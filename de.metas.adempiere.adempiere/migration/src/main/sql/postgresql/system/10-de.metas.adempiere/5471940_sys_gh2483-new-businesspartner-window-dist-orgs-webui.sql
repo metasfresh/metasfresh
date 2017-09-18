@@ -85,7 +85,7 @@ UPDATE AD_Column SET ColumnSQL='(select postal from c_bpartner_location bpl join
 -- 2017-09-17T10:04:28.097
 -- Adjusted Insert to make sure that the column is not already created in other repositories
 INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IncludedTabHeight,IsActive,IsCentrallyMaintained,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) 
-SELECT 0,557180,560290,0,540871,0,TO_TIMESTAMP('2017-09-17 10:04:28','YYYY-MM-DD HH24:MI:SS'),100,'Adresszeile 1 für diesen Standort',60,'D','"Adresszeile 1" gibt die Anschrift für diesen Standort an.',0,'Y','Y','Y','Y','N','N','N','N','N','Straße und Nr.',290,320,0,1,1,TO_TIMESTAMP('2017-09-17 10:04:28','YYYY-MM-DD HH24:MI:SS'),100
+SELECT 0,557180,560290,0,540871,0,TO_TIMESTAMP('2017-09-17 10:04:28','YYYY-MM-DD HH24:MI:SS'),100,'Adresszeile 1 für diesen Standort',60,'D','"Adresszeile 1" gibt die Anschrift für diesen Standort an.',0,'Y','Y','Y','Y','N','N','N','N','N','Straße und Nr.',290,320,0,1,1,TO_TIMESTAMP('2017-09-17 10:04:28','YYYY-MM-DD HH24:MI:SS'),100 
 WHERE NOT EXISTS (SELECT 1 FROM AD_Field JOIN AD_Column ON AD_Field.AD_Column_ID = AD_Column.AD_Column_ID WHERE AD_Column.AD_TABLE_ID = 291 AND AD_Column.ColumnName = 'Address1')
 ;
 
@@ -97,7 +97,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 -- 2017-09-17T10:04:52.016
 -- Adjusted Insert to make sure that the column is not already created in other repositories
 INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IncludedTabHeight,IsActive,IsCentrallyMaintained,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) 
-SELECT 0,557179,560291,0,540871,0,TO_TIMESTAMP('2017-09-17 10:04:51','YYYY-MM-DD HH24:MI:SS'),100,'Postleitzahl',60,'D','"PLZ" bezeichnet die Postleitzahl für diese Adresse oder dieses Postfach.',0,'Y','Y','Y','Y','N','N','N','N','N','PLZ',300,330,0,1,1,TO_TIMESTAMP('2017-09-17 10:04:51','YYYY-MM-DD HH24:MI:SS'),100
+SELECT 0,557179,560291,0,540871,0,TO_TIMESTAMP('2017-09-17 10:04:51','YYYY-MM-DD HH24:MI:SS'),100,'Postleitzahl',60,'D','"PLZ" bezeichnet die Postleitzahl für diese Adresse oder dieses Postfach.',0,'Y','Y','Y','Y','N','N','N','N','N','PLZ',300,330,0,1,1,TO_TIMESTAMP('2017-09-17 10:04:51','YYYY-MM-DD HH24:MI:SS'),100 
 WHERE NOT EXISTS (SELECT 1 FROM AD_Field JOIN AD_Column ON AD_Field.AD_Column_ID = AD_Column.AD_Column_ID WHERE AD_Column.AD_TABLE_ID = 291 AND AD_Column.ColumnName = 'Postal')
 ;
 
@@ -109,7 +109,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 -- 2017-09-17T10:05:13.844
 -- Adjusted Insert to make sure that the column is not already created in other repositories
 INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IncludedTabHeight,IsActive,IsCentrallyMaintained,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) 
-SELECT 0,557178,560292,0,540871,0,TO_TIMESTAMP('2017-09-17 10:05:13','YYYY-MM-DD HH24:MI:SS'),100,'Name des Ortes',60,'D','Bezeichnet einen einzelnen Ort in diesem Land oder dieser Region.',0,'Y','Y','Y','Y','N','N','N','N','N','Ort',310,340,0,1,1,TO_TIMESTAMP('2017-09-17 10:05:13','YYYY-MM-DD HH24:MI:SS'),100
+SELECT 0,557178,560292,0,540871,0,TO_TIMESTAMP('2017-09-17 10:05:13','YYYY-MM-DD HH24:MI:SS'),100,'Name des Ortes',60,'D','Bezeichnet einen einzelnen Ort in diesem Land oder dieser Region.',0,'Y','Y','Y','Y','N','N','N','N','N','Ort',310,340,0,1,1,TO_TIMESTAMP('2017-09-17 10:05:13','YYYY-MM-DD HH24:MI:SS'),100 
 WHERE NOT EXISTS (SELECT 1 FROM AD_Field JOIN AD_Column ON AD_Field.AD_Column_ID = AD_Column.AD_Column_ID WHERE AD_Column.AD_TABLE_ID = 291 AND AD_Column.ColumnName = 'City')
 ;
 
@@ -121,21 +121,21 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 -- 2017-09-17T10:05:49.999
 -- Adjusted Insert to make sure that the column is not already created in other repositories
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) 
-SELECT 0,560290,0,540871,541151,548670,TO_TIMESTAMP('2017-09-17 10:05:49','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','Y','N','N','Strasse und Nr.',60,0,0,TO_TIMESTAMP('2017-09-17 10:05:49','YYYY-MM-DD HH24:MI:SS'),100
+SELECT 0,560290,0,540871,541151,548670,TO_TIMESTAMP('2017-09-17 10:05:49','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','Y','N','N','Strasse und Nr.',60,0,0,TO_TIMESTAMP('2017-09-17 10:05:49','YYYY-MM-DD HH24:MI:SS'),100 
 WHERE EXISTS (SELECT 1 FROM AD_Field where AD_Field.AD_Field_ID = 560290) AND NOT EXISTS (SELECT 1 FROM AD_UI_Element where AD_Field_ID = 560290)
 ;
 
 -- 2017-09-17T10:06:01.340
 -- Adjusted Insert to make sure that the column is not already created in other repositories
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) 
-SELECT 0,560291,0,540871,541151,548671,TO_TIMESTAMP('2017-09-17 10:06:01','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','Y','N','N','PLZ',70,0,0,TO_TIMESTAMP('2017-09-17 10:06:01','YYYY-MM-DD HH24:MI:SS'),100
+SELECT 0,560291,0,540871,541151,548671,TO_TIMESTAMP('2017-09-17 10:06:01','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','Y','N','N','PLZ',70,0,0,TO_TIMESTAMP('2017-09-17 10:06:01','YYYY-MM-DD HH24:MI:SS'),100 
 WHERE EXISTS (SELECT 1 FROM AD_Field where AD_Field.AD_Field_ID = 560291) AND NOT EXISTS (SELECT 1 FROM AD_UI_Element where AD_Field_ID = 560291)
 ;
 
 -- 2017-09-17T10:06:12.465
 -- Adjusted Insert to make sure that the column is not already created in other repositories
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) 
-SELECT 0,560292,0,540871,541151,548672,TO_TIMESTAMP('2017-09-17 10:06:12','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','Y','N','N','Ort',80,0,0,TO_TIMESTAMP('2017-09-17 10:06:12','YYYY-MM-DD HH24:MI:SS'),100
+SELECT 0,560292,0,540871,541151,548672,TO_TIMESTAMP('2017-09-17 10:06:12','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','Y','N','N','Ort',80,0,0,TO_TIMESTAMP('2017-09-17 10:06:12','YYYY-MM-DD HH24:MI:SS'),100 
 WHERE EXISTS (SELECT 1 FROM AD_Field where AD_Field.AD_Field_ID = 560292) AND NOT EXISTS (SELECT 1 FROM AD_UI_Element where AD_Field_ID = 560292)
 ;
 
@@ -158,7 +158,7 @@ UPDATE AD_Column SET ColumnSQL='(select postal from c_bpartner_location bpl join
 -- 2017-09-17T10:11:10.233
 -- Adjusted Insert to make sure that the column is not already created in other repositories
 INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,AllowZoomTo,ColumnName,Created,CreatedBy,DDL_NoForeignKey,Description,EntityType,FieldLength,Help,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsSelectionColumn,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,Name,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) 
-SELECT 0,557181,881,0,10,291,'N','EMail',TO_TIMESTAMP('2017-09-17 10:11:10','YYYY-MM-DD HH24:MI:SS'),100,'N','EMail-Adresse','D',200,'The Email Address is the Electronic Mail ID for this User and should be fully qualified (e.g. joe.smith@company.com). The Email Address is used to access the self service application functionality from the web.','Y','N','Y','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','Y','N','eMail',0,0,TO_TIMESTAMP('2017-09-17 10:11:10','YYYY-MM-DD HH24:MI:SS'),100,0
+SELECT 0,557181,881,0,10,291,'N','EMail',TO_TIMESTAMP('2017-09-17 10:11:10','YYYY-MM-DD HH24:MI:SS'),100,'N','EMail-Adresse','D',200,'The Email Address is the Electronic Mail ID for this User and should be fully qualified (e.g. joe.smith@company.com). The Email Address is used to access the self service application functionality from the web.','Y','N','Y','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','Y','N','eMail',0,0,TO_TIMESTAMP('2017-09-17 10:11:10','YYYY-MM-DD HH24:MI:SS'),100,0 
 WHERE NOT EXISTS (SELECT 1 FROM AD_Column WHERE AD_TABLE_ID = 291 AND ColumnName = 'EMail')
 ;
 
@@ -170,8 +170,8 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 -- 2017-09-17T10:12:17.828
 -- Adjusted Insert to make sure that the column is not already created in other repositories
 INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IncludedTabHeight,IsActive,IsCentrallyMaintained,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) 
-SELECT 0,557181,560293,0,540871,0,TO_TIMESTAMP('2017-09-17 10:12:17','YYYY-MM-DD HH24:MI:SS'),100,'EMail-Adresse',0,'D','The Email Address is the Electronic Mail ID for this User and should be fully qualified (e.g. joe.smith@company.com). The Email Address is used to access the self service application functionality from the web.',0,'Y','Y','Y','Y','N','N','N','N','N','eMail',320,350,0,1,1,TO_TIMESTAMP('2017-09-17 10:12:17','YYYY-MM-DD HH24:MI:SS'),100
-SELECT 1 FROM AD_Field JOIN AD_Column ON AD_Field.AD_Column_ID = AD_Column.AD_Column_ID WHERE AD_Column.AD_TABLE_ID = 291 AND AD_Column.ColumnName = 'EMail'
+SELECT 0,557181,560293,0,540871,0,TO_TIMESTAMP('2017-09-17 10:12:17','YYYY-MM-DD HH24:MI:SS'),100,'EMail-Adresse',0,'D','The Email Address is the Electronic Mail ID for this User and should be fully qualified (e.g. joe.smith@company.com). The Email Address is used to access the self service application functionality from the web.',0,'Y','Y','Y','Y','N','N','N','N','N','eMail',320,350,0,1,1,TO_TIMESTAMP('2017-09-17 10:12:17','YYYY-MM-DD HH24:MI:SS'),100 
+WHERE EXISTS (SELECT  1 FROM AD_Field JOIN AD_Column ON AD_Field.AD_Column_ID = AD_Column.AD_Column_ID WHERE AD_Column.AD_TABLE_ID = 291 AND AD_Column.ColumnName = 'EMail')
 ;
 
 -- 2017-09-17T10:12:17.831
