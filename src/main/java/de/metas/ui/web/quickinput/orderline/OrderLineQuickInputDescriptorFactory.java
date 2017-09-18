@@ -89,7 +89,7 @@ import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
 				.setLookupDescriptorProvider(SqlLookupDescriptor.builder()
 						.setColumnName(IOrderLineQuickInput.COLUMNNAME_M_Product_ID)
 						.setDisplayType(DisplayType.Search)
-						.setAD_Val_Rule_ID(540051) // FIXME: hardcoded
+						.setAD_Val_Rule_ID(540051) // FIXME: hardcoded "M_Product no freight product (Trx)"
 						.buildProvider())
 				.setValueClass(IntegerLookupValue.class)
 				.setReadonlyLogic(ILogicExpression.FALSE)
@@ -106,7 +106,7 @@ import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
 				.setLookupDescriptorProvider(SqlLookupDescriptor.builder()
 						.setColumnName(IOrderLineQuickInput.COLUMNNAME_M_HU_PI_Item_Product_ID)
 						.setDisplayType(DisplayType.TableDir)
-						.setAD_Val_Rule_ID(540199) // FIXME: hardcoded
+						.setAD_Val_Rule_ID(540199) // FIXME: hardcoded "M_HU_PI_Item_Product_For_Org_and_Product_and_DateOrdered"
 						.buildProvider())
 				.setValueClass(IntegerLookupValue.class)
 				.setReadonlyLogic(ILogicExpression.FALSE)
