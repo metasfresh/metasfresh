@@ -21,6 +21,10 @@ Here come the actual release notes:
   * [#2483](https://github.com/metasfresh/metasfresh/issues/2483) New Dist-Orgs Businesspartner Window in WebUI
     * New Window in WebUI menu, adapting the requirements of dis-orgs to the Businesspartner window.
 
+* metasfresh-webui-frontend
+  * [#1192](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1192) grid values are cut off if column size is too small
+    * Showing tooltips in Table Grid Cells. Allowing to hover over a field and whoing the complete content in Tooltip. Very helpful for content that does not fit fully ionto a displayed Grid Field.
+
 # metasfresh 5.27 (2017-38)
 
 **upcoming release for week 2017-38**
