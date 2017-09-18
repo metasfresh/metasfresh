@@ -465,7 +465,7 @@ public class AdempiereException extends RuntimeException
 
 	public final boolean hasParameter(@NonNull final String name)
 	{
-		return parameters.containsKey(name);
+		return parameters == null ? false : parameters.containsKey(name);
 	}
 
 	public final Map<String, Object> getParameters()
