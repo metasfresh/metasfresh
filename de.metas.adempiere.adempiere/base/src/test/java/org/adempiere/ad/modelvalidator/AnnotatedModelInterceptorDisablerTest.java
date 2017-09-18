@@ -37,13 +37,14 @@ public class AnnotatedModelInterceptorDisablerTest
 	private Pointcut pointcut;
 
 	private AnnotatedModelInterceptorDisabler annotatedModelInterceptorDisabler;
-	
+
 	@Before
 	public void init() throws NoSuchMethodException, SecurityException
 	{
+		AdempiereTestHelper.get().init();
+
 		pointcut = new Pointcut(PointcutType.DocValidate, AnnotatedModelInterceptorDisablerTest.class.getMethod("someTestMethod"), new int[] { ModelValidator.TIMING_AFTER_CLOSE }, false);
 		annotatedModelInterceptorDisabler = new AnnotatedModelInterceptorDisabler();
-		AdempiereTestHelper.get().init();
 	}
 
 	/**
@@ -51,7 +52,7 @@ public class AnnotatedModelInterceptorDisablerTest
 	 */
 	public void someTestMethod()
 	{
-		// no need for any code, we just need a method 
+		// no need for any code, we just need a method
 	}
 
 	@Test
@@ -73,24 +74,39 @@ public class AnnotatedModelInterceptorDisablerTest
 	@Test
 	public void setDisabled()
 	{
-		setupWithSysConfigValue("N");
+		setupSysConfigAndReload("N");
 		assertThat(annotatedModelInterceptorDisabler.isDisabled(pointcut)).isTrue();
 	}
-	
+
 	@Test
 	public void setNotDisabled()
 	{
-		setupWithSysConfigValue("Y");
+		setupSysConfigAndReload("Y");
 		assertThat(annotatedModelInterceptorDisabler.isDisabled(pointcut)).isFalse();
 	}
 
-	private void setupWithSysConfigValue(final String sysConfigValue)
+	private void setupSysConfigAndReload(final String sysConfigValue)
+	{
+		setupSysConfig(sysConfigValue);
+		annotatedModelInterceptorDisabler.reloadDisabledPointcutIds();
+	}
+
+	/**
+	 * Checks if the setting are loaded initially in a new instance.
+	 */
+	@Test
+	public void setDisabledInitital()
+	{
+		setupSysConfig("N");
+		annotatedModelInterceptorDisabler = new AnnotatedModelInterceptorDisabler();
+		assertThat(annotatedModelInterceptorDisabler.isDisabled(pointcut)).isTrue();
+	}
+
+	private void setupSysConfig(final String sysConfigValue)
 	{
 		final I_AD_SysConfig sysConfig = newInstance(I_AD_SysConfig.class);
 		sysConfig.setName("IntercetorEnabled_org.adempiere.ad.modelvalidator.AnnotatedModelInterceptorDisablerTest#someTestMethod");
 		sysConfig.setValue(sysConfigValue);
 		save(sysConfig);
-		
-		annotatedModelInterceptorDisabler.reloadDisabledPointcutIds();
 	}
 }

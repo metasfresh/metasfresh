@@ -55,11 +55,6 @@ public class AnnotatedModelInterceptorDisabler
 
 	private final static AnnotatedModelInterceptorDisabler INSTANCE = new AnnotatedModelInterceptorDisabler();
 
-	public static AnnotatedModelInterceptorDisabler get()
-	{
-		return INSTANCE;
-	}
-
 	private final LoadingCache<IPointcut, String> howtoDisableMessages = CacheBuilder.newBuilder().build(new CacheLoader<IPointcut, String>()
 	{
 		@Override
@@ -82,10 +77,23 @@ public class AnnotatedModelInterceptorDisabler
 
 	private final ReadWriteLock lockForDisabledPointcutIds = new ReentrantReadWriteLock();
 
+	public static AnnotatedModelInterceptorDisabler get()
+	{
+		return INSTANCE;
+	}
+
 	@VisibleForTesting
 	AnnotatedModelInterceptorDisabler()
 	{
-		// make sure we reload if AD_Sysconfig was changed
+		reloadDisabledPointcutIds();
+		registerListenerForReload();
+	}
+
+	/**
+	 * Make sure we reload if AD_Sysconfig was changed.
+	 */
+	private void registerListenerForReload()
+	{
 		CacheMgt.get().addCacheResetListener(I_AD_SysConfig.Table_Name, new ICacheResetListener()
 		{
 			@Override
