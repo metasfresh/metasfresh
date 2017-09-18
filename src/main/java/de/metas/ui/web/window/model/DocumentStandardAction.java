@@ -43,7 +43,8 @@ public enum DocumentStandardAction
 	Email("email"), //
 	Letter("letter"), //
 	Print("print"), //
-	Delete("delete") //
+	Delete("delete"), //
+	DownloadSelected("downloadSelected") //
 	;
 
 	private final String json;
