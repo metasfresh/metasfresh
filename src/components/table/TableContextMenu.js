@@ -24,17 +24,9 @@ class TableContextMenu extends Component {
     }
 
     componentDidMount() {
-        const {
-            x, y, fieldName, supportZoomInto,
-            supportFieldEdit, docId
-        } = this.props;
-
-        this.setPosition(x, y, fieldName, supportZoomInto, supportFieldEdit,
-            this.contextMenu);
-
-        if (docId) {
-            this.getReferences();
-        }
+        const {x, y, fieldName, docId} = this.props;
+        this.setPosition(x, y, fieldName, this.contextMenu);
+        docId && this.getReferences();
     }
 
     getPosition = (dir, pos, element) => {
@@ -52,15 +44,12 @@ class TableContextMenu extends Component {
         }
     }
 
-    setPosition = (x, y, fieldName, supportZoomInto,
-                   supportFieldEdit, elem) => {
+    setPosition = (x, y, fieldName, elem) => {
         this.setState({
             contextMenu: {
                 x: this.getPosition('x', x, elem),
                 y: this.getPosition('y', y, elem),
-                fieldName,
-                supportZoomInto,
-                supportFieldEdit
+                fieldName
             }
         });
     }
@@ -69,20 +58,19 @@ class TableContextMenu extends Component {
         const {docId, tabId, type, selected} = this.props;
 
         referencesRequest('window', type, docId, tabId, selected[0])
-            .then(response => {
-                this.setState({
-                    references: response.data.references
-                });
+        .then(response => {
+            this.setState({
+                references: response.data.references
+
             });
+        });
     }
 
     handleReferenceClick = (refType, filter) => {
         const {
             dispatch, type, docId, tabId, selected
         } = this.props;
-
         dispatch(setFilter(filter, refType));
-
         window.open('/window/' + refType +
             '?refType=' + type +
             '&refId=' + docId +
@@ -94,37 +82,24 @@ class TableContextMenu extends Component {
     render() {
         const {
             blur, selected, mainTable, handleAdvancedEdit, handleOpenNewTab,
-            handleDelete, handleFieldEdit, handleZoomInto
+            handleDelete, handleZoomInto
         } = this.props;
-
         const {contextMenu, references} = this.state;
 
         const isSelectedOne = selected.length === 1;
-        const showFieldEdit = (
-            isSelectedOne && mainTable &&
-            contextMenu.supportFieldEdit &&
-            handleFieldEdit
-        );
 
         return (
                 <div
-                    ref={(c) => {
-                        this.contextMenu = c;
-                        if (c) {
-                            c.focus();
-                        }
-                    }}
+                    className="context-menu context-menu-open panel-bordered panel-primary"
+                    ref={(c) => {this.contextMenu = c; c && c.focus()}}
                     style={{
                         left: contextMenu.x,
                         top: contextMenu.y
                     }}
-                    className={'context-menu context-menu-open' +
-                    ' panel-bordered panel-primary'}
                     tabIndex="0"
                     onBlur={blur}
                 >
-
-                {contextMenu.supportZoomInto &&
+                {contextMenu.fieldName &&
                     <div
                         className="context-menu-item"
                         onClick={() => handleZoomInto(contextMenu.fieldName)}
@@ -132,20 +107,8 @@ class TableContextMenu extends Component {
                         <i className="meta-icon-share" /> Zoom into
                     </div>
                 }
-
-                {showFieldEdit && (
-                    <div
-                        className="context-menu-item"
-                        onClick={handleFieldEdit}
-                    >
-                        <i className="meta-icon-edit" /> Edit field value
-                    </div>
-                )}
-
-                {(contextMenu.supportZoomInto || showFieldEdit) && (
-                    <hr className="context-menu-separator" />
-                )}
-
+                {contextMenu.fieldName &&
+                    <hr className="context-menu-separator" />}
                 {isSelectedOne && !mainTable &&
                     <div
                         className="context-menu-item"
@@ -159,15 +122,15 @@ class TableContextMenu extends Component {
                 }
 
                 {mainTable &&
-                <div
-                    className="context-menu-item"
-                    onClick={handleOpenNewTab}
-                >
-                    <i className="meta-icon-file" /> Open in new tab
-                    <span className="tooltip-inline">
-                        {keymap.DOCUMENT_LIST_CONTEXT.OPEN_SELECTED}
-                    </span>
-                </div>
+                    <div
+                        className="context-menu-item"
+                        onClick={handleOpenNewTab}
+                    >
+                        <i className="meta-icon-file" /> Open in new tab
+                        <span className="tooltip-inline">
+                            {keymap.DOCUMENT_LIST_CONTEXT.OPEN_SELECTED}
+                        </span>
+                    </div>
                 }
 
                 {handleDelete &&
