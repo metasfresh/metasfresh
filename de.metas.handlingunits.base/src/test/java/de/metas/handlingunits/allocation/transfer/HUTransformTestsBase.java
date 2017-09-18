@@ -32,7 +32,6 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_Locator;
 import de.metas.handlingunits.model.X_M_HU;
-import de.metas.handlingunits.model.X_M_HU_Status;
 import de.metas.handlingunits.model.validator.M_HU;
 import de.metas.handlingunits.spi.IHUPackingMaterialCollectorSource;
 import de.metas.handlingunits.trace.HUTransformTracingTests;
@@ -333,7 +332,7 @@ public class HUTransformTestsBase
 
 		final I_M_HU createdLU = createdLUs.get(0);
 		final IMutableHUContext huContext = data.helper.createMutableHUContextOutOfTransaction();
-		handlingUnitsBL.setHUStatus(huContext, createdLU, X_M_HU_Status.HUSTATUS_Active);
+		handlingUnitsBL.setHUStatus(huContext, createdLU, X_M_HU.HUSTATUS_Active);
 		assertThat(createdLU.getHUStatus(), is(X_M_HU.HUSTATUS_Active));
 
 		new M_HU().updateChildren(createdLU);

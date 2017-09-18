@@ -100,7 +100,7 @@ public class HUDisplayNameBuilder implements IHUDisplayNameBuilder
 		}
 		displayNameBuilder.append("(").append(piName).append(")");
 
-		if(handlingUnitsBL.isShipped(getM_HU()))
+		if(X_M_HU.HUSTATUS_Shipped.equals(getM_HU().getHUStatus()))
 		{
 			final IADReferenceDAO adReferenceDAO = Services.get(IADReferenceDAO.class);
 			final String destroyedStr = adReferenceDAO.retrieveListNameTrl(getCtx(), X_M_HU.HUSTATUS_AD_Reference_ID, X_M_HU.HUSTATUS_Shipped);

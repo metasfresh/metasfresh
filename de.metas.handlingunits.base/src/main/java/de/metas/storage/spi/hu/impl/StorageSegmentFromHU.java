@@ -36,7 +36,7 @@ import org.adempiere.util.Services;
 import org.adempiere.util.text.annotation.ToStringBuilder;
 import org.compiere.util.Env;
 
-import de.metas.handlingunits.attribute.IHUStatusBL;
+import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Storage;
 import de.metas.storage.AbstractStorageSegment;
