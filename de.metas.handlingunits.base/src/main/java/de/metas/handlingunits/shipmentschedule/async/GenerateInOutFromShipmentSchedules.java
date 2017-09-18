@@ -338,7 +338,7 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 	 * @return records that do not have an {@link I_M_InOutLine} assigned to them and that also have
 	 *         <ul>
 	 *         <li>either no HU assigned to them, or</li>
-	 *         <li>non-destroyed HUs assigned</li>
+	 *         <li>HUs which are already picked or shipped assigned to them</li>
 	 *         </ul>
 	 * 
 	 *         Hint: also take a look at {@link #isPickedOrShippedOrNoHU(I_M_ShipmentSchedule_QtyPicked)}.
@@ -358,7 +358,7 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 
 	/**
 	 * Returns {@code true} if there is either no HU assigned to the given {@code schedQtyPicked} or if that HU is either picked or shipped.
-	 * If you don't see what it could possibly be already shipped, please take a look at issue <a href="https://github.com/metasfresh/metasfresh/issues/1174">#1174</a>.
+	 * If you don't see why it could possibly be already shipped, please take a look at issue <a href="https://github.com/metasfresh/metasfresh/issues/1174">#1174</a>.
 	 * 
 	 * @param schedQtyPicked
 	 * @return
@@ -389,8 +389,9 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 		{
 			return true; // this *might* happen with our "minidumps" there we don't have the HU data in our DB
 		}
-		
-		return X_M_HU.HUSTATUS_Picked.equals(huToVerify.getHUStatus()) || X_M_HU.HUSTATUS_Shipped.equals(huToVerify.getHUStatus());
+
+		final String huStatus = huToVerify.getHUStatus();
+		return X_M_HU.HUSTATUS_Picked.equals(huStatus) || X_M_HU.HUSTATUS_Shipped.equals(huStatus);
 	}
 
 	/**

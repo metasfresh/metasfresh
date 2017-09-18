@@ -34,6 +34,7 @@ import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
 
 import lombok.Builder;
+import lombok.Builder.Default;
 import lombok.Data;
 import lombok.NonNull;
 
@@ -43,13 +44,19 @@ public class ReceiptCostCollectorCandidate implements IReceiptCostCollectorCandi
 {
 	private final I_PP_Order PP_Order;
 	private final I_PP_Order_BOMLine PP_Order_BOMLine;
+
 	@NonNull
+	@Default
 	private Timestamp movementDate = SystemTime.asTimestamp();
+
 	private I_M_Product M_Product;
 	@NonNull
 	private I_C_UOM C_UOM;
+
 	@NonNull
+	@Default
 	private BigDecimal qtyToReceive = BigDecimal.ZERO;
+
 	@NonNull
 	private final BigDecimal qtyScrap;
 	@NonNull
