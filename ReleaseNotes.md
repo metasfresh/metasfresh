@@ -82,6 +82,7 @@ Here come the actual release notes:
 * metasfresh-webui-api
   * [#570](https://github.com/metasfresh/metasfresh-webui-api/issues/570) clicking print on non-document window shows error page
   * [#582](https://github.com/metasfresh/metasfresh-webui-api/issues/582) Cannot invoice disposal's invoice candidates
+  * [#594](https://github.com/metasfresh/metasfresh-webui-api/issues/594) LU is not created when you receive in production
 
 # metasfresh 5.26 (2017-37)
 
