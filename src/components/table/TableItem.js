@@ -3,6 +3,11 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import TableCell from './TableCell';
 
+// Widgets IDs which allowed to be edited in field edit mode
+const FIELD_EDIT_WIDGET_TYPES = [
+    'CostPrice'
+];
+
 class TableItem extends Component {
     constructor(props) {
         super(props);
@@ -25,6 +30,35 @@ class TableItem extends Component {
         }
 
         this.editProperty(e, property, callback, item);
+    }
+
+    prepareWidgetData = (item) => {
+        const { fieldsByName } = this.props;
+
+        let widgetData = item.fields.map( (prop) => {
+            return fieldsByName[prop.field] || -1;
+        });
+
+        return widgetData;
+    }
+
+    initPropertyEditor = (fieldName) => {
+        const { cols, fieldsByName } = this.props;
+
+        if (cols && fieldsByName) {
+            cols.map((item) => {
+                const property = item.fields[0].field;
+                if (property === fieldName) {
+                    const widgetData = this.prepareWidgetData(item);
+
+                    if (widgetData) {
+                        this.handleEditProperty(
+                            null, property, true, widgetData[0]
+                        );
+                    }
+                }
+            });
+        }
     }
 
     editProperty = (e, property, callback, item) => {
@@ -93,6 +127,10 @@ class TableItem extends Component {
         activeCell && activeCell.focus();
     }
 
+    isAllowedFieldEdit = (item) => {
+        return FIELD_EDIT_WIDGET_TYPES.indexOf(item.widgetType) > -1;
+    }
+
     renderCells = (cols, cells) => {
         const {
             type, docId, rowId, tabId, readonly, mainTable, newRow,
@@ -114,11 +152,26 @@ class TableItem extends Component {
                 )
             } else {
                 return cols && cols.map((item, index) => {
-                    const property = item.fields[0].field;
-                    const widgetData = item.fields.map(
-                        (prop) => cells && cells[prop.field] || -1
-                    );
                     const {supportZoomInto} = item.fields[0];
+                    const supportFieldEdit = mainTable &&
+                        this.isAllowedFieldEdit(item);
+
+                    const property = item.fields[0].field;
+                    let widgetData = item.fields.map(
+                        (prop) => {
+                            if (cells) {
+                                let cellWidget = cells[prop.field] || -1;
+
+                                if (supportFieldEdit) {
+                                    cellWidget.widgetType = item.widgetType;
+                                }
+
+                                return cellWidget;
+                            }
+
+                            return -1;
+                        }
+                    );
 
                     return (
                         <TableCell
@@ -146,7 +199,7 @@ class TableItem extends Component {
                             listenOnKeysFalse={this.listenOnKeysFalse}
                             closeTableField={(e) => this.closeTableField(e)}
                             handleRightClick={(e) => handleRightClick(
-                                e, supportZoomInto ? property : null
+                                e, property, supportZoomInto, supportFieldEdit
                             )}
                         />
                     )
@@ -304,6 +357,6 @@ TableItem.propTypes = {
     dispatch: PropTypes.func.isRequired
 };
 
-TableItem = connect()(TableItem)
+TableItem = connect(false, false, false, { withRef: true })(TableItem)
 
 export default TableItem
