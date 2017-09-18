@@ -267,7 +267,7 @@ class Subheader extends Component {
                 {gridView && query && (
                     <a
                         className="subheader-item js-subheader-item"
-                        href={`/rest/api/documentView/${windowType}/${query.viewId}/export/excel?selectedIds=${selected.join(',')}`}
+                        href={`${config.API_URL}/documentView/${windowType}/${query.viewId}/export/excel?selectedIds=${selected.join(',')}`}
                         download
                         onClick={this.handleDownloadSelected}
                         style={{
