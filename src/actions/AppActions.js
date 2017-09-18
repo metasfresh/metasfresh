@@ -5,7 +5,6 @@ import {replace} from 'react-router-redux';
 import Moment from 'moment';
 import numeral from 'numeral';
 import {LOCAL_LANG}  from '../constants/Constants';
-import {LOCAL_NUMERAL_FORMATS}  from '../constants/Locales';
 
 // REQUESTS
 
@@ -238,10 +237,12 @@ export function loginSuccess(auth) {
         getUserSession().then(session => {
             dispatch(userSessionInit(session.data));
             languageSuccess(Object.keys(session.data.language)[0]);
+            initNumeralLocales(Object.keys(session.data.language)[0], session.data.locale);
             auth.initSessionClient(session.data.websocketEndpoint, msg => {
                 const me = JSON.parse(msg.body);
                 dispatch(userSessionUpdate(me));
                 me.language && languageSuccess(Object.keys(me.language)[0]);
+                me.locale && initNumeralLocales(Object.keys(me.language)[0], me.locale);
                 getNotifications().then(response => {
                     dispatch(getNotificationsSuccess(
                         response.data.notifications,
@@ -294,30 +295,34 @@ export function loginSuccess(auth) {
     }
 }
 
-function initNumeralLocales(lang) {
-    let formatKeys = Object.keys(LOCAL_NUMERAL_FORMATS);
-    let language = lang.toLowerCase();
+function initNumeralLocales (lang, locale) {
 
-    formatKeys.forEach( (locale) => {
-        if (typeof numeral.locales[locale] === 'undefined') {
-            numeral.register('locale', locale, LOCAL_NUMERAL_FORMATS[locale]);
+    const language = lang.toLowerCase();
+    const LOCAL_NUMERAL_FORMAT = {
+        defaultFormat: '0,0.00',
+        delimiters: {
+            thousands: locale.numberGroupingSeparator || ',',
+            decimal: locale.numberDecimalSeparator || '.'
         }
-    });
+    };
+
+    if (typeof numeral.locales[language] === 'undefined') {
+        numeral.register('locale', language, LOCAL_NUMERAL_FORMAT);
+    }
 
     if (typeof numeral.locales[language] !== 'undefined') {
         numeral.locale(language);
 
-        if (LOCAL_NUMERAL_FORMATS[language].defaultFormat) {
-            numeral.defaultFormat(LOCAL_NUMERAL_FORMATS[language].defaultFormat);
+        if (LOCAL_NUMERAL_FORMAT.defaultFormat) {
+            numeral.defaultFormat(LOCAL_NUMERAL_FORMAT.defaultFormat);
         }
     }
+
 }
 
 export function languageSuccess(lang) {
     localStorage.setItem(LOCAL_LANG, lang);
-    Moment.locale(lang);
-
-    initNumeralLocales(lang);
+    Moment.locale(lang);    
 
     axios.defaults.headers.common['Accept-Language'] = lang;
 }
