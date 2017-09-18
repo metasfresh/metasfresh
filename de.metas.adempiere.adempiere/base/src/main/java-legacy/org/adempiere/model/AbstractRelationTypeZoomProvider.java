@@ -1,7 +1,6 @@
 package org.adempiere.model;
 
 import java.util.List;
-import java.util.Properties;
 
 import javax.annotation.Nullable;
 
@@ -53,6 +52,11 @@ public abstract class AbstractRelationTypeZoomProvider implements IZoomProvider
 	protected int adRelationTypeId;
 	protected static final Logger logger = LogManager.getLogger(RelationTypeZoomProvider.class);
 
+	/**
+	 * Each zoom provider must have a target reference
+	 */
+	protected static ZoomProviderDestination target;
+
 	public boolean isDirected()
 	{
 		return directed;
@@ -73,10 +77,6 @@ public abstract class AbstractRelationTypeZoomProvider implements IZoomProvider
 		return adRelationTypeId;
 	}
 
-	protected abstract ZoomProviderDestination getTarget();
-
-	protected abstract String getTargetTableName();
-
 	protected static void updateRecordsCountAndZoomValue(final MQuery query)
 	{
 		final String sqlCommon = " FROM " + query.getZoomTableName() + " WHERE " + query.getWhereClause(false);
@@ -94,7 +94,13 @@ public abstract class AbstractRelationTypeZoomProvider implements IZoomProvider
 		}
 	}
 
-	public abstract <T> List<T> retrieveDestinations(final Properties ctx, final PO sourcePO, final Class<T> clazz, final String trxName);
+	public ZoomProviderDestination getTarget()
+	{
+		return target;
+	}
+
+
+	public abstract <T> List<T> retrieveDestinations( final PO sourcePO, final Class<T> clazz, final String trxName);
 
 	protected static class ZoomProviderDestination
 	{

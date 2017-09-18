@@ -55,16 +55,16 @@ import lombok.ToString;
 public class ReferenceTargetRelationTypeZoomProvider extends AbstractRelationTypeZoomProvider
 {
 
-	private ZoomProviderDestination target;
+
 
 	private ReferenceTargetRelationTypeZoomProvider(final Builder builder)
 	{
 		super();
 
-		directed = builder.isDirected();
 		zoomInfoId = builder.getZoomInfoId();
 		internalName = builder.getInternalName();
 		adRelationTypeId = builder.getAD_RelationType_ID();
+		
 		target = new ZoomProviderDestination(builder.getTarget_Reference_ID(), builder.getTargetTableRefInfoOrNull(), builder.getTargetRoleDisplayName());
 	}
 
@@ -75,7 +75,7 @@ public class ReferenceTargetRelationTypeZoomProvider extends AbstractRelationTyp
 				.omitNullValues()
 				.add("zoomInfoId", zoomInfoId)
 				.add("internalName", internalName)
-				.add("directed", directed)
+				.add("adRelationTypeId", adRelationTypeId)
 				.toString();
 	}
 
@@ -88,11 +88,11 @@ public class ReferenceTargetRelationTypeZoomProvider extends AbstractRelationTyp
 		final ITableRefInfo refTable = target.getTableRefInfo();
 
 		final Properties ctx = zoomSource.getCtx();
-		
+
 		final I_AD_Column referenceTargetColumn = InterfaceWrapperHelper.create(ctx, refTable.getReferenceTargetColumnID(), I_AD_Column.class, ITrx.TRXNAME_None);
-		
+
 		Check.assumeNotNull(referenceTargetColumn, "No ReferenceTarget Column defined for the AD_Ref_Table entry " + refTable);
-		
+
 		queryWhereClause
 				.append(zoomSource.getAD_Table_ID())
 				.append(" = ")
@@ -138,21 +138,15 @@ public class ReferenceTargetRelationTypeZoomProvider extends AbstractRelationTyp
 		return ImmutableList.of(ZoomInfo.of(zoomInfoId, adWindowId, query, display));
 	}
 
-	@Override
-	protected ZoomProviderDestination getTarget()
-	{
-		return target;
-	}
+	
 
 	@Override
-	protected String getTargetTableName()
+	public <T> List<T> retrieveDestinations(final PO sourcePO, final Class<T> clazz, final String trxName)
 	{
-		return target.getTableName();
-	}
-
-	@Override
-	public <T> List<T> retrieveDestinations(Properties ctx, PO sourcePO, Class<T> clazz, String trxName)
-	{
+		Check.assumeNotNull(sourcePO, "Parameter sourcePO is not null");
+	
+		final Properties ctx = sourcePO.getCtx();
+		
 		final IZoomSource zoomSource = POZoomSource.of(sourcePO, -1);
 
 		final MQuery query = mkQuery(zoomSource, getTarget());
@@ -174,12 +168,11 @@ public class ReferenceTargetRelationTypeZoomProvider extends AbstractRelationTyp
 	{
 		private final transient ILookupDAO lookupDAO = Services.get(ILookupDAO.class);
 
-		private Boolean directed;
 		private String internalName;
 		private int adRelationTypeId;
 		private boolean isReferenceTarget;
 
-		private int targetReferenceId = -1;
+		private int targetReferenceId;
 		private ITranslatableString targetRoleDisplayName;
 		private ITableRefInfo targetTableRefInfo = null; // lazy
 
@@ -227,18 +220,6 @@ public class ReferenceTargetRelationTypeZoomProvider extends AbstractRelationTyp
 			return internalName;
 		}
 
-		public Builder setDirected(final boolean directed)
-		{
-			this.directed = directed;
-			return this;
-		}
-
-		private boolean isDirected()
-		{
-			Check.assumeNotNull(directed, "Parameter directed is not null");
-			return directed;
-		}
-
 		public Builder setTarget_Reference_ID(final int targetReferenceId)
 		{
 			this.targetReferenceId = targetReferenceId;
@@ -278,10 +259,6 @@ public class ReferenceTargetRelationTypeZoomProvider extends AbstractRelationTyp
 			return this;
 		}
 
-		private boolean isReferenceTarget()
-		{
-			return isReferenceTarget;
-		}
 	}
 
 }

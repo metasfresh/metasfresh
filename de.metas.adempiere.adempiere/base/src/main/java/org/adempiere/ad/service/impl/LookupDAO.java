@@ -157,10 +157,10 @@ public class LookupDAO implements ILookupDAO
 
 		// #2340
 		// Flag to mark a ref_table as ReferenceTarget
-		private boolean isReferenceTarget;
+		private final boolean isReferenceTarget;
 		// #2340
 		// Specify which [table_]Record_ID column is the wanter ReferenceTargetColumn; only relevant if the isReferenceTarget flag is true
-		private int referenceTargetColumnID;
+		private final int referenceTargetColumnID;
 
 	
 		private TableRefInfo(final TableRefInfoBuilder builder)

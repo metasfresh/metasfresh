@@ -138,7 +138,7 @@ public class OLCandBL implements IOLCandBL
 		final String relationTypeInternalName = mkRelationTypeInternalName(processor);
 		final List<I_C_OLCand> allCandidates = RelationTypeZoomProvidersFactory.instance
 				.getZoomProviderBySourceTableNameAndInternalName(I_C_OLCand.Table_Name, relationTypeInternalName)
-				.retrieveDestinations(ctx, InterfaceWrapperHelper.getPO(processor), I_C_OLCand.class, trxName);
+				.retrieveDestinations(InterfaceWrapperHelper.getPO(processor), I_C_OLCand.class, trxName);
 
 		if (allCandidates.isEmpty())
 		{

@@ -127,24 +127,9 @@ public class RelationTypeZoomProvider extends AbstractRelationTypeZoomProvider
 		return ImmutableList.of(ZoomInfo.of(zoomInfoId, adWindowId, query, display));
 	}
 
-	protected ZoomProviderDestination getTarget()
-	{
-		return target;
-	}
-
-	public String getTargetTableName()
-	{
-		return target.getTableName();
-	}
-
-	protected ZoomProviderDestination getSource()
+	private ZoomProviderDestination getSource()
 	{
 		return source;
-	}
-
-	public String getSourceTableName()
-	{
-		return source.getTableName();
 	}
 
 	/**
@@ -247,11 +232,16 @@ public class RelationTypeZoomProvider extends AbstractRelationTypeZoomProvider
 		return whereParsed;
 	}
 
-	public <T> List<T> retrieveDestinations(final Properties ctx, final PO sourcePO, final Class<T> clazz, final String trxName)
+	public <T> List<T> retrieveDestinations( final PO sourcePO, final Class<T> clazz, final String trxName)
 	{
+		Check.assumeNotNull(sourcePO, "Parameter sourcePO is not null");
+		
+		final Properties ctx = sourcePO.getCtx();
+		
 		final IZoomSource zoomSource = POZoomSource.of(sourcePO, -1);
 
 		final ZoomProviderDestination target = findSourceAndTargetEffective(zoomSource).getRight();
+		
 		final MQuery query = mkQuery(zoomSource, target);
 
 		return new Query(ctx, query.getZoomTableName(), query.getWhereClause(false), trxName)

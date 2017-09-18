@@ -11,7 +11,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
-import java.util.Properties;
 import java.util.Set;
 
 import org.adempiere.ad.service.IADReferenceDAO;
@@ -61,6 +60,9 @@ public final class RelationTypeZoomProvidersFactory
 	private static final Logger logger = LogManager.getLogger(RelationTypeZoomProvidersFactory.class);
 
 	public static final transient RelationTypeZoomProvidersFactory instance = new RelationTypeZoomProvidersFactory();
+
+	// services
+	public static final transient IADReferenceDAO adReferenceDAO = Services.get(IADReferenceDAO.class);
 
 	/**
 	 * Selection for those relation types whose AD_Reference(s) might match a given PO. Only evaluates the table and key
@@ -114,7 +116,7 @@ public final class RelationTypeZoomProvidersFactory
 			+ "    AND rt." + I_AD_RelationType.COLUMNNAME_IsReferenceTarget + " = 'Y'"
 			+ "    AND ref.IsActive='Y'" //
 			+ "    AND ref.ValidationType='T'" // must have table validation
-	
+
 			+ "    AND (" // join the source AD_Reference
 			+ "      rt.AD_Reference_Source_ID is null" //
 			+ "      AND " // not directed? -> also join the target AD_Reference
@@ -152,7 +154,7 @@ public final class RelationTypeZoomProvidersFactory
 
 		final POInfo poInfo = POInfo.getPOInfo(tableName);
 		final String keyColumnName = poInfo.getKeyColumnName();
-		if (keyColumnName == null)
+		if (Check.isEmpty(keyColumnName))
 		{
 			logger.error("{} does not have a single key column", tableName);
 			throw PORelationException.throwWrongKeyColumnCount(tableName, poInfo.getKeyColumnNames());
@@ -195,7 +197,8 @@ public final class RelationTypeZoomProvidersFactory
 
 		final POInfo poInfo = POInfo.getPOInfo(tableName);
 		final String keyColumnName = poInfo.getKeyColumnName();
-		if (keyColumnName == null)
+
+		if (Check.isEmpty(keyColumnName))
 		{
 			logger.error("{} does not have a single key column", tableName);
 			throw PORelationException.throwWrongKeyColumnCount(tableName, poInfo.getKeyColumnNames());
@@ -238,43 +241,42 @@ public final class RelationTypeZoomProvidersFactory
 	 */
 	private static List<ReferenceTargetRelationTypeZoomProvider> retrieveReferenceTargetZoomProviders(final ResultSet rs) throws SQLException
 	{
-		final IADReferenceDAO adReferenceDAO = Services.get(IADReferenceDAO.class);
-		final Properties ctx = Env.getCtx();
-
 		final List<ReferenceTargetRelationTypeZoomProvider> result = new ArrayList<>();
 		final Set<Integer> alreadySeen = new HashSet<>();
 
 		while (rs.next())
 		{
 			final int adRelationTypeId = rs.getInt(I_AD_RelationType.COLUMNNAME_AD_RelationType_ID);
+
 			if (!alreadySeen.add(adRelationTypeId))
 			{
 				continue;
 			}
 
-			final I_AD_RelationType relationType = InterfaceWrapperHelper.create(ctx, adRelationTypeId, I_AD_RelationType.class, ITrx.TRXNAME_None);
+			final I_AD_RelationType relationType = InterfaceWrapperHelper.create(Env.getCtx(), adRelationTypeId, I_AD_RelationType.class, ITrx.TRXNAME_None);
 
 			final ADRefListItem roleTargetItem = adReferenceDAO.retrieveListItemOrNull(X_AD_RelationType.ROLE_TARGET_AD_Reference_ID, relationType.getRole_Target());
+
 			final ITranslatableString roleTargetDisplayName = roleTargetItem == null ? null : roleTargetItem.getName();
 
 			try
 			{
 				final ReferenceTargetRelationTypeZoomProvider zoomProvider = ReferenceTargetRelationTypeZoomProvider.builder()
-						.setDirected(relationType.isDirected())
+					
 						.setAD_RelationType_ID(relationType.getAD_RelationType_ID())
 						.setInternalName(relationType.getInternalName())
 						//
 						.setTarget_Reference_ID(relationType.getAD_Reference_Target_ID())
 						.setTargetRoleDisplayName(roleTargetDisplayName)
+						.setIsReferenceTarget(true)
 						//
 						.buildOrNull();
 
-				if (zoomProvider == null)
+				if (zoomProvider != null)
 				{
-					continue;
+					result.add(zoomProvider);
 				}
 
-				result.add(zoomProvider);
 			}
 			catch (Exception ex)
 			{
@@ -284,10 +286,15 @@ public final class RelationTypeZoomProvidersFactory
 		return result;
 	}
 
+	/**
+	 * Retrieve general kind of zoom providers, that have both source and target and their references are of type TableValidation
+	 * 
+	 * @param rs
+	 * @return
+	 * @throws SQLException
+	 */
 	private static List<RelationTypeZoomProvider> retrieveZoomProviders(final ResultSet rs) throws SQLException
 	{
-		final IADReferenceDAO adReferenceDAO = Services.get(IADReferenceDAO.class);
-		final Properties ctx = Env.getCtx();
 
 		final List<RelationTypeZoomProvider> result = new ArrayList<>();
 		final Set<Integer> alreadySeen = new HashSet<>();
@@ -300,7 +307,7 @@ public final class RelationTypeZoomProvidersFactory
 				continue;
 			}
 
-			final I_AD_RelationType relationType = InterfaceWrapperHelper.create(ctx, adRelationTypeId, I_AD_RelationType.class, ITrx.TRXNAME_None);
+			final I_AD_RelationType relationType = InterfaceWrapperHelper.create(Env.getCtx(), adRelationTypeId, I_AD_RelationType.class, ITrx.TRXNAME_None);
 
 			final ADRefListItem roleSourceItem = adReferenceDAO.retrieveListItemOrNull(X_AD_RelationType.ROLE_SOURCE_AD_Reference_ID, relationType.getRole_Source());
 			final ITranslatableString roleSourceDisplayName = roleSourceItem == null ? null : roleSourceItem.getName();
@@ -323,12 +330,10 @@ public final class RelationTypeZoomProvidersFactory
 						//
 
 						.buildOrNull();
-				if (zoomProvider == null)
+				if (zoomProvider != null)
 				{
-					continue;
+					result.add(zoomProvider);
 				}
-
-				result.add(zoomProvider);
 			}
 			catch (Exception ex)
 			{
