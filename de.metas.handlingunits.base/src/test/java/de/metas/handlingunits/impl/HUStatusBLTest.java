@@ -1,10 +1,16 @@
-package org.adempiere.ad.validationRule;
+package de.metas.handlingunits.impl;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import org.junit.Test;
+
+import de.metas.handlingunits.model.X_M_HU;
 
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * de.metas.handlingunits.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2017 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,29 +28,13 @@ package org.adempiere.ad.validationRule;
  * #L%
  */
 
-import java.util.List;
-
-import org.adempiere.util.ISingletonService;
-import org.compiere.model.I_AD_Val_Rule;
-
-/**
- * DAO methods for retrieving {@link I_AD_Val_Rule}s
- * 
- * @author tsa
- * 
- */
-public interface IValidationRuleDAO extends ISingletonService
+public class HUStatusBLTest
 {
-	I_AD_Val_Rule retriveValRule(int adValRuleId);
-
-	int retrieveValRuleIdByColumnName(String tableName, String columnName);
-
-	/**
-	 * Retrieve child/included validation rules
-	 * 
-	 * @param parent
-	 * @return included validation rules
-	 */
-	List<I_AD_Val_Rule> retrieveChildValRules(I_AD_Val_Rule parent);
-
+	@Test
+	public void testIsStatusTransitionAllowed()
+	{
+		assertThat(new HUStatusBL().isStatusTransitionAllowed(X_M_HU.HUSTATUS_Active, X_M_HU.HUSTATUS_Destroyed)).isTrue();
+		assertThat(new HUStatusBL().isStatusTransitionAllowed(X_M_HU.HUSTATUS_Picked, X_M_HU.HUSTATUS_Issued)).isFalse();
+		assertThat(new HUStatusBL().isStatusTransitionAllowed(X_M_HU.HUSTATUS_Active, "unexpectedstatus")).isFalse();
+	}
 }

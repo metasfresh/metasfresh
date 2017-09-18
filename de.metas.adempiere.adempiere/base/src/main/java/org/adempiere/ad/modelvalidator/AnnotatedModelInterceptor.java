@@ -37,6 +37,7 @@ import com.google.common.base.MoreObjects;
 import com.google.common.base.Throwables;
 
 import de.metas.logging.LogManager;
+import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 
 /**
@@ -45,6 +46,8 @@ import lombok.NonNull;
  * @author tsa
  *
  */
+
+@EqualsAndHashCode(of = { "annotatedObject", "annotatedClass", "clientId" })
 /* package */class AnnotatedModelInterceptor implements IModelInterceptor
 {
 	private final transient Logger logger = LogManager.getLogger(getClass());
@@ -555,21 +558,33 @@ import lombok.NonNull;
 		{
 			executeNow0(model, pointcut, timing);
 		}
-		catch (Exception e)
+		catch (final Exception e)
+		{
+			final AdempiereException adempiereException = appendAndLogHowtoDisableMessage(e, pointcut);
+			throw adempiereException;
+		}
+	}
+
+	private AdempiereException appendAndLogHowtoDisableMessage(
+			@NonNull final Exception e,
+			@NonNull final IPointcut pointcut)
+	{
+		final String parameterName = "HowtoDisableModelInterceptor";
+		final AdempiereException ae = AdempiereException.wrapIfNeeded(e);
+
+		if (!ae.hasParameter(parameterName))
 		{
 			final String howtoDisableMsg = AnnotatedModelInterceptorDisabler.get().getHowtoDisableMessage(pointcut);
-			logger.error(howtoDisableMsg);
 
-			// 03444 if the pointcut method threw an adempiere exception, just forward it
-			throw AdempiereException
-				.wrapIfNeeded(e)
-				.setParameter("howtoDisableMsg", howtoDisableMsg);
+			logger.error(howtoDisableMsg);
+			ae.setParameter(parameterName, howtoDisableMsg);
 		}
+		return ae;
 	}
 
 	private void executeNow0(
 			@NonNull final Object model,
-			@NonNull final IPointcut pointcut, 
+			@NonNull final IPointcut pointcut,
 			final int timing) throws IllegalAccessException, InvocationTargetException
 	{
 		final Method method = pointcut.getMethod();
@@ -621,52 +636,12 @@ import lombok.NonNull;
 		return new PointcutKey(tableName, type);
 	}
 
-	@Override
-	public int hashCode()
-	{
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((annotatedClass == null) ? 0 : annotatedClass.hashCode());
-		result = prime * result + ((annotatedObject == null) ? 0 : annotatedObject.hashCode());
-		result = prime * result + clientId;
-		return result;
-	}
-
-	@Override
-	public boolean equals(Object obj)
-	{
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		AnnotatedModelInterceptor other = (AnnotatedModelInterceptor)obj;
-		if (annotatedClass == null)
-		{
-			if (other.annotatedClass != null)
-				return false;
-		}
-		else if (!annotatedClass.equals(other.annotatedClass))
-			return false;
-		if (annotatedObject == null)
-		{
-			if (other.annotatedObject != null)
-				return false;
-		}
-		else if (!annotatedObject.equals(other.annotatedObject))
-			return false;
-		if (clientId != other.clientId)
-			return false;
-		return true;
-	}
-
 	@lombok.Value
 	private class PointcutKey
 	{
 		@NonNull
 		String tableName;
-		
+
 		@NonNull
 		PointcutType type;
 	}

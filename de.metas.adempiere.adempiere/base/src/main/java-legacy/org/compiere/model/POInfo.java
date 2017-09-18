@@ -918,6 +918,19 @@ public final class POInfo implements Serializable
 		final int columnIndex = getColumnIndex(columnName);
 		return getColumnReferenceValueId(columnIndex);
 	}
+	
+	public int getColumnValRuleId(final String columnName)
+	{
+		final int columnIndex = getColumnIndex(columnName);
+		return getColumnValRuleId(columnIndex);
+	}
+
+	private int getColumnValRuleId(final int columnIndex)
+	{
+		if (columnIndex < 0 || columnIndex >= m_columns.length)
+			return -1;
+		return m_columns[columnIndex].getAD_Val_Rule_ID();
+	}
 
 	//
 	// metas-03035 end
