@@ -50,7 +50,6 @@ import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
-import de.metas.handlingunits.model.I_M_HU_Status;
 import de.metas.handlingunits.model.X_M_HU_Item;
 
 public interface IHandlingUnitsDAO extends ISingletonService
@@ -326,16 +325,6 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	 * @return
 	 */
 	I_DD_NetworkDistribution retrieveEmptiesDistributionNetwork(Properties ctx, I_M_Product product, String trxName);
-
-	/**
-	 *
-	 * Retrieve the HU Status entry that fits the value given as parameter
-	 *
-	 * @param ctx
-	 * @param huStatusValue
-	 * @return {@link I_M_HU_Status} or <code>null</code>.
-	 */
-	I_M_HU_Status retrieveHUStatus(Properties ctx, String huStatusValue);
 
 	/**
 	 * @param ctx

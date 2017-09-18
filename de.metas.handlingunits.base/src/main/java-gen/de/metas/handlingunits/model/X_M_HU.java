@@ -14,7 +14,7 @@ public class X_M_HU extends org.compiere.model.PO implements I_M_HU, org.compier
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1044082489L;
+	private static final long serialVersionUID = -854929727L;
 
     /** Standard Constructor */
     public X_M_HU (Properties ctx, int M_HU_ID, String trxName)
@@ -23,6 +23,7 @@ public class X_M_HU extends org.compiere.model.PO implements I_M_HU, org.compier
       /** if (M_HU_ID == 0)
         {
 			setHUStatus (null); // 'P'
+			setIsCompressedVHU (false); // N
 			setM_HU_ID (0);
 			setM_HU_PI_Version_ID (0);
 			setValue (null);
@@ -159,6 +160,8 @@ public class X_M_HU extends org.compiere.model.PO implements I_M_HU, org.compier
 	public static final String HUSTATUS_Picked = "S";
 	/** Shipped = E */
 	public static final String HUSTATUS_Shipped = "E";
+	/** Issued = I */
+	public static final String HUSTATUS_Issued = "I";
 	/** Set Gebinde Status.
 		@param HUStatus Gebinde Status	  */
 	@Override
@@ -450,6 +453,39 @@ public class X_M_HU extends org.compiere.model.PO implements I_M_HU, org.compier
 	public int getM_Product_Category_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_Product_Category_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_M_Product getM_Product() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class);
+	}
+
+	@Override
+	public void setM_Product(org.compiere.model.I_M_Product M_Product)
+	{
+		set_ValueFromPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class, M_Product);
+	}
+
+	/** Set Produkt.
+		@param M_Product_ID 
+		Produkt, Leistung, Artikel
+	  */
+	@Override
+	public void setM_Product_ID (int M_Product_ID)
+	{
+		throw new IllegalArgumentException ("M_Product_ID is virtual column");	}
+
+	/** Get Produkt.
+		@return Produkt, Leistung, Artikel
+	  */
+	@Override
+	public int getM_Product_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_Product_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

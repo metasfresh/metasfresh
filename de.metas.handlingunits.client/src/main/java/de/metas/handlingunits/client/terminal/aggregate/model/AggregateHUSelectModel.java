@@ -110,9 +110,7 @@ public class AggregateHUSelectModel extends InventoryHUSelectModel
 		return huQueryBuilder;
 	}
 
-	/* (non-Javadoc)
-	 * @see de.metas.handlingunits.client.terminal.inventory.model.InventoryHUSelectModel#refreshLines(boolean)
-	 * 
+	/**
 	 * Overrode the method here so I can add the additional filter for excluding statuses A and E
 	 */
 	@Override

@@ -26,39 +26,32 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
+import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
-import org.adempiere.util.time.SystemTime;
-import org.compiere.util.TimeUtil;
 import org.eevolution.api.IPPOrderBOMDAO;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
-import org.eevolution.model.X_PP_Order_BOMLine;
-import org.slf4j.Logger;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.handlingunits.IHUContext;
-import de.metas.handlingunits.IHULockBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
-import de.metas.handlingunits.attribute.IPPOrderProductAttributeBL;
+import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.attribute.IPPOrderProductAttributeDAO;
 import de.metas.handlingunits.exceptions.HUException;
-import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_PP_Order_Qty;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.pporder.api.IHUPPOrderIssueProducer;
 import de.metas.handlingunits.pporder.api.IHUPPOrderQtyDAO;
-import de.metas.handlingunits.storage.IHUProductStorage;
-import de.metas.lock.api.LockOwner;
-import de.metas.logging.LogManager;
-import de.metas.material.planning.pporder.IPPOrderBOMBL;
+import de.metas.handlingunits.pporder.api.impl.hu_pporder_issue_producer.CreateDraftIssues;
 import de.metas.material.planning.pporder.PPOrderUtil;
-import de.metas.quantity.Quantity;
+import lombok.NonNull;
 
 /**
  * Issues given HUs to configured Order BOM Lines.
@@ -68,30 +61,16 @@ import de.metas.quantity.Quantity;
  */
 public class HUPPOrderIssueProducer implements IHUPPOrderIssueProducer
 {
-	// Services
-	private static final transient Logger logger = LogManager.getLogger(HUPPOrderIssueProducer.class);
-	//
-	private final transient IPPOrderBOMBL ppOrderBOMBL = Services.get(IPPOrderBOMBL.class);
-	//
-	private final transient IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
-	private final transient IHULockBL huLockBL = Services.get(IHULockBL.class);
 	private final transient IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final transient IHUPPOrderQtyDAO huPPOrderQtyDAO = Services.get(IHUPPOrderQtyDAO.class);
-	private final transient IPPOrderProductAttributeBL ppOrderProductAttributeBL = Services.get(IPPOrderProductAttributeBL.class);
 	private final transient IPPOrderProductAttributeDAO ppOrderProductAttributeDAO = Services.get(IPPOrderProductAttributeDAO.class);
-
-	private static final String MSG_IssuingAggregatedTUsNotAllowed = "de.metas.handlingunits.pporder.api.impl.HUPPOrderIssueProducer.IssuingAggregatedTUsNotAllowed";
-	private static final String MSG_IssuingVHUsNotAllowed = "de.metas.handlingunits.pporder.api.impl.HUPPOrderIssueProducer.IssuingVHUsNotAllowed";
-	private static final String MSG_IssuingHUWithMultipleProductsNotAllowed = "de.metas.handlingunits.pporder.api.impl.HUPPOrderIssueProducer.IssuingHUsWithMultipleProductsNotAllowed";
-
-	public static final LockOwner lockOwner = LockOwner.forOwnerName("PP_Order_PreparedToIssue");
 
 	private Date movementDate;
 	private List<I_PP_Order_BOMLine> targetOrderBOMLines;
 
+	@VisibleForTesting
 	HUPPOrderIssueProducer()
 	{
-		super();
 	}
 
 	@Override
@@ -105,170 +84,14 @@ public class HUPPOrderIssueProducer implements IHUPPOrderIssueProducer
 	}
 
 	@Override
-	public List<I_PP_Order_Qty> createIssues(final Collection<I_M_HU> hus)
-	{
-		if (hus.isEmpty())
-		{
-			return ImmutableList.of();
-		}
-
-		// NOTE: we would prefer to always run this out of transactions,
-		// but in some cases like issuing from Swing POS we cannot enforce it because in that case
-		// the candidates are created and processed in one uber-transaction
-		// trxManager.assertThreadInheritedTrxNotExists();
-
-		// Lock the HUs first, to make sure nobody else is changing them
-		// The lock shall stay until the issue candidate is processed.
-		huLockBL.lockAll(hus, lockOwner);
-
-		boolean success = false;
-		try
-		{
-			final List<I_PP_Order_Qty> candidates = huTrxBL.process(huContext -> {
-				return hus.stream()
-						.map(hu -> createIssue_InTrx(huContext, hu))
-						.filter(issueCandidate -> issueCandidate != null)
-						.collect(ImmutableList.toImmutableList());
-			});
-
-			success = true;
-
-			return candidates;
-		}
-		finally
-		{
-			// In case of failure, unlock the HUs.
-			if (!success)
-			{
-				huLockBL.unlockAll(hus, lockOwner);
-			}
-		}
-
-	}
-
-	private I_PP_Order_Qty createIssue_InTrx(final IHUContext huContext, final I_M_HU hu)
-	{
-		//
-		// Check if HU status is eligible
-		if (!X_M_HU.HUSTATUS_Active.equals(hu.getHUStatus()))
-		{
-			throw new HUException("Only active HUs can be issued but " + hu + " is " + hu.getHUStatus());
-		}
-
-		// If not a top level HU, take it out first
-		if (!handlingUnitsBL.isTopLevel(hu))
-		{
-			if(handlingUnitsBL.isAggregateHU(hu))
-			{
-				throw HUException.ofAD_Message(MSG_IssuingAggregatedTUsNotAllowed);
-			}
-			if (handlingUnitsBL.isVirtual(hu))
-			{
-				throw HUException.ofAD_Message(MSG_IssuingVHUsNotAllowed);
-			}
-			else
-			{
-				huTrxBL.setParentHU(huContext //
-						, null // parentHUItem
-						, hu //
-						, true // destroyOldParentIfEmptyStorage
-				);
-			}
-		}
-
-		//
-		// Get the product storage
-		final IHUProductStorage productStorage;
-		{
-			final List<IHUProductStorage> productStorages = huContext.getHUStorageFactory()
-					.getStorage(hu)
-					.getProductStorages();
-
-			// Empty HU
-			if (productStorages.isEmpty())
-			{
-				logger.warn("{}: Skip {} from issuing because its storage is empty", this, hu);
-				return null; // no candidate
-			}
-
-			if (productStorages.size() != 1)
-			{
-				throw HUException.ofAD_Message(MSG_IssuingHUWithMultipleProductsNotAllowed)
-						.setParameter("HU", hu)
-						.setParameter("ProductStorages", productStorages);
-			}
-			productStorage = productStorages.get(0);
-		}
-
-		//
-		// Actually create and save the candidate
-		final I_PP_Order_Qty candidate;
-		{
-			final Date movementDate = getMovementDate();
-			final int productId = productStorage.getM_Product_ID();
-			final I_PP_Order_BOMLine targetBOMLine = getTargetOrderBOMLine(productId);
-			final int targetPPOrderId = targetBOMLine.getPP_Order_ID();
-			final int topLevelHUId = hu.getM_HU_ID();
-			final int locatorId = hu.getM_Locator_ID();
-			final Quantity qtyToIssue = calculateQtyToIssue(targetBOMLine, productStorage);
-
-			candidate = InterfaceWrapperHelper.newInstance(I_PP_Order_Qty.class);
-			candidate.setPP_Order_ID(targetPPOrderId);
-			candidate.setPP_Order_BOMLine(targetBOMLine);
-			candidate.setM_Locator_ID(locatorId);
-			candidate.setM_HU_ID(topLevelHUId);
-			candidate.setM_Product_ID(productId);
-			candidate.setQty(qtyToIssue.getQty());
-			candidate.setC_UOM(qtyToIssue.getUOM());
-			candidate.setMovementDate(TimeUtil.asTimestamp(movementDate));
-			candidate.setProcessed(false);
-			huPPOrderQtyDAO.save(candidate);
-		}
-		
-		ppOrderProductAttributeBL.addPPOrderProductAttributesFromIssueCandidate(candidate);
-		
-		//
-		return candidate;
-	}
-
-	/** @return how much quantity to take "from" and issue it to given BOM line */
-	private Quantity calculateQtyToIssue(final I_PP_Order_BOMLine targetBOMLine, final IHUProductStorage from)
-	{
-		//
-		// Case: if this is an Issue BOM Line, IssueMethod is Backflush and we did not over-issue on it yet
-		// => enforce the capacity to Projected Qty Required (i.e. standard Qty that needs to be issued on this line).
-		// initial concept: http://dewiki908/mediawiki/index.php/07433_Folie_Zuteilung_Produktion_Fertigstellung_POS_%28102170996938%29
-		// additional (use of projected qty required): http://dewiki908/mediawiki/index.php/07601_Calculation_of_Folie_in_Action_Receipt_%28102017845369%29
-		final String issueMethod = targetBOMLine.getIssueMethod();
-		if (X_PP_Order_BOMLine.ISSUEMETHOD_IssueOnlyForReceived.equals(issueMethod))
-		{
-			return ppOrderBOMBL.calculateQtyToIssueBasedOnFinishedGoodReceipt(targetBOMLine, from.getC_UOM());
-		}
-		else
-		{
-			return Quantity.of(from.getQty(), from.getC_UOM());
-		}
-
-	}
-
-	@Override
 	public IHUPPOrderIssueProducer setMovementDate(final Date movementDate)
 	{
 		this.movementDate = movementDate;
 		return this;
 	}
 
-	private Date getMovementDate()
-	{
-		if (movementDate == null)
-		{
-			movementDate = SystemTime.asDayTimestamp();
-		}
-		return movementDate;
-	}
-
 	@Override
-	public IHUPPOrderIssueProducer setTargetOrderBOMLines(final List<I_PP_Order_BOMLine> targetOrderBOMLines)
+	public IHUPPOrderIssueProducer setTargetOrderBOMLines(@NonNull final List<I_PP_Order_BOMLine> targetOrderBOMLines)
 	{
 		Check.assumeNotEmpty(targetOrderBOMLines, "Parameter targetOrderBOMLines is not empty");
 		targetOrderBOMLines.forEach(bomLine -> {
@@ -282,20 +105,9 @@ public class HUPPOrderIssueProducer implements IHUPPOrderIssueProducer
 		return this;
 	}
 
-	private List<I_PP_Order_BOMLine> getTargetOrderBOMLines()
-	{
-		if (targetOrderBOMLines == null || targetOrderBOMLines.isEmpty())
-		{
-			throw new HUException("No BOM lines were configured");
-		}
-
-		return targetOrderBOMLines;
-	}
-
 	@Override
-	public IHUPPOrderIssueProducer setTargetOrderBOMLine(final I_PP_Order_BOMLine targetOrderBOMLine)
+	public IHUPPOrderIssueProducer setTargetOrderBOMLine(@NonNull final I_PP_Order_BOMLine targetOrderBOMLine)
 	{
-		Check.assumeNotNull(targetOrderBOMLine, "targetOrderBOMLine not null");
 		return setTargetOrderBOMLines(ImmutableList.of(targetOrderBOMLine));
 	}
 
@@ -315,18 +127,15 @@ public class HUPPOrderIssueProducer implements IHUPPOrderIssueProducer
 		return setTargetOrderBOMLines(ppOrderBOMLines);
 	}
 
-	private I_PP_Order_BOMLine getTargetOrderBOMLine(final int productId)
-	{
-		final List<I_PP_Order_BOMLine> targetBOMLines = getTargetOrderBOMLines();
-		return targetBOMLines
-				.stream()
-				.filter(bomLine -> bomLine.getM_Product_ID() == productId)
-				.findFirst()
-				.orElseThrow(() -> new HUException("No BOM line found for productId=" + productId + " in " + targetBOMLines));
-	}
 
 	@Override
-	public void reverseDraftIssue(final I_PP_Order_Qty candidate)
+	public List<I_PP_Order_Qty> createDraftIssues(@NonNull final Collection<I_M_HU> hus)
+	{
+		return new CreateDraftIssues(targetOrderBOMLines, movementDate).createDraftIssues(hus);
+	}
+	
+	@Override
+	public void reverseDraftIssue(@NonNull final I_PP_Order_Qty candidate)
 	{
 		if (candidate.isProcessed())
 		{
@@ -334,9 +143,13 @@ public class HUPPOrderIssueProducer implements IHUPPOrderIssueProducer
 		}
 
 		final I_M_HU huToIssue = candidate.getM_HU();
-		huLockBL.unlock(huToIssue, HUPPOrderIssueProducer.lockOwner);
-		
-		//
+
+		final IContextAware contextProvider = InterfaceWrapperHelper.getContextAware(candidate);
+		final IHUContext huContext = handlingUnitsBL.createMutableHUContext(contextProvider);
+
+		handlingUnitsBL.setHUStatus(huContext, huToIssue, X_M_HU.HUSTATUS_Active);
+		Services.get(IHandlingUnitsDAO.class).saveHU(huToIssue);
+
 		// Delete PP_Order_ProductAttributes for issue candidate's HU
 		ppOrderProductAttributeDAO.deleteForHU(candidate.getPP_Order_ID(), huToIssue.getM_HU_ID());
 

@@ -30,6 +30,7 @@ import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHUDisplayNameBuilder;
 import de.metas.handlingunits.IHUIterator;
+import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.IMutableHUContext;
@@ -42,7 +43,6 @@ import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
-import de.metas.handlingunits.model.I_M_HU_Status;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
@@ -748,7 +748,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 		}
 
 		// we consider the rest of the statuses to be physical
-		// (Active and picked)
+		// (active, picked and issued)
 		return true;
 	}
 
@@ -838,18 +838,8 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 			return;
 		}
 
-		final Properties ctx = InterfaceWrapperHelper.getCtx(hu);
-		final I_M_HU_Status statusEntry = Services.get(IHandlingUnitsDAO.class).retrieveHUStatus(ctx, huStatus);
-
-		// do not break the tests
-		// TODO: test with the new M_HU_Status table
-		if (statusEntry == null)
-		{
-			hu.setHUStatus(huStatus);
-			return;
-		}
-
-		final boolean isExchangeGebindelagerWhenEmpty = statusEntry.isExchangeGebindelagerWhenEmpty();
+		final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
+		final boolean isExchangeGebindelagerWhenEmpty = huStatusBL.isMovePackagingToEmptiesWarehouse(huStatus);
 
 		//
 		// 08157: If forced packing material fetching is enabled, then make sure to pull packing material from Gebinde warehouse (i.e when bringing a blank LU)
@@ -942,11 +932,5 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 			}
 		});
 
-	}
-
-	@Override
-	public boolean isShipped(final I_M_HU hu)
-	{
-		return X_M_HU.HUSTATUS_Shipped.equals(hu.getHUStatus());
 	}
 }
