@@ -186,7 +186,7 @@ public interface IHUPickingSlotBL extends IPickingSlotBL, ISingletonService
 		 * If true we shall consider the HU attributes while searching for matching HUs.
 		 */
 		@Default
-		boolean considerAttributes = true;
+		boolean onlyIfAttributesMatchWithShipmentSchedules = true;
 
 		/**
 		 * ShipmentSchedules for which the HUs shall be picked. Needed to filter by the HUs' product and location and may therefore not be {@code null}.

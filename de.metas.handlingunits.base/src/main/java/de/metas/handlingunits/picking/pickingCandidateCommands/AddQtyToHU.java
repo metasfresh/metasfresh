@@ -128,7 +128,7 @@ public class AddQtyToHU
 	private HUListAllocationSourceDestination createAllocationSource(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
 	{
 		final PickingHUsQuery query = PickingHUsQuery.builder()
-				.considerAttributes(true)
+				.onlyIfAttributesMatchWithShipmentSchedules(true)
 				.shipmentSchedules(ImmutableList.of(shipmentSchedule))
 				.onlyTopLevelHUs(true)
 				.build();

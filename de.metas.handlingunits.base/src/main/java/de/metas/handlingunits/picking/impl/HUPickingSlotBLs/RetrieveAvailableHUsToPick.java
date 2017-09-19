@@ -64,19 +64,21 @@ import lombok.experimental.UtilityClass;
 public class RetrieveAvailableHUsToPick
 {
 	public List<I_M_HU> retrieveAvailableHUsToPick(
-			@NonNull final PickingHUsQuery request,
+			@NonNull final PickingHUsQuery query,
 			@NonNull final Function<List<I_M_HU>, List<I_M_HU>> vhuToEndResultFunction)
 	{
-		if (request.getShipmentSchedules().isEmpty())
+		if (query.getShipmentSchedules().isEmpty())
 		{
 			return Collections.emptyList();
 		}
 
-		final List<I_M_HU> vhus = retrieveVHUsFromStorage(request.getShipmentSchedules(), request.isConsiderAttributes());
+		final List<I_M_HU> vhus = retrieveVHUsFromStorage(
+				query.getShipmentSchedules(), 
+				query.isOnlyIfAttributesMatchWithShipmentSchedules());
 
 		final List<I_M_HU> result = vhuToEndResultFunction.apply(vhus);
 
-		if (!request.isOnlyTopLevelHUs())
+		if (!query.isOnlyTopLevelHUs())
 		{
 			return result; // we are done
 		}
