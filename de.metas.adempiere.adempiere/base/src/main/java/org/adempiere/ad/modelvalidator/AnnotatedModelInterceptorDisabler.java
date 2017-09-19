@@ -97,7 +97,7 @@ public class AnnotatedModelInterceptorDisabler
 		CacheMgt.get().addCacheResetListener(I_AD_SysConfig.Table_Name, new ICacheResetListener()
 		{
 			@Override
-			public int reset(@NonNull final String tableName, @NonNull final Object key)
+			public int reset(final String tableName, final Object key)
 			{
 				return reloadDisabledPointcutIds();
 			}
