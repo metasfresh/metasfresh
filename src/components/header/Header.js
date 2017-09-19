@@ -16,6 +16,7 @@ import Inbox from '../inbox/Inbox';
 import Tooltips from '../tooltips/Tooltips';
 import Prompt from '../app/Prompt';
 import NewEmail from '../email/NewEmail';
+import NewLetter from '../letter/NewLetter';
 
 import {
     openModal,
@@ -72,7 +73,7 @@ class Header extends Component {
             this.closeOverlays();
         }
     }
-    
+
     componentDidUpdate = (prevProps) => {
         const {dispatch, pathname} = this.props;
         if(
@@ -226,9 +227,21 @@ class Header extends Component {
         });
     }
 
+    handleLetter = () => {
+        this.setState({
+            isLetterOpen: true
+        });
+    }
+
     handleCloseEmail = () => {
         this.setState({
             isEmailOpen: false
+        });
+    }
+
+    handleCloseLetter = () => {
+        this.setState({
+            isLetterOpen: false
         });
     }
 
@@ -321,7 +334,7 @@ class Header extends Component {
         const {
             isSubheaderShow, isSideListShow, menuOverlay, isInboxOpen, scrolled,
             isMenuOverlayShow, tooltipOpen, prompt, sideListTab, isUDOpen,
-            isEmailOpen
+            isEmailOpen, isLetterOpen
         } = this.state;
 
         return (
@@ -587,6 +600,7 @@ class Header extends Component {
                     handleClone={this.handleClone}
                     handleDelete={this.handleDelete}
                     handleEmail={this.handleEmail}
+                    handleLetter={this.handleLetter}
                     redirect={this.redirect}
                     disableOnClickOutside={!isSubheaderShow}
                     {...{breadcrumb, notfound, query, entity,
@@ -613,7 +627,13 @@ class Header extends Component {
                         handleCloseEmail={this.handleCloseEmail}
                     />
                 }
-
+                {isLetterOpen &&
+                    <NewLetter
+                        windowId={windowType ? windowType : ''}
+                        docId={dataId}
+                        handleCloseLetter={this.handleCloseLetter}
+                    />
+                }
                 <GlobalContextShortcuts
                     handleSidelistToggle={(id) =>
                         showSidelist &&
@@ -640,6 +660,7 @@ class Header extends Component {
                         ) : ''
                     }
                     handleEmail={this.handleEmail}
+                    handleLetter={this.handleLetter}
                     handleDelete={dataId ? this.handleDelete: ''}
                     redirect={windowType ?
                         () => this.redirect('/window/'+ windowType +'/new') : ''
