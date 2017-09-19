@@ -58,17 +58,9 @@ public class AnnotatedModelInterceptorDisablerTest
 	@Test
 	public void createHowtoDisableMsg0()
 	{
-		assertThat(annotatedModelInterceptorDisabler.getHowtoDisableMessage(pointcut))
+		assertThat(AnnotatedModelInterceptorDisabler.createHowtoDisableMessage(pointcut))
 				.isEqualTo("Model interceptor method org.adempiere.ad.modelvalidator.AnnotatedModelInterceptorDisablerTest#someTestMethod threw an exception."
 						+ "\nYou can disable this method with SysConfig IntercetorEnabled_org.adempiere.ad.modelvalidator.AnnotatedModelInterceptorDisablerTest#someTestMethod='N' (with AD_Client_ID and AD_Org_ID=0!)");
-	}
-
-	@Test
-	public void testCreateHowtoDisableMsgCaching()
-	{
-		final String firstMsg = annotatedModelInterceptorDisabler.getHowtoDisableMessage(pointcut);
-		final String secondMsg = annotatedModelInterceptorDisabler.getHowtoDisableMessage(pointcut);
-		assertThat(firstMsg).isSameAs(secondMsg);
 	}
 
 	@Test
@@ -88,7 +80,7 @@ public class AnnotatedModelInterceptorDisablerTest
 	private void setupSysConfigAndReload(final String sysConfigValue)
 	{
 		setupSysConfig(sysConfigValue);
-		annotatedModelInterceptorDisabler.reloadDisabledPointcutIds();
+		annotatedModelInterceptorDisabler.invalidateCache();
 	}
 
 	/**
