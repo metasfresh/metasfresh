@@ -99,6 +99,29 @@ public interface I_WEBUI_Dashboard
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
+	 * Set Beschreibung.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setDescription (java.lang.String Description);
+
+	/**
+	 * Get Beschreibung.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getDescription();
+
+    /** Column definition for Description */
+    public static final org.adempiere.model.ModelColumn<I_WEBUI_Dashboard, Object> COLUMN_Description = new org.adempiere.model.ModelColumn<I_WEBUI_Dashboard, Object>(I_WEBUI_Dashboard.class, "Description", null);
+    /** Column name Description */
+    public static final String COLUMNNAME_Description = "Description";
+
+	/**
 	 * Set Aktiv.
 	 * Der Eintrag ist im System aktiv
 	 *
