@@ -22,6 +22,7 @@
 @import './tooltip.css';
 @import './image.css';
 @import './email.css';
+@import './letter.css';
 
 @import './intro.css';
 
@@ -190,7 +191,7 @@ body {
     font-size: 12px;
 }
 
-.order-list-panel-body .subheader-item, 
+.order-list-panel-body .subheader-item,
 .order-list-panel-body .subheader-caption {
     font-size: 14px;
 }
@@ -598,7 +599,7 @@ body {
 }
 
 .search-wrapper .input-primary {
-    background-color: #fff; 
+    background-color: #fff;
 }
 
 .search-wrapper .input-field {
@@ -995,7 +996,7 @@ td.pulse-off input {
     border-radius: 3px;
     border: 1px solid $brand-border-color;
     margin-left: 3px;
-    
+
     overflow: auto;
     overflow-x: hidden;
 }
@@ -1233,7 +1234,7 @@ td.pulse-off input {
     flex-direction: row;
     align-items: center;
     justify-content: flex-start;
-    
+
     margin-top: 2rem;
 }
 
