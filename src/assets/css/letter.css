@@ -65,7 +65,12 @@
     min-width: 100px;
 }
 
-.icon-letter {
+.icon-letter, .icon-print {
     cursor: pointer;
     color: $brand-super-light-color;
+}
+
+.icon-print:hover {
+    color: $brand-super-light-color;
+    text-decoration: none;
 }

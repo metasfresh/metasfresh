@@ -109,7 +109,7 @@ class NewLetter extends Component {
 
     render() {
         const { handleCloseLetter } = this.props;
-        const { init, message, templates, template } = this.state;
+        const { init, message, templates, template, letterId } = this.state;
 
         if (!init) {
             return false;
@@ -123,6 +123,14 @@ class NewLetter extends Component {
                             <span className="letter-headline">
                                 {counterpart.translate('window.letter.new')}
                             </span>
+                            <a
+                                href={`${config.API_URL}/letter/${letterId}/printPreview`}
+                                target="_blank"
+                                className="input-icon input-icon-lg icon-print"
+                                onClick={handleCloseLetter}
+                            >
+                                <i className="meta-icon-print"/>
+                            </a>
                             <div className="letter-templates">
                                 {templates.length>0 && (
                                     <RawList
