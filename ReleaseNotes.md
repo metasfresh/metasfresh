@@ -16,6 +16,8 @@ Here come the actual release notes:
 
 ## Features
 * metasfresh-app
+  * [#2376](https://github.com/metasfresh/metasfresh/issues/2376) Detail Improvements to Order Candidates Window
+    * Improvement of Order Candidates Window, allowing the user to manipulate the data directly in Main View.
   * [#2440](https://github.com/metasfresh/metasfresh/issues/2440) Material Tracking adjustments in WebUI
     * Adjustments to the Material Tracking Window. Adding further Filter possibilities.
   * [#2478](https://github.com/metasfresh/metasfresh/issues/2478) Check Filter Sequence for Default Fields Organisation and Warehouse
