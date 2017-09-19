@@ -1,5 +1,7 @@
 package de.metas.ui.web.window.descriptor.factory.standard;
 
+import javax.annotation.Nullable;
+
 import org.compiere.model.I_AD_Window;
 import org.compiere.util.CCache;
 import org.springframework.stereotype.Service;
@@ -22,11 +24,11 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -38,7 +40,6 @@ public class DefaultDocumentDescriptorFactory implements DocumentDescriptorFacto
 
 	/* package */ DefaultDocumentDescriptorFactory()
 	{
-		super();
 	}
 
 	@Override
@@ -52,5 +53,14 @@ public class DefaultDocumentDescriptorFactory implements DocumentDescriptorFacto
 		{
 			throw DocumentLayoutBuildException.wrapIfNeeded(e);
 		}
+	}
+
+	/**
+	 * @return {@code true} if the given {@code windowId} is not-{@code null} and embeds an int value.
+	 */
+	@Override
+	public boolean isWindowIdSupported(@Nullable final WindowId windowId)
+	{
+		return windowId == null ? false :windowId.isInt();
 	}
 }

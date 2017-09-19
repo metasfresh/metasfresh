@@ -344,8 +344,10 @@ public class ADProcessInstancesRepository implements IProcessInstancesRepository
 	{
 		try (final IAutoCloseable readLock = getOrLoad(pinstanceId).lockForReading())
 		{
-			final ADProcessInstanceController processInstance = getOrLoad(pinstanceId).copy(CopyMode.CheckInReadonly, NullDocumentChangesCollector.instance)
-					.bindContextSingleDocument(documentsCollection);
+			final ADProcessInstanceController processInstance = getOrLoad(pinstanceId)
+					.copy(CopyMode.CheckInReadonly, NullDocumentChangesCollector.instance)
+					.bindContextSingleDocumentIfPossible(documentsCollection);
+
 			try (final IAutoCloseable c = processInstance.activate())
 			{
 				return processor.apply(processInstance);
@@ -370,8 +372,9 @@ public class ADProcessInstancesRepository implements IProcessInstancesRepository
 	{
 		try (final IAutoCloseable writeLock = getOrLoad(pinstanceId).lockForWriting())
 		{
-			final ADProcessInstanceController processInstance = getOrLoad(pinstanceId).copy(CopyMode.CheckOutWritable, changesCollector)
-					.bindContextSingleDocument(documentsCollection);
+			final ADProcessInstanceController processInstance = getOrLoad(pinstanceId)
+					.copy(CopyMode.CheckOutWritable, changesCollector)
+					.bindContextSingleDocumentIfPossible(documentsCollection);
 
 			// Make sure the process was not already executed.
 			// If it was executed we are not allowed to change it.
