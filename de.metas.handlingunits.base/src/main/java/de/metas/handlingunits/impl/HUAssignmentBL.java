@@ -41,6 +41,7 @@ import de.metas.handlingunits.IHUAssignmentDAO;
 import de.metas.handlingunits.IHUAssignmentListener;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Assignment;
+import lombok.NonNull;
 
 public class HUAssignmentBL implements IHUAssignmentBL
 {
@@ -263,11 +264,12 @@ public class HUAssignmentBL implements IHUAssignmentBL
 	 * @param deleteOld if true, assigned HUs which are not found in <code>handlingUnits</code> will be deleted
 	 * @param trxName transaction name
 	 */
-	private void setAssignedHandlingUnits(final Object model, final Collection<I_M_HU> handlingUnits, final boolean deleteOld, final String trxName)
+	private void setAssignedHandlingUnits(
+			@NonNull final Object model, 
+			@NonNull final Collection<I_M_HU> handlingUnits, 
+			final boolean deleteOld, 
+			final String trxName)
 	{
-		Check.assumeNotNull(model, "model not null");
-		Check.assumeNotNull(handlingUnits, "handlingUnits not null");
-
 		final Properties ctx = InterfaceWrapperHelper.getCtx(model);
 		final int adTableId = InterfaceWrapperHelper.getModelTableId(model);
 		final int recordId = InterfaceWrapperHelper.getId(model);

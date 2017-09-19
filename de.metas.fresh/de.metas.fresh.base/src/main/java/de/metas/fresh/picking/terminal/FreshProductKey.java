@@ -237,7 +237,7 @@ public class FreshProductKey extends ProductKey
 		final IHUPickingSlotBL huPickingSlotBL = Services.get(IHUPickingSlotBL.class);
 		return huPickingSlotBL.retrieveAvailableHUsToPick(PickingHUsQuery.builder()
 				.shipmentSchedules(shipmentSchedules)
-				.considerAttributes(considerAttributes)
+				.onlyIfAttributesMatchWithShipmentSchedules(considerAttributes)
 				.onlyTopLevelHUs(true)
 				.build());
 	}

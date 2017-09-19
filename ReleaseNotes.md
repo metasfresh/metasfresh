@@ -16,10 +16,16 @@ Here come the actual release notes:
 
 ## Features
 * metasfresh-app
+  * [#2440](https://github.com/metasfresh/metasfresh/issues/2440) Material Tracking adjustments in WebUI
+    * Adjustments to the Material Tracking Window. Adding further Filter possibilities.
   * [#2478](https://github.com/metasfresh/metasfresh/issues/2478) Check Filter Sequence for Default Fields Organisation and Warehouse
     * Globally moving the Filter for Organisation to the end of each filter list.
   * [#2483](https://github.com/metasfresh/metasfresh/issues/2483) New Dist-Orgs Businesspartner Window in WebUI
     * New Window in WebUI menu, adapting the requirements of dis-orgs to the Businesspartner window.
+
+* metasfresh-webui-frontend
+  * [#1192](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1192) grid values are cut off if column size is too small
+    * Showing tooltips in Table Grid Cells. Allowing to hover over a field and whoing the complete content in Tooltip. Very helpful for content that does not fit fully ionto a displayed Grid Field.
 
 # metasfresh 5.27 (2017-38)
 
