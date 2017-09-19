@@ -65,6 +65,7 @@ import de.metas.ui.web.window.model.IDocumentChangesCollector;
 import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
 import de.metas.ui.web.window.model.IDocumentFieldView;
 import de.metas.ui.web.window.model.NullDocumentChangesCollector;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -112,7 +113,7 @@ import de.metas.ui.web.window.model.NullDocumentChangesCollector;
 	private final IViewsRepository viewsRepo;
 	private final ViewId viewId;
 	private final DocumentIdsSelection viewSelectedDocumentIds;
-	
+
 	private final DocumentPath contextSingleDocumentPath;
 
 	private boolean executed = false;
@@ -131,7 +132,7 @@ import de.metas.ui.web.window.model.NullDocumentChangesCollector;
 		viewsRepo = builder.viewsRepo;
 		viewId = builder.viewId;
 		viewSelectedDocumentIds = builder.viewSelectedDocumentIds == null ? DocumentIdsSelection.EMPTY : builder.viewSelectedDocumentIds;
-		
+
 		contextSingleDocumentPath = builder.contextSingleDocumentPath;
 
 		executed = false;
@@ -154,7 +155,7 @@ import de.metas.ui.web.window.model.NullDocumentChangesCollector;
 		viewsRepo = from.viewsRepo;
 		viewId = from.viewId;
 		viewSelectedDocumentIds = from.viewSelectedDocumentIds;
-		
+
 		contextSingleDocumentPath = from.contextSingleDocumentPath;
 
 		executed = from.executed;
@@ -201,17 +202,21 @@ import de.metas.ui.web.window.model.NullDocumentChangesCollector;
 	{
 		return new ADProcessInstanceController(this, copyMode, changesCollector);
 	}
-	
-	public ADProcessInstanceController bindContextSingleDocument(final DocumentCollection documentsCollection)
+
+	public ADProcessInstanceController bindContextSingleDocumentIfPossible(@NonNull final DocumentCollection documentsCollection)
 	{
-		if(contextSingleDocumentPath == null)
+		if (contextSingleDocumentPath == null)
 		{
 			return this;
 		}
-		
+		if (!documentsCollection.isWindowIdSupported(contextSingleDocumentPath.getWindowIdOrNull()))
+		{
+			return this;
+		}
+
 		final Document contextSingleDocument = documentsCollection.forDocumentReadonly(contextSingleDocumentPath, NullDocumentChangesCollector.instance, Function.identity());
 		getParametersDocument().setShadowParentDocumentEvaluatee(contextSingleDocument.asEvaluatee());
-		
+
 		return this;
 	}
 
@@ -344,7 +349,7 @@ import de.metas.ui.web.window.model.NullDocumentChangesCollector;
 					final String parentViewIdStr = processExecutionResult.getWebuiViewId();
 					final ViewId parentViewId = parentViewIdStr != null ? ViewId.ofViewIdString(parentViewIdStr) : null;
 					final CreateViewRequest viewRequest = createViewRequest(recordsToOpen, referencingDocumentPaths, parentViewId);
-					
+
 					final IView view = viewsRepo.createView(viewRequest);
 					resultBuilder.setAction(OpenViewAction.builder()
 							.viewId(view.getViewId())
@@ -573,11 +578,10 @@ import de.metas.ui.web.window.model.NullDocumentChangesCollector;
 		private IViewsRepository viewsRepo;
 		private ViewId viewId;
 		private DocumentIdsSelection viewSelectedDocumentIds;
-		
+
 		private Object processClassInstance;
-		
+
 		private DocumentPath contextSingleDocumentPath;
-		
 
 		private Builder()
 		{
@@ -625,7 +629,7 @@ import de.metas.ui.web.window.model.NullDocumentChangesCollector;
 			this.processClassInstance = processClassInstance;
 			return this;
 		}
-		
+
 		public Builder setContextSingleDocumentPath(final DocumentPath contextSingleDocumentPath)
 		{
 			this.contextSingleDocumentPath = contextSingleDocumentPath;

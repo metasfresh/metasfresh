@@ -8,6 +8,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Function;
 
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
@@ -113,9 +114,21 @@ public class DocumentCollection
 		super();
 	}
 
+
 	public DocumentDescriptorFactory getDocumentDescriptorFactory()
 	{
 		return documentDescriptorFactory;
+	}
+
+	/**
+	 * Delegates to the {@link DocumentDescriptorFactory#isWindowIdSupported(WindowId)} of this instance's {@code documentDescriptorFactory}.
+	 * 
+	 * @param windowId
+	 * @return
+	 */
+	public boolean isWindowIdSupported(@Nullable final WindowId windowId)
+	{
+		return documentDescriptorFactory.isWindowIdSupported(windowId);
 	}
 
 	public final DocumentDescriptor getDocumentDescriptor(final WindowId windowId)
@@ -147,7 +160,10 @@ public class DocumentCollection
 		return windowIds != null && !windowIds.isEmpty() ? ImmutableSet.copyOf(windowIds) : ImmutableSet.of();
 	}
 
-	public <R> R forDocumentReadonly(final DocumentPath documentPath, final IDocumentChangesCollector changesCollector, final Function<Document, R> documentProcessor)
+	public <R> R forDocumentReadonly(
+			@NonNull final DocumentPath documentPath,
+			final IDocumentChangesCollector changesCollector,
+			final Function<Document, R> documentProcessor)
 	{
 		final DocumentPath rootDocumentPath = documentPath.getRootDocumentPath();
 
@@ -170,7 +186,7 @@ public class DocumentCollection
 		});
 	}
 
-	private Document getOrLoadDocument(final DocumentKey documentKey)
+	private Document getOrLoadDocument(@NonNull final DocumentKey documentKey)
 	{
 		try
 		{
@@ -186,7 +202,10 @@ public class DocumentCollection
 		}
 	}
 
-	public <R> R forRootDocumentReadonly(final DocumentPath documentPath, final IDocumentChangesCollector changesCollector, final Function<Document, R> rootDocumentProcessor)
+	public <R> R forRootDocumentReadonly(
+			@NonNull final DocumentPath documentPath,
+			final IDocumentChangesCollector changesCollector,
+			final Function<Document, R> rootDocumentProcessor)
 	{
 		final DocumentKey rootDocumentKey = DocumentKey.ofRootDocumentPath(documentPath.getRootDocumentPath());
 
@@ -199,7 +218,10 @@ public class DocumentCollection
 		}
 	}
 
-	public <R> R forDocumentWritable(final DocumentPath documentPath, final IDocumentChangesCollector changesCollector, final Function<Document, R> documentProcessor)
+	public <R> R forDocumentWritable(
+			@NonNull final DocumentPath documentPath,
+			final IDocumentChangesCollector changesCollector,
+			final Function<Document, R> documentProcessor)
 	{
 		final DocumentPath rootDocumentPath = documentPath.getRootDocumentPath();
 		return forRootDocumentWritable(rootDocumentPath, changesCollector, rootDocument -> {
@@ -589,7 +611,7 @@ public class DocumentCollection
 			websocketSender.convertAndSend(event.getWebsocketEndpoint(), event);
 		});
 	}
-	
+
 	/**
 	 * Invalidates all root documents identified by tableName/recordId and notifies frontend (via websocket).
 	 * 
@@ -609,21 +631,20 @@ public class DocumentCollection
 		final JSONDocumentChangedWebSocketEvent event = JSONDocumentChangedWebSocketEvent.staleRootDocument(documentKey.getWindowId(), documentKey.getDocumentId());
 		websocketSender.convertAndSend(event.getWebsocketEndpoint(), event);
 	}
-	
+
 	public Document duplicateDocument(final DocumentPath fromDocumentPath)
 	{
 		final TableRecordReference fromRecordRef = getTableRecordReference(fromDocumentPath);
-		
+
 		final Object fromModel = fromRecordRef.getModel(PlainContextAware.newWithThreadInheritedTrx());
 		final String tableName = InterfaceWrapperHelper.getModelTableName(fromModel);
 		final PO fromPO = InterfaceWrapperHelper.getPO(fromModel);
-		
-		
+
 		final PO toPO = TableModelLoader.instance.newPO(Env.getCtx(), tableName, ITrx.TRXNAME_ThreadInherited);
 		toPO.setDynAttribute(PO.DYNATTR_CopyRecordSupport, CopyRecordFactory.getCopyRecordSupport(tableName)); // set "getValueToCopy" advisor
 		PO.copyValues(fromPO, toPO, true);
 		InterfaceWrapperHelper.save(toPO);
-		
+
 		final CopyRecordSupport childCRS = CopyRecordFactory.getCopyRecordSupport(tableName);
 		childCRS.setAD_Window_ID(fromDocumentPath.getAD_Window_ID(-1));
 		childCRS.setParentPO(toPO);
@@ -633,7 +654,7 @@ public class DocumentCollection
 		final DocumentPath toDocumentPath = DocumentPath.rootDocumentPath(fromDocumentPath.getWindowId(), DocumentId.of(toPO.get_ID()));
 		return forDocumentReadonly(toDocumentPath, NullDocumentChangesCollector.instance, Function.identity());
 	}
-	
+
 	public BoilerPlateContext createBoilerPlateContext(final DocumentPath documentPath)
 	{
 		if (documentPath == null)
@@ -646,7 +667,7 @@ public class DocumentCollection
 			return MADBoilerPlate.createEditorContext(sourceDocument);
 		});
 	}
-	
+
 	@AllArgsConstructor
 	private static final class DocumentAsTemplateSourceDocument implements SourceDocument
 	{
@@ -671,7 +692,6 @@ public class DocumentCollection
 			return document.getFieldView(fieldName).getValueAsInt(defaultValue);
 		}
 	}
-
 
 	@Immutable
 	@Value

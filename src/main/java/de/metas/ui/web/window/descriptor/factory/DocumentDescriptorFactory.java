@@ -34,6 +34,14 @@ import lombok.NonNull;
 
 public interface DocumentDescriptorFactory
 {
+	/**
+	 * Tell the caller if they can expect this instance's methods to work with the given {@code windowId}.
+	 * 
+	 * @param windowId may be {@code null}. If {@code null}, then return {@code false}.
+	 * @return
+	 */
+	boolean isWindowIdSupported(WindowId windowId);
+
 	DocumentDescriptor getDocumentDescriptor(WindowId windowId) throws DocumentLayoutBuildException;
 
 	default DocumentEntityDescriptor getDocumentEntityDescriptor(final int AD_Window_ID)
@@ -41,7 +49,7 @@ public interface DocumentDescriptorFactory
 		final WindowId windowId = WindowId.of(AD_Window_ID);
 		return getDocumentDescriptor(windowId).getEntityDescriptor();
 	}
-	
+
 	default DocumentEntityDescriptor getDocumentEntityDescriptor(@NonNull final WindowId windowId)
 	{
 		return getDocumentDescriptor(windowId).getEntityDescriptor();
@@ -64,7 +72,7 @@ public interface DocumentDescriptorFactory
 			return descriptor.getIncludedEntityByDetailId(detailId).getTableName();
 		}
 	}
-	
+
 	default DocumentEntityDescriptor getDocumentEntityDescriptor(final DocumentPath documentPath)
 	{
 		final DocumentEntityDescriptor rootEntityDescriptor = getDocumentEntityDescriptor(documentPath.getWindowId());
@@ -78,7 +86,7 @@ public interface DocumentDescriptorFactory
 			return rootEntityDescriptor.getIncludedEntityByDetailId(documentPath.getDetailId());
 		}
 	}
-	
+
 	default TableRecordReference getTableRecordReference(final DocumentPath documentPath)
 	{
 		final DocumentEntityDescriptor rootEntityDescriptor = getDocumentEntityDescriptor(documentPath.getWindowId());
@@ -95,5 +103,4 @@ public interface DocumentDescriptorFactory
 		final int recordId = documentPath.getSingleRowId().toInt();
 		return TableRecordReference.of(tableName, recordId);
 	}
-
 }
