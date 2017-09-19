@@ -27,11 +27,9 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
@@ -82,7 +80,6 @@ import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
-import de.metas.handlingunits.model.I_M_HU_Status;
 import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.logging.LogManager;
@@ -930,42 +927,5 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 				.filter(new EqualsQueryFilter<I_DD_NetworkDistribution>(I_DD_NetworkDistribution.COLUMNNAME_IsHUDestroyed, true))
 				.create()
 				.firstOnly(I_DD_NetworkDistribution.class);
-	}
-
-	@Override
-	public I_M_HU_Status retrieveHUStatus(final Properties ctx, final String huStatus)
-	{
-		Check.assumeNotEmpty(huStatus, "huStatus not empty");
-
-		final Map<String, I_M_HU_Status> huStatuses = retrieveAllHUStatuses(ctx);
-		final I_M_HU_Status huStatusRecord = huStatuses.get(huStatus);
-
-		// NOTE: commented out to not break the current automated tests
-		// Check.assumeNotNull(huStatusRecord, "huStatusRecord shall exist for {}", huStatus);
-
-		return huStatusRecord;
-	}
-
-	/**
-	 *
-	 * @param ctx
-	 * @return HUStatus to {@link I_M_HU_Status} map
-	 */
-	@Cached(cacheName = I_M_HU_Status.Table_Name + "#All", expireMinutes = Cached.EXPIREMINUTES_Never)
-	Map<String, I_M_HU_Status> retrieveAllHUStatuses(@CacheCtx final Properties ctx)
-	{
-		final List<I_M_HU_Status> huStatuses = Services.get(IQueryBL.class).createQueryBuilder(I_M_HU_Status.class, ctx, ITrx.TRXNAME_None)
-				// .addOnlyActiveRecordsFilter() // get all!
-				.create()
-				.list(I_M_HU_Status.class);
-
-		final Map<String, I_M_HU_Status> huStatusesMap = new HashMap<>(huStatuses.size());
-		for (final I_M_HU_Status huStatus : huStatuses)
-		{
-			final String huStatusCode = huStatus.getHUStatus();
-			huStatusesMap.put(huStatusCode, huStatus);
-		}
-
-		return Collections.unmodifiableMap(huStatusesMap);
 	}
 }

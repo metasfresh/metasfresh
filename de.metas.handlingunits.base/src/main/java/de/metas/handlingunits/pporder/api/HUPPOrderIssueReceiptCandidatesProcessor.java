@@ -35,7 +35,6 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
-import de.metas.handlingunits.IHULockBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.allocation.IAllocationDestination;
@@ -54,7 +53,6 @@ import de.metas.handlingunits.model.I_PP_Cost_Collector;
 import de.metas.handlingunits.model.I_PP_Order_BOMLine;
 import de.metas.handlingunits.model.I_PP_Order_Qty;
 import de.metas.handlingunits.model.X_M_HU;
-import de.metas.handlingunits.pporder.api.impl.HUPPOrderIssueProducer;
 import de.metas.handlingunits.pporder.api.impl.PPOrderBOMLineProductStorage;
 import de.metas.handlingunits.util.HUByIdComparator;
 import de.metas.logging.LogManager;
@@ -225,9 +223,9 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 		//
 		// Validate the HU
 		final I_M_HU hu = candidate.getM_HU();
-		if (!X_M_HU.HUSTATUS_Active.equals(hu.getHUStatus()))
+		if (!X_M_HU.HUSTATUS_Issued.equals(hu.getHUStatus()))
 		{
-			throw new HUException("Only active HUs can be issued")
+			throw new HUException("Only HUs with status 'issued' can be finalized with their PP_Cost_Collector and destroyed")
 					.setParameter("HU", hu)
 					.setParameter("HUStatus", hu.getHUStatus())
 					.setParameter("candidate", candidate);
@@ -296,14 +294,7 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 
 			snapshotId = husSource.getSnapshotId();
 		}
-		
-		//
-		// Unlock the HU
-		{
-			Services.get(IHULockBL.class).unlockOnAfterCommit(hu.getM_HU_ID(), HUPPOrderIssueProducer.lockOwner);
-		}
 
-		//
 		// Create cost collectors and mark the candidate as processed
 		{
 			final I_PP_Cost_Collector cc = issueCostCollectorsBuilder.createSingleCostCollector(snapshotId);

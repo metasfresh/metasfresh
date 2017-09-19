@@ -13,15 +13,14 @@ package de.metas.fresh.picking;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -29,7 +28,6 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 
 import org.adempiere.util.Services;
@@ -39,7 +37,9 @@ import org.adempiere.util.comparator.ComparableComparator;
 
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.picking.api.IPickingSlotDAO;
+import de.metas.picking.api.IPickingSlotDAO.PickingSlotQuery;
 import de.metas.picking.model.I_M_PickingSlot;
+import lombok.NonNull;
 
 public class PickingSlotKeyBuilder
 {
@@ -51,7 +51,7 @@ public class PickingSlotKeyBuilder
 	 * Sort by PickingSlot string
 	 */
 	private static final Comparator<PickingSlotKey> pickingSlotKeysComparator = new AccessorComparator<PickingSlotKey, String>(
-			ComparableComparator.<String>getInstance(),
+			ComparableComparator.<String> getInstance(),
 			new TypedAccessor<String>()
 			{
 
@@ -67,7 +67,6 @@ public class PickingSlotKeyBuilder
 				}
 			});
 
-
 	public PickingSlotKeyBuilder(final ITerminalContext terminalContext)
 	{
 		super();
@@ -76,39 +75,48 @@ public class PickingSlotKeyBuilder
 
 	public void addBPartner(final int bpartnerId, final int bpartnerLocationId, final Set<Integer> allowedWarehouseIds)
 	{
-		final Properties ctx = terminalContext.getCtx();
-		final List<I_M_PickingSlot> bpPickingSlots = Services.get(IPickingSlotDAO.class).retrivePickingSlotsForBPartner(ctx, bpartnerId, bpartnerLocationId);
+		final PickingSlotQuery pickingSlotRequest = PickingSlotQuery.builder()
+				.ctx(terminalContext.getCtx())
+				.bpartnerId(bpartnerId)
+				.bpartnerLocationId(bpartnerLocationId)
+				.build();
+
+		final List<I_M_PickingSlot> bpPickingSlots = Services.get(IPickingSlotDAO.class).retrivePickingSlots(pickingSlotRequest);
+
 		for (final I_M_PickingSlot pickingSlot : bpPickingSlots)
 		{
-			if (!pickingSlot.isActive())
-			{
-				continue;
-			}
-
-			final int pickingSlotId = pickingSlot.getM_PickingSlot_ID();
-			if (pickingSlotsKeys.containsKey(pickingSlotId))
-			{
-				// already added
-				continue;
-			}
-			
-			//
-			// Filter by warehouse
-			if (allowedWarehouseIds != null && !allowedWarehouseIds.isEmpty())
-			{
-				final int warehouseId = pickingSlot.getM_Warehouse_ID();
-				if (!allowedWarehouseIds.contains(warehouseId))
-				{
-					// skip because it's not in our list of accepted warehouses
-					continue;
-				}
-			}
-
-			final PickingSlotKey pickingSlotKey = new PickingSlotKey(terminalContext, pickingSlot);
-			pickingSlotsKeys.put(pickingSlotId, pickingSlotKey);
+			addIfValid(pickingSlot, allowedWarehouseIds);
 		}
 	}
-	
+
+	private void addIfValid(
+			@NonNull final I_M_PickingSlot pickingSlot,
+			@NonNull final Set<Integer> allowedWarehouseIds)
+	{
+		if (!pickingSlot.isActive())
+		{
+			return;
+		}
+
+		final int pickingSlotId = pickingSlot.getM_PickingSlot_ID();
+		if (pickingSlotsKeys.containsKey(pickingSlotId))
+		{
+			return; // already added
+		}
+
+		// Filter by warehouse
+		if (allowedWarehouseIds != null && !allowedWarehouseIds.isEmpty())
+		{
+			final int warehouseId = pickingSlot.getM_Warehouse_ID();
+			if (!allowedWarehouseIds.contains(warehouseId))
+			{
+				return; // skip because it's not in our list of accepted warehouses
+			}
+		}
+
+		final PickingSlotKey pickingSlotKey = new PickingSlotKey(terminalContext, pickingSlot);
+		pickingSlotsKeys.put(pickingSlotId, pickingSlotKey);
+	}
 
 	public List<PickingSlotKey> getPickingSlotKeys()
 	{
@@ -119,7 +127,7 @@ public class PickingSlotKeyBuilder
 
 		final List<PickingSlotKey> result = new ArrayList<PickingSlotKey>(pickingSlotsKeys.values());
 		Collections.sort(result, pickingSlotKeysComparator);
-		
+
 		return result;
 	}
 }

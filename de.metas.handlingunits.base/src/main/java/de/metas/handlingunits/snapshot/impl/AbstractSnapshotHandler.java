@@ -13,15 +13,14 @@ package de.metas.handlingunits.snapshot.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Date;
 import java.util.HashMap;
@@ -138,8 +137,10 @@ abstract class AbstractSnapshotHandler<ModelType, SnapshotModelType, ParentModel
 		return this;
 	}
 
-	/** @return referenced model; never returns null */
-	protected final Object getReferencedModel()
+	/**
+	 * @return referenced model, if one was set earlier.
+	 */
+	protected final Object getReferencedModelOrNull()
 	{
 		if (_referencedModel != null)
 		{
@@ -147,9 +148,10 @@ abstract class AbstractSnapshotHandler<ModelType, SnapshotModelType, ParentModel
 		}
 		else if (_parentHandler != null)
 		{
-			return _parentHandler.getReferencedModel();
+			return _parentHandler.getReferencedModelOrNull();
 		}
-		throw new AdempiereException("ReferencedModel is not configured to " + this);
+
+		return null;
 	}
 
 	@Override

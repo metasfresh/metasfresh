@@ -26,7 +26,8 @@ import com.google.common.base.MoreObjects;
 	{
 		super();
 		this.name = name;
-		this.whereClause = Services.get(IExpressionFactory.class).compileOrDefault(whereClause, IStringExpression.NULL, IStringExpression.class);
+		this.whereClause = Services.get(IExpressionFactory.class)
+				.compileOrDefault(whereClause, IStringExpression.NULL, IStringExpression.class);
 	}
 
 	@Override

@@ -61,7 +61,9 @@ public class AllocationDAO implements IAllocationDAO
 {
 
 	@Override
-	public final BigDecimal retrieveOpenAmt(final org.compiere.model.I_C_Invoice invoice, final boolean creditMemoAdjusted)
+	public final BigDecimal retrieveOpenAmt(
+			@NonNull final org.compiere.model.I_C_Invoice invoice,
+			final boolean creditMemoAdjusted)
 	{
 		if (invoice.isPaid())
 		{

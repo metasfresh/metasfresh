@@ -48,30 +48,32 @@ public interface IHUPPOrderIssueProducer
 	 * @param hus
 	 * @return generated manufacturing order issue cost collectors
 	 */
-	List<I_PP_Order_Qty> createIssues(final Collection<I_M_HU> hus);
+	List<I_PP_Order_Qty> createDraftIssues(final Collection<I_M_HU> hus);
 
 	/**
-	 * Convenient way of calling {@link #createIssues(Collection)}.
+	 * Convenient way of calling {@link #createDraftIssues(Collection)}.
 	 *
 	 * @param hu
 	 * @return generated manufacturing order issue cost collectors
 	 */
-	default List<I_PP_Order_Qty> createIssues(final I_M_HU hu)
+	default List<I_PP_Order_Qty> createDraftIssue(final I_M_HU hu)
 	{
-		return createIssues(ImmutableSet.of(hu));
+		return createDraftIssues(ImmutableSet.of(hu));
 	}
+
+	void reverseDraftIssue(final I_PP_Order_Qty candidate);
 
 	/**
 	 * Sets movement date to be used in generated underlying {@link I_PP_Cost_Collector}s.
 	 *
-	 * @param movementDate
+	 * @param movementDate may be {@code null} in which case, the current time is used.
 	 */
 	IHUPPOrderIssueProducer setMovementDate(final Date movementDate);
 
 	/**
 	 * Sets manufacturing order BOM Lines which needs to be considered when issuing.
 	 *
-	 * @param targetOrderBOMLines
+	 * @param targetOrderBOMLines may not be {@code null} and need to contain lines that match the products of the HUs we give as parameters to {@link #createDraftIssues(Collection)}.
 	 */
 	IHUPPOrderIssueProducer setTargetOrderBOMLines(final List<I_PP_Order_BOMLine> targetOrderBOMLines);
 
@@ -88,6 +90,4 @@ public interface IHUPPOrderIssueProducer
 	 * @param targetOrderBOMLine
 	 */
 	IHUPPOrderIssueProducer setTargetOrderBOMLine(I_PP_Order_BOMLine targetOrderBOMLine);
-
-	void reverseDraftIssue(final I_PP_Order_Qty candidate);
 }

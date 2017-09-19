@@ -226,7 +226,7 @@ public class HUTraceEventsService
 	/**
 	 * Iterate the given {@link I_M_HU_Trx_Line}s and add events for those lines that
 	 * <ul>
-	 * <li>have a {@link IHandlingUnitsBL#isPhysicalHU(String) physical} {@code M_HU_ID}. We don't care to planned HUs and we assume that destroyed or shipped HUs won't be altered anymore.
+	 * <li>have a {@link IHandlingUnitsBL#isPhysicalHU(String) physical} {@code M_HU_ID}. We don't care about planned HUs and we assume that destroyed or shipped HUs won't be altered anymore.
 	 * <li>have a partner ({@code Parent_HU_Trx_Line_ID > 0}) which also has a a M_HU_ID
 	 * <li>have {@code Quantity > 0}
 	 * </ul>
@@ -241,7 +241,7 @@ public class HUTraceEventsService
 			@NonNull final I_M_HU_Trx_Hdr trxHeader,
 			@NonNull final List<I_M_HU_Trx_Line> trxLines)
 	{
-		final HUTraceEventBuilder builder = HUTraceEvent.builder()
+		final HUTraceEventBuilder traceEventBuilder = HUTraceEvent.builder()
 				.type(HUTraceType.TRANSFORM_LOAD)
 				.eventTime(trxHeader.getUpdated().toInstant());
 
@@ -274,7 +274,7 @@ public class HUTraceEventsService
 		// iterate the lines and create an every per vhuId and sourceVhuId
 		for (final I_M_HU_Trx_Line trxLine : trxLinesToUse)
 		{
-			builder.huTrxLineId(trxLine.getM_HU_Trx_Line_ID());
+			traceEventBuilder.huTrxLineId(trxLine.getM_HU_Trx_Line_ID());
 
 			final List<I_M_HU> vhus = getVhus.apply(trxLine);
 			for (final I_M_HU vhu : vhus)
@@ -295,7 +295,7 @@ public class HUTraceEventsService
 				final int vhuTopLevelHuId = huAccessService.retrieveTopLevelHuId(vhu);
 				Check.errorIf(vhuTopLevelHuId <= 0, "vhuTopLevelHuId returned by HUAccessService.retrieveTopLevelHuId has to be >0, but is {}; vhu={}", vhuTopLevelHuId, vhu);
 
-				builder
+				traceEventBuilder
 						.vhuId(vhu.getM_HU_ID())
 						.topLevelHuId(vhuTopLevelHuId)
 						.productId(productAndQty.get().getLeft().getM_Product_ID())
@@ -313,7 +313,7 @@ public class HUTraceEventsService
 						continue;
 					}
 
-					builder.vhuSourceId(sourceVhu.getM_HU_ID());
+					traceEventBuilder.vhuSourceId(sourceVhu.getM_HU_ID());
 
 					if (sourceVhu.getM_HU_ID() == vhu.getM_HU_ID())
 					{
@@ -323,13 +323,13 @@ public class HUTraceEventsService
 					}
 
 					// create a trace record for the split's "destination"
-					final HUTraceEvent splitDestEvent = builder.build();
+					final HUTraceEvent splitDestEvent = traceEventBuilder.build();
 
 					final int sourceVhuTopLevelHuId = huAccessService.retrieveTopLevelHuId(sourceVhu);
 					Check.errorIf(sourceVhuTopLevelHuId <= 0, "sourceVhuTopLevelHuId returned by HUAccessService.retrieveTopLevelHuId has to be >0, but is {}; vhu={}", sourceVhuTopLevelHuId, sourceVhu);
 
 					// create a trace record for the split's "source"
-					final HUTraceEvent splitSourceEvent = builder
+					final HUTraceEvent splitSourceEvent = traceEventBuilder
 							.huTrxLineId(sourceTrxLine.getM_HU_Trx_Line_ID())
 							.vhuId(sourceVhu.getM_HU_ID())
 							.topLevelHuId(sourceVhuTopLevelHuId)

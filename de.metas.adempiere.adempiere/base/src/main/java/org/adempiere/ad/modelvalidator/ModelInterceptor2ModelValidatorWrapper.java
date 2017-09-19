@@ -25,11 +25,12 @@ package org.adempiere.ad.modelvalidator;
 
 import org.adempiere.ad.security.IUserLoginListener;
 import org.adempiere.ad.session.MFSession;
-import org.adempiere.util.Check;
 import org.compiere.model.MClient;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.PO;
+
+import lombok.NonNull;
 
 /**
  * Wraps an {@link IModelInterceptor} and make it behave like an {@link ModelValidator}
@@ -55,10 +56,8 @@ public final class ModelInterceptor2ModelValidatorWrapper implements ModelValida
 	/** {@link #interceptor} casted as {@link IUserLoginListener} or null */
 	private final IUserLoginListener userLoginListener;
 
-	private ModelInterceptor2ModelValidatorWrapper(final IModelInterceptor interceptor)
+	private ModelInterceptor2ModelValidatorWrapper(@NonNull final IModelInterceptor interceptor)
 	{
-		super();
-		Check.assumeNotNull(interceptor, "interceptor not null");
 		this.interceptor = interceptor;
 		
 		if (interceptor instanceof IUserLoginListener)

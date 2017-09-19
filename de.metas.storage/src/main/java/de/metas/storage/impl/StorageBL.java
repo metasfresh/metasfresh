@@ -26,25 +26,12 @@ package de.metas.storage.impl;
 import java.math.BigDecimal;
 import java.util.Collection;
 
-import org.adempiere.util.Services;
-
 import de.metas.storage.IStorageBL;
-import de.metas.storage.IStorageEngineService;
-import de.metas.storage.IStorageQuery;
 import de.metas.storage.IStorageRecord;
 import de.metas.storage.IStorageSegmentBuilder;
 
 public class StorageBL implements IStorageBL
 {
-
-	@Override
-	public IStorageQuery createStorageQuery()
-	{
-		final IStorageEngineService storageEngineProvider = Services.get(IStorageEngineService.class);
-		final IStorageQuery storageQuery = storageEngineProvider.getStorageEngine().newStorageQuery();
-		return storageQuery;
-	}
-
 	@Override
 	public BigDecimal calculateQtyOnHandSum(final Collection<? extends IStorageRecord> storageRecords)
 	{

@@ -360,7 +360,7 @@ public class HUIssueModel implements IDisposable
 					final List<I_PP_Order_Qty> candidates = huPPOrderBL.createIssueProducer()
 							.setMovementDate(getMovementDate())
 							.setTargetOrderBOMLines(orderBOMLineKeyLayout.getOrderBOMLinesForIssuing())
-							.createIssues(selectedHUs);
+							.createDraftIssues(selectedHUs);
 
 					//
 					// Process created manufacturing issue candidates

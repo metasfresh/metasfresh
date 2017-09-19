@@ -30,10 +30,10 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.ModelValidator;
 
-import de.metas.handlingunits.IHUPickingSlotBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_PickingSlot_HU;
 import de.metas.handlingunits.model.I_M_PickingSlot_Trx;
+import de.metas.handlingunits.picking.IHUPickingSlotBL;
 import de.metas.picking.model.I_M_PickingSlot;
 
 @Validator(I_M_PickingSlot_HU.class)

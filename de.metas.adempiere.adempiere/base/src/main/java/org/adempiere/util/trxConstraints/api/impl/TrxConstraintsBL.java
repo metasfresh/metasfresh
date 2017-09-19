@@ -36,8 +36,11 @@ import org.adempiere.util.trxConstraints.api.ITrxConstraints;
 import org.adempiere.util.trxConstraints.api.ITrxConstraintsBL;
 import org.compiere.util.Env;
 
+import com.google.common.annotations.VisibleForTesting;
+
 public class TrxConstraintsBL implements ITrxConstraintsBL
 {
+	@VisibleForTesting
 	public static final String SYSCONFIG_TRX_CONSTRAINTS_DISABLED = "org.compiere.util.trxConstraints.disabled";
 	public static final boolean DEFAULT_TRX_CONSTRAINTS_DISABLED = true;
 

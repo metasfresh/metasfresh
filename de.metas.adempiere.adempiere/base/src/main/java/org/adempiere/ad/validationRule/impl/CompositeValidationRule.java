@@ -158,7 +158,7 @@ public final class CompositeValidationRule implements IValidationRule
 			for (final IValidationRule rule : rules)
 			{
 				final IStringExpression ruleWhereClause = rule.getPrefilterWhereClause();
-				if (ruleWhereClause == null || ruleWhereClause ==IStringExpression.NULL)
+				if (ruleWhereClause == null || ruleWhereClause == IStringExpression.NULL)
 				{
 					continue;
 				}

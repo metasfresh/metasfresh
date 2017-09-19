@@ -26,6 +26,8 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -71,6 +73,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.logging.LogManager;
 import de.metas.script.IADRuleDAO;
 import de.metas.script.ScriptEngineFactory;
+import lombok.NonNull;
 
 /**
  * Model Validation Engine
@@ -454,12 +457,14 @@ public class ModelValidationEngine implements IModelValidationEngine
 	private void initialize(final ModelValidator validator, final I_AD_Client client)
 	{
 		if (client == null)
+		{
 			registerGlobal(validator);
+		}
 		m_validators.add(validator);
 
 		final MClient clientPO = LegacyAdapters.convertToPO(client);
 		validator.initialize(this, clientPO);
-	}	// initialize
+	}
 
 	/**
 	 * Called when login is complete
@@ -784,21 +789,23 @@ public class ModelValidationEngine implements IModelValidationEngine
 
 	}
 
-	private final void fireModelChange0(final PO po, final int changeType,
-			List<ModelValidator> interceptorsSystem,
-			List<ModelValidator> interceptorsClient,
-			List<I_AD_Table_ScriptValidator> scriptValidators)
+	private final void fireModelChange0(
+			final PO po,
+			final int changeType,
+			@Nullable List<ModelValidator> interceptorsSystem,
+			@Nullable List<ModelValidator> interceptorsClient,
+			@Nullable List<I_AD_Table_ScriptValidator> scriptValidators)
 	{
 		if (interceptorsSystem != null)
 		{
 			// ad_entitytype.modelvalidationclasses
-			fireModelChange(po, changeType, interceptorsSystem);
+			invokeModelChangeMethods(po, changeType, interceptorsSystem);
 		}
 
 		if (interceptorsClient != null)
 		{
 			// ad_client.modelvalidationclasses
-			fireModelChange(po, changeType, interceptorsClient);
+			invokeModelChangeMethods(po, changeType, interceptorsClient);
 		}
 
 		//
@@ -817,7 +824,7 @@ public class ModelValidationEngine implements IModelValidationEngine
 			final PO po,
 			final String ruleEventType,
 			final int changeTypeOrDocTiming,
-			final List<I_AD_Table_ScriptValidator> scriptValidators)
+			@Nullable final List<I_AD_Table_ScriptValidator> scriptValidators)
 	{
 		// if there are no script validators => do nothing
 		if (scriptValidators == null || scriptValidators.isEmpty())
@@ -903,42 +910,61 @@ public class ModelValidationEngine implements IModelValidationEngine
 		}
 	}
 
-	private final void fireModelChange(final PO po, final int changeType, final List<ModelValidator> list)
+	private final void invokeModelChangeMethods(
+			@NonNull final PO po,
+			final int changeType,
+			@NonNull final List<ModelValidator> validators)
 	{
-		for (final ModelValidator validator : list)
+		for (final ModelValidator validator : validators)
 		{
-			try
-			{
-				if (appliesFor(validator, po.getAD_Client_ID()))
-				{
-					if (changeType == ModelValidator.TYPE_SUBSEQUENT)
-					{
-						if (m_modelChangeSubsequent.containsKey(validator))
-						{
-							// create a queue record
-							final MADProcessablePO processablePO = MADProcessablePO.createOrRetrieveFor(po, validator);
+			invokeModelChangeMethod(po, changeType, validator);
+		}
+	}
 
-							if (m_modelChangeSubsequent.get(validator))
-							{
-								// process 'po' right now. If a problem occurs, record it in 'processablePO'
-								Services.get(IProcessingService.class).process(processablePO, null);
-							}
-						}
-					}
-					else
-					{
-						// the default cause
-						String error = validator.modelChange(po, changeType);
-						if (error != null && error.length() > 0)
-						{
-							throw new AdempiereException(error);
-						}
-					}
-				}
-			}
-			catch (Exception e)
+	@SuppressWarnings("deprecation")
+	private void invokeModelChangeMethod(
+			@NonNull final PO po,
+			final int changeType,
+			@NonNull final ModelValidator validator)
+	{
+		try
+		{
+			if (!appliesFor(validator, po.getAD_Client_ID()))
 			{
-				throw AdempiereException.wrapIfNeeded(e);
+				return;
+			}
+			if (changeType == ModelValidator.TYPE_SUBSEQUENT)
+			{
+				handleTypeSubsequent(po, validator);
+				return;
+			}
+
+			// the default cause
+			final String error = validator.modelChange(po, changeType);
+			if (!Check.isEmpty(error))
+			{
+				throw new AdempiereException(error);
+			}
+		}
+		catch (Exception e)
+		{
+			throw AdempiereException.wrapIfNeeded(e);
+		}
+	}
+
+	private void handleTypeSubsequent(
+			@NonNull final PO po, 
+			@NonNull final ModelValidator validator)
+	{
+		if (m_modelChangeSubsequent.containsKey(validator))
+		{
+			// create a queue record
+			final MADProcessablePO processablePO = MADProcessablePO.createOrRetrieveFor(po, validator);
+
+			if (m_modelChangeSubsequent.get(validator))
+			{
+				// process 'po' right now. If a problem occurs, record it in 'processablePO'
+				Services.get(IProcessingService.class).process(processablePO, null);
 			}
 		}
 	}

@@ -1,5 +1,7 @@
 package org.adempiere.exceptions;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -141,4 +143,27 @@ public class AdempiereExceptionTests
 		Assert.assertEquals(ImmutableMap.of("param2", "value2"), ex.getParameters());
 	}
 
+	@Test
+	public void test_hasParameters_null()
+	{
+		final AdempiereException adempiereException = new AdempiereException();
+		assertThat(adempiereException.hasParameter("hasnt")).isFalse();
+	}
+
+	@Test
+	public void test_hasParameters_different()
+	{
+		final AdempiereException adempiereException = new AdempiereException()
+				.setParameter("someParam", "test");
+		assertThat(adempiereException.hasParameter("hasnt")).isFalse();
+	}
+
+	@Test
+	public void test_hasParameters_same()
+	{
+		final AdempiereException adempiereException = new AdempiereException()
+				.setParameter("someParam", "test");
+		assertThat(adempiereException.hasParameter("someParam")).isTrue();
+	}
+	
 }

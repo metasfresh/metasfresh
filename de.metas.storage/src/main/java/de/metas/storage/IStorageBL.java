@@ -30,8 +30,6 @@ import org.adempiere.util.ISingletonService;
 
 public interface IStorageBL extends ISingletonService
 {
-	IStorageQuery createStorageQuery();
-	
 	IStorageSegmentBuilder createStorageSegmentBuilder();
 
 	/**
