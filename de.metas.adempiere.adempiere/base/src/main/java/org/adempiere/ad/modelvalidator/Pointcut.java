@@ -115,7 +115,7 @@ import com.google.common.primitives.Ints;
 		return tableName;
 	}
 
-	protected void setTableName(String tableName)
+	protected void setTableName(final String tableName)
 	{
 		this.tableName = tableName;
 	}
@@ -126,7 +126,7 @@ import com.google.common.primitives.Ints;
 		return modelClass;
 	}
 
-	protected void setModelClass(Class<?> modelClass)
+	protected void setModelClass(final Class<?> modelClass)
 	{
 		this.modelClass = modelClass;
 		this.modelColumnNames = InterfaceWrapperHelper.getModelColumnNames(modelClass);
@@ -223,7 +223,7 @@ import com.google.common.primitives.Ints;
 		return afterCommit;
 	}
 
-	public void setChangedColumns(String[] changedColumns)
+	public void setChangedColumns(final String[] changedColumns)
 	{
 		if (changedColumns == null || changedColumns.length == 0)
 		{
@@ -255,7 +255,7 @@ import com.google.common.primitives.Ints;
 		return onlyIfUIAction;
 	}
 
-	public void setOnlyIfUIAction(boolean onlyIfUIAction)
+	public void setOnlyIfUIAction(final boolean onlyIfUIAction)
 	{
 		this.onlyIfUIAction = onlyIfUIAction;
 	}
@@ -340,7 +340,7 @@ import com.google.common.primitives.Ints;
 	 * @task https://metasfresh.atlassian.net/browse/FRESH-318
 	 */
 	@Override
-	public boolean equals(Object obj)
+	public boolean equals(final Object obj)
 	{
 		if (this == obj)
 		{
@@ -372,7 +372,7 @@ import com.google.common.primitives.Ints;
 	 * @task https://metasfresh.atlassian.net/browse/FRESH-318
 	 */
 	@Override
-	public int compareTo(Pointcut o)
+	public int compareTo(final Pointcut o)
 	{
 		return ComparisonChain.start()
 
