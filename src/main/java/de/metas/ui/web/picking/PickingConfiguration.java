@@ -36,6 +36,11 @@ public class PickingConfiguration
 {
 	public PickingConfiguration(@NonNull final SqlViewFactory sqlViewFactory)
 	{
+		configurePackageablesGrouping(sqlViewFactory);
+	}
+
+	private void configurePackageablesGrouping(@NonNull final SqlViewFactory sqlViewFactory)
+	{
 		final Supplier<SqlViewGroupingBinding> supplier = () -> SqlViewGroupingBinding.builder()
 				.groupBy(I_M_Packageable_V.COLUMNNAME_M_Warehouse_ID)
 				.groupBy(I_M_Packageable_V.COLUMNNAME_M_Product_ID)

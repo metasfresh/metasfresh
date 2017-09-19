@@ -38,7 +38,7 @@ public final class SqlDocumentFilterConverters
 	}
 
 	/**
-	 * Convenient method to create the effective converter instance from given <code>entityBinding</code>.
+	 * Convenient method to create the effective converter instance from the given <code>entityBinding</code>.
 	 * It will use
 	 * <ul>
 	 * <li>entity binding's registered converters list: {@link SqlEntityBinding#getFilterConverters()}

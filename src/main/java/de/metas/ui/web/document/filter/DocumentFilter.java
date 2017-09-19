@@ -39,6 +39,12 @@ import lombok.NonNull;
  * #L%
  */
 
+/**
+ * Also see {@link de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverter}.
+ * 
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
 @Immutable
 public final class DocumentFilter
 {
@@ -77,11 +83,9 @@ public final class DocumentFilter
 
 	private DocumentFilter(final Builder builder)
 	{
-		super();
-
 		filterId = builder.filterId;
 		Check.assumeNotEmpty(filterId, "filterId is not empty");
-		
+
 		caption = builder.caption;
 
 		parameters = builder.parameters == null ? ImmutableList.of() : ImmutableList.copyOf(builder.parameters);
@@ -102,7 +106,7 @@ public final class DocumentFilter
 	{
 		return filterId;
 	}
-	
+
 	public String getCaption(@Nullable final String adLanguage)
 	{
 		return caption != null ? caption.translate(adLanguage) : null;

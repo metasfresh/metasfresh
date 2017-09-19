@@ -7,7 +7,6 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -395,7 +394,7 @@ public class PackingInfoProcessParams
 			final int M_HU_PI_Item_Product_ID,
 			@NonNull final BigDecimal qtyTU)
 	{
-		final I_M_HU_PI_Item_Product tuPIItemProduct = InterfaceWrapperHelper.create(Env.getCtx(), M_HU_PI_Item_Product_ID, I_M_HU_PI_Item_Product.class, ITrx.TRXNAME_None);
+		final I_M_HU_PI_Item_Product tuPIItemProduct = loadOutOfTrx(M_HU_PI_Item_Product_ID, I_M_HU_PI_Item_Product.class);
 		final I_M_HU_PI tuPI = tuPIItemProduct.getM_HU_PI_Item().getM_HU_PI_Version().getM_HU_PI();
 
 		lutuConfigNew.setM_HU_PI_Item_Product(tuPIItemProduct);

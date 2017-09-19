@@ -1,10 +1,10 @@
 package de.metas.ui.web.pporder.process;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+
 import java.math.BigDecimal;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.Adempiere;
 import org.eevolution.model.I_PP_Order_BOMLine;
@@ -122,13 +122,13 @@ public class WEBUI_PP_Order_Receipt
 		if (type == PPOrderLineType.MainProduct)
 		{
 			final int ppOrderId = row.getPP_Order_ID();
-			final I_PP_Order ppOrder = InterfaceWrapperHelper.create(getCtx(), ppOrderId, I_PP_Order.class, ITrx.TRXNAME_ThreadInherited);
+			final I_PP_Order ppOrder = load(ppOrderId, I_PP_Order.class);
 			return huPPOrderBL.createReceiptLUTUConfigurationManager(ppOrder);
 		}
 		else if (type == PPOrderLineType.BOMLine_ByCoProduct)
 		{
 			final int ppOrderBOMLineId = row.getPP_Order_BOMLine_ID();
-			final I_PP_Order_BOMLine ppOrderBOMLine = InterfaceWrapperHelper.create(getCtx(), ppOrderBOMLineId, I_PP_Order_BOMLine.class, ITrx.TRXNAME_ThreadInherited);
+			final I_PP_Order_BOMLine ppOrderBOMLine = load(ppOrderBOMLineId, I_PP_Order_BOMLine.class);
 			return huPPOrderBL.createReceiptLUTUConfigurationManager(ppOrderBOMLine);
 		}
 		else
@@ -143,13 +143,13 @@ public class WEBUI_PP_Order_Receipt
 		if (type == PPOrderLineType.MainProduct)
 		{
 			final int ppOrderId = row.getPP_Order_ID();
-			final I_PP_Order ppOrder = InterfaceWrapperHelper.create(getCtx(), ppOrderId, I_PP_Order.class, ITrx.TRXNAME_ThreadInherited);
+			final I_PP_Order ppOrder = load(ppOrderId, I_PP_Order.class);
 			return IPPOrderReceiptHUProducer.receiveMainProduct(ppOrder);
 		}
 		else if (type == PPOrderLineType.BOMLine_ByCoProduct)
 		{
 			final int ppOrderBOMLineId = row.getPP_Order_BOMLine_ID();
-			final I_PP_Order_BOMLine ppOrderBOMLine = InterfaceWrapperHelper.create(getCtx(), ppOrderBOMLineId, I_PP_Order_BOMLine.class, ITrx.TRXNAME_ThreadInherited);
+			final I_PP_Order_BOMLine ppOrderBOMLine = load(ppOrderBOMLineId, I_PP_Order_BOMLine.class);
 			return IPPOrderReceiptHUProducer.receiveByOrCoProduct(ppOrderBOMLine);
 		}
 		else
@@ -234,13 +234,10 @@ public class WEBUI_PP_Order_Receipt
 		final PPOrderLineRow selectedRow = getSingleSelectedRow();
 		final IPPOrderReceiptHUProducer receiptCandidatesProducer = createReceiptCandidatesProducer(selectedRow);
 
-		//
 		// Calculate and set the LU/TU config from packing info params and defaults
 		final I_M_HU_LUTU_Configuration lutuConfig = getPackingInfoParams().createAndSaveNewLUTUConfig();
 		receiptCandidatesProducer.setM_HU_LUTU_Configuration(lutuConfig);
 
-		//
-		// Create
 		receiptCandidatesProducer.createReceiptCandidatesAndPlanningHUs();
 
 		return MSG_OK;

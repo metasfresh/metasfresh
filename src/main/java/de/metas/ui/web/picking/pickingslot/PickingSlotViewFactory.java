@@ -22,7 +22,7 @@ import de.metas.ui.web.picking.PickingViewsIndexStorage;
 import de.metas.ui.web.picking.process.WEBUI_Picking_M_Picking_Candidate_Process;
 import de.metas.ui.web.picking.process.WEBUI_Picking_M_Picking_Candidate_Unprocess;
 import de.metas.ui.web.picking.process.WEBUI_Picking_M_Source_HU_Delete;
-import de.metas.ui.web.picking.process.WEBUI_Picking_OpenHUsToPick;
+import de.metas.ui.web.picking.process.WEBUI_Picking_HUEditor_Open;
 import de.metas.ui.web.picking.process.WEBUI_Picking_PickQtyToExistingHU;
 import de.metas.ui.web.picking.process.WEBUI_Picking_PickQtyToNewHU;
 import de.metas.ui.web.picking.process.WEBUI_Picking_RemoveHUFromPickingSlot;
@@ -155,7 +155,7 @@ public class PickingSlotViewFactory implements IViewFactory
 		return ImmutableList.of(
 				// allow to open the HU-editor for various picking related purposes
 				RelatedProcessDescriptor.builder()
-						.processId(adProcessDAO.retriveProcessIdByClass(ctx, WEBUI_Picking_OpenHUsToPick.class))
+						.processId(adProcessDAO.retriveProcessIdByClass(ctx, WEBUI_Picking_HUEditor_Open.class))
 						.anyTable().anyWindow()
 						.webuiQuickAction(true)
 						.build(),

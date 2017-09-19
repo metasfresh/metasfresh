@@ -52,16 +52,16 @@ import de.metas.ui.web.view.json.JSONViewDataType;
  */
 
 /**
- * This process opens a HU editor window within the picking window and registers the processes {@link WEBUI_Picking_PickSelectedHU} for that window.
+ * This process opens a HU editor window within the picking window and registers the processes {@link WEBUI_Picking_HUEditor_PickHU} for that window.
  * 
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public class WEBUI_Picking_OpenHUsToPick extends ViewBasedProcessTemplate
+public class WEBUI_Picking_HUEditor_Open extends ViewBasedProcessTemplate
 {
 	@Autowired
 	private IViewsRepository viewsRepo;
-	
+
 	private final transient IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 
 	private final transient IHUPickingSlotBL huPickingSlotBL = Services.get(IHUPickingSlotBL.class);
@@ -83,25 +83,25 @@ public class WEBUI_Picking_OpenHUsToPick extends ViewBasedProcessTemplate
 		final ViewId pickingSlotViewId = getView().getViewId();
 
 		final int shipmentScheduleId = getView().getCurrentShipmentScheduleId();
-		
+
 		final PickingHUsQuery query = PickingHUsQuery.builder()
 				.shipmentSchedules(ImmutableList.of(loadOutOfTrx(shipmentScheduleId, I_M_ShipmentSchedule.class)))
 				.onlyTopLevelHUs(false)
-				.considerAttributes(true)
+				.onlyIfAttributesMatchWithShipmentSchedules(true)
 				.build();
 		final List<I_M_HU> availableHUsToPick = huPickingSlotBL.retrieveAvailableHUsToPick(query);
 		final List<Integer> availableHUsToPickIDs = availableHUsToPick.stream().map(hu -> hu.getM_HU_ID()).collect(Collectors.toList());
 
 		final RelatedProcessDescriptor pickSelectedHU = RelatedProcessDescriptor.builder()
-				.processId(adProcessDAO.retriveProcessIdByClassIfUnique(Env.getCtx(), WEBUI_Picking_PickSelectedHU.class))
+				.processId(adProcessDAO.retriveProcessIdByClassIfUnique(Env.getCtx(), WEBUI_Picking_HUEditor_PickHU.class))
 				.webuiQuickAction(true)
 				.build();
 
 		final RelatedProcessDescriptor flagSelectedHUsAsSourceHUs = RelatedProcessDescriptor.builder()
-				.processId(adProcessDAO.retriveProcessIdByClassIfUnique(Env.getCtx(), WEBUI_Picking_M_Source_HU_Create.class))
+				.processId(adProcessDAO.retriveProcessIdByClassIfUnique(Env.getCtx(), WEBUI_Picking_HUEditor_Create_M_Source_HU.class))
 				.webuiQuickAction(true)
 				.build();
-		
+
 		final IView husToPickView = viewsRepo.createView(
 				CreateViewRequest.builder(WEBUI_HU_Constants.WEBUI_HU_Window_ID, JSONViewDataType.includedView)
 						.setParentViewId(pickingSlotViewId)
