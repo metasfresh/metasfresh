@@ -65,13 +65,13 @@ import lombok.NonNull;
 	 */
 	private transient List<?> allowedTargetTableNames = null;
 
-	private final transient List<InterceptorInit> initializers = new ArrayList<InterceptorInit>();
+	private final transient List<InterceptorInit> initializers = new ArrayList<>();
 
 	/**
 	 * Map PointcutType(TableName,PointcutType) -> pointcuts list.<br>
 	 * FRESH-318: order then, because without a specified ordering, java7 executes them in a different ordering that java8.
 	 */
-	private final transient Map<PointcutKey, SortedSet<Pointcut>> mapPointcuts = new HashMap<PointcutKey, SortedSet<Pointcut>>();
+	private final transient Map<PointcutKey, SortedSet<Pointcut>> mapPointcuts = new HashMap<>();
 
 	private int clientId = -1;
 
@@ -287,7 +287,7 @@ import lombok.NonNull;
 		initializers.add(init);
 	}
 
-	private void loadPointcut(ModelChange annModelChange, Method method)
+	private void loadPointcut(final ModelChange annModelChange, final Method method)
 	{
 		final Pointcut pointcut = new Pointcut(PointcutType.ModelChange, method, annModelChange.timings(), annModelChange.afterCommit());
 		pointcut.setChangedColumns(annModelChange.ifColumnsChanged());
@@ -296,7 +296,7 @@ import lombok.NonNull;
 		initPointcutAndAddToMap(pointcut);
 	}
 
-	private void loadPointcut(DocValidate annDocValidate, Method method)
+	private void loadPointcut(final DocValidate annDocValidate, final Method method)
 	{
 		final Pointcut pointcut = new Pointcut(PointcutType.DocValidate, method, annDocValidate.timings(), annDocValidate.afterCommit());
 		initPointcutAndAddToMap(pointcut);
@@ -374,7 +374,7 @@ import lombok.NonNull;
 		SortedSet<Pointcut> set = mapPointcuts.get(key);
 		if (set == null)
 		{
-			set = new TreeSet<Pointcut>();
+			set = new TreeSet<>();
 			mapPointcuts.put(key, set);
 		}
 
@@ -429,7 +429,7 @@ import lombok.NonNull;
 	}
 
 	@Override
-	public void onUserLogin(int AD_Org_ID, int AD_Role_ID, int AD_User_ID)
+	public void onUserLogin(final int AD_Org_ID, final int AD_Role_ID, final int AD_User_ID)
 	{
 		// nothing
 	}
@@ -442,7 +442,7 @@ import lombok.NonNull;
 	}
 
 	@Override
-	public final void onDocValidate(Object model, final DocTimingType timing)
+	public final void onDocValidate(final Object model, final DocTimingType timing)
 	{
 		final int timingCode = timing.getTiming();
 		execute(PointcutType.DocValidate, model, timingCode);
