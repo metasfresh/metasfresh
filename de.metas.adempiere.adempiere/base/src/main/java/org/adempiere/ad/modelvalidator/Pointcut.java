@@ -37,6 +37,7 @@ import com.google.common.primitives.Ints;
 
 /* package */final class Pointcut implements IPointcut, Comparable<Pointcut>
 {
+	private final String pointcutId;
 	private final PointcutType type;
 	private final Method method;
 	private final Set<Integer> timings;
@@ -52,7 +53,10 @@ import com.google.common.primitives.Ints;
 
 	public Pointcut(final PointcutType type, final Method method, final int[] timings, final boolean afterCommit)
 	{
-		super();
+		this.pointcutId = String.format("%s#%s",
+				method.getDeclaringClass().getName(),
+				method.getName());
+
 		this.type = type;
 		this.method = method;
 		this.timings = ImmutableSet.copyOf(Ints.asList(timings));
@@ -101,6 +105,12 @@ import com.google.common.primitives.Ints;
 				+ ", methodTimingParameterType=" + methodTimingParameterType
 				+ ", onlyIfUIAction=" + onlyIfUIAction
 				+ "]";
+	}
+
+	@Override
+	public String getPointcutId()
+	{
+		return pointcutId;
 	}
 
 	@Override

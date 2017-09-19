@@ -574,7 +574,7 @@ import lombok.NonNull;
 
 		if (!ae.hasParameter(parameterName))
 		{
-			final String howtoDisableMsg = AnnotatedModelInterceptorDisabler.get().getHowtoDisableMessage(pointcut);
+			final String howtoDisableMsg = AnnotatedModelInterceptorDisabler.createHowtoDisableMessage(pointcut);
 
 			logger.error(howtoDisableMsg);
 			ae.setParameter(parameterName, howtoDisableMsg);
