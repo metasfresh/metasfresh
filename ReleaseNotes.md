@@ -28,6 +28,8 @@ Here come the actual release notes:
 * metasfresh-webui-frontend
   * [#1192](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1192) grid values are cut off if column size is too small
     * Showing tooltips in Table Grid Cells. Allowing to hover over a field and whoing the complete content in Tooltip. Very helpful for content that does not fit fully ionto a displayed Grid Field.
+  * [#1196](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1196) frontend: Letters feature
+    * New Letter functionality in WebUI, allowing to write letters via action Menu entry.
 
 ## Fixes
 * metasfresh-app
