@@ -14,7 +14,7 @@ public class X_I_Request extends org.compiere.model.PO implements I_I_Request, o
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1803129896L;
+	private static final long serialVersionUID = -663486873L;
 
     /** Standard Constructor */
     public X_I_Request (Properties ctx, int I_Request_ID, String trxName)
@@ -116,6 +116,25 @@ public class X_I_Request extends org.compiere.model.PO implements I_I_Request, o
 	public java.sql.Timestamp getDateTrx () 
 	{
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_DateTrx);
+	}
+
+	/** Set Beleg Nr..
+		@param DocumentNo 
+		Document sequence number of the document
+	  */
+	@Override
+	public void setDocumentNo (java.lang.String DocumentNo)
+	{
+		set_Value (COLUMNNAME_DocumentNo, DocumentNo);
+	}
+
+	/** Get Beleg Nr..
+		@return Document sequence number of the document
+	  */
+	@Override
+	public java.lang.String getDocumentNo () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_DocumentNo);
 	}
 
 	/** Set Import-Fehlermeldung.

@@ -39,6 +39,7 @@ import org.compiere.model.I_R_Status;
 import org.compiere.model.PO;
 import org.compiere.model.X_I_Request;
 import org.compiere.util.DB;
+import org.compiere.util.Env;
 
 /**
  * Imports {@link I_I_Request} records to {@link I_R_Request}.
@@ -102,11 +103,11 @@ public class RequestImportProcess extends AbstractImportProcess<I_I_Request>
 		}
 
 		//
-		// Update R_RequestType_ID by name
+		// Update R_RequestType_ID by InternalName
 		{
 			final String sqlSelectByValue = "select MIN(rt." + I_R_RequestType.COLUMNNAME_R_RequestType_ID + ")"
 					+ " from " + I_R_RequestType.Table_Name + " rt "
-					+ " where rt." + I_R_RequestType.COLUMNNAME_Name + "=i." + I_I_Request.COLUMNNAME_RequestType
+					+ " where rt." + I_R_RequestType.COLUMNNAME_InternalName + "=i." + I_I_Request.COLUMNNAME_RequestType
 					+ " and rt." + I_R_RequestType.COLUMNNAME_AD_Client_ID + "=i." + I_I_Request.COLUMNNAME_AD_Client_ID;
 
 			final String sql = "UPDATE " + I_I_Request.Table_Name + " i "
@@ -217,11 +218,22 @@ public class RequestImportProcess extends AbstractImportProcess<I_I_Request>
 		{
 			request.setSummary(importRecord.getSummary());
 		}
-		if (importRecord.getResult() != null)
+		
+		if (importRecord.getDocumentNo() != null)
 		{
-			request.setResult(importRecord.getResult());
+			request.setDocumentNo(importRecord.getDocumentNo());
 		}
 		
+		// TODO: don't support for now
+//		if (importRecord.getResult() != null)
+//		{
+//			request.setResult(importRecord.getResult());
+//		}
+		
+		int userid = Env.getAD_User_ID(getCtx());
+		request.setSalesRep_ID(userid);
+		
+		InterfaceWrapperHelper.save(request);
 		
 		// Link back the request to current import record
 		importRecord.setR_Request(request);
