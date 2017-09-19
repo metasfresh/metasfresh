@@ -133,7 +133,8 @@ class Subheader extends Component {
         const {
             dataId, windowType, query, openModal, closeSubheader, handlePrint,
             handleDelete, docNo, redirect, breadcrumb, siteName, editmode,
-            handleEditModeToggle, handleEmail, handleClone, selected
+            handleEditModeToggle, handleEmail, handleLetter, handleClone,
+            selected
         } = this.props;
 
         const {
@@ -191,6 +192,21 @@ class Subheader extends Component {
                 className="subheader-item js-subheader-item"
                 tabIndex={0}
                 onClick={() => {
+                    handleLetter();
+                    closeSubheader();
+                }}
+            >
+                <i className="meta-icon-letter" />
+                {counterpart.translate('window.letter.caption')}
+                <span className="tooltip-inline">
+                    {keymap.GLOBAL_CONTEXT.OPEN_LETTER}
+                </span>
+            </div>,
+            <div
+                key={40}
+                className="subheader-item js-subheader-item"
+                tabIndex={0}
+                onClick={() => {
                     handlePrint(windowType, dataId, docNo);
                     closeSubheader();
                 }}
@@ -202,7 +218,7 @@ class Subheader extends Component {
                 </span>
             </div>,
             <div
-                key={40}
+                key={50}
                 className="subheader-item js-subheader-item"
                 tabIndex={0}
                 onClick={() => {
