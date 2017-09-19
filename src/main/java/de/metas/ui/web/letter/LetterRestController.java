@@ -41,6 +41,7 @@ import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentPath;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
+import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
 import de.metas.ui.web.window.model.DocumentCollection;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiOperation;
@@ -256,6 +257,16 @@ public class LetterRestController
 					.setParameter("fieldName", fieldName)
 					.setParameter("availablePaths", PATCH_FIELD_ALL);
 		}
+	}
+	
+	@GetMapping("/templates")
+	@ApiOperation("Available Email templates")
+	public JSONLookupValuesList getTemplates()
+	{
+		return MADBoilerPlate.getAll(userSession.getCtx())
+				.stream()
+				.map(adBoilerPlate -> JSONLookupValue.of(adBoilerPlate.getAD_BoilerPlate_ID(), adBoilerPlate.getName()))
+				.collect(JSONLookupValuesList.collect());
 	}
 
 	private void applyTemplate(final WebuiLetter letter, final WebuiLetterBuilder newLetterBuilder, final LookupValue templateId)
