@@ -596,7 +596,6 @@ public final class Document
 		private final DocumentValuesSupplier parentSupplier;
 		private final DocumentType documentType;
 		private final DocumentId documentTypeId;
-		private final String documentTableName;
 		private final IDocumentEvaluatee _evaluatee;
 		private final DocumentId parentDocumentId;
 
@@ -607,7 +606,6 @@ public final class Document
 			final DocumentEntityDescriptor entityDescriptor = document.getEntityDescriptor();
 			documentType = entityDescriptor.getDocumentType();
 			documentTypeId = entityDescriptor.getDocumentTypeId();
-			documentTableName = entityDescriptor.getTableNameOrNull();
 
 			_evaluatee = document.asEvaluatee();
 
@@ -1508,9 +1506,8 @@ public final class Document
 	public LookupValuesList getFieldLookupValuesForQuery(final String fieldName, final String query)
 	{
 		return getField(fieldName).getLookupValuesForQuery(query);
-
 	}
-
+	
 	public Document getIncludedDocument(final DetailId detailId, final DocumentId rowId)
 	{
 		final IIncludedDocumentsCollection includedDocuments = getIncludedDocumentsCollection(detailId);
