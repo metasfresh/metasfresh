@@ -103,7 +103,7 @@ public class RequestImportProcess extends AbstractImportProcess<I_I_Request>
 		}
 
 		//
-		// Update R_RequestType_ID by InternalName
+		// Update R_RequestType_ID by Name
 		{
 			final String sqlSelectByValue = "select MIN(rt." + I_R_RequestType.COLUMNNAME_R_RequestType_ID + ")"
 					+ " from " + I_R_RequestType.Table_Name + " rt "
@@ -124,7 +124,7 @@ public class RequestImportProcess extends AbstractImportProcess<I_I_Request>
 		}
 
 		//
-		// Update R_Status_ID by value
+		// Update R_Status_ID by Name
 		{
 			final String sqlSelectByValue = "select MIN(r." + I_R_Status.COLUMNNAME_R_Status_ID + ")"
 					+ " from " + I_R_Status.Table_Name + " r "
