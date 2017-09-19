@@ -674,6 +674,31 @@ public interface I_R_Request
     public static final String COLUMNNAME_DateStartPlan = "DateStartPlan";
 
 	/**
+	 * Set Vorgangsdatum.
+	 * Vorgangsdatum
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setDateTrx (java.sql.Timestamp DateTrx);
+
+	/**
+	 * Get Vorgangsdatum.
+	 * Vorgangsdatum
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.sql.Timestamp getDateTrx();
+
+    /** Column definition for DateTrx */
+    public static final org.adempiere.model.ModelColumn<I_R_Request, Object> COLUMN_DateTrx = new org.adempiere.model.ModelColumn<I_R_Request, Object>(I_R_Request.class, "DateTrx", null);
+    /** Column name DateTrx */
+    public static final String COLUMNNAME_DateTrx = "DateTrx";
+
+	/**
 	 * Set Beleg Nr..
 	 * Document sequence number of the document
 	 *
