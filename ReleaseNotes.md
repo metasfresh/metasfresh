@@ -16,6 +16,8 @@ Here come the actual release notes:
 
 ## Features
 * metasfresh-app
+  * [#2090](https://github.com/metasfresh/metasfresh/issues/2090) Improve text Variable Window in WebUI
+    * Improving the Textvariable and Textsnippets window in WebUI, adapting out current webui design guidelines and adding Translations for de_DE, en_US.
   * [#2376](https://github.com/metasfresh/metasfresh/issues/2376) Detail Improvements to Order Candidates Window
     * Improvement of Order Candidates Window, allowing the user to manipulate the data directly in Main View.
   * [#2440](https://github.com/metasfresh/metasfresh/issues/2440) Material Tracking adjustments in WebUI
