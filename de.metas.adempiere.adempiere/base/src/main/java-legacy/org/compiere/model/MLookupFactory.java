@@ -745,6 +745,19 @@ public class MLookupFactory
 				return null;
 			}
 		}
+		// List
+		else if (DisplayType.List == ldc.getDisplayType())
+		{
+			final String embeddedSQL = getLookup_ListEmbed(languageInfo, ldc.getAD_Reference_ID(), columnSQL);
+			if (embeddedSQL != null)
+			{
+				return "(" + embeddedSQL + ")";
+			}
+			else
+			{
+				return null;
+			}
+		}		
 		// number
 		else if (DisplayType.isNumeric(ldc.getDisplayType()))
 		{
