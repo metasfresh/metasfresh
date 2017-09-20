@@ -32,7 +32,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IMutable;
 import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_I_BPartner;
 import org.compiere.model.I_I_Request;
 import org.compiere.model.I_R_Request;
 import org.compiere.model.I_R_RequestType;
@@ -91,6 +90,10 @@ public class RequestImportProcess extends AbstractImportProcess<I_I_Request>
 
 		final int no = DB.executeUpdateEx(sql, trxName);
 		log.debug("Set C_BPartner_ID for {} records", no);
+		//
+		// Flag missing BPartners
+		markAsError("BPartner not found", I_I_Request.COLUMNNAME_C_BPartner_ID + " IS NULL"
+				+ "\n AND " + sqlImportWhereClause);
 	}
 
 	private void dbUpdateRequestTypeIds(final String sqlImportWhereClause)
@@ -109,6 +112,10 @@ public class RequestImportProcess extends AbstractImportProcess<I_I_Request>
 
 		final int no = DB.executeUpdateEx(sql, trxName);
 		log.debug("Set R_RequestType_ID for {} records", no);
+		//
+		// Flag missing R_RequestType_ID
+		markAsError("Request Type not found", I_I_Request.COLUMNNAME_R_RequestType_ID + " IS NULL"
+				+ "\n AND " + sqlImportWhereClause);
 	}
 
 	private void dbUpdateStatusIds(final String sqlImportWhereClause)
@@ -127,45 +134,32 @@ public class RequestImportProcess extends AbstractImportProcess<I_I_Request>
 
 		final int no = DB.executeUpdateEx(sql, trxName);
 		log.debug("Set M_Product_ID for {} records (by Value)", no);
+		//
+		// Flag missing status
+		markAsError("R_Status not found", I_I_Request.COLUMNNAME_R_Status_ID + " IS NULL"
+				+ "\n AND " + sqlImportWhereClause);
 	}
 
 	@Override
 	protected void updateAndValidateImportRecords()
 	{
-		final String trxName = ITrx.TRXNAME_ThreadInherited;
 		final String sqlImportWhereClause = COLUMNNAME_I_IsImported + "<>" + DB.TO_BOOLEAN(true)
 				+ "\n " + getWhereClause();
-
 		//
 		// Update C_BPartner_ID
 		{
 			dbUpdateBPartnerIds(sqlImportWhereClause);
-			//
-			// Flag missing BPartners
-			markAsError("BPartner not found", I_I_Request.COLUMNNAME_C_BPartner_ID + " IS NULL"
-					+ "\n AND " + sqlImportWhereClause);
 		}
-
 		//
 		// Update R_RequestType_ID by Name
 		{
 			dbUpdateRequestTypeIds(sqlImportWhereClause);
-			//
-			// Flag missing R_RequestType_ID
-			markAsError("Request Type not found", I_I_Request.COLUMNNAME_R_RequestType_ID + " IS NULL"
-					+ "\n AND " + sqlImportWhereClause);
 		}
-
 		//
 		// Update R_Status_ID by Name
 		{
 			dbUpdateStatusIds(sqlImportWhereClause);
-			//
-			// Flag missing status
-			markAsError("R_Status not found", I_I_Request.COLUMNNAME_R_Status_ID + " IS NULL"
-					+ "\n AND " + sqlImportWhereClause);
 		}
-
 	}
 
 	private final void markAsError(final String errorMsg, final String sqlWhereClause)
@@ -192,7 +186,6 @@ public class RequestImportProcess extends AbstractImportProcess<I_I_Request>
 		// Create a new request
 		final I_R_Request request = InterfaceWrapperHelper.newInstance(I_R_Request.class, importRecord);
 		request.setAD_Org_ID(importRecord.getAD_Org_ID());
-
 		//
 		// BPartner
 		{
@@ -231,9 +224,9 @@ public class RequestImportProcess extends AbstractImportProcess<I_I_Request>
 		request.setDocumentNo(importRecord.getDocumentNo());
 		int userid = Env.getAD_User_ID(getCtx());
 		request.setSalesRep_ID(userid);
-		
+		//
 		InterfaceWrapperHelper.save(request);
-
+		//
 		// Link back the request to current import record
 		importRecord.setR_Request(request);
 		//
