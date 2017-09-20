@@ -145,7 +145,7 @@ public class RelationTypeZoomProvider implements IZoomProvider
 		{
 			final ReferenceTargetZoomProviderDestination referenceTarget = getReferenceTarget();
 
-			adWindowId = referenceTarget.getAD_Window_ID(zoomSource.isSOTrx());
+			adWindowId = getRefTableAD_Window_ID(referenceTarget.getTableRefInfo(), zoomSource.isSOTrx());
 
 			display = referenceTarget.getRoleDisplayName(adWindowId);
 		}
@@ -164,7 +164,7 @@ public class RelationTypeZoomProvider implements IZoomProvider
 				return ImmutableList.of();
 			}
 
-			adWindowId = target.getAD_Window_ID(zoomSource.isSOTrx());
+			adWindowId = getRefTableAD_Window_ID(target.getTableRefInfo(),zoomSource.isSOTrx());
 
 			display = target.getRoleDisplayName(adWindowId);
 		}
@@ -247,8 +247,7 @@ public class RelationTypeZoomProvider implements IZoomProvider
 		{
 			// this relation type is from one table to the same table
 			// use the window-id to distinguish
-			final boolean isSOTrx = zoomSource.isSOTrx();
-			if (zoomSource.getAD_Window_ID() == source.getAD_Window_ID(isSOTrx))
+			if (zoomSource.getAD_Window_ID() == getRefTableAD_Window_ID(source.getTableRefInfo(), zoomSource.isSOTrx()))
 			{
 				return ImmutablePair.of(source, target);
 			}
@@ -447,35 +446,6 @@ public class RelationTypeZoomProvider implements IZoomProvider
 			Check.errorIf(windowName == null, "Found no display string for, destination={}, AD_Window_ID={}", this, fallbackAD_Window_ID);
 			return windowName;
 		}
-
-		/**
-		 * @return the <code>AD_Window_ID</code>
-		 * @throws PORelationException if no <code>AD_Window_ID</code> can be found.
-		 */
-		public int getAD_Window_ID(final boolean isSOTrx)
-		{
-			int windowId = tableRefInfo.getZoomAD_Window_ID_Override();
-			if (windowId > 0)
-			{
-				return windowId;
-			}
-
-			if (isSOTrx)
-			{
-				windowId = tableRefInfo.getZoomSO_Window_ID();
-			}
-			else
-			{
-				windowId = tableRefInfo.getZoomPO_Window_ID();
-			}
-			if (windowId <= 0)
-			{
-				throw PORelationException.throwMissingWindowId(tableRefInfo.getName(), tableRefInfo.getTableName(), isSOTrx);
-			}
-
-			return windowId;
-		}
-
 	}
 
 	private static final class ZoomProviderDestination
@@ -527,34 +497,7 @@ public class RelationTypeZoomProvider implements IZoomProvider
 			return windowName;
 		}
 
-		/**
-		 * @return the <code>AD_Window_ID</code>
-		 * @throws PORelationException if no <code>AD_Window_ID</code> can be found.
-		 */
-		public int getAD_Window_ID(final boolean isSOTrx)
-		{
-			int windowId = tableRefInfo.getZoomAD_Window_ID_Override();
-			if (windowId > 0)
-			{
-				return windowId;
-			}
-
-			if (isSOTrx)
-			{
-				windowId = tableRefInfo.getZoomSO_Window_ID();
-			}
-			else
-			{
-				windowId = tableRefInfo.getZoomPO_Window_ID();
-			}
-			if (windowId <= 0)
-			{
-				throw PORelationException.throwMissingWindowId(tableRefInfo.getName(), tableRefInfo.getTableName(), isSOTrx);
-			}
-
-			return windowId;
-		}
-
+		
 		public boolean matchesAsSource(final IZoomSource zoomSource)
 		{
 			// if (isReferenceTarget())
@@ -590,6 +533,35 @@ public class RelationTypeZoomProvider implements IZoomProvider
 			return match;
 		}
 	}
+	
+	/**
+	 * @return the <code>AD_Window_ID</code>
+	 * @throws PORelationException if no <code>AD_Window_ID</code> can be found.
+	 */
+	private int getRefTableAD_Window_ID(final ITableRefInfo tableRefInfo, final boolean isSOTrx)
+	{
+		int windowId = tableRefInfo.getZoomAD_Window_ID_Override();
+		if (windowId > 0)
+		{
+			return windowId;
+		}
+
+		if (isSOTrx)
+		{
+			windowId = tableRefInfo.getZoomSO_Window_ID();
+		}
+		else
+		{
+			windowId = tableRefInfo.getZoomPO_Window_ID();
+		}
+		if (windowId <= 0)
+		{
+			throw PORelationException.throwMissingWindowId(tableRefInfo.getName(), tableRefInfo.getTableName(), isSOTrx);
+		}
+
+		return windowId;
+	}
+
 
 	@ToString(exclude = "lookupDAO")
 	public static final class Builder

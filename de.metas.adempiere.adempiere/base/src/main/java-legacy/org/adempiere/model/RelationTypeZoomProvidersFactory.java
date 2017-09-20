@@ -159,12 +159,6 @@ public final class RelationTypeZoomProvidersFactory
 			throw PORelationException.throwWrongKeyColumnCount(tableName, poInfo.getKeyColumnNames());
 		}
 
-		// TODO
-
-		// not needed here
-		// final int adTableId = poInfo.getAD_Table_ID();
-		// final int keyColumnId = poInfo.getAD_Column_ID(keyColumnName);
-		//
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		
