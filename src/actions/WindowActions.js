@@ -71,6 +71,7 @@ export function initDataSuccess({
     includedTabsInfo,
     saveStatus,
     scope,
+    standardActions,
     validStatus,
     websocket
 }) {
@@ -80,6 +81,7 @@ export function initDataSuccess({
         includedTabsInfo,
         saveStatus,
         scope,
+        standardActions,
         type: types.INIT_DATA_SUCCESS,
         validStatus,
         websocket
@@ -312,6 +314,7 @@ export function createWindow(
                     docId,
                     saveStatus: response.data[0].saveStatus,
                     scope: getScope(isModal),
+                    standardActions: response.data[0].standardActions,
                     validStatus: response.data[0].validStatus,
                     includedTabsInfo: response.data[0].includedTabsInfo,
                     websocketEndpoint: response.data[0].websocketEndpoint
@@ -405,6 +408,7 @@ export function initWindow(windowType, docId, tabId, rowId = null, isAdvanced) {
                         includedTabsInfo: {},
                         scope: 'master',
                         saveStatus: { saved: true },
+                        standardActions: {},
                         validStatus: {}
                     }));
                     dispatch(getWindowBreadcrumb(windowType));
