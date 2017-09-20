@@ -129,34 +129,26 @@ class Subheader extends Component {
         }
     }
 
-    renderDocLink = function (docLinks, {
-        action,
-        handler,
-        icon,
-        caption,
-        hotkey
-    }) {
-        const { closeSubheader, standardActions } = this.props;
+    renderDocLink = ({ action, handler, icon, caption, hotkey }) => {
+        const { closeSubheader } = this.props;
 
-        if (standardActions.has(action)) {
-            docLinks.push(
-                <div
-                    key={action}
-                    className="subheader-item js-subheader-item"
-                    tabIndex={0}
-                    onClick={() => {
-                        handler()
-                        closeSubheader();
-                    }}
-                >
-                    <i className={icon} />
-                    {caption}
-                    <span className="tooltip-inline">
-                        {hotkey}
-                    </span>
-                </div>
-            )
-        }
+        return (
+            <div
+                key={action}
+                className="subheader-item js-subheader-item"
+                tabIndex={0}
+                onClick={() => {
+                    handler()
+                    closeSubheader();
+                }}
+            >
+                <i className={icon} />
+                {caption}
+                <span className="tooltip-inline">
+                    {hotkey}
+                </span>
+            </div>
+        );
     }
 
     renderDocLinks = () => {
@@ -169,6 +161,7 @@ class Subheader extends Component {
             handleLetter,
             handlePrint,
             openModal,
+            standardActions,
             windowType
         } = this.props;
 
@@ -176,11 +169,7 @@ class Subheader extends Component {
             return false;
         }
 
-        const docLinks = [];
-
-        const renderDocLink = this.renderDocLink.bind(this, docLinks);
-
-        renderDocLink({
+        const docLinks = ([{
             action: 'advancedEdit',
             handler: () => {
                 openModal(windowType, 'window', 'Advanced edit', true);
@@ -188,9 +177,7 @@ class Subheader extends Component {
             icon: 'meta-icon-edit',
             caption: counterpart.translate('window.advancedEdit.caption'),
             hotkey: keymap.GLOBAL_CONTEXT.OPEN_ADVANCED_EDIT
-        });
-
-        renderDocLink({
+        }, {
             action: 'clone',
             handler: () => {
                 handleClone(windowType, dataId);
@@ -198,9 +185,7 @@ class Subheader extends Component {
             icon: 'meta-icon-duplicate',
             caption: counterpart.translate('window.clone.caption'),
             hotkey: keymap.GLOBAL_CONTEXT.CLONE_DOCUMENT
-        });
-
-        renderDocLink({
+        }, {
             action: 'email',
             handler: () => {
                 handleEmail();
@@ -208,9 +193,7 @@ class Subheader extends Component {
             icon: 'meta-icon-mail',
             caption: counterpart.translate('window.email.caption'),
             hotkey: keymap.GLOBAL_CONTEXT.OPEN_EMAIL
-        });
-
-        renderDocLink({
+        }, {
             action: 'letter',
             handler: () => {
                 handleLetter();
@@ -218,9 +201,7 @@ class Subheader extends Component {
             icon: 'meta-icon-letter',
             caption: counterpart.translate('window.letter.caption'),
             hotkey: keymap.GLOBAL_CONTEXT.OPEN_LETTER
-        });
-
-        renderDocLink({
+        }, {
             action: 'print',
             handler: () => {
                 handlePrint(windowType, dataId, docNo);
@@ -228,9 +209,7 @@ class Subheader extends Component {
             icon: 'meta-icon-print',
             caption: counterpart.translate('window.Print.caption'),
             hotkey: keymap.GLOBAL_CONTEXT.OPEN_PRINT_RAPORT
-        });
-
-        renderDocLink({
+        }, {
             action: 'delete',
             handler: () => {
                 handleDelete();
@@ -238,7 +217,12 @@ class Subheader extends Component {
             icon: 'meta-icon-delete',
             caption: counterpart.translate('window.Delete.caption'),
             hotkey: keymap.GLOBAL_CONTEXT.DELETE_DOCUMENT
-        });
+        }]
+            .filter(docLink => standardActions.has(docLink.action))
+            .map(docLink => {
+                return this.renderDocLink(docLink);
+            })
+        );
 
         return docLinks;
     }
