@@ -117,6 +117,7 @@ export default function windowHandler(state = initialState, action) {
                     layout: {},
                     rowData: {},
                     saveStatus: action.saveStatus,
+                    standardActions: new Set(action.standardActions),
                     validStatus: action.validStatus,
                     includedTabsInfo: action.includedTabsInfo,
                     websocket: action.websocket
