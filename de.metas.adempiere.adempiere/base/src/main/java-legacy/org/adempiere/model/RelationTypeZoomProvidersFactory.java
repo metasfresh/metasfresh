@@ -152,8 +152,8 @@ public final class RelationTypeZoomProvidersFactory
 		Check.assumeNotEmpty(tableName, "tableName is not empty");
 
 		final POInfo poInfo = POInfo.getPOInfo(tableName);
-		final String keyColumnName = poInfo.getKeyColumnName();
-		if (keyColumnName == null)
+		
+		if (poInfo.getKeyColumnName() == null)
 		{
 			logger.error("{} does not have a single key column", tableName);
 			throw PORelationException.throwWrongKeyColumnCount(tableName, poInfo.getKeyColumnNames());
@@ -255,7 +255,7 @@ public final class RelationTypeZoomProvidersFactory
 						.setAD_RelationType_ID(relationType.getAD_RelationType_ID())
 						.setInternalName(relationType.getInternalName())
 						//
-						.setSource_Reference_AD(relationType.getAD_Reference_Source_ID())
+						.setSource_Reference_ID(relationType.getAD_Reference_Source_ID())
 						.setSourceRoleDisplayName(roleSourceDisplayName)
 						//
 						.setTarget_Reference_AD(relationType.getAD_Reference_Target_ID())

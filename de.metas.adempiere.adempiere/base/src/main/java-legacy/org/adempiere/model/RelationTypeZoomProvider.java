@@ -71,12 +71,13 @@ public class RelationTypeZoomProvider implements IZoomProvider
 	private final boolean directed;
 	private final String zoomInfoId;
 	private final String internalName;
-	private final int adRelationTypeId;
 	private final boolean isReferenceTarget;
 
 	private final ZoomProviderDestination source;
 	private final ZoomProviderDestination target;
 
+	// #2340
+	// Reference Target zoom provider destination
 	private final ReferenceTargetZoomProviderDestination referenceTarget;
 
 	private RelationTypeZoomProvider(final Builder builder)
@@ -86,37 +87,23 @@ public class RelationTypeZoomProvider implements IZoomProvider
 		directed = builder.isDirected();
 		zoomInfoId = builder.getZoomInfoId();
 		internalName = builder.getInternalName();
-		adRelationTypeId = builder.getAD_RelationType_ID();
 
 		isReferenceTarget = builder.isReferenceTarget();
 
-		if (isReferenceTarget)
-		{
-			target = null;
-			source = null;
+		source = isReferenceTarget ? null : new ZoomProviderDestination(
+				builder.getSource_Reference_ID(),
+				builder.getSourceTableRefInfoOrNull(),
+				builder.getSourceRoleDisplayName());
+		target = isReferenceTarget ? null : new ZoomProviderDestination(
+				builder.getTarget_Reference_ID(),
+				builder.getTargetTableRefInfoOrNull(),
+				builder.getTargetRoleDisplayName());
 
-			referenceTarget = new ReferenceTargetZoomProviderDestination(
-					builder.getTarget_Reference_ID(),
-					builder.getTargetTableRefInfoOrNull(),
-					builder.getTargetRoleDisplayName());
+		referenceTarget = isReferenceTarget ? new ReferenceTargetZoomProviderDestination(
+				builder.getTarget_Reference_ID(),
+				builder.getTargetTableRefInfoOrNull(),
+				builder.getTargetRoleDisplayName()) : null;
 
-		}
-
-		else
-
-		{
-			source = new ZoomProviderDestination(
-					builder.getSource_Reference_ID(),
-					builder.getSourceTableRefInfoOrNull(),
-					builder.getSourceRoleDisplayName());
-
-			target = new ZoomProviderDestination(
-					builder.getTarget_Reference_ID(),
-					builder.getTargetTableRefInfoOrNull(),
-					builder.getTargetRoleDisplayName());
-
-			referenceTarget = null;
-		}
 	}
 
 	@Override
@@ -164,7 +151,7 @@ public class RelationTypeZoomProvider implements IZoomProvider
 				return ImmutableList.of();
 			}
 
-			adWindowId = getRefTableAD_Window_ID(target.getTableRefInfo(),zoomSource.isSOTrx());
+			adWindowId = getRefTableAD_Window_ID(target.getTableRefInfo(), zoomSource.isSOTrx());
 
 			display = target.getRoleDisplayName(adWindowId);
 		}
@@ -175,14 +162,13 @@ public class RelationTypeZoomProvider implements IZoomProvider
 		}
 
 		final MQuery query = mkQuery(zoomSource, isReferenceTarget);
-		
+
 		if (checkRecordsCount)
 		{
 			updateRecordsCountAndZoomValue(query);
 		}
 
-		final String zoomInfoId = getZoomInfoId();
-		return ImmutableList.of(ZoomInfo.of(zoomInfoId, adWindowId, query, display));
+		return ImmutableList.of(ZoomInfo.of(getZoomInfoId(), adWindowId, query, display));
 	}
 
 	public boolean isDirected()
@@ -200,11 +186,6 @@ public class RelationTypeZoomProvider implements IZoomProvider
 		return internalName;
 	}
 
-	public int getAD_RelationType_ID()
-	{
-		return adRelationTypeId;
-	}
-
 	private ZoomProviderDestination getTarget()
 	{
 		return target;
@@ -218,16 +199,6 @@ public class RelationTypeZoomProvider implements IZoomProvider
 	private ReferenceTargetZoomProviderDestination getReferenceTarget()
 	{
 		return referenceTarget;
-	}
-
-	public String getTargetTableName()
-	{
-		return target.getTableName();
-	}
-
-	public String getSourceTableName()
-	{
-		return source.getTableName();
 	}
 
 	/**
@@ -497,7 +468,6 @@ public class RelationTypeZoomProvider implements IZoomProvider
 			return windowName;
 		}
 
-		
 		public boolean matchesAsSource(final IZoomSource zoomSource)
 		{
 			// if (isReferenceTarget())
@@ -533,7 +503,7 @@ public class RelationTypeZoomProvider implements IZoomProvider
 			return match;
 		}
 	}
-	
+
 	/**
 	 * @return the <code>AD_Window_ID</code>
 	 * @throws PORelationException if no <code>AD_Window_ID</code> can be found.
@@ -561,7 +531,6 @@ public class RelationTypeZoomProvider implements IZoomProvider
 
 		return windowId;
 	}
-
 
 	@ToString(exclude = "lookupDAO")
 	public static final class Builder
@@ -648,7 +617,7 @@ public class RelationTypeZoomProvider implements IZoomProvider
 			return directed;
 		}
 
-		public Builder setSource_Reference_AD(final int sourceReferenceId)
+		public Builder setSource_Reference_ID(final int sourceReferenceId)
 		{
 			this.sourceReferenceId = sourceReferenceId;
 			sourceTableRefInfo = null; // reset
