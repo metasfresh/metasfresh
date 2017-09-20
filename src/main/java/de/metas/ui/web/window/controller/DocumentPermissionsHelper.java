@@ -63,7 +63,7 @@ public class DocumentPermissionsHelper
 					.setParameter("WindowName", entityDescriptor.getCaption())
 					.setParameter("AD_Window_ID", adWindowId);
 
-			logAccessIfWindoExistsAndThrowEx(permissions, adWindowId, ex);
+			logAccessIfWindowExistsAndThrowEx(permissions, adWindowId, ex);
 		}
 
 		return windowPermission;
@@ -96,11 +96,11 @@ public class DocumentPermissionsHelper
 					.setParameter("view", viewId)
 					.setParameter("windowId", adWindowId);
 
-			logAccessIfWindoExistsAndThrowEx(permissions, adWindowId, ex);
+			logAccessIfWindowExistsAndThrowEx(permissions, adWindowId, ex);
 		}
 	}
 
-	private static void logAccessIfWindoExistsAndThrowEx(
+	private static void logAccessIfWindowExistsAndThrowEx(
 			@NonNull final IUserRolePermissions permissions,
 			final int adWindowId,
 			@NonNull final AdempiereException ex)
