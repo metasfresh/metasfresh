@@ -16,6 +16,10 @@ Here come the actual release notes:
 
 ## Features
 * metasfresh-app
+  * [#2090](https://github.com/metasfresh/metasfresh/issues/2090) Improve text Variable Window in WebUI
+    * Improving the Textvariable and Textsnippets window in WebUI, adapting out current webui design guidelines and adding Translations for de_DE, en_US.
+  * [#2376](https://github.com/metasfresh/metasfresh/issues/2376) Detail Improvements to Order Candidates Window
+    * Improvement of Order Candidates Window, allowing the user to manipulate the data directly in Main View.
   * [#2440](https://github.com/metasfresh/metasfresh/issues/2440) Material Tracking adjustments in WebUI
     * Adjustments to the Material Tracking Window. Adding further Filter possibilities.
   * [#2478](https://github.com/metasfresh/metasfresh/issues/2478) Check Filter Sequence for Default Fields Organisation and Warehouse
@@ -26,6 +30,13 @@ Here come the actual release notes:
 * metasfresh-webui-frontend
   * [#1192](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1192) grid values are cut off if column size is too small
     * Showing tooltips in Table Grid Cells. Allowing to hover over a field and whoing the complete content in Tooltip. Very helpful for content that does not fit fully ionto a displayed Grid Field.
+  * [#1196](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1196) frontend: Letters feature
+    * New Letter functionality in WebUI, allowing to write letters via action Menu entry.
+
+## Fixes
+* metasfresh-app
+  * [#2503](https://github.com/metasfresh/metasfresh/issues/2503) Typo in German Translation of Contract Terms menu Entry
+    * Fixing the Translation of Contract Window for Language/ Locale de_DE in WebUI Menu.
 
 # metasfresh 5.27 (2017-38)
 

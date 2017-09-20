@@ -15,7 +15,7 @@ public class X_R_Request extends org.compiere.model.PO implements I_R_Request, o
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1407441794L;
+	private static final long serialVersionUID = 1384303322L;
 
     /** Standard Constructor */
     public X_R_Request (Properties ctx, int R_Request_ID, String trxName)
@@ -710,6 +710,25 @@ public class X_R_Request extends org.compiere.model.PO implements I_R_Request, o
 	public java.sql.Timestamp getDateStartPlan () 
 	{
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_DateStartPlan);
+	}
+
+	/** Set Vorgangsdatum.
+		@param DateTrx 
+		Vorgangsdatum
+	  */
+	@Override
+	public void setDateTrx (java.sql.Timestamp DateTrx)
+	{
+		set_Value (COLUMNNAME_DateTrx, DateTrx);
+	}
+
+	/** Get Vorgangsdatum.
+		@return Vorgangsdatum
+	  */
+	@Override
+	public java.sql.Timestamp getDateTrx () 
+	{
+		return (java.sql.Timestamp)get_Value(COLUMNNAME_DateTrx);
 	}
 
 	/** Set Beleg Nr..
