@@ -983,7 +983,7 @@ public abstract class AbstractTrxManager implements ITrxManager
 		}
 		catch (final Exception e)
 		{
-			throw new DBException(e);
+			throw DBException.wrapIfNeeded(e);
 		}
 	}
 

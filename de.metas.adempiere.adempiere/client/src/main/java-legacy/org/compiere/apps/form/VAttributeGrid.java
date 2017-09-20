@@ -41,7 +41,6 @@ import javax.swing.event.ChangeListener;
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.pricing.api.ProductPriceQuery;
 import org.compiere.apps.ALayout;
 import org.compiere.apps.ALayoutConstraint;
 import org.compiere.apps.ConfirmPanel;
@@ -65,6 +64,7 @@ import org.slf4j.Logger;
 
 import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
+import de.metas.pricing.ProductPrices;
 
 
 /**
@@ -508,8 +508,7 @@ public class VAttributeGrid extends CPanel
 		if (m_M_PriceList_Version_ID > 0)
 		{
 			final I_M_PriceList_Version plv = InterfaceWrapperHelper.create(Env.getCtx(), m_M_PriceList_Version_ID, I_M_PriceList_Version.class, ITrx.TRXNAME_None);
-			final I_M_ProductPrice pp = ProductPriceQuery.retrieveMainProductPriceIfExists(plv, M_Product_ID)
-					.orElse(null);
+			final I_M_ProductPrice pp = ProductPrices.retrieveMainProductPriceOrNull(plv, M_Product_ID);
 			if (pp != null)
 			{
 				BigDecimal price = pp.getPriceStd();

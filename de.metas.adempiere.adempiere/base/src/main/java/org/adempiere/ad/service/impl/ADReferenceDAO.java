@@ -37,14 +37,9 @@ public class ADReferenceDAO implements IADReferenceDAO
 		return itemsMap.keySet();
 	}
 
-	/**
-	 * 
-	 * @param ctx
-	 * @param adReferenceId
-	 * @return map of "Value" to {@link ADRefListItem}; never return null
-	 */
 	@Cached(cacheName = I_AD_Ref_List.Table_Name + "#by#" + I_AD_Ref_List.COLUMNNAME_AD_Reference_ID + "#asMap"
 			, expireMinutes = Cached.EXPIREMINUTES_Never)
+	@Override
 	public Map<String, ADRefListItem> retrieveListValuesMap(final int adReferenceId)
 	{
 
@@ -64,7 +59,7 @@ public class ADReferenceDAO implements IADReferenceDAO
 			return ImmutableMap.of();
 		}
 
-		final Map<String, ADRefListItem> itemsMap = new HashMap<String, ADRefListItem>(items.size());
+		final Map<String, ADRefListItem> itemsMap = new HashMap<>(items.size());
 		for (final I_AD_Ref_List item : items)
 		{
 			final String value = item.getValue();
