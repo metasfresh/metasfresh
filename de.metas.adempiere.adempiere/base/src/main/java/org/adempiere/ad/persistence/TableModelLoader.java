@@ -115,7 +115,7 @@ public final class TableModelLoader
 	 * @param trxName
 	 * @return PO or null
 	 */
-	private final PO retrievePO(final Properties ctx, final String tableName, int Record_ID, String trxName)
+	private final PO retrievePO(final Properties ctx, final String tableName, final int Record_ID, final String trxName)
 	{
 		final POInfo poInfo = POInfo.getPOInfo(tableName);
 		if (Record_ID > 0 && poInfo.getKeyColumnName() == null)
@@ -168,7 +168,7 @@ public final class TableModelLoader
 	 * @param trxName transaction
 	 * @return PO for Record; never return null
 	 */
-	public PO getPO(final Properties ctx, final String tableName, ResultSet rs, String trxName)
+	public PO getPO(final Properties ctx, final String tableName, final ResultSet rs, final String trxName)
 	{
 		final PO po = retrievePO(ctx, tableName, rs, trxName);
 
@@ -220,7 +220,7 @@ public final class TableModelLoader
 	 * @param trxName transaction
 	 * @return PO for Record or null
 	 */
-	public PO getPO(final Properties ctx, final String tableName, String whereClause, String trxName)
+	public PO getPO(final Properties ctx, final String tableName, final String whereClause, final String trxName)
 	{
 		final Object[] params = null;
 		return getPO(ctx, tableName, whereClause, params, trxName);
@@ -234,7 +234,7 @@ public final class TableModelLoader
 	 * @param trxName
 	 * @return
 	 */
-	public PO getPO(final Properties ctx, final String tableName, String whereClause, Object[] params, String trxName)
+	public PO getPO(final Properties ctx, final String tableName, final String whereClause, final Object[] params, final String trxName)
 	{
 		final PO po = retrievePO(ctx, tableName, whereClause, params, trxName);
 		if (po != null)
