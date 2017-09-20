@@ -48,7 +48,7 @@ import com.google.common.collect.ImmutableSet;
 	private final String expressionStr;
 	private final CtxName parameter;
 
-	private final Set<String> parameters;
+	private final Set<CtxName> parametersAsCtxName;
 
 	/* package */ SingleParameterStringExpression(final String expressionStr, final CtxName parameter)
 	{
@@ -60,7 +60,7 @@ import com.google.common.collect.ImmutableSet;
 		Check.assumeNotNull(parameter, "Parameter parameter is not null");
 		this.parameter = parameter;
 
-		parameters = ImmutableSet.of(parameter.getName()); // NOTE: we need only the parameter name (and not all modifiers)
+		parametersAsCtxName = ImmutableSet.of(parameter);
 	}
 
 	@Override
@@ -105,11 +105,11 @@ import com.google.common.collect.ImmutableSet;
 	{
 		return parameter.toStringWithMarkers();
 	}
-
+	
 	@Override
-	public Set<String> getParameters()
+	public Set<CtxName> getParameters()
 	{
-		return parameters;
+		return parametersAsCtxName;
 	}
 
 	@Override

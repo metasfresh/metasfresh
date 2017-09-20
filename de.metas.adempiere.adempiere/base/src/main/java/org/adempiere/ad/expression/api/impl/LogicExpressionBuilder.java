@@ -128,7 +128,7 @@ public final class LogicExpressionBuilder
 			}
 
 			// If the expression depends on external parameters, there is nothing we can do.
-			if (!expr.getParameters().isEmpty())
+			if (!expr.getParameterNames().isEmpty())
 			{
 				return expr;
 			}
@@ -177,7 +177,7 @@ public final class LogicExpressionBuilder
 				return expr.constantValue();
 			}
 
-			if (!expr.getParameters().isEmpty())
+			if (!expr.getParameterNames().isEmpty())
 			{
 				return null;
 			}

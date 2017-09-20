@@ -8,9 +8,12 @@ import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.ad.expression.exceptions.ExpressionEvaluationException;
 import org.adempiere.ad.expression.json.JsonLogicExpressionSerializer;
 import org.adempiere.util.Check;
+import org.compiere.util.CtxName;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.collect.ImmutableSet;
+
+import lombok.NonNull;
 
 @JsonSerialize(using = JsonLogicExpressionSerializer.class)
 /* package */final class LogicExpression extends AbstractLogicExpression
@@ -20,19 +23,19 @@ import com.google.common.collect.ImmutableSet;
 	private final String operator;
 	private final Boolean constantValue;
 
-	private ImmutableSet<String> _parameters;
+	private ImmutableSet<CtxName> _parameters;
 
 	private Integer _hashcode; // lazy
 	private String _expressionString; // lazy
 	private String _formatedExpressionString; // lazy
 
-	/* package */ LogicExpression(final Boolean constantValue, final ILogicExpression left, final String operator, final ILogicExpression right)
+	/* package */ LogicExpression(
+			final Boolean constantValue,
+			@NonNull final ILogicExpression left,
+			@NonNull final String operator,
+			@NonNull final ILogicExpression right)
 	{
-		super();
-
-		Check.assumeNotNull(left, "left expression not null");
 		Check.assumeNotEmpty(operator, "operator not empty");
-		Check.assumeNotNull(right, "right expression not null");
 
 		this.left = left;
 		this.operator = operator;
@@ -43,7 +46,6 @@ import com.google.common.collect.ImmutableSet;
 	/** Constant LogicExpression constructor */
 	private LogicExpression(final Boolean constantValue, final LogicExpression from)
 	{
-		super();
 		left = from.left;
 		right = from.right;
 		operator = from.operator;
@@ -207,7 +209,7 @@ import com.google.common.collect.ImmutableSet;
 	}
 
 	@Override
-	public Set<String> getParameters()
+	public Set<CtxName> getParameters()
 	{
 		if (_parameters == null)
 		{
@@ -217,7 +219,7 @@ import com.google.common.collect.ImmutableSet;
 			}
 			else
 			{
-				final Set<String> result = new LinkedHashSet<>(left.getParameters());
+				final Set<CtxName> result = new LinkedHashSet<>(left.getParameters());
 				result.addAll(right.getParameters());
 				_parameters = ImmutableSet.copyOf(result);
 			}

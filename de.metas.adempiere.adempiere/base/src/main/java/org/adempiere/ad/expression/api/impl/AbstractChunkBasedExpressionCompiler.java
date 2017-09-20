@@ -8,6 +8,7 @@ import org.adempiere.ad.expression.api.IExpression;
 import org.adempiere.ad.expression.api.IExpressionCompiler;
 import org.adempiere.ad.expression.exceptions.ExpressionCompileException;
 import org.compiere.util.CtxName;
+import org.compiere.util.CtxNames;
 
 /*
  * #%L
@@ -42,8 +43,8 @@ import org.compiere.util.CtxName;
  */
 public abstract class AbstractChunkBasedExpressionCompiler<V, ET extends IExpression<V>> implements IExpressionCompiler<V, ET>
 {
-	protected static final String PARAMETER_TAG = CtxName.NAME_Marker;
-	private static final int PARAMETER_TAG_LENGTH = CtxName.NAME_Marker.length();
+	protected static final String PARAMETER_TAG = CtxNames.NAME_Marker;
+	private static final int PARAMETER_TAG_LENGTH = CtxNames.NAME_Marker.length();
 	protected static final String PARAMETER_DOUBLE_TAG = PARAMETER_TAG + PARAMETER_TAG;
 
 	// NOTE to developer: make sure there are no variables here since we are using a shared instance
@@ -110,7 +111,7 @@ public abstract class AbstractChunkBasedExpressionCompiler<V, ET extends IExpres
 			{
 				// Parameter
 				final String token = inStr.substring(0, j);
-				final CtxName parameter = CtxName.parse(token);
+				final CtxName parameter = CtxNames.parse(token);
 				chunks.add(parameter);
 			}
 

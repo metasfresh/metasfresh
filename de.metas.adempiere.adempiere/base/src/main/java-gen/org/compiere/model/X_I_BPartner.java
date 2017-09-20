@@ -14,7 +14,7 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 99009869L;
+	private static final long serialVersionUID = -479195364L;
 
     /** Standard Constructor */
     public X_I_BPartner (Properties ctx, int I_BPartner_ID, String trxName)
@@ -48,6 +48,25 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
+
+	/** Set Sprache.
+		@param AD_Language 
+		Sprache für diesen Eintrag
+	  */
+	@Override
+	public void setAD_Language (java.lang.String AD_Language)
+	{
+		set_Value (COLUMNNAME_AD_Language, AD_Language);
+	}
+
+	/** Get Sprache.
+		@return Sprache für diesen Eintrag
+	  */
+	@Override
+	public java.lang.String getAD_Language () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_AD_Language);
+	}
 
 	@Override
 	public org.compiere.model.I_AD_User getAD_User() throws RuntimeException

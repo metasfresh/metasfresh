@@ -40,12 +40,13 @@ import de.metas.adempiere.model.I_AD_User;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.interfaces.I_C_BPartner;
+import lombok.NonNull;
 
 public class ShipmentScheduleEffectiveBL implements IShipmentScheduleEffectiveBL
 {
 
 	@Override
-	public I_C_BPartner_Location getBPartnerLocation(final I_M_ShipmentSchedule sched)
+	public I_C_BPartner_Location getBPartnerLocation(@NonNull final I_M_ShipmentSchedule sched)
 	{
 		final I_C_BPartner_Location location = InterfaceWrapperHelper.create(
 				sched.getC_BP_Location_Override_ID() <= 0 ? sched.getC_BPartner_Location() : sched.getC_BP_Location_Override(),
@@ -54,7 +55,7 @@ public class ShipmentScheduleEffectiveBL implements IShipmentScheduleEffectiveBL
 	}
 
 	@Override
-	public int getC_BPartner_ID(final I_M_ShipmentSchedule sched)
+	public int getC_BPartner_ID(@NonNull final I_M_ShipmentSchedule sched)
 	{
 		if (sched.getC_BPartner_Override_ID() <= 0)
 		{
@@ -67,18 +68,15 @@ public class ShipmentScheduleEffectiveBL implements IShipmentScheduleEffectiveBL
 	}
 
 	@Override
-	public String getDeliveryRule(final I_M_ShipmentSchedule sched)
+	public String getDeliveryRule(@NonNull final I_M_ShipmentSchedule sched)
 	{
-		Check.assume(sched != null, "'sched' parameter may not be null");
-
 		final String deliveryRule = Check.isEmpty(sched.getDeliveryRule_Override(), true) ? sched.getDeliveryRule() : sched.getDeliveryRule_Override();
 		return deliveryRule;
 	}
 
 	@Override
-	public I_M_Warehouse getWarehouse(final I_M_ShipmentSchedule sched)
+	public I_M_Warehouse getWarehouse(@NonNull final I_M_ShipmentSchedule sched)
 	{
-		Check.assumeNotNull(sched, "sched not null");
 		if (!InterfaceWrapperHelper.isNull(sched, I_M_ShipmentSchedule.COLUMNNAME_M_Warehouse_Override_ID))
 		{
 			return sched.getM_Warehouse_Override();
@@ -98,7 +96,7 @@ public class ShipmentScheduleEffectiveBL implements IShipmentScheduleEffectiveBL
 	}
 
 	@Override
-	public I_M_Locator getM_Locator(final I_M_ShipmentSchedule sched)
+	public I_M_Locator getDefaultLocator(final I_M_ShipmentSchedule sched)
 	{
 		final I_M_Warehouse warehouse = getWarehouse(sched);
 		final I_M_Locator locator = Services.get(IWarehouseBL.class).getDefaultLocator(warehouse);

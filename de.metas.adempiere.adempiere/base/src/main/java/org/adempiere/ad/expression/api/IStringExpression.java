@@ -2,7 +2,6 @@ package org.adempiere.ad.expression.api;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
@@ -58,7 +57,6 @@ public interface IStringExpression extends IExpression<String>
 		return StringExpressionCompiler.instance.compileOrDefault(expressionStr, defaultExpression);
 	}
 
-
 	/**
 	 * Gets a new composite string expression builder.
 	 * 
@@ -98,13 +96,10 @@ public interface IStringExpression extends IExpression<String>
 	{
 		return String.class;
 	}
-
-	@Override
-	Set<String> getParameters();
-	
+		
 	default boolean requiresParameter(final String parameterName)
 	{
-		return getParameters().contains(parameterName);
+		return getParameterNames().contains(parameterName);
 	}
 
 	@Override

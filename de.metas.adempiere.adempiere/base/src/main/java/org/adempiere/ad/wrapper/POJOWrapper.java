@@ -38,6 +38,8 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.persistence.IModelInternalAccessor;
 import org.adempiere.ad.persistence.ModelClassIntrospector;
 import org.adempiere.ad.service.IDeveloperModeBL;
@@ -56,6 +58,7 @@ import org.compiere.util.Evaluatee2;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
+import lombok.NonNull;
 
 /**
  * Simple implementation which binds an given interface to a internal Map.
@@ -542,7 +545,24 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 	}
 
 	@Override
-	public Object invoke(final Object proxy, final Method method, final Object[] args) throws Throwable
+	public Object invoke(
+			final Object proxy, 
+			@NonNull final Method method, 
+			@Nullable final Object[] args) throws Throwable
+	{
+		try
+		{
+			return invoke0(method, args);
+		}
+		catch (final AdempiereException e)
+		{
+			throw new AdempiereException("Error invoking method=\"" + method.getName() + "\"; proxy=" + proxy + "; args=" + args, e);
+		}
+	}
+
+	private Object invoke0(
+			@NonNull final Method method, 
+			@Nullable final Object[] args)
 	{
 		final String methodName = method.getName();
 
@@ -554,20 +574,7 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 		}
 		else if (methodName.startsWith("set") && args.length == 1)
 		{
-			final String propertyNameLowerCase = methodName.substring(3);
-			final Class<?> paramType = method.getParameterTypes()[0];
-			final Object value = args[0];
-			if (isModelInterface(paramType))
-			{
-				setReferencedObject(propertyNameLowerCase, value);
-				// throw new AdempiereException("Object setter not supported: " + method);
-				// setValueFromPO(propertyName + "_ID", paramType, value);
-			}
-			else
-			{
-				setValue(propertyNameLowerCase, value);
-			}
-			return null;
+			return invokeSet(method, args, methodName);
 		}
 		else if (methodName.equals("get_TrxName") && (args == null || args.length == 0))
 		{
@@ -575,76 +582,11 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 		}
 		else if (methodName.startsWith("get") && (args == null || args.length == 0))
 		{
-			final String propertyNameLowerCase = methodName.substring(3);
-
-			if (propertyNameLowerCase.equals(idColumnName))
-			{
-				return getId();
-			}
-			if (isModelInterface(method.getReturnType()))
-			{
-				final Object referencedObject = getReferencedObject(propertyNameLowerCase, method);
-				if (referencedObject != null)
-				{
-					final String referencedObjectTrxName = getTrxName(referencedObject);
-					Check.assume(Objects.equals(this.getTrxName(), referencedObjectTrxName), "Invalid transaction"); // shall not happen, never ever
-					// POJOWrapper.setTrxName(referencedObject, POJOWrapper.getTrxName(this));
-				}
-				return referencedObject;
-			}
-
-			Object value = getValue(propertyNameLowerCase, method.getReturnType());
-			if (value != null)
-			{
-				return value;
-			}
-			//
-			if (method.getReturnType() == int.class)
-			{
-				if (propertyNameLowerCase.endsWith("_ID"))
-				{
-					value = DEFAULT_VALUE_ID;
-				}
-				else
-				{
-					value = DEFAULT_VALUE_int;
-				}
-			}
-			else if (method.getReturnType() == BigDecimal.class)
-			{
-				value = DEFAULT_VALUE_BigDecimal;
-			}
-			else if (PO.class.isAssignableFrom(method.getReturnType()))
-			{
-				throw new IllegalArgumentException("Method not supported - " + methodName);
-			}
-			return value;
+			return invokeGet(method, methodName);
 		}
 		else if (methodName.startsWith("is") && (args == null || args.length == 0))
 		{
-			final Map<String, Object> values = getInnerValues();
-			final String propertyNameLowerCase = methodName.substring(2);
-			final Object value;
-			if (values.containsKey(propertyNameLowerCase))
-			{
-				value = getValue(propertyNameLowerCase, method.getReturnType());
-			}
-			else if (values.containsKey("Is" + propertyNameLowerCase))
-			{
-				value = getValue("Is" + propertyNameLowerCase, method.getReturnType());
-			}
-			else
-			{
-				if (strictValues)
-				{
-					throw new IllegalStateException("No property " + propertyNameLowerCase + " was defined for bean " + this);
-				}
-
-				value = Boolean.FALSE;
-			}
-
-			// System.out.println("values="+values+", propertyName="+propertyName+" => value="+value);
-			return value == null ? false : (Boolean)value;
+			return invokeIs(method, methodName);
 		}
 		else if (methodName.equals("equals") && args.length == 1)
 		{
@@ -664,6 +606,102 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 		}
 	}
 
+	private Object invokeSet(
+			@NonNull final Method method, 
+			@NonNull final Object[] args, 
+			@NonNull final String methodName)
+	{
+		final String propertyNameLowerCase = methodName.substring(3);
+		final Class<?> paramType = method.getParameterTypes()[0];
+		final Object value = args[0];
+		if (isModelInterface(paramType))
+		{
+			setReferencedObject(propertyNameLowerCase, value);
+			// throw new AdempiereException("Object setter not supported: " + method);
+			// setValueFromPO(propertyName + "_ID", paramType, value);
+		}
+		else
+		{
+			setValue(propertyNameLowerCase, value);
+		}
+		return null;
+	}
+
+	private Object invokeGet(final Method method, final String methodName)
+	{
+		final String propertyNameLowerCase = methodName.substring(3);
+
+		if (propertyNameLowerCase.equals(idColumnName))
+		{
+			return getId();
+		}
+		if (isModelInterface(method.getReturnType()))
+		{
+			final Object referencedObject = getReferencedObject(propertyNameLowerCase, method);
+			if (referencedObject != null)
+			{
+				final String referencedObjectTrxName = getTrxName(referencedObject);
+				Check.assume(Objects.equals(this.getTrxName(), referencedObjectTrxName), "Invalid transaction"); // shall not happen, never ever
+				// POJOWrapper.setTrxName(referencedObject, POJOWrapper.getTrxName(this));
+			}
+			return referencedObject;
+		}
+
+		Object value = getValue(propertyNameLowerCase, method.getReturnType());
+		if (value != null)
+		{
+			return value;
+		}
+		//
+		if (method.getReturnType() == int.class)
+		{
+			if (propertyNameLowerCase.endsWith("_ID"))
+			{
+				value = DEFAULT_VALUE_ID;
+			}
+			else
+			{
+				value = DEFAULT_VALUE_int;
+			}
+		}
+		else if (method.getReturnType() == BigDecimal.class)
+		{
+			value = DEFAULT_VALUE_BigDecimal;
+		}
+		else if (PO.class.isAssignableFrom(method.getReturnType()))
+		{
+			throw new IllegalArgumentException("Method not supported - " + methodName);
+		}
+		return value;
+	}
+
+	private Object invokeIs(final Method method, final String methodName)
+	{
+		final Map<String, Object> values = getInnerValues();
+		final String propertyNameLowerCase = methodName.substring(2);
+		final Object value;
+		if (values.containsKey(propertyNameLowerCase))
+		{
+			value = getValue(propertyNameLowerCase, method.getReturnType());
+		}
+		else if (values.containsKey("Is" + propertyNameLowerCase))
+		{
+			value = getValue("Is" + propertyNameLowerCase, method.getReturnType());
+		}
+		else
+		{
+			if (strictValues)
+			{
+				throw new IllegalStateException("No property " + propertyNameLowerCase + " was defined for bean " + this);
+			}
+
+			value = Boolean.FALSE;
+		}
+
+		// System.out.println("values="+values+", propertyName="+propertyName+" => value="+value);
+		return value == null ? false : (Boolean)value;
+	}
+	
 	void setReferencedObject(final String propertyName, final Object value)
 	{
 		final String idPropertyName = propertyName + "_ID";
@@ -1280,13 +1318,20 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 		setTrxName(this, trxName); // doing it because this is also a side effect of PO.load(trxName) which is called when a PO is refreshed
 
 		final Object record = lookup.lookup(tableName, getId(), interfaceClass);
+		if (record == null)
+		{
+			throw new AdempiereException("No record found for tableName=" + tableName + " and ID=" + getId()
+					+ "\ninterfaceClass: " + interfaceClass
+					+ "\nthis=" + this);
+		}
 		final POJOWrapper recordWrapper = getWrapper(record);
 		if (recordWrapper == null)
 		{
-			throw new AdempiereException("No POJOWrapper was found in database for " + this
+			throw new AdempiereException("No POJOWrapper found for tableName=" + tableName + " and ID=" + getId()
 					+ "\ninterfaceClass: " + interfaceClass
-					+ "\nTableName: " + tableName
-					+ "\nID=" + getId());
+					+ "\nrecord: " + record
+					+ "\nthis=" + this);
+
 		}
 		else if (this == recordWrapper)
 		{

@@ -21,7 +21,7 @@
 			<artifactId>de.metas.util</artifactId>
 			<version>10.0.0</version>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>de.metas.monitoring</groupId>
 			<artifactId>de.metas.monitoring</artifactId>
@@ -145,8 +145,8 @@
 		<!-- Scripting support -->
 		<dependency>
 			<!-- required by AD_Rule scripts -->
-		    <groupId>org.codehaus.groovy</groupId>
-		    <artifactId>groovy-jsr223</artifactId>
+			<groupId>org.codehaus.groovy</groupId>
+			<artifactId>groovy-jsr223</artifactId>
 		</dependency>
 		
 
@@ -259,19 +259,6 @@
 			<version>1.0.19</version>
 		</dependency>
 
-		<!-- workaround, see 06687 Get rid of calls to non-API (107116288996) -->
-		<!-- if you are using badly written maven plugins then blame them and add
-      	<scope>provided</scope>
-      	-->
-		<!-- 
-		<dependency>
-			<groupId>org.codehaus.mojo</groupId>
-			<artifactId>animal-sniffer-annotations</artifactId>
-			<version>1.11</version>
-			<optional>true</optional>
-		</dependency>
- 		-->
-
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-collections4</artifactId>
@@ -303,6 +290,12 @@
 			<scope>provided</scope>
 		</dependency>
 
+		<dependency>
+			<groupId>org.assertj</groupId>
+			<artifactId>assertj-core</artifactId>
+			<scope>test</scope>
+		</dependency>
+
 	</dependencies>
 
 	<build>
@@ -311,7 +304,6 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jar-plugin</artifactId>
-				<version>2.2</version>
 				<executions>
 					<execution>
 						<goals>

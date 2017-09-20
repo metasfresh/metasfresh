@@ -47,7 +47,7 @@ public interface IShipmentScheduleEffectiveBL extends ISingletonService
 
 	int getWarehouseId(I_M_ShipmentSchedule sched);
 
-	I_M_Locator getM_Locator(I_M_ShipmentSchedule sched);
+	I_M_Locator getDefaultLocator(I_M_ShipmentSchedule sched);
 
 	I_C_BPartner_Location getBPartnerLocation(I_M_ShipmentSchedule sched);
 

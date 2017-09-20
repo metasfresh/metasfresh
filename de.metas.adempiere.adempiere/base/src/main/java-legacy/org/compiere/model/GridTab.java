@@ -90,6 +90,8 @@ import com.google.common.base.MoreObjects.ToStringHelper;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.MultimapBuilder;
 
 import de.metas.adempiere.form.IClientUI;
 import de.metas.i18n.IMsgBL;
@@ -258,7 +260,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 	private ArrayList<String> m_parents = new ArrayList<>(2);
 
 	/** Map of ColumnName of source field (key) and the dependant field (value) */
-	private MultiMap<String, GridField> m_depOnField = new MultiMap<>();
+	private Multimap<String, GridField> m_depOnField = MultimapBuilder.hashKeys().arrayListValues().build();
 
 	/** Async Loader */
 	private Loader m_loader = null;
@@ -456,7 +458,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 
 	/**
 	 * Get Field data and add to MTable, if it's required or displayed.
-	 * Reqiored fields are keys, parents, or standard Columns
+	 * Required fields are keys, parents, or standard Columns
 	 *
 	 * @return true if fields loaded
 	 */
@@ -667,9 +669,9 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 	 * @param columnName column name
 	 * @return ArrayList with GridFields dependent on columnName
 	 */
-	public ArrayList<GridField> getDependantFields(final String columnName)
+	public List<GridField> getDependantFields(final String columnName)
 	{
-		return m_depOnField.getValues(columnName);
+		return ImmutableList.copyOf(m_depOnField.get(columnName));
 	}   // getDependentFields
 
 	/**************************************************************************

@@ -12,6 +12,7 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IReference;
 import org.compiere.Adempiere;
+import org.slf4j.Logger;
 
 import de.metas.handlingunits.hutransaction.IHUTrxListener;
 import de.metas.handlingunits.model.I_M_HU;
@@ -19,6 +20,7 @@ import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_Trx_Hdr;
 import de.metas.handlingunits.model.I_M_HU_Trx_Line;
 import de.metas.handlingunits.trace.HUTraceEventsService;
+import de.metas.logging.LogManager;
 import lombok.NonNull;
 
 /*
@@ -56,6 +58,14 @@ import lombok.NonNull;
  */
 public class TraceHUTrxListener implements IHUTrxListener
 {
+	private static final Logger logger = LogManager.getLogger(TraceHUTrxListener.class);
+
+	public static TraceHUTrxListener INSTANCE = new TraceHUTrxListener();
+
+	private TraceHUTrxListener()
+	{
+	}
+
 	@Override
 	public void huParentChanged(
 			@NonNull final I_M_HU hu,
@@ -70,7 +80,7 @@ public class TraceHUTrxListener implements IHUTrxListener
 			@NonNull final IReference<I_M_HU_Trx_Hdr> trxHdrRef,
 			@NonNull final List<I_M_HU_Trx_Line> trxLines)
 	{
-		final I_M_HU_Trx_Hdr trxHdr = trxHdrRef.getValue();
+		final I_M_HU_Trx_Hdr trxHdr = trxHdrRef.getValue(); // we'll need the record, not the reference that might be stale after the commit.
 
 		if (Adempiere.isUnitTestMode())
 		{
@@ -80,7 +90,7 @@ public class TraceHUTrxListener implements IHUTrxListener
 
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
 		final ITrxListenerManager trxListenerManager = trxManager.getTrxListenerManager(ITrx.TRXNAME_ThreadInherited);
-		trxListenerManager.onAfterCommit(() -> {
+		trxListenerManager.onAfterFirstCommit(() -> {
 
 			final ITrxManager innerTrxManager = Services.get(ITrxManager.class);
 			innerTrxManager.run(localTrxName -> {
@@ -92,10 +102,15 @@ public class TraceHUTrxListener implements IHUTrxListener
 				afterTrxProcessed0(trxLines, trxHdr);
 			});
 		});
+		logger.info("Enqueued M_HU_Trx_Hdr and _M_HU_Trx_Lines for HU-tracing after the next commit; trxHdr={}; trxLines={}", trxHdr, trxLines);
 	}
 
-	private void afterTrxProcessed0(final List<I_M_HU_Trx_Line> trxLines, final I_M_HU_Trx_Hdr trxHdr)
+	private void afterTrxProcessed0(
+			@NonNull final List<I_M_HU_Trx_Line> trxLines,
+			@NonNull final I_M_HU_Trx_Hdr trxHdr)
 	{
+		logger.info("Invoke HUTraceEventsService; trxHdr={}; trxLines={}", trxHdr, trxLines);
+
 		final HUTraceEventsService huTraceEventService = HUTraceModuleInterceptor.INSTANCE.getHUTraceEventsService();
 		huTraceEventService.createAndAddFor(trxHdr, trxLines);
 	}

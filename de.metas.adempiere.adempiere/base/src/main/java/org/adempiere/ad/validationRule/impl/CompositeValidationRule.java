@@ -98,7 +98,7 @@ public final class CompositeValidationRule implements IValidationRule
 		if(_allParameters == null)
 		{
 			_allParameters = ImmutableSet.<String>builder()
-					.addAll(prefilterWhereClause.getParameters())
+					.addAll(prefilterWhereClause.getParameterNames())
 					.addAll(postQueryPredicates.getParameters())
 					.build();
 		}
@@ -158,7 +158,7 @@ public final class CompositeValidationRule implements IValidationRule
 			for (final IValidationRule rule : rules)
 			{
 				final IStringExpression ruleWhereClause = rule.getPrefilterWhereClause();
-				if (ruleWhereClause == null || ruleWhereClause ==IStringExpression.NULL)
+				if (ruleWhereClause == null || ruleWhereClause == IStringExpression.NULL)
 				{
 					continue;
 				}
