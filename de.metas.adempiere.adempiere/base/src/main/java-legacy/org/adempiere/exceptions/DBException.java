@@ -20,6 +20,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 import org.adempiere.util.Check;
 import org.adempiere.util.exceptions.IExceptionWrapper;
@@ -327,7 +328,7 @@ public class DBException extends AdempiereException
 	public static final boolean isSQLState(final Throwable e, final String sqlState)
 	{
 		final String exceptionSQLState = extractSQLStateOrNull(e);
-		return Check.equals(exceptionSQLState, sqlState);
+		return Objects.equals(exceptionSQLState, sqlState);
 	}
 
 	/**

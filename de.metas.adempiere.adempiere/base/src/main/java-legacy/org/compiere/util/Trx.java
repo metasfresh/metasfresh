@@ -259,32 +259,22 @@ public class Trx extends AbstractTrx implements VetoableChangeListener
 		}
 
 		// Case: we really have something to rollback (because connection was acquired and used)
-		if (connection != null)
+		try
 		{
-			try
-			{
-				connection.rollback();
-				log.debug("rollbackNative: OK - {}", trxName);
-				return true;
-			}
-			catch (SQLException e)
-			{
-				log.error("rollbackNative: FAILED - {} (throwException={})", trxName, throwException, e);
-				if (throwException)
-				{
-					throw e;
-				}
-				return false;
-			}
-		}
-		//
-		// Case: nothing was done on this transaction (because connection is null, so it was not acquired)
-		else
-		{
-			// => consider this a success because if nothing was done then there is nothing to rollback
+			connection.rollback();
+			log.debug("rollbackNative: OK - {}", trxName);
 			return true;
 		}
-	}	// rollback
+		catch (final SQLException e)
+		{
+			log.error("rollbackNative: FAILED - {} (throwException={})", trxName, throwException, e);
+			if (throwException)
+			{
+				throw e;
+			}
+			return false;
+		}
+	}
 
 	@Override
 	protected boolean rollbackNative(ITrxSavepoint savepoint) throws SQLException

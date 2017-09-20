@@ -1072,7 +1072,9 @@ public class TimeUtil
 		return new Timestamp(truncToMillis(dayTime, trunc));
 	}
 
-	public static long truncToMillis(Date dayTime, final String trunc)
+	public static long truncToMillis(
+			@Nullable Date dayTime, 
+			final String trunc)
 	{
 		if (dayTime == null)
 		{
