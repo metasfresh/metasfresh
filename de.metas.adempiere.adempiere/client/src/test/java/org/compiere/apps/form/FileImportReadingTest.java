@@ -5,10 +5,12 @@ package org.compiere.apps.form;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.List;
 
 import org.adempiere.test.AdempiereTestHelper;
+import org.apache.commons.io.FileUtils;
 import org.compiere.apps.form.fileimport.FileImportReader;
 import org.junit.Assert;
 import org.junit.Before;
@@ -56,9 +58,12 @@ public class FileImportReadingTest
 	@Test
 	public void testMultipleLinesFieldFile()
 	{
-		final File file = new File("/multiplelines.csv");
+		final URL url = getClass().getResource("/multiplelines.csv");
+		Assert.assertNotNull("url null", url);
+		final File file = FileUtils.toFile(url);
 		Assert.assertNotNull("file null", file);
-
+		
+		//
 		final Charset charset = Charset.forName("UTF-8");
 		try
 		{
@@ -77,7 +82,9 @@ public class FileImportReadingTest
 	@Test
 	public void testRegularLinesFieldFile()
 	{
-		final File file = new File("/regularlines.csv");
+		final URL url = getClass().getResource("/regularlines.csv");
+		Assert.assertNotNull("url null", url);
+		final File file = FileUtils.toFile(url);
 		Assert.assertNotNull("file null", file);
 
 		final Charset charset = Charset.forName("UTF-8");
