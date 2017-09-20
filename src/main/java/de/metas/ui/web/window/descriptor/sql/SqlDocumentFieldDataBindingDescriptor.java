@@ -257,7 +257,7 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 	@Override
 	public IStringExpression getSqlOrderBy()
 	{
-		final IStringExpression orderByExpr = isUsingDisplayColumn() ? getDisplayColumnSqlExpression() : ConstantStringExpression.of(getColumnSql());
+		final IStringExpression orderByExpr = isUsingDisplayColumn() ? getDisplayColumnSqlExpression() : ConstantStringExpression.ofNullable(getColumnSql());
 		return orderByExpr;
 	}
 

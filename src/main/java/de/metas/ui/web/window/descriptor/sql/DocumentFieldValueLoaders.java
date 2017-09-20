@@ -349,8 +349,19 @@ public final class DocumentFieldValueLoaders
 		@Override
 		public LookupValuesList retrieveFieldValue(final ResultSet rs, final boolean isDisplayColumnAvailable, final String adLanguage, final LookupDescriptor lookupDescriptor) throws SQLException
 		{
+			// FIXME: atm we are avoiding NPE by returning EMPTY.
+			// We need to make sure we always get a lookup...
+			// Also, please note this method is called with null lookup when loading view row, even though the labels field is not part of the grid.
+			// This might be a performance penalty too, so:
+			// * make sure never load labels in grid mode
+			// * or, load labels for the whole page, all together (avoiding SQL N+1 issue)
+			if (lookupDescriptor == null)
+			{
+				return LookupValuesList.EMPTY;
+			}
+
 			final LabelsLookup lookup = LabelsLookup.cast(lookupDescriptor);
-			
+
 			final String linkColumnName = lookup.getLinkColumnName();
 			final int linkId = rs.getInt(linkColumnName);
 			return lookup.retrieveExistingValues(linkId);
