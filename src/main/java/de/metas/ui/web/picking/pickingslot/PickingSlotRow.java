@@ -72,7 +72,7 @@ public final class PickingSlotRow implements IViewRow
 		return (PickingSlotRow)row;
 	}
 
-	private final PickingSlotRowId id;
+	private final PickingSlotRowId pickingSlotRowId;
 	private final PickingSlotRowType type;
 
 	private final DocumentPath documentPath;
@@ -126,11 +126,11 @@ public final class PickingSlotRow implements IViewRow
 			final String packingInfo,
 			final BigDecimal qtyCU)
 	{
-		id = PickingSlotRowId.ofSourceHU(huId);
+		pickingSlotRowId = PickingSlotRowId.ofSourceHU(huId);
 
 		this.type = PickingSlotRowType.forPickingHuRow(huEditorRowType);
 		processed = true;
-		documentPath = DocumentPath.rootDocumentPath(PickingConstants.WINDOWID_PickingSlotView, id.toDocumentId());
+		documentPath = DocumentPath.rootDocumentPath(WEBUI_HU_Constants.WEBUI_HU_Window_ID, huId);
 
 		//
 		// HU
@@ -174,11 +174,11 @@ public final class PickingSlotRow implements IViewRow
 			//
 			final List<PickingSlotRow> includedHURows)
 	{
-		id = PickingSlotRowId.ofPickingSlotId(pickingSlotId);
+		pickingSlotRowId = PickingSlotRowId.ofPickingSlotId(pickingSlotId);
 
 		type = PickingSlotRowType.forPickingSlotRow();
 		processed = false;
-		documentPath = DocumentPath.rootDocumentPath(PickingConstants.WINDOWID_PickingSlotView, id.toDocumentId());
+		documentPath = DocumentPath.rootDocumentPath(PickingConstants.WINDOWID_PickingSlotView, pickingSlotId);
 
 		// HU
 		huId = -1;
@@ -231,11 +231,12 @@ public final class PickingSlotRow implements IViewRow
 		Preconditions.checkArgument(pickingSlotId > 0, "pickingSlotId > 0");
 		Preconditions.checkArgument(huId > 0, "huId > 0");
 
-		id = PickingSlotRowId.ofPickedHU(pickingSlotId, huId, huStorageProductId);
+		pickingSlotRowId = PickingSlotRowId.ofPickedHU(pickingSlotId, huId, huStorageProductId);
 
 		this.type = PickingSlotRowType.forPickingHuRow(huEditorRowType);
 		this.processed = processed;
-		documentPath = DocumentPath.rootDocumentPath(WEBUI_HU_Constants.WEBUI_HU_Window_ID, id.toDocumentId());
+
+		documentPath = DocumentPath.rootDocumentPath(WEBUI_HU_Constants.WEBUI_HU_Window_ID, huId);
 
 		// HU
 		this.huId = huId;
@@ -266,12 +267,12 @@ public final class PickingSlotRow implements IViewRow
 	@Override
 	public DocumentId getId()
 	{
-		return id.toDocumentId();
+		return pickingSlotRowId.toDocumentId();
 	}
 
 	public PickingSlotRowId getPickingSlotRowId()
 	{
-		return id;
+		return pickingSlotRowId;
 	}
 
 	@Override
@@ -311,7 +312,7 @@ public final class PickingSlotRow implements IViewRow
 	public Optional<PickingSlotRow> findIncludedRowById(final PickingSlotRowId id)
 	{
 		// This
-		if (this.id.equals(id))
+		if (this.pickingSlotRowId.equals(id))
 		{
 			return Optional.of(this);
 		}
