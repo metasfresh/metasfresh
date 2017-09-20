@@ -131,16 +131,16 @@ class NewLetter extends Component {
                             >
                                 <i className="meta-icon-print"/>
                             </a>
-                            <div className="letter-templates">
-                                {templates.length>0 && (
+                            {templates.length > 0 && (
+                                <div className="letter-templates">
                                     <RawList
                                         rank="primary"
                                         list={templates}
                                         onSelect={option => this.handleTemplate(option)}
                                         selected={template}
                                     />
-                                )}
-                            </div>
+                                </div>
+                            )}
                             <div
                                 className="input-icon input-icon-lg letter-icon-close"
                                 onClick={handleCloseLetter}

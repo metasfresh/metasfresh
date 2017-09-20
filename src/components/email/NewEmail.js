@@ -127,24 +127,22 @@ class NewEmail extends Component {
                             <span className="email-headline">
                                 {counterpart.translate('window.email.new')}
                             </span>
-                            <div className="email-templates">
-                                {templates.length>0 && <RawList
-                                    rank="primary"
-                                    list={templates}
-                                    onSelect={
-                                        option => this.handleTemplate(option)
-                                    }
-                                    selected={template}
-                                />}
-                            </div>
-
+                            {templates.length > 0 && (
+                                <div className="email-templates">
+                                    <RawList
+                                        rank="primary"
+                                        list={templates}
+                                        onSelect={option => this.handleTemplate(option)}
+                                        selected={template}
+                                    />
+                                </div>
+                            )}
                             <div
                                 className="input-icon input-icon-lg icon-email"
                                 onClick={handleCloseEmail}
                             >
                                 <i className="meta-icon-close-1"/>
                             </div>
-
                         </div>
                         <div className="panel-email-header panel-email-bright">
                             <div className="panel-email-data-wrapper">
