@@ -52,6 +52,7 @@ import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.apps.ConfirmPanel;
 import org.compiere.apps.form.fileimport.FileImportPreviewColumnFactory;
 import org.compiere.apps.form.fileimport.FileImportPreviewTableModel;
+import org.compiere.apps.form.fileimport.FileImportReader;
 import org.compiere.impexp.ImpDataLine;
 import org.compiere.impexp.ImpFormat;
 import org.compiere.impexp.ImportStatus;
@@ -103,7 +104,6 @@ public class VFileImport extends CPanel
 
 	private static final int MAX_LOADED_LINES = 100;
 	private static final int MAX_SHOWN_LINES = 10;
-	private static final char TEXT_DELIMITER ='"';
 
 	/**
 	 * Initialize Panel
@@ -474,9 +474,9 @@ public class VFileImport extends CPanel
 	{
 		if (isMultiLineFormat())
 		{
-			return readMultiLines(file, charset);
+			return FileImportReader.readMultiLines(file, charset);
 		}
-		return readRegularLines(file, charset);
+		return FileImportReader.readRegularLines(file, charset);
 	}
 	
 	private boolean isMultiLineFormat()
@@ -489,109 +489,7 @@ public class VFileImport extends CPanel
 		return impFormatModel.isMultiLine();
 	}
 	
-	/**
-	 * Read file that has at least on filed with multiline text
-	 * <br>
-	 * Assumes the <code>TEXT_DELIMITER</code> is not encountered in the field
-	 * @param file
-	 * @param charset
-	 * @return
-	 * @throws IOException
-	 */
-	private List<String> readMultiLines(@NonNull final File file, @NonNull final Charset charset) throws IOException
-	{
-		final List<String> loadedDataLines = new ArrayList<>();
-		
-		Files.readLines(file, charset, new LineProcessor<Void>()
-		{
-			boolean openQuote = false;
-			boolean closedQuote = false;
-			
-			@Override
-			public boolean processLine(final String line) throws IOException
-			{
-				// if previous line had a " which is not closed, then add all to the previous line, until we meet next "
-				if (CharMatcher.anyOf(line).matches(TEXT_DELIMITER))
-				{
-					if (openQuote)
-					{
-						closedQuote = true;
-					}
-					else
-					{
-						openQuote = true;
-					}
-				}
-				//
-				// if open quote , add this line to the previous
-				if (openQuote && loadedDataLines.size()> 0)
-				{
-					final StringBuilder previousLine = new StringBuilder();
-					final int index = loadedDataLines.size()-1;
-					previousLine.append(loadedDataLines.get(index));
-					// append the new line, because the char exists
-					previousLine.append("\n");
-					previousLine.append(line);
-					//
-					// now remove the line and add the new line
-					loadedDataLines.remove(index);
-					loadedDataLines.add(previousLine.toString());
-				}
-				else
-				{
-					loadedDataLines.add(line);
-				}
-				
-				//
-				// reset
-				if (closedQuote)
-				{
-					openQuote = false;
-					closedQuote = false;
-				}
-				return true;
-			}
-
-			@Override
-			public Void getResult()
-			{
-				return null;
-			}
-		});
-		
-		return loadedDataLines;
-	}
 	
-	
-	/**
-	 * Read file that has not any multi-line text
-	 * @param file
-	 * @param charset
-	 * @return
-	 * @throws IOException
-	 */
-	private List<String> readRegularLines(@NonNull final File file, @NonNull final Charset charset) throws IOException
-	{
-		final List<String> loadedDataLines = new ArrayList<>();
-		
-		Files.readLines(file, charset, new LineProcessor<Void>()
-		{
-			@Override
-			public boolean processLine(final String line) throws IOException
-			{
-				loadedDataLines.add(line);
-				return true;
-			}
-
-			@Override
-			public Void getResult()
-			{
-				return null;
-			}
-		});
-		
-		return loadedDataLines;
-	}
 	
 	private final void updateButtonsStatus()
 	{
