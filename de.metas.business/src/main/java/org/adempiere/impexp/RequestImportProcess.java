@@ -178,10 +178,8 @@ public class RequestImportProcess extends AbstractImportProcess<I_I_Request>
 			{
 				throw new AdempiereException("BPartner not found");
 			}
-
 			request.setC_BPartner_ID(bpartnerId);
 		}
-
 		//
 		// request type
 		{
@@ -192,7 +190,6 @@ public class RequestImportProcess extends AbstractImportProcess<I_I_Request>
 			}
 			request.setR_RequestType_ID(requesTypeId);
 		}
-
 		//
 		// status
 		{
@@ -203,7 +200,6 @@ public class RequestImportProcess extends AbstractImportProcess<I_I_Request>
 			}
 			request.setR_Status_ID(statusId);
 		}
-
 		//
 		// set data from the other fields
 		if (importRecord.getDateTrx() != null)
@@ -218,26 +214,18 @@ public class RequestImportProcess extends AbstractImportProcess<I_I_Request>
 		{
 			request.setSummary(importRecord.getSummary());
 		}
-		
 		if (importRecord.getDocumentNo() != null)
 		{
 			request.setDocumentNo(importRecord.getDocumentNo());
 		}
 		
 		// TODO: don't support for now
-//		if (importRecord.getResult() != null)
-//		{
-//			request.setResult(importRecord.getResult());
-//		}
-		
 		int userid = Env.getAD_User_ID(getCtx());
 		request.setSalesRep_ID(userid);
-		
 		InterfaceWrapperHelper.save(request);
 		
 		// Link back the request to current import record
 		importRecord.setR_Request(request);
-
 		//
 		return ImportRecordResult.Inserted;
 	}
@@ -245,9 +233,6 @@ public class RequestImportProcess extends AbstractImportProcess<I_I_Request>
 	@Override
 	protected void markImported(final I_I_Request importRecord)
 	{
-		// NOTE: overriding the method from abstract class because in case of I_Flatrate_Term,
-		// * the I_IsImported is a List (as it should be) and not YesNo
-		// * there is no Processing column
 		importRecord.setI_IsImported(X_I_Request.I_ISIMPORTED_Imported);
 		importRecord.setProcessed(true);
 		InterfaceWrapperHelper.save(importRecord);
