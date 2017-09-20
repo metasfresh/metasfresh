@@ -24,7 +24,7 @@
     border-bottom: 1px solid $brand-super-light-color;
 }
 
-.letter-templates {
+.letter-templates, .letter-icon-print {
     margin-right: 20px;
 }
 
@@ -65,12 +65,12 @@
     min-width: 100px;
 }
 
-.icon-letter, .icon-print {
+.letter-icon-close, .letter-icon-print {
     cursor: pointer;
     color: $brand-super-light-color;
 }
 
-.icon-print:hover {
+.letter-icon-print:hover {
     color: $brand-super-light-color;
     text-decoration: none;
 }

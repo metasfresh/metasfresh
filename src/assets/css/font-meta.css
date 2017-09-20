@@ -230,4 +230,8 @@
 .meta-icon-mail:before {
   content: '\39';
 }
-
+.meta-icon-letter {
+    /* TODO: replace with content */
+    display: inline-block;
+    min-width: 14px;
+}

@@ -464,14 +464,28 @@ class RawList extends Component {
             lookupList
         } = this.props;
 
-        let value = '';
+        let placeholder = '';
         const isListEmpty = (list.length === 0);
         const { isOpen } = this.state;
 
         if (typeof defaultValue === 'string') {
-            value = defaultValue;
+            placeholder = defaultValue;
         } else {
-            value = defaultValue && defaultValue[Object.keys(defaultValue)[0]];
+            placeholder = defaultValue && (
+                defaultValue[Object.keys(defaultValue)[0]]
+            );
+        }
+
+        let value;
+
+        if (lookupList) {
+            value = placeholder;
+        } else if (selected) {
+            value = selected[Object.keys(selected)[0]];
+        }
+
+        if (!value) {
+            value = '';
         }
 
         return (
@@ -512,9 +526,8 @@ class RawList extends Component {
                             }
                             readOnly
                             tabIndex={-1}
-                            placeholder={value}
-                            value={lookupList ? value : (selected ?
-                                selected[Object.keys(selected)[0]] : '')}
+                            placeholder={placeholder}
+                            value={value}
                             disabled={readonly || disabled}
                             onChange={this.handleChange}
                         />

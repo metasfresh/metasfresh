@@ -126,23 +126,23 @@ class NewLetter extends Component {
                             <a
                                 href={`${config.API_URL}/letter/${letterId}/printPreview`}
                                 target="_blank"
-                                className="input-icon input-icon-lg icon-print"
+                                className="input-icon input-icon-lg letter-icon-print"
                                 onClick={handleCloseLetter}
                             >
                                 <i className="meta-icon-print"/>
                             </a>
-                            <div className="letter-templates">
-                                {templates.length>0 && (
+                            {templates.length > 0 && (
+                                <div className="letter-templates">
                                     <RawList
                                         rank="primary"
                                         list={templates}
                                         onSelect={option => this.handleTemplate(option)}
                                         selected={template}
                                     />
-                                )}
-                            </div>
+                                </div>
+                            )}
                             <div
-                                className="input-icon input-icon-lg icon-letter"
+                                className="input-icon input-icon-lg letter-icon-close"
                                 onClick={handleCloseLetter}
                             >
                                 <i className="meta-icon-close-1"/>
