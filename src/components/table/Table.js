@@ -49,7 +49,9 @@ class Table extends Component {
                 open: false,
                 x: 0,
                 y: 0,
-                fieldName: null
+                fieldName: null,
+                supportZoomInto: false,
+                supportFieldEdit: false
             },
             promptOpen: false,
             isBatchEntry: false,
@@ -519,27 +521,33 @@ class Table extends Component {
         }
     }
 
-    handleRightClick = (e, id, fieldName) => {
+    handleRightClick = (e, id, fieldName,
+                        supportZoomInto, supportFieldEdit) => {
         const {selected} = this.state;
         const {clientX, clientY} = e;
         e.preventDefault();
 
         if(selected.indexOf(id) > -1){
-            this.setContextMenu(clientX, clientY, fieldName);
+            this.setContextMenu(clientX, clientY, fieldName,
+                supportZoomInto, supportFieldEdit);
         }else{
             this.selectOneProduct(id, null, null, () => {
-                this.setContextMenu(clientX, clientY, fieldName);
+                this.setContextMenu(clientX, clientY, fieldName,
+                    supportZoomInto, supportFieldEdit);
             });
         }
     }
 
-    setContextMenu = (clientX, clientY, fieldName) => {
+    setContextMenu = (clientX, clientY, fieldName,
+                      supportZoomInto, supportFieldEdit) => {
         this.setState({
             contextMenu: Object.assign({}, this.state.contextMenu, {
                 x: clientX,
                 y: clientY,
                 open: true,
-                fieldName
+                fieldName,
+                supportZoomInto,
+                supportFieldEdit
             })
         });
     }
@@ -764,25 +772,54 @@ class Table extends Component {
         const {selected, rows, collapsedParentsRows} = this.state;
         const {keyProperty} = this.props;
 
-        let node = "";
-        let isCollapsed = "";
+        let node = '';
+        let isCollapsed = '';
         selected.length === 1 && rows.map((item)=>{
             if(item.id === selected[0]){
                 if(item.includedDocuments){
+                    const keyProp = item[keyProperty];
                     node = item;
-                    isCollapsed = collapsedParentsRows.indexOf(item[keyProperty]) > -1;
+                    isCollapsed = collapsedParentsRows.indexOf(keyProp) > -1;
                 }
             }
         });
-        
+
         if(node){
             if(isCollapsed && expand) {
                 this.handleRowCollapse(node, expand);
             } else if(!isCollapsed && !expand) {
                 this.handleRowCollapse(node, expand);
-            } 
+            }
         }
-        
+    }
+
+    handleFieldEdit = (selected, fieldName) => {
+        this.closeContextMenu();
+
+        const selectedId = selected[0];
+
+        if (this.rowRefs && this.rowRefs[selectedId]) {
+            this.rowRefs[selectedId].initPropertyEditor(fieldName);
+        }
+    }
+
+    handleItemChange = (rowId, prop, value) => {
+        const { mainTable, keyProperty } = this.props;
+
+        if (mainTable) {
+            const { rows } = this.state;
+
+            if (!rows || !rows.length) return;
+
+            rows.filter( (row) => row[keyProperty] === rowId )
+                .map( (item) => {
+                    let field = item.fieldsByName[prop];
+
+                    if (field) {
+                        field.value = value;
+                    }
+                });
+        }
     }
 
     renderTableBody = () => {
@@ -798,6 +835,8 @@ class Table extends Component {
 
         if (!rows || !rows.length) return;
 
+        this.rowRefs = {};
+
         return rows
             .filter(row => collapsedRows.indexOf(row[keyProperty]) === -1)
             .map((item, i) => (
@@ -812,6 +851,12 @@ class Table extends Component {
                                 .indexOf(item[keyProperty]) > -1
                         }
                         odd={i & 1}
+                        ref={(c) => {
+                            if (c) {
+                                const keyProp = item[keyProperty];
+                                this.rowRefs[keyProp] = c.refs.wrappedInstance;
+                            }
+                        }}
                         rowId={item[keyProperty]}
                         tabId={tabid}
                         onDoubleClick={() => onDoubleClick &&
@@ -819,13 +864,19 @@ class Table extends Component {
                         }
                         onMouseDown={(e) => {
                             this.handleClick(e, item[keyProperty]);
-                            supportIncludedViewOnSelect && showIncludedViewOnSelect(item.supportIncludedViews, item.includedView)
-                        }
-                        }
-                        handleRightClick={(e, fieldName) =>
+                            supportIncludedViewOnSelect &&
+                                showIncludedViewOnSelect(
+                                    item.supportIncludedViews,
+                                    item.includedView
+                                )
+                        }}
+                        handleRightClick={(e, fieldName, supportZoomInto,
+                                           supportFieldEdit) =>
                             this.handleRightClick(
-                                e, item[keyProperty], fieldName)
-                            }
+                                e, item[keyProperty], fieldName,
+                                !!supportZoomInto, supportFieldEdit
+                            )
+                        }
                         changeListenOnTrue={() => this.changeListen(true)}
                         changeListenOnFalse={() => this.changeListen(false)}
                         newRow={i === rows.length - 1 ? newRow : false}
@@ -847,6 +898,7 @@ class Table extends Component {
                             collapsedParentsRows
                                 .indexOf(item[keyProperty]) > -1)
                         }
+                        onItemChange={this.handleItemChange}
                     />
                 </tbody>
         ));
@@ -902,6 +954,16 @@ class Table extends Component {
                         blur={() => this.closeContextMenu()}
                         tabId={tabid}
                         deselect={() => this.deselectAllProducts()}
+                        handleFieldEdit={() => {
+                            if (
+                                contextMenu.supportFieldEdit &&
+                                (selected.length === 1)
+                            ) {
+                                this.handleFieldEdit(
+                                    selected, contextMenu.fieldName
+                                );
+                            }
+                        }}
                         handleAdvancedEdit={() =>
                             this.handleAdvancedEdit(type, tabid, selected)
                         }

@@ -3,6 +3,11 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import TableCell from './TableCell';
 
+// Widgets IDs which allowed to be edited in field edit mode
+const FIELD_EDIT_WIDGET_TYPES = [
+    'CostPrice'
+];
+
 class TableItem extends Component {
     constructor(props) {
         super(props);
@@ -25,6 +30,37 @@ class TableItem extends Component {
         }
 
         this.editProperty(e, property, callback, item);
+    }
+
+    prepareWidgetData = (item) => {
+        const { fieldsByName } = this.props;
+
+        let widgetData = item.fields.map( (prop) => fieldsByName[prop.field] );
+
+        return widgetData;
+    }
+
+    initPropertyEditor = (fieldName) => {
+        const { cols, fieldsByName } = this.props;
+
+        if (cols && fieldsByName) {
+            cols.map((item) => {
+                const property = item.fields[0].field;
+                if (property === fieldName) {
+                    const widgetData = this.prepareWidgetData(item);
+
+                    if (widgetData) {
+                        this.setState({
+                            forceKeysBind: true
+                        }, () => {
+                            this.handleEditProperty(
+                                null, property, true, widgetData[0]
+                            );
+                        });
+                    }
+                }
+            });
+        }
     }
 
     editProperty = (e, property, callback, item) => {
@@ -87,71 +123,102 @@ class TableItem extends Component {
     closeTableField = (e) => {
         const { changeListenOnTrue } = this.props;
         const {activeCell} = this.state;
+
         this.handleEditProperty(e);
         this.listenOnKeysTrue();
+
         changeListenOnTrue();
+
         activeCell && activeCell.focus();
+    }
+
+    isAllowedFieldEdit = (item) => {
+        return FIELD_EDIT_WIDGET_TYPES.indexOf(item.widgetType) > -1;
     }
 
     renderCells = (cols, cells) => {
         const {
             type, docId, rowId, tabId, readonly, mainTable, newRow,
             changeListenOnTrue, tabIndex, entity, getSizeClass,
-            handleRightClick, caption, colspan
+            handleRightClick, caption, colspan, onItemChange
         } = this.props;
 
         const {
-            edited, updatedRow, listenOnKeys
+            edited, updatedRow, listenOnKeys, forceKeysBind
         } = this.state;
 
         // Iterate over layout settings
 
-            if(colspan) {
-                return (
-                    <td colSpan={cols.length}>
-                        {caption}
-                    </td>
-                )
-            } else {
-                return cols && cols.map((item, index) => {
-                    const property = item.fields[0].field;
-                    const widgetData = item.fields.map(
-                        (prop) => cells && cells[prop.field] || -1
-                    );
-                    const {supportZoomInto} = item.fields[0];
+        if (colspan) {
+            return (
+                <td colSpan={cols.length}>
+                    {caption}
+                </td>
+            )
+        } else {
+            return cols && cols.map((item, index) => {
+                const {supportZoomInto} = item.fields[0];
+                const supportFieldEdit = mainTable &&
+                    this.isAllowedFieldEdit(item);
 
-                    return (
-                        <TableCell
-                            {...{getSizeClass, entity, type, docId, rowId,
-                                tabId, item, readonly, widgetData, tabIndex,
-                                listenOnKeys, caption
-                            }}
-                            key={index}
-                            isEdited={edited === property}
-                            onDoubleClick={(e) =>
-                                this.handleEditProperty(
-                                    e, property, true, widgetData[0]
-                                )
+                const property = item.fields[0].field;
+                let widgetData = item.fields.map(
+                    (prop) => {
+                        if (cells) {
+                            let cellWidget = cells[prop.field] || -1;
+
+                            if (
+                                supportFieldEdit &&
+                                typeof cellWidget === 'object'
+                            ) {
+                                cellWidget = Object.assign({}, cellWidget, {
+                                    widgetType: item.widgetType,
+                                    displayed: true,
+                                    mandatory: true,
+                                    readonly: false
+                                });
                             }
-                            onClickOutside={(e) => {
-                                this.handleEditProperty(e);
-                                changeListenOnTrue();
-                            }}
-                            disableOnClickOutside={edited !== property}
-                            onKeyDown = {!mainTable ?
-                                (e) => this.handleKey(e, property) : ''
-                            }
-                            updatedRow={updatedRow || newRow}
-                            updateRow={this.updateRow}
-                            listenOnKeysFalse={this.listenOnKeysFalse}
-                            closeTableField={(e) => this.closeTableField(e)}
-                            handleRightClick={(e) => handleRightClick(
-                                e, supportZoomInto ? property : null
-                            )}
-                        />
-                    )
-                })
-            }
+
+                            return cellWidget;
+                        }
+
+                        return -1;
+                    }
+                );
+
+                return (
+                    <TableCell
+                        {...{getSizeClass, entity, type, docId, rowId,
+                            tabId, item, readonly, widgetData, tabIndex,
+                            listenOnKeys, caption, mainTable
+                        }}
+                        key={index}
+                        isEdited={edited === property}
+                        onDoubleClick={(e) =>
+                            this.handleEditProperty(
+                                e, property, true, widgetData[0]
+                            )
+                        }
+                        onClickOutside={(e) => {
+                            this.handleEditProperty(e);
+                            changeListenOnTrue();
+                        }}
+                        disableOnClickOutside={edited !== property}
+                        onKeyDown = {(!mainTable || forceKeysBind) ?
+                            (e) => this.handleKey(e, property) : ''
+                        }
+                        onCellChange={onItemChange}
+                        updatedRow={updatedRow || newRow}
+                        updateRow={this.updateRow}
+                        listenOnKeysFalse={this.listenOnKeysFalse}
+                        closeTableField={(e) => this.closeTableField(e)}
+                        handleRightClick={(e) => handleRightClick(
+                            e, property, supportZoomInto, supportFieldEdit
+                        )}
+                    />
+                )
+            })
+        }
     }
 
     updateRow = () => {
@@ -304,6 +371,6 @@ TableItem.propTypes = {
     dispatch: PropTypes.func.isRequired
 };
 
-TableItem = connect()(TableItem)
+TableItem = connect(false, false, false, { withRef: true })(TableItem)
 
 export default TableItem

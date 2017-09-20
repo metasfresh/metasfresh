@@ -95,8 +95,8 @@ class MasterWidget extends Component {
         ));
 
         //callback
-        if(onChange){
-            onChange();
+        if (onChange) {
+            onChange(rowId, property, value);
         }
 
         return ret;
@@ -212,6 +212,6 @@ MasterWidget.propTypes = {
     dispatch: PropTypes.func.isRequired
 };
 
-MasterWidget = connect()(MasterWidget)
+MasterWidget = connect(false, false, false, { withRef: true })(MasterWidget)
 
 export default MasterWidget

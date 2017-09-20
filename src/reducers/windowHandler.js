@@ -225,26 +225,36 @@ export default function windowHandler(state = initialState, action) {
                 }
             });
 
-            case types.UPDATE_ROW_FIELD_PROPERTY:
+        case types.UPDATE_ROW_FIELD_PROPERTY:
+            const scope = action.scope;
+            const tabid = action.tabid;
+            const rowid = action.rowid;
+            const property = action.property;
+            const scState = state[scope];
+
+            if (
+                scState && scState.rowData && scState.rowData[tabid]
+            ) {
+                const scRowData = scState.rowData[tabid];
+
                 return update(state, {
                     [action.scope]: {
                         rowData: {
-                            [action.tabid]: {
-                                $set: state[action.scope].rowData[action.tabid]
+                            [tabid]: {
+                                $set: scRowData
                                     .map((item, index) =>
-                                        item.rowId === action.rowid ? {
-                                            ...state[action.scope]
-                                                .rowData[action.tabid][index],
+                                        item.rowId === rowid ? {
+                                            ...scRowData[index],
+
                                             fieldsByName: {
-                                                ...state[action.scope]
-                                                    .rowData[action.tabid][index]
+                                                ...scRowData[index]
                                                     .fieldsByName,
-                                                [action.property]: {
-                                                    ...state[action.scope]
-                                                        .rowData[action.tabid][index]
-                                                        .fieldsByName[action.property],
+
+                                                [property]: {
+                                                    ...scRowData[index]
+                                                        .fieldsByName[property],
                                                     ...action.item
-                                                    }
+                                                }
                                             }
                                         } : item
                                     )
@@ -252,6 +262,10 @@ export default function windowHandler(state = initialState, action) {
                         }
                     }
                 });
+            }
+            else {
+                return state;
+            }
 
          case types.UPDATE_ROW_PROPERTY:
             return update(state, {
