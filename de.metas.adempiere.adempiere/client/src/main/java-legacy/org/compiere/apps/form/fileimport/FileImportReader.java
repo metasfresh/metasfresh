@@ -47,6 +47,65 @@ public class FileImportReader
 {
 	private static final char TEXT_DELIMITER ='"';
 	
+	
+	final class MultiLineProcessor implements LineProcessor<List<String>>
+	{
+		boolean openQuote = false;
+		boolean closedQuote = false;
+		final List<String> loadedDataLines = new ArrayList<>();
+		
+		@Override
+		public boolean processLine(final String line) throws IOException
+		{
+			// if previous line had a " which is not closed, then add all to the previous line, until we meet next "
+			if (CharMatcher.anyOf(line).matches(TEXT_DELIMITER))
+			{
+				if (openQuote)
+				{
+					closedQuote = true;
+				}
+				else
+				{
+					openQuote = true;
+				}
+			}
+			//
+			// if open quote , add this line to the previous
+			if (openQuote && loadedDataLines.size()> 0)
+			{
+				final StringBuilder previousLine = new StringBuilder();
+				final int index = loadedDataLines.size()-1;
+				previousLine.append(loadedDataLines.get(index));
+				// append the new line, because the char exists
+				previousLine.append("\n");
+				previousLine.append(line);
+				//
+				// now remove the line and add the new line
+				loadedDataLines.remove(index);
+				loadedDataLines.add(previousLine.toString());
+			}
+			else
+			{
+				loadedDataLines.add(line);
+			}
+			
+			//
+			// reset
+			if (closedQuote)
+			{
+				openQuote = false;
+				closedQuote = false;
+			}
+			return true;
+		}
+
+		@Override
+		public List<String> getResult()
+		{
+			return loadedDataLines;
+		}
+	}
+	
 	/**
 	 * Read file that has at least on filed with multiline text
 	 * <br>
@@ -58,65 +117,7 @@ public class FileImportReader
 	 */
 	public List<String> readMultiLines(@NonNull final File file, @NonNull final Charset charset) throws IOException
 	{
-		final List<String> loadedDataLines = new ArrayList<>();
-		
-		Files.readLines(file, charset, new LineProcessor<Void>()
-		{
-			boolean openQuote = false;
-			boolean closedQuote = false;
-			
-			@Override
-			public boolean processLine(final String line) throws IOException
-			{
-				// if previous line had a " which is not closed, then add all to the previous line, until we meet next "
-				if (CharMatcher.anyOf(line).matches(TEXT_DELIMITER))
-				{
-					if (openQuote)
-					{
-						closedQuote = true;
-					}
-					else
-					{
-						openQuote = true;
-					}
-				}
-				//
-				// if open quote , add this line to the previous
-				if (openQuote && loadedDataLines.size()> 0)
-				{
-					final StringBuilder previousLine = new StringBuilder();
-					final int index = loadedDataLines.size()-1;
-					previousLine.append(loadedDataLines.get(index));
-					// append the new line, because the char exists
-					previousLine.append("\n");
-					previousLine.append(line);
-					//
-					// now remove the line and add the new line
-					loadedDataLines.remove(index);
-					loadedDataLines.add(previousLine.toString());
-				}
-				else
-				{
-					loadedDataLines.add(line);
-				}
-				
-				//
-				// reset
-				if (closedQuote)
-				{
-					openQuote = false;
-					closedQuote = false;
-				}
-				return true;
-			}
-
-			@Override
-			public Void getResult()
-			{
-				return null;
-			}
-		});
-		
+		final List<String> loadedDataLines = Files.readLines(file, charset, new MultiLineProcessor());		
 		return loadedDataLines;
 	}
 	
