@@ -50,9 +50,9 @@ public class FileImportReader
 	
 	final class MultiLineProcessor implements LineProcessor<List<String>>
 	{
-		boolean openQuote = false;
-		boolean closedQuote = false;
-		final List<String> loadedDataLines = new ArrayList<>();
+		private boolean openQuote = false;
+		private boolean closedQuote = false;
+		private final List<String> loadedDataLines = new ArrayList<>();
 		
 		@Override
 		public boolean processLine(final String line) throws IOException

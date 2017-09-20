@@ -67,10 +67,6 @@ import org.compiere.util.Ini;
 import org.jdesktop.swingx.JXTable;
 import org.slf4j.Logger;
 
-import com.google.common.base.CharMatcher;
-import com.google.common.io.Files;
-import com.google.common.io.LineProcessor;
-
 import de.metas.adempiere.form.IClientUI;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
