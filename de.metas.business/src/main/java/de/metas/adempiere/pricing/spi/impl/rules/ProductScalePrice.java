@@ -31,7 +31,6 @@ import org.adempiere.model.I_M_ProductScalePrice;
 import org.adempiere.pricing.api.IPriceListDAO;
 import org.adempiere.pricing.api.IPricingContext;
 import org.adempiere.pricing.api.IPricingResult;
-import org.adempiere.pricing.api.ProductPriceQuery;
 import org.adempiere.pricing.spi.impl.rules.AbstractPriceListBasedRule;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -40,6 +39,7 @@ import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_ProductPrice;
 import org.compiere.model.MProduct;
 
+import de.metas.pricing.ProductPrices;
 import de.metas.product.IProductPA;
 
 /**
@@ -80,7 +80,7 @@ public class ProductScalePrice extends AbstractPriceListBasedRule
 			return;
 		}
 		
-		final I_M_ProductPrice productPrice = ProductPriceQuery.newInstance(priceListVersion)
+		final I_M_ProductPrice productPrice = ProductPrices.newQuery(priceListVersion)
 				.setM_Product_ID(pricingCtx.getM_Product_ID())
 				.noAttributePricing()
 				.onlyScalePrices()

@@ -35,7 +35,6 @@ import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.invoice.service.IInvoiceDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.pricing.api.IPriceListDAO;
-import org.adempiere.pricing.api.ProductPriceQuery;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_BPartner;
@@ -48,6 +47,7 @@ import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.allocation.api.IAllocationDAO;
 import de.metas.document.IDocumentLocationBL;
 import de.metas.document.engine.IDocActionBL;
+import de.metas.pricing.ProductPrices;
 
 @Interceptor(I_C_Invoice.class)
 public class C_Invoice
@@ -101,7 +101,7 @@ public class C_Invoice
 		final List<I_C_InvoiceLine> invoiceLines = Services.get(IInvoiceDAO.class).retrieveLines(invoice, trxName);
 		for (final I_C_InvoiceLine invoiceLine : invoiceLines)
 		{
-			if (!ProductPriceQuery.mainProductPriceExists(priceListVersion, invoiceLine.getM_Product_ID()))
+			if (!ProductPrices.hasMainProductPrice(priceListVersion, invoiceLine.getM_Product_ID()))
 			{
 				InterfaceWrapperHelper.delete(invoiceLine);
 			}
