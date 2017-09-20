@@ -96,8 +96,8 @@
 
 				<executions>
 					<!-- source for the xsd: https://www.iso20022.org/documents/messages/camt/schemas/camt.054.001.06.zip -->
-					<!-- source for the xsd: https://www.iso20022.org/documents/messages/camt/schemas/camt.054.001.05.zip -->
-					<!-- source for the xsd: https://www.iso20022.org/documents/messages/camt/schemas/camt.054.001.04.zip -->
+					<!-- source for the xsd: https://www.iso20022.org/documents/messages/camt/schemas/camt.054.001.02.zip -->
+					<!-- NOTE about "<clearOutputDir>false</clearOutputDir>" further down: don't clear the directory because else we will lose previously generated files	-->
 					<execution>
 						<id>generate-de.metas.payment.esr.camt054.001.06</id>
 						<goals>
@@ -111,38 +111,20 @@
 						</configuration>
 					</execution>
 					
-					<!-- NOTE about "<clearOutputDir>false</clearOutputDir>" further down: don't clear the directory because else we will lose previously generated files	-->
-					<!--
-						https://github.com/metasfresh/metasfresh/issues/1903
-						We don't need jaxb code for these two XSD versions. 
-						They are so similar (at least the parts we use) that we rather trick jaxb into thinking that XML created according to ..001.04 and ..001.05 i actually ..001.06 as well.
 					<execution>
-						<id>generate-de.metas.payment.esr.camt.054.001.05</id>
+						<id>generate-de.metas.payment.esr.camt054.001.02</id>
 						<goals>
 							<goal>xjc</goal>
 						</goals>
 						<configuration>
 							<sources>
-								<source>src/main/xsd/camt.054.001.05.xsd</source>
+								<source>src/main/xsd/camt.054.001.02.xsd</source>
 							</sources>
-							<packageName>de.metas.payment.camt054_001_05</packageName>
+							<packageName>de.metas.payment.camt054_001_02</packageName>
 							<clearOutputDir>false</clearOutputDir>
 						</configuration>
 					</execution>
-					<execution>
-						<id>generate-de.metas.payment.esr.camt.054.001.04</id>
-						<goals>
-							<goal>xjc</goal>
-						</goals>
-						<configuration>
-							<sources>
-								<source>src/main/xsd/camt.054.001.04.xsd</source>
-							</sources>
-							<packageName>de.metas.payment.camt054_001_04</packageName>
-							<clearOutputDir>false</clearOutputDir>
-						</configuration>
-					</execution>
-					-->
+
 				</executions>
 			</plugin>
 			

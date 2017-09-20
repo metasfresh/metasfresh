@@ -171,7 +171,9 @@ public class ESRImportBL implements IESRImportBL
 	}
 
 	@VisibleForTesting
-	public void loadAndEvaluateESRImportStream(@NonNull final I_ESR_Import esrImport, @NonNull final InputStream in)
+	public void loadAndEvaluateESRImportStream(
+			@NonNull final I_ESR_Import esrImport, 
+			@NonNull final InputStream in)
 	{
 		int countLines = 0;
 		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
@@ -182,6 +184,14 @@ public class ESRImportBL implements IESRImportBL
 
 		final IESRDataImporter loader = ESRDataLoaderFactory.createImporter(esrImport, in);
 		final ESRStatement esrStatement = loader.importData();
+		try
+		{
+			in.close();
+		}
+		catch (IOException e)
+		{
+			throw AdempiereException.wrapIfNeeded(e);
+		}
 
 		esrImport.setESR_Control_Amount(esrStatement.getCtrlAmount());
 		esrImport.setESR_Control_Trx_Qty(esrStatement.getCtrlQty());

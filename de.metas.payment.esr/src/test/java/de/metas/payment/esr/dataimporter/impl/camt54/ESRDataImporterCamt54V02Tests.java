@@ -15,7 +15,6 @@ import de.metas.payment.camt054_001_06.BatchInformation2;
 import de.metas.payment.camt054_001_06.EntryDetails7;
 import de.metas.payment.camt054_001_06.ReportEntry8;
 import de.metas.payment.esr.dataimporter.ESRStatement;
-import de.metas.payment.esr.dataimporter.ESRStatement.ESRStatementBuilder;
 import de.metas.payment.esr.dataimporter.ESRTransaction;
 import de.metas.payment.esr.model.I_ESR_Import;
 
@@ -41,7 +40,7 @@ import de.metas.payment.esr.model.I_ESR_Import;
  * #L%
  */
 
-public class ESRDataImporterCamt54Tests
+public class ESRDataImporterCamt54V02Tests
 {
 	private final Condition<? super ESRTransaction> trxHasNoErrors = new Condition<>(
 			t -> t.getErrorMsgs().isEmpty(),
@@ -56,7 +55,7 @@ public class ESRDataImporterCamt54Tests
 	@Test
 	public void testWithSampleFile()
 	{
-		final InputStream inputStream = getClass().getResourceAsStream("/camt054.xml");
+		final InputStream inputStream = getClass().getResourceAsStream("/camt54_v02.xml");
 		assertThat(inputStream).isNotNull();
 
 		final ESRStatement importData = new ESRDataImporterCamt54(newInstance(I_ESR_Import.class), inputStream).importData();
@@ -79,7 +78,7 @@ public class ESRDataImporterCamt54Tests
 	@Test
 	public void testMissingCtrlQty()
 	{
-		final InputStream inputStream = getClass().getResourceAsStream("/camt54_no_Btch.xml");
+		final InputStream inputStream = getClass().getResourceAsStream("/camt54_no_Btch_v02.xml");
 		assertThat(inputStream).isNotNull();
 
 		final ESRStatement importData = new ESRDataImporterCamt54(newInstance(I_ESR_Import.class), inputStream).importData();
@@ -103,8 +102,8 @@ public class ESRDataImporterCamt54Tests
 	@Test
 	public void testMissingCtrlQtyUnit()
 	{
-		final ESRDataImporterCamt54 importer = new ESRDataImporterCamt54();
-		final ESRStatementBuilder stmtBuilder = ESRStatement.builder();
+		final ESRDataImporterCamt54v06 importer = new ESRDataImporterCamt54v06();
+		final ESRStatement.ESRStatementBuilder stmtBuilder = ESRStatement.builder();
 
 		final EntryDetails7 emptyNtryDetails = new EntryDetails7();
 		emptyNtryDetails.setBtch(new BatchInformation2());
@@ -209,7 +208,7 @@ public class ESRDataImporterCamt54Tests
 	@Test
 	public void testAmbigousEsrReference()
 	{
-		final ESRStatement importData = performWithMissingOrAmbigousEsrReference("/camt54_one_ESR_reference_ambigous.xml");
+		final ESRStatement importData = performWithMissingOrAmbigousEsrReference("/camt54_one_ESR_reference_ambigous_v02.xml");
 
 		// all have a reference set
 		assertThat(importData.getTransactions())
@@ -232,8 +231,8 @@ public class ESRDataImporterCamt54Tests
 	@Test
 	public void testMissingEsrReference()
 	{
-		final ESRStatement importData = performWithMissingOrAmbigousEsrReference("/camt54_one_ESR_reference_missing.xml");
-
+		final ESRStatement importData = performWithMissingOrAmbigousEsrReference("/camt54_one_ESR_reference_missing_v02.xml");
+		
 		assertThat(importData.getTransactions())
 				.as("those nine transactions that have a reference set, also have a non-empty string")
 				.filteredOn(t -> t.getEsrReferenceNumber() != null)
@@ -271,31 +270,5 @@ public class ESRDataImporterCamt54Tests
 				.areExactly(9, trxHasNoErrors);
 
 		return importData;
-	}
-
-	/**
-	 * User this method to quickly run with customer-provided files which we can't share.<br>
-	 * Goal: create a "generic" and sharable test case.
-	 */
-	// @Test
-	public void otherTest()
-	{
-		final InputStream inputStream = getClass().getResourceAsStream("");
-		assertThat(inputStream).isNotNull();
-
-		final ESRStatement importData = new ESRDataImporterCamt54(newInstance(I_ESR_Import.class), inputStream).importData();
-
-		assertThat(importData.getCtrlQty()).isEqualByComparingTo("13");
-		assertThat(importData.getTransactions()).hasSize(importData.getCtrlQty().intValue());
-
-		assertThat(importData.getCtrlAmount()).isEqualByComparingTo("1030");
-
-		final BigDecimal lineSum = importData
-				.getTransactions()
-				.stream()
-				.map(t -> t.getAmount()).reduce(
-						BigDecimal.ZERO,
-						(a, b) -> a.add(b));
-		assertThat(lineSum).isEqualByComparingTo(importData.getCtrlAmount());
 	}
 }
