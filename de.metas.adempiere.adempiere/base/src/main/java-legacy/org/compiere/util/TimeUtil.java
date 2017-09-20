@@ -323,14 +323,14 @@ public class TimeUtil
 	 * @return true if on one of the days
 	 */
 	static public boolean inRange(
-			@NonNull final Timestamp start, 
+			@NonNull final Timestamp start,
 			@NonNull final Timestamp end,
-			final boolean OnMonday, 
-			final boolean OnTuesday, 
+			final boolean OnMonday,
+			final boolean OnTuesday,
 			final boolean OnWednesday,
-			final boolean OnThursday, 
-			final boolean OnFriday, 
-			final boolean OnSaturday, 
+			final boolean OnThursday,
+			final boolean OnFriday,
+			final boolean OnSaturday,
 			final boolean OnSunday)
 	{
 		// are there restrictions?
@@ -1072,12 +1072,18 @@ public class TimeUtil
 		return new Timestamp(truncToMillis(dayTime, trunc));
 	}
 
-	public static long truncToMillis(Date dayTime, final String trunc)
+	public static long truncToMillis(
+			@Nullable final Date dayTime,
+			final String trunc)
 	{
-		if (dayTime == null)
-		{
-			dayTime = new Timestamp(System.currentTimeMillis());
-		}
+		final Date dayTimeToUse = dayTime == null ? SystemTime.asTimestamp() : dayTime;
+		return truncToMillisDayTimeNotNull(dayTimeToUse, trunc);
+	}
+
+	private static long truncToMillisDayTimeNotNull(
+			@NonNull final Date dayTime,
+			final String trunc)
+	{
 		// note-ts: not using a locale because this method may be used during early startup
 		// (and I don't see what for we need a locale)
 		// GregorianCalendar cal = new GregorianCalendar(Env.getLanguage(Env.getCtx()).getLocale());

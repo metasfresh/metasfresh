@@ -13,27 +13,26 @@ package org.adempiere.impexp;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.pricing.api.ProductPriceQuery;
 import org.adempiere.util.Check;
 import org.adempiere.util.lang.IMutable;
 import org.compiere.model.I_I_Product;
@@ -46,6 +45,7 @@ import org.compiere.util.DB;
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.adempiere.model.I_M_Product;
+import de.metas.pricing.ProductPrices;
 
 /**
  * Import {@link I_I_Product} to {@link I_M_Product}.
@@ -143,9 +143,9 @@ public class ProductImportProcess extends AbstractImportProcess<I_I_Product>
 		sql = new StringBuilder("UPDATE I_Product "
 				+ "SET ProductCategory_Value=(SELECT MAX(Value) FROM M_Product_Category"
 				+ " WHERE IsDefault='Y' AND AD_Client_ID=").append(adClientId).append(") "
-				+ "WHERE ProductCategory_Value IS NULL AND M_Product_Category_ID IS NULL"
-				+ " AND M_Product_ID IS NULL"	// set category only if product not found
-				+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
+						+ "WHERE ProductCategory_Value IS NULL AND M_Product_Category_ID IS NULL"
+						+ " AND M_Product_ID IS NULL"	// set category only if product not found
+						+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
 		no = DB.executeUpdateEx(sql.toString(), trxName);
 		log.debug("Set Category Default Value=" + no);
 		//
@@ -165,10 +165,11 @@ public class ProductImportProcess extends AbstractImportProcess<I_I_Product>
 		{
 			sql = new StringBuilder("UPDATE I_Product i "
 					+ "SET ").append(strFields[i]).append(" = (SELECT ").append(strFields[i]).append(" FROM M_Product p"
-					+ " WHERE i.M_Product_ID=p.M_Product_ID AND i.AD_Client_ID=p.AD_Client_ID) "
-					+ "WHERE M_Product_ID IS NOT NULL"
-					+ " AND ").append(strFields[i]).append(" IS NULL"
-					+ " AND " + COLUMNNAME_I_IsImported + "='N'").append(whereClause);
+							+ " WHERE i.M_Product_ID=p.M_Product_ID AND i.AD_Client_ID=p.AD_Client_ID) "
+							+ "WHERE M_Product_ID IS NOT NULL"
+							+ " AND ").append(strFields[i]).append(" IS NULL"
+									+ " AND " + COLUMNNAME_I_IsImported + "='N'")
+							.append(whereClause);
 			no = DB.executeUpdateEx(sql.toString(), trxName);
 			if (no != 0)
 			{
@@ -181,10 +182,11 @@ public class ProductImportProcess extends AbstractImportProcess<I_I_Product>
 		{
 			sql = new StringBuilder("UPDATE I_PRODUCT i "
 					+ "SET ").append(numFields[i]).append(" = (SELECT ").append(numFields[i]).append(" FROM M_Product p"
-					+ " WHERE i.M_Product_ID=p.M_Product_ID AND i.AD_Client_ID=p.AD_Client_ID) "
-					+ "WHERE M_Product_ID IS NOT NULL"
-					+ " AND (").append(numFields[i]).append(" IS NULL OR ").append(numFields[i]).append("=0)"
-					+ " AND " + COLUMNNAME_I_IsImported + "='N'").append(whereClause);
+							+ " WHERE i.M_Product_ID=p.M_Product_ID AND i.AD_Client_ID=p.AD_Client_ID) "
+							+ "WHERE M_Product_ID IS NOT NULL"
+							+ " AND (").append(numFields[i]).append(" IS NULL OR ").append(numFields[i]).append("=0)"
+									+ " AND " + COLUMNNAME_I_IsImported + "='N'")
+							.append(whereClause);
 			no = DB.executeUpdateEx(sql.toString(), trxName);
 			if (no != 0)
 			{
@@ -200,11 +202,13 @@ public class ProductImportProcess extends AbstractImportProcess<I_I_Product>
 		{
 			sql = new StringBuilder("UPDATE I_PRODUCT i "
 					+ "SET ").append(strFieldsPO[i]).append(" = (SELECT ").append(strFieldsPO[i])
-					.append(" FROM M_Product_PO p"
-							+ " WHERE i.M_Product_ID=p.M_Product_ID AND i.C_BPartner_ID=p.C_BPartner_ID AND i.AD_Client_ID=p.AD_Client_ID) "
-							+ "WHERE M_Product_ID IS NOT NULL AND C_BPartner_ID IS NOT NULL"
-							+ " AND ").append(strFieldsPO[i]).append(" IS NULL"
-							+ " AND " + COLUMNNAME_I_IsImported + "='N'").append(whereClause);
+							.append(" FROM M_Product_PO p"
+									+ " WHERE i.M_Product_ID=p.M_Product_ID AND i.C_BPartner_ID=p.C_BPartner_ID AND i.AD_Client_ID=p.AD_Client_ID) "
+									+ "WHERE M_Product_ID IS NOT NULL AND C_BPartner_ID IS NOT NULL"
+									+ " AND ")
+							.append(strFieldsPO[i]).append(" IS NULL"
+									+ " AND " + COLUMNNAME_I_IsImported + "='N'")
+							.append(whereClause);
 			no = DB.executeUpdateEx(sql.toString(), trxName);
 			if (no != 0)
 			{
@@ -218,11 +222,13 @@ public class ProductImportProcess extends AbstractImportProcess<I_I_Product>
 		{
 			sql = new StringBuilder("UPDATE I_PRODUCT i "
 					+ "SET ").append(numFieldsPO[i]).append(" = (SELECT ").append(numFieldsPO[i])
-					.append(" FROM M_Product_PO p"
-							+ " WHERE i.M_Product_ID=p.M_Product_ID AND i.C_BPartner_ID=p.C_BPartner_ID AND i.AD_Client_ID=p.AD_Client_ID) "
-							+ "WHERE M_Product_ID IS NOT NULL AND C_BPartner_ID IS NOT NULL"
-							+ " AND (").append(numFieldsPO[i]).append(" IS NULL OR ").append(numFieldsPO[i]).append("=0)"
-							+ " AND " + COLUMNNAME_I_IsImported + "='N'").append(whereClause);
+							.append(" FROM M_Product_PO p"
+									+ " WHERE i.M_Product_ID=p.M_Product_ID AND i.C_BPartner_ID=p.C_BPartner_ID AND i.AD_Client_ID=p.AD_Client_ID) "
+									+ "WHERE M_Product_ID IS NOT NULL AND C_BPartner_ID IS NOT NULL"
+									+ " AND (")
+							.append(numFieldsPO[i]).append(" IS NULL OR ").append(numFieldsPO[i]).append("=0)"
+									+ " AND " + COLUMNNAME_I_IsImported + "='N'")
+							.append(whereClause);
 			no = DB.executeUpdateEx(sql.toString(), trxName);
 			if (no != 0)
 			{
@@ -360,7 +366,7 @@ public class ProductImportProcess extends AbstractImportProcess<I_I_Product>
 				+ " AND C_BPartner_ID IS NOT NULL"
 				+ " AND (C_BPartner_ID, VendorProductNo) IN "
 				+ " (SELECT C_BPartner_ID, VendorProductNo FROM I_Product ii WHERE i.AD_Client_ID=ii.AD_Client_ID GROUP BY C_BPartner_ID, VendorProductNo HAVING COUNT(*) > 1)")
-				.append(whereClause);
+						.append(whereClause);
 		no = DB.executeUpdateEx(sql.toString(), trxName);
 		if (no != 0)
 		{
@@ -615,7 +621,9 @@ public class ProductImportProcess extends AbstractImportProcess<I_I_Product>
 		//
 		// Get/Create Product Price record
 		final I_M_PriceList_Version plv = InterfaceWrapperHelper.create(getCtx(), priceListVersionId, I_M_PriceList_Version.class, ITrx.TRXNAME_ThreadInherited);
-		final I_M_ProductPrice pp = ProductPriceQuery.retrieveMainProductPriceIfExists(plv, productId)
+		final I_M_ProductPrice pp = Optional
+				.ofNullable(
+						ProductPrices.retrieveMainProductPriceOrNull(plv, productId))
 				.orElseGet(() -> InterfaceWrapperHelper.create(getCtx(), I_M_ProductPrice.class, ITrx.TRXNAME_ThreadInherited));
 		pp.setM_PriceList_Version(plv);	// FK
 		pp.setM_Product_ID(productId); // FK

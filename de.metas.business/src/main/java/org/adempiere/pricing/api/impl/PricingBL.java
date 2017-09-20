@@ -37,7 +37,6 @@ import org.adempiere.pricing.api.IPricingBL;
 import org.adempiere.pricing.api.IPricingContext;
 import org.adempiere.pricing.api.IPricingDAO;
 import org.adempiere.pricing.api.IPricingResult;
-import org.adempiere.pricing.api.ProductPriceQuery;
 import org.adempiere.pricing.exceptions.PriceListVersionNotFoundException;
 import org.adempiere.pricing.model.I_C_PricingRule;
 import org.adempiere.pricing.spi.AggregatedPricingRule;
@@ -58,6 +57,7 @@ import org.slf4j.Logger;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.logging.LogManager;
+import de.metas.pricing.ProductPrices;
 
 public class PricingBL implements IPricingBL
 {
@@ -311,8 +311,7 @@ public class PricingBL implements IPricingBL
 		final I_M_PriceList_Version plv = pricingCtx.getM_PriceList_Version();
 		if (plv != null)
 		{
-			final I_M_ProductPrice productPrice = ProductPriceQuery.retrieveMainProductPriceIfExists(plv, product.getM_Product_ID())
-					.orElse(null);
+			final I_M_ProductPrice productPrice = ProductPrices.retrieveMainProductPriceOrNull(plv, product.getM_Product_ID());
 			if (productPrice == null)
 			{
 				result.setPrice_UOM_ID(product.getC_UOM_ID());
