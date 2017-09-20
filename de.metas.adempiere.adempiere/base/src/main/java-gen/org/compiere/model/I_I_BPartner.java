@@ -40,6 +40,31 @@ public interface I_I_BPartner
     public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
+	 * Set Sprache.
+	 * Sprache für diesen Eintrag
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setAD_Language (java.lang.String AD_Language);
+
+	/**
+	 * Get Sprache.
+	 * Sprache für diesen Eintrag
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getAD_Language();
+
+    /** Column definition for AD_Language */
+    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_AD_Language = new org.adempiere.model.ModelColumn<I_I_BPartner, Object>(I_I_BPartner.class, "AD_Language", null);
+    /** Column name AD_Language */
+    public static final String COLUMNNAME_AD_Language = "AD_Language";
+
+	/**
 	 * Set Sektion.
 	 * Organisatorische Einheit des Mandanten
 	 *
@@ -821,6 +846,29 @@ public interface I_I_BPartner
     public static final String COLUMNNAME_IsBillTo = "IsBillTo";
 
 	/**
+	 * Set Rechnungskontakt.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsBillToContact_Default (boolean IsBillToContact_Default);
+
+	/**
+	 * Get Rechnungskontakt.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isBillToContact_Default();
+
+    /** Column definition for IsBillToContact_Default */
+    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_IsBillToContact_Default = new org.adempiere.model.ModelColumn<I_I_BPartner, Object>(I_I_BPartner.class, "IsBillToContact_Default", null);
+    /** Column name IsBillToContact_Default */
+    public static final String COLUMNNAME_IsBillToContact_Default = "IsBillToContact_Default";
+
+	/**
 	 * Set Rechnung Standard Adresse.
 	 *
 	 * <br>Type: YesNo
@@ -940,6 +988,29 @@ public interface I_I_BPartner
     public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_IsShipTo = new org.adempiere.model.ModelColumn<I_I_BPartner, Object>(I_I_BPartner.class, "IsShipTo", null);
     /** Column name IsShipTo */
     public static final String COLUMNNAME_IsShipTo = "IsShipTo";
+
+	/**
+	 * Set Lieferkontakt.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsShipToContact_Default (boolean IsShipToContact_Default);
+
+	/**
+	 * Get Lieferkontakt.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isShipToContact_Default();
+
+    /** Column definition for IsShipToContact_Default */
+    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_IsShipToContact_Default = new org.adempiere.model.ModelColumn<I_I_BPartner, Object>(I_I_BPartner.class, "IsShipToContact_Default", null);
+    /** Column name IsShipToContact_Default */
+    public static final String COLUMNNAME_IsShipToContact_Default = "IsShipToContact_Default";
 
 	/**
 	 * Set Liefer Standard Adresse.

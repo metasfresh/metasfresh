@@ -286,7 +286,7 @@ import lombok.NonNull;
 	 * @param request
 	 * @return candidate
 	 */
-	private void createReceiptCandidateFromRequest(CreateReceiptCandidateRequest request)
+	private void createReceiptCandidateFromRequest(@NonNull final CreateReceiptCandidateRequest request)
 	{
 		final Date movementDate = getMovementDate();
 

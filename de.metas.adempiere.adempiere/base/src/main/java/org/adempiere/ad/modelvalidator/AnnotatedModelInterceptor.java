@@ -1,5 +1,6 @@
 package org.adempiere.ad.modelvalidator;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -31,10 +32,13 @@ import org.compiere.model.ModelValidator;
 import org.reflections.ReflectionUtils;
 import org.slf4j.Logger;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Throwables;
 
 import de.metas.logging.LogManager;
+import lombok.EqualsAndHashCode;
+import lombok.NonNull;
 
 /**
  * Wrapping class which introspect an object, identifies it's pointcuts (ModelChange, DocValidate etc) and maps them to {@link ModelValidator} interface.
@@ -42,6 +46,8 @@ import de.metas.logging.LogManager;
  * @author tsa
  *
  */
+
+@EqualsAndHashCode(of = { "annotatedObject", "annotatedClass", "clientId" })
 /* package */class AnnotatedModelInterceptor implements IModelInterceptor
 {
 	private final transient Logger logger = LogManager.getLogger(getClass());
@@ -59,13 +65,13 @@ import de.metas.logging.LogManager;
 	 */
 	private transient List<?> allowedTargetTableNames = null;
 
-	private final transient List<InterceptorInit> initializers = new ArrayList<InterceptorInit>();
+	private final transient List<InterceptorInit> initializers = new ArrayList<>();
 
 	/**
 	 * Map PointcutType(TableName,PointcutType) -> pointcuts list.<br>
 	 * FRESH-318: order then, because without a specified ordering, java7 executes them in a different ordering that java8.
 	 */
-	private final transient Map<PointcutKey, SortedSet<Pointcut>> mapPointcuts = new HashMap<PointcutKey, SortedSet<Pointcut>>();
+	private final transient Map<PointcutKey, SortedSet<Pointcut>> mapPointcuts = new HashMap<>();
 
 	private int clientId = -1;
 
@@ -74,9 +80,8 @@ import de.metas.logging.LogManager;
 	 * @param annotatedObject
 	 * @throws AdempiereException if annotations were not correctly used
 	 */
-	AnnotatedModelInterceptor(final Object annotatedObject) throws AdempiereException
+	AnnotatedModelInterceptor(@NonNull final Object annotatedObject) throws AdempiereException
 	{
-		Check.assumeNotNull(annotatedObject, "annotatedObject is not null");
 		this.annotatedObject = annotatedObject;
 		this.annotatedClass = annotatedObject.getClass();
 
@@ -282,7 +287,7 @@ import de.metas.logging.LogManager;
 		initializers.add(init);
 	}
 
-	private void loadPointcut(ModelChange annModelChange, Method method)
+	private void loadPointcut(final ModelChange annModelChange, final Method method)
 	{
 		final Pointcut pointcut = new Pointcut(PointcutType.ModelChange, method, annModelChange.timings(), annModelChange.afterCommit());
 		pointcut.setChangedColumns(annModelChange.ifColumnsChanged());
@@ -291,7 +296,7 @@ import de.metas.logging.LogManager;
 		initPointcutAndAddToMap(pointcut);
 	}
 
-	private void loadPointcut(DocValidate annDocValidate, Method method)
+	private void loadPointcut(final DocValidate annDocValidate, final Method method)
 	{
 		final Pointcut pointcut = new Pointcut(PointcutType.DocValidate, method, annDocValidate.timings(), annDocValidate.afterCommit());
 		initPointcutAndAddToMap(pointcut);
@@ -369,7 +374,7 @@ import de.metas.logging.LogManager;
 		SortedSet<Pointcut> set = mapPointcuts.get(key);
 		if (set == null)
 		{
-			set = new TreeSet<Pointcut>();
+			set = new TreeSet<>();
 			mapPointcuts.put(key, set);
 		}
 
@@ -383,7 +388,7 @@ import de.metas.logging.LogManager;
 		logger.debug("Loaded {}", pointcut);
 	}
 
-	private void bindPointcuts(IModelValidationEngine engine)
+	private void bindPointcuts(@NonNull final IModelValidationEngine engine)
 	{
 		if (!hasPointcuts())
 		{
@@ -391,7 +396,7 @@ import de.metas.logging.LogManager;
 		}
 
 		logger.debug("Binding pointcuts for {}", annotatedClass);
-		for (Map.Entry<PointcutKey, SortedSet<Pointcut>> e : mapPointcuts.entrySet())
+		for (final Map.Entry<PointcutKey, SortedSet<Pointcut>> e : mapPointcuts.entrySet())
 		{
 			final Set<Pointcut> list = e.getValue();
 			if (list == null || list.isEmpty())
@@ -424,7 +429,7 @@ import de.metas.logging.LogManager;
 	}
 
 	@Override
-	public void onUserLogin(int AD_Org_ID, int AD_Role_ID, int AD_User_ID)
+	public void onUserLogin(final int AD_Org_ID, final int AD_Role_ID, final int AD_User_ID)
 	{
 		// nothing
 	}
@@ -437,7 +442,7 @@ import de.metas.logging.LogManager;
 	}
 
 	@Override
-	public final void onDocValidate(Object model, final DocTimingType timing)
+	public final void onDocValidate(final Object model, final DocTimingType timing)
 	{
 		final int timingCode = timing.getTiming();
 		execute(PointcutType.DocValidate, model, timingCode);
@@ -535,35 +540,71 @@ import de.metas.logging.LogManager;
 		}
 	}
 
-	private final void executeNow(final Object po, final IPointcut pointcut, final int timing)
+	@VisibleForTesting
+	private final void executeNow(
+			@NonNull final Object po,
+			@NonNull final IPointcut pointcut,
+			final int timing)
 	{
+		if (AnnotatedModelInterceptorDisabler.get().isDisabled(pointcut))
+		{
+			logger.info("Not executing pointCut because it is disabled via sysconfig (name-prefix={}); pointcut={}",
+					AnnotatedModelInterceptorDisabler.SYS_CONFIG_NAME_PREFIX, pointcut);
+			return;
+		}
+
 		final Object model = InterfaceWrapperHelper.create(po, pointcut.getModelClass());
 		try
 		{
-			final Method method = pointcut.getMethod();
-
-			// Make sure the method is accessible
-			if (!method.isAccessible())
-			{
-				method.setAccessible(true);
-			}
-
-			logger.debug("Executing: {}", pointcut);
-
-			if (pointcut.isMethodRequiresTiming())
-			{
-				final Object timingParam = pointcut.convertToMethodTimingParameterType(timing);
-				method.invoke(annotatedObject, model, timingParam);
-			}
-			else
-			{
-				method.invoke(annotatedObject, model);
-			}
+			executeNow0(model, pointcut, timing);
 		}
-		catch (Exception e)
+		catch (final Exception e)
 		{
-			// 03444 if the pointcut method threw an adempiere exception, just forward it
-			throw AdempiereException.wrapIfNeeded(e);
+			final AdempiereException adempiereException = appendAndLogHowtoDisableMessage(e, pointcut);
+			throw adempiereException;
+		}
+	}
+
+	private AdempiereException appendAndLogHowtoDisableMessage(
+			@NonNull final Exception e,
+			@NonNull final IPointcut pointcut)
+	{
+		final String parameterName = "HowtoDisableModelInterceptor";
+		final AdempiereException ae = AdempiereException.wrapIfNeeded(e);
+
+		if (!ae.hasParameter(parameterName))
+		{
+			final String howtoDisableMsg = AnnotatedModelInterceptorDisabler.createHowtoDisableMessage(pointcut);
+
+			logger.error(howtoDisableMsg);
+			ae.setParameter(parameterName, howtoDisableMsg);
+		}
+		return ae;
+	}
+
+	private void executeNow0(
+			@NonNull final Object model,
+			@NonNull final IPointcut pointcut,
+			final int timing) throws IllegalAccessException, InvocationTargetException
+	{
+		final Method method = pointcut.getMethod();
+
+		// Make sure the method is accessible
+		if (!method.isAccessible())
+		{
+			method.setAccessible(true);
+		}
+
+		logger.debug("Executing: {}", pointcut);
+
+		if (pointcut.isMethodRequiresTiming())
+		{
+			final Object timingParam = pointcut.convertToMethodTimingParameterType(timing);
+			method.invoke(annotatedObject, model, timingParam);
+		}
+		else
+		{
+			method.invoke(annotatedObject, model);
 		}
 	}
 
@@ -585,114 +626,23 @@ import de.metas.logging.LogManager;
 		return "annotated[" + this.annotatedClass.getName() + "]";
 	}
 
-	private final PointcutKey mkKey(Pointcut pointcut)
+	private final PointcutKey mkKey(@NonNull final Pointcut pointcut)
 	{
 		return mkKey(pointcut.getTableName(), pointcut.getType());
 	}
 
-	private final PointcutKey mkKey(String tableName, PointcutType type)
+	private final PointcutKey mkKey(@NonNull final String tableName, @NonNull final PointcutType type)
 	{
 		return new PointcutKey(tableName, type);
 	}
 
-	@Override
-	public int hashCode()
+	@lombok.Value
+	private class PointcutKey
 	{
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((annotatedClass == null) ? 0 : annotatedClass.hashCode());
-		result = prime * result + ((annotatedObject == null) ? 0 : annotatedObject.hashCode());
-		result = prime * result + clientId;
-		return result;
-	}
+		@NonNull
+		String tableName;
 
-	@Override
-	public boolean equals(Object obj)
-	{
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		AnnotatedModelInterceptor other = (AnnotatedModelInterceptor)obj;
-		if (annotatedClass == null)
-		{
-			if (other.annotatedClass != null)
-				return false;
-		}
-		else if (!annotatedClass.equals(other.annotatedClass))
-			return false;
-		if (annotatedObject == null)
-		{
-			if (other.annotatedObject != null)
-				return false;
-		}
-		else if (!annotatedObject.equals(other.annotatedObject))
-			return false;
-		if (clientId != other.clientId)
-			return false;
-		return true;
-	}
-
-	private static class PointcutKey
-	{
-		private final String tableName;
-		private final PointcutType type;
-
-		public PointcutKey(String tableName, PointcutType type)
-		{
-			super();
-			this.tableName = tableName;
-			this.type = type;
-		}
-
-		public String getTableName()
-		{
-			return tableName;
-		}
-
-		public PointcutType getType()
-		{
-			return type;
-		}
-
-		@Override
-		public int hashCode()
-		{
-			final int prime = 31;
-			int result = 1;
-			result = prime * result + ((tableName == null) ? 0 : tableName.hashCode());
-			result = prime * result + ((type == null) ? 0 : type.hashCode());
-			return result;
-		}
-
-		@Override
-		public boolean equals(Object obj)
-		{
-			if (this == obj)
-				return true;
-			if (obj == null)
-				return false;
-			if (getClass() != obj.getClass())
-				return false;
-			PointcutKey other = (PointcutKey)obj;
-			if (tableName == null)
-			{
-				if (other.tableName != null)
-					return false;
-			}
-			else if (!tableName.equals(other.tableName))
-				return false;
-			if (type != other.type)
-				return false;
-			return true;
-		}
-
-		@Override
-		public String toString()
-		{
-			return "PointcutKey [tableName=" + tableName + ", type=" + type + "]";
-		}
+		@NonNull
+		PointcutType type;
 	}
 }

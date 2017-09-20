@@ -28,6 +28,7 @@ import java.util.Set;
 
 /* package */interface IPointcut
 {
+	String getPointcutId();
 
 	Method getMethod();
 

@@ -557,6 +557,31 @@ public interface I_I_Flatrate_Term
     public static final String COLUMNNAME_ProductValue = "ProductValue";
 
 	/**
+	 * Set Menge.
+	 * Menge
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setQty (java.math.BigDecimal Qty);
+
+	/**
+	 * Get Menge.
+	 * Menge
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getQty();
+
+    /** Column definition for Qty */
+    public static final org.adempiere.model.ModelColumn<I_I_Flatrate_Term, Object> COLUMN_Qty = new org.adempiere.model.ModelColumn<I_I_Flatrate_Term, Object>(I_I_Flatrate_Term.class, "Qty", null);
+    /** Column name Qty */
+    public static final String COLUMNNAME_Qty = "Qty";
+
+	/**
 	 * Set Anfangsdatum.
 	 * First effective day (inclusive)
 	 *

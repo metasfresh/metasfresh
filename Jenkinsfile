@@ -378,6 +378,17 @@ stage('Invoke downstream jobs')
 } // timestamps
 } catch(all)
 {
-  mattermostSend color: 'danger', message: "This build failed or was aborted: ${BUILD_URL}"
-  error 'Build failed'
+  final String mattermostMsg = "This **${MF_UPSTREAM_BRANCH}** build failed or was aborted: ${BUILD_URL}"
+  if(MF_UPSTREAM_BRANCH=='master' || MF_UPSTREAM_BRANCH=='release')
+  {
+    mattermostSend color: 'danger', message: mattermostMsg
+  }
+  else
+  {
+    withCredentials([string(credentialsId: 'jenkins-issue-branches-webhook-URL', variable: 'secretWebhookUrl')])
+    {
+      mattermostSend color: 'danger', endpoint: secretWebhookUrl, channel: 'jenkins-low-prio', message: mattermostMsg
+    }
+  }
+  throw all
 }

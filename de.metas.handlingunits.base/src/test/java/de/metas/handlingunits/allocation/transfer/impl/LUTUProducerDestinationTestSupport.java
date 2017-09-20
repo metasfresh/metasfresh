@@ -90,6 +90,8 @@ public class LUTUProducerDestinationTestSupport
 	public I_M_HU_PI_Item piTruck_UnlimitedCapacity_Item;
 
 	/**
+	 * This is an <b>alternative</b> to calling link AdempiereTestHelper#init()}! Don't call both, they will reset each other's stuff.
+	 *  
 	 * Creates a new instance with fresh masterdata. Also causes the {@link HUTestHelper} to be initialized.
 	 * This constructor should be called from tests' {@link Before} methods.
 	 * 

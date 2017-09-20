@@ -46,8 +46,8 @@ import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.Env;
 
 import de.metas.handlingunits.IHUQueryBuilder;
+import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
-import de.metas.handlingunits.attribute.IHUStatusBL;
 import de.metas.handlingunits.model.I_M_HU_Storage;
 import de.metas.handlingunits.model.I_M_Locator;
 import de.metas.storage.IStorageQuery;
@@ -96,7 +96,7 @@ import de.metas.storage.spi.hu.IHUStorageBL;
 		huQueryBuilder.setOnlyTopLevelHUs(false);
 		huQueryBuilder.addPIVersionToInclude(handlingUnitsDAO.getVirtual_HU_PI_ID());
 
-		// consider only those HUs which are Active or Picked. Those are about QtyOnHand.
+		// consider only those HUs which are supposed to be considered for (e.g. not "shipped")
 		final List<String> huStatusesQtyOnHand = Services.get(IHUStatusBL.class).getQtyOnHandStatuses();
 		for (final String huStatus : huStatusesQtyOnHand)
 		{

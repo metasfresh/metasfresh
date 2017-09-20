@@ -11,9 +11,12 @@ import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.exceptions.ExpressionEvaluationException;
 import org.adempiere.util.Check;
 import org.compiere.util.CtxName;
+import org.compiere.util.CtxNames;
 import org.compiere.util.Evaluatee;
 
 import com.google.common.collect.ImmutableSet;
+
+import lombok.NonNull;
 
 /*
  * #%L
@@ -28,11 +31,11 @@ import com.google.common.collect.ImmutableSet;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -117,7 +120,6 @@ public abstract class StringExpressionSupportTemplate<V, ET extends IExpression<
 
 		private ExpressionTemplateBase(final ExpressionContext context, final Compiler<V, ET> compiler)
 		{
-			super();
 			this.valueClass = compiler.valueClass;
 			this.noResultValue = compiler.noResultValue;
 			this.valueConverter = compiler.valueConverter;
@@ -169,11 +171,11 @@ public abstract class StringExpressionSupportTemplate<V, ET extends IExpression<
 		}
 
 		@Override
-		public Set<String> getParameters()
+		public Set<CtxName> getParameters()
 		{
 			return ImmutableSet.of();
 		}
-
+		
 		@Override
 		public boolean isNullExpression()
 		{
@@ -253,7 +255,7 @@ public abstract class StringExpressionSupportTemplate<V, ET extends IExpression<
 		}
 
 		@Override
-		public Set<String> getParameters()
+		public Set<CtxName> getParameters()
 		{
 			return ImmutableSet.of();
 		}
@@ -276,18 +278,20 @@ public abstract class StringExpressionSupportTemplate<V, ET extends IExpression<
 		private final String expressionStr;
 
 		protected final CtxName parameter;
-		private final Set<String> _parametersList;
+		private final Set<CtxName> _parametersList;
 
-		/* package */ SingleParameterExpressionTemplate(final ExpressionContext context, final Compiler<V, ET> compiler, final String expressionStr, final CtxName parameter)
+		/* package */ SingleParameterExpressionTemplate(
+				final ExpressionContext context,
+				final Compiler<V, ET> compiler,
+				@NonNull final String expressionStr,
+				@NonNull final CtxName parameter)
 		{
 			super(context, compiler);
 
-			Check.assumeNotNull(expressionStr, "Parameter expressionStr is not null");
 			this.expressionStr = expressionStr;
 
-			Check.assumeNotNull(parameter, "Parameter parameter is not null");
 			this.parameter = parameter;
-			_parametersList = ImmutableSet.of(parameter.getName()); // NOTE: we need only the parameter name (and not all modifiers)
+			_parametersList = ImmutableSet.of(parameter); // NOTE: we need only the parameter name (and not all modifiers)
 		}
 
 		@Override
@@ -335,7 +339,7 @@ public abstract class StringExpressionSupportTemplate<V, ET extends IExpression<
 		}
 
 		@Override
-		public Set<String> getParameters()
+		public Set<CtxName> getParameters()
 		{
 			return _parametersList;
 		}
@@ -344,7 +348,7 @@ public abstract class StringExpressionSupportTemplate<V, ET extends IExpression<
 		{
 			final String valueStr = parameter.getValueAsString(ctx);
 
-			if (valueStr == null || valueStr == CtxName.VALUE_NULL)
+			if (valueStr == null || valueStr == CtxNames.VALUE_NULL)
 			{
 				return null;
 			}
@@ -400,7 +404,13 @@ public abstract class StringExpressionSupportTemplate<V, ET extends IExpression<
 		}
 
 		@Override
-		public Set<String> getParameters()
+		public Set<String> getParameterNames()
+		{
+			return stringExpression.getParameterNames();
+		}
+
+		@Override
+		public Set<CtxName> getParameters()
 		{
 			return stringExpression.getParameters();
 		}

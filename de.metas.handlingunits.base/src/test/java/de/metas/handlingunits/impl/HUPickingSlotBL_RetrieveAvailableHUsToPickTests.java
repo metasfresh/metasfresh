@@ -21,12 +21,14 @@ import org.junit.runner.RunWith;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.handlingunits.IHUPickingSlotBL.AvailableHUsToPickRequest;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_Picking_Candidate;
+import de.metas.handlingunits.model.I_M_Source_HU;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_HU_Item;
+import de.metas.handlingunits.picking.IHUPickingSlotBL.PickingHUsQuery;
+import de.metas.handlingunits.picking.impl.HUPickingSlotBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.storage.IStorageEngine;
 import de.metas.storage.IStorageEngineService;
@@ -77,7 +79,7 @@ public class HUPickingSlotBL_RetrieveAvailableHUsToPickTests
 	@Test
 	public void testEmtpySchedulesList()
 	{
-		final List<I_M_HU> result = new HUPickingSlotBL().retrieveAvailableHUsToPick(AvailableHUsToPickRequest.builder().shipmentSchedules(Collections.emptyList()).build());
+		final List<I_M_HU> result = new HUPickingSlotBL().retrieveAvailableHUsToPick(PickingHUsQuery.builder().shipmentSchedules(Collections.emptyList()).build());
 		assertThat(result).isEmpty();
 	}
 
@@ -243,6 +245,25 @@ public class HUPickingSlotBL_RetrieveAvailableHUsToPickTests
 	}
 
 	/**
+	 * Like {@link #testVhuWithTuAndLuAndPickingCandidateForLu(boolean)}, but the LU is not flagged by a picking candidate but by a {@link I_M_Source_HU}.<br>
+	 * Because of the source HU, LU shall still not be returned.
+	 * 
+	 * @param onlyTopLevelHUs
+	 */
+	@Theory
+	public void testVhuWithTuAndLuAndSourceHuForLu(final boolean onlyTopLevelHUs)
+	{
+		final LuTuVhu luTuVhu = createLuTuVhu();
+
+		final I_M_Source_HU sourceHU = newInstance(I_M_Source_HU.class);
+		sourceHU.setM_HU(luTuVhu.getLu());
+		save(sourceHU);
+
+		final List<I_M_HU> result = common(luTuVhu.getVhu(), onlyTopLevelHUs);
+		assertThat(result).isEmpty();
+	}
+
+	/**
 	 * Creates a LU with two TUs. One of the two TUs is already picked. Verifies that the LU, the not-picked TU and the not-picked TU's VHU are returned.
 	 */
 	@Theory
@@ -361,7 +382,7 @@ public class HUPickingSlotBL_RetrieveAvailableHUsToPickTests
 		// @formatter:on
 
 		final List<I_M_HU> result = new HUPickingSlotBL()
-				.retrieveAvailableHUsToPick(AvailableHUsToPickRequest.builder()
+				.retrieveAvailableHUsToPick(PickingHUsQuery.builder()
 						.shipmentSchedules(ImmutableList.of(shipmentSchedule))
 						.onlyTopLevelHUs(onlyTopLevelHUs)
 						.build());

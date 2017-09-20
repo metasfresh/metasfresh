@@ -40,6 +40,7 @@ import de.metas.inout.model.I_M_InOut;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.spi.ICandidateProcessor;
 import de.metas.inoutcandidate.spi.IShipmentScheduleQtyUpdateListener;
+import de.metas.storage.IStorageQuery;
 
 public interface IShipmentScheduleBL extends ISingletonService
 {
@@ -181,4 +182,13 @@ public interface IShipmentScheduleBL extends ISingletonService
 	 * @param schedule
 	 */
 	void closeShipmentSchedule(I_M_ShipmentSchedule schedule);
+
+	/**
+	 * Creates a storage query for the given {@code shipmentSchedule}.
+	 * 
+	 * @param sched
+	 * @param considerAttributes {@code true} if the query shall be strict with respect to the given {@code shipmentSchedule}'s ASI.
+	 * @return query
+	 */
+	IStorageQuery createStorageQuery(I_M_ShipmentSchedule shipmentSchedule, boolean considerAttributes);
 }

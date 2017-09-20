@@ -30,7 +30,7 @@ import de.metas.picking.model.I_M_PickingSlot;
 public interface IPickingSlotBL extends ISingletonService
 {
 	/**
-	 * Returns <code>true</code> if the given picking slot has not partner assigned.
+	 * Returns <code>true</code> if the given picking slot has no partner assigned.
 	 * 
 	 * @param pickingSlot
 	 * @return

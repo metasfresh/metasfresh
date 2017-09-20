@@ -242,9 +242,9 @@ public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 	}
 
 	@Override
-	public boolean isNoLU(final I_M_HU_LUTU_Configuration lutuConfiguration)
+	public boolean isNoLU(@NonNull final I_M_HU_LUTU_Configuration lutuConfiguration)
 	{
-		Check.assumeNotNull(lutuConfiguration, "lutuConfiguration not null");
+
 		return lutuConfiguration.getM_LU_HU_PI_Item_ID() <= 0;
 	}
 

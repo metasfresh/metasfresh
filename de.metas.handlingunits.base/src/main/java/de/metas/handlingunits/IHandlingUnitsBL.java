@@ -21,7 +21,6 @@ import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
-import de.metas.handlingunits.model.X_M_HU_Status;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import lombok.Builder.Default;
 import lombok.NonNull;
@@ -96,12 +95,6 @@ public interface IHandlingUnitsBL extends ISingletonService
 	 * @return true if HU was destroyed
 	 */
 	boolean isDestroyed(I_M_HU hu);
-
-	/**
-	 * @param hu
-	 * @return true if HU was shipped
-	 */
-	boolean isShipped(I_M_HU hu);
 
 	/**
 	 * Refresh HU first before checking if it's destroyed
@@ -181,10 +174,11 @@ public interface IHandlingUnitsBL extends ISingletonService
 
 	/**
 	 * Destroy given HU or some of it's children which are empty.
-	 *
-	 * NOTE: if you are not calling this method from a code chunk which is injected to be executed inside HU API (which could be your case!) please consider using
+	 * <p>
+	 * NOTE 1: if you are not calling this method from a code chunk which is injected to be executed inside HU API (which could be your case!) please consider using
 	 * {@link #destroyIfEmptyStorage(I_M_HU)}.
-	 * 
+	 * <p>
+	 * NOTE 2: the destroyed HUs are also saved.
 	 * Additionally, this method does:
 	 * <ul>
 	 * <li>destroys any of it's HU children which have empty storage
@@ -220,21 +214,21 @@ public interface IHandlingUnitsBL extends ISingletonService
 	/**
 	 * Gets top level HUs of given HUs (i.e. the top of hierarchy).
 	 *
-	 * @param request see {@link TopLevelHusRequest}.
+	 * @param request see {@link TopLevelHusQuery}.
 	 * 
 	 * @return top level HUs; never return {@code null}
 	 */
-	List<I_M_HU> getTopLevelHUs(TopLevelHusRequest request);
+	List<I_M_HU> getTopLevelHUs(TopLevelHusQuery request);
 
 	@lombok.Builder
 	@lombok.Value
-	final static class TopLevelHusRequest
+	final static class TopLevelHusQuery
 	{
 		/**
 		 * May be empty, but not {@code null}
 		 */
 		@NonNull
-		List<I_M_HU> hus;
+		Collection<I_M_HU> hus;
 
 		/**
 		 * If {@code true} then e.g. for a CU, not only the LU will be returned, but also the intermediate TU and the CU itself.<br>

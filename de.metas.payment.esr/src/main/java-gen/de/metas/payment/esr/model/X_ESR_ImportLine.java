@@ -4,7 +4,6 @@ package de.metas.payment.esr.model;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import org.compiere.util.Env;
 
 /** Generated Model for ESR_ImportLine
  *  @author Adempiere (generated) 
@@ -16,7 +15,7 @@ public class X_ESR_ImportLine extends org.compiere.model.PO implements I_ESR_Imp
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1369881824L;
+	private static final long serialVersionUID = -122556249L;
 
     /** Standard Constructor */
     public X_ESR_ImportLine (Properties ctx, int ESR_ImportLine_ID, String trxName)
@@ -24,17 +23,13 @@ public class X_ESR_ImportLine extends org.compiere.model.PO implements I_ESR_Imp
       super (ctx, ESR_ImportLine_ID, trxName);
       /** if (ESR_ImportLine_ID == 0)
         {
-			setESR_Document_Status (null);
-// N
+			setESR_Document_Status (null); // N
 			setESR_Import_ID (0);
 			setESR_ImportLine_ID (0);
-			setESR_IsManual_ReferenceNo (true);
-// Y
+			setESR_IsManual_ReferenceNo (true); // Y
 			setESRLineText (null);
-			setIsValid (false);
-// N
-			setProcessed (false);
-// N
+			setIsValid (false); // N
+			setProcessed (false); // N
         } */
     }
 

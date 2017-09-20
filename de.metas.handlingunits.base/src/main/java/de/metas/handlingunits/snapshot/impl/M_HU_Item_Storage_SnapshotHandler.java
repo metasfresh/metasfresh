@@ -142,7 +142,7 @@ class M_HU_Item_Storage_SnapshotHandler extends AbstractSnapshotHandler<I_M_HU_I
 		final I_C_UOM uom = model.getC_UOM();
 		final Quantity quantity = new Quantity(qtyDiff, uom);
 		final Date date = getDateTrx();
-		final Object referencedModel = getReferencedModel();
+		final Object referencedModel = getReferencedModelOrNull();
 
 		//
 		// Create HU Transaction From
