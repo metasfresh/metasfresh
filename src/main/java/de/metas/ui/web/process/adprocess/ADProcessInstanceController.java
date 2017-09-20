@@ -122,7 +122,7 @@ import lombok.NonNull;
 	private final ReentrantReadWriteLock readwriteLock;
 
 	/** New instance constructor */
-	private ADProcessInstanceController(final Builder builder)
+	private ADProcessInstanceController(@NonNull final Builder builder)
 	{
 		processDescriptor = builder.processDescriptor;
 		instanceId = builder.instanceId;
@@ -144,8 +144,6 @@ import lombok.NonNull;
 	/** Copy constructor */
 	private ADProcessInstanceController(final ADProcessInstanceController from, final CopyMode copyMode, final IDocumentChangesCollector changesCollector)
 	{
-		super();
-
 		instanceId = from.instanceId;
 
 		processDescriptor = from.processDescriptor;

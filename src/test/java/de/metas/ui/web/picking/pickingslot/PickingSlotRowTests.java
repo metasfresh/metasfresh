@@ -31,30 +31,46 @@ import de.metas.ui.web.handlingunits.HUEditorRowType;
 public class PickingSlotRowTests
 {
 	@Test
-	public void testCreateSourceHURow()
+	public void createSourceHURow()
 	{
 		final PickingSlotRow sourceHURow = PickingSlotRow.fromSourceHUBuilder()
 				.huCode("123")
-				.huId(2)
+				.huId(123)
 				.huEditorRowType(HUEditorRowType.LU)
 				.build();
-		assertThat(sourceHURow.isPickingSourceHURow()).isTrue();
-		assertThat(sourceHURow.isPickedHURow()).isFalse();
 		assertThat(sourceHURow.isPickingSlotRow()).isFalse();
+		assertThat(sourceHURow.isPickedHURow()).isFalse();
+		assertThat(sourceHURow.isPickingSourceHURow()).isTrue();
 		assertThat(sourceHURow.getType().getName()).isEqualTo(HUEditorRowType.LU.getName());
+		assertThat(sourceHURow.getDocumentPath().getDocumentId().toInt()).isEqualTo(123);
 	}
 	
 	@Test
-	public void testCreatePickedHURow()
+	public void createPickedHURow()
 	{
-		final PickingSlotRow sourceHURow = PickingSlotRow.fromSourceHUBuilder()
-				.huCode("123")
-				.huId(2)
+		final PickingSlotRow sourceHURow = PickingSlotRow.fromPickedHUBuilder()
+				.huCode("124")
+				.pickingSlotId(54)
+				.huId(124)
 				.huEditorRowType(HUEditorRowType.TU)
 				.build();
-		assertThat(sourceHURow.isPickingSourceHURow()).isTrue();
-		assertThat(sourceHURow.isPickedHURow()).isFalse();
 		assertThat(sourceHURow.isPickingSlotRow()).isFalse();
+		assertThat(sourceHURow.isPickedHURow()).isTrue();
+		assertThat(sourceHURow.isPickingSourceHURow()).isFalse();
 		assertThat(sourceHURow.getType().getName()).isEqualTo(HUEditorRowType.TU.getName());
+		assertThat(sourceHURow.getDocumentPath().getDocumentId().toInt()).isEqualTo(124);
+	}
+	
+	@Test
+	public void createPickingSlotRow()
+	{
+		final PickingSlotRow pickingSlotRow = PickingSlotRow.fromPickingSlotBuilder()
+				.pickingSlotId(55)
+				.build();
+		assertThat(pickingSlotRow.isPickingSlotRow()).isTrue();
+		assertThat(pickingSlotRow.isPickingSourceHURow()).isFalse();
+		assertThat(pickingSlotRow.isPickedHURow()).isFalse();
+		assertThat(pickingSlotRow.getType().getName()).isEqualTo(PickingSlotRowType.M_PICKING_SLOT);
+		assertThat(pickingSlotRow.getDocumentPath().getDocumentId().toInt()).isEqualTo(55);
 	}
 }
