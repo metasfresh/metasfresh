@@ -196,9 +196,9 @@ public final class ImpFormat
 	/** Format Type - Fixed Length F */
 	public static final String FORMATTYPE_FIXED = X_AD_ImpFormat.FORMATTYPE_FixedPosition;
 	/** Format Type - Comma Separated C */
-	public static final String FORMATTYPE_COMMA = X_AD_ImpFormat.FORMATTYPE_CommaSeparated;
+	public static final String FORMATTYPE_COMMA = X_AD_ImpFormat.FORMATTYPE_Komma_Separiert;
 	/** Format Type - Tab Separated T */
-	public static final String FORMATTYPE_TAB = X_AD_ImpFormat.FORMATTYPE_TabSeparated;
+	public static final String FORMATTYPE_TAB = X_AD_ImpFormat.FORMATTYPE_Tabulator_Separiert;
 	/** Format Type - XML X */
 	public static final String FORMATTYPE_XML = X_AD_ImpFormat.FORMATTYPE_XML;
 
