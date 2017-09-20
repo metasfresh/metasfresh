@@ -551,7 +551,7 @@ public final class HUEditorRow implements IViewRow
 		private DocumentPath getDocumentPath()
 		{
 			final HUEditorRowId rowId = getRowId();
-			return DocumentPath.rootDocumentPath(windowId, rowId.toDocumentId());
+			return DocumentPath.rootDocumentPath(windowId, rowId.getHuId());
 		}
 
 		public Builder setRowId(final HUEditorRowId rowId)
