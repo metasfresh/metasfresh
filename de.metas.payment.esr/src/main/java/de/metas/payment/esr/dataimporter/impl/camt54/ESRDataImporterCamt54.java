@@ -137,7 +137,7 @@ public class ESRDataImporterCamt54 implements IESRDataImporter
 	@Override
 	public ESRStatement importData()
 	{
-		final XMLStreamReader xsr;
+		XMLStreamReader xsr = null;
 		try
 		{
 			final XMLInputFactory xif = XMLInputFactory.newInstance();
@@ -185,7 +185,19 @@ public class ESRDataImporterCamt54 implements IESRDataImporter
 		}
 		finally 
 		{
-			xsr.close();
+			try
+			{
+				if (xsr != null)
+				{
+					xsr.close();
+				}
+				
+				input.close();
+			}
+			catch (XMLStreamException | IOException e)
+			{
+				throw AdempiereException.wrapIfNeeded(e);
+			}
 		}
 		
 	}
