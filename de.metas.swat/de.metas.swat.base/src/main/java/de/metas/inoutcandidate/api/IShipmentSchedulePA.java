@@ -54,18 +54,10 @@ public interface IShipmentSchedulePA extends ISingletonService
 {
 	/**
 	 *
-	 * @param orderLineId
-	 * @param trxName
-	 * @return the shipment schedule entry that refers to the given order line id or <code>null</code>
-	 */
-	I_M_ShipmentSchedule retrieveForOrderLine(Properties ctx, int orderLineId, String trxName);
-
-	/**
-	 *
 	 * @param orderLine
 	 * @return the shipment schedule entry that refers to the given order line or <code>null</code>
 	 */
-	I_M_ShipmentSchedule retrieveForOrderLine(org.compiere.model.I_C_OrderLine orderLine);
+	List<I_M_ShipmentSchedule> retrieveForOrderLine(org.compiere.model.I_C_OrderLine orderLine);
 
 	/**
 	 * @param ctx

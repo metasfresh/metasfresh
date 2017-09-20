@@ -13,11 +13,11 @@ package de.metas.inoutcandidate.spi.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -43,13 +43,13 @@ import org.compiere.util.DB;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_C_Order;
+import de.metas.adempiere.service.IOrderDAO;
 import de.metas.inoutcandidate.api.IDeliverRequest;
 import de.metas.inoutcandidate.api.IShipmentScheduleInvalidateBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.spi.IInOutCandHandler;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.logging.LogManager;
-import de.metas.order.IOrderPA;
 import de.metas.product.IProductBL;
 
 /**
@@ -89,7 +89,6 @@ public class OrderLineInOutCandHandler implements IInOutCandHandler
 		newSched.setQtyOrdered_Calculated(qtyOrdered_Effective);
 		newSched.setDateOrdered(orderLine.getDateOrdered());
 		Services.get(IAttributeSetInstanceBL.class).cloneASI(newSched, orderLine);
-		;
 
 		//
 		// 08255 : initialize the qty order calculated
@@ -198,8 +197,7 @@ public class OrderLineInOutCandHandler implements IInOutCandHandler
 
 		if (DELIVERYRULE_CompleteOrder.equals(order.getDeliveryRule()))
 		{
-			final IOrderPA orderPA = Services.get(IOrderPA.class);
-			for (final I_C_OrderLine ol : orderPA.retrieveOrderLines(order, I_C_OrderLine.class))
+			for (final I_C_OrderLine ol : Services.get(IOrderDAO.class).retrieveOrderLines(order, I_C_OrderLine.class))
 			{
 				shipmentScheduleInvalidateBL.invalidateJustForOrderLine(ol);
 				shipmentScheduleInvalidateBL.invalidateSegmentForOrderLine(ol);
@@ -226,46 +224,10 @@ public class OrderLineInOutCandHandler implements IInOutCandHandler
 		// task 08896: don't use the where clause with all those INs.
 		// It's performance can turn catastrophic for large numbers or orderlines and orders.
 		// Instead use an efficient view (i.e. C_OrderLine_ID_With_Missing_ShipmentSchedule) and (bad enough) use an in because we still need to select from *one* table.
-		// i keep the original where for reference. The view is similar, but used inner joins to do the job. See the screeshot of this task to see how bad it was with that where-clause
 		// Note: still, this polling sucks, but that's a bigger task
 		final String wc = " C_OrderLine_ID IN ( select C_OrderLine_ID from C_OrderLine_ID_With_Missing_ShipmentSchedule_v ) ";
-		// // only if the ol is not yet fully delivered
-		// "    QtyOrdered <> QtyDelivered \n" +
-		//
-		// // only if the schedule doesn't exist yet
-		// "   AND NOT EXISTS ( select * from M_ShipmentSchedule s where s.C_OrderLine_ID=C_OrderLine.C_OrderLine_ID )" +
-		//
-		// "	AND C_Order_ID IN (" +
-		// "      select o.C_Order_ID " +
-		// "      from C_Order o" +
-		// "      where " +
-		//
-		// // only for sales orders
-		// "      o.IsSOTrx='Y' \n" +
-		//
-		// // not for Proposals, Quotations and POS-Orders
-		// "      AND o.C_DocType_ID IN ( \n" +
-		// "        SELECT C_DocType_ID FROM C_DocType WHERE DocBaseType='SOO' AND DocSubType NOT IN ('ON','OB','WR') \n" +
-		// "      )\n" +
-		//
-		// // only for completed orders
-		// "      AND o.docstatus='CO' \n" +
-		// "   )" +
-		//
-		// // only if we didn't yet look at the order
-		// "   AND NOT EXISTS (" +
-		// "      select 1 from " + I_M_IolCandHandler_Log.Table_Name + " log " +
-		// "      where log." + I_M_IolCandHandler_Log.COLUMNNAME_M_IolCandHandler_ID + "=?" +
-		// "        and log." + I_M_IolCandHandler_Log.COLUMNNAME_AD_Table_ID + "=?" +
-		// "        and log." + I_M_IolCandHandler_Log.COLUMNNAME_Record_ID + "=C_OrderLine.C_OrderLine_ID" +
-		// "        and log." + I_M_IolCandHandler_Log.COLUMNNAME_IsActive + "='Y'" +
-		// "   )";
 
 		final List<I_C_OrderLine> ols = new Query(ctx, getSourceTable(), wc, trxName)
-				// task 08896: no params anymore, they are hardcoded in the view.
-				// .setParameters(
-				// Services.get(IInOutCandHandlerBL.class).retrieveHandlerRecordOrNull(ctx, this.getClass().getName(), trxName).getM_IolCandHandler_ID(),
-				// MTable.getTable_ID(I_C_OrderLine.Table_Name))
 				.setOnlyActiveRecords(true)
 				.setClient_ID()
 				.setOrderBy(I_C_OrderLine.COLUMNNAME_C_OrderLine_ID)
@@ -277,7 +239,8 @@ public class OrderLineInOutCandHandler implements IInOutCandHandler
 	}
 
 	/**
-	 * Returns an instance which in turn just returns as <ul>
+	 * Returns an instance which in turn just returns as
+	 * <ul>
 	 * <li><code>QtyOrdered</code>: the sched's order line's QtyOrdered value
 	 * </ul>
 	 */

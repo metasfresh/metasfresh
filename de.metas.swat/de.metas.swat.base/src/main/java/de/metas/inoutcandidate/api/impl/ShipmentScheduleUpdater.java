@@ -40,7 +40,6 @@ import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.IShipmentScheduleUpdater;
 import de.metas.inoutcandidate.api.OlAndSched;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.inoutcandidate.spi.IUpdatableSchedulesCollector;
 import de.metas.logging.LogManager;
 
 public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
@@ -130,7 +129,6 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 			final String trxName)
 	{
 		final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
-
 		final List<OlAndSched> olsAndScheds = shipmentSchedulePA.retrieveInvalid(adClientId, adPinstanceId, retrieveOnlyLocked, trxName);
 
 		if (olsAndScheds.isEmpty())
@@ -138,17 +136,10 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 			logger.debug("There are no shipment schedule entries to update");
 			return Collections.emptyList();
 		}
-
 		logger.debug("Found {} invalid shipment schedule entries", olsAndScheds.size());
 
-		final CachedObjects cachedObjects = new CachedObjects();
-
-		// TODO: decide if we should invoke the collector if retrieveOnlyLocked==true
-		logger.debug("Collecting additional schedule entries to update");
-		final IUpdatableSchedulesCollector updatableSchedulesCollector = Services.get(IUpdatableSchedulesCollector.class);
-
 		final List<OlAndSched> collectResult = new ArrayList<OlAndSched>();
-		collectResult.addAll(updatableSchedulesCollector.collectUpdatableLines(ctx, olsAndScheds, cachedObjects, trxName));
+		collectResult.addAll(olsAndScheds);
 
 		logger.debug("Found additional {} schedule entries to update", (collectResult.size() - olsAndScheds.size()));
 		return collectResult;
