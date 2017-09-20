@@ -60,19 +60,19 @@ public class ADWindowDAO implements IADWindowDAO
 	public ITranslatableString retrieveWindowNameCached(final int adWindowId)
 	{
 		// using a simple DB call would be faster, but this way it's less coupled and after all we have caching
-		
+
 		final I_AD_Window window = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_AD_Window.class, Env.getCtx(), ITrx.TRXNAME_None)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_AD_Window.COLUMNNAME_AD_Window_ID, adWindowId)
 				.create()
 				.firstOnly(I_AD_Window.class);
-		
-		if(window == null)
+
+		if (window == null)
 		{
 			return ImmutableTranslatableString.empty();
 		}
-		
+
 		return InterfaceWrapperHelper.getModelTranslationMap(window).getColumnTrl(I_AD_Window.COLUMNNAME_Name, window.getName());
 	}
 
@@ -288,6 +288,5 @@ public class ADWindowDAO implements IADWindowDAO
 				.create()
 				.firstOnly(I_AD_Tab.class);
 	}
-	
-	
+
 }
