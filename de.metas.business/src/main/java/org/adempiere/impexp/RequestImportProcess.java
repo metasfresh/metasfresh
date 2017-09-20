@@ -32,6 +32,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IMutable;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_I_BPartner;
 import org.compiere.model.I_I_Request;
 import org.compiere.model.I_R_Request;
 import org.compiere.model.I_R_RequestType;
@@ -74,6 +75,60 @@ public class RequestImportProcess extends AbstractImportProcess<I_I_Request>
 		return I_I_Request.COLUMNNAME_DocumentNo;
 	}
 
+	private void dbUpdateBPartnerIds(final String sqlImportWhereClause)
+	{
+		final String trxName = ITrx.TRXNAME_ThreadInherited;
+
+		final String sqlSelectByValue = "select MIN(bp." + I_C_BPartner.COLUMNNAME_C_BPartner_ID + ")"
+				+ " from " + I_C_BPartner.Table_Name + " bp "
+				+ " where bp." + I_C_BPartner.COLUMNNAME_Value + "=i." + I_I_Request.COLUMNNAME_Value
+				+ " and bp." + I_C_BPartner.COLUMNNAME_AD_Client_ID + "=i." + I_I_Request.COLUMNNAME_AD_Client_ID;
+
+		final String sql = "UPDATE " + I_I_Request.Table_Name + " i "
+				+ "\n SET " + I_I_Request.COLUMNNAME_C_BPartner_ID + "=(" + sqlSelectByValue + ")"
+				+ "\n WHERE " + sqlImportWhereClause
+				+ "\n AND i." + I_I_Request.COLUMNNAME_C_BPartner_ID + " IS NULL";
+
+		final int no = DB.executeUpdateEx(sql, trxName);
+		log.debug("Set C_BPartner_ID for {} records", no);
+	}
+
+	private void dbUpdateRequestTypeIds(final String sqlImportWhereClause)
+	{
+		final String trxName = ITrx.TRXNAME_ThreadInherited;
+
+		final String sqlSelectByValue = "select MIN(rt." + I_R_RequestType.COLUMNNAME_R_RequestType_ID + ")"
+				+ " from " + I_R_RequestType.Table_Name + " rt "
+				+ " where rt." + I_R_RequestType.COLUMNNAME_Name + "=i." + I_I_Request.COLUMNNAME_RequestType
+				+ " and rt." + I_R_RequestType.COLUMNNAME_AD_Client_ID + "=i." + I_I_Request.COLUMNNAME_AD_Client_ID;
+
+		final String sql = "UPDATE " + I_I_Request.Table_Name + " i "
+				+ "\n SET " + I_I_Request.COLUMNNAME_R_RequestType_ID + "=(" + sqlSelectByValue + ")"
+				+ "\n WHERE " + sqlImportWhereClause
+				+ "\n AND i." + I_I_Request.COLUMNNAME_R_RequestType_ID + " IS NULL";
+
+		final int no = DB.executeUpdateEx(sql, trxName);
+		log.debug("Set R_RequestType_ID for {} records", no);
+	}
+
+	private void dbUpdateStatusIds(final String sqlImportWhereClause)
+	{
+		final String trxName = ITrx.TRXNAME_ThreadInherited;
+
+		final String sqlSelectByValue = "select MIN(r." + I_R_Status.COLUMNNAME_R_Status_ID + ")"
+				+ " from " + I_R_Status.Table_Name + " r "
+				+ " where r." + I_R_Status.COLUMNNAME_Name + "=i." + I_I_Request.COLUMNNAME_Status
+				+ " and r." + I_R_Status.COLUMNNAME_AD_Client_ID + "=i." + I_I_Request.COLUMNNAME_AD_Client_ID;
+
+		final String sql = "UPDATE " + I_I_Request.Table_Name + " i "
+				+ "\n SET " + I_I_Request.COLUMNNAME_R_Status_ID + "=(" + sqlSelectByValue + ")"
+				+ "\n WHERE " + sqlImportWhereClause
+				+ "\n AND i." + I_I_Request.COLUMNNAME_R_Status_ID + " IS NULL";
+
+		final int no = DB.executeUpdateEx(sql, trxName);
+		log.debug("Set M_Product_ID for {} records (by Value)", no);
+	}
+
 	@Override
 	protected void updateAndValidateImportRecords()
 	{
@@ -84,19 +139,8 @@ public class RequestImportProcess extends AbstractImportProcess<I_I_Request>
 		//
 		// Update C_BPartner_ID
 		{
-			final String sqlSelectByValue = "select MIN(bp." + I_C_BPartner.COLUMNNAME_C_BPartner_ID + ")"
-					+ " from " + I_C_BPartner.Table_Name + " bp "
-					+ " where bp." + I_C_BPartner.COLUMNNAME_Value + "=i." + I_I_Request.COLUMNNAME_Value
-					+ " and bp." + I_C_BPartner.COLUMNNAME_AD_Client_ID + "=i." + I_I_Request.COLUMNNAME_AD_Client_ID;
-
-			final String sql = "UPDATE " + I_I_Request.Table_Name + " i "
-					+ "\n SET " + I_I_Request.COLUMNNAME_C_BPartner_ID + "=(" + sqlSelectByValue + ")"
-					+ "\n WHERE " + sqlImportWhereClause
-					+ "\n AND i." + I_I_Request.COLUMNNAME_C_BPartner_ID + " IS NULL";
-
-			final int no = DB.executeUpdateEx(sql, trxName);
-			log.debug("Set C_BPartner_ID for {} records", no);
-
+			dbUpdateBPartnerIds(sqlImportWhereClause);
+			//
 			// Flag missing BPartners
 			markAsError("BPartner not found", I_I_Request.COLUMNNAME_C_BPartner_ID + " IS NULL"
 					+ "\n AND " + sqlImportWhereClause);
@@ -105,20 +149,9 @@ public class RequestImportProcess extends AbstractImportProcess<I_I_Request>
 		//
 		// Update R_RequestType_ID by Name
 		{
-			final String sqlSelectByValue = "select MIN(rt." + I_R_RequestType.COLUMNNAME_R_RequestType_ID + ")"
-					+ " from " + I_R_RequestType.Table_Name + " rt "
-					+ " where rt." + I_R_RequestType.COLUMNNAME_Name + "=i." + I_I_Request.COLUMNNAME_RequestType
-					+ " and rt." + I_R_RequestType.COLUMNNAME_AD_Client_ID + "=i." + I_I_Request.COLUMNNAME_AD_Client_ID;
-
-			final String sql = "UPDATE " + I_I_Request.Table_Name + " i "
-					+ "\n SET " + I_I_Request.COLUMNNAME_R_RequestType_ID + "=(" + sqlSelectByValue + ")"
-					+ "\n WHERE " + sqlImportWhereClause
-					+ "\n AND i." + I_I_Request.COLUMNNAME_R_RequestType_ID + " IS NULL";
-
-			final int no = DB.executeUpdateEx(sql, trxName);
-			log.debug("Set R_RequestType_ID for {} records", no);
-
-			// Flag missing flatrate conditions
+			dbUpdateRequestTypeIds(sqlImportWhereClause);
+			//
+			// Flag missing R_RequestType_ID
 			markAsError("Request Type not found", I_I_Request.COLUMNNAME_R_RequestType_ID + " IS NULL"
 					+ "\n AND " + sqlImportWhereClause);
 		}
@@ -126,23 +159,13 @@ public class RequestImportProcess extends AbstractImportProcess<I_I_Request>
 		//
 		// Update R_Status_ID by Name
 		{
-			final String sqlSelectByValue = "select MIN(r." + I_R_Status.COLUMNNAME_R_Status_ID + ")"
-					+ " from " + I_R_Status.Table_Name + " r "
-					+ " where r." + I_R_Status.COLUMNNAME_Name + "=i." + I_I_Request.COLUMNNAME_Status
-					+ " and r." + I_R_Status.COLUMNNAME_AD_Client_ID + "=i." + I_I_Request.COLUMNNAME_AD_Client_ID;
-
-			final String sql = "UPDATE " + I_I_Request.Table_Name + " i "
-					+ "\n SET " + I_I_Request.COLUMNNAME_R_Status_ID + "=(" + sqlSelectByValue + ")"
-					+ "\n WHERE " + sqlImportWhereClause
-					+ "\n AND i." + I_I_Request.COLUMNNAME_R_Status_ID + " IS NULL";
-
-			final int no = DB.executeUpdateEx(sql, trxName);
-			log.debug("Set M_Product_ID for {} records (by Value)", no);
+			dbUpdateStatusIds(sqlImportWhereClause);
+			//
+			// Flag missing status
+			markAsError("R_Status not found", I_I_Request.COLUMNNAME_R_Status_ID + " IS NULL"
+					+ "\n AND " + sqlImportWhereClause);
 		}
 
-		// Flag missing status
-		markAsError("R_Status not found", I_I_Request.COLUMNNAME_R_Status_ID + " IS NULL"
-				+ "\n AND " + sqlImportWhereClause);
 	}
 
 	private final void markAsError(final String errorMsg, final String sqlWhereClause)
@@ -202,28 +225,15 @@ public class RequestImportProcess extends AbstractImportProcess<I_I_Request>
 		}
 		//
 		// set data from the other fields
-		if (importRecord.getDateTrx() != null)
-		{
-			request.setDateTrx(importRecord.getDateTrx());
-		}
-		if (importRecord.getDateNextAction() != null)
-		{
-			request.setDateNextAction(importRecord.getDateNextAction());
-		}
-		if (importRecord.getSummary() != null)
-		{
-			request.setSummary(importRecord.getSummary());
-		}
-		if (importRecord.getDocumentNo() != null)
-		{
-			request.setDocumentNo(importRecord.getDocumentNo());
-		}
-		
-		// TODO: don't support for now
+		request.setDateTrx(importRecord.getDateTrx());
+		request.setDateNextAction(importRecord.getDateNextAction());
+		request.setSummary(importRecord.getSummary());
+		request.setDocumentNo(importRecord.getDocumentNo());
 		int userid = Env.getAD_User_ID(getCtx());
 		request.setSalesRep_ID(userid);
-		InterfaceWrapperHelper.save(request);
 		
+		InterfaceWrapperHelper.save(request);
+
 		// Link back the request to current import record
 		importRecord.setR_Request(request);
 		//
