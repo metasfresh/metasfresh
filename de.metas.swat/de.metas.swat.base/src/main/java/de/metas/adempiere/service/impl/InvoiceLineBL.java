@@ -177,25 +177,9 @@ public class InvoiceLineBL implements IInvoiceLineBL
 		}
 
 		final I_C_Invoice invoice = invoiceLine.getC_Invoice();
-
-		final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
-		final Boolean processedPLVFiltering = null; // task 09533: the user doesn't know about PLV's processed flag, so we can't filter by it
-
-		if (invoice.getM_PriceList_ID() != 100)  // FIXME use PriceList_None constant
+		if (invoice.getM_PriceList_ID() != MPriceList.M_PriceList_ID_None)
 		{
-			final I_M_PriceList priceList = invoice.getM_PriceList();
-
-			final I_M_PriceList_Version priceListVersion = priceListDAO.retrievePriceListVersionOrNull(priceList, invoice.getDateInvoiced(), processedPLVFiltering);
-			Check.errorIf(priceListVersion == null, "Missing PLV for M_PriceList and DateInvoiced of {}", invoice);
-
-			final int m_Product_ID = invoiceLine.getM_Product_ID();
-			Check.assume(m_Product_ID > 0, "M_Product_ID > 0 for {}", invoiceLine);
-
-			final I_M_ProductPrice productPrice = Optional
-					.ofNullable(ProductPrices.retrieveMainProductPriceOrNull(priceListVersion, m_Product_ID))
-					.orElseThrow(() -> new TaxCategoryNotFoundException(invoiceLine));
-
-			return productPrice.getC_TaxCategory_ID();
+			return getTaxCategoryFromProductPrice(invoiceLine, invoice);
 		}
 
 		// Fallback: try getting from Order Line
@@ -207,28 +191,62 @@ public class InvoiceLineBL implements IInvoiceLineBL
 		// Fallback: try getting from Invoice -> Order
 		if (invoiceLine.getC_Invoice().getC_Order_ID() > 0)
 		{
-			final Properties ctx = InterfaceWrapperHelper.getCtx(invoiceLine);
-			final String trxName = InterfaceWrapperHelper.getTrxName(invoiceLine);
-
-			final I_C_Order order = InterfaceWrapperHelper.create(ctx, invoiceLine.getC_Invoice().getC_Order_ID(), I_C_Order.class, trxName);
-
-			final I_M_PriceList priceList = order.getM_PriceList();
-
-			final I_M_PriceList_Version priceListVersion = priceListDAO.retrievePriceListVersionOrNull(priceList, invoice.getDateInvoiced(), processedPLVFiltering);
-			Check.errorIf(priceListVersion == null, "Missing PLV for M_PriceList and DateInvoiced of {}", invoice);
-
-			final int m_Product_ID = invoiceLine.getM_Product_ID();
-			Check.assume(m_Product_ID > 0, "M_Product_ID > 0 for {}", invoiceLine);
-
-			final I_M_ProductPrice productPrice = Optional
-					.ofNullable(ProductPrices.retrieveMainProductPriceOrNull(priceListVersion, m_Product_ID))
-					.orElseThrow(() -> new TaxCategoryNotFoundException(invoiceLine));
-			return productPrice.getC_TaxCategory_ID();
+			return getTaxCategoryFromOrder(invoiceLine, invoice);
 		}
 
 		throw new TaxCategoryNotFoundException(invoiceLine);
 	}
 
+	private int getTaxCategoryFromProductPrice(
+			final org.compiere.model.I_C_InvoiceLine invoiceLine, 
+			final I_C_Invoice invoice)
+	{
+		final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
+		final Boolean processedPLVFiltering = null; // task 09533: the user doesn't know about PLV's processed flag, so we can't filter by it
+		
+		final I_M_PriceList priceList = invoice.getM_PriceList();
+
+
+		final I_M_PriceList_Version priceListVersion = priceListDAO.
+				retrievePriceListVersionOrNull(priceList, invoice.getDateInvoiced(), processedPLVFiltering);
+		Check.errorIf(priceListVersion == null, "Missing PLV for M_PriceList and DateInvoiced of {}", invoice);
+
+		final int m_Product_ID = invoiceLine.getM_Product_ID();
+		Check.assume(m_Product_ID > 0, "M_Product_ID > 0 for {}", invoiceLine);
+
+		final I_M_ProductPrice productPrice = Optional
+				.ofNullable(ProductPrices.retrieveMainProductPriceOrNull(priceListVersion, m_Product_ID))
+				.orElseThrow(() -> new TaxCategoryNotFoundException(invoiceLine));
+
+		return productPrice.getC_TaxCategory_ID();
+	}
+
+	private int getTaxCategoryFromOrder(
+			final org.compiere.model.I_C_InvoiceLine invoiceLine, 
+			final I_C_Invoice invoice)
+	{
+		final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
+		final Boolean processedPLVFiltering = null; // task 09533: the user doesn't know about PLV's processed flag, so we can't filter by it
+				
+		final Properties ctx = InterfaceWrapperHelper.getCtx(invoiceLine);
+		final String trxName = InterfaceWrapperHelper.getTrxName(invoiceLine);
+
+		final I_C_Order order = InterfaceWrapperHelper.create(ctx, invoiceLine.getC_Invoice().getC_Order_ID(), I_C_Order.class, trxName);
+
+		final I_M_PriceList priceList = order.getM_PriceList();
+
+		final I_M_PriceList_Version priceListVersion = priceListDAO.retrievePriceListVersionOrNull(priceList, invoice.getDateInvoiced(), processedPLVFiltering);
+		Check.errorIf(priceListVersion == null, "Missing PLV for M_PriceList and DateInvoiced of {}", invoice);
+
+		final int m_Product_ID = invoiceLine.getM_Product_ID();
+		Check.assume(m_Product_ID > 0, "M_Product_ID > 0 for {}", invoiceLine);
+
+		final I_M_ProductPrice productPrice = Optional
+				.ofNullable(ProductPrices.retrieveMainProductPriceOrNull(priceListVersion, m_Product_ID))
+				.orElseThrow(() -> new TaxCategoryNotFoundException(invoiceLine));
+		return productPrice.getC_TaxCategory_ID();
+	}
+	
 	@Override
 	public void setQtyInvoicedInPriceUOM(final I_C_InvoiceLine invoiceLine)
 	{

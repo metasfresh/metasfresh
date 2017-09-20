@@ -158,11 +158,17 @@ public class ProductPrices
 
 	private static AdempiereException createException(@NonNull final I_M_ProductPrice someMainProductPrice)
 	{
+		final org.compiere.model.I_M_Product product = someMainProductPrice.getM_Product();
+
+		final I_M_PriceList_Version plv = someMainProductPrice.getM_PriceList_Version();
+		final I_M_PriceList pl = plv.getM_PriceList();
+		final I_M_PricingSystem ps = pl.getM_PricingSystem();
+
 		final AdempiereException exception = new DuplicateMainProductPriceException(someMainProductPrice)
-				.setParameter(I_M_PricingSystem.Table_Name, someMainProductPrice.getM_PriceList_Version().getM_PriceList().getM_PricingSystem().getName())
-				.setParameter(I_M_PriceList.Table_Name, someMainProductPrice.getM_PriceList_Version().getM_PriceList().getName())
-				.setParameter(I_M_PriceList_Version.Table_Name, someMainProductPrice.getM_PriceList_Version().getName())
-				.setParameter(I_M_Product.Table_Name, someMainProductPrice.getM_Product().getValue() + "_" + someMainProductPrice.getM_Product().getName());
+				.setParameter(I_M_PricingSystem.Table_Name, ps.getName())
+				.setParameter(I_M_PriceList.Table_Name, pl.getName())
+				.setParameter(I_M_PriceList_Version.Table_Name, plv.getName())
+				.setParameter(I_M_Product.Table_Name, product.getValue() + "_" + product.getName());
 
 		return exception;
 	}
