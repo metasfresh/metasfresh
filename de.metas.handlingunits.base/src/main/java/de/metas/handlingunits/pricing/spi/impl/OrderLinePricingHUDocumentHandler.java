@@ -29,7 +29,6 @@ import java.util.Properties;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAwareFactoryService;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.pricing.api.ProductPriceQuery;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_AttributeSetInstance;
@@ -41,6 +40,7 @@ import de.metas.handlingunits.IHUDocumentHandler;
 import de.metas.handlingunits.model.I_C_OrderLine;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_ProductPrice;
+import de.metas.pricing.ProductPrices;
 import de.metas.pricing.attributebased.IAttributePricingBL;
 import de.metas.pricing.attributebased.IProductPriceAware;
 
@@ -161,7 +161,7 @@ public class OrderLinePricingHUDocumentHandler implements IHUDocumentHandler
 		if(orderLine.getM_HU_PI_Item_Product_ID() > 0)
 		{
 			final boolean strictDefault = false;
-			final I_M_ProductPrice huProductPrice = ProductPriceQuery.newInstance(plv)
+			final I_M_ProductPrice huProductPrice = ProductPrices.newQuery(plv)
 					.setM_Product_ID(orderLine.getM_Product_ID())
 					.onlyAttributePricing()
 					.matching(HUPricing.createHUPIItemProductMatcher(orderLine.getM_HU_PI_Item_Product_ID()))
@@ -174,7 +174,7 @@ public class OrderLinePricingHUDocumentHandler implements IHUDocumentHandler
 
 		// We want *the* Default I_M_ProductPrice_Attribute (no fallbacks etc), because we use this to generate the ASI.
 		final boolean strictDefault = true;
-		return ProductPriceQuery.newInstance(plv)
+		return ProductPrices.newQuery(plv)
 				.setM_Product_ID(orderLine.getM_Product_ID())
 				.onlyAttributePricing()
 				.retrieveDefault(strictDefault, I_M_ProductPrice.class);

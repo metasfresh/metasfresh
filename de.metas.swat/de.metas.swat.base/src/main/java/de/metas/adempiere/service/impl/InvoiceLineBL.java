@@ -35,7 +35,6 @@ import org.adempiere.pricing.api.IEditablePricingContext;
 import org.adempiere.pricing.api.IPriceListDAO;
 import org.adempiere.pricing.api.IPricingBL;
 import org.adempiere.pricing.api.IPricingResult;
-import org.adempiere.pricing.api.ProductPriceQuery;
 import org.adempiere.pricing.exceptions.ProductNotOnPriceListException;
 import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.util.Check;
@@ -60,6 +59,7 @@ import de.metas.adempiere.model.I_C_BPartner_Location;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.adempiere.service.IInvoiceLineBL;
 import de.metas.logging.LogManager;
+import de.metas.pricing.ProductPrices;
 import de.metas.tax.api.ITaxBL;
 
 public class InvoiceLineBL implements IInvoiceLineBL
@@ -190,7 +190,7 @@ public class InvoiceLineBL implements IInvoiceLineBL
 			final int m_Product_ID = invoiceLine.getM_Product_ID();
 			Check.assume(m_Product_ID > 0, "M_Product_ID > 0 for {}", invoiceLine);
 
-			final I_M_ProductPrice productPrice = ProductPriceQuery.retrieveMainProductPriceIfExists(priceListVersion, m_Product_ID)
+			final I_M_ProductPrice productPrice = ProductPrices.retrieveMainProductPriceIfExists(priceListVersion, m_Product_ID)
 					.orElseThrow(() -> new TaxCategoryNotFoundException(invoiceLine));
 
 			return productPrice.getC_TaxCategory_ID();
@@ -218,7 +218,7 @@ public class InvoiceLineBL implements IInvoiceLineBL
 			final int m_Product_ID = invoiceLine.getM_Product_ID();
 			Check.assume(m_Product_ID > 0, "M_Product_ID > 0 for {}", invoiceLine);
 
-			final I_M_ProductPrice productPrice = ProductPriceQuery.retrieveMainProductPriceIfExists(priceListVersion, m_Product_ID)
+			final I_M_ProductPrice productPrice = ProductPrices.retrieveMainProductPriceIfExists(priceListVersion, m_Product_ID)
 					.orElseThrow(() -> new TaxCategoryNotFoundException(invoiceLine));
 			return productPrice.getC_TaxCategory_ID();
 		}

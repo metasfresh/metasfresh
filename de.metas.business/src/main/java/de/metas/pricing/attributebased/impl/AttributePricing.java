@@ -10,8 +10,6 @@ import org.adempiere.mm.attributes.api.IAttributeSetInstanceAwareFactoryService;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.pricing.api.IPricingContext;
 import org.adempiere.pricing.api.IPricingResult;
-import org.adempiere.pricing.api.ProductPriceQuery;
-import org.adempiere.pricing.api.ProductPriceQuery.IProductPriceQueryMatcher;
 import org.adempiere.pricing.spi.rules.PricingRuleAdapter;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -23,6 +21,8 @@ import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.logging.LogManager;
+import de.metas.pricing.ProductPriceQuery.IProductPriceQueryMatcher;
+import de.metas.pricing.ProductPrices;
 import de.metas.pricing.attributebased.IAttributePricingBL;
 import de.metas.pricing.attributebased.IProductPriceAware;
 import de.metas.pricing.attributebased.ProductPriceAware;
@@ -248,7 +248,7 @@ public class AttributePricing extends PricingRuleAdapter
 			return Optional.empty();
 		}
 
-		final I_M_ProductPrice productPrice = ProductPriceQuery.newInstance(plv)
+		final I_M_ProductPrice productPrice = ProductPrices.newQuery(plv)
 				.setM_Product_ID(pricingCtx.getM_Product_ID())
 				.matching(_defaultMatchers)
 				.matchingAttributes(attributeSetInstance)

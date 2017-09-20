@@ -1,12 +1,10 @@
-package org.adempiere.pricing.api;
+package de.metas.pricing;
 
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Properties;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -54,77 +52,16 @@ import de.metas.logging.LogManager;
  * #L%
  */
 
+/**
+ * Hint: use {@link ProductPrices} to get an instance.
+ *
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
 public class ProductPriceQuery
 {
-	public static final ProductPriceQuery newInstance()
-	{
-		return new ProductPriceQuery();
-	}
-
-	public static final ProductPriceQuery newInstance(final I_M_PriceList_Version plv)
-	{
-		return new ProductPriceQuery()
-				.setContextProvider(plv)
-				.setM_PriceList_Version_ID(plv);
-	}
-
-	/**
-	 * Convenient method to check if the main product price exists.
-	 *
-	 * @param plv price list version or null
-	 * @param productId product (negative values are tolerated)
-	 * @return true if exists
-	 */
-	public static final boolean mainProductPriceExists(final I_M_PriceList_Version plv, final int productId)
-	{
-		if (plv == null)
-		{
-			return false;
-		}
-		if (productId <= 0)
-		{
-			return false;
-		}
-
-		return newMainProductPriceQuery(plv, productId)
-				.matches();
-	}
-
-	public static final Optional<I_M_ProductPrice> retrieveMainProductPriceIfExists(final I_M_PriceList_Version plv, final int productId)
-	{
-		final I_M_ProductPrice productPrice = newMainProductPriceQuery(plv, productId)
-				.toQuery()
-				.firstOnly(I_M_ProductPrice.class);
-		return Optional.ofNullable(productPrice);
-	}
-
-	private static final ProductPriceQuery newMainProductPriceQuery(final I_M_PriceList_Version plv, final int productId)
-	{
-		return newInstance(plv)
-				.setM_Product_ID(productId)
-				.noAttributePricing()
-				//
-				.addMatchersIfAbsent(MATCHERS_MainProductPrice); // IMORTANT: keep it last
-	}
-
-	public static void registerMainProductPriceMatcher(final IProductPriceQueryMatcher matcher)
-	{
-		Check.assumeNotNull(matcher, "Parameter matcher is not null");
-		final boolean added = MATCHERS_MainProductPrice.addIfAbsent(matcher);
-		if (!added)
-		{
-			logger.warn("Main product matcher {} was not registered because it's a duplicate: {}", matcher, MATCHERS_MainProductPrice);
-		}
-		else
-		{
-			logger.info("Registered main product matcher: {}", matcher);
-		}
-	}
-
 	private static final Logger logger = LogManager.getLogger(ProductPriceQuery.class);
-
-	private static final CopyOnWriteArrayList<IProductPriceQueryMatcher> MATCHERS_MainProductPrice = new CopyOnWriteArrayList<>();
-
+	
 	private Object _contextProvider;
 	private int _priceListVersionId;
 	private int _productId;
@@ -136,7 +73,7 @@ public class ProductPriceQuery
 
 	private Map<String, IProductPriceQueryMatcher> _additionalMatchers = null;
 
-	private ProductPriceQuery()
+	/* package */ ProductPriceQuery()
 	{
 		super();
 	}
@@ -193,7 +130,7 @@ public class ProductPriceQuery
 	 * 
 	 * @param strictDefault if {@code true}, the method throws an exception if there is more than one match.
 	 *            If {@code false, it silently returns the first match which has the lowest sequence number.
-	 * @param type
+	 * 			@param type
 	 * @return
 	 */
 	public <T extends I_M_ProductPrice> T retrieveDefault(final boolean strictDefault, final Class<T> type)
@@ -236,19 +173,18 @@ public class ProductPriceQuery
 		return strictDefaultSecondTry;
 	}
 
-	private IQuery<I_M_ProductPrice> toQuery()
+	public IQuery<I_M_ProductPrice> toQuery()
 	{
 		return toQueryBuilder().create();
 	}
 
-	private IQueryBuilder<I_M_ProductPrice> toQueryBuilder()
+	public IQueryBuilder<I_M_ProductPrice> toQueryBuilder()
 	{
-		final Object contextProvider = getContextProvider();
-
-		final IQueryBuilder<I_M_ProductPrice> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_M_ProductPrice.class, contextProvider)
+		final IQueryBuilder<I_M_ProductPrice> queryBuilder = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_M_ProductPrice.class, getContextProvider())
+				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_ProductPrice.COLUMNNAME_M_PriceList_Version_ID, getM_PriceList_Version_ID())
-				.addEqualsFilter(I_M_ProductPrice.COLUMNNAME_M_Product_ID, getM_Product_ID())
-				.addOnlyActiveRecordsFilter();
+				.addEqualsFilter(I_M_ProductPrice.COLUMNNAME_M_Product_ID, getM_Product_ID());
 
 		//
 		// Attribute pricing records
@@ -289,14 +225,7 @@ public class ProductPriceQuery
 			additionalMatchers.forEach(matcher -> queryBuilder.filter(matcher.getQueryFilter()));
 		}
 
-		//
-		// Ordering
-		// NOTE: we don't know the best ordering at this point!
-		// queryBuilder.orderBy()
-		// .addColumn(I_M_ProductPrice.COLUMN_IsAttributeDependant, Direction.Ascending, Nulls.Last)
-		// .addColumn(I_M_ProductPrice.COLUMN_MatchSeqNo, Direction.Ascending, Nulls.Last)
-		// .addColumn(I_M_ProductPrice.COLUMN_M_ProductPrice_ID, Direction.Ascending, Nulls.Last);
-
+		// NOTE: don't order because we don't know the best ordering at this point!
 		return queryBuilder;
 	}
 
@@ -424,7 +353,7 @@ public class ProductPriceQuery
 		return this;
 	}
 
-	private final ProductPriceQuery addMatchersIfAbsent(final Collection<IProductPriceQueryMatcher> matchers)
+	/* package */ final ProductPriceQuery addMatchersIfAbsent(final Collection<IProductPriceQueryMatcher> matchers)
 	{
 		if (matchers == null || matchers.isEmpty())
 		{
@@ -436,7 +365,6 @@ public class ProductPriceQuery
 			_additionalMatchers = new LinkedHashMap<>();
 		}
 		matchers.forEach(matcher -> _additionalMatchers.putIfAbsent(matcher.getName(), matcher));
-
 		return this;
 	}
 

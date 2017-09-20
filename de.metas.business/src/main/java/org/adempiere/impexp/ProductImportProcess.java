@@ -33,7 +33,6 @@ import java.util.Properties;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.pricing.api.ProductPriceQuery;
 import org.adempiere.util.Check;
 import org.adempiere.util.lang.IMutable;
 import org.compiere.model.I_I_Product;
@@ -46,6 +45,7 @@ import org.compiere.util.DB;
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.adempiere.model.I_M_Product;
+import de.metas.pricing.ProductPrices;
 
 /**
  * Import {@link I_I_Product} to {@link I_M_Product}.
@@ -615,7 +615,7 @@ public class ProductImportProcess extends AbstractImportProcess<I_I_Product>
 		//
 		// Get/Create Product Price record
 		final I_M_PriceList_Version plv = InterfaceWrapperHelper.create(getCtx(), priceListVersionId, I_M_PriceList_Version.class, ITrx.TRXNAME_ThreadInherited);
-		final I_M_ProductPrice pp = ProductPriceQuery.retrieveMainProductPriceIfExists(plv, productId)
+		final I_M_ProductPrice pp = ProductPrices.retrieveMainProductPriceIfExists(plv, productId)
 				.orElseGet(() -> InterfaceWrapperHelper.create(getCtx(), I_M_ProductPrice.class, ITrx.TRXNAME_ThreadInherited));
 		pp.setM_PriceList_Version(plv);	// FK
 		pp.setM_Product_ID(productId); // FK

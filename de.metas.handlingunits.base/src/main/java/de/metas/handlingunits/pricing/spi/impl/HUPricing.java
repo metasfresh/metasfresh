@@ -7,9 +7,6 @@ import org.adempiere.ad.dao.impl.NotEqualsQueryFilter;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.pricing.api.IPricingContext;
 import org.adempiere.pricing.api.IPricingResult;
-import org.adempiere.pricing.api.ProductPriceQuery;
-import org.adempiere.pricing.api.ProductPriceQuery.IProductPriceQueryMatcher;
-import org.adempiere.pricing.api.ProductPriceQuery.ProductPriceQueryMatcher;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_PriceList_Version;
 import org.slf4j.Logger;
@@ -17,6 +14,10 @@ import org.slf4j.Logger;
 import de.metas.handlingunits.model.I_M_ProductPrice;
 import de.metas.interfaces.I_M_HU_PI_Item_Product_Aware;
 import de.metas.logging.LogManager;
+import de.metas.pricing.ProductPriceQuery;
+import de.metas.pricing.ProductPriceQuery.IProductPriceQueryMatcher;
+import de.metas.pricing.ProductPriceQuery.ProductPriceQueryMatcher;
+import de.metas.pricing.ProductPrices;
 import de.metas.pricing.attributebased.impl.AttributePricing;
 
 /**
@@ -75,7 +76,7 @@ public class HUPricing extends AttributePricing
 			return Optional.empty();
 		}
 
-		final ProductPriceQuery productPriceQuery = ProductPriceQuery.newInstance(plv)
+		final ProductPriceQuery productPriceQuery = ProductPrices.newQuery(plv)
 				.setM_Product_ID(pricingCtx.getM_Product_ID())
 				.matching(createHUPIItemProductMatcher(huPIItemProductId));
 
@@ -135,7 +136,7 @@ public class HUPricing extends AttributePricing
 		//
 		// Get the default product price attribute, if any
 		final boolean strictDefault = true; // backward compatible
-		final I_M_ProductPrice defaultPrice = ProductPriceQuery.newInstance(plv)
+		final I_M_ProductPrice defaultPrice = ProductPrices.newQuery(plv)
 				.setM_Product_ID(pricingCtx.getM_Product_ID())
 				.onlyAttributePricing()
 				.matching(HUPIItemProductMatcher_Any)

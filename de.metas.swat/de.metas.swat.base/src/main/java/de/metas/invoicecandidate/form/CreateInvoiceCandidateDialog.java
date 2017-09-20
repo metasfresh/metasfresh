@@ -53,7 +53,6 @@ import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.pricing.api.IPriceListBL;
-import org.adempiere.pricing.api.ProductPriceQuery;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
@@ -87,6 +86,7 @@ import de.metas.invoicecandidate.model.I_C_ILCandHandler;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.impl.ManualCandidateHandler;
+import de.metas.pricing.ProductPrices;
 import de.metas.pricing.exception.ProductPriceNotFoundException;
 import de.metas.product.acct.api.IProductAcctDAO;
 import de.metas.tax.api.ITaxBL;
@@ -413,7 +413,7 @@ public class CreateInvoiceCandidateDialog
 						, (Boolean)null // processedPLVFiltering
 						);
 
-				productPrice = ProductPriceQuery.retrieveMainProductPriceIfExists(currentVersion, product.getM_Product_ID())
+				productPrice = ProductPrices.retrieveMainProductPriceIfExists(currentVersion, product.getM_Product_ID())
 						.orElse(null);
 			}
 			if (productPrice == null)
