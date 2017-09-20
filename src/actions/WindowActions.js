@@ -65,17 +65,23 @@ export function initLayoutSuccess(layout, scope) {
     }
 }
 
-export function initDataSuccess(
-    data, scope, docId, saveStatus, validStatus, includedTabsInfo, websocket
-) {
+export function initDataSuccess({
+    data,
+    docId,
+    includedTabsInfo,
+    saveStatus,
+    scope,
+    validStatus,
+    websocket
+}) {
     return {
-        type: types.INIT_DATA_SUCCESS,
         data,
-        scope,
         docId,
-        saveStatus,
-        validStatus,
         includedTabsInfo,
+        saveStatus,
+        scope,
+        type: types.INIT_DATA_SUCCESS,
+        validStatus,
         websocket
     }
 }
@@ -301,13 +307,15 @@ export function createWindow(
                 }
 
                 docId = response.data[elem].id;
-                dispatch(initDataSuccess(
-                    parseToDisplay(response.data[elem].fieldsByName),
-                    getScope(isModal), docId,
-                    response.data[0].saveStatus, response.data[0].validStatus,
-                    response.data[0].includedTabsInfo,
-                    response.data[0].websocketEndpoint
-                ));
+                dispatch(initDataSuccess({
+                    data: parseToDisplay(response.data[elem].fieldsByName),
+                    docId,
+                    saveStatus: response.data[0].saveStatus,
+                    scope: getScope(isModal),
+                    validStatus: response.data[0].validStatus,
+                    includedTabsInfo: response.data[0].includedTabsInfo,
+                    websocketEndpoint: response.data[0].websocketEndpoint
+                }));
 
                 if (isModal) {
                     if(rowId === 'NEW'){
@@ -391,9 +399,14 @@ export function initWindow(windowType, docId, tabId, rowId = null, isAdvanced) {
                     'window', windowType, docId, null, null, null, null,
                     isAdvanced
                 ).catch(() => {
-                    dispatch(initDataSuccess(
-                        {}, 'master', 'notfound', {saved: true}, {}, {}
-                    ));
+                    dispatch(initDataSuccess({
+                        data: {},
+                        docId: 'notfound',
+                        includedTabsInfo: {},
+                        scope: 'master',
+                        saveStatus: { saved: true },
+                        validStatus: {}
+                    }));
                     dispatch(getWindowBreadcrumb(windowType));
                 });
             }
@@ -656,7 +669,10 @@ export function createProcess(processType, viewId, type, ids, tabId, rowId) {
                     });
                 }
                 else {
-                    dispatch(initDataSuccess(preparedData, 'modal'));
+                    dispatch(initDataSuccess({
+                        data: preparedData,
+                        scope: 'modal'
+                    }));
                     initLayout('process', processType).then(response => {
                         dispatch(setProcessSaved());
 
