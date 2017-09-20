@@ -1,36 +1,20 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
 package org.compiere.model;
 
 import java.sql.ResultSet;
 import java.util.Properties;
-import org.compiere.util.KeyNamePair;
 
 /** Generated Model for AD_Ref_Table
  *  @author Adempiere (generated) 
- *  @version Release 3.5.4a - $Id$ */
-public class X_AD_Ref_Table extends PO implements I_AD_Ref_Table, I_Persistent 
+ */
+@SuppressWarnings("javadoc")
+public class X_AD_Ref_Table extends org.compiere.model.PO implements I_AD_Ref_Table, org.compiere.model.I_Persistent 
 {
 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20090915L;
+	private static final long serialVersionUID = -2113606878L;
 
     /** Standard Constructor */
     public X_AD_Ref_Table (Properties ctx, int AD_Ref_Table_ID, String trxName)
@@ -38,12 +22,11 @@ public class X_AD_Ref_Table extends PO implements I_AD_Ref_Table, I_Persistent
       super (ctx, AD_Ref_Table_ID, trxName);
       /** if (AD_Ref_Table_ID == 0)
         {
-			setAD_Display (0);
 			setAD_Key (0);
 			setAD_Reference_ID (0);
 			setAD_Table_ID (0);
-			setEntityType (null);
-// U
+			setEntityType (null); // U
+			setIsReferenceTarget (false); // N
 			setIsValueDisplayed (false);
         } */
     }
@@ -54,45 +37,75 @@ public class X_AD_Ref_Table extends PO implements I_AD_Ref_Table, I_Persistent
       super (ctx, rs, trxName);
     }
 
-    /** AccessLevel
-      * @return 4 - System 
-      */
-    protected int get_AccessLevel()
-    {
-      return accessLevel.intValue();
-    }
 
     /** Load Meta Data */
-    protected POInfo initPO (Properties ctx)
+    @Override
+    protected org.compiere.model.POInfo initPO (Properties ctx)
     {
-      POInfo poi = POInfo.getPOInfo (ctx, Table_ID, get_TrxName());
+      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
 
-    public String toString()
-    {
-      StringBuffer sb = new StringBuffer ("X_AD_Ref_Table[")
-        .append(get_ID()).append("]");
-      return sb.toString();
-    }
+	@Override
+	public org.compiere.model.I_AD_Column getAD_Column_ReferenceTarget() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_AD_Column_ReferenceTarget_ID, org.compiere.model.I_AD_Column.class);
+	}
 
-	public I_AD_Column getAD_Disp() throws RuntimeException
-    {
-		return (I_AD_Column)MTable.get(getCtx(), I_AD_Column.Table_Name)
-			.getPO(getAD_Display(), get_TrxName());	}
+	@Override
+	public void setAD_Column_ReferenceTarget(org.compiere.model.I_AD_Column AD_Column_ReferenceTarget)
+	{
+		set_ValueFromPO(COLUMNNAME_AD_Column_ReferenceTarget_ID, org.compiere.model.I_AD_Column.class, AD_Column_ReferenceTarget);
+	}
 
-	/** Set Display column.
+	/** Set AD_Column_ReferenceTarget_ID.
+		@param AD_Column_ReferenceTarget_ID AD_Column_ReferenceTarget_ID	  */
+	@Override
+	public void setAD_Column_ReferenceTarget_ID (int AD_Column_ReferenceTarget_ID)
+	{
+		if (AD_Column_ReferenceTarget_ID < 1) 
+			set_Value (COLUMNNAME_AD_Column_ReferenceTarget_ID, null);
+		else 
+			set_Value (COLUMNNAME_AD_Column_ReferenceTarget_ID, Integer.valueOf(AD_Column_ReferenceTarget_ID));
+	}
+
+	/** Get AD_Column_ReferenceTarget_ID.
+		@return AD_Column_ReferenceTarget_ID	  */
+	@Override
+	public int getAD_Column_ReferenceTarget_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Column_ReferenceTarget_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_AD_Column getAD_Disp() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_AD_Display, org.compiere.model.I_AD_Column.class);
+	}
+
+	@Override
+	public void setAD_Disp(org.compiere.model.I_AD_Column AD_Disp)
+	{
+		set_ValueFromPO(COLUMNNAME_AD_Display, org.compiere.model.I_AD_Column.class, AD_Disp);
+	}
+
+	/** Set Anzeige-Spalte.
 		@param AD_Display 
 		Column that will display
 	  */
+	@Override
 	public void setAD_Display (int AD_Display)
 	{
 		set_Value (COLUMNNAME_AD_Display, Integer.valueOf(AD_Display));
 	}
 
-	/** Get Display column.
+	/** Get Anzeige-Spalte.
 		@return Column that will display
 	  */
+	@Override
 	public int getAD_Display () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Display);
@@ -101,23 +114,32 @@ public class X_AD_Ref_Table extends PO implements I_AD_Ref_Table, I_Persistent
 		return ii.intValue();
 	}
 
-	public I_AD_Column getAD_() throws RuntimeException
-    {
-		return (I_AD_Column)MTable.get(getCtx(), I_AD_Column.Table_Name)
-			.getPO(getAD_Key(), get_TrxName());	}
+	@Override
+	public org.compiere.model.I_AD_Column getAD_() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_AD_Key, org.compiere.model.I_AD_Column.class);
+	}
 
-	/** Set Key column.
+	@Override
+	public void setAD_(org.compiere.model.I_AD_Column AD_)
+	{
+		set_ValueFromPO(COLUMNNAME_AD_Key, org.compiere.model.I_AD_Column.class, AD_);
+	}
+
+	/** Set Schlüssel-Spalte.
 		@param AD_Key 
 		Unique identifier of a record
 	  */
+	@Override
 	public void setAD_Key (int AD_Key)
 	{
 		set_Value (COLUMNNAME_AD_Key, Integer.valueOf(AD_Key));
 	}
 
-	/** Get Key column.
+	/** Get Schlüssel-Spalte.
 		@return Unique identifier of a record
 	  */
+	@Override
 	public int getAD_Key () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Key);
@@ -126,15 +148,23 @@ public class X_AD_Ref_Table extends PO implements I_AD_Ref_Table, I_Persistent
 		return ii.intValue();
 	}
 
-	public I_AD_Reference getAD_Reference() throws RuntimeException
-    {
-		return (I_AD_Reference)MTable.get(getCtx(), I_AD_Reference.Table_Name)
-			.getPO(getAD_Reference_ID(), get_TrxName());	}
+	@Override
+	public org.compiere.model.I_AD_Reference getAD_Reference() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_AD_Reference_ID, org.compiere.model.I_AD_Reference.class);
+	}
 
-	/** Set Reference.
+	@Override
+	public void setAD_Reference(org.compiere.model.I_AD_Reference AD_Reference)
+	{
+		set_ValueFromPO(COLUMNNAME_AD_Reference_ID, org.compiere.model.I_AD_Reference.class, AD_Reference);
+	}
+
+	/** Set Referenz.
 		@param AD_Reference_ID 
 		System Reference and Validation
 	  */
+	@Override
 	public void setAD_Reference_ID (int AD_Reference_ID)
 	{
 		if (AD_Reference_ID < 1) 
@@ -143,9 +173,10 @@ public class X_AD_Ref_Table extends PO implements I_AD_Ref_Table, I_Persistent
 			set_ValueNoCheck (COLUMNNAME_AD_Reference_ID, Integer.valueOf(AD_Reference_ID));
 	}
 
-	/** Get Reference.
+	/** Get Referenz.
 		@return System Reference and Validation
 	  */
+	@Override
 	public int getAD_Reference_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Reference_ID);
@@ -154,23 +185,23 @@ public class X_AD_Ref_Table extends PO implements I_AD_Ref_Table, I_Persistent
 		return ii.intValue();
 	}
 
-    /** Get Record ID/ColumnName
-        @return ID/ColumnName pair
-      */
-    public KeyNamePair getKeyNamePair() 
-    {
-        return new KeyNamePair(get_ID(), String.valueOf(getAD_Reference_ID()));
-    }
+	@Override
+	public org.compiere.model.I_AD_Table getAD_Table() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_AD_Table_ID, org.compiere.model.I_AD_Table.class);
+	}
 
-	public I_AD_Table getAD_Table() throws RuntimeException
-    {
-		return (I_AD_Table)MTable.get(getCtx(), I_AD_Table.Table_Name)
-			.getPO(getAD_Table_ID(), get_TrxName());	}
+	@Override
+	public void setAD_Table(org.compiere.model.I_AD_Table AD_Table)
+	{
+		set_ValueFromPO(COLUMNNAME_AD_Table_ID, org.compiere.model.I_AD_Table.class, AD_Table);
+	}
 
-	/** Set Table.
+	/** Set DB-Tabelle.
 		@param AD_Table_ID 
 		Database Table information
 	  */
+	@Override
 	public void setAD_Table_ID (int AD_Table_ID)
 	{
 		if (AD_Table_ID < 1) 
@@ -179,9 +210,10 @@ public class X_AD_Ref_Table extends PO implements I_AD_Ref_Table, I_Persistent
 			set_Value (COLUMNNAME_AD_Table_ID, Integer.valueOf(AD_Table_ID));
 	}
 
-	/** Get Table.
+	/** Get DB-Tabelle.
 		@return Database Table information
 	  */
+	@Override
 	public int getAD_Table_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Table_ID);
@@ -190,15 +222,23 @@ public class X_AD_Ref_Table extends PO implements I_AD_Ref_Table, I_Persistent
 		return ii.intValue();
 	}
 
-	public I_AD_Window getAD_Window() throws RuntimeException
-    {
-		return (I_AD_Window)MTable.get(getCtx(), I_AD_Window.Table_Name)
-			.getPO(getAD_Window_ID(), get_TrxName());	}
+	@Override
+	public org.compiere.model.I_AD_Window getAD_Window() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_AD_Window_ID, org.compiere.model.I_AD_Window.class);
+	}
 
-	/** Set Window.
+	@Override
+	public void setAD_Window(org.compiere.model.I_AD_Window AD_Window)
+	{
+		set_ValueFromPO(COLUMNNAME_AD_Window_ID, org.compiere.model.I_AD_Window.class, AD_Window);
+	}
+
+	/** Set Fenster.
 		@param AD_Window_ID 
 		Data entry or display window
 	  */
+	@Override
 	public void setAD_Window_ID (int AD_Window_ID)
 	{
 		if (AD_Window_ID < 1) 
@@ -207,9 +247,10 @@ public class X_AD_Ref_Table extends PO implements I_AD_Ref_Table, I_Persistent
 			set_Value (COLUMNNAME_AD_Window_ID, Integer.valueOf(AD_Window_ID));
 	}
 
-	/** Get Window.
+	/** Get Fenster.
 		@return Data entry or display window
 	  */
+	@Override
 	public int getAD_Window_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Window_ID);
@@ -218,38 +259,68 @@ public class X_AD_Ref_Table extends PO implements I_AD_Ref_Table, I_Persistent
 		return ii.intValue();
 	}
 
-	/** EntityType AD_Reference_ID=389 */
+	/** 
+	 * EntityType AD_Reference_ID=389
+	 * Reference name: _EntityTypeNew
+	 */
 	public static final int ENTITYTYPE_AD_Reference_ID=389;
-	/** Set Entity Type.
+	/** Set Entitäts-Art.
 		@param EntityType 
 		Dictionary Entity Type; Determines ownership and synchronization
 	  */
-	public void setEntityType (String EntityType)
+	@Override
+	public void setEntityType (java.lang.String EntityType)
 	{
 
 		set_Value (COLUMNNAME_EntityType, EntityType);
 	}
 
-	/** Get Entity Type.
+	/** Get Entitäts-Art.
 		@return Dictionary Entity Type; Determines ownership and synchronization
 	  */
-	public String getEntityType () 
+	@Override
+	public java.lang.String getEntityType () 
 	{
-		return (String)get_Value(COLUMNNAME_EntityType);
+		return (java.lang.String)get_Value(COLUMNNAME_EntityType);
 	}
 
-	/** Set Display Value.
+	/** Set IsReferenceTarget.
+		@param IsReferenceTarget IsReferenceTarget	  */
+	@Override
+	public void setIsReferenceTarget (boolean IsReferenceTarget)
+	{
+		set_Value (COLUMNNAME_IsReferenceTarget, Boolean.valueOf(IsReferenceTarget));
+	}
+
+	/** Get IsReferenceTarget.
+		@return IsReferenceTarget	  */
+	@Override
+	public boolean isReferenceTarget () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsReferenceTarget);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set 'Value' anzeigen.
 		@param IsValueDisplayed 
 		Displays Value column with the Display column
 	  */
+	@Override
 	public void setIsValueDisplayed (boolean IsValueDisplayed)
 	{
 		set_Value (COLUMNNAME_IsValueDisplayed, Boolean.valueOf(IsValueDisplayed));
 	}
 
-	/** Get Display Value.
+	/** Get 'Value' anzeigen.
 		@return Displays Value column with the Display column
 	  */
+	@Override
 	public boolean isValueDisplayed () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsValueDisplayed);
@@ -266,7 +337,8 @@ public class X_AD_Ref_Table extends PO implements I_AD_Ref_Table, I_Persistent
 		@param OrderByClause 
 		Fully qualified ORDER BY clause
 	  */
-	public void setOrderByClause (String OrderByClause)
+	@Override
+	public void setOrderByClause (java.lang.String OrderByClause)
 	{
 		set_Value (COLUMNNAME_OrderByClause, OrderByClause);
 	}
@@ -274,16 +346,18 @@ public class X_AD_Ref_Table extends PO implements I_AD_Ref_Table, I_Persistent
 	/** Get Sql ORDER BY.
 		@return Fully qualified ORDER BY clause
 	  */
-	public String getOrderByClause () 
+	@Override
+	public java.lang.String getOrderByClause () 
 	{
-		return (String)get_Value(COLUMNNAME_OrderByClause);
+		return (java.lang.String)get_Value(COLUMNNAME_OrderByClause);
 	}
 
 	/** Set Sql WHERE.
 		@param WhereClause 
 		Fully qualified SQL WHERE clause
 	  */
-	public void setWhereClause (String WhereClause)
+	@Override
+	public void setWhereClause (java.lang.String WhereClause)
 	{
 		set_Value (COLUMNNAME_WhereClause, WhereClause);
 	}
@@ -291,8 +365,9 @@ public class X_AD_Ref_Table extends PO implements I_AD_Ref_Table, I_Persistent
 	/** Get Sql WHERE.
 		@return Fully qualified SQL WHERE clause
 	  */
-	public String getWhereClause () 
+	@Override
+	public java.lang.String getWhereClause () 
 	{
-		return (String)get_Value(COLUMNNAME_WhereClause);
+		return (java.lang.String)get_Value(COLUMNNAME_WhereClause);
 	}
 }

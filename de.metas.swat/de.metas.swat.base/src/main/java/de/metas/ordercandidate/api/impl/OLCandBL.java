@@ -1052,7 +1052,7 @@ public class OLCandBL implements IOLCandBL
 			refSource.setAD_Org_ID(orgId);
 			refSource.setEntityType(entityType);
 			refSource.setName(mkNameOfSourceRef(ctx, model));
-			refSource.setValidationType(X_AD_Reference.VALIDATIONTYPE_TableValidation);
+			refSource.setValidationType(X_AD_Reference.VALIDATIONTYPE_Tabellenvalidierung);
 			InterfaceWrapperHelper.save(refSource);
 			relType.setAD_Reference_Source_ID(refSource.getAD_Reference_ID());
 
@@ -1065,7 +1065,7 @@ public class OLCandBL implements IOLCandBL
 			refTarget.setAD_Org_ID(orgId);
 			refTarget.setEntityType(entityType);
 			refTarget.setName(mkNameOfTargetRef(ctx, model));
-			refTarget.setValidationType(X_AD_Reference.VALIDATIONTYPE_TableValidation);
+			refTarget.setValidationType(X_AD_Reference.VALIDATIONTYPE_Tabellenvalidierung);
 			InterfaceWrapperHelper.save(refTarget);
 			relType.setAD_Reference_Target_ID(refTarget.getAD_Reference_ID());
 

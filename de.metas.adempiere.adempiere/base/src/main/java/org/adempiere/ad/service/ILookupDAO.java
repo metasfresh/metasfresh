@@ -98,6 +98,10 @@ public interface ILookupDAO extends ISingletonService
 		 * @return
 		 */
 		boolean isNumericKey();
+
+		// #2340 ReferenceTarget
+		boolean isReferenceTarget();
+		int getReferenceTargetColumnID();
 	}
 
 	interface ILookupDisplayInfo
