@@ -409,7 +409,7 @@ public class VFileImport extends CPanel
 		final File file = getFile();
 
 		List<String> loadedDataLines = new ArrayList<>();
-		final StringBuilder loadedDataPreview = new StringBuilder();
+		StringBuilder loadedDataPreview = new StringBuilder();
 		boolean loadOK = false;
 
 		try
@@ -422,26 +422,8 @@ public class VFileImport extends CPanel
 				loadedDataLines = readLines(file, charset);
 				//
 				// build the review string
-				
-								
-				if (loadedDataLines.size() > MAX_LOADED_LINES)
-				{
-					final List<String> copyOfLoadedDataLines = Collections.unmodifiableList(loadedDataLines);
-					loadedDataLines.forEach(item -> {
-						if (copyOfLoadedDataLines.indexOf(item) < copyOfLoadedDataLines.size())
-						{
-							loadedDataPreview.append(item);
-							loadedDataPreview.append("\n");
-						}
-					});
-					loadedDataPreview.append("......................................................\n");
-				}
-				else
-				{
-					loadedDataLines.stream().forEach(item -> loadedDataPreview.append(item).append("\n"));
-				}
+				loadedDataPreview = buildDataPreview(loadedDataLines);
 			}
-
 			loadOK = true;
 		}
 		catch (final Exception e)
@@ -466,6 +448,33 @@ public class VFileImport extends CPanel
 		}
 	}	// cmd_loadFile
 
+	/**
+	 * Build the preview lines from the loaded lines
+	 * @param lines
+	 * @return
+	 */
+	private StringBuilder buildDataPreview(final List<String> lines)
+	{
+		final StringBuilder loadedDataPreview = new StringBuilder();
+		if (lines.size() > MAX_LOADED_LINES)
+		{
+			final List<String> copyOfLoadedDataLines = Collections.unmodifiableList(lines);
+			lines.forEach(item -> {
+				if (copyOfLoadedDataLines.indexOf(item) < copyOfLoadedDataLines.size())
+				{
+					loadedDataPreview.append(item);
+					loadedDataPreview.append("\n");
+				}
+			});
+			loadedDataPreview.append("......................................................\n");
+		}
+		else
+		{
+			lines.stream().forEach(item -> loadedDataPreview.append(item).append("\n"));
+		}
+		return loadedDataPreview;
+	}
+	
 	private List<String> readLines(@NonNull final File file, @NonNull final Charset charset) throws IOException
 	{
 		if (isMultiLineFormat())

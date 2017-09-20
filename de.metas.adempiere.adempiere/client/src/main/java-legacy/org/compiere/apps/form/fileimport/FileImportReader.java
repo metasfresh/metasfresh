@@ -48,7 +48,7 @@ public class FileImportReader
 	private static final char TEXT_DELIMITER ='"';
 	
 	
-	final class MultiLineProcessor implements LineProcessor<List<String>>
+	final static class MultiLineProcessor implements LineProcessor<List<String>>
 	{
 		private boolean openQuote = false;
 		private boolean closedQuote = false;
