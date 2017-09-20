@@ -129,9 +129,38 @@ class Subheader extends Component {
         }
     }
 
+    renderDocLink = function (docLinks, {
+        action,
+        handler,
+        icon,
+        caption,
+        hotkey
+    }) {
+        const { closeSubheader, standardActions } = this.props;
+
+        if (standardActions.has(action)) {
+            docLinks.push(
+                <div
+                    key={action}
+                    className="subheader-item js-subheader-item"
+                    tabIndex={0}
+                    onClick={() => {
+                        handler()
+                        closeSubheader();
+                    }}
+                >
+                    <i className={icon} />
+                    {caption}
+                    <span className="tooltip-inline">
+                        {hotkey}
+                    </span>
+                </div>
+            )
+        }
+    }
+
     renderDocLinks = () => {
         const {
-            closeSubheader,
             dataId,
             docNo,
             handleClone,
@@ -140,7 +169,6 @@ class Subheader extends Component {
             handleLetter,
             handlePrint,
             openModal,
-            standardActions,
             windowType
         } = this.props;
 
@@ -150,124 +178,67 @@ class Subheader extends Component {
 
         const docLinks = [];
 
-        if (standardActions.has('advancedEdit')) {
-            docLinks.push(
-                <div
-                    key="advancedEdit"
-                    className="subheader-item js-subheader-item"
-                    tabIndex={0}
-                    onClick={() => {
-                        openModal(windowType, 'window', 'Advanced edit', true);
-                        closeSubheader();
-                    }}
-                >
-                    <i className="meta-icon-edit" />
-                    {counterpart.translate('window.advancedEdit.caption')}
-                    <span className="tooltip-inline">
-                        {keymap.GLOBAL_CONTEXT.OPEN_ADVANCED_EDIT}
-                    </span>
-                </div>
-            );
-        }
+        const renderDocLink = this.renderDocLink.bind(this, docLinks);
 
-        if (standardActions.has('clone')) {
-            docLinks.push(
-                <div
-                    key="clone"
-                    className="subheader-item js-subheader-item"
-                    tabIndex={0}
-                    onClick={() => {
-                        handleClone(windowType, dataId);
-                        closeSubheader();
-                    }}
-                >
-                    <i className="meta-icon-duplicate" />
-                    {counterpart.translate('window.clone.caption')}
-                    <span className="tooltip-inline">
-                        {keymap.GLOBAL_CONTEXT.CLONE_DOCUMENT}
-                    </span>
-                </div>
-            );
-        }
+        renderDocLink({
+            action: 'advancedEdit',
+            handler: () => {
+                openModal(windowType, 'window', 'Advanced edit', true);
+            },
+            icon: 'meta-icon-edit',
+            caption: counterpart.translate('window.advancedEdit.caption'),
+            hotkey: keymap.GLOBAL_CONTEXT.OPEN_ADVANCED_EDIT
+        });
 
-        if (standardActions.has('email')) {
-            docLinks.push(
-                <div
-                    key="email"
-                    className="subheader-item js-subheader-item"
-                    tabIndex={0}
-                    onClick={() => {
-                        handleEmail();
-                        closeSubheader();
-                    }}
-                >
-                    <i className="meta-icon-mail" />
-                    {counterpart.translate('window.email.caption')}
-                    <span className="tooltip-inline">
-                        {keymap.GLOBAL_CONTEXT.OPEN_EMAIL}
-                    </span>
-                </div>
-            );
-        }
+        renderDocLink({
+            action: 'clone',
+            handler: () => {
+                handleClone(windowType, dataId);
+            },
+            icon: 'meta-icon-duplicate',
+            caption: counterpart.translate('window.clone.caption'),
+            hotkey: keymap.GLOBAL_CONTEXT.CLONE_DOCUMENT
+        });
 
-        if (standardActions.has('letter')) {
-            docLinks.push(
-                <div
-                    key="letter"
-                    className="subheader-item js-subheader-item"
-                    tabIndex={0}
-                    onClick={() => {
-                        handleLetter();
-                        closeSubheader();
-                    }}
-                >
-                    <i className="meta-icon-letter" />
-                    {counterpart.translate('window.letter.caption')}
-                    <span className="tooltip-inline">
-                        {keymap.GLOBAL_CONTEXT.OPEN_LETTER}
-                    </span>
-                </div>
-            );
-        }
+        renderDocLink({
+            action: 'email',
+            handler: () => {
+                handleEmail();
+            },
+            icon: 'meta-icon-mail',
+            caption: counterpart.translate('window.email.caption'),
+            hotkey: keymap.GLOBAL_CONTEXT.OPEN_EMAIL
+        });
 
-        if (standardActions.has('print')) {
-            docLinks.push(
-                <div
-                    key={40}
-                    className="subheader-item js-subheader-item"
-                    tabIndex={0}
-                    onClick={() => {
-                        handlePrint(windowType, dataId, docNo);
-                        closeSubheader();
-                    }}
-                >
-                    <i className="meta-icon-print" />
-                    {counterpart.translate('window.Print.caption')}
-                    <span className="tooltip-inline">
-                        {keymap.GLOBAL_CONTEXT.OPEN_PRINT_RAPORT}
-                    </span>
-                </div>
-            );
-        }
+        renderDocLink({
+            action: 'letter',
+            handler: () => {
+                handleLetter();
+            },
+            icon: 'meta-icon-letter',
+            caption: counterpart.translate('window.letter.caption'),
+            hotkey: keymap.GLOBAL_CONTEXT.OPEN_LETTER
+        });
 
-        if (standardActions.has('delete')) {
-            docLinks.push(
-                <div
-                    key="delete"
-                    className="subheader-item js-subheader-item"
-                    tabIndex={0}
-                    onClick={() => {
-                        handleDelete();
-                    }}
-                >
-                    <i className="meta-icon-delete" />
-                    {counterpart.translate('window.Delete.caption')}
-                    <span className="tooltip-inline">
-                        {keymap.GLOBAL_CONTEXT.DELETE_DOCUMENT}
-                    </span>
-                </div>
-            );
-        }
+        renderDocLink({
+            action: 'print',
+            handler: () => {
+                handlePrint(windowType, dataId, docNo);
+            },
+            icon: 'meta-icon-print',
+            caption: counterpart.translate('window.Print.caption'),
+            hotkey: keymap.GLOBAL_CONTEXT.OPEN_PRINT_RAPORT
+        });
+
+        renderDocLink({
+            action: 'delete',
+            handler: () => {
+                handleDelete();
+            },
+            icon: 'meta-icon-delete',
+            caption: counterpart.translate('window.Delete.caption'),
+            hotkey: keymap.GLOBAL_CONTEXT.DELETE_DOCUMENT
+        });
 
         return docLinks;
     }
