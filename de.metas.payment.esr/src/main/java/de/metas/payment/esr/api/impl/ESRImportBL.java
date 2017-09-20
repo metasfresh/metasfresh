@@ -171,7 +171,9 @@ public class ESRImportBL implements IESRImportBL
 	}
 
 	@VisibleForTesting
-	public void loadAndEvaluateESRImportStream(@NonNull final I_ESR_Import esrImport, @NonNull final InputStream in)
+	public void loadAndEvaluateESRImportStream(
+			@NonNull final I_ESR_Import esrImport, 
+			@NonNull final InputStream in)
 	{
 		int countLines = 0;
 		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);

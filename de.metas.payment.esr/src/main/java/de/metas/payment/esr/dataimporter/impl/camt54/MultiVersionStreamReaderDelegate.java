@@ -14,9 +14,9 @@ import lombok.NonNull;
  * @task https://github.com/metasfresh/metasfresh/issues/1903
  *
  */
-public class MyStreamReaderDelegate extends StreamReaderDelegate
+public class MultiVersionStreamReaderDelegate extends StreamReaderDelegate
 {
-	public MyStreamReaderDelegate(@NonNull final XMLStreamReader xsr)
+	public MultiVersionStreamReaderDelegate(@NonNull final XMLStreamReader xsr)
 	{
 		super(xsr);
 	}

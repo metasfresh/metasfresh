@@ -92,9 +92,9 @@ public class ESRDataImporterCamt54v06
 {
 
 	private final I_ESR_Import header;
-	private final MyStreamReaderDelegate xsr;
+	private final MultiVersionStreamReaderDelegate xsr;
 
-	public ESRDataImporterCamt54v06(@NonNull final I_ESR_Import header, @NonNull final MyStreamReaderDelegate xsr)
+	public ESRDataImporterCamt54v06(@NonNull final I_ESR_Import header, @NonNull final MultiVersionStreamReaderDelegate xsr)
 	{
 		this.header = header;
 		this.xsr = xsr;

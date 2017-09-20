@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
 
+import javax.annotation.Nullable;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
@@ -101,7 +102,6 @@ public class ESRDataImporterCamt54 implements IESRDataImporter
 		this.header = null;
 	}
 
-	
 	/**
 	 * check if the shema is version 02
 	 * 
@@ -141,11 +141,11 @@ public class ESRDataImporterCamt54 implements IESRDataImporter
 		{
 			final XMLInputFactory xif = XMLInputFactory.newInstance();
 			xsr = xif.createXMLStreamReader(input);
-	
+
 			// https://github.com/metasfresh/metasfresh/issues/1903
 			// use a delegate to make sure that the unmarshaller won't refuse camt.054.001.04 and amt.054.001.05
-			final MyStreamReaderDelegate mxsr = new MyStreamReaderDelegate(xsr);
-			
+			final MultiVersionStreamReaderDelegate mxsr = new MultiVersionStreamReaderDelegate(xsr);
+
 			if (isVersion2Schema(getNameSpaceURI(mxsr)))
 			{
 				return importCamt54v02(mxsr);
@@ -154,33 +154,20 @@ public class ESRDataImporterCamt54 implements IESRDataImporter
 			{
 				return importCamt54v06(mxsr);
 			}
-		
+
 		}
 		catch (final XMLStreamException e)
 		{
 			throw AdempiereException.wrapIfNeeded(e);
 		}
-		finally 
+		finally
 		{
-			try
-			{
-				if (xsr != null)
-				{
-					xsr.close();
-				}
-				
-				input.close();
-			}
-			catch (XMLStreamException | IOException e)
-			{
-				throw AdempiereException.wrapIfNeeded(e);
-			}
+			closeXmlReaderAndInputStream(xsr);
 		}
-		
+
 	}
-	
-	
-	private ESRStatement importCamt54v02(final MyStreamReaderDelegate mxsr)
+
+	private ESRStatement importCamt54v02(final MultiVersionStreamReaderDelegate mxsr)
 	{
 		final ESRDataImporterCamt54v02 importerV02 = new ESRDataImporterCamt54v02(header, mxsr);
 		final BankToCustomerDebitCreditNotificationV02 bkToCstmrDbtCdtNtfctn = importerV02.loadXML();
@@ -188,14 +175,14 @@ public class ESRDataImporterCamt54 implements IESRDataImporter
 		{
 			Loggables.get().withLogger(logger, Level.INFO).addLog("The given input is a test file: bkToCstmrDbtCdtNtfctn/grpHdr/addtlInf={}", bkToCstmrDbtCdtNtfctn.getGrpHdr().getAddtlInf());
 		}
-		
+
 		try (final IAutoCloseable switchContext = Env.switchContext(InterfaceWrapperHelper.getCtx(header, true)))
 		{
 			return importerV02.createESRStatement(bkToCstmrDbtCdtNtfctn);
 		}
 	}
-	
-	private ESRStatement importCamt54v06(final MyStreamReaderDelegate mxsr)
+
+	private ESRStatement importCamt54v06(final MultiVersionStreamReaderDelegate mxsr)
 	{
 		final ESRDataImporterCamt54v06 importerV06 = new ESRDataImporterCamt54v06(header, mxsr);
 		final BankToCustomerDebitCreditNotificationV06 bkToCstmrDbtCdtNtfctn = importerV06.loadXML();
@@ -203,12 +190,26 @@ public class ESRDataImporterCamt54 implements IESRDataImporter
 		{
 			Loggables.get().withLogger(logger, Level.INFO).addLog("The given input is a test file: bkToCstmrDbtCdtNtfctn/grpHdr/addtlInf={}", bkToCstmrDbtCdtNtfctn.getGrpHdr().getAddtlInf());
 		}
-		
+
 		try (final IAutoCloseable switchContext = Env.switchContext(InterfaceWrapperHelper.getCtx(header, true)))
 		{
 			return importerV06.createESRStatement(bkToCstmrDbtCdtNtfctn);
 		}
 	}
-	
-	
+
+	private void closeXmlReaderAndInputStream(@Nullable final XMLStreamReader xsr)
+	{
+		try
+		{
+			if (xsr != null)
+			{
+				xsr.close();
+			}
+			input.close();
+		}
+		catch (XMLStreamException | IOException e)
+		{
+			throw AdempiereException.wrapIfNeeded(e);
+		}
+	}
 }
