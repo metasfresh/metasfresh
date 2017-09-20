@@ -29,6 +29,7 @@ import java.sql.ResultSet;
 import java.util.Properties;
 
 import org.adempiere.ad.dao.cache.IModelCacheService;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.GenericPO;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -36,6 +37,7 @@ import org.adempiere.util.Services;
 import org.compiere.model.PO;
 import org.compiere.model.POInfo;
 import org.compiere.util.DB;
+import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.util.cache.CacheInterceptor;
@@ -65,6 +67,11 @@ public final class TableModelLoader
 		final int recordId = 0; // marker for new records
 		final PO po = retrievePO(ctx, tableName, recordId, trxName);
 		return po;
+	}
+	
+	public PO newPO(final String tableName)
+	{
+		return newPO(Env.getCtx(), tableName, ITrx.TRXNAME_ThreadInherited);
 	}
 
 	public PO getPO(final Properties ctx, final String tableName, final int Record_ID, final String trxName)
@@ -115,7 +122,7 @@ public final class TableModelLoader
 	 * @param trxName
 	 * @return PO or null
 	 */
-	private final PO retrievePO(final Properties ctx, final String tableName, int Record_ID, String trxName)
+	private final PO retrievePO(final Properties ctx, final String tableName, final int Record_ID, final String trxName)
 	{
 		final POInfo poInfo = POInfo.getPOInfo(tableName);
 		if (Record_ID > 0 && poInfo.getKeyColumnName() == null)
@@ -168,7 +175,7 @@ public final class TableModelLoader
 	 * @param trxName transaction
 	 * @return PO for Record; never return null
 	 */
-	public PO getPO(final Properties ctx, final String tableName, ResultSet rs, String trxName)
+	public PO getPO(final Properties ctx, final String tableName, final ResultSet rs, final String trxName)
 	{
 		final PO po = retrievePO(ctx, tableName, rs, trxName);
 
@@ -220,7 +227,7 @@ public final class TableModelLoader
 	 * @param trxName transaction
 	 * @return PO for Record or null
 	 */
-	public PO getPO(final Properties ctx, final String tableName, String whereClause, String trxName)
+	public PO getPO(final Properties ctx, final String tableName, final String whereClause, final String trxName)
 	{
 		final Object[] params = null;
 		return getPO(ctx, tableName, whereClause, params, trxName);
@@ -234,7 +241,7 @@ public final class TableModelLoader
 	 * @param trxName
 	 * @return
 	 */
-	public PO getPO(final Properties ctx, final String tableName, String whereClause, Object[] params, String trxName)
+	public PO getPO(final Properties ctx, final String tableName, final String whereClause, final Object[] params, final String trxName)
 	{
 		final PO po = retrievePO(ctx, tableName, whereClause, params, trxName);
 		if (po != null)
