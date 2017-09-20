@@ -175,6 +175,7 @@ public class RelationTypeZoomProvider implements IZoomProvider
 		}
 
 		final MQuery query = mkQuery(zoomSource, isReferenceTarget);
+		
 		if (checkRecordsCount)
 		{
 			updateRecordsCountAndZoomValue(query);
@@ -276,17 +277,14 @@ public class RelationTypeZoomProvider implements IZoomProvider
 	private MQuery mkQuery(final IZoomSource zoomSource, boolean isReferenceTarget)
 	{
 		final StringBuilder queryWhereClause = new StringBuilder();
-		final ITableRefInfo refTable;
-		final String tableName;
-		final String columnName;
+
+		final ITableRefInfo refTable = isReferenceTarget ? getReferenceTarget().getTableRefInfo() : getTarget().getTableRefInfo();
+
+		final String tableName = refTable.getTableName();
+		final String columnName = refTable.getDisplayColumn();
 
 		if (isReferenceTarget)
 		{
-			final ReferenceTargetZoomProviderDestination refTarget = getReferenceTarget();
-
-			refTable = refTarget.getTableRefInfo();
-
-			tableName = refTable.getTableName();
 
 			final I_AD_Column columnReference = InterfaceWrapperHelper.create(zoomSource.getCtx(), refTable.getReferenceTargetColumnID(), I_AD_Column.class, zoomSource.getTrxName());
 
@@ -308,10 +306,7 @@ public class RelationTypeZoomProvider implements IZoomProvider
 		}
 		else
 		{
-			final ZoomProviderDestination target = getTarget();
 
-			refTable = target.getTableRefInfo();
-			tableName = refTable.getTableName();
 			final String refTableWhereClause = refTable.getWhereClause();
 
 			if (!Check.isEmpty(refTableWhereClause))
@@ -323,8 +318,6 @@ public class RelationTypeZoomProvider implements IZoomProvider
 				throw new AdempiereException("RefTable " + refTable + " has no whereClause, so RelationType " + this + " needs to be explicit");
 			}
 		}
-
-		columnName = refTable.getKeyColumn();
 
 		final MQuery query = new MQuery();
 		query.addRestriction(queryWhereClause.toString());
@@ -625,10 +618,10 @@ public class RelationTypeZoomProvider implements IZoomProvider
 		{
 			if (!isReferenceTarget() && getSourceTableRefInfoOrNull() == null)
 			{
-				
-					logger.info("Skip building {} because source tableRefInfo is null", this);
-					return null;
-				
+
+				logger.info("Skip building {} because source tableRefInfo is null", this);
+				return null;
+
 			}
 			if (getTargetTableRefInfoOrNull() == null)
 			{
