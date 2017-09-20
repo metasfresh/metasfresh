@@ -74,6 +74,28 @@ public class RequestImportProcess extends AbstractImportProcess<I_I_Request>
 		return I_I_Request.COLUMNNAME_DocumentNo;
 	}
 
+	@Override
+	protected void updateAndValidateImportRecords()
+	{
+		final String sqlImportWhereClause = COLUMNNAME_I_IsImported + "<>" + DB.TO_BOOLEAN(true)
+				+ "\n " + getWhereClause();
+		//
+		// Update C_BPartner_ID
+		{
+			dbUpdateBPartnerIds(sqlImportWhereClause);
+		}
+		//
+		// Update R_RequestType_ID by Name
+		{
+			dbUpdateRequestTypeIds(sqlImportWhereClause);
+		}
+		//
+		// Update R_Status_ID by Name
+		{
+			dbUpdateStatusIds(sqlImportWhereClause);
+		}
+	}
+	
 	private void dbUpdateBPartnerIds(final String sqlImportWhereClause)
 	{
 		final String trxName = ITrx.TRXNAME_ThreadInherited;
@@ -138,28 +160,6 @@ public class RequestImportProcess extends AbstractImportProcess<I_I_Request>
 		// Flag missing status
 		markAsError("R_Status not found", I_I_Request.COLUMNNAME_R_Status_ID + " IS NULL"
 				+ "\n AND " + sqlImportWhereClause);
-	}
-
-	@Override
-	protected void updateAndValidateImportRecords()
-	{
-		final String sqlImportWhereClause = COLUMNNAME_I_IsImported + "<>" + DB.TO_BOOLEAN(true)
-				+ "\n " + getWhereClause();
-		//
-		// Update C_BPartner_ID
-		{
-			dbUpdateBPartnerIds(sqlImportWhereClause);
-		}
-		//
-		// Update R_RequestType_ID by Name
-		{
-			dbUpdateRequestTypeIds(sqlImportWhereClause);
-		}
-		//
-		// Update R_Status_ID by Name
-		{
-			dbUpdateStatusIds(sqlImportWhereClause);
-		}
 	}
 
 	private final void markAsError(final String errorMsg, final String sqlWhereClause)
