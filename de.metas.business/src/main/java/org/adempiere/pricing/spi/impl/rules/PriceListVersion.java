@@ -2,11 +2,12 @@ package org.adempiere.pricing.spi.impl.rules;
 
 import org.adempiere.pricing.api.IPricingContext;
 import org.adempiere.pricing.api.IPricingResult;
-import org.adempiere.pricing.api.ProductPriceQuery;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_ProductPrice;
+
+import de.metas.pricing.ProductPrices;
 
 /**
  * Calculate Price using Price List Version
@@ -52,8 +53,7 @@ public class PriceListVersion extends AbstractPriceListBasedRule
 		// we get rid of the hardcoded SQL. For the time beeing it's still here (commented), so we can see how it used to be.
 		// !!IMPORTANT!! with this change of implementation, we loose the bomPriceList calculation.
 		// Should bomPricing be needed in future, please consider adding a dedicated pricing rule
-		final I_M_ProductPrice productPrice = ProductPriceQuery.retrieveMainProductPriceIfExists(plv, productId)
-				.orElse(null);
+		final I_M_ProductPrice productPrice = ProductPrices.retrieveMainProductPriceOrNull(plv, productId);
 
 		//
 		//
