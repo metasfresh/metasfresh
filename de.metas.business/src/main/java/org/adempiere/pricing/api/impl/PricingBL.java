@@ -311,8 +311,7 @@ public class PricingBL implements IPricingBL
 		final I_M_PriceList_Version plv = pricingCtx.getM_PriceList_Version();
 		if (plv != null)
 		{
-			final I_M_ProductPrice productPrice = ProductPrices.retrieveMainProductPriceIfExists(plv, product.getM_Product_ID())
-					.orElse(null);
+			final I_M_ProductPrice productPrice = ProductPrices.retrieveMainProductPriceOrNull(plv, product.getM_Product_ID());
 			if (productPrice == null)
 			{
 				result.setPrice_UOM_ID(product.getC_UOM_ID());

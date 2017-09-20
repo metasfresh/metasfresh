@@ -413,8 +413,7 @@ public class CreateInvoiceCandidateDialog
 						, (Boolean)null // processedPLVFiltering
 						);
 
-				productPrice = ProductPrices.retrieveMainProductPriceIfExists(currentVersion, product.getM_Product_ID())
-						.orElse(null);
+				productPrice = ProductPrices.retrieveMainProductPriceOrNull(currentVersion, product.getM_Product_ID());
 			}
 			if (productPrice == null)
 			{

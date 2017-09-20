@@ -230,8 +230,7 @@ public final class CommissionTools
 			return null;
 		}
 		
-		final org.compiere.model.I_M_ProductPrice productPrice = ProductPrices.retrieveMainProductPriceIfExists(plv, productId)
-				.orElse(null);
+		final org.compiere.model.I_M_ProductPrice productPrice = ProductPrices.retrieveMainProductPriceOrNull(plv, productId);
 		
 		if(productPrice == null)
 		{

@@ -508,8 +508,7 @@ public class VAttributeGrid extends CPanel
 		if (m_M_PriceList_Version_ID > 0)
 		{
 			final I_M_PriceList_Version plv = InterfaceWrapperHelper.create(Env.getCtx(), m_M_PriceList_Version_ID, I_M_PriceList_Version.class, ITrx.TRXNAME_None);
-			final I_M_ProductPrice pp = ProductPrices.retrieveMainProductPriceIfExists(plv, M_Product_ID)
-					.orElse(null);
+			final I_M_ProductPrice pp = ProductPrices.retrieveMainProductPriceOrNull(plv, M_Product_ID);
 			if (pp != null)
 			{
 				BigDecimal price = pp.getPriceStd();

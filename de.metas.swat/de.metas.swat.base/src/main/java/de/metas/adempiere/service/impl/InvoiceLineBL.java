@@ -25,6 +25,7 @@ package de.metas.adempiere.service.impl;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.Timestamp;
+import java.util.Optional;
 import java.util.Properties;
 
 import org.adempiere.exceptions.TaxCategoryNotFoundException;
@@ -190,7 +191,8 @@ public class InvoiceLineBL implements IInvoiceLineBL
 			final int m_Product_ID = invoiceLine.getM_Product_ID();
 			Check.assume(m_Product_ID > 0, "M_Product_ID > 0 for {}", invoiceLine);
 
-			final I_M_ProductPrice productPrice = ProductPrices.retrieveMainProductPriceIfExists(priceListVersion, m_Product_ID)
+			final I_M_ProductPrice productPrice = Optional
+					.ofNullable(ProductPrices.retrieveMainProductPriceOrNull(priceListVersion, m_Product_ID))
 					.orElseThrow(() -> new TaxCategoryNotFoundException(invoiceLine));
 
 			return productPrice.getC_TaxCategory_ID();
@@ -218,7 +220,8 @@ public class InvoiceLineBL implements IInvoiceLineBL
 			final int m_Product_ID = invoiceLine.getM_Product_ID();
 			Check.assume(m_Product_ID > 0, "M_Product_ID > 0 for {}", invoiceLine);
 
-			final I_M_ProductPrice productPrice = ProductPrices.retrieveMainProductPriceIfExists(priceListVersion, m_Product_ID)
+			final I_M_ProductPrice productPrice = Optional
+					.ofNullable(ProductPrices.retrieveMainProductPriceOrNull(priceListVersion, m_Product_ID))
 					.orElseThrow(() -> new TaxCategoryNotFoundException(invoiceLine));
 			return productPrice.getC_TaxCategory_ID();
 		}

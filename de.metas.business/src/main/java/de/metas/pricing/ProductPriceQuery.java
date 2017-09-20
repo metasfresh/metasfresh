@@ -4,7 +4,6 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -12,7 +11,6 @@ import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
-import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
@@ -29,6 +27,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
 
 import de.metas.logging.LogManager;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -235,12 +234,6 @@ public class ProductPriceQuery
 		return this;
 	}
 
-	public ProductPriceQuery setContextProvider(final Properties ctx, final String trxName)
-	{
-		setContextProvider(PlainContextAware.newWithTrxName(ctx, trxName));
-		return this;
-	}
-
 	private Object getContextProvider()
 	{
 		Check.assumeNotNull(_contextProvider, "Parameter contextProvider is not null for {}", this);
@@ -253,7 +246,7 @@ public class ProductPriceQuery
 		return this;
 	}
 
-	public ProductPriceQuery setM_PriceList_Version_ID(final I_M_PriceList_Version priceListVersion)
+	public ProductPriceQuery setM_PriceList_Version_ID(@NonNull final I_M_PriceList_Version priceListVersion)
 	{
 		setM_PriceList_Version_ID(priceListVersion.getM_PriceList_Version_ID());
 		return this;

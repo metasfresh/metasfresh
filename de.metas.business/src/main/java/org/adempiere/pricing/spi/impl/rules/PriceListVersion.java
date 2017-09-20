@@ -53,8 +53,7 @@ public class PriceListVersion extends AbstractPriceListBasedRule
 		// we get rid of the hardcoded SQL. For the time beeing it's still here (commented), so we can see how it used to be.
 		// !!IMPORTANT!! with this change of implementation, we loose the bomPriceList calculation.
 		// Should bomPricing be needed in future, please consider adding a dedicated pricing rule
-		final I_M_ProductPrice productPrice = ProductPrices.retrieveMainProductPriceIfExists(plv, productId)
-				.orElse(null);
+		final I_M_ProductPrice productPrice = ProductPrices.retrieveMainProductPriceOrNull(plv, productId);
 
 		//
 		//

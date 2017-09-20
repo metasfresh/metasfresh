@@ -407,8 +407,7 @@ public class ImportPriceList extends JavaProcess
 				{
 					// M_ProductPrice
 					//I_M_ProductPrice pp = MProductPrice.get(getCtx(), pricelistversion.getM_PriceList_Version_ID(), imp.getM_Product_ID(), get_TrxName());
-					I_M_ProductPrice pp = ProductPrices.retrieveMainProductPriceIfExists(pricelistversion, imp.getM_Product_ID())
-							.orElse(null);
+					I_M_ProductPrice pp = ProductPrices.retrieveMainProductPriceOrNull(pricelistversion, imp.getM_Product_ID());
 
 					final boolean isInsert;
 					if (pp != null)

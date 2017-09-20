@@ -1,7 +1,6 @@
 package de.metas.pricing;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -56,7 +55,7 @@ public class ProductPrices
 		return new ProductPriceQuery();
 	}
 
-	public static final ProductPriceQuery newQuery(final I_M_PriceList_Version plv)
+	public static final ProductPriceQuery newQuery(@NonNull final I_M_PriceList_Version plv)
 	{
 		return new ProductPriceQuery()
 				.setContextProvider(plv)
@@ -92,9 +91,9 @@ public class ProductPrices
 			return;
 		}
 
-		final List<I_M_ProductPrice> allMainPrices = newMainProductPriceQuery(productPrice.getM_PriceList_Version(), productPrice.getM_Product_ID())
-				.toQuery()
-				.list();
+		final List<I_M_ProductPrice> allMainPrices = retrieveAllMainPrices(
+				productPrice.getM_PriceList_Version(),
+				productPrice.getM_Product_ID());
 
 		final boolean productPriceIsMainPrice = allMainPrices.stream()
 				.anyMatch(mainPrice -> mainPrice.getM_ProductPrice_ID() == productPrice.getM_ProductPrice_ID());
@@ -106,21 +105,30 @@ public class ProductPrices
 		getFirstOrThrowExceptionIfMoreThanOne(allMainPrices);
 	}
 
-	public static final Optional<I_M_ProductPrice> retrieveMainProductPriceIfExists(final I_M_PriceList_Version plv, final int productId)
+	public static final I_M_ProductPrice retrieveMainProductPriceOrNull(final I_M_PriceList_Version plv, final int productId)
 	{
-		final List<I_M_ProductPrice> productPrices = newMainProductPriceQuery(plv, productId)
-				.toQuery()
-				.list(I_M_ProductPrice.class);
-		if (productPrices.isEmpty())
+		final List<I_M_ProductPrice> allMainPrices = retrieveAllMainPrices(plv, productId);
+
+		if (allMainPrices.isEmpty())
 		{
-			return Optional.empty();
+			return null;
 		}
-		if (productPrices.size() == 1)
+		if (allMainPrices.size() == 1)
 		{
-			return Optional.of(productPrices.get(0));
+			return allMainPrices.get(0);
 		}
 
-		return Optional.ofNullable(getFirstOrThrowExceptionIfMoreThanOne(productPrices));
+		return getFirstOrThrowExceptionIfMoreThanOne(allMainPrices);
+	}
+
+	private static List<I_M_ProductPrice> retrieveAllMainPrices(
+			@NonNull final I_M_PriceList_Version plv,
+			final int productId)
+	{
+		final List<I_M_ProductPrice> allMainPrices = newMainProductPriceQuery(plv, productId)
+				.toQuery()
+				.list();
+		return allMainPrices;
 	}
 
 	private static final ProductPriceQuery newMainProductPriceQuery(final I_M_PriceList_Version plv, final int productId)
@@ -145,12 +153,18 @@ public class ProductPrices
 			return allMainPrices.get(0);
 		}
 
-		final I_M_ProductPrice someMainProductPrice = allMainPrices.get(0);
-		throw new DuplicateMainProductPriceException(someMainProductPrice)
+		throw createException(allMainPrices.get(0));
+	}
+
+	private static AdempiereException createException(@NonNull final I_M_ProductPrice someMainProductPrice)
+	{
+		final AdempiereException exception = new DuplicateMainProductPriceException(someMainProductPrice)
 				.setParameter(I_M_PricingSystem.Table_Name, someMainProductPrice.getM_PriceList_Version().getM_PriceList().getM_PricingSystem().getName())
 				.setParameter(I_M_PriceList.Table_Name, someMainProductPrice.getM_PriceList_Version().getM_PriceList().getName())
 				.setParameter(I_M_PriceList_Version.Table_Name, someMainProductPrice.getM_PriceList_Version().getName())
 				.setParameter(I_M_Product.Table_Name, someMainProductPrice.getM_Product().getValue() + "_" + someMainProductPrice.getM_Product().getName());
+
+		return exception;
 	}
 
 	public static final class DuplicateMainProductPriceException extends AdempiereException
