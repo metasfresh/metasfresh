@@ -33,7 +33,9 @@ import org.adempiere.ad.security.IUserRolePermissionsDAO;
 import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.ad.service.IADReferenceDAO.ADRefListItem;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.DBForeignKeyConstraintException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.IRolePermLoggingBL.NoSuchForeignKeyException;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -44,6 +46,7 @@ import com.google.common.base.Preconditions;
 import de.metas.i18n.IMsgBL;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.JavaProcess;
+import lombok.NonNull;
 
 /**
  * @author teo_sarca
@@ -176,11 +179,36 @@ public class MRolePermRequest extends X_AD_Role_PermRequest
 				req.set_ValueOfColumn(type2, value2);
 			}
 		}
+
+		updatePermissionRequest(description, isPermissionGranted, isReadWrite, req);
+		savePermissionRequestAndHandleException(type, value, req);
+	}
+
+	private static void updatePermissionRequest(
+			final String description,
+			final boolean isPermissionGranted,
+			final boolean isReadWrite,
+			@NonNull final MRolePermRequest req)
+	{
 		req.setIsActive(true);
 		req.setIsReadWrite(isReadWrite);
 		req.setIsPermissionGranted(isPermissionGranted);
 		req.setDescription(description);
-		req.saveEx();
+	}
+
+	private static void savePermissionRequestAndHandleException(
+			@NonNull final String type,
+			@NonNull final Object value,
+			@NonNull final MRolePermRequest req)
+	{
+		try
+		{
+			req.saveEx();
+		}
+		catch (final DBForeignKeyConstraintException e)
+		{
+			throw new NoSuchForeignKeyException(type + "=" + value + " is not a valid foreign key", e);
+		}
 	}
 
 	public void grantAccess()
