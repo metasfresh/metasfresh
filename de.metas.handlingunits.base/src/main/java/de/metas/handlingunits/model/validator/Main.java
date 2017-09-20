@@ -26,14 +26,13 @@ import java.util.Arrays;
 
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.dao.cache.IModelCacheService;
-import org.adempiere.ad.dao.cache.ITableCacheConfigBuilder;
 import org.adempiere.ad.dao.cache.ITableCacheConfig.TrxLevel;
+import org.adempiere.ad.dao.cache.ITableCacheConfigBuilder;
 import org.adempiere.ad.dao.impl.EqualsQueryFilter;
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.ad.ui.api.ITabCalloutFactory;
 import org.adempiere.mm.attributes.spi.impl.WeightGenerateHUTrxListener;
-import org.adempiere.pricing.api.ProductPriceQuery;
 import org.adempiere.ui.api.IGridTabSummaryInfoFactory;
 import org.adempiere.util.Services;
 import org.adempiere.util.agg.key.IAggregationKeyRegistry;
@@ -101,6 +100,7 @@ import de.metas.order.process.IC_Order_CreatePOFromSOsBL;
 import de.metas.order.process.IC_Order_CreatePOFromSOsDAO;
 import de.metas.ordercandidate.api.IOLCandBL;
 import de.metas.ordercandidate.api.IOLCandValdiatorBL;
+import de.metas.pricing.ProductPrices;
 import de.metas.pricing.attributebased.impl.AttributePricing;
 import de.metas.storage.IStorageEngineService;
 import de.metas.tourplanning.api.IDeliveryDayBL;
@@ -204,7 +204,7 @@ public final class Main extends AbstractModuleInterceptor
 
 	public static void setupPricing()
 	{
-		ProductPriceQuery.registerMainProductPriceMatcher(HUPricing.HUPIItemProductMatcher_None);
+		ProductPrices.registerMainProductPriceMatcher(HUPricing.HUPIItemProductMatcher_None);
 
 		// Registers a default matcher to make sure that the AttributePricing ignores all product prices that have an M_HU_PI_Item_Product_ID set.
 		//
