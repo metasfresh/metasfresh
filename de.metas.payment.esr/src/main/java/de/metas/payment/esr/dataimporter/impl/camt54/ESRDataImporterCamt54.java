@@ -115,6 +115,7 @@ public class ESRDataImporterCamt54 implements IESRDataImporter
 
 	private String getNameSpaceURI(@NonNull final XMLStreamReader reader) throws XMLStreamException
 	{
+		while (reader.hasNext())
 		{
 			int event = reader.next();
 			if (XMLStreamConstants.START_ELEMENT == event && reader.getNamespaceCount() > 0)
@@ -129,9 +130,7 @@ public class ESRDataImporterCamt54 implements IESRDataImporter
 				}
 			}
 		}
-
 		return null;
-
 	}
 
 	@Override
@@ -149,33 +148,11 @@ public class ESRDataImporterCamt54 implements IESRDataImporter
 			
 			if (isVersion2Schema(getNameSpaceURI(mxsr)))
 			{
-				final ESRDataImporterCamt54v02 importerV02 = new ESRDataImporterCamt54v02(header, mxsr);
-				final BankToCustomerDebitCreditNotificationV02 bkToCstmrDbtCdtNtfctn = importerV02.loadXML();
-				if (bkToCstmrDbtCdtNtfctn.getGrpHdr() != null && bkToCstmrDbtCdtNtfctn.getGrpHdr().getAddtlInf() != null)
-				{
-					Loggables.get().withLogger(logger, Level.INFO).addLog("The given input is a test file: bkToCstmrDbtCdtNtfctn/grpHdr/addtlInf={}", bkToCstmrDbtCdtNtfctn.getGrpHdr().getAddtlInf());
-				}
-				
-				try (final IAutoCloseable switchContext = Env.switchContext(InterfaceWrapperHelper.getCtx(header, true)))
-				{
-					return importerV02.createESRStatement(bkToCstmrDbtCdtNtfctn);
-				}
-
+				return importCamt54v02(mxsr);
 			}
 			else
 			{
-				final ESRDataImporterCamt54v06 importerV06 = new ESRDataImporterCamt54v06(header, mxsr);
-				final BankToCustomerDebitCreditNotificationV06 bkToCstmrDbtCdtNtfctn = importerV06.loadXML();
-				if (bkToCstmrDbtCdtNtfctn.getGrpHdr() != null && bkToCstmrDbtCdtNtfctn.getGrpHdr().getAddtlInf() != null)
-				{
-					Loggables.get().withLogger(logger, Level.INFO).addLog("The given input is a test file: bkToCstmrDbtCdtNtfctn/grpHdr/addtlInf={}", bkToCstmrDbtCdtNtfctn.getGrpHdr().getAddtlInf());
-				}
-				
-				try (final IAutoCloseable switchContext = Env.switchContext(InterfaceWrapperHelper.getCtx(header, true)))
-				{
-					return importerV06.createESRStatement(bkToCstmrDbtCdtNtfctn);
-				}
-
+				return importCamt54v06(mxsr);
 			}
 		
 		}
@@ -200,6 +177,37 @@ public class ESRDataImporterCamt54 implements IESRDataImporter
 			}
 		}
 		
+	}
+	
+	
+	private ESRStatement importCamt54v02(final MyStreamReaderDelegate mxsr)
+	{
+		final ESRDataImporterCamt54v02 importerV02 = new ESRDataImporterCamt54v02(header, mxsr);
+		final BankToCustomerDebitCreditNotificationV02 bkToCstmrDbtCdtNtfctn = importerV02.loadXML();
+		if (bkToCstmrDbtCdtNtfctn.getGrpHdr() != null && bkToCstmrDbtCdtNtfctn.getGrpHdr().getAddtlInf() != null)
+		{
+			Loggables.get().withLogger(logger, Level.INFO).addLog("The given input is a test file: bkToCstmrDbtCdtNtfctn/grpHdr/addtlInf={}", bkToCstmrDbtCdtNtfctn.getGrpHdr().getAddtlInf());
+		}
+		
+		try (final IAutoCloseable switchContext = Env.switchContext(InterfaceWrapperHelper.getCtx(header, true)))
+		{
+			return importerV02.createESRStatement(bkToCstmrDbtCdtNtfctn);
+		}
+	}
+	
+	private ESRStatement importCamt54v06(final MyStreamReaderDelegate mxsr)
+	{
+		final ESRDataImporterCamt54v06 importerV06 = new ESRDataImporterCamt54v06(header, mxsr);
+		final BankToCustomerDebitCreditNotificationV06 bkToCstmrDbtCdtNtfctn = importerV06.loadXML();
+		if (bkToCstmrDbtCdtNtfctn.getGrpHdr() != null && bkToCstmrDbtCdtNtfctn.getGrpHdr().getAddtlInf() != null)
+		{
+			Loggables.get().withLogger(logger, Level.INFO).addLog("The given input is a test file: bkToCstmrDbtCdtNtfctn/grpHdr/addtlInf={}", bkToCstmrDbtCdtNtfctn.getGrpHdr().getAddtlInf());
+		}
+		
+		try (final IAutoCloseable switchContext = Env.switchContext(InterfaceWrapperHelper.getCtx(header, true)))
+		{
+			return importerV06.createESRStatement(bkToCstmrDbtCdtNtfctn);
+		}
 	}
 	
 	
