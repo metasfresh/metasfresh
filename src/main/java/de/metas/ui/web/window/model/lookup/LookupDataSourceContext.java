@@ -257,6 +257,11 @@ public final class LookupDataSourceContext implements Evaluatee2, IValidationCon
 			return Integer.parseInt(idToFilterStr);
 		}
 	}
+	
+	public String getIdToFilterAsString()
+	{
+		return idToFilter != null ? idToFilter.toString() : null;
+	}
 
 	public static final class Builder
 	{

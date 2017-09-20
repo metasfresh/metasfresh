@@ -39,7 +39,9 @@ public enum JSONLayoutWidgetType
 	, Integer, Number, Amount, Quantity, CostPrice
 
 	//
-	, List, Lookup, Address, ProductAttributes
+	, List, Lookup
+	, Labels
+	, Address, ProductAttributes
 
 	, YesNo, Switch
 
@@ -80,6 +82,7 @@ public enum JSONLayoutWidgetType
 			.put(DocumentFieldWidgetType.CostPrice, JSONLayoutWidgetType.CostPrice)
 			.put(DocumentFieldWidgetType.List, JSONLayoutWidgetType.List)
 			.put(DocumentFieldWidgetType.Lookup, JSONLayoutWidgetType.Lookup)
+			.put(DocumentFieldWidgetType.Labels, JSONLayoutWidgetType.Labels)
 			.put(DocumentFieldWidgetType.Address, JSONLayoutWidgetType.Address)
 			.put(DocumentFieldWidgetType.ProductAttributes, JSONLayoutWidgetType.ProductAttributes)
 			.put(DocumentFieldWidgetType.YesNo, JSONLayoutWidgetType.YesNo)

@@ -18,11 +18,14 @@ import org.compiere.model.I_AD_UI_Element;
 import org.compiere.model.I_AD_UI_ElementField;
 import org.compiere.model.I_AD_UI_ElementGroup;
 import org.compiere.model.I_AD_UI_Section;
+import org.compiere.model.X_AD_UI_Element;
+import org.compiere.util.Util;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.i18n.ITranslatableString;
@@ -108,6 +111,8 @@ public class LayoutFactory
 	private final int _adWindowId;
 	private final ITranslatableString windowCaption;
 
+	private final ImmutableSet<Integer> childAdTabIdsToSkip;
+
 	//
 	// Build parameters
 	private final IWindowUIElementsProvider _uiProvider;
@@ -117,7 +122,6 @@ public class LayoutFactory
 	{
 		Adempiere.autowire(this);
 
-		descriptorsFactory = new GridTabVOBasedDocumentEntityDescriptorFactory(gridTabVO, parentTab, gridWindowVO.isSOTrx());
 		_adWindowId = gridTabVO.getAD_Window_ID();
 		windowCaption = ImmutableTranslatableString.ofMap(gridWindowVO.getNameTrls(), gridWindowVO.getName());
 
@@ -142,6 +146,11 @@ public class LayoutFactory
 			_uiProvider = uiProvider;
 			logger.trace("Using UI provider: {}", _uiProvider);
 		}
+
+		final List<I_AD_UI_Element> labelsUIElements = _uiProvider.getUIElementsOfTypeLabels(gridTabVO.getAD_Tab_ID());
+		descriptorsFactory = new GridTabVOBasedDocumentEntityDescriptorFactory(gridTabVO, parentTab, gridWindowVO.isSOTrx(), labelsUIElements);
+		
+		this.childAdTabIdsToSkip = labelsUIElements.stream().map(I_AD_UI_Element::getLabels_Tab_ID).collect(ImmutableSet.toImmutableSet());
 	}
 
 	@Override
@@ -154,8 +163,13 @@ public class LayoutFactory
 				.add("UIProvider", getUIProvider())
 				.toString();
 	}
+	
+	public boolean isSkipAD_Tab_ID(final int adTabId)
+	{
+		return childAdTabIdsToSkip.contains(adTabId);
+	}
 
-	private IWindowUIElementsProvider getUIProvider()
+	private final IWindowUIElementsProvider getUIProvider()
 	{
 		return _uiProvider;
 	}
@@ -378,8 +392,6 @@ public class LayoutFactory
 				.setWidgetSize(WidgetSize.fromNullableADRefListValue(uiElement.getWidgetSize()))
 				.setAdvancedField(uiElement.isAdvancedField());
 
-		//
-		// Fields
 		for (final DocumentFieldDescriptor.Builder field : extractDocumentFields(uiElement))
 		{
 			final DocumentLayoutElementFieldDescriptor.Builder layoutElementFieldBuilder = layoutElementField(field);
@@ -427,37 +439,57 @@ public class LayoutFactory
 	private List<DocumentFieldDescriptor.Builder> extractDocumentFields(final I_AD_UI_Element uiElement)
 	{
 		final List<DocumentFieldDescriptor.Builder> fields = new ArrayList<>();
-
+		
+		final String uiElementType = Util.coalesce(uiElement.getAD_UI_ElementType(), X_AD_UI_Element.AD_UI_ELEMENTTYPE_Field);
+		if (X_AD_UI_Element.AD_UI_ELEMENTTYPE_Field.equals(uiElementType))
 		{
-			final DocumentFieldDescriptor.Builder field = descriptorsFactory.documentFieldByAD_Field_ID(uiElement.getAD_Field_ID());
-			if (field != null)
 			{
+				final DocumentFieldDescriptor.Builder field = descriptorsFactory.documentFieldByAD_Field_ID(uiElement.getAD_Field_ID());
+				if (field != null)
+				{
+					fields.add(field);
+				}
+				else
+				{
+					logger.warn("No field found for {} (AD_Field_ID={})", uiElement, uiElement.getAD_Field_ID());
+				}
+			}
+
+			for (final I_AD_UI_ElementField uiElementField : getUIProvider().getUIElementFields(uiElement))
+			{
+				if (!uiElementField.isActive())
+				{
+					logger.trace("Skip {} because it's not active", uiElementField);
+					continue;
+				}
+
+				final DocumentFieldDescriptor.Builder field = descriptorsFactory.documentFieldByAD_Field_ID(uiElementField.getAD_Field_ID());
+				if (field == null)
+				{
+					logger.warn("No field found for {} (AD_Field_ID={})", uiElementField, uiElementField.getAD_Field_ID());
+					continue;
+				}
+
 				fields.add(field);
+			}
+		}
+		else if (X_AD_UI_Element.AD_UI_ELEMENTTYPE_Labels.equals(uiElementType))
+		{
+			final String labelsFieldName = GridTabVOBasedDocumentEntityDescriptorFactory.getLabelsFieldName(uiElement);
+			final DocumentFieldDescriptor.Builder field = descriptorsFactory.documentField(labelsFieldName);
+			if(field == null)
+			{
+				logger.warn("No label field found for {}", labelsFieldName);
 			}
 			else
 			{
-				logger.warn("No field found for {} (AD_Field_ID={})", uiElement, uiElement.getAD_Field_ID());
+				fields.add(field);
 			}
 		}
-
-		for (final I_AD_UI_ElementField uiElementField : getUIProvider().getUIElementFields(uiElement))
+		else
 		{
-			if (!uiElementField.isActive())
-			{
-				logger.trace("Skip {} because it's not active", uiElementField);
-				continue;
-			}
-
-			final DocumentFieldDescriptor.Builder field = descriptorsFactory.documentFieldByAD_Field_ID(uiElementField.getAD_Field_ID());
-			if (field == null)
-			{
-				logger.warn("No field found for {} (AD_Field_ID={})", uiElementField, uiElementField.getAD_Field_ID());
-				continue;
-			}
-
-			fields.add(field);
-		}
-
+			throw new IllegalArgumentException("Unknown AD_UI_ElementType: " + uiElementType + "  for " + uiElement);
+		}		
 		return fields;
 	}
 
