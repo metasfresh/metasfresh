@@ -65,8 +65,11 @@ import org.compiere.util.Ini;
 import org.jdesktop.swingx.JXTable;
 import org.slf4j.Logger;
 
+import com.google.common.base.CharMatcher;
+import com.google.common.base.Joiner;
 import com.google.common.io.Files;
 import com.google.common.io.LineProcessor;
+import com.mchange.lang.StringUtils;
 
 import de.metas.adempiere.form.IClientUI;
 import de.metas.i18n.IMsgBL;
@@ -418,12 +421,56 @@ public class VFileImport extends CPanel
 			if (file != null)
 			{
 				final Charset charset = fCharset.getSelectedItem();
+				
+				
 				Files.readLines(file, charset, new LineProcessor<Void>()
 				{
+					boolean openQuote = false;
+					boolean closedQuote = false;
+					
 					@Override
 					public boolean processLine(final String line) throws IOException
 					{
-						loadedDataLines.add(line);
+						// if previous line had a " which is not closed, then add all to the previous line, until we meet next "
+						if (CharMatcher.anyOf(line).matches('"'))
+						{
+							if (openQuote)
+							{
+								closedQuote = true;
+							}
+							else
+							{
+								openQuote = true;
+							}
+						}
+						//
+						// if open quote , add this line to the previous
+						if (openQuote && loadedDataLines.size()> 0)
+						{
+							final StringBuilder previousLine = new StringBuilder();
+							final int index = loadedDataLines.size()-1;
+							previousLine.append(loadedDataLines.get(index));
+							// append the new line, because the char exists
+							previousLine.append("\n");
+							previousLine.append(line);
+							//
+							// now remove the line and add the new line
+							loadedDataLines.remove(index);
+							loadedDataLines.add(previousLine.toString());
+						}
+						else
+						{
+							loadedDataLines.add(line);
+						}
+						
+						//
+						// reset
+						if (closedQuote)
+						{
+							openQuote = false;
+							closedQuote = false;
+						}
+						
 						if (loadedDataLines.size() <= MAX_LOADED_LINES)
 						{
 							loadedDataPreview.append(line);
