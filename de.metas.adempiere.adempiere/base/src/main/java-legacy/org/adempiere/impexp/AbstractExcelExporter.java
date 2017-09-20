@@ -21,12 +21,8 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.HashMap;
 import java.util.Properties;
-import org.slf4j.Logger;
 
-import de.metas.i18n.Language;
-import de.metas.i18n.Msg;
-import de.metas.logging.LogManager;
-
+import org.adempiere.util.Check;
 import org.adempiere.util.StringUtils;
 import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.hssf.usermodel.HSSFCellStyle;
@@ -43,7 +39,11 @@ import org.compiere.Adempiere;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
-import org.compiere.util.Util;
+import org.slf4j.Logger;
+
+import de.metas.i18n.Language;
+import de.metas.i18n.Msg;
+import de.metas.logging.LogManager;
 
 /**
  * Abstract MS Excel Format (xls) Exporter
@@ -103,7 +103,7 @@ public abstract class AbstractExcelExporter
 	 * @param col column index
 	 * @return cell value
 	 */
-	public abstract Object getValueAt(int row, int col);
+	protected abstract Object getValueAt(int row, int col);
 	
 	/**
 	 * Check if there is a page break on given cell
@@ -126,7 +126,7 @@ public abstract class AbstractExcelExporter
 	private int m_colSplit = 1;
 	private int m_rowSplit = 1;
 	/** Styles cache */
-	private HashMap<String, HSSFCellStyle> m_styles = new HashMap<String, HSSFCellStyle>();
+	private HashMap<String, HSSFCellStyle> m_styles = new HashMap<>();
 
 	public AbstractExcelExporter() {
 		m_workbook = new HSSFWorkbook();
@@ -137,12 +137,12 @@ public abstract class AbstractExcelExporter
 		return Env.getCtx();
 	}
 
-	protected void setFreezePane(int colSplit, int rowSplit) {
+	protected void setFreezePane(final int colSplit, final int rowSplit) {
 		m_colSplit = colSplit;
 		m_rowSplit = rowSplit;
 	}
 
-	private String fixString(String str)
+	private String fixString(final String str)
 	{
 		// ms excel doesn't support UTF8 charset
 		return StringUtils.stripDiacritics(str);
@@ -154,7 +154,7 @@ public abstract class AbstractExcelExporter
 		return m_lang;
 	}
 
-	private HSSFFont getFont(boolean isHeader) {
+	private HSSFFont getFont(final boolean isHeader) {
 		HSSFFont font = null;
 		if (isHeader) {
 			if (m_fontHeader == null) {
@@ -183,7 +183,7 @@ public abstract class AbstractExcelExporter
 	 * @param isHighlightNegativeNumbers highlight negative numbers using RED color
 	 * @return number excel format string
 	 */
-	private String getFormatString(NumberFormat df, boolean isHighlightNegativeNumbers) {
+	private String getFormatString(final NumberFormat df, final boolean isHighlightNegativeNumbers) {
 		StringBuffer format = new StringBuffer();
 		int integerDigitsMin = df.getMinimumIntegerDigits();
 		int integerDigitsMax = df.getMaximumIntegerDigits();
@@ -216,7 +216,7 @@ public abstract class AbstractExcelExporter
 
 	}
 
-	private HSSFCellStyle getStyle(int row, int col) {
+	private HSSFCellStyle getStyle(final int row, final int col) {
 		int displayType = getDisplayType(row, col);
 		String key = "cell-"+col+"-"+displayType;
 		HSSFCellStyle cs = m_styles.get(key);
@@ -244,7 +244,7 @@ public abstract class AbstractExcelExporter
 		return cs;
 	}
 
-	private HSSFCellStyle getHeaderStyle(int col)
+	private HSSFCellStyle getHeaderStyle(final int col)
 	{
 		String key = "header-"+col;
 		HSSFCellStyle cs_header = m_styles.get(key);
@@ -263,7 +263,7 @@ public abstract class AbstractExcelExporter
 		return cs_header;
 	}
 
-	private void fixColumnWidth(HSSFSheet sheet, int lastColumnIndex)
+	private void fixColumnWidth(final HSSFSheet sheet, final int lastColumnIndex)
 	{
 		for (short colnum = 0; colnum < lastColumnIndex; colnum++)
 		{
@@ -271,7 +271,7 @@ public abstract class AbstractExcelExporter
 		}
 	}
 
-	private void closeTableSheet(HSSFSheet prevSheet, String prevSheetName, int colCount)
+	private void closeTableSheet(final HSSFSheet prevSheet, final String prevSheetName, final int colCount)
 	{
 		if (prevSheet == null)
 			return;
@@ -279,7 +279,7 @@ public abstract class AbstractExcelExporter
 		fixColumnWidth(prevSheet, colCount);
 		if (m_colSplit >= 0 || m_rowSplit >= 0)
 			prevSheet.createFreezePane(m_colSplit >= 0 ? m_colSplit : 0, m_rowSplit >= 0 ? m_rowSplit : 0);
-		if (!Util.isEmpty(prevSheetName, true) && m_sheetCount > 0) {
+		if (!Check.isEmpty(prevSheetName, true) && m_sheetCount > 0) {
 			int prevSheetIndex = m_sheetCount - 1;
 			try {
 				m_workbook.setSheetName(prevSheetIndex, prevSheetName);
@@ -300,13 +300,13 @@ public abstract class AbstractExcelExporter
 		return sheet;
 	}
 
-	private void createTableHeader(HSSFSheet sheet)
+	private void createTableHeader(final HSSFSheet sheet)
 	{
-		short colnumMax = 0;
+		int colnumMax = 0;
 
 		HSSFRow row = sheet.createRow(0);
 		//	for all columns
-		short colnum = 0;
+		int colnum = 0;
 		for (int col = 0; col < getColumnCount(); col++)
 		{
 			if (colnum > colnumMax)
@@ -330,7 +330,7 @@ public abstract class AbstractExcelExporter
 //		m_workbook.setRepeatingRowsAndColumns(m_sheetCount, 0, 0, 0, 0);
 	}
 
-	protected void createHeaderFooter(HSSFSheet sheet)
+	protected void createHeaderFooter(final HSSFSheet sheet)
 	{
 		// Sheet Header
 		HSSFHeader header = sheet.getHeader();
@@ -343,7 +343,7 @@ public abstract class AbstractExcelExporter
 		footer.setRight(DisplayType.getDateFormat(DisplayType.DateTime, getLanguage()).format(now));
 	}
 
-	protected void formatPage(HSSFSheet sheet)
+	protected void formatPage(final HSSFSheet sheet)
 	{
 		sheet.setFitToPage(true);
 		// Print Setup
@@ -359,7 +359,7 @@ public abstract class AbstractExcelExporter
 	 * @param out
 	 * @throws Exception
 	 */
-	public void export(OutputStream out)
+	public void export(final OutputStream out)
 	throws Exception
 	{
 		HSSFSheet sheet= createTableSheet();
@@ -390,28 +390,31 @@ public abstract class AbstractExcelExporter
 					Object obj = getValueAt(rownum, col);
 					int displayType = getDisplayType(rownum, col);
 					if (obj == null)
-						;
-					else if (DisplayType.isDate(displayType)) {
-						Timestamp value = (Timestamp)obj;
+					{
+						// nothing
+					}
+					else if (DisplayType.isDate(displayType))
+					{
+						final java.util.Date value = (java.util.Date)obj;
 						cell.setCellValue(value);
 					}
-					else if (DisplayType.isNumeric(displayType)) {
+					else if (DisplayType.isNumeric(displayType))
+					{
 						double value = 0;
-						if (obj instanceof Number) {
+						if (obj instanceof Number)
+						{
 							value = ((Number)obj).doubleValue();
 						}
 						cell.setCellValue(value);
 					}
-					else if (DisplayType.YesNo == displayType) {
-						boolean value = false;
-						if (obj instanceof Boolean)
-							value = (Boolean)obj;
-						else
-							value = "Y".equals(obj);
+					else if (DisplayType.YesNo == displayType)
+					{
+						final boolean value = DisplayType.toBoolean(obj);
 						cell.setCellValue(new HSSFRichTextString(Msg.getMsg(getLanguage(), value == true ? "Y" : "N")));
 					}
-					else {
-						String value = fixString(obj.toString());	//	formatted
+					else
+					{
+						final String value = fixString(obj.toString());	//	formatted
 						cell.setCellValue(new HSSFRichTextString(value));
 					}
 					//
@@ -453,7 +456,7 @@ public abstract class AbstractExcelExporter
 	 * @param language reporting language
 	 * @throws Exception
 	 */
-	public void export(File file, Language language)
+	public void export(final File file, final Language language)
 	throws Exception
 	{
 		export(file, language, true);
@@ -466,7 +469,7 @@ public abstract class AbstractExcelExporter
 	 * @param autoOpen auto open file after generated
 	 * @throws Exception
 	 */
-	public void export(File file, Language language, boolean autoOpen)
+	public void export(File file, final Language language, final boolean autoOpen)
 	throws Exception
 	{
 		m_lang = language;

@@ -21,7 +21,7 @@ import org.compiere.util.Env;
 import de.metas.document.IDocTypeDAO;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHandlingUnitsBL;
-import de.metas.handlingunits.IHandlingUnitsBL.TopLevelHusRequest;
+import de.metas.handlingunits.IHandlingUnitsBL.TopLevelHusQuery;
 import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.allocation.impl.HUListAllocationSourceDestination;
 import de.metas.handlingunits.allocation.impl.HULoader;
@@ -228,7 +228,10 @@ public class HUInternalUseInventoryProducer
 		{
 			throw new AdempiereException("No HUs for internal use inventory");
 		}
-		final TopLevelHusRequest query = TopLevelHusRequest.builder().hus(_hus).includeAll(false).build();
+		final TopLevelHusQuery query = TopLevelHusQuery.builder()
+				.hus(_hus)
+				.includeAll(false)
+				.build();
 		return handlingUnitsBL.getTopLevelHUs(query);
 	}
 }

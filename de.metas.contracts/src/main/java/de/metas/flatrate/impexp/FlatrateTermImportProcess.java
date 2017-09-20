@@ -254,6 +254,13 @@ public class FlatrateTermImportProcess extends AbstractImportProcess<I_I_Flatrat
 			final BigDecimal price = importRecord.getPrice();
 			contract.setPriceActual(price);
 		}
+		
+		//
+		// Qty
+		if (importRecord.getQty() != null && importRecord.getQty().intValue() > 0)
+		{
+			contract.setPlannedQtyPerUnit(importRecord.getQty());
+		}
 
 		//
 		// Start/End date
@@ -263,6 +270,20 @@ public class FlatrateTermImportProcess extends AbstractImportProcess<I_I_Flatrat
 			contract.setEndDate(importRecord.getEndDate());
 		}
 
+		//
+		//ContractStartDate
+		if (importRecord.getMasterStartDate() != null)
+		{
+			contract.setMasterStartDate(importRecord.getMasterStartDate());
+		}
+
+		//
+		//getContractEndDate
+		if (importRecord.getMasterEndDate() != null)
+		{
+			contract.setMasterEndDate(importRecord.getMasterEndDate());
+		}
+		
 		//
 		// Complete the subscription/contract
 		InterfaceWrapperHelper.save(contract);

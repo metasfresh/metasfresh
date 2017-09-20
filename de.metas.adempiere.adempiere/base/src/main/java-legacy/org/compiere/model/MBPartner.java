@@ -74,7 +74,7 @@ public class MBPartner extends X_C_BPartner
 	 *            client
 	 * @return Template Business Partner or null
 	 */
-	public static MBPartner getTemplate(Properties ctx, int AD_Client_ID)
+	public static MBPartner getTemplate(final Properties ctx, final int AD_Client_ID)
 	{
 		MBPartner template = getBPartnerCashTrx(ctx, AD_Client_ID);
 		if (template == null)
@@ -115,7 +115,7 @@ public class MBPartner extends X_C_BPartner
 	 *            client
 	 * @return Cash Trx Business Partner or null
 	 */
-	public static MBPartner getBPartnerCashTrx(Properties ctx, int AD_Client_ID)
+	public static MBPartner getBPartnerCashTrx(final Properties ctx, final int AD_Client_ID)
 	{
 		MBPartner retValue = null;
 		String sql = "SELECT * FROM C_BPartner "
@@ -163,7 +163,7 @@ public class MBPartner extends X_C_BPartner
 	 *            value
 	 * @return BPartner or null
 	 */
-	public static MBPartner get(Properties ctx, String Value)
+	public static MBPartner get(final Properties ctx, final String Value)
 	{
 		if (Value == null || Value.length() == 0)
 			return null;
@@ -183,7 +183,7 @@ public class MBPartner extends X_C_BPartner
 	 *            value
 	 * @return BPartner or null
 	 */
-	public static MBPartner get(Properties ctx, int C_BPartner_ID)
+	public static MBPartner get(final Properties ctx, final int C_BPartner_ID)
 	{
 		String whereClause = "C_BPartner_ID=? AND AD_Client_ID=?";
 		MBPartner retValue = new Query(ctx, MBPartner.Table_Name, whereClause
@@ -200,7 +200,7 @@ public class MBPartner extends X_C_BPartner
 	 *            partner
 	 * @return value in accounting currency
 	 */
-	public static BigDecimal getNotInvoicedAmt(int C_BPartner_ID)
+	public static BigDecimal getNotInvoicedAmt(final int C_BPartner_ID)
 	{
 		BigDecimal retValue = null;
 		String sql = "SELECT COALESCE(SUM(COALESCE("
@@ -246,7 +246,7 @@ public class MBPartner extends X_C_BPartner
 	 * @param ctx
 	 *            context
 	 */
-	public MBPartner(Properties ctx)
+	public MBPartner(final Properties ctx)
 	{
 		this(ctx, -1, null);
 	} // MBPartner
@@ -261,7 +261,7 @@ public class MBPartner extends X_C_BPartner
 	 * @param trxName
 	 *            transaction
 	 */
-	public MBPartner(Properties ctx, ResultSet rs, String trxName)
+	public MBPartner(final Properties ctx, final ResultSet rs, final String trxName)
 	{
 		super(ctx, rs, trxName);
 	} // MBPartner
@@ -276,7 +276,7 @@ public class MBPartner extends X_C_BPartner
 	 * @param trxName
 	 *            transaction
 	 */
-	public MBPartner(Properties ctx, int C_BPartner_ID, String trxName)
+	public MBPartner(final Properties ctx, int C_BPartner_ID, final String trxName)
 	{
 		super(ctx, C_BPartner_ID, trxName);
 		//
@@ -320,41 +320,6 @@ public class MBPartner extends X_C_BPartner
 		// log.debug(toString());
 	} // MBPartner
 
-	/**
-	 * Import Contstructor
-	 * 
-	 * @param impBP
-	 *            import
-	 */
-	public MBPartner(final I_I_BPartner impBP)
-	{
-		this(InterfaceWrapperHelper.getCtx(impBP),
-				0,
-				InterfaceWrapperHelper.getTrxName(impBP));
-		setClientOrg(InterfaceWrapperHelper.getPO(impBP));
-		setUpdatedBy(impBP.getUpdatedBy());
-		//
-		String value = impBP.getValue();
-		if (value == null || value.length() == 0)
-			value = impBP.getEMail();
-		if (value == null || value.length() == 0)
-			value = impBP.getContactName();
-		setValue(value);
-		String name = impBP.getName();
-		if (name == null || name.length() == 0)
-			name = impBP.getContactName();
-		if (name == null || name.length() == 0)
-			name = impBP.getEMail();
-		setName(name);
-		setName2(impBP.getName2());
-		setDescription(impBP.getDescription());
-		// setHelp(impBP.getHelp());
-		setDUNS(impBP.getDUNS());
-		setTaxID(impBP.getTaxID());
-		setNAICS(impBP.getNAICS());
-		setC_BP_Group_ID(impBP.getC_BP_Group_ID());
-	} // MBPartner
-
 	/** Addressed */
 	private MBPartnerLocation[] m_locations = null;
 	/** BP Bank Accounts */
@@ -375,7 +340,7 @@ public class MBPartner extends X_C_BPartner
 	 *            client
 	 * @return true if loaded
 	 */
-	private boolean initTemplate(int AD_Client_ID)
+	private boolean initTemplate(final int AD_Client_ID)
 	{
 		if (AD_Client_ID == 0)
 			throw new IllegalArgumentException("Client_ID=0");
@@ -436,7 +401,7 @@ public class MBPartner extends X_C_BPartner
 	 *            if true users will be requeried
 	 * @return contacts
 	 */
-	public List<I_AD_User> getContacts(boolean reload)
+	public List<I_AD_User> getContacts(final boolean reload)
 	{
 		return Services.get(IBPartnerDAO.class).retrieveContacts(this);
 	}
@@ -448,7 +413,7 @@ public class MBPartner extends X_C_BPartner
 	 *            optional user
 	 * @return contact or null
 	 */
-	public I_AD_User getContact(int AD_User_ID)
+	public I_AD_User getContact(final int AD_User_ID)
 	{
 		List<I_AD_User> users = getContacts(false);
 		if (users.isEmpty())
@@ -471,7 +436,7 @@ public class MBPartner extends X_C_BPartner
 	 * @deprecated Please use {@link IBPartnerDAO#retrieveBPartnerLocations(I_C_BPartner)}
 	 */
 	@Deprecated
-	public MBPartnerLocation[] getLocations(boolean reload)
+	public MBPartnerLocation[] getLocations(final boolean reload)
 	{
 		if (reload || m_locations == null || m_locations.length == 0)
 			;
@@ -492,7 +457,7 @@ public class MBPartner extends X_C_BPartner
 	 *            optional explicit location
 	 * @return location or null
 	 */
-	public MBPartnerLocation getLocation(int C_BPartner_Location_ID)
+	public MBPartnerLocation getLocation(final int C_BPartner_Location_ID)
 	{
 		MBPartnerLocation[] locations = getLocations(false);
 		if (locations.length == 0)
@@ -517,12 +482,12 @@ public class MBPartner extends X_C_BPartner
 	 *            requery
 	 * @return Bank Accounts
 	 */
-	public MBPBankAccount[] getBankAccounts(boolean requery)
+	public MBPBankAccount[] getBankAccounts(final boolean requery)
 	{
 		if (m_accounts != null && m_accounts.length >= 0 && !requery)   // re-load
 			return m_accounts;
 		//
-		ArrayList<MBPBankAccount> list = new ArrayList<MBPBankAccount>();
+		ArrayList<MBPBankAccount> list = new ArrayList<>();
 		String sql = "SELECT * FROM C_BP_BankAccount WHERE C_BPartner_ID=? AND IsActive='Y'";
 		PreparedStatement pstmt = null;
 		try
@@ -586,7 +551,7 @@ public class MBPartner extends X_C_BPartner
 	 *            org
 	 */
 	@Override
-	public void setClientOrg(int AD_Client_ID, int AD_Org_ID)
+	public void setClientOrg(final int AD_Client_ID, final int AD_Org_ID)
 	{
 		super.setClientOrg(AD_Client_ID, AD_Org_ID);
 	} // setClientOrg
@@ -718,7 +683,7 @@ public class MBPartner extends X_C_BPartner
 	 * @param C_BPartner_Location_ID
 	 *            id
 	 */
-	public void setPrimaryC_BPartner_Location_ID(int C_BPartner_Location_ID)
+	public void setPrimaryC_BPartner_Location_ID(final int C_BPartner_Location_ID)
 	{
 		m_primaryC_BPartner_Location_ID = new Integer(C_BPartner_Location_ID);
 	} // setPrimaryC_BPartner_Location_ID
@@ -729,7 +694,7 @@ public class MBPartner extends X_C_BPartner
 	 * @param AD_User_ID
 	 *            id
 	 */
-	public void setPrimaryAD_User_ID(int AD_User_ID)
+	public void setPrimaryAD_User_ID(final int AD_User_ID)
 	{
 		m_primaryAD_User_ID = new Integer(AD_User_ID);
 	} // setPrimaryAD_User_ID
@@ -773,7 +738,7 @@ public class MBPartner extends X_C_BPartner
 	 * @param group
 	 *            group
 	 */
-	public void setBPGroup(MBPGroup group)
+	public void setBPGroup(final MBPGroup group)
 	{
 		m_group = group;
 		if (m_group == null)
@@ -872,7 +837,7 @@ public class MBPartner extends X_C_BPartner
 	 * @return true
 	 */
 	@Override
-	protected boolean beforeSave(boolean newRecord)
+	protected boolean beforeSave(final boolean newRecord)
 	{
 		if (newRecord || is_ValueChanged("C_BP_Group_ID"))
 		{
@@ -896,7 +861,7 @@ public class MBPartner extends X_C_BPartner
 	 * @return success
 	 */
 	@Override
-	protected boolean afterSave(boolean newRecord, boolean success)
+	protected boolean afterSave(final boolean newRecord, final boolean success)
 	{
 		if (newRecord && success)
 		{
@@ -940,7 +905,7 @@ public class MBPartner extends X_C_BPartner
 	 * @return deleted
 	 */
 	@Override
-	protected boolean afterDelete(boolean success)
+	protected boolean afterDelete(final boolean success)
 	{
 		if (success)
 			delete_Tree(MTree_Base.TREETYPE_BPartner);

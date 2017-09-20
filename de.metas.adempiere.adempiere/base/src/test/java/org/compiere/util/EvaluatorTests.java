@@ -1,5 +1,7 @@
 package org.compiere.util;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -52,7 +54,7 @@ public class EvaluatorTests
 			List<String> dependsActual = new ArrayList<String>();
 			List<String> dependsExpected = Arrays.asList("C_BPartner_Override_ID", "C_BPartner_Location_Override_ID");
 			Evaluator.parseDepends(dependsActual, sql);
-			assertEquals(dependsExpected, dependsActual);
+			assertThat(dependsActual).containsAll(dependsExpected);
 		}
 		{
 			// test if is also works with strings and with nested '-signs
@@ -60,7 +62,7 @@ public class EvaluatorTests
 			List<String> dependsActual = new ArrayList<String>();
 			List<String> dependsExpected = Arrays.asList("StringVar", "IntVar_ID", "NoDefaultStringVar");
 			Evaluator.parseDepends(dependsActual, sql);
-			assertEquals(dependsExpected, dependsActual);
+			assertThat(dependsActual).containsAll(dependsExpected);
 		}
 	}
 

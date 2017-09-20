@@ -227,13 +227,13 @@ public class ZoomInfoFactory
 		}
 
 		@Override
-		public boolean hasField(String columnName)
+		public boolean hasField(final String columnName)
 		{
 			return po.getPOInfo().hasColumnName(columnName);
 		}
 
 		@Override
-		public Object getFieldValue(String columnName)
+		public Object getFieldValue(final String columnName)
 		{
 			return po.get_Value(columnName);
 		}
@@ -295,7 +295,7 @@ public class ZoomInfoFactory
 		public ITranslatableString getLabel()
 		{
 			final ITranslatableString postfix = ImmutableTranslatableString.constant(" (#" + getRecordCount() + ")");
-			return ITranslatableString.compose(_destinationDisplay, postfix);
+			return ITranslatableString.compose("", _destinationDisplay, postfix);
 		}
 
 		public int getRecordCount()

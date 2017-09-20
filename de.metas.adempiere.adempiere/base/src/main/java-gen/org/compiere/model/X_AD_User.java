@@ -5,16 +5,16 @@ import java.sql.ResultSet;
 import java.util.Properties;
 
 /** Generated Model for AD_User
- *  @author Adempiere (generated)
+ *  @author Adempiere (generated) 
  */
 @SuppressWarnings("javadoc")
-public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.compiere.model.I_Persistent
+public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.compiere.model.I_Persistent 
 {
 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1440417804L;
+	private static final long serialVersionUID = 1360281306L;
 
     /** Standard Constructor */
     public X_AD_User (Properties ctx, int AD_User_ID, String trxName)
@@ -23,13 +23,14 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
       /** if (AD_User_ID == 0)
         {
 			setAD_User_ID (0);
+			setIsBillToContact_Default (false); // N
 			setIsDefaultContact (false); // N
 			setIsFullBPAccess (true); // Y
 			setIsInPayroll (false); // N
 			setIsMFProcurementUser (false); // N
 			setIsPurchaseContact_Default (false); // N
 			setIsSalesContact_Default (false); // N
-			setIsSystemUser (false); // N
+			setIsShipToContact_Default (false); // N
 			setName (null);
 			setNotificationType (null); // N
         } */
@@ -50,13 +51,13 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
       return poi;
     }
 
-	/**
+	/** 
 	 * AD_Language AD_Reference_ID=327
 	 * Reference name: AD_Language System
 	 */
 	public static final int AD_LANGUAGE_AD_Reference_ID=327;
 	/** Set Sprache.
-		@param AD_Language
+		@param AD_Language 
 		Sprache für diesen Eintrag
 	  */
 	@Override
@@ -70,7 +71,7 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 		@return Sprache für diesen Eintrag
 	  */
 	@Override
-	public java.lang.String getAD_Language ()
+	public java.lang.String getAD_Language () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_AD_Language);
 	}
@@ -88,15 +89,15 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	}
 
 	/** Set Buchende Organisation.
-		@param AD_OrgTrx_ID
+		@param AD_OrgTrx_ID 
 		Performing or initiating organization
 	  */
 	@Override
 	public void setAD_OrgTrx_ID (int AD_OrgTrx_ID)
 	{
-		if (AD_OrgTrx_ID < 1)
+		if (AD_OrgTrx_ID < 1) 
 			set_Value (COLUMNNAME_AD_OrgTrx_ID, null);
-		else
+		else 
 			set_Value (COLUMNNAME_AD_OrgTrx_ID, Integer.valueOf(AD_OrgTrx_ID));
 	}
 
@@ -104,7 +105,7 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 		@return Performing or initiating organization
 	  */
 	@Override
-	public int getAD_OrgTrx_ID ()
+	public int getAD_OrgTrx_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_AD_OrgTrx_ID);
 		if (ii == null)
@@ -113,15 +114,15 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	}
 
 	/** Set Ansprechpartner.
-		@param AD_User_ID
+		@param AD_User_ID 
 		User within the system - Internal or Business Partner Contact
 	  */
 	@Override
 	public void setAD_User_ID (int AD_User_ID)
 	{
-		if (AD_User_ID < 0)
+		if (AD_User_ID < 0) 
 			set_ValueNoCheck (COLUMNNAME_AD_User_ID, null);
-		else
+		else 
 			set_ValueNoCheck (COLUMNNAME_AD_User_ID, Integer.valueOf(AD_User_ID));
 	}
 
@@ -129,7 +130,7 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 		@return User within the system - Internal or Business Partner Contact
 	  */
 	@Override
-	public int getAD_User_ID ()
+	public int getAD_User_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_AD_User_ID);
 		if (ii == null)
@@ -150,15 +151,15 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	}
 
 	/** Set Betreuer.
-		@param AD_User_InCharge_ID
+		@param AD_User_InCharge_ID 
 		Person, die bei einem fachlichen Problem vom System informiert wird.
 	  */
 	@Override
 	public void setAD_User_InCharge_ID (int AD_User_InCharge_ID)
 	{
-		if (AD_User_InCharge_ID < 1)
+		if (AD_User_InCharge_ID < 1) 
 			set_Value (COLUMNNAME_AD_User_InCharge_ID, null);
-		else
+		else 
 			set_Value (COLUMNNAME_AD_User_InCharge_ID, Integer.valueOf(AD_User_InCharge_ID));
 	}
 
@@ -166,7 +167,7 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 		@return Person, die bei einem fachlichen Problem vom System informiert wird.
 	  */
 	@Override
-	public int getAD_User_InCharge_ID ()
+	public int getAD_User_InCharge_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_AD_User_InCharge_ID);
 		if (ii == null)
@@ -191,16 +192,16 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	@Override
 	public void setAvatar_ID (int Avatar_ID)
 	{
-		if (Avatar_ID < 1)
+		if (Avatar_ID < 1) 
 			set_Value (COLUMNNAME_Avatar_ID, null);
-		else
+		else 
 			set_Value (COLUMNNAME_Avatar_ID, Integer.valueOf(Avatar_ID));
 	}
 
 	/** Get Avatar.
 		@return Avatar	  */
 	@Override
-	public int getAvatar_ID ()
+	public int getAvatar_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_Avatar_ID);
 		if (ii == null)
@@ -209,7 +210,7 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	}
 
 	/** Set Geburtstag.
-		@param Birthday
+		@param Birthday 
 		Birthday or Anniversary day
 	  */
 	@Override
@@ -222,7 +223,7 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 		@return Birthday or Anniversary day
 	  */
 	@Override
-	public java.sql.Timestamp getBirthday ()
+	public java.sql.Timestamp getBirthday () 
 	{
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_Birthday);
 	}
@@ -240,15 +241,15 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	}
 
 	/** Set Geschäftspartner.
-		@param C_BPartner_ID
+		@param C_BPartner_ID 
 		Identifies a Business Partner
 	  */
 	@Override
 	public void setC_BPartner_ID (int C_BPartner_ID)
 	{
-		if (C_BPartner_ID < 1)
+		if (C_BPartner_ID < 1) 
 			set_Value (COLUMNNAME_C_BPartner_ID, null);
-		else
+		else 
 			set_Value (COLUMNNAME_C_BPartner_ID, Integer.valueOf(C_BPartner_ID));
 	}
 
@@ -256,7 +257,7 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 		@return Identifies a Business Partner
 	  */
 	@Override
-	public int getC_BPartner_ID ()
+	public int getC_BPartner_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_ID);
 		if (ii == null)
@@ -277,15 +278,15 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	}
 
 	/** Set Standort.
-		@param C_BPartner_Location_ID
+		@param C_BPartner_Location_ID 
 		Identifies the (ship to) address for this Business Partner
 	  */
 	@Override
 	public void setC_BPartner_Location_ID (int C_BPartner_Location_ID)
 	{
-		if (C_BPartner_Location_ID < 1)
+		if (C_BPartner_Location_ID < 1) 
 			set_Value (COLUMNNAME_C_BPartner_Location_ID, null);
-		else
+		else 
 			set_Value (COLUMNNAME_C_BPartner_Location_ID, Integer.valueOf(C_BPartner_Location_ID));
 	}
 
@@ -293,7 +294,7 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 		@return Identifies the (ship to) address for this Business Partner
 	  */
 	@Override
-	public int getC_BPartner_Location_ID ()
+	public int getC_BPartner_Location_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_Location_ID);
 		if (ii == null)
@@ -314,15 +315,15 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	}
 
 	/** Set Anrede.
-		@param C_Greeting_ID
+		@param C_Greeting_ID 
 		Greeting to print on correspondence
 	  */
 	@Override
 	public void setC_Greeting_ID (int C_Greeting_ID)
 	{
-		if (C_Greeting_ID < 1)
+		if (C_Greeting_ID < 1) 
 			set_Value (COLUMNNAME_C_Greeting_ID, null);
-		else
+		else 
 			set_Value (COLUMNNAME_C_Greeting_ID, Integer.valueOf(C_Greeting_ID));
 	}
 
@@ -330,7 +331,7 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 		@return Greeting to print on correspondence
 	  */
 	@Override
-	public int getC_Greeting_ID ()
+	public int getC_Greeting_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Greeting_ID);
 		if (ii == null)
@@ -351,15 +352,15 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	}
 
 	/** Set Position.
-		@param C_Job_ID
+		@param C_Job_ID 
 		Job Position
 	  */
 	@Override
 	public void setC_Job_ID (int C_Job_ID)
 	{
-		if (C_Job_ID < 1)
+		if (C_Job_ID < 1) 
 			set_Value (COLUMNNAME_C_Job_ID, null);
-		else
+		else 
 			set_Value (COLUMNNAME_C_Job_ID, Integer.valueOf(C_Job_ID));
 	}
 
@@ -367,7 +368,7 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 		@return Job Position
 	  */
 	@Override
-	public int getC_Job_ID ()
+	public int getC_Job_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Job_ID);
 		if (ii == null)
@@ -376,7 +377,7 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	}
 
 	/** Set Bemerkungen.
-		@param Comments
+		@param Comments 
 		Comments or additional information
 	  */
 	@Override
@@ -389,12 +390,12 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 		@return Comments or additional information
 	  */
 	@Override
-	public java.lang.String getComments ()
+	public java.lang.String getComments () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Comments);
 	}
 
-	/**
+	/** 
 	 * ConnectionProfile AD_Reference_ID=364
 	 * Reference name: AD_User ConnectionProfile
 	 */
@@ -408,7 +409,7 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	/** WAN = W */
 	public static final String CONNECTIONPROFILE_WAN = "W";
 	/** Set Verbindungsart.
-		@param ConnectionProfile
+		@param ConnectionProfile 
 		How a Java Client connects to the server(s)
 	  */
 	@Override
@@ -422,12 +423,12 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 		@return How a Java Client connects to the server(s)
 	  */
 	@Override
-	public java.lang.String getConnectionProfile ()
+	public java.lang.String getConnectionProfile () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_ConnectionProfile);
 	}
 
-	/**
+	/** 
 	 * ContactLimitation AD_Reference_ID=540089
 	 * Reference name: ContactLimitation
 	 */
@@ -452,7 +453,7 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	/** Get Kontakt Einschränkung.
 		@return Kontakt Einschränkung	  */
 	@Override
-	public java.lang.String getContactLimitation ()
+	public java.lang.String getContactLimitation () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_ContactLimitation);
 	}
@@ -468,7 +469,7 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	/** Get Begründung.
 		@return Begründung	  */
 	@Override
-	public java.lang.String getContactLimitationReason ()
+	public java.lang.String getContactLimitationReason () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_ContactLimitationReason);
 	}
@@ -484,7 +485,7 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	/** Get Löschdatum.
 		@return Löschdatum	  */
 	@Override
-	public java.sql.Timestamp getDelDate ()
+	public java.sql.Timestamp getDelDate () 
 	{
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_DelDate);
 	}
@@ -500,13 +501,13 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	/** Get Beschreibung.
 		@return Beschreibung	  */
 	@Override
-	public java.lang.String getDescription ()
+	public java.lang.String getDescription () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Description);
 	}
 
 	/** Set eMail.
-		@param EMail
+		@param EMail 
 		EMail-Adresse
 	  */
 	@Override
@@ -519,13 +520,13 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 		@return EMail-Adresse
 	  */
 	@Override
-	public java.lang.String getEMail ()
+	public java.lang.String getEMail () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_EMail);
 	}
 
 	/** Set EMail Nutzer-ID.
-		@param EMailUser
+		@param EMailUser 
 		User Name (ID) in the Mail System
 	  */
 	@Override
@@ -538,13 +539,13 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 		@return User Name (ID) in the Mail System
 	  */
 	@Override
-	public java.lang.String getEMailUser ()
+	public java.lang.String getEMailUser () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_EMailUser);
 	}
 
 	/** Set Passwort EMail-Nutzer.
-		@param EMailUserPW
+		@param EMailUserPW 
 		Passwort Ihrer EMail Nutzer-ID
 	  */
 	@Override
@@ -557,13 +558,13 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 		@return Passwort Ihrer EMail Nutzer-ID
 	  */
 	@Override
-	public java.lang.String getEMailUserPW ()
+	public java.lang.String getEMailUserPW () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_EMailUserPW);
 	}
 
 	/** Set Überprüfung EMail.
-		@param EMailVerify
+		@param EMailVerify 
 		Verification information of EMail Address
 	  */
 	@Override
@@ -576,13 +577,13 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 		@return Verification information of EMail Address
 	  */
 	@Override
-	public java.lang.String getEMailVerify ()
+	public java.lang.String getEMailVerify () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_EMailVerify);
 	}
 
 	/** Set EMail überprüft.
-		@param EMailVerifyDate
+		@param EMailVerifyDate 
 		Date Email was verified
 	  */
 	@Override
@@ -595,13 +596,13 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 		@return Date Email was verified
 	  */
 	@Override
-	public java.sql.Timestamp getEMailVerifyDate ()
+	public java.sql.Timestamp getEMailVerifyDate () 
 	{
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_EMailVerifyDate);
 	}
 
 	/** Set Fax.
-		@param Fax
+		@param Fax 
 		Facsimile number
 	  */
 	@Override
@@ -614,13 +615,13 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 		@return Facsimile number
 	  */
 	@Override
-	public java.lang.String getFax ()
+	public java.lang.String getFax () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Fax);
 	}
 
 	/** Set Vorname.
-		@param Firstname
+		@param Firstname 
 		Vorname
 	  */
 	@Override
@@ -633,12 +634,12 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 		@return Vorname
 	  */
 	@Override
-	public java.lang.String getFirstname ()
+	public java.lang.String getFirstname () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Firstname);
 	}
 
-	/**
+	/** 
 	 * Fresh_xmas_Gift AD_Reference_ID=540504
 	 * Reference name: fresh_xmas_list
 	 */
@@ -659,13 +660,13 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	/** Get Weihnachtsgeschenk.
 		@return Weihnachtsgeschenk	  */
 	@Override
-	public java.lang.String getFresh_xmas_Gift ()
+	public java.lang.String getFresh_xmas_Gift () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Fresh_xmas_Gift);
 	}
 
 	/** Set Included Tab.
-		@param Included_Tab_ID
+		@param Included_Tab_ID 
 		Included Tab in this Tab (Master Dateail)
 	  */
 	@Override
@@ -678,32 +679,29 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 		@return Included Tab in this Tab (Master Dateail)
 	  */
 	@Override
-	public java.lang.String getIncluded_Tab_ID ()
+	public java.lang.String getIncluded_Tab_ID () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Included_Tab_ID);
 	}
 
-	/** Set IsAccountLocked.
-		@param IsAccountLocked
-		Flag is yes if account is locked
-	  */
+	/** Set Rechnungskontakt.
+		@param IsBillToContact_Default Rechnungskontakt	  */
 	@Override
-	public void setIsAccountLocked (boolean IsAccountLocked)
+	public void setIsBillToContact_Default (boolean IsBillToContact_Default)
 	{
-		set_Value (COLUMNNAME_IsAccountLocked, Boolean.valueOf(IsAccountLocked));
+		set_Value (COLUMNNAME_IsBillToContact_Default, Boolean.valueOf(IsBillToContact_Default));
 	}
 
-	/** Get IsAccountLocked.
-		@return Flag is yes if account is locked
-	  */
+	/** Get Rechnungskontakt.
+		@return Rechnungskontakt	  */
 	@Override
-	public boolean isAccountLocked ()
+	public boolean isBillToContact_Default () 
 	{
-		Object oo = get_Value(COLUMNNAME_IsAccountLocked);
-		if (oo != null)
+		Object oo = get_Value(COLUMNNAME_IsBillToContact_Default);
+		if (oo != null) 
 		{
-			 if (oo instanceof Boolean)
-				 return ((Boolean)oo).booleanValue();
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
 			return "Y".equals(oo);
 		}
 		return false;
@@ -720,20 +718,20 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	/** Get Standard-Ansprechpartner.
 		@return Standard-Ansprechpartner	  */
 	@Override
-	public boolean isDefaultContact ()
+	public boolean isDefaultContact () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsDefaultContact);
-		if (oo != null)
+		if (oo != null) 
 		{
-			 if (oo instanceof Boolean)
-				 return ((Boolean)oo).booleanValue();
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
 			return "Y".equals(oo);
 		}
 		return false;
 	}
 
 	/** Set Full BP Access.
-		@param IsFullBPAccess
+		@param IsFullBPAccess 
 		The user/contact has full access to Business Partner information and resources
 	  */
 	@Override
@@ -746,13 +744,39 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 		@return The user/contact has full access to Business Partner information and resources
 	  */
 	@Override
-	public boolean isFullBPAccess ()
+	public boolean isFullBPAccess () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsFullBPAccess);
-		if (oo != null)
+		if (oo != null) 
 		{
-			 if (oo instanceof Boolean)
-				 return ((Boolean)oo).booleanValue();
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set Is In Payroll.
+		@param IsInPayroll 
+		Defined if any User Contact will be used for Calculate Payroll
+	  */
+	@Override
+	public void setIsInPayroll (boolean IsInPayroll)
+	{
+		set_Value (COLUMNNAME_IsInPayroll, Boolean.valueOf(IsInPayroll));
+	}
+
+	/** Get Is In Payroll.
+		@return Defined if any User Contact will be used for Calculate Payroll
+	  */
+	@Override
+	public boolean isInPayroll () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsInPayroll);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
 			return "Y".equals(oo);
 		}
 		return false;
@@ -769,46 +793,20 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	/** Get Login As HostKey .
 		@return Login As HostKey 	  */
 	@Override
-	public boolean isLoginAsHostKey ()
+	public boolean isLoginAsHostKey () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsLoginAsHostKey);
-		if (oo != null)
+		if (oo != null) 
 		{
-			 if (oo instanceof Boolean)
-				 return ((Boolean)oo).booleanValue();
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
 			return "Y".equals(oo);
 		}
 		return false;
 	}
 
-	/** Set Is In Payroll.
-		@param IsInPayroll
-		Defined if any User Contact will be used for Calculate Payroll
-	  */
-	@Override
-	public void setIsInPayroll (boolean IsInPayroll)
-	{
-		set_Value (COLUMNNAME_IsInPayroll, Boolean.valueOf(IsInPayroll));
-	}
-
-	/** Get Is In Payroll.
-		@return Defined if any User Contact will be used for Calculate Payroll
-	  */
-	@Override
-	public boolean isInPayroll ()
-	{
-		Object oo = get_Value(COLUMNNAME_IsInPayroll);
-		if (oo != null)
-		{
-			 if (oo instanceof Boolean)
-				 return ((Boolean)oo).booleanValue();
-			return "Y".equals(oo);
-		}
-		return false;
-	}
-
-	/** Set Mengenmeldung-WebUI.
-		@param IsMFProcurementUser
+	/** Set Mengenmeldung App.
+		@param IsMFProcurementUser 
 		Entscheidet, ob sich der betreffende Nutzer, sofern eine Mail-Adresse und eine Liefervereinbarung hinterlegt ist, bei der Mengenmeldung-WebUI anmelden kann
 	  */
 	@Override
@@ -817,17 +815,17 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 		set_Value (COLUMNNAME_IsMFProcurementUser, Boolean.valueOf(IsMFProcurementUser));
 	}
 
-	/** Get Mengenmeldung-WebUI.
+	/** Get Mengenmeldung App.
 		@return Entscheidet, ob sich der betreffende Nutzer, sofern eine Mail-Adresse und eine Liefervereinbarung hinterlegt ist, bei der Mengenmeldung-WebUI anmelden kann
 	  */
 	@Override
-	public boolean isMFProcurementUser ()
+	public boolean isMFProcurementUser () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsMFProcurementUser);
-		if (oo != null)
+		if (oo != null) 
 		{
-			 if (oo instanceof Boolean)
-				 return ((Boolean)oo).booleanValue();
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
 			return "Y".equals(oo);
 		}
 		return false;
@@ -844,13 +842,13 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	/** Get Einkaufskontakt.
 		@return Einkaufskontakt	  */
 	@Override
-	public boolean isPurchaseContact ()
+	public boolean isPurchaseContact () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsPurchaseContact);
-		if (oo != null)
+		if (oo != null) 
 		{
-			 if (oo instanceof Boolean)
-				 return ((Boolean)oo).booleanValue();
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
 			return "Y".equals(oo);
 		}
 		return false;
@@ -867,13 +865,13 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	/** Get IsPurchaseContact_Default.
 		@return IsPurchaseContact_Default	  */
 	@Override
-	public boolean isPurchaseContact_Default ()
+	public boolean isPurchaseContact_Default () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsPurchaseContact_Default);
-		if (oo != null)
+		if (oo != null) 
 		{
-			 if (oo instanceof Boolean)
-				 return ((Boolean)oo).booleanValue();
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
 			return "Y".equals(oo);
 		}
 		return false;
@@ -890,13 +888,13 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	/** Get IsSalesContact.
 		@return IsSalesContact	  */
 	@Override
-	public boolean isSalesContact ()
+	public boolean isSalesContact () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsSalesContact);
-		if (oo != null)
+		if (oo != null) 
 		{
-			 if (oo instanceof Boolean)
-				 return ((Boolean)oo).booleanValue();
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
 			return "Y".equals(oo);
 		}
 		return false;
@@ -913,13 +911,36 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	/** Get IsSalesContact_Default.
 		@return IsSalesContact_Default	  */
 	@Override
-	public boolean isSalesContact_Default ()
+	public boolean isSalesContact_Default () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsSalesContact_Default);
-		if (oo != null)
+		if (oo != null) 
 		{
-			 if (oo instanceof Boolean)
-				 return ((Boolean)oo).booleanValue();
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set Lieferkontakt.
+		@param IsShipToContact_Default Lieferkontakt	  */
+	@Override
+	public void setIsShipToContact_Default (boolean IsShipToContact_Default)
+	{
+		set_Value (COLUMNNAME_IsShipToContact_Default, Boolean.valueOf(IsShipToContact_Default));
+	}
+
+	/** Get Lieferkontakt.
+		@return Lieferkontakt	  */
+	@Override
+	public boolean isShipToContact_Default () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsShipToContact_Default);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
 			return "Y".equals(oo);
 		}
 		return false;
@@ -936,36 +957,13 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	/** Get IsSubjectMatterContact.
 		@return IsSubjectMatterContact	  */
 	@Override
-	public boolean isSubjectMatterContact ()
+	public boolean isSubjectMatterContact () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsSubjectMatterContact);
-		if (oo != null)
+		if (oo != null) 
 		{
-			 if (oo instanceof Boolean)
-				 return ((Boolean)oo).booleanValue();
-			return "Y".equals(oo);
-		}
-		return false;
-	}
-
-	/** Set Systembenutzer.
-		@param IsSystemUser Systembenutzer	  */
-	@Override
-	public void setIsSystemUser (boolean IsSystemUser)
-	{
-		set_Value (COLUMNNAME_IsSystemUser, Boolean.valueOf(IsSystemUser));
-	}
-
-	/** Get Systembenutzer.
-		@return Systembenutzer	  */
-	@Override
-	public boolean isSystemUser ()
-	{
-		Object oo = get_Value(COLUMNNAME_IsSystemUser);
-		if (oo != null)
-		{
-			 if (oo instanceof Boolean)
-				 return ((Boolean)oo).booleanValue();
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
 			return "Y".equals(oo);
 		}
 		return false;
@@ -982,13 +980,13 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	/** Get Nachname.
 		@return Nachname	  */
 	@Override
-	public java.lang.String getLastname ()
+	public java.lang.String getLastname () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Lastname);
 	}
 
 	/** Set Berechtigen über LDAP.
-		@param LDAPUser
+		@param LDAPUser 
 		User Name used for authorization via LDAP (directory) services
 	  */
 	@Override
@@ -1001,108 +999,13 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 		@return User Name used for authorization via LDAP (directory) services
 	  */
 	@Override
-	public java.lang.String getLDAPUser ()
+	public java.lang.String getLDAPUser () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_LDAPUser);
 	}
 
-	/** Set LockedFromIP.
-		@param LockedFromIP
-		Client IP address that was used when this account was locked
-	  */
-	@Override
-	public void setLockedFromIP (java.lang.String LockedFromIP)
-	{
-		set_Value (COLUMNNAME_LockedFromIP, LockedFromIP);
-	}
-
-	/** Get LockedFromIP.
-		@return Client IP address that was used when this account was locked
-	  */
-	@Override
-	public java.lang.String getLockedFromIP ()
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_LockedFromIP);
-	}
-
-	/** Set Login.
-		@param Login
-		Used for login. See Help.
-	  */
-	@Override
-	public void setLogin (java.lang.String Login)
-	{
-		set_Value (COLUMNNAME_Login, Login);
-	}
-
-	/** Get Login.
-		@return Used for login. See Help.
-	  */
-	@Override
-	public java.lang.String getLogin ()
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_Login);
-	}
-
-	/** Set LoginFailureCount.
-		@param LoginFailureCount
-		Failed login count
-	  */
-	@Override
-	public void setLoginFailureCount (int LoginFailureCount)
-	{
-		set_Value (COLUMNNAME_LoginFailureCount, Integer.valueOf(LoginFailureCount));
-	}
-
-	/** Get LoginFailureCount.
-		@return Failed login count
-	  */
-	@Override
-	public int getLoginFailureCount ()
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_LoginFailureCount);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	/** Set LoginFailureDate.
-		@param LoginFailureDate
-		Date when was last faild
-	  */
-	@Override
-	public void setLoginFailureDate (java.sql.Timestamp LoginFailureDate)
-	{
-		set_Value (COLUMNNAME_LoginFailureDate, LoginFailureDate);
-	}
-
-	/** Get LoginFailureDate.
-		@return Date when was last faild
-	  */
-	@Override
-	public java.sql.Timestamp getLoginFailureDate ()
-	{
-		return (java.sql.Timestamp)get_Value(COLUMNNAME_LoginFailureDate);
-	}
-
-	/** Set Handynummer.
-		@param MobilePhone Handynummer	  */
-	@Override
-	public void setMobilePhone (java.lang.String MobilePhone)
-	{
-		set_Value (COLUMNNAME_MobilePhone, MobilePhone);
-	}
-
-	/** Get Handynummer.
-		@return Handynummer	  */
-	@Override
-	public java.lang.String getMobilePhone ()
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_MobilePhone);
-	}
-
 	/** Set Name.
-		@param Name
+		@param Name 
 		Alphanumeric identifier of the entity
 	  */
 	@Override
@@ -1115,12 +1018,12 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 		@return Alphanumeric identifier of the entity
 	  */
 	@Override
-	public java.lang.String getName ()
+	public java.lang.String getName () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Name);
 	}
 
-	/**
+	/** 
 	 * NotificationType AD_Reference_ID=344
 	 * Reference name: AD_User NotificationType
 	 */
@@ -1136,7 +1039,7 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	/** NotifyUserInCharge = O */
 	public static final String NOTIFICATIONTYPE_NotifyUserInCharge = "O";
 	/** Set Benachrichtigungs-Art.
-		@param NotificationType
+		@param NotificationType 
 		Type of Notifications
 	  */
 	@Override
@@ -1150,13 +1053,13 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 		@return Type of Notifications
 	  */
 	@Override
-	public java.lang.String getNotificationType ()
+	public java.lang.String getNotificationType () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_NotificationType);
 	}
 
 	/** Set Kennwort.
-		@param Password
+		@param Password 
 		Password of any length (case sensitive)
 	  */
 	@Override
@@ -1169,7 +1072,7 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 		@return Password of any length (case sensitive)
 	  */
 	@Override
-	public java.lang.String getPassword ()
+	public java.lang.String getPassword () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Password);
 	}
@@ -1185,7 +1088,7 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	/** Get Portalpasswort.
 		@return Portalpasswort	  */
 	@Override
-	public java.lang.String getpasswordportal ()
+	public java.lang.String getpasswordportal () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_passwordportal);
 	}
@@ -1201,14 +1104,14 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	/** Get Code für Passwort-Änderung.
 		@return Code für Passwort-Änderung	  */
 	@Override
-	public java.lang.String getPasswordResetCode ()
+	public java.lang.String getPasswordResetCode () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_PasswordResetCode);
 	}
 
-	/** Set Phone.
-		@param Phone
-		Identifies a telephone number
+	/** Set Telefon.
+		@param Phone 
+		Beschreibt eine Telefon Nummer
 	  */
 	@Override
 	public void setPhone (java.lang.String Phone)
@@ -1216,18 +1119,18 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 		set_Value (COLUMNNAME_Phone, Phone);
 	}
 
-	/** Get Phone.
-		@return Identifies a telephone number
+	/** Get Telefon.
+		@return Beschreibt eine Telefon Nummer
 	  */
 	@Override
-	public java.lang.String getPhone ()
+	public java.lang.String getPhone () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Phone);
 	}
 
-	/** Set Telefon (alternativ).
-		@param Phone2
-		Identifies an alternate telephone number.
+	/** Set Mobil.
+		@param Phone2 
+		Alternative Mobile Telefonnummer
 	  */
 	@Override
 	public void setPhone2 (java.lang.String Phone2)
@@ -1235,11 +1138,11 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 		set_Value (COLUMNNAME_Phone2, Phone2);
 	}
 
-	/** Get Telefon (alternativ).
-		@return Identifies an alternate telephone number.
+	/** Get Mobil.
+		@return Alternative Mobile Telefonnummer
 	  */
 	@Override
-	public java.lang.String getPhone2 ()
+	public java.lang.String getPhone2 () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Phone2);
 	}
@@ -1255,20 +1158,20 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	/** Get Verarbeiten.
 		@return Verarbeiten	  */
 	@Override
-	public boolean isProcessing ()
+	public boolean isProcessing () 
 	{
 		Object oo = get_Value(COLUMNNAME_Processing);
-		if (oo != null)
+		if (oo != null) 
 		{
-			 if (oo instanceof Boolean)
-				 return ((Boolean)oo).booleanValue();
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
 			return "Y".equals(oo);
 		}
 		return false;
 	}
 
 	/** Set Handelsregister.
-		@param Registry
+		@param Registry 
 		Handelsregister
 	  */
 	@Override
@@ -1281,7 +1184,7 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 		@return Handelsregister
 	  */
 	@Override
-	public java.lang.String getRegistry ()
+	public java.lang.String getRegistry () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Registry);
 	}
@@ -1299,15 +1202,15 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	}
 
 	/** Set Vorgesetzter.
-		@param Supervisor_ID
+		@param Supervisor_ID 
 		Supervisor for this user/organization - used for escalation and approval
 	  */
 	@Override
 	public void setSupervisor_ID (int Supervisor_ID)
 	{
-		if (Supervisor_ID < 1)
+		if (Supervisor_ID < 1) 
 			set_Value (COLUMNNAME_Supervisor_ID, null);
-		else
+		else 
 			set_Value (COLUMNNAME_Supervisor_ID, Integer.valueOf(Supervisor_ID));
 	}
 
@@ -1315,7 +1218,7 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 		@return Supervisor for this user/organization - used for escalation and approval
 	  */
 	@Override
-	public int getSupervisor_ID ()
+	public int getSupervisor_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_Supervisor_ID);
 		if (ii == null)
@@ -1324,7 +1227,7 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	}
 
 	/** Set Titel.
-		@param Title
+		@param Title 
 		Name this entity is referred to as
 	  */
 	@Override
@@ -1337,48 +1240,29 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 		@return Name this entity is referred to as
 	  */
 	@Override
-	public java.lang.String getTitle ()
+	public java.lang.String getTitle () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Title);
 	}
 
-	/** Set UnlockAccount.
-		@param UnlockAccount
-		Button that will call a process to unlock current selected account
-	  */
-	@Override
-	public void setUnlockAccount (java.lang.String UnlockAccount)
-	{
-		set_Value (COLUMNNAME_UnlockAccount, UnlockAccount);
-	}
-
-	/** Get UnlockAccount.
-		@return Button that will call a process to unlock current selected account
-	  */
-	@Override
-	public java.lang.String getUnlockAccount ()
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_UnlockAccount);
-	}
-
-	/** Set UserPIN.
-		@param UserPIN UserPIN	  */
+	/** Set Benutzer PIN.
+		@param UserPIN Benutzer PIN	  */
 	@Override
 	public void setUserPIN (java.lang.String UserPIN)
 	{
 		set_Value (COLUMNNAME_UserPIN, UserPIN);
 	}
 
-	/** Get UserPIN.
-		@return UserPIN	  */
+	/** Get Benutzer PIN.
+		@return Benutzer PIN	  */
 	@Override
-	public java.lang.String getUserPIN ()
+	public java.lang.String getUserPIN () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_UserPIN);
 	}
 
 	/** Set Suchschlüssel.
-		@param Value
+		@param Value 
 		Search key for the record in the format required - must be unique
 	  */
 	@Override
@@ -1391,7 +1275,7 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 		@return Search key for the record in the format required - must be unique
 	  */
 	@Override
-	public java.lang.String getValue ()
+	public java.lang.String getValue () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Value);
 	}

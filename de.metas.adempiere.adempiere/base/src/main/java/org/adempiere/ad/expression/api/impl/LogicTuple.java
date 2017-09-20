@@ -10,6 +10,7 @@ import org.adempiere.ad.expression.exceptions.ExpressionEvaluationException;
 import org.adempiere.ad.expression.json.JsonLogicExpressionSerializer;
 import org.adempiere.util.Check;
 import org.compiere.util.CtxName;
+import org.compiere.util.CtxNames;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.collect.ImmutableList;
@@ -34,7 +35,7 @@ import com.google.common.collect.ImmutableSet;
 
 	private final Boolean constantValue;
 
-	private ImmutableSet<String> _parameters;
+	private ImmutableSet<CtxName> _parameters;
 
 	private final String expressionStr;
 	private Integer _hashcode; // lazy
@@ -51,9 +52,9 @@ import com.google.common.collect.ImmutableSet;
 
 		this.operator = operator;
 
-		if (operand1.indexOf(CtxName.NAME_Marker) != -1)
+		if (operand1.indexOf(CtxNames.NAME_Marker) != -1)
 		{
-			this.operand1 = CtxName.parseWithMarkers(operand1);
+			this.operand1 = CtxNames.parseWithMarkers(operand1);
 			isParameter1 = true;
 		}
 		else
@@ -62,9 +63,9 @@ import com.google.common.collect.ImmutableSet;
 			isParameter1 = false;
 		}
 
-		if (operand2.indexOf(CtxName.NAME_Marker) != -1)
+		if (operand2.indexOf(CtxNames.NAME_Marker) != -1)
 		{
-			this.operand2 = CtxName.parseWithMarkers(operand2);
+			this.operand2 = CtxNames.parseWithMarkers(operand2);
 			isParameter2 = true;
 		}
 		else
@@ -171,7 +172,7 @@ import com.google.common.collect.ImmutableSet;
 	}
 
 	@Override
-	public Set<String> getParameters()
+	public Set<CtxName> getParameters()
 	{
 		if (_parameters == null)
 		{
@@ -181,14 +182,14 @@ import com.google.common.collect.ImmutableSet;
 			}
 			else
 			{
-				final Set<String> result = new LinkedHashSet<String>();
+				final Set<CtxName> result = new LinkedHashSet<>();
 				if (operand1 instanceof CtxName)
 				{
-					result.add(((CtxName)operand1).getName());
+					result.add((CtxName)operand1);
 				}
 				if (operand2 instanceof CtxName)
 				{
-					result.add(((CtxName)operand2).getName());
+					result.add((CtxName)operand2);
 				}
 				_parameters = ImmutableSet.copyOf(result);
 			}

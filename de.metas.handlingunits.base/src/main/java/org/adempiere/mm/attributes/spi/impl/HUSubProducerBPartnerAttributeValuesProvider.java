@@ -21,6 +21,7 @@ import org.compiere.model.X_M_Attribute;
 import org.compiere.util.CCache;
 import org.compiere.util.CCache.CCacheStats;
 import org.compiere.util.CtxName;
+import org.compiere.util.CtxNames;
 import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
 import org.compiere.util.Evaluatees;
@@ -78,9 +79,9 @@ class HUSubProducerBPartnerAttributeValuesProvider implements IAttributeValuesPr
 	private static final ITranslatableString DISPLAYNAME_None = Services.get(IMsgBL.class).translatable("NoneOrEmpty");
 	private static final ConcurrentHashMap<String, KeyNamePair> adLanguage2keyNamePairNone = new ConcurrentHashMap<>();
 
-	private static final CtxName CTXNAME_M_HU_ID = CtxName.parse("M_HU_ID/-1");
-	private static final CtxName CTXNAME_C_BPartner_ID = CtxName.parse("C_BPartner_ID/-1");
-	private static final CtxName CTXNAME_CurrentSubProducer_BPartner_ID = CtxName.parse("CurrentSubProducer_BPartner_ID/-1");
+	private static final CtxName CTXNAME_M_HU_ID = CtxNames.parse("M_HU_ID/-1");
+	private static final CtxName CTXNAME_C_BPartner_ID = CtxNames.parse("C_BPartner_ID/-1");
+	private static final CtxName CTXNAME_CurrentSubProducer_BPartner_ID = CtxNames.parse("CurrentSubProducer_BPartner_ID/-1");
 
 	//
 	//

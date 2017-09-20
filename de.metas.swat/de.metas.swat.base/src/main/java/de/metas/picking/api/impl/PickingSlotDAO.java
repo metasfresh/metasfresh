@@ -1,5 +1,7 @@
 package de.metas.picking.api.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -23,22 +25,18 @@ package de.metas.picking.api.impl;
  */
 
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.impl.InArrayQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_C_BPartner;
-
-import com.google.common.collect.ImmutableList;
+import org.compiere.util.Env;
 
 import de.metas.adempiere.model.I_C_BPartner_Location;
 import de.metas.adempiere.util.CacheCtx;
@@ -47,6 +45,7 @@ import de.metas.i18n.IMsgBL;
 import de.metas.picking.api.IPickingSlotBL;
 import de.metas.picking.api.IPickingSlotDAO;
 import de.metas.picking.model.I_M_PickingSlot;
+import lombok.NonNull;
 
 public class PickingSlotDAO implements IPickingSlotDAO
 {
@@ -54,88 +53,65 @@ public class PickingSlotDAO implements IPickingSlotDAO
 	@Cached(cacheName = I_M_PickingSlot.Table_Name)
 	public List<I_M_PickingSlot> retrievePickingSlots(final @CacheCtx Properties ctx, final @CacheTrx String trxName)
 	{
-		final IQueryBuilder<I_M_PickingSlot> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_PickingSlot.class, ctx, trxName);
-
-		queryBuilder.orderBy()
-				.addColumn(I_M_PickingSlot.COLUMNNAME_PickingSlot);
-
-		return queryBuilder
-				.create()
-				.setOnlyActiveRecords(true)
-				.setClient_ID()
-				.list(I_M_PickingSlot.class);
-	}
-
-	@Override
-	public List<I_M_PickingSlot> retrievePickingSlotsByIds(final Collection<Integer> pickingSlotIds)
-	{
-		if (pickingSlotIds.isEmpty())
-		{
-			return ImmutableList.of();
-		}
-
 		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_PickingSlot.class)
+				.createQueryBuilder(I_M_PickingSlot.class, ctx, trxName)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient()
-				.addInArrayFilter(I_M_PickingSlot.COLUMN_M_PickingSlot_ID, pickingSlotIds)
-				//
 				.orderBy()
-				.addColumn(I_M_PickingSlot.COLUMNNAME_PickingSlot)
-				.endOrderBy()
-				//
+				.addColumn(I_M_PickingSlot.COLUMNNAME_PickingSlot).endOrderBy()
 				.create()
 				.list(I_M_PickingSlot.class);
 	}
 
 	@Override
-	public List<I_M_PickingSlot> retrivePickingSlotsForBPartner(final Properties ctx, final int bpartnerId, final int bpartnerLocationId)
+	public List<I_M_PickingSlot> retrivePickingSlots(@NonNull final PickingSlotQuery request)
 	{
-		final List<I_M_PickingSlot> pickingSlotsAll = retrievePickingSlots(ctx, ITrx.TRXNAME_None);
+		final List<I_M_PickingSlot> pickingSlotsAll = retrievePickingSlots(Env.getCtx(), ITrx.TRXNAME_None);
 
-		final List<I_M_PickingSlot> result = new ArrayList<I_M_PickingSlot>();
-		for (final I_M_PickingSlot pickingSlot : pickingSlotsAll)
-		{
-			if (!Services.get(IPickingSlotBL.class).isAvailableForBPartnerAndLocation(pickingSlot, bpartnerId, bpartnerLocationId))
-			{
-				continue;
-			}
+		final List<I_M_PickingSlot> result = filter(pickingSlotsAll, request);
 
-			result.add(pickingSlot);
-		}
-
-		if (result.isEmpty())
-		{
-			final I_C_BPartner bpartner = bpartnerId <= 0 ? null : InterfaceWrapperHelper.create(ctx, bpartnerId, I_C_BPartner.class, ITrx.TRXNAME_None);
-			final String bpartnerStr = bpartner == null ? "<" + bpartnerId + ">" : bpartner.getValue();
-
-			final I_C_BPartner_Location bparterLocation = bpartnerLocationId <= 0 ? null : InterfaceWrapperHelper.create(ctx, bpartnerLocationId, I_C_BPartner_Location.class, ITrx.TRXNAME_None);
-			final String bpartnerLocationStr = bparterLocation == null ? "<" + bpartnerLocationId + ">" : bparterLocation.getAddress();
-
-			final String translatedErrMsgWithParams = Services.get(IMsgBL.class).parseTranslation(ctx, "@PickingSlot_NotFoundFor_PartnerAndLocation@");
-
-			final String exceptionMessage = MessageFormat.format(translatedErrMsgWithParams, bpartnerStr, bpartnerLocationStr);
-			throw new AdempiereException(exceptionMessage);
-		}
+		assertResultNotEmpty(result, request);
 
 		return result;
 	}
 
-	@Override
-	public List<I_M_PickingSlot> retrivePickingSlotsForBPartners(final Properties ctx, final Collection<Integer> bpartnerIds, final Collection<Integer> bpLocIds)
+	private List<I_M_PickingSlot> filter(final List<I_M_PickingSlot> pickingSlotsAll, final PickingSlotQuery request)
 	{
-		final IQueryBuilder<I_M_PickingSlot> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_PickingSlot.class, ctx, ITrx.TRXNAME_None)
-				.filter(new InArrayQueryFilter<I_M_PickingSlot>(I_M_PickingSlot.COLUMNNAME_C_BPartner_ID, bpartnerIds))
-				.filter(new InArrayQueryFilter<I_M_PickingSlot>(I_M_PickingSlot.COLUMNNAME_C_BPartner_Location_ID, bpLocIds));
+		final int bpartnerId = request.getBpartnerId();
+		final int bpartnerLocationId = request.getBpartnerLocationId();
 
-		queryBuilder.orderBy()
-				.addColumn(I_M_PickingSlot.COLUMNNAME_PickingSlot);
+		final Predicate<I_M_PickingSlot> warehouseFilter = ps -> request.getWarehouseId() <= 0 || request.getWarehouseId() == ps.getM_Warehouse_ID();
+		final Predicate<I_M_PickingSlot> partnerFilter = ps -> Services.get(IPickingSlotBL.class).isAvailableForBPartnerAndLocation(ps, bpartnerId, bpartnerLocationId);
 
-		return queryBuilder.create()
-				.setOnlyActiveRecords(true)
-				.list(I_M_PickingSlot.class);
+		final List<I_M_PickingSlot> result = pickingSlotsAll.stream()
+				.filter(warehouseFilter)
+				.filter(partnerFilter)
+				.collect(Collectors.toList());
+		return result;
+	}
+
+	private void assertResultNotEmpty(
+			@NonNull final List<I_M_PickingSlot> result,
+			@NonNull final PickingSlotQuery request)
+	{
+		if (!result.isEmpty())
+		{
+			return;
+		}
+
+		final int bpartnerId = request.getBpartnerId();
+		final int bpartnerLocationId = request.getBpartnerLocationId();
+
+		final I_C_BPartner bpartner = bpartnerId <= 0 ? null : loadOutOfTrx(bpartnerId, I_C_BPartner.class);
+		final String bpartnerStr = bpartner == null ? "<" + bpartnerId + ">" : bpartner.getValue();
+
+		final I_C_BPartner_Location bparterLocation = bpartnerLocationId <= 0 ? null : loadOutOfTrx(bpartnerLocationId, I_C_BPartner_Location.class);
+		final String bpartnerLocationStr = bparterLocation == null ? "<" + bpartnerLocationId + ">" : bparterLocation.getAddress();
+
+		final String translatedErrMsgWithParams = Services.get(IMsgBL.class).parseTranslation(Env.getCtx(), "@PickingSlot_NotFoundFor_PartnerAndLocation@");
+
+		final String exceptionMessage = MessageFormat.format(translatedErrMsgWithParams, bpartnerStr, bpartnerLocationStr);
+		throw new AdempiereException(exceptionMessage);
 	}
 
 }

@@ -73,16 +73,16 @@ public class MLookupFactory
 	/** Logging */
 	private static Logger s_log = LogManager.getLogger(MLookupFactory.class);
 	/** Table Reference Cache */
-	private static CCache<ArrayKey, MLookupInfo> s_cacheRefTable = new CCache<ArrayKey, MLookupInfo>("AD_Ref_Table", 30, 60);	// 1h
+	private static CCache<ArrayKey, MLookupInfo> s_cacheRefTable = new CCache<>("AD_Ref_Table", 30, 60);	// 1h
 
 	/**
 	 * Create MLookup
 	 * 
 	 * @throws AdempiereException if Lookup could not be created
 	 */
-	public static MLookup get(Properties ctx, int WindowNo, int Column_ID, int AD_Reference_ID,
-			String ColumnName, int AD_Reference_Value_ID,
-			boolean IsParent, String ValidationCode)
+	public static MLookup get(final Properties ctx, final int WindowNo, final int Column_ID, final int AD_Reference_ID,
+			final String ColumnName, final int AD_Reference_Value_ID,
+			final boolean IsParent, final String ValidationCode)
 
 	{
 		MLookupInfo info = getLookupInfo(WindowNo, AD_Reference_ID, ColumnName, AD_Reference_Value_ID, IsParent, ValidationCode);
@@ -91,9 +91,9 @@ public class MLookupFactory
 		return new MLookup(ctx, Column_ID, info, 0);
 	}   // create
 
-	public static MLookup get(Properties ctx, int WindowNo, int Column_ID, int AD_Reference_ID,
-			String ColumnName, int AD_Reference_Value_ID,
-			boolean IsParent, int AD_Val_Rule_ID)
+	public static MLookup get(final Properties ctx, final int WindowNo, final int Column_ID, final int AD_Reference_ID,
+			final String ColumnName, final int AD_Reference_Value_ID,
+			final boolean IsParent, final int AD_Val_Rule_ID)
 			throws AdempiereException
 	{
 		final MLookupInfo lookupInfo = getLookupInfo(WindowNo, AD_Reference_ID, ColumnName, AD_Reference_Value_ID, IsParent, AD_Val_Rule_ID);
@@ -136,7 +136,7 @@ public class MLookupFactory
 	 * @param AD_Reference_ID display type
 	 * @return MLookup
 	 */
-	public static MLookup get(Properties ctx, int WindowNo, int TabNo, int Column_ID, int AD_Reference_ID)
+	public static MLookup get(final Properties ctx, final int WindowNo, final int TabNo, final int Column_ID, final int AD_Reference_ID)
 	{
 		//
 		MLookupInfo info = getLookupInfo(WindowNo, Column_ID, AD_Reference_ID);
@@ -162,10 +162,10 @@ public class MLookupFactory
 	 * @return lookup info structure
 	 * @Deprecated
 	 */
-	static public MLookupInfo getLookupInfo(int WindowNo,
-			int AD_Reference_ID,
-			String ColumnName, int AD_Reference_Value_ID,
-			boolean IsParent, String ValidationCode)
+	static public MLookupInfo getLookupInfo(final int WindowNo,
+			final int AD_Reference_ID,
+			final String ColumnName, final int AD_Reference_Value_ID,
+			final boolean IsParent, final String ValidationCode)
 	{
 		final int adValRuleId = -1;
 		final MLookupInfo info = getLookupInfo(WindowNo, AD_Reference_ID, ColumnName, AD_Reference_Value_ID, IsParent, adValRuleId);
@@ -175,7 +175,7 @@ public class MLookupFactory
 		return info;
 	}
 
-	static public MLookupInfo getLookupInfo(int WindowNo, int AD_Reference_ID, String ColumnName, int AD_Reference_Value_ID, boolean IsParent, int AD_Val_Rule_ID)
+	static public MLookupInfo getLookupInfo(final int WindowNo, final int AD_Reference_ID, final String ColumnName, final int AD_Reference_Value_ID, final boolean IsParent, final int AD_Val_Rule_ID)
 	{
 		final MLookupInfo info;
 		// List
@@ -364,7 +364,7 @@ public class MLookupFactory
 	 * @param linkColumnName link column name
 	 * @return SELECT Name FROM AD_Ref_List WHERE AD_Reference_ID=x AND Value=linkColumn
 	 */
-	static public String getLookup_ListEmbed(LanguageInfo languageInfo, int AD_Reference_Value_ID, String linkColumnName)
+	static public String getLookup_ListEmbed(final LanguageInfo languageInfo, final int AD_Reference_Value_ID, final String linkColumnName)
 	{
 		final MLookupInfo lookupInfo = getLookup_List(AD_Reference_Value_ID);
 		if (lookupInfo == null)
@@ -778,7 +778,7 @@ public class MLookupFactory
 	 * @return SELECT Column FROM TableName WHERE BaseTable.ColumnName=TableName.ColumnName
 	 * @see #getLookup_TableDirEmbed(LanguageInfo, String, String, String)
 	 */
-	static public String getLookup_TableDirEmbed(final LanguageInfo languageInfo, String ColumnName, String BaseTable)
+	static public String getLookup_TableDirEmbed(final LanguageInfo languageInfo, final String ColumnName, final String BaseTable)
 	{
 		return getLookup_TableDirEmbed(languageInfo, ColumnName, BaseTable, ColumnName);
 	}   // getLookup_TableDirEmbed
@@ -810,7 +810,7 @@ public class MLookupFactory
 	 * Unified lookup embedded sql method. Based on AD_Reference_ID and AD_Reference_Value_ID parameters
 	 * it will call corresponding getLookup_*Embed methods
 	 */
-	public static String getLookupEmbed(final LanguageInfo languageInfo, String BaseColumn, String BaseTable, int AD_Reference_ID, int AD_Reference_Value_ID)
+	public static String getLookupEmbed(final LanguageInfo languageInfo, final String BaseColumn, final String BaseTable, final int AD_Reference_ID, final int AD_Reference_Value_ID)
 	{
 		if (DisplayType.List == AD_Reference_ID)
 		{

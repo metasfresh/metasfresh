@@ -42,6 +42,7 @@ import org.junit.Test;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_PickingSlot;
 import de.metas.handlingunits.model.I_M_PickingSlot_HU;
+import de.metas.handlingunits.picking.impl.HUPickingSlotBL;
 
 public class HUPickingSlotTest
 {

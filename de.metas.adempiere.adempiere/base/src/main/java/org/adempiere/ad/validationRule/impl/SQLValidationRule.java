@@ -26,7 +26,8 @@ import com.google.common.base.MoreObjects;
 	{
 		super();
 		this.name = name;
-		this.whereClause = Services.get(IExpressionFactory.class).compileOrDefault(whereClause, IStringExpression.NULL, IStringExpression.class);
+		this.whereClause = Services.get(IExpressionFactory.class)
+				.compileOrDefault(whereClause, IStringExpression.NULL, IStringExpression.class);
 	}
 
 	@Override
@@ -69,13 +70,13 @@ import com.google.common.base.MoreObjects;
 	@Override
 	public Set<String> getAllParameters()
 	{
-		return whereClause.getParameters();
+		return whereClause.getParameterNames();
 	}
 
 	@Override
 	public boolean isImmutable()
 	{
-		return whereClause.getParameters().isEmpty();
+		return whereClause.getParameterNames().isEmpty();
 	}
 
 	@Override

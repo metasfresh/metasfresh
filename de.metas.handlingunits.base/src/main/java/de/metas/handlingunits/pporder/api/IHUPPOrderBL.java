@@ -42,7 +42,18 @@ public interface IHUPPOrderBL extends ISingletonService
 
 	IHUPPOrderIssueProducer createIssueProducer();
 
-	IHUQueryBuilder createHUsAvailableToIssueQuery(int productId);
+	/**
+	 * Create a query builder that retrieves all HUs that
+	 * <ul>
+	 * <li>contain the given {@code ppOrderBomLine}'s product</li>
+	 * <li>are in the bomline's warehouse</li>
+	 * <li>are still active</li>
+	 * </lu>
+	 * 
+	 * @param ppOrderBomLine
+	 * @return
+	 */
+	IHUQueryBuilder createHUsAvailableToIssueQuery(I_PP_Order_BOMLine ppOrderBomLine);
 
 	void processPlanning(String targetPlanningStatus, int ppOrderId);
 

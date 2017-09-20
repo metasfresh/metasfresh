@@ -8,6 +8,7 @@ import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.expression.json.JsonStringExpressionSerializer;
 import org.adempiere.util.Check;
+import org.compiere.util.CtxName;
 import org.compiere.util.Evaluatee;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -70,7 +71,6 @@ public final class ConstantStringExpression implements IStringExpression, ICache
 
 	private ConstantStringExpression(final String expressionStr)
 	{
-		super();
 		Check.assumeNotNull(expressionStr, "Parameter expressionStr is not null");
 		this.expressionStr = expressionStr;
 	}
@@ -117,9 +117,9 @@ public final class ConstantStringExpression implements IStringExpression, ICache
 	{
 		return expressionStr;
 	}
-
+	
 	@Override
-	public Set<String> getParameters()
+	public Set<CtxName> getParameters()
 	{
 		return ImmutableSet.of();
 	}

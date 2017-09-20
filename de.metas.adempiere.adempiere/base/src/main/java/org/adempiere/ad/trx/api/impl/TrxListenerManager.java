@@ -24,12 +24,16 @@ package org.adempiere.ad.trx.api.impl;
 
 
 import org.slf4j.Logger;
+
+import com.google.common.base.MoreObjects;
+
 import de.metas.logging.LogManager;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxListenerManager;
 import org.adempiere.ad.trx.exceptions.TrxException;
 import org.adempiere.ad.trx.spi.ITrxListener;
+import org.adempiere.ad.trx.spi.TrxListenerAdapter;
 import org.adempiere.util.WeakList;
 
 /**
@@ -55,6 +59,26 @@ public class TrxListenerManager implements ITrxListenerManager
 		registerListener(weak, listener);
 	}
 
+	@Override
+	public void onAfterFirstCommit(Runnable runnable)
+	{
+		registerListener(new TrxListenerAdapter()
+		{
+			@Override
+			public String toString()
+			{
+				return MoreObjects.toStringHelper("runOnAfterFirstCommit").addValue(runnable).toString();
+			}
+			
+			@Override
+			public void afterCommit(final ITrx trx)
+			{
+				runnable.run();
+				listeners.remove(this);
+			}
+		});
+	}
+	
 	@Override
 	public void registerListener(final boolean weak, final ITrxListener listener)
 	{
@@ -194,5 +218,4 @@ public class TrxListenerManager implements ITrxListenerManager
 			}
 		}
 	}
-
 }

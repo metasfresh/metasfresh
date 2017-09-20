@@ -692,7 +692,7 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 
 		final I_C_BPartner bpartner = shipmentScheduleEffectiveValuesBL.getBPartner(schedule);
 		final int bpartnerLocationId = shipmentScheduleEffectiveValuesBL.getC_BP_Location_ID(schedule);
-		final I_M_Locator locator = shipmentScheduleEffectiveValuesBL.getM_Locator(schedule);
+		final I_M_Locator locator = shipmentScheduleEffectiveValuesBL.getDefaultLocator(schedule);
 
 		final I_M_HU_PI_Item_Product tuPIItemProduct = getM_HU_PI_Item_Product(schedule);
 		if (tuPIItemProduct == null || tuPIItemProduct.getM_HU_PI_Item_Product_ID() <= 0)

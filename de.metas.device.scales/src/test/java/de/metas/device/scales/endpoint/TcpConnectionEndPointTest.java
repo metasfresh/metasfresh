@@ -197,7 +197,7 @@ public class TcpConnectionEndPointTest
 		exitServerSocketThread = true;
 
 		assertThat(serverSocketThread, notNullValue());
-		serverSocketThread.join(1000); // waiting for just one second, we don't want the whole build to stall
-		assertThat(serverSocketThread.isAlive(), is(false));
+		serverSocketThread.join(3000); // waiting for just one second, we don't want the whole build to stall
+		assertThat("serverSocketThread did not stop within 3 seconds; serverSocketThread=" + serverSocketThread.toString(), serverSocketThread.isAlive(), is(false));
 	}
 }

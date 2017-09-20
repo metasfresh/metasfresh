@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
-<!-- 2017-09-06T15:33:44 -->
+<!-- 2017-09-13T13:36:32 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="label" pageWidth="156" pageHeight="284" columnWidth="156" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/label/cu_manufacturing/report" uuid="76f10556-26bf-42e7-b375-0391b4cedd84">
 	<property name="com.jaspersoft.studio.unit." value="pixel"/>
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="metasfresh"/>
@@ -26,7 +26,9 @@ ORDER BY ts.T_Selection_ID]]>
 	<detail>
 		<band height="284" splitType="Stretch">
 			<subreport>
-				<reportElement x="0" y="0" width="156" height="283" uuid="06d9d72d-5738-4760-ad56-026152b47d49"/>
+				<reportElement x="0" y="0" width="156" height="284" uuid="06d9d72d-5738-4760-ad56-026152b47d49">
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+				</reportElement>
 				<subreportParameter name="m_hu_id">
 					<subreportParameterExpression><![CDATA[$F{m_hu_id}]]></subreportParameterExpression>
 				</subreportParameter>

@@ -8,8 +8,8 @@ import org.adempiere.ad.expression.api.impl.ConstantStringExpression;
 import org.adempiere.ad.expression.api.impl.StringExpressionCompiler;
 import org.adempiere.ad.expression.api.impl.StringExpressionsHelper;
 import org.adempiere.ad.expression.exceptions.ExpressionEvaluationException;
-import org.adempiere.util.Check;
 import org.compiere.util.CtxName;
+import org.compiere.util.CtxNames;
 import org.compiere.util.Evaluatee;
 import org.compiere.util.Evaluatees;
 
@@ -18,6 +18,7 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.i18n.Language;
 import de.metas.i18n.TranslatableParameterizedString;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -32,11 +33,11 @@ import de.metas.i18n.TranslatableParameterizedString;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -54,7 +55,7 @@ public final class TranslatableParameterizedStringExpression implements IStringE
 {
 	public static final TranslatableParameterizedStringExpression of(final String adLanguageParamName, final IStringExpression expressionBaseLang, final IStringExpression expressionTrl)
 	{
-		final CtxName adLanguageParam = CtxName.parse(adLanguageParamName);
+		final CtxName adLanguageParam = CtxNames.parse(adLanguageParamName);
 		return new TranslatableParameterizedStringExpression(adLanguageParam, expressionBaseLang, expressionTrl);
 	}
 
@@ -65,7 +66,7 @@ public final class TranslatableParameterizedStringExpression implements IStringE
 			return NullStringExpression.instance;
 		}
 
-		final CtxName adLanguageParam = CtxName.parseWithMarkers(translatableString.getAD_LanguageParamName());
+		final CtxName adLanguageParam = CtxNames.parseWithMarkers(translatableString.getAD_LanguageParamName());
 		return of(adLanguageParam, translatableString.getStringBaseLanguage(), translatableString.getStringTrlPattern());
 	}
 
@@ -123,27 +124,23 @@ public final class TranslatableParameterizedStringExpression implements IStringE
 	private final IStringExpression expressionBaseLang;
 	private final IStringExpression expressionTrl;
 	private final CtxName adLanguageParam;
-	private final Set<String> parameters;
+	private final Set<CtxName> parameters;
 
-	private TranslatableParameterizedStringExpression(final CtxName adLanguageParam, final IStringExpression expressionBaseLang, final IStringExpression expressionTrl)
+	private TranslatableParameterizedStringExpression(
+			@NonNull final CtxName adLanguageParam,
+			@NonNull final IStringExpression expressionBaseLang,
+			@NonNull final IStringExpression expressionTrl)
 	{
-		super();
-
-		Check.assumeNotNull(adLanguageParam, "Parameter adLanguageParam is not null");
 		this.adLanguageParam = adLanguageParam;
-
-		Check.assumeNotNull(expressionBaseLang, "Parameter expressionBaseLang is not null");
 		this.expressionBaseLang = expressionBaseLang;
-
-		Check.assumeNotNull(expressionTrl, "Parameter expressionTrl is not null");
 		this.expressionTrl = expressionTrl;
 
 		//
 		// Expression parameters: all parameters from both expressions, plus the AD_Language parameter
-		this.parameters = ImmutableSet.<String>builder()
+		this.parameters = ImmutableSet.<CtxName> builder()
 				.addAll(expressionBaseLang.getParameters())
 				.addAll(expressionTrl.getParameters())
-				.add(adLanguageParam.getName())
+				.add(adLanguageParam)
 				.build();
 	}
 
@@ -213,7 +210,7 @@ public final class TranslatableParameterizedStringExpression implements IStringE
 	}
 
 	@Override
-	public Set<String> getParameters()
+	public Set<CtxName> getParameters()
 	{
 		return parameters;
 	}

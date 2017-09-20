@@ -131,9 +131,13 @@ public interface IHUQueryBuilder
 	IHUQueryBuilder setContext(final Object contextProvider);
 
 	/**
-	 * Filter only those HUs which have given product(s) in their storages.
+	 * Filter only those HUs which have any of the given product(s) in their storages.
 	 *
-	 * NOTE: given product(s) are appended to the list of previously specified ones
+	 * NOTEs:
+	 * <ul>
+	 * <li>given product(s) are appended to the list of previously specified ones</li>
+	 * <li>by default, HUs with an <b>empty</b> storage for the given products are <b>not</b> returned. To return those HUs as well, also call {@link #setAllowEmptyStorage()}</li>
+	 * </ul>
 	 *
 	 * @param productIds
 	 * @return this
@@ -141,9 +145,7 @@ public interface IHUQueryBuilder
 	IHUQueryBuilder addOnlyWithProductIds(final Collection<Integer> productIds);
 
 	/**
-	 * Filter only those HUs which have given product(s) in their storages.
-	 *
-	 * NOTE: given product(s) are appended to the list of previously specified ones
+	 * See {@link #addOnlyWithProductIds(Collection)}.
 	 *
 	 * @param productId
 	 * @return this
@@ -151,14 +153,19 @@ public interface IHUQueryBuilder
 	IHUQueryBuilder addOnlyWithProductId(int productId);
 
 	/**
-	 * Filter only those HUs which have given product(s) in their storages.
-	 *
-	 * NOTE: given product(s) are appended to the list of previously specified ones
+	 * See {@link #addOnlyWithProductIds(Collection)}.
 	 *
 	 * @param product
 	 * @return this
 	 */
 	IHUQueryBuilder addOnlyWithProduct(org.compiere.model.I_M_Product product);
+
+	/**
+	 * This is only relevant {@link #addOnlyWithProductIds(Collection)} or one of its siblings is used. The default is {@code false}.
+	 * 
+	 * @return
+	 */
+	IHUQueryBuilder setAllowEmptyStorage();
 
 	/**
 	 * Filter only those HUs which are in any of the given warehouse(s).
@@ -505,7 +512,7 @@ public interface IHUQueryBuilder
 	IHUQueryBuilder setEmptyStorageOnly();
 
 	/**
-	 * Entries with not empty storage will be the only ones retrieved
+	 * Entries with not-empty storage will be the only ones retrieved.
 	 *
 	 * @return
 	 */
