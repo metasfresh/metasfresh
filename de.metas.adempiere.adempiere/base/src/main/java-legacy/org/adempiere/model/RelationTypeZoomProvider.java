@@ -520,11 +520,6 @@ public class RelationTypeZoomProvider implements IZoomProvider
 		{
 			return tableRefInfo;
 		}
-		//
-		// public boolean isReferenceTarget()
-		// {
-		// return isReferenceTarget;
-		// }
 
 		public ITranslatableString getRoleDisplayName(final int fallbackAD_Window_ID)
 		{
@@ -628,13 +623,12 @@ public class RelationTypeZoomProvider implements IZoomProvider
 
 		public RelationTypeZoomProvider buildOrNull()
 		{
-			if (!isReferenceTarget())
+			if (!isReferenceTarget() && getSourceTableRefInfoOrNull() == null)
 			{
-				if (getSourceTableRefInfoOrNull() == null)
-				{
+				
 					logger.info("Skip building {} because source tableRefInfo is null", this);
 					return null;
-				}
+				
 			}
 			if (getTargetTableRefInfoOrNull() == null)
 			{
