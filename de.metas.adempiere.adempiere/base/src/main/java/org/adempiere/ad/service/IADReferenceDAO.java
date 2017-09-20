@@ -47,6 +47,14 @@ public interface IADReferenceDAO extends ISingletonService
 		/** AD_Ref_List_ID */
 		private final int refListId;
 	}
+	
+	/**
+	 * 
+	 * @param ctx
+	 * @param adReferenceId
+	 * @return map of "Value" to {@link ADRefListItem}; never return null
+	 */
+	Map<String, ADRefListItem> retrieveListValuesMap(int adReferenceId);
 
 	/**
 	 * @param adReferenceId
