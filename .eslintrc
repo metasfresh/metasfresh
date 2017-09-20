@@ -5,13 +5,14 @@
   },
   "env": {
     "browser": true,
-    "node": true
+    "node": true,
+    "es6": true
   },
   "parser": "babel-eslint",
   "extends": "eslint:recommended",
   "rules": {
     "max-len": [2, {
-        "code": 80, 
+        "code": 80,
         "ignorePattern": "^\\s*className=\"([\\s\\w-]*)\""
     }],
     "quotes": [2, "single"],
