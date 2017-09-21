@@ -43,6 +43,7 @@ import de.metas.ui.web.window.model.DocumentsRepository;
 import de.metas.ui.web.window.model.IDocumentFieldValueProvider;
 import de.metas.ui.web.window.model.lookup.LabelsLookup;
 import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -388,7 +389,7 @@ import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
 				//
 				.setReadonlyLogic(readonlyLogic)
 				.setAlwaysUpdateable(alwaysUpdateable)
-				.setMandatoryLogic(gridFieldVO.isMandatory() ? ConstantLogicExpression.TRUE : gridFieldVO.getMandatoryLogic())
+				.setMandatoryLogic(extractMandatoryLogic(gridFieldVO))
 				.setDisplayLogic(gridFieldVO.getDisplayLogic())
 				//
 				.setDefaultFilterField(gridFieldVO.isSelectionColumn())
@@ -631,6 +632,13 @@ import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
 		return gridFieldVO.isAlwaysUpdateable();
 	}
 
+	private static ILogicExpression extractMandatoryLogic(@NonNull final GridFieldVO gridFieldVO)
+	{
+		final ILogicExpression mandatoryLogic = gridFieldVO.getMandatoryLogic();
+
+		return mandatoryLogic.isNullExpression() ? ConstantLogicExpression.of(gridFieldVO.isMandatory()) : mandatoryLogic;
+	}
+	
 	private final void collectSpecialField(final DocumentFieldDescriptor.Builder field)
 	{
 		if (_specialFieldsCollector == null)

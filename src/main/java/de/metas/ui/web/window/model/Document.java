@@ -1707,7 +1707,7 @@ public final class Document
 				continue;
 			}
 
-			final DocumentValidStatus validState = documentField.updateStatusIfInvalidAndGet(changesCollector);
+			final DocumentValidStatus validState = documentField.updateStatusIfInitialInvalidAndGet(changesCollector);
 			if (!validState.isValid())
 			{
 				logger.trace("Considering document invalid because {} is not valid: {}", documentField, validState);
