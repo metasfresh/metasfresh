@@ -388,3 +388,8 @@ DELETE FROM AD_UI_ElementGroup WHERE AD_UI_ElementGroup_ID=540771
 UPDATE AD_UI_Element SET IsAdvancedField='N',Updated=TO_TIMESTAMP('2017-09-21 14:28:22','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=546144
 ;
 
+-- 2017-09-21T14:37:11.977
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-09-21 14:37:11','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Transition Conditions' WHERE AD_Tab_ID=540422 AND AD_Language='en_US'
+;
+
