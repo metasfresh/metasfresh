@@ -85,6 +85,12 @@ public class MovementsAnyWarehouseModel extends AbstractMovementsWarehouseModel
 
 	}
 
+	/**
+	 * Get the warehouses existing for the hus' organization , excluding those which currently contain the HUs given as parameters
+	 * 
+	 * @param hus
+	 * @return
+	 */
 	public static List<org.compiere.model.I_M_Warehouse> getWarehousesUnlessOfHUs(final List<I_M_HU> hus)
 	{
 		if (hus.isEmpty())
@@ -93,12 +99,12 @@ public class MovementsAnyWarehouseModel extends AbstractMovementsWarehouseModel
 			return Collections.emptyList();
 		}
 
+		// used for deciding the org and context
 		final I_M_HU firstHU = hus.get(0);
 
 		final int orgId = firstHU.getAD_Org_ID();
 		final Properties ctx = InterfaceWrapperHelper.getCtx(firstHU);
 
-		// final List<org.compiere.model.I_M_Warehouse> warehousesOfHUs = get
 		final List<org.compiere.model.I_M_Warehouse> warehouses = Services.get(IWarehouseDAO.class).retrieveForOrg(ctx, orgId);
 
 		final ImmutableList<org.compiere.model.I_M_Warehouse> huWarehouses = hus
