@@ -69,8 +69,6 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 
 	private final String fieldName;
 
-	private final String sqlTableName;
-	private final String sqlTableAlias;
 	private final String sqlColumnName;
 	private final String sqlColumnSql;
 	private final Class<?> sqlValueClass;
@@ -99,8 +97,6 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 		super();
 		fieldName = builder.fieldName;
 
-		sqlTableName = builder.getTableName();
-		sqlTableAlias = builder.getTableAlias();
 		sqlColumnName = builder.getColumnName();
 		sqlColumnSql = builder.getColumnSql();
 		sqlValueClass = builder.getSqlValueClass();
@@ -136,7 +132,6 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 	{
 		return MoreObjects.toStringHelper(this)
 				.omitNullValues()
-				.add("sqlTableName", sqlTableName)
 				.add("sqlColumnName", sqlColumnName)
 				.toString();
 	}
@@ -144,16 +139,6 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 	public String getFieldName()
 	{
 		return fieldName;
-	}
-
-	public String getTableName()
-	{
-		return sqlTableName;
-	}
-
-	public String getTableAlias()
-	{
-		return sqlTableAlias;
 	}
 
 	@Override
@@ -272,10 +257,10 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 	@Override
 	public IStringExpression getSqlOrderBy()
 	{
-		final IStringExpression orderByExpr = isUsingDisplayColumn() ? getDisplayColumnSqlExpression() : ConstantStringExpression.of(getColumnSql());
+		final IStringExpression orderByExpr = isUsingDisplayColumn() ? getDisplayColumnSqlExpression() : ConstantStringExpression.ofNullable(getColumnSql());
 		return orderByExpr;
 	}
-	
+
 	public static final class Builder
 	{
 		private String fieldName;
@@ -316,7 +301,7 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 			//
 			// Display column
 			final SqlLookupDescriptor sqlLookupDescriptor = _lookupDescriptor == null ? null : _lookupDescriptor.castOrNull(SqlLookupDescriptor.class);
-			if (_lookupDescriptor != null)
+			if (sqlLookupDescriptor != null)
 			{
 				_usingDisplayColumn = true;
 
@@ -344,11 +329,22 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 			final String columnSql = getColumnSql();
 			final String columnName = getColumnName();
 
-			final boolean isVirtualColumn = isVirtualColumn();
-			if (isVirtualColumn)
+			//
+			// Case: the SQL binding doesn't have any column set.
+			// Usually that's the case when the actual value it's not in the table name but it will be fetched by loader (from other tables).
+			// Check the Labels case for example.
+			if (Check.isEmpty(columnName, true))
+			{
+				return "NULL AS " + getFieldName();
+			}
+			//
+			// Virtual column
+			else if (isVirtualColumn())
 			{
 				return columnSql + " AS " + columnName;
 			}
+			//
+			// Regular table column 
 			else
 			{
 				return getTableName() + "." + columnSql + " AS " + columnName;
@@ -405,7 +401,7 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 				, final DocumentFieldWidgetType widgetType //
 				, final boolean encrypted //
 				, final Boolean numericKey //
-				)
+		)
 		{
 			if (!Check.isEmpty(displayColumnName))
 			{
@@ -438,6 +434,11 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 			{
 				return DocumentFieldValueLoaders.toByteArray(sqlColumnName, encrypted);
 			}
+			// Labels
+			else if (DocumentFieldWidgetType.Labels.getValueClass().equals(valueClass))
+			{
+				return DocumentFieldValueLoaders.toLabelValues(sqlColumnName);
+			}
 			else
 			{
 				return DocumentFieldValueLoaders.toString(sqlColumnName, encrypted);
@@ -448,6 +449,11 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 		{
 			this.fieldName = fieldName;
 			return this;
+		}
+
+		private String getFieldName()
+		{
+			return fieldName;
 		}
 
 		public Builder setTableName(final String tableName)

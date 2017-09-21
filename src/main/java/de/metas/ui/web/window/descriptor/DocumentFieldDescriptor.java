@@ -35,8 +35,10 @@ import de.metas.ui.web.window.datatypes.DateRangeValue;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
+import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONDate;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
+import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONRange;
 import de.metas.ui.web.window.descriptor.DocumentFieldDependencyMap.DependencyType;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.LookupSource;
@@ -635,6 +637,17 @@ public final class DocumentFieldDescriptor implements Serializable
 					final IntegerLookupValue lookupValueInt = (IntegerLookupValue)value;
 					@SuppressWarnings("unchecked")
 					final T valueConv = (T)StringLookupValue.of(lookupValueInt.getIdAsString(), lookupValueInt.getDisplayName());
+					return valueConv;
+				}
+			}
+			else if(LookupValuesList.class == targetType)
+			{
+				if (Map.class.isAssignableFrom(fromType))
+				{
+					@SuppressWarnings("unchecked")
+					final Map<String, Object> map = (Map<String, Object>)value;
+					@SuppressWarnings("unchecked")
+					final T valueConv = (T)JSONLookupValuesList.lookupValuesListFromJsonMap(map);
 					return valueConv;
 				}
 			}

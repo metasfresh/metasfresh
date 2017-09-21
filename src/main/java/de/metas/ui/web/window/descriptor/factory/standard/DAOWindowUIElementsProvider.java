@@ -10,6 +10,7 @@ import org.compiere.model.I_AD_UI_Element;
 import org.compiere.model.I_AD_UI_ElementField;
 import org.compiere.model.I_AD_UI_ElementGroup;
 import org.compiere.model.I_AD_UI_Section;
+import org.compiere.model.X_AD_UI_Element;
 import org.compiere.util.Env;
 
 /*
@@ -25,15 +26,14 @@ import org.compiere.util.Env;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 final class DAOWindowUIElementsProvider implements IWindowUIElementsProvider
 {
@@ -62,6 +62,15 @@ final class DAOWindowUIElementsProvider implements IWindowUIElementsProvider
 	public List<I_AD_UI_Element> getUIElements(final I_AD_UI_ElementGroup uiElementGroup)
 	{
 		return windowDAO.retrieveUIElements(uiElementGroup);
+	}
+
+	@Override
+	public List<I_AD_UI_Element> getUIElementsOfTypeLabels(final int adTabId)
+	{
+		return windowDAO.retrieveUIElementsQueryByTabId(adTabId)
+				.addEqualsFilter(I_AD_UI_Element.COLUMN_AD_UI_ElementType, X_AD_UI_Element.AD_UI_ELEMENTTYPE_Labels)
+				.create()
+				.list(I_AD_UI_Element.class);
 	}
 
 	@Override

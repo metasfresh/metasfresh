@@ -28,6 +28,7 @@ import de.metas.ui.web.window.datatypes.Values;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
+import de.metas.ui.web.window.descriptor.LookupDescriptor;
 import de.metas.ui.web.window.descriptor.factory.DocumentDescriptorFactory;
 import de.metas.ui.web.window.descriptor.sql.DocumentFieldValueLoader;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentEntityDataBindingDescriptor;
@@ -246,9 +247,9 @@ public class SqlViewFactory implements IViewFactory
 		private final boolean isDisplayColumnAvailable;
 
 		@Override
-		public Object retrieveValueAsJson(ResultSet rs, String adLanguage) throws SQLException
+		public Object retrieveValueAsJson(final ResultSet rs, final String adLanguage) throws SQLException
 		{
-			final Object fieldValue = fieldValueLoader.retrieveFieldValue(rs, isDisplayColumnAvailable, adLanguage);
+			final Object fieldValue = fieldValueLoader.retrieveFieldValue(rs, isDisplayColumnAvailable, adLanguage, (LookupDescriptor)null);
 			return Values.valueToJsonObject(fieldValue);
 		}
 

@@ -2,6 +2,7 @@ package de.metas.ui.web.window.datatypes;
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
@@ -180,6 +181,11 @@ public final class LookupValuesList
 	public boolean isEmpty()
 	{
 		return valuesById.isEmpty() && debugProperties.isEmpty();
+	}
+	
+	public Set<Object> getKeys()
+	{
+		return valuesById.keySet();
 	}
 
 	/**
