@@ -7,8 +7,8 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.google.common.base.CharMatcher;
 import com.google.common.io.Files;
@@ -94,6 +94,7 @@ public class FileImportReader
 
 		/**
 		 * add current line to the previous one
+		 * 
 		 * @param line
 		 */
 		private void addLine(@NonNull final String line)
@@ -165,37 +166,21 @@ public class FileImportReader
 	}
 
 	/**
-	 * Build the preview lines from the loaded lines
+	 * Build the preview from the loaded lines
 	 * 
 	 * @param lines
 	 * @return
 	 */
 	public String buildDataPreview(@NonNull final List<String> lines)
 	{
+		String dataPreview = lines.stream()
+				.limit(MAX_LOADED_LINES)
+				.collect(Collectors.joining("\n"));
+
 		if (lines.size() > MAX_LOADED_LINES)
 		{
-			return buildLimitedPreview(lines);
+			dataPreview = dataPreview + "\n......................................................\n";
 		}
-		else
-		{
-			final StringBuilder loadedDataPreview = new StringBuilder();
-			lines.stream().forEach(item -> loadedDataPreview.append(item).append("\n"));
-			return loadedDataPreview.toString();
-		}
-	}
-
-	private String buildLimitedPreview(@NonNull final List<String> lines)
-	{
-		final StringBuilder loadedDataPreview = new StringBuilder();
-		final List<String> copyOfLoadedDataLines = Collections.unmodifiableList(lines);
-		lines.forEach(item -> {
-			if (copyOfLoadedDataLines.indexOf(item) < copyOfLoadedDataLines.size())
-			{
-				loadedDataPreview.append(item);
-				loadedDataPreview.append("\n");
-			}
-		});
-		loadedDataPreview.append("......................................................\n");
-		return loadedDataPreview.toString();
+		return dataPreview;
 	}
 }
