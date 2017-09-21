@@ -59,17 +59,25 @@ Here come the actual release notes:
   * [#2089](https://github.com/metasfresh/metasfresh/issues/2089) Inventory Move Window improvements
     * Improvements done to the Inventory Movement Window.
   * [#2218](https://github.com/metasfresh/metasfresh/issues/2218) User would like to import default values for contact and address
+    * Providing a possibility to import default Roles for User and Locations in Business Partrner.
   * [#2245](https://github.com/metasfresh/metasfresh/issues/2445) Support quantity in flatrate term import
+    * Adding the field quantity to the importer of flatrate terms.
   * [#2247](https://github.com/metasfresh/metasfresh/issues/2474) Extend Partner Import with ad_language
+    * Now possible to add the language to Business Partner imports to metasfresh.
   * [#2436](https://github.com/metasfresh/metasfresh/issues/2436) Use default values for IsShipTo and isBillTo when importing bpartner
+    * Fallback mechanism to set default billto and shipto locations in Business Partner.
   * [#2459](https://github.com/metasfresh/metasfresh/issues/2459) shipto and billto contact / user
+    * New Fields in Business Partner Contact: shipto and billto
   * [#2298](https://github.com/metasfresh/metasfresh/issues/2298) Introduce source-HU to fine-Picking
+    * New functionality for a more efficient Picking workflow. Now able to chose a source HU that is used for the following picking steps.
   * [#2361](https://github.com/metasfresh/metasfresh/issues/2361) Invoice Candidates Action Approval for Invoicing
+    * New action in Invoice candidates, allowing to mass approve candidates for Invoiceing.
   * [#2381](https://github.com/metasfresh/metasfresh/issues/2381) Detailed Improvement of Flatrate Term window in WebUI
     * New Window for contracts in WebUI, making the contract management easier and more transparent.
   * [#2386](https://github.com/metasfresh/metasfresh/issues/2386) New Window for M_PickingSlot_Trx in WebUI
     * New Window in WebUI allowing to View Picking Slot Transations and involved Handling Units.
   * [#2387](https://github.com/metasfresh/metasfresh/issues/2387) Autocomplete for zip / postal code and city
+    * New functionality to autocomplete postal and city in Location recording workflow.
   * [#2397](https://github.com/metasfresh/metasfresh/issues/2397) Import and Store Contract meta-data e.g. startdate on flatrate
   * [#2405](https://github.com/metasfresh/metasfresh/issues/2405) New Window for C_Invoice_Clearing_Alloc in WebUI
     * New window for Invoice Allocation as substitute for 3rd Level Subtab in old Contract Window.
