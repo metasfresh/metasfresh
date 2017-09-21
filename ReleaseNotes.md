@@ -59,18 +59,27 @@ Here come the actual release notes:
   * [#2089](https://github.com/metasfresh/metasfresh/issues/2089) Inventory Move Window improvements
     * Improvements done to the Inventory Movement Window.
   * [#2218](https://github.com/metasfresh/metasfresh/issues/2218) User would like to import default values for contact and address
+    * Providing a possibility to import default Roles for User and Locations in Business Partrner.
   * [#2245](https://github.com/metasfresh/metasfresh/issues/2445) Support quantity in flatrate term import
+    * Adding the field quantity to the importer of flatrate terms.
   * [#2247](https://github.com/metasfresh/metasfresh/issues/2474) Extend Partner Import with ad_language
+    * Now possible to add the language to Business Partner imports to metasfresh.
   * [#2436](https://github.com/metasfresh/metasfresh/issues/2436) Use default values for IsShipTo and isBillTo when importing bpartner
+    * Fallback mechanism to set default billto and shipto locations in Business Partner.
   * [#2459](https://github.com/metasfresh/metasfresh/issues/2459) shipto and billto contact / user
+    * New Fields in Business Partner Contact: shipto and billto
   * [#2298](https://github.com/metasfresh/metasfresh/issues/2298) Introduce source-HU to fine-Picking
+    * New functionality for a more efficient Picking workflow. Now able to chose a source HU that is used for the following picking steps.
   * [#2361](https://github.com/metasfresh/metasfresh/issues/2361) Invoice Candidates Action Approval for Invoicing
+    * New action in Invoice candidates, allowing to mass approve candidates for Invoiceing.
   * [#2381](https://github.com/metasfresh/metasfresh/issues/2381) Detailed Improvement of Flatrate Term window in WebUI
     * New Window for contracts in WebUI, making the contract management easier and more transparent.
   * [#2386](https://github.com/metasfresh/metasfresh/issues/2386) New Window for M_PickingSlot_Trx in WebUI
     * New Window in WebUI allowing to View Picking Slot Transations and involved Handling Units.
   * [#2387](https://github.com/metasfresh/metasfresh/issues/2387) Autocomplete for zip / postal code and city
+    * New functionality to autocomplete postal and city in Location recording workflow.
   * [#2397](https://github.com/metasfresh/metasfresh/issues/2397) Import and Store Contract meta-data e.g. startdate on flatrate
+    * Now possible to store different metadata via contracts import.
   * [#2405](https://github.com/metasfresh/metasfresh/issues/2405) New Window for C_Invoice_Clearing_Alloc in WebUI
     * New window for Invoice Allocation as substitute for 3rd Level Subtab in old Contract Window.
   * [#2406](https://github.com/metasfresh/metasfresh/issues/2406) New Window for C_SubscriptionProgress in WebUI
@@ -78,6 +87,7 @@ Here come the actual release notes:
   * [#2408](https://github.com/metasfresh/metasfresh/issues/2408) Contract Date and Contract DocumentNo
     * New Fields in Contract Window: Document No and Date, allowing a better recognition of the Contract creation.
   * [#2413](https://github.com/metasfresh/metasfresh/issues/2413) Make request status a search field in request window
+    * Adding a new Filter to request window, allowing to search for data with a given request status.
   * [#2416](https://github.com/metasfresh/metasfresh/issues/2416) New Window for M_QualityInsp_LagerKonf_Version in WebUI
     * New Windows for yearly Swiss Storage Conference, allowing the user to define the Storage Conference Criteria.
   * [#2421](https://github.com/metasfresh/metasfresh/issues/2421) New Fields MasterStartDate and MasterEndDate in FlatRate Term
@@ -85,8 +95,11 @@ Here come the actual release notes:
   * [#2426](https://github.com/metasfresh/metasfresh/issues/2426) Translation for window "RfQ" in WebUI
     * Adjustments to the Request for Quotation Window, Refining Layout and adding Translations for en_US, de_DE locale/ Language.
   * [#2429](https://github.com/metasfresh/metasfresh/issues/2429) hide qty TU when HU name is empty
+    * Now hiding the QtyTU Field in different Jasper reports in case the Handling Unit name is empty.
   * [#2431](https://github.com/metasfresh/metasfresh/issues/2431) Product Filter in Handling Unit Editor
+    * New Filter in Handling Unit Editor, allowing to search for entries with a given product.
   * [#2434](https://github.com/metasfresh/metasfresh/issues/2434) Make field ad_user_incharge_id from C_Flatrate_Term optional
+    * Adjusting the Field inCharge in Flatrate Term, now making it optional.
   * [#2442](https://github.com/metasfresh/metasfresh/issues/2442) New Window for GL Journal Category in WebUI
     * New Window for GL Category in WebUI Finance/ Settings.
   * [#2449](https://github.com/metasfresh/metasfresh/issues/2449) Adjust the window Product for Procurement Contracts
@@ -101,11 +114,17 @@ Here come the actual release notes:
 
 * metasfresh-webui-api
   * [#142](https://github.com/metasfresh/metasfresh-webui-api/issues/142) Provide v11 / CAMT 54 File Import
+    * New importer for ESR v11/ camt54 files in WebUI.
   * [#178](https://github.com/metasfresh/metasfresh-webui-api/issues/178) Have Letter Feature in Sales Order Window
+    * New Letter Feature in WebUI allowing the user to oppen a text editore and create Letters with then help of Textsnippets.
   * [#547](https://github.com/metasfresh/metasfresh-webui-api/issues/547) Provide mass export of Data to Excel
+    * Very nice new, Feature allowing the user to select lines and export to excel.
   * [#581](https://github.com/metasfresh/metasfresh-webui-api/issues/581) API to provide user session's locale
+    * Internal hjousekeeping issue allowing the locae of a user to be stored in session.
   * [#583](https://github.com/metasfresh/metasfresh-webui-api/issues/583) Provide the document's standard actions
+    * New Feature to restrict actions in the action menu. Now only showing those that fit to the window opened.
   * [#585](https://github.com/metasfresh/metasfresh-webui-api/issues/585) Lookup validation rule shall support @CtxName/Default@ annotation
+    * Interlan Housekeeping Issue in Applicaiton Dictionary, now allowing to use @notations in Validation rules in WebUI too.
 
 * metasfresh-webui-frontend
   * [#1060](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1060) Locale viewing and editing in User Interface
