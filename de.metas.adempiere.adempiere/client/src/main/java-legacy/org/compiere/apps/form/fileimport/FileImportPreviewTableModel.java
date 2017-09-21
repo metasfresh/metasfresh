@@ -2,6 +2,7 @@ package org.compiere.apps.form.fileimport;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableModel;
@@ -45,7 +46,7 @@ public class FileImportPreviewTableModel extends AbstractTableModel
 
 	public void setImpFormat(final ImpFormat impFormat)
 	{
-		if (impFormatSet && Check.equals(this.impFormat, impFormat))
+		if (impFormatSet && Objects.equals(this.impFormat, impFormat))
 		{
 			return;
 		}
