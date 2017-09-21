@@ -3,14 +3,13 @@ package de.metas.ui.web.quickinput.invoiceline;
 import java.util.Set;
 
 import org.adempiere.ad.expression.api.ILogicExpression;
-import org.adempiere.ad.validationRule.IValidationRuleDAO;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_InvoiceLine;
-import org.compiere.util.DisplayType;
 import org.springframework.stereotype.Component;
 
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.i18n.IMsgBL;
 import de.metas.ui.web.quickinput.IQuickInputDescriptorFactory;
 import de.metas.ui.web.quickinput.QuickInputDescriptor;
@@ -23,7 +22,7 @@ import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
-import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
+import de.metas.ui.web.window.descriptor.sql.ProductLookupDescriptor;
 
 /*
  * #%L
@@ -80,11 +79,10 @@ public class InvoiceLineQuickInputDescriptorFactory implements IQuickInputDescri
 				.setCaption(msgBL.translatable(IInvoiceLineQuickInput.COLUMNNAME_M_Product_ID))
 				//
 				.setWidgetType(DocumentFieldWidgetType.Lookup).setValueClass(IntegerLookupValue.class)
-				.setLookupDescriptorProvider(SqlLookupDescriptor.builder()
-						.setColumnName(IInvoiceLineQuickInput.COLUMNNAME_M_Product_ID)
-						.setDisplayType(DisplayType.Search)
-						.setAD_Val_Rule_ID(Services.get(IValidationRuleDAO.class).retrieveValRuleIdByColumnName(I_C_InvoiceLine.Table_Name, I_C_InvoiceLine.COLUMNNAME_M_Product_ID))
-						.buildProvider())
+				.setLookupDescriptorProvider(ProductLookupDescriptor.builder()
+						.bpartnerParamName(I_C_Invoice.COLUMNNAME_C_BPartner_ID)
+						.dateParamName(I_C_Invoice.COLUMNNAME_DateInvoiced)
+						.build())
 				.setMandatoryLogic(true)
 				.setDisplayLogic(ILogicExpression.TRUE)
 				.addCharacteristic(Characteristic.PublicField));
