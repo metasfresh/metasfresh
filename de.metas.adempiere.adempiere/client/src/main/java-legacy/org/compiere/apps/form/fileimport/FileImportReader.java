@@ -7,6 +7,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import com.google.common.base.CharMatcher;
@@ -29,11 +30,11 @@ import lombok.experimental.UtilityClass;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -45,15 +46,15 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public class FileImportReader
 {
-	private static final char TEXT_DELIMITER ='"';
-	
-	
-	final static class MultiLineProcessor implements LineProcessor<List<String>>
+	private static final char TEXT_DELIMITER = '"';
+	private static final int MAX_LOADED_LINES = 100;
+
+	final private static class MultiLineProcessor implements LineProcessor<List<String>>
 	{
 		private boolean openQuote = false;
 		private boolean closedQuote = false;
 		private final List<String> loadedDataLines = new ArrayList<>();
-		
+
 		@Override
 		public boolean processLine(final String line) throws IOException
 		{
@@ -71,10 +72,10 @@ public class FileImportReader
 			}
 			//
 			// if open quote , add this line to the previous
-			if (openQuote && loadedDataLines.size()> 0)
+			if (openQuote && !loadedDataLines.isEmpty())
 			{
 				final StringBuilder previousLine = new StringBuilder();
-				final int index = loadedDataLines.size()-1;
+				final int index = loadedDataLines.size() - 1;
 				previousLine.append(loadedDataLines.get(index));
 				// append the new line, because the char exists
 				previousLine.append("\n");
@@ -88,7 +89,7 @@ public class FileImportReader
 			{
 				loadedDataLines.add(line);
 			}
-			
+
 			//
 			// reset
 			if (closedQuote)
@@ -105,11 +106,12 @@ public class FileImportReader
 			return loadedDataLines;
 		}
 	}
-	
+
 	/**
 	 * Read file that has at least on filed with multiline text
 	 * <br>
 	 * Assumes the <code>TEXT_DELIMITER</code> is not encountered in the field
+	 * 
 	 * @param file
 	 * @param charset
 	 * @return
@@ -117,13 +119,13 @@ public class FileImportReader
 	 */
 	public List<String> readMultiLines(@NonNull final File file, @NonNull final Charset charset) throws IOException
 	{
-		final List<String> loadedDataLines = Files.readLines(file, charset, new MultiLineProcessor());		
+		final List<String> loadedDataLines = Files.readLines(file, charset, new MultiLineProcessor());
 		return loadedDataLines;
 	}
-	
-	
+
 	/**
 	 * Read file that has not any multi-line text
+	 * 
 	 * @param file
 	 * @param charset
 	 * @return
@@ -132,7 +134,7 @@ public class FileImportReader
 	public List<String> readRegularLines(@NonNull final File file, @NonNull final Charset charset) throws IOException
 	{
 		final List<String> loadedDataLines = new ArrayList<>();
-		
+
 		Files.readLines(file, charset, new LineProcessor<Void>()
 		{
 			@Override
@@ -148,7 +150,35 @@ public class FileImportReader
 				return null;
 			}
 		});
-		
+
 		return loadedDataLines;
+	}
+
+	/**
+	 * Build the preview lines from the loaded lines
+	 * 
+	 * @param lines
+	 * @return
+	 */
+	public String buildDataPreview(final List<String> lines)
+	{
+		final StringBuilder loadedDataPreview = new StringBuilder();
+		if (lines.size() > MAX_LOADED_LINES)
+		{
+			final List<String> copyOfLoadedDataLines = Collections.unmodifiableList(lines);
+			lines.forEach(item -> {
+				if (copyOfLoadedDataLines.indexOf(item) < copyOfLoadedDataLines.size())
+				{
+					loadedDataPreview.append(item);
+					loadedDataPreview.append("\n");
+				}
+			});
+			loadedDataPreview.append("......................................................\n");
+		}
+		else
+		{
+			lines.stream().forEach(item -> loadedDataPreview.append(item).append("\n"));
+		}
+		return loadedDataPreview.toString();
 	}
 }

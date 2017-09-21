@@ -26,7 +26,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
@@ -98,7 +97,6 @@ public class VFileImport extends CPanel
 	private final transient IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final transient IClientUI clientUI = Services.get(IClientUI.class);
 
-	private static final int MAX_LOADED_LINES = 100;
 	private static final int MAX_SHOWN_LINES = 10;
 
 	/**
@@ -409,7 +407,7 @@ public class VFileImport extends CPanel
 		final File file = getFile();
 
 		List<String> loadedDataLines = new ArrayList<>();
-		StringBuilder loadedDataPreview = new StringBuilder();
+		String loadedDataPreview = "";
 		boolean loadOK = false;
 
 		try
@@ -422,7 +420,7 @@ public class VFileImport extends CPanel
 				loadedDataLines = readLines(file, charset);
 				//
 				// build the review string
-				loadedDataPreview = buildDataPreview(loadedDataLines);
+				loadedDataPreview = FileImportReader.buildDataPreview(loadedDataLines);
 			}
 			loadOK = true;
 		}
@@ -448,33 +446,6 @@ public class VFileImport extends CPanel
 		}
 	}	// cmd_loadFile
 
-	/**
-	 * Build the preview lines from the loaded lines
-	 * @param lines
-	 * @return
-	 */
-	private StringBuilder buildDataPreview(final List<String> lines)
-	{
-		final StringBuilder loadedDataPreview = new StringBuilder();
-		if (lines.size() > MAX_LOADED_LINES)
-		{
-			final List<String> copyOfLoadedDataLines = Collections.unmodifiableList(lines);
-			lines.forEach(item -> {
-				if (copyOfLoadedDataLines.indexOf(item) < copyOfLoadedDataLines.size())
-				{
-					loadedDataPreview.append(item);
-					loadedDataPreview.append("\n");
-				}
-			});
-			loadedDataPreview.append("......................................................\n");
-		}
-		else
-		{
-			lines.stream().forEach(item -> loadedDataPreview.append(item).append("\n"));
-		}
-		return loadedDataPreview;
-	}
-	
 	private List<String> readLines(@NonNull final File file, @NonNull final Charset charset) throws IOException
 	{
 		if (isMultiLineFormat())

@@ -79,4 +79,7 @@ UPDATE AD_Field SET IsDisplayed='Y', SeqNo=80,Updated=TO_TIMESTAMP('2017-09-20 1
 ;
 
 
+-------------- Fix FormatType---
+update AD_Ref_List set ValueName='CommaSeparated' where AD_Ref_List_ID=384;
+update AD_Ref_List set ValueName='TabSeparated' where AD_Ref_List_ID=385;
 

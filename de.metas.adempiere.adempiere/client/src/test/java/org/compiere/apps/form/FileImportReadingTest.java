@@ -62,7 +62,7 @@ public class FileImportReadingTest
 		Assert.assertNotNull("url null", url);
 		final File file = FileUtils.toFile(url);
 		Assert.assertNotNull("file null", file);
-		
+
 		//
 		final Charset charset = Charset.forName("UTF-8");
 		try
@@ -78,9 +78,9 @@ public class FileImportReadingTest
 			logger.warn(e.getMessage());
 		}
 	}
-	
+
 	@Test
-	public void testRegularLinesFieldFile()
+	public void testRegularLinesFieldFile() throws IOException
 	{
 		final URL url = getClass().getResource("/regularlines.csv");
 		Assert.assertNotNull("url null", url);
@@ -88,17 +88,10 @@ public class FileImportReadingTest
 		Assert.assertNotNull("file null", file);
 
 		final Charset charset = Charset.forName("UTF-8");
-		try
-		{
-			final List<String> lines = FileImportReader.readMultiLines(file, charset);
+		final List<String> lines = FileImportReader.readRegularLines(file, charset);
 
-			Assert.assertNotNull("lines null", lines);
-			Assert.assertFalse(lines.isEmpty());
-			Assert.assertTrue(lines.size() == 3);
-		}
-		catch (IOException e)
-		{
-			logger.warn(e.getMessage());
-		}
+		Assert.assertNotNull("lines null", lines);
+		Assert.assertFalse(lines.isEmpty());
+		Assert.assertTrue(lines.size() == 3);
 	}
 }

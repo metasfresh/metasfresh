@@ -14,7 +14,7 @@ public class X_AD_ImpFormat extends org.compiere.model.PO implements I_AD_ImpFor
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 723165073L;
+	private static final long serialVersionUID = 1201182869L;
 
     /** Standard Constructor */
     public X_AD_ImpFormat (Properties ctx, int AD_ImpFormat_ID, String trxName)
@@ -128,10 +128,10 @@ public class X_AD_ImpFormat extends org.compiere.model.PO implements I_AD_ImpFor
 	public static final int FORMATTYPE_AD_Reference_ID=209;
 	/** Fixed Position = F */
 	public static final String FORMATTYPE_FixedPosition = "F";
-	/** Komma-separiert = C */
-	public static final String FORMATTYPE_Komma_Separiert = "C";
-	/** Tabulator-separiert = T */
-	public static final String FORMATTYPE_Tabulator_Separiert = "T";
+	/** CommaSeparated = C */
+	public static final String FORMATTYPE_CommaSeparated = "C";
+	/** TabSeparated = T */
+	public static final String FORMATTYPE_TabSeparated = "T";
 	/** XML = X */
 	public static final String FORMATTYPE_XML = "X";
 	/** Set Format.
