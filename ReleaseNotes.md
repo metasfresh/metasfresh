@@ -34,6 +34,8 @@ Here come the actual release notes:
     * Translating the Picking Tray Window and Picking to en_US.
   * [#2516](https://github.com/metasfresh/metasfresh/issues/2516) Add Rüstliste Report to WebUI
     * New Picking Preview Report now available in shipping reports section of WebUI Menu.
+  * [#2533](https://github.com/metasfresh/metasfresh/issues/2533) Adjust Contract Period Window in WebUI for Subscriptions
+    * Improvements for the Contract Period Window in WebUI. Adding Translations for en_US Language/ Locale.
 
 * metasfresh-webui-frontend
   * [#1192](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1192) grid values are cut off if column size is too small
