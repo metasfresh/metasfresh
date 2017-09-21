@@ -83,10 +83,11 @@ Here come the actual release notes:
   * [#570](https://github.com/metasfresh/metasfresh-webui-api/issues/570) clicking print on non-document window shows error page
   * [#582](https://github.com/metasfresh/metasfresh-webui-api/issues/582) Cannot invoice disposal's invoice candidates
   * [#594](https://github.com/metasfresh/metasfresh-webui-api/issues/594) LU is not created when you receive in production
+  * [#599](https://github.com/metasfresh/metasfresh-webui-api/issues/599) String document IDs cannot be converted to int error on Transform
 
 # metasfresh 5.26 (2017-37)
 
-**upcoming release for week 2017-37**
+**release for week 2017-37**
 
 ## Features
 * metasfresh-app
