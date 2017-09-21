@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.pricing.api.IPricingResult;
@@ -44,7 +45,6 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.MNote;
 import org.compiere.model.MPriceList;
 import org.compiere.model.MProductPricing;
-import org.compiere.model.MTable;
 import org.compiere.model.Query;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -94,18 +94,11 @@ public class SubscriptionBL implements ISubscriptionBL
 	public static final Logger logger = LogManager.getLogger(SubscriptionBL.class);
 
 	@Override
-	public I_C_Flatrate_Term createSubscriptionTerm(final I_C_OrderLine ol,
-			final boolean completeIt,
-			I_C_Order order)
+	public I_C_Flatrate_Term createSubscriptionTerm(
+			@NonNull final I_C_OrderLine ol,
+			final boolean completeIt)
 	{
-		if (order == null)
-		{
-			order = InterfaceWrapperHelper.create(ol.getC_Order(), I_C_Order.class);
-		}
-		else
-		{
-			Check.assume(order.getC_Order_ID() == ol.getC_Order_ID(), ol + " does not belong to " + order);
-		}
+		final I_C_Order order = InterfaceWrapperHelper.create(ol.getC_Order(), I_C_Order.class);
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(ol);
 		final String trxName = InterfaceWrapperHelper.getTrxName(ol);
@@ -228,49 +221,50 @@ public class SubscriptionBL implements ISubscriptionBL
 			{
 				final Throwable[] t = new Throwable[1];
 
-				Trx.run(trxName, new TrxRunnable2()
-				{
-					@Override
-					public void run(String trxName) throws Exception
-					{
-						createTermForOLCand(ctx, olCand, AD_PInstance_ID, completeIt, trxName);
-						Services.get(IMonitoringBL.class).createOrGet(Contracts_Constants.ENTITY_TYPE, "SubscriptionBL.createMissingTermsForOLCands()_Done").plusOne();
-					}
-
-					@Override
-					public void doFinally()
-					{
-						if (t[0] == null)
+				Services.get(ITrxManager.class).run(
+						trxName, new TrxRunnable2()
 						{
-							return;
-						}
+							@Override
+							public void run(String trxName) throws Exception
+							{
+								createTermForOLCand(ctx, olCand, AD_PInstance_ID, completeIt, trxName);
+								Services.get(IMonitoringBL.class).createOrGet(Contracts_Constants.ENTITY_TYPE, "SubscriptionBL.createMissingTermsForOLCands()_Done").plusOne();
+							}
 
-						I_AD_User userInCharge = Services.get(IBPartnerOrgBL.class).retrieveUserInChargeOrNull(ctx, olCand.getAD_Org_ID(), trxName);
-						if (userInCharge == null)
-						{
-							userInCharge = InterfaceWrapperHelper.create(ctx, Env.getAD_User_ID(ctx), I_AD_User.class, trxName);
-						}
+							@Override
+							public void doFinally()
+							{
+								if (t[0] == null)
+								{
+									return;
+								}
 
-						final MNote note = new MNote(ctx, IOLCandBL.MSG_OL_CAND_PROCESSOR_PROCESSING_ERROR_0P, userInCharge.getAD_User_ID(), trxName);
-						note.setRecord(MTable.getTable_ID(I_C_OLCand.Table_Name), olCand.getC_OLCand_ID());
+								I_AD_User userInCharge = Services.get(IBPartnerOrgBL.class).retrieveUserInChargeOrNull(ctx, olCand.getAD_Org_ID(), trxName);
+								if (userInCharge == null)
+								{
+									userInCharge = InterfaceWrapperHelper.create(ctx, Env.getAD_User_ID(ctx), I_AD_User.class, trxName);
+								}
 
-						note.setClientOrg(userInCharge.getAD_Client_ID(), userInCharge.getAD_Org_ID());
+								final MNote note = new MNote(ctx, IOLCandBL.MSG_OL_CAND_PROCESSOR_PROCESSING_ERROR_0P, userInCharge.getAD_User_ID(), trxName);
+								note.setRecord(InterfaceWrapperHelper.getTableId(I_C_OLCand.class), olCand.getC_OLCand_ID());
 
-						note.setTextMsg(t[0].getLocalizedMessage());
-						note.saveEx();
+								note.setClientOrg(userInCharge.getAD_Client_ID(), userInCharge.getAD_Org_ID());
 
-						olCand.setIsError(true);
-						olCand.setAD_Note_ID(note.getAD_Note_ID());
-						olCand.setErrorMsg(t[0].getLocalizedMessage());
-					}
+								note.setTextMsg(t[0].getLocalizedMessage());
+								note.saveEx();
 
-					@Override
-					public boolean doCatch(Throwable e) throws Throwable
-					{
-						t[0] = e; // store 'e'
-						return true; // rollback transaction
-					}
-				});
+								olCand.setIsError(true);
+								olCand.setAD_Note_ID(note.getAD_Note_ID());
+								olCand.setErrorMsg(t[0].getLocalizedMessage());
+							}
+
+							@Override
+							public boolean doCatch(Throwable e) throws Throwable
+							{
+								t[0] = e; // store 'e'
+								return true; // rollback transaction
+							}
+						});
 
 				InterfaceWrapperHelper.save(olCand);
 				counter++;
@@ -304,7 +298,7 @@ public class SubscriptionBL implements ISubscriptionBL
 	{
 		final IOLCandEffectiveValuesBL olCandEffectiveValuesBL = Services.get(IOLCandEffectiveValuesBL.class);
 		final IOLCandBL olCandBL = Services.get(IOLCandBL.class);
-		
+
 		final Properties ctx = InterfaceWrapperHelper.getCtx(olCand);
 		final String trxName = InterfaceWrapperHelper.getTrxName(olCand);
 
@@ -440,7 +434,7 @@ public class SubscriptionBL implements ISubscriptionBL
 
 	@Override
 	public void evalCurrentSPs(
-			@NonNull final I_C_Flatrate_Term term, 
+			@NonNull final I_C_Flatrate_Term term,
 			@NonNull final Timestamp currentDate)
 	{
 		final ISubscriptionDAO subscriptionPA = Services.get(ISubscriptionDAO.class);
@@ -736,7 +730,10 @@ public class SubscriptionBL implements ISubscriptionBL
 				}
 			}
 
-			final List<I_M_ShipmentSchedule> openScheds = shipmentSchedulePA.retrieveUnprocessedForRecord(ctx, MTable.getTable_ID(I_C_SubscriptionProgress.Table_Name), sd.getC_SubscriptionProgress_ID(), trxName);
+			final List<I_M_ShipmentSchedule> openScheds = shipmentSchedulePA.retrieveUnprocessedForRecord(ctx,
+					InterfaceWrapperHelper.getTableId(I_C_SubscriptionProgress.class),
+					sd.getC_SubscriptionProgress_ID(),
+					trxName);
 
 			if (openScheds.isEmpty())
 			{

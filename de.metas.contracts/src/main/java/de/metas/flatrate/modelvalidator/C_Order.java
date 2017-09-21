@@ -1,5 +1,7 @@
 package de.metas.flatrate.modelvalidator;
 
+import java.util.List;
+
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
@@ -123,9 +125,8 @@ public class C_Order implements ModelValidator
 		final String trxName = po.get_TrxName();
 		final I_C_Order order = InterfaceWrapperHelper.create(po, I_C_Order.class);
 
-		final IOrderDAO orderPA = Services.get(IOrderDAO.class);
-
-		for (final I_C_OrderLine ol : orderPA.retrieveOrderLines(order, I_C_OrderLine.class))
+		final List<I_C_OrderLine> orderLines = Services.get(IOrderDAO.class).retrieveOrderLines(order, I_C_OrderLine.class);
+		for (final I_C_OrderLine ol : orderLines)
 		{
 			if (ol.getC_Flatrate_Conditions_ID() <= 0)
 			{
@@ -161,7 +162,8 @@ public class C_Order implements ModelValidator
 		logger.info("Creating new {} entry", I_C_Flatrate_Term.Table_Name);
 
 		// Note that order.getDocStatus() might still return 'IP' at this point
-		final I_C_Flatrate_Term newSc = Services.get(ISubscriptionBL.class).createSubscriptionTerm(ol, true, order);
+		final boolean completeIt = true;
+		final I_C_Flatrate_Term newSc = Services.get(ISubscriptionBL.class).createSubscriptionTerm(ol, completeIt);
 
 		Check.assume(
 				X_C_Flatrate_Term.DOCSTATUS_Completed.equals(newSc.getDocStatus()),

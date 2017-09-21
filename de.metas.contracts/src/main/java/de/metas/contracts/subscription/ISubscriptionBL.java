@@ -33,7 +33,6 @@ import org.adempiere.pricing.exceptions.ProductNotOnPriceListException;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_M_Product;
 
-import de.metas.adempiere.model.I_C_Order;
 import de.metas.contracts.subscription.model.I_C_OrderLine;
 import de.metas.flatrate.interfaces.I_C_OLCand;
 import de.metas.flatrate.model.I_C_Flatrate_Conditions;
@@ -138,12 +137,9 @@ public interface ISubscriptionBL extends ISingletonService
 	 * @param ol
 	 * @param completeIt
 	 *            if <code>true</code>, then the new term is completed
-	 * @param order
-	 *            may be <code>null</code>. Can be used to provide <code>ol</code>'s order if that order has already
-	 *            been loaded.
 	 * @return
 	 */
-	I_C_Flatrate_Term createSubscriptionTerm(I_C_OrderLine ol, boolean completeIt, I_C_Order order);
+	I_C_Flatrate_Term createSubscriptionTerm(I_C_OrderLine ol, boolean completeIt);
 
 	I_C_Flatrate_Term createSubscriptionTerm(I_C_OLCand olCand, boolean completeIt);
 

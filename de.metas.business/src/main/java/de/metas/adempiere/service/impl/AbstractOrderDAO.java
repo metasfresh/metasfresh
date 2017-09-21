@@ -35,7 +35,6 @@ import org.compiere.model.I_M_InOut;
 import org.compiere.model.X_C_Order;
 
 import de.metas.adempiere.service.IOrderDAO;
-import de.metas.adempiere.util.CacheIgnore;
 import de.metas.adempiere.util.CacheModel;
 import de.metas.interfaces.I_C_OrderLine;
 import lombok.NonNull;
@@ -52,7 +51,7 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 	@Cached(cacheName = I_C_OrderLine.Table_Name + "#via#" + I_C_OrderLine.COLUMNNAME_C_Order_ID)
 	public <T extends org.compiere.model.I_C_OrderLine> List<T> retrieveOrderLines(
 			@NonNull @CacheModel final I_C_Order order, 
-			@CacheIgnore final Class<T> clazz)
+			@NonNull final Class<T> clazz)
 	{
 		final List<T> orderLines = Services.get(IQueryBL.class)
 				.createQueryBuilder(org.compiere.model.I_C_OrderLine.class, order)
