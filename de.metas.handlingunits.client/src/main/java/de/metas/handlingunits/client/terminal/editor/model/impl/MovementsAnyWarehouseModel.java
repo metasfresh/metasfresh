@@ -1,12 +1,17 @@
 package de.metas.handlingunits.client.terminal.editor.model.impl;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Properties;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
+import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_M_Movement;
+
+import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.handlingunits.model.I_M_HU;
@@ -50,15 +55,8 @@ public class MovementsAnyWarehouseModel extends AbstractMovementsWarehouseModel
 	@Override
 	protected void load()
 	{
-		if (hus.isEmpty())
-		{
-			// should never happen
-			return;
-		}
 
-		final int orgId = hus.get(0).getAD_Org_ID();
-		final List<org.compiere.model.I_M_Warehouse> warehouses = Services.get(IWarehouseDAO.class).retrieveForOrg(getCtx(), orgId);
-
+		final List<org.compiere.model.I_M_Warehouse> warehouses = getWarehousesUnlessOfHUs(hus);
 		final List<org.compiere.model.I_M_Warehouse> warehousesToLoad = InterfaceWrapperHelper.createList(warehouses, org.compiere.model.I_M_Warehouse.class);
 		Check.assumeNotEmpty(warehouses, MSG_NoWarehouseFound);
 		warehouseKeyLayout.createAndSetKeysFromWarehouses(warehousesToLoad);
@@ -85,6 +83,36 @@ public class MovementsAnyWarehouseModel extends AbstractMovementsWarehouseModel
 
 		return qualityMovements;
 
+	}
+
+	public static List<org.compiere.model.I_M_Warehouse> getWarehousesUnlessOfHUs(final List<I_M_HU> hus)
+	{
+		if (hus.isEmpty())
+		{
+			// should never happen
+			return Collections.emptyList();
+		}
+
+		final I_M_HU firstHU = hus.get(0);
+
+		final int orgId = firstHU.getAD_Org_ID();
+		final Properties ctx = InterfaceWrapperHelper.getCtx(firstHU);
+
+		// final List<org.compiere.model.I_M_Warehouse> warehousesOfHUs = get
+		final List<org.compiere.model.I_M_Warehouse> warehouses = Services.get(IWarehouseDAO.class).retrieveForOrg(ctx, orgId);
+
+		final ImmutableList<org.compiere.model.I_M_Warehouse> huWarehouses = hus
+				.stream()
+				.map(I_M_HU::getM_Locator)
+				.collect(GuavaCollectors.toImmutableList())
+				.stream()
+				.distinct()
+				.map(org.compiere.model.I_M_Locator::getM_Warehouse)
+				.collect(GuavaCollectors.toImmutableList());
+
+		warehouses.removeAll(huWarehouses);
+
+		return warehouses;
 	}
 
 }
