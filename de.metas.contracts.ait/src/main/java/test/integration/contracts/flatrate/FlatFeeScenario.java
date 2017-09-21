@@ -99,8 +99,6 @@ public class FlatFeeScenario
 
 	public static final String PARAM_BOOL_IS_CORR_AFTER_CLOSING = "IsCorrectionAfterClosing";
 
-	public static final String PARAM_BOOL_IS_CREATE_ORDER_LINES = "IsCreateOrderLines";
-
 	private final AIntegrationTestDriver driver;
 
 	private final ContractsHelper helper;

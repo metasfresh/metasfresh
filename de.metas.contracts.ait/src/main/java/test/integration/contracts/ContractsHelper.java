@@ -315,9 +315,6 @@ public class ContractsHelper extends HelperDelegator
 		// this is the part specific to subscription
 		conditions.setType_Conditions(X_C_Flatrate_Conditions.TYPE_CONDITIONS_Abonnement);
 
-		// 03660
-		conditions.setIsNewTermCreatesOrder(testConfig.getCustomParamBool(FlatFeeScenario.PARAM_BOOL_IS_CREATE_ORDER_LINES));
-
 		createConditionsCommonEnd(driver, gridWindowHelper, conditions,
 				testConfig.getM_Product_Matching_Subcr_Value(),
 				testConfig.getM_Product_Matching_Subcr_IsStocked());
