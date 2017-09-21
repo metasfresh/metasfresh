@@ -42,8 +42,7 @@ import de.metas.flatrate.model.I_C_Flatrate_Term;
 import de.metas.flatrate.model.I_C_Flatrate_Transition;
 import de.metas.flatrate.model.X_C_Flatrate_Conditions;
 import de.metas.flatrate.model.X_C_Flatrate_Transition;
-import de.metas.i18n.Msg;
-import de.metas.inoutcandidate.api.IInOutCandidateConfig;
+import de.metas.i18n.IMsgBL;
 
 @Validator(I_C_Flatrate_Conditions.class)
 public class C_Flatrate_Conditions
@@ -67,11 +66,13 @@ public class C_Flatrate_Conditions
 						|| trans.getDeliveryInterval() <= 0)
 				{
 					final Properties ctx = InterfaceWrapperHelper.getCtx(cond);
+					final IMsgBL msgBL = Services.get(IMsgBL.class);
+
 					throw new AdempiereException(Env.getAD_Language(ctx), MSG_CONDITIONS_ERROR_INVALID_TRANSITION_2P,
 							new Object[] {
-									Msg.translate(ctx, I_C_Flatrate_Transition.COLUMNNAME_C_Flatrate_Transition_ID),
-									Msg.translate(ctx, I_C_Flatrate_Transition.COLUMNNAME_DeliveryIntervalUnit) + ", " +
-											Msg.translate(ctx, I_C_Flatrate_Transition.COLUMNNAME_DeliveryInterval)
+									msgBL.translate(ctx, I_C_Flatrate_Transition.COLUMNNAME_C_Flatrate_Transition_ID),
+									msgBL.translate(ctx, I_C_Flatrate_Transition.COLUMNNAME_DeliveryIntervalUnit) + ", " +
+											msgBL.translate(ctx, I_C_Flatrate_Transition.COLUMNNAME_DeliveryInterval)
 							});
 				}
 			}
@@ -103,21 +104,12 @@ public class C_Flatrate_Conditions
 				throw new AdempiereException("@" + MSG_CONDITIONS_ERROR_MATCHING_MISSING_0P + "@");
 			}
 
-			// 03204: as of now, the code in de.metas.inoutcandidate doesn't fully support
-			// I_M_ShipmentSchedules that don't reference a C_OrderLine
-			if (!cond.isNewTermCreatesOrder())
-			{
-				if (!Services.get(IInOutCandidateConfig.class).isSupportForSchedsWithoutOrderLine())
-				{
-					throw new AdempiereException("@" + MSG_CONDITIONS_ERROR_ORDERLESS_SUBSCRIPTION_NOT_SUPPORTED_0P + "@");
-				}
-			}
 		}
 		if (!X_C_Flatrate_Transition.DOCSTATUS_Completed.equals(cond.getC_Flatrate_Transition().getDocStatus()))
 		{
 			final Properties ctx = InterfaceWrapperHelper.getCtx(cond);
 			// note that the message itself contains the string '@C_Flatrate_Transition_ID@'
-			throw new AdempiereException(Msg.getMsg(ctx, MSG_CONDITIONS_ERROR_TRANSITION_NOT_CO_0P));
+			throw new AdempiereException(Services.get(IMsgBL.class).getMsg(ctx, MSG_CONDITIONS_ERROR_TRANSITION_NOT_CO_0P));
 		}
 	}
 

@@ -745,10 +745,7 @@ public class SubscriptionTestDriver extends AIntegrationTestDriver
 	{
 		assertThat(term, notNullValue());
 
-		if (term.isNewTermCreatesOrder())
-		{
-			assertThat("term has a C_OrderLine_Term_ID>0", term.getC_OrderLine_Term_ID(), greaterThan(0));
-		}
+		assertThat("term has a C_OrderLine_Term_ID>0", term.getC_OrderLine_Term_ID(), greaterThan(0));
 		if (trans.isAutoCompleteNewTerm())
 		{
 			assertThat(term.getDocStatus(), equalTo(X_C_Flatrate_Term.DOCSTATUS_Completed));

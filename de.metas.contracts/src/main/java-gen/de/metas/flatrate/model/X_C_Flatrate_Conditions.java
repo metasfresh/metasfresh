@@ -489,32 +489,6 @@ public class X_C_Flatrate_Conditions extends org.compiere.model.PO implements I_
 		return false;
 	}
 
-	/** Set AB bei neuer Vertragslaufzeit.
-		@param IsNewTermCreatesOrder 
-		Entscheidet, ob das System beim Fertigstellen einer neuen Vertragslaufzeit (z.B. bei automatischer Verlängerung) eine Auftragsbestätigung erzeugt.
-	  */
-	@Override
-	public void setIsNewTermCreatesOrder (boolean IsNewTermCreatesOrder)
-	{
-		set_Value (COLUMNNAME_IsNewTermCreatesOrder, Boolean.valueOf(IsNewTermCreatesOrder));
-	}
-
-	/** Get AB bei neuer Vertragslaufzeit.
-		@return Entscheidet, ob das System beim Fertigstellen einer neuen Vertragslaufzeit (z.B. bei automatischer Verlängerung) eine Auftragsbestätigung erzeugt.
-	  */
-	@Override
-	public boolean isNewTermCreatesOrder () 
-	{
-		Object oo = get_Value(COLUMNNAME_IsNewTermCreatesOrder);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
-	}
-
 	/** Set Planspiel.
 		@param IsSimulation Planspiel	  */
 	@Override
