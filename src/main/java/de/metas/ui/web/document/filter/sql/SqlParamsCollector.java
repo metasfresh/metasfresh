@@ -126,6 +126,11 @@ public final class SqlParamsCollector
 		}
 		params.addAll(sqlParams);
 	}
+	
+	public void collect(final SqlParamsCollector from)
+	{
+		collectAll(from.params);
+	}
 
 	/**
 	 * Collects given SQL value and returns an SQL placeholder, i.e. "?"
