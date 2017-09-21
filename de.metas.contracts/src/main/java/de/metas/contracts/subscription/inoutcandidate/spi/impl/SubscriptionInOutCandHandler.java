@@ -93,12 +93,9 @@ public class SubscriptionInOutCandHandler implements IInOutCandHandler
 		final I_C_Flatrate_Term term = subscriptionLine.getC_Flatrate_Term();
 
 		Check.assume(term.getM_Product_ID() > 0, term + " has M_Product_ID>0");
-		if (term.isNewTermCreatesOrder())
-		{
-			Check.assume(term.getC_OrderLine_Term_ID() > 0, term + " has C_OrderLine_Term_ID>0");
-			newSched.setC_OrderLine_ID(term.getC_OrderLine_Term_ID());
-			newSched.setC_Order_ID(term.getC_OrderLine_Term().getC_Order_ID());
-		}
+		Check.assume(term.getC_OrderLine_Term_ID() > 0, term + " has C_OrderLine_Term_ID>0");
+		newSched.setC_OrderLine_ID(term.getC_OrderLine_Term_ID());
+		newSched.setC_Order_ID(term.getC_OrderLine_Term().getC_Order_ID());
 
 		newSched.setM_Product_ID(term.getM_Product_ID());
 
