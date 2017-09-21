@@ -311,9 +311,15 @@ public class InventoryAllocationDestination implements IAllocationDestination
 
 	public List<I_M_Inventory> completeInventories()
 	{
+		
+		
 		final List<I_M_Inventory> inventories = getInventories();
 		for (final I_M_Inventory inventory : inventories)
 		{
+			// Finally create the snapshot for all the HUs that were added to each producer			
+			final ISnapshotProducer<I_M_HU> currentSnapshotProducer = huSnapshotProducerByInventoryId.get(inventory.getM_Inventory_ID());
+			
+			currentSnapshotProducer.createSnapshots();
 			docActionBL.processEx(inventory, X_M_Inventory.DOCACTION_Complete, X_M_Inventory.DOCSTATUS_Completed);
 
 			//
@@ -417,8 +423,9 @@ public class InventoryAllocationDestination implements IAllocationDestination
 		final ISnapshotProducer<I_M_HU> currentSnapshotProducer = huSnapshotProducerByInventoryId.get(inventoryLine.getM_Inventory_ID());
 		Check.errorIf(currentSnapshotProducer == null, "Missing SnapshotProducer for M_Inventory_ID={}", inventoryLine.getM_Inventory_ID());
 
+		// add each top level HU to be added to the snapshot of the inventory
 		currentSnapshotProducer.addModel(topLevelHU);
-		currentSnapshotProducer.createSnapshots();
+
 		return currentSnapshotProducer;
 	}
 
