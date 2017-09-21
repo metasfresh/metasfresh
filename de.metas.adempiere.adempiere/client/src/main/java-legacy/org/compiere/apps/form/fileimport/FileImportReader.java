@@ -61,6 +61,7 @@ public class FileImportReader
 			// if previous line had a " which is not closed, then add all to the previous line, until we meet next "
 			if (CharMatcher.anyOf(line).matches(TEXT_DELIMITER))
 			{
+				// if we already had a delimiter, the next one is closing delimiter
 				if (openQuote)
 				{
 					closedQuote = true;
@@ -162,23 +163,30 @@ public class FileImportReader
 	 */
 	public String buildDataPreview(final List<String> lines)
 	{
-		final StringBuilder loadedDataPreview = new StringBuilder();
 		if (lines.size() > MAX_LOADED_LINES)
 		{
-			final List<String> copyOfLoadedDataLines = Collections.unmodifiableList(lines);
-			lines.forEach(item -> {
-				if (copyOfLoadedDataLines.indexOf(item) < copyOfLoadedDataLines.size())
-				{
-					loadedDataPreview.append(item);
-					loadedDataPreview.append("\n");
-				}
-			});
-			loadedDataPreview.append("......................................................\n");
+			return buildLimitedPreview(lines);
 		}
 		else
 		{
+			final StringBuilder loadedDataPreview = new StringBuilder();
 			lines.stream().forEach(item -> loadedDataPreview.append(item).append("\n"));
+			return loadedDataPreview.toString();
 		}
+	}
+	
+	private String buildLimitedPreview(final List<String> lines)
+	{
+		final StringBuilder loadedDataPreview = new StringBuilder();
+		final List<String> copyOfLoadedDataLines = Collections.unmodifiableList(lines);
+		lines.forEach(item -> {
+			if (copyOfLoadedDataLines.indexOf(item) < copyOfLoadedDataLines.size())
+			{
+				loadedDataPreview.append(item);
+				loadedDataPreview.append("\n");
+			}
+		});
+		loadedDataPreview.append("......................................................\n");
 		return loadedDataPreview.toString();
 	}
 }

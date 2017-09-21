@@ -1,7 +1,7 @@
 /**
  * 
  */
-package org.compiere.apps.form;
+package org.compiere.apps.form.fileimport;
 
 import java.io.File;
 import java.io.IOException;
@@ -11,7 +11,6 @@ import java.util.List;
 
 import org.adempiere.test.AdempiereTestHelper;
 import org.apache.commons.io.FileUtils;
-import org.compiere.apps.form.fileimport.FileImportReader;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -48,6 +47,7 @@ import de.metas.logging.LogManager;
 public class FileImportReadingTest
 {
 	private static final transient Logger logger = LogManager.getLogger(FileImportReadingTest.class);
+	private static final String packagePath = "/org/compiere/apps/form/fileimport";
 
 	@Before
 	public void init()
@@ -58,7 +58,7 @@ public class FileImportReadingTest
 	@Test
 	public void testMultipleLinesFieldFile()
 	{
-		final URL url = getClass().getResource("/multiplelines.csv");
+		final URL url = getClass().getResource(packagePath + "/multiplelines.csv");
 		Assert.assertNotNull("url null", url);
 		final File file = FileUtils.toFile(url);
 		Assert.assertNotNull("file null", file);
@@ -72,6 +72,9 @@ public class FileImportReadingTest
 			Assert.assertNotNull("lines null", lines);
 			Assert.assertFalse(lines.isEmpty());
 			Assert.assertTrue(lines.size() == 2);
+			lines.forEach(l -> Assert.assertTrue(l.startsWith("G00")));
+			Assert.assertTrue(lines.get(0).endsWith("70"));
+			Assert.assertTrue(lines.get(1).endsWith("80"));
 		}
 		catch (IOException e)
 		{
@@ -82,7 +85,7 @@ public class FileImportReadingTest
 	@Test
 	public void testRegularLinesFieldFile() throws IOException
 	{
-		final URL url = getClass().getResource("/regularlines.csv");
+		final URL url = getClass().getResource(packagePath + "/regularlines.csv");
 		Assert.assertNotNull("url null", url);
 		final File file = FileUtils.toFile(url);
 		Assert.assertNotNull("file null", file);
@@ -93,5 +96,9 @@ public class FileImportReadingTest
 		Assert.assertNotNull("lines null", lines);
 		Assert.assertFalse(lines.isEmpty());
 		Assert.assertTrue(lines.size() == 3);
+		lines.forEach(l -> Assert.assertTrue(l.startsWith("G00")));
+		Assert.assertTrue(lines.get(0).endsWith("80"));
+		Assert.assertTrue(lines.get(1).endsWith("90"));
+		Assert.assertTrue(lines.get(2).endsWith("100"));
 	}
 }
