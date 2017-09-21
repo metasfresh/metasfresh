@@ -71,7 +71,7 @@ public class MLookupFactory
 	public static final int COLUMNINDEX_EntityType = 5;
 
 	/** Logging */
-	private static Logger s_log = LogManager.getLogger(MLookupFactory.class);
+	private static final Logger s_log = LogManager.getLogger(MLookupFactory.class);
 	/** Table Reference Cache */
 	private static CCache<ArrayKey, MLookupInfo> s_cacheRefTable = new CCache<>("AD_Ref_Table", 30, 60);	// 1h
 
