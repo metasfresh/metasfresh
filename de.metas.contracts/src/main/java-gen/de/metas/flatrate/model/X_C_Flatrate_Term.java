@@ -1080,31 +1080,6 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 		return false;
 	}
 
-	/** Set AB bei neuer Vertragslaufzeit.
-		@param IsNewTermCreatesOrder 
-		Entscheidet, ob das System beim Fertigstellen einer neuen Vertragslaufzeit (z.B. bei automatischer Verlängerung) eine Auftragsbestätigung erzeugt.
-	  */
-	@Override
-	public void setIsNewTermCreatesOrder (boolean IsNewTermCreatesOrder)
-	{
-		throw new IllegalArgumentException ("IsNewTermCreatesOrder is virtual column");	}
-
-	/** Get AB bei neuer Vertragslaufzeit.
-		@return Entscheidet, ob das System beim Fertigstellen einer neuen Vertragslaufzeit (z.B. bei automatischer Verlängerung) eine Auftragsbestätigung erzeugt.
-	  */
-	@Override
-	public boolean isNewTermCreatesOrder () 
-	{
-		Object oo = get_Value(COLUMNNAME_IsNewTermCreatesOrder);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
-	}
-
 	/** Set Portofrei.
 		@param IsPostageFree Portofrei	  */
 	@Override

@@ -403,10 +403,6 @@ public class C_Flatrate_Term
 
 		if (X_C_Flatrate_Term.TYPE_CONDITIONS_Abonnement.equals(term.getType_Conditions()))
 		{
-			if (term.isNewTermCreatesOrder() && term.getC_OrderLine_Term_ID() <= 0)
-			{
-				Services.get(IFlatrateBL.class).createOrderForTerm(term);
-			}
 			Services.get(ISubscriptionBL.class).evalCurrentSPs(term, term.getStartDate());
 		}
 		else if (X_C_Flatrate_Term.TYPE_CONDITIONS_Depotgebuehr.equals(term.getType_Conditions())

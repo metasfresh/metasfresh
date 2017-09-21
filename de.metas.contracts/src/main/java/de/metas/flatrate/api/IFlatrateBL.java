@@ -35,7 +35,6 @@ import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 
-import de.metas.adempiere.model.I_C_Order;
 import de.metas.contracts.subscription.model.I_C_OrderLine;
 import de.metas.flatrate.model.I_C_Flatrate_Conditions;
 import de.metas.flatrate.model.I_C_Flatrate_Data;
@@ -113,15 +112,6 @@ public interface IFlatrateBL extends ISingletonService
 	void updateNoticeDateAndEndDate(I_C_Flatrate_Term term);
 
 	I_C_DocType getDocTypeFor(I_C_Flatrate_Term term);
-
-	/**
-	 * Creates a new C_Order for the given term. This method is supposed to be used if a term is extended and if we need a dedicated C_Order for the new term, e.g. in order to print if and send if to
-	 * the customer.
-	 *
-	 * @param term
-	 * @return
-	 */
-	I_C_Order createOrderForTerm(I_C_Flatrate_Term term);
 
 	int getWarehouse(I_C_Flatrate_Term term);
 

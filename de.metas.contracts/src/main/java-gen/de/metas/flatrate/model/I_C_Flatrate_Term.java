@@ -966,33 +966,6 @@ public interface I_C_Flatrate_Term
     public static final String COLUMNNAME_IsClosingWithCorrectionSum = "IsClosingWithCorrectionSum";
 
 	/**
-	 * Set AB bei neuer Vertragslaufzeit.
-	 * Entscheidet, ob das System beim Fertigstellen einer neuen Vertragslaufzeit (z.B. bei automatischer Verlängerung) eine Auftragsbestätigung erzeugt.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
-	 * @deprecated Please don't use it because this is a virtual column
-	 */
-	@Deprecated
-	public void setIsNewTermCreatesOrder (boolean IsNewTermCreatesOrder);
-
-	/**
-	 * Get AB bei neuer Vertragslaufzeit.
-	 * Entscheidet, ob das System beim Fertigstellen einer neuen Vertragslaufzeit (z.B. bei automatischer Verlängerung) eine Auftragsbestätigung erzeugt.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
-	 */
-	public boolean isNewTermCreatesOrder();
-
-    /** Column definition for IsNewTermCreatesOrder */
-    public static final org.adempiere.model.ModelColumn<I_C_Flatrate_Term, Object> COLUMN_IsNewTermCreatesOrder = new org.adempiere.model.ModelColumn<I_C_Flatrate_Term, Object>(I_C_Flatrate_Term.class, "IsNewTermCreatesOrder", null);
-    /** Column name IsNewTermCreatesOrder */
-    public static final String COLUMNNAME_IsNewTermCreatesOrder = "IsNewTermCreatesOrder";
-
-	/**
 	 * Set Portofrei.
 	 *
 	 * <br>Type: YesNo
