@@ -28,6 +28,7 @@ import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Builder;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
+import de.metas.ui.web.window.descriptor.sql.ProductLookupDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
 
 /*
@@ -102,11 +103,10 @@ import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
 				.setCaption(Services.get(IMsgBL.class).translatable(IOrderLineQuickInput.COLUMNNAME_M_Product_ID))
 				//
 				.setWidgetType(DocumentFieldWidgetType.Lookup)
-				.setLookupDescriptorProvider(SqlLookupDescriptor.builder()
-						.setColumnName(IOrderLineQuickInput.COLUMNNAME_M_Product_ID)
-						.setDisplayType(DisplayType.Search)
-						.setAD_Val_Rule_ID(540051) // FIXME: hardcoded "M_Product no freight product (Trx)"
-						.buildProvider())
+				.setLookupDescriptorProvider(ProductLookupDescriptor.builder()
+						.bpartnerParamName(I_C_Order.COLUMNNAME_C_BPartner_ID)
+						.dateParamName(I_C_Order.COLUMNNAME_DatePromised)
+						.build())
 				.setValueClass(IntegerLookupValue.class)
 				.setReadonlyLogic(ILogicExpression.FALSE)
 				.setAlwaysUpdateable(true)
