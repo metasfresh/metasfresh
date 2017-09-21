@@ -1,8 +1,8 @@
 package org.compiere.process;
 
+import org.compiere.model.I_AD_User;
 import org.compiere.model.I_I_User;
 
-import de.metas.adempiere.model.I_AD_User;
 
 /**
  * Import {@link I_I_User} records to {@link I_AD_User}.

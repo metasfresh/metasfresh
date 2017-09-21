@@ -33,6 +33,8 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IMutable;
+import org.apache.commons.lang3.RandomStringUtils;
+import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_I_User;
 import org.compiere.model.PO;
@@ -40,7 +42,6 @@ import org.compiere.model.X_I_User;
 import org.compiere.util.DB;
 
 import de.metas.adempiere.model.I_AD_Role;
-import de.metas.adempiere.model.I_AD_User;
 
 /**
  * Imports {@link I_I_User} records to {@link I_AD_User}.
@@ -98,7 +99,7 @@ public class ADUserImportProcess extends AbstractImportProcess<I_I_User>
 
 		final String sqlSelectByValue = "select MIN(bp." + I_C_BPartner.COLUMNNAME_C_BPartner_ID + ")"
 				+ " from " + I_C_BPartner.Table_Name + " bp "
-				+ " where bp." + I_C_BPartner.COLUMNNAME_Value + "=i." + I_I_User.COLUMNNAME_Value
+				+ " where bp." + I_C_BPartner.COLUMNNAME_Value + "=i." + I_I_User.COLUMNNAME_BPValue
 				+ " and bp." + I_C_BPartner.COLUMNNAME_AD_Client_ID + "=i." + I_I_User.COLUMNNAME_AD_Client_ID;
 
 		final String sql = "UPDATE " + I_I_User.Table_Name + " i "
@@ -184,8 +185,10 @@ public class ADUserImportProcess extends AbstractImportProcess<I_I_User>
 		// set value after we set first name and last name
 		user.setValue(importRecord.getValue());
 		user.setEMail(importRecord.getEMail());
-		user.setLogin(importRecord.getLogin());
-		user.setIsSystemUser(importRecord.isSystemUser());
+		final de.metas.adempiere.model.I_AD_User loginUser = InterfaceWrapperHelper.create(user, de.metas.adempiere.model.I_AD_User.class);
+		loginUser.setLogin(importRecord.getLogin());
+		loginUser.setPassword(RandomStringUtils.randomAlphanumeric(8));
+		loginUser.setIsSystemUser(importRecord.isSystemUser());
 		//
 		InterfaceWrapperHelper.save(user);
 		//
