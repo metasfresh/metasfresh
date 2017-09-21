@@ -33,11 +33,10 @@ import org.adempiere.inout.util.IShipmentCandidates.OverallStatus;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.model.MTable;
 
 import de.metas.flatrate.model.I_C_SubscriptionProgress;
 import de.metas.flatrate.model.X_C_SubscriptionProgress;
-import de.metas.i18n.Msg;
+import de.metas.i18n.IMsgBL;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
@@ -101,7 +100,7 @@ public class InOutCandSubscriptionProcessor implements ICandidateProcessor
 		boolean atLeastOneSubscription = hasSubscriptionDelivery(ctx, candidates, inOutLine, trxName);
 		if (!atLeastOneSubscription)
 		{
-			candidates.addStatusInfo(inOutLine, Msg.getMsg(ctx, MSG_WITH_NEXT_SUBSCRIPTION));
+			candidates.addStatusInfo(inOutLine, Services.get(IMsgBL.class).getMsg(ctx, MSG_WITH_NEXT_SUBSCRIPTION));
 			candidates.setOverallStatus(inOutLine, OverallStatus.DISCARD);
 			return 1;
 		}
@@ -127,8 +126,7 @@ public class InOutCandSubscriptionProcessor implements ICandidateProcessor
 			}
 			if (candidates.isLineDiscarded(currentLine))
 			{
-				// 'currentLine' won't be delivered anyways, it is irrelevant
-				// here
+				// 'currentLine' won't be delivered anyways, it is irrelevant here
 				continue;
 			}
 
@@ -136,7 +134,7 @@ public class InOutCandSubscriptionProcessor implements ICandidateProcessor
 			// (which means that it is to be delivered right now)
 			final I_M_ShipmentSchedule sched = candidates.getShipmentSchedule(inOutLine);
 
-			if (MTable.getTable_ID(I_C_SubscriptionProgress.Table_Name) == sched.getAD_Table_ID())
+			if (InterfaceWrapperHelper.getTableId(I_C_SubscriptionProgress.class) == sched.getAD_Table_ID())
 			{
 				final I_C_SubscriptionProgress sp = InterfaceWrapperHelper.create(ctx, sched.getRecord_ID(), I_C_SubscriptionProgress.class, trxName);
 				Check.assume(X_C_SubscriptionProgress.STATUS_LieferungOffen.equals(sp.getStatus()),

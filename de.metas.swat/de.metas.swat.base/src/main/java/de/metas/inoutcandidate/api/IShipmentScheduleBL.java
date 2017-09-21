@@ -24,14 +24,12 @@ package de.metas.inoutcandidate.api;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
-import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.inout.util.CachedObjects;
 import org.adempiere.util.ISingletonService;
 import org.adempiere.util.agg.key.IAggregationKeyBuilder;
-import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_UOM;
 import org.compiere.util.Util.ArrayKey;
 
@@ -75,8 +73,6 @@ public interface IShipmentScheduleBL extends ISingletonService
 			List<OlAndSched> olsAndScheds, boolean saveSchedules, Timestamp date,
 			CachedObjects cachedObjects,
 			String trxName);
-
-	void invalidateProducts(Collection<I_C_OrderLine> orderLines, String trxName);
 
 	void registerCandidateProcessor(ICandidateProcessor processor);
 

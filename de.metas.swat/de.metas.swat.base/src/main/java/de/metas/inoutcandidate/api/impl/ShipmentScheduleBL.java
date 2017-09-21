@@ -31,13 +31,10 @@ import static org.compiere.model.X_C_Order.DELIVERYRULE_Manual;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
 
 import org.adempiere.bpartner.service.IBPartnerBL;
 import org.adempiere.exceptions.AdempiereException;
@@ -181,8 +178,6 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 		firstRun.afterFirstRun(false);
 
 		// prepare the second run
-		// coToUse.resetOnHandQtys();
-
 		final int removeCnt = applyCandidateProcessors(ctx, firstRun, coToUse, trxName);
 		logger.info(removeCnt + " records were discarded by candidate processors");
 
@@ -1024,33 +1019,6 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 		}
 
 		return Util.mkKey(productId, orderLineId, bpartnerId, bpLocId);
-	}
-
-	@Override
-	public void invalidateProducts(
-			final Collection<I_C_OrderLine> orderLines,
-			final String trxName)
-	{
-		final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
-
-		final Set<Integer> alreadyDone = new HashSet<>();
-
-		for (final I_C_OrderLine currentLine : orderLines)
-		{
-			final int productId = currentLine.getM_Product_ID();
-
-			if (alreadyDone.contains(productId))
-			{
-				continue;
-			}
-
-			alreadyDone.add(productId);
-
-			if (productId > 0)
-			{
-				shipmentSchedulePA.invalidateForProduct(productId, trxName);
-			}
-		}
 	}
 
 	@Override

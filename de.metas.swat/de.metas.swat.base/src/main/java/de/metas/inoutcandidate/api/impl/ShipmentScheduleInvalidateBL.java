@@ -13,17 +13,16 @@ package de.metas.inoutcandidate.api.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -46,6 +45,7 @@ import de.metas.storage.IStorageBL;
 import de.metas.storage.IStorageListeners;
 import de.metas.storage.IStorageSegment;
 import de.metas.storage.IStorageSegmentBuilder;
+import lombok.NonNull;
 
 public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidateBL
 {
@@ -119,7 +119,7 @@ public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidate
 	 * Note that this method is overridden in the de.metas.handlingunits.base module!
 	 * TODO: don't override this whole method, there are plenty of better ways
 	 */
-	protected IStorageSegment createSegmentForInOutLine(final int bPartnerId, final I_M_InOutLine inoutLine)
+	protected IStorageSegment createSegmentForInOutLine(final int bPartnerId, @NonNull final I_M_InOutLine inoutLine)
 	{
 		final IStorageBL storageBL = Services.get(IStorageBL.class);
 
@@ -135,7 +135,7 @@ public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidate
 	}
 
 	@Override
-	public void invalidateSegmentForShipmentSchedule(final I_M_ShipmentSchedule schedule)
+	public void invalidateSegmentForShipmentSchedule(@NonNull final I_M_ShipmentSchedule schedule)
 	{
 		//
 		// If shipment schedule updater is currently running in this thread, it means that updater changed this record
@@ -154,7 +154,7 @@ public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidate
 	 * Note that this method is overridden in the de.metas.handlingunits.base module!
 	 * TODO: don't override this whole method, there are plenty of better ways
 	 */
-	protected IStorageSegment createSegmentForShipmentSchedule(final I_M_ShipmentSchedule schedule)
+	protected IStorageSegment createSegmentForShipmentSchedule(@NonNull final I_M_ShipmentSchedule schedule)
 	{
 		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 
@@ -174,7 +174,7 @@ public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidate
 	}
 
 	@Override
-	public void invalidateSegmentForOrderLine(final I_C_OrderLine orderLine)
+	public void invalidateSegmentForOrderLine(@NonNull final I_C_OrderLine orderLine)
 	{
 		final IStorageListeners storageListeners = Services.get(IStorageListeners.class);
 		final IStorageBL storageBL = Services.get(IStorageBL.class);
@@ -194,11 +194,11 @@ public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidate
 	}
 
 	@Override
-	public void invalidateJustForOrderLine(final I_C_OrderLine orderLine)
+	public void invalidateJustForOrderLine(@NonNull final I_C_OrderLine orderLine)
 	{
 		final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
-		final I_M_ShipmentSchedule sched = shipmentSchedulePA.retrieveForOrderLine(orderLine);
-		shipmentSchedulePA.invalidate(Collections.singletonList(sched), InterfaceWrapperHelper.getTrxName(orderLine));
+		final List<I_M_ShipmentSchedule> scheds = shipmentSchedulePA.retrieveForOrderLine(orderLine);
+		shipmentSchedulePA.invalidate(scheds, InterfaceWrapperHelper.getTrxName(orderLine));
 	}
 
 }
