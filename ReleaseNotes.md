@@ -63,13 +63,13 @@ Here come the actual release notes:
   * [#2245](https://github.com/metasfresh/metasfresh/issues/2445) Support quantity in flatrate term import
     * Adding the field quantity to the importer of flatrate terms.
   * [#2247](https://github.com/metasfresh/metasfresh/issues/2474) Extend Partner Import with ad_language
-    * Now possible to add the language to Business Partner imports to metasfresh.
+    * Now possible to add the language to Business Partner import data.
   * [#2436](https://github.com/metasfresh/metasfresh/issues/2436) Use default values for IsShipTo and isBillTo when importing bpartner
     * Fallback mechanism to set default billto and shipto locations in Business Partner.
   * [#2459](https://github.com/metasfresh/metasfresh/issues/2459) shipto and billto contact / user
-    * New Fields in Business Partner Contact: shipto and billto
+    * New Fields in Business Partner Contact: shipto and billto.
   * [#2298](https://github.com/metasfresh/metasfresh/issues/2298) Introduce source-HU to fine-Picking
-    * New functionality for a more efficient Picking workflow. Now able to chose a source HU that is used for the following picking steps.
+    * New functionality for a more efficient Picking workflow. Now able to select a source HU that is used for the following picking steps.
   * [#2361](https://github.com/metasfresh/metasfresh/issues/2361) Invoice Candidates Action Approval for Invoicing
     * New action in Invoice candidates, allowing to mass approve candidates for Invoiceing.
   * [#2381](https://github.com/metasfresh/metasfresh/issues/2381) Detailed Improvement of Flatrate Term window in WebUI
@@ -79,19 +79,19 @@ Here come the actual release notes:
   * [#2387](https://github.com/metasfresh/metasfresh/issues/2387) Autocomplete for zip / postal code and city
     * New functionality to autocomplete postal and city in Location recording workflow.
   * [#2397](https://github.com/metasfresh/metasfresh/issues/2397) Import and Store Contract meta-data e.g. startdate on flatrate
-    * Now possible to store different metadata via contracts import.
+    * Now possible to store different contracts metadata via import.
   * [#2405](https://github.com/metasfresh/metasfresh/issues/2405) New Window for C_Invoice_Clearing_Alloc in WebUI
     * New window for Invoice Allocation as substitute for 3rd Level Subtab in old Contract Window.
   * [#2406](https://github.com/metasfresh/metasfresh/issues/2406) New Window for C_SubscriptionProgress in WebUI
     * New window for Subscription Progress/ History as substitute for 3rd Level Subtab in old Contract Window.
   * [#2408](https://github.com/metasfresh/metasfresh/issues/2408) Contract Date and Contract DocumentNo
-    * New Fields in Contract Window: Document No and Date, allowing a better recognition of the Contract creation.
+    * New Fields in contract Window: Document No and Date, allowing a better recognition of the contract creation.
   * [#2413](https://github.com/metasfresh/metasfresh/issues/2413) Make request status a search field in request window
     * Adding a new Filter to request window, allowing to search for data with a given request status.
   * [#2416](https://github.com/metasfresh/metasfresh/issues/2416) New Window for M_QualityInsp_LagerKonf_Version in WebUI
     * New Windows for yearly Swiss Storage Conference, allowing the user to define the Storage Conference Criteria.
   * [#2421](https://github.com/metasfresh/metasfresh/issues/2421) New Fields MasterStartDate and MasterEndDate in FlatRate Term
-    * New Fields for Matercontract Start and End to the Flatrate Term Window in WebUI.
+    * New Fields for Mastercontract Start and End Date added to the Flatrate Term Window in WebUI.
   * [#2426](https://github.com/metasfresh/metasfresh/issues/2426) Translation for window "RfQ" in WebUI
     * Adjustments to the Request for Quotation Window, Refining Layout and adding Translations for en_US, de_DE locale/ Language.
   * [#2429](https://github.com/metasfresh/metasfresh/issues/2429) hide qty TU when HU name is empty
@@ -107,16 +107,17 @@ Here come the actual release notes:
   * [#2453](https://github.com/metasfresh/metasfresh/issues/2453) Add missing Reports to WebUI menu
     * New reports in WebUI Menu for Purchase and Sales Tracing and for Finance (Cost Center ajdustments).
   * [#2469](https://github.com/metasfresh/metasfresh/issues/2469) Window for C_Postal in WebUI
-    * New Window Country, City and Postal for WebUI. Added to WebUI menu in System/ Settings. Allowing to the User to maintain Postal-City combinations and use them for fast Location recordning.
+    * New Window Country, City and Postal for WebUI. Added to WebUI menu in System/ Settings. Allowing to the User to maintain Postal-City combinations and use them for fast Location recording.
   * [#2450](https://github.com/metasfresh/metasfresh/issues/2450) Translation for Packvorschrift-Produkt-Zuordnung in English version
-    * New en_US Translation for the Field Packing Instruciotn. Making the Name shorter and more comprehensive for the user.
+    * New en_US Translation for the Field Packing Instruction. Making the Name shorter and more comprehensive for the user.
   * [#2463](https://github.com/metasfresh/metasfresh/issues/2463) Extend Partner Import to support contact flags
+    * Extended Partner import, allowing to also import contact Y/N settings.
 
 * metasfresh-webui-api
   * [#142](https://github.com/metasfresh/metasfresh-webui-api/issues/142) Provide v11 / CAMT 54 File Import
     * New importer for ESR v11/ camt54 files in WebUI.
   * [#178](https://github.com/metasfresh/metasfresh-webui-api/issues/178) Have Letter Feature in Sales Order Window
-    * New Letter Feature in WebUI allowing the user to oppen a text editore and create Letters with then help of Textsnippets.
+    * New Letter Feature in WebUI allowing the user to oppen a text editor and create Letters with then help of Textsnippets.
   * [#547](https://github.com/metasfresh/metasfresh-webui-api/issues/547) Provide mass export of Data to Excel
     * Very nice new, Feature allowing the user to select lines and export to excel.
   * [#581](https://github.com/metasfresh/metasfresh-webui-api/issues/581) API to provide user session's locale
@@ -124,10 +125,11 @@ Here come the actual release notes:
   * [#583](https://github.com/metasfresh/metasfresh-webui-api/issues/583) Provide the document's standard actions
     * New Feature to restrict actions in the action menu. Now only showing those that fit to the window opened.
   * [#585](https://github.com/metasfresh/metasfresh-webui-api/issues/585) Lookup validation rule shall support @CtxName/Default@ annotation
-    * Interlan Housekeeping Issue in Applicaiton Dictionary, now allowing to use @notations in Validation rules in WebUI too.
+    * Internal Housekeeping Issue in Applicaiton Dictionary, now allowing to use @notations in Validation rules in WebUI too.
 
 * metasfresh-webui-frontend
   * [#1060](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1060) Locale viewing and editing in User Interface
+    * The user has not the possibility to switch the user locale. The formatting of numbers are then shown correct for the selected country.
 
 * other
   * [metasfresh/metasfresh-parent#14](https://github.com/metasfresh/metasfresh-parent/issues/14) Look for a way of not having the "placeholder" on local builds
@@ -135,15 +137,23 @@ Here come the actual release notes:
 ## Fixes
 * metasfresh-app
   * [#2401](https://github.com/metasfresh/metasfresh/issues/2401) vendor return with quality discount
+    * Fix for the Vendor Return Feature, now also working with voided Returns and quality discount properly.
   * [#2412](https://github.com/metasfresh/metasfresh/issues/2412) OrderCheckout Jaspers display empty C_BPartner_Product.ProductName
+    * Fix for the Jasper Report of Order Checkout, now showing the BPartner.name properly again.
   * [#2423](https://github.com/metasfresh/metasfresh/issues/2423) fix jaspers for vendor return with quality issue
+    * Fixes in the Vendor Returns Jasper document when having cases with quality issues.
   * [#2430](https://github.com/metasfresh/metasfresh/issues/2430) Invoice candidate close is retrieving the invoice candidates out of transaction
+    * Internal Housekeeping fix for invoice candidates close workflow.
   * [#2457](https://github.com/metasfresh/metasfresh/issues/2457) Duplicate locations on partner import when multiple contacts
+    * Fix for the Business Partner Location Importer, now not generating multiple entries when multiple user contacts exist to a Partner.
 
 * metasfresh-webui-api
   * [#570](https://github.com/metasfresh/metasfresh-webui-api/issues/570) clicking print on non-document window shows error page
+    * Adjustment of Action Menu API, now only showing the actions that are possible in a given Window.
   * [#582](https://github.com/metasfresh/metasfresh-webui-api/issues/582) Cannot invoice disposal's invoice candidates
+    * Fix for the disposal invoicing process.
   * [#594](https://github.com/metasfresh/metasfresh-webui-api/issues/594) LU is not created when you receive in production
+    * Action Receipt Handling Unit retrieval. Fix when creating Logistic Units in manufacturing.
 
 # metasfresh 5.26 (2017-37)
 
