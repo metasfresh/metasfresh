@@ -29,6 +29,7 @@ import org.adempiere.ad.security.IUserRolePermissionsDAO;
 
 
 import org.adempiere.exceptions.FillMandatoryException;
+import org.adempiere.service.RolePermGrandAccess;
 import org.adempiere.util.Services;
 import org.compiere.model.MRolePermRequest;
 
@@ -70,13 +71,14 @@ public class AD_Role_GrantPermission extends JavaProcess
 		if (p_AD_Role_PermRequest_ID <= 0)
 			throw new FillMandatoryException(MRolePermRequest.COLUMNNAME_AD_Role_PermRequest_ID);
 		//
-		MRolePermRequest req = new MRolePermRequest(getCtx(), p_AD_Role_PermRequest_ID, get_TrxName());
-		req.setCaller(this);
+		final MRolePermRequest req = new MRolePermRequest(getCtx(), p_AD_Role_PermRequest_ID, get_TrxName());
 		if (p_IsReadWrite != null)
+		{
 			req.setIsReadWrite(p_IsReadWrite);
-		req.grantAccess();
+		}
+		RolePermGrandAccess.grantAccess(req);
 		req.saveEx();
-		//
+
 		return "Ok";
 	}
 
