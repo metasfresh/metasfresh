@@ -10,7 +10,7 @@ import { introSteps, introHints } from '../components/intro/intro';
 export class Dashboard extends Component {
     constructor(props){
         super(props);
-        
+
         this.state = {
             editmode: false,
             hintsEnabled: null,
@@ -19,6 +19,9 @@ export class Dashboard extends Component {
     }
 
     componentDidUpdate() {
+        // TODO: Resolve this hotfix
+        return;
+
         const {me} = this.props;
 
         if (me) {
