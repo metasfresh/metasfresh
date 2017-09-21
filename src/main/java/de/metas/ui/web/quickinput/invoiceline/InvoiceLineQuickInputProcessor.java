@@ -1,9 +1,12 @@
 package de.metas.ui.web.quickinput.invoiceline;
 
+import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.Services;
 import org.compiere.model.I_C_Invoice;
-import org.compiere.model.I_C_InvoiceLine;
 
+import de.metas.adempiere.model.I_C_InvoiceLine;
+import de.metas.adempiere.service.IInvoiceLineBL;
 import de.metas.ui.web.quickinput.IQuickInputProcessor;
 import de.metas.ui.web.quickinput.QuickInput;
 import de.metas.ui.web.window.datatypes.DocumentId;
@@ -36,13 +39,22 @@ public class InvoiceLineQuickInputProcessor implements IQuickInputProcessor
 	@Override
 	public DocumentId process(final QuickInput quickInput)
 	{
+		final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
+		final IInvoiceLineBL invoiceLineBL = Services.get(IInvoiceLineBL.class);
+
 		final I_C_Invoice invoice = quickInput.getRootDocumentAs(I_C_Invoice.class);
 		final IInvoiceLineQuickInput invoiceLineQuickInput = quickInput.getQuickInputDocumentAs(IInvoiceLineQuickInput.class);
 
 		final I_C_InvoiceLine invoiceLine = InterfaceWrapperHelper.newInstance(I_C_InvoiceLine.class, invoice);
 		invoiceLine.setC_Invoice(invoice);
-		invoiceLine.setM_Product_ID(invoiceLineQuickInput.getM_Product_ID());
-		invoiceLine.setQtyEntered(invoiceLineQuickInput.getQty());
+
+		invoiceBL.setProductAndUOM(invoiceLine, invoiceLineQuickInput.getM_Product_ID());
+		invoiceBL.setQtys(invoiceLine, invoiceLineQuickInput.getQty());
+
+		invoiceLineBL.updatePrices(invoiceLine);
+		// invoiceBL.setLineNetAmt(invoiceLine); // not needed; will be called on save
+		// invoiceBL.setTaxAmt(invoiceLine);// not needed; will be called on save
+
 		InterfaceWrapperHelper.save(invoiceLine);
 
 		return DocumentId.of(invoiceLine.getC_InvoiceLine_ID());
