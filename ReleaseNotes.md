@@ -59,14 +59,14 @@ Here come the actual release notes:
   * [#2089](https://github.com/metasfresh/metasfresh/issues/2089) Inventory Move Window improvements
     * Improvements done to the Inventory Movement Window.
   * [#2218](https://github.com/metasfresh/metasfresh/issues/2218) User would like to import default values for contact and address
-    * Providing a possibility to import default Roles for User and Locations in Business Partrner.
+    * Providing a possibility to import default Roles for User and Locations in Business Partner.
   * [#2245](https://github.com/metasfresh/metasfresh/issues/2445) Support quantity in flatrate term import
     * Adding the field quantity to the importer of flatrate terms.
   * [#2247](https://github.com/metasfresh/metasfresh/issues/2474) Extend Partner Import with ad_language
     * Now possible to add the language to Business Partner import data.
   * [#2436](https://github.com/metasfresh/metasfresh/issues/2436) Use default values for IsShipTo and isBillTo when importing bpartner
     * Fallback mechanism to set default billto and shipto locations in Business Partner.
-  * [#2459](https://github.com/metasfresh/metasfresh/issues/2459) shipto and billto contact / user
+  * [#2459](https://github.com/metasfresh/metasfresh/issues/2459) Shipto and billto contact / user
     * New Fields in Business Partner Contact: shipto and billto.
   * [#2298](https://github.com/metasfresh/metasfresh/issues/2298) Introduce source-HU to fine-Picking
     * New functionality for a more efficient Picking workflow. Now able to select a source HU that is used for the following picking steps.
@@ -94,7 +94,7 @@ Here come the actual release notes:
     * New Fields for Mastercontract Start and End Date added to the Flatrate Term Window in WebUI.
   * [#2426](https://github.com/metasfresh/metasfresh/issues/2426) Translation for window "RfQ" in WebUI
     * Adjustments to the Request for Quotation Window, Refining Layout and adding Translations for en_US, de_DE locale/ Language.
-  * [#2429](https://github.com/metasfresh/metasfresh/issues/2429) hide qty TU when HU name is empty
+  * [#2429](https://github.com/metasfresh/metasfresh/issues/2429) Hide qty TU when HU name is empty
     * Now hiding the QtyTU Field in different Jasper reports in case the Handling Unit name is empty.
   * [#2431](https://github.com/metasfresh/metasfresh/issues/2431) Product Filter in Handling Unit Editor
     * New Filter in Handling Unit Editor, allowing to search for entries with a given product.
@@ -121,7 +121,7 @@ Here come the actual release notes:
   * [#547](https://github.com/metasfresh/metasfresh-webui-api/issues/547) Provide mass export of Data to Excel
     * Very nice new, Feature allowing the user to select lines and export to excel.
   * [#581](https://github.com/metasfresh/metasfresh-webui-api/issues/581) API to provide user session's locale
-    * Internal hjousekeeping issue allowing the locae of a user to be stored in session.
+    * Internal housekeeping issue allowing the locale of a user to be stored in session.
   * [#583](https://github.com/metasfresh/metasfresh-webui-api/issues/583) Provide the document's standard actions
     * New Feature to restrict actions in the action menu. Now only showing those that fit to the window opened.
   * [#585](https://github.com/metasfresh/metasfresh-webui-api/issues/585) Lookup validation rule shall support @CtxName/Default@ annotation
@@ -137,11 +137,11 @@ Here come the actual release notes:
 
 ## Fixes
 * metasfresh-app
-  * [#2401](https://github.com/metasfresh/metasfresh/issues/2401) vendor return with quality discount
+  * [#2401](https://github.com/metasfresh/metasfresh/issues/2401) Vendor return with quality discount
     * Fix for the Vendor Return Feature, now also working with voided Returns and quality discount properly.
   * [#2412](https://github.com/metasfresh/metasfresh/issues/2412) OrderCheckout Jaspers display empty C_BPartner_Product.ProductName
     * Fix for the Jasper Report of Order Checkout, now showing the BPartner.name properly again.
-  * [#2423](https://github.com/metasfresh/metasfresh/issues/2423) fix jaspers for vendor return with quality issue
+  * [#2423](https://github.com/metasfresh/metasfresh/issues/2423) Fix jaspers for vendor return with quality issue
     * Fixes in the Vendor Returns Jasper document when having cases with quality issues.
   * [#2430](https://github.com/metasfresh/metasfresh/issues/2430) Invoice candidate close is retrieving the invoice candidates out of transaction
     * Internal Housekeeping fix for invoice candidates close workflow.
@@ -149,7 +149,7 @@ Here come the actual release notes:
     * Fix for the Business Partner Location Importer, now not generating multiple entries when multiple user contacts exist to a Partner.
 
 * metasfresh-webui-api
-  * [#570](https://github.com/metasfresh/metasfresh-webui-api/issues/570) clicking print on non-document window shows error page
+  * [#570](https://github.com/metasfresh/metasfresh-webui-api/issues/570) Clicking print on non-document window shows error page
     * Adjustment of Action Menu API, now only showing the actions that are possible in a given Window.
   * [#582](https://github.com/metasfresh/metasfresh-webui-api/issues/582) Cannot invoice disposal's invoice candidates
     * Fix for the disposal invoicing process.
