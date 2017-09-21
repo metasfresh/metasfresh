@@ -75,16 +75,7 @@ public class FileImportReader
 			// if open quote , add this line to the previous
 			if (openQuote && !loadedDataLines.isEmpty())
 			{
-				final StringBuilder previousLine = new StringBuilder();
-				final int index = loadedDataLines.size() - 1;
-				previousLine.append(loadedDataLines.get(index));
-				// append the new line, because the char exists
-				previousLine.append("\n");
-				previousLine.append(line);
-				//
-				// now remove the line and add the new line
-				loadedDataLines.remove(index);
-				loadedDataLines.add(previousLine.toString());
+				addLine(line);
 			}
 			else
 			{
@@ -99,6 +90,24 @@ public class FileImportReader
 				closedQuote = false;
 			}
 			return true;
+		}
+
+		/**
+		 * add current line to the previous one
+		 * @param line
+		 */
+		private void addLine(@NonNull final String line)
+		{
+			final StringBuilder previousLine = new StringBuilder();
+			final int index = loadedDataLines.size() - 1;
+			previousLine.append(loadedDataLines.get(index));
+			// append the new line, because the char exists
+			previousLine.append("\n");
+			previousLine.append(line);
+			//
+			// now remove the line and add the new line
+			loadedDataLines.remove(index);
+			loadedDataLines.add(previousLine.toString());
 		}
 
 		@Override
@@ -161,7 +170,7 @@ public class FileImportReader
 	 * @param lines
 	 * @return
 	 */
-	public String buildDataPreview(final List<String> lines)
+	public String buildDataPreview(@NonNull final List<String> lines)
 	{
 		if (lines.size() > MAX_LOADED_LINES)
 		{
@@ -174,8 +183,8 @@ public class FileImportReader
 			return loadedDataPreview.toString();
 		}
 	}
-	
-	private String buildLimitedPreview(final List<String> lines)
+
+	private String buildLimitedPreview(@NonNull final List<String> lines)
 	{
 		final StringBuilder loadedDataPreview = new StringBuilder();
 		final List<String> copyOfLoadedDataLines = Collections.unmodifiableList(lines);

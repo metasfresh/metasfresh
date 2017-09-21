@@ -419,7 +419,7 @@ public class VFileImport extends CPanel
 				final Charset charset = fCharset.getSelectedItem();
 				loadedDataLines = readLines(file, charset);
 				//
-				// build the review string
+				// build the preview string
 				loadedDataPreview = FileImportReader.buildDataPreview(loadedDataLines);
 			}
 			loadOK = true;
