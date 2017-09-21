@@ -133,6 +133,7 @@ Here come the actual release notes:
 
 * other
   * [metasfresh/metasfresh-parent#14](https://github.com/metasfresh/metasfresh-parent/issues/14) Look for a way of not having the "placeholder" on local builds
+    * Improvements of continuous integration System when creating local builds.
 
 ## Fixes
 * metasfresh-app
