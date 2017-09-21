@@ -42,6 +42,7 @@ import org.compiere.model.X_I_User;
 import org.compiere.util.DB;
 
 import de.metas.adempiere.model.I_AD_Role;
+import lombok.NonNull;
 
 /**
  * Imports {@link I_I_User} records to {@link I_AD_User}.
@@ -180,15 +181,7 @@ public class ADUserImportProcess extends AbstractImportProcess<I_I_User>
 		}
 		//
 		// set data from the other fields
-		user.setFirstname(importRecord.getFirstname());
-		user.setLastname(importRecord.getLastname());
-		// set value after we set first name and last name
-		user.setValue(importRecord.getValue());
-		user.setEMail(importRecord.getEMail());
-		final de.metas.adempiere.model.I_AD_User loginUser = InterfaceWrapperHelper.create(user, de.metas.adempiere.model.I_AD_User.class);
-		loginUser.setLogin(importRecord.getLogin());
-		loginUser.setPassword(RandomStringUtils.randomAlphanumeric(8));
-		loginUser.setIsSystemUser(importRecord.isSystemUser());
+		setUserFields(user, importRecord);
 		//
 		InterfaceWrapperHelper.save(user);
 		//
@@ -201,6 +194,19 @@ public class ADUserImportProcess extends AbstractImportProcess<I_I_User>
 		importRecord.setAD_User(user);
 		//
 		return ImportRecordResult.Inserted;
+	}
+	
+	private void setUserFields(@NonNull final I_AD_User user, @NonNull final I_I_User importRecord)
+	{
+		user.setFirstname(importRecord.getFirstname());
+		user.setLastname(importRecord.getLastname());
+		// set value after we set first name and last name
+		user.setValue(importRecord.getValue());
+		user.setEMail(importRecord.getEMail());
+		final de.metas.adempiere.model.I_AD_User loginUser = InterfaceWrapperHelper.create(user, de.metas.adempiere.model.I_AD_User.class);
+		loginUser.setLogin(importRecord.getLogin());
+		loginUser.setPassword(RandomStringUtils.randomAlphanumeric(8));
+		loginUser.setIsSystemUser(importRecord.isSystemUser());
 	}
 
 	@Override
