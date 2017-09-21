@@ -29,6 +29,7 @@ import org.adempiere.ad.security.IUserRolePermissionsDAO;
 
 
 import org.adempiere.exceptions.FillMandatoryException;
+import org.adempiere.service.RolePermRevokeAccess;
 import org.adempiere.util.Services;
 import org.compiere.model.MRolePermRequest;
 
@@ -57,9 +58,9 @@ public class AD_Role_RevokePermission extends JavaProcess
 		if (p_AD_Role_PermRequest_ID <= 0)
 			throw new FillMandatoryException(MRolePermRequest.COLUMNNAME_AD_Role_PermRequest_ID);
 		//
-		MRolePermRequest req = new MRolePermRequest(getCtx(), p_AD_Role_PermRequest_ID, get_TrxName());
-		req.setCaller(this);
-		req.revokeAccess();
+		final MRolePermRequest req = new MRolePermRequest(getCtx(), p_AD_Role_PermRequest_ID, get_TrxName());
+		
+		RolePermRevokeAccess.revokeAccess(req);
 		req.saveEx();
 		//
 		return "Ok";
