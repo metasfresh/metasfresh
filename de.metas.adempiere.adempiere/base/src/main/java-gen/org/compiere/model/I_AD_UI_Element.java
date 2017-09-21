@@ -177,6 +177,29 @@ public interface I_AD_UI_Element
     public static final String COLUMNNAME_AD_UI_ElementGroup_ID = "AD_UI_ElementGroup_ID";
 
 	/**
+	 * Set Element type.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setAD_UI_ElementType (java.lang.String AD_UI_ElementType);
+
+	/**
+	 * Get Element type.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getAD_UI_ElementType();
+
+    /** Column definition for AD_UI_ElementType */
+    public static final org.adempiere.model.ModelColumn<I_AD_UI_Element, Object> COLUMN_AD_UI_ElementType = new org.adempiere.model.ModelColumn<I_AD_UI_Element, Object>(I_AD_UI_Element.class, "AD_UI_ElementType", null);
+    /** Column name AD_UI_ElementType */
+    public static final String COLUMNNAME_AD_UI_ElementType = "AD_UI_ElementType";
+
+	/**
 	 * Get Erstellt.
 	 * Datum, an dem dieser Eintrag erstellt wurde
 	 *
@@ -376,6 +399,60 @@ public interface I_AD_UI_Element
     public static final org.adempiere.model.ModelColumn<I_AD_UI_Element, Object> COLUMN_IsDisplayedGrid = new org.adempiere.model.ModelColumn<I_AD_UI_Element, Object>(I_AD_UI_Element.class, "IsDisplayedGrid", null);
     /** Column name IsDisplayedGrid */
     public static final String COLUMNNAME_IsDisplayedGrid = "IsDisplayedGrid";
+
+	/**
+	 * Set Labels selector field.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setLabels_Selector_Field_ID (int Labels_Selector_Field_ID);
+
+	/**
+	 * Get Labels selector field.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getLabels_Selector_Field_ID();
+
+	public org.compiere.model.I_AD_Field getLabels_Selector_Field();
+
+	public void setLabels_Selector_Field(org.compiere.model.I_AD_Field Labels_Selector_Field);
+
+    /** Column definition for Labels_Selector_Field_ID */
+    public static final org.adempiere.model.ModelColumn<I_AD_UI_Element, org.compiere.model.I_AD_Field> COLUMN_Labels_Selector_Field_ID = new org.adempiere.model.ModelColumn<I_AD_UI_Element, org.compiere.model.I_AD_Field>(I_AD_UI_Element.class, "Labels_Selector_Field_ID", org.compiere.model.I_AD_Field.class);
+    /** Column name Labels_Selector_Field_ID */
+    public static final String COLUMNNAME_Labels_Selector_Field_ID = "Labels_Selector_Field_ID";
+
+	/**
+	 * Set Labels content tab.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setLabels_Tab_ID (int Labels_Tab_ID);
+
+	/**
+	 * Get Labels content tab.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getLabels_Tab_ID();
+
+	public org.compiere.model.I_AD_Tab getLabels_Tab();
+
+	public void setLabels_Tab(org.compiere.model.I_AD_Tab Labels_Tab);
+
+    /** Column definition for Labels_Tab_ID */
+    public static final org.adempiere.model.ModelColumn<I_AD_UI_Element, org.compiere.model.I_AD_Tab> COLUMN_Labels_Tab_ID = new org.adempiere.model.ModelColumn<I_AD_UI_Element, org.compiere.model.I_AD_Tab>(I_AD_UI_Element.class, "Labels_Tab_ID", org.compiere.model.I_AD_Tab.class);
+    /** Column name Labels_Tab_ID */
+    public static final String COLUMNNAME_Labels_Tab_ID = "Labels_Tab_ID";
 
 	/**
 	 * Set Name.

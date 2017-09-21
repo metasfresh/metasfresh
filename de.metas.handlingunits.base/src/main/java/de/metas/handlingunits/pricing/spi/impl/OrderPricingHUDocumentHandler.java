@@ -1,7 +1,6 @@
 package de.metas.handlingunits.pricing.spi.impl;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.pricing.api.ProductPriceQuery;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_PriceList_Version;
@@ -12,6 +11,7 @@ import de.metas.adempiere.service.IOrderBL;
 import de.metas.handlingunits.IHUDocumentHandler;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_ProductPrice;
+import de.metas.pricing.ProductPrices;
 
 public class OrderPricingHUDocumentHandler implements IHUDocumentHandler
 {
@@ -26,7 +26,7 @@ public class OrderPricingHUDocumentHandler implements IHUDocumentHandler
 		final I_M_PriceList_Version plv = Services.get(IOrderBL.class).getPriceListVersion(order);
 
 		final boolean strictDefault = false;
-		final I_M_ProductPrice productPrice = ProductPriceQuery.newInstance(plv)
+		final I_M_ProductPrice productPrice = ProductPrices.newQuery(plv)
 				.setM_Product_ID(product)
 				.onlyAttributePricing()
 				.retrieveDefault(strictDefault, I_M_ProductPrice.class);

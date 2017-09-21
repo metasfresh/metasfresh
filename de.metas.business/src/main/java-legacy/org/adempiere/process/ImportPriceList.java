@@ -31,7 +31,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.pricing.api.ProductPriceQuery;
 import org.compiere.model.I_M_ProductPrice;
 import org.compiere.model.MPriceList;
 import org.compiere.model.MPriceListVersion;
@@ -41,6 +40,7 @@ import org.compiere.model.X_M_ProductPriceVendorBreak;
 import org.compiere.util.AdempiereUserError;
 import org.compiere.util.DB;
 
+import de.metas.pricing.ProductPrices;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
 
@@ -407,8 +407,7 @@ public class ImportPriceList extends JavaProcess
 				{
 					// M_ProductPrice
 					//I_M_ProductPrice pp = MProductPrice.get(getCtx(), pricelistversion.getM_PriceList_Version_ID(), imp.getM_Product_ID(), get_TrxName());
-					I_M_ProductPrice pp = ProductPriceQuery.retrieveMainProductPriceIfExists(pricelistversion, imp.getM_Product_ID())
-							.orElse(null);
+					I_M_ProductPrice pp = ProductPrices.retrieveMainProductPriceOrNull(pricelistversion, imp.getM_Product_ID());
 
 					final boolean isInsert;
 					if (pp != null)

@@ -31,7 +31,6 @@ import java.util.Properties;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.pricing.api.IPriceListDAO;
-import org.adempiere.pricing.api.ProductPriceQuery;
 import org.adempiere.util.Constants;
 import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
@@ -55,6 +54,7 @@ import de.metas.commission.model.I_C_Sponsor_SalesRep;
 import de.metas.commission.model.I_M_DiscountSchema;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
+import de.metas.pricing.ProductPrices;
 import de.metas.product.IProductPA;
 
 public final class CommissionTools
@@ -230,8 +230,7 @@ public final class CommissionTools
 			return null;
 		}
 		
-		final org.compiere.model.I_M_ProductPrice productPrice = ProductPriceQuery.retrieveMainProductPriceIfExists(plv, productId)
-				.orElse(null);
+		final org.compiere.model.I_M_ProductPrice productPrice = ProductPrices.retrieveMainProductPriceOrNull(plv, productId);
 		
 		if(productPrice == null)
 		{

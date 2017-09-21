@@ -29,21 +29,13 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Properties;
 
-import org.adempiere.ad.security.IUserRolePermissionsDAO;
-import org.adempiere.ad.service.IADReferenceDAO;
-import org.adempiere.ad.service.IADReferenceDAO.ADRefListItem;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.exceptions.DBForeignKeyConstraintException;
+import org.adempiere.service.IRolePermLoggingBL.NoSuchForeignKeyException;
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.util.Env;
 
-import com.google.common.base.Preconditions;
-
-import de.metas.i18n.IMsgBL;
-import de.metas.process.IADProcessDAO;
-import de.metas.process.JavaProcess;
+import lombok.NonNull;
 
 /**
  * @author teo_sarca
@@ -70,13 +62,6 @@ public class MRolePermRequest extends X_AD_Role_PermRequest
 	public MRolePermRequest(final Properties ctx, final ResultSet rs, final String trxName)
 	{
 		super(ctx, rs, trxName);
-	}
-
-	private JavaProcess m_caller = null;
-
-	public void setCaller(final JavaProcess process)
-	{
-		m_caller = process;
 	}
 
 	public static String getPermLogLevel()
@@ -176,185 +161,27 @@ public class MRolePermRequest extends X_AD_Role_PermRequest
 				req.set_ValueOfColumn(type2, value2);
 			}
 		}
+
 		req.setIsActive(true);
 		req.setIsReadWrite(isReadWrite);
 		req.setIsPermissionGranted(isPermissionGranted);
 		req.setDescription(description);
-		req.saveEx();
+
+		savePermissionRequestAndHandleException(type, value, req);
 	}
 
-	public void grantAccess()
+	private static void savePermissionRequestAndHandleException(
+			@NonNull final String type,
+			@NonNull final Object value,
+			@NonNull final MRolePermRequest req)
 	{
-		if (getAD_Window_ID() > 0)
+		try
 		{
-			grantWindowAccess(getAD_Window_ID());
+			req.saveEx();
 		}
-		else if (getAD_Process_ID() > 0)
+		catch (final DBForeignKeyConstraintException e)
 		{
-			grantProcessAccess(getAD_Process_ID());
-		}
-		else if (getAD_Form_ID() > 0)
-		{
-			grantFormAccess(getAD_Form_ID());
-		}
-		else if (getAD_Task_ID() > 0)
-		{
-			grantTaskAccess(getAD_Task_ID());
-		}
-		else if (getAD_Workflow_ID() > 0)
-		{
-			grantWorkflowAccess(getAD_Workflow_ID());
-		}
-		else if (getDocAction() != null)
-		{
-			grantDocActionAccess(getC_DocType_ID(), getDocAction());
-		}
-		else
-		{
-			throw new AdempiereException("Can not identify what permissions to grant");
-		}
-		//
-		setIsPermissionGranted(true);
-	}
-
-	private void grantWindowAccess(final int AD_Window_ID)
-	{
-		Preconditions.checkArgument(AD_Window_ID > 0, "invalid AD_Window_ID");
-		final I_AD_Window window = InterfaceWrapperHelper.loadOutOfTrx(AD_Window_ID, I_AD_Window.class);
-
-		Services.get(IUserRolePermissionsDAO.class).createWindowAccess(getAD_Role(), AD_Window_ID, isReadWrite());
-		logGranted(I_AD_Window.COLUMNNAME_AD_Window_ID, window.getName());
-	}
-
-	private void grantProcessAccess(final int AD_Process_ID)
-	{
-		setIsReadWrite(true); // we always need read write access to processes
-
-		final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
-		final I_AD_Process adProcess = adProcessDAO.retrieveProcessById(getCtx(), AD_Process_ID);
-
-		Services.get(IUserRolePermissionsDAO.class).createProcessAccess(getAD_Role(), AD_Process_ID, isReadWrite());
-		logGranted(I_AD_Process.COLUMNNAME_AD_Process_ID, adProcess.getName());
-
-		//
-		// Recursively grant access to child elements:
-		if (adProcess.getAD_Form_ID() > 0)
-		{
-			grantFormAccess(adProcess.getAD_Form_ID());
-		}
-		if (adProcess.getAD_Workflow_ID() > 0)
-		{
-			grantWorkflowAccess(adProcess.getAD_Workflow_ID());
-		}
-	}
-
-	private void grantFormAccess(final int AD_Form_ID)
-	{
-		final I_AD_Form form = InterfaceWrapperHelper.loadOutOfTrx(AD_Form_ID, I_AD_Form.class);
-		Services.get(IUserRolePermissionsDAO.class).createFormAccess(getAD_Role(), AD_Form_ID, isReadWrite());
-		logGranted(I_AD_Form.COLUMNNAME_AD_Form_ID, form.getName());
-	}
-
-	private void grantWorkflowAccess(final int AD_Workflow_ID)
-	{
-		final I_AD_Workflow wf = InterfaceWrapperHelper.loadOutOfTrx(AD_Workflow_ID, I_AD_Workflow.class);
-		Services.get(IUserRolePermissionsDAO.class).createWorkflowAccess(getAD_Role(), AD_Workflow_ID, isReadWrite());
-		logGranted(I_AD_Workflow.COLUMNNAME_AD_Workflow_ID, wf.getName());
-	}
-
-	private void grantTaskAccess(final int AD_Task_ID)
-	{
-		final I_AD_Task task = InterfaceWrapperHelper.loadOutOfTrx(AD_Task_ID, I_AD_Task.class);
-		Services.get(IUserRolePermissionsDAO.class).createTaskAccess(getAD_Role(), AD_Task_ID, isReadWrite());
-		logGranted(I_AD_Task.COLUMNNAME_AD_Task_ID, task.getName());
-	}
-
-	private void grantDocActionAccess(final int C_DocType_ID, final String docAction)
-	{
-		final I_C_DocType docType = InterfaceWrapperHelper.loadOutOfTrx(C_DocType_ID, I_C_DocType.class);
-
-		final ADRefListItem docActionItem = Services.get(IADReferenceDAO.class).retrieveListItemOrNull(X_C_Invoice.DOCACTION_AD_Reference_ID, docAction);
-		Check.assumeNotNull(docActionItem, "docActionItem is missing for {}", docAction);
-		final int docActionRefListId = docActionItem.getRefListId();
-
-		Services.get(IUserRolePermissionsDAO.class).createDocumentActionAccess(getAD_Role(), C_DocType_ID, docActionRefListId);
-		logGranted(I_C_DocType.COLUMNNAME_C_DocType_ID, docType.getName() + "/" + docAction);
-	}
-
-	public void revokeAccess()
-	{
-		final IUserRolePermissionsDAO permissionsDAO = Services.get(IUserRolePermissionsDAO.class);
-		if (getAD_Window_ID() > 0)
-		{
-			final I_AD_Window window = getAD_Window();
-			permissionsDAO.deleteWindowAccess(getAD_Role(), window.getAD_Window_ID());
-			logRevoked(I_AD_Window.COLUMNNAME_AD_Window_ID, window.getName());
-		}
-		else if (getAD_Process_ID() > 0)
-		{
-			final I_AD_Process process = getAD_Process();
-			permissionsDAO.deleteProcessAccess(getAD_Role(), process.getAD_Process_ID());
-			logRevoked(I_AD_Process.COLUMNNAME_AD_Process_ID, process.getName());
-		}
-		else if (getAD_Form_ID() > 0)
-		{
-			final I_AD_Form form = getAD_Form();
-			permissionsDAO.deleteFormAccess(getAD_Role(), form.getAD_Form_ID());
-			logRevoked(I_AD_Form.COLUMNNAME_AD_Form_ID, form.getName());
-		}
-		else if (getAD_Task_ID() > 0)
-		{
-			final I_AD_Task task = getAD_Task();
-			permissionsDAO.deleteTaskAccess(getAD_Role(), task.getAD_Task_ID());
-			logRevoked(I_AD_Task.COLUMNNAME_AD_Task_ID, task.getName());
-		}
-		else if (getAD_Workflow_ID() > 0)
-		{
-			final I_AD_Workflow wf = getAD_Workflow();
-			permissionsDAO.deleteWorkflowAccess(getAD_Role(), wf.getAD_Workflow_ID());
-			logRevoked(I_AD_Workflow.COLUMNNAME_AD_Workflow_ID, wf.getName());
-		}
-		else if (getDocAction() != null)
-		{
-			final I_C_DocType docType = InterfaceWrapperHelper.loadOutOfTrx(getC_DocType_ID(), I_C_DocType.class);
-
-			final String docAction = getDocAction();
-			final ADRefListItem docActionItem = Services.get(IADReferenceDAO.class).retrieveListItemOrNull(X_C_Invoice.DOCACTION_AD_Reference_ID, docAction);
-			Check.assumeNotNull(docActionItem, "docActionItem is missing for {}", docAction);
-			final int docActionRefListId = docActionItem.getRefListId();
-
-			permissionsDAO.deleteDocumentActionAccess(getAD_Role(), docType.getC_DocType_ID(), docActionRefListId);
-			logRevoked(I_C_DocType.COLUMNNAME_C_DocType_ID, docType.getName());
-		}
-		else
-		{
-			throw new AdempiereException("Can not identify what permissions to revoke");
-		}
-		//
-		setIsPermissionGranted(false);
-	}
-
-	private void logGranted(final String type, final String name)
-	{
-		if (m_caller != null)
-		{
-			m_caller.addLog("@" + type + "@:" + name);
-		}
-		else
-		{
-			log.info("Access granted: " + Services.get(IMsgBL.class).translate(getCtx(), type) + ":" + name);
-		}
-	}
-
-	private void logRevoked(final String type, final String name)
-	{
-		if (m_caller != null)
-		{
-			m_caller.addLog("@" + type + "@:" + name);
-		}
-		else
-		{
-			log.info("Access revoked: " + Services.get(IMsgBL.class).translate(getCtx(), type) + ":" + name);
+			throw new NoSuchForeignKeyException(type + "=" + value + " is not a valid foreign key", e);
 		}
 	}
 }
