@@ -64,9 +64,18 @@ public interface IPriceListDAO extends ISingletonService
 	 * @param priceList
 	 * @param date
 	 * @param processed optional, can be <code>null</code>. Allow to filter by <code>I_M_PriceList.Processed</code>
-	 * @return
 	 */
 	I_M_PriceList_Version retrievePriceListVersionOrNull(org.compiere.model.I_M_PriceList priceList, Date date, Boolean processed);
+
+	/**
+	 * Retrieves the plv for the given price list and date. Never returns <code>null</code>
+	 *
+	 * @param ctx
+	 * @param priceListId
+	 * @param date
+	 * @param processed optional, can be <code>null</code>. Allow to filter by <code>I_M_PriceList.Processed</code>
+	 */
+	I_M_PriceList_Version retrievePriceListVersionOrNull(Properties ctx, int priceListId, Date date, Boolean processed);
 
 	/**
 	 * Retrieve the price list version that has <code>Processed='Y'</code> and and was valid before after the the given <code>plv</code>.
