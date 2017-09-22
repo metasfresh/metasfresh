@@ -29,6 +29,11 @@ import lombok.Value;
 @Value
 public class PickingSlotRowType implements IViewRowType
 {
+	/**
+	 * Name of a dedicated picking slot row's type. Other possible name types are borrowed from {@link HUEditorRowType}.
+	 */
+	public static final String M_PICKING_SLOT = "M_Picking_Slot";
+
 	public static PickingSlotRowType forPickingHuRow(@NonNull final HUEditorRowType huEditorRowType)
 	{
 		return new PickingSlotRowType(huEditorRowType.getName());
@@ -36,7 +41,7 @@ public class PickingSlotRowType implements IViewRowType
 
 	public static PickingSlotRowType forPickingSlotRow()
 	{
-		return new PickingSlotRowType("M_Picking_Slot");
+		return new PickingSlotRowType(M_PICKING_SLOT);
 	}
 
 	@NonNull
