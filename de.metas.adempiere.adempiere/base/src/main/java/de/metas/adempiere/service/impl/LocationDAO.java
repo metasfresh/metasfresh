@@ -8,7 +8,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_City;
 
-import de.metas.adempiere.model.I_C_Location;
 import de.metas.adempiere.service.ILocationDAO;
 
 /*
@@ -55,27 +54,5 @@ public class LocationDAO implements ILocationDAO
 		}
 
 		return queryBuilder;
-	}
-	
-	@Override
-	public I_C_Location retrieveLocation(Properties ctx, int C_Country_ID, int C_Region_ID, String city, String trxName)
-	{
-		final IQueryBuilder<I_C_Location> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_Location.class, ctx, ITrx.TRXNAME_None)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_Location.COLUMNNAME_C_Country_ID, C_Country_ID)
-				.addEqualsFilter(I_C_Location.COLUMNNAME_City, city)
-				//
-				.orderBy()
-				.addColumn(I_C_Location.COLUMNNAME_C_Country_ID)
-				.addColumn(I_C_Location.COLUMNNAME_City)
-				.endOrderBy();
-
-		if (C_Region_ID > 0)
-		{
-			queryBuilder.addEqualsFilter(I_C_Location.COLUMNNAME_C_Region_ID, C_Region_ID);
-		}
-
-		return queryBuilder.create().first(); 
 	}
 }

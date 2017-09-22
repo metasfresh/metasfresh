@@ -100,7 +100,7 @@ public class BPartnerImportTest
 	}
 
 	@Test
-	public void tesMultiplePartnerAndAddresses()
+	public void testMultiplePartnerAndAddresses()
 	{
 		final List<I_I_BPartner> ibpartners = prepareImportMultipleBPartners();
 		Assert.assertNotNull("list null", ibpartners);
@@ -120,11 +120,51 @@ public class BPartnerImportTest
 				logger.warn(e.getMessage());
 			}
 		});
+		
+		assertMultipleBpartnerImported(ibpartners);
 
+	}
+	
+	private void assertMultipleBpartnerImported(final List<I_I_BPartner> ibpartners)
+	{
 		ibpartners.forEach(imporRecord -> asserImported(imporRecord));
 
 		// check first partner imported
 		// should have 2 contacts and one address
+		assertFirstImportedBpartner(ibpartners);
+
+		// check second partner imported
+		// should have 1 contact and one address (the address is exactly the one from the first bpartner)
+		{
+			assertSecondImportedBpartner(ibpartners);
+			
+			// check location - is similar with the one from first partner, but should have different id
+			final I_C_BPartner firstBpartner = ibpartners.get(0).getC_BPartner();
+			final I_C_BPartner secondBPartner = ibpartners.get(2).getC_BPartner();
+			final List<de.metas.adempiere.model.I_C_BPartner_Location> fbplocations = Services.get(IBPartnerDAO.class).retrieveBPartnerLocations(firstBpartner);
+			final List<de.metas.adempiere.model.I_C_BPartner_Location> sbplocations = Services.get(IBPartnerDAO.class).retrieveBPartnerLocations(secondBPartner);
+			Assert.assertTrue(fbplocations.get(0).getC_Location_ID() != sbplocations.get(0).getC_Location_ID());
+		}
+		
+		// check third partner imported
+		// should have 1 contact and one address
+		{
+			assertThirdImportedBpartner(ibpartners);
+		}
+	}
+	
+	private void asserImported(@NonNull final I_I_BPartner ibpartner)
+	{
+		Assert.assertTrue(ibpartner.getC_BPartner_ID() > 0);
+		Assert.assertTrue(ibpartner.getAD_User_ID() > 0);
+		Assert.assertTrue(ibpartner.getC_BPartner_Location_ID() > 0);
+
+		final I_C_BPartner bpartner = ibpartner.getC_BPartner();
+		Assert.assertNotNull(bpartner.getAD_Language());
+	}
+	
+	private void assertFirstImportedBpartner(final List<I_I_BPartner> ibpartners)
+	{
 		Assert.assertTrue(ibpartners.get(0).getC_BPartner_ID() == ibpartners.get(1).getC_BPartner_ID());
 		final I_C_BPartner firstBPartner = ibpartners.get(0).getC_BPartner();
 		//
@@ -148,72 +188,60 @@ public class BPartnerImportTest
 			Assert.assertFalse(bplocation.isShipToDefault());
 			Assert.assertFalse(bplocation.isShipTo());
 		});
-
-		// check second partner imported
-		// should have 1 contact and one address (the address is exactly the one from the first bpartner)
-		{
-			final I_C_BPartner secondBPartner = ibpartners.get(2).getC_BPartner();
-			//
-			// check user
-			final List<de.metas.adempiere.model.I_AD_User> users = Services.get(IBPartnerDAO.class).retrieveContacts(secondBPartner);
-			Assert.assertTrue(!users.isEmpty());
-			Assert.assertTrue(users.size() == 1);
-			users.forEach(user -> {
-				Assert.assertTrue(user.isShipToContact_Default());
-				Assert.assertTrue(user.isBillToContact_Default());
-			});
-			//
-			// check bplocation
-			final List<de.metas.adempiere.model.I_C_BPartner_Location> bplocations = Services.get(IBPartnerDAO.class).retrieveBPartnerLocations(secondBPartner);
-			Assert.assertTrue(!bplocations.isEmpty());
-			Assert.assertTrue(bplocations.size() == 1);
-			bplocations.forEach(bplocation -> {
-				Assert.assertTrue(bplocation.getC_Location_ID() > 0);
-				Assert.assertTrue(bplocation.isBillToDefault());
-				Assert.assertTrue(bplocation.isBillTo());
-				Assert.assertTrue(bplocation.isShipToDefault());
-				Assert.assertTrue(bplocation.isShipTo());
-			});
-		}
-		
-		// check third partner imported
-		// should have 1 contact and one address
-		{
-			final I_C_BPartner thirdBPartner = ibpartners.get(3).getC_BPartner();
-			//
-			// check user
-			final List<de.metas.adempiere.model.I_AD_User> users = Services.get(IBPartnerDAO.class).retrieveContacts(thirdBPartner);
-			Assert.assertTrue(!users.isEmpty());
-			Assert.assertTrue(users.size() == 1);
-			users.forEach(user -> {
-				Assert.assertTrue(user.isShipToContact_Default());
-				Assert.assertTrue(user.isBillToContact_Default());
-			});
-			//
-			// check bplocation
-			final List<de.metas.adempiere.model.I_C_BPartner_Location> bplocations = Services.get(IBPartnerDAO.class).retrieveBPartnerLocations(thirdBPartner);
-			Assert.assertTrue(!bplocations.isEmpty());
-			Assert.assertTrue(bplocations.size() == 1);
-			bplocations.forEach(bplocation -> {
-				Assert.assertTrue(bplocation.getC_Location_ID() > 0);
-				Assert.assertTrue(bplocation.isBillToDefault());
-				Assert.assertTrue(bplocation.isBillTo());
-				Assert.assertTrue(bplocation.isShipToDefault());
-				Assert.assertTrue(bplocation.isShipTo());
-			});
-		}
-
 	}
-
-	private void asserImported(@NonNull final I_I_BPartner ibpartner)
+	
+	private void assertSecondImportedBpartner(final List<I_I_BPartner> ibpartners)
 	{
-		Assert.assertTrue(ibpartner.getC_BPartner_ID() > 0);
-		Assert.assertTrue(ibpartner.getAD_User_ID() > 0);
-		Assert.assertTrue(ibpartner.getC_BPartner_Location_ID() > 0);
-
-		final I_C_BPartner bpartner = ibpartner.getC_BPartner();
-		Assert.assertNotNull(bpartner.getAD_Language());
+		final I_C_BPartner secondBPartner = ibpartners.get(2).getC_BPartner();
+		//
+		// check user
+		final List<de.metas.adempiere.model.I_AD_User> users = Services.get(IBPartnerDAO.class).retrieveContacts(secondBPartner);
+		Assert.assertTrue(!users.isEmpty());
+		Assert.assertTrue(users.size() == 1);
+		users.forEach(user -> {
+			Assert.assertTrue(user.isShipToContact_Default());
+			Assert.assertTrue(user.isBillToContact_Default());
+		});
+		//
+		// check bplocation
+		final List<de.metas.adempiere.model.I_C_BPartner_Location> bplocations = Services.get(IBPartnerDAO.class).retrieveBPartnerLocations(secondBPartner);
+		Assert.assertTrue(!bplocations.isEmpty());
+		Assert.assertTrue(bplocations.size() == 1);
+		bplocations.forEach(bplocation -> {
+			Assert.assertTrue(bplocation.getC_Location_ID() > 0);
+			Assert.assertTrue(bplocation.isBillToDefault());
+			Assert.assertTrue(bplocation.isBillTo());
+			Assert.assertTrue(bplocation.isShipToDefault());
+			Assert.assertTrue(bplocation.isShipTo());
+		});
 	}
+	
+	private void assertThirdImportedBpartner(final List<I_I_BPartner> ibpartners)
+	{
+		final I_C_BPartner thirdBPartner = ibpartners.get(3).getC_BPartner();
+		//
+		// check user
+		final List<de.metas.adempiere.model.I_AD_User> users = Services.get(IBPartnerDAO.class).retrieveContacts(thirdBPartner);
+		Assert.assertTrue(!users.isEmpty());
+		Assert.assertTrue(users.size() == 1);
+		users.forEach(user -> {
+			Assert.assertTrue(user.isShipToContact_Default());
+			Assert.assertTrue(user.isBillToContact_Default());
+		});
+		//
+		// check bplocation
+		final List<de.metas.adempiere.model.I_C_BPartner_Location> bplocations = Services.get(IBPartnerDAO.class).retrieveBPartnerLocations(thirdBPartner);
+		Assert.assertTrue(!bplocations.isEmpty());
+		Assert.assertTrue(bplocations.size() == 1);
+		bplocations.forEach(bplocation -> {
+			Assert.assertTrue(bplocation.getC_Location_ID() > 0);
+			Assert.assertTrue(bplocation.isBillToDefault());
+			Assert.assertTrue(bplocation.isBillTo());
+			Assert.assertTrue(bplocation.isShipToDefault());
+			Assert.assertTrue(bplocation.isShipTo());
+		});
+	}
+	
 
 	/**
 	 * Build a test case for import<br>

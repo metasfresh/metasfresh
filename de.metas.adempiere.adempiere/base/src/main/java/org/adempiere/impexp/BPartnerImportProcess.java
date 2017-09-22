@@ -48,8 +48,6 @@ import org.compiere.model.MContactInterest;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.X_I_BPartner;
 
-import de.metas.adempiere.service.ILocationDAO;
-
 /**
  * Imports {@link I_I_BPartner} records to {@link I_C_BPartner}.
  *
@@ -372,7 +370,10 @@ public class BPartnerImportProcess extends AbstractImportProcess<I_I_BPartner>
 	private I_C_BPartner_Location createNewBPartnerLocation(final I_I_BPartner importRecord)
 	{
 		I_C_BPartner_Location bpartnerLocation;
-		final I_C_Location location = getCreateLocation(getCtx(), importRecord.getC_Country_ID(), importRecord.getC_Region_ID(), importRecord.getCity(), ITrx.TRXNAME_ThreadInherited);
+		final I_C_Location location = InterfaceWrapperHelper.create(getCtx(), I_C_Location.class, ITrx.TRXNAME_ThreadInherited);
+		location.setC_Country_ID(importRecord.getC_Country_ID());
+		location.setC_Region_ID(importRecord.getC_Region_ID());
+		location.setCity(importRecord.getCity());
 		location.setAddress1(importRecord.getAddress1());
 		location.setAddress2(importRecord.getAddress2());
 		location.setPostal(importRecord.getPostal());
@@ -402,21 +403,6 @@ public class BPartnerImportProcess extends AbstractImportProcess<I_I_BPartner>
 		return bpartnerLocation;
 	}
 
-	private I_C_Location getCreateLocation(Properties ctx, int C_Country_ID, int C_Region_ID, String city, String trxName)
-	{
-		I_C_Location location = Services.get(ILocationDAO.class).retrieveLocation(ctx, C_Country_ID, C_Region_ID, city, trxName);
-		if (location == null)
-		{
-			location = InterfaceWrapperHelper.create(ctx, I_C_Location.class, ITrx.TRXNAME_ThreadInherited);
-			location.setC_Country_ID(C_Country_ID);
-			location.setC_Region_ID(C_Region_ID);
-			location.setCity(city);
-			InterfaceWrapperHelper.save(location);
-		}
-		
-		return location;
-	}
-	
 	private I_AD_User createUpdateContact(final I_I_BPartner importRecord)
 	{
 		final I_C_BPartner bpartner = importRecord.getC_BPartner();

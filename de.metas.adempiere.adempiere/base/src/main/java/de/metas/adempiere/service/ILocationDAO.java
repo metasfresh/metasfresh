@@ -6,8 +6,6 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_City;
 
-import de.metas.adempiere.model.I_C_Location;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -37,16 +35,5 @@ public interface ILocationDAO extends ISingletonService
 	 * @return cities filter by country and by regionId (if set)
 	 */
 	IQueryBuilder<I_C_City> retrieveCitiesByCountryOrRegionQuery(Properties ctx, int countryId, int regionId);
-
-	/**
-	 * retrieve location
-	 * @param ctx
-	 * @param C_Country_ID
-	 * @param C_Region_ID
-	 * @param city
-	 * @param trxName
-	 * @return
-	 */
-	I_C_Location retrieveLocation(Properties ctx, int C_Country_ID, int C_Region_ID, String city, String trxName);
 
 }
