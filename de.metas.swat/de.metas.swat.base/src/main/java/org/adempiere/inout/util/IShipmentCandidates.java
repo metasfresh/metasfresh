@@ -53,12 +53,6 @@ public interface IShipmentCandidates
 		INCOMPLETE_ORDER
 	};
 
-	public static enum PostageFreeStatus
-	{
-		OK,
-		BELOW_POSTAGEFREE_AMT
-	};
-
 	/**
 	 * This enum is used by {@link ICandidateProcessor}s to indicate if a given inOutLine shall be revalidated in the second run or not.
 	 * 
@@ -101,8 +95,6 @@ public interface IShipmentCandidates
 	 */
 	void setOverallStatus(I_M_InOutLine inOutLine, OverallStatus status);
 
-	PostageFreeStatus getPostageFreeStatus(I_M_InOutLine inOutLine);
-
 	BigDecimal getQtyDeliverable(int orderLineId);
 
 	/**
@@ -122,8 +114,6 @@ public interface IShipmentCandidates
 	 * @throws NullPointerException if <code>inOut</code> is <code>null</code> or hasn't been added to this instance using {@link #addInOut(MInOut)} before.
 	 */
 	boolean hasNoLines(I_M_InOut inOut);
-
-	void setPostageFreeStatusOK(I_M_InOut inOut);
 
 	/**
 	 * Note: no need for a 'shipperID'-parameter (as in {@link #getInOutForShipper(int, int)}) because there are not two different shipperId for the same order.
@@ -147,13 +137,6 @@ public interface IShipmentCandidates
 	public I_M_InOut getInOutForShipper(int shipperId, int warehouseId, String bPartnerAddress);
 
 	public void addLine(I_M_InOut inOut, I_M_InOutLine inOutLine, I_M_ShipmentSchedule sched, CompleteStatus completeStatus, I_C_Order order);
-
-	/**
-	 * Updates all inoutLines' PostageFreeStatus according to the respective bPartner's postage free amount.
-	 * 
-	 * @param ignorePostageFreeAmt if true, the lines qty is not set to {@link BigDecimal#ZERO}, even if we are below the customer's postage free amount. However, the status is still set.
-	 */
-	public void updatePostageFreeStatus(boolean ignorePostageFreeAmt);
 
 	public I_M_InOutLine getInOutLineForOrderLine(int orderLineId);
 

@@ -1327,28 +1327,6 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 		return (java.lang.String)get_Value(COLUMNNAME_POReference);
 	}
 
-	/** Set PostageFreeAmt.
-		@param PostageFreeAmt 
-		Betrag zur Bestimmung der Potofreigrenze im Lieferlauf.
-	  */
-	@Override
-	public void setPostageFreeAmt (java.math.BigDecimal PostageFreeAmt)
-	{
-		set_Value (COLUMNNAME_PostageFreeAmt, PostageFreeAmt);
-	}
-
-	/** Get PostageFreeAmt.
-		@return Betrag zur Bestimmung der Potofreigrenze im Lieferlauf.
-	  */
-	@Override
-	public java.math.BigDecimal getPostageFreeAmt () 
-	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PostageFreeAmt);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
-	}
-
 	/** Set Bereitstellungsdatum.
 		@param PreparationDate Bereitstellungsdatum	  */
 	@Override
