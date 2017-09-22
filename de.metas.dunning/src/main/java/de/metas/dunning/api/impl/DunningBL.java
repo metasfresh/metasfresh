@@ -64,6 +64,7 @@ import de.metas.dunning.spi.IDunnableSource;
 import de.metas.dunning.spi.IDunningCandidateSource;
 import de.metas.dunning.spi.IDunningConfigurator;
 import de.metas.logging.LogManager;
+import lombok.NonNull;
 
 public class DunningBL implements IDunningBL
 {
@@ -283,7 +284,9 @@ public class DunningBL implements IDunningBL
 	}
 
 	@Override
-	public void processDunningDoc(IDunningContext context, I_C_DunningDoc dunningDoc)
+	public void processDunningDoc(
+			@NonNull final IDunningContext context, 
+			@NonNull final I_C_DunningDoc dunningDoc)
 	{
 		if (dunningDoc.isProcessed())
 		{

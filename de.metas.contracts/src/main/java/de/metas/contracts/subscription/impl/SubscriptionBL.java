@@ -1,5 +1,7 @@
 package de.metas.contracts.subscription.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+
 /*
  * #%L
  * de.metas.contracts
@@ -40,6 +42,7 @@ import org.adempiere.pricing.exceptions.ProductNotOnPriceListException;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.MNote;
@@ -61,7 +64,6 @@ import de.metas.contracts.subscription.model.I_C_OrderLine;
 import de.metas.document.engine.IDocActionBL;
 import de.metas.flatrate.Contracts_Constants;
 import de.metas.flatrate.api.IFlatrateDAO;
-import de.metas.flatrate.interfaces.I_C_BPartner;
 import de.metas.flatrate.interfaces.I_C_OLCand;
 import de.metas.flatrate.model.I_C_Contract_Term_Alloc;
 import de.metas.flatrate.model.I_C_Flatrate_Conditions;
@@ -159,22 +161,6 @@ public class SubscriptionBL implements ISubscriptionBL
 		newTerm.setIsSimulation(cond.isSimulation());
 		newTerm.setM_Product_ID(ol.getM_Product_ID());
 
-		final boolean postageFree;
-
-		final I_C_BPartner bPartner = InterfaceWrapperHelper.create(order.getBill_BPartner(), I_C_BPartner.class);
-		final String bpPostageFree = bPartner.getPostageFree();
-
-		if (I_C_BPartner.POSTAGEFREE_Always.equals(bpPostageFree)
-				|| I_C_BPartner.POSTAGEFREE_Subscription.equals(bpPostageFree))
-		{
-			postageFree = true;
-		}
-		else
-		{
-			postageFree = false;
-		}
-
-		newTerm.setIsPostageFree(postageFree);
 		newTerm.setContractStatus(X_C_Flatrate_Term.CONTRACTSTATUS_NochNichtBegonnen);
 		newTerm.setDocAction(X_C_Flatrate_Term.DOCACTION_Complete);
 
@@ -359,22 +345,6 @@ public class SubscriptionBL implements ISubscriptionBL
 		newTerm.setIsSimulation(cond.isSimulation());
 		newTerm.setM_Product_ID(olCandEffectiveValuesBL.getM_Product_Effective_ID(olCand));
 
-		final boolean postageFree;
-
-		final I_C_BPartner bPartner = InterfaceWrapperHelper.create(olCand.getBill_BPartner(), I_C_BPartner.class);
-		final String bpPostageFree = bPartner.getPostageFree();
-
-		if (I_C_BPartner.POSTAGEFREE_Always.equals(bpPostageFree)
-				|| I_C_BPartner.POSTAGEFREE_Subscription.equals(bpPostageFree))
-		{
-			postageFree = true;
-		}
-		else
-		{
-			postageFree = false;
-		}
-
-		newTerm.setIsPostageFree(postageFree);
 		newTerm.setContractStatus(X_C_Flatrate_Term.CONTRACTSTATUS_NochNichtBegonnen);
 		newTerm.setDocAction(X_C_Flatrate_Term.DOCACTION_Complete);
 
@@ -439,37 +409,48 @@ public class SubscriptionBL implements ISubscriptionBL
 	{
 		final ISubscriptionDAO subscriptionPA = Services.get(ISubscriptionDAO.class);
 
-		I_C_SubscriptionProgress sp = retrieveOrCreateSP(term, currentDate);
+		I_C_SubscriptionProgress currentProgressRecord = retrieveOrCreateSP(term, currentDate);
 
 		// see if there are further SPs to evaluate.
-		Timestamp lastSPDate = sp.getEventDate();
-		int lastSPSeqNo = sp.getSeqNo();
-		int count = 0;
+		Timestamp lastSPDate = currentProgressRecord.getEventDate();
+		int lastSPSeqNo = currentProgressRecord.getSeqNo();
+		int count = 1;
 
-		while (notYetDoneWithCurrentSPs(sp, currentDate))
+		while (!currentProgressRecord.getEventDate().after(currentDate))
 		{
-			evalCurrentSP(term, currentDate, sp);
+			markPlannedPauseRecordAsExecuted(term, currentDate, currentProgressRecord);
+
+			term.setContractStatus(currentProgressRecord.getContractStatus());
 
 			// see if there is an SP for the next loop iteration
-			sp = subscriptionPA.retrieveNextSP(term, currentDate, sp.getSeqNo() + 1);
-			count++;
-
-			if (sp == null)
+			currentProgressRecord = subscriptionPA.retrieveNextSP(
+					term,
+					currentDate,
+					currentProgressRecord.getSeqNo() + 1);
+			if (currentProgressRecord == null)
 			{
-				continue;
+				break;
 			}
 
+			count++;
+
 			// make sure that we don't get stuck in an infinite loop
-			Check.assume(!lastSPDate.after(sp.getEventDate()), "");
-			Check.assume(lastSPSeqNo < sp.getSeqNo(), "");
+			Check.assume(!lastSPDate.after(currentProgressRecord.getEventDate()), "");
+			Check.assume(lastSPSeqNo < currentProgressRecord.getSeqNo(), "");
 
-			lastSPSeqNo = sp.getSeqNo();
-			lastSPDate = sp.getEventDate();
+			lastSPSeqNo = currentProgressRecord.getSeqNo();
+			lastSPDate = currentProgressRecord.getEventDate();
 		}
-
+		save(term);
 		logger.info("Evaluated {} {} records", count, I_C_SubscriptionProgress.Table_Name);
 	}
 
+	/**
+	 * 
+	 * @param term
+	 * @param currentDate
+	 * @return never returns {@code null}
+	 */
 	private I_C_SubscriptionProgress retrieveOrCreateSP(
 			@NonNull final I_C_Flatrate_Term term,
 			@NonNull final Timestamp currentDate)
@@ -486,140 +467,31 @@ public class SubscriptionBL implements ISubscriptionBL
 		return createSubscriptionEntries(term);
 	}
 
-	private boolean notYetDoneWithCurrentSPs(
-			final I_C_SubscriptionProgress sp,
-			@NonNull final Timestamp currentDate)
+	private boolean markPlannedPauseRecordAsExecuted(
+			@NonNull final I_C_Flatrate_Term term,
+			@NonNull final Timestamp currentDate,
+			@NonNull final I_C_SubscriptionProgress sp)
 	{
-		if (sp == null)
-		{
-			logger.info("There are no more SPs to evaluate");
-			return false;
-		}
-		if (sp.getEventDate().after(currentDate))
-		{
-			logger.info("CurrentDate={} -> Still too early to process term={}" + currentDate, sp.getC_Flatrate_Term());
-			return false;
-		}
+		Check.errorIf(sp.getEventDate().after(currentDate),
+				"The event date {} of the given subscriptionProgress is after currentDate={}; subscriptionProgress={}",
+				sp.getEventDate(), currentDate, sp);
 
-		return true;
-	}
-
-	private boolean evalCurrentSP(final I_C_Flatrate_Term sc, final Timestamp currentDate, I_C_SubscriptionProgress sp)
-	{
-		Check.assume(!sp.getEventDate().after(currentDate), sp.toString());
-
-		boolean spUpdated = false;
-
-		// if (isPlannedExtendSubscription(sp))
-		// {
-		// extendSubscription(sc, currentDate, sc.get_TrxName(), sp);
-		// sp.setStatus(STATUS_Ausgefuehrt);
-		// spUpdated = true;
-		// }
-		// else
 		if (isPlannedStartPause(sp))
 		{
-			Check.assume(!isWaitForConfirm(sp), sp + "is not waiting for confirmation anymore");
 			sp.setStatus(X_C_SubscriptionProgress.STATUS_Ausgefuehrt);
-			spUpdated = true;
+			save(sp);
+			return true;
 
 		}
 		else if (isPlannedEndPause(sp))
 		{
-			Check.assume(!isWaitForConfirm(sp), sp + "is not waiting for confirmation anymore");
 			sp.setStatus(X_C_SubscriptionProgress.STATUS_Ausgefuehrt);
-			spUpdated = true;
-
-		}
-		// else if (isPlannedStart(sp))
-		// {
-		// sp.setStatus(STATUS_Ausgefuehrt);
-		// spUpdated = true;
-		// }
-		// else if (isPlannedEnd(sp))
-		// {
-		// sp.setStatus(STATUS_Ausgefuehrt);
-		// spUpdated = true;
-		// }
-
-		if (isWaitForConfirm(sp))
-		{
-			if (sp.isSubscriptionConfirmed())
-			{
-				logger.info(sp + " has been confirmed");
-				sp.setContractStatus(X_C_SubscriptionProgress.CONTRACTSTATUS_Laufend);
-				sp.setStatus(X_C_SubscriptionProgress.STATUS_Geplant);
-				spUpdated = true;
-
-			}
-			else if (!X_C_SubscriptionProgress.STATUS_Verzoegert.equals(sp.getStatus()))
-			{
-				sp.setStatus(X_C_SubscriptionProgress.STATUS_Verzoegert);
-				spUpdated = true;
-			}
+			save(sp);
+			return true;
 		}
 
-		if (spUpdated)
-		{
-			InterfaceWrapperHelper.save(sp);
-		}
-
-		sc.setContractStatus(sp.getContractStatus());
-		InterfaceWrapperHelper.save(sc);
-
-		return spUpdated;
+		return false;
 	}
-
-	private boolean isWaitForConfirm(final I_C_SubscriptionProgress sp)
-	{
-		return X_C_SubscriptionProgress.CONTRACTSTATUS_WartetAufBestaetigung.equals(sp.getContractStatus());
-	}
-
-	// private void extendSubscription(
-	// final MSubscriptionControl sc,
-	// final Timestamp currentDate,
-	// final String trxName,
-	// final I_C_SubscriptionProgress subscriptionProgress)
-	// {
-	//
-	// logger.info("Extending subscription for " + sc);
-	//
-	// final I_C_OrderLine oldSubscriptionOl = POWrapper.create(subscriptionProgress.getC_OrderLine(),
-	// I_C_OrderLine.class);
-	//
-	// final IPOService poService = Services.get(IPOService.class);
-	//
-	// final MOrderLine newSubscriptionOlPO =
-	// createNewOrderAndOl(oldSubscriptionOl, currentDate, subscriptionProgress.getEventDate(), trxName);
-	//
-	// final I_C_OrderLine newSubscriptionOl = POWrapper.create(newSubscriptionOlPO, I_C_OrderLine.class);
-	//
-	// setSubscription(newSubscriptionOl, oldSubscriptionOl.getC_Subscription_ID(), Env.getCtx(), trxName);
-	//
-	// final I_C_Order newOrder = POWrapper.create(newSubscriptionOl.getC_Order(), I_C_Order.class);
-	// final IDocActionBL docActionBL = Services.get(IDocActionBL.class);
-	// if (!docActionBL.processIt(newOrder, DocAction.ACTION_Complete))
-	// {
-	//
-	// throw new AdempiereException("CompleteIt failed for order "
-	// + newOrder + "\n" + MiscUtils.loggerMsgsUser());
-	// }
-	// logger.info("Completed new order " + newOrder + " for " + sc);
-	// poService.save(newOrder, trxName);
-	//
-	// newSubscription(newSubscriptionOl, sc, trxName);
-	//
-	// subscriptionProgress.setStatus(STATUS_Ausgefuehrt);
-	// poService.save(subscriptionProgress, trxName);
-	// }
-
-	// private boolean isPlannedExtendSubscription(final I_C_SubscriptionProgress sp)
-	// {
-	//
-	// return STATUS_Geplant.equals(sp.getStatus()) && ( //
-	// EVENTTYPE_Abo_Autoverlaengerung.equals(sp.getEventType()) //
-	// || EVENTTYPE_Abowechsel.equals(sp.getEventType()));
-	// }
 
 	private boolean isPlannedStartPause(final I_C_SubscriptionProgress sp)
 	{
@@ -632,20 +504,6 @@ public class SubscriptionBL implements ISubscriptionBL
 		return X_C_SubscriptionProgress.EVENTTYPE_Abopause_Ende.equals(sp.getEventType())
 				&& X_C_SubscriptionProgress.STATUS_Geplant.equals(sp.getStatus());
 	}
-
-	// private boolean isPlannedStart(final I_C_SubscriptionProgress sp)
-	// {
-	//
-	// return EVENTTYPE_Abo_Beginn.equals(sp.getEventType())
-	// && STATUS_Geplant.equals(sp.getStatus());
-	// }
-
-	// private boolean isPlannedEnd(final I_C_SubscriptionProgress sp)
-	// {
-	//
-	// return EVENTTYPE_Abo_Ende.equals(sp.getEventType())
-	// && STATUS_Geplant.equals(sp.getStatus());
-	// }
 
 	private Timestamp mkNextDate(final I_C_Flatrate_Transition trans, final Timestamp currentDate)
 	{
@@ -713,21 +571,6 @@ public class SubscriptionBL implements ISubscriptionBL
 				sd.setStatus(X_C_SubscriptionProgress.STATUS_Verzoegert);
 				InterfaceWrapperHelper.save(sd);
 				continue;
-			}
-
-			if (isWaitForConfirm(sd))
-			{
-				if (sd.isSubscriptionConfirmed())
-				{
-					sd.setContractStatus(X_C_SubscriptionProgress.CONTRACTSTATUS_Laufend);
-					sd.setStatus(X_C_SubscriptionProgress.STATUS_Geplant);
-				}
-				else
-				{
-					logger.info(sd + " is still delayed due to missing confirmation");
-					delayedControlIds.add(sd.getC_Flatrate_Term_ID());
-					continue;
-				}
 			}
 
 			final List<I_M_ShipmentSchedule> openScheds = shipmentSchedulePA.retrieveUnprocessedForRecord(ctx,
@@ -870,7 +713,9 @@ public class SubscriptionBL implements ISubscriptionBL
 
 			BigDecimal LineNetAmt = priceQty.multiply(factor.multiply(pp.getPriceStd()));
 			if (LineNetAmt.scale() > StdPrecision)
+			{
 				LineNetAmt = LineNetAmt.setScale(StdPrecision, BigDecimal.ROUND_HALF_UP);
+			}
 			logger.info("LineNetAmt=" + LineNetAmt);
 			ol.setLineNetAmt(LineNetAmt);
 		}
@@ -949,16 +794,7 @@ public class SubscriptionBL implements ISubscriptionBL
 		delivery.setEventType(X_C_SubscriptionProgress.EVENTTYPE_Lieferung);
 		delivery.setStatus(X_C_SubscriptionProgress.STATUS_Geplant);
 
-		// we need to handle the whole issue of confirmation when we want to run this at
-		// if (POWrapper.create(sc.getBill_BPartner(),
-		// de.metas.flatrate.interfaces.I_C_BPartner.class).isSubscriptionConfirmRequired())
-		// {
-		// delivery.setContractStatus(X_C_SubscriptionProgress.CONTRACTSTATUS_WartetAufBestaetigung);
-		// }
-		// else
-		// {
 		delivery.setContractStatus(X_C_SubscriptionProgress.CONTRACTSTATUS_Laufend);
-		// }
 
 		delivery.setEventDate(eventDate);
 

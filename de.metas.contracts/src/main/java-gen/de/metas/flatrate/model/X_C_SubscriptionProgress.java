@@ -118,8 +118,6 @@ public class X_C_SubscriptionProgress extends org.compiere.model.PO implements I
 	public static final String CONTRACTSTATUS_Beendet = "En";
 	/** Gekündigt = Qu */
 	public static final String CONTRACTSTATUS_Gekuendigt = "Qu";
-	/** Wartet auf Bestätigung = St */
-	public static final String CONTRACTSTATUS_WartetAufBestaetigung = "St";
 	/** Info = In */
 	public static final String CONTRACTSTATUS_Info = "In";
 	/** Noch nicht begonnen = Wa */
@@ -306,29 +304,6 @@ public class X_C_SubscriptionProgress extends org.compiere.model.PO implements I
 	public java.lang.String getEventType () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_EventType);
-	}
-
-	/** Set Bestätigung eingegangen.
-		@param IsSubscriptionConfirmed Bestätigung eingegangen	  */
-	@Override
-	public void setIsSubscriptionConfirmed (boolean IsSubscriptionConfirmed)
-	{
-		set_Value (COLUMNNAME_IsSubscriptionConfirmed, Boolean.valueOf(IsSubscriptionConfirmed));
-	}
-
-	/** Get Bestätigung eingegangen.
-		@return Bestätigung eingegangen	  */
-	@Override
-	public boolean isSubscriptionConfirmed () 
-	{
-		Object oo = get_Value(COLUMNNAME_IsSubscriptionConfirmed);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
 	}
 
 	@Override

@@ -151,11 +151,9 @@ public class C_Order implements ModelValidator
 			final String trxName)
 	{
 		final ISubscriptionDAO subscriptionDAO = Services.get(ISubscriptionDAO.class);
-
-		final I_C_Flatrate_Term existingTerm = subscriptionDAO.retrieveTermForOl(ol);
-		if (existingTerm != null)
+		if (subscriptionDAO.existsTermForOl(ol))
 		{
-			logger.debug("{} has already {}", ol, existingTerm);
+			logger.debug("{} is already already referenced by a C_Flatrate_Term record ", ol);
 			return;
 		}
 

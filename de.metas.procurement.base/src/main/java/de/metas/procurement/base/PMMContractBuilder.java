@@ -21,6 +21,7 @@ import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Calendar;
 import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_C_Period;
@@ -36,7 +37,6 @@ import com.google.common.base.Optional;
 import de.metas.adempiere.service.ICalendarDAO;
 import de.metas.adempiere.service.IPeriodBL;
 import de.metas.flatrate.api.IFlatrateBL;
-import de.metas.flatrate.interfaces.I_C_BPartner;
 import de.metas.flatrate.model.I_C_Flatrate_Conditions;
 import de.metas.flatrate.model.X_C_Flatrate_Term;
 import de.metas.logging.LogManager;
@@ -353,10 +353,10 @@ public class PMMContractBuilder
 		return _flatrateConditions;
 	}
 
-	public PMMContractBuilder setC_BPartner(final org.compiere.model.I_C_BPartner bpartner)
+	public PMMContractBuilder setC_BPartner(final I_C_BPartner bpartner)
 	{
 		assertNotProcessed();
-		_bpartner = InterfaceWrapperHelper.create(bpartner, I_C_BPartner.class);
+		_bpartner = bpartner;
 		return this;
 	}
 
