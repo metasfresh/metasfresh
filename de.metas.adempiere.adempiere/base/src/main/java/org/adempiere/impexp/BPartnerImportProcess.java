@@ -121,8 +121,6 @@ public class BPartnerImportProcess extends AbstractImportProcess<I_I_BPartner>
 		final int previousBPartnerId = context.getPreviousC_BPartner_ID();
 		final String previousBPValue = context.getPreviousBPValue();
 		context.setPreviousImportRecord(importRecord); // set it early in case this method fails
-		final List<I_I_BPartner> sameBPpreviousImportRecords = new ArrayList<>();
-		sameBPpreviousImportRecords.addAll(context.getSameBPpreviousImportRecords());
 
 		final ImportRecordResult bpartnerImportResult;
 
@@ -133,7 +131,6 @@ public class BPartnerImportProcess extends AbstractImportProcess<I_I_BPartner>
 		{
 			// create a new list because we are passing to a new partner
 			context.sameBPpreviousImportRecords = new ArrayList<>();
-			context.sameBPpreviousImportRecords.add(importRecord);
 
 			bpartnerImportResult = importRecord.getC_BPartner_ID() <= 0 ? ImportRecordResult.Inserted : ImportRecordResult.Updated;
 			createUpdateBPartner(importRecord);
@@ -142,8 +139,6 @@ public class BPartnerImportProcess extends AbstractImportProcess<I_I_BPartner>
 		// Same BPValue like previous line
 		else
 		{
-			context.getSameBPpreviousImportRecords().add(importRecord); // set in the context the new line
-
 			// We don't have a previous C_BPartner_ID
 			// => create or update existing BPartner from this line
 			if (previousBPartnerId <= 0)
@@ -166,10 +161,12 @@ public class BPartnerImportProcess extends AbstractImportProcess<I_I_BPartner>
 			}
 		}
 
-		createOrUpdateBPartnerLocation(importRecord, sameBPpreviousImportRecords);
+		createOrUpdateBPartnerLocation(importRecord, context.getSameBPpreviousImportRecords());
 		createUpdateContact(importRecord);
 		createUpdateInterestArea(importRecord);
 
+		context.getSameBPpreviousImportRecords().add(importRecord); // set in the context the new line
+		
 		return bpartnerImportResult;
 	}
 
@@ -235,7 +232,6 @@ public class BPartnerImportProcess extends AbstractImportProcess<I_I_BPartner>
 		bpartner.setName(name);
 		bpartner.setName2(importRecord.getName2());
 		bpartner.setDescription(importRecord.getDescription());
-		// setHelp(impBP.getHelp());
 		bpartner.setDUNS(importRecord.getDUNS());
 		bpartner.setVATaxID(importRecord.getTaxID());
 		bpartner.setNAICS(importRecord.getNAICS());
@@ -248,8 +244,6 @@ public class BPartnerImportProcess extends AbstractImportProcess<I_I_BPartner>
 	{
 		final I_C_BPartner bpartner;
 		bpartner = importRecord.getC_BPartner();
-		// if (impBP.getValue() != null) // not to overwite
-		// bp.setValue(impBP.getValue());
 		if (importRecord.getName() != null)
 		{
 			bpartner.setName(importRecord.getName());
@@ -419,14 +413,7 @@ public class BPartnerImportProcess extends AbstractImportProcess<I_I_BPartner>
 			{
 				user.setC_Greeting_ID(importRecord.getC_Greeting_ID());
 			}
-			// String name = importRecord.getContactName();
-			String name = importContactName;
-			if (name == null || name.length() == 0)
-			{
-				name = importRecord.getEMail();
-			}
-			user.setName(name);
-
+			user.setName(Check.isEmpty(importContactName, true) ? importRecord.getEMail() : importContactName);
 			updateWithAvailablemportRecordFields(importRecord, user);
 
 			if (bpartnerLocation != null)
@@ -446,13 +433,7 @@ public class BPartnerImportProcess extends AbstractImportProcess<I_I_BPartner>
 			{
 				user.setC_Greeting_ID(importRecord.getC_Greeting_ID());
 			}
-
-			String name = importContactName;
-			if (Check.isEmpty(name, true))
-			{
-				name = importRecord.getEMail();
-			}
-			user.setName(name);
+			user.setName(Check.isEmpty(importContactName, true) ? importRecord.getEMail() : importContactName);
 			updateWithImportRecordFields(importRecord, user);
 			if (bpartnerLocation != null)
 			{
