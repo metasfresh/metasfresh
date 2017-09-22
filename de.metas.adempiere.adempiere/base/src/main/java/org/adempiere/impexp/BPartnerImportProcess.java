@@ -103,6 +103,16 @@ public class BPartnerImportProcess extends AbstractImportProcess<I_I_BPartner>
 		{
 			return sameBPpreviousImportRecords;
 		}
+		
+		public void clearPreviousRecords()
+		{
+			sameBPpreviousImportRecords = new ArrayList<>();
+		}
+
+		public void collectImportRecord(I_I_BPartner importRecord)
+		{
+			sameBPpreviousImportRecords.add(importRecord);
+		}
 
 	}
 
@@ -130,7 +140,7 @@ public class BPartnerImportProcess extends AbstractImportProcess<I_I_BPartner>
 		if (previousImportRecord == null || !Objects.equals(importRecord.getValue(), previousBPValue))
 		{
 			// create a new list because we are passing to a new partner
-			context.sameBPpreviousImportRecords = new ArrayList<>();
+			context.clearPreviousRecords();
 
 			bpartnerImportResult = importRecord.getC_BPartner_ID() <= 0 ? ImportRecordResult.Inserted : ImportRecordResult.Updated;
 			createUpdateBPartner(importRecord);
@@ -165,7 +175,7 @@ public class BPartnerImportProcess extends AbstractImportProcess<I_I_BPartner>
 		createUpdateContact(importRecord);
 		createUpdateInterestArea(importRecord);
 
-		context.getSameBPpreviousImportRecords().add(importRecord); // set in the context the new line
+		context.collectImportRecord(importRecord);
 		
 		return bpartnerImportResult;
 	}
