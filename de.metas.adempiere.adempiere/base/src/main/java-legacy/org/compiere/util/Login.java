@@ -49,9 +49,7 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
 import org.adempiere.warehouse.api.IWarehouseDAO;
-import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Role;
-import org.compiere.model.I_AD_System;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_M_Warehouse;
@@ -221,17 +219,6 @@ public class Login
 		// Try auth via LDAP
 		final LoginContext ctx = getCtx();
 		boolean authenticated = false;
-		if (!authenticated)
-		{
-			authenticated = authLDAP(ctx, username, password);
-		}
-
-		//
-		// If we were authenticated, reset the password because we no longer need it
-		if (authenticated)
-		{
-			password = null;
-		}
 
 		//
 		// If not authenticated so far, use AD_User as backup
@@ -374,32 +361,6 @@ public class Login
 		Services.get(ISessionBL.class).logoutCurrentSession();
 
 		getCtx().resetAD_Session_ID();
-	}
-
-	private static final boolean authLDAP(final LoginContext ctx, final String app_user, final String app_pwd)
-	{
-		// LDAP auth is not currently supported in JUnit testing mode
-		if (Adempiere.isUnitTestMode())
-		{
-			return false;
-		}
-
-		final ISystemBL systemBL = Services.get(ISystemBL.class);
-
-		final I_AD_System system = systemBL.get(ctx.getSessionContext());
-		if (system == null)
-		{
-			throw new IllegalStateException("No System Info");
-		}
-
-		// LDAP auth not configured
-		if (!systemBL.isLDAP())
-		{
-			return false;
-		}
-
-		final boolean authenticated = systemBL.isLDAP(app_user, app_pwd);
-		return authenticated;
 	}
 
 	/**
