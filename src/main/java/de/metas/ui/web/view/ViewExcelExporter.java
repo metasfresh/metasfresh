@@ -5,6 +5,8 @@ import java.util.Set;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.impexp.AbstractExcelExporter;
+import org.adempiere.impexp.CellValue;
+import org.adempiere.impexp.CellValues;
 
 import com.google.common.collect.ImmutableList;
 
@@ -162,7 +164,7 @@ import lombok.NonNull;
 	}
 
 	@Override
-	public Object getValueAt(final int rowIndex, final int columnIndex)
+	public CellValue getValueAt(final int rowIndex, final int columnIndex)
 	{
 		final String fieldName = getFieldName(columnIndex);
 
@@ -181,14 +183,17 @@ import lombok.NonNull;
 		final DocumentFieldWidgetType widgetType = getWidgetType(columnIndex);
 		if (widgetType.isDateOrTime())
 		{
-			return JSONDate.fromJson(value.toString(), widgetType);
+			return CellValue.ofDate(JSONDate.fromJson(value.toString(), widgetType));
 		}
 		else if (value instanceof JSONLookupValue)
 		{
-			return ((JSONLookupValue)value).getName();
+			final String valueStr = ((JSONLookupValue)value).getName();
+			return CellValues.toCellValue(valueStr, widgetType.getDisplayType());
 		}
-
-		return value;
+		else
+		{
+			return CellValues.toCellValue(value, widgetType.getDisplayType());
+		}
 	}
 
 	@Override
