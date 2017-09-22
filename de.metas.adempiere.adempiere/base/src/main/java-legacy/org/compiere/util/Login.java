@@ -218,7 +218,6 @@ public class Login
 		//
 		// Try auth via LDAP
 		final LoginContext ctx = getCtx();
-		boolean authenticated = false;
 
 		//
 		// If not authenticated so far, use AD_User as backup
@@ -254,11 +253,8 @@ public class Login
 				throw new AdempiereException("@UserAccountLockedError@"); // TODO: specific exception
 			}
 		}
-		boolean isPasswordValid = authenticated;
-		if (!isPasswordValid)
-		{
-			isPasswordValid = Objects.equals(password, user.getPassword());
-		}
+		
+		final boolean isPasswordValid = Objects.equals(password, user.getPassword());
 		if (!isPasswordValid)
 		{
 			loginFailureCount++;
