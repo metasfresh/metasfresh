@@ -6,14 +6,12 @@ import java.util.Properties;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
-import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_M_Movement;
 
-import com.google.common.collect.ImmutableList;
-
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
+import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Warehouse;
 import de.metas.handlingunits.movement.api.IHUMovementBL;
@@ -56,7 +54,7 @@ public class MovementsAnyWarehouseModel extends AbstractMovementsWarehouseModel
 	protected void load()
 	{
 
-		final List<org.compiere.model.I_M_Warehouse> warehouses = getWarehousesUnlessOfHUs(hus);
+		final List<org.compiere.model.I_M_Warehouse> warehouses = retrieveWarehousesWhichContainNoneOf(hus);
 		final List<org.compiere.model.I_M_Warehouse> warehousesToLoad = InterfaceWrapperHelper.createList(warehouses, org.compiere.model.I_M_Warehouse.class);
 		Check.assumeNotEmpty(warehouses, MSG_NoWarehouseFound);
 		warehouseKeyLayout.createAndSetKeysFromWarehouses(warehousesToLoad);
@@ -86,13 +84,15 @@ public class MovementsAnyWarehouseModel extends AbstractMovementsWarehouseModel
 	}
 
 	/**
-	 * Get the warehouses existing for the hus' organization , excluding those which currently contain the HUs given as parameters
+	 * Get the warehouses of the hus' organization , excluding those which currently contain the given HUs
 	 * 
 	 * @param hus
 	 * @return
 	 */
-	public static List<org.compiere.model.I_M_Warehouse> getWarehousesUnlessOfHUs(final List<I_M_HU> hus)
+	public static List<org.compiere.model.I_M_Warehouse> retrieveWarehousesWhichContainNoneOf(final List<I_M_HU> hus)
 	{
+		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+
 		if (hus.isEmpty())
 		{
 			// should never happen
@@ -107,14 +107,7 @@ public class MovementsAnyWarehouseModel extends AbstractMovementsWarehouseModel
 
 		final List<org.compiere.model.I_M_Warehouse> warehouses = Services.get(IWarehouseDAO.class).retrieveForOrg(ctx, orgId);
 
-		final ImmutableList<org.compiere.model.I_M_Warehouse> huWarehouses = hus
-				.stream()
-				.map(I_M_HU::getM_Locator)
-				.collect(GuavaCollectors.toImmutableList())
-				.stream()
-				.distinct()
-				.map(org.compiere.model.I_M_Locator::getM_Warehouse)
-				.collect(GuavaCollectors.toImmutableList());
+		final List<org.compiere.model.I_M_Warehouse> huWarehouses = handlingUnitsDAO.retrieveWarehousesForHUs(hus);
 
 		warehouses.removeAll(huWarehouses);
 

@@ -1,5 +1,7 @@
 package de.metas.handlingunits.client.terminal.editor.model.impl;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -7,7 +9,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -62,27 +63,22 @@ public class MovementsAnyWarehouseTests
 		List<I_M_HU> hus = new ArrayList<>();
 		hus.add(hu1);
 
-		final List<I_M_Warehouse> warehousesUnlessOfHUs1 = MovementsAnyWarehouseModel.getWarehousesUnlessOfHUs(hus);
+		final List<I_M_Warehouse> warehousesUnlessOfHUs1 = MovementsAnyWarehouseModel.retrieveWarehousesWhichContainNoneOf(hus);
 
-		Assert.assertFalse(warehousesUnlessOfHUs1.contains(warehouse1));
-		Assert.assertTrue(warehousesUnlessOfHUs1.contains(warehouse2));
-		Assert.assertTrue(warehousesUnlessOfHUs1.contains(warehouse3));
+		assertThat(warehousesUnlessOfHUs1).containsOnly(warehouse2, warehouse3);
 
 		hus.add(hu2);
 
-		final List<I_M_Warehouse> warehousesUnlessOfHUs2 = MovementsAnyWarehouseModel.getWarehousesUnlessOfHUs(hus);
+		final List<I_M_Warehouse> warehousesUnlessOfHUs2 = MovementsAnyWarehouseModel.retrieveWarehousesWhichContainNoneOf(hus);
 
-		Assert.assertFalse(warehousesUnlessOfHUs2.contains(warehouse1));
-		Assert.assertFalse(warehousesUnlessOfHUs2.contains(warehouse2));
-		Assert.assertTrue(warehousesUnlessOfHUs2.contains(warehouse3));
-		
-		
+		assertThat(warehousesUnlessOfHUs2).containsOnly(warehouse3);
+
 		hus.add(hu3);
 
-		final List<I_M_Warehouse> warehousesUnlessOfHUs3 = MovementsAnyWarehouseModel.getWarehousesUnlessOfHUs(hus);
+		final List<I_M_Warehouse> warehousesUnlessOfHUs3 = MovementsAnyWarehouseModel.retrieveWarehousesWhichContainNoneOf(hus);
 
-		Assert.assertTrue(warehousesUnlessOfHUs3.isEmpty());
-		
+		assertThat(warehousesUnlessOfHUs3).isEmpty();
+
 	}
 
 	private I_M_HU createHU(I_M_Locator locator)
