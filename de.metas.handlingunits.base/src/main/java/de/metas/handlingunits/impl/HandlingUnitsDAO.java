@@ -938,7 +938,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 				.map(I_M_HU::getM_Locator_ID)
 				.distinct()
 				.map(id -> InterfaceWrapperHelper.load(id, I_M_Locator.class))
-				.map(org.compiere.model.I_M_Locator::getM_Warehouse_ID)
+				.map(I_M_Locator::getM_Warehouse_ID)
 				.distinct()
 				.map(id -> InterfaceWrapperHelper.load(id, I_M_Warehouse.class))
 				.collect(ImmutableList.toImmutableList());
