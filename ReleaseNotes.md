@@ -84,6 +84,7 @@ Here come the actual release notes:
   * [#582](https://github.com/metasfresh/metasfresh-webui-api/issues/582) Cannot invoice disposal's invoice candidates
   * [#594](https://github.com/metasfresh/metasfresh-webui-api/issues/594) LU is not created when you receive in production
   * [#597](https://github.com/metasfresh/metasfresh-webui-api/issues/597) error in picking
+  * [#598](https://github.com/metasfresh/metasfresh-webui-api/issues/598) partial issue is disabled
   * [#599](https://github.com/metasfresh/metasfresh-webui-api/issues/599) String document IDs cannot be converted to int error on Transform
 
 * metasfresh-webui-frontend
