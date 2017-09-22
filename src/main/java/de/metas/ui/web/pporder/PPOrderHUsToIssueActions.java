@@ -103,7 +103,7 @@ public final class PPOrderHUsToIssueActions
 			final DocumentId rowId = selectedDocumentIds.getSingleDocumentId();
 			final HUEditorRow row = HUEditorRow.cast(view.getById(rowId));
 
-			if(row.isHUStatusActive())
+			if(!row.isHUStatusActive())
 			{
 				return ProcessPreconditionsResolution.reject("only active HUs");
 			}
