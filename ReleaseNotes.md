@@ -83,7 +83,11 @@ Here come the actual release notes:
   * [#570](https://github.com/metasfresh/metasfresh-webui-api/issues/570) clicking print on non-document window shows error page
   * [#582](https://github.com/metasfresh/metasfresh-webui-api/issues/582) Cannot invoice disposal's invoice candidates
   * [#594](https://github.com/metasfresh/metasfresh-webui-api/issues/594) LU is not created when you receive in production
+  * [#597](https://github.com/metasfresh/metasfresh-webui-api/issues/597) error in picking
   * [#599](https://github.com/metasfresh/metasfresh-webui-api/issues/599) String document IDs cannot be converted to int error on Transform
+
+* metasfresh-webui-frontend
+  * [#1205](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1205) Can't open any process while on Dashboard
 
 # metasfresh 5.26 (2017-37)
 
