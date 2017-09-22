@@ -1,4 +1,4 @@
-package org.adempiere.impexp;
+package org.adempiere.impexp.bpartner;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -6,6 +6,7 @@ import java.util.Properties;
 
 import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.impexp.bpartner.BPartnerImportProcess;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IMutable;

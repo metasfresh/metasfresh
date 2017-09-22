@@ -1,4 +1,4 @@
-package org.adempiere.impexp;
+package org.adempiere.impexp.bpartner;
 
 /*
  * #%L
@@ -31,6 +31,7 @@ import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.impexp.AbstractImportProcess;
 import org.adempiere.util.lang.IMutable;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_I_BPartner;

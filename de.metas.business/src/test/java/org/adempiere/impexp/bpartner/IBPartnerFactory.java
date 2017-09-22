@@ -1,4 +1,4 @@
-package org.adempiere.impexp;
+package org.adempiere.impexp.bpartner;
 
 import java.util.Properties;
 

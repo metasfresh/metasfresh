@@ -1,7 +1,8 @@
-package org.adempiere.impexp;
+package org.adempiere.impexp.bpartner;
 
 import java.util.Properties;
 
+import org.adempiere.impexp.bpartner.BPartnerImportProcess;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.Mutable;
 import org.compiere.model.I_I_BPartner;

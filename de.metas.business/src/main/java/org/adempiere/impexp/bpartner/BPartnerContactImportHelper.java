@@ -1,7 +1,8 @@
-package org.adempiere.impexp;
+package org.adempiere.impexp.bpartner;
 
 import org.adempiere.bpartner.service.IBPartnerBL;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.impexp.IImportValidator;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.user.api.IUserBL;
 import org.adempiere.util.Check;

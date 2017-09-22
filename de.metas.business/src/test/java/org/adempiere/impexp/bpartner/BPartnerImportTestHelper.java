@@ -1,7 +1,8 @@
-package org.adempiere.impexp;
+package org.adempiere.impexp.bpartner;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import org.adempiere.impexp.bpartner.BPartnerLocationImportHelper;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;

@@ -1,4 +1,4 @@
-package org.adempiere.impexp;
+package org.adempiere.impexp.bpartner;
 
 import java.util.List;
 import java.util.Objects;
@@ -7,6 +7,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.impexp.IImportValidator;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.compiere.model.I_C_BPartner;
