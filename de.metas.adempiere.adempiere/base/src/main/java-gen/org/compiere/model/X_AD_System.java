@@ -412,44 +412,6 @@ public class X_AD_System extends org.compiere.model.PO implements I_AD_System, o
 		return (java.lang.String)get_Value(COLUMNNAME_LastBuildInfo);
 	}
 
-	/** Set LDAP-Query.
-		@param LDAPDomain 
-		Directory service domain name - e.g. adempiere.org
-	  */
-	@Override
-	public void setLDAPDomain (java.lang.String LDAPDomain)
-	{
-		set_Value (COLUMNNAME_LDAPDomain, LDAPDomain);
-	}
-
-	/** Get LDAP-Query.
-		@return Directory service domain name - e.g. adempiere.org
-	  */
-	@Override
-	public java.lang.String getLDAPDomain () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_LDAPDomain);
-	}
-
-	/** Set LDAP-Server.
-		@param LDAPHost 
-		Connection String to LDAP server starting with ldap://
-	  */
-	@Override
-	public void setLDAPHost (java.lang.String LDAPHost)
-	{
-		set_Value (COLUMNNAME_LDAPHost, LDAPHost);
-	}
-
-	/** Get LDAP-Server.
-		@return Connection String to LDAP server starting with ldap://
-	  */
-	@Override
-	public java.lang.String getLDAPHost () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_LDAPHost);
-	}
-
 	/** Set Name.
 		@param Name 
 		Alphanumeric identifier of the entity
