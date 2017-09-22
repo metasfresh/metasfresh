@@ -111,32 +111,38 @@ class RawWidget extends Component {
         })
     }
 
+    classNames = classObject => (Object.entries(classObject)
+        .filter(([, classActive]) => classActive)
+        .map(([className]) => className)
+        .join(' ')
+    )
+
     getClassnames = (icon, forcedPrimary) => {
         const {
             widgetData, disabled, gridAlign, type, updated, rowId, isModal
         } = this.props;
 
-        const {isEdited} = this.state;
+        const { isEdited } = this.state;
 
-        return 'input-block ' +
-            (icon ? 'input-icon-container ' : '') +
-            (widgetData[0].readonly || disabled ? 'input-disabled ' : '') +
-            ((widgetData[0].mandatory &&
-                (
-                    (widgetData[0].value && widgetData[0].value.length === 0) ||
-                    (!widgetData[0].value && widgetData[0].value !== 0))
-                ) ? 'input-mandatory ' : '') +
-            ((widgetData[0].validStatus &&
-                (
-                    !widgetData[0].validStatus.valid &&
-                    !widgetData[0].validStatus.initialValue
-                ) &&
-                !isEdited) ? 'input-error ' : '') +
-            (gridAlign ? 'text-xs-' + gridAlign + ' ' : '') +
-            (type === 'primary' || forcedPrimary ?
-                'input-primary ' : 'input-secondary ') +
-            (updated ? 'pulse-on ' : 'pulse-off ') +
-            (rowId && !isModal ? 'input-table ' : '');
+        const { readonly, value, mandatory, validStatus } = widgetData[0];
+
+        return this.classNames({
+            'input-block': true,
+            'input-icon-container': icon,
+            'input-disabled': readonly || disabled,
+            'input-mandatory': (mandatory &&
+                (value ? value.length === 0 : value !== 0)
+            ),
+            'input-error': (validStatus &&
+                !validStatus.valid &&
+                !validStatus.initialValue &&
+                !isEdited
+            ),
+            [`text-xs-${gridAlign}`]: gridAlign,
+            [`input-${(type === 'primary' || forcedPrimary) ? 'primary' : 'secondary'}`]: true,
+            [`pulse-${updated ? 'on' : 'off'}`]: true,
+            'input-table': rowId && !isModal
+        });
     }
 
     renderErrorPopup = (reason) => {
