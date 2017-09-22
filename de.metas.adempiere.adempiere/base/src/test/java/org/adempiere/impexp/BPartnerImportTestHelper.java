@@ -65,9 +65,12 @@ import lombok.experimental.UtilityClass;
 		assertThat(bplocation).isNotNull();
 		assertThat(bplocation.getC_Location_ID()).isGreaterThan(0);
 		assertThat(bplocation.isBillToDefault()).isEqualTo(ibpartner.isBillToDefault());
-		assertThat(bplocation.isBillTo()).isEqualTo(BPartnerImportProcess.extractIsBillTo(ibpartner));
+		assertThat(bplocation.isBillTo()).isEqualTo(BPartnerLocationImportHelper.extractIsBillTo(ibpartner));
 		assertThat(bplocation.isShipToDefault()).isEqualTo(ibpartner.isShipToDefault());
-		assertThat(bplocation.isShipTo()).isEqualTo(BPartnerImportProcess.extractIsShipTo(ibpartner));
+		assertThat(bplocation.isShipTo()).isEqualTo(BPartnerLocationImportHelper.extractIsShipTo(ibpartner));
+		assertThat(bplocation.getPhone()).isEqualTo(ibpartner.getPhone());
+		assertThat(bplocation.getPhone2()).isEqualTo(ibpartner.getPhone2());
+		assertThat(bplocation.getFax()).isEqualTo(ibpartner.getFax());
 
 		// Location
 		final I_C_Location location = bplocation.getC_Location();

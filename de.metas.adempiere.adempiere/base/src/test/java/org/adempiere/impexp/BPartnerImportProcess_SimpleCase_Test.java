@@ -67,12 +67,20 @@ public class BPartnerImportProcess_SimpleCase_Test
 		return IBPartnerFactory.builder()
 				.ctx(ctx)
 				.value("G0022")
+				.groupValue("Standard")
+				.language("de_CH")
+				//
+				// Contact:
 				.firstName("FNTest1").lastName("LNTest1")
+				//
+				// Location:
 				.shipToContact(true).billToContact(false)
 				.address1("street 997").address2("").city("Berlin").region("").countryCode("DE")
 				.shipToDefaultAddress(false).billToDefaultAddress(true)
-				.groupValue("Standard")
-				.language("de_CH")
+				.locationPhone("phone1")
+				.locationPhone2("phone2")
+				.locationFax("fax")
+				//
 				.createImportRecord();
 	}
 }

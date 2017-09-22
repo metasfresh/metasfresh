@@ -44,19 +44,26 @@ import lombok.Value;
 
 	private final Properties ctx;
 	private final String value;
-	private final String firstName;
-	private final String lastName;
+	private final String groupValue;
+	private final String language;
+	
+	// Location
 	private final String address1;
 	private final String address2;
 	private final String city;
 	private final String region;
 	private final String countryCode;
-	private final String groupValue;
-	private final String language;
 	private final boolean shipToContact;
 	private final boolean billToContact;
 	private final boolean billToDefaultAddress;
 	private final boolean shipToDefaultAddress;
+	private final String locationPhone;
+	private final String locationPhone2;
+	private final String locationFax;
+	
+	// Contact
+	private final String firstName;
+	private final String lastName;
 
 	public static class IBPartnerFactoryBuilder
 	{
@@ -64,22 +71,32 @@ import lombok.Value;
 		{
 			final I_I_BPartner ibpartner = InterfaceWrapperHelper.create(ctx, I_I_BPartner.class, ITrx.TRXNAME_None);
 			ibpartner.setValue(value);
-			ibpartner.setFirstname(firstName);
-			ibpartner.setLastname(lastName);
+			ibpartner.setGroupValue(groupValue);
+			ibpartner.setAD_Language(language);
+			
+			//
+			// Location
 			ibpartner.setAddress1(address1);
 			ibpartner.setAddress2(address2);
 			ibpartner.setCity(city);
 			ibpartner.setRegionName(region);
-			ibpartner.setGroupValue(groupValue);
 			ibpartner.setCountryCode(countryCode);
-			ibpartner.setAD_Language(language);
-			ibpartner.setIsBillToContact_Default(billToContact);
-			ibpartner.setIsShipToContact_Default(shipToContact);
+			ibpartner.setC_Country_ID(C_Country_ID);
+			//
 			ibpartner.setIsBillToDefault(billToDefaultAddress);
 			ibpartner.setIsShipToDefault(shipToDefaultAddress);
-			ibpartner.setC_Country_ID(C_Country_ID);
+			ibpartner.setPhone(locationPhone);
+			ibpartner.setPhone2(locationPhone2);
+			ibpartner.setFax(locationFax);
+			
+			//
+			// Contact
+			ibpartner.setFirstname(firstName);
+			ibpartner.setLastname(lastName);
+			ibpartner.setIsBillToContact_Default(billToContact);
+			ibpartner.setIsShipToContact_Default(shipToContact);
+			
 			InterfaceWrapperHelper.save(ibpartner);
-
 			return ibpartner;
 		}
 
