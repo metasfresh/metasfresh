@@ -121,7 +121,7 @@ public class Login
 	 * @param isClient client connection
 	 * @return true if Java Version is OK
 	 */
-	public static boolean isJavaOK(boolean isClient)
+	public static boolean isJavaOK(final boolean isClient)
 	{
 		// Java System version check
 		final String jVersion = System.getProperty("java.version");
@@ -199,7 +199,7 @@ public class Login
 	 * @return available roles; never null or empty
 	 * @throws AdempiereException in case of any error (including no roles found)
 	 */
-	public Set<KeyNamePair> authenticate(final String username, String password)
+	public Set<KeyNamePair> authenticate(final String username, final String password)
 	{
 		log.debug("User={}", username);
 
@@ -921,7 +921,7 @@ public class Login
 		ctx.setProperty(Env.CTXNAME_UI_WindowHeader_Notice_FG_COLOR, windowHeaderForegroundColor);
 	}
 
-	public void setRemoteAddr(String remoteAddr)
+	public void setRemoteAddr(final String remoteAddr)
 	{
 		getCtx().setRemoteAddr(remoteAddr);
 	}
@@ -931,7 +931,7 @@ public class Login
 		return getCtx().getRemoteAddr();
 	}	// RemoteAddr
 
-	public void setRemoteHost(String remoteHost)
+	public void setRemoteHost(final String remoteHost)
 	{
 		getCtx().setRemoteHost(remoteHost);
 	}
@@ -941,7 +941,7 @@ public class Login
 		return getCtx().getRemoteHost();
 	}	// RemoteHost
 
-	public void setWebSession(String webSession)
+	public void setWebSession(final String webSession)
 	{
 		getCtx().setWebSession(webSession);
 	}
