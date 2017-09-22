@@ -39,13 +39,11 @@ import de.metas.contracts.subscription.inoutcandidate.spi.impl.InOutCandFlatrate
 import de.metas.contracts.subscription.inoutcandidate.spi.impl.InOutCandSubscriptionProcessor;
 import de.metas.contracts.subscription.inoutcandidate.spi.impl.SubscriptionInOutCandHandler;
 import de.metas.flatrate.Contracts_Constants;
-import de.metas.flatrate.freighcost.spi.impl.SubscriptionFreighCostFreeEvaluator;
 import de.metas.flatrate.impexp.FlatrateTermImportProcess;
 import de.metas.flatrate.inout.spi.impl.FlatrateMaterialBalanceConfigMatcher;
 import de.metas.flatrate.model.I_I_Flatrate_Term;
 import de.metas.flatrate.ordercandidate.spi.FlatrateGroupingProvider;
 import de.metas.flatrate.ordercandidate.spi.FlatrateOLCandListener;
-import de.metas.freighcost.api.IFreightCostBL;
 import de.metas.i18n.IMsgBL;
 import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.impex.model.I_AD_InputDataSource;
@@ -80,8 +78,6 @@ public class MainValidator implements ModelValidator
 		Services.get(IInOutCandHandlerBL.class).registerHandler(Env.getCtx(), new SubscriptionInOutCandHandler());
 
 		Services.get(IShipmentScheduleBL.class).registerCandidateProcessor(new InOutCandSubscriptionProcessor());
-
-		Services.get(IFreightCostBL.class).registerFreightCostFreeEvaluator(new SubscriptionFreighCostFreeEvaluator());
 
 		Services.get(IOLCandBL.class).registerCustomerGroupingValuesProvider(new FlatrateGroupingProvider());
 		Services.get(IOLCandBL.class).registerOLCandListener(new FlatrateOLCandListener());

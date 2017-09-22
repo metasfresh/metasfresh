@@ -42,7 +42,6 @@ import org.adempiere.inout.service.IInOutPA;
 import org.adempiere.inout.util.CachedObjects;
 import org.adempiere.inout.util.IShipmentCandidates;
 import org.adempiere.inout.util.IShipmentCandidates.CompleteStatus;
-import org.adempiere.inout.util.IShipmentCandidates.PostageFreeStatus;
 import org.adempiere.inout.util.ShipmentCandidates;
 import org.adempiere.inout.util.ShipmentScheduleQtyOnHandStorage;
 import org.adempiere.inout.util.ShipmentScheduleStorageRecord;
@@ -175,7 +174,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 		final CachedObjects coToUse = mkCoToUse(co);
 
 		final ShipmentCandidates firstRun = generate(ctx, olsAndScheds, null, coToUse, date, trxName);
-		firstRun.afterFirstRun(false);
+		firstRun.afterFirstRun();
 
 		// prepare the second run
 		final int removeCnt = applyCandidateProcessors(ctx, firstRun, coToUse, trxName);
@@ -219,7 +218,6 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 
 			final boolean isBPAllowConsolidateInOut = bpartnerBL.isAllowConsolidateInOutEffective(bPartner, isSOTrx);
 			sched.setAllowConsolidateInOut(isBPAllowConsolidateInOut);
-			sched.setPostageFreeAmt(bPartner.getPostageFreeAmt());
 
 			//
 			// Delivery Day related info:
@@ -947,12 +945,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 		{
 			shipmentCandidates.addStatusInfo(inOutLine, Services.get(IMsgBL.class).getMsg(Env.getCtx(), completeStatus.toString()));
 		}
-
-		final PostageFreeStatus postageFreeStatus = shipmentCandidates.getPostageFreeStatus(inOutLine);
-		if (!IShipmentCandidates.PostageFreeStatus.OK.equals(postageFreeStatus))
-		{
-			shipmentCandidates.addStatusInfo(inOutLine, Services.get(IMsgBL.class).getMsg(Env.getCtx(), postageFreeStatus.toString()));
-		}
+		
 		return shipmentCandidates.getStatusInfos(inOutLine);
 	}
 

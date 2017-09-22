@@ -330,29 +330,6 @@ public interface I_C_SubscriptionProgress
     public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Bestätigung eingegangen.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setIsSubscriptionConfirmed (boolean IsSubscriptionConfirmed);
-
-	/**
-	 * Get Bestätigung eingegangen.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public boolean isSubscriptionConfirmed();
-
-    /** Column definition for IsSubscriptionConfirmed */
-    public static final org.adempiere.model.ModelColumn<I_C_SubscriptionProgress, Object> COLUMN_IsSubscriptionConfirmed = new org.adempiere.model.ModelColumn<I_C_SubscriptionProgress, Object>(I_C_SubscriptionProgress.class, "IsSubscriptionConfirmed", null);
-    /** Column name IsSubscriptionConfirmed */
-    public static final String COLUMNNAME_IsSubscriptionConfirmed = "IsSubscriptionConfirmed";
-
-	/**
 	 * Set Lieferdisposition.
 	 *
 	 * <br>Type: TableDir

@@ -30,26 +30,26 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.collections.IdentityHashSet;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.MInOut;
-import org.compiere.model.MInOutLine;
 import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;
 import org.compiere.model.X_C_Order;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
+import org.slf4j.Logger;
+
+import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.interfaces.I_C_BPartner;
+import de.metas.logging.LogManager;
 
 /**
  * Helper class to manage the shipments that might actually be created in the end.
@@ -65,40 +65,38 @@ public class ShipmentCandidates implements IShipmentCandidates
 	/**
 	 * List to store the shipments before it is decided if they are persisted to the database.
 	 */
-	private final List<MInOut> orderedCandidates = new ArrayList<MInOut>();
+	private final List<I_M_InOut> orderedCandidates = new ArrayList<>();
 
 	/**
 	 * Maps inOuts to their inOutLines. Usually this is done using the inOut's ID stored in the inOutLine. But as the inOut hasn't been saved yet, it doesn't have an ID.
 	 */
-	private final Map<MInOut, List<MInOutLine>> inOut2Line = new HashMap<MInOut, List<MInOutLine>>();
+	private final Map<I_M_InOut, List<I_M_InOutLine>> inOut2Line = new HashMap<>();
 
-	private final Map<MInOutLine, MInOut> line2InOut = new HashMap<MInOutLine, MInOut>();
+	private final Map<I_M_InOutLine, I_M_InOut> line2InOut = new HashMap<>();
 
-	private final Map<MInOutLine, StringBuilder> line2StatusInfo = new HashMap<MInOutLine, StringBuilder>();
+	private final Map<I_M_InOutLine, StringBuilder> line2StatusInfo = new HashMap<>();
 
 	/**
 	 * Contains the quantities that would be delivered when postage free amount and order delivery rules where ignored.
 	 */
 	private final Map<Integer, BigDecimal> olId2QtyDeliverable = new HashMap<Integer, BigDecimal>();
 
-	private final Map<MInOutLine, CompleteStatus> line2CompleteStatus = new HashMap<MInOutLine, CompleteStatus>();
+	private final Map<I_M_InOutLine, CompleteStatus> line2CompleteStatus = new HashMap<>();
 
-	private final Map<MInOutLine, PostageFreeStatus> line2PostageFreeStatus = new HashMap<MInOutLine, PostageFreeStatus>();
-
-	private final Map<MInOutLine, OverallStatus> line2OverallStatus = new HashMap<MInOutLine, OverallStatus>();
+	private final Map<I_M_InOutLine, OverallStatus> line2OverallStatus = new HashMap<>();
 
 	/**
 	 * Used to keep track of which inOutLine's order has which delivery rule.
 	 * 
 	 * @see {@link #updateCompleteStatus()}
 	 */
-	private final Map<MOrder, Set<MInOutLine>> order2InOutLine = new HashMap<MOrder, Set<MInOutLine>>();
+	private final Map<MOrder, Set<I_M_InOutLine>> order2InOutLine = new HashMap<>();
 
 	private final Map<Integer, MOrderLine> orderLineCache;
 
-	private final Map<Integer, MInOutLine> orderLineId2InOutLine = new HashMap<Integer, MInOutLine>();
+	private final Map<Integer, I_M_InOutLine> orderLineId2InOutLine = new HashMap<>();
 
-	private final Map<MInOutLine, I_M_ShipmentSchedule> line2sched = new HashMap<MInOutLine, I_M_ShipmentSchedule>();
+	private final Map<I_M_InOutLine, I_M_ShipmentSchedule> line2sched = new HashMap<>();
 
 	/**
 	 * Used when multiple orders need to be consolidated to one shipment
@@ -142,7 +140,7 @@ public class ShipmentCandidates implements IShipmentCandidates
 			throw new IllegalArgumentException("Each input may be added only once");
 		}
 
-		orderedCandidates.add(getPO(inOut));
+		orderedCandidates.add(inOut);
 
 		final ArrayKey shipperKey = Util.mkKey(
 				inOut.getBPartnerAddress(),
@@ -156,8 +154,8 @@ public class ShipmentCandidates implements IShipmentCandidates
 				inOut.getC_Order_ID());
 		orderKey2Candidate.put(orderKey, getPO(inOut));
 
-		final List<MInOutLine> inOutLines = new ArrayList<MInOutLine>();
-		inOut2Line.put(getPO(inOut), inOutLines);
+		final List<I_M_InOutLine> inOutLines = new ArrayList<>();
+		inOut2Line.put(inOut, inOutLines);
 	}
 
 	private MInOut getPO(final I_M_InOut inOut)
@@ -195,46 +193,37 @@ public class ShipmentCandidates implements IShipmentCandidates
 			throw new IllegalArgumentException("completeStatus may not be " + CompleteStatus.INCOMPLETE_ORDER + " (this will be figured out later by this class)");
 		}
 
-		final MInOutLine inOutLinePO = getPO(inOutLine);
-		final MInOut inOutPO = getPO(inOut);
-
-		inOut2Line.get(inOutPO).add(inOutLinePO);
-		line2InOut.put(inOutLinePO, inOutPO);
+		inOut2Line.get(inOut).add(inOutLine);
+		line2InOut.put(inOutLine, inOut);
 
 		// store the inoutLine's orderId and status as well to support our
 		// later purge
-		line2CompleteStatus.put(inOutLinePO, completeStatus);
-		line2PostageFreeStatus.put(inOutLinePO, PostageFreeStatus.OK);
+		line2CompleteStatus.put(inOutLine, completeStatus);
 
 		final MOrder orderPO = InterfaceWrapperHelper.getPO(order);
 
-		Set<MInOutLine> inOutLines = order2InOutLine.get(orderPO);
+		Set<I_M_InOutLine> inOutLines = order2InOutLine.get(orderPO);
 		if (inOutLines == null)
 		{
-			inOutLines = new HashSet<MInOutLine>();
+			inOutLines = new HashSet<I_M_InOutLine>();
 			order2InOutLine.put(orderPO, inOutLines);
 		}
-		inOutLines.add(inOutLinePO);
+		inOutLines.add(inOutLine);
 
 		//
 		// C_OrderLine_ID to M_InOutLine mapping
 		{
-			final MInOutLine inOutLinePO_Old = orderLineId2InOutLine.put(inOutLine.getC_OrderLine_ID(), inOutLinePO);
-			if (inOutLinePO_Old != null && inOutLinePO_Old != inOutLinePO)
+			final I_M_InOutLine inOutLine_Old = orderLineId2InOutLine.put(inOutLine.getC_OrderLine_ID(), inOutLine);
+			if (inOutLine_Old != null && inOutLine_Old != inOutLine)
 			{
 				throw new IllegalArgumentException("An InOutLine was already set for order line in orderLineId2InOutLine mapping"
-						+ "\n InOutLine: " + inOutLinePO
-						+ "\n InOutLine (old): " + inOutLinePO_Old
+						+ "\n InOutLine: " + inOutLine
+						+ "\n InOutLine (old): " + inOutLine_Old
 						+ "\n orderLineId2InOutLine (after change): " + orderLineId2InOutLine);
 			}
 		}
 
-		line2sched.put(inOutLinePO, sched);
-	}
-
-	private MInOutLine getPO(final I_M_InOutLine inOutLine)
-	{
-		return InterfaceWrapperHelper.getPO(inOutLine);
+		line2sched.put(inOutLine, sched);
 	}
 
 	public void removeLine(final I_M_InOutLine inOutLine)
@@ -244,14 +233,13 @@ public class ShipmentCandidates implements IShipmentCandidates
 			throw new NullPointerException("inOutLine");
 		}
 
-		final MInOutLine inOutLinePO = getPO(inOutLine);
-		final MInOut inOutPO = line2InOut.remove(inOutLinePO);
-		if (inOutPO == null)
+		final I_M_InOut inOut = line2InOut.remove(inOutLine);
+		if (inOut == null)
 		{
 			throw new IllegalStateException("inOutLine wasn't in line2InOut");
 		}
 
-		boolean success = inOut2Line.get(inOutPO).remove(inOutLine);
+		boolean success = inOut2Line.get(inOut).remove(inOutLine);
 		if (!success)
 		{
 			throw new IllegalStateException("inOutLine wasn't in inOut2Line");
@@ -265,7 +253,7 @@ public class ShipmentCandidates implements IShipmentCandidates
 					+ "\n orderLineId2InOutLine: " + orderLineId2InOutLine);
 		}
 
-		success = line2sched.remove(inOutLinePO) != null;
+		success = line2sched.remove(inOutLine) != null;
 		if (!success)
 		{
 			throw new IllegalStateException("inOutLine wasn't in line2sched"
@@ -280,12 +268,7 @@ public class ShipmentCandidates implements IShipmentCandidates
 	@Override
 	public List<I_M_InOut> getCandidates()
 	{
-		final List<I_M_InOut> result = new ArrayList<I_M_InOut>(orderedCandidates.size());
-		for (final MInOut inOutPO : orderedCandidates)
-		{
-			result.add(InterfaceWrapperHelper.create(inOutPO, I_M_InOut.class));
-		}
-		return result;
+		return ImmutableList.copyOf(orderedCandidates);
 	}
 
 	/**
@@ -314,21 +297,6 @@ public class ShipmentCandidates implements IShipmentCandidates
 	}
 
 	@Override
-	public PostageFreeStatus getPostageFreeStatus(final I_M_InOutLine inOutLine)
-	{
-		if (inOutLine == null)
-		{
-			throw new NullPointerException("inOutLine");
-		}
-		if (!line2PostageFreeStatus.containsKey(inOutLine))
-		{
-			throw new IllegalArgumentException("inOutLine " + inOutLine
-					+ " is not contained in this instance");
-		}
-		return line2PostageFreeStatus.get(inOutLine);
-	}
-
-	@Override
 	public BigDecimal getQtyDeliverable(final int orderLineId)
 	{
 		if (olId2QtyDeliverable.containsKey(orderLineId))
@@ -353,7 +321,7 @@ public class ShipmentCandidates implements IShipmentCandidates
 		}
 
 		final List<I_M_InOutLine> result = new ArrayList<I_M_InOutLine>();
-		for (final MInOutLine iol : inOut2Line.get(getPO(inOut)))
+		for (final I_M_InOutLine iol : inOut2Line.get(inOut))
 		{
 			result.add(InterfaceWrapperHelper.create(iol, I_M_InOutLine.class));
 		}
@@ -363,13 +331,13 @@ public class ShipmentCandidates implements IShipmentCandidates
 	@Override
 	public I_M_InOut getInOut(final I_M_InOutLine inOutLine)
 	{
-		final MInOut inoutPO = line2InOut.get(getPO(inOutLine));
+		final I_M_InOut inout = line2InOut.get(inOutLine);
 
-		if (inoutPO == null)
+		if (inout == null)
 		{
 			throw new IllegalArgumentException("inOutLine " + inOutLine + " is not contained in this instance");
 		}
-		return InterfaceWrapperHelper.create(inoutPO, I_M_InOut.class);
+		return inout;
 	}
 
 	/**
@@ -385,7 +353,7 @@ public class ShipmentCandidates implements IShipmentCandidates
 		{
 			throw new NullPointerException("inOut");
 		}
-		return inOut2Line.get(getPO(inOut)).isEmpty();
+		return inOut2Line.get(inOut).isEmpty();
 	}
 
 	/**
@@ -427,13 +395,12 @@ public class ShipmentCandidates implements IShipmentCandidates
 	}
 
 	/**
-	 * Updates the {@link CompleteStatus} and the {@link PostageFreeStatus} of the candidates. Also sets the candidates' quantities to zero if this is implied by the status.
+	 * Updates the {@link CompleteStatus} of the candidates. Also sets the candidates' quantities to zero if this is implied by the status.
 	 */
-	public void afterFirstRun(final boolean ignorePostageFreeAmt)
+	public void afterFirstRun()
 	{
 		resetQtyDeliverables();
 		updateCompleteStatus();
-		updatePostageFreeStatus(ignorePostageFreeAmt);
 	}
 
 	public I_M_InOutLine getInOutLineFor(final I_C_OrderLine orderLine)
@@ -488,12 +455,12 @@ public class ShipmentCandidates implements IShipmentCandidates
 			{
 				// We only deliver if the line qty is same as the qty
 				// ordered by the customer
-				for (final MInOutLine inOutLinePO : order2InOutLine.get(order))
+				for (final I_M_InOutLine inOutLine : order2InOutLine.get(order))
 				{
-					if (CompleteStatus.INCOMPLETE_LINE.equals(line2CompleteStatus.get(inOutLinePO)))
+					if (CompleteStatus.INCOMPLETE_LINE.equals(line2CompleteStatus.get(inOutLine)))
 					{
-						inOutLinePO.setQtyEntered(BigDecimal.ZERO);
-						inOutLinePO.setMovementQty(BigDecimal.ZERO);
+						inOutLine.setQtyEntered(BigDecimal.ZERO);
+						inOutLine.setMovementQty(BigDecimal.ZERO);
 					}
 				}
 			}
@@ -502,9 +469,9 @@ public class ShipmentCandidates implements IShipmentCandidates
 				// We only deliver any line at all if all line qtys as the
 				// same as the qty ordered by the customer
 				boolean removeAll = false;
-				for (final MInOutLine inOutLinePO : order2InOutLine.get(order))
+				for (final I_M_InOutLine inOutLine : order2InOutLine.get(order))
 				{
-					if (CompleteStatus.INCOMPLETE_LINE.equals(line2CompleteStatus.get(inOutLinePO)))
+					if (CompleteStatus.INCOMPLETE_LINE.equals(line2CompleteStatus.get(inOutLine)))
 					{
 						removeAll = true;
 						break;
@@ -512,98 +479,23 @@ public class ShipmentCandidates implements IShipmentCandidates
 				}
 				if (removeAll)
 				{
-					for (final MInOutLine inOutLinePO : order2InOutLine.get(order))
+					for (final I_M_InOutLine inOutLine : order2InOutLine.get(order))
 					{
-						inOutLinePO.setQtyEntered(BigDecimal.ZERO);
-						inOutLinePO.setMovementQty(BigDecimal.ZERO);
+						inOutLine.setQtyEntered(BigDecimal.ZERO);
+						inOutLine.setMovementQty(BigDecimal.ZERO);
 
 						// update the status to show why we set the quantity to zero
-						line2CompleteStatus.put(inOutLinePO, CompleteStatus.INCOMPLETE_ORDER);
+						line2CompleteStatus.put(inOutLine, CompleteStatus.INCOMPLETE_ORDER);
 					}
 				}
 			}
 			else
 			{
-				for (MInOutLine inOutLinePO : order2InOutLine.get(order))
+				for (I_M_InOutLine inOutLine : order2InOutLine.get(order))
 				{
 					// update the status to show that the "completeness" of this inOuLine is irrelevant
-					line2CompleteStatus.put(inOutLinePO, CompleteStatus.OK);
+					line2CompleteStatus.put(inOutLine, CompleteStatus.OK);
 				}
-			}
-		}
-	}
-
-	/**
-	 * Updated all inoutLines' PostageFreeStatus according to the respective bPartner's postage free amount.
-	 * 
-	 * @param ignorePostageFreeAmt if true, the lines qty is not set to {@link BigDecimal#ZERO}, even if we are below the customer's postage free amount. However, the status is still set.
-	 */
-	@Override
-	public void updatePostageFreeStatus(final boolean ignorePostageFreeAmt)
-	{
-		for (final I_M_InOut shipmentCandidate : getCandidates())
-		{
-			final I_C_BPartner bPartner = InterfaceWrapperHelper.create(shipmentCandidate.getC_BPartner(), I_C_BPartner.class);
-
-			final BigDecimal postageFree = (BigDecimal)bPartner.getPostageFreeAmt();
-
-			BigDecimal shipmentValue = BigDecimal.ZERO;
-
-			// if ignorePostageFreeAmount is false and a postage free amount
-			// is set, we need to check if the value of this shipment is
-			// enough to make shipping profitable
-			boolean sufficiantValue = postageFree == null;
-
-			if (!sufficiantValue)
-			{
-				for (final I_M_InOutLine inOutLine : getLines(shipmentCandidate))
-				{
-
-					// access orderLineCache instead of loading the line
-					// from DB
-					final MOrderLine orderLinePO = this.orderLineCache.get(inOutLine.getC_OrderLine_ID());
-					final BigDecimal lineValue = orderLinePO.getPriceActual().multiply(inOutLine.getQtyEntered());
-
-					shipmentValue = shipmentValue.add(lineValue);
-
-					if (shipmentValue.compareTo(postageFree) >= 0)
-					{
-						sufficiantValue = true;
-						break;
-					}
-				}
-			}
-			for (final I_M_InOutLine inOutLine : getLines(shipmentCandidate))
-			{
-				final PostageFreeStatus status;
-
-				if (sufficiantValue)
-				{
-					status = PostageFreeStatus.OK;
-				}
-				else
-				{
-					if (!ignorePostageFreeAmt)
-					{
-						inOutLine.setQtyEntered(BigDecimal.ZERO);
-						inOutLine.setMovementQty(BigDecimal.ZERO);
-					}
-
-					status = PostageFreeStatus.BELOW_POSTAGEFREE_AMT;
-
-					if (logger.isInfoEnabled())
-					{
-						logger.info("Shipment "
-								+ shipmentCandidate.getDocumentNo()
-								+ " has an insufficient value of "
-								+ shipmentValue.toPlainString()
-								+ " (minimum value is "
-								+ postageFree.toPlainString() + ")");
-					}
-				}
-
-				final MInOutLine inOutLinePO = getPO(inOutLine);
-				line2PostageFreeStatus.put(inOutLinePO, status);
 			}
 		}
 	}
@@ -612,7 +504,7 @@ public class ShipmentCandidates implements IShipmentCandidates
 	{
 		olId2QtyDeliverable.clear();
 
-		for (final MInOutLine inOutLine : line2InOut.keySet())
+		for (final I_M_InOutLine inOutLine : line2InOut.keySet())
 		{
 			if (inOutLine.getMovementQty().signum() != 0)
 			{
@@ -622,27 +514,15 @@ public class ShipmentCandidates implements IShipmentCandidates
 	}
 
 	@Override
-	public void setPostageFreeStatusOK(final I_M_InOut inOut)
-	{
-		for (final I_M_InOutLine inOutLine : getLines(inOut))
-		{
-			final MInOutLine inOutLinePO = getPO(inOutLine);
-			line2PostageFreeStatus.put(inOutLinePO, PostageFreeStatus.OK);
-		}
-	}
-
-	@Override
 	public I_M_InOutLine getInOutLineForOrderLine(final int orderLineId)
 	{
-		final MInOutLine inoutLine = orderLineId2InOutLine.get(orderLineId);
-		return InterfaceWrapperHelper.create(inoutLine, I_M_InOutLine.class);
+		return orderLineId2InOutLine.get(orderLineId);
 	}
 
 	@Override
 	public void setOverallStatus(final I_M_InOutLine inOutLine, final OverallStatus status)
 	{
-		final MInOutLine inOutLinePO = getPO(inOutLine);
-		line2OverallStatus.put(inOutLinePO, status);
+		line2OverallStatus.put(inOutLine, status);
 	}
 
 	@Override
@@ -657,15 +537,13 @@ public class ShipmentCandidates implements IShipmentCandidates
 	@Override
 	public void addStatusInfo(final I_M_InOutLine inOutLine, final String string)
 	{
-		final MInOutLine inOutLinePO = getPO(inOutLine);
-
 		StringBuilder currentInfos = line2StatusInfo.get(inOutLine);
 
 		boolean firstInfo = false;
 		if (currentInfos == null)
 		{
 			currentInfos = new StringBuilder();
-			line2StatusInfo.put(inOutLinePO, currentInfos);
+			line2StatusInfo.put(inOutLine, currentInfos);
 			firstInfo = true;
 		}
 

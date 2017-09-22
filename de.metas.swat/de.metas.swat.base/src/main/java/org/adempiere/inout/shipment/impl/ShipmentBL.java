@@ -1,38 +1,11 @@
 package org.adempiere.inout.shipment.impl;
 
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-
-import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 
-import org.adempiere.inout.service.IInOutPA;
 import org.adempiere.inout.shipment.IShipmentBL;
 import org.adempiere.inout.shipment.ShipmentParams;
 import org.adempiere.inout.util.IShipmentCandidates;
@@ -42,21 +15,19 @@ import org.adempiere.util.MiscUtils;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_Warehouse;
 import org.slf4j.Logger;
-import de.metas.logging.LogManager;
-import org.compiere.util.Util;
-import org.compiere.util.Util.ArrayKey;
+
+import com.google.common.annotations.VisibleForTesting;
 
 import de.metas.document.engine.IDocActionBL;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inout.model.I_M_InOutLine;
-import de.metas.inoutcandidate.api.IDeliverRequest;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.OlAndSched;
 import de.metas.inoutcandidate.api.impl.ShipmentGenerateException;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.interfaces.I_C_OrderLine;
+import de.metas.logging.LogManager;
 
 public class ShipmentBL implements IShipmentBL
 {
@@ -70,9 +41,6 @@ public class ShipmentBL implements IShipmentBL
 			final String trxName)
 	{
 		final ShipmentFactory factory = new ShipmentFactory();
-
-		// try to lock schedules
-		final List<Integer> olsAndSchedsLocked = new ArrayList<Integer>();
 
 		final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 
@@ -122,21 +90,8 @@ public class ShipmentBL implements IShipmentBL
 			logger.info("Going to create shipments from " + finalList.size() + " shipment schedule entries");
 
 			mkInOutsDefault(ctx, shipmentParams, factory, finalList, trxName);
-
-			if (!shipmentParams.isIgnorePostageFreeamount())
-			{
-				int counter = 0;
-				while (redistribute(ctx, finalList, factory, shipmentParams, trxName) > 0)
-				{
-					counter++;
-					if (counter > olsAndSchedsLocked.size())
-					{
-						throw new RuntimeException("Redistribution doesn't finish. Aparently there's a bug.");
-					}
-				}
-			}
+			
 			factory.addAllToCandidates(candidates);
-
 		}
 		finally
 		{
@@ -188,138 +143,6 @@ public class ShipmentBL implements IShipmentBL
 
 	}
 
-	/**
-	 *
-	 * @param olsAndScheds
-	 * @param factory
-	 * @param shipmentParams are required in case a new inOutLine needs to be made
-	 * @param trxName
-	 * @return
-	 */
-	private int redistribute(
-			final Properties ctx,
-			final List<OlAndSched> olsAndScheds,
-			final ShipmentFactory factory,
-			final ShipmentParams shipmentParams,
-			final String trxName)
-	{
-
-		// map (productId, asiId) -> (Qty to redistribute)
-		final Map<ArrayKey, BigDecimal> qtys = evalPostageFreeAmt(olsAndScheds, factory);
-		final int result = qtys.size();
-
-		if (result == 0)
-		{
-			// there's nothing to redistribute
-			return 0;
-		}
-
-		for (final OlAndSched olAndSched : olsAndScheds)
-		{
-			final I_C_OrderLine ol = olAndSched.getOl();
-			final IDeliverRequest deliverRequest = olAndSched.getDeliverRequest();
-			final I_M_ShipmentSchedule sched = olAndSched.getSched();
-
-			if (sched.getQtyToDeliver().compareTo(deliverRequest.getQtyOrdered()) >= 0)
-			{
-				// the current line doesn't need redistribution
-				continue;
-			}
-			if (factory.isInvalid(olAndSched))
-			{
-				// the current line has already been invalidated
-				continue;
-			}
-
-			final ArrayKey currentKey = Util.mkKey(ol.getM_Product_ID(), ol.getM_AttributeSetInstance_ID());
-
-			if (!qtys.containsKey(currentKey))
-			{
-				// there is nothing in store for the current line
-				continue;
-			}
-
-			I_M_InOutLine inOutLine = factory.getInOutLine(olAndSched);
-			if (inOutLine == null)
-			{
-				inOutLine = factory.mkInOutLine(ctx, olAndSched, shipmentParams, trxName);
-			}
-
-			final BigDecimal qtyCurrent = inOutLine.getMovementQty();
-			final BigDecimal qtyDemand = deliverRequest.getQtyOrdered().subtract(qtyCurrent);
-
-			final BigDecimal qtyAvail = qtys.get(currentKey);
-
-			BigDecimal qtyNew;
-			if (qtyDemand.compareTo(qtyAvail) >= 0)
-			{
-				// the full available qty is given to the current line
-				qtyNew = qtyCurrent.add(qtyAvail);
-				qtys.remove(currentKey);
-			}
-			else
-			{
-				qtyNew = qtyCurrent.add(qtyDemand);
-				final BigDecimal newQtyAvail = qtyAvail.subtract(qtyDemand);
-				qtys.put(currentKey, newQtyAvail);
-			}
-
-			final IInOutPA inoutPA = Services.get(IInOutPA.class);
-			inoutPA.setLineQty(inOutLine, qtyNew);
-		}
-		return result;
-	}
-
-	private Map<ArrayKey, BigDecimal> evalPostageFreeAmt(
-			final List<OlAndSched> olsAndScheds,
-			final ShipmentFactory factory)
-	{
-		// map (productId, asiId) -> (Qty to redistribute)
-		final Map<ArrayKey, BigDecimal> qtys = new HashMap<ArrayKey, BigDecimal>();
-
-		for (final OlAndSched olAndSched : olsAndScheds)
-		{
-			if (factory.isInvalid(olAndSched))
-			{
-				// nothing to to
-				continue;
-			}
-
-			final I_M_InOut inOut = factory.getInOut(olAndSched);
-			if (inOut == null)
-			{
-				// nothing to do
-				continue;
-			}
-
-			final BigDecimal valueOfInOut = factory.getValueOfInOut(inOut);
-
-			if (valueOfInOut.compareTo(olAndSched.getSched().getPostageFreeAmt()) >= 0)
-			{
-				// nothing to do
-				continue;
-			}
-
-			final I_M_InOutLine inOutLine = factory.getInOutLine(olAndSched);
-
-			final ArrayKey key = Util.mkKey(inOutLine.getM_Product_ID(), inOutLine.getM_AttributeSetInstance_ID());
-
-			final BigDecimal qtyCollected = qtys.get(key);
-
-			if (qtyCollected == null)
-			{
-				qtys.put(key, inOutLine.getMovementQty());
-			}
-			else
-			{
-				qtys.put(key, qtyCollected.add(inOutLine.getMovementQty()));
-			}
-
-			factory.invalidate(olAndSched);
-		}
-		return qtys;
-	}
-
 	private List<OlAndSched> filterDatePromised(
 			final ShipmentParams shipmentParams,
 			final List<OlAndSched> olsAndScheds)
@@ -349,7 +172,7 @@ public class ShipmentBL implements IShipmentBL
 	 * @param trxName
 	 * @return
 	 */
-	/* note: this method is package visible for testing purposes. */
+	@VisibleForTesting
 	List<OlAndSched> retrieveOlsAndScheds(
 			final Properties ctx,
 			final ShipmentParams params,

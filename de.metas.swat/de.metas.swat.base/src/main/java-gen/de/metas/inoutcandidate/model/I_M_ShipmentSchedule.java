@@ -1268,31 +1268,6 @@ public interface I_M_ShipmentSchedule
     public static final String COLUMNNAME_POReference = "POReference";
 
 	/**
-	 * Set PostageFreeAmt.
-	 * Betrag zur Bestimmung der Potofreigrenze im Lieferlauf.
-	 *
-	 * <br>Type: Amount
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setPostageFreeAmt (java.math.BigDecimal PostageFreeAmt);
-
-	/**
-	 * Get PostageFreeAmt.
-	 * Betrag zur Bestimmung der Potofreigrenze im Lieferlauf.
-	 *
-	 * <br>Type: Amount
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.math.BigDecimal getPostageFreeAmt();
-
-    /** Column definition for PostageFreeAmt */
-    public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_PostageFreeAmt = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object>(I_M_ShipmentSchedule.class, "PostageFreeAmt", null);
-    /** Column name PostageFreeAmt */
-    public static final String COLUMNNAME_PostageFreeAmt = "PostageFreeAmt";
-
-	/**
 	 * Set Bereitstellungsdatum.
 	 *
 	 * <br>Type: DateTime

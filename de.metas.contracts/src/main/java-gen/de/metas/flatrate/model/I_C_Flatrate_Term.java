@@ -966,29 +966,6 @@ public interface I_C_Flatrate_Term
     public static final String COLUMNNAME_IsClosingWithCorrectionSum = "IsClosingWithCorrectionSum";
 
 	/**
-	 * Set Portofrei.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setIsPostageFree (boolean IsPostageFree);
-
-	/**
-	 * Get Portofrei.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public boolean isPostageFree();
-
-    /** Column definition for IsPostageFree */
-    public static final org.adempiere.model.ModelColumn<I_C_Flatrate_Term, Object> COLUMN_IsPostageFree = new org.adempiere.model.ModelColumn<I_C_Flatrate_Term, Object>(I_C_Flatrate_Term.class, "IsPostageFree", null);
-    /** Column name IsPostageFree */
-    public static final String COLUMNNAME_IsPostageFree = "IsPostageFree";
-
-	/**
 	 * Set Planspiel.
 	 *
 	 * <br>Type: YesNo
