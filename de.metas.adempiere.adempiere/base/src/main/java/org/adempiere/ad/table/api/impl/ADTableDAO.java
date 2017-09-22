@@ -23,6 +23,7 @@ package org.adempiere.ad.table.api.impl;
  */
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBL;
@@ -204,7 +205,7 @@ public class ADTableDAO implements IADTableDAO
 		final String tableNameNew = table.getTableName();
 
 		// Do nothing if the table name was not actually changed
-		if (Check.equals(tableNameOld, tableNameNew))
+		if (Objects.equals(tableNameOld, tableNameNew))
 		{
 			return;
 		}
@@ -232,5 +233,18 @@ public class ADTableDAO implements IADTableDAO
 		@SuppressWarnings("deprecation")
 		final int tableID = MTable.getTable_ID(tableName);
 		return InterfaceWrapperHelper.create(Env.getCtx(), tableID, I_AD_Table.class, ITrx.TRXNAME_None);
+	}
+
+	@Override
+	public List<I_AD_Column> retrieveColumnsForTable(final I_AD_Table table)
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+		return queryBL.createQueryBuilder(I_AD_Column.class)
+				.addOnlyActiveRecordsFilter()
+				.addOnlyContextClient()
+				.addEqualsFilter(I_AD_Column.COLUMNNAME_AD_Table_ID, table.getAD_Table_ID())
+				.create()
+				.list();
 	}
 }

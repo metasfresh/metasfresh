@@ -30,13 +30,13 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.table.api.impl.CopyColumnsProducer;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_Table;
-import org.compiere.model.MTable;
 
-import de.metas.process.ProcessInfoParameter;
 import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
 
 /**
  * Copy selected columns to given table.
@@ -101,7 +101,7 @@ public class AD_Column_CopySelectedToTable extends JavaProcess
 			throw new AdempiereException("@NotFound@ @AD_Table_ID@ " + p_AD_Table_ID);
 		}
 
-		final MTable targetTable = new MTable(getCtx(), p_AD_Table_ID, get_TrxName());
+		final I_AD_Table targetTable = InterfaceWrapperHelper.create(getCtx(), p_AD_Table_ID, I_AD_Table.class, get_TrxName());
 		return targetTable;
 	}
 
