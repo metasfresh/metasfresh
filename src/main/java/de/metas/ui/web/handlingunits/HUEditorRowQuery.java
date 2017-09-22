@@ -37,7 +37,7 @@ import lombok.Value;
 public class HUEditorRowQuery
 {
 	/** User string filter (e.g. what user typed in the lookup field) */
-	private final String stringFilter;
+	private final String userInputFilter;
 
 	/** If specified only the rows of given type are considered */
 	private final HUEditorRowType rowType;
@@ -46,15 +46,24 @@ public class HUEditorRowQuery
 	 * M_HU_IDs to exclude.
 	 * The HUs are excluded AFTER they are exploded,
 	 * so if you exclude an M_HU_ID then you will not get it in the result but it's children will be part of the result.
+	 * 
+	 * Note: this list is never {@code null}, empty means "no restriction".
 	 */
 	private final ImmutableSet<Integer> excludeHUIds;
 
+	/**
+	 * Note: this list is never {@code null}, empty means "no restriction".
+	 */
+	private final ImmutableSet<String> excludeHUStatuses;
+
 	@Builder
-	private HUEditorRowQuery(final String stringFilter,
+	private HUEditorRowQuery(
+			final String userInputFilter,
 			final HUEditorRowType rowType,
-			@Singular final ImmutableSet<Integer> excludeHUIds)
+			@Singular final ImmutableSet<Integer> excludeHUIds,
+			@Singular final ImmutableSet<String> excludeHUStatuses)
 	{
-		this.stringFilter = stringFilter;
+		this.userInputFilter = userInputFilter;
 		this.rowType = rowType;
 
 		if (excludeHUIds == null || excludeHUIds.isEmpty())
@@ -65,5 +74,7 @@ public class HUEditorRowQuery
 		{
 			this.excludeHUIds = excludeHUIds.stream().filter(huId -> huId > 0).collect(ImmutableSet.toImmutableSet());
 		}
+
+		this.excludeHUStatuses = excludeHUStatuses;
 	}
 }

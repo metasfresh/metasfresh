@@ -16,6 +16,7 @@ import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.ad.expression.api.LogicExpressionResult;
 import org.adempiere.ad.persistence.TableModelLoader;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.CopyRecordFactory;
 import org.adempiere.model.CopyRecordSupport;
@@ -23,6 +24,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.model.RecordZoomWindowFinder;
 import org.adempiere.util.Check;
+import org.adempiere.util.Services;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.PO;
@@ -634,6 +636,22 @@ public class DocumentCollection
 
 	public Document duplicateDocument(final DocumentPath fromDocumentPath)
 	{
+		// NOTE: assume running out of transaction
+
+		// Clone the document in transaction.
+		// One of the reasons of doing this is because for some documents there are events which are triggered on each change (but on trx commit).
+		// If we would run out of transaction, those events would be triggered 10k times.
+		// e.g. copying the AD_Role. Each time a record like AD_Window_Access is created, the UserRolePermissionsEventBus.fireCacheResetEvent() is called.
+		final ITrxManager trxManager = Services.get(ITrxManager.class);
+		final DocumentPath toDocumentPath = trxManager.call(ITrx.TRXNAME_ThreadInherited, () -> duplicateDocumentInTrx(fromDocumentPath));
+
+		return forDocumentReadonly(toDocumentPath, NullDocumentChangesCollector.instance, Function.identity());
+	}
+
+	private DocumentPath duplicateDocumentInTrx(final DocumentPath fromDocumentPath)
+	{
+		// NOTE: assume it's already running in transaction
+
 		final TableRecordReference fromRecordRef = getTableRecordReference(fromDocumentPath);
 
 		final Object fromModel = fromRecordRef.getModel(PlainContextAware.newWithThreadInheritedTrx());
@@ -652,7 +670,7 @@ public class DocumentCollection
 		childCRS.copyRecord(fromPO, ITrx.TRXNAME_ThreadInherited);
 
 		final DocumentPath toDocumentPath = DocumentPath.rootDocumentPath(fromDocumentPath.getWindowId(), DocumentId.of(toPO.get_ID()));
-		return forDocumentReadonly(toDocumentPath, NullDocumentChangesCollector.instance, Function.identity());
+		return toDocumentPath;
 	}
 
 	public BoilerPlateContext createBoilerPlateContext(final DocumentPath documentPath)

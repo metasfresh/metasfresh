@@ -10,6 +10,7 @@ import org.compiere.util.NamePair;
 
 import de.metas.ui.web.window.datatypes.json.JSONDate;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
+import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONRange;
 
 /*
@@ -74,6 +75,11 @@ public final class Values
 		{
 			final LookupValue lookupValue = (LookupValue)value;
 			return JSONLookupValue.ofLookupValue(lookupValue);
+		}
+		else if (value instanceof LookupValuesList)
+		{
+			final LookupValuesList lookupValues = (LookupValuesList)value;
+			return JSONLookupValuesList.ofLookupValuesList(lookupValues);
 		}
 		else if (value instanceof NamePair)
 		{

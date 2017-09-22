@@ -1,9 +1,8 @@
-package de.metas.ui.web.window.descriptor.sql;
+package de.metas.ui.web.handlingunits;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import static org.assertj.core.api.Assertions.assertThat;
 
-import de.metas.ui.web.window.descriptor.LookupDescriptor;
+import org.junit.Test;
 
 /*
  * #%L
@@ -27,13 +26,17 @@ import de.metas.ui.web.window.descriptor.LookupDescriptor;
  * #L%
  */
 
-/**
- * Retrieves a particular field from given {@link ResultSet}.
- * 
- * To create specific instances of this interface, please use {@link DocumentFieldValueLoaders}.
- */
-@FunctionalInterface
-public interface DocumentFieldValueLoader
+public class HUEditorRowQueryTest
 {
-	Object retrieveFieldValue(ResultSet rs, boolean isDisplayColumnAvailable, String adLanguage, LookupDescriptor lookupDescriptor) throws SQLException;
+	@Test
+	public void testListsNotNullInEmptyQuery()
+	{
+		final HUEditorRowQuery emptyQuery = HUEditorRowQuery.builder().build();
+
+		assertThat(emptyQuery.getExcludeHUIds()).isNotNull();
+		assertThat(emptyQuery.getExcludeHUIds()).isEmpty();
+
+		assertThat(emptyQuery.getExcludeHUStatuses()).isNotNull();
+		assertThat(emptyQuery.getExcludeHUStatuses()).isEmpty();
+	}
 }

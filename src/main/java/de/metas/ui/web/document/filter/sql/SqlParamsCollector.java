@@ -10,9 +10,10 @@ import org.adempiere.ad.dao.ISqlQueryFilter;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
+import com.google.common.base.MoreObjects;
+
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
-import lombok.ToString;
 
 /*
  * #%L
@@ -43,7 +44,6 @@ import lombok.ToString;
  *
  */
 @EqualsAndHashCode
-@ToString
 public final class SqlParamsCollector
 {
 	public static SqlParamsCollector newInstance()
@@ -78,6 +78,14 @@ public final class SqlParamsCollector
 	{
 		this.params = params;
 		paramsRO = params != null ? Collections.unmodifiableList(params) : null;
+	}
+	
+	@Override
+	public String toString()
+	{
+		return MoreObjects.toStringHelper(this)
+				.addValue(paramsRO)
+				.toString();
 	}
 
 	public boolean isCollecting()
@@ -117,6 +125,11 @@ public final class SqlParamsCollector
 			throw new IllegalStateException("Cannot append " + sqlParams + " to not collecting params");
 		}
 		params.addAll(sqlParams);
+	}
+	
+	public void collect(final SqlParamsCollector from)
+	{
+		collectAll(from.params);
 	}
 
 	/**

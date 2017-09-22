@@ -1,12 +1,11 @@
 package de.metas.ui.web.quickinput;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
-
-import com.google.common.base.MoreObjects;
 
 import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
+import lombok.NonNull;
+import lombok.Value;
 
 /*
  * #%L
@@ -30,50 +29,15 @@ import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
  * #L%
  */
 
+@Value(staticConstructor = "of")
 public class QuickInputDescriptor
 {
-	public static final QuickInputDescriptor of( //
-			final DocumentEntityDescriptor entityDescriptor //
-			, final QuickInputLayoutDescriptor layout //
-			, final Class<? extends IQuickInputProcessor> processorClass //
-	)
-	{
-		return new QuickInputDescriptor(entityDescriptor, layout, processorClass);
-	}
-
+	@NonNull
 	private final DocumentEntityDescriptor entityDescriptor;
+	@NonNull
 	private final QuickInputLayoutDescriptor layout;
+	@NonNull
 	private final Class<? extends IQuickInputProcessor> processorClass;
-
-	private QuickInputDescriptor(final DocumentEntityDescriptor entityDescriptor, final QuickInputLayoutDescriptor layout, final Class<? extends IQuickInputProcessor> processorClass)
-	{
-		Check.assumeNotNull(entityDescriptor, "Parameter entityDescriptor is not null");
-		Check.assumeNotNull(layout, "Parameter layout is not null");
-		Check.assumeNotNull(processorClass, "Parameter processorClass is not null");
-
-		this.entityDescriptor = entityDescriptor;
-		this.layout = layout;
-		this.processorClass = processorClass;
-	}
-
-	@Override
-	public String toString()
-	{
-		return MoreObjects.toStringHelper(this)
-				.add("processorClass", processorClass)
-				.add("entityDescriptor", entityDescriptor)
-				.toString();
-	}
-
-	public DocumentEntityDescriptor getEntityDescriptor()
-	{
-		return entityDescriptor;
-	}
-
-	public QuickInputLayoutDescriptor getLayout()
-	{
-		return layout;
-	}
 
 	public IQuickInputProcessor createProcessor()
 	{

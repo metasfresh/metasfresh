@@ -49,9 +49,9 @@ import lombok.NonNull;
 interface HUEditorViewBuffer
 {
 	ViewId getViewId();
-	
+
 	List<DocumentFilter> getStickyFilters();
-	
+
 	long size();
 
 	void invalidateAll();
@@ -64,7 +64,7 @@ interface HUEditorViewBuffer
 
 	/** @return top level rows and included rows recursive stream */
 	Stream<HUEditorRow> streamAllRecursive() throws UnsupportedOperationException;
-	
+
 	/** @return top level rows and included rows recursive stream which are matching the given query */
 	default Stream<HUEditorRow> streamAllRecursive(@NonNull final HUEditorRowQuery query)
 	{
@@ -78,7 +78,7 @@ interface HUEditorViewBuffer
 		}
 
 		// Filter by string filter
-		final String stringFilter = query.getStringFilter();
+		final String stringFilter = query.getUserInputFilter();
 		if (!Check.isEmpty(stringFilter, true))
 		{
 			result = result.filter(row -> row.matchesStringFilter(stringFilter));
@@ -86,20 +86,24 @@ interface HUEditorViewBuffer
 
 		// Exclude M_HU_IDs
 		final ImmutableSet<Integer> excludeHUIds = query.getExcludeHUIds();
-		if(!excludeHUIds.isEmpty())
+		if (!excludeHUIds.isEmpty())
 		{
 			result = result.filter(row -> !excludeHUIds.contains(row.getM_HU_ID()));
 		}
 
+		if (!query.getExcludeHUStatuses().isEmpty())
+		{
+			result = result.filter(row -> !query.getExcludeHUStatuses().contains(row.getHUStatusKey()));
+		}
+
 		return result;
 	}
-	
+
 	/** @return true if there is any top level or included row which is matching given query */
 	default boolean matchesAnyRowRecursive(final HUEditorRowQuery query)
 	{
 		return streamAllRecursive(query).findAny().isPresent();
 	}
-
 
 	/**
 	 * Stream all rows (including children) which match any of given <code>rowIds</code>.

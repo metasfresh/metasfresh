@@ -337,7 +337,6 @@ public class WindowRestController
 		
 		final DocumentPath fromDocumentPath = DocumentPath.rootDocumentPath(WindowId.fromJson(windowIdStr), DocumentId.of(documentIdStr));
 		
-		// NOTE: deliberately we are not running in a transaction so basically we will ask the duplicate method to copy as much as it can ;)
 		final Document documentCopy = documentCollection.duplicateDocument(fromDocumentPath);
 		return JSONDocument.ofDocument(documentCopy, newJSONOptions().setShowAdvancedFields(advanced).build());
 	}

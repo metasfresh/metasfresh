@@ -1,15 +1,15 @@
 package de.metas.ui.web.quickinput;
 
-import java.util.Objects;
 import java.util.Set;
 
 import org.springframework.stereotype.Component;
 
-import com.google.common.base.MoreObjects;
-
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentType;
 import de.metas.ui.web.window.descriptor.DetailId;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Value;
 
 /*
  * #%L
@@ -50,7 +50,15 @@ public interface IQuickInputDescriptorFactory
 
 	QuickInputDescriptor createQuickInputEntityDescriptor(final DocumentType documentType, final DocumentId documentTypeId, final DetailId detailId);
 
+	//
+	//
+	// -------------------------------------------------------------------
+	//
+	//
+
 	/** Key used to identify the {@link IQuickInputDescriptorFactory} to be used */
+	@Value
+	@AllArgsConstructor(access = AccessLevel.PRIVATE)
 	public static final class MatchingKey
 	{
 		public static final MatchingKey includedDocument(final DocumentType documentType, final int documentTypeIdInt, final String tableName)
@@ -74,49 +82,5 @@ public interface IQuickInputDescriptorFactory
 		private final DocumentType documentType;
 		private final DocumentId documentTypeId;
 		private final String tableName;
-
-		private MatchingKey(final DocumentType documentType, final DocumentId documentTypeId, final String tableName)
-		{
-			this.documentType = documentType;
-			this.documentTypeId = documentTypeId;
-			this.tableName = tableName;
-		}
-
-		@Override
-		public String toString()
-		{
-			return MoreObjects.toStringHelper(this)
-					.omitNullValues()
-					.add("documentType", documentType)
-					.add("documentTypeId", documentTypeId)
-					.add("tableName", tableName)
-					.toString();
-		}
-
-		@Override
-		public int hashCode()
-		{
-			return Objects.hash(documentType, documentTypeId, tableName);
-		}
-
-		@Override
-		public boolean equals(final Object obj)
-		{
-			if (this == obj)
-			{
-				return true;
-			}
-			if (obj instanceof MatchingKey)
-			{
-				final MatchingKey other = (MatchingKey)obj;
-				return Objects.equals(documentType, other.documentType)
-						&& Objects.equals(documentTypeId, other.documentTypeId)
-						&& Objects.equals(tableName, other.tableName);
-			}
-			else
-			{
-				return false;
-			}
-		}
 	}
 }

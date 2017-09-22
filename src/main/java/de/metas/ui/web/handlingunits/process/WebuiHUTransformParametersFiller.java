@@ -21,8 +21,10 @@ import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.allocation.transfer.HUTransformService;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
+import de.metas.handlingunits.model.I_M_HU_PI_Version;
+import de.metas.handlingunits.model.X_M_HU;
+import de.metas.printing.esb.base.util.Check;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.ui.web.handlingunits.HUEditorRow;
@@ -148,74 +150,93 @@ public class WebuiHUTransformParametersFiller
 	 */
 	public final LookupValuesList getActions(final int processId)
 	{
+		final Set<String> allowedActions = new HashSet<>();
+
+		final HUEditorRow huRow = getSelectedRow();
+		if (huRow.isCU())
+		{
+			allowedActions.addAll(getActionTypesForCUs());
+		}
+
+		else if (huRow.isTU())
+		{
+			allowedActions.addAll(getActionTypesForTUs());
+		}
+
+		else if (huRow.isLU())
+		{
+			allowedActions.add(ActionType.LU_Set_Ownership.toString());
+		}
+
 		final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 		final I_AD_Process_Para processParameter = adProcessDAO.retriveProcessParameter(Env.getCtx(), processId, WEBUI_M_HU_Transform.PARAM_Action);
 		final int actionsReferenceId = processParameter.getAD_Reference_Value_ID();
 		final Collection<ADRefListItem> allActiveActionItems = adReferenceDAO.retrieveListItems(actionsReferenceId);
 
-		final Set<String> selectableTypes = new HashSet<>();
-
-		final HUEditorRow huRow = getSelectedRow();
-		if (huRow.isCU())
-		{
-			selectableTypes.add(ActionType.CU_To_NewCU.toString());
-			selectableTypes.add(ActionType.CU_To_NewTUs.toString());
-
-			final boolean existsTUs;
-			if (isCheckExistingHUsInsideView())
-			{
-				existsTUs = getView().matchesAnyRowRecursive(HUEditorRowQuery.builder()
-						.rowType(HUEditorRowType.TU)
-						.excludeHUId(getParentHUIdOfSelectedRow())
-						.build());
-			}
-			else
-			{
-				existsTUs = true;
-			}
-
-			if (existsTUs)
-			{
-				selectableTypes.add(ActionType.CU_To_ExistingTU.toString());
-			}
-		}
-
-		else if (huRow.isTU())
-		{
-			selectableTypes.add(ActionType.TU_To_NewTUs.toString());
-			selectableTypes.add(ActionType.TU_To_NewLUs.toString());
-			selectableTypes.add(ActionType.TU_Set_Ownership.toString());
-
-			final boolean existsLUs;
-			if (isCheckExistingHUsInsideView())
-			{
-				existsLUs = getView().matchesAnyRowRecursive(HUEditorRowQuery.builder()
-						.rowType(HUEditorRowType.LU)
-						.excludeHUId(getParentHUIdOfSelectedRow())
-						.build());
-			}
-			else
-			{
-				existsLUs = true;
-			}
-			if (existsLUs)
-			{
-				selectableTypes.add(ActionType.TU_To_ExistingLU.toString());
-			}
-		}
-
-		else if (huRow.isLU())
-		{
-			selectableTypes.add(ActionType.LU_Set_Ownership.toString());
-		}
-
 		final String adLanguage = Env.getAD_Language();
 
 		return allActiveActionItems.stream()
-				.filter(item -> selectableTypes.contains(item.getValueName()))
+				.filter(item -> allowedActions.contains(item.getValueName()))
 				.map(item -> StringLookupValue.of(item.getValueName(), item.getName()))
 				.sorted(Comparator.comparing(lookupValue -> lookupValue.getDisplayName(adLanguage)))
 				.collect(LookupValuesList.collect());
+	}
+
+	private Set<String> getActionTypesForCUs()
+	{
+		final Set<String> selectableTypes = new HashSet<>();
+
+		selectableTypes.add(ActionType.CU_To_NewCU.toString());
+		selectableTypes.add(ActionType.CU_To_NewTUs.toString());
+
+		final boolean existsTUs;
+		if (isCheckExistingHUsInsideView())
+		{
+			existsTUs = getView().matchesAnyRowRecursive(HUEditorRowQuery.builder()
+					.rowType(HUEditorRowType.TU)
+					.excludeHUId(getParentHUIdOfSelectedRow())
+					.excludeHUStatus(X_M_HU.HUSTATUS_Destroyed)
+					.build());
+		}
+		else
+		{
+			existsTUs = true;
+		}
+
+		if (existsTUs)
+		{
+			selectableTypes.add(ActionType.CU_To_ExistingTU.toString());
+		}
+
+		return selectableTypes;
+	}
+
+	private Set<String> getActionTypesForTUs()
+	{
+		final Set<String> selectableTypes = new HashSet<>();
+
+		selectableTypes.add(ActionType.TU_To_NewTUs.toString());
+		selectableTypes.add(ActionType.TU_To_NewLUs.toString());
+		selectableTypes.add(ActionType.TU_Set_Ownership.toString());
+
+		final boolean existsLUs;
+		if (isCheckExistingHUsInsideView())
+		{
+			existsLUs = getView().matchesAnyRowRecursive(HUEditorRowQuery.builder()
+					.rowType(HUEditorRowType.LU)
+					.excludeHUId(getParentHUIdOfSelectedRow())
+					.excludeHUStatus(X_M_HU.HUSTATUS_Destroyed)
+					.build());
+		}
+		else
+		{
+			existsLUs = true;
+		}
+		if (existsLUs)
+		{
+			selectableTypes.add(ActionType.TU_To_ExistingLU.toString());
+		}
+		return selectableTypes;
 	}
 
 	/**
@@ -239,10 +260,10 @@ public class WebuiHUTransformParametersFiller
 		final I_C_BPartner bPartner = cuRow.getM_HU().getC_BPartner();
 
 		return WEBUI_ProcessHelper.retrieveHUPIItemProducts(
-				Env.getCtx(), 
-				product, 
+				Env.getCtx(),
+				product,
 				bPartner,
-				false); // includeVirtualItem = false..moving a cu onto a "virtual" TU makes no sense. Instead, the user can just leave the CU as it is, or take it out of a physical TU 
+				false); // includeVirtualItem = false..moving a cu onto a "virtual" TU makes no sense. Instead, the user can just leave the CU as it is, or take it out of a physical TU
 	}
 
 	/**
@@ -269,9 +290,10 @@ public class WebuiHUTransformParametersFiller
 		{
 			return getView()
 					.streamAllRecursive(HUEditorRowQuery.builder()
-							.stringFilter(context.getFilterOrIfAny(null))
+							.userInputFilter(context.getFilterOrIfAny(null))
 							.rowType(HUEditorRowType.TU) // ..needs to be a TU
 							.excludeHUId(getParentHUIdOfSelectedRow()) // ..may not be the one TU that 'cu' is already attached to
+							.excludeHUStatus(X_M_HU.HUSTATUS_Destroyed)
 							.build())
 					.sorted(Comparator.comparing(HUEditorRow::getM_HU_ID))
 					.map(row -> row.toLookupValue())
@@ -323,9 +345,10 @@ public class WebuiHUTransformParametersFiller
 		{
 			return getView()
 					.streamAllRecursive(HUEditorRowQuery.builder()
-							.stringFilter(context.getFilterOrIfAny(null))
+							.userInputFilter(context.getFilterOrIfAny(null))
 							.rowType(HUEditorRowType.LU) // ..needs to be a LU
 							.excludeHUId(getParentHUIdOfSelectedRow()) // ..may not be the one LU that 'tu' is already attached to
+							.excludeHUStatus(X_M_HU.HUSTATUS_Destroyed)
 							.build())
 					.sorted(Comparator.comparing(HUEditorRow::getM_HU_ID))
 					.map(row -> row.toLookupValue())
@@ -375,9 +398,10 @@ public class WebuiHUTransformParametersFiller
 
 		final HUEditorRow tuRow = getSelectedRow();
 		final I_M_HU tuHU = tuRow.getM_HU();
-		final I_M_HU_PI tuPI = handlingUnitsBL.getEffectivePIVersion(tuHU).getM_HU_PI();
+		final I_M_HU_PI_Version effectivePIVersion = handlingUnitsBL.getEffectivePIVersion(tuHU);
+		Check.errorIf(effectivePIVersion == null, "tuHU is inconsistent; hu={}", tuHU);
 
-		final List<I_M_HU_PI_Item> luPIItems = handlingUnitsDAO.retrieveParentPIItemsForParentPI(tuPI, null, tuHU.getC_BPartner());
+		final List<I_M_HU_PI_Item> luPIItems = handlingUnitsDAO.retrieveParentPIItemsForParentPI(effectivePIVersion.getM_HU_PI(), null, tuHU.getC_BPartner());
 
 		return luPIItems.stream()
 				.filter(luPIItem -> luPIItem.getM_HU_PI_Version().isCurrent() && luPIItem.getM_HU_PI_Version().isActive() && luPIItem.getM_HU_PI_Version().getM_HU_PI().isActive())

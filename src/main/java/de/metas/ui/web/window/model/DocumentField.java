@@ -490,7 +490,7 @@ import lombok.NonNull;
 	}
 
 	@Override
-	public DocumentValidStatus updateStatusIfInvalidAndGet(final IDocumentChangesCollector changesCollector)
+	public DocumentValidStatus updateStatusIfInitialInvalidAndGet(final IDocumentChangesCollector changesCollector)
 	{
 		if (_validStatus.isInitialInvalid())
 		{

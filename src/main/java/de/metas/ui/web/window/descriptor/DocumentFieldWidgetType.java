@@ -10,6 +10,7 @@ import com.google.common.collect.Sets;
 
 import de.metas.ui.web.window.datatypes.DateRangeValue;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
+import de.metas.ui.web.window.datatypes.LookupValuesList;
 
 /*
  * #%L
@@ -60,6 +61,7 @@ public enum DocumentFieldWidgetType
 	// General Lookups
 	, List(LayoutAlign.Left, null, DisplayType.Search) //
 	, Lookup(LayoutAlign.Left, null, DisplayType.Search) //
+	, Labels(LayoutAlign.Left, LookupValuesList.class, -1) //
 
 	//
 	// Special lookups

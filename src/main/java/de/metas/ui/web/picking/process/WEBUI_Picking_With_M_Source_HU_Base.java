@@ -50,7 +50,7 @@ public abstract class WEBUI_Picking_With_M_Source_HU_Base
 		final I_M_ShipmentSchedule shipmentSchedule = getView().getCurrentShipmentSchedule();
 
 		final PickingHUsQuery query = PickingHUsQuery.builder()
-				.considerAttributes(true)
+				.onlyIfAttributesMatchWithShipmentSchedules(true)
 				.shipmentSchedules(ImmutableList.of(shipmentSchedule))
 				.onlyTopLevelHUs(true)
 				.build();

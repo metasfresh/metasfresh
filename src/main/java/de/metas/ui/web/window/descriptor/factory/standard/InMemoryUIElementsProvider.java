@@ -15,6 +15,7 @@ import org.compiere.model.I_AD_UI_Section;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Lists;
@@ -123,6 +124,12 @@ final class InMemoryUIElementsProvider implements IWindowUIElementsGeneratorCons
 	public List<I_AD_UI_Element> getUIElements(final I_AD_UI_ElementGroup uiElementGroup)
 	{
 		return elementGroup2elements.get(uiElementGroup);
+	}
+	
+	@Override
+	public List<I_AD_UI_Element> getUIElementsOfTypeLabels(final int adTabId)
+	{
+		return ImmutableList.of();
 	}
 
 	@Override

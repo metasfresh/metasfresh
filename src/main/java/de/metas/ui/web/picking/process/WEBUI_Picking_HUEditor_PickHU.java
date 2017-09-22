@@ -34,12 +34,12 @@ import de.metas.ui.web.picking.pickingslot.PickingSlotView;
 /**
  * Assigns an existing HU to a picking slot.
  * 
- * This process is called from the HU selection dialog that is opened by {@link WEBUI_Picking_OpenHUsToPick}.
+ * This process is called from the HU selection dialog that is opened by {@link WEBUI_Picking_HUEditor_Open}.
  * 
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public class WEBUI_Picking_PickSelectedHU
+public class WEBUI_Picking_HUEditor_PickHU
 		extends WEBUI_Picking_Select_M_HU_Base
 		implements IProcessPrecondition
 {
