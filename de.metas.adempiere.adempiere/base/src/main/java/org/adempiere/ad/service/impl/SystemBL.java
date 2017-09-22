@@ -193,39 +193,8 @@ public class SystemBL implements ISystemBL
 		system.setSupportUnits(internalUsers);
 	}	//	setInternalUsers
 
-	/**
-	 * 	Is LDAP Authentification defined
-	 *	@return true if ldap defined
-	 */
-	@Override
-	public boolean isLDAP()
-	{
-		final I_AD_System system = get(Env.getCtx());
-		
-		final String host = system.getLDAPHost();
-		if (host == null || host.length() == 0)
-		{
-			return false;
-		}
-		final String domain = system.getLDAPDomain();
-		return domain != null && domain.length() > 0;
-	}	//	isLDAP	
-	
-	/**
-	 * 	LDAP Authentification. Assumes that LDAP is defined.
-	 *	@param userName user name
-	 *	@param password password
-	 *	@return true if ldap authenticated
-	 */
-	@Override
-	public boolean isLDAP (String userName, String password)
-	{
-		final I_AD_System system = get(Env.getCtx());
-		
-		return LDAP.validate(system.getLDAPHost(), system.getLDAPDomain(), userName, password);
-	}	//	isLDAP
-	
-	
+
+
 	/*
 	 * Allow remember me feature
 	 * ZK_LOGIN_ALLOW_REMEMBER_ME and SWING_ALLOW_REMEMBER_ME parameter allow the next values

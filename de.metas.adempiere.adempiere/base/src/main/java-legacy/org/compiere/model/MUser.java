@@ -76,8 +76,6 @@ public class MUser extends X_AD_User
 	@Override
 	public void setValue(String Value)
 	{
-		if (Value == null || Value.trim().length() == 0)
-			Value = getLDAPUser();
 		if (Value == null || Value.length() == 0)
 			Value = getName();
 		if (Value == null || Value.length() == 0)

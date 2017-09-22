@@ -37,10 +37,6 @@ public interface ISystemBL extends ISingletonService
 
 	boolean setInfo(I_AD_System system);
 
-	boolean isLDAP();
-
-	boolean isLDAP(String userName, String password);
-
 	/**
 	 * Evaluate a sysconfig value and check it's value:
 	 * <ul>
