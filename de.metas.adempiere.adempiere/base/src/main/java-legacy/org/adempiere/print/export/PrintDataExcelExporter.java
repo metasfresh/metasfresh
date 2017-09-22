@@ -19,6 +19,8 @@ import java.util.Date;
 import javax.print.attribute.standard.MediaSizeName;
 
 import org.adempiere.impexp.AbstractExcelExporter;
+import org.adempiere.impexp.CellValue;
+import org.adempiere.impexp.CellValues;
 import org.apache.poi.hssf.usermodel.HSSFPrintSetup;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.compiere.print.MPrintFormat;
@@ -83,7 +85,7 @@ public class PrintDataExcelExporter
 	}
 
 	@Override
-	public Object getValueAt(final int row, final int col)
+	public CellValue getValueAt(final int row, final int col)
 	{
 		PrintDataElement pde = getPDE(row, col);
 		Object value = null;
@@ -118,7 +120,7 @@ public class PrintDataExcelExporter
 			value = pde.getValueDisplay(getLanguage());
 		}
 		//
-		return value;
+		return CellValues.toCellValue(value, pde.getDisplayType());
 	}
 
 	@Override

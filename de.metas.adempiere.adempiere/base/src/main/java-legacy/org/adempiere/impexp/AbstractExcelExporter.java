@@ -112,7 +112,7 @@ public abstract class AbstractExcelExporter
 	 * @param col column index
 	 * @return cell value
 	 */
-	protected abstract Object getValueAt(int row, int col);
+	protected abstract CellValue getValueAt(int row, int col);
 
 	/**
 	 * Check if there is a page break on given cell
@@ -126,8 +126,8 @@ public abstract class AbstractExcelExporter
 	/** Logger */
 	protected final Logger log = LogManager.getLogger(getClass());
 	//
-	private HSSFWorkbook m_workbook;
-	private HSSFDataFormat m_dataFormat;
+	private final HSSFWorkbook m_workbook;
+	private final HSSFDataFormat m_dataFormat;
 	private HSSFFont m_fontHeader = null;
 	private HSSFFont m_fontDefault = null;
 	private Language m_lang = null;
@@ -155,7 +155,7 @@ public abstract class AbstractExcelExporter
 		m_rowSplit = rowSplit;
 	}
 
-	private String fixString(final String str)
+	private static String fixString(final String str)
 	{
 		// ms excel doesn't support UTF8 charset
 		return StringUtils.stripDiacritics(str);
@@ -266,8 +266,8 @@ public abstract class AbstractExcelExporter
 			}
 			else if (DisplayType.isNumeric(displayType))
 			{
-				DecimalFormat df = DisplayType.getNumberFormat(displayType, getLanguage());
-				String format = getFormatString(df, isHighlightNegativeNumbers);
+				final DecimalFormat df = DisplayType.getNumberFormat(displayType, getLanguage());
+				final String format = getFormatString(df, isHighlightNegativeNumbers);
 				cs.setDataFormat(m_dataFormat.getFormat(format));
 			}
 			m_styles.put(key, cs);
@@ -396,8 +396,7 @@ public abstract class AbstractExcelExporter
 	 * @param out
 	 * @throws Exception
 	 */
-	public void export(final OutputStream out)
-			throws Exception
+	public void export(final OutputStream out) throws Exception
 	{
 		HSSFSheet sheet = createTableSheet();
 		String sheetName = null;
@@ -408,7 +407,7 @@ public abstract class AbstractExcelExporter
 			setCurrentRow(rownum);
 
 			boolean isPageBreak = false;
-			HSSFRow row = sheet.createRow(xls_rownum);
+			final HSSFRow row = sheet.createRow(xls_rownum);
 			// for all columns
 			int colnum = 0;
 			for (int col = 0; col < getColumnCount(); col++)
@@ -418,45 +417,51 @@ public abstract class AbstractExcelExporter
 				//
 				if (isColumnPrinted(col))
 				{
-					HSSFCell cell = row.createCell(colnum);
+					final HSSFCell cell = row.createCell(colnum);
 
 					// 03917: poi-3.7 doesn't have this method anymore
 					// cell.setEncoding(HSSFCell.ENCODING_UTF_16); // Bug-2017673 - Export Report as Excel - Bad Encoding
+					
+					//
+					// Fetch cell value
+					CellValue cellValue;
+					try
+					{
+						cellValue = getValueAt(rownum, col);
+					}
+					catch (final Exception ex)
+					{
+						log.warn("Failed extracting cell value at row={}, col={}. Considering it null.", rownum, col, ex);
+						cellValue = null;
+					}
 
-					// line row
-					Object obj = getValueAt(rownum, col);
-					int displayType = getDisplayType(rownum, col);
-					if (obj == null)
+					//
+					// Update the excel cell
+					if (cellValue == null)
 					{
 						// nothing
 					}
-					else if (DisplayType.isDate(displayType))
+					else if (cellValue.isDate())
 					{
-						final java.util.Date value = (java.util.Date)obj;
-						cell.setCellValue(value);
+						cell.setCellValue(cellValue.dateValue());
 					}
-					else if (DisplayType.isNumeric(displayType))
+					else if (cellValue.isNumber())
 					{
-						double value = 0;
-						if (obj instanceof Number)
-						{
-							value = ((Number)obj).doubleValue();
-						}
-						cell.setCellValue(value);
+						cell.setCellValue(cellValue.doubleValue());
 					}
-					else if (DisplayType.YesNo == displayType)
+					else if (cellValue.isBoolean())
 					{
-						final boolean value = DisplayType.toBoolean(obj);
+						final boolean value = cellValue.booleanValue();
 						cell.setCellValue(new HSSFRichTextString(Msg.getMsg(getLanguage(), value == true ? "Y" : "N")));
 					}
 					else
 					{
-						final String value = fixString(obj.toString());	// formatted
+						final String value = fixString(cellValue.stringValue());	// formatted
 						cell.setCellValue(new HSSFRichTextString(value));
 					}
 					//
-					HSSFCellStyle style = getStyle(rownum, col);
-					cell.setCellStyle(style);
+					cell.setCellStyle(getStyle(rownum, col));
+					
 					// Page break
 					if (isPageBreak(rownum, col))
 					{

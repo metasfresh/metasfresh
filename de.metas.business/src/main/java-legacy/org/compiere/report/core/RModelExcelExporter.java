@@ -14,6 +14,8 @@
 package org.compiere.report.core;
 
 import org.adempiere.impexp.AbstractExcelExporter;
+import org.adempiere.impexp.CellValue;
+import org.adempiere.impexp.CellValues;
 
 /**
  * @author Teo Sarca, SC ARHIPAC SERVICE SRL
@@ -56,9 +58,11 @@ public class RModelExcelExporter
 	}
 
 	@Override
-	public Object getValueAt(final int row, final int col)
+	public CellValue getValueAt(final int row, final int col)
 	{
-		return m_model.getValueAt(row, col);
+		final Object valueObj = m_model.getValueAt(row, col);
+		final int displayType = getDisplayType(row, col);
+		return CellValues.toCellValue(valueObj, displayType);
 	}
 
 	@Override
