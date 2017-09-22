@@ -30,7 +30,6 @@ import org.adempiere.inout.util.CachedObjects;
 import org.adempiere.inout.util.IShipmentCandidates;
 import org.adempiere.inout.util.IShipmentCandidates.CompleteStatus;
 import org.adempiere.inout.util.IShipmentCandidates.OverallStatus;
-import org.adempiere.inout.util.IShipmentCandidates.PostageFreeStatus;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Services;
@@ -75,9 +74,8 @@ public class DefaultCandidateProcessor implements ICandidateProcessor
 				//
 				// check the complete and postage free status
 				final CompleteStatus completeStatus = candidates.getCompleteStatus(inOutLine);
-				final PostageFreeStatus postageFreeStatus = candidates.getPostageFreeStatus(inOutLine);
-
-				if (CompleteStatus.OK.equals(completeStatus) && PostageFreeStatus.OK.equals(postageFreeStatus))
+				
+				if (CompleteStatus.OK.equals(completeStatus))
 				{
 					candidates.setOverallStatus(inOutLine, OverallStatus.REVALIDATE);
 					rmInOutLines++;
