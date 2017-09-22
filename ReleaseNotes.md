@@ -155,6 +155,12 @@ Here come the actual release notes:
     * Fix for the disposal invoicing process.
   * [#594](https://github.com/metasfresh/metasfresh-webui-api/issues/594) LU is not created when you receive in production
     * Action Receipt Handling Unit retrieval. Fix when creating Logistic Units in manufacturing.
+  * [#597](https://github.com/metasfresh/metasfresh-webui-api/issues/597) error in picking
+  * [#598](https://github.com/metasfresh/metasfresh-webui-api/issues/598) partial issue is disabled
+  * [#599](https://github.com/metasfresh/metasfresh-webui-api/issues/599) String document IDs cannot be converted to int error on Transform
+
+* metasfresh-webui-frontend
+  * [#1205](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1205) Can't open any process while on Dashboard
 
 # metasfresh 5.26 (2017-37)
 
