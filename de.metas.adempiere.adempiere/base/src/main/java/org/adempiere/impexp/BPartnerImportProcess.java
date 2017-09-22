@@ -48,6 +48,8 @@ import org.compiere.model.MContactInterest;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.X_I_BPartner;
 
+import com.google.common.annotations.VisibleForTesting;
+
 /**
  * Imports {@link I_I_BPartner} records to {@link I_C_BPartner}.
  *
@@ -107,7 +109,7 @@ public class BPartnerImportProcess extends AbstractImportProcess<I_I_BPartner>
 			sameBPpreviousImportRecords = new ArrayList<>();
 		}
 
-		public void collectImportRecord(I_I_BPartner importRecord)
+		public void collectImportRecord(final I_I_BPartner importRecord)
 		{
 			sameBPpreviousImportRecords.add(importRecord);
 		}
@@ -344,9 +346,9 @@ public class BPartnerImportProcess extends AbstractImportProcess<I_I_BPartner>
 
 		// also set isBillTo and IsShipTo flags
 		bpartnerLocation.setIsShipToDefault(importRecord.isShipToDefault());
-		bpartnerLocation.setIsShipTo(importRecord.isShipToDefault() ? importRecord.isShipToDefault() : importRecord.isShipTo()); // if isShipToDefault='Y', then use that value
+		bpartnerLocation.setIsShipTo(extractIsShipTo(importRecord));
 		bpartnerLocation.setIsBillToDefault(importRecord.isBillToDefault());
-		bpartnerLocation.setIsBillTo(importRecord.isBillToDefault() ? importRecord.isBillToDefault() : importRecord.isBillTo()); // if isBillToDefault='Y', the use that value
+		bpartnerLocation.setIsBillTo(extractIsBillTo(importRecord));
 
 		if (importRecord.getPhone() != null)
 		{
@@ -366,6 +368,19 @@ public class BPartnerImportProcess extends AbstractImportProcess<I_I_BPartner>
 
 		importRecord.setC_BPartner_Location(bpartnerLocation);
 	}
+	
+	@VisibleForTesting
+	static final boolean extractIsShipTo(final I_I_BPartner importRecord)
+	{
+		return importRecord.isShipToDefault() ? true : importRecord.isShipTo();
+	}
+	
+	@VisibleForTesting
+	static final boolean extractIsBillTo(final I_I_BPartner importRecord)
+	{
+		return importRecord.isBillToDefault() ? true : importRecord.isBillTo();
+	}
+
 
 	private I_C_BPartner_Location createNewBPartnerLocation(final I_I_BPartner importRecord)
 	{
@@ -391,9 +406,9 @@ public class BPartnerImportProcess extends AbstractImportProcess<I_I_BPartner>
 
 		// set isShipTo and isBillTo
 		bpartnerLocation.setIsShipToDefault(importRecord.isShipToDefault());
-		bpartnerLocation.setIsShipTo(importRecord.isShipToDefault() ? importRecord.isShipToDefault() : importRecord.isShipTo()); // if isShipToDefault='Y', then use that value
+		bpartnerLocation.setIsShipTo(extractIsShipTo(importRecord));
 		bpartnerLocation.setIsBillToDefault(importRecord.isBillToDefault());
-		bpartnerLocation.setIsBillTo(importRecord.isBillToDefault() ? importRecord.isBillToDefault() : importRecord.isBillTo()); // if isBillToDefault='Y', the use that value
+		bpartnerLocation.setIsBillTo(extractIsBillTo(importRecord));
 
 		ModelValidationEngine.get().fireImportValidate(this, importRecord, bpartnerLocation, IImportValidator.TIMING_AFTER_IMPORT);
 		InterfaceWrapperHelper.save(bpartnerLocation);
