@@ -1080,29 +1080,6 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 		return false;
 	}
 
-	/** Set Portofrei.
-		@param IsPostageFree Portofrei	  */
-	@Override
-	public void setIsPostageFree (boolean IsPostageFree)
-	{
-		set_Value (COLUMNNAME_IsPostageFree, Boolean.valueOf(IsPostageFree));
-	}
-
-	/** Get Portofrei.
-		@return Portofrei	  */
-	@Override
-	public boolean isPostageFree () 
-	{
-		Object oo = get_Value(COLUMNNAME_IsPostageFree);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
-	}
-
 	/** Set Planspiel.
 		@param IsSimulation Planspiel	  */
 	@Override

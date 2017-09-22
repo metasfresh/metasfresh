@@ -1165,7 +1165,6 @@ public class FlatrateBL implements IFlatrateBL
 			nextTerm.setC_Flatrate_Conditions_ID(nextConditions.getC_Flatrate_Conditions_ID());
 			nextTerm.setPlannedQtyPerUnit(currentTerm.getPlannedQtyPerUnit());
 			nextTerm.setIsSimulation(currentTerm.isSimulation());
-			nextTerm.setIsPostageFree(currentTerm.isPostageFree()); // 04836 : also copy the postage fee
 
 			nextTerm.setBill_BPartner_ID(currentTerm.getBill_BPartner_ID());
 			nextTerm.setBill_Location_ID(currentTerm.getBill_Location_ID());
