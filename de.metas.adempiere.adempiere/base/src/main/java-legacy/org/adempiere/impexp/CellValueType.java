@@ -1,12 +1,10 @@
-package de.metas.inoutcandidate.spi;
-
-import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+package org.adempiere.impexp;
 
 /*
  * #%L
- * de.metas.swat.base
+ * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2017 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -24,19 +22,7 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
  * #L%
  */
 
-/**
- * This interface will have Listener implementations in projects different than de.metas.swat, so the qtys of the shipment schedules can be modified based on new logics.
- * 
- * @author metas-dev <dev@metasfresh.com>
- *
- */
-public interface IShipmentScheduleQtyUpdateListener
+public enum CellValueType
 {
-
-	/**
-	 * Implement this method in the subclasses of IShipmentScheduleQtyUpdateListener by creating an update logic from other projects.
-	 * 
-	 * @param schedule
-	 */
-	void updateQtys(final I_M_ShipmentSchedule schedule);
+	Date, Number, Boolean, String
 }

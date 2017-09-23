@@ -1,16 +1,16 @@
 package org.adempiere.ad.security.impl;
 
-import java.sql.Timestamp;
-import java.text.Format;
-import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Properties;
 
 import org.adempiere.model.GeneralCopyRecordSupport;
 import org.adempiere.user.api.IUserDAO;
 import org.adempiere.util.Services;
+import org.compiere.model.GridField;
 import org.compiere.model.PO;
 import org.compiere.util.Env;
 
-import de.metas.adempiere.model.I_AD_Role;
 import de.metas.i18n.IMsgBL;
 
 /*
@@ -23,43 +23,64 @@ import de.metas.i18n.IMsgBL;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
 public class AD_Role_POCopyRecordSupport extends GeneralCopyRecordSupport
 {
+	private static final String MSG_AD_Role_Name_Unique = "AD_Role_Unique_Name";
+	private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd:HH:mm:ss");
+
 	@Override
-	public void updateSpecialColumnsName(PO to)
+	public Object getValueToCopy(final GridField gridField)
 	{
-		final String MSG_AD_Role_Name_Unique = "AD_Role_Unique_Name";
-
-		final IMsgBL msgBL = Services.get(IMsgBL.class);
-
-		final Format formatter = new SimpleDateFormat("yyyyMMdd:HH:mm:ss");
-
-		Timestamp ts = new Timestamp(System.currentTimeMillis());
-		String s = formatter.format(ts);
-		String name = Services.get(IUserDAO.class).retrieveUserFullname(Env.getAD_User_ID(getCtx()));
-
-		final String language = Env.getAD_Language(getCtx());
-		// Create the name using the text from the specific AD_Message.
-		String msg = msgBL.getMsg(language, MSG_AD_Role_Name_Unique, new String[] { name, s });
-
-		// shall never happen if the message is set.
-		if (msg.isEmpty())
+		if (org.compiere.model.I_AD_Role.COLUMNNAME_Name.equals(gridField.getColumnName()))
 		{
-			super.updateSpecialColumnsName(to);
+			return makeUniqueName();
 		}
+		else
+		{
+			return super.getValueToCopy(gridField);
+		}
+	}
 
-		to.set_CustomColumn(I_AD_Role.COLUMNNAME_Name, msg);
+	@Override
+	public Object getValueToCopy(final PO to, final PO from, final String columnName)
+	{
+		if (org.compiere.model.I_AD_Role.COLUMNNAME_Name.equals(columnName))
+		{
+			return makeUniqueName();
+		}
+		else
+		{
+			return super.getValueToCopy(to, from, columnName);
+		}
+	}
+
+	private static final String makeUniqueName()
+	{
+		final IMsgBL msgBL = Services.get(IMsgBL.class);
+		final IUserDAO userDAO = Services.get(IUserDAO.class);
+
+		final Properties ctx = Env.getCtx();
+		final int adUserId = Env.getAD_User_ID(ctx);
+		final String adLanguage = Env.getAD_Language(ctx);
+
+		final String timestampStr = DATE_FORMATTER.format(LocalDateTime.now());
+		final String userName = userDAO.retrieveUserFullname(adUserId);
+
+		// Create the name using the text from the specific AD_Message.
+		final String nameUnique = msgBL.getMsg(adLanguage, MSG_AD_Role_Name_Unique, new String[] { userName, timestampStr });
+
+		return nameUnique;
 	}
 }

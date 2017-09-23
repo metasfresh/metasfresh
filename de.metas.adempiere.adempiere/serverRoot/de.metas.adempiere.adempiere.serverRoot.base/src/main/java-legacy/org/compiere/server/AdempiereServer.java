@@ -23,7 +23,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.service.IClientDAO;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.ldap.LdapProcessor;
 import org.compiere.model.AdempiereProcessor;
 import org.compiere.model.AdempiereProcessor2;
 import org.compiere.model.AdempiereProcessorLog;
@@ -31,7 +30,6 @@ import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_IMP_Processor;
 import org.compiere.model.MAcctProcessor;
 import org.compiere.model.MAlertProcessor;
-import org.compiere.model.MLdapProcessor;
 import org.compiere.model.MRequestProcessor;
 import org.compiere.model.MScheduler;
 import org.compiere.model.X_R_RequestProcessor;
@@ -41,6 +39,7 @@ import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.compiere.wf.MWorkflowProcessor;
 import org.slf4j.Logger;
+
 import de.metas.logging.LogManager;
 
 /**
@@ -70,8 +69,6 @@ public abstract class AdempiereServer extends Thread
 			return new AlertProcessor ((MAlertProcessor)model);
 		if (model instanceof MScheduler)
 			return new Scheduler ((MScheduler)model);
-		if (model instanceof MLdapProcessor)
-			return new LdapProcessor((MLdapProcessor)model);
 		if (I_IMP_Processor.Table_Name.equals(model.get_TableName())) // @Trifon
 			return new ReplicationProcessor(model);
 		//
