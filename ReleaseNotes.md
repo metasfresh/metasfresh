@@ -22,6 +22,8 @@ Here come the actual release notes:
     * Adapting the Sales Order Window to current design guidelines. Adding primary Layout for Included Tabs and rearranging the Grid View Sequence.
   *[#2284](https://github.com/metasfresh/metasfresh/issues/2284) Window Design WebUI : Attributes Improvements
     * Layout adaption to the Attributes Window in WebUI. Minor Improvements.
+  * [#2286](https://github.com/metasfresh/metasfresh/issues/2286) Window Design WebUI : Discount Schema Improvements
+    * Layout adaption to the Discount Schema Window in WebUI. Minor Improvements.
   * [#2376](https://github.com/metasfresh/metasfresh/issues/2376) Detail Improvements to Order Candidates Window
     * Improvement of Order Candidates Window, allowing the user to manipulate the data directly in Main View.
   * [#2440](https://github.com/metasfresh/metasfresh/issues/2440) Material Tracking adjustments in WebUI
