@@ -18,6 +18,7 @@ Here come the actual release notes:
 * metasfresh-app
   * [#2090](https://github.com/metasfresh/metasfresh/issues/2090) Improve text Variable Window in WebUI
     * Improving the Textvariable and Textsnippets window in WebUI, adapting out current webui design guidelines and adding Translations for de_DE, en_US.
+  * [#2146](https://github.com/metasfresh/metasfresh/issues/2146) Implement Generic Multi Tags / labels for records
   * [#2222](https://github.com/metasfresh/metasfresh/issues/2222) Window Design WebUI : Sales Order Improvements
     * Adapting the Sales Order Window to current design guidelines. Adding primary Layout for Included Tabs and rearranging the Grid View Sequence.
   * [#2284](https://github.com/metasfresh/metasfresh/issues/2284) Window Design WebUI : Attributes Improvements
@@ -26,35 +27,62 @@ Here come the actual release notes:
     * Layout adaption to the Discount Schema Window in WebUI. Minor Improvements.
   * [#2288](https://github.com/metasfresh/metasfresh/issues/2288) Window Design WebUI : Product Category Improvements
     * Layout adaption to the Discount Schema Window in WebUI. Primary Key added. Improvements in Subtab Layout and Grid View.
+  * [#2344](https://github.com/metasfresh/metasfresh/issues/2344) Support version 02 CAMT54 file
   * [#2376](https://github.com/metasfresh/metasfresh/issues/2376) Detail Improvements to Order Candidates Window
     * Improvement of Order Candidates Window, allowing the user to manipulate the data directly in Main View.
+  * [#2395](https://github.com/metasfresh/metasfresh/issues/2395) Drop C_Flatrate_Conditions.IsNewTermCreatesOrder together with java code
   * [#2440](https://github.com/metasfresh/metasfresh/issues/2440) Material Tracking adjustments in WebUI
     * Adjustments to the Material Tracking Window. Adding further Filter possibilities.
+  * [#2477](https://github.com/metasfresh/metasfresh/issues/2477) Subscription Import Window Adjustments
   * [#2478](https://github.com/metasfresh/metasfresh/issues/2478) Check Filter Sequence for Default Fields Organisation and Warehouse
     * Globally moving the Filter for Organisation to the end of each filter list.
+  * [#2482](https://github.com/metasfresh/metasfresh/issues/2482) Allow disabling of model interceptors on the fly
   * [#2483](https://github.com/metasfresh/metasfresh/issues/2483) New Dist-Orgs Businesspartner Window in WebUI
     * New Window in WebUI menu, adapting the requirements of dis-orgs to the Businesspartner window.
+  * [#2484](https://github.com/metasfresh/metasfresh/issues/2484) allow using partner product numbers and name for entering order line
   * [#2498](https://github.com/metasfresh/metasfresh/issues/2498) Window Design WebUI: Returns Improvements
     * Detail Improvements added to the Customer and Vendor Returns window in WebUI. Adapting metasfresh WebUI design Guidelines.
-  *[#2509](https://github.com/metasfresh/metasfresh/issues/2509) Window Design WebUI : Translate Picking Slot Window name in en
+  * [#2501](https://github.com/metasfresh/metasfresh/issues/2501) Import Requests
+  * [#2502](https://github.com/metasfresh/metasfresh/issues/2502) Allow multiple shipment schedules per orderline
+  * [#2509](https://github.com/metasfresh/metasfresh/issues/2509) Window Design WebUI : Translate Picking Slot Window name in en
     * Translating the Picking Tray Window and Picking to en_US.
+  * [#2510](https://github.com/metasfresh/metasfresh/issues/2510) Prevent users from creating duplicate main prices
+  * [#2514](https://github.com/metasfresh/metasfresh/issues/2514) Support importing multiline fields
   * [#2516](https://github.com/metasfresh/metasfresh/issues/2516) Add Rüstliste Report to WebUI
     * New Picking Preview Report now available in shipping reports section of WebUI Menu.
+  * [#2529](https://github.com/metasfresh/metasfresh/issues/2529) Import System users
   * [#2533](https://github.com/metasfresh/metasfresh/issues/2533) Adjust Contract Period Window in WebUI for Subscriptions
     * Improvements for the Contract Period Window in WebUI. Adding Translations for en_US Language/ Locale.
+  * [#2538](https://github.com/metasfresh/metasfresh/issues/2538) Remove legacy LDAP code
+  * [#2541](https://github.com/metasfresh/metasfresh/issues/2541) Allow filtering by product group in window product
+
+* metasfresh-webui-api
+  * [#591](https://github.com/metasfresh/metasfresh-webui-api/issues/591) Filter by warehouse when selecting HUs to issue
+
+  * [#603](https://github.com/metasfresh/metasfresh-webui-api/issues/603) Handle incorrect AD_Window_ID in URL
+  * [#607](https://github.com/metasfresh/metasfresh-webui-api/issues/607) AD_Column.IsMandatory shall be overwritten by MandatoryLogic
 
 * metasfresh-webui-frontend
+  * [#1167](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1167) Edit Fields in Main Grid View
   * [#1192](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1192) grid values are cut off if column size is too small
     * Showing tooltips in Table Grid Cells. Allowing to hover over a field and whoing the complete content in Tooltip. Very helpful for content that does not fit fully ionto a displayed Grid Field.
+  * [#1194](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1194) Use API to fetch the locale
   * [#1195](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1195) Render only provided document standard actions
     * New Functionality in WebUI frontend, now only showing entries in Action Menu that fit to the opened window.
   * [#1196](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1196) frontend: Letters feature
     * New Letter functionality in WebUI, allowing to write letters via action Menu entry.
+  * [#1197](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1197) frontend: export view to excel
 
 ## Fixes
 * metasfresh-app
   * [#2503](https://github.com/metasfresh/metasfresh/issues/2503) Typo in German Translation of Contract Terms menu Entry
     * Fixing the Translation of Contract Window for Language/ Locale de_DE in WebUI Menu.
+* [#593](https://github.com/metasfresh/metasfresh-webui-api/issues/593) Remove Clone action if not supported
+* metasfresh-webui-api
+  * [#608](https://github.com/metasfresh/metasfresh-webui-api/issues/608) CU Quantity in Excel Export from HU Editor is wrong
+  * [#576](https://github.com/metasfresh/metasfresh-webui-api/issues/576) Implement batch entry for Sales/Purchase Invoice documents
+  * [#588](https://github.com/metasfresh/metasfresh-webui-api/issues/588) Cloning Feature: Error when cloning BOM
+  * [#590](https://github.com/metasfresh/metasfresh-webui-api/issues/590) Issues HUs are still selectable in HU editor while production is not completed
 
 # metasfresh 5.27 (2017-38)
 
@@ -124,6 +152,7 @@ Here come the actual release notes:
     * New importer for ESR v11/ camt54 files in WebUI.
   * [#178](https://github.com/metasfresh/metasfresh-webui-api/issues/178) Have Letter Feature in Sales Order Window
     * New Letter Feature in WebUI allowing the user to oppen a text editor and create Letters with then help of Textsnippets.
+  * [#491](https://github.com/metasfresh/metasfresh-webui-api/issues/491) Wrong widget Type for Date-Range in Process Parameter
   * [#547](https://github.com/metasfresh/metasfresh-webui-api/issues/547) Provide mass export of Data to Excel
     * Very nice new, Feature allowing the user to select lines and export to excel.
   * [#581](https://github.com/metasfresh/metasfresh-webui-api/issues/581) API to provide user session's locale
@@ -153,6 +182,7 @@ Here come the actual release notes:
     * Internal Housekeeping fix for invoice candidates close workflow.
   * [#2457](https://github.com/metasfresh/metasfresh/issues/2457) Duplicate locations on partner import when multiple contacts
     * Fix for the Business Partner Location Importer, now not generating multiple entries when multiple user contacts exist to a Partner.
+  * [#2492](https://github.com/metasfresh/metasfresh/issues/2492) Process C_Dunning_Candidate_Process fails
 
 * metasfresh-webui-api
   * [#570](https://github.com/metasfresh/metasfresh-webui-api/issues/570) Clicking print on non-document window shows error page
