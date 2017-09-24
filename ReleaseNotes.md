@@ -10,6 +10,10 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.29 (2017-40)
+
+**upcoming release for week 2017-40**
+
 # metasfresh 5.28 (2017-39)
 
 **upcoming release for week 2017-39**
