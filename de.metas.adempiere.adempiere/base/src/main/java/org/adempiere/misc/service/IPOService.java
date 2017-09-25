@@ -1,5 +1,7 @@
 package org.adempiere.misc.service;
 
+import org.adempiere.model.InterfaceWrapperHelper;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -13,20 +15,26 @@ package org.adempiere.misc.service;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.PO;
 
-public interface IPOService extends ISingletonService {
+/**
+ * 
+ * @author metas-dev <dev@metasfresh.com>
+ * @deprecated this service is deprecated <b>big time</b>. Please use {@link InterfaceWrapperHelper} instead.
+ */
+@Deprecated
+public interface IPOService extends ISingletonService
+{
 
 	public static final String IS_ACTIVE = "IsActive";
 	public static final String AD_ORG_ID = "AD_Org_ID";
@@ -79,7 +87,7 @@ public interface IPOService extends ISingletonService {
 	Object getValue(Object po, String columnName);
 
 	Object getOldValue(Object po, String columnName);
-	
+
 	/**
 	 * If the table of the given PO has a column with the given name, the PO's
 	 * value is set to the given value.
@@ -172,10 +180,8 @@ public interface IPOService extends ISingletonService {
 	/**
 	 * 
 	 * @param po
-	 * @return the result of ((PO)object).get_TrxName() 
+	 * @return the result of ((PO)object).get_TrxName()
 	 */
 	String getTrxName(Object po);
-	
-	
-	
+
 }

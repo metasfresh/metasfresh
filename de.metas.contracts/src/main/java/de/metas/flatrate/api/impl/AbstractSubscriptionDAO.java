@@ -159,4 +159,19 @@ public abstract class AbstractSubscriptionDAO implements ISubscriptionDAO
 				.create()
 				.first();
 	}
+
+	@Override
+	public final List<I_C_SubscriptionProgress> retrieveNextSPs(
+			@NonNull final I_C_Flatrate_Term term,
+			@NonNull final Timestamp date)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_SubscriptionProgress.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_SubscriptionProgress.COLUMN_C_Flatrate_Term_ID, term.getC_Flatrate_Term_ID())
+				.addCompareFilter(I_C_SubscriptionProgress.COLUMNNAME_EventDate, Operator.GREATER_OR_EQUAL, date)
+				.orderBy().addColumn(I_C_SubscriptionProgress.COLUMNNAME_SeqNo).endOrderBy()
+				.create()
+				.list();
+	}
 }
