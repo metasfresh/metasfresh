@@ -14,6 +14,11 @@ Here come the actual release notes:
 
 **upcoming release for week 2017-40**
 
+##Features
+* metasfresh-app
+  * [#2285](https://github.com/metasfresh/metasfresh/issues/2285) Window Design WebUI : Unit of Measure Improvements
+    * Minor Layout Improvement for the Unit of Measure Window in WebUI
+
 # metasfresh 5.28 (2017-39)
 
 **upcoming release for week 2017-39**
