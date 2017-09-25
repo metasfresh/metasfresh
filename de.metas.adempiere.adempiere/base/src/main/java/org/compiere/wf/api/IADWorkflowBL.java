@@ -1,4 +1,4 @@
-package org.compiere.wf;
+package org.compiere.wf.api;
 
 /*
  * #%L
@@ -13,19 +13,19 @@ package org.compiere.wf;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.util.Date;
 
 import org.adempiere.util.ISingletonService;
+import org.compiere.model.I_AD_Table;
 import org.compiere.model.I_AD_WF_Node;
 import org.compiere.model.I_AD_Workflow;
 import org.compiere.wf.exceptions.WorkflowNotValidException;
@@ -58,6 +58,14 @@ public interface IADWorkflowBL extends ISingletonService
 	 * @throws WorkflowNotValidException if workflow is not valid
 	 */
 	public void validate(final I_AD_Workflow workflow);
-	
+
 	public String getWorkflowName(int AD_Workflow_ID);
+
+	/**
+	 * Create a processing workflow for the document table given as parameter.
+	 * 
+	 * @param document
+	 * @return
+	 */
+	I_AD_Workflow createWorkflowForDocument(I_AD_Table document);
 }

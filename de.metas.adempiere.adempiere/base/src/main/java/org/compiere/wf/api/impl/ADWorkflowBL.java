@@ -1,4 +1,6 @@
-package org.compiere.wf.impl;
+package org.compiere.wf.api.impl;
+
+import java.math.BigDecimal;
 
 /*
  * #%L
@@ -13,27 +15,33 @@ package org.compiere.wf.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.util.Date;
 
+import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.Services;
+import org.compiere.Adempiere;
+import org.compiere.model.I_AD_Table;
 import org.compiere.model.I_AD_WF_Node;
 import org.compiere.model.I_AD_Workflow;
 import org.compiere.model.X_AD_Workflow;
 import org.compiere.util.Env;
-import org.compiere.wf.IADWorkflowBL;
 import org.compiere.wf.MWorkflow;
+import org.compiere.wf.api.IADWorkflowBL;
+import org.compiere.wf.api.IADWorkflowDAO;
 import org.compiere.wf.exceptions.WorkflowNotValidException;
+
+import lombok.NonNull;
 
 public class ADWorkflowBL implements IADWorkflowBL
 {
@@ -110,6 +118,56 @@ public class ADWorkflowBL implements IADWorkflowBL
 		}
 
 		return null;
+	}
+
+	@Override
+	public I_AD_Workflow createWorkflowForDocument(@NonNull final I_AD_Table document)
+	{
+		// Services
+		final IADWorkflowDAO workflowDAO = Services.get(IADWorkflowDAO.class);
+
+		final I_AD_Workflow workflow = InterfaceWrapperHelper.newInstance(I_AD_Workflow.class);
+
+		final String workflowValue = "Process_" + getDocumentName(document);
+
+		// Document specific details
+		workflow.setValue(workflowValue);
+		workflow.setName(workflowValue);
+		workflow.setAD_Table_ID(document.getAD_Table_ID());
+
+		// Mandatory fields
+		workflow.setWorkflowType(X_AD_Workflow.WORKFLOWTYPE_DocumentProcess);
+		workflow.setAccessLevel(X_AD_Workflow.ACCESSLEVEL_Organization);
+		workflow.setEntityType(X_AD_Workflow.ENTITYTYPE_Dictionary);
+		workflow.setPublishStatus(X_AD_Workflow.PUBLISHSTATUS_Released);
+		workflow.setVersion(0);
+		workflow.setAuthor(Adempiere.getName());
+
+		// Simulation details
+		workflow.setDuration(1);
+		workflow.setCost(BigDecimal.ZERO);
+		workflow.setWorkingTime(0);
+		workflow.setWaitingTime(0);
+
+		// Other general details
+
+		// The suggested workflow node will be one with the action X_AD_WF_Node.ACTION_WaitSleep, if exists.
+		// Otherwise it will be not set, which is acceptable, since it's not a mandatory field.
+		final int waitSleepWorkflowNodeId = workflowDAO.retrieveWaitSleepWorkflowNodeID(workflow);
+		workflow.setAD_WF_Node_ID(waitSleepWorkflowNodeId);
+
+		workflow.setDurationUnit(X_AD_Workflow.DURATIONUNIT_Day);
+
+		InterfaceWrapperHelper.save(workflow);
+
+		return workflow;
+	}
+
+	private String getDocumentName(@NonNull final I_AD_Table document)
+	{
+		final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
+
+		return adTableDAO.retrieveTableName(document.getAD_Table_ID());
 	}
 
 }

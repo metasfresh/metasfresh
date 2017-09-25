@@ -1,4 +1,4 @@
-package org.compiere.wf;
+package org.compiere.wf.api;
 
 /*
  * #%L
@@ -43,4 +43,12 @@ public interface IADWorkflowDAO extends ISingletonService
 	List<I_AD_WF_NodeNext> retrieveNodeNexts(I_AD_WF_Node node);
 
 	List<I_AD_WF_NodeNext> retrieveNodeNexts(I_AD_WF_Node node, int adClientId);
+	
+	/**
+	 * Retrieve the ID of a node that has action {@link org.compiere.model.X_AD_WF_Node.ACTION_WaitSleep} for the context of <code>workflow</code>
+	 * 
+	 * @param workflow
+	 * @return first WaitSleep 
+	 */
+	int retrieveWaitSleepWorkflowNodeID(I_AD_Workflow workflow);
 }
