@@ -108,7 +108,7 @@ public class BPartnerImportProcess extends AbstractImportProcess<I_I_BPartner>
 	}
 
 	@Override
-	protected ImportRecordResult importRecord(final IMutable<Object> state, final I_I_BPartner importRecord) throws Exception
+	protected ImportRecordResult importRecord(final IMutable<Object> state, final I_I_BPartner importRecord)
 	{
 		//
 		// Get previous values

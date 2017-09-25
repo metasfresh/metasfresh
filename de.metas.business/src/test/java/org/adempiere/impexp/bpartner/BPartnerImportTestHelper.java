@@ -44,9 +44,6 @@ import lombok.experimental.UtilityClass;
 {
 	public static void assertImported(final I_I_BPartner ibpartner)
 	{
-		// assertThat(ibpartner.isI_IsImported()).isTrue();
-		// assertThat(ibpartner.isProcessed()).isTrue();
-
 		assertBPartnerImported(ibpartner);
 		assertLocationImported(ibpartner);
 		assertContactImported(ibpartner);
@@ -56,6 +53,8 @@ import lombok.experimental.UtilityClass;
 	{
 		final I_C_BPartner bpartner = ibpartner.getC_BPartner();
 		assertThat(bpartner).isNotNull();
+		assertThat(bpartner.getValue()).isNotNull();
+		assertThat(bpartner.getName()).isNotNull();
 		assertThat(bpartner.getValue()).isEqualTo(ibpartner.getValue());
 		assertThat(bpartner.getAD_Language()).isEqualTo(ibpartner.getAD_Language());
 	}

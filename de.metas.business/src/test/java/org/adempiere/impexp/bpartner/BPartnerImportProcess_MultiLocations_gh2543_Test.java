@@ -1,12 +1,12 @@
 package org.adempiere.impexp.bpartner;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.bpartner.service.IBPartnerDAO;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.impexp.bpartner.BPartnerImportProcess;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IMutable;
@@ -68,16 +68,7 @@ public class BPartnerImportProcess_MultiLocations_gh2543_Test
 
 		final IMutable<Object> state = new Mutable<>();
 
-		ibpartners.forEach(importRecord -> {
-			try
-			{
-				importProcess.importRecord(state, importRecord);
-			}
-			catch (final Exception e)
-			{
-				throw AdempiereException.wrapIfNeeded(e); // propagate
-			}
-		});
+		ibpartners.forEach(importRecord -> importProcess.importRecord(state, importRecord));
 
 		assertMultipleBpartnerImported(ibpartners);
 
@@ -101,7 +92,7 @@ public class BPartnerImportProcess_MultiLocations_gh2543_Test
 			final I_C_BPartner secondBPartner = ibpartners.get(2).getC_BPartner();
 			final List<de.metas.adempiere.model.I_C_BPartner_Location> fbplocations = Services.get(IBPartnerDAO.class).retrieveBPartnerLocations(firstBpartner);
 			final List<de.metas.adempiere.model.I_C_BPartner_Location> sbplocations = Services.get(IBPartnerDAO.class).retrieveBPartnerLocations(secondBPartner);
-			Assert.assertTrue(fbplocations.get(0).getC_Location_ID() != sbplocations.get(0).getC_Location_ID());
+			assertThat(fbplocations.get(0).getC_Location_ID()).isNotEqualTo(sbplocations.get(0).getC_Location_ID());
 		}
 
 		// check third partner imported
@@ -118,8 +109,8 @@ public class BPartnerImportProcess_MultiLocations_gh2543_Test
 		//
 		// check user
 		final List<de.metas.adempiere.model.I_AD_User> fusers = Services.get(IBPartnerDAO.class).retrieveContacts(firstBPartner);
-		Assert.assertTrue(!fusers.isEmpty());
-		Assert.assertTrue(fusers.size() == 2);
+		assertThat(fusers).isNotEmpty();
+		assertThat(fusers).hasSize(2);
 		fusers.forEach(user -> {
 			Assert.assertTrue(user.isShipToContact_Default());
 			Assert.assertFalse(user.isBillToContact_Default());
@@ -128,7 +119,7 @@ public class BPartnerImportProcess_MultiLocations_gh2543_Test
 		// check bplocation
 		final List<de.metas.adempiere.model.I_C_BPartner_Location> fbplocations = Services.get(IBPartnerDAO.class).retrieveBPartnerLocations(firstBPartner);
 		Assert.assertTrue(!fbplocations.isEmpty());
-		Assert.assertTrue(fbplocations.size() == 1);
+		assertThat(fbplocations).hasSize(1);
 		fbplocations.forEach(bplocation -> {
 			Assert.assertTrue(bplocation.getC_Location_ID() > 0);
 			Assert.assertTrue(bplocation.isBillToDefault());
@@ -144,8 +135,8 @@ public class BPartnerImportProcess_MultiLocations_gh2543_Test
 		//
 		// check user
 		final List<de.metas.adempiere.model.I_AD_User> users = Services.get(IBPartnerDAO.class).retrieveContacts(secondBPartner);
-		Assert.assertTrue(!users.isEmpty());
-		Assert.assertTrue(users.size() == 1);
+		assertThat(users).isNotEmpty();
+		assertThat(users).hasSize(1);
 		users.forEach(user -> {
 			Assert.assertTrue(user.isShipToContact_Default());
 			Assert.assertTrue(user.isBillToContact_Default());
@@ -154,7 +145,7 @@ public class BPartnerImportProcess_MultiLocations_gh2543_Test
 		// check bplocation
 		final List<de.metas.adempiere.model.I_C_BPartner_Location> bplocations = Services.get(IBPartnerDAO.class).retrieveBPartnerLocations(secondBPartner);
 		Assert.assertTrue(!bplocations.isEmpty());
-		Assert.assertTrue(bplocations.size() == 1);
+		assertThat(bplocations).hasSize(1);
 		bplocations.forEach(bplocation -> {
 			Assert.assertTrue(bplocation.getC_Location_ID() > 0);
 			Assert.assertTrue(bplocation.isBillToDefault());
@@ -170,8 +161,8 @@ public class BPartnerImportProcess_MultiLocations_gh2543_Test
 		//
 		// check user
 		final List<de.metas.adempiere.model.I_AD_User> users = Services.get(IBPartnerDAO.class).retrieveContacts(thirdBPartner);
-		Assert.assertTrue(!users.isEmpty());
-		Assert.assertTrue(users.size() == 1);
+		assertThat(users).isNotEmpty();
+		assertThat(users).hasSize(1);
 		users.forEach(user -> {
 			Assert.assertTrue(user.isShipToContact_Default());
 			Assert.assertTrue(user.isBillToContact_Default());
@@ -179,8 +170,8 @@ public class BPartnerImportProcess_MultiLocations_gh2543_Test
 		//
 		// check bplocation
 		final List<de.metas.adempiere.model.I_C_BPartner_Location> bplocations = Services.get(IBPartnerDAO.class).retrieveBPartnerLocations(thirdBPartner);
-		Assert.assertTrue(!bplocations.isEmpty());
-		Assert.assertTrue(bplocations.size() == 1);
+		assertThat(bplocations).isNotEmpty();
+		assertThat(bplocations).hasSize(1);
 		bplocations.forEach(bplocation -> {
 			Assert.assertTrue(bplocation.getC_Location_ID() > 0);
 			Assert.assertTrue(bplocation.isBillToDefault());
