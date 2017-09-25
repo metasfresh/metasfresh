@@ -634,9 +634,7 @@ import lombok.NonNull;
 
 	private static ILogicExpression extractMandatoryLogic(@NonNull final GridFieldVO gridFieldVO)
 	{
-		final ILogicExpression mandatoryLogic = gridFieldVO.getMandatoryLogic();
-
-		return mandatoryLogic.isNullExpression() ? ConstantLogicExpression.of(gridFieldVO.isMandatory()) : mandatoryLogic;
+		return gridFieldVO.isMandatoryLogicExpression() ? gridFieldVO.getMandatoryLogic() : ConstantLogicExpression.of(gridFieldVO.isMandatory());
 	}
 	
 	private final void collectSpecialField(final DocumentFieldDescriptor.Builder field)
