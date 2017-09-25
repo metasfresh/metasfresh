@@ -33,12 +33,14 @@ import org.adempiere.util.Services;
 import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Table;
 import org.compiere.model.I_AD_WF_Node;
+import org.compiere.model.I_AD_WF_NodeNext;
 import org.compiere.model.I_AD_Workflow;
+import org.compiere.model.X_AD_WF_Node;
 import org.compiere.model.X_AD_Workflow;
 import org.compiere.util.Env;
+import org.compiere.wf.ADWorkflowConstants;
 import org.compiere.wf.MWorkflow;
 import org.compiere.wf.api.IADWorkflowBL;
-import org.compiere.wf.api.IADWorkflowDAO;
 import org.compiere.wf.exceptions.WorkflowNotValidException;
 
 import lombok.NonNull;
@@ -123,9 +125,6 @@ public class ADWorkflowBL implements IADWorkflowBL
 	@Override
 	public I_AD_Workflow createWorkflowForDocument(@NonNull final I_AD_Table document)
 	{
-		// Services
-		final IADWorkflowDAO workflowDAO = Services.get(IADWorkflowDAO.class);
-
 		final I_AD_Workflow workflow = InterfaceWrapperHelper.newInstance(I_AD_Workflow.class);
 
 		final String workflowValue = "Process_" + getDocumentName(document);
@@ -143,22 +142,16 @@ public class ADWorkflowBL implements IADWorkflowBL
 		workflow.setVersion(0);
 		workflow.setAuthor(Adempiere.getName());
 
-		// Simulation details
+		// General details
 		workflow.setDuration(1);
 		workflow.setCost(BigDecimal.ZERO);
 		workflow.setWorkingTime(0);
 		workflow.setWaitingTime(0);
-
-		// Other general details
-
-		// The suggested workflow node will be one with the action X_AD_WF_Node.ACTION_WaitSleep, if exists.
-		// Otherwise it will be not set, which is acceptable, since it's not a mandatory field.
-		final int waitSleepWorkflowNodeId = workflowDAO.retrieveWaitSleepWorkflowNodeID(workflow);
-		workflow.setAD_WF_Node_ID(waitSleepWorkflowNodeId);
-
 		workflow.setDurationUnit(X_AD_Workflow.DURATIONUNIT_Day);
 
 		InterfaceWrapperHelper.save(workflow);
+
+		createAndLinkWorkflowNodesForDocumentWorkflow(workflow);
 
 		return workflow;
 	}
@@ -168,6 +161,78 @@ public class ADWorkflowBL implements IADWorkflowBL
 		final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 
 		return adTableDAO.retrieveTableName(document.getAD_Table_ID());
+	}
+
+	private void createAndLinkWorkflowNodesForDocumentWorkflow(@NonNull I_AD_Workflow documentWorkflow)
+	{
+		// Create start Workflow Node
+		final I_AD_WF_Node startWorkflowNode = createWorkflowNode(documentWorkflow, ADWorkflowConstants.WF_NODE_Start_Name, X_AD_WF_Node.ACTION_WaitSleep, null);
+
+		// set this node as the start node in the workflow
+		documentWorkflow.setAD_WF_Node_ID(startWorkflowNode.getAD_WF_Node_ID());
+		InterfaceWrapperHelper.save(documentWorkflow);
+		
+		// Create DocAuto Workflow Node
+		final I_AD_WF_Node docAutoWorkflowNode = createWorkflowNode(documentWorkflow, ADWorkflowConstants.WF_NODE_DocAuto_Name, X_AD_WF_Node.ACTION_DocumentAction, X_AD_WF_Node.DOCACTION_None);
+
+		// Create DocPrepare Workflow Node
+		final I_AD_WF_Node docPrepareWorkflowNode = createWorkflowNode(documentWorkflow, ADWorkflowConstants.WF_NODE_DocPrepare_Name, X_AD_WF_Node.ACTION_DocumentAction, X_AD_WF_Node.DOCACTION_Prepare);
+
+		// Create DocComplete Workflow Node
+		final I_AD_WF_Node docCompleteWorkflowNode = createWorkflowNode(documentWorkflow, ADWorkflowConstants.WF_NODE_DocComplete_Name, X_AD_WF_Node.ACTION_DocumentAction, X_AD_WF_Node.DOCACTION_Complete);
+
+		// Link workflow nodes Start and DocPrepare
+		final I_AD_WF_NodeNext startToDocPrepare = linkNextNode(startWorkflowNode, docPrepareWorkflowNode, 10);
+		startToDocPrepare.setDescription("(Standard Approval)");
+		startToDocPrepare.setIsStdUserWorkflow(true);
+		InterfaceWrapperHelper.save(startToDocPrepare);
+
+		// Link workflow nodes Start and DocAuto
+		linkNextNode(startWorkflowNode, docAutoWorkflowNode, 100);
+
+		// Link workflos nodes Prepare and Complete
+		linkNextNode(docPrepareWorkflowNode, docCompleteWorkflowNode, 100);
+
+	}
+
+	private I_AD_WF_Node createWorkflowNode(@NonNull final I_AD_Workflow workflow, @NonNull final String name, final String action, final String docAction)
+	{
+		final I_AD_WF_Node workflowNode = InterfaceWrapperHelper.newInstance(I_AD_WF_Node.class);
+
+		// Specific details
+		workflowNode.setAD_Workflow(workflow);
+		workflowNode.setName(name);
+		workflowNode.setValue(name);
+		workflowNode.setAction(action);
+		workflowNode.setDocAction(docAction);
+
+		// General details
+		workflowNode.setDescription("(Standard Node)");
+		workflowNode.setEntityType(workflow.getEntityType());
+
+		workflowNode.setSplitElement(X_AD_WF_Node.JOINELEMENT_XOR);
+		workflowNode.setJoinElement(X_AD_WF_Node.JOINELEMENT_XOR);
+
+		InterfaceWrapperHelper.save(workflowNode);
+
+		return workflowNode;
+
+	}
+
+	private I_AD_WF_NodeNext linkNextNode(@NonNull final I_AD_WF_Node workflowSourceNode, @NonNull final I_AD_WF_Node workflowTargetNode, int seqNo)
+	{
+		final I_AD_WF_NodeNext workflowNodeNext = InterfaceWrapperHelper.newInstance(I_AD_WF_NodeNext.class);
+
+		// Specific Details
+		workflowNodeNext.setAD_WF_Node_ID(workflowSourceNode.getAD_WF_Node_ID());
+		workflowNodeNext.setAD_WF_Next_ID(workflowTargetNode.getAD_WF_Node_ID());
+		workflowNodeNext.setSeqNo(seqNo);
+		workflowNodeNext.setEntityType(workflowSourceNode.getEntityType());
+		workflowNodeNext.setDescription("Standard Transition");
+
+		InterfaceWrapperHelper.save(workflowNodeNext);
+
+		return workflowNodeNext;
 	}
 
 }

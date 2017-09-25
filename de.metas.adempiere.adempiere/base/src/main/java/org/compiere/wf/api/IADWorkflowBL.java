@@ -63,6 +63,7 @@ public interface IADWorkflowBL extends ISingletonService
 
 	/**
 	 * Create a processing workflow for the document table given as parameter.
+	 * Create the specific document nodes for this workflow and link them together.
 	 * 
 	 * @param document
 	 * @return

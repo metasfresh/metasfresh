@@ -1,12 +1,20 @@
 package org.adempiere.ad.table.process;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.table.api.impl.CopyColumnsProducer;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
+import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_Table;
+import org.compiere.model.MColumn;
+import org.compiere.model.MTable;
 
+import de.metas.process.IADProcessBL;
 import de.metas.process.JavaProcess;
-import de.metas.process.Param;
 
 /*
  * #%L
@@ -43,22 +51,33 @@ import de.metas.process.Param;
 public class AD_Table_ConvertToDocument extends JavaProcess
 {
 	private static transient IADTableDAO tableDAO = Services.get(IADTableDAO.class);
+	private static transient IADProcessBL processBL = Services.get(IADProcessBL.class);
 
-	@Param(parameterName = I_AD_Table.COLUMNNAME_AD_Table_ID, mandatory = true)
-	private I_AD_Table table;
+	private I_AD_Table document;
 
-	@Param(parameterName = I_AD_Table.COLUMNNAME_EntityType, mandatory = false)
-	private String entityType;
+	protected void prepare()
+	{
+		document = getRecord(I_AD_Table.class);
+	}
 
 	@Override
 	protected String doIt() throws Exception
 	{
+		// Create the document specific columns and add them to the document
 		final CopyColumnsProducer producer = new CopyColumnsProducer(this);
 		producer.setLogger(this);
-		producer.setTargetTable(table);
-		producer.setSourceColumns(tableDAO.retrieveColumnsForTable(table));
+		producer.setTargetTable(document);
+
+		// Get the document table template
+		final I_AD_Table sourceTable = tableDAO.retrieveDocumentTableTemplate(document);
+		producer.setSourceColumns(tableDAO.retrieveColumnsForTable(sourceTable));
 		producer.create();
-		
+
+		InterfaceWrapperHelper.save(document);
+
+		processBL.createAndLinkDocumentSpecificProcess(document);
+
 		return "@Created@ #" + producer.getCountCreated();
 	}
+
 }

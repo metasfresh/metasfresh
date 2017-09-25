@@ -139,20 +139,4 @@ public class ADWorkflowDAO implements IADWorkflowDAO
 
 		return nodeNexts;
 	}
-
-	@Override
-	public int retrieveWaitSleepWorkflowNodeID(@NonNull final I_AD_Workflow workflow)
-	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-
-		return queryBL.createQueryBuilder(I_AD_WF_Node.class, workflow)
-				.addOnlyActiveRecordsFilter()
-				.addOnlyContextClient()
-				.addEqualsFilter(I_AD_WF_Node.COLUMNNAME_Action, X_AD_WF_Node.ACTION_WaitSleep)
-				.orderBy()
-				.addColumn(I_AD_WF_Node.COLUMN_Created, Direction.Descending, Nulls.Last)
-				.endOrderBy()
-				.create()
-				.firstId();
-	}
 }

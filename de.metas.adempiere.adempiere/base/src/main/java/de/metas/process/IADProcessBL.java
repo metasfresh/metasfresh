@@ -1,10 +1,14 @@
-package org.compiere.wf.api;
+package de.metas.process;
+
+import org.adempiere.util.ISingletonService;
+import org.compiere.model.I_AD_Process;
+import org.compiere.model.I_AD_Table;
 
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2017 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,25 +26,15 @@ package org.compiere.wf.api;
  * #L%
  */
 
-import java.util.List;
-import java.util.Properties;
-
-import org.adempiere.util.ISingletonService;
-import org.compiere.model.I_AD_WF_Node;
-import org.compiere.model.I_AD_WF_NodeNext;
-import org.compiere.model.I_AD_Workflow;
-
-public interface IADWorkflowDAO extends ISingletonService
+public interface IADProcessBL extends ISingletonService
 {
 
-	List<I_AD_WF_Node> retrieveNodes(Properties ctx, int adWorkflowId, String trxName);
-
-	List<I_AD_WF_Node> retrieveNodes(I_AD_Workflow workflow);
-
-	List<I_AD_WF_Node> retrieveNodes(I_AD_Workflow workflow, int adClientId);
-
-	List<I_AD_WF_NodeNext> retrieveNodeNexts(I_AD_WF_Node node);
-
-	List<I_AD_WF_NodeNext> retrieveNodeNexts(I_AD_WF_Node node, int adClientId);
+	/**
+	 * Create a document specific process with a specific workflow for the given document. Link the process to the document
+	 * 
+	 * @param document
+	 * @return
+	 */
+	I_AD_Process createAndLinkDocumentSpecificProcess(I_AD_Table document);
 
 }

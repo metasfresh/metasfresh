@@ -1,10 +1,10 @@
-package org.compiere.wf.api;
+package org.compiere.wf;
 
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2017 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,25 +22,27 @@ package org.compiere.wf.api;
  * #L%
  */
 
-import java.util.List;
-import java.util.Properties;
-
-import org.adempiere.util.ISingletonService;
-import org.compiere.model.I_AD_WF_Node;
-import org.compiere.model.I_AD_WF_NodeNext;
-import org.compiere.model.I_AD_Workflow;
-
-public interface IADWorkflowDAO extends ISingletonService
+public class ADWorkflowConstants
 {
 
-	List<I_AD_WF_Node> retrieveNodes(Properties ctx, int adWorkflowId, String trxName);
+	/**
+	 * Start Workflow Node name
+	 */
+	public static final String WF_NODE_Start_Name = "(Start)";
 
-	List<I_AD_WF_Node> retrieveNodes(I_AD_Workflow workflow);
+	/**
+	 * DocAuto Workflow Node name
+	 */
+	public static final String WF_NODE_DocAuto_Name = "(DocAuto)";
 
-	List<I_AD_WF_Node> retrieveNodes(I_AD_Workflow workflow, int adClientId);
+	/**
+	 * DocPrepare Workflow Node name
+	 */
+	public static final String WF_NODE_DocPrepare_Name = "(DocPrepare)";
 
-	List<I_AD_WF_NodeNext> retrieveNodeNexts(I_AD_WF_Node node);
-
-	List<I_AD_WF_NodeNext> retrieveNodeNexts(I_AD_WF_Node node, int adClientId);
+	/**
+	 * DocComplete Workflow Node name
+	 */
+	public static final String WF_NODE_DocComplete_Name = "(DocComplete)";
 
 }
