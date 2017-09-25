@@ -123,7 +123,7 @@ import org.compiere.model.ModelValidationEngine;
 			return name;
 		}
 		final String email = importRecord.getEMail();
-		if (Check.isEmpty(email, true))
+		if (!Check.isEmpty(email, true))
 		{
 			return email;
 		}
