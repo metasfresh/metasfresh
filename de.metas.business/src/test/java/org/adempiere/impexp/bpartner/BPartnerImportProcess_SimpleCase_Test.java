@@ -2,7 +2,6 @@ package org.adempiere.impexp.bpartner;
 
 import java.util.Properties;
 
-import org.adempiere.impexp.bpartner.BPartnerImportProcess;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.Mutable;
 import org.compiere.model.I_I_BPartner;
@@ -44,7 +43,7 @@ public class BPartnerImportProcess_SimpleCase_Test
 	}
 
 	@Test
-	public void testSingleBpartner() throws Exception
+	public void testSingleBpartner() 
 	{
 		final I_I_BPartner ibpartner = prepareImportSingleBPartner();
 
