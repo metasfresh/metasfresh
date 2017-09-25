@@ -73,6 +73,7 @@ public final class ViewActionParamDescriptor
 				lookupDescriptorProvider = SqlLookupDescriptor.builder()
 						.setColumnName(InterfaceWrapperHelper.getKeyColumnName(parameterAnnotation.sqlLookupTableName()))
 						.setDisplayType(DisplayType.Search)
+						.setReadOnlyAccess()
 						.buildProvider();
 			}
 		}
