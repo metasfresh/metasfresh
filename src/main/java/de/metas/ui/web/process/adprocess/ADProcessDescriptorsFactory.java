@@ -207,6 +207,7 @@ import lombok.NonNull;
 					.setDisplayType(adProcessParam.getAD_Reference_ID())
 					.setAD_Reference_Value_ID(adProcessParam.getAD_Reference_Value_ID())
 					.setAD_Val_Rule_ID(adProcessParam.getAD_Val_Rule_ID())
+					.setReadOnlyAccess()
 					.buildProvider();
 		}
 		//

@@ -16,6 +16,8 @@ import org.adempiere.ad.validationRule.impl.CompositeValidationRule;
 import org.adempiere.ad.validationRule.impl.NullValidationRule;
 import org.adempiere.db.DBConstants;
 import org.adempiere.util.Check;
+import org.compiere.model.I_AD_Client;
+import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.MLookupFactory;
 import org.compiere.model.MLookupInfo;
@@ -55,11 +57,11 @@ import groovy.transform.Immutable;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -176,9 +178,9 @@ public final class SqlLookupDescriptor implements LookupDescriptor
 				&& Objects.equals(postQueryPredicate, other.postQueryPredicate)
 				&& highVolume == other.highVolume
 				&& numericKey == other.numericKey
-				// dependsOnFieldNames // not needed because it's computed
-				// lookupSourceType // not needed because it's computed
-				// lookupDataSourceFetcher // not needed because it's computed
+		// dependsOnFieldNames // not needed because it's computed
+		// lookupSourceType // not needed because it's computed
+		// lookupDataSourceFetcher // not needed because it's computed
 		;
 	}
 
@@ -199,7 +201,7 @@ public final class SqlLookupDescriptor implements LookupDescriptor
 	{
 		return tableName;
 	}
-	
+
 	@Override
 	public Optional<WindowId> getZoomIntoWindowId()
 	{
@@ -268,6 +270,7 @@ public final class SqlLookupDescriptor implements LookupDescriptor
 		private int AD_Reference_Value_ID = -1;
 		private int AD_Val_Rule_ID = -1;
 		private LookupScope scope = LookupScope.DocumentField;
+		private Boolean readWriteAccess = null;
 
 		//
 		// Built/prepared values
@@ -279,7 +282,7 @@ public final class SqlLookupDescriptor implements LookupDescriptor
 		private ICachedStringExpression sqlForFetchingExpression;
 		private ICachedStringExpression sqlForFetchingDisplayNameByIdExpression;
 		private int entityTypeIndex = -1;
-		
+
 		private int zoomIntoWindowId = -1;
 
 		private Builder()
@@ -290,34 +293,32 @@ public final class SqlLookupDescriptor implements LookupDescriptor
 		public LookupDescriptorProvider buildProvider()
 		{
 			Check.assumeNotNull(displayType, "Parameter displayType is not null");
-			
+
 			return buildProvider(columnName, widgetType, displayType, AD_Reference_Value_ID, AD_Val_Rule_ID);
 		}
-		
+
 		public LookupDescriptor buildForScope(final LookupScope scope)
 		{
 			return buildProvider().provideForScope(scope);
 		}
-		
+
 		public LookupDescriptor buildForDefaultScope()
 		{
 			return buildProvider().provideForScope(LookupScope.DocumentField);
 		}
 
-
 		private static LookupDescriptorProvider buildProvider(
 				final String sqlColumnName //
-				, final DocumentFieldWidgetType widgetType
-				, final int displayType //
+				, final DocumentFieldWidgetType widgetType, final int displayType //
 				, final int AD_Reference_Value_ID //
 				, final int AD_Val_Rule_ID //
 		)
 		{
-			if(widgetType == DocumentFieldWidgetType.ProcessButton)
+			if (widgetType == DocumentFieldWidgetType.ProcessButton)
 			{
 				return LookupDescriptorProvider.NULL;
 			}
-			
+
 			if (DisplayType.isAnyLookup(displayType)
 					|| DisplayType.Button == displayType && AD_Reference_Value_ID > 0)
 			{
@@ -447,7 +448,7 @@ public final class SqlLookupDescriptor implements LookupDescriptor
 					.append("\n ORDER BY ").append(lookup_SqlOrderBy) // ORDER BY
 					.append("\n OFFSET ").append(LookupDataSourceContext.PARAM_Offset.toStringWithMarkers())
 					.append("\n LIMIT ").append(LookupDataSourceContext.PARAM_Limit.toStringWithMarkers()) // LIMIT
-					.wrap(AccessSqlStringExpression.wrapper(tableName, IUserRolePermissions.SQL_FULLYQUALIFIED, IUserRolePermissions.SQL_RO)) // security
+					.wrap(AccessSqlStringExpression.wrapper(tableName, IUserRolePermissions.SQL_FULLYQUALIFIED, isReadWriteAccessRequired(tableName))) // security
 					.build();
 			final IStringExpression sqlForFetchingDisplayNameById = IStringExpression.composer()
 					.append("SELECT ").append(displayColumnSql) // SELECT
@@ -526,7 +527,7 @@ public final class SqlLookupDescriptor implements LookupDescriptor
 					.append("\n ORDER BY ").append(sqlOrderBy) // ORDER BY
 					.append("\n OFFSET ").append(LookupDataSourceContext.PARAM_Offset) // OFFSET
 					.append("\n LIMIT ").append(LookupDataSourceContext.PARAM_Limit) // LIMIT
-					.wrapIfTrue(!lookupInfo.isSecurityDisabled(), AccessSqlStringExpression.wrapper(tableName, IUserRolePermissions.SQL_FULLYQUALIFIED, IUserRolePermissions.SQL_RO)) // security
+					.wrapIfTrue(!lookupInfo.isSecurityDisabled(), AccessSqlStringExpression.wrapper(tableName, IUserRolePermissions.SQL_FULLYQUALIFIED, isReadWriteAccessRequired(tableName))) // security
 					.build();
 		}
 
@@ -573,7 +574,7 @@ public final class SqlLookupDescriptor implements LookupDescriptor
 			this.columnName = columnName;
 			return this;
 		}
-		
+
 		public Builder setWidgetType(final DocumentFieldWidgetType widgetType)
 		{
 			this.widgetType = widgetType;
@@ -609,7 +610,7 @@ public final class SqlLookupDescriptor implements LookupDescriptor
 			this.scope = scope;
 			return this;
 		}
-		
+
 		public Optional<WindowId> getZoomIntoWindowId()
 		{
 			final WindowId windowId = zoomIntoWindowId > 0 ? WindowId.of(zoomIntoWindowId) : null;
@@ -620,5 +621,36 @@ public final class SqlLookupDescriptor implements LookupDescriptor
 		{
 			return DescriptorsFactoryHelper.extractLookupSource(displayType, AD_Reference_Value_ID);
 		}
+
+		/** Advice the lookup to show all records on which current user has at least read only access */
+		public Builder setReadOnlyAccess()
+		{
+			this.readWriteAccess = Boolean.FALSE;
+			return this;
+		}
+
+		private final boolean isReadWriteAccessRequired(final String tableName)
+		{
+			if (readWriteAccess != null)
+			{
+				return readWriteAccess.booleanValue();
+			}
+
+			return extractReadWriteAccessRequired(tableName);
+		}
+
+		private static final boolean extractReadWriteAccessRequired(final String tableName)
+		{
+			// AD_Client_ID/AD_Org_ID (security fields): shall display only those entries on which current user has read-write access
+			if (I_AD_Client.Table_Name.equals(tableName)
+					|| I_AD_Org.Table_Name.equals(tableName))
+			{
+				return IUserRolePermissions.SQL_RW;
+			}
+
+			// Default: all entries on which current user has at least readonly access
+			return IUserRolePermissions.SQL_RO;
+		}
+
 	}
 }
