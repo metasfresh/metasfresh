@@ -178,3 +178,38 @@ UPDATE AD_UI_Element SET IsDisplayed='Y',Updated=TO_TIMESTAMP('2017-09-25 07:31:
 UPDATE AD_UI_Element SET IsDisplayed='Y',Updated=TO_TIMESTAMP('2017-09-25 07:31:17','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=546608
 ;
 
+-- 2017-09-25T07:43:52.451
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET IsDisplayedGrid='N', SeqNoGrid=0,Updated=TO_TIMESTAMP('2017-09-25 07:43:52','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=546640
+;
+
+-- 2017-09-25T07:45:35.739
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-09-25 07:45:35','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='SeqNo.',Description='',Help='' WHERE AD_Field_ID=64761 AND AD_Language='en_US'
+;
+
+-- 2017-09-25T07:45:48.235
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-09-25 07:45:48','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Description' WHERE AD_Field_ID=64754 AND AD_Language='en_US'
+;
+
+-- 2017-09-25T07:45:56.182
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-09-25 07:45:56','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Classname' WHERE AD_Field_ID=64757 AND AD_Language='en_US'
+;
+
+-- 2017-09-25T07:46:08.347
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-09-25 07:46:08','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Entity Type' WHERE AD_Field_ID=64763 AND AD_Language='en_US'
+;
+
+-- 2017-09-25T07:46:30.766
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Preis Regel',Updated=TO_TIMESTAMP('2017-09-25 07:46:30','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=64760
+;
+
+-- 2017-09-25T07:46:34.213
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-09-25 07:46:34','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y' WHERE AD_Field_ID=64760 AND AD_Language='en_US'
+;
+
