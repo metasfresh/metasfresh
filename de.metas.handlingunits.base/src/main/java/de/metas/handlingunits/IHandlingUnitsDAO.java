@@ -40,6 +40,7 @@ import org.adempiere.util.lang.IPair;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_Warehouse;
 
 import com.google.common.collect.ImmutableMap;
 
@@ -358,4 +359,12 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	 * @return
 	 */
 	List<I_M_HU> retrieveChildHUsForItem(I_M_HU_Item parentItem);
+
+	/**
+	 * Retrieve all the warehouses that contain the HUs in the given list
+	 * 
+	 * @param hus
+	 * @return
+	 */
+	List<I_M_Warehouse> retrieveWarehousesForHUs(List<I_M_HU> hus);
 }
