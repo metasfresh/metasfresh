@@ -478,7 +478,17 @@ public class DocumentCollection
 			return zoomIntoInfo.getWindowId();
 		}
 
-		final int zoomInto_adWindowId = RecordZoomWindowFinder.findAD_Window_ID(zoomIntoInfo.getTableName());
+		
+		final RecordZoomWindowFinder zoomWindowFinder;
+		if(zoomIntoInfo.isRecordIdPresent())
+		{
+			zoomWindowFinder = RecordZoomWindowFinder.newInstance(zoomIntoInfo.getTableName(), zoomIntoInfo.getRecordId());
+		}
+		else
+		{
+			zoomWindowFinder = RecordZoomWindowFinder.newInstance(zoomIntoInfo.getTableName());
+		}
+		final int zoomInto_adWindowId = zoomWindowFinder.findAD_Window_ID();
 		if (zoomInto_adWindowId <= 0)
 		{
 			throw new EntityNotFoundException("No windowId found")
