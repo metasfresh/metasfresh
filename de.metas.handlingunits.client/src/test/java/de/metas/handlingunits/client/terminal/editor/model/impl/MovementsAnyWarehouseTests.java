@@ -45,7 +45,7 @@ public class MovementsAnyWarehouseTests
 	}
 
 	@Test
-	public void testGetWarehousesUnlessOfHUs()
+	public void testRetrieveWarehousesWhichContainNoneOf()
 	{
 
 		final I_M_Warehouse warehouse1 = createWarehouse("Warehouse1");
