@@ -16,6 +16,8 @@ Here come the actual release notes:
 
 ##Features
 * metasfresh-app
+  * [#2280](https://github.com/metasfresh/metasfresh/issues/2280) Window Design WebUI: c_activity
+    * Minor Layout Improvement for the Cost Center Window in WebUI.
   * [#2281](https://github.com/metasfresh/metasfresh/issues/2281) Window Design WebUI: Product Costs
     * Minor Layout Improvement for the Product Cost Window in WebUI.
   * [#2285](https://github.com/metasfresh/metasfresh/issues/2285) Window Design WebUI : Unit of Measure Improvements

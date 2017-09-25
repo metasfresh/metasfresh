@@ -1,6 +1,8 @@
 package de.metas.handlingunits.client.terminal.editor.model.impl;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Properties;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
@@ -9,6 +11,7 @@ import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_M_Movement;
 
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
+import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Warehouse;
 import de.metas.handlingunits.movement.api.IHUMovementBL;
@@ -50,15 +53,8 @@ public class MovementsAnyWarehouseModel extends AbstractMovementsWarehouseModel
 	@Override
 	protected void load()
 	{
-		if (hus.isEmpty())
-		{
-			// should never happen
-			return;
-		}
 
-		final int orgId = hus.get(0).getAD_Org_ID();
-		final List<org.compiere.model.I_M_Warehouse> warehouses = Services.get(IWarehouseDAO.class).retrieveForOrg(getCtx(), orgId);
-
+		final List<org.compiere.model.I_M_Warehouse> warehouses = retrieveWarehousesWhichContainNoneOf(hus);
 		final List<org.compiere.model.I_M_Warehouse> warehousesToLoad = InterfaceWrapperHelper.createList(warehouses, org.compiere.model.I_M_Warehouse.class);
 		Check.assumeNotEmpty(warehouses, MSG_NoWarehouseFound);
 		warehouseKeyLayout.createAndSetKeysFromWarehouses(warehousesToLoad);
@@ -85,6 +81,37 @@ public class MovementsAnyWarehouseModel extends AbstractMovementsWarehouseModel
 
 		return qualityMovements;
 
+	}
+
+	/**
+	 * Get the warehouses of the hus' organization , excluding those which currently contain the given HUs
+	 * 
+	 * @param hus
+	 * @return
+	 */
+	public static List<org.compiere.model.I_M_Warehouse> retrieveWarehousesWhichContainNoneOf(final List<I_M_HU> hus)
+	{
+		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+
+		if (hus.isEmpty())
+		{
+			// should never happen
+			return Collections.emptyList();
+		}
+
+		// used for deciding the org and context
+		final I_M_HU firstHU = hus.get(0);
+
+		final int orgId = firstHU.getAD_Org_ID();
+		final Properties ctx = InterfaceWrapperHelper.getCtx(firstHU);
+
+		final List<org.compiere.model.I_M_Warehouse> warehouses = Services.get(IWarehouseDAO.class).retrieveForOrg(ctx, orgId);
+
+		final List<org.compiere.model.I_M_Warehouse> huWarehouses = handlingUnitsDAO.retrieveWarehousesForHUs(hus);
+
+		warehouses.removeAll(huWarehouses);
+
+		return warehouses;
 	}
 
 }
