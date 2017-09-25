@@ -60,6 +60,7 @@ import de.metas.adempiere.model.I_C_Order;
 import de.metas.adempiere.service.IBPartnerOrgBL;
 import de.metas.contracts.subscription.ISubscriptionBL;
 import de.metas.contracts.subscription.ISubscriptionDAO;
+import de.metas.contracts.subscription.ISubscriptionDAO.SubscriptionProgressQuery;
 import de.metas.contracts.subscription.model.I_C_OrderLine;
 import de.metas.document.engine.IDocActionBL;
 import de.metas.flatrate.Contracts_Constants;
@@ -407,7 +408,7 @@ public class SubscriptionBL implements ISubscriptionBL
 			@NonNull final I_C_Flatrate_Term term,
 			@NonNull final Timestamp currentDate)
 	{
-		final ISubscriptionDAO subscriptionPA = Services.get(ISubscriptionDAO.class);
+		final ISubscriptionDAO subscriptionDAO = Services.get(ISubscriptionDAO.class);
 
 		I_C_SubscriptionProgress currentProgressRecord = retrieveOrCreateSP(term, currentDate);
 
@@ -422,11 +423,16 @@ public class SubscriptionBL implements ISubscriptionBL
 
 			term.setContractStatus(currentProgressRecord.getContractStatus());
 
+			final SubscriptionProgressQuery query = SubscriptionProgressQuery.builder()
+					.term(term)
+					.eventDateNotBefore(currentDate)
+					.seqNoNotLessThan(currentProgressRecord.getSeqNo() + 1)
+					.excludedStatus(X_C_SubscriptionProgress.STATUS_Ausgefuehrt)
+					.excludedStatus(X_C_SubscriptionProgress.STATUS_Ausgeliefert)
+					.build();
+
 			// see if there is an SP for the next loop iteration
-			currentProgressRecord = subscriptionPA.retrieveNextSP(
-					term,
-					currentDate,
-					currentProgressRecord.getSeqNo() + 1);
+			currentProgressRecord = subscriptionDAO.retrieveSubscriptionProgress(query);
 			if (currentProgressRecord == null)
 			{
 				break;
@@ -457,7 +463,14 @@ public class SubscriptionBL implements ISubscriptionBL
 	{
 		final ISubscriptionDAO subscriptionPA = Services.get(ISubscriptionDAO.class);
 
-		final I_C_SubscriptionProgress sp = subscriptionPA.retrieveNextSP(term, currentDate, 0);
+		final SubscriptionProgressQuery query = SubscriptionProgressQuery.builder()
+				.term(term)
+				.eventDateNotBefore(currentDate)
+				.excludedStatus(X_C_SubscriptionProgress.STATUS_Ausgefuehrt)
+				.excludedStatus(X_C_SubscriptionProgress.STATUS_Ausgeliefert)
+				.build();
+		
+		final I_C_SubscriptionProgress sp = subscriptionPA.retrieveSubscriptionProgress(query);
 		if (sp != null)
 		{
 			return sp;

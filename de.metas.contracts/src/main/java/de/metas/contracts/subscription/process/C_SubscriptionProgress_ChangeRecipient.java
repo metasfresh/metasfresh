@@ -51,7 +51,7 @@ public class C_SubscriptionProgress_ChangeRecipient
 	protected String doIt()
 	{
 		final ChangeRecipientsRequest request = ChangeRecipientsRequest.builder()
-				.term(getTerm())
+				.term(getTermFromProcessInfo())
 				.dateFrom(dateFrom)
 				.dateTo(dateTo)
 				.DropShip_BPartner_ID(DropShip_BPartner_ID)

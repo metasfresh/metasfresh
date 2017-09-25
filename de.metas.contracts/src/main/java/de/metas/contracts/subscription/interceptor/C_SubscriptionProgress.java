@@ -40,7 +40,6 @@ public class C_SubscriptionProgress
 
 	private C_SubscriptionProgress()
 	{
-		super();
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE })

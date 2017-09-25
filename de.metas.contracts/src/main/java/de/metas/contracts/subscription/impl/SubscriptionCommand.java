@@ -13,18 +13,20 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
 import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableList.Builder;
+import com.jgoodies.common.base.Objects;
 
 import de.metas.contracts.subscription.ISubscriptionDAO;
+import de.metas.contracts.subscription.ISubscriptionDAO.SubscriptionProgressQuery;
+import de.metas.contracts.subscription.impl.subscriptioncommands.RemovePauses;
 import de.metas.flatrate.model.I_C_Flatrate_Term;
 import de.metas.flatrate.model.I_C_SubscriptionProgress;
 import de.metas.flatrate.model.X_C_SubscriptionProgress;
 import de.metas.i18n.IMsgBL;
 import lombok.Builder.Default;
 import lombok.NonNull;
-import lombok.experimental.UtilityClass;
 
 /*
  * #%L
@@ -48,41 +50,26 @@ import lombok.experimental.UtilityClass;
  * #L%
  */
 
-@UtilityClass
 public class SubscriptionCommand
 {
 	public static final String MSG_NO_SPS_AFTER_DATE_1P = "Subscription.NoSpsAfterDate_1P";
 
-	public void insertPauseAndShiftOverlappingItems(
-			@NonNull final I_C_Flatrate_Term term,
-			@NonNull final Timestamp pauseFrom,
-			@NonNull final Timestamp pauseUntil)
+	public static SubscriptionCommand get()
 	{
-		final List<I_C_SubscriptionProgress> sps = retrieveNextSPsAndLogIfEmpty(term, pauseFrom);
-		if (sps.isEmpty())
-		{
-			return;
-		}
-
-		final I_C_SubscriptionProgress firstSpAfterBeginOfPause = sps.get(0);
-		createBeginOfPause(term, pauseFrom, firstSpAfterBeginOfPause);
-
-		final int endOfPauseSeqNo = firstSpAfterBeginOfPause.getSeqNo() + 1;
-		createEndOfPause(term, pauseUntil, endOfPauseSeqNo);
-
-		final int daysUntilAfterEndOfPause = TimeUtil.getDaysBetween(firstSpAfterBeginOfPause.getEventDate(), pauseUntil) + 1;
-		shiftEventDates(sps, daysUntilAfterEndOfPause);
-
-		shiftSeqNos(sps, 2);
-
-		sps.forEach(InterfaceWrapperHelper::save);
+		return new SubscriptionCommand();
 	}
 
-	public static void insertPauseAndPauseOverlappingItems(
+	private SubscriptionCommand()
+	{
+	}
+
+	public void insertPause(
 			@NonNull final I_C_Flatrate_Term term,
 			@NonNull final Timestamp pauseFrom,
 			@NonNull final Timestamp pauseUntil)
 	{
+		removePauses(term, pauseFrom, pauseUntil);
+
 		final List<I_C_SubscriptionProgress> sps = retrieveNextSPsAndLogIfEmpty(term, pauseFrom);
 		if (sps.isEmpty())
 		{
@@ -92,41 +79,42 @@ public class SubscriptionCommand
 		final I_C_SubscriptionProgress firstSpAfterBeginOfPause = sps.get(0);
 		createBeginOfPause(term, pauseFrom, firstSpAfterBeginOfPause);
 
-		final ImmutableList<I_C_SubscriptionProgress> spsWithinPause = updateAndCollectRecordWithinPause(sps, pauseUntil);
+		final ImmutableList<I_C_SubscriptionProgress> updatedSpsWithinPause = updateAndCollectRecordWithinPause(sps, pauseUntil);
 
-		final int endOfPauseSeqNo = spsWithinPause.isEmpty() ? firstSpAfterBeginOfPause.getSeqNo() + 1 : spsWithinPause.get(spsWithinPause.size() - 1).getSeqNo() + 1;
+		final int endOfPauseSeqNo = computeEndOfPauseSeqNo(firstSpAfterBeginOfPause, updatedSpsWithinPause);
+
 		createEndOfPause(term, pauseUntil, endOfPauseSeqNo);
 
 		final ImmutableList<I_C_SubscriptionProgress> spsAfterPause = collectSpsAfterPause(sps, pauseUntil);
 
-		shiftSeqNos(spsAfterPause, 2);
+		increaseSeqNosByTwo(spsAfterPause);
+
 		sps.forEach(InterfaceWrapperHelper::save);
 	}
 
-	private ImmutableList<I_C_SubscriptionProgress> collectSpsAfterPause(final List<I_C_SubscriptionProgress> sps, Timestamp pauseUntil)
+	public final List<I_C_SubscriptionProgress> retrieveNextSPsAndLogIfEmpty(
+			@NonNull final I_C_Flatrate_Term term,
+			@NonNull final Timestamp pauseFrom)
 	{
-		final ImmutableList<I_C_SubscriptionProgress> spsAfterPause = sps.stream()
-				.filter(sp -> sp.getEventDate().after(pauseUntil))
-				.collect(ImmutableList.toImmutableList());
-		return spsAfterPause;
-	}
+		final ISubscriptionDAO subscriptionDAO = Services.get(ISubscriptionDAO.class);
+		final SubscriptionProgressQuery query = SubscriptionProgressQuery.builder()
+				.term(term)
+				.eventDateNotBefore(pauseFrom)
+				.build();
 
-	private ImmutableList<I_C_SubscriptionProgress> updateAndCollectRecordWithinPause(final List<I_C_SubscriptionProgress> sps, Timestamp pauseUntil)
-	{
-		final ImmutableList<I_C_SubscriptionProgress> spsWithinPause = sps.stream()
-				.filter(sp -> !sp.getEventDate().after(pauseUntil))
-				.peek(sp -> {
-					sp.setSeqNo(sp.getSeqNo() + 1);
-					sp.setContractStatus(X_C_SubscriptionProgress.CONTRACTSTATUS_Lieferpause);
-				})
-				.collect(ImmutableList.toImmutableList());
-		return spsWithinPause;
+		final List<I_C_SubscriptionProgress> sps = subscriptionDAO.retrieveSubscriptionProgresses(query);
+		if (sps.isEmpty())
+		{
+			final IMsgBL msgBL = Services.get(IMsgBL.class);
+			Loggables.get().addLog(msgBL.getMsg(Env.getCtx(), MSG_NO_SPS_AFTER_DATE_1P, new Object[] { pauseFrom }));
+		}
+		return sps;
 	}
 
 	private void createBeginOfPause(
-			final I_C_Flatrate_Term term,
-			final Timestamp pauseFrom,
-			final I_C_SubscriptionProgress nextSP)
+			@NonNull final I_C_Flatrate_Term term,
+			@NonNull final Timestamp pauseFrom,
+			@NonNull final I_C_SubscriptionProgress nextSP)
 	{
 		final I_C_SubscriptionProgress pauseBegin = newInstance(I_C_SubscriptionProgress.class);
 
@@ -137,6 +125,35 @@ public class SubscriptionCommand
 		pauseBegin.setEventDate(pauseFrom);
 		pauseBegin.setSeqNo(nextSP.getSeqNo());
 		save(pauseBegin);
+	}
+
+	private ImmutableList<I_C_SubscriptionProgress> updateAndCollectRecordWithinPause(
+			@NonNull final List<I_C_SubscriptionProgress> sps,
+			@NonNull final Timestamp pauseUntil)
+	{
+		final Builder<I_C_SubscriptionProgress> spsWithinPause = ImmutableList.builder();
+
+		for (final I_C_SubscriptionProgress sp : sps)
+		{
+			if (sp.getEventDate().after(pauseUntil))
+			{
+				continue;
+			}
+			spsWithinPause.add(sp);
+			sp.setSeqNo(sp.getSeqNo() + 1);
+
+			if (Objects.equals(sp.getStatus(), X_C_SubscriptionProgress.STATUS_Geplant))
+			{
+				sp.setContractStatus(X_C_SubscriptionProgress.CONTRACTSTATUS_Lieferpause);
+			}
+		}
+
+		return spsWithinPause.build();
+	}
+
+	private static int computeEndOfPauseSeqNo(final I_C_SubscriptionProgress firstSpAfterBeginOfPause, final ImmutableList<I_C_SubscriptionProgress> spsWithinPause)
+	{
+		return spsWithinPause.isEmpty() ? firstSpAfterBeginOfPause.getSeqNo() + 1 : spsWithinPause.get(spsWithinPause.size() - 1).getSeqNo() + 1;
 	}
 
 	private void createEndOfPause(
@@ -155,35 +172,17 @@ public class SubscriptionCommand
 		save(pauseEnd);
 	}
 
-	private List<I_C_SubscriptionProgress> retrieveNextSPsAndLogIfEmpty(
-			final I_C_Flatrate_Term term,
-			final Timestamp pauseFrom)
+	private ImmutableList<I_C_SubscriptionProgress> collectSpsAfterPause(final List<I_C_SubscriptionProgress> sps, Timestamp pauseUntil)
 	{
-		final ISubscriptionDAO subscriptionPA = Services.get(ISubscriptionDAO.class);
-		final List<I_C_SubscriptionProgress> sps = subscriptionPA.retrieveNextSPs(term, pauseFrom);
-		if (sps.isEmpty())
-		{
-			final IMsgBL msgBL = Services.get(IMsgBL.class);
-			Loggables.get().addLog(msgBL.getMsg(Env.getCtx(), MSG_NO_SPS_AFTER_DATE_1P, new Object[] { pauseFrom }));
-		}
-		return sps;
+		final ImmutableList<I_C_SubscriptionProgress> spsAfterPause = sps.stream()
+				.filter(sp -> sp.getEventDate().after(pauseUntil))
+				.collect(ImmutableList.toImmutableList());
+		return spsAfterPause;
 	}
 
-	private void shiftEventDates(
-			@NonNull final List<I_C_SubscriptionProgress> sps,
-			final int daysOffset)
+	private void increaseSeqNosByTwo(@NonNull final List<I_C_SubscriptionProgress> sps)
 	{
-		for (final I_C_SubscriptionProgress currentSP : sps)
-		{
-			final Timestamp newEventDate = TimeUtil.addDays(currentSP.getEventDate(), daysOffset);
-			currentSP.setEventDate(newEventDate);
-		}
-	}
-
-	private void shiftSeqNos(
-			@NonNull final List<I_C_SubscriptionProgress> sps,
-			final int seqNoOffSet)
-	{
+		final int seqNoOffSet = 2;
 		for (final I_C_SubscriptionProgress currentSP : sps)
 		{
 			currentSP.setSeqNo(currentSP.getSeqNo() + seqNoOffSet);
@@ -232,5 +231,10 @@ public class SubscriptionCommand
 
 		@Default
 		Integer DropShip_User_ID = 0;
+	}
+
+	public void removePauses(I_C_Flatrate_Term term, Timestamp pauseFrom, Timestamp pauseUntil)
+	{
+		new RemovePauses(this).removePauses(term, pauseFrom, pauseUntil);
 	}
 }

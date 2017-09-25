@@ -42,6 +42,7 @@ import de.metas.logging.LogManager;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.contracts.subscription.ISubscriptionBL;
 import de.metas.contracts.subscription.ISubscriptionDAO;
+import de.metas.contracts.subscription.ISubscriptionDAO.SubscriptionProgressQuery;
 import de.metas.contracts.subscription.model.I_C_OrderLine;
 import de.metas.document.engine.IDocActionBL;
 import de.metas.flatrate.api.IContractChangeBL;
@@ -74,7 +75,7 @@ public class ContractChangeBL implements IContractChangeBL
 		final ISubscriptionDAO subscriptionPA = Services.get(ISubscriptionDAO.class);
 
 		// get the subscription progress entries that we might be dealing with
-		final List<I_C_SubscriptionProgress> sps = subscriptionPA.retrieveSubscriptionProgress(currentTerm);
+		final List<I_C_SubscriptionProgress> sps = subscriptionPA.retrieveSubscriptionProgresses(SubscriptionProgressQuery.builder().term(currentTerm).build());
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(currentTerm);
 		final String trxName = InterfaceWrapperHelper.getTrxName(currentTerm);

@@ -42,8 +42,8 @@ public class C_SubscriptionProgress_InsertPause
 	@Override
 	protected String doIt()
 	{
-		final I_C_Flatrate_Term term = getTerm();
-		SubscriptionCommand.insertPauseAndPauseOverlappingItems(term, dateFrom, dateTo);
+		final I_C_Flatrate_Term term = getTermFromProcessInfo();
+		SubscriptionCommand.get().insertPause(term, dateFrom, dateTo);
 
 		return MSG_OK;
 	}

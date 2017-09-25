@@ -33,6 +33,9 @@ import de.metas.flatrate.interfaces.I_C_OLCand;
 import de.metas.flatrate.model.I_C_Flatrate_Term;
 import de.metas.flatrate.model.I_C_SubscriptionProgress;
 import de.metas.flatrate.model.X_C_SubscriptionProgress;
+import lombok.Builder.Default;
+import lombok.NonNull;
+import lombok.Singular;
 
 public interface ISubscriptionDAO extends ISingletonService
 {
@@ -46,7 +49,7 @@ public interface ISubscriptionDAO extends ISingletonService
 	 * @param trxName
 	 * @return
 	 */
-	I_C_SubscriptionProgress retrieveNextSP(I_C_Flatrate_Term control, Timestamp date, int seqNo);
+	// I_C_SubscriptionProgress retrieveNextSP(I_C_Flatrate_Term control, Timestamp date, int seqNo);
 
 	/**
 	 * Returns all <code>C_SubscriptionProgress</code> records that belong to the given <code>term</code> and have an
@@ -59,7 +62,7 @@ public interface ISubscriptionDAO extends ISingletonService
 	 * @param trxName
 	 * @return
 	 */
-	List<I_C_SubscriptionProgress> retrieveNextSPs(I_C_Flatrate_Term term, Timestamp date);
+	// List<I_C_SubscriptionProgress> retrieveNextSPs(I_C_Flatrate_Term term, Timestamp date);
 
 	/**
 	 * Returns those {@link I_C_SubscriptionProgress} instances that belong to the same running subscription (same
@@ -70,7 +73,58 @@ public interface ISubscriptionDAO extends ISingletonService
 	 * @param trxName
 	 * @return
 	 */
-	List<I_C_SubscriptionProgress> retrieveSubscriptionProgress(I_C_Flatrate_Term term);
+	// List<I_C_SubscriptionProgress> retrieveSubscriptionProgress(I_C_Flatrate_Term term);
+
+	List<I_C_SubscriptionProgress> retrieveSubscriptionProgresses(SubscriptionProgressQuery query);
+
+	I_C_SubscriptionProgress retrieveSubscriptionProgress(SubscriptionProgressQuery query);
+
+	@lombok.Value
+	@lombok.Builder
+	public class SubscriptionProgressQuery
+	{
+		public static SubscriptionProgressQueryBuilder startingWith(@NonNull final I_C_SubscriptionProgress subscriptionProgress)
+		{
+			final I_C_Flatrate_Term term = subscriptionProgress.getC_Flatrate_Term();
+			return term(term).seqNoNotLessThan(subscriptionProgress.getSeqNo());
+		}
+
+		public static SubscriptionProgressQueryBuilder endingRightBefore(@NonNull final I_C_SubscriptionProgress subscriptionProgress)
+		{
+			final I_C_Flatrate_Term term = subscriptionProgress.getC_Flatrate_Term();
+			return term(term).seqNoLessThan(subscriptionProgress.getSeqNo());
+		}
+		
+		public static SubscriptionProgressQueryBuilder term(@NonNull final I_C_Flatrate_Term term)
+		{
+			return builder().term(term);
+		}
+
+		@NonNull
+		I_C_Flatrate_Term term;
+
+		Timestamp eventDateNotBefore;
+
+		Timestamp eventDateNotAfter;
+		
+		@Default
+		int seqNoNotLessThan = 0;
+
+		@Default
+		int seqNoLessThan = 0;
+
+		/** never {@code null}. Empty means "don't filter by status altogether". */
+		@Singular
+		List<String> excludedStatuses;
+
+		/** never {@code null}. Empty means "don't filter by status altogether". */
+		@Singular
+		List<String> includedStatuses;
+		
+		/** never {@code null}. Empty means "don't filter by status altogether". */
+		@Singular
+		List<String> includedContractStatuses;
+	}
 
 	/**
 	 * Loads all {@link I_C_SubscriptionProgress} records that have event type
