@@ -22,6 +22,8 @@ Here come the actual release notes:
     * Minor Layout Improvement for the Product Cost Window in WebUI.
   * [#2285](https://github.com/metasfresh/metasfresh/issues/2285) Window Design WebUI : Unit of Measure Improvements
     * Minor Layout Improvement for the Unit of Measure Window in WebUI.
+  * [#2468](https://github.com/metasfresh/metasfresh/issues/2468) Window Design WebUI: gridview with client
+    * Improvements in different Windows, adapting the Layout to our current design Guidelines. Adding Translations for de_DE and en_US Locale/ Language.
 
 # metasfresh 5.28 (2017-39)
 
