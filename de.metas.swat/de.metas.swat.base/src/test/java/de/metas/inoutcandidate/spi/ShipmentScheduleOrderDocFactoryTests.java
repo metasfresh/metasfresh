@@ -16,6 +16,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.inoutcandidate.spi.impl.ShipmentScheduleOrderDocForOrderLine;
 
 /*
  * #%L
@@ -46,6 +47,7 @@ public class ShipmentScheduleOrderDocFactoryTests
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
+
 	}
 
 	@Test
@@ -72,7 +74,10 @@ public class ShipmentScheduleOrderDocFactoryTests
 		sched.setAD_Table_ID(ref.getAD_Table_ID());
 		sched.setRecord_ID(ref.getRecord_ID());
 
-		final ShipmentScheduleOrderDoc result = new ShipmentScheduleOrderDocFactory().createFor(sched);
+		final ShipmentScheduleOrderDocFactory shipmentScheduleOrderDocFactory = new ShipmentScheduleOrderDocFactory();
+		shipmentScheduleOrderDocFactory.registerProvider(I_C_OrderLine.Table_Name, ShipmentScheduleOrderDocForOrderLine.INSTANCE);
+
+		final ShipmentScheduleOrderDoc result = shipmentScheduleOrderDocFactory.createFor(sched);
 		assertThat(result.getBillPartner()).isEqualTo(billBPartner);
 		assertThat(result.getDeliveryDate()).isEqualTo(deliveryDate);
 		assertThat(result.getPreparationDate()).isNull();
