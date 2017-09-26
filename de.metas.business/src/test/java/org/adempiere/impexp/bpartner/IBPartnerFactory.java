@@ -67,7 +67,12 @@ import lombok.Value;
 
 	public static class IBPartnerFactoryBuilder
 	{
-		public I_I_BPartner createImportRecord()
+		public I_I_BPartner build()
+		{
+			return createImportRecord();
+		}
+
+		private I_I_BPartner createImportRecord()
 		{
 			final I_I_BPartner ibpartner = InterfaceWrapperHelper.create(ctx, I_I_BPartner.class, ITrx.TRXNAME_None);
 			ibpartner.setValue(value);
@@ -99,12 +104,5 @@ import lombok.Value;
 			InterfaceWrapperHelper.save(ibpartner);
 			return ibpartner;
 		}
-
-		@Deprecated
-		public I_I_BPartner build()
-		{
-			return createImportRecord();
-		}
-
 	}
 }

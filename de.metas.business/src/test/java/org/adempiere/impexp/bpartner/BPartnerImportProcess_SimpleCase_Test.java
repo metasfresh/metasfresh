@@ -81,6 +81,6 @@ public class BPartnerImportProcess_SimpleCase_Test
 				.locationPhone2("phone2")
 				.locationFax("fax")
 				//
-				.createImportRecord();
+				.build();
 	}
 }

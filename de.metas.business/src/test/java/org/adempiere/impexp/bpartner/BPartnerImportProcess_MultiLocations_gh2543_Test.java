@@ -206,7 +206,7 @@ public class BPartnerImportProcess_MultiLocations_gh2543_Test
 				.shipToDefaultAddress(false).billToDefaultAddress(true)
 				.groupValue("Standard")
 				.language("de_CH")
-				.createImportRecord());
+				.build());
 
 		records.add(IBPartnerFactory.builder()
 				.ctx(ctx)
@@ -217,7 +217,7 @@ public class BPartnerImportProcess_MultiLocations_gh2543_Test
 				.shipToDefaultAddress(false).billToDefaultAddress(true)
 				.groupValue("Standard")
 				.language("de_CH")
-				.createImportRecord());
+				.build());
 
 		records.add(IBPartnerFactory.builder()
 				.ctx(ctx)
@@ -228,7 +228,7 @@ public class BPartnerImportProcess_MultiLocations_gh2543_Test
 				.shipToDefaultAddress(true).billToDefaultAddress(true)
 				.groupValue("Standard")
 				.language("de_CH")
-				.createImportRecord());
+				.build());
 
 		records.add(IBPartnerFactory.builder()
 				.ctx(ctx)
@@ -239,7 +239,7 @@ public class BPartnerImportProcess_MultiLocations_gh2543_Test
 				.shipToDefaultAddress(true).billToDefaultAddress(true)
 				.groupValue("Standard")
 				.language("de_CH")
-				.createImportRecord());
+				.build());
 
 		return records;
 	}
