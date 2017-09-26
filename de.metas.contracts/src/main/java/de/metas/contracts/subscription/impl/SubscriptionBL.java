@@ -432,7 +432,7 @@ public class SubscriptionBL implements ISubscriptionBL
 					.build();
 
 			// see if there is an SP for the next loop iteration
-			currentProgressRecord = subscriptionDAO.retrieveSubscriptionProgress(query);
+			currentProgressRecord = subscriptionDAO.retrieveFirstSubscriptionProgress(query);
 			if (currentProgressRecord == null)
 			{
 				break;
@@ -470,7 +470,7 @@ public class SubscriptionBL implements ISubscriptionBL
 				.excludedStatus(X_C_SubscriptionProgress.STATUS_Ausgeliefert)
 				.build();
 		
-		final I_C_SubscriptionProgress sp = subscriptionPA.retrieveSubscriptionProgress(query);
+		final I_C_SubscriptionProgress sp = subscriptionPA.retrieveFirstSubscriptionProgress(query);
 		if (sp != null)
 		{
 			return sp;

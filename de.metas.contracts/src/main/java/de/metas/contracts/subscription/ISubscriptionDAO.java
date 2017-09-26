@@ -39,45 +39,9 @@ import lombok.Singular;
 
 public interface ISubscriptionDAO extends ISingletonService
 {
-
-	/**
-	 * Retrieve the "next" subscription progress with seqNo>= the given seqNo and eventDate<=date.
-	 * 
-	 * @param control
-	 * @param date
-	 * @param seqNo
-	 * @param trxName
-	 * @return
-	 */
-	// I_C_SubscriptionProgress retrieveNextSP(I_C_Flatrate_Term control, Timestamp date, int seqNo);
-
-	/**
-	 * Returns all <code>C_SubscriptionProgress</code> records that belong to the given <code>term</code> and have an
-	 * <code>EventDate</code> at or after the given <code>date</code>.
-	 * 
-	 * The result is ordered by <code>EventDate</code>
-	 * 
-	 * @param term
-	 * @param date
-	 * @param trxName
-	 * @return
-	 */
-	// List<I_C_SubscriptionProgress> retrieveNextSPs(I_C_Flatrate_Term term, Timestamp date);
-
-	/**
-	 * Returns those {@link I_C_SubscriptionProgress} instances that belong to the same running subscription (same
-	 * C_OrderLineId) and have there after the given date.
-	 * 
-	 * @param subscriptionControlId
-	 * @param date
-	 * @param trxName
-	 * @return
-	 */
-	// List<I_C_SubscriptionProgress> retrieveSubscriptionProgress(I_C_Flatrate_Term term);
-
 	List<I_C_SubscriptionProgress> retrieveSubscriptionProgresses(SubscriptionProgressQuery query);
 
-	I_C_SubscriptionProgress retrieveSubscriptionProgress(SubscriptionProgressQuery query);
+	I_C_SubscriptionProgress retrieveFirstSubscriptionProgress(SubscriptionProgressQuery query);
 
 	@lombok.Value
 	@lombok.Builder

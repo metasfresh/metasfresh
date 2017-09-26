@@ -63,7 +63,7 @@ public class SubscriptionDAOTest
 		assertThat(resultList).hasSize(1);
 		assertThat(resultList.get(0).getC_SubscriptionProgress_ID()).isEqualTo(subscriptionProgress.getC_SubscriptionProgress_ID());
 
-		final I_C_SubscriptionProgress singleResult = new SubscriptionDAO().retrieveSubscriptionProgress(query);
+		final I_C_SubscriptionProgress singleResult = new SubscriptionDAO().retrieveFirstSubscriptionProgress(query);
 		assertThat(singleResult.getC_SubscriptionProgress_ID()).isEqualTo(subscriptionProgress.getC_SubscriptionProgress_ID());
 	}
 

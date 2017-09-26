@@ -172,7 +172,7 @@ public class RemovePauses
 		final SubscriptionProgressQuery query = SubscriptionProgressQuery.endingRightBefore(firstSp)
 				.includedContractStatus(X_C_SubscriptionProgress.CONTRACTSTATUS_Lieferpause)
 				.build();
-		final I_C_SubscriptionProgress preceedingPauseRecord = Services.get(ISubscriptionDAO.class).retrieveSubscriptionProgress(query);
+		final I_C_SubscriptionProgress preceedingPauseRecord = Services.get(ISubscriptionDAO.class).retrieveFirstSubscriptionProgress(query);
 
 		final I_C_SubscriptionProgress firstPauseRecord = preceedingPauseRecord != null ? preceedingPauseRecord : firstSp;
 		return firstPauseRecord;

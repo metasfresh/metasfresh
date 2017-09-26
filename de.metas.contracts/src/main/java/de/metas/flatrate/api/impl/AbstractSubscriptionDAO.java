@@ -65,7 +65,7 @@ public abstract class AbstractSubscriptionDAO implements ISubscriptionDAO
 	}
 
 	@Override
-	public I_C_SubscriptionProgress retrieveSubscriptionProgress(@NonNull final SubscriptionProgressQuery query)
+	public I_C_SubscriptionProgress retrieveFirstSubscriptionProgress(@NonNull final SubscriptionProgressQuery query)
 	{
 		return createQuery(query).first();
 	}
@@ -157,30 +157,6 @@ public abstract class AbstractSubscriptionDAO implements ISubscriptionDAO
 		logger.info("Created new C_SubscriptionProgress={}", sdNew);
 		return sdNew;
 	}
-
-//	@Override
-//	public final I_C_SubscriptionProgress retrieveNextSP(final I_C_Flatrate_Term control, final Timestamp date, final int seqNo)
-//	{
-//		logger.debug("Parameters: date=" + date + ", seqNo=" + seqNo + ", control=" + control);
-//
-//		final I_C_SubscriptionProgress result = Services.get(IQueryBL.class)
-//				.createQueryBuilder(I_C_SubscriptionProgress.class)
-//				.addOnlyActiveRecordsFilter()
-//				.addEqualsFilter(I_C_SubscriptionProgress.COLUMN_C_Flatrate_Term_ID, control.getC_Flatrate_Term_ID())
-//				.addCompareFilter(I_C_SubscriptionProgress.COLUMN_EventDate, Operator.GREATER_OR_EQUAL, date)
-//				.addCompareFilter(I_C_SubscriptionProgress.COLUMN_SeqNo, Operator.GREATER_OR_EQUAL, seqNo)
-//				.addNotInArrayFilter(I_C_SubscriptionProgress.COLUMN_Status, ImmutableList.of(STATUS_Ausgefuehrt, STATUS_Ausgeliefert))
-//				.orderBy().addColumn(I_C_SubscriptionProgress.COLUMN_SeqNo).endOrderBy()
-//				.create()
-//				.first();
-//
-//		if (result != null)
-//		{
-//			return result;
-//		}
-//
-//		return retrieveLastSP(control.getC_Flatrate_Term_ID(), seqNo);
-//	}
 
 	public final I_C_SubscriptionProgress retrieveLastSP(
 			final int termId,
