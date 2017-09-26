@@ -64,7 +64,7 @@ import de.metas.dunning.spi.IDunnableSource;
 import de.metas.dunning.spi.IDunningCandidateSource;
 import de.metas.dunning.spi.IDunningConfigurator;
 import de.metas.inoutcandidate.api.IShipmentConstraintsBL;
-import de.metas.inoutcandidate.api.ShipmentRestrictionCreateRequest;
+import de.metas.inoutcandidate.api.ShipmentConstraintCreateRequest;
 import de.metas.logging.LogManager;
 import lombok.NonNull;
 
@@ -315,6 +315,20 @@ public class DunningBL implements IDunningBL
 
 			line.setProcessed(true);
 			InterfaceWrapperHelper.save(line);
+		}
+
+		//
+		// Delivery stop (https://github.com/metasfresh/metasfresh/issues/2499)
+		// TODO: get the delivery partner instead of invoice partner. That one shall be Stopped!
+		final org.compiere.model.I_C_DunningLevel dunningLevel = dunningDoc.getC_DunningLevel();
+		if (dunningLevel.isDeliveryStop())
+		{
+			final IShipmentConstraintsBL shipmentConstraintsBL = Services.get(IShipmentConstraintsBL.class);
+			shipmentConstraintsBL.createConstraint(ShipmentConstraintCreateRequest.builder()
+					.bpartnerId(dunningDoc.getC_BPartner_ID())
+					.sourceDocRef(TableRecordReference.of(dunningDoc))
+					.deliveryStop(true)
+					.build());
 		}
 
 		dunningDoc.setProcessed(true);
