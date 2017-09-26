@@ -2,11 +2,8 @@ package de.metas.inoutcandidate.spi;
 
 import java.sql.Timestamp;
 
-import org.compiere.model.I_C_BPartner;
-
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import lombok.Builder;
-import lombok.NonNull;
 import lombok.Value;
 
 /*
@@ -46,7 +43,4 @@ public class ShipmentScheduleOrderDoc
 	Timestamp deliveryDate;
 
 	Timestamp preparationDate;
-
-	@NonNull
-	I_C_BPartner billPartner;
 }

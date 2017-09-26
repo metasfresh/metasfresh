@@ -1,10 +1,12 @@
-package de.metas.storage;
+package de.metas.inoutcandidate.api;
+
+import org.adempiere.util.ISingletonService;
 
 /*
  * #%L
- * de.metas.storage
+ * de.metas.swat.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2017 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,24 +24,9 @@ package de.metas.storage;
  * #L%
  */
 
-
-import java.util.Collections;
-import java.util.Set;
-
-import org.adempiere.util.lang.ObjectUtils;
-
-public abstract class AbstractStorageSegment implements IStorageSegment
+public interface IShipmentConstraintsBL extends ISingletonService
 {
-	@Override
-	public String toString()
-	{
-		return ObjectUtils.toString(this);
-	}
-	
-	@Override
-	public Set<IStorageAttributeSegment> getAttributes()
-	{
-		return Collections.emptySet();
-	}
+	void createConstraint(ShipmentConstraintCreateRequest request);
 
+	int getDeliveryStopShipmentConstraintId(int bpartnerId);
 }

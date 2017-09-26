@@ -66,7 +66,6 @@ import org.compiere.model.MInOut;
 import org.compiere.model.MOrder;
 import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_C_Order;
-import org.compiere.util.Env;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
 import org.slf4j.Logger;
@@ -75,10 +74,10 @@ import de.metas.adempiere.model.I_AD_User;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.document.engine.IDocActionBL;
-import de.metas.i18n.IMsgBL;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.inoutcandidate.api.IDeliverRequest;
+import de.metas.inoutcandidate.api.IShipmentConstraintsBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
@@ -173,6 +172,28 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			final String headerAggregationKey = shipmentScheduleKeyBuilder.buildKey(sched);
 			sched.setHeaderAggregationKey(headerAggregationKey);
 		}
+		
+		//
+		// Check shipment constraints
+		final IShipmentConstraintsBL shipmentConstraintsBL = Services.get(IShipmentConstraintsBL.class);
+		for (final OlAndSched olAndSched : olsAndScheds)
+		{
+			final I_M_ShipmentSchedule sched = olAndSched.getSched();
+			final int billBPartnerId = sched.getBill_BPartner_ID();
+			final int deliveryStopShipmentConstraintId = shipmentConstraintsBL.getDeliveryStopShipmentConstraintId(billBPartnerId);
+			final boolean isDeliveryStop = deliveryStopShipmentConstraintId > 0;
+			if(isDeliveryStop)
+			{
+				sched.setIsDeliveryStop(true);
+				sched.setM_Shipment_Constraint_ID(deliveryStopShipmentConstraintId);
+			}
+			else
+			{
+				sched.setIsDeliveryStop(false);
+				sched.setM_Shipment_Constraint_ID(-1);
+			}
+		}
+		
 
 		final CachedObjects coToUse = mkCoToUse(co);
 
@@ -181,7 +202,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 
 		// prepare the second run
 		final int removeCnt = applyCandidateProcessors(ctx, firstRun, coToUse, trxName);
-		logger.info(removeCnt + " records were discarded by candidate processors");
+		logger.info("{} records were discarded by candidate processors", removeCnt);
 
 		// evaluate the processor's result: lines that have been discarded won't
 		// be delivered and won't be validated in the second run.
@@ -214,8 +235,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 
 			final I_M_ShipmentSchedule sched = olAndSched.getSched();
 			final IDeliverRequest deliverRequest = olAndSched.getDeliverRequest();
-			final I_C_BPartner bPartner = shipmentScheduleEffectiveBL.getBPartner(sched); // task 08756: we don't really care for the ol's partner, but for the partner who will actually receive the
-			// shipment.
+			final I_C_BPartner bPartner = shipmentScheduleEffectiveBL.getBPartner(sched); // task 08756: we don't really care for the ol's partner, but for the partner who will actually receive the shipment.
 
 			final org.compiere.model.I_M_Product product = ol.getM_Product();
 
@@ -241,38 +261,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 
 			updateLineNewAmt(ctx, ol, sched, product);
 
-			final I_M_InOutLine inOutLine = secondRun.getInOutLineForOrderLine(ol.getC_OrderLine_ID());
-			if (inOutLine != null)
-			{
-				sched.setQtyToDeliver(inOutLine.getMovementQty());
-				sched.setStatus(mkStatus(inOutLine, secondRun));
-			}
-			else
-			{
-				setQtyToDeliverWhenNullInoutLine(sched);
-			}
-
-			final BigDecimal newQtyToDeliverOverrideFulfilled = mkQtyToDeliverOverrideFulFilled(olAndSched);
-
-			if (olAndSched.getQtyOverride() != null)
-			{
-
-				if (newQtyToDeliverOverrideFulfilled.compareTo(olAndSched.getQtyOverride()) >= 0)
-				{
-					// the QtyToDeliverOverride value that was set by the user has been fulfilled (or even
-					// over-fulfilled)
-					sched.setQtyToDeliver_Override(null);
-					sched.setQtyToDeliver_OverrideFulfilled(null);
-				}
-				else
-				{
-					sched.setQtyToDeliver_OverrideFulfilled(newQtyToDeliverOverrideFulfilled);
-				}
-			}
-			else
-			{
-				sched.setQtyToDeliver_OverrideFulfilled(null);
-			}
+			ShipmentScheduleQtysHelper.updateQtyToDeliver(olAndSched, secondRun);
 
 			final String orderDocStatus = coToUse.retrieveAndCacheOrder(ol, trxName).getDocStatus();
 
@@ -428,57 +417,6 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 		}
 	}
 
-	/**
-	 * Method sets the give {@code sched}'s {@code QtyToDeliver} value in case the previous allocation runs did <b>not</b> allocate a qty to deliver. Note that if the effective delivery rule is
-	 * "FORCE", then we still need to set a qty even in that case.
-	 *
-	 * @param sched
-	 */
-	/* package */void setQtyToDeliverWhenNullInoutLine(final I_M_ShipmentSchedule sched)
-	{
-		//
-		// if delivery rule == force :
-		// // set qtyToDeliver = qtyToDeliverOveride (if exists)
-		// // else set qtyToDeliver = QtyOrdered
-		// if not forced, qtyToDeliver is 0
-		final String deliveryRule = Services.get(IShipmentScheduleEffectiveBL.class).getDeliveryRule(sched);
-		final boolean ruleForce = DELIVERYRULE_Force.equals(deliveryRule);
-		if (ruleForce)
-		{
-			final BigDecimal qtyToDeliverOverride = sched.getQtyToDeliver_Override();
-			if (qtyToDeliverOverride.compareTo(BigDecimal.ZERO) > 0)
-			{
-				sched.setQtyToDeliver(qtyToDeliverOverride);
-			}
-			else
-			{
-				// task 09005: make sure the correct qtyOrdered is taken from the shipmentSchedule
-				final BigDecimal qtyOrdered = Services.get(IShipmentScheduleEffectiveBL.class).getQtyOrdered(sched);
-
-				// task 07884-IT1: even if the rule is force: if there is an unconfirmed qty, then *don't* deliver it again
-				sched.setQtyToDeliver(mkQtyToDeliver(qtyOrdered, sched.getQtyPickList()));
-			}
-		}
-		else
-		{
-			sched.setQtyToDeliver(BigDecimal.ZERO);
-		}
-	}
-
-	private BigDecimal mkQtyToDeliverOverrideFulFilled(final OlAndSched olAndSched)
-	{
-		final I_C_OrderLine ol = olAndSched.getOl();
-		final I_M_ShipmentSchedule sched = olAndSched.getSched();
-
-		final BigDecimal deliveredDiff = ol.getQtyDelivered().subtract(olAndSched.getInitialSchedQtyDelivered());
-
-		final BigDecimal newQtyToDeliverOverrideFulfilled = sched.getQtyToDeliver_OverrideFulfilled().add(deliveredDiff);
-		if (newQtyToDeliverOverrideFulfilled.signum() < 0)
-		{
-			return BigDecimal.ZERO;
-		}
-		return newQtyToDeliverOverrideFulfilled;
-	}
 
 	/**
 	 * Generate Shipments.
@@ -539,7 +477,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			final I_C_Order order = co.retrieveAndCacheOrder(orderLine, trxName);
 			final String deliveryRule = shipmentScheduleEffectiveValuesBL.getDeliveryRule(sched);
 
-			logger.debug("check: {} - DeliveryRule={}", new Object[] { order, deliveryRule });
+			logger.debug("check: {} - DeliveryRule={}", order, deliveryRule);
 			logger.debug("check: {}", orderLine);
 
 			final boolean ruleManual = DELIVERYRULE_Manual.equals(deliveryRule);
@@ -547,7 +485,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			final BigDecimal qtyRequired;
 			if (olAndSched.getQtyOverride() != null)
 			{
-				qtyRequired = olAndSched.getQtyOverride().subtract(mkQtyToDeliverOverrideFulFilled(olAndSched));
+				qtyRequired = olAndSched.getQtyOverride().subtract(ShipmentScheduleQtysHelper.mkQtyToDeliverOverrideFulFilled(olAndSched));
 			}
 			else if (ruleManual)
 			{
@@ -585,7 +523,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 				continue;
 			}
 
-			final BigDecimal qtyToDeliver = mkQtyToDeliver(qtyRequired, qtyUnconfirmedShipments);
+			final BigDecimal qtyToDeliver = ShipmentScheduleQtysHelper.mkQtyToDeliver(qtyRequired, qtyUnconfirmedShipments);
 
 			final boolean ruleCompleteOrder = DELIVERYRULE_CompleteOrder.equals(deliveryRule);
 
@@ -712,22 +650,6 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 		return completeStatus;
 	}
 
-	private BigDecimal mkQtyToDeliver(final BigDecimal qtyRequired, final BigDecimal unconfirmedShippedQty)
-	{
-		final StringBuilder logInfo = new StringBuilder("Unconfirmed Qty=" + unconfirmedShippedQty + " - ToDeliver=" + qtyRequired + "->");
-
-		BigDecimal toDeliver = qtyRequired.subtract(unconfirmedShippedQty);
-
-		logInfo.append(toDeliver);
-
-		if (toDeliver.signum() < 0)
-		{
-			toDeliver = BigDecimal.ZERO;
-			logInfo.append(" (set to 0)");
-		}
-		logger.debug(logInfo.toString());
-		return toDeliver;
-	}
 
 	private ShipmentCandidates mkCandidatesToUse(
 			final List<OlAndSched> lines,
@@ -945,27 +867,8 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 
 	} // createLine
 
-	/**
-	 * Creates the status string for the {@link I_M_ShipmentSchedule#COLUMNNAME_Status} column.
-	 *
-	 * @param inOutLine
-	 * @param shipmentCandidates
-	 * @return
-	 */
-	private String mkStatus(final I_M_InOutLine inOutLine, final IShipmentCandidates shipmentCandidates)
-	{
-		final CompleteStatus completeStatus = shipmentCandidates.getCompleteStatus(inOutLine);
-		if (!IShipmentCandidates.CompleteStatus.OK.equals(completeStatus))
-		{
-			shipmentCandidates.addStatusInfo(inOutLine, Services.get(IMsgBL.class).getMsg(Env.getCtx(), completeStatus.toString()));
-		}
-
-		return shipmentCandidates.getStatusInfos(inOutLine);
-	}
-
 	private CachedObjects mkCoToUse(final CachedObjects co)
 	{
-
 		if (co == null)
 		{
 			return new CachedObjects();
@@ -1215,7 +1118,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	}
 
 	@Override
-	public void closeShipmentSchedule(I_M_ShipmentSchedule schedule)
+	public void closeShipmentSchedule(final I_M_ShipmentSchedule schedule)
 	{
 		final BigDecimal qtyDelivered = schedule.getQtyDelivered();
 

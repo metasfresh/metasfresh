@@ -25,12 +25,10 @@ package de.metas.inoutcandidate.api;
 
 import java.math.BigDecimal;
 
-import org.adempiere.misc.service.IPOService;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.inoutcandidate.model.X_M_ShipmentSchedule;
 import de.metas.interfaces.I_C_OrderLine;
 
 /**
@@ -77,17 +75,11 @@ public final class OlAndSched
 	}
 
 	/**
-	 * This method doesn't use {@link X_M_ShipmentSchedule#getQtyToDeliver_Override()} because that method returns
-	 * {@link BigDecimal#ZERO} if the database value is NULL.
-	 *
-	 * @return
+	 * @return shipment schedule's QtyToDeliver_Override or <code>null</code>
 	 */
 	public BigDecimal getQtyOverride()
 	{
-		final IPOService poService = Services.get(IPOService.class);
-
-		final BigDecimal result = (BigDecimal)poService.getValue(shipmentSchedule, I_M_ShipmentSchedule.COLUMNNAME_QtyToDeliver_Override);
-		return result;
+		return InterfaceWrapperHelper.getValueOrNull(shipmentSchedule, I_M_ShipmentSchedule.COLUMNNAME_QtyToDeliver_Override);
 	}
 
 	public boolean isAvailForShipmentRun()
@@ -95,7 +87,7 @@ public final class OlAndSched
 		return availForShipmentRun;
 	}
 
-	public void setAvailForShipmentRun(boolean availForShipmentRun)
+	public void setAvailForShipmentRun(final boolean availForShipmentRun)
 	{
 		this.availForShipmentRun = availForShipmentRun;
 	}

@@ -16,6 +16,8 @@ Here come the actual release notes:
 
 ##Features
 * metasfresh-app
+  * [#2190](https://github.com/metasfresh/metasfresh/issues/2190) Window Design WebUI: Shipment Improvements
+    * Layout adjustments for the Shipment Window in WebUI.
   * [#2280](https://github.com/metasfresh/metasfresh/issues/2280) Window Design WebUI: c_activity
     * Minor Layout Improvement for the Cost Center Window in WebUI.
   * [#2281](https://github.com/metasfresh/metasfresh/issues/2281) Window Design WebUI: Product Costs

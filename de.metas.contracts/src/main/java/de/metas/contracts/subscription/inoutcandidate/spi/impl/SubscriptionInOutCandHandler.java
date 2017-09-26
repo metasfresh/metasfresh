@@ -96,6 +96,7 @@ public class SubscriptionInOutCandHandler implements IInOutCandHandler
 		newSched.setC_BPartner_Location_ID(subscriptionLine.getDropShip_Location_ID());
 		newSched.setC_BPartner_ID(subscriptionLine.getDropShip_BPartner_ID());
 		newSched.setAD_User_ID(subscriptionLine.getDropShip_User_ID());
+		newSched.setBill_BPartner_ID(newSched.getC_BPartner_ID());
 
 		final IDocumentLocation documentLocation = InterfaceWrapperHelper.create(newSched, IDocumentLocation.class);
 		documentLocationBL.setBPartnerAddress(documentLocation);
@@ -192,7 +193,7 @@ public class SubscriptionInOutCandHandler implements IInOutCandHandler
 
 		logger.debug("Identified {} C_SubscriptionProgress that need a shipment schedule", subscriptionLines.size());
 
-		return new ArrayList<Object>(subscriptionLines);
+		return new ArrayList<>(subscriptionLines);
 	}
 
 	@Override

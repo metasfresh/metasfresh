@@ -78,7 +78,6 @@ public class ShipmentScheduleOrderDocFactoryTests
 		shipmentScheduleOrderDocFactory.registerProvider(I_C_OrderLine.Table_Name, ShipmentScheduleOrderDocForOrderLine.INSTANCE);
 
 		final ShipmentScheduleOrderDoc result = shipmentScheduleOrderDocFactory.createFor(sched);
-		assertThat(result.getBillPartner()).isEqualTo(billBPartner);
 		assertThat(result.getDeliveryDate()).isEqualTo(deliveryDate);
 		assertThat(result.getPreparationDate()).isNull();
 	}
