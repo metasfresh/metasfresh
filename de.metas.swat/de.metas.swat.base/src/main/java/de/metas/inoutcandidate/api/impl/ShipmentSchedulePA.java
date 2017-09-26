@@ -865,38 +865,30 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 
 		//
 		// Products
-		final boolean resetAllProducts = productIds.contains(0) || productIds.contains(-1) || productIds.contains(null);
+		final boolean resetAllProducts = productIds.contains(0) || productIds.contains(-1) || productIds.contains(IStorageSegment.ANY);
 		if (!resetAllProducts)
 		{
 			final String productColumnName = ssAlias + I_M_ShipmentSchedule.COLUMNNAME_M_Product_ID;
 			whereClause.append("\n\t AND ");
 			whereClause.append("(").append(DB.buildSqlList(productColumnName, productIds, sqlParams)).append(")");
-			// if (debug)
-			// {
-			// whereClause.append(" -- ").append(productIds);
-			// }
 		}
 
 		//
 		// BPartners
 		// NOTE: If we were asked to reset for BPartner=none (i.e. value 0, -1 or null) then we shall reset for all of them,
 		// because the QOH from this segment could be used by ALL
-		final boolean resetAllBPartners = bpartnerIds.contains(0) || bpartnerIds.contains(-1) || bpartnerIds.contains(null);
+		final boolean resetAllBPartners = bpartnerIds.contains(0) || bpartnerIds.contains(-1) || bpartnerIds.contains(IStorageSegment.ANY);
 		if (!resetAllBPartners)
 		{
 			final String bpartnerColumnName = "COALESCE(" + ssAlias + I_M_ShipmentSchedule.COLUMNNAME_C_BPartner_Override_ID + ", " + ssAlias + I_M_ShipmentSchedule.COLUMNNAME_C_BPartner_ID + ")";
 			whereClause.append("\n\t AND ");
 			whereClause.append("(").append(DB.buildSqlList(bpartnerColumnName, bpartnerIds, sqlParams)).append(")");
-			// if (debug)
-			// {
-			// whereClause.append(" -- ").append(bpartnerIds);
-			// }
 		}
 
 		//
 		// Locators
 		// NOTE: same as for bPartners if no particular locator is specified, it means "all of them"
-		final boolean resetAllLocators = locatorIds.contains(0) || locatorIds.contains(-1) || locatorIds.contains(null);
+		final boolean resetAllLocators = locatorIds.contains(0) || locatorIds.contains(-1) || locatorIds.contains(IStorageSegment.ANY);
 		if (!resetAllLocators)
 		{
 			final String warehouseColumnName = "COALESCE(" + ssAlias + I_M_ShipmentSchedule.COLUMNNAME_M_Warehouse_Override_ID + ", " + ssAlias + I_M_ShipmentSchedule.COLUMNNAME_M_Warehouse_ID + ")";
@@ -906,10 +898,6 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 					+ "\n\t\t loc." + I_M_Locator.COLUMNNAME_M_Warehouse_ID + "=" + warehouseColumnName
 					+ " AND " + DB.buildSqlList("loc." + I_M_Locator.COLUMNNAME_M_Locator_ID, locatorIds, sqlParams)
 					+ ")");
-			// if (debug)
-			// {
-			// whereClause.append(" -- ").append(locatorIds);
-			// }
 		}
 
 		//
