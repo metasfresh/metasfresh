@@ -87,7 +87,7 @@ public final class OlAndSched
 		return availForShipmentRun;
 	}
 
-	public void setAvailForShipmentRun(boolean availForShipmentRun)
+	public void setAvailForShipmentRun(final boolean availForShipmentRun)
 	{
 		this.availForShipmentRun = availForShipmentRun;
 	}
