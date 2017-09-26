@@ -1,5 +1,7 @@
 package de.metas.contracts.subscription.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+
 /*
  * #%L
  * de.metas.contracts
@@ -13,11 +15,11 @@ package de.metas.contracts.subscription.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -32,6 +34,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.pricing.api.IPricingResult;
@@ -39,16 +42,13 @@ import org.adempiere.pricing.exceptions.ProductNotOnPriceListException;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.MNote;
-import org.compiere.model.MOrder;
-import org.compiere.model.MOrderLine;
 import org.compiere.model.MPriceList;
 import org.compiere.model.MProductPricing;
-import org.compiere.model.MTable;
 import org.compiere.model.Query;
-import org.compiere.process.DocAction;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Trx;
@@ -64,7 +64,6 @@ import de.metas.contracts.subscription.model.I_C_OrderLine;
 import de.metas.document.engine.IDocActionBL;
 import de.metas.flatrate.Contracts_Constants;
 import de.metas.flatrate.api.IFlatrateDAO;
-import de.metas.flatrate.interfaces.I_C_BPartner;
 import de.metas.flatrate.interfaces.I_C_OLCand;
 import de.metas.flatrate.model.I_C_Contract_Term_Alloc;
 import de.metas.flatrate.model.I_C_Flatrate_Conditions;
@@ -84,35 +83,24 @@ import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.logging.LogManager;
 import de.metas.monitoring.api.IMonitoringBL;
-import de.metas.order.IOrderPA;
 import de.metas.ordercandidate.api.IOLCandBL;
 import de.metas.ordercandidate.api.IOLCandEffectiveValuesBL;
 import de.metas.product.IProductPA;
 import de.metas.workflow.api.IWFExecutionFactory;
+import lombok.NonNull;
 
 public class SubscriptionBL implements ISubscriptionBL
 {
-
 	private static final String ERR_NEW_CONDITIONS_PRICE_MISSING_1P = "de.metas.flatrate.NewConditions.Price_Missing";
+
 	public static final Logger logger = LogManager.getLogger(SubscriptionBL.class);
 
-	final IOLCandEffectiveValuesBL olCandEffectiveValuesBL = Services.get(IOLCandEffectiveValuesBL.class);
-
-	final IOLCandBL olCandBL = Services.get(IOLCandBL.class);
-
 	@Override
-	public I_C_Flatrate_Term createSubscriptionTerm(final I_C_OrderLine ol,
-			final boolean completeIt,
-			I_C_Order order)
+	public I_C_Flatrate_Term createSubscriptionTerm(
+			@NonNull final I_C_OrderLine ol,
+			final boolean completeIt)
 	{
-		if (order == null)
-		{
-			order = InterfaceWrapperHelper.create(ol.getC_Order(), I_C_Order.class);
-		}
-		else
-		{
-			Check.assume(order.getC_Order_ID() == ol.getC_Order_ID(), ol + " does not belong to " + order);
-		}
+		final I_C_Order order = InterfaceWrapperHelper.create(ol.getC_Order(), I_C_Order.class);
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(ol);
 		final String trxName = InterfaceWrapperHelper.getTrxName(ol);
@@ -173,28 +161,12 @@ public class SubscriptionBL implements ISubscriptionBL
 		newTerm.setIsSimulation(cond.isSimulation());
 		newTerm.setM_Product_ID(ol.getM_Product_ID());
 
-		final boolean postageFree;
-
-		final I_C_BPartner bPartner = InterfaceWrapperHelper.create(order.getBill_BPartner(), I_C_BPartner.class);
-		final String bpPostageFree = bPartner.getPostageFree();
-
-		if (I_C_BPartner.POSTAGEFREE_Always.equals(bpPostageFree)
-				|| I_C_BPartner.POSTAGEFREE_Subscription.equals(bpPostageFree))
-		{
-			postageFree = true;
-		}
-		else
-		{
-			postageFree = false;
-		}
-
-		newTerm.setIsPostageFree(postageFree);
 		newTerm.setContractStatus(X_C_Flatrate_Term.CONTRACTSTATUS_NochNichtBegonnen);
 		newTerm.setDocAction(X_C_Flatrate_Term.DOCACTION_Complete);
 
 		newTerm.setPriceActual(ol.getPriceActual());
 		newTerm.setC_Currency(ol.getC_Currency());
-		
+
 		InterfaceWrapperHelper.save(newTerm);
 
 		if (completeIt)
@@ -212,20 +184,18 @@ public class SubscriptionBL implements ISubscriptionBL
 			final int AD_PInstance_ID,
 			final String trxName)
 	{
-		final I_AD_InputDataSource dataDest =
-				Services.get(IInputDataSourceDAO.class).retrieveInputDataSource(ctx, Contracts_Constants.DATA_DESTINATION_INTERNAL_NAME, true, trxName);
+		final I_AD_InputDataSource dataDest = Services.get(IInputDataSourceDAO.class).retrieveInputDataSource(ctx, Contracts_Constants.DATA_DESTINATION_INTERNAL_NAME, true, trxName);
 
-		final String wc =
-				I_C_OLCand.COLUMNNAME_AD_DataDestination_ID + "=? AND " +
-						I_C_OLCand.COLUMNNAME_IsActive + "=" + DB.TO_STRING("Y") + " AND " +
-						I_C_OLCand.COLUMNNAME_IsError + "=" + DB.TO_STRING("N") + " AND " +
-						" NOT EXISTS (" +
-						"   select 1 from " + I_C_Contract_Term_Alloc.Table_Name + " ta " +
-						"   where " +
-						"      ta." + I_C_Contract_Term_Alloc.COLUMNNAME_IsActive + "=" + DB.TO_STRING("Y") + " AND " +
-						"      ta." + I_C_Contract_Term_Alloc.COLUMNNAME_AD_Client_ID + "=" + I_C_OLCand.Table_Name + "." + I_C_OLCand.COLUMNNAME_AD_Client_ID + " AND " +
-						"      ta." + I_C_Contract_Term_Alloc.COLUMNNAME_C_OLCand_ID + "=" + I_C_OLCand.Table_Name + "." + I_C_OLCand.COLUMNNAME_C_OLCand_ID +
-						" )";
+		final String wc = I_C_OLCand.COLUMNNAME_AD_DataDestination_ID + "=? AND " +
+				I_C_OLCand.COLUMNNAME_IsActive + "=" + DB.TO_STRING("Y") + " AND " +
+				I_C_OLCand.COLUMNNAME_IsError + "=" + DB.TO_STRING("N") + " AND " +
+				" NOT EXISTS (" +
+				"   select 1 from " + I_C_Contract_Term_Alloc.Table_Name + " ta " +
+				"   where " +
+				"      ta." + I_C_Contract_Term_Alloc.COLUMNNAME_IsActive + "=" + DB.TO_STRING("Y") + " AND " +
+				"      ta." + I_C_Contract_Term_Alloc.COLUMNNAME_AD_Client_ID + "=" + I_C_OLCand.Table_Name + "." + I_C_OLCand.COLUMNNAME_AD_Client_ID + " AND " +
+				"      ta." + I_C_Contract_Term_Alloc.COLUMNNAME_C_OLCand_ID + "=" + I_C_OLCand.Table_Name + "." + I_C_OLCand.COLUMNNAME_C_OLCand_ID +
+				" )";
 
 		List<I_C_OLCand> candidates = retrieveList(ctx, wc, dataDest, trxName);
 
@@ -237,49 +207,50 @@ public class SubscriptionBL implements ISubscriptionBL
 			{
 				final Throwable[] t = new Throwable[1];
 
-				Trx.run(trxName, new TrxRunnable2()
-				{
-					@Override
-					public void run(String trxName) throws Exception
-					{
-						createTermForOLCand(ctx, olCand, AD_PInstance_ID, completeIt, trxName);
-						Services.get(IMonitoringBL.class).createOrGet(Contracts_Constants.ENTITY_TYPE, "SubscriptionBL.createMissingTermsForOLCands()_Done").plusOne();
-					}
-
-					@Override
-					public void doFinally()
-					{
-						if (t[0] == null)
+				Services.get(ITrxManager.class).run(
+						trxName, new TrxRunnable2()
 						{
-							return;
-						}
+							@Override
+							public void run(String trxName) throws Exception
+							{
+								createTermForOLCand(ctx, olCand, AD_PInstance_ID, completeIt, trxName);
+								Services.get(IMonitoringBL.class).createOrGet(Contracts_Constants.ENTITY_TYPE, "SubscriptionBL.createMissingTermsForOLCands()_Done").plusOne();
+							}
 
-						I_AD_User userInCharge = Services.get(IBPartnerOrgBL.class).retrieveUserInChargeOrNull(ctx, olCand.getAD_Org_ID(), trxName);
-						if (userInCharge == null)
-						{
-							userInCharge = InterfaceWrapperHelper.create(ctx, Env.getAD_User_ID(ctx), I_AD_User.class, trxName);
-						}
+							@Override
+							public void doFinally()
+							{
+								if (t[0] == null)
+								{
+									return;
+								}
 
-						final MNote note = new MNote(ctx, IOLCandBL.MSG_OL_CAND_PROCESSOR_PROCESSING_ERROR_0P, userInCharge.getAD_User_ID(), trxName);
-						note.setRecord(MTable.getTable_ID(I_C_OLCand.Table_Name), olCand.getC_OLCand_ID());
+								I_AD_User userInCharge = Services.get(IBPartnerOrgBL.class).retrieveUserInChargeOrNull(ctx, olCand.getAD_Org_ID(), trxName);
+								if (userInCharge == null)
+								{
+									userInCharge = InterfaceWrapperHelper.create(ctx, Env.getAD_User_ID(ctx), I_AD_User.class, trxName);
+								}
 
-						note.setClientOrg(userInCharge.getAD_Client_ID(), userInCharge.getAD_Org_ID());
+								final MNote note = new MNote(ctx, IOLCandBL.MSG_OL_CAND_PROCESSOR_PROCESSING_ERROR_0P, userInCharge.getAD_User_ID(), trxName);
+								note.setRecord(InterfaceWrapperHelper.getTableId(I_C_OLCand.class), olCand.getC_OLCand_ID());
 
-						note.setTextMsg(t[0].getLocalizedMessage());
-						note.saveEx();
+								note.setClientOrg(userInCharge.getAD_Client_ID(), userInCharge.getAD_Org_ID());
 
-						olCand.setIsError(true);
-						olCand.setAD_Note_ID(note.getAD_Note_ID());
-						olCand.setErrorMsg(t[0].getLocalizedMessage());
-					}
+								note.setTextMsg(t[0].getLocalizedMessage());
+								note.saveEx();
 
-					@Override
-					public boolean doCatch(Throwable e) throws Throwable
-					{
-						t[0] = e; // store 'e'
-						return true; // rollback transaction
-					}
-				});
+								olCand.setIsError(true);
+								olCand.setAD_Note_ID(note.getAD_Note_ID());
+								olCand.setErrorMsg(t[0].getLocalizedMessage());
+							}
+
+							@Override
+							public boolean doCatch(Throwable e) throws Throwable
+							{
+								t[0] = e; // store 'e'
+								return true; // rollback transaction
+							}
+						});
 
 				InterfaceWrapperHelper.save(olCand);
 				counter++;
@@ -311,6 +282,8 @@ public class SubscriptionBL implements ISubscriptionBL
 			final I_C_OLCand olCand,
 			final boolean completeIt)
 	{
+		final IOLCandEffectiveValuesBL olCandEffectiveValuesBL = Services.get(IOLCandEffectiveValuesBL.class);
+		final IOLCandBL olCandBL = Services.get(IOLCandBL.class);
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(olCand);
 		final String trxName = InterfaceWrapperHelper.getTrxName(olCand);
@@ -372,22 +345,6 @@ public class SubscriptionBL implements ISubscriptionBL
 		newTerm.setIsSimulation(cond.isSimulation());
 		newTerm.setM_Product_ID(olCandEffectiveValuesBL.getM_Product_Effective_ID(olCand));
 
-		final boolean postageFree;
-
-		final I_C_BPartner bPartner = InterfaceWrapperHelper.create(olCand.getBill_BPartner(), I_C_BPartner.class);
-		final String bpPostageFree = bPartner.getPostageFree();
-
-		if (I_C_BPartner.POSTAGEFREE_Always.equals(bpPostageFree)
-				|| I_C_BPartner.POSTAGEFREE_Subscription.equals(bpPostageFree))
-		{
-			postageFree = true;
-		}
-		else
-		{
-			postageFree = false;
-		}
-
-		newTerm.setIsPostageFree(postageFree);
 		newTerm.setContractStatus(X_C_Flatrate_Term.CONTRACTSTATUS_NochNichtBegonnen);
 		newTerm.setDocAction(X_C_Flatrate_Term.DOCACTION_Complete);
 
@@ -398,8 +355,7 @@ public class SubscriptionBL implements ISubscriptionBL
 			newTerm.setM_PricingSystem_ID(olCand.getM_PricingSystem_ID());
 		}
 
-		final IPricingResult pricingResult =
-				olCandBL.computePriceActual(olCand, newTerm.getPlannedQtyPerUnit(), newTerm.getM_PricingSystem_ID(), olCand.getDateCandidate());
+		final IPricingResult pricingResult = olCandBL.computePriceActual(olCand, newTerm.getPlannedQtyPerUnit(), newTerm.getM_PricingSystem_ID(), olCand.getDateCandidate());
 
 		newTerm.setPriceActual(pricingResult.getPriceStd());
 		newTerm.setC_UOM_ID(pricingResult.getPrice_UOM_ID());
@@ -420,7 +376,7 @@ public class SubscriptionBL implements ISubscriptionBL
 	}
 
 	@Override
-	public I_C_SubscriptionProgress createSubscriptionEntries(final I_C_Flatrate_Term term)
+	public I_C_SubscriptionProgress createSubscriptionEntries(@NonNull final I_C_Flatrate_Term term)
 	{
 		final I_C_Flatrate_Transition trans = term.getC_Flatrate_Transition();
 
@@ -447,182 +403,95 @@ public class SubscriptionBL implements ISubscriptionBL
 	}
 
 	@Override
-	public void evalCurrentSPs(final I_C_Flatrate_Term term, final Timestamp currentDate)
+	public void evalCurrentSPs(
+			@NonNull final I_C_Flatrate_Term term,
+			@NonNull final Timestamp currentDate)
 	{
 		final ISubscriptionDAO subscriptionPA = Services.get(ISubscriptionDAO.class);
 
-		I_C_SubscriptionProgress sp = subscriptionPA.retrieveNextSP(term, currentDate, 0);
-
-		logger.debug("next SP: " + sp);
-
-		if (sp == null)
-		{
-			logger.info("Creating initial SPs for " + term);
-			sp = createSubscriptionEntries(term);
-		}
+		I_C_SubscriptionProgress currentProgressRecord = retrieveOrCreateSP(term, currentDate);
 
 		// see if there are further SPs to evaluate.
-		Timestamp lastSPDate = sp.getEventDate();
-		int lastSPSeqNo = sp.getSeqNo();
-		int count = 0;
-		while (true)
+		Timestamp lastSPDate = currentProgressRecord.getEventDate();
+		int lastSPSeqNo = currentProgressRecord.getSeqNo();
+		int count = 1;
+
+		while (!currentProgressRecord.getEventDate().after(currentDate))
 		{
-			//
-			// check if we can exit the loop
-			if (sp == null)
+			markPlannedPauseRecordAsExecuted(term, currentDate, currentProgressRecord);
+
+			term.setContractStatus(currentProgressRecord.getContractStatus());
+
+			// see if there is an SP for the next loop iteration
+			currentProgressRecord = subscriptionPA.retrieveNextSP(
+					term,
+					currentDate,
+					currentProgressRecord.getSeqNo() + 1);
+			if (currentProgressRecord == null)
 			{
-				logger.info("There are no more SPs to evaluate");
-				// sc.setLastEval(SystemTime.asTimestamp());
-				// sc.saveEx();
-				return;
-			}
-			if (sp.getEventDate().after(currentDate))
-			{
-				logger.info("CurrentDate=" + currentDate + " -> Still too early to process " + term);
-				// sc.setLastEval(SystemTime.asTimestamp());
-				// sc.saveEx();
 				break;
 			}
 
-			//
-			// do the actual work
-			evalCurrentSP(term, currentDate, sp);
-
-			// see if there is an SP for the next loop iteration
-			sp = subscriptionPA.retrieveNextSP(term, currentDate, sp.getSeqNo() + 1);
 			count++;
 
-			//
 			// make sure that we don't get stuck in an infinite loop
-			if (sp != null)
-			{
-				Check.assume(!lastSPDate.after(sp.getEventDate()), "");
-				Check.assume(lastSPSeqNo < sp.getSeqNo(), "");
+			Check.assume(!lastSPDate.after(currentProgressRecord.getEventDate()), "");
+			Check.assume(lastSPSeqNo < currentProgressRecord.getSeqNo(), "");
 
-				lastSPSeqNo = sp.getSeqNo();
-				lastSPDate = sp.getEventDate();
-			}
-		} // while
-
-		logger.info("Evaluated " + count + " " + I_C_SubscriptionProgress.Table_Name + " records");
+			lastSPSeqNo = currentProgressRecord.getSeqNo();
+			lastSPDate = currentProgressRecord.getEventDate();
+		}
+		save(term);
+		logger.info("Evaluated {} {} records", count, I_C_SubscriptionProgress.Table_Name);
 	}
 
-	private boolean evalCurrentSP(final I_C_Flatrate_Term sc, final Timestamp currentDate, I_C_SubscriptionProgress sp)
+	/**
+	 * 
+	 * @param term
+	 * @param currentDate
+	 * @return never returns {@code null}
+	 */
+	private I_C_SubscriptionProgress retrieveOrCreateSP(
+			@NonNull final I_C_Flatrate_Term term,
+			@NonNull final Timestamp currentDate)
 	{
-		Check.assume(!sp.getEventDate().after(currentDate), sp.toString());
+		final ISubscriptionDAO subscriptionPA = Services.get(ISubscriptionDAO.class);
 
-		boolean spUpdated = false;
+		final I_C_SubscriptionProgress sp = subscriptionPA.retrieveNextSP(term, currentDate, 0);
+		if (sp != null)
+		{
+			return sp;
+		}
 
-		// if (isPlannedExtendSubscription(sp))
-		// {
-		// extendSubscription(sc, currentDate, sc.get_TrxName(), sp);
-		// sp.setStatus(STATUS_Ausgefuehrt);
-		// spUpdated = true;
-		// }
-		// else
+		logger.info("Creating initial SPs for term={}", term);
+		return createSubscriptionEntries(term);
+	}
+
+	private boolean markPlannedPauseRecordAsExecuted(
+			@NonNull final I_C_Flatrate_Term term,
+			@NonNull final Timestamp currentDate,
+			@NonNull final I_C_SubscriptionProgress sp)
+	{
+		Check.errorIf(sp.getEventDate().after(currentDate),
+				"The event date {} of the given subscriptionProgress is after currentDate={}; subscriptionProgress={}",
+				sp.getEventDate(), currentDate, sp);
+
 		if (isPlannedStartPause(sp))
 		{
-			Check.assume(!isWaitForConfirm(sp), sp + "is not waiting for confirmation anymore");
 			sp.setStatus(X_C_SubscriptionProgress.STATUS_Ausgefuehrt);
-			spUpdated = true;
+			save(sp);
+			return true;
 
 		}
 		else if (isPlannedEndPause(sp))
 		{
-			Check.assume(!isWaitForConfirm(sp), sp + "is not waiting for confirmation anymore");
 			sp.setStatus(X_C_SubscriptionProgress.STATUS_Ausgefuehrt);
-			spUpdated = true;
-
-		}
-		// else if (isPlannedStart(sp))
-		// {
-		// sp.setStatus(STATUS_Ausgefuehrt);
-		// spUpdated = true;
-		// }
-		// else if (isPlannedEnd(sp))
-		// {
-		// sp.setStatus(STATUS_Ausgefuehrt);
-		// spUpdated = true;
-		// }
-
-		if (isWaitForConfirm(sp))
-		{
-			if (sp.isSubscriptionConfirmed())
-			{
-				logger.info(sp + " has been confirmed");
-				sp.setContractStatus(X_C_SubscriptionProgress.CONTRACTSTATUS_Laufend);
-				sp.setStatus(X_C_SubscriptionProgress.STATUS_Geplant);
-				spUpdated = true;
-
-			}
-			else if (!X_C_SubscriptionProgress.STATUS_Verzoegert.equals(sp.getStatus()))
-			{
-				sp.setStatus(X_C_SubscriptionProgress.STATUS_Verzoegert);
-				spUpdated = true;
-			}
+			save(sp);
+			return true;
 		}
 
-		if (spUpdated)
-		{
-			InterfaceWrapperHelper.save(sp);
-		}
-
-		sc.setContractStatus(sp.getContractStatus());
-		InterfaceWrapperHelper.save(sc);
-
-		return spUpdated;
+		return false;
 	}
-
-	private boolean isWaitForConfirm(final I_C_SubscriptionProgress sp)
-	{
-		return X_C_SubscriptionProgress.CONTRACTSTATUS_WartetAufBestaetigung.equals(sp.getContractStatus());
-	}
-
-	// private void extendSubscription(
-	// final MSubscriptionControl sc,
-	// final Timestamp currentDate,
-	// final String trxName,
-	// final I_C_SubscriptionProgress subscriptionProgress)
-	// {
-	//
-	// logger.info("Extending subscription for " + sc);
-	//
-	// final I_C_OrderLine oldSubscriptionOl = POWrapper.create(subscriptionProgress.getC_OrderLine(),
-	// I_C_OrderLine.class);
-	//
-	// final IPOService poService = Services.get(IPOService.class);
-	//
-	// final MOrderLine newSubscriptionOlPO =
-	// createNewOrderAndOl(oldSubscriptionOl, currentDate, subscriptionProgress.getEventDate(), trxName);
-	//
-	// final I_C_OrderLine newSubscriptionOl = POWrapper.create(newSubscriptionOlPO, I_C_OrderLine.class);
-	//
-	// setSubscription(newSubscriptionOl, oldSubscriptionOl.getC_Subscription_ID(), Env.getCtx(), trxName);
-	//
-	// final I_C_Order newOrder = POWrapper.create(newSubscriptionOl.getC_Order(), I_C_Order.class);
-	// final IDocActionBL docActionBL = Services.get(IDocActionBL.class);
-	// if (!docActionBL.processIt(newOrder, DocAction.ACTION_Complete))
-	// {
-	//
-	// throw new AdempiereException("CompleteIt failed for order "
-	// + newOrder + "\n" + MiscUtils.loggerMsgsUser());
-	// }
-	// logger.info("Completed new order " + newOrder + " for " + sc);
-	// poService.save(newOrder, trxName);
-	//
-	// newSubscription(newSubscriptionOl, sc, trxName);
-	//
-	// subscriptionProgress.setStatus(STATUS_Ausgefuehrt);
-	// poService.save(subscriptionProgress, trxName);
-	// }
-
-	// private boolean isPlannedExtendSubscription(final I_C_SubscriptionProgress sp)
-	// {
-	//
-	// return STATUS_Geplant.equals(sp.getStatus()) && ( //
-	// EVENTTYPE_Abo_Autoverlaengerung.equals(sp.getEventType()) //
-	// || EVENTTYPE_Abowechsel.equals(sp.getEventType()));
-	// }
 
 	private boolean isPlannedStartPause(final I_C_SubscriptionProgress sp)
 	{
@@ -634,57 +503,6 @@ public class SubscriptionBL implements ISubscriptionBL
 	{
 		return X_C_SubscriptionProgress.EVENTTYPE_Abopause_Ende.equals(sp.getEventType())
 				&& X_C_SubscriptionProgress.STATUS_Geplant.equals(sp.getStatus());
-	}
-
-	// private boolean isPlannedStart(final I_C_SubscriptionProgress sp)
-	// {
-	//
-	// return EVENTTYPE_Abo_Beginn.equals(sp.getEventType())
-	// && STATUS_Geplant.equals(sp.getStatus());
-	// }
-
-	// private boolean isPlannedEnd(final I_C_SubscriptionProgress sp)
-	// {
-	//
-	// return EVENTTYPE_Abo_Ende.equals(sp.getEventType())
-	// && STATUS_Geplant.equals(sp.getStatus());
-	// }
-
-	/**
-	 *
-	 * @param oldOl
-	 * @param oldOrder
-	 * @return
-	 */
-	@Override
-	public I_C_OrderLine createNewOrderAndOl(
-			final I_C_OrderLine oldOl,
-			final Timestamp dateOrdered,
-			final Timestamp datePromised,
-			final String trxName)
-	{
-		final I_C_Order oldOrder = InterfaceWrapperHelper.create(oldOl.getC_Order(), I_C_Order.class);
-
-		//
-		// create a new order and order line for the new subscription
-		final IOrderPA orderPA = Services.get(IOrderPA.class);
-		final MOrder newOrder = (MOrder)orderPA.copyOrder(oldOrder, false, trxName);
-		newOrder.setDateOrdered(dateOrdered);
-		newOrder.setDatePromised(datePromised);
-		newOrder.setIsSOTrx(true);
-		newOrder.setDocAction(DocAction.ACTION_Complete);
-		newOrder.saveEx(trxName);
-
-		logger.debug("Created new order " + newOrder);
-
-		final MOrderLine newOl = new MOrderLine(newOrder);
-
-		newOl.setM_Product_ID(oldOl.getM_Product_ID());
-		newOl.setQtyEntered(oldOl.getQtyEntered());
-		newOl.saveEx(trxName);
-
-		logger.debug("Created new order line" + newOl);
-		return InterfaceWrapperHelper.create(newOl, I_C_OrderLine.class);
 	}
 
 	private Timestamp mkNextDate(final I_C_Flatrate_Transition trans, final Timestamp currentDate)
@@ -734,8 +552,7 @@ public class SubscriptionBL implements ISubscriptionBL
 
 		final ISubscriptionDAO subscriptionPA = Services.get(ISubscriptionDAO.class);
 
-		final List<I_C_SubscriptionProgress> deliveries =
-				subscriptionPA.retrievePlannedAndDelayedDeliveries(ctx, SystemTime.asTimestamp(), trxName);
+		final List<I_C_SubscriptionProgress> deliveries = subscriptionPA.retrievePlannedAndDelayedDeliveries(ctx, SystemTime.asTimestamp(), trxName);
 
 		logger.debug("Going to add shipment schedule entries for " + deliveries.size() + " subscription deliveries");
 
@@ -756,23 +573,10 @@ public class SubscriptionBL implements ISubscriptionBL
 				continue;
 			}
 
-			if (isWaitForConfirm(sd))
-			{
-				if (sd.isSubscriptionConfirmed())
-				{
-					sd.setContractStatus(X_C_SubscriptionProgress.CONTRACTSTATUS_Laufend);
-					sd.setStatus(X_C_SubscriptionProgress.STATUS_Geplant);
-				}
-				else
-				{
-					logger.info(sd + " is still delayed due to missing confirmation");
-					delayedControlIds.add(sd.getC_Flatrate_Term_ID());
-					continue;
-				}
-			}
-
-			final List<I_M_ShipmentSchedule> openScheds =
-					shipmentSchedulePA.retrieveUnprocessedForRecord(ctx, MTable.getTable_ID(I_C_SubscriptionProgress.Table_Name), sd.getC_SubscriptionProgress_ID(), trxName);
+			final List<I_M_ShipmentSchedule> openScheds = shipmentSchedulePA.retrieveUnprocessedForRecord(ctx,
+					InterfaceWrapperHelper.getTableId(I_C_SubscriptionProgress.class),
+					sd.getC_SubscriptionProgress_ID(),
+					trxName);
 
 			if (openScheds.isEmpty())
 			{
@@ -845,23 +649,21 @@ public class SubscriptionBL implements ISubscriptionBL
 				I_C_OrderLine.class);
 
 		final IProductPA productPA = Services.get(IProductPA.class);
-		final I_M_PriceList pl =
-				InterfaceWrapperHelper.create(
-						productPA.retrievePriceListByPricingSyst(
-								ctx,
-								mPricingSystemId,
-								ol.getC_BPartner_Location_ID(),
-								true,
-								trxName),
-						I_M_PriceList.class);
+		final I_M_PriceList pl = InterfaceWrapperHelper.create(
+				productPA.retrievePriceListByPricingSyst(
+						ctx,
+						mPricingSystemId,
+						ol.getC_BPartner_Location_ID(),
+						true,
+						trxName),
+				I_M_PriceList.class);
 
-		final BigDecimal newPrice =
-				productPA.retrievePriceStd(
-						ol.getM_Product_ID(),
-						ol.getC_BPartner_ID(),
-						pl.getM_PriceList_ID(),
-						qtySum,
-						true).multiply(qtySum);
+		final BigDecimal newPrice = productPA.retrievePriceStd(
+				ol.getM_Product_ID(),
+				ol.getC_BPartner_ID(),
+				pl.getM_PriceList_ID(),
+				qtySum,
+				true).multiply(qtySum);
 
 		final BigDecimal oldPrice = ol.getPriceActual().multiply(qtySum);
 
@@ -881,7 +683,7 @@ public class SubscriptionBL implements ISubscriptionBL
 
 		final MProductPricing pp = new MProductPricing(productId, bPartnerId, priceQty, true);
 		pp.setReferencedObject(ol); // 03152: setting the 'ol' to allow the subscription system to compute the
-									// right price
+									 // right price
 
 		pp.setM_PriceList_ID(priceListId);
 
@@ -911,7 +713,9 @@ public class SubscriptionBL implements ISubscriptionBL
 
 			BigDecimal LineNetAmt = priceQty.multiply(factor.multiply(pp.getPriceStd()));
 			if (LineNetAmt.scale() > StdPrecision)
+			{
 				LineNetAmt = LineNetAmt.setScale(StdPrecision, BigDecimal.ROUND_HALF_UP);
+			}
 			logger.info("LineNetAmt=" + LineNetAmt);
 			ol.setLineNetAmt(LineNetAmt);
 		}
@@ -928,22 +732,20 @@ public class SubscriptionBL implements ISubscriptionBL
 
 		ol.setC_Flatrate_Conditions_ID(subscription.getC_Flatrate_Conditions_ID());
 
-		final int pricingSystemIdToUse =
-				subscription.getM_PricingSystem_ID() > 0
-						? subscription.getM_PricingSystem_ID()
-						: InterfaceWrapperHelper.create(ol.getC_Order(), I_C_Order.class).getM_PricingSystem_ID();
+		final int pricingSystemIdToUse = subscription.getM_PricingSystem_ID() > 0
+				? subscription.getM_PricingSystem_ID()
+				: InterfaceWrapperHelper.create(ol.getC_Order(), I_C_Order.class).getM_PricingSystem_ID();
 
 		final IProductPA productPA = Services.get(IProductPA.class);
 
-		final I_M_PriceList subscriptionPL =
-				InterfaceWrapperHelper.create(
-						productPA.retrievePriceListByPricingSyst(
-								ctx,
-								pricingSystemIdToUse,
-								ol.getC_BPartner_Location_ID(),
-								true,
-								trxName),
-						I_M_PriceList.class);
+		final I_M_PriceList subscriptionPL = InterfaceWrapperHelper.create(
+				productPA.retrievePriceListByPricingSyst(
+						ctx,
+						pricingSystemIdToUse,
+						ol.getC_BPartner_Location_ID(),
+						true,
+						trxName),
+				I_M_PriceList.class);
 
 		if (subscriptionPL == null)
 		{
@@ -992,16 +794,7 @@ public class SubscriptionBL implements ISubscriptionBL
 		delivery.setEventType(X_C_SubscriptionProgress.EVENTTYPE_Lieferung);
 		delivery.setStatus(X_C_SubscriptionProgress.STATUS_Geplant);
 
-		// we need to handle the whole issue of confirmation when we want to run this at
-		// if (POWrapper.create(sc.getBill_BPartner(),
-		// de.metas.flatrate.interfaces.I_C_BPartner.class).isSubscriptionConfirmRequired())
-		// {
-		// delivery.setContractStatus(X_C_SubscriptionProgress.CONTRACTSTATUS_WartetAufBestaetigung);
-		// }
-		// else
-		// {
 		delivery.setContractStatus(X_C_SubscriptionProgress.CONTRACTSTATUS_Laufend);
-		// }
 
 		delivery.setEventDate(eventDate);
 
@@ -1045,29 +838,7 @@ public class SubscriptionBL implements ISubscriptionBL
 	@Override
 	public int computeNumberOfRuns(final I_C_Flatrate_Transition trans, final Timestamp date)
 	{
-		final Calendar calTermEnd = new GregorianCalendar();
-		calTermEnd.setTime(date);
-		if (X_C_Flatrate_Transition.TERMDURATIONUNIT_JahrE.equals(trans.getTermDurationUnit()))
-		{
-			calTermEnd.add(Calendar.YEAR, trans.getTermDuration());
-		}
-		else if (X_C_Flatrate_Transition.TERMDURATIONUNIT_MonatE.equals(trans.getTermDurationUnit()))
-		{
-			calTermEnd.add(Calendar.MONTH, trans.getTermDuration());
-		}
-		else if (X_C_Flatrate_Transition.TERMDURATIONUNIT_WocheN.equals(trans.getTermDurationUnit()))
-		{
-			calTermEnd.add(Calendar.WEEK_OF_YEAR, trans.getTermDuration());
-		}
-		else if (X_C_Flatrate_Transition.TERMDURATIONUNIT_TagE.equals(trans.getTermDurationUnit()))
-		{
-			calTermEnd.add(Calendar.DAY_OF_YEAR, trans.getTermDuration());
-		}
-		else
-		{
-			Check.assume(false, trans + " has unsupported TermDurationUnit=" + trans.getTermDurationUnit());
-		}
-		calTermEnd.add(Calendar.DAY_OF_YEAR, -1);
+		final Calendar calTermEnd = addDurationToDate(trans, date);
 
 		final Calendar cal = new GregorianCalendar();
 		cal.setTime(date);
@@ -1100,6 +871,34 @@ public class SubscriptionBL implements ISubscriptionBL
 			numberOfRuns++;
 		}
 		return numberOfRuns;
+	}
+
+	private Calendar addDurationToDate(final I_C_Flatrate_Transition trans, final Timestamp date)
+	{
+		final Calendar calTermEnd = new GregorianCalendar();
+		calTermEnd.setTime(date);
+		if (X_C_Flatrate_Transition.TERMDURATIONUNIT_JahrE.equals(trans.getTermDurationUnit()))
+		{
+			calTermEnd.add(Calendar.YEAR, trans.getTermDuration());
+		}
+		else if (X_C_Flatrate_Transition.TERMDURATIONUNIT_MonatE.equals(trans.getTermDurationUnit()))
+		{
+			calTermEnd.add(Calendar.MONTH, trans.getTermDuration());
+		}
+		else if (X_C_Flatrate_Transition.TERMDURATIONUNIT_WocheN.equals(trans.getTermDurationUnit()))
+		{
+			calTermEnd.add(Calendar.WEEK_OF_YEAR, trans.getTermDuration());
+		}
+		else if (X_C_Flatrate_Transition.TERMDURATIONUNIT_TagE.equals(trans.getTermDurationUnit()))
+		{
+			calTermEnd.add(Calendar.DAY_OF_YEAR, trans.getTermDuration());
+		}
+		else
+		{
+			Check.assume(false, trans + " has unsupported TermDurationUnit=" + trans.getTermDurationUnit());
+		}
+		calTermEnd.add(Calendar.DAY_OF_YEAR, -1);
+		return calTermEnd;
 	}
 
 	@Override

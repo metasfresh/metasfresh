@@ -273,32 +273,6 @@ public interface I_AD_System
 	/** Get Last Build Info	  */
 	public java.lang.String getLastBuildInfo();
 
-    /** Column name LDAPDomain */
-    public static final String COLUMNNAME_LDAPDomain = "LDAPDomain";
-
-	/** Set LDAP-Query.
-	  * Directory service domain name - e.g. adempiere.org
-	  */
-	public void setLDAPDomain (java.lang.String LDAPDomain);
-
-	/** Get LDAP-Query.
-	  * Directory service domain name - e.g. adempiere.org
-	  */
-	public java.lang.String getLDAPDomain();
-
-    /** Column name LDAPHost */
-    public static final String COLUMNNAME_LDAPHost = "LDAPHost";
-
-	/** Set LDAP-Server.
-	  * Connection String to LDAP server starting with ldap://
-	  */
-	public void setLDAPHost (java.lang.String LDAPHost);
-
-	/** Get LDAP-Server.
-	  * Connection String to LDAP server starting with ldap://
-	  */
-	public java.lang.String getLDAPHost();
-
     /** Column name Name */
     public static final String COLUMNNAME_Name = "Name";
 

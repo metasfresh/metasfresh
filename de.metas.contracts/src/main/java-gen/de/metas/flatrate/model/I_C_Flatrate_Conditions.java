@@ -476,31 +476,6 @@ public interface I_C_Flatrate_Conditions
     public static final String COLUMNNAME_IsManualPrice = "IsManualPrice";
 
 	/**
-	 * Set AB bei neuer Vertragslaufzeit.
-	 * Entscheidet, ob das System beim Fertigstellen einer neuen Vertragslaufzeit (z.B. bei automatischer Verlängerung) eine Auftragsbestätigung erzeugt.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setIsNewTermCreatesOrder (boolean IsNewTermCreatesOrder);
-
-	/**
-	 * Get AB bei neuer Vertragslaufzeit.
-	 * Entscheidet, ob das System beim Fertigstellen einer neuen Vertragslaufzeit (z.B. bei automatischer Verlängerung) eine Auftragsbestätigung erzeugt.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public boolean isNewTermCreatesOrder();
-
-    /** Column definition for IsNewTermCreatesOrder */
-    public static final org.adempiere.model.ModelColumn<I_C_Flatrate_Conditions, Object> COLUMN_IsNewTermCreatesOrder = new org.adempiere.model.ModelColumn<I_C_Flatrate_Conditions, Object>(I_C_Flatrate_Conditions.class, "IsNewTermCreatesOrder", null);
-    /** Column name IsNewTermCreatesOrder */
-    public static final String COLUMNNAME_IsNewTermCreatesOrder = "IsNewTermCreatesOrder";
-
-	/**
 	 * Set Planspiel.
 	 *
 	 * <br>Type: YesNo

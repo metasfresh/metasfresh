@@ -13,15 +13,14 @@ package de.metas.contracts.subscription;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.sql.Timestamp;
 import java.util.List;
@@ -31,7 +30,6 @@ import org.adempiere.util.ISingletonService;
 
 import de.metas.contracts.subscription.model.I_C_OrderLine;
 import de.metas.flatrate.interfaces.I_C_OLCand;
-import de.metas.flatrate.model.I_C_Flatrate_Conditions;
 import de.metas.flatrate.model.I_C_Flatrate_Term;
 import de.metas.flatrate.model.I_C_SubscriptionProgress;
 import de.metas.flatrate.model.X_C_SubscriptionProgress;
@@ -88,13 +86,11 @@ public interface ISubscriptionDAO extends ISingletonService
 	List<I_C_SubscriptionProgress> retrievePlannedAndDelayedDeliveries(Properties ctx, Timestamp date, String trxName);
 
 	/**
-	 * Retrieves the term that references the given <code>ol</code> via its <code>C_OrderLine_Term_ID</code> column or
-	 * <code>null</code>. The method assumes that there is at most one such term.
 	 * 
 	 * @param ol
-	 * @return
+	 * @return {@code true} if there is at lease one term that references the given <code>ol</code> via its <code>C_OrderLine_Term_ID</code> column.
 	 */
-	I_C_Flatrate_Term retrieveTermForOl(I_C_OrderLine ol);
+	boolean existsTermForOl(I_C_OrderLine ol);
 
 	/**
 	 * Retrieves the terms that are connection to the given <code>olCand</code> via an active
@@ -104,17 +100,6 @@ public interface ISubscriptionDAO extends ISingletonService
 	 * @return
 	 */
 	List<I_C_Flatrate_Term> retrieveTermsForOLCand(I_C_OLCand olCand);
-
-	/**
-	 * Returns the subscription for the given bPartner and product. The subscription must currently be in state
-	 * <code>Ru</code> (running). If there is more than one subscription, the one with the most recent start date is
-	 * returned. If there is no such subscription, <code>null</code> is returned.
-	 * 
-	 * @param bPArtnerId
-	 * @param productId
-	 * @return a matching subscription or <code>null</code>.
-	 */
-	I_C_Flatrate_Conditions retrieveSubscription(Timestamp date, int bPartnerId, int productId, int locationId, String trxName);
 
 	/**
 	 * Insert a new {@link I_C_SubscriptionProgress} after the given predecessor. All values from the predecessor are
@@ -127,7 +112,6 @@ public interface ISubscriptionDAO extends ISingletonService
 	 * @return
 	 */
 	I_C_SubscriptionProgress insertNewDelivery(I_C_SubscriptionProgress predecessor);
-
 
 	<T extends I_C_OLCand> List<T> retrieveOLCands(I_C_Flatrate_Term term, Class<T> clazz);
 

@@ -33,7 +33,6 @@ import org.adempiere.pricing.exceptions.ProductNotOnPriceListException;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_M_Product;
 
-import de.metas.adempiere.model.I_C_Order;
 import de.metas.contracts.subscription.model.I_C_OrderLine;
 import de.metas.flatrate.interfaces.I_C_OLCand;
 import de.metas.flatrate.model.I_C_Flatrate_Conditions;
@@ -48,13 +47,12 @@ public interface ISubscriptionBL extends ISingletonService
 {
 	/**
 	 * 
-	 * Creates new {@link I_C_SubscriptionProgress} delivery records for the given <code>term</code>. The first sp has
+	 * Creates new {@link I_C_SubscriptionProgress} delivery records for the given <code>term</code>. The first of them has
 	 * the term's <code>StartDate</code> as EventDate.
 	 * 
 	 * @param term
 	 * @return the first <code>C_SubscriptionProgress</code> that has been created
 	 */
-	// this method's name used to be 'newSubscription'
 	I_C_SubscriptionProgress createSubscriptionEntries(I_C_Flatrate_Term term);
 
 	/**
@@ -72,7 +70,7 @@ public interface ISubscriptionBL extends ISingletonService
 
 	/**
 	 * Iterate the given deliveries, sum up their price (using their orderline's product and priceActual). Then compute
-	 * the price that wound be payable with the given pricing system and return the different.
+	 * the price that would be payable with the given pricing system and return the difference.
 	 * 
 	 * @param ctx
 	 * @param mPricingSystemId
@@ -89,11 +87,8 @@ public interface ISubscriptionBL extends ISingletonService
 	 */
 	BigDecimal computePriceDifference(Properties ctx, int mPricingSystemId, List<I_C_SubscriptionProgress> deliveries, String trxName);
 
-	I_C_OrderLine createNewOrderAndOl(I_C_OrderLine oldOl, Timestamp dateOrdered,
-			Timestamp datePromised, String trxName);
-
 	/**
-	 * Works on the given <code>MSubscriptionControl</code>'s (a.k.a sc) next {@link I_C_SubscriptionProgress} record.
+	 * Works on the given {@code sc}'s next {@link I_C_SubscriptionProgress} record.
 	 * "Next" means the next record after the given date. If the sc doesn't have a next record and the subscription is
 	 * supposed to go on, new records are created. If the next record's event date is the current date, the sc's
 	 * subscriptionStatus is set to the next record's subscription status.
@@ -120,14 +115,14 @@ public interface ISubscriptionBL extends ISingletonService
 	I_C_Flatrate_Matching retrieveMatching(Properties ctx, int flatrateConditionsId, I_M_Product product, String trxName);
 
 	/**
-	 * this method uses the given <code>C_Flatrate_Transition</code>'s <code>TermDurationUnit</code>,
+	 * Use the given <code>C_Flatrate_Transition</code>'s <code>TermDurationUnit</code>,
 	 * <code>TermDuration</code>, <code>FrequencyType</code> and <code>Frequency</code> values to compute the number of
 	 * subscription deliveries, starting from the given date.
 	 * 
 	 * @param trans
 	 * @param date
 	 *            note that the method uses a {@link GregorianCalendar} to make the computations. Because different
-	 *            months have different numbers of days, the result might be different ofr different <code>date</code>
+	 *            months have different numbers of days, the result might be different for different <code>date</code>
 	 *            values.
 	 * 
 	 * @return
@@ -142,12 +137,9 @@ public interface ISubscriptionBL extends ISingletonService
 	 * @param ol
 	 * @param completeIt
 	 *            if <code>true</code>, then the new term is completed
-	 * @param order
-	 *            may be <code>null</code>. Can be used to provide <code>ol</code>'s order if that order has already
-	 *            been loaded.
 	 * @return
 	 */
-	I_C_Flatrate_Term createSubscriptionTerm(I_C_OrderLine ol, boolean completeIt, I_C_Order order);
+	I_C_Flatrate_Term createSubscriptionTerm(I_C_OrderLine ol, boolean completeIt);
 
 	I_C_Flatrate_Term createSubscriptionTerm(I_C_OLCand olCand, boolean completeIt);
 

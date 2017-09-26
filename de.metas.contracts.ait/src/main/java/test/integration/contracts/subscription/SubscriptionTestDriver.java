@@ -118,7 +118,6 @@ public class SubscriptionTestDriver extends AIntegrationTestDriver
 		testConfig.setCustomParam(FlatFeeScenario.PARAM_BD_PRICE_PER_UNIT, new BigDecimal("2"));
 		testConfig.setCustomParam(FlatFeeScenario.PARAM_STR_PRODUCT_FLATRATE_VALUE, Helper.parseName("SubscrOdr1st_(*)"));
 		testConfig.setCustomParam(FlatFeeScenario.PARAM_BD_ACTUAL_QTY, new BigDecimal("3"));
-		testConfig.setCustomParam(FlatFeeScenario.PARAM_BOOL_IS_CREATE_ORDER_LINES, true);
 
 		final I_C_Flatrate_Transition ft = helper.createTransistion(this);
 		final I_C_Flatrate_Conditions conditions = helper.createSubscriptionContract(this, ft);
@@ -180,7 +179,6 @@ public class SubscriptionTestDriver extends AIntegrationTestDriver
 		testConfig.setCustomParam(FlatFeeScenario.PARAM_BOOL_IS_SIMULATION, false);
 		testConfig.setCustomParam(FlatFeeScenario.PARAM_BD_PRICE_PER_UNIT, new BigDecimal("2"));
 		testConfig.setCustomParam(FlatFeeScenario.PARAM_STR_PRODUCT_FLATRATE_VALUE, Helper.parseName("SubscrTrm1st_(*)"));
-		testConfig.setCustomParam(FlatFeeScenario.PARAM_BOOL_IS_CREATE_ORDER_LINES, true);
 
 		final I_C_Flatrate_Transition ft = helper.createTransistion(this);
 		final I_C_Flatrate_Conditions conditions = helper.createSubscriptionContract(this, ft);
@@ -222,7 +220,6 @@ public class SubscriptionTestDriver extends AIntegrationTestDriver
 		testConfig.setCustomParam(FlatFeeScenario.PARAM_BOOL_IS_SIMULATION, false);
 		testConfig.setCustomParam(FlatFeeScenario.PARAM_BD_PRICE_PER_UNIT, new BigDecimal("2"));
 		testConfig.setCustomParam(FlatFeeScenario.PARAM_STR_PRODUCT_FLATRATE_VALUE, Helper.parseName("SubscrTrm1st_(*)"));
-		testConfig.setCustomParam(FlatFeeScenario.PARAM_BOOL_IS_CREATE_ORDER_LINES, false);
 
 		// create the term
 		final I_C_Flatrate_Transition ft = helper.createTransistion(this);
@@ -266,7 +263,6 @@ public class SubscriptionTestDriver extends AIntegrationTestDriver
 		testConfig.setCustomParam(FlatFeeScenario.PARAM_BOOL_IS_SIMULATION, false);
 		testConfig.setCustomParam(FlatFeeScenario.PARAM_BD_PRICE_PER_UNIT, new BigDecimal("2"));
 		testConfig.setCustomParam(FlatFeeScenario.PARAM_STR_PRODUCT_FLATRATE_VALUE, Helper.parseName("createTermFromOLCand_(*)"));
-		testConfig.setCustomParam(FlatFeeScenario.PARAM_BOOL_IS_CREATE_ORDER_LINES, false);
 
 		// create the conditions
 		final I_C_Flatrate_Transition ft = helper.createTransistion(this);
@@ -361,7 +357,6 @@ public class SubscriptionTestDriver extends AIntegrationTestDriver
 		testConfig.setCustomParam(FlatFeeScenario.PARAM_BOOL_IS_SIMULATION, false);
 		testConfig.setCustomParam(FlatFeeScenario.PARAM_BD_PRICE_PER_UNIT, new BigDecimal("2"));
 		testConfig.setCustomParam(FlatFeeScenario.PARAM_STR_PRODUCT_FLATRATE_VALUE, Helper.parseName("SubscrManualRenew(*)"));
-		testConfig.setCustomParam(FlatFeeScenario.PARAM_BOOL_IS_CREATE_ORDER_LINES, true);
 
 		// explicitly setting the deadline params here, because we wan to have a 'changeDate' that is before the
 		// deadline
@@ -413,7 +408,6 @@ public class SubscriptionTestDriver extends AIntegrationTestDriver
 		testConfig.setCustomParam(FlatFeeScenario.PARAM_BOOL_IS_SIMULATION, false);
 		testConfig.setCustomParam(FlatFeeScenario.PARAM_BD_PRICE_PER_UNIT, new BigDecimal("2"));
 		testConfig.setCustomParam(FlatFeeScenario.PARAM_STR_PRODUCT_FLATRATE_VALUE, Helper.parseName("SubscrProcessRenew(*)"));
-		testConfig.setCustomParam(FlatFeeScenario.PARAM_BOOL_IS_CREATE_ORDER_LINES, true);
 
 		// explicitly setting the deadline params here, because we wan to have a 'changeDate' that is before the
 		// deadline
@@ -517,7 +511,6 @@ public class SubscriptionTestDriver extends AIntegrationTestDriver
 		testConfig.setCustomParam(FlatFeeScenario.PARAM_BOOL_IS_SIMULATION, false);
 		testConfig.setCustomParam(FlatFeeScenario.PARAM_BD_PRICE_PER_UNIT, new BigDecimal("2"));
 		testConfig.setCustomParam(FlatFeeScenario.PARAM_STR_PRODUCT_FLATRATE_VALUE, Helper.parseName("SubscrCancelRenew_(*)"));
-		testConfig.setCustomParam(FlatFeeScenario.PARAM_BOOL_IS_CREATE_ORDER_LINES, true);
 
 		// explicitly setting the deadline params here, because we wan to have a 'changeDate' that is before the
 		// deadline
@@ -565,7 +558,6 @@ public class SubscriptionTestDriver extends AIntegrationTestDriver
 		testConfig.setCustomParam(FlatFeeScenario.PARAM_BOOL_IS_SIMULATION, false);
 		testConfig.setCustomParam(FlatFeeScenario.PARAM_BD_PRICE_PER_UNIT, new BigDecimal("2"));
 		testConfig.setCustomParam(FlatFeeScenario.PARAM_STR_PRODUCT_FLATRATE_VALUE, Helper.parseName("SubscrCancelOK_(*)"));
-		testConfig.setCustomParam(FlatFeeScenario.PARAM_BOOL_IS_CREATE_ORDER_LINES, true);
 
 		// explicitly setting the duration and deadline params here, because we want to have
 		// a 'changeDate' that is before the deadline
@@ -620,7 +612,6 @@ public class SubscriptionTestDriver extends AIntegrationTestDriver
 		testConfig.setCustomParam(FlatFeeScenario.PARAM_BOOL_IS_SIMULATION, false);
 		testConfig.setCustomParam(FlatFeeScenario.PARAM_BD_PRICE_PER_UNIT, new BigDecimal("2"));
 		testConfig.setCustomParam(FlatFeeScenario.PARAM_STR_PRODUCT_FLATRATE_VALUE, Helper.parseName("SubscrCancelOK_(*)"));
-		testConfig.setCustomParam(FlatFeeScenario.PARAM_BOOL_IS_CREATE_ORDER_LINES, false);
 
 		// explicitly setting the duration and deadline params here, because we want to have
 		// a 'changeDate' that is before the deadline
@@ -707,7 +698,6 @@ public class SubscriptionTestDriver extends AIntegrationTestDriver
 
 		testConfig.setCustomParam(ContractsHelper.PARAM_CONTRACT_CANGE_CANCEL_DEADLINE, 4);
 		testConfig.setCustomParam(ContractsHelper.PARAM_CONTRACT_CANGE_CANCEL_DEADLINE_UNIT, X_C_Contract_Change.DEADLINEUNIT_MonatE);
-		testConfig.setCustomParam(FlatFeeScenario.PARAM_BOOL_IS_CREATE_ORDER_LINES, true);
 
 		final I_C_Flatrate_Transition ft = helper.createTransistion(this);
 		final I_C_Flatrate_Conditions conditions = helper.createSubscriptionContract(this, ft);
@@ -745,10 +735,7 @@ public class SubscriptionTestDriver extends AIntegrationTestDriver
 	{
 		assertThat(term, notNullValue());
 
-		if (term.isNewTermCreatesOrder())
-		{
-			assertThat("term has a C_OrderLine_Term_ID>0", term.getC_OrderLine_Term_ID(), greaterThan(0));
-		}
+		assertThat("term has a C_OrderLine_Term_ID>0", term.getC_OrderLine_Term_ID(), greaterThan(0));
 		if (trans.isAutoCompleteNewTerm())
 		{
 			assertThat(term.getDocStatus(), equalTo(X_C_Flatrate_Term.DOCSTATUS_Completed));

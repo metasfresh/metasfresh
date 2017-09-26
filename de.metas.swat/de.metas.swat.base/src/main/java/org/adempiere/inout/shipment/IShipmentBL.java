@@ -40,14 +40,13 @@ public interface IShipmentBL extends ISingletonService {
 
 	/**
 	 * Create shipments and adds them to the given {@link IShipmentCandidates}
-	 * instance. The shipments (and lines )aren't saved to database.
+	 * instance. The shipments (and lines) aren't saved to database.
 	 * 
 	 * @param shipmentParams
 	 * @param candidates
 	 * @param trxName
 	 */
-	void addShipments(Properties ctx, ShipmentParams shipmentParams,
-			IShipmentCandidates candidates, String trxName);
+	void addShipments(Properties ctx, ShipmentParams shipmentParams, IShipmentCandidates candidates, String trxName);
 
 	/**
 	 * Create and process shipments

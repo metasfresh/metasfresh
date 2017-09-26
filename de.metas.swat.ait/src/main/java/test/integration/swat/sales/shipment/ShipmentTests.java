@@ -13,15 +13,14 @@ package test.integration.swat.sales.shipment;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import static org.junit.Assert.assertEquals;
 
@@ -33,7 +32,6 @@ import org.adempiere.util.Services;
 import org.compiere.model.MOrderLine;
 import org.compiere.process.DocAction;
 import org.compiere.util.DB;
-import org.compiere.util.Env;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -151,10 +149,12 @@ public class ShipmentTests extends AIntegrationTestDriver
 		final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
 		for (final MOrderLine ol : orderHelper.getOrderPO(order).getLines())
 		{
-			olsAndSchedsToLock.add(
-					new OlAndSched(
-							InterfaceWrapperHelper.create(ol, I_C_OrderLine.class),
-							shipmentSchedulePA.retrieveForOrderLine(Env.getCtx(), ol.getC_OrderLine_ID(), trxName)));
+			shipmentSchedulePA.retrieveForOrderLine(ol)
+					.forEach(sched -> {
+						olsAndSchedsToLock.add(new OlAndSched(
+								InterfaceWrapperHelper.create(ol, I_C_OrderLine.class),
+								sched));
+					});
 		}
 		return olsAndSchedsToLock;
 	}

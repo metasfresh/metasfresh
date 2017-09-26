@@ -91,14 +91,6 @@ public class FreightCostBL implements IFreightCostBL
 			return true;
 		}
 
-		final String postageFree = bPartner.getPostageFree();
-
-		if (I_C_BPartner.POSTAGEFREE_Always.equals(postageFree))
-		{
-			logger.debug("No freigtcost because of receiving c_bpartner has postageFree={}; Order: {}", postageFree, orderOrInOut);
-			return true;
-		}
-
 		if (orderOrInOut.getM_Shipper_ID() <= 0)
 		{
 			logger.debug("No freigtcost because M_Shipper_ID={}", orderOrInOut.getM_Shipper_ID());

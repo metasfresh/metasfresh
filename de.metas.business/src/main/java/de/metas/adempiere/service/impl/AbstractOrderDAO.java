@@ -13,11 +13,11 @@ package de.metas.adempiere.service.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -29,12 +29,15 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.Services;
+import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.X_C_Order;
 
 import de.metas.adempiere.service.IOrderDAO;
+import de.metas.adempiere.util.CacheModel;
 import de.metas.interfaces.I_C_OrderLine;
+import lombok.NonNull;
 
 public abstract class AbstractOrderDAO implements IOrderDAO
 {
@@ -45,7 +48,10 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 	}
 
 	@Override
-	public <T extends org.compiere.model.I_C_OrderLine> List<T> retrieveOrderLines(final I_C_Order order, final Class<T> clazz)
+	@Cached(cacheName = I_C_OrderLine.Table_Name + "#via#" + I_C_OrderLine.COLUMNNAME_C_Order_ID)
+	public <T extends org.compiere.model.I_C_OrderLine> List<T> retrieveOrderLines(
+			@NonNull @CacheModel final I_C_Order order, 
+			@NonNull final Class<T> clazz)
 	{
 		final List<T> orderLines = Services.get(IQueryBL.class)
 				.createQueryBuilder(org.compiere.model.I_C_OrderLine.class, order)
@@ -62,7 +68,6 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 		{
 			orderLine.setC_Order(order);
 		}
-
 		return orderLines;
 	}
 

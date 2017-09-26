@@ -80,6 +80,7 @@ import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
+import de.metas.handlingunits.model.I_M_Warehouse;
 import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.logging.LogManager;
@@ -220,7 +221,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	{
 		return getHUAndItemsDAO().retrieveParent(hu);
 	}
-	
+
 	@Override
 	public int retrieveParentId(final I_M_HU hu)
 	{
@@ -312,7 +313,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	{
 		return getHUAndItemsDAO().retrieveItem(hu, piItem);
 	}
-	
+
 	@Override
 	public I_M_HU_Item retrieveAggregatedItemOrNull(final I_M_HU hu, final I_M_HU_PI_Item piItem)
 	{
@@ -600,23 +601,23 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 				.setOnlyActiveRecords(true)
 				.iterate(I_M_HU.class);
 	}
-	
+
 	@Override
-	public List <I_M_HU>retrieveChildHUsForItem(final I_M_HU_Item parentItem)
+	public List<I_M_HU> retrieveChildHUsForItem(final I_M_HU_Item parentItem)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		final IQueryBuilder<I_M_HU> queryBuilder = queryBL.createQueryBuilder(I_M_HU.class, parentItem);
-		
+
 		return queryBuilder
-		.addEqualsFilter(I_M_HU.COLUMNNAME_M_HU_Item_Parent_ID, parentItem.getM_HU_Item_ID())
-		.create()
-		.list();
+				.addEqualsFilter(I_M_HU.COLUMNNAME_M_HU_Item_Parent_ID, parentItem.getM_HU_Item_ID())
+				.create()
+				.list();
 	}
 
 	@Override
 	public List<I_M_HU_PI_Item> retrieveParentPIItemsForParentPI(
-			@NonNull final I_M_HU_PI huPI, 
-			@Nullable final String huUnitType, 
+			@NonNull final I_M_HU_PI huPI,
+			@Nullable final String huUnitType,
 			@Nullable final I_C_BPartner bpartner)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(huPI);
@@ -836,8 +837,8 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 
 	@Override
 	public I_M_HU_PI_Item retrieveDefaultParentPIItem(
-			@NonNull final I_M_HU_PI huPI, 
-			@Nullable final String huUnitType, 
+			@NonNull final I_M_HU_PI huPI,
+			@Nullable final String huUnitType,
 			@Nullable final I_C_BPartner bpartner)
 	{
 		//
@@ -927,5 +928,19 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 				.filter(new EqualsQueryFilter<I_DD_NetworkDistribution>(I_DD_NetworkDistribution.COLUMNNAME_IsHUDestroyed, true))
 				.create()
 				.firstOnly(I_DD_NetworkDistribution.class);
+	}
+
+	@Override
+	public List<org.compiere.model.I_M_Warehouse> retrieveWarehousesForHUs(final List<I_M_HU> hus)
+	{
+		return hus
+				.stream()
+				.map(I_M_HU::getM_Locator_ID)
+				.distinct()
+				.map(id -> InterfaceWrapperHelper.load(id, I_M_Locator.class))
+				.map(I_M_Locator::getM_Warehouse_ID)
+				.distinct()
+				.map(id -> InterfaceWrapperHelper.load(id, I_M_Warehouse.class))
+				.collect(ImmutableList.toImmutableList());
 	}
 }

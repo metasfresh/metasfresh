@@ -13,34 +13,34 @@ package de.metas.contracts.subscription.process;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
 import java.sql.Timestamp;
 import java.util.Iterator;
-import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.PlainContextAware;
-import org.adempiere.util.MiscUtils;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.Mutable;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.process.DocAction;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
-import org.compiere.util.Trx;
 
 import de.metas.contracts.subscription.ISubscriptionBL;
 import de.metas.flatrate.model.I_C_Flatrate_Term;
 import de.metas.flatrate.model.X_C_Flatrate_Term;
 import de.metas.process.JavaProcess;
+import de.metas.process.RunOutOfTrx;
 
 /**
  *
@@ -51,56 +51,75 @@ public class C_SubscriptionProgress_Evaluate extends JavaProcess
 {
 	private final ISubscriptionBL subscriptionBL = Services.get(ISubscriptionBL.class);
 
+	private final Timestamp currentDate = TimeUtil.truncToDay(Env.getContextAsDate(getCtx(), Env.CTXNAME_Date));
+
 	@Override
+	@RunOutOfTrx
 	protected String doIt() throws Exception
 	{
-
 		final Timestamp startTime = SystemTime.asTimestamp();
-
-		final Properties localCtx = Env.deriveCtx(getCtx());
-		Env.setContext(localCtx, Env.CTXNAME_AD_Client_ID, getProcessInfo().getAD_Client_ID());
-
-		final Timestamp currentDate = MiscUtils.removeTime(Env.getContextAsDate(getCtx(), Env.CTXNAME_Date));
-
-		final Trx trx = Trx.get(get_TrxName(), false);
 		int errorCount = 0;
 		int count = 0;
 
-		final Iterator<I_C_Flatrate_Term> termsToEval = Services.get(IQueryBL.class).createQueryBuilder(I_C_Flatrate_Term.class, new PlainContextAware(localCtx, getTrxName()))
-				.addOnlyContextClient(localCtx)
+		final Iterator<I_C_Flatrate_Term> termsToEvaluate = retrieveTermsToEvaluate();
+
+		while (termsToEvaluate.hasNext())
+		{
+			final I_C_Flatrate_Term term = termsToEvaluate.next();
+
+			if (invokeEvalCurrentSPs(term))
+			{
+				count++;
+			}
+			else
+			{
+				errorCount++;
+			}
+		}
+		addLog(errorCount + " errors on updating subscriptions");
+		
+		addLog("Updating shipment schedule");
+		final ITrxManager trxManager = Services.get(ITrxManager.class);
+		trxManager.run(() -> {
+			subscriptionBL.evalDeliveries(getCtx(), ITrx.TRXNAME_ThreadInherited);
+		});
+
+		addLog("Done after {}" + " (evaluated {} terms)", TimeUtil.formatElapsed(startTime), count);
+
+		return "@Success@";
+	}
+
+	private Iterator<I_C_Flatrate_Term> retrieveTermsToEvaluate()
+	{
+		final Iterator<I_C_Flatrate_Term> termsToEval = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_Flatrate_Term.class)
+				.addOnlyContextClient(getCtx())
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_Type_Conditions, X_C_Flatrate_Term.TYPE_CONDITIONS_Abonnement)
-				.addInArrayOrAllFilter(I_C_Flatrate_Term.COLUMNNAME_DocStatus, DocAction.STATUS_Closed, DocAction.STATUS_Completed)
+				.addInArrayFilter(I_C_Flatrate_Term.COLUMNNAME_DocStatus, DocAction.STATUS_Closed, DocAction.STATUS_Completed)
 				.orderBy()
 				.addColumn(I_C_Flatrate_Term.COLUMNNAME_StartDate).addColumn(I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Term_ID).endOrderBy()
 				.create()
 				.iterate(I_C_Flatrate_Term.class);
+		return termsToEval;
+	}
 
-		while(termsToEval.hasNext())
-		{
-			final I_C_Flatrate_Term sc = termsToEval.next();
+	private boolean invokeEvalCurrentSPs(final I_C_Flatrate_Term sc)
+	{
+		final Mutable<Boolean> success = new Mutable<>(false);
 
-			// addLog("Updating " + sc);
+		Services.get(ITrxManager.class).run(() -> {
 			try
 			{
 				subscriptionBL.evalCurrentSPs(sc, currentDate);
+				success.setValue(true);
 			}
 			catch (AdempiereException e)
 			{
 				addLog("Error updating " + sc + ": " + e.getMessage());
-				errorCount += 1;
 			}
+		});
 
-			trx.commit(true);
-			count += 1;
-		}
-		addLog(errorCount + " errors on updating subscriptions");
-		Trx.get(get_TrxName(), false).commit(true);
-		addLog("Updating shipment schedule");
-		subscriptionBL.evalDeliveries(getCtx(), get_TrxName());
-
-		addLog("Done after " + TimeUtil.formatElapsed(startTime) + " (evaluated " + count + " terms)");
-
-		return "@Success@";
+		return success.getValue();
 	}
 }

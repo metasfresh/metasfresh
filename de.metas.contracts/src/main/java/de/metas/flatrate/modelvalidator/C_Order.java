@@ -1,5 +1,7 @@
 package de.metas.flatrate.modelvalidator;
 
+import java.util.List;
+
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
@@ -24,11 +26,11 @@ import org.compiere.util.Env;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -36,6 +38,7 @@ import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_C_Order;
+import de.metas.adempiere.service.IOrderDAO;
 import de.metas.contracts.subscription.ISubscriptionBL;
 import de.metas.contracts.subscription.ISubscriptionDAO;
 import de.metas.contracts.subscription.model.I_C_OrderLine;
@@ -44,7 +47,6 @@ import de.metas.flatrate.model.X_C_Flatrate_Term;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.logging.LogManager;
-import de.metas.order.IOrderPA;
 
 public class C_Order implements ModelValidator
 {
@@ -79,43 +81,43 @@ public class C_Order implements ModelValidator
 	@Override
 	public String modelChange(final PO po, final int type) throws Exception
 	{
-		if (type == TYPE_BEFORE_CHANGE)
+		if (type != TYPE_BEFORE_CHANGE)
 		{
-			final I_C_Order order = InterfaceWrapperHelper.create(po, I_C_Order.class);
+			return null;
+		}
 
-			if (po.is_ValueChanged(I_C_Invoice_Candidate.COLUMNNAME_DateOrdered))
+		final I_C_Order order = InterfaceWrapperHelper.create(po, I_C_Order.class);
+
+		if (po.is_ValueChanged(I_C_Invoice_Candidate.COLUMNNAME_DateOrdered))
+		{
+			return null;
+		}
+		final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+		final IInvoiceCandDAO invoiceCandDB = Services.get(IInvoiceCandDAO.class);
+
+		for (final I_C_OrderLine ol : orderDAO.retrieveOrderLines(order, I_C_OrderLine.class))
+		{
+			for (final I_C_Invoice_Candidate icOfOl : invoiceCandDB.retrieveReferencing(ol))
 			{
-				final IOrderPA orderPA = Services.get(IOrderPA.class);
-				final IInvoiceCandDAO invoiceCandDB = Services.get(IInvoiceCandDAO.class);
-
-				for (final I_C_OrderLine ol : orderPA.retrieveOrderLines(order, I_C_OrderLine.class))
+				if (icOfOl.isToClear())
 				{
-					for (final I_C_Invoice_Candidate icOfOl : invoiceCandDB.retrieveReferencing(ol))
-					{
-						if (icOfOl.isToClear())
-						{
-							// If the column was updatable, we would have to
-							// *check if new and old term are the same
-							// *check if ICAs need update, creation or deletion and do it;
-							// *check which dataEntries' ActualQty needs update and make sure that they are not yet
-							// completed
-							// *check is isToClear needs update;
-							throw new AdempiereException(Env.getAD_Language(po.getCtx()), MSG_ORDER_DATE_ORDERED_CHANGE_FORBIDDEN_1P, new Object[] { ol.getLine() });
-						}
-					}
+					// If the column was updatable, we would have to
+					// *check if new and old term are the same
+					// *check if ICAs need update, creation or deletion and do it;
+					// *check which dataEntries' ActualQty needs update and make sure that they are not yet
+					// completed
+					// *check is isToClear needs update;
+					throw new AdempiereException(Env.getAD_Language(po.getCtx()), MSG_ORDER_DATE_ORDERED_CHANGE_FORBIDDEN_1P, new Object[] { ol.getLine() });
 				}
 			}
 		}
 		return null;
 	}
 
-	// Note: this code used to be located in
-	// /sw01_swat_it/src/java/org/adempiere/order/subscription/modelvalidator/OrderValidator.java
 	@Override
 	public String docValidate(final PO po, final int timing)
 	{
-		if (timing != TIMING_AFTER_COMPLETE
-				&& timing != TIMING_AFTER_REACTIVATE)
+		if (timing != TIMING_AFTER_COMPLETE && timing != TIMING_AFTER_REACTIVATE)
 		{
 			return null;
 		}
@@ -123,9 +125,8 @@ public class C_Order implements ModelValidator
 		final String trxName = po.get_TrxName();
 		final I_C_Order order = InterfaceWrapperHelper.create(po, I_C_Order.class);
 
-		final IOrderPA orderPA = Services.get(IOrderPA.class);
-
-		for (final I_C_OrderLine ol : orderPA.retrieveOrderLines(order, I_C_OrderLine.class))
+		final List<I_C_OrderLine> orderLines = Services.get(IOrderDAO.class).retrieveOrderLines(order, I_C_OrderLine.class);
+		for (final I_C_OrderLine ol : orderLines)
 		{
 			if (ol.getC_Flatrate_Conditions_ID() <= 0)
 			{
@@ -135,12 +136,10 @@ public class C_Order implements ModelValidator
 			if (timing == TIMING_AFTER_COMPLETE)
 			{
 				handleOrderLineComplete(order, ol, trxName);
-
 			}
 			else if (timing == TIMING_AFTER_REACTIVATE)
 			{
 				handleOrderLineReactivate(ol, trxName);
-
 			}
 		}
 		return null;
@@ -152,18 +151,17 @@ public class C_Order implements ModelValidator
 			final String trxName)
 	{
 		final ISubscriptionDAO subscriptionDAO = Services.get(ISubscriptionDAO.class);
-
-		final I_C_Flatrate_Term existingSc = subscriptionDAO.retrieveTermForOl(ol);
-		if (existingSc != null)
+		if (subscriptionDAO.existsTermForOl(ol))
 		{
-			logger.debug("{} has already {}", ol, existingSc);
+			logger.debug("{} is already already referenced by a C_Flatrate_Term record ", ol);
 			return;
 		}
 
 		logger.info("Creating new {} entry", I_C_Flatrate_Term.Table_Name);
 
 		// Note that order.getDocStatus() might still return 'IP' at this point
-		final I_C_Flatrate_Term newSc = Services.get(ISubscriptionBL.class).createSubscriptionTerm(ol, true, order);
+		final boolean completeIt = true;
+		final I_C_Flatrate_Term newSc = Services.get(ISubscriptionBL.class).createSubscriptionTerm(ol, completeIt);
 
 		Check.assume(
 				X_C_Flatrate_Term.DOCSTATUS_Completed.equals(newSc.getDocStatus()),

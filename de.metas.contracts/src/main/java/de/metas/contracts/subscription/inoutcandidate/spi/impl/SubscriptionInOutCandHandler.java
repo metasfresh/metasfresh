@@ -1,29 +1,8 @@
 package de.metas.contracts.subscription.inoutcandidate.spi.impl;
 
-/*
- * #%L
- * de.metas.contracts
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import static de.metas.flatrate.model.I_C_SubscriptionProgress.COLUMNNAME_EventDate;
-import static de.metas.flatrate.model.X_C_SubscriptionProgress.EVENTTYPE_Lieferung;
+import static org.adempiere.model.InterfaceWrapperHelper.create;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -31,6 +10,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -39,8 +20,6 @@ import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_DocType;
-import org.compiere.model.MTable;
-import org.compiere.model.Query;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_C_Order;
@@ -51,21 +30,13 @@ import de.metas.flatrate.model.I_C_Flatrate_Term;
 import de.metas.flatrate.model.I_C_SubscriptionProgress;
 import de.metas.flatrate.model.X_C_SubscriptionProgress;
 import de.metas.inoutcandidate.api.IDeliverRequest;
-import de.metas.inoutcandidate.api.IInOutCandHandlerBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
-import de.metas.inoutcandidate.model.I_M_IolCandHandler_Log;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.model.X_M_ShipmentSchedule;
 import de.metas.inoutcandidate.spi.IInOutCandHandler;
 import de.metas.logging.LogManager;
 import de.metas.product.IProductBL;
 
-/**
- * Default implementation for sales order lines.
- *
- * @author ts
- *
- */
 public class SubscriptionInOutCandHandler implements IInOutCandHandler
 {
 
@@ -78,13 +49,13 @@ public class SubscriptionInOutCandHandler implements IInOutCandHandler
 		final IDocumentLocationBL documentLocationBL = Services.get(IDocumentLocationBL.class);
 		final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
 
-		final I_C_SubscriptionProgress subscriptionLine = InterfaceWrapperHelper.create(model, I_C_SubscriptionProgress.class);
+		final I_C_SubscriptionProgress subscriptionLine = create(model, I_C_SubscriptionProgress.class);
 
 		final String trxName = InterfaceWrapperHelper.getTrxName(model);
 
 		Check.assume(subscriptionLine.getQty().signum() > 0, subscriptionLine + " has Qty>0");
 
-		final I_M_ShipmentSchedule newSched = InterfaceWrapperHelper.newInstance(I_M_ShipmentSchedule.class, model);
+		final I_M_ShipmentSchedule newSched = newInstance(I_M_ShipmentSchedule.class, model);
 
 		final int tableId = adTableDAO.retrieveTableId(I_C_SubscriptionProgress.Table_Name);
 		newSched.setAD_Table_ID(tableId);
@@ -93,12 +64,9 @@ public class SubscriptionInOutCandHandler implements IInOutCandHandler
 		final I_C_Flatrate_Term term = subscriptionLine.getC_Flatrate_Term();
 
 		Check.assume(term.getM_Product_ID() > 0, term + " has M_Product_ID>0");
-		if (term.isNewTermCreatesOrder())
-		{
-			Check.assume(term.getC_OrderLine_Term_ID() > 0, term + " has C_OrderLine_Term_ID>0");
-			newSched.setC_OrderLine_ID(term.getC_OrderLine_Term_ID());
-			newSched.setC_Order_ID(term.getC_OrderLine_Term().getC_Order_ID());
-		}
+		Check.assume(term.getC_OrderLine_Term_ID() > 0, term + " has C_OrderLine_Term_ID>0");
+		newSched.setC_OrderLine_ID(term.getC_OrderLine_Term_ID());
+		newSched.setC_Order_ID(term.getC_OrderLine_Term().getC_Order_ID());
 
 		newSched.setM_Product_ID(term.getM_Product_ID());
 
@@ -121,7 +89,7 @@ public class SubscriptionInOutCandHandler implements IInOutCandHandler
 		final IDocumentLocation documentLocation = InterfaceWrapperHelper.create(newSched, IDocumentLocation.class);
 		documentLocationBL.setBPartnerAddress(documentLocation);
 
-		final I_C_Order order = InterfaceWrapperHelper.create(term.getC_Order_Term(), I_C_Order.class);
+		final I_C_Order order = create(term.getC_Order_Term(), I_C_Order.class);
 		newSched.setDeliveryRule(order.getDeliveryRule());
 		newSched.setDeliveryViaRule(order.getDeliveryViaRule());
 
@@ -142,14 +110,14 @@ public class SubscriptionInOutCandHandler implements IInOutCandHandler
 		final boolean display = Services.get(IProductBL.class).isItem(term.getM_Product());
 		newSched.setIsDisplayed(display);
 
-		InterfaceWrapperHelper.save(newSched);
+		save(newSched);
 
 		shipmentSchedulePA.invalidateForProducts(Collections.singletonList(newSched.getM_Product_ID()), trxName);
 
 		subscriptionLine.setStatus(X_C_SubscriptionProgress.STATUS_LieferungOffen);
 		subscriptionLine.setM_ShipmentSchedule_ID(newSched.getM_ShipmentSchedule_ID());
 
-		InterfaceWrapperHelper.save(subscriptionLine);
+		save(subscriptionLine);
 
 		// Note: AllowConsolidateInOut and PostageFreeAmt is set on the first update of this schedule
 		return Collections.singletonList(newSched);
@@ -177,30 +145,18 @@ public class SubscriptionInOutCandHandler implements IInOutCandHandler
 			final Properties ctx,
 			final String trxName)
 	{
-		final String wc =
-				I_C_SubscriptionProgress.COLUMNNAME_EventType + "='" + EVENTTYPE_Lieferung + "'" +
-						"   AND " + I_C_SubscriptionProgress.COLUMNNAME_Status + " = '" + X_C_SubscriptionProgress.STATUS_Geplant + "'" +
-						"   AND " + COLUMNNAME_EventDate + "<=?" +
-
-						// only if we didn't yet look at the subscription line
-						"   AND NOT EXISTS (" +
-						"      select 1 from " + I_M_IolCandHandler_Log.Table_Name + " log " +
-						"      where log." + I_M_IolCandHandler_Log.COLUMNNAME_M_IolCandHandler_ID + "=?" +
-						"        and log." + I_M_IolCandHandler_Log.COLUMNNAME_AD_Table_ID + "=?" +
-						"        and log." + I_M_IolCandHandler_Log.COLUMNNAME_Record_ID + "=" + I_C_SubscriptionProgress.Table_Name + "."
-						+ I_C_SubscriptionProgress.COLUMNNAME_C_SubscriptionProgress_ID +
-						"        and log." + I_M_IolCandHandler_Log.COLUMNNAME_IsActive + "='Y'" +
-						"   )";
-
-		final List<I_C_SubscriptionProgress> subscriptionLines = new Query(ctx, getSourceTable(), wc, trxName)
-				.setParameters(
-						SystemTime.asTimestamp(),
-						Services.get(IInOutCandHandlerBL.class).retrieveHandlerRecordOrNull(ctx, this.getClass().getName(), trxName).getM_IolCandHandler_ID(),
-						MTable.getTable_ID(I_C_SubscriptionProgress.Table_Name))
-				.setOnlyActiveRecords(true)
-				.setClient_ID()
-				.setOrderBy(I_C_SubscriptionProgress.COLUMNNAME_C_SubscriptionProgress_ID)
-				.list(I_C_SubscriptionProgress.class);
+		// Note: we used to also check if there is an active I_M_IolCandHandler_Log record referencing the C_SubscriptionProgress, but I don't see why.
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		final List<I_C_SubscriptionProgress> subscriptionLines = queryBL
+				.createQueryBuilder(I_C_SubscriptionProgress.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_SubscriptionProgress.COLUMN_Status, X_C_SubscriptionProgress.STATUS_Geplant)
+				.addCompareFilter(I_C_SubscriptionProgress.COLUMN_EventDate, Operator.LESS_OR_EQUAL, SystemTime.asTimestamp())
+				.addEqualsFilter(I_C_SubscriptionProgress.COLUMN_M_ShipmentSchedule_ID, null) // we didn't do this in the very old code which i found
+				.addOnlyContextClient(ctx)
+				.orderBy().addColumn(I_C_SubscriptionProgress.COLUMN_C_SubscriptionProgress_ID).endOrderBy()
+				.create()
+				.list();
 
 		logger.debug("Identified {} C_SubscriptionProgress that need a shipment schedule", subscriptionLines.size());
 

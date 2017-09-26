@@ -31,13 +31,10 @@ import static org.compiere.model.X_C_Order.DELIVERYRULE_Manual;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
 
 import org.adempiere.bpartner.service.IBPartnerBL;
 import org.adempiere.exceptions.AdempiereException;
@@ -45,7 +42,6 @@ import org.adempiere.inout.service.IInOutPA;
 import org.adempiere.inout.util.CachedObjects;
 import org.adempiere.inout.util.IShipmentCandidates;
 import org.adempiere.inout.util.IShipmentCandidates.CompleteStatus;
-import org.adempiere.inout.util.IShipmentCandidates.PostageFreeStatus;
 import org.adempiere.inout.util.ShipmentCandidates;
 import org.adempiere.inout.util.ShipmentScheduleQtyOnHandStorage;
 import org.adempiere.inout.util.ShipmentScheduleStorageRecord;
@@ -178,11 +174,9 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 		final CachedObjects coToUse = mkCoToUse(co);
 
 		final ShipmentCandidates firstRun = generate(ctx, olsAndScheds, null, coToUse, date, trxName);
-		firstRun.afterFirstRun(false);
+		firstRun.afterFirstRun();
 
 		// prepare the second run
-		// coToUse.resetOnHandQtys();
-
 		final int removeCnt = applyCandidateProcessors(ctx, firstRun, coToUse, trxName);
 		logger.info(removeCnt + " records were discarded by candidate processors");
 
@@ -224,7 +218,6 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 
 			final boolean isBPAllowConsolidateInOut = bpartnerBL.isAllowConsolidateInOutEffective(bPartner, isSOTrx);
 			sched.setAllowConsolidateInOut(isBPAllowConsolidateInOut);
-			sched.setPostageFreeAmt(bPartner.getPostageFreeAmt());
 
 			//
 			// Delivery Day related info:
@@ -952,12 +945,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 		{
 			shipmentCandidates.addStatusInfo(inOutLine, Services.get(IMsgBL.class).getMsg(Env.getCtx(), completeStatus.toString()));
 		}
-
-		final PostageFreeStatus postageFreeStatus = shipmentCandidates.getPostageFreeStatus(inOutLine);
-		if (!IShipmentCandidates.PostageFreeStatus.OK.equals(postageFreeStatus))
-		{
-			shipmentCandidates.addStatusInfo(inOutLine, Services.get(IMsgBL.class).getMsg(Env.getCtx(), postageFreeStatus.toString()));
-		}
+		
 		return shipmentCandidates.getStatusInfos(inOutLine);
 	}
 
@@ -1024,33 +1012,6 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 		}
 
 		return Util.mkKey(productId, orderLineId, bpartnerId, bpLocId);
-	}
-
-	@Override
-	public void invalidateProducts(
-			final Collection<I_C_OrderLine> orderLines,
-			final String trxName)
-	{
-		final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
-
-		final Set<Integer> alreadyDone = new HashSet<>();
-
-		for (final I_C_OrderLine currentLine : orderLines)
-		{
-			final int productId = currentLine.getM_Product_ID();
-
-			if (alreadyDone.contains(productId))
-			{
-				continue;
-			}
-
-			alreadyDone.add(productId);
-
-			if (productId > 0)
-			{
-				shipmentSchedulePA.invalidateForProduct(productId, trxName);
-			}
-		}
 	}
 
 	@Override

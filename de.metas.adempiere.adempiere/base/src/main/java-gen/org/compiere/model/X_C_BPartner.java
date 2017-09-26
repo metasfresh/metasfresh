@@ -1777,28 +1777,6 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 		return (java.lang.String)get_Value(COLUMNNAME_POReferencePattern);
 	}
 
-	/** Set PostageFreeAmt.
-		@param PostageFreeAmt 
-		Betrag zur Bestimmung der Potofreigrenze im Lieferlauf.
-	  */
-	@Override
-	public void setPostageFreeAmt (java.math.BigDecimal PostageFreeAmt)
-	{
-		set_Value (COLUMNNAME_PostageFreeAmt, PostageFreeAmt);
-	}
-
-	/** Get PostageFreeAmt.
-		@return Betrag zur Bestimmung der Potofreigrenze im Lieferlauf.
-	  */
-	@Override
-	public java.math.BigDecimal getPostageFreeAmt () 
-	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PostageFreeAmt);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
-	}
-
 	/** Set Möglicher Gesamtertrag.
 		@param PotentialLifeTimeValue 
 		Total Revenue expected

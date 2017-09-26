@@ -59,14 +59,10 @@ import org.compiere.model.I_M_ProductPrice;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.Lookup;
 import org.compiere.model.MNote;
-import org.compiere.model.MOrder;
-import org.compiere.model.MOrderLine;
 import org.compiere.model.MOrg;
 import org.compiere.model.MRefList;
 import org.compiere.model.POInfo;
 import org.compiere.model.Query;
-import org.compiere.model.X_C_DocType;
-import org.compiere.model.X_C_Order;
 import org.compiere.process.DocAction;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -74,11 +70,9 @@ import org.compiere.util.TrxRunnable;
 import org.slf4j.Logger;
 
 import ch.qos.logback.classic.Level;
-import de.metas.adempiere.model.I_C_Order;
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.adempiere.service.ICalendarBL;
 import de.metas.adempiere.service.ICalendarDAO;
-import de.metas.contracts.subscription.ISubscriptionBL;
 import de.metas.contracts.subscription.model.I_C_OrderLine;
 import de.metas.document.IDocumentPA;
 import de.metas.document.engine.IDocActionBL;
@@ -1171,7 +1165,6 @@ public class FlatrateBL implements IFlatrateBL
 			nextTerm.setC_Flatrate_Conditions_ID(nextConditions.getC_Flatrate_Conditions_ID());
 			nextTerm.setPlannedQtyPerUnit(currentTerm.getPlannedQtyPerUnit());
 			nextTerm.setIsSimulation(currentTerm.isSimulation());
-			nextTerm.setIsPostageFree(currentTerm.isPostageFree()); // 04836 : also copy the postage fee
 
 			nextTerm.setBill_BPartner_ID(currentTerm.getBill_BPartner_ID());
 			nextTerm.setBill_Location_ID(currentTerm.getBill_Location_ID());
@@ -1486,64 +1479,6 @@ public class FlatrateBL implements IFlatrateBL
 
 		final IDocumentPA documentPA = Services.get(IDocumentPA.class);
 		return documentPA.retrieve(ctx, term.getAD_Org_ID(), de.metas.flatrate.interfaces.I_C_DocType.DocBaseType_CustomerContract, subType, true, trxName);
-	}
-
-	@Override
-	public I_C_Order createOrderForTerm(final I_C_Flatrate_Term term)
-	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(term);
-		final String trxName = InterfaceWrapperHelper.getTrxName(term);
-
-		final I_C_Order order = InterfaceWrapperHelper.create(ctx, I_C_Order.class, trxName);
-		order.setAD_Org_ID(term.getAD_Org_ID());
-
-		final I_C_Flatrate_Data data = term.getC_Flatrate_Data();
-		order.setC_BPartner_ID(data.getC_BPartner_ID());
-		// order.setC_BPartner_Location_ID(C_BPartner_Location_ID)
-		// order.setAD_User_ID(AD_User_ID)
-
-		order.setBill_BPartner_ID(term.getBill_BPartner_ID());
-		order.setBill_Location_ID(term.getBill_Location_ID());
-		order.setBill_User_ID(term.getBill_User_ID());
-
-		order.setDropShip_BPartner_ID(term.getDropShip_BPartner_ID());
-		order.setDropShip_Location_ID(term.getDropShip_Location_ID());
-		order.setDropShip_User_ID(term.getDropShip_User_ID());
-
-		order.setC_Currency_ID(term.getC_Currency_ID());
-		order.setC_DocTypeTarget_ID(
-				Services.get(IDocumentPA.class).retrieve(ctx, term.getAD_Org_ID(), X_C_DocType.DOCBASETYPE_SalesOrder, X_C_DocType.DOCSUBTYPE_StandardOrder, true, trxName)
-						.getC_DocType_ID());
-		order.setDateOrdered(term.getStartDate());
-
-		order.setDeliveryRule(term.getDeliveryRule());
-		order.setDeliveryViaRule(term.getDeliveryViaRule());
-		order.setDocAction(X_C_Order.DOCACTION_Complete);
-
-		final I_C_Flatrate_Conditions conditions = term.getC_Flatrate_Conditions();
-		order.setInvoiceRule(conditions.getInvoiceRule());
-		order.setIsSOTrx(true);
-		order.setM_PricingSystem_ID(conditions.getM_PricingSystem_ID());
-		final int warehouseId = getWarehouse(term);
-		order.setM_Warehouse_ID(warehouseId);
-
-		InterfaceWrapperHelper.save(order);
-
-		final I_C_OrderLine ol = InterfaceWrapperHelper.create(new MOrderLine((MOrder)InterfaceWrapperHelper.getPO(order)), I_C_OrderLine.class);
-		ol.setM_Product_ID(term.getM_Product_ID());
-		ol.setQtyEntered(term.getPlannedQtyPerUnit());
-		Services.get(ISubscriptionBL.class).setSubscription(ol, conditions);
-
-		InterfaceWrapperHelper.save(ol);
-
-		// Note that we set the term's C_OrderLine_ID before trying to complete the order.
-		// Otherwise the system would try to create another term on the order's completion
-		term.setC_OrderLine_Term_ID(ol.getC_OrderLine_ID());
-		InterfaceWrapperHelper.save(term);
-
-		Services.get(IDocActionBL.class).processEx(order, X_C_Order.DOCACTION_Complete, X_C_Order.DOCSTATUS_Completed);
-
-		return order;
 	}
 
 	@Override
