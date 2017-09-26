@@ -73,6 +73,8 @@ public class M_Shipment_Constraint
 	{
 		return ImmutableStorageSegment.builder()
 				.C_BPartner_ID(constraint.getC_BPartner_ID())
+				.anyM_Product_ID()
+				.anyM_Locator_ID()
 				.build();
 	}
 }
