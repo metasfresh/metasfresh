@@ -80,7 +80,7 @@ public class HUInternalUseInventoryProducer
 	{
 	}
 
-	public List<I_M_Inventory> create()
+	public List<I_M_Inventory> createInventories()
 	{
 		final Map<Integer, List<I_M_HU>> husByWarehouseId = getTopLevelHUs()
 				.stream()
@@ -91,14 +91,14 @@ public class HUInternalUseInventoryProducer
 		{
 			final int warehouseId = warehouseIdAndHUs.getKey();
 			final List<I_M_HU> hus = warehouseIdAndHUs.getValue();
-			final List<I_M_Inventory> inventories = create(warehouseId, hus);
+			final List<I_M_Inventory> inventories = createInventories(warehouseId, hus);
 			result.addAll(inventories);
 		}
 
 		return result;
 	}
 
-	private final List<I_M_Inventory> create(final int warehouseId, final List<I_M_HU> hus)
+	private final List<I_M_Inventory> createInventories(final int warehouseId, final List<I_M_HU> hus)
 	{
 		final I_M_Warehouse warehouse = InterfaceWrapperHelper.loadOutOfTrx(warehouseId, I_M_Warehouse.class);
 
@@ -110,7 +110,6 @@ public class HUInternalUseInventoryProducer
 		final HUListAllocationSourceDestination husSource = HUListAllocationSourceDestination.of(hus);
 
 		husSource.setCreateHUSnapshots(true);
-		husSource.setDestroyEmptyHUs(true); // get rid of those HUs which got empty
 
 		//
 		// Create and setup context
@@ -133,8 +132,10 @@ public class HUInternalUseInventoryProducer
 		// Unload everything from source (our HUs)
 		loader.unloadAllFromSource(huContext);
 
+		//
+		final List<I_M_Inventory> inventories = inventoryAllocationDestination.processInventories();
+
 		// destroy empty hus
-		// TODO: not sure if this is still needed because at this point we expect everything to be already destroyed!
 		{
 			for (final I_M_HU hu : hus)
 			{
@@ -147,10 +148,6 @@ public class HUInternalUseInventoryProducer
 				handlingUnitsBL.destroyIfEmptyStorage(huContext, hu);
 			}
 		}
-
-		//
-		final List<I_M_Inventory> inventories = inventoryAllocationDestination.completeInventories();
-
 		//
 		// Send notifications
 		InventoryProcessedEventBus.newInstance()

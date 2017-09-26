@@ -117,7 +117,7 @@ public class HUInternalUseInventoryProducerTests
 
 		HUInternalUseInventoryProducer.newInstance()
 				.addHUs(ImmutableList.of(lu))
-				.create();
+				.createInventories();
 	}
 
 	/**

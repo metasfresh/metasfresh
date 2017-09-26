@@ -24,6 +24,8 @@ Here come the actual release notes:
     * Minor Layout Improvement for the Unit of Measure Window in WebUI.
   * [#2468](https://github.com/metasfresh/metasfresh/issues/2468) Window Design WebUI: gridview with client
     * Improvements in different Windows, adapting the Layout to our current design Guidelines. Adding Translations for de_DE and en_US Locale/ Language.
+  * [#2560](https://github.com/metasfresh/metasfresh/issues/2560) Menu Window improvements in WebUI
+    * New -Column Layout for the Menu maintenance Window in WebUI.
 
 # metasfresh 5.28 (2017-39)
 

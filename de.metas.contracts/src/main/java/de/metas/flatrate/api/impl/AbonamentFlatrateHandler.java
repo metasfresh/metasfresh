@@ -37,7 +37,7 @@ import lombok.NonNull;
 
 public class AbonamentFlatrateHandler extends DefaultFlatrateHandler
 {
-	public static final String TYPE_CONDITIONS = X_C_Flatrate_Term.TYPE_CONDITIONS_Abonnement;
+	public static final String TYPE_CONDITIONS = X_C_Flatrate_Term.TYPE_CONDITIONS_Subscription;
 
 	private static final String MSG_TERM_ERROR_DELIVERY_ALREADY_HAS_SHIPMENT_SCHED_0P = "Term_Error_Delivery_Already_Has_Shipment_Sched";
 

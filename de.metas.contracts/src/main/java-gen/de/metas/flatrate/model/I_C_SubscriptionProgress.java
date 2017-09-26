@@ -96,29 +96,6 @@ public interface I_C_SubscriptionProgress
     public static final String COLUMNNAME_C_Flatrate_Term_ID = "C_Flatrate_Term_ID";
 
 	/**
-	 * Set Abo-Verlauf.
-	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setC_SubscriptionProgress_ID (int C_SubscriptionProgress_ID);
-
-	/**
-	 * Get Abo-Verlauf.
-	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getC_SubscriptionProgress_ID();
-
-    /** Column definition for C_SubscriptionProgress_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_SubscriptionProgress, Object> COLUMN_C_SubscriptionProgress_ID = new org.adempiere.model.ModelColumn<I_C_SubscriptionProgress, Object>(I_C_SubscriptionProgress.class, "C_SubscriptionProgress_ID", null);
-    /** Column name C_SubscriptionProgress_ID */
-    public static final String COLUMNNAME_C_SubscriptionProgress_ID = "C_SubscriptionProgress_ID";
-
-	/**
 	 * Set Vertrags-Status.
 	 *
 	 * <br>Type: List
@@ -172,11 +149,34 @@ public interface I_C_SubscriptionProgress
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
+	 * Set Abo-Verlauf.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setC_SubscriptionProgress_ID (int C_SubscriptionProgress_ID);
+
+	/**
+	 * Get Abo-Verlauf.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getC_SubscriptionProgress_ID();
+
+    /** Column definition for C_SubscriptionProgress_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_SubscriptionProgress, Object> COLUMN_C_SubscriptionProgress_ID = new org.adempiere.model.ModelColumn<I_C_SubscriptionProgress, Object>(I_C_SubscriptionProgress.class, "C_SubscriptionProgress_ID", null);
+    /** Column name C_SubscriptionProgress_ID */
+    public static final String COLUMNNAME_C_SubscriptionProgress_ID = "C_SubscriptionProgress_ID";
+
+	/**
 	 * Set Lieferempfänger.
 	 * Business Partner to ship to
 	 *
 	 * <br>Type: Table
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public void setDropShip_BPartner_ID (int DropShip_BPartner_ID);
@@ -186,7 +186,7 @@ public interface I_C_SubscriptionProgress
 	 * Business Partner to ship to
 	 *
 	 * <br>Type: Table
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public int getDropShip_BPartner_ID();
@@ -205,7 +205,7 @@ public interface I_C_SubscriptionProgress
 	 * Business Partner Location for shipping to
 	 *
 	 * <br>Type: Table
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public void setDropShip_Location_ID (int DropShip_Location_ID);
@@ -215,7 +215,7 @@ public interface I_C_SubscriptionProgress
 	 * Business Partner Location for shipping to
 	 *
 	 * <br>Type: Table
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public int getDropShip_Location_ID();

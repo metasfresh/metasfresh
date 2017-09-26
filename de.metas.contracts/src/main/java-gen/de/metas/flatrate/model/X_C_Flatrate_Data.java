@@ -14,7 +14,7 @@ public class X_C_Flatrate_Data extends org.compiere.model.PO implements I_C_Flat
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 114751667L;
+	private static final long serialVersionUID = 269562803L;
 
     /** Standard Constructor */
     public X_C_Flatrate_Data (Properties ctx, int C_Flatrate_Data_ID, String trxName)
@@ -80,6 +80,22 @@ public class X_C_Flatrate_Data extends org.compiere.model.PO implements I_C_Flat
 		return ii.intValue();
 	}
 
+	/** Set C_Flatrate_DataEntry_IncludedTab.
+		@param C_Flatrate_DataEntry_IncludedT C_Flatrate_DataEntry_IncludedTab	  */
+	@Override
+	public void setC_Flatrate_DataEntry_IncludedT (java.lang.String C_Flatrate_DataEntry_IncludedT)
+	{
+		set_Value (COLUMNNAME_C_Flatrate_DataEntry_IncludedT, C_Flatrate_DataEntry_IncludedT);
+	}
+
+	/** Get C_Flatrate_DataEntry_IncludedTab.
+		@return C_Flatrate_DataEntry_IncludedTab	  */
+	@Override
+	public java.lang.String getC_Flatrate_DataEntry_IncludedT () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_C_Flatrate_DataEntry_IncludedT);
+	}
+
 	/** Set Datenerfassung.
 		@param C_Flatrate_Data_ID Datenerfassung	  */
 	@Override
@@ -100,22 +116,6 @@ public class X_C_Flatrate_Data extends org.compiere.model.PO implements I_C_Flat
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	/** Set C_Flatrate_DataEntry_IncludedTab.
-		@param C_Flatrate_DataEntry_IncludedT C_Flatrate_DataEntry_IncludedTab	  */
-	@Override
-	public void setC_Flatrate_DataEntry_IncludedT (java.lang.String C_Flatrate_DataEntry_IncludedT)
-	{
-		set_Value (COLUMNNAME_C_Flatrate_DataEntry_IncludedT, C_Flatrate_DataEntry_IncludedT);
-	}
-
-	/** Get C_Flatrate_DataEntry_IncludedTab.
-		@return C_Flatrate_DataEntry_IncludedTab	  */
-	@Override
-	public java.lang.String getC_Flatrate_DataEntry_IncludedT () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_C_Flatrate_DataEntry_IncludedT);
 	}
 
 	/** Set Existierende Verträge.

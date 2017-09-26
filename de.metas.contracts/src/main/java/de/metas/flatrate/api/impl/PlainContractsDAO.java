@@ -67,7 +67,7 @@ public class PlainContractsDAO implements IContractsDAO
 					return false;
 				}
 
-				if (!X_C_Flatrate_Term.TYPE_CONDITIONS_Abonnement.equals(pojo.getType_Conditions()))
+				if (!X_C_Flatrate_Term.TYPE_CONDITIONS_Subscription.equals(pojo.getType_Conditions()))
 				{
 					return false;
 				}

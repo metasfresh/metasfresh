@@ -15,7 +15,7 @@ public class X_C_SubscriptionProgress extends org.compiere.model.PO implements I
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1831041135L;
+	private static final long serialVersionUID = -2104501876L;
 
     /** Standard Constructor */
     public X_C_SubscriptionProgress (Properties ctx, int C_SubscriptionProgress_ID, String trxName)
@@ -25,10 +25,7 @@ public class X_C_SubscriptionProgress extends org.compiere.model.PO implements I
         {
 			setC_Flatrate_Term_ID (0);
 			setC_SubscriptionProgress_ID (0);
-			setDropShip_BPartner_ID (0);
-			setDropShip_Location_ID (0);
 			setEventType (null);
-			setIsSubscriptionConfirmed (false); // N
 			setProcessed (false); // N
 			setStatus (null); // P
         } */
@@ -83,6 +80,40 @@ public class X_C_SubscriptionProgress extends org.compiere.model.PO implements I
 		return ii.intValue();
 	}
 
+	/** 
+	 * ContractStatus AD_Reference_ID=540000
+	 * Reference name: SubscriptionStatus
+	 */
+	public static final int CONTRACTSTATUS_AD_Reference_ID=540000;
+	/** Running = Ru */
+	public static final String CONTRACTSTATUS_Running = "Ru";
+	/** DeliveryPause = Pa */
+	public static final String CONTRACTSTATUS_DeliveryPause = "Pa";
+	/** Quit = Qu */
+	public static final String CONTRACTSTATUS_Quit = "Qu";
+	/** Info = In */
+	public static final String CONTRACTSTATUS_Info = "In";
+	/** Waiting = Wa */
+	public static final String CONTRACTSTATUS_Waiting = "Wa";
+	/** EndingContract = Ec */
+	public static final String CONTRACTSTATUS_EndingContract = "Ec";
+	/** Set Vertrags-Status.
+		@param ContractStatus Vertrags-Status	  */
+	@Override
+	public void setContractStatus (java.lang.String ContractStatus)
+	{
+
+		set_Value (COLUMNNAME_ContractStatus, ContractStatus);
+	}
+
+	/** Get Vertrags-Status.
+		@return Vertrags-Status	  */
+	@Override
+	public java.lang.String getContractStatus () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_ContractStatus);
+	}
+
 	/** Set Abo-Verlauf.
 		@param C_SubscriptionProgress_ID Abo-Verlauf	  */
 	@Override
@@ -103,42 +134,6 @@ public class X_C_SubscriptionProgress extends org.compiere.model.PO implements I
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	/** 
-	 * ContractStatus AD_Reference_ID=540000
-	 * Reference name: SubscriptionStatus
-	 */
-	public static final int CONTRACTSTATUS_AD_Reference_ID=540000;
-	/** Laufend  = Ru */
-	public static final String CONTRACTSTATUS_Laufend = "Ru";
-	/** Lieferpause = Pa */
-	public static final String CONTRACTSTATUS_Lieferpause = "Pa";
-	/** Beendet = En */
-	public static final String CONTRACTSTATUS_Beendet = "En";
-	/** Gekündigt = Qu */
-	public static final String CONTRACTSTATUS_Gekuendigt = "Qu";
-	/** Info = In */
-	public static final String CONTRACTSTATUS_Info = "In";
-	/** Noch nicht begonnen = Wa */
-	public static final String CONTRACTSTATUS_NochNichtBegonnen = "Wa";
-	/** EndingContract = Ec */
-	public static final String CONTRACTSTATUS_EndingContract = "Ec";
-	/** Set Vertrags-Status.
-		@param ContractStatus Vertrags-Status	  */
-	@Override
-	public void setContractStatus (java.lang.String ContractStatus)
-	{
-
-		set_Value (COLUMNNAME_ContractStatus, ContractStatus);
-	}
-
-	/** Get Vertrags-Status.
-		@return Vertrags-Status	  */
-	@Override
-	public java.lang.String getContractStatus () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_ContractStatus);
 	}
 
 	@Override
@@ -273,22 +268,12 @@ public class X_C_SubscriptionProgress extends org.compiere.model.PO implements I
 	 * Reference name: C_SubscriptionProgress EventType
 	 */
 	public static final int EVENTTYPE_AD_Reference_ID=540013;
-	/** Lieferung = DE */
-	public static final String EVENTTYPE_Lieferung = "DE";
-	/** Abowechsel = SU */
-	public static final String EVENTTYPE_Abowechsel = "SU";
-	/** Statuswechsel = ST */
-	public static final String EVENTTYPE_Statuswechsel = "ST";
-	/** Abo-Ende = SE */
-	public static final String EVENTTYPE_Abo_Ende = "SE";
-	/** Abo-Beginn = SB */
-	public static final String EVENTTYPE_Abo_Beginn = "SB";
-	/** Abo-Autoverlängerung = SR */
-	public static final String EVENTTYPE_Abo_Autoverlaengerung = "SR";
-	/** Abopause-Beginn = PB */
-	public static final String EVENTTYPE_Abopause_Beginn = "PB";
-	/** Abopause-Ende = PE */
-	public static final String EVENTTYPE_Abopause_Ende = "PE";
+	/** Delivery = DE */
+	public static final String EVENTTYPE_Delivery = "DE";
+	/** BeginOfPause = PB */
+	public static final String EVENTTYPE_BeginOfPause = "PB";
+	/** EndOfPause = PE */
+	public static final String EVENTTYPE_EndOfPause = "PE";
 	/** Set Ereignisart.
 		@param EventType Ereignisart	  */
 	@Override
@@ -415,18 +400,18 @@ public class X_C_SubscriptionProgress extends org.compiere.model.PO implements I
 	 * Reference name: C_SubscriptionProgress Status
 	 */
 	public static final int STATUS_AD_Reference_ID=540002;
-	/** Geplant = P */
-	public static final String STATUS_Geplant = "P";
-	/** Lieferung Offen = O */
-	public static final String STATUS_LieferungOffen = "O";
-	/** Ausgeliefert = D */
-	public static final String STATUS_Ausgeliefert = "D";
-	/** Wird kommissioniert = C */
-	public static final String STATUS_WirdKommissioniert = "C";
-	/** Ausgeführt = E */
-	public static final String STATUS_Ausgefuehrt = "E";
-	/** Verzögert = H */
-	public static final String STATUS_Verzoegert = "H";
+	/** Planned = P */
+	public static final String STATUS_Planned = "P";
+	/** Open = O */
+	public static final String STATUS_Open = "O";
+	/** Delivered = D */
+	public static final String STATUS_Delivered = "D";
+	/** InPicking = C */
+	public static final String STATUS_InPicking = "C";
+	/** Done = E */
+	public static final String STATUS_Done = "E";
+	/** Delayed = H */
+	public static final String STATUS_Delayed = "H";
 	/** Set Status.
 		@param Status 
 		Status of the currently running check
