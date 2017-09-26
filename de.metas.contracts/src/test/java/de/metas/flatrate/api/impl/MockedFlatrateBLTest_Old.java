@@ -491,7 +491,7 @@ public class MockedFlatrateBLTest_Old
 
 				conditions.getType_Flatrate();
 				minTimes = 0;
-				result = X_C_Flatrate_Conditions.TYPE_FLATRATE_Korridor;
+				result = X_C_Flatrate_Conditions.TYPE_FLATRATE_Corridor_Percent;
 
 				conditions.getM_Product_Flatrate();
 				minTimes = 0;
@@ -539,11 +539,11 @@ public class MockedFlatrateBLTest_Old
 
 				conditions.getType_Clearing();
 				minTimes = 0; 
-				result = X_C_Flatrate_Conditions.TYPE_CLEARING_Ueber_Unterschreitung;
+				result = X_C_Flatrate_Conditions.TYPE_CLEARING_Exceeding;
 
 				conditions.getClearingAmtBaseOn();
 				minTimes = 0; 
-				result = X_C_Flatrate_Conditions.CLEARINGAMTBASEON_Pauschalenpreis;
+				result = X_C_Flatrate_Conditions.CLEARINGAMTBASEON_FlatrateAmount;
 
 				flatrateBL.getFlatFeePricePerUnit(term, new BigDecimal("23"), dataEntry);
 				minTimes = 0; 
@@ -567,11 +567,11 @@ public class MockedFlatrateBLTest_Old
 
 				conditions.getType_Clearing();
 				minTimes = 0; 
-				result = X_C_Flatrate_Conditions.TYPE_CLEARING_Ueber_Unterschreitung;
+				result = X_C_Flatrate_Conditions.TYPE_CLEARING_Exceeding;
 
 				conditions.getClearingAmtBaseOn();
 				minTimes = 0; 
-				result = X_C_Flatrate_Conditions.CLEARINGAMTBASEON_Pauschalenpreis;
+				result = X_C_Flatrate_Conditions.CLEARINGAMTBASEON_FlatrateAmount;
 
 				dataEntry.getQty_Reported();
 				minTimes = 0; 

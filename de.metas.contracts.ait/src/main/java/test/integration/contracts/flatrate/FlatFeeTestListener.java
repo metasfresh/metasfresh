@@ -114,7 +114,7 @@ public class FlatFeeTestListener
 	public void afterFlatFeeTermComplete(final TestEvent evt)
 	{
 		final I_C_Flatrate_Term term = (I_C_Flatrate_Term)evt.getObj();
-		assumeThat(term.getType_Conditions(), equalTo(X_C_Flatrate_Term.TYPE_CONDITIONS_Pauschalengebuehr));
+		assumeThat(term.getType_Conditions(), equalTo(X_C_Flatrate_Term.TYPE_CONDITIONS_FlatFee));
 
 		final Properties ctx = evt.getSource().getCtx();
 		final String trxName = evt.getSource().getTrxName();
@@ -143,7 +143,7 @@ public class FlatFeeTestListener
 	{
 		final I_C_Flatrate_Term term = (I_C_Flatrate_Term)evt.getObj();
 
-		if (!equalTo(X_C_Flatrate_Term.TYPE_CONDITIONS_Pauschalengebuehr).matches(term.getType_Conditions()))
+		if (!equalTo(X_C_Flatrate_Term.TYPE_CONDITIONS_FlatFee).matches(term.getType_Conditions()))
 		{
 			// tests are not applicable
 			return;
@@ -217,7 +217,7 @@ public class FlatFeeTestListener
 	{
 		final I_C_Flatrate_Term term = (I_C_Flatrate_Term)evt.getObj();
 
-		if (!equalTo(X_C_Flatrate_Term.TYPE_CONDITIONS_Pauschalengebuehr).matches(term.getType_Conditions()))
+		if (!equalTo(X_C_Flatrate_Term.TYPE_CONDITIONS_FlatFee).matches(term.getType_Conditions()))
 		{
 			// tests are not applicable
 			return;

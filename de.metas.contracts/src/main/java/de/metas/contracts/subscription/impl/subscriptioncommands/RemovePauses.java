@@ -161,16 +161,16 @@ public class RemovePauses
 
 	private static boolean isWithinPause(final I_C_SubscriptionProgress subscriptionProgress)
 	{
-		final boolean withinPause = subscriptionProgress.getContractStatus().equals(X_C_SubscriptionProgress.CONTRACTSTATUS_Lieferpause)
-				|| subscriptionProgress.getEventType().equals(X_C_SubscriptionProgress.EVENTTYPE_Abopause_Beginn)
-				|| subscriptionProgress.getEventType().equals(X_C_SubscriptionProgress.EVENTTYPE_Abopause_Ende);
+		final boolean withinPause = subscriptionProgress.getContractStatus().equals(X_C_SubscriptionProgress.CONTRACTSTATUS_DeliveryPause)
+				|| subscriptionProgress.getEventType().equals(X_C_SubscriptionProgress.EVENTTYPE_BeginOfPause)
+				|| subscriptionProgress.getEventType().equals(X_C_SubscriptionProgress.EVENTTYPE_EndOfPause);
 		return withinPause;
 	}
 
 	private static I_C_SubscriptionProgress retrieveFirstPauseRecordSearchBackwards(final I_C_SubscriptionProgress firstSp)
 	{
 		final SubscriptionProgressQuery query = SubscriptionProgressQuery.endingRightBefore(firstSp)
-				.includedContractStatus(X_C_SubscriptionProgress.CONTRACTSTATUS_Lieferpause)
+				.includedContractStatus(X_C_SubscriptionProgress.CONTRACTSTATUS_DeliveryPause)
 				.build();
 		final I_C_SubscriptionProgress preceedingPauseRecord = Services.get(ISubscriptionDAO.class).retrieveFirstSubscriptionProgress(query);
 
@@ -185,7 +185,7 @@ public class RemovePauses
 		for (final I_C_SubscriptionProgress pauseRecord : allPauseRecords)
 		{
 
-			final boolean pauseStartOrEnd = X_C_SubscriptionProgress.EVENTTYPE_Abopause_Beginn.equals(pauseRecord.getEventType()) || X_C_SubscriptionProgress.EVENTTYPE_Abopause_Ende.equals(pauseRecord.getEventType());
+			final boolean pauseStartOrEnd = X_C_SubscriptionProgress.EVENTTYPE_BeginOfPause.equals(pauseRecord.getEventType()) || X_C_SubscriptionProgress.EVENTTYPE_EndOfPause.equals(pauseRecord.getEventType());
 			if (pauseStartOrEnd)
 			{
 				delete(pauseRecord);
@@ -194,7 +194,7 @@ public class RemovePauses
 			}
 			else if (isWithinPause(pauseRecord))
 			{
-				pauseRecord.setContractStatus(X_C_SubscriptionProgress.CONTRACTSTATUS_Laufend);
+				pauseRecord.setContractStatus(X_C_SubscriptionProgress.CONTRACTSTATUS_Running);
 			}
 			subtractFromSeqNoAndSave(pauseRecord, seqNoOffset);
 		}

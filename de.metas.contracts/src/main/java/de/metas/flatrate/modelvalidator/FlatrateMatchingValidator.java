@@ -71,7 +71,7 @@ public class FlatrateMatchingValidator implements ModelValidator
 			final I_C_Flatrate_Conditions fc = matching.getC_Flatrate_Conditions();
 
 			if (matching.getM_Product_Category_Matching_ID() <= 0
-					&& X_C_Flatrate_Conditions.TYPE_CONDITIONS_Depotgebuehr.equals(fc.getType_Conditions()))
+					&& X_C_Flatrate_Conditions.TYPE_CONDITIONS_HoldingFee.equals(fc.getType_Conditions()))
 			{
 				throw new FillMandatoryException(I_C_Flatrate_Matching.COLUMNNAME_M_Product_Category_Matching_ID);
 			}

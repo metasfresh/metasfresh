@@ -111,7 +111,7 @@ public class FlatrateDataEntryValidator implements ModelValidator
 
 					final I_C_Flatrate_Conditions conditions = dataEntry.getC_Flatrate_Term().getC_Flatrate_Conditions();
 
-					if (!X_C_Flatrate_Conditions.TYPE_CONDITIONS_Leergutverwaltung.equals(conditions.getType_Conditions()))
+					if (!X_C_Flatrate_Conditions.TYPE_CONDITIONS_Refundable.equals(conditions.getType_Conditions()))
 					{
 						flatrateBL.updateEntry(dataEntry);
 					}

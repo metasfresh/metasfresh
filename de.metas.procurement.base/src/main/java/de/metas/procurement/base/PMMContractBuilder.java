@@ -238,7 +238,7 @@ public class PMMContractBuilder
 
 		}
 
-		contract.setContractStatus(X_C_Flatrate_Term.CONTRACTSTATUS_Laufend);
+		contract.setContractStatus(X_C_Flatrate_Term.CONTRACTSTATUS_Running);
 		contract.setEndDate(getEndDate());
 		contract.setC_Currency(getC_Currency());
 
