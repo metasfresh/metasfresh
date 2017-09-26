@@ -60,6 +60,7 @@ import de.metas.adempiere.model.I_C_Order;
 import de.metas.adempiere.service.IBPartnerOrgBL;
 import de.metas.contracts.subscription.ISubscriptionBL;
 import de.metas.contracts.subscription.ISubscriptionDAO;
+import de.metas.contracts.subscription.ISubscriptionDAO.SubscriptionProgressQuery;
 import de.metas.contracts.subscription.model.I_C_OrderLine;
 import de.metas.document.engine.IDocActionBL;
 import de.metas.flatrate.Contracts_Constants;
@@ -407,7 +408,7 @@ public class SubscriptionBL implements ISubscriptionBL
 			@NonNull final I_C_Flatrate_Term term,
 			@NonNull final Timestamp currentDate)
 	{
-		final ISubscriptionDAO subscriptionPA = Services.get(ISubscriptionDAO.class);
+		final ISubscriptionDAO subscriptionDAO = Services.get(ISubscriptionDAO.class);
 
 		I_C_SubscriptionProgress currentProgressRecord = retrieveOrCreateSP(term, currentDate);
 
@@ -422,11 +423,16 @@ public class SubscriptionBL implements ISubscriptionBL
 
 			term.setContractStatus(currentProgressRecord.getContractStatus());
 
+			final SubscriptionProgressQuery query = SubscriptionProgressQuery.builder()
+					.term(term)
+					.eventDateNotBefore(currentDate)
+					.seqNoNotLessThan(currentProgressRecord.getSeqNo() + 1)
+					.excludedStatus(X_C_SubscriptionProgress.STATUS_Ausgefuehrt)
+					.excludedStatus(X_C_SubscriptionProgress.STATUS_Ausgeliefert)
+					.build();
+
 			// see if there is an SP for the next loop iteration
-			currentProgressRecord = subscriptionPA.retrieveNextSP(
-					term,
-					currentDate,
-					currentProgressRecord.getSeqNo() + 1);
+			currentProgressRecord = subscriptionDAO.retrieveFirstSubscriptionProgress(query);
 			if (currentProgressRecord == null)
 			{
 				break;
@@ -457,7 +463,14 @@ public class SubscriptionBL implements ISubscriptionBL
 	{
 		final ISubscriptionDAO subscriptionPA = Services.get(ISubscriptionDAO.class);
 
-		final I_C_SubscriptionProgress sp = subscriptionPA.retrieveNextSP(term, currentDate, 0);
+		final SubscriptionProgressQuery query = SubscriptionProgressQuery.builder()
+				.term(term)
+				.eventDateNotBefore(currentDate)
+				.excludedStatus(X_C_SubscriptionProgress.STATUS_Ausgefuehrt)
+				.excludedStatus(X_C_SubscriptionProgress.STATUS_Ausgeliefert)
+				.build();
+		
+		final I_C_SubscriptionProgress sp = subscriptionPA.retrieveFirstSubscriptionProgress(query);
 		if (sp != null)
 		{
 			return sp;
@@ -779,17 +792,17 @@ public class SubscriptionBL implements ISubscriptionBL
 	}
 
 	private I_C_SubscriptionProgress createDelivery(
-			final I_C_Flatrate_Term sc,
+			final I_C_Flatrate_Term term,
 			final Timestamp eventDate,
 			final int seqNo)
 	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(sc);
-		final String trxName = InterfaceWrapperHelper.getTrxName(sc);
+		final Properties ctx = InterfaceWrapperHelper.getCtx(term);
+		final String trxName = InterfaceWrapperHelper.getTrxName(term);
 
-		final I_C_SubscriptionProgress delivery = InterfaceWrapperHelper.newInstance(I_C_SubscriptionProgress.class, sc);
+		final I_C_SubscriptionProgress delivery = InterfaceWrapperHelper.newInstance(I_C_SubscriptionProgress.class, term);
 
-		delivery.setAD_Org_ID(sc.getAD_Org_ID());
-		delivery.setC_Flatrate_Term(sc);
+		delivery.setAD_Org_ID(term.getAD_Org_ID());
+		delivery.setC_Flatrate_Term(term);
 
 		delivery.setEventType(X_C_SubscriptionProgress.EVENTTYPE_Lieferung);
 		delivery.setStatus(X_C_SubscriptionProgress.STATUS_Geplant);
@@ -798,20 +811,20 @@ public class SubscriptionBL implements ISubscriptionBL
 
 		delivery.setEventDate(eventDate);
 
-		delivery.setDropShip_Location_ID(sc.getDropShip_Location_ID());
-		delivery.setDropShip_BPartner_ID(sc.getDropShip_BPartner_ID());
-		delivery.setDropShip_User_ID(sc.getDropShip_User_ID());
+		delivery.setDropShip_Location_ID(term.getDropShip_Location_ID());
+		delivery.setDropShip_BPartner_ID(term.getDropShip_BPartner_ID());
+		delivery.setDropShip_User_ID(term.getDropShip_User_ID());
 
 		delivery.setSeqNo(seqNo);
 
-		final int flatrateConditionsId = sc.getC_Flatrate_Conditions_ID();
-		final I_M_Product product = sc.getM_Product();
+		final int flatrateConditionsId = term.getC_Flatrate_Conditions_ID();
+		final I_M_Product product = term.getM_Product();
 
 		final I_C_Flatrate_Matching matching = retrieveMatching(ctx, flatrateConditionsId, product, trxName);
 
 		final BigDecimal qtyPerDelivery = matching == null ? BigDecimal.ONE : matching.getQtyPerDelivery();
 
-		final BigDecimal qty = qtyPerDelivery.multiply(sc.getPlannedQtyPerUnit());
+		final BigDecimal qty = qtyPerDelivery.multiply(term.getPlannedQtyPerUnit());
 		delivery.setQty(qty);
 
 		return delivery;
