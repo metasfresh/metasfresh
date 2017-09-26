@@ -41,9 +41,9 @@ public class SubscriptionTestUtil
 	{
 		final I_C_SubscriptionProgress subscriptionProgress = newInstance(I_C_SubscriptionProgress.class);
 		POJOWrapper.setInstanceName(subscriptionProgress, eventDate);
-		subscriptionProgress.setContractStatus(X_C_SubscriptionProgress.CONTRACTSTATUS_Laufend);
+		subscriptionProgress.setContractStatus(X_C_SubscriptionProgress.CONTRACTSTATUS_Running);
 		subscriptionProgress.setStatus(X_C_SubscriptionProgress.STATUS_Geplant);
-		subscriptionProgress.setEventType(X_C_SubscriptionProgress.EVENTTYPE_Lieferung);
+		subscriptionProgress.setEventType(X_C_SubscriptionProgress.EVENTTYPE_Delivery);
 		subscriptionProgress.setC_Flatrate_Term(term);
 		subscriptionProgress.setEventDate(TimeUtil.parseTimestamp(eventDate));
 		subscriptionProgress.setSeqNo(seqNo);

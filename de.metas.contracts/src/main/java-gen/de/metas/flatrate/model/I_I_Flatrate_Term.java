@@ -407,35 +407,6 @@ public interface I_I_Flatrate_Term
     public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Produkt.
-	 * Produkt, Leistung, Artikel
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setM_Product_ID (int M_Product_ID);
-
-	/**
-	 * Get Produkt.
-	 * Produkt, Leistung, Artikel
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getM_Product_ID();
-
-	public org.compiere.model.I_M_Product getM_Product();
-
-	public void setM_Product(org.compiere.model.I_M_Product M_Product);
-
-    /** Column definition for M_Product_ID */
-    public static final org.adempiere.model.ModelColumn<I_I_Flatrate_Term, org.compiere.model.I_M_Product> COLUMN_M_Product_ID = new org.adempiere.model.ModelColumn<I_I_Flatrate_Term, org.compiere.model.I_M_Product>(I_I_Flatrate_Term.class, "M_Product_ID", org.compiere.model.I_M_Product.class);
-    /** Column name M_Product_ID */
-    public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
-
-	/**
 	 * Set Master End Date.
 	 *
 	 * <br>Type: Date
@@ -480,6 +451,35 @@ public interface I_I_Flatrate_Term
     public static final org.adempiere.model.ModelColumn<I_I_Flatrate_Term, Object> COLUMN_MasterStartDate = new org.adempiere.model.ModelColumn<I_I_Flatrate_Term, Object>(I_I_Flatrate_Term.class, "MasterStartDate", null);
     /** Column name MasterStartDate */
     public static final String COLUMNNAME_MasterStartDate = "MasterStartDate";
+
+	/**
+	 * Set Produkt.
+	 * Produkt, Leistung, Artikel
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setM_Product_ID (int M_Product_ID);
+
+	/**
+	 * Get Produkt.
+	 * Produkt, Leistung, Artikel
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getM_Product_ID();
+
+	public org.compiere.model.I_M_Product getM_Product();
+
+	public void setM_Product(org.compiere.model.I_M_Product M_Product);
+
+    /** Column definition for M_Product_ID */
+    public static final org.adempiere.model.ModelColumn<I_I_Flatrate_Term, org.compiere.model.I_M_Product> COLUMN_M_Product_ID = new org.adempiere.model.ModelColumn<I_I_Flatrate_Term, org.compiere.model.I_M_Product>(I_I_Flatrate_Term.class, "M_Product_ID", org.compiere.model.I_M_Product.class);
+    /** Column name M_Product_ID */
+    public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
 
 	/**
 	 * Set Preis.

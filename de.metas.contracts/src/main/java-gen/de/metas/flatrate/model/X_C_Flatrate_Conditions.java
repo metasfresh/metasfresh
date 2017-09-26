@@ -15,7 +15,7 @@ public class X_C_Flatrate_Conditions extends org.compiere.model.PO implements I_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -786693114L;
+	private static final long serialVersionUID = 60443327L;
 
     /** Standard Constructor */
     public X_C_Flatrate_Conditions (Properties ctx, int C_Flatrate_Conditions_ID, String trxName)
@@ -34,18 +34,16 @@ public class X_C_Flatrate_Conditions extends org.compiere.model.PO implements I_
 			setIsCreateNoInvoice (false); // N
 			setIsFreeOfCharge (false); // N
 			setIsManualPrice (false); // N
-			setIsNewTermCreatesOrder (true); // Y
 			setIsSimulation (false); // N
-			setM_Product_Flatrate_ID (0);
 			setMargin_Max (BigDecimal.ZERO);
 			setMargin_Min (BigDecimal.ZERO);
+			setM_Product_Flatrate_ID (0);
 			setName (null);
 			setProcessed (false); // N
 			setProcessing (false); // N
 			setType_Clearing (null); // EX
 			setType_Conditions (null);
 			setType_Flatrate (null); // NONE
-			setUOMType (null);
         } */
     }
 
@@ -138,6 +136,35 @@ public class X_C_Flatrate_Conditions extends org.compiere.model.PO implements I_
 		return ii.intValue();
 	}
 
+	/** 
+	 * ClearingAmtBaseOn AD_Reference_ID=540278
+	 * Reference name: ClearingAmtBaseOn
+	 */
+	public static final int CLEARINGAMTBASEON_AD_Reference_ID=540278;
+	/** ProductPrice = ProductPrice */
+	public static final String CLEARINGAMTBASEON_ProductPrice = "ProductPrice";
+	/** FlatrateAmount = FlatrateAmount */
+	public static final String CLEARINGAMTBASEON_FlatrateAmount = "FlatrateAmount";
+	/** Set Basis für Verrechnungs-Zahlbetrag.
+		@param ClearingAmtBaseOn 
+		Entscheidet, ob der Verrechnungsbetrag auf Basis der Produktpreise (tats. erbrachte Leistungen) oder als prozentualer Aufschlag/Abschlag ermittelt wird. 
+	  */
+	@Override
+	public void setClearingAmtBaseOn (java.lang.String ClearingAmtBaseOn)
+	{
+
+		set_Value (COLUMNNAME_ClearingAmtBaseOn, ClearingAmtBaseOn);
+	}
+
+	/** Get Basis für Verrechnungs-Zahlbetrag.
+		@return Entscheidet, ob der Verrechnungsbetrag auf Basis der Produktpreise (tats. erbrachte Leistungen) oder als prozentualer Aufschlag/Abschlag ermittelt wird. 
+	  */
+	@Override
+	public java.lang.String getClearingAmtBaseOn () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_ClearingAmtBaseOn);
+	}
+
 	@Override
 	public org.compiere.model.I_C_UOM getC_UOM() throws RuntimeException
 	{
@@ -173,35 +200,6 @@ public class X_C_Flatrate_Conditions extends org.compiere.model.PO implements I_
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	/** 
-	 * ClearingAmtBaseOn AD_Reference_ID=540278
-	 * Reference name: ClearingAmtBaseOn
-	 */
-	public static final int CLEARINGAMTBASEON_AD_Reference_ID=540278;
-	/** Produktpreis = ProductPrice */
-	public static final String CLEARINGAMTBASEON_Produktpreis = "ProductPrice";
-	/** Pauschalenpreis = FlatrateAmount */
-	public static final String CLEARINGAMTBASEON_Pauschalenpreis = "FlatrateAmount";
-	/** Set Basis für Verrechnungs-Zahlbetrag.
-		@param ClearingAmtBaseOn 
-		Entscheidet, ob der Verrechnungsbetrag auf Basis der Produktpreise (tats. erbrachte Leistungen) oder als prozentualer Aufschlag/Abschlag ermittelt wird. 
-	  */
-	@Override
-	public void setClearingAmtBaseOn (java.lang.String ClearingAmtBaseOn)
-	{
-
-		set_Value (COLUMNNAME_ClearingAmtBaseOn, ClearingAmtBaseOn);
-	}
-
-	/** Get Basis für Verrechnungs-Zahlbetrag.
-		@return Entscheidet, ob der Verrechnungsbetrag auf Basis der Produktpreise (tats. erbrachte Leistungen) oder als prozentualer Aufschlag/Abschlag ermittelt wird. 
-	  */
-	@Override
-	public java.lang.String getClearingAmtBaseOn () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_ClearingAmtBaseOn);
 	}
 
 	/** 
@@ -512,6 +510,44 @@ public class X_C_Flatrate_Conditions extends org.compiere.model.PO implements I_
 		return false;
 	}
 
+	/** Set Korridor - Überschreitung.
+		@param Margin_Max Korridor - Überschreitung	  */
+	@Override
+	public void setMargin_Max (java.math.BigDecimal Margin_Max)
+	{
+		set_Value (COLUMNNAME_Margin_Max, Margin_Max);
+	}
+
+	/** Get Korridor - Überschreitung.
+		@return Korridor - Überschreitung	  */
+	@Override
+	public java.math.BigDecimal getMargin_Max () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Margin_Max);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
+	}
+
+	/** Set Korridor - Unterschreitung.
+		@param Margin_Min Korridor - Unterschreitung	  */
+	@Override
+	public void setMargin_Min (java.math.BigDecimal Margin_Min)
+	{
+		set_Value (COLUMNNAME_Margin_Min, Margin_Min);
+	}
+
+	/** Get Korridor - Unterschreitung.
+		@return Korridor - Unterschreitung	  */
+	@Override
+	public java.math.BigDecimal getMargin_Min () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Margin_Min);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
+	}
+
 	@Override
 	public org.compiere.model.I_M_PricingSystem getM_PricingSystem() throws RuntimeException
 	{
@@ -660,44 +696,6 @@ public class X_C_Flatrate_Conditions extends org.compiere.model.PO implements I_
 		return ii.intValue();
 	}
 
-	/** Set Korridor - Überschreitung.
-		@param Margin_Max Korridor - Überschreitung	  */
-	@Override
-	public void setMargin_Max (java.math.BigDecimal Margin_Max)
-	{
-		set_Value (COLUMNNAME_Margin_Max, Margin_Max);
-	}
-
-	/** Get Korridor - Überschreitung.
-		@return Korridor - Überschreitung	  */
-	@Override
-	public java.math.BigDecimal getMargin_Max () 
-	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Margin_Max);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
-	}
-
-	/** Set Korridor - Unterschreitung.
-		@param Margin_Min Korridor - Unterschreitung	  */
-	@Override
-	public void setMargin_Min (java.math.BigDecimal Margin_Min)
-	{
-		set_Value (COLUMNNAME_Margin_Min, Margin_Min);
-	}
-
-	/** Get Korridor - Unterschreitung.
-		@return Korridor - Unterschreitung	  */
-	@Override
-	public java.math.BigDecimal getMargin_Min () 
-	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Margin_Min);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
-	}
-
 	/** Set Name.
 		@param Name 
 		Alphanumeric identifier of the entity
@@ -771,10 +769,10 @@ public class X_C_Flatrate_Conditions extends org.compiere.model.PO implements I_
 	 * Reference name: Type_Clearing
 	 */
 	public static final int TYPE_CLEARING_AD_Reference_ID=540265;
-	/** Komplett = CO */
-	public static final String TYPE_CLEARING_Komplett = "CO";
-	/** Über-/Unterschreitung = EX */
-	public static final String TYPE_CLEARING_Ueber_Unterschreitung = "EX";
+	/** Complete = CO */
+	public static final String TYPE_CLEARING_Complete = "CO";
+	/** Exceeding = EX */
+	public static final String TYPE_CLEARING_Exceeding = "EX";
 	/** Set Verrechnungsmodus.
 		@param Type_Clearing Verrechnungsmodus	  */
 	@Override
@@ -797,18 +795,18 @@ public class X_C_Flatrate_Conditions extends org.compiere.model.PO implements I_
 	 * Reference name: Type_Conditions
 	 */
 	public static final int TYPE_CONDITIONS_AD_Reference_ID=540271;
-	/** Pauschalengebühr = FlatFee */
-	public static final String TYPE_CONDITIONS_Pauschalengebuehr = "FlatFee";
-	/** Depotgebühr = HoldingFee */
-	public static final String TYPE_CONDITIONS_Depotgebuehr = "HoldingFee";
-	/** Abonnement = Subscr */
-	public static final String TYPE_CONDITIONS_Abonnement = "Subscr";
-	/** Leergutverwaltung = Refundable */
-	public static final String TYPE_CONDITIONS_Leergutverwaltung = "Refundable";
+	/** FlatFee = FlatFee */
+	public static final String TYPE_CONDITIONS_FlatFee = "FlatFee";
+	/** HoldingFee = HoldingFee */
+	public static final String TYPE_CONDITIONS_HoldingFee = "HoldingFee";
+	/** Subscription = Subscr */
+	public static final String TYPE_CONDITIONS_Subscription = "Subscr";
+	/** Refundable = Refundable */
+	public static final String TYPE_CONDITIONS_Refundable = "Refundable";
 	/** QualityBasedInvoicing = QualityBsd */
 	public static final String TYPE_CONDITIONS_QualityBasedInvoicing = "QualityBsd";
-	/** Liefervereinbarung = Procuremnt */
-	public static final String TYPE_CONDITIONS_Liefervereinbarung = "Procuremnt";
+	/** Procurement = Procuremnt */
+	public static final String TYPE_CONDITIONS_Procurement = "Procuremnt";
 	/** Set Vertragsart.
 		@param Type_Conditions Vertragsart	  */
 	@Override
@@ -831,10 +829,10 @@ public class X_C_Flatrate_Conditions extends org.compiere.model.PO implements I_
 	 * Reference name: Type_Flatrate
 	 */
 	public static final int TYPE_FLATRATE_AD_Reference_ID=540264;
-	/** Keine Verrechnung = NONE */
-	public static final String TYPE_FLATRATE_KeineVerrechnung = "NONE";
-	/** Korridor % = LIPE */
-	public static final String TYPE_FLATRATE_Korridor = "LIPE";
+	/** NONE = NONE */
+	public static final String TYPE_FLATRATE_NONE = "NONE";
+	/** Corridor_Percent = LIPE */
+	public static final String TYPE_FLATRATE_Corridor_Percent = "LIPE";
 	/** Set Verrechnungsart.
 		@param Type_Flatrate 
 		Art der Verrechnung bei der Gegenüberstellung mit tatsächliche erbrachten Leistungen

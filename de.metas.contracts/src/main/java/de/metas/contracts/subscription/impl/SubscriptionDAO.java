@@ -26,7 +26,6 @@ import static de.metas.flatrate.model.I_C_SubscriptionProgress.COLUMNNAME_C_Flat
 import static de.metas.flatrate.model.I_C_SubscriptionProgress.COLUMNNAME_EventDate;
 import static de.metas.flatrate.model.I_C_SubscriptionProgress.COLUMNNAME_EventType;
 import static de.metas.flatrate.model.I_C_SubscriptionProgress.COLUMNNAME_SeqNo;
-import static de.metas.flatrate.model.X_C_SubscriptionProgress.EVENTTYPE_Lieferung;
 import static de.metas.flatrate.model.X_C_SubscriptionProgress.STATUS_Geplant;
 import static de.metas.flatrate.model.X_C_SubscriptionProgress.STATUS_Verzoegert;
 
@@ -43,6 +42,7 @@ import de.metas.flatrate.interfaces.I_C_OLCand;
 import de.metas.flatrate.model.I_C_Contract_Term_Alloc;
 import de.metas.flatrate.model.I_C_Flatrate_Term;
 import de.metas.flatrate.model.I_C_SubscriptionProgress;
+import de.metas.flatrate.model.X_C_SubscriptionProgress;
 
 public class SubscriptionDAO extends AbstractSubscriptionDAO
 {
@@ -55,7 +55,7 @@ public class SubscriptionDAO extends AbstractSubscriptionDAO
 			final String trxName)
 	{
 
-		final String where = COLUMNNAME_EventType + "='" + EVENTTYPE_Lieferung + "'"
+		final String where = COLUMNNAME_EventType + "='" + X_C_SubscriptionProgress.EVENTTYPE_Delivery + "'"
 				+ " AND " + I_C_SubscriptionProgress.COLUMNNAME_Status + " IN ('" + STATUS_Geplant + "', '" + STATUS_Verzoegert + "')"
 				+ " AND " + COLUMNNAME_EventDate + "<=?";
 

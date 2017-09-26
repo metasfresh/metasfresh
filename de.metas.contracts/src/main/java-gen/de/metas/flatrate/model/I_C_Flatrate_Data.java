@@ -98,29 +98,6 @@ public interface I_C_Flatrate_Data
     public static final String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
 
 	/**
-	 * Set Datenerfassung.
-	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setC_Flatrate_Data_ID (int C_Flatrate_Data_ID);
-
-	/**
-	 * Get Datenerfassung.
-	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getC_Flatrate_Data_ID();
-
-    /** Column definition for C_Flatrate_Data_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_Flatrate_Data, Object> COLUMN_C_Flatrate_Data_ID = new org.adempiere.model.ModelColumn<I_C_Flatrate_Data, Object>(I_C_Flatrate_Data.class, "C_Flatrate_Data_ID", null);
-    /** Column name C_Flatrate_Data_ID */
-    public static final String COLUMNNAME_C_Flatrate_Data_ID = "C_Flatrate_Data_ID";
-
-	/**
 	 * Set C_Flatrate_DataEntry_IncludedTab.
 	 *
 	 * <br>Type: String
@@ -142,6 +119,29 @@ public interface I_C_Flatrate_Data
     public static final org.adempiere.model.ModelColumn<I_C_Flatrate_Data, Object> COLUMN_C_Flatrate_DataEntry_IncludedT = new org.adempiere.model.ModelColumn<I_C_Flatrate_Data, Object>(I_C_Flatrate_Data.class, "C_Flatrate_DataEntry_IncludedT", null);
     /** Column name C_Flatrate_DataEntry_IncludedT */
     public static final String COLUMNNAME_C_Flatrate_DataEntry_IncludedT = "C_Flatrate_DataEntry_IncludedT";
+
+	/**
+	 * Set Datenerfassung.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setC_Flatrate_Data_ID (int C_Flatrate_Data_ID);
+
+	/**
+	 * Get Datenerfassung.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getC_Flatrate_Data_ID();
+
+    /** Column definition for C_Flatrate_Data_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Flatrate_Data, Object> COLUMN_C_Flatrate_Data_ID = new org.adempiere.model.ModelColumn<I_C_Flatrate_Data, Object>(I_C_Flatrate_Data.class, "C_Flatrate_Data_ID", null);
+    /** Column name C_Flatrate_Data_ID */
+    public static final String COLUMNNAME_C_Flatrate_Data_ID = "C_Flatrate_Data_ID";
 
 	/**
 	 * Get Erstellt.

@@ -14,6 +14,7 @@ import java.util.Properties;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
@@ -77,6 +78,7 @@ public class SubscriptionInOutCandHandler implements IInOutCandHandler
 		newSched.setC_Order_ID(term.getC_OrderLine_Term().getC_Order_ID());
 
 		newSched.setM_Product_ID(term.getM_Product_ID());
+		Services.get(IAttributeSetInstanceBL.class).cloneASI(term, newSched);
 
 		newSched.setProductDescription(null);
 
@@ -179,8 +181,8 @@ public class SubscriptionInOutCandHandler implements IInOutCandHandler
 				.createQueryBuilder(I_C_SubscriptionProgress.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_SubscriptionProgress.COLUMN_Status, X_C_SubscriptionProgress.STATUS_Geplant)
-				.addEqualsFilter(I_C_SubscriptionProgress.COLUMN_ContractStatus, X_C_SubscriptionProgress.CONTRACTSTATUS_Laufend)
-				.addEqualsFilter(I_C_SubscriptionProgress.COLUMN_EventType, X_C_SubscriptionProgress.EVENTTYPE_Lieferung)
+				.addEqualsFilter(I_C_SubscriptionProgress.COLUMN_ContractStatus, X_C_SubscriptionProgress.CONTRACTSTATUS_Running)
+				.addEqualsFilter(I_C_SubscriptionProgress.COLUMN_EventType, X_C_SubscriptionProgress.EVENTTYPE_Delivery)
 				.addCompareFilter(I_C_SubscriptionProgress.COLUMN_EventDate, Operator.LESS_OR_EQUAL, eventDateMaximum)
 				.addEqualsFilter(I_C_SubscriptionProgress.COLUMN_M_ShipmentSchedule_ID, null) // we didn't do this in the very old code which i found
 				.addOnlyContextClient(ctx)

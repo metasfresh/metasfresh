@@ -36,6 +36,7 @@ import java.util.Set;
 
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.pricing.api.IPricingResult;
 import org.adempiere.pricing.exceptions.ProductNotOnPriceListException;
@@ -160,9 +161,11 @@ public class SubscriptionBL implements ISubscriptionBL
 		newTerm.setAD_User_InCharge_ID(order.getSalesRep_ID());
 
 		newTerm.setIsSimulation(cond.isSimulation());
-		newTerm.setM_Product_ID(ol.getM_Product_ID());
 
-		newTerm.setContractStatus(X_C_Flatrate_Term.CONTRACTSTATUS_NochNichtBegonnen);
+		newTerm.setM_Product_ID(ol.getM_Product_ID());
+		Services.get(IAttributeSetInstanceBL.class).cloneASI(ol, newTerm);
+
+		newTerm.setContractStatus(X_C_Flatrate_Term.CONTRACTSTATUS_Waiting);
 		newTerm.setDocAction(X_C_Flatrate_Term.DOCACTION_Complete);
 
 		newTerm.setPriceActual(ol.getPriceActual());
@@ -344,9 +347,11 @@ public class SubscriptionBL implements ISubscriptionBL
 			newTerm.setAD_User_InCharge_ID(Env.getAD_User_ID(ctx));
 		}
 		newTerm.setIsSimulation(cond.isSimulation());
-		newTerm.setM_Product_ID(olCandEffectiveValuesBL.getM_Product_Effective_ID(olCand));
 
-		newTerm.setContractStatus(X_C_Flatrate_Term.CONTRACTSTATUS_NochNichtBegonnen);
+		newTerm.setM_Product_ID(olCandEffectiveValuesBL.getM_Product_Effective_ID(olCand));
+		Services.get(IAttributeSetInstanceBL.class).cloneASI(olCand, newTerm);
+
+		newTerm.setContractStatus(X_C_Flatrate_Term.CONTRACTSTATUS_Waiting);
 		newTerm.setDocAction(X_C_Flatrate_Term.DOCACTION_Complete);
 
 		InterfaceWrapperHelper.save(newTerm);
@@ -469,7 +474,7 @@ public class SubscriptionBL implements ISubscriptionBL
 				.excludedStatus(X_C_SubscriptionProgress.STATUS_Ausgefuehrt)
 				.excludedStatus(X_C_SubscriptionProgress.STATUS_Ausgeliefert)
 				.build();
-		
+
 		final I_C_SubscriptionProgress sp = subscriptionPA.retrieveFirstSubscriptionProgress(query);
 		if (sp != null)
 		{
@@ -508,13 +513,13 @@ public class SubscriptionBL implements ISubscriptionBL
 
 	private boolean isPlannedStartPause(final I_C_SubscriptionProgress sp)
 	{
-		return X_C_SubscriptionProgress.EVENTTYPE_Abopause_Beginn.equals(sp.getEventType())
+		return X_C_SubscriptionProgress.EVENTTYPE_BeginOfPause.equals(sp.getEventType())
 				&& X_C_SubscriptionProgress.STATUS_Geplant.equals(sp.getStatus());
 	}
 
 	private boolean isPlannedEndPause(final I_C_SubscriptionProgress sp)
 	{
-		return X_C_SubscriptionProgress.EVENTTYPE_Abopause_Ende.equals(sp.getEventType())
+		return X_C_SubscriptionProgress.EVENTTYPE_EndOfPause.equals(sp.getEventType())
 				&& X_C_SubscriptionProgress.STATUS_Geplant.equals(sp.getStatus());
 	}
 
@@ -651,7 +656,7 @@ public class SubscriptionBL implements ISubscriptionBL
 		{
 			qtySum = qtySum.add(sp.getQty());
 
-			if (!X_C_SubscriptionProgress.EVENTTYPE_Lieferung.equals(sp.getEventType()))
+			if (!X_C_SubscriptionProgress.EVENTTYPE_Delivery.equals(sp.getEventType()))
 			{
 				throw new IllegalArgumentException(sp.toString() + " has event type " + sp.getEventType());
 			}
@@ -737,7 +742,7 @@ public class SubscriptionBL implements ISubscriptionBL
 	@Override
 	public void setSubscription(final I_C_OrderLine ol, final I_C_Flatrate_Conditions subscription)
 	{
-		Check.assume(X_C_Flatrate_Conditions.TYPE_CONDITIONS_Abonnement.equals(subscription.getType_Conditions()), "");
+		Check.assume(X_C_Flatrate_Conditions.TYPE_CONDITIONS_Subscription.equals(subscription.getType_Conditions()), "");
 		Check.assume(ol.getM_Product_ID() > 0, "");
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(ol);
@@ -804,10 +809,10 @@ public class SubscriptionBL implements ISubscriptionBL
 		delivery.setAD_Org_ID(term.getAD_Org_ID());
 		delivery.setC_Flatrate_Term(term);
 
-		delivery.setEventType(X_C_SubscriptionProgress.EVENTTYPE_Lieferung);
+		delivery.setEventType(X_C_SubscriptionProgress.EVENTTYPE_Delivery);
 		delivery.setStatus(X_C_SubscriptionProgress.STATUS_Geplant);
 
-		delivery.setContractStatus(X_C_SubscriptionProgress.CONTRACTSTATUS_Laufend);
+		delivery.setContractStatus(X_C_SubscriptionProgress.CONTRACTSTATUS_Running);
 
 		delivery.setEventDate(eventDate);
 

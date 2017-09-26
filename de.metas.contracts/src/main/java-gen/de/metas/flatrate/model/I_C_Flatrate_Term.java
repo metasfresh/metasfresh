@@ -100,7 +100,7 @@ public interface I_C_Flatrate_Term
 	 * Person, die bei einem fachlichen Problem vom System informiert wird.
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public void setAD_User_InCharge_ID (int AD_User_InCharge_ID);
@@ -110,7 +110,7 @@ public interface I_C_Flatrate_Term
 	 * Person, die bei einem fachlichen Problem vom System informiert wird.
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public int getAD_User_InCharge_ID();
@@ -318,6 +318,33 @@ public interface I_C_Flatrate_Term
     public static final String COLUMNNAME_C_Flatrate_Term_ID = "C_Flatrate_Term_ID";
 
 	/**
+	 * Set Nachfolgende Vertragsperiode.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_FlatrateTerm_Next_ID (int C_FlatrateTerm_Next_ID);
+
+	/**
+	 * Get Nachfolgende Vertragsperiode.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_FlatrateTerm_Next_ID();
+
+	public de.metas.flatrate.model.I_C_Flatrate_Term getC_FlatrateTerm_Next();
+
+	public void setC_FlatrateTerm_Next(de.metas.flatrate.model.I_C_Flatrate_Term C_FlatrateTerm_Next);
+
+    /** Column definition for C_FlatrateTerm_Next_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Flatrate_Term, de.metas.flatrate.model.I_C_Flatrate_Term> COLUMN_C_FlatrateTerm_Next_ID = new org.adempiere.model.ModelColumn<I_C_Flatrate_Term, de.metas.flatrate.model.I_C_Flatrate_Term>(I_C_Flatrate_Term.class, "C_FlatrateTerm_Next_ID", de.metas.flatrate.model.I_C_Flatrate_Term.class);
+    /** Column name C_FlatrateTerm_Next_ID */
+    public static final String COLUMNNAME_C_FlatrateTerm_Next_ID = "C_FlatrateTerm_Next_ID";
+
+	/**
 	 * Set Vertragsverlängerung/-übergang.
 	 * Regelt z.B. die Vertragslaufzeit, Kündigungsfristen, autmatische Verlängerung usw.
 	 *
@@ -350,63 +377,131 @@ public interface I_C_Flatrate_Term
     public static final String COLUMNNAME_C_Flatrate_Transition_ID = "C_Flatrate_Transition_ID";
 
 	/**
-	 * Set Nachfolgende Vertragsperiode.
+	 * Set Ändern oder Kündigen.
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Button
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setC_FlatrateTerm_Next_ID (int C_FlatrateTerm_Next_ID);
+	public void setChangeOrCancelTerm (java.lang.String ChangeOrCancelTerm);
 
 	/**
-	 * Get Nachfolgende Vertragsperiode.
+	 * Get Ändern oder Kündigen.
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Button
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getC_FlatrateTerm_Next_ID();
+	public java.lang.String getChangeOrCancelTerm();
 
-	public de.metas.flatrate.model.I_C_Flatrate_Term getC_FlatrateTerm_Next();
-
-	public void setC_FlatrateTerm_Next(de.metas.flatrate.model.I_C_Flatrate_Term C_FlatrateTerm_Next);
-
-    /** Column definition for C_FlatrateTerm_Next_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_Flatrate_Term, de.metas.flatrate.model.I_C_Flatrate_Term> COLUMN_C_FlatrateTerm_Next_ID = new org.adempiere.model.ModelColumn<I_C_Flatrate_Term, de.metas.flatrate.model.I_C_Flatrate_Term>(I_C_Flatrate_Term.class, "C_FlatrateTerm_Next_ID", de.metas.flatrate.model.I_C_Flatrate_Term.class);
-    /** Column name C_FlatrateTerm_Next_ID */
-    public static final String COLUMNNAME_C_FlatrateTerm_Next_ID = "C_FlatrateTerm_Next_ID";
+    /** Column definition for ChangeOrCancelTerm */
+    public static final org.adempiere.model.ModelColumn<I_C_Flatrate_Term, Object> COLUMN_ChangeOrCancelTerm = new org.adempiere.model.ModelColumn<I_C_Flatrate_Term, Object>(I_C_Flatrate_Term.class, "ChangeOrCancelTerm", null);
+    /** Column name ChangeOrCancelTerm */
+    public static final String COLUMNNAME_ChangeOrCancelTerm = "ChangeOrCancelTerm";
 
 	/**
-	 * Set Vertrags-Auftrag.
-	 * Auftrag, mit der der Vertrag abgeschlossen wurde
+	 * Set Vertrag Nr..
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setContractDocumentNo (java.lang.String ContractDocumentNo);
+
+	/**
+	 * Get Vertrag Nr..
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getContractDocumentNo();
+
+    /** Column definition for ContractDocumentNo */
+    public static final org.adempiere.model.ModelColumn<I_C_Flatrate_Term, Object> COLUMN_ContractDocumentNo = new org.adempiere.model.ModelColumn<I_C_Flatrate_Term, Object>(I_C_Flatrate_Term.class, "ContractDocumentNo", null);
+    /** Column name ContractDocumentNo */
+    public static final String COLUMNNAME_ContractDocumentNo = "ContractDocumentNo";
+
+	/**
+	 * Set Vertrags-Status.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setContractStatus (java.lang.String ContractStatus);
+
+	/**
+	 * Get Vertrags-Status.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getContractStatus();
+
+    /** Column definition for ContractStatus */
+    public static final org.adempiere.model.ModelColumn<I_C_Flatrate_Term, Object> COLUMN_ContractStatus = new org.adempiere.model.ModelColumn<I_C_Flatrate_Term, Object>(I_C_Flatrate_Term.class, "ContractStatus", null);
+    /** Column name ContractStatus */
+    public static final String COLUMNNAME_ContractStatus = "ContractStatus";
+
+	/**
+	 * Set Änderungs-Auftragszeile.
+	 * Auftragszeile, mit der der Vertrag vor dem regulären Ende gekündigt oder umgewandelt wurde
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
-	 * @deprecated Please don't use it because this is a virtual column
+	 * <br>Virtual Column: false
 	 */
-	@Deprecated
-	public void setC_Order_Term_ID (int C_Order_Term_ID);
+	public void setC_OrderLine_TermChange_ID (int C_OrderLine_TermChange_ID);
 
 	/**
-	 * Get Vertrags-Auftrag.
-	 * Auftrag, mit der der Vertrag abgeschlossen wurde
+	 * Get Änderungs-Auftragszeile.
+	 * Auftragszeile, mit der der Vertrag vor dem regulären Ende gekündigt oder umgewandelt wurde
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
+	 * <br>Virtual Column: false
 	 */
-	public int getC_Order_Term_ID();
+	public int getC_OrderLine_TermChange_ID();
 
-	public org.compiere.model.I_C_Order getC_Order_Term();
+	public org.compiere.model.I_C_OrderLine getC_OrderLine_TermChange();
 
-	@Deprecated
-	public void setC_Order_Term(org.compiere.model.I_C_Order C_Order_Term);
+	public void setC_OrderLine_TermChange(org.compiere.model.I_C_OrderLine C_OrderLine_TermChange);
 
-    /** Column definition for C_Order_Term_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_Flatrate_Term, org.compiere.model.I_C_Order> COLUMN_C_Order_Term_ID = new org.adempiere.model.ModelColumn<I_C_Flatrate_Term, org.compiere.model.I_C_Order>(I_C_Flatrate_Term.class, "C_Order_Term_ID", org.compiere.model.I_C_Order.class);
-    /** Column name C_Order_Term_ID */
-    public static final String COLUMNNAME_C_Order_Term_ID = "C_Order_Term_ID";
+    /** Column definition for C_OrderLine_TermChange_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Flatrate_Term, org.compiere.model.I_C_OrderLine> COLUMN_C_OrderLine_TermChange_ID = new org.adempiere.model.ModelColumn<I_C_Flatrate_Term, org.compiere.model.I_C_OrderLine>(I_C_Flatrate_Term.class, "C_OrderLine_TermChange_ID", org.compiere.model.I_C_OrderLine.class);
+    /** Column name C_OrderLine_TermChange_ID */
+    public static final String COLUMNNAME_C_OrderLine_TermChange_ID = "C_OrderLine_TermChange_ID";
+
+	/**
+	 * Set Vertrags-Auftragszeile.
+	 * Auftragszeile, mit der der Vertrag abgeschlossen wurde
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_OrderLine_Term_ID (int C_OrderLine_Term_ID);
+
+	/**
+	 * Get Vertrags-Auftragszeile.
+	 * Auftragszeile, mit der der Vertrag abgeschlossen wurde
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_OrderLine_Term_ID();
+
+	public org.compiere.model.I_C_OrderLine getC_OrderLine_Term();
+
+	public void setC_OrderLine_Term(org.compiere.model.I_C_OrderLine C_OrderLine_Term);
+
+    /** Column definition for C_OrderLine_Term_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Flatrate_Term, org.compiere.model.I_C_OrderLine> COLUMN_C_OrderLine_Term_ID = new org.adempiere.model.ModelColumn<I_C_Flatrate_Term, org.compiere.model.I_C_OrderLine>(I_C_Flatrate_Term.class, "C_OrderLine_Term_ID", org.compiere.model.I_C_OrderLine.class);
+    /** Column name C_OrderLine_Term_ID */
+    public static final String COLUMNNAME_C_OrderLine_Term_ID = "C_OrderLine_Term_ID";
 
 	/**
 	 * Set Änderungs-Auftrag.
@@ -441,62 +536,66 @@ public interface I_C_Flatrate_Term
     public static final String COLUMNNAME_C_Order_TermChange_ID = "C_Order_TermChange_ID";
 
 	/**
-	 * Set Vertrags-Auftragszeile.
-	 * Auftragszeile, mit der der Vertrag abgeschlossen wurde
+	 * Set Vertrags-Auftrag.
+	 * Auftrag, mit der der Vertrag abgeschlossen wurde
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
+	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
 	 */
-	public void setC_OrderLine_Term_ID (int C_OrderLine_Term_ID);
+	@Deprecated
+	public void setC_Order_Term_ID (int C_Order_Term_ID);
 
 	/**
-	 * Get Vertrags-Auftragszeile.
-	 * Auftragszeile, mit der der Vertrag abgeschlossen wurde
+	 * Get Vertrags-Auftrag.
+	 * Auftrag, mit der der Vertrag abgeschlossen wurde
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
+	 * <br>Virtual Column: true
 	 */
-	public int getC_OrderLine_Term_ID();
+	public int getC_Order_Term_ID();
 
-	public org.compiere.model.I_C_OrderLine getC_OrderLine_Term();
+	public org.compiere.model.I_C_Order getC_Order_Term();
 
-	public void setC_OrderLine_Term(org.compiere.model.I_C_OrderLine C_OrderLine_Term);
+	@Deprecated
+	public void setC_Order_Term(org.compiere.model.I_C_Order C_Order_Term);
 
-    /** Column definition for C_OrderLine_Term_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_Flatrate_Term, org.compiere.model.I_C_OrderLine> COLUMN_C_OrderLine_Term_ID = new org.adempiere.model.ModelColumn<I_C_Flatrate_Term, org.compiere.model.I_C_OrderLine>(I_C_Flatrate_Term.class, "C_OrderLine_Term_ID", org.compiere.model.I_C_OrderLine.class);
-    /** Column name C_OrderLine_Term_ID */
-    public static final String COLUMNNAME_C_OrderLine_Term_ID = "C_OrderLine_Term_ID";
+    /** Column definition for C_Order_Term_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Flatrate_Term, org.compiere.model.I_C_Order> COLUMN_C_Order_Term_ID = new org.adempiere.model.ModelColumn<I_C_Flatrate_Term, org.compiere.model.I_C_Order>(I_C_Flatrate_Term.class, "C_Order_Term_ID", org.compiere.model.I_C_Order.class);
+    /** Column name C_Order_Term_ID */
+    public static final String COLUMNNAME_C_Order_Term_ID = "C_Order_Term_ID";
 
 	/**
-	 * Set Änderungs-Auftragszeile.
-	 * Auftragszeile, mit der der Vertrag vor dem regulären Ende gekündigt oder umgewandelt wurde
+	 * Get Erstellt.
+	 * Datum, an dem dieser Eintrag erstellt wurde
 	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
+	 * <br>Type: DateTime
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setC_OrderLine_TermChange_ID (int C_OrderLine_TermChange_ID);
+	public java.sql.Timestamp getCreated();
+
+    /** Column definition for Created */
+    public static final org.adempiere.model.ModelColumn<I_C_Flatrate_Term, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_C_Flatrate_Term, Object>(I_C_Flatrate_Term.class, "Created", null);
+    /** Column name Created */
+    public static final String COLUMNNAME_Created = "Created";
 
 	/**
-	 * Get Änderungs-Auftragszeile.
-	 * Auftragszeile, mit der der Vertrag vor dem regulären Ende gekündigt oder umgewandelt wurde
+	 * Get Erstellt durch.
+	 * Nutzer, der diesen Eintrag erstellt hat
 	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
+	 * <br>Type: Table
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getC_OrderLine_TermChange_ID();
+	public int getCreatedBy();
 
-	public org.compiere.model.I_C_OrderLine getC_OrderLine_TermChange();
-
-	public void setC_OrderLine_TermChange(org.compiere.model.I_C_OrderLine C_OrderLine_TermChange);
-
-    /** Column definition for C_OrderLine_TermChange_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_Flatrate_Term, org.compiere.model.I_C_OrderLine> COLUMN_C_OrderLine_TermChange_ID = new org.adempiere.model.ModelColumn<I_C_Flatrate_Term, org.compiere.model.I_C_OrderLine>(I_C_Flatrate_Term.class, "C_OrderLine_TermChange_ID", org.compiere.model.I_C_OrderLine.class);
-    /** Column name C_OrderLine_TermChange_ID */
-    public static final String COLUMNNAME_C_OrderLine_TermChange_ID = "C_OrderLine_TermChange_ID";
+    /** Column definition for CreatedBy */
+    public static final org.adempiere.model.ModelColumn<I_C_Flatrate_Term, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_C_Flatrate_Term, org.compiere.model.I_AD_User>(I_C_Flatrate_Term.class, "CreatedBy", org.compiere.model.I_AD_User.class);
+    /** Column name CreatedBy */
+    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
 	 * Set Maßeinheit.
@@ -528,80 +627,27 @@ public interface I_C_Flatrate_Term
     public static final String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
 
 	/**
-	 * Set Ändern oder Kündigen.
+	 * Set Vertrag Datum.
 	 *
-	 * <br>Type: Button
+	 * <br>Type: Date
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setChangeOrCancelTerm (java.lang.String ChangeOrCancelTerm);
+	public void setDateContracted (java.sql.Timestamp DateContracted);
 
 	/**
-	 * Get Ändern oder Kündigen.
+	 * Get Vertrag Datum.
 	 *
-	 * <br>Type: Button
+	 * <br>Type: Date
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getChangeOrCancelTerm();
+	public java.sql.Timestamp getDateContracted();
 
-    /** Column definition for ChangeOrCancelTerm */
-    public static final org.adempiere.model.ModelColumn<I_C_Flatrate_Term, Object> COLUMN_ChangeOrCancelTerm = new org.adempiere.model.ModelColumn<I_C_Flatrate_Term, Object>(I_C_Flatrate_Term.class, "ChangeOrCancelTerm", null);
-    /** Column name ChangeOrCancelTerm */
-    public static final String COLUMNNAME_ChangeOrCancelTerm = "ChangeOrCancelTerm";
-
-	/**
-	 * Set Vertrags-Status.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setContractStatus (java.lang.String ContractStatus);
-
-	/**
-	 * Get Vertrags-Status.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getContractStatus();
-
-    /** Column definition for ContractStatus */
-    public static final org.adempiere.model.ModelColumn<I_C_Flatrate_Term, Object> COLUMN_ContractStatus = new org.adempiere.model.ModelColumn<I_C_Flatrate_Term, Object>(I_C_Flatrate_Term.class, "ContractStatus", null);
-    /** Column name ContractStatus */
-    public static final String COLUMNNAME_ContractStatus = "ContractStatus";
-
-	/**
-	 * Get Erstellt.
-	 * Datum, an dem dieser Eintrag erstellt wurde
-	 *
-	 * <br>Type: DateTime
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public java.sql.Timestamp getCreated();
-
-    /** Column definition for Created */
-    public static final org.adempiere.model.ModelColumn<I_C_Flatrate_Term, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_C_Flatrate_Term, Object>(I_C_Flatrate_Term.class, "Created", null);
-    /** Column name Created */
-    public static final String COLUMNNAME_Created = "Created";
-
-	/**
-	 * Get Erstellt durch.
-	 * Nutzer, der diesen Eintrag erstellt hat
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getCreatedBy();
-
-    /** Column definition for CreatedBy */
-    public static final org.adempiere.model.ModelColumn<I_C_Flatrate_Term, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_C_Flatrate_Term, org.compiere.model.I_AD_User>(I_C_Flatrate_Term.class, "CreatedBy", org.compiere.model.I_AD_User.class);
-    /** Column name CreatedBy */
-    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+    /** Column definition for DateContracted */
+    public static final org.adempiere.model.ModelColumn<I_C_Flatrate_Term, Object> COLUMN_DateContracted = new org.adempiere.model.ModelColumn<I_C_Flatrate_Term, Object>(I_C_Flatrate_Term.class, "DateContracted", null);
+    /** Column name DateContracted */
+    public static final String COLUMNNAME_DateContracted = "DateContracted";
 
 	/**
 	 * Set Lieferart.
@@ -989,6 +1035,81 @@ public interface I_C_Flatrate_Term
     public static final String COLUMNNAME_IsSimulation = "IsSimulation";
 
 	/**
+	 * Set Master End Date.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setMasterEndDate (java.sql.Timestamp MasterEndDate);
+
+	/**
+	 * Get Master End Date.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.sql.Timestamp getMasterEndDate();
+
+    /** Column definition for MasterEndDate */
+    public static final org.adempiere.model.ModelColumn<I_C_Flatrate_Term, Object> COLUMN_MasterEndDate = new org.adempiere.model.ModelColumn<I_C_Flatrate_Term, Object>(I_C_Flatrate_Term.class, "MasterEndDate", null);
+    /** Column name MasterEndDate */
+    public static final String COLUMNNAME_MasterEndDate = "MasterEndDate";
+
+	/**
+	 * Set Master Start Date.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setMasterStartDate (java.sql.Timestamp MasterStartDate);
+
+	/**
+	 * Get Master Start Date.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.sql.Timestamp getMasterStartDate();
+
+    /** Column definition for MasterStartDate */
+    public static final org.adempiere.model.ModelColumn<I_C_Flatrate_Term, Object> COLUMN_MasterStartDate = new org.adempiere.model.ModelColumn<I_C_Flatrate_Term, Object>(I_C_Flatrate_Term.class, "MasterStartDate", null);
+    /** Column name MasterStartDate */
+    public static final String COLUMNNAME_MasterStartDate = "MasterStartDate";
+
+	/**
+	 * Set Merkmale.
+	 * Merkmals Ausprägungen zum Produkt
+	 *
+	 * <br>Type: PAttribute
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setM_AttributeSetInstance_ID (int M_AttributeSetInstance_ID);
+
+	/**
+	 * Get Merkmale.
+	 * Merkmals Ausprägungen zum Produkt
+	 *
+	 * <br>Type: PAttribute
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getM_AttributeSetInstance_ID();
+
+	public org.compiere.model.I_M_AttributeSetInstance getM_AttributeSetInstance();
+
+	public void setM_AttributeSetInstance(org.compiere.model.I_M_AttributeSetInstance M_AttributeSetInstance);
+
+    /** Column definition for M_AttributeSetInstance_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Flatrate_Term, org.compiere.model.I_M_AttributeSetInstance> COLUMN_M_AttributeSetInstance_ID = new org.adempiere.model.ModelColumn<I_C_Flatrate_Term, org.compiere.model.I_M_AttributeSetInstance>(I_C_Flatrate_Term.class, "M_AttributeSetInstance_ID", org.compiere.model.I_M_AttributeSetInstance.class);
+    /** Column name M_AttributeSetInstance_ID */
+    public static final String COLUMNNAME_M_AttributeSetInstance_ID = "M_AttributeSetInstance_ID";
+
+	/**
 	 * Set Preissystem.
 	 * Ein Preissystem enthält beliebig viele, Länder-abhängige Preislisten.
 	 *
@@ -1045,52 +1166,6 @@ public interface I_C_Flatrate_Term
     public static final org.adempiere.model.ModelColumn<I_C_Flatrate_Term, org.compiere.model.I_M_Product> COLUMN_M_Product_ID = new org.adempiere.model.ModelColumn<I_C_Flatrate_Term, org.compiere.model.I_M_Product>(I_C_Flatrate_Term.class, "M_Product_ID", org.compiere.model.I_M_Product.class);
     /** Column name M_Product_ID */
     public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
-
-	/**
-	 * Set Master End Date.
-	 *
-	 * <br>Type: Date
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setMasterEndDate (java.sql.Timestamp MasterEndDate);
-
-	/**
-	 * Get Master End Date.
-	 *
-	 * <br>Type: Date
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.sql.Timestamp getMasterEndDate();
-
-    /** Column definition for MasterEndDate */
-    public static final org.adempiere.model.ModelColumn<I_C_Flatrate_Term, Object> COLUMN_MasterEndDate = new org.adempiere.model.ModelColumn<I_C_Flatrate_Term, Object>(I_C_Flatrate_Term.class, "MasterEndDate", null);
-    /** Column name MasterEndDate */
-    public static final String COLUMNNAME_MasterEndDate = "MasterEndDate";
-
-	/**
-	 * Set Master Start Date.
-	 *
-	 * <br>Type: Date
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setMasterStartDate (java.sql.Timestamp MasterStartDate);
-
-	/**
-	 * Get Master Start Date.
-	 *
-	 * <br>Type: Date
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.sql.Timestamp getMasterStartDate();
-
-    /** Column definition for MasterStartDate */
-    public static final org.adempiere.model.ModelColumn<I_C_Flatrate_Term, Object> COLUMN_MasterStartDate = new org.adempiere.model.ModelColumn<I_C_Flatrate_Term, Object>(I_C_Flatrate_Term.class, "MasterStartDate", null);
-    /** Column name MasterStartDate */
-    public static final String COLUMNNAME_MasterStartDate = "MasterStartDate";
 
 	/**
 	 * Set Notiz.
