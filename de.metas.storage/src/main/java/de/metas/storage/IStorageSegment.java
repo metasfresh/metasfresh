@@ -41,12 +41,17 @@ import com.google.common.collect.ImmutableSet;
 public interface IStorageSegment
 {
 	Integer ANY = null;
-	
+
 	Set<Integer> getM_Product_IDs();
+
+	Set<Integer> getM_Locator_IDs();
 
 	Set<Integer> getC_BPartner_IDs();
 
-	Set<Integer> getM_Locator_IDs();
+	default Set<Integer> getBill_BPartner_IDs()
+	{
+		return ImmutableSet.of();
+	}
 
 	default Set<IStorageAttributeSegment> getAttributes()
 	{

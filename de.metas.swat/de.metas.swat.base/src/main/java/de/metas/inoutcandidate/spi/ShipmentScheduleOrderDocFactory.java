@@ -40,7 +40,6 @@ public class ShipmentScheduleOrderDocFactory
 		return ShipmentScheduleOrderDoc.builder()
 				.preparationDate(getOrderPreparationDate(shipmentSchedule))
 				.deliveryDate(getOrderLineDeliveryDate(shipmentSchedule))
-				.billPartner(shipmentSchedule.getC_OrderLine().getC_Order().getBill_BPartner())
 				.build();
 	}
 

@@ -243,6 +243,35 @@ public interface I_M_ShipmentSchedule
     public static final String COLUMNNAME_AllowConsolidateInOut = "AllowConsolidateInOut";
 
 	/**
+	 * Set Rechnungspartner.
+	 * Geschäftspartners für die Rechnungsstellung
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setBill_BPartner_ID (int Bill_BPartner_ID);
+
+	/**
+	 * Get Rechnungspartner.
+	 * Geschäftspartners für die Rechnungsstellung
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getBill_BPartner_ID();
+
+	public org.compiere.model.I_C_BPartner getBill_BPartner();
+
+	public void setBill_BPartner(org.compiere.model.I_C_BPartner Bill_BPartner);
+
+    /** Column definition for Bill_BPartner_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, org.compiere.model.I_C_BPartner> COLUMN_Bill_BPartner_ID = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, org.compiere.model.I_C_BPartner>(I_M_ShipmentSchedule.class, "Bill_BPartner_ID", org.compiere.model.I_C_BPartner.class);
+    /** Column name Bill_BPartner_ID */
+    public static final String COLUMNNAME_Bill_BPartner_ID = "Bill_BPartner_ID";
+
+	/**
 	 * Set Anschrift-Text.
 	 *
 	 * <br>Type: Text

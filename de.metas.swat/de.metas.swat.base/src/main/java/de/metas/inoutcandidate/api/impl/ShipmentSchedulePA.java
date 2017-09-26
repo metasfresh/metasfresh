@@ -828,7 +828,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 	/**
 	 * Build {@link I_M_ShipmentSchedule} where clause based on given segment.
 	 *
-	 * @param ssAlias {@link I_M_ShipmentSchedule#Table_Name}'s alias
+	 * @param ssAlias {@link I_M_ShipmentSchedule#Table_Name}'s alias with trailing dot
 	 * @param storageSegment
 	 * @param sqlParams output SQL parameters
 	 * @return where clause or <code>null</code>
@@ -876,6 +876,17 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 			final String bpartnerColumnName = "COALESCE(" + ssAlias + I_M_ShipmentSchedule.COLUMNNAME_C_BPartner_Override_ID + ", " + ssAlias + I_M_ShipmentSchedule.COLUMNNAME_C_BPartner_ID + ")";
 			whereClause.append("\n\t AND ");
 			whereClause.append("(").append(DB.buildSqlList(bpartnerColumnName, bpartnerIds, sqlParams)).append(")");
+		}
+		
+		//
+		// Bill BPartners
+		final Set<Integer> billBPartnerIds = storageSegment.getBill_BPartner_IDs();
+		final boolean resetAllBillBPartners = billBPartnerIds.isEmpty() || billBPartnerIds.contains(0) || billBPartnerIds.contains(-1) || billBPartnerIds.contains(IStorageSegment.ANY);
+		if(!resetAllBillBPartners)
+		{
+			final String billBPartnerColumnName = ssAlias + I_M_ShipmentSchedule.COLUMNNAME_Bill_BPartner_ID;
+			whereClause.append("\n\t AND ");
+			whereClause.append("(").append(DB.buildSqlList(billBPartnerColumnName, billBPartnerIds, sqlParams)).append(")");
 		}
 
 		//

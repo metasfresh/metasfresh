@@ -40,7 +40,7 @@ public class ShipmentConstraintsBL implements IShipmentConstraintsBL
 	public void createConstraint(final ShipmentConstraintCreateRequest request)
 	{
 		final I_M_Shipment_Constraint constraintPO = InterfaceWrapperHelper.newInstance(I_M_Shipment_Constraint.class);
-		constraintPO.setC_BPartner_ID(request.getBpartnerId());
+		constraintPO.setBill_BPartner_ID(request.getBillPartnerId());
 		constraintPO.setSourceDoc_Table_ID(request.getSourceDocRef().getAD_Table_ID());
 		constraintPO.setSourceDoc_Record_ID(request.getSourceDocRef().getRecord_ID());
 
@@ -60,14 +60,14 @@ public class ShipmentConstraintsBL implements IShipmentConstraintsBL
 
 	@Override
 	@Cached(cacheName = I_M_Shipment_Constraint.Table_Name + "#IsDeliveryStop")
-	public int getDeliveryStopShipmentConstraintId(final int bpartnerId)
+	public int getDeliveryStopShipmentConstraintId(final int billBPartnerId)
 	{
-		Preconditions.checkArgument(bpartnerId > 0, "bpartnerId > 0");
+		Preconditions.checkArgument(billBPartnerId > 0, "bpartnerId > 0");
 
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_M_Shipment_Constraint.class, PlainContextAware.newOutOfTrx())
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_Shipment_Constraint.COLUMN_C_BPartner_ID, bpartnerId)
+				.addEqualsFilter(I_M_Shipment_Constraint.COLUMN_Bill_BPartner_ID, billBPartnerId)
 				.addEqualsFilter(I_M_Shipment_Constraint.COLUMN_IsDeliveryStop, true)
 				.orderBy()
 				.addColumn(I_M_Shipment_Constraint.COLUMN_M_Shipment_Constraint_ID)

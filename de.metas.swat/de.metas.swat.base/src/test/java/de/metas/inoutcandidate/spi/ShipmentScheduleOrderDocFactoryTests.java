@@ -73,7 +73,6 @@ public class ShipmentScheduleOrderDocFactoryTests
 		sched.setRecord_ID(ref.getRecord_ID());
 
 		final ShipmentScheduleOrderDoc result = new ShipmentScheduleOrderDocFactory().createFor(sched);
-		assertThat(result.getBillPartner()).isEqualTo(billBPartner);
 		assertThat(result.getDeliveryDate()).isEqualTo(deliveryDate);
 		assertThat(result.getPreparationDate()).isNull();
 	}

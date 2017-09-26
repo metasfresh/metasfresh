@@ -15,7 +15,7 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1778728472L;
+	private static final long serialVersionUID = -2051329467L;
 
     /** Standard Constructor */
     public X_M_ShipmentSchedule (Properties ctx, int M_ShipmentSchedule_ID, String trxName)
@@ -24,6 +24,7 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
       /** if (M_ShipmentSchedule_ID == 0)
         {
 			setAD_Table_ID (0);
+			setBill_BPartner_ID (0);
 			setBPartnerAddress (null);
 			setC_BPartner_ID (0);
 			setC_BPartner_Location_ID (0);
@@ -244,6 +245,43 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 			return "Y".equals(oo);
 		}
 		return false;
+	}
+
+	@Override
+	public org.compiere.model.I_C_BPartner getBill_BPartner() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_Bill_BPartner_ID, org.compiere.model.I_C_BPartner.class);
+	}
+
+	@Override
+	public void setBill_BPartner(org.compiere.model.I_C_BPartner Bill_BPartner)
+	{
+		set_ValueFromPO(COLUMNNAME_Bill_BPartner_ID, org.compiere.model.I_C_BPartner.class, Bill_BPartner);
+	}
+
+	/** Set Rechnungspartner.
+		@param Bill_BPartner_ID 
+		Geschäftspartners für die Rechnungsstellung
+	  */
+	@Override
+	public void setBill_BPartner_ID (int Bill_BPartner_ID)
+	{
+		if (Bill_BPartner_ID < 1) 
+			set_Value (COLUMNNAME_Bill_BPartner_ID, null);
+		else 
+			set_Value (COLUMNNAME_Bill_BPartner_ID, Integer.valueOf(Bill_BPartner_ID));
+	}
+
+	/** Get Rechnungspartner.
+		@return Geschäftspartners für die Rechnungsstellung
+	  */
+	@Override
+	public int getBill_BPartner_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Bill_BPartner_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	/** Set Anschrift-Text.

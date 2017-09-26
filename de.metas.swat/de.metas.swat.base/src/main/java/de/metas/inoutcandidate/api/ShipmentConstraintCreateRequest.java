@@ -33,22 +33,19 @@ import lombok.Value;
 @Value
 public class ShipmentConstraintCreateRequest
 {
-	private final int bpartnerId;
+	private final int billPartnerId;
 	private final TableRecordReference sourceDocRef;
 	
 	private final boolean deliveryStop;
 
 	@Builder
-	public ShipmentConstraintCreateRequest(final int bpartnerId, @NonNull final TableRecordReference sourceDocRef, final boolean deliveryStop)
+	public ShipmentConstraintCreateRequest(final int billPartnerId, @NonNull final TableRecordReference sourceDocRef, final boolean deliveryStop)
 	{
-		Preconditions.checkArgument(bpartnerId > 0, "bpartnerId > 0");
+		Preconditions.checkArgument(billPartnerId > 0, "billPartnerId > 0");
 		Preconditions.checkArgument(!deliveryStop, "at least one constraint shall be set");
 		
-		this.bpartnerId = bpartnerId;
+		this.billPartnerId = billPartnerId;
 		this.sourceDocRef = sourceDocRef;
 		this.deliveryStop = deliveryStop;
 	}
-	
-	
-	 
 }

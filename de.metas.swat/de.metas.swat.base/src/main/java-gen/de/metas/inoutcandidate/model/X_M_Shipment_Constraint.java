@@ -14,7 +14,7 @@ public class X_M_Shipment_Constraint extends org.compiere.model.PO implements I_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1010144454L;
+	private static final long serialVersionUID = -193814760L;
 
     /** Standard Constructor */
     public X_M_Shipment_Constraint (Properties ctx, int M_Shipment_Constraint_ID, String trxName)
@@ -43,37 +43,37 @@ public class X_M_Shipment_Constraint extends org.compiere.model.PO implements I_
     }
 
 	@Override
-	public org.compiere.model.I_C_BPartner getC_BPartner() throws RuntimeException
+	public org.compiere.model.I_C_BPartner getBill_BPartner() throws RuntimeException
 	{
-		return get_ValueAsPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class);
+		return get_ValueAsPO(COLUMNNAME_Bill_BPartner_ID, org.compiere.model.I_C_BPartner.class);
 	}
 
 	@Override
-	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner)
+	public void setBill_BPartner(org.compiere.model.I_C_BPartner Bill_BPartner)
 	{
-		set_ValueFromPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class, C_BPartner);
+		set_ValueFromPO(COLUMNNAME_Bill_BPartner_ID, org.compiere.model.I_C_BPartner.class, Bill_BPartner);
 	}
 
-	/** Set Geschäftspartner.
-		@param C_BPartner_ID 
-		Bezeichnet einen Geschäftspartner
+	/** Set Rechnungspartner.
+		@param Bill_BPartner_ID 
+		Geschäftspartners für die Rechnungsstellung
 	  */
 	@Override
-	public void setC_BPartner_ID (int C_BPartner_ID)
+	public void setBill_BPartner_ID (int Bill_BPartner_ID)
 	{
-		if (C_BPartner_ID < 1) 
-			set_Value (COLUMNNAME_C_BPartner_ID, null);
+		if (Bill_BPartner_ID < 1) 
+			set_Value (COLUMNNAME_Bill_BPartner_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_BPartner_ID, Integer.valueOf(C_BPartner_ID));
+			set_Value (COLUMNNAME_Bill_BPartner_ID, Integer.valueOf(Bill_BPartner_ID));
 	}
 
-	/** Get Geschäftspartner.
-		@return Bezeichnet einen Geschäftspartner
+	/** Get Rechnungspartner.
+		@return Geschäftspartners für die Rechnungsstellung
 	  */
 	@Override
-	public int getC_BPartner_ID () 
+	public int getBill_BPartner_ID () 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_Bill_BPartner_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

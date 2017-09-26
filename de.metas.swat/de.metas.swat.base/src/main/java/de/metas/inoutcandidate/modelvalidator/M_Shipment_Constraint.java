@@ -72,7 +72,8 @@ public class M_Shipment_Constraint
 	private static IStorageSegment createStorageSegment(final I_M_Shipment_Constraint constraint)
 	{
 		return ImmutableStorageSegment.builder()
-				.C_BPartner_ID(constraint.getC_BPartner_ID())
+				.anyC_BPartner_ID()
+				.Bill_BPartner_ID(constraint.getBill_BPartner_ID())
 				.anyM_Product_ID()
 				.anyM_Locator_ID()
 				.build();

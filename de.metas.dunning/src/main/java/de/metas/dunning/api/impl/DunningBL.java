@@ -325,7 +325,7 @@ public class DunningBL implements IDunningBL
 		{
 			final IShipmentConstraintsBL shipmentConstraintsBL = Services.get(IShipmentConstraintsBL.class);
 			shipmentConstraintsBL.createConstraint(ShipmentConstraintCreateRequest.builder()
-					.bpartnerId(dunningDoc.getC_BPartner_ID())
+					.billPartnerId(dunningDoc.getC_BPartner_ID())
 					.sourceDocRef(TableRecordReference.of(dunningDoc))
 					.deliveryStop(true)
 					.build());

@@ -29,7 +29,11 @@ public class ImmutableStorageSegment implements IStorageSegment
 	 */
 	@Singular
 	private final Set<Integer> C_BPartner_IDs;
+	
+	@Singular
+	private final Set<Integer> Bill_BPartner_IDs;
 
+	
 	/**
 	 * Never {@code null}. Empty collection means "not constrained on any locators".
 	 */

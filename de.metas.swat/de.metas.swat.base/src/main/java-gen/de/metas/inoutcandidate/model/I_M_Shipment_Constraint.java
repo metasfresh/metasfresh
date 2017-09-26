@@ -69,33 +69,33 @@ public interface I_M_Shipment_Constraint
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Geschäftspartner.
-	 * Bezeichnet einen Geschäftspartner
+	 * Set Rechnungspartner.
+	 * Geschäftspartners für die Rechnungsstellung
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setC_BPartner_ID (int C_BPartner_ID);
+	public void setBill_BPartner_ID (int Bill_BPartner_ID);
 
 	/**
-	 * Get Geschäftspartner.
-	 * Bezeichnet einen Geschäftspartner
+	 * Get Rechnungspartner.
+	 * Geschäftspartners für die Rechnungsstellung
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getC_BPartner_ID();
+	public int getBill_BPartner_ID();
 
-	public org.compiere.model.I_C_BPartner getC_BPartner();
+	public org.compiere.model.I_C_BPartner getBill_BPartner();
 
-	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner);
+	public void setBill_BPartner(org.compiere.model.I_C_BPartner Bill_BPartner);
 
-    /** Column definition for C_BPartner_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_Shipment_Constraint, org.compiere.model.I_C_BPartner> COLUMN_C_BPartner_ID = new org.adempiere.model.ModelColumn<I_M_Shipment_Constraint, org.compiere.model.I_C_BPartner>(I_M_Shipment_Constraint.class, "C_BPartner_ID", org.compiere.model.I_C_BPartner.class);
-    /** Column name C_BPartner_ID */
-    public static final String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
+    /** Column definition for Bill_BPartner_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_Shipment_Constraint, org.compiere.model.I_C_BPartner> COLUMN_Bill_BPartner_ID = new org.adempiere.model.ModelColumn<I_M_Shipment_Constraint, org.compiere.model.I_C_BPartner>(I_M_Shipment_Constraint.class, "Bill_BPartner_ID", org.compiere.model.I_C_BPartner.class);
+    /** Column name Bill_BPartner_ID */
+    public static final String COLUMNNAME_Bill_BPartner_ID = "Bill_BPartner_ID";
 
 	/**
 	 * Get Erstellt.

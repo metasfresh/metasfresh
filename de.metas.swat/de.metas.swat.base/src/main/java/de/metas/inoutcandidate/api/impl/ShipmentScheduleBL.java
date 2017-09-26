@@ -179,8 +179,8 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 		for (final OlAndSched olAndSched : olsAndScheds)
 		{
 			final I_M_ShipmentSchedule sched = olAndSched.getSched();
-			final int bpartnerId = shipmentScheduleEffectiveBL.getC_BPartner_ID(sched);
-			final int deliveryStopShipmentConstraintId = shipmentConstraintsBL.getDeliveryStopShipmentConstraintId(bpartnerId);
+			final int billBPartnerId = sched.getBill_BPartner_ID();
+			final int deliveryStopShipmentConstraintId = shipmentConstraintsBL.getDeliveryStopShipmentConstraintId(billBPartnerId);
 			final boolean isDeliveryStop = deliveryStopShipmentConstraintId > 0;
 			if(isDeliveryStop)
 			{
