@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
-<!-- 2017-09-26T13:59:15 -->
+<!-- 2017-09-26T16:15:23 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_details" pageWidth="596" pageHeight="842" columnWidth="596" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/sales/picking/report" uuid="771c1e7b-347d-4c78-a5e0-6fb78e3c3b48">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -237,6 +237,14 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_Picking_Details( $P{c_order_
 				<textFieldExpression><![CDATA[$F{qtydelivered}]]></textFieldExpression>
 				<patternExpression><![CDATA[$F{qtypattern}]]></patternExpression>
 			</textField>
+			<image scaleImage="FillFrame" hAlign="Left">
+				<reportElement x="37" y="0" width="80" height="24" uuid="5e34a955-72b0-4b5d-9e4a-6ebda78fbb87">
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+				</reportElement>
+				<imageExpression><![CDATA[new java.net.URL( $P{barcodeURL} + "?Content=" +
+$F{upc} +
+"&Format=CODE_128&Width=570&Height=140" )]]></imageExpression>
+			</image>
 		</band>
 	</detail>
 	<columnFooter>
