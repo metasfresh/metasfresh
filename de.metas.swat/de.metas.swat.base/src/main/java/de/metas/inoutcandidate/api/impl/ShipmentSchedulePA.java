@@ -772,13 +772,6 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 		sqlWhereClause.append(ssAlias + I_M_ShipmentSchedule.COLUMNNAME_Processed).append("=?");
 		sqlParams.add(false);
 
-		// task 08749: don't invalidate "forced" scheds, because there QtyToDeliver won't change anyways
-		sqlWhereClause.append(" AND COALESCE(")
-				.append(ssAlias + I_M_ShipmentSchedule.COLUMNNAME_DeliveryRule_Override + ",")
-				.append(ssAlias + I_M_ShipmentSchedule.COLUMNNAME_DeliveryRule)
-				.append(") != ?");
-		sqlParams.add(X_M_ShipmentSchedule.DELIVERYRULE_Force);
-
 		//
 		// Filter shipment schedules by segments
 		final StringBuilder sqlWhereClause_AllSegments = new StringBuilder();
