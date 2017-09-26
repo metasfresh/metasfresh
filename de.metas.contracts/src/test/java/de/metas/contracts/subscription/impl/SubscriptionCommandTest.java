@@ -8,7 +8,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.sql.Timestamp;
 import java.util.List;
 
-import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.util.Services;
@@ -18,6 +17,7 @@ import org.junit.Rule;
 import org.junit.Test;
 
 import de.metas.contracts.subscription.ISubscriptionDAO;
+import de.metas.contracts.subscription.ISubscriptionDAO.SubscriptionProgressQuery;
 import de.metas.flatrate.model.I_C_Flatrate_Term;
 import de.metas.flatrate.model.I_C_SubscriptionProgress;
 import de.metas.flatrate.model.X_C_SubscriptionProgress;
@@ -51,6 +51,9 @@ public class SubscriptionCommandTest
 
 	private ISubscriptionDAO subscriptionDAO;
 
+	private final Timestamp pauseFrom = TimeUtil.parseTimestamp("2017-09-12");
+	private final Timestamp pauseUntil = TimeUtil.parseTimestamp("2017-10-12");
+
 	private I_C_Flatrate_Term term;
 	private I_C_SubscriptionProgress first;
 	private I_C_SubscriptionProgress middle;
@@ -65,72 +68,121 @@ public class SubscriptionCommandTest
 		term = newInstance(I_C_Flatrate_Term.class);
 		save(term);
 
-		first = createSubscriptionProgress(term, "2017-09-10", 1);
-		middle = createSubscriptionProgress(term, "2017-10-10", 2);
-		last = createSubscriptionProgress(term, "2017-11-10", 3);
+		first = SubscriptionTestUtil.createDeliverySubscriptionProgress(term, "2017-09-10", 1);
+		middle = SubscriptionTestUtil.createDeliverySubscriptionProgress(term, "2017-10-10", 2);
+		last = SubscriptionTestUtil.createDeliverySubscriptionProgress(term, "2017-11-10", 3);
 
-		assertThat(subscriptionDAO.retrieveSubscriptionProgress(term)).hasSize(3); // guard
-	}
-
-	private I_C_SubscriptionProgress createSubscriptionProgress(
-			final I_C_Flatrate_Term term,
-			final String eventDate,
-			final int seqNo)
-	{
-		final I_C_SubscriptionProgress subscriptionProgress = newInstance(I_C_SubscriptionProgress.class);
-		POJOWrapper.setInstanceName(subscriptionProgress, eventDate);
-		subscriptionProgress.setEventType(X_C_SubscriptionProgress.EVENTTYPE_Lieferung);
-		subscriptionProgress.setC_Flatrate_Term(term);
-		subscriptionProgress.setEventDate(TimeUtil.parseTimestamp(eventDate));
-		subscriptionProgress.setSeqNo(seqNo);
-		save(subscriptionProgress);
-
-		return subscriptionProgress;
-	}
-
-	@Test
-	public void insertPauseAndShiftOverlappingItems()
-	{
-		final Timestamp pauseFrom = TimeUtil.parseTimestamp("2017-09-12");
-		final Timestamp pauseEnd = TimeUtil.parseTimestamp("2017-10-12");
-
-		SubscriptionCommand.insertPauseAndShiftOverlappingItems(term, pauseFrom, pauseEnd);
-
-		final List<I_C_SubscriptionProgress> all = subscriptionDAO.retrieveSubscriptionProgress(term);
-		assertThat(all).hasSize(5);
-		assertThat(all.get(0).getC_SubscriptionProgress_ID()).isEqualTo(first.getC_SubscriptionProgress_ID());
-		assertThat(all.get(4).getC_SubscriptionProgress_ID()).isEqualTo(last.getC_SubscriptionProgress_ID());
-
-		final I_C_SubscriptionProgress createdPauseStart = all.get(1);
-		assertThat(createdPauseStart.getEventDate()).isEqualTo(pauseFrom);
-		assertThat(createdPauseStart.getSeqNo()).isEqualByComparingTo(2);
-
-		final I_C_SubscriptionProgress createdPauseEnd = all.get(2);
-		assertThat(createdPauseEnd.getEventDate()).isEqualTo(pauseEnd);
-		assertThat(createdPauseEnd.getSeqNo()).isEqualByComparingTo(3);
-
-		refresh(middle);
-		assertThat(middle.getEventDate()).isEqualTo(TimeUtil.addDays(pauseEnd, 1));
-		assertThat(middle.getSeqNo()).isEqualTo(4);
-
-		refresh(last);
-		assertThat(last.getEventDate()).isEqualTo(TimeUtil.parseTimestamp("2017-11-13"));
-		assertThat(last.getSeqNo()).isEqualTo(5);
+		assertThat(retrieveAllforTerm()).hasSize(3); // guard
 	}
 
 	@Test
 	public void insertPauseAndCancelOverlappingItems()
 	{
-		final Timestamp pauseFrom = TimeUtil.parseTimestamp("2017-09-12");
-		final Timestamp pauseEnd = TimeUtil.parseTimestamp("2017-10-12");
+		performInsertPause(true);
+	}
 
+	@Test
+	public void removePauses()
+	{
+		performInsertPause(true);
+		SubscriptionCommand.get().removePauses(term, TimeUtil.addDays(pauseFrom, 2), TimeUtil.addDays(pauseUntil, 3));
+
+		assertAllGoodAfterRemovePauses();
+	}
+
+	@Test
+	public void removePausesEndDateAfterLastDelivery()
+	{
+		performInsertPause(true);
+		SubscriptionCommand.get().removePauses(term, TimeUtil.addDays(middle.getEventDate(), 2), TimeUtil.addDays(last.getEventDate(), 2));
+		
+		assertAllGoodAfterRemovePauses();
+	}
+	
+	@Test
+	public void removePausesStartAndEndOnTheSameDay()
+	{
+		performInsertPause(true);
+		SubscriptionCommand.get().removePauses(term, pauseFrom, pauseFrom);
+		
+		assertAllGoodAfterRemovePauses();
+	}
+	
+	@Test
+	public void removePausesStartAndEndOnTheSameDay2()
+	{
+		performInsertPause(true);
+		SubscriptionCommand.get().removePauses(term, middle.getEventDate(), middle.getEventDate());
+		
+		assertAllGoodAfterRemovePauses();
+	}
+	
+	@Test
+	public void removePausesStartAndEndOnTheSameDay3()
+	{
+		performInsertPause(true);
+		SubscriptionCommand.get().removePauses(term, pauseUntil, pauseUntil);
+		
+		assertAllGoodAfterRemovePauses();
+	}
+	
+	private void assertAllGoodAfterRemovePauses()
+	{
+		final List<I_C_SubscriptionProgress> allAfterPauseRemoval = retrieveAllforTerm();
+		assertThat(allAfterPauseRemoval).hasSize(3);
+
+		assertThat(allAfterPauseRemoval.get(0).getSeqNo()).isEqualTo(1);
+		assertThat(allAfterPauseRemoval.get(1).getSeqNo()).isEqualTo(2);
+		assertThat(allAfterPauseRemoval.get(2).getSeqNo()).isEqualTo(3);
+		
+		assertThat(allAfterPauseRemoval).allSatisfy(record -> {
+
+			assertThat(record.getEventType()).isEqualTo(X_C_SubscriptionProgress.EVENTTYPE_Lieferung);
+			assertThat(record.getContractStatus()).isEqualTo(X_C_SubscriptionProgress.CONTRACTSTATUS_Laufend);
+		});
+	}
+
+
+	private List<I_C_SubscriptionProgress> retrieveAllforTerm()
+	{
+		return subscriptionDAO.retrieveSubscriptionProgresses(SubscriptionProgressQuery.term(term).build());
+	}
+
+	@Test
+	public void ignoreRecordsWithShipmentSchedule()
+	{
+		middle.setStatus(X_C_SubscriptionProgress.STATUS_LieferungOffen);
+		save(middle);
+		assertThat(middle.getContractStatus()).isEqualTo(X_C_SubscriptionProgress.CONTRACTSTATUS_Laufend); // guard
+
+		final boolean assertThatMiddleRecordIsPaused = false;
+		performInsertPause(assertThatMiddleRecordIsPaused);
+
+		final List<I_C_SubscriptionProgress> all = retrieveAllforTerm();
+		final I_C_SubscriptionProgress middleAfterUpdate = all.get(2);
+
+		assertThat(middleAfterUpdate)
+				.as("this record may not be paused because it's already on progress")
+				.satisfies(record -> {
+					assertThat(record.getC_SubscriptionProgress_ID()).isEqualTo(middle.getC_SubscriptionProgress_ID());
+					assertThat(record.getContractStatus()).isEqualTo(X_C_SubscriptionProgress.CONTRACTSTATUS_Laufend);
+					assertThat(record.getStatus()).isEqualTo(X_C_SubscriptionProgress.STATUS_LieferungOffen);
+				});
+
+	}
+
+	private List<I_C_SubscriptionProgress> performInsertPause(final boolean assertMiddleRecordIsPaused)
+	{
 		final Timestamp middleEventDateBefore = middle.getEventDate();
 		final Timestamp lastEventDateBefore = last.getEventDate();
 
-		SubscriptionCommand.insertPauseAndPauseOverlappingItems(term, pauseFrom, pauseEnd);
+		SubscriptionCommand.get().insertPause(term, pauseFrom, pauseUntil);
 
-		final List<I_C_SubscriptionProgress> all = subscriptionDAO.retrieveSubscriptionProgress(term);
-		assertThat(all).hasSize(5);
+		final List<I_C_SubscriptionProgress> all = retrieveAllforTerm();
+		final int numberOfPauseRecords = 2;
+		final int numberOfDeliveryRecords = 3;
+		assertThat(all).hasSize(numberOfPauseRecords + numberOfDeliveryRecords);
+
 		assertThat(all.get(0).getC_SubscriptionProgress_ID()).isEqualTo(first.getC_SubscriptionProgress_ID());
 		assertThat(all.get(4).getC_SubscriptionProgress_ID()).isEqualTo(last.getC_SubscriptionProgress_ID());
 
@@ -143,20 +195,68 @@ public class SubscriptionCommandTest
 		assertThat(all.get(2).getC_SubscriptionProgress_ID()).isEqualTo(middle.getC_SubscriptionProgress_ID());
 		refresh(middle);
 		assertThat(middle.getEventDate()).isEqualTo(middleEventDateBefore);
-		assertThat(middle.getEventType()).isEqualTo(X_C_SubscriptionProgress.EVENTTYPE_Lieferung);
-		assertThat(middle.getContractStatus()).isEqualTo(X_C_SubscriptionProgress.CONTRACTSTATUS_Lieferpause);
 		assertThat(middle.getSeqNo()).isEqualTo(3);
-		
-		
+		assertThat(middle.getEventType()).isEqualTo(X_C_SubscriptionProgress.EVENTTYPE_Lieferung);
+
+		if (assertMiddleRecordIsPaused)
+		{
+			assertThat(middle.getContractStatus()).isEqualTo(X_C_SubscriptionProgress.CONTRACTSTATUS_Lieferpause);
+		}
+
 		final I_C_SubscriptionProgress createdPauseEnd = all.get(3);
 		assertThat(createdPauseEnd.getEventType()).isEqualTo(X_C_SubscriptionProgress.EVENTTYPE_Abopause_Ende);
 		assertThat(createdPauseEnd.getContractStatus()).isEqualTo(X_C_SubscriptionProgress.CONTRACTSTATUS_Laufend);
-		assertThat(createdPauseEnd.getEventDate()).isEqualTo(pauseEnd);
+		assertThat(createdPauseEnd.getEventDate()).isEqualTo(pauseUntil);
 		assertThat(createdPauseEnd.getSeqNo()).isEqualByComparingTo(4);
 
 		refresh(last);
 		assertThat(last.getEventDate()).isEqualTo(lastEventDateBefore);
 		assertThat(last.getSeqNo()).isEqualTo(5);
+
+		return all;
 	}
 
+	@Test
+	public void insertPauseAndThenModifyIt()
+	{
+		performInsertPause(true);
+
+		SubscriptionCommand.get().insertPause(term, TimeUtil.addDays(middle.getEventDate(), 2), TimeUtil.addDays(last.getEventDate(), 2));
+
+		final List<I_C_SubscriptionProgress> all = retrieveAllforTerm();
+		assertThat(all).hasSize(5);
+
+		assertThat(all.get(0)).satisfies(firstResult -> {
+			assertThat(firstResult.getC_SubscriptionProgress_ID()).isEqualTo(first.getC_SubscriptionProgress_ID());
+			assertThat(firstResult.getContractStatus()).isEqualTo(X_C_SubscriptionProgress.CONTRACTSTATUS_Laufend);
+			assertThat(firstResult.getEventType()).isEqualTo(X_C_SubscriptionProgress.EVENTTYPE_Lieferung);
+			assertThat(firstResult.getSeqNo()).isEqualTo(1);
+		});
+
+		assertThat(all.get(1)).satisfies(secondResult -> {
+			assertThat(secondResult.getC_SubscriptionProgress_ID()).isEqualTo(middle.getC_SubscriptionProgress_ID());
+			assertThat(secondResult.getContractStatus()).isEqualTo(X_C_SubscriptionProgress.CONTRACTSTATUS_Laufend);
+			assertThat(secondResult.getEventType()).isEqualTo(X_C_SubscriptionProgress.EVENTTYPE_Lieferung);
+			assertThat(secondResult.getSeqNo()).isEqualTo(2);
+		});
+
+		assertThat(all.get(2)).satisfies(thirdResult -> {
+			assertThat(thirdResult.getContractStatus()).isEqualTo(X_C_SubscriptionProgress.CONTRACTSTATUS_Lieferpause);
+			assertThat(thirdResult.getEventType()).isEqualTo(X_C_SubscriptionProgress.EVENTTYPE_Abopause_Beginn);
+			assertThat(thirdResult.getSeqNo()).isEqualTo(3);
+		});
+
+		assertThat(all.get(3)).satisfies(fourthResult -> {
+			assertThat(fourthResult.getC_SubscriptionProgress_ID()).isEqualTo(last.getC_SubscriptionProgress_ID());
+			assertThat(fourthResult.getContractStatus()).isEqualTo(X_C_SubscriptionProgress.CONTRACTSTATUS_Lieferpause);
+			assertThat(fourthResult.getEventType()).isEqualTo(X_C_SubscriptionProgress.EVENTTYPE_Lieferung);
+			assertThat(fourthResult.getSeqNo()).isEqualTo(4);
+		});
+
+		assertThat(all.get(4)).satisfies(fithResult -> {
+			assertThat(fithResult.getContractStatus()).isEqualTo(X_C_SubscriptionProgress.CONTRACTSTATUS_Laufend);
+			assertThat(fithResult.getEventType()).isEqualTo(X_C_SubscriptionProgress.EVENTTYPE_Abopause_Ende);
+			assertThat(fithResult.getSeqNo()).isEqualTo(5);
+		});
+	}
 }

@@ -25,26 +25,43 @@ package de.metas.contracts.subscription.process;
 import java.sql.Timestamp;
 
 import de.metas.contracts.subscription.impl.SubscriptionCommand;
-import de.metas.flatrate.model.I_C_Flatrate_Term;
-import de.metas.process.IProcessPrecondition;
+import de.metas.contracts.subscription.impl.SubscriptionCommand.ChangeRecipientsRequest;
 import de.metas.process.Param;
 
-public class C_SubscriptionProgress_InsertPause
+/**
+ * @task https://github.com/metasfresh/metasfresh/issues/2496
+ */
+public class C_SubscriptionProgress_ChangeRecipient
 		extends C_SubscriptionProgressBase
-		implements IProcessPrecondition
 {
+
 	@Param(parameterName = "DateGeneral", mandatory = true)
 	private Timestamp dateFrom;
 
 	@Param(parameterName = "DateGeneral", mandatory = true, parameterTo = true)
 	private Timestamp dateTo;
 
+	private int DropShip_BPartner_ID;
+
+	private int DropShip_Location_ID;
+
+	private int DropShip_User_ID;
+
 	@Override
 	protected String doIt()
 	{
-		final I_C_Flatrate_Term term = getTermFromProcessInfo();
-		SubscriptionCommand.get().insertPause(term, dateFrom, dateTo);
+		final ChangeRecipientsRequest request = ChangeRecipientsRequest.builder()
+				.term(getTermFromProcessInfo())
+				.dateFrom(dateFrom)
+				.dateTo(dateTo)
+				.DropShip_BPartner_ID(DropShip_BPartner_ID)
+				.DropShip_Location_ID(DropShip_Location_ID)
+				.DropShip_User_ID(DropShip_User_ID)
+				.build();
+
+		SubscriptionCommand.changeRecipient(request);
 
 		return MSG_OK;
 	}
+
 }

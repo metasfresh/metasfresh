@@ -42,13 +42,14 @@ public abstract class C_SubscriptionProgressBase extends JavaProcess
 	@Override
 	public final ProcessPreconditionsResolution checkPreconditionsApplicable(@NonNull final IProcessPreconditionsContext context)
 	{
-		final String tableName = getTableName();
-		if (!Objects.equals(tableName, I_C_Flatrate_Term.Table_Name) && !Objects.equals(getTableName(), I_C_SubscriptionProgress.Table_Name))
+		final String tableName = context.getTableName();
+		if (!Objects.equals(tableName, I_C_Flatrate_Term.Table_Name) && !Objects.equals(tableName, I_C_SubscriptionProgress.Table_Name))
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("Only for C_Flatrate_Term and C_SubscriptionProgress; not for tableName=" + tableName);
 		}
 
-		final I_C_Flatrate_Term term = getTerm();
+		final I_C_Flatrate_Term term = getTermFromPreconditionsContext(context);
+
 		if (!Objects.equals(X_C_Flatrate_Term.TYPE_CONDITIONS_Abonnement, term.getType_Conditions()))
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("Only for Type_Conditions=Subscr; not for " + term.getType_Conditions());
@@ -65,7 +66,23 @@ public abstract class C_SubscriptionProgressBase extends JavaProcess
 		return ProcessPreconditionsResolution.accept();
 	}
 
-	protected final I_C_Flatrate_Term getTerm()
+	private final I_C_Flatrate_Term getTermFromPreconditionsContext(@NonNull final IProcessPreconditionsContext context)
+	{
+		final String tableName = context.getTableName();
+		if (Objects.equals(tableName, I_C_Flatrate_Term.Table_Name))
+		{
+			return context.getSelectedModel(I_C_Flatrate_Term.class);
+		}
+		else if (Objects.equals(tableName, I_C_SubscriptionProgress.Table_Name))
+		{
+			return context.getSelectedModel(I_C_SubscriptionProgress.class).getC_Flatrate_Term();
+		}
+
+		final String message = StringUtils.formatMessage("Process is called with TableName={}; preconditionsContext={}; this={}", tableName, context, this);
+		throw new IllegalStateException(message);
+	}
+
+	protected final I_C_Flatrate_Term getTermFromProcessInfo()
 	{
 		if (Objects.equals(getTableName(), I_C_Flatrate_Term.Table_Name))
 		{
@@ -78,4 +95,5 @@ public abstract class C_SubscriptionProgressBase extends JavaProcess
 		final String message = StringUtils.formatMessage("Process is called with TableName={}; processInfo={}; this={}", getTableName(), getProcessInfo(), this);
 		throw new IllegalStateException(message);
 	}
+
 }

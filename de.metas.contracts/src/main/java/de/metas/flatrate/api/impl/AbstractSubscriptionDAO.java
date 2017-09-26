@@ -1,22 +1,18 @@
 package de.metas.flatrate.api.impl;
 
-import static de.metas.flatrate.model.X_C_SubscriptionProgress.STATUS_Ausgefuehrt;
-import static de.metas.flatrate.model.X_C_SubscriptionProgress.STATUS_Ausgeliefert;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
 import java.util.List;
 
 import org.adempiere.ad.dao.ICompositeQueryUpdater;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
-import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.compiere.model.IQuery;
 import org.slf4j.Logger;
-
-import com.google.common.collect.ImmutableList;
 
 import de.metas.contracts.subscription.ISubscriptionDAO;
 import de.metas.contracts.subscription.model.I_C_OrderLine;
@@ -63,18 +59,58 @@ public abstract class AbstractSubscriptionDAO implements ISubscriptionDAO
 	}
 
 	@Override
-	public final List<I_C_SubscriptionProgress> retrieveSubscriptionProgress(final I_C_Flatrate_Term term)
+	public List<I_C_SubscriptionProgress> retrieveSubscriptionProgresses(@NonNull final SubscriptionProgressQuery query)
 	{
-		Check.assumeNotNull(term, "Param 'term' not null");
+		return createQuery(query).list();
+	}
 
-		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_SubscriptionProgress.class, term)
+	@Override
+	public I_C_SubscriptionProgress retrieveFirstSubscriptionProgress(@NonNull final SubscriptionProgressQuery query)
+	{
+		return createQuery(query).first();
+	}
+
+	private IQuery<I_C_SubscriptionProgress> createQuery(@NonNull final SubscriptionProgressQuery query)
+	{
+		final IQueryBuilder<I_C_SubscriptionProgress> queryBuilder = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_SubscriptionProgress.class, query.getTerm())
 				.addOnlyActiveRecordsFilter()
-				.addOnlyContextClient()
-				.addEqualsFilter(I_C_SubscriptionProgress.COLUMNNAME_C_Flatrate_Term_ID, term.getC_Flatrate_Term_ID())
+				.addEqualsFilter(I_C_SubscriptionProgress.COLUMNNAME_C_Flatrate_Term_ID, query.getTerm().getC_Flatrate_Term_ID());
+
+		if (query.getSeqNoNotLessThan() > 0)
+		{
+			queryBuilder.addCompareFilter(I_C_SubscriptionProgress.COLUMN_SeqNo, Operator.GREATER_OR_EQUAL, query.getSeqNoNotLessThan());
+		}
+
+		if (query.getSeqNoLessThan() > 0)
+		{
+			queryBuilder.addCompareFilter(I_C_SubscriptionProgress.COLUMN_SeqNo, Operator.LESS, query.getSeqNoLessThan());
+		}
+		
+		if (query.getEventDateNotBefore() != null)
+		{
+			queryBuilder.addCompareFilter(I_C_SubscriptionProgress.COLUMN_EventDate, Operator.GREATER_OR_EQUAL, query.getEventDateNotBefore());
+		}
+
+		if(!query.getIncludedContractStatuses().isEmpty())
+		{
+			queryBuilder.addInArrayFilter(I_C_SubscriptionProgress.COLUMN_ContractStatus, query.getIncludedContractStatuses());
+		}
+		
+		if(!query.getExcludedStatuses().isEmpty())
+		{
+			queryBuilder.addNotInArrayFilter(I_C_SubscriptionProgress.COLUMN_Status, query.getExcludedStatuses());
+		}
+
+		if(!query.getIncludedStatuses().isEmpty())
+		{
+			queryBuilder.addInArrayFilter(I_C_SubscriptionProgress.COLUMN_Status, query.getIncludedStatuses());
+		}
+		
+		return queryBuilder
 				.orderBy().addColumn(I_C_SubscriptionProgress.COLUMNNAME_SeqNo).endOrderBy()
-				.create()
-				.list(I_C_SubscriptionProgress.class);
+				.create();
+
 	}
 
 	@Override
@@ -122,30 +158,6 @@ public abstract class AbstractSubscriptionDAO implements ISubscriptionDAO
 		return sdNew;
 	}
 
-	@Override
-	public final I_C_SubscriptionProgress retrieveNextSP(final I_C_Flatrate_Term control, final Timestamp date, final int seqNo)
-	{
-		logger.debug("Parameters: date=" + date + ", seqNo=" + seqNo + ", control=" + control);
-
-		final I_C_SubscriptionProgress result = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_SubscriptionProgress.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_SubscriptionProgress.COLUMN_C_Flatrate_Term_ID, control.getC_Flatrate_Term_ID())
-				.addCompareFilter(I_C_SubscriptionProgress.COLUMN_EventDate, Operator.GREATER_OR_EQUAL, date)
-				.addCompareFilter(I_C_SubscriptionProgress.COLUMN_SeqNo, Operator.GREATER_OR_EQUAL, seqNo)
-				.addNotInArrayFilter(I_C_SubscriptionProgress.COLUMN_Status, ImmutableList.of(STATUS_Ausgefuehrt, STATUS_Ausgeliefert))
-				.orderBy().addColumn(I_C_SubscriptionProgress.COLUMN_SeqNo).endOrderBy()
-				.create()
-				.first();
-
-		if (result != null)
-		{
-			return result;
-		}
-
-		return retrieveLastSP(control.getC_Flatrate_Term_ID(), seqNo);
-	}
-
 	public final I_C_SubscriptionProgress retrieveLastSP(
 			final int termId,
 			final int seqNo)
@@ -158,20 +170,5 @@ public abstract class AbstractSubscriptionDAO implements ISubscriptionDAO
 				.orderBy().addColumn(I_C_SubscriptionProgress.COLUMNNAME_SeqNo, false).endOrderBy()
 				.create()
 				.first();
-	}
-
-	@Override
-	public final List<I_C_SubscriptionProgress> retrieveNextSPs(
-			@NonNull final I_C_Flatrate_Term term,
-			@NonNull final Timestamp date)
-	{
-		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_SubscriptionProgress.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_SubscriptionProgress.COLUMN_C_Flatrate_Term_ID, term.getC_Flatrate_Term_ID())
-				.addCompareFilter(I_C_SubscriptionProgress.COLUMNNAME_EventDate, Operator.GREATER_OR_EQUAL, date)
-				.orderBy().addColumn(I_C_SubscriptionProgress.COLUMNNAME_SeqNo).endOrderBy()
-				.create()
-				.list();
 	}
 }
