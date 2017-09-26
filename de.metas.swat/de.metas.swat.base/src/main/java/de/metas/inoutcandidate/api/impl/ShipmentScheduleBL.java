@@ -55,6 +55,7 @@ import org.adempiere.util.Services;
 import org.adempiere.util.agg.key.IAggregationKeyBuilder;
 import org.adempiere.util.time.SystemTime;
 import org.adempiere.warehouse.spi.IWarehouseAdvisor;
+import org.compiere.Adempiere;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_UOM;
@@ -86,6 +87,8 @@ import de.metas.inoutcandidate.api.OlAndSched;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.spi.ICandidateProcessor;
 import de.metas.inoutcandidate.spi.IShipmentScheduleQtyUpdateListener;
+import de.metas.inoutcandidate.spi.ShipmentScheduleOrderDoc;
+import de.metas.inoutcandidate.spi.ShipmentScheduleOrderDocFactory;
 import de.metas.inoutcandidate.spi.impl.CompositeCandidateProcessor;
 import de.metas.inoutcandidate.spi.impl.CompositeShipmentScheduleQtyUpdateListener;
 import de.metas.interfaces.I_C_BPartner;
@@ -219,11 +222,12 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			final boolean isBPAllowConsolidateInOut = bpartnerBL.isAllowConsolidateInOutEffective(bPartner, isSOTrx);
 			sched.setAllowConsolidateInOut(isBPAllowConsolidateInOut);
 
+			updatePreparationAndDeliveryDate(sched);
+
 			//
 			// Delivery Day related info:
 			// TODO: invert dependency add make this pluggable from de.metas.tourplanning module
-
-			shipmentScheduleDeliveryDayBL.updateDeliveryDayInfo(olAndSched.getSched());
+			shipmentScheduleDeliveryDayBL.updateDeliveryDayInfo(sched);
 
 			// task 09358: ol.qtyReserved should be as correct as QtyOrdered and QtyDelivered, but in some cases isn't. this here is a workaround to the problem
 			// task 09869: don't rely on ol anyways
@@ -380,6 +384,16 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			}
 
 		}
+	}
+
+	@Override
+	public void updatePreparationAndDeliveryDate(@NonNull final I_M_ShipmentSchedule sched)
+	{
+		final ShipmentScheduleOrderDocFactory shipmentScheduleOrderDocFactory = Adempiere.getBean(ShipmentScheduleOrderDocFactory.class);
+		final ShipmentScheduleOrderDoc shipmentScheduleOrderDoc = shipmentScheduleOrderDocFactory.createFor(sched);
+
+		sched.setPreparationDate(shipmentScheduleOrderDoc.getPreparationDate());
+		sched.setDeliveryDate(shipmentScheduleOrderDoc.getDeliveryDate());
 	}
 
 	/**
@@ -945,7 +959,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 		{
 			shipmentCandidates.addStatusInfo(inOutLine, Services.get(IMsgBL.class).getMsg(Env.getCtx(), completeStatus.toString()));
 		}
-		
+
 		return shipmentCandidates.getStatusInfos(inOutLine);
 	}
 
@@ -1212,7 +1226,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 
 	@Override
 	public IStorageQuery createStorageQuery(
-			@NonNull final I_M_ShipmentSchedule sched, 
+			@NonNull final I_M_ShipmentSchedule sched,
 			final boolean considerAttributes)
 	{
 		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);

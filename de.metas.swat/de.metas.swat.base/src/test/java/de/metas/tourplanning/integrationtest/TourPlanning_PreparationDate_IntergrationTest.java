@@ -13,23 +13,24 @@ package de.metas.tourplanning.integrationtest;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.junit.Assert;
 import org.junit.Test;
 
 import de.metas.adempiere.model.I_C_Order;
+import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.tourplanning.TourPlanningTestBase;
 import de.metas.tourplanning.model.I_M_DeliveryDay;
 import de.metas.tourplanning.model.I_M_ShipmentSchedule;
@@ -67,12 +68,12 @@ public class TourPlanning_PreparationDate_IntergrationTest extends TourPlanningT
 
 		final String currentTime = "07.09.2014 00:00:00.000";
 		setSystemTime(currentTime);
-		
+
 		//
 		// Create and test Order's PreparationDate
 		final I_C_Order order = createOrder(
 				"08.09.2014 23:59:59.999" // date promised
-				);
+		);
 		Assert.assertEquals("Invalid order PreparationDate: " + order,
 				toDateTimeTimestamp("08.09.2014 15:00:00.000"),
 				order.getPreparationDate());
@@ -135,6 +136,8 @@ public class TourPlanning_PreparationDate_IntergrationTest extends TourPlanningT
 		shipmentSchedule.setC_Order(order);
 		shipmentSchedule.setC_BPartner(order.getC_BPartner());
 		shipmentSchedule.setC_BPartner_Location(order.getC_BPartner_Location());
+
+		Services.get(IShipmentScheduleBL.class).updatePreparationAndDeliveryDate(shipmentSchedule);
 
 		shipmentScheduleDeliveryDayBL.updateDeliveryDayInfo(shipmentSchedule);
 
