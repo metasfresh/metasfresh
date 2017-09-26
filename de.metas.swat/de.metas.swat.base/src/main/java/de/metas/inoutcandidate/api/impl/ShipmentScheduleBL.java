@@ -832,27 +832,8 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 
 	} // createLine
 
-	/**
-	 * Creates the status string for the {@link I_M_ShipmentSchedule#COLUMNNAME_Status} column.
-	 *
-	 * @param inOutLine
-	 * @param shipmentCandidates
-	 * @return
-	 */
-	private String mkStatus(final I_M_InOutLine inOutLine, final IShipmentCandidates shipmentCandidates)
-	{
-		final CompleteStatus completeStatus = shipmentCandidates.getCompleteStatus(inOutLine);
-		if (!IShipmentCandidates.CompleteStatus.OK.equals(completeStatus))
-		{
-			shipmentCandidates.addStatusInfo(inOutLine, Services.get(IMsgBL.class).getMsg(Env.getCtx(), completeStatus.toString()));
-		}
-		
-		return shipmentCandidates.getStatusInfos(inOutLine);
-	}
-
 	private CachedObjects mkCoToUse(final CachedObjects co)
 	{
-
 		if (co == null)
 		{
 			return new CachedObjects();
