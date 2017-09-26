@@ -94,6 +94,7 @@ public final class InOutCandidateValidator implements ModelValidator
 		engine.addModelValidator(new C_Order_ShipmentSchedule(), client);
 		engine.addModelValidator(new C_OrderLine_ShipmentSchedule(), client);
 		engine.addModelValidator(new M_ShipmentSchedule(), client);
+		engine.addModelValidator(new M_Shipment_Constraint(), client);
 		engine.addModelValidator(new de.metas.inoutcandidate.modelvalidator.M_AttributeInstance(), client);
 		engine.addModelValidator(new M_InOutLine_Shipment(), client);
 		engine.addModelValidator(new M_InOut_Shipment(), client);
