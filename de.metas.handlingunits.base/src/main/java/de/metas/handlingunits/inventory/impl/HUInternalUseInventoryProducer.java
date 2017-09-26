@@ -149,7 +149,7 @@ public class HUInternalUseInventoryProducer
 		}
 
 		//
-		final List<I_M_Inventory> inventories = inventoryAllocationDestination.completeInventories();
+		final List<I_M_Inventory> inventories = inventoryAllocationDestination.processInventories();
 
 		//
 		// Send notifications
