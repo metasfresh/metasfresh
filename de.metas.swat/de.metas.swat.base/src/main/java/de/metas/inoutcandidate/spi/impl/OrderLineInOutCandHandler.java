@@ -235,7 +235,7 @@ public class OrderLineInOutCandHandler implements IInOutCandHandler
 
 		logger.debug("Identified {} C_OrderLines that need a shipment schedule", ols.size());
 
-		return new ArrayList<Object>(ols);
+		return new ArrayList<>(ols);
 	}
 
 	/**
