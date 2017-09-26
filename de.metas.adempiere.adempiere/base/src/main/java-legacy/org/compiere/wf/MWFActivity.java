@@ -33,8 +33,10 @@ import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.security.IUserRolePermissionsDAO;
 import org.adempiere.ad.security.permissions.DocumentApprovalConstraint;
 import org.adempiere.ad.service.IADReferenceDAO;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxSavepoint;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.user.api.IUserBL;
 import org.adempiere.user.api.IUserDAO;
 import org.adempiere.util.Check;
@@ -56,6 +58,7 @@ import org.compiere.model.Query;
 import org.compiere.model.X_AD_WF_Activity;
 import org.compiere.print.ReportEngine;
 import org.compiere.process.DocAction;
+import org.compiere.process.DocActionWrapper;
 import org.compiere.process.StateEngine;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -67,6 +70,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.attachments.IAttachmentBL;
 import de.metas.currency.ICurrencyBL;
+
 import de.metas.email.IMailBL;
 import de.metas.email.IMailTextBuilder;
 import de.metas.i18n.IMsgBL;
@@ -361,7 +365,7 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 	 * @param trx transaction
 	 * @return po
 	 */
-	public PO getPO(Trx trx)
+	public PO getPO(final ITrx trx)
 	{
 		if (m_po != null)
 		{
@@ -377,7 +381,7 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 			m_po = table.getPO(getRecord_ID(), null);
 		return m_po;
 	}	// getPO
-
+	
 	/**
 	 * Get Persistent Object
 	 *
@@ -387,6 +391,25 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 	{
 		return getPO(get_TrxName() != null ? Trx.get(get_TrxName(), false) : null);
 	}	// getPO
+
+	private DocAction getDocument(final ITrx trx)
+	{
+		final PO po = getPO(trx);
+		if (po == null)
+		{
+			throw new AdempiereException("Persistent Object not found - AD_Table_ID=" + getAD_Table_ID() + ", Record_ID=" + getRecord_ID());
+		}
+		
+		if(po instanceof DocAction)
+		{
+			return (DocAction)po;
+		}
+
+		
+		throw new IllegalStateException("Persistent Object not DocAction - "
+				+ m_po.getClass().getName()
+				+ " - AD_Table_ID=" + getAD_Table_ID() + ", Record_ID=" + getRecord_ID());
+	}
 
 	/**
 	 * Get PO AD_Client_ID
@@ -916,7 +939,7 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 	 * @return true if completed, false otherwise
 	 * @throws Exception if error
 	 */
-	private boolean performWork(Trx trx) throws Exception
+	private boolean performWork(final Trx trx) throws Exception
 	{
 		log.debug("Performing work for {} [{}]", m_node, trx);
 		m_docStatus = null;
@@ -939,42 +962,35 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 		/****** Document Action ******/
 		else if (MWFNode.ACTION_DocumentAction.equals(action))
 		{
-			log.debug("DocumentAction=" + m_node.getDocAction());
-			getPO(trx);
-			if (m_po == null)
-				throw new Exception("Persistent Object not found - AD_Table_ID="
-						+ getAD_Table_ID() + ", Record_ID=" + getRecord_ID());
+			log.debug("DocumentAction={}", m_node.getDocAction());
+			
 			boolean success = false;
 			String processMsg = null;
-			DocAction doc = null;
-			if (m_po instanceof DocAction)
+			final DocAction doc = getDocument(trx);
+			
+			//
+			try
 			{
-				doc = (DocAction)m_po;
-				//
-				try
-				{
-					success = doc.processIt(m_node.getDocAction());	// ** Do the work
-					setTextMsg(doc.getSummary());
-					processMsg = doc.getProcessMsg();
-					m_docStatus = doc.getDocStatus();
-				}
-				catch (Exception e)
-				{
-					if (m_process != null)
-						m_process.setProcessMsg(e.getLocalizedMessage());
-					throw e;
-				}
-
-				// NOTE: there is no need to postImmediate because DocumentEngine is handling this case (old code was removed from here)
-
-				//
-				if (m_process != null)
-					m_process.setProcessMsg(processMsg);
+				success = doc.processIt(m_node.getDocAction());	// ** Do the work
+				setTextMsg(doc.getSummary());
+				processMsg = doc.getProcessMsg();
+				m_docStatus = doc.getDocStatus();
 			}
-			else
-				throw new IllegalStateException("Persistent Object not DocAction - "
-						+ m_po.getClass().getName()
-						+ " - AD_Table_ID=" + getAD_Table_ID() + ", Record_ID=" + getRecord_ID());
+			catch (Exception e)
+			{
+				if (m_process != null)
+					m_process.setProcessMsg(e.getLocalizedMessage());
+				throw e;
+			}
+
+			// NOTE: there is no need to postImmediate because DocumentEngine is handling this case (old code was removed from here)
+
+			//
+			if (m_process != null)
+			{
+				m_process.setProcessMsg(processMsg);
+			}
+			
 			//
 			if (!m_po.save())
 			{
