@@ -178,7 +178,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 
 		// prepare the second run
 		final int removeCnt = applyCandidateProcessors(ctx, firstRun, coToUse, trxName);
-		logger.info(removeCnt + " records were discarded by candidate processors");
+		logger.info("{} records were discarded by candidate processors", removeCnt);
 
 		// evaluate the processor's result: lines that have been discarded won't
 		// be delivered and won't be validated in the second run.
@@ -211,8 +211,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 
 			final I_M_ShipmentSchedule sched = olAndSched.getSched();
 			final IDeliverRequest deliverRequest = olAndSched.getDeliverRequest();
-			final I_C_BPartner bPartner = shipmentScheduleEffectiveBL.getBPartner(sched); // task 08756: we don't really care for the ol's partner, but for the partner who will actually receive the
-			// shipment.
+			final I_C_BPartner bPartner = shipmentScheduleEffectiveBL.getBPartner(sched); // task 08756: we don't really care for the ol's partner, but for the partner who will actually receive the shipment.
 
 			final org.compiere.model.I_M_Product product = ol.getM_Product();
 
@@ -1201,7 +1200,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	}
 
 	@Override
-	public void closeShipmentSchedule(I_M_ShipmentSchedule schedule)
+	public void closeShipmentSchedule(final I_M_ShipmentSchedule schedule)
 	{
 		final BigDecimal qtyDelivered = schedule.getQtyDelivered();
 
