@@ -65,7 +65,6 @@ import org.compiere.model.MInOut;
 import org.compiere.model.MOrder;
 import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_C_Order;
-import org.compiere.util.Env;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
 import org.slf4j.Logger;
@@ -74,10 +73,10 @@ import de.metas.adempiere.model.I_AD_User;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.document.engine.IDocActionBL;
-import de.metas.i18n.IMsgBL;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.inoutcandidate.api.IDeliverRequest;
+import de.metas.inoutcandidate.api.IShipmentConstraintsBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
@@ -170,6 +169,28 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			final String headerAggregationKey = shipmentScheduleKeyBuilder.buildKey(sched);
 			sched.setHeaderAggregationKey(headerAggregationKey);
 		}
+		
+		//
+		// Check shipment constraints
+		final IShipmentConstraintsBL shipmentConstraintsBL = Services.get(IShipmentConstraintsBL.class);
+		for (final OlAndSched olAndSched : olsAndScheds)
+		{
+			final I_M_ShipmentSchedule sched = olAndSched.getSched();
+			final int bpartnerId = shipmentScheduleEffectiveBL.getC_BPartner_ID(sched);
+			final int deliveryStopShipmentConstraintId = shipmentConstraintsBL.getDeliveryStopShipmentConstraintId(bpartnerId);
+			final boolean isDeliveryStop = deliveryStopShipmentConstraintId > 0;
+			if(isDeliveryStop)
+			{
+				sched.setIsDeliveryStop(true);
+				sched.setM_Shipment_Constraint_ID(deliveryStopShipmentConstraintId);
+			}
+			else
+			{
+				sched.setIsDeliveryStop(false);
+				sched.setM_Shipment_Constraint_ID(-1);
+			}
+		}
+		
 
 		final CachedObjects coToUse = mkCoToUse(co);
 

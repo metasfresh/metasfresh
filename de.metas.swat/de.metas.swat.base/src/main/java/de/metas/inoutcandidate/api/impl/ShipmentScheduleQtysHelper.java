@@ -63,10 +63,8 @@ import lombok.experimental.UtilityClass;
 		{
 			ShipmentScheduleQtysHelper.setQtyToDeliverWhenNullInoutLine(sched);
 		}
-		
-		
-		final BigDecimal newQtyToDeliverOverrideFulfilled = ShipmentScheduleQtysHelper.mkQtyToDeliverOverrideFulFilled(olAndSched);
 
+		final BigDecimal newQtyToDeliverOverrideFulfilled = mkQtyToDeliverOverrideFulFilled(olAndSched);
 		if (olAndSched.getQtyOverride() != null)
 		{
 			if (newQtyToDeliverOverrideFulfilled.compareTo(olAndSched.getQtyOverride()) >= 0)
@@ -87,7 +85,7 @@ import lombok.experimental.UtilityClass;
 		}
 
 	}
-	
+
 	/**
 	 * Creates the status string for the {@link I_M_ShipmentSchedule#COLUMNNAME_Status} column.
 	 *
@@ -102,10 +100,10 @@ import lombok.experimental.UtilityClass;
 		{
 			shipmentCandidates.addStatusInfo(inOutLine, Services.get(IMsgBL.class).getMsg(Env.getCtx(), completeStatus.toString()));
 		}
-		
+
 		return shipmentCandidates.getStatusInfos(inOutLine);
 	}
-	
+
 	/**
 	 * Method sets the give {@code sched}'s {@code QtyToDeliver} value in case the previous allocation runs did <b>not</b> allocate a qty to deliver. Note that if the effective delivery rule is
 	 * "FORCE", then we still need to set a qty even in that case.
