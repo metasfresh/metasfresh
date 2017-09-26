@@ -46,7 +46,7 @@ public class HUInventoryBL implements IHUInventoryBL
 				.setMovementDate(movementDate)
 				.setDocSubType(X_C_DocType.DOCSUBTYPE_MaterialDisposal)
 				.addHUs(husToDestroy)
-				.create();
+				.createInventories();
 	}
 
 	@Override
