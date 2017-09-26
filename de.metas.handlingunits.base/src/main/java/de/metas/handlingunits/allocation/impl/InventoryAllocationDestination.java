@@ -193,9 +193,6 @@ public class InventoryAllocationDestination implements IAllocationDestination
 		final I_M_HU topLevelHU = handlingUnitsBL.getTopLevelParent(hu);
 		final List<I_M_InOutLine> receiptLines = huAssignmentDAO.retrieveModelsForHU(topLevelHU, I_M_InOutLine.class);
 
-		// request.getHUContext().getHUStorageFactory().getStorage(hu)
-		// .getProductStorages()
-
 		for (final I_M_InOutLine receiptLine : receiptLines)
 		{
 			final I_M_InOut receipt = receiptLine.getM_InOut();
