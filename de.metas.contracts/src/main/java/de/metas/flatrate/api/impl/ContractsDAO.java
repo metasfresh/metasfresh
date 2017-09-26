@@ -54,7 +54,7 @@ public class ContractsDAO implements IContractsDAO
 		wc.append(I_C_Flatrate_Term.COLUMNNAME_DocStatus + "=" + DB.TO_STRING(X_C_Flatrate_Term.DOCSTATUS_Completed) + " AND \n");
 		
 		// only subscription contract terms
-		wc.append("( " + sqlTypeCondiditons + ") " + "=" + DB.TO_STRING(X_C_Flatrate_Term.TYPE_CONDITIONS_Abonnement) + " AND \n");
+		wc.append("( " + sqlTypeCondiditons + ") " + "=" + DB.TO_STRING(X_C_Flatrate_Term.TYPE_CONDITIONS_Subscription) + " AND \n");
 
 		// only terms that don't have their own C_OrderLine (? := 0)
 		wc.append(I_C_Flatrate_Term.COLUMNNAME_C_OrderLine_Term_ID + " IS NULL AND \n");

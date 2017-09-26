@@ -71,17 +71,17 @@ public class RemovePausesTest
 		SubscriptionTestUtil.createDeliverySubscriptionProgress(term, "2017-09-10", 1);
 		
 		final I_C_SubscriptionProgress pauseStart = SubscriptionTestUtil.createDeliverySubscriptionProgress(term, "2017-09-12", 2);
-		pauseStart.setEventType(X_C_SubscriptionProgress.EVENTTYPE_Abopause_Beginn);
-		pauseStart.setContractStatus(X_C_SubscriptionProgress.CONTRACTSTATUS_Lieferpause);
+		pauseStart.setEventType(X_C_SubscriptionProgress.EVENTTYPE_BeginOfPause);
+		pauseStart.setContractStatus(X_C_SubscriptionProgress.CONTRACTSTATUS_DeliveryPause);
 		save(pauseStart);
 		
 		middle = SubscriptionTestUtil.createDeliverySubscriptionProgress(term, "2017-10-10", 3);
-		middle.setContractStatus(X_C_SubscriptionProgress.CONTRACTSTATUS_Lieferpause);
+		middle.setContractStatus(X_C_SubscriptionProgress.CONTRACTSTATUS_DeliveryPause);
 		save(middle);
 		
 		final I_C_SubscriptionProgress pauseEnd = SubscriptionTestUtil.createDeliverySubscriptionProgress(term, "2017-10-12", 4);
-		pauseEnd.setEventType(X_C_SubscriptionProgress.EVENTTYPE_Abopause_Ende);
-		pauseEnd.setContractStatus(X_C_SubscriptionProgress.CONTRACTSTATUS_Laufend);
+		pauseEnd.setEventType(X_C_SubscriptionProgress.EVENTTYPE_EndOfPause);
+		pauseEnd.setContractStatus(X_C_SubscriptionProgress.CONTRACTSTATUS_Running);
 		save(pauseEnd);
 		
 		SubscriptionTestUtil.createDeliverySubscriptionProgress(term, "2017-11-10", 5);
@@ -150,18 +150,18 @@ public class RemovePausesTest
 		assertThat(pausedRecords).hasSize(3);
 
 		assertThat(pausedRecords.get(0)).satisfies(record -> {
-			assertThat(record.getEventType()).isEqualTo(X_C_SubscriptionProgress.EVENTTYPE_Abopause_Beginn);
-			assertThat(record.getContractStatus()).isEqualTo(X_C_SubscriptionProgress.CONTRACTSTATUS_Lieferpause);
+			assertThat(record.getEventType()).isEqualTo(X_C_SubscriptionProgress.EVENTTYPE_BeginOfPause);
+			assertThat(record.getContractStatus()).isEqualTo(X_C_SubscriptionProgress.CONTRACTSTATUS_DeliveryPause);
 		});
 
 		assertThat(pausedRecords.get(1)).satisfies(record -> {
-			assertThat(record.getEventType()).isEqualTo(X_C_SubscriptionProgress.EVENTTYPE_Lieferung);
-			assertThat(record.getContractStatus()).isEqualTo(X_C_SubscriptionProgress.CONTRACTSTATUS_Lieferpause);
+			assertThat(record.getEventType()).isEqualTo(X_C_SubscriptionProgress.EVENTTYPE_Delivery);
+			assertThat(record.getContractStatus()).isEqualTo(X_C_SubscriptionProgress.CONTRACTSTATUS_DeliveryPause);
 		});
 
 		assertThat(pausedRecords.get(2)).satisfies(record -> {
-			assertThat(record.getEventType()).isEqualTo(X_C_SubscriptionProgress.EVENTTYPE_Abopause_Ende);
-			assertThat(record.getContractStatus()).isEqualTo(X_C_SubscriptionProgress.CONTRACTSTATUS_Laufend);
+			assertThat(record.getEventType()).isEqualTo(X_C_SubscriptionProgress.EVENTTYPE_EndOfPause);
+			assertThat(record.getContractStatus()).isEqualTo(X_C_SubscriptionProgress.CONTRACTSTATUS_Running);
 		});
 	}
 }

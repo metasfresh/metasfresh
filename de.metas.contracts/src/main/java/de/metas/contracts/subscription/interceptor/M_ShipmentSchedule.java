@@ -58,7 +58,7 @@ public class M_ShipmentSchedule
 		final BigDecimal qtyDelivered = shipmentSchedule.getQtyDelivered();
 		if (qtyDelivered.compareTo(subscriptionProgress.getQty()) >= 0)
 		{
-			subscriptionProgress.setStatus(X_C_SubscriptionProgress.STATUS_Ausgeliefert);
+			subscriptionProgress.setStatus(X_C_SubscriptionProgress.STATUS_Done);
 			InterfaceWrapperHelper.save(subscriptionProgress);
 			return;
 		}
@@ -66,12 +66,12 @@ public class M_ShipmentSchedule
 		final BigDecimal qtyPickList = shipmentSchedule.getQtyPickList();
 		if (qtyPickList.signum() > 0)
 		{
-			subscriptionProgress.setStatus(X_C_SubscriptionProgress.STATUS_WirdKommissioniert);
+			subscriptionProgress.setStatus(X_C_SubscriptionProgress.STATUS_InPicking);
 			InterfaceWrapperHelper.save(subscriptionProgress);
 			return;
 		}
 
-		subscriptionProgress.setStatus(X_C_SubscriptionProgress.STATUS_LieferungOffen);
+		subscriptionProgress.setStatus(X_C_SubscriptionProgress.STATUS_Open);
 		InterfaceWrapperHelper.save(subscriptionProgress);
 	}
 
@@ -85,7 +85,7 @@ public class M_ShipmentSchedule
 		}
 
 		subscriptionProgress.setM_ShipmentSchedule(null);
-		subscriptionProgress.setStatus(X_C_SubscriptionProgress.STATUS_Geplant);
+		subscriptionProgress.setStatus(X_C_SubscriptionProgress.STATUS_Planned);
 		InterfaceWrapperHelper.save(subscriptionProgress);
 	}
 

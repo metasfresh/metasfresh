@@ -17,11 +17,11 @@ public class C_SubscriptionProgress_RemovePauses
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(IProcessPreconditionsContext context)
 	{
 		final I_C_SubscriptionProgress subscriptionProgress = context.getSelectedModel(I_C_SubscriptionProgress.class);
-		if (X_C_SubscriptionProgress.CONTRACTSTATUS_Lieferpause.equals(subscriptionProgress.getContractStatus()))
+		if (X_C_SubscriptionProgress.CONTRACTSTATUS_DeliveryPause.equals(subscriptionProgress.getContractStatus()))
 		{
 			return ProcessPreconditionsResolution.accept();
 		}
-		else if(X_C_SubscriptionProgress.EVENTTYPE_Abopause_Ende.equals(subscriptionProgress.getEventType()))
+		else if(X_C_SubscriptionProgress.EVENTTYPE_EndOfPause.equals(subscriptionProgress.getEventType()))
 		{
 			return ProcessPreconditionsResolution.accept();
 		}
