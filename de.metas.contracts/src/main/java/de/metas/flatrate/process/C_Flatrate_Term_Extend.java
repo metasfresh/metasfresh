@@ -78,7 +78,7 @@ public class C_Flatrate_Term_Extend
 					+ I_C_Flatrate_Term.COLUMNNAME_DocStatus + "='" + X_C_Flatrate_Term.DOCSTATUS_Completed + "' AND "
 					+ I_C_Flatrate_Term.COLUMNNAME_NoticeDate + "<? AND "
 					// 04432 don't extend canceled contracts
-					+ "COALESCE (" + I_C_Flatrate_Term.COLUMNNAME_ContractStatus + ",'') != " + DB.TO_STRING(X_C_Flatrate_Term.CONTRACTSTATUS_Gekuendigt);
+					+ "COALESCE (" + I_C_Flatrate_Term.COLUMNNAME_ContractStatus + ",'') != " + DB.TO_STRING(X_C_Flatrate_Term.CONTRACTSTATUS_Quit);
 
 			final Iterator<I_C_Flatrate_Term> termsToExtend = new Query(getCtx(), I_C_Flatrate_Term.Table_Name, wc, get_TrxName())
 					.setParameters(SystemTime.asTimestamp())

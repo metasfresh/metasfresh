@@ -254,7 +254,7 @@ public class FlatrateTermHandlerTest extends ContractsTestBase
 		InterfaceWrapperHelper.save(product1);
 
 		final I_C_Flatrate_Conditions conditions = InterfaceWrapperHelper.newInstance(I_C_Flatrate_Conditions.class, getContext());
-		conditions.setType_Conditions(X_C_Flatrate_Term.TYPE_CONDITIONS_Abonnement);
+		conditions.setType_Conditions(X_C_Flatrate_Term.TYPE_CONDITIONS_Subscription);
 		InterfaceWrapperHelper.save(conditions);
 
 		final I_C_Flatrate_Term term1 = InterfaceWrapperHelper.newInstance(I_C_Flatrate_Term.class, getContext());
@@ -263,7 +263,7 @@ public class FlatrateTermHandlerTest extends ContractsTestBase
 		term1.setAD_Org(org);
 		term1.setDocStatus(X_C_Flatrate_Term.DOCSTATUS_Completed);
 		term1.setC_Flatrate_Conditions(conditions);
-		term1.setType_Conditions(X_C_Flatrate_Term.TYPE_CONDITIONS_Abonnement);
+		term1.setType_Conditions(X_C_Flatrate_Term.TYPE_CONDITIONS_Subscription);
 		term1.setM_Product(product1);
 		term1.setStartDate(TimeUtil.getDay(2013, 5, 27)); // yesterday
 		InterfaceWrapperHelper.save(term1);

@@ -124,8 +124,8 @@ public class FlatrateDAO implements IFlatrateDAO
 		final IQuery<I_C_Flatrate_Conditions> fcQuery = matchingQueryBuilder
 				.andCollect(I_C_Flatrate_Conditions.COLUMN_C_Flatrate_Conditions_ID, I_C_Flatrate_Conditions.class)
 				.addEqualsFilter(I_C_Flatrate_Conditions.COLUMNNAME_DocStatus, DocAction.STATUS_Completed)
-				.addNotEqualsFilter(I_C_Flatrate_Conditions.COLUMNNAME_Type_Conditions, X_C_Flatrate_Conditions.TYPE_CONDITIONS_Abonnement)
-				.addNotEqualsFilter(I_C_Flatrate_Conditions.COLUMNNAME_Type_Conditions, X_C_Flatrate_Conditions.TYPE_CONDITIONS_Depotgebuehr)
+				.addNotEqualsFilter(I_C_Flatrate_Conditions.COLUMNNAME_Type_Conditions, X_C_Flatrate_Conditions.TYPE_CONDITIONS_Subscription)
+				.addNotEqualsFilter(I_C_Flatrate_Conditions.COLUMNNAME_Type_Conditions, X_C_Flatrate_Conditions.TYPE_CONDITIONS_HoldingFee)
 				.create();
 
 		return Services.get(IQueryBL.class).createQueryBuilder(I_C_Flatrate_Term.class, ctx, trxName)
@@ -798,7 +798,7 @@ public class FlatrateDAO implements IFlatrateDAO
 
 		params.add(bPartner_ID);
 
-		wc.append(" AND fc." + I_C_Flatrate_Conditions.COLUMNNAME_Type_Conditions + " = '" + X_C_Flatrate_Conditions.TYPE_CONDITIONS_Leergutverwaltung + "'")
+		wc.append(" AND fc." + I_C_Flatrate_Conditions.COLUMNNAME_Type_Conditions + " = '" + X_C_Flatrate_Conditions.TYPE_CONDITIONS_Refundable + "'")
 				.append(" AND	( ? >= per." + I_C_Period.COLUMNNAME_StartDate)
 				.append(" AND ? <= per." + I_C_Period.COLUMNNAME_EndDate + "))) AND ");
 

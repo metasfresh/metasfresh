@@ -34,6 +34,7 @@ import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.pricing.api.IEditablePricingContext;
@@ -154,7 +155,7 @@ public class FlatrateBL implements IFlatrateBL
 			return null;
 		}
 
-		if (X_C_Flatrate_Conditions.TYPE_CONDITIONS_Pauschalengebuehr.equals(fc.getType_Conditions())
+		if (X_C_Flatrate_Conditions.TYPE_CONDITIONS_FlatFee.equals(fc.getType_Conditions())
 				&& fc.getC_UOM_ID() != dataEntry.getC_UOM_ID())
 		{
 			// nothing to do
@@ -248,7 +249,7 @@ public class FlatrateBL implements IFlatrateBL
 		}
 
 		final List<I_C_Invoice_Candidate> newCands;
-		if (X_C_Flatrate_Conditions.TYPE_CONDITIONS_Pauschalengebuehr.equals(fc.getType_Conditions()))
+		if (X_C_Flatrate_Conditions.TYPE_CONDITIONS_FlatFee.equals(fc.getType_Conditions()))
 		{
 			newCands = createCandForFlatFeeDataEntry(fc, dataEntry);
 		}
@@ -297,10 +298,10 @@ public class FlatrateBL implements IFlatrateBL
 	{
 		Check.assume(!dataEntry.isSimulation(), dataEntry + " has IsSimulation='N'");
 
-		Check.assume(X_C_Flatrate_Conditions.TYPE_CONDITIONS_Pauschalengebuehr.equals(fc.getType_Conditions())
-				|| X_C_Flatrate_Conditions.TYPE_CONDITIONS_Leergutverwaltung.equals(fc.getType_Conditions()),
-				fc + " has Type_Conditions=" + X_C_Flatrate_Conditions.TYPE_CONDITIONS_Pauschalengebuehr
-						+ " or " + X_C_Flatrate_Conditions.TYPE_CONDITIONS_Leergutverwaltung);
+		Check.assume(X_C_Flatrate_Conditions.TYPE_CONDITIONS_FlatFee.equals(fc.getType_Conditions())
+				|| X_C_Flatrate_Conditions.TYPE_CONDITIONS_Refundable.equals(fc.getType_Conditions()),
+				fc + " has Type_Conditions=" + X_C_Flatrate_Conditions.TYPE_CONDITIONS_FlatFee
+						+ " or " + X_C_Flatrate_Conditions.TYPE_CONDITIONS_Refundable);
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(fc);
 		final String trxName = InterfaceWrapperHelper.getTrxName(fc);
@@ -338,7 +339,7 @@ public class FlatrateBL implements IFlatrateBL
 
 			final int productId = fc.getM_Product_Flatrate_ID();
 			Check.assume(productId > 0,
-					fc + " with Type_Conditions=" + X_C_Flatrate_Conditions.TYPE_CONDITIONS_Pauschalengebuehr + " has no M_Product_Flatrate");
+					fc + " with Type_Conditions=" + X_C_Flatrate_Conditions.TYPE_CONDITIONS_FlatFee + " has no M_Product_Flatrate");
 
 			final I_C_Invoice_Candidate newIc = createCand(ctx, term, dataEntry, productId, priceActual, trxName);
 			result.add(newIc);
@@ -481,8 +482,8 @@ public class FlatrateBL implements IFlatrateBL
 		final int productIdForIc;
 		final BigDecimal priceActual;
 
-		if (X_C_Flatrate_Conditions.TYPE_CONDITIONS_Depotgebuehr.equals(fc.getType_Conditions())
-				|| X_C_Flatrate_Conditions.TYPE_CONDITIONS_Leergutverwaltung.equals(fc.getType_Conditions()))
+		if (X_C_Flatrate_Conditions.TYPE_CONDITIONS_HoldingFee.equals(fc.getType_Conditions())
+				|| X_C_Flatrate_Conditions.TYPE_CONDITIONS_Refundable.equals(fc.getType_Conditions()))
 		{
 			final I_M_Product product = InterfaceWrapperHelper.create(dataEntry.getM_Product_DataEntry(), I_M_Product.class);
 			productIdForIc = product.getM_Product_ID();
@@ -493,8 +494,8 @@ public class FlatrateBL implements IFlatrateBL
 		}
 		else
 		{
-			Check.assume(X_C_Flatrate_Conditions.TYPE_CONDITIONS_Pauschalengebuehr.equals(fc.getType_Conditions()),
-					fc + " has Type_Conditions=" + X_C_Flatrate_Conditions.TYPE_CONDITIONS_Pauschalengebuehr);
+			Check.assume(X_C_Flatrate_Conditions.TYPE_CONDITIONS_FlatFee.equals(fc.getType_Conditions()),
+					fc + " has Type_Conditions=" + X_C_Flatrate_Conditions.TYPE_CONDITIONS_FlatFee);
 
 			if (X_C_Flatrate_DataEntry.TYPE_Invoicing_PeriodBased.equals(dataEntry.getType()))
 			{
@@ -507,7 +508,7 @@ public class FlatrateBL implements IFlatrateBL
 				productIdForIc = fc.getM_Product_Correction_ID();
 			}
 			Check.assume(productIdForIc > 0,
-					fc + " with Type_Conditions=" + X_C_Flatrate_Conditions.TYPE_CONDITIONS_Pauschalengebuehr + " has no M_Product_Flatrate");
+					fc + " with Type_Conditions=" + X_C_Flatrate_Conditions.TYPE_CONDITIONS_FlatFee + " has no M_Product_Flatrate");
 
 			priceActual = dataEntry.getFlatrateAmt();
 		}
@@ -668,7 +669,7 @@ public class FlatrateBL implements IFlatrateBL
 		final I_M_Product flatrateProduct = InterfaceWrapperHelper.create(fc.getM_Product_Flatrate(), I_M_Product.class);
 		validatePricingForProduct(fc, term, pl, flatrateProduct, date);
 
-		if (fc.isClosingWithActualSum() && X_C_Flatrate_Conditions.TYPE_FLATRATE_Korridor.equals(fc.getType_Flatrate()))
+		if (fc.isClosingWithActualSum() && X_C_Flatrate_Conditions.TYPE_FLATRATE_Corridor_Percent.equals(fc.getType_Flatrate()))
 		{
 			Check.assume(fc.getM_Product_Actual_ID() > 0, fc + " has no product to invoice the flatRateCorrectionAmt");
 			final I_M_Product actualProduct = InterfaceWrapperHelper.create(fc.getM_Product_Actual(), I_M_Product.class);
@@ -795,13 +796,13 @@ public class FlatrateBL implements IFlatrateBL
 		final Properties ctx = InterfaceWrapperHelper.getCtx(flatrateTerm);
 		final String trxName = InterfaceWrapperHelper.getTrxName(flatrateTerm);
 
-		if (X_C_Flatrate_Term.TYPE_CONDITIONS_Pauschalengebuehr.equals(flatrateTerm.getType_Conditions()))
+		if (X_C_Flatrate_Term.TYPE_CONDITIONS_FlatFee.equals(flatrateTerm.getType_Conditions()))
 		{
 			createEntriesForFlatFee(ctx, flatrateTerm, trxName);
 		}
-		else if (X_C_Flatrate_Term.TYPE_CONDITIONS_Abonnement.equals(flatrateTerm.getType_Conditions())
-				|| X_C_Flatrate_Term.TYPE_CONDITIONS_Depotgebuehr.equals(flatrateTerm.getType_Conditions())
-				|| X_C_Flatrate_Term.TYPE_CONDITIONS_Leergutverwaltung.equals(flatrateTerm.getType_Conditions()))
+		else if (X_C_Flatrate_Term.TYPE_CONDITIONS_Subscription.equals(flatrateTerm.getType_Conditions())
+				|| X_C_Flatrate_Term.TYPE_CONDITIONS_HoldingFee.equals(flatrateTerm.getType_Conditions())
+				|| X_C_Flatrate_Term.TYPE_CONDITIONS_Refundable.equals(flatrateTerm.getType_Conditions()))
 		{
 			createEntriesForHoldingFee(ctx, flatrateTerm, trxName);
 		}
@@ -1019,7 +1020,7 @@ public class FlatrateBL implements IFlatrateBL
 		{
 			currencyId = term.getC_Currency_ID();
 
-			if (X_C_Flatrate_Conditions.TYPE_FLATRATE_Korridor.equals(conditions.getType_Flatrate())
+			if (X_C_Flatrate_Conditions.TYPE_FLATRATE_Corridor_Percent.equals(conditions.getType_Flatrate())
 					&& !correctionWithoutActualQty)
 			{
 
@@ -1044,15 +1045,15 @@ public class FlatrateBL implements IFlatrateBL
 
 				if (marginExceeded)
 				{
-					if (X_C_Flatrate_Conditions.TYPE_CLEARING_Komplett.equals(conditions.getType_Clearing()))
+					if (X_C_Flatrate_Conditions.TYPE_CLEARING_Complete.equals(conditions.getType_Clearing()))
 					{
 						effectiveDiffPercent = diffPercent;
 					}
 					else
 					{
-						Check.assume(X_C_Flatrate_Conditions.TYPE_CLEARING_Ueber_Unterschreitung.equals(conditions.getType_Clearing()),
-								conditions + " has either Type_Clearing '" + X_C_Flatrate_Conditions.TYPE_CLEARING_Ueber_Unterschreitung + "' or '"
-										+ X_C_Flatrate_Conditions.TYPE_CLEARING_Komplett
+						Check.assume(X_C_Flatrate_Conditions.TYPE_CLEARING_Exceeding.equals(conditions.getType_Clearing()),
+								conditions + " has either Type_Clearing '" + X_C_Flatrate_Conditions.TYPE_CLEARING_Exceeding + "' or '"
+										+ X_C_Flatrate_Conditions.TYPE_CLEARING_Complete
 										+ "'");
 						effectiveDiffPercent = diffPercent.subtract(percentSubtrahent);
 					}
@@ -1060,8 +1061,8 @@ public class FlatrateBL implements IFlatrateBL
 					// if
 					// (X_C_Flatrate_Conditions.CLEARINGAMTBASEON_Pauschalenpreis.equals(conditions.getClearingAmtBaseOn()))
 					// {
-					Check.assume(X_C_Flatrate_Conditions.CLEARINGAMTBASEON_Pauschalenpreis.equals(conditions.getClearingAmtBaseOn()),
-							conditions + " has ClearingAmtBaseOn='" + X_C_Flatrate_Conditions.CLEARINGAMTBASEON_Pauschalenpreis + "'");
+					Check.assume(X_C_Flatrate_Conditions.CLEARINGAMTBASEON_FlatrateAmount.equals(conditions.getClearingAmtBaseOn()),
+							conditions + " has ClearingAmtBaseOn='" + X_C_Flatrate_Conditions.CLEARINGAMTBASEON_FlatrateAmount + "'");
 
 					amtCorrection = flatrateAmt
 							.multiply(effectiveDiffPercent.divide(Env.ONEHUNDRED, scale * 2, RoundingMode.HALF_UP))
@@ -1210,7 +1211,10 @@ public class FlatrateBL implements IFlatrateBL
 			nextTerm.setM_PricingSystem(currentTerm.getM_PricingSystem());
 			nextTerm.setDropShip_BPartner_ID(currentTerm.getDropShip_BPartner_ID());
 			nextTerm.setDropShip_Location_ID(currentTerm.getDropShip_Location_ID());
+			
 			nextTerm.setM_Product_ID(currentTerm.getM_Product_ID());
+			Services.get(IAttributeSetInstanceBL.class).cloneASI(currentTerm, nextTerm);
+			
 			nextTerm.setDropShip_User_ID(currentTerm.getDropShip_User_ID());
 			nextTerm.setDeliveryRule(currentTerm.getDeliveryRule());
 			nextTerm.setDeliveryViaRule(currentTerm.getDeliveryViaRule());
@@ -1459,15 +1463,15 @@ public class FlatrateBL implements IFlatrateBL
 		final String trxName = InterfaceWrapperHelper.getTrxName(term);
 
 		final String subType;
-		if (X_C_Flatrate_Term.TYPE_CONDITIONS_Abonnement.equals(term.getType_Conditions()))
+		if (X_C_Flatrate_Term.TYPE_CONDITIONS_Subscription.equals(term.getType_Conditions()))
 		{
 			subType = de.metas.flatrate.interfaces.I_C_DocType.DocSubType_Abonnement;
 		}
-		else if (X_C_Flatrate_Term.TYPE_CONDITIONS_Depotgebuehr.equals(term.getType_Conditions()))
+		else if (X_C_Flatrate_Term.TYPE_CONDITIONS_HoldingFee.equals(term.getType_Conditions()))
 		{
 			subType = de.metas.flatrate.interfaces.I_C_DocType.DocSubType_Depotgebuehr;
 		}
-		else if (X_C_Flatrate_Term.TYPE_CONDITIONS_Pauschalengebuehr.equals(term.getType_Conditions()))
+		else if (X_C_Flatrate_Term.TYPE_CONDITIONS_FlatFee.equals(term.getType_Conditions()))
 		{
 			subType = de.metas.flatrate.interfaces.I_C_DocType.DocSubType_Pauschalengebuehr;
 		}

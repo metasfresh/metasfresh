@@ -16,6 +16,8 @@ Here come the actual release notes:
 
 ##Features
 * metasfresh-app
+  * [#2190](https://github.com/metasfresh/metasfresh/issues/2190) Window Design WebUI: Shipment Improvements
+    * Layout adjustments for the Shipment Window in WebUI.
   * [#2280](https://github.com/metasfresh/metasfresh/issues/2280) Window Design WebUI: c_activity
     * Minor Layout Improvement for the Cost Center Window in WebUI.
   * [#2281](https://github.com/metasfresh/metasfresh/issues/2281) Window Design WebUI: Product Costs
@@ -24,6 +26,8 @@ Here come the actual release notes:
     * Minor Layout Improvement for the Unit of Measure Window in WebUI.
   * [#2468](https://github.com/metasfresh/metasfresh/issues/2468) Window Design WebUI: gridview with client
     * Improvements in different Windows, adapting the Layout to our current design Guidelines. Adding Translations for de_DE and en_US Locale/ Language.
+  * [#2560](https://github.com/metasfresh/metasfresh/issues/2560) Menu Window improvements in WebUI
+    * New -Column Layout for the Menu maintenance Window in WebUI.
 
 # metasfresh 5.28 (2017-39)
 

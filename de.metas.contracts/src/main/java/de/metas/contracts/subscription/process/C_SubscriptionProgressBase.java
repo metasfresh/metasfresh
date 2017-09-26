@@ -50,7 +50,7 @@ public abstract class C_SubscriptionProgressBase extends JavaProcess
 
 		final I_C_Flatrate_Term term = getTermFromPreconditionsContext(context);
 
-		if (!Objects.equals(X_C_Flatrate_Term.TYPE_CONDITIONS_Abonnement, term.getType_Conditions()))
+		if (!Objects.equals(X_C_Flatrate_Term.TYPE_CONDITIONS_Subscription, term.getType_Conditions()))
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("Only for Type_Conditions=Subscr; not for " + term.getType_Conditions());
 		}

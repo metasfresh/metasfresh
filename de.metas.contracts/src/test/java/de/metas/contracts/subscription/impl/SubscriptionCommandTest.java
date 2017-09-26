@@ -137,8 +137,8 @@ public class SubscriptionCommandTest
 		
 		assertThat(allAfterPauseRemoval).allSatisfy(record -> {
 
-			assertThat(record.getEventType()).isEqualTo(X_C_SubscriptionProgress.EVENTTYPE_Lieferung);
-			assertThat(record.getContractStatus()).isEqualTo(X_C_SubscriptionProgress.CONTRACTSTATUS_Laufend);
+			assertThat(record.getEventType()).isEqualTo(X_C_SubscriptionProgress.EVENTTYPE_Delivery);
+			assertThat(record.getContractStatus()).isEqualTo(X_C_SubscriptionProgress.CONTRACTSTATUS_Running);
 		});
 	}
 
@@ -151,9 +151,9 @@ public class SubscriptionCommandTest
 	@Test
 	public void ignoreRecordsWithShipmentSchedule()
 	{
-		middle.setStatus(X_C_SubscriptionProgress.STATUS_LieferungOffen);
+		middle.setStatus(X_C_SubscriptionProgress.STATUS_Open);
 		save(middle);
-		assertThat(middle.getContractStatus()).isEqualTo(X_C_SubscriptionProgress.CONTRACTSTATUS_Laufend); // guard
+		assertThat(middle.getContractStatus()).isEqualTo(X_C_SubscriptionProgress.CONTRACTSTATUS_Running); // guard
 
 		final boolean assertThatMiddleRecordIsPaused = false;
 		performInsertPause(assertThatMiddleRecordIsPaused);
@@ -165,8 +165,8 @@ public class SubscriptionCommandTest
 				.as("this record may not be paused because it's already on progress")
 				.satisfies(record -> {
 					assertThat(record.getC_SubscriptionProgress_ID()).isEqualTo(middle.getC_SubscriptionProgress_ID());
-					assertThat(record.getContractStatus()).isEqualTo(X_C_SubscriptionProgress.CONTRACTSTATUS_Laufend);
-					assertThat(record.getStatus()).isEqualTo(X_C_SubscriptionProgress.STATUS_LieferungOffen);
+					assertThat(record.getContractStatus()).isEqualTo(X_C_SubscriptionProgress.CONTRACTSTATUS_Running);
+					assertThat(record.getStatus()).isEqualTo(X_C_SubscriptionProgress.STATUS_Open);
 				});
 
 	}
@@ -187,8 +187,8 @@ public class SubscriptionCommandTest
 		assertThat(all.get(4).getC_SubscriptionProgress_ID()).isEqualTo(last.getC_SubscriptionProgress_ID());
 
 		final I_C_SubscriptionProgress createdPauseStart = all.get(1);
-		assertThat(createdPauseStart.getEventType()).isEqualTo(X_C_SubscriptionProgress.EVENTTYPE_Abopause_Beginn);
-		assertThat(createdPauseStart.getContractStatus()).isEqualTo(X_C_SubscriptionProgress.CONTRACTSTATUS_Lieferpause);
+		assertThat(createdPauseStart.getEventType()).isEqualTo(X_C_SubscriptionProgress.EVENTTYPE_BeginOfPause);
+		assertThat(createdPauseStart.getContractStatus()).isEqualTo(X_C_SubscriptionProgress.CONTRACTSTATUS_DeliveryPause);
 		assertThat(createdPauseStart.getEventDate()).isEqualTo(pauseFrom);
 		assertThat(createdPauseStart.getSeqNo()).isEqualByComparingTo(2);
 
@@ -196,16 +196,16 @@ public class SubscriptionCommandTest
 		refresh(middle);
 		assertThat(middle.getEventDate()).isEqualTo(middleEventDateBefore);
 		assertThat(middle.getSeqNo()).isEqualTo(3);
-		assertThat(middle.getEventType()).isEqualTo(X_C_SubscriptionProgress.EVENTTYPE_Lieferung);
+		assertThat(middle.getEventType()).isEqualTo(X_C_SubscriptionProgress.EVENTTYPE_Delivery);
 
 		if (assertMiddleRecordIsPaused)
 		{
-			assertThat(middle.getContractStatus()).isEqualTo(X_C_SubscriptionProgress.CONTRACTSTATUS_Lieferpause);
+			assertThat(middle.getContractStatus()).isEqualTo(X_C_SubscriptionProgress.CONTRACTSTATUS_DeliveryPause);
 		}
 
 		final I_C_SubscriptionProgress createdPauseEnd = all.get(3);
-		assertThat(createdPauseEnd.getEventType()).isEqualTo(X_C_SubscriptionProgress.EVENTTYPE_Abopause_Ende);
-		assertThat(createdPauseEnd.getContractStatus()).isEqualTo(X_C_SubscriptionProgress.CONTRACTSTATUS_Laufend);
+		assertThat(createdPauseEnd.getEventType()).isEqualTo(X_C_SubscriptionProgress.EVENTTYPE_EndOfPause);
+		assertThat(createdPauseEnd.getContractStatus()).isEqualTo(X_C_SubscriptionProgress.CONTRACTSTATUS_Running);
 		assertThat(createdPauseEnd.getEventDate()).isEqualTo(pauseUntil);
 		assertThat(createdPauseEnd.getSeqNo()).isEqualByComparingTo(4);
 
@@ -228,34 +228,34 @@ public class SubscriptionCommandTest
 
 		assertThat(all.get(0)).satisfies(firstResult -> {
 			assertThat(firstResult.getC_SubscriptionProgress_ID()).isEqualTo(first.getC_SubscriptionProgress_ID());
-			assertThat(firstResult.getContractStatus()).isEqualTo(X_C_SubscriptionProgress.CONTRACTSTATUS_Laufend);
-			assertThat(firstResult.getEventType()).isEqualTo(X_C_SubscriptionProgress.EVENTTYPE_Lieferung);
+			assertThat(firstResult.getContractStatus()).isEqualTo(X_C_SubscriptionProgress.CONTRACTSTATUS_Running);
+			assertThat(firstResult.getEventType()).isEqualTo(X_C_SubscriptionProgress.EVENTTYPE_Delivery);
 			assertThat(firstResult.getSeqNo()).isEqualTo(1);
 		});
 
 		assertThat(all.get(1)).satisfies(secondResult -> {
 			assertThat(secondResult.getC_SubscriptionProgress_ID()).isEqualTo(middle.getC_SubscriptionProgress_ID());
-			assertThat(secondResult.getContractStatus()).isEqualTo(X_C_SubscriptionProgress.CONTRACTSTATUS_Laufend);
-			assertThat(secondResult.getEventType()).isEqualTo(X_C_SubscriptionProgress.EVENTTYPE_Lieferung);
+			assertThat(secondResult.getContractStatus()).isEqualTo(X_C_SubscriptionProgress.CONTRACTSTATUS_Running);
+			assertThat(secondResult.getEventType()).isEqualTo(X_C_SubscriptionProgress.EVENTTYPE_Delivery);
 			assertThat(secondResult.getSeqNo()).isEqualTo(2);
 		});
 
 		assertThat(all.get(2)).satisfies(thirdResult -> {
-			assertThat(thirdResult.getContractStatus()).isEqualTo(X_C_SubscriptionProgress.CONTRACTSTATUS_Lieferpause);
-			assertThat(thirdResult.getEventType()).isEqualTo(X_C_SubscriptionProgress.EVENTTYPE_Abopause_Beginn);
+			assertThat(thirdResult.getContractStatus()).isEqualTo(X_C_SubscriptionProgress.CONTRACTSTATUS_DeliveryPause);
+			assertThat(thirdResult.getEventType()).isEqualTo(X_C_SubscriptionProgress.EVENTTYPE_BeginOfPause);
 			assertThat(thirdResult.getSeqNo()).isEqualTo(3);
 		});
 
 		assertThat(all.get(3)).satisfies(fourthResult -> {
 			assertThat(fourthResult.getC_SubscriptionProgress_ID()).isEqualTo(last.getC_SubscriptionProgress_ID());
-			assertThat(fourthResult.getContractStatus()).isEqualTo(X_C_SubscriptionProgress.CONTRACTSTATUS_Lieferpause);
-			assertThat(fourthResult.getEventType()).isEqualTo(X_C_SubscriptionProgress.EVENTTYPE_Lieferung);
+			assertThat(fourthResult.getContractStatus()).isEqualTo(X_C_SubscriptionProgress.CONTRACTSTATUS_DeliveryPause);
+			assertThat(fourthResult.getEventType()).isEqualTo(X_C_SubscriptionProgress.EVENTTYPE_Delivery);
 			assertThat(fourthResult.getSeqNo()).isEqualTo(4);
 		});
 
 		assertThat(all.get(4)).satisfies(fithResult -> {
-			assertThat(fithResult.getContractStatus()).isEqualTo(X_C_SubscriptionProgress.CONTRACTSTATUS_Laufend);
-			assertThat(fithResult.getEventType()).isEqualTo(X_C_SubscriptionProgress.EVENTTYPE_Abopause_Ende);
+			assertThat(fithResult.getContractStatus()).isEqualTo(X_C_SubscriptionProgress.CONTRACTSTATUS_Running);
+			assertThat(fithResult.getEventType()).isEqualTo(X_C_SubscriptionProgress.EVENTTYPE_EndOfPause);
 			assertThat(fithResult.getSeqNo()).isEqualTo(5);
 		});
 	}

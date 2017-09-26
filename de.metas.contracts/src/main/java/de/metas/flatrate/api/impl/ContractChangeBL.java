@@ -134,7 +134,7 @@ public class ContractChangeBL implements IContractChangeBL
 			}
 			
 			// update contract status
-			currentTerm.setContractStatus(X_C_Flatrate_Term.CONTRACTSTATUS_Gekuendigt);
+			currentTerm.setContractStatus(X_C_Flatrate_Term.CONTRACTSTATUS_Quit);
 		}
 
 		currentTerm.setIsCloseInvoiceCandidate(isCloseInvoiceCandidate); 
@@ -148,7 +148,7 @@ public class ContractChangeBL implements IContractChangeBL
 		{
 			// make sure that the canceled term won't be extended by the system
 			currentTerm.setIsAutoRenew(false);
-			currentTerm.setContractStatus(X_C_Flatrate_Term.CONTRACTSTATUS_Gekuendigt);
+			currentTerm.setContractStatus(X_C_Flatrate_Term.CONTRACTSTATUS_Quit);
 		}
 
 		InterfaceWrapperHelper.save(currentTerm);
@@ -173,13 +173,13 @@ public class ContractChangeBL implements IContractChangeBL
 				final String evtType = currentSP.getEventType();
 				final String status = currentSP.getStatus();
 
-				if (X_C_SubscriptionProgress.EVENTTYPE_Lieferung.equals(evtType)
-						&& (X_C_SubscriptionProgress.STATUS_Geplant.equals(status) || X_C_SubscriptionProgress.STATUS_LieferungOffen.equals(status)))
+				if (X_C_SubscriptionProgress.EVENTTYPE_Delivery.equals(evtType)
+						&& (X_C_SubscriptionProgress.STATUS_Planned.equals(status) || X_C_SubscriptionProgress.STATUS_Open.equals(status)))
 				{
 					surplusQty = surplusQty.add(currentSP.getQty());
 					InterfaceWrapperHelper.delete(currentSP);
 				}
-				else if (X_C_SubscriptionProgress.EVENTTYPE_Abopause_Beginn.equals(evtType) || X_C_SubscriptionProgress.EVENTTYPE_Abopause_Ende.equals(evtType))
+				else if (X_C_SubscriptionProgress.EVENTTYPE_BeginOfPause.equals(evtType) || X_C_SubscriptionProgress.EVENTTYPE_EndOfPause.equals(evtType))
 				{
 					InterfaceWrapperHelper.delete(currentSP);
 				}
@@ -226,7 +226,7 @@ public class ContractChangeBL implements IContractChangeBL
 		for (final I_C_SubscriptionProgress currentSP : sps)
 		{
 			if (changeDate.after(currentSP.getEventDate())
-					&& X_C_SubscriptionProgress.EVENTTYPE_Lieferung.equals(currentSP.getEventType()))
+					&& X_C_SubscriptionProgress.EVENTTYPE_Delivery.equals(currentSP.getEventType()))
 			{
 				deliveries.add(currentSP);
 			}
