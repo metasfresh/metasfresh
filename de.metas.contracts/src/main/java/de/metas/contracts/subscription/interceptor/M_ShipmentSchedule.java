@@ -1,4 +1,4 @@
-package de.metas.contracts.subscription.model.interceptor;
+package de.metas.contracts.subscription.interceptor;
 
 import java.math.BigDecimal;
 
@@ -25,11 +25,11 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -42,11 +42,9 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 @Interceptor(I_M_ShipmentSchedule.class)
 public class M_ShipmentSchedule
 {
-	@ModelChange(
-			timings = {
-					ModelValidator.TYPE_AFTER_NEW,
-					ModelValidator.TYPE_AFTER_CHANGE },
-			ifColumnsChanged = {
+	@ModelChange(timings = {
+			ModelValidator.TYPE_AFTER_NEW,
+			ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = {
 					I_M_ShipmentSchedule.COLUMNNAME_QtyDelivered,
 					I_M_ShipmentSchedule.COLUMNNAME_QtyPickList })
 	public void updateSubScriptionProgress(final I_M_ShipmentSchedule shipmentSchedule)
@@ -77,6 +75,20 @@ public class M_ShipmentSchedule
 		InterfaceWrapperHelper.save(subscriptionProgress);
 	}
 
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_DELETE })
+	public void updateSubScriptionProgressAfterDelete(final I_M_ShipmentSchedule shipmentSchedule)
+	{
+		final I_C_SubscriptionProgress subscriptionProgress = getSubscriptionRecordOrNull(shipmentSchedule);
+		if (subscriptionProgress == null)
+		{
+			return;
+		}
+
+		subscriptionProgress.setM_ShipmentSchedule(null);
+		subscriptionProgress.setStatus(X_C_SubscriptionProgress.STATUS_Geplant);
+		InterfaceWrapperHelper.save(subscriptionProgress);
+	}
+
 	private I_C_SubscriptionProgress getSubscriptionRecordOrNull(final I_M_ShipmentSchedule shipmentSchedule)
 	{
 		final TableRecordReference ref = new TableRecordReference(shipmentSchedule.getAD_Table_ID(), shipmentSchedule.getRecord_ID());
@@ -89,20 +101,5 @@ public class M_ShipmentSchedule
 				InterfaceWrapperHelper.getContextAware(shipmentSchedule),
 				I_C_SubscriptionProgress.class);
 		return subscriptionProgress;
-	}
-
-	@ModelChange(
-			timings = {
-					ModelValidator.TYPE_AFTER_DELETE })
-	public void updateSubScriptionProgressAfterDelete(final I_M_ShipmentSchedule shipmentSchedule)
-	{
-		final I_C_SubscriptionProgress subscriptionProgress = getSubscriptionRecordOrNull(shipmentSchedule);
-		if (subscriptionProgress == null)
-		{
-			return;
-		}
-
-		subscriptionProgress.setStatus(X_C_SubscriptionProgress.STATUS_Geplant);
-		InterfaceWrapperHelper.save(subscriptionProgress);
 	}
 }

@@ -5,6 +5,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -15,12 +16,20 @@ import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.time.SystemTime;
+import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_M_Locator;
+import org.compiere.model.I_M_Warehouse;
+import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
+
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.document.IDocumentLocationBL;
@@ -30,12 +39,15 @@ import de.metas.flatrate.model.I_C_Flatrate_Term;
 import de.metas.flatrate.model.I_C_SubscriptionProgress;
 import de.metas.flatrate.model.X_C_SubscriptionProgress;
 import de.metas.inoutcandidate.api.IDeliverRequest;
+import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.model.X_M_ShipmentSchedule;
 import de.metas.inoutcandidate.spi.IInOutCandHandler;
 import de.metas.logging.LogManager;
 import de.metas.product.IProductBL;
+import de.metas.storage.impl.ImmutableStorageSegment;
+import lombok.NonNull;
 
 public class SubscriptionInOutCandHandler implements IInOutCandHandler
 {
@@ -47,11 +59,7 @@ public class SubscriptionInOutCandHandler implements IInOutCandHandler
 	{
 		final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 		final IDocumentLocationBL documentLocationBL = Services.get(IDocumentLocationBL.class);
-		final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
-
 		final I_C_SubscriptionProgress subscriptionLine = create(model, I_C_SubscriptionProgress.class);
-
-		final String trxName = InterfaceWrapperHelper.getTrxName(model);
 
 		Check.assume(subscriptionLine.getQty().signum() > 0, subscriptionLine + " has Qty>0");
 
@@ -112,14 +120,14 @@ public class SubscriptionInOutCandHandler implements IInOutCandHandler
 
 		save(newSched);
 
-		shipmentSchedulePA.invalidateForProducts(Collections.singletonList(newSched.getM_Product_ID()), trxName);
-
 		subscriptionLine.setStatus(X_C_SubscriptionProgress.STATUS_LieferungOffen);
 		subscriptionLine.setM_ShipmentSchedule_ID(newSched.getM_ShipmentSchedule_ID());
 
 		save(subscriptionLine);
 
-		// Note: AllowConsolidateInOut and PostageFreeAmt is set on the first update of this schedule
+		invalidateCandidatesFor(subscriptionLine);
+
+		// Note: AllowConsolidateInOut is set on the first update of this schedule
 		return Collections.singletonList(newSched);
 	}
 
@@ -127,11 +135,28 @@ public class SubscriptionInOutCandHandler implements IInOutCandHandler
 	public void invalidateCandidatesFor(Object model)
 	{
 		final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
-		final String trxName = InterfaceWrapperHelper.getTrxName(model);
 
 		final I_C_SubscriptionProgress subscriptionLine = InterfaceWrapperHelper.create(model, I_C_SubscriptionProgress.class);
+		if (subscriptionLine.getM_ShipmentSchedule_ID() >= 0)
+		{
+			return;
+		}
 
-		shipmentSchedulePA.invalidateForProducts(Collections.singletonList(subscriptionLine.getC_Flatrate_Term().getM_Product_ID()), trxName);
+		final ImmutableStorageSegment segment = createStorageSegmentFor(subscriptionLine);
+		shipmentSchedulePA.invalidate(ImmutableSet.of(segment));
+	}
+
+	private ImmutableStorageSegment createStorageSegmentFor(@NonNull final I_C_SubscriptionProgress subscriptionLine)
+	{
+		final I_M_Warehouse warehouse = Services.get(IShipmentScheduleEffectiveBL.class).getWarehouse(subscriptionLine.getM_ShipmentSchedule());
+		final ImmutableSet<Integer> locatorIds = Services.get(IWarehouseDAO.class).retrieveLocators(warehouse).stream().map(I_M_Locator::getM_Locator_ID).collect(ImmutableSet.toImmutableSet());
+
+		final ImmutableStorageSegment segment = ImmutableStorageSegment.builder()
+				.M_Product_ID(subscriptionLine.getC_Flatrate_Term().getM_Product_ID())
+				.C_BPartner_ID(subscriptionLine.getDropShip_BPartner_ID())
+				.M_Locator_IDs(locatorIds)
+				.build();
+		return segment;
 	}
 
 	@Override
@@ -145,13 +170,18 @@ public class SubscriptionInOutCandHandler implements IInOutCandHandler
 			final Properties ctx,
 			final String trxName)
 	{
+		final int daysInAdvance = Services.get(ISysConfigBL.class).getIntValue("C_SubscriptionProgress.Create_ShipmentSchedulesInAdvanceDays", 0, Env.getAD_Client_ID(ctx), Env.getAD_Org_ID(ctx));
+		final Timestamp eventDateMaximum = TimeUtil.addDays(SystemTime.asTimestamp(), -daysInAdvance);
+
 		// Note: we used to also check if there is an active I_M_IolCandHandler_Log record referencing the C_SubscriptionProgress, but I don't see why.
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		final List<I_C_SubscriptionProgress> subscriptionLines = queryBL
 				.createQueryBuilder(I_C_SubscriptionProgress.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_SubscriptionProgress.COLUMN_Status, X_C_SubscriptionProgress.STATUS_Geplant)
-				.addCompareFilter(I_C_SubscriptionProgress.COLUMN_EventDate, Operator.LESS_OR_EQUAL, SystemTime.asTimestamp())
+				.addEqualsFilter(I_C_SubscriptionProgress.COLUMN_ContractStatus, X_C_SubscriptionProgress.CONTRACTSTATUS_Laufend)
+				.addEqualsFilter(I_C_SubscriptionProgress.COLUMN_EventType, X_C_SubscriptionProgress.EVENTTYPE_Lieferung)
+				.addCompareFilter(I_C_SubscriptionProgress.COLUMN_EventDate, Operator.LESS_OR_EQUAL, eventDateMaximum)
 				.addEqualsFilter(I_C_SubscriptionProgress.COLUMN_M_ShipmentSchedule_ID, null) // we didn't do this in the very old code which i found
 				.addOnlyContextClient(ctx)
 				.orderBy().addColumn(I_C_SubscriptionProgress.COLUMN_C_SubscriptionProgress_ID).endOrderBy()

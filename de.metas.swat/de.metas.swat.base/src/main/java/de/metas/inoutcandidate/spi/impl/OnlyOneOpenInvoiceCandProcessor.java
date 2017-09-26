@@ -35,7 +35,7 @@ import org.adempiere.inout.util.IShipmentCandidates.OverallStatus;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 
-import de.metas.i18n.Msg;
+import de.metas.i18n.IMsgBL;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.inoutcandidate.spi.ICandidateProcessor;
@@ -91,7 +91,7 @@ public class OnlyOneOpenInvoiceCandProcessor implements ICandidateProcessor
 			
 			if (soCreditUsed.signum() > 0)
 			{
-				candidates.addStatusInfo(inOutLine, Msg.getMsg(ctx, MSG_OPEN_INVOICE_1P, new Object[] { soCreditUsed }));
+				candidates.addStatusInfo(inOutLine, Services.get(IMsgBL.class).getMsg(ctx, MSG_OPEN_INVOICE_1P, new Object[] { soCreditUsed }));
 
 				candidates.setOverallStatus(inOutLine, OverallStatus.DISCARD);
 				removeCount = 1;

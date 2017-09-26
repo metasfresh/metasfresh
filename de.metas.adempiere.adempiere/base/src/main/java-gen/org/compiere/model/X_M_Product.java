@@ -109,43 +109,6 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	}
 
 	@Override
-	public org.compiere.model.I_C_SubscriptionType getC_SubscriptionType() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_SubscriptionType_ID, org.compiere.model.I_C_SubscriptionType.class);
-	}
-
-	@Override
-	public void setC_SubscriptionType(org.compiere.model.I_C_SubscriptionType C_SubscriptionType)
-	{
-		set_ValueFromPO(COLUMNNAME_C_SubscriptionType_ID, org.compiere.model.I_C_SubscriptionType.class, C_SubscriptionType);
-	}
-
-	/** Set Abotyp.
-		@param C_SubscriptionType_ID 
-		Vorbestellungsart
-	  */
-	@Override
-	public void setC_SubscriptionType_ID (int C_SubscriptionType_ID)
-	{
-		if (C_SubscriptionType_ID < 1) 
-			set_Value (COLUMNNAME_C_SubscriptionType_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_SubscriptionType_ID, Integer.valueOf(C_SubscriptionType_ID));
-	}
-
-	/** Get Abotyp.
-		@return Vorbestellungsart
-	  */
-	@Override
-	public int getC_SubscriptionType_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_SubscriptionType_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	@Override
 	public org.compiere.model.I_C_UOM getC_UOM() throws RuntimeException
 	{
 		return get_ValueAsPO(COLUMNNAME_C_UOM_ID, org.compiere.model.I_C_UOM.class);

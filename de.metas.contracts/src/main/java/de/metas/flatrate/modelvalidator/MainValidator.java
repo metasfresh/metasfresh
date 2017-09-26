@@ -38,6 +38,7 @@ import org.compiere.util.Ini;
 import de.metas.contracts.subscription.inoutcandidate.spi.impl.InOutCandFlatrateListener;
 import de.metas.contracts.subscription.inoutcandidate.spi.impl.InOutCandSubscriptionProcessor;
 import de.metas.contracts.subscription.inoutcandidate.spi.impl.SubscriptionInOutCandHandler;
+import de.metas.contracts.subscription.interceptor.C_SubscriptionProgress;
 import de.metas.flatrate.Contracts_Constants;
 import de.metas.flatrate.impexp.FlatrateTermImportProcess;
 import de.metas.flatrate.inout.spi.impl.FlatrateMaterialBalanceConfigMatcher;
@@ -107,7 +108,7 @@ public class MainValidator implements ModelValidator
 //		engine.addModelValidator(new M_InOutLine_HU(), client);
 
 		// 09869
-		engine.addModelValidator(new de.metas.contracts.subscription.model.interceptor.M_ShipmentSchedule(), client);
+		engine.addModelValidator(new de.metas.contracts.subscription.interceptor.M_ShipmentSchedule(), client);
 
 		// material balance matcher
 		Services.get(IMaterialBalanceConfigBL.class).addMaterialBalanceConfigMather(new FlatrateMaterialBalanceConfigMatcher());

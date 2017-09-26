@@ -1,4 +1,4 @@
-package de.metas.flatrate.modelvalidator;
+package de.metas.contracts.subscription.interceptor;
 
 /*
  * #%L
@@ -40,7 +40,6 @@ public class C_SubscriptionProgress
 
 	private C_SubscriptionProgress()
 	{
-		super();
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE })
@@ -51,5 +50,4 @@ public class C_SubscriptionProgress
 		final String trxName = InterfaceWrapperHelper.getTrxName(subscription);
 		CreateMissingShipmentSchedulesWorkpackageProcessor.schedule(ctx, trxName);
 	}
-
 }

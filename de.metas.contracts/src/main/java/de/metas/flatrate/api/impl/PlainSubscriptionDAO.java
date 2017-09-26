@@ -43,12 +43,6 @@ public class PlainSubscriptionDAO extends AbstractSubscriptionDAO
 	}
 
 	@Override
-	public List<I_C_SubscriptionProgress> retrieveNextSPs(I_C_Flatrate_Term term, Timestamp date)
-	{
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
 	public List<I_C_SubscriptionProgress> retrievePlannedAndDelayedDeliveries(Properties ctx, Timestamp date, String trxName)
 	{
 		throw new UnsupportedOperationException();
