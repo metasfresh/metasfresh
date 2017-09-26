@@ -22,6 +22,8 @@ Here come the actual release notes:
     * Minor Layout Improvement for the Product Cost Window in WebUI.
   * [#2285](https://github.com/metasfresh/metasfresh/issues/2285) Window Design WebUI : Unit of Measure Improvements
     * Minor Layout Improvement for the Unit of Measure Window in WebUI.
+  * [#2468](https://github.com/metasfresh/metasfresh/issues/2468) Window Design WebUI: gridview with client
+    * Improvements in different Windows, adapting the Layout to our current design Guidelines. Adding Translations for de_DE and en_US Locale/ Language.
 
 # metasfresh 5.28 (2017-39)
 
@@ -90,8 +92,9 @@ Here come the actual release notes:
 * metasfresh-app
   * [#2503](https://github.com/metasfresh/metasfresh/issues/2503) Typo in German Translation of Contract Terms menu Entry
     * Fixing the Translation of Contract Window for Language/ Locale de_DE in WebUI Menu.
-* [#593](https://github.com/metasfresh/metasfresh-webui-api/issues/593) Remove Clone action if not supported
 * metasfresh-webui-api
+  * [#505](https://github.com/metasfresh/metasfresh-webui-api/issues/505) Record_ID not found for IsSOTrx = "N"
+  * [#593](https://github.com/metasfresh/metasfresh-webui-api/issues/593) Remove Clone action if not supported
   * [#608](https://github.com/metasfresh/metasfresh-webui-api/issues/608) CU Quantity in Excel Export from HU Editor is wrong
   * [#576](https://github.com/metasfresh/metasfresh-webui-api/issues/576) Implement batch entry for Sales/Purchase Invoice documents
   * [#588](https://github.com/metasfresh/metasfresh-webui-api/issues/588) Cloning Feature: Error when cloning BOM
