@@ -98,35 +98,6 @@ public interface I_M_Product
     public static final String COLUMNNAME_C_RevenueRecognition_ID = "C_RevenueRecognition_ID";
 
 	/**
-	 * Set Abotyp.
-	 * Vorbestellungsart
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setC_SubscriptionType_ID (int C_SubscriptionType_ID);
-
-	/**
-	 * Get Abotyp.
-	 * Vorbestellungsart
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getC_SubscriptionType_ID();
-
-	public org.compiere.model.I_C_SubscriptionType getC_SubscriptionType();
-
-	public void setC_SubscriptionType(org.compiere.model.I_C_SubscriptionType C_SubscriptionType);
-
-    /** Column definition for C_SubscriptionType_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_Product, org.compiere.model.I_C_SubscriptionType> COLUMN_C_SubscriptionType_ID = new org.adempiere.model.ModelColumn<I_M_Product, org.compiere.model.I_C_SubscriptionType>(I_M_Product.class, "C_SubscriptionType_ID", org.compiere.model.I_C_SubscriptionType.class);
-    /** Column name C_SubscriptionType_ID */
-    public static final String COLUMNNAME_C_SubscriptionType_ID = "C_SubscriptionType_ID";
-
-	/**
 	 * Set Maßeinheit.
 	 * Unit of Measure
 	 *

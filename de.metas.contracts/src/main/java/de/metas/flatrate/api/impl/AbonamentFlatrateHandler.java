@@ -7,9 +7,11 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 
 import de.metas.contracts.subscription.ISubscriptionDAO;
+import de.metas.contracts.subscription.ISubscriptionDAO.SubscriptionProgressQuery;
 import de.metas.flatrate.model.I_C_Flatrate_Term;
 import de.metas.flatrate.model.I_C_SubscriptionProgress;
 import de.metas.flatrate.model.X_C_Flatrate_Term;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -24,11 +26,11 @@ import de.metas.flatrate.model.X_C_Flatrate_Term;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -40,12 +42,13 @@ public class AbonamentFlatrateHandler extends DefaultFlatrateHandler
 	private static final String MSG_TERM_ERROR_DELIVERY_ALREADY_HAS_SHIPMENT_SCHED_0P = "Term_Error_Delivery_Already_Has_Shipment_Sched";
 
 	@Override
-	public void beforeFlatrateTermReactivate(I_C_Flatrate_Term term)
+	public void beforeFlatrateTermReactivate(@NonNull final I_C_Flatrate_Term term)
 	{
-		//
-		// Delete subscription progress entries
+			// Delete subscription progress entries
 		final ISubscriptionDAO subscriptionBL = Services.get(ISubscriptionDAO.class);
-		final List<I_C_SubscriptionProgress> entries = subscriptionBL.retrieveSubscriptionProgress(term);
+		final List<I_C_SubscriptionProgress> entries = subscriptionBL.retrieveSubscriptionProgresses(SubscriptionProgressQuery.builder()
+				.term(term).build());
+
 		for (final I_C_SubscriptionProgress entry : entries)
 		{
 			if (entry.getM_ShipmentSchedule_ID() > 0)
