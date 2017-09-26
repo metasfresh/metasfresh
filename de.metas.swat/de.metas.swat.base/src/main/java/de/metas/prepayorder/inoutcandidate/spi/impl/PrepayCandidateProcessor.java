@@ -34,7 +34,7 @@ import org.adempiere.util.Services;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_C_Order;
-import de.metas.i18n.Msg;
+import de.metas.i18n.IMsgBL;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.inoutcandidate.spi.ICandidateProcessor;
@@ -83,7 +83,7 @@ public class PrepayCandidateProcessor implements ICandidateProcessor
 				if (allocatedAmt.compareTo(order.getGrandTotal()) < 0)
 				{
 					// add a warning
-					final String statusInfo = Msg.getMsg(ctx, MSG_ORDER_NOT_PAID_3P, new Object[] { order.getDocumentNo(), order.getGrandTotal(), allocatedAmt });
+					final String statusInfo = Services.get(IMsgBL.class).getMsg(ctx, MSG_ORDER_NOT_PAID_3P, new Object[] { order.getDocumentNo(), order.getGrandTotal(), allocatedAmt });
 					candidates.addStatusInfo(ioLine, statusInfo);
 
 					// discard the line if the qty has been set manually

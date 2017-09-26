@@ -47,7 +47,7 @@ import de.metas.flatrate.model.I_C_SubscriptionProgress;
 public class SubscriptionDAO extends AbstractSubscriptionDAO
 {
 	public static final String SUBSCRIPTION_NO_SP_AT_DATE_1P = "Subscription_NoSPAtDate_1P";
-	
+
 	@Override
 	public List<I_C_SubscriptionProgress> retrievePlannedAndDelayedDeliveries(
 			final Properties ctx,
@@ -114,24 +114,5 @@ public class SubscriptionDAO extends AbstractSubscriptionDAO
 				.setOnlyActiveRecords(true)
 				.setOrderBy(I_C_OLCand.COLUMNNAME_C_OLCand_ID)
 				.list(clazz);
-	}
-
-	@Override
-	public List<I_C_SubscriptionProgress> retrieveNextSPs(
-			final I_C_Flatrate_Term term,
-			final Timestamp date)
-	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(term);
-		final String trxName = InterfaceWrapperHelper.getTrxName(term);
-
-		final String where = I_C_SubscriptionProgress.COLUMNNAME_C_Flatrate_Term_ID + "=? AND " +
-				I_C_SubscriptionProgress.COLUMNNAME_EventDate + ">=?";
-
-		return new Query(ctx, I_C_SubscriptionProgress.Table_Name, where, trxName)
-				.setParameters(term.getC_Flatrate_Term_ID(), date)
-				.setOnlyActiveRecords(true)
-				.setClient_ID()
-				.setOrderBy(I_C_SubscriptionProgress.COLUMNNAME_SeqNo)
-				.list(I_C_SubscriptionProgress.class);
 	}
 }
