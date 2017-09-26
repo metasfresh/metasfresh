@@ -433,7 +433,7 @@ public class SubscriptionBL implements ISubscriptionBL
 					.eventDateNotBefore(currentDate)
 					.seqNoNotLessThan(currentProgressRecord.getSeqNo() + 1)
 					.excludedStatus(X_C_SubscriptionProgress.STATUS_Done)
-					.excludedStatus(X_C_SubscriptionProgress.STATUS_Done)
+					.excludedStatus(X_C_SubscriptionProgress.STATUS_Delivered)
 					.build();
 
 			// see if there is an SP for the next loop iteration

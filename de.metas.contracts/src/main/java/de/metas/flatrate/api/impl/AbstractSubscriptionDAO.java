@@ -4,7 +4,9 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.util.List;
+import java.util.Properties;
 
 import org.adempiere.ad.dao.ICompositeQueryUpdater;
 import org.adempiere.ad.dao.IQueryBL;
@@ -18,6 +20,7 @@ import de.metas.contracts.subscription.ISubscriptionDAO;
 import de.metas.contracts.subscription.model.I_C_OrderLine;
 import de.metas.flatrate.model.I_C_Flatrate_Term;
 import de.metas.flatrate.model.I_C_SubscriptionProgress;
+import de.metas.flatrate.model.X_C_SubscriptionProgress;
 import de.metas.logging.LogManager;
 import lombok.NonNull;
 
@@ -170,5 +173,25 @@ public abstract class AbstractSubscriptionDAO implements ISubscriptionDAO
 				.orderBy().addColumn(I_C_SubscriptionProgress.COLUMNNAME_SeqNo, false).endOrderBy()
 				.create()
 				.first();
+	}
+	
+	@Override
+	public final List<I_C_SubscriptionProgress> retrievePlannedAndDelayedDeliveries(
+			@NonNull final Properties ctx,
+			@NonNull final Timestamp date,
+			final String trxName)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_SubscriptionProgress.class, ctx, trxName)
+				.addOnlyActiveRecordsFilter()
+				.addOnlyContextClient()
+				.addEqualsFilter(I_C_SubscriptionProgress.COLUMN_EventType, X_C_SubscriptionProgress.EVENTTYPE_Delivery)
+				.addInArrayFilter(I_C_SubscriptionProgress.COLUMN_Status, X_C_SubscriptionProgress.STATUS_Planned, X_C_SubscriptionProgress.STATUS_Delayed)
+				.addCompareFilter(I_C_SubscriptionProgress.COLUMN_EventDate, Operator.LESS_OR_EQUAL, date)
+				.orderBy()
+				.addColumn(I_C_SubscriptionProgress.COLUMN_EventDate)
+				.addColumn(I_C_SubscriptionProgress.COLUMN_C_Flatrate_Term_ID)
+				.addColumn(I_C_SubscriptionProgress.COLUMN_SeqNo).endOrderBy()
+				.create().list();
 	}
 }
