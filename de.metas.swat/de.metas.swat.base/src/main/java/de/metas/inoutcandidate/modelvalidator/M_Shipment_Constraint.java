@@ -1,7 +1,7 @@
 package de.metas.inoutcandidate.modelvalidator;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
@@ -43,13 +43,13 @@ public class M_Shipment_Constraint
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE, ModelValidator.TYPE_AFTER_DELETE })
 	public void invalidateShipmentSchedules(final I_M_Shipment_Constraint constraint, final ModelChangeType changeType)
 	{
-		final List<IStorageSegment> affectedStorageSegments = extractAffectedStorageSegments(constraint, changeType);
+		final Set<IStorageSegment> affectedStorageSegments = extractAffectedStorageSegments(constraint, changeType);
 		Services.get(IShipmentSchedulePA.class).invalidate(affectedStorageSegments);
 	}
 
-	private static final List<IStorageSegment> extractAffectedStorageSegments(final I_M_Shipment_Constraint constraint, final ModelChangeType changeType)
+	private static final Set<IStorageSegment> extractAffectedStorageSegments(final I_M_Shipment_Constraint constraint, final ModelChangeType changeType)
 	{
-		final List<IStorageSegment> storageSegments = new ArrayList<>();
+		final Set<IStorageSegment> storageSegments = new LinkedHashSet<>();
 		if (changeType.isNewOrChange())
 		{
 			if (constraint.isActive())
