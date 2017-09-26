@@ -136,7 +136,7 @@ public final class InOutCandidateValidator implements ModelValidator
 		Services.get(IStorageListeners.class).addStorageListener(new StorageListenerAdapter()
 		{
 			@Override
-			public void onStorageSegmentChanged(Collection<IStorageSegment> storageSegments)
+			public void onStorageSegmentChanged(final Collection<IStorageSegment> storageSegments)
 			{
 				Services.get(IShipmentSchedulePA.class).invalidate(storageSegments);
 			}
