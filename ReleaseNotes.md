@@ -100,6 +100,9 @@ Here come the actual release notes:
   * [#588](https://github.com/metasfresh/metasfresh-webui-api/issues/588) Cloning Feature: Error when cloning BOM
   * [#590](https://github.com/metasfresh/metasfresh-webui-api/issues/590) Issues HUs are still selectable in HU editor while production is not completed
 
+* metasfresh-webui-api
+  * [#536](https://github.com/metasfresh/metasfresh-webui-api/issues/536) fields org and client are not filtered by users permissions
+
 # metasfresh 5.27 (2017-38)
 
 **upcoming release for week 2017-38**
