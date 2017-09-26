@@ -18,6 +18,8 @@ import org.compiere.model.ModelValidationEngine;
 
 import com.google.common.annotations.VisibleForTesting;
 
+import lombok.NonNull;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -53,7 +55,7 @@ import com.google.common.annotations.VisibleForTesting;
 	{
 	}
 
-	public BPartnerLocationImportHelper setProcess(final BPartnerImportProcess process)
+	public BPartnerLocationImportHelper setProcess(@NonNull final BPartnerImportProcess process)
 	{
 		this.process = process;
 		return this;
@@ -64,21 +66,21 @@ import com.google.common.annotations.VisibleForTesting;
 		return process.getCtx();
 	}
 
-	public I_C_BPartner_Location importRecord(final I_I_BPartner importRecord, final List<I_I_BPartner> previousImportRecordsForSameBPartner)
+	public I_C_BPartner_Location importRecord(
+			@NonNull final I_I_BPartner importRecord, 
+			@NonNull final List<I_I_BPartner> previousImportRecordsForSameBPartner)
 	{
 		I_C_BPartner_Location bpartnerLocation = importRecord.getC_BPartner_Location();
 
-		final List<I_I_BPartner> alreadyImportedBPAddresses = previousImportRecordsForSameBPartner.stream()
-				.filter(isSameAddress(importRecord))
-				.collect(Collectors.toList());
+		final List<I_I_BPartner> importRecordsWithEqualAddresses = getImportRecordsWithEqualAddresses(importRecord, previousImportRecordsForSameBPartner);
 
-		final boolean isAlreadyImportedBPAddresses = alreadyImportedBPAddresses.isEmpty() ? false : true;
-		if (isAlreadyImportedBPAddresses
+		final boolean previousImportRecordsHaveAnEqualAddress = !importRecordsWithEqualAddresses.isEmpty();
+		if (previousImportRecordsHaveAnEqualAddress
 				|| bpartnerLocation != null && bpartnerLocation.getC_BPartner_Location_ID() > 0)// Update Location
 		{
-			if (isAlreadyImportedBPAddresses)
+			if (previousImportRecordsHaveAnEqualAddress)
 			{
-				bpartnerLocation = alreadyImportedBPAddresses.get(0).getC_BPartner_Location();
+				bpartnerLocation = importRecordsWithEqualAddresses.get(0).getC_BPartner_Location();
 			}
 
 			updateExistingBPartnerLocation(importRecord, bpartnerLocation);
@@ -94,7 +96,30 @@ import com.google.common.annotations.VisibleForTesting;
 		return bpartnerLocation;
 	}
 
-	private I_C_BPartner_Location createNewBPartnerLocation(final I_I_BPartner importRecord)
+	private List<I_I_BPartner> getImportRecordsWithEqualAddresses(
+			@NonNull final I_I_BPartner importRecord, 
+			@NonNull final List<I_I_BPartner> previousImportRecordsForSameBPartner)
+	{
+		final List<I_I_BPartner> alreadyImportedBPAddresses = previousImportRecordsForSameBPartner.stream()
+				.filter(createEqualAddressFilter(importRecord))
+				.collect(Collectors.toList());
+
+		return alreadyImportedBPAddresses;
+	}
+
+	private static Predicate<I_I_BPartner> createEqualAddressFilter(@NonNull final I_I_BPartner importRecord)
+	{
+		return p -> p.getC_BPartner_Location_ID() > 0
+				&& importRecord.getC_Country_ID() == p.getC_Country_ID()
+				&& importRecord.getC_Region_ID() == p.getC_Region_ID()
+				&& Objects.equals(importRecord.getCity(), p.getCity())
+				&& Objects.equals(importRecord.getAddress1(), p.getAddress1())
+				&& Objects.equals(importRecord.getAddress2(), p.getAddress2())
+				&& Objects.equals(importRecord.getPostal(), p.getPostal())
+				&& Objects.equals(importRecord.getPostal_Add(), p.getPostal_Add());
+	}
+	
+	private I_C_BPartner_Location createNewBPartnerLocation(@NonNull final I_I_BPartner importRecord)
 	{
 		final I_C_BPartner bpartner = importRecord.getC_BPartner();
 		final I_C_BPartner_Location bpartnerLocation = InterfaceWrapperHelper.newInstance(I_C_BPartner_Location.class, bpartner);
@@ -105,10 +130,25 @@ import com.google.common.annotations.VisibleForTesting;
 		return bpartnerLocation;
 	}
 
-	private void updateExistingBPartnerLocation(final I_I_BPartner importRecord, final I_C_BPartner_Location bpartnerLocation)
+	private void updateExistingBPartnerLocation(
+			@NonNull final I_I_BPartner importRecord, 
+			@NonNull final I_C_BPartner_Location bpartnerLocation)
 	{
-		//
-		// Location
+		updateLocation(importRecord, bpartnerLocation);
+		
+		updateBillToAndShipToFlags(importRecord, bpartnerLocation);
+
+		updatePhoneAndFax(importRecord, bpartnerLocation);
+
+		fireImportValidatorAndSaveBPartnerLocation(importRecord, bpartnerLocation);
+
+		importRecord.setC_BPartner_Location(bpartnerLocation);
+	}
+
+	private void updateLocation(
+			@NonNull final I_I_BPartner importRecord, 
+			@NonNull final I_C_BPartner_Location bpartnerLocation)
+	{
 		I_C_Location location = bpartnerLocation.getC_Location();
 		if (location == null)
 		{
@@ -116,16 +156,37 @@ import com.google.common.annotations.VisibleForTesting;
 		}
 		updateExistingLocation(importRecord, location);
 		bpartnerLocation.setC_Location(location);
+	}
+	
+	
+	private static void updateExistingLocation(
+			@NonNull final I_I_BPartner importRecord, 
+			@NonNull final I_C_Location location)
+	{
+		location.setAddress1(importRecord.getAddress1());
+		location.setAddress2(importRecord.getAddress2());
+		location.setPostal(importRecord.getPostal());
+		location.setPostal_Add(importRecord.getPostal_Add());
+		location.setCity(importRecord.getCity());
+		location.setC_Region_ID(importRecord.getC_Region_ID());
+		location.setC_Country_ID(importRecord.getC_Country_ID());
+		InterfaceWrapperHelper.save(location);
+	}
 
-		//
-		// IsBillTo and IsShipTo flags
+	private void updateBillToAndShipToFlags(
+			@NonNull final I_I_BPartner importRecord, 
+			@NonNull final I_C_BPartner_Location bpartnerLocation)
+	{
 		bpartnerLocation.setIsShipToDefault(importRecord.isShipToDefault());
 		bpartnerLocation.setIsShipTo(extractIsShipTo(importRecord));
 		bpartnerLocation.setIsBillToDefault(importRecord.isBillToDefault());
 		bpartnerLocation.setIsBillTo(extractIsBillTo(importRecord));
+	}
 
-		//
-		// Phone, Fax etc
+	private void updatePhoneAndFax(
+			@NonNull final I_I_BPartner importRecord, 
+			@NonNull final I_C_BPartner_Location bpartnerLocation)
+	{
 		if (importRecord.getPhone() != null)
 		{
 			bpartnerLocation.setPhone(importRecord.getPhone());
@@ -138,47 +199,25 @@ import com.google.common.annotations.VisibleForTesting;
 		{
 			bpartnerLocation.setFax(importRecord.getFax());
 		}
-
-		//
+	}
+	
+	private void fireImportValidatorAndSaveBPartnerLocation(
+			@NonNull final I_I_BPartner importRecord, 
+			@NonNull final I_C_BPartner_Location bpartnerLocation)
+	{
 		ModelValidationEngine.get().fireImportValidate(process, importRecord, bpartnerLocation, IImportValidator.TIMING_AFTER_IMPORT);
 		InterfaceWrapperHelper.save(bpartnerLocation);
-
-		importRecord.setC_BPartner_Location(bpartnerLocation);
-	}
-
-	private static void updateExistingLocation(final I_I_BPartner importRecord, final I_C_Location location)
-	{
-		location.setAddress1(importRecord.getAddress1());
-		location.setAddress2(importRecord.getAddress2());
-		location.setPostal(importRecord.getPostal());
-		location.setPostal_Add(importRecord.getPostal_Add());
-		location.setCity(importRecord.getCity());
-		location.setC_Region_ID(importRecord.getC_Region_ID());
-		location.setC_Country_ID(importRecord.getC_Country_ID());
-		InterfaceWrapperHelper.save(location);
 	}
 
 	@VisibleForTesting
-	static final boolean extractIsShipTo(final I_I_BPartner importRecord)
+	static final boolean extractIsShipTo(@NonNull final I_I_BPartner importRecord)
 	{
 		return importRecord.isShipToDefault() ? true : importRecord.isShipTo();
 	}
 
 	@VisibleForTesting
-	static final boolean extractIsBillTo(final I_I_BPartner importRecord)
+	static final boolean extractIsBillTo(@NonNull final I_I_BPartner importRecord)
 	{
 		return importRecord.isBillToDefault() ? true : importRecord.isBillTo();
-	}
-
-	private static Predicate<I_I_BPartner> isSameAddress(final I_I_BPartner importRecord)
-	{
-		return p -> p.getC_BPartner_Location_ID() > 0
-				&& importRecord.getC_Country_ID() == p.getC_Country_ID()
-				&& importRecord.getC_Region_ID() == p.getC_Region_ID()
-				&& Objects.equals(importRecord.getCity(), p.getCity())
-				&& Objects.equals(importRecord.getAddress1(), p.getAddress1())
-				&& Objects.equals(importRecord.getAddress2(), p.getAddress2())
-				&& Objects.equals(importRecord.getPostal(), p.getPostal())
-				&& Objects.equals(importRecord.getPostal_Add(), p.getPostal_Add());
 	}
 }

@@ -56,6 +56,7 @@ public class BPartnerImportProcess extends AbstractImportProcess<I_I_BPartner>
 		bpartnerLocationImporter = BPartnerLocationImportHelper.newInstance().setProcess(this);
 		bpartnerContactImporter = BPartnerContactImportHelper.newInstance().setProcess(this);
 	}
+
 	@Override
 	protected void updateAndValidateImportRecords()
 	{
@@ -125,34 +126,26 @@ public class BPartnerImportProcess extends AbstractImportProcess<I_I_BPartner>
 
 		final ImportRecordResult bpartnerImportResult;
 
-		//
 		// First line to import or this line does NOT have the same BP value
 		// => create a new BPartner or update the existing one
-		if (previousImportRecord == null || !Objects.equals(importRecord.getValue(), previousBPValue))
+		final boolean firstImportRecordOrNewBPartner = previousImportRecord == null || !Objects.equals(importRecord.getValue(), previousBPValue);
+		if (firstImportRecordOrNewBPartner)
 		{
 			// create a new list because we are passing to a new partner
 			context.clearPreviousRecordsForSameBP();
-
-			bpartnerImportResult = importRecord.getC_BPartner_ID() <= 0 ? ImportRecordResult.Inserted : ImportRecordResult.Updated;
-			bpartnerImporter.importRecord(importRecord);
+			bpartnerImportResult = importOrUpdateBPartner(importRecord);
 		}
-		//
+
 		// Same BPValue like previous line
 		else
 		{
-			// We don't have a previous C_BPartner_ID
-			// => create or update existing BPartner from this line
 			if (previousBPartnerId <= 0)
 			{
-				bpartnerImportResult = importRecord.getC_BPartner_ID() <= 0 ? ImportRecordResult.Inserted : ImportRecordResult.Updated;
-				bpartnerImporter.importRecord(importRecord);
+				bpartnerImportResult = importOrUpdateBPartner(importRecord);
 			}
-			// Our line does not have a C_BPartner_ID or it has the same C_BPartner_ID like the previous line
-			// => reuse previous BPartner
 			else if (importRecord.getC_BPartner_ID() <= 0 || importRecord.getC_BPartner_ID() == previousBPartnerId)
 			{
-				bpartnerImportResult = ImportRecordResult.Nothing;
-				importRecord.setC_BPartner(previousImportRecord.getC_BPartner());
+				bpartnerImportResult = doNothingAndUsePreviousPartner(importRecord, previousImportRecord);
 			}
 			// Our line has a C_BPartner_ID set but it's not the same like previous one, even though the BPValues are the same
 			// => ERROR
@@ -171,21 +164,44 @@ public class BPartnerImportProcess extends AbstractImportProcess<I_I_BPartner>
 		return bpartnerImportResult;
 	}
 
+	private ImportRecordResult importOrUpdateBPartner(final I_I_BPartner importRecord)
+	{
+		final ImportRecordResult bpartnerImportResult;
+		// We don't have a previous C_BPartner_ID
+		// => create or update existing BPartner from this line
+		bpartnerImportResult = importRecord.getC_BPartner_ID() <= 0 ? ImportRecordResult.Inserted : ImportRecordResult.Updated;
+		bpartnerImporter.importRecord(importRecord);
+		return bpartnerImportResult;
+	}
+
+	/**
+	 * importRecord not have a C_BPartner_ID or it has the same C_BPartner_ID like the previous line
+	 * => reuse previous BPartner
+	 * 
+	 * @param importRecord
+	 * @param previousImportRecord
+	 * @return
+	 */
+	private ImportRecordResult doNothingAndUsePreviousPartner(final I_I_BPartner importRecord, final I_I_BPartner previousImportRecord)
+	{
+		importRecord.setC_BPartner(previousImportRecord.getC_BPartner());
+		return ImportRecordResult.Nothing;
+	}
 
 	private final void createUpdateInterestArea(final I_I_BPartner importRecord)
 	{
 		int interestAreaId = importRecord.getR_InterestArea_ID();
-		if(interestAreaId <= 0)
+		if (interestAreaId <= 0)
 		{
 			return;
 		}
-		
+
 		final int adUserId = importRecord.getAD_User_ID();
-		if(adUserId <= 0)
+		if (adUserId <= 0)
 		{
 			return;
 		}
-		
+
 		final MContactInterest ci = MContactInterest.get(getCtx(),
 				interestAreaId,
 				adUserId,
