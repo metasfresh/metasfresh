@@ -159,7 +159,7 @@ public class C_Flatrate_Term
 			return; // nothing to do
 		}
 
-		if (X_C_Flatrate_Conditions.TYPE_CONDITIONS_Pauschalengebuehr.equals(term.getType_Conditions()))
+		if (X_C_Flatrate_Conditions.TYPE_CONDITIONS_FlatFee.equals(term.getType_Conditions()))
 		{
 			// check if the current products are on the price list
 			final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
@@ -187,7 +187,7 @@ public class C_Flatrate_Term
 		final IMsgBL msgBL = Services.get(IMsgBL.class);
 		if (term.getStartDate() != null
 				&& term.getEndDate() != null
-				&& !X_C_Flatrate_Conditions.TYPE_CONDITIONS_Abonnement.equals(term.getType_Conditions()))
+				&& !X_C_Flatrate_Conditions.TYPE_CONDITIONS_Subscription.equals(term.getType_Conditions()))
 		{
 			final ICalendarDAO calendarDAO = Services.get(ICalendarDAO.class);
 
@@ -350,14 +350,14 @@ public class C_Flatrate_Term
 	{
 		// TODO: refactor it to specific IFlatrateHandlers
 
-		if (X_C_Flatrate_Term.TYPE_CONDITIONS_Pauschalengebuehr.equals(term.getType_Conditions()))
+		if (X_C_Flatrate_Term.TYPE_CONDITIONS_FlatFee.equals(term.getType_Conditions()))
 		{
 			if (term.getPlannedQtyPerUnit().signum() <= 0)
 			{
 				throw new AdempiereException("@" + MSG_TERM_ERROR_PLANNED_QTY_PER_UNIT + "@");
 			}
 		}
-		if (X_C_Flatrate_Term.TYPE_CONDITIONS_Abonnement.equals(term.getType_Conditions()))
+		if (X_C_Flatrate_Term.TYPE_CONDITIONS_Subscription.equals(term.getType_Conditions()))
 		{
 			// first do a number of checks
 			final List<String> missingValues = new ArrayList<String>();
@@ -395,19 +395,19 @@ public class C_Flatrate_Term
 	{
 		// TODO: refactor it to specific IFlatrateHandlers
 
-		if (X_C_Flatrate_Term.TYPE_CONDITIONS_Abonnement.equals(term.getType_Conditions())
-				|| X_C_Flatrate_Term.TYPE_CONDITIONS_Pauschalengebuehr.equals(term.getType_Conditions()))
+		if (X_C_Flatrate_Term.TYPE_CONDITIONS_Subscription.equals(term.getType_Conditions())
+				|| X_C_Flatrate_Term.TYPE_CONDITIONS_FlatFee.equals(term.getType_Conditions()))
 		{
 			Check.assume(term.getPlannedQtyPerUnit().signum() >= 0, "@" + MSG_TERM_ERROR_PLANNED_QTY_PER_UNIT + "@");
 		}
 
-		if (X_C_Flatrate_Term.TYPE_CONDITIONS_Abonnement.equals(term.getType_Conditions()))
+		if (X_C_Flatrate_Term.TYPE_CONDITIONS_Subscription.equals(term.getType_Conditions()))
 		{
 			Services.get(ISubscriptionBL.class).evalCurrentSPs(term, term.getStartDate());
 		}
-		else if (X_C_Flatrate_Term.TYPE_CONDITIONS_Depotgebuehr.equals(term.getType_Conditions())
-				|| X_C_Flatrate_Term.TYPE_CONDITIONS_Leergutverwaltung.equals(term.getType_Conditions())
-				|| X_C_Flatrate_Term.TYPE_CONDITIONS_Pauschalengebuehr.equals(term.getType_Conditions()))
+		else if (X_C_Flatrate_Term.TYPE_CONDITIONS_HoldingFee.equals(term.getType_Conditions())
+				|| X_C_Flatrate_Term.TYPE_CONDITIONS_Refundable.equals(term.getType_Conditions())
+				|| X_C_Flatrate_Term.TYPE_CONDITIONS_FlatFee.equals(term.getType_Conditions()))
 		{
 			Services.get(IFlatrateBL.class).createDataEntriesForTerm(term);
 		}

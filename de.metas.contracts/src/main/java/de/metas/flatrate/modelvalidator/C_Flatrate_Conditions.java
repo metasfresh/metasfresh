@@ -57,7 +57,7 @@ public class C_Flatrate_Conditions
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE)
 	public void onTransitionChange(final I_C_Flatrate_Conditions cond)
 	{
-		if (X_C_Flatrate_Conditions.TYPE_CONDITIONS_Abonnement.equals(cond.getType_Conditions()))
+		if (X_C_Flatrate_Conditions.TYPE_CONDITIONS_Subscription.equals(cond.getType_Conditions()))
 		{
 			final I_C_Flatrate_Transition trans = cond.getC_Flatrate_Transition();
 			if (trans != null)
@@ -90,9 +90,9 @@ public class C_Flatrate_Conditions
 	{
 		final IFlatrateDAO flatrateDB = Services.get(IFlatrateDAO.class);
 		final boolean matchingsAreRequired =
-				X_C_Flatrate_Conditions.TYPE_CONDITIONS_Depotgebuehr.equals(cond.getType_Conditions())
-						|| X_C_Flatrate_Conditions.TYPE_CONDITIONS_Leergutverwaltung.equals(cond.getType_Conditions())
-						|| X_C_Flatrate_Conditions.TYPE_CONDITIONS_Pauschalengebuehr.equals(cond.getType_Conditions())
+				X_C_Flatrate_Conditions.TYPE_CONDITIONS_HoldingFee.equals(cond.getType_Conditions())
+						|| X_C_Flatrate_Conditions.TYPE_CONDITIONS_Refundable.equals(cond.getType_Conditions())
+						|| X_C_Flatrate_Conditions.TYPE_CONDITIONS_FlatFee.equals(cond.getType_Conditions())
 						|| X_C_Flatrate_Conditions.TYPE_CONDITIONS_QualityBasedInvoicing.equals(cond.getType_Conditions());
 		if (matchingsAreRequired)
 		{

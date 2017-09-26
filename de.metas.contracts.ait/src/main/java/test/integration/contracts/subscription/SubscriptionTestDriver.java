@@ -654,7 +654,7 @@ public class SubscriptionTestDriver extends AIntegrationTestDriver
 
 		InterfaceWrapperHelper.refresh(term);
 		assertThat(term.isAutoRenew(), is(false));
-		assertThat(term.getContractStatus(), equalTo(X_C_Flatrate_Term.CONTRACTSTATUS_Gekuendigt));
+		assertThat(term.getContractStatus(), equalTo(X_C_Flatrate_Term.CONTRACTSTATUS_Quit));
 		assertThat("After a early change, " + term + " without order should have C_OrderLine_TermChange_ID==0", term.getC_OrderLine_TermChange_ID(), is(0));
 
 		InterfaceWrapperHelper.refresh(candForTermBeforeCancel);

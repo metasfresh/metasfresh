@@ -310,7 +310,7 @@ public class FlatrateTermHandler extends AbstractInvoiceCandidateHandler
 
 		ic.setDateOrdered(getDateOrdered(term));
 
-		if (X_C_Flatrate_Term.CONTRACTSTATUS_Gekuendigt.equals(term.getContractStatus()) && term.isCloseInvoiceCandidate()) // terminate invoice candidates only when the flag is set
+		if (X_C_Flatrate_Term.CONTRACTSTATUS_Quit.equals(term.getContractStatus()) && term.isCloseInvoiceCandidate()) // terminate invoice candidates only when the flag is set
 		{
 			// Make sure that no further invoicing takes place
 			Services.get(IInvoiceCandBL.class).closeInvoiceCandidate(ic);

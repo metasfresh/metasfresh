@@ -141,7 +141,7 @@ public class FlatrateBLTest extends ContractsTestBase
 		InterfaceWrapperHelper.save(pricingSystem);
 
 		final I_C_Flatrate_Conditions flatrateConditions = InterfaceWrapperHelper.newInstance(I_C_Flatrate_Conditions.class, getContext());
-		flatrateConditions.setType_Conditions(X_C_Flatrate_Conditions.TYPE_CONDITIONS_Depotgebuehr);
+		flatrateConditions.setType_Conditions(X_C_Flatrate_Conditions.TYPE_CONDITIONS_HoldingFee);
 		flatrateConditions.setM_PricingSystem(pricingSystem);
 		InterfaceWrapperHelper.save(flatrateConditions);
 
