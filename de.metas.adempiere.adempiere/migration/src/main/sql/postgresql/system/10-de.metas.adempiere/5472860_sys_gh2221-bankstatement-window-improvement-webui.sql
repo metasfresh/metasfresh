@@ -18,3 +18,8 @@ INSERT INTO AD_Table_Process (AD_Client_ID,AD_Org_ID,AD_Process_ID,AD_Table_ID,C
 DELETE FROM AD_UI_Element WHERE AD_UI_Element_ID=543114
 ;
 
+-- 2017-09-26T16:11:35.258
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET IsActive='N',Updated=TO_TIMESTAMP('2017-09-26 16:11:35','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=543080
+;
+
