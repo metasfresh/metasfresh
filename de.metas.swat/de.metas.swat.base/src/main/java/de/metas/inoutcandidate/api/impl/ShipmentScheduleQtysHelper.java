@@ -47,12 +47,20 @@ import lombok.experimental.UtilityClass;
 /* package */class ShipmentScheduleQtysHelper
 {
 	private final static Logger logger = LogManager.getLogger(ShipmentScheduleQtysHelper.class);
+	private static final String MSG_DeliveryStopStatus = "ShipmentSchedule_DeliveryStop_Status";
 
 	public static void updateQtyToDeliver(final OlAndSched olAndSched, final IShipmentCandidates shipmentCandidates)
 	{
 		final I_M_ShipmentSchedule sched = olAndSched.getSched();
-		final I_C_OrderLine ol = olAndSched.getOl();
 		
+		if (sched.isDeliveryStop())
+		{
+			sched.setQtyToDeliver(BigDecimal.ZERO);
+			sched.setStatus(Services.get(IMsgBL.class).getMsg(Env.getCtx(), MSG_DeliveryStopStatus));
+			return;
+		}
+
+		final I_C_OrderLine ol = olAndSched.getOl();
 		final I_M_InOutLine inOutLine = shipmentCandidates.getInOutLineForOrderLine(ol.getC_OrderLine_ID());
 		if (inOutLine != null)
 		{
