@@ -30,6 +30,7 @@ import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.adempiere.model.I_C_Order;
@@ -52,6 +53,8 @@ import lombok.NonNull;
 
 public class SubscriptionInOutCandHandler implements IInOutCandHandler
 {
+	@VisibleForTesting
+	static final String SYSCONFIG_CREATE_SHIPMENT_SCHEDULES_IN_ADVANCE_DAYS = "C_SubscriptionProgress.Create_ShipmentSchedulesInAdvanceDays";
 
 	private static final Logger logger = LogManager.getLogger(SubscriptionInOutCandHandler.class);
 
@@ -122,7 +125,7 @@ public class SubscriptionInOutCandHandler implements IInOutCandHandler
 
 		save(newSched);
 
-		subscriptionLine.setStatus(X_C_SubscriptionProgress.STATUS_LieferungOffen);
+		subscriptionLine.setStatus(X_C_SubscriptionProgress.STATUS_Open);
 		subscriptionLine.setM_ShipmentSchedule_ID(newSched.getM_ShipmentSchedule_ID());
 
 		save(subscriptionLine);
@@ -172,16 +175,15 @@ public class SubscriptionInOutCandHandler implements IInOutCandHandler
 			final Properties ctx,
 			final String trxName)
 	{
-		final int daysInAdvance = Services.get(ISysConfigBL.class).getIntValue("C_SubscriptionProgress.Create_ShipmentSchedulesInAdvanceDays", 0, Env.getAD_Client_ID(ctx), Env.getAD_Org_ID(ctx));
-		final Timestamp eventDateMaximum = TimeUtil.addDays(SystemTime.asTimestamp(), -daysInAdvance);
+		final int daysInAdvance = Services.get(ISysConfigBL.class).getIntValue(SYSCONFIG_CREATE_SHIPMENT_SCHEDULES_IN_ADVANCE_DAYS, 0, Env.getAD_Client_ID(ctx), Env.getAD_Org_ID(ctx));
+		final Timestamp eventDateMaximum = TimeUtil.addDays(SystemTime.asTimestamp(), daysInAdvance);
 
 		// Note: we used to also check if there is an active I_M_IolCandHandler_Log record referencing the C_SubscriptionProgress, but I don't see why.
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		final List<I_C_SubscriptionProgress> subscriptionLines = queryBL
 				.createQueryBuilder(I_C_SubscriptionProgress.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_SubscriptionProgress.COLUMN_Status, X_C_SubscriptionProgress.STATUS_Geplant)
-				.addEqualsFilter(I_C_SubscriptionProgress.COLUMN_ContractStatus, X_C_SubscriptionProgress.CONTRACTSTATUS_Running)
+				.addEqualsFilter(I_C_SubscriptionProgress.COLUMN_Status, X_C_SubscriptionProgress.STATUS_Planned)
 				.addEqualsFilter(I_C_SubscriptionProgress.COLUMN_EventType, X_C_SubscriptionProgress.EVENTTYPE_Delivery)
 				.addCompareFilter(I_C_SubscriptionProgress.COLUMN_EventDate, Operator.LESS_OR_EQUAL, eventDateMaximum)
 				.addEqualsFilter(I_C_SubscriptionProgress.COLUMN_M_ShipmentSchedule_ID, null) // we didn't do this in the very old code which i found

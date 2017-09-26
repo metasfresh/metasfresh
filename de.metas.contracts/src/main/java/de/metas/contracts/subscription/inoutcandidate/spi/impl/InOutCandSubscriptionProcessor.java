@@ -137,7 +137,7 @@ public class InOutCandSubscriptionProcessor implements ICandidateProcessor
 			if (InterfaceWrapperHelper.getTableId(I_C_SubscriptionProgress.class) == sched.getAD_Table_ID())
 			{
 				final I_C_SubscriptionProgress sp = InterfaceWrapperHelper.create(ctx, sched.getRecord_ID(), I_C_SubscriptionProgress.class, trxName);
-				Check.assume(X_C_SubscriptionProgress.STATUS_LieferungOffen.equals(sp.getStatus()),
+				Check.assume(X_C_SubscriptionProgress.STATUS_Open.equals(sp.getStatus()),
 						sp + "referenced by " + sched + " doesn't have status " + sp.getStatus());
 				atLeastOneSubscription = true;
 				break;

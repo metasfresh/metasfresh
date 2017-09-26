@@ -26,8 +26,6 @@ import static de.metas.flatrate.model.I_C_SubscriptionProgress.COLUMNNAME_C_Flat
 import static de.metas.flatrate.model.I_C_SubscriptionProgress.COLUMNNAME_EventDate;
 import static de.metas.flatrate.model.I_C_SubscriptionProgress.COLUMNNAME_EventType;
 import static de.metas.flatrate.model.I_C_SubscriptionProgress.COLUMNNAME_SeqNo;
-import static de.metas.flatrate.model.X_C_SubscriptionProgress.STATUS_Geplant;
-import static de.metas.flatrate.model.X_C_SubscriptionProgress.STATUS_Verzoegert;
 
 import java.sql.Timestamp;
 import java.util.List;
@@ -56,7 +54,7 @@ public class SubscriptionDAO extends AbstractSubscriptionDAO
 	{
 
 		final String where = COLUMNNAME_EventType + "='" + X_C_SubscriptionProgress.EVENTTYPE_Delivery + "'"
-				+ " AND " + I_C_SubscriptionProgress.COLUMNNAME_Status + " IN ('" + STATUS_Geplant + "', '" + STATUS_Verzoegert + "')"
+				+ " AND " + I_C_SubscriptionProgress.COLUMNNAME_Status + " IN ('" + X_C_SubscriptionProgress.STATUS_Planned + "', '" + X_C_SubscriptionProgress.STATUS_Delivered + "')"
 				+ " AND " + COLUMNNAME_EventDate + "<=?";
 
 		final String orderBy = COLUMNNAME_EventDate + ", " + COLUMNNAME_C_Flatrate_Term_ID + ", " + COLUMNNAME_SeqNo;

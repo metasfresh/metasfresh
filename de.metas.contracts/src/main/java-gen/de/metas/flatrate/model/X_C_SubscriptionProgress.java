@@ -15,7 +15,7 @@ public class X_C_SubscriptionProgress extends org.compiere.model.PO implements I
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -749970218L;
+	private static final long serialVersionUID = -2104501876L;
 
     /** Standard Constructor */
     public X_C_SubscriptionProgress (Properties ctx, int C_SubscriptionProgress_ID, String trxName)
@@ -400,18 +400,18 @@ public class X_C_SubscriptionProgress extends org.compiere.model.PO implements I
 	 * Reference name: C_SubscriptionProgress Status
 	 */
 	public static final int STATUS_AD_Reference_ID=540002;
-	/** Geplant = P */
-	public static final String STATUS_Geplant = "P";
-	/** Lieferung Offen = O */
-	public static final String STATUS_LieferungOffen = "O";
-	/** Ausgeliefert = D */
-	public static final String STATUS_Ausgeliefert = "D";
-	/** Wird kommissioniert = C */
-	public static final String STATUS_WirdKommissioniert = "C";
-	/** Ausgeführt = E */
-	public static final String STATUS_Ausgefuehrt = "E";
-	/** Verzögert = H */
-	public static final String STATUS_Verzoegert = "H";
+	/** Planned = P */
+	public static final String STATUS_Planned = "P";
+	/** Open = O */
+	public static final String STATUS_Open = "O";
+	/** Delivered = D */
+	public static final String STATUS_Delivered = "D";
+	/** InPicking = C */
+	public static final String STATUS_InPicking = "C";
+	/** Done = E */
+	public static final String STATUS_Done = "E";
+	/** Delayed = H */
+	public static final String STATUS_Delayed = "H";
 	/** Set Status.
 		@param Status 
 		Status of the currently running check

@@ -151,7 +151,7 @@ public class SubscriptionCommandTest
 	@Test
 	public void ignoreRecordsWithShipmentSchedule()
 	{
-		middle.setStatus(X_C_SubscriptionProgress.STATUS_LieferungOffen);
+		middle.setStatus(X_C_SubscriptionProgress.STATUS_Open);
 		save(middle);
 		assertThat(middle.getContractStatus()).isEqualTo(X_C_SubscriptionProgress.CONTRACTSTATUS_Running); // guard
 
@@ -166,7 +166,7 @@ public class SubscriptionCommandTest
 				.satisfies(record -> {
 					assertThat(record.getC_SubscriptionProgress_ID()).isEqualTo(middle.getC_SubscriptionProgress_ID());
 					assertThat(record.getContractStatus()).isEqualTo(X_C_SubscriptionProgress.CONTRACTSTATUS_Running);
-					assertThat(record.getStatus()).isEqualTo(X_C_SubscriptionProgress.STATUS_LieferungOffen);
+					assertThat(record.getStatus()).isEqualTo(X_C_SubscriptionProgress.STATUS_Open);
 				});
 
 	}

@@ -87,7 +87,7 @@ public class InsertPause
 
 		pauseBegin.setEventType(X_C_SubscriptionProgress.EVENTTYPE_BeginOfPause);
 		pauseBegin.setC_Flatrate_Term(term);
-		pauseBegin.setStatus(X_C_SubscriptionProgress.STATUS_Geplant);
+		pauseBegin.setStatus(X_C_SubscriptionProgress.STATUS_Planned);
 		pauseBegin.setContractStatus(X_C_SubscriptionProgress.CONTRACTSTATUS_DeliveryPause);
 		pauseBegin.setEventDate(pauseFrom);
 		pauseBegin.setSeqNo(seqNoOfPauseRecord);
@@ -109,7 +109,7 @@ public class InsertPause
 			spsWithinPause.add(sp);
 			sp.setSeqNo(sp.getSeqNo() + 1);
 
-			if (Objects.equals(sp.getStatus(), X_C_SubscriptionProgress.STATUS_Geplant))
+			if (Objects.equals(sp.getStatus(), X_C_SubscriptionProgress.STATUS_Planned))
 			{
 				sp.setContractStatus(X_C_SubscriptionProgress.CONTRACTSTATUS_DeliveryPause);
 			}
@@ -132,7 +132,7 @@ public class InsertPause
 
 		pauseEnd.setEventType(X_C_SubscriptionProgress.EVENTTYPE_EndOfPause);
 		pauseEnd.setC_Flatrate_Term(term);
-		pauseEnd.setStatus(X_C_SubscriptionProgress.STATUS_Geplant);
+		pauseEnd.setStatus(X_C_SubscriptionProgress.STATUS_Planned);
 		pauseEnd.setContractStatus(X_C_SubscriptionProgress.CONTRACTSTATUS_Running);
 		pauseEnd.setEventDate(pauseUntil);
 		pauseEnd.setSeqNo(seqNoOfPauseRecord);

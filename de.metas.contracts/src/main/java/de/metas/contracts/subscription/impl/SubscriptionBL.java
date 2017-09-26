@@ -432,8 +432,8 @@ public class SubscriptionBL implements ISubscriptionBL
 					.term(term)
 					.eventDateNotBefore(currentDate)
 					.seqNoNotLessThan(currentProgressRecord.getSeqNo() + 1)
-					.excludedStatus(X_C_SubscriptionProgress.STATUS_Ausgefuehrt)
-					.excludedStatus(X_C_SubscriptionProgress.STATUS_Ausgeliefert)
+					.excludedStatus(X_C_SubscriptionProgress.STATUS_Done)
+					.excludedStatus(X_C_SubscriptionProgress.STATUS_Done)
 					.build();
 
 			// see if there is an SP for the next loop iteration
@@ -471,8 +471,8 @@ public class SubscriptionBL implements ISubscriptionBL
 		final SubscriptionProgressQuery query = SubscriptionProgressQuery.builder()
 				.term(term)
 				.eventDateNotBefore(currentDate)
-				.excludedStatus(X_C_SubscriptionProgress.STATUS_Ausgefuehrt)
-				.excludedStatus(X_C_SubscriptionProgress.STATUS_Ausgeliefert)
+				.excludedStatus(X_C_SubscriptionProgress.STATUS_Done)
+				.excludedStatus(X_C_SubscriptionProgress.STATUS_Delivered)
 				.build();
 
 		final I_C_SubscriptionProgress sp = subscriptionPA.retrieveFirstSubscriptionProgress(query);
@@ -496,14 +496,14 @@ public class SubscriptionBL implements ISubscriptionBL
 
 		if (isPlannedStartPause(sp))
 		{
-			sp.setStatus(X_C_SubscriptionProgress.STATUS_Ausgefuehrt);
+			sp.setStatus(X_C_SubscriptionProgress.STATUS_Done);
 			save(sp);
 			return true;
 
 		}
 		else if (isPlannedEndPause(sp))
 		{
-			sp.setStatus(X_C_SubscriptionProgress.STATUS_Ausgefuehrt);
+			sp.setStatus(X_C_SubscriptionProgress.STATUS_Done);
 			save(sp);
 			return true;
 		}
@@ -514,13 +514,13 @@ public class SubscriptionBL implements ISubscriptionBL
 	private boolean isPlannedStartPause(final I_C_SubscriptionProgress sp)
 	{
 		return X_C_SubscriptionProgress.EVENTTYPE_BeginOfPause.equals(sp.getEventType())
-				&& X_C_SubscriptionProgress.STATUS_Geplant.equals(sp.getStatus());
+				&& X_C_SubscriptionProgress.STATUS_Planned.equals(sp.getStatus());
 	}
 
 	private boolean isPlannedEndPause(final I_C_SubscriptionProgress sp)
 	{
 		return X_C_SubscriptionProgress.EVENTTYPE_EndOfPause.equals(sp.getEventType())
-				&& X_C_SubscriptionProgress.STATUS_Geplant.equals(sp.getStatus());
+				&& X_C_SubscriptionProgress.STATUS_Planned.equals(sp.getStatus());
 	}
 
 	private Timestamp mkNextDate(final I_C_Flatrate_Transition trans, final Timestamp currentDate)
@@ -567,7 +567,6 @@ public class SubscriptionBL implements ISubscriptionBL
 	@Override
 	public void evalDeliveries(final Properties ctx, final String trxName)
 	{
-
 		final ISubscriptionDAO subscriptionPA = Services.get(ISubscriptionDAO.class);
 
 		final List<I_C_SubscriptionProgress> deliveries = subscriptionPA.retrievePlannedAndDelayedDeliveries(ctx, SystemTime.asTimestamp(), trxName);
@@ -586,7 +585,7 @@ public class SubscriptionBL implements ISubscriptionBL
 			if (delayedControlIds.contains(sd.getC_Flatrate_Term_ID()))
 			{
 				logger.info("An earlier SP of " + sc + " is delayed => also delaying " + sd);
-				sd.setStatus(X_C_SubscriptionProgress.STATUS_Verzoegert);
+				sd.setStatus(X_C_SubscriptionProgress.STATUS_Delayed);
 				InterfaceWrapperHelper.save(sd);
 				continue;
 			}
@@ -598,42 +597,22 @@ public class SubscriptionBL implements ISubscriptionBL
 
 			if (openScheds.isEmpty())
 			{
-				if (X_C_SubscriptionProgress.STATUS_Verzoegert.equals(sd.getStatus()))
+				if (X_C_SubscriptionProgress.STATUS_Delayed.equals(sd.getStatus()))
 				{
 					logger.info(sd + " is not delayed anymore");
-					sd.setStatus(X_C_SubscriptionProgress.STATUS_Geplant);
+					sd.setStatus(X_C_SubscriptionProgress.STATUS_Planned);
 					InterfaceWrapperHelper.save(sd);
 				}
 			}
 			else
 			{
 				logger.debug(sd + " is deplayed because there is at least on open delivery");
-				sd.setStatus(X_C_SubscriptionProgress.STATUS_Verzoegert);
+				sd.setStatus(X_C_SubscriptionProgress.STATUS_Delayed);
 				InterfaceWrapperHelper.save(sd);
 
 				delayedControlIds.add(sd.getC_Flatrate_Term_ID());
 				continue;
 			}
-
-			// final I_C_OrderLine ol = POWrapper.create(sd.getC_OrderLine(), I_C_OrderLine.class);
-			//
-			// createSchedule(ctx, sd, sc, ol, trxName);
-			//
-			// logger.debug("invalidating related schedule entries");
-			// Services.get(IInOutCandHandlerBL.class).invalidateCandidatesFor(ol, I_C_OrderLine.Table_Name);
-			//
-			// try
-			// {
-			// Trx.get(trxName, false).commit(true);
-			// }
-			// catch (SQLException e)
-			// {
-			// throw new AdempiereException(e);
-			// }
-			//
-			// logger.debug("Setting subscription delivery " + sd + " to status " + STATUS_LieferungOffen);
-			// sd.setStatus(STATUS_LieferungOffen);
-			// poService.save(sd, trxName);
 		}
 	}
 
@@ -810,7 +789,7 @@ public class SubscriptionBL implements ISubscriptionBL
 		delivery.setC_Flatrate_Term(term);
 
 		delivery.setEventType(X_C_SubscriptionProgress.EVENTTYPE_Delivery);
-		delivery.setStatus(X_C_SubscriptionProgress.STATUS_Geplant);
+		delivery.setStatus(X_C_SubscriptionProgress.STATUS_Planned);
 
 		delivery.setContractStatus(X_C_SubscriptionProgress.CONTRACTSTATUS_Running);
 

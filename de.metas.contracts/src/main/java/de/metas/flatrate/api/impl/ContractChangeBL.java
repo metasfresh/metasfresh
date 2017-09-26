@@ -174,7 +174,7 @@ public class ContractChangeBL implements IContractChangeBL
 				final String status = currentSP.getStatus();
 
 				if (X_C_SubscriptionProgress.EVENTTYPE_Delivery.equals(evtType)
-						&& (X_C_SubscriptionProgress.STATUS_Geplant.equals(status) || X_C_SubscriptionProgress.STATUS_LieferungOffen.equals(status)))
+						&& (X_C_SubscriptionProgress.STATUS_Planned.equals(status) || X_C_SubscriptionProgress.STATUS_Open.equals(status)))
 				{
 					surplusQty = surplusQty.add(currentSP.getQty());
 					InterfaceWrapperHelper.delete(currentSP);
