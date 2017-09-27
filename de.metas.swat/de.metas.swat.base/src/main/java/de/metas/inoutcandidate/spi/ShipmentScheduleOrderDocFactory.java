@@ -1,13 +1,16 @@
 package de.metas.inoutcandidate.spi;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Function;
 
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import com.google.common.annotations.VisibleForTesting;
 
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import lombok.NonNull;
@@ -15,33 +18,55 @@ import lombok.NonNull;
 @Service
 public class ShipmentScheduleOrderDocFactory
 {
-	private final Map<Integer, Function<I_M_ShipmentSchedule, ShipmentScheduleOrderDoc>> providers = new HashMap<>();
+	private final Map<String, ShipmentScheduleOrderDocProvider> providers = new HashMap<>();
 
-	public void registerProvider(
-			@NonNull final String tableName,
-			@NonNull final Function<I_M_ShipmentSchedule, ShipmentScheduleOrderDoc> provider)
+	@Autowired
+	public void registerProviders(@NonNull final Collection<ShipmentScheduleOrderDocProvider> providers)
 	{
-		final int tableId = Services.get(IADTableDAO.class).retrieveTableId(tableName);
-		providers.put(tableId, provider);
+		for (ShipmentScheduleOrderDocProvider provider : providers)
+		{
+			this.providers.put(provider.getTableName(), provider);
+		}
 	}
 
+	/**
+	 * May not be {@code null}
+	 * 
+	 * @param shipmentSchedule
+	 * @return
+	 * @throws UnsupportedShipmentScheduleTableId if no {@link ShipmentScheduleOrderDocProvider} is available for the given {@code shipmentSchedule}'s {@code AD_Table_ID}.
+	 */
 	public ShipmentScheduleOrderDoc createFor(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
 	{
-		final Function<I_M_ShipmentSchedule, ShipmentScheduleOrderDoc> provider = providers.get(shipmentSchedule.getAD_Table_ID());
+		final String tableName = Services.get(IADTableDAO.class).retrieveTableName(shipmentSchedule.getAD_Table_ID());
+
+		final ShipmentScheduleOrderDocProvider provider = providers.get(tableName);
 		if (provider == null)
 		{
-			throw new UnsupportedShipmentScheduleTableId(shipmentSchedule);
+			throw new UnsupportedShipmentScheduleTableId(shipmentSchedule, tableName);
 		}
-		return provider.apply(shipmentSchedule);
+		return provider.provideFor(shipmentSchedule);
 	}
 
+	/**
+	 * See {@link ShipmentScheduleOrderDocFactory#createFor(I_M_ShipmentSchedule)}.
+	 * 
+	 * @author metas-dev <dev@metasfresh.com>
+	 *
+	 */
 	public static final class UnsupportedShipmentScheduleTableId extends AdempiereException
 	{
 		private static final long serialVersionUID = 3430768273480532505L;
 
-		public UnsupportedShipmentScheduleTableId(final I_M_ShipmentSchedule shipmentSchedule)
+		public UnsupportedShipmentScheduleTableId(final I_M_ShipmentSchedule shipmentSchedule, final String tableName)
 		{
-			super("AD_Table_ID=" + shipmentSchedule.getAD_Table_ID() + "; M_ShipmentSchedule=" + shipmentSchedule.toString());
+			super("Missing ShipmentScheduleOrderDocProvider for tableName='" + tableName + "'; AD_Table_ID=" + shipmentSchedule.getAD_Table_ID() + "; M_ShipmentSchedule=" + shipmentSchedule.toString());
 		}
+	}
+
+	@VisibleForTesting
+	ShipmentScheduleOrderDocProvider getProviderForTableName(@NonNull final String tableName)
+	{
+		return providers.get(tableName);
 	}
 }

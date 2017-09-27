@@ -1,10 +1,12 @@
 package de.metas.contracts.subscription.inoutcandidate.spi.impl;
 
-import java.util.function.Function;
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 
+import de.metas.flatrate.model.I_C_SubscriptionProgress;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.spi.ShipmentScheduleOrderDoc;
-import de.metas.inoutcandidate.spi.impl.ShipmentScheduleOrderDocForOrderLine;
+import de.metas.inoutcandidate.spi.ShipmentScheduleOrderDocProvider;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -19,30 +21,35 @@ import de.metas.inoutcandidate.spi.impl.ShipmentScheduleOrderDocForOrderLine;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-public class ShipmentScheduleOrderDocForSubscriptionLine implements Function<I_M_ShipmentSchedule, ShipmentScheduleOrderDoc>
+public class ShipmentScheduleOrderDocForSubscriptionLine implements ShipmentScheduleOrderDocProvider
 {
-
-	public static final ShipmentScheduleOrderDocForSubscriptionLine INSTANCE = new ShipmentScheduleOrderDocForSubscriptionLine();
-
-	private ShipmentScheduleOrderDocForSubscriptionLine()
+	/**
+	 * @return {@link I_C_SubscriptionProgress#Table_Name}.
+	 */
+	@Override
+	public String getTableName()
 	{
+		return I_C_SubscriptionProgress.Table_Name;
 	}
 
 	@Override
-	public ShipmentScheduleOrderDoc apply(I_M_ShipmentSchedule schipmentSchedule)
+	public ShipmentScheduleOrderDoc provideFor(@NonNull final I_M_ShipmentSchedule sched)
 	{
-		// TODO Auto-generated method stub
-		return null;
-	};
+		final I_C_SubscriptionProgress subscriptionProgress = load(sched.getRecord_ID(), I_C_SubscriptionProgress.class);
 
+		return ShipmentScheduleOrderDoc.builder()
+				.deliveryDate(subscriptionProgress.getEventDate())
+				.preparationDate(subscriptionProgress.getEventDate())
+				.build();
+	};
 
 }

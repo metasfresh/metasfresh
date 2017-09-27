@@ -1,7 +1,6 @@
 package de.metas.inoutcandidate.spi.impl;
 
 import java.sql.Timestamp;
-import java.util.function.Function;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_Order;
@@ -9,6 +8,7 @@ import org.compiere.model.I_C_OrderLine;
 
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.spi.ShipmentScheduleOrderDoc;
+import de.metas.inoutcandidate.spi.ShipmentScheduleOrderDocProvider;
 import lombok.NonNull;
 
 /*
@@ -33,17 +33,20 @@ import lombok.NonNull;
  * #L%
  */
 
-public class ShipmentScheduleOrderDocForOrderLine implements Function<I_M_ShipmentSchedule, ShipmentScheduleOrderDoc>
+
+public class ShipmentScheduleOrderDocForOrderLine implements ShipmentScheduleOrderDocProvider
 {
-
-	public static final ShipmentScheduleOrderDocForOrderLine INSTANCE = new ShipmentScheduleOrderDocForOrderLine();
-
-	private ShipmentScheduleOrderDocForOrderLine()
+	/**
+	 * @return {@link I_C_OrderLine#Table_Name}
+	 */
+	@Override
+	public String getTableName()
 	{
-	};
+		return I_C_OrderLine.Table_Name;
+	}
 
 	@Override
-	public ShipmentScheduleOrderDoc apply(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
+	public ShipmentScheduleOrderDoc provideFor(I_M_ShipmentSchedule shipmentSchedule)
 	{
 		return ShipmentScheduleOrderDoc.builder()
 				.preparationDate(getOrderPreparationDate(shipmentSchedule))

@@ -1,4 +1,4 @@
-package de.metas.inoutcandidate.spi;
+package de.metas.inoutcandidate.spi.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
@@ -16,7 +16,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.inoutcandidate.spi.impl.ShipmentScheduleOrderDocForOrderLine;
+import de.metas.inoutcandidate.spi.ShipmentScheduleOrderDoc;
 
 /*
  * #%L
@@ -40,7 +40,7 @@ import de.metas.inoutcandidate.spi.impl.ShipmentScheduleOrderDocForOrderLine;
  * #L%
  */
 
-public class ShipmentScheduleOrderDocFactoryTests
+public class ShipmentScheduleOrderDocForOrderLineTests
 {
 
 	@Before
@@ -74,10 +74,7 @@ public class ShipmentScheduleOrderDocFactoryTests
 		sched.setAD_Table_ID(ref.getAD_Table_ID());
 		sched.setRecord_ID(ref.getRecord_ID());
 
-		final ShipmentScheduleOrderDocFactory shipmentScheduleOrderDocFactory = new ShipmentScheduleOrderDocFactory();
-		shipmentScheduleOrderDocFactory.registerProvider(I_C_OrderLine.Table_Name, ShipmentScheduleOrderDocForOrderLine.INSTANCE);
-
-		final ShipmentScheduleOrderDoc result = shipmentScheduleOrderDocFactory.createFor(sched);
+		final ShipmentScheduleOrderDoc result = new ShipmentScheduleOrderDocForOrderLine().provideFor(sched);
 		assertThat(result.getDeliveryDate()).isEqualTo(deliveryDate);
 		assertThat(result.getPreparationDate()).isNull();
 	}
