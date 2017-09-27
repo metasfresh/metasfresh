@@ -2,6 +2,8 @@ package de.metas.contracts.subscription.inoutcandidate.spi.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
+import org.springframework.stereotype.Service;
+
 import de.metas.flatrate.model.I_C_SubscriptionProgress;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.spi.ShipmentScheduleOrderDoc;
@@ -30,6 +32,7 @@ import lombok.NonNull;
  * #L%
  */
 
+@Service
 public class ShipmentScheduleOrderDocForSubscriptionLine implements ShipmentScheduleOrderDocProvider
 {
 	/**

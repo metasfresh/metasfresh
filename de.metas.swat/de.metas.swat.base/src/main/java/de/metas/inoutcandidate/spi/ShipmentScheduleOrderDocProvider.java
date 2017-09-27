@@ -28,7 +28,9 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 
 /**
  * Implementations create {@link ShipmentScheduleOrderDoc} instances for shipment schedules that reference a particular table.
- * They inherit this interface's {@link Service} annotation and are automatically discovered and added to {@link ShipmentScheduleOrderDocProvider} on startup.
+ * They are automatically discovered and added to {@link ShipmentScheduleOrderDocProvider} on startup.
+ * <p>
+ * Please annotate your implementations also with {@link Service} to avoid problems with spring junit testing.
  * 
  * @author metas-dev <dev@metasfresh.com>
  *

@@ -5,6 +5,7 @@ import java.sql.Timestamp;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
+import org.springframework.stereotype.Service;
 
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.spi.ShipmentScheduleOrderDoc;
@@ -33,7 +34,7 @@ import lombok.NonNull;
  * #L%
  */
 
-
+@Service
 public class ShipmentScheduleOrderDocForOrderLine implements ShipmentScheduleOrderDocProvider
 {
 	/**
