@@ -1,4 +1,4 @@
-	
+﻿	
 DROP FUNCTION IF EXISTS report.fresh_product_statistics_report
 	(
 		IN C_Period_ID numeric, 

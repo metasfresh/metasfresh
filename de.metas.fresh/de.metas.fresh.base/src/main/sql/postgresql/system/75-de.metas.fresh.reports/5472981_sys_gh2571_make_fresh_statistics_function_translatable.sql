@@ -1,4 +1,4 @@
---DROP FUNCTION IF EXISTS report.fresh_Get_Predecessor_Period (IN Source_Period_ID numeric);
+﻿--DROP FUNCTION IF EXISTS report.fresh_Get_Predecessor_Period (IN Source_Period_ID numeric);
 
 DROP FUNCTION IF EXISTS report.fresh_statistics ( 
 	IN C_Period_ID numeric, IN issotrx character varying, IN C_BPartner_ID numeric, IN C_Activity_ID numeric,
