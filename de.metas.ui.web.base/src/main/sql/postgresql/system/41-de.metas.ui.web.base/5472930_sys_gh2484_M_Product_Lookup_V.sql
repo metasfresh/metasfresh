@@ -30,3 +30,4 @@ create or replace view M_Product_Lookup_V as
 	inner join M_Product p on (p.M_Product_ID=bpp.M_Product_ID)
 	where bpp.IsActive='Y'
 ;
+
