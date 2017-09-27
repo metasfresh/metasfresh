@@ -30,6 +30,8 @@ Here come the actual release notes:
     * Improvements in different Windows, adapting the Layout to our current design Guidelines. Adding Translations for de_DE and en_US Locale/ Language.
   * [#2560](https://github.com/metasfresh/metasfresh/issues/2560) Menu Window improvements in WebUI
     * New -Column Layout for the Menu maintenance Window in WebUI.
+  * [#2580](https://github.com/metasfresh/metasfresh/issues/2580) Add Subscription history in Contract window WebUI
+    * adding included Tab for Subscription History to Contract Window in WebUI.
 
 # metasfresh 5.28 (2017-39)
 
