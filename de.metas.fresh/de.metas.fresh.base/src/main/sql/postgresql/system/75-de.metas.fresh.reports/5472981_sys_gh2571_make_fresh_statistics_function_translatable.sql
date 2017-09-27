@@ -93,7 +93,10 @@ SELECT
 	to_char( EndDate, 'DD.MM.YYYY' ) AS EndDate,
 	(SELECT name FROM C_BPartner WHERE C_BPartner_ID = $3 AND isActive = 'Y') AS param_bp,
 	(SELECT name FROM C_Activity WHERE C_Activity_ID = $4 AND isActive = 'Y') AS param_Activity,
-	(SELECT name FROM M_Product WHERE M_Product_ID = $5 AND isActive = 'Y') AS param_product,
+	(SELECT COALESCE(pt.name, p.name) FROM M_Product p 
+		LEFT OUTER JOIN M_Product_Trl pt ON p.M_Product_ID = pt.M_Product_ID AND pt.AD_Language = $9 AND pt.isActive = 'Y'
+		WHERE p.M_Product_ID = $5 AND p.isActive = 'Y'
+	) AS param_product,
 	(SELECT name FROM M_Product_Category WHERE M_Product_Category_ID = $6 AND isActive = 'Y') AS param_Product_Category,
 	(SELECT String_Agg(ai_value, ', ' ORDER BY ai_Value) FROM Report.fresh_Attributes WHERE M_AttributeSetInstance_ID = $7) AS Param_Attributes,
 	a.ad_org_id,

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
-<!-- 2017-09-27T15:02:13 -->
+<!-- 2017-09-27T18:13:11 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="842" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/reports/article_statistics/report" uuid="9ee5152e-1472-4ae4-ac36-02ca94f79b5d">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -123,21 +123,21 @@
 					<textElement>
 						<font size="7" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$P{IsSOTrx} == "N" ? $R{Purchase} : ($P{IsSOTrx} =="Y"? $R{Sales} : $R{All} )]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$P{IsSOTrx}.equals("N") ? $R{Purchase} : ($P{IsSOTrx} .equals("Y") ? $R{Sales} : $R{All} )]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement x="170" y="66" width="105" height="10" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
 					<textElement>
 						<font size="7" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{param_bp} != null ? $F{param_bp} : $R{All} ]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{param_bp} != null ? $F{param_bp} : $R{All}]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement x="364" y="57" width="81" height="10" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
 					<textElement>
 						<font size="7" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{p_name} != null ? $F{p_name} : $R{All} ]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{p_name} != null ? $F{p_name} : $R{All}]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement x="284" y="57" width="81" height="10" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
@@ -151,7 +151,7 @@
 					<textElement>
 						<font size="7" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{param_attributes} != null ? $F{param_attributes} : $R{All} ]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{param_attributes} != null ? $F{param_attributes} : $R{All}]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement x="284" y="66" width="81" height="10" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
@@ -298,7 +298,7 @@
 					<textElement>
 						<font size="7" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{p_value} != null ? $F{p_value} : $R{All} ]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{p_value} != null ? $F{p_value} : $R{All}]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement x="284" y="48" width="81" height="10" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
