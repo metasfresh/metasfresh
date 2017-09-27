@@ -163,13 +163,8 @@ public class ShipmentScheduleEffectiveBL implements IShipmentScheduleEffectiveBL
 	@Override
 	public Timestamp getDeliveryDate(final I_M_ShipmentSchedule sched)
 	{
-		final Timestamp deliveryDateOverride = sched.getDeliveryDate_Override();
-		if (deliveryDateOverride != null)
-		{
-			return deliveryDateOverride;
-		}
-
-		return sched.getDeliveryDate();
+		final Timestamp deliveryDate = InterfaceWrapperHelper.getValueOverrideOrValue(sched, I_M_ShipmentSchedule.COLUMNNAME_DeliveryDate);
+		return deliveryDate;
 	}
 
 	@Override

@@ -13,15 +13,14 @@ package de.metas.handlingunits.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -45,6 +44,7 @@ import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import de.metas.StartupListener;
 import de.metas.handlingunits.AbstractHUTest;
 import de.metas.handlingunits.HUTestHelper;
 import de.metas.handlingunits.HandlingUnitsConfiguration;
@@ -63,7 +63,7 @@ import de.metas.handlingunits.util.TraceUtils;
 import de.metas.interfaces.I_M_Warehouse;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes= HandlingUnitsConfiguration.class)
+@SpringBootTest(classes = { StartupListener.class, HandlingUnitsConfiguration.class })
 public class HUSnapshotDAOTest extends AbstractHUTest
 {
 	private HUSnapshotDAO huSnapshotDAO;
@@ -103,7 +103,7 @@ public class HUSnapshotDAOTest extends AbstractHUTest
 		Check.assumeNotNull(trxManager, "trxManager not null");
 
 		setupMasterData_HU_PI();
-		
+
 		final I_M_Warehouse warehouse1 = helper.createWarehouse("Warehouse1");
 		warehouse1_locator1 = helper.createLocator("Warehouse1_Locator1", warehouse1);
 	}
