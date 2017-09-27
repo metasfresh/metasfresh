@@ -71,6 +71,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_Storage;
 import de.metas.handlingunits.picking.IHUPickingSlotDAO;
+import lombok.NonNull;
 
 /**
  * {@link IHUQueryBuilder} implementation.
@@ -892,6 +893,13 @@ import de.metas.handlingunits.picking.IHUPickingSlotDAO;
 	{
 		Check.assumeNotEmpty(huStatus, "huStatus not empty");
 		_huStatusesToInclude.add(huStatus);
+		return this;
+	}
+	
+	@Override
+	public IHUQueryBuilder addHUStatusesToInclude(@NonNull final Collection<String> huStatuses)
+	{
+		huStatuses.stream().filter(huStatus -> !Check.isEmpty(huStatus, true)).forEach(this::addHUStatusToInclude);
 		return this;
 	}
 
