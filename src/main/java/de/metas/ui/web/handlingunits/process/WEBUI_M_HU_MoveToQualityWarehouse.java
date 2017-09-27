@@ -14,6 +14,7 @@ import de.metas.printing.esb.base.util.Check;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.ui.web.handlingunits.process.HUEditorProcessTemplate.HUEditorRowFilter.Select;
 
 /*
  * #%L

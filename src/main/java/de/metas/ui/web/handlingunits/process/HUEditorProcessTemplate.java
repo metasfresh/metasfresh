@@ -2,19 +2,26 @@ package de.metas.ui.web.handlingunits.process;
 
 import java.util.List;
 import java.util.Set;
+import java.util.function.Predicate;
 
 import org.adempiere.util.Services;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.X_M_HU;
 import de.metas.ui.web.handlingunits.HUEditorRow;
 import de.metas.ui.web.handlingunits.HUEditorView;
+import de.metas.ui.web.handlingunits.process.HUEditorProcessTemplate.HUEditorRowFilter.Select;
 import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
+import lombok.Builder;
 import lombok.NonNull;
+import lombok.Singular;
+import lombok.Value;
 
 /*
  * #%L
@@ -58,27 +65,13 @@ public abstract class HUEditorProcessTemplate extends ViewBasedProcessTemplate
 		return HUEditorRow.cast(super.getSingleSelectedRow());
 	}
 
-	enum Select
-	{
-		ONLY_TOPLEVEL, ALL
-	}
-
-	/**
-	 * 
-	 * @param select if {@link Select#ONLY_TOPLEVEL} then the method only returns row with {@link HUEditorRow#isTopLevel()} {@code == true};
-	 * @return
-	 */
-	protected final List<HUEditorRow> getSelectedRows(@NonNull final Select select)
+	protected final List<HUEditorRow> getSelectedRows(@NonNull final HUEditorRowFilter filter)
 	{
 		final DocumentIdsSelection selectedDocumentIds = getSelectedDocumentIds();
 		final List<HUEditorRow> allRows = getView().getByIds(selectedDocumentIds);
 
-		if (select == Select.ALL)
-		{
-			return allRows;
-		}
 		return allRows.stream()
-				.filter(HUEditorRow::isTopLevel)
+				.filter(toPredicate(filter))
 				.collect(ImmutableList.toImmutableList());
 
 	}
@@ -87,11 +80,15 @@ public abstract class HUEditorProcessTemplate extends ViewBasedProcessTemplate
 	 * Calls {@link #getSelectedRows(Select)} and returns the {@link HUEditorRow}s' {@code M_HU_ID}s.
 	 *
 	 * @param select
-	 * @return
 	 */
 	protected final Set<Integer> getSelectedHUIds(@NonNull final Select select)
 	{
-		return getSelectedRows(select)
+		return getSelectedHUIds(HUEditorRowFilter.select(select));
+	}
+
+	protected final Set<Integer> getSelectedHUIds(@NonNull final HUEditorRowFilter filter)
+	{
+		return getSelectedRows(filter)
 				.stream()
 				.map(HUEditorRow::getM_HU_ID)
 				.filter(huId -> huId > 0)
@@ -99,7 +96,7 @@ public abstract class HUEditorProcessTemplate extends ViewBasedProcessTemplate
 	}
 
 	/**
-	 * Gets <b>all</b> selected {@link HUEditorRow}s and loads the top level-HUs from those. 
+	 * Gets <b>all</b> selected {@link HUEditorRow}s and loads the top level-HUs from those.
 	 * I.e. this method does not rely on {@link HUEditorRow#isTopLevel()}, but checks the underlying HU.
 	 * 
 	 * @param select
@@ -107,14 +104,78 @@ public abstract class HUEditorProcessTemplate extends ViewBasedProcessTemplate
 	 */
 	protected final List<I_M_HU> getSelectedHUs(@NonNull final Select select)
 	{
-		// get all IDs, we we will check for ourselves if they are toplevel or not
-		final Set<Integer> huIds = getSelectedHUIds(Select.ALL);
+		return getSelectedHUs(HUEditorRowFilter.select(select));
+	}
 
-		return Services.get(IHandlingUnitsDAO.class)
-				.createHUQueryBuilder()
+	protected final List<I_M_HU> getSelectedHUs(@NonNull final HUEditorRowFilter filter)
+	{
+		// get all IDs, we we will enforce the filter using HUQueryBuilder
+		final Set<Integer> huIds = getSelectedHUIds(HUEditorRowFilter.ALL);
+
+		return toHUQueryBuilder(filter)
 				.addOnlyHUIds(huIds)
-				.setOnlyTopLevelHUs(select == Select.ONLY_TOPLEVEL)
 				.createQuery()
 				.list(I_M_HU.class);
+	}
+	
+	private static final IHUQueryBuilder toHUQueryBuilder(final HUEditorRowFilter filter)
+	{
+		return Services.get(IHandlingUnitsDAO.class)
+				.createHUQueryBuilder()
+				.setOnlyTopLevelHUs(filter.getSelect() == Select.ONLY_TOPLEVEL)
+				.addHUStatusesToInclude(filter.getOnlyHUStatuses());
+	}
+
+	private static final Predicate<HUEditorRow> toPredicate(@NonNull final HUEditorRowFilter filter)
+	{
+		return row -> matches(row, filter);
+	}
+
+	private static final boolean matches(final HUEditorRow row, final HUEditorRowFilter filter)
+	{
+		final Select select = filter.getSelect();
+		if (select == Select.ONLY_TOPLEVEL && !row.isTopLevel())
+		{
+			return false;
+		}
+
+		final Set<String> onlyHUStatuses = filter.getOnlyHUStatuses();
+		if (!onlyHUStatuses.isEmpty() && !onlyHUStatuses.contains(row.getHUStatusKey()))
+		{
+			return false;
+		}
+
+		return true;
+	}
+
+	@Builder(toBuilder = true)
+	@Value
+	protected static final class HUEditorRowFilter
+	{
+		public static final HUEditorRowFilter ALL = builder().select(Select.ALL).build();
+		
+		public static final HUEditorRowFilter select(Select select)
+		{
+			return builder().select(select).build();
+		}
+
+		@NonNull
+		private final Select select;
+		@Singular
+		private final ImmutableSet<String> onlyHUStatuses;
+
+		enum Select
+		{
+			ONLY_TOPLEVEL, ALL
+		}
+
+		public static final class HUEditorRowFilterBuilder
+		{
+			public HUEditorRowFilterBuilder onlyActiveHUs()
+			{
+				onlyHUStatus(X_M_HU.HUSTATUS_Active);
+				return this;
+			}
+		}
 	}
 }
