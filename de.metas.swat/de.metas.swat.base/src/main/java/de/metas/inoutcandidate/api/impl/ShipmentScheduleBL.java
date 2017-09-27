@@ -172,7 +172,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			final String headerAggregationKey = shipmentScheduleKeyBuilder.buildKey(sched);
 			sched.setHeaderAggregationKey(headerAggregationKey);
 		}
-		
+
 		//
 		// Check shipment constraints
 		final IShipmentConstraintsBL shipmentConstraintsBL = Services.get(IShipmentConstraintsBL.class);
@@ -182,7 +182,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			final int billBPartnerId = sched.getBill_BPartner_ID();
 			final int deliveryStopShipmentConstraintId = shipmentConstraintsBL.getDeliveryStopShipmentConstraintId(billBPartnerId);
 			final boolean isDeliveryStop = deliveryStopShipmentConstraintId > 0;
-			if(isDeliveryStop)
+			if (isDeliveryStop)
 			{
 				sched.setIsDeliveryStop(true);
 				sched.setM_Shipment_Constraint_ID(deliveryStopShipmentConstraintId);
@@ -193,7 +193,6 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 				sched.setM_Shipment_Constraint_ID(-1);
 			}
 		}
-		
 
 		final CachedObjects coToUse = mkCoToUse(co);
 
@@ -416,7 +415,6 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			sched.setLineNetAmt(qtyReservedInPriceUOM.multiply(ol.getPriceActual()));
 		}
 	}
-
 
 	/**
 	 * Generate Shipments.
@@ -649,7 +647,6 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 		}
 		return completeStatus;
 	}
-
 
 	private ShipmentCandidates mkCandidatesToUse(
 			final List<OlAndSched> lines,
@@ -1158,5 +1155,17 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			}
 		}
 		return storageQuery;
+	}
+
+	@Override
+	public void openProcessedShipmentSchedule(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
+	{
+		Check.assume(shipmentSchedule.isProcessed(), "M_ShipmentSchedule {} is not Processed", shipmentSchedule);
+
+		shipmentSchedule.setQtyOrdered_Override(null);
+		shipmentSchedule.setProcessed(false);
+
+		InterfaceWrapperHelper.save(shipmentSchedule);
+
 	}
 }
