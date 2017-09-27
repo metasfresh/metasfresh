@@ -179,7 +179,8 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 				+ "\n, p." + I_M_Product_Lookup_V.COLUMNNAME_Value
 				+ "\n, " + trlAlias + "." + I_M_Product_Lookup_V.COLUMNNAME_Name
 				+ "\n, p." + I_M_Product_Lookup_V.COLUMNNAME_UPC
-				+ "\n, p." + I_M_Product_Lookup_V.COLUMNNAME_VendorProductNo
+				+ "\n, p." + I_M_Product_Lookup_V.COLUMNNAME_BPartnerProductNo
+				+ "\n, p." + I_M_Product_Lookup_V.COLUMNNAME_BPartnerProductName
 				+ "\n FROM " + I_M_Product_Lookup_V.Table_Name + " p ");
 		if (!isBaseLanguage)
 		{
@@ -228,7 +229,8 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 				.append(" p." + I_M_Product_Lookup_V.COLUMNNAME_Value + " ILIKE ").append(sqlWhereClauseParams.placeholder(sqlFilter))
 				.append(" OR ").append(trlAlias).append("." + I_M_Product_Lookup_V.COLUMNNAME_Name + " ILIKE ").append(sqlWhereClauseParams.placeholder(sqlFilter))
 				.append(" OR ").append("p." + I_M_Product_Lookup_V.COLUMNNAME_UPC + " ILIKE ").append(sqlWhereClauseParams.placeholder(sqlFilter))
-				.append(" OR ").append("p." + I_M_Product_Lookup_V.COLUMNNAME_VendorProductNo + " ILIKE ").append(sqlWhereClauseParams.placeholder(sqlFilter))
+				.append(" OR ").append("p." + I_M_Product_Lookup_V.COLUMNNAME_BPartnerProductNo + " ILIKE ").append(sqlWhereClauseParams.placeholder(sqlFilter))
+				.append(" OR ").append("p." + I_M_Product_Lookup_V.COLUMNNAME_BPartnerProductName + " ILIKE ").append(sqlWhereClauseParams.placeholder(sqlFilter))
 				.append(")");
 	}
 
@@ -301,7 +303,8 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 		final String value = rs.getString(I_M_Product_Lookup_V.COLUMNNAME_Value);
 		final String name = rs.getString(I_M_Product_Lookup_V.COLUMNNAME_Name);
 		final String upc = rs.getString(I_M_Product_Lookup_V.COLUMNNAME_UPC);
-		final String bpartnerProductNo = rs.getString(I_M_Product_Lookup_V.COLUMNNAME_VendorProductNo);
+		final String bpartnerProductNo = rs.getString(I_M_Product_Lookup_V.COLUMNNAME_BPartnerProductNo);
+		// final String bpartnerProductName = rs.getString(I_M_Product_Lookup_V.COLUMNNAME_BPartnerProductName); // not displayed
 
 		final String displayName = Joiner.on("_").skipNulls().join(value, name, upc, bpartnerProductNo);
 
@@ -401,7 +404,8 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 		String COLUMNNAME_Value = "Value";
 		String COLUMNNAME_Name = "Name";
 		String COLUMNNAME_UPC = "UPC";
-		String COLUMNNAME_VendorProductNo = "VendorProductNo";
+		String COLUMNNAME_BPartnerProductNo = "BPartnerProductNo";
+		String COLUMNNAME_BPartnerProductName = "BPartnerProductName";
 		String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
 	}
 }
