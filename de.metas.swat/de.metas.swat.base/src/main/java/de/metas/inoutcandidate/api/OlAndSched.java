@@ -25,11 +25,15 @@ package de.metas.inoutcandidate.api;
 
 import java.math.BigDecimal;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.interfaces.I_C_OrderLine;
+import lombok.Builder;
+import lombok.NonNull;
 
 /**
  *
@@ -38,32 +42,40 @@ import de.metas.interfaces.I_C_OrderLine;
  */
 public final class OlAndSched
 {
-	private final I_C_OrderLine orderLine;
-
-	private final IDeliverRequest deliverRequest;
-
 	private final I_M_ShipmentSchedule shipmentSchedule;
+	@Nullable
+	private final I_C_OrderLine orderLine;
+	private final IDeliverRequest deliverRequest;
+	private final BigDecimal initialSchedQtyDelivered;
 
 	private boolean availForShipmentRun;
 
-	private final BigDecimal initialSchedQtyDelivered;
-
+	@Deprecated
 	public OlAndSched(final org.compiere.model.I_C_OrderLine ol, final I_M_ShipmentSchedule sched)
 	{
-		super();
-		orderLine = InterfaceWrapperHelper.create(ol, I_C_OrderLine.class);
-		shipmentSchedule = sched;
-		initialSchedQtyDelivered = sched.getQtyDelivered();
-		final IInOutCandHandlerBL inOutCandHandlerBL = Services.get(IInOutCandHandlerBL.class);
-
-		deliverRequest = inOutCandHandlerBL.createDeliverRequest(sched);
+		this(ol, sched, Services.get(IInOutCandHandlerBL.class).createDeliverRequest(sched));
 	}
+
+	@Builder
+	private OlAndSched(
+			final org.compiere.model.I_C_OrderLine orderLine,
+			@NonNull final I_M_ShipmentSchedule shipmentSchedule,
+			@NonNull final IDeliverRequest deliverRequest)
+	{
+		this.orderLine = InterfaceWrapperHelper.create(orderLine, I_C_OrderLine.class);
+		this.shipmentSchedule = shipmentSchedule;
+		this.deliverRequest = deliverRequest;
+		
+		initialSchedQtyDelivered = shipmentSchedule.getQtyDelivered();
+	}
+
 
 	public IDeliverRequest getDeliverRequest()
 	{
 		return deliverRequest;
 	}
 
+	@Nullable
 	public I_C_OrderLine getOl()
 	{
 		return orderLine;
@@ -100,6 +112,6 @@ public final class OlAndSched
 	@Override
 	public String toString()
 	{
-		return orderLine + " / " + shipmentSchedule;
+		return String.valueOf(orderLine) + " / " + shipmentSchedule;
 	}
 }

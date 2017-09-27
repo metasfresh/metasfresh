@@ -2,10 +2,15 @@ package de.metas.inoutcandidate.api.impl;
 
 import java.math.BigDecimal;
 
+import org.adempiere.inout.util.IShipmentCandidates;
+import org.adempiere.inout.util.ShipmentCandidates;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
+import de.metas.inoutcandidate.api.OlAndSched;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.inoutcandidate.model.X_M_ShipmentSchedule;
 
 /*
  * #%L
@@ -78,6 +83,33 @@ public class ShipmentScheduleQtysHelperTest extends ShipmentScheduleTestBase
 		sched.setQtyToDeliver_Override(new BigDecimal("10"));
 		ShipmentScheduleQtysHelper.setQtyToDeliverWhenNullInoutLine(sched);
 		Assert.assertEquals("Invalid qtyToDeliver", BigDecimal.valueOf(0), sched.getQtyToDeliver());
+	}
+
+	@Test
+	@Ignore("this one throws NPE because orderLine is null") // FIXME
+	public void test_updateQtyToDeliver_DeliveryStop()
+	{
+		final BigDecimal qtyOrdered = new BigDecimal("14");
+		final BigDecimal qtyToDeliver_Override = new BigDecimal("10");
+
+		final I_M_ShipmentSchedule sched = createShipmentSchedule(qtyOrdered);
+		sched.setQtyToDeliver_Override(qtyToDeliver_Override);
+		sched.setDeliveryRule(X_M_ShipmentSchedule.DELIVERYRULE_Force);
+
+		final OlAndSched olAndSched = OlAndSched.builder()
+				.shipmentSchedule(sched)
+				.deliverRequest(() -> qtyOrdered)
+				.build();
+		final IShipmentCandidates shipmentCandidates = new ShipmentCandidates();
+
+		sched.setIsDeliveryStop(false);
+		ShipmentScheduleQtysHelper.updateQtyToDeliver(olAndSched, shipmentCandidates);
+		Assert.assertEquals("QtyToDeliver (with delivery stop)", qtyToDeliver_Override, sched.getQtyToDeliver());
+
+		sched.setIsDeliveryStop(true);
+		ShipmentScheduleQtysHelper.updateQtyToDeliver(olAndSched, shipmentCandidates);
+		Assert.assertEquals("QtyToDeliver (with delivery stop)", BigDecimal.ZERO, sched.getQtyToDeliver());
+
 	}
 
 }
