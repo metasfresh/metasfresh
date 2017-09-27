@@ -91,6 +91,7 @@ public final class InOutCandidateValidator implements ModelValidator
 		// 07344: Register RS AggregationKey Dependencies
 		registerSSAggregationKeyDependencies();
 
+		engine.addModelValidator(new C_Order(), client);
 		engine.addModelValidator(new C_Order_ShipmentSchedule(), client);
 		engine.addModelValidator(new C_OrderLine_ShipmentSchedule(), client);
 		engine.addModelValidator(new M_ShipmentSchedule(), client);
