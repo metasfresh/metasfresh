@@ -18,10 +18,8 @@ import de.metas.ui.web.handlingunits.HUEditorView;
 import de.metas.ui.web.handlingunits.process.HUEditorProcessTemplate.HUEditorRowFilter.Select;
 import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
-import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
-import lombok.Value;
 
 /*
  * #%L
@@ -148,8 +146,8 @@ public abstract class HUEditorProcessTemplate extends ViewBasedProcessTemplate
 		return true;
 	}
 
-	@Builder(toBuilder = true)
-	@Value
+	@lombok.Builder(toBuilder = true)
+	@lombok.Value
 	protected static final class HUEditorRowFilter
 	{
 		public static final HUEditorRowFilter ALL = builder().select(Select.ALL).build();
