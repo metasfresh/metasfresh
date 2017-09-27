@@ -48,7 +48,6 @@ public class ShipmentScheduleOrderDocForOrderLine implements Function<I_M_Shipme
 		return ShipmentScheduleOrderDoc.builder()
 				.preparationDate(getOrderPreparationDate(shipmentSchedule))
 				.deliveryDate(getOrderLineDeliveryDate(shipmentSchedule))
-				.billPartner(shipmentSchedule.getC_OrderLine().getC_Order().getBill_BPartner())
 				.build();
 	}
 

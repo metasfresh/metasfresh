@@ -1,36 +1,14 @@
 package de.metas.tourplanning.integrationtest;
 
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.junit.Assert;
 import org.junit.Test;
 
 import de.metas.adempiere.model.I_C_Order;
-import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.tourplanning.TourPlanningTestBase;
 import de.metas.tourplanning.model.I_M_DeliveryDay;
 import de.metas.tourplanning.model.I_M_ShipmentSchedule;
@@ -80,7 +58,7 @@ public class TourPlanning_PreparationDate_IntergrationTest extends TourPlanningT
 
 		//
 		// Create and validate Shipment Schedule
-		final I_M_ShipmentSchedule shipmentSchedule = createShipmentSchedule(order);
+		final I_M_ShipmentSchedule shipmentSchedule = createShipmentSchedule(order, -1);
 		Assert.assertEquals("Invalid shipment schedule's DeliveryDate: " + shipmentSchedule,
 				toDateTimeTimestamp("08.09.2014 23:59:59.999"),
 				shipmentSchedule.getDeliveryDate());
@@ -93,7 +71,7 @@ public class TourPlanning_PreparationDate_IntergrationTest extends TourPlanningT
 
 	protected I_M_DeliveryDay createDeliveryDay(final String deliveryDateTimeStr, final int bufferHours)
 	{
-		final I_M_DeliveryDay deliveryDay = InterfaceWrapperHelper.newInstance(I_M_DeliveryDay.class, contextProvider);
+		final I_M_DeliveryDay deliveryDay = newInstance(I_M_DeliveryDay.class, contextProvider);
 		deliveryDay.setC_BPartner(bpartner);
 		deliveryDay.setC_BPartner_Location(bpLocation);
 		deliveryDay.setDeliveryDate(toDateTimeTimestamp(deliveryDateTimeStr));
@@ -108,14 +86,14 @@ public class TourPlanning_PreparationDate_IntergrationTest extends TourPlanningT
 		deliveryDayBL.setDeliveryDateTimeMax(deliveryDay);
 		Assert.assertNotNull("DeliveryDateTimeMax shall be set", deliveryDay.getDeliveryDateTimeMax());
 
-		InterfaceWrapperHelper.save(deliveryDay);
+		save(deliveryDay);
 
 		return deliveryDay;
 	}
 
 	private I_C_Order createOrder(final String datePromisedStr)
 	{
-		final I_C_Order order = InterfaceWrapperHelper.newInstance(I_C_Order.class, contextProvider);
+		final I_C_Order order = newInstance(I_C_Order.class, contextProvider);
 		order.setC_BPartner(bpartner);
 		order.setC_BPartner_Location(bpLocation);
 
@@ -123,33 +101,9 @@ public class TourPlanning_PreparationDate_IntergrationTest extends TourPlanningT
 		order.setDatePromised(toDateTimeTimestamp(datePromisedStr));
 		order.setPreparationDate(null); // to be updated
 
-		InterfaceWrapperHelper.save(order);
-
+		save(order);
 		// NOTE: we expect PreparationDate to be set by model validator
 
 		return order;
-	}
-
-	private I_M_ShipmentSchedule createShipmentSchedule(final I_C_Order order)
-	{
-		final I_M_ShipmentSchedule shipmentSchedule = InterfaceWrapperHelper.newInstance(I_M_ShipmentSchedule.class, order);
-		shipmentSchedule.setC_Order(order);
-		shipmentSchedule.setC_BPartner(order.getC_BPartner());
-		shipmentSchedule.setC_BPartner_Location(order.getC_BPartner_Location());
-
-		Services.get(IShipmentScheduleBL.class).updatePreparationAndDeliveryDate(shipmentSchedule);
-
-		shipmentScheduleDeliveryDayBL.updateDeliveryDayInfo(shipmentSchedule);
-
-		InterfaceWrapperHelper.save(shipmentSchedule);
-
-		Assert.assertEquals("Invalid shipment schedule's DeliveryDate: " + shipmentSchedule,
-				order.getDatePromised(),
-				shipmentSchedule.getDeliveryDate());
-		Assert.assertEquals("Invalid shipment schedule's PreparationDate: " + shipmentSchedule,
-				order.getPreparationDate(),
-				shipmentSchedule.getPreparationDate());
-
-		return shipmentSchedule;
 	}
 }

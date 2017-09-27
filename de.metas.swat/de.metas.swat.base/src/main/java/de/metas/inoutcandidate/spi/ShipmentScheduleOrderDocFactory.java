@@ -12,8 +12,6 @@ import org.springframework.stereotype.Service;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import lombok.NonNull;
 
-
-
 @Service
 public class ShipmentScheduleOrderDocFactory
 {
@@ -43,7 +41,7 @@ public class ShipmentScheduleOrderDocFactory
 
 		public UnsupportedShipmentScheduleTableId(final I_M_ShipmentSchedule shipmentSchedule)
 		{
-			super("M_ShipmentSchedule=" + shipmentSchedule.toString() + " with AD_Table_ID=" + shipmentSchedule.getAD_Table_ID());
+			super("AD_Table_ID=" + shipmentSchedule.getAD_Table_ID() + "; M_ShipmentSchedule=" + shipmentSchedule.toString());
 		}
 	}
 }

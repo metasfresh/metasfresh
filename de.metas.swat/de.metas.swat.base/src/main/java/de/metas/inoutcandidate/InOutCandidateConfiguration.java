@@ -1,11 +1,7 @@
 package de.metas.inoutcandidate;
 
-import org.compiere.model.I_C_OrderLine;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-
-import de.metas.inoutcandidate.spi.ShipmentScheduleOrderDocFactory;
-import de.metas.inoutcandidate.spi.impl.ShipmentScheduleOrderDocForOrderLine;
-import lombok.NonNull;
 
 /*
  * #%L
@@ -28,11 +24,10 @@ import lombok.NonNull;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
 @Configuration
-public class InOutCandidateconfiguration
+@ComponentScan(basePackageClasses = { InOutCandidateConfiguration.class })
+public class InOutCandidateConfiguration
 {
-	public InOutCandidateconfiguration(@NonNull final ShipmentScheduleOrderDocFactory shipmentScheduleOrderDocFactory)
-	{
-		shipmentScheduleOrderDocFactory.registerProvider(I_C_OrderLine.Table_Name, ShipmentScheduleOrderDocForOrderLine.INSTANCE);
-	}
+
 }
