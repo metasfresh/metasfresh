@@ -303,14 +303,7 @@ public class DunningBL implements IDunningBL
 		{
 			for (final I_C_DunningDoc_Line_Source source : dao.retrieveDunningDocLineSources(context, line))
 			{
-				final I_C_Dunning_Candidate candidate = source.getC_Dunning_Candidate();
-				candidate.setProcessed(true); // make sure the Processed flag is set
-				candidate.setIsDunningDocProcessed(true); // IsDunningDocProcessed
-				candidate.setDunningDateEffective(dunningDoc.getDunningDate());
-				dao.save(candidate);
-
-				source.setProcessed(true);
-				InterfaceWrapperHelper.save(source);
+				processSourceAndItsCandidates(dunningDoc, source);
 			}
 
 			line.setProcessed(true);
@@ -319,20 +312,43 @@ public class DunningBL implements IDunningBL
 
 		//
 		// Delivery stop (https://github.com/metasfresh/metasfresh/issues/2499)
-		// TODO: get the delivery partner instead of invoice partner. That one shall be Stopped!
-		final org.compiere.model.I_C_DunningLevel dunningLevel = dunningDoc.getC_DunningLevel();
-		if (dunningLevel.isDeliveryStop())
-		{
-			final IShipmentConstraintsBL shipmentConstraintsBL = Services.get(IShipmentConstraintsBL.class);
-			shipmentConstraintsBL.createConstraint(ShipmentConstraintCreateRequest.builder()
-					.billPartnerId(dunningDoc.getC_BPartner_ID())
-					.sourceDocRef(TableRecordReference.of(dunningDoc))
-					.deliveryStop(true)
-					.build());
-		}
+		makeDeliveryStopIfNeeded(dunningDoc);
 
 		dunningDoc.setProcessed(true);
 		dao.save(dunningDoc);
+	}
+
+	private void processSourceAndItsCandidates(
+			@NonNull final I_C_DunningDoc dunningDoc,
+			@NonNull final I_C_DunningDoc_Line_Source source)
+	{
+		final IDunningDAO dao = Services.get(IDunningDAO.class);
+
+		final I_C_Dunning_Candidate candidate = source.getC_Dunning_Candidate();
+		candidate.setProcessed(true); // make sure the Processed flag is set
+		candidate.setIsDunningDocProcessed(true); // IsDunningDocProcessed
+		candidate.setDunningDateEffective(dunningDoc.getDunningDate());
+		dao.save(candidate);
+
+		source.setProcessed(true);
+		InterfaceWrapperHelper.save(source);
+	}
+
+	private void makeDeliveryStopIfNeeded(@NonNull final I_C_DunningDoc dunningDoc)
+	{
+		final org.compiere.model.I_C_DunningLevel dunningLevel = dunningDoc.getC_DunningLevel();
+		if (!dunningLevel.isDeliveryStop())
+		{
+			return;
+		}
+
+		final IShipmentConstraintsBL shipmentConstraintsBL = Services.get(IShipmentConstraintsBL.class);
+		shipmentConstraintsBL.createConstraint(ShipmentConstraintCreateRequest.builder()
+				.billPartnerId(dunningDoc.getC_BPartner_ID())
+				.sourceDocRef(TableRecordReference.of(dunningDoc))
+				.deliveryStop(true)
+				.build());
+
 	}
 
 	@Override
