@@ -107,6 +107,12 @@ public interface IShipmentScheduleBL extends ISingletonService
 	I_M_InOut createInOut(Properties ctx, I_C_Order order, Timestamp movementDate, OlAndSched olAndSched, String trxName);
 
 	/**
+	 * Update the given {@code sched}'s delivery and preparation date from its underlying document (orderline etc).
+	 * @param sched
+	 */
+	void updatePreparationAndDeliveryDate(I_M_ShipmentSchedule sched);
+	
+	/**
 	 * Currently this method returns true iff the given {@code sched} has just been changes by {@link #updateSchedules(Properties, List, boolean, Timestamp, CachedObjects, String)}.
 	 *
 	 * @param sched

@@ -1,14 +1,14 @@
-package org.eevolution;
+package de.metas.inoutcandidate.spi;
 
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
+import java.sql.Timestamp;
 
-import de.metas.material.event.MaterialEventConfiguration;
-import de.metas.material.planning.MaterialPlanningConfiguration;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import lombok.Builder;
+import lombok.Value;
 
 /*
  * #%L
- * de.metas.adempiere.libero.libero
+ * de.metas.swat.base
  * %%
  * Copyright (C) 2017 metas GmbH
  * %%
@@ -16,23 +16,31 @@ import de.metas.material.planning.MaterialPlanningConfiguration;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-@Configuration
-@ComponentScan(basePackageClasses = {
-		LiberoConfiguration.class, // scan the classes in *this* package and its subpackages
-		MaterialPlanningConfiguration.class, // scan the classes in the material planning sub-packages for components. Without this, we need to have @Bean annotated methods in here
-		MaterialEventConfiguration.class,
-})
-public class LiberoConfiguration
+
+/**
+ * Contains data about the document a given {@link I_M_ShipmentSchedule} references via its {@code AD_Table_ID} and {@code Reference_ID} columns.
+ * Instances are generally created by {@link ShipmentScheduleOrderDocFactory}.
+ * 
+ * 
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
+@Value
+@Builder
+public class ShipmentScheduleOrderDoc
 {
+	Timestamp deliveryDate;
+
+	Timestamp preparationDate;
 }

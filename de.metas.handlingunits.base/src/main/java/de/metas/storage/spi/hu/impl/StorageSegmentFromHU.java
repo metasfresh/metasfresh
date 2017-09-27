@@ -33,25 +33,24 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.text.annotation.ToStringBuilder;
 import org.compiere.util.Env;
+
+import com.google.common.base.MoreObjects;
 
 import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Storage;
-import de.metas.storage.AbstractStorageSegment;
+import de.metas.storage.IStorageSegment;
 
-public class StorageSegmentFromHU extends AbstractStorageSegment
+public class StorageSegmentFromHU implements IStorageSegment
 {
 	// services
 	private final transient IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
 
 	private final Set<Integer> bpartnerIds = new HashSet<>();
-	@ToStringBuilder(skip = true)
 	private final Set<Integer> bpartnersIdsRO = Collections.unmodifiableSet(bpartnerIds);
 	//
 	private final Set<Integer> locatorIds = new HashSet<>();
-	@ToStringBuilder(skip = true)
 	private final Set<Integer> locatorsIdsRO = Collections.unmodifiableSet(locatorIds);
 	//
 	private Set<Integer> productIdsRO = null; // lazy init
@@ -93,6 +92,18 @@ public class StorageSegmentFromHU extends AbstractStorageSegment
 		{
 			productIdsRO = Collections.emptySet();
 		}
+	}
+	
+	@Override
+	public String toString()
+	{
+		return MoreObjects.toStringHelper(this)
+				.add("bpartnerIds", bpartnerIds)
+				.add("locatorIds", locatorIds)
+				.add("productIdsRO", productIdsRO)
+				.add("huId", huId)
+				.add("hasQtyOnHandChanges", hasQtyOnHandChanges)
+				.toString();
 	}
 
 	@Override

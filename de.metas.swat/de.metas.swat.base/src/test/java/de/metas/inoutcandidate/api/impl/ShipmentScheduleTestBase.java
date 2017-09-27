@@ -94,6 +94,7 @@ public abstract class ShipmentScheduleTestBase
 		shipmentSchedule.setAD_Table_ID(0);
 		shipmentSchedule.setBPartnerAddress("address");
 		shipmentSchedule.setC_BPartner_ID(0);
+		shipmentSchedule.setBill_BPartner_ID(0);
 		shipmentSchedule.setC_BPartner_Location_ID(0);
 		shipmentSchedule.setQtyDeliverable(qty);
 		shipmentSchedule.setQtyReserved(qty);
