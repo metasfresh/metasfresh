@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.X_M_HU;
 import de.metas.process.RunOutOfTrx;
 import de.metas.ui.web.window.model.DocumentCollection;
 
@@ -58,18 +59,6 @@ public class WEBUI_M_HU_MoveToDirectWarehouse_Mass extends HUEditorProcessTempla
 	private Timestamp p_MovementDate = null;
 	private String p_Description = null;
 
-	private boolean failOnFirstError = false;
-
-	protected final void setFailOnFirstError(final boolean failOnFirstError)
-	{
-		this.failOnFirstError = failOnFirstError;
-	}
-
-	protected final boolean isFailOnFirstError()
-	{
-		return failOnFirstError;
-	}
-
 	@Override
 	protected void prepare()
 	{
@@ -89,7 +78,7 @@ public class WEBUI_M_HU_MoveToDirectWarehouse_Mass extends HUEditorProcessTempla
 				.setHUView(getView())
 				.setMovementDate(p_MovementDate)
 				.setDescription(p_Description)
-				.setFailOnFirstError(failOnFirstError)
+				.setFailOnFirstError(false)
 				.setLoggable(this)
 				.move(retrieveHUs());
 
@@ -106,6 +95,9 @@ public class WEBUI_M_HU_MoveToDirectWarehouse_Mass extends HUEditorProcessTempla
 
 		// Only top level HUs
 		huQueryBuilder.setOnlyTopLevelHUs();
+		
+		// Only Active HUs
+		huQueryBuilder.addHUStatusToInclude(X_M_HU.HUSTATUS_Active);
 
 		// Only for preselected warehouse
 		if (p_M_Warehouse_ID > 0)

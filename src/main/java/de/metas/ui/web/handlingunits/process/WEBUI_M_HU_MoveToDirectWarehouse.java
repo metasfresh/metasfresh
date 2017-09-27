@@ -46,6 +46,8 @@ public class WEBUI_M_HU_MoveToDirectWarehouse extends HUEditorProcessTemplate im
 {
 	@Autowired
 	private DocumentCollection documentsCollection;
+	
+	private static final HUEditorRowFilter rowsFilter = HUEditorRowFilter.builder().select(Select.ONLY_TOPLEVEL).onlyActiveHUs().build();
 
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
@@ -56,7 +58,7 @@ public class WEBUI_M_HU_MoveToDirectWarehouse extends HUEditorProcessTemplate im
 			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
 		}
 
-		final Set<Integer> huIds = getSelectedHUIds(Select.ONLY_TOPLEVEL);
+		final Set<Integer> huIds = getSelectedHUIds(rowsFilter);
 		if (huIds.isEmpty())
 		{
 			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(WEBUI_M_HU_Messages.MSG_WEBUI_ONLY_TOP_LEVEL_HU));
@@ -69,7 +71,7 @@ public class WEBUI_M_HU_MoveToDirectWarehouse extends HUEditorProcessTemplate im
 	@RunOutOfTrx
 	protected String doIt()
 	{
-		final List<I_M_HU> selectedTopLevelHUs = getSelectedHUs(Select.ONLY_TOPLEVEL);
+		final List<I_M_HU> selectedTopLevelHUs = getSelectedHUs(rowsFilter);
 		if (selectedTopLevelHUs.isEmpty())
 		{
 			throw new AdempiereException("@NoSelection@");
