@@ -19,9 +19,12 @@ UPDATE AD_ColumnCallout SET ClassName = 'de.metas.contracts.flatrate.callout.C_F
 UPDATE AD_ColumnCallout SET ClassName = 'de.metas.contracts.flatrate.callout.OrderLine.qty' WHERE ClassName = 'de.metas.flatrate.callout.OrderLine.qty';
 UPDATE AD_ColumnCallout SET ClassName = 'de.metas.contracts.flatrate.callout.OrderLine.amt' WHERE ClassName = 'de.metas.flatrate.callout.OrderLine.amt';
 
-UPDATE C_ILCandHandler SET ClassName='de.metas.contracts.invoicecandidate.FlatrateTermHandler' WHERE ClassName = 'de.metas.flatrate.invoicecandidate.spi.impl.FlatrateTermHandler';
+UPDATE C_ILCandHandler SET ClassName='de.metas.contracts.invoicecandidate.FlatrateTermInvoiceCandidateHandler' WHERE ClassName = 'de.metas.flatrate.invoicecandidate.spi.impl.FlatrateTermHandler';
 UPDATE C_ILCandHandler SET ClassName='de.metas.contracts.invoicecandidate.FlatrateDataEntryHandler' WHERE ClassName = 'de.metas.flatrate.invoicecandidate.spi.impl.FlatrateDataEntryHandler';
 
 UPDATE AD_EntityType SET ModelPackage='de.metas.contracts.flatrate.model' WHERE ModelPackage='de.metas.flatrate.model';
 
 UPDATE M_IolCandHandler SET ClassName = 'de.metas.contracts.inoutcandidate.SubscriptionShipmentScheduleHandler' WHERE ClassName='de.metas.flatrate.inoutcandidate.spi.impl.SubscriptionInOutCandHandler';
+
+
+UPDATE C_ILCandHandler SET IsActive='Y' WHERE ClassName='de.metas.contracts.invoicecandidate.FlatrateTermInvoiceCandidateHandler';

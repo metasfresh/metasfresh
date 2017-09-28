@@ -39,7 +39,6 @@ import org.adempiere.util.ILoggable;
 import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.compiere.util.Env;
 import org.compiere.util.TrxRunnable;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
@@ -359,7 +358,9 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 		}
 	}
 
-	private void updateDefaultsAndSaveSingleCandidate(final IInvoiceCandidateHandler handler, final I_C_Invoice_Candidate ic)
+	private void updateDefaultsAndSaveSingleCandidate(
+			@NonNull final IInvoiceCandidateHandler handler, 
+			@NonNull final I_C_Invoice_Candidate ic)
 	{
 		Check.assumeNotNull(handler, "handler not null");
 

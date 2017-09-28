@@ -32,7 +32,7 @@ import de.metas.contracts.flatrate.model.I_C_Flatrate_Term;
 import de.metas.contracts.flatrate.model.I_C_Flatrate_Transition;
 import de.metas.contracts.flatrate.model.X_C_Flatrate_Term;
 import de.metas.contracts.flatrate.model.X_C_Flatrate_Transition;
-import de.metas.contracts.invoicecandidate.FlatrateTermHandler;
+import de.metas.contracts.invoicecandidate.FlatrateTermInvoiceCandidateHandler;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateRequest;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateResult;
@@ -96,7 +96,7 @@ public class FlatrateTermHandlerTest extends ContractsTestBase
 		term.setC_Flatrate_Conditions(conditions);
 		InterfaceWrapperHelper.save(term);
 
-		final FlatrateTermHandler handler = new FlatrateTermHandler();
+		final FlatrateTermInvoiceCandidateHandler handler = new FlatrateTermInvoiceCandidateHandler();
 
 		final boolean resultActual = handler.isCorrectDateForTerm(term);
 		final boolean resultExpected = true;
@@ -127,7 +127,7 @@ public class FlatrateTermHandlerTest extends ContractsTestBase
 		term.setC_Flatrate_Conditions(conditions);
 		InterfaceWrapperHelper.save(term);
 
-		final FlatrateTermHandler handler = new FlatrateTermHandler();
+		final FlatrateTermInvoiceCandidateHandler handler = new FlatrateTermInvoiceCandidateHandler();
 
 		final boolean resultActual = handler.isCorrectDateForTerm(term);
 		final boolean resultExpected = true;
@@ -158,7 +158,7 @@ public class FlatrateTermHandlerTest extends ContractsTestBase
 		term.setC_Flatrate_Conditions(conditions);
 		InterfaceWrapperHelper.save(term);
 
-		final FlatrateTermHandler handler = new FlatrateTermHandler();
+		final FlatrateTermInvoiceCandidateHandler handler = new FlatrateTermInvoiceCandidateHandler();
 
 		final boolean resultActual = handler.isCorrectDateForTerm(term);
 		final boolean resultExpected = false;
@@ -189,7 +189,7 @@ public class FlatrateTermHandlerTest extends ContractsTestBase
 		term.setC_Flatrate_Conditions(conditions);
 		InterfaceWrapperHelper.save(term);
 
-		final FlatrateTermHandler handler = new FlatrateTermHandler();
+		final FlatrateTermInvoiceCandidateHandler handler = new FlatrateTermInvoiceCandidateHandler();
 
 		final boolean resultActual = handler.isCorrectDateForTerm(term);
 		final boolean resultExpected = true;
@@ -215,7 +215,7 @@ public class FlatrateTermHandlerTest extends ContractsTestBase
 		term.setC_Flatrate_Conditions(conditions);
 		InterfaceWrapperHelper.save(term);
 
-		final FlatrateTermHandler handler = new FlatrateTermHandler();
+		final FlatrateTermInvoiceCandidateHandler handler = new FlatrateTermInvoiceCandidateHandler();
 		handler.isCorrectDateForTerm(term);
 	}
 
@@ -281,7 +281,7 @@ public class FlatrateTermHandlerTest extends ContractsTestBase
 		}};
 		// @formatter:on
 
-		final FlatrateTermHandler flatrateTermHandler = new FlatrateTermHandler();
+		final FlatrateTermInvoiceCandidateHandler flatrateTermHandler = new FlatrateTermInvoiceCandidateHandler();
 		final InvoiceCandidateGenerateResult candidates = flatrateTermHandler.createCandidatesFor(InvoiceCandidateGenerateRequest.of(flatrateTermHandler, term1));
 
 		assertThat(candidates.getC_Invoice_Candidates()).hasSize(1);

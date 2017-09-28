@@ -51,14 +51,18 @@ public class ContractsDAO implements IContractsDAO
 	{
 		final Timestamp now = SystemTime.asTimestamp();
 
-		return  Services.get(IQueryBL.class)
+		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_Flatrate_Term.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Flatrate_Term.COLUMN_DocStatus, DocAction.STATUS_Completed)
 				.addEqualsFilter(I_C_Flatrate_Term.COLUMN_Type_Conditions, X_C_Flatrate_Term.TYPE_CONDITIONS_Subscription)
+
 				.addInSubQueryFilter(I_C_Flatrate_Term.COLUMN_C_Flatrate_Conditions_ID, I_C_Flatrate_Conditions.COLUMN_C_Flatrate_Conditions_ID, flatrateConditionsThatRequireInvoicing())
+
 				.addNotInSubQueryFilter(I_C_Flatrate_Term.COLUMN_C_Flatrate_Term_ID, I_C_Invoice_Candidate.COLUMN_Record_ID, invoiceCandidatesThatReferenceTerms())
+
 				.filter(relevantTermDateAfterTimestamp(now))
+
 				.orderBy().addColumn(I_C_Flatrate_Term.COLUMN_C_Flatrate_Term_ID).endOrderBy()
 				.setLimit(limit)
 				.create()

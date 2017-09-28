@@ -61,20 +61,8 @@ import de.metas.tax.api.ITaxBL;
  * @author tsa
  *
  */
-public class FlatrateTermHandler extends AbstractInvoiceCandidateHandler
+public class FlatrateTermInvoiceCandidateHandler extends AbstractInvoiceCandidateHandler
 {
-	@Override
-	public boolean isCreateMissingCandidatesAutomatically()
-	{
-		return false;
-	}
-
-	@Override
-	public boolean isCreateMissingCandidatesAutomatically(Object model)
-	{
-		return false;
-	}
-
 	/**
 	 * One invocation returns a maximum of <code>limit</code> {@link I_C_Flatrate_Term}s that are completed subscriptions and don't have a <code>C_OrderLine_Term_ID</code>.
 	 */
