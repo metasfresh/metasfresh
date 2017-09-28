@@ -1017,4 +1017,16 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 		}
 		return storageQuery;
 	}
+
+	@Override
+	public void openProcessedShipmentSchedule(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
+	{
+		Check.assume(shipmentSchedule.isProcessed(), "M_ShipmentSchedule {} is not Processed", shipmentSchedule);
+
+		shipmentSchedule.setQtyOrdered_Override(null);
+		shipmentSchedule.setProcessed(false);
+
+		InterfaceWrapperHelper.save(shipmentSchedule);
+
+	}
 }
