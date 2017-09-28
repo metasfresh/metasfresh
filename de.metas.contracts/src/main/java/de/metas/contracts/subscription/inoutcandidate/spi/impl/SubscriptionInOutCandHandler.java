@@ -22,6 +22,7 @@ import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.time.SystemTime;
 import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.compiere.Adempiere;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
@@ -83,7 +84,8 @@ public class SubscriptionInOutCandHandler implements IInOutCandHandler
 
 		newSched.setProductDescription(null);
 
-		newSched.setM_Warehouse_ID(Services.get(IFlatrateBL.class).getWarehouse(term));
+		final int warehouseId = Adempiere.getBean(ShipmentScheduleOrderDocForSubscriptionLine.class).getWarehouseId(subscriptionLine);
+		newSched.setM_Warehouse_ID(warehouseId); // use the same implementation what will be used when updating
 
 		final I_C_DocType doctypeForTerm = Services.get(IFlatrateBL.class).getDocTypeFor(term);
 

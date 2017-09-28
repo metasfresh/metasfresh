@@ -1610,25 +1610,6 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 		return (java.lang.String)get_Value(COLUMNNAME_ProductDescription);
 	}
 
-	/** Set Lieferbare Menge.
-		@param QtyDeliverable Lieferbare Menge	  */
-	@Override
-	public void setQtyDeliverable (java.math.BigDecimal QtyDeliverable)
-	{
-		set_Value (COLUMNNAME_QtyDeliverable, QtyDeliverable);
-	}
-
-	/** Get Lieferbare Menge.
-		@return Lieferbare Menge	  */
-	@Override
-	public java.math.BigDecimal getQtyDeliverable () 
-	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyDeliverable);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
-	}
-
 	/** Set Gelieferte Menge.
 		@param QtyDelivered 
 		Gelieferte Menge

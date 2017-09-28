@@ -1543,29 +1543,6 @@ public interface I_M_ShipmentSchedule
     public static final String COLUMNNAME_ProductDescription = "ProductDescription";
 
 	/**
-	 * Set Lieferbare Menge.
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setQtyDeliverable (java.math.BigDecimal QtyDeliverable);
-
-	/**
-	 * Get Lieferbare Menge.
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.math.BigDecimal getQtyDeliverable();
-
-    /** Column definition for QtyDeliverable */
-    public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_QtyDeliverable = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object>(I_M_ShipmentSchedule.class, "QtyDeliverable", null);
-    /** Column name QtyDeliverable */
-    public static final String COLUMNNAME_QtyDeliverable = "QtyDeliverable";
-
-	/**
 	 * Set Gelieferte Menge.
 	 * Gelieferte Menge
 	 *

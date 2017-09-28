@@ -687,7 +687,7 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveValuesBL = Services.get(IShipmentScheduleEffectiveBL.class);
 		final ILUTUConfigurationFactory lutuConfigurationFactory = Services.get(ILUTUConfigurationFactory.class);
 
-		final I_C_UOM cuUOM = shipmentScheduleBL.getC_UOM(schedule);
+		final I_C_UOM cuUOM = shipmentScheduleBL.getUomOfProduct(schedule);
 		final I_M_Product cuProduct = schedule.getM_Product();
 
 		final I_C_BPartner bpartner = shipmentScheduleEffectiveValuesBL.getBPartner(schedule);

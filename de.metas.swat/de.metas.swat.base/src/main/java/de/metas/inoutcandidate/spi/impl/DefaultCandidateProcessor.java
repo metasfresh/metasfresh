@@ -26,19 +26,16 @@ package de.metas.inoutcandidate.spi.impl;
 import java.math.BigDecimal;
 import java.util.Properties;
 
-import org.adempiere.inout.util.CachedObjects;
+import org.adempiere.inout.util.DeliveryGroupCandidate;
+import org.adempiere.inout.util.DeliveryLineCandidate;
 import org.adempiere.inout.util.IShipmentCandidates;
 import org.adempiere.inout.util.IShipmentCandidates.CompleteStatus;
-import org.adempiere.inout.util.IShipmentCandidates.OverallStatus;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Services;
+import org.compiere.model.I_M_Product;
 import org.slf4j.Logger;
 
-import de.metas.adempiere.model.I_M_Product;
 import de.metas.i18n.IMsgBL;
-import de.metas.inout.model.I_M_InOut;
-import de.metas.inout.model.I_M_InOutLine;
 import de.metas.inoutcandidate.spi.ICandidateProcessor;
 import de.metas.logging.LogManager;
 import de.metas.product.IProductBL;
@@ -53,8 +50,10 @@ public class DefaultCandidateProcessor implements ICandidateProcessor
 	private static final Logger logger = LogManager.getLogger(DefaultCandidateProcessor.class);
 
 	@Override
-	public final int processCandidates(final Properties ctx,
-			final IShipmentCandidates candidates, final CachedObjects co, final String trxName)
+	public final int processCandidates(
+			final Properties ctx,
+			final IShipmentCandidates candidates, 
+			final String trxName)
 	{
 		return purgeLinesOK(ctx, candidates, trxName);
 	}
@@ -67,22 +66,21 @@ public class DefaultCandidateProcessor implements ICandidateProcessor
 	{
 		int rmInOutLines = 0;
 
-		for (final I_M_InOut inOut : candidates.getCandidates())
+		for (final DeliveryGroupCandidate inOut : candidates.getCandidates())
 		{
-			for (final I_M_InOutLine inOutLine : candidates.getLines(inOut))
+			for (final DeliveryLineCandidate inOutLine : inOut.getLines())
 			{
 				//
 				// check the complete and postage free status
-				final CompleteStatus completeStatus = candidates.getCompleteStatus(inOutLine);
+				final CompleteStatus completeStatus = inOutLine.getCompleteStatus();
 				
 				if (CompleteStatus.OK.equals(completeStatus))
 				{
-					candidates.setOverallStatus(inOutLine, OverallStatus.REVALIDATE);
 					rmInOutLines++;
 				}
 				else
 				{
-					candidates.setOverallStatus(inOutLine, OverallStatus.DISCARD);
+					inOutLine.setDiscarded(true);
 				}
 
 				//
@@ -90,11 +88,9 @@ public class DefaultCandidateProcessor implements ICandidateProcessor
 				final IProductBL productBL = Services.get(IProductBL.class);
 				final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
-				final I_M_Product product = InterfaceWrapperHelper.create(inOutLine.getM_Product(), I_M_Product.class);
-
 				// task 08745: by default we don't allow this, to stay back wards compatible 
 				final boolean allowShipSingleNonItems = sysConfigBL.getBooleanValue(AD_SYSCONFIG_DE_METAS_INOUTCANDIDATE_ALLOW_SHIP_SINGLE_NON_ITEMS, false);
-				final boolean isItemProduct = productBL.isItem(product);
+				final boolean isItemProduct = productBL.isItem(inOutLine.getM_Product());
 
 				if (!allowShipSingleNonItems && !isItemProduct)
 				{
@@ -104,9 +100,9 @@ public class DefaultCandidateProcessor implements ICandidateProcessor
 					// also be an item on the same inOut
 
 					boolean inOutContainsItem = false;
-					for (final I_M_InOutLine searchIol : candidates.getLines(inOut))
+					for (final DeliveryLineCandidate searchIol : inOut.getLines())
 					{
-						final org.compiere.model.I_M_Product iolProduct = searchIol.getM_Product();
+						final I_M_Product iolProduct = searchIol.getM_Product();
 
 						if (productBL.isItem(iolProduct))
 						{
@@ -119,11 +115,11 @@ public class DefaultCandidateProcessor implements ICandidateProcessor
 						// check if the delivery of this non-item has been
 						// enforced using QtyToDeliver_Override>0
 
-						final BigDecimal qtyToDeliverOverride = candidates.getShipmentSchedule(inOutLine).getQtyToDeliver_Override();
+						final BigDecimal qtyToDeliverOverride = inOutLine.getShipmentSchedule().getQtyToDeliver_Override();
 
 						if (qtyToDeliverOverride == null || qtyToDeliverOverride.signum() <= 0)
 						{
-							candidates.setOverallStatus(inOutLine, OverallStatus.DISCARD);
+							inOutLine.setDiscarded(true);
 							candidates.addStatusInfo(inOutLine, Services.get(IMsgBL.class).getMsg(ctx, MSG_NO_ITEM_TO_SHIP));
 						}
 					}

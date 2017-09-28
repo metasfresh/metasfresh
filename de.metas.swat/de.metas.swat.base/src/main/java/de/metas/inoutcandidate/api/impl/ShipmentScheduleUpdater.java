@@ -28,10 +28,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.inout.util.CachedObjects;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.time.SystemTime;
 import org.slf4j.Logger;
 
 import de.metas.inoutcandidate.api.IInOutCandHandlerBL;
@@ -88,9 +86,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 			final List<OlAndSched> collectResult = retrieveOlsAndSchedsToProcess(ctx, adClientId, adPInstanceId, updateOnlyLocked, trxName);
 
 			logger.debug("Invoking shipmentScheduleBL to update {} shipment schedule entries.", collectResult.size());
-			final CachedObjects cachedObjects = new CachedObjects();
-			final boolean saveSchedules = true;
-			shipmentScheduleBL.updateSchedules(ctx, collectResult, saveSchedules, SystemTime.asTimestamp(), cachedObjects, trxName);
+			shipmentScheduleBL.updateSchedules(ctx, collectResult, trxName);
 
 			// cleanup the marker/pointer tables
 			shipmentSchedulePA.deleteRecomputeMarkers(adPInstanceId, trxName); // if updateOnlyLocked, then there is nothing to delete..but still making this call, it should finish rather quickly

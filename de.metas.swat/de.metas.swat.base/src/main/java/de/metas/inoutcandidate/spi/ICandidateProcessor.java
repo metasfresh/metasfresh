@@ -25,7 +25,6 @@ package de.metas.inoutcandidate.spi;
 
 import java.util.Properties;
 
-import org.adempiere.inout.util.CachedObjects;
 import org.adempiere.inout.util.IShipmentCandidates;
 
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
@@ -46,5 +45,5 @@ public interface ICandidateProcessor
 	 * @param trxName
 	 * @return the number of inout line candidates that have been removed
 	 */
-	int processCandidates(Properties ctx, IShipmentCandidates candidates, CachedObjects cachedObjects, String trxName);
+	int processCandidates(Properties ctx, IShipmentCandidates candidates, String trxName);
 }

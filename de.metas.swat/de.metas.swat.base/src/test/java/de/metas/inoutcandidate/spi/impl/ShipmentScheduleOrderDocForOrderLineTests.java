@@ -11,6 +11,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.TimeUtil;
 import org.junit.Before;
 import org.junit.Test;
@@ -55,11 +56,15 @@ public class ShipmentScheduleOrderDocForOrderLineTests
 	{
 		final Timestamp deliveryDate = TimeUtil.parseTimestamp("2017-09-26");
 
+		final I_M_Warehouse wh = newInstance(I_M_Warehouse.class);
+		save(wh);
+		
 		final I_C_BPartner billBPartner = newInstance(I_C_BPartner.class);
 		save(billBPartner);
 
 		final I_C_Order order = newInstance(I_C_Order.class);
 		order.setBill_BPartner(billBPartner);
+		order.setM_Warehouse(wh);
 		order.setDatePromised(deliveryDate);
 		save(order);
 

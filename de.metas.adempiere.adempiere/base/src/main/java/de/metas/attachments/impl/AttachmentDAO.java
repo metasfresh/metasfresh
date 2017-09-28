@@ -3,6 +3,8 @@ package de.metas.attachments.impl;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -14,15 +16,22 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Attachment;
 import org.compiere.model.I_AD_AttachmentEntry;
+import org.compiere.model.X_AD_AttachmentEntry;
 import org.compiere.util.MimeType;
+import org.slf4j.Logger;
 
+import com.google.common.collect.BiMap;
+import com.google.common.collect.ImmutableBiMap;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.attachments.AttachmentEntry;
+import de.metas.attachments.AttachmentEntryType;
 import de.metas.attachments.IAttachmentDAO;
+import de.metas.logging.LogManager;
 import lombok.NonNull;
 
 /*
@@ -49,6 +58,8 @@ import lombok.NonNull;
 
 public class AttachmentDAO implements IAttachmentDAO
 {
+	private static final transient Logger logger = LogManager.getLogger(AttachmentDAO.class);
+
 	@Override
 	public I_AD_Attachment retrieveAttachment(final Properties ctx, final int adTableId, final int recordId, final String trxName)
 	{
@@ -76,7 +87,8 @@ public class AttachmentDAO implements IAttachmentDAO
 					.orderBy().addColumn(I_AD_AttachmentEntry.COLUMN_AD_AttachmentEntry_ID).endOrderBy()
 					.create()
 					.stream(I_AD_AttachmentEntry.class)
-					.map(this::toAttachmentEntry)
+					.map(this::toAttachmentEntryOrNullIfError)
+					.filter(entry -> entry != null)
 					.collect(ImmutableList.toImmutableList());
 		}
 	}
@@ -85,7 +97,7 @@ public class AttachmentDAO implements IAttachmentDAO
 	public AttachmentEntry retrieveAttachmentEntryById(final int attachmentId, final int attachmentEntryId)
 	{
 		final I_AD_AttachmentEntry entryRecord = InterfaceWrapperHelper.load(attachmentEntryId, I_AD_AttachmentEntry.class);
-		
+
 		// Make sure the attachmentId is matching
 		// NOTE: because some BLs are not aware of attachmentId but only about attachmentEntryId, we are validating only when provided
 		if (attachmentId > 0 && entryRecord.getAD_Attachment_ID() != attachmentId)
@@ -114,18 +126,18 @@ public class AttachmentDAO implements IAttachmentDAO
 			return toAttachmentEntry(entryRecord);
 		}
 	}
-	
+
 	@Override
 	public byte[] retrieveFirstAttachmentEntryAsBytes(final int attachmentId)
 	{
 		final AttachmentEntry entry = retrieveFirstAttachmentEntry(attachmentId);
-		if(entry == null)
+		if (entry == null)
 		{
 			return null;
 		}
 		return retrieveData(entry);
 	}
-	
+
 	@Override
 	public AttachmentEntry retrieveFirstAttachmentEntry(final int attachmentId)
 	{
@@ -145,43 +157,75 @@ public class AttachmentDAO implements IAttachmentDAO
 		}
 	}
 
-
 	@Override
 	public AttachmentEntry toAttachmentEntry(@NonNull final I_AD_AttachmentEntry entryRecord)
 	{
 		return AttachmentEntry.builder()
 				.id(entryRecord.getAD_AttachmentEntry_ID())
 				.name(entryRecord.getFileName())
+				.type(toAttachmentEntryTypeFromADRefListValue(entryRecord.getType()))
 				.filename(entryRecord.getFileName())
-				// .data(entryRecord.getBinaryData())
 				.contentType(entryRecord.getContentType())
+				.url(extractURI(entryRecord))
 				.build();
 	}
 
-	@Override
-	public void saveAttachmentEntry(final I_AD_Attachment attachment, final AttachmentEntry entry)
+	private AttachmentEntry toAttachmentEntryOrNullIfError(@NonNull final I_AD_AttachmentEntry entryRecord)
 	{
-		final I_AD_AttachmentEntry entryRecord = InterfaceWrapperHelper.load(entry.getId(), I_AD_AttachmentEntry.class);
-
-		if (attachment.getAD_Attachment_ID() != entryRecord.getAD_Attachment_ID())
+		try
 		{
-			throw new IllegalArgumentException("Attachment entry not matching the attachment header: " + entry);
+			return toAttachmentEntry(entryRecord);
+		}
+		catch (Exception ex)
+		{
+			logger.warn("Cannot convert {} to attachment entry. Returning null", entryRecord, ex);
+			return null;
+		}
+	}
+
+	private static final URI extractURI(final I_AD_AttachmentEntry entryRecord)
+	{
+		final String url = entryRecord.getURL();
+		if (Check.isEmpty(url, true))
+		{
+			return null;
 		}
 
-		// entryRecord.setAD_Attachment_ID(attachment.getAD_Attachment_ID());
-		// entryRecord.setAD_Table_ID(attachment.getAD_Table_ID());
-		// entryRecord.setRecord_ID(attachment.getRecord_ID());
-
-		entryRecord.setFileName(entry.getFilename());
-		// entryRecord.setBinaryData(entry.getData());
-		entryRecord.setContentType(entry.getContentType());
-		InterfaceWrapperHelper.save(entryRecord);
+		try
+		{
+			return new URI(url);
+		}
+		catch (URISyntaxException ex)
+		{
+			throw new AdempiereException("Invalid URL: " + url, ex)
+					.setParameter("entryRecord", entryRecord);
+		}
 	}
-	
+
+	private static final AttachmentEntryType toAttachmentEntryTypeFromADRefListValue(final String adRefListValue)
+	{
+		final AttachmentEntryType type = adRefListValue2attachmentEntryType.get(adRefListValue);
+		if (type == null)
+		{
+			throw new IllegalArgumentException("No " + AttachmentEntryType.class + " found for " + adRefListValue);
+		}
+		return type;
+	}
+
+	private static final BiMap<String, AttachmentEntryType> adRefListValue2attachmentEntryType = ImmutableBiMap.<String, AttachmentEntryType> builder()
+			.put(X_AD_AttachmentEntry.TYPE_Data, AttachmentEntryType.Data)
+			.put(X_AD_AttachmentEntry.TYPE_URL, AttachmentEntryType.URL)
+			.build();
+
 	@Override
 	public void saveAttachmentEntryData(final AttachmentEntry entry, final byte[] data)
 	{
 		final I_AD_AttachmentEntry entryRecord = InterfaceWrapperHelper.load(entry.getId(), I_AD_AttachmentEntry.class);
+		if (X_AD_AttachmentEntry.TYPE_Data.equals(entryRecord.getType()))
+		{
+			throw new AdempiereException("Only entries of type Data support attaching data").setParameter("entry", entry);
+		}
+
 		entryRecord.setBinaryData(data);
 		InterfaceWrapperHelper.save(entryRecord);
 	}
@@ -285,17 +329,17 @@ public class AttachmentDAO implements IAttachmentDAO
 	public byte[] retrieveData(@NonNull final AttachmentEntry entry)
 	{
 		final int entryId = entry.getId();
-		if(entryId <= 0)
+		if (entryId <= 0)
 		{
 			return null;
 		}
-		
+
 		final I_AD_AttachmentEntry entryRecord = InterfaceWrapperHelper.load(entryId, I_AD_AttachmentEntry.class);
-		if(entryRecord == null)
+		if (entryRecord == null)
 		{
 			return null;
 		}
-		
+
 		return entryRecord.getBinaryData();
 	}
 }
