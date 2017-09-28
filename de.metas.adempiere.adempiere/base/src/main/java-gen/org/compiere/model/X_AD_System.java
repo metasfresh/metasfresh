@@ -1,26 +1,9 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
 package org.compiere.model;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import org.compiere.util.Env;
 
 /** Generated Model for AD_System
  *  @author Adempiere (generated) 
@@ -32,7 +15,7 @@ public class X_AD_System extends org.compiere.model.PO implements I_AD_System, o
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 2121740566L;
+	private static final long serialVersionUID = -317855642L;
 
     /** Standard Constructor */
     public X_AD_System (Properties ctx, int AD_System_ID, String trxName)
@@ -40,22 +23,16 @@ public class X_AD_System extends org.compiere.model.PO implements I_AD_System, o
       super (ctx, AD_System_ID, trxName);
       /** if (AD_System_ID == 0)
         {
-			setAD_System_ID (0);
-// 0
+			setAD_System_ID (0); // 0
 			setInfo (null);
 			setIsAllowStatistics (false);
-			setIsAutoErrorReport (true);
-// Y
-			setIsFailOnBuildDiffer (false);
-// N
-			setIsFailOnMissingModelValidator (true);
-// Y
+			setIsAutoErrorReport (true); // Y
+			setIsFailOnBuildDiffer (false); // N
+			setIsFailOnMissingModelValidator (true); // Y
 			setName (null);
 			setPassword (null);
-			setReplicationType (null);
-// L
-			setSystemStatus (null);
-// E
+			setReplicationType (null); // L
+			setSystemStatus (null); // E
 			setUserName (null);
 			setVersion (null);
         } */
@@ -67,29 +44,13 @@ public class X_AD_System extends org.compiere.model.PO implements I_AD_System, o
       super (ctx, rs, trxName);
     }
 
-    /** AccessLevel
-      * @return 4 - System 
-      */
-    @Override
-    protected int get_AccessLevel()
-    {
-      return accessLevel.intValue();
-    }
 
     /** Load Meta Data */
     @Override
     protected org.compiere.model.POInfo initPO (Properties ctx)
     {
-      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_ID, get_TrxName());
+      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
-    }
-
-    @Override
-    public String toString()
-    {
-      StringBuffer sb = new StringBuffer ("X_AD_System[")
-        .append(get_ID()).append("]");
-      return sb.toString();
     }
 
 	/** Set System.
@@ -174,6 +135,25 @@ public class X_AD_System extends org.compiere.model.PO implements I_AD_System, o
 		return (java.lang.String)get_Value(COLUMNNAME_DBInstance);
 	}
 
+	/** Set DBVersion.
+		@param DBVersion 
+		version of the SQL migration scripts that were last rolled out
+	  */
+	@Override
+	public void setDBVersion (java.lang.String DBVersion)
+	{
+		set_Value (COLUMNNAME_DBVersion, DBVersion);
+	}
+
+	/** Get DBVersion.
+		@return version of the SQL migration scripts that were last rolled out
+	  */
+	@Override
+	public java.lang.String getDBVersion () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_DBVersion);
+	}
+
 	/** Set Beschreibung.
 		@param Description Beschreibung	  */
 	@Override
@@ -227,7 +207,7 @@ public class X_AD_System extends org.compiere.model.PO implements I_AD_System, o
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_IDRangeEnd);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -249,7 +229,7 @@ public class X_AD_System extends org.compiere.model.PO implements I_AD_System, o
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_IDRangeStart);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -431,14 +411,6 @@ public class X_AD_System extends org.compiere.model.PO implements I_AD_System, o
 		return (java.lang.String)get_Value(COLUMNNAME_Name);
 	}
 
-    /** Get Record ID/ColumnName
-        @return ID/ColumnName pair
-      */
-    public org.compiere.util.KeyNamePair getKeyNamePair() 
-    {
-        return new org.compiere.util.KeyNamePair(get_ID(), getName());
-    }
-
 	/** Set Processors.
 		@param NoProcessors 
 		Number of Database Processors
@@ -587,12 +559,12 @@ public class X_AD_System extends org.compiere.model.PO implements I_AD_System, o
 	 * Reference name: AD_Table Replication Type
 	 */
 	public static final int REPLICATIONTYPE_AD_Reference_ID=126;
-	/** Lokal = L */
-	public static final String REPLICATIONTYPE_Lokal = "L";
+	/** Local = L */
+	public static final String REPLICATIONTYPE_Local = "L";
 	/** Merge = M */
 	public static final String REPLICATIONTYPE_Merge = "M";
-	/** Referenz = R */
-	public static final String REPLICATIONTYPE_Referenz = "R";
+	/** Reference = R */
+	public static final String REPLICATIONTYPE_Reference = "R";
 	/** Set Replication Type.
 		@param ReplicationType 
 		Type of Data Replication
