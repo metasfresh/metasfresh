@@ -35,8 +35,8 @@ import de.metas.adempiere.ait.helper.GridWindowHelper;
 import de.metas.adempiere.ait.helper.Helper;
 import de.metas.adempiere.ait.helper.IHelper;
 import de.metas.adempiere.ait.test.annotation.IntegrationTest;
-import de.metas.flatrate.model.I_C_Flatrate_Conditions;
-import de.metas.flatrate.model.X_C_Flatrate_Conditions;
+import de.metas.contracts.flatrate.model.I_C_Flatrate_Conditions;
+import de.metas.contracts.flatrate.model.X_C_Flatrate_Conditions;
 
 public class FlatrateTests extends AIntegrationTestDriver
 {

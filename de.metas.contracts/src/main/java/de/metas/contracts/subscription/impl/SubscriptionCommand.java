@@ -7,13 +7,13 @@ import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
 import org.compiere.util.Env;
 
+import de.metas.contracts.flatrate.model.I_C_Flatrate_Term;
+import de.metas.contracts.flatrate.model.I_C_SubscriptionProgress;
 import de.metas.contracts.subscription.ISubscriptionDAO;
 import de.metas.contracts.subscription.ISubscriptionDAO.SubscriptionProgressQuery;
 import de.metas.contracts.subscription.impl.subscriptioncommands.ChangeRecipient;
 import de.metas.contracts.subscription.impl.subscriptioncommands.InsertPause;
 import de.metas.contracts.subscription.impl.subscriptioncommands.RemovePauses;
-import de.metas.flatrate.model.I_C_Flatrate_Term;
-import de.metas.flatrate.model.I_C_SubscriptionProgress;
 import de.metas.i18n.IMsgBL;
 import lombok.Builder.Default;
 import lombok.NonNull;

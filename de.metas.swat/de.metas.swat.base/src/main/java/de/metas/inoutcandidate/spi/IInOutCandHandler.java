@@ -13,11 +13,11 @@ package de.metas.inoutcandidate.spi;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -29,12 +29,15 @@ import org.adempiere.model.InterfaceWrapperHelper;
 
 import de.metas.inoutcandidate.api.IDeliverRequest;
 import de.metas.inoutcandidate.api.IInOutCandHandlerBL;
+import de.metas.inoutcandidate.model.I_M_IolCandHandler;
 import de.metas.inoutcandidate.model.I_M_IolCandHandler_Log;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 
 /**
  * This interface declares the pluggable main component to create and handle {@link I_M_ShipmentSchedule} records for
  * other records from a specific source table (e.g. order lines or subscription lines).
+ *
+ * Implementors are also related to {@link I_M_IolCandHandler} records.
  *
  * Implementors can be registered by calling {@link IInOutCandHandlerBL#registerHandler(Properties, IInOutCandHandler).
  *

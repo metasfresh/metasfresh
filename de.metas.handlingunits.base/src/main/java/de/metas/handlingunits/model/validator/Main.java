@@ -336,7 +336,7 @@ public final class Main extends AbstractModuleInterceptor
 
 			// 07042: we don't want shipment schedules for mere packaging order lines
 			Services.get(IInOutCandHandlerBL.class)
-					.registerListener(new ShipmentSchedulePackingMaterialLineListener(), I_C_OrderLine.Table_Name);
+					.registerVetoer(new ShipmentSchedulePackingMaterialLineListener(), I_C_OrderLine.Table_Name);
 		}
 
 		// Order - Fast Input

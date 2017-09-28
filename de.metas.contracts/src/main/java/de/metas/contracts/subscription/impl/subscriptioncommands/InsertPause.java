@@ -12,10 +12,10 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 import com.jgoodies.common.base.Objects;
 
+import de.metas.contracts.flatrate.model.I_C_Flatrate_Term;
+import de.metas.contracts.flatrate.model.I_C_SubscriptionProgress;
+import de.metas.contracts.flatrate.model.X_C_SubscriptionProgress;
 import de.metas.contracts.subscription.impl.SubscriptionCommand;
-import de.metas.flatrate.model.I_C_Flatrate_Term;
-import de.metas.flatrate.model.I_C_SubscriptionProgress;
-import de.metas.flatrate.model.X_C_SubscriptionProgress;
 import lombok.NonNull;
 
 /*

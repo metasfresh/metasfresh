@@ -116,7 +116,7 @@ public class InOutCandHandlerBL implements IInOutCandHandlerBL
 	}
 
 	@Override
-	public void registerListener(final ModelWithoutShipmentScheduleVetoer l, final String tableName)
+	public void registerVetoer(final ModelWithoutShipmentScheduleVetoer l, final String tableName)
 	{
 		List<ModelWithoutShipmentScheduleVetoer> listeners = tableName2Listeners.get(tableName);
 		if (listeners == null)
