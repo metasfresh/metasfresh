@@ -558,3 +558,13 @@ UPDATE AD_Field SET Name='Lieferung Stop',Updated=TO_TIMESTAMP('2017-09-28 14:31
 UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-09-28 14:31:21','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y' WHERE AD_Field_ID=560372 AND AD_Language='en_US'
 ;
 
+-- 2017-09-28T14:36:54.939
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-09-28 14:36:54','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Dunning Trigger' WHERE AD_Field_ID=551594 AND AD_Language='en_US'
+;
+
+-- 2017-09-28T14:37:28.819
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-09-28 14:37:28','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Note Header',Description='',Help='' WHERE AD_Field_ID=556383 AND AD_Language='en_US'
+;
+
