@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
-<!-- 2016-09-19T17:42:59 -->
+<!-- 2017-09-28T11:21:40 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="1500" pageHeight="595" orientation="Landscape" columnWidth="1460" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" resourceBundle="de/metas/reports/request_report/report" uuid="d6ca4e72-06bf-4f5c-bec4-5ba066220b99">
 	<property name="com.jaspersoft.studio.unit." value="pixel"/>
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="metasfresh"/>
@@ -19,6 +19,9 @@
 		<parameterDescription><![CDATA[]]></parameterDescription>
 	</parameter>
 	<parameter name="M_Product_ID" class="java.math.BigDecimal"/>
+	<parameter name="ad_language" class="java.lang.String">
+		<defaultValueExpression><![CDATA[$P{REPORT_LOCALE}.toString()]]></defaultValueExpression>
+	</parameter>
 	<queryString>
 		<![CDATA[SELECT * FROM de_metas_endcustomer_fresh_reports.request_report(
 	$P{AD_Org_ID}, 
@@ -30,7 +33,8 @@
 	$P{PerformanceType}, 
 	$P{IsMaterialReturned},
 	$P{R_Status_ID},
-	$P{M_Product_ID}
+	$P{M_Product_ID},
+	$P{ad_language}
 	);]]>
 	</queryString>
 	<field name="date" class="java.sql.Date"/>
