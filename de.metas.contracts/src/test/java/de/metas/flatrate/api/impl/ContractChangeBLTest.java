@@ -1,5 +1,7 @@
 package de.metas.flatrate.api.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+
 /*
  * #%L
  * de.metas.contracts
@@ -57,15 +59,15 @@ public class ContractChangeBLTest extends ContractsTestBase
 
 		SystemTime.setTimeSource(new FixedTimeSource(2013, 5, 28)); // today
 
-		final I_C_Flatrate_Transition flatrateTransition = InterfaceWrapperHelper.newInstance(I_C_Flatrate_Transition.class, getContext());
+		final I_C_Flatrate_Transition flatrateTransition = newInstance(I_C_Flatrate_Transition.class);
 		flatrateTransition.setDeliveryInterval(1);
 		flatrateTransition.setDeliveryIntervalUnit(X_C_Flatrate_Transition.DELIVERYINTERVALUNIT_JahrE);
 		InterfaceWrapperHelper.save(flatrateTransition);
 
-		final I_C_Flatrate_Conditions flatrateConditions = InterfaceWrapperHelper.newInstance(I_C_Flatrate_Conditions.class, getContext());
+		final I_C_Flatrate_Conditions flatrateConditions = newInstance(I_C_Flatrate_Conditions.class);
 		InterfaceWrapperHelper.save(flatrateConditions);
 
-		final I_C_Contract_Change contractChange = InterfaceWrapperHelper.newInstance(I_C_Contract_Change.class, getContext());
+		final I_C_Contract_Change contractChange = newInstance(I_C_Contract_Change.class);
 		contractChange.setAction(X_C_Contract_Change.ACTION_Statuswechsel);
 		contractChange.setC_Flatrate_Transition(flatrateTransition);
 		contractChange.setC_Flatrate_Conditions(flatrateConditions);
@@ -75,14 +77,14 @@ public class ContractChangeBLTest extends ContractsTestBase
 		InterfaceWrapperHelper.save(contractChange);
 
 
-		final I_C_Flatrate_Term currentTerm = InterfaceWrapperHelper.newInstance(I_C_Flatrate_Term.class, getContext());
+		final I_C_Flatrate_Term currentTerm = newInstance(I_C_Flatrate_Term.class);
 		currentTerm.setStartDate(TimeUtil.getDay(1013, 1, 1));
 		currentTerm.setEndDate(TimeUtil.getDay(2014,7,27));
 		currentTerm.setC_Flatrate_Transition(flatrateTransition);
 		currentTerm.setC_Flatrate_Conditions(flatrateConditions);
 		InterfaceWrapperHelper.save(currentTerm);
 
-		final I_C_SubscriptionProgress progress = InterfaceWrapperHelper.newInstance(I_C_SubscriptionProgress.class, getContext());
+		final I_C_SubscriptionProgress progress = newInstance(I_C_SubscriptionProgress.class);
 		progress.setC_Flatrate_Term(currentTerm);
 		progress.setEventDate(TimeUtil.getDay(2013, 5, 30));
 		InterfaceWrapperHelper.save(progress);

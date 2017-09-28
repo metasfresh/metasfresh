@@ -79,9 +79,9 @@ public class FlatrateTermHandler extends AbstractInvoiceCandidateHandler
 	 * One invocation returns a maximum of <code>limit</code> {@link I_C_Flatrate_Term}s that are completed subscriptions and don't have a <code>C_OrderLine_Term_ID</code>.
 	 */
 	@Override
-	public Iterator<I_C_Flatrate_Term> retrieveAllModelsWithMissingCandidates(final Properties ctx, final int limit, final String trxName)
+	public Iterator<I_C_Flatrate_Term> retrieveAllModelsWithMissingCandidates(final int limit)
 	{
-		return Services.get(IContractsDAO.class).retrieveCFlatrateTermsWithMissingCandidates(ctx, limit, trxName).iterator();
+		return Services.get(IContractsDAO.class).retrieveSubscriptionTermsWithMissingCandidates(limit).iterator();
 	}
 
 	@Override
@@ -170,7 +170,7 @@ public class FlatrateTermHandler extends AbstractInvoiceCandidateHandler
 		ic.setPrice_UOM_ID(term.getC_UOM_ID()); // 07090 when we set PiceActual, we shall also set PriceUOM.
 		ic.setC_Currency_ID(term.getC_Currency_ID());
 
-		ic.setQtyToInvoice(Env.ZERO); // to be computed
+		ic.setQtyToInvoice(BigDecimal.ZERO); // to be computed
 
 		ic.setBill_BPartner_ID(term.getBill_BPartner_ID());
 		ic.setBill_Location_ID(term.getBill_Location_ID());

@@ -1,4 +1,4 @@
-package de.metas.contracts.subscription.inoutcandidate.spi.impl;
+package de.metas.contracts.subscription.inoutcandidate;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
@@ -10,6 +10,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.junit.Before;
 import org.junit.Test;
 
+import de.metas.contracts.subscription.inoutcandidate.ShipmentScheduleOrderDocForSubscriptionLine;
 import de.metas.flatrate.api.IFlatrateBL;
 import de.metas.flatrate.model.I_C_Flatrate_Term;
 import de.metas.flatrate.model.I_C_SubscriptionProgress;

@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -94,9 +95,9 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 	}
 
 	@Override
-	public Iterator<I_C_OrderLine> retrieveAllModelsWithMissingCandidates(final Properties ctx, final int limit, final String trxName)
+	public Iterator<I_C_OrderLine> retrieveAllModelsWithMissingCandidates(final int limit)
 	{
-		return Services.get(IC_OrderLine_HandlerDAO.class).retrieveMissingOrderLinesQuery(ctx, trxName)
+		return Services.get(IC_OrderLine_HandlerDAO.class).retrieveMissingOrderLinesQuery(Env.getCtx(), ITrx.TRXNAME_ThreadInherited)
 				.create()
 				.list(I_C_OrderLine.class)
 				.iterator();

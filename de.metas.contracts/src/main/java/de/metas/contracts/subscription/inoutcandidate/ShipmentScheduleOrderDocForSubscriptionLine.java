@@ -1,4 +1,4 @@
-package de.metas.contracts.subscription.inoutcandidate.spi.impl;
+package de.metas.contracts.subscription.inoutcandidate;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 

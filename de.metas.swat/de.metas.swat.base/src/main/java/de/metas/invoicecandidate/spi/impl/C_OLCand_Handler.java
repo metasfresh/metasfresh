@@ -1,5 +1,7 @@
 package de.metas.invoicecandidate.spi.impl;
 
+import java.math.BigDecimal;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -28,6 +30,7 @@ import java.util.Properties;
 
 import org.adempiere.ad.dao.cache.impl.TableRecordCacheLocal;
 import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.pricing.api.IPricingResult;
@@ -91,9 +94,9 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 	}
 
 	@Override
-	public Iterator<I_C_OLCand> retrieveAllModelsWithMissingCandidates(final Properties ctx, final int limit, final String trxName)
+	public Iterator<I_C_OLCand> retrieveAllModelsWithMissingCandidates(final int limit)
 	{
-		return dao.retrieveMissingCandidatesQuery(ctx, trxName)
+		return dao.retrieveMissingCandidatesQuery(Env.getCtx(), ITrx.TRXNAME_ThreadInherited)
 				.setLimit(limit)
 				.create()
 				.iterate(I_C_OLCand.class);
@@ -159,7 +162,7 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 		ic.setQtyOrdered(olc.getQty());
 		ic.setDateOrdered(olc.getDateCandidate());
 
-		ic.setQtyToInvoice(Env.ZERO); // to be computed
+		ic.setQtyToInvoice(BigDecimal.ZERO); // to be computed
 		ic.setC_UOM_ID(olCandEffectiveValuesBL.getC_UOM_Effective_ID(olc));
 
 		ic.setM_PricingSystem_ID(olc.getM_PricingSystem_ID());

@@ -53,6 +53,7 @@ import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
 import org.compiere.process.DocAction;
+import org.compiere.util.Env;
 
 import de.metas.document.engine.IDocActionBL;
 import de.metas.inout.IInOutBL;
@@ -108,9 +109,9 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 	}
 
 	@Override
-	public Iterator<I_M_InOutLine> retrieveAllModelsWithMissingCandidates(final Properties ctx, final int limit, final String trxName)
+	public Iterator<I_M_InOutLine> retrieveAllModelsWithMissingCandidates(final int limit)
 	{
-		return dao.retrieveAllLinesWithoutOrderLine(ctx, limit, trxName);
+		return dao.retrieveAllLinesWithoutOrderLine(Env.getCtx(), limit, ITrx.TRXNAME_ThreadInherited);
 	}
 
 	@Override

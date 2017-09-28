@@ -28,8 +28,8 @@ import java.util.Properties;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.util.ISingletonService;
+import org.compiere.model.I_C_OrderLine;
 
-import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.impl.C_OrderLine_Handler;
 

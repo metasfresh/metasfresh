@@ -13,21 +13,23 @@ package de.metas.flatrate.modelvalidator;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.impexp.IImportProcessFactory;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
+import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.MClient;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
@@ -35,10 +37,11 @@ import org.compiere.model.PO;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
 
-import de.metas.contracts.subscription.inoutcandidate.spi.impl.InOutCandFlatrateListener;
-import de.metas.contracts.subscription.inoutcandidate.spi.impl.InOutCandSubscriptionProcessor;
-import de.metas.contracts.subscription.inoutcandidate.spi.impl.SubscriptionInOutCandHandler;
+import de.metas.contracts.subscription.inoutcandidate.InOutCandFlatrateListener;
+import de.metas.contracts.subscription.inoutcandidate.InOutCandSubscriptionProcessor;
+import de.metas.contracts.subscription.inoutcandidate.SubscriptionInOutCandHandler;
 import de.metas.contracts.subscription.interceptor.C_SubscriptionProgress;
+import de.metas.contracts.subscription.invoicecandidate.SubscriptionOrderLineFilter;
 import de.metas.flatrate.Contracts_Constants;
 import de.metas.flatrate.impexp.FlatrateTermImportProcess;
 import de.metas.flatrate.inout.spi.impl.FlatrateMaterialBalanceConfigMatcher;
@@ -51,7 +54,7 @@ import de.metas.impex.model.I_AD_InputDataSource;
 import de.metas.inout.api.IMaterialBalanceConfigBL;
 import de.metas.inoutcandidate.api.IInOutCandHandlerBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
-import de.metas.interfaces.I_C_OrderLine;
+import de.metas.invoicecandidate.spi.IC_OrderLine_HandlerDAO;
 import de.metas.ordercandidate.api.IOLCandBL;
 
 public class MainValidator implements ModelValidator
@@ -96,16 +99,16 @@ public class MainValidator implements ModelValidator
 
 		engine.addModelValidator(new M_ShipmentSchedule(), client);
 
-		//03742
+		// 03742
 		engine.addModelValidator(new C_Flatrate_Transition(), client);
 
-		//04360
+		// 04360
 		engine.addModelValidator(new C_Period(), client);
 
 		engine.addModelValidator(new M_InOutLine(), client);
 
 		// 05197 : Functionality not required anymore.
-//		engine.addModelValidator(new M_InOutLine_HU(), client);
+		// engine.addModelValidator(new M_InOutLine_HU(), client);
 
 		// 09869
 		engine.addModelValidator(new de.metas.contracts.subscription.interceptor.M_ShipmentSchedule(), client);
@@ -119,15 +122,17 @@ public class MainValidator implements ModelValidator
 		}
 
 		setupCallouts();
-		
+
 		Services.get(IImportProcessFactory.class).registerImportProcess(I_I_Flatrate_Term.class, FlatrateTermImportProcess.class);
+
+		SubscriptionOrderLineFilter.registerFilterForInvoiceCandidateCreation();
 	}
 
 	private void setupCallouts()
 	{
 		final IProgramaticCalloutProvider calloutProvider = Services.get(IProgramaticCalloutProvider.class);
 		calloutProvider.registerAnnotatedCallout(new de.metas.contracts.subscription.callout.C_OrderLine());
-		
+
 		calloutProvider.registerAnnotatedCallout(new de.metas.flatrate.callout.C_Flatrate_Term());
 	}
 
@@ -142,7 +147,6 @@ public class MainValidator implements ModelValidator
 	{
 		return null; // nothing to do
 	}
-
 
 	@Override
 	public String docValidate(final PO po, final int timing)

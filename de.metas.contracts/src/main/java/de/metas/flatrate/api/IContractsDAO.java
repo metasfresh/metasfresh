@@ -25,7 +25,6 @@ package de.metas.flatrate.api;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Properties;
 
 import org.adempiere.util.ISingletonService;
 
@@ -36,11 +35,9 @@ public interface IContractsDAO extends ISingletonService
 {
 
 	/**
-	 * @param ctx
-	 * @param trxName
 	 * @return the flatrate terms with missing candidates, gathered in a list.
 	 */
-	List<I_C_Flatrate_Term> retrieveCFlatrateTermsWithMissingCandidates(Properties ctx, int limit, String trxName);
+	List<I_C_Flatrate_Term> retrieveSubscriptionTermsWithMissingCandidates(int limit);
 
 	
 	/**

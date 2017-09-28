@@ -26,9 +26,6 @@ package de.metas.flatrate;
 import java.util.Date;
 import java.util.Properties;
 
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.model.IContextAware;
-import org.adempiere.model.PlainContextAware;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.util.Services;
@@ -42,7 +39,6 @@ import org.junit.rules.TestWatcher;
 
 import de.metas.flatrate.api.IContractsDAO;
 import de.metas.flatrate.api.impl.PlainContractChangeDAO;
-import de.metas.flatrate.api.impl.PlainContractsDAO;
 
 public class ContractsTestBase
 {
@@ -55,9 +51,8 @@ public class ContractsTestBase
 	{
 		AdempiereTestHelper.get().staticInit();
 	}
-
-	protected IContextAware context;
-	protected PlainContractsDAO dao;
+	
+	protected IContractsDAO dao;
 	protected PlainContractChangeDAO contractChangeDAO;
 
 	@Before
@@ -65,7 +60,7 @@ public class ContractsTestBase
 	{
 		AdempiereTestHelper.get().init();
 
-		dao = (PlainContractsDAO)Services.get(IContractsDAO.class);
+		dao = Services.get(IContractsDAO.class);
 
 		//
 		// Setup context
@@ -75,20 +70,13 @@ public class ContractsTestBase
 		Env.setContext(ctx, "#AD_Org_ID", 1);
 		Env.setContext(ctx, "#AD_Role_ID", 1);
 		Env.setContext(ctx, "#AD_User_ID", 1);
-
-		context = new PlainContextAware(ctx, ITrx.TRXNAME_None);
-
+		
 		init();
 	}
 
 	protected void init()
 	{
 		// nothing
-	}
-
-	protected IContextAware getContext()
-	{
-		return context;
 	}
 
 	public static class FixedTimeSource implements TimeSource

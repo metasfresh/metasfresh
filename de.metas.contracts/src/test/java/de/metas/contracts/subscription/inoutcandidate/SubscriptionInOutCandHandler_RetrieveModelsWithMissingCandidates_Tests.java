@@ -1,4 +1,4 @@
-package de.metas.contracts.subscription.inoutcandidate.spi.impl;
+package de.metas.contracts.subscription.inoutcandidate;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
@@ -16,6 +16,7 @@ import org.compiere.util.TimeUtil;
 import org.junit.Before;
 import org.junit.Test;
 
+import de.metas.contracts.subscription.inoutcandidate.SubscriptionInOutCandHandler;
 import de.metas.flatrate.model.I_C_SubscriptionProgress;
 import de.metas.flatrate.model.X_C_SubscriptionProgress;
 

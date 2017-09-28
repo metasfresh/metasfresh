@@ -92,12 +92,10 @@ public interface IInvoiceCandidateHandler
 	/**
 	 * Retrieves all models which are eligible for invoicing but they have no invoice candidates.
 	 *
-	 * @param ctx
 	 * @param limit how many models shall be retrieved. Note that, at this moment, this is a recommendation which could be respected or not by current implementations.
-	 * @param trxName
 	 * @return models
 	 */
-	Iterator<? extends Object> retrieveAllModelsWithMissingCandidates(Properties ctx, int limit, String trxName);
+	Iterator<? extends Object> retrieveAllModelsWithMissingCandidates(int limit);
 
 	/**
 	 * Called by API to expand an initial invoice candidate generate request.

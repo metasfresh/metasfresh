@@ -6,11 +6,13 @@ import static org.junit.Assert.assertThat;
 import java.sql.Timestamp;
 import java.util.List;
 
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Product;
 import org.compiere.process.DocAction;
+import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.junit.Test;
 
@@ -49,23 +51,23 @@ public class FlatrateDAOTest extends ContractsTestBase
 	{
 		final Timestamp now = SystemTime.asTimestamp();
 
-		final I_M_Product product = InterfaceWrapperHelper.newInstance(I_M_Product.class, getContext());
+		final I_M_Product product = InterfaceWrapperHelper.newInstance(I_M_Product.class);
 		InterfaceWrapperHelper.save(product);
 
-		final I_C_BPartner bpartner = InterfaceWrapperHelper.newInstance(I_C_BPartner.class, getContext());
+		final I_C_BPartner bpartner = InterfaceWrapperHelper.newInstance(I_C_BPartner.class);
 		InterfaceWrapperHelper.save(bpartner);
 
-		final I_C_Flatrate_Conditions fc = InterfaceWrapperHelper.newInstance(I_C_Flatrate_Conditions.class, getContext());
+		final I_C_Flatrate_Conditions fc = InterfaceWrapperHelper.newInstance(I_C_Flatrate_Conditions.class);
 		fc.setDocStatus(DocAction.STATUS_Completed);
 		fc.setType_Conditions(X_C_Flatrate_Conditions.TYPE_CONDITIONS_QualityBasedInvoicing);
 		InterfaceWrapperHelper.save(fc);
 
-		final I_C_Flatrate_Matching matching = InterfaceWrapperHelper.newInstance(I_C_Flatrate_Matching.class, getContext());
+		final I_C_Flatrate_Matching matching = InterfaceWrapperHelper.newInstance(I_C_Flatrate_Matching.class);
 		matching.setC_Flatrate_Conditions(fc);
 		matching.setM_Product(product);
 		InterfaceWrapperHelper.save(matching);
 
-		final I_C_Flatrate_Term ft = InterfaceWrapperHelper.newInstance(I_C_Flatrate_Term.class, getContext());
+		final I_C_Flatrate_Term ft = InterfaceWrapperHelper.newInstance(I_C_Flatrate_Term.class);
 		ft.setDocStatus(DocAction.STATUS_Completed);
 		ft.setC_Flatrate_Conditions(fc);
 		ft.setBill_BPartner(bpartner);
@@ -74,13 +76,13 @@ public class FlatrateDAOTest extends ContractsTestBase
 		InterfaceWrapperHelper.save(ft);
 
 		final List<I_C_Flatrate_Term> result = new FlatrateDAO().retrieveTerms(
-				getContext().getCtx(),
+				Env.getCtx(),
 				bpartner.getC_BPartner_ID(),
 				now,
 				0,
 				product.getM_Product_ID(),
 				0,
-				getContext().getTrxName());
+				ITrx.TRXNAME_ThreadInherited);
 
 		assertThat(result.size(), is(1));
 		assertThat(result.get(0), is(ft));

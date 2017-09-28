@@ -1,4 +1,4 @@
-package de.metas.contracts.subscription.inoutcandidate.spi.impl;
+package de.metas.contracts.subscription.inoutcandidate;
 
 /*
  * #%L
@@ -41,7 +41,6 @@ import de.metas.inoutcandidate.spi.IInOutCandHandlerListener;
  * This implementation vetoes the creation of shipment schedule records for {@link I_C_OrderLine}s if those order lines
  * are handled by a flatrate contract.
  *
- * @author ts
  *
  */
 public class InOutCandFlatrateListener implements IInOutCandHandlerListener
@@ -64,10 +63,10 @@ public class InOutCandFlatrateListener implements IInOutCandHandlerListener
 
 		final I_C_OrderLine ol = InterfaceWrapperHelper.create(model, I_C_OrderLine.class);
 
-		return isSubscription(ol) || hasAtLreastOneFlatrateContract(ol) ? OnMissingCandidate.SKIP_CREATION : OnMissingCandidate.I_DONT_CARE;
+		return isSubscription(ol) || hasAtLeastOneFlatrateContract(ol) ? OnMissingCandidate.SKIP_CREATION : OnMissingCandidate.I_DONT_CARE;
 	}
 
-	public boolean hasAtLreastOneFlatrateContract(final I_C_OrderLine ol)
+	public boolean hasAtLeastOneFlatrateContract(final I_C_OrderLine ol)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(ol);
 		final String trxName = InterfaceWrapperHelper.getTrxName(ol);

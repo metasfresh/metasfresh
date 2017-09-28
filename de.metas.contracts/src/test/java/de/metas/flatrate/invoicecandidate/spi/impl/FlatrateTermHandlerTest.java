@@ -1,28 +1,9 @@
 package de.metas.flatrate.invoicecandidate.spi.impl;
 
-/*
- * #%L
- * de.metas.contracts
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
@@ -51,10 +32,9 @@ import de.metas.flatrate.model.I_C_Flatrate_Term;
 import de.metas.flatrate.model.I_C_Flatrate_Transition;
 import de.metas.flatrate.model.X_C_Flatrate_Term;
 import de.metas.flatrate.model.X_C_Flatrate_Transition;
-import de.metas.invoicecandidate.InvoiceCandidatesTestHelper;
-import de.metas.invoicecandidate.model.I_C_ILCandHandler;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
-import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler;
+import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateRequest;
+import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateResult;
 import de.metas.product.acct.api.IProductAcctDAO;
 import de.metas.tax.api.ITaxBL;
 import mockit.Expectations;
@@ -84,10 +64,10 @@ public class FlatrateTermHandlerTest extends ContractsTestBase
 	@Before
 	public void before()
 	{
-		org = InterfaceWrapperHelper.newInstance(I_AD_Org.class, getContext());
+		org = newInstance(I_AD_Org.class);
 		InterfaceWrapperHelper.save(org);
 
-		activity = InterfaceWrapperHelper.newInstance(I_C_Activity.class, getContext());
+		activity = newInstance(I_C_Activity.class);
 		InterfaceWrapperHelper.save(activity);
 	}
 
@@ -96,7 +76,7 @@ public class FlatrateTermHandlerTest extends ContractsTestBase
 	{
 		SystemTime.setTimeSource(new FixedTimeSource(2013, 2, 7));
 
-		final I_C_Flatrate_Transition transition = InterfaceWrapperHelper.newInstance(I_C_Flatrate_Transition.class, getContext());
+		final I_C_Flatrate_Transition transition = newInstance(I_C_Flatrate_Transition.class);
 		transition.setTermDuration(1);
 		transition.setTermDurationUnit(X_C_Flatrate_Transition.TERMDURATIONUNIT_JahrE);
 		transition.setTermOfNotice(3);
@@ -105,11 +85,11 @@ public class FlatrateTermHandlerTest extends ContractsTestBase
 		transition.setC_Calendar_Contract_ID(1000000);
 		InterfaceWrapperHelper.save(transition);
 
-		final I_C_Flatrate_Conditions conditions = InterfaceWrapperHelper.newInstance(I_C_Flatrate_Conditions.class, getContext());
+		final I_C_Flatrate_Conditions conditions = newInstance(I_C_Flatrate_Conditions.class);
 		conditions.setC_Flatrate_Transition(transition);
 		InterfaceWrapperHelper.save(conditions);
 
-		final I_C_Flatrate_Term term = InterfaceWrapperHelper.newInstance(I_C_Flatrate_Term.class, getContext());
+		final I_C_Flatrate_Term term = newInstance(I_C_Flatrate_Term.class);
 		term.setStartDate(TimeUtil.getDay(2013, 5, 7));
 		term.setIsAutoRenew(true);
 		term.setC_Flatrate_Conditions(conditions);
@@ -127,7 +107,7 @@ public class FlatrateTermHandlerTest extends ContractsTestBase
 	{
 		SystemTime.setTimeSource(new FixedTimeSource(2013, 2, 7));
 
-		final I_C_Flatrate_Transition transition = InterfaceWrapperHelper.newInstance(I_C_Flatrate_Transition.class, getContext());
+		final I_C_Flatrate_Transition transition = newInstance(I_C_Flatrate_Transition.class);
 		transition.setTermDuration(1);
 		transition.setTermDurationUnit(X_C_Flatrate_Transition.TERMDURATIONUNIT_JahrE);
 		transition.setTermOfNotice(3);
@@ -136,11 +116,11 @@ public class FlatrateTermHandlerTest extends ContractsTestBase
 		transition.setC_Calendar_Contract_ID(1000000);
 		InterfaceWrapperHelper.save(transition);
 
-		final I_C_Flatrate_Conditions conditions = InterfaceWrapperHelper.newInstance(I_C_Flatrate_Conditions.class, getContext());
+		final I_C_Flatrate_Conditions conditions = newInstance(I_C_Flatrate_Conditions.class);
 		conditions.setC_Flatrate_Transition(transition);
 		InterfaceWrapperHelper.save(conditions);
 
-		final I_C_Flatrate_Term term = InterfaceWrapperHelper.newInstance(I_C_Flatrate_Term.class, getContext());
+		final I_C_Flatrate_Term term = newInstance(I_C_Flatrate_Term.class);
 		term.setStartDate(TimeUtil.getDay(2013, 4, 7));
 		term.setIsAutoRenew(true);
 		term.setC_Flatrate_Conditions(conditions);
@@ -158,7 +138,7 @@ public class FlatrateTermHandlerTest extends ContractsTestBase
 	{
 		SystemTime.setTimeSource(new FixedTimeSource(2013, 2, 7));
 
-		final I_C_Flatrate_Transition transition = InterfaceWrapperHelper.newInstance(I_C_Flatrate_Transition.class, getContext());
+		final I_C_Flatrate_Transition transition = newInstance(I_C_Flatrate_Transition.class);
 		transition.setTermDuration(1);
 		transition.setTermDurationUnit(X_C_Flatrate_Transition.TERMDURATIONUNIT_JahrE);
 		transition.setTermOfNotice(3);
@@ -167,11 +147,11 @@ public class FlatrateTermHandlerTest extends ContractsTestBase
 		transition.setC_Calendar_Contract_ID(1000000);
 		InterfaceWrapperHelper.save(transition);
 
-		final I_C_Flatrate_Conditions conditions = InterfaceWrapperHelper.newInstance(I_C_Flatrate_Conditions.class, getContext());
+		final I_C_Flatrate_Conditions conditions = newInstance(I_C_Flatrate_Conditions.class);
 		conditions.setC_Flatrate_Transition(transition);
 		InterfaceWrapperHelper.save(conditions);
 
-		final I_C_Flatrate_Term term = InterfaceWrapperHelper.newInstance(I_C_Flatrate_Term.class, getContext());
+		final I_C_Flatrate_Term term = newInstance(I_C_Flatrate_Term.class);
 		term.setStartDate(TimeUtil.getDay(2013, 10, 7));
 		term.setIsAutoRenew(true);
 		term.setC_Flatrate_Conditions(conditions);
@@ -189,7 +169,7 @@ public class FlatrateTermHandlerTest extends ContractsTestBase
 	{
 		SystemTime.setTimeSource(new FixedTimeSource(2013, 2, 7));
 
-		final I_C_Flatrate_Transition transition = InterfaceWrapperHelper.newInstance(I_C_Flatrate_Transition.class, getContext());
+		final I_C_Flatrate_Transition transition = newInstance(I_C_Flatrate_Transition.class);
 		transition.setTermDuration(1);
 		transition.setTermDurationUnit(X_C_Flatrate_Transition.TERMDURATIONUNIT_JahrE);
 		transition.setTermOfNotice(3);
@@ -198,11 +178,11 @@ public class FlatrateTermHandlerTest extends ContractsTestBase
 		transition.setC_Calendar_Contract_ID(1000000);
 		InterfaceWrapperHelper.save(transition);
 
-		final I_C_Flatrate_Conditions conditions = InterfaceWrapperHelper.newInstance(I_C_Flatrate_Conditions.class, getContext());
+		final I_C_Flatrate_Conditions conditions = newInstance(I_C_Flatrate_Conditions.class);
 		conditions.setC_Flatrate_Transition(transition);
 		InterfaceWrapperHelper.save(conditions);
 
-		final I_C_Flatrate_Term term = InterfaceWrapperHelper.newInstance(I_C_Flatrate_Term.class, getContext());
+		final I_C_Flatrate_Term term = newInstance(I_C_Flatrate_Term.class);
 		term.setStartDate(TimeUtil.getDay(2011, 10, 7));
 		term.setIsAutoRenew(true);
 		term.setC_Flatrate_Conditions(conditions);
@@ -220,15 +200,15 @@ public class FlatrateTermHandlerTest extends ContractsTestBase
 	{
 		SystemTime.setTimeSource(new FixedTimeSource(2013, 2, 7));
 
-		final I_C_Flatrate_Transition transition = InterfaceWrapperHelper.newInstance(I_C_Flatrate_Transition.class, getContext());
+		final I_C_Flatrate_Transition transition = newInstance(I_C_Flatrate_Transition.class);
 
 		InterfaceWrapperHelper.save(transition);
 
-		final I_C_Flatrate_Conditions conditions = InterfaceWrapperHelper.newInstance(I_C_Flatrate_Conditions.class, getContext());
+		final I_C_Flatrate_Conditions conditions = newInstance(I_C_Flatrate_Conditions.class);
 		conditions.setC_Flatrate_Transition(transition);
 		InterfaceWrapperHelper.save(conditions);
 
-		final I_C_Flatrate_Term term = InterfaceWrapperHelper.newInstance(I_C_Flatrate_Term.class, getContext());
+		final I_C_Flatrate_Term term = newInstance(I_C_Flatrate_Term.class);
 		term.setStartDate(TimeUtil.getDay(2013, 5, 7));
 		term.setIsAutoRenew(true);
 		term.setC_Flatrate_Conditions(conditions);
@@ -239,25 +219,20 @@ public class FlatrateTermHandlerTest extends ContractsTestBase
 	}
 
 	@Test
-	public void test_createMissingCandidates()
+	public void test_createCandidatesForTerm()
 	{
 
 		SystemTime.setTimeSource(new FixedTimeSource(2013, 5, 28)); // today
 
-		final IInvoiceCandidateHandler invoiceCandHandler = new FlatrateTermHandler();
-
-		final I_C_ILCandHandler ilCandHandler = InterfaceWrapperHelper.newInstance(I_C_ILCandHandler.class, getContext());
-		InterfaceWrapperHelper.save(ilCandHandler);
-
-		final I_M_Product product1 = InterfaceWrapperHelper.newInstance(I_M_Product.class, getContext());
+		final I_M_Product product1 = newInstance(I_M_Product.class);
 		POJOWrapper.setInstanceName(product1, "product1");
-		InterfaceWrapperHelper.save(product1);
+		save(product1);
 
-		final I_C_Flatrate_Conditions conditions = InterfaceWrapperHelper.newInstance(I_C_Flatrate_Conditions.class, getContext());
+		final I_C_Flatrate_Conditions conditions = newInstance(I_C_Flatrate_Conditions.class);
 		conditions.setType_Conditions(X_C_Flatrate_Term.TYPE_CONDITIONS_Subscription);
-		InterfaceWrapperHelper.save(conditions);
+		save(conditions);
 
-		final I_C_Flatrate_Term term1 = InterfaceWrapperHelper.newInstance(I_C_Flatrate_Term.class, getContext());
+		final I_C_Flatrate_Term term1 = newInstance(I_C_Flatrate_Term.class);
 		POJOWrapper.setInstanceName(term1, "term1");
 
 		term1.setAD_Org(org);
@@ -266,9 +241,7 @@ public class FlatrateTermHandlerTest extends ContractsTestBase
 		term1.setType_Conditions(X_C_Flatrate_Term.TYPE_CONDITIONS_Subscription);
 		term1.setM_Product(product1);
 		term1.setStartDate(TimeUtil.getDay(2013, 5, 27)); // yesterday
-		InterfaceWrapperHelper.save(term1);
-
-		invoiceCandHandler.setHandlerRecord(ilCandHandler);
+		save(term1);
 
 		Services.registerService(IProductAcctDAO.class, productAcctDAO);
 		Services.registerService(ITaxBL.class, taxBL);
@@ -306,16 +279,12 @@ public class FlatrateTermHandlerTest extends ContractsTestBase
 				result = 3;
 		}};
 		// @formatter:on
-		final List<I_C_Invoice_Candidate> candidates =
-				InvoiceCandidatesTestHelper.createMissingCandidates(invoiceCandHandler,
-						getContext().getCtx(),
-						5,
-						getContext().getTrxName());
 
-		Assert.assertTrue("Candidates not created", !candidates.isEmpty());
-		Assert.assertTrue("Wrong number of candidates created", candidates.size() == 1);
+		final FlatrateTermHandler flatrateTermHandler = new FlatrateTermHandler();
+		final InvoiceCandidateGenerateResult candidates = flatrateTermHandler.createCandidatesFor(InvoiceCandidateGenerateRequest.of(flatrateTermHandler, term1));
 
-		final I_C_Invoice_Candidate cand1 = candidates.get(0);
-		Assert.assertTrue("Wrong product", product1.equals(cand1.getM_Product()));
+		assertThat(candidates.getC_Invoice_Candidates()).hasSize(1);
+		final I_C_Invoice_Candidate invoiceCandidate = candidates.getC_Invoice_Candidates().get(0);
+		assertThat(invoiceCandidate.getM_Product_ID()).isEqualTo(product1.getM_Product_ID());
 	}
 }

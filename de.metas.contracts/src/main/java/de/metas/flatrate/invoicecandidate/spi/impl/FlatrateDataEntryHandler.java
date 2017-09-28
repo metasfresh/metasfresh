@@ -25,7 +25,6 @@ package de.metas.flatrate.invoicecandidate.spi.impl;
 
 import java.util.Collections;
 import java.util.Iterator;
-import java.util.Properties;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
@@ -58,7 +57,7 @@ public class FlatrateDataEntryHandler extends AbstractInvoiceCandidateHandler
 	 * @return empty iterator
 	 */
 	@Override
-	public Iterator<I_C_Flatrate_DataEntry> retrieveAllModelsWithMissingCandidates(final Properties ctx, final int limit, final String trxName)
+	public Iterator<I_C_Flatrate_DataEntry> retrieveAllModelsWithMissingCandidates(final int limit)
 	{
 		return Collections.emptyIterator();
 	}
