@@ -41,34 +41,9 @@ public final class AttachmentEntry
 	public String toStringX()
 	{
 		final StringBuilder sb = new StringBuilder(getName());
-
-		// final byte[] data = getData();
-		// if (data != null)
-		// {
-		// sb.append(" (");
-		// //
-		// float size = data.length;
-		// if (size <= 1024)
-		// sb.append(data.length).append(" B");
-		// else
-		// {
-		// size /= 1024;
-		// if (size > 1024)
-		// {
-		// size /= 1024;
-		// sb.append(size).append(" MB");
-		// }
-		// else
-		// sb.append(size).append(" kB");
-		// }
-		// //
-		// sb.append(")");
-		// }
-
 		sb.append(" - ").append(getContentType());
-
 		return sb.toString();
-	}	// toStringX
+	}
 
 	public boolean isPDF()
 	{
