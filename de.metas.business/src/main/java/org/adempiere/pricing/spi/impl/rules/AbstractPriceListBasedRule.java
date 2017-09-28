@@ -4,7 +4,7 @@ import javax.annotation.OverridingMethodsMustInvokeSuper;
 
 import org.adempiere.pricing.api.IPricingContext;
 import org.adempiere.pricing.api.IPricingResult;
-import org.adempiere.pricing.spi.rules.PricingRuleAdapter;
+import org.adempiere.pricing.spi.IPricingRule;
 import org.adempiere.util.Loggables;
 import org.compiere.model.MPriceList;
 import org.compiere.util.Trace;
@@ -35,7 +35,7 @@ import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
 
-public abstract class AbstractPriceListBasedRule extends PricingRuleAdapter
+public abstract class AbstractPriceListBasedRule implements IPricingRule
 {
 	protected final transient Logger log = LogManager.getLogger(getClass());
 

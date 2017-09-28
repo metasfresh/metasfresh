@@ -13,15 +13,14 @@ package de.metas.contracts.pricing;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Properties;
 
@@ -31,7 +30,7 @@ import org.adempiere.pricing.api.IPricingBL;
 import org.adempiere.pricing.api.IPricingContext;
 import org.adempiere.pricing.api.IPricingResult;
 import org.adempiere.pricing.exceptions.ProductNotOnPriceListException;
-import org.adempiere.pricing.spi.rules.PricingRuleAdapter;
+import org.adempiere.pricing.spi.IPricingRule;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_PriceList;
@@ -41,22 +40,26 @@ import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.subscription.model.I_C_OrderLine;
 import de.metas.logging.LogManager;
 import de.metas.product.IProductPA;
+import lombok.NonNull;
 
 /**
- * Pricing rule applies for order lines that have a subscription id set. If the rule is called and
- * {@link IPricingContext#getReferencedObject()} returns a subscription order line, then the rule creates a pricing
- * context of it's own and calls the pricing engine with that pricing context. The rule's own pricing context contains
- * the subscription's price list.
+ * This pricing rule applies for sales order lines that reference a {@link I_C_Flatrate_Conditions}.
+ * <p>
+ * If the rule is called and {@link IPricingContext#getReferencedObject()} returns a subscription sales order line, 
+ * then the rule creates a pricing context of it's own and calls the pricing engine with that "alternative" pricing context. 
+ * The rule's own pricing context contains the {@link I_C_Flatrate_Conditions}'s pricing system.
  * 
- * @author ts
  * 
  */
-public class SubscriptionPricingRule extends PricingRuleAdapter
+public class SubscriptionPricingRule implements IPricingRule
 {
-	private final transient Logger logger = LogManager.getLogger(getClass());
+	
+	private static final Logger logger = LogManager.getLogger(SubscriptionPricingRule.class);
 
 	@Override
-	public boolean applies(final IPricingContext pricingCtx, final IPricingResult result)
+	public boolean applies(
+			@NonNull final IPricingContext pricingCtx, 
+			@NonNull final IPricingResult result)
 	{
 		if (result.isCalculated())
 		{
@@ -71,7 +74,7 @@ public class SubscriptionPricingRule extends PricingRuleAdapter
 			return false;
 		}
 
-		final String tableName = InterfaceWrapperHelper.getTableNameOrNull(referencedObject.getClass());
+		final String tableName = InterfaceWrapperHelper.getModelTableNameOrNull(referencedObject);
 		if (!I_C_OrderLine.Table_Name.equals(tableName))
 		{
 			logger.debug("Not applying because referencedObject='" + referencedObject + "' has tableName='" + tableName + "'");
@@ -110,6 +113,7 @@ public class SubscriptionPricingRule extends PricingRuleAdapter
 		//
 		// create a new pricing context.
 		// copy most values from 'pricingCtx'...
+		
 		final IEditablePricingContext subscriptionPricingCtx = pricingBL.createPricingContext();
 		subscriptionPricingCtx.setAD_Table_ID(pricingCtx.getAD_Table_ID());
 		subscriptionPricingCtx.setC_BPartner_ID(pricingCtx.getC_BPartner_ID());
@@ -142,12 +146,12 @@ public class SubscriptionPricingRule extends PricingRuleAdapter
 		result.setPrice_UOM_ID(subscriptionPricingResult.getPrice_UOM_ID());
 		result.setCalculated(subscriptionPricingResult.isCalculated());
 		result.setDisallowDiscount(subscriptionPricingResult.isDisallowDiscount());
-		if(!pricingCtx.isDisallowDiscount())
+		if (!pricingCtx.isDisallowDiscount())
 		{
 			result.setDiscount(subscriptionPricingResult.getDiscount());
 		}
 		result.setUsesDiscountSchema(subscriptionPricingResult.isUsesDiscountSchema());
-		//08634: also set the discount schema
+		// 08634: also set the discount schema
 		result.setM_DiscountSchema_ID(subscriptionPricingResult.getM_DiscountSchema_ID());
 		result.setEnforcePriceLimit(subscriptionPricingResult.isEnforcePriceLimit());
 		result.setM_PricingSystem_ID(subscriptionPricingResult.getM_PricingSystem_ID());
@@ -158,5 +162,6 @@ public class SubscriptionPricingRule extends PricingRuleAdapter
 		result.setPriceList(subscriptionPricingResult.getPriceList());
 		result.setPriceStd(subscriptionPricingResult.getPriceStd());
 		result.setTaxIncluded(subscriptionPricingResult.isTaxIncluded());
+		result.setC_TaxCategory_ID(subscriptionPricingResult.getC_TaxCategory_ID());
 	}
 }

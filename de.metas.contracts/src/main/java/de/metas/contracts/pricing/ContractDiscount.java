@@ -2,7 +2,7 @@ package de.metas.contracts.pricing;
 
 import org.adempiere.pricing.api.IPricingContext;
 import org.adempiere.pricing.api.IPricingResult;
-import org.adempiere.pricing.spi.rules.PricingRuleAdapter;
+import org.adempiere.pricing.spi.IPricingRule;
 import org.compiere.util.Env;
 
 /*
@@ -43,13 +43,11 @@ import de.metas.logging.LogManager;
  * 
  * In this case, the rule's {@link #calculate(IPricingContext, IPricingResult)} sets the discount to 100%.
  * 
- * @author ts
  * 
  */
-public class ContractDiscount extends PricingRuleAdapter
+public class ContractDiscount implements IPricingRule
 {
-
-	private final transient Logger logger = LogManager.getLogger(getClass());
+	private static final Logger logger = LogManager.getLogger(ContractDiscount.class);
 
 	@Override
 	public boolean applies(final IPricingContext pricingCtx, final IPricingResult result)

@@ -1,5 +1,8 @@
 package de.metas.contracts.invoicecandidate;
 
+import static org.adempiere.model.InterfaceWrapperHelper.getContextAware;
+import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
+
 /*
  * #%L
  * de.metas.contracts
@@ -13,11 +16,11 @@ package de.metas.contracts.invoicecandidate;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -27,12 +30,12 @@ import java.sql.Timestamp;
 import java.util.Iterator;
 import java.util.Properties;
 
-import org.adempiere.ad.dao.cache.impl.TableRecordCacheLocal;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_Activity;
 import org.compiere.model.I_M_Warehouse;
@@ -54,6 +57,7 @@ import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateRequest;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateResult;
 import de.metas.product.acct.api.IProductAcctDAO;
 import de.metas.tax.api.ITaxBL;
+import lombok.NonNull;
 
 /**
  * Creates {@link I_C_Invoice_Candidate} from {@link I_C_Flatrate_Term}.
@@ -185,20 +189,11 @@ public class FlatrateTermInvoiceCandidateHandler extends AbstractInvoiceCandidat
 		final boolean isSOTrx = true;
 
 		final int taxId = Services.get(ITaxBL.class).getTax(
-				ctx
-				, term
-				, taxCategoryId
-				, term.getM_Product_ID()
-				, -1 // chargeId
+				ctx, term, taxCategoryId, term.getM_Product_ID(), -1 // chargeId
 				, dateOrdered // billDate
 				, dateOrdered // shipDate
-				, term.getAD_Org_ID()
-				, warehouse
-				, term.getBill_Location_ID()
-				, -1 // ship location id
-				, isSOTrx
-				, trxName
-				);
+				, term.getAD_Org_ID(), warehouse, term.getBill_Location_ID(), -1 // ship location id
+				, isSOTrx, trxName);
 
 		ic.setC_Tax_ID(taxId);
 		return ic;
@@ -310,14 +305,12 @@ public class FlatrateTermInvoiceCandidateHandler extends AbstractInvoiceCandidat
 		}
 	}
 
-	private I_C_Flatrate_Term retrieveTerm(final I_C_Invoice_Candidate ic)
+	private I_C_Flatrate_Term retrieveTerm(@NonNull final I_C_Invoice_Candidate ic)
 	{
-		Check.assumeNotNull(ic, "Param 'ic' not null");
-		final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
-		Check.assume(ic.getAD_Table_ID() == adTableDAO.retrieveTableId(I_C_Flatrate_Term.Table_Name), "{} has AD_Table_ID={}", ic, adTableDAO.retrieveTableId(I_C_Flatrate_Term.Table_Name));
+		final int flatrateTermTableId = getTableId(I_C_Flatrate_Term.class);
+		Check.assume(ic.getAD_Table_ID() == flatrateTermTableId, "{} has AD_Table_ID={}", ic, flatrateTermTableId);
 
-		final I_C_Flatrate_Term term = TableRecordCacheLocal.getReferencedValue(ic, I_C_Flatrate_Term.class);
-		return term;
+		return TableRecordReference.ofReferenced(ic).getModel(getContextAware(ic), I_C_Flatrate_Term.class);
 	}
 
 	/**
