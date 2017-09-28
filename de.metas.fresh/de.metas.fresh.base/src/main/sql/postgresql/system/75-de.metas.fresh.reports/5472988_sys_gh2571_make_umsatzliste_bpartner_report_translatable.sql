@@ -1,4 +1,4 @@
-DROP FUNCTION IF EXISTS report.umsatzliste_bpartner_report
+﻿DROP FUNCTION IF EXISTS report.umsatzliste_bpartner_report
 	(
 		IN Base_Period_Start date,IN Base_Period_End date, IN Comp_Period_Start date, IN Comp_Period_End date, IN issotrx character varying,IN C_BPartner_ID numeric, IN C_Activity_ID numeric,IN M_Product_ID numeric,IN M_Product_Category_ID numeric,IN M_AttributeSetInstance_ID numeric,IN AD_Org_ID numeric
 	);
