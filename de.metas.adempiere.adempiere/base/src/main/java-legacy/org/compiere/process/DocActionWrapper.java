@@ -27,11 +27,11 @@ import lombok.NonNull;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -40,24 +40,26 @@ public class DocActionWrapper implements DocAction
 {
 	public static DocAction wrap(@NonNull final Object model)
 	{
-		if(model instanceof DocAction)
+		if (model instanceof DocAction)
 		{
 			return (DocAction)model;
 		}
-		
+
 		final DocActionFields docActionModel = InterfaceWrapperHelper.create(model, DocActionFields.class);
-		
+
 		return new DocActionWrapper(docActionModel);
 	}
 
 	private final DocActionFields docActionModel;
+	private final DocActionHandler docActionHandler;
+
 	private String m_processMsg;
 	private boolean m_justPrepared;
-	
-	private DocActionWrapper(DocActionFields docActionModel)
+
+	private DocActionWrapper(@NonNull DocActionFields docActionModel)
 	{
 		this.docActionModel = docActionModel;
-		// TODO Auto-generated constructor stub
+		this.docActionHandler = null; // TODO
 	}
 
 	@Override
@@ -69,8 +71,7 @@ public class DocActionWrapper implements DocAction
 	@Override
 	public String getDocStatus()
 	{
-		// TODO Auto-generated method stub
-		return null;
+		return docActionModel.getDocStatus();
 	}
 
 	@Override
@@ -83,36 +84,39 @@ public class DocActionWrapper implements DocAction
 	@Override
 	public boolean unlockIt()
 	{
-		// TODO Auto-generated method stub
-		return false;
+		docActionModel.setProcessing(false);
+		return true;
 	}
 
 	@Override
 	public boolean invalidateIt()
 	{
-		// TODO Auto-generated method stub
-		return false;
+		docActionModel.setDocAction(DocAction.ACTION_Prepare);
+		return true;
 	}
 
 	@Override
 	public String prepareIt()
 	{
-		// TODO Auto-generated method stub
-		return null;
+		ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_PREPARE);
+		final String newDocStatus = docActionHandler.prepareIt(docActionModel);
+		ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_PREPARE);
+
+		return newDocStatus;
 	}
 
 	@Override
 	public boolean approveIt()
 	{
-		// TODO Auto-generated method stub
-		return false;
+		docActionHandler.approveIt(docActionModel);
+		return true;
 	}
 
 	@Override
 	public boolean rejectIt()
 	{
-		// TODO Auto-generated method stub
-		return false;
+		docActionHandler.rejectIt(docActionModel);
+		return true;
 	}
 
 	@Override
@@ -127,76 +131,82 @@ public class DocActionWrapper implements DocAction
 		}
 
 		ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_COMPLETE);
-		
-		// TODO: actual BL
-		
+
+		final String newDocStatus = docActionHandler.completeIt(docActionModel);
+
 		ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_COMPLETE);
-		
+
 		docActionModel.setProcessed(true);
-		return DocAction.STATUS_Completed;
+		return newDocStatus;
 	}
 
 	@Override
 	public boolean voidIt()
 	{
-		// TODO Auto-generated method stub
-		return false;
+		ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_VOID);
+		docActionHandler.voidIt(docActionModel);
+		ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_VOID);
+		return true;
 	}
 
 	@Override
 	public boolean closeIt()
 	{
-		// TODO Auto-generated method stub
-		return false;
+		ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_CLOSE);
+		docActionHandler.closeIt(docActionModel);
+		ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_CLOSE);
+		return true;
 	}
 
 	@Override
 	public boolean reverseCorrectIt()
 	{
-		// TODO Auto-generated method stub
-		return false;
+		ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_REVERSECORRECT);
+		docActionHandler.reverseCorrectIt(docActionModel);
+		ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_REVERSECORRECT);
+		return true;
 	}
 
 	@Override
 	public boolean reverseAccrualIt()
 	{
-		// TODO Auto-generated method stub
-		return false;
+		ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_REVERSEACCRUAL);
+		docActionHandler.reverseAccrualIt(docActionModel);
+		ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_REVERSEACCRUAL);
+		return true;
 	}
 
 	@Override
 	public boolean reActivateIt()
 	{
-		// TODO Auto-generated method stub
-		return false;
+		ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_REACTIVATE);
+		docActionHandler.reactivateIt(docActionModel);
+		ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_REACTIVATE);
+		return true;
 	}
 
 	@Override
 	public String getSummary()
 	{
-		// TODO Auto-generated method stub
-		return null;
+		return docActionHandler.getSummary(docActionModel);
 	}
 
 	@Override
 	public String getDocumentInfo()
 	{
-		// TODO Auto-generated method stub
-		return null;
+		return docActionHandler.getDocumentInfo(docActionModel);
 	}
 
 	@Override
 	public String getDocumentNo()
 	{
-		// TODO Auto-generated method stub
-		return null;
+		return docActionModel.getDocumentNo();
 	}
 
 	@Override
 	public File createPDF()
 	{
-		// TODO Auto-generated method stub
-		return null;
+		return docActionHandler.createPDF(docActionModel);
 	}
 
 	@Override
@@ -300,7 +310,7 @@ public class DocActionWrapper implements DocAction
 	public void set_TrxName(String trxName)
 	{
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override

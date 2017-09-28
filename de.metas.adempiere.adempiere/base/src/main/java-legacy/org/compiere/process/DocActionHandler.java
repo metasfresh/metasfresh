@@ -1,5 +1,7 @@
 package org.compiere.process;
 
+import java.io.File;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -22,30 +24,31 @@ package org.compiere.process;
  * #L%
  */
 
-public interface DocActionFields
+public interface DocActionHandler
 {
-	//@formatter:off
-	String getDocumentNo();
-	//@formatter:on
 
-	//@formatter:off
-	String getDocStatus();
-	void setDocStatus(String docStatus);
-	//@formatter:on
+	String prepareIt(DocActionFields docActionModel);
 
-	//@formatter:off
-	String getDocAction();
-	void setDocAction(String docAction);
-	//@formatter:on
+	String completeIt(DocActionFields docActionModel);
 
-	//@formatter:off
-	boolean isProcessed();
-	void setProcessed(boolean processed);
-	//@formatter:on
+	void approveIt(DocActionFields docActionModel);
 
-	//@formatter:off
-	boolean isProcessing();
-	void setProcessing(boolean processing);
-	//@formatter:on
+	void rejectIt(DocActionFields docActionModel);
+
+	void voidIt(DocActionFields docActionModel);
+
+	void closeIt(DocActionFields docActionModel);
+
+	void reverseCorrectIt(DocActionFields docActionModel);
+
+	void reverseAccrualIt(DocActionFields docActionModel);
+
+	void reactivateIt(DocActionFields docActionModel);
+
+	String getSummary(DocActionFields docActionModel);
+
+	String getDocumentInfo(DocActionFields docActionModel);
+
+	File createPDF(DocActionFields docActionModel);
 
 }

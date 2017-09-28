@@ -1244,7 +1244,7 @@ public class MOrder extends X_C_Order implements DocAction
 	@Override
 	public boolean unlockIt()
 	{
-		log.debug("unlockIt - " + toString());
+		log.debug("unlockIt - {}", this);
 		setProcessing(false);
 		return true;
 	}	// unlockIt
@@ -1257,7 +1257,7 @@ public class MOrder extends X_C_Order implements DocAction
 	@Override
 	public boolean invalidateIt()
 	{
-		log.debug(toString());
+		log.debug("{}", this);
 		setDocAction(DOCACTION_Prepare);
 		return true;
 	}	// invalidateIt
@@ -1726,7 +1726,7 @@ public class MOrder extends X_C_Order implements DocAction
 
 		// Lines
 		BigDecimal totalLines = Env.ZERO;
-		final Set<Integer> taxIds = new HashSet<Integer>();
+		final Set<Integer> taxIds = new HashSet<>();
 		final MOrderLine[] lines = getLines();
 		for (final MOrderLine line : lines)
 		{
