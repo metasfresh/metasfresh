@@ -5,7 +5,7 @@ import java.util.List;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 
 import de.metas.contracts.flatrate.interfaces.I_C_OLCand;
-import de.metas.contracts.flatrate.model.I_C_Flatrate_Term;
+import de.metas.contracts.model.I_C_Flatrate_Term;
 
 public class PlainSubscriptionDAO extends AbstractSubscriptionDAO
 {

@@ -35,7 +35,7 @@ import org.compiere.process.DocAction;
 import org.compiere.process.DocumentEngine;
 import org.compiere.util.Env;
 
-import de.metas.contracts.flatrate.model.X_C_Flatrate_DataEntry;
+import de.metas.contracts.model.X_C_Flatrate_DataEntry;
 import de.metas.i18n.Msg;
 
 public class MCFlatrateDataEntry extends X_C_Flatrate_DataEntry implements DocAction

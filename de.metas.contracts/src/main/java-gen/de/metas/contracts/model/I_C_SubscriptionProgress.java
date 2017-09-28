@@ -1,4 +1,4 @@
-package de.metas.contracts.flatrate.model;
+package de.metas.contracts.model;
 
 
 /** Generated Interface for C_SubscriptionProgress
@@ -86,12 +86,12 @@ public interface I_C_SubscriptionProgress
 	 */
 	public int getC_Flatrate_Term_ID();
 
-	public de.metas.contracts.flatrate.model.I_C_Flatrate_Term getC_Flatrate_Term();
+	public de.metas.contracts.model.I_C_Flatrate_Term getC_Flatrate_Term();
 
-	public void setC_Flatrate_Term(de.metas.contracts.flatrate.model.I_C_Flatrate_Term C_Flatrate_Term);
+	public void setC_Flatrate_Term(de.metas.contracts.model.I_C_Flatrate_Term C_Flatrate_Term);
 
     /** Column definition for C_Flatrate_Term_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_SubscriptionProgress, de.metas.contracts.flatrate.model.I_C_Flatrate_Term> COLUMN_C_Flatrate_Term_ID = new org.adempiere.model.ModelColumn<I_C_SubscriptionProgress, de.metas.contracts.flatrate.model.I_C_Flatrate_Term>(I_C_SubscriptionProgress.class, "C_Flatrate_Term_ID", de.metas.contracts.flatrate.model.I_C_Flatrate_Term.class);
+    public static final org.adempiere.model.ModelColumn<I_C_SubscriptionProgress, de.metas.contracts.model.I_C_Flatrate_Term> COLUMN_C_Flatrate_Term_ID = new org.adempiere.model.ModelColumn<I_C_SubscriptionProgress, de.metas.contracts.model.I_C_Flatrate_Term>(I_C_SubscriptionProgress.class, "C_Flatrate_Term_ID", de.metas.contracts.model.I_C_Flatrate_Term.class);
     /** Column name C_Flatrate_Term_ID */
     public static final String COLUMNNAME_C_Flatrate_Term_ID = "C_Flatrate_Term_ID";
 

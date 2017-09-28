@@ -35,11 +35,11 @@ import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 
-import de.metas.contracts.flatrate.model.I_C_Flatrate_Conditions;
-import de.metas.contracts.flatrate.model.I_C_Flatrate_Data;
-import de.metas.contracts.flatrate.model.I_C_Flatrate_DataEntry;
-import de.metas.contracts.flatrate.model.I_C_Flatrate_Term;
-import de.metas.contracts.flatrate.model.I_C_Flatrate_Transition;
+import de.metas.contracts.model.I_C_Flatrate_Conditions;
+import de.metas.contracts.model.I_C_Flatrate_Data;
+import de.metas.contracts.model.I_C_Flatrate_DataEntry;
+import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.contracts.model.I_C_Flatrate_Transition;
 import de.metas.contracts.subscription.model.I_C_OrderLine;
 import de.metas.inout.model.I_M_InOutLine;
 

@@ -35,9 +35,9 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.contracts.flatrate.api.IFlatrateBL;
-import de.metas.contracts.flatrate.model.I_C_Flatrate_Term;
-import de.metas.contracts.flatrate.model.I_C_SubscriptionProgress;
-import de.metas.contracts.flatrate.model.X_C_SubscriptionProgress;
+import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.contracts.model.I_C_SubscriptionProgress;
+import de.metas.contracts.model.X_C_SubscriptionProgress;
 import de.metas.document.IDocumentLocationBL;
 import de.metas.document.model.IDocumentLocation;
 import de.metas.inoutcandidate.api.IDeliverRequest;

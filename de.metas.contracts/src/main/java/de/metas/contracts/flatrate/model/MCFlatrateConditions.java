@@ -34,7 +34,7 @@ import org.compiere.process.DocAction;
 import org.compiere.process.DocumentEngine;
 import org.compiere.util.Env;
 
-import de.metas.contracts.flatrate.model.X_C_Flatrate_Conditions;
+import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.i18n.Msg;
 
 public class MCFlatrateConditions extends X_C_Flatrate_Conditions implements DocAction

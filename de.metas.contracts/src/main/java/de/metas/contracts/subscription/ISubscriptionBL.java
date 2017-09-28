@@ -34,12 +34,12 @@ import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_M_Product;
 
 import de.metas.contracts.flatrate.interfaces.I_C_OLCand;
-import de.metas.contracts.flatrate.model.I_C_Flatrate_Conditions;
-import de.metas.contracts.flatrate.model.I_C_Flatrate_Matching;
-import de.metas.contracts.flatrate.model.I_C_Flatrate_Term;
-import de.metas.contracts.flatrate.model.I_C_Flatrate_Transition;
-import de.metas.contracts.flatrate.model.I_C_SubscriptionProgress;
-import de.metas.contracts.flatrate.model.X_C_SubscriptionProgress;
+import de.metas.contracts.model.I_C_Flatrate_Conditions;
+import de.metas.contracts.model.I_C_Flatrate_Matching;
+import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.contracts.model.I_C_Flatrate_Transition;
+import de.metas.contracts.model.I_C_SubscriptionProgress;
+import de.metas.contracts.model.X_C_SubscriptionProgress;
 import de.metas.contracts.subscription.model.I_C_OrderLine;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 

@@ -9,8 +9,8 @@ import org.compiere.util.DB;
 
 import de.metas.contracts.flatrate.api.impl.AbstractSubscriptionDAO;
 import de.metas.contracts.flatrate.interfaces.I_C_OLCand;
-import de.metas.contracts.flatrate.model.I_C_Contract_Term_Alloc;
-import de.metas.contracts.flatrate.model.I_C_Flatrate_Term;
+import de.metas.contracts.model.I_C_Contract_Term_Alloc;
+import de.metas.contracts.model.I_C_Flatrate_Term;
 
 public class SubscriptionDAO extends AbstractSubscriptionDAO
 {

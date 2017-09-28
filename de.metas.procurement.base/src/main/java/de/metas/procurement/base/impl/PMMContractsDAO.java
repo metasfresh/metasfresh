@@ -66,13 +66,13 @@ public class PMMContractsDAO implements IPMMContractsDAO
 				.list(I_C_Flatrate_Term.class);
 	}
 
-	private IQueryBuilder<de.metas.contracts.flatrate.model.I_C_Flatrate_Term> retrieveAllRunningContractsOnDateQuery(final Date date)
+	private IQueryBuilder<de.metas.contracts.model.I_C_Flatrate_Term> retrieveAllRunningContractsOnDateQuery(final Date date)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-		final IQueryBuilder<de.metas.contracts.flatrate.model.I_C_Flatrate_Term> queryBuilder = queryBL.createQueryBuilder(de.metas.contracts.flatrate.model.I_C_Flatrate_Term.class, Env.getCtx(), ITrx.TRXNAME_ThreadInherited)
+		final IQueryBuilder<de.metas.contracts.model.I_C_Flatrate_Term> queryBuilder = queryBL.createQueryBuilder(de.metas.contracts.model.I_C_Flatrate_Term.class, Env.getCtx(), ITrx.TRXNAME_ThreadInherited)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(de.metas.contracts.flatrate.model.I_C_Flatrate_Term.COLUMNNAME_Type_Conditions, I_C_Flatrate_Conditions.TYPE_CONDITIONS_Procuremnt)
+				.addEqualsFilter(de.metas.contracts.model.I_C_Flatrate_Term.COLUMNNAME_Type_Conditions, I_C_Flatrate_Conditions.TYPE_CONDITIONS_Procuremnt)
 
 				// completed contract restriction
 				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_DocStatus, DocAction.STATUS_Completed)
@@ -116,7 +116,7 @@ public class PMMContractsDAO implements IPMMContractsDAO
 	}
 
 	@Override
-	public I_C_Flatrate_DataEntry retrieveFlatrateDataEntry(final de.metas.contracts.flatrate.model.I_C_Flatrate_Term flatrateTerm, final Timestamp date)
+	public I_C_Flatrate_DataEntry retrieveFlatrateDataEntry(final de.metas.contracts.model.I_C_Flatrate_Term flatrateTerm, final Timestamp date)
 	{
 		Check.assumeNotNull(flatrateTerm, "flatrateTerm not null");
 		Check.assumeNotNull(date, "date not null");

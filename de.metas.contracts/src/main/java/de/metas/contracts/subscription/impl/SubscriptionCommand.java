@@ -7,8 +7,8 @@ import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
 import org.compiere.util.Env;
 
-import de.metas.contracts.flatrate.model.I_C_Flatrate_Term;
-import de.metas.contracts.flatrate.model.I_C_SubscriptionProgress;
+import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.contracts.model.I_C_SubscriptionProgress;
 import de.metas.contracts.subscription.ISubscriptionDAO;
 import de.metas.contracts.subscription.ISubscriptionDAO.SubscriptionProgressQuery;
 import de.metas.contracts.subscription.impl.subscriptioncommands.ChangeRecipient;

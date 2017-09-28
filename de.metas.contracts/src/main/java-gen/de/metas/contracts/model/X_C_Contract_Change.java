@@ -1,5 +1,5 @@
 /** Generated Model - DO NOT CHANGE */
-package de.metas.contracts.flatrate.model;
+package de.metas.contracts.model;
 
 import java.sql.ResultSet;
 import java.util.Properties;
@@ -97,15 +97,15 @@ public class X_C_Contract_Change extends org.compiere.model.PO implements I_C_Co
 	}
 
 	@Override
-	public de.metas.contracts.flatrate.model.I_C_Flatrate_Conditions getC_Flatrate_Conditions() throws RuntimeException
+	public de.metas.contracts.model.I_C_Flatrate_Conditions getC_Flatrate_Conditions() throws RuntimeException
 	{
-		return get_ValueAsPO(COLUMNNAME_C_Flatrate_Conditions_ID, de.metas.contracts.flatrate.model.I_C_Flatrate_Conditions.class);
+		return get_ValueAsPO(COLUMNNAME_C_Flatrate_Conditions_ID, de.metas.contracts.model.I_C_Flatrate_Conditions.class);
 	}
 
 	@Override
-	public void setC_Flatrate_Conditions(de.metas.contracts.flatrate.model.I_C_Flatrate_Conditions C_Flatrate_Conditions)
+	public void setC_Flatrate_Conditions(de.metas.contracts.model.I_C_Flatrate_Conditions C_Flatrate_Conditions)
 	{
-		set_ValueFromPO(COLUMNNAME_C_Flatrate_Conditions_ID, de.metas.contracts.flatrate.model.I_C_Flatrate_Conditions.class, C_Flatrate_Conditions);
+		set_ValueFromPO(COLUMNNAME_C_Flatrate_Conditions_ID, de.metas.contracts.model.I_C_Flatrate_Conditions.class, C_Flatrate_Conditions);
 	}
 
 	/** Set Vertragsbedingungen.
@@ -131,15 +131,15 @@ public class X_C_Contract_Change extends org.compiere.model.PO implements I_C_Co
 	}
 
 	@Override
-	public de.metas.contracts.flatrate.model.I_C_Flatrate_Conditions getC_Flatrate_Conditions_Next() throws RuntimeException
+	public de.metas.contracts.model.I_C_Flatrate_Conditions getC_Flatrate_Conditions_Next() throws RuntimeException
 	{
-		return get_ValueAsPO(COLUMNNAME_C_Flatrate_Conditions_Next_ID, de.metas.contracts.flatrate.model.I_C_Flatrate_Conditions.class);
+		return get_ValueAsPO(COLUMNNAME_C_Flatrate_Conditions_Next_ID, de.metas.contracts.model.I_C_Flatrate_Conditions.class);
 	}
 
 	@Override
-	public void setC_Flatrate_Conditions_Next(de.metas.contracts.flatrate.model.I_C_Flatrate_Conditions C_Flatrate_Conditions_Next)
+	public void setC_Flatrate_Conditions_Next(de.metas.contracts.model.I_C_Flatrate_Conditions C_Flatrate_Conditions_Next)
 	{
-		set_ValueFromPO(COLUMNNAME_C_Flatrate_Conditions_Next_ID, de.metas.contracts.flatrate.model.I_C_Flatrate_Conditions.class, C_Flatrate_Conditions_Next);
+		set_ValueFromPO(COLUMNNAME_C_Flatrate_Conditions_Next_ID, de.metas.contracts.model.I_C_Flatrate_Conditions.class, C_Flatrate_Conditions_Next);
 	}
 
 	/** Set Nächste Vertragsbedingungen.
@@ -168,15 +168,15 @@ public class X_C_Contract_Change extends org.compiere.model.PO implements I_C_Co
 	}
 
 	@Override
-	public de.metas.contracts.flatrate.model.I_C_Flatrate_Transition getC_Flatrate_Transition() throws RuntimeException
+	public de.metas.contracts.model.I_C_Flatrate_Transition getC_Flatrate_Transition() throws RuntimeException
 	{
-		return get_ValueAsPO(COLUMNNAME_C_Flatrate_Transition_ID, de.metas.contracts.flatrate.model.I_C_Flatrate_Transition.class);
+		return get_ValueAsPO(COLUMNNAME_C_Flatrate_Transition_ID, de.metas.contracts.model.I_C_Flatrate_Transition.class);
 	}
 
 	@Override
-	public void setC_Flatrate_Transition(de.metas.contracts.flatrate.model.I_C_Flatrate_Transition C_Flatrate_Transition)
+	public void setC_Flatrate_Transition(de.metas.contracts.model.I_C_Flatrate_Transition C_Flatrate_Transition)
 	{
-		set_ValueFromPO(COLUMNNAME_C_Flatrate_Transition_ID, de.metas.contracts.flatrate.model.I_C_Flatrate_Transition.class, C_Flatrate_Transition);
+		set_ValueFromPO(COLUMNNAME_C_Flatrate_Transition_ID, de.metas.contracts.model.I_C_Flatrate_Transition.class, C_Flatrate_Transition);
 	}
 
 	/** Set Vertragsverlängerung/-übergang.

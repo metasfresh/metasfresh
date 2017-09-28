@@ -30,7 +30,7 @@ import org.compiere.util.Env;
 
 import org.slf4j.Logger;
 
-import de.metas.contracts.flatrate.model.I_C_Flatrate_Conditions;
+import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.logging.LogManager;
 
 /**

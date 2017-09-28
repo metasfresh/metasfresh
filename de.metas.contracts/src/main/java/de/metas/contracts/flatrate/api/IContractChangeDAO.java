@@ -28,8 +28,8 @@ import java.sql.Timestamp;
 import org.adempiere.util.ISingletonService;
 
 import de.metas.contracts.flatrate.exceptions.SubscriptionChangeException;
-import de.metas.contracts.flatrate.model.I_C_Contract_Change;
-import de.metas.contracts.flatrate.model.I_C_Flatrate_Term;
+import de.metas.contracts.model.I_C_Contract_Change;
+import de.metas.contracts.model.I_C_Flatrate_Term;
 
 public interface IContractChangeDAO extends ISingletonService
 {

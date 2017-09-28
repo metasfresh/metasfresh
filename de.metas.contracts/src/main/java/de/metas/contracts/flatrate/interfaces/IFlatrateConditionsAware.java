@@ -1,6 +1,6 @@
 package de.metas.contracts.flatrate.interfaces;
 
-import de.metas.contracts.flatrate.model.I_C_Flatrate_Conditions;
+import de.metas.contracts.model.I_C_Flatrate_Conditions;
 
 public interface IFlatrateConditionsAware
 {

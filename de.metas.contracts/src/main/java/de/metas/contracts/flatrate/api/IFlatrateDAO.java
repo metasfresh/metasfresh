@@ -34,13 +34,13 @@ import org.compiere.model.I_C_Period;
 import org.compiere.model.I_C_UOM;
 
 import de.metas.adempiere.model.I_M_Product;
-import de.metas.contracts.flatrate.model.I_C_Flatrate_Conditions;
-import de.metas.contracts.flatrate.model.I_C_Flatrate_Data;
-import de.metas.contracts.flatrate.model.I_C_Flatrate_DataEntry;
-import de.metas.contracts.flatrate.model.I_C_Flatrate_Matching;
-import de.metas.contracts.flatrate.model.I_C_Flatrate_Term;
-import de.metas.contracts.flatrate.model.I_C_Flatrate_Transition;
-import de.metas.contracts.flatrate.model.I_C_Invoice_Clearing_Alloc;
+import de.metas.contracts.model.I_C_Flatrate_Conditions;
+import de.metas.contracts.model.I_C_Flatrate_Data;
+import de.metas.contracts.model.I_C_Flatrate_DataEntry;
+import de.metas.contracts.model.I_C_Flatrate_Matching;
+import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.contracts.model.I_C_Flatrate_Transition;
+import de.metas.contracts.model.I_C_Invoice_Clearing_Alloc;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 
 public interface IFlatrateDAO extends ISingletonService

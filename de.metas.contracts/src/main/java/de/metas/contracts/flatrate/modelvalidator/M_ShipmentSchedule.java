@@ -32,7 +32,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.Query;
 
-import de.metas.contracts.flatrate.model.I_C_SubscriptionProgress;
+import de.metas.contracts.model.I_C_SubscriptionProgress;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 
 @Validator(I_M_ShipmentSchedule.class)

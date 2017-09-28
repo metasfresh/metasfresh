@@ -27,7 +27,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 
 import de.metas.contracts.flatrate.interfaces.IFlatrateConditionsAware;
-import de.metas.contracts.flatrate.model.I_C_Flatrate_Conditions;
+import de.metas.contracts.model.I_C_Flatrate_Conditions;
 
 public final class ContractPricingUtil
 {

@@ -30,7 +30,7 @@ import de.metas.adempiere.ait.helper.OrderHelper;
 import de.metas.adempiere.ait.helper.OrderLineHelper;
 import de.metas.adempiere.ait.helper.ProductPriceVO.LineType;
 import de.metas.adempiere.model.I_C_Order;
-import de.metas.contracts.flatrate.model.I_C_Flatrate_Conditions;
+import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.subscription.model.I_C_OrderLine;
 
 public class ContractsOrderLineHelper extends OrderLineHelper

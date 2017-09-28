@@ -30,7 +30,7 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 
 import de.metas.contracts.flatrate.api.IContractChangeDAO;
-import de.metas.contracts.flatrate.model.I_C_Contract_Change;
+import de.metas.contracts.model.I_C_Contract_Change;
 import de.metas.contracts.subscription.ISubscriptionBL;
 
 public abstract class AbstractContractChangeDAO implements IContractChangeDAO

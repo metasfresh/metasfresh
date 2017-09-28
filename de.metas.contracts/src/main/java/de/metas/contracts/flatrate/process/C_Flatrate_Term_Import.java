@@ -2,7 +2,7 @@ package de.metas.contracts.flatrate.process;
 
 import org.compiere.process.AbstractImportJavaProcess;
 
-import de.metas.contracts.flatrate.model.I_I_Flatrate_Term;
+import de.metas.contracts.model.I_I_Flatrate_Term;
 
 /*
  * #%L

@@ -36,11 +36,11 @@ import org.compiere.model.ModelValidator;
 import org.compiere.model.Query;
 
 import de.metas.adempiere.service.ICalendarBL;
-import de.metas.contracts.flatrate.model.I_C_Flatrate_Conditions;
-import de.metas.contracts.flatrate.model.I_C_Flatrate_Transition;
-import de.metas.contracts.flatrate.model.X_C_Flatrate_Conditions;
-import de.metas.contracts.flatrate.model.X_C_Flatrate_Transition;
 import de.metas.contracts.interceptor.MainValidator;
+import de.metas.contracts.model.I_C_Flatrate_Conditions;
+import de.metas.contracts.model.I_C_Flatrate_Transition;
+import de.metas.contracts.model.X_C_Flatrate_Conditions;
+import de.metas.contracts.model.X_C_Flatrate_Transition;
 import de.metas.i18n.IMsgBL;
 
 @Validator(I_C_Flatrate_Transition.class)

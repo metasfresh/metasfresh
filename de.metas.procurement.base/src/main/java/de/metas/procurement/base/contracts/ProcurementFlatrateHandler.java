@@ -10,7 +10,7 @@ import org.compiere.util.TimeUtil;
 
 import de.metas.contracts.flatrate.api.IFlatrateDAO;
 import de.metas.contracts.flatrate.api.impl.DefaultFlatrateHandler;
-import de.metas.contracts.flatrate.model.I_C_Flatrate_DataEntry;
+import de.metas.contracts.model.I_C_Flatrate_DataEntry;
 import de.metas.procurement.base.PMMContractBuilder;
 import de.metas.procurement.base.model.I_C_Flatrate_Conditions;
 import de.metas.procurement.base.model.I_C_Flatrate_Term;
@@ -45,19 +45,19 @@ public class ProcurementFlatrateHandler extends DefaultFlatrateHandler
 	 * Does not delete the data entries on reactivate!
 	 */
 	@Override
-	protected void deleteFlatrateTermDataEntriesOnReactivate(final de.metas.contracts.flatrate.model.I_C_Flatrate_Term term)
+	protected void deleteFlatrateTermDataEntriesOnReactivate(final de.metas.contracts.model.I_C_Flatrate_Term term)
 	{
 		// nothing
 	}
 
 	/**
-	 * Create new {@link de.metas.contracts.flatrate.model.I_C_Flatrate_DataEntry}s using {@link PMMContractBuilder#newBuilder(I_C_Flatrate_Term)}.
+	 * Create new {@link de.metas.contracts.model.I_C_Flatrate_DataEntry}s using {@link PMMContractBuilder#newBuilder(I_C_Flatrate_Term)}.
 	 * The new dataEntries use data from the dataEntries of the given <code>oldTerm</code>.
 	 *
 	 * @task https://github.com/metasfresh/metasfresh/issues/549
 	 */
 	@Override
-	public void afterExtendFlatrateTermCreated(final de.metas.contracts.flatrate.model.I_C_Flatrate_Term oldTerm, final de.metas.contracts.flatrate.model.I_C_Flatrate_Term newTerm)
+	public void afterExtendFlatrateTermCreated(final de.metas.contracts.model.I_C_Flatrate_Term oldTerm, final de.metas.contracts.model.I_C_Flatrate_Term newTerm)
 	{
 		final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
 

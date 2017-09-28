@@ -18,10 +18,10 @@ import org.junit.Test;
 
 import de.metas.contracts.flatrate.ContractsTestBase;
 import de.metas.contracts.flatrate.api.impl.FlatrateDAO;
-import de.metas.contracts.flatrate.model.I_C_Flatrate_Conditions;
-import de.metas.contracts.flatrate.model.I_C_Flatrate_Matching;
-import de.metas.contracts.flatrate.model.I_C_Flatrate_Term;
-import de.metas.contracts.flatrate.model.X_C_Flatrate_Conditions;
+import de.metas.contracts.model.I_C_Flatrate_Conditions;
+import de.metas.contracts.model.I_C_Flatrate_Matching;
+import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.contracts.model.X_C_Flatrate_Conditions;
 
 /*
  * #%L

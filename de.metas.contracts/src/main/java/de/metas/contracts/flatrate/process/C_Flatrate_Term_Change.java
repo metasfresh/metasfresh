@@ -31,9 +31,9 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 
 import de.metas.contracts.flatrate.api.IContractChangeBL;
-import de.metas.contracts.flatrate.model.I_C_Contract_Change;
-import de.metas.contracts.flatrate.model.I_C_Flatrate_Term;
-import de.metas.contracts.flatrate.model.I_C_Flatrate_Transition;
+import de.metas.contracts.model.I_C_Contract_Change;
+import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.contracts.model.I_C_Flatrate_Transition;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.process.JavaProcess;
 

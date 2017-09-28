@@ -26,7 +26,7 @@ package de.metas.contracts.flatrate.model;
 import java.sql.ResultSet;
 import java.util.Properties;
 
-import de.metas.contracts.flatrate.model.X_C_SubscriptionProgress;
+import de.metas.contracts.model.X_C_SubscriptionProgress;
 
 public class MSubscriptionProgress extends X_C_SubscriptionProgress
 {

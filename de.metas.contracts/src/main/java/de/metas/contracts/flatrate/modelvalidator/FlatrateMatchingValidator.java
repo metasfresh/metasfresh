@@ -30,10 +30,10 @@ import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.PO;
 
-import de.metas.contracts.flatrate.model.I_C_Flatrate_Conditions;
-import de.metas.contracts.flatrate.model.I_C_Flatrate_Matching;
-import de.metas.contracts.flatrate.model.X_C_Flatrate_Conditions;
 import de.metas.contracts.interceptor.MainValidator;
+import de.metas.contracts.model.I_C_Flatrate_Conditions;
+import de.metas.contracts.model.I_C_Flatrate_Matching;
+import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.i18n.Msg;
 
 public class FlatrateMatchingValidator implements ModelValidator

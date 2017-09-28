@@ -35,7 +35,7 @@ import org.compiere.model.ModelValidator;
 
 import de.metas.adempiere.service.ICalendarBL;
 import de.metas.contracts.flatrate.api.IFlatrateDAO;
-import de.metas.contracts.flatrate.model.I_C_Flatrate_Transition;
+import de.metas.contracts.model.I_C_Flatrate_Transition;
 
 @Validator(I_C_Period.class)
 public class C_Period

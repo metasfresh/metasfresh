@@ -7,7 +7,7 @@ import org.adempiere.util.Check;
 import com.google.common.base.MoreObjects;
 
 import de.metas.contracts.flatrate.api.IFlatrateHandler;
-import de.metas.contracts.flatrate.model.I_C_Flatrate_Term;
+import de.metas.contracts.model.I_C_Flatrate_Term;
 
 /*
  * #%L

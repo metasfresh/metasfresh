@@ -40,11 +40,11 @@ import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
 import de.metas.contracts.flatrate.api.IContractsDAO;
-import de.metas.contracts.flatrate.model.I_C_Flatrate_Conditions;
-import de.metas.contracts.flatrate.model.I_C_Flatrate_Term;
-import de.metas.contracts.flatrate.model.I_C_Flatrate_Transition;
-import de.metas.contracts.flatrate.model.X_C_Flatrate_Term;
-import de.metas.contracts.flatrate.model.X_C_Flatrate_Transition;
+import de.metas.contracts.model.I_C_Flatrate_Conditions;
+import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.contracts.model.I_C_Flatrate_Transition;
+import de.metas.contracts.model.X_C_Flatrate_Term;
+import de.metas.contracts.model.X_C_Flatrate_Transition;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;

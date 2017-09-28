@@ -37,7 +37,7 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_M_PriceList;
 import org.slf4j.Logger;
 
-import de.metas.contracts.flatrate.model.I_C_Flatrate_Conditions;
+import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.subscription.model.I_C_OrderLine;
 import de.metas.logging.LogManager;
 import de.metas.product.IProductPA;

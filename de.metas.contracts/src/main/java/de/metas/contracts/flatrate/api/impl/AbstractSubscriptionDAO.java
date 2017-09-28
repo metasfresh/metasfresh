@@ -16,9 +16,9 @@ import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
 import org.slf4j.Logger;
 
-import de.metas.contracts.flatrate.model.I_C_Flatrate_Term;
-import de.metas.contracts.flatrate.model.I_C_SubscriptionProgress;
-import de.metas.contracts.flatrate.model.X_C_SubscriptionProgress;
+import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.contracts.model.I_C_SubscriptionProgress;
+import de.metas.contracts.model.X_C_SubscriptionProgress;
 import de.metas.contracts.subscription.ISubscriptionDAO;
 import de.metas.contracts.subscription.model.I_C_OrderLine;
 import de.metas.logging.LogManager;

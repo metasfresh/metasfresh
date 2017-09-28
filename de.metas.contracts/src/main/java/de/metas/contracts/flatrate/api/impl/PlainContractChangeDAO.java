@@ -34,9 +34,9 @@ import org.adempiere.util.comparator.AccessorComparator;
 import org.adempiere.util.comparator.ComparableComparator;
 import org.compiere.util.Env;
 
-import de.metas.contracts.flatrate.model.I_C_Contract_Change;
-import de.metas.contracts.flatrate.model.I_C_Flatrate_Term;
-import de.metas.contracts.flatrate.model.X_C_Contract_Change;
+import de.metas.contracts.model.I_C_Contract_Change;
+import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.contracts.model.X_C_Contract_Change;
 
 public class PlainContractChangeDAO extends AbstractContractChangeDAO
 {

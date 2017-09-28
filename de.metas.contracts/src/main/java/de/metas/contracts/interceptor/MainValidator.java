@@ -38,7 +38,6 @@ import org.compiere.util.Ini;
 import de.metas.contracts.flatrate.Contracts_Constants;
 import de.metas.contracts.flatrate.impexp.FlatrateTermImportProcess;
 import de.metas.contracts.flatrate.inout.spi.impl.FlatrateMaterialBalanceConfigMatcher;
-import de.metas.contracts.flatrate.model.I_I_Flatrate_Term;
 import de.metas.contracts.flatrate.modelvalidator.C_Flatrate_Conditions;
 import de.metas.contracts.flatrate.modelvalidator.C_Flatrate_Term;
 import de.metas.contracts.flatrate.modelvalidator.C_Flatrate_Transition;
@@ -57,6 +56,7 @@ import de.metas.contracts.inoutcandidate.ShipmentScheduleFromSubscriptionOrderLi
 import de.metas.contracts.inoutcandidate.ShipmentScheduleSubscriptionProcessor;
 import de.metas.contracts.inoutcandidate.SubscriptionShipmentScheduleHandler;
 import de.metas.contracts.invoicecandidate.SubscriptionOrderLineFilter;
+import de.metas.contracts.model.I_I_Flatrate_Term;
 import de.metas.contracts.subscription.interceptor.C_SubscriptionProgress;
 import de.metas.i18n.IMsgBL;
 import de.metas.impex.api.IInputDataSourceDAO;

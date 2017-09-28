@@ -26,10 +26,10 @@ import com.google.common.collect.Ordering;
 
 import de.metas.adempiere.model.I_C_BPartner_Location;
 import de.metas.contracts.flatrate.api.IFlatrateBL;
-import de.metas.contracts.flatrate.model.I_C_Flatrate_Conditions;
-import de.metas.contracts.flatrate.model.I_C_Flatrate_Term;
-import de.metas.contracts.flatrate.model.I_I_Flatrate_Term;
-import de.metas.contracts.flatrate.model.X_I_Flatrate_Term;
+import de.metas.contracts.model.I_C_Flatrate_Conditions;
+import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.contracts.model.I_I_Flatrate_Term;
+import de.metas.contracts.model.X_I_Flatrate_Term;
 import de.metas.product.IProductBL;
 
 /*

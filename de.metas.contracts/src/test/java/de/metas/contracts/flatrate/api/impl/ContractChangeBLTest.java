@@ -36,13 +36,13 @@ import org.junit.Test;
 
 import de.metas.contracts.flatrate.ContractsTestBase;
 import de.metas.contracts.flatrate.api.IContractChangeBL;
-import de.metas.contracts.flatrate.model.I_C_Contract_Change;
-import de.metas.contracts.flatrate.model.I_C_Flatrate_Conditions;
-import de.metas.contracts.flatrate.model.I_C_Flatrate_Term;
-import de.metas.contracts.flatrate.model.I_C_Flatrate_Transition;
-import de.metas.contracts.flatrate.model.I_C_SubscriptionProgress;
-import de.metas.contracts.flatrate.model.X_C_Contract_Change;
-import de.metas.contracts.flatrate.model.X_C_Flatrate_Transition;
+import de.metas.contracts.model.I_C_Contract_Change;
+import de.metas.contracts.model.I_C_Flatrate_Conditions;
+import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.contracts.model.I_C_Flatrate_Transition;
+import de.metas.contracts.model.I_C_SubscriptionProgress;
+import de.metas.contracts.model.X_C_Contract_Change;
+import de.metas.contracts.model.X_C_Flatrate_Transition;
 
 public class ContractChangeBLTest extends ContractsTestBase
 {

@@ -27,12 +27,12 @@ import org.junit.Test;
 
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.contracts.flatrate.ContractsTestBase;
-import de.metas.contracts.flatrate.model.I_C_Flatrate_Conditions;
-import de.metas.contracts.flatrate.model.I_C_Flatrate_Term;
-import de.metas.contracts.flatrate.model.I_C_Flatrate_Transition;
-import de.metas.contracts.flatrate.model.X_C_Flatrate_Term;
-import de.metas.contracts.flatrate.model.X_C_Flatrate_Transition;
 import de.metas.contracts.invoicecandidate.FlatrateTermInvoiceCandidateHandler;
+import de.metas.contracts.model.I_C_Flatrate_Conditions;
+import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.contracts.model.I_C_Flatrate_Transition;
+import de.metas.contracts.model.X_C_Flatrate_Term;
+import de.metas.contracts.model.X_C_Flatrate_Transition;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateRequest;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateResult;

@@ -1,5 +1,5 @@
 /** Generated Model - DO NOT CHANGE */
-package de.metas.contracts.flatrate.model;
+package de.metas.contracts.model;
 
 import java.sql.ResultSet;
 import java.util.Properties;
@@ -44,15 +44,15 @@ public class X_C_Invoice_Clearing_Alloc extends org.compiere.model.PO implements
     }
 
 	@Override
-	public de.metas.contracts.flatrate.model.I_C_Flatrate_DataEntry getC_Flatrate_DataEntry() throws RuntimeException
+	public de.metas.contracts.model.I_C_Flatrate_DataEntry getC_Flatrate_DataEntry() throws RuntimeException
 	{
-		return get_ValueAsPO(COLUMNNAME_C_Flatrate_DataEntry_ID, de.metas.contracts.flatrate.model.I_C_Flatrate_DataEntry.class);
+		return get_ValueAsPO(COLUMNNAME_C_Flatrate_DataEntry_ID, de.metas.contracts.model.I_C_Flatrate_DataEntry.class);
 	}
 
 	@Override
-	public void setC_Flatrate_DataEntry(de.metas.contracts.flatrate.model.I_C_Flatrate_DataEntry C_Flatrate_DataEntry)
+	public void setC_Flatrate_DataEntry(de.metas.contracts.model.I_C_Flatrate_DataEntry C_Flatrate_DataEntry)
 	{
-		set_ValueFromPO(COLUMNNAME_C_Flatrate_DataEntry_ID, de.metas.contracts.flatrate.model.I_C_Flatrate_DataEntry.class, C_Flatrate_DataEntry);
+		set_ValueFromPO(COLUMNNAME_C_Flatrate_DataEntry_ID, de.metas.contracts.model.I_C_Flatrate_DataEntry.class, C_Flatrate_DataEntry);
 	}
 
 	/** Set Abrechnungssatz.
@@ -78,15 +78,15 @@ public class X_C_Invoice_Clearing_Alloc extends org.compiere.model.PO implements
 	}
 
 	@Override
-	public de.metas.contracts.flatrate.model.I_C_Flatrate_Term getC_Flatrate_Term() throws RuntimeException
+	public de.metas.contracts.model.I_C_Flatrate_Term getC_Flatrate_Term() throws RuntimeException
 	{
-		return get_ValueAsPO(COLUMNNAME_C_Flatrate_Term_ID, de.metas.contracts.flatrate.model.I_C_Flatrate_Term.class);
+		return get_ValueAsPO(COLUMNNAME_C_Flatrate_Term_ID, de.metas.contracts.model.I_C_Flatrate_Term.class);
 	}
 
 	@Override
-	public void setC_Flatrate_Term(de.metas.contracts.flatrate.model.I_C_Flatrate_Term C_Flatrate_Term)
+	public void setC_Flatrate_Term(de.metas.contracts.model.I_C_Flatrate_Term C_Flatrate_Term)
 	{
-		set_ValueFromPO(COLUMNNAME_C_Flatrate_Term_ID, de.metas.contracts.flatrate.model.I_C_Flatrate_Term.class, C_Flatrate_Term);
+		set_ValueFromPO(COLUMNNAME_C_Flatrate_Term_ID, de.metas.contracts.model.I_C_Flatrate_Term.class, C_Flatrate_Term);
 	}
 
 	/** Set Pauschale - Vertragsperiode.

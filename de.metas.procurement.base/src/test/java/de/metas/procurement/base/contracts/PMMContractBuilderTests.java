@@ -18,9 +18,9 @@ import org.junit.Before;
 import org.junit.Test;
 
 import de.metas.contracts.flatrate.api.IFlatrateDAO;
-import de.metas.contracts.flatrate.model.I_C_Flatrate_Conditions;
-import de.metas.contracts.flatrate.model.I_C_Flatrate_DataEntry;
-import de.metas.contracts.flatrate.model.I_C_Flatrate_Transition;
+import de.metas.contracts.model.I_C_Flatrate_Conditions;
+import de.metas.contracts.model.I_C_Flatrate_DataEntry;
+import de.metas.contracts.model.I_C_Flatrate_Transition;
 import de.metas.procurement.base.PMMContractBuilder;
 import de.metas.procurement.base.model.I_C_Flatrate_Term;
 

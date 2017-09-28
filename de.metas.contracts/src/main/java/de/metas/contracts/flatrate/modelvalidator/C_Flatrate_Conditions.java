@@ -36,13 +36,13 @@ import org.compiere.model.ModelValidator;
 import org.compiere.util.Env;
 
 import de.metas.contracts.flatrate.api.IFlatrateDAO;
-import de.metas.contracts.flatrate.model.I_C_Flatrate_Conditions;
-import de.metas.contracts.flatrate.model.I_C_Flatrate_Matching;
-import de.metas.contracts.flatrate.model.I_C_Flatrate_Term;
-import de.metas.contracts.flatrate.model.I_C_Flatrate_Transition;
-import de.metas.contracts.flatrate.model.X_C_Flatrate_Conditions;
-import de.metas.contracts.flatrate.model.X_C_Flatrate_Transition;
 import de.metas.contracts.interceptor.MainValidator;
+import de.metas.contracts.model.I_C_Flatrate_Conditions;
+import de.metas.contracts.model.I_C_Flatrate_Matching;
+import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.contracts.model.I_C_Flatrate_Transition;
+import de.metas.contracts.model.X_C_Flatrate_Conditions;
+import de.metas.contracts.model.X_C_Flatrate_Transition;
 import de.metas.i18n.IMsgBL;
 
 @Validator(I_C_Flatrate_Conditions.class)

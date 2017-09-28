@@ -1,5 +1,5 @@
 /** Generated Model - DO NOT CHANGE */
-package de.metas.contracts.flatrate.model;
+package de.metas.contracts.model;
 
 import java.sql.ResultSet;
 import java.util.Properties;

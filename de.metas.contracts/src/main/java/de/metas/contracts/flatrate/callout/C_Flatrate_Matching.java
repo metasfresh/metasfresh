@@ -30,7 +30,7 @@ import org.compiere.model.CalloutEngine;
 import org.compiere.model.GridField;
 import org.compiere.model.GridTab;
 
-import de.metas.contracts.flatrate.model.I_C_Flatrate_Matching;
+import de.metas.contracts.model.I_C_Flatrate_Matching;
 
 /**
  * Callout for

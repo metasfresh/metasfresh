@@ -41,9 +41,9 @@ import org.compiere.util.TimeUtil;
 
 import de.metas.contracts.flatrate.api.IFlatrateBL;
 import de.metas.contracts.flatrate.api.IFlatrateDAO;
-import de.metas.contracts.flatrate.model.I_C_Flatrate_DataEntry;
-import de.metas.contracts.flatrate.model.I_C_Flatrate_Term;
-import de.metas.contracts.flatrate.model.X_C_Flatrate_DataEntry;
+import de.metas.contracts.model.I_C_Flatrate_DataEntry;
+import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.contracts.model.X_C_Flatrate_DataEntry;
 import de.metas.i18n.Msg;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.process.JavaProcess;

@@ -1,4 +1,4 @@
-package de.metas.contracts.flatrate.model;
+package de.metas.contracts.model;
 
 
 /** Generated Interface for C_Flatrate_Transition
@@ -117,12 +117,12 @@ public interface I_C_Flatrate_Transition
 	 */
 	public int getC_Flatrate_Conditions_Next_ID();
 
-	public de.metas.contracts.flatrate.model.I_C_Flatrate_Conditions getC_Flatrate_Conditions_Next();
+	public de.metas.contracts.model.I_C_Flatrate_Conditions getC_Flatrate_Conditions_Next();
 
-	public void setC_Flatrate_Conditions_Next(de.metas.contracts.flatrate.model.I_C_Flatrate_Conditions C_Flatrate_Conditions_Next);
+	public void setC_Flatrate_Conditions_Next(de.metas.contracts.model.I_C_Flatrate_Conditions C_Flatrate_Conditions_Next);
 
     /** Column definition for C_Flatrate_Conditions_Next_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_Flatrate_Transition, de.metas.contracts.flatrate.model.I_C_Flatrate_Conditions> COLUMN_C_Flatrate_Conditions_Next_ID = new org.adempiere.model.ModelColumn<I_C_Flatrate_Transition, de.metas.contracts.flatrate.model.I_C_Flatrate_Conditions>(I_C_Flatrate_Transition.class, "C_Flatrate_Conditions_Next_ID", de.metas.contracts.flatrate.model.I_C_Flatrate_Conditions.class);
+    public static final org.adempiere.model.ModelColumn<I_C_Flatrate_Transition, de.metas.contracts.model.I_C_Flatrate_Conditions> COLUMN_C_Flatrate_Conditions_Next_ID = new org.adempiere.model.ModelColumn<I_C_Flatrate_Transition, de.metas.contracts.model.I_C_Flatrate_Conditions>(I_C_Flatrate_Transition.class, "C_Flatrate_Conditions_Next_ID", de.metas.contracts.model.I_C_Flatrate_Conditions.class);
     /** Column name C_Flatrate_Conditions_Next_ID */
     public static final String COLUMNNAME_C_Flatrate_Conditions_Next_ID = "C_Flatrate_Conditions_Next_ID";
 

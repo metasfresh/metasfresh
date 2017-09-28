@@ -27,7 +27,7 @@ import java.sql.Timestamp;
 
 import org.adempiere.util.ISingletonService;
 
-import de.metas.contracts.flatrate.model.I_C_Flatrate_Term;
+import de.metas.contracts.model.I_C_Flatrate_Term;
 
 public interface IContractChangeBL extends ISingletonService
 {
@@ -35,7 +35,7 @@ public interface IContractChangeBL extends ISingletonService
 	 * Cancels the given <code>term</code> at the given <code>date</code>.
 	 * <p>
 	 * <b>IMPORTANT:</b> Currently, we only create term-change orders if the term has a normal order to begin with!<br>
-	 * In other words, a customer won't be charged if their {@link de.metas.contracts.flatrate.model.I_C_Flatrate_Conditions#COLUMNNAME_IsNewTermCreatesOrder} value is <code>='N'</code>.
+	 * In other words, a customer won't be charged if their {@link de.metas.contracts.model.I_C_Flatrate_Conditions#COLUMNNAME_IsNewTermCreatesOrder} value is <code>='N'</code>.
 	 * 
 	 * <p>
 	 * Note that a canceled term won't be invoiced further, as the term's <code>C_Invoice_Candidate</code> will be updated and that their <code>QtyOrdered</code> value will be set to their
@@ -48,11 +48,11 @@ public interface IContractChangeBL extends ISingletonService
 	 *            are invalidated.</li> <li>the term's {@link I_C_Flatrate_Term#COLUMNNAME_EndDate} is updated according to the <code>changeDate</code> parameter. If the term's StartDate is after
 	 *            <code>changeDate</code>, then the EndDate will be set to the StartDate. If the terms EndDate is before <code>changeDate</code>, then the EndDate won't be updated</li>
 	 *            </ul>
-	 * @param changeDate the cancellation date. If this this date is before the term's "regular" EndDate, it is also used to find the correct {@link de.metas.contracts.flatrate.model.I_C_Contract_Change} record
+	 * @param changeDate the cancellation date. If this this date is before the term's "regular" EndDate, it is also used to find the correct {@link de.metas.contracts.model.I_C_Contract_Change} record
 	 *            for the cancel conditions.
 	 * @param isCloseInvoiceCandidate this value is forwarded to the given term's <code>IsCloseInvoiceCandidate</code> column and will determine what to do with invoice candidates for the term which were not
 	 *            yet (fully) invoiced. See {@link de.metas.contracts.invoicecandidate.FlatrateTermInvoiceCandidateHandler}
-	 * @throws SubscriptionChangeException if <code>changeDate</code> is before the term's EndDate and if there is no {@link de.metas.contracts.flatrate.model.I_C_Contract_Change} record for that date
+	 * @throws SubscriptionChangeException if <code>changeDate</code> is before the term's EndDate and if there is no {@link de.metas.contracts.model.I_C_Contract_Change} record for that date
 	 */
 	void cancelContract(I_C_Flatrate_Term term, Timestamp changeDate,  boolean isCloseInvoiceCandidate);
 	

@@ -11,9 +11,9 @@ import org.junit.Before;
 import org.junit.Test;
 
 import de.metas.contracts.flatrate.api.IFlatrateBL;
-import de.metas.contracts.flatrate.model.I_C_Flatrate_Term;
-import de.metas.contracts.flatrate.model.I_C_SubscriptionProgress;
 import de.metas.contracts.inoutcandidate.ShipmentScheduleOrderDocForSubscriptionLine;
+import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.contracts.model.I_C_SubscriptionProgress;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.spi.ShipmentScheduleOrderDoc;
 import mockit.Expectations;

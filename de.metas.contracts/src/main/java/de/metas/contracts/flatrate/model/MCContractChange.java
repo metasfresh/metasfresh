@@ -26,7 +26,7 @@ package de.metas.contracts.flatrate.model;
 import java.sql.ResultSet;
 import java.util.Properties;
 
-import de.metas.contracts.flatrate.model.X_C_Contract_Change;
+import de.metas.contracts.model.X_C_Contract_Change;
 
 public class MCContractChange extends X_C_Contract_Change
 {

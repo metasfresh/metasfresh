@@ -1,5 +1,5 @@
 /** Generated Model - DO NOT CHANGE */
-package de.metas.contracts.flatrate.model;
+package de.metas.contracts.model;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
@@ -280,15 +280,15 @@ public class X_C_Flatrate_DataEntry extends org.compiere.model.PO implements I_C
 	}
 
 	@Override
-	public de.metas.contracts.flatrate.model.I_C_Flatrate_Term getC_Flatrate_Term() throws RuntimeException
+	public de.metas.contracts.model.I_C_Flatrate_Term getC_Flatrate_Term() throws RuntimeException
 	{
-		return get_ValueAsPO(COLUMNNAME_C_Flatrate_Term_ID, de.metas.contracts.flatrate.model.I_C_Flatrate_Term.class);
+		return get_ValueAsPO(COLUMNNAME_C_Flatrate_Term_ID, de.metas.contracts.model.I_C_Flatrate_Term.class);
 	}
 
 	@Override
-	public void setC_Flatrate_Term(de.metas.contracts.flatrate.model.I_C_Flatrate_Term C_Flatrate_Term)
+	public void setC_Flatrate_Term(de.metas.contracts.model.I_C_Flatrate_Term C_Flatrate_Term)
 	{
-		set_ValueFromPO(COLUMNNAME_C_Flatrate_Term_ID, de.metas.contracts.flatrate.model.I_C_Flatrate_Term.class, C_Flatrate_Term);
+		set_ValueFromPO(COLUMNNAME_C_Flatrate_Term_ID, de.metas.contracts.model.I_C_Flatrate_Term.class, C_Flatrate_Term);
 	}
 
 	/** Set Pauschale - Vertragsperiode.

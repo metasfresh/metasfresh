@@ -28,8 +28,8 @@ import java.util.List;
 
 import org.adempiere.util.ISingletonService;
 
-import de.metas.contracts.flatrate.model.I_C_Flatrate_Term;
-import de.metas.contracts.flatrate.model.I_C_SubscriptionProgress;
+import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.contracts.model.I_C_SubscriptionProgress;
 
 public interface IContractsDAO extends ISingletonService
 {

@@ -39,8 +39,8 @@ import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.adempiere.service.IOrderDAO;
-import de.metas.contracts.flatrate.model.I_C_Flatrate_Term;
-import de.metas.contracts.flatrate.model.X_C_Flatrate_Term;
+import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.subscription.ISubscriptionBL;
 import de.metas.contracts.subscription.ISubscriptionDAO;
 import de.metas.contracts.subscription.model.I_C_OrderLine;

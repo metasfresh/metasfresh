@@ -15,9 +15,9 @@ import org.junit.Test;
 
 import de.metas.contracts.flatrate.ContractsTestBase.FixedTimeSource;
 import de.metas.contracts.flatrate.api.impl.ContractsDAO;
-import de.metas.contracts.flatrate.model.I_C_Flatrate_Conditions;
-import de.metas.contracts.flatrate.model.I_C_Flatrate_Term;
-import de.metas.contracts.flatrate.model.X_C_Flatrate_Term;
+import de.metas.contracts.model.I_C_Flatrate_Conditions;
+import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.contracts.model.X_C_Flatrate_Term;
 
 /*
  * #%L
