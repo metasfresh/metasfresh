@@ -453,13 +453,13 @@ public class FlatrateBL implements IFlatrateBL
 		{
 			if (handler.isActive())
 			{
-				Check.assume(!handlerFound, "There is only one active handler for " + FlatrateDataEntryHandler.class);
+				Check.errorIf(handlerFound, "The handler list contains more than one active handler for the class {}; list={}", FlatrateDataEntryHandler.class, handlers);
 				newCand.setC_ILCandHandler(handler);
 				handlerFound = true;
 			}
 		}
 
-		Check.assume(handlerFound, "There is an active handler for " + FlatrateDataEntryHandler.class);
+		Check.errorIf(!handlerFound, "There is no (aktive) active C_ILCandHandler record for the class {}", FlatrateDataEntryHandler.class);
 	}
 
 	private I_C_Invoice_Candidate createCandForDataEntry(
@@ -1211,10 +1211,10 @@ public class FlatrateBL implements IFlatrateBL
 			nextTerm.setM_PricingSystem(currentTerm.getM_PricingSystem());
 			nextTerm.setDropShip_BPartner_ID(currentTerm.getDropShip_BPartner_ID());
 			nextTerm.setDropShip_Location_ID(currentTerm.getDropShip_Location_ID());
-			
+
 			nextTerm.setM_Product_ID(currentTerm.getM_Product_ID());
 			Services.get(IAttributeSetInstanceBL.class).cloneASI(currentTerm, nextTerm);
-			
+
 			nextTerm.setDropShip_User_ID(currentTerm.getDropShip_User_ID());
 			nextTerm.setDeliveryRule(currentTerm.getDeliveryRule());
 			nextTerm.setDeliveryViaRule(currentTerm.getDeliveryViaRule());
@@ -1226,7 +1226,7 @@ public class FlatrateBL implements IFlatrateBL
 			flatrateHandlersService
 					.getHandler(nextConditions.getType_Conditions()) // nextterm is not saved yet, so type will be null in this moment
 					.beforeFlatrateTermCreated(currentTerm, nextTerm);
-			
+
 			InterfaceWrapperHelper.save(nextTerm);
 
 			// the conditions were set via de.metas.flatrate.modelvalidator.C_Flatrate_Term.copyFromConditions(term)
@@ -1272,7 +1272,7 @@ public class FlatrateBL implements IFlatrateBL
 			flatrateHandlersService
 					.getHandler(currentTerm.getType_Conditions())
 					.afterFlatrateTermEnded(currentTerm);
-			
+
 			if (currentTransition.isNotifyUserInCharge())
 			{
 				msgValue = FlatrateBL.MSG_TERM_NO_NEW_0P;

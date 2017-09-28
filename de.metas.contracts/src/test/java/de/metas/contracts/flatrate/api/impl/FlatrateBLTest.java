@@ -1,6 +1,7 @@
 package de.metas.contracts.flatrate.api.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 /*
  * #%L
@@ -29,7 +30,6 @@ import java.util.Properties;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.IContextAware;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.pricing.model.I_C_PricingRule;
 import org.adempiere.pricing.spi.impl.rules.MockedPricingRule;
 import org.adempiere.util.Services;
@@ -56,6 +56,7 @@ import de.metas.adempiere.model.I_M_Product;
 import de.metas.adempiere.model.I_M_Product_Category;
 import de.metas.contracts.flatrate.ContractsTestBase;
 import de.metas.contracts.flatrate.api.IFlatrateBL;
+import de.metas.contracts.invoicecandidate.FlatrateDataEntryHandler;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Data;
 import de.metas.contracts.model.I_C_Flatrate_DataEntry;
@@ -111,21 +112,21 @@ public class FlatrateBLTest extends ContractsTestBase
 		final I_C_PricingRule pricingRule = newInstance(I_C_PricingRule.class);
 		pricingRule.setSeqNo(10);
 		pricingRule.setClassname(MockedPricingRule.class.getName());
-		InterfaceWrapperHelper.save(pricingRule);
+		save(pricingRule);
 
 		final I_C_ILCandHandler handler = newInstance(I_C_ILCandHandler.class);
-		handler.setClassname("de.metas.flatrate.invoicecandidate.spi.impl.FlatrateDataEntryHandler");
-		InterfaceWrapperHelper.save(handler);
+		handler.setClassname(FlatrateDataEntryHandler.class.getName());
+		save(handler);
 	}
 
 	@Before
 	public void before()
 	{
 		org = newInstance(I_AD_Org.class);
-		InterfaceWrapperHelper.save(org);
+		save(org);
 
 		activity = newInstance(I_C_Activity.class);
-		InterfaceWrapperHelper.save(activity);
+		save(activity);
 	}
 
 	@Test
@@ -137,57 +138,56 @@ public class FlatrateBLTest extends ContractsTestBase
 		final I_C_Flatrate_Transition flatrateTransition = newInstance(I_C_Flatrate_Transition.class);
 		flatrateTransition.setDeliveryInterval(1);
 		flatrateTransition.setDeliveryIntervalUnit(X_C_Flatrate_Transition.DELIVERYINTERVALUNIT_JahrE);
-		InterfaceWrapperHelper.save(flatrateTransition);
+		save(flatrateTransition);
 
 		final I_M_PricingSystem pricingSystem = newInstance(I_M_PricingSystem.class);
-		InterfaceWrapperHelper.save(pricingSystem);
+		save(pricingSystem);
 
 		final I_C_Flatrate_Conditions flatrateConditions = newInstance(I_C_Flatrate_Conditions.class);
 		flatrateConditions.setType_Conditions(X_C_Flatrate_Conditions.TYPE_CONDITIONS_HoldingFee);
 		flatrateConditions.setM_PricingSystem(pricingSystem);
-		InterfaceWrapperHelper.save(flatrateConditions);
+		save(flatrateConditions);
 
 		final I_C_Country country = newInstance(I_C_Country.class);
-		InterfaceWrapperHelper.save(country);
+		save(country);
 
 		final I_C_Location location = newInstance(I_C_Location.class);
 		location.setC_Country_ID(country.getC_Country_ID());
-		InterfaceWrapperHelper.save(location);
+		save(location);
 
 		final I_C_BPartner_Location bpLocation = newInstance(I_C_BPartner_Location.class);
 		bpLocation.setName("Location1");
 		bpLocation.setC_Location_ID(location.getC_Location_ID());
-		InterfaceWrapperHelper.save(bpLocation);
+		save(bpLocation);
 
 		final I_C_Flatrate_Term currentTerm = newInstance(I_C_Flatrate_Term.class);
 		currentTerm.setAD_Org(org);
 		currentTerm.setStartDate(TimeUtil.getDay(2013, 1, 1));
 		currentTerm.setEndDate(TimeUtil.getDay(2014, 7, 27));
-		currentTerm.setC_Flatrate_Transition(flatrateTransition);
 		currentTerm.setC_Flatrate_Conditions(flatrateConditions);
 		currentTerm.setM_PricingSystem(pricingSystem);
 		currentTerm.setBill_Location(bpLocation);
-		InterfaceWrapperHelper.save(currentTerm);
+		save(currentTerm);
 
 		final I_M_PriceList priceList = newInstance(I_M_PriceList.class);
 		priceList.setC_Country_ID(country.getC_Country_ID());
 		priceList.setIsSOPriceList(true);
 		priceList.setM_PricingSystem_ID(pricingSystem.getM_PricingSystem_ID());
 		priceList.setIsActive(true);
-		InterfaceWrapperHelper.save(priceList);
+		save(priceList);
 
 		final I_M_PriceList_Version priceListVersion = newInstance(I_M_PriceList_Version.class);
 		priceListVersion.setM_PriceList_ID(priceList.getM_PriceList_ID());
 		priceListVersion.setValidFrom(TimeUtil.getDay(2013, 1, 1));
 		priceListVersion.setIsActive(true);
-		InterfaceWrapperHelper.save(priceListVersion);
+		save(priceListVersion);
 
 		final I_M_Product product = newInstance(I_M_Product.class);
-		InterfaceWrapperHelper.save(product);
+		save(product);
 
 		final I_C_Period period = newInstance(I_C_Period.class);
 		period.setStartDate(TimeUtil.getDay(2013, 1, 1));
-		InterfaceWrapperHelper.save(period);
+		save(period);
 
 		final I_C_Flatrate_DataEntry dataEntry = newInstance(I_C_Flatrate_DataEntry.class);
 		dataEntry.setAD_Org(org);
@@ -195,7 +195,7 @@ public class FlatrateBLTest extends ContractsTestBase
 		dataEntry.setType(X_C_Flatrate_DataEntry.TYPE_Invoicing_PeriodBased);
 		dataEntry.setM_Product_DataEntry(product);
 		dataEntry.setC_Period(period);
-		InterfaceWrapperHelper.save(dataEntry);
+		save(dataEntry);
 
 		setupTaxAndActivity(product, dataEntry, currentTerm);
 
@@ -243,7 +243,7 @@ public class FlatrateBLTest extends ContractsTestBase
 		// term duration: 24 months
 		transition.setTermDurationUnit(X_C_Flatrate_Transition.TERMDURATIONUNIT_MonatE);
 		transition.setTermDuration(24);
-		InterfaceWrapperHelper.save(transition);
+		save(transition);
 
 		Services.get(IFlatrateBL.class).updateNoticeDateAndEndDate(term);
 
@@ -257,7 +257,7 @@ public class FlatrateBLTest extends ContractsTestBase
 		// term duration: 25 months
 		transition.setTermDurationUnit(X_C_Flatrate_Transition.TERMDURATIONUNIT_MonatE);
 		transition.setTermDuration(25);
-		InterfaceWrapperHelper.save(transition);
+		save(transition);
 
 		Services.get(IFlatrateBL.class).updateNoticeDateAndEndDate(term);
 	}
@@ -269,7 +269,7 @@ public class FlatrateBLTest extends ContractsTestBase
 
 		transition.setTermDurationUnit(X_C_Flatrate_Transition.TERMDURATIONUNIT_MonatE);
 		transition.setTermDuration(48); // the year of now + 4 years is not in calendar
-		InterfaceWrapperHelper.save(transition);
+		save(transition);
 
 		Services.get(IFlatrateBL.class).updateNoticeDateAndEndDate(term);
 	}
@@ -283,7 +283,7 @@ public class FlatrateBLTest extends ContractsTestBase
 
 		transition.setTermDurationUnit(X_C_Flatrate_Transition.TERMDURATIONUNIT_MonatE);
 		transition.setTermDuration(5);
-		InterfaceWrapperHelper.save(transition);
+		save(transition);
 
 		Services.get(IFlatrateBL.class).updateNoticeDateAndEndDate(term);
 
@@ -291,7 +291,7 @@ public class FlatrateBLTest extends ContractsTestBase
 
 		transition.setTermDurationUnit(X_C_Flatrate_Transition.TERMDURATIONUNIT_TagE);
 		transition.setTermDuration(30);
-		InterfaceWrapperHelper.save(transition);
+		save(transition);
 
 		Services.get(IFlatrateBL.class).updateNoticeDateAndEndDate(term);
 
@@ -299,7 +299,7 @@ public class FlatrateBLTest extends ContractsTestBase
 
 		transition.setTermDurationUnit(X_C_Flatrate_Transition.TERMDURATIONUNIT_JahrE);
 		transition.setTermDuration(2);
-		InterfaceWrapperHelper.save(transition);
+		save(transition);
 
 		Services.get(IFlatrateBL.class).updateNoticeDateAndEndDate(term);
 
@@ -307,7 +307,7 @@ public class FlatrateBLTest extends ContractsTestBase
 
 		transition.setTermDurationUnit(X_C_Flatrate_Transition.TERMDURATIONUNIT_WocheN);
 		transition.setTermDuration(2);
-		InterfaceWrapperHelper.save(transition);
+		save(transition);
 
 		Services.get(IFlatrateBL.class).updateNoticeDateAndEndDate(term);
 
@@ -318,54 +318,54 @@ public class FlatrateBLTest extends ContractsTestBase
 	private void prepareForUpdateEndDate()
 	{
 		final I_C_Calendar calendar = newInstance(I_C_Calendar.class);
-		InterfaceWrapperHelper.save(calendar);
+		save(calendar);
 
 		// first year
 		final I_C_Year year1 = newInstance(I_C_Year.class);
 		year1.setC_Calendar_ID(calendar.getC_Calendar_ID());
-		InterfaceWrapperHelper.save(year1);
+		save(year1);
 
 		period1 = newInstance(I_C_Period.class);
 		period1.setStartDate(TimeUtil.getDay(2013, 1, 1));
 		period1.setEndDate(TimeUtil.getDay(2013, 5, 1));
 		period1.setC_Year_ID(year1.getC_Year_ID());
-		InterfaceWrapperHelper.save(period1);
+		save(period1);
 
 		period2 = newInstance(I_C_Period.class);
 		period2.setStartDate(TimeUtil.getDay(2013, 5, 2));
 		period2.setEndDate(TimeUtil.getDay(2013, 10, 1));
 		period2.setC_Year_ID(year1.getC_Year_ID());
-		InterfaceWrapperHelper.save(period2);
+		save(period2);
 
 		period3 = newInstance(I_C_Period.class);
 		period3.setStartDate(TimeUtil.getDay(2013, 10, 2));
 		period3.setEndDate(TimeUtil.getDay(2013, 12, 31));
 		period3.setC_Year_ID(year1.getC_Year_ID());
-		InterfaceWrapperHelper.save(period3);
+		save(period3);
 
 		// second year
 
 		final I_C_Year year2 = newInstance(I_C_Year.class);
 		year2.setC_Calendar_ID(calendar.getC_Calendar_ID());
-		InterfaceWrapperHelper.save(year2);
+		save(year2);
 
 		period4 = newInstance(I_C_Period.class);
 		period4.setStartDate(TimeUtil.getDay(2014, 1, 1));
 		period4.setEndDate(TimeUtil.getDay(2014, 5, 1));
 		period4.setC_Year_ID(year2.getC_Year_ID());
-		InterfaceWrapperHelper.save(period4);
+		save(period4);
 
 		period5 = newInstance(I_C_Period.class);
 		period5.setStartDate(TimeUtil.getDay(2014, 5, 2));
 		period5.setEndDate(TimeUtil.getDay(2014, 10, 1));
 		period5.setC_Year_ID(year2.getC_Year_ID());
-		InterfaceWrapperHelper.save(period5);
+		save(period5);
 
 		period6 = newInstance(I_C_Period.class);
 		period6.setStartDate(TimeUtil.getDay(2014, 10, 2));
 		period6.setEndDate(TimeUtil.getDay(2014, 12, 31));
 		period6.setC_Year_ID(year2.getC_Year_ID());
-		InterfaceWrapperHelper.save(period6);
+		save(period6);
 
 		transition = newInstance(I_C_Flatrate_Transition.class);
 		transition.setEndsWithCalendarYear(true);
@@ -374,17 +374,16 @@ public class FlatrateBLTest extends ContractsTestBase
 		transition.setTermOfNoticeUnit(X_C_Flatrate_Transition.TERMOFNOTICEUNIT_WocheN);
 		transition.setTermOfNotice(2);
 		transition.setC_Calendar_Contract(calendar);
-		InterfaceWrapperHelper.save(transition);
+		save(transition);
 
 		final I_C_Flatrate_Conditions conditions = newInstance(I_C_Flatrate_Conditions.class);
 		conditions.setC_Flatrate_Transition(transition);
-		InterfaceWrapperHelper.save(conditions);
+		save(conditions);
 
 		term = newInstance(I_C_Flatrate_Term.class);
 		term.setStartDate(TimeUtil.getDay(2013, 3, 3));
-		term.setC_Flatrate_Transition(transition);
 		term.setC_Flatrate_Conditions(conditions);
-		InterfaceWrapperHelper.save(term);
+		save(term);
 	}
 
 	@Test
@@ -392,12 +391,12 @@ public class FlatrateBLTest extends ContractsTestBase
 	{
 		// calendar
 		final I_C_Calendar calendar = newInstance(I_C_Calendar.class);
-		InterfaceWrapperHelper.save(calendar);
+		save(calendar);
 
 		// first year
 		final I_C_Year year1 = newInstance(I_C_Year.class);
 		year1.setC_Calendar_ID(calendar.getC_Calendar_ID());
-		InterfaceWrapperHelper.save(year1);
+		save(year1);
 
 		// create transition
 		transition = newInstance(I_C_Flatrate_Transition.class);
@@ -408,21 +407,21 @@ public class FlatrateBLTest extends ContractsTestBase
 		transition.setTermOfNoticeUnit(X_C_Flatrate_Transition.TERMOFNOTICEUNIT_WocheN);
 		transition.setTermOfNotice(1);
 		transition.setC_Calendar_Contract(calendar);
-		InterfaceWrapperHelper.save(transition);
+		save(transition);
 
 		// product category is mandatofy in matchings
 		productCategory = newInstance(I_M_Product_Category.class);
-		InterfaceWrapperHelper.save(productCategory);
+		save(productCategory);
 
 		// product
 		product = newInstance(I_M_Product.class);
 		product.setM_Product_Category(productCategory);
-		InterfaceWrapperHelper.save(product);
+		save(product);
 
 		// first conditions
 		conditions1 = newInstance(I_C_Flatrate_Conditions.class);
 		conditions1.setC_Flatrate_Transition(transition);
-		InterfaceWrapperHelper.save(conditions1);
+		save(conditions1);
 
 		// matchings linked to the first conditions
 		final I_C_Flatrate_Matching matching1 = newInstance(I_C_Flatrate_Matching.class);
@@ -430,12 +429,12 @@ public class FlatrateBLTest extends ContractsTestBase
 		matching1.setM_Product_Category_Matching(productCategory);
 		matching1.setC_Flatrate_Transition(transition);
 		matching1.setC_Flatrate_Conditions(conditions1);
-		InterfaceWrapperHelper.save(matching1);
+		save(matching1);
 
 		// second conditions
 		conditions2 = newInstance(I_C_Flatrate_Conditions.class);
 		conditions2.setC_Flatrate_Transition(transition);
-		InterfaceWrapperHelper.save(conditions2);
+		save(conditions2);
 
 		// matchings linked with the second conditions
 		final I_C_Flatrate_Matching matching2 = newInstance(I_C_Flatrate_Matching.class);
@@ -444,17 +443,17 @@ public class FlatrateBLTest extends ContractsTestBase
 		matching2.setM_Product(product);
 		matching2.setC_Flatrate_Transition(transition);
 		matching2.setC_Flatrate_Conditions(conditions2);
-		InterfaceWrapperHelper.save(matching2);
+		save(matching2);
 
 		// terms must be for the same partner
 		partner = newInstance(I_C_BPartner.class);
 		partner.setName("Partner1");
-		InterfaceWrapperHelper.save(partner);
+		save(partner);
 
 		// terms must be for the same flatrate data
 		final I_C_Flatrate_Data flatrateData = newInstance(I_C_Flatrate_Data.class);
 		flatrateData.setC_BPartner(partner);
-		InterfaceWrapperHelper.save(flatrateData);
+		save(flatrateData);
 
 		// first term: first conditions, March 15 - April 14
 		term = newInstance(I_C_Flatrate_Term.class);
@@ -462,10 +461,9 @@ public class FlatrateBLTest extends ContractsTestBase
 		term.setStartDate(TimeUtil.getDay(2017, 3, 15));
 		term.setEndDate(TimeUtil.getDay(2017, 4, 14));
 		term.setC_Flatrate_Conditions(conditions1);
-		term.setC_Flatrate_Transition(transition);
 		term.setC_Flatrate_Data(flatrateData);
 		term.setDocStatus(X_C_Flatrate_Term.DOCSTATUS_Completed);
-		InterfaceWrapperHelper.save(term);
+		save(term);
 
 		// second term: second conditions, March 14 - April 13 => Overlapping: March 15, April 14
 		overlappingTerm = newInstance(I_C_Flatrate_Term.class);
@@ -473,10 +471,9 @@ public class FlatrateBLTest extends ContractsTestBase
 		overlappingTerm.setStartDate(TimeUtil.getDay(2017, 3, 14));
 		overlappingTerm.setEndDate(TimeUtil.getDay(2017, 4, 13));
 		overlappingTerm.setC_Flatrate_Conditions(conditions2);
-		overlappingTerm.setC_Flatrate_Transition(transition);
 		overlappingTerm.setC_Flatrate_Data(flatrateData);
 		overlappingTerm.setDocStatus(X_C_Flatrate_Term.DOCSTATUS_Completed);
-		InterfaceWrapperHelper.save(overlappingTerm);
+		save(overlappingTerm);
 
 		boolean hasOverlappingTerms = Services.get(IFlatrateBL.class).hasOverlappingTerms(term);
 		Assert.assertTrue("Term has overlapping terms", hasOverlappingTerms);
