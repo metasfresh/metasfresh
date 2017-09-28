@@ -96,7 +96,7 @@ public class PackingService implements IPackingService
 				huContext,
 				schedule.getM_Product(),
 				qtyToRemove,
-				Services.get(IShipmentScheduleBL.class).getC_UOM(schedule), // uom
+				Services.get(IShipmentScheduleBL.class).getUomOfProduct(schedule), // uom
 				SystemTime.asDate(),
 				schedule // reference model
 				);

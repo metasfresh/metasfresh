@@ -1,27 +1,26 @@
-package de.metas.inoutcandidate.spi.impl;
+package de.metas.contracts.subscription.inoutcandidate.spi.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.sql.Timestamp;
-
 import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_Order;
-import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.I_M_Warehouse;
-import org.compiere.util.TimeUtil;
 import org.junit.Before;
 import org.junit.Test;
 
+import de.metas.flatrate.api.IFlatrateBL;
+import de.metas.flatrate.model.I_C_Flatrate_Term;
+import de.metas.flatrate.model.I_C_SubscriptionProgress;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.spi.ShipmentScheduleOrderDoc;
+import mockit.Expectations;
+import mockit.Mocked;
 
 /*
  * #%L
- * de.metas.swat.base
+ * de.metas.contracts
  * %%
  * Copyright (C) 2017 metas GmbH
  * %%
@@ -41,46 +40,45 @@ import de.metas.inoutcandidate.spi.ShipmentScheduleOrderDoc;
  * #L%
  */
 
-public class ShipmentScheduleOrderDocForOrderLineTests
+public class ShipmentScheduleOrderDocForSubscriptionLineTest
 {
+
+	@Mocked
+	private IFlatrateBL flatrateBL;
 
 	@Before
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
 
+		Services.registerService(IFlatrateBL.class, flatrateBL);
 	}
 
 	@Test
-	public void createForOrderLineSchedule()
+	public void test()
 	{
-		final Timestamp deliveryDate = TimeUtil.parseTimestamp("2017-09-26");
+		final I_C_Flatrate_Term term = newInstance(I_C_Flatrate_Term.class);
+		save(term);
 
-		final I_M_Warehouse wh = newInstance(I_M_Warehouse.class);
-		save(wh);
-		
-		final I_C_BPartner billBPartner = newInstance(I_C_BPartner.class);
-		save(billBPartner);
+		// @formatter:off
+		new Expectations() {{ flatrateBL.getWarehouseId(term); result = 23;	}};
+		// @formatter:on
 
-		final I_C_Order order = newInstance(I_C_Order.class);
-		order.setBill_BPartner(billBPartner);
-		order.setM_Warehouse(wh);
-		order.setDatePromised(deliveryDate);
-		save(order);
+		final I_C_SubscriptionProgress subscriptionLine = newInstance(I_C_SubscriptionProgress.class);
+		subscriptionLine.setC_Flatrate_Term(term);
+		save(subscriptionLine);
 
-		final I_C_OrderLine orderLine = newInstance(I_C_OrderLine.class);
-		orderLine.setC_Order(order);
-		save(orderLine);
-		final TableRecordReference ref = TableRecordReference.of(orderLine);
+		final TableRecordReference reference = TableRecordReference.of(subscriptionLine);
 
 		final I_M_ShipmentSchedule sched = newInstance(I_M_ShipmentSchedule.class);
-		sched.setC_Order(order);
-		sched.setC_OrderLine(orderLine);
-		sched.setAD_Table_ID(ref.getAD_Table_ID());
-		sched.setRecord_ID(ref.getRecord_ID());
+		sched.setAD_Table_ID(reference.getAD_Table_ID());
+		sched.setRecord_ID(reference.getRecord_ID());
+		save(sched);
 
-		final ShipmentScheduleOrderDoc result = new ShipmentScheduleOrderDocForOrderLine().provideFor(sched);
-		assertThat(result.getDeliveryDate()).isEqualTo(deliveryDate);
-		assertThat(result.getPreparationDate()).isNull();
+		final ShipmentScheduleOrderDoc result = new ShipmentScheduleOrderDocForSubscriptionLine().provideFor(sched);
+		assertThat(result).isNotNull();
+		assertThat(result.getGroupId()).isEqualTo(term.getC_Flatrate_Term_ID());
+		assertThat(result.getWarehouseId()).isEqualTo(23);
 	}
+
 }

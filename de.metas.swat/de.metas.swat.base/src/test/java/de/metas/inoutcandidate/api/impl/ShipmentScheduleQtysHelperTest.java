@@ -1,11 +1,12 @@
 package de.metas.inoutcandidate.api.impl;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.math.BigDecimal;
 
 import org.adempiere.inout.util.IShipmentCandidates;
 import org.adempiere.inout.util.ShipmentCandidates;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import de.metas.inoutcandidate.api.OlAndSched;
@@ -86,7 +87,6 @@ public class ShipmentScheduleQtysHelperTest extends ShipmentScheduleTestBase
 	}
 
 	@Test
-	@Ignore("this one throws NPE because orderLine is null") // FIXME
 	public void test_updateQtyToDeliver_DeliveryStop()
 	{
 		final BigDecimal qtyOrdered = new BigDecimal("14");
@@ -104,12 +104,17 @@ public class ShipmentScheduleQtysHelperTest extends ShipmentScheduleTestBase
 
 		sched.setIsDeliveryStop(false);
 		ShipmentScheduleQtysHelper.updateQtyToDeliver(olAndSched, shipmentCandidates);
-		Assert.assertEquals("QtyToDeliver (with delivery stop)", qtyToDeliver_Override, sched.getQtyToDeliver());
+
+		assertThat(sched.getQtyToDeliver())
+				.as("QtyToDeliver (with NO delivery stop)")
+				.isEqualByComparingTo(qtyToDeliver_Override);
 
 		sched.setIsDeliveryStop(true);
 		ShipmentScheduleQtysHelper.updateQtyToDeliver(olAndSched, shipmentCandidates);
-		Assert.assertEquals("QtyToDeliver (with delivery stop)", BigDecimal.ZERO, sched.getQtyToDeliver());
 
+		assertThat(sched.getQtyToDeliver())
+				.as("QtyToDeliver (with delivery stop)")
+				.isZero();
 	}
 
 }

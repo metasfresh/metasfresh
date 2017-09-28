@@ -36,8 +36,6 @@ import de.metas.adempiere.ait.test.IntegrationTestSuite;
 //		test.integration.commission.sales.SalesTestEventListener.class
 //})
 @SuiteClasses({
-		test.integration.commission.sponsor.HierarchyInsertionTests.class,
-		test.integration.commission.sponsor.HierarchyChangeTests.class,
 		test.integration.commission.bPartner.BPartnerLocationTest.class
 })
 public class AllTests

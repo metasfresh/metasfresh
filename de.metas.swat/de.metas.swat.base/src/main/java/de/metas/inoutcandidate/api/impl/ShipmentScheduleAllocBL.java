@@ -53,7 +53,7 @@ public class ShipmentScheduleAllocBL implements IShipmentScheduleAllocBL
 	public void setQtyPicked(final I_M_ShipmentSchedule sched, final BigDecimal qtyPicked)
 	{
 		boolean justAdd = false;
-		final I_C_UOM uom = Services.get(IShipmentScheduleBL.class).getC_UOM(sched);
+		final I_C_UOM uom = Services.get(IShipmentScheduleBL.class).getUomOfProduct(sched);
 		setQtyPicked(sched, qtyPicked, uom, justAdd);
 	}
 
@@ -81,7 +81,7 @@ public class ShipmentScheduleAllocBL implements IShipmentScheduleAllocBL
 	{
 		// Convert QtyPicked to shipment schedule's UOM
 		final org.compiere.model.I_M_Product product = sched.getM_Product();
-		final I_C_UOM schedUOM = Services.get(IShipmentScheduleBL.class).getC_UOM(sched);
+		final I_C_UOM schedUOM = Services.get(IShipmentScheduleBL.class).getUomOfProduct(sched);
 		final BigDecimal qtyPickedConv = Services.get(IUOMConversionBL.class).convertQty(product,
 				qtyPicked,
 				uom, // from UOM

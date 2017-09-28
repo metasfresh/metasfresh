@@ -1486,7 +1486,7 @@ public class FlatrateBL implements IFlatrateBL
 	}
 
 	@Override
-	public int getWarehouse(final I_C_Flatrate_Term term)
+	public int getWarehouseId(final I_C_Flatrate_Term term)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(term);
 
