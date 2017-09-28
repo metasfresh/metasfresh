@@ -1358,21 +1358,6 @@ public class Helper implements IHelper
 		return invoices.get(0);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see test.integration.common.helper.IHelper#createInOut(org.compiere.model.I_C_Order)
-	 */
-	@Override
-	public I_M_InOut createInOut(I_C_Order order)
-	{
-		runProcess_InOutGenerate(order.getC_Order_ID());
-		List<I_M_InOut> inouts = retrieveInOutsForOrders(new int[] { order.getC_Order_ID() }, getTrxName());
-		Assert.assertNotNull(inouts);
-		Assert.assertEquals("Only one InOut should be generated", 1, inouts.size());
-		return inouts.get(0);
-	}
-
 	@Override
 	public void createOrder_checkOrderLine(
 			I_C_OrderLine orderLine,
@@ -1444,30 +1429,6 @@ public class Helper implements IHelper
 				.setParameter("Selection", true)
 				.setParameter("DocAction", DocAction.ACTION_Complete)
 				.run();
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see test.integration.common.helper.IHelper#runProcess_InOutGenerate(int)
-	 */
-	@Override
-	public void runProcess_InOutGenerate(int... orderIds)
-	{
-		ProcessHelper processHelper = mkProcessHelper()
-				.setProcessClass(org.adempiere.inout.process.InOutGenerate.class)
-				.setParameter("Selection", true)
-				.setParameter("M_Warehouse_ID", getM_Warehouse().getM_Warehouse_ID());
-
-		for (int orderId : orderIds)
-		{
-			int[] ids = new Query(ctx, I_C_OrderLine.Table_Name, "C_Order_ID=?", trxName)
-					.setParameters(orderId)
-					.getIDs();
-			processHelper.addSelection(ids);
-		}
-
-		processHelper.run();
 	}
 
 	/*

@@ -113,7 +113,7 @@ public interface IFlatrateBL extends ISingletonService
 
 	I_C_DocType getDocTypeFor(I_C_Flatrate_Term term);
 
-	int getWarehouse(I_C_Flatrate_Term term);
+	int getWarehouseId(I_C_Flatrate_Term term);
 
 	/**
 	 * Copy relevant columns from {@link I_C_Flatrate_Conditions} to given <code>term</code>.

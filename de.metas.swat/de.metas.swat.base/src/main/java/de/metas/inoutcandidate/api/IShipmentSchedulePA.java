@@ -172,14 +172,6 @@ public interface IShipmentSchedulePA extends ISingletonService
 	void invalidateForProducts(Collection<Integer> productIds, String trxName);
 
 	/**
-	 * Sets the {@link I_M_ShipmentSchedule#COLUMNNAME_IsValid} column to <code>'N'</code> for all shipment schedule entries whose delivery date is equla or after the given date.
-	 *
-	 * @param productId
-	 * @param trxName
-	 */
-	void invalidateForDeliveryDate(Timestamp date, String trxName);
-
-	/**
 	 * Invalidates all shipment schedules which have one of the given <code>headerAggregationKeys</code>.
 	 *
 	 * @param headerAggregationKeys
@@ -198,11 +190,7 @@ public interface IShipmentSchedulePA extends ISingletonService
 	/**
 	 * Invalidates shipment schedules for the given storage segments.
 	 * <p>
-	 * <b>IMPORTANT:</b> won't invalidate
-	 * <ul>
-	 * <li>any processed schedules.
-	 * <li>any schedules with delivery rule "force"
-	 * </ul>
+	 * <b>IMPORTANT:</b> won't invalidate any processed schedules.
 	 *
 	 * @param storageSegments
 	 */

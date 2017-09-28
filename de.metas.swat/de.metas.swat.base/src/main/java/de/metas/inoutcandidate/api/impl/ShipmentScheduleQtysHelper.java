@@ -4,17 +4,16 @@ import static org.compiere.model.X_C_Order.DELIVERYRULE_Force;
 
 import java.math.BigDecimal;
 
+import org.adempiere.inout.util.DeliveryLineCandidate;
 import org.adempiere.inout.util.IShipmentCandidates;
 import org.adempiere.inout.util.IShipmentCandidates.CompleteStatus;
 import org.adempiere.util.Services;
-import org.compiere.model.I_C_OrderLine;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import com.google.common.annotations.VisibleForTesting;
 
 import de.metas.i18n.IMsgBL;
-import de.metas.inout.model.I_M_InOutLine;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.OlAndSched;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
@@ -60,11 +59,10 @@ import lombok.experimental.UtilityClass;
 			return;
 		}
 
-		final I_C_OrderLine ol = olAndSched.getOl();
-		final I_M_InOutLine inOutLine = shipmentCandidates.getInOutLineForOrderLine(ol.getC_OrderLine_ID());
+		final DeliveryLineCandidate inOutLine = shipmentCandidates.getInOutLineForOrderLine(sched.getM_ShipmentSchedule_ID());
 		if (inOutLine != null)
 		{
-			sched.setQtyToDeliver(inOutLine.getMovementQty());
+			sched.setQtyToDeliver(inOutLine.getQtyToDeliver());
 			sched.setStatus(mkStatus(inOutLine, shipmentCandidates));
 		}
 		else
@@ -101,9 +99,11 @@ import lombok.experimental.UtilityClass;
 	 * @param shipmentCandidates
 	 * @return
 	 */
-	private static String mkStatus(final I_M_InOutLine inOutLine, final IShipmentCandidates shipmentCandidates)
+	private static String mkStatus(
+			final DeliveryLineCandidate inOutLine, 
+			final IShipmentCandidates shipmentCandidates)
 	{
-		final CompleteStatus completeStatus = shipmentCandidates.getCompleteStatus(inOutLine);
+		final CompleteStatus completeStatus = inOutLine.getCompleteStatus();
 		if (!IShipmentCandidates.CompleteStatus.OK.equals(completeStatus))
 		{
 			shipmentCandidates.addStatusInfo(inOutLine, Services.get(IMsgBL.class).getMsg(Env.getCtx(), completeStatus.toString()));
@@ -169,10 +169,9 @@ import lombok.experimental.UtilityClass;
 
 	public static BigDecimal mkQtyToDeliverOverrideFulFilled(final OlAndSched olAndSched)
 	{
-		final I_C_OrderLine ol = olAndSched.getOl();
 		final I_M_ShipmentSchedule sched = olAndSched.getSched();
 
-		final BigDecimal deliveredDiff = ol.getQtyDelivered().subtract(olAndSched.getInitialSchedQtyDelivered());
+		final BigDecimal deliveredDiff = sched.getQtyDelivered().subtract(olAndSched.getInitialSchedQtyDelivered());
 
 		final BigDecimal newQtyToDeliverOverrideFulfilled = sched.getQtyToDeliver_OverrideFulfilled().add(deliveredDiff);
 		if (newQtyToDeliverOverrideFulfilled.signum() < 0)

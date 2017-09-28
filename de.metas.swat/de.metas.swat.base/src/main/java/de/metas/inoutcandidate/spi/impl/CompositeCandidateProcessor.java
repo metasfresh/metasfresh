@@ -28,7 +28,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
 
-import org.adempiere.inout.util.CachedObjects;
 import org.adempiere.inout.util.IShipmentCandidates;
 import org.adempiere.util.Check;
 import de.metas.inoutcandidate.spi.ICandidateProcessor;
@@ -46,18 +45,17 @@ public final class CompositeCandidateProcessor implements ICandidateProcessor
 		{
 			throw new IllegalStateException(processor + " has already been added");
 		}
-
 	}
 
 	@Override
-	public int processCandidates(Properties ctx, IShipmentCandidates candidates, CachedObjects cachedObjects, String trxName)
+	public int processCandidates(Properties ctx, IShipmentCandidates candidates, String trxName)
 	{
 		int removeCount = 0;
 
 		for (final ICandidateProcessor processor : processors)
 		{
 			logger.info("Invoking {}", processor);
-			final int currentCount = processor.processCandidates(ctx, candidates, cachedObjects, trxName);
+			final int currentCount = processor.processCandidates(ctx, candidates, trxName);
 
 			logger.info("{} records were discarded by {}", new Object[] { currentCount, processor });
 			removeCount += currentCount;

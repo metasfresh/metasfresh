@@ -2,8 +2,10 @@ package de.metas.contracts.subscription.inoutcandidate.spi.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
+import org.adempiere.util.Services;
 import org.springframework.stereotype.Service;
 
+import de.metas.flatrate.api.IFlatrateBL;
 import de.metas.flatrate.model.I_C_SubscriptionProgress;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.spi.ShipmentScheduleOrderDoc;
@@ -47,12 +49,19 @@ public class ShipmentScheduleOrderDocForSubscriptionLine implements ShipmentSche
 	@Override
 	public ShipmentScheduleOrderDoc provideFor(@NonNull final I_M_ShipmentSchedule sched)
 	{
-		final I_C_SubscriptionProgress subscriptionProgress = load(sched.getRecord_ID(), I_C_SubscriptionProgress.class);
+		final I_C_SubscriptionProgress subscriptionLine = load(sched.getRecord_ID(), I_C_SubscriptionProgress.class);
 
 		return ShipmentScheduleOrderDoc.builder()
-				.deliveryDate(subscriptionProgress.getEventDate())
-				.preparationDate(subscriptionProgress.getEventDate())
+				.groupId(subscriptionLine.getC_Flatrate_Term_ID())
+				.shipperId(0)
+				.deliveryDate(subscriptionLine.getEventDate())
+				.preparationDate(subscriptionLine.getEventDate())
+				.warehouseId(getWarehouseId(subscriptionLine))
 				.build();
 	};
 
+	public int getWarehouseId(@NonNull final I_C_SubscriptionProgress subscriptionLine)
+	{
+		return Services.get(IFlatrateBL.class).getWarehouseId(subscriptionLine.getC_Flatrate_Term());
+	}
 }
