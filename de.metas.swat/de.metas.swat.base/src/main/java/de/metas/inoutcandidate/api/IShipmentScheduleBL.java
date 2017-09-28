@@ -96,10 +96,11 @@ public interface IShipmentScheduleBL extends ISingletonService
 
 	/**
 	 * Update the given {@code sched}'s delivery and preparation date from its underlying document (orderline etc).
+	 * 
 	 * @param sched
 	 */
 	void updatePreparationAndDeliveryDate(I_M_ShipmentSchedule sched);
-	
+
 	/**
 	 * Currently this method returns true iff the given {@code sched} has just been changes by {@link #updateSchedules(Properties, List, boolean, Timestamp, CachedObjects, String)}.
 	 *
@@ -169,4 +170,11 @@ public interface IShipmentScheduleBL extends ISingletonService
 	 * @return query
 	 */
 	IStorageQuery createStorageQuery(I_M_ShipmentSchedule shipmentSchedule, boolean considerAttributes);
+
+	/**
+	 * Reopen the processed shipment schedule given as parameter
+	 * 
+	 * @param shipmentSchedule
+	 */
+	void openProcessedShipmentSchedule(I_M_ShipmentSchedule shipmentSchedule);
 }
