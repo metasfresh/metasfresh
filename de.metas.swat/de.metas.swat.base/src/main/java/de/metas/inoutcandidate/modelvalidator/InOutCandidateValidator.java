@@ -1,29 +1,5 @@
 package de.metas.inoutcandidate.modelvalidator;
 
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-
-import java.sql.Timestamp;
 import java.util.Collection;
 
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
@@ -31,13 +7,8 @@ import org.adempiere.ad.housekeeping.IHouseKeepingBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.agg.key.IAggregationKeyRegistry;
-import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.I_M_Storage;
 import org.compiere.model.MClient;
-import org.compiere.model.MInOut;
-import org.compiere.model.MOrder;
 import org.compiere.model.MProduct;
-import org.compiere.model.MStorage;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.PO;
@@ -58,8 +29,6 @@ import de.metas.product.IProductBL;
 import de.metas.storage.IStorageListeners;
 import de.metas.storage.IStorageSegment;
 import de.metas.storage.StorageListenerAdapter;
-import de.metas.tourplanning.model.I_M_DeliveryDay;
-import de.metas.tourplanning.model.X_M_DeliveryDay;
 
 /**
  * Shipment Schedule / Receipt Schedule module activator
@@ -91,23 +60,17 @@ public final class InOutCandidateValidator implements ModelValidator
 		// 07344: Register RS AggregationKey Dependencies
 		registerSSAggregationKeyDependencies();
 
+		engine.addModelValidator(new C_Order(), client);
 		engine.addModelValidator(new C_Order_ShipmentSchedule(), client);
 		engine.addModelValidator(new C_OrderLine_ShipmentSchedule(), client);
 		engine.addModelValidator(new M_ShipmentSchedule(), client);
+		engine.addModelValidator(new M_Shipment_Constraint(), client);
 		engine.addModelValidator(new de.metas.inoutcandidate.modelvalidator.M_AttributeInstance(), client);
 		engine.addModelValidator(new M_InOutLine_Shipment(), client);
 		engine.addModelValidator(new M_InOut_Shipment(), client);
 		engine.addModelValidator(new C_BPartner_ShipmentSchedule(), client);
 
 		engine.addModelValidator(new M_ShipmentSchedule_QtyPicked(), client); // task 08123
-
-		engine.addModelChange(org.compiere.model.I_C_Order.Table_Name, this);
-		engine.addModelChange(I_C_OrderLine.Table_Name, this);
-
-		engine.addModelChange(org.compiere.model.I_M_InOut.Table_Name, this);
-
-		engine.addModelChange(I_M_Storage.Table_Name, this);
-		engine.addModelChange(I_M_DeliveryDay.Table_Name, this);
 
 		engine.addModelChange(org.compiere.model.I_M_Product.Table_Name, this);
 
@@ -135,7 +98,7 @@ public final class InOutCandidateValidator implements ModelValidator
 		Services.get(IStorageListeners.class).addStorageListener(new StorageListenerAdapter()
 		{
 			@Override
-			public void onStorageSegmentChanged(Collection<IStorageSegment> storageSegments)
+			public void onStorageSegmentChanged(final Collection<IStorageSegment> storageSegments)
 			{
 				Services.get(IShipmentSchedulePA.class).invalidate(storageSegments);
 			}
@@ -179,82 +142,14 @@ public final class InOutCandidateValidator implements ModelValidator
 	}
 
 	@Override
-	public String modelChange(final PO po, final int type) throws Exception
+	public String modelChange(final PO po, final int type)
 	{
-		if (po instanceof MStorage)
-		{
-			// NOTE: on we use M_HU_Storage, so there is no point to trigger it on M_Storage change
-			// storageChange((MStorage)po, type, po.get_TrxName());
-		}
-		else if (po instanceof MProduct)
+		if (po instanceof MProduct)
 		{
 			productChange((MProduct)po, type);
 		}
-		else if (po instanceof MInOut)
-		{
-			// NOTE: took it out because we don't need it on
-			// inOutChange((MInOut)po, type);
-		}
-		else if (po instanceof MOrder)
-		{
-			// NOTE: took it out because we don't need it on
-			// orderChanged((MOrder)po, type);
-		}
-		else if (po instanceof X_M_DeliveryDay)
-		{
-			// NOTE: took it out because we don't need it on
-			// deliveryDayChange((X_M_DeliveryDay)po, type);
-		}
 		return null;
 	}
-
-// @formatter:off
-//	@SuppressWarnings("unused")
-//	private void orderChanged(final MOrder po, final int type)
-//	{
-//		// make sure we are dealing with shipments
-//		if (!po.isSOTrx())
-//		{
-//			return;
-//		}
-//
-//		if (type == ModelValidator.TYPE_BEFORE_CHANGE)
-//		{
-//			if (po.is_ValueChanged(org.compiere.model.I_C_Order.COLUMNNAME_DocStatus))
-//			{
-//				final boolean wasWaitingPayment = X_C_Order.DOCSTATUS_WaitingPayment.equals(po.get_ValueOld(org.compiere.model.I_C_Order.COLUMNNAME_DocStatus));
-//				final boolean isWaitingPayment = X_C_Order.DOCSTATUS_WaitingPayment.equals(po.getDocStatus());
-//				if (isWaitingPayment && !wasWaitingPayment)
-//				{
-//					final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
-//					for (final MOrderLine olPO : po.getLines())
-//					{
-//						Services.get(IShipmentScheduleInvalidateBL.class).invalidateSegmentForOrderLine(olPO);
-//					}
-//				}
-//			}
-//		}
-//	}
-// @formatter:on
-
-
-// @formatter:off
-//	/**
-//	 * That's right: we are not invalidating on storage-changes anymore.
-//	 * @param storage
-//	 * @param type
-//	 * @param trxName
-//	 */
-//	@SuppressWarnings("unused")
-//	private void storageChange(final I_M_Storage storage, final int type, final String trxName)
-//	{
-//		if (type == ModelValidator.TYPE_AFTER_NEW || type == ModelValidator.TYPE_AFTER_CHANGE)
-//		{
-//			final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
-//			shipmentSchedulePA.invalidateForProduct(storage.getM_Product_ID(), trxName);
-//		}
-//	}
-// @formatter:on
 
 	private void productChange(final MProduct productPO, final int type)
 	{
@@ -278,17 +173,5 @@ public final class InOutCandidateValidator implements ModelValidator
 	public String docValidate(final PO po, final int timing)
 	{
 		return null; // nothing to do
-	}
-
-	@SuppressWarnings("unused")
-	private void deliveryDayChange(final X_M_DeliveryDay dd, final int type)
-	{
-		if (type == ModelValidator.TYPE_AFTER_NEW || type == ModelValidator.TYPE_AFTER_CHANGE)
-		{
-			final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
-
-			final Timestamp deliveryDate = dd.getDeliveryDate();
-			shipmentSchedulePA.invalidateForDeliveryDate(deliveryDate, dd.get_TrxName()); // invalidate all with delivery date bigger then this
-		}
 	}
 }

@@ -35,11 +35,13 @@ import org.compiere.util.Env;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Attribute;
-import de.metas.storage.AbstractStorageSegment;
 import de.metas.storage.IStorageAttributeSegment;
+import de.metas.storage.IStorageSegment;
 import de.metas.storage.impl.ImmutableStorageAttributeSegment;
+import lombok.ToString;
 
-public class StorageSegmentFromHUAttribute extends AbstractStorageSegment
+@ToString
+public class StorageSegmentFromHUAttribute implements IStorageSegment
 {
 	private final int huId;
 

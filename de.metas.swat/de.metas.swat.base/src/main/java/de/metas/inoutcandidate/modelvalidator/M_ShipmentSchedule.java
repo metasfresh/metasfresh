@@ -103,9 +103,8 @@ public class M_ShipmentSchedule
 				|| Check.isEmpty(schedule.getBPartnerAddress_Override(), true))
 		{
 			final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
-			final Properties ctx = InterfaceWrapperHelper.getCtx(schedule);
-			final String trxName = InterfaceWrapperHelper.getTrxName(schedule);
-			shipmentScheduleBL.updateBPArtnerAddressOverride(ctx, schedule, trxName);
+			schedule.setBPartnerAddress_Override(null);
+			shipmentScheduleBL.updateBPArtnerAddressOverrideIfNotYetSet(schedule);
 		}
 	}
 

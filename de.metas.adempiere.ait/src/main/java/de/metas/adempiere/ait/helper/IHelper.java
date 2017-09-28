@@ -243,8 +243,6 @@ public interface IHelper
 
 	public de.metas.adempiere.model.I_C_Invoice createInvoice(I_C_Order order);
 
-	public I_M_InOut createInOut(I_C_Order order);
-
 	public void createT_Selection(int AD_PInstance_ID, int... ids);
 
 	public void runProcess_InvoiceGenerate(int... orderIds);
@@ -253,8 +251,6 @@ public interface IHelper
 
 	public void runProcess_InvoiceGenerateFromCands(I_C_Invoice_Candidate... cands);
 	
-	public void runProcess_InOutGenerate(int... orderIds);
-
 	public List<I_C_Invoice> retrieveInvoicesForOrders(int[] orderIds, String trxName);
 
 	public List<I_M_InOut> retrieveInOutsForOrders(int[] orderIds, String trxName);

@@ -13,17 +13,18 @@ package de.metas.storage;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.util.Set;
+
+import com.google.common.collect.ImmutableSet;
 
 /**
  * A storage segment can identify a set of concrete storage records.
@@ -39,11 +40,22 @@ import java.util.Set;
  */
 public interface IStorageSegment
 {
-	Set<Integer> getM_Product_IDs();
+	Integer ANY = null;
 
-	Set<Integer> getC_BPartner_IDs();
+	Set<Integer> getM_Product_IDs();
 
 	Set<Integer> getM_Locator_IDs();
 
-	Set<IStorageAttributeSegment> getAttributes();
+	Set<Integer> getC_BPartner_IDs();
+
+	default Set<Integer> getBill_BPartner_IDs()
+	{
+		return ImmutableSet.of();
+	}
+
+	default Set<IStorageAttributeSegment> getAttributes()
+	{
+		return ImmutableSet.of();
+	}
+
 }

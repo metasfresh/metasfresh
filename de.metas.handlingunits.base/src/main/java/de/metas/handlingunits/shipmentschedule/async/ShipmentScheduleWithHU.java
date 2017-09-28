@@ -222,7 +222,7 @@ import de.metas.logging.LogManager;
 	@Override
 	public I_C_UOM getQtyPickedUOM()
 	{
-		return Services.get(IShipmentScheduleBL.class).getC_UOM(shipmentSchedule);
+		return Services.get(IShipmentScheduleBL.class).getUomOfProduct(shipmentSchedule);
 	}
 
 	@Override

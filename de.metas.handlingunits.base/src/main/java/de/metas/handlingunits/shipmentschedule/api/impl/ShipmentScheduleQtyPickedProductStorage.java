@@ -113,7 +113,7 @@ public class ShipmentScheduleQtyPickedProductStorage extends AbstractProductStor
 		//
 		// Create the total capacity based on qtyTarget
 		final I_M_Product product = shipmentSchedule.getM_Product();
-		final I_C_UOM uom = shipmentScheduleBL.getC_UOM(shipmentSchedule);
+		final I_C_UOM uom = shipmentScheduleBL.getUomOfProduct(shipmentSchedule);
 		return capacityBL.createCapacity(
 				qtyTarget, // qty
 				product, // product

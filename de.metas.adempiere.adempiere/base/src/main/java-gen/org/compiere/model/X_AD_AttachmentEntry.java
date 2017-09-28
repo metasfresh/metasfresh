@@ -14,7 +14,7 @@ public class X_AD_AttachmentEntry extends org.compiere.model.PO implements I_AD_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -317996713L;
+	private static final long serialVersionUID = -965904823L;
 
     /** Standard Constructor */
     public X_AD_AttachmentEntry (Properties ctx, int AD_AttachmentEntry_ID, String trxName)
@@ -235,5 +235,53 @@ public class X_AD_AttachmentEntry extends org.compiere.model.PO implements I_AD_
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** 
+	 * Type AD_Reference_ID=540751
+	 * Reference name: AD_AttachmentEntry_Type
+	 */
+	public static final int TYPE_AD_Reference_ID=540751;
+	/** Data = D */
+	public static final String TYPE_Data = "D";
+	/** URL = U */
+	public static final String TYPE_URL = "U";
+	/** Set Art.
+		@param Type 
+		Type of Validation (SQL, Java Script, Java Language)
+	  */
+	@Override
+	public void setType (java.lang.String Type)
+	{
+
+		set_Value (COLUMNNAME_Type, Type);
+	}
+
+	/** Get Art.
+		@return Type of Validation (SQL, Java Script, Java Language)
+	  */
+	@Override
+	public java.lang.String getType () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_Type);
+	}
+
+	/** Set URL.
+		@param URL 
+		Full URL address - e.g. http://www.adempiere.org
+	  */
+	@Override
+	public void setURL (java.lang.String URL)
+	{
+		set_Value (COLUMNNAME_URL, URL);
+	}
+
+	/** Get URL.
+		@return Full URL address - e.g. http://www.adempiere.org
+	  */
+	@Override
+	public java.lang.String getURL () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_URL);
 	}
 }

@@ -13,52 +13,70 @@ package de.metas.inoutcandidate.api;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.math.BigDecimal;
+import java.util.Optional;
 
-import org.adempiere.misc.service.IPOService;
+import javax.annotation.Nullable;
+
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.inoutcandidate.model.X_M_ShipmentSchedule;
 import de.metas.interfaces.I_C_OrderLine;
+import lombok.Builder;
+import lombok.NonNull;
 
 /**
- *
- * @author ts
+ * 
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public final class OlAndSched
 {
-	private final I_C_OrderLine orderLine;
-
-	private final IDeliverRequest deliverRequest;
-
 	private final I_M_ShipmentSchedule shipmentSchedule;
+	@Nullable
+	private final I_C_OrderLine orderLine;
+	private final IDeliverRequest deliverRequest;
+	private final BigDecimal initialSchedQtyDelivered;
 
 	private boolean availForShipmentRun;
 
-	private final BigDecimal initialSchedQtyDelivered;
-
-	public OlAndSched(final org.compiere.model.I_C_OrderLine ol, final I_M_ShipmentSchedule sched)
+	@Deprecated
+	public OlAndSched(
+			@Nullable final org.compiere.model.I_C_OrderLine ol,
+			@NonNull final I_M_ShipmentSchedule shipmentSchedule)
 	{
-		super();
-		orderLine = InterfaceWrapperHelper.create(ol, I_C_OrderLine.class);
-		shipmentSchedule = sched;
-		initialSchedQtyDelivered = sched.getQtyDelivered();
-		final IInOutCandHandlerBL inOutCandHandlerBL = Services.get(IInOutCandHandlerBL.class);
+		this(ol, shipmentSchedule, Services.get(IInOutCandHandlerBL.class).createDeliverRequest(shipmentSchedule));
+	}
 
-		deliverRequest = inOutCandHandlerBL.createDeliverRequest(sched);
+	@Builder
+	private OlAndSched(
+			@Nullable final org.compiere.model.I_C_OrderLine orderLine,
+			@NonNull final I_M_ShipmentSchedule shipmentSchedule,
+			@Nullable final IDeliverRequest deliverRequest)
+	{
+		this.orderLine = InterfaceWrapperHelper.create(orderLine, I_C_OrderLine.class);
+		this.shipmentSchedule = shipmentSchedule;
+
+		if (deliverRequest == null)
+		{
+			this.deliverRequest = Services.get(IInOutCandHandlerBL.class).createDeliverRequest(shipmentSchedule);
+		}
+		else
+		{
+			this.deliverRequest = deliverRequest;
+		}
+
+		initialSchedQtyDelivered = shipmentSchedule.getQtyDelivered();
 	}
 
 	public IDeliverRequest getDeliverRequest()
@@ -66,9 +84,9 @@ public final class OlAndSched
 		return deliverRequest;
 	}
 
-	public I_C_OrderLine getOl()
+	public Optional<I_C_OrderLine> getOl()
 	{
-		return orderLine;
+		return Optional.ofNullable(orderLine);
 	}
 
 	public I_M_ShipmentSchedule getSched()
@@ -77,17 +95,11 @@ public final class OlAndSched
 	}
 
 	/**
-	 * This method doesn't use {@link X_M_ShipmentSchedule#getQtyToDeliver_Override()} because that method returns
-	 * {@link BigDecimal#ZERO} if the database value is NULL.
-	 *
-	 * @return
+	 * @return shipment schedule's QtyToDeliver_Override or <code>null</code>
 	 */
 	public BigDecimal getQtyOverride()
 	{
-		final IPOService poService = Services.get(IPOService.class);
-
-		final BigDecimal result = (BigDecimal)poService.getValue(shipmentSchedule, I_M_ShipmentSchedule.COLUMNNAME_QtyToDeliver_Override);
-		return result;
+		return InterfaceWrapperHelper.getValueOrNull(shipmentSchedule, I_M_ShipmentSchedule.COLUMNNAME_QtyToDeliver_Override);
 	}
 
 	public boolean isAvailForShipmentRun()
@@ -95,7 +107,7 @@ public final class OlAndSched
 		return availForShipmentRun;
 	}
 
-	public void setAvailForShipmentRun(boolean availForShipmentRun)
+	public void setAvailForShipmentRun(final boolean availForShipmentRun)
 	{
 		this.availForShipmentRun = availForShipmentRun;
 	}
@@ -108,6 +120,6 @@ public final class OlAndSched
 	@Override
 	public String toString()
 	{
-		return orderLine + " / " + shipmentSchedule;
+		return String.valueOf(orderLine) + " / " + shipmentSchedule;
 	}
 }

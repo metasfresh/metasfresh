@@ -13,7 +13,6 @@ import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
-import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -23,6 +22,7 @@ import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.time.SystemTime;
 import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.compiere.Adempiere;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
@@ -59,9 +59,8 @@ public class SubscriptionInOutCandHandler implements IInOutCandHandler
 	private static final Logger logger = LogManager.getLogger(SubscriptionInOutCandHandler.class);
 
 	@Override
-	public List<I_M_ShipmentSchedule> createCandidatesFor(final Object model)
+	public List<I_M_ShipmentSchedule> createCandidatesFor(@NonNull final Object model)
 	{
-		final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 		final IDocumentLocationBL documentLocationBL = Services.get(IDocumentLocationBL.class);
 		final I_C_SubscriptionProgress subscriptionLine = create(model, I_C_SubscriptionProgress.class);
 
@@ -69,7 +68,7 @@ public class SubscriptionInOutCandHandler implements IInOutCandHandler
 
 		final I_M_ShipmentSchedule newSched = newInstance(I_M_ShipmentSchedule.class, model);
 
-		final int tableId = adTableDAO.retrieveTableId(I_C_SubscriptionProgress.Table_Name);
+		final int tableId = InterfaceWrapperHelper.getTableId(I_C_SubscriptionProgress.class);
 		newSched.setAD_Table_ID(tableId);
 		newSched.setRecord_ID(subscriptionLine.getC_SubscriptionProgress_ID());
 
@@ -85,7 +84,8 @@ public class SubscriptionInOutCandHandler implements IInOutCandHandler
 
 		newSched.setProductDescription(null);
 
-		newSched.setM_Warehouse_ID(Services.get(IFlatrateBL.class).getWarehouse(term));
+		final int warehouseId = Adempiere.getBean(ShipmentScheduleOrderDocForSubscriptionLine.class).getWarehouseId(subscriptionLine);
+		newSched.setM_Warehouse_ID(warehouseId); // use the same implementation what will be used when updating
 
 		final I_C_DocType doctypeForTerm = Services.get(IFlatrateBL.class).getDocTypeFor(term);
 
@@ -98,6 +98,7 @@ public class SubscriptionInOutCandHandler implements IInOutCandHandler
 		newSched.setC_BPartner_Location_ID(subscriptionLine.getDropShip_Location_ID());
 		newSched.setC_BPartner_ID(subscriptionLine.getDropShip_BPartner_ID());
 		newSched.setAD_User_ID(subscriptionLine.getDropShip_User_ID());
+		newSched.setBill_BPartner_ID(newSched.getC_BPartner_ID());
 
 		final IDocumentLocation documentLocation = InterfaceWrapperHelper.create(newSched, IDocumentLocation.class);
 		documentLocationBL.setBPartnerAddress(documentLocation);
@@ -194,7 +195,7 @@ public class SubscriptionInOutCandHandler implements IInOutCandHandler
 
 		logger.debug("Identified {} C_SubscriptionProgress that need a shipment schedule", subscriptionLines.size());
 
-		return new ArrayList<Object>(subscriptionLines);
+		return new ArrayList<>(subscriptionLines);
 	}
 
 	@Override

@@ -34,8 +34,6 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.invoice.service.IInvoiceBL;
-import org.adempiere.invoice.service.IInvoiceDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Services;
@@ -80,10 +78,6 @@ import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.adempiere.service.IInvoiceLineBL;
-import de.metas.document.engine.IDocActionBL;
-import de.metas.inout.model.I_M_InOut;
-import de.metas.interfaces.I_C_OrderLine;
-import test.integration.swat.sales.scenario.SalesScenario;
 
 @RunWith(IntegrationTestRunner.class)
 public class SalesTestDriver extends AIntegrationTestDriver
@@ -100,18 +94,6 @@ public class SalesTestDriver extends AIntegrationTestDriver
 	public IHelper newHelper()
 	{
 		return new Helper();
-	}
-
-	@IntegrationTest(
-			tasks = "01671",
-			desc = "Creates, deliveres and invoices a standard sales order with a new product")
-	@Test
-	public void standardOrder()
-	{
-		final String productValue = IHelper.DEFAULT_ProductValue;
-		final String bPartnerName = IHelper.DEFAULT_BPName;
-		
-		new SalesScenario(this).standartOrderWithProduct(productValue, bPartnerName);
 	}
 
 	/**
@@ -203,90 +185,6 @@ public class SalesTestDriver extends AIntegrationTestDriver
 		assertThat(invoice.getGrandTotal(), comparesEqualTo(Env.ZERO));
 
 		return invoice;
-	}
-
-	@IntegrationTest(
-			tasks = "US1184",
-			desc = "Creates two orders with different pricing systems, consolidates them to one invoice *using the packaging-BL* and verifies that the original order prices have been preserved")
-	@Test
-	public void ordersWithDifferentPricingSystems()
-	{
-		ordersWithDifferentPricingSystems(Order_InvoiceRule.IMMEDIATE, Order_InvoiceRule.IMMEDIATE);
-	}
-
-	/**
-	 * @see http://dewiki908/mediawiki/index.php/US1184:_Zwei_Auftr%C3%
-	 *      A4ge_mit_unterschiedlichen_Preissystemen_werden_in_Rechnung_und_Lieferschein_zusammengefasst_jedoch_mit_einem_
-	 *      %282011021510000063%29
-	 */
-	@Theory
-	public void ordersWithDifferentPricingSystems(
-			Order_InvoiceRule invoiceRule1,
-			Order_InvoiceRule invoiceRule2)
-	{
-		final String trxName = getTrxName();
-
-		final String productValue = "TestP1";
-
-		getHelper().addInventory(productValue, 100);
-
-		final I_C_Order order1 = getHelper().mkOrderHelper()
-				.setInvoiceRule(invoiceRule1)
-				// NOTE: if Freight Cost Rule is FreightIncluded or FixPrice then the Shipment won't be aggregated
-				// see org.adempiere.inout.shipment.impl.ShipmentFactory.isConsolidate(OlAndSched, ShipmentParams, String)
-				.setFreighCostRule(X_C_Order.FREIGHTCOSTRULE_Calculated)
-				.setPricingSystemValue("TestPS1")
-				.addLine(productValue, 10, 11)
-				.setComplete(DocAction.STATUS_Completed)
-				.createOrder();
-		
-		final I_C_Order order2 = getHelper().mkOrderHelper()
-				.setInvoiceRule(invoiceRule2)
-				// NOTE: if Freight Cost Rule is FreightIncluded or FixPrice then the Shipment won't be aggregated  
-				// see org.adempiere.inout.shipment.impl.ShipmentFactory.isConsolidate(OlAndSched, ShipmentParams, String)
-				.setFreighCostRule(X_C_Order.FREIGHTCOSTRULE_Calculated)
-				.setPricingSystemValue("TestPS2")
-				.addLine(productValue, 13, 14)
-				.setComplete(DocAction.STATUS_Completed)
-				.createOrder();
-
-		final BigDecimal ordersNetAmt = order1.getTotalLines().add(order2.getTotalLines());
-
-		final int[] orderIds = new int[] { order1.getC_Order_ID(), order2.getC_Order_ID() };
-
-		getHelper().runProcess_UpdateShipmentScheds();
-		getHelper().runProcess_InOutGenerate(orderIds);
-
-		List<I_M_InOut> ioList = getHelper().retrieveInOutsForOrders(orderIds, trxName);
-		Assert.assertEquals("Only one shipment should be generated", 1, ioList.size());
-
-		final I_M_InOut shipment = ioList.get(0);
-		final org.compiere.model.I_C_Invoice invoice = Services.get(IInvoiceBL.class).createAndCompleteForInOut(shipment, getHelper().getNow(), trxName);
-		System.out.println("Invoice: " + invoice);
-
-		Assert.assertEquals("Invoce price list should be None", 100, invoice.getM_PriceList_ID());
-
-		// Compute invoice net amount (without freight costs)
-		BigDecimal invoiceNetAmt = Env.ZERO;
-		for (I_C_InvoiceLine iline : Services.get(IInvoiceDAO.class).retrieveLines(invoice, trxName))
-		{
-			if (iline.getC_OrderLine_ID() <= 0)
-				continue;
-			I_C_OrderLine oline = InterfaceWrapperHelper.create(iline.getC_OrderLine(), I_C_OrderLine.class);
-			Assert.assertEquals("Invoice line net amount is not equal with order line net amount", oline.getLineNetAmt(), iline.getLineNetAmt());
-			invoiceNetAmt = invoiceNetAmt.add(iline.getLineNetAmt());
-		}
-		Assert.assertEquals("Invoice net amount not equal with orders net amount", ordersNetAmt, invoiceNetAmt);
-
-		// Reverse it:
-		Services.get(IDocActionBL.class).processEx(invoice, DocAction.ACTION_Reverse_Correct, DocAction.STATUS_Reversed);
-		
-		final I_C_Invoice invoiceReversal = InterfaceWrapperHelper.create(invoice.getReversal(), I_C_Invoice.class);
-		System.out.println("Invoice reversal: " + invoiceReversal);
-		Assert.assertEquals("Reversal invoice net amount is not equal with original invoice net amt", invoiceReversal.getGrandTotal(), invoice.getGrandTotal().negate());
-
-		// fire event to allow further tests
-		fireTestEvent(EventType.INVOICE_UNPAID_REVERSE_AFTER, invoice);
 	}
 
 	/**

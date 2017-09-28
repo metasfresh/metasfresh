@@ -510,7 +510,7 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 				huContext,
 				schedule.getM_Product(),
 				qtyToDeliver,
-				shipmentScheduleBL.getC_UOM(schedule),      // uom
+				shipmentScheduleBL.getUomOfProduct(schedule),      // uom
 				SystemTime.asDate(),
 				schedule,      // reference model
 				false // forceQtyAllocation
