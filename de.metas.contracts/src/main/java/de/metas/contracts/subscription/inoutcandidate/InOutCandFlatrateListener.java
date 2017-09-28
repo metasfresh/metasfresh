@@ -27,7 +27,6 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 
 import de.metas.adempiere.model.I_C_Order;
@@ -35,7 +34,7 @@ import de.metas.contracts.subscription.model.I_C_OrderLine;
 import de.metas.flatrate.api.IFlatrateDAO;
 import de.metas.flatrate.model.I_C_Flatrate_Term;
 import de.metas.inoutcandidate.spi.IInOutCandHandler;
-import de.metas.inoutcandidate.spi.IInOutCandHandlerListener;
+import de.metas.inoutcandidate.spi.ModelWithoutShipmentScheduleVetoer;
 
 /**
  * This implementation vetoes the creation of shipment schedule records for {@link I_C_OrderLine}s if those order lines
@@ -43,7 +42,7 @@ import de.metas.inoutcandidate.spi.IInOutCandHandlerListener;
  *
  *
  */
-public class InOutCandFlatrateListener implements IInOutCandHandlerListener
+public class InOutCandFlatrateListener implements ModelWithoutShipmentScheduleVetoer
 {
 
 	/**
@@ -57,13 +56,11 @@ public class InOutCandFlatrateListener implements IInOutCandHandlerListener
 	 *            <code>"C_OrderLine"</code>.
 	 */
 	@Override
-	public OnMissingCandidate foundModelWithoutInOutCandidate(Object model, IInOutCandHandler handler)
+	public OnMissingCandidate foundModelWithoutInOutCandidate(Object model)
 	{
-		Check.assume(I_C_OrderLine.Table_Name.equals(handler.getSourceTable()), "Param 'handler'=" + handler + " has SourceTable=" + I_C_OrderLine.Table_Name);
-
 		final I_C_OrderLine ol = InterfaceWrapperHelper.create(model, I_C_OrderLine.class);
 
-		return isSubscription(ol) || hasAtLeastOneFlatrateContract(ol) ? OnMissingCandidate.SKIP_CREATION : OnMissingCandidate.I_DONT_CARE;
+		return isSubscription(ol) || hasAtLeastOneFlatrateContract(ol) ? OnMissingCandidate.I_VETO : OnMissingCandidate.I_DONT_CARE;
 	}
 
 	public boolean hasAtLeastOneFlatrateContract(final I_C_OrderLine ol)

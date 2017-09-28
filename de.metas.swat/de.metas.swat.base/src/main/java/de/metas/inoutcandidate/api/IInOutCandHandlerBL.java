@@ -30,7 +30,8 @@ import org.adempiere.util.ISingletonService;
 import de.metas.inoutcandidate.model.I_M_IolCandHandler;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.spi.IInOutCandHandler;
-import de.metas.inoutcandidate.spi.IInOutCandHandlerListener;
+import de.metas.inoutcandidate.spi.ModelWithoutShipmentScheduleVetoer;
+
 
 /**
  * This interface declares methods to
@@ -76,7 +77,7 @@ public interface IInOutCandHandlerBL extends ISingletonService
 	 * @param listener
 	 * @param tableName
 	 */
-	public void registerListener(IInOutCandHandlerListener listener, String tableName);
+	public void registerListener(ModelWithoutShipmentScheduleVetoer listener, String tableName);
 
 	void invalidateCandidatesFor(Object model, String tableName);
 

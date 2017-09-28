@@ -13,15 +13,14 @@ package de.metas.inoutcandidate.spi;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import org.adempiere.model.InterfaceWrapperHelper;
 
@@ -30,7 +29,7 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 
 /**
  * Implementors of this interface can be registered using
- * {@link IInOutCandHandlerBL#registerListener(IInOutCandHandlerListener)}. They are notified if a given
+ * {@link IInOutCandHandlerBL#registerListener(ModelWithoutInOutCandidateListener)}. They are notified if a given
  * {@link IInOutCandHandler} wants to create a {@link I_M_ShipmentSchedule} for a given data record and they can veto
  * that creation.
  * 
@@ -41,11 +40,13 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
  * @author ts
  * 
  */
-public interface IInOutCandHandlerListener
+public interface ModelWithoutShipmentScheduleVetoer
 {
 	public enum OnMissingCandidate
 	{
-		SKIP_CREATION, I_DONT_CARE
+		I_VETO,
+
+		I_DONT_CARE
 	}
 
 	/**
@@ -55,11 +56,11 @@ public interface IInOutCandHandlerListener
 	 * @param model
 	 *            the record that the given
 	 *            <code>handler/code> identified as "lacking a shipment schedule". The implementor can assume that this model can be accessed using {@link InterfaceWrapperHelper}.
-	 * @param handler
+	 * &#64;param handler
 	 *            the handler that found the model and would also create the shipment schedule(s)
-	 * @return {@link OnMissingCandidate#SKIP_CREATION} if there are reasons that no <code>I_M_ShipmentSchedule</code>
+	 * @return {@link OnMissingCandidate#I_VETO} if there are reasons that no <code>I_M_ShipmentSchedule</code>
 	 *         should be created. Each implementation can assume that no <code>I_M_ShipmentSchedule</code> is create if
 	 *         at least one
 	 */
-	public OnMissingCandidate foundModelWithoutInOutCandidate(Object model, IInOutCandHandler handler);
+	public OnMissingCandidate foundModelWithoutInOutCandidate(Object model);
 }
