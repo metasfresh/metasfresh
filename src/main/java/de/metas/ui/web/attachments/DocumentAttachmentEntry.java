@@ -1,10 +1,14 @@
 package de.metas.ui.web.attachments;
 
+import java.net.URI;
+
 import org.adempiere.util.Services;
 
 import de.metas.attachments.AttachmentEntry;
+import de.metas.attachments.AttachmentEntryType;
 import de.metas.attachments.IAttachmentDAO;
 import de.metas.ui.web.window.datatypes.DocumentId;
+import lombok.ToString;
 
 /*
  * #%L
@@ -34,6 +38,7 @@ import de.metas.ui.web.window.datatypes.DocumentId;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
+@ToString
 class DocumentAttachmentEntry implements IDocumentAttachmentEntry
 {
 	/* package */static DocumentAttachmentEntry of(final DocumentId id, final AttachmentEntry entry)
@@ -41,7 +46,7 @@ class DocumentAttachmentEntry implements IDocumentAttachmentEntry
 		return new DocumentAttachmentEntry(id, entry);
 	}
 
-	private DocumentId id;
+	private final DocumentId id;
 	private final AttachmentEntry entry;
 
 	private DocumentAttachmentEntry(final DocumentId id, final AttachmentEntry entry)
@@ -54,6 +59,12 @@ class DocumentAttachmentEntry implements IDocumentAttachmentEntry
 	public DocumentId getId()
 	{
 		return id;
+	}
+
+	@Override
+	public AttachmentEntryType getType()
+	{
+		return entry.getType();
 	}
 
 	@Override
@@ -72,5 +83,11 @@ class DocumentAttachmentEntry implements IDocumentAttachmentEntry
 	public String getContentType()
 	{
 		return entry.getContentType();
+	}
+
+	@Override
+	public URI getUrl()
+	{
+		return entry.getUrl();
 	}
 }

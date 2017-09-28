@@ -1,6 +1,7 @@
 package de.metas.ui.web.attachments;
 
 import java.io.IOException;
+import java.net.URI;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -127,6 +128,14 @@ final class DocumentAttachments
 
 		notifyRelatedDocumentTabsChanged();
 	}
+	
+	public void addURLEntry(final String name, final URI url)
+	{
+		attachmentsBL.addURLEntry(recordRef, name, url);
+
+		notifyRelatedDocumentTabsChanged();
+	}
+
 
 	public IDocumentAttachmentEntry getEntry(final DocumentId id)
 	{
