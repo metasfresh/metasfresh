@@ -112,7 +112,7 @@ public abstract class AbstractPackingItem implements IPackingItem
 			this.groupingKey = groupingKey;
 		}
 
-		uom = Services.get(IShipmentScheduleBL.class).getC_UOM(sched);
+		uom = Services.get(IShipmentScheduleBL.class).getUomOfProduct(sched);
 		Check.assumeNotNull(uom, "uom not null");
 
 		assertValid();
@@ -194,7 +194,7 @@ public abstract class AbstractPackingItem implements IPackingItem
 		boolean firstSched = true;
 		for (final I_M_ShipmentSchedule sched : sched2qty.keySet())
 		{
-			final I_C_UOM currentUOM = Services.get(IShipmentScheduleBL.class).getC_UOM(sched);
+			final I_C_UOM currentUOM = Services.get(IShipmentScheduleBL.class).getUomOfProduct(sched);
 			final int currentKey = computeGroupingKey(sched);
 			if (firstSched)
 			{

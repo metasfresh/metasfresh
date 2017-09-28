@@ -307,12 +307,6 @@ public class HelperDelegator implements IHelper
 	}
 
 	@Override
-	public I_M_InOut createInOut(I_C_Order order)
-	{
-		return helper.createInOut(order);
-	}
-
-	@Override
 	public void createT_Selection(int AD_PInstance_ID, int... ids)
 	{
 		helper.createT_Selection(AD_PInstance_ID, ids);
@@ -328,12 +322,6 @@ public class HelperDelegator implements IHelper
 	public void runProcess_InvoiceGenerate(String trxName, int... orderIds)
 	{
 		helper.runProcess_InvoiceGenerate(trxName, orderIds);
-	}
-
-	@Override
-	public void runProcess_InOutGenerate(int... orderIds)
-	{
-		helper.runProcess_InOutGenerate(orderIds);
 	}
 
 	@Override

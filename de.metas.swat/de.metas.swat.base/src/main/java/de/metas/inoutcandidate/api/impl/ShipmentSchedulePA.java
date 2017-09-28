@@ -24,6 +24,7 @@ package de.metas.inoutcandidate.api.impl;
 
 import static de.metas.inoutcandidate.model.I_M_ShipmentSchedule.COLUMNNAME_C_OrderLine_ID;
 import static de.metas.inoutcandidate.model.I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID;
+import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -500,7 +501,11 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 
 		for (final I_M_ShipmentSchedule schedule : schedules)
 		{
-			result.add(new OlAndSched(InterfaceWrapperHelper.create(orderLines.get(schedule.getC_OrderLine_ID()), I_C_OrderLine.class), schedule));
+			final OlAndSched olAndSched = OlAndSched.builder()
+					.shipmentSchedule(schedule)
+					.orderLine(InterfaceWrapperHelper.create(orderLines.get(schedule.getC_OrderLine_ID()), I_C_OrderLine.class))
+					.build();
+			result.add(olAndSched);
 		}
 		return result;
 	}
@@ -539,7 +544,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 	@Override
 	public void invalidateAll(final Properties ctx)
 	{
-		final String trxName = null;
+		final String trxName = ITrx.TRXNAME_None;
 		final int clientId = Env.getAD_Client_ID(ctx);
 
 		final IDBService dbService = Services.get(IDBService.class);
@@ -553,7 +558,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 			//
 			if (result > 0)
 			{
-				UpdateInvalidShipmentSchedulesWorkpackageProcessor.schedule(ctx, ITrx.TRXNAME_ThreadInherited);
+				UpdateInvalidShipmentSchedulesWorkpackageProcessor.schedule(ctx, trxName);
 			}
 		}
 		catch (SQLException e)
@@ -662,41 +667,6 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 		{
 			UpdateInvalidShipmentSchedulesWorkpackageProcessor.schedule(Env.getCtx(), trxName);
 		}
-	}
-
-	@Override
-	public void invalidateForDeliveryDate(final Timestamp date1, final String trxName)
-	{
-		if (date1 == null)
-		{
-			return;
-		}
-
-		final IDBService dbService = Services.get(IDBService.class);
-		final PreparedStatement pstmt = dbService.mkPstmt(SQL_RECOMPUTE_DELIVERYDATE_1P, trxName);
-
-		try
-		{
-			pstmt.setTimestamp(1, date1);
-
-			final int result = pstmt.executeUpdate();
-			logger.debug("Invalidated {} entries for DeliveryDate={}", result, date1);
-
-			//
-			if (result > 0)
-			{
-				UpdateInvalidShipmentSchedulesWorkpackageProcessor.schedule(Env.getCtx(), trxName);
-			}
-		}
-		catch (SQLException e)
-		{
-			throw new DBException(e);
-		}
-		finally
-		{
-			DB.close(pstmt);
-		}
-
 	}
 
 	@Override
@@ -821,7 +791,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 		//
 		if (count > 0)
 		{
-			UpdateInvalidShipmentSchedulesWorkpackageProcessor.schedule(Env.getCtx(), ITrx.TRXNAME_ThreadInherited);
+			UpdateInvalidShipmentSchedulesWorkpackageProcessor.schedule(Env.getCtx(), trxName);
 		}
 	}
 
@@ -877,12 +847,12 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 			whereClause.append("\n\t AND ");
 			whereClause.append("(").append(DB.buildSqlList(bpartnerColumnName, bpartnerIds, sqlParams)).append(")");
 		}
-		
+
 		//
 		// Bill BPartners
 		final Set<Integer> billBPartnerIds = storageSegment.getBill_BPartner_IDs();
 		final boolean resetAllBillBPartners = billBPartnerIds.isEmpty() || billBPartnerIds.contains(0) || billBPartnerIds.contains(-1) || billBPartnerIds.contains(IStorageSegment.ANY);
-		if(!resetAllBillBPartners)
+		if (!resetAllBillBPartners)
 		{
 			final String billBPartnerColumnName = ssAlias + I_M_ShipmentSchedule.COLUMNNAME_Bill_BPartner_ID;
 			whereClause.append("\n\t AND ");
@@ -1048,7 +1018,8 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 	public void deleteSchedulesWithOutOl(final String trxName)
 	{
 		final String sql = "DELETE FROM " + I_M_ShipmentSchedule.Table_Name + " s "
-				+ "WHERE NOT EXISTS ("
+				+ "WHERE s.AD_Table_ID=" + getTableId(I_C_OrderLine.class) + " "
+				+ "AND NOT EXISTS ("
 				+ "   select 1 from " + I_C_OrderLine.Table_Name + " ol "
 				+ "   where ol." + I_C_OrderLine.COLUMNNAME_C_OrderLine_ID + "=s." + I_M_ShipmentSchedule.COLUMNNAME_C_OrderLine_ID
 				+ ")";
@@ -1556,14 +1527,14 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 			final I_M_InOutLine inoutLine = TableRecordReference
 					.ofReferenced(candidate)
 					.getModel(PlainContextAware.newWithThreadInheritedTrx(), I_M_InOutLine.class);
-			
+
 			schedules = ImmutableSet.copyOf(retrieveForInOutLine(inoutLine));
 		}
 		else
 		{
 			// No other tables are supported yet; please add implementation if required
-			Check.errorIf(true, "given candidate has ansupported table_id={}; candidate={}", tableID, candidate); 
-			schedules = ImmutableSet.of(); 
+			Check.errorIf(true, "given candidate has ansupported table_id={}; candidate={}", tableID, candidate);
+			schedules = ImmutableSet.of();
 		}
 		return schedules;
 	}

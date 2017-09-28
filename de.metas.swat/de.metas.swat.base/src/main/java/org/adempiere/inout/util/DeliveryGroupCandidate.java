@@ -1,11 +1,14 @@
-package de.metas.inoutcandidate.spi;
+package org.adempiere.inout.util;
 
-import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
 
-import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import lombok.Builder;
+import lombok.Builder.Default;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NonNull;
-import lombok.Value;
+import lombok.ToString;
 
 /*
  * #%L
@@ -30,29 +33,32 @@ import lombok.Value;
  */
 
 /**
- * Contains data about the document a given {@link I_M_ShipmentSchedule} references via its {@code AD_Table_ID} and {@code Reference_ID} columns.
- * Instances are generally created by {@link ShipmentScheduleOrderDocFactory}.
+ * Note that we exclude {@link #getLines()} from {@link #toString()}, {@link #equals(Object)} and {@link #hashCode()} to avoid a {@link StackOverflowError}.
  * 
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-@Value
+@Data
 @Builder
-public class ShipmentScheduleOrderDoc
+@EqualsAndHashCode(exclude = "lines")
+@ToString(exclude = "lines")
+public class DeliveryGroupCandidate
 {
-	@NonNull
-	Integer groupId;
-
-	Timestamp deliveryDate;
-
-	Timestamp preparationDate;
-
 	/**
-	 * Might be zero.
+	 * A more generic replacement for orderId..needed at least for deliveryRule complete-order
 	 */
 	@NonNull
-	Integer shipperId;
+	private final Integer groupId;
 
 	@NonNull
-	Integer warehouseId;
+	private final String bPartnerAddress;
+
+	@NonNull
+	private final Integer warehouseId;
+
+	@NonNull
+	private final Integer shipperId;
+
+	@Default
+	private final List<DeliveryLineCandidate> lines = new ArrayList<>();
 }

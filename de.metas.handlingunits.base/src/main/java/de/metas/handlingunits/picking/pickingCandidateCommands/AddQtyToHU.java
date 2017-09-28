@@ -99,7 +99,7 @@ public class AddQtyToHU
 		final IAllocationRequest request = AllocationUtils.createAllocationRequestBuilder()
 				.setHUContext(huContext)
 				.setProduct(product)
-				.setQuantity(Quantity.of(qtyCU, shipmentScheduleBL.getC_UOM(shipmentSchedule)))
+				.setQuantity(Quantity.of(qtyCU, shipmentScheduleBL.getUomOfProduct(shipmentSchedule)))
 				.setDateAsToday()
 				.setFromReferencedModel(candidate) // the m_hu_trx_Line coming out of this will reference the picking candidate
 				.setForceQtyAllocation(true)

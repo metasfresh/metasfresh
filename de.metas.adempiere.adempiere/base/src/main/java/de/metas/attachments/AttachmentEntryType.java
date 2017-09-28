@@ -1,15 +1,8 @@
-package de.metas.inoutcandidate.spi;
-
-import java.sql.Timestamp;
-
-import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
+package de.metas.attachments;
 
 /*
  * #%L
- * de.metas.swat.base
+ * de.metas.adempiere.adempiere.base
  * %%
  * Copyright (C) 2017 metas GmbH
  * %%
@@ -29,30 +22,7 @@ import lombok.Value;
  * #L%
  */
 
-/**
- * Contains data about the document a given {@link I_M_ShipmentSchedule} references via its {@code AD_Table_ID} and {@code Reference_ID} columns.
- * Instances are generally created by {@link ShipmentScheduleOrderDocFactory}.
- * 
- * @author metas-dev <dev@metasfresh.com>
- *
- */
-@Value
-@Builder
-public class ShipmentScheduleOrderDoc
+public enum AttachmentEntryType
 {
-	@NonNull
-	Integer groupId;
-
-	Timestamp deliveryDate;
-
-	Timestamp preparationDate;
-
-	/**
-	 * Might be zero.
-	 */
-	@NonNull
-	Integer shipperId;
-
-	@NonNull
-	Integer warehouseId;
+	Data, URL
 }

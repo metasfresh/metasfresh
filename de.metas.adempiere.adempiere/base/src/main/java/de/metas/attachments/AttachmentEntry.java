@@ -1,11 +1,18 @@
 package de.metas.attachments;
 
 import java.io.File;
+import java.net.URI;
 
+import javax.annotation.Nullable;
+
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.MimeType;
+
+import com.google.common.base.Preconditions;
 
 import lombok.Builder;
 import lombok.Data;
+import lombok.NonNull;
 
 /**
  * Attachment entry
@@ -17,19 +24,39 @@ public final class AttachmentEntry
 {
 	private final int id;
 	private final String name;
+	private final AttachmentEntryType type;
 	private final String filename;
 	private final String contentType;
+	private final URI url;
 
 	@Builder
-	private AttachmentEntry(final int id,
-			final String name,
-			final String filename,
-			final String contentType)
+	private AttachmentEntry(
+			final int id,
+			@Nullable final String name,
+			@NonNull final AttachmentEntryType type,
+			@Nullable final String filename,
+			@Nullable final String contentType,
+			@Nullable final URI url)
 	{
 		this.id = id;
 		this.name = name == null ? "?" : name;
+		this.type = type;
 		this.filename = filename != null ? filename : new File(this.name).getName();
-		this.contentType = contentType != null ? contentType : MimeType.getMimeType(this.name);
+
+		if (type == AttachmentEntryType.Data)
+		{
+			this.contentType = contentType != null ? contentType : MimeType.getMimeType(this.name);
+			this.url = null;
+		}
+		else if (type == AttachmentEntryType.URL)
+		{
+			this.contentType = null;
+			this.url = Preconditions.checkNotNull(url, "url");
+		}
+		else
+		{
+			throw new AdempiereException("Attachment entry type not supported: " + type);
+		}
 	}
 
 	@Override
@@ -41,34 +68,9 @@ public final class AttachmentEntry
 	public String toStringX()
 	{
 		final StringBuilder sb = new StringBuilder(getName());
-
-		// final byte[] data = getData();
-		// if (data != null)
-		// {
-		// sb.append(" (");
-		// //
-		// float size = data.length;
-		// if (size <= 1024)
-		// sb.append(data.length).append(" B");
-		// else
-		// {
-		// size /= 1024;
-		// if (size > 1024)
-		// {
-		// size /= 1024;
-		// sb.append(size).append(" MB");
-		// }
-		// else
-		// sb.append(size).append(" kB");
-		// }
-		// //
-		// sb.append(")");
-		// }
-
 		sb.append(" - ").append(getContentType());
-
 		return sb.toString();
-	}	// toStringX
+	}
 
 	public boolean isPDF()
 	{

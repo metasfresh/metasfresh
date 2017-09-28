@@ -34,6 +34,8 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_BPartner_QuickInput;
 import org.compiere.model.MBPartner;
 import org.compiere.util.Env;
@@ -42,11 +44,10 @@ import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
 
 import de.metas.adempiere.model.I_AD_User;
-import de.metas.adempiere.model.I_C_BPartner_Location;
 import de.metas.adempiere.service.ILocationBL;
 import de.metas.adempiere.service.impl.AddressBuilder;
 import de.metas.i18n.Language;
-import de.metas.interfaces.I_C_BPartner;
+
 
 public class BPartnerBL implements IBPartnerBL
 {
@@ -56,7 +57,7 @@ public class BPartnerBL implements IBPartnerBL
 
 	@Override
 	public String mkFullAddress(
-			final I_C_BPartner bPartner,
+			final org.compiere.model.I_C_BPartner bPartner,
 			final I_C_BPartner_Location location,
 			final I_AD_User user,
 			final String trxName)
@@ -176,8 +177,9 @@ public class BPartnerBL implements IBPartnerBL
 	@Override
 	public void setAddress(final I_C_BPartner_Location bpLocation)
 	{
-		final String address = Services.get(ILocationBL.class).mkAddress(bpLocation.getC_Location(),
-				InterfaceWrapperHelper.create(bpLocation.getC_BPartner(), I_C_BPartner.class),
+		final String address = Services.get(ILocationBL.class).mkAddress(
+				bpLocation.getC_Location(),
+				bpLocation.getC_BPartner(),
 				"",  // bPartnerBlock
 				"" // userBlock
 		);

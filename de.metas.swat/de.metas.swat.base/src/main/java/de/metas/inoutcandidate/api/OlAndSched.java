@@ -13,17 +13,17 @@ package de.metas.inoutcandidate.api;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.math.BigDecimal;
+import java.util.Optional;
 
 import javax.annotation.Nullable;
 
@@ -36,8 +36,8 @@ import lombok.Builder;
 import lombok.NonNull;
 
 /**
- *
- * @author ts
+ * 
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public final class OlAndSched
@@ -51,34 +51,42 @@ public final class OlAndSched
 	private boolean availForShipmentRun;
 
 	@Deprecated
-	public OlAndSched(final org.compiere.model.I_C_OrderLine ol, final I_M_ShipmentSchedule sched)
+	public OlAndSched(
+			@Nullable final org.compiere.model.I_C_OrderLine ol,
+			@NonNull final I_M_ShipmentSchedule shipmentSchedule)
 	{
-		this(ol, sched, Services.get(IInOutCandHandlerBL.class).createDeliverRequest(sched));
+		this(ol, shipmentSchedule, Services.get(IInOutCandHandlerBL.class).createDeliverRequest(shipmentSchedule));
 	}
 
 	@Builder
 	private OlAndSched(
-			final org.compiere.model.I_C_OrderLine orderLine,
+			@Nullable final org.compiere.model.I_C_OrderLine orderLine,
 			@NonNull final I_M_ShipmentSchedule shipmentSchedule,
-			@NonNull final IDeliverRequest deliverRequest)
+			@Nullable final IDeliverRequest deliverRequest)
 	{
 		this.orderLine = InterfaceWrapperHelper.create(orderLine, I_C_OrderLine.class);
 		this.shipmentSchedule = shipmentSchedule;
-		this.deliverRequest = deliverRequest;
-		
+
+		if (deliverRequest == null)
+		{
+			this.deliverRequest = Services.get(IInOutCandHandlerBL.class).createDeliverRequest(shipmentSchedule);
+		}
+		else
+		{
+			this.deliverRequest = deliverRequest;
+		}
+
 		initialSchedQtyDelivered = shipmentSchedule.getQtyDelivered();
 	}
-
 
 	public IDeliverRequest getDeliverRequest()
 	{
 		return deliverRequest;
 	}
 
-	@Nullable
-	public I_C_OrderLine getOl()
+	public Optional<I_C_OrderLine> getOl()
 	{
-		return orderLine;
+		return Optional.ofNullable(orderLine);
 	}
 
 	public I_M_ShipmentSchedule getSched()
