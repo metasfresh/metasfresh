@@ -32,13 +32,13 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
-import org.compiere.process.DocumentEngine;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
 import de.metas.document.documentNo.IDocumentNoBuilder;
 import de.metas.document.documentNo.IDocumentNoBuilderFactory;
 import de.metas.document.engine.DocAction;
+import de.metas.document.engine.IDocActionBL;
 import de.metas.i18n.IMsgBL;
 
 /**
@@ -401,19 +401,12 @@ public class MJournal extends X_GL_Journal implements DocAction
 		}
 	}
 
-	/**************************************************************************
-	 * Process document
-	 *
-	 * @param processAction document action
-	 * @return true if performed
-	 */
 	@Override
 	public boolean processIt(final String processAction)
 	{
 		m_processMsg = null;
-		DocumentEngine engine = new DocumentEngine(this, getDocStatus());
-		return engine.processIt(processAction, getDocAction());
-	}	// process
+		return Services.get(IDocActionBL.class).processIt(this, processAction);
+	}
 
 	/** Process Message */
 	private String m_processMsg = null;

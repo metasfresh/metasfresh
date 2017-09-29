@@ -28,12 +28,13 @@ import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
 
+import org.adempiere.util.Services;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
-import org.compiere.process.DocumentEngine;
 import org.compiere.util.Env;
 
 import de.metas.document.engine.DocAction;
+import de.metas.document.engine.IDocActionBL;
 import de.metas.i18n.Msg;
 
 public class MCSponsorCond extends X_C_Sponsor_Cond implements DocAction
@@ -252,19 +253,12 @@ public class MCSponsorCond extends X_C_Sponsor_Cond implements DocAction
 		return DocAction.STATUS_InProgress;
 	} // prepareIt
 
-	/**************************************************************************
-	 * Process document
-	 * 
-	 * @param processAction document action
-	 * @return true if performed
-	 */
 	@Override
 	public boolean processIt(final String processAction)
 	{
 		m_processMsg = null;
-		final DocumentEngine engine = new DocumentEngine(this, getDocStatus());
-		return engine.processIt(processAction, getDocAction());
-	} // processIt
+		return Services.get(IDocActionBL.class).processIt(this, processAction);
+	}
 
 	/** Process Message */
 	private String m_processMsg = null;

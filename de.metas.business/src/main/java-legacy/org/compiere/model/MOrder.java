@@ -1218,18 +1218,12 @@ public class MOrder extends X_C_Order implements DocAction
 		return true;
 	}	// beforeDelete
 
-	/**************************************************************************
-	 * Process document
-	 *
-	 * @param processAction document action
-	 * @return true if performed
-	 */
 	@Override
 	public boolean processIt(String processAction)
 	{
 		m_processMsg = null;
 		return Services.get(IDocActionBL.class).processIt(this, processAction); // task 09824
-	}	// processIt
+	}
 
 	/** Process Message */
 	private String m_processMsg = null;

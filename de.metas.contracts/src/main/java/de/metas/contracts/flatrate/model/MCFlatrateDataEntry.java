@@ -29,13 +29,14 @@ import java.sql.ResultSet;
 import java.util.Properties;
 
 import org.adempiere.util.Check;
+import org.adempiere.util.Services;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
-import org.compiere.process.DocumentEngine;
 import org.compiere.util.Env;
 
 import de.metas.contracts.model.X_C_Flatrate_DataEntry;
 import de.metas.document.engine.DocAction;
+import de.metas.document.engine.IDocActionBL;
 import de.metas.i18n.Msg;
 
 public class MCFlatrateDataEntry extends X_C_Flatrate_DataEntry implements DocAction
@@ -195,20 +196,12 @@ public class MCFlatrateDataEntry extends X_C_Flatrate_DataEntry implements DocAc
 		return DocAction.STATUS_InProgress;
 	} // prepareIt
 
-	/**************************************************************************
-	 * Process document
-	 *
-	 * @param processAction
-	 *            document action
-	 * @return true if performed
-	 */
 	@Override
-	public boolean processIt(String processAction)
+	public boolean processIt(final String processAction)
 	{
 		m_processMsg = null;
-		DocumentEngine engine = new DocumentEngine(this, getDocStatus());
-		return engine.processIt(processAction, getDocAction());
-	} // processIt
+		return Services.get(IDocActionBL.class).processIt(this, processAction);
+	}
 
 	@Override
 	public boolean reActivateIt()

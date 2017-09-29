@@ -38,13 +38,13 @@ import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.Query;
 import org.compiere.print.ReportEngine;
-import org.compiere.process.DocumentEngine;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import de.metas.document.engine.DocAction;
+import de.metas.document.engine.IDocActionBL;
 import de.metas.logging.LogManager;
 import de.metas.script.IADRuleDAO;
 import de.metas.script.ScriptEngineFactory;
@@ -73,7 +73,7 @@ public class MHRProcess extends X_HR_Process implements DocAction
 	public Timestamp m_dateFrom;
 	public Timestamp m_dateTo;
 	/** HR_Concept_ID->MHRMovement */
-	public Hashtable<Integer, MHRMovement> m_movement = new Hashtable<Integer, MHRMovement>();
+	public Hashtable<Integer, MHRMovement> m_movement = new Hashtable<>();
 	public MHRPayrollConcept[] linesConcept;
 
 	/** Static Logger */
@@ -158,18 +158,12 @@ public class MHRProcess extends X_HR_Process implements DocAction
 		return true;
 	}
 
-	/**
-	 * Process document
-	 * 
-	 * @param processAction document action
-	 * @return true if performed
-	 */
 	@Override
-	public boolean processIt(String processAction)
+	public boolean processIt(final String processAction)
 	{
-		DocumentEngine engine = new DocumentEngine(this, getDocStatus());
-		return engine.processIt(processAction, getDocAction());
-	}	// processIt
+		m_processMsg = null;
+		return Services.get(IDocActionBL.class).processIt(this, processAction);
+	}
 
 	/** Process Message */
 	private String m_processMsg = null;
@@ -506,7 +500,7 @@ public class MHRProcess extends X_HR_Process implements DocAction
 	 */
 	public MHRMovement[] getLines(boolean requery)
 	{
-		ArrayList<Object> params = new ArrayList<Object>();
+		ArrayList<Object> params = new ArrayList<>();
 		StringBuffer whereClause = new StringBuffer();
 		// For HR_Process:
 		whereClause.append(MHRMovement.COLUMNNAME_HR_Process_ID + "=?");
@@ -622,7 +616,7 @@ public class MHRProcess extends X_HR_Process implements DocAction
 	 */
 	private void createCostCollectorMovements(int C_BPartner_ID, MHRPeriod period, Map<String, Object> scriptCtx)
 	{
-		List<Object> params = new ArrayList<Object>();
+		List<Object> params = new ArrayList<>();
 		StringBuffer whereClause = new StringBuffer();
 		whereClause.append("EXISTS (SELECT 1 FROM AD_User u WHERE u.AD_User_ID=PP_Cost_Collector.AD_User_ID AND u.C_BPartner_ID=?)");
 		params.add(C_BPartner_ID);
@@ -661,7 +655,7 @@ public class MHRProcess extends X_HR_Process implements DocAction
 		MHRConcept concept = MHRConcept.forValue(getCtx(), CONCEPT_PP_COST_COLLECTOR_LABOR);
 
 		// get the attribute for specific concept
-		List<Object> params = new ArrayList<Object>();
+		List<Object> params = new ArrayList<>();
 		StringBuffer whereClause = new StringBuffer();
 		whereClause.append("? >= ValidFrom AND ( ? <= ValidTo OR ValidTo IS NULL)");
 		params.add(m_dateFrom);
@@ -780,7 +774,7 @@ public class MHRProcess extends X_HR_Process implements DocAction
 				MHRConcept concept = MHRConcept.get(getCtx(), m_HR_Concept_ID);
 				m_columnType = concept.getColumnType();
 
-				List<Object> params = new ArrayList<Object>();
+				List<Object> params = new ArrayList<>();
 				StringBuffer whereClause = new StringBuffer();
 				whereClause.append("? >= ValidFrom AND ( ? <= ValidTo OR ValidTo IS NULL)");
 				params.add(m_dateFrom);
@@ -1040,7 +1034,7 @@ public class MHRProcess extends X_HR_Process implements DocAction
 		if (m_columnType.equals(MHRConcept.COLUMNTYPE_Amount))
 		{
 			column = column.toString().length() == 1 ? "Col_" + column : "Amount" + column;
-			ArrayList<Object> params = new ArrayList<Object>();
+			ArrayList<Object> params = new ArrayList<>();
 			String sqlList = "SELECT " + column +
 					" FROM HR_List l " +
 					"INNER JOIN HR_ListVersion lv ON (lv.HR_List_ID=l.HR_List_ID) " +
@@ -1076,7 +1070,7 @@ public class MHRProcess extends X_HR_Process implements DocAction
 		if (concept == null)
 			return 0;
 
-		ArrayList<Object> params = new ArrayList<Object>();
+		ArrayList<Object> params = new ArrayList<>();
 		StringBuffer whereClause = new StringBuffer();
 		// check ValidFrom:
 		whereClause.append(MHRAttribute.COLUMNNAME_ValidFrom + "<=?");
@@ -1126,7 +1120,7 @@ public class MHRProcess extends X_HR_Process implements DocAction
 		if (concept == null)
 			return null;
 
-		ArrayList<Object> params = new ArrayList<Object>();
+		ArrayList<Object> params = new ArrayList<>();
 		StringBuffer whereClause = new StringBuffer();
 		// check client
 		whereClause.append("AD_Client_ID = ?");
@@ -1288,7 +1282,7 @@ public class MHRProcess extends X_HR_Process implements DocAction
 		}
 		//
 		MHRPeriod p = MHRPeriod.get(getCtx(), getHR_Period_ID());
-		ArrayList<Object> params = new ArrayList<Object>();
+		ArrayList<Object> params = new ArrayList<>();
 		StringBuffer whereClause = new StringBuffer();
 		// check client
 		whereClause.append("AD_Client_ID = ?");
@@ -1365,7 +1359,7 @@ public class MHRProcess extends X_HR_Process implements DocAction
 			return 0; // TODO: throw exception?
 		}
 		//
-		ArrayList<Object> params = new ArrayList<Object>();
+		ArrayList<Object> params = new ArrayList<>();
 		StringBuffer whereClause = new StringBuffer();
 		// check client
 		whereClause.append("AD_Client_ID = ?");
@@ -1454,7 +1448,7 @@ public class MHRProcess extends X_HR_Process implements DocAction
 		if (concept == null)
 			return 0;
 
-		ArrayList<Object> params = new ArrayList<Object>();
+		ArrayList<Object> params = new ArrayList<>();
 		StringBuffer whereClause = new StringBuffer();
 		// check ValidFrom:
 		whereClause.append(MHRAttribute.COLUMNNAME_ValidFrom + "<=?");
@@ -1497,7 +1491,7 @@ public class MHRProcess extends X_HR_Process implements DocAction
 		if (concept == null)
 			return 0;
 
-		ArrayList<Object> params = new ArrayList<Object>();
+		ArrayList<Object> params = new ArrayList<>();
 		StringBuffer whereClause = new StringBuffer();
 		// check ValidFrom:
 		whereClause.append(MHRAttribute.COLUMNNAME_ValidFrom + "<=?");

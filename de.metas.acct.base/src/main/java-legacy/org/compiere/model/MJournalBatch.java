@@ -28,13 +28,13 @@ import java.util.Properties;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
-import org.compiere.process.DocumentEngine;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
 import de.metas.document.documentNo.IDocumentNoBuilder;
 import de.metas.document.documentNo.IDocumentNoBuilderFactory;
 import de.metas.document.engine.DocAction;
+import de.metas.document.engine.IDocActionBL;
 import de.metas.i18n.IMsgBL;
 
 /**
@@ -189,7 +189,7 @@ public class MJournalBatch extends X_GL_JournalBatch implements DocAction
 	 */
 	public MJournal[] getJournals (boolean requery)
 	{
-		ArrayList<MJournal> list = new ArrayList<MJournal>();
+		ArrayList<MJournal> list = new ArrayList<>();
 		String sql = "SELECT * FROM GL_Journal WHERE GL_JournalBatch_ID=? ORDER BY DocumentNo";
 		PreparedStatement pstmt = null;
 		try
@@ -263,18 +263,12 @@ public class MJournalBatch extends X_GL_JournalBatch implements DocAction
 	}	//	copyLinesFrom
 
 	
-	/**************************************************************************
-	 * 	Process document
-	 *	@param processAction document action
-	 *	@return true if performed
-	 */
 	@Override
-	public boolean processIt (String processAction)
+	public boolean processIt(final String processAction)
 	{
 		m_processMsg = null;
-		DocumentEngine engine = new DocumentEngine (this, getDocStatus());
-		return engine.processIt (processAction, getDocAction());
-	}	//	process
+		return Services.get(IDocActionBL.class).processIt(this, processAction);
+	}
 	
 	/**	Process Message 			*/
 	private String		m_processMsg = null;

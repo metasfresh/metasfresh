@@ -41,12 +41,12 @@ import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.PO;
 import org.compiere.model.Query;
-import org.compiere.process.DocumentEngine;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import de.metas.commission.service.ICommissionFactCandBL;
 import de.metas.document.engine.DocAction;
+import de.metas.document.engine.IDocActionBL;
 import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
 
@@ -460,19 +460,12 @@ public class MCAdvComDoc extends X_C_AdvComDoc implements DocAction
 		return DocAction.STATUS_InProgress;
 	} // prepareIt
 
-	/**************************************************************************
-	 * Process document
-	 * 
-	 * @param processAction document action
-	 * @return true if performed
-	 */
 	@Override
 	public boolean processIt(final String processAction)
 	{
 		m_processMsg = null;
-		final DocumentEngine engine = new DocumentEngine(this, getDocStatus());
-		return engine.processIt(processAction, getDocAction());
-	} // processIt
+		return Services.get(IDocActionBL.class).processIt(this, processAction);
+	}
 
 	/** Process Message */
 	private String m_processMsg = null;

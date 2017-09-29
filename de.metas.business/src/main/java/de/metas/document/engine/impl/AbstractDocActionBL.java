@@ -44,7 +44,6 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.X_C_Order;
-import org.compiere.process.DocumentEngine;
 import org.compiere.util.Env;
 import org.compiere.util.TrxRunnable;
 import org.compiere.util.TrxRunnable2;
@@ -72,7 +71,7 @@ public abstract class AbstractDocActionBL implements IDocActionBL
 	@Override
 	public boolean processIt(final DocAction document, final String processAction)
 	{
-		final DocumentEngine engine = new DocumentEngine(document, document.getDocStatus());
+		final DocumentEngine engine = DocumentEngine.ofDocument(document);
 		return engine.processIt(processAction, document.getDocAction());
 	}
 

@@ -68,7 +68,6 @@ import org.compiere.model.Query;
 import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_C_Order;
 import org.compiere.print.ReportEngine;
-import org.compiere.process.DocumentEngine;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
@@ -80,6 +79,7 @@ import org.eevolution.api.IReceiptCostCollectorCandidate;
 import org.eevolution.exceptions.LiberoException;
 
 import de.metas.document.engine.DocAction;
+import de.metas.document.engine.IDocActionBL;
 import de.metas.i18n.IMsgBL;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.PPOrderUtil;
@@ -357,12 +357,11 @@ public class MPPOrder extends X_PP_Order implements DocAction
 	} // setProcessed
 
 	@Override
-	public boolean processIt(String processAction)
+	public boolean processIt(final String processAction)
 	{
 		m_processMsg = null;
-		DocumentEngine engine = new DocumentEngine(this, getDocStatus());
-		return engine.processIt(processAction, getDocAction());
-	} // processIt
+		return Services.get(IDocActionBL.class).processIt(this, processAction);
+	}
 
 	/** Process Message */
 	private String m_processMsg = null;

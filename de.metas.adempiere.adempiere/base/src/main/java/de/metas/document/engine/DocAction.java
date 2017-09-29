@@ -4,6 +4,7 @@ import java.io.File;
 import java.math.BigDecimal;
 import java.util.Properties;
 
+import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Client;
 import org.slf4j.Logger;
 
@@ -72,7 +73,10 @@ public interface DocAction
 	String getProcessMsg();
 
 	/** @return true if success */
-	boolean processIt(String docAction) throws Exception;
+	default boolean processIt(String docAction) throws Exception
+	{
+		return Services.get(IDocActionBL.class).processIt(this, docAction);
+	}
 
 	/** @return true if success */
 	boolean unlockIt();

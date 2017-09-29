@@ -70,7 +70,6 @@ import org.compiere.model.MUOM;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.Query;
-import org.compiere.process.DocumentEngine;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -345,12 +344,11 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements DocAction, 
 	}	// setProcessed
 
 	@Override
-	public boolean processIt(String processAction)
+	public boolean processIt(final String processAction)
 	{
 		m_processMsg = null;
-		DocumentEngine engine = new DocumentEngine(this, getDocStatus());
-		return engine.processIt(processAction, getDocAction());
-	}	// processIt
+		return Services.get(IDocActionBL.class).processIt(this, processAction);
+	}
 
 	/** Process Message */
 	private String m_processMsg = null;
@@ -934,7 +932,7 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements DocAction, 
 	private String createPO(MPPOrderNode activity)
 	{
 		String msg = "";
-		HashMap<Integer, MOrder> orders = new HashMap<Integer, MOrder>();
+		HashMap<Integer, MOrder> orders = new HashMap<>();
 		//
 		String whereClause = I_PP_Order_Node_Product.COLUMNNAME_PP_Order_Node_ID + "=?"
 				+ " AND " + I_PP_Order_Node_Product.COLUMNNAME_IsSubcontracting + "=?";
