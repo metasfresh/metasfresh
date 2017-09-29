@@ -26,7 +26,7 @@ import java.util.List;
 
 import org.adempiere.util.ISingletonService;
 
-import de.metas.flatrate.model.I_C_Invoice_Clearing_Alloc;
+import de.metas.contracts.model.I_C_Invoice_Clearing_Alloc;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
 import de.metas.materialtracking.model.validator.C_Invoice_Candidate;

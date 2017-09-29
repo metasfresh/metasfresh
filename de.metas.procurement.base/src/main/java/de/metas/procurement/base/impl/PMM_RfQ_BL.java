@@ -8,9 +8,9 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 
+import de.metas.contracts.flatrate.api.IFlatrateBL;
+import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.document.engine.IDocActionBL;
-import de.metas.flatrate.api.IFlatrateBL;
-import de.metas.flatrate.model.I_C_Flatrate_Conditions;
 import de.metas.procurement.base.IPMM_RfQ_BL;
 import de.metas.procurement.base.IPMM_RfQ_DAO;
 import de.metas.procurement.base.PMMContractBuilder;

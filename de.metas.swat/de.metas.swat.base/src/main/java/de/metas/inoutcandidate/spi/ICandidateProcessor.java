@@ -31,7 +31,7 @@ import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 
 /**
  * Implementations are called by
- * {@link IShipmentScheduleBL#updateSchedules(Properties, java.util.List, boolean, java.sql.Timestamp, CachedObjects, String)}
+ * {@link IShipmentScheduleBL#updateSchedules(Properties, java.util.List, String)}
  * between the first and second allocation run. It's task is to set the status of the candidates from the first run.
  * 
  * @author ts

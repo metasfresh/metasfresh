@@ -18,7 +18,7 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.process.DocAction;
 import org.compiere.util.Env;
 
-import de.metas.flatrate.api.IFlatrateDAO;
+import de.metas.contracts.flatrate.api.IFlatrateDAO;
 import de.metas.procurement.base.IPMMContractsDAO;
 import de.metas.procurement.base.model.I_C_Flatrate_Conditions;
 import de.metas.procurement.base.model.I_C_Flatrate_DataEntry;
@@ -66,13 +66,13 @@ public class PMMContractsDAO implements IPMMContractsDAO
 				.list(I_C_Flatrate_Term.class);
 	}
 
-	private IQueryBuilder<de.metas.flatrate.model.I_C_Flatrate_Term> retrieveAllRunningContractsOnDateQuery(final Date date)
+	private IQueryBuilder<de.metas.contracts.model.I_C_Flatrate_Term> retrieveAllRunningContractsOnDateQuery(final Date date)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-		final IQueryBuilder<de.metas.flatrate.model.I_C_Flatrate_Term> queryBuilder = queryBL.createQueryBuilder(de.metas.flatrate.model.I_C_Flatrate_Term.class, Env.getCtx(), ITrx.TRXNAME_ThreadInherited)
+		final IQueryBuilder<de.metas.contracts.model.I_C_Flatrate_Term> queryBuilder = queryBL.createQueryBuilder(de.metas.contracts.model.I_C_Flatrate_Term.class, Env.getCtx(), ITrx.TRXNAME_ThreadInherited)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(de.metas.flatrate.model.I_C_Flatrate_Term.COLUMNNAME_Type_Conditions, I_C_Flatrate_Conditions.TYPE_CONDITIONS_Procuremnt)
+				.addEqualsFilter(de.metas.contracts.model.I_C_Flatrate_Term.COLUMNNAME_Type_Conditions, I_C_Flatrate_Conditions.TYPE_CONDITIONS_Procuremnt)
 
 				// completed contract restriction
 				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_DocStatus, DocAction.STATUS_Completed)
@@ -116,7 +116,7 @@ public class PMMContractsDAO implements IPMMContractsDAO
 	}
 
 	@Override
-	public I_C_Flatrate_DataEntry retrieveFlatrateDataEntry(final de.metas.flatrate.model.I_C_Flatrate_Term flatrateTerm, final Timestamp date)
+	public I_C_Flatrate_DataEntry retrieveFlatrateDataEntry(final de.metas.contracts.model.I_C_Flatrate_Term flatrateTerm, final Timestamp date)
 	{
 		Check.assumeNotNull(flatrateTerm, "flatrateTerm not null");
 		Check.assumeNotNull(date, "date not null");

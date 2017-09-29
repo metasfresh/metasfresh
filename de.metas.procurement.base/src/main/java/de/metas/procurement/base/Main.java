@@ -14,8 +14,8 @@ import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.contracts.flatrate.api.IFlatrateHandlersService;
 import de.metas.event.Topic;
-import de.metas.flatrate.api.IFlatrateHandlersService;
 import de.metas.jax.rs.CreateEndpointRequest;
 import de.metas.jax.rs.IJaxRsBL;
 import de.metas.logging.LogManager;

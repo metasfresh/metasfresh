@@ -61,7 +61,6 @@ public class PrepayOrderValidator implements ModelValidator
 			ad_Client_ID = client.getAD_Client_ID();
 		}
 
-		// Services.registerService(IPrepayOrderBL.class, new PrepayOrderBL()); // metas: autodetect
 		Services.get(IShipmentScheduleBL.class).registerCandidateProcessor(new PrepayCandidateProcessor());
 	}
 

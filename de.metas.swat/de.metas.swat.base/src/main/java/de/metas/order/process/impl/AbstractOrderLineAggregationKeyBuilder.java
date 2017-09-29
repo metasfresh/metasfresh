@@ -3,8 +3,9 @@ package de.metas.order.process.impl;
 import java.util.List;
 
 import org.adempiere.util.agg.key.IAggregationKeyBuilder;
+import org.compiere.model.I_C_OrderLine;
 
-import de.metas.interfaces.I_C_OrderLine;
+
 
 /*
  * #%L
