@@ -29,6 +29,7 @@ import java.sql.ResultSet;
 import java.util.Properties;
 
 import org.adempiere.ad.dao.cache.IModelCacheService;
+import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.GenericPO;
@@ -85,6 +86,12 @@ public final class TableModelLoader
 		}
 
 		return getPO(ctx, tableName, Record_ID, checkCache, trxName);
+	}
+
+	public PO getPO(final Properties ctx, final int adTableId, final int Record_ID, final String trxName)
+	{
+		final String tableName = Services.get(IADTableDAO.class).retrieveTableName(adTableId);
+		return getPO(ctx, tableName, Record_ID, trxName);
 	}
 
 	/**

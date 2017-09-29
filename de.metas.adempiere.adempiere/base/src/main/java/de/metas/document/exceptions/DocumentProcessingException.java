@@ -25,9 +25,11 @@ package de.metas.document.exceptions;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
+import org.adempiere.util.Services;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import de.metas.document.engine.DocAction;
+import de.metas.document.engine.IDocActionBL;
 
 /**
  * Exception thrown when document processing failed.
@@ -73,16 +75,21 @@ public class DocumentProcessingException extends AdempiereException
 			documentInfo = "no document";
 			processMsg = null;
 		}
-		else if(documentObj instanceof DocAction)
-		{
-			documentInfo = ((DocAction)documentObj).getDocumentInfo();
-			processMsg = ((DocAction)documentObj).getProcessMsg();
-		}
 		else
 		{
-			documentInfo = documentObj.toString();
-			processMsg = null;
+			final DocAction document = Services.get(IDocActionBL.class).getDocActionOrNull(documentObj);
+			if(document != null)
+			{
+				documentInfo = document.getDocumentInfo();
+				processMsg = document.getProcessMsg();
+			}
+			else
+			{
+				documentInfo = documentObj.toString();
+				processMsg = null;
+			}
 		}
+		
 		
 		msg.append("\n@Document@: ").append(documentInfo);
 		msg.append("\n@DocAction@: ").append(docAction);

@@ -40,6 +40,7 @@ import org.compiere.wf.MWorkflowProcessor;
 import org.compiere.wf.MWorkflowProcessorLog;
 
 import de.metas.document.engine.DocAction;
+import de.metas.document.engine.IDocActionBL;
 import de.metas.i18n.Msg;
 
 
@@ -361,19 +362,19 @@ public class WorkflowProcessor extends AdempiereServer
 		if (message == null || message.length() == 0)
 			message = process.getTextMsg();
 		File pdf = null; 
-		PO po = activity.getPO();
-		if (po instanceof DocAction)
+		final PO po = activity.getPO();
+		final DocAction document = po != null ? Services.get(IDocActionBL.class).getDocActionOrNull(po) : null;
+		if (document != null)
 		{
-			message = ((DocAction)po).getDocumentInfo() + "\n" + message;
-			pdf = ((DocAction)po).createPDF();
+			message = document.getDocumentInfo() + "\n" + message;
+			pdf = document.createPDF();
 		}
 		
 		//  Inactivity Alert: Workflow Activity {}
-		String subject = Msg.getMsg(m_client.getAD_Language(), AD_Message, 
-			new Object[] {subjectVar});
+		String subject = Msg.getMsg(m_client.getAD_Language(), AD_Message, new Object[] {subjectVar});
 		
 		//	Prevent duplicates
-		ArrayList<Integer> list = new ArrayList<Integer>();
+		ArrayList<Integer> list = new ArrayList<>();
 		int counter = 0;
 		
 		//	To Activity Owner
