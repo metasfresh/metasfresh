@@ -52,8 +52,8 @@ import org.compiere.util.TrxRunnableAdapter;
 
 import com.google.common.annotations.VisibleForTesting;
 
-import de.metas.flatrate.api.IFlatrateDAO;
-import de.metas.flatrate.model.I_C_Invoice_Clearing_Alloc;
+import de.metas.contracts.flatrate.api.IFlatrateDAO;
+import de.metas.contracts.model.I_C_Invoice_Clearing_Alloc;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_ILCandHandler;
 import de.metas.materialtracking.IMaterialTrackingPPOrderBL;

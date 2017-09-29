@@ -30,7 +30,8 @@ import org.adempiere.util.ISingletonService;
 import de.metas.inoutcandidate.model.I_M_IolCandHandler;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.spi.IInOutCandHandler;
-import de.metas.inoutcandidate.spi.IInOutCandHandlerListener;
+import de.metas.inoutcandidate.spi.ModelWithoutShipmentScheduleVetoer;
+
 
 /**
  * This interface declares methods to
@@ -73,10 +74,10 @@ public interface IInOutCandHandlerBL extends ISingletonService
 	 * <li>it is allowed to register a listener for a table name when no handler has (yet) been registered for the same table name</li>
 	 * </ul>
 	 *
-	 * @param listener
+	 * @param vetoer
 	 * @param tableName
 	 */
-	public void registerListener(IInOutCandHandlerListener listener, String tableName);
+	public void registerVetoer(ModelWithoutShipmentScheduleVetoer vetoer, String tableName);
 
 	void invalidateCandidatesFor(Object model, String tableName);
 

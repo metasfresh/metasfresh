@@ -3,7 +3,7 @@ package de.metas.procurement.base.pricing.spi.impl;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.pricing.api.IPricingContext;
 import org.adempiere.pricing.api.IPricingResult;
-import org.adempiere.pricing.spi.rules.PricingRuleAdapter;
+import org.adempiere.pricing.spi.IPricingRule;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_Order;
 import org.slf4j.Logger;
@@ -36,7 +36,7 @@ import de.metas.procurement.base.order.impl.PMMPricingAware_C_OrderLine;
  * #L%
  */
 
-public class ProcurementFlatrateRule extends PricingRuleAdapter
+public class ProcurementFlatrateRule implements IPricingRule
 {
 
 	private final transient Logger logger = LogManager.getLogger(getClass());

@@ -66,7 +66,7 @@ public interface IInvoiceCandidateHandlerBL extends ISingletonService
 	 * @param ctx
 	 * @param handlers see {@link IInvoiceCandBL#createMissingCandidates(org.compiere.model.I_AD_PInstance, List, String)}
 	 */
-	void createMissingCandidates(Properties ctx, List<I_C_ILCandHandler> handlers);
+	void createMissingCandidates(List<I_C_ILCandHandler> handlers);
 
 	/**
 	 * Creates missing invoice candidates for the given table name and model. It is assumes that 'model' can be handled by {@link InterfaceWrapperHelper}.

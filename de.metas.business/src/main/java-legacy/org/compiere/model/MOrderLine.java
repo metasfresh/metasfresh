@@ -1003,47 +1003,6 @@ public class MOrderLine extends X_C_OrderLine
 		if (newRecord || is_ValueChanged("QtyOrdered"))
 			setQtyOrdered(getQtyOrdered());
 
-		// task 05295: commenting this out because also for ASI-Order-Lines it shall be allowed to order qty that is not yet fully avalable on stock
-		// // Qty on instance ASI for SO
-		// if (m_IsSOTrx
-		// && getM_AttributeSetInstance_ID() != 0
-		// && (newRecord || is_ValueChanged("M_Product_ID")
-		// || is_ValueChanged("M_AttributeSetInstance_ID")
-		// || is_ValueChanged("M_Warehouse_ID")))
-		// {
-		// MProduct product = getProduct();
-		// if (product.isStocked())
-		// {
-		// int M_AttributeSet_ID = product.getM_AttributeSet_ID();
-		// boolean isInstance = M_AttributeSet_ID != 0;
-		// if (isInstance)
-		// {
-		// MAttributeSet mas = MAttributeSet.get(getCtx(), M_AttributeSet_ID);
-		// isInstance = mas.isInstanceAttribute();
-		// }
-		// // Max
-		// if (isInstance)
-		// {
-		// MStorage[] storages = MStorage.getWarehouse(getCtx(),
-		// Services.get(IWarehouseAdvisor.class).evaluateWarehouse(this).getM_Warehouse_ID(), getM_Product_ID(), getM_AttributeSetInstance_ID(),
-		// M_AttributeSet_ID, false, null, true, get_TrxName());
-		// BigDecimal qty = BigDecimal.ZERO;
-		// for (int i = 0; i < storages.length; i++)
-		// {
-		// if (storages[i].getM_AttributeSetInstance_ID() == getM_AttributeSetInstance_ID())
-		// qty = qty.add(storages[i].getQtyOnHand());
-		// }
-		//
-		// if (getQtyOrdered().compareTo(qty) > 0)
-		// {
-		// log.warn("Qty - Stock=" + qty + ", Ordered=" + getQtyOrdered());
-		// log.error("QtyInsufficient", "=" + qty);
-		// return false;
-		// }
-		// }
-		// } // stocked
-		// } // SO instance
-
 		// FreightAmt Not used
 		if (BigDecimal.ZERO.compareTo(getFreightAmt()) != 0)
 			setFreightAmt(BigDecimal.ZERO);
@@ -1064,20 +1023,6 @@ public class MOrderLine extends X_C_OrderLine
 			int ii = DB.getSQLValue(get_TrxName(), sql, getC_Order_ID());
 			setLine(ii);
 		}
-
-		// Calculations & Rounding
-
-		// FIXME: commented out because actually was doing nothing (see, it was updating another instance of this order line, which is not saved), and more, setLineNetAmt is no longer called from here
-		// final I_C_OrderLine orderLine = InterfaceWrapperHelper.create(getCtx(), getC_OrderLine_ID(), I_C_OrderLine.class, get_TrxName());
-		// Services.get(IOrderLineBL.class).setPrices(orderLine);
-
-		// 07264
-		// commented out because we are not using this anymore
-		// setLineNetAmt(); // extended Amount with or without tax
-
-		// metas
-		// setDiscount();
-		// metas ende
 
 		return true;
 	}	// beforeSave

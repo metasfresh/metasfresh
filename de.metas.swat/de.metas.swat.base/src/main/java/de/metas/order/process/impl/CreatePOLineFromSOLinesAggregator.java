@@ -1,5 +1,7 @@
 package de.metas.order.process.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.create;
+
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.IdentityHashMap;
@@ -16,11 +18,12 @@ import org.adempiere.util.Services;
 import org.adempiere.util.collections.MapReduceAggregator;
 import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_AttributeSetInstance;
 
 import de.metas.adempiere.service.IOrderLineBL;
-import de.metas.interfaces.I_C_OrderLine;
 import de.metas.order.process.IC_Order_CreatePOFromSOsBL;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -35,11 +38,11 @@ import de.metas.order.process.IC_Order_CreatePOFromSOsBL;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -129,13 +132,20 @@ public class CreatePOLineFromSOLinesAggregator extends MapReduceAggregator<I_C_O
 		purchaseOrderLine.setC_BPartner(purchaseOrder.getC_BPartner());
 		purchaseOrderLine.setC_BPartner_Location(purchaseOrder.getC_BPartner_Location());
 
-		final int userID = salesOrderLine.getAD_User_ID();
-		purchaseOrderLine.setAD_User_ID(userID);
+		copyUserIdFromSalesToPurchaseOrderLine(salesOrderLine, purchaseOrderLine);
 
 		purchaseOrderLine.setM_AttributeSetInstance(poASI);
 		IModelAttributeSetInstanceListener.DYNATTR_DisableASIUpdateOnModelChange.setValue(purchaseOrderLine, true); // (08091)
 
 		return purchaseOrderLine;
+	}
+
+	private void copyUserIdFromSalesToPurchaseOrderLine(
+			@NonNull final I_C_OrderLine salesOrderLine, 
+			@NonNull final I_C_OrderLine purchaseOrderLine)
+	{
+		final int userID = create(salesOrderLine, de.metas.interfaces.I_C_OrderLine.class).getAD_User_ID();
+		create(purchaseOrderLine, de.metas.interfaces.I_C_OrderLine.class).setAD_User_ID(userID);
 	}
 
 	@Override

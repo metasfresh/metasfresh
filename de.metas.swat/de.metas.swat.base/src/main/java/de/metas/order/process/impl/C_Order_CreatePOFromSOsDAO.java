@@ -17,11 +17,11 @@ import org.adempiere.util.Services;
 import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_BPartner_Product;
+import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_Product;
 import org.compiere.process.DocAction;
 import org.compiere.util.TimeUtil;
 
-import de.metas.interfaces.I_C_OrderLine;
 import de.metas.order.model.I_C_Order;
 import de.metas.order.process.IC_Order_CreatePOFromSOsDAO;
 

@@ -24,8 +24,8 @@ package de.metas.contracts.subscription.process;
 
 import java.sql.Timestamp;
 
+import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.subscription.impl.SubscriptionCommand;
-import de.metas.flatrate.model.I_C_Flatrate_Term;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.Param;
 

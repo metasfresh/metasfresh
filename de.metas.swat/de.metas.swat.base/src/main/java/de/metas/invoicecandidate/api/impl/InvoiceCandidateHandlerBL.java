@@ -13,11 +13,11 @@ package de.metas.invoicecandidate.api.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -30,6 +30,7 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.adempiere.ad.dao.cache.impl.TableRecordCacheLocal;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -64,6 +65,7 @@ import de.metas.lock.api.ILockAutoCloseable;
 import de.metas.lock.api.ILockManager;
 import de.metas.lock.api.LockOwner;
 import de.metas.workflow.api.IWFExecutionFactory;
+import lombok.NonNull;
 
 public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 {
@@ -130,42 +132,26 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 	}
 
 	@Override
-	public void createMissingCandidates(final Properties ctx,
-			final List<I_C_ILCandHandler> handlerRecords)
+	public void createMissingCandidates(@NonNull final List<I_C_ILCandHandler> handlerRecords)
 	{
-		final IInvoiceCandidateHandlerDAO invoiceCandidateHandlerDAO = Services.get(IInvoiceCandidateHandlerDAO.class);
-
-		final List<I_C_ILCandHandler> handlerRecordsToUse;
-		if (handlerRecords == null || handlerRecords.isEmpty())
-		{
-			handlerRecordsToUse = invoiceCandidateHandlerDAO.retrieveAll(ctx);
-		}
-		else
-		{
-			handlerRecordsToUse = handlerRecords;
-		}
-
 		Services.get(ITrxManager.class).run(new TrxRunnable()
 		{
 			@Override
 			public void run(final String trxName) throws Exception
 			{
-				createInvoiceCandidates(ctx, handlerRecordsToUse, InvoiceCandidateHandlerBL.NO_MODEL, trxName);
+				createInvoiceCandidates(handlerRecords, InvoiceCandidateHandlerBL.NO_MODEL);
 			}
 		});
 	}
 
 	@Override
-	public List<I_C_Invoice_Candidate> createMissingCandidatesFor(final Object model)
+	public List<I_C_Invoice_Candidate> createMissingCandidatesFor(@NonNull final Object model)
 	{
-		Check.assumeNotNull(model, "model is not null");
-
 		final Properties ctx = InterfaceWrapperHelper.getCtx(model);
-		final String trxName = InterfaceWrapperHelper.getTrxName(model);
 		final String tableName = InterfaceWrapperHelper.getModelTableName(model);
 
 		final List<I_C_ILCandHandler> icCandHandlers = Services.get(IInvoiceCandidateHandlerDAO.class).retrieveForTable(ctx, tableName);
-		return createInvoiceCandidates(ctx, icCandHandlers, model, trxName);
+		return createInvoiceCandidates(icCandHandlers, model);
 	}
 
 	@Override
@@ -205,13 +191,11 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 	 * @return if model is <code>{@link #NO_MODEL}</code>, then we return the empty list. If not, then we return the created invoice candidates.
 	 */
 	private List<I_C_Invoice_Candidate> createInvoiceCandidates(
-			final Properties ctx,
-			final List<I_C_ILCandHandler> handlerRecords,
-			final Object model,
-			final String trxName)
+			@NonNull final List<I_C_ILCandHandler> handlerRecords,
+			final Object model)
 	{
 		final List<I_C_Invoice_Candidate> result = new ArrayList<>();
-		if (handlerRecords == null || handlerRecords.isEmpty())
+		if (handlerRecords.isEmpty())
 		{
 			logger.warn("No C_ILCandHandler were provided for '{}'. Nothing to do.", model);
 		}
@@ -231,13 +215,13 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 				// HARDCODED BufferSize/Limit to be used when we are creating missing candidates
 				final int bufferSize = 500;
 
-				List<I_C_Invoice_Candidate> newCandidates = createCandidates(ctx, model, bufferSize, creatorImpl, trxName);
+				List<I_C_Invoice_Candidate> newCandidates = createCandidates(model, bufferSize, creatorImpl);
 				final int candidatesCount = newCandidates.size();
 				while (!newCandidates.isEmpty())
 				{
 					if (Util.same(model, InvoiceCandidateHandlerBL.NO_MODEL))
 					{
-						trxManager.commit(trxName);
+						trxManager.commit(ITrx.TRXNAME_ThreadInherited);
 					}
 					else
 					{
@@ -245,7 +229,7 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 						break;
 					}
 
-					newCandidates = createCandidates(ctx, model, bufferSize, creatorImpl, trxName);
+					newCandidates = createCandidates(model, bufferSize, creatorImpl);
 				}
 
 				loggable.addLog("Handler " + handlerRecord.getName() + ": @Created@ #" + candidatesCount);
@@ -268,7 +252,7 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 		if (Util.same(model, InvoiceCandidateHandlerBL.NO_MODEL))
 		{
 			Check.assume(result.isEmpty(), "Internal error: result shall be empty");
-			trxManager.commit(trxName);
+			trxManager.commit(ITrx.TRXNAME_ThreadInherited);
 		}
 
 		return result;
@@ -277,25 +261,23 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 	/**
 	 * Create candidates. If model is {@link #NO_MODEL} then all missing candidates will be created.
 	 *
-	 * @param ctx
 	 * @param modelOrNoModel if set to a value != {@link #NO_MODEL}, then only candidates for the given model are created,
 	 * @param bufferSize used only when creating missing candidates. See limit parameter of {@link IInvoiceCandidateHandler#createMissingCandidates(Properties, int, String)}.
 	 * @param invoiceCandiateHandler
-	 * @param trxName
+	 *
 	 * @return created candidates
 	 */
-	private List<I_C_Invoice_Candidate> createCandidates(final Properties ctx,
+	private List<I_C_Invoice_Candidate> createCandidates(
 			final Object modelOrNoModel,
 			final int bufferSize,
-			final IInvoiceCandidateHandler invoiceCandiateHandler,
-			final String trxName)
+			final IInvoiceCandidateHandler invoiceCandiateHandler)
 	{
 		//
 		// Retrieve actual models for whom we will generate invoice candidates
 		final Iterator<? extends Object> models;
 		if (Util.same(modelOrNoModel, InvoiceCandidateHandlerBL.NO_MODEL))
 		{
-			models = invoiceCandiateHandler.retrieveAllModelsWithMissingCandidates(ctx, bufferSize, trxName);
+			models = invoiceCandiateHandler.retrieveAllModelsWithMissingCandidates(bufferSize);
 		}
 		else
 		{
@@ -376,7 +358,9 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 		}
 	}
 
-	private void updateDefaultsAndSaveSingleCandidate(final IInvoiceCandidateHandler handler, final I_C_Invoice_Candidate ic)
+	private void updateDefaultsAndSaveSingleCandidate(
+			@NonNull final IInvoiceCandidateHandler handler, 
+			@NonNull final I_C_Invoice_Candidate ic)
 	{
 		Check.assumeNotNull(handler, "handler not null");
 

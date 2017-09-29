@@ -116,8 +116,7 @@ public interface IProductPA extends ISingletonService
 	 * @return
 	 * @throws ProductNotOnPriceListException
 	 */
-	BigDecimal retrievePriceStd(int productId, int bPartnerId, int priceListId,
-			BigDecimal qty, boolean soTrx);
+	BigDecimal retrievePriceStd(int productId, int bPartnerId, int priceListId,	BigDecimal qty, boolean soTrx);
 
 	Collection<MProductPrice> retrieveProductPrices(int priceListVersionId, String trxName);
 
