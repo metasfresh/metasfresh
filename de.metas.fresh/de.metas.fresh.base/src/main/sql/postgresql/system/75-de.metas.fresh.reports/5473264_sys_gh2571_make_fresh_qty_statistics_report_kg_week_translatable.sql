@@ -1,4 +1,4 @@
-DROP FUNCTION IF EXISTS report.fresh_qty_statistics_report_kg_week
+﻿DROP FUNCTION IF EXISTS report.fresh_qty_statistics_report_kg_week
 	(
 		IN C_Year_ID numeric, IN week integer,IN issotrx character varying,	IN C_Activity_ID numeric,IN M_Product_ID numeric,IN M_Product_Category_ID numeric,IN M_AttributeSetInstance_ID numeric,	IN convert_to_kg character varying,	IN ad_org_id numeric
 	);
