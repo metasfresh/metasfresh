@@ -8,8 +8,8 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.util.TimeUtil;
 
-import de.metas.contracts.flatrate.api.IFlatrateDAO;
-import de.metas.contracts.flatrate.api.impl.DefaultFlatrateHandler;
+import de.metas.contracts.flatrate.IFlatrateDAO;
+import de.metas.contracts.flatrate.impl.FallbackFlatrateTermEventListener;
 import de.metas.contracts.model.I_C_Flatrate_DataEntry;
 import de.metas.procurement.base.PMMContractBuilder;
 import de.metas.procurement.base.model.I_C_Flatrate_Conditions;
@@ -37,7 +37,7 @@ import de.metas.procurement.base.model.I_C_Flatrate_Term;
  * #L%
  */
 
-public class ProcurementFlatrateHandler extends DefaultFlatrateHandler
+public class ProcurementFlatrateHandler extends FallbackFlatrateTermEventListener
 {
 	public static final String TYPE_CONDITIONS = I_C_Flatrate_Conditions.TYPE_CONDITIONS_Procuremnt;
 

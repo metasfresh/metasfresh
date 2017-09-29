@@ -1,4 +1,4 @@
-package de.metas.contracts.flatrate.api.impl;
+package de.metas.contracts.flatrate.impl;
 
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
@@ -17,7 +17,7 @@ import org.compiere.util.TimeUtil;
 import org.junit.Test;
 
 import de.metas.contracts.flatrate.ContractsTestBase;
-import de.metas.contracts.flatrate.api.impl.FlatrateDAO;
+import de.metas.contracts.flatrate.impl.FlatrateDAO;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Matching;
 import de.metas.contracts.model.I_C_Flatrate_Term;

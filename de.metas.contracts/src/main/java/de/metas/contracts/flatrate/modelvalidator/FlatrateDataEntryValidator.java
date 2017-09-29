@@ -38,8 +38,8 @@ import org.compiere.model.PO;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.contracts.flatrate.api.IFlatrateBL;
-import de.metas.contracts.flatrate.api.IFlatrateDAO;
+import de.metas.contracts.flatrate.IFlatrateBL;
+import de.metas.contracts.flatrate.IFlatrateDAO;
 import de.metas.contracts.interceptor.MainValidator;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_DataEntry;

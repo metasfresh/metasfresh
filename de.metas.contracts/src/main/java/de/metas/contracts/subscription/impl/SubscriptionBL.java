@@ -60,7 +60,7 @@ import de.metas.adempiere.model.I_AD_User;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.adempiere.service.IBPartnerOrgBL;
 import de.metas.contracts.flatrate.Contracts_Constants;
-import de.metas.contracts.flatrate.api.IFlatrateDAO;
+import de.metas.contracts.flatrate.IFlatrateDAO;
 import de.metas.contracts.flatrate.interfaces.I_C_OLCand;
 import de.metas.contracts.model.I_C_Contract_Term_Alloc;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;

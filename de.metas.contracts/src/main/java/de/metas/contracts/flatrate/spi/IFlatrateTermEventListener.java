@@ -1,5 +1,6 @@
-package de.metas.contracts.flatrate.api;
+package de.metas.contracts.flatrate.spi;
 
+import de.metas.contracts.flatrate.IFlatrateBL;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 
 /*
@@ -30,7 +31,7 @@ import de.metas.contracts.model.I_C_Flatrate_Term;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public interface IFlatrateHandler
+public interface IFlatrateTermEventListener
 {
 	/**
 	 * Invoked by a model interceptor on {@link org.compiere.model.ModelValidator#TIMING_BEFORE_REACTIVATE}.
@@ -64,5 +65,5 @@ public interface IFlatrateHandler
 	 * 
 	 * @param term
 	 */
-	void beforeFlatrateTermCreated(final I_C_Flatrate_Term currentTerm, final I_C_Flatrate_Term nextTerm);
+	void beforeExtendFlatrateTermSaved(final I_C_Flatrate_Term currentTerm, final I_C_Flatrate_Term nextTerm);
 }

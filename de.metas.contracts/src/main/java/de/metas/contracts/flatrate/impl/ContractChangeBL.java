@@ -1,4 +1,4 @@
-package de.metas.contracts.flatrate.api.impl;
+package de.metas.contracts.flatrate.impl;
 
 /*
  * #%L
@@ -40,8 +40,8 @@ import org.slf4j.Logger;
 import de.metas.logging.LogManager;
 
 import de.metas.adempiere.model.I_C_Order;
-import de.metas.contracts.flatrate.api.IContractChangeBL;
-import de.metas.contracts.flatrate.api.IContractChangeDAO;
+import de.metas.contracts.flatrate.IContractChangeBL;
+import de.metas.contracts.flatrate.IContractChangeDAO;
 import de.metas.contracts.model.I_C_Contract_Change;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_SubscriptionProgress;

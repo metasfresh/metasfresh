@@ -1,4 +1,4 @@
-package de.metas.contracts.flatrate.api.impl;
+package de.metas.contracts.flatrate.impl;
 
 import java.util.List;
 

@@ -30,7 +30,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 
 import de.metas.adempiere.model.I_C_Order;
-import de.metas.contracts.flatrate.api.IFlatrateDAO;
+import de.metas.contracts.flatrate.IFlatrateDAO;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.subscription.model.I_C_OrderLine;
 import de.metas.inoutcandidate.spi.IInOutCandHandler;

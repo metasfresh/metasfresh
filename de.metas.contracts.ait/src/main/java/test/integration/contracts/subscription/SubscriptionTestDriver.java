@@ -60,7 +60,7 @@ import de.metas.adempiere.ait.test.annotation.IntegrationTest;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.contracts.flatrate.Contracts_Constants;
-import de.metas.contracts.flatrate.api.IContractsDAO;
+import de.metas.contracts.flatrate.IContractsDAO;
 import de.metas.contracts.flatrate.exceptions.SubscriptionChangeException;
 import de.metas.contracts.flatrate.interfaces.I_C_OLCand;
 import de.metas.contracts.flatrate.process.C_Flatrate_Term_Change;

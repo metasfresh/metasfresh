@@ -35,7 +35,7 @@ import org.adempiere.util.Services;
 import org.compiere.model.ModelValidator;
 import org.compiere.util.Env;
 
-import de.metas.contracts.flatrate.api.IFlatrateDAO;
+import de.metas.contracts.flatrate.IFlatrateDAO;
 import de.metas.contracts.interceptor.MainValidator;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Matching;

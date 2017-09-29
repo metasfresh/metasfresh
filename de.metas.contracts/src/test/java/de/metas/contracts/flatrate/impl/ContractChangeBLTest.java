@@ -1,4 +1,4 @@
-package de.metas.contracts.flatrate.api.impl;
+package de.metas.contracts.flatrate.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 
@@ -35,7 +35,7 @@ import org.compiere.util.TimeUtil;
 import org.junit.Test;
 
 import de.metas.contracts.flatrate.ContractsTestBase;
-import de.metas.contracts.flatrate.api.IContractChangeBL;
+import de.metas.contracts.flatrate.IContractChangeBL;
 import de.metas.contracts.model.I_C_Contract_Change;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;

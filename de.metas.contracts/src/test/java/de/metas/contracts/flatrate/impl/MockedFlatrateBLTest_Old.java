@@ -1,4 +1,4 @@
-package de.metas.contracts.flatrate.api.impl;
+package de.metas.contracts.flatrate.impl;
 
 /*
  * #%L
@@ -31,7 +31,7 @@ import org.junit.Test;
 
 import de.metas.adempiere.model.I_C_Currency;
 import de.metas.adempiere.model.I_M_Product;
-import de.metas.contracts.flatrate.api.impl.FlatrateBL;
+import de.metas.contracts.flatrate.impl.FlatrateBL;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_DataEntry;
 import de.metas.contracts.model.I_C_Flatrate_Term;

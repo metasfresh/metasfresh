@@ -10,7 +10,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.junit.Before;
 import org.junit.Test;
 
-import de.metas.contracts.flatrate.api.IFlatrateBL;
+import de.metas.contracts.flatrate.IFlatrateBL;
 import de.metas.contracts.inoutcandidate.ShipmentScheduleOrderDocForSubscriptionLine;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_SubscriptionProgress;

@@ -1,4 +1,4 @@
-package de.metas.contracts.flatrate.api.impl;
+package de.metas.contracts.flatrate.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
 
@@ -36,7 +36,7 @@ import org.adempiere.util.time.SystemTime;
 import org.compiere.model.IQuery;
 import org.compiere.process.DocAction;
 
-import de.metas.contracts.flatrate.api.IContractsDAO;
+import de.metas.contracts.flatrate.IContractsDAO;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_SubscriptionProgress;

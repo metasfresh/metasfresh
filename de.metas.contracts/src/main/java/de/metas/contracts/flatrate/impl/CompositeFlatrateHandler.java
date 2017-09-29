@@ -1,4 +1,4 @@
-package de.metas.contracts.flatrate.api.impl;
+package de.metas.contracts.flatrate.impl;
 
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -6,7 +6,7 @@ import org.adempiere.util.Check;
 
 import com.google.common.base.MoreObjects;
 
-import de.metas.contracts.flatrate.api.IFlatrateHandler;
+import de.metas.contracts.flatrate.spi.IFlatrateTermEventListener;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 
 /*
@@ -31,9 +31,9 @@ import de.metas.contracts.model.I_C_Flatrate_Term;
  * #L%
  */
 
-final class CompositeFlatrateHandler implements IFlatrateHandler
+final class CompositeFlatrateHandler implements IFlatrateTermEventListener
 {
-	public static final IFlatrateHandler compose(final IFlatrateHandler handler, final IFlatrateHandler handlerToAdd)
+	public static final IFlatrateTermEventListener compose(final IFlatrateTermEventListener handler, final IFlatrateTermEventListener handlerToAdd)
 	{
 		if (handler == null)
 		{
@@ -59,7 +59,7 @@ final class CompositeFlatrateHandler implements IFlatrateHandler
 		}
 	}
 
-	private final CopyOnWriteArrayList<IFlatrateHandler> handlers = new CopyOnWriteArrayList<>();
+	private final CopyOnWriteArrayList<IFlatrateTermEventListener> handlers = new CopyOnWriteArrayList<>();
 
 	@Override
 	public String toString()
@@ -69,7 +69,7 @@ final class CompositeFlatrateHandler implements IFlatrateHandler
 				.toString();
 	}
 
-	public void addHandler(final IFlatrateHandler handler)
+	public void addHandler(final IFlatrateTermEventListener handler)
 	{
 		Check.assumeNotNull(handler, "handler not null");
 		handlers.addIfAbsent(handler);
@@ -94,8 +94,8 @@ final class CompositeFlatrateHandler implements IFlatrateHandler
 	}
 	
 	@Override
-	public void beforeFlatrateTermCreated(I_C_Flatrate_Term currentTerm,  I_C_Flatrate_Term nextTerm)
+	public void beforeExtendFlatrateTermSaved(I_C_Flatrate_Term currentTerm,  I_C_Flatrate_Term nextTerm)
 	{
-		handlers.forEach(h -> h.beforeFlatrateTermCreated(currentTerm,nextTerm));
+		handlers.forEach(h -> h.beforeExtendFlatrateTermSaved(currentTerm,nextTerm));
 	}
 }

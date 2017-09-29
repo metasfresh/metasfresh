@@ -1,4 +1,4 @@
-package de.metas.contracts.flatrate.api.impl;
+package de.metas.contracts.flatrate.impl;
 
 import java.util.List;
 
@@ -35,9 +35,9 @@ import lombok.NonNull;
  * #L%
  */
 
-public class AbonamentFlatrateHandler extends DefaultFlatrateHandler
+public class SubscriptionTermEventListener extends FallbackFlatrateTermEventListener
 {
-	public static final String TYPE_CONDITIONS = X_C_Flatrate_Term.TYPE_CONDITIONS_Subscription;
+	public static final String TYPE_CONDITIONS_SUBSCRIPTION = X_C_Flatrate_Term.TYPE_CONDITIONS_Subscription;
 
 	private static final String MSG_TERM_ERROR_DELIVERY_ALREADY_HAS_SHIPMENT_SCHED_0P = "Term_Error_Delivery_Already_Has_Shipment_Sched";
 

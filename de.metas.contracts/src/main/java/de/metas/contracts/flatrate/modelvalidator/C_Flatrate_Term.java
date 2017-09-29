@@ -52,10 +52,10 @@ import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.service.ICalendarDAO;
-import de.metas.contracts.flatrate.api.IFlatrateBL;
-import de.metas.contracts.flatrate.api.IFlatrateDAO;
-import de.metas.contracts.flatrate.api.IFlatrateHandlersService;
-import de.metas.contracts.flatrate.api.impl.FlatrateBL;
+import de.metas.contracts.flatrate.IFlatrateBL;
+import de.metas.contracts.flatrate.IFlatrateDAO;
+import de.metas.contracts.flatrate.IFlatrateTermEventService;
+import de.metas.contracts.flatrate.impl.FlatrateBL;
 import de.metas.contracts.flatrate.interfaces.I_C_DocType;
 import de.metas.contracts.flatrate.interfaces.I_C_OLCand;
 import de.metas.contracts.interceptor.MainValidator;
@@ -465,7 +465,7 @@ public class C_Flatrate_Term
 	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_REACTIVATE })
 	public void beforeReactivate(final I_C_Flatrate_Term term)
 	{
-		Services.get(IFlatrateHandlersService.class)
+		Services.get(IFlatrateTermEventService.class)
 				.getHandler(term.getType_Conditions())
 				.beforeFlatrateTermReactivate(term);
 	}

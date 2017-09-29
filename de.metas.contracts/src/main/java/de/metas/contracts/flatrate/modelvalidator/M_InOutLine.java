@@ -28,7 +28,7 @@ import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.util.Services;
 import org.compiere.model.ModelValidator;
 
-import de.metas.contracts.flatrate.api.IFlatrateBL;
+import de.metas.contracts.flatrate.IFlatrateBL;
 import de.metas.inout.model.I_M_InOutLine;
 
 @Validator(I_M_InOutLine.class)

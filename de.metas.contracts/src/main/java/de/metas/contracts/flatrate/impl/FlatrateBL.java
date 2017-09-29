@@ -1,4 +1,4 @@
-package de.metas.contracts.flatrate.api.impl;
+package de.metas.contracts.flatrate.impl;
 
 /*
  * #%L
@@ -74,9 +74,9 @@ import ch.qos.logback.classic.Level;
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.adempiere.service.ICalendarBL;
 import de.metas.adempiere.service.ICalendarDAO;
-import de.metas.contracts.flatrate.api.IFlatrateBL;
-import de.metas.contracts.flatrate.api.IFlatrateDAO;
-import de.metas.contracts.flatrate.api.IFlatrateHandlersService;
+import de.metas.contracts.flatrate.IFlatrateBL;
+import de.metas.contracts.flatrate.IFlatrateDAO;
+import de.metas.contracts.flatrate.IFlatrateTermEventService;
 import de.metas.contracts.flatrate.modelvalidator.C_Flatrate_Term;
 import de.metas.contracts.invoicecandidate.FlatrateDataEntryHandler;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
@@ -1218,14 +1218,14 @@ public class FlatrateBL implements IFlatrateBL
 			nextTerm.setDropShip_User_ID(currentTerm.getDropShip_User_ID());
 			nextTerm.setDeliveryRule(currentTerm.getDeliveryRule());
 			nextTerm.setDeliveryViaRule(currentTerm.getDeliveryViaRule());
-			nextTerm.setPriceActual(currentTerm.getPriceActual());
+			nextTerm.setPriceActual(currentTerm.getPriceActual()); // TODO fixme!!
 			nextTerm.setC_UOM_ID(currentTerm.getC_UOM_ID());
 			nextTerm.setC_Currency_ID(currentTerm.getC_Currency_ID());
 
-			final IFlatrateHandlersService flatrateHandlersService = Services.get(IFlatrateHandlersService.class);
+			final IFlatrateTermEventService flatrateHandlersService = Services.get(IFlatrateTermEventService.class);
 			flatrateHandlersService
 					.getHandler(nextConditions.getType_Conditions()) // nextterm is not saved yet, so type will be null in this moment
-					.beforeFlatrateTermCreated(currentTerm, nextTerm);
+					.beforeExtendFlatrateTermSaved(currentTerm, nextTerm);
 
 			InterfaceWrapperHelper.save(nextTerm);
 
@@ -1268,7 +1268,7 @@ public class FlatrateBL implements IFlatrateBL
 		}
 		else
 		{
-			final IFlatrateHandlersService flatrateHandlersService = Services.get(IFlatrateHandlersService.class);
+			final IFlatrateTermEventService flatrateHandlersService = Services.get(IFlatrateTermEventService.class);
 			flatrateHandlersService
 					.getHandler(currentTerm.getType_Conditions())
 					.afterFlatrateTermEnded(currentTerm);

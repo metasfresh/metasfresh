@@ -1,4 +1,4 @@
-package de.metas.contracts.flatrate.api.impl;
+package de.metas.contracts.flatrate.impl;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -7,8 +7,8 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.slf4j.Logger;
 
-import de.metas.contracts.flatrate.api.IFlatrateHandler;
-import de.metas.contracts.flatrate.api.IFlatrateHandlersService;
+import de.metas.contracts.flatrate.IFlatrateTermEventService;
+import de.metas.contracts.flatrate.spi.IFlatrateTermEventListener;
 import de.metas.logging.LogManager;
 
 /*
@@ -33,24 +33,22 @@ import de.metas.logging.LogManager;
  * #L%
  */
 
-public class FlatrateHandlersService implements IFlatrateHandlersService
+public class FlatrateTermEventService implements IFlatrateTermEventService
 {
-	private static final Logger logger = LogManager.getLogger(FlatrateHandlersService.class);
+	private static final Logger logger = LogManager.getLogger(FlatrateTermEventService.class);
 
-	private final Map<String, IFlatrateHandler> typeConditions2handlers = new ConcurrentHashMap<>();
+	private final Map<String, IFlatrateTermEventListener> typeConditions2handlers = new ConcurrentHashMap<>();
 
-	private final IFlatrateHandler defaultHandler = new DefaultFlatrateHandler();
+	private final IFlatrateTermEventListener fallbackListener = new FallbackFlatrateTermEventListener();
 
-	public FlatrateHandlersService()
+	public FlatrateTermEventService()
 	{
-		super();
-
 		// Register standard handlers
-		registerHandler(AbonamentFlatrateHandler.TYPE_CONDITIONS, new AbonamentFlatrateHandler());
+		registerEventListenerForConditionsType(new SubscriptionTermEventListener(), SubscriptionTermEventListener.TYPE_CONDITIONS_SUBSCRIPTION);
 	}
 
 	@Override
-	public synchronized void registerHandler(final String typeConditions, final IFlatrateHandler handlerNew)
+	public synchronized void registerEventListenerForConditionsType(IFlatrateTermEventListener handlerNew, String typeConditions)
 	{
 		Check.assumeNotEmpty(typeConditions, "typeConditions not empty");
 
@@ -63,21 +61,21 @@ public class FlatrateHandlersService implements IFlatrateHandlersService
 		}
 
 		//
-		final IFlatrateHandler handlerCurrent = typeConditions2handlers.get(typeConditions);
-		final IFlatrateHandler handlerComposed = CompositeFlatrateHandler.compose(handlerCurrent, handlerNew);
+		final IFlatrateTermEventListener handlerCurrent = typeConditions2handlers.get(typeConditions);
+		final IFlatrateTermEventListener handlerComposed = CompositeFlatrateHandler.compose(handlerCurrent, handlerNew);
 		typeConditions2handlers.put(typeConditions, handlerComposed);
 
 		logger.info("Registered {} for TYPE_CONDITIONS={}", handlerNew, typeConditions);
 	}
 
 	@Override
-	public IFlatrateHandler getHandler(final String typeConditions)
+	public IFlatrateTermEventListener getHandler(final String typeConditions)
 	{
-		final IFlatrateHandler handlers = typeConditions2handlers.get(typeConditions);
+		final IFlatrateTermEventListener handlers = typeConditions2handlers.get(typeConditions);
 		if (handlers == null)
 		{
-			logger.debug("No handler found for TYPE_CONDITIONS={}. Returning default: {}", typeConditions, defaultHandler);
-			return defaultHandler;
+			logger.debug("No handler found for TYPE_CONDITIONS={}. Returning default: {}", typeConditions, fallbackListener);
+			return fallbackListener;
 		}
 
 		return handlers;

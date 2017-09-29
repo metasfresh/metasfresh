@@ -1,4 +1,4 @@
-package de.metas.contracts.flatrate.api.impl;
+package de.metas.contracts.flatrate.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
@@ -55,7 +55,7 @@ import org.junit.Test;
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.adempiere.model.I_M_Product_Category;
 import de.metas.contracts.flatrate.ContractsTestBase;
-import de.metas.contracts.flatrate.api.IFlatrateBL;
+import de.metas.contracts.flatrate.IFlatrateBL;
 import de.metas.contracts.invoicecandidate.FlatrateDataEntryHandler;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Data;

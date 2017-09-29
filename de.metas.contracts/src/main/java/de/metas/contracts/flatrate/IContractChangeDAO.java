@@ -1,4 +1,4 @@
-package de.metas.contracts.flatrate.api;
+package de.metas.contracts.flatrate;
 
 /*
  * #%L

@@ -1,4 +1,4 @@
-package de.metas.contracts.flatrate.api.impl;
+package de.metas.contracts.flatrate.impl;
 
 /*
  * #%L
@@ -58,7 +58,7 @@ import org.slf4j.Logger;
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.adempiere.util.CacheTrx;
-import de.metas.contracts.flatrate.api.IFlatrateDAO;
+import de.metas.contracts.flatrate.IFlatrateDAO;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Data;
 import de.metas.contracts.model.I_C_Flatrate_DataEntry;

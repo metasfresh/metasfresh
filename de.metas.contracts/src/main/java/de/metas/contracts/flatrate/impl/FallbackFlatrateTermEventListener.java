@@ -1,4 +1,4 @@
-package de.metas.contracts.flatrate.api.impl;
+package de.metas.contracts.flatrate.impl;
 
 import java.util.List;
 import java.util.Properties;
@@ -8,8 +8,9 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.util.Env;
 
-import de.metas.contracts.flatrate.api.IFlatrateDAO;
-import de.metas.contracts.flatrate.api.IFlatrateHandler;
+import de.metas.contracts.flatrate.IFlatrateDAO;
+import de.metas.contracts.flatrate.IFlatrateTermEventService;
+import de.metas.contracts.flatrate.spi.IFlatrateTermEventListener;
 import de.metas.contracts.model.I_C_Flatrate_DataEntry;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_Invoice_Clearing_Alloc;
@@ -37,7 +38,12 @@ import de.metas.contracts.model.X_C_Flatrate_DataEntry;
  * #L%
  */
 
-public class DefaultFlatrateHandler implements IFlatrateHandler
+/**
+ * This one is invoked by {@link IFlatrateTermEventService} if no other listener was registered for a particular conditions type.
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
+public class FallbackFlatrateTermEventListener implements IFlatrateTermEventListener
 {
 	private static final String MSG_TERM_ERROR_ENTRY_ALREADY_CO_2P = "Term_Error_Entry_Already_CO";
 
@@ -112,7 +118,7 @@ public class DefaultFlatrateHandler implements IFlatrateHandler
 	 * Does nothing; Feel free to override.
 	 */
 	@Override
-	public void beforeFlatrateTermCreated(I_C_Flatrate_Term currentTerm,  I_C_Flatrate_Term nextTerm)
+	public void beforeExtendFlatrateTermSaved(I_C_Flatrate_Term currentTerm,  I_C_Flatrate_Term nextTerm)
 	{
 		// nothing
 	}

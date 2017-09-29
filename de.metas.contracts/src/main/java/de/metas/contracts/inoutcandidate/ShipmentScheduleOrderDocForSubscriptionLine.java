@@ -5,7 +5,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
 import org.adempiere.util.Services;
 import org.springframework.stereotype.Service;
 
-import de.metas.contracts.flatrate.api.IFlatrateBL;
+import de.metas.contracts.flatrate.IFlatrateBL;
 import de.metas.contracts.model.I_C_SubscriptionProgress;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.spi.ShipmentScheduleOrderDoc;

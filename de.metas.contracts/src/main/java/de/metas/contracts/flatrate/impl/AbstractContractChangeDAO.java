@@ -1,4 +1,4 @@
-package de.metas.contracts.flatrate.api.impl;
+package de.metas.contracts.flatrate.impl;
 
 /*
  * #%L
@@ -29,7 +29,7 @@ import java.util.List;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 
-import de.metas.contracts.flatrate.api.IContractChangeDAO;
+import de.metas.contracts.flatrate.IContractChangeDAO;
 import de.metas.contracts.model.I_C_Contract_Change;
 import de.metas.contracts.subscription.ISubscriptionBL;
 

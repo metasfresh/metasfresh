@@ -37,8 +37,7 @@ import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.rules.TestWatcher;
 
-import de.metas.contracts.flatrate.api.IContractsDAO;
-import de.metas.contracts.flatrate.api.impl.PlainContractChangeDAO;
+import de.metas.contracts.flatrate.impl.PlainContractChangeDAO;
 
 public class ContractsTestBase
 {

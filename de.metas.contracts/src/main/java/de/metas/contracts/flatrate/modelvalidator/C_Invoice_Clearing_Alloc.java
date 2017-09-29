@@ -31,7 +31,7 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.ModelValidator;
 
-import de.metas.contracts.flatrate.api.IFlatrateDAO;
+import de.metas.contracts.flatrate.IFlatrateDAO;
 import de.metas.contracts.model.I_C_Flatrate_DataEntry;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_Invoice_Clearing_Alloc;
