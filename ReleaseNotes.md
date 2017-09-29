@@ -82,31 +82,41 @@ Here come the actual release notes:
   * [#2509](https://github.com/metasfresh/metasfresh/issues/2509) Window Design WebUI : Translate Picking Slot Window name in en
     * Translating the Picking Tray Window and Picking to en_US.
   * [#2510](https://github.com/metasfresh/metasfresh/issues/2510) Prevent users from creating duplicate main prices
+    * New Feature that dissallows the user to create more than 1 main price.
   * [#2514](https://github.com/metasfresh/metasfresh/issues/2514) Support importing multiline fields
+    * Improvements of the data improter, now allowing the import of multiline content.
   * [#2516](https://github.com/metasfresh/metasfresh/issues/2516) Add Rüstliste Report to WebUI
     * New Picking Preview Report now available in shipping reports section of WebUI Menu.
   * [#2529](https://github.com/metasfresh/metasfresh/issues/2529) Import System users
+    * Extension of the user import, adding the possibility to mark users as system users.
   * [#2533](https://github.com/metasfresh/metasfresh/issues/2533) Adjust Contract Period Window in WebUI for Subscriptions
     * Improvements for the Contract Period Window in WebUI. Adding Translations for en_US Language/ Locale.
   * [#2538](https://github.com/metasfresh/metasfresh/issues/2538) Remove legacy LDAP code
+    * Housekeeping task, removing deprecated legace code of LDAP functionality.
   * [#2541](https://github.com/metasfresh/metasfresh/issues/2541) Allow filtering by product group in window product
+    * Adds a new default Filter to the Product Window, now possible to filter by Product Category.
 
 * metasfresh-webui-api
   * [#591](https://github.com/metasfresh/metasfresh-webui-api/issues/591) Filter by warehouse when selecting HUs to issue
-
+    * Adds a new default Filter to the Handling Unit Window, allowing users to search for Handling Units only in the selected warehouse.
   * [#603](https://github.com/metasfresh/metasfresh-webui-api/issues/603) Handle incorrect AD_Window_ID in URL
+    * Handling the case when a incorrect Window ID is added to the URL in WebUI.
   * [#607](https://github.com/metasfresh/metasfresh-webui-api/issues/607) AD_Column.IsMandatory shall be overwritten by MandatoryLogic
+    * Improved Feature that allows the overwrite isMandatory with Mandatory Logic in Application Dictionary.
 
 * metasfresh-webui-frontend
   * [#1167](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1167) Edit Fields in Main Grid View
+    * New Functionality that allows to switch into edit mode in Main Grid Views. This Feature was wanted by a lot of users to quickly maintain data changes in long lists, e.g. Product Prices.
   * [#1192](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1192) grid values are cut off if column size is too small
     * Showing tooltips in Table Grid Cells. Allowing to hover over a field and whoing the complete content in Tooltip. Very helpful for content that does not fit fully ionto a displayed Grid Field.
   * [#1194](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1194) Use API to fetch the locale
+     Now fetching the User Locale via API call.
   * [#1195](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1195) Render only provided document standard actions
     * New Functionality in WebUI frontend, now only showing entries in Action Menu that fit to the opened window.
   * [#1196](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1196) frontend: Letters feature
     * New Letter functionality in WebUI, allowing to write letters via action Menu entry.
   * [#1197](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1197) frontend: export view to excel
+    * New Functionality that allows to select Record lines and export them directly into an Excel File.
 
 ## Fixes
 * metasfresh-app
