@@ -95,17 +95,22 @@ FROM AD_Archive a
 		AND log_done.AD_Column_ID=(select c.AD_Column_ID from AD_Column c where c.AD_Table_ID=get_table_id('c_print_job_instructions') and c.ColumnName='Status')
 		AND log_done.Record_ID=ji.c_print_job_instructions_id
 		AND log_done.NewValue='D'
-/*		
+;
+
+COMMENT ON VIEW "de.metas.printing".archived_to_printed_performance_v
+IS 'This view shows creation time stamps and durations for different steps between the creation of an AD_Archive and it''s printout
+See issue Printing via standalone client takes too long https://github.com/metasfresh/metasfresh/issues/2604
+
+Usage example:
+SELECT * FROM "de.metas.printing".archived_to_printed_performance_v
 WHERE true
-	AND a.IsDirectEnqueue='Y' -- for the current issue, now we only care for those..
-	AND jl.c_print_job_line_ID IS NOT NULL -- right now we care for the performance of things that were printed
---	AND a.Created between '2017-09-29 10:29' and '2017-09-29 10:46'
---	AND a.Created between '2017-09-29 11:29' and '2017-09-29 11:46'
-	AND a.Created between '2017-09-29 10:29' and '2017-09-29 12:46'
---	AND hw.Name='\\SRVPRT01\I9-EG-Warenannahme-Vorne'
+	AND c_print_job_line_created IS NOT NULL -- right now we care for the performance of things that were printed
+--	AND ad_archive_created between ''2017-09-29 10:29'' and ''2017-09-29 10:46''
+--	AND ad_archive_created between ''2017-09-29 11:29'' and ''2017-09-29 11:46''
+	AND ad_archive_created between ''2017-09-29 10:29'' and ''2017-09-29 12:46''
+--	AND printer_name=''my-printer''
 ORDER BY 
 	--duration_archived_to_printed
 	--percent_pending_to_send
 	ad_archive_created
-*/
-;
+';
