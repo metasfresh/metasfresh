@@ -10,11 +10,15 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.30 (2017-41)
+
+**release for week 2017-41**
+
 # metasfresh 5.29 (2017-40)
 
-**upcoming release for week 2017-40**
+**release for week 2017-40**
 
-##Features
+## Features
 * metasfresh-app
   * [#2190](https://github.com/metasfresh/metasfresh/issues/2190) Window Design WebUI: Shipment Improvements
     * Layout adjustments for the Shipment Window in WebUI.
@@ -30,16 +34,37 @@ Here come the actual release notes:
     * Minor Layout Improvement for the Unit of Measure Window in WebUI.
   * [#2468](https://github.com/metasfresh/metasfresh/issues/2468) Window Design WebUI: gridview with client
     * Improvements in different Windows, adapting the Layout to our current design Guidelines. Adding Translations for de_DE and en_US Locale/ Language.
+  * [#2495](https://github.com/metasfresh/metasfresh/issues/2495) Pause subscription delivery for given timeframe
+  * [#2496](https://github.com/metasfresh/metasfresh/issues/2496) Different subscription Receiver for given timeframe
+  * [#2499](https://github.com/metasfresh/metasfresh/issues/2499) Stop Subscription shipment after 2nd dunning
   * [#2560](https://github.com/metasfresh/metasfresh/issues/2560) Menu Window improvements in WebUI
     * New -Column Layout for the Menu maintenance Window in WebUI.
+  * [#2565](https://github.com/metasfresh/metasfresh/issues/2565) Add attributes to subscription flatrate terms
+  * [#2566](https://github.com/metasfresh/metasfresh/issues/2566) Fix AD_RefList.ValueName value around subscription
+  * [#2574](https://github.com/metasfresh/metasfresh/issues/2574) Provide data about a shipment schedule's source document
   * [#2580](https://github.com/metasfresh/metasfresh/issues/2580) Add Subscription history in Contract window WebUI
     * adding included Tab for Subscription History to Contract Window in WebUI.
+  * [#2584](https://github.com/metasfresh/metasfresh/issues/2584) Remove remaining dependencies between shipment schedule and order line
+  * [#2585](https://github.com/metasfresh/metasfresh/issues/2585) Action/ Process to reopen processed Shipment Schedules
+  * [#2591](https://github.com/metasfresh/metasfresh/issues/2591) Subscription invoicing
   * [#2593](https://github.com/metasfresh/metasfresh/issues/2593) New Window for Dunning Level in WebUI
     * New window in WebUI that allows the Maintenance of different Dunning Types and Dunning Levels.
+  * [#2601](https://github.com/metasfresh/metasfresh/issues/2601) Export AD_System relevant fields to /info endpoint
+  * [#2602](https://github.com/metasfresh/metasfresh/issues/2602) Reactivate and fix subscription pricing
+
+* metasfreesh-webui-api
+  * [#605](https://github.com/metasfresh/metasfresh-webui-api/issues/605) I as an user want to store an URL as attachment to a record
+  * [#606](https://github.com/metasfresh/metasfresh-webui-api/issues/606) HU-Transform needs to filter by HU status
+  * [#613](https://github.com/metasfresh/metasfresh-webui-api/issues/613) Set unique hazlecast group name
+
+## Fixes
+* metasfresh-app
+  * [#2598](https://github.com/metasfresh/metasfresh/issues/2598) Fix the callout for CalloutProductCategory to comply with webui
+  * [#2576](https://github.com/metasfresh/metasfresh/issues/2576) Swing Client. Window for Printing Queue does not open properly anymore
 
 # metasfresh 5.28 (2017-39)
 
-**upcoming release for week 2017-39**
+**release for week 2017-39**
 
 ## Features
 * metasfresh-app
@@ -71,7 +96,7 @@ Here come the actual release notes:
     * New technological Improvements that allows to manipulate model interceptors without restarting the instance.
   * [#2483](https://github.com/metasfresh/metasfresh/issues/2483) New Dist-Orgs Businesspartner Window in WebUI
     * New Window in WebUI menu, adapting the requirements of dis-orgs to the Businesspartner window.
-  * [#2484](https://github.com/metasfresh/metasfresh/issues/2484) allow using partner product numbers and name for entering order line
+  * [#2484](https://github.com/metasfresh/metasfresh/issues/2484) Allow using partner product numbers and name for entering order line
     * New Functionality for Orderline Batch entry, now allowing to also search for customer Product Numbers in Batch entry.
   * [#2498](https://github.com/metasfresh/metasfresh/issues/2498) Window Design WebUI: Returns Improvements
     * Detail Improvements added to the Customer and Vendor Returns window in WebUI. Adapting metasfresh WebUI design Guidelines.
@@ -99,7 +124,7 @@ Here come the actual release notes:
 * metasfresh-webui-api
   * [#576](https://github.com/metasfresh/metasfresh-webui-api/issues/576) Implement batch entry for Sales/Purchase Invoice documents
     * New Feature in Sales and Purchase Invoices, now allowing to use the Batch Entry there too.
-  * [#591](https://github.com/metasfresh/metasfresh-webui-api/issues/591) Filter by warehouse when selecting HUs to issue
+  * [#591](https://github.com/metasfresh/metasfresh-webui-api/issues/591) Filter by Warehouse when selecting HUs to issue
     * Adds a new default Filter to the Handling Unit Window, allowing users to search for Handling Units only in the selected warehouse.
   * [#603](https://github.com/metasfresh/metasfresh-webui-api/issues/603) Handle incorrect AD_Window_ID in URL
     * Handling the case when a incorrect Window ID is added to the URL in WebUI.
@@ -109,15 +134,15 @@ Here come the actual release notes:
 * metasfresh-webui-frontend
   * [#1167](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1167) Edit Fields in Main Grid View
     * New Functionality that allows to switch into edit mode in Main Grid Views. This Feature was wanted by a lot of users to quickly maintain data changes in long lists, e.g. Product Prices.
-  * [#1192](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1192) grid values are cut off if column size is too small
+  * [#1192](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1192) Grid values are cut off if column size is too small
     * Showing tooltips in Table Grid Cells. Allowing to hover over a field and whoing the complete content in Tooltip. Very helpful for content that does not fit fully ionto a displayed Grid Field.
   * [#1194](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1194) Use API to fetch the locale
      Now fetching the User Locale via API call.
   * [#1195](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1195) Render only provided document standard actions
     * New Functionality in WebUI frontend, now only showing entries in Action Menu that fit to the opened window.
-  * [#1196](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1196) frontend: Letters feature
+  * [#1196](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1196) Frontend: Letters feature
     * New Letter functionality in WebUI, allowing to write letters via action Menu entry.
-  * [#1197](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1197) frontend: export view to excel
+  * [#1197](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1197) Frontend: Export view to excel
     * New Functionality that allows to select Record lines and export them directly into an Excel File.
 
 ## Fixes
@@ -138,7 +163,8 @@ Here come the actual release notes:
     * Fix for the Action Issue and Handling Unit editor in Manufacturing workflow.
 
 * metasfresh-webui-api
-  * [#536](https://github.com/metasfresh/metasfresh-webui-api/issues/536) fields org and client are not filtered by users permissions
+  * [#536](https://github.com/metasfresh/metasfresh-webui-api/issues/536) Fields Org and Client are not filtered by users permissions
+    * Fix for the permissions for Filter of organisation and Client in WebUI.
 
 # metasfresh 5.27 (2017-38)
 
