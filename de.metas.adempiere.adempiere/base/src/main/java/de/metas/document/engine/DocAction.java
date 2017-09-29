@@ -5,7 +5,6 @@ import java.math.BigDecimal;
 import java.util.Properties;
 
 import org.adempiere.util.Services;
-import org.compiere.model.I_AD_Client;
 import org.slf4j.Logger;
 
 /**
@@ -135,8 +134,6 @@ public interface DocAction
 	BigDecimal getApprovalAmt();
 
 	int getAD_Client_ID();
-
-	I_AD_Client getAD_Client();
 
 	int getAD_Org_ID();
 

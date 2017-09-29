@@ -6,7 +6,6 @@ import java.util.Properties;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
-import org.compiere.model.I_AD_Client;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.slf4j.Logger;
@@ -239,12 +238,6 @@ public class DocActionWrapper implements DocAction
 	public int getAD_Client_ID()
 	{
 		return docActionModel.getAD_Client_ID();
-	}
-
-	@Override
-	public I_AD_Client getAD_Client()
-	{
-		return docActionModel.getAD_Client();
 	}
 
 	@Override
