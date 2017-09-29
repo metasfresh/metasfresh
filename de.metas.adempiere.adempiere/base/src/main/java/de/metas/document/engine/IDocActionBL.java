@@ -39,7 +39,6 @@ import org.compiere.model.I_C_DocType;
  */
 public interface IDocActionBL extends ISingletonService
 {
-
 	/**
 	 *
 	 * @param document
@@ -58,6 +57,12 @@ public interface IDocActionBL extends ISingletonService
 	 * @return
 	 */
 	boolean processIt(DocAction document, String processAction);
+
+	default boolean processIt(final Object documentObj)
+	{
+		final DocAction document = getDocAction(documentObj);
+		return processIt(document, document.getDocAction());
+	}
 
 	/**
 	 * Process document. If there is any error it throws exception. If success the document is saved.
