@@ -1,4 +1,4 @@
-package de.metas.contracts.flatrate.model;
+package de.metas.contracts.model;
 
 /*
  * #%L
@@ -28,34 +28,33 @@ import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
 
-import org.adempiere.util.Check;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.process.DocAction;
 import org.compiere.process.DocumentEngine;
 import org.compiere.util.Env;
 
-import de.metas.contracts.model.X_C_Flatrate_Term;
+import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.i18n.Msg;
 
-public class MCFlatrateTerm extends X_C_Flatrate_Term implements DocAction
+public class MCFlatrateConditions extends X_C_Flatrate_Conditions implements DocAction
 {
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 5991467188908320233L;
+	private static final long serialVersionUID = -6423880921308525801L;
 
 	/** Process Message */
 	private String m_processMsg = null;
 	/** Just Prepared Flag */
 	private boolean m_justPrepared = false;
 
-	public MCFlatrateTerm(Properties ctx, int C_Flatrate_DataEntry_ID, String trxName)
+	public MCFlatrateConditions(Properties ctx, int C_Flatrate_Conditions_ID, String trxName)
 	{
-		super(ctx, C_Flatrate_DataEntry_ID, trxName);
+		super(ctx, C_Flatrate_Conditions_ID, trxName);
 	}
 
-	public MCFlatrateTerm(Properties ctx, ResultSet rs, String trxName)
+	public MCFlatrateConditions(Properties ctx, ResultSet rs, String trxName)
 	{
 		super(ctx, rs, trxName);
 	}
@@ -79,6 +78,7 @@ public class MCFlatrateTerm extends X_C_Flatrate_Term implements DocAction
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_CLOSE);
 		if (m_processMsg != null)
 			return false;
+
 		// After Close
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_CLOSE);
 		if (m_processMsg != null)
@@ -103,13 +103,6 @@ public class MCFlatrateTerm extends X_C_Flatrate_Term implements DocAction
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_COMPLETE);
 		if (m_processMsg != null)
 			return DocAction.STATUS_Invalid;
-
-		// Note:
-		// setting and saving the doc status here, because the model validator will search for invoice existing invoice
-		// candidates what might be related to this term. To check this for a given candidate, this term's docstatus must be 'CO'.
-		setDocStatus(DOCSTATUS_Completed);
-		Check.assume(get_TrxName() != null, this + " has trxName!=null");
-		saveEx();
 
 		final String valid = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_COMPLETE);
 		if (valid != null)
@@ -144,7 +137,7 @@ public class MCFlatrateTerm extends X_C_Flatrate_Term implements DocAction
 	@Override
 	public String getDocumentInfo()
 	{
-		return Msg.getElement(getCtx(), COLUMNNAME_C_Flatrate_Term_ID) + " " + getDocumentNo();
+		return Msg.getElement(getCtx(), COLUMNNAME_C_Flatrate_Conditions_ID) + " " + getDocumentNo();
 	} // getDocumentInfo
 
 	@Override
@@ -193,6 +186,7 @@ public class MCFlatrateTerm extends X_C_Flatrate_Term implements DocAction
 		m_justPrepared = true;
 		if (!DOCACTION_Complete.equals(getDocAction()))
 			setDocAction(DOCACTION_Complete);
+
 		return DocAction.STATUS_InProgress;
 	} // prepareIt
 
@@ -288,6 +282,12 @@ public class MCFlatrateTerm extends X_C_Flatrate_Term implements DocAction
 	public boolean voidIt()
 	{
 		return false;
+	}
+
+	@Override
+	public int getC_Currency_ID()
+	{
+		return 0;
 	}
 
 }
