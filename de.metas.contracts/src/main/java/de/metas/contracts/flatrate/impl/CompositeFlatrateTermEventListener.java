@@ -31,7 +31,7 @@ import de.metas.contracts.model.I_C_Flatrate_Term;
  * #L%
  */
 
-final class CompositeFlatrateHandler implements IFlatrateTermEventListener
+final class CompositeFlatrateTermEventListener implements IFlatrateTermEventListener
 {
 	public static final IFlatrateTermEventListener compose(final IFlatrateTermEventListener handler, final IFlatrateTermEventListener handlerToAdd)
 	{
@@ -44,15 +44,15 @@ final class CompositeFlatrateHandler implements IFlatrateTermEventListener
 			return handler;
 		}
 
-		if (handler instanceof CompositeFlatrateHandler)
+		if (handler instanceof CompositeFlatrateTermEventListener)
 		{
-			final CompositeFlatrateHandler handlerComposite = (CompositeFlatrateHandler)handler;
+			final CompositeFlatrateTermEventListener handlerComposite = (CompositeFlatrateTermEventListener)handler;
 			handlerComposite.addHandler(handlerToAdd);
 			return handlerComposite;
 		}
 		else
 		{
-			final CompositeFlatrateHandler handlerComposite = new CompositeFlatrateHandler();
+			final CompositeFlatrateTermEventListener handlerComposite = new CompositeFlatrateTermEventListener();
 			handlerComposite.addHandler(handler);
 			handlerComposite.addHandler(handlerToAdd);
 			return handlerComposite;
@@ -82,9 +82,9 @@ final class CompositeFlatrateHandler implements IFlatrateTermEventListener
 	}
 
 	@Override
-	public void afterExtendFlatrateTermCreated(I_C_Flatrate_Term oldTerm, I_C_Flatrate_Term newTerm)
+	public void afterSaveOfNextTermForPredecessor(I_C_Flatrate_Term next, I_C_Flatrate_Term predecessor)
 	{
-		handlers.forEach(h -> h.afterExtendFlatrateTermCreated(oldTerm, newTerm));
+		handlers.forEach(h -> h.afterSaveOfNextTermForPredecessor(next, predecessor));
 	}
 	
 	@Override
@@ -94,8 +94,8 @@ final class CompositeFlatrateHandler implements IFlatrateTermEventListener
 	}
 	
 	@Override
-	public void beforeExtendFlatrateTermSaved(I_C_Flatrate_Term currentTerm,  I_C_Flatrate_Term nextTerm)
+	public void beforeSaveOfNextTermForPredecessor(I_C_Flatrate_Term next,  I_C_Flatrate_Term predecessor)
 	{
-		handlers.forEach(h -> h.beforeExtendFlatrateTermSaved(currentTerm,nextTerm));
+		handlers.forEach(h -> h.beforeSaveOfNextTermForPredecessor(next,predecessor));
 	}
 }

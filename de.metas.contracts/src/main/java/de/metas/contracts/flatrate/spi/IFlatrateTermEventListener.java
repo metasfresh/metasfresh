@@ -43,13 +43,12 @@ public interface IFlatrateTermEventListener
 	/**
 	 * Invoked by {@link IFlatrateBL#extendContract(I_C_Flatrate_Term, boolean, boolean, de.metas.contracts.subscription.model.I_C_OrderLine)} after the given <code>newTerm</code> was saved.
 	 * At this point, the term was not completed, nor was any user notified.
+	 * @param next the successor of <code>oldTerm</code>
+	 * @param predecessor the term that is extended
 	 *
-	 * @param oldTerm the term that is extended
-	 * @param newTerm the successor of <code>oldTerm</code>
-	 * 
 	 * @task https://github.com/metasfresh/metasfresh/issues/549
 	 */
-	void afterExtendFlatrateTermCreated(final I_C_Flatrate_Term oldTerm, final I_C_Flatrate_Term newTerm);
+	void afterSaveOfNextTermForPredecessor(final I_C_Flatrate_Term next, final I_C_Flatrate_Term predecessor);
 	
 	
 	/**
@@ -62,8 +61,7 @@ public interface IFlatrateTermEventListener
 	
 	/**
 	 * Invoked by {@link IFlatrateBL#de.metas.flatrate.api.impl.FlatrateBL.extendContract0(I_C_Flatrate_Term, boolean, boolean, I_C_OrderLine, String)} after the given <code>nextTerm</code> was created, but not yet saved
-	 * 
 	 * @param term
 	 */
-	void beforeExtendFlatrateTermSaved(final I_C_Flatrate_Term currentTerm, final I_C_Flatrate_Term nextTerm);
+	void beforeSaveOfNextTermForPredecessor(final I_C_Flatrate_Term next, final I_C_Flatrate_Term predecessor);
 }

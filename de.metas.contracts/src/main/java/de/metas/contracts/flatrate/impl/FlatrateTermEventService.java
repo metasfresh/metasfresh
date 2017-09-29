@@ -8,6 +8,7 @@ import org.adempiere.util.Check;
 import org.slf4j.Logger;
 
 import de.metas.contracts.flatrate.IFlatrateTermEventService;
+import de.metas.contracts.flatrate.spi.FallbackFlatrateTermEventListener;
 import de.metas.contracts.flatrate.spi.IFlatrateTermEventListener;
 import de.metas.logging.LogManager;
 
@@ -54,7 +55,7 @@ public class FlatrateTermEventService implements IFlatrateTermEventService
 
 		// Validate handler
 		Check.assumeNotNull(handlerNew, "handler not null");
-		if (handlerNew instanceof CompositeFlatrateHandler)
+		if (handlerNew instanceof CompositeFlatrateTermEventListener)
 		{
 			// enforce immutability of given handler: we are not accepting composite because it might be that on next registerHandler calls will will add a handler inside it.
 			throw new AdempiereException("Composite shall not be used: " + handlerNew);
@@ -62,7 +63,7 @@ public class FlatrateTermEventService implements IFlatrateTermEventService
 
 		//
 		final IFlatrateTermEventListener handlerCurrent = typeConditions2handlers.get(typeConditions);
-		final IFlatrateTermEventListener handlerComposed = CompositeFlatrateHandler.compose(handlerCurrent, handlerNew);
+		final IFlatrateTermEventListener handlerComposed = CompositeFlatrateTermEventListener.compose(handlerCurrent, handlerNew);
 		typeConditions2handlers.put(typeConditions, handlerComposed);
 
 		logger.info("Registered {} for TYPE_CONDITIONS={}", handlerNew, typeConditions);

@@ -1,7 +1,9 @@
-package de.metas.contracts.flatrate.impl;
+package de.metas.contracts.flatrate.spi;
 
 import java.util.List;
 import java.util.Properties;
+
+import javax.annotation.OverridingMethodsMustInvokeSuper;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -10,7 +12,6 @@ import org.compiere.util.Env;
 
 import de.metas.contracts.flatrate.IFlatrateDAO;
 import de.metas.contracts.flatrate.IFlatrateTermEventService;
-import de.metas.contracts.flatrate.spi.IFlatrateTermEventListener;
 import de.metas.contracts.model.I_C_Flatrate_DataEntry;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_Invoice_Clearing_Alloc;
@@ -48,6 +49,7 @@ public class FallbackFlatrateTermEventListener implements IFlatrateTermEventList
 	private static final String MSG_TERM_ERROR_ENTRY_ALREADY_CO_2P = "Term_Error_Entry_Already_CO";
 
 	@Override
+	@OverridingMethodsMustInvokeSuper
 	public void beforeFlatrateTermReactivate(final I_C_Flatrate_Term term)
 	{
 		deleteFlatrateTermDataEntriesOnReactivate(term);
@@ -100,7 +102,7 @@ public class FallbackFlatrateTermEventListener implements IFlatrateTermEventList
 	 * Does nothing; Feel free to override.
 	 */
 	@Override
-	public void afterExtendFlatrateTermCreated(I_C_Flatrate_Term oldTerm, I_C_Flatrate_Term newTerm)
+	public void afterSaveOfNextTermForPredecessor(I_C_Flatrate_Term next, I_C_Flatrate_Term predecessor)
 	{
 		// nothing
 	}
@@ -118,7 +120,7 @@ public class FallbackFlatrateTermEventListener implements IFlatrateTermEventList
 	 * Does nothing; Feel free to override.
 	 */
 	@Override
-	public void beforeExtendFlatrateTermSaved(I_C_Flatrate_Term currentTerm,  I_C_Flatrate_Term nextTerm)
+	public void beforeSaveOfNextTermForPredecessor(I_C_Flatrate_Term next,  I_C_Flatrate_Term predecessor)
 	{
 		// nothing
 	}
