@@ -97,6 +97,8 @@ Here come the actual release notes:
     * Adds a new default Filter to the Product Window, now possible to filter by Product Category.
 
 * metasfresh-webui-api
+  * [#576](https://github.com/metasfresh/metasfresh-webui-api/issues/576) Implement batch entry for Sales/Purchase Invoice documents
+    * New Feature in Sales and Purchase Invoices, now allowing to use the Batch Entry there too.
   * [#591](https://github.com/metasfresh/metasfresh-webui-api/issues/591) Filter by warehouse when selecting HUs to issue
     * Adds a new default Filter to the Handling Unit Window, allowing users to search for Handling Units only in the selected warehouse.
   * [#603](https://github.com/metasfresh/metasfresh-webui-api/issues/603) Handle incorrect AD_Window_ID in URL
@@ -122,20 +124,25 @@ Here come the actual release notes:
 * metasfresh-app
   * [#2503](https://github.com/metasfresh/metasfresh/issues/2503) Typo in German Translation of Contract Terms menu Entry
     * Fixing the Translation of Contract Window for Language/ Locale de_DE in WebUI Menu.
+
 * metasfresh-webui-api
   * [#505](https://github.com/metasfresh/metasfresh-webui-api/issues/505) Record_ID not found for IsSOTrx = "N"
+    * Fix for the Zoom-To Functionality. Now possible to Zoom to windows depending on the isSOTrx context.
   * [#593](https://github.com/metasfresh/metasfresh-webui-api/issues/593) Remove Clone action if not supported
+    * Now only showing the Close Action when supported on the selected Record/ Record Type.
   * [#608](https://github.com/metasfresh/metasfresh-webui-api/issues/608) CU Quantity in Excel Export from HU Editor is wrong
-  * [#576](https://github.com/metasfresh/metasfresh-webui-api/issues/576) Implement batch entry for Sales/Purchase Invoice documents
+    * Fix for the new Excel Export when used in Handling Unit Editor. Now exporting the correct Customer Unit Quantity.
   * [#588](https://github.com/metasfresh/metasfresh-webui-api/issues/588) Cloning Feature: Error when cloning BOM
+    * Fix of the Record Close action, now allowing to clone BOMs too.
   * [#590](https://github.com/metasfresh/metasfresh-webui-api/issues/590) Issues HUs are still selectable in HU editor while production is not completed
+    * Fix for the Action Issue and Handling Unit editor in Manufacturing workflow.
 
 * metasfresh-webui-api
   * [#536](https://github.com/metasfresh/metasfresh-webui-api/issues/536) fields org and client are not filtered by users permissions
 
 # metasfresh 5.27 (2017-38)
 
-**upcoming release for week 2017-38**
+**release for week 2017-38**
 
 ## Features
 * metasfresh-app
