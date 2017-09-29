@@ -1,4 +1,4 @@
-package de.metas.contracts.flatrate.impl;
+package de.metas.contracts.impl;
 
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -6,8 +6,8 @@ import org.adempiere.util.Check;
 
 import com.google.common.base.MoreObjects;
 
-import de.metas.contracts.flatrate.spi.IFlatrateTermEventListener;
 import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.contracts.spi.IFlatrateTermEventListener;
 
 /*
  * #%L

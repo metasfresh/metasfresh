@@ -26,6 +26,8 @@ import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.model.ModelColumn;
 
+import lombok.NonNull;
+
 public interface IQueryOrderByBuilder<T>
 {
 	/** @return created {@link IQueryOrderBy} instance */
@@ -53,7 +55,10 @@ public interface IQueryOrderByBuilder<T>
 	 * @deprecated please use {@link #addColumnAscending(String)} or {@link #addColumnDescending(String)}.
 	 */
 	@Deprecated
-	IQueryOrderByBuilder<T> addColumn(String columnName, boolean asc);
+	default IQueryOrderByBuilder<T> addColumn(@NonNull final String columnName, final boolean asc)
+	{
+		return  asc ? addColumnAscending(columnName) : addColumnDescending(columnName);
+	}
 
 	IQueryOrderByBuilder<T> addColumnAscending(String columnName);
 

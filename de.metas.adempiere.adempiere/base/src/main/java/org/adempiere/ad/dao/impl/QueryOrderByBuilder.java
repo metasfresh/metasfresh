@@ -75,12 +75,6 @@ final class QueryOrderByBuilder<T> implements IQueryOrderByBuilder<T>
 	}
 
 	@Override
-	public IQueryOrderByBuilder<T> addColumn(final String columnName, boolean asc)
-	{
-		return  asc ? addColumnAscending(columnName) : addColumnDescending(columnName);
-	}
-
-	@Override
 	public IQueryOrderByBuilder<T> addColumnAscending(@NonNull final String columnName)
 	{
 		final Direction direction = Direction.Ascending;

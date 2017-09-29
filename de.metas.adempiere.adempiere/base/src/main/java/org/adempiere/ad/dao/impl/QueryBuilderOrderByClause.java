@@ -91,20 +91,6 @@ class QueryBuilderOrderByClause<ModelType> implements IQueryBuilderOrderByClause
 	}
 
 	@Override
-	public IQueryBuilderOrderByClause<ModelType> addColumn(String columnName, boolean asc)
-	{
-		if (asc)
-		{
-			orderByBuilder.addColumnAscending(columnName);
-		}
-		else
-		{
-			orderByBuilder.addColumnDescending(columnName);
-		}
-		return this;
-	}
-
-	@Override
 	public IQueryBuilderOrderByClause<ModelType> addColumnAscending(String columnName)
 	{
 		orderByBuilder.addColumnAscending(columnName);
