@@ -1,4 +1,4 @@
-package de.metas.contracts.flatrate.impl;
+package de.metas.contracts.impl;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -7,9 +7,9 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.slf4j.Logger;
 
-import de.metas.contracts.flatrate.IFlatrateTermEventService;
-import de.metas.contracts.flatrate.spi.FallbackFlatrateTermEventListener;
-import de.metas.contracts.flatrate.spi.IFlatrateTermEventListener;
+import de.metas.contracts.IFlatrateTermEventService;
+import de.metas.contracts.spi.FallbackFlatrateTermEventListener;
+import de.metas.contracts.spi.IFlatrateTermEventListener;
 import de.metas.logging.LogManager;
 
 /*

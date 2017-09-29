@@ -1,9 +1,9 @@
-package de.metas.contracts.flatrate;
+package de.metas.contracts;
 
 import org.adempiere.util.ISingletonService;
 
-import de.metas.contracts.flatrate.spi.IFlatrateTermEventListener;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
+import de.metas.contracts.spi.IFlatrateTermEventListener;
 
 /*
  * #%L

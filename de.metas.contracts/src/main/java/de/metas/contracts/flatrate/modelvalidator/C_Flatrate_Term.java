@@ -52,9 +52,9 @@ import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.service.ICalendarDAO;
+import de.metas.contracts.IFlatrateTermEventService;
 import de.metas.contracts.flatrate.IFlatrateBL;
 import de.metas.contracts.flatrate.IFlatrateDAO;
-import de.metas.contracts.flatrate.IFlatrateTermEventService;
 import de.metas.contracts.flatrate.impl.FlatrateBL;
 import de.metas.contracts.flatrate.interfaces.I_C_DocType;
 import de.metas.contracts.flatrate.interfaces.I_C_OLCand;

@@ -9,8 +9,8 @@ import org.adempiere.util.Services;
 import org.compiere.util.TimeUtil;
 
 import de.metas.contracts.flatrate.IFlatrateDAO;
-import de.metas.contracts.flatrate.spi.FallbackFlatrateTermEventListener;
 import de.metas.contracts.model.I_C_Flatrate_DataEntry;
+import de.metas.contracts.spi.FallbackFlatrateTermEventListener;
 import de.metas.procurement.base.PMMContractBuilder;
 import de.metas.procurement.base.model.I_C_Flatrate_Conditions;
 import de.metas.procurement.base.model.I_C_Flatrate_Term;

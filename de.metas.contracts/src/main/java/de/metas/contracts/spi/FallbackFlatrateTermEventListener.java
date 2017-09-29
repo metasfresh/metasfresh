@@ -1,4 +1,4 @@
-package de.metas.contracts.flatrate.spi;
+package de.metas.contracts.spi;
 
 import java.util.List;
 import java.util.Properties;
@@ -10,8 +10,8 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.util.Env;
 
+import de.metas.contracts.IFlatrateTermEventService;
 import de.metas.contracts.flatrate.IFlatrateDAO;
-import de.metas.contracts.flatrate.IFlatrateTermEventService;
 import de.metas.contracts.model.I_C_Flatrate_DataEntry;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_Invoice_Clearing_Alloc;

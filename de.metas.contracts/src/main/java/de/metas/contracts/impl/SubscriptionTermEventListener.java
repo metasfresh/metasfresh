@@ -1,4 +1,4 @@
-package de.metas.contracts.flatrate.impl;
+package de.metas.contracts.impl;
 
 import java.util.List;
 
@@ -8,10 +8,10 @@ import org.adempiere.pricing.api.IPricingResult;
 import org.adempiere.util.Services;
 
 import de.metas.contracts.flatrate.FlatrateTermPricing;
-import de.metas.contracts.flatrate.spi.FallbackFlatrateTermEventListener;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_SubscriptionProgress;
 import de.metas.contracts.model.X_C_Flatrate_Term;
+import de.metas.contracts.spi.FallbackFlatrateTermEventListener;
 import de.metas.contracts.subscription.ISubscriptionDAO;
 import de.metas.contracts.subscription.ISubscriptionDAO.SubscriptionProgressQuery;
 import lombok.NonNull;
