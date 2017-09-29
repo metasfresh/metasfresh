@@ -132,7 +132,7 @@ public class LetterRestController
 		final DocumentPath contextDocumentPath = JSONDocumentPath.toDocumentPathOrNull(request.getDocumentPath());
 		final I_C_Letter persistentLetter = fromLetterBuilder()
 				.content("")
-				.Subject("")
+				.subject("")
 				.build();
 		final WebuiLetter letter = lettersRepo.createNewLetter(userSession.getAD_User_ID(), contextDocumentPath, persistentLetter.getC_Letter_ID());
 
@@ -150,10 +150,10 @@ public class LetterRestController
 	}
 
 	@Builder(builderMethodName = "fromLetterBuilder")
-	private I_C_Letter createPersistentLetter(final String Subject, final String content)
+	private I_C_Letter createPersistentLetter(final String subject, final String content)
 	{
 		final I_C_Letter persistentLetter = InterfaceWrapperHelper.newInstance(I_C_Letter.class);
-		persistentLetter.setLetterSubject(Subject);
+		persistentLetter.setLetterSubject(subject);
 		persistentLetter.setLetterBody(content);
 		persistentLetter.setLetterBodyParsed(content);
 		InterfaceWrapperHelper.save(persistentLetter);
@@ -163,11 +163,19 @@ public class LetterRestController
 	private I_C_Letter updatePersistentLetter(final WebuiLetter letter)
 	{
 		Check.assume(letter.getPersistentLetterId() > 0, "Letter ID should be > 0");
-		final I_C_Letter persistentLetter = InterfaceWrapperHelper.create(Env.getCtx(), letter.getPersistentLetterId(), I_C_Letter.class, ITrx.TRXNAME_None);
+		final Properties ctx = Env.getCtx();
+		final int C_BPartner_ID = Env.getContextAsInt(ctx, I_C_Letter.COLUMNNAME_C_BPartner_ID);
+		final int C_BPartner_Location_ID = Env.getContextAsInt(ctx, I_C_Letter.COLUMNNAME_C_BPartner_Location_ID);
+		final String bpartnerAddress = Env.getContext(ctx, I_C_Letter.COLUMNNAME_BPartnerAddress);
+		
+		final I_C_Letter persistentLetter = InterfaceWrapperHelper.create(ctx, letter.getPersistentLetterId(), I_C_Letter.class, ITrx.TRXNAME_ThreadInherited);
 		persistentLetter.setLetterSubject(letter.getSubject());
 		// field is mandatory
 		persistentLetter.setLetterBody(Joiner.on(" ").skipNulls().join(Arrays.asList(letter.getContent())));
 		persistentLetter.setLetterBodyParsed(letter.getContent());
+		persistentLetter.setC_BPartner_ID(C_BPartner_ID);
+		persistentLetter.setC_BPartner_Location_ID(C_BPartner_Location_ID);
+		persistentLetter.setBPartnerAddress(bpartnerAddress);
 		InterfaceWrapperHelper.save(persistentLetter);
 		return persistentLetter;
 	}
