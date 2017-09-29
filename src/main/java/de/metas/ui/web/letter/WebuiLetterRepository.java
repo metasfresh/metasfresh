@@ -46,7 +46,7 @@ public class WebuiLetterRepository
 			.expireAfterAccess(2, TimeUnit.HOURS)
 			.build();
 
-	public WebuiLetter createNewLetter(final int ownerUserId, final DocumentPath contextDocumentPath)
+	public WebuiLetter createNewLetter(final int ownerUserId, final DocumentPath contextDocumentPath, final int persistentLetterId)
 	{
 		Preconditions.checkArgument(ownerUserId >= 0, "ownerUserId >= 0");
 
@@ -55,6 +55,7 @@ public class WebuiLetterRepository
 				.ownerUserId(ownerUserId)
 				.contextDocumentPath(contextDocumentPath)
 				.content(null)
+				.persistentLetterId(persistentLetterId)
 				.build();
 
 		lettersById.put(letter.getLetterId(), new WebuiLetterEntry(letter));

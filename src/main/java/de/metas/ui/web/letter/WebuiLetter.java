@@ -41,7 +41,10 @@ public class WebuiLetter
 	/** File PDF file; set when the letter is marked as processed too */
 	private final File temporaryPDFFile;
 
+	private final int persistentLetterId;
+	
 	private final String content;
+	private final String subject;
 	@NonNull
 	private final DocumentPath contextDocumentPath;
 }
