@@ -46,6 +46,7 @@ Here come the actual release notes:
   * [#2090](https://github.com/metasfresh/metasfresh/issues/2090) Improve text Variable Window in WebUI
     * Improving the Textvariable and Textsnippets window in WebUI, adapting out current webui design guidelines and adding Translations for de_DE, en_US.
   * [#2146](https://github.com/metasfresh/metasfresh/issues/2146) Implement Generic Multi Tags / labels for records
+    * New Lookup Functionality allowing to define Subtab Data as Label Container in a Main View Section.
   * [#2222](https://github.com/metasfresh/metasfresh/issues/2222) Window Design WebUI : Sales Order Improvements
     * Adapting the Sales Order Window to current design guidelines. Adding primary Layout for Included Tabs and rearranging the Grid View Sequence.
   * [#2284](https://github.com/metasfresh/metasfresh/issues/2284) Window Design WebUI : Attributes Improvements
@@ -55,22 +56,29 @@ Here come the actual release notes:
   * [#2288](https://github.com/metasfresh/metasfresh/issues/2288) Window Design WebUI : Product Category Improvements
     * Layout adaption to the Discount Schema Window in WebUI. Primary Key added. Improvements in Subtab Layout and Grid View.
   * [#2344](https://github.com/metasfresh/metasfresh/issues/2344) Support version 02 CAMT54 file
+    * Upgrades the CAMT54 Sepa Import to the new Version 02.
   * [#2376](https://github.com/metasfresh/metasfresh/issues/2376) Detail Improvements to Order Candidates Window
     * Improvement of Order Candidates Window, allowing the user to manipulate the data directly in Main View.
   * [#2395](https://github.com/metasfresh/metasfresh/issues/2395) Drop C_Flatrate_Conditions.IsNewTermCreatesOrder together with java code
+    * Housekeeping in Subscripts. Eliminating deprecated functionalities in Code and Application Dictionary.
   * [#2440](https://github.com/metasfresh/metasfresh/issues/2440) Material Tracking adjustments in WebUI
     * Adjustments to the Material Tracking Window. Adding further Filter possibilities.
   * [#2477](https://github.com/metasfresh/metasfresh/issues/2477) Subscription Import Window Adjustments
+    * Adds further Improvements to the new Subscription Import Window.
   * [#2478](https://github.com/metasfresh/metasfresh/issues/2478) Check Filter Sequence for Default Fields Organisation and Warehouse
     * Globally moving the Filter for Organisation to the end of each filter list.
   * [#2482](https://github.com/metasfresh/metasfresh/issues/2482) Allow disabling of model interceptors on the fly
+    * New technological Improvements that allows to manipulate model interceptors without restarting the instance.
   * [#2483](https://github.com/metasfresh/metasfresh/issues/2483) New Dist-Orgs Businesspartner Window in WebUI
     * New Window in WebUI menu, adapting the requirements of dis-orgs to the Businesspartner window.
   * [#2484](https://github.com/metasfresh/metasfresh/issues/2484) allow using partner product numbers and name for entering order line
+    * New Functionality for Orderline Batch entry, now allowing to also search for customer Product Numbers in Batch entry.
   * [#2498](https://github.com/metasfresh/metasfresh/issues/2498) Window Design WebUI: Returns Improvements
     * Detail Improvements added to the Customer and Vendor Returns window in WebUI. Adapting metasfresh WebUI design Guidelines.
   * [#2501](https://github.com/metasfresh/metasfresh/issues/2501) Import Requests
+    * New Functionality the allows the import of Requests.
   * [#2502](https://github.com/metasfresh/metasfresh/issues/2502) Allow multiple shipment schedules per orderline
+    * Improvement to the Shipment Schedule Generation and Handling. Now allowing to have more than 1 shipment schedule line for an orderline. This allows a much more flexible handling of Shipping Candidates in Subscriptions.
   * [#2509](https://github.com/metasfresh/metasfresh/issues/2509) Window Design WebUI : Translate Picking Slot Window name in en
     * Translating the Picking Tray Window and Picking to en_US.
   * [#2510](https://github.com/metasfresh/metasfresh/issues/2510) Prevent users from creating duplicate main prices
