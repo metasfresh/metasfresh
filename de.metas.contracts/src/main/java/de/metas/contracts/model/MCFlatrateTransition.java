@@ -1,4 +1,4 @@
-package de.metas.contracts.flatrate.model;
+package de.metas.contracts.model;
 
 /*
  * #%L
@@ -34,27 +34,28 @@ import org.compiere.process.DocAction;
 import org.compiere.process.DocumentEngine;
 import org.compiere.util.Env;
 
-import de.metas.contracts.model.X_C_Flatrate_Conditions;
+import de.metas.contracts.model.X_C_Flatrate_Transition;
 import de.metas.i18n.Msg;
 
-public class MCFlatrateConditions extends X_C_Flatrate_Conditions implements DocAction
+public class MCFlatrateTransition extends X_C_Flatrate_Transition implements DocAction
 {
+
+
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -6423880921308525801L;
-
+	private static final long serialVersionUID = 5338632310970646067L;
 	/** Process Message */
 	private String m_processMsg = null;
 	/** Just Prepared Flag */
 	private boolean m_justPrepared = false;
 
-	public MCFlatrateConditions(Properties ctx, int C_Flatrate_Conditions_ID, String trxName)
+	public MCFlatrateTransition(Properties ctx, int C_Flatrate_DataEntry_ID, String trxName)
 	{
-		super(ctx, C_Flatrate_Conditions_ID, trxName);
+		super(ctx, C_Flatrate_DataEntry_ID, trxName);
 	}
 
-	public MCFlatrateConditions(Properties ctx, ResultSet rs, String trxName)
+	public MCFlatrateTransition(Properties ctx, ResultSet rs, String trxName)
 	{
 		super(ctx, rs, trxName);
 	}
@@ -78,7 +79,6 @@ public class MCFlatrateConditions extends X_C_Flatrate_Conditions implements Doc
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_CLOSE);
 		if (m_processMsg != null)
 			return false;
-
 		// After Close
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_CLOSE);
 		if (m_processMsg != null)
@@ -103,6 +103,7 @@ public class MCFlatrateConditions extends X_C_Flatrate_Conditions implements Doc
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_COMPLETE);
 		if (m_processMsg != null)
 			return DocAction.STATUS_Invalid;
+
 
 		final String valid = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_COMPLETE);
 		if (valid != null)
@@ -129,6 +130,12 @@ public class MCFlatrateConditions extends X_C_Flatrate_Conditions implements Doc
 	}
 
 	@Override
+	public int getC_Currency_ID()
+	{
+		return 0;
+	}
+
+	@Override
 	public int getDoc_User_ID()
 	{
 		return getUpdatedBy();
@@ -137,7 +144,7 @@ public class MCFlatrateConditions extends X_C_Flatrate_Conditions implements Doc
 	@Override
 	public String getDocumentInfo()
 	{
-		return Msg.getElement(getCtx(), COLUMNNAME_C_Flatrate_Conditions_ID) + " " + getDocumentNo();
+		return Msg.getElement(getCtx(), COLUMNNAME_C_Flatrate_Transition_ID) + " " + getDocumentNo();
 	} // getDocumentInfo
 
 	@Override
@@ -186,7 +193,6 @@ public class MCFlatrateConditions extends X_C_Flatrate_Conditions implements Doc
 		m_justPrepared = true;
 		if (!DOCACTION_Complete.equals(getDocAction()))
 			setDocAction(DOCACTION_Complete);
-
 		return DocAction.STATUS_InProgress;
 	} // prepareIt
 
@@ -282,12 +288,6 @@ public class MCFlatrateConditions extends X_C_Flatrate_Conditions implements Doc
 	public boolean voidIt()
 	{
 		return false;
-	}
-
-	@Override
-	public int getC_Currency_ID()
-	{
-		return 0;
 	}
 
 }

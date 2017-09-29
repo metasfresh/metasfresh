@@ -1,4 +1,4 @@
-package de.metas.contracts.flatrate.model;
+package de.metas.contracts.model;
 
 /*
  * #%L
@@ -35,10 +35,10 @@ import org.compiere.process.DocAction;
 import org.compiere.process.DocumentEngine;
 import org.compiere.util.Env;
 
-import de.metas.contracts.model.X_C_Flatrate_DataEntry;
+import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.i18n.Msg;
 
-public class MCFlatrateDataEntry extends X_C_Flatrate_DataEntry implements DocAction
+public class MCFlatrateTerm extends X_C_Flatrate_Term implements DocAction
 {
 	/**
 	 *
@@ -50,12 +50,12 @@ public class MCFlatrateDataEntry extends X_C_Flatrate_DataEntry implements DocAc
 	/** Just Prepared Flag */
 	private boolean m_justPrepared = false;
 
-	public MCFlatrateDataEntry(Properties ctx, int C_Flatrate_DataEntry_ID, String trxName)
+	public MCFlatrateTerm(Properties ctx, int C_Flatrate_DataEntry_ID, String trxName)
 	{
 		super(ctx, C_Flatrate_DataEntry_ID, trxName);
 	}
 
-	public MCFlatrateDataEntry(Properties ctx, ResultSet rs, String trxName)
+	public MCFlatrateTerm(Properties ctx, ResultSet rs, String trxName)
 	{
 		super(ctx, rs, trxName);
 	}
@@ -104,6 +104,13 @@ public class MCFlatrateDataEntry extends X_C_Flatrate_DataEntry implements DocAc
 		if (m_processMsg != null)
 			return DocAction.STATUS_Invalid;
 
+		// Note:
+		// setting and saving the doc status here, because the model validator will search for invoice existing invoice
+		// candidates what might be related to this term. To check this for a given candidate, this term's docstatus must be 'CO'.
+		setDocStatus(DOCSTATUS_Completed);
+		Check.assume(get_TrxName() != null, this + " has trxName!=null");
+		saveEx();
+
 		final String valid = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_COMPLETE);
 		if (valid != null)
 		{
@@ -129,12 +136,6 @@ public class MCFlatrateDataEntry extends X_C_Flatrate_DataEntry implements DocAc
 	}
 
 	@Override
-	public int getC_Currency_ID()
-	{
-		return 0;
-	}
-
-	@Override
 	public int getDoc_User_ID()
 	{
 		return getUpdatedBy();
@@ -143,7 +144,7 @@ public class MCFlatrateDataEntry extends X_C_Flatrate_DataEntry implements DocAc
 	@Override
 	public String getDocumentInfo()
 	{
-		return Msg.getElement(getCtx(), COLUMNNAME_C_Flatrate_DataEntry_ID) + " " + getDocumentNo();
+		return Msg.getElement(getCtx(), COLUMNNAME_C_Flatrate_Term_ID) + " " + getDocumentNo();
 	} // getDocumentInfo
 
 	@Override
@@ -221,13 +222,6 @@ public class MCFlatrateDataEntry extends X_C_Flatrate_DataEntry implements DocAc
 
 		setProcessed(false);
 		setDocAction(DOCACTION_Complete);
-
-		// Note:
-		// setting and saving the doc status here, because the model validator updates an invoice candidate, which in
-		// term will make sure that this data entry is not completed
-		setDocStatus(DOCSTATUS_InProgress);
-		Check.assume(get_TrxName() != null, this + " has trxName!=null");
-		saveEx();
 
 		// After reActivate
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_REACTIVATE);
