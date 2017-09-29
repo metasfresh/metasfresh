@@ -24,6 +24,7 @@ package de.metas.attachments.impl;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
@@ -40,6 +41,7 @@ import org.adempiere.util.Services;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.model.I_AD_Attachment;
 import org.compiere.model.I_AD_AttachmentEntry;
+import org.compiere.model.X_AD_AttachmentEntry;
 import org.compiere.util.Env;
 import org.compiere.util.MimeType;
 import org.compiere.util.Util;
@@ -47,6 +49,7 @@ import org.compiere.util.Util;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.attachments.AttachmentEntry;
+import de.metas.attachments.AttachmentEntryType;
 import de.metas.attachments.IAttachmentBL;
 import de.metas.attachments.IAttachmentDAO;
 import lombok.Builder;
@@ -135,11 +138,23 @@ public class AttachmentBL implements IAttachmentBL
 		return addEntry(model, AttachmentEntryCreateRequest.fromFile(file));
 	}
 
+	@Override
+	public AttachmentEntry addURLEntry(@NonNull final Object model, final String name, @NonNull final URI url)
+	{
+		return addEntry(model, AttachmentEntryCreateRequest.builder()
+				.type(AttachmentEntryType.URL)
+				.filename(name)
+				.url(url)
+				.build());
+	}
+
 	private AttachmentEntry addEntry(@NonNull final Object model, @NonNull final AttachmentEntryCreateRequest request)
 	{
+		final AttachmentEntryType type = request.getType();
 		final String filename = request.getFilename();
 		final String contentType = request.getContentType();
 		final byte[] data = request.getData();
+		final URI url = request.getUrl();
 
 		//
 		// Make sure the attachment is saved
@@ -157,8 +172,24 @@ public class AttachmentBL implements IAttachmentBL
 		entryRecord.setRecord_ID(attachment.getRecord_ID());
 		//
 		entryRecord.setFileName(filename);
-		entryRecord.setBinaryData(data);
-		entryRecord.setContentType(contentType);
+
+		if (type == AttachmentEntryType.Data)
+		{
+			entryRecord.setType(X_AD_AttachmentEntry.TYPE_Data);
+			entryRecord.setBinaryData(data);
+			entryRecord.setContentType(contentType);
+		}
+		else if (type == AttachmentEntryType.URL)
+		{
+			entryRecord.setType(X_AD_AttachmentEntry.TYPE_URL);
+			Check.assumeNotNull(url, "Parameter url is not null");
+			entryRecord.setURL(url.toString());
+		}
+		else
+		{
+			throw new AdempiereException("Type not supported: " + type).setParameter("request", request);
+		}
+
 		InterfaceWrapperHelper.save(entryRecord);
 
 		//
@@ -185,11 +216,12 @@ public class AttachmentBL implements IAttachmentBL
 
 	@Override
 	public AttachmentEntry addEntry(
-			@NonNull final Object model, 
-			@NonNull final String name, 
+			@NonNull final Object model,
+			@NonNull final String name,
 			@NonNull final byte[] data)
 	{
 		return addEntry(model, AttachmentEntryCreateRequest.builder()
+				.type(AttachmentEntryType.Data)
 				.filename(name)
 				.contentType(MimeType.getMimeType(name))
 				.data(data)
@@ -203,7 +235,7 @@ public class AttachmentBL implements IAttachmentBL
 		{
 			return ImmutableList.of();
 		}
-		
+
 		final I_AD_Attachment attachment = getAttachment(model);
 
 		final List<AttachmentEntry> entries = dataSources.stream()
@@ -261,7 +293,7 @@ public class AttachmentBL implements IAttachmentBL
 	public AttachmentEntry getEntryByFilename(final Object model, final String filename)
 	{
 		final int attachmentId = getAttachmentId(model);
-		if(attachmentId <= 0)
+		if (attachmentId <= 0)
 		{
 			return null;
 		}
@@ -272,7 +304,7 @@ public class AttachmentBL implements IAttachmentBL
 	public byte[] getFirstEntryAsBytesOrNull(final Object model)
 	{
 		final int attachmentId = getAttachmentId(model);
-		if(attachmentId <= 0)
+		if (attachmentId <= 0)
 		{
 			return null;
 		}
@@ -353,6 +385,7 @@ public class AttachmentBL implements IAttachmentBL
 			}
 
 			return builder()
+					.type(AttachmentEntryType.Data)
 					.filename(filename)
 					.contentType(contentType)
 					.data(data)
@@ -366,14 +399,18 @@ public class AttachmentBL implements IAttachmentBL
 			final byte[] data = Util.readBytes(file);
 
 			return builder()
+					.type(AttachmentEntryType.Data)
 					.filename(filename)
 					.contentType(contentType)
 					.data(data)
 					.build();
 		}
 
+		@NonNull
+		private final AttachmentEntryType type;
 		private final String filename;
 		private final String contentType;
 		private final byte[] data;
+		private final URI url;
 	}
 }

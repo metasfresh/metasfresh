@@ -4,6 +4,7 @@ import java.sql.Timestamp;
 
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 
 /*
@@ -32,7 +33,6 @@ import lombok.Value;
  * Contains data about the document a given {@link I_M_ShipmentSchedule} references via its {@code AD_Table_ID} and {@code Reference_ID} columns.
  * Instances are generally created by {@link ShipmentScheduleOrderDocFactory}.
  * 
- * 
  * @author metas-dev <dev@metasfresh.com>
  *
  */
@@ -40,7 +40,19 @@ import lombok.Value;
 @Builder
 public class ShipmentScheduleOrderDoc
 {
+	@NonNull
+	Integer groupId;
+
 	Timestamp deliveryDate;
 
 	Timestamp preparationDate;
+
+	/**
+	 * Might be zero.
+	 */
+	@NonNull
+	Integer shipperId;
+
+	@NonNull
+	Integer warehouseId;
 }

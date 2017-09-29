@@ -1,6 +1,6 @@
 package de.metas.procurement.base.rfq.model;
 
-import de.metas.flatrate.model.I_C_Flatrate_Term;
+import de.metas.contracts.model.I_C_Flatrate_Term;
 
 /*
  * #%L
@@ -28,10 +28,10 @@ public interface I_C_RfQ_Topic extends de.metas.rfq.model.I_C_RfQ_Topic
 {
 	//@formatter:off
 	String COLUMNNAME_C_Flatrate_Conditions_ID = "C_Flatrate_Conditions_ID";
-	org.adempiere.model.ModelColumn<I_C_Flatrate_Term, de.metas.flatrate.model.I_C_Flatrate_Conditions> COLUMN_C_Flatrate_Conditions_ID = new org.adempiere.model.ModelColumn<I_C_Flatrate_Term, de.metas.flatrate.model.I_C_Flatrate_Conditions>(I_C_Flatrate_Term.class, "C_Flatrate_Conditions_ID", de.metas.flatrate.model.I_C_Flatrate_Conditions.class);
+	org.adempiere.model.ModelColumn<I_C_Flatrate_Term, de.metas.contracts.model.I_C_Flatrate_Conditions> COLUMN_C_Flatrate_Conditions_ID = new org.adempiere.model.ModelColumn<I_C_Flatrate_Term, de.metas.contracts.model.I_C_Flatrate_Conditions>(I_C_Flatrate_Term.class, "C_Flatrate_Conditions_ID", de.metas.contracts.model.I_C_Flatrate_Conditions.class);
 	void setC_Flatrate_Conditions_ID (int C_Flatrate_Conditions_ID);
 	int getC_Flatrate_Conditions_ID();
-	de.metas.flatrate.model.I_C_Flatrate_Conditions getC_Flatrate_Conditions();
-	void setC_Flatrate_Conditions(de.metas.flatrate.model.I_C_Flatrate_Conditions C_Flatrate_Conditions);
+	de.metas.contracts.model.I_C_Flatrate_Conditions getC_Flatrate_Conditions();
+	void setC_Flatrate_Conditions(de.metas.contracts.model.I_C_Flatrate_Conditions C_Flatrate_Conditions);
 	//@formatter:on
 }

@@ -27,8 +27,10 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.ad.modelvalidator.DocTimingType;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
+import org.compiere.util.Env;
 
 import de.metas.invoicecandidate.model.IIsInvoiceCandidateAware;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
@@ -128,9 +130,9 @@ public class PP_Order_MaterialTracking_Handler extends AbstractInvoiceCandidateH
 	 * @return all PP_Orders which are suitable for invoices and there are no invoice candidates created yet.
 	 */
 	@Override
-	public Iterator<I_PP_Order> retrieveAllModelsWithMissingCandidates(final Properties ctx, final int limit, final String trxName)
+	public Iterator<I_PP_Order> retrieveAllModelsWithMissingCandidates(final int limit)
 	{
-		return dao.retrievePPOrdersWithMissingICs(ctx, limit, trxName);
+		return dao.retrievePPOrdersWithMissingICs(Env.getCtx(), limit, ITrx.TRXNAME_ThreadInherited);
 	}
 
 	/**

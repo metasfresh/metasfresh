@@ -30,7 +30,7 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.ModelValidator;
 
-import de.metas.flatrate.model.I_C_SubscriptionProgress;
+import de.metas.contracts.model.I_C_SubscriptionProgress;
 import de.metas.inoutcandidate.async.CreateMissingShipmentSchedulesWorkpackageProcessor;
 
 @Interceptor(I_C_SubscriptionProgress.class)

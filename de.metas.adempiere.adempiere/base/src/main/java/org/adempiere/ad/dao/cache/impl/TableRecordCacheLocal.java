@@ -36,6 +36,8 @@ import org.compiere.util.Env;
 
 import com.google.common.base.Optional;
 
+import lombok.NonNull;
+
 /**
  * Local cache used to store model references on records which have AD_Table_ID, Record_ID.
  *
@@ -192,10 +194,8 @@ public class TableRecordCacheLocal<ParentModelType>
 	 * @param modelClass
 	 * @return referenced model or null
 	 */
-	public final <RT> RT getValue(Class<RT> modelClass)
+	public final <RT> RT getValue(@NonNull Class<RT> modelClass)
 	{
-		Check.assumeNotNull(modelClass, "modelClass not null");
-
 		//
 		// If parent's AD_Table_ID/Record_ID are not set
 		// => reset model

@@ -3,6 +3,8 @@ package de.metas.inoutcandidate.spi.impl;
 import java.sql.Timestamp;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.Services;
+import org.adempiere.warehouse.spi.IWarehouseAdvisor;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.springframework.stereotype.Service;
@@ -50,64 +52,56 @@ public class ShipmentScheduleOrderDocForOrderLine implements ShipmentScheduleOrd
 	public ShipmentScheduleOrderDoc provideFor(I_M_ShipmentSchedule shipmentSchedule)
 	{
 		return ShipmentScheduleOrderDoc.builder()
+				.groupId(shipmentSchedule.getC_Order_ID())
 				.preparationDate(getOrderPreparationDate(shipmentSchedule))
 				.deliveryDate(getOrderLineDeliveryDate(shipmentSchedule))
+				.warehouseId(getWarehouseId(shipmentSchedule))
+				.shipperId(shipmentSchedule.getC_OrderLine().getM_Shipper_ID())
 				.build();
 	}
 
 	/**
 	 * Fetch it from order header if possible.
 	 * 
-	 * @param sched
+	 * @param shipmentSchedule
 	 * @return
 	 */
-	private static Timestamp getOrderPreparationDate(@NonNull final I_M_ShipmentSchedule sched)
+	private static Timestamp getOrderPreparationDate(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
 	{
-		if (sched.getC_Order_ID() <= 0)
-		{
-			return null;
-		}
-
-		final I_C_Order order = sched.getC_Order();
-
-		final Timestamp preparationDate = order.getPreparationDate();
-		if (preparationDate != null)
-		{
-			return preparationDate;
-		}
-
-		return null;
+		final I_C_Order order = shipmentSchedule.getC_Order();
+		return order.getPreparationDate();
 	}
 
-	private static Timestamp getOrderLineDeliveryDate(@NonNull final I_M_ShipmentSchedule sched)
+	private static Timestamp getOrderLineDeliveryDate(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
 	{
 		// Fetch it from order line if possible
-		if (sched.getC_OrderLine_ID() > 0)
+		final I_C_OrderLine orderLine = shipmentSchedule.getC_OrderLine();
+		final Timestamp datePromised = orderLine.getDatePromised();
+		if (datePromised != null)
 		{
-			final I_C_OrderLine orderLine = sched.getC_OrderLine();
-			final Timestamp datePromised = orderLine.getDatePromised();
-			if (datePromised != null)
-			{
-				return datePromised;
-			}
+			return datePromised;
 		}
 
 		// Fetch it from order header if possible
-		if (sched.getC_Order_ID() > 0)
+		final I_C_Order order = shipmentSchedule.getC_Order();
+		final Timestamp datePromisedFromOrder = order.getDatePromised();
+		if (datePromisedFromOrder != null)
 		{
-			final I_C_Order order = sched.getC_Order();
-			final Timestamp datePromised = order.getDatePromised();
-			if (datePromised != null)
-			{
-				return datePromised;
-			}
+			return datePromisedFromOrder;
 		}
 
 		// Fail miserably...
 		throw new AdempiereException("@NotFound@ @DeliveryDate@"
-				+ "\n @M_ShipmentSchedule_ID@: " + sched
-				+ "\n @C_OrderLine_ID@: " + sched.getC_OrderLine()
-				+ "\n @C_Order_ID@: " + sched.getC_Order());
+				+ "\n @M_ShipmentSchedule_ID@: " + shipmentSchedule
+				+ "\n @C_OrderLine_ID@: " + shipmentSchedule.getC_OrderLine()
+				+ "\n @C_Order_ID@: " + shipmentSchedule.getC_Order());
+	}
+
+	private int getWarehouseId(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
+	{
+		return Services.get(IWarehouseAdvisor.class)
+				.evaluateWarehouse(shipmentSchedule.getC_OrderLine())
+				.getM_Warehouse_ID();
 	}
 
 }

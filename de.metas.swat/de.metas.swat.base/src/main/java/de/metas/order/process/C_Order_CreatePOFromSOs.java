@@ -8,9 +8,9 @@ import org.adempiere.util.Services;
 import org.adempiere.util.api.IRangeAwareParams;
 import org.adempiere.util.lang.Mutable;
 import org.apache.commons.collections4.IteratorUtils;
+import org.compiere.model.I_C_OrderLine;
 import org.compiere.process.DocAction;
 
-import de.metas.interfaces.I_C_OrderLine;
 import de.metas.order.model.I_C_Order;
 import de.metas.order.process.impl.CreatePOFromSOsAggregationKeyBuilder;
 import de.metas.order.process.impl.CreatePOFromSOsAggregator;

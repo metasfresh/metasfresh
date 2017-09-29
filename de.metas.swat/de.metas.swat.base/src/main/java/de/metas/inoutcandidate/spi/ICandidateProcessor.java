@@ -25,14 +25,13 @@ package de.metas.inoutcandidate.spi;
 
 import java.util.Properties;
 
-import org.adempiere.inout.util.CachedObjects;
 import org.adempiere.inout.util.IShipmentCandidates;
 
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 
 /**
  * Implementations are called by
- * {@link IShipmentScheduleBL#updateSchedules(Properties, java.util.List, boolean, java.sql.Timestamp, CachedObjects, String)}
+ * {@link IShipmentScheduleBL#updateSchedules(Properties, java.util.List, String)}
  * between the first and second allocation run. It's task is to set the status of the candidates from the first run.
  * 
  * @author ts
@@ -46,5 +45,5 @@ public interface ICandidateProcessor
 	 * @param trxName
 	 * @return the number of inout line candidates that have been removed
 	 */
-	int processCandidates(Properties ctx, IShipmentCandidates candidates, CachedObjects cachedObjects, String trxName);
+	int processCandidates(Properties ctx, IShipmentCandidates candidates, String trxName);
 }

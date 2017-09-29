@@ -6,9 +6,9 @@ import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
 
+import de.metas.contracts.model.I_C_SubscriptionProgress;
+import de.metas.contracts.model.X_C_SubscriptionProgress;
 import de.metas.contracts.subscription.impl.SubscriptionCommand.ChangeRecipientsRequest;
-import de.metas.flatrate.model.I_C_SubscriptionProgress;
-import de.metas.flatrate.model.X_C_SubscriptionProgress;
 import lombok.NonNull;
 
 /*

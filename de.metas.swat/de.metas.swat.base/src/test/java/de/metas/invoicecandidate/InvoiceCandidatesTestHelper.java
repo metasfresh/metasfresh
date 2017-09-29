@@ -47,15 +47,13 @@ public class InvoiceCandidatesTestHelper
 	 * {@link IInvoiceCandidateHandler#createCandidatesFor(InvoiceCandidateGenerateRequest)} for retrieved models.
 	 * 
 	 * @param handler
-	 * @param ctx
 	 * @param limit
-	 * @param trxName
 	 * @return invoice candidates
 	 */
-	public static List<I_C_Invoice_Candidate> createMissingCandidates(final IInvoiceCandidateHandler handler, final Properties ctx, final int limit, final String trxName)
+	public static List<I_C_Invoice_Candidate> createMissingCandidates(final IInvoiceCandidateHandler handler, final int limit)
 	{
 		final List<I_C_Invoice_Candidate> invoiceCandidatesAll = new ArrayList<>();
-		final Iterator<? extends Object> models = handler.retrieveAllModelsWithMissingCandidates(ctx, limit, trxName);
+		final Iterator<? extends Object> models = handler.retrieveAllModelsWithMissingCandidates(limit);
 		while (models.hasNext())
 		{
 			final Object model = models.next();
