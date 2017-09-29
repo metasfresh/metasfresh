@@ -43,6 +43,7 @@ public interface DocActionFields
 	//@formatter:on
 
 	//@formatter:off
+	String COLUMNNAME_DocAction = "DocAction";
 	String getDocAction();
 	void setDocAction(String docAction);
 	//@formatter:on
@@ -53,6 +54,7 @@ public interface DocActionFields
 	//@formatter:on
 
 	//@formatter:off
+	String COLUMNNAME_Processing = "Processing";
 	boolean isProcessing();
 	void setProcessing(boolean processing);
 	//@formatter:on

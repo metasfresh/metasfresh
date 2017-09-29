@@ -24,12 +24,5 @@ package de.metas.document;
 
 public class DocumentConstants
 {
-
-	public static final String Processing_ColumnName = "Processing";
-	
-	public static final String DocAction_ColumnName = "DocAction";
-	
 	public static final String AD_TABLE_Document_Template_TableName = "AD_Table_Document_Template";
-	
-	
 }
