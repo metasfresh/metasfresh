@@ -36,7 +36,6 @@ import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxSavepoint;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.user.api.IUserBL;
 import org.adempiere.user.api.IUserDAO;
 import org.adempiere.util.Check;
@@ -58,7 +57,6 @@ import org.compiere.model.Query;
 import org.compiere.model.X_AD_WF_Activity;
 import org.compiere.print.ReportEngine;
 import org.compiere.process.DocAction;
-import org.compiere.process.DocActionWrapper;
 import org.compiere.process.StateEngine;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -70,7 +68,6 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.attachments.IAttachmentBL;
 import de.metas.currency.ICurrencyBL;
-
 import de.metas.email.IMailBL;
 import de.metas.email.IMailTextBuilder;
 import de.metas.i18n.IMsgBL;
@@ -103,7 +100,7 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 	 */
 	public static MWFActivity[] get(Properties ctx, int AD_Table_ID, int Record_ID, boolean activeOnly)
 	{
-		ArrayList<Object> params = new ArrayList<Object>();
+		ArrayList<Object> params = new ArrayList<>();
 		StringBuffer whereClause = new StringBuffer("AD_Table_ID=? AND Record_ID=?");
 		params.add(AD_Table_ID);
 		params.add(Record_ID);
@@ -254,7 +251,7 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 	/** Process */
 	private MWFProcess m_process = null;
 	/** List of email recipients */
-	private ArrayList<String> m_emails = new ArrayList<String>();
+	private ArrayList<String> m_emails = new ArrayList<>();
 
 	/**************************************************************************
 	 * Get State
@@ -1086,7 +1083,7 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 						+ getAD_Table_ID() + ", Record_ID=" + getRecord_ID());
 			if (m_po instanceof DocAction)
 			{
-				m_emails = new ArrayList<String>();
+				m_emails = new ArrayList<>();
 				sendEMail();
 				setTextMsg(m_emails.toString());
 			}
