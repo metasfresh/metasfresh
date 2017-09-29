@@ -1,5 +1,7 @@
 package org.compiere.process;
 
+import org.compiere.model.I_AD_Client;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -25,6 +27,13 @@ package org.compiere.process;
 public interface DocActionFields
 {
 	//@formatter:off
+	int getAD_Client_ID();
+	I_AD_Client getAD_Client();
+	int getAD_Org_ID();
+	boolean isActive();
+	//@formatter:on
+
+	//@formatter:off
 	String getDocumentNo();
 	//@formatter:on
 
@@ -47,5 +56,4 @@ public interface DocActionFields
 	boolean isProcessing();
 	void setProcessing(boolean processing);
 	//@formatter:on
-
 }

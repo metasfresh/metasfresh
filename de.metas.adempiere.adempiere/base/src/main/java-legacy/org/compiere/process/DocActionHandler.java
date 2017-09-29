@@ -1,6 +1,7 @@
 package org.compiere.process;
 
 import java.io.File;
+import java.math.BigDecimal;
 
 /*
  * #%L
@@ -26,29 +27,31 @@ import java.io.File;
 
 public interface DocActionHandler
 {
-
-	String prepareIt(DocActionFields docActionModel);
-
-	String completeIt(DocActionFields docActionModel);
-
-	void approveIt(DocActionFields docActionModel);
-
-	void rejectIt(DocActionFields docActionModel);
-
-	void voidIt(DocActionFields docActionModel);
-
-	void closeIt(DocActionFields docActionModel);
-
-	void reverseCorrectIt(DocActionFields docActionModel);
-
-	void reverseAccrualIt(DocActionFields docActionModel);
-
-	void reactivateIt(DocActionFields docActionModel);
-
+	//
+	// Document Info
+	//@formatter:off
 	String getSummary(DocActionFields docActionModel);
-
 	String getDocumentInfo(DocActionFields docActionModel);
+	int getDoc_User_ID(DocActionFields docActionModel);
+	int getC_Currency_ID(DocActionFields docActionModel);
+	BigDecimal getApprovalAmt(DocActionFields docActionModel);
+	//@formatter:on
 
+	//
+	// Reporting
 	File createPDF(DocActionFields docActionModel);
 
+	//
+	// Document processing
+	//@formatter:off
+	String prepareIt(DocActionFields docActionModel);
+	String completeIt(DocActionFields docActionModel);
+	void approveIt(DocActionFields docActionModel);
+	void rejectIt(DocActionFields docActionModel);
+	void voidIt(DocActionFields docActionModel);
+	void closeIt(DocActionFields docActionModel);
+	void reverseCorrectIt(DocActionFields docActionModel);
+	void reverseAccrualIt(DocActionFields docActionModel);
+	void reactivateIt(DocActionFields docActionModel);
+	//@formatter:on
 }

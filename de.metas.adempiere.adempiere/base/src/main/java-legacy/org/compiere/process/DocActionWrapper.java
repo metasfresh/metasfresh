@@ -12,6 +12,7 @@ import org.compiere.model.ModelValidator;
 import org.slf4j.Logger;
 
 import de.metas.document.engine.IDocActionBL;
+import de.metas.logging.LogManager;
 import lombok.NonNull;
 
 /*
@@ -24,12 +25,12 @@ import lombok.NonNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -50,20 +51,22 @@ public class DocActionWrapper implements DocAction
 		return new DocActionWrapper(docActionModel);
 	}
 
+	private static final Logger logger = LogManager.getLogger(DocActionWrapper.class);
+
 	private final DocActionFields docActionModel;
 	private final DocActionHandler docActionHandler;
 
 	private String m_processMsg;
 	private boolean m_justPrepared;
 
-	private DocActionWrapper(@NonNull DocActionFields docActionModel)
+	private DocActionWrapper(@NonNull final DocActionFields docActionModel)
 	{
 		this.docActionModel = docActionModel;
-		this.docActionHandler = null; // TODO
+		docActionHandler = null; // TODO
 	}
 
 	@Override
-	public void setDocStatus(String newStatus)
+	public void setDocStatus(final String newStatus)
 	{
 		docActionModel.setDocStatus(newStatus);
 	}
@@ -75,7 +78,7 @@ public class DocActionWrapper implements DocAction
 	}
 
 	@Override
-	public boolean processIt(String action) throws Exception
+	public boolean processIt(final String action) throws Exception
 	{
 		m_processMsg = null;
 		return Services.get(IDocActionBL.class).processIt(this, action);
@@ -96,16 +99,6 @@ public class DocActionWrapper implements DocAction
 	}
 
 	@Override
-	public String prepareIt()
-	{
-		ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_PREPARE);
-		final String newDocStatus = docActionHandler.prepareIt(docActionModel);
-		ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_PREPARE);
-
-		return newDocStatus;
-	}
-
-	@Override
 	public boolean approveIt()
 	{
 		docActionHandler.approveIt(docActionModel);
@@ -120,22 +113,32 @@ public class DocActionWrapper implements DocAction
 	}
 
 	@Override
+	public String prepareIt()
+	{
+		ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_PREPARE);
+		final String newDocStatus = docActionHandler.prepareIt(docActionModel);
+		ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_PREPARE);
+
+		return newDocStatus;
+	}
+
+	@Override
 	public String completeIt()
 	{
 		// Re-Check
 		if (!m_justPrepared)
 		{
-			String status = prepareIt();
+			final String status = prepareIt();
 			if (!DocAction.STATUS_InProgress.equals(status))
+			{
 				return status;
+			}
 		}
 
 		ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_COMPLETE);
 
 		final String newDocStatus = docActionHandler.completeIt(docActionModel);
-
 		ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_COMPLETE);
-
 		docActionModel.setProcessed(true);
 		return newDocStatus;
 	}
@@ -218,106 +221,91 @@ public class DocActionWrapper implements DocAction
 	@Override
 	public int getDoc_User_ID()
 	{
-		// TODO Auto-generated method stub
-		return 0;
+		return docActionHandler.getDoc_User_ID(docActionModel);
 	}
 
 	@Override
 	public int getC_Currency_ID()
 	{
-		// TODO Auto-generated method stub
-		return 0;
+		return docActionHandler.getC_Currency_ID(docActionModel);
 	}
 
 	@Override
 	public BigDecimal getApprovalAmt()
 	{
-		// TODO Auto-generated method stub
-		return null;
+		return docActionHandler.getApprovalAmt(docActionModel);
 	}
 
 	@Override
 	public int getAD_Client_ID()
 	{
-		// TODO Auto-generated method stub
-		return 0;
+		return docActionModel.getAD_Client_ID();
 	}
 
 	@Override
 	public I_AD_Client getAD_Client()
 	{
-		// TODO Auto-generated method stub
-		return null;
+		return docActionModel.getAD_Client();
 	}
 
 	@Override
 	public int getAD_Org_ID()
 	{
-		// TODO Auto-generated method stub
-		return 0;
+		return docActionModel.getAD_Org_ID();
 	}
 
 	@Override
 	public String getDocAction()
 	{
-		// TODO Auto-generated method stub
-		return null;
+		return docActionModel.getDocAction();
 	}
 
 	@Override
 	public boolean save()
 	{
-		// TODO Auto-generated method stub
-		return false;
+		InterfaceWrapperHelper.save(docActionModel);
+		return true;
 	}
 
 	@Override
 	public Properties getCtx()
 	{
-		// TODO Auto-generated method stub
-		return null;
+		return InterfaceWrapperHelper.getCtx(docActionModel);
 	}
 
 	@Override
 	public int get_ID()
 	{
-		// TODO Auto-generated method stub
-		return 0;
+		return InterfaceWrapperHelper.getId(docActionModel);
 	}
 
 	@Override
 	public int get_Table_ID()
 	{
-		// TODO Auto-generated method stub
-		return 0;
+		return InterfaceWrapperHelper.getModelTableId(docActionModel);
 	}
 
 	@Override
 	public Logger get_Logger()
 	{
-		// TODO Auto-generated method stub
-		return null;
+		return logger;
 	}
 
 	@Override
 	public String get_TrxName()
 	{
-		// TODO Auto-generated method stub
-		return null;
+		return InterfaceWrapperHelper.getTrxName(docActionModel);
 	}
 
 	@Override
-	public void set_TrxName(String trxName)
+	public void set_TrxName(final String trxName)
 	{
-		// TODO Auto-generated method stub
-
+		InterfaceWrapperHelper.setTrxName(docActionModel, trxName);
 	}
 
 	@Override
 	public boolean isActive()
 	{
-		// TODO Auto-generated method stub
-		return false;
+		return docActionModel.isActive();
 	}
-
 }
