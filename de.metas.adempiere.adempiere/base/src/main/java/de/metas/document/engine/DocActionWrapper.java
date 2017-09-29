@@ -1,4 +1,4 @@
-package org.compiere.process;
+package de.metas.document.engine;
 
 import java.io.File;
 import java.math.BigDecimal;
@@ -9,9 +9,9 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
+import org.compiere.process.DocAction;
 import org.slf4j.Logger;
 
-import de.metas.document.engine.IDocActionBL;
 import de.metas.logging.LogManager;
 import lombok.NonNull;
 

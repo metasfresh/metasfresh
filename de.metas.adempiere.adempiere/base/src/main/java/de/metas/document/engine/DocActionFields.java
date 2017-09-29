@@ -1,4 +1,4 @@
-package org.compiere.process;
+package de.metas.document.engine;
 
 import org.compiere.model.I_AD_Client;
 
