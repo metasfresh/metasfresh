@@ -1,15 +1,20 @@
 package de.metas.ui.web.letter;
 
 import java.io.File;
+import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.function.UnaryOperator;
 
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.apache.commons.io.FileUtils;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,12 +30,16 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.i18n.IMsgBL;
+import de.metas.letters.api.ITextTemplateBL;
+import de.metas.letters.model.I_C_Letter;
 import de.metas.letters.model.Letters;
 import de.metas.letters.model.MADBoilerPlate;
 import de.metas.letters.model.MADBoilerPlate.BoilerPlateContext;
+import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.config.WebConfig;
 import de.metas.ui.web.letter.WebuiLetter.WebuiLetterBuilder;
 import de.metas.ui.web.letter.json.JSONLetter;
@@ -45,6 +54,7 @@ import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
 import de.metas.ui.web.window.model.DocumentCollection;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiOperation;
+import lombok.Builder;
 
 /*
  * #%L
@@ -120,7 +130,12 @@ public class LetterRestController
 		userSession.assertLoggedIn();
 
 		final DocumentPath contextDocumentPath = JSONDocumentPath.toDocumentPathOrNull(request.getDocumentPath());
-		final WebuiLetter letter = lettersRepo.createNewLetter(userSession.getAD_User_ID(), contextDocumentPath);
+		final I_C_Letter persistentLetter = fromLetterBuilder()
+				.content("")
+				.Subject("")
+				.build();
+		final WebuiLetter letter = lettersRepo.createNewLetter(userSession.getAD_User_ID(), contextDocumentPath, persistentLetter.getC_Letter_ID());
+
 		return JSONLetter.of(letter);
 	}
 
@@ -134,10 +149,45 @@ public class LetterRestController
 		return JSONLetter.of(letter);
 	}
 
+	@Builder(builderMethodName = "fromLetterBuilder")
+	private I_C_Letter createPersistentLetter(final String Subject, final String content)
+	{
+		final I_C_Letter persistentLetter = InterfaceWrapperHelper.newInstance(I_C_Letter.class);
+		persistentLetter.setLetterSubject(Subject);
+		persistentLetter.setLetterBody(content);
+		persistentLetter.setLetterBodyParsed(content);
+		InterfaceWrapperHelper.save(persistentLetter);
+		return persistentLetter;
+	}
+
+	private I_C_Letter updatePersistentLetter(final WebuiLetter letter)
+	{
+		Check.assume(letter.getPersistentLetterId() > 0, "Letter ID should be > 0");
+		final I_C_Letter persistentLetter = InterfaceWrapperHelper.create(Env.getCtx(), letter.getPersistentLetterId(), I_C_Letter.class, ITrx.TRXNAME_None);
+		persistentLetter.setLetterSubject(letter.getSubject());
+		// field is mandatory
+		persistentLetter.setLetterBody(Joiner.on(" ").skipNulls().join(Arrays.asList(letter.getContent())));
+		persistentLetter.setLetterBodyParsed(letter.getContent());
+		InterfaceWrapperHelper.save(persistentLetter);
+		return persistentLetter;
+	}
+
 	private File createPDFFile(final WebuiLetter letter)
 	{
+		final I_C_Letter persistentLetter = updatePersistentLetter(letter);
+		byte[] pdf = Services.get(ITextTemplateBL.class).createPDF(persistentLetter);
 		final String pdfFilenamePrefix = Services.get(IMsgBL.class).getMsg(Env.getCtx(), Letters.MSG_Letter);
-		final File pdfFile = MADBoilerPlate.getPDF(pdfFilenamePrefix, letter.getContent(), BoilerPlateContext.EMPTY);
+		File pdfFile = null;
+		try
+		{
+			pdfFile = File.createTempFile(pdfFilenamePrefix, ".pdf");
+			FileUtils.writeByteArrayToFile(pdfFile, pdf);
+		}
+		catch (IOException e)
+		{
+			AdempiereException.wrapIfNeeded(e);
+		}
+
 		return pdfFile;
 	}
 
@@ -178,13 +228,16 @@ public class LetterRestController
 		userSession.assertLoggedIn();
 
 		final WebuiLetterChangeResult result = changeLetter(letterId, letter -> {
+
 			//
 			// Create the printable letter
 			final File pdfFile = createPDFFile(letter);
 
 			//
-			// Create the request
+			// create the Boilerplate context
 			final BoilerPlateContext context = documentCollection.createBoilerPlateContext(letter.getContextDocumentPath());
+			//
+			// Create the request
 			final TableRecordReference recordRef = documentCollection.getTableRecordReference(letter.getContextDocumentPath());
 			MADBoilerPlate.createRequest(pdfFile, recordRef.getAD_Table_ID(), recordRef.getRecord_ID(), context);
 
@@ -258,7 +311,7 @@ public class LetterRestController
 					.setParameter("availablePaths", PATCH_FIELD_ALL);
 		}
 	}
-	
+
 	@GetMapping("/templates")
 	@ApiOperation("Available Email templates")
 	public JSONLookupValuesList getTemplates()
@@ -279,8 +332,9 @@ public class LetterRestController
 		final BoilerPlateContext context = documentCollection.createBoilerPlateContext(letter.getContextDocumentPath());
 
 		//
-		// Content
+		// Content and subject
 		newLetterBuilder.content(boilerPlate.getTextSnippetParsed(context));
+		newLetterBuilder.subject(boilerPlate.getSubject());
 	}
 
 }
