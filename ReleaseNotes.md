@@ -34,6 +34,8 @@ Here come the actual release notes:
     * New -Column Layout for the Menu maintenance Window in WebUI.
   * [#2580](https://github.com/metasfresh/metasfresh/issues/2580) Add Subscription history in Contract window WebUI
     * adding included Tab for Subscription History to Contract Window in WebUI.
+  * [#2593](https://github.com/metasfresh/metasfresh/issues/2593) New Window for Dunning Level in WebUI
+    * New window in WebUI that allows the Maintenance of different Dunning Types and Dunning Levels.
 
 # metasfresh 5.28 (2017-39)
 
