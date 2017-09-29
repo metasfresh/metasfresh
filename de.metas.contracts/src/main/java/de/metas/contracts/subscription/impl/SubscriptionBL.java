@@ -128,7 +128,7 @@ public class SubscriptionBL implements ISubscriptionBL
 		// over the whole subscription term
 		newTerm.setC_OrderLine_Term_ID(ol.getC_OrderLine_ID());
 		newTerm.setPlannedQtyPerUnit(ol.getQtyEntered());
-		newTerm.setC_UOM_ID(ol.getC_UOM_ID());
+		newTerm.setC_UOM_ID(ol.getPrice_UOM_ID());
 
 		newTerm.setStartDate(order.getDateOrdered());
 
@@ -368,8 +368,8 @@ public class SubscriptionBL implements ISubscriptionBL
 
 		// task 03805:
 		// Make sure the currency ID for term is the same as the one from olCand
-		final int currencyID = olCand.getC_Currency_ID();
-		newTerm.setC_Currency_ID(currencyID);
+		Check.errorIf(pricingResult.getC_Currency_ID() != olCand.getC_Currency_ID(), "Currency of olCand differs from the currency computed by the pricing engine; olCand={}; pricingResult={}", olCand, pricingResult);
+		newTerm.setC_Currency_ID(pricingResult.getC_Currency_ID());
 
 		InterfaceWrapperHelper.save(newTerm);
 

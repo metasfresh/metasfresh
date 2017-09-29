@@ -4,8 +4,10 @@ import java.util.List;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.pricing.api.IPricingResult;
 import org.adempiere.util.Services;
 
+import de.metas.contracts.flatrate.FlatrateTermPricing;
 import de.metas.contracts.flatrate.spi.FallbackFlatrateTermEventListener;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_SubscriptionProgress;
@@ -45,7 +47,7 @@ public class SubscriptionTermEventListener extends FallbackFlatrateTermEventList
 	@Override
 	public void beforeFlatrateTermReactivate(@NonNull final I_C_Flatrate_Term term)
 	{
-			// Delete subscription progress entries
+		// Delete subscription progress entries
 		final ISubscriptionDAO subscriptionBL = Services.get(ISubscriptionDAO.class);
 		final List<I_C_SubscriptionProgress> entries = subscriptionBL.retrieveSubscriptionProgresses(SubscriptionProgressQuery.builder()
 				.term(term).build());
@@ -58,6 +60,24 @@ public class SubscriptionTermEventListener extends FallbackFlatrateTermEventList
 			}
 			InterfaceWrapperHelper.delete(entry);
 		}
+	}
+
+	@Override
+	public void beforeSaveOfNextTermForPredecessor(
+			@NonNull final I_C_Flatrate_Term next, 
+			@NonNull final I_C_Flatrate_Term predecessor)
+	{
+		final IPricingResult pricingInfo = FlatrateTermPricing.builder()
+				.termRelatedProduct(next.getM_Product())
+				.term(next)
+				.priceDate(next.getStartDate())
+				.qty(next.getPlannedQtyPerUnit())
+				.build()
+				.computeOrThrowEx();
+
+		next.setPriceActual(pricingInfo.getPriceStd());
+		next.setC_Currency_ID(pricingInfo.getC_Currency_ID());
+		next.setC_UOM_ID(pricingInfo.getPrice_UOM_ID());
 	}
 
 }

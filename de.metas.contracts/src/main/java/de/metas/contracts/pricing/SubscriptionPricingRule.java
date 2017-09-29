@@ -63,7 +63,7 @@ public class SubscriptionPricingRule implements IPricingRule
 
 		final I_C_Flatrate_Conditions conditions = ContractPricingUtil.getC_Flatrate_Conditions(referencedObject);
 
-		final I_M_PriceList subscriptionPL = Services.get(IQueryBL.class).createQueryBuilder(I_M_PriceList.class).addOnlyActiveRecordsFilter()
+		final I_M_PriceList subscriptionPriceList = Services.get(IQueryBL.class).createQueryBuilder(I_M_PriceList.class).addOnlyActiveRecordsFilter()
 				.addInArrayFilter(I_M_PriceList.COLUMN_C_Country_ID, pricingCtx.getC_Country_ID(), 0)
 				.addEqualsFilter(I_M_PriceList.COLUMN_M_PricingSystem_ID, conditions.getM_PricingSystem_ID())
 				.addEqualsFilter(I_M_PriceList.COLUMN_IsSOPriceList, true)
@@ -94,7 +94,7 @@ public class SubscriptionPricingRule implements IPricingRule
 
 		// set the price list from subscription's M_Pricing_Systen
 		subscriptionPricingCtx.setM_PriceList_Version_ID(0);
-		subscriptionPricingCtx.setM_PriceList_ID(subscriptionPL.getM_PriceList_ID());
+		subscriptionPricingCtx.setM_PriceList_ID(subscriptionPriceList.getM_PriceList_ID());
 
 		// call the pricing engine with our own parameters
 		final IPricingResult subscriptionPricingResult = pricingBL.calculatePrice(subscriptionPricingCtx);

@@ -37,9 +37,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.pricing.api.IEditablePricingContext;
-import org.adempiere.pricing.api.IPricingBL;
-import org.adempiere.pricing.api.IPricingResult;
 import org.adempiere.util.Check;
 import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
@@ -54,16 +51,13 @@ import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Period;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_C_Year;
-import org.compiere.model.I_M_PriceList;
-import org.compiere.model.I_M_PricingSystem;
-import org.compiere.model.I_M_ProductPrice;
+import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.Lookup;
 import org.compiere.model.MNote;
 import org.compiere.model.MOrg;
 import org.compiere.model.MRefList;
 import org.compiere.model.POInfo;
-import org.compiere.model.Query;
 import org.compiere.process.DocAction;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -71,9 +65,9 @@ import org.compiere.util.TrxRunnable;
 import org.slf4j.Logger;
 
 import ch.qos.logback.classic.Level;
-import de.metas.adempiere.model.I_M_Product;
 import de.metas.adempiere.service.ICalendarBL;
 import de.metas.adempiere.service.ICalendarDAO;
+import de.metas.contracts.flatrate.FlatrateTermPricing;
 import de.metas.contracts.flatrate.IFlatrateBL;
 import de.metas.contracts.flatrate.IFlatrateDAO;
 import de.metas.contracts.flatrate.IFlatrateTermEventService;
@@ -99,10 +93,10 @@ import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerDAO;
 import de.metas.invoicecandidate.model.I_C_ILCandHandler;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.logging.LogManager;
-import de.metas.product.IProductPA;
 import de.metas.product.acct.api.IProductAcctDAO;
 import de.metas.tax.api.ITaxBL;
 import de.metas.workflow.api.IWFExecutionFactory;
+import lombok.NonNull;
 
 public class FlatrateBL implements IFlatrateBL
 {
@@ -114,9 +108,6 @@ public class FlatrateBL implements IFlatrateBL
 	private static final String MSG_FLATRATEBL_INVOICE_CANDIDATE_TO_RECOMPUTE_1P = "FlatrateBL_InvoicingCand_ToRecompute";
 
 	private static final String MSG_FLATRATEBL_INVOICE_CANDIDATE_QTY_TO_INVOICE_1P = "FlatrateBL_InvoicingCand_QtyToInvoice";
-
-	private static final String MSG_FLATRATEBL_PRICE_MISSING_2P = "FlatrateBL_Price_Missing";
-	private static final String MSG_FLATRATEBL_PRICE_LIST_MISSING_2P = "FlatrateBL_PriceList_Missing";
 
 	private static final String MSG_DATA_ENTRY_CREATE_FLAT_FEE_4P = "DataEntry_Create_FlatFee";
 
@@ -490,7 +481,12 @@ public class FlatrateBL implements IFlatrateBL
 			Check.assume(productIdForIc > 0,
 					dataEntry + " has no M_Product_DataEntry, despite " + fc + "has Type_Conditions=" + fc.getType_Conditions());
 
-			priceActual = getPriceForProduct(term, product, qtyToInvoice, dataEntry.getC_Period().getStartDate());
+			priceActual = FlatrateTermPricing.builder()
+					.term(term)
+					.termRelatedProduct(product)
+					.priceDate(dataEntry.getC_Period().getStartDate())
+					.qty(qtyToInvoice)
+					.build().computeOrThrowEx().getPriceStd();
 		}
 		else
 		{
@@ -579,80 +575,20 @@ public class FlatrateBL implements IFlatrateBL
 		final I_M_Product flatrateProduct;
 		if (X_C_Flatrate_DataEntry.TYPE_Invoicing_PeriodBased.equals(dataEntry.getType()))
 		{
-			flatrateProduct = InterfaceWrapperHelper.create(flatrateCond.getM_Product_Flatrate(), I_M_Product.class);
+			flatrateProduct = flatrateCond.getM_Product_Flatrate();
 		}
 		else
 		{
 			Check.assume(X_C_Flatrate_DataEntry.TYPE_Correction_PeriodBased.equals(dataEntry.getType()), "");
-			flatrateProduct = InterfaceWrapperHelper.create(flatrateCond.getM_Product_Correction(), I_M_Product.class);
+			flatrateProduct = flatrateCond.getM_Product_Correction();
 		}
 
-		return getPriceForProduct(flatrateTerm, flatrateProduct, qty, dataEntry.getC_Period().getStartDate());
-	}
-
-	private BigDecimal getPriceForProduct(
-			final I_C_Flatrate_Term flatrateTerm,
-			final I_M_Product flatrateProduct,
-			final BigDecimal qty,
-			final Timestamp priceDate)
-	{
-		final I_C_Flatrate_Conditions flatrateCond = flatrateTerm.getC_Flatrate_Conditions();
-
-		final I_M_PriceList priceList = retrievePriceList(flatrateCond, flatrateTerm);
-		final IPricingResult pricingResult = retrievePricingInfo(flatrateCond, flatrateTerm, flatrateProduct, qty, priceList, priceDate);
-		return pricingResult.getPriceStd();
-	}
-
-	private IPricingResult retrievePricingInfo(
-			final I_C_Flatrate_Conditions flatrateCond,
-			final I_C_Flatrate_Term flatrateTerm,
-			final I_M_Product product,
-			final BigDecimal qty,
-			final I_M_PriceList priceList,
-			final Timestamp priceDate)
-	{
-		final IPricingBL pricingBL = Services.get(IPricingBL.class);
-
-		final boolean isSOTrx = true;
-		final IEditablePricingContext pricingCtx = pricingBL.createInitialContext(product.getM_Product_ID(), flatrateTerm.getBill_BPartner_ID(), product.getC_UOM_ID(), qty, isSOTrx);
-		pricingCtx.setPriceDate(priceDate);
-		pricingCtx.setM_PriceList_ID(priceList.getM_PriceList_ID());
-
-		final IPricingResult result = pricingBL.calculatePrice(pricingCtx);
-		if (!result.isCalculated())
-		{
-			final Properties ctx = InterfaceWrapperHelper.getCtx(flatrateCond);
-			throw new AdempiereException(
-					msgBL.getMsg(ctx, FlatrateBL.MSG_FLATRATEBL_PRICE_MISSING_2P,
-							new Object[] { priceList.getName(), product.getValue() }));
-		}
-
-		return result;
-	}
-
-	private I_M_PriceList retrievePriceList(
-			final I_C_Flatrate_Conditions flatrateCond,
-			final I_C_Flatrate_Term term)
-	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(flatrateCond);
-		final String trxName = InterfaceWrapperHelper.getTrxName(flatrateCond);
-
-		final int pricingSystemIdToUse = term.getM_PricingSystem_ID() > 0
-				? term.getM_PricingSystem_ID()
-				: flatrateCond.getM_PricingSystem_ID();
-
-		final IProductPA productPA = Services.get(IProductPA.class);
-
-		final I_M_PriceList priceList = productPA.retrievePriceListByPricingSyst(ctx, pricingSystemIdToUse, term.getBill_Location_ID(), true, trxName);
-		if (priceList == null)
-		{
-			throw new AdempiereException(
-					msgBL.getMsg(ctx, FlatrateBL.MSG_FLATRATEBL_PRICE_LIST_MISSING_2P,
-							new Object[] {
-									InterfaceWrapperHelper.create(ctx, pricingSystemIdToUse, I_M_PricingSystem.class, trxName).getName(),
-									term.getBill_Location().getName() }));
-		}
-		return priceList;
+		return FlatrateTermPricing.builder()
+				.term(flatrateTerm)
+				.termRelatedProduct(flatrateProduct)
+				.priceDate(dataEntry.getC_Period().getStartDate())
+				.qty(qty)
+				.build().computeOrThrowEx().getPriceStd();
 	}
 
 	@Override
@@ -660,59 +596,37 @@ public class FlatrateBL implements IFlatrateBL
 	{
 		final I_C_Flatrate_Conditions fc = term.getC_Flatrate_Conditions();
 
-		final I_M_PriceList pl = retrievePriceList(fc, term);
-		// Note C_Currency should be mandatory in a pl
-		Check.assume(pl.getC_Currency_ID() > 0, pl + " has no C_Currency_ID");
-
 		final Timestamp date = SystemTime.asTimestamp();
 
-		final I_M_Product flatrateProduct = InterfaceWrapperHelper.create(fc.getM_Product_Flatrate(), I_M_Product.class);
-		validatePricingForProduct(fc, term, pl, flatrateProduct, date);
+		final I_M_Product flatrateProduct = fc.getM_Product_Flatrate();
+		validatePricingForProduct(term, flatrateProduct, date);
 
 		if (fc.isClosingWithActualSum() && X_C_Flatrate_Conditions.TYPE_FLATRATE_Corridor_Percent.equals(fc.getType_Flatrate()))
 		{
 			Check.assume(fc.getM_Product_Actual_ID() > 0, fc + " has no product to invoice the flatRateCorrectionAmt");
-			final I_M_Product actualProduct = InterfaceWrapperHelper.create(fc.getM_Product_Actual(), I_M_Product.class);
-			validatePricingForProduct(fc, term, pl, actualProduct, date);
+			final I_M_Product actualProduct = fc.getM_Product_Actual();
+			validatePricingForProduct(term, actualProduct, date);
 		}
 		if (fc.isClosingWithCorrectionSum())
 		{
 			Check.assume(fc.getM_Product_Correction_ID() > 0, fc + " has no product to invoice the corrected qty_reported");
-			final I_M_Product correctionProduct = InterfaceWrapperHelper.create(fc.getM_Product_Correction(), I_M_Product.class);
-			validatePricingForProduct(fc, term, pl, correctionProduct, date);
+			final I_M_Product correctionProduct = fc.getM_Product_Correction();
+			validatePricingForProduct(term, correctionProduct, date);
 		}
 	}
 
 	private void validatePricingForProduct(
-			final I_C_Flatrate_Conditions fc,
-			final I_C_Flatrate_Term term,
-			final I_M_PriceList pl,
-			final I_M_Product product,
-			final Timestamp date)
+			@NonNull final I_C_Flatrate_Term term, 
+			@NonNull final I_M_Product product, 
+			@NonNull final Timestamp date)
 	{
-		final IPricingResult pricingResult = retrievePricingInfo(fc, term, product, BigDecimal.ONE, pl, date);
-		final int plvId = pricingResult.getM_PriceList_Version_ID();
-
-		final Properties ctx = InterfaceWrapperHelper.getCtx(fc);
-		final String trxName = InterfaceWrapperHelper.getTrxName(fc);
-
-		final String wc = org.compiere.model.I_M_ProductPrice.COLUMNNAME_M_Product_ID + "=? AND " + org.compiere.model.I_M_ProductPrice.COLUMNNAME_M_PriceList_Version_ID + "=?";
-		final I_M_ProductPrice pp = getProductPrice(fc, plvId, ctx, trxName, wc);
-		if (pp == null || pp.getC_TaxCategory_ID() == 0)
-		{
-			throw new AdempiereException(
-					msgBL.getMsg(ctx, FlatrateBL.MSG_FLATRATEBL_PRICE_MISSING_2P,
-							new Object[] { pl.getName(), product.getValue() }));
-		}
-	}
-
-	private final I_M_ProductPrice getProductPrice(final I_C_Flatrate_Conditions fc, final int plvId, final Properties ctx, final String trxName, final String wc)
-	{
-		return new Query(ctx, org.compiere.model.I_M_ProductPrice.Table_Name, wc, trxName)
-				.setParameters(fc.getM_Product_Flatrate_ID(), plvId)
-				.setOnlyActiveRecords(true)
-				.setClient_ID()
-				.firstOnly(I_M_ProductPrice.class);
+		FlatrateTermPricing.builder()
+				.term(term)
+				.termRelatedProduct(product)
+				.priceDate(date)
+				.qty(BigDecimal.ONE)
+				.build()
+				.computeOrThrowEx();
 	}
 
 	@Override
@@ -1218,9 +1132,8 @@ public class FlatrateBL implements IFlatrateBL
 			nextTerm.setDropShip_User_ID(currentTerm.getDropShip_User_ID());
 			nextTerm.setDeliveryRule(currentTerm.getDeliveryRule());
 			nextTerm.setDeliveryViaRule(currentTerm.getDeliveryViaRule());
-			nextTerm.setPriceActual(currentTerm.getPriceActual()); // TODO fixme!!
+			
 			nextTerm.setC_UOM_ID(currentTerm.getC_UOM_ID());
-			nextTerm.setC_Currency_ID(currentTerm.getC_Currency_ID());
 
 			final IFlatrateTermEventService flatrateHandlersService = Services.get(IFlatrateTermEventService.class);
 			flatrateHandlersService

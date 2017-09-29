@@ -47,6 +47,7 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Calendar;
 import org.compiere.model.I_C_Period;
 import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Product;
 import org.compiere.model.Query;
 import org.compiere.process.DocAction;
 import org.compiere.util.DB;
@@ -55,7 +56,6 @@ import org.compiere.util.TimeUtil;
 import org.compiere.util.TrxRunnable;
 import org.slf4j.Logger;
 
-import de.metas.adempiere.model.I_M_Product;
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.adempiere.util.CacheTrx;
 import de.metas.contracts.flatrate.IFlatrateDAO;
@@ -575,11 +575,6 @@ public class FlatrateDAO implements IFlatrateDAO
 	@Override
 	public List<I_M_Product> retrieveHoldingFeeProducts(final I_C_Flatrate_Conditions fc)
 	{
-		// Check.assume(X_C_Flatrate_Conditions.TYPE_CONDITIONS_Depotgebuehr.equals(fc.getType_Conditions())
-		// || X_C_Flatrate_Conditions.TYPE_CONDITIONS_Leergutverwaltung.equals(fc.getType_Conditions()),
-		// fc + " has Type_Conditions=" + X_C_Flatrate_Conditions.TYPE_CONDITIONS_Depotgebuehr
-		// + " or " + X_C_Flatrate_Conditions.TYPE_CONDITIONS_Leergutverwaltung);
-
 		final Properties ctx = InterfaceWrapperHelper.getCtx(fc);
 		final String trxName = InterfaceWrapperHelper.getTrxName(fc);
 
