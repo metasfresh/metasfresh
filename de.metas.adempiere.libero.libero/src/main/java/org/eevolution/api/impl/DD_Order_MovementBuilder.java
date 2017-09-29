@@ -42,7 +42,6 @@ import org.compiere.model.I_M_MovementLine;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.X_C_DocType;
-import org.compiere.process.DocAction;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.IDDOrderBL;
 import org.eevolution.api.IDDOrderMovementBuilder;
@@ -53,6 +52,7 @@ import org.eevolution.model.I_DD_OrderLine_Alternative;
 import org.eevolution.model.I_DD_OrderLine_Or_Alternative;
 
 import de.metas.document.IDocTypeDAO;
+import de.metas.document.engine.DocAction;
 import de.metas.document.engine.IDocActionBL;
 
 public class DD_Order_MovementBuilder implements IDDOrderMovementBuilder

@@ -33,13 +33,13 @@ import org.adempiere.util.Services;
 import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_InOut;
-import org.compiere.process.DocAction;
 import org.slf4j.Logger;
 
 import com.google.common.base.Optional;
 
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.document.archive.model.I_AD_Archive;
+import de.metas.document.engine.DocAction;
 import de.metas.document.engine.IDocActionBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;

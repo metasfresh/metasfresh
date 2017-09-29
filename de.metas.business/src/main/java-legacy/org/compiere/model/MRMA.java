@@ -25,13 +25,13 @@ import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
-import org.compiere.process.DocAction;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
 import de.metas.adempiere.service.IOrderBL;
 import de.metas.document.documentNo.IDocumentNoBuilder;
 import de.metas.document.documentNo.IDocumentNoBuilderFactory;
+import de.metas.document.engine.DocAction;
 import de.metas.document.engine.IDocActionBL;
 import de.metas.i18n.Msg;
 

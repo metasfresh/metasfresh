@@ -42,11 +42,11 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_C_InvoiceTax;
-import org.compiere.process.DocAction;
 import org.compiere.util.Env;
 
 import de.metas.allocation.api.IAllocationDAO;
 import de.metas.document.IDocCopyHandler;
+import de.metas.document.engine.DocAction;
 import de.metas.document.engine.IDocActionBL;
 
 /**

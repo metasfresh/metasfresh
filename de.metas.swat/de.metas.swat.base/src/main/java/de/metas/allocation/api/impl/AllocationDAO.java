@@ -48,13 +48,13 @@ import org.compiere.model.I_C_Payment;
 import org.compiere.model.I_Fact_Acct;
 import org.compiere.model.I_GL_Journal;
 import org.compiere.model.X_C_Payment;
-import org.compiere.process.DocAction;
 import org.compiere.util.DB;
 
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.adempiere.util.CacheTrx;
 import de.metas.allocation.api.IAllocationDAO;
+import de.metas.document.engine.DocAction;
 import lombok.NonNull;
 
 public class AllocationDAO implements IAllocationDAO

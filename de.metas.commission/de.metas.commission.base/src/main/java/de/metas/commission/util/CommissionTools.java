@@ -42,7 +42,6 @@ import org.compiere.model.MPriceList;
 import org.compiere.model.MPriceListVersion;
 import org.compiere.model.MProductPrice;
 import org.compiere.model.Query;
-import org.compiere.process.DocAction;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
@@ -52,6 +51,7 @@ import de.metas.commission.interfaces.I_M_ProductScalePrice;
 import de.metas.commission.model.I_C_Sponsor;
 import de.metas.commission.model.I_C_Sponsor_SalesRep;
 import de.metas.commission.model.I_M_DiscountSchema;
+import de.metas.document.engine.DocAction;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.pricing.ProductPrices;

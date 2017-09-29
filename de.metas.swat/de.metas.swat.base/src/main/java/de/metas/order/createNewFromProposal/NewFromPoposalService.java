@@ -40,8 +40,9 @@ import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;
 import org.compiere.model.MProductCategory;
 import org.compiere.model.X_C_DocType;
-import org.compiere.process.DocAction;
 import org.compiere.util.Env;
+
+import de.metas.document.engine.DocAction;
 
 public final class NewFromPoposalService implements INewFromPoposalService {
 

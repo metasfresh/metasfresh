@@ -42,7 +42,6 @@ import org.adempiere.util.time.SystemTime;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
-import org.compiere.process.DocAction;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
 
@@ -52,6 +51,7 @@ import de.metas.adempiere.form.terminal.TerminalKeyListenerAdapter;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.adempiere.form.terminal.context.ITerminalContextReferences;
 import de.metas.adempiere.service.IPOSAccessBL;
+import de.metas.document.engine.DocAction;
 import de.metas.document.engine.IDocActionBL;
 import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.client.terminal.editor.model.IHUKey;

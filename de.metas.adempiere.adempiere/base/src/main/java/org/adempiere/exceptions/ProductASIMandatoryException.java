@@ -24,7 +24,8 @@ package org.adempiere.exceptions;
 
 
 import org.compiere.model.I_M_Product;
-import org.compiere.process.DocAction;
+
+import de.metas.document.engine.DocAction;
 
 public class ProductASIMandatoryException extends AdempiereException
 {

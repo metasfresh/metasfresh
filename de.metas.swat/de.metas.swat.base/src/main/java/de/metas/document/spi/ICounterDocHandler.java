@@ -1,6 +1,6 @@
 package de.metas.document.spi;
 
-import org.compiere.process.DocAction;
+import de.metas.document.engine.DocAction;
 
 /*
  * #%L

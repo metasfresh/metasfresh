@@ -3,8 +3,7 @@ package de.metas.shipping.model;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-import org.compiere.process.DocAction;
-
+import de.metas.document.engine.DocAction;
 import de.metas.document.engine.IDocActionOptionsContext;
 import de.metas.document.engine.IDocActionOptionsCustomizer;
 

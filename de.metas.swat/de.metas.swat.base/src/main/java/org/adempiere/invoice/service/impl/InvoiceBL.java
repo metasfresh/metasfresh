@@ -16,11 +16,11 @@ import org.compiere.model.MInOutLine;
 import org.compiere.model.MInvoice;
 import org.compiere.model.MInvoiceLine;
 import org.compiere.model.MPriceList;
-import org.compiere.process.DocAction;
 
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.document.ICopyHandlerBL;
 import de.metas.document.IDocLineCopyHandler;
+import de.metas.document.engine.DocAction;
 import de.metas.document.engine.IDocActionBL;
 import de.metas.i18n.IMsgBL;
 

@@ -33,11 +33,12 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.Query;
-import org.compiere.process.DocAction;
 import org.eevolution.api.IPPOrderDAO;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.X_PP_Order;
 import org.eevolution.model.X_PP_Order_BOM;
+
+import de.metas.document.engine.DocAction;
 
 public class PPOrderDAO implements IPPOrderDAO
 {

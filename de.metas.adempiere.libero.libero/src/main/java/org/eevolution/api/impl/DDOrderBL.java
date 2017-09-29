@@ -39,7 +39,6 @@ import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_MovementLine;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_S_Resource;
-import org.compiere.process.DocAction;
 import org.eevolution.api.IDDOrderBL;
 import org.eevolution.api.IDDOrderDAO;
 import org.eevolution.api.IDDOrderMovementBuilder;
@@ -51,6 +50,7 @@ import org.eevolution.model.I_DD_OrderLine_Or_Alternative;
 import org.eevolution.model.I_PP_Order;
 import org.slf4j.Logger;
 
+import de.metas.document.engine.DocAction;
 import de.metas.document.engine.IDocActionBL;
 import de.metas.logging.LogManager;
 import de.metas.material.planning.IProductPlanningDAO;

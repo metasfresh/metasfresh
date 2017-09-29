@@ -53,10 +53,10 @@ import org.compiere.model.MPackage;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.Query;
-import org.compiere.process.DocAction;
 import org.compiere.process.DocumentEngine;
 import org.compiere.util.Env;
 
+import de.metas.document.engine.DocAction;
 import de.metas.i18n.IMsgBL;
 import de.metas.shipping.api.IShipperTransportationBL;
 

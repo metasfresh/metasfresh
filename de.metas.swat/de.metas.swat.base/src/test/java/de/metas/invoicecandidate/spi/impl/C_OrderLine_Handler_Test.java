@@ -41,13 +41,13 @@ import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.X_C_DocType;
-import org.compiere.process.DocAction;
 import org.compiere.util.Env;
 import org.junit.Before;
 import org.junit.Test;
 
 import ch.qos.logback.classic.Level;
 import de.metas.aggregation.model.I_C_Aggregation;
+import de.metas.document.engine.DocAction;
 import de.metas.invoicecandidate.AbstractICTestSupport;
 import de.metas.invoicecandidate.InvoiceCandidatesTestHelper;
 import de.metas.invoicecandidate.api.impl.HeaderAggregationKeyBuilder;

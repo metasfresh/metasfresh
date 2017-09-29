@@ -18,10 +18,10 @@ import org.compiere.model.I_AD_OrgInfo;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
-import org.compiere.process.DocAction;
 import org.compiere.util.Env;
 
 import de.metas.adempiere.service.IOrderBL;
+import de.metas.document.engine.DocAction;
 import de.metas.i18n.IMsgBL;
 
 

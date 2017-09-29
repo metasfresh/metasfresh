@@ -34,8 +34,9 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.PO;
 import org.compiere.model.POInfo;
-import org.compiere.process.DocAction;
 import org.compiere.util.DB;
+
+import de.metas.document.engine.DocAction;
 
 public final class DocActionBL extends AbstractDocActionBL
 {

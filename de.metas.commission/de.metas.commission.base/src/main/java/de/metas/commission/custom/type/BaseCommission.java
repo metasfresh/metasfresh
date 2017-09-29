@@ -36,7 +36,6 @@ import org.compiere.model.MInvoiceLine;
 import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;
 import org.compiere.model.PO;
-import org.compiere.process.DocAction;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
 
@@ -53,6 +52,7 @@ import de.metas.commission.service.ICommissionFactBL;
 import de.metas.commission.service.ICommissionFactCandBL;
 import de.metas.commission.service.IFieldAccessBL;
 import de.metas.commission.util.CommissionTools;
+import de.metas.document.engine.DocAction;
 
 /**
  * Common base class for all commission types.

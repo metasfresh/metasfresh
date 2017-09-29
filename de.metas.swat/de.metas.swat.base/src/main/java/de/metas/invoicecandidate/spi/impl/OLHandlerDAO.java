@@ -37,9 +37,9 @@ import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.X_C_DocType;
-import org.compiere.process.DocAction;
 
 import de.metas.adempiere.model.I_C_Order;
+import de.metas.document.engine.DocAction;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.IOLHandlerDAO;

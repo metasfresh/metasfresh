@@ -31,7 +31,6 @@ import java.util.List;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.collections.ListUtils;
 import org.compiere.model.I_C_BPartner;
-import org.compiere.process.DocAction;
 import org.compiere.util.TimeUtil;
 import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_PP_Order;
@@ -44,6 +43,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import ch.qos.logback.classic.Level;
+import de.metas.document.engine.DocAction;
 import de.metas.logging.LogManager;
 
 /**

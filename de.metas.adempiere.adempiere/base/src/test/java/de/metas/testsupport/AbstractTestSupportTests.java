@@ -31,9 +31,10 @@ import static org.junit.Assert.assertThat;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_Order;
-import org.compiere.process.DocAction;
 import org.junit.Ignore;
 import org.junit.Test;
+
+import de.metas.document.engine.DocAction;
 
 public class AbstractTestSupportTests
 {

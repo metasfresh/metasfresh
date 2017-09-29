@@ -42,7 +42,6 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
-import org.compiere.process.DocAction;
 import org.compiere.util.Env;
 import org.eevolution.exceptions.LiberoException;
 import org.eevolution.model.I_PP_MRP;
@@ -60,6 +59,7 @@ import org.eevolution.mrp.spi.IMRPSupplyProducer;
 import org.slf4j.Logger;
 
 import de.metas.document.IDocTypeDAO;
+import de.metas.document.engine.DocAction;
 import de.metas.document.engine.IDocActionBL;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;

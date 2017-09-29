@@ -51,6 +51,7 @@ import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 
 import de.metas.adempiere.model.I_C_Invoice;
+import de.metas.document.engine.DocAction;
 import de.metas.i18n.Language;
 import de.metas.interfaces.I_C_OrderLine;
 

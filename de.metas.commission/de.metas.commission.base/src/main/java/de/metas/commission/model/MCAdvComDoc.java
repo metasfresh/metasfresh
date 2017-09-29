@@ -41,12 +41,12 @@ import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.PO;
 import org.compiere.model.Query;
-import org.compiere.process.DocAction;
 import org.compiere.process.DocumentEngine;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import de.metas.commission.service.ICommissionFactCandBL;
+import de.metas.document.engine.DocAction;
 import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
 

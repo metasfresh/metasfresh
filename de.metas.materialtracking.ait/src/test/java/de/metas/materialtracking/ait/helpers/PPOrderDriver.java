@@ -7,10 +7,10 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.ModelValidator;
-import org.compiere.process.DocAction;
 import org.eevolution.api.IPPOrderBOMDAO;
 
 import de.metas.adempiere.model.I_M_Product;
+import de.metas.document.engine.DocAction;
 import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.handlingunits.model.I_PP_Cost_Collector;
 import de.metas.handlingunits.model.I_PP_Order_BOMLine;

@@ -23,7 +23,8 @@ import java.util.Properties;
 import org.compiere.model.PO;
 import org.compiere.model.Query;
 import org.compiere.model.X_AD_WF_NodeNext;
-import org.compiere.process.DocAction;
+
+import de.metas.document.engine.DocAction;
 
 /**
  *	Workflow Node Next - Transition

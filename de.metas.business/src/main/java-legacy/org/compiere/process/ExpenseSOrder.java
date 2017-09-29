@@ -36,6 +36,7 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 
 import de.metas.currency.ICurrencyBL;
+import de.metas.document.engine.DocAction;
 
 /**
  *	Create Sales Orders from Expense Reports

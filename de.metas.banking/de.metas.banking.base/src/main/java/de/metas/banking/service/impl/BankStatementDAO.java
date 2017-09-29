@@ -37,11 +37,11 @@ import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_C_BankStatementLine;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.I_Fact_Acct;
-import org.compiere.process.DocAction;
 import org.compiere.util.Env;
 
 import de.metas.banking.interfaces.I_C_BankStatementLine_Ref;
 import de.metas.banking.service.IBankStatementDAO;
+import de.metas.document.engine.DocAction;
 
 public class BankStatementDAO implements IBankStatementDAO
 {

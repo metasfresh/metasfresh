@@ -39,10 +39,10 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_M_InOut;
-import org.compiere.process.DocAction;
 
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.document.engine.DocAction;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.inoutcandidate.api.IReceiptScheduleDAO;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;

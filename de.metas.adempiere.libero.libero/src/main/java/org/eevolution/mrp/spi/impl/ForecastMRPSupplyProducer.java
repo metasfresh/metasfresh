@@ -35,7 +35,6 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Forecast;
 import org.compiere.model.I_M_ForecastLine;
 import org.compiere.model.I_M_Product;
-import org.compiere.process.DocAction;
 import org.eevolution.model.I_PP_MRP;
 import org.eevolution.model.X_PP_MRP;
 import org.eevolution.mrp.api.IMRPCreateSupplyRequest;
@@ -43,6 +42,7 @@ import org.eevolution.mrp.api.IMRPDAO;
 import org.eevolution.mrp.api.IMRPExecutor;
 import org.eevolution.mrp.api.IMRPSourceEvent;
 
+import de.metas.document.engine.DocAction;
 import de.metas.material.planning.IMaterialPlanningContext;
 import de.metas.product.IProductBL;
 

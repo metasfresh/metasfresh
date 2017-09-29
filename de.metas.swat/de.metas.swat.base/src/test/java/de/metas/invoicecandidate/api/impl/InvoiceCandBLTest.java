@@ -44,11 +44,11 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_InvoiceCandidate_InOutLine;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
-import org.compiere.process.DocAction;
 import org.junit.Before;
 import org.junit.Test;
 
 import de.metas.adempiere.service.IOrderLineBL;
+import de.metas.document.engine.DocAction;
 import de.metas.invoicecandidate.AbstractICTestSupport;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 

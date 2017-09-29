@@ -43,10 +43,10 @@ import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_PaySelection;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.I_Fact_Acct;
-import org.compiere.process.DocAction;
 
 import de.metas.adempiere.model.I_C_PaySelectionLine;
 import de.metas.allocation.api.IAllocationDAO;
+import de.metas.document.engine.DocAction;
 import de.metas.payment.api.IPaymentDAO;
 
 public abstract class AbstractPaymentDAO implements IPaymentDAO

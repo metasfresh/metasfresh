@@ -35,7 +35,6 @@ import org.adempiere.util.time.SystemTime;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.X_C_DocType;
-import org.compiere.process.DocAction;
 import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.IPPOrderBOMDAO;
 import org.eevolution.model.I_DD_Order;
@@ -52,6 +51,7 @@ import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import de.metas.document.engine.DocAction;
 import de.metas.document.engine.IDocActionBL;
 
 /**

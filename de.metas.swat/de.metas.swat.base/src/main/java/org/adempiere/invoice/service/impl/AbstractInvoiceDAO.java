@@ -42,13 +42,13 @@ import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_Fact_Acct;
 import org.compiere.model.I_M_InOutLine;
-import org.compiere.process.DocAction;
 
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.adempiere.util.CacheTrx;
 import de.metas.allocation.api.IAllocationDAO;
+import de.metas.document.engine.DocAction;
 
 /**
  * Implements those methods from {@link IInvoiceDAO} that are DB decoupled.

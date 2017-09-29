@@ -39,8 +39,8 @@ import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Product;
-import org.compiere.process.DocAction;
 
+import de.metas.document.engine.DocAction;
 import de.metas.inout.model.I_M_InOutLine;
 
 public class InOutLineExpectation<ParentExpectationType> extends AbstractExpectation<ParentExpectationType>

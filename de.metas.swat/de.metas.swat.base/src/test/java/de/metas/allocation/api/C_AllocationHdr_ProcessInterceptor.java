@@ -36,8 +36,8 @@ import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_AllocationLine;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
-import org.compiere.process.DocAction;
 
+import de.metas.document.engine.DocAction;
 import de.metas.document.engine.impl.PlainDocActionBL.IProcessInterceptor;
 import de.metas.payment.api.IPaymentBL;
 

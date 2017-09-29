@@ -1,7 +1,6 @@
 package de.metas.document.impl;
 
-import org.compiere.process.DocAction;
-
+import de.metas.document.engine.DocAction;
 import de.metas.document.spi.ICounterDocHandler;
 
 /*

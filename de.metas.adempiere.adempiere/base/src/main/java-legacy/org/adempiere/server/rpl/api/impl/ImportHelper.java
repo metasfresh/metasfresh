@@ -96,7 +96,6 @@ import org.compiere.model.X_AD_Reference;
 import org.compiere.model.X_AD_ReplicationDocument;
 import org.compiere.model.X_AD_ReplicationTable;
 import org.compiere.model.X_EXP_FormatLine;
-import org.compiere.process.DocAction;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -111,6 +110,7 @@ import org.w3c.dom.NodeList;
 import com.google.common.base.Optional;
 
 import de.metas.adempiere.service.IColumnBL;
+import de.metas.document.engine.DocAction;
 import de.metas.logging.LogManager;
 import de.metas.monitoring.api.IMeter;
 import de.metas.monitoring.api.IMonitoringBL;

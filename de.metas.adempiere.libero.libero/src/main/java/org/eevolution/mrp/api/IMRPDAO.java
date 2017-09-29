@@ -32,11 +32,11 @@ import org.adempiere.model.IContextAware;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
-import org.compiere.process.DocAction;
 import org.eevolution.model.I_PP_MRP;
 import org.eevolution.model.I_PP_MRP_Alloc;
 import org.eevolution.model.I_PP_MRP_Alternative;
 
+import de.metas.document.engine.DocAction;
 import de.metas.material.planning.IMRPSegment;
 
 public interface IMRPDAO extends ISingletonService

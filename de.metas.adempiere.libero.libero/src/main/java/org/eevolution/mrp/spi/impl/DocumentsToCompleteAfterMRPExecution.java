@@ -36,7 +36,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IReference;
-import org.compiere.process.DocAction;
 import org.compiere.util.Env;
 import org.eevolution.api.IDDOrderBL;
 import org.eevolution.model.I_DD_Order;
@@ -48,7 +47,7 @@ import org.slf4j.Logger;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
 import de.metas.logging.LogManager;
-
+import de.metas.document.engine.DocAction;
 import de.metas.document.engine.IDocActionBL;
 
 public class DocumentsToCompleteAfterMRPExecution implements Runnable

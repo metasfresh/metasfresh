@@ -29,7 +29,6 @@ import org.adempiere.util.Services;
 import org.compiere.model.MClient;
 import org.compiere.model.MOrgInfo;
 import org.compiere.model.PO;
-import org.compiere.process.DocAction;
 import org.compiere.process.StateEngine;
 import org.compiere.util.DB;
 import org.compiere.util.TimeUtil;
@@ -40,6 +39,7 @@ import org.compiere.wf.MWFResponsible;
 import org.compiere.wf.MWorkflowProcessor;
 import org.compiere.wf.MWorkflowProcessorLog;
 
+import de.metas.document.engine.DocAction;
 import de.metas.i18n.Msg;
 
 

@@ -36,8 +36,8 @@ import org.adempiere.ad.trx.processor.spi.ITrxItemProcessor;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
-import org.compiere.process.DocAction;
 
+import de.metas.document.engine.DocAction;
 import de.metas.edi.api.IDesadvBL;
 import de.metas.edi.model.I_C_BPartner;
 import de.metas.edi.model.I_EDI_Document;

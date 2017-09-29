@@ -30,7 +30,6 @@ import java.util.Properties;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_DocType;
-import org.compiere.process.DocAction;
 
 /**
  * Note the the implementation of this

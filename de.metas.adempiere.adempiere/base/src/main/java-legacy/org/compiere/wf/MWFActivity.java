@@ -56,7 +56,6 @@ import org.compiere.model.PO;
 import org.compiere.model.Query;
 import org.compiere.model.X_AD_WF_Activity;
 import org.compiere.print.ReportEngine;
-import org.compiere.process.DocAction;
 import org.compiere.process.StateEngine;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -68,6 +67,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.attachments.IAttachmentBL;
 import de.metas.currency.ICurrencyBL;
+import de.metas.document.engine.DocAction;
 import de.metas.email.IMailBL;
 import de.metas.email.IMailTextBuilder;
 import de.metas.i18n.IMsgBL;

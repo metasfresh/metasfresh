@@ -46,10 +46,10 @@ import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_M_InOut;
-import org.compiere.process.DocAction;
 import org.compiere.util.Env;
 
 import de.metas.document.IDocTypeDAO;
+import de.metas.document.engine.DocAction;
 import de.metas.document.engine.IDocActionBL;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.event.InOutProcessedEventBus;

@@ -6,11 +6,11 @@ import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Client;
-import org.compiere.process.DocAction;
 
 import com.google.common.base.MoreObjects;
 
 import de.metas.document.ICounterDocBL;
+import de.metas.document.engine.DocAction;
 
 /*
  * #%L

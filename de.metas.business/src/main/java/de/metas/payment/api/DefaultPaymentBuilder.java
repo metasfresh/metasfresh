@@ -34,10 +34,10 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.X_C_DocType;
-import org.compiere.process.DocAction;
 
 import de.metas.builder.IBuilder;
 import de.metas.document.IDocTypeDAO;
+import de.metas.document.engine.DocAction;
 import de.metas.document.engine.IDocActionBL;
 
 public class DefaultPaymentBuilder implements IBuilder

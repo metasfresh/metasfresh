@@ -41,7 +41,6 @@ import org.compiere.model.MOrderLine;
 import org.compiere.model.MPeriod;
 import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_C_Order;
-import org.compiere.process.DocAction;
 
 import de.metas.adempiere.ait.event.AIntegrationTestDriver;
 import de.metas.adempiere.ait.event.EventType;
@@ -59,6 +58,7 @@ import de.metas.contracts.model.I_C_Flatrate_Transition;
 import de.metas.contracts.model.I_C_Invoice_Clearing_Alloc;
 import de.metas.contracts.model.X_C_Flatrate_DataEntry;
 import de.metas.contracts.model.X_C_Flatrate_Term;
+import de.metas.document.engine.DocAction;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import test.integration.contracts.ContractsHelper;
 import test.integration.contracts.ContractsTestConfig;

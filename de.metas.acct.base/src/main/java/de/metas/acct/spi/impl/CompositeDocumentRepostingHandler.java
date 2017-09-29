@@ -7,9 +7,9 @@ import java.util.Properties;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.adempiere.util.Services;
-import org.compiere.process.DocAction;
 
 import de.metas.acct.spi.IDocumentRepostingHandler;
+import de.metas.document.engine.DocAction;
 import de.metas.document.engine.IDocActionBL;
 
 /*

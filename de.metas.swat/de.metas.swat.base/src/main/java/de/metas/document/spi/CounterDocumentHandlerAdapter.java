@@ -8,10 +8,9 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.MDocTypeCounter;
 import org.compiere.model.MOrg;
-import org.compiere.process.DocAction;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
-
+import de.metas.document.engine.DocAction;
 import de.metas.document.engine.IDocActionBL;
 
 /*

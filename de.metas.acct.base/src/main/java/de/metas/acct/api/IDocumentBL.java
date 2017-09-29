@@ -5,9 +5,9 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.util.ISingletonService;
-import org.compiere.process.DocAction;
 
 import de.metas.acct.spi.IDocumentRepostingHandler;
+import de.metas.document.engine.DocAction;
 
 /*
  * #%L

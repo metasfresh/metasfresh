@@ -56,7 +56,6 @@ import org.compiere.model.MLookupFactory;
 import org.compiere.model.MTable;
 import org.compiere.model.MUserMail;
 import org.compiere.model.PO;
-import org.compiere.process.DocAction;
 import org.compiere.swing.CCheckBox;
 import org.compiere.swing.CDialog;
 import org.compiere.swing.CLabel;
@@ -66,6 +65,7 @@ import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
+import de.metas.document.engine.DocAction;
 import de.metas.email.EMail;
 import de.metas.email.EMailSentStatus;
 import de.metas.i18n.IMsgBL;

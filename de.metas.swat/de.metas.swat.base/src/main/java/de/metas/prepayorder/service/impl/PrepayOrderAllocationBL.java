@@ -52,10 +52,10 @@ import org.compiere.model.MPeriod;
 import org.compiere.model.Query;
 import org.compiere.model.X_C_Invoice;
 import org.compiere.model.X_C_Order;
-import org.compiere.process.DocAction;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
 
+import de.metas.document.engine.DocAction;
 import de.metas.document.engine.IDocActionBL;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;

@@ -1,7 +1,7 @@
 package org.eevolution.event;
 
-import static org.compiere.process.DocAction.ACTION_Complete;
-import static org.compiere.process.DocAction.STATUS_Completed;
+import static de.metas.document.engine.DocAction.ACTION_Complete;
+import static de.metas.document.engine.DocAction.STATUS_Completed;
 
 import java.util.Date;
 

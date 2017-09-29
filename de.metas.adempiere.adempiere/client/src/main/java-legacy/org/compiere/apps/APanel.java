@@ -118,7 +118,6 @@ import org.compiere.model.MWindow;
 import org.compiere.model.PO;
 import org.compiere.model.X_AD_Process;
 import org.compiere.print.AReport;
-import org.compiere.process.DocAction;
 import org.compiere.swing.CPanel;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -129,6 +128,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.form.IClientUI;
 import de.metas.adempiere.service.IColumnBL;
+import de.metas.document.engine.DocAction;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;

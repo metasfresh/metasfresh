@@ -50,11 +50,11 @@ import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.PO;
 import org.compiere.model.X_C_Order;
-import org.compiere.process.DocAction;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
 
 import de.metas.adempiere.service.IInvoiceLineBL;
+import de.metas.document.engine.DocAction;
 import de.metas.freighcost.api.IFreightCostBL;
 import de.metas.freighcost.api.impl.FreightCostBL;
 

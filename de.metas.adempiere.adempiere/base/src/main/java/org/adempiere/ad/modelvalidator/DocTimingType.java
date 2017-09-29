@@ -29,9 +29,10 @@ import java.util.stream.Stream;
 import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
 import org.compiere.model.ModelValidator;
-import org.compiere.process.DocAction;
 
 import com.google.common.annotations.VisibleForTesting;
+
+import de.metas.document.engine.DocAction;
 
 public enum DocTimingType
 {

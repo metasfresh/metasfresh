@@ -27,9 +27,10 @@ package org.eevolution.exceptions;
 
 
 import org.compiere.model.I_S_Resource;
-import org.compiere.process.DocAction;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_Node;
+
+import de.metas.document.engine.DocAction;
 
 /**
  * @author teo_sarca

@@ -39,8 +39,9 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_Fact_Acct;
 import org.compiere.model.I_GL_Journal;
 import org.compiere.model.I_GL_JournalBatch;
-import org.compiere.process.DocAction;
 import org.compiere.util.Env;
+
+import de.metas.document.engine.DocAction;
 
 public class GLJournalDAO implements IGLJournalDAO
 {

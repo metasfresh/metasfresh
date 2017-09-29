@@ -29,6 +29,7 @@ import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_C_Order;
 import org.slf4j.Logger;
 
+import de.metas.document.engine.DocAction;
 import de.metas.lock.api.ILock;
 import de.metas.lock.api.ILockAutoCloseable;
 import de.metas.lock.api.ILockCommand;
@@ -98,7 +99,7 @@ public class DocumentEngine implements DocAction
 	 * Set Doc Status - Ignored
 	 *
 	 * @param ignored Status is not set directly
-	 * @see org.compiere.process.DocAction#setDocStatus(String)
+	 * @see de.metas.document.engine.DocAction#setDocStatus(String)
 	 */
 	@Override
 	public void setDocStatus(final String ignored)
@@ -377,7 +378,7 @@ public class DocumentEngine implements DocAction
 	 * Unlock Document. Status: Drafted
 	 *
 	 * @return true if success
-	 * @see org.compiere.process.DocAction#unlockIt()
+	 * @see de.metas.document.engine.DocAction#unlockIt()
 	 */
 	@Override
 	public boolean unlockIt()
@@ -404,7 +405,7 @@ public class DocumentEngine implements DocAction
 	 * Invalidate Document. Status: Invalid
 	 *
 	 * @return true if success
-	 * @see org.compiere.process.DocAction#invalidateIt()
+	 * @see de.metas.document.engine.DocAction#invalidateIt()
 	 */
 	@Override
 	public boolean invalidateIt()
@@ -431,7 +432,7 @@ public class DocumentEngine implements DocAction
 	 * Process Document. Status is set by process
 	 *
 	 * @return new status (In Progress or Invalid)
-	 * @see org.compiere.process.DocAction#prepareIt()
+	 * @see de.metas.document.engine.DocAction#prepareIt()
 	 */
 	@Override
 	public String prepareIt()
@@ -452,7 +453,7 @@ public class DocumentEngine implements DocAction
 	 * Approve Document. Status: Approved
 	 *
 	 * @return true if success
-	 * @see org.compiere.process.DocAction#approveIt()
+	 * @see de.metas.document.engine.DocAction#approveIt()
 	 */
 	@Override
 	public boolean approveIt()
@@ -479,7 +480,7 @@ public class DocumentEngine implements DocAction
 	 * Reject Approval. Status: Not Approved
 	 *
 	 * @return true if success
-	 * @see org.compiere.process.DocAction#rejectIt()
+	 * @see de.metas.document.engine.DocAction#rejectIt()
 	 */
 	@Override
 	public boolean rejectIt()
@@ -506,7 +507,7 @@ public class DocumentEngine implements DocAction
 	 * Complete Document. Status is set by process
 	 *
 	 * @return new document status (Complete, In Progress, Invalid, Waiting ..)
-	 * @see org.compiere.process.DocAction#completeIt()
+	 * @see de.metas.document.engine.DocAction#completeIt()
 	 */
 	@Override
 	public String completeIt()
@@ -556,7 +557,7 @@ public class DocumentEngine implements DocAction
 	 * Void Document. Status: Voided
 	 *
 	 * @return true if success
-	 * @see org.compiere.process.DocAction#voidIt()
+	 * @see de.metas.document.engine.DocAction#voidIt()
 	 */
 	@Override
 	public boolean voidIt()
@@ -593,7 +594,7 @@ public class DocumentEngine implements DocAction
 	 * Close Document. Status: Closed
 	 *
 	 * @return true if success
-	 * @see org.compiere.process.DocAction#closeIt()
+	 * @see de.metas.document.engine.DocAction#closeIt()
 	 */
 	@Override
 	public boolean closeIt()
@@ -628,7 +629,7 @@ public class DocumentEngine implements DocAction
 	 * Reverse Correct Document. Status: Reversed
 	 *
 	 * @return true if success
-	 * @see org.compiere.process.DocAction#reverseCorrectIt()
+	 * @see de.metas.document.engine.DocAction#reverseCorrectIt()
 	 */
 	@Override
 	public boolean reverseCorrectIt()
@@ -658,7 +659,7 @@ public class DocumentEngine implements DocAction
 	 * Reverse Accrual Document. Status: Reversed
 	 *
 	 * @return true if success
-	 * @see org.compiere.process.DocAction#reverseAccrualIt()
+	 * @see de.metas.document.engine.DocAction#reverseAccrualIt()
 	 */
 	@Override
 	public boolean reverseAccrualIt()
@@ -688,7 +689,7 @@ public class DocumentEngine implements DocAction
 	 * Re-activate Document. Status: In Progress
 	 *
 	 * @return true if success
-	 * @see org.compiere.process.DocAction#reActivateIt()
+	 * @see de.metas.document.engine.DocAction#reActivateIt()
 	 */
 	@Override
 	public boolean reActivateIt()

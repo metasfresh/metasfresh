@@ -36,7 +36,6 @@ import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.X_C_DocType;
-import org.compiere.process.DocAction;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.IPPOrderBOMDAO;
@@ -58,6 +57,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 
+import de.metas.document.engine.DocAction;
 import de.metas.handlingunits.AbstractHUTest;
 import de.metas.handlingunits.HUAssert;
 import de.metas.handlingunits.HUTestHelper;

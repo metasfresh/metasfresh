@@ -10,9 +10,9 @@ import java.text.ParseException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_M_InOut;
-import org.compiere.process.DocAction;
 
 import de.metas.adempiere.model.I_M_Product;
+import de.metas.document.engine.DocAction;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
 
 /*

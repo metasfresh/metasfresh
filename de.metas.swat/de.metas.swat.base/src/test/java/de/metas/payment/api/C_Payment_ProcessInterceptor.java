@@ -35,11 +35,11 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
-import org.compiere.process.DocAction;
 
 import de.metas.allocation.api.IAllocationBL;
 import de.metas.allocation.api.IAllocationBuilder;
 import de.metas.allocation.api.IAllocationLineBuilder;
+import de.metas.document.engine.DocAction;
 import de.metas.document.engine.impl.PlainDocActionBL.IProcessInterceptor;
 
 /**

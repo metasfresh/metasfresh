@@ -39,9 +39,9 @@ import org.compiere.model.MInvoice;
 import org.compiere.model.MOrder;
 import org.compiere.model.MPayment;
 import org.compiere.model.Query;
-import org.compiere.process.DocAction;
 import org.slf4j.Logger;
 
+import de.metas.document.engine.DocAction;
 import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
 

@@ -26,7 +26,8 @@ package de.metas.document.exceptions;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.compiere.process.DocAction;
+
+import de.metas.document.engine.DocAction;
 
 /**
  * Exception thrown when document processing failed.

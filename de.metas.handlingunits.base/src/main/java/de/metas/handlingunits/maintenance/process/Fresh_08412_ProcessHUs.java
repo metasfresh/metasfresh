@@ -46,7 +46,6 @@ import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_S_Resource;
 import org.compiere.model.X_C_DocType;
-import org.compiere.process.DocAction;
 import org.compiere.util.DB;
 import org.compiere.util.TrxRunnable2;
 import org.eevolution.api.IPPCostCollectorDAO;
@@ -61,6 +60,7 @@ import org.eevolution.model.X_PP_Order;
 
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.document.IDocTypeDAO;
+import de.metas.document.engine.DocAction;
 import de.metas.document.engine.IDocActionBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.exceptions.HUException;

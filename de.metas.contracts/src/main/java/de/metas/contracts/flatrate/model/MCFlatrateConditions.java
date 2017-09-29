@@ -30,11 +30,11 @@ import java.util.Properties;
 
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
-import org.compiere.process.DocAction;
 import org.compiere.process.DocumentEngine;
 import org.compiere.util.Env;
 
 import de.metas.contracts.model.X_C_Flatrate_Conditions;
+import de.metas.document.engine.DocAction;
 import de.metas.i18n.Msg;
 
 public class MCFlatrateConditions extends X_C_Flatrate_Conditions implements DocAction

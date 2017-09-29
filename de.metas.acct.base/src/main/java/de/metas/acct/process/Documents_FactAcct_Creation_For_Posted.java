@@ -10,10 +10,10 @@ import org.adempiere.util.ILoggable;
 import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
 import org.compiere.model.POInfo;
-import org.compiere.process.DocAction;
 import org.compiere.util.TimeUtil;
 
 import de.metas.acct.api.IDocumentBL;
+import de.metas.document.engine.DocAction;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 

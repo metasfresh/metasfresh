@@ -15,9 +15,9 @@ import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.MDocTypeCounter;
 import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;
-import org.compiere.process.DocAction;
 import org.slf4j.Logger;
 
+import de.metas.document.engine.DocAction;
 import de.metas.document.engine.IDocActionBL;
 import de.metas.document.spi.CounterDocumentHandlerAdapter;
 import de.metas.document.spi.ICounterDocHandler;

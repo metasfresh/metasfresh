@@ -39,7 +39,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.Mutable;
 import org.compiere.model.I_M_Product;
-import org.compiere.process.DocAction;
 import org.compiere.util.TrxRunnable;
 import org.junit.Assert;
 import org.junit.Test;
@@ -52,6 +51,7 @@ import de.metas.adempiere.ait.test.IntegrationTestRunner;
 import de.metas.adempiere.ait.test.annotation.IntegrationTest;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.allocation.api.IAllocationDAO;
+import de.metas.document.engine.DocAction;
 
 @RunWith(IntegrationTestRunner.class)
 public class InvoiceTests extends AIntegrationTestDriver

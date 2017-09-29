@@ -25,9 +25,9 @@ package de.metas.tourplanning.integrationtest;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
-import org.compiere.process.DocAction;
 import org.junit.Test;
 
+import de.metas.document.engine.DocAction;
 import de.metas.document.engine.IDocActionBL;
 import de.metas.document.engine.impl.PlainDocActionBL;
 import de.metas.document.exceptions.DocumentProcessingException;

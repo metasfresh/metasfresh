@@ -277,7 +277,7 @@ public class VDocAction extends CDialog
 		// setDefault
 		if (DocAction.equals("--")) // If None, suggest closing
 		{
-			DocAction = org.compiere.process.DocAction.ACTION_Close;
+			DocAction = de.metas.document.engine.DocAction.ACTION_Close;
 		}
 
 		final IDocActionItem defaultDocActionItem = docActionItems.get(DocAction);

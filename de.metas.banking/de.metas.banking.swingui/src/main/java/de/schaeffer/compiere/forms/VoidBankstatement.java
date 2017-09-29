@@ -57,7 +57,6 @@ import org.compiere.apps.form.FormPanel;
 import org.compiere.model.MBankStatement;
 import org.compiere.model.MBankStatementLine;
 import org.compiere.model.MQuery;
-import org.compiere.process.DocAction;
 import org.compiere.swing.CPanel;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -66,6 +65,7 @@ import org.slf4j.Logger;
 
 import de.metas.banking.model.I_C_BankStatement;
 import de.metas.banking.model.I_C_BankStatementLine;
+import de.metas.document.engine.DocAction;
 import de.metas.logging.LogManager;
 import de.schaeffer.compiere.constants.Constants;
 import de.schaeffer.compiere.tools.TableHelper;

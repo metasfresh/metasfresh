@@ -2,8 +2,8 @@ package de.metas.document;
 
 import org.adempiere.ad.modelvalidator.IModelInterceptor;
 import org.adempiere.util.ISingletonService;
-import org.compiere.process.DocAction;
 
+import de.metas.document.engine.DocAction;
 import de.metas.document.spi.ICounterDocHandler;
 
 /*

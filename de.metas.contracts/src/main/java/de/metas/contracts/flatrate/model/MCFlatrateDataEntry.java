@@ -31,11 +31,11 @@ import java.util.Properties;
 import org.adempiere.util.Check;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
-import org.compiere.process.DocAction;
 import org.compiere.process.DocumentEngine;
 import org.compiere.util.Env;
 
 import de.metas.contracts.model.X_C_Flatrate_DataEntry;
+import de.metas.document.engine.DocAction;
 import de.metas.i18n.Msg;
 
 public class MCFlatrateDataEntry extends X_C_Flatrate_DataEntry implements DocAction

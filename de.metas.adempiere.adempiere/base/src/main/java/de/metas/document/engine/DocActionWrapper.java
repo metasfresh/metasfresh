@@ -9,7 +9,6 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
-import org.compiere.process.DocAction;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;

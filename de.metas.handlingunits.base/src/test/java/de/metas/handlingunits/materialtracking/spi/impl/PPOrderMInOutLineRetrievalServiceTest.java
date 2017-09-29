@@ -21,7 +21,6 @@ import org.compiere.model.I_AD_SysConfig;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_Product;
-import org.compiere.process.DocAction;
 import org.compiere.util.Env;
 import org.eevolution.model.I_PP_Cost_Collector;
 import org.eevolution.model.X_PP_Cost_Collector;
@@ -32,6 +31,7 @@ import org.junit.rules.TestWatcher;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.document.engine.DocAction;
 import de.metas.document.engine.IDocActionBL;
 import de.metas.handlingunits.HUDocumentSelectTestHelper;
 import de.metas.handlingunits.HUIteratorListenerAdapter;

@@ -36,9 +36,9 @@ import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
-import org.compiere.process.DocAction;
 import org.compiere.util.Util.ArrayKey;
 
+import de.metas.document.engine.DocAction;
 import de.metas.document.engine.IDocActionBL;
 
 /**

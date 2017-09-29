@@ -51,7 +51,6 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.MCashLine;
 import org.compiere.model.MPayment;
 import org.compiere.model.X_C_Order;
-import org.compiere.process.DocAction;
 import org.compiere.swing.CComboBox;
 import org.compiere.swing.CDialog;
 import org.compiere.swing.CLabel;
@@ -65,6 +64,7 @@ import org.compiere.util.TrxRunnable2;
 import org.compiere.util.ValueNamePair;
 
 import de.metas.currency.ICurrencyDAO;
+import de.metas.document.engine.DocAction;
 import de.metas.i18n.IMsgBL;
 
 /**

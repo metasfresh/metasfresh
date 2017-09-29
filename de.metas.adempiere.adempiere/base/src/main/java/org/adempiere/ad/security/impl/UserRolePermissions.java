@@ -68,7 +68,6 @@ import org.adempiere.util.Services;
 import org.compiere.model.AccessSqlParser;
 import org.compiere.model.I_AD_PInstance_Log;
 import org.compiere.model.I_AD_Private_Access;
-import org.compiere.process.DocAction;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -82,6 +81,7 @@ import com.google.common.base.MoreObjects;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.document.engine.DocAction;
 import de.metas.document.engine.IDocActionOptionsContext;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;

@@ -46,7 +46,6 @@ import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_S_Resource;
-import org.compiere.process.DocAction;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.eevolution.api.IPPOrderDAO;
@@ -62,6 +61,7 @@ import org.slf4j.Logger;
 
 import com.google.common.base.Optional;
 
+import de.metas.document.engine.DocAction;
 import de.metas.document.engine.IDocActionBL;
 import de.metas.logging.LogManager;
 import de.metas.material.planning.IMRPSegment;

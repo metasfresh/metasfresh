@@ -41,7 +41,6 @@ import org.compiere.model.MInvoice;
 import org.compiere.model.MInvoiceLine;
 import org.compiere.model.MQuery;
 import org.compiere.model.MTable;
-import org.compiere.process.DocAction;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
@@ -50,6 +49,7 @@ import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.document.IDocumentPA;
+import de.metas.document.engine.DocAction;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.logging.LogManager;
 

@@ -52,7 +52,6 @@ import org.compiere.model.MInvoiceLine;
 import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;
 import org.compiere.model.PO;
-import org.compiere.process.DocAction;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
 
@@ -85,6 +84,7 @@ import de.metas.commission.service.IFieldAccessBL;
 import de.metas.commission.service.ISponsorBL;
 import de.metas.commission.service.ISponsorDAO;
 import de.metas.commission.util.Messages;
+import de.metas.document.engine.DocAction;
 import de.metas.i18n.Msg;
 import de.metas.logging.MetasfreshLastError;
 import de.metas.prepayorder.service.IPrepayOrderBL;

@@ -37,7 +37,8 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.Query;
 import org.compiere.model.X_C_Order;
-import org.compiere.process.DocAction;
+
+import de.metas.document.engine.DocAction;
 
 public class OrderDAO extends AbstractOrderDAO
 {

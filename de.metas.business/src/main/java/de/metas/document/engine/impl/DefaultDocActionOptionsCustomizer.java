@@ -16,7 +16,6 @@ import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Inventory;
 import org.compiere.model.I_M_Movement;
 import org.compiere.model.X_C_DocType;
-import org.compiere.process.DocAction;
 import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_HR_Process;
 import org.eevolution.model.I_PP_Cost_Collector;
@@ -24,6 +23,7 @@ import org.eevolution.model.I_PP_Order;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.document.engine.DocAction;
 import de.metas.document.engine.IDocActionOptionsContext;
 import de.metas.document.engine.IDocActionOptionsCustomizer;
 import de.metas.shipping.model.I_M_ShipperTransportation;

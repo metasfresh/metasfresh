@@ -55,7 +55,6 @@ import org.compiere.model.Query;
 import org.compiere.model.X_C_Invoice;
 import org.compiere.model.X_C_Order;
 import org.compiere.model.X_C_Payment;
-import org.compiere.process.DocAction;
 import org.compiere.util.Env;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -78,6 +77,7 @@ import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.adempiere.service.IInvoiceLineBL;
+import de.metas.document.engine.DocAction;
 
 @RunWith(IntegrationTestRunner.class)
 public class SalesTestDriver extends AIntegrationTestDriver

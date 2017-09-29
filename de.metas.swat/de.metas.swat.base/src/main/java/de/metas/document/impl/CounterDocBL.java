@@ -9,10 +9,10 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Pair;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_Order;
-import org.compiere.process.DocAction;
 
 import de.metas.document.ICounterDocBL;
 import de.metas.document.async.spi.impl.CreateCounterDocPP;
+import de.metas.document.engine.DocAction;
 import de.metas.document.engine.IDocActionBL;
 import de.metas.document.model.interceptor.CounterDocHandlerInterceptor;
 import de.metas.document.spi.ICounterDocHandler;
