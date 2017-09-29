@@ -1,17 +1,19 @@
 /******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2006 Adempiere, Inc. All Rights Reserved.               *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
+ * Product: Adempiere ERP & CRM Smart Business Solution *
+ * Copyright (C) 1999-2006 Adempiere, Inc. All Rights Reserved. *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms version 2 of the GNU General Public License as published *
+ * by the Free Software Foundation. This program is distributed in the hope *
  * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
+ * See the GNU General Public License for more details. *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
  *****************************************************************************/
 package org.compiere.dbPort;
+
+import static org.junit.Assert.assertEquals;
 
 /*
  * #%L
@@ -26,21 +28,18 @@ package org.compiere.dbPort;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.util.List;
 
 import org.junit.Test;
-
-import junit.framework.TestCase;
 
 /**
  * Unit testing for Convert_PostgreSQL.
@@ -48,7 +47,7 @@ import junit.framework.TestCase;
  * @author Low Heng Sin
  * @version 20061225
  */
-public final class Convert_PostgreSQLTest extends TestCase
+public final class Convert_PostgreSQLTest
 {
 	private Convert_PostgreSQL convert = new Convert_PostgreSQL();
 	String sql;
@@ -59,6 +58,7 @@ public final class Convert_PostgreSQLTest extends TestCase
 	{
 	}
 
+	@Test
 	public void test1807657()
 	{
 		sql = "UPDATE A_Asset a "
@@ -80,6 +80,7 @@ public final class Convert_PostgreSQLTest extends TestCase
 		assertEquals(sqe, convertResult.get(0));
 	}
 
+	@Test
 	public void test1751966()
 	{
 		sql = "UPDATE I_ReportLine i "
@@ -109,6 +110,7 @@ public final class Convert_PostgreSQLTest extends TestCase
 	}
 
 	// [ 1707959 ] Copy from other PrintFormat doesn't work anymore
+	@Test
 	public void test1707959()
 	{
 		sql = "UPDATE AD_PrintFormatItem_Trl new " +
@@ -129,6 +131,7 @@ public final class Convert_PostgreSQLTest extends TestCase
 
 	// [ 1707540 ] Dependency problem when modifying AD Columns and Sync.
 	// [ 1707611 ] Column synchronization for mandatory columns doesn't work
+	@Test
 	public void testAlterColumn()
 	{
 		sql = "ALTER TABLE Test MODIFY T_Integer NUMBER(10) NOT NULL";
@@ -180,6 +183,7 @@ public final class Convert_PostgreSQLTest extends TestCase
 
 	// Convert.recoverQuotedStrings() error on strings with "<-->" - teo_sarca [ 1705768 ]
 	// http://sourceforge.net/tracker/index.php?func=detail&aid=1705768&group_id=176962&atid=879332
+	@Test
 	public void test1705768()
 	{
 		sql = "SELECT 'Partner <--> Organization', 's2\\$', 's3' FROM DUAL";
@@ -188,6 +192,7 @@ public final class Convert_PostgreSQLTest extends TestCase
 		assertEquals(sqe, convertResult.get(0));
 	}
 
+	@Test
 	public void test1704261()
 	{
 		// [ 1704261 ] can not import currency rate
@@ -197,6 +202,7 @@ public final class Convert_PostgreSQLTest extends TestCase
 		assertEquals(sqe, convertResult.get(0));
 	}
 
+	@Test
 	public void testAlterTable()
 	{
 		// [ 1668720 ] Convert failing in alter table
@@ -212,6 +218,7 @@ public final class Convert_PostgreSQLTest extends TestCase
 		assertEquals(sqe, convertResult.get(0));
 	}
 
+	@Test
 	public void test1662983()
 	{
 		// [ 1662983 ] Convert cutting backslash from string
@@ -226,6 +233,7 @@ public final class Convert_PostgreSQLTest extends TestCase
 		assertEquals(sqe, convertResult.get(0));
 	}
 
+	@Test
 	public void testMultiColumnAssignment()
 	{
 		// Line 407 of ImportProduct.java
@@ -274,6 +282,7 @@ public final class Convert_PostgreSQLTest extends TestCase
 
 	}
 
+	@Test
 	public void testReservedWordInQuote()
 	{
 		// test conversion of reserved words inside quotes
@@ -283,6 +292,7 @@ public final class Convert_PostgreSQLTest extends TestCase
 		assertEquals(sqe, convertResult.get(0));
 	}
 
+	@Test
 	public void test1580231()
 	{
 		// financial report, bug [ 1580231 ]
@@ -297,27 +307,7 @@ public final class Convert_PostgreSQLTest extends TestCase
 		assertEquals(sqe, convertResult.get(0));
 	}
 
-	/*
-	 * public void testRowNum() { //test limit sql =
-	 * "UPDATE I_Order SET M_Warehouse_ID=(SELECT M_Warehouse_ID FROM M_Warehouse w WHERE ROWNUM=1 AND I_Order.AD_Client_ID=w.AD_Client_ID AND I_Order.AD_Org_ID=w.AD_Org_ID) WHERE M_Warehouse_ID IS NULL AND I_IsImported<>'Y' AND AD_Client_ID=11"
-	 * ; sqe =
-	 * "UPDATE I_Order SET M_Warehouse_ID=(SELECT M_Warehouse_ID FROM M_Warehouse w WHERE  I_Order.AD_Client_ID=w.AD_Client_ID AND I_Order.AD_Org_ID=w.AD_Org_ID LIMIT 1 ) WHERE M_Warehouse_ID IS NULL AND I_IsImported<>'Y' AND AD_Client_ID=11"
-	 * ; r = convert.convert(sql); assertEquals(sqe, r[0]);
-	 * 
-	 * //Doc_Invoice sql = "UPDATE M_Product_PO po " + "SET PriceLastInv = " +
-	 * "(SELECT currencyConvert(il.PriceActual,i.C_Currency_ID,po.C_Currency_ID,i.DateInvoiced,i.C_ConversionType_ID,i.AD_Client_ID,i.AD_Org_ID) " + "FROM C_Invoice i, C_InvoiceLine il " +
-	 * "WHERE i.C_Invoice_ID=il.C_Invoice_ID" + " AND po.M_Product_ID=il.M_Product_ID AND po.C_BPartner_ID=i.C_BPartner_ID" + " AND ROWNUM=1 AND i.C_Invoice_ID=0) " + "WHERE EXISTS (SELECT * " +
-	 * "FROM C_Invoice i, C_InvoiceLine il " + "WHERE i.C_Invoice_ID=il.C_Invoice_ID" + " AND po.M_Product_ID=il.M_Product_ID AND po.C_BPartner_ID=i.C_BPartner_ID" + " AND i.C_Invoice_ID=0)"; sqe =
-	 * "UPDATE M_Product_PO SET PriceLastInv = (SELECT currencyConvert(il.PriceActual,i.C_Currency_ID,M_Product_PO.C_Currency_ID,i.DateInvoiced,i.C_ConversionType_ID,i.AD_Client_ID,i.AD_Org_ID) FROM C_Invoice i, C_InvoiceLine il WHERE i.C_Invoice_ID=il.C_Invoice_ID AND M_Product_PO.M_Product_ID=il.M_Product_ID AND M_Product_PO.C_BPartner_ID=i.C_BPartner_ID  AND i.C_Invoice_ID=0 LIMIT 1 ) WHERE EXISTS (SELECT * FROM C_Invoice i, C_InvoiceLine il WHERE i.C_Invoice_ID=il.C_Invoice_ID AND M_Product_PO.M_Product_ID=il.M_Product_ID AND M_Product_PO.C_BPartner_ID=i.C_BPartner_ID AND i.C_Invoice_ID=0)"
-	 * ; r = convert.convert(sql); assertEquals(sqe, r[0]);
-	 * 
-	 * sql=
-	 * "UPDATE T_InventoryValue SET PricePO = (SELECT currencyConvert (po.PriceList,po.C_Currency_ID,T_InventoryValue.C_Currency_ID,T_InventoryValue.DateValue,null, po.AD_Client_ID,po.AD_Org_ID) FROM M_Product_PO po WHERE po.M_Product_ID=T_InventoryValue.M_Product_ID AND po.IsCurrentVendor='Y' AND RowNum=1), PriceList = (SELECT currencyConvert(pp.PriceList,pl.C_Currency_ID,T_InventoryValue.C_Currency_ID,T_InventoryValue.DateValue,null, pl.AD_Client_ID,pl.AD_Org_ID) FROM M_PriceList pl, M_PriceList_Version plv, M_ProductPrice pp WHERE pp.M_Product_ID=T_InventoryValue.M_Product_ID AND pp.M_PriceList_Version_ID=T_InventoryValue.M_PriceList_Version_ID AND pp.M_PriceList_Version_ID=plv.M_PriceList_Version_ID AND plv.M_PriceList_ID=pl.M_PriceList_ID), PriceStd = (SELECT currencyConvert(pp.PriceStd,pl.C_Currency_ID,T_InventoryValue.C_Currency_ID,T_InventoryValue.DateValue,null, pl.AD_Client_ID,pl.AD_Org_ID) FROM M_PriceList pl, M_PriceList_Version plv, M_ProductPrice pp WHERE pp.M_Product_ID=T_InventoryValue.M_Product_ID AND pp.M_PriceList_Version_ID=T_InventoryValue.M_PriceList_Version_ID AND pp.M_PriceList_Version_ID=plv.M_PriceList_Version_ID AND plv.M_PriceList_ID=pl.M_PriceList_ID), PriceLimit = (SELECT currencyConvert(pp.PriceLimit,pl.C_Currency_ID,T_InventoryValue.C_Currency_ID,T_InventoryValue.DateValue,null, pl.AD_Client_ID,pl.AD_Org_ID) FROM M_PriceList pl, M_PriceList_Version plv, M_ProductPrice pp WHERE pp.M_Product_ID=T_InventoryValue.M_Product_ID AND pp.M_PriceList_Version_ID=T_InventoryValue.M_PriceList_Version_ID AND pp.M_PriceList_Version_ID=plv.M_PriceList_Version_ID AND plv.M_PriceList_ID=pl.M_PriceList_ID)"
-	 * ; sqe =
-	 * "UPDATE T_InventoryValue SET PricePO = (SELECT currencyConvert (po.PriceList,po.C_Currency_ID,T_InventoryValue.C_Currency_ID,T_InventoryValue.DateValue,null, po.AD_Client_ID,po.AD_Org_ID) FROM M_Product_PO po WHERE po.M_Product_ID=T_InventoryValue.M_Product_ID AND po.IsCurrentVendor='Y'  LIMIT 1 ), PriceList = (SELECT currencyConvert(pp.PriceList,pl.C_Currency_ID,T_InventoryValue.C_Currency_ID,T_InventoryValue.DateValue,null, pl.AD_Client_ID,pl.AD_Org_ID) FROM M_PriceList pl, M_PriceList_Version plv, M_ProductPrice pp WHERE pp.M_Product_ID=T_InventoryValue.M_Product_ID AND pp.M_PriceList_Version_ID=T_InventoryValue.M_PriceList_Version_ID AND pp.M_PriceList_Version_ID=plv.M_PriceList_Version_ID AND plv.M_PriceList_ID=pl.M_PriceList_ID), PriceStd = (SELECT currencyConvert(pp.PriceStd,pl.C_Currency_ID,T_InventoryValue.C_Currency_ID,T_InventoryValue.DateValue,null, pl.AD_Client_ID,pl.AD_Org_ID) FROM M_PriceList pl, M_PriceList_Version plv, M_ProductPrice pp WHERE pp.M_Product_ID=T_InventoryValue.M_Product_ID AND pp.M_PriceList_Version_ID=T_InventoryValue.M_PriceList_Version_ID AND pp.M_PriceList_Version_ID=plv.M_PriceList_Version_ID AND plv.M_PriceList_ID=pl.M_PriceList_ID), PriceLimit = (SELECT currencyConvert(pp.PriceLimit,pl.C_Currency_ID,T_InventoryValue.C_Currency_ID,T_InventoryValue.DateValue,null, pl.AD_Client_ID,pl.AD_Org_ID) FROM M_PriceList pl, M_PriceList_Version plv, M_ProductPrice pp WHERE pp.M_Product_ID=T_InventoryValue.M_Product_ID AND pp.M_PriceList_Version_ID=T_InventoryValue.M_PriceList_Version_ID AND pp.M_PriceList_Version_ID=plv.M_PriceList_Version_ID AND plv.M_PriceList_ID=pl.M_PriceList_ID)"
-	 * ; r = convert.convert(sql); assertEquals(sqe, r[0]); }
-	 */
-
+	@Test
 	public void testAliasInUpdate()
 	{
 		// test alias and column list update
@@ -327,6 +317,7 @@ public final class Convert_PostgreSQLTest extends TestCase
 		assertEquals(sqe, convertResult.get(0));
 	}
 
+	@Test
 	public void test1580226()
 	{
 		// from bug [ 1580226 ] - test alias and trunc
@@ -368,6 +359,7 @@ public final class Convert_PostgreSQLTest extends TestCase
 		assertEquals(sqe, convertResult.get(0));
 	}
 
+	@Test
 	public void testTrunc()
 	{
 		// From bug [ 1576358 ] and [ 1577055 ]
@@ -377,6 +369,7 @@ public final class Convert_PostgreSQLTest extends TestCase
 		assertEquals(sqe, convertResult.get(0));
 	}
 
+	@Test
 	public void testSubQuery()
 	{
 		// MLanguage.addTable
@@ -396,6 +389,7 @@ public final class Convert_PostgreSQLTest extends TestCase
 		assertEquals(sqe, convertResult.get(0));
 	}
 
+	@Test
 	public void test1622302()
 	{
 		// MInOutLineMa bug [ 1622302 ]
@@ -426,6 +420,7 @@ public final class Convert_PostgreSQLTest extends TestCase
 	}
 
 	// [ 1727193 ] Convert failed with decode in quoted string
+	@Test
 	public void test1727193()
 	{
 		sql = "UPDATE a set a.ten_decode = 'b'";
@@ -439,6 +434,7 @@ public final class Convert_PostgreSQLTest extends TestCase
 		assertEquals(sqe, convertResult.get(0));
 	}
 
+	@Test
 	public void testDecode()
 	{
 		sql = "SELECT supplier_name, decode(supplier_id, 10000, 'IBM', 10001, 'Microsoft', 10002, 'Hewlett Packard', 'Gateway') FROM suppliers";
@@ -459,6 +455,7 @@ public final class Convert_PostgreSQLTest extends TestCase
 		assertEquals(sqe, convertResult.get(0));
 	}
 
+	@Test
 	public void test2371805_GetDate()
 	{
 		sql = "SELECT getdate() FROM DUAL";
@@ -475,6 +472,7 @@ public final class Convert_PostgreSQLTest extends TestCase
 	/**
 	 * Test BF [ 1824256 ] Convert sql casts
 	 */
+	@Test
 	public void testCasts()
 	{
 		String sql_begin = "SELECT ";
@@ -511,6 +509,7 @@ public final class Convert_PostgreSQLTest extends TestCase
 	/**
 	 * Test BF [ 2521586 ] Postgres conversion error
 	 */
+	@Test
 	public void test2521586()
 	{
 		sql = "INSERT INTO M_Forecast (M_Forecast_ID) VALUES (1000000)";
@@ -522,6 +521,7 @@ public final class Convert_PostgreSQLTest extends TestCase
 	/**
 	 * Test BF [3137355 ] PG query not valid when contains quotes and backslashes. https://sourceforge.net/tracker/?func=detail&aid=3137355&group_id=176962&atid=879332
 	 */
+	@Test
 	public void test3137355()
 	{
 		sql = "INSERT INTO MyTable (a, b, c, d, xml) VALUES ('val1', 'val2', 'this ''is'' a string with ''quotes'' and backslashes ''\\''', 'val4')";
@@ -539,6 +539,7 @@ public final class Convert_PostgreSQLTest extends TestCase
 	/**
 	 * @task http://dewiki908/mediawiki/index.php/03306:_ADempiere_time_values_don%27t_know_their_timezone_%282012091910000041%29
 	 */
+	@Test
 	public void testDDL_With_Timestamp_With_TimeZone()
 	{
 		sql = "ALTER TABLE Test MODIFY Date1 TIMESTAMP WITH TIME ZONE DEFAULT NULL";
