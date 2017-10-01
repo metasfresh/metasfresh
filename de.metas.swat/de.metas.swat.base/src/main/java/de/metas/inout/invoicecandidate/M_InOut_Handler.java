@@ -1,4 +1,4 @@
-package de.metas.invoicecandidate.spi.impl;
+package de.metas.inout.invoicecandidate;
 
 import java.util.Collections;
 import java.util.Iterator;

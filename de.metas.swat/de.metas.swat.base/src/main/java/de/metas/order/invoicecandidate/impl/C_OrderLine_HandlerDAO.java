@@ -1,4 +1,4 @@
-package de.metas.invoicecandidate.spi.impl;
+package de.metas.order.invoicecandidate.impl;
 
 /*
  * #%L
@@ -10,12 +10,12 @@ package de.metas.invoicecandidate.spi.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -36,19 +36,19 @@ import org.adempiere.ad.dao.impl.NotQueryFilter;
 import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.X_C_DocType;
 import org.compiere.process.DocAction;
 
 import de.metas.adempiere.model.I_C_Order;
-import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
-import de.metas.invoicecandidate.spi.IOLHandlerDAO;
+import de.metas.order.invoicecandidate.IC_OrderLine_HandlerDAO;
 
-public class OLHandlerDAO implements IOLHandlerDAO
+public class C_OrderLine_HandlerDAO implements IC_OrderLine_HandlerDAO
 {
 	private final ICompositeQueryFilter<I_C_OrderLine> additionalFilters;
 
-	public OLHandlerDAO()
+	public C_OrderLine_HandlerDAO()
 	{
 		additionalFilters = Services.get(IQueryBL.class).createCompositeQueryFilter(I_C_OrderLine.class);
 		additionalFilters.setJoinAnd();
@@ -80,8 +80,6 @@ public class OLHandlerDAO implements IOLHandlerDAO
 			filters.addFilter(notQueryFilter);
 		}
 
-		//
-		//
 		{
 			//
 			// Excluding docTypes. We ignore for Proposals, Quotations, POS-Orders (SO) or delivery RMAs (PO)
@@ -121,6 +119,7 @@ public class OLHandlerDAO implements IOLHandlerDAO
 		filters.addFilter(additionalFilters); // task 07242
 
 		final IQueryBuilder<I_C_OrderLine> queryBuilder = queryBL.createQueryBuilder(I_C_OrderLine.class, ctx, trxName)
+				.setOption(IQueryBuilder.OPTION_Explode_OR_Joins_To_SQL_Unions)
 				.filter(filters)
 				.filterByClientId();
 

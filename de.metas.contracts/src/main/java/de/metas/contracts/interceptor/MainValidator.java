@@ -43,14 +43,15 @@ import de.metas.contracts.flatrate.ordercandidate.spi.FlatrateOLCandListener;
 import de.metas.contracts.inoutcandidate.ShipmentScheduleFromSubscriptionOrderLineVetoer;
 import de.metas.contracts.inoutcandidate.ShipmentScheduleSubscriptionProcessor;
 import de.metas.contracts.inoutcandidate.SubscriptionShipmentScheduleHandler;
+import de.metas.contracts.invoicecandidate.ExcludeSubscriptionInOutLines;
 import de.metas.contracts.invoicecandidate.ExcludeSubscriptionOrderLines;
 import de.metas.contracts.model.I_I_Flatrate_Term;
 import de.metas.i18n.IMsgBL;
 import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.impex.model.I_AD_InputDataSource;
 import de.metas.inout.api.IMaterialBalanceConfigBL;
-import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
+import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
 import de.metas.ordercandidate.api.IOLCandBL;
 
 public class MainValidator implements ModelValidator
@@ -119,6 +120,7 @@ public class MainValidator implements ModelValidator
 		Services.get(IImportProcessFactory.class).registerImportProcess(I_I_Flatrate_Term.class, FlatrateTermImportProcess.class);
 
 		ExcludeSubscriptionOrderLines.registerFilterForInvoiceCandidateCreation();
+		ExcludeSubscriptionInOutLines.registerFilterForInvoiceCandidateCreation();
 	}
 
 	private void setupCallouts()

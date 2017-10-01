@@ -1,4 +1,4 @@
-package de.metas.invoicecandidate.spi;
+package de.metas.order.invoicecandidate;
 
 /*
  * #%L
@@ -28,23 +28,23 @@ import java.util.Properties;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.util.ISingletonService;
+import org.compiere.model.I_C_OrderLine;
 
-import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
-import de.metas.invoicecandidate.spi.impl.C_OrderLine_Handler;
+import de.metas.order.invoicecandidate.impl.C_OrderLine_Handler;
 
 /**
  * DAO to be used for {@link C_OrderLine_Handler}.
- * 
+ *
  * @author tsa
- * 
+ *
  */
-public interface IOLHandlerDAO extends ISingletonService
+public interface IC_OrderLine_HandlerDAO extends ISingletonService
 {
 
 	/**
 	 * Fetch {@link I_C_OrderLine} which does not have an {@link I_C_Invoice_Candidate} already created
-	 * 
+	 *
 	 * @param ctx
 	 * @param trxName
 	 * @return
@@ -57,7 +57,7 @@ public interface IOLHandlerDAO extends ISingletonService
 	void addAdditionalFilter(IQueryFilter<I_C_OrderLine> filter);
 
 	/**
-	 * 
+	 *
 	 * @return additional order line filters
 	 */
 	IQueryFilter<I_C_OrderLine> getAdditionalFilters();

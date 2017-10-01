@@ -1,4 +1,4 @@
-package de.metas.invoicecandidate.spi.impl;
+package de.metas.inout.invoicecandidate;
 
 /*
  * #%L
@@ -41,6 +41,7 @@ import org.adempiere.pricing.api.IPricingResult;
 import org.adempiere.pricing.exceptions.ProductNotOnPriceListException;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Note;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_User;
@@ -79,7 +80,6 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 {
 	//
 	// Services
-	private static final transient M_InOutLine_HandlerDAO dao = new M_InOutLine_HandlerDAO();
 	private final transient IInOutBL inOutBL = Services.get(IInOutBL.class);
 
 	@Override
@@ -108,9 +108,10 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 	}
 
 	@Override
-	public Iterator<I_M_InOutLine> retrieveAllModelsWithMissingCandidates(final int limit)
+	public Iterator<org.compiere.model.I_M_InOutLine> retrieveAllModelsWithMissingCandidates(final int limit)
 	{
-		return dao.retrieveAllLinesWithoutOrderLine(limit);
+		final InOutLinesWithMissingInvoiceCandidate dao = Adempiere.getBean(InOutLinesWithMissingInvoiceCandidate.class);
+		return dao.retrieveLinesThatNeedAnInvoiceCandidate(limit);
 	}
 
 	@Override

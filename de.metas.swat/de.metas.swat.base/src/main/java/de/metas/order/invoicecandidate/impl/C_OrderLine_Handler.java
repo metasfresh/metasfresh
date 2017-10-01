@@ -1,4 +1,4 @@
-package de.metas.invoicecandidate.spi.impl;
+package de.metas.order.invoicecandidate.impl;
 
 import java.math.BigDecimal;
 
@@ -50,10 +50,10 @@ import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.AbstractInvoiceCandidateHandler;
-import de.metas.invoicecandidate.spi.IC_OrderLine_HandlerDAO;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateRequest;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateResult;
+import de.metas.order.invoicecandidate.IC_OrderLine_HandlerDAO;
 import de.metas.product.acct.api.IProductAcctDAO;
 import de.metas.tax.api.ITaxBL;
 

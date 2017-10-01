@@ -3,10 +3,11 @@ package de.metas.contracts.invoicecandidate;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.util.Services;
-import org.compiere.model.I_C_OrderLine;
+import org.compiere.Adempiere;
+import org.compiere.model.I_M_InOutLine;
 
+import de.metas.inout.invoicecandidate.InOutLinesWithMissingInvoiceCandidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
-import de.metas.order.invoicecandidate.IC_OrderLine_HandlerDAO;
 import lombok.experimental.UtilityClass;
 
 /*
@@ -32,19 +33,20 @@ import lombok.experimental.UtilityClass;
  */
 
 @UtilityClass
-public class ExcludeSubscriptionOrderLines
+public class ExcludeSubscriptionInOutLines
 {
 
 	/**
-	 * Make sure that no {@link I_C_Invoice_Candidate}s are created for order lines that belong to a subscription contract.
+	 * Make sure that no {@link I_C_Invoice_Candidate}s are created for inout lines that belong to a subscription contract.
 	 */
 	public void registerFilterForInvoiceCandidateCreation()
 	{
-		final IQueryFilter<I_C_OrderLine> f = Services.get(IQueryBL.class)
-				.createCompositeQueryFilter(I_C_OrderLine.class)
+		final IQueryFilter<I_M_InOutLine> filter = Services.get(IQueryBL.class)
+				.createCompositeQueryFilter(I_M_InOutLine.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(de.metas.contracts.subscription.model.I_C_OrderLine.COLUMNNAME_C_Flatrate_Conditions_ID, null);
+				.addEqualsFilter(de.metas.contracts.model.I_M_InOutLine.COLUMNNAME_C_SubscriptionProgress_ID, null);
 
-		Services.get(IC_OrderLine_HandlerDAO.class).addAdditionalFilter(f);
+		final InOutLinesWithMissingInvoiceCandidate dao = Adempiere.getBean(InOutLinesWithMissingInvoiceCandidate.class);
+		dao.addAdditionalFilter(filter);
 	}
 }
