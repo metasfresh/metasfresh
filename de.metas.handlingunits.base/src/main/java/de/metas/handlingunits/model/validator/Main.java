@@ -84,7 +84,7 @@ import de.metas.handlingunits.shipmentschedule.api.impl.ShipmentScheduleHUTrxLis
 import de.metas.handlingunits.shipmentschedule.spi.impl.ShipmentSchedulePackingMaterialLineListener;
 import de.metas.handlingunits.tourplanning.spi.impl.HUShipmentScheduleDeliveryDayHandler;
 import de.metas.inoutcandidate.agg.key.impl.HUShipmentScheduleKeyValueHandler;
-import de.metas.inoutcandidate.api.IInOutCandHandlerBL;
+import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
 import de.metas.inoutcandidate.api.IReceiptScheduleBL;
 import de.metas.inoutcandidate.api.IReceiptScheduleProducerFactory;
 import de.metas.inoutcandidate.api.IShipmentScheduleInvalidateBL;
@@ -335,7 +335,7 @@ public final class Main extends AbstractModuleInterceptor
 			huTrxBL.addListener(ShipmentScheduleHUTrxListener.instance);
 
 			// 07042: we don't want shipment schedules for mere packaging order lines
-			Services.get(IInOutCandHandlerBL.class)
+			Services.get(IShipmentScheduleHandlerBL.class)
 					.registerVetoer(new ShipmentSchedulePackingMaterialLineListener(), I_C_OrderLine.Table_Name);
 		}
 

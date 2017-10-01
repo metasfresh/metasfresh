@@ -2,7 +2,7 @@ package org.adempiere.inout.util;
 
 import java.math.BigDecimal;
 
-import org.adempiere.inout.util.IShipmentCandidates.CompleteStatus;
+import org.adempiere.inout.util.IShipmentSchedulesDuringUpdate.CompleteStatus;
 import org.compiere.model.I_M_Product;
 
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;

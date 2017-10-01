@@ -59,7 +59,7 @@ public interface IQueryBuilderOrderByClause<ModelType> extends IQueryOrderByBuil
 	IQueryBuilderOrderByClause<ModelType> addColumn(ModelColumn<ModelType, ?> column);
 
 	/**
-	 * @deprecated please use 
+	 * @deprecated please use {@link #addColumnAscending(String)} and {@link #addColumnDescending(String)}.
 	 */
 	@Override
 	@Deprecated

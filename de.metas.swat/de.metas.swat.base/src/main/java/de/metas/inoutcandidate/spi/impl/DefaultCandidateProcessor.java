@@ -28,19 +28,19 @@ import java.util.Properties;
 
 import org.adempiere.inout.util.DeliveryGroupCandidate;
 import org.adempiere.inout.util.DeliveryLineCandidate;
-import org.adempiere.inout.util.IShipmentCandidates;
-import org.adempiere.inout.util.IShipmentCandidates.CompleteStatus;
+import org.adempiere.inout.util.IShipmentSchedulesDuringUpdate;
+import org.adempiere.inout.util.IShipmentSchedulesDuringUpdate.CompleteStatus;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_Product;
 import org.slf4j.Logger;
 
 import de.metas.i18n.IMsgBL;
-import de.metas.inoutcandidate.spi.ICandidateProcessor;
+import de.metas.inoutcandidate.spi.IShipmentSchedulesAfterFirstPassUpdater;
 import de.metas.logging.LogManager;
 import de.metas.product.IProductBL;
 
-public class DefaultCandidateProcessor implements ICandidateProcessor
+public class DefaultCandidateProcessor implements IShipmentSchedulesAfterFirstPassUpdater
 {
 
 	private static final String AD_SYSCONFIG_DE_METAS_INOUTCANDIDATE_ALLOW_SHIP_SINGLE_NON_ITEMS = "de.metas.inoutcandidate.AllowShipSingleNonItems";
@@ -50,9 +50,9 @@ public class DefaultCandidateProcessor implements ICandidateProcessor
 	private static final Logger logger = LogManager.getLogger(DefaultCandidateProcessor.class);
 
 	@Override
-	public final int processCandidates(
+	public final int doUpdateAfterFirstPass(
 			final Properties ctx,
-			final IShipmentCandidates candidates, 
+			final IShipmentSchedulesDuringUpdate candidates, 
 			final String trxName)
 	{
 		return purgeLinesOK(ctx, candidates, trxName);
@@ -62,7 +62,7 @@ public class DefaultCandidateProcessor implements ICandidateProcessor
 	 * Removes all inOutLines (and afterwards also empty inOuts) that have {@link CompleteStatus#OK} <b>and</b>
 	 * {@link PostageFreeStatus#OK}
 	 */
-	private int purgeLinesOK(final Properties ctx, final IShipmentCandidates candidates, final String trxName)
+	private int purgeLinesOK(final Properties ctx, final IShipmentSchedulesDuringUpdate candidates, final String trxName)
 	{
 		int rmInOutLines = 0;
 

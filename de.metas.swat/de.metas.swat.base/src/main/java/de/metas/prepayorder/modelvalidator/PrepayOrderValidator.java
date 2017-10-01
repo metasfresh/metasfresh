@@ -30,7 +30,7 @@ import org.compiere.model.ModelValidator;
 import org.compiere.model.PO;
 
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
-import de.metas.inoutcandidate.spi.ICandidateProcessor;
+import de.metas.inoutcandidate.spi.IShipmentSchedulesAfterFirstPassUpdater;
 import de.metas.prepayorder.inoutcandidate.spi.impl.PrepayCandidateProcessor;
 import de.metas.prepayorder.service.IPrepayOrderBL;
 
@@ -51,7 +51,7 @@ public class PrepayOrderValidator implements ModelValidator
 	}
 
 	/**
-	 * Registers a {@link IPrepayOrderBL} and a {@link ICandidateProcessor} implementation.
+	 * Registers a {@link IPrepayOrderBL} and a {@link IShipmentSchedulesAfterFirstPassUpdater} implementation.
 	 */
 	@Override
 	public void initialize(ModelValidationEngine engine, MClient client)

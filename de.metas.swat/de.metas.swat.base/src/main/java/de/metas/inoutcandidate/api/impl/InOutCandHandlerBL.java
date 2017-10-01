@@ -42,31 +42,31 @@ import de.metas.adempiere.util.CacheCtx;
 import de.metas.adempiere.util.CacheTrx;
 import de.metas.i18n.IMsgBL;
 import de.metas.inoutcandidate.api.IDeliverRequest;
-import de.metas.inoutcandidate.api.IInOutCandHandlerBL;
+import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
 import de.metas.inoutcandidate.model.I_M_IolCandHandler;
 import de.metas.inoutcandidate.model.I_M_IolCandHandler_Log;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.inoutcandidate.spi.IInOutCandHandler;
+import de.metas.inoutcandidate.spi.IShipmentScheduleHandler;
 import de.metas.inoutcandidate.spi.ModelWithoutShipmentScheduleVetoer;
 import de.metas.inoutcandidate.spi.ModelWithoutShipmentScheduleVetoer.OnMissingCandidate;
 import de.metas.logging.LogManager;
 
-public class InOutCandHandlerBL implements IInOutCandHandlerBL
+public class InOutCandHandlerBL implements IShipmentScheduleHandlerBL
 {
 	private static final String MSG_RECORDS_CREATED_1P = "de.metas.inoutCandidate.RECORDS_CREATED";
 	private static final String MSG_RECORD_CREATION_VETOED_1P = "de.metas.inoutCandidate.RECORD_CREATION_VETOED";
 
 	private final static Logger logger = LogManager.getLogger(InOutCandHandlerBL.class);
 
-	private final Map<String, IInOutCandHandler> tableName2Handler = new HashMap<String, IInOutCandHandler>();
+	private final Map<String, IShipmentScheduleHandler> tableName2Handler = new HashMap<String, IShipmentScheduleHandler>();
 
 	private final Map<String, List<ModelWithoutShipmentScheduleVetoer>> tableName2Listeners = new HashMap<>();
 
 	@Override
-	public void registerHandler(final Properties ctx, final IInOutCandHandler handler)
+	public void registerHandler(final Properties ctx, final IShipmentScheduleHandler handler)
 	{
 		// do the actual registering
-		final IInOutCandHandler oldImpl = tableName2Handler.put(handler.getSourceTable(), handler);
+		final IShipmentScheduleHandler oldImpl = tableName2Handler.put(handler.getSourceTable(), handler);
 		Check.assume(oldImpl == null, "There is only one attempt to register a handler for table '" + handler.getSourceTable() + "'");
 
 		// make sure that there is also a list of listeners (albeit empty) for the handler's source table
@@ -137,7 +137,7 @@ public class InOutCandHandlerBL implements IInOutCandHandlerBL
 
 		for (final String tableName : tableName2Handler.keySet())
 		{
-			final IInOutCandHandler handler = tableName2Handler.get(tableName);
+			final IShipmentScheduleHandler handler = tableName2Handler.get(tableName);
 			final I_M_IolCandHandler handlerRecord = retrieveHandlerRecordOrNull(ctx, handler.getClass().getName(), trxName);
 
 			final List<Object> missingCandidateModels = handler.retrieveModelsWithMissingCandidates(ctx, trxName);
@@ -202,7 +202,7 @@ public class InOutCandHandlerBL implements IInOutCandHandlerBL
 	@Override
 	public void invalidateCandidatesFor(final Object model, final String tableName)
 	{
-		final IInOutCandHandler handler = tableName2Handler.get(tableName);
+		final IShipmentScheduleHandler handler = tableName2Handler.get(tableName);
 		if (handler == null)
 		{
 			return;
@@ -232,7 +232,7 @@ public class InOutCandHandlerBL implements IInOutCandHandlerBL
 		final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 		final String tableName = adTableDAO.retrieveTableName(sched.getAD_Table_ID());
 
-		final IInOutCandHandler inOutCandHandler = tableName2Handler.get(tableName);
+		final IShipmentScheduleHandler inOutCandHandler = tableName2Handler.get(tableName);
 		Check.assumeNotNull(inOutCandHandler, "IInOutCandHandler for {} with table name {} is not null", sched, tableName);
 
 		return inOutCandHandler.createDeliverRequest(sched);

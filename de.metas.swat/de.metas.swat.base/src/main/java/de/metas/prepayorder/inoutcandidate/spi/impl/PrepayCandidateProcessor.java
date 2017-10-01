@@ -27,7 +27,7 @@ import java.util.Properties;
 
 import org.adempiere.inout.util.DeliveryGroupCandidate;
 import org.adempiere.inout.util.DeliveryLineCandidate;
-import org.adempiere.inout.util.IShipmentCandidates;
+import org.adempiere.inout.util.IShipmentSchedulesDuringUpdate;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -36,7 +36,7 @@ import org.compiere.model.I_C_OrderLine;
 import org.slf4j.Logger;
 
 import de.metas.i18n.IMsgBL;
-import de.metas.inoutcandidate.spi.ICandidateProcessor;
+import de.metas.inoutcandidate.spi.IShipmentSchedulesAfterFirstPassUpdater;
 import de.metas.logging.LogManager;
 import de.metas.prepayorder.service.IPrepayOrderBL;
 
@@ -45,7 +45,7 @@ import de.metas.prepayorder.service.IPrepayOrderBL;
  * @author ts
  * @see "<a href='http://dewiki908/mediawiki/index.php?title=US342:_Definition_Provisionsausloeser_(2010070510001145)'>US342: Definition Provisionsausloeser (2010070510001145)</a>"
  */
-public class PrepayCandidateProcessor implements ICandidateProcessor
+public class PrepayCandidateProcessor implements IShipmentSchedulesAfterFirstPassUpdater
 {
 
 	private static final Logger logger = LogManager.getLogger(PrepayCandidateProcessor.class);
@@ -58,9 +58,9 @@ public class PrepayCandidateProcessor implements ICandidateProcessor
 	 * @see de.metas.prepayorder.model.I_C_DocType#DOCSUBTYPE_PrepayOrder_metas
 	 */
 	@Override
-	public int processCandidates(
+	public int doUpdateAfterFirstPass(
 			final Properties ctx,
-			final IShipmentCandidates candidates,
+			final IShipmentSchedulesDuringUpdate candidates,
 			final String trxName)
 	{
 		final IPrepayOrderBL prepayOrderBL = Services.get(IPrepayOrderBL.class);

@@ -1,6 +1,5 @@
 package de.metas.contracts.spi;
 
-import de.metas.contracts.flatrate.IFlatrateBL;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 
 /*

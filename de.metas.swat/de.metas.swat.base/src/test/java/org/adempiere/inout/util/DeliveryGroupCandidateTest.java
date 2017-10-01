@@ -3,7 +3,7 @@ package org.adempiere.inout.util;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.adempiere.inout.util.IShipmentCandidates.CompleteStatus;
+import org.adempiere.inout.util.IShipmentSchedulesDuringUpdate.CompleteStatus;
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.Before;
 import org.junit.Test;

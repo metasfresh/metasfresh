@@ -26,7 +26,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import de.metas.adempiere.model.I_M_Product;
-import de.metas.contracts.flatrate.ContractsTestBase;
+import de.metas.contracts.impl.ContractsTestBase;
 import de.metas.contracts.invoicecandidate.FlatrateTermInvoiceCandidateHandler;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;

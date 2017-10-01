@@ -4,7 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
 
-import org.adempiere.inout.util.IShipmentCandidates;
+import org.adempiere.inout.util.IShipmentSchedulesDuringUpdate;
 import org.adempiere.inout.util.ShipmentCandidates;
 import org.junit.Assert;
 import org.junit.Test;
@@ -100,7 +100,7 @@ public class ShipmentScheduleQtysHelperTest extends ShipmentScheduleTestBase
 				.shipmentSchedule(sched)
 				.deliverRequest(() -> qtyOrdered)
 				.build();
-		final IShipmentCandidates shipmentCandidates = new ShipmentCandidates();
+		final IShipmentSchedulesDuringUpdate shipmentCandidates = new ShipmentCandidates();
 
 		sched.setIsDeliveryStop(false);
 		ShipmentScheduleQtysHelper.updateQtyToDeliver(olAndSched, shipmentCandidates);

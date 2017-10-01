@@ -17,7 +17,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.inoutcandidate.spi.ShipmentScheduleOrderDoc;
+import de.metas.inoutcandidate.spi.ShipmentScheduleReferencedLine;
 
 /*
  * #%L
@@ -79,7 +79,7 @@ public class ShipmentScheduleOrderDocForOrderLineTests
 		sched.setAD_Table_ID(ref.getAD_Table_ID());
 		sched.setRecord_ID(ref.getRecord_ID());
 
-		final ShipmentScheduleOrderDoc result = new ShipmentScheduleOrderDocForOrderLine().provideFor(sched);
+		final ShipmentScheduleReferencedLine result = new ShipmentScheduleOrderDocForOrderLine().provideFor(sched);
 		assertThat(result.getDeliveryDate()).isEqualTo(deliveryDate);
 		assertThat(result.getPreparationDate()).isNull();
 	}

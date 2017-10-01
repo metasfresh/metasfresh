@@ -34,7 +34,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.adempiere.model.I_C_Order;
-import de.metas.contracts.flatrate.IFlatrateBL;
+import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_SubscriptionProgress;
 import de.metas.contracts.model.X_C_SubscriptionProgress;
@@ -45,13 +45,13 @@ import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.model.X_M_ShipmentSchedule;
-import de.metas.inoutcandidate.spi.IInOutCandHandler;
+import de.metas.inoutcandidate.spi.IShipmentScheduleHandler;
 import de.metas.logging.LogManager;
 import de.metas.product.IProductBL;
 import de.metas.storage.impl.ImmutableStorageSegment;
 import lombok.NonNull;
 
-public class SubscriptionShipmentScheduleHandler implements IInOutCandHandler
+public class SubscriptionShipmentScheduleHandler implements IShipmentScheduleHandler
 {
 	@VisibleForTesting
 	static final String SYSCONFIG_CREATE_SHIPMENT_SCHEDULES_IN_ADVANCE_DAYS = "C_SubscriptionProgress.Create_ShipmentSchedulesInAdvanceDays";

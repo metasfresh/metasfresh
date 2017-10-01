@@ -24,7 +24,6 @@ package de.metas.invoicecandidate.spi.impl;
 
 
 import java.util.Iterator;
-import java.util.Properties;
 
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
@@ -56,7 +55,7 @@ import de.metas.invoicecandidate.model.I_M_InOutLine;
 	 * @param trxName
 	 * @return inout lines
 	 */
-	public Iterator<I_M_InOutLine> retrieveAllLinesWithoutOrderLine(final Properties ctx, final int limit, final String trxName)
+	public Iterator<I_M_InOutLine> retrieveAllLinesWithoutOrderLine(final int limit)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
@@ -69,14 +68,14 @@ import de.metas.invoicecandidate.model.I_M_InOutLine;
 		//
 		// Filter M_InOut
 		{
-			final IQueryBuilder<I_M_InOut> inoutQueryBuilder = queryBL.createQueryBuilder(I_M_InOut.class, ctx, trxName);
+			final IQueryBuilder<I_M_InOut> inoutQueryBuilder = queryBL.createQueryBuilder(I_M_InOut.class);
 	
 			// if the inout was reversed, and there is no IC yet, don't bother creating one
 			inoutQueryBuilder.addNotEqualsFilter(I_M_InOut.COLUMNNAME_DocStatus, DocAction.STATUS_Reversed);
 			
 			// Exclude some DocTypes
 			{
-				final IQuery<I_C_DocType> validDocTypesQuery = queryBL.createQueryBuilder(I_C_DocType.class, ctx, trxName)
+				final IQuery<I_C_DocType> validDocTypesQuery = queryBL.createQueryBuilder(I_C_DocType.class)
 						// Don't create InvoiceCandidates for DocSubType Saldokorrektur (FRESH-454)
 						.addNotEqualsFilter(I_C_DocType.COLUMNNAME_DocSubType, I_C_DocType.DOCSUBTYPE_InOutAmountCorrection)
 						//
@@ -87,7 +86,7 @@ import de.metas.invoicecandidate.model.I_M_InOutLine;
 			filters.addInSubQueryFilter(I_M_InOutLine.COLUMNNAME_M_InOut_ID, I_M_InOut.COLUMNNAME_M_InOut_ID, inoutQueryBuilder.create());
 		}
 
-		final IQueryBuilder<I_M_InOutLine> queryBuilder = queryBL.createQueryBuilder(I_M_InOutLine.class, ctx, trxName)
+		final IQueryBuilder<I_M_InOutLine> queryBuilder = queryBL.createQueryBuilder(I_M_InOutLine.class)
 				.filter(filters)
 				.filterByClientId();
 		queryBuilder.orderBy()

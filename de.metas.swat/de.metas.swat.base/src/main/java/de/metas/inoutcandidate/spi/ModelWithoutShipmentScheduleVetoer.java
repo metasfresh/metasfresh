@@ -24,13 +24,13 @@ package de.metas.inoutcandidate.spi;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 
-import de.metas.inoutcandidate.api.IInOutCandHandlerBL;
+import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 
 /**
  * Implementors of this interface can be registered using
- * {@link IInOutCandHandlerBL#registerListener(ModelWithoutInOutCandidateListener)}. They are notified if a given
- * {@link IInOutCandHandler} wants to create a {@link I_M_ShipmentSchedule} for a given data record and they can veto
+ * {@link IShipmentScheduleHandlerBL#registerListener(ModelWithoutInOutCandidateListener)}. They are notified if a given
+ * {@link IShipmentScheduleHandler} wants to create a {@link I_M_ShipmentSchedule} for a given data record and they can veto
  * that creation.
  * 
  * A use case is that a subscription module registers a listener to veto the immediate creation of shipment schedules
