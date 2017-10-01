@@ -51,12 +51,12 @@ import de.metas.inoutcandidate.spi.ModelWithoutShipmentScheduleVetoer;
 import de.metas.inoutcandidate.spi.ModelWithoutShipmentScheduleVetoer.OnMissingCandidate;
 import de.metas.logging.LogManager;
 
-public class InOutCandHandlerBL implements IShipmentScheduleHandlerBL
+public class ShipmentScheduleHandlerBL implements IShipmentScheduleHandlerBL
 {
 	private static final String MSG_RECORDS_CREATED_1P = "de.metas.inoutCandidate.RECORDS_CREATED";
 	private static final String MSG_RECORD_CREATION_VETOED_1P = "de.metas.inoutCandidate.RECORD_CREATION_VETOED";
 
-	private final static Logger logger = LogManager.getLogger(InOutCandHandlerBL.class);
+	private final static Logger logger = LogManager.getLogger(ShipmentScheduleHandlerBL.class);
 
 	private final Map<String, IShipmentScheduleHandler> tableName2Handler = new HashMap<String, IShipmentScheduleHandler>();
 
