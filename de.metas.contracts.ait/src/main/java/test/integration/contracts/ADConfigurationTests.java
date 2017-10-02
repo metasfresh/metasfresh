@@ -37,11 +37,11 @@ import de.metas.adempiere.ait.helper.Helper;
 import de.metas.adempiere.ait.helper.IHelper;
 import de.metas.adempiere.ait.test.IntegrationTestRunner;
 import de.metas.contracts.flatrate.interfaces.I_C_DocType;
-import de.metas.contracts.flatrate.modelvalidator.C_Flatrate_Conditions;
-import de.metas.contracts.flatrate.modelvalidator.C_Invoice_Candidate;
 import de.metas.contracts.flatrate.process.C_Flatrate_Term_Create_From_OLCand;
 import de.metas.contracts.flatrate.process.C_Flatrate_Term_Extend;
 import de.metas.contracts.flatrate.process.C_Flatrate_Term_Prepare_Closing;
+import de.metas.contracts.interceptor.C_Flatrate_Conditions;
+import de.metas.contracts.interceptor.C_Invoice_Candidate;
 
 @RunWith(IntegrationTestRunner.class)
 public class ADConfigurationTests extends AIntegrationTestDriver

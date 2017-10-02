@@ -10,12 +10,12 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.junit.Before;
 import org.junit.Test;
 
-import de.metas.contracts.flatrate.api.IFlatrateBL;
+import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.inoutcandidate.ShipmentScheduleOrderDocForSubscriptionLine;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_SubscriptionProgress;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.inoutcandidate.spi.ShipmentScheduleOrderDoc;
+import de.metas.inoutcandidate.spi.ShipmentScheduleReferencedLine;
 import mockit.Expectations;
 import mockit.Mocked;
 
@@ -76,7 +76,7 @@ public class ShipmentScheduleOrderDocForSubscriptionLineTest
 		sched.setRecord_ID(reference.getRecord_ID());
 		save(sched);
 
-		final ShipmentScheduleOrderDoc result = new ShipmentScheduleOrderDocForSubscriptionLine().provideFor(sched);
+		final ShipmentScheduleReferencedLine result = new ShipmentScheduleOrderDocForSubscriptionLine().provideFor(sched);
 		assertThat(result).isNotNull();
 		assertThat(result.getGroupId()).isEqualTo(term.getC_Flatrate_Term_ID());
 		assertThat(result.getWarehouseId()).isEqualTo(23);

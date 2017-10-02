@@ -34,7 +34,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.adempiere.model.I_C_Order;
-import de.metas.contracts.flatrate.api.IFlatrateBL;
+import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_SubscriptionProgress;
 import de.metas.contracts.model.X_C_SubscriptionProgress;
@@ -45,13 +45,14 @@ import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.model.X_M_ShipmentSchedule;
-import de.metas.inoutcandidate.spi.IInOutCandHandler;
+import de.metas.inoutcandidate.spi.IShipmentScheduleHandler;
+import de.metas.inoutcandidate.spi.ShipmentScheduleReferencedLine;
 import de.metas.logging.LogManager;
 import de.metas.product.IProductBL;
 import de.metas.storage.impl.ImmutableStorageSegment;
 import lombok.NonNull;
 
-public class SubscriptionShipmentScheduleHandler implements IInOutCandHandler
+public class SubscriptionShipmentScheduleHandler implements IShipmentScheduleHandler
 {
 	@VisibleForTesting
 	static final String SYSCONFIG_CREATE_SHIPMENT_SCHEDULES_IN_ADVANCE_DAYS = "C_SubscriptionProgress.Create_ShipmentSchedulesInAdvanceDays";
@@ -75,25 +76,19 @@ public class SubscriptionShipmentScheduleHandler implements IInOutCandHandler
 		final I_C_Flatrate_Term term = subscriptionLine.getC_Flatrate_Term();
 
 		Check.assume(term.getM_Product_ID() > 0, term + " has M_Product_ID>0");
-		Check.assume(term.getC_OrderLine_Term_ID() > 0, term + " has C_OrderLine_Term_ID>0");
-		newSched.setC_OrderLine_ID(term.getC_OrderLine_Term_ID());
-		newSched.setC_Order_ID(term.getC_OrderLine_Term().getC_Order_ID());
 
 		newSched.setM_Product_ID(term.getM_Product_ID());
 		Services.get(IAttributeSetInstanceBL.class).cloneASI(term, newSched);
 
 		newSched.setProductDescription(null);
 
-		final int warehouseId = Adempiere.getBean(ShipmentScheduleOrderDocForSubscriptionLine.class).getWarehouseId(subscriptionLine);
-		newSched.setM_Warehouse_ID(warehouseId); // use the same implementation what will be used when updating
+		updateNewSchedWithValuesFromReferencedLine(newSched);
 
 		final I_C_DocType doctypeForTerm = Services.get(IFlatrateBL.class).getDocTypeFor(term);
+		newSched.setC_DocType_ID(doctypeForTerm.getC_DocType_ID());
+		newSched.setDocSubType(doctypeForTerm.getDocSubType());
 
 		newSched.setPriorityRule(X_M_ShipmentSchedule.PRIORITYRULE_High);
-
-		newSched.setC_DocType_ID(doctypeForTerm.getC_DocType_ID());
-
-		newSched.setDocSubType(doctypeForTerm.getDocSubType());
 
 		newSched.setC_BPartner_Location_ID(subscriptionLine.getDropShip_Location_ID());
 		newSched.setC_BPartner_ID(subscriptionLine.getDropShip_BPartner_ID());
@@ -107,11 +102,11 @@ public class SubscriptionShipmentScheduleHandler implements IInOutCandHandler
 		newSched.setDeliveryRule(order.getDeliveryRule());
 		newSched.setDeliveryViaRule(order.getDeliveryViaRule());
 
-		newSched.setLineNetAmt(newSched.getQtyReserved().multiply(term.getC_OrderLine_Term().getPriceActual()));
-
 		newSched.setQtyOrdered(subscriptionLine.getQty());
 		newSched.setQtyOrdered_Calculated(subscriptionLine.getQty());
 		newSched.setQtyReserved(subscriptionLine.getQty());
+
+		newSched.setLineNetAmt(newSched.getQtyReserved().multiply(term.getC_OrderLine_Term().getPriceActual()));
 
 		newSched.setDateOrdered(subscriptionLine.getEventDate());
 
@@ -128,7 +123,6 @@ public class SubscriptionShipmentScheduleHandler implements IInOutCandHandler
 
 		subscriptionLine.setStatus(X_C_SubscriptionProgress.STATUS_Open);
 		subscriptionLine.setM_ShipmentSchedule_ID(newSched.getM_ShipmentSchedule_ID());
-
 		save(subscriptionLine);
 
 		invalidateCandidatesFor(subscriptionLine);
@@ -137,8 +131,19 @@ public class SubscriptionShipmentScheduleHandler implements IInOutCandHandler
 		return Collections.singletonList(newSched);
 	}
 
+	private void updateNewSchedWithValuesFromReferencedLine(@NonNull final I_M_ShipmentSchedule newSched)
+	{
+		final ShipmentScheduleReferencedLine subscriptionFromgressInfos = Adempiere
+				.getBean(ShipmentScheduleOrderDocForSubscriptionLine.class)
+				.provideFor(newSched);
+
+		newSched.setM_Warehouse_ID(subscriptionFromgressInfos.getWarehouseId());
+		newSched.setPreparationDate(subscriptionFromgressInfos.getPreparationDate());
+		newSched.setDeliveryDate(subscriptionFromgressInfos.getDeliveryDate());
+	}
+
 	@Override
-	public void invalidateCandidatesFor(Object model)
+	public void invalidateCandidatesFor(@NonNull final Object model)
 	{
 		final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
 

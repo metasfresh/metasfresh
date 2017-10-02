@@ -5,8 +5,8 @@ import static org.compiere.model.X_C_Order.DELIVERYRULE_Force;
 import java.math.BigDecimal;
 
 import org.adempiere.inout.util.DeliveryLineCandidate;
-import org.adempiere.inout.util.IShipmentCandidates;
-import org.adempiere.inout.util.IShipmentCandidates.CompleteStatus;
+import org.adempiere.inout.util.IShipmentSchedulesDuringUpdate;
+import org.adempiere.inout.util.IShipmentSchedulesDuringUpdate.CompleteStatus;
 import org.adempiere.util.Services;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
@@ -48,7 +48,7 @@ import lombok.experimental.UtilityClass;
 	private final static Logger logger = LogManager.getLogger(ShipmentScheduleQtysHelper.class);
 	private static final String MSG_DeliveryStopStatus = "ShipmentSchedule_DeliveryStop_Status";
 
-	public static void updateQtyToDeliver(final OlAndSched olAndSched, final IShipmentCandidates shipmentCandidates)
+	public static void updateQtyToDeliver(final OlAndSched olAndSched, final IShipmentSchedulesDuringUpdate shipmentCandidates)
 	{
 		final I_M_ShipmentSchedule sched = olAndSched.getSched();
 		
@@ -101,10 +101,10 @@ import lombok.experimental.UtilityClass;
 	 */
 	private static String mkStatus(
 			final DeliveryLineCandidate inOutLine, 
-			final IShipmentCandidates shipmentCandidates)
+			final IShipmentSchedulesDuringUpdate shipmentCandidates)
 	{
 		final CompleteStatus completeStatus = inOutLine.getCompleteStatus();
-		if (!IShipmentCandidates.CompleteStatus.OK.equals(completeStatus))
+		if (!IShipmentSchedulesDuringUpdate.CompleteStatus.OK.equals(completeStatus))
 		{
 			shipmentCandidates.addStatusInfo(inOutLine, Services.get(IMsgBL.class).getMsg(Env.getCtx(), completeStatus.toString()));
 		}
