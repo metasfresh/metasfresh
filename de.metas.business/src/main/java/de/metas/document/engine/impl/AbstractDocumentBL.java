@@ -56,8 +56,8 @@ import com.google.common.base.Objects;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableMap;
 
-import de.metas.document.engine.IDocument;
 import de.metas.document.engine.DocActionHandlerProvider;
+import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.document.exceptions.DocumentProcessingException;
 import de.metas.logging.LogManager;
@@ -413,6 +413,8 @@ public abstract class AbstractDocumentBL implements IDocumentBL
 		{
 			return null;
 		}
+		
+		// FIXME: hardcoded... we shall introduce it in IDocument
 
 		if (model instanceof I_C_Invoice)
 		{
