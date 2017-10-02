@@ -1,18 +1,7 @@
-### Type of issue
-Bug / Feature request
-### Current behavior
+### Is this a bug or feature request?
 
-### Expected behavior
+### What is the current behavior?
 
-### Steps to reproduce
-Remove this part if feature request.
+#### Which are the steps to reproduce?
 
-**Window:** enter window ID or Navigation menu step-by-step.
-
-**Entity:** enter document ID or steps to reproduce environment.
-
-/or/
-
-**Link:** link to w101.
-
-**Pre-filled data:** which inputs shall be filled before?
+### What is the expected or desired behavior?
