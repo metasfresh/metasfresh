@@ -13,15 +13,14 @@ package de.metas.document.engine.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.sql.Timestamp;
 import java.util.Properties;
@@ -30,6 +29,7 @@ import org.adempiere.ad.persistence.TableModelClassLoader;
 import org.adempiere.ad.persistence.TableModelLoader;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.PO;
@@ -37,34 +37,37 @@ import org.compiere.model.POInfo;
 import org.compiere.util.DB;
 
 import de.metas.document.engine.DocAction;
+import de.metas.document.engine.DocActionHandler;
+import de.metas.document.engine.DocActionHandlerProvider;
+import de.metas.document.engine.DocActionWrapper;
 
 public final class DocActionBL extends AbstractDocActionBL
 {
-	// private static final Logger logger = CLogMgt.getLogger(DocActionBL.class);
-
 	@Override
-	protected DocAction getDocAction(final Object document, boolean throwEx)
+	protected DocAction getDocAction(final Object documentObj, final boolean throwEx)
 	{
-		if (document == null)
+		if (documentObj == null)
 		{
 			if (throwEx)
 			{
-				throw new IllegalArgumentException("document is null");
+				throw new AdempiereException("document is null");
 			}
 			return null;
 		}
 
-		if (document instanceof DocAction)
+		//
+		if (documentObj instanceof DocAction)
 		{
-			return (DocAction)document;
+			return (DocAction)documentObj;
 		}
 
-		final PO po = InterfaceWrapperHelper.getPO(document);
+		//
+		final PO po = InterfaceWrapperHelper.getPO(documentObj);
 		if (po == null)
 		{
 			if (throwEx)
 			{
-				throw new IllegalArgumentException("Param 'document' is not instanceof DocAction and POWrapper.getPO can't get a PO from it");
+				throw new AdempiereException("Cannot extract " + PO.class + " from " + documentObj);
 			}
 			return null;
 		}
@@ -74,9 +77,18 @@ public final class DocActionBL extends AbstractDocActionBL
 
 		}
 
+		//
+		final String tableName = po.get_TableName();
+		final DocActionHandlerProvider handlerProvider = getDocActionHandlerProviderByTableNameOrNull(tableName);
+		if (handlerProvider != null)
+		{
+			final DocActionHandler handler = handlerProvider.provideForDocument(po);
+			return DocActionWrapper.wrapModelUsingHandler(po, handler);
+		}
+
 		if (throwEx)
 		{
-			throw new IllegalArgumentException("The PO encapsulated by param 'document' must be instanceof docAction; po=: " + po);
+			throw new AdempiereException("Cannot extract " + DocAction.class + " from " + documentObj);
 		}
 		return null;
 	}
