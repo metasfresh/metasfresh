@@ -128,3 +128,43 @@ UPDATE AD_Column SET IsSelectionColumn='Y', SelectionColumnSeqNo=90,Updated=TO_T
 UPDATE AD_Column SET IsSelectionColumn='Y', SelectionColumnSeqNo=100,Updated=TO_TIMESTAMP('2017-10-02 16:12:01','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=551759
 ;
 
+-- 2017-10-02T16:23:53.834
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Table_Process SET WEBUI_QuickAction='Y',Updated=TO_TIMESTAMP('2017-10-02 16:23:53','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=540458 AND AD_Table_ID=500221
+;
+
+-- 2017-10-02T16:25:28.729
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Table_Process SET WEBUI_QuickAction='Y',Updated=TO_TIMESTAMP('2017-10-02 16:25:28','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=540580 AND AD_Table_ID=500221
+;
+
+-- 2017-10-02T16:26:22.687
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process SET Name='Lieferdispo Auswahl öffnen',Updated=TO_TIMESTAMP('2017-10-02 16:26:22','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=540855
+;
+
+-- 2017-10-02T16:26:50.082
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-10-02 16:26:50','YYYY-MM-DD HH24:MI:SS'),Name='Reopen Shipment Schedule' WHERE AD_Process_ID=540855 AND AD_Language='en_US'
+;
+
+-- 2017-10-02T16:27:16.466
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-10-02 16:27:16','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y' WHERE AD_Process_ID=540855 AND AD_Language='en_US'
+;
+
+-- 2017-10-02T16:33:08.882
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Table_Process SET WEBUI_QuickAction='Y',Updated=TO_TIMESTAMP('2017-10-02 16:33:08','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=540571 AND AD_Table_ID=500221
+;
+
+-- 2017-10-02T16:33:22.075
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process SET Name='Lieferdatum ändern',Updated=TO_TIMESTAMP('2017-10-02 16:33:22','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=540571
+;
+
+-- 2017-10-02T16:33:37.721
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-10-02 16:33:37','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Change Deliverydate' WHERE AD_Process_ID=540571 AND AD_Language='en_US'
+;
+
