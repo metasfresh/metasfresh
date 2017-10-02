@@ -12,7 +12,7 @@ import org.adempiere.util.Services;
 import org.compiere.model.POInfo;
 import org.compiere.util.TimeUtil;
 
-import de.metas.acct.api.IDocumentBL;
+import de.metas.acct.api.IDocumentRepostingBL;
 import de.metas.document.engine.DocAction;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
@@ -67,7 +67,7 @@ public class Documents_FactAcct_Creation_For_Posted extends JavaProcess
 
 		// list all the documents that are marked as posted but have no fact accounts.
 		// this list will not include the documents with no fact accounts that were not supposed to be posted (always 0 in posting)
-		final List<DocAction> documentsPostedNoFacts = Services.get(IDocumentBL.class).retrievePostedWithoutFactAcct(getCtx(), startTime);
+		final List<DocAction> documentsPostedNoFacts = Services.get(IDocumentRepostingBL.class).retrievePostedWithoutFactAcct(getCtx(), startTime);
 
 		if (documentsPostedNoFacts.isEmpty())
 		{

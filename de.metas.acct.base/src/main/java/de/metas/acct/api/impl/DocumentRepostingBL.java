@@ -1,12 +1,12 @@
-package de.metas.acct.api;
+package de.metas.acct.api.impl;
 
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.util.ISingletonService;
-
+import de.metas.acct.api.IDocumentRepostingBL;
 import de.metas.acct.spi.IDocumentRepostingHandler;
+import de.metas.acct.spi.impl.CompositeDocumentRepostingHandler;
 import de.metas.document.engine.DocAction;
 
 /*
@@ -22,33 +22,28 @@ import de.metas.document.engine.DocAction;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
+ * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-public interface IDocumentBL extends ISingletonService
+public class DocumentRepostingBL implements IDocumentRepostingBL
 {
+	private final CompositeDocumentRepostingHandler repostingHandlers = new CompositeDocumentRepostingHandler();
 
-	/**
-	 * Register the IDocumentRepostingHandler handler so it will be used when the reposting process is called
-	 * 
-	 * @param handler
-	 */
-	void registerHandler(IDocumentRepostingHandler handler);
+	@Override
+	public void registerHandler(final IDocumentRepostingHandler handler)
+	{
+		repostingHandlers.addHandler(handler);
+	}
 
-	/**
-	 * Retrieve all the documents that are marked as posted but do not actually have fact accounts
-	 * Exclude the documents with no fact accounts that were not supposed to be posted (always 0 in posting)
-	 * 
-	 * @param ctx
-	 * @param startTime
-	 * @return
-	 */
-	List<DocAction> retrievePostedWithoutFactAcct(Properties ctx, Timestamp startTime);
-
+	@Override
+	public List<DocAction> retrievePostedWithoutFactAcct (final Properties ctx, final Timestamp startTime)
+	{
+		return repostingHandlers.retrievePostedWithoutFactAcct(ctx, startTime);
+	}
 }
