@@ -34,10 +34,12 @@ public interface DocumentFields
 	//@formatter:on
 
 	//@formatter:off
+	String COLUMNNAME_DocumentNo = "DocumentNo";
 	String getDocumentNo();
 	//@formatter:on
 
 	//@formatter:off
+	String COLUMNNAME_DocStatus = "DocStatus";
 	String getDocStatus();
 	void setDocStatus(String docStatus);
 	//@formatter:on

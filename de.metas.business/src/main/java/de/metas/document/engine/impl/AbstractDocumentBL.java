@@ -56,6 +56,7 @@ import com.google.common.base.Objects;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableMap;
 
+import de.metas.document.engine.DocumentFields;
 import de.metas.document.engine.DocumentHandlerProvider;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
@@ -301,7 +302,7 @@ public abstract class AbstractDocumentBL implements IDocumentBL
 	@Override
 	public String getDocStatusOrNull(final Properties ctx_NOTUSED, final int adTableId, final int recordId)
 	{
-		return retrieveString(adTableId, recordId, "DocStatus");
+		return retrieveString(adTableId, recordId, DocumentFields.COLUMNNAME_DocStatus);
 	}
 
 	@Override
@@ -314,7 +315,7 @@ public abstract class AbstractDocumentBL implements IDocumentBL
 
 		//
 		// First we try to fetch the DocumentNo column from database
-		final String documentNo = retrieveString(adTableId, recordId, "DocumentNo");
+		final String documentNo = retrieveString(adTableId, recordId, DocumentFields.COLUMNNAME_DocumentNo);
 		if (documentNo != null)
 		{
 			return documentNo;
