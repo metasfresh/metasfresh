@@ -1,4 +1,4 @@
-package de.metas.contracts.flatrate.model;
+package de.metas.contracts.model;
 
 /*
  * #%L
@@ -28,34 +28,34 @@ import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
 
+import org.adempiere.util.Check;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.process.DocAction;
 import org.compiere.process.DocumentEngine;
 import org.compiere.util.Env;
 
-import de.metas.contracts.model.X_C_Flatrate_Transition;
+import de.metas.contracts.model.X_C_Flatrate_DataEntry;
 import de.metas.i18n.Msg;
 
-public class MCFlatrateTransition extends X_C_Flatrate_Transition implements DocAction
+public class MCFlatrateDataEntry extends X_C_Flatrate_DataEntry implements DocAction
 {
-
-
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 5338632310970646067L;
+	private static final long serialVersionUID = 5991467188908320233L;
+
 	/** Process Message */
 	private String m_processMsg = null;
 	/** Just Prepared Flag */
 	private boolean m_justPrepared = false;
 
-	public MCFlatrateTransition(Properties ctx, int C_Flatrate_DataEntry_ID, String trxName)
+	public MCFlatrateDataEntry(Properties ctx, int C_Flatrate_DataEntry_ID, String trxName)
 	{
 		super(ctx, C_Flatrate_DataEntry_ID, trxName);
 	}
 
-	public MCFlatrateTransition(Properties ctx, ResultSet rs, String trxName)
+	public MCFlatrateDataEntry(Properties ctx, ResultSet rs, String trxName)
 	{
 		super(ctx, rs, trxName);
 	}
@@ -104,7 +104,6 @@ public class MCFlatrateTransition extends X_C_Flatrate_Transition implements Doc
 		if (m_processMsg != null)
 			return DocAction.STATUS_Invalid;
 
-
 		final String valid = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_COMPLETE);
 		if (valid != null)
 		{
@@ -144,7 +143,7 @@ public class MCFlatrateTransition extends X_C_Flatrate_Transition implements Doc
 	@Override
 	public String getDocumentInfo()
 	{
-		return Msg.getElement(getCtx(), COLUMNNAME_C_Flatrate_Transition_ID) + " " + getDocumentNo();
+		return Msg.getElement(getCtx(), COLUMNNAME_C_Flatrate_DataEntry_ID) + " " + getDocumentNo();
 	} // getDocumentInfo
 
 	@Override
@@ -222,6 +221,13 @@ public class MCFlatrateTransition extends X_C_Flatrate_Transition implements Doc
 
 		setProcessed(false);
 		setDocAction(DOCACTION_Complete);
+
+		// Note:
+		// setting and saving the doc status here, because the model validator updates an invoice candidate, which in
+		// term will make sure that this data entry is not completed
+		setDocStatus(DOCSTATUS_InProgress);
+		Check.assume(get_TrxName() != null, this + " has trxName!=null");
+		saveEx();
 
 		// After reActivate
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_REACTIVATE);

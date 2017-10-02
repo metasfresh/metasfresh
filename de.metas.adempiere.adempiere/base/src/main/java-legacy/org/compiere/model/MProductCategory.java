@@ -16,14 +16,13 @@
  *****************************************************************************/
 package org.compiere.model;
 
+import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Iterator;
 import java.util.Properties;
 import java.util.Vector;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
@@ -31,7 +30,9 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.LegacyAdapters;
 import org.compiere.util.CCache;
 import org.compiere.util.DB;
-import org.compiere.util.Env;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
 
 /**
  *	Product Category Model
@@ -142,7 +143,7 @@ public class MProductCategory extends X_M_Product_Category
 		//	setName (null);
 		//	setValue (null);
 			setMMPolicy (MMPOLICY_FiFo);	// F
-			setPlannedMargin (Env.ZERO);
+			setPlannedMargin (BigDecimal.ZERO);
 			setIsDefault (false);
 			setIsSelfService (true);	// Y
 		}
@@ -167,10 +168,7 @@ public class MProductCategory extends X_M_Product_Category
 	@Override
 	protected boolean beforeSave (boolean newRecord)
 	{
-		if (hasLoopInTree())
-		{
-			throw new AdempiereException("@ProductCategoryLoopDetected@");
-		}
+		assertNoLoopInTree(this);
 		
 		return true;
 	}	//	beforeSave
@@ -209,6 +207,13 @@ public class MProductCategory extends X_M_Product_Category
 		return MMPOLICY_FiFo.equals(getMMPolicy());
 	}	//	isFiFo
 	
+	static void assertNoLoopInTree(final I_M_Product_Category productCategory)
+	{
+		if (hasLoopInTree(productCategory))
+		{
+			throw new AdempiereException("@ProductCategoryLoopDetected@");
+		}
+	}
 	
 	/**
 	 *	Loop detection of product category tree.
@@ -218,10 +223,10 @@ public class MProductCategory extends X_M_Product_Category
 	 *  @param newParentCategoryId New Parent Category
 	 *  @return "" or error message
 	 */
-	public boolean hasLoopInTree ()
+	private static boolean hasLoopInTree (final I_M_Product_Category productCategory)
 	{
-		int productCategoryId = getM_Product_Category_ID();
-		int newParentCategoryId = getM_Product_Category_Parent_ID();
+		int productCategoryId = productCategory.getM_Product_Category_ID();
+		int newParentCategoryId = productCategory.getM_Product_Category_Parent_ID();
 		//	get values
 		ResultSet rs = null;
 		PreparedStatement pstmt = null;
@@ -258,7 +263,7 @@ public class MProductCategory extends X_M_Product_Category
 	 * @param loopIndicatorId
 	 * @return
 	 */
-	private boolean hasLoop(int parentCategoryId, Vector<SimpleTreeNode> categories, int loopIndicatorId) {
+	private static boolean hasLoop(int parentCategoryId, Vector<SimpleTreeNode> categories, int loopIndicatorId) {
 		final Iterator<SimpleTreeNode> iter = categories.iterator();
 		boolean ret = false;
 		while (iter.hasNext()) {
@@ -283,7 +288,7 @@ public class MProductCategory extends X_M_Product_Category
 	 * @author Karsten Thiemann, kthiemann@adempiere.org
 	 *
 	 */
-	private class SimpleTreeNode {
+	private static class SimpleTreeNode {
 		/** id of the node */
 		private int nodeId;
 		/** id of the nodes parent */

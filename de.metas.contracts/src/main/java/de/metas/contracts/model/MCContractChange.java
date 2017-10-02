@@ -1,4 +1,4 @@
-package de.metas.contracts.flatrate.model;
+package de.metas.contracts.model;
 
 /*
  * #%L
