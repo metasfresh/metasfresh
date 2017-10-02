@@ -1380,11 +1380,11 @@ public class Util
 	{
 		// save the exception for displaying to user
 		String msg = e.getLocalizedMessage();
-		if (Util.isEmpty(msg, true))
+		if (Check.isEmpty(msg, true))
 		{
 			msg = e.getMessage();
 		}
-		if (Util.isEmpty(msg, true))
+		if (Check.isEmpty(msg, true))
 		{
 			// note that e.g. a NullPointerException doesn't have a nice message
 			msg = dumpStackTraceToString(e);

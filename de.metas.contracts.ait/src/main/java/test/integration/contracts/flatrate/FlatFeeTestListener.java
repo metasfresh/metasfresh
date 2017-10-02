@@ -53,7 +53,7 @@ import de.metas.adempiere.ait.helper.TestConfig;
 import de.metas.adempiere.ait.test.annotation.ITEventListener;
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.adempiere.service.ICalendarDAO;
-import de.metas.contracts.flatrate.api.IFlatrateDAO;
+import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Data;
 import de.metas.contracts.model.I_C_Flatrate_DataEntry;

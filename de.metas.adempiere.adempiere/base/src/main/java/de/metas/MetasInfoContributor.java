@@ -56,8 +56,6 @@ public class MetasInfoContributor implements InfoContributor
 		try
 		{
 			final I_AD_System adSystem = Services.get(ISystemBL.class).get(Env.getCtx());
-			adSystemInfo.put("version", adSystem.getVersion());
-			adSystemInfo.put("releaseNo", adSystem.getReleaseNo());
 			adSystemInfo.put("lastBuildInfo", adSystem.getLastBuildInfo());
 			adSystemInfo.put("dbVersion", adSystem.getDBVersion());
 		}

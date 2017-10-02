@@ -8,9 +8,9 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.util.TimeUtil;
 
-import de.metas.contracts.flatrate.api.IFlatrateDAO;
-import de.metas.contracts.flatrate.api.impl.DefaultFlatrateHandler;
+import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.model.I_C_Flatrate_DataEntry;
+import de.metas.contracts.spi.FallbackFlatrateTermEventListener;
 import de.metas.procurement.base.PMMContractBuilder;
 import de.metas.procurement.base.model.I_C_Flatrate_Conditions;
 import de.metas.procurement.base.model.I_C_Flatrate_Term;
@@ -37,7 +37,7 @@ import de.metas.procurement.base.model.I_C_Flatrate_Term;
  * #L%
  */
 
-public class ProcurementFlatrateHandler extends DefaultFlatrateHandler
+public class ProcurementFlatrateHandler extends FallbackFlatrateTermEventListener
 {
 	public static final String TYPE_CONDITIONS = I_C_Flatrate_Conditions.TYPE_CONDITIONS_Procuremnt;
 
@@ -57,17 +57,17 @@ public class ProcurementFlatrateHandler extends DefaultFlatrateHandler
 	 * @task https://github.com/metasfresh/metasfresh/issues/549
 	 */
 	@Override
-	public void afterExtendFlatrateTermCreated(final de.metas.contracts.model.I_C_Flatrate_Term oldTerm, final de.metas.contracts.model.I_C_Flatrate_Term newTerm)
+	public void afterSaveOfNextTermForPredecessor(final de.metas.contracts.model.I_C_Flatrate_Term next, final de.metas.contracts.model.I_C_Flatrate_Term predecessor)
 	{
 		final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
 
-		final I_C_Flatrate_Term oldTermtoUse = InterfaceWrapperHelper.create(oldTerm, I_C_Flatrate_Term.class);
-		final I_C_Flatrate_Term newTermtoUse = InterfaceWrapperHelper.create(newTerm, I_C_Flatrate_Term.class);
+		final I_C_Flatrate_Term oldTermtoUse = InterfaceWrapperHelper.create(predecessor, I_C_Flatrate_Term.class);
+		final I_C_Flatrate_Term newTermtoUse = InterfaceWrapperHelper.create(next, I_C_Flatrate_Term.class);
 
 		newTermtoUse.setPMM_Product(oldTermtoUse.getPMM_Product());
 		InterfaceWrapperHelper.save(newTermtoUse);
 
-		final List<I_C_Flatrate_DataEntry> oldDataEntries = flatrateDAO.retrieveDataEntries(oldTerm, null, null);
+		final List<I_C_Flatrate_DataEntry> oldDataEntries = flatrateDAO.retrieveDataEntries(predecessor, null, null);
 
 		final PMMContractBuilder builder = PMMContractBuilder.newBuilder(newTermtoUse)
 				.setComplete(false);

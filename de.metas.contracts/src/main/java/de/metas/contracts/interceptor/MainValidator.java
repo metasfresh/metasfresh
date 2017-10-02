@@ -35,35 +35,23 @@ import org.compiere.model.PO;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
 
-import de.metas.contracts.flatrate.Contracts_Constants;
+import de.metas.contracts.Contracts_Constants;
 import de.metas.contracts.flatrate.impexp.FlatrateTermImportProcess;
 import de.metas.contracts.flatrate.inout.spi.impl.FlatrateMaterialBalanceConfigMatcher;
-import de.metas.contracts.flatrate.modelvalidator.C_Flatrate_Conditions;
-import de.metas.contracts.flatrate.modelvalidator.C_Flatrate_Term;
-import de.metas.contracts.flatrate.modelvalidator.C_Flatrate_Transition;
-import de.metas.contracts.flatrate.modelvalidator.C_Invoice_Candidate;
-import de.metas.contracts.flatrate.modelvalidator.C_Invoice_Clearing_Alloc;
-import de.metas.contracts.flatrate.modelvalidator.C_Order;
-import de.metas.contracts.flatrate.modelvalidator.C_OrderLine;
-import de.metas.contracts.flatrate.modelvalidator.C_Period;
-import de.metas.contracts.flatrate.modelvalidator.FlatrateDataEntryValidator;
-import de.metas.contracts.flatrate.modelvalidator.FlatrateMatchingValidator;
-import de.metas.contracts.flatrate.modelvalidator.M_InOutLine;
-import de.metas.contracts.flatrate.modelvalidator.M_ShipmentSchedule;
 import de.metas.contracts.flatrate.ordercandidate.spi.FlatrateGroupingProvider;
 import de.metas.contracts.flatrate.ordercandidate.spi.FlatrateOLCandListener;
 import de.metas.contracts.inoutcandidate.ShipmentScheduleFromSubscriptionOrderLineVetoer;
 import de.metas.contracts.inoutcandidate.ShipmentScheduleSubscriptionProcessor;
 import de.metas.contracts.inoutcandidate.SubscriptionShipmentScheduleHandler;
-import de.metas.contracts.invoicecandidate.SubscriptionOrderLineFilter;
+import de.metas.contracts.invoicecandidate.ExcludeSubscriptionInOutLines;
+import de.metas.contracts.invoicecandidate.ExcludeSubscriptionOrderLines;
 import de.metas.contracts.model.I_I_Flatrate_Term;
-import de.metas.contracts.subscription.interceptor.C_SubscriptionProgress;
 import de.metas.i18n.IMsgBL;
 import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.impex.model.I_AD_InputDataSource;
 import de.metas.inout.api.IMaterialBalanceConfigBL;
-import de.metas.inoutcandidate.api.IInOutCandHandlerBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
+import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
 import de.metas.ordercandidate.api.IOLCandBL;
 
 public class MainValidator implements ModelValidator
@@ -87,8 +75,8 @@ public class MainValidator implements ModelValidator
 			m_AD_Client_ID = client.getAD_Client_ID();
 		}
 
-		Services.get(IInOutCandHandlerBL.class).registerVetoer(new ShipmentScheduleFromSubscriptionOrderLineVetoer(), I_C_OrderLine.Table_Name);
-		Services.get(IInOutCandHandlerBL.class).registerHandler(Env.getCtx(), new SubscriptionShipmentScheduleHandler());
+		Services.get(IShipmentScheduleHandlerBL.class).registerVetoer(new ShipmentScheduleFromSubscriptionOrderLineVetoer(), I_C_OrderLine.Table_Name);
+		Services.get(IShipmentScheduleHandlerBL.class).registerHandler(Env.getCtx(), new SubscriptionShipmentScheduleHandler());
 
 		Services.get(IShipmentScheduleBL.class).registerCandidateProcessor(new ShipmentScheduleSubscriptionProcessor());
 
@@ -97,16 +85,14 @@ public class MainValidator implements ModelValidator
 
 		engine.addModelValidator(new C_Flatrate_Conditions(), client);
 		engine.addModelValidator(C_SubscriptionProgress.instance, client);
-		engine.addModelValidator(new FlatrateDataEntryValidator(), client);
-		engine.addModelValidator(new FlatrateMatchingValidator(), client);
+		engine.addModelValidator(new C_Flatrate_DataEntry(), client);
+		engine.addModelValidator(new C_Flatrate_Matching(), client);
 		engine.addModelValidator(new C_Flatrate_Term(), client);
 
 		engine.addModelValidator(new C_Invoice_Candidate(), client);
 		engine.addModelValidator(new C_Invoice_Clearing_Alloc(), client);
 		engine.addModelValidator(new C_Order(), client);
 		engine.addModelValidator(new C_OrderLine(), client);
-
-		engine.addModelValidator(new M_ShipmentSchedule(), client);
 
 		// 03742
 		engine.addModelValidator(new C_Flatrate_Transition(), client);
@@ -116,11 +102,10 @@ public class MainValidator implements ModelValidator
 
 		engine.addModelValidator(new M_InOutLine(), client);
 
-		// 05197 : Functionality not required anymore.
-		// engine.addModelValidator(new M_InOutLine_HU(), client);
-
+		engine.addModelValidator(new M_ShipmentSchedule_QtyPicked(), client);
+		
 		// 09869
-		engine.addModelValidator(new de.metas.contracts.subscription.interceptor.M_ShipmentSchedule(), client);
+		engine.addModelValidator(new de.metas.contracts.interceptor.M_ShipmentSchedule(), client);
 
 		// material balance matcher
 		Services.get(IMaterialBalanceConfigBL.class).addMaterialBalanceConfigMather(new FlatrateMaterialBalanceConfigMatcher());
@@ -134,7 +119,8 @@ public class MainValidator implements ModelValidator
 
 		Services.get(IImportProcessFactory.class).registerImportProcess(I_I_Flatrate_Term.class, FlatrateTermImportProcess.class);
 
-		SubscriptionOrderLineFilter.registerFilterForInvoiceCandidateCreation();
+		ExcludeSubscriptionOrderLines.registerFilterForInvoiceCandidateCreation();
+		ExcludeSubscriptionInOutLines.registerFilterForInvoiceCandidateCreation();
 	}
 
 	private void setupCallouts()

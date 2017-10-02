@@ -13,7 +13,7 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.TrxRunnableAdapter;
 
-import de.metas.contracts.flatrate.api.IFlatrateBL;
+import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.process.JavaProcess;

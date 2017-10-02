@@ -12,7 +12,7 @@ import org.junit.Test;
 
 import de.metas.inoutcandidate.api.OlAndSched;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.inoutcandidate.spi.ShipmentScheduleOrderDoc;
+import de.metas.inoutcandidate.spi.ShipmentScheduleReferencedLine;
 
 public class ShipmentScheduleBLTest extends ShipmentScheduleTestBase
 {
@@ -36,7 +36,7 @@ public class ShipmentScheduleBLTest extends ShipmentScheduleTestBase
 		sched.setBPartnerAddress_Override("bPartnerAddress");
 		save(sched);
 		
-		final ShipmentScheduleOrderDoc scheduleSourceDoc = ShipmentScheduleOrderDoc.builder()
+		final ShipmentScheduleReferencedLine scheduleSourceDoc = ShipmentScheduleReferencedLine.builder()
 				.groupId(10)
 				.shipperId(20)
 				.warehouseId(30)

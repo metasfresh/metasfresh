@@ -6,7 +6,7 @@ import org.adempiere.util.Services;
 import org.compiere.model.MTable;
 import org.compiere.util.Env;
 
-import de.metas.contracts.flatrate.Contracts_Constants;
+import de.metas.contracts.Contracts_Constants;
 import de.metas.contracts.flatrate.interfaces.I_C_OLCand;
 import de.metas.contracts.subscription.ISubscriptionBL;
 import de.metas.impex.api.IInputDataSourceDAO;
