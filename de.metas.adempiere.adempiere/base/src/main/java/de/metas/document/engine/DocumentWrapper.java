@@ -48,8 +48,8 @@ public class DocumentWrapper implements IDocument
 	private final DocumentFields model;
 	private final DocumentHandler handler;
 
-	private String m_processMsg;
-	private boolean m_justPrepared;
+	private String processMsg;
+	private boolean justPrepared;
 
 	private DocumentWrapper(@NonNull final DocumentFields docActionModel, @NonNull final DocumentHandler handler)
 	{
@@ -72,7 +72,7 @@ public class DocumentWrapper implements IDocument
 	@Override
 	public boolean processIt(final String action) throws Exception
 	{
-		m_processMsg = null;
+		processMsg = null;
 		return Services.get(IDocumentBL.class).processIt(this, action);
 	}
 
@@ -111,6 +111,8 @@ public class DocumentWrapper implements IDocument
 		final String newDocStatus = handler.prepareIt(model);
 		ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_PREPARE);
 
+		justPrepared = STATUS_InProgress.equals(newDocStatus);
+
 		return newDocStatus;
 	}
 
@@ -118,7 +120,7 @@ public class DocumentWrapper implements IDocument
 	public String completeIt()
 	{
 		// Re-Check
-		if (!m_justPrepared)
+		if (!justPrepared)
 		{
 			final String status = prepareIt();
 			if (!IDocument.STATUS_InProgress.equals(status))
@@ -128,7 +130,6 @@ public class DocumentWrapper implements IDocument
 		}
 
 		ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_COMPLETE);
-
 		final String newDocStatus = handler.completeIt(model);
 		ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_COMPLETE);
 		model.setProcessed(true);
@@ -207,7 +208,7 @@ public class DocumentWrapper implements IDocument
 	@Override
 	public String getProcessMsg()
 	{
-		return m_processMsg;
+		return processMsg;
 	}
 
 	@Override
