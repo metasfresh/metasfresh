@@ -10,7 +10,7 @@ import org.compiere.model.I_AD_Workflow;
 import org.compiere.model.X_AD_Process;
 import org.compiere.wf.api.IADWorkflowBL;
 
-import de.metas.document.engine.DocumentFields;
+import de.metas.document.engine.DocumentTableFields;
 import de.metas.process.IADProcessBL;
 import lombok.NonNull;
 
@@ -69,10 +69,10 @@ public class ADProcessBL implements IADProcessBL
 
 	private void linkProccessWithDocument(@NonNull final I_AD_Table document, @NonNull final I_AD_Process documentSpecificProcess)
 	{
-		final I_AD_Column processingColumn = getColumnForDocument(document, DocumentFields.COLUMNNAME_Processing);
+		final I_AD_Column processingColumn = getColumnForDocument(document, DocumentTableFields.COLUMNNAME_Processing);
 		linkProcessingColumnWithProcess(documentSpecificProcess, processingColumn);
 
-		final I_AD_Column docActionColumn = getColumnForDocument(document, DocumentFields.COLUMNNAME_DocAction);
+		final I_AD_Column docActionColumn = getColumnForDocument(document, DocumentTableFields.COLUMNNAME_DocAction);
 		linkProcessingColumnWithProcess(documentSpecificProcess, docActionColumn);
 
 	}

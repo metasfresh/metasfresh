@@ -39,19 +39,19 @@ public class DocumentWrapper implements IDocument
 {
 	public static IDocument wrapModelUsingHandler(@NonNull final Object model, final DocumentHandler handler)
 	{
-		final DocumentFields docActionModel = InterfaceWrapperHelper.create(model, DocumentFields.class);
+		final DocumentTableFields docActionModel = InterfaceWrapperHelper.create(model, DocumentTableFields.class);
 		return new DocumentWrapper(docActionModel, handler);
 	}
 
 	private static final Logger logger = LogManager.getLogger(DocumentWrapper.class);
 
-	private final DocumentFields model;
+	private final DocumentTableFields model;
 	private final DocumentHandler handler;
 
 	private String processMsg;
 	private boolean justPrepared;
 
-	private DocumentWrapper(@NonNull final DocumentFields docActionModel, @NonNull final DocumentHandler handler)
+	private DocumentWrapper(@NonNull final DocumentTableFields docActionModel, @NonNull final DocumentHandler handler)
 	{
 		this.model = docActionModel;
 		this.handler = handler;
