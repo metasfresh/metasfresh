@@ -1,5 +1,7 @@
 package org.compiere.util;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -51,21 +53,27 @@ public class UtilTest
 		}
 	}
 
-@Test
+	@Test
+	public void coalesceIntIds()
+	{
+		assertThat(Util.firstGreaterThanZero(0, 3, 1)).isEqualTo(3);
+	}
+
+	@Test
 	public void test_clearAmp()
 	{
 		test_clearAmp(null, null);
 		test_clearAmp("", "");
-		
+
 		test_clearAmp("nothing", "nothing");
-		
+
 		test_clearAmp("Springe zu Eintrag (wo verwendet)", "&Springe zu Eintrag (wo verwendet)");
 	}
-	
+
 	private void test_clearAmp(final String expected, final String input)
 	{
 		final String actual = Util.cleanAmp(input);
-		Assert.assertEquals("Invalid result for input: "+input, expected, actual);
+		Assert.assertEquals("Invalid result for input: " + input, expected, actual);
 	}
 
 }

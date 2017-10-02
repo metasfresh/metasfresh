@@ -14,7 +14,7 @@ import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.contracts.flatrate.api.IFlatrateHandlersService;
+import de.metas.contracts.IFlatrateTermEventService;
 import de.metas.event.Topic;
 import de.metas.jax.rs.CreateEndpointRequest;
 import de.metas.jax.rs.IJaxRsBL;
@@ -161,6 +161,6 @@ public class Main extends AbstractModuleInterceptor
 	
 	private void setupFlatrateTerms()
 	{
-		Services.get(IFlatrateHandlersService.class).registerHandler(ProcurementFlatrateHandler.TYPE_CONDITIONS, new ProcurementFlatrateHandler());
+		Services.get(IFlatrateTermEventService.class).registerEventListenerForConditionsType(new ProcurementFlatrateHandler(), ProcurementFlatrateHandler.TYPE_CONDITIONS);
 	}
 }

@@ -13,19 +13,20 @@ package org.adempiere.ad.dao;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.model.ModelColumn;
+
+import lombok.NonNull;
 
 public interface IQueryOrderByBuilder<T>
 {
@@ -45,7 +46,23 @@ public interface IQueryOrderByBuilder<T>
 
 	IQueryOrderByBuilder<T> addColumn(ModelColumn<T, ?> column);
 
-	IQueryOrderByBuilder<T> addColumn(String columnName, boolean asc);
+	/**
+	 * 
+	 * @param columnName
+	 * @param asc
+	 * @return
+	 * 
+	 * @deprecated please use {@link #addColumnAscending(String)} or {@link #addColumnDescending(String)}.
+	 */
+	@Deprecated
+	default IQueryOrderByBuilder<T> addColumn(@NonNull final String columnName, final boolean asc)
+	{
+		return  asc ? addColumnAscending(columnName) : addColumnDescending(columnName);
+	}
+
+	IQueryOrderByBuilder<T> addColumnAscending(String columnName);
+
+	IQueryOrderByBuilder<T> addColumnDescending(String columnName);
 
 	IQueryOrderByBuilder<T> addColumn(String columnName, Direction direction, Nulls nulls);
 

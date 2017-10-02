@@ -30,7 +30,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 
-import de.metas.contracts.flatrate.api.IFlatrateDAO;
+import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.model.I_C_Flatrate_DataEntry;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
