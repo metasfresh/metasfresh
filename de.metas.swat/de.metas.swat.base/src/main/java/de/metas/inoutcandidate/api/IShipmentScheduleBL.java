@@ -33,7 +33,7 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.util.Util.ArrayKey;
 
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.inoutcandidate.spi.ICandidateProcessor;
+import de.metas.inoutcandidate.spi.IShipmentSchedulesAfterFirstPassUpdater;
 import de.metas.inoutcandidate.spi.IShipmentScheduleQtyUpdateListener;
 import de.metas.storage.IStorageQuery;
 
@@ -54,7 +54,7 @@ public interface IShipmentScheduleBL extends ISingletonService
 	 * <li>
 	 * {@link I_M_ShipmentSchedule#COLUMNNAME_AllowConsolidateInOut}
 	 *
-	 * To actually set those values, this method calls the registered {@link ICandidateProcessor}.
+	 * To actually set those values, this method calls the registered {@link IShipmentSchedulesAfterFirstPassUpdater}.
 	 *
 	 *
 	 * @param olsAndScheds
@@ -66,7 +66,7 @@ public interface IShipmentScheduleBL extends ISingletonService
 			List<OlAndSched> olsAndScheds, 
 			String trxName);
 
-	void registerCandidateProcessor(ICandidateProcessor processor);
+	void registerCandidateProcessor(IShipmentSchedulesAfterFirstPassUpdater processor);
 
 	/**
 	 * Create grouping key for given shipment schedule.

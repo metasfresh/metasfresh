@@ -5,11 +5,11 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
 import org.adempiere.util.Services;
 import org.springframework.stereotype.Service;
 
-import de.metas.contracts.flatrate.api.IFlatrateBL;
+import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.model.I_C_SubscriptionProgress;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.inoutcandidate.spi.ShipmentScheduleOrderDoc;
-import de.metas.inoutcandidate.spi.ShipmentScheduleOrderDocProvider;
+import de.metas.inoutcandidate.spi.ShipmentScheduleReferencedLine;
+import de.metas.inoutcandidate.spi.ShipmentScheduleReferencedLineProvider;
 import lombok.NonNull;
 
 /*
@@ -35,7 +35,7 @@ import lombok.NonNull;
  */
 
 @Service
-public class ShipmentScheduleOrderDocForSubscriptionLine implements ShipmentScheduleOrderDocProvider
+public class ShipmentScheduleOrderDocForSubscriptionLine implements ShipmentScheduleReferencedLineProvider
 {
 	/**
 	 * @return {@link I_C_SubscriptionProgress#Table_Name}.
@@ -47,11 +47,11 @@ public class ShipmentScheduleOrderDocForSubscriptionLine implements ShipmentSche
 	}
 
 	@Override
-	public ShipmentScheduleOrderDoc provideFor(@NonNull final I_M_ShipmentSchedule sched)
+	public ShipmentScheduleReferencedLine provideFor(@NonNull final I_M_ShipmentSchedule sched)
 	{
 		final I_C_SubscriptionProgress subscriptionLine = load(sched.getRecord_ID(), I_C_SubscriptionProgress.class);
 
-		return ShipmentScheduleOrderDoc.builder()
+		return ShipmentScheduleReferencedLine.builder()
 				.groupId(subscriptionLine.getC_Flatrate_Term_ID())
 				.shipperId(0)
 				.deliveryDate(subscriptionLine.getEventDate())

@@ -100,7 +100,7 @@ public class ProcurementFlatrateHandlerTests
 		newTerm.setStartDate(Timestamp.valueOf("2017-01-01 00:00:00"));
 		InterfaceWrapperHelper.save(newTerm);
 
-		procurementFlatrateHandler.afterExtendFlatrateTermCreated(oldTerm, newTerm);
+		procurementFlatrateHandler.afterSaveOfNextTermForPredecessor(newTerm, oldTerm);
 
 		// @formatter:off
 		new Verifications()

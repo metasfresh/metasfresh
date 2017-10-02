@@ -34,7 +34,7 @@ import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_Product;
 
-import de.metas.contracts.flatrate.api.IFlatrateDAO;
+import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.inout.spi.IMaterialBalanceConfigMatcher;
 

@@ -28,7 +28,7 @@ import java.util.Properties;
 
 import org.adempiere.inout.util.DeliveryGroupCandidate;
 import org.adempiere.inout.util.DeliveryLineCandidate;
-import org.adempiere.inout.util.IShipmentCandidates;
+import org.adempiere.inout.util.IShipmentSchedulesDuringUpdate;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -38,7 +38,7 @@ import de.metas.contracts.model.X_C_SubscriptionProgress;
 import de.metas.i18n.IMsgBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.inoutcandidate.spi.ICandidateProcessor;
+import de.metas.inoutcandidate.spi.IShipmentSchedulesAfterFirstPassUpdater;
 
 /**
  * 
@@ -46,16 +46,16 @@ import de.metas.inoutcandidate.spi.ICandidateProcessor;
  * @see "<a href='http://dewiki908/mediawiki/index.php?title=Auftrag_versenden_mit_Abo-Lieferung_(2009_0027_G62)'>(2009 0027 G62)</a>"
  * 
  */
-public class ShipmentScheduleSubscriptionProcessor implements ICandidateProcessor
+public class ShipmentScheduleSubscriptionProcessor implements IShipmentSchedulesAfterFirstPassUpdater
 {
 	public static final String MSG_OPEN_INVOICE_1P = "ShipmentSchedule_OpenInvoice_1P";
 
 	public static final String MSG_WITH_NEXT_SUBSCRIPTION = "ShipmentSchedule_WithNextSubscription";
 
 	@Override
-	public int processCandidates(
+	public int doUpdateAfterFirstPass(
 			final Properties ctx,
-			final IShipmentCandidates candidates,
+			final IShipmentSchedulesDuringUpdate candidates,
 			final String trxName)
 	{
 		int removeCount = 0;
@@ -78,7 +78,7 @@ public class ShipmentScheduleSubscriptionProcessor implements ICandidateProcesso
 
 	private int handleWithNextSubscription(
 			final Properties ctx,
-			final IShipmentCandidates candidates,
+			final IShipmentSchedulesDuringUpdate candidates,
 			final DeliveryLineCandidate inOutLine,
 			final String trxName)
 	{
@@ -109,7 +109,7 @@ public class ShipmentScheduleSubscriptionProcessor implements ICandidateProcesso
 
 	private boolean hasSubscriptionDelivery(
 			final Properties ctx,
-			final IShipmentCandidates candidates,
+			final IShipmentSchedulesDuringUpdate candidates,
 			final DeliveryLineCandidate inOutLine,
 			final String trxName)
 	{

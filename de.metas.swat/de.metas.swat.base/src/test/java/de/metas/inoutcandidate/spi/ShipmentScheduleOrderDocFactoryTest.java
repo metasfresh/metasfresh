@@ -41,16 +41,16 @@ import de.metas.inoutcandidate.spi.impl.ShipmentScheduleOrderDocForOrderLine;
 		StartupListener.class,
 
 		// needed so that the spring context can discover those two components. Note that there are other ways too, but this one is very fast
-		ShipmentScheduleOrderDocFactory.class, ShipmentScheduleOrderDocForOrderLine.class
+		ShipmentScheduleReferencedLineFactory.class, ShipmentScheduleOrderDocForOrderLine.class
 })
 public class ShipmentScheduleOrderDocFactoryTest
 {
 	@Test
 	public void factoryAndOrderLineImplCanBeDiscoveredAndConfigured()
 	{
-		final ShipmentScheduleOrderDocFactory bean = Adempiere.getBean(ShipmentScheduleOrderDocFactory.class);
+		final ShipmentScheduleReferencedLineFactory bean = Adempiere.getBean(ShipmentScheduleReferencedLineFactory.class);
 
-		final ShipmentScheduleOrderDocProvider providerForOrderLineScheds = bean.getProviderForTableName(I_C_OrderLine.Table_Name);
+		final ShipmentScheduleReferencedLineProvider providerForOrderLineScheds = bean.getProviderForTableName(I_C_OrderLine.Table_Name);
 		assertThat(providerForOrderLineScheds).isNotNull();
 		assertThat(providerForOrderLineScheds).isInstanceOf(ShipmentScheduleOrderDocForOrderLine.class);
 	}
