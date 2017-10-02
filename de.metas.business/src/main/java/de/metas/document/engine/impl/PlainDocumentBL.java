@@ -64,10 +64,8 @@ public class PlainDocumentBL extends AbstractDocumentBL
 	}
 
 	@Override
-	protected IDocument getDocAction(Object document, boolean throwEx)
+	protected IDocument getDocument(Object document, boolean throwEx)
 	{
-		// throw new UnsupportedOperationException("Method not implemented");
-
 		if (document == null)
 		{
 			if (throwEx)
@@ -229,7 +227,7 @@ public class PlainDocumentBL extends AbstractDocumentBL
 		processInterceptors.put(key, interceptor);
 	}
 
-	private final Map<ArrayKey, IProcessInterceptor> processInterceptors = new HashMap<ArrayKey, IProcessInterceptor>();
+	private final Map<ArrayKey, IProcessInterceptor> processInterceptors = new HashMap<>();
 
 	private IProcessInterceptor defaultProcessInterceptor = PROCESSINTERCEPTOR_CompleteDirectly;
 

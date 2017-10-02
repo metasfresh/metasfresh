@@ -1,8 +1,15 @@
-package de.metas.document.engine;
+package de.metas.document.engine.impl;
+
+import java.util.Collection;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+import de.metas.document.engine.DocumentHandlerProvider;
 
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * de.metas.business
  * %%
  * Copyright (C) 2017 metas GmbH
  * %%
@@ -22,9 +29,12 @@ package de.metas.document.engine;
  * #L%
  */
 
-public interface DocActionHandlerProvider
+@Component
+public class DocumentHandlerProvidersRegistry
 {
-	String getHandledTableName();
-	
-	DocumentHandler provideForDocument(Object model);
+	@Autowired
+	private void registerProviders(final Collection<DocumentHandlerProvider> providers)
+	{
+		// TODO
+	}
 }

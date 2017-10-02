@@ -38,13 +38,13 @@ import org.compiere.util.DB;
 
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.DocumentHandler;
-import de.metas.document.engine.DocActionHandlerProvider;
+import de.metas.document.engine.DocumentHandlerProvider;
 import de.metas.document.engine.DocumentWrapper;
 
 public final class DocumentBL extends AbstractDocumentBL
 {
 	@Override
-	protected IDocument getDocAction(final Object documentObj, final boolean throwEx)
+	protected IDocument getDocument(final Object documentObj, final boolean throwEx)
 	{
 		if (documentObj == null)
 		{
@@ -79,7 +79,7 @@ public final class DocumentBL extends AbstractDocumentBL
 
 		//
 		final String tableName = po.get_TableName();
-		final DocActionHandlerProvider handlerProvider = getDocActionHandlerProviderByTableNameOrNull(tableName);
+		final DocumentHandlerProvider handlerProvider = getDocActionHandlerProviderByTableNameOrNull(tableName);
 		if (handlerProvider != null)
 		{
 			final DocumentHandler handler = handlerProvider.provideForDocument(po);

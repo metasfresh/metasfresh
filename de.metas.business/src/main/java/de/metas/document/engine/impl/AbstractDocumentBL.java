@@ -56,7 +56,7 @@ import com.google.common.base.Objects;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableMap;
 
-import de.metas.document.engine.DocActionHandlerProvider;
+import de.metas.document.engine.DocumentHandlerProvider;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.document.exceptions.DocumentProcessingException;
@@ -70,24 +70,24 @@ public abstract class AbstractDocumentBL implements IDocumentBL
 
 	protected static final String COLUMNNAME_C_DocType_ID = "C_DocType_ID";
 
-	private final Supplier<Map<String, DocActionHandlerProvider>> docActionHandlerProvidersByTableName = Suppliers.memoize(() -> retrieveDocActionHandlerProvidersIndexedByTableName());
+	private final Supplier<Map<String, DocumentHandlerProvider>> docActionHandlerProvidersByTableName = Suppliers.memoize(() -> retrieveDocActionHandlerProvidersIndexedByTableName());
 
 	protected abstract String retrieveString(Properties ctx, int adTableId, int recordId, final String columnName);
 
 	protected abstract Object retrieveModelOrNull(Properties ctx, int adTableId, int recordId);
 
-	protected final DocActionHandlerProvider getDocActionHandlerProviderByTableNameOrNull(@NonNull final String tableName)
+	protected final DocumentHandlerProvider getDocActionHandlerProviderByTableNameOrNull(@NonNull final String tableName)
 	{
 		return docActionHandlerProvidersByTableName.get().get(tableName);
 	}
 
-	private static final Map<String, DocActionHandlerProvider> retrieveDocActionHandlerProvidersIndexedByTableName()
+	private static final Map<String, DocumentHandlerProvider> retrieveDocActionHandlerProvidersIndexedByTableName()
 	{
 		return Adempiere.getSpringApplicationContext()
-				.getBeansOfType(DocActionHandlerProvider.class)
+				.getBeansOfType(DocumentHandlerProvider.class)
 				.values()
 				.stream()
-				.collect(ImmutableMap.toImmutableMap(DocActionHandlerProvider::getHandledTableName, Function.identity()));
+				.collect(ImmutableMap.toImmutableMap(DocumentHandlerProvider::getHandledTableName, Function.identity()));
 	}
 
 	@Override
@@ -228,17 +228,17 @@ public abstract class AbstractDocumentBL implements IDocumentBL
 	public IDocument getDocument(final Object document)
 	{
 		final boolean throwEx = true;
-		return getDocAction(document, throwEx);
+		return getDocument(document, throwEx);
 	}
 
 	@Override
 	public IDocument getDocumentOrNull(final Object document)
 	{
 		final boolean throwEx = false;
-		return getDocAction(document, throwEx);
+		return getDocument(document, throwEx);
 	}
 
-	protected abstract IDocument getDocAction(final Object document, boolean throwEx);
+	protected abstract IDocument getDocument(final Object document, boolean throwEx);
 
 	@Override
 	public boolean issDocumentDraftedOrInProgress(final Object document)
