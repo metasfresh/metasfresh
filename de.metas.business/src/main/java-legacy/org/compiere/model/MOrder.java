@@ -696,7 +696,7 @@ public class MOrder extends X_C_Order implements IDocument
 	@Override
 	public String toString()
 	{
-		StringBuffer sb = new StringBuffer("C_Order[ID=").append(get_ID())
+		StringBuilder sb = new StringBuilder("C_Order[ID=").append(get_ID())
 				.append("-DocumentNo=").append(getDocumentNo())
 				.append(",IsSOTrx=").append(isSOTrx())
 				.append(",C_DocType_ID=").append(getC_DocType_ID())
@@ -782,7 +782,7 @@ public class MOrder extends X_C_Order implements IDocument
 	public MOrderLine[] getLines(String whereClause, String orderClause)
 	{
 		// red1 - using new Query class from Teo / Victor's MDDOrder.java implementation
-		final StringBuffer whereClauseFinal = new StringBuffer("(" + MOrderLine.COLUMNNAME_C_Order_ID + "=? AND " + MOrderLine.COLUMNNAME_IsActive + "='Y' )");
+		final StringBuilder whereClauseFinal = new StringBuilder("(" + MOrderLine.COLUMNNAME_C_Order_ID + "=? AND " + MOrderLine.COLUMNNAME_IsActive + "='Y' )");
 		if (!Check.isEmpty(whereClause, true))
 			whereClauseFinal.append(whereClause);
 		if (orderClause.length() == 0)
@@ -1264,7 +1264,6 @@ public class MOrder extends X_C_Order implements IDocument
 	@Override
 	public String prepareIt()
 	{
-		log.debug(toString());
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_PREPARE);
 		if (m_processMsg != null)
 		{
@@ -1798,7 +1797,7 @@ public class MOrder extends X_C_Order implements IDocument
 	@Override
 	public boolean approveIt()
 	{
-		log.debug("approveIt - " + toString());
+		log.debug("approveIt - {}", this);
 		setIsApproved(true);
 		return true;
 	}	// approveIt
@@ -1811,7 +1810,7 @@ public class MOrder extends X_C_Order implements IDocument
 	@Override
 	public boolean rejectIt()
 	{
-		log.debug("rejectIt - " + toString());
+		log.debug("rejectIt - {}", this);
 		setIsApproved(false);
 		return true;
 	}	// rejectIt
@@ -1884,7 +1883,7 @@ public class MOrder extends X_C_Order implements IDocument
 			approveIt();
 		getLines(true, null);
 		log.debug("Completed: {}", this);
-		StringBuffer info = new StringBuffer();
+		StringBuilder info = new StringBuilder();
 
 		boolean realTimePOS = false;
 
@@ -2048,7 +2047,7 @@ public class MOrder extends X_C_Order implements IDocument
 	 */
 	private MInvoice createInvoice(MDocType dt, MInOut shipment, Timestamp invoiceDate)
 	{
-		log.debug(dt.toString());
+		log.debug("docType={}", dt);
 		MInvoice invoice = new MInvoice(this, dt.getC_DocTypeInvoice_ID(), invoiceDate);
 		if (!invoice.save(get_TrxName()))
 		{
@@ -2137,7 +2136,6 @@ public class MOrder extends X_C_Order implements IDocument
 	@Override
 	public boolean voidIt()
 	{
-		log.debug(toString());
 		// Before Void
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_VOID);
 		if (m_processMsg != null)
@@ -2210,7 +2208,7 @@ public class MOrder extends X_C_Order implements IDocument
 			return true;
 
 		log.debug("createReversals");
-		StringBuffer info = new StringBuffer();
+		StringBuilder info = new StringBuilder();
 
 		// Reverse All *Shipments*
 		info.append("@M_InOut_ID@:");
@@ -2291,7 +2289,6 @@ public class MOrder extends X_C_Order implements IDocument
 	@Override
 	public boolean closeIt()
 	{
-		log.debug(toString());
 		// Before Close
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_CLOSE);
 		if (m_processMsg != null)
@@ -2335,7 +2332,6 @@ public class MOrder extends X_C_Order implements IDocument
 	 */
 	public String reopenIt()
 	{
-		log.debug(toString());
 		if (!MOrder.DOCSTATUS_Closed.equals(getDocStatus()))
 		{
 			return "Not closed - can't reopen";
@@ -2391,7 +2387,6 @@ public class MOrder extends X_C_Order implements IDocument
 	@Override
 	public boolean reverseCorrectIt()
 	{
-		log.debug(toString());
 		// Before reverseCorrect
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_REVERSECORRECT);
 		if (m_processMsg != null)
@@ -2413,7 +2408,6 @@ public class MOrder extends X_C_Order implements IDocument
 	@Override
 	public boolean reverseAccrualIt()
 	{
-		log.debug(toString());
 		// Before reverseAccrual
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_REVERSEACCRUAL);
 		if (m_processMsg != null)
@@ -2435,7 +2429,6 @@ public class MOrder extends X_C_Order implements IDocument
 	@Override
 	public boolean reActivateIt()
 	{
-		log.debug(toString());
 		// Before reActivate
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_REACTIVATE);
 		if (m_processMsg != null)
@@ -2507,7 +2500,7 @@ public class MOrder extends X_C_Order implements IDocument
 	@Override
 	public String getSummary()
 	{
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		sb.append(getDocumentNo());
 		// : Grand Total = 123.00 (#1)
 		sb.append(": ").append(Msg.translate(getCtx(), "GrandTotal")).append("=").append(getGrandTotal());
