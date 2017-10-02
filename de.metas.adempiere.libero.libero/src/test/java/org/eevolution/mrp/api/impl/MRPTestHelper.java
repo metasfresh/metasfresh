@@ -702,7 +702,7 @@ public class MRPTestHelper
 		final List<T> documentModelsCompleted = new ArrayList<>(documentModels.size());
 		for (final T documentModel : documentModels)
 		{
-			final IDocument document = docActionBL.getDocAction(documentModel);
+			final IDocument document = docActionBL.getDocument(documentModel);
 			docActionBL.processEx(document, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
 
 			documentModelsCompleted.add(documentModel);

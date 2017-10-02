@@ -134,7 +134,7 @@ public class ProcessDocuments extends JavaProcess
 				public boolean doCatch(final Throwable e) throws Throwable
 				{
 					final String msg = "Processing of document " + doc
-							+ ": Failed - ProccessMsg: " + Services.get(IDocumentBL.class).getDocAction(doc).getProcessMsg()
+							+ ": Failed - ProccessMsg: " + Services.get(IDocumentBL.class).getDocument(doc).getProcessMsg()
 							+ "; ExceptionMsg: " + e.getMessage();
 					addLog(msg);
 					ProcessDocuments.this.log.warn(msg, e);

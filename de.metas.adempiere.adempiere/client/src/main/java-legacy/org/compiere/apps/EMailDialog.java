@@ -831,7 +831,7 @@ public class EMailDialog
 		if (m_documentFile == null || !m_documentFile.canRead())
 		{
 			final PO po = TableModelLoader.instance.getPO(Env.getCtx(), m_AD_Table_ID, m_Record_ID, ITrx.TRXNAME_None);
-			final IDocument document = po != null ? Services.get(IDocumentBL.class).getDocActionOrNull(po) : null;
+			final IDocument document = po != null ? Services.get(IDocumentBL.class).getDocumentOrNull(po) : null;
 			if (document == null)
 			{
 				return;

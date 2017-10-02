@@ -421,7 +421,7 @@ public class MWFProcess extends X_AD_WF_Process
 		{
 			final PO po = getPO();
 			//	(2) Doc Owner
-			final IDocument document = po != null ? Services.get(IDocumentBL.class).getDocActionOrNull(po) : null;
+			final IDocument document = po != null ? Services.get(IDocumentBL.class).getDocumentOrNull(po) : null;
 			if (document != null)
 			{
 				AD_User_ID = document.getDoc_User_ID();
@@ -545,7 +545,7 @@ public class MWFProcess extends X_AD_WF_Process
 	 */
 	public void setTextMsg (final PO po)
 	{
-		final IDocument document = po != null ? Services.get(IDocumentBL.class).getDocActionOrNull(po) : null;
+		final IDocument document = po != null ? Services.get(IDocumentBL.class).getDocumentOrNull(po) : null;
 		if (document != null)
 		{
 			setTextMsg(document.getSummary());

@@ -408,7 +408,7 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 			throw new AdempiereException("Persistent Object not found - AD_Table_ID=" + getAD_Table_ID() + ", Record_ID=" + getRecord_ID());
 		}
 		
-		return Services.get(IDocumentBL.class).getDocAction(po);
+		return Services.get(IDocumentBL.class).getDocument(po);
 	}
 	
 	private IDocument getDocumentOrNull(final String trxName)
@@ -419,7 +419,7 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 			throw new AdempiereException("Persistent Object not found - AD_Table_ID=" + getAD_Table_ID() + ", Record_ID=" + getRecord_ID());
 		}
 		
-		return Services.get(IDocumentBL.class).getDocActionOrNull(po);
+		return Services.get(IDocumentBL.class).getDocumentOrNull(po);
 	}
 
 
@@ -925,7 +925,7 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 			
 			// Set Document Status
 			final PO po = getPONoLoad();
-			final IDocument doc = po != null ? Services.get(IDocumentBL.class).getDocActionOrNull(po) : null;
+			final IDocument doc = po != null ? Services.get(IDocumentBL.class).getDocumentOrNull(po) : null;
 			if (doc != null && m_docStatus != null)
 			{
 				po.load(get_TrxName());
@@ -1156,7 +1156,7 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 		{
 			log.debug("UserChoice:AD_Column_ID={}", m_node.getAD_Column_ID());
 			// Approval
-			final IDocument doc = Services.get(IDocumentBL.class).getDocActionOrNull(getPO(trxName));
+			final IDocument doc = Services.get(IDocumentBL.class).getDocumentOrNull(getPO(trxName));
 			if (m_node.isUserApproval() && doc != null)
 			{
 				boolean autoApproval = false;

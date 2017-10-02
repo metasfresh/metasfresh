@@ -77,7 +77,7 @@ public class DocumentProcessingException extends AdempiereException
 		}
 		else
 		{
-			final IDocument document = Services.get(IDocumentBL.class).getDocActionOrNull(documentObj);
+			final IDocument document = Services.get(IDocumentBL.class).getDocumentOrNull(documentObj);
 			if(document != null)
 			{
 				documentInfo = document.getDocumentInfo();

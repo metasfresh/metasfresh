@@ -285,7 +285,7 @@ public class MRPDAO implements IMRPDAO
 			return null;
 		}
 
-		final IDocument document = Services.get(IDocumentBL.class).getDocAction(documentObj);
+		final IDocument document = Services.get(IDocumentBL.class).getDocument(documentObj);
 		return document;
 	}
 

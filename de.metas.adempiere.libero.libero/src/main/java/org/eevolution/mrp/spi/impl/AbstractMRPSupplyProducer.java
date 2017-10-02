@@ -230,7 +230,7 @@ public abstract class AbstractMRPSupplyProducer implements IMRPSupplyProducer
 
 	private IDocument getDocument(final Object model)
 	{
-		final IDocument doc = Services.get(IDocumentBL.class).getDocActionOrNull(model);
+		final IDocument doc = Services.get(IDocumentBL.class).getDocumentOrNull(model);
 		if (doc != null)
 		{
 			return doc;
@@ -239,7 +239,7 @@ public abstract class AbstractMRPSupplyProducer implements IMRPSupplyProducer
 		if (model instanceof I_C_OrderLine)
 		{
 			final I_C_Order order = ((I_C_OrderLine)model).getC_Order();
-			return Services.get(IDocumentBL.class).getDocAction(order);
+			return Services.get(IDocumentBL.class).getDocument(order);
 		}
 
 		return null;

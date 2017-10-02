@@ -363,7 +363,7 @@ public class WorkflowProcessor extends AdempiereServer
 			message = process.getTextMsg();
 		File pdf = null; 
 		final PO po = activity.getPO();
-		final IDocument document = po != null ? Services.get(IDocumentBL.class).getDocActionOrNull(po) : null;
+		final IDocument document = po != null ? Services.get(IDocumentBL.class).getDocumentOrNull(po) : null;
 		if (document != null)
 		{
 			message = document.getDocumentInfo() + "\n" + message;

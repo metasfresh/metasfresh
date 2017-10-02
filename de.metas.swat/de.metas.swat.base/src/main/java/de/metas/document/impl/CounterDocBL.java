@@ -99,7 +99,7 @@ public class CounterDocBL implements ICounterDocBL
 			return new Pair<ICounterDocHandler, IDocument>(NullCounterDocumentHandler.instance, null);
 		}
 
-		final IDocument docAction = Services.get(IDocumentBL.class).getDocActionOrNull(document);
+		final IDocument docAction = Services.get(IDocumentBL.class).getDocumentOrNull(document);
 		if (docAction == null)
 		{
 			return new Pair<ICounterDocHandler, IDocument>(NullCounterDocumentHandler.instance, null);

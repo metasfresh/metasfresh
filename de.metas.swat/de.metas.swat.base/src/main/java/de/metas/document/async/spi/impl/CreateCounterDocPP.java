@@ -88,7 +88,7 @@ public class CreateCounterDocPP extends WorkpackageProcessorAdapter
 		final List<Object> models = queueDAO.retrieveItemsSkipMissing(workpackage, Object.class, localTrxName);
 		for (final Object model : models)
 		{
-			final IDocument document = docActionBL.getDocAction(model);
+			final IDocument document = docActionBL.getDocument(model);
 
 			final IDocument counterDocument = counterDocumentBL.createCounterDocument(document, false);
 			Loggables.get().addLog("Document {0}: created counter document {1}", document, counterDocument);

@@ -108,7 +108,7 @@ public class DocActionBLTest
 		final Object record = InterfaceWrapperHelper.create(Env.getCtx(), clazz, ITrx.TRXNAME_None);
 		InterfaceWrapperHelper.save(record);
 
-		final IDocument docAction = docActionBL.getDocActionOrNull(record);
+		final IDocument docAction = docActionBL.getDocumentOrNull(record);
 		if (expectDocument)
 		{
 			Assert.assertNotNull("Record " + record + " (class " + clazz + ") shall be an DocAction", docAction);
@@ -128,7 +128,7 @@ public class DocActionBLTest
 		record.setDocumentNo("SomeDocumentNo");
 		InterfaceWrapperHelper.save(record);
 
-		docActionBL.getDocAction(record);
+		docActionBL.getDocument(record);
 	}
 
 	@Test

@@ -71,7 +71,7 @@ public class CompositeDocumentRepostingHandler implements IDocumentRepostingHand
 			
 			for(final Object document: documents)
 			{
-				documentsPostedWithoutFactAcct.add(docActionBL.getDocAction(document));
+				documentsPostedWithoutFactAcct.add(docActionBL.getDocument(document));
 			}
 			
 		}

@@ -106,7 +106,7 @@ public abstract class AbstractDocumentBL implements IDocumentBL
 
 	private final boolean processIt(final Object documentObj, final String action, final boolean throwExIfNotSuccess)
 	{
-		final IDocument document = getDocAction(documentObj);
+		final IDocument document = getDocument(documentObj);
 
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
 
@@ -167,7 +167,7 @@ public abstract class AbstractDocumentBL implements IDocumentBL
 	@Override
 	public void processEx(final Object document, final String docAction, final String expectedDocStatus)
 	{
-		final IDocument doc = getDocAction(document);
+		final IDocument doc = getDocument(document);
 
 		final boolean throwExIfNotSuccess = true;
 		processIt(doc, docAction, throwExIfNotSuccess);
@@ -225,14 +225,14 @@ public abstract class AbstractDocumentBL implements IDocumentBL
 	}
 
 	@Override
-	public IDocument getDocAction(final Object document)
+	public IDocument getDocument(final Object document)
 	{
 		final boolean throwEx = true;
 		return getDocAction(document, throwEx);
 	}
 
 	@Override
-	public IDocument getDocActionOrNull(final Object document)
+	public IDocument getDocumentOrNull(final Object document)
 	{
 		final boolean throwEx = false;
 		return getDocAction(document, throwEx);
@@ -273,7 +273,7 @@ public abstract class AbstractDocumentBL implements IDocumentBL
 	@Override
 	public boolean issDocumentCompletedOrClosedOrReversed(final Object document)
 	{
-		final IDocument doc = getDocAction(document);
+		final IDocument doc = getDocument(document);
 		final String docStatus = doc.getDocStatus();
 
 		return isStatusCompletedOrClosedOrReversed(docStatus);
@@ -291,7 +291,7 @@ public abstract class AbstractDocumentBL implements IDocumentBL
 	@Override
 	public boolean isDocumentReversedOrVoided(final Object document)
 	{
-		final IDocument doc = getDocAction(document);
+		final IDocument doc = getDocument(document);
 		final String docStatus = doc.getDocStatus();
 		return isStatusStrOneOf(docStatus,
 				IDocument.STATUS_Reversed,
@@ -335,7 +335,7 @@ public abstract class AbstractDocumentBL implements IDocumentBL
 	{
 		//
 		// First try: document's DocumentNo if available
-		final IDocument doc = getDocActionOrNull(model);
+		final IDocument doc = getDocumentOrNull(model);
 		if (doc != null)
 		{
 			return doc.getDocumentNo();
@@ -389,7 +389,7 @@ public abstract class AbstractDocumentBL implements IDocumentBL
 	@Override
 	public boolean isDocumentStatusOneOf(@NonNull final Object document, @NonNull final String... docStatusesToCheckFor)
 	{
-		final IDocument doc = getDocAction(document);
+		final IDocument doc = getDocument(document);
 		final String docStatus = doc.getDocStatus();
 		return isStatusStrOneOf(docStatus, docStatusesToCheckFor);
 	}
@@ -443,7 +443,7 @@ public abstract class AbstractDocumentBL implements IDocumentBL
 	{
 		Check.assumeNotNull(model, "model not null");
 
-		final IDocument doc = getDocActionOrNull(model);
+		final IDocument doc = getDocumentOrNull(model);
 		if (doc != null)
 		{
 			return doc.getSummary();

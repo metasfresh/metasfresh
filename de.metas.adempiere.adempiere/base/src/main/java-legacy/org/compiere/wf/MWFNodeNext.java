@@ -161,7 +161,7 @@ public class MWFNodeNext extends X_AD_WF_NodeNext
 		if (isStdUserWorkflow())
 		{
 			final PO po = activity.getPO();
-			final IDocument da = Services.get(IDocumentBL.class).getDocActionOrNull(po);
+			final IDocument da = Services.get(IDocumentBL.class).getDocumentOrNull(po);
 			if (da != null)
 			{
 				String docStatus = da.getDocStatus();

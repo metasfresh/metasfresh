@@ -114,7 +114,7 @@ public class DocumentPrintingQueueHandler extends PrintingQueueHandlerAdapter
 
 		// special stuff wrt special document type
 		final IDocumentBL docActionBL = Services.get(IDocumentBL.class);
-		final IDocument document = docActionBL.getDocActionOrNull(archiveRerencedModel);
+		final IDocument document = docActionBL.getDocumentOrNull(archiveRerencedModel);
 		if (document != null)
 		{
 			logger.debug("Setting column of C_Printing_Queue {} from DocAction-PO {} that is referenced by AD_Archive {}: [AD_User_ID={}]",

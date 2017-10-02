@@ -60,7 +60,7 @@ public interface IDocumentBL extends ISingletonService
 
 	default boolean processIt(final Object documentObj)
 	{
-		final IDocument document = getDocAction(documentObj);
+		final IDocument document = getDocument(documentObj);
 		return processIt(document, document.getDocAction());
 	}
 
@@ -97,7 +97,7 @@ public interface IDocumentBL extends ISingletonService
 	 * @return document as {@link IDocument}
 	 * @throws IllegalArgumentException if document is null or it cannot be converted to {@link IDocument}
 	 */
-	IDocument getDocAction(Object document);
+	IDocument getDocument(Object document);
 
 	/**
 	 * Convert given <code>document</code> to {@link IDocument} interface. If the document cannot be converted to {@link IDocument} null is returned.
@@ -105,7 +105,7 @@ public interface IDocumentBL extends ISingletonService
 	 * @param document
 	 * @return document as {@link IDocument} or null
 	 */
-	IDocument getDocActionOrNull(Object document);
+	IDocument getDocumentOrNull(Object document);
 
 	/**
 	 * Retrieve C_DocType_ID for given record. C_DocType_ID and C_DocTypeTarget_ID columns will be checked.
