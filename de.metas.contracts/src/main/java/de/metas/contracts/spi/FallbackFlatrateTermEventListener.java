@@ -16,6 +16,8 @@ import de.metas.contracts.model.I_C_Flatrate_DataEntry;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_Invoice_Clearing_Alloc;
 import de.metas.contracts.model.X_C_Flatrate_DataEntry;
+import de.metas.invoicecandidate.api.IInvoiceCandDAO;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 
 /*
  * #%L
@@ -54,6 +56,7 @@ public class FallbackFlatrateTermEventListener implements IFlatrateTermEventList
 	{
 		deleteFlatrateTermDataEntriesOnReactivate(term);
 		deleteC_Invoice_Clearing_AllocsOnReactivate(term);
+		deleteInvoiceCandidates(term);
 	}
 
 	/**
@@ -98,6 +101,23 @@ public class FallbackFlatrateTermEventListener implements IFlatrateTermEventList
 		}
 	}
 
+	/**
+	 * When a term is reactivated, it's invoice candidate needs to be deleted. Note that we assume the deletion will fail with a meaningful error message if the invoice candidate has already been
+	 * invoiced.
+	 *
+	 * @param term
+	 */
+	public void deleteInvoiceCandidates(final I_C_Flatrate_Term term)
+	{
+		//
+		// Delete invoice candidates
+		final IInvoiceCandDAO invoiceCandDB = Services.get(IInvoiceCandDAO.class);
+		for (final I_C_Invoice_Candidate icToDelete : invoiceCandDB.retrieveReferencing(term))
+		{
+			InterfaceWrapperHelper.delete(icToDelete);
+		}
+	}
+	
 	/**
 	 * Does nothing; Feel free to override.
 	 */
