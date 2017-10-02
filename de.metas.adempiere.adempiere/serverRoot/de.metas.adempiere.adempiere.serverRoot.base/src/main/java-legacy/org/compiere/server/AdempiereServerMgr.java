@@ -30,7 +30,6 @@ import org.adempiere.util.Services;
 import org.compiere.model.AdempiereProcessor;
 import org.compiere.model.MAcctProcessor;
 import org.compiere.model.MAlertProcessor;
-import org.compiere.model.MLdapProcessor;
 import org.compiere.model.MRequestProcessor;
 import org.compiere.model.MScheduler;
 import org.compiere.model.X_AD_Scheduler;
@@ -171,16 +170,7 @@ public final class AdempiereServerMgr
 			server.setPriority(Thread.NORM_PRIORITY - 2);
 			m_servers.add(server);
 		}
-		// LDAP
-		MLdapProcessor[] ldapModels = MLdapProcessor.getActive(ctx);
-		for (int i = 0; i < ldapModels.length; i++)
-		{
-			MLdapProcessor lp = ldapModels[i];
-			AdempiereServer server = AdempiereServer.create(lp);
-			server.start();
-			server.setPriority(Thread.NORM_PRIORITY - 1);
-			m_servers.add(server);
-		}
+		
 		// ImportProcessor - @Trifon
 		final List<I_IMP_Processor> importModels = Services.get(IIMPProcessorDAO.class).retrieveAllActive(ctx);
 		for (final I_IMP_Processor importModel : importModels)
