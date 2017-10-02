@@ -36,15 +36,15 @@ import org.compiere.model.PO;
 import org.compiere.model.POInfo;
 import org.compiere.util.DB;
 
-import de.metas.document.engine.DocAction;
-import de.metas.document.engine.DocActionHandler;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.DocumentHandler;
 import de.metas.document.engine.DocActionHandlerProvider;
-import de.metas.document.engine.DocActionWrapper;
+import de.metas.document.engine.DocumentWrapper;
 
-public final class DocActionBL extends AbstractDocActionBL
+public final class DocumentBL extends AbstractDocumentBL
 {
 	@Override
-	protected DocAction getDocAction(final Object documentObj, final boolean throwEx)
+	protected IDocument getDocAction(final Object documentObj, final boolean throwEx)
 	{
 		if (documentObj == null)
 		{
@@ -56,9 +56,9 @@ public final class DocActionBL extends AbstractDocActionBL
 		}
 
 		//
-		if (documentObj instanceof DocAction)
+		if (documentObj instanceof IDocument)
 		{
-			return (DocAction)documentObj;
+			return (IDocument)documentObj;
 		}
 
 		//
@@ -71,9 +71,9 @@ public final class DocActionBL extends AbstractDocActionBL
 			}
 			return null;
 		}
-		if (po instanceof DocAction)
+		if (po instanceof IDocument)
 		{
-			return (DocAction)po;
+			return (IDocument)po;
 
 		}
 
@@ -82,13 +82,13 @@ public final class DocActionBL extends AbstractDocActionBL
 		final DocActionHandlerProvider handlerProvider = getDocActionHandlerProviderByTableNameOrNull(tableName);
 		if (handlerProvider != null)
 		{
-			final DocActionHandler handler = handlerProvider.provideForDocument(po);
-			return DocActionWrapper.wrapModelUsingHandler(po, handler);
+			final DocumentHandler handler = handlerProvider.provideForDocument(po);
+			return DocumentWrapper.wrapModelUsingHandler(po, handler);
 		}
 
 		if (throwEx)
 		{
-			throw new AdempiereException("Cannot extract " + DocAction.class + " from " + documentObj);
+			throw new AdempiereException("Cannot extract " + IDocument.class + " from " + documentObj);
 		}
 		return null;
 	}
@@ -102,7 +102,7 @@ public final class DocActionBL extends AbstractDocActionBL
 			return false;
 		}
 
-		if (!DocAction.class.isAssignableFrom(clazz))
+		if (!IDocument.class.isAssignableFrom(clazz))
 		{
 			return false;
 		}

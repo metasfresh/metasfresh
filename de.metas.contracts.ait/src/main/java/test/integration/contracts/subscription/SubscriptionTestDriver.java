@@ -75,7 +75,7 @@ import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.subscription.ISubscriptionDAO;
 import de.metas.contracts.subscription.model.I_C_OrderLine;
 import de.metas.currency.ICurrencyDAO;
-import de.metas.document.engine.DocAction;
+import de.metas.document.engine.IDocument;
 import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.impex.model.I_AD_InputDataSource;
 import de.metas.inoutcandidate.api.IInOutCandidateConfig;
@@ -131,7 +131,7 @@ public class SubscriptionTestDriver extends AIntegrationTestDriver
 				.setDocSubType(X_C_DocType.DOCSUBTYPE_StandardOrder)
 				.setBPartnerName(testConfig.getC_BPartner_Value())
 				.setInvoiceRule(OrderHelper.Order_InvoiceRule.AFTER_DELIVERY)
-				.setComplete(DocAction.STATUS_Completed)
+				.setComplete(IDocument.STATUS_Completed)
 				.addLine(ContractsOrderLineHelper.class)
 				.setContractConditions(conditions)
 				.setProductValue(testConfig.getM_Product_Matching_Subcr_Value())

@@ -52,8 +52,8 @@ import org.eevolution.model.I_DD_OrderLine_Alternative;
 import org.eevolution.model.I_DD_OrderLine_Or_Alternative;
 
 import de.metas.document.IDocTypeDAO;
-import de.metas.document.engine.DocAction;
-import de.metas.document.engine.IDocActionBL;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 
 public class DD_Order_MovementBuilder implements IDDOrderMovementBuilder
 {
@@ -296,7 +296,7 @@ public class DD_Order_MovementBuilder implements IDDOrderMovementBuilder
 	{
 		Check.assumeNotNull(movement, LiberoException.class, "movement not null");
 
-		Services.get(IDocActionBL.class).processEx(movement, DocAction.ACTION_Complete, DocAction.STATUS_Completed);
+		Services.get(IDocumentBL.class).processEx(movement, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
 		return movement;
 	}
 }

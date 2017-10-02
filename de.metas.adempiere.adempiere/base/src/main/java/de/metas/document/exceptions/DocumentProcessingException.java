@@ -28,8 +28,8 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
-import de.metas.document.engine.DocAction;
-import de.metas.document.engine.IDocActionBL;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 
 /**
  * Exception thrown when document processing failed.
@@ -40,12 +40,12 @@ import de.metas.document.engine.IDocActionBL;
 @SuppressWarnings("serial")
 public class DocumentProcessingException extends AdempiereException
 {
-	public DocumentProcessingException(final DocAction document, final String docAction, final Throwable cause)
+	public DocumentProcessingException(final IDocument document, final String docAction, final Throwable cause)
 	{
 		super(buildMsg((String)null, document, docAction, cause), cause);
 	}
 
-	public DocumentProcessingException(final DocAction document, final String docAction)
+	public DocumentProcessingException(final IDocument document, final String docAction)
 	{
 		super(buildMsg((String)null, document, docAction, (Throwable)null));
 	}
@@ -77,7 +77,7 @@ public class DocumentProcessingException extends AdempiereException
 		}
 		else
 		{
-			final DocAction document = Services.get(IDocActionBL.class).getDocActionOrNull(documentObj);
+			final IDocument document = Services.get(IDocumentBL.class).getDocActionOrNull(documentObj);
 			if(document != null)
 			{
 				documentInfo = document.getDocumentInfo();

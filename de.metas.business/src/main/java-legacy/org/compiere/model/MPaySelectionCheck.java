@@ -41,7 +41,7 @@ import org.compiere.util.Env;
 import de.metas.adempiere.model.I_C_PaySelectionLine;
 import de.metas.banking.api.IBPBankAccountDAO;
 import de.metas.currency.ICurrencyDAO;
-import de.metas.document.engine.DocAction;
+import de.metas.document.engine.IDocument;
 import de.metas.i18n.IMsgBL;
 
 /**
@@ -525,7 +525,7 @@ public final class MPaySelectionCheck extends X_C_PaySelectionCheck
 					check.setC_Payment_ID(C_Payment_ID);
 					check.save();	// Payment process needs it
 					// Should start WF
-					payment.processIt(DocAction.ACTION_Complete);
+					payment.processIt(IDocument.ACTION_Complete);
 					if (!payment.save())
 						s_log.error("Payment not saved: " + payment);
 				}

@@ -109,8 +109,8 @@ import org.w3c.dom.NodeList;
 import com.google.common.base.Optional;
 
 import de.metas.adempiere.service.IColumnBL;
-import de.metas.document.engine.DocAction;
-import de.metas.document.engine.IDocActionBL;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.logging.LogManager;
 import de.metas.monitoring.api.IMeter;
 import de.metas.monitoring.api.IMonitoringBL;
@@ -324,7 +324,7 @@ public class ImportHelper implements IImportHelper
 		}
 		else if (MReplicationStrategy.REPLICATION_DOCUMENT == ReplicationMode
 				&& X_AD_ReplicationDocument.REPLICATIONTYPE_Merge.equals(ReplicationType)
-				&& po instanceof DocAction)
+				&& po instanceof IDocument)
 		{
 			handleDocumentReplication(po);
 		}
@@ -399,7 +399,7 @@ public class ImportHelper implements IImportHelper
 		Env.setContext(documentObj.getCtx(), Env.CTXNAME_AD_Client_ID, documentObj.getAD_Client_ID());
 		try
 		{
-			if (!Services.get(IDocActionBL.class).processIt(documentObj))
+			if (!Services.get(IDocumentBL.class).processIt(documentObj))
 			{
 				log.info("Cannot process {}", documentObj);
 			}

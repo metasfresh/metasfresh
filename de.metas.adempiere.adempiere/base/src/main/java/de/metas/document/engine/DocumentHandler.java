@@ -25,33 +25,33 @@ import java.math.BigDecimal;
  * #L%
  */
 
-public interface DocActionHandler
+public interface DocumentHandler
 {
 	//
 	// Document Info
 	//@formatter:off
-	String getSummary(DocActionFields docActionModel);
-	String getDocumentInfo(DocActionFields docActionModel);
-	int getDoc_User_ID(DocActionFields docActionModel);
-	int getC_Currency_ID(DocActionFields docActionModel);
-	BigDecimal getApprovalAmt(DocActionFields docActionModel);
+	String getSummary(DocumentFields docActionModel);
+	String getDocumentInfo(DocumentFields docActionModel);
+	int getDoc_User_ID(DocumentFields docActionModel);
+	int getC_Currency_ID(DocumentFields docActionModel);
+	BigDecimal getApprovalAmt(DocumentFields docActionModel);
 	//@formatter:on
 
 	//
 	// Reporting
-	File createPDF(DocActionFields docActionModel);
+	File createPDF(DocumentFields docActionModel);
 
 	//
 	// Document processing
 	//@formatter:off
-	String prepareIt(DocActionFields docActionModel);
-	String completeIt(DocActionFields docActionModel);
-	void approveIt(DocActionFields docActionModel);
-	void rejectIt(DocActionFields docActionModel);
-	void voidIt(DocActionFields docActionModel);
-	void closeIt(DocActionFields docActionModel);
-	void reverseCorrectIt(DocActionFields docActionModel);
-	void reverseAccrualIt(DocActionFields docActionModel);
-	void reactivateIt(DocActionFields docActionModel);
+	String prepareIt(DocumentFields docActionModel);
+	String completeIt(DocumentFields docActionModel);
+	void approveIt(DocumentFields docActionModel);
+	void rejectIt(DocumentFields docActionModel);
+	void voidIt(DocumentFields docActionModel);
+	void closeIt(DocumentFields docActionModel);
+	void reverseCorrectIt(DocumentFields docActionModel);
+	void reverseAccrualIt(DocumentFields docActionModel);
+	void reactivateIt(DocumentFields docActionModel);
 	//@formatter:on
 }

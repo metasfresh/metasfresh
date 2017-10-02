@@ -49,8 +49,8 @@ import org.compiere.model.X_M_InOut;
 import org.compiere.util.Env;
 
 import de.metas.document.IDocTypeDAO;
-import de.metas.document.engine.DocAction;
-import de.metas.document.engine.IDocActionBL;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.event.InOutProcessedEventBus;
 import de.metas.inout.model.I_M_InOut;
@@ -349,7 +349,7 @@ public class InOutProducer implements IInOutProducer
 
 		//
 		// Process current receipt
-		Services.get(IDocActionBL.class).processEx(currentReceipt, DocAction.ACTION_Complete, DocAction.STATUS_Completed);
+		Services.get(IDocumentBL.class).processEx(currentReceipt, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
 
 		//
 		// Invoke all after-process runnables

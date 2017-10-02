@@ -43,7 +43,7 @@ import de.metas.document.archive.model.I_C_BPartner;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log_Line;
 import de.metas.document.archive.model.X_C_Doc_Outbound_Log_Line;
-import de.metas.document.engine.IDocActionBL;
+import de.metas.document.engine.IDocumentBL;
 
 public class DocOutboundArchiveEventListener extends ArchiveEventListenerAdapter
 {
@@ -56,7 +56,7 @@ public class DocOutboundArchiveEventListener extends ArchiveEventListenerAdapter
 	private I_C_Doc_Outbound_Log createLog(final I_AD_Archive archive)
 	{
 		// Services
-		final IDocActionBL docActionBL = Services.get(IDocActionBL.class);
+		final IDocumentBL docActionBL = Services.get(IDocumentBL.class);
 
 		final int adTableId = archive.getAD_Table_ID();
 		final int recordId = archive.getRecord_ID();
@@ -146,7 +146,7 @@ public class DocOutboundArchiveEventListener extends ArchiveEventListenerAdapter
 		docExchangeLine.setAD_Table_ID(archive.getAD_Table_ID());
 		docExchangeLine.setRecord_ID(archive.getRecord_ID());
 
-		final IDocActionBL documentBL = Services.get(IDocActionBL.class);
+		final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 
 		// We need to use DocumentNo if possible, else fallback to archive's name
 		// see http://dewiki908/mediawiki/index.php/03918_Massendruck_f%C3%BCr_Mahnungen_%282013021410000132%29#IT2_-_G01_-_Mass_Printing

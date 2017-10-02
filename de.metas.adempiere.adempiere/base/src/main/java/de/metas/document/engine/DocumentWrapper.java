@@ -35,23 +35,23 @@ import lombok.NonNull;
  * #L%
  */
 
-public class DocActionWrapper implements DocAction
+public class DocumentWrapper implements IDocument
 {
-	public static DocAction wrapModelUsingHandler(@NonNull final Object model, final DocActionHandler handler)
+	public static IDocument wrapModelUsingHandler(@NonNull final Object model, final DocumentHandler handler)
 	{
-		final DocActionFields docActionModel = InterfaceWrapperHelper.create(model, DocActionFields.class);
-		return new DocActionWrapper(docActionModel, handler);
+		final DocumentFields docActionModel = InterfaceWrapperHelper.create(model, DocumentFields.class);
+		return new DocumentWrapper(docActionModel, handler);
 	}
 
-	private static final Logger logger = LogManager.getLogger(DocActionWrapper.class);
+	private static final Logger logger = LogManager.getLogger(DocumentWrapper.class);
 
-	private final DocActionFields model;
-	private final DocActionHandler handler;
+	private final DocumentFields model;
+	private final DocumentHandler handler;
 
 	private String m_processMsg;
 	private boolean m_justPrepared;
 
-	private DocActionWrapper(@NonNull final DocActionFields docActionModel, @NonNull final DocActionHandler handler)
+	private DocumentWrapper(@NonNull final DocumentFields docActionModel, @NonNull final DocumentHandler handler)
 	{
 		this.model = docActionModel;
 		this.handler = handler;
@@ -73,7 +73,7 @@ public class DocActionWrapper implements DocAction
 	public boolean processIt(final String action) throws Exception
 	{
 		m_processMsg = null;
-		return Services.get(IDocActionBL.class).processIt(this, action);
+		return Services.get(IDocumentBL.class).processIt(this, action);
 	}
 
 	@Override
@@ -86,7 +86,7 @@ public class DocActionWrapper implements DocAction
 	@Override
 	public boolean invalidateIt()
 	{
-		model.setDocAction(DocAction.ACTION_Prepare);
+		model.setDocAction(IDocument.ACTION_Prepare);
 		return true;
 	}
 
@@ -121,7 +121,7 @@ public class DocActionWrapper implements DocAction
 		if (!m_justPrepared)
 		{
 			final String status = prepareIt();
-			if (!DocAction.STATUS_InProgress.equals(status))
+			if (!IDocument.STATUS_InProgress.equals(status))
 			{
 				return status;
 			}

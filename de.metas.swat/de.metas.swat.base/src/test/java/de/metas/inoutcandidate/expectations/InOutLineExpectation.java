@@ -40,7 +40,7 @@ import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Product;
 
-import de.metas.document.engine.DocAction;
+import de.metas.document.engine.IDocument;
 import de.metas.inout.model.I_M_InOutLine;
 
 public class InOutLineExpectation<ParentExpectationType> extends AbstractExpectation<ParentExpectationType>
@@ -148,7 +148,7 @@ public class InOutLineExpectation<ParentExpectationType> extends AbstractExpecta
 		// gh 1566: create a completed and active inout, otherwise the line won't be counted properly
 		final I_M_InOut inout = InterfaceWrapperHelper.newInstance(I_M_InOut.class, getContext());
 		inout.setIsActive(true);
-		inout.setDocStatus(DocAction.STATUS_Completed);
+		inout.setDocStatus(IDocument.STATUS_Completed);
 		InterfaceWrapperHelper.save(inout);
 
 		final InOutLineType inoutLine = InterfaceWrapperHelper.newInstance(inoutLineClass, getContext());

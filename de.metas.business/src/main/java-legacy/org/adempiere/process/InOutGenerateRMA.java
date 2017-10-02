@@ -23,7 +23,7 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import org.slf4j.Logger;
 
-import de.metas.document.engine.DocAction;
+import de.metas.document.engine.IDocument;
 import de.metas.logging.LogManager;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.process.JavaProcess;
@@ -55,7 +55,7 @@ public class InOutGenerateRMA extends JavaProcess
     @SuppressWarnings("unused")
     private int         p_M_Warehouse_ID = 0;
     /** DocAction               */
-    private String      p_docAction = DocAction.ACTION_Complete;
+    private String      p_docAction = IDocument.ACTION_Complete;
     /** Number of Shipments     */
     private int         m_created = 0;
     /** Movement Date           */

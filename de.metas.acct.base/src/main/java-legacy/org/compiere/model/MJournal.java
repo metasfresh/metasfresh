@@ -37,8 +37,8 @@ import org.compiere.util.Env;
 
 import de.metas.document.documentNo.IDocumentNoBuilder;
 import de.metas.document.documentNo.IDocumentNoBuilderFactory;
-import de.metas.document.engine.DocAction;
-import de.metas.document.engine.IDocActionBL;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.IMsgBL;
 
 /**
@@ -54,7 +54,7 @@ import de.metas.i18n.IMsgBL;
  *      Org
  * @see http://sourceforge.net/tracker2/?func=detail&atid=879335&aid=2520591&group_id=176962
  */
-public class MJournal extends X_GL_Journal implements DocAction
+public class MJournal extends X_GL_Journal implements IDocument
 {
 	/**
 	 * 
@@ -405,7 +405,7 @@ public class MJournal extends X_GL_Journal implements DocAction
 	public boolean processIt(final String processAction)
 	{
 		m_processMsg = null;
-		return Services.get(IDocActionBL.class).processIt(this, processAction);
+		return Services.get(IDocumentBL.class).processIt(this, processAction);
 	}
 
 	/** Process Message */
@@ -450,7 +450,7 @@ public class MJournal extends X_GL_Journal implements DocAction
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_PREPARE);
 		if (m_processMsg != null)
 		{
-			return DocAction.STATUS_Invalid;
+			return IDocument.STATUS_Invalid;
 		}
 
 		// Assert period is open
@@ -513,11 +513,11 @@ public class MJournal extends X_GL_Journal implements DocAction
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_PREPARE);
 		if (m_processMsg != null)
 		{
-			return DocAction.STATUS_Invalid;
+			return IDocument.STATUS_Invalid;
 		}
 
 		m_justPrepared = true;
-		return DocAction.STATUS_InProgress;
+		return IDocument.STATUS_InProgress;
 	}	// prepareIt
 
 	/**
@@ -558,13 +558,13 @@ public class MJournal extends X_GL_Journal implements DocAction
 		if (!m_justPrepared)
 		{
 			String status = prepareIt();
-			if (!DocAction.STATUS_InProgress.equals(status))
+			if (!IDocument.STATUS_InProgress.equals(status))
 				return status;
 		}
 
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_COMPLETE);
 		if (m_processMsg != null)
-			return DocAction.STATUS_Invalid;
+			return IDocument.STATUS_Invalid;
 
 		// Implicit Approval
 		if (!isApproved())
@@ -575,7 +575,7 @@ public class MJournal extends X_GL_Journal implements DocAction
 		if (valid != null)
 		{
 			m_processMsg = valid;
-			return DocAction.STATUS_Invalid;
+			return IDocument.STATUS_Invalid;
 		}
 
 		// Set the definite document number after completed (if needed)
@@ -584,7 +584,7 @@ public class MJournal extends X_GL_Journal implements DocAction
 		//
 		setProcessed(true);
 		setDocAction(DOCACTION_Close);
-		return DocAction.STATUS_Completed;
+		return IDocument.STATUS_Completed;
 	}	// completeIt
 
 	/**
@@ -732,7 +732,7 @@ public class MJournal extends X_GL_Journal implements DocAction
 		reverse.copyLinesFrom(this, null, 'C');
 		
 		// Complete the reversal and set it's status to Reversed
-		if (!reverse.processIt(DocAction.ACTION_Complete))
+		if (!reverse.processIt(IDocument.ACTION_Complete))
 		{
 			throw new AdempiereException(reverse.getProcessMsg());
 		}

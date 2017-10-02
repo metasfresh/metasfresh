@@ -105,8 +105,8 @@ import de.metas.commission.util.CommissionConstants;
 import de.metas.commission.util.Messages;
 import de.metas.document.ICopyHandlerBL;
 import de.metas.document.IDocumentPA;
-import de.metas.document.engine.DocAction;
-import de.metas.document.engine.IDocActionBL;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;
@@ -363,12 +363,12 @@ public class CommissionValidator implements ModelValidator
 			ilPO.saveEx();
 		}
 
-		final IDocActionBL docActionBL = Services.get(IDocActionBL.class);
+		final IDocumentBL docActionBL = Services.get(IDocumentBL.class);
 		for (final Map<Integer, MInvoice> currencyId2Invoice : bPartnerId2Inv.values())
 		{
 			for (final MInvoice invoice : currencyId2Invoice.values())
 			{
-				if (docActionBL.processIt(invoice, DocAction.ACTION_Complete))
+				if (docActionBL.processIt(invoice, IDocument.ACTION_Complete))
 				{
 					invoice.saveEx();
 				}
@@ -431,7 +431,7 @@ public class CommissionValidator implements ModelValidator
 
 			invoice.setC_DocTypeTarget_ID(docType.getC_DocType_ID());
 			invoice.setC_Currency_ID(currencyId);
-			invoice.setDocAction(DocAction.ACTION_Complete);
+			invoice.setDocAction(IDocument.ACTION_Complete);
 
 			// TODO: introduce/use Services.get(IInvoiceBL.class).setBPartner(invoice, bPartnerPO);
 			invoicePO.setBPartner(bPartnerPO);

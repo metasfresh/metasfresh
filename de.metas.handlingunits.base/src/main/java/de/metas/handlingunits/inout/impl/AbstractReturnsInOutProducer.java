@@ -43,8 +43,8 @@ import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
 import de.metas.adempiere.model.I_C_BPartner_Location;
-import de.metas.document.engine.DocAction;
-import de.metas.document.engine.IDocActionBL;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.inout.IReturnsInOutProducer;
@@ -61,7 +61,7 @@ public abstract class AbstractReturnsInOutProducer implements IReturnsInOutProdu
 	//
 	// Services
 	private final transient IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
-	private final transient IDocActionBL docActionBL = Services.get(IDocActionBL.class);
+	private final transient IDocumentBL docActionBL = Services.get(IDocumentBL.class);
 	protected final transient ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	protected final Properties _ctx;
@@ -146,7 +146,7 @@ public abstract class AbstractReturnsInOutProducer implements IReturnsInOutProdu
 
 			createHUSnapshots();
 
-			docActionBL.processEx(inout, DocAction.ACTION_Complete, DocAction.STATUS_Completed);
+			docActionBL.processEx(inout, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
 
 			afterInOutProcessed(inout);
 

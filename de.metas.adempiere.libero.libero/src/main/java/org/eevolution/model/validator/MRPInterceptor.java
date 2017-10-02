@@ -39,7 +39,7 @@ import org.eevolution.mrp.spi.IMRPSupplyProducer;
 import org.eevolution.mrp.spi.IMRPSupplyProducerFactory;
 import org.slf4j.Logger;
 
-import de.metas.document.engine.IDocActionBL;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.logging.LogManager;
 import de.metas.process.IADProcessDAO;
 
@@ -62,7 +62,7 @@ public class MRPInterceptor extends AbstractModelInterceptor
 	protected void onInit(final IModelValidationEngine engine, final I_AD_Client client)
 	{
 		// services
-		final IDocActionBL docActionBL = Services.get(IDocActionBL.class);
+		final IDocumentBL docActionBL = Services.get(IDocumentBL.class);
 		final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 
 		//

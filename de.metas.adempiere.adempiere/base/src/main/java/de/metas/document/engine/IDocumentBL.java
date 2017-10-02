@@ -37,14 +37,14 @@ import org.compiere.model.I_C_DocType;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public interface IDocActionBL extends ISingletonService
+public interface IDocumentBL extends ISingletonService
 {
 	/**
 	 *
 	 * @param document
 	 * @param docAction
 	 * @return true if document was processed
-	 * @throws IllegalArgumentException if 'document' is not instance of {@link DocAction}.
+	 * @throws IllegalArgumentException if 'document' is not instance of {@link IDocument}.
 	 */
 	boolean processIt(Object document, String docAction);
 
@@ -56,11 +56,11 @@ public interface IDocActionBL extends ISingletonService
 	 * @param processAction
 	 * @return
 	 */
-	boolean processIt(DocAction document, String processAction);
+	boolean processIt(IDocument document, String processAction);
 
 	default boolean processIt(final Object documentObj)
 	{
-		final DocAction document = getDocAction(documentObj);
+		final IDocument document = getDocAction(documentObj);
 		return processIt(document, document.getDocAction());
 	}
 
@@ -70,7 +70,7 @@ public interface IDocActionBL extends ISingletonService
 	 * @param document
 	 * @param docAction
 	 * @param expectedDocStatus (optional) If specified (not null), after processing it is checked that document shall have expected DocStatus
-	 * @throws IllegalArgumentException if document is not a valid {@link DocAction}
+	 * @throws IllegalArgumentException if document is not a valid {@link IDocument}
 	 * @throws AdempiereException if processing fails or document does not have expected DocStatus
 	 */
 	void processEx(Object document, String docAction, String expectedDocStatus);
@@ -84,28 +84,28 @@ public interface IDocActionBL extends ISingletonService
 	 *
 	 * @param document
 	 * @return true if document is completed
-	 * @throws IllegalArgumentException if document is not a valid {@link DocAction}.
+	 * @throws IllegalArgumentException if document is not a valid {@link IDocument}.
 	 */
 	boolean isDocumentCompletedOrClosed(Object document);
 
 	boolean isDocumentTable(String tableName);
 
 	/**
-	 * Convert given <code>document</code> to {@link DocAction} interface
+	 * Convert given <code>document</code> to {@link IDocument} interface
 	 *
 	 * @param document
-	 * @return document as {@link DocAction}
-	 * @throws IllegalArgumentException if document is null or it cannot be converted to {@link DocAction}
+	 * @return document as {@link IDocument}
+	 * @throws IllegalArgumentException if document is null or it cannot be converted to {@link IDocument}
 	 */
-	DocAction getDocAction(Object document);
+	IDocument getDocAction(Object document);
 
 	/**
-	 * Convert given <code>document</code> to {@link DocAction} interface. If the document cannot be converted to {@link DocAction} null is returned.
+	 * Convert given <code>document</code> to {@link IDocument} interface. If the document cannot be converted to {@link IDocument} null is returned.
 	 *
 	 * @param document
-	 * @return document as {@link DocAction} or null
+	 * @return document as {@link IDocument} or null
 	 */
-	DocAction getDocActionOrNull(Object document);
+	IDocument getDocActionOrNull(Object document);
 
 	/**
 	 * Retrieve C_DocType_ID for given record. C_DocType_ID and C_DocTypeTarget_ID columns will be checked.
@@ -144,7 +144,7 @@ public interface IDocActionBL extends ISingletonService
 	/**
 	 * Retrieve DocumentNo for given model. Steps to fetch the DocumentNo are (in this order):
 	 * <ul>
-	 * <li>if <code>model</code> is a {@link DocAction} instance, then {@link DocAction#getDocumentNo()} will be used
+	 * <li>if <code>model</code> is a {@link IDocument} instance, then {@link IDocument#getDocumentNo()} will be used
 	 * <li>if <code>model</code> has DocumentNo column and is not null, that column will be used
 	 * <li>if <code>model</code> has Value column and is not null, that column will be used
 	 * <li>if <code>model</code> has Name column and is not null, that column will be used

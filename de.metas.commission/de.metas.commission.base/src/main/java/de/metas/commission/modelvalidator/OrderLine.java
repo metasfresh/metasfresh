@@ -43,7 +43,7 @@ import de.metas.commission.interfaces.I_C_OrderLine;
 import de.metas.commission.model.IInstanceTrigger;
 import de.metas.commission.service.IInstanceTriggerBL;
 import de.metas.commission.service.IOrderLineBL;
-import de.metas.document.engine.DocAction;
+import de.metas.document.engine.IDocument;
 import de.metas.logging.LogManager;
 
 public class OrderLine implements ModelValidator
@@ -110,7 +110,7 @@ public class OrderLine implements ModelValidator
 
 		// metas: Order mit WP haben isProcessed = 'N' und werden sonst auch nach Fertigstellen aktualisiert
 		final I_C_Order o = ol.getC_Order();
-		if (ol.isProcessed() || DocAction.STATUS_WaitingPayment.equals(o.getDocStatus()))
+		if (ol.isProcessed() || IDocument.STATUS_WaitingPayment.equals(o.getDocStatus()))
 		{
 			// nothing more to do
 			return null;

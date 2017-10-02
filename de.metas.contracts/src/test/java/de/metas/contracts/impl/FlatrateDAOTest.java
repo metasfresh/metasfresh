@@ -20,7 +20,7 @@ import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Matching;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Conditions;
-import de.metas.document.engine.DocAction;
+import de.metas.document.engine.IDocument;
 
 /*
  * #%L
@@ -58,7 +58,7 @@ public class FlatrateDAOTest extends ContractsTestBase
 		InterfaceWrapperHelper.save(bpartner);
 
 		final I_C_Flatrate_Conditions fc = InterfaceWrapperHelper.newInstance(I_C_Flatrate_Conditions.class);
-		fc.setDocStatus(DocAction.STATUS_Completed);
+		fc.setDocStatus(IDocument.STATUS_Completed);
 		fc.setType_Conditions(X_C_Flatrate_Conditions.TYPE_CONDITIONS_QualityBasedInvoicing);
 		InterfaceWrapperHelper.save(fc);
 
@@ -68,7 +68,7 @@ public class FlatrateDAOTest extends ContractsTestBase
 		InterfaceWrapperHelper.save(matching);
 
 		final I_C_Flatrate_Term ft = InterfaceWrapperHelper.newInstance(I_C_Flatrate_Term.class);
-		ft.setDocStatus(DocAction.STATUS_Completed);
+		ft.setDocStatus(IDocument.STATUS_Completed);
 		ft.setC_Flatrate_Conditions(fc);
 		ft.setBill_BPartner(bpartner);
 		ft.setStartDate(TimeUtil.addDays(now, -10));

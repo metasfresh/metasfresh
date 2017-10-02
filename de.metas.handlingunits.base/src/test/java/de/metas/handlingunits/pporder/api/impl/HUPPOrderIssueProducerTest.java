@@ -57,7 +57,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 
-import de.metas.document.engine.DocAction;
+import de.metas.document.engine.IDocument;
 import de.metas.handlingunits.AbstractHUTest;
 import de.metas.handlingunits.HUAssert;
 import de.metas.handlingunits.HUTestHelper;
@@ -456,8 +456,8 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 		ppOrder.setS_Resource(masterData.plant01);
 		ppOrder.setQtyOrdered(new BigDecimal(qtyOrderedStr));
 		ppOrder.setDatePromised(SystemTime.asDayTimestamp());
-		ppOrder.setDocStatus(DocAction.STATUS_Drafted);
-		ppOrder.setDocAction(DocAction.ACTION_Complete);
+		ppOrder.setDocStatus(IDocument.STATUS_Drafted);
+		ppOrder.setDocAction(IDocument.ACTION_Complete);
 		ppOrder.setC_UOM(uom);
 		ppOrder.setDateStartSchedule(SystemTime.asTimestamp());
 		InterfaceWrapperHelper.save(ppOrder);

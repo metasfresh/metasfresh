@@ -36,7 +36,7 @@ import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.eevolution.model.X_PP_Cost_Collector;
 
-import de.metas.document.engine.DocAction;
+import de.metas.document.engine.IDocument;
 
 public class PPCostCollectorDAO implements IPPCostCollectorDAO
 {
@@ -114,7 +114,7 @@ public class PPCostCollectorDAO implements IPPCostCollectorDAO
 		Check.assumeNotNull(order, "order not null");
 		final IQueryBuilder<I_PP_Cost_Collector> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_PP_Cost_Collector.class, order)
 				.addEqualsFilter(I_PP_Cost_Collector.COLUMN_PP_Order_ID, order.getPP_Order_ID())
-				.addInArrayOrAllFilter(I_PP_Cost_Collector.COLUMN_DocStatus, DocAction.STATUS_Completed, DocAction.STATUS_Closed);
+				.addInArrayOrAllFilter(I_PP_Cost_Collector.COLUMN_DocStatus, IDocument.STATUS_Completed, IDocument.STATUS_Closed);
 
 		queryBuilder.orderBy()
 				.addColumn(I_PP_Cost_Collector.COLUMN_PP_Cost_Collector_ID);

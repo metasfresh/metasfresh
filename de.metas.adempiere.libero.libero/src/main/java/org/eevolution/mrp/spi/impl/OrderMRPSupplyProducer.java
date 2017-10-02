@@ -71,8 +71,8 @@ import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import de.metas.adempiere.service.IOrderDAO;
-import de.metas.document.engine.DocAction;
-import de.metas.document.engine.IDocActionBL;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.material.planning.IMaterialPlanningContext;
@@ -150,7 +150,7 @@ public class OrderMRPSupplyProducer extends AbstractMRPSupplyProducer
 							+ Services.get(IMsgBL.class).translate(ctx, I_M_InOut.COLUMNNAME_DocumentNo);
 
 					order.setDescription(description);
-					Services.get(IDocActionBL.class).processIt(order, DocAction.ACTION_Close);
+					Services.get(IDocumentBL.class).processIt(order, IDocument.ACTION_Close);
 					order.setDocStatus(X_PP_Order.DOCACTION_Close);
 					order.setDocAction(X_PP_Order.DOCACTION_None);
 					InterfaceWrapperHelper.save(order);
@@ -494,7 +494,7 @@ public class OrderMRPSupplyProducer extends AbstractMRPSupplyProducer
 					order.setC_OrderLine(null);
 					order.setC_OrderLine_MTO(null);
 
-					Services.get(IDocActionBL.class).processIt(order, DocAction.ACTION_Void);
+					Services.get(IDocumentBL.class).processIt(order, IDocument.ACTION_Void);
 					// order.voidIt();
 
 					order.setDocStatus(X_PP_Order.DOCSTATUS_Voided);
@@ -587,7 +587,7 @@ public class OrderMRPSupplyProducer extends AbstractMRPSupplyProducer
 		order.setPriorityRule(X_PP_Order.PRIORITYRULE_High);
 		InterfaceWrapperHelper.save(order);
 
-		Services.get(IDocActionBL.class).processIt(order, DocAction.ACTION_Prepare);
+		Services.get(IDocumentBL.class).processIt(order, IDocument.ACTION_Prepare);
 		// order.setDocStatus(order.prepareIt());
 
 		order.setDocAction(X_PP_Order.DOCACTION_Complete); // TODO: legacy code, but why we do this???

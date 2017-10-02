@@ -45,12 +45,12 @@ import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import de.metas.commission.service.ICommissionFactCandBL;
-import de.metas.document.engine.DocAction;
-import de.metas.document.engine.IDocActionBL;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
 
-public class MCAdvComDoc extends X_C_AdvComDoc implements DocAction
+public class MCAdvComDoc extends X_C_AdvComDoc implements IDocument
 {
 	private static final Logger logger = LogManager.getLogger(MCAdvComDoc.class);
 
@@ -296,7 +296,7 @@ public class MCAdvComDoc extends X_C_AdvComDoc implements DocAction
 		if (!m_justPrepared)
 		{
 			final String status = prepareIt();
-			if (!DocAction.STATUS_InProgress.equals(status))
+			if (!IDocument.STATUS_InProgress.equals(status))
 			{
 				return status;
 			}
@@ -305,7 +305,7 @@ public class MCAdvComDoc extends X_C_AdvComDoc implements DocAction
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_COMPLETE);
 		if (m_processMsg != null)
 		{
-			return DocAction.STATUS_Invalid;
+			return IDocument.STATUS_Invalid;
 		}
 
 		// Implicit Approval
@@ -320,12 +320,12 @@ public class MCAdvComDoc extends X_C_AdvComDoc implements DocAction
 		if (valid != null)
 		{
 			m_processMsg = valid;
-			return DocAction.STATUS_Invalid;
+			return IDocument.STATUS_Invalid;
 		}
 
 		setProcessed(true);
 		setDocAction(X_C_AdvComDoc.DOCACTION_Reaktivieren);
-		return DocAction.STATUS_Completed;
+		return IDocument.STATUS_Completed;
 	} // completeIt
 
 	/**
@@ -443,13 +443,13 @@ public class MCAdvComDoc extends X_C_AdvComDoc implements DocAction
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_PREPARE);
 		if (m_processMsg != null)
 		{
-			return DocAction.STATUS_Invalid;
+			return IDocument.STATUS_Invalid;
 		}
 
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_PREPARE);
 		if (m_processMsg != null)
 		{
-			return DocAction.STATUS_Invalid;
+			return IDocument.STATUS_Invalid;
 		}
 		//
 		m_justPrepared = true;
@@ -457,14 +457,14 @@ public class MCAdvComDoc extends X_C_AdvComDoc implements DocAction
 		{
 			setDocAction(X_C_AdvComDoc.DOCACTION_Fertigstellen);
 		}
-		return DocAction.STATUS_InProgress;
+		return IDocument.STATUS_InProgress;
 	} // prepareIt
 
 	@Override
 	public boolean processIt(final String processAction)
 	{
 		m_processMsg = null;
-		return Services.get(IDocActionBL.class).processIt(this, processAction);
+		return Services.get(IDocumentBL.class).processIt(this, processAction);
 	}
 
 	/** Process Message */

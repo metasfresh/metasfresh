@@ -52,7 +52,7 @@ import de.metas.commission.service.ICommissionFactBL;
 import de.metas.commission.service.ICommissionFactCandBL;
 import de.metas.commission.service.IFieldAccessBL;
 import de.metas.commission.util.CommissionTools;
-import de.metas.document.engine.DocAction;
+import de.metas.document.engine.IDocument;
 
 /**
  * Common base class for all commission types.
@@ -157,10 +157,10 @@ public abstract class BaseCommission implements ICommissionType
 		final String docStatus = order.getDocStatus();
 
 		final boolean completeSO = order.isSOTrx()
-				&& (DocAction.STATUS_Completed.equals(docStatus)
-						|| DocAction.STATUS_WaitingPayment.equals(docStatus)
-						|| DocAction.STATUS_Closed.equals(docStatus)
-						|| DocAction.STATUS_Voided.equals(docStatus));
+				&& (IDocument.STATUS_Completed.equals(docStatus)
+						|| IDocument.STATUS_WaitingPayment.equals(docStatus)
+						|| IDocument.STATUS_Closed.equals(docStatus)
+						|| IDocument.STATUS_Voided.equals(docStatus));
 
 		if (!completeSO)
 		{

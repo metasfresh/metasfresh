@@ -12,7 +12,7 @@ import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_M_InOut;
 
 import de.metas.adempiere.model.I_M_Product;
-import de.metas.document.engine.DocAction;
+import de.metas.document.engine.IDocument;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
 
 /*
@@ -59,7 +59,7 @@ public class MaterialReceiptDriver
 			io = InterfaceWrapperHelper.newInstance(I_M_InOut.class, Helper.context);
 			io.setMovementDate(movementDate);
 			io.setC_BPartner_Location(bpl);
-			io.setDocStatus(DocAction.STATUS_Completed);
+			io.setDocStatus(IDocument.STATUS_Completed);
 			InterfaceWrapperHelper.save(io);
 			Helper.storeFirstTime(documentNo, io);
 		}

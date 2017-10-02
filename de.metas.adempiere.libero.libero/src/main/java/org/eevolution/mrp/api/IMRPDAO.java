@@ -36,7 +36,7 @@ import org.eevolution.model.I_PP_MRP;
 import org.eevolution.model.I_PP_MRP_Alloc;
 import org.eevolution.model.I_PP_MRP_Alternative;
 
-import de.metas.document.engine.DocAction;
+import de.metas.document.engine.IDocument;
 import de.metas.material.planning.IMRPSegment;
 
 public interface IMRPDAO extends ISingletonService
@@ -117,7 +117,7 @@ public interface IMRPDAO extends ISingletonService
 	 * @param mrp
 	 * @return document or null
 	 */
-	DocAction retrieveDocumentOrNull(I_PP_MRP mrp);
+	IDocument retrieveDocumentOrNull(I_PP_MRP mrp);
 
 	/**
 	 * Mark given {@link I_PP_MRP} as not available and save it.

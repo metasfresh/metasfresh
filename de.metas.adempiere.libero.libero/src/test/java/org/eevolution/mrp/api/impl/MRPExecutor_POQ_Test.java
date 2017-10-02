@@ -42,7 +42,7 @@ import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import de.metas.document.engine.DocAction;
+import de.metas.document.engine.IDocument;
 
 public class MRPExecutor_POQ_Test extends AbstractMRPTestBase
 {
@@ -271,7 +271,7 @@ public class MRPExecutor_POQ_Test extends AbstractMRPTestBase
 
 		//
 		// Complete the MO
-		docActionBL.processEx(ppOrder, DocAction.ACTION_Complete, DocAction.STATUS_Completed);
+		docActionBL.processEx(ppOrder, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
 		// Fully receive the MO
 		helper.receiveFromPPOrder(ppOrder, ppOrder.getQtyOrdered());
 		helper.dumpMRPRecords("After receiving all from MO");
@@ -347,7 +347,7 @@ public class MRPExecutor_POQ_Test extends AbstractMRPTestBase
 
 		//
 		// Complete the MO
-		docActionBL.processEx(ppOrder, DocAction.ACTION_Complete, DocAction.STATUS_Completed);
+		docActionBL.processEx(ppOrder, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
 
 		//
 		// Partially ship from demands (i.e. decrease their quantity)

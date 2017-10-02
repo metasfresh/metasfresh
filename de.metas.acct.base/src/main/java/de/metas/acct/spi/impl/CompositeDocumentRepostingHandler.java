@@ -9,8 +9,8 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import org.adempiere.util.Services;
 
 import de.metas.acct.spi.IDocumentRepostingHandler;
-import de.metas.document.engine.DocAction;
-import de.metas.document.engine.IDocActionBL;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 
 /*
  * #%L
@@ -58,11 +58,11 @@ public class CompositeDocumentRepostingHandler implements IDocumentRepostingHand
 	}
 
 	@Override
-	public List<DocAction> retrievePostedWithoutFactAcct(Properties ctx, Timestamp startTime)
+	public List<IDocument> retrievePostedWithoutFactAcct(Properties ctx, Timestamp startTime)
 	{
-		final IDocActionBL docActionBL = Services.get(IDocActionBL.class);
+		final IDocumentBL docActionBL = Services.get(IDocumentBL.class);
 		
-		final List<DocAction> documentsPostedWithoutFactAcct = new ArrayList<>();
+		final List<IDocument> documentsPostedWithoutFactAcct = new ArrayList<>();
 
 		// Retrieve the documents marked as posted but with no fact accounts from all the handlers
 		for (final IDocumentRepostingHandler handler : handlers)

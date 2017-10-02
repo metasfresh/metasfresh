@@ -24,7 +24,7 @@ import org.compiere.model.I_AD_Client;
  * #L%
  */
 
-public interface DocActionFields
+public interface DocumentFields
 {
 	//@formatter:off
 	int getAD_Client_ID();

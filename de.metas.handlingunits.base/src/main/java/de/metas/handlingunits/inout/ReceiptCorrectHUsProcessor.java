@@ -24,8 +24,8 @@ import com.google.common.collect.Ordering;
 import com.google.common.collect.SetMultimap;
 import com.google.common.collect.TreeMultimap;
 
-import de.metas.document.engine.DocAction;
-import de.metas.document.engine.IDocActionBL;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.handlingunits.IHUAware;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU;
@@ -170,8 +170,8 @@ public class ReceiptCorrectHUsProcessor
 
 		//
 		// Reverse those receipts
-		final IDocActionBL docActionBL = Services.get(IDocActionBL.class);
-		docActionBL.processDocumentsList(receiptsToReverse, DocAction.ACTION_Reverse_Correct, DocAction.STATUS_Reversed);
+		final IDocumentBL docActionBL = Services.get(IDocumentBL.class);
+		docActionBL.processDocumentsList(receiptsToReverse, IDocument.ACTION_Reverse_Correct, IDocument.STATUS_Reversed);
 
 		// Notify the user that the receipt was reversed
 		InOutProcessedEventBus.newInstance()

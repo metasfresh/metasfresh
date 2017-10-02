@@ -34,8 +34,8 @@ import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.Util;
 
-import de.metas.document.engine.DocAction;
-import de.metas.document.engine.IDocActionBL;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.process.ProcessInfo;
 
 
@@ -421,7 +421,7 @@ public class MWFProcess extends X_AD_WF_Process
 		{
 			final PO po = getPO();
 			//	(2) Doc Owner
-			final DocAction document = po != null ? Services.get(IDocActionBL.class).getDocActionOrNull(po) : null;
+			final IDocument document = po != null ? Services.get(IDocumentBL.class).getDocActionOrNull(po) : null;
 			if (document != null)
 			{
 				AD_User_ID = document.getDoc_User_ID();
@@ -545,7 +545,7 @@ public class MWFProcess extends X_AD_WF_Process
 	 */
 	public void setTextMsg (final PO po)
 	{
-		final DocAction document = po != null ? Services.get(IDocActionBL.class).getDocActionOrNull(po) : null;
+		final IDocument document = po != null ? Services.get(IDocumentBL.class).getDocActionOrNull(po) : null;
 		if (document != null)
 		{
 			setTextMsg(document.getSummary());

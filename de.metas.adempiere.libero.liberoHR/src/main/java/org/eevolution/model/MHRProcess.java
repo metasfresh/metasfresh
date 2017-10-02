@@ -43,8 +43,8 @@ import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
-import de.metas.document.engine.DocAction;
-import de.metas.document.engine.IDocActionBL;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.logging.LogManager;
 import de.metas.script.IADRuleDAO;
 import de.metas.script.ScriptEngineFactory;
@@ -59,7 +59,7 @@ import de.metas.script.ScriptEngineFactory;
  * @see http://sourceforge.net/tracker2/?func=detail&atid=879335&aid=2520591&group_id=176962
  * @author Cristina Ghita, www.arhipac.ro
  */
-public class MHRProcess extends X_HR_Process implements DocAction
+public class MHRProcess extends X_HR_Process implements IDocument
 {
 	/**
 	 * 
@@ -162,7 +162,7 @@ public class MHRProcess extends X_HR_Process implements DocAction
 	public boolean processIt(final String processAction)
 	{
 		m_processMsg = null;
-		return Services.get(IDocActionBL.class).processIt(this, processAction);
+		return Services.get(IDocumentBL.class).processIt(this, processAction);
 	}
 
 	/** Process Message */
@@ -209,7 +209,7 @@ public class MHRProcess extends X_HR_Process implements DocAction
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_PREPARE);
 		if (m_processMsg != null)
 		{
-			return DocAction.STATUS_Invalid;
+			return IDocument.STATUS_Invalid;
 		}
 
 		// Std Period open?
@@ -236,12 +236,12 @@ public class MHRProcess extends X_HR_Process implements DocAction
 
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_PREPARE);
 		if (m_processMsg != null)
-			return DocAction.STATUS_Invalid;
+			return IDocument.STATUS_Invalid;
 		//
 		m_justPrepared = true;
 		if (!DOCACTION_Complete.equals(getDocAction()))
 			setDocAction(DOCACTION_Complete);
-		return DocAction.STATUS_InProgress;
+		return IDocument.STATUS_InProgress;
 	}	// prepareIt
 
 	/**
@@ -256,24 +256,24 @@ public class MHRProcess extends X_HR_Process implements DocAction
 		if (!m_justPrepared)
 		{
 			String status = prepareIt();
-			if (!DocAction.STATUS_InProgress.equals(status))
+			if (!IDocument.STATUS_InProgress.equals(status))
 				return status;
 		}
 
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_COMPLETE);
 		if (m_processMsg != null)
-			return DocAction.STATUS_Invalid;
+			return IDocument.STATUS_Invalid;
 
 		// User Validation
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_COMPLETE);
 		if (m_processMsg != null)
 		{
-			return DocAction.STATUS_Invalid;
+			return IDocument.STATUS_Invalid;
 		}
 		//
 		setProcessed(true);
 		setDocAction(DOCACTION_Close);
-		return DocAction.STATUS_Completed;
+		return IDocument.STATUS_Completed;
 	}	// completeIt
 
 	/**

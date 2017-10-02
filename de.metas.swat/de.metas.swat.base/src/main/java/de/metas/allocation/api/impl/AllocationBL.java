@@ -47,7 +47,7 @@ import de.metas.allocation.api.IAllocationBL;
 import de.metas.allocation.api.IAllocationBuilder;
 import de.metas.allocation.api.IAllocationDAO;
 import de.metas.allocation.api.IAllocationLineBuilder;
-import de.metas.document.engine.DocAction;
+import de.metas.document.engine.IDocument;
 import de.metas.payment.api.IPaymentDAO;
 
 public class AllocationBL implements IAllocationBL
@@ -177,7 +177,7 @@ public class AllocationBL implements IAllocationBL
 		}
 
 		// payment must be completed
-		if (!DocAction.STATUS_Completed.equals(payment.getDocStatus()))
+		if (!IDocument.STATUS_Completed.equals(payment.getDocStatus()))
 		{
 			return null;
 		}

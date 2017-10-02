@@ -46,7 +46,7 @@ import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.adempiere.model.I_M_Product_Category;
-import de.metas.document.engine.DocAction;
+import de.metas.document.engine.IDocument;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.interfaces.I_C_BP_BankAccount;
@@ -148,7 +148,7 @@ public class HelperDelegator implements IHelper
 	}
 
 	@Override
-	public void processComplete(DocAction doc)
+	public void processComplete(IDocument doc)
 	{
 		helper.processComplete(doc);
 	}

@@ -70,7 +70,7 @@ import de.metas.banking.payment.paymentallocation.model.IInvoiceRow;
 import de.metas.banking.payment.paymentallocation.model.IPaymentRow;
 import de.metas.banking.payment.paymentallocation.model.InvoiceRow;
 import de.metas.banking.payment.paymentallocation.model.PaymentRow;
-import de.metas.document.engine.DocAction;
+import de.metas.document.engine.IDocument;
 import de.metas.payment.api.IPaymentDAO;
 
 public class PaymentAllocationBuilderTest
@@ -555,7 +555,7 @@ public class PaymentAllocationBuilderTest
 		invoice.setC_Currency(currency);
 		invoice.setGrandTotal(openAmt);
 		invoice.setProcessed(true);
-		invoice.setDocStatus(DocAction.STATUS_Completed);
+		invoice.setDocStatus(IDocument.STATUS_Completed);
 		InterfaceWrapperHelper.save(invoice);
 
 		final InvoiceRow invoiceRow = InvoiceRow.builder()

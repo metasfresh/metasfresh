@@ -46,8 +46,8 @@ import org.slf4j.Logger;
 
 import de.metas.adempiere.form.IClientUI;
 import de.metas.document.engine.DefaultDocActionOptionsContext;
-import de.metas.document.engine.IDocActionBL;
-import de.metas.document.engine.IDocActionBL.IDocActionItem;
+import de.metas.document.engine.IDocumentBL;
+import de.metas.document.engine.IDocumentBL.IDocActionItem;
 import de.metas.document.engine.IDocActionOptionsBL;
 import de.metas.document.engine.IDocActionOptionsContext;
 import de.metas.i18n.IMsgBL;
@@ -277,7 +277,7 @@ public class VDocAction extends CDialog
 		// setDefault
 		if (DocAction.equals("--")) // If None, suggest closing
 		{
-			DocAction = de.metas.document.engine.DocAction.ACTION_Close;
+			DocAction = de.metas.document.engine.IDocument.ACTION_Close;
 		}
 
 		final IDocActionItem defaultDocActionItem = docActionItems.get(DocAction);
@@ -331,7 +331,7 @@ public class VDocAction extends CDialog
 	{
 		if(docActionItemsByValue == null)
 		{
-			docActionItemsByValue = Services.get(IDocActionBL.class).retrieveDocActionItemsIndexedByValue();
+			docActionItemsByValue = Services.get(IDocumentBL.class).retrieveDocActionItemsIndexedByValue();
 		}
 
 		return docActionItemsByValue;

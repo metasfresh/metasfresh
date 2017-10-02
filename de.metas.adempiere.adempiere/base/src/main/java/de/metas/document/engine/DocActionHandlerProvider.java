@@ -26,5 +26,5 @@ public interface DocActionHandlerProvider
 {
 	String getHandledTableName();
 	
-	DocActionHandler provideForDocument(Object model);
+	DocumentHandler provideForDocument(Object model);
 }

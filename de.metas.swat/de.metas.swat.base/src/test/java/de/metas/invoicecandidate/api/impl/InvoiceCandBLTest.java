@@ -48,7 +48,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import de.metas.adempiere.service.IOrderLineBL;
-import de.metas.document.engine.DocAction;
+import de.metas.document.engine.IDocument;
 import de.metas.invoicecandidate.AbstractICTestSupport;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 
@@ -421,7 +421,7 @@ public class InvoiceCandBLTest extends AbstractICTestSupport
 		// gh #1566: we need an active and completed inout; otherwise, the iol won't be counted properly
 		final I_M_InOut inOut = newInstance(I_M_InOut.class);
 		inOut.setIsActive(true);
-		inOut.setDocStatus(DocAction.STATUS_Completed);
+		inOut.setDocStatus(IDocument.STATUS_Completed);
 		save(inOut);
 
 		final I_M_InOutLine iol = InterfaceWrapperHelper.create(ctx, I_M_InOutLine.class, trxName);

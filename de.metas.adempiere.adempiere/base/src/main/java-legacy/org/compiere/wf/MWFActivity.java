@@ -68,8 +68,8 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.attachments.IAttachmentBL;
 import de.metas.currency.ICurrencyBL;
-import de.metas.document.engine.DocAction;
-import de.metas.document.engine.IDocActionBL;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.email.IMailBL;
 import de.metas.email.IMailTextBuilder;
 import de.metas.i18n.IMsgBL;
@@ -395,12 +395,12 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 		return getPO(get_TrxName());
 	}	// getPO
 
-	private DocAction getDocument()
+	private IDocument getDocument()
 	{
 		return getDocument(ITrx.TRXNAME_ThreadInherited);
 	}
 
-	private DocAction getDocument(final String trxName)
+	private IDocument getDocument(final String trxName)
 	{
 		final PO po = getPO(trxName);
 		if (po == null)
@@ -408,10 +408,10 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 			throw new AdempiereException("Persistent Object not found - AD_Table_ID=" + getAD_Table_ID() + ", Record_ID=" + getRecord_ID());
 		}
 		
-		return Services.get(IDocActionBL.class).getDocAction(po);
+		return Services.get(IDocumentBL.class).getDocAction(po);
 	}
 	
-	private DocAction getDocumentOrNull(final String trxName)
+	private IDocument getDocumentOrNull(final String trxName)
 	{
 		final PO po = getPO(trxName);
 		if (po == null)
@@ -419,7 +419,7 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 			throw new AdempiereException("Persistent Object not found - AD_Table_ID=" + getAD_Table_ID() + ", Record_ID=" + getRecord_ID());
 		}
 		
-		return Services.get(IDocActionBL.class).getDocActionOrNull(po);
+		return Services.get(IDocumentBL.class).getDocActionOrNull(po);
 	}
 
 
@@ -882,7 +882,7 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 				{
 					// If we have a DocStatus, change it to Invalid, and throw the exception to the next level
 					if (m_docStatus != null)
-						m_docStatus = DocAction.STATUS_Invalid;
+						m_docStatus = IDocument.STATUS_Invalid;
 					throw e;
 				}
 			}
@@ -925,7 +925,7 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 			
 			// Set Document Status
 			final PO po = getPONoLoad();
-			final DocAction doc = po != null ? Services.get(IDocActionBL.class).getDocActionOrNull(po) : null;
+			final IDocument doc = po != null ? Services.get(IDocumentBL.class).getDocActionOrNull(po) : null;
 			if (doc != null && m_docStatus != null)
 			{
 				po.load(get_TrxName());
@@ -980,7 +980,7 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 			
 			boolean success = false;
 			String processMsg = null;
-			final DocAction doc = getDocument(trxName);
+			final IDocument doc = getDocument(trxName);
 			
 			//
 			try
@@ -1095,7 +1095,7 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 		{
 			log.debug("EMail:EMailRecipient={}", m_node.getEMailRecipient());
 			
-			final DocAction document = getDocumentOrNull(trxName);
+			final IDocument document = getDocumentOrNull(trxName);
 			if (document != null)
 			{
 				m_emails = new ArrayList<>();
@@ -1156,7 +1156,7 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 		{
 			log.debug("UserChoice:AD_Column_ID={}", m_node.getAD_Column_ID());
 			// Approval
-			final DocAction doc = Services.get(IDocActionBL.class).getDocActionOrNull(getPO(trxName));
+			final IDocument doc = Services.get(IDocumentBL.class).getDocActionOrNull(getPO(trxName));
 			if (m_node.isUserApproval() && doc != null)
 			{
 				boolean autoApproval = false;
@@ -1207,7 +1207,7 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 					// end MZ
 				}
 				if (autoApproval
-						&& doc.processIt(DocAction.ACTION_Approve)
+						&& doc.processIt(IDocument.ACTION_Approve)
 						&& doc.save())
 				{
 					return true;	// done
@@ -1295,7 +1295,7 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 
 		String newState = StateEngine.STATE_Completed;
 		// Approval
-		final DocAction doc = getDocumentOrNull(trxName);
+		final IDocument doc = getDocumentOrNull(trxName);
 		if (getNode().isUserApproval() && doc != null)
 		{
 			try
@@ -1304,7 +1304,7 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 				if (!"Y".equals(value))
 				{
 					newState = StateEngine.STATE_Aborted;
-					if (!(doc.processIt(DocAction.ACTION_Reject)))
+					if (!(doc.processIt(IDocument.ACTION_Reject)))
 						setTextMsg("Cannot Reject - Document Status: " + doc.getDocStatus());
 				}
 				else
@@ -1323,7 +1323,7 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 						{
 							newState = StateEngine.STATE_Aborted;
 							setTextMsg("Cannot Approve - No Approver");
-							doc.processIt(DocAction.ACTION_Reject);
+							doc.processIt(IDocument.ACTION_Reject);
 						}
 						else if (startAD_User_ID != nextAD_User_ID)
 						{
@@ -1333,7 +1333,7 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 						else
 						// Approve
 						{
-							if (!(doc.processIt(DocAction.ACTION_Approve)))
+							if (!(doc.processIt(IDocument.ACTION_Approve)))
 							{
 								newState = StateEngine.STATE_Aborted;
 								setTextMsg("Cannot Approve - Document Status: " + doc.getDocStatus());
@@ -1341,7 +1341,7 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 						}
 					}
 					// No Invoker - Approve
-					else if (!(doc.processIt(DocAction.ACTION_Approve)))
+					else if (!(doc.processIt(IDocument.ACTION_Approve)))
 					{
 						newState = StateEngine.STATE_Aborted;
 						setTextMsg("Cannot Approve - Document Status: " + doc.getDocStatus());
@@ -1556,7 +1556,7 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 	 */
 	private void sendEMail()
 	{
-		final DocAction doc = getDocument();
+		final IDocument doc = getDocument();
 		
 		final IMailBL mailBL = Services.get(IMailBL.class);
 		final IMailTextBuilder mailTextBuilder = mailBL.newMailTextBuilder(m_node.getR_MailText());

@@ -30,8 +30,8 @@ import org.adempiere.util.Services;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
-import de.metas.document.engine.DocAction;
-import de.metas.document.engine.IDocActionBL;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.Msg;
 
 /**
@@ -46,7 +46,7 @@ import de.metas.i18n.Msg;
  * 
  * @version $Id: MBankStatement.java,v 1.3 2006/07/30 00:51:03 jjanke Exp $
  */
-public class MBankStatement extends X_C_BankStatement implements DocAction
+public class MBankStatement extends X_C_BankStatement implements IDocument
 {
 	/**
 	 * 
@@ -228,7 +228,7 @@ public class MBankStatement extends X_C_BankStatement implements DocAction
 	public boolean processIt(final String processAction)
 	{
 		m_processMsg = null;
-		return Services.get(IDocActionBL.class).processIt(this, processAction);
+		return Services.get(IDocumentBL.class).processIt(this, processAction);
 	}
 
 	/** Process Message */
@@ -273,7 +273,7 @@ public class MBankStatement extends X_C_BankStatement implements DocAction
 		log.debug("Prepare: {}", this);
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_PREPARE);
 		if (m_processMsg != null)
-			return DocAction.STATUS_Invalid;
+			return IDocument.STATUS_Invalid;
 
 		// Std Period open?
 		MPeriod.testPeriodOpen(getCtx(), getStatementDate(), MDocType.DOCBASETYPE_BankStatement, getAD_Org_ID());
@@ -281,7 +281,7 @@ public class MBankStatement extends X_C_BankStatement implements DocAction
 		if (lines.length == 0)
 		{
 			m_processMsg = "@NoLines@";
-			return DocAction.STATUS_Invalid;
+			return IDocument.STATUS_Invalid;
 		}
 		// Lines
 		BigDecimal total = Env.ZERO;
@@ -303,12 +303,12 @@ public class MBankStatement extends X_C_BankStatement implements DocAction
 
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_PREPARE);
 		if (m_processMsg != null)
-			return DocAction.STATUS_Invalid;
+			return IDocument.STATUS_Invalid;
 
 		m_justPrepared = true;
 		if (!DOCACTION_Complete.equals(getDocAction()))
 			setDocAction(DOCACTION_Complete);
-		return DocAction.STATUS_InProgress;
+		return IDocument.STATUS_InProgress;
 	}	// prepareIt
 
 	/**
@@ -349,13 +349,13 @@ public class MBankStatement extends X_C_BankStatement implements DocAction
 		if (!m_justPrepared)
 		{
 			String status = prepareIt();
-			if (!DocAction.STATUS_InProgress.equals(status))
+			if (!IDocument.STATUS_InProgress.equals(status))
 				return status;
 		}
 
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_COMPLETE);
 		if (m_processMsg != null)
-			return DocAction.STATUS_Invalid;
+			return IDocument.STATUS_Invalid;
 
 		// Implicit Approval
 		if (!isApproved())
@@ -408,12 +408,12 @@ public class MBankStatement extends X_C_BankStatement implements DocAction
 		if (valid != null)
 		{
 			m_processMsg = valid;
-			return DocAction.STATUS_Invalid;
+			return IDocument.STATUS_Invalid;
 		}
 		//
 		setProcessed(true);
 		setDocAction(DOCACTION_Close);
-		return DocAction.STATUS_Completed;
+		return IDocument.STATUS_Completed;
 	}	// completeIt
 
 	/**

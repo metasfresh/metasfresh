@@ -20,8 +20,8 @@ import org.compiere.model.MPriceList;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.document.ICopyHandlerBL;
 import de.metas.document.IDocLineCopyHandler;
-import de.metas.document.engine.DocAction;
-import de.metas.document.engine.IDocActionBL;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.IMsgBL;
 
 public final class InvoiceBL extends AbstractInvoiceBL
@@ -88,7 +88,7 @@ public final class InvoiceBL extends AbstractInvoiceBL
 		// metas: Neunumerierung der Rechnungszeilen vor Fertigstellung
 		this.renumberLines(InterfaceWrapperHelper.create(invoice, de.metas.adempiere.model.I_C_Invoice.class), 10);
 
-		Services.get(IDocActionBL.class).processEx(invoice, DocAction.ACTION_Complete, DocAction.STATUS_Completed);
+		Services.get(IDocumentBL.class).processEx(invoice, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
 
 		return invoice;
 	}

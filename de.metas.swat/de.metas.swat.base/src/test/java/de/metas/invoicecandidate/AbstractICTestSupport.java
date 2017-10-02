@@ -75,7 +75,7 @@ import de.metas.aggregation.model.X_C_AggregationItem;
 import de.metas.aggregation.model.X_C_Aggregation_Attribute;
 import de.metas.currency.ICurrencyBL;
 import de.metas.currency.impl.PlainCurrencyBL;
-import de.metas.document.engine.DocAction;
+import de.metas.document.engine.IDocument;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.interfaces.I_C_OrderLine;
@@ -476,7 +476,7 @@ public abstract class AbstractICTestSupport extends AbstractTestSupport
 		inOut.setC_Order_ID(orderId);
 
 		// gh #1566: inactive and reversed inouts will be ignored by IInvoiceCandDAO.retrieveICIOLAssociationsExclRE()
-		inOut.setDocStatus(DocAction.STATUS_Completed);
+		inOut.setDocStatus(IDocument.STATUS_Completed);
 		inOut.setIsActive(true);
 
 		InterfaceWrapperHelper.save(inOut);

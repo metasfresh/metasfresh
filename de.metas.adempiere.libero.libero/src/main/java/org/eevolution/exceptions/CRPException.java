@@ -30,7 +30,7 @@ import org.compiere.model.I_S_Resource;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_Node;
 
-import de.metas.document.engine.DocAction;
+import de.metas.document.engine.IDocument;
 
 /**
  * @author teo_sarca
@@ -86,9 +86,9 @@ public class CRPException extends LiberoException
 		if (this.order != null)
 		{
 			final String info;
-			if (order instanceof DocAction)
+			if (order instanceof IDocument)
 			{
-				info = ((DocAction)order).getSummary();
+				info = ((IDocument)order).getSummary();
 			}
 			else
 			{

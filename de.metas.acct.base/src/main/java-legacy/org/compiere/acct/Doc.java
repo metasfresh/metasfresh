@@ -61,7 +61,7 @@ import de.metas.currency.ICurrencyBL;
 import de.metas.currency.ICurrencyConversionContext;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.currency.exceptions.NoCurrencyRateFoundException;
-import de.metas.document.engine.DocAction;
+import de.metas.document.engine.IDocument;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 
@@ -487,10 +487,10 @@ public abstract class Doc
 		{
 			// This is a valid case (e.g. M_MatchInv, M_MatchPO)
 		}
-		else if (m_DocStatus.equals(DocAction.STATUS_Completed)
-				|| m_DocStatus.equals(DocAction.STATUS_Closed)
-				|| m_DocStatus.equals(DocAction.STATUS_Voided)
-				|| m_DocStatus.equals(DocAction.STATUS_Reversed))
+		else if (m_DocStatus.equals(IDocument.STATUS_Completed)
+				|| m_DocStatus.equals(IDocument.STATUS_Closed)
+				|| m_DocStatus.equals(IDocument.STATUS_Voided)
+				|| m_DocStatus.equals(IDocument.STATUS_Reversed))
 		{
 			;
 		}

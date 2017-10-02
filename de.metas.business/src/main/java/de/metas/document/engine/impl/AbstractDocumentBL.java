@@ -56,17 +56,17 @@ import com.google.common.base.Objects;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableMap;
 
-import de.metas.document.engine.DocAction;
+import de.metas.document.engine.IDocument;
 import de.metas.document.engine.DocActionHandlerProvider;
-import de.metas.document.engine.IDocActionBL;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.document.exceptions.DocumentProcessingException;
 import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;
 import lombok.NonNull;
 
-public abstract class AbstractDocActionBL implements IDocActionBL
+public abstract class AbstractDocumentBL implements IDocumentBL
 {
-	private static final transient Logger logger = LogManager.getLogger(AbstractDocActionBL.class);
+	private static final transient Logger logger = LogManager.getLogger(AbstractDocumentBL.class);
 
 	protected static final String COLUMNNAME_C_DocType_ID = "C_DocType_ID";
 
@@ -91,7 +91,7 @@ public abstract class AbstractDocActionBL implements IDocActionBL
 	}
 
 	@Override
-	public boolean processIt(final DocAction document, final String processAction)
+	public boolean processIt(final IDocument document, final String processAction)
 	{
 		final DocumentEngine engine = DocumentEngine.ofDocument(document);
 		return engine.processIt(processAction, document.getDocAction());
@@ -106,7 +106,7 @@ public abstract class AbstractDocActionBL implements IDocActionBL
 
 	private final boolean processIt(final Object documentObj, final String action, final boolean throwExIfNotSuccess)
 	{
-		final DocAction document = getDocAction(documentObj);
+		final IDocument document = getDocAction(documentObj);
 
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
 
@@ -147,7 +147,7 @@ public abstract class AbstractDocActionBL implements IDocActionBL
 		return processed[0];
 	}
 
-	protected boolean processIt0(final DocAction doc, final String action) throws Exception
+	protected boolean processIt0(final IDocument doc, final String action) throws Exception
 	{
 		Check.assumeNotNull(doc, "doc not null");
 
@@ -167,7 +167,7 @@ public abstract class AbstractDocActionBL implements IDocActionBL
 	@Override
 	public void processEx(final Object document, final String docAction, final String expectedDocStatus)
 	{
-		final DocAction doc = getDocAction(document);
+		final IDocument doc = getDocAction(document);
 
 		final boolean throwExIfNotSuccess = true;
 		processIt(doc, docAction, throwExIfNotSuccess);
@@ -225,55 +225,55 @@ public abstract class AbstractDocActionBL implements IDocActionBL
 	}
 
 	@Override
-	public DocAction getDocAction(final Object document)
+	public IDocument getDocAction(final Object document)
 	{
 		final boolean throwEx = true;
 		return getDocAction(document, throwEx);
 	}
 
 	@Override
-	public DocAction getDocActionOrNull(final Object document)
+	public IDocument getDocActionOrNull(final Object document)
 	{
 		final boolean throwEx = false;
 		return getDocAction(document, throwEx);
 	}
 
-	protected abstract DocAction getDocAction(final Object document, boolean throwEx);
+	protected abstract IDocument getDocAction(final Object document, boolean throwEx);
 
 	@Override
 	public boolean issDocumentDraftedOrInProgress(final Object document)
 	{
 		return isDocumentStatusOneOf(document,
-				DocAction.STATUS_Drafted,
-				DocAction.STATUS_InProgress);
+				IDocument.STATUS_Drafted,
+				IDocument.STATUS_InProgress);
 	}
 
 	@Override
 	public boolean isDocumentCompleted(final Object document)
 	{
 		return isDocumentStatusOneOf(document,
-				DocAction.STATUS_Completed);
+				IDocument.STATUS_Completed);
 	}
 
 	@Override
 	public boolean isDocumentClosed(final Object document)
 	{
 		return isDocumentStatusOneOf(document,
-				DocAction.STATUS_Closed);
+				IDocument.STATUS_Closed);
 	}
 
 	@Override
 	public boolean isDocumentCompletedOrClosed(final Object document)
 	{
 		return isDocumentStatusOneOf(document,
-				DocAction.STATUS_Completed,
-				DocAction.STATUS_Closed);
+				IDocument.STATUS_Completed,
+				IDocument.STATUS_Closed);
 	}
 
 	@Override
 	public boolean issDocumentCompletedOrClosedOrReversed(final Object document)
 	{
-		final DocAction doc = getDocAction(document);
+		final IDocument doc = getDocAction(document);
 		final String docStatus = doc.getDocStatus();
 
 		return isStatusCompletedOrClosedOrReversed(docStatus);
@@ -283,19 +283,19 @@ public abstract class AbstractDocActionBL implements IDocActionBL
 	public boolean isStatusCompletedOrClosedOrReversed(final String docStatus)
 	{
 		return isStatusStrOneOf(docStatus,
-				DocAction.STATUS_Completed,
-				DocAction.STATUS_Closed,
-				DocAction.STATUS_Reversed);
+				IDocument.STATUS_Completed,
+				IDocument.STATUS_Closed,
+				IDocument.STATUS_Reversed);
 	}
 
 	@Override
 	public boolean isDocumentReversedOrVoided(final Object document)
 	{
-		final DocAction doc = getDocAction(document);
+		final IDocument doc = getDocAction(document);
 		final String docStatus = doc.getDocStatus();
 		return isStatusStrOneOf(docStatus,
-				DocAction.STATUS_Reversed,
-				DocAction.STATUS_Voided);
+				IDocument.STATUS_Reversed,
+				IDocument.STATUS_Voided);
 	}
 
 	@Override
@@ -335,7 +335,7 @@ public abstract class AbstractDocActionBL implements IDocActionBL
 	{
 		//
 		// First try: document's DocumentNo if available
-		final DocAction doc = getDocActionOrNull(model);
+		final IDocument doc = getDocActionOrNull(model);
 		if (doc != null)
 		{
 			return doc.getDocumentNo();
@@ -389,7 +389,7 @@ public abstract class AbstractDocActionBL implements IDocActionBL
 	@Override
 	public boolean isDocumentStatusOneOf(@NonNull final Object document, @NonNull final String... docStatusesToCheckFor)
 	{
-		final DocAction doc = getDocAction(document);
+		final IDocument doc = getDocAction(document);
 		final String docStatus = doc.getDocStatus();
 		return isStatusStrOneOf(docStatus, docStatusesToCheckFor);
 	}
@@ -443,7 +443,7 @@ public abstract class AbstractDocActionBL implements IDocActionBL
 	{
 		Check.assumeNotNull(model, "model not null");
 
-		final DocAction doc = getDocActionOrNull(model);
+		final IDocument doc = getDocActionOrNull(model);
 		if (doc != null)
 		{
 			return doc.getSummary();
@@ -457,7 +457,7 @@ public abstract class AbstractDocActionBL implements IDocActionBL
 	public boolean isReversalDocument(@NonNull final Object model)
 	{
 		// Try Reversal_ID column if available
-		final Integer original_ID = InterfaceWrapperHelper.getValueOrNull(model, DocAction.Reversal_ID);
+		final Integer original_ID = InterfaceWrapperHelper.getValueOrNull(model, IDocument.Reversal_ID);
 		if (original_ID != null && original_ID > 0)
 		{
 			final int reversal_id = InterfaceWrapperHelper.getId(model);

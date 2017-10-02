@@ -31,8 +31,8 @@ import org.adempiere.util.Services;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
-import de.metas.document.engine.DocAction;
-import de.metas.document.engine.IDocActionBL;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.product.IProductBL;
 
 /**
@@ -675,7 +675,7 @@ public class MInOutLine extends X_M_InOutLine
 	protected boolean beforeDelete()
 	{
 		final MInOut parent = getParent();
-		if (Services.get(IDocActionBL.class).isDocumentStatusOneOf(parent, DocAction.STATUS_Drafted, DocAction.STATUS_InProgress))
+		if (Services.get(IDocumentBL.class).isDocumentStatusOneOf(parent, IDocument.STATUS_Drafted, IDocument.STATUS_InProgress))
 		{
 			return true;
 		}

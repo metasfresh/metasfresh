@@ -39,8 +39,8 @@ import org.compiere.wf.MWFResponsible;
 import org.compiere.wf.MWorkflowProcessor;
 import org.compiere.wf.MWorkflowProcessorLog;
 
-import de.metas.document.engine.DocAction;
-import de.metas.document.engine.IDocActionBL;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.Msg;
 
 
@@ -363,7 +363,7 @@ public class WorkflowProcessor extends AdempiereServer
 			message = process.getTextMsg();
 		File pdf = null; 
 		final PO po = activity.getPO();
-		final DocAction document = po != null ? Services.get(IDocActionBL.class).getDocActionOrNull(po) : null;
+		final IDocument document = po != null ? Services.get(IDocumentBL.class).getDocActionOrNull(po) : null;
 		if (document != null)
 		{
 			message = document.getDocumentInfo() + "\n" + message;

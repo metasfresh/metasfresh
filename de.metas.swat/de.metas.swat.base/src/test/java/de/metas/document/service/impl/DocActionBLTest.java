@@ -40,9 +40,9 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import de.metas.document.engine.DocAction;
-import de.metas.document.engine.IDocActionBL;
-import de.metas.document.engine.impl.PlainDocActionBL;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
+import de.metas.document.engine.impl.PlainDocumentBL;
 
 public class DocActionBLTest
 {
@@ -80,12 +80,12 @@ public class DocActionBLTest
 		Adempiere.enableUnitTestMode();
 	}
 
-	private PlainDocActionBL docActionBL;
+	private PlainDocumentBL docActionBL;
 
 	@Before
 	public void init()
 	{
-		docActionBL = (PlainDocActionBL)Services.get(IDocActionBL.class);
+		docActionBL = (PlainDocumentBL)Services.get(IDocumentBL.class);
 	}
 
 	@Test
@@ -108,7 +108,7 @@ public class DocActionBLTest
 		final Object record = InterfaceWrapperHelper.create(Env.getCtx(), clazz, ITrx.TRXNAME_None);
 		InterfaceWrapperHelper.save(record);
 
-		final DocAction docAction = docActionBL.getDocActionOrNull(record);
+		final IDocument docAction = docActionBL.getDocActionOrNull(record);
 		if (expectDocument)
 		{
 			Assert.assertNotNull("Record " + record + " (class " + clazz + ") shall be an DocAction", docAction);
@@ -195,13 +195,13 @@ public class DocActionBLTest
 		final int adTableId = MTable.getTable_ID(tableName);
 
 		final I_C_Invoice invoice = InterfaceWrapperHelper.create(ctx, I_C_Invoice.class, ITrx.TRXNAME_None);
-		invoice.setDocStatus(DocAction.STATUS_InProgress);
+		invoice.setDocStatus(IDocument.STATUS_InProgress);
 		InterfaceWrapperHelper.save(invoice);
 
 		final int recordId = InterfaceWrapperHelper.getId(invoice);
 		Assert.assertTrue("Invalid recordId=" + recordId, recordId > 0);
 
-		Assert.assertEquals("Invalid DocStatus", DocAction.STATUS_InProgress, docActionBL.getDocStatusOrNull(ctx, adTableId, recordId));
+		Assert.assertEquals("Invalid DocStatus", IDocument.STATUS_InProgress, docActionBL.getDocStatusOrNull(ctx, adTableId, recordId));
 	}
 
 	public void test_getDocStatusOrNull_NonDocument()

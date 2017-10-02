@@ -36,7 +36,7 @@ import org.compiere.model.ModelValidator;
 
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
-import de.metas.document.engine.DocAction;
+import de.metas.document.engine.IDocument;
 import de.metas.i18n.IMsgBL;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
 import de.metas.invoicecandidate.model.IIsInvoiceCandidateAware;
@@ -126,7 +126,7 @@ public class PP_Order
 				.addEqualsFilter(I_C_Invoice_Detail.COLUMN_PP_Order_ID, ppOrder.getPP_Order_ID())
 				.andCollect(I_C_Invoice_Detail.COLUMN_C_InvoiceLine_ID)
 				.andCollect(I_C_InvoiceLine.COLUMN_C_Invoice_ID)
-				.addInArrayOrAllFilter(I_C_Invoice.COLUMNNAME_DocStatus, DocAction.STATUS_Completed, DocAction.STATUS_Closed)
+				.addInArrayOrAllFilter(I_C_Invoice.COLUMNNAME_DocStatus, IDocument.STATUS_Completed, IDocument.STATUS_Closed)
 				.orderBy().addColumn(I_C_Invoice.COLUMNNAME_DocumentNo).endOrderBy()
 				.create()
 				.list();

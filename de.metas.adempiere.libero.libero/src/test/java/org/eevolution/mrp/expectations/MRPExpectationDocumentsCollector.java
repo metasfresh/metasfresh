@@ -37,7 +37,7 @@ import org.eevolution.mrp.api.IMRPBL;
 import org.eevolution.mrp.api.IMRPDAO;
 import org.eevolution.mrp.api.impl.PlainMRPDAO;
 
-import de.metas.document.engine.DocAction;
+import de.metas.document.engine.IDocument;
 
 public class MRPExpectationDocumentsCollector
 {
@@ -87,7 +87,7 @@ public class MRPExpectationDocumentsCollector
 			return;
 		}
 		
-		final DocAction document = mrpDAO.retrieveDocumentOrNull(mrp);
+		final IDocument document = mrpDAO.retrieveDocumentOrNull(mrp);
 		if(document == null)
 		{
 			return;
@@ -108,7 +108,7 @@ public class MRPExpectationDocumentsCollector
 		}
 	}
 
-	private final <T> void add(DocAction document, final Class<T> modelClass, final String documentTableName, final int documentId)
+	private final <T> void add(IDocument document, final Class<T> modelClass, final String documentTableName, final int documentId)
 	{
 		@SuppressWarnings("unchecked")
 		final List<T> documents = (List<T>)modelClass2documents.get(modelClass);

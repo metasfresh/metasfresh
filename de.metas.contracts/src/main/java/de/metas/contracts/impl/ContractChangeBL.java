@@ -50,8 +50,8 @@ import de.metas.contracts.model.X_C_SubscriptionProgress;
 import de.metas.contracts.subscription.ISubscriptionBL;
 import de.metas.contracts.subscription.ISubscriptionDAO;
 import de.metas.contracts.subscription.ISubscriptionDAO.SubscriptionProgressQuery;
-import de.metas.document.engine.DocAction;
-import de.metas.document.engine.IDocActionBL;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
 import de.metas.logging.LogManager;
 import de.metas.order.IOrderPA;
@@ -102,7 +102,7 @@ public class ContractChangeBL implements IContractChangeBL
 
 				termChangeOrder.setDateOrdered(SystemTime.asDayTimestamp());
 				termChangeOrder.setDatePromised(changeDate);
-				termChangeOrder.setDocAction(DocAction.ACTION_Complete);
+				termChangeOrder.setDocAction(IDocument.ACTION_Complete);
 
 				InterfaceWrapperHelper.save(termChangeOrder);
 
@@ -110,8 +110,8 @@ public class ContractChangeBL implements IContractChangeBL
 
 				final I_C_OrderLine termChangeOL = createChargeOrderLine(termChangeOrder, changeConditions, difference);
 
-				final IDocActionBL docActionBL = Services.get(IDocActionBL.class);
-				docActionBL.processEx(termChangeOrder, DocAction.ACTION_Complete, DocAction.STATUS_Completed);
+				final IDocumentBL docActionBL = Services.get(IDocumentBL.class);
+				docActionBL.processEx(termChangeOrder, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
 				logger.info("Completed new order {}", termChangeOrder);
 
 				currentTerm.setC_OrderLine_TermChange_ID(termChangeOL.getC_OrderLine_ID());

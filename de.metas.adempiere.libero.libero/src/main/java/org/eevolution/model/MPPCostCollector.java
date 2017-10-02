@@ -79,8 +79,8 @@ import org.eevolution.api.IPPOrderBL;
 import org.eevolution.exceptions.ActivityProcessedException;
 import org.eevolution.exceptions.LiberoException;
 
-import de.metas.document.engine.DocAction;
-import de.metas.document.engine.IDocActionBL;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.IMsgBL;
 import de.metas.interfaces.I_C_BPartner_Product;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
@@ -96,7 +96,7 @@ import de.metas.purchasing.api.IBPartnerProductDAO;
  * @author Teo Sarca, www.arhipac.ro
  * @version $Id: MPPCostCollector.java,v 1.1 2004/06/19 02:10:34 vpj-cd Exp $
  */
-public class MPPCostCollector extends X_PP_Cost_Collector implements DocAction, IDocumentLine
+public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument, IDocumentLine
 {
 	/**
 	 * 
@@ -106,7 +106,7 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements DocAction, 
 	// Services
 	private final transient IPPCostCollectorBL ppCostCollectorBL = Services.get(IPPCostCollectorBL.class);
 	private final transient IPPOrderBOMBL ppOrderBOMBL = Services.get(IPPOrderBOMBL.class);
-	private final transient IDocActionBL docActionBL = Services.get(IDocActionBL.class);
+	private final transient IDocumentBL docActionBL = Services.get(IDocumentBL.class);
 
 	/**
 	 * Create & Complete Cost Collector
@@ -244,7 +244,7 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements DocAction, 
 
 		//
 		// Process the Cost Collector
-		Services.get(IDocActionBL.class).processEx(cc,
+		Services.get(IDocumentBL.class).processEx(cc,
 				X_PP_Cost_Collector.DOCACTION_Complete,
 				null // expectedDocStatus
 				);
@@ -347,7 +347,7 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements DocAction, 
 	public boolean processIt(final String processAction)
 	{
 		m_processMsg = null;
-		return Services.get(IDocActionBL.class).processIt(this, processAction);
+		return Services.get(IDocumentBL.class).processIt(this, processAction);
 	}
 
 	/** Process Message */
@@ -377,7 +377,7 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements DocAction, 
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_PREPARE);
 		if (m_processMsg != null)
 		{
-			return DocAction.STATUS_Invalid;
+			return IDocument.STATUS_Invalid;
 		}
 
 		MPeriod.testPeriodOpen(getCtx(), getDateAcct(), getC_DocTypeTarget_ID(), getAD_Org_ID());
@@ -458,10 +458,10 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements DocAction, 
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_PREPARE);
 		if (m_processMsg != null)
 		{
-			return DocAction.STATUS_Invalid;
+			return IDocument.STATUS_Invalid;
 		}
 
-		return DocAction.STATUS_InProgress;
+		return IDocument.STATUS_InProgress;
 	}	// prepareIt
 
 	@Override
@@ -487,7 +487,7 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements DocAction, 
 		if (!m_justPrepared)
 		{
 			String status = prepareIt();
-			if (!DocAction.STATUS_InProgress.equals(status))
+			if (!IDocument.STATUS_InProgress.equals(status))
 				return status;
 		}
 
@@ -496,7 +496,7 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements DocAction, 
 		{
 			m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_COMPLETE);
 			if (m_processMsg != null)
-				return DocAction.STATUS_Invalid;
+				return IDocument.STATUS_Invalid;
 		}
 
 		final boolean isReversal = getReversal_ID() > 0;
@@ -697,7 +697,7 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements DocAction, 
 		{
 			m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_COMPLETE);
 			if (m_processMsg != null)
-				return DocAction.STATUS_Invalid;
+				return IDocument.STATUS_Invalid;
 		}
 
 		//
@@ -705,7 +705,7 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements DocAction, 
 		setProcessed(true);
 		setDocAction(DOCACTION_Close);
 		setDocStatus(DOCSTATUS_Completed);
-		return DocAction.STATUS_Completed;
+		return IDocument.STATUS_Completed;
 	}	// completeIt
 
 	@Override

@@ -61,8 +61,8 @@ import org.slf4j.Logger;
 
 import com.google.common.base.Optional;
 
-import de.metas.document.engine.DocAction;
-import de.metas.document.engine.IDocActionBL;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.logging.LogManager;
 import de.metas.material.planning.IMRPSegment;
 
@@ -251,7 +251,7 @@ public class MRPDAO implements IMRPDAO
 	}
 
 	@Override
-	public DocAction retrieveDocumentOrNull(final I_PP_MRP mrp)
+	public IDocument retrieveDocumentOrNull(final I_PP_MRP mrp)
 	{
 		final Object documentObj;
 		if (mrp.getC_Order_ID() > 0)
@@ -285,7 +285,7 @@ public class MRPDAO implements IMRPDAO
 			return null;
 		}
 
-		final DocAction document = Services.get(IDocActionBL.class).getDocAction(documentObj);
+		final IDocument document = Services.get(IDocumentBL.class).getDocAction(documentObj);
 		return document;
 	}
 

@@ -29,7 +29,7 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.ValueNamePair;
 
-import de.metas.document.engine.DocAction;
+import de.metas.document.engine.IDocument;
 
 /**
  * Wrapper for standard order
@@ -239,10 +239,10 @@ public class PosOrderModel extends MOrder {
 		// check if order completed OK
 		if (getDocStatus().equals("DR") || getDocStatus().equals("IP") )
 		{ 
-			setDocAction(DocAction.ACTION_Complete);
+			setDocAction(IDocument.ACTION_Complete);
 			try
 			{
-				if (processIt(DocAction.ACTION_Complete) )
+				if (processIt(IDocument.ACTION_Complete) )
 				{
 					save();
 				}

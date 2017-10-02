@@ -1,6 +1,6 @@
 package org.eevolution.event;
 
-import static de.metas.document.engine.DocAction.STATUS_Completed;
+import static de.metas.document.engine.IDocument.STATUS_Completed;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.hamcrest.Matchers.is;

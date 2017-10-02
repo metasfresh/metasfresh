@@ -16,32 +16,32 @@
  *****************************************************************************/
 package de.metas.document.engine.impl;
 
-import static de.metas.document.engine.DocAction.ACTION_Approve;
-import static de.metas.document.engine.DocAction.ACTION_Close;
-import static de.metas.document.engine.DocAction.ACTION_Complete;
-import static de.metas.document.engine.DocAction.ACTION_Invalidate;
-import static de.metas.document.engine.DocAction.ACTION_None;
-import static de.metas.document.engine.DocAction.ACTION_Post;
-import static de.metas.document.engine.DocAction.ACTION_Prepare;
-import static de.metas.document.engine.DocAction.ACTION_ReActivate;
-import static de.metas.document.engine.DocAction.ACTION_ReOpen;
-import static de.metas.document.engine.DocAction.ACTION_Reject;
-import static de.metas.document.engine.DocAction.ACTION_Reverse_Accrual;
-import static de.metas.document.engine.DocAction.ACTION_Reverse_Correct;
-import static de.metas.document.engine.DocAction.ACTION_Unlock;
-import static de.metas.document.engine.DocAction.ACTION_Void;
-import static de.metas.document.engine.DocAction.ACTION_WaitComplete;
-import static de.metas.document.engine.DocAction.STATUS_Approved;
-import static de.metas.document.engine.DocAction.STATUS_Closed;
-import static de.metas.document.engine.DocAction.STATUS_Completed;
-import static de.metas.document.engine.DocAction.STATUS_Drafted;
-import static de.metas.document.engine.DocAction.STATUS_InProgress;
-import static de.metas.document.engine.DocAction.STATUS_Invalid;
-import static de.metas.document.engine.DocAction.STATUS_NotApproved;
-import static de.metas.document.engine.DocAction.STATUS_Reversed;
-import static de.metas.document.engine.DocAction.STATUS_Voided;
-import static de.metas.document.engine.DocAction.STATUS_WaitingConfirmation;
-import static de.metas.document.engine.DocAction.STATUS_WaitingPayment;
+import static de.metas.document.engine.IDocument.ACTION_Approve;
+import static de.metas.document.engine.IDocument.ACTION_Close;
+import static de.metas.document.engine.IDocument.ACTION_Complete;
+import static de.metas.document.engine.IDocument.ACTION_Invalidate;
+import static de.metas.document.engine.IDocument.ACTION_None;
+import static de.metas.document.engine.IDocument.ACTION_Post;
+import static de.metas.document.engine.IDocument.ACTION_Prepare;
+import static de.metas.document.engine.IDocument.ACTION_ReActivate;
+import static de.metas.document.engine.IDocument.ACTION_ReOpen;
+import static de.metas.document.engine.IDocument.ACTION_Reject;
+import static de.metas.document.engine.IDocument.ACTION_Reverse_Accrual;
+import static de.metas.document.engine.IDocument.ACTION_Reverse_Correct;
+import static de.metas.document.engine.IDocument.ACTION_Unlock;
+import static de.metas.document.engine.IDocument.ACTION_Void;
+import static de.metas.document.engine.IDocument.ACTION_WaitComplete;
+import static de.metas.document.engine.IDocument.STATUS_Approved;
+import static de.metas.document.engine.IDocument.STATUS_Closed;
+import static de.metas.document.engine.IDocument.STATUS_Completed;
+import static de.metas.document.engine.IDocument.STATUS_Drafted;
+import static de.metas.document.engine.IDocument.STATUS_InProgress;
+import static de.metas.document.engine.IDocument.STATUS_Invalid;
+import static de.metas.document.engine.IDocument.STATUS_NotApproved;
+import static de.metas.document.engine.IDocument.STATUS_Reversed;
+import static de.metas.document.engine.IDocument.STATUS_Voided;
+import static de.metas.document.engine.IDocument.STATUS_WaitingConfirmation;
+import static de.metas.document.engine.IDocument.STATUS_WaitingPayment;
 
 import java.util.Set;
 
@@ -56,7 +56,7 @@ import org.slf4j.Logger;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.document.engine.DocAction;
+import de.metas.document.engine.IDocument;
 import de.metas.lock.api.ILock;
 import de.metas.lock.api.ILockAutoCloseable;
 import de.metas.lock.api.ILockCommand;
@@ -73,7 +73,7 @@ import lombok.NonNull;
  */
 /* package */class DocumentEngine
 {
-	public static DocumentEngine ofDocument(final DocAction document)
+	public static DocumentEngine ofDocument(final IDocument document)
 	{
 		return new DocumentEngine(document);
 	}
@@ -84,11 +84,11 @@ import lombok.NonNull;
 	private final transient IPostingService postingService = Services.get(IPostingService.class);
 	private final transient IFactAcctDAO factAcctDAO = Services.get(IFactAcctDAO.class);
 
-	private final DocAction _document;
+	private final IDocument _document;
 	private String _docStatus;
 	private String _docAction = null;
 
-	private DocumentEngine(@NonNull final DocAction document)
+	private DocumentEngine(@NonNull final IDocument document)
 	{
 		_document = document;
 		_docStatus = document.getDocStatus();
@@ -104,7 +104,7 @@ import lombok.NonNull;
 				.toString();
 	}
 
-	private final DocAction getDocument()
+	private final IDocument getDocument()
 	{
 		return _document;
 	}
@@ -182,7 +182,7 @@ import lombok.NonNull;
 	{
 		setDocActionIntern(null);
 
-		final DocAction document = getDocument();
+		final IDocument document = getDocument();
 
 		if (isValidDocAction(processAction))
 		{
@@ -320,7 +320,7 @@ import lombok.NonNull;
 			return false;
 		}
 
-		final DocAction document = getDocument();
+		final IDocument document = getDocument();
 		if (document.unlockIt())
 		{
 			setDocStatusIntern(STATUS_Drafted);
@@ -340,7 +340,7 @@ import lombok.NonNull;
 			return false;
 		}
 
-		final DocAction document = getDocument();
+		final IDocument document = getDocument();
 		if (document.invalidateIt())
 		{
 			setDocStatusIntern(STATUS_Invalid);
@@ -360,7 +360,7 @@ import lombok.NonNull;
 			return getDocStatus();
 		}
 
-		final DocAction document = getDocument();
+		final IDocument document = getDocument();
 		final String newDocStatus = document.prepareIt();
 		setDocStatusIntern(newDocStatus);
 		document.setDocStatus(newDocStatus);
@@ -374,7 +374,7 @@ import lombok.NonNull;
 			return false;
 		}
 
-		final DocAction document = getDocument();
+		final IDocument document = getDocument();
 		if (document.approveIt())
 		{
 			setDocStatusIntern(STATUS_Approved);
@@ -391,7 +391,7 @@ import lombok.NonNull;
 	 * Reject Approval. Status: Not Approved
 	 *
 	 * @return true if success
-	 * @see de.metas.document.engine.DocAction#rejectIt()
+	 * @see de.metas.document.engine.IDocument#rejectIt()
 	 */
 
 	private boolean rejectIt()
@@ -401,7 +401,7 @@ import lombok.NonNull;
 			return false;
 		}
 
-		final DocAction document = getDocument();
+		final IDocument document = getDocument();
 		if (document.rejectIt())
 		{
 			setDocStatusIntern(STATUS_NotApproved);
@@ -418,7 +418,7 @@ import lombok.NonNull;
 	 * Complete Document. Status is set by process
 	 *
 	 * @return new document status (Complete, In Progress, Invalid, Waiting ..)
-	 * @see de.metas.document.engine.DocAction#completeIt()
+	 * @see de.metas.document.engine.IDocument#completeIt()
 	 */
 
 	private String completeIt()
@@ -428,7 +428,7 @@ import lombok.NonNull;
 			return getDocStatus();
 		}
 
-		final DocAction document = getDocument();
+		final IDocument document = getDocument();
 		final String newDocStatus = document.completeIt();
 
 		setDocStatusIntern(newDocStatus);
@@ -449,7 +449,7 @@ import lombok.NonNull;
 		}
 
 		// Make sure document is saved before we are asking to be posted
-		final DocAction document = getDocument();
+		final IDocument document = getDocument();
 		InterfaceWrapperHelper.save(document);
 
 		postingService
@@ -465,7 +465,7 @@ import lombok.NonNull;
 	 * Void Document. Status: Voided
 	 *
 	 * @return true if success
-	 * @see de.metas.document.engine.DocAction#voidIt()
+	 * @see de.metas.document.engine.IDocument#voidIt()
 	 */
 
 	private boolean voidIt()
@@ -475,7 +475,7 @@ import lombok.NonNull;
 			return false;
 		}
 
-		final DocAction document = getDocument();
+		final IDocument document = getDocument();
 		if (document.voidIt())
 		{
 			final String newDocStatus = STATUS_Voided;
@@ -503,12 +503,12 @@ import lombok.NonNull;
 	 * Close Document. Status: Closed
 	 *
 	 * @return true if success
-	 * @see de.metas.document.engine.DocAction#closeIt()
+	 * @see de.metas.document.engine.IDocument#closeIt()
 	 */
 
 	private boolean closeIt()
 	{
-		final DocAction document = getDocument();
+		final IDocument document = getDocument();
 		if (document.get_Table_ID() == I_C_Order.Table_ID) // orders can be closed any time
 		{
 			;
@@ -538,7 +538,7 @@ import lombok.NonNull;
 	 * Reverse Correct Document. Status: Reversed
 	 *
 	 * @return true if success
-	 * @see de.metas.document.engine.DocAction#reverseCorrectIt()
+	 * @see de.metas.document.engine.IDocument#reverseCorrectIt()
 	 */
 
 	private boolean reverseCorrectIt()
@@ -547,7 +547,7 @@ import lombok.NonNull;
 		{
 			return false;
 		}
-		final DocAction document = getDocument();
+		final IDocument document = getDocument();
 		if (document.reverseCorrectIt())
 		{
 			final String newDocStatus = STATUS_Reversed;
@@ -568,7 +568,7 @@ import lombok.NonNull;
 	 * Reverse Accrual Document. Status: Reversed
 	 *
 	 * @return true if success
-	 * @see de.metas.document.engine.DocAction#reverseAccrualIt()
+	 * @see de.metas.document.engine.IDocument#reverseAccrualIt()
 	 */
 
 	private boolean reverseAccrualIt()
@@ -578,7 +578,7 @@ import lombok.NonNull;
 			return false;
 		}
 
-		final DocAction document = getDocument();
+		final IDocument document = getDocument();
 		if (document.reverseAccrualIt())
 		{
 			final String newDocStatus = STATUS_Reversed;
@@ -602,7 +602,7 @@ import lombok.NonNull;
 			return false;
 		}
 
-		final DocAction document = getDocument();
+		final IDocument document = getDocument();
 		if (document.reActivateIt())
 		{
 			final String newDocStatus = STATUS_InProgress;

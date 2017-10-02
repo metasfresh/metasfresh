@@ -8,12 +8,12 @@ import org.adempiere.util.Services;
 import org.slf4j.Logger;
 
 /**
- * Document Action Interface
+ * Document Interface
  * 
  * @author based on initial version of Jorg Janke
  * @author metas-dev <dev@metasfresh.com>
  */
-public interface DocAction
+public interface IDocument
 {
 	String ACTION_Complete = "CO";
 	String ACTION_WaitComplete = "WC";
@@ -74,7 +74,7 @@ public interface DocAction
 	/** @return true if success */
 	default boolean processIt(String docAction) throws Exception
 	{
-		return Services.get(IDocActionBL.class).processIt(this, docAction);
+		return Services.get(IDocumentBL.class).processIt(this, docAction);
 	}
 
 	/** @return true if success */

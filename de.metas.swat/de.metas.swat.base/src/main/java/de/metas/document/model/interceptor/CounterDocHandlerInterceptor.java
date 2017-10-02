@@ -10,7 +10,7 @@ import org.compiere.model.I_AD_Client;
 import com.google.common.base.MoreObjects;
 
 import de.metas.document.ICounterDocBL;
-import de.metas.document.engine.DocAction;
+import de.metas.document.engine.IDocument;
 
 /*
  * #%L
@@ -35,7 +35,7 @@ import de.metas.document.engine.DocAction;
  */
 
 /**
- * Interceptor used to intercept {@link DocAction}s that might need a counter document
+ * Interceptor used to intercept {@link IDocument}s that might need a counter document
  *
  * @author metas-dev <dev@metasfresh.com>
  *

@@ -82,8 +82,8 @@ import de.metas.document.IDocCopyHandler;
 import de.metas.document.IDocLineCopyHandler;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.IDocumentPA;
-import de.metas.document.engine.DocAction;
-import de.metas.document.engine.IDocActionBL;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.invoice.IMatchInvBL;
 import de.metas.invoice.IMatchInvDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
@@ -220,8 +220,8 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		Check.errorUnless(from.getAD_Client_ID() == to.getAD_Client_ID(), "from.AD_Client_ID={}, to.AD_Client_ID={}", from.getAD_Client_ID(), to.getAD_Client_ID());
 		Check.errorUnless(from.getAD_Org_ID() == to.getAD_Org_ID(), "from.AD_Org_ID={}, to.AD_Org_ID={}", from.getAD_Org_ID(), to.getAD_Org_ID());
 
-		to.setDocStatus(DocAction.STATUS_Drafted);		// Draft
-		to.setDocAction(DocAction.ACTION_Complete);
+		to.setDocStatus(IDocument.STATUS_Drafted);		// Draft
+		to.setDocAction(IDocument.ACTION_Complete);
 		//
 		to.setC_DocType_ID(0);
 		to.setC_DocTypeTarget_ID(C_DocTypeTarget_ID);
@@ -1158,7 +1158,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	public final boolean isComplete(final org.compiere.model.I_C_Invoice invoice)
 	{
 		final String docStatus = invoice.getDocStatus();
-		return Services.get(IDocActionBL.class).isStatusCompletedOrClosedOrReversed(docStatus);
+		return Services.get(IDocumentBL.class).isStatusCompletedOrClosedOrReversed(docStatus);
 	}
 
 	@Override
@@ -1421,7 +1421,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		final String trxName = InterfaceWrapperHelper.getTrxName(invoice);
 
 		// void invoice
-		Services.get(IDocActionBL.class).processEx(invoice, DocAction.ACTION_Reverse_Correct, DocAction.STATUS_Reversed);
+		Services.get(IDocumentBL.class).processEx(invoice, IDocument.ACTION_Reverse_Correct, IDocument.STATUS_Reversed);
 
 		// update invalids
 		invoiceCandBL.updateInvalid()

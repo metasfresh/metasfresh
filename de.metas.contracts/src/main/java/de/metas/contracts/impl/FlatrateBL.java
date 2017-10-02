@@ -85,8 +85,8 @@ import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Transition;
 import de.metas.contracts.subscription.model.I_C_OrderLine;
 import de.metas.document.IDocumentPA;
-import de.metas.document.engine.DocAction;
-import de.metas.document.engine.IDocActionBL;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.IMsgBL;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerDAO;
@@ -1553,7 +1553,7 @@ public class FlatrateBL implements IFlatrateBL
 	public void complete(final I_C_Flatrate_Term term)
 	{
 		// NOTE: the whole reason why we have this method is for readability ease of refactoring.
-		Services.get(IDocActionBL.class).processEx(term, DocAction.ACTION_Complete, DocAction.STATUS_Completed);
+		Services.get(IDocumentBL.class).processEx(term, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
 	}
 
 	@Override
@@ -1577,7 +1577,7 @@ public class FlatrateBL implements IFlatrateBL
 	public void voidIt(final I_C_Flatrate_Term term)
 	{
 		// NOTE: the whole reason why we have this method is for readability ease of refactoring.
-		Services.get(IDocActionBL.class).processEx(term, DocAction.ACTION_Void, DocAction.STATUS_Voided);
+		Services.get(IDocumentBL.class).processEx(term, IDocument.ACTION_Void, IDocument.STATUS_Voided);
 
 	}
 

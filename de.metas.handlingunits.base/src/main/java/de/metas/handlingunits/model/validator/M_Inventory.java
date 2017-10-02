@@ -14,7 +14,7 @@ import org.compiere.model.I_M_InventoryLine;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.X_M_Inventory;
 
-import de.metas.document.engine.IDocActionBL;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.handlingunits.IHUAssignmentDAO;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.inventory.IHUInventoryBL;
@@ -85,7 +85,7 @@ public class M_Inventory
 		//
 		// Reverse empties movements
 		{
-			final IDocActionBL docActionBL = Services.get(IDocActionBL.class);
+			final IDocumentBL docActionBL = Services.get(IDocumentBL.class);
 			Services.get(IMovementDAO.class)
 					.retrieveMovementsForInventoryQuery(inventory.getM_Inventory_ID())
 					.addEqualsFilter(I_M_Inventory.COLUMNNAME_DocStatus, X_M_Inventory.DOCSTATUS_Completed)

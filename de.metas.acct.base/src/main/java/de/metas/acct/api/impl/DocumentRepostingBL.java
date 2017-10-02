@@ -7,7 +7,7 @@ import java.util.Properties;
 import de.metas.acct.api.IDocumentRepostingBL;
 import de.metas.acct.spi.IDocumentRepostingHandler;
 import de.metas.acct.spi.impl.CompositeDocumentRepostingHandler;
-import de.metas.document.engine.DocAction;
+import de.metas.document.engine.IDocument;
 
 /*
  * #%L
@@ -42,7 +42,7 @@ public class DocumentRepostingBL implements IDocumentRepostingBL
 	}
 
 	@Override
-	public List<DocAction> retrievePostedWithoutFactAcct (final Properties ctx, final Timestamp startTime)
+	public List<IDocument> retrievePostedWithoutFactAcct (final Properties ctx, final Timestamp startTime)
 	{
 		return repostingHandlers.retrievePostedWithoutFactAcct(ctx, startTime);
 	}

@@ -49,7 +49,7 @@ import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.document.IDocumentPA;
-import de.metas.document.engine.DocAction;
+import de.metas.document.engine.IDocument;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.logging.LogManager;
 
@@ -260,7 +260,7 @@ public class InvoiceHelper
 
 		if (expectedCompleteStatus != null)
 		{
-			helper.process(invoice, DocAction.ACTION_Complete, expectedCompleteStatus);
+			helper.process(invoice, IDocument.ACTION_Complete, expectedCompleteStatus);
 			// BPOpenBalanceValidator.get().afterInvoiceComplete(invoicePO);
 
 			doAccountingAssertions(invoice);

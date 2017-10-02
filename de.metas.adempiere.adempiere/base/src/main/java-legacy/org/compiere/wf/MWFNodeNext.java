@@ -25,8 +25,8 @@ import org.compiere.model.PO;
 import org.compiere.model.Query;
 import org.compiere.model.X_AD_WF_NodeNext;
 
-import de.metas.document.engine.DocAction;
-import de.metas.document.engine.IDocActionBL;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 
 /**
  *	Workflow Node Next - Transition
@@ -161,18 +161,18 @@ public class MWFNodeNext extends X_AD_WF_NodeNext
 		if (isStdUserWorkflow())
 		{
 			final PO po = activity.getPO();
-			final DocAction da = Services.get(IDocActionBL.class).getDocActionOrNull(po);
+			final IDocument da = Services.get(IDocumentBL.class).getDocActionOrNull(po);
 			if (da != null)
 			{
 				String docStatus = da.getDocStatus();
 				String docAction = da.getDocAction();
-				if (!DocAction.ACTION_Complete.equals(docAction)
-					|| DocAction.STATUS_Completed.equals(docStatus)
-					|| DocAction.STATUS_WaitingConfirmation.equals(docStatus)
-					|| DocAction.STATUS_WaitingPayment.equals(docStatus)
-					|| DocAction.STATUS_Voided.equals(docStatus)
-					|| DocAction.STATUS_Closed.equals(docStatus)
-					|| DocAction.STATUS_Reversed.equals(docStatus) )
+				if (!IDocument.ACTION_Complete.equals(docAction)
+					|| IDocument.STATUS_Completed.equals(docStatus)
+					|| IDocument.STATUS_WaitingConfirmation.equals(docStatus)
+					|| IDocument.STATUS_WaitingPayment.equals(docStatus)
+					|| IDocument.STATUS_Voided.equals(docStatus)
+					|| IDocument.STATUS_Closed.equals(docStatus)
+					|| IDocument.STATUS_Reversed.equals(docStatus) )
 					/*
 					|| DocAction.ACTION_Complete.equals(docAction)	
 					|| DocAction.ACTION_ReActivate.equals(docAction)	

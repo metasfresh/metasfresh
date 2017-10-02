@@ -128,7 +128,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.form.IClientUI;
 import de.metas.adempiere.service.IColumnBL;
-import de.metas.document.engine.DocAction;
+import de.metas.document.engine.IDocument;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;
@@ -2972,10 +2972,10 @@ public class APanel extends CPanel
 			if (!"Y".equals(processed))
 			{
 				String docStatus = Env.getContext(m_ctx, m_curWindowNo, "DocStatus");
-				if (DocAction.STATUS_Completed.equals(docStatus)
-						|| DocAction.STATUS_Closed.equals(docStatus)
-						|| DocAction.STATUS_Reversed.equals(docStatus)
-						|| DocAction.STATUS_Voided.equals(docStatus))
+				if (IDocument.STATUS_Completed.equals(docStatus)
+						|| IDocument.STATUS_Closed.equals(docStatus)
+						|| IDocument.STATUS_Reversed.equals(docStatus)
+						|| IDocument.STATUS_Voided.equals(docStatus))
 					;
 				else
 				{
