@@ -101,21 +101,6 @@ public class DocumentPA implements IDocumentPA
 					+ "    AND i." + I_C_Order.COLUMNNAME_IsUseBPartnerAddress + "='N'";
 
 	@Override
-	public String retrieveDocBaseType(final int docTypeId, final String trxName)
-	{
-
-		final MDocType docType = new MDocType(Env.getCtx(), docTypeId, trxName);
-
-		if (docType.getC_DocType_ID() == 0)
-		{
-			throw new IllegalArgumentException(
-					"Found no C_DocType record for C_DocType_ID " + docTypeId);
-		}
-
-		return docType.getDocBaseType();
-	}
-
-	@Override
 	public int retriveDocTypeId(final Properties ctx, final int adOrgId, final String docBaseType)
 	{
 

@@ -28,18 +28,9 @@ import java.util.Properties;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
-import org.compiere.model.X_C_DocType;
 
 public interface IDocumentPA extends ISingletonService
 {
-	/**
-	 * 
-	 * @param docTypeId
-	 * @param trxName
-	 * @return something like {@link X_C_DocType#DOCBASETYPE_MaterialDelivery}
-	 */
-	String retrieveDocBaseType(int docTypeId, String trxName);
-
 	int retriveDocTypeId(Properties ctx, int adOrgId, String docBaseType);
 	/**
 	 * Returns a C_DocType_ID for a given DocSubType
