@@ -36,6 +36,7 @@ import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.invoice.service.IInvoiceCreditContext;
@@ -81,7 +82,6 @@ import de.metas.document.ICopyHandlerBL;
 import de.metas.document.IDocCopyHandler;
 import de.metas.document.IDocLineCopyHandler;
 import de.metas.document.IDocTypeDAO;
-import de.metas.document.IDocumentPA;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.invoice.IMatchInvBL;
@@ -174,7 +174,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		}
 		//
 		// TODO: What happens when we have multiple DocTypes per DocBaseType and nothing was selected by the user?
-		return Services.get(IDocumentPA.class).retriveDocTypeId(ctx, invoice.getAD_Org_ID(), docBaseType);
+		return Services.get(IDocTypeDAO.class).getDocTypeId(ctx, docBaseType, invoice.getAD_Client_ID(), invoice.getAD_Org_ID(), ITrx.TRXNAME_None);
 	}
 
 	public static final IDocCopyHandler<org.compiere.model.I_C_Invoice, org.compiere.model.I_C_InvoiceLine> defaultDocCopyHandler = new DefaultDocCopyHandler<>(org.compiere.model.I_C_Invoice.class, org.compiere.model.I_C_InvoiceLine.class);
@@ -1179,7 +1179,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(invoice);
 		final String docbasetype = X_C_DocType.DOCBASETYPE_ARInvoice;
-		final int targetDocTypeID = Services.get(IDocumentPA.class).retriveDocTypeIdForDocSubtype(ctx, docbasetype, docSubType);
+		final int targetDocTypeID = Services.get(IDocTypeDAO.class).getDocTypeId(ctx, docbasetype, docSubType, invoice.getAD_Client_ID(), invoice.getAD_Org_ID(), ITrx.TRXNAME_None);
 		final I_C_Invoice adjustmentCharge = InterfaceWrapperHelper.create(
 				copyFrom(invoice, SystemTime.asTimestamp(), targetDocTypeID, invoice.isSOTrx(),
 						false, // counter == false

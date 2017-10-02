@@ -84,7 +84,7 @@ import de.metas.contracts.model.X_C_Flatrate_DataEntry;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Transition;
 import de.metas.contracts.subscription.model.I_C_OrderLine;
-import de.metas.document.IDocumentPA;
+import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.IMsgBL;
@@ -1394,8 +1394,8 @@ public class FlatrateBL implements IFlatrateBL
 			subType = null;
 		}
 
-		final IDocumentPA documentPA = Services.get(IDocumentPA.class);
-		return documentPA.retrieve(ctx, term.getAD_Org_ID(), de.metas.contracts.flatrate.interfaces.I_C_DocType.DocBaseType_CustomerContract, subType, true, trxName);
+		final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+		return docTypeDAO.getDocType(de.metas.contracts.flatrate.interfaces.I_C_DocType.DocBaseType_CustomerContract, subType, term.getAD_Client_ID(), term.getAD_Org_ID());
 	}
 
 	@Override

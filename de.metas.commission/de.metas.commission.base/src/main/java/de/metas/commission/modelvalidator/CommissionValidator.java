@@ -104,7 +104,7 @@ import de.metas.commission.service.impl.SponsorCondition;
 import de.metas.commission.util.CommissionConstants;
 import de.metas.commission.util.Messages;
 import de.metas.document.ICopyHandlerBL;
-import de.metas.document.IDocumentPA;
+import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.IMsgBL;
@@ -305,7 +305,7 @@ public class CommissionValidator implements ModelValidator
 
 	private String generateInvoices(final MHRProcess process)
 	{
-		final Map<Integer, Map<Integer, MInvoice>> bPartnerId2Inv = new HashMap<Integer, Map<Integer, MInvoice>>();
+		final Map<Integer, Map<Integer, MInvoice>> bPartnerId2Inv = new HashMap<>();
 
 		for (final I_HR_Movement movement : getMovements(process))
 		{
@@ -318,7 +318,7 @@ public class CommissionValidator implements ModelValidator
 
 			if (currencyId2Invoice == null)
 			{
-				currencyId2Invoice = new HashMap<Integer, MInvoice>();
+				currencyId2Invoice = new HashMap<>();
 				bPartnerId2Inv.put(bPartnerId, currencyId2Invoice);
 			}
 
@@ -426,8 +426,7 @@ public class CommissionValidator implements ModelValidator
 
 			invoice.setIsSOTrx(false);
 
-			final IDocumentPA docPA = Services.get(IDocumentPA.class);
-			final I_C_DocType docType = docPA.retrieve(ctx, process.getAD_Org_ID(), Constants.DOCBASETYPE_AEInvoice, CommissionConstants.COMMISSON_INVOICE_DOCSUBTYPE_CALC, true, trxName);
+			final I_C_DocType docType = Services.get(IDocTypeDAO.class).getDocType(Constants.DOCBASETYPE_AEInvoice, CommissionConstants.COMMISSON_INVOICE_DOCSUBTYPE_CALC, process.getAD_Client_ID(), process.getAD_Org_ID());
 
 			invoice.setC_DocTypeTarget_ID(docType.getC_DocType_ID());
 			invoice.setC_Currency_ID(currencyId);
