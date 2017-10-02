@@ -18,6 +18,8 @@ Here come the actual release notes:
     * Adding default further Filter to Invoice Candidate Window in WebUI.
   * [#2594](https://github.com/metasfresh/metasfresh/issues/2594) New Window for Dunning Candidates in WebUI
     * New Window for Dunning Candidates in WebUI, that allows the preparation and creation of Dunning Documents.
+  * [#2614](https://github.com/metasfresh/metasfresh/issues/2614) Overhaul shipment schedule UI window
+    * Additional shipment Schedule adjustments, new Quickactions and adding new Fields to Main View.
 
 
 # metasfresh 5.29 (2017-40)
