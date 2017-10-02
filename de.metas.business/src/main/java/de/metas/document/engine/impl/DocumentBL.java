@@ -36,10 +36,10 @@ import org.compiere.model.PO;
 import org.compiere.model.POInfo;
 import org.compiere.util.DB;
 
-import de.metas.document.engine.IDocument;
 import de.metas.document.engine.DocumentHandler;
 import de.metas.document.engine.DocumentHandlerProvider;
 import de.metas.document.engine.DocumentWrapper;
+import de.metas.document.engine.IDocument;
 
 public final class DocumentBL extends AbstractDocumentBL
 {
@@ -143,14 +143,19 @@ public final class DocumentBL extends AbstractDocumentBL
 	}
 
 	@Override
-	protected String retrieveString(Properties ctx, int adTableId, int recordId, final String columnName)
+	protected String retrieveString(final int adTableId, final int recordId, final String columnName)
 	{
 		if (adTableId <= 0 || recordId <= 0)
 		{
 			return null;
 		}
 
-		final POInfo poInfo = POInfo.getPOInfo(ctx, adTableId);
+		final POInfo poInfo = POInfo.getPOInfo(adTableId);
+		if (poInfo == null)
+		{
+			throw new AdempiereException("No POInfo found for AD_Table_ID=" + adTableId);
+		}
+		
 		final String keyColumn = poInfo.getKeyColumnName();
 		if (keyColumn == null)
 		{

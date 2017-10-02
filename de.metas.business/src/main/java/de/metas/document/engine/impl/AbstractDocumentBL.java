@@ -72,7 +72,7 @@ public abstract class AbstractDocumentBL implements IDocumentBL
 
 	private final Supplier<Map<String, DocumentHandlerProvider>> docActionHandlerProvidersByTableName = Suppliers.memoize(() -> retrieveDocActionHandlerProvidersIndexedByTableName());
 
-	protected abstract String retrieveString(Properties ctx, int adTableId, int recordId, final String columnName);
+	protected abstract String retrieveString(int adTableId, int recordId, final String columnName);
 
 	protected abstract Object retrieveModelOrNull(Properties ctx, int adTableId, int recordId);
 
@@ -299,9 +299,9 @@ public abstract class AbstractDocumentBL implements IDocumentBL
 	}
 
 	@Override
-	public String getDocStatusOrNull(final Properties ctx, final int adTableId, final int recordId)
+	public String getDocStatusOrNull(final Properties ctx_NOTUSED, final int adTableId, final int recordId)
 	{
-		return retrieveString(ctx, adTableId, recordId, "DocStatus");
+		return retrieveString(adTableId, recordId, "DocStatus");
 	}
 
 	@Override
@@ -314,7 +314,7 @@ public abstract class AbstractDocumentBL implements IDocumentBL
 
 		//
 		// First we try to fetch the DocumentNo column from database
-		final String documentNo = retrieveString(ctx, adTableId, recordId, "DocumentNo");
+		final String documentNo = retrieveString(adTableId, recordId, "DocumentNo");
 		if (documentNo != null)
 		{
 			return documentNo;

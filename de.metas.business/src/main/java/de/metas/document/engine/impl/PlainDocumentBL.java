@@ -153,7 +153,7 @@ public class PlainDocumentBL extends AbstractDocumentBL
 	}
 
 	@Override
-	protected String retrieveString(Properties ctx, int adTableId, int recordId, String columnName)
+	protected String retrieveString(final int adTableId, final int recordId, final String columnName)
 	{
 		final Object model = POJOLookupMap.get().lookup(adTableId, recordId);
 		if (model == null)
