@@ -49,6 +49,6 @@ public interface IDocumentBL extends ISingletonService
 	 * @param startTime
 	 * @return
 	 */
-	List<DocAction> retrievePostedWithoutFactActt(Properties ctx, Timestamp startTime);
+	List<DocAction> retrievePostedWithoutFactAcct(Properties ctx, Timestamp startTime);
 
 }

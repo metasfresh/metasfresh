@@ -42,7 +42,7 @@ public class DocumentBL implements IDocumentBL
 	}
 
 	@Override
-	public List<DocAction> retrievePostedWithoutFactActt (final Properties ctx, final Timestamp startTime)
+	public List<DocAction> retrievePostedWithoutFactAcct (final Properties ctx, final Timestamp startTime)
 	{
 		return repostingHandlers.retrievePostedWithoutFactAcct(ctx, startTime);
 	}
