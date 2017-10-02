@@ -69,6 +69,7 @@ import de.metas.interfaces.I_C_OrderLine;
 import de.metas.logging.LogManager;
 import de.metas.product.IProductDAO;
 import de.metas.tax.api.ITaxBL;
+import lombok.NonNull;
 
 public class OrderLineBL implements IOrderLineBL
 {
@@ -397,9 +398,9 @@ public class OrderLineBL implements IOrderLineBL
 		pricingCtx.setReferencedObject(orderLine);
 
 		pricingCtx.setM_PriceList_ID(priceListId);
-		// PLV is only accurate if PL selected in header
-		// metas: rely on M_PriceList_ID only, don't use M_PriceList_Version_ID
-		// pricingCtx.setM_PriceList_Version_ID(orderLine.getM_PriceList_Version_ID());
+
+		final int countryId = getCountryIdOrZero(orderLine);
+		pricingCtx.setC_Country_ID(countryId);
 
 		return pricingCtx;
 	}
@@ -431,6 +432,23 @@ public class OrderLineBL implements IOrderLineBL
 			date = order.getDateOrdered();
 		}
 		return date;
+	}
+
+	private int getCountryIdOrZero(@NonNull final org.compiere.model.I_C_OrderLine orderLine)
+	{
+		if (orderLine.getC_BPartner_Location_ID() <= 0)
+		{
+			return 0;
+		}
+
+		final I_C_BPartner_Location bPartnerLocation = orderLine.getC_BPartner_Location();
+		if (bPartnerLocation.getC_Location_ID() <= 0)
+		{
+			return 0;
+		}
+
+		final int countryId = bPartnerLocation.getC_Location().getC_Country_ID();
+		return countryId;
 	}
 
 	@Override

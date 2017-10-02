@@ -1,7 +1,5 @@
 package de.metas.contracts.pricing;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.pricing.api.IEditablePricingContext;
 import org.adempiere.pricing.api.IPricingBL;
@@ -41,6 +39,12 @@ public class SubscriptionPricingRule implements IPricingRule
 			return false;
 		}
 
+		if (pricingCtx.getC_Country_ID() <= 0)
+		{
+			logger.debug("Not applying because pricingCtx has no C_Country_ID; pricingCtx={}", pricingCtx);
+			return false;
+		}
+
 		final Object referencedObject = pricingCtx.getReferencedObject();
 		final I_C_Flatrate_Conditions flatrateConditions = ContractPricingUtil.getC_Flatrate_Conditions(referencedObject);
 		if (flatrateConditions == null)
@@ -59,19 +63,43 @@ public class SubscriptionPricingRule implements IPricingRule
 	}
 
 	@Override
-	public void calculate(final IPricingContext pricingCtx, final IPricingResult result)
+	public void calculate(
+			@NonNull final IPricingContext pricingCtx, 
+			@NonNull final IPricingResult result)
 	{
 		final Object referencedObject = pricingCtx.getReferencedObject();
 
 		final I_C_Flatrate_Conditions conditions = ContractPricingUtil.getC_Flatrate_Conditions(referencedObject);
-		final I_M_PriceList originalPriceList = load(pricingCtx.getM_PriceList_ID(),I_M_PriceList.class);
-		final I_M_PriceList subscriptionPriceList = retrievePriceListForConditionsAndCountry(originalPriceList.getC_Country_ID(), conditions);
+		final I_M_PriceList subscriptionPriceList = retrievePriceListForConditionsAndCountry(pricingCtx.getC_Country_ID(), conditions);
 
+		final IEditablePricingContext subscriptionPricingCtx = copyPricingCtxButInsertPriceList(pricingCtx, subscriptionPriceList);
+
+		final IPricingResult subscriptionPricingResult = invokePricingEngine(subscriptionPricingCtx);
+
+		copySubscriptionResultIntoResult(subscriptionPricingResult, result);
+
+		copyDiscountIntoResultIfAllowedByPricingContext(subscriptionPricingResult, result, pricingCtx);
+	}
+
+	private static I_M_PriceList retrievePriceListForConditionsAndCountry(
+			final int countryId, 
+			@NonNull final I_C_Flatrate_Conditions conditions)
+	{
+		final I_M_PriceList subscriptionPriceList = Services.get(IQueryBL.class).createQueryBuilder(I_M_PriceList.class).addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_M_PriceList.COLUMN_C_Country_ID, countryId, 0)
+				.addEqualsFilter(I_M_PriceList.COLUMN_M_PricingSystem_ID, conditions.getM_PricingSystem_ID())
+				.addEqualsFilter(I_M_PriceList.COLUMN_IsSOPriceList, true)
+				.orderBy().addColumnDescending(I_M_PriceList.COLUMNNAME_C_Country_ID).endOrderBy()
+				.create()
+				.first();
+		return subscriptionPriceList;
+	}
+
+	private static IEditablePricingContext copyPricingCtxButInsertPriceList(
+			@NonNull final IPricingContext pricingCtx,
+			@NonNull final I_M_PriceList subscriptionPriceList)
+	{
 		final IPricingBL pricingBL = Services.get(IPricingBL.class);
-
-		//
-		// create a new pricing context.
-		// copy most values from 'pricingCtx'...
 
 		final IEditablePricingContext subscriptionPricingCtx = pricingBL.createPricingContext();
 		subscriptionPricingCtx.setAD_Table_ID(pricingCtx.getAD_Table_ID());
@@ -92,23 +120,36 @@ public class SubscriptionPricingRule implements IPricingRule
 		subscriptionPricingCtx.setM_PriceList_Version_ID(0);
 		subscriptionPricingCtx.setM_PriceList_ID(subscriptionPriceList.getM_PriceList_ID());
 
-		// call the pricing engine with our own parameters
+		return subscriptionPricingCtx;
+	}
+
+	private static IPricingResult invokePricingEngine(@NonNull final IPricingContext subscriptionPricingCtx)
+	{
+		final IPricingBL pricingBL = Services.get(IPricingBL.class);
 		final IPricingResult subscriptionPricingResult = pricingBL.calculatePrice(subscriptionPricingCtx);
 
 		if (!subscriptionPricingResult.isCalculated())
 		{
 			throw new ProductNotOnPriceListException(subscriptionPricingCtx, 0);
 		}
+		return subscriptionPricingResult;
+	}
 
-		// copy the results of our internal call into 'result'
+	/**
+	 * copy the results of our internal call into 'result'
+	 * 
+	 * @param subscriptionPricingResult
+	 * @param result
+	 */
+	private static void copySubscriptionResultIntoResult(
+			@NonNull final IPricingResult subscriptionPricingResult,
+			@NonNull final IPricingResult result)
+	{
 		result.setC_Currency_ID(subscriptionPricingResult.getC_Currency_ID());
 		result.setPrice_UOM_ID(subscriptionPricingResult.getPrice_UOM_ID());
 		result.setCalculated(subscriptionPricingResult.isCalculated());
 		result.setDisallowDiscount(subscriptionPricingResult.isDisallowDiscount());
-		if (!pricingCtx.isDisallowDiscount())
-		{
-			result.setDiscount(subscriptionPricingResult.getDiscount());
-		}
+
 		result.setUsesDiscountSchema(subscriptionPricingResult.isUsesDiscountSchema());
 		// 08634: also set the discount schema
 		result.setM_DiscountSchema_ID(subscriptionPricingResult.getM_DiscountSchema_ID());
@@ -124,15 +165,15 @@ public class SubscriptionPricingRule implements IPricingRule
 		result.setC_TaxCategory_ID(subscriptionPricingResult.getC_TaxCategory_ID());
 	}
 
-	private I_M_PriceList retrievePriceListForConditionsAndCountry(final int countryId, final I_C_Flatrate_Conditions conditions)
+	private static void copyDiscountIntoResultIfAllowedByPricingContext(
+			@NonNull final IPricingResult subscriptionPricingResult, 
+			@NonNull final IPricingResult result, 
+			@NonNull final IPricingContext pricingCtx)
 	{
-		final I_M_PriceList subscriptionPriceList = Services.get(IQueryBL.class).createQueryBuilder(I_M_PriceList.class).addOnlyActiveRecordsFilter()
-				.addInArrayFilter(I_M_PriceList.COLUMN_C_Country_ID, countryId, 0)
-				.addEqualsFilter(I_M_PriceList.COLUMN_M_PricingSystem_ID, conditions.getM_PricingSystem_ID())
-				.addEqualsFilter(I_M_PriceList.COLUMN_IsSOPriceList, true)
-				.orderBy().addColumnDescending(I_M_PriceList.COLUMNNAME_C_Country_ID).endOrderBy()
-				.create()
-				.first();
-		return subscriptionPriceList;
+		if (!pricingCtx.isDisallowDiscount())
+		{
+			result.setDiscount(subscriptionPricingResult.getDiscount());
+		}
 	}
+	
 }

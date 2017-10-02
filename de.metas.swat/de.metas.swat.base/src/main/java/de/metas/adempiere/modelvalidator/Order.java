@@ -199,7 +199,7 @@ public class Order implements ModelValidator
 						// Freight costs are not calculated by Price List.
 						continue;
 					}
-					ol.setPrice(mOrder.getM_PriceList_ID());
+					ol.setPrice();
 					ol.saveEx();
 				}
 			}
