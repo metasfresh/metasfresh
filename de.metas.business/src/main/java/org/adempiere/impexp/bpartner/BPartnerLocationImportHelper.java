@@ -150,7 +150,6 @@ import lombok.NonNull;
 	private I_C_BPartner_Location createNewBPartnerLocation(@NonNull final I_I_BPartner importRecord)
 	{
 		if (importRecord.getC_Country_ID() > 0
-				&& !Check.isEmpty(importRecord.getAddress1(), true)
 				&& !Check.isEmpty(importRecord.getCity(), true))
 		{
 			final I_C_BPartner bpartner = importRecord.getC_BPartner();
