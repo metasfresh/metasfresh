@@ -67,7 +67,27 @@ import lombok.NonNull;
 	}
 
 	public I_C_BPartner_Location importRecord(
-			@NonNull final I_I_BPartner importRecord, 
+			@NonNull final I_I_BPartner importRecord,
+			@NonNull final List<I_I_BPartner> previousImportRecordsForSameBPartner)
+	{
+		// first, try to find an existent one
+		I_C_BPartner_Location bpartnerLocation = fetchAndUpdateExistingBPLocation(importRecord, previousImportRecordsForSameBPartner);
+		// if null, create a new one
+		if (bpartnerLocation == null)
+		{
+			bpartnerLocation = createNewBPartnerLocation(importRecord);
+		}
+		return bpartnerLocation;
+	}
+
+	/**
+	 * retrieve existent BPartner location and call method for updating the fields
+	 * 
+	 * @param importRecord
+	 * @param previousImportRecordsForSameBPartner
+	 * @return
+	 */
+	private I_C_BPartner_Location fetchAndUpdateExistingBPLocation(@NonNull final I_I_BPartner importRecord,
 			@NonNull final List<I_I_BPartner> previousImportRecordsForSameBPartner)
 	{
 		I_C_BPartner_Location bpartnerLocation = importRecord.getC_BPartner_Location();
@@ -85,19 +105,12 @@ import lombok.NonNull;
 
 			updateExistingBPartnerLocation(importRecord, bpartnerLocation);
 		}
-		else 	// New Location
-		if (importRecord.getC_Country_ID() > 0
-				&& !Check.isEmpty(importRecord.getAddress1(), true)
-				&& !Check.isEmpty(importRecord.getCity(), true))
-		{
-			bpartnerLocation = createNewBPartnerLocation(importRecord);
-		}
 
 		return bpartnerLocation;
 	}
 
 	private List<I_I_BPartner> getImportRecordsWithEqualAddresses(
-			@NonNull final I_I_BPartner importRecord, 
+			@NonNull final I_I_BPartner importRecord,
 			@NonNull final List<I_I_BPartner> previousImportRecordsForSameBPartner)
 	{
 		final List<I_I_BPartner> alreadyImportedBPAddresses = previousImportRecordsForSameBPartner.stream()
@@ -118,24 +131,44 @@ import lombok.NonNull;
 				&& Objects.equals(importRecord.getPostal(), p.getPostal())
 				&& Objects.equals(importRecord.getPostal_Add(), p.getPostal_Add());
 	}
-	
+
+	/**
+	 * create a new BPartner location
+	 * <ul>
+	 * * C_Country_ID > 0
+	 * </ul>
+	 * <ul>
+	 * * Address1 not empty
+	 * </ul>
+	 * <ul>
+	 * * City not empty
+	 * </ul>
+	 * 
+	 * @param importRecord
+	 * @return
+	 */
 	private I_C_BPartner_Location createNewBPartnerLocation(@NonNull final I_I_BPartner importRecord)
 	{
-		final I_C_BPartner bpartner = importRecord.getC_BPartner();
-		final I_C_BPartner_Location bpartnerLocation = InterfaceWrapperHelper.newInstance(I_C_BPartner_Location.class, bpartner);
-		bpartnerLocation.setC_BPartner(bpartner);
+		if (importRecord.getC_Country_ID() > 0
+				&& !Check.isEmpty(importRecord.getAddress1(), true)
+				&& !Check.isEmpty(importRecord.getCity(), true))
+		{
+			final I_C_BPartner bpartner = importRecord.getC_BPartner();
+			final I_C_BPartner_Location bpartnerLocation = InterfaceWrapperHelper.newInstance(I_C_BPartner_Location.class, bpartner);
+			bpartnerLocation.setC_BPartner(bpartner);
+			updateExistingBPartnerLocation(importRecord, bpartnerLocation);
+			return bpartnerLocation;
+		}
 
-		updateExistingBPartnerLocation(importRecord, bpartnerLocation);
-
-		return bpartnerLocation;
+		return null;
 	}
 
 	private void updateExistingBPartnerLocation(
-			@NonNull final I_I_BPartner importRecord, 
+			@NonNull final I_I_BPartner importRecord,
 			@NonNull final I_C_BPartner_Location bpartnerLocation)
 	{
 		updateLocation(importRecord, bpartnerLocation);
-		
+
 		updateBillToAndShipToFlags(importRecord, bpartnerLocation);
 
 		updatePhoneAndFax(importRecord, bpartnerLocation);
@@ -146,7 +179,7 @@ import lombok.NonNull;
 	}
 
 	private void updateLocation(
-			@NonNull final I_I_BPartner importRecord, 
+			@NonNull final I_I_BPartner importRecord,
 			@NonNull final I_C_BPartner_Location bpartnerLocation)
 	{
 		I_C_Location location = bpartnerLocation.getC_Location();
@@ -157,10 +190,9 @@ import lombok.NonNull;
 		updateExistingLocation(importRecord, location);
 		bpartnerLocation.setC_Location(location);
 	}
-	
-	
+
 	private static void updateExistingLocation(
-			@NonNull final I_I_BPartner importRecord, 
+			@NonNull final I_I_BPartner importRecord,
 			@NonNull final I_C_Location location)
 	{
 		location.setAddress1(importRecord.getAddress1());
@@ -174,7 +206,7 @@ import lombok.NonNull;
 	}
 
 	private void updateBillToAndShipToFlags(
-			@NonNull final I_I_BPartner importRecord, 
+			@NonNull final I_I_BPartner importRecord,
 			@NonNull final I_C_BPartner_Location bpartnerLocation)
 	{
 		bpartnerLocation.setIsShipToDefault(importRecord.isShipToDefault());
@@ -184,7 +216,7 @@ import lombok.NonNull;
 	}
 
 	private void updatePhoneAndFax(
-			@NonNull final I_I_BPartner importRecord, 
+			@NonNull final I_I_BPartner importRecord,
 			@NonNull final I_C_BPartner_Location bpartnerLocation)
 	{
 		if (importRecord.getPhone() != null)
@@ -200,9 +232,9 @@ import lombok.NonNull;
 			bpartnerLocation.setFax(importRecord.getFax());
 		}
 	}
-	
+
 	private void fireImportValidatorAndSaveBPartnerLocation(
-			@NonNull final I_I_BPartner importRecord, 
+			@NonNull final I_I_BPartner importRecord,
 			@NonNull final I_C_BPartner_Location bpartnerLocation)
 	{
 		ModelValidationEngine.get().fireImportValidate(process, importRecord, bpartnerLocation, IImportValidator.TIMING_AFTER_IMPORT);
