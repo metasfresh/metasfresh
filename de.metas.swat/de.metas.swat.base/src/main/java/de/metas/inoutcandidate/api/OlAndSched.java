@@ -55,7 +55,7 @@ public final class OlAndSched
 			@Nullable final org.compiere.model.I_C_OrderLine ol,
 			@NonNull final I_M_ShipmentSchedule shipmentSchedule)
 	{
-		this(ol, shipmentSchedule, Services.get(IInOutCandHandlerBL.class).createDeliverRequest(shipmentSchedule));
+		this(ol, shipmentSchedule, Services.get(IShipmentScheduleHandlerBL.class).createDeliverRequest(shipmentSchedule));
 	}
 
 	@Builder
@@ -69,7 +69,7 @@ public final class OlAndSched
 
 		if (deliverRequest == null)
 		{
-			this.deliverRequest = Services.get(IInOutCandHandlerBL.class).createDeliverRequest(shipmentSchedule);
+			this.deliverRequest = Services.get(IShipmentScheduleHandlerBL.class).createDeliverRequest(shipmentSchedule);
 		}
 		else
 		{

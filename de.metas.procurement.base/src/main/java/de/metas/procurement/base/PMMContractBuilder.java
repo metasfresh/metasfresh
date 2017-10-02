@@ -36,7 +36,7 @@ import com.google.common.base.Optional;
 
 import de.metas.adempiere.service.ICalendarDAO;
 import de.metas.adempiere.service.IPeriodBL;
-import de.metas.contracts.flatrate.api.IFlatrateBL;
+import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.logging.LogManager;

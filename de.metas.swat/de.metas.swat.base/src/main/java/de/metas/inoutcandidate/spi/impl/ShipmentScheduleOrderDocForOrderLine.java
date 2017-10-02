@@ -10,8 +10,8 @@ import org.compiere.model.I_C_OrderLine;
 import org.springframework.stereotype.Service;
 
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.inoutcandidate.spi.ShipmentScheduleOrderDoc;
-import de.metas.inoutcandidate.spi.ShipmentScheduleOrderDocProvider;
+import de.metas.inoutcandidate.spi.ShipmentScheduleReferencedLine;
+import de.metas.inoutcandidate.spi.ShipmentScheduleReferencedLineProvider;
 import lombok.NonNull;
 
 /*
@@ -37,7 +37,7 @@ import lombok.NonNull;
  */
 
 @Service
-public class ShipmentScheduleOrderDocForOrderLine implements ShipmentScheduleOrderDocProvider
+public class ShipmentScheduleOrderDocForOrderLine implements ShipmentScheduleReferencedLineProvider
 {
 	/**
 	 * @return {@link I_C_OrderLine#Table_Name}
@@ -49,9 +49,9 @@ public class ShipmentScheduleOrderDocForOrderLine implements ShipmentScheduleOrd
 	}
 
 	@Override
-	public ShipmentScheduleOrderDoc provideFor(I_M_ShipmentSchedule shipmentSchedule)
+	public ShipmentScheduleReferencedLine provideFor(I_M_ShipmentSchedule shipmentSchedule)
 	{
-		return ShipmentScheduleOrderDoc.builder()
+		return ShipmentScheduleReferencedLine.builder()
 				.groupId(shipmentSchedule.getC_Order_ID())
 				.preparationDate(getOrderPreparationDate(shipmentSchedule))
 				.deliveryDate(getOrderLineDeliveryDate(shipmentSchedule))

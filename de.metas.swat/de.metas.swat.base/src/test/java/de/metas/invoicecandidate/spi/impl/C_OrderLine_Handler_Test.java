@@ -56,6 +56,7 @@ import de.metas.invoicecandidate.model.I_C_ILCandHandler;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateRequest;
 import de.metas.logging.LogManager;
+import de.metas.order.invoicecandidate.impl.C_OrderLine_Handler;
 import de.metas.product.acct.api.IProductAcctDAO;
 import de.metas.tax.api.ITaxBL;
 import mockit.Expectations;

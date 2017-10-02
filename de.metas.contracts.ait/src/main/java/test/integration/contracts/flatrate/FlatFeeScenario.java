@@ -48,7 +48,7 @@ import de.metas.adempiere.ait.helper.GridWindowHelper;
 import de.metas.adempiere.ait.helper.OrderHelper;
 import de.metas.adempiere.ait.helper.TestConfig;
 import de.metas.adempiere.model.I_C_Order;
-import de.metas.contracts.flatrate.api.IFlatrateDAO;
+import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.flatrate.process.C_Flatrate_Term_Extend;
 import de.metas.contracts.flatrate.process.C_Flatrate_Term_Prepare_Closing;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;

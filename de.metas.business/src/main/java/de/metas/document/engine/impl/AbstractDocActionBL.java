@@ -28,6 +28,8 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.ad.service.IADReferenceDAO.ADRefListItem;
@@ -38,6 +40,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
+import org.compiere.Adempiere;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
@@ -50,8 +53,11 @@ import org.compiere.util.TrxRunnable2;
 import org.slf4j.Logger;
 
 import com.google.common.base.Objects;
+import com.google.common.base.Suppliers;
+import com.google.common.collect.ImmutableMap;
 
 import de.metas.document.engine.DocAction;
+import de.metas.document.engine.DocActionHandlerProvider;
 import de.metas.document.engine.IDocActionBL;
 import de.metas.document.exceptions.DocumentProcessingException;
 import de.metas.logging.LogManager;
@@ -60,13 +66,29 @@ import lombok.NonNull;
 
 public abstract class AbstractDocActionBL implements IDocActionBL
 {
-	private static final Logger logger = LogManager.getLogger(AbstractDocActionBL.class);
+	private static final transient Logger logger = LogManager.getLogger(AbstractDocActionBL.class);
 
 	protected static final String COLUMNNAME_C_DocType_ID = "C_DocType_ID";
+
+	private final Supplier<Map<String, DocActionHandlerProvider>> docActionHandlerProvidersByTableName = Suppliers.memoize(() -> retrieveDocActionHandlerProvidersIndexedByTableName());
 
 	protected abstract String retrieveString(Properties ctx, int adTableId, int recordId, final String columnName);
 
 	protected abstract Object retrieveModelOrNull(Properties ctx, int adTableId, int recordId);
+
+	protected final DocActionHandlerProvider getDocActionHandlerProviderByTableNameOrNull(@NonNull final String tableName)
+	{
+		return docActionHandlerProvidersByTableName.get().get(tableName);
+	}
+
+	private static final Map<String, DocActionHandlerProvider> retrieveDocActionHandlerProvidersIndexedByTableName()
+	{
+		return Adempiere.getSpringApplicationContext()
+				.getBeansOfType(DocActionHandlerProvider.class)
+				.values()
+				.stream()
+				.collect(ImmutableMap.toImmutableMap(DocActionHandlerProvider::getHandledTableName, Function.identity()));
+	}
 
 	@Override
 	public boolean processIt(final DocAction document, final String processAction)
@@ -507,18 +529,12 @@ public abstract class AbstractDocActionBL implements IDocActionBL
 			}
 		}
 
-		/* (non-Javadoc)
-		 * @see de.metas.document.engine.impl.IDocActionItem#getValue()
-		 */
 		@Override
 		public String getValue()
 		{
 			return value;
 		}
 
-		/* (non-Javadoc)
-		 * @see de.metas.document.engine.impl.IDocActionItem#getDescription()
-		 */
 		@Override
 		public String getDescription()
 		{

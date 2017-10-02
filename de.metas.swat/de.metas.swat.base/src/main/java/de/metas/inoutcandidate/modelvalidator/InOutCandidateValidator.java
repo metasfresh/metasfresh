@@ -16,7 +16,7 @@ import org.compiere.util.Env;
 
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.inoutcandidate.agg.key.impl.ShipmentScheduleKeyValueHandler;
-import de.metas.inoutcandidate.api.IInOutCandHandlerBL;
+import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.impl.ShipmentScheduleHeaderAggregationKeyBuilder;
@@ -93,7 +93,7 @@ public final class InOutCandidateValidator implements ModelValidator
 		shipmentScheduleBL.registerCandidateProcessor(new DefaultCandidateProcessor());
 		shipmentScheduleBL.registerCandidateProcessor(new OnlyOneOpenInvoiceCandProcessor());
 
-		Services.get(IInOutCandHandlerBL.class).registerHandler(Env.getCtx(), new OrderLineInOutCandHandler());
+		Services.get(IShipmentScheduleHandlerBL.class).registerHandler(Env.getCtx(), new OrderLineInOutCandHandler());
 
 		Services.get(IStorageListeners.class).addStorageListener(new StorageListenerAdapter()
 		{

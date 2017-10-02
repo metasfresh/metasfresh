@@ -24,5 +24,7 @@ package de.metas.document.engine;
 
 public interface DocActionHandlerProvider
 {
+	String getHandledTableName();
+	
 	DocActionHandler provideForDocument(Object model);
 }

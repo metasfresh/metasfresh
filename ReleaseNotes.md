@@ -10,11 +10,15 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.30 (2017-41)
+
+**release for week 2017-41**
+
 # metasfresh 5.29 (2017-40)
 
-**upcoming release for week 2017-40**
+**release for week 2017-40**
 
-##Features
+## Features
 * metasfresh-app
   * [#2190](https://github.com/metasfresh/metasfresh/issues/2190) Window Design WebUI: Shipment Improvements
     * Layout adjustments for the Shipment Window in WebUI.
@@ -30,16 +34,37 @@ Here come the actual release notes:
     * Minor Layout Improvement for the Unit of Measure Window in WebUI.
   * [#2468](https://github.com/metasfresh/metasfresh/issues/2468) Window Design WebUI: gridview with client
     * Improvements in different Windows, adapting the Layout to our current design Guidelines. Adding Translations for de_DE and en_US Locale/ Language.
+  * [#2495](https://github.com/metasfresh/metasfresh/issues/2495) Pause subscription delivery for given timeframe
+  * [#2496](https://github.com/metasfresh/metasfresh/issues/2496) Different subscription Receiver for given timeframe
+  * [#2499](https://github.com/metasfresh/metasfresh/issues/2499) Stop Subscription shipment after 2nd dunning
   * [#2560](https://github.com/metasfresh/metasfresh/issues/2560) Menu Window improvements in WebUI
     * New -Column Layout for the Menu maintenance Window in WebUI.
+  * [#2565](https://github.com/metasfresh/metasfresh/issues/2565) Add attributes to subscription flatrate terms
+  * [#2566](https://github.com/metasfresh/metasfresh/issues/2566) Fix AD_RefList.ValueName value around subscription
+  * [#2574](https://github.com/metasfresh/metasfresh/issues/2574) Provide data about a shipment schedule's source document
   * [#2580](https://github.com/metasfresh/metasfresh/issues/2580) Add Subscription history in Contract window WebUI
     * adding included Tab for Subscription History to Contract Window in WebUI.
+  * [#2584](https://github.com/metasfresh/metasfresh/issues/2584) Remove remaining dependencies between shipment schedule and order line
+  * [#2585](https://github.com/metasfresh/metasfresh/issues/2585) Action/ Process to reopen processed Shipment Schedules
+  * [#2591](https://github.com/metasfresh/metasfresh/issues/2591) Subscription invoicing
   * [#2593](https://github.com/metasfresh/metasfresh/issues/2593) New Window for Dunning Level in WebUI
     * New window in WebUI that allows the Maintenance of different Dunning Types and Dunning Levels.
+  * [#2601](https://github.com/metasfresh/metasfresh/issues/2601) Export AD_System relevant fields to /info endpoint
+  * [#2602](https://github.com/metasfresh/metasfresh/issues/2602) Reactivate and fix subscription pricing
+
+* metasfreesh-webui-api
+  * [#605](https://github.com/metasfresh/metasfresh-webui-api/issues/605) I as an user want to store an URL as attachment to a record
+  * [#606](https://github.com/metasfresh/metasfresh-webui-api/issues/606) HU-Transform needs to filter by HU status
+  * [#613](https://github.com/metasfresh/metasfresh-webui-api/issues/613) Set unique hazlecast group name
+
+## Fixes
+* metasfresh-app
+  * [#2598](https://github.com/metasfresh/metasfresh/issues/2598) Fix the callout for CalloutProductCategory to comply with webui
+  * [#2576](https://github.com/metasfresh/metasfresh/issues/2576) Swing Client. Window for Printing Queue does not open properly anymore
 
 # metasfresh 5.28 (2017-39)
 
-**upcoming release for week 2017-39**
+**release for week 2017-39**
 
 ## Features
 * metasfresh-app

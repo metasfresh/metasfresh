@@ -37,42 +37,36 @@ import lombok.NonNull;
 
 public class DocActionWrapper implements DocAction
 {
-	public static DocAction wrap(@NonNull final Object model)
+	public static DocAction wrapModelUsingHandler(@NonNull final Object model, final DocActionHandler handler)
 	{
-		if (model instanceof DocAction)
-		{
-			return (DocAction)model;
-		}
-
 		final DocActionFields docActionModel = InterfaceWrapperHelper.create(model, DocActionFields.class);
-
-		return new DocActionWrapper(docActionModel);
+		return new DocActionWrapper(docActionModel, handler);
 	}
 
 	private static final Logger logger = LogManager.getLogger(DocActionWrapper.class);
 
-	private final DocActionFields docActionModel;
-	private final DocActionHandler docActionHandler;
+	private final DocActionFields model;
+	private final DocActionHandler handler;
 
 	private String m_processMsg;
 	private boolean m_justPrepared;
 
-	private DocActionWrapper(@NonNull final DocActionFields docActionModel)
+	private DocActionWrapper(@NonNull final DocActionFields docActionModel, @NonNull final DocActionHandler handler)
 	{
-		this.docActionModel = docActionModel;
-		docActionHandler = null; // TODO
+		this.model = docActionModel;
+		this.handler = handler;
 	}
 
 	@Override
 	public void setDocStatus(final String newStatus)
 	{
-		docActionModel.setDocStatus(newStatus);
+		model.setDocStatus(newStatus);
 	}
 
 	@Override
 	public String getDocStatus()
 	{
-		return docActionModel.getDocStatus();
+		return model.getDocStatus();
 	}
 
 	@Override
@@ -85,28 +79,28 @@ public class DocActionWrapper implements DocAction
 	@Override
 	public boolean unlockIt()
 	{
-		docActionModel.setProcessing(false);
+		model.setProcessing(false);
 		return true;
 	}
 
 	@Override
 	public boolean invalidateIt()
 	{
-		docActionModel.setDocAction(DocAction.ACTION_Prepare);
+		model.setDocAction(DocAction.ACTION_Prepare);
 		return true;
 	}
 
 	@Override
 	public boolean approveIt()
 	{
-		docActionHandler.approveIt(docActionModel);
+		handler.approveIt(model);
 		return true;
 	}
 
 	@Override
 	public boolean rejectIt()
 	{
-		docActionHandler.rejectIt(docActionModel);
+		handler.rejectIt(model);
 		return true;
 	}
 
@@ -114,7 +108,7 @@ public class DocActionWrapper implements DocAction
 	public String prepareIt()
 	{
 		ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_PREPARE);
-		final String newDocStatus = docActionHandler.prepareIt(docActionModel);
+		final String newDocStatus = handler.prepareIt(model);
 		ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_PREPARE);
 
 		return newDocStatus;
@@ -135,9 +129,9 @@ public class DocActionWrapper implements DocAction
 
 		ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_COMPLETE);
 
-		final String newDocStatus = docActionHandler.completeIt(docActionModel);
+		final String newDocStatus = handler.completeIt(model);
 		ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_COMPLETE);
-		docActionModel.setProcessed(true);
+		model.setProcessed(true);
 		return newDocStatus;
 	}
 
@@ -145,7 +139,7 @@ public class DocActionWrapper implements DocAction
 	public boolean voidIt()
 	{
 		ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_VOID);
-		docActionHandler.voidIt(docActionModel);
+		handler.voidIt(model);
 		ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_VOID);
 		return true;
 	}
@@ -154,7 +148,7 @@ public class DocActionWrapper implements DocAction
 	public boolean closeIt()
 	{
 		ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_CLOSE);
-		docActionHandler.closeIt(docActionModel);
+		handler.closeIt(model);
 		ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_CLOSE);
 		return true;
 	}
@@ -163,7 +157,7 @@ public class DocActionWrapper implements DocAction
 	public boolean reverseCorrectIt()
 	{
 		ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_REVERSECORRECT);
-		docActionHandler.reverseCorrectIt(docActionModel);
+		handler.reverseCorrectIt(model);
 		ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_REVERSECORRECT);
 		return true;
 	}
@@ -172,7 +166,7 @@ public class DocActionWrapper implements DocAction
 	public boolean reverseAccrualIt()
 	{
 		ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_REVERSEACCRUAL);
-		docActionHandler.reverseAccrualIt(docActionModel);
+		handler.reverseAccrualIt(model);
 		ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_REVERSEACCRUAL);
 		return true;
 	}
@@ -181,7 +175,7 @@ public class DocActionWrapper implements DocAction
 	public boolean reActivateIt()
 	{
 		ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_REACTIVATE);
-		docActionHandler.reactivateIt(docActionModel);
+		handler.reactivateIt(model);
 		ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_REACTIVATE);
 		return true;
 	}
@@ -189,25 +183,25 @@ public class DocActionWrapper implements DocAction
 	@Override
 	public String getSummary()
 	{
-		return docActionHandler.getSummary(docActionModel);
+		return handler.getSummary(model);
 	}
 
 	@Override
 	public String getDocumentInfo()
 	{
-		return docActionHandler.getDocumentInfo(docActionModel);
+		return handler.getDocumentInfo(model);
 	}
 
 	@Override
 	public String getDocumentNo()
 	{
-		return docActionModel.getDocumentNo();
+		return model.getDocumentNo();
 	}
 
 	@Override
 	public File createPDF()
 	{
-		return docActionHandler.createPDF(docActionModel);
+		return handler.createPDF(model);
 	}
 
 	@Override
@@ -219,62 +213,62 @@ public class DocActionWrapper implements DocAction
 	@Override
 	public int getDoc_User_ID()
 	{
-		return docActionHandler.getDoc_User_ID(docActionModel);
+		return handler.getDoc_User_ID(model);
 	}
 
 	@Override
 	public int getC_Currency_ID()
 	{
-		return docActionHandler.getC_Currency_ID(docActionModel);
+		return handler.getC_Currency_ID(model);
 	}
 
 	@Override
 	public BigDecimal getApprovalAmt()
 	{
-		return docActionHandler.getApprovalAmt(docActionModel);
+		return handler.getApprovalAmt(model);
 	}
 
 	@Override
 	public int getAD_Client_ID()
 	{
-		return docActionModel.getAD_Client_ID();
+		return model.getAD_Client_ID();
 	}
 
 	@Override
 	public int getAD_Org_ID()
 	{
-		return docActionModel.getAD_Org_ID();
+		return model.getAD_Org_ID();
 	}
 
 	@Override
 	public String getDocAction()
 	{
-		return docActionModel.getDocAction();
+		return model.getDocAction();
 	}
 
 	@Override
 	public boolean save()
 	{
-		InterfaceWrapperHelper.save(docActionModel);
+		InterfaceWrapperHelper.save(model);
 		return true;
 	}
 
 	@Override
 	public Properties getCtx()
 	{
-		return InterfaceWrapperHelper.getCtx(docActionModel);
+		return InterfaceWrapperHelper.getCtx(model);
 	}
 
 	@Override
 	public int get_ID()
 	{
-		return InterfaceWrapperHelper.getId(docActionModel);
+		return InterfaceWrapperHelper.getId(model);
 	}
 
 	@Override
 	public int get_Table_ID()
 	{
-		return InterfaceWrapperHelper.getModelTableId(docActionModel);
+		return InterfaceWrapperHelper.getModelTableId(model);
 	}
 
 	@Override
@@ -286,18 +280,18 @@ public class DocActionWrapper implements DocAction
 	@Override
 	public String get_TrxName()
 	{
-		return InterfaceWrapperHelper.getTrxName(docActionModel);
+		return InterfaceWrapperHelper.getTrxName(model);
 	}
 
 	@Override
 	public void set_TrxName(final String trxName)
 	{
-		InterfaceWrapperHelper.setTrxName(docActionModel, trxName);
+		InterfaceWrapperHelper.setTrxName(model, trxName);
 	}
 
 	@Override
 	public boolean isActive()
 	{
-		return docActionModel.isActive();
+		return model.isActive();
 	}
 }

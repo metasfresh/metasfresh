@@ -13,15 +13,14 @@ package org.adempiere.ad.dao.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryBuilderOrderByClause;
@@ -92,12 +91,19 @@ class QueryBuilderOrderByClause<ModelType> implements IQueryBuilderOrderByClause
 	}
 
 	@Override
-	public IQueryBuilderOrderByClause<ModelType> addColumn(String columnName, boolean asc)
+	public IQueryBuilderOrderByClause<ModelType> addColumnAscending(String columnName)
 	{
-		orderByBuilder.addColumn(columnName, asc);
+		orderByBuilder.addColumnAscending(columnName);
 		return this;
 	}
 
+	@Override
+	public IQueryBuilderOrderByClause<ModelType> addColumnDescending(String columnName)
+	{
+		orderByBuilder.addColumnDescending(columnName);
+		return this;
+	}
+	
 	@Override
 	public IQueryBuilderOrderByClause<ModelType> addColumn(String columnName, Direction direction, Nulls nulls)
 	{

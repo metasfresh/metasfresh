@@ -17,7 +17,7 @@ import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.util.Env;
 
-import de.metas.contracts.flatrate.api.IFlatrateDAO;
+import de.metas.contracts.IFlatrateDAO;
 import de.metas.document.engine.DocAction;
 import de.metas.procurement.base.IPMMContractsDAO;
 import de.metas.procurement.base.model.I_C_Flatrate_Conditions;

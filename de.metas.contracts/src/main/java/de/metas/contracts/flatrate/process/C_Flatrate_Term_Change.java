@@ -30,7 +30,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 
-import de.metas.contracts.flatrate.api.IContractChangeBL;
+import de.metas.contracts.IContractChangeBL;
 import de.metas.contracts.model.I_C_Contract_Change;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_Flatrate_Transition;
