@@ -130,3 +130,228 @@ INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_El
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,550810,0,540424,541191,548982,TO_TIMESTAMP('2017-10-02 12:41:10','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','Y','Y','N','IsDunningDocProcessed',200,200,0,TO_TIMESTAMP('2017-10-02 12:41:10','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
+-- 2017-10-02T12:44:15.813
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_ElementGroup (AD_Client_ID,AD_Org_ID,AD_UI_Column_ID,AD_UI_ElementGroup_ID,Created,CreatedBy,IsActive,Name,SeqNo,UIStyle,Updated,UpdatedBy) VALUES (0,0,540684,541192,TO_TIMESTAMP('2017-10-02 12:44:15','YYYY-MM-DD HH24:MI:SS'),100,'Y','default',10,'primary',TO_TIMESTAMP('2017-10-02 12:44:15','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-10-02T12:44:36.426
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_ElementGroup SET Name='advanced edit', SeqNo=90,Updated=TO_TIMESTAMP('2017-10-02 12:44:36','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_ElementGroup_ID=541191
+;
+
+-- 2017-10-02T12:46:18.632
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,550579,0,540424,541192,548983,'F',TO_TIMESTAMP('2017-10-02 12:46:18','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','Y','N','N','Geschäftspartner',10,0,0,TO_TIMESTAMP('2017-10-02 12:46:18','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-10-02T12:46:25.451
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_ElementField (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_UI_ElementField_ID,AD_UI_Element_ID,Created,CreatedBy,IsActive,SeqNo,Updated,UpdatedBy) VALUES (0,550806,0,540215,548983,TO_TIMESTAMP('2017-10-02 12:46:25','YYYY-MM-DD HH24:MI:SS'),100,'Y',10,TO_TIMESTAMP('2017-10-02 12:46:25','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-10-02T12:46:35.911
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_ElementField (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_UI_ElementField_ID,AD_UI_Element_ID,Created,CreatedBy,IsActive,SeqNo,Updated,UpdatedBy) VALUES (0,550581,0,540216,548983,TO_TIMESTAMP('2017-10-02 12:46:35','YYYY-MM-DD HH24:MI:SS'),100,'Y',20,TO_TIMESTAMP('2017-10-02 12:46:35','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-10-02T12:48:33.733
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_ElementGroup (AD_Client_ID,AD_Org_ID,AD_UI_Column_ID,AD_UI_ElementGroup_ID,Created,CreatedBy,IsActive,Name,SeqNo,Updated,UpdatedBy) VALUES (0,0,540685,541193,TO_TIMESTAMP('2017-10-02 12:48:33','YYYY-MM-DD HH24:MI:SS'),100,'Y','flags',10,TO_TIMESTAMP('2017-10-02 12:48:33','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-10-02T12:48:46.175
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,550589,0,540424,541193,548984,'F',TO_TIMESTAMP('2017-10-02 12:48:46','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','Y','N','N','Verarbeitet',10,0,0,TO_TIMESTAMP('2017-10-02 12:48:46','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-10-02T12:48:56.885
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,550810,0,540424,541193,548985,'F',TO_TIMESTAMP('2017-10-02 12:48:56','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','Y','N','N','Mahnung erstellt',20,0,0,TO_TIMESTAMP('2017-10-02 12:48:56','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-10-02T12:51:34.616
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,557045,0,540424,541192,548986,'F',TO_TIMESTAMP('2017-10-02 12:51:34','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','Y','N','N','Nr.',20,0,0,TO_TIMESTAMP('2017-10-02 12:51:34','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-10-02T12:52:02.765
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,550575,0,540424,541192,548987,'F',TO_TIMESTAMP('2017-10-02 12:52:02','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','Y','N','N','Tabelle',30,0,0,TO_TIMESTAMP('2017-10-02 12:52:02','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-10-02T12:52:11.903
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,550574,0,540424,541192,548988,'F',TO_TIMESTAMP('2017-10-02 12:52:11','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','Y','N','N','Datensatz',40,0,0,TO_TIMESTAMP('2017-10-02 12:52:11','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-10-02T12:52:47.199
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_ElementGroup (AD_Client_ID,AD_Org_ID,AD_UI_Column_ID,AD_UI_ElementGroup_ID,Created,CreatedBy,IsActive,Name,SeqNo,Updated,UpdatedBy) VALUES (0,0,540684,541194,TO_TIMESTAMP('2017-10-02 12:52:47','YYYY-MM-DD HH24:MI:SS'),100,'Y','dunning',20,TO_TIMESTAMP('2017-10-02 12:52:47','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-10-02T12:53:03.581
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,550584,0,540424,541194,548989,'F',TO_TIMESTAMP('2017-10-02 12:53:03','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','Y','N','N','Offener Betrag',10,0,0,TO_TIMESTAMP('2017-10-02 12:53:03','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-10-02T12:53:16.146
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,550580,0,540424,541194,548990,'F',TO_TIMESTAMP('2017-10-02 12:53:16','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','Y','N','N','Mahnzins',20,0,0,TO_TIMESTAMP('2017-10-02 12:53:16','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-10-02T12:53:28.187
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,550805,0,540424,541194,548991,'F',TO_TIMESTAMP('2017-10-02 12:53:28','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','Y','N','N','Mahnkarenz',30,0,0,TO_TIMESTAMP('2017-10-02 12:53:28','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-10-02T12:53:43.189
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,550588,0,540424,541194,548992,'F',TO_TIMESTAMP('2017-10-02 12:53:43','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','Y','N','N','Gesamtbetrag',40,0,0,TO_TIMESTAMP('2017-10-02 12:53:43','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-10-02T12:53:55.258
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,550698,0,540424,541194,548993,'F',TO_TIMESTAMP('2017-10-02 12:53:55','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','Y','N','N','Währung',50,0,0,TO_TIMESTAMP('2017-10-02 12:53:55','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-10-02T12:54:27.417
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,550591,0,540424,541192,548994,'F',TO_TIMESTAMP('2017-10-02 12:54:27','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','Y','N','N','Mahnstufe',50,0,0,TO_TIMESTAMP('2017-10-02 12:54:27','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-10-02T12:54:50.611
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_ElementGroup (AD_Client_ID,AD_Org_ID,AD_UI_Column_ID,AD_UI_ElementGroup_ID,Created,CreatedBy,IsActive,Name,SeqNo,Updated,UpdatedBy) VALUES (0,0,540685,541195,TO_TIMESTAMP('2017-10-02 12:54:50','YYYY-MM-DD HH24:MI:SS'),100,'Y','org',30,TO_TIMESTAMP('2017-10-02 12:54:50','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-10-02T12:55:03.355
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,550585,0,540424,541195,548995,'F',TO_TIMESTAMP('2017-10-02 12:55:03','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','Y','N','N','Sektion',10,0,0,TO_TIMESTAMP('2017-10-02 12:55:03','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-10-02T12:55:15.714
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,550583,0,540424,541195,548996,'F',TO_TIMESTAMP('2017-10-02 12:55:15','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','Y','N','N','Mandant',20,0,0,TO_TIMESTAMP('2017-10-02 12:55:15','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-10-02T12:56:54.089
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_UI_Element WHERE AD_UI_Element_ID=548963
+;
+
+-- 2017-10-02T12:56:54.128
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_UI_Element WHERE AD_UI_Element_ID=548964
+;
+
+-- 2017-10-02T12:56:54.143
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_UI_Element WHERE AD_UI_Element_ID=548965
+;
+
+-- 2017-10-02T12:56:54.155
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_UI_Element WHERE AD_UI_Element_ID=548966
+;
+
+-- 2017-10-02T12:56:54.170
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_UI_Element WHERE AD_UI_Element_ID=548967
+;
+
+-- 2017-10-02T12:56:54.181
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_UI_Element WHERE AD_UI_Element_ID=548968
+;
+
+-- 2017-10-02T12:57:27.972
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_UI_Element WHERE AD_UI_Element_ID=548975
+;
+
+-- 2017-10-02T12:57:27.983
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_UI_Element WHERE AD_UI_Element_ID=548976
+;
+
+-- 2017-10-02T12:57:44.949
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_UI_Element WHERE AD_UI_Element_ID=548972
+;
+
+-- 2017-10-02T12:57:50.898
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_UI_Element WHERE AD_UI_Element_ID=548978
+;
+
+-- 2017-10-02T12:57:50.911
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_UI_Element WHERE AD_UI_Element_ID=548979
+;
+
+-- 2017-10-02T12:58:06.802
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_UI_Element WHERE AD_UI_Element_ID=548977
+;
+
+-- 2017-10-02T12:58:06.812
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_UI_Element WHERE AD_UI_Element_ID=548980
+;
+
+-- 2017-10-02T12:58:06.830
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_UI_Element WHERE AD_UI_Element_ID=548981
+;
+
+-- 2017-10-02T12:58:06.841
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_UI_Element WHERE AD_UI_Element_ID=548982
+;
+
+-- 2017-10-02T12:58:12.688
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_UI_ElementField WHERE AD_UI_ElementField_ID=540214
+;
+
+-- 2017-10-02T12:58:16.431
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_UI_Element WHERE AD_UI_Element_ID=548971
+;
+
+-- 2017-10-02T12:58:44.981
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_ElementGroup (AD_Client_ID,AD_Org_ID,AD_UI_Column_ID,AD_UI_ElementGroup_ID,Created,CreatedBy,IsActive,Name,SeqNo,Updated,UpdatedBy) VALUES (0,0,540685,541196,TO_TIMESTAMP('2017-10-02 12:58:44','YYYY-MM-DD HH24:MI:SS'),100,'Y','dates',20,TO_TIMESTAMP('2017-10-02 12:58:44','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-10-02T12:59:05.951
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET AD_UI_ElementGroup_ID=541196, SeqNo=10,Updated=TO_TIMESTAMP('2017-10-02 12:59:05','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=548973
+;
+
+-- 2017-10-02T12:59:23.783
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET AD_UI_ElementGroup_ID=541194, SeqNo=60,Updated=TO_TIMESTAMP('2017-10-02 12:59:23','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=548974
+;
+
+-- 2017-10-02T12:59:34.280
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET AD_UI_ElementGroup_ID=541196, SeqNo=20,Updated=TO_TIMESTAMP('2017-10-02 12:59:34','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=548970
+;
+
+-- 2017-10-02T12:59:42.435
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET AD_UI_ElementGroup_ID=541196, SeqNo=30,Updated=TO_TIMESTAMP('2017-10-02 12:59:42','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=548969
+;
+
+-- 2017-10-02T12:59:46.970
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_UI_ElementGroup WHERE AD_UI_ElementGroup_ID=541191
+;
+
+-- 2017-10-02T13:01:20.196
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET AD_UI_ElementGroup_ID=541196, SeqNo=40,Updated=TO_TIMESTAMP('2017-10-02 13:01:20','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=548991
+;
+
