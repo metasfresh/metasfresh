@@ -15,15 +15,14 @@ import java.math.BigDecimal;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -42,6 +41,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.collections.IteratorUtils;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.slf4j.Logger;
 
 import de.metas.dunning.api.IDunnableDoc;
@@ -63,6 +63,8 @@ import de.metas.dunning.model.I_C_Dunning_Candidate;
 import de.metas.dunning.spi.IDunnableSource;
 import de.metas.dunning.spi.IDunningCandidateSource;
 import de.metas.dunning.spi.IDunningConfigurator;
+import de.metas.inoutcandidate.api.IShipmentConstraintsBL;
+import de.metas.inoutcandidate.api.ShipmentConstraintCreateRequest;
 import de.metas.logging.LogManager;
 import lombok.NonNull;
 
@@ -114,7 +116,7 @@ public class DunningBL implements IDunningBL
 	}
 
 	@Override
-	public void setDunningConfigurator(IDunningConfigurator configurator)
+	public void setDunningConfigurator(final IDunningConfigurator configurator)
 	{
 		configLock.lock();
 		try
@@ -135,14 +137,14 @@ public class DunningBL implements IDunningBL
 	}
 
 	@Override
-	public IDunningContext createDunningContext(Properties ctx, I_C_DunningLevel dunningLevel, Date dunningDate, String trxName)
+	public IDunningContext createDunningContext(final Properties ctx, final I_C_DunningLevel dunningLevel, final Date dunningDate, final String trxName)
 	{
 		final ITrxRunConfig defaultConfig = Services.get(ITrxManager.class).createTrxRunConfig(TrxPropagation.REQUIRES_NEW, OnRunnableSuccess.COMMIT, OnRunnableFail.ASK_RUNNABLE);
 		return createDunningContext(ctx, dunningLevel, dunningDate, defaultConfig, trxName);
 	}
 
 	@Override
-	public IDunningContext createDunningContext(Properties ctx, I_C_DunningLevel dunningLevel, Date dunningDate, ITrxRunConfig trxRunnerConfig, String trxName)
+	public IDunningContext createDunningContext(final Properties ctx, final I_C_DunningLevel dunningLevel, final Date dunningDate, final ITrxRunConfig trxRunnerConfig, final String trxName)
 	{
 		final IDunningConfig config = getDunningConfig();
 		final IDunningContext context = new DunningContext(ctx, config, dunningLevel, dunningDate, trxRunnerConfig, trxName);
@@ -170,7 +172,7 @@ public class DunningBL implements IDunningBL
 	}
 
 	@Override
-	public int createDunningCandidates(IDunningContext context)
+	public int createDunningCandidates(final IDunningContext context)
 	{
 		final IDunningConfig config = context.getDunningConfig();
 		final IDunnableSourceFactory sourceFactory = config.getDunnableSourceFactory();
@@ -262,7 +264,7 @@ public class DunningBL implements IDunningBL
 
 		final int totalDays = level.getDaysAfterDue().intValue();
 
-		final List<I_C_DunningLevel> result = new ArrayList<I_C_DunningLevel>();
+		final List<I_C_DunningLevel> result = new ArrayList<>();
 		for (final I_C_DunningLevel currentLevel : dunningDAO.retrieveDunningLevels(dunning))
 		{
 			if (currentLevel.getC_DunningLevel_ID() == level.getC_DunningLevel_ID())
@@ -285,7 +287,7 @@ public class DunningBL implements IDunningBL
 
 	@Override
 	public void processDunningDoc(
-			@NonNull final IDunningContext context, 
+			@NonNull final IDunningContext context,
 			@NonNull final I_C_DunningDoc dunningDoc)
 	{
 		if (dunningDoc.isProcessed())
@@ -301,22 +303,52 @@ public class DunningBL implements IDunningBL
 		{
 			for (final I_C_DunningDoc_Line_Source source : dao.retrieveDunningDocLineSources(context, line))
 			{
-				final I_C_Dunning_Candidate candidate = source.getC_Dunning_Candidate();
-				candidate.setProcessed(true); // make sure the Processed flag is set
-				candidate.setIsDunningDocProcessed(true); // IsDunningDocProcessed
-				candidate.setDunningDateEffective(dunningDoc.getDunningDate());
-				dao.save(candidate);
-
-				source.setProcessed(true);
-				InterfaceWrapperHelper.save(source);
+				processSourceAndItsCandidates(dunningDoc, source);
 			}
 
 			line.setProcessed(true);
 			InterfaceWrapperHelper.save(line);
 		}
 
+		//
+		// Delivery stop (https://github.com/metasfresh/metasfresh/issues/2499)
+		makeDeliveryStopIfNeeded(dunningDoc);
+
 		dunningDoc.setProcessed(true);
 		dao.save(dunningDoc);
+	}
+
+	private void processSourceAndItsCandidates(
+			@NonNull final I_C_DunningDoc dunningDoc,
+			@NonNull final I_C_DunningDoc_Line_Source source)
+	{
+		final IDunningDAO dao = Services.get(IDunningDAO.class);
+
+		final I_C_Dunning_Candidate candidate = source.getC_Dunning_Candidate();
+		candidate.setProcessed(true); // make sure the Processed flag is set
+		candidate.setIsDunningDocProcessed(true); // IsDunningDocProcessed
+		candidate.setDunningDateEffective(dunningDoc.getDunningDate());
+		dao.save(candidate);
+
+		source.setProcessed(true);
+		InterfaceWrapperHelper.save(source);
+	}
+
+	private void makeDeliveryStopIfNeeded(@NonNull final I_C_DunningDoc dunningDoc)
+	{
+		final org.compiere.model.I_C_DunningLevel dunningLevel = dunningDoc.getC_DunningLevel();
+		if (!dunningLevel.isDeliveryStop())
+		{
+			return;
+		}
+
+		final IShipmentConstraintsBL shipmentConstraintsBL = Services.get(IShipmentConstraintsBL.class);
+		shipmentConstraintsBL.createConstraint(ShipmentConstraintCreateRequest.builder()
+				.billPartnerId(dunningDoc.getC_BPartner_ID())
+				.sourceDocRef(TableRecordReference.of(dunningDoc))
+				.deliveryStop(true)
+				.build());
+
 	}
 
 	@Override
@@ -357,7 +389,6 @@ public class DunningBL implements IDunningBL
 		// DunningDate < DunningGrace => candidate is no longer valid
 		return true;
 	}
-	
 
 	@Override
 	public I_C_Dunning_Candidate getLastLevelCandidate(final List<I_C_Dunning_Candidate> candidates)

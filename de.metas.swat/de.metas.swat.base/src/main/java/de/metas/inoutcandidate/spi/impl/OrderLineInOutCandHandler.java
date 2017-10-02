@@ -119,6 +119,7 @@ public class OrderLineInOutCandHandler implements IInOutCandHandler
 
 		newSched.setC_BPartner_Location_ID(orderLine.getC_BPartner_Location_ID());
 		newSched.setC_BPartner_ID(orderLine.getC_BPartner_ID());
+		newSched.setBill_BPartner_ID(order.getBill_BPartner_ID());
 
 		final String bPartnerAddress;
 		if (!Check.isEmpty(orderLine.getBPartnerAddress()))
@@ -235,7 +236,7 @@ public class OrderLineInOutCandHandler implements IInOutCandHandler
 
 		logger.debug("Identified {} C_OrderLines that need a shipment schedule", ols.size());
 
-		return new ArrayList<Object>(ols);
+		return new ArrayList<>(ols);
 	}
 
 	/**

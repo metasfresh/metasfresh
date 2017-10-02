@@ -49,7 +49,7 @@ public class M_ReceiptSchedule_ReOpen extends JavaProcess implements IProcessPre
 
 		if (!someSchedsAreClosed)
 		{
-			return ProcessPreconditionsResolution.reject(MSG_RECEIPT_SCHEDULES_ALL_OPEN);
+			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_RECEIPT_SCHEDULES_ALL_OPEN));
 		}
 
 		return ProcessPreconditionsResolution.accept();
@@ -75,14 +75,14 @@ public class M_ReceiptSchedule_ReOpen extends JavaProcess implements IProcessPre
 				addLog(msgBL.getMsg(getCtx(), MSG_SKIP_OPEN_1P, new Object[] { receiptSchedule.getM_ReceiptSchedule_ID() }));
 				continue;
 			}
-			closeInTrx(receiptSchedule);
+			reopenInTrx(receiptSchedule);
 			counter++;
 		}
 
 		return "@Processed@: " + counter;
 	}
 
-	private void closeInTrx(final I_M_ReceiptSchedule receiptSchedule)
+	private void reopenInTrx(final I_M_ReceiptSchedule receiptSchedule)
 	{
 		Services.get(ITrxManager.class)
 				.run(new TrxRunnable()

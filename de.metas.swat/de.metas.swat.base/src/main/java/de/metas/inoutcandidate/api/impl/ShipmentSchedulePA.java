@@ -24,6 +24,7 @@ package de.metas.inoutcandidate.api.impl;
 
 import static de.metas.inoutcandidate.model.I_M_ShipmentSchedule.COLUMNNAME_C_OrderLine_ID;
 import static de.metas.inoutcandidate.model.I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID;
+import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -320,7 +321,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 			final int... params)
 	{
 		ResultSet rs = null;
-		final List<I_M_ShipmentSchedule> result = new ArrayList<I_M_ShipmentSchedule>();
+		final List<I_M_ShipmentSchedule> result = new ArrayList<>();
 		try
 		{
 			for (int i = 0; i < params.length; i++)
@@ -496,11 +497,15 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 			final List<X_M_ShipmentSchedule> schedules,
 			final Map<Integer, MOrderLine> orderLines)
 	{
-		final List<OlAndSched> result = new ArrayList<OlAndSched>();
+		final List<OlAndSched> result = new ArrayList<>();
 
 		for (final I_M_ShipmentSchedule schedule : schedules)
 		{
-			result.add(new OlAndSched(InterfaceWrapperHelper.create(orderLines.get(schedule.getC_OrderLine_ID()), I_C_OrderLine.class), schedule));
+			final OlAndSched olAndSched = OlAndSched.builder()
+					.shipmentSchedule(schedule)
+					.orderLine(InterfaceWrapperHelper.create(orderLines.get(schedule.getC_OrderLine_ID()), I_C_OrderLine.class))
+					.build();
+			result.add(olAndSched);
 		}
 		return result;
 	}
@@ -533,13 +538,13 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 		final List<X_M_ShipmentSchedule> schedules = db.retrieveList(
 				SQL_BPARTNER, params, X_M_ShipmentSchedule.class, trxName);
 
-		return new ArrayList<I_M_ShipmentSchedule>(schedules);
+		return new ArrayList<>(schedules);
 	}
 
 	@Override
 	public void invalidateAll(final Properties ctx)
 	{
-		final String trxName = null;
+		final String trxName = ITrx.TRXNAME_None;
 		final int clientId = Env.getAD_Client_ID(ctx);
 
 		final IDBService dbService = Services.get(IDBService.class);
@@ -553,7 +558,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 			//
 			if (result > 0)
 			{
-				UpdateInvalidShipmentSchedulesWorkpackageProcessor.schedule(ctx, ITrx.TRXNAME_ThreadInherited);
+				UpdateInvalidShipmentSchedulesWorkpackageProcessor.schedule(ctx, trxName);
 			}
 		}
 		catch (SQLException e)
@@ -567,7 +572,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 	}
 
 	@Override
-	public void invalidateForProducts(Collection<Integer> productIds, String trxName)
+	public void invalidateForProducts(final Collection<Integer> productIds, final String trxName)
 	{
 		for (Integer productId : productIds)
 		{
@@ -618,7 +623,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 		}
 
 		final StringBuilder headerAggregationKeysWhereClause = new StringBuilder();
-		final List<Object> headerAggregationKeysParams = new ArrayList<Object>();
+		final List<Object> headerAggregationKeysParams = new ArrayList<>();
 		for (final String headerAggregationKey : headerAggregationKeys)
 		{
 			// Skip empty header aggregation keys
@@ -640,7 +645,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 			return;
 		}
 
-		final List<Object> sqlParams = new ArrayList<Object>();
+		final List<Object> sqlParams = new ArrayList<>();
 		sqlParams.addAll(headerAggregationKeysParams);
 		final String sql = "INSERT INTO " + M_SHIPMENT_SCHEDULE_RECOMPUTE + " (M_ShipmentSchedule_ID) "
 				+ " SELECT " + COLUMNNAME_M_ShipmentSchedule_ID
@@ -665,41 +670,6 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 	}
 
 	@Override
-	public void invalidateForDeliveryDate(final Timestamp date1, String trxName)
-	{
-		if (date1 == null)
-		{
-			return;
-		}
-
-		final IDBService dbService = Services.get(IDBService.class);
-		final PreparedStatement pstmt = dbService.mkPstmt(SQL_RECOMPUTE_DELIVERYDATE_1P, trxName);
-
-		try
-		{
-			pstmt.setTimestamp(1, date1);
-
-			final int result = pstmt.executeUpdate();
-			logger.debug("Invalidated {} entries for DeliveryDate={}", result, date1);
-
-			//
-			if (result > 0)
-			{
-				UpdateInvalidShipmentSchedulesWorkpackageProcessor.schedule(Env.getCtx(), trxName);
-			}
-		}
-		catch (SQLException e)
-		{
-			throw new DBException(e);
-		}
-		finally
-		{
-			DB.close(pstmt);
-		}
-
-	}
-
-	@Override
 	public void invalidate(final Collection<I_M_ShipmentSchedule> shipmentSchedules, final String trxName)
 	{
 		if (shipmentSchedules == null || shipmentSchedules.isEmpty())
@@ -717,7 +687,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 			shipmentScheduleIds.add(shipmentSchedule.getM_ShipmentSchedule_ID());
 		}
 
-		final List<Object> sqlParams = new ArrayList<Object>();
+		final List<Object> sqlParams = new ArrayList<>();
 		final String sqlInWhereClause = DB.buildSqlList(shipmentScheduleIds, sqlParams); // creates the string and fills the sqlParams list
 
 		final String sql = "INSERT INTO " + M_SHIPMENT_SCHEDULE_RECOMPUTE + " (M_ShipmentSchedule_ID) "
@@ -772,13 +742,6 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 		sqlWhereClause.append(ssAlias + I_M_ShipmentSchedule.COLUMNNAME_Processed).append("=?");
 		sqlParams.add(false);
 
-		// task 08749: don't invalidate "forced" scheds, because there QtyToDeliver won't change anyways
-		sqlWhereClause.append(" AND COALESCE(")
-				.append(ssAlias + I_M_ShipmentSchedule.COLUMNNAME_DeliveryRule_Override + ",")
-				.append(ssAlias + I_M_ShipmentSchedule.COLUMNNAME_DeliveryRule)
-				.append(") != ?");
-		sqlParams.add(X_M_ShipmentSchedule.DELIVERYRULE_Force);
-
 		//
 		// Filter shipment schedules by segments
 		final StringBuilder sqlWhereClause_AllSegments = new StringBuilder();
@@ -828,14 +791,14 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 		//
 		if (count > 0)
 		{
-			UpdateInvalidShipmentSchedulesWorkpackageProcessor.schedule(Env.getCtx(), ITrx.TRXNAME_ThreadInherited);
+			UpdateInvalidShipmentSchedulesWorkpackageProcessor.schedule(Env.getCtx(), trxName);
 		}
 	}
 
 	/**
 	 * Build {@link I_M_ShipmentSchedule} where clause based on given segment.
 	 *
-	 * @param ssAlias {@link I_M_ShipmentSchedule#Table_Name}'s alias
+	 * @param ssAlias {@link I_M_ShipmentSchedule#Table_Name}'s alias with trailing dot
 	 * @param storageSegment
 	 * @param sqlParams output SQL parameters
 	 * @return where clause or <code>null</code>
@@ -865,38 +828,41 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 
 		//
 		// Products
-		final boolean resetAllProducts = productIds.contains(0) || productIds.contains(-1) || productIds.contains(null);
+		final boolean resetAllProducts = productIds.contains(0) || productIds.contains(-1) || productIds.contains(IStorageSegment.ANY);
 		if (!resetAllProducts)
 		{
 			final String productColumnName = ssAlias + I_M_ShipmentSchedule.COLUMNNAME_M_Product_ID;
 			whereClause.append("\n\t AND ");
 			whereClause.append("(").append(DB.buildSqlList(productColumnName, productIds, sqlParams)).append(")");
-			// if (debug)
-			// {
-			// whereClause.append(" -- ").append(productIds);
-			// }
 		}
 
 		//
 		// BPartners
 		// NOTE: If we were asked to reset for BPartner=none (i.e. value 0, -1 or null) then we shall reset for all of them,
 		// because the QOH from this segment could be used by ALL
-		final boolean resetAllBPartners = bpartnerIds.contains(0) || bpartnerIds.contains(-1) || bpartnerIds.contains(null);
+		final boolean resetAllBPartners = bpartnerIds.contains(0) || bpartnerIds.contains(-1) || bpartnerIds.contains(IStorageSegment.ANY);
 		if (!resetAllBPartners)
 		{
 			final String bpartnerColumnName = "COALESCE(" + ssAlias + I_M_ShipmentSchedule.COLUMNNAME_C_BPartner_Override_ID + ", " + ssAlias + I_M_ShipmentSchedule.COLUMNNAME_C_BPartner_ID + ")";
 			whereClause.append("\n\t AND ");
 			whereClause.append("(").append(DB.buildSqlList(bpartnerColumnName, bpartnerIds, sqlParams)).append(")");
-			// if (debug)
-			// {
-			// whereClause.append(" -- ").append(bpartnerIds);
-			// }
+		}
+
+		//
+		// Bill BPartners
+		final Set<Integer> billBPartnerIds = storageSegment.getBill_BPartner_IDs();
+		final boolean resetAllBillBPartners = billBPartnerIds.isEmpty() || billBPartnerIds.contains(0) || billBPartnerIds.contains(-1) || billBPartnerIds.contains(IStorageSegment.ANY);
+		if (!resetAllBillBPartners)
+		{
+			final String billBPartnerColumnName = ssAlias + I_M_ShipmentSchedule.COLUMNNAME_Bill_BPartner_ID;
+			whereClause.append("\n\t AND ");
+			whereClause.append("(").append(DB.buildSqlList(billBPartnerColumnName, billBPartnerIds, sqlParams)).append(")");
 		}
 
 		//
 		// Locators
 		// NOTE: same as for bPartners if no particular locator is specified, it means "all of them"
-		final boolean resetAllLocators = locatorIds.contains(0) || locatorIds.contains(-1) || locatorIds.contains(null);
+		final boolean resetAllLocators = locatorIds.contains(0) || locatorIds.contains(-1) || locatorIds.contains(IStorageSegment.ANY);
 		if (!resetAllLocators)
 		{
 			final String warehouseColumnName = "COALESCE(" + ssAlias + I_M_ShipmentSchedule.COLUMNNAME_M_Warehouse_Override_ID + ", " + ssAlias + I_M_ShipmentSchedule.COLUMNNAME_M_Warehouse_ID + ")";
@@ -906,10 +872,6 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 					+ "\n\t\t loc." + I_M_Locator.COLUMNNAME_M_Warehouse_ID + "=" + warehouseColumnName
 					+ " AND " + DB.buildSqlList("loc." + I_M_Locator.COLUMNNAME_M_Locator_ID, locatorIds, sqlParams)
 					+ ")");
-			// if (debug)
-			// {
-			// whereClause.append(" -- ").append(locatorIds);
-			// }
 		}
 
 		//
@@ -1056,7 +1018,8 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 	public void deleteSchedulesWithOutOl(final String trxName)
 	{
 		final String sql = "DELETE FROM " + I_M_ShipmentSchedule.Table_Name + " s "
-				+ "WHERE NOT EXISTS ("
+				+ "WHERE s.AD_Table_ID=" + getTableId(I_C_OrderLine.class) + " "
+				+ "AND NOT EXISTS ("
 				+ "   select 1 from " + I_C_OrderLine.Table_Name + " ol "
 				+ "   where ol." + I_C_OrderLine.COLUMNNAME_C_OrderLine_ID + "=s." + I_M_ShipmentSchedule.COLUMNNAME_C_OrderLine_ID
 				+ ")";
@@ -1101,7 +1064,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 	{
 		final String sql = "SELECT M_ShipmentSchedule_ID FROM " + M_SHIPMENT_SCHEDULE_SHIPMENT_RUN + " WHERE Processed='Y'";
 
-		final List<Integer> result = new ArrayList<Integer>();
+		final List<Integer> result = new ArrayList<>();
 
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
@@ -1170,7 +1133,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 			final int adUserId,
 			final String trxName)
 	{
-		final List<OlAndSched> result = new ArrayList<OlAndSched>();
+		final List<OlAndSched> result = new ArrayList<>();
 
 		// NOTE: we are not using trxName given as parameter because we will lock in an anonymous transaction to let the locks be visible to other processes too
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
@@ -1192,7 +1155,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 			}
 
 			@Override
-			public boolean doCatch(Throwable e) throws Throwable
+			public boolean doCatch(final Throwable e) throws Throwable
 			{
 				if (e instanceof UnableToLockShipmentRunException)
 				{
@@ -1222,7 +1185,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 	 */
 	private List<OlAndSched> filterLockedScheds(final List<OlAndSched> allOlsAndScheds)
 	{
-		final List<OlAndSched> result = new ArrayList<OlAndSched>();
+		final List<OlAndSched> result = new ArrayList<>();
 
 		for (final OlAndSched olAndSched : allOlsAndScheds)
 		{
@@ -1491,7 +1454,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 	}
 
 	@Override
-	public void updateDeliveryDate_Override(Timestamp deliveryDate, int ADPinstance_ID, String trxName)
+	public void updateDeliveryDate_Override(final Timestamp deliveryDate, final int ADPinstance_ID, final String trxName)
 	{
 		// No need of invalidation after deliveryDate update because it is not used for anything else than preparation date calculation.
 		// In case this calculation is needed, the invalidation will be done on preparation date updating
@@ -1564,14 +1527,14 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 			final I_M_InOutLine inoutLine = TableRecordReference
 					.ofReferenced(candidate)
 					.getModel(PlainContextAware.newWithThreadInheritedTrx(), I_M_InOutLine.class);
-			
+
 			schedules = ImmutableSet.copyOf(retrieveForInOutLine(inoutLine));
 		}
 		else
 		{
 			// No other tables are supported yet; please add implementation if required
-			Check.errorIf(true, "given candidate has ansupported table_id={}; candidate={}", tableID, candidate); 
-			schedules = ImmutableSet.of(); 
+			Check.errorIf(true, "given candidate has ansupported table_id={}; candidate={}", tableID, candidate);
+			schedules = ImmutableSet.of();
 		}
 		return schedules;
 	}

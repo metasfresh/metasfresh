@@ -13,15 +13,14 @@ package org.adempiere.pricing.spi.impl.rules;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.HashMap;
@@ -30,7 +29,6 @@ import java.util.Map;
 import org.adempiere.pricing.api.IPricingContext;
 import org.adempiere.pricing.api.IPricingResult;
 import org.adempiere.pricing.spi.IPricingRule;
-import org.adempiere.pricing.spi.rules.PricingRuleAdapter;
 import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
@@ -44,10 +42,9 @@ import org.compiere.util.Env;
  * @author tsa
  *
  */
-public class MockedPricingRule extends PricingRuleAdapter
+public class MockedPricingRule implements IPricingRule
 {
 	public static final MockedPricingRule INSTANCE = new MockedPricingRule();
-
 
 	public final BigDecimal priceToReturnInitial = Env.ONEHUNDRED;
 
@@ -56,7 +53,7 @@ public class MockedPricingRule extends PricingRuleAdapter
 
 	private int precision;
 
-	private final  Map<Integer, I_C_UOM> productId2priceUOM = new HashMap<>();
+	private final Map<Integer, I_C_UOM> productId2priceUOM = new HashMap<>();
 
 	/** M_Product_ID to "price" to return" */
 	private final Map<Integer, BigDecimal> productId2price = new HashMap<>();
@@ -112,7 +109,7 @@ public class MockedPricingRule extends PricingRuleAdapter
 		result.setC_TaxCategory_ID(100);
 
 		final I_C_UOM priceUOM = productId2priceUOM.get(productID);
-		if(priceUOM!=null)
+		if (priceUOM != null)
 		{
 			result.setPrice_UOM_ID(priceUOM.getC_UOM_ID());
 		}

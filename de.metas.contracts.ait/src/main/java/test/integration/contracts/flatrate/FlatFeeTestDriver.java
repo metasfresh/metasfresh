@@ -36,7 +36,7 @@ import de.metas.adempiere.ait.helper.IHelper;
 import de.metas.adempiere.ait.helper.TestConfig;
 import de.metas.adempiere.ait.test.IntegrationTestRunner;
 import de.metas.adempiere.ait.test.annotation.IntegrationTest;
-import de.metas.flatrate.model.X_C_Flatrate_Conditions;
+import de.metas.contracts.model.X_C_Flatrate_Conditions;
 
 @RunWith(IntegrationTestRunner.class)
 public class FlatFeeTestDriver extends AIntegrationTestDriver
@@ -62,7 +62,7 @@ public class FlatFeeTestDriver extends AIntegrationTestDriver
 		testConfig.setC_BPartner_Name(Helper.parseName(testConfig.getPrefix() + "_(*)"));
 		testConfig.setCustomParam(FlatFeeScenario.PARAM_BOOL_IS_SIMULATION, false);
 		testConfig.setCustomParam(FlatFeeScenario.PARAM_BOOL_IS_CORR_AFTER_CLOSING, false);
-		testConfig.setCustomParam(FlatFeeScenario.PARAM_STR_TYPE_CLEARING, X_C_Flatrate_Conditions.TYPE_CLEARING_Ueber_Unterschreitung);
+		testConfig.setCustomParam(FlatFeeScenario.PARAM_STR_TYPE_CLEARING, X_C_Flatrate_Conditions.TYPE_CLEARING_Exceeding);
 
 		testConfig.setCustomParam(FlatFeeScenario.PARAM_STR_PRODUCT_FLATRATE_VALUE, Helper.parseName("FeeOrderFirstFlatrate_(*)"));
 		testConfig.setCustomParam(FlatFeeScenario.PARAM_STR_PRODUCT_ACTUAL_VALUE, Helper.parseName("FeeOrderFirstActual_(*)"));
@@ -89,7 +89,7 @@ public class FlatFeeTestDriver extends AIntegrationTestDriver
 		testConfig.setC_BPartner_Name(Helper.parseName(testConfig.getPrefix() + "_(*)"));
 		testConfig.setCustomParam(FlatFeeScenario.PARAM_BOOL_IS_SIMULATION, false);
 		testConfig.setCustomParam(FlatFeeScenario.PARAM_BOOL_IS_CORR_AFTER_CLOSING, false);
-		testConfig.setCustomParam(FlatFeeScenario.PARAM_STR_TYPE_CLEARING, X_C_Flatrate_Conditions.TYPE_CLEARING_Ueber_Unterschreitung);
+		testConfig.setCustomParam(FlatFeeScenario.PARAM_STR_TYPE_CLEARING, X_C_Flatrate_Conditions.TYPE_CLEARING_Exceeding);
 
 		testConfig.setCustomParam(FlatFeeScenario.PARAM_STR_PRODUCT_FLATRATE_VALUE, Helper.parseName("FeeOrderFirstFlatrate_(*)"));
 		testConfig.setCustomParam(FlatFeeScenario.PARAM_STR_PRODUCT_ACTUAL_VALUE, Helper.parseName("FeeOrderFirstActual_(*)"));
@@ -119,7 +119,7 @@ public class FlatFeeTestDriver extends AIntegrationTestDriver
 		testConfig.setC_BPartner_Name(Helper.parseName(testConfig.getPrefix() + "_(*)"));
 		testConfig.setCustomParam(FlatFeeScenario.PARAM_BOOL_IS_SIMULATION, true);
 		testConfig.setCustomParam(FlatFeeScenario.PARAM_BOOL_IS_CORR_AFTER_CLOSING, false);
-		testConfig.setCustomParam(FlatFeeScenario.PARAM_STR_TYPE_CLEARING, X_C_Flatrate_Conditions.TYPE_CLEARING_Ueber_Unterschreitung);
+		testConfig.setCustomParam(FlatFeeScenario.PARAM_STR_TYPE_CLEARING, X_C_Flatrate_Conditions.TYPE_CLEARING_Exceeding);
 
 		testConfig.setCustomParam(FlatFeeScenario.PARAM_STR_PRODUCT_FLATRATE_VALUE, Helper.parseName("FlatfeeFlatrate_(*)"));
 		testConfig.setCustomParam(FlatFeeScenario.PARAM_STR_PRODUCT_ACTUAL_VALUE, Helper.parseName("FlatfeeActual_(*)"));
@@ -156,7 +156,7 @@ public class FlatFeeTestDriver extends AIntegrationTestDriver
 
 		testConfig.setCustomParam(FlatFeeScenario.PARAM_BD_UNITS_REPORTED, new BigDecimal("23"));
 		testConfig.setCustomParam(FlatFeeScenario.PARAM_BD_ACTUAL_QTY, new BigDecimal("138"));
-		testConfig.setCustomParam(FlatFeeScenario.PARAM_STR_TYPE_CLEARING, X_C_Flatrate_Conditions.TYPE_CLEARING_Ueber_Unterschreitung);
+		testConfig.setCustomParam(FlatFeeScenario.PARAM_STR_TYPE_CLEARING, X_C_Flatrate_Conditions.TYPE_CLEARING_Exceeding);
 
 		testConfig.setCustomParam(FlatFeeScenario.PARAM_STR_PRODUCT_FLATRATE_VALUE, Helper.parseName("FlatfeeFlatrateEX_(*)"));
 		testConfig.setCustomParam(FlatFeeScenario.PARAM_STR_PRODUCT_ACTUAL_VALUE, Helper.parseName("FlatfeeActualEX_(*)"));
@@ -194,7 +194,7 @@ public class FlatFeeTestDriver extends AIntegrationTestDriver
 
 		testConfig.setCustomParam(FlatFeeScenario.PARAM_BD_UNITS_REPORTED, new BigDecimal("23"));
 		testConfig.setCustomParam(FlatFeeScenario.PARAM_BD_ACTUAL_QTY, new BigDecimal("138"));
-		testConfig.setCustomParam(FlatFeeScenario.PARAM_STR_TYPE_CLEARING, X_C_Flatrate_Conditions.TYPE_CLEARING_Ueber_Unterschreitung);
+		testConfig.setCustomParam(FlatFeeScenario.PARAM_STR_TYPE_CLEARING, X_C_Flatrate_Conditions.TYPE_CLEARING_Exceeding);
 
 		testConfig.setCustomParam(FlatFeeScenario.PARAM_STR_PRODUCT_FLATRATE_VALUE, Helper.parseName("FlatfeeEX_(*)"));
 		testConfig.setCustomParam(FlatFeeScenario.PARAM_STR_PRODUCT_ACTUAL_VALUE, Helper.parseName("FlatfeeEX_(*)"));
@@ -233,7 +233,7 @@ public class FlatFeeTestDriver extends AIntegrationTestDriver
 
 		testConfig.setCustomParam(FlatFeeScenario.PARAM_BD_UNITS_REPORTED, new BigDecimal("23"));
 		testConfig.setCustomParam(FlatFeeScenario.PARAM_BD_ACTUAL_QTY, new BigDecimal("138"));
-		testConfig.setCustomParam(FlatFeeScenario.PARAM_STR_TYPE_CLEARING, X_C_Flatrate_Conditions.TYPE_CLEARING_Komplett);
+		testConfig.setCustomParam(FlatFeeScenario.PARAM_STR_TYPE_CLEARING, X_C_Flatrate_Conditions.TYPE_CLEARING_Complete);
 
 		testConfig.setCustomParam(FlatFeeScenario.PARAM_STR_PRODUCT_FLATRATE_VALUE, Helper.parseName("FlatfeeCO_(*)"));
 		testConfig.setCustomParam(FlatFeeScenario.PARAM_STR_PRODUCT_ACTUAL_VALUE, Helper.parseName("FlatfeeCO_(*)"));
@@ -271,7 +271,7 @@ public class FlatFeeTestDriver extends AIntegrationTestDriver
 
 		testConfig.setCustomParam(FlatFeeScenario.PARAM_BD_UNITS_REPORTED, new BigDecimal("23"));
 		testConfig.setCustomParam(FlatFeeScenario.PARAM_BD_ACTUAL_QTY, new BigDecimal("138"));
-		testConfig.setCustomParam(FlatFeeScenario.PARAM_STR_TYPE_CLEARING, X_C_Flatrate_Conditions.TYPE_CLEARING_Ueber_Unterschreitung);
+		testConfig.setCustomParam(FlatFeeScenario.PARAM_STR_TYPE_CLEARING, X_C_Flatrate_Conditions.TYPE_CLEARING_Exceeding);
 
 		testConfig.setCustomParam(FlatFeeScenario.PARAM_STR_PRODUCT_FLATRATE_VALUE, Helper.parseName("FlatfeeFlatrateEX_(*)"));
 		testConfig.setCustomParam(FlatFeeScenario.PARAM_STR_PRODUCT_ACTUAL_VALUE, Helper.parseName("FlatfeeActualEX_(*)"));
@@ -309,7 +309,7 @@ public class FlatFeeTestDriver extends AIntegrationTestDriver
 
 		testConfig.setCustomParam(FlatFeeScenario.PARAM_BD_UNITS_REPORTED, new BigDecimal("23"));
 		testConfig.setCustomParam(FlatFeeScenario.PARAM_BD_ACTUAL_QTY, new BigDecimal("138"));
-		testConfig.setCustomParam(FlatFeeScenario.PARAM_STR_TYPE_CLEARING, X_C_Flatrate_Conditions.TYPE_CLEARING_Komplett);
+		testConfig.setCustomParam(FlatFeeScenario.PARAM_STR_TYPE_CLEARING, X_C_Flatrate_Conditions.TYPE_CLEARING_Complete);
 
 		testConfig.setCustomParam(FlatFeeScenario.PARAM_STR_PRODUCT_FLATRATE_VALUE, Helper.parseName("FlatfeeFlatrateCO_(*)"));
 		testConfig.setCustomParam(FlatFeeScenario.PARAM_STR_PRODUCT_ACTUAL_VALUE, Helper.parseName("FlatfeeActualCO_(*)"));
@@ -347,7 +347,7 @@ public class FlatFeeTestDriver extends AIntegrationTestDriver
 
 		testConfig.setCustomParam(FlatFeeScenario.PARAM_BD_UNITS_REPORTED, new BigDecimal("23"));
 		testConfig.setCustomParam(FlatFeeScenario.PARAM_BD_ACTUAL_QTY, new BigDecimal("138"));
-		testConfig.setCustomParam(FlatFeeScenario.PARAM_STR_TYPE_CLEARING, X_C_Flatrate_Conditions.TYPE_CLEARING_Ueber_Unterschreitung);
+		testConfig.setCustomParam(FlatFeeScenario.PARAM_STR_TYPE_CLEARING, X_C_Flatrate_Conditions.TYPE_CLEARING_Exceeding);
 
 		testConfig.setCustomParam(FlatFeeScenario.PARAM_STR_PRODUCT_FLATRATE_VALUE, Helper.parseName("FlatfeeFlatrateEX_(*)"));
 		testConfig.setCustomParam(FlatFeeScenario.PARAM_STR_PRODUCT_ACTUAL_VALUE, Helper.parseName("FlatfeeActualEX_(*)"));

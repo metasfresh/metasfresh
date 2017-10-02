@@ -1,5 +1,8 @@
 package de.metas.inoutcandidate.api.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -24,16 +27,10 @@ package de.metas.inoutcandidate.api.impl;
 
 
 import java.math.BigDecimal;
-import java.util.Properties;
 
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.wrapper.POJOWrapper;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
-import org.compiere.util.Env;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.rules.TestWatcher;
 
@@ -41,16 +38,7 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 
 public abstract class ShipmentScheduleTestBase
 {
-
-	@BeforeClass
-	public final static void staticInit()
-	{
-		AdempiereTestHelper.get().staticInit();
-		POJOWrapper.setDefaultStrictValues(false);
-	}
-
 	protected ShipmentScheduleBL shipmentScheduleBL;
-	protected Properties ctx;
 
 	// Masterdata
 	protected BigDecimal qtyOrdered;
@@ -68,37 +56,29 @@ public abstract class ShipmentScheduleTestBase
 
 		shipmentScheduleBL = new ShipmentScheduleBL();
 
-		ctx = Env.getCtx();
-
 		setup();
 	}
 
 	protected void setup()
 	{
 		// nothing to do
-
-	}
-
-	protected Properties getCtx()
-	{
-		return ctx;
 	}
 
 	protected I_M_ShipmentSchedule createShipmentSchedule(final BigDecimal qty)
 	{
 
-		final I_M_ShipmentSchedule shipmentSchedule = InterfaceWrapperHelper.create(ctx, I_M_ShipmentSchedule.class, ITrx.TRXNAME_None);
+		final I_M_ShipmentSchedule shipmentSchedule = newInstance(I_M_ShipmentSchedule.class);
 		shipmentSchedule.setQtyOrdered_Calculated(qty);
 		shipmentSchedule.setAD_User_ID(123);
 		shipmentSchedule.setAD_Org_ID(0);
 		shipmentSchedule.setAD_Table_ID(0);
 		shipmentSchedule.setBPartnerAddress("address");
 		shipmentSchedule.setC_BPartner_ID(0);
+		shipmentSchedule.setBill_BPartner_ID(0);
 		shipmentSchedule.setC_BPartner_Location_ID(0);
-		shipmentSchedule.setQtyDeliverable(qty);
 		shipmentSchedule.setQtyReserved(qty);
 
-		InterfaceWrapperHelper.save(shipmentSchedule);
+		save(shipmentSchedule);
 
 		return shipmentSchedule;
 	}

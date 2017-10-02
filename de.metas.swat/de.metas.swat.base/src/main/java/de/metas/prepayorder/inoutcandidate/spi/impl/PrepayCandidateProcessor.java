@@ -13,32 +13,30 @@ package de.metas.prepayorder.inoutcandidate.spi.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.math.BigDecimal;
 import java.util.Properties;
 
-import org.adempiere.inout.util.CachedObjects;
+import org.adempiere.inout.util.DeliveryGroupCandidate;
+import org.adempiere.inout.util.DeliveryLineCandidate;
 import org.adempiere.inout.util.IShipmentCandidates;
-import org.adempiere.inout.util.IShipmentCandidates.OverallStatus;
-import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_OrderLine;
 import org.slf4j.Logger;
 
-import de.metas.adempiere.model.I_C_Order;
-import de.metas.i18n.Msg;
-import de.metas.inout.model.I_M_InOut;
-import de.metas.inout.model.I_M_InOutLine;
+import de.metas.i18n.IMsgBL;
 import de.metas.inoutcandidate.spi.ICandidateProcessor;
-import de.metas.interfaces.I_C_OrderLine;
 import de.metas.logging.LogManager;
 import de.metas.prepayorder.service.IPrepayOrderBL;
 
@@ -60,41 +58,49 @@ public class PrepayCandidateProcessor implements ICandidateProcessor
 	 * @see de.metas.prepayorder.model.I_C_DocType#DOCSUBTYPE_PrepayOrder_metas
 	 */
 	@Override
-	public int processCandidates(final Properties ctx, final IShipmentCandidates candidates, final CachedObjects cachedObjects, final String trxName)
+	public int processCandidates(
+			final Properties ctx,
+			final IShipmentCandidates candidates,
+			final String trxName)
 	{
 		final IPrepayOrderBL prepayOrderBL = Services.get(IPrepayOrderBL.class);
 
-		for (final I_M_InOut inOut : candidates.getCandidates())
+		for (final DeliveryGroupCandidate inOut : candidates.getCandidates())
 		{
-			for (final I_M_InOutLine ioLine : candidates.getLines(inOut))
+			for (final DeliveryLineCandidate ioLine : inOut.getLines())
 			{
-				final I_C_Order order = cachedObjects.retrieveAndCacheOrder(InterfaceWrapperHelper.create(ioLine.getC_OrderLine(), I_C_OrderLine.class), trxName);
+				final TableRecordReference scheduleReference = TableRecordReference.ofReferenced(ioLine.getShipmentSchedule());
+				if (!I_C_OrderLine.Table_Name.equals(scheduleReference.getTableName()))
+				{
+					continue;
+				}
 
-				assert order.getC_Order_ID() > 0;
-
-				if (!prepayOrderBL.isPrepayOrder(ctx, order.getC_Order_ID(), trxName))
+				final I_C_OrderLine orderLine = scheduleReference.getModel(PlainContextAware.newWithTrxName(ctx, trxName), I_C_OrderLine.class);
+				if (!prepayOrderBL.isPrepayOrder(ctx, orderLine.getC_Order_ID(), trxName))
 				{
 					// nothing to do
 					continue;
 				}
 
-				final BigDecimal allocatedAmt = prepayOrderBL.retrieveAllocatedAmt(ctx, order.getC_Order_ID(), trxName);
+				final BigDecimal allocatedAmt = prepayOrderBL.retrieveAllocatedAmt(ctx, orderLine.getC_Order_ID(), trxName);
+
+				final I_C_Order order = orderLine.getC_Order();
 
 				if (allocatedAmt.compareTo(order.getGrandTotal()) < 0)
 				{
 					// add a warning
-					final String statusInfo = Msg.getMsg(ctx, MSG_ORDER_NOT_PAID_3P, new Object[] { order.getDocumentNo(), order.getGrandTotal(), allocatedAmt });
+					final String statusInfo = Services.get(IMsgBL.class).getMsg(ctx, MSG_ORDER_NOT_PAID_3P, new Object[] { order.getDocumentNo(), order.getGrandTotal(), allocatedAmt });
 					candidates.addStatusInfo(ioLine, statusInfo);
 
 					// discard the line if the qty has been set manually
-					if (candidates.getShipmentSchedule(ioLine).getQtyToDeliver_Override().signum() <= 0)
+					if (ioLine.getShipmentSchedule().getQtyToDeliver_Override().signum() <= 0)
 					{
-						logger.debug("Discarding candidate for " + candidates.getShipmentSchedule(ioLine));
-						candidates.setOverallStatus(ioLine, OverallStatus.DISCARD);
+						logger.debug("Discarding candidate for " + ioLine.getShipmentSchedule());
+						ioLine.setDiscarded(true);
 					}
 					else
 					{
-						logger.debug("Not discarding line despite insufficent allocation, because " + candidates.getShipmentSchedule(ioLine) + " has a qty override");
+						logger.debug("Not discarding line despite insufficent allocation, because " + ioLine.getShipmentSchedule() + " has a qty override");
 					}
 				}
 			}

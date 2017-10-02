@@ -84,7 +84,7 @@ public class Adempiere
 	 * Please keep it in sync with the <code>build-version-env-missing</code> profile of the <a href="https://github.com/metasfresh/metasfresh-parent">metasfresh-parent</a> <code>pom.xml</code>.
 	 */
 	public static final String CLIENT_VERSION_LOCAL_BUILD = "LOCAL-NO-RELEASE";
-	
+
 	public static final transient Adempiere instance = new Adempiere();
 
 	/**
@@ -156,7 +156,6 @@ public class Adempiere
 
 		// gh #427: NOTE: the "Services.setExternalServiceImplProvider" is not called here because it might introduce a deadlock.
 		// we will call it when the spring context was loaded.
-
 	}
 
 	/**
@@ -183,12 +182,34 @@ public class Adempiere
 	public static final <T> T getBean(final Class<T> requiredType)
 	{
 		final ApplicationContext springApplicationContext = getSpringApplicationContext();
-		if (springApplicationContext == null)
-		{
-			throw new IllegalStateException("springApplicationContext not configured yet");
-		}
+		throwExceptionIfNull(springApplicationContext);
 
 		return springApplicationContext.getBean(requiredType);
+	}
+
+	private static void throwExceptionIfNull(final ApplicationContext springApplicationContext)
+	{
+		if (springApplicationContext != null)
+		{
+			return;
+		}
+		final String message;
+		if (isUnitTestMode())
+		{
+			message = "This unit test requires a spring ApplicationContext; A known way to do that is to annotate the test class like this:\n"
+					+ "\n"
+					+ "@RunWith(SpringRunner.class)\n"
+					+ "@SpringBootTest(classes = { StartupListener.class, <further configuration classes> })\n"
+					+ "public class YourTest ...\n"
+					+ "\n"
+					+ "Where the further configuration classes contain @ComponentScann annotations to discover spring components required by the actual tests"
+					+ "Also see https://docs.spring.io/spring-boot/docs/current/reference/html/boot-features-testing.html";
+		}
+		else
+		{
+			message = "SpringApplicationContext not configured yet";
+		}
+		throw new IllegalStateException(message);
 	}
 
 	//

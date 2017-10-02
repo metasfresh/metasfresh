@@ -35,9 +35,8 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.Query;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.TrxRunnable;
+import org.slf4j.Logger;
 
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.adempiere.util.CacheTrx;
@@ -48,8 +47,9 @@ import de.metas.inoutcandidate.model.I_M_IolCandHandler;
 import de.metas.inoutcandidate.model.I_M_IolCandHandler_Log;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.spi.IInOutCandHandler;
-import de.metas.inoutcandidate.spi.IInOutCandHandlerListener;
-import de.metas.inoutcandidate.spi.IInOutCandHandlerListener.OnMissingCandidate;
+import de.metas.inoutcandidate.spi.ModelWithoutShipmentScheduleVetoer;
+import de.metas.inoutcandidate.spi.ModelWithoutShipmentScheduleVetoer.OnMissingCandidate;
+import de.metas.logging.LogManager;
 
 public class InOutCandHandlerBL implements IInOutCandHandlerBL
 {
@@ -60,7 +60,7 @@ public class InOutCandHandlerBL implements IInOutCandHandlerBL
 
 	private final Map<String, IInOutCandHandler> tableName2Handler = new HashMap<String, IInOutCandHandler>();
 
-	private final Map<String, List<IInOutCandHandlerListener>> tableName2Listeners = new HashMap<String, List<IInOutCandHandlerListener>>();
+	private final Map<String, List<ModelWithoutShipmentScheduleVetoer>> tableName2Listeners = new HashMap<>();
 
 	@Override
 	public void registerHandler(final Properties ctx, final IInOutCandHandler handler)
@@ -72,7 +72,7 @@ public class InOutCandHandlerBL implements IInOutCandHandlerBL
 		// make sure that there is also a list of listeners (albeit empty) for the handler's source table
 		if (!tableName2Listeners.containsKey(handler.getSourceTable()))
 		{
-			tableName2Listeners.put(handler.getSourceTable(), new ArrayList<IInOutCandHandlerListener>());
+			tableName2Listeners.put(handler.getSourceTable(), new ArrayList<ModelWithoutShipmentScheduleVetoer>());
 		}
 
 		// make sure that there is an M_IolCandHandler record for the handler
@@ -116,12 +116,12 @@ public class InOutCandHandlerBL implements IInOutCandHandlerBL
 	}
 
 	@Override
-	public void registerListener(final IInOutCandHandlerListener l, final String tableName)
+	public void registerVetoer(final ModelWithoutShipmentScheduleVetoer l, final String tableName)
 	{
-		List<IInOutCandHandlerListener> listeners = tableName2Listeners.get(tableName);
+		List<ModelWithoutShipmentScheduleVetoer> listeners = tableName2Listeners.get(tableName);
 		if (listeners == null)
 		{
-			listeners = new ArrayList<IInOutCandHandlerListener>();
+			listeners = new ArrayList<ModelWithoutShipmentScheduleVetoer>();
 			tableName2Listeners.put(tableName, listeners);
 		}
 		listeners.add(l);
@@ -144,12 +144,12 @@ public class InOutCandHandlerBL implements IInOutCandHandlerBL
 
 			for (final Object model : missingCandidateModels)
 			{
-				final List<IInOutCandHandlerListener> vetoListeners = new ArrayList<IInOutCandHandlerListener>();
+				final List<ModelWithoutShipmentScheduleVetoer> vetoListeners = new ArrayList<>();
 
-				for (final IInOutCandHandlerListener l : tableName2Listeners.get(tableName))
+				for (final ModelWithoutShipmentScheduleVetoer l : tableName2Listeners.get(tableName))
 				{
-					final OnMissingCandidate listenerResult = l.foundModelWithoutInOutCandidate(model, handler);
-					if (listenerResult == OnMissingCandidate.SKIP_CREATION)
+					final OnMissingCandidate listenerResult = l.foundModelWithoutInOutCandidate(model);
+					if (listenerResult == ModelWithoutShipmentScheduleVetoer.OnMissingCandidate.I_VETO)
 					{
 						logger.debug("IInOutCandHandlerListener " + l + " doesn't want us to create a shipment schedule");
 						vetoListeners.add(l);
@@ -179,7 +179,7 @@ public class InOutCandHandlerBL implements IInOutCandHandlerBL
 				else
 				{
 					final StringBuilder vetoNames = new StringBuilder();
-					for (final IInOutCandHandlerListener vetoListener : vetoListeners)
+					for (final ModelWithoutShipmentScheduleVetoer vetoListener : vetoListeners)
 					{
 						if (vetoNames.length() > 0)
 						{

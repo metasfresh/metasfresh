@@ -15,29 +15,26 @@ import java.math.BigDecimal;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Properties;
 
 import org.adempiere.bpartner.service.IBPartnerStats;
 import org.adempiere.bpartner.service.IBPartnerStatsDAO;
-import org.adempiere.inout.util.CachedObjects;
+import org.adempiere.inout.util.DeliveryGroupCandidate;
+import org.adempiere.inout.util.DeliveryLineCandidate;
 import org.adempiere.inout.util.IShipmentCandidates;
-import org.adempiere.inout.util.IShipmentCandidates.OverallStatus;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 
-import de.metas.i18n.Msg;
-import de.metas.inout.model.I_M_InOut;
-import de.metas.inout.model.I_M_InOutLine;
+import de.metas.i18n.IMsgBL;
 import de.metas.inoutcandidate.spi.ICandidateProcessor;
 import de.metas.interfaces.I_C_BPartner;
 
@@ -54,16 +51,18 @@ public class OnlyOneOpenInvoiceCandProcessor implements ICandidateProcessor
 	public static final String MSG_WITH_NEXT_SUBSCRIPTION = "ShipmentSchedule_WithNextSubscription";
 
 	@Override
-	public int processCandidates(final Properties ctx,
-			final IShipmentCandidates candidates, final CachedObjects co, final String trxName)
+	public int processCandidates(
+			final Properties ctx,
+			final IShipmentCandidates candidates,
+			final String trxName)
 	{
 		int removeCount = 0;
 
-		for (final I_M_InOut inOut : candidates.getCandidates())
+		for (final DeliveryGroupCandidate inOut : candidates.getCandidates())
 		{
-			for (final I_M_InOutLine inOutLine : candidates.getLines(inOut))
+			for (final DeliveryLineCandidate inOutLine : inOut.getLines())
 			{
-				if (candidates.isLineDiscarded(inOutLine))
+				if (inOutLine.isDiscarded())
 				{
 					// this line won't be delivered anyways. Nothing to do
 					continue;
@@ -77,10 +76,13 @@ public class OnlyOneOpenInvoiceCandProcessor implements ICandidateProcessor
 
 	private int handleOnlyOneOpenInv(final Properties ctx,
 			final IShipmentCandidates candidates,
-			final I_M_InOutLine inOutLine, final String trxName, int removeCount)
+			final DeliveryLineCandidate inOutLine,
+			final String trxName,
+			int removeCount)
 	{
-		final I_C_BPartner billPartner = InterfaceWrapperHelper.create(inOutLine.getC_OrderLine().getC_Order().getBill_BPartner(), I_C_BPartner.class);
-		
+
+		final I_C_BPartner billPartner = InterfaceWrapperHelper.create(inOutLine.getShipmentSchedule().getBill_BPartner(), I_C_BPartner.class);
+
 		final IBPartnerStats stats = Services.get(IBPartnerStatsDAO.class).retrieveBPartnerStats(billPartner);
 
 		final String creditStatus = I_C_BPartner.SO_CREDITSTATUS_ONE_OPEN_INVOICE;
@@ -88,12 +90,12 @@ public class OnlyOneOpenInvoiceCandProcessor implements ICandidateProcessor
 		if (creditStatus.equals(stats.getSOCreditStatus()))
 		{
 			final BigDecimal soCreditUsed = stats.getSOCreditUsed();
-			
+
 			if (soCreditUsed.signum() > 0)
 			{
-				candidates.addStatusInfo(inOutLine, Msg.getMsg(ctx, MSG_OPEN_INVOICE_1P, new Object[] { soCreditUsed }));
+				candidates.addStatusInfo(inOutLine, Services.get(IMsgBL.class).getMsg(ctx, MSG_OPEN_INVOICE_1P, new Object[] { soCreditUsed }));
 
-				candidates.setOverallStatus(inOutLine, OverallStatus.DISCARD);
+				inOutLine.setDiscarded(true);
 				removeCount = 1;
 			}
 		}

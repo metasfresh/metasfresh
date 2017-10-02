@@ -34,6 +34,7 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_AD_Org;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.Query;
@@ -47,7 +48,6 @@ import de.metas.adempiere.service.ICountryDAO;
 import de.metas.adempiere.service.ILocationBL;
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.dpd.model.I_DPD_Route;
-import de.metas.interfaces.I_C_BPartner;
 import de.metas.logging.LogManager;
 
 public class LocationBL implements ILocationBL

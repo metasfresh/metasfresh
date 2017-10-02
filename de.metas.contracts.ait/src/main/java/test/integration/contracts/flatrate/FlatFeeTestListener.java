@@ -53,13 +53,13 @@ import de.metas.adempiere.ait.helper.TestConfig;
 import de.metas.adempiere.ait.test.annotation.ITEventListener;
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.adempiere.service.ICalendarDAO;
-import de.metas.flatrate.api.IFlatrateDAO;
-import de.metas.flatrate.model.I_C_Flatrate_Conditions;
-import de.metas.flatrate.model.I_C_Flatrate_Data;
-import de.metas.flatrate.model.I_C_Flatrate_DataEntry;
-import de.metas.flatrate.model.I_C_Flatrate_Term;
-import de.metas.flatrate.model.X_C_Flatrate_DataEntry;
-import de.metas.flatrate.model.X_C_Flatrate_Term;
+import de.metas.contracts.flatrate.api.IFlatrateDAO;
+import de.metas.contracts.model.I_C_Flatrate_Conditions;
+import de.metas.contracts.model.I_C_Flatrate_Data;
+import de.metas.contracts.model.I_C_Flatrate_DataEntry;
+import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.contracts.model.X_C_Flatrate_DataEntry;
+import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.product.IProductPA;
 import test.integration.contracts.ContractsHelper;
@@ -114,7 +114,7 @@ public class FlatFeeTestListener
 	public void afterFlatFeeTermComplete(final TestEvent evt)
 	{
 		final I_C_Flatrate_Term term = (I_C_Flatrate_Term)evt.getObj();
-		assumeThat(term.getType_Conditions(), equalTo(X_C_Flatrate_Term.TYPE_CONDITIONS_Pauschalengebuehr));
+		assumeThat(term.getType_Conditions(), equalTo(X_C_Flatrate_Term.TYPE_CONDITIONS_FlatFee));
 
 		final Properties ctx = evt.getSource().getCtx();
 		final String trxName = evt.getSource().getTrxName();
@@ -143,7 +143,7 @@ public class FlatFeeTestListener
 	{
 		final I_C_Flatrate_Term term = (I_C_Flatrate_Term)evt.getObj();
 
-		if (!equalTo(X_C_Flatrate_Term.TYPE_CONDITIONS_Pauschalengebuehr).matches(term.getType_Conditions()))
+		if (!equalTo(X_C_Flatrate_Term.TYPE_CONDITIONS_FlatFee).matches(term.getType_Conditions()))
 		{
 			// tests are not applicable
 			return;
@@ -217,7 +217,7 @@ public class FlatFeeTestListener
 	{
 		final I_C_Flatrate_Term term = (I_C_Flatrate_Term)evt.getObj();
 
-		if (!equalTo(X_C_Flatrate_Term.TYPE_CONDITIONS_Pauschalengebuehr).matches(term.getType_Conditions()))
+		if (!equalTo(X_C_Flatrate_Term.TYPE_CONDITIONS_FlatFee).matches(term.getType_Conditions()))
 		{
 			// tests are not applicable
 			return;

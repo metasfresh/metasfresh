@@ -40,7 +40,7 @@ import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
 import org.compiere.process.DocAction;
 
-import de.metas.flatrate.model.I_C_Flatrate_Term;
+import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.materialtracking.IMaterialTrackingQuery;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
 import de.metas.materialtracking.model.I_M_Material_Tracking_Ref;
