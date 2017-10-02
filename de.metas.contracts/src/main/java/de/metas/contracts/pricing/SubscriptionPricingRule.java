@@ -1,5 +1,7 @@
 package de.metas.contracts.pricing;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.pricing.api.IEditablePricingContext;
 import org.adempiere.pricing.api.IPricingBL;
@@ -62,14 +64,8 @@ public class SubscriptionPricingRule implements IPricingRule
 		final Object referencedObject = pricingCtx.getReferencedObject();
 
 		final I_C_Flatrate_Conditions conditions = ContractPricingUtil.getC_Flatrate_Conditions(referencedObject);
-
-		final I_M_PriceList subscriptionPriceList = Services.get(IQueryBL.class).createQueryBuilder(I_M_PriceList.class).addOnlyActiveRecordsFilter()
-				.addInArrayFilter(I_M_PriceList.COLUMN_C_Country_ID, pricingCtx.getC_Country_ID(), 0)
-				.addEqualsFilter(I_M_PriceList.COLUMN_M_PricingSystem_ID, conditions.getM_PricingSystem_ID())
-				.addEqualsFilter(I_M_PriceList.COLUMN_IsSOPriceList, true)
-				.orderBy().addColumnDescending(I_M_PriceList.COLUMNNAME_C_Country_ID).endOrderBy()
-				.create()
-				.first();
+		final I_M_PriceList originalPriceList = load(pricingCtx.getM_PriceList_ID(),I_M_PriceList.class);
+		final I_M_PriceList subscriptionPriceList = retrievePriceListForConditionsAndCountry(originalPriceList.getC_Country_ID(), conditions);
 
 		final IPricingBL pricingBL = Services.get(IPricingBL.class);
 
@@ -126,5 +122,17 @@ public class SubscriptionPricingRule implements IPricingRule
 		result.setPriceStd(subscriptionPricingResult.getPriceStd());
 		result.setTaxIncluded(subscriptionPricingResult.isTaxIncluded());
 		result.setC_TaxCategory_ID(subscriptionPricingResult.getC_TaxCategory_ID());
+	}
+
+	private I_M_PriceList retrievePriceListForConditionsAndCountry(final int countryId, final I_C_Flatrate_Conditions conditions)
+	{
+		final I_M_PriceList subscriptionPriceList = Services.get(IQueryBL.class).createQueryBuilder(I_M_PriceList.class).addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_M_PriceList.COLUMN_C_Country_ID, countryId, 0)
+				.addEqualsFilter(I_M_PriceList.COLUMN_M_PricingSystem_ID, conditions.getM_PricingSystem_ID())
+				.addEqualsFilter(I_M_PriceList.COLUMN_IsSOPriceList, true)
+				.orderBy().addColumnDescending(I_M_PriceList.COLUMNNAME_C_Country_ID).endOrderBy()
+				.create()
+				.first();
+		return subscriptionPriceList;
 	}
 }

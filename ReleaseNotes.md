@@ -13,6 +13,10 @@ Here come the actual release notes:
 # metasfresh 5.30 (2017-41)
 
 **release for week 2017-41**
+* metasfresh-app
+  * [#2594](https://github.com/metasfresh/metasfresh/issues/2594) New Window for Dunning Candidates in WebUI
+    * New Window for Dunning Candidates in WebUI, that allows the preparation and creation of Dunning Documents.
+
 
 # metasfresh 5.29 (2017-40)
 
