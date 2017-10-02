@@ -31,7 +31,6 @@ import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_OrderLine;
 
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
-import de.metas.order.invoicecandidate.impl.C_OrderLine_Handler;
 
 /**
  * DAO to be used for {@link C_OrderLine_Handler}.

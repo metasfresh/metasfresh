@@ -48,7 +48,7 @@ import org.junit.rules.TestWatcher;
 
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.invoicecandidate.model.I_C_ILCandHandler;
-import de.metas.order.invoicecandidate.impl.C_OrderLine_Handler;
+import de.metas.order.invoicecandidate.C_OrderLine_Handler;
 import de.metas.product.acct.api.IProductAcctDAO;
 import de.metas.tax.api.ITaxBL;
 import mockit.Expectations;

@@ -67,8 +67,6 @@ import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.subscription.ISubscriptionBL;
 import de.metas.document.IDocumentPA;
 import de.metas.i18n.IMsgBL;
-import de.metas.invoicecandidate.api.IInvoiceCandDAO;
-import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.logging.LogManager;
 import de.metas.ordercandidate.modelvalidator.C_OLCand;
 
@@ -443,26 +441,8 @@ public class C_Flatrate_Term
 				});
 	}
 
-	/**
-	 * When a term is reactivated, it's invoice candidate needs to be deleted. Note that we assume the deletion will fail with a meaningful error message if the invoice candidate has already been
-	 * invoiced.
-	 *
-	 * @param term
-	 */
 	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_REACTIVATE })
-	public void deleteInvoiceCandidate(final I_C_Flatrate_Term term)
-	{
-		//
-		// Delete invoice candidates
-		final IInvoiceCandDAO invoiceCandDB = Services.get(IInvoiceCandDAO.class);
-		for (final I_C_Invoice_Candidate icToDelete : invoiceCandDB.retrieveReferencing(term))
-		{
-			InterfaceWrapperHelper.delete(icToDelete);
-		}
-	}
-
-	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_REACTIVATE })
-	public void beforeReactivate(final I_C_Flatrate_Term term)
+	public void beforeReactivateFireFlatrateTermEventListener(final I_C_Flatrate_Term term)
 	{
 		Services.get(IFlatrateTermEventService.class)
 				.getHandler(term.getType_Conditions())
