@@ -9,8 +9,8 @@ import org.compiere.model.I_C_Period;
 import org.junit.Before;
 import org.junit.Test;
 
-import de.metas.flatrate.model.I_C_Flatrate_DataEntry;
-import de.metas.flatrate.model.I_C_Flatrate_Term;
+import de.metas.contracts.model.I_C_Flatrate_DataEntry;
+import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.procurement.base.PMMContractBuilder;
 import mockit.Mocked;
 import mockit.Tested;
@@ -100,7 +100,7 @@ public class ProcurementFlatrateHandlerTests
 		newTerm.setStartDate(Timestamp.valueOf("2017-01-01 00:00:00"));
 		InterfaceWrapperHelper.save(newTerm);
 
-		procurementFlatrateHandler.afterExtendFlatrateTermCreated(oldTerm, newTerm);
+		procurementFlatrateHandler.afterSaveOfNextTermForPredecessor(newTerm, oldTerm);
 
 		// @formatter:off
 		new Verifications()

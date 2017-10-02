@@ -40,8 +40,8 @@ import org.adempiere.bpartner.service.IBPartnerBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.inout.util.DeliveryGroupCandidate;
 import org.adempiere.inout.util.DeliveryLineCandidate;
-import org.adempiere.inout.util.IShipmentCandidates;
-import org.adempiere.inout.util.IShipmentCandidates.CompleteStatus;
+import org.adempiere.inout.util.IShipmentSchedulesDuringUpdate;
+import org.adempiere.inout.util.IShipmentSchedulesDuringUpdate.CompleteStatus;
 import org.adempiere.inout.util.ShipmentCandidates;
 import org.adempiere.inout.util.ShipmentScheduleQtyOnHandStorage;
 import org.adempiere.inout.util.ShipmentScheduleStorageRecord;
@@ -80,10 +80,10 @@ import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.OlAndSched;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.inoutcandidate.spi.ICandidateProcessor;
+import de.metas.inoutcandidate.spi.IShipmentSchedulesAfterFirstPassUpdater;
 import de.metas.inoutcandidate.spi.IShipmentScheduleQtyUpdateListener;
-import de.metas.inoutcandidate.spi.ShipmentScheduleOrderDoc;
-import de.metas.inoutcandidate.spi.ShipmentScheduleOrderDocFactory;
+import de.metas.inoutcandidate.spi.ShipmentScheduleReferencedLine;
+import de.metas.inoutcandidate.spi.ShipmentScheduleReferencedLineFactory;
 import de.metas.inoutcandidate.spi.impl.CompositeCandidateProcessor;
 import de.metas.inoutcandidate.spi.impl.CompositeShipmentScheduleQtyUpdateListener;
 import de.metas.logging.LogManager;
@@ -178,7 +178,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 		}
 
 		// make the second run
-		final IShipmentCandidates secondRun = generate(ctx, olsAndScheds, firstRun, trxName);
+		final IShipmentSchedulesDuringUpdate secondRun = generate(ctx, olsAndScheds, firstRun, trxName);
 
 		// finally update the shipment schedule entries
 		for (final OlAndSched olAndSched : olsAndScheds)
@@ -337,8 +337,8 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	@Override
 	public void updatePreparationAndDeliveryDate(@NonNull final I_M_ShipmentSchedule sched)
 	{
-		final ShipmentScheduleOrderDocFactory shipmentScheduleOrderDocFactory = Adempiere.getBean(ShipmentScheduleOrderDocFactory.class);
-		final ShipmentScheduleOrderDoc shipmentScheduleOrderDoc = shipmentScheduleOrderDocFactory.createFor(sched);
+		final ShipmentScheduleReferencedLineFactory shipmentScheduleOrderDocFactory = Adempiere.getBean(ShipmentScheduleReferencedLineFactory.class);
+		final ShipmentScheduleReferencedLine shipmentScheduleOrderDoc = shipmentScheduleOrderDocFactory.createFor(sched);
 
 		sched.setPreparationDate(shipmentScheduleOrderDoc.getPreparationDate());
 		sched.setDeliveryDate(shipmentScheduleOrderDoc.getDeliveryDate());
@@ -646,7 +646,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 		// Services
 		final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
 
-		final ShipmentScheduleOrderDoc scheduleSourcedoc = Adempiere.getBean(ShipmentScheduleOrderDocFactory.class).createFor(sched);
+		final ShipmentScheduleReferencedLine scheduleSourcedoc = Adempiere.getBean(ShipmentScheduleReferencedLineFactory.class).createFor(sched);
 
 		//
 		// Create the M_InOut header candidate
@@ -770,13 +770,13 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 
 	}
 
-	private int applyCandidateProcessors(final Properties ctx, final IShipmentCandidates candidates, final String trxName)
+	private int applyCandidateProcessors(final Properties ctx, final IShipmentSchedulesDuringUpdate candidates, final String trxName)
 	{
-		return candidateProcessors.processCandidates(ctx, candidates, trxName);
+		return candidateProcessors.doUpdateAfterFirstPass(ctx, candidates, trxName);
 	}
 
 	@Override
-	public void registerCandidateProcessor(final ICandidateProcessor processor)
+	public void registerCandidateProcessor(final IShipmentSchedulesAfterFirstPassUpdater processor)
 	{
 		candidateProcessors.addCandidateProcessor(processor);
 	}
@@ -832,7 +832,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	 */
 	private static void updateWarehouseId(final I_M_ShipmentSchedule sched)
 	{
-		final int warehouseId = Adempiere.getBean(ShipmentScheduleOrderDocFactory.class)
+		final int warehouseId = Adempiere.getBean(ShipmentScheduleReferencedLineFactory.class)
 				.createFor(sched)
 				.getWarehouseId();
 		sched.setM_Warehouse_ID(warehouseId);
@@ -881,7 +881,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 
 	@VisibleForTesting
 	DeliveryGroupCandidate createGroup(
-			final ShipmentScheduleOrderDoc scheduleSourceDoc,
+			final ShipmentScheduleReferencedLine scheduleSourceDoc,
 			final I_M_ShipmentSchedule sched)
 	{
 

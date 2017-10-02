@@ -56,6 +56,7 @@ import de.metas.invoicecandidate.model.I_C_ILCandHandler;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateRequest;
 import de.metas.logging.LogManager;
+import de.metas.order.invoicecandidate.C_OrderLine_Handler;
 import de.metas.product.acct.api.IProductAcctDAO;
 import de.metas.tax.api.ITaxBL;
 import mockit.Expectations;
@@ -342,7 +343,7 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 
 		setUpActivityAndTaxRetrieval(order4, oL4);
 
-		final List<I_C_Invoice_Candidate> candidates = InvoiceCandidatesTestHelper.createMissingCandidates(oLHandler, InterfaceWrapperHelper.getCtx(handler), 5, ITrx.TRXNAME_None);
+		final List<I_C_Invoice_Candidate> candidates = InvoiceCandidatesTestHelper.createMissingCandidates(oLHandler, 5);
 
 		assertEquals(2, candidates.size());
 

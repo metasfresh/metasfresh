@@ -115,12 +115,12 @@ public interface I_PMM_Balance
 	 */
 	public int getC_Flatrate_DataEntry_ID();
 
-	public de.metas.flatrate.model.I_C_Flatrate_DataEntry getC_Flatrate_DataEntry();
+	public de.metas.contracts.model.I_C_Flatrate_DataEntry getC_Flatrate_DataEntry();
 
-	public void setC_Flatrate_DataEntry(de.metas.flatrate.model.I_C_Flatrate_DataEntry C_Flatrate_DataEntry);
+	public void setC_Flatrate_DataEntry(de.metas.contracts.model.I_C_Flatrate_DataEntry C_Flatrate_DataEntry);
 
     /** Column definition for C_Flatrate_DataEntry_ID */
-    public static final org.adempiere.model.ModelColumn<I_PMM_Balance, de.metas.flatrate.model.I_C_Flatrate_DataEntry> COLUMN_C_Flatrate_DataEntry_ID = new org.adempiere.model.ModelColumn<I_PMM_Balance, de.metas.flatrate.model.I_C_Flatrate_DataEntry>(I_PMM_Balance.class, "C_Flatrate_DataEntry_ID", de.metas.flatrate.model.I_C_Flatrate_DataEntry.class);
+    public static final org.adempiere.model.ModelColumn<I_PMM_Balance, de.metas.contracts.model.I_C_Flatrate_DataEntry> COLUMN_C_Flatrate_DataEntry_ID = new org.adempiere.model.ModelColumn<I_PMM_Balance, de.metas.contracts.model.I_C_Flatrate_DataEntry>(I_PMM_Balance.class, "C_Flatrate_DataEntry_ID", de.metas.contracts.model.I_C_Flatrate_DataEntry.class);
     /** Column name C_Flatrate_DataEntry_ID */
     public static final String COLUMNNAME_C_Flatrate_DataEntry_ID = "C_Flatrate_DataEntry_ID";
 

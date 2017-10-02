@@ -36,7 +36,7 @@ import de.metas.adempiere.ait.helper.IHelper;
 import de.metas.adempiere.ait.helper.TestConfig;
 import de.metas.adempiere.ait.test.IntegrationTestRunner;
 import de.metas.adempiere.ait.test.annotation.IntegrationTest;
-import de.metas.flatrate.model.X_C_Flatrate_Conditions;
+import de.metas.contracts.model.X_C_Flatrate_Conditions;
 
 @RunWith(IntegrationTestRunner.class)
 public class FlatFeeTestDriver extends AIntegrationTestDriver

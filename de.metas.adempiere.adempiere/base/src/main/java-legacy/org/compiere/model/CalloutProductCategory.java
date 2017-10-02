@@ -16,7 +16,7 @@
  *****************************************************************************/
 package org.compiere.model;
 
-import java.util.Properties;
+import org.adempiere.ad.callout.api.ICalloutField;
 
 /**
  *	Product Category Callouts
@@ -36,23 +36,22 @@ public class CalloutProductCategory extends CalloutEngine
 	 *  @param value New Value
 	 *  @return "" or error message
 	 */
-	public  String testForLoop (Properties ctx, int WindowNo, GridTab mTab, GridField mField, Object value, Object oldValue)
+	public  String testForLoop (final ICalloutField calloutField)
 	{
-		if (isCalloutActive() || value == null)
-			return "";
-
-		Integer productCategoryId = (Integer) mTab.getValue(MProductCategory.COLUMNNAME_M_Product_Category_ID);
-		if (productCategoryId == null)
-			productCategoryId = new Integer(0);
+		final I_M_Product_Category productCategory = calloutField.getModel(I_M_Product_Category.class);
 		
-		if (productCategoryId.intValue() > 0) {
-			MProductCategory pc = new MProductCategory(ctx, productCategoryId.intValue(), null);
-			pc.setM_Product_Category_Parent_ID(((Integer) value).intValue());
-			if (pc.hasLoopInTree())
-				return "ProductCategoryLoopDetected";
+		final int productCategoryParentId = productCategory.getM_Product_Category_Parent_ID();
+		if (productCategoryParentId <= 0)
+		{
+			return NO_ERROR;
+		}
+
+		if(productCategory.getM_Product_Category_ID() > 0)
+		{
+			MProductCategory.assertNoLoopInTree(productCategory);
 		}
 		
-		return "";
-	}	//	testForLoop
+		return NO_ERROR;
+	}
 	
 }	//	CalloutProductCategory

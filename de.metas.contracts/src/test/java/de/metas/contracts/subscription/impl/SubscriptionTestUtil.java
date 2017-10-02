@@ -6,9 +6,9 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.compiere.util.TimeUtil;
 
-import de.metas.flatrate.model.I_C_Flatrate_Term;
-import de.metas.flatrate.model.I_C_SubscriptionProgress;
-import de.metas.flatrate.model.X_C_SubscriptionProgress;
+import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.contracts.model.I_C_SubscriptionProgress;
+import de.metas.contracts.model.X_C_SubscriptionProgress;
 
 /*
  * #%L

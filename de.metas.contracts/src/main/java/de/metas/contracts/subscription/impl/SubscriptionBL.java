@@ -59,25 +59,25 @@ import org.slf4j.Logger;
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.adempiere.service.IBPartnerOrgBL;
+import de.metas.contracts.Contracts_Constants;
+import de.metas.contracts.IFlatrateDAO;
+import de.metas.contracts.flatrate.interfaces.I_C_OLCand;
+import de.metas.contracts.model.I_C_Contract_Term_Alloc;
+import de.metas.contracts.model.I_C_Flatrate_Conditions;
+import de.metas.contracts.model.I_C_Flatrate_Data;
+import de.metas.contracts.model.I_C_Flatrate_Matching;
+import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.contracts.model.I_C_Flatrate_Transition;
+import de.metas.contracts.model.I_C_SubscriptionProgress;
+import de.metas.contracts.model.X_C_Flatrate_Conditions;
+import de.metas.contracts.model.X_C_Flatrate_Term;
+import de.metas.contracts.model.X_C_Flatrate_Transition;
+import de.metas.contracts.model.X_C_SubscriptionProgress;
 import de.metas.contracts.subscription.ISubscriptionBL;
 import de.metas.contracts.subscription.ISubscriptionDAO;
 import de.metas.contracts.subscription.ISubscriptionDAO.SubscriptionProgressQuery;
 import de.metas.contracts.subscription.model.I_C_OrderLine;
 import de.metas.document.engine.IDocActionBL;
-import de.metas.flatrate.Contracts_Constants;
-import de.metas.flatrate.api.IFlatrateDAO;
-import de.metas.flatrate.interfaces.I_C_OLCand;
-import de.metas.flatrate.model.I_C_Contract_Term_Alloc;
-import de.metas.flatrate.model.I_C_Flatrate_Conditions;
-import de.metas.flatrate.model.I_C_Flatrate_Data;
-import de.metas.flatrate.model.I_C_Flatrate_Matching;
-import de.metas.flatrate.model.I_C_Flatrate_Term;
-import de.metas.flatrate.model.I_C_Flatrate_Transition;
-import de.metas.flatrate.model.I_C_SubscriptionProgress;
-import de.metas.flatrate.model.X_C_Flatrate_Conditions;
-import de.metas.flatrate.model.X_C_Flatrate_Term;
-import de.metas.flatrate.model.X_C_Flatrate_Transition;
-import de.metas.flatrate.model.X_C_SubscriptionProgress;
 import de.metas.i18n.IMsgBL;
 import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.impex.model.I_AD_InputDataSource;
@@ -128,7 +128,7 @@ public class SubscriptionBL implements ISubscriptionBL
 		// over the whole subscription term
 		newTerm.setC_OrderLine_Term_ID(ol.getC_OrderLine_ID());
 		newTerm.setPlannedQtyPerUnit(ol.getQtyEntered());
-		newTerm.setC_UOM_ID(ol.getC_UOM_ID());
+		newTerm.setC_UOM_ID(ol.getPrice_UOM_ID());
 
 		newTerm.setStartDate(order.getDateOrdered());
 
@@ -368,8 +368,8 @@ public class SubscriptionBL implements ISubscriptionBL
 
 		// task 03805:
 		// Make sure the currency ID for term is the same as the one from olCand
-		final int currencyID = olCand.getC_Currency_ID();
-		newTerm.setC_Currency_ID(currencyID);
+		Check.errorIf(pricingResult.getC_Currency_ID() != olCand.getC_Currency_ID(), "Currency of olCand differs from the currency computed by the pricing engine; olCand={}; pricingResult={}", olCand, pricingResult);
+		newTerm.setC_Currency_ID(pricingResult.getC_Currency_ID());
 
 		InterfaceWrapperHelper.save(newTerm);
 

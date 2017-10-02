@@ -553,13 +553,13 @@ public interface I_M_Material_Tracking
 	 */
 	public int getC_Flatrate_Term_ID();
 
-	public de.metas.flatrate.model.I_C_Flatrate_Term getC_Flatrate_Term();
+	public de.metas.contracts.model.I_C_Flatrate_Term getC_Flatrate_Term();
 
-	public void setC_Flatrate_Term(de.metas.flatrate.model.I_C_Flatrate_Term C_Flatrate_Term);
+	public void setC_Flatrate_Term(de.metas.contracts.model.I_C_Flatrate_Term C_Flatrate_Term);
 
 	/** Column definition for C_Flatrate_Term_ID */
-	public static final org.adempiere.model.ModelColumn<I_M_Material_Tracking, de.metas.flatrate.model.I_C_Flatrate_Term> COLUMN_C_Flatrate_Term_ID = new org.adempiere.model.ModelColumn<I_M_Material_Tracking, de.metas.flatrate.model.I_C_Flatrate_Term>(
-			I_M_Material_Tracking.class, "C_Flatrate_Term_ID", de.metas.flatrate.model.I_C_Flatrate_Term.class);
+	public static final org.adempiere.model.ModelColumn<I_M_Material_Tracking, de.metas.contracts.model.I_C_Flatrate_Term> COLUMN_C_Flatrate_Term_ID = new org.adempiere.model.ModelColumn<I_M_Material_Tracking, de.metas.contracts.model.I_C_Flatrate_Term>(
+			I_M_Material_Tracking.class, "C_Flatrate_Term_ID", de.metas.contracts.model.I_C_Flatrate_Term.class);
 	/** Column name C_Flatrate_Term_ID */
 	public static final String COLUMNNAME_C_Flatrate_Term_ID = "C_Flatrate_Term_ID";
 

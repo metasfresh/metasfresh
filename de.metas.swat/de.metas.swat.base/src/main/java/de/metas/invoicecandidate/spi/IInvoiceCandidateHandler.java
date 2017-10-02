@@ -35,16 +35,15 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 
 /**
  * Implementors of this class have the job to create and invalidate {@link I_C_Invoice_Candidate} records.
- *
- * They can be registered in {@link I_C_ILCandHandler} table.
- *
+ * <p>
+ * <b>IMPORTANT:</b> They need be registered in the {@link I_C_ILCandHandler} table. Only then the system will create model interceptors to make sure they are invoked at the right times.
+ * <p>
  * To get an instance of this interface, use {@link IInvoiceCandidateHandlerBL} methods.
  *
  * Registered implementations will instantiated and their {@link #createMissingCandidates(Properties, String)} method will be called by API.
  *
  * NOTE: because the API will create a new instance each time a handler is needed, it's safe to have status/field variables.
  *
- * @author ts
  *
  * @see IInvoiceCandidateHandlerBL
  */
@@ -68,36 +67,47 @@ public interface IInvoiceCandidateHandler
 	OnInvalidateForModelAction getOnInvalidateForModelAction();
 
 	/**
-	 * Checks if this handler, in general, can create invoice candidates automatically.
+	 * Checks if this handler, in general, can create invoice candidates automatically. Returns {@code true} by default.
 	 *
-	 * This is a preliminary condition, and when the business logic has to create invoice candidates automatically, first it will call {@link #isCreateMissingCandidatesAutomatically(Object)}.
+	 * This is a preliminary condition. When the business logic has to create invoice candidates automatically, it will also call {@link #isCreateMissingCandidatesAutomatically(Object)}.
 	 *
 	 * @return true if the invoice candidates shall be automatically generated for {@link #getSourceTable()}.
 	 */
-	boolean isCreateMissingCandidatesAutomatically();
+	default boolean isCreateMissingCandidatesAutomatically()
+	{
+		return true;
+	}
 
 	/**
-	 * Checks if this handler can generate invoice candidates for given model.
+	 * Checks if this handler can generate invoice candidates for given model. Returns {@code true} by default.
+	 * <p>
+	 * Note that this method only matters if {@link #isCreateMissingCandidatesAutomatically()} returned {@code true} when the system started.
 	 *
 	 * @param model
-	 * @return true if the invoice candidates shall be automatically generated for given model.
+	 * @return {@code true} if the invoice candidates shall be automatically generated for the given particular model.
 	 */
-	boolean isCreateMissingCandidatesAutomatically(Object model);
+	default boolean isCreateMissingCandidatesAutomatically(Object model)
+	{
+		return true;
+	}
 
 	/**
+	 *  Returns {@code AFTER_COMPLETE} by default.
+	 * 
 	 * @return {@link DocTimingType} when to create the missing invoice candidates automatically; shall never return null.
 	 */
-	DocTimingType getAutomaticallyCreateMissingCandidatesDocTiming();
+	default DocTimingType getAutomaticallyCreateMissingCandidatesDocTiming()
+	{
+		return DocTimingType.AFTER_COMPLETE;
+	}
 
 	/**
 	 * Retrieves all models which are eligible for invoicing but they have no invoice candidates.
 	 *
-	 * @param ctx
 	 * @param limit how many models shall be retrieved. Note that, at this moment, this is a recommendation which could be respected or not by current implementations.
-	 * @param trxName
 	 * @return models
 	 */
-	Iterator<? extends Object> retrieveAllModelsWithMissingCandidates(Properties ctx, int limit, String trxName);
+	Iterator<? extends Object> retrieveAllModelsWithMissingCandidates(int limit);
 
 	/**
 	 * Called by API to expand an initial invoice candidate generate request.
@@ -121,8 +131,8 @@ public interface IInvoiceCandidateHandler
 	Object getModelForInvoiceCandidateGenerateScheduling(Object model);
 
 	/**
-	 * Creates missing candidates for the given model.
-	 *
+	 * Create missing candidates for the given model. No need to save them, that's already done by the caller.
+	 * <p>
 	 * SPI-implementors can assume that this method is only called with objects that
 	 * <ul>
 	 * <li>can be handled by {@link InterfaceWrapperHelper} and

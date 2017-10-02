@@ -49,7 +49,7 @@ import lombok.NonNull;
  * @author ts
  *
  */
-public class ShipmentCandidates implements IShipmentCandidates
+public class ShipmentCandidates implements IShipmentSchedulesDuringUpdate
 {
 
 	static final Logger logger = LogManager.getLogger(ShipmentCandidates.class);
