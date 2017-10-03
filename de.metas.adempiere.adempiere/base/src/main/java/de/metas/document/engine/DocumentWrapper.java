@@ -4,6 +4,7 @@ import java.io.File;
 import java.math.BigDecimal;
 import java.util.Properties;
 
+import org.adempiere.model.IModelWrapper;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.ModelValidationEngine;
@@ -35,7 +36,8 @@ import lombok.NonNull;
  * #L%
  */
 
-public class DocumentWrapper implements IDocument
+// NOTE: IModelWrapper is required to be able to save the document (see de.metas.document.engine.impl.DocumentEngine.postIt(PostImmediate))
+public class DocumentWrapper implements IDocument, IModelWrapper
 {
 	public static IDocument wrapModelUsingHandler(@NonNull final Object model, final DocumentHandler handler)
 	{
@@ -294,5 +296,11 @@ public class DocumentWrapper implements IDocument
 	public boolean isActive()
 	{
 		return model.isActive();
+	}
+
+	@Override
+	public Object getModel()
+	{
+		return model;
 	}
 }
