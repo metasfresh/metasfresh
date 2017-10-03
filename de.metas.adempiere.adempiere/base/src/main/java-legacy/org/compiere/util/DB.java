@@ -2041,6 +2041,7 @@ public final class DB
 
 	/** Quote */
 	private static final char QUOTE = '\'';
+	public static final String QUOTE_STRING = String.valueOf(QUOTE);
 
 	// Following methods are kept for BeanShell compatibility.
 	// See BF [ 2030233 ] Remove duplicate code from DB class
