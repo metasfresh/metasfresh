@@ -11,8 +11,8 @@ import java.util.function.UnaryOperator;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.apache.commons.io.FileUtils;
 import org.compiere.util.Env;
-import org.compiere.util.Util;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -213,14 +213,14 @@ public class LetterRestController
 		return createPDFResponseEntry(result.getLetter().getTemporaryPDFData());
 	}
 	
-	private static File createFile(final byte[] pdfData)
+	private File createFile(final byte[] pdfData)
 	{
 		final String pdfFilenamePrefix = Services.get(IMsgBL.class).getMsg(Env.getCtx(), Letters.MSG_Letter);
 		File pdfFile = null;
 		try
 		{
 			pdfFile = File.createTempFile(pdfFilenamePrefix, ".pdf");
-			Util.writeBytes(pdfFile, pdfData);
+			FileUtils.writeByteArrayToFile(pdfFile, pdfData);
 		}
 		catch (IOException e)
 		{
