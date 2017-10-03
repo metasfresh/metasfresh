@@ -273,7 +273,7 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 				rtService.getDefault(I_R_RequestType.COLUMNNAME_IsDefaultForLetter),
 				Services.get(IMsgBL.class).translate(Env.getCtx(), "de.metas.letter.RequestLetterSubject"),
 				false, // isSelfService,
-				null // trxName
+				ITrx.TRXNAME_ThreadInherited // trxName
 		);
 		updateRequestDetails(request, parent_table_id, parent_record_id, context);
 		InterfaceWrapperHelper.save(request);

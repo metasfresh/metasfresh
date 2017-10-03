@@ -51,6 +51,7 @@ import de.metas.letters.model.MADBoilerPlate.SourceDocument;
 import de.metas.logging.LogManager;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
+import de.metas.process.RunOutOfTrx;
 
 /**
  * Send BoilerPlate to Bundle (R_Group)
@@ -85,6 +86,7 @@ public class AD_BoilderPlate_SendToGroup extends JavaProcess
 	}
 
 	@Override
+	@RunOutOfTrx
 	protected String doIt() throws Exception
 	{
 		MGroup group = MGroup.get(getCtx(), p_R_Group_ID);
