@@ -58,6 +58,7 @@ public class ADProcessBL implements IADProcessBL
 		documentSpecificProcess.setEntityType(documentSpecificWorkflow.getEntityType());
 		documentSpecificProcess.setAccessLevel(documentSpecificWorkflow.getAccessLevel());
 		documentSpecificProcess.setType(X_AD_Process.TYPE_Java);
+		documentSpecificProcess.setIsReport(false);
 		documentSpecificProcess.setIsUseBPartnerLanguage(true);
 
 		InterfaceWrapperHelper.save(documentSpecificProcess);
