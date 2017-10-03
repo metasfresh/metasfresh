@@ -699,6 +699,9 @@ class RawWidget extends Component {
                         name={widgetField}
                         selected={widgetData[0].value.values}
                         className={this.getClassNames()}
+                        onChange={value => this.handlePatch(widgetField, {
+                            values: value
+                        })}
                     />
                 );
             default:

@@ -2,8 +2,7 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import {
     dropdownRequest,
-    autocompleteRequest,
-    patchRequest
+    autocompleteRequest
 } from '../../actions/GenericActions';
 
 class Labels extends Component {
@@ -38,19 +37,7 @@ class Labels extends Component {
                 return;
             }
 
-            const value = {
-                values: selected.slice(0, selected.length - 1)
-            };
-
-            await patchRequest({
-                docId,
-                entity: 'window',
-                property: name,
-                viewId: windowId,
-                value
-            });
-
-            return;
+            this.props.onChange(selected.slice(0, selected.length - 1));
         }
 
         const response = await autocompleteRequest({
