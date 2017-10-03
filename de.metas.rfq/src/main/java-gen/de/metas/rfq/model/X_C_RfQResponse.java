@@ -15,7 +15,7 @@ public class X_C_RfQResponse extends org.compiere.model.PO implements I_C_RfQRes
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1823602999L;
+	private static final long serialVersionUID = 638989377L;
 
     /** Standard Constructor */
     public X_C_RfQResponse (Properties ctx, int C_RfQResponse_ID, String trxName)
@@ -28,6 +28,7 @@ public class X_C_RfQResponse extends org.compiere.model.PO implements I_C_RfQRes
 			setC_Currency_ID (0); // @C_Currency_ID@
 			setC_RfQ_ID (0);
 			setC_RfQResponse_ID (0);
+			setDocAction (null); // CO
 			setDocStatus (null); // DR
 			setIsSelectedWinner (false);
 			setIsSelfService (false);
@@ -411,6 +412,61 @@ public class X_C_RfQResponse extends org.compiere.model.PO implements I_C_RfQRes
 	public java.lang.String getDescription () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Description);
+	}
+
+	/** 
+	 * DocAction AD_Reference_ID=135
+	 * Reference name: _Document Action
+	 */
+	public static final int DOCACTION_AD_Reference_ID=135;
+	/** Complete = CO */
+	public static final String DOCACTION_Complete = "CO";
+	/** Approve = AP */
+	public static final String DOCACTION_Approve = "AP";
+	/** Reject = RJ */
+	public static final String DOCACTION_Reject = "RJ";
+	/** Post = PO */
+	public static final String DOCACTION_Post = "PO";
+	/** Void = VO */
+	public static final String DOCACTION_Void = "VO";
+	/** Close = CL */
+	public static final String DOCACTION_Close = "CL";
+	/** Reverse_Correct = RC */
+	public static final String DOCACTION_Reverse_Correct = "RC";
+	/** Reverse_Accrual = RA */
+	public static final String DOCACTION_Reverse_Accrual = "RA";
+	/** Invalidate = IN */
+	public static final String DOCACTION_Invalidate = "IN";
+	/** Re_Activate = RE */
+	public static final String DOCACTION_Re_Activate = "RE";
+	/** None = -- */
+	public static final String DOCACTION_None = "--";
+	/** Prepare = PR */
+	public static final String DOCACTION_Prepare = "PR";
+	/** Unlock = XL */
+	public static final String DOCACTION_Unlock = "XL";
+	/** WaitComplete = WC */
+	public static final String DOCACTION_WaitComplete = "WC";
+	/** UnClose = UC */
+	public static final String DOCACTION_UnClose = "UC";
+	/** Set Belegverarbeitung.
+		@param DocAction 
+		Der zukünftige Status des Belegs
+	  */
+	@Override
+	public void setDocAction (java.lang.String DocAction)
+	{
+
+		set_Value (COLUMNNAME_DocAction, DocAction);
+	}
+
+	/** Get Belegverarbeitung.
+		@return Der zukünftige Status des Belegs
+	  */
+	@Override
+	public java.lang.String getDocAction () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_DocAction);
 	}
 
 	/** 
