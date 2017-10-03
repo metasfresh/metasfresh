@@ -24,11 +24,22 @@ class Labels extends Component {
 
     render() {
         return (
-            <div onFocus={this.handleFocus}>
-                <input />
-                {JSON.stringify(this.props.selected)}
-                {this.props.name}
-                {JSON.stringify(this.state.values)}
+            <div
+                className={this.props.className}
+                onFocus={this.handleFocus}
+            >
+                {this.props.selected.map(item => {
+                    const [key, value] = Object.entries(item)[0];
+
+                    return (
+                        <span
+                            key={key}
+                            className="labels-label"
+                        >
+                            {value}
+                        </span>
+                    );
+                })}
             </div>
         );
     }

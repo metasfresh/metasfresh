@@ -697,9 +697,8 @@ class RawWidget extends Component {
                 return (
                     <Labels
                         name={widgetField}
-                        selected={widgetData[0].value.values.map(
-                            value => Object.keys(value)[0]
-                        )}
+                        selected={widgetData[0].value.values}
+                        className={this.getClassNames()}
                     />
                 );
             default:

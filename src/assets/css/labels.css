@@ -1,0 +1,6 @@
+.labels-label {
+    display: inline-block;
+    padding: 0.25em 0.5em;
+    background: rgba(0, 0, 0, 0.05);
+    margin-right: 0.25em;
+}
