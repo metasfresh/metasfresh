@@ -142,7 +142,7 @@ public class LetterRestController
 		return JSONLetter.of(letter);
 	}
 
-	private byte[] createPDF(final WebuiLetter letter)
+	private byte[] createPDFFile(final WebuiLetter letter)
 	{
 		final I_C_Letter persistentLetter = lettersRepo.updatePersistentLetter(letter);
 		return Services.get(ITextTemplateBL.class).createPDF(persistentLetter);
@@ -173,7 +173,7 @@ public class LetterRestController
 
 		//
 		// Create and return the printable letter
-		final byte[] pdfFile = createPDF(letter);
+		final byte[] pdfFile = createPDFFile(letter);
 		return createPDFResponseEntry(pdfFile);
 	}
 
@@ -187,7 +187,7 @@ public class LetterRestController
 
 			//
 			// Create the printable letter
-			final byte[] pdfData = createPDF(letter);
+			final byte[] pdfData = createPDFFile(letter);
 
 			final File pdfFile = createFile(pdfData); 
 			//
