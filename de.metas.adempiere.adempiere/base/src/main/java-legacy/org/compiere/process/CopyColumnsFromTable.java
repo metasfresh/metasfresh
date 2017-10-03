@@ -1,17 +1,17 @@
 /******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 2007 ADempiere, Inc. All Rights Reserved.                    *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
+ * Product: Adempiere ERP & CRM Smart Business Solution *
+ * Copyright (C) 2007 ADempiere, Inc. All Rights Reserved. *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms version 2 of the GNU General Public License as published *
+ * by the Free Software Foundation. This program is distributed in the hope *
  * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * Adempiere, Inc.                                                            *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
+ * See the GNU General Public License for more details. *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
+ * For the text or an alternative of this public license, you may reach us *
+ * Adempiere, Inc. *
  *****************************************************************************/
 package org.compiere.process;
 
@@ -25,8 +25,8 @@ import org.compiere.model.I_AD_Table;
 import org.compiere.model.MColumn;
 import org.compiere.model.MTable;
 
-import de.metas.process.ProcessInfoParameter;
 import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
 
 /**
  * Copy columns from one table to other
@@ -46,6 +46,7 @@ public class CopyColumnsFromTable extends JavaProcess
 	/**
 	 * Prepare - e.g., get Parameters.
 	 */
+	@Override
 	protected void prepare()
 	{
 		for (final ProcessInfoParameter para : getParametersAsArray())
@@ -67,20 +68,14 @@ public class CopyColumnsFromTable extends JavaProcess
 		p_target_AD_Table_ID = getRecord_ID();
 	}	// prepare
 
-	/**
-	 * Process
-	 *
-	 * @return info
-	 * @throws Exception
-	 */
 	@Override
-	protected String doIt() throws Exception
+	protected String doIt()
 	{
-		final CopyColumnsProducer producer = new CopyColumnsProducer(this);
-		producer.setLogger(this);
-		producer.setTargetTable(getTargetTable());
-		producer.setSourceColumns(getSourceColumns());
-		producer.create();
+		final int countCreated = CopyColumnsProducer.newInstance()
+				.setLogger(this)
+				.setTargetTable(getTargetTable())
+				.setSourceColumns(getSourceColumns())
+				.create();
 
 		if (p_IsTest)
 		{
@@ -88,7 +83,7 @@ public class CopyColumnsFromTable extends JavaProcess
 		}
 
 		//
-		return "@Created@ #" + producer.getCountCreated();
+		return "@Created@ #" + countCreated;
 	}	// doIt
 
 	protected I_AD_Table getTargetTable()
@@ -111,7 +106,7 @@ public class CopyColumnsFromTable extends JavaProcess
 			throw new AdempiereException("@NotFound@ @AD_Column_ID@ (@AD_Table_ID@:" + sourceTable.getTableName() + ")");
 		}
 
-		final List<I_AD_Column> sourceColumns = new ArrayList<I_AD_Column>(sourceColumnsArr.length);
+		final List<I_AD_Column> sourceColumns = new ArrayList<>(sourceColumnsArr.length);
 		for (final I_AD_Column sourceColumn : sourceColumnsArr)
 		{
 			sourceColumns.add(sourceColumn);
