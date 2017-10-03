@@ -59,6 +59,11 @@ public class DocumentWrapper implements IDocument, IModelWrapper
 		this.handler = handler;
 	}
 
+	private final void fireDocValidateEvent(final int timing)
+	{
+		ModelValidationEngine.get().fireDocValidate(model, timing);
+	}
+
 	@Override
 	public void setDocStatus(final String newStatus)
 	{
@@ -109,9 +114,9 @@ public class DocumentWrapper implements IDocument, IModelWrapper
 	@Override
 	public String prepareIt()
 	{
-		ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_PREPARE);
+		fireDocValidateEvent(ModelValidator.TIMING_BEFORE_PREPARE);
 		final String newDocStatus = handler.prepareIt(model);
-		ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_PREPARE);
+		fireDocValidateEvent(ModelValidator.TIMING_AFTER_PREPARE);
 
 		justPrepared = STATUS_InProgress.equals(newDocStatus);
 
@@ -131,9 +136,9 @@ public class DocumentWrapper implements IDocument, IModelWrapper
 			}
 		}
 
-		ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_COMPLETE);
+		fireDocValidateEvent(ModelValidator.TIMING_BEFORE_COMPLETE);
 		final String newDocStatus = handler.completeIt(model);
-		ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_COMPLETE);
+		fireDocValidateEvent(ModelValidator.TIMING_AFTER_COMPLETE);
 		model.setProcessed(true);
 		return newDocStatus;
 	}
@@ -141,45 +146,45 @@ public class DocumentWrapper implements IDocument, IModelWrapper
 	@Override
 	public boolean voidIt()
 	{
-		ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_VOID);
+		fireDocValidateEvent(ModelValidator.TIMING_BEFORE_VOID);
 		handler.voidIt(model);
-		ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_VOID);
+		fireDocValidateEvent(ModelValidator.TIMING_AFTER_VOID);
 		return true;
 	}
 
 	@Override
 	public boolean closeIt()
 	{
-		ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_CLOSE);
+		fireDocValidateEvent(ModelValidator.TIMING_BEFORE_CLOSE);
 		handler.closeIt(model);
-		ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_CLOSE);
+		fireDocValidateEvent(ModelValidator.TIMING_AFTER_CLOSE);
 		return true;
 	}
 
 	@Override
 	public boolean reverseCorrectIt()
 	{
-		ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_REVERSECORRECT);
+		fireDocValidateEvent(ModelValidator.TIMING_BEFORE_REVERSECORRECT);
 		handler.reverseCorrectIt(model);
-		ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_REVERSECORRECT);
+		fireDocValidateEvent(ModelValidator.TIMING_AFTER_REVERSECORRECT);
 		return true;
 	}
 
 	@Override
 	public boolean reverseAccrualIt()
 	{
-		ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_REVERSEACCRUAL);
+		fireDocValidateEvent(ModelValidator.TIMING_BEFORE_REVERSEACCRUAL);
 		handler.reverseAccrualIt(model);
-		ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_REVERSEACCRUAL);
+		fireDocValidateEvent(ModelValidator.TIMING_AFTER_REVERSEACCRUAL);
 		return true;
 	}
 
 	@Override
 	public boolean reActivateIt()
 	{
-		ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_REACTIVATE);
+		fireDocValidateEvent(ModelValidator.TIMING_BEFORE_REACTIVATE);
 		handler.reactivateIt(model);
-		ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_REACTIVATE);
+		fireDocValidateEvent(ModelValidator.TIMING_AFTER_REACTIVATE);
 		return true;
 	}
 
