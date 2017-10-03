@@ -15,6 +15,11 @@ import org.slf4j.Logger;
  */
 public interface IDocument
 {
+	static IDocument cast(final Object documentObj)
+	{
+		return (IDocument)documentObj;
+	}
+
 	String ACTION_Complete = "CO";
 	String ACTION_WaitComplete = "WC";
 	String ACTION_Approve = "AP";
