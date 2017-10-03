@@ -1,4 +1,4 @@
-package org.adempiere.impexp;
+package org.adempiere.impexp.bpartner;
 
 import static org.adempiere.impexp.AbstractImportProcess.COLUMNNAME_I_ErrorMsg;
 import static org.adempiere.impexp.AbstractImportProcess.COLUMNNAME_I_IsImported;
