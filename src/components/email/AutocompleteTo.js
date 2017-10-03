@@ -33,14 +33,17 @@ class AutocompleteTo extends Component {
 
     suggestionsFetch = ({value}) => {
         const {emailId} = this.props;
-        autocompleteRequest(
-            emailId, 'to', value, null, null, null, 'mail', null,
-            null, null, false
-        ).then(res => {
+        autocompleteRequest({
+            attribute: false,
+            docType: emailId,
+            entity: 'mail',
+            propertyName: 'to',
+            query: value
+        }).then(response => {
             this.setState({
-                suggestions: res.data.values
+                suggestions: response.data.values
             })
-        })
+        });
     }
 
     autocompleteRenderInput = ({addTag, ...props}) => {

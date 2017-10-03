@@ -123,10 +123,19 @@ export function completeRequest(
     );
 }
 
-export function autocompleteRequest(
-    docType, propertyName, query, docId, tabId, rowId, entity, subentity,
-    subentityId, viewId, attribute
-) {
+export function autocompleteRequest({
+    attribute,
+    docId,
+    docType,
+    entity,
+    propertyName,
+    query,
+    rowId,
+    subentity,
+    subentityId,
+    tabId,
+    viewId
+}) {
     return axios.get(
         config.API_URL +
         '/' + entity +
