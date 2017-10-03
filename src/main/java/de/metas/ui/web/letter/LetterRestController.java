@@ -224,7 +224,7 @@ public class LetterRestController
 		}
 		catch (IOException e)
 		{
-			throw AdempiereException.wrapIfNeeded(e);
+			AdempiereException.wrapIfNeeded(e);
 		}
 
 		return pdfFile;
