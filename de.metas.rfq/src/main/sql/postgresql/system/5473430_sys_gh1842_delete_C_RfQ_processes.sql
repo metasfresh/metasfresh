@@ -34,3 +34,10 @@ DELETE FROM  AD_Process_Trl WHERE AD_Process_ID=540688
 DELETE FROM AD_Process WHERE AD_Process_ID=540688
 ;
 
+-- 2017-10-03T23:33:51.755
+-- C_RfQReponse_Complete
+DELETE FROM  AD_Process_Trl WHERE AD_Process_ID=277
+;
+DELETE FROM AD_Process WHERE AD_Process_ID=277
+;
+

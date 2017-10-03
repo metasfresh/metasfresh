@@ -43,9 +43,10 @@ import de.metas.rfq.model.X_C_RfQ;
 class RfQDocumentHandler implements DocumentHandler
 {
 	// services
-	final IRfQEventDispacher rfqEventDispacher = Services.get(IRfQEventDispacher.class);
-	final IRfqDAO rfqDAO = Services.get(IRfqDAO.class);
-	final IRfqBL rfqBL = Services.get(IRfqBL.class);
+	private final transient IRfQEventDispacher rfqEventDispacher = Services.get(IRfQEventDispacher.class);
+	private final transient IRfqDAO rfqDAO = Services.get(IRfqDAO.class);
+	private final transient IRfqBL rfqBL = Services.get(IRfqBL.class);
+	private final transient IRfQConfiguration rfqConfiguration = Services.get(IRfQConfiguration.class);
 
 	private static final I_C_RfQ extractRfQ(final DocumentTableFields docFields)
 	{
@@ -129,13 +130,14 @@ class RfQDocumentHandler implements DocumentHandler
 
 		// Mark completed
 		rfq.setDocStatus(X_C_RfQ.DOCSTATUS_Completed);
+		rfq.setDocAction(X_C_RfQ.DOCACTION_Close);
 		rfq.setProcessed(true);
 		rfq.setIsRfQResponseAccepted(true);
 		InterfaceWrapperHelper.save(rfq);
 
 		//
 		// Generate RfQ Responses
-		Services.get(IRfQConfiguration.class).newRfQResponsesProducerFor(rfq)
+		rfqConfiguration.newRfQResponsesProducerFor(rfq)
 				.setC_RfQ(rfq)
 				.setPublish(false) // do not publish them by default
 				.create();
@@ -158,13 +160,13 @@ class RfQDocumentHandler implements DocumentHandler
 	@Override
 	public void rejectIt(final DocumentTableFields docFields)
 	{
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
 	public void voidIt(final DocumentTableFields docFields)
 	{
-		// TODO Auto-generated method stub
-
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
@@ -178,13 +180,13 @@ class RfQDocumentHandler implements DocumentHandler
 		//
 		// Mark as closed
 		rfq.setDocStatus(X_C_RfQ.DOCSTATUS_Closed);
+		rfq.setDocAction(X_C_RfQ.DOCACTION_None);
 		rfq.setProcessed(true);
 		rfq.setIsRfQResponseAccepted(false);
 		InterfaceWrapperHelper.save(rfq);
 
 		//
 		// Close RfQ Responses
-		final IRfqDAO rfqDAO = Services.get(IRfqDAO.class);
 		for (final I_C_RfQResponse rfqResponse : rfqDAO.retrieveAllResponses(rfq))
 		{
 			if (!rfqBL.isDraft(rfqResponse))
@@ -192,7 +194,6 @@ class RfQDocumentHandler implements DocumentHandler
 				continue;
 			}
 
-			// completeInTrx(rfqResponse);
 			rfqBL.complete(rfqResponse);
 		}
 
@@ -214,6 +215,7 @@ class RfQDocumentHandler implements DocumentHandler
 		//
 		// Mark as completed
 		rfq.setDocStatus(X_C_RfQ.DOCSTATUS_Completed);
+		rfq.setDocAction(X_C_RfQ.DOCACTION_Close);
 		InterfaceWrapperHelper.save(rfq);
 
 		//
@@ -225,7 +227,7 @@ class RfQDocumentHandler implements DocumentHandler
 				continue;
 			}
 
-			rfqBL.uncloseInTrx(rfqResponse);
+			rfqBL.unclose(rfqResponse);
 		}
 
 		//
