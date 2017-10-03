@@ -5,11 +5,12 @@ import java.math.BigDecimal;
 import java.util.Properties;
 
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.slf4j.Logger;
 
 /**
  * Document Interface
- * 
+ *
  * @author based on initial version of Jorg Janke
  * @author metas-dev <dev@metasfresh.com>
  */
@@ -77,7 +78,7 @@ public interface IDocument
 	String getProcessMsg();
 
 	/** @return true if success */
-	default boolean processIt(String docAction) throws Exception
+	default boolean processIt(final String docAction) throws Exception
 	{
 		return Services.get(IDocumentBL.class).processIt(this, docAction);
 	}
@@ -165,4 +166,8 @@ public interface IDocument
 
 	void set_TrxName(String trxName);
 
+	default TableRecordReference toTableRecordReference()
+	{
+		return TableRecordReference.of(get_Table_ID(), get_ID());
+	}
 }
