@@ -170,4 +170,9 @@ public interface IDocument
 	{
 		return TableRecordReference.of(get_Table_ID(), get_ID());
 	}
+	
+	default Object getDocumentModel()
+	{
+		return this;
+	}
 }

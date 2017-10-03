@@ -633,7 +633,7 @@ public abstract class Doc
 	private final int deleteAcct()
 	{
 		final Object documentPO = getPO();
-		return factAcctDAO.deleteForDocument(documentPO);
+		return factAcctDAO.deleteForDocumentModel(documentPO);
 	}	// deleteAcct
 
 	/**

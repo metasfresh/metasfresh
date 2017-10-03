@@ -527,7 +527,7 @@ import lombok.NonNull;
 			document.setDocStatus(newDocStatus);
 
 			// task 09243: update doc status in the fact accounts of the document
-			factAcctDAO.updateDocStatusForDocument(document, newDocStatus);
+			factAcctDAO.updateDocStatusForDocument(document);
 			return true;
 		}
 		else
@@ -557,7 +557,7 @@ import lombok.NonNull;
 			document.setDocStatus(newDocStatus);
 
 			// task 09243: update doc status in the fact accounts of the document
-			factAcctDAO.updateDocStatusForDocument(document, newDocStatus);
+			factAcctDAO.updateDocStatusForDocument(document);
 			return true;
 		}
 		else
@@ -588,7 +588,7 @@ import lombok.NonNull;
 			document.setDocStatus(newDocStatus);
 
 			// task 09243: update doc status in the fact accounts of the document
-			factAcctDAO.updateDocStatusForDocument(document, newDocStatus);
+			factAcctDAO.updateDocStatusForDocument(document);
 			return true;
 		}
 		else
@@ -618,8 +618,8 @@ import lombok.NonNull;
 		}
 	}
 
-	/** @return available DocActions based on current DocStatus */
-	private Set<String> getAvailableDocActionsForCurrentDocStatus()
+	/** @return all valid DocActions based on current DocStatus */
+	private Set<String> getValidDocActionsForCurrentDocStatus()
 	{
 		if (isInvalid())
 		{
@@ -667,7 +667,7 @@ import lombok.NonNull;
 	/** @return true if given docAction is valid for current docStatus. */
 	private boolean isValidDocAction(final String docAction)
 	{
-		final Set<String> availableDocActions = getAvailableDocActionsForCurrentDocStatus();
+		final Set<String> availableDocActions = getValidDocActionsForCurrentDocStatus();
 		return availableDocActions.contains(docAction);
 	}
 

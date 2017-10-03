@@ -197,7 +197,7 @@ public class Fresh_08412_ProcessHUs extends JavaProcess
 
 		//
 		// Close movement (to not allow somebody to touch it)
-		factAcctDAO.deleteForDocument(movement);
+		factAcctDAO.deleteForDocumentModel(movement);
 		movement.setPosted(true);
 		movement.setDocStatus(IDocument.STATUS_Closed);
 		movement.setDocAction(IDocument.ACTION_None);
@@ -315,7 +315,7 @@ public class Fresh_08412_ProcessHUs extends JavaProcess
 		// Delete the accountings
 		ppOrder.setPosted(true);
 		InterfaceWrapperHelper.save(ppOrder);
-		factAcctDAO.deleteForDocument(ppOrder); // just to be sure
+		factAcctDAO.deleteForDocumentModel(ppOrder); // just to be sure
 
 		//
 		// Mark all cost collectors as closed.
@@ -329,7 +329,7 @@ public class Fresh_08412_ProcessHUs extends JavaProcess
 			cc.setDocAction(IDocument.ACTION_None);
 			InterfaceWrapperHelper.save(cc);
 
-			factAcctDAO.deleteForDocument(cc);
+			factAcctDAO.deleteForDocumentModel(cc);
 		}
 	}
 }

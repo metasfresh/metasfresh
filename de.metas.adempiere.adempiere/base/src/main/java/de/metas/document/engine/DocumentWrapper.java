@@ -306,6 +306,12 @@ public class DocumentWrapper implements IDocument, IModelWrapper
 	@Override
 	public Object getModel()
 	{
+		return getDocumentModel();
+	}
+	
+	@Override
+	public Object getDocumentModel()
+	{
 		return model;
 	}
 }
