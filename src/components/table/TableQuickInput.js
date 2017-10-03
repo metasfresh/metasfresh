@@ -117,10 +117,16 @@ class TableQuickInput extends Component {
         const {id} = this.state;
 
         this.patchPromise = new Promise(resolve => {
-            patchRequest(
-                'window', docType, docId, tabId, null, prop, value,
-                'quickInput', id
-            ).then(response => {
+            patchRequest({
+                entity: 'window',
+                docType,
+                docId,
+                tabId,
+                property: prop,
+                value,
+                subentity: 'quickInput',
+                subentityId: id
+            }).then(response => {
                 const fields = response.data[0] && response.data[0].fieldsByName
 
                 fields && Object.keys(fields).map(fieldName => {
@@ -139,7 +145,7 @@ class TableQuickInput extends Component {
                         resolve();
                     });
                 })
-            })
+            });
         });
     }
 

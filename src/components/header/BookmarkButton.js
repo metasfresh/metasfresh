@@ -30,10 +30,13 @@ class BookmarkButton extends Component {
         const {dispatch, nodeId, updateData} = this.props;
         const {isBookmark} = this.state;
 
-        patchRequest(
-            'menu', null, null, null, null, 'favorite', !isBookmark, 'node',
-            nodeId
-        ).then(response => {
+        patchRequest({
+            entity: 'menu',
+            property: 'favorite',
+            value: !isBookmark,
+            subentity: 'node',
+            subentityId: nodeId
+        }).then(response => {
             this.setState({isBookmark: !isBookmark})
             updateData && updateData(response.data);
         });

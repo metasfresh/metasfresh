@@ -383,13 +383,21 @@ export function initWindow(windowType, docId, tabId, rowId = null, isAdvanced) {
     return (dispatch) => {
         if (docId === 'NEW') {
             //New master document
-            return patchRequest('window', windowType, docId)
+            return patchRequest({
+                entity: 'window',
+                docType: windowType,
+                docId
+            });
         } else {
             if (rowId === 'NEW') {
                 //New row document
-                return patchRequest(
-                    'window', windowType, docId, tabId, 'NEW'
-                )
+                return patchRequest({
+                    entity: 'window',
+                    docType: windowType,
+                    docId,
+                    tabId,
+                    rowId
+                });
             } else if (rowId) {
                 //Existing row document
                 return getData(
@@ -427,16 +435,18 @@ export function patch(
     isAdvanced
 ) {
     return dispatch => {
-        let responsed = false;
-
         dispatch(indicatorState('pending'));
 
-        return patchRequest(
-            entity, windowType, id, tabId, rowId, property, value, null, null,
+        return patchRequest({
+            entity,
+            docType: windowType,
+            docId: id,
+            tabId,
+            rowId,
+            property,
+            value,
             isAdvanced
-        ).then(response => {
-            responsed = true;
-
+        }).then(response => {
             dispatch(mapDataToState(
                 response.data, isModal, rowId, id, windowType, isAdvanced
             ));

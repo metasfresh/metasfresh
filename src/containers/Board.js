@@ -43,17 +43,17 @@ class Board extends Component {
     componentWillUnmount = () => {
         disconnectWS.call(this);
     }
-    
+
     laneCardsChanged = (event) => {
         const {board} = this.state;
         const {laneId, cardIds} = event;
         const laneIndex = board.lanes.findIndex(lane => lane.laneId === laneId);
         const lane = board.lanes[laneIndex];
-        
-        
+
+
         const prom = Promise.all(
             cardIds.map(id => getRequest('board', board.boardId, 'card', id)));
-            
+
         prom.then(res => {
             const cards = res.map(item => item.data);
             this.addCards(laneIndex, cards);
@@ -87,29 +87,36 @@ class Board extends Component {
     handleDrop = (card, targetLaneId) => {
         const {board} = this.state;
         this.clearTargetIndicator();
-        
-        if(card.initLaneId === 0) {
+
+        if (card.initLaneId === 0) {
             // Adding card
             addCard(board.boardId, targetLaneId, card.id, card.index);
 
             if (this.sideNav) {
                 this.sideNav.removeCard(card.id);
             }
-        }else{
+        } else {
             // Moving card
-            if(card.initLaneId === targetLaneId){
+            if (card.initLaneId === targetLaneId) {
                 //Changing position
-                patchRequest(
-                    'board', board.boardId, null, null, null, 'position',
-                    card.index, 'card', card.id
-                );
-            }else{
+                patchRequest({
+                    entity: 'board',
+                    docType: board.boardId,
+                    property: 'position',
+                    value: card.index,
+                    subentity: 'card',
+                    subentityId: card.id
+                });
+            } else {
                 //Changing lane at least
-                patchRequest(
-                    'board', board.boardId, null, null, null,
-                    ['laneId', 'position'], [targetLaneId, card.index], 'card',
-                    card.id
-                );
+                patchRequest({
+                    entity: 'board',
+                    docType: board.boardId,
+                    property: ['laneId', 'position'],
+                    value: [targetLaneId, card.index],
+                    subentity: 'card',
+                    subentityId: card.id
+                });
             }
         }
     }
@@ -161,7 +168,7 @@ class Board extends Component {
 
         const url = '/window/' + docPath.windowId +
             (docPath.documentId ? '/' + docPath.documentId : '');
-        
+
         window.open(url, '_blank');
     }
 

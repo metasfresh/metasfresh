@@ -88,7 +88,7 @@ export class DraggableWrapper extends Component {
     }
 
     getType = (entity) => entity === 'cards' ? 'kpis' : 'targetIndicators';
-    
+
     getIndicators = () => {
         getTargetIndicatorsDashboard().then(response => {
             this.setState({
@@ -96,7 +96,7 @@ export class DraggableWrapper extends Component {
             });
         });
     }
-    
+
     getDashboard = () => {
         getKPIsDashboard().then(response => {
             this.setState({
@@ -105,7 +105,7 @@ export class DraggableWrapper extends Component {
             });
         });
     }
-    
+
     addCard = (entity, id) => {
         const tmpItemIndex = this.state[entity].findIndex(i => i.id === id);
         addDashboardWidget(this.getType(entity), id, tmpItemIndex).then(res => {
@@ -116,15 +116,19 @@ export class DraggableWrapper extends Component {
             }));
         });
     }
-    
+
     onDrop = (entity, id) => {
         const tmpItemIndex = this.state[entity].findIndex(i => i.id === id);
-        patchRequest(
-            'dashboard', null, null, null, null, 'position',
-            tmpItemIndex, this.getType(entity), id
-        );
+        patchRequest({
+            entity: 'dashboard',
+            property: 'position',
+            value: tmpItemIndex,
+            subentity: this.getType(entity),
+            // TODO: This looks like it should rather be viewId: id
+            isAdvanced: id
+        });
     }
-    
+
     moveCard = (entity, dragIndex, hoverIndex, item) => {
         const draggedItem = this.state[entity][dragIndex];
         if(draggedItem){
@@ -156,7 +160,7 @@ export class DraggableWrapper extends Component {
             }));
         }
     }
-    
+
     removeCard = (entity, index, id) => {
         removeDashboardWidget(this.getType(entity), id);
         this.setState(prev => update(prev, {
@@ -167,17 +171,17 @@ export class DraggableWrapper extends Component {
             }
         }));
     }
-    
+
     maximizeWidget = (id) => {
         this.setState({
             idMaximized: id
         })
     }
-    
+
     renderIndicators = () => {
         const {indicators, idMaximized} = this.state;
         const {editmode} = this.props;
-        
+
         if(!indicators.length && editmode) return (
             <div className='indicators-wrapper'>
                 <DndWidget
@@ -194,9 +198,9 @@ export class DraggableWrapper extends Component {
                 </DndWidget>
             </div>
         );
-        
+
         if(!indicators.length) return false;
-        
+
         return (
             <div
                 className={'indicators-wrapper'}
@@ -230,11 +234,11 @@ export class DraggableWrapper extends Component {
             </div>
         )
     }
-    
+
     renderKpis = () => {
         const {cards, idMaximized} = this.state;
         const {editmode} = this.props;
-        
+
         if(!cards.length && editmode) return (
             <div className="kpis-wrapper">
                 <DndWidget
@@ -251,7 +255,7 @@ export class DraggableWrapper extends Component {
                 </DndWidget>
             </div>
         );
-        
+
         return (
             <div className="kpis-wrapper">
                 {cards.length > 0 ? cards.map((item, id) => {
@@ -305,7 +309,7 @@ export class DraggableWrapper extends Component {
     renderOptionModal = () => {
         const {chartOptions, captionHandler, when, interval} = this.state;
         return (
-            chartOptions && 
+            chartOptions &&
                 <div className="chart-options-overlay">
                     <div className="chart-options-wrapper">
                         <div className="chart-options">
@@ -340,7 +344,7 @@ export class DraggableWrapper extends Component {
                             </div>
                         </div>
                         <div className="chart-options-button-wrapper">
-                            <button 
+                            <button
                                 className="btn btn-meta-outline-secondary btn-sm"
                                 onClick={() => this.changeChartData("caption", captionHandler )}
                             >
@@ -402,10 +406,10 @@ export class DraggableWrapper extends Component {
             });
         }
     }
-    
+
     render() {
         const {editmode, toggleEditMode} = this.props;
-        
+
         return (
             <div className="dashboard-cards-wrapper">
                 {this.renderOptionModal()}
@@ -424,7 +428,7 @@ export class DraggableWrapper extends Component {
         );
     }
 }
-    
+
 DraggableWrapper.propTypes = {
     dispatch: PropTypes.func.isRequired
 };

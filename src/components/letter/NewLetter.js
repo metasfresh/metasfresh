@@ -67,14 +67,17 @@ class NewLetter extends Component {
             return;
         }
 
-        (patchRequest('letter', letterId, null, null, null, 'message', message)
-            .then(res => {
-                this.setState({
-                    ...res.data,
-                    cached: res.data
-                });
-            })
-        );
+        patchRequest({
+            entity: 'letter',
+            docType: letterId,
+            property: 'message',
+            value: message
+        }).then(response => {
+            this.setState({
+                ...response.data,
+                cached: response.data
+            });
+        });
     }
 
     complete = () => {
@@ -97,14 +100,17 @@ class NewLetter extends Component {
             return;
         }
 
-        (patchRequest('letter', letterId, null, null, null, 'templateId', option)
-            .then(res => {
-               this.setState({
-                   ...res.data,
-                    template: option
-                });
-            })
-        );
+        patchRequest({
+            entity: 'letter',
+            docType: letterId,
+            property: 'templateId',
+            value: option
+        }).then(response => {
+           this.setState({
+               ...response.data,
+                template: option
+            });
+        });
     }
 
     render() {
