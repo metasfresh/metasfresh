@@ -23,9 +23,9 @@ import org.eevolution.model.I_PP_Order;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocActionOptionsContext;
 import de.metas.document.engine.IDocActionOptionsCustomizer;
+import de.metas.document.engine.IDocument;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 
 /*
@@ -41,22 +41,28 @@ import de.metas.shipping.model.I_M_ShipperTransportation;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-public final class DefaultDocActionOptionsCustomizer implements IDocActionOptionsCustomizer
+// @Component // shall not be discovered by spring context
+/* package */final class DefaultDocActionOptionsCustomizer implements IDocActionOptionsCustomizer
 {
 	public static final transient DefaultDocActionOptionsCustomizer instance = new DefaultDocActionOptionsCustomizer();
 
 	private DefaultDocActionOptionsCustomizer()
 	{
-		super();
+	}
+
+	@Override
+	public String getAppliesToTableName()
+	{
+		return null; // ANY
 	}
 
 	@Override

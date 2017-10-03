@@ -3,9 +3,11 @@ package de.metas.shipping.model;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-import de.metas.document.engine.IDocument;
+import org.springframework.stereotype.Component;
+
 import de.metas.document.engine.IDocActionOptionsContext;
 import de.metas.document.engine.IDocActionOptionsCustomizer;
+import de.metas.document.engine.IDocument;
 
 /*
  * #%L
@@ -29,13 +31,13 @@ import de.metas.document.engine.IDocActionOptionsCustomizer;
  * #L%
  */
 
+@Component
 public class ShipperTransportationDocActionCustomizer implements IDocActionOptionsCustomizer
 {
-	public static final transient ShipperTransportationDocActionCustomizer instance = new ShipperTransportationDocActionCustomizer();
-
-	private ShipperTransportationDocActionCustomizer()
+	@Override
+	public String getAppliesToTableName()
 	{
-		super();
+		return I_M_ShipperTransportation.Table_Name;
 	}
 
 	@Override
