@@ -2,7 +2,8 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import {
     dropdownRequest,
-    autocompleteRequest
+    autocompleteRequest,
+    patchRequest
 } from '../../actions/GenericActions';
 
 class Labels extends Component {
@@ -28,9 +29,29 @@ class Labels extends Component {
         this.setState({ values });
     }
 
-    handleInput = async event => {
+    handleKeyDown = async event => {
         const typeAhead = event.target.innerHTML;
-        const { windowId, docId, name } = this.props;
+        const { windowId, docId, name, selected } = this.props;
+
+        if (!typeAhead && event.key === 'Backspace') {
+            if (this.props.selected.length < 1) {
+                return;
+            }
+
+            const value = {
+                values: selected.slice(0, selected.length - 1)
+            };
+
+            await patchRequest({
+                docId,
+                entity: 'window',
+                property: name,
+                viewId: windowId,
+                value
+            });
+
+            return;
+        }
 
         const response = await autocompleteRequest({
             docId,
@@ -77,7 +98,7 @@ class Labels extends Component {
                     className="labels-input"
                     ref={ref => { this.input = ref; }}
                     contentEditable
-                    onInput={this.handleInput}
+                    onKeyDown={this.handleKeyDown}
                 />
                 <div>
                     {suggestions.map(suggestion => {
