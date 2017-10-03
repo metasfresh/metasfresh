@@ -55,6 +55,12 @@ class Labels extends Component {
         });
     }
 
+    handleSuggestionClick = suggestion => () => {
+        this.input.innerHTML = '';
+
+        this.props.onChange([...this.props.selected, suggestion]);
+    }
+
     render() {
         let suggestions;
 
@@ -100,7 +106,10 @@ class Labels extends Component {
                         const [key, value] = Object.entries(suggestion)[0];
 
                         return (
-                            <div key={key}>
+                            <div
+                                key={key}
+                                onClick={this.handleSuggestionClick(suggestion)}
+                            >
                                 {value}
                             </div>
                         );
