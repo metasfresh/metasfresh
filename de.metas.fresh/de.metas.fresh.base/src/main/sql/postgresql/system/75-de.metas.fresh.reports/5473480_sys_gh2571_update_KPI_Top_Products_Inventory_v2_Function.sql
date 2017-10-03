@@ -1,4 +1,4 @@
-
+﻿
 DROP FUNCTION IF EXISTS de_metas_fresh_kpi.KPI_Top_Products_Inventory_v2_Function (IN CurrentDate date, IN ComparisonDate date) ;
 
 CREATE OR REPLACE FUNCTION de_metas_fresh_kpi.KPI_Top_Products_Inventory_v2_Function (IN CurrentDate date, IN ComparisonDate date) 
