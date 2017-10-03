@@ -11,21 +11,16 @@ import org.adempiere.util.Services;
 import org.compiere.util.Env;
 import org.compiere.util.TrxRunnableAdapter;
 
-import de.metas.rfq.IRfQConfiguration;
 import de.metas.rfq.IRfqBL;
 import de.metas.rfq.IRfqDAO;
 import de.metas.rfq.event.IRfQEventDispacher;
-import de.metas.rfq.exceptions.NoRfQLinesFoundException;
-import de.metas.rfq.exceptions.RfQDocumentClosedException;
 import de.metas.rfq.exceptions.RfQDocumentNotClosedException;
 import de.metas.rfq.exceptions.RfQDocumentNotCompleteException;
 import de.metas.rfq.exceptions.RfQDocumentNotDraftException;
-import de.metas.rfq.exceptions.RfQLineInvalidException;
 import de.metas.rfq.exceptions.RfQResponseInvalidException;
 import de.metas.rfq.exceptions.RfQResponseLineInvalidException;
 import de.metas.rfq.exceptions.RfQResponseLineQtyInvalidException;
 import de.metas.rfq.model.I_C_RfQ;
-import de.metas.rfq.model.I_C_RfQLine;
 import de.metas.rfq.model.I_C_RfQResponse;
 import de.metas.rfq.model.I_C_RfQResponseLine;
 import de.metas.rfq.model.I_C_RfQResponseLineQty;
@@ -256,146 +251,6 @@ public class RfqBL implements IRfqBL
 	}
 
 	@Override
-	public void complete(final I_C_RfQ rfq)
-	{
-		final ITrxManager trxManager = Services.get(ITrxManager.class);
-		trxManager.run(ITrx.TRXNAME_ThreadInherited, new TrxRunnableAdapter()
-		{
-			@Override
-			public void run(final String localTrxName) throws Exception
-			{
-				InterfaceWrapperHelper.setTrxName(rfq, ITrx.TRXNAME_ThreadInherited);
-				completeInTrx(rfq);
-			}
-		});
-	}
-
-	private void completeInTrx(final I_C_RfQ rfq)
-	{
-		assertDraft(rfq);
-
-		//
-		// Fire event: before complete
-		final IRfQEventDispacher rfqEventDispacher = getRfQEventDispacher();
-		rfqEventDispacher.fireBeforeComplete(rfq);
-
-		// services
-		final IRfqDAO rfqDAO = Services.get(IRfqDAO.class);
-
-		//
-		// If we require quoting only the total amount then:
-		// * make sure there are no C_RfQLineQty records
-		if (isQuoteTotalAmtOnly(rfq))
-		{
-			// Need to check Line Qty
-			for (final I_C_RfQLine rfqLine : rfqDAO.retrieveLines(rfq))
-			{
-				final int rfqLineQtyCount = rfqDAO.retrieveLineQtysCount(rfqLine);
-				if (rfqLineQtyCount > 1)
-				{
-					throw new RfQLineInvalidException(rfqLine, "@C_RfQLineQty_ID@ #" + rfqLineQtyCount + " - @IsQuoteTotalAmt@");
-				}
-			}
-		}
-		else
-		{
-			final int rfqLinesCount = rfqDAO.retrieveLinesCount(rfq);
-			if (rfqLinesCount <= 0)
-			{
-				throw new NoRfQLinesFoundException(rfq);
-			}
-		}
-
-		// Mark completed
-		rfq.setDocStatus(X_C_RfQ.DOCSTATUS_Completed);
-		rfq.setProcessed(true);
-		rfq.setIsRfQResponseAccepted(true);
-		InterfaceWrapperHelper.save(rfq);
-
-		//
-		// Generate RfQ Responses
-		Services.get(IRfQConfiguration.class).newRfQResponsesProducerFor(rfq)
-				.setC_RfQ(rfq)
-				.setPublish(false) // do not publish them by default
-				.create();
-
-		//
-		// Fire event: after complete
-		rfqEventDispacher.fireAfterComplete(rfq);
-
-		// Make sure everything was saved
-		InterfaceWrapperHelper.save(rfq);
-	}
-
-	@Override
-	public void reActivate(final I_C_RfQ rfq)
-	{
-		final ITrxManager trxManager = Services.get(ITrxManager.class);
-		trxManager.run(ITrx.TRXNAME_ThreadInherited, new TrxRunnableAdapter()
-		{
-			@Override
-			public void run(final String localTrxName) throws Exception
-			{
-				InterfaceWrapperHelper.setTrxName(rfq, ITrx.TRXNAME_ThreadInherited);
-				reActivateInTrx(rfq);
-			}
-		});
-	}
-
-	private void reActivateInTrx(final I_C_RfQ rfq)
-	{
-		assertComplete(rfq);
-
-		// services
-		final IRfqDAO rfqDAO = Services.get(IRfqDAO.class);
-
-		//
-		// Void and delete all responses
-		for (final I_C_RfQResponse rfqResponse : rfqDAO.retrieveAllResponses(rfq))
-		{
-			voidAndDelete(rfqResponse);
-		}
-
-		//
-		// Mark as not processed
-		rfq.setDocStatus(X_C_RfQ.DOCSTATUS_Drafted);
-		rfq.setProcessed(false);
-		rfq.setIsRfQResponseAccepted(false);
-		InterfaceWrapperHelper.save(rfq);
-	}
-
-	private void voidAndDelete(final I_C_RfQResponse rfqResponse)
-	{
-		// Prevent deleting/voiding an already closed RfQ response
-		if (isClosed(rfqResponse))
-		{
-			throw new RfQDocumentClosedException(getSummary(rfqResponse));
-		}
-
-		// TODO: FRESH-402 shall we throw exception if the rfqResponse was published?
-
-		rfqResponse.setProcessed(false);
-		InterfaceWrapperHelper.delete(rfqResponse);
-	}
-
-	@Override
-	public void assertDraft(final I_C_RfQ rfq)
-	{
-		if (!isDraft(rfq))
-		{
-			throw new RfQDocumentNotDraftException(getSummary(rfq));
-		}
-	}
-
-	@Override
-	public boolean isDraft(final I_C_RfQ rfq)
-	{
-		final String docStatus = rfq.getDocStatus();
-		return X_C_RfQ.DOCSTATUS_Drafted.equals(docStatus)
-				|| X_C_RfQ.DOCSTATUS_InProgress.equals(docStatus);
-	}
-
-	@Override
 	public void assertComplete(final I_C_RfQ rfq)
 	{
 		if (!isCompleted(rfq))
@@ -422,56 +277,6 @@ public class RfqBL implements IRfqBL
 	public boolean isClosed(final I_C_RfQ rfq)
 	{
 		return X_C_RfQ.DOCSTATUS_Closed.equals(rfq.getDocStatus());
-	}
-
-	@Override
-	public void close(final I_C_RfQ rfq)
-	{
-		final ITrxManager trxManager = Services.get(ITrxManager.class);
-		trxManager.run(ITrx.TRXNAME_ThreadInherited, new TrxRunnableAdapter()
-		{
-			@Override
-			public void run(final String localTrxName) throws Exception
-			{
-				InterfaceWrapperHelper.setTrxName(rfq, ITrx.TRXNAME_ThreadInherited);
-				closeInTrx(rfq);
-			}
-		});
-	}
-
-	private void closeInTrx(final I_C_RfQ rfq)
-	{
-		assertComplete(rfq);
-
-		//
-		final IRfQEventDispacher rfQEventDispacher = getRfQEventDispacher();
-		rfQEventDispacher.fireBeforeClose(rfq);
-
-		//
-		// Mark as closed
-		rfq.setDocStatus(X_C_RfQ.DOCSTATUS_Closed);
-		rfq.setProcessed(true);
-		rfq.setIsRfQResponseAccepted(false);
-		InterfaceWrapperHelper.save(rfq);
-
-		//
-		// Close RfQ Responses
-		final IRfqDAO rfqDAO = Services.get(IRfqDAO.class);
-		for (final I_C_RfQResponse rfqResponse : rfqDAO.retrieveAllResponses(rfq))
-		{
-			if (!isDraft(rfqResponse))
-			{
-				continue;
-			}
-
-			completeInTrx(rfqResponse);
-		}
-
-		//
-		rfQEventDispacher.fireAfterClose(rfq);
-
-		// Make sure it's saved
-		InterfaceWrapperHelper.save(rfq);
 	}
 
 	@Override
@@ -595,54 +400,7 @@ public class RfqBL implements IRfqBL
 	}
 
 	@Override
-	public void unclose(final I_C_RfQ rfq)
-	{
-		final ITrxManager trxManager = Services.get(ITrxManager.class);
-		trxManager.run(ITrx.TRXNAME_ThreadInherited, new TrxRunnableAdapter()
-		{
-			@Override
-			public void run(final String localTrxName) throws Exception
-			{
-				InterfaceWrapperHelper.setTrxName(rfq, ITrx.TRXNAME_ThreadInherited);
-				uncloseInTrx(rfq);
-			}
-		});
-	}
-
-	private void uncloseInTrx(final I_C_RfQ rfq)
-	{
-		assertClosed(rfq);
-
-		//
-		final IRfQEventDispacher rfQEventDispacher = getRfQEventDispacher();
-		rfQEventDispacher.fireBeforeUnClose(rfq);
-
-		//
-		// Mark as completed
-		rfq.setDocStatus(X_C_RfQ.DOCSTATUS_Completed);
-		InterfaceWrapperHelper.save(rfq);
-
-		//
-		// UnClose RfQ Responses
-		final IRfqDAO rfqDAO = Services.get(IRfqDAO.class);
-		for (final I_C_RfQResponse rfqResponse : rfqDAO.retrieveAllResponses(rfq))
-		{
-			if (!isClosed(rfqResponse))
-			{
-				continue;
-			}
-
-			uncloseInTrx(rfqResponse);
-		}
-
-		//
-		rfQEventDispacher.fireAfterUnClose(rfq);
-
-		// Make sure it's saved
-		InterfaceWrapperHelper.save(rfq);
-	}
-
-	private void uncloseInTrx(final I_C_RfQResponse rfqResponse)
+	public void uncloseInTrx(final I_C_RfQResponse rfqResponse)
 	{
 		if (!isClosed(rfqResponse))
 		{

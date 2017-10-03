@@ -421,6 +421,31 @@ public interface I_C_RfQ
     public static final String COLUMNNAME_Description = "Description";
 
 	/**
+	 * Set Belegverarbeitung.
+	 * Der zukünftige Status des Belegs
+	 *
+	 * <br>Type: Button
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setDocAction (java.lang.String DocAction);
+
+	/**
+	 * Get Belegverarbeitung.
+	 * Der zukünftige Status des Belegs
+	 *
+	 * <br>Type: Button
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getDocAction();
+
+    /** Column definition for DocAction */
+    public static final org.adempiere.model.ModelColumn<I_C_RfQ, Object> COLUMN_DocAction = new org.adempiere.model.ModelColumn<I_C_RfQ, Object>(I_C_RfQ.class, "DocAction", null);
+    /** Column name DocAction */
+    public static final String COLUMNNAME_DocAction = "DocAction";
+
+	/**
 	 * Set Belegstatus.
 	 * The current status of the document
 	 *

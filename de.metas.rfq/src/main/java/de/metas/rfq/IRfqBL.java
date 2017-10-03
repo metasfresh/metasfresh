@@ -41,18 +41,10 @@ public interface IRfqBL extends ISingletonService
 	boolean isQuoteSelectedLines(I_C_RfQ rfq);
 	boolean isQuoteTotalAmtOnly(I_C_RfQ rfq);
 	
-	boolean isDraft(I_C_RfQ rfq);
-	void assertDraft(I_C_RfQ rfq);
-	
 	boolean isCompleted(I_C_RfQ rfq);
 	void assertComplete(I_C_RfQ rfq);
-	void complete(I_C_RfQ rfq);
 	
 	boolean isClosed(I_C_RfQ rfq);
-	void close(I_C_RfQ rfq);
-	void unclose(I_C_RfQ rfq);
-	
-	void reActivate(I_C_RfQ rfq);
 	//@formatter:on
 
 	//
@@ -70,6 +62,7 @@ public interface IRfqBL extends ISingletonService
 	boolean isCompleted(I_C_RfQResponseLine rfqResponseLine);
 	//
 	void close(I_C_RfQResponse rfqResponse);
+	void uncloseInTrx(I_C_RfQResponse rfqResponse);
 	boolean isClosed(I_C_RfQResponse rfqResponse);
 	boolean isClosed(I_C_RfQResponseLine rfqResponseLine);
 	//@formatter:on
