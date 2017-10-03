@@ -97,6 +97,7 @@ class Labels extends Component {
                 onClick={this.handleClick}
                 onFocus={this.handleFocus}
                 onBlur={this.handleBlur}
+                tabIndex={this.props.tabIndex}
             >
                 {this.props.selected.map(item => {
                     const [key, value] = Object.entries(item)[0];

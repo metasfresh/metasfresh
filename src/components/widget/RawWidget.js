@@ -702,6 +702,7 @@ class RawWidget extends Component {
                         onChange={value => this.handlePatch(widgetField, {
                             values: value
                         })}
+                        tabIndex={fullScreen ? -1 : tabIndex}
                     />
                 );
             default:
