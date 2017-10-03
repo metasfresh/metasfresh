@@ -160,8 +160,8 @@ public class LetterRestController
 
 		//
 		// Create and return the printable letter
-		final byte[] pdfFile = lettersRepo.createPDFData(letter);
-		return createPDFResponseEntry(pdfFile);
+		final byte[] pdfData = lettersRepo.createPDFData(letter);
+		return createPDFResponseEntry(pdfData);
 	}
 
 	@PostMapping("/{letterId}/complete")

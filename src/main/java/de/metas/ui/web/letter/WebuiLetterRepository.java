@@ -131,7 +131,8 @@ public class WebuiLetterRepository
 	
 	public byte[] createPDFData(@NonNull final WebuiLetter letter)
 	{
-		return Services.get(ITextTemplateBL.class).createPDF(getAndUpdatePersistentLetter(letter));
+		final I_C_Letter persistentLetter = getAndUpdatePersistentLetter(letter);
+		return Services.get(ITextTemplateBL.class).createPDF(persistentLetter);
 	}
 
 	@ToString
