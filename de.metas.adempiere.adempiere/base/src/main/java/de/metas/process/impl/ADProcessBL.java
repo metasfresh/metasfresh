@@ -44,28 +44,26 @@ public class ADProcessBL implements IADProcessBL
 	{
 		// Services
 		final IADWorkflowBL workflowBL = Services.get(IADWorkflowBL.class);
-		
-		final I_AD_Process documentSpecificProcess = InterfaceWrapperHelper.newInstance(I_AD_Process.class);
 
 		// Workflow
-		final I_AD_Workflow documentSpecificWorkflow = workflowBL.createWorkflowForDocument(document);
-		documentSpecificProcess.setAD_Workflow(documentSpecificWorkflow);
+		final I_AD_Workflow adWorkflow = workflowBL.createWorkflowForDocument(document);
 
-		documentSpecificProcess.setValue(documentSpecificWorkflow.getValue());
+		// Process
+		final I_AD_Process adProcess = InterfaceWrapperHelper.newInstance(I_AD_Process.class);
+		adProcess.setAD_Workflow(adWorkflow);
+		adProcess.setValue(adWorkflow.getValue());
+		adProcess.setName(adWorkflow.getName());
+		adProcess.setEntityType(adWorkflow.getEntityType());
+		adProcess.setAccessLevel(adWorkflow.getAccessLevel());
+		adProcess.setType(X_AD_Process.TYPE_Java);
+		adProcess.setIsReport(false);
+		adProcess.setIsUseBPartnerLanguage(true);
+		InterfaceWrapperHelper.save(adProcess);
 
-		documentSpecificProcess.setName(documentSpecificWorkflow.getName());
+		//
+		linkProccessWithDocument(document, adProcess);
 
-		documentSpecificProcess.setEntityType(documentSpecificWorkflow.getEntityType());
-		documentSpecificProcess.setAccessLevel(documentSpecificWorkflow.getAccessLevel());
-		documentSpecificProcess.setType(X_AD_Process.TYPE_Java);
-		documentSpecificProcess.setIsReport(false);
-		documentSpecificProcess.setIsUseBPartnerLanguage(true);
-
-		InterfaceWrapperHelper.save(documentSpecificProcess);
-
-		linkProccessWithDocument(document, documentSpecificProcess);
-
-		return documentSpecificProcess;
+		return adProcess;
 	}
 
 	private void linkProccessWithDocument(@NonNull final I_AD_Table document, @NonNull final I_AD_Process documentSpecificProcess)
