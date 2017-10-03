@@ -1,4 +1,4 @@
-drop function if exists report.Balance_Sheet_Function(Date DATE, p_IncludePostingTypeStatistical char) ;
+﻿drop function if exists report.Balance_Sheet_Function(Date DATE, p_IncludePostingTypeStatistical char) ;
 
 drop function if exists report.Balance_Sheet_Function(Date DATE,  ad_org_id numeric(10,0),  p_IncludePostingTypeStatistical char) ;
 

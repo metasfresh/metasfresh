@@ -1,4 +1,4 @@
---
+﻿--
 -- this overwrites a view in de.metas.fresh !
 --
 DROP FUNCTION IF EXISTS report.saldobilanz_Report (IN Date, IN defaultAcc character varying);
