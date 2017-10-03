@@ -15,7 +15,7 @@ public class X_C_RfQ extends org.compiere.model.PO implements I_C_RfQ, org.compi
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 198710648L;
+	private static final long serialVersionUID = -1839403224L;
 
     /** Standard Constructor */
     public X_C_RfQ (Properties ctx, int C_RfQ_ID, String trxName)
@@ -433,6 +433,8 @@ public class X_C_RfQ extends org.compiere.model.PO implements I_C_RfQ, org.compi
 	public static final String DOCACTION_Unlock = "XL";
 	/** WaitComplete = WC */
 	public static final String DOCACTION_WaitComplete = "WC";
+	/** UnClose = UC */
+	public static final String DOCACTION_UnClose = "UC";
 	/** Set Belegverarbeitung.
 		@param DocAction 
 		Der zukünftige Status des Belegs
