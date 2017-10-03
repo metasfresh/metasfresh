@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
-<!-- 2017-10-03T13:58:16 -->
+<!-- 2017-10-03T15:45:18 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" resourceBundle="de/metas/reports/bank_statement/report" uuid="a4d42ac6-2943-44c0-bb04-1a006e359813">
 	<property name="ireport.zoom" value="2.0"/>
 	<property name="ireport.x" value="293"/>
@@ -136,7 +136,7 @@
 				<textElement markup="none">
 					<font size="7" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{valuedate}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{valutadate}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="397" y="0" width="30" height="12" uuid="8050a482-c752-4995-a2fe-74ffc0259ab3"/>
