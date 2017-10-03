@@ -2,21 +2,17 @@ package de.metas.ui.web.letter;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.function.UnaryOperator;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.apache.commons.io.FileUtils;
 import org.compiere.util.Env;
-import org.compiere.util.Util;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -30,7 +26,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.i18n.IMsgBL;
@@ -39,7 +34,6 @@ import de.metas.letters.model.I_C_Letter;
 import de.metas.letters.model.Letters;
 import de.metas.letters.model.MADBoilerPlate;
 import de.metas.letters.model.MADBoilerPlate.BoilerPlateContext;
-import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.config.WebConfig;
 import de.metas.ui.web.letter.WebuiLetter.WebuiLetterBuilder;
 import de.metas.ui.web.letter.json.JSONLetter;
@@ -54,7 +48,6 @@ import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
 import de.metas.ui.web.window.model.DocumentCollection;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiOperation;
-import lombok.Builder;
 
 /*
  * #%L
@@ -130,7 +123,7 @@ public class LetterRestController
 		userSession.assertLoggedIn();
 
 		final DocumentPath contextDocumentPath = JSONDocumentPath.toDocumentPathOrNull(request.getDocumentPath());
-		final I_C_Letter persistentLetter = fromLetterBuilder()
+		final I_C_Letter persistentLetter = lettersRepo.fromLetterBuilder()
 				.content("")
 				.subject("")
 				.build();
@@ -149,61 +142,16 @@ public class LetterRestController
 		return JSONLetter.of(letter);
 	}
 
-	@Builder(builderMethodName = "fromLetterBuilder")
-	private I_C_Letter createPersistentLetter(final String subject, final String content)
+	private byte[] createPDFFile(final WebuiLetter letter)
 	{
-		final I_C_Letter persistentLetter = InterfaceWrapperHelper.newInstance(I_C_Letter.class);
-		persistentLetter.setLetterSubject(subject);
-		persistentLetter.setLetterBody(content);
-		persistentLetter.setLetterBodyParsed(content);
-		InterfaceWrapperHelper.save(persistentLetter);
-		return persistentLetter;
-	}
-
-	private I_C_Letter updatePersistentLetter(final WebuiLetter letter)
-	{
-		Check.assume(letter.getPersistentLetterId() > 0, "Letter ID should be > 0");
-		final Properties ctx = Env.getCtx();
-		final int C_BPartner_ID = Env.getContextAsInt(ctx, I_C_Letter.COLUMNNAME_C_BPartner_ID);
-		final int C_BPartner_Location_ID = Env.getContextAsInt(ctx, I_C_Letter.COLUMNNAME_C_BPartner_Location_ID);
-		final String bpartnerAddress = Env.getContext(ctx, I_C_Letter.COLUMNNAME_BPartnerAddress);
+		final I_C_Letter persistentLetter = lettersRepo.updatePersistentLetter(letter);
+		return Services.get(ITextTemplateBL.class).createPDF(persistentLetter);
 		
-		final I_C_Letter persistentLetter = InterfaceWrapperHelper.create(ctx, letter.getPersistentLetterId(), I_C_Letter.class, ITrx.TRXNAME_ThreadInherited);
-		persistentLetter.setLetterSubject(letter.getSubject());
-		// field is mandatory
-		persistentLetter.setLetterBody(Joiner.on(" ").skipNulls().join(Arrays.asList(letter.getContent())));
-		persistentLetter.setLetterBodyParsed(letter.getContent());
-		persistentLetter.setC_BPartner_ID(C_BPartner_ID);
-		persistentLetter.setC_BPartner_Location_ID(C_BPartner_Location_ID);
-		persistentLetter.setBPartnerAddress(bpartnerAddress);
-		InterfaceWrapperHelper.save(persistentLetter);
-		return persistentLetter;
 	}
 
-	private File createPDFFile(final WebuiLetter letter)
+	private ResponseEntity<byte[]> createPDFResponseEntry(final byte[] pdfData)
 	{
-		final I_C_Letter persistentLetter = updatePersistentLetter(letter);
-		byte[] pdf = Services.get(ITextTemplateBL.class).createPDF(persistentLetter);
-		final String pdfFilenamePrefix = Services.get(IMsgBL.class).getMsg(Env.getCtx(), Letters.MSG_Letter);
-		File pdfFile = null;
-		try
-		{
-			pdfFile = File.createTempFile(pdfFilenamePrefix, ".pdf");
-			FileUtils.writeByteArrayToFile(pdfFile, pdf);
-		}
-		catch (IOException e)
-		{
-			AdempiereException.wrapIfNeeded(e);
-		}
-
-		return pdfFile;
-	}
-
-	private ResponseEntity<byte[]> createPDFResponseEntry(final File pdfFile)
-	{
-		final String pdfFilename = pdfFile.getName();
-		final byte[] pdfData = Util.readBytes(pdfFile);
-
+		final String pdfFilename = Services.get(IMsgBL.class).getMsg(Env.getCtx(), Letters.MSG_Letter);
 		final HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.APPLICATION_PDF);
 		headers.set(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + pdfFilename + "\"");
@@ -225,7 +173,7 @@ public class LetterRestController
 
 		//
 		// Create and return the printable letter
-		final File pdfFile = createPDFFile(letter);
+		final byte[] pdfFile = createPDFFile(letter);
 		return createPDFResponseEntry(pdfFile);
 	}
 
@@ -239,8 +187,9 @@ public class LetterRestController
 
 			//
 			// Create the printable letter
-			final File pdfFile = createPDFFile(letter);
+			final byte[] pdfData = createPDFFile(letter);
 
+			final File pdfFile = createFile(pdfData); 
 			//
 			// create the Boilerplate context
 			final BoilerPlateContext context = documentCollection.createBoilerPlateContext(letter.getContextDocumentPath());
@@ -251,9 +200,9 @@ public class LetterRestController
 
 			return letter.toBuilder()
 					.processed(true)
-					.temporaryPDFFile(pdfFile)
+					.temporaryPDFData(pdfData)
 					.build();
-		});
+		}); 
 
 		//
 		// Remove the letter
@@ -261,7 +210,24 @@ public class LetterRestController
 
 		//
 		// Return the printable letter
-		return createPDFResponseEntry(result.getLetter().getTemporaryPDFFile());
+		return createPDFResponseEntry(result.getLetter().getTemporaryPDFData());
+	}
+	
+	private File createFile(final byte[] pdfData)
+	{
+		final String pdfFilenamePrefix = Services.get(IMsgBL.class).getMsg(Env.getCtx(), Letters.MSG_Letter);
+		File pdfFile = null;
+		try
+		{
+			pdfFile = File.createTempFile(pdfFilenamePrefix, ".pdf");
+			FileUtils.writeByteArrayToFile(pdfFile, pdfData);
+		}
+		catch (IOException e)
+		{
+			AdempiereException.wrapIfNeeded(e);
+		}
+
+		return pdfFile;
 	}
 
 	@PatchMapping("/{letterId}")

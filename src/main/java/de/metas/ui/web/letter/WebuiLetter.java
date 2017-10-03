@@ -1,7 +1,5 @@
 package de.metas.ui.web.letter;
 
-import java.io.File;
-
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import lombok.Builder;
 import lombok.NonNull;
@@ -38,8 +36,8 @@ public class WebuiLetter
 	private final int ownerUserId;
 
 	private final boolean processed;
-	/** File PDF file; set when the letter is marked as processed too */
-	private final File temporaryPDFFile;
+	/** PDF data; set when the letter is marked as processed too */
+	private final byte[] temporaryPDFData;
 
 	private final int persistentLetterId;
 	

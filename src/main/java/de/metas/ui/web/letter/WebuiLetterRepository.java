@@ -1,17 +1,25 @@
 package de.metas.ui.web.letter;
 
+import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.UnaryOperator;
 
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.util.Env;
 import org.springframework.stereotype.Component;
 
+import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 
+import de.metas.letters.model.I_C_Letter;
+import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.window.datatypes.DocumentPath;
+import lombok.Builder;
 import lombok.NonNull;
 import lombok.ToString;
 
@@ -86,6 +94,32 @@ public class WebuiLetterRepository
 	public void removeLetterById(final String letterId)
 	{
 		lettersById.invalidate(letterId);
+	}
+	
+	@Builder(builderMethodName = "fromLetterBuilder")
+	public I_C_Letter createPersistentLetter(final String subject, final String content)
+	{
+		final I_C_Letter persistentLetter = InterfaceWrapperHelper.newInstance(I_C_Letter.class);
+		persistentLetter.setLetterSubject(subject);
+		persistentLetter.setLetterBody(content);
+		persistentLetter.setLetterBodyParsed(content);
+		InterfaceWrapperHelper.save(persistentLetter);
+		return persistentLetter;
+	}
+
+	public I_C_Letter updatePersistentLetter(final WebuiLetter letter)
+	{
+		Check.assume(letter.getPersistentLetterId() > 0, "Letter ID should be > 0");
+		final Properties ctx = Env.getCtx();
+		final I_C_Letter persistentLetter = InterfaceWrapperHelper.create(ctx, letter.getPersistentLetterId(), I_C_Letter.class, ITrx.TRXNAME_ThreadInherited);
+		persistentLetter.setLetterSubject(letter.getSubject());
+		// field is mandatory
+		persistentLetter.setLetterBody(Joiner.on(" ").skipNulls().join(letter.getContent(), ""));
+		persistentLetter.setLetterBodyParsed(letter.getContent());
+		// also this should be completed in order that reports based on C_Letter to work
+		persistentLetter.setBPartnerAddress("");
+		InterfaceWrapperHelper.save(persistentLetter);
+		return persistentLetter;
 	}
 
 	@ToString
