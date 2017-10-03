@@ -168,6 +168,11 @@ import de.metas.ui.web.base.session.UserPreference;
 	{
 		return Env.getAD_Client_ID(getCtx());
 	}
+	
+	public int getAD_Org_ID()
+	{
+		return Env.getAD_Org_ID(getCtx());
+	}
 
 	public int getAD_User_ID()
 	{
