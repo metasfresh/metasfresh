@@ -2407,7 +2407,7 @@ public abstract class Doc
 					// Post it in same context and transaction as this document is posted
 					.setContext(getCtx(), getTrxName())
 					.setAD_Client_ID(getAD_Client_ID())
-					.setDocument(document) // the document to be posted
+					.setDocumentFromModel(document) // the document to be posted
 					.setFailOnError(false) // don't fail because we don't want to fail the main document posting because one of it's depending documents are failing
 					.setPostImmediate(PostImmediate.Yes) // yes, post it immediate
 					.setForce(false) // don't force it
