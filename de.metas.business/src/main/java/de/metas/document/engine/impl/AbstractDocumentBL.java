@@ -155,7 +155,7 @@ public abstract class AbstractDocumentBL implements IDocumentBL
 
 		//
 		// Guard: save the document if new, else the processing could be corrupted.
-		if (InterfaceWrapperHelper.isNew(doc))
+		if (doc.get_ID() <= 0)
 		{
 			new AdempiereException("Please make sure the document is saved before processing it: " + doc)
 					.throwIfDeveloperModeOrLogWarningElse(logger);
