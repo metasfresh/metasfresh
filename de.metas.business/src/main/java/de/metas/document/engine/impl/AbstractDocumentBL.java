@@ -35,6 +35,7 @@ import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.ad.service.IADReferenceDAO.ADRefListItem;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.ad.trx.api.TrxCallable;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
@@ -49,15 +50,14 @@ import org.compiere.model.I_M_InOut;
 import org.compiere.model.X_C_Order;
 import org.compiere.util.Env;
 import org.compiere.util.TrxRunnable;
-import org.compiere.util.TrxRunnable2;
 import org.slf4j.Logger;
 
 import com.google.common.base.Objects;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableMap;
 
-import de.metas.document.engine.DocumentTableFields;
 import de.metas.document.engine.DocumentHandlerProvider;
+import de.metas.document.engine.DocumentTableFields;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.document.exceptions.DocumentProcessingException;
@@ -110,30 +110,29 @@ public abstract class AbstractDocumentBL implements IDocumentBL
 	private final boolean processIt(final Object documentObj, final String action, final boolean throwExIfNotSuccess)
 	{
 		final IDocument document = getDocument(documentObj);
-
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 		final String trxName = document.get_TrxName();
 
-		final boolean[] processed = new boolean[] { false };
-		trxManager.run(trxName, new TrxRunnable2()
+		final Boolean processed = trxManager.call(trxName, new TrxCallable<Boolean>()
 		{
 
 			@Override
-			public void run(final String localTrxName) throws Exception
+			public Boolean call() throws Exception
 			{
-				document.set_TrxName(localTrxName);
-				processed[0] = processIt0(document, action);
-				if (!processed[0] && throwExIfNotSuccess)
+				document.set_TrxName(ITrx.TRXNAME_ThreadInherited);
+				final boolean processed = processIt0(document, action);
+				if (!processed && throwExIfNotSuccess)
 				{
 					throw new DocumentProcessingException(document, action);
 				}
+
+				return processed;
 			}
 
 			@Override
 			public boolean doCatch(final Throwable e) throws Throwable
 			{
-				processed[0] = false;
 				final DocumentProcessingException dpe = new DocumentProcessingException(document, action, e);
 				MetasfreshLastError.saveError(logger, dpe.getLocalizedMessage(), dpe);
 				throw dpe;
@@ -147,7 +146,7 @@ public abstract class AbstractDocumentBL implements IDocumentBL
 			}
 		});
 
-		return processed[0];
+		return processed != null && processed.booleanValue();
 	}
 
 	protected boolean processIt0(final IDocument doc, final String action) throws Exception
@@ -416,7 +415,7 @@ public abstract class AbstractDocumentBL implements IDocumentBL
 		{
 			return null;
 		}
-		
+
 		// FIXME: hardcoded... we shall introduce it in IDocument
 
 		if (model instanceof I_C_Invoice)
