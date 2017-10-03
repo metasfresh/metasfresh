@@ -298,8 +298,8 @@ public interface I_C_RfQResponse
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Invited.
-	 * Date when (last) invitation was sent
+	 * Set Datum Einladung.
+	 * Datum an dem die Einladung versendet wurde
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
@@ -308,8 +308,8 @@ public interface I_C_RfQResponse
 	public void setDateInvited (java.sql.Timestamp DateInvited);
 
 	/**
-	 * Get Invited.
-	 * Date when (last) invitation was sent
+	 * Get Datum Einladung.
+	 * Datum an dem die Einladung versendet wurde
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
@@ -323,8 +323,8 @@ public interface I_C_RfQResponse
     public static final String COLUMNNAME_DateInvited = "DateInvited";
 
 	/**
-	 * Set Antwort-datum.
-	 * Date of the Response
+	 * Set Datum Antwort.
+	 * Datum der Antwort
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
@@ -333,8 +333,8 @@ public interface I_C_RfQResponse
 	public void setDateResponse (java.sql.Timestamp DateResponse);
 
 	/**
-	 * Get Antwort-datum.
-	 * Date of the Response
+	 * Get Datum Antwort.
+	 * Datum der Antwort
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
@@ -521,8 +521,8 @@ public interface I_C_RfQResponse
     public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Selected Winner.
-	 * The resonse is the selected winner
+	 * Set Gewinner.
+	 * Kennzeichnet den Gewinner einer Ausschreibung
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -531,8 +531,8 @@ public interface I_C_RfQResponse
 	public void setIsSelectedWinner (boolean IsSelectedWinner);
 
 	/**
-	 * Get Selected Winner.
-	 * The resonse is the selected winner
+	 * Get Gewinner.
+	 * Kennzeichnet den Gewinner einer Ausschreibung
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true

@@ -4,7 +4,6 @@ package de.metas.rfq.model;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import org.compiere.util.Env;
 
 /** Generated Model for C_RfQResponseLine
  *  @author Adempiere (generated) 
@@ -16,7 +15,7 @@ public class X_C_RfQResponseLine extends org.compiere.model.PO implements I_C_Rf
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1748113897L;
+	private static final long serialVersionUID = -1463237596L;
 
     /** Standard Constructor */
     public X_C_RfQResponseLine (Properties ctx, int C_RfQResponseLine_ID, String trxName)
@@ -30,16 +29,11 @@ public class X_C_RfQResponseLine extends org.compiere.model.PO implements I_C_Rf
 			setDocStatus (null);
 			setIsSelectedWinner (false);
 			setIsSelfService (false);
-			setPrice (Env.ZERO);
-// 0
-			setProcessed (false);
-// N
-			setQtyPromised (Env.ZERO);
-// 0
-			setQtyRequiered (Env.ZERO);
-// 0
-			setUseLineQty (false);
-// N
+			setPrice (BigDecimal.ZERO); // 0
+			setProcessed (false); // N
+			setQtyPromised (BigDecimal.ZERO); // 0
+			setQtyRequiered (BigDecimal.ZERO); // 0
+			setUseLineQty (false); // N
         } */
     }
 
@@ -305,17 +299,17 @@ public class X_C_RfQResponseLine extends org.compiere.model.PO implements I_C_Rf
 		return ii.intValue();
 	}
 
-	/** Set Invited.
+	/** Set Datum Einladung.
 		@param DateInvited 
-		Date when (last) invitation was sent
+		Datum an dem die Einladung versendet wurde
 	  */
 	@Override
 	public void setDateInvited (java.sql.Timestamp DateInvited)
 	{
 		throw new IllegalArgumentException ("DateInvited is virtual column");	}
 
-	/** Get Invited.
-		@return Date when (last) invitation was sent
+	/** Get Datum Einladung.
+		@return Datum an dem die Einladung versendet wurde
 	  */
 	@Override
 	public java.sql.Timestamp getDateInvited () 
@@ -323,7 +317,7 @@ public class X_C_RfQResponseLine extends org.compiere.model.PO implements I_C_Rf
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_DateInvited);
 	}
 
-	/** Set Antwort-datum.
+	/** Set Datum Antwort.
 		@param DateResponse 
 		Datum der Antwort
 	  */
@@ -333,7 +327,7 @@ public class X_C_RfQResponseLine extends org.compiere.model.PO implements I_C_Rf
 		set_ValueNoCheck (COLUMNNAME_DateResponse, DateResponse);
 	}
 
-	/** Get Antwort-datum.
+	/** Get Datum Antwort.
 		@return Datum der Antwort
 	  */
 	@Override
@@ -486,9 +480,9 @@ public class X_C_RfQResponseLine extends org.compiere.model.PO implements I_C_Rf
 		return (java.lang.String)get_Value(COLUMNNAME_Help);
 	}
 
-	/** Set Selected Winner.
+	/** Set Gewinner.
 		@param IsSelectedWinner 
-		The resonse is the selected winner
+		Kennzeichnet den Gewinner einer Ausschreibung
 	  */
 	@Override
 	public void setIsSelectedWinner (boolean IsSelectedWinner)
@@ -496,8 +490,8 @@ public class X_C_RfQResponseLine extends org.compiere.model.PO implements I_C_Rf
 		set_Value (COLUMNNAME_IsSelectedWinner, Boolean.valueOf(IsSelectedWinner));
 	}
 
-	/** Get Selected Winner.
-		@return The resonse is the selected winner
+	/** Get Gewinner.
+		@return Kennzeichnet den Gewinner einer Ausschreibung
 	  */
 	@Override
 	public boolean isSelectedWinner () 
@@ -615,7 +609,7 @@ public class X_C_RfQResponseLine extends org.compiere.model.PO implements I_C_Rf
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Price);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -660,26 +654,26 @@ public class X_C_RfQResponseLine extends org.compiere.model.PO implements I_C_Rf
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyPromised);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
-	/** Set Qty Requiered.
-		@param QtyRequiered Qty Requiered	  */
+	/** Set Menge angefragt.
+		@param QtyRequiered Menge angefragt	  */
 	@Override
 	public void setQtyRequiered (java.math.BigDecimal QtyRequiered)
 	{
 		set_ValueNoCheck (COLUMNNAME_QtyRequiered, QtyRequiered);
 	}
 
-	/** Get Qty Requiered.
-		@return Qty Requiered	  */
+	/** Get Menge angefragt.
+		@return Menge angefragt	  */
 	@Override
 	public java.math.BigDecimal getQtyRequiered () 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyRequiered);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 

@@ -4,7 +4,6 @@ package de.metas.rfq.model;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import org.compiere.util.Env;
 
 /** Generated Model for C_RfQResponse
  *  @author Adempiere (generated) 
@@ -16,7 +15,7 @@ public class X_C_RfQResponse extends org.compiere.model.PO implements I_C_RfQRes
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1393798536L;
+	private static final long serialVersionUID = -1823602999L;
 
     /** Standard Constructor */
     public X_C_RfQResponse (Properties ctx, int C_RfQResponse_ID, String trxName)
@@ -26,16 +25,14 @@ public class X_C_RfQResponse extends org.compiere.model.PO implements I_C_RfQRes
         {
 			setC_BPartner_ID (0);
 			setC_BPartner_Location_ID (0);
-			setC_Currency_ID (0);
-// @C_Currency_ID@
+			setC_Currency_ID (0); // @C_Currency_ID@
 			setC_RfQ_ID (0);
 			setC_RfQResponse_ID (0);
-			setDocStatus (null);
-// DR
+			setDocStatus (null); // DR
 			setIsSelectedWinner (false);
 			setIsSelfService (false);
 			setName (null);
-			setPrice (Env.ZERO);
+			setPrice (BigDecimal.ZERO);
 			setProcessed (false);
         } */
     }
@@ -302,9 +299,9 @@ public class X_C_RfQResponse extends org.compiere.model.PO implements I_C_RfQRes
 		return ii.intValue();
 	}
 
-	/** Set Invited.
+	/** Set Datum Einladung.
 		@param DateInvited 
-		Date when (last) invitation was sent
+		Datum an dem die Einladung versendet wurde
 	  */
 	@Override
 	public void setDateInvited (java.sql.Timestamp DateInvited)
@@ -312,8 +309,8 @@ public class X_C_RfQResponse extends org.compiere.model.PO implements I_C_RfQRes
 		set_Value (COLUMNNAME_DateInvited, DateInvited);
 	}
 
-	/** Get Invited.
-		@return Date when (last) invitation was sent
+	/** Get Datum Einladung.
+		@return Datum an dem die Einladung versendet wurde
 	  */
 	@Override
 	public java.sql.Timestamp getDateInvited () 
@@ -321,9 +318,9 @@ public class X_C_RfQResponse extends org.compiere.model.PO implements I_C_RfQRes
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_DateInvited);
 	}
 
-	/** Set Antwort-datum.
+	/** Set Datum Antwort.
 		@param DateResponse 
-		Date of the Response
+		Datum der Antwort
 	  */
 	@Override
 	public void setDateResponse (java.sql.Timestamp DateResponse)
@@ -331,8 +328,8 @@ public class X_C_RfQResponse extends org.compiere.model.PO implements I_C_RfQRes
 		set_Value (COLUMNNAME_DateResponse, DateResponse);
 	}
 
-	/** Get Antwort-datum.
-		@return Date of the Response
+	/** Get Datum Antwort.
+		@return Datum der Antwort
 	  */
 	@Override
 	public java.sql.Timestamp getDateResponse () 
@@ -484,9 +481,9 @@ public class X_C_RfQResponse extends org.compiere.model.PO implements I_C_RfQRes
 		return (java.lang.String)get_Value(COLUMNNAME_Help);
 	}
 
-	/** Set Selected Winner.
+	/** Set Gewinner.
 		@param IsSelectedWinner 
-		The resonse is the selected winner
+		Kennzeichnet den Gewinner einer Ausschreibung
 	  */
 	@Override
 	public void setIsSelectedWinner (boolean IsSelectedWinner)
@@ -494,8 +491,8 @@ public class X_C_RfQResponse extends org.compiere.model.PO implements I_C_RfQRes
 		set_Value (COLUMNNAME_IsSelectedWinner, Boolean.valueOf(IsSelectedWinner));
 	}
 
-	/** Get Selected Winner.
-		@return The resonse is the selected winner
+	/** Get Gewinner.
+		@return Kennzeichnet den Gewinner einer Ausschreibung
 	  */
 	@Override
 	public boolean isSelectedWinner () 
@@ -573,7 +570,7 @@ public class X_C_RfQResponse extends org.compiere.model.PO implements I_C_RfQRes
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Price);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
