@@ -77,6 +77,14 @@ class Labels extends Component {
             suggestions = this.state.values;
         }
 
+        const selected = new Set(
+            this.props.selected.map(item => Object.keys(item)[0])
+        );
+
+        suggestions = suggestions.filter(
+            suggestion => !selected.has(Object.keys(suggestion)[0])
+        );
+
         return (
             <div
                 className={this.props.className}
