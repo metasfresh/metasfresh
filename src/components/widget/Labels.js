@@ -7,6 +7,7 @@ import {
 
 class Labels extends Component {
     state = {
+        focused: false,
         values: [],
         suggestions: []
     };
@@ -26,6 +27,18 @@ class Labels extends Component {
         const { values } = response.data;
 
         this.setState({ values });
+    }
+
+    handleFocus = () => {
+        this.setState({
+            focused: true
+        });
+    }
+
+    handleBlur = () => {
+        this.setState({
+            focused: false
+        });
     }
 
     handleKeyDown = async event => {
@@ -82,6 +95,8 @@ class Labels extends Component {
             <div
                 className={this.props.className}
                 onClick={this.handleClick}
+                onFocus={this.handleFocus}
+                onBlur={this.handleBlur}
             >
                 {this.props.selected.map(item => {
                     const [key, value] = Object.entries(item)[0];
@@ -101,20 +116,24 @@ class Labels extends Component {
                     contentEditable
                     onKeyDown={this.handleKeyDown}
                 />
-                <div>
-                    {suggestions.map(suggestion => {
-                        const [key, value] = Object.entries(suggestion)[0];
+                {this.state.focused && (
+                    <div>
+                        {suggestions.map(suggestion => {
+                            const [key, value] = Object.entries(suggestion)[0];
 
-                        return (
-                            <div
-                                key={key}
-                                onClick={this.handleSuggestionClick(suggestion)}
-                            >
-                                {value}
-                            </div>
-                        );
-                    })}
-                </div>
+                            return (
+                                <div
+                                    key={key}
+                                    onClick={
+                                        this.handleSuggestionClick(suggestion)
+                                    }
+                                >
+                                    {value}
+                                </div>
+                            );
+                        })}
+                    </div>
+                )}
             </div>
         );
     }
