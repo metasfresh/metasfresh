@@ -84,11 +84,13 @@ public abstract class AbstractDocumentBL implements IDocumentBL
 
 	private static final Map<String, DocumentHandlerProvider> retrieveDocActionHandlerProvidersIndexedByTableName()
 	{
-		return Adempiere.getSpringApplicationContext()
+		final Map<String, DocumentHandlerProvider> providersByTableName = Adempiere.getSpringApplicationContext()
 				.getBeansOfType(DocumentHandlerProvider.class)
 				.values()
 				.stream()
 				.collect(ImmutableMap.toImmutableMap(DocumentHandlerProvider::getHandledTableName, Function.identity()));
+		logger.debug("Retrieved providers: {}", providersByTableName);
+		return providersByTableName;
 	}
 
 	@Override
