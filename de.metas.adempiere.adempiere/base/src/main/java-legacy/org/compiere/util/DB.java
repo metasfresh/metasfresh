@@ -1577,7 +1577,7 @@ public final class DB
 	{
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
-		ArrayList<KeyNamePair> list = new ArrayList<KeyNamePair>();
+		ArrayList<KeyNamePair> list = new ArrayList<>();
 		if (optional)
 		{
 			list.add(new KeyNamePair(-1, ""));
@@ -2099,7 +2099,7 @@ public final class DB
 	{
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
-		ArrayList<ValueNamePair> list = new ArrayList<ValueNamePair>();
+		ArrayList<ValueNamePair> list = new ArrayList<>();
 		if (optional)
 		{
 			list.add(ValueNamePair.EMPTY);
@@ -2146,7 +2146,7 @@ public final class DB
 	{
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
-		ArrayList<KeyNamePair> list = new ArrayList<KeyNamePair>();
+		ArrayList<KeyNamePair> list = new ArrayList<>();
 		if (optional)
 		{
 			list.add(KeyNamePair.EMPTY);
