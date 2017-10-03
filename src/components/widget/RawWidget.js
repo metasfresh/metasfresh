@@ -10,6 +10,7 @@ import ActionButton from './ActionButton';
 import Checkbox from './Checkbox';
 import Image from './Image';
 import Link from './Link';
+import Labels from './Labels';
 import DevicesWidget from './Devices/DevicesWidget';
 
 import {DATE_FORMAT}  from '../../constants/Constants';
@@ -690,6 +691,15 @@ class RawWidget extends Component {
                         {caption}
                     </button>
                 )
+            case 'Labels':
+                return (
+                    <Labels
+                        name={widgetField}
+                        selected={widgetData[0].value.values.map(
+                            value => Object.keys(value)[0]
+                        )}
+                    />
+                );
             default:
                 return false;
         }
