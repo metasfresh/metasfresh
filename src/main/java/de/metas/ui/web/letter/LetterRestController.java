@@ -29,8 +29,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.i18n.IMsgBL;
-import de.metas.letters.api.ITextTemplateBL;
-import de.metas.letters.model.I_C_Letter;
 import de.metas.letters.model.Letters;
 import de.metas.letters.model.MADBoilerPlate;
 import de.metas.letters.model.MADBoilerPlate.BoilerPlateContext;
@@ -123,11 +121,7 @@ public class LetterRestController
 		userSession.assertLoggedIn();
 
 		final DocumentPath contextDocumentPath = JSONDocumentPath.toDocumentPathOrNull(request.getDocumentPath());
-		final I_C_Letter persistentLetter = lettersRepo.fromLetterBuilder()
-				.content("")
-				.subject("")
-				.build();
-		final WebuiLetter letter = lettersRepo.createNewLetter(userSession.getAD_User_ID(), contextDocumentPath, persistentLetter.getC_Letter_ID());
+		final WebuiLetter letter = lettersRepo.createNewLetter(userSession.getAD_User_ID(), contextDocumentPath);
 
 		return JSONLetter.of(letter);
 	}
@@ -140,13 +134,6 @@ public class LetterRestController
 		final WebuiLetter letter = lettersRepo.getLetter(letterId);
 		assertReadable(letter);
 		return JSONLetter.of(letter);
-	}
-
-	private byte[] createPDFFile(final WebuiLetter letter)
-	{
-		final I_C_Letter persistentLetter = lettersRepo.updatePersistentLetter(letter);
-		return Services.get(ITextTemplateBL.class).createPDF(persistentLetter);
-		
 	}
 
 	private ResponseEntity<byte[]> createPDFResponseEntry(final byte[] pdfData)
@@ -173,7 +160,7 @@ public class LetterRestController
 
 		//
 		// Create and return the printable letter
-		final byte[] pdfFile = createPDFFile(letter);
+		final byte[] pdfFile = lettersRepo.createPDFData(letter);
 		return createPDFResponseEntry(pdfFile);
 	}
 
@@ -187,7 +174,7 @@ public class LetterRestController
 
 			//
 			// Create the printable letter
-			final byte[] pdfData = createPDFFile(letter);
+			final byte[] pdfData = lettersRepo.createPDFData(letter);
 
 			final File pdfFile = createFile(pdfData); 
 			//
