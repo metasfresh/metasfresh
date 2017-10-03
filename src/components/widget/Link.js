@@ -11,14 +11,14 @@ class Link extends Component {
 
     render() {
         const {
-            getClassnames, isEdited, widgetProperties, icon, fullScreen,
+            getClassNames, isEdited, widgetProperties, icon, fullScreen,
             tabIndex, widgetData
         } = this.props;
         return (
             <div className="input-inner-container">
                 <div
                     className={
-                        getClassnames() +
+                        getClassNames() +
                         (isEdited ? 'input-focused ' : '')
                     }
                 >

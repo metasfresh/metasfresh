@@ -118,7 +118,7 @@ class RawWidget extends Component {
         .join(' ')
     )
 
-    getClassnames = (icon, forcedPrimary) => {
+    getClassNames = ({ icon, forcedPrimary } = {}) => {
         const {
             widgetData, disabled, gridAlign, type, updated, rowId, isModal
         } = this.props;
@@ -219,7 +219,7 @@ class RawWidget extends Component {
                     )
                 }else{
                     return (
-                        <div className={this.getClassnames(true)}>
+                        <div className={this.getClassNames({ icon: true })}>
                             <DatePicker
                                 timeFormat={false}
                                 dateFormat={true}
@@ -275,7 +275,7 @@ class RawWidget extends Component {
                     )
                 }else{
                     return (
-                        <div className={this.getClassnames(true)}>
+                        <div className={this.getClassNames({ icon: true })}>
                             <DatePicker
                                 timeFormat={true}
                                 dateFormat={true}
@@ -302,7 +302,7 @@ class RawWidget extends Component {
                 }
             case 'Time':
                 return (
-                    <div className={this.getClassnames(true)}>
+                    <div className={this.getClassNames({ icon: true })}>
                         <DatePicker
                             timeFormat={true}
                             dateFormat={false}
@@ -395,7 +395,7 @@ class RawWidget extends Component {
             case 'Link':
                 return (
                     <Link
-                        getClassnames={() => this.getClassnames(true)}
+                        getClassNames={() => this.getClassNames({ icon: true })}
                         {...{isEdited, widgetProperties, icon, widgetData,
                             tabIndex, fullScreen
                         }}
@@ -404,7 +404,7 @@ class RawWidget extends Component {
             case 'Text':
                 return (
                     <div className={
-                            this.getClassnames(true) +
+                            this.getClassNames({ icon: true }) +
                             (isEdited ? 'input-focused ' : '')
                         }
                     >
@@ -420,8 +420,10 @@ class RawWidget extends Component {
             case 'LongText':
                 return (
                     <div className={
-                        this.getClassnames(false, true) +
-                        (isEdited ? 'input-focused ' : '')
+                        this.getClassNames({
+                            icon: false,
+                            forcedPrimary: true
+                        }) + (isEdited ? 'input-focused ' : '')
                     }>
                         <textarea
                             {...widgetProperties}
@@ -432,7 +434,7 @@ class RawWidget extends Component {
                 return (
                     <div className="input-inner-container">
                         <div className={
-                            this.getClassnames(true) +
+                            this.getClassNames({ icon: true }) +
                             (isEdited ? 'input-focused ' : '')
                             }
                         >
@@ -457,7 +459,7 @@ class RawWidget extends Component {
             case 'Integer':
                 return (
                     <div className={
-                        this.getClassnames() +
+                        this.getClassNames() +
                         (isEdited ? 'input-focused ' : '')
                     }>
                         <input
@@ -471,7 +473,7 @@ class RawWidget extends Component {
             case 'Number':
                 return (
                     <div className={
-                        this.getClassnames() +
+                        this.getClassNames() +
                         (isEdited ? 'input-focused ' : '')
                     }>
                         <input
@@ -483,7 +485,7 @@ class RawWidget extends Component {
             case 'Amount' :
                 return (
                     <div className={
-                        this.getClassnames() +
+                        this.getClassNames() +
                         (isEdited ? 'input-focused ' : '')
                     }>
                         <input
@@ -497,7 +499,7 @@ class RawWidget extends Component {
             case 'Quantity':
                 return (
                     <div className={
-                        this.getClassnames() +
+                        this.getClassNames() +
                         (isEdited ? 'input-focused ' : '')
                     }>
                         <input
@@ -511,7 +513,7 @@ class RawWidget extends Component {
             case 'CostPrice':
                 return (
                     <div className={
-                        this.getClassnames() +
+                        this.getClassNames() +
                         (isEdited ? 'input-focused ' : '')
                     }>
                         <input
