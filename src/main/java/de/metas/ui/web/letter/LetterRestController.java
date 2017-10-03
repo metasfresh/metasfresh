@@ -200,21 +200,19 @@ public class LetterRestController
 		return createPDFResponseEntry(result.getLetter().getTemporaryPDFData());
 	}
 	
-	private File createFile(final byte[] pdfData)
+	private static File createFile(final byte[] pdfData)
 	{
 		final String pdfFilenamePrefix = Services.get(IMsgBL.class).getMsg(Env.getCtx(), Letters.MSG_Letter);
-		File pdfFile = null;
 		try
 		{
-			pdfFile = File.createTempFile(pdfFilenamePrefix, ".pdf");
+			final File pdfFile = File.createTempFile(pdfFilenamePrefix, ".pdf");
 			FileUtils.writeByteArrayToFile(pdfFile, pdfData);
+			return pdfFile;
 		}
 		catch (IOException e)
 		{
 			throw AdempiereException.wrapIfNeeded(e);
 		}
-
-		return pdfFile;
 	}
 
 	@PatchMapping("/{letterId}")
