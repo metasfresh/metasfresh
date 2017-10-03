@@ -7,6 +7,7 @@ import java.util.function.UnaryOperator;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.Check;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Component;
 
@@ -16,7 +17,6 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 
 import de.metas.letters.model.I_C_Letter;
-import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import lombok.Builder;
