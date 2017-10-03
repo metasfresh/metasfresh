@@ -1,27 +1,20 @@
 package de.metas.ui.web.letter;
 
-import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.UnaryOperator;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
-import org.compiere.util.Env;
 import org.springframework.stereotype.Component;
 
-import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Strings;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 
-import de.metas.letters.api.ITextTemplateBL;
 import de.metas.letters.model.I_C_Letter;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
-import de.metas.ui.web.window.datatypes.DocumentPath;
-import lombok.Builder;
+import de.metas.ui.web.letter.WebuiLetter.WebuiLetterBuilder;
 import lombok.NonNull;
 import lombok.ToString;
 
@@ -55,23 +48,15 @@ public class WebuiLetterRepository
 	private final Cache<String, WebuiLetterEntry> lettersById = CacheBuilder.newBuilder()
 			.expireAfterAccess(2, TimeUnit.HOURS)
 			.build();
-
-	public WebuiLetter createNewLetter(final int ownerUserId, final DocumentPath contextDocumentPath)
+	
+	public WebuiLetter createNewLetter(final WebuiLetterBuilder createRequest)
 	{
-		Preconditions.checkArgument(ownerUserId >= 0, "ownerUserId >= 0");
 
-		final I_C_Letter persistentLetter = fromLetterBuilder()
-				.content("")
-				.subject("")
+		final WebuiLetter letter = createRequest
+				.letterId(String.valueOf(nextLetterId.getAndIncrement()))
 				.build();
 		
-		final WebuiLetter letter = WebuiLetter.builder()
-				.letterId(String.valueOf(nextLetterId.getAndIncrement()))
-				.ownerUserId(ownerUserId)
-				.contextDocumentPath(contextDocumentPath)
-				.content(null)
-				.persistentLetterId(persistentLetter.getC_Letter_ID())
-				.build();
+		Preconditions.checkArgument(letter.getOwnerUserId() >= 0, "ownerUserId >= 0 for {}", letter);
 
 		lettersById.put(letter.getLetterId(), new WebuiLetterEntry(letter));
 
@@ -103,36 +88,21 @@ public class WebuiLetterRepository
 		lettersById.invalidate(letterId);
 	}
 	
-	@Builder(builderMethodName = "fromLetterBuilder")
-	private I_C_Letter createPersistentLetter(final String subject, final String content)
+	public void createC_Letter(@NonNull final WebuiLetter letter)
 	{
 		final I_C_Letter persistentLetter = InterfaceWrapperHelper.newInstance(I_C_Letter.class);
-		persistentLetter.setLetterSubject(subject);
-		persistentLetter.setLetterBody(content);
-		persistentLetter.setLetterBodyParsed(content);
-		InterfaceWrapperHelper.save(persistentLetter);
-		return persistentLetter;
-	}
-
-	private I_C_Letter getAndUpdatePersistentLetter(@NonNull final WebuiLetter letter)
-	{
-		Check.assume(letter.getPersistentLetterId() > 0, "Letter ID should be > 0");
-		final Properties ctx = Env.getCtx();
-		final I_C_Letter persistentLetter = InterfaceWrapperHelper.create(ctx, letter.getPersistentLetterId(), I_C_Letter.class, ITrx.TRXNAME_ThreadInherited);
 		persistentLetter.setLetterSubject(letter.getSubject());
-		// field is mandatory
-		persistentLetter.setLetterBody(Joiner.on(" ").skipNulls().join(letter.getContent(), ""));
+		persistentLetter.setLetterBody(Strings.nullToEmpty(letter.getContent()));
 		persistentLetter.setLetterBodyParsed(letter.getContent());
-		// also this should be completed in order that reports based on C_Letter to work
-		persistentLetter.setBPartnerAddress("");
+		
+		persistentLetter.setAD_BoilerPlate_ID(letter.getTextTemplateId());
+		
+		persistentLetter.setC_BPartner_ID(letter.getBpartnerId());
+		persistentLetter.setC_BPartner_Location_ID(letter.getBpartnerLocationId());
+		persistentLetter.setC_BP_Contact_ID(letter.getBpartnerContactId());
+		persistentLetter.setBPartnerAddress(Strings.nullToEmpty(letter.getBpartnerAddress()));
+		
 		InterfaceWrapperHelper.save(persistentLetter);
-		return persistentLetter;
-	}
-	
-	public byte[] createPDFData(@NonNull final WebuiLetter letter)
-	{
-		final I_C_Letter persistentLetter = getAndUpdatePersistentLetter(letter);
-		return Services.get(ITextTemplateBL.class).createPDF(persistentLetter);
 	}
 
 	@ToString
