@@ -50,6 +50,7 @@ public interface DocumentHandler
 	void rejectIt(DocumentTableFields docFields);
 	void voidIt(DocumentTableFields docFields);
 	void closeIt(DocumentTableFields docFields);
+	void unCloseIt(DocumentTableFields docFields);
 	void reverseCorrectIt(DocumentTableFields docFields);
 	void reverseAccrualIt(DocumentTableFields docFields);
 	void reactivateIt(DocumentTableFields docFields);

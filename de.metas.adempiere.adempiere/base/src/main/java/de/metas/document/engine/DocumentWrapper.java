@@ -160,6 +160,14 @@ public class DocumentWrapper implements IDocument, IModelWrapper
 		fireDocValidateEvent(ModelValidator.TIMING_AFTER_CLOSE);
 		return true;
 	}
+	
+	@Override
+	public void unCloseIt()
+	{
+		fireDocValidateEvent(ModelValidator.TIMING_BEFORE_UNCLOSE);
+		handler.unCloseIt(model);
+		fireDocValidateEvent(ModelValidator.TIMING_AFTER_UNCLOSE);
+	}
 
 	@Override
 	public boolean reverseCorrectIt()

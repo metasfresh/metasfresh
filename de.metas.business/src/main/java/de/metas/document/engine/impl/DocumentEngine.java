@@ -24,10 +24,10 @@ import static de.metas.document.engine.IDocument.ACTION_None;
 import static de.metas.document.engine.IDocument.ACTION_Post;
 import static de.metas.document.engine.IDocument.ACTION_Prepare;
 import static de.metas.document.engine.IDocument.ACTION_ReActivate;
-import static de.metas.document.engine.IDocument.ACTION_ReOpen;
 import static de.metas.document.engine.IDocument.ACTION_Reject;
 import static de.metas.document.engine.IDocument.ACTION_Reverse_Accrual;
 import static de.metas.document.engine.IDocument.ACTION_Reverse_Correct;
+import static de.metas.document.engine.IDocument.ACTION_UnClose;
 import static de.metas.document.engine.IDocument.ACTION_Unlock;
 import static de.metas.document.engine.IDocument.ACTION_Void;
 import static de.metas.document.engine.IDocument.ACTION_WaitComplete;
@@ -302,6 +302,10 @@ import lombok.NonNull;
 		{
 			return closeIt();
 		}
+		if (ACTION_UnClose.equals(docAction))
+		{
+			return unCloseIt();
+		}
 		if (ACTION_Void.equals(docAction))
 		{
 			return voidIt();
@@ -536,6 +540,25 @@ import lombok.NonNull;
 		}
 	}
 
+	private boolean unCloseIt()
+	{
+		if (!isValidDocAction(ACTION_UnClose))
+		{
+			return false;
+		}
+		
+		final IDocument document = getDocument();
+		document.unCloseIt();
+		
+		final String newDocStatus = STATUS_Completed;
+		setDocStatusIntern(newDocStatus);
+		document.setDocStatus(newDocStatus);
+
+		// task 09243: update doc status in the fact accounts of the document
+		factAcctDAO.updateDocStatusForDocument(document);
+		return true;
+	}
+
 	/**
 	 * Reverse Correct Document. Status: Reversed
 	 *
@@ -653,7 +676,7 @@ import lombok.NonNull;
 
 		if (isClosed())
 		{
-			return ImmutableSet.of(ACTION_Post, ACTION_ReOpen);
+			return ImmutableSet.of(ACTION_Post, ACTION_UnClose);
 		}
 
 		if (isReversed() || isVoided())

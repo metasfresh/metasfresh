@@ -37,7 +37,6 @@ public interface IDocument
 	String ACTION_Prepare = "PR";
 	String ACTION_Unlock = "XL";
 	String ACTION_Invalidate = "IN";
-	String ACTION_ReOpen = "OP"; // reopen if closed
 
 	String STATUS_Drafted = "DR";
 	String STATUS_Completed = "CO";
@@ -106,12 +105,11 @@ public interface IDocument
 
 	/** @return true if success */
 	boolean closeIt();
-
-	// @Formatter:off
-	// ts: Note: not declaring this method, because i don't want each DocAction to have to implement it
-	// /** @return true if success */
-	// boolean unCloseIt();
-	// @Formatter:on
+	
+	default void unCloseIt()
+	{
+		throw new UnsupportedOperationException();
+	}
 
 	/** @return true if success */
 	boolean reverseCorrectIt();
