@@ -30,28 +30,28 @@ public interface DocumentHandler
 	//
 	// Document Info
 	//@formatter:off
-	String getSummary(DocumentTableFields docActionModel);
-	String getDocumentInfo(DocumentTableFields docActionModel);
-	int getDoc_User_ID(DocumentTableFields docActionModel);
-	int getC_Currency_ID(DocumentTableFields docActionModel);
-	BigDecimal getApprovalAmt(DocumentTableFields docActionModel);
+	String getSummary(DocumentTableFields docFields);
+	String getDocumentInfo(DocumentTableFields docFields);
+	int getDoc_User_ID(DocumentTableFields docFields);
+	int getC_Currency_ID(DocumentTableFields docFields);
+	BigDecimal getApprovalAmt(DocumentTableFields docFields);
 	//@formatter:on
 
 	//
 	// Reporting
-	File createPDF(DocumentTableFields docActionModel);
+	File createPDF(DocumentTableFields docFields);
 
 	//
 	// Document processing
 	//@formatter:off
-	String prepareIt(DocumentTableFields docActionModel);
-	String completeIt(DocumentTableFields docActionModel);
-	void approveIt(DocumentTableFields docActionModel);
-	void rejectIt(DocumentTableFields docActionModel);
-	void voidIt(DocumentTableFields docActionModel);
-	void closeIt(DocumentTableFields docActionModel);
-	void reverseCorrectIt(DocumentTableFields docActionModel);
-	void reverseAccrualIt(DocumentTableFields docActionModel);
-	void reactivateIt(DocumentTableFields docActionModel);
+	String prepareIt(DocumentTableFields docFields);
+	String completeIt(DocumentTableFields docFields);
+	void approveIt(DocumentTableFields docFields);
+	void rejectIt(DocumentTableFields docFields);
+	void voidIt(DocumentTableFields docFields);
+	void closeIt(DocumentTableFields docFields);
+	void reverseCorrectIt(DocumentTableFields docFields);
+	void reverseAccrualIt(DocumentTableFields docFields);
+	void reactivateIt(DocumentTableFields docFields);
 	//@formatter:on
 }
