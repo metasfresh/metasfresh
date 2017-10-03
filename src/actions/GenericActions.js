@@ -143,10 +143,18 @@ export function autocompleteRequest(
     );
 }
 
-export function dropdownRequest(
-    docType, propertyName, docId, tabId, rowId, entity, subentity, subentityId,
-    viewId, attribute
-) {
+export function dropdownRequest({
+    attribute,
+    docId,
+    docType,
+    entity,
+    propertyName,
+    rowId,
+    subentity,
+    subentityId,
+    tabId,
+    viewId
+}) {
     return axios.get(
         config.API_URL +
         '/' + entity +
@@ -267,6 +275,6 @@ export function openFile(entity, docType, docId, fileType, fileId) {
 
 export function getRequest() {
     const url = config.API_URL + '/' + Array.from(arguments).join('/');
-    
+
     return axios.get(url);
 }

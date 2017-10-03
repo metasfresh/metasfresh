@@ -78,9 +78,12 @@ class ActionButton extends Component {
         if(!dataId){
             return;
         }
-        dropdownRequest(
-            windowType, fields[1].field, dataId, null, null, 'window'
-        ).then((res) => {
+        dropdownRequest({
+            docId: dataId,
+            docType: windowType,
+            entity: 'window',
+            propertyName: fields[1].field
+        }).then(res => {
             this.setState({list: res.data});
         });
     }
