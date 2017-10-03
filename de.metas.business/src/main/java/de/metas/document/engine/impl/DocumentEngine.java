@@ -219,13 +219,15 @@ import lombok.NonNull;
 	{
 		final LockOwner lockOwner = LockOwner.newOwner(DocumentEngine.class.getSimpleName() + "#processIt");
 
+		final IDocument document = getDocument();
+		
 		final ILock lock = lockManager
 				.lock()
 				.setOwner(lockOwner)
 				.setAllowAdditionalLocks(ILockCommand.AllowAdditionalLocks.FOR_DIFFERENT_OWNERS) // task 09849
 				.setFailIfAlreadyLocked(true) // fail if the record was already locked
 				.setAutoCleanup(true) // remove possible stale locks, e.g. after a client crash
-				.addRecordByModel(getDocument())
+				.addRecord(document.toTableRecordReference())
 				.acquire();
 		logger.debug("Acquired Lock {}", lock);
 
