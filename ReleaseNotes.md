@@ -20,6 +20,8 @@ Here come the actual release notes:
     * New Window for Dunning Candidates in WebUI, that allows the preparation and creation of Dunning Documents.
   * [#2614](https://github.com/metasfresh/metasfresh/issues/2614) Overhaul shipment schedule UI window
     * Additional shipment Schedule adjustments, new Quickactions and adding new Fields to Main View.
+  * [#2628](https://github.com/metasfresh/metasfresh/issues/2628) Show fields product, qty, price and contractstatus in window contracts
+    * Improvements for Subscription Contracts in Contract Window in WebUI. Adding Fields and Translations.
 
 
 # metasfresh 5.29 (2017-40)
