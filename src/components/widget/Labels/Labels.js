@@ -69,13 +69,26 @@ class Labels extends Component {
         const typeAhead = event.target.innerHTML;
         const { selected } = this.props;
 
-        if (!typeAhead && event.key === 'Backspace') {
+        if (event.key === 'Backspace' && !typeAhead) {
             if (selected.length < 1) {
                 return;
             }
 
             this.props.onChange(selected.slice(0, selected.length - 1));
         }
+
+        if (['ArrowLeft', 'ArrowRight', 'Backspace'].includes(event.key)) {
+            return;
+        }
+
+        const charAlphaNumeric = /^[\w|\p{L}]$/;
+
+        if (charAlphaNumeric.test(event.key)) {
+            return;
+        }
+
+        // For any key not checked
+        event.preventDefault();
     }
 
     handleSuggestionMouseDown = suggestion => {
