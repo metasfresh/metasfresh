@@ -43,31 +43,31 @@ class NewUrl extends Component {
         return (
             <div className="screen-freeze">
                 <div
-                    className="panel panel-modal panel-letter panel-modal-primary"
+                    className="panel panel-modal panel-attachurl panel-modal-primary"
                 >
-                    <div className="panel-letter-header-wrapper">
+                    <div className="panel-attachurl-header-wrapper">
                         <div
-                            className="panel-letter-header panel-letter-header-top"
+                            className="panel-attachurl-header panel-attachurl-header-top"
                         >
-                            <span className="letter-headline">
+                            <span className="attachurl-headline">
                                 Add URL
                                 {/* TODO: Add translation */}
                             </span>
                             <div
-                                className="input-icon input-icon-lg letter-icon-close"
+                                className="input-icon input-icon-lg attachurl-icon-close"
                                 onClick={handleAddUrlClose}
                             >
                                 <i className="meta-icon-close-1"/>
                             </div>
                         </div>
                     </div>
-                    <div className="panel-letter-body">
+                    <div className="panel-attachurl-body">
                         <textarea
                             value={url}
                             onChange={this.handleChange}
                         />
                     </div>
-                    <div className="panel-letter-footer">
+                    <div className="panel-attachurl-footer">
                         <button
                             onClick={this.handleClick}
                             className="btn btn-meta-success btn-sm btn-submit"
