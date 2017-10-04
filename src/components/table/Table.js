@@ -1,10 +1,10 @@
-import React, { Component } from 'react';
-import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
-import onClickOutside from 'react-onclickoutside';
 import update from 'immutability-helper';
-
 import * as _ from 'lodash';
+import PropTypes from 'prop-types';
+import React, { Component } from 'react';
+import onClickOutside from 'react-onclickoutside';
+import { connect } from 'react-redux';
+import { ShortcutManager } from 'react-shortcuts';
 
 import {
     openModal,
@@ -12,16 +12,16 @@ import {
     deleteLocal,
     mapIncluded,
     collapsedMap,
-    getItemsByProperty,
     getZoomIntoWindow,
     selectRow
 } from '../../actions/WindowActions';
-
-import {
-    deleteRequest
-} from '../../actions/GenericActions';
+import { deleteRequest } from '../../actions/GenericActions';
+import keymap from '../../keymap.js';
 
 import Prompt from '../app/Prompt';
+import DocumentListContextShortcuts
+    from '../shortcuts/DocumentListContextShortcuts';
+import TableContextShortcuts from '../shortcuts/TableContextShortcuts';
 
 import TableFilter from './TableFilter';
 import TableItem from './TableItem';
@@ -29,11 +29,6 @@ import TablePagination from './TablePagination';
 import TableHeader from './TableHeader';
 import TableContextMenu from './TableContextMenu';
 
-import keymap from '../../keymap.js';
-import DocumentListContextShortcuts
-    from '../shortcuts/DocumentListContextShortcuts';
-import TableContextShortcuts from '../shortcuts/TableContextShortcuts';
-import { ShortcutManager } from 'react-shortcuts';
 const shortcutManager = new ShortcutManager(keymap);
 
 class Table extends Component {
@@ -76,8 +71,7 @@ class Table extends Component {
         const {
             dispatch, mainTable, open, rowData, defaultSelected,
             disconnectFromState, type, refreshSelection,
-            supportIncludedViewOnSelect, viewId, isModal,
-            inBackground, selectedWindowType, isIncluded, hasIncluded
+            supportIncludedViewOnSelect, viewId, isModal, hasIncluded,
         } = this.props;
 
         const {
@@ -137,17 +131,19 @@ class Table extends Component {
     }
 
     showSelectedIncludedView = (selected) => {
-        const {
-            showIncludedViewOnSelect, supportIncludedViewOnSelect
-        } = this.props;
-
+        const { showIncludedViewOnSelect } = this.props;
         const { rows } = this.state;
 
-        (selected.length === 1) && rows.map( (item) => {
-            if (item.id === selected[0]) {
-                showIncludedViewOnSelect(item.supportIncludedViews, item.includedView);
-            }
-        });
+        if (selected.length === 1) {
+            rows.forEach((item) => {
+                if (item.id === selected[0]) {
+                    showIncludedViewOnSelect(
+                        item.supportIncludedViews,
+                        item.includedView,
+                    );
+                }
+            });
+        }
     }
 
     getChildContext = () => {
@@ -327,7 +323,10 @@ class Table extends Component {
 
     triggerFocus = (idFocused, idFocusedDown) => {
         if (this.table) {
-            const rowSelected = this.table.getElementsByClassName('row-selected');
+            const rowSelected = this.table.getElementsByClassName(
+                'row-selected'
+            );
+
             if(rowSelected.length > 0){
                 if(typeof idFocused == 'number'){
                     rowSelected[0].children[idFocused].focus();
@@ -435,7 +434,7 @@ class Table extends Component {
                         array[currentId - 1], idFocused, false,
                         this.showSelectedIncludedView([array[currentId - 1]])
                     );
-                    
+
                 } else {
                     this.selectProduct(
                         array[currentId - 1], idFocused, false
@@ -553,13 +552,14 @@ class Table extends Component {
     }
 
     getProductRange = (id) => {
-        const {rowData, tabid, keyProperty} = this.props;
+        const { keyProperty } = this.props;
+        const { rows } = this.state;
         let arrayIndex;
 
         let selectIdA;
         let selectIdB;
 
-        arrayIndex = rowData[tabid].map(item => item[keyProperty]);
+        arrayIndex = rows.map(item => item[keyProperty]);
         selectIdA = arrayIndex.findIndex(x => x === id);
         selectIdB = arrayIndex.findIndex(x => x === this.state.selected[0]);
 
