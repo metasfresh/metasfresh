@@ -84,6 +84,17 @@ class Attachments extends Component {
         }
     }
 
+    renderActions = () => {
+        return (
+            <div className="subheader-item js-subheader-item">
+                {'Add URL'}
+                {/* TODO: find out how to add translations and use this instead:
+                {counterpart.translate('window.sideList.attachments.addurl')}
+                */}
+            </div>
+        );
+    }
+
     renderData = () => {
         const { data, attachmentHovered } = this.state;
 
@@ -119,14 +130,13 @@ class Attachments extends Component {
 
     render() {
         const { data } = this.state;
-        let content;
+        let actions, content;
 
-        if (!data) {
-            content = <Loader />;
-        } else if (!data.length) {
-            content = this.renderEmpty();
+        if (data) {
+            content = data.length ? this.renderData() : this.renderEmpty();
+            actions = this.renderActions();
         } else {
-            content = this.renderData();
+            content = <Loader />;
         }
 
         return (
@@ -136,6 +146,7 @@ class Attachments extends Component {
                 tabIndex={0}
             >
                 {content}
+                {actions}
             </div>
         );
     }
