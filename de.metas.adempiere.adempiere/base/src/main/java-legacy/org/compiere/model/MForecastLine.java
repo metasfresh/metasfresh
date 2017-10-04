@@ -35,8 +35,6 @@ public class MForecastLine extends  X_M_ForecastLine
 	 * 
 	 */
 	private static final long serialVersionUID = -3420900505079279058L;
-	/** Parent					*/
-	private MForecast			m_parent = null;
 
 	/**
 	 * Standard Constructor
@@ -63,6 +61,7 @@ public class MForecastLine extends  X_M_ForecastLine
 	 *	@param newRecord
 	 *	@return true if it can be saved
 	 */
+	@Override
 	protected boolean beforeSave (boolean newRecord)
 	{
 		if (newRecord 
@@ -76,16 +75,4 @@ public class MForecastLine extends  X_M_ForecastLine
 		}
 		return true;
 	}
-	
-	/**
-	 * 	Get Parent
-	 *	@return parent
-	 */
-	public MForecast getParent()
-	{
-		if (m_parent == null)
-			m_parent = new MForecast(getCtx(), getM_Forecast_ID(), get_TrxName());
-		return m_parent;
-	}	//	getParent
-	
 }	//	MForecastLine
