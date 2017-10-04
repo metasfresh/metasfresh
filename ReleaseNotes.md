@@ -14,6 +14,8 @@ Here come the actual release notes:
 
 **release for week 2017-41**
 * metasfresh-app
+  * [#2212](https://github.com/metasfresh/metasfresh/issues/2212) take out password field from user window and use process instead
+    * Removing the Password Field from User Window, now only changeable via Password Change Action.
   * [#2517](https://github.com/metasfresh/metasfresh/issues/2517) Freigabe zur Fakturierung as standard filter
     * Adding default further Filter to Invoice Candidate Window in WebUI.
   * [#2594](https://github.com/metasfresh/metasfresh/issues/2594) New Window for Dunning Candidates in WebUI
