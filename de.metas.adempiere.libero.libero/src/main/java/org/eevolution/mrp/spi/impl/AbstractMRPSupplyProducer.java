@@ -42,7 +42,6 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
-import org.compiere.process.DocAction;
 import org.compiere.util.Env;
 import org.eevolution.exceptions.LiberoException;
 import org.eevolution.model.I_PP_MRP;
@@ -60,7 +59,8 @@ import org.eevolution.mrp.spi.IMRPSupplyProducer;
 import org.slf4j.Logger;
 
 import de.metas.document.IDocTypeDAO;
-import de.metas.document.engine.IDocActionBL;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.material.planning.IMRPSegment;
@@ -183,7 +183,7 @@ public abstract class AbstractMRPSupplyProducer implements IMRPSupplyProducer
 		boolean voided = false;
 		boolean closed = false;
 		boolean active = true;
-		final DocAction document = getDocument(model);
+		final IDocument document = getDocument(model);
 		if (document != null)
 		{
 			final String docStatus = document.getDocStatus();
@@ -228,9 +228,9 @@ public abstract class AbstractMRPSupplyProducer implements IMRPSupplyProducer
 		onRecordChange(model, ModelChangeType.AFTER_CHANGE);
 	}
 
-	private DocAction getDocument(final Object model)
+	private IDocument getDocument(final Object model)
 	{
-		final DocAction doc = Services.get(IDocActionBL.class).getDocActionOrNull(model);
+		final IDocument doc = Services.get(IDocumentBL.class).getDocumentOrNull(model);
 		if (doc != null)
 		{
 			return doc;
@@ -239,7 +239,7 @@ public abstract class AbstractMRPSupplyProducer implements IMRPSupplyProducer
 		if (model instanceof I_C_OrderLine)
 		{
 			final I_C_Order order = ((I_C_OrderLine)model).getC_Order();
-			return Services.get(IDocActionBL.class).getDocAction(order);
+			return Services.get(IDocumentBL.class).getDocument(order);
 		}
 
 		return null;

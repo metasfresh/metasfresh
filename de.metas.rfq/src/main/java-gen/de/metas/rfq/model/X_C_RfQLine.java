@@ -4,7 +4,6 @@ package de.metas.rfq.model;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import org.compiere.util.Env;
 
 /** Generated Model for C_RfQLine
  *  @author Adempiere (generated) 
@@ -16,7 +15,7 @@ public class X_C_RfQLine extends org.compiere.model.PO implements I_C_RfQLine, o
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1085412018L;
+	private static final long serialVersionUID = -1295016961L;
 
     /** Standard Constructor */
     public X_C_RfQLine (Properties ctx, int C_RfQLine_ID, String trxName)
@@ -26,13 +25,10 @@ public class X_C_RfQLine extends org.compiere.model.PO implements I_C_RfQLine, o
         {
 			setC_RfQ_ID (0);
 			setC_RfQLine_ID (0);
-			setLine (0);
-// @SQL=SELECT COALESCE(MAX(Line),0)+10 AS DefaultValue FROM C_RfQLine WHERE C_RfQ_ID=@C_RfQ_ID@
+			setLine (0); // @SQL=SELECT COALESCE(MAX(Line),0)+10 AS DefaultValue FROM C_RfQLine WHERE C_RfQ_ID=@C_RfQ_ID@
 			setM_AttributeSetInstance_ID (0);
-			setQty (Env.ZERO);
-// 0
-			setUseLineQty (false);
-// N
+			setQty (BigDecimal.ZERO); // 0
+			setUseLineQty (false); // N
         } */
     }
 
@@ -279,9 +275,9 @@ public class X_C_RfQLine extends org.compiere.model.PO implements I_C_RfQLine, o
 		set_ValueFromPO(COLUMNNAME_M_AttributeSetInstance_ID, org.compiere.model.I_M_AttributeSetInstance.class, M_AttributeSetInstance);
 	}
 
-	/** Set Ausprägung Merkmals-Satz.
+	/** Set Merkmale.
 		@param M_AttributeSetInstance_ID 
-		Product Attribute Set Instance
+		Merkmals Ausprägungen zum Produkt
 	  */
 	@Override
 	public void setM_AttributeSetInstance_ID (int M_AttributeSetInstance_ID)
@@ -292,8 +288,8 @@ public class X_C_RfQLine extends org.compiere.model.PO implements I_C_RfQLine, o
 			set_Value (COLUMNNAME_M_AttributeSetInstance_ID, Integer.valueOf(M_AttributeSetInstance_ID));
 	}
 
-	/** Get Ausprägung Merkmals-Satz.
-		@return Product Attribute Set Instance
+	/** Get Merkmale.
+		@return Merkmals Ausprägungen zum Produkt
 	  */
 	@Override
 	public int getM_AttributeSetInstance_ID () 
@@ -359,7 +355,7 @@ public class X_C_RfQLine extends org.compiere.model.PO implements I_C_RfQLine, o
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Qty);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -395,7 +391,7 @@ public class X_C_RfQLine extends org.compiere.model.PO implements I_C_RfQLine, o
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_RfQ_SelectedWinners_QtySum);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 

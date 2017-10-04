@@ -28,13 +28,13 @@ import java.util.Properties;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
-import org.compiere.process.DocAction;
-import org.compiere.process.DocumentEngine;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
 import de.metas.document.documentNo.IDocumentNoBuilder;
 import de.metas.document.documentNo.IDocumentNoBuilderFactory;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.IMsgBL;
 
 /**
@@ -50,7 +50,7 @@ import de.metas.i18n.IMsgBL;
  * 			<li>FR [ 1776045 ] Add ReActivate action to GL Journal
  *	@version $Id: MJournalBatch.java,v 1.3 2006/07/30 00:51:03 jjanke Exp $
  */
-public class MJournalBatch extends X_GL_JournalBatch implements DocAction
+public class MJournalBatch extends X_GL_JournalBatch implements IDocument
 {
 	/**
 	 * 
@@ -189,7 +189,7 @@ public class MJournalBatch extends X_GL_JournalBatch implements DocAction
 	 */
 	public MJournal[] getJournals (boolean requery)
 	{
-		ArrayList<MJournal> list = new ArrayList<MJournal>();
+		ArrayList<MJournal> list = new ArrayList<>();
 		String sql = "SELECT * FROM GL_Journal WHERE GL_JournalBatch_ID=? ORDER BY DocumentNo";
 		PreparedStatement pstmt = null;
 		try
@@ -263,18 +263,12 @@ public class MJournalBatch extends X_GL_JournalBatch implements DocAction
 	}	//	copyLinesFrom
 
 	
-	/**************************************************************************
-	 * 	Process document
-	 *	@param processAction document action
-	 *	@return true if performed
-	 */
 	@Override
-	public boolean processIt (String processAction)
+	public boolean processIt(final String processAction)
 	{
 		m_processMsg = null;
-		DocumentEngine engine = new DocumentEngine (this, getDocStatus());
-		return engine.processIt (processAction, getDocAction());
-	}	//	process
+		return Services.get(IDocumentBL.class).processIt(this, processAction);
+	}
 	
 	/**	Process Message 			*/
 	private String		m_processMsg = null;
@@ -314,14 +308,14 @@ public class MJournalBatch extends X_GL_JournalBatch implements DocAction
 		log.info(toString());
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_PREPARE);
 		if (m_processMsg != null)
-			return DocAction.STATUS_Invalid;
+			return IDocument.STATUS_Invalid;
 		MDocType dt = MDocType.get(getCtx(), getC_DocType_ID());
 
 		//	Std Period open?
 		if (!MPeriod.isOpen(getCtx(), getDateAcct(), dt.getDocBaseType(), getAD_Org_ID()))
 		{
 			m_processMsg = "@PeriodClosed@";
-			return DocAction.STATUS_Invalid;
+			return IDocument.STATUS_Invalid;
 		}
 		
 		//	Add up Amounts & prepare them
@@ -329,7 +323,7 @@ public class MJournalBatch extends X_GL_JournalBatch implements DocAction
 		if (journals.length == 0)
 		{
 			m_processMsg = "@NoLines@";
-			return DocAction.STATUS_Invalid;
+			return IDocument.STATUS_Invalid;
 		}
 		
 		BigDecimal TotalDr = Env.ZERO;
@@ -348,7 +342,7 @@ public class MJournalBatch extends X_GL_JournalBatch implements DocAction
 			else
 			{
 				String status = journal.prepareIt();
-				if (!DocAction.STATUS_InProgress.equals(status))
+				if (!IDocument.STATUS_InProgress.equals(status))
 				{
 					journal.setDocStatus(status);
 					journal.save();
@@ -370,18 +364,18 @@ public class MJournalBatch extends X_GL_JournalBatch implements DocAction
 			&& getControlAmt().compareTo(getTotalDr()) != 0)
 		{
 			m_processMsg = "@ControlAmtError@";
-			return DocAction.STATUS_Invalid;
+			return IDocument.STATUS_Invalid;
 		}
 
 		// NOTE: don't copy C_ConversionType_ID, CurrencyRate from GL_Journal to GL_JournalLine because it's OK to have different currencies on each line
 		
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_PREPARE);
 		if (m_processMsg != null)
-			return DocAction.STATUS_Invalid;
+			return IDocument.STATUS_Invalid;
 		
 		//	Add up Amounts
 		m_justPrepared = true;
-		return DocAction.STATUS_InProgress;
+		return IDocument.STATUS_InProgress;
 	}	//	prepareIt
 	
 	/**
@@ -420,13 +414,13 @@ public class MJournalBatch extends X_GL_JournalBatch implements DocAction
 		if (!m_justPrepared)
 		{
 			String status = prepareIt();
-			if (!DocAction.STATUS_InProgress.equals(status))
+			if (!IDocument.STATUS_InProgress.equals(status))
 				return status;
 		}
 		
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_COMPLETE);
 		if (m_processMsg != null)
-			return DocAction.STATUS_Invalid;
+			return IDocument.STATUS_Invalid;
 		
 		//	Implicit Approval
 		approveIt();
@@ -455,7 +449,7 @@ public class MJournalBatch extends X_GL_JournalBatch implements DocAction
 			else
 			{
 				String status = journal.completeIt();
-				if (!DocAction.STATUS_Completed.equals(status))
+				if (!IDocument.STATUS_Completed.equals(status))
 				{
 					journal.setDocStatus(status);
 					journal.save();
@@ -476,7 +470,7 @@ public class MJournalBatch extends X_GL_JournalBatch implements DocAction
 		if (valid != null)
 		{
 			m_processMsg = valid;
-			return DocAction.STATUS_Invalid;
+			return IDocument.STATUS_Invalid;
 		}
 
 		// Set the definite document number after completed (if needed)
@@ -485,7 +479,7 @@ public class MJournalBatch extends X_GL_JournalBatch implements DocAction
 		//
 		setProcessed(true);
 		setDocAction(DOCACTION_Close);
-		return DocAction.STATUS_Completed;
+		return IDocument.STATUS_Completed;
 	}	//	completeIt
 	
 	/**

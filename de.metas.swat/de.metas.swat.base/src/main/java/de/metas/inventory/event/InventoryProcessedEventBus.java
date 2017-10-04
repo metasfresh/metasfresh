@@ -9,7 +9,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_M_Inventory;
 import org.compiere.util.Env;
 
-import de.metas.document.engine.IDocActionBL;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.event.Event;
 import de.metas.event.IEventBus;
 import de.metas.event.IEventBusFactory;
@@ -62,7 +62,7 @@ public class InventoryProcessedEventBus extends QueueableForwardingEventBus
 			.build();
 	
 	// services
-	private final transient IDocActionBL docActionBL = Services.get(IDocActionBL.class);
+	private final transient IDocumentBL docActionBL = Services.get(IDocumentBL.class);
 
 	private static final String MSG_Event_InventoryGenerated = "Event_InventoryGenerated";
 

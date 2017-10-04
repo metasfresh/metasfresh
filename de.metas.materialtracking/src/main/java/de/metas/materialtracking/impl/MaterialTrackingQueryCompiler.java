@@ -38,9 +38,9 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
-import org.compiere.process.DocAction;
 
 import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.document.engine.IDocument;
 import de.metas.materialtracking.IMaterialTrackingQuery;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
 import de.metas.materialtracking.model.I_M_Material_Tracking_Ref;
@@ -138,7 +138,7 @@ import de.metas.materialtracking.model.I_M_Material_Tracking_Ref;
 		{
 			queryBuilder.addCompareFilter(I_M_Material_Tracking.COLUMN_C_Flatrate_Term_ID, Operator.NOT_EQUAL, null)
 					.andCollect(I_C_Flatrate_Term.COLUMN_C_Flatrate_Term_ID, I_C_Flatrate_Term.class)
-					.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_DocStatus, DocAction.STATUS_Completed)
+					.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_DocStatus, IDocument.STATUS_Completed)
 					.addOnlyActiveRecordsFilter()
 					.andCollectChildren(I_M_Material_Tracking.COLUMN_C_Flatrate_Term_ID, I_M_Material_Tracking.class);
 		}

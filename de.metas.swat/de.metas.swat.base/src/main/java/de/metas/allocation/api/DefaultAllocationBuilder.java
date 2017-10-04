@@ -39,14 +39,14 @@ import org.adempiere.util.lang.ObjectUtils;
 import org.adempiere.util.text.annotation.ToStringBuilder;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_AllocationLine;
-import org.compiere.process.DocAction;
 import org.slf4j.Logger;
 
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 
 import de.metas.builder.BuilderSupport;
-import de.metas.document.engine.IDocActionBL;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.logging.LogManager;
 
 /**
@@ -205,7 +205,7 @@ public class DefaultAllocationBuilder implements IAllocationBuilder
 		// Process the allocation if asked
 		if (complete)
 		{
-			Services.get(IDocActionBL.class).processEx(allocHdr, DocAction.ACTION_Complete, DocAction.STATUS_Completed);
+			Services.get(IDocumentBL.class).processEx(allocHdr, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
 		}
 
 		return allocHdr;

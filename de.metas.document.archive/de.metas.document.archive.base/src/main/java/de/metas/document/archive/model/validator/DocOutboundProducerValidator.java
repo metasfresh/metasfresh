@@ -29,13 +29,13 @@ import org.compiere.model.MClient;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.PO;
-import org.compiere.process.DocAction;
 
 import de.metas.document.archive.api.IDocOutboundProducerService;
 import de.metas.document.archive.api.impl.AbstractDocOutboundProducer;
 import de.metas.document.archive.async.spi.impl.DocOutboundWorkpackageProcessor;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Config;
-import de.metas.document.engine.IDocActionBL;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 
 /**
  * Intercepter which listens to a a table specified in {@link I_C_Doc_Outbound_Config} and enqueues the documents to {@link DocOutboundWorkpackageProcessor}.
@@ -134,7 +134,7 @@ import de.metas.document.engine.IDocActionBL;
 					return null;
 				}
 
-				if (po.is_ValueChanged(DocAction.DocStatus) && Services.get(IDocActionBL.class).isDocumentReversedOrVoided(po))
+				if (po.is_ValueChanged(IDocument.DocStatus) && Services.get(IDocumentBL.class).isDocumentReversedOrVoided(po))
 				{
 					voidDocOutbound(po);
 				}
@@ -159,7 +159,7 @@ import de.metas.document.engine.IDocActionBL;
 		}
 
 		if (timing == ModelValidator.TIMING_AFTER_COMPLETE
-				&& !Services.get(IDocActionBL.class).isReversalDocument(po))
+				&& !Services.get(IDocumentBL.class).isReversalDocument(po))
 		{
 			createDocOutbound(po);
 		}

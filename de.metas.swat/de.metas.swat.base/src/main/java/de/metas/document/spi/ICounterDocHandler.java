@@ -1,6 +1,6 @@
 package de.metas.document.spi;
 
-import org.compiere.process.DocAction;
+import de.metas.document.engine.IDocument;
 
 /*
  * #%L
@@ -37,14 +37,14 @@ public interface ICounterDocHandler
 	 * @param document
 	 * @return <code>true</code> if the system is supposed to create a counter document for the given document.
 	 */
-	boolean isCreateCounterDocument(DocAction document);
+	boolean isCreateCounterDocument(IDocument document);
 
 	/**
 	 *
 	 * @param document
 	 * @return <code>true</code> if the given <code>document</code> is actually a counter document.
 	 */
-	boolean isCounterDocument(DocAction document);
+	boolean isCounterDocument(IDocument document);
 
-	DocAction createCounterDocument(DocAction document);
+	IDocument createCounterDocument(IDocument document);
 }

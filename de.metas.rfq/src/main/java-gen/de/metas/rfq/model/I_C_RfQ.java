@@ -298,8 +298,8 @@ public interface I_C_RfQ
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Antwort-datum.
-	 * Date of the Response
+	 * Set Datum Antwort.
+	 * Datum der Antwort
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
@@ -308,8 +308,8 @@ public interface I_C_RfQ
 	public void setDateResponse (java.sql.Timestamp DateResponse);
 
 	/**
-	 * Get Antwort-datum.
-	 * Date of the Response
+	 * Get Datum Antwort.
+	 * Datum der Antwort
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
@@ -421,6 +421,31 @@ public interface I_C_RfQ
     public static final String COLUMNNAME_Description = "Description";
 
 	/**
+	 * Set Belegverarbeitung.
+	 * Der zukünftige Status des Belegs
+	 *
+	 * <br>Type: Button
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setDocAction (java.lang.String DocAction);
+
+	/**
+	 * Get Belegverarbeitung.
+	 * Der zukünftige Status des Belegs
+	 *
+	 * <br>Type: Button
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getDocAction();
+
+    /** Column definition for DocAction */
+    public static final org.adempiere.model.ModelColumn<I_C_RfQ, Object> COLUMN_DocAction = new org.adempiere.model.ModelColumn<I_C_RfQ, Object>(I_C_RfQ.class, "DocAction", null);
+    /** Column name DocAction */
+    public static final String COLUMNNAME_DocAction = "DocAction";
+
+	/**
 	 * Set Belegstatus.
 	 * The current status of the document
 	 *
@@ -446,7 +471,7 @@ public interface I_C_RfQ
     public static final String COLUMNNAME_DocStatus = "DocStatus";
 
 	/**
-	 * Set Beleg Nr..
+	 * Set Nr..
 	 * Document sequence number of the document
 	 *
 	 * <br>Type: String
@@ -456,7 +481,7 @@ public interface I_C_RfQ
 	public void setDocumentNo (java.lang.String DocumentNo);
 
 	/**
-	 * Get Beleg Nr..
+	 * Get Nr..
 	 * Document sequence number of the document
 	 *
 	 * <br>Type: String
@@ -771,7 +796,7 @@ public interface I_C_RfQ
 	/**
 	 * Set Bid end date.
 	 *
-	 * <br>Type: Date
+	 * <br>Type: DateTime
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -780,7 +805,7 @@ public interface I_C_RfQ
 	/**
 	 * Get Bid end date.
 	 *
-	 * <br>Type: Date
+	 * <br>Type: DateTime
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -794,7 +819,7 @@ public interface I_C_RfQ
 	/**
 	 * Set Bid start date.
 	 *
-	 * <br>Type: Date
+	 * <br>Type: DateTime
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -803,7 +828,7 @@ public interface I_C_RfQ
 	/**
 	 * Get Bid start date.
 	 *
-	 * <br>Type: Date
+	 * <br>Type: DateTime
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -838,8 +863,7 @@ public interface I_C_RfQ
     public static final String COLUMNNAME_RfQType = "RfQType";
 
 	/**
-	 * Set Vertriebsbeauftragter.
-	 * Sales Representative or Company Agent
+	 * Set Aussendienst.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
@@ -848,8 +872,7 @@ public interface I_C_RfQ
 	public void setSalesRep_ID (int SalesRep_ID);
 
 	/**
-	 * Get Vertriebsbeauftragter.
-	 * Sales Representative or Company Agent
+	 * Get Aussendienst.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true

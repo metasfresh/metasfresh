@@ -6,9 +6,9 @@ import java.util.List;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Invoice;
-import org.compiere.process.DocAction;
 
-import de.metas.document.engine.IDocActionBL;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.materialtracking.IMaterialTrackingBL;
 import de.metas.materialtracking.IMaterialTrackingDAO;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
@@ -56,14 +56,14 @@ public class InvoicedSumProvider implements IInvoicedSumProvider
 	public BigDecimal getAlreadyInvoicedNetSum(final I_M_Material_Tracking materialTracking)
 	{
 		final IMaterialTrackingDAO materialTrackingDAO = Services.get(IMaterialTrackingDAO.class);
-		final IDocActionBL docActionBL = Services.get(IDocActionBL.class);
+		final IDocumentBL docActionBL = Services.get(IDocumentBL.class);
 
 		final List<I_C_Invoice> invoices = materialTrackingDAO.retrieveReferences(materialTracking, I_C_Invoice.class);
 
 		BigDecimal result = BigDecimal.ZERO;
 		for (final I_C_Invoice invoice : invoices)
 		{
-			if (!docActionBL.isDocumentStatusOneOf(invoice, DocAction.STATUS_Completed, DocAction.STATUS_Closed))
+			if (!docActionBL.isDocumentStatusOneOf(invoice, IDocument.STATUS_Completed, IDocument.STATUS_Closed))
 			{
 				continue;
 			}

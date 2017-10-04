@@ -42,8 +42,8 @@ import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_MatchInv;
-import org.compiere.process.DocAction;
 
+import de.metas.document.engine.IDocument;
 import de.metas.printing.esb.base.util.Check;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
@@ -108,7 +108,7 @@ public class M_MatchInv_RecreateForInOutLine extends JavaProcess
 					.addOnlyActiveRecordsFilter();
 
 			// Relevant DocStatus
-			inoutQueryBuilder.addInArrayOrAllFilter(I_M_InOut.COLUMN_DocStatus, DocAction.STATUS_Completed, DocAction.STATUS_Closed);
+			inoutQueryBuilder.addInArrayOrAllFilter(I_M_InOut.COLUMN_DocStatus, IDocument.STATUS_Completed, IDocument.STATUS_Closed);
 
 			// IsSOTrx
 			if (p_IsSOTrx != null)

@@ -47,7 +47,6 @@ import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.MOrder;
 import org.compiere.model.Query;
 import org.compiere.model.X_C_Order;
-import org.compiere.process.DocAction;
 import org.junit.Assert;
 import org.slf4j.Logger;
 
@@ -55,6 +54,7 @@ import de.metas.adempiere.ait.helper.ProductPriceVO.LineType;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.adempiere.service.IOrderBL;
 import de.metas.currency.ICurrencyDAO;
+import de.metas.document.engine.IDocument;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.interfaces.I_M_Shipper;
@@ -156,7 +156,7 @@ public class OrderHelper
 		return this.setPricingSystemValue(pricingSystemValue)
 				.setDocSubType(docSubType)
 				.addLine(productValue, priceList, priceActual)
-				.setComplete(DocAction.STATUS_Completed)
+				.setComplete(IDocument.STATUS_Completed)
 				.createOrder(I_C_Order.class);
 	}
 
@@ -381,7 +381,7 @@ public class OrderHelper
 
 		if (expectedCompleteStatus != null)
 		{
-			this.process(DocAction.ACTION_Complete, expectedCompleteStatus);
+			this.process(IDocument.ACTION_Complete, expectedCompleteStatus);
 
 			if (docSubType != null)
 				assertThat(order.getC_DocType().getDocSubType(), equalTo(docSubType));

@@ -80,7 +80,7 @@ public class M_MatchInv
 			MPeriod.testPeriodOpen(ctx, matchInv.getDateAcct(), X_C_DocType.DOCBASETYPE_MatchInvoice, matchInv.getAD_Org_ID());
 
 			matchInv.setPosted(false);
-			Services.get(IFactAcctDAO.class).deleteForDocument(matchInv);
+			Services.get(IFactAcctDAO.class).deleteForDocumentModel(matchInv);
 		}
 
 		//

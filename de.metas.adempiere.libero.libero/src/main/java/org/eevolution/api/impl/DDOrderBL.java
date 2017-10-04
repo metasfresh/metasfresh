@@ -39,7 +39,6 @@ import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_MovementLine;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_S_Resource;
-import org.compiere.process.DocAction;
 import org.eevolution.api.IDDOrderBL;
 import org.eevolution.api.IDDOrderDAO;
 import org.eevolution.api.IDDOrderMovementBuilder;
@@ -51,7 +50,8 @@ import org.eevolution.model.I_DD_OrderLine_Or_Alternative;
 import org.eevolution.model.I_PP_Order;
 import org.slf4j.Logger;
 
-import de.metas.document.engine.IDocActionBL;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.logging.LogManager;
 import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.material.planning.exception.NoPlantForWarehouseException;
@@ -140,10 +140,10 @@ public class DDOrderBL implements IDDOrderBL
 	@Override
 	public void completeDDOrderIfNeeded(final I_DD_Order ddOrder)
 	{
-		final IDocActionBL docActionBL = Services.get(IDocActionBL.class);
+		final IDocumentBL docActionBL = Services.get(IDocumentBL.class);
 		if (docActionBL.issDocumentDraftedOrInProgress(ddOrder))
 		{
-			docActionBL.processEx(ddOrder, DocAction.ACTION_Complete, DocAction.STATUS_Completed);
+			docActionBL.processEx(ddOrder, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
 		}
 
 		if (!docActionBL.isDocumentCompleted(ddOrder))
@@ -160,13 +160,13 @@ public class DDOrderBL implements IDDOrderBL
 			return;
 		}
 
-		final IDocActionBL docActionBL = Services.get(IDocActionBL.class);
+		final IDocumentBL docActionBL = Services.get(IDocumentBL.class);
 
 		for (final I_DD_Order ddOrder : ddOrders)
 		{
 			if (docActionBL.issDocumentDraftedOrInProgress(ddOrder))
 			{
-				docActionBL.processEx(ddOrder, DocAction.ACTION_Complete, DocAction.STATUS_Completed);
+				docActionBL.processEx(ddOrder, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
 			}
 
 			if (!docActionBL.isDocumentCompleted(ddOrder))
@@ -318,7 +318,7 @@ public class DDOrderBL implements IDDOrderBL
 				.andCollect(I_DD_OrderLine.COLUMN_DD_Order_ID)
 				.addEqualsFilter(I_DD_Order.COLUMN_Processed, false) // only not processed DD_Orders
 				.addNotEqualsFilter(I_DD_Order.COLUMN_Processing, true) // only those which are not currently processing
-				.addInArrayOrAllFilter(I_DD_Order.COLUMN_DocStatus, DocAction.STATUS_Drafted) // only draft/not processed DD Orders
+				.addInArrayOrAllFilter(I_DD_Order.COLUMN_DocStatus, IDocument.STATUS_Drafted) // only draft/not processed DD Orders
 				.addEqualsFilter(I_DD_Order.COLUMN_PP_Plant_ID, currentPlantId) // same plant, we are not allow to cross plants (08059)
 				//
 				// Create query

@@ -38,7 +38,7 @@ import de.metas.document.archive.api.IDocOutboundProducerService;
 import de.metas.document.archive.async.spi.impl.DocOutboundWorkpackageProcessor;
 import de.metas.document.archive.async.spi.impl.ProcessPrintingQueueWorkpackageProcessor;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Config;
-import de.metas.document.engine.IDocActionBL;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.logging.LogManager;
 
 /**
@@ -73,7 +73,7 @@ public abstract class AbstractDocOutboundProducer implements IDocOutboundProduce
 		this.config = config;
 		tableName = config.getAD_Table().getTableName();
 
-		if (Services.get(IDocActionBL.class).isDocumentTable(tableName))
+		if (Services.get(IDocumentBL.class).isDocumentTable(tableName))
 		{
 			isDocument = true;
 		}
@@ -137,7 +137,7 @@ public abstract class AbstractDocOutboundProducer implements IDocOutboundProduce
 		final String requiredDocBaseType = config.getDocBaseType();
 		if (!Check.isEmpty(requiredDocBaseType, true))
 		{
-			final I_C_DocType docType = Services.get(IDocActionBL.class).getDocTypeOrNull(model);
+			final I_C_DocType docType = Services.get(IDocumentBL.class).getDocTypeOrNull(model);
 			if (docType == null)
 			{
 				logger.info("No document type found for {}. Ignore it.", model);

@@ -21,6 +21,7 @@ import java.sql.ResultSet;
 import java.sql.Timestamp;
 import org.slf4j.Logger;
 
+import de.metas.document.engine.IDocument;
 import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
 import de.metas.process.ProcessInfoParameter;
@@ -215,8 +216,8 @@ public class ExpenseAPInvoice extends JavaProcess
 	{
 		if (invoice == null)
 			return;
-		invoice.setDocAction(DocAction.ACTION_Prepare);
-		invoice.processIt(DocAction.ACTION_Prepare);
+		invoice.setDocAction(IDocument.ACTION_Prepare);
+		invoice.processIt(IDocument.ACTION_Prepare);
 		if (!invoice.save())
 			new IllegalStateException("Cannot save Invoice");
 		//

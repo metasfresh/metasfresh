@@ -18,10 +18,10 @@ import org.compiere.model.I_AD_OrgInfo;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
-import org.compiere.process.DocAction;
 import org.compiere.util.Env;
 
 import de.metas.adempiere.service.IOrderBL;
+import de.metas.document.engine.IDocument;
 import de.metas.i18n.IMsgBL;
 
 
@@ -120,7 +120,7 @@ public class CreatePOFromSOsAggregator extends MapReduceAggregator<I_C_Order, I_
 			else
 			{
 				// task 09802: Make docAction COmplete
-				purchaseOrder.setDocAction(DocAction.ACTION_Complete);
+				purchaseOrder.setDocAction(IDocument.ACTION_Complete);
 
 				InterfaceWrapperHelper.save(purchaseOrder);
 			}

@@ -37,7 +37,8 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.Query;
 import org.compiere.model.X_C_Order;
-import org.compiere.process.DocAction;
+
+import de.metas.document.engine.IDocument;
 
 public class OrderDAO extends AbstractOrderDAO
 {
@@ -80,7 +81,7 @@ public class OrderDAO extends AbstractOrderDAO
 						.addEqualsFilter(I_C_Order.COLUMNNAME_C_BPartner_Location_ID, bpLoc.getC_BPartner_Location_ID())
 						
 						// only orders that are not voided, reversed or closed
-						.addEqualsFilter(I_C_Order.COLUMNNAME_DocStatus, DocAction.STATUS_Completed)
+						.addEqualsFilter(I_C_Order.COLUMNNAME_DocStatus, IDocument.STATUS_Completed)
 
 						// DatePromised between DeliveryDateTime and DeliveryDateTimeMax
 						.addCompareFilter(I_C_Order.COLUMNNAME_DatePromised, Operator.LESS_OR_EQUAL, deliveryDateTimeMax)

@@ -19,6 +19,7 @@ RETURNS TABLE
 	rate character varying, 
 	isPrintTax character(1),
 	description character varying,
+	documentnote character varying,
 	bp_product_no character varying(30),
 	bp_product_name character varying(100)
 )
@@ -52,6 +53,7 @@ SELECT
 	END::character varying AS rate,
 	isPrintTax,
 	ol.description,
+	p.documentnote,
 	-- in case there is no C_BPartner_Product, fallback to the default ones
 	COALESCE(NULLIF(bpp.ProductNo, ''), p.value) as bp_product_no,
 	COALESCE(NULLIF(bpp.ProductName, ''), pt.Name, p.name) as bp_product_name

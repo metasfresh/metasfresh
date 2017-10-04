@@ -13,15 +13,14 @@ package org.adempiere.ad.table.process;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.List;
 
@@ -30,13 +29,13 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.table.api.impl.CopyColumnsProducer;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_Table;
-import org.compiere.model.MTable;
 
-import de.metas.process.ProcessInfoParameter;
 import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
 
 /**
  * Copy selected columns to given table.
@@ -76,14 +75,14 @@ public class AD_Column_CopySelectedToTable extends JavaProcess
 	}
 
 	@Override
-	protected String doIt() throws Exception
+	protected String doIt()
 	{
-		final CopyColumnsProducer producer = new CopyColumnsProducer(this);
-		producer.setLogger(this);
-		producer.setTargetTable(getTargetTable());
-		producer.setSourceColumns(getSourceColumns());
-		producer.setEntityType(p_EntityType);
-		producer.create();
+		final int countCreated = CopyColumnsProducer.newInstance()
+				.setLogger(this)
+				.setTargetTable(getTargetTable())
+				.setSourceColumns(getSourceColumns())
+				.setEntityType(p_EntityType)
+				.create();
 
 		if (p_IsTest)
 		{
@@ -91,7 +90,7 @@ public class AD_Column_CopySelectedToTable extends JavaProcess
 		}
 
 		//
-		return "@Created@ #" + producer.getCountCreated();
+		return "@Created@ #" + countCreated;
 	}
 
 	protected I_AD_Table getTargetTable()
@@ -101,7 +100,7 @@ public class AD_Column_CopySelectedToTable extends JavaProcess
 			throw new AdempiereException("@NotFound@ @AD_Table_ID@ " + p_AD_Table_ID);
 		}
 
-		final MTable targetTable = new MTable(getCtx(), p_AD_Table_ID, get_TrxName());
+		final I_AD_Table targetTable = InterfaceWrapperHelper.create(getCtx(), p_AD_Table_ID, I_AD_Table.class, get_TrxName());
 		return targetTable;
 	}
 

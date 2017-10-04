@@ -80,7 +80,7 @@ import org.compiere.util.Env;
 import org.compiere.util.Evaluatees;
 import org.compiere.util.Ini;
 import org.compiere.util.Splash;
-import org.compiere.wf.IADWorkflowBL;
+import org.compiere.wf.api.IADWorkflowBL;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.form.IClientUI;

@@ -35,12 +35,12 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
-import org.compiere.process.DocAction;
 
 import de.metas.allocation.api.IAllocationBL;
 import de.metas.allocation.api.IAllocationBuilder;
 import de.metas.allocation.api.IAllocationLineBuilder;
-import de.metas.document.engine.impl.PlainDocActionBL.IProcessInterceptor;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.impl.PlainDocumentBL.IProcessInterceptor;
 
 /**
  * @author cg
@@ -50,12 +50,12 @@ import de.metas.document.engine.impl.PlainDocActionBL.IProcessInterceptor;
 public class C_Payment_ProcessInterceptor implements IProcessInterceptor
 {
 	@Override
-	public boolean processIt(DocAction doc, String action) throws Exception
+	public boolean processIt(IDocument doc, String action) throws Exception
 	{
 		final POJOWrapper wrapper = POJOWrapper.getWrapper(doc);
 		final String trxName = InterfaceWrapperHelper.getTrxName(doc);
-		doc.setDocStatus(DocAction.STATUS_Completed);
-		wrapper.setValue("DocAction", DocAction.ACTION_Close);
+		doc.setDocStatus(IDocument.STATUS_Completed);
+		wrapper.setValue("DocAction", IDocument.ACTION_Close);
 		wrapper.setValue("Processed", true);
 		wrapper.setValue("Processing", false);
 		InterfaceWrapperHelper.save(wrapper);

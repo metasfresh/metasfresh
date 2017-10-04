@@ -25,8 +25,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.acct.api.IFactAcctDAO;
 import org.adempiere.ad.dao.IQueryBL;
@@ -117,7 +115,7 @@ public class Doc_Invoice extends Doc
 	 */
 	private DocTax[] loadTaxes()
 	{
-		final List<DocTax> list = new ArrayList<DocTax>();
+		final List<DocTax> list = new ArrayList<>();
 		final String sql = "SELECT it.C_Tax_ID, t.Name, t.Rate, it.TaxBaseAmt, it.TaxAmt, t.IsSalesTax " // 1..6
 				+ ", it." + I_C_InvoiceTax.COLUMNNAME_IsTaxIncluded // 7
 				+ " FROM C_Tax t, C_InvoiceTax it "
@@ -173,7 +171,7 @@ public class Doc_Invoice extends Doc
 	 */
 	private DocLine[] loadLines(MInvoice invoice)
 	{
-		ArrayList<DocLine> list = new ArrayList<DocLine>();
+		ArrayList<DocLine> list = new ArrayList<>();
 		//
 		final MInvoiceLine[] lines = invoice.getLines(false);
 		for (final MInvoiceLine line : lines)
@@ -1038,6 +1036,7 @@ public class Doc_Invoice extends Doc
 	 * @param C_AcctSchema_ID accounting schema
 	 * @deprecated old costing
 	 */
+	@Deprecated
 	private void updateProductInfo(int C_AcctSchema_ID)
 	{
 		log.debug("C_Invoice_ID=" + get_ID());
@@ -1110,7 +1109,7 @@ public class Doc_Invoice extends Doc
 		final Properties ctx = InterfaceWrapperHelper.getCtx(invoice);
 		MPeriod.testPeriodOpen(ctx, invoice.getDateAcct(), invoice.getC_DocType_ID(), invoice.getAD_Org_ID());
 
-		Services.get(IFactAcctDAO.class).deleteForDocument(invoice);
+		Services.get(IFactAcctDAO.class).deleteForDocumentModel(invoice);
 
 		invoice.setPosted(false);
 		InterfaceWrapperHelper.save(invoice);

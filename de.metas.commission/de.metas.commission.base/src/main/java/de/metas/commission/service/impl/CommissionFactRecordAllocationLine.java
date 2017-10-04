@@ -48,7 +48,6 @@ import org.compiere.model.PO;
 import org.compiere.model.X_C_AllocationHdr;
 import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_C_Invoice;
-import org.compiere.util.Trx;
 import org.slf4j.Logger;
 
 import de.metas.commission.custom.type.ICommissionType;
@@ -66,7 +65,6 @@ import de.metas.commission.service.IFieldAccessBL;
 import de.metas.commission.service.ISponsorBL;
 import de.metas.commission.util.CommissionTools;
 import de.metas.commission.util.PrecedingFactFinder;
-import de.metas.document.IDocumentPA;
 import de.metas.logging.LogManager;
 import de.metas.prepayorder.service.IPrepayOrderBL;
 
@@ -133,7 +131,7 @@ class CommissionFactRecordAllocationLine
 			final IPrepayOrderBL prepayOrderBL = Services.get(IPrepayOrderBL.class);
 			final int orderID = allocLinePO.getC_Order_ID();
 
-			final List<PO> poLines = new ArrayList<PO>();
+			final List<PO> poLines = new ArrayList<>();
 
 			final boolean allocLineHasPrepayOrder = orderID > 0 && prepayOrderBL.isPrepayOrder(cand.getCtx(), orderID, cand.get_TrxName());
 
@@ -144,7 +142,7 @@ class CommissionFactRecordAllocationLine
 
 				final MInvoiceLine[] invoiceLines = invoice.getLines();
 
-				final String docBaseType = Services.get(IDocumentPA.class).retrieveDocBaseType(invoice.getC_DocTypeTarget_ID(), Trx.TRXNAME_None);
+				final String docBaseType = invoice.getC_DocTypeTarget().getDocBaseType();
 				final boolean invoiceIsCreditMemo = X_C_DocType.DOCBASETYPE_ARCreditMemo.equals(docBaseType);
 
 				// Make sure that the invoice line is *really* recorded.
@@ -569,7 +567,7 @@ class CommissionFactRecordAllocationLine
 		final ICommissionType type = Services.get(ICommissionTypeBL.class).getBusinessLogic(comSystemType);
 
 		// the commission facts we will add the follow-up info to
-		final List<I_C_AdvCommissionFact> factsToFollowUp = new ArrayList<I_C_AdvCommissionFact>();
+		final List<I_C_AdvCommissionFact> factsToFollowUp = new ArrayList<>();
 
 		// qty will be used with the plusFact and qty.negate will be used with the minusFact
 		final BigDecimal qty;
@@ -1119,7 +1117,7 @@ class CommissionFactRecordAllocationLine
 			}
 		};
 
-		final List<I_C_AdvCommissionFact> result = new ArrayList<I_C_AdvCommissionFact>();
+		final List<I_C_AdvCommissionFact> result = new ArrayList<>();
 
 		// Note: we don't use PrecedingFactFinder.retrievePreceeding, because the fact we are looking for might not be
 		// reachable using preceding facts from the most recent element of 'allAllocationLineFacts'
