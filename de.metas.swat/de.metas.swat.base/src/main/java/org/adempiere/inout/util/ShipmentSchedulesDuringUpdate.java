@@ -52,7 +52,7 @@ import lombok.NonNull;
 public class ShipmentSchedulesDuringUpdate implements IShipmentSchedulesDuringUpdate
 {
 
-	static final Logger logger = LogManager.getLogger(ShipmentSchedulesDuringUpdate.class);
+	private static final Logger logger = LogManager.getLogger(ShipmentSchedulesDuringUpdate.class);
 
 	/**
 	 * List to store the shipments before it is decided if they are persisted to the database.
@@ -61,7 +61,7 @@ public class ShipmentSchedulesDuringUpdate implements IShipmentSchedulesDuringUp
 
 	private final Map<DeliveryLineCandidate, StringBuilder> line2StatusInfo = new HashMap<>();
 
-	private final Map<Integer, DeliveryLineCandidate> shipmentScheduleId2InOutLine = new HashMap<>();
+	private final Map<Integer, DeliveryLineCandidate> shipmentScheduleId2DeliveryLineCandidate = new HashMap<>();
 
 	private final Set<DeliveryLineCandidate> deliveryLineCandidates = new HashSet<>();
 
@@ -74,7 +74,6 @@ public class ShipmentSchedulesDuringUpdate implements IShipmentSchedulesDuringUp
 	 * Used when one shipment per order is required
 	 */
 	private final Map<ArrayKey, DeliveryGroupCandidate> orderKey2Candidate = new HashMap<>();
-
 
 	@Override
 	public void addGroup(@NonNull final DeliveryGroupCandidate deliveryGroupCandidate)
@@ -121,13 +120,13 @@ public class ShipmentSchedulesDuringUpdate implements IShipmentSchedulesDuringUp
 		//
 		// C_OrderLine_ID to M_InOutLine mapping
 		{
-			final DeliveryLineCandidate inOutLine_Old = shipmentScheduleId2InOutLine.put(sched.getM_ShipmentSchedule_ID(), deliveryLineCandidate);
-			if (inOutLine_Old != null && inOutLine_Old != deliveryLineCandidate)
+			final DeliveryLineCandidate oldCandidate = shipmentScheduleId2DeliveryLineCandidate.put(sched.getM_ShipmentSchedule_ID(), deliveryLineCandidate);
+			if (oldCandidate != null && !oldCandidate.equals(deliveryLineCandidate))
 			{
-				throw new IllegalArgumentException("An InOutLine was already set for order line in orderLineId2InOutLine mapping"
-						+ "\n InOutLine: " + deliveryLineCandidate
-						+ "\n InOutLine (old): " + inOutLine_Old
-						+ "\n shipmentScheduleId2InOutLine (after change): " + shipmentScheduleId2InOutLine);
+				throw new IllegalArgumentException("Aa deliveryLineCandidate was already set for order line in orderLineId2InOutLine mapping"
+						+ "\n deliveryLineCandidate: " + deliveryLineCandidate
+						+ "\n old deliveryLineCandidate: " + oldCandidate
+						+ "\n shipmentScheduleId2InOutLine (after change): " + shipmentScheduleId2DeliveryLineCandidate);
 			}
 		}
 
@@ -137,14 +136,13 @@ public class ShipmentSchedulesDuringUpdate implements IShipmentSchedulesDuringUp
 	public void removeLine(@NonNull final DeliveryLineCandidate deliveryLineCandidate)
 	{
 		final int shipmentScheduleId = deliveryLineCandidate.getShipmentSchedule().getM_ShipmentSchedule_ID();
-		boolean success = shipmentScheduleId2InOutLine.remove(shipmentScheduleId) != null;
+		boolean success = shipmentScheduleId2DeliveryLineCandidate.remove(shipmentScheduleId) != null;
 		if (!success)
 		{
 			throw new IllegalStateException("inOutLine wasn't in shipmentScheduleId2InOutLine."
-					+ "\n shipmentScheduleId2InOutLine: " + shipmentScheduleId2InOutLine);
+					+ "\n shipmentScheduleId2InOutLine: " + shipmentScheduleId2DeliveryLineCandidate);
 		}
-		//deliveryLineCandidate.hashCode() -1037930231
-//		deliveryLineCandidates.contains(deliveryLineCandidate)
+
 		success = deliveryLineCandidates.remove(deliveryLineCandidate);
 		if (!success)
 		{
@@ -214,10 +212,10 @@ public class ShipmentSchedulesDuringUpdate implements IShipmentSchedulesDuringUp
 	/**
 	 * Removes first the inoutLines with {@link DeliveryLineCandidate#getQtyEntered()} = 0 and afterwards the inouts that have no more lines.
 	 */
-	public void purgeLinesEmpty()
+	public void removeEmptyLineandGroupCandidates()
 	{
-		int rmInOuts = 0, rmInOutLines = 0;
-		// removing empty inOutLines
+		// removing empty DeliveryLineCandidate
+		int rmInOutLines = 0;
 		for (final DeliveryGroupCandidate inOut : getCandidates())
 		{
 			for (final DeliveryLineCandidate inOutLine : inOut.getLines())
@@ -230,7 +228,8 @@ public class ShipmentSchedulesDuringUpdate implements IShipmentSchedulesDuringUp
 			}
 		}
 
-		// removing empty inOuts
+		// removing empty DeliveryGroupCandidate
+		int rmInOuts = 0;
 		for (final DeliveryGroupCandidate inOut : getCandidates())
 		{
 			if (inOut.getLines().isEmpty())
@@ -298,7 +297,7 @@ public class ShipmentSchedulesDuringUpdate implements IShipmentSchedulesDuringUp
 	@Override
 	public DeliveryLineCandidate getLineCandidateForShipmentScheduleId(final int shipmentScheduleId)
 	{
-		return shipmentScheduleId2InOutLine.get(shipmentScheduleId);
+		return shipmentScheduleId2DeliveryLineCandidate.get(shipmentScheduleId);
 	}
 
 	@Override

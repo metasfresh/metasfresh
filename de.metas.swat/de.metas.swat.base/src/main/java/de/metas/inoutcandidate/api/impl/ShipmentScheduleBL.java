@@ -250,7 +250,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 				if (deliveryRuleIsForced)
 				{
 					sched.setQtyToDeliver(BigDecimal.ZERO);
-					InterfaceWrapperHelper.save(sched);
+					save(sched);
 				}
 				else
 				{
@@ -312,7 +312,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 				sched.setPreparationDate_Override(preparationDate);
 
 			}
-			InterfaceWrapperHelper.save(sched);
+			save(sched);
 		}
 	}
 
@@ -383,20 +383,6 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 		}
 	}
 
-	/**
-	 * Generate Shipments.
-	 *
-	 * Defaults:
-	 * <ul>
-	 * <li>Unconfirmed shipments count
-	 * <li>consolidation is on (unless the BPartner forbids it)
-	 * <li>movement date is now
-	 * </ul>
-	 *
-	 * @param lines orderLines with optional override parameters. The lines are evaluated in list order
-	 *
-	 * @return firstRun may be <code>null</code>. Can contain results from a former run. InOutLines contained here are skipped.
-	 */
 	private ShipmentSchedulesDuringUpdate generate(
 			final Properties ctx,
 			final List<OlAndSched> lines,

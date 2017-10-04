@@ -1,5 +1,7 @@
 package de.metas.order.inoutcandidate;
 
+import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -30,7 +32,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -51,6 +52,7 @@ import de.metas.inoutcandidate.spi.IShipmentScheduleHandler;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.logging.LogManager;
 import de.metas.product.IProductBL;
+import lombok.NonNull;
 
 /**
  * Default implementation for sales order lines.
@@ -64,7 +66,7 @@ public class OrderLineShipmentScheduleHandler implements IShipmentScheduleHandle
 	private static final Logger logger = LogManager.getLogger(OrderLineShipmentScheduleHandler.class);
 
 	@Override
-	public List<I_M_ShipmentSchedule> createCandidatesFor(final Object model)
+	public List<I_M_ShipmentSchedule> createCandidatesFor(@NonNull final Object model)
 	{
 		final I_C_OrderLine orderLine = InterfaceWrapperHelper.create(model, I_C_OrderLine.class);
 
@@ -81,43 +83,17 @@ public class OrderLineShipmentScheduleHandler implements IShipmentScheduleHandle
 
 		final I_M_ShipmentSchedule newSched = InterfaceWrapperHelper.create(ctx, I_M_ShipmentSchedule.class, trxName);
 
-		final BigDecimal qtyOrdered_Effective = orderLine.getQtyOrdered();
+		updateShipmentScheduleFromOrderLine(newSched, orderLine);
 
-		newSched.setC_Order_ID(orderLine.getC_Order_ID());
-		newSched.setC_OrderLine_ID(orderLine.getC_OrderLine_ID());
-		newSched.setQtyReserved(BigDecimal.ZERO.max(orderLine.getQtyReserved())); // task 09358: making sure that negative qtyOrdered are not proagated to the shipment sched
-		
-		// 08255 : initialize the qty order calculated
-		newSched.setQtyOrdered_Calculated(qtyOrdered_Effective);
-		newSched.setDateOrdered(orderLine.getDateOrdered());
+		updateShipmentScheduleFromOrder(newSched, order);
+
 		Services.get(IAttributeSetInstanceBL.class).cloneASI(newSched, orderLine);
-
-		newSched.setPriorityRule(order.getPriorityRule());
 
 		Check.assume(newSched.getAD_Client_ID() == orderLine.getAD_Client_ID(),
 				"The new M_ShipmentSchedule haas the same AD_Client_ID as " + orderLine + ", i.e." + newSched.getAD_Client_ID() + " == " + orderLine.getAD_Client_ID());
 
-		final int adTableId = Services.get(IADTableDAO.class).retrieveTableId(I_C_OrderLine.Table_Name);
-		newSched.setAD_Table_ID(adTableId);
-		newSched.setRecord_ID(orderLine.getC_OrderLine_ID());
-
-		// 03152 begin
-		// the following fields used to be SQL columns. Now setting them programatically
-
-		Check.assume(orderLine.getM_Product_ID() > 0, orderLine + " has M_Product_ID>0");
-		newSched.setM_Product_ID(orderLine.getM_Product_ID());
-
-		newSched.setProductDescription(orderLine.getProductDescription());
-
 		// 04290
 		newSched.setM_Warehouse(Services.get(IWarehouseAdvisor.class).evaluateWarehouse(orderLine));
-
-		newSched.setC_DocType_ID(order.getC_DocType_ID());
-		newSched.setDocSubType(order.getC_DocType().getDocSubType());
-
-		newSched.setC_BPartner_Location_ID(orderLine.getC_BPartner_Location_ID());
-		newSched.setC_BPartner_ID(orderLine.getC_BPartner_ID());
-		newSched.setBill_BPartner_ID(order.getBill_BPartner_ID());
 
 		final String bPartnerAddress;
 		if (!Check.isEmpty(orderLine.getBPartnerAddress()))
@@ -133,11 +109,6 @@ public class OrderLineShipmentScheduleHandler implements IShipmentScheduleHandle
 			bPartnerAddress = order.getBPartnerAddress();
 		}
 		newSched.setBPartnerAddress(bPartnerAddress);
-
-		newSched.setAD_User_ID(orderLine.getAD_User_ID());
-
-		newSched.setDeliveryRule(order.getDeliveryRule());
-		newSched.setDeliveryViaRule(order.getDeliveryViaRule());
 
 		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 		final BigDecimal qtyReservedInPriceUOM = uomConversionBL.convertFromProductUOM(ctx, orderLine.getM_Product(), orderLine.getPrice_UOM(), orderLine.getQtyReserved());
@@ -156,19 +127,56 @@ public class OrderLineShipmentScheduleHandler implements IShipmentScheduleHandle
 		newSched.setSinglePriceTag_ID(groupingOrderLineLabel);
 		// 03152 end
 
-		newSched.setAD_Org_ID(orderLine.getAD_Org_ID());
-
 		// only display item products
 		final boolean display = Services.get(IProductBL.class).isItem(orderLine.getM_Product());
 		newSched.setIsDisplayed(display);
 
 		InterfaceWrapperHelper.save(newSched);
 
-		// FIXME: disabled invalidation for
-		// invalidateForOrderLine(orderLine, order, trxName);
-
 		// Note: AllowConsolidateInOut and PostageFreeAmt is set on the first update of this schedule
 		return Collections.singletonList(newSched);
+	}
+
+	private static void updateShipmentScheduleFromOrderLine(
+			@NonNull final I_M_ShipmentSchedule shipmentSchedule,
+			@NonNull final I_C_OrderLine orderLine)
+	{
+		shipmentSchedule.setC_Order_ID(orderLine.getC_Order_ID());
+		shipmentSchedule.setC_OrderLine_ID(orderLine.getC_OrderLine_ID());
+
+		shipmentSchedule.setAD_Table_ID(getTableId(I_C_OrderLine.class));
+		shipmentSchedule.setRecord_ID(orderLine.getC_OrderLine_ID());
+
+		shipmentSchedule.setQtyReserved(BigDecimal.ZERO.max(orderLine.getQtyReserved())); // task 09358: making sure that negative qtyOrdered are not propagated to the shipment sched
+
+		// 08255 : initialize the qty order calculated
+		shipmentSchedule.setQtyOrdered_Calculated(orderLine.getQtyOrdered());
+		shipmentSchedule.setDateOrdered(orderLine.getDateOrdered());
+
+		shipmentSchedule.setProductDescription(orderLine.getProductDescription());
+
+		shipmentSchedule.setC_BPartner_Location_ID(orderLine.getC_BPartner_Location_ID());
+		shipmentSchedule.setC_BPartner_ID(orderLine.getC_BPartner_ID());
+
+		Check.assume(orderLine.getM_Product_ID() > 0, orderLine + " has M_Product_ID>0");
+		shipmentSchedule.setM_Product_ID(orderLine.getM_Product_ID());
+
+		shipmentSchedule.setAD_User_ID(orderLine.getAD_User_ID());
+
+		shipmentSchedule.setAD_Org_ID(orderLine.getAD_Org_ID());
+	}
+
+	private static void updateShipmentScheduleFromOrder(
+			@NonNull final I_M_ShipmentSchedule shipmentSchedule,
+			@NonNull final I_C_Order order)
+	{
+		shipmentSchedule.setPriorityRule(order.getPriorityRule());
+		shipmentSchedule.setBill_BPartner_ID(order.getBill_BPartner_ID());
+		shipmentSchedule.setDeliveryRule(order.getDeliveryRule());
+		shipmentSchedule.setDeliveryViaRule(order.getDeliveryViaRule());
+
+		shipmentSchedule.setC_DocType_ID(order.getC_DocType_ID());
+		shipmentSchedule.setDocSubType(order.getC_DocType().getDocSubType());
 	}
 
 	/**
