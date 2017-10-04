@@ -1,36 +1,38 @@
-import React, { Component } from 'react';
-import {connect} from 'react-redux';
-import PropTypes from 'prop-types';
 import counterpart from 'counterpart';
-
-import Loader from '../app/Loader';
+import PropTypes from 'prop-types';
+import React, { Component } from 'react';
 
 import {
     attachmentsRequest,
     openFile,
     deleteRequest
 } from '../../actions/GenericActions';
-class Attachments extends Component {
-    constructor(props) {
-        super(props);
 
-        this.state = {
-            data: null,
-            attachmentHovered: null
-        }
+import Loader from '../app/Loader';
+
+import AttachUrl from './AttachUrl';
+
+class Attachments extends Component {
+    state = {
+        data: null,
+        attachmentHovered: null,
+        isAttachUrlOpen: false,
     }
 
     componentDidMount = () => {
-        const {windowType, docId} = this.props;
+        this.fetchAttachments();
+    }
 
-        attachmentsRequest('window', windowType, docId)
-            .then(response => {
-                this.setState({
-                    data: response.data
-                }, () => {
-                    this.attachments && this.attachments.focus();
-                })
+    fetchAttachments = () => {
+        const { windowType, docId } = this.props;
+
+        attachmentsRequest('window', windowType, docId).then(response => {
+            this.setState({ data: response.data }, () => {
+                if (this.attachments) {
+                  this.attachments.focus();
+                }
             });
+        });
     }
 
     toggleAttachmentDelete = (value) => {
@@ -39,12 +41,21 @@ class Attachments extends Component {
         })
     }
 
-    handleAttachmentClick = (id) => {
+    handleClickAttachUrl = () => {
+        this.setState({ isAttachUrlOpen: true });
+    }
+
+    handleCloseAttachUrl = (event) => {
+        event.stopPropagation();
+        this.setState({ isAttachUrlOpen: false });
+    }
+
+    handleClickAttachment = (id) => {
         const {windowType, docId} = this.props;
         openFile('window', windowType, docId, 'attachments', id);
     }
 
-    handleAttachmentDelete = (e, id) => {
+    handleDeleteAttachment = (e, id) => {
         const {windowType, docId} = this.props;
         e.stopPropagation();
 
@@ -88,67 +99,89 @@ class Attachments extends Component {
         }
     }
 
-    renderData = () => {
-        const {data, attachmentHovered} = this.state;
+    renderActions = () => {
+        const { windowType, docId } = this.props;
+        const { isAttachUrlOpen } = this.state;
 
-        return (data && data.length) ?
-            data.map((item, key) =>
-                <div
-                    className="subheader-item subheader-item-ellipsis js-subheader-item"
-                    key={key}
-                    tabIndex={0}
-                    onMouseEnter={() =>
-                        this.toggleAttachmentDelete(item.id)}
-                    onMouseLeave={() =>
-                        this.toggleAttachmentDelete(null)}
-                    onClick={() =>
-                        this.handleAttachmentClick(item.id)}
-                >
-                    {item.name}
-                    {attachmentHovered === item.id &&
-                        <div
-                            className="subheader-additional-box"
-                            onClick={(e) =>
-                                this.handleAttachmentDelete(
-                                    e, item.id
-                                )
-                            }
-                        >
-                            <i className="meta-icon-delete"/>
-                        </div>
-                    }
-                </div>
-            ) :
-                <div
-                    className="subheader-item subheader-item-disabled"
-                >{counterpart.translate(
-                    'window.sideList.attachments.empty'
-                )}</div>
+        return (
+            <div
+              className="subheader-item js-subheader-item"
+              onClick={this.handleClickAttachUrl}
+            >
+                {counterpart.translate('window.attachment.url.add')}
+
+                {isAttachUrlOpen && (
+                    <AttachUrl
+                      windowId={windowType}
+                      documentId={docId}
+                      handleClose={this.handleCloseAttachUrl}
+                      fetchAttachments={this.fetchAttachments}
+                    />
+                )}
+            </div>
+        );
     }
 
+    renderData = () => {
+        const { data, attachmentHovered } = this.state;
+
+        return data.map((item, key) => (
+            <div
+                className="subheader-item subheader-item-ellipsis js-subheader-item"
+                key={key}
+                tabIndex={0}
+                onMouseEnter={() => { this.toggleAttachmentDelete(item.id); }}
+                onMouseLeave={() => { this.toggleAttachmentDelete(null); }}
+                onClick={() => { this.handleClickAttachment(item.id); }}
+            >
+                {item.name}
+                {attachmentHovered === item.id &&
+                    <div
+                        className="subheader-additional-box"
+                        onClick={(e) => {
+                            this.handleDeleteAttachment(e, item.id);
+                        }}
+                    >
+                        <i className="meta-icon-delete"/>
+                    </div>
+                }
+            </div>
+        ));
+    }
+
+    renderEmpty = () => (
+        <div className="subheader-item subheader-item-disabled">
+            {counterpart.translate('window.sideList.attachments.empty')}
+        </div>
+    )
+
     render() {
-        const {data} = this.state;
+        const { data } = this.state;
+        let actions, content;
+
+        if (data) {
+            content = data.length ? this.renderData() : this.renderEmpty();
+            actions = this.renderActions();
+        } else {
+            content = <Loader />;
+        }
+
         return (
             <div
                 onKeyDown={this.handleKeyDown}
-                ref={c => this.attachments = c}
+                ref={(c) => { this.attachments = c; }}
                 tabIndex={0}
             >
-                {!data ?
-                    <Loader /> :
-                    this.renderData()
-                }
+                {content}
+                {actions}
             </div>
         );
     }
 }
 
-Attachments.PropTypes = {
+Attachments.propTypes = {
     windowType: PropTypes.string.isRequired,
     docId: PropTypes.string.isRequired,
-    dispatch: PropTypes.func.isRequired
-}
-
-Attachments = connect()(Attachments);
+};
 
 export default Attachments;
