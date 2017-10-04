@@ -24,6 +24,8 @@ Here come the actual release notes:
     * Additional shipment Schedule adjustments, new Quickactions and adding new Fields to Main View.
   * [#2628](https://github.com/metasfresh/metasfresh/issues/2628) Show fields product, qty, price and contractstatus in window contracts
     * Improvements for Subscription Contracts in Contract Window in WebUI. Adding Fields and Translations.
+  * [#2637](https://github.com/metasfresh/metasfresh/issues/2637) Webui Window Design: Improvements to Account Combinations
+    * Additional Improvements to Account Combination Window in WebUI. Adding missing Translations for en_US.
 
 
 # metasfresh 5.29 (2017-40)
