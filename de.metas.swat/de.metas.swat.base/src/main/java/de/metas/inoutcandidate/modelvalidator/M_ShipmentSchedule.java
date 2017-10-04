@@ -48,6 +48,8 @@ import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;
 import org.compiere.model.ModelValidator;
 
+import com.google.common.collect.ImmutableList;
+
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
@@ -57,6 +59,8 @@ import de.metas.inoutcandidate.api.IShipmentScheduleUpdater;
 import de.metas.inoutcandidate.model.I_M_IolCandHandler_Log;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked;
+import de.metas.storage.IStorageBL;
+import de.metas.storage.IStorageSegment;
 
 /**
  * Shipment Schedule module: M_ShipmentSchedule
@@ -144,6 +148,42 @@ public class M_ShipmentSchedule
 			// delete the qtyPicked entries
 			InterfaceWrapperHelper.delete(alloc);
 		}
+	}
+
+	@ModelChange( //
+			timings = ModelValidator.TYPE_AFTER_CHANGE, //
+			ifColumnsChanged = {
+					I_M_ShipmentSchedule.COLUMNNAME_C_BPartner_ID,
+					I_M_ShipmentSchedule.COLUMNNAME_C_BPartner_Override_ID
+			})
+	public void invalidateIfBusinePartnerChanged(final I_M_ShipmentSchedule shipmentSchedule)
+	{
+		// If shipment schedule updater is currently running in this thread, it means that updater changed this record so there is NO need to invalidate it again.
+		if (Services.get(IShipmentScheduleUpdater.class).isRunning())
+		{
+			return;
+		}
+
+		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
+		final I_M_ShipmentSchedule oldShipmentSchedule = InterfaceWrapperHelper.createOld(shipmentSchedule, I_M_ShipmentSchedule.class);
+
+		final int newBPartnerId = shipmentScheduleEffectiveBL.getC_BPartner_ID(shipmentSchedule);
+		final int oldBpartnerId = shipmentScheduleEffectiveBL.getC_BPartner_ID(oldShipmentSchedule);
+		if (newBPartnerId == oldBpartnerId)
+		{
+			return;
+		}
+
+		final IStorageBL storageBL = Services.get(IStorageBL.class);
+		final IStorageSegment storageSegment = storageBL.createStorageSegmentBuilder()
+				.addM_Product_ID(shipmentSchedule.getM_Product_ID())
+				.addC_BPartner_ID(newBPartnerId)
+				.addC_BPartner_ID(oldBpartnerId)
+				.addM_AttributeSetInstance_ID(shipmentSchedule.getM_AttributeSetInstance_ID())
+				.addM_Warehouse(shipmentScheduleEffectiveBL.getWarehouse(shipmentSchedule))
+				.build();
+
+		Services.get(IShipmentSchedulePA.class).invalidate(ImmutableList.of(storageSegment));
 	}
 
 	/**
@@ -243,7 +283,7 @@ public class M_ShipmentSchedule
 		{
 			return;
 		}
-		
+
 		final BigDecimal qtyOrdered = shipmentSchedule.getQtyOrdered();
 		if (orderLine.getQtyOrdered().compareTo(qtyOrdered) == 0)
 		{

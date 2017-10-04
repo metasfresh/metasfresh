@@ -1,6 +1,9 @@
 package de.metas.contracts.subscription.impl.subscriptioncommands;
 
-import org.adempiere.ad.dao.ICompositeQueryUpdater;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+
+import java.util.List;
+
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.util.Services;
@@ -9,6 +12,7 @@ import org.compiere.model.IQuery;
 import de.metas.contracts.model.I_C_SubscriptionProgress;
 import de.metas.contracts.model.X_C_SubscriptionProgress;
 import de.metas.contracts.subscription.impl.SubscriptionCommand.ChangeRecipientsRequest;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import lombok.NonNull;
 
 /*
@@ -24,11 +28,11 @@ import lombok.NonNull;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -38,9 +42,18 @@ public class ChangeRecipient
 	public static int changeRecipient(@NonNull final ChangeRecipientsRequest changeRecipientsRequest)
 	{
 		final IQuery<I_C_SubscriptionProgress> query = createRecipienRecordsQuery(changeRecipientsRequest);
-		final ICompositeQueryUpdater<I_C_SubscriptionProgress> updater = createRecipientUpdater(changeRecipientsRequest);
 
-		return query.update(updater);
+		final List<I_C_SubscriptionProgress> shipmentSchedulesToUpdate = query.list();
+		for (final I_C_SubscriptionProgress subscriptionProgress : shipmentSchedulesToUpdate)
+		{
+			updateSubScriptionProgressFromRequest(subscriptionProgress, changeRecipientsRequest);
+
+			if (subscriptionProgress.getM_ShipmentSchedule_ID() > 0)
+			{
+				updateShipmentScheduleFromRequest(subscriptionProgress, changeRecipientsRequest);
+			}
+		}
+		return shipmentSchedulesToUpdate.size();
 
 	}
 
@@ -55,19 +68,28 @@ public class ChangeRecipient
 				.addCompareFilter(I_C_SubscriptionProgress.COLUMN_EventDate, Operator.LESS_OR_EQUAL, changeRecipientsRequest.getDateTo())
 				.addEqualsFilter(I_C_SubscriptionProgress.COLUMN_C_Flatrate_Term_ID, changeRecipientsRequest.getTerm().getC_Flatrate_Term_ID())
 				.addEqualsFilter(I_C_SubscriptionProgress.COLUMN_EventType, X_C_SubscriptionProgress.EVENTTYPE_Delivery)
-				.addEqualsFilter(I_C_SubscriptionProgress.COLUMN_Status, X_C_SubscriptionProgress.STATUS_Planned)
+				.addNotEqualsFilter(I_C_SubscriptionProgress.COLUMN_Status, X_C_SubscriptionProgress.STATUS_Done)
 				.create();
 	}
 
-	private static ICompositeQueryUpdater<I_C_SubscriptionProgress> createRecipientUpdater(@NonNull final ChangeRecipientsRequest changeRecipientsRequest)
+	private static void updateSubScriptionProgressFromRequest(
+			@NonNull final I_C_SubscriptionProgress subscriptionProgress,
+			@NonNull final ChangeRecipientsRequest request)
 	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		subscriptionProgress.setDropShip_BPartner_ID(request.getDropShip_BPartner_ID());
+		subscriptionProgress.setDropShip_Location_ID(request.getDropShip_Location_ID());
+		subscriptionProgress.setDropShip_User_ID(request.getDropShip_User_ID());
+		save(subscriptionProgress);
+	}
 
-		final ICompositeQueryUpdater<I_C_SubscriptionProgress> updater = queryBL
-				.createCompositeQueryUpdater(I_C_SubscriptionProgress.class)
-				.addSetColumnValue(I_C_SubscriptionProgress.COLUMNNAME_DropShip_BPartner_ID, changeRecipientsRequest.getDropShip_BPartner_ID())
-				.addSetColumnValue(I_C_SubscriptionProgress.COLUMNNAME_DropShip_Location_ID, changeRecipientsRequest.getDropShip_Location_ID())
-				.addSetColumnValue(I_C_SubscriptionProgress.COLUMNNAME_DropShip_User_ID, changeRecipientsRequest.getDropShip_User_ID());
-		return updater;
+	private static void updateShipmentScheduleFromRequest(
+			@NonNull final I_C_SubscriptionProgress subscriptionProgress,
+			@NonNull final ChangeRecipientsRequest changeRecipientsRequest)
+	{
+		final I_M_ShipmentSchedule shipmentSchedule = subscriptionProgress.getM_ShipmentSchedule();
+		shipmentSchedule.setC_BPartner_ID(changeRecipientsRequest.getDropShip_BPartner_ID());
+		shipmentSchedule.setC_BPartner_Location_ID(changeRecipientsRequest.getDropShip_Location_ID());
+		shipmentSchedule.setAD_User_ID(changeRecipientsRequest.getDropShip_User_ID());
+		save(shipmentSchedule);
 	}
 }
