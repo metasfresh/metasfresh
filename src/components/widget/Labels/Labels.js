@@ -31,6 +31,10 @@ class Labels extends Component {
     }
 
     handleFocus = () => {
+        if (document.activeElement !== this.input) {
+            return;
+        }
+
         this.setState({
             focused: true
         });
@@ -69,7 +73,7 @@ class Labels extends Component {
         });
     }
 
-    handleSuggestionClick = suggestion => {
+    handleSuggestionMouseDown = suggestion => {
         this.input.innerHTML = '';
 
         this.props.onChange([...this.props.selected, suggestion]);
@@ -125,7 +129,7 @@ class Labels extends Component {
                                 <Suggestion
                                     key={Object.keys(suggestion)[0]}
                                     suggestion={suggestion}
-                                    onClick={this.handleSuggestionClick}
+                                    onMouseDown={this.handleSuggestionMouseDown}
                                 />
                             );
                         })}
