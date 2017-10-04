@@ -14,6 +14,7 @@ class Attachments extends Component {
     state = {
         data: null,
         attachmentHovered: null,
+        isAddUrlOpen: false,
     }
 
     componentDidMount = () => {
@@ -33,6 +34,15 @@ class Attachments extends Component {
         this.setState({
             attachmentHovered: value
         })
+    }
+
+    handleAddUrlClick = () => {
+        this.setState({ isAddUrlOpen: true });
+    }
+
+    handleAddUrlClose = (e) => {
+        e.stopPropagation();
+        this.setState({ isAddUrlOpen: false });
     }
 
     handleAttachmentClick = (id) => {
@@ -85,12 +95,21 @@ class Attachments extends Component {
     }
 
     renderActions = () => {
+        const { isAddUrlOpen } = this.state;
+
         return (
-            <div className="subheader-item js-subheader-item">
-                {'Add URL'}
+            <div
+              className="subheader-item js-subheader-item"
+              onClick={this.handleAddUrlClick}
+            >
+                Add URL
                 {/* TODO: find out how to add translations and use this instead:
                 {counterpart.translate('window.sideList.attachments.addurl')}
                 */}
+
+                {isAddUrlOpen && (
+                    <div onClick={this.handleAddUrlClose}>New URL</div>
+                )}
             </div>
         );
     }
