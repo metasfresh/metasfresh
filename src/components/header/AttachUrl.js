@@ -43,7 +43,10 @@ class AttachUrl extends Component {
         }
     }
 
-    handleClick = () => {
+    handleClick = (event) => {
+        event.stopPropagation();
+        event.persist();
+
         const {
           windowId, documentId, handleClose, dispatch,
         } = this.props;
@@ -51,7 +54,7 @@ class AttachUrl extends Component {
 
         // TODO: Add translations for notifications
         createUrlAttachment({ windowId, documentId, url, name }).then(() => {
-            handleClose();
+            handleClose(event);
 
             dispatch(addNotification(
                 // counterpart.translate('window.attachment.url.title'),

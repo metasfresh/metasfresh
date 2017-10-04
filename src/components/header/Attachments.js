@@ -42,7 +42,8 @@ class Attachments extends Component {
         this.setState({ isAttachUrlOpen: true });
     }
 
-    handleCloseAttachUrl = () => {
+    handleCloseAttachUrl = (event) => {
+        event.stopPropagation();
         this.setState({ isAttachUrlOpen: false });
     }
 
