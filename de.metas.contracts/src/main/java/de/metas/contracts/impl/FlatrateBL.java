@@ -1372,9 +1372,6 @@ public class FlatrateBL implements IFlatrateBL
 	@Override
 	public I_C_DocType getDocTypeFor(final I_C_Flatrate_Term term)
 	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(term);
-		final String trxName = InterfaceWrapperHelper.getTrxName(term);
-
 		final String subType;
 		if (X_C_Flatrate_Term.TYPE_CONDITIONS_Subscription.equals(term.getType_Conditions()))
 		{
@@ -1540,12 +1537,18 @@ public class FlatrateBL implements IFlatrateBL
 		final I_C_Flatrate_Data data = flatrateDAO.retriveOrCreateFlatrateData(bPartner);
 		newTerm.setC_Flatrate_Data(data);
 
+		//
+		//set DocAction/DocStatus
+		newTerm.setDocAction(X_C_Flatrate_Term.DOCACTION_Prepare);
+		newTerm.setDocStatus(X_C_Flatrate_Term.DOCSTATUS_Drafted);
+		
 		InterfaceWrapperHelper.save(newTerm);
 
 		if (completeIt)
 		{
 			complete(newTerm);
 		}
+	
 		return newTerm;
 	}
 
