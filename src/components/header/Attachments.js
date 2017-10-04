@@ -108,10 +108,7 @@ class Attachments extends Component {
               className="subheader-item js-subheader-item"
               onClick={this.handleClickAttachUrl}
             >
-                Add URL
-                {/* TODO: find out how to add translations and use this instead:
-                {counterpart.translate('window.sideList.attachments.addurl')}
-                */}
+                {counterpart.translate('window.attachment.url.add')}
 
                 {isAttachUrlOpen && (
                     <AttachUrl

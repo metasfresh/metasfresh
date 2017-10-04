@@ -1,4 +1,4 @@
-// import counterpart from 'counterpart';
+import counterpart from 'counterpart';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 
@@ -58,18 +58,14 @@ class AttachUrl extends Component {
             fetchAttachments();
 
             dispatch(addNotification(
-                // counterpart.translate('window.attachment.url.title'),
-                'Attachment',
-                // counterpart.translate('window.attachment.url.success'),
-                'URL has been added.',
+                counterpart.translate('window.attachment.url.title'),
+                counterpart.translate('window.attachment.url.success'),
                 5000, 'success',
             ));
         }).catch(() => {
             dispatch(addNotification(
-                // counterpart.translate('window.attachment.url.title'),
-                'Attachment',
-                // counterpart.translate('window.attachment.url.error'),
-                'URL could not be added!',
+                counterpart.translate('window.attachment.url.title'),
+                counterpart.translate('window.attachment.url.error'),
                 5000, 'error',
             ));
         });
@@ -89,21 +85,19 @@ class AttachUrl extends Component {
                             className="panel-attachurl-header panel-attachurl-header-top"
                         >
                             <span className="attachurl-headline">
-                                URL attachment
-                                {/* {counterpart.translate('window.attachment.url.title')} */}
+                                {counterpart.translate('window.attachment.url.title')}
                             </span>
                             <div
                                 className="input-icon input-icon-lg attachurl-icon-close"
                                 onClick={handleClose}
                             >
-                                <i className="meta-icon-close-1"/>
+                                <i className="meta-icon-close-1" />
                             </div>
                         </div>
                         <div className="panel-attachurl-header panel-attachurl-bright">
                             <div className="panel-attachurl-data-wrapper">
                                 <span className="attachurl-label">
-                                    URL
-                                    {/* {counterpart.translate('window.attachment.url.url')} */}
+                                    {counterpart.translate('window.attachment.url.url')}
                                 </span>
                                 <input
                                     className="attachurl-input"
@@ -117,8 +111,7 @@ class AttachUrl extends Component {
                         <div className="panel-attachurl-header panel-attachurl-bright">
                             <div className="panel-attachurl-data-wrapper">
                                 <span className="attachurl-label">
-                                    Name
-                                    {/* {counterpart.translate('window.attachment.url.name')} */}
+                                    {counterpart.translate('window.attachment.url.name')}
                                 </span>
                                 <input
                                     className="attachurl-input"
@@ -135,8 +128,7 @@ class AttachUrl extends Component {
                             onClick={this.handleClick}
                             className="btn btn-meta-success btn-sm btn-submit"
                         >
-                            Create
-                            {/* {counterpart.translate('window.attachment.url.create')} */}
+                            {counterpart.translate('window.attachment.url.create')}
                         </button>
                     </div>
                 </div>
