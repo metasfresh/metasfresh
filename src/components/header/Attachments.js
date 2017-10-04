@@ -10,6 +10,8 @@ import {
 
 import Loader from '../app/Loader';
 
+import NewUrl from './NewUrl';
+
 class Attachments extends Component {
     state = {
         data: null,
@@ -40,8 +42,7 @@ class Attachments extends Component {
         this.setState({ isAddUrlOpen: true });
     }
 
-    handleAddUrlClose = (e) => {
-        e.stopPropagation();
+    handleAddUrlClose = () => {
         this.setState({ isAddUrlOpen: false });
     }
 
@@ -95,6 +96,7 @@ class Attachments extends Component {
     }
 
     renderActions = () => {
+        const { windowType, docId } = this.props;
         const { isAddUrlOpen } = this.state;
 
         return (
@@ -108,7 +110,11 @@ class Attachments extends Component {
                 */}
 
                 {isAddUrlOpen && (
-                    <div onClick={this.handleAddUrlClose}>New URL</div>
+                    <NewUrl
+                      windowId={windowType}
+                      documentId={docId}
+                      handleAddUrlClose={this.handleAddUrlClose}
+                    />
                 )}
             </div>
         );

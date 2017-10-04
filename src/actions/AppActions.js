@@ -221,6 +221,14 @@ export function getMessages(lang) {
     );
 }
 
+export function createUrlAttachment({ windowId, documentId, name, url }) {
+    return axios.post(
+        config.API_URL + '/window/' + windowId + '/' + documentId +
+        '/attachments/addUrl',
+        { name, url },
+    );
+}
+
 // END OF REQUESTS
 
 export function loginSuccess(auth) {
@@ -249,7 +257,7 @@ export function loginSuccess(auth) {
                         response.data.unreadCount
                     ));
                 });
-                
+
 /*
                 getMessages().then(response => {
                     counterpart.registerTranslations('lang', response.data);
@@ -322,7 +330,7 @@ function initNumeralLocales (lang, locale) {
 
 export function languageSuccess(lang) {
     localStorage.setItem(LOCAL_LANG, lang);
-    Moment.locale(lang);    
+    Moment.locale(lang);
 
     axios.defaults.headers.common['Accept-Language'] = lang;
 }
