@@ -4,6 +4,7 @@ import {
     dropdownRequest,
     autocompleteRequest
 } from '../../../actions/GenericActions';
+import Label from './Label';
 import Suggestion from './Suggestion';
 
 class Labels extends Component {
@@ -112,6 +113,10 @@ class Labels extends Component {
         this.props.onChange([...this.props.selected, suggestion]);
     }
 
+    handleLabelRemove = label => {
+        this.props.onChange(this.props.selected.filter(item => item !== label));
+    }
+
     unusedSuggestions = () => {
         const selected = new Set(
             this.props.selected.map(item => Object.keys(item)[0])
@@ -140,18 +145,14 @@ class Labels extends Component {
                 tabIndex={this.props.tabIndex}
             >
                 <span className="labels-wrap">
-                    {this.props.selected.map(item => {
-                        const [key, value] = Object.entries(item)[0];
-
-                        return (
-                            <span
-                                key={key}
-                                className="labels-label"
-                            >
-                                {value}
-                            </span>
-                        );
-                    })}
+                    {this.props.selected.map(item => (
+                        <Label
+                            className="labels-label"
+                            key={Object.keys(item)[0]}
+                            label={item}
+                            onRemove={this.handleLabelRemove}
+                        />
+                    ))}
                     <span
                         className="labels-input"
                         ref={ref => { this.input = ref; }}
@@ -162,16 +163,14 @@ class Labels extends Component {
                 </span>
                 {this.state.focused && (
                     <div className="labels-dropdown">
-                        {suggestions.map(suggestion => {
-                            return (
-                                <Suggestion
-                                    className="labels-suggestion"
-                                    key={Object.keys(suggestion)[0]}
-                                    suggestion={suggestion}
-                                    onMouseDown={this.handleSuggestionMouseDown}
-                                />
-                            );
-                        })}
+                        {suggestions.map(suggestion => (
+                            <Suggestion
+                                className="labels-suggestion"
+                                key={Object.keys(suggestion)[0]}
+                                suggestion={suggestion}
+                                onMouseDown={this.handleSuggestionMouseDown}
+                            />
+                        ))}
                     </div>
                 )}
             </div>

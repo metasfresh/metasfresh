@@ -13,6 +13,10 @@
         background: rgba(0, 0, 0, 0.05);
         margin-right: 0.25em;
         margin-bottom: 0.25rem;
+
+        &-remove {
+            cursor: pointer;
+        }
     }
 
     &-input {
