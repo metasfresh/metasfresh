@@ -46,17 +46,9 @@ class Labels extends Component {
         });
     }
 
-    handleKeyDown = async event => {
+    handleKeyUp = async event => {
         const typeAhead = event.target.innerHTML;
-        const { windowId, docId, name, selected } = this.props;
-
-        if (!typeAhead && event.key === 'Backspace') {
-            if (this.props.selected.length < 1) {
-                return;
-            }
-
-            this.props.onChange(selected.slice(0, selected.length - 1));
-        }
+        const { windowId, docId, name } = this.props;
 
         const response = await autocompleteRequest({
             docId,
@@ -71,6 +63,19 @@ class Labels extends Component {
         this.setState({
             suggestions: values
         });
+    }
+
+    handleKeyDown = event => {
+        const typeAhead = event.target.innerHTML;
+        const { selected } = this.props;
+
+        if (!typeAhead && event.key === 'Backspace') {
+            if (selected.length < 1) {
+                return;
+            }
+
+            this.props.onChange(selected.slice(0, selected.length - 1));
+        }
     }
 
     handleSuggestionMouseDown = suggestion => {
@@ -120,6 +125,7 @@ class Labels extends Component {
                     className="labels-input"
                     ref={ref => { this.input = ref; }}
                     contentEditable
+                    onKeyUp={this.handleKeyUp}
                     onKeyDown={this.handleKeyDown}
                 />
                 {this.state.focused && (
