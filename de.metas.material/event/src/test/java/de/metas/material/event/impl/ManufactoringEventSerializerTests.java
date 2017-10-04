@@ -16,6 +16,8 @@ import org.junit.Test;
 
 import de.metas.event.SimpleObjectSerializer;
 import de.metas.material.event.EventDescr;
+import de.metas.material.event.ForecastLineMaterialEvent;
+import de.metas.material.event.MaterialDemandDescr;
 import de.metas.material.event.MaterialDescriptor;
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.PPOrderRequestedEvent;
@@ -63,7 +65,7 @@ public class ManufactoringEventSerializerTests
 		InterfaceWrapperHelper.save(someOtherTable);
 
 		final ReceiptScheduleEvent evt = ReceiptScheduleEvent.builder()
-				.eventDescr(new EventDescr(1,2))
+				.eventDescr(new EventDescr(1, 2))
 				.materialDescr(MaterialDescriptor.builder()
 						.date(SystemTime.asDate())
 						.productId(13)
@@ -105,7 +107,7 @@ public class ManufactoringEventSerializerTests
 
 		final TransactionEvent evt = TransactionEvent
 				.builder()
-				.eventDescr(new EventDescr(1,2))
+				.eventDescr(new EventDescr(1, 2))
 				.materialDescr(MaterialDescriptor.builder()
 						.productId(14)
 						.qty(BigDecimal.TEN)
@@ -121,7 +123,7 @@ public class ManufactoringEventSerializerTests
 	public void testProductionOrderEvent()
 	{
 		final PPOrderRequestedEvent event = PPOrderRequestedEvent.builder()
-				.eventDescr(new EventDescr(1,2))
+				.eventDescr(new EventDescr(1, 2))
 				.reference(TableRecordReference.of("table", 24))
 				.ppOrder(PPOrder.builder()
 						.datePromised(SystemTime.asDate())
@@ -164,7 +166,7 @@ public class ManufactoringEventSerializerTests
 	public void testProductionPlanEvent()
 	{
 		final ProductionPlanEvent event = ProductionPlanEvent.builder()
-				.eventDescr(new EventDescr(1,2))
+				.eventDescr(new EventDescr(1, 2))
 				.reference(TableRecordReference.of("table", 24))
 				.ppOrder(PPOrder.builder()
 						.datePromised(SystemTime.asDate())
@@ -201,5 +203,32 @@ public class ManufactoringEventSerializerTests
 		final MaterialEvent deserializedEvt = SimpleObjectSerializer.get().deserialize(serializedEvt, MaterialEvent.class);
 
 		assertThat(deserializedEvt, is(event));
+	}
+
+	@Test
+	public void testForecastEvent()
+	{
+		final MaterialDescriptor materialDescriptor = MaterialDescriptor.builder()
+				.date(SystemTime.asDate())
+				.productId(20)
+				.qty(new BigDecimal("20"))
+				.warehouseId(30)
+				.build();
+
+		final ForecastLineMaterialEvent forecastLineMaterialEvent = ForecastLineMaterialEvent.builder()
+				.forecastLineId(12)
+				.materialDemandDescr(
+						MaterialDemandDescr.builder()
+								.eventDescr(new EventDescr(1, 2))
+								.materialDescr(materialDescriptor)
+								.reference(TableRecordReference.of("table", 24))
+								.build())
+				.build();
+
+		final String serializedEvt = SimpleObjectSerializer.get().serialize(forecastLineMaterialEvent);
+
+		final MaterialEvent deserializedEvt = SimpleObjectSerializer.get().deserialize(serializedEvt, MaterialEvent.class);
+
+		assertThat(deserializedEvt, is(forecastLineMaterialEvent));
 	}
 }

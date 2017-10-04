@@ -20,7 +20,8 @@ import de.metas.material.dispo.CandidatesSegment;
 import de.metas.material.dispo.Candidate.Type;
 import de.metas.material.dispo.CandidatesSegment.DateOperator;
 import de.metas.material.event.EventDescr;
-import de.metas.material.event.MaterialDemandEvent;
+import de.metas.material.event.MaterialDemandDescr;
+import de.metas.material.event.SalesOrderLineMaterialEvent;
 import de.metas.material.event.MaterialDescriptor;
 import de.metas.material.event.MaterialEventService;
 import lombok.NonNull;
@@ -111,17 +112,16 @@ public class CandidateChangeHandler
 		{
 			// this supply candidate is not new and already has a stock candidate as its parent. be sure to update exactly *that* scandidate
 			childStockWithDemand = updateStock(
-					demandCandidateWithId, () ->
-						{
-							// don't check if we might create a new stock candidate, because we know we don't.
-							// Instead we might run into trouble with CandidateRepository.retrieveExact() and multiple matching records.
-							// So get the one that we know already exists and just update its quantity
-							final Candidate childStockCandidate = possibleChildStockCandidate.get();
-							return candidateRepository.updateQty(
-									childStockCandidate
-											.withQuantity(
-													childStockCandidate.getQuantity().subtract(demandCandidateWithId.getQuantity())));
-						});
+					demandCandidateWithId, () -> {
+						// don't check if we might create a new stock candidate, because we know we don't.
+						// Instead we might run into trouble with CandidateRepository.retrieveExact() and multiple matching records.
+						// So get the one that we know already exists and just update its quantity
+						final Candidate childStockCandidate = possibleChildStockCandidate.get();
+						return candidateRepository.updateQty(
+								childStockCandidate
+										.withQuantity(
+												childStockCandidate.getQuantity().subtract(demandCandidateWithId.getQuantity())));
+					});
 		}
 
 		else
@@ -154,17 +154,19 @@ public class CandidateChangeHandler
 			// notify whoever is in charge that we have a demand to balance
 			final int orderLineId = demandCandidate.getDemandDetail() == null ? 0 : demandCandidate.getDemandDetail().getOrderLineId();
 
-			final MaterialDemandEvent materialDemandEvent = MaterialDemandEvent
+			final SalesOrderLineMaterialEvent materialDemandEvent = SalesOrderLineMaterialEvent
 					.builder()
-					.eventDescr(new EventDescr(demandCandidate.getClientId(), demandCandidate.getOrgId()))
-					.descr(MaterialDescriptor.builder()
-							.productId(demandCandidate.getProductId())
-							.date(demandCandidate.getDate())
-							.qty(childStockWithDemand.getQuantity().negate())
-							.warehouseId(demandCandidate.getWarehouseId())
+					.materialDemandDescr(MaterialDemandDescr.builder()
+							.eventDescr(new EventDescr(demandCandidate.getClientId(), demandCandidate.getOrgId()))
+							.materialDescr(MaterialDescriptor.builder()
+									.productId(demandCandidate.getProductId())
+									.date(demandCandidate.getDate())
+									.qty(childStockWithDemand.getQuantity().negate())
+									.warehouseId(demandCandidate.getWarehouseId())
+									.build())
+							.reference(demandCandidate.getReference())
+							.orderLineId(orderLineId)
 							.build())
-					.reference(demandCandidate.getReference())
-					.orderLineId(orderLineId)
 					.build();
 
 			materialEventService.fireEvent(materialDemandEvent);
@@ -200,14 +202,13 @@ public class CandidateChangeHandler
 			// this supply candidate is not new and already has a stock candidate as its parent. be sure to update exactly *that* scandidate
 			parentStockCandidateWithId = updateStock(
 					supplyCandidateDeltaWithId,
-					() ->
-						{
-							// don't check if we might create a new stock candidate, because we know we don't. Get the one that already exists and just update its quantity
-							final Candidate stockCandidate = candidateRepository.retrieve(supplyCandidateDeltaWithId.getParentId());
-							return candidateRepository.updateQty(
-									stockCandidate.withQuantity(
-											stockCandidate.getQuantity().add(supplyCandidateDeltaWithId.getQuantity())));
-						});
+					() -> {
+						// don't check if we might create a new stock candidate, because we know we don't. Get the one that already exists and just update its quantity
+						final Candidate stockCandidate = candidateRepository.retrieve(supplyCandidateDeltaWithId.getParentId());
+						return candidateRepository.updateQty(
+								stockCandidate.withQuantity(
+										stockCandidate.getQuantity().add(supplyCandidateDeltaWithId.getQuantity())));
+					});
 		}
 		else
 		{
@@ -285,15 +286,14 @@ public class CandidateChangeHandler
 	{
 		return updateStock(
 				candidate,
-				() ->
-					{
-						final Candidate stockCandidateToPersist = candidateFactory.createStockCandidate(candidate);
+				() -> {
+					final Candidate stockCandidateToPersist = candidateFactory.createStockCandidate(candidate);
 
-						final boolean preserveExistingSeqNo = true; // there there is a stock record with a seqNo, then don't override it, because we will need to adapt to it in order to put our new data into the right sequence.
-						final Candidate persistedStockCandidate = candidateRepository.addOrUpdate(stockCandidateToPersist, preserveExistingSeqNo);
+					final boolean preserveExistingSeqNo = true; // there there is a stock record with a seqNo, then don't override it, because we will need to adapt to it in order to put our new data into the right sequence.
+					final Candidate persistedStockCandidate = candidateRepository.addOrUpdate(stockCandidateToPersist, preserveExistingSeqNo);
 
-						return persistedStockCandidate;
-					});
+					return persistedStockCandidate;
+				});
 	}
 
 	public void onCandidateDelete(@NonNull final TableRecordReference recordReference)

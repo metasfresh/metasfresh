@@ -74,7 +74,7 @@ public class PPOrderPojoSupplier
 			@NonNull final IMaterialRequest request,
 			@NonNull final IMRPNotesCollector mrpNotesCollector)
 	{
-		final IMaterialPlanningContext mrpContext = request.getMRPContext();
+		final IMaterialPlanningContext mrpContext = request.getMrpContext();
 		// final IMRPExecutor executor = request.getMRPExecutor();
 
 		final I_PP_Product_Planning productPlanningData = mrpContext.getProductPlanning();
@@ -125,7 +125,7 @@ public class PPOrderPojoSupplier
 				// Qtys
 				.quantity(qtyToSupply)
 
-				.orderLineId(request.getMRPDemandOrderLineSOId())
+				.orderLineId(request.getMrpDemandOrderLineSOId())
 				//
 				// offer further advise :-)
 				.createPPOrder(productPlanningData.isCreatePlan())
