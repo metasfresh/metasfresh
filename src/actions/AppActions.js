@@ -1,6 +1,5 @@
 import * as types from '../constants/ActionTypes'
 import axios from 'axios';
-import counterpart from 'counterpart';
 import {replace} from 'react-router-redux';
 import Moment from 'moment';
 import numeral from 'numeral';
@@ -185,9 +184,9 @@ export function getKPIData(id) {
 export function changeKPIItem(id, path, value) {
     return axios.patch(config.API_URL + '/dashboard/kpis/'+id, [
         {
-            "op": "replace",
-            "path": path,
-            "value": value
+            op: 'replace',
+            path: path,
+            value: value
         }
     ]);
 }
@@ -195,9 +194,9 @@ export function changeKPIItem(id, path, value) {
 export function changeTargetIndicatorsItem(id, path, value) {
     return axios.patch(config.API_URL + '/dashboard/targetIndicators/'+id, [
         {
-            "op": "replace",
-            "path": path,
-            "value": value
+            op: 'replace',
+            path: path,
+            value: value
         }
     ]);
 }
@@ -221,6 +220,14 @@ export function getMessages(lang) {
     );
 }
 
+export function createUrlAttachment({ windowId, documentId, name, url }) {
+    return axios.post(
+        config.API_URL + '/window/' + windowId + '/' + documentId +
+        '/attachments/addUrl',
+        { name, url },
+    );
+}
+
 // END OF REQUESTS
 
 export function loginSuccess(auth) {
@@ -237,19 +244,27 @@ export function loginSuccess(auth) {
         getUserSession().then(session => {
             dispatch(userSessionInit(session.data));
             languageSuccess(Object.keys(session.data.language)[0]);
-            initNumeralLocales(Object.keys(session.data.language)[0], session.data.locale);
+            initNumeralLocales(
+              Object.keys(session.data.language)[0],
+              session.data.locale,
+            );
+
             auth.initSessionClient(session.data.websocketEndpoint, msg => {
                 const me = JSON.parse(msg.body);
                 dispatch(userSessionUpdate(me));
                 me.language && languageSuccess(Object.keys(me.language)[0]);
-                me.locale && initNumeralLocales(Object.keys(me.language)[0], me.locale);
+                me.locale && initNumeralLocales(
+                  Object.keys(me.language)[0],
+                  me.locale,
+                );
+
                 getNotifications().then(response => {
                     dispatch(getNotificationsSuccess(
                         response.data.notifications,
                         response.data.unreadCount
                     ));
                 });
-                
+
 /*
                 getMessages().then(response => {
                     counterpart.registerTranslations('lang', response.data);
@@ -322,7 +337,7 @@ function initNumeralLocales (lang, locale) {
 
 export function languageSuccess(lang) {
     localStorage.setItem(LOCAL_LANG, lang);
-    Moment.locale(lang);    
+    Moment.locale(lang);
 
     axios.defaults.headers.common['Accept-Language'] = lang;
 }
@@ -483,7 +498,9 @@ function forceUpdateIfPending(internalInstance) {
 
         if (typeof publicInstance.forceUpdate === 'function') {
             publicInstance.forceUpdate();
-        } else if (updater && typeof updater.enqueueForceUpdate === 'function') {
+        } else if (
+          updater && typeof updater.enqueueForceUpdate === 'function'
+        ) {
             updater.enqueueForceUpdate(publicInstance);
         }
     }
