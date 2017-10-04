@@ -182,7 +182,6 @@ public class ADProcessInstancesRepository implements IProcessInstancesRepository
 					.setProcessDescriptor(processDescriptor)
 					.setInstanceId(adPInstanceId)
 					.setParameters(parametersDoc)
-					.setViewsRepo(viewsRepo)
 					.setView(request.getViewId(), request.getViewDocumentIds())
 					.setProcessClassInstance(processClassInstance)
 					.setContextSingleDocumentPath(request.getSingleDocumentPath())
@@ -332,7 +331,6 @@ public class ADProcessInstancesRepository implements IProcessInstancesRepository
 					.setProcessDescriptor(processDescriptor)
 					.setInstanceId(adPInstanceId)
 					.setParameters(parametersDoc)
-					.setViewsRepo(viewsRepo)
 					.setView(viewId, viewSelectedIds)
 					.setProcessClassInstance(processClassInstance)
 					.build();

@@ -110,7 +110,6 @@ import lombok.NonNull;
 	private final Document parameters;
 	private final Object processClassInstance;
 
-	private final IViewsRepository viewsRepo;
 	private final ViewId viewId;
 	private final DocumentIdsSelection viewSelectedDocumentIds;
 
@@ -129,7 +128,6 @@ import lombok.NonNull;
 		parameters = builder.parameters;
 		processClassInstance = builder.processClassInstance;
 
-		viewsRepo = builder.viewsRepo;
 		viewId = builder.viewId;
 		viewSelectedDocumentIds = builder.viewSelectedDocumentIds == null ? DocumentIdsSelection.EMPTY : builder.viewSelectedDocumentIds;
 
@@ -150,7 +148,6 @@ import lombok.NonNull;
 		parameters = from.parameters.copy(copyMode, changesCollector);
 		processClassInstance = from.processClassInstance;
 
-		viewsRepo = from.viewsRepo;
 		viewId = from.viewId;
 		viewSelectedDocumentIds = from.viewSelectedDocumentIds;
 
@@ -573,7 +570,6 @@ import lombok.NonNull;
 		private DocumentId instanceId;
 		private Document parameters;
 
-		private IViewsRepository viewsRepo;
 		private ViewId viewId;
 		private DocumentIdsSelection viewSelectedDocumentIds;
 
@@ -606,12 +602,6 @@ import lombok.NonNull;
 		public Builder setParameters(final Document parameters)
 		{
 			this.parameters = parameters;
-			return this;
-		}
-
-		public Builder setViewsRepo(final IViewsRepository viewsRepo)
-		{
-			this.viewsRepo = viewsRepo;
 			return this;
 		}
 
