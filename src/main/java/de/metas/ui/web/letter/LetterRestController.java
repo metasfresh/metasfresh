@@ -1,17 +1,20 @@
 package de.metas.ui.web.letter;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.function.UnaryOperator;
 
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.apache.commons.io.FileUtils;
 import org.compiere.util.Env;
-import org.compiere.util.Util;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -27,7 +30,11 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.document.IDocumentLocationBL;
+import de.metas.document.model.impl.PlainDocumentLocation;
 import de.metas.i18n.IMsgBL;
+import de.metas.letters.api.ITextTemplateBL;
+import de.metas.letters.api.LetterPDFCreateRequest;
 import de.metas.letters.model.Letters;
 import de.metas.letters.model.MADBoilerPlate;
 import de.metas.letters.model.MADBoilerPlate.BoilerPlateContext;
@@ -120,7 +127,29 @@ public class LetterRestController
 		userSession.assertLoggedIn();
 
 		final DocumentPath contextDocumentPath = JSONDocumentPath.toDocumentPathOrNull(request.getDocumentPath());
-		final WebuiLetter letter = lettersRepo.createNewLetter(userSession.getAD_User_ID(), contextDocumentPath);
+
+		//
+		// Extract context BPartner, Location and Contact
+		final BoilerPlateContext context = documentCollection.createBoilerPlateContext(contextDocumentPath);
+		final int bpartnerId = context.getC_BPartner_ID(-1);
+		final int bpartnerLocationId = context.getC_BPartner_Location_ID(-1);
+		final int contactId = context.getAD_User_ID(-1);
+
+		//
+		// Build BPartnerAddress
+		final PlainDocumentLocation documentLocation = new PlainDocumentLocation(Env.getCtx(), bpartnerId, bpartnerLocationId, contactId, ITrx.TRXNAME_None);
+		Services.get(IDocumentLocationBL.class).setBPartnerAddress(documentLocation);
+		final String bpartnerAddress = documentLocation.getBPartnerAddress();
+
+		final WebuiLetter letter = lettersRepo.createNewLetter(WebuiLetter.builder()
+				.contextDocumentPath(contextDocumentPath)
+				.ownerUserId(userSession.getAD_User_ID())
+				.adOrgId(context.getAD_Org_ID(userSession.getAD_Org_ID()))
+				.bpartnerId(bpartnerId)
+				.bpartnerLocationId(bpartnerLocationId)
+				.bpartnerAddress(bpartnerAddress)
+				.bpartnerContactId(contactId));
+
 		return JSONLetter.of(letter);
 	}
 
@@ -134,18 +163,9 @@ public class LetterRestController
 		return JSONLetter.of(letter);
 	}
 
-	private File createPDFFile(final WebuiLetter letter)
+	private ResponseEntity<byte[]> createPDFResponseEntry(final byte[] pdfData)
 	{
-		final String pdfFilenamePrefix = Services.get(IMsgBL.class).getMsg(Env.getCtx(), Letters.MSG_Letter);
-		final File pdfFile = MADBoilerPlate.getPDF(pdfFilenamePrefix, letter.getContent(), BoilerPlateContext.EMPTY);
-		return pdfFile;
-	}
-
-	private ResponseEntity<byte[]> createPDFResponseEntry(final File pdfFile)
-	{
-		final String pdfFilename = pdfFile.getName();
-		final byte[] pdfData = Util.readBytes(pdfFile);
-
+		final String pdfFilename = Services.get(IMsgBL.class).getMsg(Env.getCtx(), Letters.MSG_Letter);
 		final HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.APPLICATION_PDF);
 		headers.set(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + pdfFilename + "\"");
@@ -167,8 +187,8 @@ public class LetterRestController
 
 		//
 		// Create and return the printable letter
-		final File pdfFile = createPDFFile(letter);
-		return createPDFResponseEntry(pdfFile);
+		final byte[] pdfData = createPDFData(letter);
+		return createPDFResponseEntry(pdfData);
 	}
 
 	@PostMapping("/{letterId}/complete")
@@ -177,22 +197,8 @@ public class LetterRestController
 	{
 		userSession.assertLoggedIn();
 
-		final WebuiLetterChangeResult result = changeLetter(letterId, letter -> {
-			//
-			// Create the printable letter
-			final File pdfFile = createPDFFile(letter);
-
-			//
-			// Create the request
-			final BoilerPlateContext context = documentCollection.createBoilerPlateContext(letter.getContextDocumentPath());
-			final TableRecordReference recordRef = documentCollection.getTableRecordReference(letter.getContextDocumentPath());
-			MADBoilerPlate.createRequest(pdfFile, recordRef.getAD_Table_ID(), recordRef.getRecord_ID(), context);
-
-			return letter.toBuilder()
-					.processed(true)
-					.temporaryPDFFile(pdfFile)
-					.build();
-		});
+		final ITrxManager trxManager = Services.get(ITrxManager.class);
+		final WebuiLetterChangeResult result = changeLetter(letterId, letter -> trxManager.call(() -> complete0(letter)));
 
 		//
 		// Remove the letter
@@ -200,7 +206,61 @@ public class LetterRestController
 
 		//
 		// Return the printable letter
-		return createPDFResponseEntry(result.getLetter().getTemporaryPDFFile());
+		return createPDFResponseEntry(result.getLetter().getTemporaryPDFData());
+	}
+
+	private final WebuiLetter complete0(final WebuiLetter letter)
+	{
+		lettersRepo.createC_Letter(letter);
+
+		//
+		// Create the printable letter
+		final byte[] pdfData = createPDFData(letter);
+
+		final File pdfFile = createFile(pdfData);
+		//
+		// create the Boilerplate context
+		final BoilerPlateContext context = documentCollection.createBoilerPlateContext(letter.getContextDocumentPath());
+		//
+		// Create the request
+		final TableRecordReference recordRef = documentCollection.getTableRecordReference(letter.getContextDocumentPath());
+		MADBoilerPlate.createRequest(pdfFile, recordRef.getAD_Table_ID(), recordRef.getRecord_ID(), context);
+
+		return letter.toBuilder()
+				.processed(true)
+				.temporaryPDFData(pdfData)
+				.build();
+	}
+
+	private byte[] createPDFData(final WebuiLetter letter)
+	{
+		final LetterPDFCreateRequest request = LetterPDFCreateRequest.builder()
+				.adLanguage(userSession.getAD_Language())
+				.textTemplateId(letter.getTextTemplateId())
+				.letterSubject(letter.getSubject())
+				.letterBodyParsed(letter.getContent())
+				.adOrgId(letter.getAdOrgId())
+				.bpartnerId(letter.getBpartnerId())
+				.bpartnerLocationId(letter.getBpartnerLocationId())
+				.bpartnerAddress(letter.getBpartnerAddress())
+				.bpartnerContactId(letter.getBpartnerContactId())
+				.build();
+		return Services.get(ITextTemplateBL.class).createPDF(request);
+	}
+
+	private static File createFile(final byte[] pdfData)
+	{
+		final String pdfFilenamePrefix = Services.get(IMsgBL.class).getMsg(Env.getCtx(), Letters.MSG_Letter);
+		try
+		{
+			final File pdfFile = File.createTempFile(pdfFilenamePrefix, ".pdf");
+			FileUtils.writeByteArrayToFile(pdfFile, pdfData);
+			return pdfFile;
+		}
+		catch (IOException e)
+		{
+			throw AdempiereException.wrapIfNeeded(e);
+		}
 	}
 
 	@PatchMapping("/{letterId}")
@@ -258,7 +318,7 @@ public class LetterRestController
 					.setParameter("availablePaths", PATCH_FIELD_ALL);
 		}
 	}
-	
+
 	@GetMapping("/templates")
 	@ApiOperation("Available Email templates")
 	public JSONLookupValuesList getTemplates()
@@ -269,18 +329,21 @@ public class LetterRestController
 				.collect(JSONLookupValuesList.collect());
 	}
 
-	private void applyTemplate(final WebuiLetter letter, final WebuiLetterBuilder newLetterBuilder, final LookupValue templateId)
+	private void applyTemplate(final WebuiLetter letter, final WebuiLetterBuilder newLetterBuilder, final LookupValue templateLookupValue)
 	{
 		final Properties ctx = userSession.getCtx();
-		final MADBoilerPlate boilerPlate = MADBoilerPlate.get(ctx, templateId.getIdAsInt());
+		final int textTemplateId = templateLookupValue.getIdAsInt();
+		final MADBoilerPlate boilerPlate = MADBoilerPlate.get(ctx, textTemplateId);
 
 		//
 		// Attributes
 		final BoilerPlateContext context = documentCollection.createBoilerPlateContext(letter.getContextDocumentPath());
 
 		//
-		// Content
+		// Content and subject
+		newLetterBuilder.textTemplateId(textTemplateId);
 		newLetterBuilder.content(boilerPlate.getTextSnippetParsed(context));
+		newLetterBuilder.subject(boilerPlate.getSubject());
 	}
 
 }

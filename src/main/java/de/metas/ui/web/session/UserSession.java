@@ -258,6 +258,11 @@ public class UserSession
 		return data.getAD_Client_ID();
 	}
 
+	public int getAD_Org_ID()
+	{
+		return data.getAD_Org_ID();
+	}
+
 	public String getAD_Language()
 	{
 		return data.getAdLanguage();
