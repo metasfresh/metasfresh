@@ -42,10 +42,14 @@ class DataLayoutWrapper extends Component {
         const {entity, windowType, viewId} = this.props;
         const {dataId} = this.state;
 
-        patchRequest(
-            entity, windowType, dataId, null, null, prop, value, null, null,
-            null, viewId
-        ).then(response => {
+        patchRequest({
+            entity,
+            docType: windowType,
+            docId: dataId,
+            property: prop,
+            value,
+            viewId
+        }).then(response => {
             const preparedData = parseToDisplay(response.data[0].fieldsByName);
             preparedData && Object.keys(preparedData).map(key => {
                 this.setState(prevState => ({

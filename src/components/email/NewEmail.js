@@ -77,13 +77,17 @@ class NewEmail extends Component {
 
         if(this.state.cached[prop] === value) return;
 
-        patchRequest('mail', emailId, null, null, null, prop, value)
-            .then(res => {
-                this.setState({
-                    ...res.data,
-                    cached: res.data
-                })
+        patchRequest({
+            entity: 'mail',
+            docType: emailId,
+            property: prop,
+            value
+        }).then(response => {
+            this.setState({
+                ...response.data,
+                cached: response.data
             })
+        });
     }
 
     send = () => {
@@ -101,13 +105,17 @@ class NewEmail extends Component {
         const {emailId, template} = this.state;
         if(template === option) return;
 
-        patchRequest('mail', emailId, null, null, null, 'templateId', option)
-            .then(res => {
-               this.setState({
-                   ...res.data,
-                    template: option
-                });
-            })
+        patchRequest({
+            entity: 'mail',
+            docType: emailId,
+            property: 'templateId',
+            value: option
+        }).then(response => {
+           this.setState({
+               ...response.data,
+                template: option
+            });
+        });
     }
 
     render() {

@@ -227,13 +227,19 @@ class RawLookup extends Component {
                 isOpen: true
             });
 
-            autocompleteRequest(
-                windowType,
-                (filterWidget ? parameterName : mainProperty[0].field),
-                this.inputSearch.value,
-                (filterWidget ? viewId : dataId), tabId, rowId, entity,
-                subentity, subentityId
-            ).then( (response) => {
+            autocompleteRequest({
+                docId: filterWidget ? viewId : dataId,
+                docType: windowType,
+                entity,
+                propertyName: (
+                    filterWidget ? parameterName : mainProperty[0].field
+                ),
+                query: this.inputSearch.value,
+                rowId,
+                subentity,
+                subentityId,
+                tabId
+            }).then(response => {
                 let values = response.data.values || [];
 
                 this.setState({

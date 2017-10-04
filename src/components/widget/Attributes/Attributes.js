@@ -40,9 +40,13 @@ class Attributes extends Component {
     handlePatch = (prop, value, id, cb) => {
         const {attributeType} = this.props;
 
-        patchRequest(
-            attributeType, null, id, null, null, prop, value
-        ).then(response => {
+        patchRequest({
+            entity: attributeType,
+            docType: null,
+            docId: id,
+            property: prop,
+            value
+        }).then(response => {
             const fields = response.data[0].fieldsByName;
             Object.keys(fields).map(fieldName => {
                 this.setState(prevState => ({
@@ -53,7 +57,7 @@ class Attributes extends Component {
                     })
                 }), () => cb && cb());
             })
-        })
+        });
     }
 
     handleInit = () => {

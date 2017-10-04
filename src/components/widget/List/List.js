@@ -56,12 +56,20 @@ class List extends Component {
             loading: true
         });
 
-        dropdownRequest(
-            windowType,
-            filterWidget ? properties[0].parameterName : properties[0].field,
-            dataId, tabId, rowId, entity, subentity, subentityId, viewId,
-            attribute
-        ).then( (res) => {
+        dropdownRequest({
+            attribute,
+            docId: dataId,
+            docType: windowType,
+            entity,
+            propertyName: (filterWidget ?
+                properties[0].parameterName : properties[0].field
+            ),
+            rowId,
+            subentity,
+            subentityId,
+            tabId,
+            viewId
+        }).then(res => {
             let values = res.data.values || [];
             let singleOption = values && (values.length === 1);
 

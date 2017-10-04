@@ -48,39 +48,41 @@ export function createInstance(entity, docType, docId, tabId, subentity) {
     );
 }
 
-export function patchRequest(
-    entity, docType, docId = 'NEW', tabId, rowId, property, value, subentity,
-    subentityId, isAdvanced, viewId
-) {
-
+export function patchRequest({
+    docId = 'NEW',
+    docType,
+    entity,
+    isAdvanced,
+    property,
+    rowId,
+    subentity,
+    subentityId,
+    tabId,
+    value,
+    viewId
+}) {
     let payload = [];
 
-    if (docId === 'NEW') {
-        payload = [];
-    } else if (Array.isArray(property) && Array.isArray(value)){
-        property.map((item, index) => {
-            payload.push({
-                'op': 'replace',
-                'path': item,
-                'value': value[index]
-            });
-        });
-    } else if (Array.isArray(property) && value !== undefined) {
-        property.map(item => {
-            payload.push({
-                'op': 'replace',
-                'path': item.field,
-                'value': value
-            });
-        });
-    } else if(property && value !== undefined) {
-        payload = [{
-                'op': 'replace',
-                'path': property,
-                'value': value
+    if (docId !== 'NEW') {
+        if (Array.isArray(property) && Array.isArray(value)) {
+            payload = property.map((item, index) => ({
+                    op: 'replace',
+                    path: item,
+                    value: value[index]
+            }));
+        } else if (Array.isArray(property) && value !== undefined) {
+            payload = property.map(item => ({
+                op: 'replace',
+                path: item.field,
+                value
+            }));
+        } else if (property && value !== undefined) {
+            payload = [{
+                op: 'replace',
+                path: property,
+                value
             }];
-    } else {
-        payload = [];
+        }
     }
 
     return axios.patch(
@@ -123,10 +125,19 @@ export function completeRequest(
     );
 }
 
-export function autocompleteRequest(
-    docType, propertyName, query, docId, tabId, rowId, entity, subentity,
-    subentityId, viewId, attribute
-) {
+export function autocompleteRequest({
+    attribute,
+    docId,
+    docType,
+    entity,
+    propertyName,
+    query,
+    rowId,
+    subentity,
+    subentityId,
+    tabId,
+    viewId
+}) {
     return axios.get(
         config.API_URL +
         '/' + entity +
@@ -143,10 +154,18 @@ export function autocompleteRequest(
     );
 }
 
-export function dropdownRequest(
-    docType, propertyName, docId, tabId, rowId, entity, subentity, subentityId,
-    viewId, attribute
-) {
+export function dropdownRequest({
+    attribute,
+    docId,
+    docType,
+    entity,
+    propertyName,
+    rowId,
+    subentity,
+    subentityId,
+    tabId,
+    viewId
+}) {
     return axios.get(
         config.API_URL +
         '/' + entity +
@@ -267,6 +286,6 @@ export function openFile(entity, docType, docId, fileType, fileId) {
 
 export function getRequest() {
     const url = config.API_URL + '/' + Array.from(arguments).join('/');
-    
+
     return axios.get(url);
 }

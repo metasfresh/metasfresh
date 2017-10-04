@@ -10,6 +10,7 @@ import ActionButton from './ActionButton';
 import Checkbox from './Checkbox';
 import Image from './Image';
 import Link from './Link';
+import Labels from './Labels';
 import DevicesWidget from './Devices/DevicesWidget';
 
 import {DATE_FORMAT}  from '../../constants/Constants';
@@ -111,32 +112,38 @@ class RawWidget extends Component {
         })
     }
 
-    getClassnames = (icon, forcedPrimary) => {
+    classNames = classObject => (Object.entries(classObject)
+        .filter(([, classActive]) => classActive)
+        .map(([className]) => className)
+        .join(' ')
+    )
+
+    getClassNames = ({ icon, forcedPrimary } = {}) => {
         const {
             widgetData, disabled, gridAlign, type, updated, rowId, isModal
         } = this.props;
 
-        const {isEdited} = this.state;
+        const { isEdited } = this.state;
 
-        return 'input-block ' +
-            (icon ? 'input-icon-container ' : '') +
-            (widgetData[0].readonly || disabled ? 'input-disabled ' : '') +
-            ((widgetData[0].mandatory &&
-                (
-                    (widgetData[0].value && widgetData[0].value.length === 0) ||
-                    (!widgetData[0].value && widgetData[0].value !== 0))
-                ) ? 'input-mandatory ' : '') +
-            ((widgetData[0].validStatus &&
-                (
-                    !widgetData[0].validStatus.valid &&
-                    !widgetData[0].validStatus.initialValue
-                ) &&
-                !isEdited) ? 'input-error ' : '') +
-            (gridAlign ? 'text-xs-' + gridAlign + ' ' : '') +
-            (type === 'primary' || forcedPrimary ?
-                'input-primary ' : 'input-secondary ') +
-            (updated ? 'pulse-on ' : 'pulse-off ') +
-            (rowId && !isModal ? 'input-table ' : '');
+        const { readonly, value, mandatory, validStatus } = widgetData[0];
+
+        return this.classNames({
+            'input-block': true,
+            'input-icon-container': icon,
+            'input-disabled': readonly || disabled,
+            'input-mandatory': (mandatory &&
+                (value ? value.length === 0 : value !== 0)
+            ),
+            'input-error': (validStatus &&
+                !validStatus.valid &&
+                !validStatus.initialValue &&
+                !isEdited
+            ),
+            [`text-xs-${gridAlign}`]: gridAlign,
+            [`input-${(type === 'primary' || forcedPrimary) ? 'primary' : 'secondary'}`]: true,
+            [`pulse-${updated ? 'on' : 'off'}`]: true,
+            'input-table': rowId && !isModal
+        });
     }
 
     renderErrorPopup = (reason) => {
@@ -212,7 +219,7 @@ class RawWidget extends Component {
                     )
                 }else{
                     return (
-                        <div className={this.getClassnames(true)}>
+                        <div className={this.getClassNames({ icon: true })}>
                             <DatePicker
                                 timeFormat={false}
                                 dateFormat={true}
@@ -268,7 +275,7 @@ class RawWidget extends Component {
                     )
                 }else{
                     return (
-                        <div className={this.getClassnames(true)}>
+                        <div className={this.getClassNames({ icon: true })}>
                             <DatePicker
                                 timeFormat={true}
                                 dateFormat={true}
@@ -295,7 +302,7 @@ class RawWidget extends Component {
                 }
             case 'Time':
                 return (
-                    <div className={this.getClassnames(true)}>
+                    <div className={this.getClassNames({ icon: true })}>
                         <DatePicker
                             timeFormat={true}
                             dateFormat={false}
@@ -388,7 +395,7 @@ class RawWidget extends Component {
             case 'Link':
                 return (
                     <Link
-                        getClassnames={() => this.getClassnames(true)}
+                        getClassNames={() => this.getClassNames({ icon: true })}
                         {...{isEdited, widgetProperties, icon, widgetData,
                             tabIndex, fullScreen
                         }}
@@ -397,7 +404,7 @@ class RawWidget extends Component {
             case 'Text':
                 return (
                     <div className={
-                            this.getClassnames(true) +
+                            this.getClassNames({ icon: true }) +
                             (isEdited ? 'input-focused ' : '')
                         }
                     >
@@ -413,8 +420,10 @@ class RawWidget extends Component {
             case 'LongText':
                 return (
                     <div className={
-                        this.getClassnames(false, true) +
-                        (isEdited ? 'input-focused ' : '')
+                        this.getClassNames({
+                            icon: false,
+                            forcedPrimary: true
+                        }) + (isEdited ? 'input-focused ' : '')
                     }>
                         <textarea
                             {...widgetProperties}
@@ -425,7 +434,7 @@ class RawWidget extends Component {
                 return (
                     <div className="input-inner-container">
                         <div className={
-                            this.getClassnames(true) +
+                            this.getClassNames({ icon: true }) +
                             (isEdited ? 'input-focused ' : '')
                             }
                         >
@@ -450,7 +459,7 @@ class RawWidget extends Component {
             case 'Integer':
                 return (
                     <div className={
-                        this.getClassnames() +
+                        this.getClassNames() +
                         (isEdited ? 'input-focused ' : '')
                     }>
                         <input
@@ -464,7 +473,7 @@ class RawWidget extends Component {
             case 'Number':
                 return (
                     <div className={
-                        this.getClassnames() +
+                        this.getClassNames() +
                         (isEdited ? 'input-focused ' : '')
                     }>
                         <input
@@ -476,7 +485,7 @@ class RawWidget extends Component {
             case 'Amount' :
                 return (
                     <div className={
-                        this.getClassnames() +
+                        this.getClassNames() +
                         (isEdited ? 'input-focused ' : '')
                     }>
                         <input
@@ -490,7 +499,7 @@ class RawWidget extends Component {
             case 'Quantity':
                 return (
                     <div className={
-                        this.getClassnames() +
+                        this.getClassNames() +
                         (isEdited ? 'input-focused ' : '')
                     }>
                         <input
@@ -504,7 +513,7 @@ class RawWidget extends Component {
             case 'CostPrice':
                 return (
                     <div className={
-                        this.getClassnames() +
+                        this.getClassNames() +
                         (isEdited ? 'input-focused ' : '')
                     }>
                         <input
@@ -684,6 +693,18 @@ class RawWidget extends Component {
                         {caption}
                     </button>
                 )
+            case 'Labels':
+                return (
+                    <Labels
+                        name={widgetField}
+                        selected={widgetData[0].value.values}
+                        className={this.getClassNames()}
+                        onChange={value => this.handlePatch(widgetField, {
+                            values: value
+                        })}
+                        tabIndex={fullScreen ? -1 : tabIndex}
+                    />
+                );
             default:
                 return false;
         }
