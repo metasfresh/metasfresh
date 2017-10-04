@@ -3,7 +3,8 @@ import { connect } from 'react-redux';
 import {
     dropdownRequest,
     autocompleteRequest
-} from '../../actions/GenericActions';
+} from '../../../actions/GenericActions';
+import Suggestion from './Suggestion';
 
 class Labels extends Component {
     state = {
@@ -68,7 +69,7 @@ class Labels extends Component {
         });
     }
 
-    handleSuggestionClick = suggestion => () => {
+    handleSuggestionClick = suggestion => {
         this.input.innerHTML = '';
 
         this.props.onChange([...this.props.selected, suggestion]);
@@ -120,17 +121,12 @@ class Labels extends Component {
                 {this.state.focused && (
                     <div>
                         {suggestions.map(suggestion => {
-                            const [key, value] = Object.entries(suggestion)[0];
-
                             return (
-                                <div
-                                    key={key}
-                                    onClick={
-                                        this.handleSuggestionClick(suggestion)
-                                    }
-                                >
-                                    {value}
-                                </div>
+                                <Suggestion
+                                    key={Object.keys(suggestion)[0]}
+                                    suggestion={suggestion}
+                                    onClick={this.handleSuggestionClick}
+                                />
                             );
                         })}
                     </div>
