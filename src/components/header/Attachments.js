@@ -1,15 +1,16 @@
-import React, { Component } from 'react';
-import {connect} from 'react-redux';
-import PropTypes from 'prop-types';
 import counterpart from 'counterpart';
-
-import Loader from '../app/Loader';
+import PropTypes from 'prop-types';
+import React, { Component } from 'react';
+import { connect } from 'react-redux';
 
 import {
     attachmentsRequest,
     openFile,
     deleteRequest
 } from '../../actions/GenericActions';
+
+import Loader from '../app/Loader';
+
 class Attachments extends Component {
     constructor(props) {
         super(props);
@@ -89,42 +90,37 @@ class Attachments extends Component {
     }
 
     renderData = () => {
-        const {data, attachmentHovered} = this.state;
+        const { data, attachmentHovered } = this.state;
 
-        return data.map((item, key) =>
+        return data.map((item, key) => (
             <div
                 className="subheader-item subheader-item-ellipsis js-subheader-item"
                 key={key}
                 tabIndex={0}
-                onMouseEnter={() =>
-                    this.toggleAttachmentDelete(item.id)}
-                onMouseLeave={() =>
-                    this.toggleAttachmentDelete(null)}
-                onClick={() =>
-                    this.handleAttachmentClick(item.id)}
+                onMouseEnter={() => { this.toggleAttachmentDelete(item.id); }}
+                onMouseLeave={() => { this.toggleAttachmentDelete(null); }}
+                onClick={() => { this.handleAttachmentClick(item.id); }}
             >
                 {item.name}
                 {attachmentHovered === item.id &&
                     <div
                         className="subheader-additional-box"
-                        onClick={(e) =>
-                            this.handleAttachmentDelete(
-                                e, item.id
-                            )
-                        }
+                        onClick={(e) => {
+                            this.handleAttachmentDelete(e, item.id);
+                        }}
                     >
                         <i className="meta-icon-delete"/>
                     </div>
                 }
             </div>
-        );
+        ));
     }
 
     renderEmpty = () => (
         <div className="subheader-item subheader-item-disabled">
             {counterpart.translate('window.sideList.attachments.empty')}
         </div>
-    );
+    )
 
     render() {
         const { data } = this.state;
@@ -141,7 +137,7 @@ class Attachments extends Component {
         return (
             <div
                 onKeyDown={this.handleKeyDown}
-                ref={c => this.attachments = c}
+                ref={(c) => { this.attachments = c; }}
                 tabIndex={0}
             >
                 {content}
