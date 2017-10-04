@@ -553,13 +553,14 @@ class Table extends Component {
     }
 
     getProductRange = (id) => {
-        const {rowData, tabid, keyProperty} = this.props;
+        const { keyProperty } = this.props;
+        const { rows } = this.state;
         let arrayIndex;
 
         let selectIdA;
         let selectIdB;
 
-        arrayIndex = rowData[tabid].map(item => item[keyProperty]);
+        arrayIndex = rows.map(item => item[keyProperty]);
         selectIdA = arrayIndex.findIndex(x => x === id);
         selectIdB = arrayIndex.findIndex(x => x === this.state.selected[0]);
 
