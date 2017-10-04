@@ -25,13 +25,13 @@ import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
-import org.compiere.process.DocAction;
 import org.compiere.util.CCache;
 import org.compiere.util.DB;
 
 import de.metas.document.documentNo.IDocumentNoBuilder;
 import de.metas.document.documentNo.IDocumentNoBuilderFactory;
-import de.metas.document.engine.IDocActionBL;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.Msg;
 import de.metas.product.IProductBL;
 
@@ -48,7 +48,7 @@ import de.metas.product.IProductBL;
  * 			<li>BF [ 1745154 ] Cost in Reversing Material Related Docs
  *  @see http://sourceforge.net/tracker/?func=detail&atid=879335&aid=1948157&group_id=176962
  */
-public class MInventory extends X_M_Inventory implements DocAction
+public class MInventory extends X_M_Inventory implements IDocument
 {
 	/**
 	 *
@@ -292,7 +292,7 @@ public class MInventory extends X_M_Inventory implements DocAction
 	public boolean processIt (String processAction)
 	{
 		m_processMsg = null;
-		return Services.get(IDocActionBL.class).processIt(this, processAction); // task 09824
+		return Services.get(IDocumentBL.class).processIt(this, processAction); // task 09824
 	}	//	processIt
 
 	/**	Process Message 			*/
@@ -334,7 +334,7 @@ public class MInventory extends X_M_Inventory implements DocAction
 		log.info(toString());
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_PREPARE);
 		if (m_processMsg != null)
-			return DocAction.STATUS_Invalid;
+			return IDocument.STATUS_Invalid;
 
 		//	Std Period open?
 		MPeriod.testPeriodOpen(getCtx(), getMovementDate(), MDocType.DOCBASETYPE_MaterialPhysicalInventory, getAD_Org_ID());
@@ -342,7 +342,7 @@ public class MInventory extends X_M_Inventory implements DocAction
 		if (lines.length == 0)
 		{
 			m_processMsg = "@NoLines@";
-			return DocAction.STATUS_Invalid;
+			return IDocument.STATUS_Invalid;
 		}
 
 		//	TODO: Add up Amounts
@@ -350,12 +350,12 @@ public class MInventory extends X_M_Inventory implements DocAction
 
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_PREPARE);
 		if (m_processMsg != null)
-			return DocAction.STATUS_Invalid;
+			return IDocument.STATUS_Invalid;
 
 		m_justPrepared = true;
 		if (!DOCACTION_Complete.equals(getDocAction()))
 			setDocAction(DOCACTION_Complete);
-		return DocAction.STATUS_InProgress;
+		return IDocument.STATUS_InProgress;
 	}	//	prepareIt
 
 	/**
@@ -393,13 +393,13 @@ public class MInventory extends X_M_Inventory implements DocAction
 		if (!m_justPrepared)
 		{
 			String status = prepareIt();
-			if (!DocAction.STATUS_InProgress.equals(status))
+			if (!IDocument.STATUS_InProgress.equals(status))
 				return status;
 		}
 
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_COMPLETE);
 		if (m_processMsg != null)
-			return DocAction.STATUS_Invalid;
+			return IDocument.STATUS_Invalid;
 
 		//	Implicit Approval
 		if (!isApproved())
@@ -452,7 +452,7 @@ public class MInventory extends X_M_Inventory implements DocAction
 								QtyMA.negate(), BigDecimal.ZERO, BigDecimal.ZERO, get_TrxName()))
 						{
 							m_processMsg = "Cannot correct Inventory (MA)";
-							return DocAction.STATUS_Invalid;
+							return IDocument.STATUS_Invalid;
 						}
 
 						// Only Update Date Last Inventory if is a Physical Inventory
@@ -464,7 +464,7 @@ public class MInventory extends X_M_Inventory implements DocAction
 							if (!storage.save(get_TrxName()))
 							{
 								m_processMsg = "Storage not updated(2)";
-								return DocAction.STATUS_Invalid;
+								return IDocument.STATUS_Invalid;
 							}
 						}
 
@@ -497,7 +497,7 @@ public class MInventory extends X_M_Inventory implements DocAction
 							if (!mtrx.save())
 							{
 								m_processMsg = "Transaction not inserted(2)";
-								return DocAction.STATUS_Invalid;
+								return IDocument.STATUS_Invalid;
 							}
 							if(QtyMA.signum() != 0)
 							{
@@ -506,7 +506,7 @@ public class MInventory extends X_M_Inventory implements DocAction
 								if(err != null && err.length() > 0)
 								{
 									m_processMsg = err;
-									return DocAction.STATUS_Invalid;
+									return IDocument.STATUS_Invalid;
 								}
 								//if(err != null && err.length() > 0) return err;
 							}
@@ -528,7 +528,7 @@ public class MInventory extends X_M_Inventory implements DocAction
 							qtyDiff, BigDecimal.ZERO, BigDecimal.ZERO, get_TrxName()))
 					{
 						m_processMsg = "Cannot correct Inventory (MA)";
-						return DocAction.STATUS_Invalid;
+						return IDocument.STATUS_Invalid;
 					}
 
 					// Only Update Date Last Inventory if is a Physical Inventory
@@ -544,7 +544,7 @@ public class MInventory extends X_M_Inventory implements DocAction
 						if (!storage.save(get_TrxName()))
 						{
 							m_processMsg = "Storage not updated(2)";
-							return DocAction.STATUS_Invalid;
+							return IDocument.STATUS_Invalid;
 						}
 					}
 
@@ -567,7 +567,7 @@ public class MInventory extends X_M_Inventory implements DocAction
 					if (!mtrx.save())
 					{
 						m_processMsg = "Transaction not inserted(2)";
-						return DocAction.STATUS_Invalid;
+						return IDocument.STATUS_Invalid;
 					}
 
 					if(qtyDiff.signum() != 0)
@@ -577,7 +577,7 @@ public class MInventory extends X_M_Inventory implements DocAction
 						if(err != null && err.length() > 0)
 						{
 							m_processMsg = err;
-							return DocAction.STATUS_Invalid;
+							return IDocument.STATUS_Invalid;
 						}
 						//if(err != null && err.length() > 0) return err;
 					}
@@ -591,7 +591,7 @@ public class MInventory extends X_M_Inventory implements DocAction
 		if (valid != null)
 		{
 			m_processMsg = valid;
-			return DocAction.STATUS_Invalid;
+			return IDocument.STATUS_Invalid;
 		}
 
 		// Set the definite document number after completed (if needed)
@@ -600,7 +600,7 @@ public class MInventory extends X_M_Inventory implements DocAction
 		//
 		setProcessed(true);
 		setDocAction(DOCACTION_Close);
-		return DocAction.STATUS_Completed;
+		return IDocument.STATUS_Completed;
 	}	//	completeIt
 
 	/**
@@ -841,7 +841,7 @@ public class MInventory extends X_M_Inventory implements DocAction
 			}
 		}
 		//
-		if (!reversal.processIt(DocAction.ACTION_Complete))
+		if (!reversal.processIt(IDocument.ACTION_Complete))
 		{
 			m_processMsg = "Reversal ERROR: " + reversal.getProcessMsg();
 			return false;

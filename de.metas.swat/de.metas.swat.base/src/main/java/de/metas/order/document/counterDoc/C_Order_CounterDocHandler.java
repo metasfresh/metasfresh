@@ -15,10 +15,10 @@ import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.MDocTypeCounter;
 import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;
-import org.compiere.process.DocAction;
 import org.slf4j.Logger;
 
-import de.metas.document.engine.IDocActionBL;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.document.spi.CounterDocumentHandlerAdapter;
 import de.metas.document.spi.ICounterDocHandler;
 import de.metas.logging.LogManager;
@@ -62,7 +62,7 @@ public class C_Order_CounterDocHandler extends CounterDocumentHandlerAdapter
 	 * @return <code>true</code> if <code>Ref_Order_ID() > 0</code>.
 	 */
 	@Override
-	public boolean isCounterDocument(final DocAction document)
+	public boolean isCounterDocument(final IDocument document)
 	{
 		final I_C_Order order = InterfaceWrapperHelper.create(document, I_C_Order.class);
 		return order.getRef_Order_ID() > 0;
@@ -74,7 +74,7 @@ public class C_Order_CounterDocHandler extends CounterDocumentHandlerAdapter
 	 * This implementation partially uses legacy code. I didn't yet get to refactor/remove/replace it all.
 	 */
 	@Override
-	public DocAction createCounterDocument(final DocAction document)
+	public IDocument createCounterDocument(final IDocument document)
 	{
 		final I_C_Order order = InterfaceWrapperHelper.create(document, I_C_Order.class);
 		final MOrder orderPO = LegacyAdapters.convertToPO(order);
@@ -137,7 +137,7 @@ public class C_Order_CounterDocHandler extends CounterDocumentHandlerAdapter
 			if (counterDT.getDocAction() != null)
 			{
 				counterOrder.setDocAction(counterDT.getDocAction());
-				Services.get(IDocActionBL.class).processEx(counterOrder, counterDT.getDocAction(),
+				Services.get(IDocumentBL.class).processEx(counterOrder, counterDT.getDocAction(),
 						null); // not expecting a particular docStatus (e.g. for prepay orders, it might be "waiting to payment")
 			}
 		}

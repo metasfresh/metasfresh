@@ -13,15 +13,14 @@ package de.metas.document.engine.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.sql.Timestamp;
 import java.util.Properties;
@@ -30,52 +29,66 @@ import org.adempiere.ad.persistence.TableModelClassLoader;
 import org.adempiere.ad.persistence.TableModelLoader;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.PO;
 import org.compiere.model.POInfo;
-import org.compiere.process.DocAction;
 import org.compiere.util.DB;
 
-public final class DocActionBL extends AbstractDocActionBL
-{
-	// private static final Logger logger = CLogMgt.getLogger(DocActionBL.class);
+import de.metas.document.engine.DocumentHandler;
+import de.metas.document.engine.DocumentHandlerProvider;
+import de.metas.document.engine.DocumentWrapper;
+import de.metas.document.engine.IDocument;
 
+public final class DocumentBL extends AbstractDocumentBL
+{
 	@Override
-	protected DocAction getDocAction(final Object document, boolean throwEx)
+	protected IDocument getDocument(final Object documentObj, final boolean throwEx)
 	{
-		if (document == null)
+		if (documentObj == null)
 		{
 			if (throwEx)
 			{
-				throw new IllegalArgumentException("document is null");
+				throw new AdempiereException("document is null");
 			}
 			return null;
 		}
 
-		if (document instanceof DocAction)
+		//
+		if (documentObj instanceof IDocument)
 		{
-			return (DocAction)document;
+			return (IDocument)documentObj;
 		}
 
-		final PO po = InterfaceWrapperHelper.getPO(document);
+		//
+		final PO po = InterfaceWrapperHelper.getPO(documentObj);
 		if (po == null)
 		{
 			if (throwEx)
 			{
-				throw new IllegalArgumentException("Param 'document' is not instanceof DocAction and POWrapper.getPO can't get a PO from it");
+				throw new AdempiereException("Cannot extract " + PO.class + " from " + documentObj);
 			}
 			return null;
 		}
-		if (po instanceof DocAction)
+		if (po instanceof IDocument)
 		{
-			return (DocAction)po;
+			return (IDocument)po;
 
+		}
+
+		//
+		final String tableName = po.get_TableName();
+		final DocumentHandlerProvider handlerProvider = getDocActionHandlerProviderByTableNameOrNull(tableName);
+		if (handlerProvider != null)
+		{
+			final DocumentHandler handler = handlerProvider.provideForDocument(po);
+			return DocumentWrapper.wrapModelUsingHandler(po, handler);
 		}
 
 		if (throwEx)
 		{
-			throw new IllegalArgumentException("The PO encapsulated by param 'document' must be instanceof docAction; po=: " + po);
+			throw new AdempiereException("Cannot extract " + IDocument.class + " from " + documentObj);
 		}
 		return null;
 	}
@@ -89,7 +102,7 @@ public final class DocActionBL extends AbstractDocActionBL
 			return false;
 		}
 
-		if (!DocAction.class.isAssignableFrom(clazz))
+		if (!IDocument.class.isAssignableFrom(clazz))
 		{
 			return false;
 		}
@@ -130,14 +143,19 @@ public final class DocActionBL extends AbstractDocActionBL
 	}
 
 	@Override
-	protected String retrieveString(Properties ctx, int adTableId, int recordId, final String columnName)
+	protected String retrieveString(final int adTableId, final int recordId, final String columnName)
 	{
 		if (adTableId <= 0 || recordId <= 0)
 		{
 			return null;
 		}
 
-		final POInfo poInfo = POInfo.getPOInfo(ctx, adTableId);
+		final POInfo poInfo = POInfo.getPOInfo(adTableId);
+		if (poInfo == null)
+		{
+			throw new AdempiereException("No POInfo found for AD_Table_ID=" + adTableId);
+		}
+		
 		final String keyColumn = poInfo.getKeyColumnName();
 		if (keyColumn == null)
 		{

@@ -41,11 +41,11 @@ import org.adempiere.util.lang.ImmutablePair;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.X_C_DocType;
-import org.compiere.process.DocAction;
 import org.compiere.util.Env;
 import org.junit.Before;
 import org.junit.Test;
 
+import de.metas.document.engine.IDocument;
 import de.metas.invoicecandidate.AbstractICTestSupport;
 import de.metas.invoicecandidate.C_Invoice_Candidate_Builder;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
@@ -89,8 +89,8 @@ public class InvoiceCandBLHandlCompleteAndReversalTest extends AbstractICTestSup
 
 		final BigDecimal invoiceQtyInvoiced = new BigDecimal("10");
 
-		final ImmutablePair<I_C_Invoice, I_C_InvoiceLine> invoiceAndLine = creatInvoiceWithOneLine(contextProvider, invoiceQtyInvoiced, DocAction.STATUS_Reversed, X_C_DocType.DOCBASETYPE_ARInvoice);
-		final ImmutablePair<I_C_Invoice, I_C_InvoiceLine> reversalAndLine = creatInvoiceWithOneLine(contextProvider, invoiceQtyInvoiced.negate(), DocAction.STATUS_Reversed, X_C_DocType.DOCBASETYPE_ARInvoice);
+		final ImmutablePair<I_C_Invoice, I_C_InvoiceLine> invoiceAndLine = creatInvoiceWithOneLine(contextProvider, invoiceQtyInvoiced, IDocument.STATUS_Reversed, X_C_DocType.DOCBASETYPE_ARInvoice);
+		final ImmutablePair<I_C_Invoice, I_C_InvoiceLine> reversalAndLine = creatInvoiceWithOneLine(contextProvider, invoiceQtyInvoiced.negate(), IDocument.STATUS_Reversed, X_C_DocType.DOCBASETYPE_ARInvoice);
 
 		final I_C_Invoice_Line_Alloc ila = InterfaceWrapperHelper.newInstance(I_C_Invoice_Line_Alloc.class, contextProvider);
 		ila.setC_InvoiceLine(invoiceAndLine.getRight());
@@ -210,7 +210,7 @@ public class InvoiceCandBLHandlCompleteAndReversalTest extends AbstractICTestSup
 				.setAllowConsolidateInvoiceOnBPartner(false)
 				.build();
 
-		final ImmutablePair<I_C_Invoice, I_C_InvoiceLine> invoiceAndLine = creatInvoiceWithOneLine(contextProvider, INVOICE_QTY_INVOICED_TEN, DocAction.STATUS_Completed, invoiceDocTypeBaseName);
+		final ImmutablePair<I_C_Invoice, I_C_InvoiceLine> invoiceAndLine = creatInvoiceWithOneLine(contextProvider, INVOICE_QTY_INVOICED_TEN, IDocument.STATUS_Completed, invoiceDocTypeBaseName);
 
 		final I_C_Invoice_Line_Alloc invoiceIla = InterfaceWrapperHelper.newInstance(I_C_Invoice_Line_Alloc.class, contextProvider);
 		invoiceIla.setC_InvoiceLine(invoiceAndLine.getRight());
@@ -218,7 +218,7 @@ public class InvoiceCandBLHandlCompleteAndReversalTest extends AbstractICTestSup
 		invoiceIla.setQtyInvoiced(INVOICE_QTY_INVOICED_TEN);
 		InterfaceWrapperHelper.save(invoiceIla);
 
-		final ImmutablePair<I_C_Invoice, I_C_InvoiceLine> creditMemoAndLine = creatInvoiceWithOneLine(contextProvider, CREDI_MEMO_QTY_INVOICE_NINE, DocAction.STATUS_Completed, creditmemoDocTypeBaseName);
+		final ImmutablePair<I_C_Invoice, I_C_InvoiceLine> creditMemoAndLine = creatInvoiceWithOneLine(contextProvider, CREDI_MEMO_QTY_INVOICE_NINE, IDocument.STATUS_Completed, creditmemoDocTypeBaseName);
 		creditMemoAndLine.getLeft().setIsCreditedInvoiceReinvoicable(true);
 
 		//creditMemoAndLine.getLeft().setRef_CreditMemo_ID(invoiceAndLine.getLeft().getC_Invoice_ID());
@@ -251,7 +251,7 @@ public class InvoiceCandBLHandlCompleteAndReversalTest extends AbstractICTestSup
 		final BigDecimal expectedQtyInvoicedSumAfterReversal;
 		if (reverseInvoice)
 		{
-			final ImmutablePair<I_C_Invoice, I_C_InvoiceLine> invoiceReversalAndLine = creatInvoiceWithOneLine(contextProvider, INVOICE_QTY_INVOICED_TEN.negate(), DocAction.STATUS_Reversed, invoiceDocTypeBaseName);
+			final ImmutablePair<I_C_Invoice, I_C_InvoiceLine> invoiceReversalAndLine = creatInvoiceWithOneLine(contextProvider, INVOICE_QTY_INVOICED_TEN.negate(), IDocument.STATUS_Reversed, invoiceDocTypeBaseName);
 			invoiceAndLine.getLeft().setReversal_ID(invoiceReversalAndLine.getLeft().getC_Invoice_ID());
 			InterfaceWrapperHelper.save(invoiceAndLine.getLeft());
 
@@ -260,7 +260,7 @@ public class InvoiceCandBLHandlCompleteAndReversalTest extends AbstractICTestSup
 		}
 		else
 		{
-			final ImmutablePair<I_C_Invoice, I_C_InvoiceLine> creditMemoReversalAndLine = creatInvoiceWithOneLine(contextProvider, CREDI_MEMO_QTY_INVOICE_NINE.negate(), DocAction.STATUS_Reversed,
+			final ImmutablePair<I_C_Invoice, I_C_InvoiceLine> creditMemoReversalAndLine = creatInvoiceWithOneLine(contextProvider, CREDI_MEMO_QTY_INVOICE_NINE.negate(), IDocument.STATUS_Reversed,
 					creditmemoDocTypeBaseName);
 			creditMemoAndLine.getLeft().setReversal_ID(creditMemoReversalAndLine.getLeft().getC_Invoice_ID());
 			InterfaceWrapperHelper.save(creditMemoAndLine.getLeft());
@@ -305,7 +305,7 @@ public class InvoiceCandBLHandlCompleteAndReversalTest extends AbstractICTestSup
 				.setAllowConsolidateInvoiceOnBPartner(false)
 				.build();
 
-		final ImmutablePair<I_C_Invoice, I_C_InvoiceLine> invoiceAndLine = creatInvoiceWithOneLine(contextProvider, INVOICE_QTY_INVOICED_TEN, DocAction.STATUS_Completed, invoiceDocTypeBaseName);
+		final ImmutablePair<I_C_Invoice, I_C_InvoiceLine> invoiceAndLine = creatInvoiceWithOneLine(contextProvider, INVOICE_QTY_INVOICED_TEN, IDocument.STATUS_Completed, invoiceDocTypeBaseName);
 
 		final I_C_Invoice_Line_Alloc ila = InterfaceWrapperHelper.newInstance(I_C_Invoice_Line_Alloc.class, contextProvider);
 		ila.setC_InvoiceLine(invoiceAndLine.getRight());
@@ -313,7 +313,7 @@ public class InvoiceCandBLHandlCompleteAndReversalTest extends AbstractICTestSup
 		ila.setQtyInvoiced(new BigDecimal("-1")); // shall not be taken into account by the code under test
 		InterfaceWrapperHelper.save(ila);
 
-		final ImmutablePair<I_C_Invoice, I_C_InvoiceLine> creditMemoAndLine = creatInvoiceWithOneLine(contextProvider, creditMemoQtyInvoiced, DocAction.STATUS_Completed, creditmemoDocTypeBaseName);
+		final ImmutablePair<I_C_Invoice, I_C_InvoiceLine> creditMemoAndLine = creatInvoiceWithOneLine(contextProvider, creditMemoQtyInvoiced, IDocument.STATUS_Completed, creditmemoDocTypeBaseName);
 		creditMemoAndLine.getLeft().setIsCreditedInvoiceReinvoicable(isCreditedInvoiceReinvoicable);
 		creditMemoAndLine.getLeft().setRef_Invoice_ID(invoiceAndLine.getLeft().getC_Invoice_ID());
 		InterfaceWrapperHelper.save(creditMemoAndLine.getLeft());

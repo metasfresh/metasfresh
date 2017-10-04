@@ -1,4 +1,4 @@
-package de.metas.document.service.impl;
+package de.metas.document.engine.impl;
 
 /*
  * #%L
@@ -34,17 +34,17 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_Test;
 import org.compiere.model.MTable;
-import org.compiere.process.DocAction;
 import org.compiere.util.Env;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import de.metas.document.engine.IDocActionBL;
-import de.metas.document.engine.impl.PlainDocActionBL;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
+import de.metas.document.engine.impl.PlainDocumentBL;
 
-public class DocActionBLTest
+public class DocumentBLTest
 {
 	private static interface INonDocumentWithDocumentNo
 	{
@@ -80,55 +80,55 @@ public class DocActionBLTest
 		Adempiere.enableUnitTestMode();
 	}
 
-	private PlainDocActionBL docActionBL;
+	private PlainDocumentBL documentBL;
 
 	@Before
 	public void init()
 	{
-		docActionBL = (PlainDocActionBL)Services.get(IDocActionBL.class);
+		documentBL = (PlainDocumentBL)Services.get(IDocumentBL.class);
 	}
 
 	@Test
-	public void test_getDocActionOrNull_Document()
+	public void test_getDocumentOrNull_Document()
 	{
-		test_getDocActionOrNull(I_C_Invoice.class, true);
-		test_getDocActionOrNull(I_C_Order.class, true);
-		test_getDocActionOrNull(I_M_InOut.class, true);
+		test_getDocumentOrNull(I_C_Invoice.class, true);
+		test_getDocumentOrNull(I_C_Order.class, true);
+		test_getDocumentOrNull(I_M_InOut.class, true);
 	}
 
 	@Test
-	public void test_getDocActionOrNull_NonDocument()
+	public void test_getDocumentOrNull_NonDocument()
 	{
-		test_getDocActionOrNull(I_Test.class, false);
-		test_getDocActionOrNull(INonDocumentWithDocumentNo.class, false);
+		test_getDocumentOrNull(I_Test.class, false);
+		test_getDocumentOrNull(INonDocumentWithDocumentNo.class, false);
 	}
 
-	private void test_getDocActionOrNull(final Class<?> clazz, boolean expectDocument)
+	private void test_getDocumentOrNull(final Class<?> clazz, boolean expectDocument)
 	{
 		final Object record = InterfaceWrapperHelper.create(Env.getCtx(), clazz, ITrx.TRXNAME_None);
 		InterfaceWrapperHelper.save(record);
 
-		final DocAction docAction = docActionBL.getDocActionOrNull(record);
+		final IDocument document = documentBL.getDocumentOrNull(record);
 		if (expectDocument)
 		{
-			Assert.assertNotNull("Record " + record + " (class " + clazz + ") shall be an DocAction", docAction);
+			Assert.assertNotNull("Record " + record + " (class " + clazz + ") shall be an Document", document);
 		}
 		else
 		{
-			Assert.assertNull("Record " + record + " (class " + clazz + ") shall NOT be an DocAction", docAction);
+			Assert.assertNull("Record " + record + " (class " + clazz + ") shall NOT be an Document", document);
 		}
 	}
 
-	// NOTE: this test applies only for PlainDocActionBL
+	// NOTE: this test applies only for PlainDocumentBL
 	@Test(expected = IllegalArgumentException.class)
-	public void test_getDocAction_NonDocument()
+	public void test_getDocument_NonDocument()
 	{
 		final Properties ctx = Env.getCtx();
 		final INonDocumentWithDocumentNo record = InterfaceWrapperHelper.create(ctx, INonDocumentWithDocumentNo.class, ITrx.TRXNAME_None);
 		record.setDocumentNo("SomeDocumentNo");
 		InterfaceWrapperHelper.save(record);
 
-		docActionBL.getDocAction(record);
+		documentBL.getDocument(record);
 	}
 
 	@Test
@@ -140,7 +140,7 @@ public class DocActionBLTest
 		invoice.setDocumentNo(documentNoExpected);
 		InterfaceWrapperHelper.save(invoice);
 
-		final String documentNoActual = docActionBL.getDocumentNo(invoice);
+		final String documentNoActual = documentBL.getDocumentNo(invoice);
 		Assert.assertEquals("Invalid DocumentNo", documentNoExpected, documentNoActual);
 	}
 
@@ -160,8 +160,8 @@ public class DocActionBLTest
 		final int recordId = InterfaceWrapperHelper.getId(record);
 		Assert.assertTrue("Invalid recordId=" + recordId, recordId > 0);
 
-		Assert.assertEquals("Invalid DocumentNo(1)", documentNoExpected, docActionBL.getDocumentNo(record));
-		Assert.assertEquals("Invalid DocumentNo(2)", documentNoExpected, docActionBL.getDocumentNo(ctx, adTableId, recordId));
+		Assert.assertEquals("Invalid DocumentNo(1)", documentNoExpected, documentBL.getDocumentNo(record));
+		Assert.assertEquals("Invalid DocumentNo(2)", documentNoExpected, documentBL.getDocumentNo(ctx, adTableId, recordId));
 	}
 
 	@Test
@@ -179,13 +179,13 @@ public class DocActionBLTest
 		final int recordId = InterfaceWrapperHelper.getId(record);
 		Assert.assertTrue("Invalid recordId=" + recordId, recordId > 0);
 
-		Assert.assertEquals("Invalid DocumentNo(1)", "testName", docActionBL.getDocumentNo(record));
-		Assert.assertEquals("Invalid DocumentNo(2)", "testName", docActionBL.getDocumentNo(ctx, adTableId, recordId));
+		Assert.assertEquals("Invalid DocumentNo(1)", "testName", documentBL.getDocumentNo(record));
+		Assert.assertEquals("Invalid DocumentNo(2)", "testName", documentBL.getDocumentNo(ctx, adTableId, recordId));
 
 		record.setValue("testValue");
 		InterfaceWrapperHelper.save(record);
-		Assert.assertEquals("Invalid DocumentNo", "testValue", docActionBL.getDocumentNo(record));
-		Assert.assertEquals("Invalid DocumentNo(2)", "testValue", docActionBL.getDocumentNo(ctx, adTableId, recordId));
+		Assert.assertEquals("Invalid DocumentNo", "testValue", documentBL.getDocumentNo(record));
+		Assert.assertEquals("Invalid DocumentNo(2)", "testValue", documentBL.getDocumentNo(ctx, adTableId, recordId));
 	}
 
 	public void test_getDocStatusOrNull_WithDocument()
@@ -195,13 +195,13 @@ public class DocActionBLTest
 		final int adTableId = MTable.getTable_ID(tableName);
 
 		final I_C_Invoice invoice = InterfaceWrapperHelper.create(ctx, I_C_Invoice.class, ITrx.TRXNAME_None);
-		invoice.setDocStatus(DocAction.STATUS_InProgress);
+		invoice.setDocStatus(IDocument.STATUS_InProgress);
 		InterfaceWrapperHelper.save(invoice);
 
 		final int recordId = InterfaceWrapperHelper.getId(invoice);
 		Assert.assertTrue("Invalid recordId=" + recordId, recordId > 0);
 
-		Assert.assertEquals("Invalid DocStatus", DocAction.STATUS_InProgress, docActionBL.getDocStatusOrNull(ctx, adTableId, recordId));
+		Assert.assertEquals("Invalid DocStatus", IDocument.STATUS_InProgress, documentBL.getDocStatusOrNull(ctx, adTableId, recordId));
 	}
 
 	public void test_getDocStatusOrNull_NonDocument()
@@ -216,15 +216,15 @@ public class DocActionBLTest
 		final int recordId = InterfaceWrapperHelper.getId(record);
 		Assert.assertTrue("Invalid recordId=" + recordId, recordId > 0);
 
-		Assert.assertNull("Invalid DocStatus", docActionBL.getDocStatusOrNull(ctx, adTableId, recordId));
+		Assert.assertNull("Invalid DocStatus", documentBL.getDocStatusOrNull(ctx, adTableId, recordId));
 	}
 
 	public void test_getDocStatusOrNull_InvalidParameters()
 	{
 		final Properties ctx = Env.getCtx();
-		Assert.assertNull("Invalid DocStatus", docActionBL.getDocStatusOrNull(ctx, -1, -1));
-		Assert.assertNull("Invalid DocStatus", docActionBL.getDocStatusOrNull(ctx, 318, -1));
-		Assert.assertNull("Invalid DocStatus", docActionBL.getDocStatusOrNull(ctx, -1, 1000));
+		Assert.assertNull("Invalid DocStatus", documentBL.getDocStatusOrNull(ctx, -1, -1));
+		Assert.assertNull("Invalid DocStatus", documentBL.getDocStatusOrNull(ctx, 318, -1));
+		Assert.assertNull("Invalid DocStatus", documentBL.getDocStatusOrNull(ctx, -1, 1000));
 	}
 
 }

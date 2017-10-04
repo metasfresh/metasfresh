@@ -34,11 +34,11 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.X_C_DocType;
-import org.compiere.process.DocAction;
 
 import de.metas.builder.IBuilder;
 import de.metas.document.IDocTypeDAO;
-import de.metas.document.engine.IDocActionBL;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 
 public class DefaultPaymentBuilder implements IBuilder
 {
@@ -73,8 +73,8 @@ public class DefaultPaymentBuilder implements IBuilder
 		this.contextProvider = contextProvider;
 		payment = InterfaceWrapperHelper.newInstance(I_C_Payment.class, contextProvider);
 		payment.setProcessed(false);
-		payment.setDocStatus(DocAction.STATUS_Drafted);
-		payment.setDocAction(DocAction.ACTION_Complete);
+		payment.setDocStatus(IDocument.STATUS_Drafted);
+		payment.setDocAction(IDocument.ACTION_Complete);
 	}
 	
 	private final void assertNotBuilt()
@@ -167,7 +167,7 @@ public class DefaultPaymentBuilder implements IBuilder
 		setDocAction(docAction);
 
 		final I_C_Payment payment = createDraft();
-		Services.get(IDocActionBL.class).processEx(payment, docAction, expectedDocStatus);
+		Services.get(IDocumentBL.class).processEx(payment, docAction, expectedDocStatus);
 
 		return payment;
 	}
@@ -178,7 +178,7 @@ public class DefaultPaymentBuilder implements IBuilder
 	 */
 	public I_C_Payment createAndProcess()
 	{
-		return createAndProcess(DocAction.ACTION_Complete, DocAction.STATUS_Completed);
+		return createAndProcess(IDocument.ACTION_Complete, IDocument.STATUS_Completed);
 	}
 
 	public final DefaultPaymentBuilder setC_BP_BankAccount_ID(int C_BP_BankAccount_ID)

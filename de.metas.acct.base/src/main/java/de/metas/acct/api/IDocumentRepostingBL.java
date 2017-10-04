@@ -5,9 +5,9 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.util.ISingletonService;
-import org.compiere.process.DocAction;
 
 import de.metas.acct.spi.IDocumentRepostingHandler;
+import de.metas.document.engine.IDocument;
 
 /*
  * #%L
@@ -31,7 +31,7 @@ import de.metas.acct.spi.IDocumentRepostingHandler;
  * #L%
  */
 
-public interface IDocumentBL extends ISingletonService
+public interface IDocumentRepostingBL extends ISingletonService
 {
 
 	/**
@@ -49,6 +49,6 @@ public interface IDocumentBL extends ISingletonService
 	 * @param startTime
 	 * @return
 	 */
-	List<DocAction> retrievePostedWithoutFactActt(Properties ctx, Timestamp startTime);
+	List<IDocument> retrievePostedWithoutFactAcct(Properties ctx, Timestamp startTime);
 
 }

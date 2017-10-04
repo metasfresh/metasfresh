@@ -58,7 +58,6 @@ import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.PO;
 import org.compiere.model.Query;
-import org.compiere.process.DocAction;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.eevolution.model.I_HR_Process;
@@ -105,8 +104,9 @@ import de.metas.commission.service.impl.SponsorCondition;
 import de.metas.commission.util.CommissionConstants;
 import de.metas.commission.util.Messages;
 import de.metas.document.ICopyHandlerBL;
-import de.metas.document.IDocumentPA;
-import de.metas.document.engine.IDocActionBL;
+import de.metas.document.IDocTypeDAO;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;
@@ -305,7 +305,7 @@ public class CommissionValidator implements ModelValidator
 
 	private String generateInvoices(final MHRProcess process)
 	{
-		final Map<Integer, Map<Integer, MInvoice>> bPartnerId2Inv = new HashMap<Integer, Map<Integer, MInvoice>>();
+		final Map<Integer, Map<Integer, MInvoice>> bPartnerId2Inv = new HashMap<>();
 
 		for (final I_HR_Movement movement : getMovements(process))
 		{
@@ -318,7 +318,7 @@ public class CommissionValidator implements ModelValidator
 
 			if (currencyId2Invoice == null)
 			{
-				currencyId2Invoice = new HashMap<Integer, MInvoice>();
+				currencyId2Invoice = new HashMap<>();
 				bPartnerId2Inv.put(bPartnerId, currencyId2Invoice);
 			}
 
@@ -363,12 +363,12 @@ public class CommissionValidator implements ModelValidator
 			ilPO.saveEx();
 		}
 
-		final IDocActionBL docActionBL = Services.get(IDocActionBL.class);
+		final IDocumentBL docActionBL = Services.get(IDocumentBL.class);
 		for (final Map<Integer, MInvoice> currencyId2Invoice : bPartnerId2Inv.values())
 		{
 			for (final MInvoice invoice : currencyId2Invoice.values())
 			{
-				if (docActionBL.processIt(invoice, DocAction.ACTION_Complete))
+				if (docActionBL.processIt(invoice, IDocument.ACTION_Complete))
 				{
 					invoice.saveEx();
 				}
@@ -426,12 +426,11 @@ public class CommissionValidator implements ModelValidator
 
 			invoice.setIsSOTrx(false);
 
-			final IDocumentPA docPA = Services.get(IDocumentPA.class);
-			final I_C_DocType docType = docPA.retrieve(ctx, process.getAD_Org_ID(), Constants.DOCBASETYPE_AEInvoice, CommissionConstants.COMMISSON_INVOICE_DOCSUBTYPE_CALC, true, trxName);
+			final I_C_DocType docType = Services.get(IDocTypeDAO.class).getDocType(Constants.DOCBASETYPE_AEInvoice, CommissionConstants.COMMISSON_INVOICE_DOCSUBTYPE_CALC, process.getAD_Client_ID(), process.getAD_Org_ID());
 
 			invoice.setC_DocTypeTarget_ID(docType.getC_DocType_ID());
 			invoice.setC_Currency_ID(currencyId);
-			invoice.setDocAction(DocAction.ACTION_Complete);
+			invoice.setDocAction(IDocument.ACTION_Complete);
 
 			// TODO: introduce/use Services.get(IInvoiceBL.class).setBPartner(invoice, bPartnerPO);
 			invoicePO.setBPartner(bPartnerPO);

@@ -35,7 +35,6 @@ import org.adempiere.util.time.SystemTime;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.X_C_DocType;
-import org.compiere.process.DocAction;
 import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.IPPOrderBOMDAO;
 import org.eevolution.model.I_DD_Order;
@@ -52,7 +51,8 @@ import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import de.metas.document.engine.IDocActionBL;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 
 /**
  * Integration test for {@link PPOrderMRPSupplyProducer} (it is tested indirectly).
@@ -65,7 +65,7 @@ public class PPOrderMRPSupplyProducer_IntegrationTest extends AbstractMRPTestBas
 	// services
 	private IQueryBL queryBL;
 	private IPPOrderBOMDAO ppOrderBOMDAO;
-	private IDocActionBL docActionBL;
+	private IDocumentBL docActionBL;
 	private IWarehouseBL warehouseBL;
 
 	// Master data
@@ -84,7 +84,7 @@ public class PPOrderMRPSupplyProducer_IntegrationTest extends AbstractMRPTestBas
 		// Services
 		this.queryBL = Services.get(IQueryBL.class);
 		this.ppOrderBOMDAO = Services.get(IPPOrderBOMDAO.class);
-		this.docActionBL = Services.get(IDocActionBL.class);
+		this.docActionBL = Services.get(IDocumentBL.class);
 		this.warehouseBL = Services.get(IWarehouseBL.class);
 
 		// Product Planning: pSalad_2xTomato_1xOnion
@@ -147,8 +147,8 @@ public class PPOrderMRPSupplyProducer_IntegrationTest extends AbstractMRPTestBas
 		ppOrder.setS_Resource(masterData.plant01);
 		ppOrder.setQtyOrdered(new BigDecimal("100"));
 		ppOrder.setDatePromised(helper.getToday());
-		ppOrder.setDocStatus(DocAction.STATUS_Drafted);
-		ppOrder.setDocAction(DocAction.ACTION_Complete);
+		ppOrder.setDocStatus(IDocument.STATUS_Drafted);
+		ppOrder.setDocAction(IDocument.ACTION_Complete);
 		ppOrder.setDescription("Triggering manufacturing order");
 		InterfaceWrapperHelper.save(ppOrder);
 		final I_PP_Order_BOMLine ppOrderBOMLine_Tomato = ppOrderBOMDAO.retrieveOrderBOMLine(ppOrder, masterData.pTomato);
@@ -227,8 +227,8 @@ public class PPOrderMRPSupplyProducer_IntegrationTest extends AbstractMRPTestBas
 		ppOrder.setS_Resource(masterData.plant01);
 		ppOrder.setQtyOrdered(new BigDecimal("100"));
 		ppOrder.setDatePromised(helper.getToday());
-		ppOrder.setDocStatus(DocAction.STATUS_Drafted);
-		ppOrder.setDocAction(DocAction.ACTION_Complete);
+		ppOrder.setDocStatus(IDocument.STATUS_Drafted);
+		ppOrder.setDocAction(IDocument.ACTION_Complete);
 		InterfaceWrapperHelper.save(ppOrder);
 
 		//
@@ -299,8 +299,8 @@ public class PPOrderMRPSupplyProducer_IntegrationTest extends AbstractMRPTestBas
 		ppOrder.setS_Resource(masterData.plant01);
 		ppOrder.setQtyOrdered(new BigDecimal("100"));
 		ppOrder.setDatePromised(helper.getToday());
-		ppOrder.setDocStatus(DocAction.STATUS_Drafted);
-		ppOrder.setDocAction(DocAction.ACTION_Complete);
+		ppOrder.setDocStatus(IDocument.STATUS_Drafted);
+		ppOrder.setDocAction(IDocument.ACTION_Complete);
 		ppOrder.setDescription("Triggering manufacturing order");
 
 		InterfaceWrapperHelper.save(ppOrder);
@@ -361,8 +361,8 @@ public class PPOrderMRPSupplyProducer_IntegrationTest extends AbstractMRPTestBas
 		ppOrder.setS_Resource(masterData.plant01);
 		ppOrder.setQtyOrdered(new BigDecimal("100"));
 		ppOrder.setDatePromised(helper.getToday());
-		ppOrder.setDocStatus(DocAction.STATUS_Drafted);
-		ppOrder.setDocAction(DocAction.ACTION_Complete);
+		ppOrder.setDocStatus(IDocument.STATUS_Drafted);
+		ppOrder.setDocAction(IDocument.ACTION_Complete);
 		ppOrder.setDescription("Triggering manufacturing order");
 		InterfaceWrapperHelper.save(ppOrder);
 

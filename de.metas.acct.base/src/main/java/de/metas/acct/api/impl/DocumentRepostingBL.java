@@ -4,11 +4,10 @@ import java.sql.Timestamp;
 import java.util.List;
 import java.util.Properties;
 
-import org.compiere.process.DocAction;
-
-import de.metas.acct.api.IDocumentBL;
+import de.metas.acct.api.IDocumentRepostingBL;
 import de.metas.acct.spi.IDocumentRepostingHandler;
 import de.metas.acct.spi.impl.CompositeDocumentRepostingHandler;
+import de.metas.document.engine.IDocument;
 
 /*
  * #%L
@@ -32,7 +31,7 @@ import de.metas.acct.spi.impl.CompositeDocumentRepostingHandler;
  * #L%
  */
 
-public class DocumentBL implements IDocumentBL
+public class DocumentRepostingBL implements IDocumentRepostingBL
 {
 	private final CompositeDocumentRepostingHandler repostingHandlers = new CompositeDocumentRepostingHandler();
 
@@ -43,7 +42,7 @@ public class DocumentBL implements IDocumentBL
 	}
 
 	@Override
-	public List<DocAction> retrievePostedWithoutFactActt (final Properties ctx, final Timestamp startTime)
+	public List<IDocument> retrievePostedWithoutFactAcct (final Properties ctx, final Timestamp startTime)
 	{
 		return repostingHandlers.retrievePostedWithoutFactAcct(ctx, startTime);
 	}

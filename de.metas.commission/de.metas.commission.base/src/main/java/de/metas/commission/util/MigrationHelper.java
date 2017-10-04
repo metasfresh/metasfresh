@@ -44,10 +44,9 @@ import org.compiere.model.X_AD_SysConfig;
 import org.compiere.util.Env;
 import org.compiere.util.Trx;
 import org.slf4j.Logger;
-import org.slf4j.Logger;
 
-import de.metas.document.IDocumentPA;
-import de.metas.logging.LogManager;
+import de.metas.document.IDocTypeDAO;
+import de.metas.document.IDocTypeDAO.DocTypeCreateRequest;
 import de.metas.logging.LogManager;
 import de.metas.process.JavaProcess;
 
@@ -204,7 +203,7 @@ public class MigrationHelper
 						.setClient_ID()
 						.list();
 
-		final IDocumentPA docPA = Services.get(IDocumentPA.class);
+		final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 
 		for (final MDocType existingType : existingTypes)
 		{
@@ -215,17 +214,18 @@ public class MigrationHelper
 
 			final String newDocTypeName = "Provision-Korrektur (" + currentOrg.getName() + ")";
 
-			final I_C_DocType newDocType = docPA.createDocType(ctx, CommissionConstants.ENTITY_TYPE, newDocTypeName, newDocTypeName,
-					Constants.DOCBASETYPE_AEInvoice, CommissionConstants.COMMISSON_INVOICE_DOCSUBTYPE_CORRECTION,
-					0, 0, 0,
-					1000018, // TODO: hardcoded GL_Category_ID
-					trxName);
-			newDocType.setAD_Org_ID(existingType.getAD_Org_ID());
-			newDocType.setIsDocNoControlled(true);
-			newDocType.setDocNoSequence_ID(existingType.getDocNoSequence_ID());
-			newDocType.setDocumentCopies(existingType.getDocumentCopies());
-			newDocType.setGL_Category_ID(existingType.getGL_Category_ID());
-			InterfaceWrapperHelper.save(newDocType);
+			final I_C_DocType newDocType = docTypeDAO.createDocType(DocTypeCreateRequest.builder()
+					.ctx(ctx)
+					.adOrgId(existingType.getAD_Org_ID())
+					.entityType(CommissionConstants.ENTITY_TYPE)
+					.name(newDocTypeName)
+					.printName(newDocTypeName)
+					.docBaseType(Constants.DOCBASETYPE_AEInvoice)
+					.docSubType(CommissionConstants.COMMISSON_INVOICE_DOCSUBTYPE_CORRECTION)
+					.docNoSequenceId(existingType.getDocNoSequence_ID())
+					.documentCopies(existingType.getDocumentCopies())
+					.glCategoryId(existingType.getGL_Category_ID())
+					.build());
 
 			log("Created doctype " + newDocType.getName());
 		}

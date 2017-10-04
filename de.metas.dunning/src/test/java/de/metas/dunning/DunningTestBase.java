@@ -55,8 +55,8 @@ import org.junit.Rule;
 import org.junit.rules.TestWatcher;
 
 import de.metas.document.IDocumentLocationBL;
-import de.metas.document.engine.IDocActionBL;
-import de.metas.document.engine.impl.PlainDocActionBL;
+import de.metas.document.engine.IDocumentBL;
+import de.metas.document.engine.impl.PlainDocumentBL;
 import de.metas.dunning.api.IDunnableDoc;
 import de.metas.dunning.api.IDunningBL;
 import de.metas.dunning.api.IDunningContext;
@@ -117,8 +117,8 @@ public class DunningTestBase
 
 		dunningUtil = (PlainDunningUtil)Services.get(IDunningUtil.class);
 
-		final PlainDocActionBL docActionBL = (PlainDocActionBL)Services.get(IDocActionBL.class);
-		docActionBL.setDefaultProcessInterceptor(PlainDocActionBL.PROCESSINTERCEPTOR_CompleteDirectly);
+		final PlainDocumentBL docActionBL = (PlainDocumentBL)Services.get(IDocumentBL.class);
+		docActionBL.setDefaultProcessInterceptor(PlainDocumentBL.PROCESSINTERCEPTOR_CompleteDirectly);
 
 		MockedCloseableIterator.clear();
 

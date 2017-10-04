@@ -31,7 +31,6 @@ import de.metas.logging.LogManager;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
-import org.compiere.process.DocAction;
 import org.compiere.process.PaySelectionCreateCheck;
 import org.compiere.util.AdempiereUserError;
 import org.slf4j.Logger;
@@ -42,6 +41,7 @@ import org.compiere.util.Env;
 import de.metas.adempiere.model.I_C_PaySelectionLine;
 import de.metas.banking.api.IBPBankAccountDAO;
 import de.metas.currency.ICurrencyDAO;
+import de.metas.document.engine.IDocument;
 import de.metas.i18n.IMsgBL;
 
 /**
@@ -525,7 +525,7 @@ public final class MPaySelectionCheck extends X_C_PaySelectionCheck
 					check.setC_Payment_ID(C_Payment_ID);
 					check.save();	// Payment process needs it
 					// Should start WF
-					payment.processIt(DocAction.ACTION_Complete);
+					payment.processIt(IDocument.ACTION_Complete);
 					if (!payment.save())
 						s_log.error("Payment not saved: " + payment);
 				}

@@ -26,7 +26,6 @@ import java.util.Properties;
 import org.adempiere.acct.api.IFactAcctDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
-import org.compiere.process.DocAction;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
 import org.compiere.util.DB;
@@ -35,7 +34,8 @@ import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
 import de.metas.currency.ICurrencyBL;
-import de.metas.document.engine.IDocActionBL;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.Msg;
 import de.metas.logging.MetasfreshLastError;
 
@@ -55,7 +55,7 @@ import de.metas.logging.MetasfreshLastError;
  * 			<li>BF [ 1899477 ] MCash.getLines should return only active lines
  * 			<li>BF [ 2588326 ] Cash Lines are not correctly updated on voiding
  */
-public class MCash extends X_C_Cash implements DocAction
+public class MCash extends X_C_Cash implements IDocument
 {
 	/**
 	 * 
@@ -327,7 +327,7 @@ public class MCash extends X_C_Cash implements DocAction
 	public boolean processIt (String processAction)
 	{
 		m_processMsg = null;
-		return Services.get(IDocActionBL.class).processIt(this, processAction); // task 09824 
+		return Services.get(IDocumentBL.class).processIt(this, processAction); // task 09824 
 	}	//	process
 	
 	/**	Process Message 			*/
@@ -369,19 +369,19 @@ public class MCash extends X_C_Cash implements DocAction
 		log.info(toString());
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_PREPARE);
 		if (m_processMsg != null)
-			return DocAction.STATUS_Invalid;
+			return IDocument.STATUS_Invalid;
 
 		//	Std Period open?
 		if (!MPeriod.isOpen(getCtx(), getDateAcct(), MDocType.DOCBASETYPE_CashJournal, getAD_Org_ID()))
 		{
 			m_processMsg = "@PeriodClosed@";
-			return DocAction.STATUS_Invalid;
+			return IDocument.STATUS_Invalid;
 		}
 		MCashLine[] lines = getLines(false);
 		if (lines.length == 0)
 		{
 			m_processMsg = "@NoLines@";
-			return DocAction.STATUS_Invalid;
+			return IDocument.STATUS_Invalid;
 		}
 		//	Add up Amounts
 		BigDecimal difference = Env.ZERO;
@@ -401,7 +401,7 @@ public class MCash extends X_C_Cash implements DocAction
 				if (amt == null)
 				{
 					m_processMsg = "No Conversion Rate found - @C_CashLine_ID@= " + line.getLine();
-					return DocAction.STATUS_Invalid;
+					return IDocument.STATUS_Invalid;
 				}
 				difference = difference.add(amt);
 			}
@@ -411,12 +411,12 @@ public class MCash extends X_C_Cash implements DocAction
 
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_PREPARE);
 		if (m_processMsg != null)
-			return DocAction.STATUS_Invalid;
+			return IDocument.STATUS_Invalid;
 
 		m_justPrepared = true;
 		if (!DOCACTION_Complete.equals(getDocAction()))
 			setDocAction(DOCACTION_Complete);
-		return DocAction.STATUS_InProgress;
+		return IDocument.STATUS_InProgress;
 	}	//	prepareIt
 	
 	/**
@@ -454,13 +454,13 @@ public class MCash extends X_C_Cash implements DocAction
 		if (!m_justPrepared)
 		{
 			String status = prepareIt();
-			if (!DocAction.STATUS_InProgress.equals(status))
+			if (!IDocument.STATUS_InProgress.equals(status))
 				return status;
 		}
 		
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_COMPLETE);
 		if (m_processMsg != null)
-			return DocAction.STATUS_Invalid;
+			return IDocument.STATUS_Invalid;
 
 		
 		//	Implicit Approval
@@ -484,7 +484,7 @@ public class MCash extends X_C_Cash implements DocAction
 					)
 				{
 					m_processMsg = "@Line@ "+line.getLine()+": @InvoiceCreateDocNotCompleted@";
-					return DocAction.STATUS_Invalid;
+					return IDocument.STATUS_Invalid;
 				}
 				//
 				String name = Msg.translate(getCtx(), "C_Cash_ID") + ": " + getName()
@@ -496,7 +496,7 @@ public class MCash extends X_C_Cash implements DocAction
 				if (!hdr.save())
 				{
 					m_processMsg = MetasfreshLastError.retrieveErrorString("Could not create Allocation Hdr");
-					return DocAction.STATUS_Invalid;
+					return IDocument.STATUS_Invalid;
 				}
 				//	Allocation Line
 				MAllocationLine aLine = new MAllocationLine (hdr, line.getAmount(),
@@ -506,16 +506,16 @@ public class MCash extends X_C_Cash implements DocAction
 				if (!aLine.save())
 				{
 					m_processMsg = MetasfreshLastError.retrieveErrorString("Could not create Allocation Line");
-					return DocAction.STATUS_Invalid;
+					return IDocument.STATUS_Invalid;
 				}
 				//	Should start WF
-				if(!hdr.processIt(DocAction.ACTION_Complete)) {
+				if(!hdr.processIt(IDocument.ACTION_Complete)) {
 					m_processMsg = MetasfreshLastError.retrieveErrorString("Could not process Allocation");
-					return DocAction.STATUS_Invalid;
+					return IDocument.STATUS_Invalid;
 				}
 				if (!hdr.save()) {
 					m_processMsg = MetasfreshLastError.retrieveErrorString("Could not save Allocation");
-					return DocAction.STATUS_Invalid;
+					return IDocument.STATUS_Invalid;
 				}
 			}
 			else if (MCashLine.CASHTYPE_BankAccountTransfer.equals(line.getCashType()))
@@ -547,14 +547,14 @@ public class MCash extends X_C_Cash implements DocAction
 				if (!pay.save())
 				{
 					m_processMsg = MetasfreshLastError.retrieveErrorString("Could not create Payment");
-					return DocAction.STATUS_Invalid;
+					return IDocument.STATUS_Invalid;
 				}
 				
 				line.setC_Payment_ID(pay.getC_Payment_ID());
 				if (!line.save())
 				{
 					m_processMsg = "Could not update Cash Line";
-					return DocAction.STATUS_Invalid;
+					return IDocument.STATUS_Invalid;
 				}
 			}
 		}
@@ -564,12 +564,12 @@ public class MCash extends X_C_Cash implements DocAction
 		if (valid != null)
 		{
 			m_processMsg = valid;
-			return DocAction.STATUS_Invalid;
+			return IDocument.STATUS_Invalid;
 		}
 		//
 		setProcessed(true);
 		setDocAction(DOCACTION_Close);
-		return DocAction.STATUS_Completed;
+		return IDocument.STATUS_Completed;
 	}	//	completeIt
 	
 	/**

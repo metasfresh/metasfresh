@@ -45,7 +45,6 @@ import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.MAllocationHdr;
 import org.compiere.model.X_C_DocType;
-import org.compiere.process.DocAction;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.TrxRunnable;
@@ -61,7 +60,8 @@ import de.metas.allocation.api.IAllocationDAO;
 import de.metas.attachments.IAttachmentBL;
 import de.metas.banking.model.I_C_BankStatementLine;
 import de.metas.banking.model.I_C_BankStatementLine_Ref;
-import de.metas.document.engine.IDocActionBL;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.IMsgBL;
 import de.metas.lock.api.ILockManager;
 import de.metas.logging.LogManager;
@@ -674,7 +674,7 @@ public class ESRImportBL implements IESRImportBL
 					// }
 					save(line);
 
-					Services.get(IDocActionBL.class).processEx(payment, DocAction.ACTION_Complete, DocAction.STATUS_Completed);
+					Services.get(IDocumentBL.class).processEx(payment, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
 
 					save(line);
 				}
@@ -845,15 +845,15 @@ public class ESRImportBL implements IESRImportBL
 						payment.setOverUnderAmt(overUnderAmt);
 					}
 
-					payment.setDocStatus(DocAction.STATUS_Drafted);
-					payment.setDocAction(DocAction.ACTION_Complete);
+					payment.setDocStatus(IDocument.STATUS_Drafted);
+					payment.setDocAction(IDocument.ACTION_Complete);
 
 					save(payment);
 
 					// guard; there was some crappy code in MPayment, there might be more
 					Check.assume(payment.getAD_Org_ID() == importLine.getAD_Org_ID(), "Payment has the same org as {}", importLine);
 
-					Services.get(IDocActionBL.class).processEx(payment, DocAction.ACTION_Complete, DocAction.STATUS_Completed);
+					Services.get(IDocumentBL.class).processEx(payment, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
 					final boolean ignoreProcessed = false;
 					Services.get(IInvoiceBL.class).testAllocation(invoice, ignoreProcessed);
 					save(invoice);
@@ -875,7 +875,7 @@ public class ESRImportBL implements IESRImportBL
 
 		Check.assume(payment.getAD_Org_ID() == importLine.getAD_Org_ID(), "Payment has the same org as {}", importLine);
 
-		Check.assume(!Objects.equals(payment.getDocStatus(), DocAction.STATUS_Drafted), "Payment shoould not be drafted}");
+		Check.assume(!Objects.equals(payment.getDocStatus(), IDocument.STATUS_Drafted), "Payment shoould not be drafted}");
 
 		final I_C_Invoice invoice = importLine.getC_Invoice();
 		Check.assumeNotNull(invoice, "{} has an invoice", importLine);
@@ -1123,7 +1123,7 @@ public class ESRImportBL implements IESRImportBL
 		final MAllocationHdr[] allocs = MAllocationHdr.getOfPayment(ctx, payment.getC_Payment_ID(), trxName);
 		for (final MAllocationHdr alloc : allocs)
 		{
-			Services.get(IDocActionBL.class).processEx(alloc, DocAction.ACTION_Reverse_Correct, DocAction.STATUS_Reversed);
+			Services.get(IDocumentBL.class).processEx(alloc, IDocument.ACTION_Reverse_Correct, IDocument.STATUS_Reversed);
 		}
 
 		payment.setC_Invoice_ID(-1);

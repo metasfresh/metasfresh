@@ -33,14 +33,14 @@ import org.adempiere.util.Services;
 import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_InOut;
-import org.compiere.process.DocAction;
 import org.slf4j.Logger;
 
 import com.google.common.base.Optional;
 
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.document.archive.model.I_AD_Archive;
-import de.metas.document.engine.IDocActionBL;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
@@ -113,8 +113,8 @@ public class DocumentPrintingQueueHandler extends PrintingQueueHandlerAdapter
 		}
 
 		// special stuff wrt special document type
-		final IDocActionBL docActionBL = Services.get(IDocActionBL.class);
-		final DocAction document = docActionBL.getDocActionOrNull(archiveRerencedModel);
+		final IDocumentBL docActionBL = Services.get(IDocumentBL.class);
+		final IDocument document = docActionBL.getDocumentOrNull(archiveRerencedModel);
 		if (document != null)
 		{
 			logger.debug("Setting column of C_Printing_Queue {} from DocAction-PO {} that is referenced by AD_Archive {}: [AD_User_ID={}]",
@@ -123,7 +123,7 @@ public class DocumentPrintingQueueHandler extends PrintingQueueHandlerAdapter
 		}
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(queueItem);
-		final int doctypeID = Services.get(IDocActionBL.class).getC_DocType_ID(ctx, archive.getAD_Table_ID(), archive.getRecord_ID());
+		final int doctypeID = Services.get(IDocumentBL.class).getC_DocType_ID(ctx, archive.getAD_Table_ID(), archive.getRecord_ID());
 		queueItem.setC_DocType_ID(doctypeID);
 
 		// Handles operations specific for invoices.

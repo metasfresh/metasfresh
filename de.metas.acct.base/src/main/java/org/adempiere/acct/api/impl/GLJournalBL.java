@@ -51,7 +51,7 @@ public class GLJournalBL implements IGLJournalBL
 		final Properties ctx = InterfaceWrapperHelper.getCtx(glJournal);
 		MPeriod.testPeriodOpen(ctx, glJournal.getDateAcct(), glJournal.getC_DocType_ID(), glJournal.getAD_Org_ID());
 
-		Services.get(IFactAcctDAO.class).deleteForDocument(glJournal);
+		Services.get(IFactAcctDAO.class).deleteForDocumentModel(glJournal);
 		
 		glJournal.setPosted(false);
 		InterfaceWrapperHelper.save(glJournal);

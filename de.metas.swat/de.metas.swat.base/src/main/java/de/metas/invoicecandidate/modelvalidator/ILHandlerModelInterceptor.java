@@ -10,7 +10,7 @@ import org.compiere.model.I_AD_Client;
 
 import com.google.common.base.MoreObjects;
 
-import de.metas.document.engine.IDocActionBL;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.invoicecandidate.async.spi.impl.CreateMissingInvoiceCandidatesWorkpackageProcessor;
 
 /*
@@ -61,7 +61,7 @@ final class ILHandlerModelInterceptor extends AbstractModelInterceptor
 		this.isCreateInvoiceCandidates = builder.isCreateInvoiceCandidates();
 		this.createInvoiceCandidatesTiming = builder.getCreateInvoiceCandidatesTiming();
 
-		if (Services.get(IDocActionBL.class).isDocumentTable(tableName))
+		if (Services.get(IDocumentBL.class).isDocumentTable(tableName))
 		{
 			isDocument = true;
 		}

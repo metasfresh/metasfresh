@@ -35,6 +35,7 @@ import org.compiere.model.X_AD_WF_Node;
 import org.compiere.util.CCache;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.compiere.wf.api.IADWorkflowDAO;
 
 /**
  *	Workflow Node Model

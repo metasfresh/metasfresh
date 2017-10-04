@@ -37,7 +37,6 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeValue;
-import org.compiere.process.DocAction;
 import org.compiere.util.Env;
 import org.eevolution.model.I_PP_Cost_Collector;
 import org.eevolution.model.I_PP_Order;
@@ -46,8 +45,9 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import de.metas.document.engine.IDocActionBL;
-import de.metas.document.engine.impl.PlainDocActionBL;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
+import de.metas.document.engine.impl.PlainDocumentBL;
 import de.metas.materialtracking.IMaterialTrackingDAO;
 import de.metas.materialtracking.impl.MaterialTrackingDAO;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
@@ -62,7 +62,7 @@ import de.metas.materialtracking.model.validator.Main;
 public class MaterialTrackingPPCostCollectorTest
 {
 	protected IContextAware context;
-	private PlainDocActionBL docActionBL;
+	private PlainDocumentBL docActionBL;
 	private MaterialTrackingDAO materialTrackingDAO;
 
 	@Before
@@ -71,11 +71,11 @@ public class MaterialTrackingPPCostCollectorTest
 		AdempiereTestHelper.get().init();
 		this.context = new PlainContextAware(Env.getCtx(), ITrx.TRXNAME_None);
 
-		this.docActionBL = (PlainDocActionBL)Services.get(IDocActionBL.class);
+		this.docActionBL = (PlainDocumentBL)Services.get(IDocumentBL.class);
 
 		this.materialTrackingDAO = (MaterialTrackingDAO)Services.get(IMaterialTrackingDAO.class);
 
-		docActionBL.setDefaultProcessInterceptor(PlainDocActionBL.PROCESSINTERCEPTOR_CompleteDirectly);
+		docActionBL.setDefaultProcessInterceptor(PlainDocumentBL.PROCESSINTERCEPTOR_CompleteDirectly);
 
 		final I_AD_Client adClient = InterfaceWrapperHelper.newInstance(I_AD_Client.class, context);
 		adClient.setValue("Test");
@@ -100,11 +100,11 @@ public class MaterialTrackingPPCostCollectorTest
 		final I_PP_Cost_Collector ppCostColector2 = createPP_CostColector(X_PP_Cost_Collector.COSTCOLLECTORTYPE_ComponentIssue, ppOrder, BigDecimal.valueOf(20));
 		final I_PP_Cost_Collector ppCostColector3 = createPP_CostColector(X_PP_Cost_Collector.COSTCOLLECTORTYPE_ComponentIssue, ppOrder, BigDecimal.valueOf(30));
 
-		this.docActionBL.processEx(ppCostColector1, DocAction.ACTION_Complete, DocAction.STATUS_Completed);
+		this.docActionBL.processEx(ppCostColector1, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
 
-		this.docActionBL.processEx(ppCostColector2, DocAction.ACTION_Complete, DocAction.STATUS_Completed);
+		this.docActionBL.processEx(ppCostColector2, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
 
-		this.docActionBL.processEx(ppCostColector3, DocAction.ACTION_Complete, DocAction.STATUS_Completed);
+		this.docActionBL.processEx(ppCostColector3, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
 
 		final I_M_Material_Tracking materialTracking1 = Services.get(IMaterialTrackingDAO.class).retrieveMaterialTrackingForModel(ppCostColector1.getPP_Order());
 		final I_M_Material_Tracking materialTracking2 = Services.get(IMaterialTrackingDAO.class).retrieveMaterialTrackingForModel(ppCostColector2.getPP_Order());
@@ -130,11 +130,11 @@ public class MaterialTrackingPPCostCollectorTest
 		final I_PP_Cost_Collector ppCostColector2 = createPP_CostColector(X_PP_Cost_Collector.COSTCOLLECTORTYPE_ComponentIssue, ppOrder2, BigDecimal.valueOf(20));
 		final I_PP_Cost_Collector ppCostColector3 = createPP_CostColector(X_PP_Cost_Collector.COSTCOLLECTORTYPE_ComponentIssue, ppOrder2, BigDecimal.valueOf(30));
 
-		this.docActionBL.processEx(ppCostColector1, DocAction.ACTION_Complete, DocAction.STATUS_Completed);
+		this.docActionBL.processEx(ppCostColector1, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
 
-		this.docActionBL.processEx(ppCostColector2, DocAction.ACTION_Complete, DocAction.STATUS_Completed);
+		this.docActionBL.processEx(ppCostColector2, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
 		
-		this.docActionBL.processEx(ppCostColector3, DocAction.ACTION_Complete, DocAction.STATUS_Completed);
+		this.docActionBL.processEx(ppCostColector3, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
 
 
 		final I_M_Material_Tracking materialTracking1 = Services.get(IMaterialTrackingDAO.class).retrieveMaterialTrackingForModel(ppCostColector1.getPP_Order());

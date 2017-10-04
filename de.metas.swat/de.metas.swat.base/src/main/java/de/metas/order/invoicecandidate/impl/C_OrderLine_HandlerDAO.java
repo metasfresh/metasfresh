@@ -38,9 +38,9 @@ import org.compiere.model.IQuery;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.X_C_DocType;
-import org.compiere.process.DocAction;
 
 import de.metas.adempiere.model.I_C_Order;
+import de.metas.document.engine.IDocument;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.order.invoicecandidate.IC_OrderLine_HandlerDAO;
 
@@ -99,7 +99,7 @@ public class C_OrderLine_HandlerDAO implements IC_OrderLine_HandlerDAO
 
 			// Take only lines from completed orders
 			final ICompositeQueryFilter<I_C_Order> orderFilter = queryBL.createCompositeQueryFilter(I_C_Order.class);
-			orderFilter.addEqualsFilter(I_C_Order.COLUMNNAME_DocStatus, DocAction.ACTION_Complete);
+			orderFilter.addEqualsFilter(I_C_Order.COLUMNNAME_DocStatus, IDocument.ACTION_Complete);
 
 			final IQuery<I_C_DocType> docTypeQuery = queryBL.createQueryBuilder(I_C_DocType.class, ctx, trxName)
 					.filter(docTypeFilter)

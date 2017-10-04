@@ -36,19 +36,19 @@ import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
-import org.compiere.process.DocAction;
 import org.compiere.util.Util.ArrayKey;
 
-import de.metas.document.engine.IDocActionBL;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 
 /**
- * Database decoupled implementation for {@link IDocActionBL}
+ * Database decoupled implementation for {@link IDocumentBL}
  * 
  * @author tsa
  * 
  */
 // @Ignore
-public class PlainDocActionBL extends AbstractDocActionBL
+public class PlainDocumentBL extends AbstractDocumentBL
 {
 	public static Boolean isDocumentTableResponse = null;
 
@@ -64,10 +64,8 @@ public class PlainDocActionBL extends AbstractDocActionBL
 	}
 
 	@Override
-	protected DocAction getDocAction(Object document, boolean throwEx)
+	protected IDocument getDocument(Object document, boolean throwEx)
 	{
-		// throw new UnsupportedOperationException("Method not implemented");
-
 		if (document == null)
 		{
 			if (throwEx)
@@ -77,9 +75,9 @@ public class PlainDocActionBL extends AbstractDocActionBL
 			return null;
 		}
 
-		if (document instanceof DocAction)
+		if (document instanceof IDocument)
 		{
-			return (DocAction)document;
+			return (IDocument)document;
 		}
 
 		//
@@ -90,12 +88,12 @@ public class PlainDocActionBL extends AbstractDocActionBL
 				&& hasMethod(interfaceClass, String.class, "getDocAction")
 				&& hasMethod(interfaceClass, String.class, "getDocumentNo"))
 		{
-			return POJOWrapper.create(document, DocAction.class);
+			return POJOWrapper.create(document, IDocument.class);
 		}
 
 		if (throwEx)
 		{
-			throw new IllegalArgumentException("Document '" + document + "' cannot be converted to " + DocAction.class);
+			throw new IllegalArgumentException("Document '" + document + "' cannot be converted to " + IDocument.class);
 		}
 		return null;
 	}
@@ -155,7 +153,7 @@ public class PlainDocActionBL extends AbstractDocActionBL
 	}
 
 	@Override
-	protected String retrieveString(Properties ctx, int adTableId, int recordId, String columnName)
+	protected String retrieveString(final int adTableId, final int recordId, final String columnName)
 	{
 		final Object model = POJOLookupMap.get().lookup(adTableId, recordId);
 		if (model == null)
@@ -182,7 +180,7 @@ public class PlainDocActionBL extends AbstractDocActionBL
 	}
 
 	@Override
-	protected boolean processIt0(final DocAction doc, final String action) throws Exception
+	protected boolean processIt0(final IDocument doc, final String action) throws Exception
 	{
 		Check.assumeNotEmpty(action, "action not empty");
 
@@ -193,9 +191,9 @@ public class PlainDocActionBL extends AbstractDocActionBL
 		
 		//
 		// To better emulate doc processing workflow, in case we are asked to Complete a document fire Prepare first
-		if (DocAction.ACTION_Complete.equals(action))
+		if (IDocument.ACTION_Complete.equals(action))
 		{
-			final boolean prepared = processIt0(doc, DocAction.ACTION_Prepare);
+			final boolean prepared = processIt0(doc, IDocument.ACTION_Prepare);
 			if (!prepared)
 			{
 				return prepared;
@@ -229,7 +227,7 @@ public class PlainDocActionBL extends AbstractDocActionBL
 		processInterceptors.put(key, interceptor);
 	}
 
-	private final Map<ArrayKey, IProcessInterceptor> processInterceptors = new HashMap<ArrayKey, IProcessInterceptor>();
+	private final Map<ArrayKey, IProcessInterceptor> processInterceptors = new HashMap<>();
 
 	private IProcessInterceptor defaultProcessInterceptor = PROCESSINTERCEPTOR_CompleteDirectly;
 
@@ -243,7 +241,7 @@ public class PlainDocActionBL extends AbstractDocActionBL
 		this.defaultProcessInterceptor = defaultProcessInterceptor;
 	}
 
-	private static void setDocStatus(final DocAction doc, final String docStatus, final String docAction, final boolean processed)
+	private static void setDocStatus(final IDocument doc, final String docStatus, final String docAction, final boolean processed)
 	{
 		doc.setDocStatus(docStatus);
 		final POJOWrapper wrapper = POJOWrapper.getWrapper(doc);
@@ -262,13 +260,13 @@ public class PlainDocActionBL extends AbstractDocActionBL
 
 	public static interface IProcessInterceptor
 	{
-		boolean processIt(final DocAction doc, final String action) throws Exception;
+		boolean processIt(final IDocument doc, final String action) throws Exception;
 	}
 
 	public static final IProcessInterceptor PROCESSINTERCEPTOR_DirectCall = new IProcessInterceptor()
 	{
 		@Override
-		public boolean processIt(DocAction doc, String action) throws Exception
+		public boolean processIt(IDocument doc, String action) throws Exception
 		{
 			return doc.processIt(action);
 		}
@@ -282,31 +280,31 @@ public class PlainDocActionBL extends AbstractDocActionBL
 	{
 
 		@Override
-		public boolean processIt(DocAction doc, String action) throws Exception
+		public boolean processIt(IDocument doc, String action) throws Exception
 		{
-			if (DocAction.ACTION_Complete.equals(action))
+			if (IDocument.ACTION_Complete.equals(action))
 			{
-				setDocStatus(doc, DocAction.STATUS_Completed, DocAction.ACTION_Close, true);
+				setDocStatus(doc, IDocument.STATUS_Completed, IDocument.ACTION_Close, true);
 				return true;
 			}
-			if (DocAction.ACTION_Prepare.equals(action))
+			if (IDocument.ACTION_Prepare.equals(action))
 			{
-				setDocStatus(doc, DocAction.STATUS_InProgress, DocAction.ACTION_Complete, false);
+				setDocStatus(doc, IDocument.STATUS_InProgress, IDocument.ACTION_Complete, false);
 				return true;
 			}
-			else if (DocAction.ACTION_Void.equals(action))
+			else if (IDocument.ACTION_Void.equals(action))
 			{
-				setDocStatus(doc, DocAction.STATUS_Voided, DocAction.ACTION_None, true);
+				setDocStatus(doc, IDocument.STATUS_Voided, IDocument.ACTION_None, true);
 				return true;
 			}
-			else if (DocAction.ACTION_ReActivate.equals(action))
+			else if (IDocument.ACTION_ReActivate.equals(action))
 			{
-				setDocStatus(doc, DocAction.STATUS_InProgress, DocAction.ACTION_Complete, false);
+				setDocStatus(doc, IDocument.STATUS_InProgress, IDocument.ACTION_Complete, false);
 				return true;
 			}
-			else if (DocAction.ACTION_Reverse_Correct.equals(action))
+			else if (IDocument.ACTION_Reverse_Correct.equals(action))
 			{
-				setDocStatus(doc, DocAction.STATUS_Reversed, DocAction.ACTION_None, true);
+				setDocStatus(doc, IDocument.STATUS_Reversed, IDocument.ACTION_None, true);
 				return true;
 			}
 			else

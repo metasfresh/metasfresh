@@ -65,8 +65,8 @@ import de.metas.adempiere.service.IPrinterRoutingDAO;
 import de.metas.adempiere.service.impl.PlainPrinterRoutingDAO;
 import de.metas.document.archive.api.IDocOutboundDAO;
 import de.metas.document.archive.api.impl.PlainDocOutboundDAO;
-import de.metas.document.engine.IDocActionBL;
-import de.metas.document.engine.impl.PlainDocActionBL;
+import de.metas.document.engine.IDocumentBL;
+import de.metas.document.engine.impl.PlainDocumentBL;
 import de.metas.i18n.Language;
 import de.metas.lock.api.ILockManager;
 import de.metas.lock.api.impl.PlainLockManager;
@@ -159,7 +159,7 @@ public class Helper
 		// de.metas.printing (this module):
 		Services.registerService(IPrintingDAO.class, printingDAO);
 		Services.registerService(IPrinterRoutingDAO.class, new PlainPrinterRoutingDAO());
-		Services.registerService(IDocActionBL.class, new PlainDocActionBL());
+		Services.registerService(IDocumentBL.class, new PlainDocumentBL());
 
 		staticInitialized = true;
 	}

@@ -3,10 +3,11 @@ package de.metas.shipping.model;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-import org.compiere.process.DocAction;
+import org.springframework.stereotype.Component;
 
 import de.metas.document.engine.IDocActionOptionsContext;
 import de.metas.document.engine.IDocActionOptionsCustomizer;
+import de.metas.document.engine.IDocument;
 
 /*
  * #%L
@@ -30,13 +31,13 @@ import de.metas.document.engine.IDocActionOptionsCustomizer;
  * #L%
  */
 
+@Component
 public class ShipperTransportationDocActionCustomizer implements IDocActionOptionsCustomizer
 {
-	public static final transient ShipperTransportationDocActionCustomizer instance = new ShipperTransportationDocActionCustomizer();
-
-	private ShipperTransportationDocActionCustomizer()
+	@Override
+	public String getAppliesToTableName()
 	{
-		super();
+		return I_M_ShipperTransportation.Table_Name;
 	}
 
 	@Override
@@ -45,15 +46,15 @@ public class ShipperTransportationDocActionCustomizer implements IDocActionOptio
 		final Set<String> docActions = new LinkedHashSet<>(optionsCtx.getDocActions());
 
 		final String docStatus = optionsCtx.getDocStatus();
-		if (DocAction.STATUS_Drafted.equals(docStatus))
+		if (IDocument.STATUS_Drafted.equals(docStatus))
 		{
 			// remove the void option when Drafted
-			docActions.remove(DocAction.ACTION_Void);
+			docActions.remove(IDocument.ACTION_Void);
 		}
 		// Complete .. CO
-		else if (DocAction.STATUS_Completed.equals(docStatus))
+		else if (IDocument.STATUS_Completed.equals(docStatus))
 		{
-			docActions.add(DocAction.ACTION_ReActivate);
+			docActions.add(IDocument.ACTION_ReActivate);
 		}
 
 		//

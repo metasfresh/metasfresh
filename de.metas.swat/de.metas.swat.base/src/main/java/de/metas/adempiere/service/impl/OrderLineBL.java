@@ -55,7 +55,6 @@ import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;
 import org.compiere.model.MPriceList;
 import org.compiere.model.MTax;
-import org.compiere.process.DocAction;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
@@ -63,7 +62,8 @@ import de.metas.adempiere.model.I_M_Product;
 import de.metas.adempiere.service.IOrderBL;
 import de.metas.adempiere.service.IOrderLineBL;
 import de.metas.document.IDocTypeBL;
-import de.metas.document.engine.IDocActionBL;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.IMsgBL;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.logging.LogManager;
@@ -619,12 +619,12 @@ public class OrderLineBL implements IOrderLineBL
 		}
 
 		final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
-		final IDocActionBL docActionBL = Services.get(IDocActionBL.class);
+		final IDocumentBL docActionBL = Services.get(IDocumentBL.class);
 
 		final I_C_Order order = orderLine.getC_Order();
 
 		if (!docActionBL.isDocumentStatusOneOf(order,
-				DocAction.STATUS_InProgress, DocAction.STATUS_Completed, DocAction.STATUS_Closed))
+				IDocument.STATUS_InProgress, IDocument.STATUS_Completed, IDocument.STATUS_Closed))
 		{
 			logger.debug("C_Order {} of given orderLine {} has DocStatus {}; setting QtyReserved=0.",
 					new Object[] { order, orderLine, order.getDocStatus() });

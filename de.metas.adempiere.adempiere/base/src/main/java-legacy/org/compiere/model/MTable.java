@@ -27,6 +27,8 @@ import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.adempiere.ad.dao.cache.impl.TableRecordCacheLocal;
 import org.adempiere.ad.persistence.TableModelClassLoader;
@@ -438,33 +440,25 @@ public class MTable extends X_AD_Table
 	 */
 	public String getSQLCreate()
 	{
-		final StringBuffer sb = new StringBuffer(Convert.DDL_PREFIX + "CREATE TABLE ")
-				.append("public.") // schema
-				.append(getTableName())
-				.append(" (");
-		//
+		final MColumn[] columns = getColumns(true);
+
+		final StringBuilder sqlColumns = new StringBuilder();
+		final StringBuilder sqlConstraints = new StringBuilder();
 		boolean hasPK = false;
 		boolean hasParents = false;
-		final StringBuffer constraints = new StringBuffer();
-
-		getColumns(true);
-
-		for (int i = 0; i < m_columns.length; i++)
+		for (final MColumn column : columns)
 		{
-			final MColumn column = m_columns[i];
 			final String colSQL = column.getSQLDDL();
-			if (!Check.isEmpty(colSQL, true))
-			{
-				if (i > 0)
-				{
-					sb.append(", ");
-				}
-				sb.append(column.getSQLDDL());
-			}
-			else
+			if (Check.isEmpty(colSQL, true))
 			{
 				continue; // virtual column
 			}
+
+			if(sqlColumns.length() > 0)
+			{
+				sqlColumns.append(", ");
+			}
+			sqlColumns.append(column.getSQLDDL());
 
 			if (column.isKey())
 			{
@@ -475,40 +469,34 @@ public class MTable extends X_AD_Table
 				hasParents = true;
 			}
 
-			final String constraint = column.getConstraint(getTableName());
+			final String constraint = column.getSQLConstraint(getTableName());
 			if (!Check.isEmpty(constraint, true))
 			{
-				constraints.append(", ").append(constraint);
+				sqlConstraints.append(", ").append(constraint);
 			}
 		}
+		
+		final StringBuilder sql = new StringBuilder(Convert.DDL_PREFIX + "CREATE TABLE ")
+				.append("public.") // schema
+				.append(getTableName())
+				.append(" (")
+				.append(sqlColumns);
+
+		
 		// Multi Column PK
 		if (!hasPK && hasParents)
 		{
-			final StringBuffer cols = new StringBuffer();
-			for (int i = 0; i < m_columns.length; i++)
-			{
-				final MColumn column = m_columns[i];
-				if (!column.isParent())
-				{
-					continue;
-				}
-				if (cols.length() > 0)
-				{
-					cols.append(", ");
-				}
-				cols.append(column.getColumnName());
-			}
+			final String cols = Stream.of(columns)
+					.filter(I_AD_Column::isParent)
+					.map(I_AD_Column::getColumnName)
+					.collect(Collectors.joining(", "));
 
-			sb.append(", CONSTRAINT ")
-					.append(getTableName()).append("_Key PRIMARY KEY (")
-					.append(cols).append(")");
+			sql.append(", CONSTRAINT ").append(getTableName()).append("_Key PRIMARY KEY (").append(cols).append(")");
 		}
 
-		sb
-				.append(constraints)
-				.append(")");
+		sql.append(sqlConstraints).append(")");
 
-		return sb.toString();
+		return sql.toString();
 	}	// getSQLCreate
 
 	// globalqss
@@ -617,7 +605,7 @@ public class MTable extends X_AD_Table
 	@Override
 	public String toString()
 	{
-		StringBuffer sb = new StringBuffer("MTable[");
+		StringBuilder sb = new StringBuilder("MTable[");
 		sb.append(get_ID()).append("-").append(getTableName()).append("]");
 		return sb.toString();
 	}	// toString

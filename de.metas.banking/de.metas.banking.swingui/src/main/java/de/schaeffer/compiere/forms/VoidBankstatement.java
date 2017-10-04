@@ -57,7 +57,6 @@ import org.compiere.apps.form.FormPanel;
 import org.compiere.model.MBankStatement;
 import org.compiere.model.MBankStatementLine;
 import org.compiere.model.MQuery;
-import org.compiere.process.DocAction;
 import org.compiere.swing.CPanel;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -66,6 +65,7 @@ import org.slf4j.Logger;
 
 import de.metas.banking.model.I_C_BankStatement;
 import de.metas.banking.model.I_C_BankStatementLine;
+import de.metas.document.engine.IDocument;
 import de.metas.logging.LogManager;
 import de.schaeffer.compiere.constants.Constants;
 import de.schaeffer.compiere.tools.TableHelper;
@@ -361,10 +361,10 @@ public class VoidBankstatement extends CPanel implements FormPanel, ActionListen
 		trx.close();
 		
 		voidStatementPO.set_TrxName(null);
-		voidStatement.setDocAction(DocAction.ACTION_Complete);
-		if (voidStatementPO.processIt(DocAction.ACTION_Complete)) {
-			voidStatement.setDocAction(DocAction.ACTION_Close);
-			voidStatementPO.processIt(DocAction.ACTION_Close);
+		voidStatement.setDocAction(IDocument.ACTION_Complete);
+		if (voidStatementPO.processIt(IDocument.ACTION_Complete)) {
+			voidStatement.setDocAction(IDocument.ACTION_Close);
+			voidStatementPO.processIt(IDocument.ACTION_Close);
 			voidStatement.setDocStatus(MBankStatement.DOCSTATUS_Reversed);
 			voidStatement.setDocAction(MBankStatement.DOCACTION_None);
 			origStatement.setDocStatus(MBankStatement.DOCSTATUS_Reversed);

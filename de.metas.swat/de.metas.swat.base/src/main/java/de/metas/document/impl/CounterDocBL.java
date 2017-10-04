@@ -9,11 +9,11 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Pair;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_Order;
-import org.compiere.process.DocAction;
 
 import de.metas.document.ICounterDocBL;
 import de.metas.document.async.spi.impl.CreateCounterDocPP;
-import de.metas.document.engine.IDocActionBL;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.document.model.interceptor.CounterDocHandlerInterceptor;
 import de.metas.document.spi.ICounterDocHandler;
 
@@ -47,13 +47,13 @@ public class CounterDocBL implements ICounterDocBL
 	@Override
 	public boolean isCreateCounterDocument(final Object document)
 	{
-		final Pair<ICounterDocHandler, DocAction> handlerandDocAction = getHandlerOrNull(document);
+		final Pair<ICounterDocHandler, IDocument> handlerandDocAction = getHandlerOrNull(document);
 
 		return handlerandDocAction.getFirst().isCreateCounterDocument(handlerandDocAction.getSecond());
 	}
 
 	@Override
-	public DocAction createCounterDocument(final Object document, final boolean async)
+	public IDocument createCounterDocument(final Object document, final boolean async)
 	{
 		if (async)
 		{
@@ -62,7 +62,7 @@ public class CounterDocBL implements ICounterDocBL
 		}
 		else
 		{
-			final Pair<ICounterDocHandler, DocAction> handlerandDocAction = getHandlerOrNull(document);
+			final Pair<ICounterDocHandler, IDocument> handlerandDocAction = getHandlerOrNull(document);
 			return handlerandDocAction.getFirst().createCounterDocument(handlerandDocAction.getSecond());
 		}
 	}
@@ -91,20 +91,20 @@ public class CounterDocBL implements ICounterDocBL
 	 * @param document
 	 * @return may return the {@link NullCounterDocumentHandler}, but never <code>null</code>.
 	 */
-	private Pair<ICounterDocHandler, DocAction> getHandlerOrNull(final Object document)
+	private Pair<ICounterDocHandler, IDocument> getHandlerOrNull(final Object document)
 	{
 		final String tableName = InterfaceWrapperHelper.getModelTableNameOrNull(document);
 		if (Check.isEmpty(tableName) || !handlers.containsKey(tableName))
 		{
-			return new Pair<ICounterDocHandler, DocAction>(NullCounterDocumentHandler.instance, null);
+			return new Pair<ICounterDocHandler, IDocument>(NullCounterDocumentHandler.instance, null);
 		}
 
-		final DocAction docAction = Services.get(IDocActionBL.class).getDocActionOrNull(document);
+		final IDocument docAction = Services.get(IDocumentBL.class).getDocumentOrNull(document);
 		if (docAction == null)
 		{
-			return new Pair<ICounterDocHandler, DocAction>(NullCounterDocumentHandler.instance, null);
+			return new Pair<ICounterDocHandler, IDocument>(NullCounterDocumentHandler.instance, null);
 		}
 
-		return new Pair<ICounterDocHandler, DocAction>(handlers.get(tableName), docAction);
+		return new Pair<ICounterDocHandler, IDocument>(handlers.get(tableName), docAction);
 	}
 }

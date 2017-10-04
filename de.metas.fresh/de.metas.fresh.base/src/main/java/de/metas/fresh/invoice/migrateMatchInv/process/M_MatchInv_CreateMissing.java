@@ -42,8 +42,8 @@ import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_MatchInv;
 import org.compiere.model.Query;
-import org.compiere.process.DocAction;
 
+import de.metas.document.engine.IDocument;
 import de.metas.printing.esb.base.util.Check;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
@@ -106,7 +106,7 @@ public class M_MatchInv_CreateMissing extends JavaProcess
 		{
 			final IQuery<I_C_Invoice> invoiceQuery = queryBL.createQueryBuilder(I_C_Invoice.class, getCtx(), ITrx.TRXNAME_ThreadInherited)
 					.addOnlyActiveRecordsFilter()
-					.addInArrayOrAllFilter(I_C_Invoice.COLUMN_DocStatus, DocAction.STATUS_Completed, DocAction.STATUS_Closed)
+					.addInArrayOrAllFilter(I_C_Invoice.COLUMN_DocStatus, IDocument.STATUS_Completed, IDocument.STATUS_Closed)
 					.create();
 
 			queryBuilder.addInSubQueryFilter(I_C_InvoiceLine.COLUMN_C_Invoice_ID,

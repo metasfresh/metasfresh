@@ -41,7 +41,6 @@ import org.compiere.model.MPeriod;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import de.metas.banking.interfaces.I_C_BankStatementLine_Ref;
 import de.metas.banking.model.I_C_BankStatementLine;
@@ -51,6 +50,7 @@ import de.metas.banking.service.IBankStatementListener;
 import de.metas.banking.service.IBankStatementListenerService;
 import de.metas.currency.ICurrencyBL;
 import de.metas.currency.ICurrencyConversionContext;
+import de.metas.logging.LogManager;
 
 public class BankStatementBL implements IBankStatementBL
 {
@@ -256,7 +256,7 @@ public class BankStatementBL implements IBankStatementBL
 		final Properties ctx = InterfaceWrapperHelper.getCtx(bankStatement);
 		MPeriod.testPeriodOpen(ctx, bankStatement.getStatementDate(), X_C_DocType.DOCBASETYPE_BankStatement, bankStatement.getAD_Org_ID());
 
-		Services.get(IFactAcctDAO.class).deleteForDocument(bankStatement);
+		Services.get(IFactAcctDAO.class).deleteForDocumentModel(bankStatement);
 		
 		bankStatement.setPosted(false);
 		InterfaceWrapperHelper.save(bankStatement);

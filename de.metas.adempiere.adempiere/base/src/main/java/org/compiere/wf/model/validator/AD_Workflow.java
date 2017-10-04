@@ -31,7 +31,7 @@ import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Workflow;
 import org.compiere.model.ModelValidator;
-import org.compiere.wf.IADWorkflowBL;
+import org.compiere.wf.api.IADWorkflowBL;
 import org.compiere.wf.exceptions.WorkflowNotValidException;
 
 @Validator(I_AD_Workflow.class)

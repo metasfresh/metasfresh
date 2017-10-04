@@ -36,8 +36,8 @@ import org.adempiere.ad.trx.processor.spi.ITrxItemProcessor;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
-import org.compiere.process.DocAction;
 
+import de.metas.document.engine.IDocument;
 import de.metas.edi.api.IDesadvBL;
 import de.metas.edi.model.I_C_BPartner;
 import de.metas.edi.model.I_EDI_Document;
@@ -90,7 +90,7 @@ public class EDI_Desadv_Aggregate_M_InOuts extends JavaProcess
 		.addEqualsFilter(org.compiere.model.I_M_InOut.COLUMNNAME_IsSOTrx, true)
 
 		.addInArrayOrAllFilter(org.compiere.model.I_M_InOut.COLUMNNAME_DocStatus,
-				DocAction.STATUS_Completed, DocAction.STATUS_Closed)
+				IDocument.STATUS_Completed, IDocument.STATUS_Closed)
 
 		.addNotEqualsFilter(org.compiere.model.I_M_InOut.COLUMNNAME_POReference, null)
 

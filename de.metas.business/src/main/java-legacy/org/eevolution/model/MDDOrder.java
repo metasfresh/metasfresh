@@ -45,12 +45,12 @@ import org.compiere.model.ModelValidator;
 import org.compiere.model.PO;
 import org.compiere.model.Query;
 import org.compiere.print.ReportEngine;
-import org.compiere.process.DocAction;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
 import de.metas.adempiere.model.I_AD_User;
-import de.metas.document.engine.IDocActionBL;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.IMsgBL;
 import de.metas.product.IProductBL;
 
@@ -60,7 +60,7 @@ import de.metas.product.IProductBL;
  * @author victor.perez@e-evolution.com, e-Evolution http://www.e-evolution.com <li>Original contributor of Distribution Functionality <li>FR [ 2520591 ] Support multiples calendar for Org
  * @see http://sourceforge.net/tracker2/?func=detail&atid=879335&aid=2520591&group_id=176962
  */
-public class MDDOrder extends X_DD_Order implements DocAction
+public class MDDOrder extends X_DD_Order implements IDocument
 {
 	/**
 	 * 
@@ -712,7 +712,7 @@ public class MDDOrder extends X_DD_Order implements DocAction
 	public boolean processIt(String processAction)
 	{
 		m_processMsg = null;
-		return Services.get(IDocActionBL.class).processIt(this, processAction); // task 09824
+		return Services.get(IDocumentBL.class).processIt(this, processAction); // task 09824
 	}	// processIt
 
 	/** Process Message */
@@ -757,7 +757,7 @@ public class MDDOrder extends X_DD_Order implements DocAction
 		log.info(toString());
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_PREPARE);
 		if (m_processMsg != null)
-			return DocAction.STATUS_Invalid;
+			return IDocument.STATUS_Invalid;
 
 		// Std Period open?
 		final MDocType dt = MDocType.get(getCtx(), getC_DocType_ID());
@@ -768,7 +768,7 @@ public class MDDOrder extends X_DD_Order implements DocAction
 		if (lines.length == 0)
 		{
 			m_processMsg = "@NoLines@";
-			return DocAction.STATUS_Invalid;
+			return IDocument.STATUS_Invalid;
 		}
 
 		// Bug 1564431
@@ -781,7 +781,7 @@ public class MDDOrder extends X_DD_Order implements DocAction
 				if (product != null && product.isExcludeAutoDelivery())
 				{
 					m_processMsg = "@M_Product_ID@ " + product.getValue() + " @IsExcludeAutoDelivery@";
-					return DocAction.STATUS_Invalid;
+					return IDocument.STATUS_Invalid;
 				}
 			}
 		}
@@ -799,7 +799,7 @@ public class MDDOrder extends X_DD_Order implements DocAction
 		if (no != 0)
 		{
 			m_processMsg = "@LinesWithoutProductAttribute@ (" + no + ")";
-			return DocAction.STATUS_Invalid;
+			return IDocument.STATUS_Invalid;
 		}
 
 		reserveStock(lines);
@@ -809,10 +809,10 @@ public class MDDOrder extends X_DD_Order implements DocAction
 
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_PREPARE);
 		if (m_processMsg != null)
-			return DocAction.STATUS_Invalid;
+			return IDocument.STATUS_Invalid;
 
 		m_justPrepared = true;
-		return DocAction.STATUS_InProgress;
+		return IDocument.STATUS_InProgress;
 	}	// prepareIt
 
 	/**
@@ -925,14 +925,14 @@ public class MDDOrder extends X_DD_Order implements DocAction
 		if (DOCACTION_Prepare.equals(getDocAction()))
 		{
 			setProcessed(false);
-			return DocAction.STATUS_InProgress;
+			return IDocument.STATUS_InProgress;
 		}
 
 		// Re-Check
 		if (!m_justPrepared)
 		{
 			String status = prepareIt();
-			if (!DocAction.STATUS_InProgress.equals(status))
+			if (!IDocument.STATUS_InProgress.equals(status))
 				return status;
 		}
 
@@ -941,7 +941,7 @@ public class MDDOrder extends X_DD_Order implements DocAction
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_COMPLETE);
 		if (m_processMsg != null)
 		{
-			return DocAction.STATUS_Invalid;
+			return IDocument.STATUS_Invalid;
 		}
 
 		// Implicit Approval
@@ -969,7 +969,7 @@ public class MDDOrder extends X_DD_Order implements DocAction
 				info.append(" - ");
 			info.append(valid);
 			m_processMsg = info.toString();
-			return DocAction.STATUS_Invalid;
+			return IDocument.STATUS_Invalid;
 		}
 
 		//
@@ -977,7 +977,7 @@ public class MDDOrder extends X_DD_Order implements DocAction
 		setProcessed(true);
 		m_processMsg = info.toString();
 		setDocAction(DOCACTION_Close);
-		return DocAction.STATUS_Completed;
+		return IDocument.STATUS_Completed;
 	}	// completeIt
 
 	/**

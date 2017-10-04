@@ -33,7 +33,6 @@ import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_S_Resource;
 import org.compiere.model.X_C_DocType;
-import org.compiere.process.DocAction;
 import org.compiere.util.ArrayKeyBuilder;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
@@ -47,7 +46,8 @@ import com.google.common.collect.ImmutableMap;
 import ch.qos.logback.classic.Level;
 import de.metas.adempiere.service.IBPartnerOrgBL;
 import de.metas.document.IDocTypeDAO;
-import de.metas.document.engine.IDocActionBL;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.allocation.IHUContextProcessor;
 import de.metas.handlingunits.allocation.impl.IMutableAllocationResult;
@@ -111,7 +111,7 @@ public class HUs2DDOrderProducer
 	private final transient IBPartnerOrgBL bpartnerOrgBL = Services.get(IBPartnerOrgBL.class);
 	private final transient IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 	private final transient IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
-	private final transient IDocActionBL docActionBL = Services.get(IDocActionBL.class);
+	private final transient IDocumentBL docActionBL = Services.get(IDocumentBL.class);
 	private final transient IHUDDOrderDAO huDDOrderDAO = Services.get(IHUDDOrderDAO.class);
 	private final transient IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 	private final IHUMaterialTrackingBL huMaterialTrackingId = Services.get(IHUMaterialTrackingBL.class);
@@ -211,7 +211,7 @@ public class HUs2DDOrderProducer
 
 		//
 		// Process the DD order if needed
-		docActionBL.processEx(ddOrder, DocAction.ACTION_Complete, DocAction.STATUS_Completed);
+		docActionBL.processEx(ddOrder, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
 		getLoggable().addLog("@Created@ @DD_Order_ID@ " + ddOrder.getDocumentNo());
 	}
 

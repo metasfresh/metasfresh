@@ -24,8 +24,6 @@ package org.adempiere.acct.api.impl;
 
 
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.acct.api.ClientAccountingStatus;
 import org.adempiere.acct.api.IDocFactory;
@@ -48,16 +46,18 @@ import org.compiere.acct.PostingExecutionException;
 import org.compiere.db.CConnection;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.MAcctSchema;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
+import org.slf4j.Logger;
 
 import com.google.common.base.Optional;
 
 import de.metas.adempiere.form.IClientUI;
 import de.metas.adempiere.form.IClientUIInvoker;
+import de.metas.document.engine.IDocument;
+import de.metas.logging.LogManager;
 import de.metas.session.jaxrs.IServerService;
+import lombok.NonNull;
 
 /* package */class PostingRequestBuilder implements IPostingRequestBuilder
 {
@@ -373,21 +373,47 @@ import de.metas.session.jaxrs.IServerService;
 	}
 
 	@Override
-	public IPostingRequestBuilder setDocument(final Object document)
+	public IPostingRequestBuilder setDocumentFromModel(final Object documentObj)
 	{
 		assertNotExecuted();
+		Check.assumeNotNull(documentObj, "documentObj not null");
+		
+		if(documentObj instanceof IDocument)
+		{
+			final IDocument document = IDocument.cast(documentObj);
+			setDocument(document);
+			return this;
+		}
+		else
+		{
+			setDocumentFromModel0(documentObj);
+			return this;
+		}
+	}
 
-		Check.assumeNotNull(document, "document not null");
-		final Properties ctx = InterfaceWrapperHelper.getCtx(document);
-		final String trxName = InterfaceWrapperHelper.getTrxName(document);
-		final Optional<Integer> adClientId = InterfaceWrapperHelper.getValue(document, "AD_Client_ID");
-		Check.assume(adClientId.isPresent(), "document={} has an AD_Client_ID value", document);
-
-		final ITableRecordReference documentRef = TableRecordReference.of(document);
+	private void setDocumentFromModel0(@NonNull final Object documentObj)
+	{
+		assertNotExecuted();
+		
+		Properties ctx = InterfaceWrapperHelper.getCtx(documentObj);
+		String trxName = InterfaceWrapperHelper.getTrxName(documentObj);
+		final Optional<Integer> adClientIdOpt = InterfaceWrapperHelper.getValue(documentObj, "AD_Client_ID");
+		final int adClientId = adClientIdOpt.get();
+		final TableRecordReference documentRef = TableRecordReference.of(documentObj);
 
 		setContext(ctx, trxName);
-		setAD_Client_ID(adClientId.get());
+		setAD_Client_ID(adClientId);
 		setDocumentRef(documentRef);
+	}
+
+	@Override
+	public IPostingRequestBuilder setDocument(@NonNull final IDocument document)
+	{
+		assertNotExecuted();
+		
+		setContext(document.getCtx(), document.get_TrxName());
+		setAD_Client_ID(document.getAD_Client_ID());
+		setDocumentRef(document.toTableRecordReference());
 
 		return this;
 	}

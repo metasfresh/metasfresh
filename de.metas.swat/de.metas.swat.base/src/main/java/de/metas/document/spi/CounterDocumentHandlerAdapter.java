@@ -8,11 +8,10 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.MDocTypeCounter;
 import org.compiere.model.MOrg;
-import org.compiere.process.DocAction;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
-
-import de.metas.document.engine.IDocActionBL;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 
 /*
  * #%L
@@ -51,7 +50,7 @@ public abstract class CounterDocumentHandlerAdapter implements ICounterDocHandle
 	 *         </ul>
 	 */
 	@Override
-	public boolean isCreateCounterDocument(DocAction document)
+	public boolean isCreateCounterDocument(IDocument document)
 	{
 		if (isCounterDocument(document))
 		{
@@ -79,9 +78,9 @@ public abstract class CounterDocumentHandlerAdapter implements ICounterDocHandle
 		return true;
 	}
 
-	protected final I_C_DocType retrieveCounterDocTypeOrNull(DocAction document)
+	protected final I_C_DocType retrieveCounterDocTypeOrNull(IDocument document)
 	{
-		final IDocActionBL docActionBL = Services.get(IDocActionBL.class);
+		final IDocumentBL docActionBL = Services.get(IDocumentBL.class);
 
 		final I_C_DocType docType = docActionBL.getDocTypeOrNull(document);
 		if (docType == null)
@@ -116,7 +115,7 @@ public abstract class CounterDocumentHandlerAdapter implements ICounterDocHandle
 		return null;
 	}
 
-	protected final I_C_BPartner retrieveCounterPartnerOrNull(DocAction document)
+	protected final I_C_BPartner retrieveCounterPartnerOrNull(IDocument document)
 	{
 		// our own org's bpartner would be the the counter document's C_BPartner.
 		MOrg org = MOrg.get(document.getCtx(), document.getAD_Org_ID());
@@ -128,7 +127,7 @@ public abstract class CounterDocumentHandlerAdapter implements ICounterDocHandle
 		return null;
 	}
 
-	protected final I_AD_Org retrieveCounterOrgOrNull(DocAction document)
+	protected final I_AD_Org retrieveCounterOrgOrNull(IDocument document)
 	{
 		final IBPartnerAware bpartnerAware = InterfaceWrapperHelper.asColumnReferenceAwareOrNull(document, IBPartnerAware.class);
 		if (bpartnerAware.getC_BPartner_ID() > 0 && bpartnerAware.getC_BPartner().getAD_OrgBP_ID() > 0)

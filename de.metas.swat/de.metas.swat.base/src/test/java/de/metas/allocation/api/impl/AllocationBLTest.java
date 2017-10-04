@@ -59,8 +59,8 @@ import de.metas.adempiere.model.I_C_Currency;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.allocation.api.IAllocationBL;
 import de.metas.allocation.api.IAllocationDAO;
-import de.metas.document.engine.IDocActionBL;
-import de.metas.document.engine.impl.PlainDocActionBL;
+import de.metas.document.engine.IDocumentBL;
+import de.metas.document.engine.impl.PlainDocumentBL;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.interfaces.I_C_DocType;
 import de.metas.payment.api.IPaymentBL;
@@ -96,8 +96,8 @@ public class AllocationBLTest
 		paymentBL = Services.get(IPaymentBL.class);
 
 		// Config PlainDocActionBL
-		final PlainDocActionBL docActionBL = (PlainDocActionBL)Services.get(IDocActionBL.class);
-		docActionBL.setDefaultProcessInterceptor(PlainDocActionBL.PROCESSINTERCEPTOR_CompleteDirectly);
+		final PlainDocumentBL docActionBL = (PlainDocumentBL)Services.get(IDocumentBL.class);
+		docActionBL.setDefaultProcessInterceptor(PlainDocumentBL.PROCESSINTERCEPTOR_CompleteDirectly);
 
 		//
 		// Setup context

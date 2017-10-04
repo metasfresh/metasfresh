@@ -19,9 +19,9 @@ import org.compiere.model.IQuery;
 import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_Product;
-import org.compiere.process.DocAction;
 import org.compiere.util.TimeUtil;
 
+import de.metas.document.engine.IDocument;
 import de.metas.order.model.I_C_Order;
 import de.metas.order.process.IC_Order_CreatePOFromSOsDAO;
 
@@ -78,7 +78,7 @@ public class C_Order_CreatePOFromSOsDAO implements IC_Order_CreatePOFromSOsDAO
 
 				// note: no point to include closed orders, because they have no open qtys left,
 				// and we will only create purchase orders for the still open qtys.
-				.addEqualsFilter(I_C_Order.COLUMNNAME_DocStatus, DocAction.STATUS_Completed);
+				.addEqualsFilter(I_C_Order.COLUMNNAME_DocStatus, IDocument.STATUS_Completed);
 
 		// task 07228
 		if (!allowMultiplePOOrders)

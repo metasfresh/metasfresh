@@ -1,10 +1,10 @@
-package org.compiere.wf;
+package de.metas.document.engine;
 
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2017 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,25 +22,9 @@ package org.compiere.wf;
  * #L%
  */
 
-
-import java.util.List;
-import java.util.Properties;
-
-import org.adempiere.util.ISingletonService;
-import org.compiere.model.I_AD_WF_Node;
-import org.compiere.model.I_AD_WF_NodeNext;
-import org.compiere.model.I_AD_Workflow;
-
-public interface IADWorkflowDAO extends ISingletonService
+public interface DocumentHandlerProvider
 {
-
-	List<I_AD_WF_Node> retrieveNodes(Properties ctx, int adWorkflowId, String trxName);
-
-	List<I_AD_WF_Node> retrieveNodes(I_AD_Workflow workflow);
-
-	List<I_AD_WF_Node> retrieveNodes(I_AD_Workflow workflow, int adClientId);
-
-	List<I_AD_WF_NodeNext> retrieveNodeNexts(I_AD_WF_Node node);
-
-	List<I_AD_WF_NodeNext> retrieveNodeNexts(I_AD_WF_Node node, int adClientId);
+	String getHandledTableName();
+	
+	DocumentHandler provideForDocument(Object model);
 }

@@ -23,6 +23,7 @@ package org.adempiere.ad.table.api.impl;
  */
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBL;
@@ -43,6 +44,8 @@ import org.compiere.model.MTable;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
+import de.metas.document.DocumentConstants;
+
 public class ADTableDAO implements IADTableDAO
 {
 	@Override
@@ -59,7 +62,7 @@ public class ADTableDAO implements IADTableDAO
 	@Override
 	public I_AD_Column retrieveColumnOrNull(final String tableName, final String columnName)
 	{
-		final IQueryBuilder<I_AD_Column> queryBuilder = retrieveColumnQueryBuilder(tableName, columnName, ITrx.TRXNAME_None);
+		final IQueryBuilder<I_AD_Column> queryBuilder = retrieveColumnQueryBuilder(tableName, columnName, ITrx.TRXNAME_ThreadInherited);
 		return queryBuilder.create()
 				.setOnlyActiveRecords(true)
 				.firstOnly(I_AD_Column.class);
@@ -204,7 +207,7 @@ public class ADTableDAO implements IADTableDAO
 		final String tableNameNew = table.getTableName();
 
 		// Do nothing if the table name was not actually changed
-		if (Check.equals(tableNameOld, tableNameNew))
+		if (Objects.equals(tableNameOld, tableNameNew))
 		{
 			return;
 		}
@@ -232,5 +235,24 @@ public class ADTableDAO implements IADTableDAO
 		@SuppressWarnings("deprecation")
 		final int tableID = MTable.getTable_ID(tableName);
 		return InterfaceWrapperHelper.create(Env.getCtx(), tableID, I_AD_Table.class, ITrx.TRXNAME_None);
+	}
+
+	@Override
+	public List<I_AD_Column> retrieveColumnsForTable(final I_AD_Table table)
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+		return queryBL.createQueryBuilder(I_AD_Column.class, table)
+				.addOnlyActiveRecordsFilter()
+				.addOnlyContextClient()
+				.addEqualsFilter(I_AD_Column.COLUMNNAME_AD_Table_ID, table.getAD_Table_ID())
+				.create()
+				.list();
+	}
+	
+	@Override
+	public I_AD_Table retrieveDocumentTableTemplate(final I_AD_Table targetTable)
+	{
+		return retrieveTable(DocumentConstants.AD_TABLE_Document_Template_TableName);
 	}
 }
