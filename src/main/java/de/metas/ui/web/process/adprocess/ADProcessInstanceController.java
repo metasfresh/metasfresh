@@ -12,6 +12,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
@@ -27,6 +28,7 @@ import org.compiere.util.Util;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
+import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.adempiere.report.jasper.OutputType;
@@ -181,6 +183,11 @@ import lombok.NonNull;
 	{
 		return instanceId;
 	}
+	
+	public ViewId getViewId()
+	{
+		return viewId;
+	}
 
 	private Document getParametersDocument()
 	{
@@ -264,7 +271,7 @@ import lombok.NonNull;
 	}
 
 	@Override
-	public ProcessInstanceResult startProcess(final IViewsRepository viewsRepo)
+	public ProcessInstanceResult startProcess(final IViewsRepository viewsRepo, final DocumentCollection documentsCollection)
 	{
 		assertNotExecuted();
 
@@ -277,7 +284,7 @@ import lombok.NonNull;
 		}
 
 		//
-		executionResult = executeADProcess(getInstanceId(), getDescriptor(), viewsRepo);
+		executionResult = executeADProcess(viewsRepo, documentsCollection);
 		if (executionResult.isSuccess())
 		{
 			executed = false;
@@ -285,18 +292,17 @@ import lombok.NonNull;
 		return executionResult;
 	}
 
-	private static final ProcessInstanceResult executeADProcess(final DocumentId adPInstanceId, final ProcessDescriptor processDescriptor, final IViewsRepository viewsRepo)
+	private final ProcessInstanceResult executeADProcess(final IViewsRepository viewsRepo, final DocumentCollection documentsCollection)
 	{
 		//
 		// Create the process info and execute the process synchronously
 		final Properties ctx = Env.getCtx(); // We assume the right context was already used when the process was loaded
 		final String adLanguage = Env.getAD_Language(ctx);
-		final String name = processDescriptor.getCaption().translate(adLanguage);
 		final ProcessExecutor processExecutor = ProcessInfo.builder()
 				.setCtx(ctx)
 				.setCreateTemporaryCtx()
-				.setAD_PInstance_ID(adPInstanceId.toInt())
-				.setTitle(name)
+				.setAD_PInstance_ID(getInstanceId().toInt())
+				.setTitle(getDescriptor().getCaption().translate(adLanguage))
 				.setPrintPreview(true)
 				.setJRDesiredOutputType(OutputType.PDF)
 				//
@@ -305,6 +311,8 @@ import lombok.NonNull;
 				.onErrorThrowException() // throw exception directly... this will allow the original exception (including exception params) to be sent back to frontend
 				.executeSync();
 		final ProcessExecutionResult processExecutionResult = processExecutor.getResult();
+		
+		invalidateDocumentsAndViews(processExecutionResult, viewsRepo, documentsCollection);
 
 		//
 		// Build and return the execution result
@@ -319,7 +327,7 @@ import lombok.NonNull;
 			final ProcessInstanceResult.Builder resultBuilder = ProcessInstanceResult.builder(DocumentId.of(processExecutionResult.getAD_PInstance_ID()))
 					.setSummary(summary)
 					.setError(processExecutionResult.isError());
-
+			
 			//
 			// Create result post process actions
 			{
@@ -383,7 +391,48 @@ import lombok.NonNull;
 			final ProcessInstanceResult result = resultBuilder.build();
 			return result;
 		}
+	}
+	
+	private void invalidateDocumentsAndViews(final ProcessExecutionResult processExecutionResult,
+			final IViewsRepository viewsRepo,
+			final DocumentCollection documentsCollection)
+	{
+		final Supplier<IView> viewSupplier = Suppliers.memoize(()->{
+			final ViewId viewId = getViewId();
+			if(viewId == null)
+			{
+				return null;
+			}
+			
+			final IView view = viewsRepo.getViewIfExists(viewId);
+			if(view == null)
+			{
+				logger.warn("No view found for {}. View invalidation will be skipped for {}", viewId, processExecutionResult);
+			}
+			return view;
+		});
 
+		//
+		// Refresh all
+		boolean viewInvalidateAllCalled = false;
+		if(processExecutionResult.isRefreshAllAfterExecution() && viewSupplier.get() != null)
+		{
+			viewSupplier.get().invalidateAll();
+			viewInvalidateAllCalled = true;
+		}
+
+		//
+		// Refresh required document
+		final TableRecordReference recordToRefresh = processExecutionResult.getRecordToRefreshAfterExecution();
+		if (recordToRefresh != null)
+		{
+			documentsCollection.invalidateDocumentByRecordId(recordToRefresh.getTableName(), recordToRefresh.getRecord_ID());
+			
+			if(!viewInvalidateAllCalled && viewSupplier.get() != null)
+			{
+				viewSupplier.get().notifyRecordsChanged(ImmutableSet.of(recordToRefresh));
+			}
+		}
 	}
 
 	private static final File saveReportToDiskIfAny(final ProcessExecutionResult processExecutionResult)

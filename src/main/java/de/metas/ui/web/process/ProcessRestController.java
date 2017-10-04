@@ -44,6 +44,7 @@ import de.metas.ui.web.window.datatypes.json.JSONDocument;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
+import de.metas.ui.web.window.model.DocumentCollection;
 import de.metas.ui.web.window.model.IDocumentChangesCollector;
 import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
 import de.metas.ui.web.window.model.NullDocumentChangesCollector;
@@ -86,6 +87,8 @@ public class ProcessRestController
 
 	@Autowired
 	private IViewsRepository viewsRepo;
+	@Autowired
+	private DocumentCollection documentsCollection;
 
 	private final ConcurrentHashMap<String, IProcessInstancesRepository> pinstancesRepositoriesByHandlerType = new ConcurrentHashMap<>();
 
@@ -249,7 +252,7 @@ public class ProcessRestController
 				.execute(() -> {
 					final IDocumentChangesCollector changesCollector = NullDocumentChangesCollector.instance;
 					return instancesRepository.forProcessInstanceWritable(pinstanceId, changesCollector, processInstance -> {
-						final ProcessInstanceResult result = processInstance.startProcess(viewsRepo);
+						final ProcessInstanceResult result = processInstance.startProcess(viewsRepo, documentsCollection);
 						return JSONProcessInstanceResult.of(result);
 					});
 				});

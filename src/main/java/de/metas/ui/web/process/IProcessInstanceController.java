@@ -7,6 +7,7 @@ import de.metas.ui.web.view.IViewsRepository;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
+import de.metas.ui.web.window.model.DocumentCollection;
 import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
 import de.metas.ui.web.window.model.IDocumentFieldView;
 
@@ -48,7 +49,7 @@ public interface IProcessInstanceController
 {
 	DocumentId getInstanceId();
 
-	ProcessInstanceResult startProcess(IViewsRepository viewsRepo);
+	ProcessInstanceResult startProcess(IViewsRepository viewsRepo, DocumentCollection documentsCollection);
 
 	/**
 	 * @return execution result or throws exception if the process was not already executed
