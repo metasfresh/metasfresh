@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
-<!-- 2017-10-03T17:37:14 -->
+<!-- 2017-10-04T15:03:58 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="direct_costing_unused" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" resourceBundle="de/metas/docs/direct_costing/report" uuid="3e0a681d-8905-4d93-8369-ef2c24038d15">
 	<property name="ireport.zoom" value="1.5"/>
 	<property name="ireport.x" value="0"/>
@@ -292,7 +292,7 @@ $P{ad_org_id}
 				<textElement textAlignment="Right">
 					<font size="6" isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{activity} + " 150"]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{activity150}]]></textFieldExpression>
 			</textField>
 			<textField pattern="dd.MM.yyyy" isBlankWhenNull="true">
 				<reportElement x="85" y="27" width="93" height="9" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
@@ -343,7 +343,7 @@ $P{ad_org_id}
 				<textElement textAlignment="Right">
 					<font size="6" isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{activity} + " 2000"]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{activity2000}]]></textFieldExpression>
 			</textField>
 			<textField pattern="">
 				<reportElement x="518" y="27" width="50" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
@@ -388,7 +388,7 @@ $P{ad_org_id}
 				<textElement textAlignment="Right">
 					<font size="6" isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{activity} + " 100"]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{activity100}]]></textFieldExpression>
 			</textField>
 			<textField pattern="">
 				<reportElement x="358" y="27" width="25" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
@@ -461,7 +461,7 @@ $P{ad_org_id}
 				<textElement textAlignment="Right">
 					<font size="6" isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{activity} + " 1000"]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{activity1000}]]></textFieldExpression>
 			</textField>
 			<textField pattern="">
 				<reportElement x="668" y="27" width="35" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375">
