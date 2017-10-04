@@ -235,12 +235,10 @@ public class OrderBL implements IOrderBL
 
 	private BillBPartnerAndShipToLocation extractPriceListBPartnerAndLocation(final I_C_Order order)
 	{
-		final IOrderBL orderBL = Services.get(IOrderBL.class);
-
 		final int bpartnerId = order.getC_BPartner_ID();
-		final org.compiere.model.I_C_BPartner_Location shipToLocation = orderBL.getShipToLocation(order);
-
-		return new BillBPartnerAndShipToLocation(bpartnerId, shipToLocation.getC_BPartner_Location_ID());
+		final org.compiere.model.I_C_BPartner_Location shipToLocation = getShipToLocation(order);
+		final int shipBPLocationId = shipToLocation != null ? shipToLocation.getC_BPartner_Location_ID() : -1;
+		return new BillBPartnerAndShipToLocation(bpartnerId, shipBPLocationId);
 	}
 
 	@lombok.Value
@@ -610,7 +608,7 @@ public class OrderBL implements IOrderBL
 		final List<I_C_BPartner_Location> locations = bPartnerDAO.retrieveBPartnerLocations(bp);
 
 		// Set Locations
-		final List<I_C_BPartner_Location> shipLocations = new ArrayList<I_C_BPartner_Location>();
+		final List<I_C_BPartner_Location> shipLocations = new ArrayList<>();
 		boolean foundLoc = false;
 		for (final I_C_BPartner_Location loc : locations)
 		{
@@ -716,7 +714,7 @@ public class OrderBL implements IOrderBL
 			final List<I_C_BPartner_Location> locations = bPartnerDAO.retrieveBPartnerLocations(billBPartner);
 
 			// Set Locations
-			final List<I_C_BPartner_Location> invLocations = new ArrayList<I_C_BPartner_Location>();
+			final List<I_C_BPartner_Location> invLocations = new ArrayList<>();
 			for (final I_C_BPartner_Location loc : locations)
 			{
 				if (foundLoc)
