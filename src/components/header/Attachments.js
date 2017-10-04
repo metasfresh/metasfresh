@@ -1,7 +1,6 @@
 import counterpart from 'counterpart';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
-import { connect } from 'react-redux';
 
 import {
     attachmentsRequest,
@@ -12,13 +11,9 @@ import {
 import Loader from '../app/Loader';
 
 class Attachments extends Component {
-    constructor(props) {
-        super(props);
-
-        this.state = {
-            data: null,
-            attachmentHovered: null
-        }
+    state = {
+        data: null,
+        attachmentHovered: null,
     }
 
     componentDidMount = () => {
@@ -146,12 +141,9 @@ class Attachments extends Component {
     }
 }
 
-Attachments.PropTypes = {
+Attachments.propTypes = {
     windowType: PropTypes.string.isRequired,
     docId: PropTypes.string.isRequired,
-    dispatch: PropTypes.func.isRequired
-}
-
-Attachments = connect()(Attachments);
+};
 
 export default Attachments;
