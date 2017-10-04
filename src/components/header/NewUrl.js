@@ -42,14 +42,16 @@ class NewUrl extends Component {
 
         return (
             <div className="screen-freeze">
-                <div className="panel panel-modal panel-letter panel-modal-primary">
+                <div
+                    className="panel panel-modal panel-letter panel-modal-primary"
+                >
                     <div className="panel-letter-header-wrapper">
-                        <div className="panel-letter-header panel-letter-header-top">
+                        <div
+                            className="panel-letter-header panel-letter-header-top"
+                        >
                             <span className="letter-headline">
                                 Add URL
-                                {/*
-                                {counterpart.translate('window.sideList.attachments.addurl')}
-                                */}
+                                {/* TODO: Add translation */}
                             </span>
                             <div
                                 className="input-icon input-icon-lg letter-icon-close"
@@ -71,9 +73,7 @@ class NewUrl extends Component {
                             className="btn btn-meta-success btn-sm btn-submit"
                         >
                             Create
-                            {/*
-                            {counterpart.translate('window.sideList.attachments.createurl')}
-                            */}
+                            {/* TODO: Add translation */}
                         </button>
                     </div>
                 </div>
