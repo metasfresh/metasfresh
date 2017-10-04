@@ -138,9 +138,6 @@ import lombok.NonNull;
 	 * * C_Country_ID > 0
 	 * </ul>
 	 * <ul>
-	 * * Address1 not empty
-	 * </ul>
-	 * <ul>
 	 * * City not empty
 	 * </ul>
 	 * 

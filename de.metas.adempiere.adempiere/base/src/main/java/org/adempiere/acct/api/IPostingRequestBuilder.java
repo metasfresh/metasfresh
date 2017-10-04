@@ -13,21 +13,21 @@ package org.adempiere.acct.api;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Properties;
 
 import org.compiere.acct.PostingExecutionException;
 
 import de.metas.adempiere.form.IClientUIInvoker;
+import de.metas.document.engine.IDocument;
 
 /**
  * Posting request builder: a helper class which assist the developer to Post a document.
@@ -115,15 +115,19 @@ public interface IPostingRequestBuilder
 	IPostingRequestBuilder setAD_Client_ID(int adClientId);
 
 	/**
-	 * Sets the document to be processed. Please note that this method will also set:
+	 * Sets the document to be processed. i.e.
 	 * <ul>
-	 * <li> {@link #setContext(Properties, String)}
-	 * <li> {@link #setAD_Client_ID(int)}
+	 * <li>{@link #setDocument(int, int)}
+	 * <li>{@link #setContext(Properties, String)}
+	 * <li>{@link #setAD_Client_ID(int)}
 	 * </ul>
 	 * 
 	 * @param document
 	 */
-	IPostingRequestBuilder setDocument(final Object document);
+	IPostingRequestBuilder setDocument(final IDocument document);
+
+	/** see {@link #setDocument(IDocument)} */
+	IPostingRequestBuilder setDocumentFromModel(final Object documentObj);
 
 	/**
 	 * Sets the document to be processed.

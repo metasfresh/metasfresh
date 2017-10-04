@@ -43,14 +43,14 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
-import org.compiere.process.DocAction;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
 
 import com.google.common.annotations.VisibleForTesting;
 
-import de.metas.document.engine.IDocActionBL;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -83,7 +83,7 @@ public class HUMovementBuilder
 	private final transient IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	private final transient IHUAssignmentBL huAssignmentBL = Services.get(IHUAssignmentBL.class);
 	private final transient IProductBL productBL = Services.get(IProductBL.class);
-	private final transient IDocActionBL docActionBL = Services.get(IDocActionBL.class);
+	private final transient IDocumentBL docActionBL = Services.get(IDocumentBL.class);
 
 	//
 	// Parameters
@@ -335,7 +335,7 @@ public class HUMovementBuilder
 		final I_M_Movement movement = getMovementHeaderOrNull();
 		if (movement != null)
 		{
-			docActionBL.processEx(movement, DocAction.ACTION_Complete, DocAction.STATUS_Completed);
+			docActionBL.processEx(movement, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
 		}
 	}
 
@@ -366,8 +366,8 @@ public class HUMovementBuilder
 		final IHUContext huContext = getHUContext();
 		_movement = InterfaceWrapperHelper.newInstance(I_M_Movement.class, huContext);
 
-		_movement.setDocStatus(DocAction.STATUS_Drafted);
-		_movement.setDocAction(DocAction.ACTION_Complete);
+		_movement.setDocStatus(IDocument.STATUS_Drafted);
+		_movement.setDocAction(IDocument.ACTION_Complete);
 
 		final Date movementDate = getMovementDate();
 		if (movementDate != null)

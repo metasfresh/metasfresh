@@ -18,14 +18,14 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
-import org.compiere.process.DocAction;
 import org.compiere.util.Env;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ListMultimap;
 
 import de.metas.adempiere.docline.sort.api.IDocLineSortDAO;
-import de.metas.document.engine.IDocActionBL;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.model.I_M_MovementLine;
 import de.metas.handlingunits.movement.api.IHUMovementBL;
@@ -225,8 +225,8 @@ public class EmptiesMovementProducer
 		final IContextAware context = PlainContextAware.newWithThreadInheritedTrx();
 		final I_M_Movement movement = InterfaceWrapperHelper.newInstance(I_M_Movement.class, context);
 		movement.setMovementDate(Env.getDate(context.getCtx())); // use Login date (08306)
-		movement.setDocStatus(DocAction.STATUS_Drafted);
-		movement.setDocAction(DocAction.ACTION_Complete);
+		movement.setDocStatus(IDocument.STATUS_Drafted);
+		movement.setDocAction(IDocument.ACTION_Complete);
 		
 		// Base document reference
 		if (getReferencedInOutId() > 0)
@@ -264,7 +264,7 @@ public class EmptiesMovementProducer
 
 		//
 		// Complete the movement
-		Services.get(IDocActionBL.class).processEx(movement, DocAction.ACTION_Complete, DocAction.STATUS_Completed);
+		Services.get(IDocumentBL.class).processEx(movement, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
 
 		return movement;
 	}

@@ -21,7 +21,6 @@ import org.compiere.model.I_AD_SysConfig;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_Product;
-import org.compiere.process.DocAction;
 import org.compiere.util.Env;
 import org.eevolution.model.I_PP_Cost_Collector;
 import org.eevolution.model.X_PP_Cost_Collector;
@@ -32,7 +31,8 @@ import org.junit.rules.TestWatcher;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.document.engine.IDocActionBL;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.handlingunits.HUDocumentSelectTestHelper;
 import de.metas.handlingunits.HUIteratorListenerAdapter;
 import de.metas.handlingunits.IHUAssignmentBL;
@@ -108,7 +108,7 @@ public class PPOrderMInOutLineRetrievalServiceTest
 		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
 		{
-			reversedLines = createReceiptInOutLines(DocAction.STATUS_Reversed);
+			reversedLines = createReceiptInOutLines(IDocument.STATUS_Reversed);
 			assertThat(reversedLines.get(0).getM_Product(), is(helper.pTomato));
 			assertThat(reversedLines.get(1).getM_Product(), is(helper.pSalad));
 
@@ -130,7 +130,7 @@ public class PPOrderMInOutLineRetrievalServiceTest
 		final List<I_M_HU> completedLineTomatoHUs;
 		final List<I_M_HU> completedLineSaladHUs;
 		{
-			completedLines = createReceiptInOutLines(DocAction.STATUS_Completed);
+			completedLines = createReceiptInOutLines(IDocument.STATUS_Completed);
 			assertThat(completedLines.get(0).getM_Product(), is(helper.pTomato));
 			assertThat(completedLines.get(1).getM_Product(), is(helper.pSalad));
 
@@ -247,7 +247,7 @@ public class PPOrderMInOutLineRetrievalServiceTest
 		final I_M_InOut io = InterfaceWrapperHelper.newInstance(I_M_InOut.class, context);
 		io.setDocStatus(docStatus);
 
-		final IDocActionBL docActionBL = Services.get(IDocActionBL.class);
+		final IDocumentBL docActionBL = Services.get(IDocumentBL.class);
 		if (!docActionBL.issDocumentDraftedOrInProgress(io))
 		{
 			io.setProcessed(true); // important, since the code under test might also check for this flag

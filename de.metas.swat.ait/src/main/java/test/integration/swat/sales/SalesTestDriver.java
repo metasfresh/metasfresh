@@ -55,7 +55,6 @@ import org.compiere.model.Query;
 import org.compiere.model.X_C_Invoice;
 import org.compiere.model.X_C_Order;
 import org.compiere.model.X_C_Payment;
-import org.compiere.process.DocAction;
 import org.compiere.util.Env;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -78,6 +77,7 @@ import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.adempiere.service.IInvoiceLineBL;
+import de.metas.document.engine.IDocument;
 
 @RunWith(IntegrationTestRunner.class)
 public class SalesTestDriver extends AIntegrationTestDriver
@@ -206,8 +206,8 @@ public class SalesTestDriver extends AIntegrationTestDriver
 		getHelper().setProductPrice("TestPS1", getHelper().getCurrencyCode(), getHelper().getCountryCode(), "TestP2", new BigDecimal(100), true);
 		getHelper().setProductPrice("TestPS2", getHelper().getCurrencyCode(), getHelper().getCountryCode(), "TestP2", new BigDecimal(130), true);
 
-		I_C_Order order1 = getHelper().mkOrderHelper().setPricingSystemValue("TestPS1").addLine("TestP1", 10, 11).setComplete(DocAction.STATUS_Completed).createOrder();
-		I_C_Order order2 = getHelper().mkOrderHelper().setPricingSystemValue("TestPS2").addLine("TestP2", 130, 140).setComplete(DocAction.STATUS_Completed).createOrder();
+		I_C_Order order1 = getHelper().mkOrderHelper().setPricingSystemValue("TestPS1").addLine("TestP1", 10, 11).setComplete(IDocument.STATUS_Completed).createOrder();
+		I_C_Order order2 = getHelper().mkOrderHelper().setPricingSystemValue("TestPS2").addLine("TestP2", 130, 140).setComplete(IDocument.STATUS_Completed).createOrder();
 
 		final int[] orderIds = new int[] { order1.getC_Order_ID(), order2.getC_Order_ID() };
 
@@ -304,7 +304,7 @@ public class SalesTestDriver extends AIntegrationTestDriver
 
 		final I_C_Order order = orderHelper
 				.addLine(IHelper.DEFAULT_ProductValue, 10, 11)
-				.setComplete(DocAction.STATUS_Completed)
+				.setComplete(IDocument.STATUS_Completed)
 				.createOrder();
 		final MOrder orderPO = orderHelper.getOrderPO(order);
 		MInvoice invoice = new MInvoice(orderPO, -1, getHelper().getNow());
@@ -344,7 +344,7 @@ public class SalesTestDriver extends AIntegrationTestDriver
 		final I_C_Order order = orderHelper
 				.setDocSubType(de.metas.prepayorder.model.I_C_DocType.DOCSUBTYPE_PrepayOrder_metas)
 				.setInvoiceRule(invoiceRule)
-				.setComplete(DocAction.STATUS_WaitingPayment)
+				.setComplete(IDocument.STATUS_WaitingPayment)
 				.addLine(IHelper.DEFAULT_ProductValue, 10, 10)
 				.createOrder();
 
@@ -368,7 +368,7 @@ public class SalesTestDriver extends AIntegrationTestDriver
 
 		final MPayment paymentPO = (MPayment)InterfaceWrapperHelper.getPO(payment);
 
-		getHelper().process(paymentPO, DocAction.ACTION_Complete, X_C_Payment.DOCSTATUS_Completed);
+		getHelper().process(paymentPO, IDocument.ACTION_Complete, X_C_Payment.DOCSTATUS_Completed);
 
 		// reload order
 		final MOrder orderPO = orderHelper.getOrderPO(order);
@@ -436,7 +436,7 @@ public class SalesTestDriver extends AIntegrationTestDriver
 		final I_C_Order order = orderHelper
 				.setDocSubType(MDocType.DOCSUBTYPE_POSOrder)
 				.setInvoiceRule(invoiceRule)
-				.setComplete(DocAction.STATUS_Completed)
+				.setComplete(IDocument.STATUS_Completed)
 				.addLine(IHelper.DEFAULT_ProductValue, 10, 10)
 				.createOrder();
 
@@ -496,7 +496,7 @@ public class SalesTestDriver extends AIntegrationTestDriver
 
 		final MPayment paymentPO = (MPayment)InterfaceWrapperHelper.getPO(payment);
 
-		getHelper().process(paymentPO, DocAction.ACTION_Complete, X_C_Payment.DOCSTATUS_Completed);
+		getHelper().process(paymentPO, IDocument.ACTION_Complete, X_C_Payment.DOCSTATUS_Completed);
 
 		invoice.load(getTrxName());
 		assertTrue(invoice.isPaid());
@@ -578,7 +578,7 @@ public class SalesTestDriver extends AIntegrationTestDriver
 
 		//
 		// Test reverseCorrectIt
-		getHelper().process(allocation, DocAction.ACTION_Reverse_Correct, DocAction.STATUS_Reversed);
+		getHelper().process(allocation, IDocument.ACTION_Reverse_Correct, IDocument.STATUS_Reversed);
 		Assert.assertTrue("Reversal_ID should be set", allocation.getReversal_ID() > 0);
 		Assert.assertFalse("Allocation and reversal should be different", allocation.getC_AllocationHdr_ID() == allocation.getReversal_ID());
 		I_C_AllocationHdr allocationReversal = allocation.getReversal();
@@ -607,7 +607,7 @@ public class SalesTestDriver extends AIntegrationTestDriver
 		final I_C_Order order =
 				getHelper().mkOrderHelper()
 						.setDocSubType(de.metas.prepayorder.model.I_C_DocType.DOCSUBTYPE_PrepayOrder_metas)
-						.setComplete(DocAction.STATUS_WaitingPayment)
+						.setComplete(IDocument.STATUS_WaitingPayment)
 						.addLine(Helper.DEFAULT_ProductValue, 10, 10)
 						.createOrder();
 

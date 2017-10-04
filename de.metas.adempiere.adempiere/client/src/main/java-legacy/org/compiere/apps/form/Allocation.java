@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Vector;
 import org.slf4j.Logger;
 
+import de.metas.document.engine.IDocument;
 import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
 
@@ -33,7 +34,6 @@ import org.compiere.model.MAllocationHdr;
 import org.compiere.model.MAllocationLine;
 import org.compiere.model.MInvoice;
 import org.compiere.model.MPayment;
-import org.compiere.process.DocAction;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
 import org.compiere.util.DB;
@@ -742,7 +742,7 @@ public class Allocation
 		//	Should start WF
 		if (alloc.get_ID() != 0)
 		{
-			alloc.processIt(DocAction.ACTION_Complete);
+			alloc.processIt(IDocument.ACTION_Complete);
 			alloc.saveEx();
 		}
 		

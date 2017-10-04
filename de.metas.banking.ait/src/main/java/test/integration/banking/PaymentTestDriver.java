@@ -40,7 +40,6 @@ import org.compiere.model.MBankStatement;
 import org.compiere.model.MPayment;
 import org.compiere.model.MQuery;
 import org.compiere.model.Query;
-import org.compiere.process.DocAction;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Test;
@@ -58,6 +57,7 @@ import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.banking.interfaces.I_C_BankStatementLine_Ref;
 import de.metas.banking.model.I_C_BankStatement;
 import de.metas.banking.model.I_C_BankStatementLine;
+import de.metas.document.engine.IDocument;
 import de.metas.interfaces.I_C_BP_BankAccount;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.process.JavaProcess;
@@ -452,7 +452,7 @@ public class PaymentTestDriver extends AIntegrationTestDriver
 	{
 		Assert.assertNotNull(payment);
 		Assert.assertTrue(payment.getC_Payment_ID() > 0);
-		Assert.assertEquals("Invalid payment docstatus " + payment.getDocStatus(), DocAction.STATUS_Completed, payment.getDocStatus());
+		Assert.assertEquals("Invalid payment docstatus " + payment.getDocStatus(), IDocument.STATUS_Completed, payment.getDocStatus());
 
 		InterfaceWrapperHelper.refresh(payment);
 		Assert.assertTrue("Payment is not allocateded: " + payment, payment.isAllocated());

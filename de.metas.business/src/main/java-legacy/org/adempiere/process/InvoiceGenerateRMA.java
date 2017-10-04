@@ -22,6 +22,8 @@ import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import org.slf4j.Logger;
+
+import de.metas.document.engine.IDocument;
 import de.metas.logging.LogManager;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.process.JavaProcess;
@@ -30,7 +32,6 @@ import org.compiere.model.MInvoice;
 import org.compiere.model.MInvoiceLine;
 import org.compiere.model.MRMA;
 import org.compiere.model.MRMALine;
-import org.compiere.process.DocAction;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
@@ -45,7 +46,7 @@ public class InvoiceGenerateRMA extends JavaProcess
     /** Manual Selection        */
     private boolean     p_Selection = false;
     /** Invoice Document Action */
-    private String      p_docAction = DocAction.ACTION_Complete;
+    private String      p_docAction = IDocument.ACTION_Complete;
     
     /** Number of Invoices      */
     private int         m_created = 0;

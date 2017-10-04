@@ -21,6 +21,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 import org.slf4j.Logger;
+
+import de.metas.document.engine.IDocument;
 import de.metas.logging.LogManager;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.process.JavaProcess;
@@ -309,7 +311,7 @@ public class InvoiceWriteOff extends JavaProcess
 			return true;
 		processPayment();
 		//	Process It
-		if (m_alloc.processIt(DocAction.ACTION_Complete) &&  m_alloc.save())
+		if (m_alloc.processIt(IDocument.ACTION_Complete) &&  m_alloc.save())
 		{
 			m_alloc = null;
 			return true;
@@ -328,7 +330,7 @@ public class InvoiceWriteOff extends JavaProcess
 		if (m_payment == null)
 			return true;
 		//	Process It
-		if (m_payment.processIt(DocAction.ACTION_Complete) &&  m_payment.save())
+		if (m_payment.processIt(IDocument.ACTION_Complete) &&  m_payment.save())
 		{
 			m_payment = null;
 			return true;

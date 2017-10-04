@@ -60,6 +60,8 @@ import org.compiere.model.I_GL_Journal;
 import org.compiere.model.I_GL_JournalLine;
 import org.compiere.util.TrxRunnable;
 
+import de.metas.document.engine.IDocumentBL;
+
 /**
  * Builder class which creates the {@link I_C_TaxDeclarationLine}s and {@link I_C_TaxDeclarationAcct}s.
  *
@@ -71,6 +73,7 @@ public class TaxDeclarationLinesBuilder
 	// services
 	private final transient IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
+	private final transient IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	private final transient IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 	private final transient IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	private final transient IFactAcctDAO factAcctDAO = Services.get(IFactAcctDAO.class);
@@ -291,7 +294,7 @@ public class TaxDeclarationLinesBuilder
 
 		//
 		// Tax declaration accounting records
-		final List<I_Fact_Acct> factAcctRecords = factAcctDAO.retrieveQueryForDocument(invoice)
+		final List<I_Fact_Acct> factAcctRecords = factAcctDAO.retrieveQueryForDocument(documentBL.getDocument(invoice))
 				// fetch only those Fact_Acct records which are about taxes, i.e.
 				.addNotEqualsFilter(I_Fact_Acct.COLUMN_C_Tax_ID, null) // C_Tax_ID is set
 				.addEqualsFilter(I_Fact_Acct.COLUMN_Line_ID, null) // Line_ID is NOT set

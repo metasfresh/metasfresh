@@ -10,11 +10,11 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.MDocType;
 import org.compiere.model.MOrder;
 import org.compiere.model.PO;
-import org.compiere.process.DocAction;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
-import de.metas.document.engine.IDocActionBL;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.logging.LogManager;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
@@ -73,12 +73,12 @@ public final class OrderCreateNewFromProposal extends JavaProcess
 		String docAction;
 		if (newOrderClompleteIt)
 		{
-			docAction = DocAction.ACTION_Complete;
-			Services.get(IDocActionBL.class).processEx(newOrder, DocAction.ACTION_Complete, DocAction.STATUS_Completed);
+			docAction = IDocument.ACTION_Complete;
+			Services.get(IDocumentBL.class).processEx(newOrder, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
 		}
 		else
 		{
-			docAction = DocAction.ACTION_Prepare;
+			docAction = IDocument.ACTION_Prepare;
 		}
 
 		newOrder.setDocAction(docAction);

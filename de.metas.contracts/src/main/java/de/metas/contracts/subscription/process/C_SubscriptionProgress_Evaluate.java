@@ -32,13 +32,13 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.Mutable;
 import org.adempiere.util.time.SystemTime;
-import org.compiere.process.DocAction;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.subscription.ISubscriptionBL;
+import de.metas.document.engine.IDocument;
 import de.metas.process.JavaProcess;
 import de.metas.process.RunOutOfTrx;
 
@@ -96,7 +96,7 @@ public class C_SubscriptionProgress_Evaluate extends JavaProcess
 				.addOnlyContextClient(getCtx())
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_Type_Conditions, X_C_Flatrate_Term.TYPE_CONDITIONS_Subscription)
-				.addInArrayFilter(I_C_Flatrate_Term.COLUMNNAME_DocStatus, DocAction.STATUS_Closed, DocAction.STATUS_Completed)
+				.addInArrayFilter(I_C_Flatrate_Term.COLUMNNAME_DocStatus, IDocument.STATUS_Closed, IDocument.STATUS_Completed)
 				.orderBy()
 				.addColumn(I_C_Flatrate_Term.COLUMNNAME_StartDate).addColumn(I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Term_ID).endOrderBy()
 				.create()

@@ -243,8 +243,8 @@ public interface I_RV_C_RfQ_UnAnswered
     public static final String COLUMNNAME_C_RfQ_Topic_ID = "C_RfQ_Topic_ID";
 
 	/**
-	 * Set Antwort-datum.
-	 * Date of the Response
+	 * Set Datum Antwort.
+	 * Datum der Antwort
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
@@ -253,8 +253,8 @@ public interface I_RV_C_RfQ_UnAnswered
 	public void setDateResponse (java.sql.Timestamp DateResponse);
 
 	/**
-	 * Get Antwort-datum.
-	 * Date of the Response
+	 * Get Datum Antwort.
+	 * Datum der Antwort
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
@@ -516,8 +516,7 @@ public interface I_RV_C_RfQ_UnAnswered
     public static final String COLUMNNAME_QuoteType = "QuoteType";
 
 	/**
-	 * Set Vertriebsbeauftragter.
-	 * Sales Representative or Company Agent
+	 * Set Aussendienst.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -526,8 +525,7 @@ public interface I_RV_C_RfQ_UnAnswered
 	public void setSalesRep_ID (int SalesRep_ID);
 
 	/**
-	 * Get Vertriebsbeauftragter.
-	 * Sales Representative or Company Agent
+	 * Get Aussendienst.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true

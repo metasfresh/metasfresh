@@ -36,7 +36,6 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
-import org.compiere.process.DocAction;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
 
@@ -47,7 +46,8 @@ import de.metas.banking.interfaces.I_C_BankStatementLine_Ref;
 import de.metas.banking.model.I_C_BankStatement;
 import de.metas.banking.model.I_C_BankStatementLine;
 import de.metas.banking.service.IBankStatementBL;
-import de.metas.document.engine.IDocActionBL;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.payment.esr.api.IESRImportDAO;
 import de.metas.payment.esr.model.I_ESR_Import;
 import de.metas.payment.esr.model.I_ESR_ImportLine;
@@ -66,7 +66,7 @@ import de.metas.process.ProcessPreconditionsResolution;
 public class C_BankStatementLine_CreateFrom_ESR_Import extends JavaProcess implements IProcessPrecondition
 {
 	// services
-	private final transient IDocActionBL docActionBL = Services.get(IDocActionBL.class);
+	private final transient IDocumentBL docActionBL = Services.get(IDocumentBL.class);
 	private final transient IESRImportDAO esrImportDAO = Services.get(IESRImportDAO.class);
 	private final transient IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	private final transient IBankStatementBL bankStatementBL = Services.get(IBankStatementBL.class);
@@ -95,7 +95,7 @@ public class C_BankStatementLine_CreateFrom_ESR_Import extends JavaProcess imple
 		{
 			final I_C_BankStatement bankStatement = context.getSelectedModel(I_C_BankStatement.class);
 			return ProcessPreconditionsResolution.acceptIf(docActionBL.isDocumentStatusOneOf(bankStatement,
-					DocAction.STATUS_Drafted, DocAction.STATUS_InProgress));
+					IDocument.STATUS_Drafted, IDocument.STATUS_InProgress));
 		}
 		return ProcessPreconditionsResolution.reject();
 	}

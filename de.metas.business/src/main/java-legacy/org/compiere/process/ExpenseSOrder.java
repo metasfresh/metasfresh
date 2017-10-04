@@ -36,6 +36,7 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 
 import de.metas.currency.ICurrencyBL;
+import de.metas.document.engine.IDocument;
 
 /**
  *	Create Sales Orders from Expense Reports
@@ -276,8 +277,8 @@ public class ExpenseSOrder extends JavaProcess
 	{
 		if (m_order == null)
 			return;
-		m_order.setDocAction(DocAction.ACTION_Prepare);
-		m_order.processIt(DocAction.ACTION_Prepare);
+		m_order.setDocAction(IDocument.ACTION_Prepare);
+		m_order.processIt(IDocument.ACTION_Prepare);
 		if (!m_order.save())
 			throw new IllegalStateException("Cannot save Order");
 		m_noOrders++;

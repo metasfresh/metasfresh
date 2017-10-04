@@ -30,7 +30,6 @@ import java.util.List;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.MOrderLine;
-import org.compiere.process.DocAction;
 import org.compiere.util.DB;
 import org.junit.Before;
 import org.junit.Test;
@@ -42,6 +41,7 @@ import de.metas.adempiere.ait.helper.IHelper;
 import de.metas.adempiere.ait.helper.OrderHelper;
 import de.metas.adempiere.ait.test.IntegrationTestRunner;
 import de.metas.adempiere.model.I_C_Order;
+import de.metas.document.engine.IDocument;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.OlAndSched;
 import de.metas.inoutcandidate.api.impl.ShipmentSchedulePA;
@@ -136,7 +136,7 @@ public class ShipmentTests extends AIntegrationTestDriver
 		final OrderHelper orderHelper = getHelper().mkOrderHelper();
 
 		final I_C_Order order = orderHelper
-				.setComplete(DocAction.STATUS_Completed)
+				.setComplete(IDocument.STATUS_Completed)
 				.addLine(IHelper.DEFAULT_ProductValue + "_0", 10, 11)
 				.addLine(IHelper.DEFAULT_ProductValue + "_1", 10, 11)
 				.addLine(IHelper.DEFAULT_ProductValue + "_2", 10, 11)

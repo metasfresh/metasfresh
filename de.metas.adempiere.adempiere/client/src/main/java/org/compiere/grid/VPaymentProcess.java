@@ -39,9 +39,9 @@ import org.compiere.model.MInvoice;
 import org.compiere.model.MOrder;
 import org.compiere.model.MPayment;
 import org.compiere.model.Query;
-import org.compiere.process.DocAction;
 import org.slf4j.Logger;
 
+import de.metas.document.engine.IDocument;
 import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
 
@@ -165,7 +165,7 @@ public final class VPaymentProcess
 		}
 		pctx.newPayment.saveEx();
 
-		boolean ok = pctx.newPayment.processIt(DocAction.ACTION_Complete);
+		boolean ok = pctx.newPayment.processIt(IDocument.ACTION_Complete);
 		pctx.newPayment.saveEx();
 		if (!ok)
 			throw new AdempiereException(pctx.newPayment.getProcessMsg());
@@ -385,8 +385,8 @@ public final class VPaymentProcess
 			return;
 
 		// Cancel Payment
-		pctx.oldPayment.setDocAction(DocAction.ACTION_Reverse_Correct);
-		boolean ok = pctx.oldPayment.processIt(DocAction.ACTION_Reverse_Correct);
+		pctx.oldPayment.setDocAction(IDocument.ACTION_Reverse_Correct);
+		boolean ok = pctx.oldPayment.processIt(IDocument.ACTION_Reverse_Correct);
 		pctx.oldPayment.saveEx();
 		if (!ok)
 			throw new AdempiereException("@PaymentNotCancelled@ " + pctx.oldPayment.getSummary());

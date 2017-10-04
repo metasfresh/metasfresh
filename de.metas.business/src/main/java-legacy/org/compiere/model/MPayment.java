@@ -37,7 +37,6 @@ import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.process.DocAction;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.ValueNamePair;
@@ -48,7 +47,8 @@ import de.metas.allocation.api.IAllocationDAO;
 import de.metas.currency.ICurrencyBL;
 import de.metas.document.documentNo.IDocumentNoBuilder;
 import de.metas.document.documentNo.IDocumentNoBuilderFactory;
-import de.metas.document.engine.IDocActionBL;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
 import de.metas.logging.LogManager;
@@ -95,7 +95,7 @@ import de.metas.process.ProcessInfo;
  * @version $Id: MPayment.java,v 1.4 2006/10/02 05:18:39 jjanke Exp $
  */
 public final class MPayment extends X_C_Payment
-		implements DocAction, IProcess
+		implements IDocument, IProcess
 {
 
 	/**
@@ -1617,7 +1617,7 @@ public final class MPayment extends X_C_Payment
 	public boolean processIt(String processAction)
 	{
 		m_processMsg = null;
-		return Services.get(IDocActionBL.class).processIt(this, processAction); // task 09824
+		return Services.get(IDocumentBL.class).processIt(this, processAction); // task 09824
 	}	// process
 
 	/** Process Message */
@@ -1662,12 +1662,12 @@ public final class MPayment extends X_C_Payment
 		log.info(toString());
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_PREPARE);
 		if (m_processMsg != null)
-			return DocAction.STATUS_Invalid;
+			return IDocument.STATUS_Invalid;
 
 		if (!MPaySelectionCheck.deleteGeneratedDraft(getCtx(), getC_Payment_ID(), get_TrxName()))
 		{
 			m_processMsg = "Could not delete draft generated payment selection lines";
-			return DocAction.STATUS_Invalid;
+			return IDocument.STATUS_Invalid;
 		}
 
 		// Std Period open?
@@ -1675,7 +1675,7 @@ public final class MPayment extends X_C_Payment
 				isReceipt() ? X_C_DocType.DOCBASETYPE_ARReceipt : X_C_DocType.DOCBASETYPE_APPayment, getAD_Org_ID()))
 		{
 			m_processMsg = "@PeriodClosed@";
-			return DocAction.STATUS_Invalid;
+			return IDocument.STATUS_Invalid;
 		}
 
 		// Unsuccessful Online Payment
@@ -1685,7 +1685,7 @@ public final class MPayment extends X_C_Payment
 				m_processMsg = "@OnlinePaymentFailed@";
 			else
 				m_processMsg = "@PaymentNotProcessed@";
-			return DocAction.STATUS_Invalid;
+			return IDocument.STATUS_Invalid;
 		}
 
 		// Waiting Payment - Need to create Invoice & Shipment
@@ -1727,21 +1727,21 @@ public final class MPayment extends X_C_Payment
 		if (!verifyDocType(pAllocs))
 		{
 			m_processMsg = "@PaymentDocTypeInvoiceInconsistent@";
-			return DocAction.STATUS_Invalid;
+			return IDocument.STATUS_Invalid;
 		}
 
 		// Payment Allocate is ignored if charge/invoice/order exists in header
 		if (!verifyPaymentAllocateVsHeader(pAllocs))
 		{
 			m_processMsg = "@PaymentAllocateIgnored@";
-			return DocAction.STATUS_Invalid;
+			return IDocument.STATUS_Invalid;
 		}
 
 		// Payment Amount must be equal to sum of Allocate amounts
 		if (!verifyPaymentAllocateSum(pAllocs))
 		{
 			m_processMsg = "@PaymentAllocateSumInconsistent@";
-			return DocAction.STATUS_Invalid;
+			return IDocument.STATUS_Invalid;
 		}
 
 		// Do not pay when Credit Stop/Hold
@@ -1773,18 +1773,18 @@ public final class MPayment extends X_C_Payment
 				m_processMsg = "@BPartnerCreditHold@ - @TotalOpenBalance@="
 						+ totalOpenBalance
 						+ ", @SO_CreditLimit@=" + partner.getSO_CreditLimit();
-				return DocAction.STATUS_Invalid;
+				return IDocument.STATUS_Invalid;
 			}
 		}
 
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_PREPARE);
 		if (m_processMsg != null)
-			return DocAction.STATUS_Invalid;
+			return IDocument.STATUS_Invalid;
 
 		m_justPrepared = true;
 		if (!DOCACTION_Complete.equals(getDocAction()))
 			setDocAction(DOCACTION_Complete);
-		return DocAction.STATUS_InProgress;
+		return IDocument.STATUS_InProgress;
 	}	// prepareIt
 
 	/**
@@ -1825,13 +1825,13 @@ public final class MPayment extends X_C_Payment
 		if (!m_justPrepared)
 		{
 			String status = prepareIt();
-			if (!DocAction.STATUS_InProgress.equals(status))
+			if (!IDocument.STATUS_InProgress.equals(status))
 				return status;
 		}
 
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_COMPLETE);
 		if (m_processMsg != null)
-			return DocAction.STATUS_Invalid;
+			return IDocument.STATUS_Invalid;
 
 		// Implicit Approval
 		if (!isApproved())
@@ -1870,7 +1870,7 @@ public final class MPayment extends X_C_Payment
 			{
 				m_processMsg = "Could not convert C_Currency_ID=" + getC_Currency_ID() + " to base C_Currency = "
 						+ Services.get(ICurrencyBL.class).getBaseCurrency(getCtx(), getAD_Client_ID(), getAD_Org_ID()).getISO_Code();
-				return DocAction.STATUS_Invalid;
+				return IDocument.STATUS_Invalid;
 			}
 			// Total Balance
 			BigDecimal newBalance = stats.getTotalOpenBalance();
@@ -1914,7 +1914,7 @@ public final class MPayment extends X_C_Payment
 			if (cash == null || cash.get_ID() == 0)
 			{
 				m_processMsg = "@NoCashBook@";
-				return DocAction.STATUS_Invalid;
+				return IDocument.STATUS_Invalid;
 			}
 			MCashLine cl = new MCashLine(cash);
 			cl.setCashType(X_C_CashLine.CASHTYPE_GeneralReceipts);
@@ -1940,7 +1940,7 @@ public final class MPayment extends X_C_Payment
 			if (!cl.save(get_TrxName()))
 			{
 				m_processMsg = "Could not save Cash Journal Line";
-				return DocAction.STATUS_Invalid;
+				return IDocument.STATUS_Invalid;
 			}
 		}
 		// End Trifon - CashPayments
@@ -1953,7 +1953,7 @@ public final class MPayment extends X_C_Payment
 		if (valid != null)
 		{
 			m_processMsg = valid;
-			return DocAction.STATUS_Invalid;
+			return IDocument.STATUS_Invalid;
 		}
 
 		// Set the definite document number after completed (if needed)
@@ -1962,7 +1962,7 @@ public final class MPayment extends X_C_Payment
 		//
 		setProcessed(true);
 		setDocAction(DOCACTION_Reverse_Correct); // issue #347
-		return DocAction.STATUS_Completed;
+		return IDocument.STATUS_Completed;
 	}	// completeIt
 
 	/**
@@ -2147,7 +2147,7 @@ public final class MPayment extends X_C_Payment
 			}
 		}
 		// Should start WF
-		alloc.processIt(DocAction.ACTION_Complete);
+		alloc.processIt(IDocument.ACTION_Complete);
 		m_processMsg = "@C_AllocationHdr_ID@: " + alloc.getDocumentNo();
 		return alloc.save(get_TrxName());
 	}	// allocateIt
@@ -2247,7 +2247,7 @@ public final class MPayment extends X_C_Payment
 		aLine.setC_Payment_ID(getC_Payment_ID());
 		aLine.saveEx(get_TrxName());
 		// Should start WF
-		alloc.processIt(DocAction.ACTION_Complete);
+		alloc.processIt(IDocument.ACTION_Complete);
 		alloc.saveEx(get_TrxName());
 		m_processMsg = "@C_AllocationHdr_ID@: " + alloc.getDocumentNo();
 
@@ -2341,7 +2341,7 @@ public final class MPayment extends X_C_Payment
 		}
 		else
 		{
-			alloc.processIt(DocAction.ACTION_Complete);
+			alloc.processIt(IDocument.ACTION_Complete);
 			ok = alloc.save(get_TrxName());
 			m_processMsg = "@C_AllocationHdr_ID@: " + alloc.getDocumentNo();
 		}
@@ -2366,15 +2366,15 @@ public final class MPayment extends X_C_Payment
 			final String docStatus = allocations[i].getDocStatus();
 
 			// 07570: Skip allocations which were already Reversed or Voided
-			if (DocAction.STATUS_Reversed.equals(docStatus)
-					|| DocAction.STATUS_Voided.equals(docStatus))
+			if (IDocument.STATUS_Reversed.equals(docStatus)
+					|| IDocument.STATUS_Voided.equals(docStatus))
 			{
 				continue;
 			}
 
 			allocations[i].set_TrxName(get_TrxName());
-			allocations[i].setDocAction(DocAction.ACTION_Reverse_Correct);
-			if (!allocations[i].processIt(DocAction.ACTION_Reverse_Correct))
+			allocations[i].setDocAction(IDocument.ACTION_Reverse_Correct);
+			if (!allocations[i].processIt(IDocument.ACTION_Reverse_Correct))
 				throw new AdempiereException(allocations[i].getProcessMsg());
 			allocations[i].saveEx();
 		}
@@ -2557,7 +2557,7 @@ public final class MPayment extends X_C_Payment
 		reversal.setReversal_ID(getC_Payment_ID());
 		reversal.saveEx(get_TrxName());
 		// Post Reversal
-		if (!reversal.processIt(DocAction.ACTION_Complete))
+		if (!reversal.processIt(IDocument.ACTION_Complete))
 		{
 			m_processMsg = "Reversal ERROR: " + reversal.getProcessMsg();
 			return false;
@@ -2603,7 +2603,7 @@ public final class MPayment extends X_C_Payment
 			if (!aLine.save(get_TrxName()))
 				log.warn("Automatic allocation - reversal line not saved");
 		}
-		alloc.processIt(DocAction.ACTION_Complete);
+		alloc.processIt(IDocument.ACTION_Complete);
 		alloc.save(get_TrxName());
 		//
 		StringBuffer info = new StringBuffer(reversal.getDocumentNo());

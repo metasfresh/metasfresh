@@ -29,12 +29,12 @@ import java.util.Properties;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.util.Services;
-import org.compiere.process.DocAction;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
 import de.metas.adempiere.model.I_AD_User;
-import de.metas.document.engine.IDocActionBL;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.Msg;
 
 /**
@@ -47,7 +47,7 @@ import de.metas.i18n.Msg;
  *			@see http://sourceforge.net/tracker2/?func=detail&atid=879335&aid=2520591&group_id=176962 
  *	@version $Id: MTimeExpense.java,v 1.4 2006/07/30 00:51:03 jjanke Exp $
  */
-public class MTimeExpense extends X_S_TimeExpense implements DocAction
+public class MTimeExpense extends X_S_TimeExpense implements IDocument
 {
 	/**
 	 * 
@@ -279,7 +279,7 @@ public class MTimeExpense extends X_S_TimeExpense implements DocAction
 	public boolean processIt (String processAction)
 	{
 		m_processMsg = null;
-		return Services.get(IDocActionBL.class).processIt(this, processAction); // task 09824
+		return Services.get(IDocumentBL.class).processIt(this, processAction); // task 09824
 	}	//	processIt
 	
 	/**	Process Message 			*/
@@ -321,20 +321,20 @@ public class MTimeExpense extends X_S_TimeExpense implements DocAction
 		log.info(toString());
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_PREPARE);
 		if (m_processMsg != null)
-			return DocAction.STATUS_Invalid;
+			return IDocument.STATUS_Invalid;
 
 		//	Std Period open? - AP (Reimbursement) Invoice
 		if (!MPeriod.isOpen(getCtx(), getDateReport(), MDocType.DOCBASETYPE_APInvoice, getAD_Org_ID()))
 		{
 			m_processMsg = "@PeriodClosed@";
-			return DocAction.STATUS_Invalid;
+			return IDocument.STATUS_Invalid;
 		}
 		
 		MTimeExpenseLine[] lines = getLines(false);
 		if (lines.length == 0)
 		{
 			m_processMsg = "@NoLines@";
-			return DocAction.STATUS_Invalid;
+			return IDocument.STATUS_Invalid;
 		}
 		//	Add up Amounts
 		BigDecimal amt = Env.ZERO;
@@ -352,18 +352,18 @@ public class MTimeExpense extends X_S_TimeExpense implements DocAction
 			if (line.isInvoiced() && line.getC_BPartner_ID() == 0)
 			{
 				m_processMsg = "@Line@ " + line.getLine() + ": Invoiced, but no Business Partner";
-				return DocAction.STATUS_Invalid;
+				return IDocument.STATUS_Invalid;
 			}
 		}
 		
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_PREPARE);
 		if (m_processMsg != null)
-			return DocAction.STATUS_Invalid;
+			return IDocument.STATUS_Invalid;
 
 		m_justPrepared = true;
 		if (!DOCACTION_Complete.equals(getDocAction()))
 			setDocAction(DOCACTION_Complete);
-		return DocAction.STATUS_InProgress;
+		return IDocument.STATUS_InProgress;
 	}	//	prepareIt
 	
 	/**
@@ -401,13 +401,13 @@ public class MTimeExpense extends X_S_TimeExpense implements DocAction
 		if (!m_justPrepared)
 		{
 			String status = prepareIt();
-			if (!DocAction.STATUS_InProgress.equals(status))
+			if (!IDocument.STATUS_InProgress.equals(status))
 				return status;
 		}
 		
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_COMPLETE);
 		if (m_processMsg != null)
-			return DocAction.STATUS_Invalid;
+			return IDocument.STATUS_Invalid;
 		
 		//	Implicit Approval
 		if (!isApproved())
@@ -419,13 +419,13 @@ public class MTimeExpense extends X_S_TimeExpense implements DocAction
 		if (valid != null)
 		{
 			m_processMsg = valid;
-			return DocAction.STATUS_Invalid;
+			return IDocument.STATUS_Invalid;
 		}
 
 		//
 		setProcessed(true);
 		setDocAction(DOCACTION_Close);
-		return DocAction.STATUS_Completed;
+		return IDocument.STATUS_Completed;
 	}	//	completeIt
 	
 	/**

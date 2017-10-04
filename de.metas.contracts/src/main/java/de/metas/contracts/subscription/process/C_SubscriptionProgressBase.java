@@ -3,11 +3,11 @@ package de.metas.contracts.subscription.process;
 import java.util.Objects;
 
 import org.adempiere.util.StringUtils;
-import org.compiere.process.DocAction;
 
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_SubscriptionProgress;
 import de.metas.contracts.model.X_C_Flatrate_Term;
+import de.metas.document.engine.IDocument;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
@@ -58,7 +58,7 @@ public abstract class C_SubscriptionProgressBase extends JavaProcess
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("Only for active terms");
 		}
-		if (!Objects.equals(term.getDocStatus(), DocAction.STATUS_Completed))
+		if (!Objects.equals(term.getDocStatus(), IDocument.STATUS_Completed))
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("Only for DocStatus='CO' terms; not for " + term.getDocStatus());
 		}

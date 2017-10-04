@@ -35,9 +35,9 @@ import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
-import org.compiere.process.DocAction;
 import org.springframework.stereotype.Service;
 
+import de.metas.document.engine.IDocument;
 import de.metas.interfaces.I_C_DocType;
 import de.metas.interfaces.I_C_OrderLine;
 
@@ -86,7 +86,7 @@ public class InOutLinesWithMissingInvoiceCandidate
 			final IQueryBuilder<I_M_InOut> inoutQueryBuilder = queryBL.createQueryBuilder(I_M_InOut.class);
 
 			// if the inout was reversed, and there is no IC yet, don't bother creating one
-			inoutQueryBuilder.addNotEqualsFilter(I_M_InOut.COLUMNNAME_DocStatus, DocAction.STATUS_Reversed);
+			inoutQueryBuilder.addNotEqualsFilter(I_M_InOut.COLUMNNAME_DocStatus, IDocument.STATUS_Reversed);
 
 			// Exclude some DocTypes
 			{

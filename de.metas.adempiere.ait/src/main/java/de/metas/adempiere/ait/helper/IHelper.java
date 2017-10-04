@@ -38,7 +38,6 @@ import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.I_M_ProductPrice;
 import org.compiere.model.MWarehouse;
-import org.compiere.process.DocAction;
 import org.compiere.util.Trx;
 
 import de.metas.adempiere.model.I_C_Invoice;
@@ -46,6 +45,7 @@ import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.adempiere.model.I_M_Product_Category;
+import de.metas.document.engine.IDocument;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.interfaces.I_C_BP_BankAccount;
@@ -146,7 +146,7 @@ public interface IHelper
 	 */
 	public void process(Object doc, String docAction, String expectedDocStatus);
 
-	public void processComplete(DocAction doc);
+	public void processComplete(IDocument doc);
 	
 	/**
 	 * Get/Create a Business Partner

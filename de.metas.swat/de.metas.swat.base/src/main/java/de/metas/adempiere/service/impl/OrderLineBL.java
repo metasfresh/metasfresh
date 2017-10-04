@@ -55,7 +55,6 @@ import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;
 import org.compiere.model.MPriceList;
 import org.compiere.model.MTax;
-import org.compiere.process.DocAction;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
@@ -63,12 +62,14 @@ import de.metas.adempiere.model.I_M_Product;
 import de.metas.adempiere.service.IOrderBL;
 import de.metas.adempiere.service.IOrderLineBL;
 import de.metas.document.IDocTypeBL;
-import de.metas.document.engine.IDocActionBL;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.IMsgBL;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.logging.LogManager;
 import de.metas.product.IProductDAO;
 import de.metas.tax.api.ITaxBL;
+import lombok.NonNull;
 
 public class OrderLineBL implements IOrderLineBL
 {
@@ -397,9 +398,9 @@ public class OrderLineBL implements IOrderLineBL
 		pricingCtx.setReferencedObject(orderLine);
 
 		pricingCtx.setM_PriceList_ID(priceListId);
-		// PLV is only accurate if PL selected in header
-		// metas: rely on M_PriceList_ID only, don't use M_PriceList_Version_ID
-		// pricingCtx.setM_PriceList_Version_ID(orderLine.getM_PriceList_Version_ID());
+
+		final int countryId = getCountryIdOrZero(orderLine);
+		pricingCtx.setC_Country_ID(countryId);
 
 		return pricingCtx;
 	}
@@ -431,6 +432,23 @@ public class OrderLineBL implements IOrderLineBL
 			date = order.getDateOrdered();
 		}
 		return date;
+	}
+
+	private int getCountryIdOrZero(@NonNull final org.compiere.model.I_C_OrderLine orderLine)
+	{
+		if (orderLine.getC_BPartner_Location_ID() <= 0)
+		{
+			return 0;
+		}
+
+		final I_C_BPartner_Location bPartnerLocation = orderLine.getC_BPartner_Location();
+		if (bPartnerLocation.getC_Location_ID() <= 0)
+		{
+			return 0;
+		}
+
+		final int countryId = bPartnerLocation.getC_Location().getC_Country_ID();
+		return countryId;
 	}
 
 	@Override
@@ -601,12 +619,12 @@ public class OrderLineBL implements IOrderLineBL
 		}
 
 		final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
-		final IDocActionBL docActionBL = Services.get(IDocActionBL.class);
+		final IDocumentBL docActionBL = Services.get(IDocumentBL.class);
 
 		final I_C_Order order = orderLine.getC_Order();
 
 		if (!docActionBL.isDocumentStatusOneOf(order,
-				DocAction.STATUS_InProgress, DocAction.STATUS_Completed, DocAction.STATUS_Closed))
+				IDocument.STATUS_InProgress, IDocument.STATUS_Completed, IDocument.STATUS_Closed))
 		{
 			logger.debug("C_Order {} of given orderLine {} has DocStatus {}; setting QtyReserved=0.",
 					new Object[] { order, orderLine, order.getDocStatus() });
