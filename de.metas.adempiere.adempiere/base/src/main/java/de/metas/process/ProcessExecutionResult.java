@@ -106,6 +106,9 @@ public class ProcessExecutionResult
 	private transient Throwable throwable = null;
 
 	private boolean refreshAllAfterExecution = false;
+	
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	private TableRecordReference recordToRefreshAfterExecution = null;
 
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private TableRecordReference recordToSelectAfterExecution = null;
@@ -293,13 +296,26 @@ public class ProcessExecutionResult
 	{
 		this.refreshAllAfterExecution = refreshAllAfterExecution;
 	}
-
+	
 	/**
 	 * @return if the whole window tab shall be refreshed after process execution (applies only when the process was started from a user window)
 	 */
 	public boolean isRefreshAllAfterExecution()
 	{
 		return refreshAllAfterExecution;
+	}
+	
+	/**
+	 * @param record to be refreshed after process execution
+	 */
+	public void setRecordToRefreshAfterExecution(final TableRecordReference recordToRefreshAfterExecution)
+	{
+		this.recordToRefreshAfterExecution = recordToRefreshAfterExecution;
+	}
+	
+	public TableRecordReference getRecordToRefreshAfterExecution()
+	{
+		return recordToRefreshAfterExecution;
 	}
 
 	/**
