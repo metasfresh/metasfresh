@@ -72,7 +72,15 @@ class Labels extends Component {
 
         if (typeAhead) {
             if (event.key === 'Enter') {
-                const suggestion = this.state.suggestions.filter(
+                let suggestions;
+
+                if (this.state.suggestions.length) {
+                    suggestions = this.state.suggestions;
+                } else {
+                    suggestions = this.state.values;
+                }
+
+                const suggestion = suggestions.filter(
                     this.unusedSuggestions()
                 )[0];
 
