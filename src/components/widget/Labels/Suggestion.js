@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 
 export default class Suggestion extends Component {
     handleMouseDown = () => {
-        this.props.onMouseDown(this.props.suggestion);
+        this.props.onAdd(this.props.suggestion);
     }
 
     render() {

@@ -14,6 +14,8 @@ class Labels extends Component {
         suggestions: []
     };
 
+    childClick = false;
+
     handleClick = async () => {
         this.input.focus();
 
@@ -41,7 +43,18 @@ class Labels extends Component {
         });
     }
 
-    handleBlur = () => {
+    handleBlur = event => {
+        if (this.childClick) {
+            this.childClick = false;
+            this.input.focus();
+
+            return;
+        }
+
+        if (this.wrapper.contains(event.relatedTarget)) {
+            return;
+        }
+
         this.setState({
             focused: false
         });
@@ -115,7 +128,8 @@ class Labels extends Component {
         event.preventDefault();
     }
 
-    handleSuggestionMouseDown = suggestion => {
+    handleSuggestionAdd = suggestion => {
+        this.childClick = true;
         this.input.innerHTML = '';
 
         this.props.onChange([...this.props.selected, suggestion]);
@@ -146,6 +160,7 @@ class Labels extends Component {
 
         return (
             <div
+                ref={ref => { this.wrapper = ref; }}
                 className={`${this.props.className} labels`}
                 onClick={this.handleClick}
                 onFocus={this.handleFocus}
@@ -176,7 +191,7 @@ class Labels extends Component {
                                 className="labels-suggestion"
                                 key={Object.keys(suggestion)[0]}
                                 suggestion={suggestion}
-                                onMouseDown={this.handleSuggestionMouseDown}
+                                onAdd={this.handleSuggestionAdd}
                             />
                         ))}
                     </div>
