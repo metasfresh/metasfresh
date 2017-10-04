@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
-<!-- 2017-09-26T15:49:35 -->
+<!-- 2017-10-04T14:19:17 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/sales/picking/report" uuid="ec3faad0-0045-4c5b-8fdb-e7ca318251a7">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -109,7 +109,7 @@ de_metas_endcustomer_fresh_reports.Docs_Sales_Picking_Root ($P{C_Order_ID}, $P{p
 		<band height="12" splitType="Stretch">
 			<subreport isUsingCache="true">
 				<reportElement key="subreport-3" x="0" y="0" width="595" height="12" uuid="8ec4ce73-64c9-452c-9abf-13e5efedb735">
-					<printWhenExpression><![CDATA[new Boolean($R{details_product_overflow}.equals( "Y" ))]]></printWhenExpression>
+					<printWhenExpression><![CDATA[new Boolean($R{name_over_attributes}.equals( "N" ))]]></printWhenExpression>
 				</reportElement>
 				<subreportParameter name="c_order_id">
 					<subreportParameterExpression><![CDATA[$F{c_order_id}]]></subreportParameterExpression>
@@ -122,7 +122,7 @@ de_metas_endcustomer_fresh_reports.Docs_Sales_Picking_Root ($P{C_Order_ID}, $P{p
 			</subreport>
 			<subreport isUsingCache="true">
 				<reportElement key="subreport-3" x="0" y="0" width="595" height="12" uuid="f573bfb7-df5e-4958-9cd5-87e0253bd64d">
-					<printWhenExpression><![CDATA[new Boolean($R{details_product_overflow}.equals( "N" ))]]></printWhenExpression>
+					<printWhenExpression><![CDATA[new Boolean($R{name_over_attributes}.equals( "Y" ))]]></printWhenExpression>
 				</reportElement>
 				<subreportParameter name="c_order_id">
 					<subreportParameterExpression><![CDATA[$F{c_order_id}]]></subreportParameterExpression>
@@ -134,14 +134,14 @@ de_metas_endcustomer_fresh_reports.Docs_Sales_Picking_Root ($P{C_Order_ID}, $P{p
 					<subreportParameterExpression><![CDATA[$F{displayhu}]]></subreportParameterExpression>
 				</subreportParameter>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
-				<subreportExpression><![CDATA["de/metas/docs/sales/picking/report_details_v2.jasper"]]></subreportExpression>
+				<subreportExpression><![CDATA["de/metas/docs/sales/picking/report_details_name_over_attributes.jasper"]]></subreportExpression>
 			</subreport>
 		</band>
 		<band height="24">
 			<printWhenExpression><![CDATA[new Boolean($F{displayhu}.equals( "Y" ))]]></printWhenExpression>
 			<subreport isUsingCache="true">
 				<reportElement key="subreport-3" x="0" y="12" width="595" height="12" uuid="8ec4ce73-64c9-452c-9abf-13e5efedb735">
-					<printWhenExpression><![CDATA[new Boolean($R{details_product_overflow}.equals( "Y" ))]]></printWhenExpression>
+					<printWhenExpression><![CDATA[new Boolean($R{name_over_attributes}.equals( "N" ))]]></printWhenExpression>
 				</reportElement>
 				<subreportParameter name="c_order_id">
 					<subreportParameterExpression><![CDATA[$F{c_order_id}]]></subreportParameterExpression>
@@ -156,7 +156,7 @@ de_metas_endcustomer_fresh_reports.Docs_Sales_Picking_Root ($P{C_Order_ID}, $P{p
 				<reportElement key="subreport-3" x="0" y="12" width="595" height="12" uuid="f370c428-37d2-4b86-97ef-fe7de0b98210">
 					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
-					<printWhenExpression><![CDATA[new Boolean($R{details_product_overflow}.equals( "N" ))]]></printWhenExpression>
+					<printWhenExpression><![CDATA[new Boolean($R{name_over_attributes}.equals( "Y" ))]]></printWhenExpression>
 				</reportElement>
 				<subreportParameter name="c_order_id">
 					<subreportParameterExpression><![CDATA[$F{c_order_id}]]></subreportParameterExpression>
@@ -165,7 +165,7 @@ de_metas_endcustomer_fresh_reports.Docs_Sales_Picking_Root ($P{C_Order_ID}, $P{p
 					<subreportParameterExpression><![CDATA[$P{ad_language}]]></subreportParameterExpression>
 				</subreportParameter>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
-				<subreportExpression><![CDATA["de/metas/docs/sales/picking/report_details_hu_v2.jasper"]]></subreportExpression>
+				<subreportExpression><![CDATA["de/metas/docs/sales/picking/report_details_hu_name_over_attributes.jasper"]]></subreportExpression>
 			</subreport>
 		</band>
 	</detail>
