@@ -103,36 +103,39 @@ class Labels extends Component {
 
         return (
             <div
-                className={this.props.className}
+                className={`${this.props.className} labels`}
                 onClick={this.handleClick}
                 onFocus={this.handleFocus}
                 onBlur={this.handleBlur}
                 tabIndex={this.props.tabIndex}
             >
-                {this.props.selected.map(item => {
-                    const [key, value] = Object.entries(item)[0];
+                <span className="labels-wrap">
+                    {this.props.selected.map(item => {
+                        const [key, value] = Object.entries(item)[0];
 
-                    return (
-                        <span
-                            key={key}
-                            className="labels-label"
-                        >
-                            {value}
-                        </span>
-                    );
-                })}
-                <span
-                    className="labels-input"
-                    ref={ref => { this.input = ref; }}
-                    contentEditable
-                    onKeyUp={this.handleKeyUp}
-                    onKeyDown={this.handleKeyDown}
-                />
+                        return (
+                            <span
+                                key={key}
+                                className="labels-label"
+                            >
+                                {value}
+                            </span>
+                        );
+                    })}
+                    <span
+                        className="labels-input"
+                        ref={ref => { this.input = ref; }}
+                        contentEditable
+                        onKeyUp={this.handleKeyUp}
+                        onKeyDown={this.handleKeyDown}
+                    />
+                </span>
                 {this.state.focused && (
-                    <div>
+                    <div className="labels-dropdown">
                         {suggestions.map(suggestion => {
                             return (
                                 <Suggestion
+                                    className="labels-suggestion"
                                     key={Object.keys(suggestion)[0]}
                                     suggestion={suggestion}
                                     onMouseDown={this.handleSuggestionMouseDown}

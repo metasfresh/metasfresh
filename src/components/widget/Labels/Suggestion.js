@@ -7,7 +7,10 @@ export default class Suggestion extends Component {
 
     render() {
         return (
-            <div onMouseDown={this.handleMouseDown}>
+            <div
+                className={this.props.className}
+                onMouseDown={this.handleMouseDown}
+            >
                 {Object.values(this.props.suggestion)[0]}
             </div>
         );
