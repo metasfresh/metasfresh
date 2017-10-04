@@ -39,7 +39,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.Mutable;
 import org.compiere.model.I_M_Product;
-import org.compiere.process.DocAction;
 import org.compiere.util.TrxRunnable;
 import org.junit.Assert;
 import org.junit.Test;
@@ -52,6 +51,7 @@ import de.metas.adempiere.ait.test.IntegrationTestRunner;
 import de.metas.adempiere.ait.test.annotation.IntegrationTest;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.allocation.api.IAllocationDAO;
+import de.metas.document.engine.IDocument;
 
 @RunWith(IntegrationTestRunner.class)
 public class InvoiceTests extends AIntegrationTestDriver
@@ -341,7 +341,7 @@ public class InvoiceTests extends AIntegrationTestDriver
 					.addLine(prod3.getValue(), new BigDecimal("250"), new BigDecimal("250"))
 					.addLine(prod4.getValue(), new BigDecimal("60"), new BigDecimal("60"))
 					.setIsTaxIncluded(taxIncluded)
-					.setComplete(DocAction.STATUS_Completed)
+					.setComplete(IDocument.STATUS_Completed)
 					.createInvoice();
 		}
 		else if (invoiceNo == 2)
@@ -353,7 +353,7 @@ public class InvoiceTests extends AIntegrationTestDriver
 					.addLine(prod4.getValue(), new BigDecimal("0.01"), new BigDecimal("0.01"))
 					.addLine(prod3.getValue(), new BigDecimal("309.99"), new BigDecimal("309.99"))
 					.setIsTaxIncluded(taxIncluded)
-					.setComplete(DocAction.STATUS_Completed)
+					.setComplete(IDocument.STATUS_Completed)
 					.createInvoice();
 		}
 		else
@@ -364,7 +364,7 @@ public class InvoiceTests extends AIntegrationTestDriver
 					.addLine(prod3.getValue(), new BigDecimal("179.99"), new BigDecimal("179.99"))
 					.addLine(prod4.getValue(), new BigDecimal("309.99"), new BigDecimal("309.99"))
 					.setIsTaxIncluded(taxIncluded)
-					.setComplete(DocAction.STATUS_Completed)
+					.setComplete(IDocument.STATUS_Completed)
 					.createInvoice();
 		}
 		if (taxIncluded)

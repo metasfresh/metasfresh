@@ -1,42 +1,25 @@
 package org.adempiere.ad.table.api.impl;
 
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.ad.callout.api.IADColumnCalloutBL;
 import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.model.IContextAware;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.ILoggable;
+import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_Table;
+import org.compiere.model.MColumn;
 import org.compiere.model.M_Element;
+import org.compiere.util.Env;
+
+import com.google.common.collect.ImmutableList;
+
+import lombok.NonNull;
 
 /**
  * Producer class used to given {@link I_AD_Column}s (see {@link #setSourceColumns(List)}) to another table (see {@link #setTargetTable(I_AD_Table)}).
@@ -46,105 +29,123 @@ import org.compiere.model.M_Element;
  */
 public class CopyColumnsProducer
 {
+	public static CopyColumnsProducer newInstance()
+	{
+		return new CopyColumnsProducer();
+	}
+
 	//
 	// Services
 	private final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 	private final IADColumnCalloutBL adColumnCalloutBL = Services.get(IADColumnCalloutBL.class);
 
-	private final IContextAware context;
-	private ILoggable logger;
-	private I_AD_Table targetTable;
-	private List<I_AD_Column> sourceColumns;
-	private String entityType = null;
+	private ILoggable _logger;
+	private I_AD_Table _targetTable;
+	private List<I_AD_Column> _sourceColumns;
+	private String _entityType = null;
+	private boolean _syncToDatabase = false;
 
-	private int countCreated = 0;
-
-	public CopyColumnsProducer(final IContextAware context)
+	private CopyColumnsProducer()
 	{
-		super();
-
-		Check.assumeNotNull(context, "context not null");
-		this.context = context;
-	}
-
-	private Properties getCtx()
-	{
-		return context.getCtx();
-	}
-
-	private String get_TrxName()
-	{
-		return context.getTrxName();
 	}
 
 	private void addLog(final String message)
 	{
-		if (logger == null)
+		if (_logger == null)
 		{
 			return;
 		}
 
-		logger.addLog(message);
+		_logger.addLog(message);
 	}
 
-	public void setLogger(final ILoggable logger)
+	public CopyColumnsProducer setLogger(final ILoggable logger)
 	{
-		this.logger = logger;
+		_logger = logger;
+		return this;
 	}
 
-	protected I_AD_Table getTargetTable()
+	private I_AD_Table getTargetTable()
 	{
-		Check.assumeNotNull(targetTable, "targetTable not null");
-		return targetTable;
+		Check.assumeNotNull(_targetTable, "targetTable not null");
+		return _targetTable;
 	}
 
-	public void setTargetTable(final I_AD_Table targetTable)
+	public CopyColumnsProducer setTargetTable(@NonNull final I_AD_Table targetTable)
 	{
-		Check.assumeNotNull(targetTable, "targetTable not null");
-		this.targetTable = targetTable;
+		_targetTable = targetTable;
+		return this;
 	}
 
-	protected List<I_AD_Column> getSourceColumns()
+	private List<I_AD_Column> getSourceColumns()
+	{
+		Check.assumeNotEmpty(_sourceColumns, "sourceColumns not empty");
+		return _sourceColumns;
+	}
+
+	public CopyColumnsProducer setSourceColumns(final List<I_AD_Column> sourceColumns)
 	{
 		Check.assumeNotEmpty(sourceColumns, "sourceColumns not empty");
-		return sourceColumns;
+		_sourceColumns = ImmutableList.copyOf(sourceColumns);
+		return this;
 	}
 
-	public void setSourceColumns(final List<I_AD_Column> sourceColumns)
+	public CopyColumnsProducer setEntityType(final String entityType)
 	{
-		Check.assumeNotEmpty(sourceColumns, "sourceColumns not empty");
-		this.sourceColumns = new ArrayList<I_AD_Column>(sourceColumns);
+		_entityType = entityType;
+		return this;
 	}
 
-	public void setEntityType(final String entityType)
+	private String getEntityTypeEffective()
 	{
-		this.entityType = entityType;
+		if (Check.isEmpty(_entityType))
+		{
+			return getTargetTable().getEntityType();
+		}
+		else
+		{
+			return _entityType;
+		}
 	}
 
-	public int getCountCreated()
+	public CopyColumnsProducer setSyncToDatabase(final boolean syncToDatabase)
 	{
-		return countCreated;
+		_syncToDatabase = syncToDatabase;
+		return this;
 	}
 
-	public void create()
+	private boolean isSyncToDatabase()
 	{
-		final I_AD_Table targetTable = getTargetTable();
+		return _syncToDatabase;
+	}
+
+	/**
+	 * @return now many columns were created
+	 */
+	public int create()
+	{
 		final List<I_AD_Column> sourceColumns = getSourceColumns();
 
+		int countCreated = 0;
 		for (final I_AD_Column sourceColumn : sourceColumns)
 		{
-			final I_AD_Column targetColumn = copyColumn(targetTable, sourceColumn);
+			final I_AD_Column targetColumn = copyColumn(sourceColumn);
 			if (targetColumn == null)
 			{
 				continue;
 			}
 
+			syncToDatabaseIfRequired(targetColumn);
+
 			countCreated++;
 		}
-	}	// doIt
 
-	private I_AD_Column copyColumn(final I_AD_Table targetTable, final I_AD_Column sourceColumn)
+		return countCreated;
+	}
+
+	private I_AD_Column copyColumn(final I_AD_Column sourceColumn)
 	{
+		final I_AD_Table targetTable = getTargetTable();
 		if (targetTable.getAD_Table_ID() == sourceColumn.getAD_Table_ID())
 		{
 			addLog("@AD_Column_ID@ " + targetTable.getTableName() + "." + sourceColumn.getColumnName() + ": same table [SKIP]");
@@ -153,7 +154,10 @@ public class CopyColumnsProducer
 
 		final String sourceTableName = adTableDAO.retrieveTableName(sourceColumn.getAD_Table_ID());
 
-		final I_AD_Column colTarget = createColumn(targetTable);
+		final I_AD_Column colTarget = InterfaceWrapperHelper.newInstance(I_AD_Column.class);
+		colTarget.setAD_Org_ID(0);
+		colTarget.setAD_Table_ID(targetTable.getAD_Table_ID());
+		colTarget.setEntityType(getEntityTypeEffective());
 
 		// special case the key -> sourceTable_ID
 		if (sourceColumn.getColumnName().equals(sourceTableName + "_ID"))
@@ -161,17 +165,18 @@ public class CopyColumnsProducer
 			final String targetColumnName = new String(targetTable.getTableName() + "_ID");
 			colTarget.setColumnName(targetColumnName);
 			// if the element don't exist, create it
-			M_Element element = M_Element.get(getCtx(), targetColumnName);
+			final Properties ctx = Env.getCtx();
+			M_Element element = M_Element.get(ctx, targetColumnName);
 			if (element == null)
 			{
-				element = new M_Element(getCtx(), targetColumnName, targetTable.getEntityType(), get_TrxName());
+				element = new M_Element(ctx, targetColumnName, targetTable.getEntityType(), ITrx.TRXNAME_ThreadInherited);
 				if (targetColumnName.equalsIgnoreCase(targetTable.getTableName() + "_ID"))
 				{
 					element.setColumnName(targetTable.getTableName() + "_ID");
 					element.setName(targetTable.getName());
 					element.setPrintName(targetTable.getName());
 				}
-				element.saveEx(get_TrxName());
+				element.saveEx(ITrx.TRXNAME_ThreadInherited);
 				addLog("@AD_Element_ID@ " + element.getColumnName() + ": @Created@"); // metas
 			}
 			colTarget.setAD_Element_ID(element.getAD_Element_ID());
@@ -232,23 +237,15 @@ public class CopyColumnsProducer
 		return colTarget;
 	}
 
-	private I_AD_Column createColumn(final I_AD_Table table)
+	private void syncToDatabaseIfRequired(final I_AD_Column targetColumn)
 	{
-		// see org.compiere.model.MColumn.MColumn(MTable)
-
-		final I_AD_Column column = InterfaceWrapperHelper.newInstance(I_AD_Column.class, context);
-		column.setAD_Org_ID(0);
-		column.setAD_Table_ID(table.getAD_Table_ID());
-
-		if (Check.isEmpty(entityType))
+		if (!isSyncToDatabase())
 		{
-			column.setEntityType(table.getEntityType());
-		}
-		else
-		{
-			column.setEntityType(entityType);
+			return;
 		}
 
-		return column;
+		final MColumn targetColumnPO = LegacyAdapters.convertToPO(targetColumn);
+		targetColumnPO.syncDatabase();
 	}
+
 }

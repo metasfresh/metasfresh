@@ -1,7 +1,7 @@
 package org.eevolution.event;
 
-import static org.compiere.process.DocAction.ACTION_Complete;
-import static org.compiere.process.DocAction.STATUS_Completed;
+import static de.metas.document.engine.IDocument.ACTION_Complete;
+import static de.metas.document.engine.IDocument.STATUS_Completed;
 
 import java.util.Date;
 
@@ -17,7 +17,7 @@ import org.springframework.stereotype.Service;
 
 import com.google.common.annotations.VisibleForTesting;
 
-import de.metas.document.engine.IDocActionBL;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.logging.LogManager;
 import de.metas.material.event.DDOrderRequestedEvent;
 import de.metas.material.event.MaterialDemandEvent;
@@ -125,7 +125,7 @@ public class MaterialDocumentListener implements MaterialEventListener
 		final I_PP_Order ppOrderRecord = ppOrderProducer.createPPOrder(ppOrder, dateOrdered);
 		if (ppOrderRecord.getPP_Product_Planning().isDocComplete())
 		{
-			Services.get(IDocActionBL.class).processEx(ppOrderRecord, ACTION_Complete, STATUS_Completed);
+			Services.get(IDocumentBL.class).processEx(ppOrderRecord, ACTION_Complete, STATUS_Completed);
 		}
 		return ppOrderRecord;
 	}
@@ -152,7 +152,7 @@ public class MaterialDocumentListener implements MaterialEventListener
 		final I_DD_Order ddOrderRecord = ddOrderProducer.createDDOrder(ddOrder, dateOrdered);
 		if (ddOrderRecord.getPP_Product_Planning().isDocComplete())
 		{
-			Services.get(IDocActionBL.class).processEx(ddOrderRecord, ACTION_Complete, STATUS_Completed);
+			Services.get(IDocumentBL.class).processEx(ddOrderRecord, ACTION_Complete, STATUS_Completed);
 		}
 		return ddOrderRecord;
 	}

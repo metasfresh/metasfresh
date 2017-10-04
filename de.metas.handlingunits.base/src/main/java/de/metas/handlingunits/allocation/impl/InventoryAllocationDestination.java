@@ -58,7 +58,7 @@ import org.compiere.util.TimeUtil;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.document.engine.IDocActionBL;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.IHUAssignmentDAO;
 import de.metas.handlingunits.IHUContext;
@@ -110,7 +110,7 @@ public class InventoryAllocationDestination implements IAllocationDestination
 	private final transient IHUEmptiesService huEmptiesService = Services.get(IHUEmptiesService.class);
 	private final transient IProductBL productBL = Services.get(IProductBL.class);
 	private final transient IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
-	private final transient IDocActionBL docActionBL = Services.get(IDocActionBL.class);
+	private final transient IDocumentBL docActionBL = Services.get(IDocumentBL.class);
 	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final transient IHUAttributesBL huAttributesBL = Services.get(IHUAttributesBL.class);
 	private final transient IInOutDAO inOutDAO = Services.get(IInOutDAO.class);

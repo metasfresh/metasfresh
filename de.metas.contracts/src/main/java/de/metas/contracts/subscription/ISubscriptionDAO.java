@@ -28,11 +28,11 @@ import java.util.Properties;
 
 import org.adempiere.util.ISingletonService;
 
+import de.metas.contracts.flatrate.interfaces.I_C_OLCand;
+import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.contracts.model.I_C_SubscriptionProgress;
+import de.metas.contracts.model.X_C_SubscriptionProgress;
 import de.metas.contracts.subscription.model.I_C_OrderLine;
-import de.metas.flatrate.interfaces.I_C_OLCand;
-import de.metas.flatrate.model.I_C_Flatrate_Term;
-import de.metas.flatrate.model.I_C_SubscriptionProgress;
-import de.metas.flatrate.model.X_C_SubscriptionProgress;
 import lombok.Builder.Default;
 import lombok.NonNull;
 import lombok.Singular;

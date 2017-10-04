@@ -41,7 +41,6 @@ import org.compiere.model.MOrderLine;
 import org.compiere.model.MPeriod;
 import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_C_Order;
-import org.compiere.process.DocAction;
 
 import de.metas.adempiere.ait.event.AIntegrationTestDriver;
 import de.metas.adempiere.ait.event.EventType;
@@ -49,16 +48,17 @@ import de.metas.adempiere.ait.helper.GridWindowHelper;
 import de.metas.adempiere.ait.helper.OrderHelper;
 import de.metas.adempiere.ait.helper.TestConfig;
 import de.metas.adempiere.model.I_C_Order;
-import de.metas.flatrate.api.IFlatrateDAO;
-import de.metas.flatrate.model.I_C_Flatrate_Conditions;
-import de.metas.flatrate.model.I_C_Flatrate_DataEntry;
-import de.metas.flatrate.model.I_C_Flatrate_Term;
-import de.metas.flatrate.model.I_C_Flatrate_Transition;
-import de.metas.flatrate.model.I_C_Invoice_Clearing_Alloc;
-import de.metas.flatrate.model.X_C_Flatrate_DataEntry;
-import de.metas.flatrate.model.X_C_Flatrate_Term;
-import de.metas.flatrate.process.C_Flatrate_Term_Extend;
-import de.metas.flatrate.process.C_Flatrate_Term_Prepare_Closing;
+import de.metas.contracts.IFlatrateDAO;
+import de.metas.contracts.flatrate.process.C_Flatrate_Term_Extend;
+import de.metas.contracts.flatrate.process.C_Flatrate_Term_Prepare_Closing;
+import de.metas.contracts.model.I_C_Flatrate_Conditions;
+import de.metas.contracts.model.I_C_Flatrate_DataEntry;
+import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.contracts.model.I_C_Flatrate_Transition;
+import de.metas.contracts.model.I_C_Invoice_Clearing_Alloc;
+import de.metas.contracts.model.X_C_Flatrate_DataEntry;
+import de.metas.contracts.model.X_C_Flatrate_Term;
+import de.metas.document.engine.IDocument;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import test.integration.contracts.ContractsHelper;
 import test.integration.contracts.ContractsTestConfig;
@@ -130,7 +130,7 @@ public class FlatFeeScenario
 				.setBPartnerName(testConfig.getC_BPartner_Value())
 				.setInvoiceRule(OrderHelper.Order_InvoiceRule.IMMEDIATE)
 				.setFreighCostRule(X_C_Order.FREIGHTCOSTRULE_FreightIncluded)
-				.setComplete(DocAction.STATUS_Completed)
+				.setComplete(IDocument.STATUS_Completed)
 
 				.addLine( // note: the price doesn't really matter, so I set it to 99
 						testConfig.getM_Product_Matching_Flatfee_Value(),
@@ -167,7 +167,7 @@ public class FlatFeeScenario
 				.setDocSubType(X_C_DocType.DOCSUBTYPE_StandardOrder)
 				.setBPartnerName(testConfig.getC_BPartner_Value())
 				.setInvoiceRule(OrderHelper.Order_InvoiceRule.IMMEDIATE)
-				.setComplete(DocAction.STATUS_Completed)
+				.setComplete(IDocument.STATUS_Completed)
 
 				.addLine( // note: the price doesn't really matter, so I set it to 99
 						testConfig.getM_Product_Matching_Flatfee_Value(),

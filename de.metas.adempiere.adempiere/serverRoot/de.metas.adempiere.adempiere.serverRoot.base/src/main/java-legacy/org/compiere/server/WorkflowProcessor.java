@@ -29,7 +29,6 @@ import org.adempiere.util.Services;
 import org.compiere.model.MClient;
 import org.compiere.model.MOrgInfo;
 import org.compiere.model.PO;
-import org.compiere.process.DocAction;
 import org.compiere.process.StateEngine;
 import org.compiere.util.DB;
 import org.compiere.util.TimeUtil;
@@ -40,6 +39,8 @@ import org.compiere.wf.MWFResponsible;
 import org.compiere.wf.MWorkflowProcessor;
 import org.compiere.wf.MWorkflowProcessorLog;
 
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.Msg;
 
 
@@ -361,19 +362,19 @@ public class WorkflowProcessor extends AdempiereServer
 		if (message == null || message.length() == 0)
 			message = process.getTextMsg();
 		File pdf = null; 
-		PO po = activity.getPO();
-		if (po instanceof DocAction)
+		final PO po = activity.getPO();
+		final IDocument document = po != null ? Services.get(IDocumentBL.class).getDocumentOrNull(po) : null;
+		if (document != null)
 		{
-			message = ((DocAction)po).getDocumentInfo() + "\n" + message;
-			pdf = ((DocAction)po).createPDF();
+			message = document.getDocumentInfo() + "\n" + message;
+			pdf = document.createPDF();
 		}
 		
 		//  Inactivity Alert: Workflow Activity {}
-		String subject = Msg.getMsg(m_client.getAD_Language(), AD_Message, 
-			new Object[] {subjectVar});
+		String subject = Msg.getMsg(m_client.getAD_Language(), AD_Message, new Object[] {subjectVar});
 		
 		//	Prevent duplicates
-		ArrayList<Integer> list = new ArrayList<Integer>();
+		ArrayList<Integer> list = new ArrayList<>();
 		int counter = 0;
 		
 		//	To Activity Owner

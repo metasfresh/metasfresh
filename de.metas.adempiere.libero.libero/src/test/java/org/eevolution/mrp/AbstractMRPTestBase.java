@@ -36,7 +36,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import de.metas.document.engine.IDocActionBL;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.material.planning.IMaterialPlanningContext;
 import de.metas.material.planning.MaterialPlanningConfiguration;
 
@@ -51,7 +51,7 @@ public abstract class AbstractMRPTestBase
 	protected MRPTestHelper helper;
 
 	// services
-	protected IDocActionBL docActionBL = null;
+	protected IDocumentBL docActionBL = null;
 	protected IDDOrderBL ddOrderBL = null;
 
 	protected boolean dumpDatabaseOnFail = true;
@@ -94,7 +94,7 @@ public abstract class AbstractMRPTestBase
 		// this.mrpExecutor = helper.mrpExecutor;
 
 		// services
-		docActionBL = Services.get(IDocActionBL.class);
+		docActionBL = Services.get(IDocumentBL.class);
 		ddOrderBL = Services.get(IDDOrderBL.class);
 
 		afterInit();

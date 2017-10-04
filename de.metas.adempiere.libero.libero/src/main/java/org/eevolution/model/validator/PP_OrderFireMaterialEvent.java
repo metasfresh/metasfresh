@@ -12,7 +12,7 @@ import org.eevolution.api.IPPOrderBOMDAO;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
 
-import de.metas.document.engine.IDocActionBL;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.material.event.EventDescr;
 import de.metas.material.event.MaterialEventService;
 import de.metas.material.event.ProductionPlanEvent;
@@ -41,7 +41,7 @@ public class PP_OrderFireMaterialEvent
 		// when going with @DocAction, at this point the ppOrder's docStatus would still be "IP" even if we are invoked on afterComplete..
 		// also, it might still be rolled back
 		// those aren't show-stoppers, but we therefore rather work with @ModelChange
-		final IDocActionBL docActionBL = Services.get(IDocActionBL.class);
+		final IDocumentBL docActionBL = Services.get(IDocumentBL.class);
 		if (!docActionBL.isDocumentCompletedOrClosed(ppOrder))
 		{
 			// quick workaround for https://github.com/metasfresh/metasfresh/issues/1581

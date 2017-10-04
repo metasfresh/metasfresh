@@ -25,12 +25,12 @@ package org.adempiere.bpartner.service;
 import java.util.Properties;
 
 import org.adempiere.util.ISingletonService;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_BPartner_QuickInput;
 
 import de.metas.adempiere.model.I_AD_User;
-import de.metas.adempiere.model.I_C_BPartner_Location;
 import de.metas.i18n.Language;
-import de.metas.interfaces.I_C_BPartner;
 
 public interface IBPartnerBL extends ISingletonService
 {
@@ -72,7 +72,7 @@ public interface IBPartnerBL extends ISingletonService
 	 * @param loc
 	 * @return user/contact or null
 	 */
-	I_AD_User retrieveUserForLoc(org.compiere.model.I_C_BPartner_Location loc);
+	I_AD_User retrieveUserForLoc(I_C_BPartner_Location loc);
 
 	//
 	// Commenting out this de.metas.terminable related code, because it assumes that the following columns exist
@@ -98,7 +98,7 @@ public interface IBPartnerBL extends ISingletonService
 	 */
 	void setAddress(I_C_BPartner_Location bpLocation);
 
-	I_AD_User retrieveShipContact(org.compiere.model.I_C_BPartner bpartner);
+	I_AD_User retrieveShipContact(I_C_BPartner bpartner);
 
 	/**
 	 * Creates a draft contact linked to given partner.
@@ -108,14 +108,14 @@ public interface IBPartnerBL extends ISingletonService
 	 * @param bpartner
 	 * @return draft contact
 	 */
-	I_AD_User createDraftContact(final org.compiere.model.I_C_BPartner bpartner);
+	I_AD_User createDraftContact(I_C_BPartner bpartner);
 
 	/**
 	 * @param partner the partner to check for. Internally working with {@link de.metas.interfaces.I_C_BPartner}.
 	 * @param isSOTrx
 	 * @return true if InOut consolidation is allowed for given partner
 	 */
-	boolean isAllowConsolidateInOutEffective(org.compiere.model.I_C_BPartner partner, boolean isSOTrx);
+	boolean isAllowConsolidateInOutEffective(I_C_BPartner partner, boolean isSOTrx);
 
 	/**
 	 * Use {@link IBPartnerAware} to get BPartner from given model.

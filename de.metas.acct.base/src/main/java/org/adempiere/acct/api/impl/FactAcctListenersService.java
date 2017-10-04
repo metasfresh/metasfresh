@@ -8,6 +8,8 @@ import org.adempiere.util.Check;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 
+import de.metas.document.engine.IDocument;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -21,11 +23,11 @@ import org.compiere.model.ModelValidator;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -84,26 +86,39 @@ public class FactAcctListenersService implements IFactAcctListenersService
 
 		private FactAcctListener2ModelValidationEngineAdapter()
 		{
-			super();
+		}
+
+		private final void fireDocValidate(final Object document, final int timing)
+		{
+			final Object model;
+			if(document instanceof IDocument)
+			{
+				model = ((IDocument)document).getDocumentModel();
+			}
+			else
+			{
+				model = document;
+			}
+			
+			ModelValidationEngine.get().fireDocValidate(model, timing);
 		}
 
 		@Override
-		public void onBeforePost(Object document)
+		public void onBeforePost(final Object document)
 		{
-			ModelValidationEngine.get().fireDocValidate(document, ModelValidator.TIMING_BEFORE_POST);
+			fireDocValidate(document, ModelValidator.TIMING_BEFORE_POST);
 		}
 
 		@Override
-		public void onAfterPost(Object document)
+		public void onAfterPost(final Object document)
 		{
-			ModelValidationEngine.get().fireDocValidate(document, ModelValidator.TIMING_AFTER_POST);
+			fireDocValidate(document, ModelValidator.TIMING_AFTER_POST);
 		}
 
 		@Override
-		public void onAfterUnpost(Object document)
+		public void onAfterUnpost(final Object document)
 		{
-			ModelValidationEngine.get().fireDocValidate(document, ModelValidator.TIMING_AFTER_UNPOST);
+			fireDocValidate(document, ModelValidator.TIMING_AFTER_UNPOST);
 		}
-
 	}
 }

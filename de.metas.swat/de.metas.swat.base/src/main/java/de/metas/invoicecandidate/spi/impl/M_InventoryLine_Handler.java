@@ -32,9 +32,10 @@ import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Inventory;
 import org.compiere.model.I_M_Product;
-import org.compiere.process.DocAction;
+import org.compiere.util.Env;
 
-import de.metas.document.engine.IDocActionBL;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.inout.IInOutBL;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
@@ -100,9 +101,9 @@ public class M_InventoryLine_Handler extends AbstractInvoiceCandidateHandler
 	}
 
 	@Override
-	public Iterator<? extends Object> retrieveAllModelsWithMissingCandidates(final Properties ctx, final int limit, final String trxName)
+	public Iterator<? extends Object> retrieveAllModelsWithMissingCandidates(final int limit)
 	{
-		return inventoryLineHandlerDAO.retrieveAllLinesWithoutIC(ctx, limit, trxName);
+		return inventoryLineHandlerDAO.retrieveAllLinesWithoutIC(Env.getCtx(), limit, ITrx.TRXNAME_ThreadInherited);
 	}
 
 	@Override
@@ -411,9 +412,9 @@ public class M_InventoryLine_Handler extends AbstractInvoiceCandidateHandler
 			ic.setDateOrdered(inOut.getMovementDate());
 		}
 
-		final IDocActionBL docActionBL = Services.get(IDocActionBL.class);
+		final IDocumentBL docActionBL = Services.get(IDocumentBL.class);
 
-		if (docActionBL.isDocumentStatusOneOf(inventoryLine.getM_Inventory(), DocAction.STATUS_Completed, DocAction.STATUS_Closed))
+		if (docActionBL.isDocumentStatusOneOf(inventoryLine.getM_Inventory(), IDocument.STATUS_Completed, IDocument.STATUS_Closed))
 		{
 			final BigDecimal qtyMultiplier = new BigDecimal(-1); // TODO: check if this is ok
 			final BigDecimal qtyDelivered = inventoryLine.getQtyInternalUse().multiply(qtyMultiplier);

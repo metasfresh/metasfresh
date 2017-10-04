@@ -1,8 +1,8 @@
 package org.eevolution.event;
 
+import static de.metas.document.engine.IDocument.STATUS_Completed;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.compiere.process.DocAction.STATUS_Completed;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertThat;

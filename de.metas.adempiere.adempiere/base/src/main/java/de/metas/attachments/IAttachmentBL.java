@@ -23,6 +23,7 @@ package de.metas.attachments;
  */
 
 import java.io.File;
+import java.net.URI;
 import java.util.Collection;
 import java.util.List;
 
@@ -72,6 +73,8 @@ public interface IAttachmentBL extends ISingletonService
 	 */
 	AttachmentEntry addEntry(Object model, String name, byte[] data);
 
+	AttachmentEntry addURLEntry(Object model, String name, URI url);
+
 	List<AttachmentEntry> addEntriesFromDataSources(Object model, Collection<DataSource> dataSources);
 
 	/**
@@ -114,4 +117,5 @@ public interface IAttachmentBL extends ISingletonService
 	void deleteAttachment(Object model);
 
 	void setAttachmentText(Object model, String textMsg);
+
 }

@@ -39,6 +39,7 @@ import org.compiere.process.StateEngine;
 import org.compiere.util.CCache;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.compiere.wf.api.IADWorkflowDAO;
 import org.slf4j.Logger;
 
 import de.metas.i18n.IMsgBL;

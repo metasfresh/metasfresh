@@ -220,7 +220,7 @@ public class MMatchInv extends X_M_MatchInv
 		{
 			MPeriod.testPeriodOpen(getCtx(), getDateAcct(), X_C_DocType.DOCBASETYPE_MatchInvoice, getAD_Org_ID());
 			setPosted(false);
-			Services.get(IFactAcctDAO.class).deleteForDocument(this);
+			Services.get(IFactAcctDAO.class).deleteForDocumentModel(this);
 		}
 		return true;
 	}	//	beforeDelete

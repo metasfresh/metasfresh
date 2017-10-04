@@ -33,7 +33,7 @@ import org.compiere.model.PO;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
-import de.metas.document.engine.IDocActionBL;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.document.refid.api.IReferenceNoBL;
 import de.metas.document.refid.api.IReferenceNoGeneratorInstance;
 import de.metas.logging.LogManager;
@@ -158,7 +158,7 @@ class ReferenceNoGeneratorInstanceValidator implements ModelValidator
 		{
 			final String tableName = MTable.getTableName(Env.getCtx(), tableId);
 
-			if (Services.get(IDocActionBL.class).isDocumentTable(tableName))
+			if (Services.get(IDocumentBL.class).isDocumentTable(tableName))
 			{
 				engine.addDocValidate(tableName, this);
 				logger.debug("Registered docValidate " + this);

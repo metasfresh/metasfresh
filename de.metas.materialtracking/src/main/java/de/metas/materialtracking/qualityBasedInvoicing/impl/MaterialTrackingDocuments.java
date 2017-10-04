@@ -36,10 +36,10 @@ import org.adempiere.util.Services;
 import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_PricingSystem;
-import org.compiere.process.DocAction;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.document.engine.IDocument;
 import de.metas.materialtracking.IMaterialTrackingBL;
 import de.metas.materialtracking.IMaterialTrackingDAO;
 import de.metas.materialtracking.IMaterialTrackingPPOrderBL;
@@ -150,7 +150,7 @@ import de.metas.materialtracking.qualityBasedInvoicing.IVendorReceipt;
 		final ArrayList<IQualityInspectionOrder> qualityInspectionOrders = new ArrayList<IQualityInspectionOrder>();
 		for (final I_PP_Order ppOrder : materialTrackingDAO.retrieveReferences(materialTracking, I_PP_Order.class))
 		{
-			if (!DocAction.STATUS_Closed.equals(ppOrder.getDocStatus())
+			if (!IDocument.STATUS_Closed.equals(ppOrder.getDocStatus())
 					&& !ppOrdersToBeConsideredClosed.contains(ppOrder.getPP_Order_ID()) // task 09657
 			)
 			{

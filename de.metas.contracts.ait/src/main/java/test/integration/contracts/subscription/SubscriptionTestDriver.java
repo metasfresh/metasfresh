@@ -44,7 +44,6 @@ import org.compiere.model.MUOM;
 import org.compiere.model.Query;
 import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_C_Order;
-import org.compiere.process.DocAction;
 import org.compiere.util.TimeUtil;
 import org.junit.Assume;
 import org.junit.Test;
@@ -59,23 +58,24 @@ import de.metas.adempiere.ait.helper.TestConfig;
 import de.metas.adempiere.ait.test.annotation.IntegrationTest;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.adempiere.model.I_M_Product;
+import de.metas.contracts.Contracts_Constants;
+import de.metas.contracts.IContractsDAO;
+import de.metas.contracts.flatrate.exceptions.SubscriptionChangeException;
+import de.metas.contracts.flatrate.interfaces.I_C_OLCand;
+import de.metas.contracts.flatrate.process.C_Flatrate_Term_Change;
+import de.metas.contracts.flatrate.process.C_Flatrate_Term_Create_From_OLCand;
+import de.metas.contracts.flatrate.process.C_Flatrate_Term_Extend;
+import de.metas.contracts.model.I_C_Flatrate_Conditions;
+import de.metas.contracts.model.I_C_Flatrate_Data;
+import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.contracts.model.I_C_Flatrate_Transition;
+import de.metas.contracts.model.I_C_SubscriptionProgress;
+import de.metas.contracts.model.X_C_Contract_Change;
+import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.subscription.ISubscriptionDAO;
 import de.metas.contracts.subscription.model.I_C_OrderLine;
 import de.metas.currency.ICurrencyDAO;
-import de.metas.flatrate.Contracts_Constants;
-import de.metas.flatrate.api.IContractsDAO;
-import de.metas.flatrate.exceptions.SubscriptionChangeException;
-import de.metas.flatrate.interfaces.I_C_OLCand;
-import de.metas.flatrate.model.I_C_Flatrate_Conditions;
-import de.metas.flatrate.model.I_C_Flatrate_Data;
-import de.metas.flatrate.model.I_C_Flatrate_Term;
-import de.metas.flatrate.model.I_C_Flatrate_Transition;
-import de.metas.flatrate.model.I_C_SubscriptionProgress;
-import de.metas.flatrate.model.X_C_Contract_Change;
-import de.metas.flatrate.model.X_C_Flatrate_Term;
-import de.metas.flatrate.process.C_Flatrate_Term_Create_From_OLCand;
-import de.metas.flatrate.process.C_Flatrate_Term_Extend;
-import de.metas.flatrate.process.C_Flatrate_Term_Change;
+import de.metas.document.engine.IDocument;
 import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.impex.model.I_AD_InputDataSource;
 import de.metas.inoutcandidate.api.IInOutCandidateConfig;
@@ -131,7 +131,7 @@ public class SubscriptionTestDriver extends AIntegrationTestDriver
 				.setDocSubType(X_C_DocType.DOCSUBTYPE_StandardOrder)
 				.setBPartnerName(testConfig.getC_BPartner_Value())
 				.setInvoiceRule(OrderHelper.Order_InvoiceRule.AFTER_DELIVERY)
-				.setComplete(DocAction.STATUS_Completed)
+				.setComplete(IDocument.STATUS_Completed)
 				.addLine(ContractsOrderLineHelper.class)
 				.setContractConditions(conditions)
 				.setProductValue(testConfig.getM_Product_Matching_Subcr_Value())

@@ -14,7 +14,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.ExtendedMemorizingSupplier;
-import org.compiere.util.TrxRunnableAdapter;
 import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
@@ -94,15 +93,7 @@ public class DefaultRfQResponseProducer implements IRfQResponseProducer
 		final I_C_RfQ rfq = getC_RfQ();
 		rfqBL.assertComplete(rfq);
 
-		trxManager.run(ITrx.TRXNAME_ThreadInherited, new TrxRunnableAdapter()
-		{
-
-			@Override
-			public void run(final String localTrxName) throws Exception
-			{
-				createInTrx();
-			}
-		});
+		trxManager.run(ITrx.TRXNAME_ThreadInherited, this::createInTrx);
 
 		return getGeneratedResponses();
 	}

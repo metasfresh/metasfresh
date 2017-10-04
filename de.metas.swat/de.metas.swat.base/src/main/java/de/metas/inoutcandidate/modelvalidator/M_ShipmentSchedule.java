@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.ad.table.api.IADTableDAO;
@@ -38,6 +39,7 @@ import org.adempiere.util.Check;
 import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
 import org.adempiere.util.agg.key.IAggregationKeyBuilder;
+import org.compiere.model.IQuery;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.MDocType;
@@ -45,7 +47,6 @@ import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;
 import org.compiere.model.ModelValidator;
 
-import de.metas.inoutcandidate.api.IInOutCandHandlerDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
@@ -103,15 +104,14 @@ public class M_ShipmentSchedule
 				|| Check.isEmpty(schedule.getBPartnerAddress_Override(), true))
 		{
 			final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
-			final Properties ctx = InterfaceWrapperHelper.getCtx(schedule);
-			final String trxName = InterfaceWrapperHelper.getTrxName(schedule);
-			shipmentScheduleBL.updateBPArtnerAddressOverride(ctx, schedule, trxName);
+			schedule.setBPartnerAddress_Override(null);
+			shipmentScheduleBL.updateBPArtnerAddressOverrideIfNotYetSet(schedule);
 		}
 	}
 
 	/**
 	 * If a shipment schedule is deleted, then this method makes sure that all {@link I_M_IolCandHandler_Log} records which refer to the same record as the schedule are also deleted.<br>
-	 * Otherwise, that referenced record would never be considered again by {@link de.metas.inoutcandidate.spi.IInOutCandHandler#retrieveModelsWithMissingCandidates(Properties, String)}.
+	 * Otherwise, that referenced record would never be considered again by {@link de.metas.inoutcandidate.spi.IShipmentScheduleHandler#retrieveModelsWithMissingCandidates(Properties, String)}.
 	 *
 	 * @param schedule
 	 * @task 08288
@@ -119,13 +119,16 @@ public class M_ShipmentSchedule
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_DELETE })
 	public void deleteHandlerLog(final I_M_ShipmentSchedule schedule)
 	{
-		final IInOutCandHandlerDAO inOutCandHandlerDAO = Services.get(IInOutCandHandlerDAO.class);
+		retrieveAllHandlerLogs(schedule).delete();
+	}
 
-		final List<I_M_IolCandHandler_Log> allHandlerLogs = inOutCandHandlerDAO.retrieveAllHandlerLogs(schedule);
-		for (final I_M_IolCandHandler_Log log : allHandlerLogs)
-		{
-			InterfaceWrapperHelper.delete(log);
-		}
+	private static IQuery<I_M_IolCandHandler_Log> retrieveAllHandlerLogs(final I_M_ShipmentSchedule shipmentSchedule)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_M_IolCandHandler_Log.class, shipmentSchedule)
+				.addEqualsFilter(I_M_IolCandHandler_Log.COLUMN_AD_Table_ID, shipmentSchedule.getAD_Table_ID())
+				.addEqualsFilter(I_M_IolCandHandler_Log.COLUMN_Record_ID, shipmentSchedule.getRecord_ID())
+				.create();
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_DELETE })

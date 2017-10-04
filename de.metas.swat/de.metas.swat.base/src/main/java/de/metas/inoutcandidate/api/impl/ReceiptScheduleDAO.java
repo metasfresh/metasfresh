@@ -39,10 +39,10 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_M_InOut;
-import org.compiere.process.DocAction;
 
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.document.engine.IDocument;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.inoutcandidate.api.IReceiptScheduleDAO;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
@@ -192,7 +192,7 @@ public class ReceiptScheduleDAO implements IReceiptScheduleDAO
 		return createRsaForRsQueryBuilder(receiptSchedule, I_M_ReceiptSchedule_Alloc.class)
 				.andCollect(I_M_ReceiptSchedule_Alloc.COLUMN_M_InOutLine_ID)
 				.andCollect(I_M_InOutLine.COLUMN_M_InOut_ID)
-				.addInArrayOrAllFilter(I_M_InOut.COLUMNNAME_DocStatus, DocAction.STATUS_Completed)
+				.addInArrayOrAllFilter(I_M_InOut.COLUMNNAME_DocStatus, IDocument.STATUS_Completed)
 				.create()
 				.list();
 	}

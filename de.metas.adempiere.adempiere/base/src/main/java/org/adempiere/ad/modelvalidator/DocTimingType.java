@@ -29,31 +29,32 @@ import java.util.stream.Stream;
 import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
 import org.compiere.model.ModelValidator;
-import org.compiere.process.DocAction;
 
 import com.google.common.annotations.VisibleForTesting;
 
+import de.metas.document.engine.IDocument;
+
 public enum DocTimingType
 {
-	BEFORE_PREPARE(ModelValidator.TIMING_BEFORE_PREPARE, DocAction.ACTION_Prepare, BeforeAfterType.Before) //
-	, AFTER_PREPARE(ModelValidator.TIMING_AFTER_PREPARE, DocAction.ACTION_Prepare, BeforeAfterType.After) //
-	, BEFORE_VOID(ModelValidator.TIMING_BEFORE_VOID, DocAction.ACTION_Void, BeforeAfterType.Before) //
-	, AFTER_VOID(ModelValidator.TIMING_AFTER_VOID, DocAction.ACTION_Void, BeforeAfterType.After) //
-	, BEFORE_CLOSE(ModelValidator.TIMING_BEFORE_CLOSE, DocAction.ACTION_Close, BeforeAfterType.Before) //
-	, AFTER_CLOSE(ModelValidator.TIMING_AFTER_CLOSE, DocAction.ACTION_Close, BeforeAfterType.After) //
-	, BEFORE_REACTIVATE(ModelValidator.TIMING_BEFORE_REACTIVATE, DocAction.ACTION_ReActivate, BeforeAfterType.Before) //
-	, AFTER_REACTIVATE(ModelValidator.TIMING_AFTER_REACTIVATE, DocAction.ACTION_ReActivate, BeforeAfterType.After) //
-	, BEFORE_REVERSECORRECT(ModelValidator.TIMING_BEFORE_REVERSECORRECT, DocAction.ACTION_Reverse_Correct, BeforeAfterType.Before) //
-	, AFTER_REVERSECORRECT(ModelValidator.TIMING_AFTER_REVERSECORRECT, DocAction.ACTION_Reverse_Correct, BeforeAfterType.After) //
-	, BEFORE_REVERSEACCRUAL(ModelValidator.TIMING_BEFORE_REVERSEACCRUAL, DocAction.ACTION_Reverse_Accrual, BeforeAfterType.Before) //
-	, AFTER_REVERSEACCRUAL(ModelValidator.TIMING_AFTER_REVERSEACCRUAL, DocAction.ACTION_Reverse_Accrual, BeforeAfterType.After) //
-	, BEFORE_COMPLETE(ModelValidator.TIMING_BEFORE_COMPLETE, DocAction.ACTION_Complete, BeforeAfterType.Before) //
-	, AFTER_COMPLETE(ModelValidator.TIMING_AFTER_COMPLETE, DocAction.ACTION_Complete, BeforeAfterType.After) //
-	, AFTER_UNPOST(ModelValidator.TIMING_AFTER_UNPOST, DocAction.ACTION_UnPost, BeforeAfterType.After) //
-	, BEFORE_POST(ModelValidator.TIMING_BEFORE_POST, DocAction.ACTION_Post, BeforeAfterType.Before) //
-	, AFTER_POST(ModelValidator.TIMING_AFTER_POST, DocAction.ACTION_Post, BeforeAfterType.After) //
-	, BEFORE_UNCLOSE(ModelValidator.TIMING_BEFORE_UNCLOSE, DocAction.ACTION_UnClose, BeforeAfterType.Before) //
-	, AFTER_UNCLOSE(ModelValidator.TIMING_AFTER_UNCLOSE, DocAction.ACTION_UnClose, BeforeAfterType.After) //
+	BEFORE_PREPARE(ModelValidator.TIMING_BEFORE_PREPARE, IDocument.ACTION_Prepare, BeforeAfterType.Before) //
+	, AFTER_PREPARE(ModelValidator.TIMING_AFTER_PREPARE, IDocument.ACTION_Prepare, BeforeAfterType.After) //
+	, BEFORE_VOID(ModelValidator.TIMING_BEFORE_VOID, IDocument.ACTION_Void, BeforeAfterType.Before) //
+	, AFTER_VOID(ModelValidator.TIMING_AFTER_VOID, IDocument.ACTION_Void, BeforeAfterType.After) //
+	, BEFORE_CLOSE(ModelValidator.TIMING_BEFORE_CLOSE, IDocument.ACTION_Close, BeforeAfterType.Before) //
+	, AFTER_CLOSE(ModelValidator.TIMING_AFTER_CLOSE, IDocument.ACTION_Close, BeforeAfterType.After) //
+	, BEFORE_REACTIVATE(ModelValidator.TIMING_BEFORE_REACTIVATE, IDocument.ACTION_ReActivate, BeforeAfterType.Before) //
+	, AFTER_REACTIVATE(ModelValidator.TIMING_AFTER_REACTIVATE, IDocument.ACTION_ReActivate, BeforeAfterType.After) //
+	, BEFORE_REVERSECORRECT(ModelValidator.TIMING_BEFORE_REVERSECORRECT, IDocument.ACTION_Reverse_Correct, BeforeAfterType.Before) //
+	, AFTER_REVERSECORRECT(ModelValidator.TIMING_AFTER_REVERSECORRECT, IDocument.ACTION_Reverse_Correct, BeforeAfterType.After) //
+	, BEFORE_REVERSEACCRUAL(ModelValidator.TIMING_BEFORE_REVERSEACCRUAL, IDocument.ACTION_Reverse_Accrual, BeforeAfterType.Before) //
+	, AFTER_REVERSEACCRUAL(ModelValidator.TIMING_AFTER_REVERSEACCRUAL, IDocument.ACTION_Reverse_Accrual, BeforeAfterType.After) //
+	, BEFORE_COMPLETE(ModelValidator.TIMING_BEFORE_COMPLETE, IDocument.ACTION_Complete, BeforeAfterType.Before) //
+	, AFTER_COMPLETE(ModelValidator.TIMING_AFTER_COMPLETE, IDocument.ACTION_Complete, BeforeAfterType.After) //
+	, AFTER_UNPOST(ModelValidator.TIMING_AFTER_UNPOST, IDocument.ACTION_UnPost, BeforeAfterType.After) //
+	, BEFORE_POST(ModelValidator.TIMING_BEFORE_POST, IDocument.ACTION_Post, BeforeAfterType.Before) //
+	, AFTER_POST(ModelValidator.TIMING_AFTER_POST, IDocument.ACTION_Post, BeforeAfterType.After) //
+	, BEFORE_UNCLOSE(ModelValidator.TIMING_BEFORE_UNCLOSE, IDocument.ACTION_UnClose, BeforeAfterType.Before) //
+	, AFTER_UNCLOSE(ModelValidator.TIMING_AFTER_UNCLOSE, IDocument.ACTION_UnClose, BeforeAfterType.After) //
 	;
 
 	//

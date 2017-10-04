@@ -46,10 +46,10 @@ import org.slf4j.Logger;
 
 import de.metas.adempiere.form.IClientUI;
 import de.metas.document.engine.DefaultDocActionOptionsContext;
-import de.metas.document.engine.IDocActionBL;
-import de.metas.document.engine.IDocActionBL.IDocActionItem;
 import de.metas.document.engine.IDocActionOptionsBL;
 import de.metas.document.engine.IDocActionOptionsContext;
+import de.metas.document.engine.IDocumentBL;
+import de.metas.document.engine.IDocumentBL.IDocActionItem;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 
@@ -268,6 +268,7 @@ public class VDocAction extends CDialog
 			if (docActionItem == null)
 			{
 				// shall not happen
+				log.warn("Skip DocAction={} because was not found in DocActinItems. Consider adding it to AD_Reference_ID=_Document Actions", docAction);
 				continue;
 			}
 
@@ -277,7 +278,7 @@ public class VDocAction extends CDialog
 		// setDefault
 		if (DocAction.equals("--")) // If None, suggest closing
 		{
-			DocAction = org.compiere.process.DocAction.ACTION_Close;
+			DocAction = de.metas.document.engine.IDocument.ACTION_Close;
 		}
 
 		final IDocActionItem defaultDocActionItem = docActionItems.get(DocAction);
@@ -331,7 +332,7 @@ public class VDocAction extends CDialog
 	{
 		if(docActionItemsByValue == null)
 		{
-			docActionItemsByValue = Services.get(IDocActionBL.class).retrieveDocActionItemsIndexedByValue();
+			docActionItemsByValue = Services.get(IDocumentBL.class).retrieveDocActionItemsIndexedByValue();
 		}
 
 		return docActionItemsByValue;

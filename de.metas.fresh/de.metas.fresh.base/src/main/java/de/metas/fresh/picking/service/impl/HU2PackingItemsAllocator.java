@@ -241,7 +241,7 @@ public class HU2PackingItemsAllocator extends AbstractShipmentScheduleQtyPickedB
 		{
 			final I_M_ShipmentSchedule schedule = e.getKey();
 			final BigDecimal qty = e.getValue();
-			final I_C_UOM uom = Services.get(IShipmentScheduleBL.class).getC_UOM(schedule);
+			final I_C_UOM uom = Services.get(IShipmentScheduleBL.class).getUomOfProduct(schedule);
 
 			transferQtyToTargetHU(schedule, qty, uom);
 		}

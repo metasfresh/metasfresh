@@ -15,12 +15,12 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_Client;
-import org.compiere.process.DocAction;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
 
-import de.metas.document.engine.IDocActionBL;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.elasticsearch.IESSystem;
 import de.metas.logging.LogManager;
 
@@ -89,7 +89,7 @@ public final class ESDocumentIndexTriggerInterceptor<DocumentType> extends Abstr
 		this.triggeringDocumentClass = documentClass;
 
 		triggeringTableName = InterfaceWrapperHelper.getTableName(triggeringDocumentClass);
-		if (!Services.get(IDocActionBL.class).isDocumentTable(triggeringTableName))
+		if (!Services.get(IDocumentBL.class).isDocumentTable(triggeringTableName))
 		{
 			throw new IllegalArgumentException("Table " + triggeringTableName + " must be a document table");
 		}
@@ -219,7 +219,7 @@ public final class ESDocumentIndexTriggerInterceptor<DocumentType> extends Abstr
 		// Document(triggering) filter
 		final IQuery<Object> documentsQuery = queryBL.createQueryBuilder(triggeringTableName, PlainContextAware.newWithThreadInheritedTrx())
 				.addOnlyActiveRecordsFilter()
-				.addInArrayOrAllFilter("DocStatus", DocAction.STATUS_Completed, DocAction.STATUS_Closed, DocAction.STATUS_Reversed)
+				.addInArrayOrAllFilter("DocStatus", IDocument.STATUS_Completed, IDocument.STATUS_Closed, IDocument.STATUS_Reversed)
 				.create();
 
 		return queryBL.createCompositeQueryFilter(modelTableName)

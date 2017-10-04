@@ -654,20 +654,20 @@ public interface I_M_ReceiptSchedule
     public static final String COLUMNNAME_IsBPartnerAddress_Override = "IsBPartnerAddress_Override";
 
 	/**
-	 * Set Packaging Material .
+	 * Set Verpackungsmaterial.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
-	 * <br>Virtual Column: false (lazy loading)
+	 * <br>Virtual Column: false
 	 */
 	public void setIsPackagingMaterial (boolean IsPackagingMaterial);
 
 	/**
-	 * Get Packaging Material .
+	 * Get Verpackungsmaterial.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
-	 * <br>Virtual Column: false (lazy loading)
+	 * <br>Virtual Column: false
 	 */
 	public boolean isPackagingMaterial();
 

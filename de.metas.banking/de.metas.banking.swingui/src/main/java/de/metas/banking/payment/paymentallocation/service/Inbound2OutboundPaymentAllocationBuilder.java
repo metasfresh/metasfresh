@@ -40,14 +40,14 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.model.I_C_Payment;
-import org.compiere.process.DocAction;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.TrxRunnable;
 
 import de.metas.allocation.api.IAllocationBL;
 import de.metas.banking.payment.paymentallocation.model.IPaymentRow;
-import de.metas.document.engine.IDocActionBL;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 
 /**
  * Creates outbound payments to match the given inbound payments.
@@ -59,7 +59,7 @@ public class Inbound2OutboundPaymentAllocationBuilder
 {
 	// services
 	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
-	private final transient IDocActionBL docActionBL = Services.get(IDocActionBL.class);
+	private final transient IDocumentBL docActionBL = Services.get(IDocumentBL.class);
 	private final transient IAllocationBL allocationBL = Services.get(IAllocationBL.class);
 
 	// Parameters
@@ -189,11 +189,11 @@ public class Inbound2OutboundPaymentAllocationBuilder
 		paymentOut.setOverUnderAmt(Env.ZERO);
 		paymentOut.setC_Invoice_ID(-1);
 		paymentOut.setC_Order_ID(-1);
-		paymentOut.setDocStatus(DocAction.STATUS_Drafted);
-		paymentOut.setDocAction(DocAction.ACTION_Complete);
+		paymentOut.setDocStatus(IDocument.STATUS_Drafted);
+		paymentOut.setDocAction(IDocument.ACTION_Complete);
 		InterfaceWrapperHelper.save(paymentOut);
 		Check.assume(!paymentOut.isReceipt(), "payment is not receipt: {}", paymentOut);
-		docActionBL.processEx(paymentOut, DocAction.ACTION_Complete, DocAction.STATUS_Completed);
+		docActionBL.processEx(paymentOut, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
 		
 		
 		final Timestamp dateAcct = TimeUtil.max(paymentIn.getDateAcct(), paymentOut.getDateAcct());

@@ -15,7 +15,7 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -2014321599L;
+	private static final long serialVersionUID = -2051329467L;
 
     /** Standard Constructor */
     public X_M_ShipmentSchedule (Properties ctx, int M_ShipmentSchedule_ID, String trxName)
@@ -24,12 +24,14 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
       /** if (M_ShipmentSchedule_ID == 0)
         {
 			setAD_Table_ID (0);
+			setBill_BPartner_ID (0);
 			setBPartnerAddress (null);
 			setC_BPartner_ID (0);
 			setC_BPartner_Location_ID (0);
 			setDeliveryRule (null);
 			setDeliveryViaRule (null);
 			setIsBPartnerAddress_Override (false); // N
+			setIsDeliveryStop (false); // N
 			setIsDisplayed (true); // Y
 			setIsDropShip (false); // N
 			setM_ShipmentSchedule_ID (0);
@@ -243,6 +245,43 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 			return "Y".equals(oo);
 		}
 		return false;
+	}
+
+	@Override
+	public org.compiere.model.I_C_BPartner getBill_BPartner() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_Bill_BPartner_ID, org.compiere.model.I_C_BPartner.class);
+	}
+
+	@Override
+	public void setBill_BPartner(org.compiere.model.I_C_BPartner Bill_BPartner)
+	{
+		set_ValueFromPO(COLUMNNAME_Bill_BPartner_ID, org.compiere.model.I_C_BPartner.class, Bill_BPartner);
+	}
+
+	/** Set Rechnungspartner.
+		@param Bill_BPartner_ID 
+		Geschäftspartners für die Rechnungsstellung
+	  */
+	@Override
+	public void setBill_BPartner_ID (int Bill_BPartner_ID)
+	{
+		if (Bill_BPartner_ID < 1) 
+			set_Value (COLUMNNAME_Bill_BPartner_ID, null);
+		else 
+			set_Value (COLUMNNAME_Bill_BPartner_ID, Integer.valueOf(Bill_BPartner_ID));
+	}
+
+	/** Get Rechnungspartner.
+		@return Geschäftspartners für die Rechnungsstellung
+	  */
+	@Override
+	public int getBill_BPartner_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Bill_BPartner_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	/** Set Anschrift-Text.
@@ -954,6 +993,29 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 		return false;
 	}
 
+	/** Set Delivery stop.
+		@param IsDeliveryStop Delivery stop	  */
+	@Override
+	public void setIsDeliveryStop (boolean IsDeliveryStop)
+	{
+		set_Value (COLUMNNAME_IsDeliveryStop, Boolean.valueOf(IsDeliveryStop));
+	}
+
+	/** Get Delivery stop.
+		@return Delivery stop	  */
+	@Override
+	public boolean isDeliveryStop () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsDeliveryStop);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
 	/** Set Displayed.
 		@param IsDisplayed 
 		Determines, if this field is displayed
@@ -1178,6 +1240,40 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	public int getM_Product_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_Product_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public de.metas.inoutcandidate.model.I_M_Shipment_Constraint getM_Shipment_Constraint() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_M_Shipment_Constraint_ID, de.metas.inoutcandidate.model.I_M_Shipment_Constraint.class);
+	}
+
+	@Override
+	public void setM_Shipment_Constraint(de.metas.inoutcandidate.model.I_M_Shipment_Constraint M_Shipment_Constraint)
+	{
+		set_ValueFromPO(COLUMNNAME_M_Shipment_Constraint_ID, de.metas.inoutcandidate.model.I_M_Shipment_Constraint.class, M_Shipment_Constraint);
+	}
+
+	/** Set Shipment constraint.
+		@param M_Shipment_Constraint_ID Shipment constraint	  */
+	@Override
+	public void setM_Shipment_Constraint_ID (int M_Shipment_Constraint_ID)
+	{
+		if (M_Shipment_Constraint_ID < 1) 
+			set_Value (COLUMNNAME_M_Shipment_Constraint_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_Shipment_Constraint_ID, Integer.valueOf(M_Shipment_Constraint_ID));
+	}
+
+	/** Get Shipment constraint.
+		@return Shipment constraint	  */
+	@Override
+	public int getM_Shipment_Constraint_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_Shipment_Constraint_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -1512,25 +1608,6 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	public java.lang.String getProductDescription () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_ProductDescription);
-	}
-
-	/** Set Lieferbare Menge.
-		@param QtyDeliverable Lieferbare Menge	  */
-	@Override
-	public void setQtyDeliverable (java.math.BigDecimal QtyDeliverable)
-	{
-		set_Value (COLUMNNAME_QtyDeliverable, QtyDeliverable);
-	}
-
-	/** Get Lieferbare Menge.
-		@return Lieferbare Menge	  */
-	@Override
-	public java.math.BigDecimal getQtyDeliverable () 
-	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyDeliverable);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
 	}
 
 	/** Set Gelieferte Menge.

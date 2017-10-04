@@ -31,7 +31,6 @@ import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.X_C_DocType;
-import org.compiere.process.DocAction;
 import org.eevolution.LiberoConfiguration;
 import org.eevolution.LiberoTestConfiguration;
 import org.eevolution.api.IPPOrderBL;
@@ -52,6 +51,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import de.metas.document.engine.IDocument;
 import de.metas.material.planning.MaterialPlanningConfiguration;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 
@@ -240,8 +240,8 @@ public class PPOrderBOMBLTest
 		ppOrder.setS_Resource(masterData.plant01);
 		ppOrder.setQtyOrdered(new BigDecimal(qtyOrderedStr));
 		ppOrder.setDatePromised(helper.getToday());
-		ppOrder.setDocStatus(DocAction.STATUS_Drafted);
-		ppOrder.setDocAction(DocAction.ACTION_Complete);
+		ppOrder.setDocStatus(IDocument.STATUS_Drafted);
+		ppOrder.setDocAction(IDocument.ACTION_Complete);
 		ppOrder.setC_UOM(uom);
 		InterfaceWrapperHelper.save(ppOrder);
 		return ppOrder;

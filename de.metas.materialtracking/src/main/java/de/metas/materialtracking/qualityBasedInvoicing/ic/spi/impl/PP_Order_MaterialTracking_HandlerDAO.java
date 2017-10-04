@@ -10,9 +10,9 @@ import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
-import org.compiere.process.DocAction;
 import org.eevolution.model.I_PP_Order;
 
+import de.metas.document.engine.IDocument;
 import de.metas.materialtracking.model.I_C_Invoice_Detail;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
 
@@ -62,7 +62,7 @@ public class PP_Order_MaterialTracking_HandlerDAO
 
 		final ICompositeQueryFilter<I_PP_Order> filters = queryBL.createCompositeQueryFilter(I_PP_Order.class)
 				// Only those manufacturing orders which are closed...
-				.addEqualsFilter(I_PP_Order.COLUMN_DocStatus, DocAction.STATUS_Closed)
+				.addEqualsFilter(I_PP_Order.COLUMN_DocStatus, IDocument.STATUS_Closed)
 				// ...and only those which we didn't already explicitly look at
 				.addEqualsFilter(de.metas.materialtracking.model.I_PP_Order.COLUMNNAME_IsInvoiceCandidate, false);
 

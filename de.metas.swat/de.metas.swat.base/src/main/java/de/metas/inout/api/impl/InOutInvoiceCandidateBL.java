@@ -29,9 +29,9 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_InOutLine;
-import org.compiere.process.DocAction;
 
-import de.metas.document.engine.IDocActionBL;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.api.IInOutInvoiceCandidateBL;
 import de.metas.inout.model.I_M_InOut;
@@ -48,7 +48,7 @@ public class InOutInvoiceCandidateBL implements IInOutInvoiceCandidateBL
 
 		boolean isAllowToInvoice = false;
 
-		final IDocActionBL docActionBL = Services.get(IDocActionBL.class);
+		final IDocumentBL docActionBL = Services.get(IDocumentBL.class);
 
 		if (inOut.isInOutApprovedForInvoicing())
 		{
@@ -56,7 +56,7 @@ public class InOutInvoiceCandidateBL implements IInOutInvoiceCandidateBL
 		}
 
 		if (docActionBL.isStatusStrOneOf(inOut.getDocStatus(),
-				DocAction.STATUS_Completed, DocAction.STATUS_Closed))
+				IDocument.STATUS_Completed, IDocument.STATUS_Closed))
 		{
 			isAllowToInvoice = true;
 		}

@@ -31,7 +31,6 @@ import java.util.List;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.collections.ListUtils;
 import org.compiere.model.I_C_BPartner;
-import org.compiere.process.DocAction;
 import org.compiere.util.TimeUtil;
 import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_PP_Order;
@@ -44,6 +43,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import ch.qos.logback.classic.Level;
+import de.metas.document.engine.IDocument;
 import de.metas.logging.LogManager;
 
 /**
@@ -393,7 +393,7 @@ public class MRPExecutor_Simple_Test extends AbstractMRPTestBase
 
 		//
 		// Complete the MO
-		docActionBL.processEx(ppOrder, DocAction.ACTION_Complete, DocAction.STATUS_Completed);
+		docActionBL.processEx(ppOrder, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
 
 		//
 		// Simulate that we are receiving the whole qty from MO
@@ -516,7 +516,7 @@ public class MRPExecutor_Simple_Test extends AbstractMRPTestBase
 
 		//
 		// Complete the MO
-		docActionBL.processEx(ppOrder, DocAction.ACTION_Complete, DocAction.STATUS_Completed);
+		docActionBL.processEx(ppOrder, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
 		helper.dumpMRPRecords("After Manufacturing Order Completed");
 
 		//
@@ -681,7 +681,7 @@ public class MRPExecutor_Simple_Test extends AbstractMRPTestBase
 			// Validate
 			Assert.assertEquals("Invalid PP Order - BPartner", bparter01, ppOrder.getC_BPartner());
 			// Complete it
-			docActionBL.processEx(ppOrder, DocAction.ACTION_Complete, DocAction.STATUS_Completed);
+			docActionBL.processEx(ppOrder, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
 
 			//
 			// Get the DD Order to move 300 x Salad from Manufacturing Warehouse to Picking Warehouse
@@ -857,7 +857,7 @@ public class MRPExecutor_Simple_Test extends AbstractMRPTestBase
 			Assert.assertEquals("Invalid PP Order - BPartner", bparter01, ppOrder.getC_BPartner());
 			Assert.assertEquals("Invalid PP Order - QtyOrdered", 300, ppOrder.getQtyOrdered().intValueExact());
 			// Complete it
-			docActionBL.processEx(ppOrder, DocAction.ACTION_Complete, DocAction.STATUS_Completed);
+			docActionBL.processEx(ppOrder, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
 
 			//
 			// Receive 125 items from MO

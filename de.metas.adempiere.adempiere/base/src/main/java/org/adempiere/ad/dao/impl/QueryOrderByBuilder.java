@@ -33,6 +33,8 @@ import org.adempiere.ad.dao.IQueryOrderByBuilder;
 import org.adempiere.model.ModelColumn;
 import org.adempiere.util.Check;
 
+import lombok.NonNull;
+
 final class QueryOrderByBuilder<T> implements IQueryOrderByBuilder<T>
 {
 	private List<QueryOrderByItem> orderBys = new ArrayList<QueryOrderByItem>();
@@ -73,15 +75,26 @@ final class QueryOrderByBuilder<T> implements IQueryOrderByBuilder<T>
 	}
 
 	@Override
-	public IQueryOrderByBuilder<T> addColumn(final String columnName, boolean asc)
+	public IQueryOrderByBuilder<T> addColumnAscending(@NonNull final String columnName)
 	{
-		final Direction direction = asc ? Direction.Ascending : Direction.Descending;
+		final Direction direction = Direction.Ascending;
 		final Nulls nulls = getNulls(direction);
 		return addColumn(columnName, direction, nulls);
 	}
 
 	@Override
-	public IQueryOrderByBuilder<T> addColumn(final String columnName, final Direction direction, final Nulls nulls)
+	public IQueryOrderByBuilder<T> addColumnDescending(@NonNull final String columnName)
+	{
+		final Direction direction = Direction.Descending;
+		final Nulls nulls = getNulls(direction);
+		return addColumn(columnName, direction, nulls);
+	}
+	
+	@Override
+	public IQueryOrderByBuilder<T> addColumn(
+			@NonNull final String columnName, 
+			@NonNull final Direction direction, 
+			@NonNull final Nulls nulls)
 	{
 		final QueryOrderByItem orderByItem = new QueryOrderByItem(columnName, direction, nulls);
 		orderBys.add(orderByItem);

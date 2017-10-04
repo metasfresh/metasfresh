@@ -62,6 +62,7 @@ import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_Ref_Table;
 import org.compiere.model.I_AD_Reference;
 import org.compiere.model.I_AD_RelationType;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.MNote;
@@ -1239,7 +1240,11 @@ public class OLCandBL implements IOLCandBL
 	}
 
 	@Override
-	public IPricingResult computePriceActual(final I_C_OLCand olCand, final BigDecimal qtyOverride, final int pricingSystemIdOverride, final Timestamp date)
+	public IPricingResult computePriceActual(
+			final I_C_OLCand olCand, 
+			final BigDecimal qtyOverride, 
+			final int pricingSystemIdOverride, 
+			final Timestamp date)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(olCand);
 
@@ -1259,8 +1264,11 @@ public class OLCandBL implements IOLCandBL
 			final IProductPA productPA = Services.get(IProductPA.class);
 
 			final int bill_BPartner_ID = effectiveValuesBL.getBill_BPartner_Effective_ID(olCand);
-			final int bill_Location_ID = effectiveValuesBL.getBill_Location_Effective_ID(olCand);
 
+			final I_C_BPartner_Location dropShipLocation = effectiveValuesBL.getDropShip_Location_Effective(olCand);
+			
+			pricingCtx.setC_Country_ID(dropShipLocation.getC_Location().getC_Country_ID());
+			
 			final String trxName = InterfaceWrapperHelper.getTrxName(olCand);
 
 			final BigDecimal qty = qtyOverride != null ? qtyOverride : olCand.getQty();
@@ -1279,11 +1287,11 @@ public class OLCandBL implements IOLCandBL
 
 			pricingCtx.setDisallowDiscount(olCand.isManualDiscount());
 
-			final I_M_PriceList pl = productPA.retrievePriceListByPricingSyst(ctx, pricingSystemId, bill_Location_ID, true, trxName);
+			final I_M_PriceList pl = productPA.retrievePriceListByPricingSyst(ctx, pricingSystemId, dropShipLocation.getC_BPartner_Location_ID(), true, trxName);
 
 			if (pl == null)
 			{
-				throw new AdempiereException("@PriceList@ @NotFound@: @M_PricingSystem@ " + pricingSystemId + ", @Bill_Location@ " + bill_Location_ID);
+				throw new AdempiereException("@PriceList@ @NotFound@: @M_PricingSystem@ " + pricingSystemId + ", @Bill_Location@ " + dropShipLocation.getC_BPartner_Location_ID());
 			}
 			pricingCtx.setM_PriceList_ID(pl.getM_PriceList_ID());
 			pricingCtx.setM_Product_ID(effectiveValuesBL.getM_Product_Effective_ID(olCand));

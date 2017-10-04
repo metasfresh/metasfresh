@@ -14,7 +14,7 @@ public class X_C_RfQResponse_v extends org.compiere.model.PO implements I_C_RfQR
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 332033577L;
+	private static final long serialVersionUID = -261144887L;
 
     /** Standard Constructor */
     public X_C_RfQResponse_v (Properties ctx, int C_RfQResponse_v_ID, String trxName)
@@ -376,9 +376,9 @@ public class X_C_RfQResponse_v extends org.compiere.model.PO implements I_C_RfQR
 		return (java.lang.String)get_Value(COLUMNNAME_ContactName);
 	}
 
-	/** Set Antwort-datum.
+	/** Set Datum Antwort.
 		@param DateResponse 
-		Date of the Response
+		Datum der Antwort
 	  */
 	@Override
 	public void setDateResponse (java.sql.Timestamp DateResponse)
@@ -386,8 +386,8 @@ public class X_C_RfQResponse_v extends org.compiere.model.PO implements I_C_RfQR
 		set_ValueNoCheck (COLUMNNAME_DateResponse, DateResponse);
 	}
 
-	/** Get Antwort-datum.
-		@return Date of the Response
+	/** Get Datum Antwort.
+		@return Datum der Antwort
 	  */
 	@Override
 	public java.sql.Timestamp getDateResponse () 
@@ -546,9 +546,9 @@ public class X_C_RfQResponse_v extends org.compiere.model.PO implements I_C_RfQR
 		return ii.intValue();
 	}
 
-	/** Set Phone.
+	/** Set Telefon.
 		@param Phone 
-		Identifies a telephone number
+		Beschreibt eine Telefon Nummer
 	  */
 	@Override
 	public void setPhone (java.lang.String Phone)
@@ -556,8 +556,8 @@ public class X_C_RfQResponse_v extends org.compiere.model.PO implements I_C_RfQR
 		set_ValueNoCheck (COLUMNNAME_Phone, Phone);
 	}
 
-	/** Get Phone.
-		@return Identifies a telephone number
+	/** Get Telefon.
+		@return Beschreibt eine Telefon Nummer
 	  */
 	@Override
 	public java.lang.String getPhone () 

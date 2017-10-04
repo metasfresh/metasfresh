@@ -25,21 +25,22 @@ package de.metas.workflow.api.impl;
 
 import java.util.Properties;
 
+import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.IOrgDAO;
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_AD_WF_Responsible;
-import org.compiere.model.MTable;
 import org.compiere.model.X_AD_WF_Responsible;
 import org.compiere.util.Env;
-import org.compiere.util.Trx;
-import org.compiere.util.Util;
 
 import de.metas.workflow.api.IWorkflowBL;
 import de.metas.workflow.api.IWorkflowDAO;
 import de.metas.workflow.model.I_AD_OrgInfo;
 import de.metas.workflow.model.I_C_Doc_Responsible;
+import lombok.NonNull;
 
 public class WorkflowBL implements IWorkflowBL
 {
@@ -49,7 +50,7 @@ public class WorkflowBL implements IWorkflowBL
 	public I_AD_WF_Responsible getOrgWFResponsible(Properties ctx, int adOrgId)
 	{
 		final I_AD_OrgInfo orgInfo = InterfaceWrapperHelper.create(
-				Services.get(IOrgDAO.class).retrieveOrgInfo(ctx, adOrgId, Trx.TRXNAME_None),
+				Services.get(IOrgDAO.class).retrieveOrgInfo(ctx, adOrgId, ITrx.TRXNAME_None),
 				I_AD_OrgInfo.class);
 		I_AD_WF_Responsible wfResponsible = orgInfo.getAD_WF_Responsible();
 		if (wfResponsible != null)
@@ -59,20 +60,20 @@ public class WorkflowBL implements IWorkflowBL
 
 		//
 		// Default: Invoker
-		wfResponsible = InterfaceWrapperHelper.create(ctx, AD_WF_RESPONSIBLE_ID_Invoker, I_AD_WF_Responsible.class, Trx.TRXNAME_None);
+		wfResponsible = InterfaceWrapperHelper.create(ctx, AD_WF_RESPONSIBLE_ID_Invoker, I_AD_WF_Responsible.class, ITrx.TRXNAME_None);
 		return wfResponsible;
 	}
 
 	@Override
-	public I_C_Doc_Responsible createDocResponsible(final Object doc, int adOrgId)
+	public I_C_Doc_Responsible createDocResponsible(@NonNull final Object doc, int adOrgId)
 	{
-		Util.assumeNotNull(doc, "doc is not null");
+		
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(doc);
 		final String trxName = InterfaceWrapperHelper.getTrxName(doc);
 
 		final String tableName = InterfaceWrapperHelper.getModelTableName(doc);
-		final int tableId = MTable.getTable_ID(tableName);
+		final int tableId = Services.get(IADTableDAO.class).retrieveTableId(tableName);
 		final int recordId = InterfaceWrapperHelper.getId(doc);
 
 		final I_AD_WF_Responsible wfResponsible = getOrgWFResponsible(ctx, adOrgId);
@@ -115,7 +116,7 @@ public class WorkflowBL implements IWorkflowBL
 		if (isInvoker(wfResponsible) || isHuman(wfResponsible))
 		{
 			final I_AD_User userResponsible = docResponsible.getAD_User_Responsible();
-			Util.assumeNotNull(userResponsible, "No AD_User_Responsible found for {}", docResponsible);
+			Check.assumeNotNull(userResponsible, "No AD_User_Responsible found for {}", docResponsible);
 
 			docResponsible.setAD_WF_Responsible_Name(userResponsible.getName());
 		}

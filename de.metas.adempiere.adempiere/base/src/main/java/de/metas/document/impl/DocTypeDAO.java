@@ -33,11 +33,15 @@ import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DocTypeNotFoundException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
+import org.compiere.model.I_AD_Sequence;
 import org.compiere.model.I_C_DocBaseType_Counter;
 import org.compiere.model.I_C_DocType;
+import org.compiere.model.MDocType;
+import org.compiere.model.MSequence;
 import org.compiere.util.Env;
 
 import com.google.common.collect.ImmutableMap;
@@ -131,7 +135,7 @@ public class DocTypeDAO implements IDocTypeDAO
 			final int adOrgId)
 	{
 		final I_C_DocType docType = getDocTypeOrNull(Env.getCtx(), docBaseType, docSubType, adClientId, adOrgId, ITrx.TRXNAME_None);
-		if(docType == null)
+		if (docType == null)
 		{
 			final String additionalInfo = "@DocSubType@: " + docSubType
 					+ ", @AD_Client_ID@: " + adClientId
@@ -153,7 +157,7 @@ public class DocTypeDAO implements IDocTypeDAO
 				.create()
 				.first(I_C_DocType.class);
 	}
-	
+
 	private IQueryBuilder<I_C_DocType> createDocTypeByBaseTypeQuery(
 			final Properties ctx,
 			final String docBaseType,
@@ -228,4 +232,81 @@ public class DocTypeDAO implements IDocTypeDAO
 		return docBaseTypeCounters.build();
 	}
 
+	@Override
+	public I_C_DocType createDocType(final DocTypeCreateRequest request)
+	{
+		final Properties ctx = request.getCtx();
+		final String trxName = ITrx.TRXNAME_ThreadInherited;
+		final String name = request.getName();
+
+		final int docNoSequenceId;
+		if(request.getDocNoSequenceId() > 0)
+		{
+			docNoSequenceId = request.getDocNoSequenceId();
+		}
+		else if(request.getNewDocNoSequenceStartNo() > 0)
+		{
+			final I_AD_Sequence sequence = new MSequence(ctx, Env.getAD_Client_ID(ctx), name, request.getNewDocNoSequenceStartNo(), trxName);
+			InterfaceWrapperHelper.save(sequence);
+			docNoSequenceId = sequence.getAD_Sequence_ID();
+		}
+		else
+		{
+			docNoSequenceId = -1;
+		}
+
+		final MDocType dt = new MDocType(ctx, request.getDocBaseType(), name, trxName);
+		dt.setEntityType(request.getEntityType());
+		if(request.getAdOrgId() > 0)
+		{
+			dt.setAD_Org_ID(request.getAdOrgId());
+		}
+		if (request.getPrintName() != null && request.getPrintName().length() > 0)
+		{
+			dt.setPrintName(request.getPrintName()); // Defaults to Name
+		}
+		if (request.getDocSubType() != null)
+		{
+			dt.setDocSubType(request.getDocSubType());
+		}
+		if (request.getDocTypeShipmentId() > 0)
+		{
+			dt.setC_DocTypeShipment_ID(request.getDocTypeShipmentId());
+		}
+		if (request.getDocTypeInvoiceId() > 0)
+		{
+			dt.setC_DocTypeInvoice_ID(request.getDocTypeInvoiceId());
+		}
+		if (request.getGlCategoryId() > 0)
+		{
+			dt.setGL_Category_ID(request.getGlCategoryId());
+		}
+		
+		if (docNoSequenceId <= 0)
+		{
+			dt.setIsDocNoControlled(false);
+		}
+		else
+		{
+			dt.setIsDocNoControlled(true);
+			dt.setDocNoSequence_ID(docNoSequenceId);
+		}
+		
+		if(request.getDocumentCopies() > 0)
+		{
+			dt.setDocumentCopies(request.getDocumentCopies());
+		}
+
+		if(request.getIsSOTrx() != null)
+		{
+			dt.setIsSOTrx(request.getIsSOTrx());
+		}
+		else
+		{
+			dt.setIsSOTrx();
+		}
+		
+		InterfaceWrapperHelper.save(dt);
+		return dt;
+	}
 }

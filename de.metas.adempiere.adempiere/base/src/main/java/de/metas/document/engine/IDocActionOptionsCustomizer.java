@@ -1,5 +1,7 @@
 package de.metas.document.engine;
 
+import org.springframework.stereotype.Component;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -13,11 +15,11 @@ package de.metas.document.engine;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -25,16 +27,18 @@ package de.metas.document.engine;
 /**
  * Customize the available DocActions for given document.
  * 
+ * Just annotate implementations with spring's {@link Component} they will be automatically discovered.
+ * 
  * @author metas-dev <dev@metasfresh.com>
  *
  */
 public interface IDocActionOptionsCustomizer
 {
 	/**
-	 * Customize Valid Actions
-	 *
-	 * @param optionsCtx
-	 * @return Number of valid options
+	 * Gets table name on which this customizer applies.
+	 * Called by API at registration time.
 	 */
+	String getAppliesToTableName();
+
 	void customizeValidActions(IDocActionOptionsContext optionsCtx);
 }

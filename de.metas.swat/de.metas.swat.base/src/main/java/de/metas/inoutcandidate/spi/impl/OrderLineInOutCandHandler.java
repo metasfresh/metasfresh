@@ -47,7 +47,7 @@ import de.metas.adempiere.service.IOrderDAO;
 import de.metas.inoutcandidate.api.IDeliverRequest;
 import de.metas.inoutcandidate.api.IShipmentScheduleInvalidateBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.inoutcandidate.spi.IInOutCandHandler;
+import de.metas.inoutcandidate.spi.IShipmentScheduleHandler;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.logging.LogManager;
 import de.metas.product.IProductBL;
@@ -58,7 +58,7 @@ import de.metas.product.IProductBL;
  * @author ts
  *
  */
-public class OrderLineInOutCandHandler implements IInOutCandHandler
+public class OrderLineInOutCandHandler implements IShipmentScheduleHandler
 {
 
 	private static final Logger logger = LogManager.getLogger(OrderLineInOutCandHandler.class);
@@ -119,6 +119,7 @@ public class OrderLineInOutCandHandler implements IInOutCandHandler
 
 		newSched.setC_BPartner_Location_ID(orderLine.getC_BPartner_Location_ID());
 		newSched.setC_BPartner_ID(orderLine.getC_BPartner_ID());
+		newSched.setBill_BPartner_ID(order.getBill_BPartner_ID());
 
 		final String bPartnerAddress;
 		if (!Check.isEmpty(orderLine.getBPartnerAddress()))
@@ -235,7 +236,7 @@ public class OrderLineInOutCandHandler implements IInOutCandHandler
 
 		logger.debug("Identified {} C_OrderLines that need a shipment schedule", ols.size());
 
-		return new ArrayList<Object>(ols);
+		return new ArrayList<>(ols);
 	}
 
 	/**

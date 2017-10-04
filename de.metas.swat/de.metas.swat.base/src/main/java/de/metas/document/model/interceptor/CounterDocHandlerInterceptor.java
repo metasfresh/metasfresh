@@ -6,11 +6,11 @@ import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Client;
-import org.compiere.process.DocAction;
 
 import com.google.common.base.MoreObjects;
 
 import de.metas.document.ICounterDocBL;
+import de.metas.document.engine.IDocument;
 
 /*
  * #%L
@@ -35,7 +35,7 @@ import de.metas.document.ICounterDocBL;
  */
 
 /**
- * Interceptor used to intercept {@link DocAction}s that might need a counter document
+ * Interceptor used to intercept {@link IDocument}s that might need a counter document
  *
  * @author metas-dev <dev@metasfresh.com>
  *

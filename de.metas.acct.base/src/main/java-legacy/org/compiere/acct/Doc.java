@@ -51,21 +51,19 @@ import org.compiere.model.MNote;
 import org.compiere.model.MPeriod;
 import org.compiere.model.PO;
 import org.compiere.model.X_C_DocType;
-import org.compiere.process.DocumentEngine;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.TrxRunnable2;
 import org.slf4j.Logger;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
-import de.metas.logging.LogManager;
 
 import de.metas.currency.ICurrencyBL;
 import de.metas.currency.ICurrencyConversionContext;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.currency.exceptions.NoCurrencyRateFoundException;
+import de.metas.document.engine.IDocument;
 import de.metas.i18n.IMsgBL;
+import de.metas.logging.LogManager;
 
 /**
  * Posting Document Root.
@@ -489,10 +487,10 @@ public abstract class Doc
 		{
 			// This is a valid case (e.g. M_MatchInv, M_MatchPO)
 		}
-		else if (m_DocStatus.equals(DocumentEngine.STATUS_Completed)
-				|| m_DocStatus.equals(DocumentEngine.STATUS_Closed)
-				|| m_DocStatus.equals(DocumentEngine.STATUS_Voided)
-				|| m_DocStatus.equals(DocumentEngine.STATUS_Reversed))
+		else if (m_DocStatus.equals(IDocument.STATUS_Completed)
+				|| m_DocStatus.equals(IDocument.STATUS_Closed)
+				|| m_DocStatus.equals(IDocument.STATUS_Voided)
+				|| m_DocStatus.equals(IDocument.STATUS_Reversed))
 		{
 			;
 		}
@@ -555,7 +553,7 @@ public abstract class Doc
 
 		//
 		// Create Fact per AcctSchema
-		m_fact = new ArrayList<Fact>();
+		m_fact = new ArrayList<>();
 		// for all Accounting Schema
 		{
 			for (final MAcctSchema acctSchema : m_ass)
@@ -635,7 +633,7 @@ public abstract class Doc
 	private final int deleteAcct()
 	{
 		final Object documentPO = getPO();
-		return factAcctDAO.deleteForDocument(documentPO);
+		return factAcctDAO.deleteForDocumentModel(documentPO);
 	}	// deleteAcct
 
 	/**
@@ -2409,7 +2407,7 @@ public abstract class Doc
 					// Post it in same context and transaction as this document is posted
 					.setContext(getCtx(), getTrxName())
 					.setAD_Client_ID(getAD_Client_ID())
-					.setDocument(document) // the document to be posted
+					.setDocumentFromModel(document) // the document to be posted
 					.setFailOnError(false) // don't fail because we don't want to fail the main document posting because one of it's depending documents are failing
 					.setPostImmediate(PostImmediate.Yes) // yes, post it immediate
 					.setForce(false) // don't force it

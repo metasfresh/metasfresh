@@ -39,7 +39,6 @@ import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.I_M_ProductPrice;
 import org.compiere.model.MWarehouse;
-import org.compiere.process.DocAction;
 import org.compiere.util.Trx;
 
 import de.metas.adempiere.model.I_C_Invoice;
@@ -47,6 +46,7 @@ import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.adempiere.model.I_M_Product_Category;
+import de.metas.document.engine.IDocument;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.interfaces.I_C_BP_BankAccount;
@@ -148,7 +148,7 @@ public class HelperDelegator implements IHelper
 	}
 
 	@Override
-	public void processComplete(DocAction doc)
+	public void processComplete(IDocument doc)
 	{
 		helper.processComplete(doc);
 	}
@@ -307,12 +307,6 @@ public class HelperDelegator implements IHelper
 	}
 
 	@Override
-	public I_M_InOut createInOut(I_C_Order order)
-	{
-		return helper.createInOut(order);
-	}
-
-	@Override
 	public void createT_Selection(int AD_PInstance_ID, int... ids)
 	{
 		helper.createT_Selection(AD_PInstance_ID, ids);
@@ -328,12 +322,6 @@ public class HelperDelegator implements IHelper
 	public void runProcess_InvoiceGenerate(String trxName, int... orderIds)
 	{
 		helper.runProcess_InvoiceGenerate(trxName, orderIds);
-	}
-
-	@Override
-	public void runProcess_InOutGenerate(int... orderIds)
-	{
-		helper.runProcess_InOutGenerate(orderIds);
 	}
 
 	@Override

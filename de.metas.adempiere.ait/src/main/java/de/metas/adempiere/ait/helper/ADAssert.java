@@ -36,6 +36,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Properties;
 
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.Callout;
@@ -63,7 +64,7 @@ import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 
-import de.metas.document.IDocumentPA;
+import de.metas.document.IDocTypeDAO;
 import de.metas.i18n.IADMessageDAO;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.JavaProcess;
@@ -607,7 +608,7 @@ public class ADAssert
 			final boolean isAvailable)
 	{
 
-		final I_C_DocType type = Services.get(IDocumentPA.class).retrieve(Env.getCtx(), orgId, docBaseType, docSubType, false, null);
+		final I_C_DocType type = Services.get(IDocTypeDAO.class).getDocTypeOrNull(Env.getCtx(), docBaseType, docSubType, clientId, orgId, ITrx.TRXNAME_None);
 		final int result = (type == null ? -1 : type.getC_DocType_ID());
 
 		if (isAvailable)
