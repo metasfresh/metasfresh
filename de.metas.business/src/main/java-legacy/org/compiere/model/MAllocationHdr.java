@@ -36,13 +36,13 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
-import org.compiere.process.DocAction;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import de.metas.allocation.api.IAllocationDAO;
-import de.metas.document.engine.IDocActionBL;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 
@@ -62,7 +62,7 @@ import de.metas.logging.LogManager;
  *         payment to invoice that was paid
  *         <li>https://sourceforge.net/tracker/index.php?func=detail&aid=2880182&group_id=176962&atid=879332
  */
-public final class MAllocationHdr extends X_C_AllocationHdr implements DocAction
+public final class MAllocationHdr extends X_C_AllocationHdr implements IDocument
 {
 	/**
 	 *
@@ -391,7 +391,7 @@ public final class MAllocationHdr extends X_C_AllocationHdr implements DocAction
 	public boolean processIt(final String processAction)
 	{
 		m_processMsg = null;
-		return Services.get(IDocActionBL.class).processIt(this, processAction); // task 09824
+		return Services.get(IDocumentBL.class).processIt(this, processAction); // task 09824
 	}	// processIt
 
 	/** Process Message */
@@ -437,7 +437,7 @@ public final class MAllocationHdr extends X_C_AllocationHdr implements DocAction
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_PREPARE);
 		if (m_processMsg != null)
 		{
-			return DocAction.STATUS_Invalid;
+			return IDocument.STATUS_Invalid;
 		}
 
 		// Std Period open?
@@ -446,7 +446,7 @@ public final class MAllocationHdr extends X_C_AllocationHdr implements DocAction
 		if (lines.length == 0)
 		{
 			m_processMsg = "@NoLines@";
-			return DocAction.STATUS_Invalid;
+			return IDocument.STATUS_Invalid;
 		}
 
 		// Stop the Document Workflow if invoice to allocate is as paid
@@ -483,7 +483,7 @@ public final class MAllocationHdr extends X_C_AllocationHdr implements DocAction
 			if (line.getC_BPartner_ID() <= 0)
 			{
 				m_processMsg = "No Business Partner";
-				return DocAction.STATUS_Invalid;
+				return IDocument.STATUS_Invalid;
 			}
 		}
 		setApprovalAmt(approval);
@@ -491,7 +491,7 @@ public final class MAllocationHdr extends X_C_AllocationHdr implements DocAction
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_PREPARE);
 		if (m_processMsg != null)
 		{
-			return DocAction.STATUS_Invalid;
+			return IDocument.STATUS_Invalid;
 		}
 
 		m_justPrepared = true;
@@ -500,7 +500,7 @@ public final class MAllocationHdr extends X_C_AllocationHdr implements DocAction
 			setDocAction(DOCACTION_Complete);
 		}
 
-		return DocAction.STATUS_InProgress;
+		return IDocument.STATUS_InProgress;
 	}	// prepareIt
 
 	/**
@@ -541,7 +541,7 @@ public final class MAllocationHdr extends X_C_AllocationHdr implements DocAction
 		if (!m_justPrepared)
 		{
 			final String status = prepareIt();
-			if (!DocAction.STATUS_InProgress.equals(status))
+			if (!IDocument.STATUS_InProgress.equals(status))
 			{
 				return status;
 			}
@@ -550,7 +550,7 @@ public final class MAllocationHdr extends X_C_AllocationHdr implements DocAction
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_COMPLETE);
 		if (m_processMsg != null)
 		{
-			return DocAction.STATUS_Invalid;
+			return IDocument.STATUS_Invalid;
 		}
 
 		// Implicit Approval
@@ -580,12 +580,12 @@ public final class MAllocationHdr extends X_C_AllocationHdr implements DocAction
 		if (valid != null)
 		{
 			m_processMsg = valid;
-			return DocAction.STATUS_Invalid;
+			return IDocument.STATUS_Invalid;
 		}
 
 		setProcessed(true);
 		setDocAction(DOCACTION_Reverse_Correct); // issue #347
-		return DocAction.STATUS_Completed;
+		return IDocument.STATUS_Completed;
 	}	// completeIt
 
 	/**

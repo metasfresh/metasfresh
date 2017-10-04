@@ -7,13 +7,13 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_BPartner;
-import org.compiere.process.DocAction;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.adempiere.service.IOrderBL;
-import de.metas.document.engine.IDocActionBL;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 
 /*
  * #%L
@@ -41,7 +41,7 @@ public class OrderHeaderAggregation
 {
 	// services
 	private final transient IOrderBL orderBL = Services.get(IOrderBL.class);
-	private final transient IDocActionBL docActionBL = Services.get(IDocActionBL.class);
+	private final transient IDocumentBL docActionBL = Services.get(IDocumentBL.class);
 
 	private I_C_Order order;
 	private OrderLinesAggregator orderLinesAggregator = null;
@@ -65,7 +65,7 @@ public class OrderHeaderAggregation
 
 		//
 		// Process the order
-		docActionBL.processEx(order, DocAction.ACTION_Complete, DocAction.STATUS_Completed);
+		docActionBL.processEx(order, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
 
 		return order;
 	}
@@ -156,8 +156,8 @@ public class OrderHeaderAggregation
 			order.setSalesRep_ID(Env.getAD_User_ID(ctx));
 		}
 
-		order.setDocStatus(DocAction.STATUS_Drafted);
-		order.setDocAction(DocAction.ACTION_Complete);
+		order.setDocStatus(IDocument.STATUS_Drafted);
+		order.setDocAction(IDocument.ACTION_Complete);
 
 		//
 		// Save & return

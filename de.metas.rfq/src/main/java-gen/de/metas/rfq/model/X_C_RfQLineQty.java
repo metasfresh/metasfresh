@@ -4,7 +4,6 @@ package de.metas.rfq.model;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import org.compiere.util.Env;
 
 /** Generated Model for C_RfQLineQty
  *  @author Adempiere (generated) 
@@ -16,7 +15,7 @@ public class X_C_RfQLineQty extends org.compiere.model.PO implements I_C_RfQLine
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1599547650L;
+	private static final long serialVersionUID = 1920637965L;
 
     /** Standard Constructor */
     public X_C_RfQLineQty (Properties ctx, int C_RfQLineQty_ID, String trxName)
@@ -24,16 +23,14 @@ public class X_C_RfQLineQty extends org.compiere.model.PO implements I_C_RfQLine
       super (ctx, C_RfQLineQty_ID, trxName);
       /** if (C_RfQLineQty_ID == 0)
         {
-			setBenchmarkPrice (Env.ZERO);
+			setBenchmarkPrice (BigDecimal.ZERO);
 			setC_RfQLine_ID (0);
 			setC_RfQLineQty_ID (0);
 			setC_UOM_ID (0);
 			setIsOfferQty (false);
 			setIsPurchaseQty (false);
-			setIsRfQQty (true);
-// Y
-			setQty (Env.ZERO);
-// 1
+			setIsRfQQty (true); // Y
+			setQty (BigDecimal.ZERO); // 1
         } */
     }
 
@@ -70,7 +67,7 @@ public class X_C_RfQLineQty extends org.compiere.model.PO implements I_C_RfQLine
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_BenchmarkPrice);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -92,7 +89,7 @@ public class X_C_RfQLineQty extends org.compiere.model.PO implements I_C_RfQLine
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_BestResponseAmt);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -291,7 +288,7 @@ public class X_C_RfQLineQty extends org.compiere.model.PO implements I_C_RfQLine
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Margin);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -313,7 +310,7 @@ public class X_C_RfQLineQty extends org.compiere.model.PO implements I_C_RfQLine
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_OfferAmt);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -335,7 +332,7 @@ public class X_C_RfQLineQty extends org.compiere.model.PO implements I_C_RfQLine
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Qty);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 }

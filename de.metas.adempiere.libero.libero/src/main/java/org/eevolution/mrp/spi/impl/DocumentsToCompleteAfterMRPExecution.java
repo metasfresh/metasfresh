@@ -36,7 +36,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IReference;
-import org.compiere.process.DocAction;
 import org.compiere.util.Env;
 import org.eevolution.api.IDDOrderBL;
 import org.eevolution.model.I_DD_Order;
@@ -48,8 +47,8 @@ import org.slf4j.Logger;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
 import de.metas.logging.LogManager;
-
-import de.metas.document.engine.IDocActionBL;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 
 public class DocumentsToCompleteAfterMRPExecution implements Runnable
 {
@@ -73,7 +72,7 @@ public class DocumentsToCompleteAfterMRPExecution implements Runnable
 
 	// services
 	private final transient Logger logger = LogManager.getLogger(getClass());
-	private final transient IDocActionBL docActionBL = Services.get(IDocActionBL.class);
+	private final transient IDocumentBL docActionBL = Services.get(IDocumentBL.class);
 	private final transient IDDOrderBL ddOrderBL = Services.get(IDDOrderBL.class);
 	private final transient IQueryBL queryBL = Services.get(IQueryBL.class);
 
@@ -133,7 +132,7 @@ public class DocumentsToCompleteAfterMRPExecution implements Runnable
 
 		try
 		{
-			docActionBL.processEx(ppOrder, DocAction.ACTION_Complete, DocAction.STATUS_Completed);
+			docActionBL.processEx(ppOrder, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
 		}
 		catch (final Exception e)
 		{
@@ -175,7 +174,7 @@ public class DocumentsToCompleteAfterMRPExecution implements Runnable
 				.addInArrayOrAllFilter(I_PP_Order.COLUMN_PP_Order_ID, ppOrderIdsToComplete)
 				//
 				// Not already processed
-				.addInArrayOrAllFilter(I_PP_Order.COLUMNNAME_DocStatus, DocAction.STATUS_Drafted, DocAction.STATUS_InProgress)
+				.addInArrayOrAllFilter(I_PP_Order.COLUMNNAME_DocStatus, IDocument.STATUS_Drafted, IDocument.STATUS_InProgress)
 				.addEqualsFilter(I_PP_Order.COLUMN_Processed, false)
 				//
 				// Retrieve them
@@ -240,7 +239,7 @@ public class DocumentsToCompleteAfterMRPExecution implements Runnable
 				.addInArrayOrAllFilter(I_DD_Order.COLUMN_DD_Order_ID, ddOrderIdsToComplete)
 				//
 				// Not already processed
-				.addInArrayOrAllFilter(I_DD_Order.COLUMNNAME_DocStatus, DocAction.STATUS_Drafted, DocAction.STATUS_InProgress)
+				.addInArrayOrAllFilter(I_DD_Order.COLUMNNAME_DocStatus, IDocument.STATUS_Drafted, IDocument.STATUS_InProgress)
 				.addEqualsFilter(I_DD_Order.COLUMN_Processed, false)
 				//
 				// Retrieve them

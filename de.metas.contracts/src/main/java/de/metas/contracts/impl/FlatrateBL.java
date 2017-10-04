@@ -58,7 +58,6 @@ import org.compiere.model.MNote;
 import org.compiere.model.MOrg;
 import org.compiere.model.MRefList;
 import org.compiere.model.POInfo;
-import org.compiere.process.DocAction;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.TrxRunnable;
@@ -85,8 +84,9 @@ import de.metas.contracts.model.X_C_Flatrate_DataEntry;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Transition;
 import de.metas.contracts.subscription.model.I_C_OrderLine;
-import de.metas.document.IDocumentPA;
-import de.metas.document.engine.IDocActionBL;
+import de.metas.document.IDocTypeDAO;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.IMsgBL;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerDAO;
@@ -1394,8 +1394,8 @@ public class FlatrateBL implements IFlatrateBL
 			subType = null;
 		}
 
-		final IDocumentPA documentPA = Services.get(IDocumentPA.class);
-		return documentPA.retrieve(ctx, term.getAD_Org_ID(), de.metas.contracts.flatrate.interfaces.I_C_DocType.DocBaseType_CustomerContract, subType, true, trxName);
+		final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+		return docTypeDAO.getDocType(de.metas.contracts.flatrate.interfaces.I_C_DocType.DocBaseType_CustomerContract, subType, term.getAD_Client_ID(), term.getAD_Org_ID());
 	}
 
 	@Override
@@ -1553,7 +1553,7 @@ public class FlatrateBL implements IFlatrateBL
 	public void complete(final I_C_Flatrate_Term term)
 	{
 		// NOTE: the whole reason why we have this method is for readability ease of refactoring.
-		Services.get(IDocActionBL.class).processEx(term, DocAction.ACTION_Complete, DocAction.STATUS_Completed);
+		Services.get(IDocumentBL.class).processEx(term, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
 	}
 
 	@Override
@@ -1577,7 +1577,7 @@ public class FlatrateBL implements IFlatrateBL
 	public void voidIt(final I_C_Flatrate_Term term)
 	{
 		// NOTE: the whole reason why we have this method is for readability ease of refactoring.
-		Services.get(IDocActionBL.class).processEx(term, DocAction.ACTION_Void, DocAction.STATUS_Voided);
+		Services.get(IDocumentBL.class).processEx(term, IDocument.ACTION_Void, IDocument.STATUS_Voided);
 
 	}
 

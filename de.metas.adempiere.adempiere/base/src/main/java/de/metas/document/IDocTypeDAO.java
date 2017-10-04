@@ -29,6 +29,11 @@ import org.adempiere.exceptions.DocTypeNotFoundException;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_DocType;
 
+import lombok.Builder;
+import lombok.Builder.Default;
+import lombok.NonNull;
+import lombok.Value;
+
 public interface IDocTypeDAO extends ISingletonService
 {
 	String DOCSUBTYPE_Any = "DOCSUBTYPE_Any";
@@ -111,4 +116,32 @@ public interface IDocTypeDAO extends ISingletonService
 	 * @return
 	 */
 	I_C_DocType getDocTypeOrNullForSOTrx(Properties ctx, String docBaseType, String docSubType, boolean isSOTrx, int adClientId, int adOrgId, String trxName);
+
+	I_C_DocType createDocType(DocTypeCreateRequest request);
+
+	@Value
+	@Builder
+	public static final class DocTypeCreateRequest
+	{
+		@NonNull
+		final Properties ctx;
+		@Default
+		final int adOrgId = -1;
+		final String entityType;
+		@NonNull
+		final String name;
+		final String printName;
+		@NonNull
+		final String docBaseType;
+		final String docSubType;
+		final Boolean isSOTrx;
+		final int docTypeShipmentId;
+		final int docTypeInvoiceId;
+		final int glCategoryId;
+		
+		final int docNoSequenceId;
+		final int newDocNoSequenceStartNo;
+		
+		final int documentCopies;
+	}
 }

@@ -4,7 +4,6 @@ package de.metas.rfq.model;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import org.compiere.util.Env;
 
 /** Generated Model for C_RfQ
  *  @author Adempiere (generated) 
@@ -16,7 +15,7 @@ public class X_C_RfQ extends org.compiere.model.PO implements I_C_RfQ, org.compi
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 212133419L;
+	private static final long serialVersionUID = -1839403224L;
 
     /** Standard Constructor */
     public X_C_RfQ (Properties ctx, int C_RfQ_ID, String trxName)
@@ -24,30 +23,22 @@ public class X_C_RfQ extends org.compiere.model.PO implements I_C_RfQ, org.compi
       super (ctx, C_RfQ_ID, trxName);
       /** if (C_RfQ_ID == 0)
         {
-			setC_Currency_ID (0);
-// @$C_Currency_ID @
+			setC_Currency_ID (0); // @$C_Currency_ID @
 			setC_RfQ_ID (0);
 			setC_RfQ_Topic_ID (0);
 			setDateResponse (new Timestamp( System.currentTimeMillis() ));
-			setDocStatus (null);
-// DR
+			setDocAction (null); // CO
+			setDocStatus (null); // DR
 			setDocumentNo (null);
-			setIsInvitedVendorsOnly (false);
-// N
-			setIsQuoteAllQty (false);
-// N
-			setIsQuoteTotalAmt (false);
-// N
-			setIsRfQResponseAccepted (true);
-// Y
-			setIsSelfService (true);
-// Y
+			setIsInvitedVendorsOnly (false); // N
+			setIsQuoteAllQty (false); // N
+			setIsQuoteTotalAmt (false); // N
+			setIsRfQResponseAccepted (true); // Y
+			setIsSelfService (true); // Y
 			setName (null);
 			setProcessed (false);
-			setQuoteType (null);
-// S
-			setRfQType (null);
-// D
+			setQuoteType (null); // S
+			setRfQType (null); // D
 			setSalesRep_ID (0);
         } */
     }
@@ -314,9 +305,9 @@ public class X_C_RfQ extends org.compiere.model.PO implements I_C_RfQ, org.compi
 		return ii.intValue();
 	}
 
-	/** Set Antwort-datum.
+	/** Set Datum Antwort.
 		@param DateResponse 
-		Date of the Response
+		Datum der Antwort
 	  */
 	@Override
 	public void setDateResponse (java.sql.Timestamp DateResponse)
@@ -324,8 +315,8 @@ public class X_C_RfQ extends org.compiere.model.PO implements I_C_RfQ, org.compi
 		set_Value (COLUMNNAME_DateResponse, DateResponse);
 	}
 
-	/** Get Antwort-datum.
-		@return Date of the Response
+	/** Get Datum Antwort.
+		@return Datum der Antwort
 	  */
 	@Override
 	public java.sql.Timestamp getDateResponse () 
@@ -410,6 +401,61 @@ public class X_C_RfQ extends org.compiere.model.PO implements I_C_RfQ, org.compi
 	}
 
 	/** 
+	 * DocAction AD_Reference_ID=135
+	 * Reference name: _Document Action
+	 */
+	public static final int DOCACTION_AD_Reference_ID=135;
+	/** Complete = CO */
+	public static final String DOCACTION_Complete = "CO";
+	/** Approve = AP */
+	public static final String DOCACTION_Approve = "AP";
+	/** Reject = RJ */
+	public static final String DOCACTION_Reject = "RJ";
+	/** Post = PO */
+	public static final String DOCACTION_Post = "PO";
+	/** Void = VO */
+	public static final String DOCACTION_Void = "VO";
+	/** Close = CL */
+	public static final String DOCACTION_Close = "CL";
+	/** Reverse_Correct = RC */
+	public static final String DOCACTION_Reverse_Correct = "RC";
+	/** Reverse_Accrual = RA */
+	public static final String DOCACTION_Reverse_Accrual = "RA";
+	/** Invalidate = IN */
+	public static final String DOCACTION_Invalidate = "IN";
+	/** Re_Activate = RE */
+	public static final String DOCACTION_Re_Activate = "RE";
+	/** None = -- */
+	public static final String DOCACTION_None = "--";
+	/** Prepare = PR */
+	public static final String DOCACTION_Prepare = "PR";
+	/** Unlock = XL */
+	public static final String DOCACTION_Unlock = "XL";
+	/** WaitComplete = WC */
+	public static final String DOCACTION_WaitComplete = "WC";
+	/** UnClose = UC */
+	public static final String DOCACTION_UnClose = "UC";
+	/** Set Belegverarbeitung.
+		@param DocAction 
+		Der zukünftige Status des Belegs
+	  */
+	@Override
+	public void setDocAction (java.lang.String DocAction)
+	{
+
+		set_Value (COLUMNNAME_DocAction, DocAction);
+	}
+
+	/** Get Belegverarbeitung.
+		@return Der zukünftige Status des Belegs
+	  */
+	@Override
+	public java.lang.String getDocAction () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_DocAction);
+	}
+
+	/** 
 	 * DocStatus AD_Reference_ID=131
 	 * Reference name: _Document Status
 	 */
@@ -458,7 +504,7 @@ public class X_C_RfQ extends org.compiere.model.PO implements I_C_RfQ, org.compi
 		return (java.lang.String)get_Value(COLUMNNAME_DocStatus);
 	}
 
-	/** Set Beleg Nr..
+	/** Set Nr..
 		@param DocumentNo 
 		Document sequence number of the document
 	  */
@@ -468,7 +514,7 @@ public class X_C_RfQ extends org.compiere.model.PO implements I_C_RfQ, org.compi
 		set_Value (COLUMNNAME_DocumentNo, DocumentNo);
 	}
 
-	/** Get Beleg Nr..
+	/** Get Nr..
 		@return Document sequence number of the document
 	  */
 	@Override
@@ -644,7 +690,7 @@ public class X_C_RfQ extends org.compiere.model.PO implements I_C_RfQ, org.compi
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Margin);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -817,10 +863,8 @@ public class X_C_RfQ extends org.compiere.model.PO implements I_C_RfQ, org.compi
 		set_ValueFromPO(COLUMNNAME_SalesRep_ID, org.compiere.model.I_AD_User.class, SalesRep);
 	}
 
-	/** Set Vertriebsbeauftragter.
-		@param SalesRep_ID 
-		Sales Representative or Company Agent
-	  */
+	/** Set Aussendienst.
+		@param SalesRep_ID Aussendienst	  */
 	@Override
 	public void setSalesRep_ID (int SalesRep_ID)
 	{
@@ -830,9 +874,8 @@ public class X_C_RfQ extends org.compiere.model.PO implements I_C_RfQ, org.compi
 			set_Value (COLUMNNAME_SalesRep_ID, Integer.valueOf(SalesRep_ID));
 	}
 
-	/** Get Vertriebsbeauftragter.
-		@return Sales Representative or Company Agent
-	  */
+	/** Get Aussendienst.
+		@return Aussendienst	  */
 	@Override
 	public int getSalesRep_ID () 
 	{

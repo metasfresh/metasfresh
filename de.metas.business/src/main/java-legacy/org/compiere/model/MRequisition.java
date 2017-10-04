@@ -26,12 +26,12 @@ import java.util.Properties;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.user.api.IUserDAO;
 import org.adempiere.util.Services;
-import org.compiere.process.DocAction;
 import org.compiere.util.Env;
 
 import de.metas.document.documentNo.IDocumentNoBuilder;
 import de.metas.document.documentNo.IDocumentNoBuilderFactory;
-import de.metas.document.engine.IDocActionBL;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.Msg;
 
 /**
@@ -48,7 +48,7 @@ import de.metas.i18n.Msg;
  *  @author Teo Sarca, www.arhipac.ro
  *  		<li>FR [ 2744682 ] Requisition: improve error reporting
  */
-public class MRequisition extends X_M_Requisition implements DocAction
+public class MRequisition extends X_M_Requisition implements IDocument
 {
 	/**
 	 * 
@@ -71,8 +71,8 @@ public class MRequisition extends X_M_Requisition implements DocAction
 		//	setM_Warehouse_ID(0);
 			setDateDoc(new Timestamp(System.currentTimeMillis()));
 			setDateRequired (new Timestamp(System.currentTimeMillis()));
-			setDocAction (DocAction.ACTION_Complete);	// CO
-			setDocStatus (DocAction.STATUS_Drafted);		// DR
+			setDocAction (IDocument.ACTION_Complete);	// CO
+			setDocStatus (IDocument.STATUS_Drafted);		// DR
 			setPriorityRule (PRIORITYRULE_Medium);	// 5
 			setTotalLines (Env.ZERO);
 			setIsApproved (false);
@@ -216,7 +216,7 @@ public class MRequisition extends X_M_Requisition implements DocAction
 	public boolean processIt (String processAction)
 	{
 		m_processMsg = null;
-		return Services.get(IDocActionBL.class).processIt(this, processAction); // task 09824
+		return Services.get(IDocumentBL.class).processIt(this, processAction); // task 09824
 	}	//	process
 	
 	/**	Process Message 			*/
@@ -257,7 +257,7 @@ public class MRequisition extends X_M_Requisition implements DocAction
 		log.info(toString());
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_PREPARE);
 		if (m_processMsg != null)
-			return DocAction.STATUS_Invalid;
+			return IDocument.STATUS_Invalid;
 		MRequisitionLine[] lines = getLines();
 		
 		//	Invalid
@@ -265,7 +265,7 @@ public class MRequisition extends X_M_Requisition implements DocAction
 			|| getM_PriceList_ID() == 0
 			|| getM_Warehouse_ID() == 0)
 		{
-			return DocAction.STATUS_Invalid;
+			return IDocument.STATUS_Invalid;
 		}
 		
 		if(lines.length == 0)
@@ -299,10 +299,10 @@ public class MRequisition extends X_M_Requisition implements DocAction
 		
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_PREPARE);
 		if (m_processMsg != null)
-			return DocAction.STATUS_Invalid;
+			return IDocument.STATUS_Invalid;
 		
 		m_justPrepared = true;
-		return DocAction.STATUS_InProgress;
+		return IDocument.STATUS_InProgress;
 	}	//	prepareIt
 	
 	/**
@@ -340,13 +340,13 @@ public class MRequisition extends X_M_Requisition implements DocAction
 		if (!m_justPrepared)
 		{
 			String status = prepareIt();
-			if (!DocAction.STATUS_InProgress.equals(status))
+			if (!IDocument.STATUS_InProgress.equals(status))
 				return status;
 		}
 
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_COMPLETE);
 		if (m_processMsg != null)
-			return DocAction.STATUS_Invalid;
+			return IDocument.STATUS_Invalid;
 		
 		//	Implicit Approval
 		if (!isApproved())
@@ -358,7 +358,7 @@ public class MRequisition extends X_M_Requisition implements DocAction
 		if (valid != null)
 		{
 			m_processMsg = valid;
-			return DocAction.STATUS_Invalid;
+			return IDocument.STATUS_Invalid;
 		}
 
 		// Set the definite document number after completed (if needed)
@@ -367,7 +367,7 @@ public class MRequisition extends X_M_Requisition implements DocAction
 		//
 		setProcessed(true);
 		setDocAction(ACTION_Close);
-		return DocAction.STATUS_Completed;
+		return IDocument.STATUS_Completed;
 	}	//	completeIt
 	
 	/**

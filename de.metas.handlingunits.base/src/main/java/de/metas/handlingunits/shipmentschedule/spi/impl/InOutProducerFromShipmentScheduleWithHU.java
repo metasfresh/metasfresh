@@ -39,10 +39,10 @@ import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_M_InOut;
-import org.compiere.process.DocAction;
 
 import de.metas.document.IDocTypeDAO;
-import de.metas.document.engine.IDocActionBL;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.handlingunits.IHUShipperTransportationBL;
 import de.metas.handlingunits.inout.IHUInOutBL;
 import de.metas.handlingunits.inout.impl.HUShipmentPackingMaterialLinesBuilder;
@@ -75,7 +75,7 @@ public class InOutProducerFromShipmentScheduleWithHU implements IInOutProducerFr
 	private final transient IHUInOutBL huInOutBL = Services.get(IHUInOutBL.class);
 	//
 	private final transient IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
-	private final transient IDocActionBL docActionBL = Services.get(IDocActionBL.class);
+	private final transient IDocumentBL docActionBL = Services.get(IDocumentBL.class);
 
 	private final InOutGenerateResult result;
 	private final IAggregationKeyBuilder<I_M_ShipmentSchedule> shipmentScheduleKeyBuilder;
@@ -98,7 +98,7 @@ public class InOutProducerFromShipmentScheduleWithHU implements IInOutProducerFr
 
 	//
 	// 07113: constant to know if the document shall be completed or not. Null means "don't process"
-	private String processShipmentDocAction = DocAction.ACTION_Complete;
+	private String processShipmentDocAction = IDocument.ACTION_Complete;
 
 	private boolean createPackingLines = false;
 	private boolean manualPackingMaterial = false;

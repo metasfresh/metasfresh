@@ -7,10 +7,10 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.ModelValidator;
-import org.compiere.process.DocAction;
 import org.eevolution.api.IPPOrderBOMDAO;
 
 import de.metas.adempiere.model.I_M_Product;
+import de.metas.document.engine.IDocument;
 import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.handlingunits.model.I_PP_Cost_Collector;
 import de.metas.handlingunits.model.I_PP_Order_BOMLine;
@@ -58,7 +58,7 @@ public class PPOrderDriver
 		ppOrder.setDateDelivered(Helper.parseTimestamp(strDate));
 		ppOrder.setC_DocType(docType);
 		ppOrder.setOrderType(docType.getDocSubType());
-		ppOrder.setDocStatus(DocAction.STATUS_Closed);
+		ppOrder.setDocStatus(IDocument.STATUS_Closed);
 		ppOrder.setM_Material_Tracking(materialTracking);
 		ppOrder.setIsInvoiceCandidate(false);
 		ppOrder.setDocumentNo(documentNo);
@@ -88,7 +88,7 @@ public class PPOrderDriver
 		cc.setM_Product(product);
 		cc.setCostCollectorType(type.getCostCollectorType());
 		cc.setMovementQty(qty.multiply(type.getFactor()));
-		cc.setDocStatus(DocAction.STATUS_Completed); // DocStatus is needed, because as of recently, we ignore PP_Orders that don't have a completed/closed issue-cc with qty>0
+		cc.setDocStatus(IDocument.STATUS_Completed); // DocStatus is needed, because as of recently, we ignore PP_Orders that don't have a completed/closed issue-cc with qty>0
 		InterfaceWrapperHelper.save(cc);
 
 		if (type == I_PP_Order.Type.MainProduct)

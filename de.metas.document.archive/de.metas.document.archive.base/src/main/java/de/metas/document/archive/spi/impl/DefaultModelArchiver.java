@@ -36,7 +36,7 @@ import de.metas.document.archive.async.spi.impl.DocOutboundCCWorkpackageProcesso
 import de.metas.document.archive.model.I_AD_Archive;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Config;
 import de.metas.document.archive.storage.cc.api.ICCAbleDocumentFactoryService;
-import de.metas.document.engine.IDocActionBL;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
 
@@ -75,7 +75,7 @@ public class DefaultModelArchiver
 	private final transient IArchiveBL archiveBL = Services.get(org.adempiere.archive.api.IArchiveBL.class);
 	private final transient IDocOutboundDAO archiveDAO = Services.get(IDocOutboundDAO.class);
 	private final transient IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
-	private final transient IDocActionBL docActionBL = Services.get(IDocActionBL.class);
+	private final transient IDocumentBL docActionBL = Services.get(IDocumentBL.class);
 	private final transient ICCAbleDocumentFactoryService ccAbleDocumentFactoryService = Services.get(ICCAbleDocumentFactoryService.class);
 	private final transient IQueryBL queryBL = Services.get(IQueryBL.class);
 

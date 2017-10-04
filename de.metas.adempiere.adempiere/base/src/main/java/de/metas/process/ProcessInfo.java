@@ -53,7 +53,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.report.jasper.OutputType;
-import de.metas.document.engine.IDocActionBL;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.ILanguageBL;
 import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
@@ -1668,7 +1668,7 @@ public final class ProcessInfo implements Serializable
 				return null;
 			}
 
-			final IDocActionBL docActionBL = Services.get(IDocActionBL.class);
+			final IDocumentBL docActionBL = Services.get(IDocumentBL.class);
 			final boolean isDocument = docActionBL.isDocumentTable(recordRef.getTableName()); // fails for processes
 
 			// Make sure the process is for a document

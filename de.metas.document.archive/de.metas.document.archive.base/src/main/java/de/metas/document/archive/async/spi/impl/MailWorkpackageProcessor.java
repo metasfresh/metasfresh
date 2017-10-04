@@ -39,7 +39,6 @@ import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_PInstance;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_DocType;
-import org.compiere.process.DocAction;
 import org.compiere.util.Env;
 
 import de.metas.async.api.IQueueDAO;
@@ -49,6 +48,7 @@ import de.metas.async.spi.IWorkpackageProcessor;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log_Line;
 import de.metas.document.archive.model.X_C_Doc_Outbound_Log_Line;
+import de.metas.document.engine.IDocument;
 import de.metas.email.EMail;
 import de.metas.email.IMailBL;
 import de.metas.email.Mailbox;
@@ -237,7 +237,7 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 		final String tableName = adTableDAO.retrieveTableName(tableId);
 
 		final int recordId = archive.getRecord_ID();
-		final DocAction doc = InterfaceWrapperHelper.create(ctx, tableName, recordId, DocAction.class, trxName);
+		final IDocument doc = InterfaceWrapperHelper.create(ctx, tableName, recordId, IDocument.class, trxName);
 
 		final File attachment = doc.createPDF();
 		return attachment;

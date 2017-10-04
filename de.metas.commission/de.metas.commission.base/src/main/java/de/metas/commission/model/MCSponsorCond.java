@@ -28,15 +28,16 @@ import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
 
+import org.adempiere.util.Services;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
-import org.compiere.process.DocAction;
-import org.compiere.process.DocumentEngine;
 import org.compiere.util.Env;
 
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.Msg;
 
-public class MCSponsorCond extends X_C_Sponsor_Cond implements DocAction
+public class MCSponsorCond extends X_C_Sponsor_Cond implements IDocument
 {
 	/**
 	 * 
@@ -105,7 +106,7 @@ public class MCSponsorCond extends X_C_Sponsor_Cond implements DocAction
 		if (!m_justPrepared)
 		{
 			final String status = prepareIt();
-			if (!DocAction.STATUS_InProgress.equals(status))
+			if (!IDocument.STATUS_InProgress.equals(status))
 			{
 				return status;
 			}
@@ -114,7 +115,7 @@ public class MCSponsorCond extends X_C_Sponsor_Cond implements DocAction
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_COMPLETE);
 		if (m_processMsg != null)
 		{
-			return DocAction.STATUS_Invalid;
+			return IDocument.STATUS_Invalid;
 		}
 
 		setProcessed(true);
@@ -125,10 +126,10 @@ public class MCSponsorCond extends X_C_Sponsor_Cond implements DocAction
 		if (valid != null)
 		{
 			m_processMsg = valid;
-			return DocAction.STATUS_Invalid;
+			return IDocument.STATUS_Invalid;
 		}
 
-		return DocAction.STATUS_Completed;
+		return IDocument.STATUS_Completed;
 	} // completeIt
 
 	/**
@@ -235,13 +236,13 @@ public class MCSponsorCond extends X_C_Sponsor_Cond implements DocAction
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_PREPARE);
 		if (m_processMsg != null)
 		{
-			return DocAction.STATUS_Invalid;
+			return IDocument.STATUS_Invalid;
 		}
 
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_PREPARE);
 		if (m_processMsg != null)
 		{
-			return DocAction.STATUS_Invalid;
+			return IDocument.STATUS_Invalid;
 		}
 		//
 		m_justPrepared = true;
@@ -249,22 +250,15 @@ public class MCSponsorCond extends X_C_Sponsor_Cond implements DocAction
 		{
 			setDocAction(X_C_Sponsor_Cond.DOCACTION_Fertigstellen);
 		}
-		return DocAction.STATUS_InProgress;
+		return IDocument.STATUS_InProgress;
 	} // prepareIt
 
-	/**************************************************************************
-	 * Process document
-	 * 
-	 * @param processAction document action
-	 * @return true if performed
-	 */
 	@Override
 	public boolean processIt(final String processAction)
 	{
 		m_processMsg = null;
-		final DocumentEngine engine = new DocumentEngine(this, getDocStatus());
-		return engine.processIt(processAction, getDocAction());
-	} // processIt
+		return Services.get(IDocumentBL.class).processIt(this, processAction);
+	}
 
 	/** Process Message */
 	private String m_processMsg = null;

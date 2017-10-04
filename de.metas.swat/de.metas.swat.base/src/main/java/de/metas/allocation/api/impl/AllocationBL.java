@@ -39,7 +39,6 @@ import org.adempiere.util.Services;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_Payment;
-import org.compiere.process.DocAction;
 import org.compiere.util.TimeUtil;
 
 import de.metas.adempiere.model.I_C_Invoice;
@@ -48,6 +47,7 @@ import de.metas.allocation.api.IAllocationBL;
 import de.metas.allocation.api.IAllocationBuilder;
 import de.metas.allocation.api.IAllocationDAO;
 import de.metas.allocation.api.IAllocationLineBuilder;
+import de.metas.document.engine.IDocument;
 import de.metas.payment.api.IPaymentDAO;
 
 public class AllocationBL implements IAllocationBL
@@ -177,7 +177,7 @@ public class AllocationBL implements IAllocationBL
 		}
 
 		// payment must be completed
-		if (!DocAction.STATUS_Completed.equals(payment.getDocStatus()))
+		if (!IDocument.STATUS_Completed.equals(payment.getDocStatus()))
 		{
 			return null;
 		}

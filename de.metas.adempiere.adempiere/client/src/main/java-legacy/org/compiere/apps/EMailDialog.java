@@ -34,6 +34,7 @@ import java.io.File;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
+import org.adempiere.ad.persistence.TableModelLoader;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.archive.api.IArchiveDAO;
 import org.adempiere.archive.api.IArchiveEventManager;
@@ -53,10 +54,8 @@ import org.compiere.model.I_AD_User;
 import org.compiere.model.Lookup;
 import org.compiere.model.MClient;
 import org.compiere.model.MLookupFactory;
-import org.compiere.model.MTable;
 import org.compiere.model.MUserMail;
 import org.compiere.model.PO;
-import org.compiere.process.DocAction;
 import org.compiere.swing.CCheckBox;
 import org.compiere.swing.CDialog;
 import org.compiere.swing.CLabel;
@@ -66,6 +65,8 @@ import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.email.EMail;
 import de.metas.email.EMailSentStatus;
 import de.metas.i18n.IMsgBL;
@@ -829,13 +830,13 @@ public class EMailDialog
 		//
 		if (m_documentFile == null || !m_documentFile.canRead())
 		{
-			final PO po = MTable.get(Env.getCtx(), m_AD_Table_ID).getPO(m_Record_ID, null);
-			if (!(po instanceof DocAction))
+			final PO po = TableModelLoader.instance.getPO(Env.getCtx(), m_AD_Table_ID, m_Record_ID, ITrx.TRXNAME_None);
+			final IDocument document = po != null ? Services.get(IDocumentBL.class).getDocumentOrNull(po) : null;
+			if (document == null)
 			{
 				return;
 			}
-			final DocAction doc = (DocAction)po;
-			m_documentFile = doc.createPDF();
+			m_documentFile = document.createPDF();
 		}
 		//
 		email.addAttachment(m_documentFile);

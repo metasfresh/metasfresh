@@ -1,0 +1,43 @@
+-- 2017-10-03T11:55:20.278
+-- C_RfQ_Complete
+DELETE FROM AD_Table_Process WHERE AD_Process_ID=540685 AND AD_Table_ID=677
+;
+DELETE FROM  AD_Process_Trl WHERE AD_Process_ID=540685
+;
+DELETE FROM AD_Process WHERE AD_Process_ID=540685
+;
+
+-- 2017-10-03T11:55:57.146
+-- C_RfQ_ReActivate
+DELETE FROM AD_Table_Process WHERE AD_Process_ID=540689 AND AD_Table_ID=677
+;
+DELETE FROM  AD_Process_Trl WHERE AD_Process_ID=540689
+;
+DELETE FROM AD_Process WHERE AD_Process_ID=540689
+;
+
+-- 2017-10-03T14:42:05.533
+-- C_RfQ_Close
+DELETE FROM AD_Table_Process WHERE AD_Process_ID=269 AND AD_Table_ID=677
+;
+DELETE FROM  AD_Process_Trl WHERE AD_Process_ID=269
+;
+DELETE FROM AD_Process WHERE AD_Process_ID=269
+;
+
+-- 2017-10-03T14:45:26.397
+-- C_RfQ_UnClose
+DELETE FROM AD_Table_Process WHERE AD_Process_ID=540688 AND AD_Table_ID=677
+;
+DELETE FROM  AD_Process_Trl WHERE AD_Process_ID=540688
+;
+DELETE FROM AD_Process WHERE AD_Process_ID=540688
+;
+
+-- 2017-10-03T23:33:51.755
+-- C_RfQReponse_Complete
+DELETE FROM  AD_Process_Trl WHERE AD_Process_ID=277
+;
+DELETE FROM AD_Process WHERE AD_Process_ID=277
+;
+

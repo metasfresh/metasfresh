@@ -28,7 +28,7 @@ import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Client;
 
-import de.metas.acct.api.IDocumentBL;
+import de.metas.acct.api.IDocumentRepostingBL;
 import de.metas.banking.service.IBankStatementListenerService;
 import de.metas.banking.spi.impl.BankStatementDocumentRepostingHandler;
 
@@ -55,7 +55,7 @@ public class Banking extends AbstractModuleInterceptor
 	{
 
 		// Register the Document Reposting Handler
-		final IDocumentBL documentBL = Services.get(IDocumentBL.class);
+		final IDocumentRepostingBL documentBL = Services.get(IDocumentRepostingBL.class);
 		documentBL.registerHandler(new BankStatementDocumentRepostingHandler());
 	}
 

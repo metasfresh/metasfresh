@@ -80,7 +80,6 @@ import org.compiere.model.MInvoiceSchedule;
 import org.compiere.model.MNote;
 import org.compiere.model.X_C_InvoiceSchedule;
 import org.compiere.model.X_C_Order;
-import org.compiere.process.DocAction;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
@@ -98,7 +97,8 @@ import de.metas.async.processor.IStatefulWorkpackageProcessorFactory;
 import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.async.spi.IWorkpackageProcessor;
 import de.metas.currency.ICurrencyBL;
-import de.metas.document.engine.IDocActionBL;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.IMsgBL;
 import de.metas.inout.IInOutBL;
 import de.metas.inoutcandidate.api.IInOutCandidateBL;
@@ -1287,7 +1287,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		if (creditMemo && creditMemosForInvoice.hasNext())
 		{
 			final org.compiere.model.I_C_Invoice originalInvoice = creditMemosForInvoice.next();
-			creditedInvoiceIsReversed = Services.get(IDocActionBL.class).isDocumentStatusOneOf(originalInvoice, DocAction.STATUS_Reversed);
+			creditedInvoiceIsReversed = Services.get(IDocumentBL.class).isDocumentStatusOneOf(originalInvoice, IDocument.STATUS_Reversed);
 		}
 		else
 		{
@@ -1533,7 +1533,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		{
 			// services
 			final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
-			final IDocActionBL docActionBL = Services.get(IDocActionBL.class);
+			final IDocumentBL docActionBL = Services.get(IDocumentBL.class);
 
 			//
 			// if qtyInvoiced is >= qtyOrdered, then there is no further Qty to be invoiced
@@ -1896,7 +1896,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		// In case the order is not completed (i.e. it was reactivated) and if it also wasn't modified by anyone,
 		// then null the POReference
 		if (Objects.equals(order.getPOReference(), candidate.getPOReference())
-				&& !DocAction.STATUS_Completed.equals(order.getDocStatus()))
+				&& !IDocument.STATUS_Completed.equals(order.getDocStatus()))
 		{
 			candidate.setPOReference(null);
 			return;

@@ -36,6 +36,7 @@ import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.invoice.service.IInvoiceCreditContext;
@@ -65,7 +66,6 @@ import org.compiere.model.MInvoiceLine;
 import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_C_Invoice;
 import org.compiere.model.X_C_Tax;
-import org.compiere.process.DocAction;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.Util;
 import org.slf4j.Logger;
@@ -82,8 +82,8 @@ import de.metas.document.ICopyHandlerBL;
 import de.metas.document.IDocCopyHandler;
 import de.metas.document.IDocLineCopyHandler;
 import de.metas.document.IDocTypeDAO;
-import de.metas.document.IDocumentPA;
-import de.metas.document.engine.IDocActionBL;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.invoice.IMatchInvBL;
 import de.metas.invoice.IMatchInvDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
@@ -174,7 +174,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		}
 		//
 		// TODO: What happens when we have multiple DocTypes per DocBaseType and nothing was selected by the user?
-		return Services.get(IDocumentPA.class).retriveDocTypeId(ctx, invoice.getAD_Org_ID(), docBaseType);
+		return Services.get(IDocTypeDAO.class).getDocTypeId(ctx, docBaseType, invoice.getAD_Client_ID(), invoice.getAD_Org_ID(), ITrx.TRXNAME_None);
 	}
 
 	public static final IDocCopyHandler<org.compiere.model.I_C_Invoice, org.compiere.model.I_C_InvoiceLine> defaultDocCopyHandler = new DefaultDocCopyHandler<>(org.compiere.model.I_C_Invoice.class, org.compiere.model.I_C_InvoiceLine.class);
@@ -220,8 +220,8 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		Check.errorUnless(from.getAD_Client_ID() == to.getAD_Client_ID(), "from.AD_Client_ID={}, to.AD_Client_ID={}", from.getAD_Client_ID(), to.getAD_Client_ID());
 		Check.errorUnless(from.getAD_Org_ID() == to.getAD_Org_ID(), "from.AD_Org_ID={}, to.AD_Org_ID={}", from.getAD_Org_ID(), to.getAD_Org_ID());
 
-		to.setDocStatus(DocAction.STATUS_Drafted);		// Draft
-		to.setDocAction(DocAction.ACTION_Complete);
+		to.setDocStatus(IDocument.STATUS_Drafted);		// Draft
+		to.setDocAction(IDocument.ACTION_Complete);
 		//
 		to.setC_DocType_ID(0);
 		to.setC_DocTypeTarget_ID(C_DocTypeTarget_ID);
@@ -1158,7 +1158,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	public final boolean isComplete(final org.compiere.model.I_C_Invoice invoice)
 	{
 		final String docStatus = invoice.getDocStatus();
-		return Services.get(IDocActionBL.class).isStatusCompletedOrClosedOrReversed(docStatus);
+		return Services.get(IDocumentBL.class).isStatusCompletedOrClosedOrReversed(docStatus);
 	}
 
 	@Override
@@ -1179,7 +1179,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(invoice);
 		final String docbasetype = X_C_DocType.DOCBASETYPE_ARInvoice;
-		final int targetDocTypeID = Services.get(IDocumentPA.class).retriveDocTypeIdForDocSubtype(ctx, docbasetype, docSubType);
+		final int targetDocTypeID = Services.get(IDocTypeDAO.class).getDocTypeId(ctx, docbasetype, docSubType, invoice.getAD_Client_ID(), invoice.getAD_Org_ID(), ITrx.TRXNAME_None);
 		final I_C_Invoice adjustmentCharge = InterfaceWrapperHelper.create(
 				copyFrom(invoice, SystemTime.asTimestamp(), targetDocTypeID, invoice.isSOTrx(),
 						false, // counter == false
@@ -1421,7 +1421,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		final String trxName = InterfaceWrapperHelper.getTrxName(invoice);
 
 		// void invoice
-		Services.get(IDocActionBL.class).processEx(invoice, DocAction.ACTION_Reverse_Correct, DocAction.STATUS_Reversed);
+		Services.get(IDocumentBL.class).processEx(invoice, IDocument.ACTION_Reverse_Correct, IDocument.STATUS_Reversed);
 
 		// update invalids
 		invoiceCandBL.updateInvalid()

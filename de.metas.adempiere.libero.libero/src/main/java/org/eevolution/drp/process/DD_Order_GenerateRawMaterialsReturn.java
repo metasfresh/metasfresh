@@ -46,7 +46,6 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_S_Resource;
 import org.compiere.model.X_C_DocType;
-import org.compiere.process.DocAction;
 import org.compiere.util.TrxRunnable2;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
@@ -56,7 +55,8 @@ import org.eevolution.model.I_DD_OrderLine;
 import org.eevolution.model.X_DD_Order;
 
 import de.metas.document.IDocTypeDAO;
-import de.metas.document.engine.IDocActionBL;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.process.JavaProcess;
 import de.metas.storage.IStorageEngine;
@@ -74,7 +74,7 @@ public class DD_Order_GenerateRawMaterialsReturn extends JavaProcess
 	// Services
 	private final transient IStorageEngineService storageEngineService = Services.get(IStorageEngineService.class);
 	private final transient IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
-	private final transient IDocActionBL docActionBL = Services.get(IDocActionBL.class);
+	private final transient IDocumentBL docActionBL = Services.get(IDocumentBL.class);
 	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	//
@@ -213,7 +213,7 @@ public class DD_Order_GenerateRawMaterialsReturn extends JavaProcess
 		final I_DD_Order ddOrder = createDD_Order(candidate);
 		createDD_OrderLine(ddOrder, candidate);
 
-		docActionBL.processEx(ddOrder, DocAction.ACTION_Complete, DocAction.STATUS_Completed);
+		docActionBL.processEx(ddOrder, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
 
 		return ddOrder;
 	}

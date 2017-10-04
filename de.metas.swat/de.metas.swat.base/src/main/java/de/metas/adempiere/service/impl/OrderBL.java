@@ -124,8 +124,8 @@ public class OrderBL implements IOrderBL
 		final int previousPricingSystemId = order.getM_PricingSystem_ID();
 		if (overridePricingSystem || previousPricingSystemId <= 0)
 		{
-			final BPartnerAndLocation bpartnerAndLocation = extractPriceListBPartnerAndLocation(order);
-			final int bPartnerId = bpartnerAndLocation.getC_BPartner_ID();
+			final BillBPartnerAndShipToLocation bpartnerAndLocation = extractPriceListBPartnerAndLocation(order);
+			final int bPartnerId = bpartnerAndLocation.getBill_BPartner_ID();
 			if (bPartnerId <= 0)
 			{
 				logger.debug("Order {} has no C_BPartner_ID. Doing nothing", order);
@@ -164,8 +164,8 @@ public class OrderBL implements IOrderBL
 			return;
 		}
 
-		final BPartnerAndLocation bpartnerAndLocation = extractPriceListBPartnerAndLocation(order);
-		if (bpartnerAndLocation.getC_BPartner_Location_ID() <= 0)
+		final BillBPartnerAndShipToLocation bpartnerAndLocation = extractPriceListBPartnerAndLocation(order);
+		if (bpartnerAndLocation.getShip_BPartner_Location_ID() <= 0)
 		{
 			logger.debug("order {} has no C_BPartner_Location_ID. Doing nothing", order);
 			return;
@@ -192,8 +192,8 @@ public class OrderBL implements IOrderBL
 			return;
 		}
 
-		final BPartnerAndLocation bpartnerAndLocation = extractPriceListBPartnerAndLocation(order);
-		if (bpartnerAndLocation.getC_BPartner_Location_ID() <= 0)
+		final BillBPartnerAndShipToLocation bpartnerAndLocation = extractPriceListBPartnerAndLocation(order);
+		if (bpartnerAndLocation.getShip_BPartner_Location_ID() <= 0)
 		{
 			return;
 		}
@@ -210,59 +210,42 @@ public class OrderBL implements IOrderBL
 	@Override
 	public int retrievePriceListId(final I_C_Order order)
 	{
-		final BPartnerAndLocation bpartnerAndLocation = extractPriceListBPartnerAndLocation(order);
+		final BillBPartnerAndShipToLocation bpartnerAndLocation = extractPriceListBPartnerAndLocation(order);
 		final I_M_PriceList priceList = retrievePriceListOrNull(order, bpartnerAndLocation);
 		return priceList == null ? 0 : priceList.getM_PriceList_ID();
 	}
 
-	private I_M_PriceList retrievePriceListOrNull(final I_C_Order order, final BPartnerAndLocation bpartnerAndLocation)
+	private I_M_PriceList retrievePriceListOrNull(final I_C_Order order, final BillBPartnerAndShipToLocation bpartnerAndLocation)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(order);
 		final String trxName = InterfaceWrapperHelper.getTrxName(order);
 
-		final int C_BPartner_Location_ID = bpartnerAndLocation.getC_BPartner_Location_ID();
-		if (C_BPartner_Location_ID <= 0)
+		if (bpartnerAndLocation.getShip_BPartner_Location_ID() <= 0)
 		{
 			return null;
 		}
 
 		final IProductPA productPA = Services.get(IProductPA.class);
 		final int M_PricingSystem_ID = order.getM_PricingSystem_ID();
+		final int shipBPartnerLocationId = bpartnerAndLocation.getShip_BPartner_Location_ID();
 		final boolean isSOTrx = order.isSOTrx();
-		final I_M_PriceList pl = productPA.retrievePriceListByPricingSyst(ctx, M_PricingSystem_ID, C_BPartner_Location_ID, isSOTrx, trxName);
+		final I_M_PriceList pl = productPA.retrievePriceListByPricingSyst(ctx, M_PricingSystem_ID, shipBPartnerLocationId, isSOTrx, trxName);
 		return pl;
 	}
 
-	private BPartnerAndLocation extractPriceListBPartnerAndLocation(final I_C_Order order)
+	private BillBPartnerAndShipToLocation extractPriceListBPartnerAndLocation(final I_C_Order order)
 	{
-		// TODO: shall we also consider Bill_BPartner_ID and Dropship_BPartner_ID?
 		final int bpartnerId = order.getC_BPartner_ID();
-		final int bpartnerLocationId = order.getC_BPartner_Location_ID();
-
-		return new BPartnerAndLocation(bpartnerId, bpartnerLocationId);
+		final org.compiere.model.I_C_BPartner_Location shipToLocation = getShipToLocation(order);
+		final int shipBPLocationId = shipToLocation != null ? shipToLocation.getC_BPartner_Location_ID() : -1;
+		return new BillBPartnerAndShipToLocation(bpartnerId, shipBPLocationId);
 	}
 
-	private static class BPartnerAndLocation
+	@lombok.Value
+	private static class BillBPartnerAndShipToLocation
 	{
-		private final int C_BPartner_ID;
-		private final int C_BPartner_Location_ID;
-
-		private BPartnerAndLocation(final int C_BPartner_ID, final int C_BPartner_Location_ID)
-		{
-			super();
-			this.C_BPartner_ID = C_BPartner_ID;
-			this.C_BPartner_Location_ID = C_BPartner_Location_ID;
-		}
-
-		public int getC_BPartner_ID()
-		{
-			return C_BPartner_ID;
-		}
-
-		public int getC_BPartner_Location_ID()
-		{
-			return C_BPartner_Location_ID;
-		}
+		int Bill_BPartner_ID;
+		int Ship_BPartner_Location_ID;
 	}
 
 	@Override
@@ -625,7 +608,7 @@ public class OrderBL implements IOrderBL
 		final List<I_C_BPartner_Location> locations = bPartnerDAO.retrieveBPartnerLocations(bp);
 
 		// Set Locations
-		final List<I_C_BPartner_Location> shipLocations = new ArrayList<I_C_BPartner_Location>();
+		final List<I_C_BPartner_Location> shipLocations = new ArrayList<>();
 		boolean foundLoc = false;
 		for (final I_C_BPartner_Location loc : locations)
 		{
@@ -731,7 +714,7 @@ public class OrderBL implements IOrderBL
 			final List<I_C_BPartner_Location> locations = bPartnerDAO.retrieveBPartnerLocations(billBPartner);
 
 			// Set Locations
-			final List<I_C_BPartner_Location> invLocations = new ArrayList<I_C_BPartner_Location>();
+			final List<I_C_BPartner_Location> invLocations = new ArrayList<>();
 			for (final I_C_BPartner_Location loc : locations)
 			{
 				if (foundLoc)

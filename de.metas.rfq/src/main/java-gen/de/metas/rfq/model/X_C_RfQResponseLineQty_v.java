@@ -4,7 +4,6 @@ package de.metas.rfq.model;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import org.compiere.util.Env;
 
 /** Generated Model for C_RfQResponseLineQty_v
  *  @author Adempiere (generated) 
@@ -16,7 +15,7 @@ public class X_C_RfQResponseLineQty_v extends org.compiere.model.PO implements I
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -536319299L;
+	private static final long serialVersionUID = -1029529082L;
 
     /** Standard Constructor */
     public X_C_RfQResponseLineQty_v (Properties ctx, int C_RfQResponseLineQty_v_ID, String trxName)
@@ -29,7 +28,7 @@ public class X_C_RfQResponseLineQty_v extends org.compiere.model.PO implements I
 			setC_RfQResponseLineQty_ID (0);
 			setC_UOM_ID (0);
 			setPrice (0);
-			setQty (Env.ZERO);
+			setQty (BigDecimal.ZERO);
         } */
     }
 
@@ -227,7 +226,7 @@ public class X_C_RfQResponseLineQty_v extends org.compiere.model.PO implements I
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Discount);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -283,7 +282,7 @@ public class X_C_RfQResponseLineQty_v extends org.compiere.model.PO implements I
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Qty);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 

@@ -60,7 +60,7 @@ import org.compiere.model.X_M_InOut;
 import org.slf4j.Logger;
 
 import de.metas.document.IDocTypeDAO;
-import de.metas.document.engine.IDocActionBL;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHUShipperTransportationBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -580,7 +580,7 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 				// Only sum up the qtys from inout lines that belong to completed inouts
 				final org.compiere.model.I_M_InOut io = iol.getM_InOut();
 
-				if (Services.get(IDocActionBL.class).isDocumentCompleted(io))
+				if (Services.get(IDocumentBL.class).isDocumentCompleted(io))
 				{
 					seenIOIds.add(io.getM_InOut_ID());
 					iolTuQtySum = iolTuQtySum.add(iol.getQtyEnteredTU());

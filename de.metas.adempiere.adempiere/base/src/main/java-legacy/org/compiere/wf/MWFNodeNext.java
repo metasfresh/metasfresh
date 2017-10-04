@@ -20,10 +20,13 @@ import java.sql.ResultSet;
 import java.util.List;
 import java.util.Properties;
 
+import org.adempiere.util.Services;
 import org.compiere.model.PO;
 import org.compiere.model.Query;
 import org.compiere.model.X_AD_WF_NodeNext;
-import org.compiere.process.DocAction;
+
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 
 /**
  *	Workflow Node Next - Transition
@@ -93,6 +96,7 @@ public class MWFNodeNext extends X_AD_WF_NodeNext
 	 *	@param AD_Client_ID client
 	 *	@param AD_Org_ID org
 	 */
+	@Override
 	public void setClientOrg (int AD_Client_ID, int AD_Org_ID)
 	{
 		super.setClientOrg (AD_Client_ID, AD_Org_ID);
@@ -102,6 +106,7 @@ public class MWFNodeNext extends X_AD_WF_NodeNext
 	 * 	String Representation
 	 *	@return info
 	 */
+	@Override
 	public String toString ()
 	{
 		StringBuffer sb = new StringBuffer ("MWFNodeNext[");
@@ -155,19 +160,19 @@ public class MWFNodeNext extends X_AD_WF_NodeNext
 	{
 		if (isStdUserWorkflow())
 		{
-			PO po = activity.getPO();
-			if (po instanceof DocAction)
+			final PO po = activity.getPO();
+			final IDocument da = Services.get(IDocumentBL.class).getDocumentOrNull(po);
+			if (da != null)
 			{
-				DocAction da = (DocAction)po;
 				String docStatus = da.getDocStatus();
 				String docAction = da.getDocAction();
-				if (!DocAction.ACTION_Complete.equals(docAction)
-					|| DocAction.STATUS_Completed.equals(docStatus)
-					|| DocAction.STATUS_WaitingConfirmation.equals(docStatus)
-					|| DocAction.STATUS_WaitingPayment.equals(docStatus)
-					|| DocAction.STATUS_Voided.equals(docStatus)
-					|| DocAction.STATUS_Closed.equals(docStatus)
-					|| DocAction.STATUS_Reversed.equals(docStatus) )
+				if (!IDocument.ACTION_Complete.equals(docAction)
+					|| IDocument.STATUS_Completed.equals(docStatus)
+					|| IDocument.STATUS_WaitingConfirmation.equals(docStatus)
+					|| IDocument.STATUS_WaitingPayment.equals(docStatus)
+					|| IDocument.STATUS_Voided.equals(docStatus)
+					|| IDocument.STATUS_Closed.equals(docStatus)
+					|| IDocument.STATUS_Reversed.equals(docStatus) )
 					/*
 					|| DocAction.ACTION_Complete.equals(docAction)	
 					|| DocAction.ACTION_ReActivate.equals(docAction)	

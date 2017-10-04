@@ -64,7 +64,7 @@ import de.metas.contracts.model.X_C_Flatrate_DataEntry;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Transition;
 import de.metas.currency.ICurrencyDAO;
-import de.metas.document.engine.IDocActionBL;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import test.integration.contracts.flatrate.FlatFeeScenario;
@@ -174,7 +174,7 @@ public class ContractsHelper extends HelperDelegator
 		change.setM_Product_ID(chargeProduct.getM_Product_ID());
 		gridWindowHelper.save();
 
-		Services.get(IDocActionBL.class).processEx(trans, X_C_Flatrate_Transition.DOCACTION_Complete, X_C_Flatrate_Transition.DOCSTATUS_Completed);
+		Services.get(IDocumentBL.class).processEx(trans, X_C_Flatrate_Transition.DOCACTION_Complete, X_C_Flatrate_Transition.DOCSTATUS_Completed);
 
 		InterfaceWrapperHelper.refresh(trans);
 		assertThat(trans.getDocStatus(), equalTo(X_C_Flatrate_Transition.DOCSTATUS_Completed));

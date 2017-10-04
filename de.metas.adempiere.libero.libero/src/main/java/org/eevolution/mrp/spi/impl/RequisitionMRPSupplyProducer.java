@@ -43,7 +43,6 @@ import org.compiere.model.I_M_Requisition;
 import org.compiere.model.I_M_RequisitionLine;
 import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_M_Requisition;
-import org.compiere.process.DocAction;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -57,6 +56,7 @@ import org.eevolution.mrp.api.IMRPExecutor;
 import org.eevolution.mrp.api.IMRPSourceEvent;
 
 import de.metas.adempiere.service.IRequisitionBL;
+import de.metas.document.engine.IDocument;
 import de.metas.material.planning.IMaterialPlanningContext;
 import de.metas.material.planning.ProductPlanningBL;
 
@@ -299,7 +299,7 @@ public class RequisitionMRPSupplyProducer extends AbstractMRPSupplyProducer
 		// MRP record for a requisition will be ALWAYS Drafted because
 		// a requisition generates just Planned Orders (which is a wish list)
 		// and not Scheduled Receipts
-		mrp.setDocStatus(DocAction.STATUS_Drafted);
+		mrp.setDocStatus(IDocument.STATUS_Drafted);
 		InterfaceWrapperHelper.save(mrp);
 	}
 

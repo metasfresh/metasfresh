@@ -26,7 +26,7 @@ import org.compiere.util.Env;
 import org.compiere.util.Util.ArrayKey;
 
 import de.metas.adempiere.model.I_C_BPartner_Location;
-import de.metas.document.engine.IDocActionBL;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.handlingunits.IHUAssignmentDAO;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
@@ -170,7 +170,7 @@ public class MultiCustomerHUReturnsInOutProducer
 					continue;
 				}
 
-				if (!Services.get(IDocActionBL.class).isDocumentCompletedOrClosed(inout))
+				if (!Services.get(IDocumentBL.class).isDocumentCompletedOrClosed(inout))
 				{
 					// do not allow HUs from uncompleted inouts to get into customer returns
 					continue;

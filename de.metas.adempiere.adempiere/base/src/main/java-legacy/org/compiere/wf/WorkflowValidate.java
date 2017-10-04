@@ -20,6 +20,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Workflow;
+import org.compiere.wf.api.IADWorkflowBL;
 import org.compiere.wf.exceptions.WorkflowNotValidException;
 
 import de.metas.process.JavaProcess;
