@@ -2,8 +2,7 @@ import counterpart from 'counterpart';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 
-import { addNotification } from '../../actions/AppActions';
-import { createUrlAttachment } from '../../actions/AppActions';
+import { addNotification, createUrlAttachment } from '../../actions/AppActions';
 
 class AttachUrl extends Component {
     state = {
@@ -75,15 +74,14 @@ class AttachUrl extends Component {
         const { handleClose } = this.props;
         const { url, name } = this.state;
 
+        // TODO: increase max-len or find another way to avoid this
+        // (following this rule here decreases this JSX' readability)
+        /* eslint-disable max-len */
         return (
             <div className="screen-freeze">
-                <div
-                    className="panel panel-modal panel-attachurl panel-modal-primary"
-                >
+                <div className="panel panel-modal panel-attachurl panel-modal-primary">
                     <div className="panel-attachurl-header-wrapper">
-                        <div
-                            className="panel-attachurl-header panel-attachurl-header-top"
-                        >
+                        <div className="panel-attachurl-header panel-attachurl-header-top">
                             <span className="attachurl-headline">
                                 {counterpart.translate('window.attachment.url.title')}
                             </span>
@@ -134,6 +132,7 @@ class AttachUrl extends Component {
                 </div>
             </div>
         );
+        /* eslint-enable max-len */
     }
 }
 
