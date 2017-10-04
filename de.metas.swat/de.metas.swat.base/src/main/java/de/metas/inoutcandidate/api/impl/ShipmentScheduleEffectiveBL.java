@@ -151,13 +151,20 @@ public class ShipmentScheduleEffectiveBL implements IShipmentScheduleEffectiveBL
 	}
 
 	@Override
-	public BigDecimal getQtyOrdered(final I_M_ShipmentSchedule shipmentSchedule)
+	public BigDecimal computeQtyOrdered(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
 	{
-		if (InterfaceWrapperHelper.isNull(shipmentSchedule, I_M_ShipmentSchedule.COLUMNNAME_QtyOrdered_Override))
+		if (shipmentSchedule.isClosed())
 		{
-			return shipmentSchedule.getQtyOrdered_Calculated();
+			return shipmentSchedule.getQtyDelivered();
 		}
-		return shipmentSchedule.getQtyOrdered_Override();
+
+		final boolean hasQtyOrderedOverride = !InterfaceWrapperHelper.isNull(shipmentSchedule, I_M_ShipmentSchedule.COLUMNNAME_QtyOrdered_Override);
+		if (hasQtyOrderedOverride)
+		{
+			return shipmentSchedule.getQtyOrdered_Override();
+		}
+
+		return shipmentSchedule.getQtyOrdered_Calculated();
 	}
 
 	@Override

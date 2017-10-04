@@ -49,10 +49,10 @@ import lombok.NonNull;
  * @author ts
  *
  */
-public class ShipmentCandidates implements IShipmentSchedulesDuringUpdate
+public class ShipmentSchedulesDuringUpdate implements IShipmentSchedulesDuringUpdate
 {
 
-	static final Logger logger = LogManager.getLogger(ShipmentCandidates.class);
+	static final Logger logger = LogManager.getLogger(ShipmentSchedulesDuringUpdate.class);
 
 	/**
 	 * List to store the shipments before it is decided if they are persisted to the database.
@@ -77,32 +77,32 @@ public class ShipmentCandidates implements IShipmentSchedulesDuringUpdate
 
 
 	@Override
-	public void addInOut(@NonNull final DeliveryGroupCandidate inOut)
+	public void addGroup(@NonNull final DeliveryGroupCandidate deliveryGroupCandidate)
 	{
-		if (orderedCandidates.contains(inOut))
+		if (orderedCandidates.contains(deliveryGroupCandidate))
 		{
 			throw new IllegalArgumentException("Each input may be added only once");
 		}
 
-		orderedCandidates.add(inOut);
+		orderedCandidates.add(deliveryGroupCandidate);
 
 		final ArrayKey shipperKey = Util.mkKey(
-				inOut.getBPartnerAddress(),
-				inOut.getWarehouseId(),
-				inOut.getShipperId());
-		shipperKey2Candidate.put(shipperKey, inOut);
+				deliveryGroupCandidate.getBPartnerAddress(),
+				deliveryGroupCandidate.getWarehouseId(),
+				deliveryGroupCandidate.getShipperId());
+		shipperKey2Candidate.put(shipperKey, deliveryGroupCandidate);
 
 		final ArrayKey orderKey = Util.mkKey(
-				inOut.getBPartnerAddress(),
-				inOut.getWarehouseId(),
-				inOut.getGroupId());
-		orderKey2Candidate.put(orderKey, inOut);
+				deliveryGroupCandidate.getBPartnerAddress(),
+				deliveryGroupCandidate.getWarehouseId(),
+				deliveryGroupCandidate.getGroupId());
+		orderKey2Candidate.put(orderKey, deliveryGroupCandidate);
 	}
 
 	@Override
-	public void addLine(@NonNull final DeliveryLineCandidate inOutLine)
+	public void addLine(@NonNull final DeliveryLineCandidate deliveryLineCandidate)
 	{
-		final DeliveryGroupCandidate inOut = inOutLine.getGroup();
+		final DeliveryGroupCandidate inOut = deliveryLineCandidate.getGroup();
 
 		if (!orderedCandidates.contains(inOut))
 		{
@@ -111,27 +111,27 @@ public class ShipmentCandidates implements IShipmentSchedulesDuringUpdate
 					+ "\n orderedCandidates: " + orderedCandidates);
 		}
 
-		if (CompleteStatus.INCOMPLETE_ORDER.equals(inOutLine.getCompleteStatus()))
+		if (CompleteStatus.INCOMPLETE_ORDER.equals(deliveryLineCandidate.getCompleteStatus()))
 		{
 			throw new IllegalArgumentException("completeStatus may not be " + CompleteStatus.INCOMPLETE_ORDER + " (this will be figured out later by this class)");
 		}
 
-		final I_M_ShipmentSchedule sched = inOutLine.getShipmentSchedule();
+		final I_M_ShipmentSchedule sched = deliveryLineCandidate.getShipmentSchedule();
 
 		//
 		// C_OrderLine_ID to M_InOutLine mapping
 		{
-			final DeliveryLineCandidate inOutLine_Old = shipmentScheduleId2InOutLine.put(sched.getM_ShipmentSchedule_ID(), inOutLine);
-			if (inOutLine_Old != null && inOutLine_Old != inOutLine)
+			final DeliveryLineCandidate inOutLine_Old = shipmentScheduleId2InOutLine.put(sched.getM_ShipmentSchedule_ID(), deliveryLineCandidate);
+			if (inOutLine_Old != null && inOutLine_Old != deliveryLineCandidate)
 			{
 				throw new IllegalArgumentException("An InOutLine was already set for order line in orderLineId2InOutLine mapping"
-						+ "\n InOutLine: " + inOutLine
+						+ "\n InOutLine: " + deliveryLineCandidate
 						+ "\n InOutLine (old): " + inOutLine_Old
 						+ "\n shipmentScheduleId2InOutLine (after change): " + shipmentScheduleId2InOutLine);
 			}
 		}
 
-		deliveryLineCandidates.add(inOutLine);
+		deliveryLineCandidates.add(deliveryLineCandidate);
 	}
 
 	public void removeLine(@NonNull final DeliveryLineCandidate deliveryLineCandidate)
@@ -208,7 +208,7 @@ public class ShipmentCandidates implements IShipmentSchedulesDuringUpdate
 
 	public DeliveryLineCandidate getInOutLineFor(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
 	{
-		return getInOutLineForOrderLine(shipmentSchedule.getM_ShipmentSchedule_ID());
+		return getLineCandidateForShipmentScheduleId(shipmentSchedule.getM_ShipmentSchedule_ID());
 	}
 
 	/**
@@ -296,7 +296,7 @@ public class ShipmentCandidates implements IShipmentSchedulesDuringUpdate
 	}
 
 	@Override
-	public DeliveryLineCandidate getInOutLineForOrderLine(final int shipmentScheduleId)
+	public DeliveryLineCandidate getLineCandidateForShipmentScheduleId(final int shipmentScheduleId)
 	{
 		return shipmentScheduleId2InOutLine.get(shipmentScheduleId);
 	}

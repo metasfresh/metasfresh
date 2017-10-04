@@ -33,7 +33,7 @@ public interface IShipmentSchedulesDuringUpdate
 	 */
 	public DeliveryGroupCandidate getInOutForOrderId(int orderId, int warehouseId, String bPartnerAddress);
 
-	public void addInOut(DeliveryGroupCandidate inOut);
+	public void addGroup(DeliveryGroupCandidate deliveryGroupCandidate);
 
 	/**
 	 * 
@@ -45,9 +45,9 @@ public interface IShipmentSchedulesDuringUpdate
 	 */
 	public DeliveryGroupCandidate getInOutForShipper(int shipperId, int warehouseId, String bPartnerAddress);
 
-	public void addLine(DeliveryLineCandidate inOutLine);
+	public void addLine(DeliveryLineCandidate deliveryLineCandidate);
 
-	public DeliveryLineCandidate getInOutLineForOrderLine(int shipmentScheduleId);
+	public DeliveryLineCandidate getLineCandidateForShipmentScheduleId(int shipmentScheduleId);
 
 	/**
 	 * Adds a custom status info for the given iol. Usally the info explains, why an open order line won't be delivered this time.

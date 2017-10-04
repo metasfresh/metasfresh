@@ -1,4 +1,4 @@
-package de.metas.inoutcandidate.spi.impl;
+package de.metas.order.inoutcandidate;
 
 /*
  * #%L
@@ -58,10 +58,10 @@ import de.metas.product.IProductBL;
  * @author ts
  *
  */
-public class OrderLineInOutCandHandler implements IShipmentScheduleHandler
+public class OrderLineShipmentScheduleHandler implements IShipmentScheduleHandler
 {
 
-	private static final Logger logger = LogManager.getLogger(OrderLineInOutCandHandler.class);
+	private static final Logger logger = LogManager.getLogger(OrderLineShipmentScheduleHandler.class);
 
 	@Override
 	public List<I_M_ShipmentSchedule> createCandidatesFor(final Object model)
@@ -86,13 +86,11 @@ public class OrderLineInOutCandHandler implements IShipmentScheduleHandler
 		newSched.setC_Order_ID(orderLine.getC_Order_ID());
 		newSched.setC_OrderLine_ID(orderLine.getC_OrderLine_ID());
 		newSched.setQtyReserved(BigDecimal.ZERO.max(orderLine.getQtyReserved())); // task 09358: making sure that negative qtyOrdered are not proagated to the shipment sched
+		
+		// 08255 : initialize the qty order calculated
 		newSched.setQtyOrdered_Calculated(qtyOrdered_Effective);
 		newSched.setDateOrdered(orderLine.getDateOrdered());
 		Services.get(IAttributeSetInstanceBL.class).cloneASI(newSched, orderLine);
-
-		//
-		// 08255 : initialize the qty order calculated
-		newSched.setQtyOrdered_Calculated(qtyOrdered_Effective);
 
 		newSched.setPriorityRule(order.getPriorityRule());
 
