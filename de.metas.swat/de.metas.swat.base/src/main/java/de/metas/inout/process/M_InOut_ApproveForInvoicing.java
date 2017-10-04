@@ -2,9 +2,9 @@ package de.metas.inout.process;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
-import org.compiere.process.DocAction;
 
-import de.metas.document.engine.IDocActionBL;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.inout.api.IInOutInvoiceCandidateBL;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.process.IProcessPrecondition;
@@ -57,7 +57,7 @@ public class M_InOut_ApproveForInvoicing extends JavaProcess implements IProcess
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
 	{
-		final IDocActionBL docActionBL = Services.get(IDocActionBL.class);
+		final IDocumentBL docActionBL = Services.get(IDocumentBL.class);
 
 		// Make this process only available for inout entries that are active and have the status Completed or Closed
 
@@ -65,7 +65,7 @@ public class M_InOut_ApproveForInvoicing extends JavaProcess implements IProcess
 		{
 			final I_M_InOut inOut = context.getSelectedModel(I_M_InOut.class);
 			return ProcessPreconditionsResolution.acceptIf(docActionBL.isStatusStrOneOf(inOut.getDocStatus(),
-					DocAction.STATUS_Completed, DocAction.STATUS_Closed));
+					IDocument.STATUS_Completed, IDocument.STATUS_Closed));
 		}
 		return ProcessPreconditionsResolution.reject();
 	}

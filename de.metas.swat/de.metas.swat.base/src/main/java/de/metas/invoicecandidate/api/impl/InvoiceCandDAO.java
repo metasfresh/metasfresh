@@ -76,7 +76,7 @@ import de.metas.adempiere.util.CacheModel;
 import de.metas.adempiere.util.CacheTrx;
 import de.metas.aggregation.model.I_C_Aggregation;
 import de.metas.currency.ICurrencyBL;
-import de.metas.document.engine.IDocActionBL;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandRecomputeTagger;
@@ -286,7 +286,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	@Override
 	public List<I_C_InvoiceCandidate_InOutLine> retrieveICIOLAssociationsExclRE(@CacheModel final I_C_Invoice_Candidate invoiceCandidate)
 	{
-		final IDocActionBL docActionBL = Services.get(IDocActionBL.class);
+		final IDocumentBL docActionBL = Services.get(IDocumentBL.class);
 
 		// load all I_C_InvoiceCandidate_InOutLine and filter locally.
 		// i think it's safe to assume that there are not 1000s of records to load and this way the code is simpler

@@ -43,7 +43,6 @@ import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_M_InOutLine;
-import org.compiere.process.DocAction;
 import org.slf4j.Logger;
 
 import ch.qos.logback.classic.Level;
@@ -52,6 +51,7 @@ import de.metas.async.exceptions.WorkpackageSkipRequestException;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.ILatchStragegy;
 import de.metas.async.spi.WorkpackageProcessorAdapter;
+import de.metas.document.engine.IDocument;
 import de.metas.handlingunits.HUConstants;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
@@ -138,7 +138,7 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 		final String shipmentDocDocAction;
 		if (getParameters().getParameterAsBool(PARAM_IsCompleteShipments))
 		{
-			shipmentDocDocAction = DocAction.ACTION_Complete;
+			shipmentDocDocAction = IDocument.ACTION_Complete;
 		}
 		else
 		{

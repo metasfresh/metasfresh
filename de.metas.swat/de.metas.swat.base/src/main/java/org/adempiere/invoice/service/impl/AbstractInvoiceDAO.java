@@ -42,13 +42,13 @@ import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_Fact_Acct;
 import org.compiere.model.I_M_InOutLine;
-import org.compiere.process.DocAction;
 
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.adempiere.util.CacheTrx;
 import de.metas.allocation.api.IAllocationDAO;
+import de.metas.document.engine.IDocument;
 
 /**
  * Implements those methods from {@link IInvoiceDAO} that are DB decoupled.
@@ -153,7 +153,7 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 		queryBuilder
 				.addEqualsFilter(I_C_Invoice.COLUMNNAME_Posted, true) // Posted
 				.addEqualsFilter(I_C_Invoice.COLUMNNAME_Processed, true) // Processed
-				.addInArrayOrAllFilter(I_C_Invoice.COLUMNNAME_DocStatus, DocAction.STATUS_Closed, DocAction.STATUS_Completed); // DocStatus in ('CO', 'CL')
+				.addInArrayOrAllFilter(I_C_Invoice.COLUMNNAME_DocStatus, IDocument.STATUS_Closed, IDocument.STATUS_Completed); // DocStatus in ('CO', 'CL')
 
 		// Exclude the entries that don't have either GrandTotal or TotalLines. These entries will produce 0 in posting
 		final ICompositeQueryFilter<I_C_Invoice> nonZeroFilter = queryBL.createCompositeQueryFilter(I_C_Invoice.class).setJoinOr()

@@ -41,7 +41,6 @@ import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
 import org.adempiere.warehouse.spi.IWarehouseAdvisor;
 import org.compiere.print.ReportEngine;
-import org.compiere.process.DocAction;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
@@ -52,7 +51,8 @@ import de.metas.currency.ICurrencyBL;
 import de.metas.document.documentNo.IDocumentNoBL;
 import de.metas.document.documentNo.IDocumentNoBuilder;
 import de.metas.document.documentNo.IDocumentNoBuilderFactory;
-import de.metas.document.engine.IDocActionBL;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.Msg;
 import de.metas.prepayorder.service.IPrepayOrderAllocationBL;
 import de.metas.product.IProductBL;
@@ -80,7 +80,7 @@ import de.metas.tax.api.ITaxBL;
  * @author Michael Judd, www.akunagroup.com
  *         <li>BF [ 2804888 ] Incorrect reservation of products with attributes
  */
-public class MOrder extends X_C_Order implements DocAction
+public class MOrder extends X_C_Order implements IDocument
 {
 
 	/**
@@ -696,7 +696,7 @@ public class MOrder extends X_C_Order implements DocAction
 	@Override
 	public String toString()
 	{
-		StringBuffer sb = new StringBuffer("C_Order[ID=").append(get_ID())
+		StringBuilder sb = new StringBuilder("C_Order[ID=").append(get_ID())
 				.append("-DocumentNo=").append(getDocumentNo())
 				.append(",IsSOTrx=").append(isSOTrx())
 				.append(",C_DocType_ID=").append(getC_DocType_ID())
@@ -782,7 +782,7 @@ public class MOrder extends X_C_Order implements DocAction
 	public MOrderLine[] getLines(String whereClause, String orderClause)
 	{
 		// red1 - using new Query class from Teo / Victor's MDDOrder.java implementation
-		final StringBuffer whereClauseFinal = new StringBuffer("(" + MOrderLine.COLUMNNAME_C_Order_ID + "=? AND " + MOrderLine.COLUMNNAME_IsActive + "='Y' )");
+		final StringBuilder whereClauseFinal = new StringBuilder("(" + MOrderLine.COLUMNNAME_C_Order_ID + "=? AND " + MOrderLine.COLUMNNAME_IsActive + "='Y' )");
 		if (!Check.isEmpty(whereClause, true))
 			whereClauseFinal.append(whereClause);
 		if (orderClause.length() == 0)
@@ -1218,18 +1218,12 @@ public class MOrder extends X_C_Order implements DocAction
 		return true;
 	}	// beforeDelete
 
-	/**************************************************************************
-	 * Process document
-	 *
-	 * @param processAction document action
-	 * @return true if performed
-	 */
 	@Override
 	public boolean processIt(String processAction)
 	{
 		m_processMsg = null;
-		return Services.get(IDocActionBL.class).processIt(this, processAction); // task 09824
-	}	// processIt
+		return Services.get(IDocumentBL.class).processIt(this, processAction); // task 09824
+	}
 
 	/** Process Message */
 	private String m_processMsg = null;
@@ -1244,7 +1238,7 @@ public class MOrder extends X_C_Order implements DocAction
 	@Override
 	public boolean unlockIt()
 	{
-		log.debug("unlockIt - " + toString());
+		log.debug("unlockIt - {}", this);
 		setProcessing(false);
 		return true;
 	}	// unlockIt
@@ -1257,7 +1251,7 @@ public class MOrder extends X_C_Order implements DocAction
 	@Override
 	public boolean invalidateIt()
 	{
-		log.debug(toString());
+		log.debug("{}", this);
 		setDocAction(DOCACTION_Prepare);
 		return true;
 	}	// invalidateIt
@@ -1270,11 +1264,10 @@ public class MOrder extends X_C_Order implements DocAction
 	@Override
 	public String prepareIt()
 	{
-		log.debug(toString());
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_PREPARE);
 		if (m_processMsg != null)
 		{
-			return DocAction.STATUS_Invalid;
+			return IDocument.STATUS_Invalid;
 		}
 		MDocType dt = MDocType.get(getCtx(), getC_DocTypeTarget_ID());
 
@@ -1282,7 +1275,7 @@ public class MOrder extends X_C_Order implements DocAction
 		if (!MPeriod.isOpen(getCtx(), getDateAcct(), dt.getDocBaseType(), getAD_Org_ID()))
 		{
 			m_processMsg = "@PeriodClosed@";
-			return DocAction.STATUS_Invalid;
+			return IDocument.STATUS_Invalid;
 		}
 
 		// Lines
@@ -1290,7 +1283,7 @@ public class MOrder extends X_C_Order implements DocAction
 		if (lines.length == 0)
 		{
 			m_processMsg = "@NoLines@";
-			return DocAction.STATUS_Invalid;
+			return IDocument.STATUS_Invalid;
 		}
 
 		// Bug 1564431
@@ -1303,7 +1296,7 @@ public class MOrder extends X_C_Order implements DocAction
 				if (product != null && product.isExcludeAutoDelivery())
 				{
 					m_processMsg = "@M_Product_ID@ " + product.getValue() + " @IsExcludeAutoDelivery@";
-					return DocAction.STATUS_Invalid;
+					return IDocument.STATUS_Invalid;
 				}
 			}
 		}
@@ -1324,7 +1317,7 @@ public class MOrder extends X_C_Order implements DocAction
 						{
 							log.warn("different Warehouse " + lines[i]);
 							m_processMsg = "@CannotChangeDocType@";
-							return DocAction.STATUS_Invalid;
+							return IDocument.STATUS_Invalid;
 						}
 					}
 				}
@@ -1346,7 +1339,7 @@ public class MOrder extends X_C_Order implements DocAction
 				else
 				{
 					m_processMsg = "@CannotChangeDocType@";
-					return DocAction.STATUS_Invalid;
+					return IDocument.STATUS_Invalid;
 				}
 			}
 		}  	// convert DocType
@@ -1364,7 +1357,7 @@ public class MOrder extends X_C_Order implements DocAction
 		if (no != 0)
 		{
 			m_processMsg = "@LinesWithoutProductAttribute@ (" + no + ")";
-			return DocAction.STATUS_Invalid;
+			return IDocument.STATUS_Invalid;
 		}
 
 		// Lines
@@ -1374,12 +1367,12 @@ public class MOrder extends X_C_Order implements DocAction
 		if (!reserveStock(dt, lines))
 		{
 			m_processMsg = "Cannot reserve Stock";
-			return DocAction.STATUS_Invalid;
+			return IDocument.STATUS_Invalid;
 		}
 		if (!calculateTaxTotal())
 		{
 			m_processMsg = "Error calculating tax";
-			return DocAction.STATUS_Invalid;
+			return IDocument.STATUS_Invalid;
 		}
 
 		// Credit Check
@@ -1413,14 +1406,14 @@ public class MOrder extends X_C_Order implements DocAction
 					m_processMsg = "@BPartnerCreditStop@ - @TotalOpenBalance@="
 							+ totalOpenBalance
 							+ ", @SO_CreditLimit@=" + partner.getSO_CreditLimit();
-					return DocAction.STATUS_Invalid;
+					return IDocument.STATUS_Invalid;
 				}
 				if (X_C_BPartner_Stats.SOCREDITSTATUS_CreditHold.equals(soCreditStatus))
 				{
 					m_processMsg = "@BPartnerCreditHold@ - @TotalOpenBalance@="
 							+ totalOpenBalance
 							+ ", @SO_CreditLimit@=" + partner.getSO_CreditLimit();
-					return DocAction.STATUS_Invalid;
+					return IDocument.STATUS_Invalid;
 				}
 				BigDecimal grandTotal = Services.get(ICurrencyBL.class).convertBase(getCtx(),
 						getGrandTotal(), getC_Currency_ID(), getDateOrdered(),
@@ -1433,7 +1426,7 @@ public class MOrder extends X_C_Order implements DocAction
 					m_processMsg = "@BPartnerOverOCreditHold@ - @TotalOpenBalance@="
 							+ totalOpenBalance + ", @GrandTotal@=" + grandTotal
 							+ ", @SO_CreditLimit@=" + partner.getSO_CreditLimit();
-					return DocAction.STATUS_Invalid;
+					return IDocument.STATUS_Invalid;
 				}
 
 			}
@@ -1441,12 +1434,12 @@ public class MOrder extends X_C_Order implements DocAction
 
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_PREPARE);
 		if (m_processMsg != null)
-			return DocAction.STATUS_Invalid;
+			return IDocument.STATUS_Invalid;
 
 		m_justPrepared = true;
 		// if (!DOCACTION_Complete.equals(getDocAction())) don't set for just prepare
 		// setDocAction(DOCACTION_Complete);
-		return DocAction.STATUS_InProgress;
+		return IDocument.STATUS_InProgress;
 	}	// prepareIt
 
 	// @formatter:off
@@ -1726,7 +1719,7 @@ public class MOrder extends X_C_Order implements DocAction
 
 		// Lines
 		BigDecimal totalLines = Env.ZERO;
-		final Set<Integer> taxIds = new HashSet<Integer>();
+		final Set<Integer> taxIds = new HashSet<>();
 		final MOrderLine[] lines = getLines();
 		for (final MOrderLine line : lines)
 		{
@@ -1804,7 +1797,7 @@ public class MOrder extends X_C_Order implements DocAction
 	@Override
 	public boolean approveIt()
 	{
-		log.debug("approveIt - " + toString());
+		log.debug("approveIt - {}", this);
 		setIsApproved(true);
 		return true;
 	}	// approveIt
@@ -1817,7 +1810,7 @@ public class MOrder extends X_C_Order implements DocAction
 	@Override
 	public boolean rejectIt()
 	{
-		log.debug("rejectIt - " + toString());
+		log.debug("rejectIt - {}", this);
 		setIsApproved(false);
 		return true;
 	}	// rejectIt
@@ -1843,7 +1836,7 @@ public class MOrder extends X_C_Order implements DocAction
 		if (DOCACTION_Prepare.equals(getDocAction()))
 		{
 			setProcessed(false);
-			return DocAction.STATUS_InProgress;
+			return IDocument.STATUS_InProgress;
 		}
 		// Offers
 		if (MDocType.DOCSUBTYPE_Proposal.equals(DocSubType)
@@ -1854,14 +1847,14 @@ public class MOrder extends X_C_Order implements DocAction
 				reserveStock(dt, getLines(true, MOrderLine.COLUMNNAME_M_Product_ID));
 			m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_COMPLETE);
 			if (m_processMsg != null)
-				return DocAction.STATUS_Invalid;
+				return IDocument.STATUS_Invalid;
 			m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_COMPLETE);
 			if (m_processMsg != null)
-				return DocAction.STATUS_Invalid;
+				return IDocument.STATUS_Invalid;
 			// Set the definite document number after completed (if needed)
 			setDefiniteDocumentNo();
 			setProcessed(true);
-			return DocAction.STATUS_Completed;
+			return IDocument.STATUS_Completed;
 		}
 		// Waiting Payment - until we have a payment
 		if (!m_forceCreation
@@ -1870,27 +1863,27 @@ public class MOrder extends X_C_Order implements DocAction
 				&& getC_Payment_ID() == 0 && getC_CashLine_ID() == 0)
 		{
 			setProcessed(true);
-			return DocAction.STATUS_WaitingPayment;
+			return IDocument.STATUS_WaitingPayment;
 		}
 
 		// Re-Check
 		if (!m_justPrepared)
 		{
 			String status = prepareIt();
-			if (!DocAction.STATUS_InProgress.equals(status))
+			if (!IDocument.STATUS_InProgress.equals(status))
 				return status;
 		}
 
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_COMPLETE);
 		if (m_processMsg != null)
-			return DocAction.STATUS_Invalid;
+			return IDocument.STATUS_Invalid;
 
 		// Implicit Approval
 		if (!isApproved())
 			approveIt();
 		getLines(true, null);
 		log.debug("Completed: {}", this);
-		StringBuffer info = new StringBuffer();
+		StringBuilder info = new StringBuilder();
 
 		boolean realTimePOS = false;
 
@@ -1906,7 +1899,7 @@ public class MOrder extends X_C_Order implements DocAction
 			//
 			shipment = createShipment(dt, realTimePOS ? null : getDateOrdered());
 			if (shipment == null)
-				return DocAction.STATUS_Invalid;
+				return IDocument.STATUS_Invalid;
 			info.append("@M_InOut_ID@: ").append(shipment.getDocumentNo());
 			String msg = shipment.getProcessMsg();
 			if (msg != null && msg.length() > 0)
@@ -1920,7 +1913,7 @@ public class MOrder extends X_C_Order implements DocAction
 		{
 			MInvoice invoice = createInvoice(dt, shipment, realTimePOS ? null : getDateOrdered());
 			if (invoice == null)
-				return DocAction.STATUS_Invalid;
+				return IDocument.STATUS_Invalid;
 			info.append(" - @C_Invoice_ID@: ").append(invoice.getDocumentNo());
 			String msg = invoice.getProcessMsg();
 			if (msg != null && msg.length() > 0)
@@ -1935,7 +1928,7 @@ public class MOrder extends X_C_Order implements DocAction
 				info.append(" - ");
 			info.append(valid);
 			m_processMsg = info.toString();
-			return DocAction.STATUS_Invalid;
+			return IDocument.STATUS_Invalid;
 		}
 
 		// Set the definite document number after completed (if needed)
@@ -1945,7 +1938,7 @@ public class MOrder extends X_C_Order implements DocAction
 		m_processMsg = info.toString();
 		//
 		setDocAction(DOCACTION_Re_Activate); // issue #347
-		return DocAction.STATUS_Completed;
+		return IDocument.STATUS_Completed;
 	}	// completeIt
 
 	/**
@@ -2054,7 +2047,7 @@ public class MOrder extends X_C_Order implements DocAction
 	 */
 	private MInvoice createInvoice(MDocType dt, MInOut shipment, Timestamp invoiceDate)
 	{
-		log.debug(dt.toString());
+		log.debug("docType={}", dt);
 		MInvoice invoice = new MInvoice(this, dt.getC_DocTypeInvoice_ID(), invoiceDate);
 		if (!invoice.save(get_TrxName()))
 		{
@@ -2143,7 +2136,6 @@ public class MOrder extends X_C_Order implements DocAction
 	@Override
 	public boolean voidIt()
 	{
-		log.debug(toString());
 		// Before Void
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_VOID);
 		if (m_processMsg != null)
@@ -2216,7 +2208,7 @@ public class MOrder extends X_C_Order implements DocAction
 			return true;
 
 		log.debug("createReversals");
-		StringBuffer info = new StringBuffer();
+		StringBuilder info = new StringBuilder();
 
 		// Reverse All *Shipments*
 		info.append("@M_InOut_ID@:");
@@ -2297,7 +2289,6 @@ public class MOrder extends X_C_Order implements DocAction
 	@Override
 	public boolean closeIt()
 	{
-		log.debug(toString());
 		// Before Close
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_CLOSE);
 		if (m_processMsg != null)
@@ -2341,7 +2332,6 @@ public class MOrder extends X_C_Order implements DocAction
 	 */
 	public String reopenIt()
 	{
-		log.debug(toString());
 		if (!MOrder.DOCSTATUS_Closed.equals(getDocStatus()))
 		{
 			return "Not closed - can't reopen";
@@ -2397,7 +2387,6 @@ public class MOrder extends X_C_Order implements DocAction
 	@Override
 	public boolean reverseCorrectIt()
 	{
-		log.debug(toString());
 		// Before reverseCorrect
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_REVERSECORRECT);
 		if (m_processMsg != null)
@@ -2419,7 +2408,6 @@ public class MOrder extends X_C_Order implements DocAction
 	@Override
 	public boolean reverseAccrualIt()
 	{
-		log.debug(toString());
 		// Before reverseAccrual
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_REVERSEACCRUAL);
 		if (m_processMsg != null)
@@ -2441,7 +2429,6 @@ public class MOrder extends X_C_Order implements DocAction
 	@Override
 	public boolean reActivateIt()
 	{
-		log.debug(toString());
 		// Before reActivate
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_REACTIVATE);
 		if (m_processMsg != null)
@@ -2513,7 +2500,7 @@ public class MOrder extends X_C_Order implements DocAction
 	@Override
 	public String getSummary()
 	{
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		sb.append(getDocumentNo());
 		// : Grand Total = 123.00 (#1)
 		sb.append(": ").append(Msg.translate(getCtx(), "GrandTotal")).append("=").append(getGrandTotal());

@@ -23,21 +23,19 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.acct.api.IFactAcctDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
 
 import de.metas.adempiere.service.IOrderLineBL;
 import de.metas.currency.ICurrencyBL;
 import de.metas.invoice.IMatchInvDAO;
+import de.metas.logging.LogManager;
 import de.metas.tax.api.ITaxBL;
 
 /**
@@ -86,7 +84,7 @@ public class MMatchPO extends X_M_MatchPO
 			return new MMatchPO[]{};
 		//
 		String sql = "SELECT * FROM M_MatchPO WHERE C_OrderLine_ID=? AND C_InvoiceLine_ID=?";
-		ArrayList<MMatchPO> list = new ArrayList<MMatchPO>();
+		ArrayList<MMatchPO> list = new ArrayList<>();
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
@@ -128,7 +126,7 @@ public class MMatchPO extends X_M_MatchPO
 		String sql = "SELECT * FROM M_MatchPO m"
 			+ " INNER JOIN M_InOutLine l ON (m.M_InOutLine_ID=l.M_InOutLine_ID) "
 			+ "WHERE l.M_InOut_ID=?"; 
-		ArrayList<MMatchPO> list = new ArrayList<MMatchPO>();
+		ArrayList<MMatchPO> list = new ArrayList<>();
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
@@ -169,7 +167,7 @@ public class MMatchPO extends X_M_MatchPO
 		String sql = "SELECT * FROM M_MatchPO mi"
 			+ " INNER JOIN C_InvoiceLine il ON (mi.C_InvoiceLine_ID=il.C_InvoiceLine_ID) "
 			+ "WHERE il.C_Invoice_ID=?";
-		ArrayList<MMatchPO> list = new ArrayList<MMatchPO>();
+		ArrayList<MMatchPO> list = new ArrayList<>();
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
@@ -208,7 +206,7 @@ public class MMatchPO extends X_M_MatchPO
 			return new MMatchPO[]{};
 		//
 		String sql = "SELECT * FROM M_MatchPO WHERE C_OrderLine_ID=?";
-		ArrayList<MMatchPO> list = new ArrayList<MMatchPO>();
+		ArrayList<MMatchPO> list = new ArrayList<>();
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
@@ -812,7 +810,7 @@ public class MMatchPO extends X_M_MatchPO
 		{
 			MPeriod.testPeriodOpen(getCtx(), getDateTrx(), MDocType.DOCBASETYPE_MatchPO, getAD_Org_ID());
 			setPosted(false);
-			Services.get(IFactAcctDAO.class).deleteForDocument(this);
+			Services.get(IFactAcctDAO.class).deleteForDocumentModel(this);
 		}
 		return true;
 	}	//	beforeDelete

@@ -47,6 +47,7 @@ import de.metas.adempiere.util.CacheCtx;
 import de.metas.document.IDocumentLocationBL;
 import de.metas.document.model.IDocumentLocation;
 import de.metas.letters.api.ITextTemplateBL;
+import de.metas.letters.api.LetterPDFCreateRequest;
 import de.metas.letters.model.I_AD_BoilerPlate;
 import de.metas.letters.model.I_C_Letter;
 import de.metas.letters.model.I_T_Letter_Spool;
@@ -166,19 +167,19 @@ public final class TextTemplateBL implements ITextTemplateBL
 	}
 
 	@Override
-	public byte[] createPDF(final I_C_Letter letter)
+	public byte[] createPDF(final LetterPDFCreateRequest request)
 	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(letter);
+		final Properties ctx = Env.getCtx();
 		final ProcessInfo jasperProcessInfo = ProcessInfo.builder()
 				.setCtx(ctx)
-				.setAD_Process_ID(getJasperProcess_ID(letter))
+				.setAD_Process_ID(getJasperProcess_ID(request))
 				// .setRecord(recordRef) // no record
-				.setReportLanguage(Env.getLanguage(ctx))
+				.setReportLanguage(request.getAdLanguage())
 				.setJRDesiredOutputType(OutputType.PDF)
 				.build();
 		Services.get(IADPInstanceDAO.class).saveProcessInfoOnly(jasperProcessInfo);
 
-		createLetterSpoolRecord(jasperProcessInfo.getAD_PInstance_ID(), letter);
+		createLetterSpoolRecord(jasperProcessInfo.getAD_PInstance_ID(), request, jasperProcessInfo.getAD_Client_ID());
 
 		final JRClient jrClient = JRClient.get();
 		final byte[] pdf = jrClient.report(jasperProcessInfo);
@@ -186,9 +187,14 @@ public final class TextTemplateBL implements ITextTemplateBL
 		return pdf;
 	}
 
-	private int getJasperProcess_ID(I_C_Letter letter)
+	private static int getJasperProcess_ID(final LetterPDFCreateRequest request)
 	{
-		final I_AD_BoilerPlate textTemplate = letter.getAD_BoilerPlate();
+		if(request.getTextTemplateId() <= 0)
+		{
+			return AD_Process_ID_T_Letter_Spool_Print;
+		}
+		
+		final I_AD_BoilerPlate textTemplate = InterfaceWrapperHelper.loadOutOfTrx(request.getTextTemplateId(), I_AD_BoilerPlate.class);
 		if (textTemplate == null)
 		{
 			return AD_Process_ID_T_Letter_Spool_Print;
@@ -203,11 +209,8 @@ public final class TextTemplateBL implements ITextTemplateBL
 		return jasperProcessId;
 	}
 
-	public void createLetterSpoolRecord(int adPInstanceId, I_C_Letter letter)
+	private static void createLetterSpoolRecord(final int adPInstanceId, final LetterPDFCreateRequest request, final int adClientId)
 	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(letter);
-		final int clientId = Env.getAD_Client_ID(ctx);
-
 		final String sql = "INSERT INTO " + I_T_Letter_Spool.Table_Name + "("
 				+ " " + I_T_Letter_Spool.COLUMNNAME_AD_Client_ID
 				+ "," + I_T_Letter_Spool.COLUMNNAME_AD_Org_ID
@@ -232,16 +235,16 @@ public final class TextTemplateBL implements ITextTemplateBL
 		DB.executeUpdateEx(sql,
 				new Object[]
 				{
-						clientId,
-						letter.getAD_Org_ID(), // NOTE: using the same Org as in C_Letter is very important for reports to know from where to take the Org Header
+						adClientId,
+						request.getAdOrgId(), // NOTE: using the same Org as in C_Letter is very important for reports to know from where to take the Org Header
 						adPInstanceId,
 						10, // seqNo
-						letter.getLetterSubject(),
-						letter.getLetterBodyParsed(),
-						letter.getC_BPartner_ID(),
-						letter.getC_BPartner_Location_ID(),
-						letter.getBPartnerAddress(),
-						letter.getC_BP_Contact_ID(),
+						request.getLetterSubject(),
+						request.getLetterBodyParsed(),
+						request.getBpartnerId(),
+						request.getBpartnerLocationId(),
+						request.getBpartnerAddress(),
+						request.getBpartnerContactId(),
 				},
 				ITrx.TRXNAME_None);
 	}

@@ -2,8 +2,8 @@ package de.metas.document;
 
 import org.adempiere.ad.modelvalidator.IModelInterceptor;
 import org.adempiere.util.ISingletonService;
-import org.compiere.process.DocAction;
 
+import de.metas.document.engine.IDocument;
 import de.metas.document.spi.ICounterDocHandler;
 
 /*
@@ -29,7 +29,7 @@ import de.metas.document.spi.ICounterDocHandler;
  */
 
 /**
- * Note: there is still counter-doc logic in various {@link DocAction} implementors. As of now, we only deal with <code>C_Order</code>.
+ * Note: there is still counter-doc logic in various {@link IDocument} implementors. As of now, we only deal with <code>C_Order</code>.
  *
  * @author metas-dev <dev@metasfresh.com>
  * @task http://dewiki908/mediawiki/index.php/09700_Counter_Documents_(100691234288)
@@ -39,8 +39,8 @@ public interface ICounterDocBL extends ISingletonService
 	/**
 	 *
 	 * @param document
-	 * @return <code>true</code> iff the given document is a {@link DocAction}, an {@link ICounterDocHandler} is registered for the given <code>document</code> and if that handler's
-	 *         {@link ICounterDocHandler#isCreateCounterDocument(DocAction)} method returns <code>true</code>.
+	 * @return <code>true</code> iff the given document is a {@link IDocument}, an {@link ICounterDocHandler} is registered for the given <code>document</code> and if that handler's
+	 *         {@link ICounterDocHandler#isCreateCounterDocument(IDocument)} method returns <code>true</code>.
 	 */
 	boolean isCreateCounterDocument(Object document);
 
@@ -51,7 +51,7 @@ public interface ICounterDocBL extends ISingletonService
 	 * @return the created counter document or <code>null</code> if either the {@link ICounterDocHandler} returned <code>null</code>, or if no handler was registered for the given
 	 *         <code>document</code>'s have name.
 	 */
-	DocAction createCounterDocument(Object document, boolean async);
+	IDocument createCounterDocument(Object document, boolean async);
 
 	/**
 	 * Intended to be called from an {@link org.adempiere.ad.modelvalidator.AbstractModuleInterceptor}.<br>

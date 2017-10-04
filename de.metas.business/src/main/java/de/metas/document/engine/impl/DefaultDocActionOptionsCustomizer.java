@@ -16,7 +16,6 @@ import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Inventory;
 import org.compiere.model.I_M_Movement;
 import org.compiere.model.X_C_DocType;
-import org.compiere.process.DocAction;
 import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_HR_Process;
 import org.eevolution.model.I_PP_Cost_Collector;
@@ -26,6 +25,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.document.engine.IDocActionOptionsContext;
 import de.metas.document.engine.IDocActionOptionsCustomizer;
+import de.metas.document.engine.IDocument;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 
 /*
@@ -41,22 +41,28 @@ import de.metas.shipping.model.I_M_ShipperTransportation;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-public final class DefaultDocActionOptionsCustomizer implements IDocActionOptionsCustomizer
+// @Component // shall not be discovered by spring context
+/* package */final class DefaultDocActionOptionsCustomizer implements IDocActionOptionsCustomizer
 {
 	public static final transient DefaultDocActionOptionsCustomizer instance = new DefaultDocActionOptionsCustomizer();
 
 	private DefaultDocActionOptionsCustomizer()
 	{
-		super();
+	}
+
+	@Override
+	public String getAppliesToTableName()
+	{
+		return null; // ANY
 	}
 
 	@Override
@@ -69,7 +75,7 @@ public final class DefaultDocActionOptionsCustomizer implements IDocActionOption
 		final boolean locked = optionsCtx.isProcessing();
 		if (locked)
 		{
-			docActions.add(DocAction.ACTION_Unlock);
+			docActions.add(IDocument.ACTION_Unlock);
 		}
 
 		final String tableName = optionsCtx.getTableName();
@@ -77,49 +83,49 @@ public final class DefaultDocActionOptionsCustomizer implements IDocActionOption
 		final String docStatus = optionsCtx.getDocStatus();
 
 		// Approval required .. NA
-		if (DocAction.STATUS_NotApproved.equals(docStatus))
+		if (IDocument.STATUS_NotApproved.equals(docStatus))
 		{
-			docActions.add(DocAction.ACTION_Prepare);
-			docActions.add(DocAction.ACTION_Void);
+			docActions.add(IDocument.ACTION_Prepare);
+			docActions.add(IDocument.ACTION_Void);
 		}
 		// Draft/Invalid .. DR/IN
-		else if (DocAction.STATUS_Drafted.equals(docStatus)
-				|| DocAction.STATUS_Invalid.equals(docStatus))
+		else if (IDocument.STATUS_Drafted.equals(docStatus)
+				|| IDocument.STATUS_Invalid.equals(docStatus))
 		{
-			docActions.add(DocAction.ACTION_Complete);
+			docActions.add(IDocument.ACTION_Complete);
 			// options.add(DocumentEngine.ACTION_Prepare;
-			docActions.add(DocAction.ACTION_Void);
+			docActions.add(IDocument.ACTION_Void);
 		}
 		// In Process .. IP
-		else if (DocAction.STATUS_InProgress.equals(docStatus)
-				|| DocAction.STATUS_Approved.equals(docStatus))
+		else if (IDocument.STATUS_InProgress.equals(docStatus)
+				|| IDocument.STATUS_Approved.equals(docStatus))
 		{
-			docActions.add(DocAction.ACTION_Complete);
-			docActions.add(DocAction.ACTION_Void);
+			docActions.add(IDocument.ACTION_Complete);
+			docActions.add(IDocument.ACTION_Void);
 		}
 		// Complete .. CO
-		else if (DocAction.STATUS_Completed.equals(docStatus))
+		else if (IDocument.STATUS_Completed.equals(docStatus))
 		{
 			if (I_M_InOut.Table_Name.equals(tableName))  // 08656: Default action Re-Activate
 			{
-				docActions.add(DocAction.ACTION_ReActivate);
+				docActions.add(IDocument.ACTION_ReActivate);
 			}
 			else
 			{
-				docActions.add(DocAction.ACTION_Close);
+				docActions.add(IDocument.ACTION_Close);
 			}
 		}
 		// Waiting Payment
-		else if (DocAction.STATUS_WaitingPayment.equals(docStatus)
-				|| DocAction.STATUS_WaitingConfirmation.equals(docStatus))
+		else if (IDocument.STATUS_WaitingPayment.equals(docStatus)
+				|| IDocument.STATUS_WaitingConfirmation.equals(docStatus))
 		{
-			docActions.add(DocAction.ACTION_Void);
-			docActions.add(DocAction.ACTION_Prepare);
+			docActions.add(IDocument.ACTION_Void);
+			docActions.add(IDocument.ACTION_Prepare);
 		}
 		// Closed, Voided, REversed .. CL/VO/RE
-		else if (DocAction.STATUS_Closed.equals(docStatus)
-				|| DocAction.STATUS_Voided.equals(docStatus)
-				|| DocAction.STATUS_Reversed.equals(docStatus))
+		else if (IDocument.STATUS_Closed.equals(docStatus)
+				|| IDocument.STATUS_Voided.equals(docStatus)
+				|| IDocument.STATUS_Reversed.equals(docStatus))
 		{
 			optionsCtx.setDocActions(ImmutableList.of());
 			return;
@@ -131,31 +137,31 @@ public final class DefaultDocActionOptionsCustomizer implements IDocActionOption
 		if (I_C_Order.Table_Name.equals(tableName))
 		{
 			// Draft .. DR/IP/IN
-			if (docStatus.equals(DocAction.STATUS_Drafted)
-					|| docStatus.equals(DocAction.STATUS_InProgress)
-					|| docStatus.equals(DocAction.STATUS_Invalid))
+			if (docStatus.equals(IDocument.STATUS_Drafted)
+					|| docStatus.equals(IDocument.STATUS_InProgress)
+					|| docStatus.equals(IDocument.STATUS_Invalid))
 			{
-				docActions.add(DocAction.ACTION_Prepare);
-				docActions.add(DocAction.ACTION_Close);
+				docActions.add(IDocument.ACTION_Prepare);
+				docActions.add(IDocument.ACTION_Close);
 				// Draft Sales Order Quote/Proposal - Process
 
 				final String orderType = optionsCtx.getOrderType();
 				if (optionsCtx.isSOTrx()
 						&& (X_C_DocType.DOCSUBTYPE_Quotation.equals(orderType) || X_C_DocType.DOCSUBTYPE_Proposal.equals(orderType)))
 				{
-					optionsCtx.setDocActionToUse(DocAction.ACTION_Prepare);
+					optionsCtx.setDocActionToUse(IDocument.ACTION_Prepare);
 				}
 			}
 			// Complete .. CO
-			else if (docStatus.equals(DocAction.STATUS_Completed))
+			else if (docStatus.equals(IDocument.STATUS_Completed))
 			{
-				docActions.add(DocAction.ACTION_Void);
-				docActions.add(DocAction.ACTION_ReActivate);
+				docActions.add(IDocument.ACTION_Void);
+				docActions.add(IDocument.ACTION_ReActivate);
 			}
-			else if (docStatus.equals(DocAction.STATUS_WaitingPayment))
+			else if (docStatus.equals(IDocument.STATUS_WaitingPayment))
 			{
-				docActions.add(DocAction.ACTION_ReActivate);
-				docActions.add(DocAction.ACTION_Close);
+				docActions.add(IDocument.ACTION_ReActivate);
+				docActions.add(IDocument.ACTION_Close);
 			}
 		}
 		/********************
@@ -164,11 +170,11 @@ public final class DefaultDocActionOptionsCustomizer implements IDocActionOption
 		else if (I_M_InOut.Table_Name.equals(tableName))
 		{
 			// Complete .. CO
-			if (docStatus.equals(DocAction.STATUS_Completed))
+			if (docStatus.equals(IDocument.STATUS_Completed))
 			{
-				docActions.add(DocAction.ACTION_Reverse_Correct);
-				docActions.add(DocAction.ACTION_Void);
-				docActions.add(DocAction.ACTION_Close);
+				docActions.add(IDocument.ACTION_Reverse_Correct);
+				docActions.add(IDocument.ACTION_Void);
+				docActions.add(IDocument.ACTION_Close);
 			}
 		}
 		/********************
@@ -177,10 +183,10 @@ public final class DefaultDocActionOptionsCustomizer implements IDocActionOption
 		else if (I_C_Invoice.Table_Name.equals(tableName))
 		{
 			// Complete .. CO
-			if (docStatus.equals(DocAction.STATUS_Completed))
+			if (docStatus.equals(IDocument.STATUS_Completed))
 			{
-				docActions.add(DocAction.ACTION_Void);
-				docActions.add(DocAction.ACTION_Reverse_Correct);
+				docActions.add(IDocument.ACTION_Void);
+				docActions.add(IDocument.ACTION_Reverse_Correct);
 			}
 		}
 		/********************
@@ -189,10 +195,10 @@ public final class DefaultDocActionOptionsCustomizer implements IDocActionOption
 		else if (I_C_Payment.Table_Name.equals(tableName))
 		{
 			// Complete .. CO
-			if (docStatus.equals(DocAction.STATUS_Completed))
+			if (docStatus.equals(IDocument.STATUS_Completed))
 			{
-				docActions.add(DocAction.ACTION_Void);
-				docActions.add(DocAction.ACTION_Reverse_Correct);
+				docActions.add(IDocument.ACTION_Void);
+				docActions.add(IDocument.ACTION_Reverse_Correct);
 			}
 		}
 		/********************
@@ -201,11 +207,11 @@ public final class DefaultDocActionOptionsCustomizer implements IDocActionOption
 		else if (I_GL_Journal.Table_Name.equals(tableName) || I_GL_JournalBatch.Table_Name.equals(tableName))
 		{
 			// Complete .. CO
-			if (docStatus.equals(DocAction.STATUS_Completed))
+			if (docStatus.equals(IDocument.STATUS_Completed))
 			{
-				docActions.add(DocAction.ACTION_Reverse_Correct);
-				docActions.add(DocAction.ACTION_Reverse_Accrual);
-				docActions.add(DocAction.ACTION_ReActivate);
+				docActions.add(IDocument.ACTION_Reverse_Correct);
+				docActions.add(IDocument.ACTION_Reverse_Accrual);
+				docActions.add(IDocument.ACTION_ReActivate);
 			}
 		}
 		/********************
@@ -214,10 +220,10 @@ public final class DefaultDocActionOptionsCustomizer implements IDocActionOption
 		else if (I_C_AllocationHdr.Table_Name.equals(tableName))
 		{
 			// Complete .. CO
-			if (docStatus.equals(DocAction.STATUS_Completed))
+			if (docStatus.equals(IDocument.STATUS_Completed))
 			{
-				docActions.add(DocAction.ACTION_Void);
-				docActions.add(DocAction.ACTION_Reverse_Correct);
+				docActions.add(IDocument.ACTION_Void);
+				docActions.add(IDocument.ACTION_Reverse_Correct);
 			}
 		}
 		// [ 1782412 ]
@@ -227,9 +233,9 @@ public final class DefaultDocActionOptionsCustomizer implements IDocActionOption
 		else if (I_C_Cash.Table_Name.equals(tableName))
 		{
 			// Complete .. CO
-			if (docStatus.equals(DocAction.STATUS_Completed))
+			if (docStatus.equals(IDocument.STATUS_Completed))
 			{
-				docActions.add(DocAction.ACTION_Void);
+				docActions.add(IDocument.ACTION_Void);
 			}
 		}
 		/********************
@@ -238,9 +244,9 @@ public final class DefaultDocActionOptionsCustomizer implements IDocActionOption
 		else if (I_C_BankStatement.Table_Name.equals(tableName))
 		{
 			// Complete .. CO
-			if (docStatus.equals(DocAction.STATUS_Completed))
+			if (docStatus.equals(IDocument.STATUS_Completed))
 			{
-				docActions.add(DocAction.ACTION_Void);
+				docActions.add(IDocument.ACTION_Void);
 			}
 		}
 		/********************
@@ -250,10 +256,10 @@ public final class DefaultDocActionOptionsCustomizer implements IDocActionOption
 				|| I_M_Inventory.Table_Name.equals(tableName))
 		{
 			// Complete .. CO
-			if (docStatus.equals(DocAction.STATUS_Completed))
+			if (docStatus.equals(IDocument.STATUS_Completed))
 			{
-				docActions.add(DocAction.ACTION_Void);
-				docActions.add(DocAction.ACTION_Reverse_Correct);
+				docActions.add(IDocument.ACTION_Void);
+				docActions.add(IDocument.ACTION_Reverse_Correct);
 			}
 		}
 		/********************
@@ -261,18 +267,18 @@ public final class DefaultDocActionOptionsCustomizer implements IDocActionOption
 		 */
 		else if (I_PP_Order.Table_Name.equals(tableName))
 		{
-			if (docStatus.equals(DocAction.STATUS_Drafted)
-					|| docStatus.equals(DocAction.STATUS_InProgress)
-					|| docStatus.equals(DocAction.STATUS_Invalid))
+			if (docStatus.equals(IDocument.STATUS_Drafted)
+					|| docStatus.equals(IDocument.STATUS_InProgress)
+					|| docStatus.equals(IDocument.STATUS_Invalid))
 			{
-				docActions.add(DocAction.ACTION_Prepare);
-				docActions.add(DocAction.ACTION_Close);
+				docActions.add(IDocument.ACTION_Prepare);
+				docActions.add(IDocument.ACTION_Close);
 			}
 			// Complete .. CO
-			else if (docStatus.equals(DocAction.STATUS_Completed))
+			else if (docStatus.equals(IDocument.STATUS_Completed))
 			{
-				docActions.add(DocAction.ACTION_Void);
-				docActions.add(DocAction.ACTION_ReActivate);
+				docActions.add(IDocument.ACTION_Void);
+				docActions.add(IDocument.ACTION_ReActivate);
 			}
 		}
 		/********************
@@ -280,18 +286,18 @@ public final class DefaultDocActionOptionsCustomizer implements IDocActionOption
 		 */
 		else if (I_PP_Cost_Collector.Table_Name.equals(tableName))
 		{
-			if (docStatus.equals(DocAction.STATUS_Drafted)
-					|| docStatus.equals(DocAction.STATUS_InProgress)
-					|| docStatus.equals(DocAction.STATUS_Invalid))
+			if (docStatus.equals(IDocument.STATUS_Drafted)
+					|| docStatus.equals(IDocument.STATUS_InProgress)
+					|| docStatus.equals(IDocument.STATUS_Invalid))
 			{
-				docActions.add(DocAction.ACTION_Prepare);
-				docActions.add(DocAction.ACTION_Close);
+				docActions.add(IDocument.ACTION_Prepare);
+				docActions.add(IDocument.ACTION_Close);
 			}
 			// Complete .. CO
-			else if (docStatus.equals(DocAction.STATUS_Completed))
+			else if (docStatus.equals(IDocument.STATUS_Completed))
 			{
-				docActions.add(DocAction.ACTION_Void);
-				docActions.add(DocAction.ACTION_Reverse_Correct);
+				docActions.add(IDocument.ACTION_Void);
+				docActions.add(IDocument.ACTION_Reverse_Correct);
 			}
 		}
 		/********************
@@ -299,18 +305,18 @@ public final class DefaultDocActionOptionsCustomizer implements IDocActionOption
 		 */
 		else if (I_DD_Order.Table_Name.equals(tableName))
 		{
-			if (docStatus.equals(DocAction.STATUS_Drafted)
-					|| docStatus.equals(DocAction.STATUS_InProgress)
-					|| docStatus.equals(DocAction.STATUS_Invalid))
+			if (docStatus.equals(IDocument.STATUS_Drafted)
+					|| docStatus.equals(IDocument.STATUS_InProgress)
+					|| docStatus.equals(IDocument.STATUS_Invalid))
 			{
-				docActions.add(DocAction.ACTION_Prepare);
-				docActions.add(DocAction.ACTION_Close);
+				docActions.add(IDocument.ACTION_Prepare);
+				docActions.add(IDocument.ACTION_Close);
 			}
 			// Complete .. CO
-			else if (docStatus.equals(DocAction.STATUS_Completed))
+			else if (docStatus.equals(IDocument.STATUS_Completed))
 			{
-				docActions.add(DocAction.ACTION_Void);
-				docActions.add(DocAction.ACTION_ReActivate);
+				docActions.add(IDocument.ACTION_Void);
+				docActions.add(IDocument.ACTION_ReActivate);
 			}
 		}
 		/********************
@@ -318,18 +324,18 @@ public final class DefaultDocActionOptionsCustomizer implements IDocActionOption
 		 */
 		else if (I_HR_Process.Table_Name.equals(tableName))
 		{
-			if (docStatus.equals(DocAction.STATUS_Drafted)
-					|| docStatus.equals(DocAction.STATUS_InProgress)
-					|| docStatus.equals(DocAction.STATUS_Invalid))
+			if (docStatus.equals(IDocument.STATUS_Drafted)
+					|| docStatus.equals(IDocument.STATUS_InProgress)
+					|| docStatus.equals(IDocument.STATUS_Invalid))
 			{
-				docActions.add(DocAction.ACTION_Prepare);
-				docActions.add(DocAction.ACTION_Close);
+				docActions.add(IDocument.ACTION_Prepare);
+				docActions.add(IDocument.ACTION_Close);
 			}
 			// Complete .. CO
-			else if (docStatus.equals(DocAction.STATUS_Completed))
+			else if (docStatus.equals(IDocument.STATUS_Completed))
 			{
-				docActions.add(DocAction.ACTION_Void);
-				docActions.add(DocAction.ACTION_ReActivate);
+				docActions.add(IDocument.ACTION_Void);
+				docActions.add(IDocument.ACTION_ReActivate);
 			}
 		}
 		// metas: (Task: us240) Shipping order needs to be reactivatable.
@@ -338,16 +344,16 @@ public final class DefaultDocActionOptionsCustomizer implements IDocActionOption
 		 */
 		else if (I_M_ShipperTransportation.Table_Name.equals(tableName))
 		{
-			if (docStatus.equals(DocAction.STATUS_Completed))
+			if (docStatus.equals(IDocument.STATUS_Completed))
 			{
-				docActions.add(DocAction.ACTION_ReActivate);
+				docActions.add(IDocument.ACTION_ReActivate);
 			}
 		}
 		// metas: end
 		// metas us050: Allow to reactivate document by default (required for C_AdvcomDoc)
 		else
 		{
-			docActions.add(DocAction.ACTION_ReActivate);
+			docActions.add(IDocument.ACTION_ReActivate);
 		}
 		// metas: end
 

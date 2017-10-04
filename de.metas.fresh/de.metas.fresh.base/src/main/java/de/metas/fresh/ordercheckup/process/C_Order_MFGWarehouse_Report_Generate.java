@@ -28,7 +28,7 @@ import org.compiere.model.I_C_Order;
 
 import org.slf4j.Logger;
 
-import de.metas.document.engine.IDocActionBL;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.fresh.ordercheckup.IOrderCheckupBL;
 import de.metas.logging.LogManager;
 import de.metas.process.IProcessPrecondition;
@@ -42,7 +42,7 @@ public class C_Order_MFGWarehouse_Report_Generate extends JavaProcess implements
 	private static final Logger logger = LogManager.getLogger(C_Order_MFGWarehouse_Report_Generate.class);
 	private final transient IOrderCheckupBL orderCheckupBL = Services.get(IOrderCheckupBL.class);
 	private final transient ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-	private final transient IDocActionBL docActionBL = Services.get(IDocActionBL.class);
+	private final transient IDocumentBL docActionBL = Services.get(IDocumentBL.class);
 
 	private static final String SYSCONFIG_EnableProcessGear = "de.metas.fresh.ordercheckup.CreateAndRouteJasperReports.EnableProcessGear";
 

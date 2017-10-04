@@ -45,7 +45,6 @@ import org.adempiere.warehouse.api.IWarehouseBL;
 import org.adempiere.warehouse.spi.IWarehouseAdvisor;
 import org.apache.commons.collections4.comparators.ComparatorChain;
 import org.compiere.print.ReportEngine;
-import org.compiere.process.DocAction;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
@@ -53,7 +52,8 @@ import de.metas.adempiere.model.I_AD_User;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.document.documentNo.IDocumentNoBuilder;
 import de.metas.document.documentNo.IDocumentNoBuilderFactory;
-import de.metas.document.engine.IDocActionBL;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
 import de.metas.invoice.IMatchInvBL;
@@ -77,7 +77,7 @@ import de.metas.product.IStorageBL;
  *         <li>BF [ 1745154 ] Cost in Reversing Material Related Docs
  * @see http ://sourceforge.net/tracker/?func=detail&atid=879335&aid=1948157&group_id =176962
  */
-public class MInOut extends X_M_InOut implements DocAction
+public class MInOut extends X_M_InOut implements IDocument
 {
 	private static final long serialVersionUID = 132321718005732306L;
 
@@ -1067,7 +1067,7 @@ public class MInOut extends X_M_InOut implements DocAction
 	public boolean processIt(String processAction)
 	{
 		m_processMsg = null;
-		return Services.get(IDocActionBL.class).processIt(this, processAction); // task 09824
+		return Services.get(IDocumentBL.class).processIt(this, processAction); // task 09824
 	}
 
 	/** Process Message */
@@ -1109,13 +1109,13 @@ public class MInOut extends X_M_InOut implements DocAction
 	{
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_PREPARE);
 		if (m_processMsg != null)
-			return DocAction.STATUS_Invalid;
+			return IDocument.STATUS_Invalid;
 
 		// Order OR RMA can be processed on a shipment/receipt
 		if (getC_Order_ID() != 0 && getM_RMA_ID() != 0)
 		{
 			m_processMsg = "@OrderOrRMA@";
-			return DocAction.STATUS_Invalid;
+			return IDocument.STATUS_Invalid;
 		}
 		// Std Period open?
 		MPeriod.testPeriodOpen(getCtx(), getDateAcct(), getC_DocType_ID(), getAD_Org_ID());
@@ -1147,14 +1147,14 @@ public class MInOut extends X_M_InOut implements DocAction
 					m_processMsg = "@BPartnerCreditStop@ - @TotalOpenBalance@="
 							+ totalOpenBalance
 							+ ", @SO_CreditLimit@=" + partner.getSO_CreditLimit();
-					return DocAction.STATUS_Invalid;
+					return IDocument.STATUS_Invalid;
 				}
 				if (X_C_BPartner_Stats.SOCREDITSTATUS_CreditHold.equals(soCreditStatus))
 				{
 					m_processMsg = "@BPartnerCreditHold@ - @TotalOpenBalance@="
 							+ totalOpenBalance
 							+ ", @SO_CreditLimit@=" + partner.getSO_CreditLimit();
-					return DocAction.STATUS_Invalid;
+					return IDocument.STATUS_Invalid;
 				}
 
 				BigDecimal notInvoicedAmt = MBPartner.getNotInvoicedAmt(getC_BPartner_ID());
@@ -1164,7 +1164,7 @@ public class MInOut extends X_M_InOut implements DocAction
 					m_processMsg = "@BPartnerOverSCreditHold@ - @TotalOpenBalance@="
 							+ totalOpenBalance + ", @NotInvoicedAmt@=" + notInvoicedAmt
 							+ ", @SO_CreditLimit@=" + partner.getSO_CreditLimit();
-					return DocAction.STATUS_Invalid;
+					return IDocument.STATUS_Invalid;
 				}
 
 			}
@@ -1175,7 +1175,7 @@ public class MInOut extends X_M_InOut implements DocAction
 		if (lines == null || lines.length == 0)
 		{
 			m_processMsg = "@NoLines@";
-			return DocAction.STATUS_Invalid;
+			return IDocument.STATUS_Invalid;
 		}
 		BigDecimal Volume = BigDecimal.ZERO;
 		BigDecimal Weight = BigDecimal.ZERO;
@@ -1208,12 +1208,12 @@ public class MInOut extends X_M_InOut implements DocAction
 
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_PREPARE);
 		if (m_processMsg != null)
-			return DocAction.STATUS_Invalid;
+			return IDocument.STATUS_Invalid;
 
 		m_justPrepared = true;
 		if (!DOCACTION_Complete.equals(getDocAction()))
 			setDocAction(DOCACTION_Complete);
-		return DocAction.STATUS_InProgress;
+		return IDocument.STATUS_InProgress;
 	} // prepareIt
 
 	/**
@@ -1252,13 +1252,13 @@ public class MInOut extends X_M_InOut implements DocAction
 		if (!m_justPrepared)
 		{
 			String status = prepareIt();
-			if (!DocAction.STATUS_InProgress.equals(status))
+			if (!IDocument.STATUS_InProgress.equals(status))
 				return status;
 		}
 
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_COMPLETE);
 		if (m_processMsg != null)
-			return DocAction.STATUS_Invalid;
+			return IDocument.STATUS_Invalid;
 
 		// Outstanding (not processed) Incoming Confirmations ?
 		MInOutConfirm[] confirmations = getConfirmations(true);
@@ -1272,7 +1272,7 @@ public class MInOut extends X_M_InOut implements DocAction
 				//
 				m_processMsg = "Open @M_InOutConfirm_ID@: " +
 						confirm.getConfirmTypeName() + " - " + confirm.getDocumentNo();
-				return DocAction.STATUS_InProgress;
+				return IDocument.STATUS_InProgress;
 			}
 		}
 
@@ -1517,7 +1517,7 @@ public class MInOut extends X_M_InOut implements DocAction
 					if (!asset.save(get_TrxName()))
 					{
 						m_processMsg = "Could not create Asset";
-						return DocAction.STATUS_Invalid;
+						return IDocument.STATUS_Invalid;
 					}
 					info.append(asset.getValue());
 				}
@@ -1628,7 +1628,7 @@ public class MInOut extends X_M_InOut implements DocAction
 		if (valid != null)
 		{
 			m_processMsg = valid;
-			return DocAction.STATUS_Invalid;
+			return IDocument.STATUS_Invalid;
 		}
 
 		// Set the definite document number after completed (if needed)
@@ -1637,7 +1637,7 @@ public class MInOut extends X_M_InOut implements DocAction
 		m_processMsg = info.toString();
 		setProcessed(true);
 		setDocAction(DOCACTION_Re_Activate); // 08656: Default action Re-Activate
-		return DocAction.STATUS_Completed;
+		return IDocument.STATUS_Completed;
 	} // completeIt
 
 	/**
@@ -2315,8 +2315,8 @@ public class MInOut extends X_M_InOut implements DocAction
 		reversal.setM_RMA_ID(getM_RMA_ID());
 		reversal.addDescription("{->" + getDocumentNo() + ")");
 		//
-		if (!reversal.processIt(DocAction.ACTION_Complete)
-				|| !reversal.getDocStatus().equals(DocAction.STATUS_Completed))
+		if (!reversal.processIt(IDocument.ACTION_Complete)
+				|| !reversal.getDocStatus().equals(IDocument.STATUS_Completed))
 		{
 			m_processMsg = "Reversal ERROR: " + reversal.getProcessMsg();
 			return false;
@@ -2453,7 +2453,7 @@ public class MInOut extends X_M_InOut implements DocAction
 			final List<I_C_InvoiceLine> existingInvoiceLines = Services.get(IInvoiceDAO.class).retrieveLines(inoutLine);
 			for (final I_C_InvoiceLine existingInvoiceLine : existingInvoiceLines)
 			{
-				if (!Services.get(IDocActionBL.class).isDocumentStatusOneOf(existingInvoiceLine.getC_Invoice(), DocAction.STATUS_Reversed, DocAction.STATUS_Voided))
+				if (!Services.get(IDocumentBL.class).isDocumentStatusOneOf(existingInvoiceLine.getC_Invoice(), IDocument.STATUS_Reversed, IDocument.STATUS_Voided))
 				{
 					foundInvoice = true;
 				}

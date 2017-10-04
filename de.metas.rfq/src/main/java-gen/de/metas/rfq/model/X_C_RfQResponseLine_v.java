@@ -4,7 +4,6 @@ package de.metas.rfq.model;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import org.compiere.util.Env;
 
 /** Generated Model for C_RfQResponseLine_v
  *  @author Adempiere (generated) 
@@ -16,7 +15,7 @@ public class X_C_RfQResponseLine_v extends org.compiere.model.PO implements I_C_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -2082167581L;
+	private static final long serialVersionUID = -1124821920L;
 
     /** Standard Constructor */
     public X_C_RfQResponseLine_v (Properties ctx, int C_RfQResponseLine_v_ID, String trxName)
@@ -24,7 +23,7 @@ public class X_C_RfQResponseLine_v extends org.compiere.model.PO implements I_C_
       super (ctx, C_RfQResponseLine_v_ID, trxName);
       /** if (C_RfQResponseLine_v_ID == 0)
         {
-			setBenchmarkPrice (Env.ZERO);
+			setBenchmarkPrice (BigDecimal.ZERO);
 			setC_RfQLine_ID (0);
 			setC_RfQLineQty_ID (0);
 			setC_RfQResponse_ID (0);
@@ -32,8 +31,8 @@ public class X_C_RfQResponseLine_v extends org.compiere.model.PO implements I_C_
 			setC_RfQResponseLineQty_ID (0);
 			setC_UOM_ID (0);
 			setLine (0);
-			setPrice (Env.ZERO);
-			setQty (Env.ZERO);
+			setPrice (BigDecimal.ZERO);
+			setQty (BigDecimal.ZERO);
         } */
     }
 
@@ -95,7 +94,7 @@ public class X_C_RfQResponseLine_v extends org.compiere.model.PO implements I_C_
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_BenchmarkPrice);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -384,7 +383,7 @@ public class X_C_RfQResponseLine_v extends org.compiere.model.PO implements I_C_
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Discount);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -460,9 +459,9 @@ public class X_C_RfQResponseLine_v extends org.compiere.model.PO implements I_C_
 		set_ValueFromPO(COLUMNNAME_M_AttributeSetInstance_ID, org.compiere.model.I_M_AttributeSetInstance.class, M_AttributeSetInstance);
 	}
 
-	/** Set Ausprägung Merkmals-Satz.
+	/** Set Merkmale.
 		@param M_AttributeSetInstance_ID 
-		Product Attribute Set Instance
+		Merkmals Ausprägungen zum Produkt
 	  */
 	@Override
 	public void setM_AttributeSetInstance_ID (int M_AttributeSetInstance_ID)
@@ -473,8 +472,8 @@ public class X_C_RfQResponseLine_v extends org.compiere.model.PO implements I_C_
 			set_ValueNoCheck (COLUMNNAME_M_AttributeSetInstance_ID, Integer.valueOf(M_AttributeSetInstance_ID));
 	}
 
-	/** Get Ausprägung Merkmals-Satz.
-		@return Product Attribute Set Instance
+	/** Get Merkmale.
+		@return Merkmals Ausprägungen zum Produkt
 	  */
 	@Override
 	public int getM_AttributeSetInstance_ID () 
@@ -559,7 +558,7 @@ public class X_C_RfQResponseLine_v extends org.compiere.model.PO implements I_C_
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Price);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -600,7 +599,7 @@ public class X_C_RfQResponseLine_v extends org.compiere.model.PO implements I_C_
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Qty);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 

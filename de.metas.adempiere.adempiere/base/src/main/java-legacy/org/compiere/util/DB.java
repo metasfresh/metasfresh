@@ -1577,7 +1577,7 @@ public final class DB
 	{
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
-		ArrayList<KeyNamePair> list = new ArrayList<KeyNamePair>();
+		ArrayList<KeyNamePair> list = new ArrayList<>();
 		if (optional)
 		{
 			list.add(new KeyNamePair(-1, ""));
@@ -2041,6 +2041,7 @@ public final class DB
 
 	/** Quote */
 	private static final char QUOTE = '\'';
+	public static final String QUOTE_STRING = String.valueOf(QUOTE);
 
 	// Following methods are kept for BeanShell compatibility.
 	// See BF [ 2030233 ] Remove duplicate code from DB class
@@ -2099,7 +2100,7 @@ public final class DB
 	{
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
-		ArrayList<ValueNamePair> list = new ArrayList<ValueNamePair>();
+		ArrayList<ValueNamePair> list = new ArrayList<>();
 		if (optional)
 		{
 			list.add(ValueNamePair.EMPTY);
@@ -2146,7 +2147,7 @@ public final class DB
 	{
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
-		ArrayList<KeyNamePair> list = new ArrayList<KeyNamePair>();
+		ArrayList<KeyNamePair> list = new ArrayList<>();
 		if (optional)
 		{
 			list.add(KeyNamePair.EMPTY);

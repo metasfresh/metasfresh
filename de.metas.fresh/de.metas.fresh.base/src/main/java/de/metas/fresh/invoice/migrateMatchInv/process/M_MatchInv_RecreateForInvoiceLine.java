@@ -43,9 +43,9 @@ import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_MatchInv;
-import org.compiere.process.DocAction;
 
-import de.metas.document.engine.IDocActionBL;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.printing.esb.base.util.Check;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
@@ -110,7 +110,7 @@ public class M_MatchInv_RecreateForInvoiceLine extends JavaProcess
 					.addOnlyActiveRecordsFilter();
 
 			// Relevant DocStatus
-			invoiceQueryBuilder.addInArrayOrAllFilter(I_C_Invoice.COLUMN_DocStatus, DocAction.STATUS_Completed, DocAction.STATUS_Closed);
+			invoiceQueryBuilder.addInArrayOrAllFilter(I_C_Invoice.COLUMN_DocStatus, IDocument.STATUS_Completed, IDocument.STATUS_Closed);
 
 			// IsSOTrx
 			if (p_IsSOTrx != null)
@@ -268,7 +268,7 @@ public class M_MatchInv_RecreateForInvoiceLine extends JavaProcess
 				final I_M_InOut inout = inoutLine.getM_InOut();
 
 				// Skip inouts which are not COmpleted or CLosed
-				if (!Services.get(IDocActionBL.class).isDocumentCompletedOrClosed(inout))
+				if (!Services.get(IDocumentBL.class).isDocumentCompletedOrClosed(inout))
 				{
 					continue;
 				}

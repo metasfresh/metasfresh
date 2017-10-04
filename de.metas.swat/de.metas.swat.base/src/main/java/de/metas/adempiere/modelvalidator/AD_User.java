@@ -42,6 +42,13 @@ public class AD_User
 		}
 		
 		final String password = user.getPassword();
+		
+		// NOTE: Allow empty passwords because in webui we are not showing the password field so, initially it will be empty  
+		if(password == null || password.isEmpty())
+		{
+			return;
+		}
+		
 		Services.get(IUserBL.class).assertValidPassword(password);
 	}
 

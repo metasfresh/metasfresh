@@ -41,7 +41,7 @@ import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
-import de.metas.document.engine.IDocActionBL;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.logging.LogManager;
 import de.metas.materialtracking.IMaterialTrackingDAO;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
@@ -178,7 +178,7 @@ public class PPOrderQualityCalculator
 		// Services
 		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 		final IMaterialTrackingDAO materialTrackingDAO = Services.get(IMaterialTrackingDAO.class);
-		final IDocActionBL docActionBL = Services.get(IDocActionBL.class);
+		final IDocumentBL docActionBL = Services.get(IDocumentBL.class);
 
 		Check.assumeNotNull(product, "product not null");
 		final int receivedProductId = product.getM_Product_ID();

@@ -53,10 +53,10 @@ import org.compiere.model.MPackage;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.Query;
-import org.compiere.process.DocAction;
-import org.compiere.process.DocumentEngine;
 import org.compiere.util.Env;
 
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.IMsgBL;
 import de.metas.shipping.api.IShipperTransportationBL;
 
@@ -65,7 +65,7 @@ import de.metas.shipping.api.IShipperTransportationBL;
  *
  * @author Carlos Ruiz
  */
-public class MMShipperTransportation extends X_M_ShipperTransportation implements DocAction
+public class MMShipperTransportation extends X_M_ShipperTransportation implements IDocument
 {
 	/**
 	 *
@@ -157,13 +157,13 @@ public class MMShipperTransportation extends X_M_ShipperTransportation implement
 		if (!m_justPrepared)
 		{
 			String status = prepareIt();
-			if (!DocAction.STATUS_InProgress.equals(status))
+			if (!IDocument.STATUS_InProgress.equals(status))
 				return status;
 		}
 
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_COMPLETE);
 		if (m_processMsg != null)
-			return DocAction.STATUS_Invalid;
+			return IDocument.STATUS_Invalid;
 
 		// Implicit Approval
 		if (!isApproved())
@@ -188,12 +188,12 @@ public class MMShipperTransportation extends X_M_ShipperTransportation implement
 		if (valid != null)
 		{
 			m_processMsg = valid;
-			return DocAction.STATUS_Invalid;
+			return IDocument.STATUS_Invalid;
 		}
 
 		setProcessed(true);
 		setDocAction(DOCACTION_Reaktivieren); // issue #347
-		return DocAction.STATUS_Completed;
+		return IDocument.STATUS_Completed;
 	}	// completeIt
 
 	/**
@@ -329,38 +329,31 @@ public class MMShipperTransportation extends X_M_ShipperTransportation implement
 		log.info(toString());
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_PREPARE);
 		if (m_processMsg != null)
-			return DocAction.STATUS_Invalid;
+			return IDocument.STATUS_Invalid;
 
 		MMShippingPackage[] lines = getLines(true);
 		if (lines.length == 0)
 		{
 			m_processMsg = "@NoLines@";
-			return DocAction.STATUS_Invalid;
+			return IDocument.STATUS_Invalid;
 		}
 
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_PREPARE);
 		if (m_processMsg != null)
-			return DocAction.STATUS_Invalid;
+			return IDocument.STATUS_Invalid;
 		//
 		m_justPrepared = true;
 		if (!DOCACTION_Fertigstellen.equals(getDocAction()))
 			setDocAction(DOCACTION_Fertigstellen);
-		return DocAction.STATUS_InProgress;
+		return IDocument.STATUS_InProgress;
 	}	// prepareIt
 
-	/**************************************************************************
-	 * Process document
-	 *
-	 * @param processAction document action
-	 * @return true if performed
-	 */
 	@Override
-	public boolean processIt(String processAction)
+	public boolean processIt(final String processAction)
 	{
 		m_processMsg = null;
-		DocumentEngine engine = new DocumentEngine(this, getDocStatus());
-		return engine.processIt(processAction, getDocAction());
-	}	// processIt
+		return Services.get(IDocumentBL.class).processIt(this, processAction);
+	}
 
 	/** Process Message */
 	private String m_processMsg = null;

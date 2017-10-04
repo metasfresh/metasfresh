@@ -17,7 +17,7 @@ DELETE FROM AD_Ref_List WHERE AD_Ref_List_ID=540005
 ;
 
 
-ALTER TABLE public.C_SubscriptionProgress DROP COLUMN IsSubScriptionConfirmed;
+SELECT public.db_alter_table('C_SubscriptionProgress', 'ALTER TABLE public.C_SubscriptionProgress DROP COLUMN IsSubScriptionConfirmed;');
 
 --
 -- remove C_BPartner.IsSubscriptionconfirmRequired
@@ -32,7 +32,7 @@ DELETE FROM AD_Column WHERE AD_Element_ID=540085;
 
 DELETE FROM AD_Element WHERE AD_Element_ID=540085;
 
-ALTER TABLE public.C_BPartner DROP COLUMN IsSubscriptionconfirmRequired;
+SELECT public.db_alter_table('C_BPartner', 'ALTER TABLE public.C_BPartner DROP COLUMN IsSubscriptionconfirmRequired;');
 
 --
 --Remove C_BPartner.PostageFree
@@ -50,7 +50,7 @@ DELETE FROM AD_Element WHERE AD_Element_ID=540637;
 DELETE FROM AD_Ref_List WHERE AD_Reference_ID=540155;
 DELETE FROM AD_Reference WHERE AD_Reference_ID=540155;
 
-ALTER TABLE public.C_BPartner DROP COLUMN PostageFree;
+SELECT public.db_alter_table('C_BPartner', 'ALTER TABLE public.C_BPartner DROP COLUMN PostageFree;');
 
 
 --
@@ -66,7 +66,7 @@ DELETE FROM AD_Column WHERE AD_Element_ID=540638;
 
 DELETE FROM AD_Element WHERE AD_Element_ID=540638;
 
-ALTER TABLE public.C_Flatrate_Term DROP COLUMN IsPostageFree;
+SELECT public.db_alter_table('C_Flatrate_Term', 'ALTER TABLE public.C_Flatrate_Term DROP COLUMN IsPostageFree;');
 
 
 
@@ -86,8 +86,9 @@ DELETE FROM AD_Element WHERE AD_Element_ID=500056;
 
 DROP VIEW "public".c_orderline_id_with_missing_shipmentschedule_v;
 
-ALTER TABLE public.C_BPartner DROP COLUMN PostageFreeAmt;
-ALTER TABLE public.M_ShipmentSchedule DROP COLUMN PostageFreeAmt;
+SELECT public.db_alter_table('C_BPartner', 'ALTER TABLE public.C_BPartner DROP COLUMN PostageFreeAmt;');
+
+SELECT public.db_alter_table('M_ShipmentSchedule', 'ALTER TABLE public.M_ShipmentSchedule DROP COLUMN PostageFreeAmt;');
 
 CREATE OR REPLACE VIEW public.c_orderline_id_with_missing_shipmentschedule_v AS 
 SELECT ol.c_orderline_id

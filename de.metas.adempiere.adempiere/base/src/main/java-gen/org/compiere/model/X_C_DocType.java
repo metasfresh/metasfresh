@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
 package org.compiere.model;
 
@@ -30,7 +14,7 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1223707395L;
+	private static final long serialVersionUID = -334703035L;
 
     /** Standard Constructor */
     public X_C_DocType (Properties ctx, int C_DocType_ID, String trxName)
@@ -40,23 +24,20 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
         {
 			setC_DocType_ID (0);
 			setDocBaseType (null);
-			setDocumentCopies (0);
-// 1
+			setDocumentCopies (0); // 1
+			setEntityType (null);
 			setGL_Category_ID (0);
 			setHasCharges (false);
-			setIsCreateCounter (true);
-// Y
+			setIsCreateCounter (true); // Y
 			setIsDefault (false);
 			setIsDefaultCounterDoc (false);
-			setIsDocNoControlled (true);
-// Y
+			setIsDocNoControlled (true); // Y
 			setIsIndexed (false);
 			setIsInTransit (false);
 			setIsPickQAConfirm (false);
 			setIsShipConfirm (false);
 			setIsSOTrx (false);
-			setIsSplitWhenDifference (false);
-// N
+			setIsSplitWhenDifference (false); // N
 			setName (null);
 			setPrintName (null);
         } */
@@ -151,6 +132,31 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 		return ii.intValue();
 	}
 
+	/** Set Belegart.
+		@param C_DocType_ID 
+		Document type or rules
+	  */
+	@Override
+	public void setC_DocType_ID (int C_DocType_ID)
+	{
+		if (C_DocType_ID < 0) 
+			set_ValueNoCheck (COLUMNNAME_C_DocType_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_C_DocType_ID, Integer.valueOf(C_DocType_ID));
+	}
+
+	/** Get Belegart.
+		@return Document type or rules
+	  */
+	@Override
+	public int getC_DocType_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_DocType_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
 	@Override
 	public org.compiere.model.I_C_DocType getC_DocTypeDifference() throws RuntimeException
 	{
@@ -183,31 +189,6 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	public int getC_DocTypeDifference_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_DocTypeDifference_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	/** Set Belegart.
-		@param C_DocType_ID 
-		Document type or rules
-	  */
-	@Override
-	public void setC_DocType_ID (int C_DocType_ID)
-	{
-		if (C_DocType_ID < 0) 
-			set_ValueNoCheck (COLUMNNAME_C_DocType_ID, null);
-		else 
-			set_ValueNoCheck (COLUMNNAME_C_DocType_ID, Integer.valueOf(C_DocType_ID));
-	}
-
-	/** Get Belegart.
-		@return Document type or rules
-	  */
-	@Override
-	public int getC_DocType_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_DocType_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -445,10 +426,8 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	public static final String DOCBASETYPE_SpeditionsauftragLadeliste = "MST";
 	/** CustomerContract = CON */
 	public static final String DOCBASETYPE_CustomerContract = "CON";
-	/** Set Document BaseType.
-		@param DocBaseType 
-		Logical type of document
-	  */
+	/** Set Dokument Basis Typ.
+		@param DocBaseType Dokument Basis Typ	  */
 	@Override
 	public void setDocBaseType (java.lang.String DocBaseType)
 	{
@@ -456,9 +435,8 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 		set_Value (COLUMNNAME_DocBaseType, DocBaseType);
 	}
 
-	/** Get Document BaseType.
-		@return Logical type of document
-	  */
+	/** Get Dokument Basis Typ.
+		@return Dokument Basis Typ	  */
 	@Override
 	public java.lang.String getDocBaseType () 
 	{
@@ -559,9 +537,10 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	public static final String DOCSUBTYPE_VendorInvoice = "VI";
 	/** DownPayment = DP */
 	public static final String DOCSUBTYPE_DownPayment = "DP";
-	/** Material Disposal */
+	/** Saldokorektur = EC */
+	public static final String DOCSUBTYPE_Saldokorektur = "EC";
+	/** Material Disposal = MD */
 	public static final String DOCSUBTYPE_MaterialDisposal = "MD";
-	
 	/** Set Doc Sub Type.
 		@param DocSubType 
 		Document Sub Type
@@ -621,6 +600,31 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	public java.lang.String getDocumentNote () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_DocumentNote);
+	}
+
+	/** 
+	 * EntityType AD_Reference_ID=389
+	 * Reference name: _EntityTypeNew
+	 */
+	public static final int ENTITYTYPE_AD_Reference_ID=389;
+	/** Set Entitäts-Art.
+		@param EntityType 
+		Dictionary Entity Type; Determines ownership and synchronization
+	  */
+	@Override
+	public void setEntityType (java.lang.String EntityType)
+	{
+
+		set_Value (COLUMNNAME_EntityType, EntityType);
+	}
+
+	/** Get Entitäts-Art.
+		@return Dictionary Entity Type; Determines ownership and synchronization
+	  */
+	@Override
+	public java.lang.String getEntityType () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_EntityType);
 	}
 
 	@Override

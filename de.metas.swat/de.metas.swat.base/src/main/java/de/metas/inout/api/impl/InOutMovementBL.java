@@ -39,10 +39,10 @@ import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
-import org.compiere.process.DocAction;
 import org.compiere.util.Env;
 
-import de.metas.document.engine.IDocActionBL;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.api.IInOutMovementBL;
@@ -168,7 +168,7 @@ public class InOutMovementBL implements IInOutMovementBL
 
 		generateMovementLines(movement, moveToInOutWarehouse,  warehouse, lines);
 
-		Services.get(IDocActionBL.class).processEx(movement, DocAction.ACTION_Complete, DocAction.STATUS_Completed);
+		Services.get(IDocumentBL.class).processEx(movement, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
 
 		return movement;
 	}
@@ -182,8 +182,8 @@ public class InOutMovementBL implements IInOutMovementBL
 		final Timestamp movementDate = Env.getDate(ctx);
 		movement.setMovementDate(movementDate);
 
-		movement.setDocStatus(DocAction.STATUS_Drafted);
-		movement.setDocAction(DocAction.ACTION_Complete);
+		movement.setDocStatus(IDocument.STATUS_Drafted);
+		movement.setDocAction(IDocument.ACTION_Complete);
 
 		// 06365: Also set the linked M_InOut entry to the movement
 		movement.setM_InOut(inOut);
@@ -264,7 +264,7 @@ public class InOutMovementBL implements IInOutMovementBL
 	@Override
 	public void reverseMovements(final I_M_InOut inout)
 	{
-		final IDocActionBL docActionBL = Services.get(IDocActionBL.class);
+		final IDocumentBL docActionBL = Services.get(IDocumentBL.class);
 
 		//
 		// Iterate all linked movements and reverse them one by one (if not already reversed)
@@ -279,7 +279,7 @@ public class InOutMovementBL implements IInOutMovementBL
 			}
 
 			// Reverse movement
-			docActionBL.processEx(movement, DocAction.ACTION_Reverse_Correct, DocAction.STATUS_Reversed);
+			docActionBL.processEx(movement, IDocument.ACTION_Reverse_Correct, IDocument.STATUS_Reversed);
 		}
 	}
 }

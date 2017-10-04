@@ -273,7 +273,7 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 				rtService.getDefault(I_R_RequestType.COLUMNNAME_IsDefaultForLetter),
 				Services.get(IMsgBL.class).translate(Env.getCtx(), "de.metas.letter.RequestLetterSubject"),
 				false, // isSelfService,
-				null // trxName
+				ITrx.TRXNAME_ThreadInherited // trxName
 		);
 		updateRequestDetails(request, parent_table_id, parent_record_id, context);
 		InterfaceWrapperHelper.save(request);
@@ -826,6 +826,7 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 		}
 
 		int C_BPartner_ID = -1;
+		int C_BPartner_Location_ID = -1;
 		I_AD_User user = null;
 		final int AD_User_ID = sourceDocument != null ? sourceDocument.getFieldValueAsInt("AD_User_ID", -1) : -1;
 		String email = null;
@@ -840,6 +841,7 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 				attributesBuilder.setEmail(email);
 			}
 			C_BPartner_ID = user.getC_BPartner_ID();
+			C_BPartner_Location_ID = user.getC_BPartner_Location_ID();
 		}
 		if (C_BPartner_ID <= 0)
 		{
@@ -865,6 +867,15 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 			}
 		}
 		
+		if(C_BPartner_Location_ID <= 0)
+		{
+			C_BPartner_Location_ID = sourceDocument != null ? sourceDocument.getFieldValueAsInt("C_BPartner_Location_ID", -1) : -1;
+		}
+		if(C_BPartner_Location_ID > 0)
+		{
+			attributesBuilder.setC_BPartner_Location_ID(C_BPartner_Location_ID);
+		}
+		
 		//
 		// Language
 		String AD_Language = Env.getAD_Language(ctx);
@@ -877,6 +888,14 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 			}
 		}
 		attributesBuilder.setAD_Language(AD_Language);
+		
+		int adOrgId = sourceDocument != null ? sourceDocument.getFieldValueAsInt("AD_Org_ID", -1) : -1;
+		if(adOrgId < 0)
+		{
+			adOrgId = Env.getAD_Org_ID(ctx);
+		}
+		attributesBuilder.setAD_Org_ID(adOrgId);
+
 		
 		//
 		//
@@ -1012,6 +1031,8 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 		private static final String VAR_AD_User_ID = "AD_User_ID";
 		private static final String VAR_AD_User = "AD_User";
 		private static final String VAR_C_BPartner_ID = "C_BPartner_ID";
+		private static final String VAR_C_BPartner_Location_ID = "C_BPartner_Location_ID";
+		private static final String VAR_AD_Org_ID = "AD_Org_ID";
 		private static final String VAR_AD_Language = "AD_Language";
 		/** Source document. Usually it's of type {@link SourceDocument} */
 		private static final String VAR_SourceDocument = SourceDocument.NAME;
@@ -1061,9 +1082,44 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 		}
 
 		@Nullable
+		public Integer getC_BPartner_ID(final Integer defaultValue)
+		{
+			final Integer bpartnerId = getC_BPartner_ID();
+			return bpartnerId != null ? bpartnerId : defaultValue;
+		}
+		
+		@Nullable
+		public Integer getC_BPartner_Location_ID()
+		{
+			return (Integer)get(VAR_C_BPartner_Location_ID);
+		}
+
+		@Nullable
+		public Integer getC_BPartner_Location_ID(final Integer defaultValue)
+		{
+			final Integer bpartnerLocationId = getC_BPartner_Location_ID();
+			return bpartnerLocationId != null ? bpartnerLocationId : defaultValue;
+		}
+
+
+		@Nullable
 		public Integer getAD_User_ID()
 		{
 			return (Integer)get(VAR_AD_User_ID);
+		}
+
+		@Nullable
+		public Integer getAD_User_ID(final Integer defaultValue)
+		{
+			final Integer adUserId = getAD_User_ID();
+			return adUserId != null ? adUserId : defaultValue;
+		}
+
+		@Nullable
+		public Integer getAD_Org_ID(final Integer defaultValue)
+		{
+			final Integer adOrgId = (Integer)get(VAR_AD_Org_ID);
+			return adOrgId != null ? adOrgId : defaultValue;
 		}
 
 		@Nullable
@@ -1160,6 +1216,12 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 				return this;
 			}
 
+			public Builder setC_BPartner_Location_ID(final int bpartnerLocationId)
+			{
+				setAttribute(VAR_C_BPartner_Location_ID, bpartnerLocationId);
+				return this;
+			}
+
 			public Builder setUser(final I_AD_User user)
 			{
 				setAttribute(VAR_AD_User, user);
@@ -1172,6 +1234,13 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 				setAttribute(VAR_EMail, email);
 				return this;
 			}
+			
+			public Builder setAD_Org_ID(final int adOrgId)
+			{
+				setAttribute(VAR_AD_Org_ID, adOrgId);
+				return this;
+			}
+
 
 			public Builder setCustomAttribute(final String attributeName, final Object value)
 			{

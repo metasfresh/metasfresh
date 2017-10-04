@@ -298,8 +298,8 @@ public interface I_C_RfQResponseLine
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Invited.
-	 * Date when (last) invitation was sent
+	 * Set Datum Einladung.
+	 * Datum an dem die Einladung versendet wurde
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
@@ -310,8 +310,8 @@ public interface I_C_RfQResponseLine
 	public void setDateInvited (java.sql.Timestamp DateInvited);
 
 	/**
-	 * Get Invited.
-	 * Date when (last) invitation was sent
+	 * Get Datum Einladung.
+	 * Datum an dem die Einladung versendet wurde
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
@@ -327,7 +327,7 @@ public interface I_C_RfQResponseLine
     public static final String COLUMNNAME_DateInvited = "DateInvited";
 
 	/**
-	 * Set Antwort-datum.
+	 * Set Datum Antwort.
 	 * Datum der Antwort
 	 *
 	 * <br>Type: DateTime
@@ -337,7 +337,7 @@ public interface I_C_RfQResponseLine
 	public void setDateResponse (java.sql.Timestamp DateResponse);
 
 	/**
-	 * Get Antwort-datum.
+	 * Get Datum Antwort.
 	 * Datum der Antwort
 	 *
 	 * <br>Type: DateTime
@@ -525,8 +525,8 @@ public interface I_C_RfQResponseLine
     public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Selected Winner.
-	 * The resonse is the selected winner
+	 * Set Gewinner.
+	 * Kennzeichnet den Gewinner einer Ausschreibung
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -535,8 +535,8 @@ public interface I_C_RfQResponseLine
 	public void setIsSelectedWinner (boolean IsSelectedWinner);
 
 	/**
-	 * Get Selected Winner.
-	 * The resonse is the selected winner
+	 * Get Gewinner.
+	 * Kennzeichnet den Gewinner einer Ausschreibung
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -702,7 +702,7 @@ public interface I_C_RfQResponseLine
     public static final String COLUMNNAME_QtyPromised = "QtyPromised";
 
 	/**
-	 * Set Qty Requiered.
+	 * Set Menge angefragt.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
@@ -711,7 +711,7 @@ public interface I_C_RfQResponseLine
 	public void setQtyRequiered (java.math.BigDecimal QtyRequiered);
 
 	/**
-	 * Get Qty Requiered.
+	 * Get Menge angefragt.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
