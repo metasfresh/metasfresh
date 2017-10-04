@@ -6,7 +6,7 @@ import org.adempiere.util.Services;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.slf4j.Logger;
 
-import de.metas.document.engine.IDocActionBL;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.event.EventMessageFormatTemplate;
 import de.metas.logging.LogManager;
 
@@ -69,7 +69,7 @@ final class UserNotificationDetailMessageFormat extends EventMessageFormatTempla
 			return "<" + recordRef.getRecord_ID() + ">";
 		}
 
-		final String documentNo = Services.get(IDocActionBL.class).getDocumentNo(record);
+		final String documentNo = Services.get(IDocumentBL.class).getDocumentNo(record);
 		return documentNo;
 	}
 }

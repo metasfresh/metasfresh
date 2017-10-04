@@ -39,7 +39,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.document.engine.IDocActionBL;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.document.exceptions.DocumentProcessingException;
 import de.metas.letters.model.Letters;
 import de.metas.logging.LogManager;
@@ -1188,7 +1188,7 @@ public final class Document
 		// TODO: trigger the document workflow instead!
 		final String docAction = docActionField.getValueAs(StringLookupValue.class).getIdAsString();
 		final String expectedDocStatus = null; // N/A
-		Services.get(IDocActionBL.class).processEx(this, docAction, expectedDocStatus);
+		Services.get(IDocumentBL.class).processEx(this, docAction, expectedDocStatus);
 
 		//
 		// Refresh it
