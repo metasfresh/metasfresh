@@ -20,16 +20,19 @@ class Attachments extends Component {
     }
 
     componentDidMount = () => {
-        const {windowType, docId} = this.props;
+        this.fetchAttachments();
+    }
 
-        attachmentsRequest('window', windowType, docId)
-            .then(response => {
-                this.setState({
-                    data: response.data
-                }, () => {
-                    this.attachments && this.attachments.focus();
-                })
+    fetchAttachments = () => {
+        const { windowType, docId } = this.props;
+
+        attachmentsRequest('window', windowType, docId).then(response => {
+            this.setState({ data: response.data }, () => {
+                if (this.attachments) {
+                  this.attachments.focus();
+                }
             });
+        });
     }
 
     toggleAttachmentDelete = (value) => {
@@ -115,6 +118,7 @@ class Attachments extends Component {
                       windowId={windowType}
                       documentId={docId}
                       handleClose={this.handleCloseAttachUrl}
+                      fetchAttachments={this.fetchAttachments}
                     />
                 )}
             </div>

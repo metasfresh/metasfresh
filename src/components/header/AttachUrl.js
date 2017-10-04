@@ -48,13 +48,14 @@ class AttachUrl extends Component {
         event.persist();
 
         const {
-            windowId, documentId, handleClose, dispatch,
+            windowId, documentId, handleClose, dispatch, fetchAttachments,
         } = this.props;
         const { url, name } = this.state;
 
         // TODO: Add translations for notifications
         createUrlAttachment({ windowId, documentId, url, name }).then(() => {
             handleClose(event);
+            fetchAttachments();
 
             dispatch(addNotification(
                 // counterpart.translate('window.attachment.url.title'),
