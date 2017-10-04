@@ -10,13 +10,13 @@ import {
 
 import Loader from '../app/Loader';
 
-import NewUrl from './NewUrl';
+import AttachUrl from './AttachUrl';
 
 class Attachments extends Component {
     state = {
         data: null,
         attachmentHovered: null,
-        isAddUrlOpen: false,
+        isAttachUrlOpen: false,
     }
 
     componentDidMount = () => {
@@ -38,20 +38,20 @@ class Attachments extends Component {
         })
     }
 
-    handleAddUrlClick = () => {
-        this.setState({ isAddUrlOpen: true });
+    handleClickAttachUrl = () => {
+        this.setState({ isAttachUrlOpen: true });
     }
 
-    handleAddUrlClose = () => {
-        this.setState({ isAddUrlOpen: false });
+    handleCloseAttachUrl = () => {
+        this.setState({ isAttachUrlOpen: false });
     }
 
-    handleAttachmentClick = (id) => {
+    handleClickAttachment = (id) => {
         const {windowType, docId} = this.props;
         openFile('window', windowType, docId, 'attachments', id);
     }
 
-    handleAttachmentDelete = (e, id) => {
+    handleDeleteAttachment = (e, id) => {
         const {windowType, docId} = this.props;
         e.stopPropagation();
 
@@ -97,23 +97,23 @@ class Attachments extends Component {
 
     renderActions = () => {
         const { windowType, docId } = this.props;
-        const { isAddUrlOpen } = this.state;
+        const { isAttachUrlOpen } = this.state;
 
         return (
             <div
               className="subheader-item js-subheader-item"
-              onClick={this.handleAddUrlClick}
+              onClick={this.handleClickAttachUrl}
             >
                 Add URL
                 {/* TODO: find out how to add translations and use this instead:
                 {counterpart.translate('window.sideList.attachments.addurl')}
                 */}
 
-                {isAddUrlOpen && (
-                    <NewUrl
+                {isAttachUrlOpen && (
+                    <AttachUrl
                       windowId={windowType}
                       documentId={docId}
-                      handleAddUrlClose={this.handleAddUrlClose}
+                      handleClose={this.handleCloseAttachUrl}
                     />
                 )}
             </div>
@@ -130,14 +130,14 @@ class Attachments extends Component {
                 tabIndex={0}
                 onMouseEnter={() => { this.toggleAttachmentDelete(item.id); }}
                 onMouseLeave={() => { this.toggleAttachmentDelete(null); }}
-                onClick={() => { this.handleAttachmentClick(item.id); }}
+                onClick={() => { this.handleClickAttachment(item.id); }}
             >
                 {item.name}
                 {attachmentHovered === item.id &&
                     <div
                         className="subheader-additional-box"
                         onClick={(e) => {
-                            this.handleAttachmentDelete(e, item.id);
+                            this.handleDeleteAttachment(e, item.id);
                         }}
                     >
                         <i className="meta-icon-delete"/>

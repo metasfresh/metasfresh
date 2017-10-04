@@ -5,7 +5,7 @@ import { connect } from 'react-redux';
 import { addNotification } from '../../actions/AppActions';
 import { createUrlAttachment } from '../../actions/AppActions';
 
-class NewUrl extends Component {
+class AttachUrl extends Component {
     state = {
       url: '',
       name: '',
@@ -45,13 +45,13 @@ class NewUrl extends Component {
 
     handleClick = () => {
         const {
-          windowId, documentId, handleAddUrlClose, dispatch,
+          windowId, documentId, handleClose, dispatch,
         } = this.props;
         const { url } = this.state;
 
         // TODO: Add translations for notifications
         createUrlAttachment({ windowId, documentId, url, name }).then(() => {
-            handleAddUrlClose();
+            handleClose();
 
             dispatch(addNotification(
                 // counterpart.translate('window.attachment.url.title'),
@@ -72,7 +72,7 @@ class NewUrl extends Component {
     }
 
     render() {
-        const { handleAddUrlClose } = this.props;
+        const { handleClose } = this.props;
         const { url, name } = this.state;
 
         return (
@@ -90,7 +90,7 @@ class NewUrl extends Component {
                             </span>
                             <div
                                 className="input-icon input-icon-lg attachurl-icon-close"
-                                onClick={handleAddUrlClose}
+                                onClick={handleClose}
                             >
                                 <i className="meta-icon-close-1"/>
                             </div>
@@ -141,6 +141,6 @@ class NewUrl extends Component {
     }
 }
 
-NewUrl = connect()(NewUrl);
+AttachUrl = connect()(AttachUrl);
 
-export default NewUrl;
+export default AttachUrl;
