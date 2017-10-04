@@ -6,10 +6,41 @@ import { addNotification } from '../../actions/AppActions';
 import { createUrlAttachment } from '../../actions/AppActions';
 
 class NewUrl extends Component {
-    state = { url: '' }
+    state = {
+      url: '',
+      name: '',
+    }
 
-    handleChange = ({ target: { value: url } }) => {
+    getName = () => {
+        const { url } = this.state;
+
+        // generate name from URL by getting part after last / and before ? or #
+        // TODO: handle edge cases like URL with trailing slash
+        return url.split('/').pop().split('#')[0].split('?')[0];
+    }
+
+    handleChangeName = ({ target: { value: name } }) => {
+        this.setState({ name });
+    }
+
+    handleBlurName = () => {
+        const { name } = this.state;
+
+        if (!name) {
+            this.setState({ name: this.getName() });
+        }
+    }
+
+    handleChangeUrl = ({ target: { value: url } }) => {
         this.setState({ url });
+    }
+
+    handleBlurUrl = () => {
+        const { name } = this.state;
+
+        if (!name) {
+            this.setState({ name: this.getName() });
+        }
     }
 
     handleClick = () => {
@@ -18,27 +49,31 @@ class NewUrl extends Component {
         } = this.props;
         const { url } = this.state;
 
-        // extract name from URL by getting part after last / and before ? or #
-        // TODO: handle edge cases like URL with trailing slash
-        const name = url.split('/').pop().split('#')[0].split('?')[0];
-
         // TODO: Add translations for notifications
         createUrlAttachment({ windowId, documentId, url, name }).then(() => {
             handleAddUrlClose();
 
             dispatch(addNotification(
-                'Attachment', 'URL has been added.', 5000, 'success',
+                // counterpart.translate('window.attachment.url.title'),
+                'Attachment',
+                // counterpart.translate('window.attachment.url.success'),
+                'URL has been added.',
+                5000, 'success',
             ));
         }).catch(() => {
             dispatch(addNotification(
-                'Attachment', 'URL could not be added!', 5000, 'error',
+                // counterpart.translate('window.attachment.url.title'),
+                'Attachment',
+                // counterpart.translate('window.attachment.url.error'),
+                'URL could not be added!',
+                5000, 'error',
             ));
         });
     }
 
     render() {
         const { handleAddUrlClose } = this.props;
-        const { url } = this.state;
+        const { url, name } = this.state;
 
         return (
             <div className="screen-freeze">
@@ -50,8 +85,8 @@ class NewUrl extends Component {
                             className="panel-attachurl-header panel-attachurl-header-top"
                         >
                             <span className="attachurl-headline">
-                                Add URL
-                                {/* TODO: Add translation */}
+                                URL attachment
+                                {/* {counterpart.translate('window.attachment.url.title')} */}
                             </span>
                             <div
                                 className="input-icon input-icon-lg attachurl-icon-close"
@@ -60,12 +95,36 @@ class NewUrl extends Component {
                                 <i className="meta-icon-close-1"/>
                             </div>
                         </div>
-                    </div>
-                    <div className="panel-attachurl-body">
-                        <textarea
-                            value={url}
-                            onChange={this.handleChange}
-                        />
+                        <div className="panel-attachurl-header panel-attachurl-bright">
+                            <div className="panel-attachurl-data-wrapper">
+                                <span className="attachurl-label">
+                                    URL
+                                    {/* {counterpart.translate('window.attachment.url.url')} */}
+                                </span>
+                                <input
+                                    className="attachurl-input"
+                                    type="url"
+                                    onBlur={this.handleBlurUrl}
+                                    onChange={this.handleChangeUrl}
+                                    value={url}
+                                />
+                            </div>
+                        </div>
+                        <div className="panel-attachurl-header panel-attachurl-bright">
+                            <div className="panel-attachurl-data-wrapper">
+                                <span className="attachurl-label">
+                                    Name
+                                    {/* {counterpart.translate('window.attachment.url.name')} */}
+                                </span>
+                                <input
+                                    className="attachurl-input"
+                                    type="text"
+                                    onBlur={this.handleBlurName}
+                                    onChange={this.handleChangeName}
+                                    value={name}
+                                />
+                            </div>
+                        </div>
                     </div>
                     <div className="panel-attachurl-footer">
                         <button
@@ -73,12 +132,12 @@ class NewUrl extends Component {
                             className="btn btn-meta-success btn-sm btn-submit"
                         >
                             Create
-                            {/* TODO: Add translation */}
+                            {/* {counterpart.translate('window.attachment.url.create')} */}
                         </button>
                     </div>
                 </div>
             </div>
-        )
+        );
     }
 }
 

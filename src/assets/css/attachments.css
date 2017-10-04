@@ -28,10 +28,37 @@
     border-bottom: 1px solid $brand-super-light-color;
 }
 
+.panel-attachurl-bright {
+    color: $brand-font-color;
+}
+
+.panel-attachurl-data-wrapper {
+    width: 100%;
+    display: flex;
+    align-items: center;
+}
+
+.panel-attachurl-data-wrapper .attachurl-input {
+    flex-grow: 1;
+}
+
+.attachurl-input {
+    height: 50px;
+    border: none;
+    padding-left: 10px;
+}
+
+.attachurl-label {
+    min-width: 50px;
+    font-weight: bold;
+}
+
 .panel-attachurl-header-wrapper {
     box-shadow: 0 0 6px rgba(0, 0, 0, .1);
 }
 
+/* currently unused, could be used for preview */
+/*
 .panel-attachurl-body {
     padding: 20px;
     height: 100%;
@@ -42,6 +69,7 @@
     height: 100%;
     border: none;
 }
+*/
 
 .panel-attachurl-footer {
     padding: 20px;
