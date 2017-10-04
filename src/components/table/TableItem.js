@@ -269,7 +269,8 @@ class TableItem extends Component {
             case 'PP_Order_Issue':
                 return 'meta-icon-issue';
             case 'M_Picking_Slot':
-                return 'meta-icon-beschaffung';	// https://github.com/metasfresh/metasfresh/issues/2298
+                // https://github.com/metasfresh/metasfresh/issues/2298
+                return 'meta-icon-beschaffung';
         }
     }
 

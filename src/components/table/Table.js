@@ -71,8 +71,7 @@ class Table extends Component {
         const {
             dispatch, mainTable, open, rowData, defaultSelected,
             disconnectFromState, type, refreshSelection,
-            supportIncludedViewOnSelect, viewId, isModal,
-            inBackground, selectedWindowType, isIncluded, hasIncluded
+            supportIncludedViewOnSelect, viewId, isModal, hasIncluded,
         } = this.props;
 
         const {
@@ -132,17 +131,19 @@ class Table extends Component {
     }
 
     showSelectedIncludedView = (selected) => {
-        const {
-            showIncludedViewOnSelect, supportIncludedViewOnSelect
-        } = this.props;
-
+        const { showIncludedViewOnSelect } = this.props;
         const { rows } = this.state;
 
-        (selected.length === 1) && rows.map( (item) => {
-            if (item.id === selected[0]) {
-                showIncludedViewOnSelect(item.supportIncludedViews, item.includedView);
-            }
-        });
+        if (selected.length === 1) {
+            rows.forEach((item) => {
+                if (item.id === selected[0]) {
+                    showIncludedViewOnSelect(
+                        item.supportIncludedViews,
+                        item.includedView,
+                    );
+                }
+            });
+        }
     }
 
     getChildContext = () => {
@@ -322,7 +323,10 @@ class Table extends Component {
 
     triggerFocus = (idFocused, idFocusedDown) => {
         if (this.table) {
-            const rowSelected = this.table.getElementsByClassName('row-selected');
+            const rowSelected = this.table.getElementsByClassName(
+                'row-selected'
+            );
+
             if(rowSelected.length > 0){
                 if(typeof idFocused == 'number'){
                     rowSelected[0].children[idFocused].focus();
@@ -430,7 +434,7 @@ class Table extends Component {
                         array[currentId - 1], idFocused, false,
                         this.showSelectedIncludedView([array[currentId - 1]])
                     );
-                    
+
                 } else {
                     this.selectProduct(
                         array[currentId - 1], idFocused, false
