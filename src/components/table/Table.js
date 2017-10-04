@@ -1,10 +1,10 @@
-import React, { Component } from 'react';
-import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
-import onClickOutside from 'react-onclickoutside';
 import update from 'immutability-helper';
-
 import * as _ from 'lodash';
+import PropTypes from 'prop-types';
+import React, { Component } from 'react';
+import onClickOutside from 'react-onclickoutside';
+import { connect } from 'react-redux';
+import { ShortcutManager } from 'react-shortcuts';
 
 import {
     openModal,
@@ -12,16 +12,16 @@ import {
     deleteLocal,
     mapIncluded,
     collapsedMap,
-    getItemsByProperty,
     getZoomIntoWindow,
     selectRow
 } from '../../actions/WindowActions';
-
-import {
-    deleteRequest
-} from '../../actions/GenericActions';
+import { deleteRequest } from '../../actions/GenericActions';
+import keymap from '../../keymap.js';
 
 import Prompt from '../app/Prompt';
+import DocumentListContextShortcuts
+    from '../shortcuts/DocumentListContextShortcuts';
+import TableContextShortcuts from '../shortcuts/TableContextShortcuts';
 
 import TableFilter from './TableFilter';
 import TableItem from './TableItem';
@@ -29,11 +29,6 @@ import TablePagination from './TablePagination';
 import TableHeader from './TableHeader';
 import TableContextMenu from './TableContextMenu';
 
-import keymap from '../../keymap.js';
-import DocumentListContextShortcuts
-    from '../shortcuts/DocumentListContextShortcuts';
-import TableContextShortcuts from '../shortcuts/TableContextShortcuts';
-import { ShortcutManager } from 'react-shortcuts';
 const shortcutManager = new ShortcutManager(keymap);
 
 class Table extends Component {
