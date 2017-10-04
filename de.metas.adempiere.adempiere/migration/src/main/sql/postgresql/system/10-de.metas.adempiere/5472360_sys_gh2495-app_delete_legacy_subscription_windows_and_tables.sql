@@ -147,14 +147,14 @@ DELETE FROM EXP_FormatLine WHERE AD_Column_ID IN (select AD_Column_ID FROM AD_Co
 DELETE FROM AD_Column WHERE AD_Element_ID=2385;
 DELETE FROM AD_Element WHERE AD_Element_ID=2385;
 
-ALTER TABLE M_Product DROP COLUMN C_SubscriptionType_ID;
+ALTER TABLE M_Product DROP COLUMN IF EXISTS C_SubscriptionType_ID;
 
 
-DROP VIEW C_Subscription_BPartner_V;
-DROP Table c_subscriptionchange;
-DROP Table C_Subscription_Delivery;
-DROP Table C_Subscriptioncontrol;
-DROP Table C_Subscription;
+DROP VIEW IF EXISTS C_Subscription_BPartner_V;
+DROP Table IF EXISTS c_subscriptionchange;
+DROP Table IF EXISTS C_Subscription_Delivery;
+DROP Table IF EXISTS C_Subscriptioncontrol;
+DROP Table IF EXISTS C_Subscription;
 
 -- 2017-09-22T10:44:39.295
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
@@ -205,14 +205,3 @@ DELETE FROM  AD_Element_Trl WHERE AD_Element_ID=540017
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 DELETE FROM AD_Element WHERE AD_Element_ID=540017
 ;
-
--- 2017-09-22T13:02:57.059
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Process SET EntityType='de.metas.contracts.subscription',Updated=TO_TIMESTAMP('2017-09-22 13:02:57','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=540010
-;
-
--- 2017-09-22T13:09:40.993
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Table_Process (AD_Client_ID,AD_Org_ID,AD_Process_ID,AD_Table_ID,Created,CreatedBy,EntityType,IsActive,Updated,UpdatedBy,WEBUI_QuickAction,WEBUI_QuickAction_Default) VALUES (0,0,540010,540029,TO_TIMESTAMP('2017-09-22 13:09:40','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.contracts.subscription','Y',TO_TIMESTAMP('2017-09-22 13:09:40','YYYY-MM-DD HH24:MI:SS'),100,'Y','Y')
-;
-
