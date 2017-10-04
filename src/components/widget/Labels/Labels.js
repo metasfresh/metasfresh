@@ -69,12 +69,27 @@ class Labels extends Component {
         const typeAhead = event.target.innerHTML;
         const { selected } = this.props;
 
-        if (event.key === 'Backspace' && !typeAhead) {
-            if (selected.length < 1) {
+        if (typeAhead) {
+            if (event.key === 'Enter') {
+                const suggestion = this.state.suggestions.filter(
+                    this.unusedSuggestions()
+                )[0];
+
+                this.props.onChange([...this.props.selected, suggestion]);
+
+                event.preventDefault();
+                this.input.innerHTML = '';
+
                 return;
             }
+        } else {
+            if (event.key === 'Backspace' && !typeAhead) {
+                if (selected.length < 1) {
+                    return;
+                }
 
-            this.props.onChange(selected.slice(0, selected.length - 1));
+                this.props.onChange(selected.slice(0, selected.length - 1));
+            }
         }
 
         if (['ArrowLeft', 'ArrowRight', 'Backspace'].includes(event.key)) {
@@ -97,6 +112,14 @@ class Labels extends Component {
         this.props.onChange([...this.props.selected, suggestion]);
     }
 
+    unusedSuggestions = () => {
+        const selected = new Set(
+            this.props.selected.map(item => Object.keys(item)[0])
+        );
+
+        return suggestion => !selected.has(Object.keys(suggestion)[0]);
+    }
+
     render() {
         let suggestions;
 
@@ -106,13 +129,7 @@ class Labels extends Component {
             suggestions = this.state.values;
         }
 
-        const selected = new Set(
-            this.props.selected.map(item => Object.keys(item)[0])
-        );
-
-        suggestions = suggestions.filter(
-            suggestion => !selected.has(Object.keys(suggestion)[0])
-        );
+        suggestions = suggestions.filter(this.unusedSuggestions());
 
         return (
             <div
