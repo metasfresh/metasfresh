@@ -145,4 +145,22 @@ public interface IADTableDAO extends ISingletonService
 	 * @return
 	 */
 	I_AD_Table retrieveTable(String tableName);
+
+	/**
+	 * Retrieve all the columns of the given table
+	 * 
+	 * @param table
+	 * @return
+	 */
+	List<I_AD_Column> retrieveColumnsForTable(I_AD_Table table);
+
+	/**
+	 * Retrieve the AD_DocumentTable_Template table for the context of the given targetTable.
+	 * This table contains all the dolumns that are supposed to belong in a table that is a document.
+	 * The table name of this template is defined in the {@link de.metas.document.DocumentConstants}
+	 * 
+	 * @param targetTable
+	 * @return the Table DOcument Template
+	 */
+	I_AD_Table retrieveDocumentTableTemplate(I_AD_Table targetTable);
 }

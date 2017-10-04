@@ -32,11 +32,12 @@ import java.util.Set;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.process.DocAction;
 import org.eevolution.model.I_PP_MRP;
 import org.eevolution.mrp.api.IMRPBL;
 import org.eevolution.mrp.api.IMRPDAO;
 import org.eevolution.mrp.api.impl.PlainMRPDAO;
+
+import de.metas.document.engine.IDocument;
 
 public class MRPExpectationDocumentsCollector
 {
@@ -86,7 +87,7 @@ public class MRPExpectationDocumentsCollector
 			return;
 		}
 		
-		final DocAction document = mrpDAO.retrieveDocumentOrNull(mrp);
+		final IDocument document = mrpDAO.retrieveDocumentOrNull(mrp);
 		if(document == null)
 		{
 			return;
@@ -107,7 +108,7 @@ public class MRPExpectationDocumentsCollector
 		}
 	}
 
-	private final <T> void add(DocAction document, final Class<T> modelClass, final String documentTableName, final int documentId)
+	private final <T> void add(IDocument document, final Class<T> modelClass, final String documentTableName, final int documentId)
 	{
 		@SuppressWarnings("unchecked")
 		final List<T> documents = (List<T>)modelClass2documents.get(modelClass);

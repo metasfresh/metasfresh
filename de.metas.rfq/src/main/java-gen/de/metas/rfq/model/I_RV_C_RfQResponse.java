@@ -351,8 +351,8 @@ public interface I_RV_C_RfQResponse
     public static final String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
 
 	/**
-	 * Set Antwort-datum.
-	 * Date of the Response
+	 * Set Datum Antwort.
+	 * Datum der Antwort
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
@@ -361,8 +361,8 @@ public interface I_RV_C_RfQResponse
 	public void setDateResponse (java.sql.Timestamp DateResponse);
 
 	/**
-	 * Get Antwort-datum.
-	 * Date of the Response
+	 * Get Datum Antwort.
+	 * Datum der Antwort
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
@@ -695,8 +695,8 @@ public interface I_RV_C_RfQResponse
     public static final String COLUMNNAME_LineHelp = "LineHelp";
 
 	/**
-	 * Set Ausprägung Merkmals-Satz.
-	 * Product Attribute Set Instance
+	 * Set Merkmale.
+	 * Merkmals Ausprägungen zum Produkt
 	 *
 	 * <br>Type: PAttribute
 	 * <br>Mandatory: false
@@ -705,8 +705,8 @@ public interface I_RV_C_RfQResponse
 	public void setM_AttributeSetInstance_ID (int M_AttributeSetInstance_ID);
 
 	/**
-	 * Get Ausprägung Merkmals-Satz.
-	 * Product Attribute Set Instance
+	 * Get Merkmale.
+	 * Merkmals Ausprägungen zum Produkt
 	 *
 	 * <br>Type: PAttribute
 	 * <br>Mandatory: false

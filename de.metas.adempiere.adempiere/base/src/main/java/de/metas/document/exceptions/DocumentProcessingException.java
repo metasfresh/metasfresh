@@ -25,8 +25,11 @@ package de.metas.document.exceptions;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
+import org.adempiere.util.Services;
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.compiere.process.DocAction;
+
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 
 /**
  * Exception thrown when document processing failed.
@@ -37,12 +40,12 @@ import org.compiere.process.DocAction;
 @SuppressWarnings("serial")
 public class DocumentProcessingException extends AdempiereException
 {
-	public DocumentProcessingException(final DocAction document, final String docAction, final Throwable cause)
+	public DocumentProcessingException(final IDocument document, final String docAction, final Throwable cause)
 	{
 		super(buildMsg((String)null, document, docAction, cause), cause);
 	}
 
-	public DocumentProcessingException(final DocAction document, final String docAction)
+	public DocumentProcessingException(final IDocument document, final String docAction)
 	{
 		super(buildMsg((String)null, document, docAction, (Throwable)null));
 	}
@@ -72,16 +75,21 @@ public class DocumentProcessingException extends AdempiereException
 			documentInfo = "no document";
 			processMsg = null;
 		}
-		else if(documentObj instanceof DocAction)
-		{
-			documentInfo = ((DocAction)documentObj).getDocumentInfo();
-			processMsg = ((DocAction)documentObj).getProcessMsg();
-		}
 		else
 		{
-			documentInfo = documentObj.toString();
-			processMsg = null;
+			final IDocument document = Services.get(IDocumentBL.class).getDocumentOrNull(documentObj);
+			if(document != null)
+			{
+				documentInfo = document.getDocumentInfo();
+				processMsg = document.getProcessMsg();
+			}
+			else
+			{
+				documentInfo = documentObj.toString();
+				processMsg = null;
+			}
 		}
+		
 		
 		msg.append("\n@Document@: ").append(documentInfo);
 		msg.append("\n@DocAction@: ").append(docAction);

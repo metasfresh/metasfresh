@@ -68,8 +68,6 @@ import org.compiere.model.Query;
 import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_C_Order;
 import org.compiere.print.ReportEngine;
-import org.compiere.process.DocAction;
-import org.compiere.process.DocumentEngine;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
@@ -80,6 +78,8 @@ import org.eevolution.api.IPPOrderCostBL;
 import org.eevolution.api.IReceiptCostCollectorCandidate;
 import org.eevolution.exceptions.LiberoException;
 
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.IMsgBL;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.PPOrderUtil;
@@ -91,7 +91,7 @@ import de.metas.product.IProductBL;
  * @author Victor Perez www.e-evolution.com
  * @author Teo Sarca, www.arhipac.ro
  */
-public class MPPOrder extends X_PP_Order implements DocAction
+public class MPPOrder extends X_PP_Order implements IDocument
 {
 	private static final long serialVersionUID = 1L;
 
@@ -357,12 +357,11 @@ public class MPPOrder extends X_PP_Order implements DocAction
 	} // setProcessed
 
 	@Override
-	public boolean processIt(String processAction)
+	public boolean processIt(final String processAction)
 	{
 		m_processMsg = null;
-		DocumentEngine engine = new DocumentEngine(this, getDocStatus());
-		return engine.processIt(processAction, getDocAction());
-	} // processIt
+		return Services.get(IDocumentBL.class).processIt(this, processAction);
+	}
 
 	/** Process Message */
 	private String m_processMsg = null;
@@ -396,7 +395,7 @@ public class MPPOrder extends X_PP_Order implements DocAction
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_PREPARE);
 		if (m_processMsg != null)
 		{
-			return DocAction.STATUS_Invalid;
+			return IDocument.STATUS_Invalid;
 		}
 
 		//
@@ -456,13 +455,13 @@ public class MPPOrder extends X_PP_Order implements DocAction
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_PREPARE);
 		if (m_processMsg != null)
 		{
-			return DocAction.STATUS_Invalid;
+			return IDocument.STATUS_Invalid;
 		}
 
 		//
 		// Update Document Status and return new status "InProgress"
 		m_justPrepared = true;
-		return DocAction.STATUS_InProgress;
+		return IDocument.STATUS_InProgress;
 	} // prepareIt
 
 	@Override
@@ -501,14 +500,14 @@ public class MPPOrder extends X_PP_Order implements DocAction
 		if (DOCACTION_Prepare.equals(getDocAction()))
 		{
 			setProcessed(false);
-			return DocAction.STATUS_InProgress;
+			return IDocument.STATUS_InProgress;
 		}
 
 		// Re-Check
 		if (!m_justPrepared)
 		{
 			final String status = prepareIt();
-			if (!DocAction.STATUS_InProgress.equals(status))
+			if (!IDocument.STATUS_InProgress.equals(status))
 			{
 				return status;
 			}
@@ -519,7 +518,7 @@ public class MPPOrder extends X_PP_Order implements DocAction
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_COMPLETE);
 		if (m_processMsg != null)
 		{
-			return DocAction.STATUS_Invalid;
+			return IDocument.STATUS_Invalid;
 		}
 
 		//
@@ -568,12 +567,12 @@ public class MPPOrder extends X_PP_Order implements DocAction
 		if (valid != null)
 		{
 			m_processMsg = valid;
-			return DocAction.STATUS_Invalid;
+			return IDocument.STATUS_Invalid;
 		}
 
 		//
 		// Return new document status: Completed
-		return DocAction.STATUS_Completed;
+		return IDocument.STATUS_Completed;
 	} // completeIt
 
 	/**

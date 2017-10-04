@@ -49,7 +49,6 @@ import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.print.ReportEngine;
-import org.compiere.process.DocAction;
 import org.compiere.util.CCache;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -62,7 +61,8 @@ import de.metas.currency.ICurrencyBL;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.document.documentNo.IDocumentNoBuilder;
 import de.metas.document.documentNo.IDocumentNoBuilderFactory;
-import de.metas.document.engine.IDocActionBL;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.Msg;
 import de.metas.invoice.IMatchInvBL;
@@ -84,7 +84,7 @@ import de.metas.tax.api.ITaxBL;
  * @see http://sourceforge.net/tracker2/?func=detail&atid=879335&aid=2520591&group_id=176962
  *      Modifications: Added RMA functionality (Ashley Ramdass)
  */
-public class MInvoice extends X_C_Invoice implements DocAction
+public class MInvoice extends X_C_Invoice implements IDocument
 {
 	/**
 	 *
@@ -1265,7 +1265,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 	public boolean processIt(String processAction)
 	{
 		m_processMsg = null;
-		return Services.get(IDocActionBL.class).processIt(this, processAction); // task 09824
+		return Services.get(IDocumentBL.class).processIt(this, processAction); // task 09824
 	}	// process
 
 	/** Process Message */
@@ -1310,7 +1310,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 		log.debug("{}", toString());
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_PREPARE);
 		if (m_processMsg != null)
-			return DocAction.STATUS_Invalid;
+			return IDocument.STATUS_Invalid;
 
 		MPeriod.testPeriodOpen(getCtx(), getDateAcct(), getC_DocTypeTarget_ID(), getAD_Org_ID());
 
@@ -1319,14 +1319,14 @@ public class MInvoice extends X_C_Invoice implements DocAction
 		if (lines.length == 0)
 		{
 			m_processMsg = "@NoLines@";
-			return DocAction.STATUS_Invalid;
+			return IDocument.STATUS_Invalid;
 		}
 		// No Cash Book
 		if (PAYMENTRULE_Cash.equals(getPaymentRule())
 				&& MCashBook.get(getCtx(), getAD_Org_ID(), getC_Currency_ID()) == null)
 		{
 			m_processMsg = "@NoCashBook@";
-			return DocAction.STATUS_Invalid;
+			return IDocument.STATUS_Invalid;
 		}
 
 		// Convert/Check DocType
@@ -1335,7 +1335,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 		if (getC_DocType_ID() == 0)
 		{
 			m_processMsg = "No Document Type";
-			return DocAction.STATUS_Invalid;
+			return IDocument.STATUS_Invalid;
 		}
 
 		// explodeBOM(); // task 09030: we don't really want to explode the BOM, least of all this uncontrolled way after invoice-candidates-way.
@@ -1343,7 +1343,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 		if (!calculateTaxTotal()) 	// setTotals
 		{
 			m_processMsg = "Error calculating Tax";
-			return DocAction.STATUS_Invalid;
+			return IDocument.STATUS_Invalid;
 		}
 
 		createPaySchedule();
@@ -1375,20 +1375,20 @@ public class MInvoice extends X_C_Invoice implements DocAction
 				if (error != null && error.length() > 0)
 				{
 					m_processMsg = error;
-					return DocAction.STATUS_Invalid;
+					return IDocument.STATUS_Invalid;
 				}
 			}
 		}
 
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_PREPARE);
 		if (m_processMsg != null)
-			return DocAction.STATUS_Invalid;
+			return IDocument.STATUS_Invalid;
 
 		// Add up Amounts
 		m_justPrepared = true;
 		if (!DOCACTION_Complete.equals(getDocAction()))
 			setDocAction(DOCACTION_Complete);
-		return DocAction.STATUS_InProgress;
+		return IDocument.STATUS_InProgress;
 	}	// prepareIt
 
 	// @formatter:off
@@ -1639,13 +1639,13 @@ public class MInvoice extends X_C_Invoice implements DocAction
 		if (!m_justPrepared)
 		{
 			String status = prepareIt();
-			if (!DocAction.STATUS_InProgress.equals(status))
+			if (!IDocument.STATUS_InProgress.equals(status))
 				return status;
 		}
 
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_COMPLETE);
 		if (m_processMsg != null)
-			return DocAction.STATUS_Invalid;
+			return IDocument.STATUS_Invalid;
 
 		// Implicit Approval
 		if (!isApproved())
@@ -1689,14 +1689,14 @@ public class MInvoice extends X_C_Invoice implements DocAction
 			if (cash == null || cash.get_ID() == 0)
 			{
 				m_processMsg = "@NoCashBook@";
-				return DocAction.STATUS_Invalid;
+				return IDocument.STATUS_Invalid;
 			}
 			MCashLine cl = new MCashLine(cash);
 			cl.setInvoice(this);
 			if (!cl.save(get_TrxName()))
 			{
 				m_processMsg = "Could not save Cash Journal Line";
-				return DocAction.STATUS_Invalid;
+				return IDocument.STATUS_Invalid;
 			}
 			info.append("@C_Cash_ID@: " + cash.getName() + " #" + cl.getLine());
 			setC_CashLine_ID(cl.getC_CashLine_ID());
@@ -1805,7 +1805,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 							currency.getISO_Code(),
 							currencyTo.getISO_Code() });
 
-			return DocAction.STATUS_Invalid;
+			return IDocument.STATUS_Invalid;
 		}
 
 		// FRESH-152 Update BP Statistics
@@ -1825,7 +1825,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 			{
 				m_processMsg = "Could not convert C_Currency_ID=" + getC_Currency_ID()
 						+ " to Project C_Currency_ID=" + C_CurrencyTo_ID;
-				return DocAction.STATUS_Invalid;
+				return IDocument.STATUS_Invalid;
 			}
 			BigDecimal newAmt = project.getInvoicedAmt();
 			if (newAmt == null)
@@ -1844,7 +1844,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 		if (valid != null)
 		{
 			m_processMsg = valid;
-			return DocAction.STATUS_Invalid;
+			return IDocument.STATUS_Invalid;
 		}
 
 		// Set the definite document number after completed (if needed)
@@ -1858,7 +1858,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 		m_processMsg = info.toString().trim();
 		setProcessed(true);
 		setDocAction(DOCACTION_Reverse_Correct); // issue #347
-		return DocAction.STATUS_Completed;
+		return IDocument.STATUS_Completed;
 	}	// completeIt
 
 	/**
@@ -2105,7 +2105,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 		final MAllocationHdr[] allocations = MAllocationHdr.getOfInvoice(getCtx(), getC_Invoice_ID(), get_TrxName());
 		for (int i = 0; i < allocations.length; i++)
 		{
-			allocations[i].setDocAction(DocAction.ACTION_Reverse_Correct);
+			allocations[i].setDocAction(IDocument.ACTION_Reverse_Correct);
 			allocations[i].reverseCorrectIt();
 			allocations[i].saveEx(get_TrxName()); // metas: tsa: always use saveEx
 		}
@@ -2167,7 +2167,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 		// metas: we need to set the Reversal_ID, before we process (and other model validators are invoked)
 		reversal.setReversal_ID(getC_Invoice_ID());
 		//
-		if (!reversal.processIt(DocAction.ACTION_Complete))
+		if (!reversal.processIt(IDocument.ACTION_Complete))
 		{
 			m_processMsg = "Reversal ERROR: " + reversal.getProcessMsg();
 			return false;
@@ -2240,7 +2240,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 			rLine.setC_Invoice_ID(reversal.getC_Invoice_ID());
 			rLine.saveEx(); // metas: tsa: always use saveEx
 			// Process It
-			if (alloc.processIt(DocAction.ACTION_Complete))
+			if (alloc.processIt(IDocument.ACTION_Complete))
 				alloc.saveEx(); // metas: tsa: always use saveEx
 		}
 

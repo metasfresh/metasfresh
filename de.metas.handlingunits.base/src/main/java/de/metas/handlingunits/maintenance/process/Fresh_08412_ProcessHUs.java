@@ -46,7 +46,6 @@ import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_S_Resource;
 import org.compiere.model.X_C_DocType;
-import org.compiere.process.DocAction;
 import org.compiere.util.DB;
 import org.compiere.util.TrxRunnable2;
 import org.eevolution.api.IPPCostCollectorDAO;
@@ -61,7 +60,8 @@ import org.eevolution.model.X_PP_Order;
 
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.document.IDocTypeDAO;
-import de.metas.document.engine.IDocActionBL;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU;
@@ -80,7 +80,7 @@ public class Fresh_08412_ProcessHUs extends JavaProcess
 {
 	// services
 	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
-	private final transient IDocActionBL docActionBL = Services.get(IDocActionBL.class);
+	private final transient IDocumentBL docActionBL = Services.get(IDocumentBL.class);
 	private final transient IFactAcctDAO factAcctDAO = Services.get(IFactAcctDAO.class);
 	private final transient IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
 	private final transient IPPOrderBOMDAO ppOrderBOMDAO = Services.get(IPPOrderBOMDAO.class);
@@ -197,10 +197,10 @@ public class Fresh_08412_ProcessHUs extends JavaProcess
 
 		//
 		// Close movement (to not allow somebody to touch it)
-		factAcctDAO.deleteForDocument(movement);
+		factAcctDAO.deleteForDocumentModel(movement);
 		movement.setPosted(true);
-		movement.setDocStatus(DocAction.STATUS_Closed);
-		movement.setDocAction(DocAction.ACTION_None);
+		movement.setDocStatus(IDocument.STATUS_Closed);
+		movement.setDocAction(IDocument.ACTION_None);
 		InterfaceWrapperHelper.save(movement);
 
 		huToProcess.setM_Movement(movement);
@@ -284,7 +284,7 @@ public class Fresh_08412_ProcessHUs extends JavaProcess
 
 		//
 		// Process the manufacturing order
-		docActionBL.processEx(order, DocAction.ACTION_Complete, DocAction.STATUS_Completed);
+		docActionBL.processEx(order, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
 
 		huToProcess.setPP_Order(order);
 	}
@@ -311,11 +311,11 @@ public class Fresh_08412_ProcessHUs extends JavaProcess
 		//
 		// Close the manufacturing order
 		// => this will trigger quality fields re-calculations
-		docActionBL.processEx(ppOrder, DocAction.ACTION_Close, DocAction.STATUS_Closed);
+		docActionBL.processEx(ppOrder, IDocument.ACTION_Close, IDocument.STATUS_Closed);
 		// Delete the accountings
 		ppOrder.setPosted(true);
 		InterfaceWrapperHelper.save(ppOrder);
-		factAcctDAO.deleteForDocument(ppOrder); // just to be sure
+		factAcctDAO.deleteForDocumentModel(ppOrder); // just to be sure
 
 		//
 		// Mark all cost collectors as closed.
@@ -325,11 +325,11 @@ public class Fresh_08412_ProcessHUs extends JavaProcess
 		for (final I_PP_Cost_Collector cc : costCollectors)
 		{
 			cc.setPosted(true);
-			cc.setDocStatus(DocAction.STATUS_Closed);
-			cc.setDocAction(DocAction.ACTION_None);
+			cc.setDocStatus(IDocument.STATUS_Closed);
+			cc.setDocAction(IDocument.ACTION_None);
 			InterfaceWrapperHelper.save(cc);
 
-			factAcctDAO.deleteForDocument(cc);
+			factAcctDAO.deleteForDocumentModel(cc);
 		}
 	}
 }

@@ -6,12 +6,12 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_C_BankStatementLine;
 import org.compiere.model.I_C_Payment;
-import org.compiere.process.DocAction;
 
 import de.metas.banking.model.I_C_BankStatementLine_Ref;
 import de.metas.banking.service.IBankStatementBL;
 import de.metas.banking.service.IBankStatementDAO;
-import de.metas.document.engine.IDocActionBL;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.process.JavaProcess;
 
 /*
@@ -45,7 +45,7 @@ import de.metas.process.JavaProcess;
 public class C_BankStatementLine_UnLink_Payments extends JavaProcess
 {
 	// services
-	private final transient IDocActionBL docActionBL = Services.get(IDocActionBL.class);
+	private final transient IDocumentBL docActionBL = Services.get(IDocumentBL.class);
 	private final transient IBankStatementDAO bankStatementDAO = Services.get(IBankStatementDAO.class);
 	private final transient IBankStatementBL bankStatementBL = Services.get(IBankStatementBL.class);
 
@@ -63,7 +63,7 @@ public class C_BankStatementLine_UnLink_Payments extends JavaProcess
 		// Make sure we are allowed to modify this line
 		final I_C_BankStatement bankStatement = bankStatementLine.getC_BankStatement();
 		final String docStatus = bankStatement.getDocStatus();
-		if (!docActionBL.isStatusStrOneOf(docStatus, DocAction.STATUS_Drafted, DocAction.STATUS_Completed, DocAction.STATUS_InProgress))
+		if (!docActionBL.isStatusStrOneOf(docStatus, IDocument.STATUS_Drafted, IDocument.STATUS_Completed, IDocument.STATUS_InProgress))
 		{
 			throw new AdempiereException("@Invalid@ @DocStatus@: " + docStatus);
 		}

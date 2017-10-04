@@ -60,7 +60,7 @@ import de.metas.commission.interfaces.I_C_BPartner_Location;
 import de.metas.commission.model.I_C_Invoice_VAT_Corr_Candidates_v1;
 import de.metas.commission.service.IBPartnerDAO;
 import de.metas.commission.util.CommissionConstants;
-import de.metas.document.IDocumentPA;
+import de.metas.document.IDocTypeDAO;
 import de.metas.i18n.Msg;
 import de.metas.tax.api.ITaxBL;
 
@@ -100,10 +100,7 @@ public class CreateCorrections extends CreateFrom
 		log.info("");
 
 		final Properties ctx = Env.getCtx();
-
-		final IDocumentPA docPA = Services.get(IDocumentPA.class);
-
-		final I_C_DocType dt = docPA.retrieve(ctx, Env.getAD_Org_ID(ctx), Constants.DOCBASETYPE_AEInvoice, CommissionConstants.COMMISSON_INVOICE_DOCSUBTYPE_CORRECTION, true, null);
+		final I_C_DocType dt = Services.get(IDocTypeDAO.class).getDocType(Constants.DOCBASETYPE_AEInvoice, CommissionConstants.COMMISSON_INVOICE_DOCSUBTYPE_CORRECTION, Env.getAD_Client_ID(ctx), Env.getAD_Org_ID(ctx));
 
 		setTitle(dt.getName() + " .. " + Msg.translate(ctx, "CreateFrom"));
 
@@ -214,7 +211,7 @@ public class CreateCorrections extends CreateFrom
 	{
 		final int bPartnerId = invoice.getC_BPartner_ID();
 
-		final Vector<Vector<Object>> data = new Vector<Vector<Object>>();
+		final Vector<Vector<Object>> data = new Vector<>();
 
 		final StringBuilder sql = new StringBuilder();
 		sql.append("SELECT * ");
@@ -232,7 +229,7 @@ public class CreateCorrections extends CreateFrom
 			rs = pstmt.executeQuery();
 			while (rs.next())
 			{
-				final Vector<Object> line = new Vector<Object>(6);
+				final Vector<Object> line = new Vector<>(6);
 
 				line.add(Boolean.FALSE); // 0-Selection
 
@@ -398,12 +395,10 @@ public class CreateCorrections extends CreateFrom
 	protected Vector<String> getOISColumnNames()
 	{
 		final Properties ctx = Env.getCtx();
-		final IDocumentPA docPA = Services.get(IDocumentPA.class);
-
-		final I_C_DocType dt = docPA.retrieve(ctx, Env.getAD_Org_ID(ctx), Constants.DOCBASETYPE_AEInvoice, CommissionConstants.COMMISSON_INVOICE_DOCSUBTYPE_CALC, true, null);
+		final I_C_DocType dt = Services.get(IDocTypeDAO.class).getDocType(Constants.DOCBASETYPE_AEInvoice, CommissionConstants.COMMISSON_INVOICE_DOCSUBTYPE_CALC, Env.getAD_Client_ID(ctx), Env.getAD_Org_ID(ctx));
 
 		// Header Info
-		final Vector<String> columnNames = new Vector<String>(9);
+		final Vector<String> columnNames = new Vector<>(9);
 
 		columnNames.add(Msg.getMsg(Env.getCtx(), "Select")); // 0-Selection
 		columnNames.add(Msg.translate(Env.getCtx(), "C_BPartner_ID")); // 1-sales rep

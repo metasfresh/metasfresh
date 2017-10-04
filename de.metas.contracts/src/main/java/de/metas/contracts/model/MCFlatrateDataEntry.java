@@ -29,16 +29,17 @@ import java.sql.ResultSet;
 import java.util.Properties;
 
 import org.adempiere.util.Check;
+import org.adempiere.util.Services;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
-import org.compiere.process.DocAction;
-import org.compiere.process.DocumentEngine;
 import org.compiere.util.Env;
 
 import de.metas.contracts.model.X_C_Flatrate_DataEntry;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.Msg;
 
-public class MCFlatrateDataEntry extends X_C_Flatrate_DataEntry implements DocAction
+public class MCFlatrateDataEntry extends X_C_Flatrate_DataEntry implements IDocument
 {
 	/**
 	 *
@@ -96,24 +97,24 @@ public class MCFlatrateDataEntry extends X_C_Flatrate_DataEntry implements DocAc
 		if (!m_justPrepared)
 		{
 			final String status = prepareIt();
-			if (!DocAction.STATUS_InProgress.equals(status))
+			if (!IDocument.STATUS_InProgress.equals(status))
 				return status;
 		}
 
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_COMPLETE);
 		if (m_processMsg != null)
-			return DocAction.STATUS_Invalid;
+			return IDocument.STATUS_Invalid;
 
 		final String valid = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_COMPLETE);
 		if (valid != null)
 		{
 			m_processMsg = valid;
-			return DocAction.STATUS_Invalid;
+			return IDocument.STATUS_Invalid;
 		}
 
 		setProcessed(true);
 		setDocAction(DOCACTION_Re_Activate);
-		return DocAction.STATUS_Completed;
+		return IDocument.STATUS_Completed;
 	}
 
 	@Override
@@ -183,32 +184,24 @@ public class MCFlatrateDataEntry extends X_C_Flatrate_DataEntry implements DocAc
 		log.info(toString());
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_PREPARE);
 		if (m_processMsg != null)
-			return DocAction.STATUS_Invalid;
+			return IDocument.STATUS_Invalid;
 
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_PREPARE);
 		if (m_processMsg != null)
-			return DocAction.STATUS_Invalid;
+			return IDocument.STATUS_Invalid;
 		//
 		m_justPrepared = true;
 		if (!DOCACTION_Complete.equals(getDocAction()))
 			setDocAction(DOCACTION_Complete);
-		return DocAction.STATUS_InProgress;
+		return IDocument.STATUS_InProgress;
 	} // prepareIt
 
-	/**************************************************************************
-	 * Process document
-	 *
-	 * @param processAction
-	 *            document action
-	 * @return true if performed
-	 */
 	@Override
-	public boolean processIt(String processAction)
+	public boolean processIt(final String processAction)
 	{
 		m_processMsg = null;
-		DocumentEngine engine = new DocumentEngine(this, getDocStatus());
-		return engine.processIt(processAction, getDocAction());
-	} // processIt
+		return Services.get(IDocumentBL.class).processIt(this, processAction);
+	}
 
 	@Override
 	public boolean reActivateIt()

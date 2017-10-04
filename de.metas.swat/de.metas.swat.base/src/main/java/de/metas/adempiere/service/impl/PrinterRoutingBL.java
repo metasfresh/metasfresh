@@ -51,7 +51,7 @@ import de.metas.adempiere.service.IPrinterRoutingBL;
 import de.metas.adempiere.service.IPrinterRoutingDAO;
 import de.metas.adempiere.service.IPrintingService;
 import de.metas.adempiere.util.CacheCtx;
-import de.metas.document.engine.IDocActionBL;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.logging.LogManager;
 
 /**
@@ -72,7 +72,7 @@ public class PrinterRoutingBL implements IPrinterRoutingBL
 		final int AD_Role_ID = Env.getAD_Role_ID(ctx);
 		final int AD_User_ID = Env.getAD_User_ID(ctx);
 		final int AD_Process_ID = pi.getAD_Process_ID();
-		final int C_DocType_ID = Services.get(IDocActionBL.class).getC_DocType_ID(ctx, pi.getTable_ID(), pi.getRecord_ID());
+		final int C_DocType_ID = Services.get(IDocumentBL.class).getC_DocType_ID(ctx, pi.getTable_ID(), pi.getRecord_ID());
 		final String printerType = null;
 
 		return findPrintingService0(ctx,

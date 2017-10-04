@@ -26,11 +26,11 @@ import java.util.Properties;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.user.api.IUserDAO;
 import org.adempiere.util.Services;
-import org.compiere.process.DocAction;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
-import de.metas.document.engine.IDocActionBL;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
 
@@ -44,7 +44,7 @@ import de.metas.logging.LogManager;
  * 			<li>BF [ 2800460 ] System generate Material Receipt with no lines
  * 				https://sourceforge.net/tracker/?func=detail&atid=879332&aid=2800460&group_id=176962
  */
-public class MInOutConfirm extends X_M_InOutConfirm implements DocAction
+public class MInOutConfirm extends X_M_InOutConfirm implements IDocument
 {
 	/**
 	 * 
@@ -270,7 +270,7 @@ public class MInOutConfirm extends X_M_InOutConfirm implements DocAction
 	public boolean processIt (String processAction)
 	{
 		m_processMsg = null;
-		return Services.get(IDocActionBL.class).processIt(this, processAction); // task 09824
+		return Services.get(IDocumentBL.class).processIt(this, processAction); // task 09824
 	}
 	
 	/**	Process Message 			*/
@@ -312,7 +312,7 @@ public class MInOutConfirm extends X_M_InOutConfirm implements DocAction
 		log.info(toString());
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_PREPARE);
 		if (m_processMsg != null)
-			return DocAction.STATUS_Invalid;
+			return IDocument.STATUS_Invalid;
 
 		/**
 		MDocType dt = MDocType.get(getCtx(), getC_DocTypeTarget_ID());
@@ -329,7 +329,7 @@ public class MInOutConfirm extends X_M_InOutConfirm implements DocAction
 		if (lines.length == 0)
 		{
 			m_processMsg = "@NoLines@";
-			return DocAction.STATUS_Invalid;
+			return IDocument.STATUS_Invalid;
 		}
 		//	Set dispute if not fully confirmed
 		boolean difference = false;
@@ -345,12 +345,12 @@ public class MInOutConfirm extends X_M_InOutConfirm implements DocAction
 
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_PREPARE);
 		if (m_processMsg != null)
-			return DocAction.STATUS_Invalid;
+			return IDocument.STATUS_Invalid;
 		//
 		m_justPrepared = true;
 		if (!DOCACTION_Complete.equals(getDocAction()))
 			setDocAction(DOCACTION_Complete);
-		return DocAction.STATUS_InProgress;
+		return IDocument.STATUS_InProgress;
 	}	//	prepareIt
 	
 	/**
@@ -388,13 +388,13 @@ public class MInOutConfirm extends X_M_InOutConfirm implements DocAction
 		if (!m_justPrepared)
 		{
 			String status = prepareIt();
-			if (!DocAction.STATUS_InProgress.equals(status))
+			if (!IDocument.STATUS_InProgress.equals(status))
 				return status;
 		}
 		
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_COMPLETE);
 		if (m_processMsg != null)
-			return DocAction.STATUS_Invalid;
+			return IDocument.STATUS_Invalid;
 		
 		//	Implicit Approval
 		if (!isApproved())
@@ -413,7 +413,7 @@ public class MInOutConfirm extends X_M_InOutConfirm implements DocAction
 				if (dt.getC_DocTypeDifference_ID() == 0)
 				{
 					m_processMsg = "No Split Document Type defined for: " + dt.getName();
-					return DocAction.STATUS_Invalid;
+					return IDocument.STATUS_Invalid;
 				}
 				splitInOut (inout, dt.getC_DocTypeDifference_ID(), lines);
 				m_lines = null;
@@ -428,7 +428,7 @@ public class MInOutConfirm extends X_M_InOutConfirm implements DocAction
 			if (!confirmLine.processLine (inout.isSOTrx(), getConfirmType()))
 			{
 				m_processMsg = "ShipLine not saved - " + confirmLine;
-				return DocAction.STATUS_Invalid;
+				return IDocument.STATUS_Invalid;
 			}
 			if (confirmLine.isFullyConfirmed())
 			{
@@ -446,7 +446,7 @@ public class MInOutConfirm extends X_M_InOutConfirm implements DocAction
 				{
 					log.error("Scrapped=" + confirmLine.getScrappedQty()
 						+ " - Difference=" + confirmLine.getDifferenceQty());
-					return DocAction.STATUS_Invalid;
+					return IDocument.STATUS_Invalid;
 				}
 			}
 		}	//	for all lines
@@ -466,12 +466,12 @@ public class MInOutConfirm extends X_M_InOutConfirm implements DocAction
 		if (valid != null)
 		{
 			m_processMsg = valid;
-			return DocAction.STATUS_Invalid;
+			return IDocument.STATUS_Invalid;
 		}
 
 		setProcessed(true);
 		setDocAction(DOCACTION_Close);
-		return DocAction.STATUS_Completed;
+		return IDocument.STATUS_Completed;
 	}	//	completeIt
 
 	/**
@@ -540,7 +540,7 @@ public class MInOutConfirm extends X_M_InOutConfirm implements DocAction
 			+ " - @M_InOutConfirm_ID@=";
 
 		//	Create Dispute Confirmation
-		if (!split.processIt(DocAction.ACTION_Prepare))
+		if (!split.processIt(IDocument.ACTION_Prepare))
 			throw new AdempiereException(split.getProcessMsg());
 	//	split.createConfirmation();
 		split.saveEx();

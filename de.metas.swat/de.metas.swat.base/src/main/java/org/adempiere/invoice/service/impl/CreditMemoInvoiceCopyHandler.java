@@ -42,12 +42,12 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_C_InvoiceTax;
-import org.compiere.process.DocAction;
 import org.compiere.util.Env;
 
 import de.metas.allocation.api.IAllocationDAO;
 import de.metas.document.IDocCopyHandler;
-import de.metas.document.engine.IDocActionBL;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 
 /**
  *
@@ -278,7 +278,7 @@ public class CreditMemoInvoiceCopyHandler implements IDocCopyHandler<I_C_Invoice
 	{
 		if (!creditCtx.completeAndAllocate())
 		{
-			Services.get(IDocActionBL.class).processEx(creditMemo, DocAction.ACTION_Prepare, DocAction.STATUS_InProgress);
+			Services.get(IDocumentBL.class).processEx(creditMemo, IDocument.ACTION_Prepare, IDocument.STATUS_InProgress);
 			Check.assume(creditMemo.getGrandTotal().compareTo(openAmt) == 0, "{} has GrandTotal={}", creditMemo, openAmt);
 
 			// nothing left to do
@@ -288,7 +288,7 @@ public class CreditMemoInvoiceCopyHandler implements IDocCopyHandler<I_C_Invoice
 		// make sure the grand total of the credit memo equals the open AMT of the invoice
 		Check.assume(creditMemo.getGrandTotal().compareTo(openAmt) == 0, "{} has GrandTotal={}", creditMemo, openAmt);
 
-		Services.get(IDocActionBL.class).processEx(creditMemo, DocAction.ACTION_Complete, DocAction.STATUS_Completed);
+		Services.get(IDocumentBL.class).processEx(creditMemo, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
 
 		// allocate invoice against credit memo will be done in the model validator of creditmemo complete
 	}

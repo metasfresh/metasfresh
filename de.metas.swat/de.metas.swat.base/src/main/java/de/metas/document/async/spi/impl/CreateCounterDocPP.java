@@ -7,14 +7,14 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.process.DocAction;
 
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.WorkpackageProcessorAdapter;
 import de.metas.async.spi.WorkpackagesOnCommitSchedulerTemplate;
 import de.metas.document.ICounterDocBL;
-import de.metas.document.engine.IDocActionBL;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 
 /*
  * #%L
@@ -79,7 +79,7 @@ public class CreateCounterDocPP extends WorkpackageProcessorAdapter
 
 	// services
 	private final transient IQueueDAO queueDAO = Services.get(IQueueDAO.class);
-	private final transient IDocActionBL docActionBL = Services.get(IDocActionBL.class);
+	private final transient IDocumentBL docActionBL = Services.get(IDocumentBL.class);
 	private final transient ICounterDocBL counterDocumentBL = Services.get(ICounterDocBL.class);
 
 	@Override
@@ -88,9 +88,9 @@ public class CreateCounterDocPP extends WorkpackageProcessorAdapter
 		final List<Object> models = queueDAO.retrieveItemsSkipMissing(workpackage, Object.class, localTrxName);
 		for (final Object model : models)
 		{
-			final DocAction document = docActionBL.getDocAction(model);
+			final IDocument document = docActionBL.getDocument(model);
 
-			final DocAction counterDocument = counterDocumentBL.createCounterDocument(document, false);
+			final IDocument counterDocument = counterDocumentBL.createCounterDocument(document, false);
 			Loggables.get().addLog("Document {0}: created counter document {1}", document, counterDocument);
 		}
 		return Result.SUCCESS;

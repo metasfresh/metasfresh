@@ -47,7 +47,7 @@ import org.compiere.util.CacheMgt;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
-import de.metas.acct.api.IDocumentBL;
+import de.metas.acct.api.IDocumentRepostingBL;
 import de.metas.acct.async.ScheduleFactAcctLogProcessingFactAcctListener;
 import de.metas.acct.model.I_C_VAT_Code;
 import de.metas.acct.spi.impl.AllocationHdrDocumentRepostingHandler;
@@ -74,7 +74,7 @@ public class AcctModuleInterceptor extends AbstractModuleInterceptor
 	{
 		Services.get(IFactAcctListenersService.class).registerListener(ScheduleFactAcctLogProcessingFactAcctListener.instance);
 
-		final IDocumentBL documentBL = Services.get(IDocumentBL.class);
+		final IDocumentRepostingBL documentBL = Services.get(IDocumentRepostingBL.class);
 
 		// FRESH-539: register Reposting Handlers
 		documentBL.registerHandler(new InvoiceDocumentRepostingHandler());

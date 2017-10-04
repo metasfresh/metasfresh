@@ -53,9 +53,9 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
-import org.compiere.process.DocAction;
 
-import de.metas.document.engine.IDocActionBL;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
@@ -359,9 +359,9 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 			ic.setDateOrdered(inOut.getMovementDate());
 		}
 
-		final IDocActionBL docActionBL = Services.get(IDocActionBL.class);
+		final IDocumentBL docActionBL = Services.get(IDocumentBL.class);
 
-		if (docActionBL.isDocumentStatusOneOf(inOut, DocAction.STATUS_Completed, DocAction.STATUS_Closed))
+		if (docActionBL.isDocumentStatusOneOf(inOut, IDocument.STATUS_Completed, IDocument.STATUS_Closed))
 		{
 			final BigDecimal qtyMultiplier = getQtyMultiplier(ic);
 			final BigDecimal qtyDelivered = inOutLine.getMovementQty().multiply(qtyMultiplier);

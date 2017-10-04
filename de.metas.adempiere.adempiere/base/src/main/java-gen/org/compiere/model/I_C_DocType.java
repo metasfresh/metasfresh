@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 package org.compiere.model;
 
 
@@ -143,6 +127,31 @@ public interface I_C_DocType
     public static final String COLUMNNAME_AD_PrintFormat_ID = "AD_PrintFormat_ID";
 
 	/**
+	 * Set Belegart.
+	 * Document type or rules
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setC_DocType_ID (int C_DocType_ID);
+
+	/**
+	 * Get Belegart.
+	 * Document type or rules
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getC_DocType_ID();
+
+    /** Column definition for C_DocType_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_DocType, Object> COLUMN_C_DocType_ID = new org.adempiere.model.ModelColumn<I_C_DocType, Object>(I_C_DocType.class, "C_DocType_ID", null);
+    /** Column name C_DocType_ID */
+    public static final String COLUMNNAME_C_DocType_ID = "C_DocType_ID";
+
+	/**
 	 * Set Difference Document.
 	 * Document type for generating in dispute Shipments
 	 *
@@ -170,31 +179,6 @@ public interface I_C_DocType
     public static final org.adempiere.model.ModelColumn<I_C_DocType, org.compiere.model.I_C_DocType> COLUMN_C_DocTypeDifference_ID = new org.adempiere.model.ModelColumn<I_C_DocType, org.compiere.model.I_C_DocType>(I_C_DocType.class, "C_DocTypeDifference_ID", org.compiere.model.I_C_DocType.class);
     /** Column name C_DocTypeDifference_ID */
     public static final String COLUMNNAME_C_DocTypeDifference_ID = "C_DocTypeDifference_ID";
-
-	/**
-	 * Set Belegart.
-	 * Document type or rules
-	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setC_DocType_ID (int C_DocType_ID);
-
-	/**
-	 * Get Belegart.
-	 * Document type or rules
-	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getC_DocType_ID();
-
-    /** Column definition for C_DocType_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_DocType, Object> COLUMN_C_DocType_ID = new org.adempiere.model.ModelColumn<I_C_DocType, Object>(I_C_DocType.class, "C_DocType_ID", null);
-    /** Column name C_DocType_ID */
-    public static final String COLUMNNAME_C_DocType_ID = "C_DocType_ID";
 
 	/**
 	 * Set Rechnungs-Belegart.
@@ -364,8 +348,7 @@ public interface I_C_DocType
     public static final String COLUMNNAME_Description = "Description";
 
 	/**
-	 * Set Document BaseType.
-	 * Logical type of document
+	 * Set Dokument Basis Typ.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
@@ -374,8 +357,7 @@ public interface I_C_DocType
 	public void setDocBaseType (java.lang.String DocBaseType);
 
 	/**
-	 * Get Document BaseType.
-	 * Logical type of document
+	 * Get Dokument Basis Typ.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
@@ -491,6 +473,33 @@ public interface I_C_DocType
     public static final org.adempiere.model.ModelColumn<I_C_DocType, Object> COLUMN_DocumentNote = new org.adempiere.model.ModelColumn<I_C_DocType, Object>(I_C_DocType.class, "DocumentNote", null);
     /** Column name DocumentNote */
     public static final String COLUMNNAME_DocumentNote = "DocumentNote";
+
+	/**
+	 * Set Entitäts-Art.
+	 * Dictionary Entity Type;
+ Determines ownership and synchronization
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setEntityType (java.lang.String EntityType);
+
+	/**
+	 * Get Entitäts-Art.
+	 * Dictionary Entity Type;
+ Determines ownership and synchronization
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getEntityType();
+
+    /** Column definition for EntityType */
+    public static final org.adempiere.model.ModelColumn<I_C_DocType, Object> COLUMN_EntityType = new org.adempiere.model.ModelColumn<I_C_DocType, Object>(I_C_DocType.class, "EntityType", null);
+    /** Column name EntityType */
+    public static final String COLUMNNAME_EntityType = "EntityType";
 
 	/**
 	 * Set Hauptbuch - Kategorie.

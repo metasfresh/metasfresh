@@ -37,3 +37,19 @@ INSERT INTO AD_Table_Process (AD_Client_ID,AD_Org_ID,AD_Process_ID,AD_Table_ID,C
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 UPDATE AD_Table_Process SET WEBUI_QuickAction_Default='N',Updated=TO_TIMESTAMP('2017-09-22 17:18:17','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=540010 AND AD_Table_ID=540029
 ;
+
+
+
+-- 2017-09-22T13:02:57.059
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process SET EntityType='de.metas.contracts.subscription',Updated=TO_TIMESTAMP('2017-09-22 13:02:57','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=540010
+;
+
+-- associate "C_SubscriptionProgress_InsertPause" with table "C_SubscriptionProgress"
+-- 2017-09-22T13:09:40.993
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Table_Process (AD_Client_ID,AD_Org_ID,AD_Process_ID,AD_Table_ID,Created,CreatedBy,EntityType,IsActive,Updated,UpdatedBy,WEBUI_QuickAction,WEBUI_QuickAction_Default) 
+SELECT 0,0,540010,540029,TO_TIMESTAMP('2017-09-22 13:09:40','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.contracts.subscription','Y',TO_TIMESTAMP('2017-09-22 13:09:40','YYYY-MM-DD HH24:MI:SS'),100,'Y','Y'
+WHERE NOT EXISTS (select 1 from AD_Table_Process where AD_Process_ID=540010 and AD_Table_ID=540029)
+;
+

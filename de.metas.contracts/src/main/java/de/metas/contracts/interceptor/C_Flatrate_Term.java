@@ -35,6 +35,7 @@ import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.ad.service.IADReferenceDAO;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -52,6 +53,7 @@ import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.service.ICalendarDAO;
+import de.metas.contracts.Contracts_Constants;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.IFlatrateTermEventService;
@@ -65,7 +67,8 @@ import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.subscription.ISubscriptionBL;
-import de.metas.document.IDocumentPA;
+import de.metas.document.IDocTypeDAO;
+import de.metas.document.IDocTypeDAO.DocTypeCreateRequest;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.ordercandidate.modelvalidator.C_OLCand;
@@ -96,7 +99,7 @@ public class C_Flatrate_Term
 
 	private void ensureDocTypesExist(final String docSubType)
 	{
-		final IDocumentPA documentPA = Services.get(IDocumentPA.class);
+		final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 
 		final List<I_AD_Org> orgs = new Query(Env.getCtx(), I_AD_Org.Table_Name, I_AD_Org.COLUMNNAME_AD_Org_ID + "!=0", null)
 				.setOnlyActiveRecords(true)
@@ -112,22 +115,29 @@ public class C_Flatrate_Term
 			Env.setContext(localCtx, Env.CTXNAME_AD_Client_ID, org.getAD_Client_ID());
 			Env.setContext(localCtx, Env.CTXNAME_AD_Org_ID, org.getAD_Org_ID());
 
-			if (null != documentPA.retrieve(localCtx, org.getAD_Org_ID(), I_C_DocType.DocBaseType_CustomerContract, docSubType, false, null))
+			final org.compiere.model.I_C_DocType existingDocType = docTypeDAO.getDocTypeOrNull(localCtx,
+					I_C_DocType.DocBaseType_CustomerContract, docSubType,
+					org.getAD_Client_ID(), org.getAD_Org_ID(),
+					ITrx.TRXNAME_None);
+			if (existingDocType != null)
 			{
 				continue;
 			}
 
-			final POInfo docTypePOInfo = POInfo.getPOInfo(localCtx, I_C_DocType.Table_Name);
+			final POInfo docTypePOInfo = POInfo.getPOInfo(I_C_DocType.Table_Name);
 			final String name = Services.get(IADReferenceDAO.class).retrieveListNameTrl(docTypePOInfo.getColumnReferenceValueId(docTypePOInfo.getColumnIndex(I_C_DocType.COLUMNNAME_DocSubType)), docSubType)
 					+ " (" + org.getValue() + ")";
-			final org.compiere.model.I_C_DocType newType = documentPA.createDocType(localCtx, "de.metas.flatrate",
-					name,
-					name,
-					I_C_DocType.DocBaseType_CustomerContract, docSubType, 0, 0, 10000, 0, null);
-
-			// newType.setAD_Org_ID(org.getAD_Org_ID());
-			newType.setIsSOTrx(true);
-			InterfaceWrapperHelper.save(newType);
+			docTypeDAO.createDocType(DocTypeCreateRequest.builder()
+					.ctx(localCtx)
+					.adOrgId(org.getAD_Org_ID())
+					.entityType(Contracts_Constants.ENTITY_TYPE)
+					.name(name)
+					.printName(name)
+					.docBaseType(I_C_DocType.DocBaseType_CustomerContract)
+					.docSubType(docSubType)
+					.isSOTrx(true)
+					.newDocNoSequenceStartNo(10000)
+					.build());
 		}
 	}
 
@@ -180,7 +190,7 @@ public class C_Flatrate_Term
 		final Properties ctx = InterfaceWrapperHelper.getCtx(term);
 		final String trxName = InterfaceWrapperHelper.getTrxName(term);
 
-		final List<String> errors = new ArrayList<String>();
+		final List<String> errors = new ArrayList<>();
 
 		final IMsgBL msgBL = Services.get(IMsgBL.class);
 		if (term.getStartDate() != null
@@ -358,7 +368,7 @@ public class C_Flatrate_Term
 		if (X_C_Flatrate_Term.TYPE_CONDITIONS_Subscription.equals(term.getType_Conditions()))
 		{
 			// first do a number of checks
-			final List<String> missingValues = new ArrayList<String>();
+			final List<String> missingValues = new ArrayList<>();
 
 			if (term.getM_PricingSystem_ID() <= 0)
 			{

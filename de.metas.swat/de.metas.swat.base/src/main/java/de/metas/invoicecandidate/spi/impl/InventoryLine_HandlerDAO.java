@@ -10,8 +10,8 @@ import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_M_Inventory;
 import org.compiere.model.X_C_DocType;
-import org.compiere.process.DocAction;
 
+import de.metas.document.engine.IDocument;
 import de.metas.interfaces.I_C_DocType;
 import de.metas.invoicecandidate.model.I_M_InventoryLine;
 import de.metas.invoicecandidate.spi.IInventoryLine_HandlerDAO;
@@ -58,7 +58,7 @@ public class InventoryLine_HandlerDAO implements IInventoryLine_HandlerDAO
 			final IQueryBuilder<I_M_Inventory> inventoryQueryBuilder = queryBL.createQueryBuilder(I_M_Inventory.class, ctx, trxName);
 
 			// if the inventory was reversed, and there is no IC yet, don't bother creating one
-			inventoryQueryBuilder.addNotEqualsFilter(I_M_Inventory.COLUMNNAME_DocStatus, DocAction.STATUS_Reversed);
+			inventoryQueryBuilder.addNotEqualsFilter(I_M_Inventory.COLUMNNAME_DocStatus, IDocument.STATUS_Reversed);
 
 			// Only create invoice candidates for material disposal
 			{

@@ -1,7 +1,6 @@
 package de.metas.document.impl;
 
-import org.compiere.process.DocAction;
-
+import de.metas.document.engine.IDocument;
 import de.metas.document.spi.ICounterDocHandler;
 
 /*
@@ -41,19 +40,19 @@ public class NullCounterDocumentHandler implements ICounterDocHandler
 	}
 
 	@Override
-	public boolean isCreateCounterDocument(DocAction document)
+	public boolean isCreateCounterDocument(IDocument document)
 	{
 		return false;
 	}
 
 	@Override
-	public boolean isCounterDocument(DocAction document)
+	public boolean isCounterDocument(IDocument document)
 	{
 		return false;
 	}
 
 	@Override
-	public DocAction createCounterDocument(DocAction document)
+	public IDocument createCounterDocument(IDocument document)
 	{
 		return null;
 	}

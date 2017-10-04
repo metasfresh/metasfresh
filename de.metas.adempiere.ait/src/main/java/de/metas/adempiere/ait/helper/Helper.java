@@ -78,7 +78,6 @@ import org.compiere.model.Query;
 import org.compiere.model.X_C_BankAccount;
 import org.compiere.model.X_C_Tax;
 import org.compiere.model.X_M_DiscountSchema;
-import org.compiere.process.DocAction;
 import org.compiere.process.InvoiceGenerate;
 import org.compiere.util.CacheMgt;
 import org.compiere.util.DB;
@@ -100,6 +99,7 @@ import de.metas.adempiere.model.I_M_Product_Category;
 import de.metas.adempiere.service.ICountryDAO;
 import de.metas.currency.ICurrencyBL;
 import de.metas.currency.ICurrencyDAO;
+import de.metas.document.engine.IDocument;
 import de.metas.freighcost.api.IFreightCostBL;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inout.model.I_M_InOutLine;
@@ -433,7 +433,7 @@ public class Helper implements IHelper
 		final PO po = InterfaceWrapperHelper.getStrictPO(model);
 		if (po != null)
 		{
-			Assert.assertTrue("Object " + po + " is not an instanceof " + DocAction.class, po instanceof DocAction);
+			Assert.assertTrue("Object " + po + " is not an instanceof " + IDocument.class, po instanceof IDocument);
 
 			final MTable poTable = MTable.get(po.getCtx(), po.get_TableName());
 			final MColumn docActionColumn = poTable.getColumn("DocAction");
@@ -441,7 +441,7 @@ public class Helper implements IHelper
 			final int processId = docActionColumn.getAD_Process_ID();
 			Assert.assertTrue("Object " + po + " does not have a process on DocAction column", processId > 0);
 
-			final DocAction doc = (DocAction)po;
+			final IDocument doc = (IDocument)po;
 
 			process = mkProcessHelper()
 					.setPO(po)
@@ -524,9 +524,9 @@ public class Helper implements IHelper
 	 * @see test.integration.common.helper.IHelper#processComplete(org.compiere.process.DocAction)
 	 */
 	@Override
-	public void processComplete(DocAction doc)
+	public void processComplete(IDocument doc)
 	{
-		process(doc, DocAction.ACTION_Complete, DocAction.STATUS_Completed);
+		process(doc, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
 	}
 
 	/**
@@ -1410,7 +1410,7 @@ public class Helper implements IHelper
 				.setProcessClass(InvoiceGenerate.class)
 				.setSelection(orderIds)
 				.setParameter("Selection", true)
-				.setParameter("DocAction", DocAction.ACTION_Complete)
+				.setParameter("DocAction", IDocument.ACTION_Complete)
 				.run();
 	}
 
@@ -1427,7 +1427,7 @@ public class Helper implements IHelper
 				.setProcessClass(C_Invoice_Candidate_GenerateInvoice.class)
 				.setSelection(invoiceCandIds)
 				.setParameter("Selection", true)
-				.setParameter("DocAction", DocAction.ACTION_Complete)
+				.setParameter("DocAction", IDocument.ACTION_Complete)
 				.run();
 	}
 

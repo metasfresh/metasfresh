@@ -36,9 +36,9 @@ import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_AllocationLine;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
-import org.compiere.process.DocAction;
 
-import de.metas.document.engine.impl.PlainDocActionBL.IProcessInterceptor;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.impl.PlainDocumentBL.IProcessInterceptor;
 import de.metas.payment.api.IPaymentBL;
 
 /**
@@ -49,12 +49,12 @@ import de.metas.payment.api.IPaymentBL;
 public class C_AllocationHdr_ProcessInterceptor implements IProcessInterceptor
 {
 	@Override
-	public boolean processIt(DocAction doc, String action) throws Exception
+	public boolean processIt(IDocument doc, String action) throws Exception
 	{
 		final POJOWrapper wrapper = POJOWrapper.getWrapper(doc);
 		final String trxName = InterfaceWrapperHelper.getTrxName(doc);
-		doc.setDocStatus(DocAction.STATUS_Completed);
-		wrapper.setValue("DocAction", DocAction.ACTION_Close);
+		doc.setDocStatus(IDocument.STATUS_Completed);
+		wrapper.setValue("DocAction", IDocument.ACTION_Close);
 		wrapper.setValue("Processed", true);
 		wrapper.setValue("Processing", false);
 		InterfaceWrapperHelper.save(wrapper);

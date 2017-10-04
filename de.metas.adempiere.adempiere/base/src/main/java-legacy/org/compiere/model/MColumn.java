@@ -22,11 +22,16 @@ import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
+
+import javax.annotation.Nullable;
 
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.DBException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -37,7 +42,13 @@ import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.slf4j.Logger;
 
+import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableList;
+
 import de.metas.logging.LogManager;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
 
 /**
  * Persistent Column Model
@@ -316,7 +327,7 @@ public class MColumn extends X_AD_Column
 					|| is_ValueChanged(MColumn.COLUMNNAME_Description)
 					|| is_ValueChanged(MColumn.COLUMNNAME_Help))
 			{
-				StringBuffer sql = new StringBuffer("UPDATE AD_Field SET Name=")
+				StringBuilder sql = new StringBuilder("UPDATE AD_Field SET Name=")
 						.append(DB.TO_STRING(getName()))
 						.append(", Description=").append(DB.TO_STRING(getDescription()))
 						.append(", Help=").append(DB.TO_STRING(getHelp()))
@@ -335,25 +346,27 @@ public class MColumn extends X_AD_Column
 	 * @param table table
 	 * @return sql
 	 */
-	public String getSQLAdd(I_AD_Table table)
+	private List<String> getSQLAdd(final String tableName)
 	{
-		final String tableName = table.getTableName();
+		final List<String> sqlStatements = new ArrayList<>();
 
-		final StringBuilder sql = new StringBuilder("ALTER TABLE ")
+		sqlStatements.add(new StringBuilder("ALTER TABLE ")
 				.append("public.") // if the table is already DLM'ed then there is a view with the same name in the dlm schema.
 				.append(tableName)
 				.append(" ADD COLUMN ") // not just "ADD" but "ADD COLUMN" to make it easier to distinguish the sort of this DDL further down the road.
-				.append(getSQLDDL());
+				.append(getSQLDDL())
+				.toString());
 
-		final String constraint = getConstraint(tableName);
-		if (constraint != null && constraint.length() > 0)
+		final String sqlConstraint = getSQLConstraint(tableName);
+		if (!Check.isEmpty(sqlConstraint, true))
 		{
-			sql.append(DB.SQLSTATEMENT_SEPARATOR).append("ALTER TABLE ")
+			sqlStatements.add(new StringBuilder("ALTER TABLE ")
 					.append(tableName)
-					.append(" ADD ").append(constraint);
+					.append(" ADD ").append(sqlConstraint)
+					.toString());
 		}
 
-		return sql.toString();
+		return sqlStatements;
 	}	// getSQLAdd
 
 	/**
@@ -361,13 +374,13 @@ public class MColumn extends X_AD_Column
 	 *
 	 * @return columnName datataype ..
 	 */
-	public String getSQLDDL()
+	/* package */String getSQLDDL()
 	{
 		if (isVirtualColumn())
 		{
 			return null;
 		}
-		StringBuffer sql = new StringBuffer(getColumnName())
+		StringBuilder sql = new StringBuilder(getColumnName())
 				.append(" ").append(getSQLDataType());
 
 		// Default
@@ -411,29 +424,80 @@ public class MColumn extends X_AD_Column
 	/**
 	 * Get SQL Modify command
 	 *
-	 * @param table table
+	 * @param tableName table name
 	 * @param setNullOption generate null / not null statement
 	 * @return sql separated by ;
 	 */
-	public String getSQLModify(final I_AD_Table table, final boolean setNullOption)
+	private List<String> getSQLModify(final String tableName, final boolean setNullOption)
 	{
-		final String tableName = table.getTableName();
 		final String columnName = getColumnName();
 		final int displayType = getAD_Reference_ID();
-		String defaultValue = getDefaultValue();
+		final String sqlDefaultValue = extractSqlDefaultValue(getDefaultValue(), columnName, displayType);
 		final boolean mandatory = isMandatory();
 		final String sqlDataType = getSQLDataType();
 
-		final StringBuilder sql = new StringBuilder();
-		final StringBuilder sqlBase = new StringBuilder("ALTER TABLE ")
+		final StringBuilder sqlBase_ModifyColumn = new StringBuilder("ALTER TABLE ")
 				.append(tableName)
 				.append(" MODIFY ").append(columnName);
 
-		// Default
-		final StringBuilder sqlDefault = new StringBuilder(sqlBase)
-				.append(" ").append(sqlDataType);
+		final List<String> sqlStatements = new ArrayList<>();
+
+		//
+		// Modify data type and DEFAULT value
+		{
+			final StringBuilder sqlDefault = new StringBuilder(sqlBase_ModifyColumn);
+
+			// Datatype
+			sqlDefault.append(" ").append(sqlDataType);
+
+			// Default
+			if (sqlDefaultValue != null)
+			{
+				sqlDefault.append(" DEFAULT ").append(sqlDefaultValue);
+			}
+			else
+			{
+				// avoid the explicit DEFAULT NULL, because apparently it causes an extra cost
+				// if (!mandatory)
+				// sqlDefault.append(" DEFAULT NULL ");
+			}
+
+			sqlStatements.add(DB.convertSqlToNative(sqlDefault.toString()));
+		}
+
+		//
+		// Update NULL values
+		if (mandatory && sqlDefaultValue != null && !sqlDefaultValue.isEmpty())
+		{
+			final String sqlSet = new StringBuilder("UPDATE ")
+					.append(tableName)
+					.append(" SET ").append(columnName)
+					.append("=").append(sqlDefaultValue)
+					.append(" WHERE ").append(columnName).append(" IS NULL")
+					.toString();
+			sqlStatements.add(sqlSet);
+		}
+
+		//
+		// Set NULL/NOT NULL constraint
+		if (setNullOption)
+		{
+			final StringBuilder sqlNull = new StringBuilder(sqlBase_ModifyColumn);
+			if (mandatory)
+				sqlNull.append(" NOT NULL");
+			else
+				sqlNull.append(" NULL");
+			sqlStatements.add(DB.convertSqlToNative(sqlNull.toString()));
+		}
+
+		//
+		return sqlStatements;
+	}
+
+	private static final String extractSqlDefaultValue(final String defaultValue, final String columnName, final int displayType)
+	{
 		if (defaultValue != null
-				&& defaultValue.length() > 0
+				&& !defaultValue.isEmpty()
 				&& defaultValue.indexOf('@') == -1		// no variables
 				&& (!(DisplayType.isID(displayType) && defaultValue.equals("-1"))))    // not for ID's with default -1
 		{
@@ -442,49 +506,27 @@ public class MColumn extends X_AD_Column
 					|| displayType == DisplayType.YesNo
 					// Two special columns: Defined as Table but DB Type is String
 					|| columnName.equals("EntityType") || columnName.equals("AD_Language")
-					|| (displayType == DisplayType.Button &&
-							!(columnName.endsWith("_ID"))))
+					|| (displayType == DisplayType.Button && !(columnName.endsWith("_ID"))))
 			{
-				if (!defaultValue.startsWith("'") && !defaultValue.endsWith("'"))
-					defaultValue = DB.TO_STRING(defaultValue);
+				if (!defaultValue.startsWith(DB.QUOTE_STRING) && !defaultValue.endsWith(DB.QUOTE_STRING))
+				{
+					return DB.TO_STRING(defaultValue);
+				}
+				else
+				{
+					return defaultValue;
+				}
 			}
-			sqlDefault.append(" DEFAULT ").append(defaultValue);
+			else
+			{
+				return defaultValue;
+			}
 		}
 		else
 		{
-			// avoid the explicit DEFAULT NULL, because apparently it causes an extra cost
-			// if (!mandatory)
-			// sqlDefault.append(" DEFAULT NULL ");
-			defaultValue = null;
+			return null;
 		}
-		sql.append(DB.convertSqlToNative(sqlDefault.toString()));
-
-		// Constraint
-
-		// Null Values
-		if (mandatory && defaultValue != null && defaultValue.length() > 0)
-		{
-			StringBuffer sqlSet = new StringBuffer("UPDATE ")
-					.append(tableName)
-					.append(" SET ").append(columnName)
-					.append("=").append(defaultValue)
-					.append(" WHERE ").append(columnName).append(" IS NULL");
-			sql.append(DB.SQLSTATEMENT_SEPARATOR).append(sqlSet);
-		}
-
-		// Null
-		if (setNullOption)
-		{
-			StringBuffer sqlNull = new StringBuffer(sqlBase);
-			if (mandatory)
-				sqlNull.append(" NOT NULL");
-			else
-				sqlNull.append(" NULL");
-			sql.append(DB.SQLSTATEMENT_SEPARATOR).append(DB.convertSqlToNative(sqlNull.toString()));
-		}
-		//
-		return sql.toString();
-	}	// getSQLModify
+	}
 
 	/**
 	 * Get SQL Data Type
@@ -505,7 +547,7 @@ public class MColumn extends X_AD_Column
 	 * @param tableName table name
 	 * @return table constraint
 	 */
-	public String getConstraint(String tableName)
+	String getSQLConstraint(final String tableName)
 	{
 		if (isKey())
 		{
@@ -535,18 +577,14 @@ public class MColumn extends X_AD_Column
 		return "";
 	}	// getConstraint
 
-	/**
-	 * String Representation
-	 *
-	 * @return info
-	 */
 	@Override
 	public String toString()
 	{
-		StringBuffer sb = new StringBuffer("MColumn[");
-		sb.append(get_ID()).append("-").append(getColumnName()).append("]");
-		return sb.toString();
-	}	// toString
+		return MoreObjects.toStringHelper(this)
+				.add("AD_Column_ID", getAD_Column_ID())
+				.add("ColumnName", getColumnName())
+				.toString();
+	}
 
 	// begin vpj-cd e-evolution
 	/**
@@ -601,96 +639,159 @@ public class MColumn extends X_AD_Column
 	/**
 	 * Sync this column with the database
 	 *
-	 * @return
+	 * @return SQLs
 	 */
-	public String syncDatabase()
+	public List<String> syncDatabase()
 	{
 		final MTable table = new MTable(getCtx(), getAD_Table_ID(), get_TrxName());
 		table.set_TrxName(get_TrxName());  // otherwise table.getSQLCreate may miss current column
-		if (table.get_ID() == 0)
+		if (table.get_ID() <= 0)
 		{
 			throw new AdempiereException("@NotFound@ @AD_Table_ID@ " + getAD_Table_ID());
 		}
 
-		// Find Column in Database
+		final List<String> sqlStatements;
+		final boolean addingSingleColumn;
+		final String tableName = table.getTableName();
+		if (isDBTableExists(tableName))
+		{
+			final DBColumn dbColumn = retrieveDBColumn(tableName, getColumnName());
+			if (dbColumn != null)
+			{
+				// Update existing column
+				sqlStatements = getSQLModify(tableName, isMandatory() != dbColumn.isMandatory());
+				addingSingleColumn = false;
+			}
+			else
+			{
+				// No existing column
+				sqlStatements = getSQLAdd(tableName);
+				addingSingleColumn = true;
+			}
+		}
+		else
+		{
+			// No DB table
+			sqlStatements = ImmutableList.of(table.getSQLCreate());
+			addingSingleColumn = false;
+		}
+
+		//
+		// Execute
+		sqlStatements.forEach(sqlStatement -> executeSQL(tableName, sqlStatement, addingSingleColumn));
+
+		return sqlStatements;
+	}
+
+	private static boolean isDBTableExists(final String tableName)
+	{
 		Connection conn = null;
+		ResultSet rs = null;
 		try
 		{
 			conn = DB.getConnectionRO();
 			final DatabaseMetaData md = conn.getMetaData();
 			final String catalog = DB.getDatabase().getCatalog();
 			final String schema = DB.getDatabase().getSchema();
+			final String tableNameNorm = normalizeTableName(tableName, md);
 
-			String tableName = table.getTableName();
-			if (md.storesUpperCaseIdentifiers())
-			{
-				tableName = tableName.toUpperCase();
-			}
-			else if (md.storesLowerCaseIdentifiers())
-			{
-				tableName = tableName.toLowerCase();
-			}
-			int noColumns = 0;
-			String sql = null;
 			//
-			ResultSet rs = md.getColumns(catalog, schema, tableName, null);
-			while (rs.next())
+			rs = md.getTables(catalog, schema, tableNameNorm, null);
+			if (rs.next())
 			{
-				noColumns++;
-				String columnName = rs.getString("COLUMN_NAME");
-				if (!columnName.equalsIgnoreCase(getColumnName()))
-					continue;
-
-				// update existing column
-				boolean notNull = DatabaseMetaData.columnNoNulls == rs.getInt("NULLABLE");
-				sql = getSQLModify(table, isMandatory() != notNull);
-				break;
+				return true;
 			}
-			rs.close();
-			rs = null;
-
-			boolean addingSingleColumn = false;
-			if (noColumns == 0)
+			else
 			{
-				// No Table
-				sql = table.getSQLCreate();
+				return false;
 			}
-			else if (sql == null)
-			{
-				// No existing column
-				sql = getSQLAdd(table);
-				addingSingleColumn = true;
-			}
-			if (sql == null)
-			{
-				return "No sql";
-			}
-
-			final String statements[] = sql.split(DB.SQLSTATEMENT_SEPARATOR); // split also works for a single statement, with and without the separator
-			for (String statement : statements)
-			{
-				executeSQL(tableName, statement, addingSingleColumn);
-			}
-
-			return sql;
-
 		}
-		catch (SQLException e)
+		catch (final SQLException ex)
 		{
-			throw new AdempiereException(e);
+			throw new DBException(ex);
 		}
 		finally
 		{
-			if (conn != null)
+			DB.close(rs);
+			DB.close(conn);
+		}
+
+	}
+
+	@Value
+	@Builder
+	private static final class DBColumn
+	{
+		final String columnName;
+		final boolean mandatory; // i.e. NOT NULL
+	}
+
+	@Nullable
+	private static DBColumn retrieveDBColumn(@NonNull final String tableName, @NonNull final String columnName)
+	{
+		Connection conn = null;
+		ResultSet rs = null;
+		try
+		{
+			conn = DB.getConnectionRO();
+			final DatabaseMetaData md = conn.getMetaData();
+			final String catalog = DB.getDatabase().getCatalog();
+			final String schema = DB.getDatabase().getSchema();
+			final String tableNameNorm = normalizeTableName(tableName, md);
+
+			//
+			rs = md.getColumns(catalog, schema, tableNameNorm, null);
+			while (rs.next())
 			{
-				try
+				final String currColumnName = rs.getString("COLUMN_NAME");
+				if (!currColumnName.equalsIgnoreCase(columnName))
 				{
-					conn.close();
+					continue;
 				}
-				catch (Exception e)
-				{
-				}
+
+				// update existing column
+				final boolean mandatory = DatabaseMetaData.columnNoNulls == rs.getInt("NULLABLE");
+
+				return DBColumn.builder()
+						.columnName(currColumnName)
+						.mandatory(mandatory)
+						.build();
 			}
+
+			// Column not found
+			return null;
+		}
+		catch (SQLException ex)
+		{
+			throw new DBException(ex);
+		}
+		finally
+		{
+			DB.close(rs);
+			DB.close(conn);
+		}
+	}
+
+	private static final String normalizeTableName(final String tableName, final DatabaseMetaData md)
+	{
+		try
+		{
+			if (md.storesUpperCaseIdentifiers())
+			{
+				return tableName.toUpperCase();
+			}
+			else if (md.storesLowerCaseIdentifiers())
+			{
+				return tableName.toLowerCase();
+			}
+			else
+			{
+				return tableName;
+			}
+		}
+		catch (final SQLException ex)
+		{
+			throw new DBException(ex);
 		}
 	}
 
@@ -698,23 +799,23 @@ public class MColumn extends X_AD_Column
 	 * Executes the given SQL statement.
 	 * 
 	 * @param tableName the table name that needs to be changed
-	 * @param statement the DDL that needs to be executed
-	 * @param addingSingleColumn tells if the given {@code statement} is about adding a (single) column, as opposed to creating a whole table.
+	 * @param sqlStatement the DDL that needs to be executed
+	 * @param addingSingleColumn tells if the given {@code sqlStatement} is about adding a (single) column, as opposed to creating a whole table.
 	 *            If this parameter's value is {@code true} and if {@link #isAddColumnDDL(String)} returns {@code true} on the given {@code statement},
 	 *            then the given statement is wrapped into an invocation of the {@code db_alter_table()} DB function.
 	 *            See that function and its documentation for more infos.
 	 */
-	private void executeSQL(String tableName, String statement, boolean addingSingleColumn)
+	private static void executeSQL(final String tableName, final String sqlStatement, final boolean addingSingleColumn)
 	{
-		if (addingSingleColumn && isAddColumnDDL(statement))
+		if (addingSingleColumn && isAddColumnDDL(sqlStatement))
 		{
-			final String sql = Convert.DDL_PREFIX + "SELECT public.db_alter_table(" + DB.TO_STRING(tableName) + "," + DB.TO_STRING(statement) + ")";
+			final String sql = Convert.DDL_PREFIX + "SELECT public.db_alter_table(" + DB.TO_STRING(tableName) + "," + DB.TO_STRING(sqlStatement) + ")";
 			final Object[] sqlParams = null; // IMPORTANT: don't use any parameters because we want to log this command to migration script file
-			DB.executeFunctionCallEx(get_TrxName(), sql, sqlParams);
+			DB.executeFunctionCallEx(ITrx.TRXNAME_ThreadInherited, sql, sqlParams);
 		}
 		else
 		{
-			DB.executeUpdateEx(statement, get_TrxName());
+			DB.executeUpdateEx(sqlStatement, ITrx.TRXNAME_ThreadInherited);
 		}
 	}
 
@@ -723,7 +824,7 @@ public class MColumn extends X_AD_Column
 	 * @param statement
 	 * @return {@code true} if the given statement is something like {@code ... ALTER TABLE ... ADD COLUMN ...} (case-insensitive!).
 	 */
-	private boolean isAddColumnDDL(final String statement)
+	private static boolean isAddColumnDDL(final String statement)
 	{
 		if (Check.isEmpty(statement, true))
 		{

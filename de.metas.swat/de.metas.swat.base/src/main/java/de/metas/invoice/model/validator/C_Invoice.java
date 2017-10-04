@@ -46,7 +46,7 @@ import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.allocation.api.IAllocationDAO;
 import de.metas.document.IDocumentLocationBL;
-import de.metas.document.engine.IDocActionBL;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.pricing.ProductPrices;
 
 @Interceptor(I_C_Invoice.class)
@@ -209,7 +209,7 @@ public class C_Invoice
 		final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 
 		// ONLY delete lines for status Draft or In Progress
-		final boolean isDraftOrInProgress = Services.get(IDocActionBL.class).issDocumentDraftedOrInProgress(invoice);
+		final boolean isDraftOrInProgress = Services.get(IDocumentBL.class).issDocumentDraftedOrInProgress(invoice);
 
 		if (!isDraftOrInProgress)
 		{

@@ -67,7 +67,6 @@ import org.compiere.model.MProduct;
 import org.compiere.model.MTransaction;
 import org.compiere.model.PO;
 import org.compiere.model.Query;
-import org.compiere.process.DocAction;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.eevolution.api.IPPCostCollectorDAO;
@@ -79,7 +78,8 @@ import org.eevolution.model.MPPCostCollector;
 import org.eevolution.model.X_PP_Cost_Collector;
 import org.slf4j.Logger;
 
-import de.metas.document.engine.IDocActionBL;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.logging.LogManager;
 import de.metas.material.planning.IResourceProductService;
 import de.metas.material.planning.RoutingService;
@@ -656,7 +656,7 @@ public class CostEngine
 		//
 		if (ccrv != null)
 		{
-			Services.get(IDocActionBL.class).processEx(ccrv, DocAction.ACTION_Complete, DocAction.STATUS_Completed);
+			Services.get(IDocumentBL.class).processEx(ccrv, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
 		}
 	}
 
@@ -710,7 +710,7 @@ public class CostEngine
 		//
 		if (ccmv != null)
 		{
-			Services.get(IDocActionBL.class).processEx(ccmv, DocAction.ACTION_Complete, DocAction.STATUS_Completed);
+			Services.get(IDocumentBL.class).processEx(ccmv, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
 		}
 	}
 

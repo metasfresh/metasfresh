@@ -40,8 +40,9 @@ import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;
 import org.compiere.model.MProductCategory;
 import org.compiere.model.X_C_DocType;
-import org.compiere.process.DocAction;
 import org.compiere.util.Env;
+
+import de.metas.document.engine.IDocument;
 
 public final class NewFromPoposalService implements INewFromPoposalService {
 
@@ -61,9 +62,9 @@ public final class NewFromPoposalService implements INewFromPoposalService {
 
 		String docAction;
 		if (newOrderClompleteIt) {
-			docAction = DocAction.ACTION_Complete;
+			docAction = IDocument.ACTION_Complete;
 		} else {
-			docAction = DocAction.ACTION_Prepare;
+			docAction = IDocument.ACTION_Prepare;
 		}
 
 		final int defaultDoctypeID = retriveDocSubType(newOrderDocSubType)
@@ -134,7 +135,7 @@ public final class NewFromPoposalService implements INewFromPoposalService {
 
 			poService.save(proposal, trxName);
 
-			if (proposal.processIt(DocAction.ACTION_Close)) {
+			if (proposal.processIt(IDocument.ACTION_Close)) {
 				poService.save(proposal, trxName);
 			} else {
 				throw new IllegalStateException("Unable to close proposal '"

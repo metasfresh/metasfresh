@@ -29,6 +29,8 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_Fact_Acct;
 
+import de.metas.document.engine.IDocument;
+
 public interface IFactAcctDAO extends ISingletonService
 {
 	String DB_SCHEMA = "de_metas_acct";
@@ -43,15 +45,9 @@ public interface IFactAcctDAO extends ISingletonService
 	 * @param document
 	 * @return how many {@link I_Fact_Acct} were deleted
 	 */
-	int deleteForDocument(Object document);
-
-	/**
-	 * Retries all accounting records for given document.
-	 *
-	 * @param document
-	 * @return
-	 */
-	List<I_Fact_Acct> retrieveForDocument(Object document);
+	int deleteForDocument(IDocument document);
+	
+	int deleteForDocumentModel(final Object documentObj);
 
 	/**
 	 * Retries all accounting records for given document.
@@ -59,7 +55,7 @@ public interface IFactAcctDAO extends ISingletonService
 	 * @param document
 	 * @return query
 	 */
-	IQueryBuilder<I_Fact_Acct> retrieveQueryForDocument(Object document);
+	IQueryBuilder<I_Fact_Acct> retrieveQueryForDocument(IDocument document);
 
 	/**
 	 * Retries all accounting records for given document line.
@@ -72,13 +68,12 @@ public interface IFactAcctDAO extends ISingletonService
 	List<I_Fact_Acct> retrieveForDocumentLine(String tableName, int recordId, Object documentLine);
 
 	/**
-	 * Update directly all the fact accounts of the given document by setting their docStatus with the given docStatus
+	 * Update directly all the fact accounts of the given document by setting their docStatus from document.
 	 * 
 	 * @param document
-	 * @param docStatus
 	 * @task http://dewiki908/mediawiki/index.php/09243_Stornobuchungen_ausblenden_%28Liste%2C_Konteninfo%29
 	 */
-	void updateDocStatusForDocument(Object document, String docStatus);
+	void updateDocStatusForDocument(IDocument document);
 
 	/**
 	 * Update directly all {@link I_Fact_Acct} records for given document line and sets the given activity.
