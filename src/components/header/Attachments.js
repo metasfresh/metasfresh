@@ -91,53 +91,60 @@ class Attachments extends Component {
     renderData = () => {
         const {data, attachmentHovered} = this.state;
 
-        return (data && data.length) ?
-            data.map((item, key) =>
-                <div
-                    className="subheader-item subheader-item-ellipsis js-subheader-item"
-                    key={key}
-                    tabIndex={0}
-                    onMouseEnter={() =>
-                        this.toggleAttachmentDelete(item.id)}
-                    onMouseLeave={() =>
-                        this.toggleAttachmentDelete(null)}
-                    onClick={() =>
-                        this.handleAttachmentClick(item.id)}
-                >
-                    {item.name}
-                    {attachmentHovered === item.id &&
-                        <div
-                            className="subheader-additional-box"
-                            onClick={(e) =>
-                                this.handleAttachmentDelete(
-                                    e, item.id
-                                )
-                            }
-                        >
-                            <i className="meta-icon-delete"/>
-                        </div>
-                    }
-                </div>
-            ) :
-                <div
-                    className="subheader-item subheader-item-disabled"
-                >{counterpart.translate(
-                    'window.sideList.attachments.empty'
-                )}</div>
+        return data.map((item, key) =>
+            <div
+                className="subheader-item subheader-item-ellipsis js-subheader-item"
+                key={key}
+                tabIndex={0}
+                onMouseEnter={() =>
+                    this.toggleAttachmentDelete(item.id)}
+                onMouseLeave={() =>
+                    this.toggleAttachmentDelete(null)}
+                onClick={() =>
+                    this.handleAttachmentClick(item.id)}
+            >
+                {item.name}
+                {attachmentHovered === item.id &&
+                    <div
+                        className="subheader-additional-box"
+                        onClick={(e) =>
+                            this.handleAttachmentDelete(
+                                e, item.id
+                            )
+                        }
+                    >
+                        <i className="meta-icon-delete"/>
+                    </div>
+                }
+            </div>
+        );
     }
 
+    renderEmpty = () => (
+        <div className="subheader-item subheader-item-disabled">
+            {counterpart.translate('window.sideList.attachments.empty')}
+        </div>
+    );
+
     render() {
-        const {data} = this.state;
+        const { data } = this.state;
+        let content;
+
+        if (!data) {
+            content = <Loader />;
+        } else if (!data.length) {
+            content = this.renderEmpty();
+        } else {
+            content = this.renderData();
+        }
+
         return (
             <div
                 onKeyDown={this.handleKeyDown}
                 ref={c => this.attachments = c}
                 tabIndex={0}
             >
-                {!data ?
-                    <Loader /> :
-                    this.renderData()
-                }
+                {content}
             </div>
         );
     }
