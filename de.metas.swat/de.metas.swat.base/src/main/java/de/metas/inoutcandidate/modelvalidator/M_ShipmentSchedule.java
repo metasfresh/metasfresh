@@ -61,6 +61,7 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.storage.IStorageBL;
 import de.metas.storage.IStorageSegment;
+import lombok.NonNull;
 
 /**
  * Shipment Schedule module: M_ShipmentSchedule
@@ -156,7 +157,7 @@ public class M_ShipmentSchedule
 					I_M_ShipmentSchedule.COLUMNNAME_C_BPartner_ID,
 					I_M_ShipmentSchedule.COLUMNNAME_C_BPartner_Override_ID
 			})
-	public void invalidateIfBusinePartnerChanged(final I_M_ShipmentSchedule shipmentSchedule)
+	public void invalidateIfBusinessPartnerChanged(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
 	{
 		// If shipment schedule updater is currently running in this thread, it means that updater changed this record so there is NO need to invalidate it again.
 		if (Services.get(IShipmentScheduleUpdater.class).isRunning())
@@ -165,14 +166,32 @@ public class M_ShipmentSchedule
 		}
 
 		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
-		final I_M_ShipmentSchedule oldShipmentSchedule = InterfaceWrapperHelper.createOld(shipmentSchedule, I_M_ShipmentSchedule.class);
-
 		final int newBPartnerId = shipmentScheduleEffectiveBL.getC_BPartner_ID(shipmentSchedule);
-		final int oldBpartnerId = shipmentScheduleEffectiveBL.getC_BPartner_ID(oldShipmentSchedule);
+
+		final int oldBpartnerId = getOldBPartnerId(shipmentSchedule);
 		if (newBPartnerId == oldBpartnerId)
 		{
 			return;
 		}
+
+		invalidateForOldAndNewBPartners(shipmentSchedule, oldBpartnerId);
+	}
+
+	private int getOldBPartnerId(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
+	{
+		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
+		final I_M_ShipmentSchedule oldShipmentSchedule = InterfaceWrapperHelper.createOld(shipmentSchedule, I_M_ShipmentSchedule.class);
+		final int oldBpartnerId = shipmentScheduleEffectiveBL.getC_BPartner_ID(oldShipmentSchedule);
+		
+		return oldBpartnerId;
+	}
+	
+	private void invalidateForOldAndNewBPartners(
+			@NonNull final I_M_ShipmentSchedule shipmentSchedule,
+			final int oldBpartnerId)
+	{
+		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
+		final int newBPartnerId = shipmentScheduleEffectiveBL.getC_BPartner_ID(shipmentSchedule);
 
 		final IStorageBL storageBL = Services.get(IStorageBL.class);
 		final IStorageSegment storageSegment = storageBL.createStorageSegmentBuilder()

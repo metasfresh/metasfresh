@@ -250,47 +250,72 @@ public class ShipmentSchedulesDuringUpdate implements IShipmentSchedulesDuringUp
 	 */
 	public void updateCompleteStatusAndSetQtyToZeroWhereNeeded()
 	{
-		for (final DeliveryLineCandidate inOutLine : deliveryLineCandidates)
+		for (final DeliveryLineCandidate deliveryLineCandidate : deliveryLineCandidates)
 		{
-			if (inOutLine.isDiscarded())
-			{
-				continue;
-			}
+			updateCompleteStatusAndSetQtyToZeroIfNeeded(deliveryLineCandidate);
+		}
+	}
 
-			final String deliveryRule = inOutLine.getShipmentSchedule().getDeliveryRule();
+	private static void updateCompleteStatusAndSetQtyToZeroIfNeeded(@NonNull final DeliveryLineCandidate deliveryLineCandidate)
+	{
+		if (deliveryLineCandidate.isDiscarded())
+		{
+			return;
+		}
 
-			if (X_C_Order.DELIVERYRULE_CompleteLine.equals(deliveryRule))
-			{
-				// We only deliver if the line qty is same as the qty
-				// ordered by the customer
-				if (CompleteStatus.INCOMPLETE_LINE.equals(inOutLine.getCompleteStatus()))
-				{
-					inOutLine.setQtyToDeliver(BigDecimal.ZERO);
-					inOutLine.setDiscarded(true);
-				}
+		final String deliveryRule = deliveryLineCandidate.getShipmentSchedule().getDeliveryRule();
 
-			}
-			else if (X_C_Order.DELIVERYRULE_CompleteOrder.equals(deliveryRule))
-			{
-				// We only deliver any line at all if all line qtys as the
-				// same as the qty ordered by the customer
-				if (!CompleteStatus.OK.equals(inOutLine.getCompleteStatus()))
-				{
-					for (final DeliveryLineCandidate inOutLinee : inOutLine.getGroup().getLines())
-					{
-						inOutLinee.setQtyToDeliver(BigDecimal.ZERO);
-						inOutLinee.setDiscarded(true);
+		if (X_C_Order.DELIVERYRULE_CompleteLine.equals(deliveryRule))
+		{
+			discardLineCandidateIfIncomplete(deliveryLineCandidate);
+		}
+		else if (X_C_Order.DELIVERYRULE_CompleteOrder.equals(deliveryRule))
+		{
+			discardAllLinesFromSameGroupIfIncomplete(deliveryLineCandidate);
+		}
+		else
+		{
+			deliveryLineCandidate.setCompleteStatus(CompleteStatus.OK); // update the status to show that the "completeness" of this deliveryLineCandidate is irrelevant
+		}
+	}
 
-						// update the status to show why we set the quantity to zero
-						inOutLinee.setCompleteStatus(CompleteStatus.INCOMPLETE_ORDER);
-					}
-				}
-			}
-			else
-			{
-				// update the status to show that the "completeness" of this inOuLine is irrelevant
-				inOutLine.setCompleteStatus(CompleteStatus.OK);
-			}
+	/**
+	 * We only deliver if the line qty is same as the qty
+	 * ordered by the customer
+	 * 
+	 * @param deliveryLineCandidate
+	 */
+	private static void discardLineCandidateIfIncomplete(@NonNull final DeliveryLineCandidate deliveryLineCandidate)
+	{
+		final boolean lineIsIncompletelyDelivered = CompleteStatus.INCOMPLETE_LINE.equals(deliveryLineCandidate.getCompleteStatus());
+
+		if (lineIsIncompletelyDelivered)
+		{
+			deliveryLineCandidate.setQtyToDeliver(BigDecimal.ZERO);
+			deliveryLineCandidate.setDiscarded(true);
+		}
+	}
+
+	/**
+	 * We only deliver any line at all if all line qtys as the
+	 * same as the qty ordered by the customer
+	 * 
+	 * @param deliveryLineCandidate
+	 */
+	private static void discardAllLinesFromSameGroupIfIncomplete(@NonNull final DeliveryLineCandidate deliveryLineCandidate)
+	{
+		if (CompleteStatus.OK.equals(deliveryLineCandidate.getCompleteStatus()))
+		{
+			return;
+		}
+
+		for (final DeliveryLineCandidate inOutLinee : deliveryLineCandidate.getGroup().getLines())
+		{
+			inOutLinee.setQtyToDeliver(BigDecimal.ZERO);
+			inOutLinee.setDiscarded(true);
+
+			// update the status to show why we set the quantity to zero
+			inOutLinee.setCompleteStatus(CompleteStatus.INCOMPLETE_ORDER);
 		}
 	}
 

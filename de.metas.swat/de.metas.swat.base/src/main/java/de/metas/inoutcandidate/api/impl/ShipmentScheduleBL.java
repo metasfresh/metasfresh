@@ -635,38 +635,8 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			return;
 		}
 
-		//
-		// Services
-		final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
 
-		final ShipmentScheduleReferencedLine scheduleSourcedoc = Adempiere.getBean(ShipmentScheduleReferencedLineFactory.class).createFor(sched);
-
-		//
-		// Create the M_InOut header candidate
-		final I_C_BPartner partner = sched.getC_BPartner();
-		DeliveryGroupCandidate candidate = null;
-		final String bPartnerAddress = sched.getBPartnerAddress_Override();
-
-		final int warehouseId = Services.get(IShipmentScheduleEffectiveBL.class).getWarehouseId(sched);
-
-		final boolean consolidateAllowed = bpartnerBL.isAllowConsolidateInOutEffective(partner, true);
-		if (consolidateAllowed)
-		{
-			// see if there is an existing shipment for this location and shipper
-			candidate = candidates.getInOutForShipper(scheduleSourcedoc.getShipperId(), warehouseId, bPartnerAddress);
-		}
-		else
-		{
-			// see if there is an existing shipment for this order
-			candidate = candidates.getInOutForOrderId(scheduleSourcedoc.getGroupId(), warehouseId, bPartnerAddress);
-		}
-
-		if (candidate == null)
-		{
-			// create a new Shipment
-			candidate = createGroup(scheduleSourcedoc, sched);
-			candidates.addGroup(candidate);
-		}
+		final DeliveryGroupCandidate candidate = getOrCreateGroupCandidateForShipmentSchedule(sched, candidates);
 
 		//
 		// Case: no Quantity on Hand storages
@@ -759,8 +729,41 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			toDeliver = toDeliver.subtract(deliver);
 
 			storage.subtractQtyOnHand(deliver);
-		}         // for each storage record
+		}    // for each storage record
+	}
 
+	private DeliveryGroupCandidate getOrCreateGroupCandidateForShipmentSchedule(
+			@NonNull final I_M_ShipmentSchedule sched,
+			final IShipmentSchedulesDuringUpdate candidates)
+	{
+		final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
+		final I_C_BPartner partner = sched.getC_BPartner();
+
+		final ShipmentScheduleReferencedLine scheduleSourcedoc = Adempiere.getBean(ShipmentScheduleReferencedLineFactory.class).createFor(sched);
+		final String bPartnerAddress = sched.getBPartnerAddress_Override();
+
+		DeliveryGroupCandidate candidate = null;
+
+		final int warehouseId = Services.get(IShipmentScheduleEffectiveBL.class).getWarehouseId(sched);
+		final boolean consolidateAllowed = bpartnerBL.isAllowConsolidateInOutEffective(partner, true);
+		if (consolidateAllowed)
+		{
+			// see if there is an existing shipment for this location and shipper
+			candidate = candidates.getInOutForShipper(scheduleSourcedoc.getShipperId(), warehouseId, bPartnerAddress);
+		}
+		else
+		{
+			// see if there is an existing shipment for this order
+			candidate = candidates.getInOutForOrderId(scheduleSourcedoc.getGroupId(), warehouseId, bPartnerAddress);
+		}
+
+		if (candidate == null)
+		{
+			// create a new Shipment
+			candidate = createGroup(scheduleSourcedoc, sched);
+			candidates.addGroup(candidate);
+		}
+		return candidate;
 	}
 
 	private int applyCandidateProcessors(final Properties ctx, final IShipmentSchedulesDuringUpdate candidates, final String trxName)
