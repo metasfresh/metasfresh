@@ -7,8 +7,8 @@ import { createUrlAttachment } from '../../actions/AppActions';
 
 class AttachUrl extends Component {
     state = {
-      url: '',
-      name: '',
+        url: '',
+        name: '',
     }
 
     getName = () => {
@@ -48,9 +48,9 @@ class AttachUrl extends Component {
         event.persist();
 
         const {
-          windowId, documentId, handleClose, dispatch,
+            windowId, documentId, handleClose, dispatch,
         } = this.props;
-        const { url } = this.state;
+        const { url, name } = this.state;
 
         // TODO: Add translations for notifications
         createUrlAttachment({ windowId, documentId, url, name }).then(() => {
