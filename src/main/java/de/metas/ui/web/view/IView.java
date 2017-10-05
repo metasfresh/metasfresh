@@ -51,7 +51,10 @@ public interface IView
 {
 	ViewId getViewId();
 
-	ITranslatableString getDescription();
+	default ITranslatableString getDescription()
+	{
+		return ITranslatableString.empty();
+	}
 
 	JSONViewDataType getViewType();
 
