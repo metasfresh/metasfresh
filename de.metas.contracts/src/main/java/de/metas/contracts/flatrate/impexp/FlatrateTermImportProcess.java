@@ -277,7 +277,7 @@ public class FlatrateTermImportProcess extends AbstractImportProcess<I_I_Flatrat
 		final I_C_UOM uom = Services.get(IProductBL.class).getStockingUOM(product);
 		contract.setC_UOM(uom);
 	}
-	
+
 	private void setPlannedQtyPerUnit(@NonNull final I_I_Flatrate_Term importRecord, @NonNull final I_C_Flatrate_Term contract)
 	{
 		if (importRecord.getQty() != null && importRecord.getQty().intValue() > 0)
@@ -293,7 +293,7 @@ public class FlatrateTermImportProcess extends AbstractImportProcess<I_I_Flatrat
 			contract.setEndDate(importRecord.getEndDate());
 		}
 	}
-	
+
 	private void setMasterStartdDate(@NonNull final I_I_Flatrate_Term importRecord, @NonNull final I_C_Flatrate_Term contract)
 	{
 		if (importRecord.getMasterStartDate() != null)
@@ -301,7 +301,7 @@ public class FlatrateTermImportProcess extends AbstractImportProcess<I_I_Flatrat
 			contract.setMasterStartDate(importRecord.getMasterStartDate());
 		}
 	}
-	
+
 	private void setMasterEnddDate(@NonNull final I_I_Flatrate_Term importRecord, @NonNull final I_C_Flatrate_Term contract)
 	{
 		if (importRecord.getMasterEndDate() != null)
@@ -313,13 +313,10 @@ public class FlatrateTermImportProcess extends AbstractImportProcess<I_I_Flatrat
 	private boolean isEndedContract(@NonNull final I_I_Flatrate_Term importRecord)
 	{
 		final Timestamp contractEndDate = importRecord.getEndDate();
-		if (contractEndDate != null)
+		final Timestamp today = SystemTime.asDayTimestamp();
+		if (contractEndDate != null && today.after(contractEndDate))
 		{
-			final Timestamp today = SystemTime.asDayTimestamp();
-			if (today.after(contractEndDate))
-			{
-				return true;
-			}
+			return true;
 		}
 		return false;
 	}
