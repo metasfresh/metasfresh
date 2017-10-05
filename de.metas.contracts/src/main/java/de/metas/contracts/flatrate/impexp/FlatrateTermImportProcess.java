@@ -3,6 +3,7 @@ package de.metas.contracts.flatrate.impexp;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.List;
 import java.util.Properties;
 
@@ -15,6 +16,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IMutable;
+import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
@@ -29,8 +31,10 @@ import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_I_Flatrate_Term;
+import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.model.X_I_Flatrate_Term;
 import de.metas.product.IProductBL;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -223,77 +227,124 @@ public class FlatrateTermImportProcess extends AbstractImportProcess<I_I_Flatrat
 			throw new AdempiereException("contract not created");
 		}
 
-		//
-		// DropShip BPartner and Location
-		{
-			int dropShipBPartnerId = importRecord.getDropShip_BPartner_ID();
-			if (dropShipBPartnerId <= 0)
-			{
-				dropShipBPartnerId = importRecord.getC_BPartner_ID();
-			}
-			if (dropShipBPartnerId <= 0)
-			{
-				throw new AdempiereException("DropShip BPartner not found");
-			}
-
-			final I_C_BPartner_Location dropShipBPLocation = findBPartnerShipToLocation(dropShipBPartnerId);
-			if (dropShipBPLocation != null)
-			{
-				contract.setDropShip_BPartner_ID(dropShipBPartnerId);
-				contract.setDropShip_Location(dropShipBPLocation);
-			}
-		}
+		setDropShipBPartner(importRecord, contract);
+		setDropShipLocation(contract);
 
 		//
 		// Product/UOM and price
 		{
 			contract.setM_Product(product);
-			final I_C_UOM uom = Services.get(IProductBL.class).getStockingUOM(product);
-			contract.setC_UOM(uom);
+
+			setUOM(contract, product);
 
 			final BigDecimal price = importRecord.getPrice();
 			contract.setPriceActual(price);
 		}
+
+		setPlannedQtyPerUnit(importRecord, contract);
+		setEndDate(importRecord, contract);
+		setMasterStartdDate(importRecord, contract);
+		setMasterEnddDate(importRecord, contract);
 		
+		final boolean isEndedContract = isEndedContract(importRecord);
+		if (isEndedContract)
+		{
+			endContract(contract);
+		}
+		InterfaceWrapperHelper.save(contract);
 		//
-		// Qty
+		// Complete the subscription/contract
+		if (!isEndedContract)
+		{
+			flatrateBL.complete(contract);
+		}
+		//
+		// Link back the contract to current import record
+		importRecord.setC_Flatrate_Term(contract);
+		//
+		return ImportRecordResult.Inserted;
+	}
+
+	private void setDropShipBPartner(@NonNull final I_I_Flatrate_Term importRecord, @NonNull final I_C_Flatrate_Term contract)
+	{
+		final int dropShipBPartnerId = importRecord.getDropShip_BPartner_ID() > 0 ? importRecord.getDropShip_BPartner_ID() : importRecord.getC_BPartner_ID();
+		if (dropShipBPartnerId <= 0)
+		{
+			throw new AdempiereException("DropShip BPartner not found");
+		}
+		contract.setDropShip_BPartner_ID(dropShipBPartnerId);
+	}
+
+	private void setDropShipLocation(@NonNull final I_C_Flatrate_Term contract)
+	{
+		int dropShipBPartnerId = contract.getDropShip_BPartner_ID();
+		final I_C_BPartner_Location dropShipBPLocation = findBPartnerShipToLocation(dropShipBPartnerId);
+		if (dropShipBPLocation != null)
+		{
+			contract.setDropShip_Location(dropShipBPLocation);
+		}
+	}
+
+	private void setUOM(@NonNull final I_C_Flatrate_Term contract, @NonNull final I_M_Product product)
+	{
+		final I_C_UOM uom = Services.get(IProductBL.class).getStockingUOM(product);
+		contract.setC_UOM(uom);
+	}
+	
+	private void setPlannedQtyPerUnit(@NonNull final I_I_Flatrate_Term importRecord, @NonNull final I_C_Flatrate_Term contract)
+	{
 		if (importRecord.getQty() != null && importRecord.getQty().intValue() > 0)
 		{
 			contract.setPlannedQtyPerUnit(importRecord.getQty());
 		}
+	}
 
-		//
-		// Start/End date
-		// NOTE: start date was already set above
+	private void setEndDate(@NonNull final I_I_Flatrate_Term importRecord, @NonNull final I_C_Flatrate_Term contract)
+	{
 		if (importRecord.getEndDate() != null)
 		{
 			contract.setEndDate(importRecord.getEndDate());
 		}
-
-		//
-		//ContractStartDate
+	}
+	
+	private void setMasterStartdDate(@NonNull final I_I_Flatrate_Term importRecord, @NonNull final I_C_Flatrate_Term contract)
+	{
 		if (importRecord.getMasterStartDate() != null)
 		{
 			contract.setMasterStartDate(importRecord.getMasterStartDate());
 		}
-
-		//
-		//getContractEndDate
+	}
+	
+	private void setMasterEnddDate(@NonNull final I_I_Flatrate_Term importRecord, @NonNull final I_C_Flatrate_Term contract)
+	{
 		if (importRecord.getMasterEndDate() != null)
 		{
 			contract.setMasterEndDate(importRecord.getMasterEndDate());
 		}
-		
-		//
-		// Complete the subscription/contract
-		InterfaceWrapperHelper.save(contract);
-		flatrateBL.complete(contract);
+	}
 
-		// Link back the contract to current import record
-		importRecord.setC_Flatrate_Term(contract);
+	private boolean isEndedContract(@NonNull final I_I_Flatrate_Term importRecord)
+	{
+		final Timestamp contractEndDate = importRecord.getEndDate();
+		if (contractEndDate != null)
+		{
+			final Timestamp today = SystemTime.asDayTimestamp();
+			if (today.after(contractEndDate))
+			{
+				return true;
+			}
+		}
+		return false;
+	}
 
-		//
-		return ImportRecordResult.Inserted;
+	private void endContract(@NonNull final I_C_Flatrate_Term contract)
+	{
+		contract.setContractStatus(X_C_Flatrate_Term.CONTRACTSTATUS_Quit);
+		contract.setNoticeDate(contract.getEndDate());
+		contract.setIsAutoRenew(false);
+		contract.setProcessed(true);
+		contract.setDocAction(X_C_Flatrate_Term.DOCACTION_None);
+		contract.setDocStatus(X_C_Flatrate_Term.DOCSTATUS_Completed);
 	}
 
 	@Override
