@@ -24,6 +24,8 @@ Here come the actual release notes:
     * Additional shipment Schedule adjustments, new Quickactions and adding new Fields to Main View.
   * [#2628](https://github.com/metasfresh/metasfresh/issues/2628) Show fields product, qty, price and contractstatus in window contracts
     * Improvements for Subscription Contracts in Contract Window in WebUI. Adding Fields and Translations.
+  * [#2631](https://github.com/metasfresh/metasfresh/issues/2631) Window Design Webui: Improve Business Partner window
+    * Detailed Improvements to Business Partner Window in WebUI. Adapting current Design Guidelines. Translations added for en_US.
   * [#2632](https://github.com/metasfresh/metasfresh/issues/2632) Window Design Webui: Translations for Tourversion window
     * Additional Translations for Language/ Locale en_US in Window Tourversion in WebUI.
   * [#2635](https://github.com/metasfresh/metasfresh/issues/2635) Window Design Webui: Translations for Bank Statement Line Reference
