@@ -55,12 +55,6 @@ class AttachUrl extends Component {
         createUrlAttachment({ windowId, documentId, url, name }).then(() => {
             handleClose(event);
             fetchAttachments();
-
-            dispatch(addNotification(
-                counterpart.translate('window.attachment.url.title'),
-                counterpart.translate('window.attachment.url.success'),
-                5000, 'success',
-            ));
         }).catch(() => {
             dispatch(addNotification(
                 counterpart.translate('window.attachment.url.title'),
