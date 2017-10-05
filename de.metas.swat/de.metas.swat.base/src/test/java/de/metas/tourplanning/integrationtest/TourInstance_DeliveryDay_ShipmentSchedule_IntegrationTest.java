@@ -170,7 +170,7 @@ public class TourInstance_DeliveryDay_ShipmentSchedule_IntegrationTest extends T
 	{
 		// Increase QtyOrdered by 10
 		// task 09005: make sure the correct qtyOrdered is taken from the shipmentSchedule
-		final BigDecimal qtyOrdered = Services.get(IShipmentScheduleEffectiveBL.class).getQtyOrdered(shipmentSchedule);
+		final BigDecimal qtyOrdered = Services.get(IShipmentScheduleEffectiveBL.class).computeQtyOrdered(shipmentSchedule);
 		shipmentSchedule.setQtyOrdered_Calculated(qtyOrdered.add(BigDecimal.valueOf(10)));
 
 		// NOTE: because the de.metas.tourplanning.api.impl.ShipmentScheduleDeliveryDayHandler.updateDeliveryDayWhenAllocationChanged(I_M_DeliveryDay, I_M_DeliveryDay_Alloc, I_M_DeliveryDay_Alloc)
@@ -258,7 +258,7 @@ public class TourInstance_DeliveryDay_ShipmentSchedule_IntegrationTest extends T
 		final I_M_DeliveryDay_Alloc alloc = super.assertDeliveryDayAlloc(deliveryDayExpected, shipmentSchedule);
 
 		// task 09005: make sure the correct qtyOrdered is taken from the shipmentSchedule
-		final BigDecimal qtyOrdered = Services.get(IShipmentScheduleEffectiveBL.class).getQtyOrdered(shipmentSchedule);
+		final BigDecimal qtyOrdered = Services.get(IShipmentScheduleEffectiveBL.class).computeQtyOrdered(shipmentSchedule);
 		
 		Assert.assertEquals("Invalid allocation QtyOrdered: " + alloc, qtyOrdered, alloc.getQtyOrdered());
 

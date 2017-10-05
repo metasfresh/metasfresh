@@ -83,7 +83,6 @@ public class C_Flatrate_Term
 	private static final String MSG_TERM_ERROR_PERIOD_END_DATE_BEFORE_TERM_END_DATE_2P = "Term_Error_PeriodEndDate_Before_TermEndDate";
 	private static final String MSG_TERM_ERROR_PERIOD_START_DATE_AFTER_TERM_START_DATE_2P = "Term_Error_PeriodStartDate_After_TermStartDate";
 
-
 	protected final transient Logger log = LogManager.getLogger(getClass());
 
 	@Init
@@ -347,8 +346,8 @@ public class C_Flatrate_Term
 		return sb.toString();
 	}
 
-	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_VOID, ModelValidator.TIMING_BEFORE_CLOSE })
-	public void prohibitVoidAndClose(final I_C_Flatrate_Term term)
+	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_REACTIVATE, ModelValidator.TIMING_BEFORE_REACTIVATE, ModelValidator.TIMING_BEFORE_CLOSE })
+	public void prohibitReactivationAndVoidingAndClosing(final I_C_Flatrate_Term term)
 	{
 		throw new AdempiereException("@" + MainValidator.MSG_FLATRATE_DOC_ACTION_NOT_SUPPORTED_0P + "@");
 	}
@@ -471,7 +470,7 @@ public class C_Flatrate_Term
 	 * 
 	 * @param term
 	 */
-	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_COMPLETE})
+	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_COMPLETE })
 	public void preventOverlappingTerms_OnComplete(final I_C_Flatrate_Term term)
 	{
 		// services

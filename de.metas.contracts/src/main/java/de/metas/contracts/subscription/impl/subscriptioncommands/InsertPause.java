@@ -7,6 +7,7 @@ import java.sql.Timestamp;
 import java.util.List;
 
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.Services;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
@@ -16,6 +17,7 @@ import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_SubscriptionProgress;
 import de.metas.contracts.model.X_C_SubscriptionProgress;
 import de.metas.contracts.subscription.impl.SubscriptionCommand;
+import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import lombok.NonNull;
 
 /*
@@ -31,11 +33,11 @@ import lombok.NonNull;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -48,7 +50,7 @@ public class InsertPause
 	{
 		this.subscriptionCommand = subscriptionCommand;
 	}
-	
+
 	public void insertPause(
 			@NonNull final I_C_Flatrate_Term term,
 			@NonNull final Timestamp pauseFrom,
@@ -65,7 +67,7 @@ public class InsertPause
 		final I_C_SubscriptionProgress firstSpAfterBeginOfPause = allSpsAfterBeginOfPause.get(0);
 		createBeginOfPause(term, pauseFrom, firstSpAfterBeginOfPause.getSeqNo());
 
-		final ImmutableList<I_C_SubscriptionProgress> updatedSpsWithinPause = updateAndCollectRecordWithinPause(allSpsAfterBeginOfPause, pauseUntil);
+		final ImmutableList<I_C_SubscriptionProgress> updatedSpsWithinPause = processAndCollectRecordWithinPause(allSpsAfterBeginOfPause, pauseUntil);
 
 		final int endOfPauseSeqNo = computeEndOfPauseSeqNo(firstSpAfterBeginOfPause, updatedSpsWithinPause);
 
@@ -94,7 +96,7 @@ public class InsertPause
 		save(pauseBegin);
 	}
 
-	private ImmutableList<I_C_SubscriptionProgress> updateAndCollectRecordWithinPause(
+	private ImmutableList<I_C_SubscriptionProgress> processAndCollectRecordWithinPause(
 			@NonNull final List<I_C_SubscriptionProgress> sps,
 			@NonNull final Timestamp pauseUntil)
 	{
@@ -109,7 +111,13 @@ public class InsertPause
 			spsWithinPause.add(sp);
 			sp.setSeqNo(sp.getSeqNo() + 1);
 
-			if (Objects.equals(sp.getStatus(), X_C_SubscriptionProgress.STATUS_Planned))
+			if (sp.getM_ShipmentSchedule_ID() > 0)
+			{
+				Services.get(IShipmentScheduleBL.class).closeShipmentSchedule(sp.getM_ShipmentSchedule());
+			}
+
+			final boolean notYetDone = !Objects.equals(sp.getStatus(), X_C_SubscriptionProgress.STATUS_Done);
+			if (notYetDone)
 			{
 				sp.setContractStatus(X_C_SubscriptionProgress.CONTRACTSTATUS_DeliveryPause);
 			}
