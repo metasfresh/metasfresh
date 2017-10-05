@@ -148,8 +148,8 @@ public class PickingSlotViewRepository
 		Check.errorIf(query.getShipmentScheduleIds().isEmpty(), "Given query has no shipmentScheduleIds; query={}", query);
 
 		// get M_HU_Source records that reference active HUs with their locator in this WH and not on the picking location
-		final List<HUEditorRow> sourceHuEditorRows = pickingHUsRepo.retrieveSourceHUs(query.getShipmentScheduleIds());
-		final List<PickingSlotRow> sourceHUPickingSlotRows = sourceHuEditorRows.stream()
+		final List<HUEditorRow> sourceHUEditorRows = pickingHUsRepo.retrieveSourceHUs(query.getShipmentScheduleIds());
+		final List<PickingSlotRow> sourceHUPickingSlotRows = sourceHUEditorRows.stream()
 				.map(sourceHuEditorRow -> createSourceHURow(sourceHuEditorRow))
 				.collect(Collectors.toList());
 
