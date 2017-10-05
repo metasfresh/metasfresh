@@ -43,11 +43,11 @@ import de.metas.contracts.model.X_I_Flatrate_Term;
 
 public class FlatrateTermImportProcess extends AbstractImportProcess<I_I_Flatrate_Term>
 {
-	private final FlatrateTermImportHelper flatRateImporter;
+	private final FlatrateTermImporter flatRateImporter;
 
 	public FlatrateTermImportProcess()
 	{
-		flatRateImporter = FlatrateTermImportHelper.newInstance().setProcess(this);
+		flatRateImporter = FlatrateTermImporter.newInstance().setProcess(this);
 	}
 
 	@Override

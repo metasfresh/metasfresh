@@ -56,26 +56,26 @@ import lombok.NonNull;
  * @author cg
  *
  */
-/* package */ class FlatrateTermImportHelper
+/* package */ class FlatrateTermImporter
 {
-	public static FlatrateTermImportHelper newInstance()
+	public static FlatrateTermImporter newInstance()
 	{
-		return new FlatrateTermImportHelper();
+		return new FlatrateTermImporter();
 	}
 
 	// services
 	private final transient IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	private final transient IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 	
-	private static final Logger logger = LogManager.getLogger(FlatrateTermImportHelper.class);
+	private static final Logger logger = LogManager.getLogger(FlatrateTermImporter.class);
 
 	private FlatrateTermImportProcess process;
 
-	private FlatrateTermImportHelper()
+	private FlatrateTermImporter()
 	{
 	}
 
-	public FlatrateTermImportHelper setProcess(@NonNull final FlatrateTermImportProcess process)
+	public FlatrateTermImporter setProcess(@NonNull final FlatrateTermImportProcess process)
 	{
 		this.process = process;
 		return this;
