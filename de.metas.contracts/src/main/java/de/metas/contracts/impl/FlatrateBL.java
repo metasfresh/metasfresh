@@ -1140,8 +1140,6 @@ public class FlatrateBL implements IFlatrateBL
 					.getHandler(nextConditions.getType_Conditions()) // nextterm is not saved yet, so type will be null in this moment
 					.beforeSaveOfNextTermForPredecessor(nextTerm, currentTerm);
 
-			//
-			//set DocAction/DocStatus
 			nextTerm.setDocAction(X_C_Flatrate_Term.DOCACTION_Prepare);
 			nextTerm.setDocStatus(X_C_Flatrate_Term.DOCSTATUS_Drafted);
 			
@@ -1542,8 +1540,6 @@ public class FlatrateBL implements IFlatrateBL
 		final I_C_Flatrate_Data data = flatrateDAO.retriveOrCreateFlatrateData(bPartner);
 		newTerm.setC_Flatrate_Data(data);
 
-		//
-		//set DocAction/DocStatus
 		newTerm.setDocAction(X_C_Flatrate_Term.DOCACTION_Prepare);
 		newTerm.setDocStatus(X_C_Flatrate_Term.DOCSTATUS_Drafted);
 		
