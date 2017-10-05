@@ -66,7 +66,7 @@ import lombok.NonNull;
 /**
  * Picking editor's view right-hand side view which lists {@link PickingSlotRow}s.
  * <p>
- * Note that technically this is contained the left-hand side {@link PackageableView}.
+ * Note that technically this is contained in the left-hand side {@link PackageableView}.
  * 
  * @author metas-dev <dev@metasfresh.com>
  *
@@ -311,7 +311,7 @@ public class PickingSlotView implements IView
 	 */
 	public I_M_ShipmentSchedule getCurrentShipmentSchedule()
 	{
-		final I_M_ShipmentSchedule shipmentSchedule = load(currentShipmentScheduleId, I_M_ShipmentSchedule.class);
+		final I_M_ShipmentSchedule shipmentSchedule = load(getCurrentShipmentScheduleId(), I_M_ShipmentSchedule.class);
 		return shipmentSchedule;
 	}
 
