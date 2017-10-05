@@ -34,6 +34,8 @@ public interface IPickingSlotDAO extends ISingletonService
 	@Value
 	public static class PickingSlotQuery
 	{
+		public static final PickingSlotQuery ALL = builder().build();
+		
 		/**
 		 * {@code -1} means "no restriction".
 		 */
