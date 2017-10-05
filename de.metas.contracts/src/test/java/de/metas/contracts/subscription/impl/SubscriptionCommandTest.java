@@ -21,6 +21,7 @@ import de.metas.contracts.model.I_C_SubscriptionProgress;
 import de.metas.contracts.model.X_C_SubscriptionProgress;
 import de.metas.contracts.subscription.ISubscriptionDAO;
 import de.metas.contracts.subscription.ISubscriptionDAO.SubscriptionProgressQuery;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 
 /*
  * #%L
@@ -95,37 +96,37 @@ public class SubscriptionCommandTest
 	{
 		performInsertPause(true);
 		SubscriptionCommand.get().removePauses(term, TimeUtil.addDays(middle.getEventDate(), 2), TimeUtil.addDays(last.getEventDate(), 2));
-		
+
 		assertAllGoodAfterRemovePauses();
 	}
-	
+
 	@Test
 	public void removePausesStartAndEndOnTheSameDay()
 	{
 		performInsertPause(true);
 		SubscriptionCommand.get().removePauses(term, pauseFrom, pauseFrom);
-		
+
 		assertAllGoodAfterRemovePauses();
 	}
-	
+
 	@Test
 	public void removePausesStartAndEndOnTheSameDay2()
 	{
 		performInsertPause(true);
 		SubscriptionCommand.get().removePauses(term, middle.getEventDate(), middle.getEventDate());
-		
+
 		assertAllGoodAfterRemovePauses();
 	}
-	
+
 	@Test
 	public void removePausesStartAndEndOnTheSameDay3()
 	{
 		performInsertPause(true);
 		SubscriptionCommand.get().removePauses(term, pauseUntil, pauseUntil);
-		
+
 		assertAllGoodAfterRemovePauses();
 	}
-	
+
 	private void assertAllGoodAfterRemovePauses()
 	{
 		final List<I_C_SubscriptionProgress> allAfterPauseRemoval = retrieveAllforTerm();
@@ -134,14 +135,13 @@ public class SubscriptionCommandTest
 		assertThat(allAfterPauseRemoval.get(0).getSeqNo()).isEqualTo(1);
 		assertThat(allAfterPauseRemoval.get(1).getSeqNo()).isEqualTo(2);
 		assertThat(allAfterPauseRemoval.get(2).getSeqNo()).isEqualTo(3);
-		
+
 		assertThat(allAfterPauseRemoval).allSatisfy(record -> {
 
 			assertThat(record.getEventType()).isEqualTo(X_C_SubscriptionProgress.EVENTTYPE_Delivery);
 			assertThat(record.getContractStatus()).isEqualTo(X_C_SubscriptionProgress.CONTRACTSTATUS_Running);
 		});
 	}
-
 
 	private List<I_C_SubscriptionProgress> retrieveAllforTerm()
 	{
@@ -151,11 +151,15 @@ public class SubscriptionCommandTest
 	@Test
 	public void ignoreRecordsWithShipmentSchedule()
 	{
+		final I_M_ShipmentSchedule shipmentSchedule = newInstance(I_M_ShipmentSchedule.class);
+		save(shipmentSchedule);
+
 		middle.setStatus(X_C_SubscriptionProgress.STATUS_Open);
+		middle.setM_ShipmentSchedule(shipmentSchedule);
 		save(middle);
 		assertThat(middle.getContractStatus()).isEqualTo(X_C_SubscriptionProgress.CONTRACTSTATUS_Running); // guard
 
-		final boolean assertThatMiddleRecordIsPaused = false;
+		final boolean assertThatMiddleRecordIsPaused = true;
 		performInsertPause(assertThatMiddleRecordIsPaused);
 
 		final List<I_C_SubscriptionProgress> all = retrieveAllforTerm();
@@ -165,10 +169,9 @@ public class SubscriptionCommandTest
 				.as("this record may not be paused because it's already on progress")
 				.satisfies(record -> {
 					assertThat(record.getC_SubscriptionProgress_ID()).isEqualTo(middle.getC_SubscriptionProgress_ID());
-					assertThat(record.getContractStatus()).isEqualTo(X_C_SubscriptionProgress.CONTRACTSTATUS_Running);
-					assertThat(record.getStatus()).isEqualTo(X_C_SubscriptionProgress.STATUS_Open);
+					assertThat(record.getContractStatus()).isEqualTo(X_C_SubscriptionProgress.CONTRACTSTATUS_DeliveryPause);
+					assertThat(record.getM_ShipmentSchedule().isClosed()).isTrue();
 				});
-
 	}
 
 	private List<I_C_SubscriptionProgress> performInsertPause(final boolean assertMiddleRecordIsPaused)

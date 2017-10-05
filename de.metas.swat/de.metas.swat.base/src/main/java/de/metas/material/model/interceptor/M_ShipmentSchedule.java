@@ -59,7 +59,7 @@ public class M_ShipmentSchedule
 						.date(preparationDate)
 						.productId(schedule.getM_Product_ID())
 						.warehouseId(shipmentScheduleEffectiveBL.getWarehouseId(schedule))
-						.qty(shipmentScheduleEffectiveBL.getQtyOrdered(schedule))
+						.qty(shipmentScheduleEffectiveBL.computeQtyOrdered(schedule))
 						.build())
 				.reference(TableRecordReference.of(schedule))
 				.shipmentScheduleDeleted(deleted)

@@ -18,6 +18,7 @@ import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.OlAndSched;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.logging.LogManager;
+import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
 /*
@@ -46,28 +47,34 @@ import lombok.experimental.UtilityClass;
 /* package */class ShipmentScheduleQtysHelper
 {
 	private final static Logger logger = LogManager.getLogger(ShipmentScheduleQtysHelper.class);
-	private static final String MSG_DeliveryStopStatus = "ShipmentSchedule_DeliveryStop_Status";
 
-	public static void updateQtyToDeliver(final OlAndSched olAndSched, final IShipmentSchedulesDuringUpdate shipmentCandidates)
+	@VisibleForTesting
+	static final String MSG_DeliveryStopStatus = "ShipmentSchedule_DeliveryStop_Status";
+
+	@VisibleForTesting
+	static final String MSG_ClosedStatus = "ShipmentSchedule_Closed_Status";
+
+	public static void updateQtyToDeliver(
+			@NonNull final OlAndSched olAndSched,
+			@NonNull final IShipmentSchedulesDuringUpdate shipmentCandidates)
 	{
 		final I_M_ShipmentSchedule sched = olAndSched.getSched();
-		
-		if (sched.isDeliveryStop())
+
+		if (sched.isClosed() || sched.isDeliveryStop())
 		{
-			sched.setQtyToDeliver(BigDecimal.ZERO);
-			sched.setStatus(Services.get(IMsgBL.class).getMsg(Env.getCtx(), MSG_DeliveryStopStatus));
+			setZeroQtyToDeliverAndRelatedStatuses(sched);
 			return;
 		}
 
-		final DeliveryLineCandidate inOutLine = shipmentCandidates.getInOutLineForOrderLine(sched.getM_ShipmentSchedule_ID());
-		if (inOutLine != null)
+		final DeliveryLineCandidate lineCandidate = shipmentCandidates.getLineCandidateForShipmentScheduleId(sched.getM_ShipmentSchedule_ID());
+		if (lineCandidate == null)
 		{
-			sched.setQtyToDeliver(inOutLine.getQtyToDeliver());
-			sched.setStatus(mkStatus(inOutLine, shipmentCandidates));
+			ShipmentScheduleQtysHelper.setQtyToDeliverForDiscardedShipmentSchedule(sched);
 		}
 		else
 		{
-			ShipmentScheduleQtysHelper.setQtyToDeliverWhenNullInoutLine(sched);
+			sched.setQtyToDeliver(lineCandidate.getQtyToDeliver());
+			sched.setStatus(mkStatus(lineCandidate, shipmentCandidates));
 		}
 
 		final BigDecimal newQtyToDeliverOverrideFulfilled = mkQtyToDeliverOverrideFulFilled(olAndSched);
@@ -75,8 +82,7 @@ import lombok.experimental.UtilityClass;
 		{
 			if (newQtyToDeliverOverrideFulfilled.compareTo(olAndSched.getQtyOverride()) >= 0)
 			{
-				// the QtyToDeliverOverride value that was set by the user has been fulfilled (or even
-				// over-fulfilled)
+				// the QtyToDeliverOverride value that was set by the user has been fulfilled (or even over-fulfilled)
 				sched.setQtyToDeliver_Override(null);
 				sched.setQtyToDeliver_OverrideFulfilled(null);
 			}
@@ -92,62 +98,73 @@ import lombok.experimental.UtilityClass;
 
 	}
 
-	/**
-	 * Creates the status string for the {@link I_M_ShipmentSchedule#COLUMNNAME_Status} column.
-	 *
-	 * @param inOutLine
-	 * @param shipmentCandidates
-	 * @return
-	 */
-	private static String mkStatus(
-			final DeliveryLineCandidate inOutLine, 
-			final IShipmentSchedulesDuringUpdate shipmentCandidates)
+	private static void setZeroQtyToDeliverAndRelatedStatuses(final I_M_ShipmentSchedule sched)
 	{
-		final CompleteStatus completeStatus = inOutLine.getCompleteStatus();
-		if (!IShipmentSchedulesDuringUpdate.CompleteStatus.OK.equals(completeStatus))
+		final StringBuilder statusMessages = new StringBuilder();
+		if (sched.isDeliveryStop())
 		{
-			shipmentCandidates.addStatusInfo(inOutLine, Services.get(IMsgBL.class).getMsg(Env.getCtx(), completeStatus.toString()));
+			statusMessages.append(Services.get(IMsgBL.class).getMsg(Env.getCtx(), MSG_DeliveryStopStatus) + "\n");
 		}
-
-		return shipmentCandidates.getStatusInfos(inOutLine);
+		if (sched.isClosed())
+		{
+			statusMessages.append(Services.get(IMsgBL.class).getMsg(Env.getCtx(), MSG_ClosedStatus) + "\n");
+		}
+		sched.setQtyToDeliver(BigDecimal.ZERO);
+		sched.setStatus(statusMessages.toString());
 	}
 
 	/**
 	 * Method sets the give {@code sched}'s {@code QtyToDeliver} value in case the previous allocation runs did <b>not</b> allocate a qty to deliver. Note that if the effective delivery rule is
 	 * "FORCE", then we still need to set a qty even in that case.
 	 *
-	 * @param sched
+	 * @param discardedShipmentSchedule
 	 */
 	@VisibleForTesting
-	/* package */static void setQtyToDeliverWhenNullInoutLine(final I_M_ShipmentSchedule sched)
+	/* package */static void setQtyToDeliverForDiscardedShipmentSchedule(final I_M_ShipmentSchedule discardedShipmentSchedule)
 	{
-		//
-		// if delivery rule == force :
-		// // set qtyToDeliver = qtyToDeliverOveride (if exists)
-		// // else set qtyToDeliver = QtyOrdered
-		// if not forced, qtyToDeliver is 0
-		final String deliveryRule = Services.get(IShipmentScheduleEffectiveBL.class).getDeliveryRule(sched);
+		final String deliveryRule = Services.get(IShipmentScheduleEffectiveBL.class).getDeliveryRule(discardedShipmentSchedule);
 		final boolean ruleForce = DELIVERYRULE_Force.equals(deliveryRule);
-		if (ruleForce)
-		{
-			final BigDecimal qtyToDeliverOverride = sched.getQtyToDeliver_Override();
-			if (qtyToDeliverOverride.compareTo(BigDecimal.ZERO) > 0)
-			{
-				sched.setQtyToDeliver(qtyToDeliverOverride);
-			}
-			else
-			{
-				// task 09005: make sure the correct qtyOrdered is taken from the shipmentSchedule
-				final BigDecimal qtyOrdered = Services.get(IShipmentScheduleEffectiveBL.class).getQtyOrdered(sched);
 
-				// task 07884-IT1: even if the rule is force: if there is an unconfirmed qty, then *don't* deliver it again
-				sched.setQtyToDeliver(mkQtyToDeliver(qtyOrdered, sched.getQtyPickList()));
-			}
+		if (!ruleForce)
+		{
+			discardedShipmentSchedule.setQtyToDeliver(BigDecimal.ZERO);
+			return;
+		}
+
+		final BigDecimal qtyToDeliverOverride = discardedShipmentSchedule.getQtyToDeliver_Override();
+		if (qtyToDeliverOverride.signum() > 0)
+		{
+			discardedShipmentSchedule.setQtyToDeliver(qtyToDeliverOverride);
 		}
 		else
 		{
-			sched.setQtyToDeliver(BigDecimal.ZERO);
+			// task 09005: make sure the correct qtyOrdered is taken from the shipmentSchedule
+			final BigDecimal qtyOrdered = Services.get(IShipmentScheduleEffectiveBL.class).computeQtyOrdered(discardedShipmentSchedule);
+
+			// task 07884-IT1: even if the rule is force: if there is an unconfirmed qty, then *don't* deliver it again
+			discardedShipmentSchedule.setQtyToDeliver(mkQtyToDeliver(qtyOrdered, discardedShipmentSchedule.getQtyPickList()));
 		}
+	}
+
+	/**
+	 * Creates the status string for the {@link I_M_ShipmentSchedule#COLUMNNAME_Status} column.
+	 *
+	 * @param deliveryLineCandidate
+	 * @param shipmentCandidates
+	 * @return
+	 */
+	private static String mkStatus(
+			@NonNull final DeliveryLineCandidate deliveryLineCandidate,
+			@NonNull final IShipmentSchedulesDuringUpdate shipmentCandidates)
+	{
+		final CompleteStatus completeStatus = deliveryLineCandidate.getCompleteStatus();
+		if (!IShipmentSchedulesDuringUpdate.CompleteStatus.OK.equals(completeStatus))
+		{
+			final String statusMessage = Services.get(IMsgBL.class).getMsg(Env.getCtx(), completeStatus.toString());
+			shipmentCandidates.addStatusInfo(deliveryLineCandidate, statusMessage);
+		}
+
+		return shipmentCandidates.getStatusInfos(deliveryLineCandidate);
 	}
 
 	public static BigDecimal mkQtyToDeliver(final BigDecimal qtyRequired, final BigDecimal unconfirmedShippedQty)

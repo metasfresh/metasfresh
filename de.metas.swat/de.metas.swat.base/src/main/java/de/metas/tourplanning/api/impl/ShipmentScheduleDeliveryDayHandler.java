@@ -79,7 +79,7 @@ public final class ShipmentScheduleDeliveryDayHandler extends DeliveryDayHandler
 		deliveryDayAlloc.setM_Product_ID(sched.getM_Product_ID());
 
 		// task 09005: make sure the correct qtyOrdered is taken from the shipmentSchedule
-		final BigDecimal qtyOrdered = Services.get(IShipmentScheduleEffectiveBL.class).getQtyOrdered(sched);
+		final BigDecimal qtyOrdered = Services.get(IShipmentScheduleEffectiveBL.class).computeQtyOrdered(sched);
 
 		deliveryDayAlloc.setQtyOrdered(qtyOrdered);
 

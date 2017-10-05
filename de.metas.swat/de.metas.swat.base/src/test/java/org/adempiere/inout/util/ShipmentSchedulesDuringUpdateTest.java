@@ -37,12 +37,12 @@ import de.metas.inoutcandidate.model.X_M_ShipmentSchedule;
  * #L%
  */
 
-public class ShipmentCandidatesTest
+public class ShipmentSchedulesDuringUpdateTest
 {
 	private static final BigDecimal LINE_2_QTY = BigDecimal.valueOf(15);
 	private static final BigDecimal LINE_1_QTY = BigDecimal.valueOf(10);
 
-	private ShipmentCandidates shipmentCandidates;
+	private ShipmentSchedulesDuringUpdate shipmentCandidates;
 	private DeliveryGroupCandidate group;
 
 	@Before
@@ -56,8 +56,8 @@ public class ShipmentCandidatesTest
 				.bPartnerAddress("bPartnerAddress")
 				.build();
 
-		shipmentCandidates = new ShipmentCandidates();
-		shipmentCandidates.addInOut(group);
+		shipmentCandidates = new ShipmentSchedulesDuringUpdate();
+		shipmentCandidates.addGroup(group);
 	}
 
 	@Test
