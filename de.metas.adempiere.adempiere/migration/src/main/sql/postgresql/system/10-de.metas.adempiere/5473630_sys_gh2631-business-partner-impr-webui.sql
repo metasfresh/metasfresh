@@ -1053,3 +1053,33 @@ UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-10-05 18:14:02'
 UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-10-05 18:14:27','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Billing Contact Default' WHERE AD_Field_ID=559901 AND AD_Language='en_US'
 ;
 
+-- 2017-10-05T18:18:49.194
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET Name='Replikations Standard',Updated=TO_TIMESTAMP('2017-10-05 18:18:49','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=1000085
+;
+
+-- 2017-10-05T18:18:51.758
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET Name='Erhält EDI Belege',Updated=TO_TIMESTAMP('2017-10-05 18:18:51','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=1000083
+;
+
+-- 2017-10-05T18:19:33.121
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-10-05 18:19:33','YYYY-MM-DD HH24:MI:SS'),Name='EDI Receipient',Description='Receives EDI Documents' WHERE AD_Field_ID=553177 AND AD_Language='en_US'
+;
+
+-- 2017-10-05T18:19:54.082
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Replikations Standard',Updated=TO_TIMESTAMP('2017-10-05 18:19:54','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=554020
+;
+
+-- 2017-10-05T18:20:15.296
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-10-05 18:20:15','YYYY-MM-DD HH24:MI:SS'),Name='Replication Default Value',Help='' WHERE AD_Field_ID=554020 AND AD_Language='en_US'
+;
+
+-- 2017-10-05T18:20:43.894
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Description='Erhält EDI Belege', Name='Erhält EDI Belege',Updated=TO_TIMESTAMP('2017-10-05 18:20:43','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=553177
+;
+
