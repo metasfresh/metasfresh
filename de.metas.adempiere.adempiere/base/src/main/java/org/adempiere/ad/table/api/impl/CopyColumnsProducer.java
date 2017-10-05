@@ -9,11 +9,9 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.ILoggable;
-import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_Table;
-import org.compiere.model.MColumn;
 import org.compiere.model.M_Element;
 import org.compiere.util.Env;
 
@@ -43,7 +41,6 @@ public class CopyColumnsProducer
 	private I_AD_Table _targetTable;
 	private List<I_AD_Column> _sourceColumns;
 	private String _entityType = null;
-	private boolean _syncToDatabase = false;
 
 	private CopyColumnsProducer()
 	{
@@ -108,17 +105,6 @@ public class CopyColumnsProducer
 		}
 	}
 
-	public CopyColumnsProducer setSyncToDatabase(final boolean syncToDatabase)
-	{
-		_syncToDatabase = syncToDatabase;
-		return this;
-	}
-
-	private boolean isSyncToDatabase()
-	{
-		return _syncToDatabase;
-	}
-
 	/**
 	 * @return now many columns were created
 	 */
@@ -134,8 +120,6 @@ public class CopyColumnsProducer
 			{
 				continue;
 			}
-
-			syncToDatabaseIfRequired(targetColumn);
 
 			countCreated++;
 		}
@@ -236,16 +220,4 @@ public class CopyColumnsProducer
 
 		return colTarget;
 	}
-
-	private void syncToDatabaseIfRequired(final I_AD_Column targetColumn)
-	{
-		if (!isSyncToDatabase())
-		{
-			return;
-		}
-
-		final MColumn targetColumnPO = LegacyAdapters.convertToPO(targetColumn);
-		targetColumnPO.syncDatabase();
-	}
-
 }

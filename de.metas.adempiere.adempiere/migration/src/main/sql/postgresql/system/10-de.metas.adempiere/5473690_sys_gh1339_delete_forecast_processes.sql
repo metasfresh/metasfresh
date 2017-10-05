@@ -1,0 +1,7 @@
+-- 2017-10-04T21:56:32.407
+-- M_Forecast_Process
+DELETE FROM  AD_Process_Trl WHERE AD_Process_ID=540433
+;
+DELETE FROM AD_Process WHERE AD_Process_ID=540433
+;
+
