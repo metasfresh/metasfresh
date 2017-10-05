@@ -1,4 +1,4 @@
-package de.metas.ui.web.picking;
+package de.metas.ui.web.picking.pickingslot;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -8,10 +8,9 @@ import org.adempiere.exceptions.AdempiereException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import de.metas.ui.web.picking.PickingConstants;
 import de.metas.ui.web.picking.packageable.PackageableRow;
 import de.metas.ui.web.picking.packageable.PackageableView;
-import de.metas.ui.web.picking.pickingslot.PickingSlotView;
-import de.metas.ui.web.picking.pickingslot.PickingSlotViewFactory;
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewsIndexStorage;
@@ -55,7 +54,7 @@ import lombok.NonNull;
  *
  */
 @Component
-public class PickingViewsIndexStorage implements IViewsIndexStorage
+public class PickingSlotViewsIndexStorage implements IViewsIndexStorage
 {
 	@Autowired
 	private PickingSlotViewFactory pickingSlotViewFactory;
@@ -93,9 +92,7 @@ public class PickingViewsIndexStorage implements IViewsIndexStorage
 		packageableView.setPickingSlotView(rowId, PickingSlotView.cast(pickingSlotView));
 	}
 
-	public static ViewId createViewId(
-			@NonNull final ViewId pickingViewId,
-			@NonNull final DocumentId pickingRowId)
+	public static ViewId createViewId(@NonNull final ViewId pickingViewId, @NonNull final DocumentId pickingRowId)
 	{
 		if (!PickingConstants.WINDOWID_PickingView.equals(pickingViewId.getWindowId()))
 		{
@@ -106,13 +103,13 @@ public class PickingViewsIndexStorage implements IViewsIndexStorage
 		return ViewId.ofParts(PickingConstants.WINDOWID_PickingSlotView, pickingViewId.getViewIdPart(), pickingRowId.toJson());
 	}
 
-	private ViewId extractPickingViewId(final ViewId pickingSlotViewId)
+	private static ViewId extractPickingViewId(final ViewId pickingSlotViewId)
 	{
 		final String viewIdPart = pickingSlotViewId.getViewIdPart();
 		return ViewId.ofParts(PickingConstants.WINDOWID_PickingView, viewIdPart);
 	}
 
-	private DocumentId extractRowId(@NonNull final ViewId pickingSlotViewId)
+	private static DocumentId extractRowId(@NonNull final ViewId pickingSlotViewId)
 	{
 		final String rowIdStr = pickingSlotViewId.getPart(2);
 		return DocumentId.of(rowIdStr);
@@ -132,9 +129,7 @@ public class PickingViewsIndexStorage implements IViewsIndexStorage
 		return getOrCreatePickingSlotView(pickingSlotViewId, create);
 	}
 
-	private PickingSlotView getOrCreatePickingSlotView(
-			@NonNull final ViewId pickingSlotViewId,
-			final boolean create)
+	private PickingSlotView getOrCreatePickingSlotView(@NonNull final ViewId pickingSlotViewId, final boolean create)
 	{
 		final PackageableView packageableView = getPackageableViewByPickingSlotViewId(pickingSlotViewId);
 		final DocumentId packageableRowId = extractRowId(pickingSlotViewId);
@@ -161,8 +156,10 @@ public class PickingViewsIndexStorage implements IViewsIndexStorage
 						return pickingSlotViewFactory.createView(createViewRequest, allShipmentScheduleIds);
 					});
 		}
-
-		return packageableView.getPickingSlotViewOrNull(packageableRowId);
+		else
+		{
+			return packageableView.getPickingSlotViewOrNull(packageableRowId);
+		}
 	}
 
 	@Override
