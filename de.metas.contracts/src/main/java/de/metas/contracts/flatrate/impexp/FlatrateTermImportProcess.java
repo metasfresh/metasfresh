@@ -229,32 +229,19 @@ public class FlatrateTermImportProcess extends AbstractImportProcess<I_I_Flatrat
 
 		setDropShipBPartner(importRecord, contract);
 		setDropShipLocation(contract);
-
-		//
-		// Product/UOM and price
-		{
-			contract.setM_Product(product);
-
-			setUOM(contract, product);
-
-			final BigDecimal price = importRecord.getPrice();
-			contract.setPriceActual(price);
-		}
-
+		contract.setM_Product(product);
+		setUOM(contract, product);
+		contract.setPriceActual(importRecord.getPrice());
 		setPlannedQtyPerUnit(importRecord, contract);
 		setEndDate(importRecord, contract);
 		setMasterStartdDate(importRecord, contract);
 		setMasterEnddDate(importRecord, contract);
-		
-		final boolean isEndedContract = isEndedContract(importRecord);
-		if (isEndedContract)
-		{
-			endContract(contract);
-		}
+		// important to ended if needed, before saving
+		endContractIfNeeded(importRecord, contract);
 		InterfaceWrapperHelper.save(contract);
 		//
 		// Complete the subscription/contract
-		if (!isEndedContract)
+		if (!isEndedContract(importRecord))
 		{
 			flatrateBL.complete(contract);
 		}
@@ -337,14 +324,17 @@ public class FlatrateTermImportProcess extends AbstractImportProcess<I_I_Flatrat
 		return false;
 	}
 
-	private void endContract(@NonNull final I_C_Flatrate_Term contract)
+	private void endContractIfNeeded(@NonNull final I_I_Flatrate_Term importRecord, @NonNull final I_C_Flatrate_Term contract)
 	{
-		contract.setContractStatus(X_C_Flatrate_Term.CONTRACTSTATUS_Quit);
-		contract.setNoticeDate(contract.getEndDate());
-		contract.setIsAutoRenew(false);
-		contract.setProcessed(true);
-		contract.setDocAction(X_C_Flatrate_Term.DOCACTION_None);
-		contract.setDocStatus(X_C_Flatrate_Term.DOCSTATUS_Completed);
+		if (isEndedContract(importRecord))
+		{
+			contract.setContractStatus(X_C_Flatrate_Term.CONTRACTSTATUS_Quit);
+			contract.setNoticeDate(contract.getEndDate());
+			contract.setIsAutoRenew(false);
+			contract.setProcessed(true);
+			contract.setDocAction(X_C_Flatrate_Term.DOCACTION_None);
+			contract.setDocStatus(X_C_Flatrate_Term.DOCSTATUS_Completed);
+		}
 	}
 
 	@Override
