@@ -1,6 +1,5 @@
 package de.metas.ui.web.picking.packageable;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Supplier;
@@ -9,7 +8,6 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.handlingunits.picking.PickingCandidateCommand;
 import de.metas.i18n.ITranslatableString;
-import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
 import de.metas.ui.web.picking.PickingConstants;
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IView;
@@ -93,14 +91,6 @@ public class PackageableViewFactory implements IViewFactory
 				.addElementsFromViewRowClass(PackageableRow.class, viewDataType)
 				//
 				.build();
-	}
-
-	@Override
-	public Collection<DocumentFilterDescriptor> getViewFilterDescriptors(
-			@NonNull final WindowId windowId,
-			@NonNull final JSONViewDataType viewDataType)
-	{
-		return getViewLayout(windowId, viewDataType).getFilters();
 	}
 
 	/**

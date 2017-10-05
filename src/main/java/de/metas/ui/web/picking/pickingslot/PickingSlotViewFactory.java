@@ -1,6 +1,5 @@
 package de.metas.ui.web.picking.pickingslot;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
 import java.util.function.Supplier;
@@ -16,12 +15,11 @@ import com.google.common.collect.ImmutableList;
 import de.metas.printing.esb.base.util.Check;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.RelatedProcessDescriptor;
-import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
 import de.metas.ui.web.picking.PickingConstants;
+import de.metas.ui.web.picking.process.WEBUI_Picking_HUEditor_Open;
 import de.metas.ui.web.picking.process.WEBUI_Picking_M_Picking_Candidate_Process;
 import de.metas.ui.web.picking.process.WEBUI_Picking_M_Picking_Candidate_Unprocess;
 import de.metas.ui.web.picking.process.WEBUI_Picking_M_Source_HU_Delete;
-import de.metas.ui.web.picking.process.WEBUI_Picking_HUEditor_Open;
 import de.metas.ui.web.picking.process.WEBUI_Picking_PickQtyToExistingHU;
 import de.metas.ui.web.picking.process.WEBUI_Picking_PickQtyToNewHU;
 import de.metas.ui.web.picking.process.WEBUI_Picking_RemoveHUFromPickingSlot;
@@ -81,12 +79,6 @@ public class PickingSlotViewFactory implements IViewFactory
 				.addElementsFromViewRowClass(PickingSlotRow.class, viewDataType)
 				.setHasTreeSupport(true)
 				.build();
-	}
-
-	@Override
-	public Collection<DocumentFilterDescriptor> getViewFilterDescriptors(final WindowId windowId, final JSONViewDataType viewDataType)
-	{
-		return getViewLayout(windowId, viewDataType).getFilters();
 	}
 
 	/**

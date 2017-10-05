@@ -32,11 +32,14 @@ import de.metas.ui.web.window.datatypes.WindowId;
 
 public interface IViewFactory
 {
+	IView createView(CreateViewRequest request);
+	
 	ViewLayout getViewLayout(WindowId windowId, JSONViewDataType viewDataType);
 
-	Collection<DocumentFilterDescriptor> getViewFilterDescriptors(WindowId windowId, JSONViewDataType viewDataType);
-
-	IView createView(CreateViewRequest request);
+	default Collection<DocumentFilterDescriptor> getViewFilterDescriptors(final WindowId windowId, final JSONViewDataType viewDataType)
+	{
+		return getViewLayout(windowId, viewDataType).getFilters();
+	}
 
 	default IView filterView(final IView view, final JSONFilterViewRequest filterViewRequest)
 	{
