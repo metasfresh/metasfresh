@@ -1,4 +1,4 @@
-DROP FUNCTION IF EXISTS report.saldobilanz_summary_Report (IN Date, IN defaultAcc character varying, IN showCurrencyExchange character varying, IN ad_org_id numeric(10,0), IN p_IncludePostingTypeStatistical char(1));
+﻿DROP FUNCTION IF EXISTS report.saldobilanz_summary_Report (IN Date, IN defaultAcc character varying, IN showCurrencyExchange character varying, IN ad_org_id numeric(10,0), IN p_IncludePostingTypeStatistical char(1));
 DROP FUNCTION IF EXISTS report.saldobilanz_summary_Report (IN Date, IN defaultAcc character varying, IN showCurrencyExchange character varying, IN ad_org_id numeric(10,0), IN p_IncludePostingTypeStatistical char(1), IN p_ExcludePostingTypeYearEnd char(1));
 
 DROP TABLE IF EXISTS report.saldobilanz_summary_Report;
