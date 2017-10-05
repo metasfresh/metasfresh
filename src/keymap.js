@@ -4,6 +4,7 @@ let mod = 'ctrl';
 
 // DO NOT USE:
 // mod + l - windows browser focusing address bar
+// mod + w - closes tab (preconfigured chrome shortcut)
 
 export default {
     GLOBAL_CONTEXT: {
