@@ -4,7 +4,8 @@
     justify-content: space-between;
 
     /* create small window */
-    width: auto;
+    width: 50%;
+    min-width: 288px; /* 320px mobile * 90% */
     height: auto;
 }
 
