@@ -31,6 +31,10 @@ Here come the actual release notes:
   * [#2637](https://github.com/metasfresh/metasfresh/issues/2637) Webui Window Design: Improvements to Account Combinations
     * Additional Improvements to Account Combination Window in WebUI. Adding missing Translations for en_US.
 
+# Fixes
+* metasfresh-webui-frontend
+  * [#1234](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1234) Letter Window does not store template info
+    * Fixes a minor Bug in Letter component that prevented the usage of Text Snippets.
 
 # metasfresh 5.29 (2017-40)
 

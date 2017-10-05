@@ -45,12 +45,12 @@ public class PickingSlotKeyBuilder
 {
 	private final ITerminalContext terminalContext;
 
-	private final Map<Integer, PickingSlotKey> pickingSlotsKeys = new HashMap<Integer, PickingSlotKey>();
+	private final Map<Integer, PickingSlotKey> pickingSlotsKeys = new HashMap<>();
 
 	/**
 	 * Sort by PickingSlot string
 	 */
-	private static final Comparator<PickingSlotKey> pickingSlotKeysComparator = new AccessorComparator<PickingSlotKey, String>(
+	private static final Comparator<PickingSlotKey> pickingSlotKeysComparator = new AccessorComparator<>(
 			ComparableComparator.<String> getInstance(),
 			new TypedAccessor<String>()
 			{
@@ -76,7 +76,6 @@ public class PickingSlotKeyBuilder
 	public void addBPartner(final int bpartnerId, final int bpartnerLocationId, final Set<Integer> allowedWarehouseIds)
 	{
 		final PickingSlotQuery pickingSlotRequest = PickingSlotQuery.builder()
-				.ctx(terminalContext.getCtx())
 				.bpartnerId(bpartnerId)
 				.bpartnerLocationId(bpartnerLocationId)
 				.build();
@@ -125,7 +124,7 @@ public class PickingSlotKeyBuilder
 			return Collections.emptyList();
 		}
 
-		final List<PickingSlotKey> result = new ArrayList<PickingSlotKey>(pickingSlotsKeys.values());
+		final List<PickingSlotKey> result = new ArrayList<>(pickingSlotsKeys.values());
 		Collections.sort(result, pickingSlotKeysComparator);
 
 		return result;
