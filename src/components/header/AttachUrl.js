@@ -8,14 +8,15 @@ class AttachUrl extends Component {
     state = {
         url: '',
         name: '',
+        nameFromUrl: '',
     }
 
-    getName = () => {
-        const { url } = this.state;
-
+    updateNameFromUrl = (url) => {
         // generate name from URL by getting part after last / and before ? or #
-        // TODO: handle edge cases like URL with trailing slash
-        return url.split('/').pop().split('#')[0].split('?')[0];
+        this.setState({
+            // TODO: handle edge cases like URL with trailing slash
+            nameFromUrl: url.split('/').pop().split('#')[0].split('?')[0],
+        });
     }
 
     handleChangeName = ({ target: { value: name } }) => {
@@ -23,23 +24,17 @@ class AttachUrl extends Component {
     }
 
     handleBlurName = () => {
-        const { name } = this.state;
+        // generate name from URL if name is not set
+        const { name, url } = this.state;
 
         if (!name) {
-            this.setState({ name: this.getName() });
+            this.updateNameFromUrl(url);
         }
     }
 
     handleChangeUrl = ({ target: { value: url } }) => {
         this.setState({ url });
-    }
-
-    handleBlurUrl = () => {
-        const { name } = this.state;
-
-        if (!name) {
-            this.setState({ name: this.getName() });
-        }
+        this.updateNameFromUrl(url);
     }
 
     handleClick = (event) => {
@@ -49,10 +44,14 @@ class AttachUrl extends Component {
         const {
             windowId, documentId, handleClose, dispatch, fetchAttachments,
         } = this.props;
-        const { url, name } = this.state;
+        const { url, name, nameFromUrl } = this.state;
 
-        // TODO: Add translations for notifications
-        createUrlAttachment({ windowId, documentId, url, name }).then(() => {
+        createUrlAttachment({
+            windowId,
+            documentId,
+            url,
+            name: name || nameFromUrl,
+        }).then(() => {
             handleClose(event);
             fetchAttachments();
         }).catch(() => {
@@ -66,7 +65,7 @@ class AttachUrl extends Component {
 
     render() {
         const { handleClose } = this.props;
-        const { url, name } = this.state;
+        const { url, name, nameFromUrl } = this.state;
 
         // TODO: increase max-len or find another way to avoid this
         // (following this rule here decreases this JSX' readability)
@@ -94,7 +93,6 @@ class AttachUrl extends Component {
                                 <input
                                     className="attachurl-input"
                                     type="url"
-                                    onBlur={this.handleBlurUrl}
                                     onChange={this.handleChangeUrl}
                                     value={url}
                                 />
@@ -110,7 +108,7 @@ class AttachUrl extends Component {
                                     type="text"
                                     onBlur={this.handleBlurName}
                                     onChange={this.handleChangeName}
-                                    value={name}
+                                    value={name || nameFromUrl}
                                 />
                             </div>
                         </div>
