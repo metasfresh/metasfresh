@@ -47,7 +47,7 @@ public class FlatrateTermImportProcess extends AbstractImportProcess<I_I_Flatrat
 
 	public FlatrateTermImportProcess()
 	{
-		flatRateImporter = FlatrateTermImporter.newInstance().setProcess(this);
+		flatRateImporter = FlatrateTermImporter.newInstance(this);
 	}
 
 	@Override

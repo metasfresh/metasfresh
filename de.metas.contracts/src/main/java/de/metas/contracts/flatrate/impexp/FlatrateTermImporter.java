@@ -58,9 +58,9 @@ import lombok.NonNull;
  */
 /* package */ class FlatrateTermImporter
 {
-	public static FlatrateTermImporter newInstance()
+	public static FlatrateTermImporter newInstance(@NonNull final FlatrateTermImportProcess process)
 	{
-		return new FlatrateTermImporter();
+		return new FlatrateTermImporter(process);
 	}
 
 	// services
@@ -69,16 +69,11 @@ import lombok.NonNull;
 	
 	private static final Logger logger = LogManager.getLogger(FlatrateTermImporter.class);
 
-	private FlatrateTermImportProcess process;
+	final private FlatrateTermImportProcess process;
 
-	private FlatrateTermImporter()
-	{
-	}
-
-	public FlatrateTermImporter setProcess(@NonNull final FlatrateTermImportProcess process)
+	private FlatrateTermImporter(FlatrateTermImportProcess process)
 	{
 		this.process = process;
-		return this;
 	}
 
 	private Properties getCtx()
