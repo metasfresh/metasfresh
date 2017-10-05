@@ -1,4 +1,4 @@
-package org.adempiere.service.impl;
+package de.metas.mforecast.impl;
 
 /*
  * #%L
@@ -29,10 +29,11 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.ActiveRecordQueryFilter;
 import org.adempiere.ad.dao.impl.EqualsQueryFilter;
-import org.adempiere.service.IForecastDAO;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_Forecast;
 import org.compiere.model.I_M_ForecastLine;
+
+import de.metas.mforecast.IForecastDAO;
 
 public class ForecastDAO implements IForecastDAO
 

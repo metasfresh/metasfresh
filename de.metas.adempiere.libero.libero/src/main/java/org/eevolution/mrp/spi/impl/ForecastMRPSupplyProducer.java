@@ -28,7 +28,6 @@ import java.util.List;
 
 import org.adempiere.ad.modelvalidator.DocTimingType;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.IForecastDAO;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IMutable;
 import org.compiere.model.I_C_UOM;
@@ -44,6 +43,7 @@ import org.eevolution.mrp.api.IMRPSourceEvent;
 
 import de.metas.document.engine.IDocument;
 import de.metas.material.planning.IMaterialPlanningContext;
+import de.metas.mforecast.IForecastDAO;
 import de.metas.product.IProductBL;
 
 public class ForecastMRPSupplyProducer extends AbstractMRPSupplyProducer

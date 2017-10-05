@@ -1,4 +1,4 @@
-package org.adempiere.service;
+package de.metas.mforecast;
 
 /*
  * #%L
