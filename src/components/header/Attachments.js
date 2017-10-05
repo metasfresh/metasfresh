@@ -105,7 +105,7 @@ class Attachments extends Component {
 
         return (
             <div
-              className="subheader-item js-subheader-item"
+              className="subheader-attachurl"
               onClick={this.handleClickAttachUrl}
             >
                 {counterpart.translate('window.attachment.url.add')}
