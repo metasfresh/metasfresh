@@ -13,17 +13,17 @@ package de.metas.handlingunits.picking;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.util.List;
+import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.util.ISingletonService;
@@ -63,9 +63,11 @@ public interface IHUPickingSlotDAO extends ISingletonService
 	 * and also the one which is currently open within the picking slot.
 	 *
 	 * @param pickingSlot
-	 * @return
 	 */
 	List<I_M_HU> retrieveAllHUs(de.metas.picking.model.I_M_PickingSlot pickingSlot);
+
+	/** @see {@link #retrieveAllHUs(de.metas.picking.model.I_M_PickingSlot)} */
+	Set<Integer> retrieveAllHUIds(final int pickingSlotId);
 
 	/**
 	 * @param pickingSlot
@@ -98,7 +100,7 @@ public interface IHUPickingSlotDAO extends ISingletonService
 	 * @return
 	 */
 	IQueryFilter<I_M_HU> createHUOnPickingSlotQueryFilter(final Object contextProvider);
-	
+
 	/**
 	 * Return {@code true} if the given {@code M_HU_ID} is referenced by an active {@link I_M_Picking_Candidate}.<br>
 	 * Note that we use the ID for performance reasons.
