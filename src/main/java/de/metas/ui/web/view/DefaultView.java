@@ -34,7 +34,6 @@ import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
-import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 import de.metas.ui.web.window.model.sql.SqlOptions;
 import lombok.NonNull;
@@ -124,10 +123,9 @@ public class DefaultView implements IView
 			final ViewEvaluationCtx evalCtx = ViewEvaluationCtx.of(Env.getCtx());
 
 			defaultSelection = viewDataRepository.createOrderedSelection(
-					evalCtx //
-					, builder.getWindowId() //
-					, ImmutableList.copyOf(Iterables.concat(stickyFilters, filters)) //
-			);
+					evalCtx,
+					builder.getViewId(),
+					ImmutableList.copyOf(Iterables.concat(stickyFilters, filters)));
 			selectionsByOrderBys.put(defaultSelection.getOrderBys(), defaultSelection);
 		}
 
@@ -164,7 +162,7 @@ public class DefaultView implements IView
 	{
 		return parentViewId;
 	}
-	
+
 	@Override
 	public DocumentId getParentRowId()
 	{
@@ -266,14 +264,14 @@ public class DefaultView implements IView
 
 		logger.debug("View closed: {}", this);
 	}
-	
+
 	@Override
 	public void invalidateAll()
 	{
 		// TODO recreate defaultSelection, clear selectionsByOrderBys etc
 		cache_rowsById.clear();
 	}
-	
+
 	@Override
 	public void invalidateRowById(final DocumentId rowId)
 	{
@@ -447,7 +445,7 @@ public class DefaultView implements IView
 
 	public static final class Builder
 	{
-		private WindowId windowId;
+		private ViewId viewId;
 		private JSONViewDataType viewType;
 		private Set<DocumentPath> referencingDocumentPaths;
 		private ViewId parentViewId;
@@ -472,27 +470,28 @@ public class DefaultView implements IView
 			this.parentViewId = parentViewId;
 			return this;
 		}
-		
+
 		public Builder setParentRowId(final DocumentId parentRowId)
 		{
 			this.parentRowId = parentRowId;
 			return this;
 		}
-		
+
 		private DocumentId getParentRowId()
 		{
 			return parentRowId;
 		}
 
-		public Builder setWindowId(final WindowId windowId)
+		public Builder setViewId(ViewId viewId)
 		{
-			this.windowId = windowId;
+			this.viewId = viewId;
 			return this;
 		}
 
-		public WindowId getWindowId()
+		@NonNull
+		public ViewId getViewId()
 		{
-			return windowId;
+			return viewId;
 		}
 
 		public Builder setViewType(final JSONViewDataType viewType)

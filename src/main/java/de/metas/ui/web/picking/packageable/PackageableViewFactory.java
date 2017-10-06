@@ -99,13 +99,11 @@ public class PackageableViewFactory implements IViewFactory
 	@Override
 	public IView createView(@NonNull final CreateViewRequest request)
 	{
-		final WindowId windowId = request.getWindowId();
-		if (!PickingConstants.WINDOWID_PickingView.equals(windowId))
+		final ViewId viewId = request.getViewId();
+		if (!PickingConstants.WINDOWID_PickingView.equals(viewId.getWindowId()))
 		{
 			throw new IllegalArgumentException("Invalid request's windowId: " + request);
 		}
-
-		final ViewId viewId = ViewId.random(PickingConstants.WINDOWID_PickingView);
 
 		final Set<DocumentId> rowIds = request
 				.getFilterOnlyIds() // this is never null, empty means "no restriction"

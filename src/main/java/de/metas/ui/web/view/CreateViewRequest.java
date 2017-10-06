@@ -62,7 +62,13 @@ public final class CreateViewRequest
 {
 	public static final Builder builder(final WindowId windowId, final JSONViewDataType viewType)
 	{
-		return new Builder(windowId, viewType);
+		final ViewId viewId = ViewId.random(windowId);
+		return new Builder(viewId, viewType);
+	}
+
+	public static final Builder builder(final ViewId viewId, final JSONViewDataType viewType)
+	{
+		return new Builder(viewId, viewType);
 	}
 
 	public static final Builder filterViewBuilder(
@@ -106,7 +112,7 @@ public final class CreateViewRequest
 				.addAdditionalRelatedProcessDescriptors(view.getAdditionalRelatedProcessDescriptors());
 	}
 
-	WindowId windowId;
+	ViewId viewId;
 	JSONViewDataType viewType;
 
 	ViewId parentViewId;
@@ -143,7 +149,7 @@ public final class CreateViewRequest
 
 	private CreateViewRequest(final Builder builder)
 	{
-		windowId = builder.getWindowId();
+		viewId = builder.getViewId();
 		viewType = builder.getViewType();
 
 		parentViewId = builder.getParentViewId();
@@ -195,7 +201,7 @@ public final class CreateViewRequest
 	//
 	public static final class Builder
 	{
-		private final WindowId windowId;
+		private final ViewId viewId;
 		private final JSONViewDataType viewType;
 
 		private ViewId parentViewId;
@@ -216,10 +222,10 @@ public final class CreateViewRequest
 		private final List<RelatedProcessDescriptor> additionalRelatedProcessDescriptors = new ArrayList<>();
 
 		private Builder(
-				@NonNull final WindowId windowId,
+				@NonNull final ViewId viewId,
 				@NonNull final JSONViewDataType viewType)
 		{
-			this.windowId = windowId;
+			this.viewId = viewId;
 			this.viewType = viewType;
 		}
 
@@ -228,9 +234,9 @@ public final class CreateViewRequest
 			return new CreateViewRequest(this);
 		}
 
-		private WindowId getWindowId()
+		public ViewId getViewId()
 		{
-			return windowId;
+			return viewId;
 		}
 
 		private JSONViewDataType getViewType()

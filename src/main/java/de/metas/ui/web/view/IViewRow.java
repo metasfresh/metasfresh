@@ -69,7 +69,7 @@ public interface IViewRow
 	//
 	// Attributes
 	// @formatter:off
-	boolean hasIncludedView();
+	default boolean hasIncludedView() { return false; }
 	default ViewId getIncludedViewId() { return null; }
 	// @formatter:on
 

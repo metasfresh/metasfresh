@@ -53,7 +53,7 @@ public class PPOrderLinesViewFactory implements IViewFactory
 	@Override
 	public PPOrderLinesView createView(final CreateViewRequest request)
 	{
-		final ViewId viewId = ViewId.random(request.getWindowId());
+		final ViewId viewId = request.getViewId();
 
 		return PPOrderLinesView.builder()
 				.parentViewId(request.getParentViewId())

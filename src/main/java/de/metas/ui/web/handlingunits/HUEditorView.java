@@ -41,7 +41,6 @@ import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
-import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 import de.metas.ui.web.window.model.sql.SqlOptions;
 import lombok.NonNull;
@@ -105,6 +104,7 @@ public class HUEditorView implements IView
 		parentViewId = builder.getParentViewId();
 		parentRowId = builder.getParentRowId();
 		viewType = builder.getViewType();
+		viewId = builder.getViewId();
 
 		final List<DocumentFilter> stickyFilters = builder.getStickyFilters();
 		final boolean isHighVolume = HUIdsFilterHelper.isHighVolume(stickyFilters);
@@ -118,7 +118,7 @@ public class HUEditorView implements IView
 		// Build the repository
 		referencingTableName = builder.getReferencingTableName();
 		final HUEditorViewRepository huEditorRepo = HUEditorViewRepository.builder()
-				.windowId(builder.getWindowId())
+				.windowId(viewId.getWindowId())
 				.referencingTableName(builder.getReferencingTableName())
 				.attributesProvider(huAttributesProvider)
 				.sqlViewBinding(builder.getSqlViewBinding())
@@ -132,8 +132,7 @@ public class HUEditorView implements IView
 
 		//
 		// Build rowsBuffer
-		rowsBuffer = createRowsBuffer(builder.getWindowId(), isHighVolume, huEditorRepo, stickyFilters, filters);
-		viewId = rowsBuffer.getViewId();
+		rowsBuffer = createRowsBuffer(viewId, isHighVolume, huEditorRepo, stickyFilters, filters);
 
 		referencingDocumentPaths = builder.getReferencingDocumentPaths();
 
@@ -144,7 +143,7 @@ public class HUEditorView implements IView
 	}
 
 	private static final HUEditorViewBuffer createRowsBuffer( //
-			final WindowId windowId //
+			final ViewId viewId //
 			, final boolean isHighVolume //
 			, final HUEditorViewRepository huEditorRepo //
 			, final List<DocumentFilter> stickyFilters //
@@ -153,11 +152,11 @@ public class HUEditorView implements IView
 	{
 		if (isHighVolume)
 		{
-			return new HUEditorViewBuffer_HighVolume(windowId, huEditorRepo, stickyFilters, filters);
+			return new HUEditorViewBuffer_HighVolume(viewId, huEditorRepo, stickyFilters, filters);
 		}
 		else
 		{
-			return new HUEditorViewBuffer_FullyCached(windowId, huEditorRepo, stickyFilters, filters);
+			return new HUEditorViewBuffer_FullyCached(viewId, huEditorRepo, stickyFilters, filters);
 		}
 
 	}
@@ -499,7 +498,7 @@ public class HUEditorView implements IView
 		private final SqlViewBinding sqlViewBinding;
 		private ViewId parentViewId;
 		private DocumentId parentRowId;
-		private WindowId windowId;
+		private ViewId viewId;
 		private JSONViewDataType viewType;
 
 		private String referencingTableName;
@@ -512,6 +511,7 @@ public class HUEditorView implements IView
 		private List<DocumentFilter> filters;
 
 		private LinkedHashMap<String, Object> parameters;
+
 
 		private Builder(@NonNull final SqlViewBinding sqlViewBinding)
 		{
@@ -550,15 +550,16 @@ public class HUEditorView implements IView
 			return parentRowId;
 		}
 
-		public Builder setWindowId(final WindowId windowId)
+		public Builder setViewId(final ViewId viewId)
 		{
-			this.windowId = windowId;
+			this.viewId = viewId;
 			return this;
 		}
 
-		private WindowId getWindowId()
+		@NonNull
+		private ViewId getViewId()
 		{
-			return windowId;
+			return viewId;
 		}
 
 		public Builder setViewType(final JSONViewDataType viewType)

@@ -40,7 +40,6 @@ import de.metas.ui.web.view.descriptor.SqlViewRowIdsConverter;
 import de.metas.ui.web.view.descriptor.SqlViewSelectionQueryBuilder;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
-import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 import lombok.NonNull;
 
@@ -83,7 +82,7 @@ public class HUEditorViewBuffer_HighVolume implements HUEditorViewBuffer
 	private final CCache<DocumentId, HUEditorRow> cache_huRowsById = CCache.newLRUCache(I_M_HU.Table_Name + "#HUEditorRows#by#Id", 100, 2);
 
 	HUEditorViewBuffer_HighVolume(
-			final WindowId windowId,
+			final ViewId viewId,
 			final HUEditorViewRepository huEditorRepo,
 			final List<DocumentFilter> stickyFilters,
 			final List<DocumentFilter> filters)
@@ -98,7 +97,7 @@ public class HUEditorViewBuffer_HighVolume implements HUEditorViewBuffer
 
 		final ViewEvaluationCtx viewEvalCtx = ViewEvaluationCtx.of(Env.getCtx());
 		final List<DocumentFilter> filtersAll = ImmutableList.copyOf(Iterables.concat(stickyFilters, filters));
-		final ViewRowIdsOrderedSelection defaultSelection = viewSelectionFactory.createOrderedSelection(viewEvalCtx, windowId, filtersAll, viewBinding.getDefaultOrderBys());
+		final ViewRowIdsOrderedSelection defaultSelection = viewSelectionFactory.createOrderedSelection(viewEvalCtx, viewId, filtersAll, viewBinding.getDefaultOrderBys());
 		defaultSelectionRef = new AtomicReference<>(defaultSelection);
 	}
 

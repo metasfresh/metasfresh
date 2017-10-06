@@ -167,9 +167,9 @@ class SqlViewDataRepository implements IViewDataRepository
 	}
 
 	@Override
-	public ViewRowIdsOrderedSelection createOrderedSelection(final ViewEvaluationCtx viewEvalCtx, final WindowId windowId, final List<DocumentFilter> filters)
+	public ViewRowIdsOrderedSelection createOrderedSelection(final ViewEvaluationCtx viewEvalCtx, final ViewId viewId, final List<DocumentFilter> filters)
 	{
-		return viewRowIdsOrderedSelectionFactory.createOrderedSelection(viewEvalCtx, windowId, filters, defaultOrderBys);
+		return viewRowIdsOrderedSelectionFactory.createOrderedSelection(viewEvalCtx, viewId, filters, defaultOrderBys);
 	}
 
 	@Override

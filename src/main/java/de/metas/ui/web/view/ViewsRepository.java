@@ -238,7 +238,7 @@ public class ViewsRepository implements IViewsRepository
 	{
 		logger.trace("Creating new view from {}", request);
 
-		final WindowId windowId = request.getWindowId();
+		final WindowId windowId = request.getViewId().getWindowId();
 		final JSONViewDataType viewType = request.getViewType();
 		final IViewFactory factory = getFactory(windowId, viewType);
 		final IView view = factory.createView(request);

@@ -37,6 +37,7 @@ import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IViewFactory;
 import de.metas.ui.web.view.SqlViewFactory;
 import de.metas.ui.web.view.ViewFactory;
+import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.descriptor.SqlViewBinding;
 import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.view.json.JSONViewDataType;
@@ -96,7 +97,7 @@ public class HUEditorViewFactory implements IViewFactory
 	private SqlViewBinding getSqlViewBinding()
 	{
 		final int key = 0; // not important
-		return sqlViewBindingCache.getOrLoad(key, () -> createSqlViewBinding());
+		return sqlViewBindingCache.getOrLoad(key, this::createSqlViewBinding);
 	}
 
 	private SqlViewBinding createSqlViewBinding()
@@ -112,7 +113,7 @@ public class HUEditorViewFactory implements IViewFactory
 
 			// Consider window tab's where clause if any
 			final I_AD_Tab huTab = Services.get(IADWindowDAO.class).retrieveFirstTab(WEBUI_HU_Constants.WEBUI_HU_Window_ID.toInt());
-			if(!Check.isEmpty(huTab.getWhereClause(), true))
+			if (!Check.isEmpty(huTab.getWhereClause(), true))
 			{
 				sqlWhereClause.append("\n AND (").append(huTab.getWhereClause()).append(")");
 			}
@@ -221,11 +222,10 @@ public class HUEditorViewFactory implements IViewFactory
 	@Override
 	public HUEditorView createView(final CreateViewRequest request)
 	{
-		final WindowId windowId = request.getWindowId();
-		if (!WEBUI_HU_Constants.WEBUI_HU_Window_ID.equals(windowId))
-		{
-			throw new IllegalArgumentException("Invalid request's windowId: " + request);
-		}
+		final ViewId viewId = request.getViewId();
+
+		// NOTE: we shall allow any windowId because in some cases we want to use it as an included view mapped to some other window
+		// if (!WEBUI_HU_Constants.WEBUI_HU_Window_ID.equals(viewId.getWindowId())) throw new IllegalArgumentException("Invalid request's windowId: " + request);
 
 		//
 		// Referencing path and tableName (i.e. from where are we coming, e.g. receipt schedule)
@@ -250,7 +250,7 @@ public class HUEditorViewFactory implements IViewFactory
 		final HUEditorView.Builder huViewBuilder = HUEditorView.builder(getSqlViewBinding())
 				.setParentViewId(request.getParentViewId())
 				.setParentRowId(request.getParentRowId())
-				.setWindowId(windowId)
+				.setViewId(viewId)
 				.setViewType(request.getViewType())
 				.setStickyFilters(stickyFilters)
 				.setFilters(filters)
