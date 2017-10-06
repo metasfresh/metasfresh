@@ -1,4 +1,4 @@
-
+﻿
 DROP FUNCTION IF EXISTS report.movements_report(c_period_id numeric, c_activityfrom_id numeric, c_activityto_id numeric, ad_org_id numeric(10,0)) ;
 DROP FUNCTION IF EXISTS report.movements_report(c_period_id numeric, c_activityfrom_id numeric, c_activityto_id numeric, ad_org_id numeric(10,0), ad_language character varying (6)) ;
 
