@@ -178,7 +178,7 @@ import lombok.NonNull;
 	 * @param docAction document action based on document
 	 * @return true if performed
 	 */
-	public boolean processIt(final String processAction, final String docAction)
+	public boolean processIt(@NonNull final String processAction, @NonNull final String docAction)
 	{
 		setDocActionIntern(null);
 
@@ -192,7 +192,7 @@ import lombok.NonNull;
 		{
 			setDocActionIntern(docAction);
 		}
-		else if (processAction.equals(ACTION_None) || docAction.equals(ACTION_None))
+		else if (ACTION_None.equals(processAction) || ACTION_None.equals(docAction))
 		{
 			logger.debug("**** No Action (Prc={}/Doc={}) {}", processAction, docAction, document);
 			return true;
