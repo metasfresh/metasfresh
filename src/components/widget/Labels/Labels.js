@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import {
     dropdownRequest,
@@ -8,6 +9,22 @@ import Label from './Label';
 import Suggestion from './Suggestion';
 
 class Labels extends Component {
+    static propTypes = {
+        name: PropTypes.string.isRequired,
+        selected: PropTypes.array.isRequired,
+        className: PropTypes.string,
+        onChange: PropTypes.func.isRequired,
+        tabIndex: PropTypes.oneOfType([
+            PropTypes.string,
+            PropTypes.number
+        ])
+    };
+
+    static defaultProps = {
+        selected: [],
+        onChange: () => {}
+    };
+
     state = {
         focused: false,
         values: [],
@@ -31,7 +48,7 @@ class Labels extends Component {
         const { values } = response.data;
 
         this.setState({ values });
-    }
+    };
 
     handleFocus = () => {
         if (document.activeElement !== this.input) {
@@ -41,7 +58,7 @@ class Labels extends Component {
         this.setState({
             focused: true
         });
-    }
+    };
 
     handleBlur = event => {
         if (this.childClick) {
@@ -58,7 +75,7 @@ class Labels extends Component {
         this.setState({
             focused: false
         });
-    }
+    };
 
     handleKeyUp = async event => {
         const typeAhead = event.target.innerHTML;
@@ -77,7 +94,7 @@ class Labels extends Component {
         this.setState({
             suggestions: values
         });
-    }
+    };
 
     handleKeyDown = event => {
         const typeAhead = event.target.innerHTML;
@@ -126,18 +143,18 @@ class Labels extends Component {
 
         // For any key not checked
         event.preventDefault();
-    }
+    };
 
     handleSuggestionAdd = suggestion => {
         this.childClick = true;
         this.input.innerHTML = '';
 
         this.props.onChange([...this.props.selected, suggestion]);
-    }
+    };
 
     handleLabelRemove = label => {
         this.props.onChange(this.props.selected.filter(item => item !== label));
-    }
+    };
 
     unusedSuggestions = () => {
         const selected = new Set(
@@ -145,7 +162,7 @@ class Labels extends Component {
         );
 
         return suggestion => !selected.has(Object.keys(suggestion)[0]);
-    }
+    };
 
     render() {
         let suggestions;
