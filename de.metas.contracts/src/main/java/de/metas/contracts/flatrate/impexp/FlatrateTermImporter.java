@@ -85,13 +85,13 @@ import lombok.NonNull;
 		final I_M_Product product = importRecord.getM_Product();
 
 		final I_C_Flatrate_Term contract = flatrateBL.createTerm(
-				PlainContextAware.newWithThreadInheritedTrx(), // context
-				importRecord.getC_BPartner(), // bpartner
-				importRecord.getC_Flatrate_Conditions(), // conditions
-				importRecord.getStartDate(), // startDate
-				(I_AD_User)null, // userInCharge
-				product, // product
-				false // completeIt
+				PlainContextAware.newWithThreadInheritedTrx(), 
+				importRecord.getC_BPartner(), 
+				importRecord.getC_Flatrate_Conditions(),
+				importRecord.getStartDate(), 
+				(I_AD_User)null, 
+				product, 
+				false 
 		);
 		if (contract == null)
 		{
@@ -112,8 +112,7 @@ import lombok.NonNull;
 		// important to ended if needed, before saving
 		endContractIfNeeded(importRecord, contract);
 		InterfaceWrapperHelper.save(contract);
-		//
-		// Complete the subscription/contract
+
 		if (!isEndedContract(importRecord))
 		{
 			flatrateBL.complete(contract);
@@ -211,11 +210,7 @@ import lombok.NonNull;
 	{
 		final Timestamp contractEndDate = importRecord.getEndDate();
 		final Timestamp today = SystemTime.asDayTimestamp();
-		if (contractEndDate != null && today.after(contractEndDate))
-		{
-			return true;
-		}
-		return false;
+		return contractEndDate != null && today.after(contractEndDate);
 	}
 
 	private void endContractIfNeeded(@NonNull final I_I_Flatrate_Term importRecord, @NonNull final I_C_Flatrate_Term contract)
