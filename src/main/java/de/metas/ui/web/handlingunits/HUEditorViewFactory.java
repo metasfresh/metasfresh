@@ -224,10 +224,8 @@ public class HUEditorViewFactory implements IViewFactory
 	{
 		final ViewId viewId = request.getViewId();
 
-		if (!WEBUI_HU_Constants.WEBUI_HU_Window_ID.equals(viewId.getWindowId()))
-		{
-			throw new IllegalArgumentException("Invalid request's windowId: " + request);
-		}
+		// NOTE: we shall allow any windowId because in some cases we want to use it as an included view mapped to some other window
+		// if (!WEBUI_HU_Constants.WEBUI_HU_Window_ID.equals(viewId.getWindowId())) throw new IllegalArgumentException("Invalid request's windowId: " + request);
 
 		//
 		// Referencing path and tableName (i.e. from where are we coming, e.g. receipt schedule)
