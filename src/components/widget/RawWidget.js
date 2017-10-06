@@ -693,11 +693,19 @@ class RawWidget extends Component {
                         {caption}
                     </button>
                 )
-            case 'Labels':
+            case 'Labels': {
+                let values = [];
+
+                const entry = widgetData[0];
+
+                if (entry && entry.value && Array.isArray(entry.value.values)) {
+                    values = entry.value.values;
+                }
+
                 return (
                     <Labels
                         name={widgetField}
-                        selected={widgetData[0].value.values}
+                        selected={values}
                         className={this.getClassNames()}
                         onChange={value => this.handlePatch(widgetField, {
                             values: value
@@ -705,6 +713,7 @@ class RawWidget extends Component {
                         tabIndex={fullScreen ? -1 : tabIndex}
                     />
                 );
+            }
             default:
                 return false;
         }
