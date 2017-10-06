@@ -86,7 +86,10 @@ public class PlainDocumentBL extends AbstractDocumentBL
 		final Class<?> interfaceClass = wrapper.getInterfaceClass();
 		if (hasMethod(interfaceClass, String.class, "getDocStatus")
 				&& hasMethod(interfaceClass, String.class, "getDocAction")
-				&& hasMethod(interfaceClass, String.class, "getDocumentNo"))
+				// allow for now to consider documents also the ones that don't have DocumentNo; see <code>I_C_Flatrate_Term</code>
+//				&& hasMethod(interfaceClass, String.class, "getDocumentNo") 
+				)
+			
 		{
 			return POJOWrapper.create(document, IDocument.class);
 		}
