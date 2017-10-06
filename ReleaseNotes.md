@@ -58,6 +58,8 @@ Here come the actual release notes:
     * Translations added for Language en_US in Bank Statement Line Reference Window in WebUI
   * [#2637](https://github.com/metasfresh/metasfresh/issues/2637) Webui Window Design: Improvements to Account Combinations
     * Additional Improvements to Account Combination Window in WebUI. Adding missing Translations for en_US.
+  * [#2639](https://github.com/metasfresh/metasfresh/issues/2639) Rename default Account Values to be sorted last
+    * Moving the 5-digit Default Accounts to the end of table.
   * [#2642](https://github.com/metasfresh/metasfresh/issues/2642) Flatrate Import: Support explicit enddate and terminated contracts
   * [#2650](https://github.com/metasfresh/metasfresh/issues/2650) allow subscription pause and recipient change with existing shipment scheds
   * [#2657](https://github.com/metasfresh/metasfresh/issues/2657) don't show active hus in hu costprice report
