@@ -10,6 +10,16 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.31 (2017-42)
+
+**release for week 2017-42**
+
+## Features
+* metasfresh-app
+
+## Fixes
+* metasfresh-app
+
 # metasfresh 5.30 (2017-41)
 
 **release for week 2017-41**
