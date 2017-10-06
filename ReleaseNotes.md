@@ -14,16 +14,28 @@ Here come the actual release notes:
 
 **release for week 2017-41**
 * metasfresh-app
+  * [#1339](https://github.com/metasfresh/metasfresh/issues/1339) Forecast Window as Document
+  * [#2152](https://github.com/metasfresh/metasfresh/issues/2152) Prepare Default Filters for Retraceability window
   * [#2212](https://github.com/metasfresh/metasfresh/issues/2212) take out password field from user window and use process instead
     * Removing the Password Field from User Window, now only changeable via Password Change Action.
+  * [#2432](https://github.com/metasfresh/metasfresh/issues/2432) Process for converting any table to a document
+  * [#2494](https://github.com/metasfresh/metasfresh/issues/2494) Prices changing in FlatrateTerms after Prolongation
   * [#2517](https://github.com/metasfresh/metasfresh/issues/2517) Freigabe zur Fakturierung as standard filter
     * Adding default further Filter to Invoice Candidate Window in WebUI.
+  * [#2525](https://github.com/metasfresh/metasfresh/issues/2525) Generate Picking Document
+  * [#2590](https://github.com/metasfresh/metasfresh/issues/2590) Make use of product documentnote on Quotation and Order Document
+  * [#2592](https://github.com/metasfresh/metasfresh/issues/2592) Make letter print preview work with AD_BoilerPlate jasper process
   * [#2594](https://github.com/metasfresh/metasfresh/issues/2594) New Window for Dunning Candidates in WebUI
     * New Window for Dunning Candidates in WebUI, that allows the preparation and creation of Dunning Documents.
+  * [#2604](https://github.com/metasfresh/metasfresh/issues/2604) Printing via standalone client takes too long
+  * [#2611](https://github.com/metasfresh/metasfresh/issues/2611) Business Partner Import with empty location
   * [#2614](https://github.com/metasfresh/metasfresh/issues/2614) Overhaul shipment schedule UI window
     * Additional shipment Schedule adjustments, new Quickactions and adding new Fields to Main View.
+  * [#2615](https://github.com/metasfresh/metasfresh/issues/2615) Make the callout C_Flatrate_Matching.onC_Flatrate_Transition_ID comply with webui
+  * [#2623](https://github.com/metasfresh/metasfresh/issues/2623) overhaul shipment schedule closing
   * [#2626](https://github.com/metasfresh/metasfresh/issues/2626) Window Design Webui: Translations and Improvements for DeliveryDays
     * Improved Translations for Language/ Locale en_US in Delivery Days Window.
+  * [#2627](https://github.com/metasfresh/metasfresh/issues/2627) Create Zoom Across Reference between Flatrate Term and Invoice Candidate
   * [#2628](https://github.com/metasfresh/metasfresh/issues/2628) Show fields product, qty, price and contractstatus in window contracts
     * Improvements for Subscription Contracts in Contract Window in WebUI. Adding Fields and Translations.
   * [#2631](https://github.com/metasfresh/metasfresh/issues/2631) Window Design Webui: Improve Business Partner window
@@ -34,9 +46,21 @@ Here come the actual release notes:
     * Translations added for Language en_US in Bank Statement Line Reference Window in WebUI
   * [#2637](https://github.com/metasfresh/metasfresh/issues/2637) Webui Window Design: Improvements to Account Combinations
     * Additional Improvements to Account Combination Window in WebUI. Adding missing Translations for en_US.
+  * [#2642](https://github.com/metasfresh/metasfresh/issues/2642) Flatrate Import: Support explicit enddate and terminated contracts
+  * [#2650](https://github.com/metasfresh/metasfresh/issues/2650) allow subscription pause and recipient change with existing shipment scheds
+  * [#2657](https://github.com/metasfresh/metasfresh/issues/2657) don't show active hus in hu costprice report
+
+* metasfresh-webui-frontend
+  * [#1138](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1138) frontend: Labels widget
+  * [#1220](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1220) frontend: Attach URL support
+
 
 # Fixes
+* metasfresh-app
+  * [#2543](https://github.com/metasfresh/metasfresh/issues/2543) Businesspartner Import for different Partner with the same address
+
 * metasfresh-webui-frontend
+  * [#1212](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1212) Selection using SHIFT does not work in Handling unit Editor
   * [#1234](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1234) Letter Window does not store template info
     * Fixes a minor Bug in Letter component that prevented the usage of Text Snippets.
 
