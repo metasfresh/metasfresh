@@ -109,7 +109,7 @@ Here come the actual release notes:
   * [#2574](https://github.com/metasfresh/metasfresh/issues/2574) Provide data about a shipment schedule's source document
     * Extension of Shipment Schedule, now adding more Transparences about the Shipment Schedule Trigger Document.
   * [#2580](https://github.com/metasfresh/metasfresh/issues/2580) Add Subscription history in Contract window WebUI
-    * adding included Tab for Subscription History to Contract Window in WebUI.
+    * Adding included Tab for Subscription History to Contract Window in WebUI.
   * [#2584](https://github.com/metasfresh/metasfresh/issues/2584) Remove remaining dependencies between shipment schedule and order line
     * Improving the Shipment Schedule to Orderline Dependancy, now allowing to have more than 1 Shipment Schedule to an Orderline, which is often needed in Subscription Contracts.
   * [#2585](https://github.com/metasfresh/metasfresh/issues/2585) Action/ Process to reopen processed Shipment Schedules
@@ -119,7 +119,7 @@ Here come the actual release notes:
   * [#2593](https://github.com/metasfresh/metasfresh/issues/2593) New Window for Dunning Level in WebUI
     * New window in WebUI that allows the Maintenance of different Dunning Types and Dunning Levels.
   * [#2601](https://github.com/metasfresh/metasfresh/issues/2601) Export AD_System relevant fields to /info endpoint
-    * new internal Functionality that allows to get all AD_System relevant fields via /info endpoiint.
+    * New internal Functionality that allows to get all AD_System relevant fields via /info endpoint.
   * [#2602](https://github.com/metasfresh/metasfresh/issues/2602) Reactivate and fix subscription pricing
     * Improvement of the subscription Pricing Functionality.
 
@@ -138,7 +138,7 @@ Here come the actual release notes:
   * [#2598](https://github.com/metasfresh/metasfresh/issues/2598) Fix the callout for CalloutProductCategory to comply with webui
     * Minor fix in the Product Category Callout to comply with WebUI.
   * [#2576](https://github.com/metasfresh/metasfresh/issues/2576) Swing Client. Window for Printing Queue does not open properly anymore
-    * Fix for the Prining Queue Window in Swing Client.
+    * Fix for the Printing Queue Window in Swing Client.
 
 # metasfresh 5.28 (2017-39)
 
