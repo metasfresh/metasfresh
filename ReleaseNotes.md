@@ -13,6 +13,8 @@ Here come the actual release notes:
 # metasfresh 5.30 (2017-41)
 
 **release for week 2017-41**
+
+## Features
 * metasfresh-app
   * [#1339](https://github.com/metasfresh/metasfresh/issues/1339) Forecast Window as Document
   * [#2152](https://github.com/metasfresh/metasfresh/issues/2152) Prepare Default Filters for Retraceability window
@@ -55,7 +57,7 @@ Here come the actual release notes:
   * [#1220](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1220) frontend: Attach URL support
 
 
-# Fixes
+## Fixes
 * metasfresh-app
   * [#2543](https://github.com/metasfresh/metasfresh/issues/2543) Businesspartner Import for different Partner with the same address
 
