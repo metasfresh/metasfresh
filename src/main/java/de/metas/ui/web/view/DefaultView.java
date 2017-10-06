@@ -34,7 +34,6 @@ import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
-import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 import de.metas.ui.web.window.model.sql.SqlOptions;
 import lombok.NonNull;
@@ -123,10 +122,9 @@ public class DefaultView implements IView
 		{
 			final ViewEvaluationCtx evalCtx = ViewEvaluationCtx.of(Env.getCtx());
 
-			final ViewId viewId = ViewId.random(builder.getWindowId());
 			defaultSelection = viewDataRepository.createOrderedSelection(
 					evalCtx,
-					viewId,
+					builder.getViewId(),
 					ImmutableList.copyOf(Iterables.concat(stickyFilters, filters)));
 			selectionsByOrderBys.put(defaultSelection.getOrderBys(), defaultSelection);
 		}
@@ -447,7 +445,7 @@ public class DefaultView implements IView
 
 	public static final class Builder
 	{
-		private WindowId windowId;
+		private ViewId viewId;
 		private JSONViewDataType viewType;
 		private Set<DocumentPath> referencingDocumentPaths;
 		private ViewId parentViewId;
@@ -484,15 +482,16 @@ public class DefaultView implements IView
 			return parentRowId;
 		}
 
-		public Builder setWindowId(final WindowId windowId)
+		public Builder setViewId(ViewId viewId)
 		{
-			this.windowId = windowId;
+			this.viewId = viewId;
 			return this;
 		}
 
-		public WindowId getWindowId()
+		@NonNull
+		public ViewId getViewId()
 		{
-			return windowId;
+			return viewId;
 		}
 
 		public Builder setViewType(final JSONViewDataType viewType)

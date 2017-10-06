@@ -37,6 +37,7 @@ import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IViewFactory;
 import de.metas.ui.web.view.SqlViewFactory;
 import de.metas.ui.web.view.ViewFactory;
+import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.descriptor.SqlViewBinding;
 import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.view.json.JSONViewDataType;
@@ -221,8 +222,9 @@ public class HUEditorViewFactory implements IViewFactory
 	@Override
 	public HUEditorView createView(final CreateViewRequest request)
 	{
-		final WindowId windowId = request.getWindowId();
-		if (!WEBUI_HU_Constants.WEBUI_HU_Window_ID.equals(windowId))
+		final ViewId viewId = request.getViewId();
+		
+		if (!WEBUI_HU_Constants.WEBUI_HU_Window_ID.equals(viewId.getWindowId()))
 		{
 			throw new IllegalArgumentException("Invalid request's windowId: " + request);
 		}
@@ -250,7 +252,7 @@ public class HUEditorViewFactory implements IViewFactory
 		final HUEditorView.Builder huViewBuilder = HUEditorView.builder(getSqlViewBinding())
 				.setParentViewId(request.getParentViewId())
 				.setParentRowId(request.getParentRowId())
-				.setWindowId(windowId)
+				.setViewId(viewId)
 				.setViewType(request.getViewType())
 				.setStickyFilters(stickyFilters)
 				.setFilters(filters)

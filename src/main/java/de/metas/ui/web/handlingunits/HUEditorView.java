@@ -41,7 +41,6 @@ import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
-import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 import de.metas.ui.web.window.model.sql.SqlOptions;
 import lombok.NonNull;
@@ -499,7 +498,7 @@ public class HUEditorView implements IView
 		private final SqlViewBinding sqlViewBinding;
 		private ViewId parentViewId;
 		private DocumentId parentRowId;
-		private WindowId windowId;
+		private ViewId viewId;
 		private JSONViewDataType viewType;
 
 		private String referencingTableName;
@@ -513,7 +512,6 @@ public class HUEditorView implements IView
 
 		private LinkedHashMap<String, Object> parameters;
 
-		private ViewId _viewId; // lazy
 
 		private Builder(@NonNull final SqlViewBinding sqlViewBinding)
 		{
@@ -552,20 +550,16 @@ public class HUEditorView implements IView
 			return parentRowId;
 		}
 
-		public Builder setWindowId(final WindowId windowId)
+		public Builder setViewId(final ViewId viewId)
 		{
-			this.windowId = windowId;
-			this._viewId = null;
+			this.viewId = viewId;
 			return this;
 		}
 
+		@NonNull
 		private ViewId getViewId()
 		{
-			if(_viewId == null)
-			{
-				_viewId = ViewId.random(windowId);
-			}
-			return _viewId;
+			return viewId;
 		}
 
 		public Builder setViewType(final JSONViewDataType viewType)
