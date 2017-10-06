@@ -14,13 +14,13 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
-import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.slf4j.Logger;
 
 import com.google.common.collect.Ordering;
 
+import de.metas.adempiere.model.I_AD_User;
 import de.metas.adempiere.model.I_C_BPartner_Location;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.model.I_C_Flatrate_Term;
@@ -98,7 +98,9 @@ import lombok.NonNull;
 			throw new AdempiereException("contract not created");
 		}
 
+		setBillUser(contract);
 		setDropShipBPartner(importRecord, contract);
+		setDropShipUser(contract);
 		setDropShipLocation(contract);
 		contract.setM_Product(product);
 		setUOM(contract, product);
@@ -126,6 +128,16 @@ import lombok.NonNull;
 		return contract;
 	}
 	
+	private void setBillUser(@NonNull final I_C_Flatrate_Term contract)
+	{
+		int billPartnerId = contract.getBill_BPartner_ID();
+		final I_AD_User billUser = findBillUser(billPartnerId);
+		if (billUser != null)
+		{
+			contract.setBill_User(billUser);
+		}
+	}
+	
 	private void setDropShipBPartner(@NonNull final I_I_Flatrate_Term importRecord, @NonNull final I_C_Flatrate_Term contract)
 	{
 		final int dropShipBPartnerId = importRecord.getDropShip_BPartner_ID() > 0 ? importRecord.getDropShip_BPartner_ID() : importRecord.getC_BPartner_ID();
@@ -136,6 +148,16 @@ import lombok.NonNull;
 		contract.setDropShip_BPartner_ID(dropShipBPartnerId);
 	}
 
+	private void setDropShipUser(@NonNull final I_C_Flatrate_Term contract)
+	{
+		int dropShipBPartnerId = contract.getDropShip_BPartner_ID();
+		final I_AD_User dropShipUser = findDropShipUser(dropShipBPartnerId);
+		if (dropShipUser != null)
+		{
+			contract.setDropShip_User(dropShipUser);
+		}
+	}
+	
 	private void setDropShipLocation(@NonNull final I_C_Flatrate_Term contract)
 	{
 		int dropShipBPartnerId = contract.getDropShip_BPartner_ID();
@@ -146,33 +168,6 @@ import lombok.NonNull;
 		}
 	}
 	
-	private I_C_BPartner_Location findBPartnerShipToLocation(final int bpartnerId)
-	{
-		final List<I_C_BPartner_Location> bpLocations = bpartnerDAO.retrieveBPartnerLocations(getCtx(), bpartnerId, ITrx.TRXNAME_None);
-		if (bpLocations.isEmpty())
-		{
-			return null;
-		}
-		else if (bpLocations.size() == 1)
-		{
-			return bpLocations.get(0);
-		}
-		else
-		{
-			final I_C_BPartner_Location bpLocation = bpLocations.stream()
-					.filter(I_C_BPartner_Location::isShipTo)
-					.sorted(Ordering.natural().onResultOf(bpl -> bpl.isShipToDefault() ? 0 : 1))
-					.findFirst().get();
-			if (bpLocation.isShipToDefault())
-			{
-				return bpLocation;
-			}
-			else
-			{
-				return null;
-			}
-		}
-	}
 
 	private void setUOM(@NonNull final I_C_Flatrate_Term contract, @NonNull final I_M_Product product)
 	{
@@ -233,6 +228,90 @@ import lombok.NonNull;
 			contract.setProcessed(true);
 			contract.setDocAction(X_C_Flatrate_Term.DOCACTION_None);
 			contract.setDocStatus(X_C_Flatrate_Term.DOCSTATUS_Completed);
+		}
+	}
+	
+	private I_AD_User findBillUser(final int bpartnerId)
+	{
+		final List<I_AD_User> users = bpartnerDAO.retrieveContacts(getCtx(), bpartnerId, ITrx.TRXNAME_ThreadInherited);
+		if (users.isEmpty())
+		{
+			return null;
+		}
+		else if (users.size() == 1)
+		{
+			return users.get(0);
+		}
+		else
+		{
+			final I_AD_User billUser = users.stream()
+					.filter(I_AD_User::isBillToContact_Default)
+					.sorted(Ordering.natural().onResultOf(user -> user.isBillToContact_Default() ? 0 : 1))
+					.findFirst().get();
+			if (billUser.isBillToContact_Default())
+			{
+				return billUser;
+			}
+			else
+			{
+				return null;
+			}
+		}
+	}
+	
+	private I_AD_User findDropShipUser(final int bpartnerId)
+	{
+		final List<I_AD_User> users = bpartnerDAO.retrieveContacts(getCtx(), bpartnerId, ITrx.TRXNAME_ThreadInherited);
+		if (users.isEmpty())
+		{
+			return null;
+		}
+		else if (users.size() == 1)
+		{
+			return users.get(0);
+		}
+		else
+		{
+			final I_AD_User dropShipUser = users.stream()
+					.filter(I_AD_User::isShipToContact_Default)
+					.sorted(Ordering.natural().onResultOf(user -> user.isShipToContact_Default() ? 0 : 1))
+					.findFirst().get();
+			if (dropShipUser.isShipToContact_Default())
+			{
+				return dropShipUser;
+			}
+			else
+			{
+				return null;
+			}
+		}
+	}
+	
+	private I_C_BPartner_Location findBPartnerShipToLocation(final int bpartnerId)
+	{
+		final List<I_C_BPartner_Location> bpLocations = bpartnerDAO.retrieveBPartnerLocations(getCtx(), bpartnerId, ITrx.TRXNAME_None);
+		if (bpLocations.isEmpty())
+		{
+			return null;
+		}
+		else if (bpLocations.size() == 1)
+		{
+			return bpLocations.get(0);
+		}
+		else
+		{
+			final I_C_BPartner_Location bpLocation = bpLocations.stream()
+					.filter(I_C_BPartner_Location::isShipTo)
+					.sorted(Ordering.natural().onResultOf(bpl -> bpl.isShipToDefault() ? 0 : 1))
+					.findFirst().get();
+			if (bpLocation.isShipToDefault())
+			{
+				return bpLocation;
+			}
+			else
+			{
+				return null;
+			}
 		}
 	}
 }
