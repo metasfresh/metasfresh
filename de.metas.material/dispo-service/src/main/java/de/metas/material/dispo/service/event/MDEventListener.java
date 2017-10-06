@@ -6,18 +6,18 @@ import org.springframework.stereotype.Service;
 import de.metas.material.dispo.Candidate;
 import de.metas.material.dispo.Candidate.SubType;
 import de.metas.material.dispo.Candidate.Type;
-import de.metas.material.dispo.service.CandidateChangeHandler;
 import de.metas.material.dispo.DemandCandidateDetail;
-import de.metas.material.event.DistributionPlanEvent;
+import de.metas.material.dispo.service.CandidateChangeHandler;
 import de.metas.material.event.EventDescr;
-import de.metas.material.event.ForecastEvent;
 import de.metas.material.event.MaterialDescriptor;
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.MaterialEventListener;
-import de.metas.material.event.ProductionPlanEvent;
 import de.metas.material.event.ReceiptScheduleEvent;
 import de.metas.material.event.ShipmentScheduleEvent;
 import de.metas.material.event.TransactionEvent;
+import de.metas.material.event.ddorder.DistributionPlanEvent;
+import de.metas.material.event.forecast.ForecastEvent;
+import de.metas.material.event.pporder.ProductionPlanEvent;
 import lombok.NonNull;
 
 /*

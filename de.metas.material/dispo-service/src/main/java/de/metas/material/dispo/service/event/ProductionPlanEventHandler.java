@@ -11,9 +11,9 @@ import de.metas.material.dispo.DemandCandidateDetail;
 import de.metas.material.dispo.ProductionCandidateDetail;
 import de.metas.material.dispo.service.CandidateChangeHandler;
 import de.metas.material.event.EventDescr;
-import de.metas.material.event.ProductionPlanEvent;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrderLine;
+import de.metas.material.event.pporder.ProductionPlanEvent;
 import lombok.NonNull;
 
 /*

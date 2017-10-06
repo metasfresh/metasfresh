@@ -23,15 +23,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import de.metas.material.event.DemandHandlerAuditEvent;
-import de.metas.material.event.DistributionPlanEvent;
 import de.metas.material.event.EventDescr;
 import de.metas.material.event.MaterialDemandDescr;
 import de.metas.material.event.MaterialDescriptor;
 import de.metas.material.event.MaterialEventService;
-import de.metas.material.event.ProductionPlanEvent;
 import de.metas.material.event.ddorder.DDOrder;
 import de.metas.material.event.ddorder.DDOrderLine;
+import de.metas.material.event.ddorder.DistributionPlanEvent;
 import de.metas.material.event.pporder.PPOrder;
+import de.metas.material.event.pporder.ProductionPlanEvent;
 import de.metas.material.planning.IMRPContextFactory;
 import de.metas.material.planning.IMRPNoteBuilder;
 import de.metas.material.planning.IMRPNotesCollector;

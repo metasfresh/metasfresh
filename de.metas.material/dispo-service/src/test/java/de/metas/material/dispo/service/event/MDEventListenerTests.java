@@ -32,13 +32,13 @@ import de.metas.material.dispo.service.event.DistributionPlanEventHandler;
 import de.metas.material.dispo.service.event.MDEventListener;
 import de.metas.material.dispo.service.event.ProductionPlanEventHandler;
 import de.metas.material.dispo.service.event.SupplyProposalEvaluator;
-import de.metas.material.event.DistributionPlanEvent;
 import de.metas.material.event.EventDescr;
 import de.metas.material.event.MaterialDescriptor;
 import de.metas.material.event.MaterialEventService;
 import de.metas.material.event.ShipmentScheduleEvent;
 import de.metas.material.event.ddorder.DDOrder;
 import de.metas.material.event.ddorder.DDOrderLine;
+import de.metas.material.event.ddorder.DistributionPlanEvent;
 import mockit.Mocked;
 
 /*

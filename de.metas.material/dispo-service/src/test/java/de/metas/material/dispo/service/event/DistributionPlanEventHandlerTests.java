@@ -31,11 +31,11 @@ import de.metas.material.dispo.DispoTestUtils;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.service.CandidateChangeHandler;
 import de.metas.material.dispo.service.StockCandidateFactory;
-import de.metas.material.event.DistributionPlanEvent;
 import de.metas.material.event.EventDescr;
 import de.metas.material.event.MaterialEventService;
 import de.metas.material.event.ddorder.DDOrder;
 import de.metas.material.event.ddorder.DDOrderLine;
+import de.metas.material.event.ddorder.DistributionPlanEvent;
 import lombok.NonNull;
 import mockit.Mocked;
 

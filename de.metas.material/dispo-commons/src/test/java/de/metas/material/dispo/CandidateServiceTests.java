@@ -18,11 +18,11 @@ import de.metas.material.dispo.CandidateService;
 import de.metas.material.dispo.ProductionCandidateDetail;
 import de.metas.material.dispo.Candidate.SubType;
 import de.metas.material.dispo.Candidate.Type;
-import de.metas.material.event.DDOrderRequestedEvent;
 import de.metas.material.event.MaterialEventService;
-import de.metas.material.event.PPOrderRequestedEvent;
 import de.metas.material.event.ddorder.DDOrder;
+import de.metas.material.event.ddorder.DDOrderRequestedEvent;
 import de.metas.material.event.pporder.PPOrder;
+import de.metas.material.event.pporder.PPOrderRequestedEvent;
 
 /*
  * #%L

@@ -19,12 +19,12 @@ import com.google.common.annotations.VisibleForTesting;
 
 import de.metas.document.engine.IDocumentBL;
 import de.metas.logging.LogManager;
-import de.metas.material.event.DDOrderRequestedEvent;
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.MaterialEventListener;
-import de.metas.material.event.PPOrderRequestedEvent;
 import de.metas.material.event.ddorder.DDOrder;
+import de.metas.material.event.ddorder.DDOrderRequestedEvent;
 import de.metas.material.event.pporder.PPOrder;
+import de.metas.material.event.pporder.PPOrderRequestedEvent;
 import lombok.NonNull;
 
 /*

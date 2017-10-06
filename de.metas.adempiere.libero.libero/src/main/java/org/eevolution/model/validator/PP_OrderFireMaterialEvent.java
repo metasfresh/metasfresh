@@ -15,10 +15,10 @@ import org.eevolution.model.I_PP_Order_BOMLine;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.material.event.EventDescr;
 import de.metas.material.event.MaterialEventService;
-import de.metas.material.event.ProductionPlanEvent;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrder.PPOrderBuilder;
 import de.metas.material.event.pporder.PPOrderLine;
+import de.metas.material.event.pporder.ProductionPlanEvent;
 import de.metas.material.planning.pporder.PPOrderUtil;
 
 /**

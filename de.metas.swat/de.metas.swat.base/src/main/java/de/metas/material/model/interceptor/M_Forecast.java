@@ -14,8 +14,8 @@ import org.compiere.model.I_M_Forecast;
 import org.compiere.model.I_M_ForecastLine;
 import org.compiere.model.ModelValidator;
 
-import de.metas.material.event.ForecastEvent;
 import de.metas.material.event.MaterialEventService;
+import de.metas.material.event.forecast.ForecastEvent;
 import lombok.NonNull;
 
 @Interceptor(I_M_Forecast.class)

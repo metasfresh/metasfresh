@@ -1,9 +1,10 @@
-package de.metas.material.event;
+package de.metas.material.event.pporder;
 
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.eevolution.model.I_PP_Order;
 
-import de.metas.material.event.pporder.PPOrder;
+import de.metas.material.event.EventDescr;
+import de.metas.material.event.MaterialEvent;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -31,7 +32,10 @@ import lombok.NonNull;
  * #L%
  */
 /**
- * Send by the material planner when it came up with a brilliant production plan that could be turned into an {@link I_PP_Order} <b>or</or> if a ppOrder was actually created or changed.
+ * Send by the material dispo when it wants a {@link I_PP_Order} to be created.
+ * <p>
+ * <b>Important: right now, any {@link PPOrderLine}s are ignored</b>. The receiver of this event will mostly use
+ * the event's {@link PPOrder}'s {@link PPOrder#getProductPlanningId()} to create the @{code PP_Order}.
  *
  * @author metas-dev <dev@metasfresh.com>
  *
@@ -39,9 +43,9 @@ import lombok.NonNull;
 @Data
 @AllArgsConstructor
 @Builder
-final public class ProductionPlanEvent implements MaterialEvent
+public class PPOrderRequestedEvent implements MaterialEvent
 {
-	public static final String TYPE = "ProductionPlanEvent";
+	public static final String TYPE = "PPOrderRequestedEvent";
 
 	@NonNull
 	private final EventDescr eventDescr;
@@ -50,4 +54,5 @@ final public class ProductionPlanEvent implements MaterialEvent
 
 	@NonNull
 	private final PPOrder ppOrder;
+
 }

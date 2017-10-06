@@ -11,9 +11,9 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.material.event.EventDescr;
-import de.metas.material.event.ForecastEvent;
 import de.metas.material.event.MaterialDescriptor;
 import de.metas.material.event.forecast.Forecast;
+import de.metas.material.event.forecast.ForecastEvent;
 import de.metas.material.event.forecast.Forecast.ForecastBuilder;
 import de.metas.material.event.forecast.ForecastLine;
 import lombok.NonNull;

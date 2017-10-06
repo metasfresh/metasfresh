@@ -1,10 +1,10 @@
-package de.metas.material.event;
+package de.metas.material.event.ddorder;
 
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.eevolution.model.I_PP_Order;
+import org.eevolution.model.I_DD_Order;
 
-import de.metas.material.event.pporder.PPOrder;
-import de.metas.material.event.pporder.PPOrderLine;
+import de.metas.material.event.EventDescr;
+import de.metas.material.event.MaterialEvent;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -32,20 +32,16 @@ import lombok.NonNull;
  * #L%
  */
 /**
- * Send by the material dispo when it wants a {@link I_PP_Order} to be created.
- * <p>
- * <b>Important: right now, any {@link PPOrderLine}s are ignored</b>. The receiver of this event will mostly use
- * the event's {@link PPOrder}'s {@link PPOrder#getProductPlanningId()} to create the @{code PP_Order}.
+ * Send by the material planner when it came up with a distribution plan that could be turned into an {@link I_DD_Order}.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 @Data
-@AllArgsConstructor
 @Builder
-public class PPOrderRequestedEvent implements MaterialEvent
+@AllArgsConstructor
+public class DistributionPlanEvent implements MaterialEvent
 {
-	public static final String TYPE = "PPOrderRequestedEvent";
+	public static final String TYPE = "DistributionPlanEvent";
 
 	@NonNull
 	private final EventDescr eventDescr;
@@ -53,6 +49,18 @@ public class PPOrderRequestedEvent implements MaterialEvent
 	private final TableRecordReference reference;
 
 	@NonNull
-	private final PPOrder ppOrder;
+	private final DDOrder ddOrder;
 
+
+	/**
+	 * Note: this field is a bit redundant because the {@link #getPpOrder()}'s lines contain a network distribution line with this info. However, the material-dispo code doesn't know or care about how to get to that information.
+	 */
+	@NonNull
+	private final Integer fromWarehouseId;
+
+	/**
+	 * Also check the note about {@link #getFromWarehouseId()}.
+	 */
+	@NonNull
+	private final Integer toWarehouseId;
 }

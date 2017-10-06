@@ -1,6 +1,7 @@
-package de.metas.material.event;
+package de.metas.material.event.forecast;
 
-import de.metas.material.event.forecast.Forecast;
+import de.metas.material.event.EventDescr;
+import de.metas.material.event.MaterialEvent;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;

@@ -23,9 +23,9 @@ import com.google.common.collect.ImmutableList;
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.document.engine.IDocument;
 import de.metas.interfaces.I_M_Warehouse;
-import de.metas.material.event.ForecastEvent;
 import de.metas.material.event.MaterialDescriptor;
 import de.metas.material.event.forecast.Forecast;
+import de.metas.material.event.forecast.ForecastEvent;
 import de.metas.material.event.forecast.ForecastLine;
 
 /*

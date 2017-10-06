@@ -16,17 +16,17 @@ import org.junit.Test;
 
 import de.metas.event.SimpleObjectSerializer;
 import de.metas.material.event.EventDescr;
-import de.metas.material.event.ForecastEvent;
 import de.metas.material.event.MaterialDescriptor;
 import de.metas.material.event.MaterialEvent;
-import de.metas.material.event.PPOrderRequestedEvent;
-import de.metas.material.event.ProductionPlanEvent;
 import de.metas.material.event.ReceiptScheduleEvent;
 import de.metas.material.event.TransactionEvent;
 import de.metas.material.event.forecast.Forecast;
+import de.metas.material.event.forecast.ForecastEvent;
 import de.metas.material.event.forecast.ForecastLine;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrderLine;
+import de.metas.material.event.pporder.PPOrderRequestedEvent;
+import de.metas.material.event.pporder.ProductionPlanEvent;
 
 /*
  * #%L

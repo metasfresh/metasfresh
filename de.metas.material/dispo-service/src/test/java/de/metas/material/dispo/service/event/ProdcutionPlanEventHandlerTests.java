@@ -13,11 +13,13 @@ import java.math.BigDecimal;
 import java.util.Date;
 
 import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_AD_Org;
 import org.compiere.util.TimeUtil;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 
 import de.metas.material.dispo.Candidate.Type;
@@ -30,9 +32,9 @@ import de.metas.material.dispo.service.StockCandidateFactory;
 import de.metas.material.dispo.service.event.ProductionPlanEventHandler;
 import de.metas.material.event.EventDescr;
 import de.metas.material.event.MaterialEventService;
-import de.metas.material.event.ProductionPlanEvent;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrderLine;
+import de.metas.material.event.pporder.ProductionPlanEvent;
 import mockit.Mocked;
 
 /*
@@ -59,6 +61,9 @@ import mockit.Mocked;
 
 public class ProdcutionPlanEventHandlerTests
 {
+	@Rule
+	public final AdempiereTestWatcher testWatcher = new AdempiereTestWatcher();
+	
 	public static final Date t0 = SystemTime.asDate();
 
 	private static final Date t1 = TimeUtil.addMinutes(t0, 10);

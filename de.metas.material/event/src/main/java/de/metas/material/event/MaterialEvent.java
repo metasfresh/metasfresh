@@ -3,6 +3,12 @@ package de.metas.material.event;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
+import de.metas.material.event.ddorder.DDOrderRequestedEvent;
+import de.metas.material.event.ddorder.DistributionPlanEvent;
+import de.metas.material.event.forecast.ForecastEvent;
+import de.metas.material.event.pporder.PPOrderRequestedEvent;
+import de.metas.material.event.pporder.ProductionPlanEvent;
+
 /*
  * #%L
  * metasfresh-manufacturing-event-api

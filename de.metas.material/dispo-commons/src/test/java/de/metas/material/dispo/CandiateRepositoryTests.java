@@ -413,7 +413,7 @@ public class CandiateRepositoryTests
 	}
 
 	/**
-	 * Verifies that also the candidate's {@link DemandCandidateDetail} is persisted.
+	 * Verifies that also the candidate's {@link DemandCandidateDetailTests} is persisted.
 	 */
 	@Test
 	public void addOrReplace_with_DemandDetail()

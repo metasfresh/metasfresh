@@ -8,9 +8,9 @@ import de.metas.material.dispo.Candidate.SubType;
 import de.metas.material.dispo.DemandCandidateDetail;
 import de.metas.material.dispo.service.CandidateChangeHandler;
 import de.metas.material.event.EventDescr;
-import de.metas.material.event.ForecastEvent;
 import de.metas.material.event.MaterialDescriptor;
 import de.metas.material.event.forecast.Forecast;
+import de.metas.material.event.forecast.ForecastEvent;
 import de.metas.material.event.forecast.ForecastLine;
 import lombok.NonNull;
 
