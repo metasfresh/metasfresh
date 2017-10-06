@@ -20,13 +20,13 @@ import org.junit.rules.TestWatcher;
 
 import de.metas.material.dispo.Candidate;
 import de.metas.material.dispo.Candidate.Type;
-import de.metas.material.dispo.service.CandidateChangeHandler;
-import de.metas.material.dispo.service.StockCandidateFactory;
-import de.metas.material.dispo.service.event.DistributionPlanEventHandler;
-import de.metas.material.dispo.service.event.SupplyProposalEvaluator;
-import de.metas.material.dispo.service.event.SupplyProposalEvaluator.SupplyProposal;
 import de.metas.material.dispo.CandidateRepository;
 import de.metas.material.dispo.CandidateService;
+import de.metas.material.dispo.service.CandidateChangeHandler;
+import de.metas.material.dispo.service.StockCandidateFactory;
+import de.metas.material.dispo.service.event.SupplyProposalEvaluator.SupplyProposal;
+import de.metas.material.dispo.service.event.handler.DistributionPlanEventHandler;
+import de.metas.material.dispo.service.event.handler.DistributionPlanEventHandlerTests;
 import de.metas.material.event.MaterialEventService;
 import mockit.Mocked;
 

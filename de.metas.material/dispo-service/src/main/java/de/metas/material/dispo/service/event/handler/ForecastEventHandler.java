@@ -1,4 +1,4 @@
-package de.metas.material.dispo.service.event;
+package de.metas.material.dispo.service.event.handler;
 
 import org.springframework.stereotype.Service;
 
@@ -7,6 +7,7 @@ import de.metas.material.dispo.Candidate.CandidateBuilder;
 import de.metas.material.dispo.Candidate.SubType;
 import de.metas.material.dispo.DemandCandidateDetail;
 import de.metas.material.dispo.service.CandidateChangeHandler;
+import de.metas.material.dispo.service.event.EventUtil;
 import de.metas.material.event.EventDescr;
 import de.metas.material.event.MaterialDescriptor;
 import de.metas.material.event.forecast.Forecast;
@@ -51,7 +52,7 @@ public class ForecastEventHandler
 		this.candidateChangeHandler = candidateChangeHandler;
 	}
 
-	void handleForecastEvent(@NonNull final ForecastEvent event)
+	public void handleForecastEvent(@NonNull final ForecastEvent event)
 	{
 		final EventDescr eventDescr = event.getEventDescr();
 		final Forecast forecast = event.getForecast();

@@ -1,13 +1,19 @@
 package de.metas.material.dispo.service;
 
 import java.math.BigDecimal;
+import java.util.Date;
+import java.util.List;
 import java.util.Optional;
+import java.util.function.Supplier;
 
 import org.springframework.stereotype.Service;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import de.metas.material.dispo.Candidate;
-import de.metas.material.dispo.CandidateRepository;
 import de.metas.material.dispo.Candidate.Type;
+import de.metas.material.dispo.CandidateRepository;
+import de.metas.material.dispo.CandidatesSegment;
 import de.metas.material.dispo.CandidatesSegment.DateOperator;
 import lombok.NonNull;
 
@@ -83,5 +89,102 @@ public class StockCandidateFactory
 				.seqNo(candidate.getSeqNo())
 				.groupId(groupId)
 				.build();
+	}
+	
+	/**
+	 * This method creates or updates a stock candidate according to the given candidate.
+	 * It then updates the quantities of all "later" stock candidates that have the same product etc.<br>
+	 * according to the delta between the candidate's former value (or zero if it was only just added) and it's new value.
+	 *
+	 * @param relatedCandidate a candidate that can have any type and a quantity which is a <b>delta</b>, i.e. a quantity that is added or removed at the candidate's date.
+	 *
+	 * @return a candidate with type {@link Type#STOCK} that reflects what was persisted in the DB.<br>
+	 *         The candidate will have an ID and its quantity will not be a delta, but the "absolute" projected quantity at the given time.<br>
+	 *         Note: this method does not establish a parent-child relationship between any two records
+	 */
+	public Candidate addOrUpdateStock(@NonNull final Candidate relatedCandidate)
+	{
+		final Supplier<Candidate> stockCandidateToUpdate = () -> {
+			final Candidate stockCandidateToPersist = createStockCandidate(relatedCandidate);
+			final Candidate persistedStockCandidate = candidateRepository.addOrUpdatePreserveExistingSeqNo(stockCandidateToPersist);
+			return persistedStockCandidate;
+		};
+
+		return updateStock(
+				relatedCandidate,
+				stockCandidateToUpdate);
+	}
+	
+	/**
+	 * Updates the qty for the stock candidate returned by the given {@code stockCandidateToUpdate} and it's later stock candidates
+	 * 
+	 * @param relatedCanidateWithDelta
+	 * @param stockCandidateToUpdate
+	 * @return
+	 */
+	public Candidate updateStock(
+			@NonNull final Candidate relatedCanidateWithDelta,
+			@NonNull final Supplier<Candidate> stockCandidateToUpdate)
+	{
+		final Optional<Candidate> previousCandidate = candidateRepository.retrieve(relatedCanidateWithDelta);
+
+		final Candidate persistedStockCandidate = stockCandidateToUpdate.get();
+
+		final BigDecimal delta;
+		if (previousCandidate.isPresent())
+		{
+			// there was already a persisted candidate. This means that the addOrReplace already did the work of providing our delta between the old and the current status.
+			delta = persistedStockCandidate.getQuantity();
+		}
+		else
+		{
+			// there was no persisted candidate, so we basically propagate the full qty (positive or negative) of the given candidate upwards
+			delta = relatedCanidateWithDelta.getQuantity();
+		}
+		applyDeltaToLaterStockCandidates(
+				relatedCanidateWithDelta.getProductId(),
+				relatedCanidateWithDelta.getWarehouseId(),
+				relatedCanidateWithDelta.getDate(),
+				persistedStockCandidate.getGroupId(),
+				delta);
+		return persistedStockCandidate;
+	}
+	
+	/**
+	 * Selects all stock candidates which have the same product and locator but a later timestamp than the one from the given {@code segment}.
+	 * Iterate them and add the given {@code delta} to their quantity.
+	 * <p>
+	 * That's it for now :-). Don't alter those stock candidates' children or parents.
+	 *
+	 * @param productId the product ID to match against
+	 * @param warehouseId the warehouse ID to match against
+	 * @param date the date to match against (i.e. everything after this date shall be a match)
+	 * @param groupId the groupId to set to every stock record that we matched
+	 * @param delta the quantity (positive or negative) to add to every stock record that we matched
+	 */
+	@VisibleForTesting
+	/* package */ void applyDeltaToLaterStockCandidates(
+			@NonNull final Integer productId,
+			@NonNull final Integer warehouseId,
+			@NonNull final Date date,
+			@NonNull final Integer groupId,
+			@NonNull final BigDecimal delta)
+	{
+		final CandidatesSegment segment = CandidatesSegment.builder()
+				.type(Type.STOCK)
+				.date(date)
+				.dateOperator(DateOperator.after)
+				.productId(productId)
+				.warehouseId(warehouseId)
+				.build();
+
+		final List<Candidate> candidatesToUpdate = candidateRepository.retrieveMatchesOrderByDateAndSeqNo(segment);
+		for (final Candidate candidate : candidatesToUpdate)
+		{
+			final BigDecimal newQty = candidate.getQuantity().add(delta);
+			candidateRepository.addOrUpdateOverwriteStoredSeqNo(candidate
+					.withQuantity(newQty)
+					.withGroupId(groupId));
+		}
 	}
 }

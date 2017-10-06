@@ -3,13 +3,12 @@ package de.metas.material.dispo.service.event;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
-import de.metas.material.dispo.Candidate;
-import de.metas.material.dispo.Candidate.SubType;
-import de.metas.material.dispo.Candidate.Type;
-import de.metas.material.dispo.DemandCandidateDetail;
-import de.metas.material.dispo.service.CandidateChangeHandler;
-import de.metas.material.event.EventDescr;
-import de.metas.material.event.MaterialDescriptor;
+import de.metas.material.dispo.service.event.handler.DistributionPlanEventHandler;
+import de.metas.material.dispo.service.event.handler.ForecastEventHandler;
+import de.metas.material.dispo.service.event.handler.ProductionPlanEventHandler;
+import de.metas.material.dispo.service.event.handler.ReceiptScheduleEventHandler;
+import de.metas.material.dispo.service.event.handler.ShipmentScheduleEventHandler;
+import de.metas.material.dispo.service.event.handler.TransactionEventHandler;
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.MaterialEventListener;
 import de.metas.material.event.ReceiptScheduleEvent;
@@ -46,26 +45,32 @@ import lombok.NonNull;
 public class MDEventListener implements MaterialEventListener
 {
 
-	private final CandidateChangeHandler candidateChangeHandler;
-
 	private final ProductionPlanEventHandler productionPlanEventHandler;
 
 	private final DistributionPlanEventHandler distributionPlanEventHandler;
 
 	private final ForecastEventHandler forecastEventHandler;
-	
-	
+
+	private final TransactionEventHandler transactionEventHandler;
+
+	private final ReceiptScheduleEventHandler receiptScheduleEventHandler;
+
+	private final ShipmentScheduleEventHandler shipmentScheduleEventHandler;
 
 	public MDEventListener(
-			@NonNull final CandidateChangeHandler candidateChangeHandler,
 			@NonNull final DistributionPlanEventHandler distributionPlanEventHandler,
 			@NonNull final ProductionPlanEventHandler productionPlanEventHandler,
-			@NonNull final ForecastEventHandler forecastEventHandler)
+			@NonNull final ForecastEventHandler forecastEventHandler,
+			@NonNull final TransactionEventHandler transactionEventHandler,
+			@NonNull final ReceiptScheduleEventHandler receiptScheduleEventHandler,
+			@NonNull final ShipmentScheduleEventHandler shipmentScheduleEventHandler)
 	{
+		this.shipmentScheduleEventHandler = shipmentScheduleEventHandler;
+		this.receiptScheduleEventHandler = receiptScheduleEventHandler;
 		this.distributionPlanEventHandler = distributionPlanEventHandler;
 		this.productionPlanEventHandler = productionPlanEventHandler;
-		this.candidateChangeHandler = candidateChangeHandler;
 		this.forecastEventHandler = forecastEventHandler;
+		this.transactionEventHandler = transactionEventHandler;
 	}
 
 	@Override
@@ -73,15 +78,15 @@ public class MDEventListener implements MaterialEventListener
 	{
 		if (event instanceof TransactionEvent)
 		{
-			handleTransactionEvent((TransactionEvent)event);
+			transactionEventHandler.handleTransactionEvent((TransactionEvent)event);
 		}
 		else if (event instanceof ReceiptScheduleEvent)
 		{
-			handleReceiptScheduleEvent((ReceiptScheduleEvent)event);
+			receiptScheduleEventHandler.handleReceiptScheduleEvent((ReceiptScheduleEvent)event);
 		}
 		else if (event instanceof ShipmentScheduleEvent)
 		{
-			handleShipmentScheduleEvent((ShipmentScheduleEvent)event);
+			shipmentScheduleEventHandler.handleShipmentScheduleEvent((ShipmentScheduleEvent)event);
 		}
 		else if (event instanceof ForecastEvent)
 		{
@@ -95,85 +100,5 @@ public class MDEventListener implements MaterialEventListener
 		{
 			productionPlanEventHandler.handleProductionPlanEvent((ProductionPlanEvent)event);
 		}
-	}
-
-	private void handleTransactionEvent(@NonNull final TransactionEvent event)
-	{
-		if (event.isTransactionDeleted())
-		{
-			candidateChangeHandler.onCandidateDelete(event.getReference());
-			return;
-		}
-
-		final MaterialDescriptor materialDescr = event.getMaterialDescr();
-
-		final EventDescr eventDescr = event.getEventDescr();
-
-		final Candidate candidate = Candidate.builder()
-				.type(Type.STOCK)
-				.clientId(eventDescr.getClientId())
-				.orgId(eventDescr.getOrgId())
-				.warehouseId(materialDescr.getWarehouseId())
-				.date(materialDescr.getDate())
-				.productId(materialDescr.getProductId())
-				.quantity(materialDescr.getQty())
-				.reference(event.getReference())
-				.build();
-
-		candidateChangeHandler.addOrUpdateStock(candidate);
-	}
-
-	private void handleReceiptScheduleEvent(@NonNull final ReceiptScheduleEvent event)
-	{
-		if (event.isReceiptScheduleDeleted())
-		{
-			candidateChangeHandler.onCandidateDelete(event.getReference());
-			return;
-		}
-
-		final MaterialDescriptor materialDescr = event.getMaterialDescr();
-
-		final EventDescr eventDescr = event.getEventDescr();
-
-		final Candidate candidate = Candidate.builder()
-				.type(Type.SUPPLY)
-				.subType(SubType.RECEIPT)
-				.clientId(eventDescr.getClientId())
-				.orgId(eventDescr.getOrgId())
-				.date(materialDescr.getDate())
-				.warehouseId(materialDescr.getWarehouseId())
-				.productId(materialDescr.getProductId())
-				.quantity(materialDescr.getQty())
-				.reference(event.getReference())
-				.build();
-
-		candidateChangeHandler.onCandidateNewOrChange(candidate);
-	}
-
-	private void handleShipmentScheduleEvent(@NonNull final ShipmentScheduleEvent event)
-	{
-		if (event.isShipmentScheduleDeleted())
-		{
-			candidateChangeHandler.onCandidateDelete(event.getReference());
-			return;
-		}
-
-		final MaterialDescriptor materialDescr = event.getMaterialDescr();
-
-		final EventDescr eventDescr = event.getEventDescr();
-
-		final Candidate candidate = Candidate.builder()
-				.type(Type.DEMAND)
-				.subType(SubType.SHIPMENT)
-				.clientId(eventDescr.getClientId())
-				.orgId(eventDescr.getOrgId())
-				.date(materialDescr.getDate())
-				.warehouseId(materialDescr.getWarehouseId())
-				.productId(materialDescr.getProductId())
-				.quantity(materialDescr.getQty())
-				.reference(event.getReference())
-				.demandDetail(DemandCandidateDetail.forOrderLineId(event.getOrderLineId()))
-				.build();
-		candidateChangeHandler.onCandidateNewOrChange(candidate);
 	}
 }

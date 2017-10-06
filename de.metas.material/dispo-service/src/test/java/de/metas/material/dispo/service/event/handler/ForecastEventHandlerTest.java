@@ -1,4 +1,4 @@
-package de.metas.material.dispo.service.event;
+package de.metas.material.dispo.service.event.handler;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;

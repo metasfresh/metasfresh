@@ -1,4 +1,4 @@
-package de.metas.material.dispo.service.event;
+package de.metas.material.dispo.service.event.handler;
 
 import java.sql.Timestamp;
 import java.util.HashSet;
@@ -16,6 +16,8 @@ import de.metas.material.dispo.CandidateService;
 import de.metas.material.dispo.DemandCandidateDetail;
 import de.metas.material.dispo.DistributionCandidateDetail;
 import de.metas.material.dispo.service.CandidateChangeHandler;
+import de.metas.material.dispo.service.event.EventUtil;
+import de.metas.material.dispo.service.event.SupplyProposalEvaluator;
 import de.metas.material.dispo.service.event.SupplyProposalEvaluator.SupplyProposal;
 import de.metas.material.event.EventDescr;
 import de.metas.material.event.ddorder.DDOrder;
@@ -70,7 +72,7 @@ public class DistributionPlanEventHandler
 		this.supplyProposalEvaluator = supplyProposalEvaluator;
 	}
 
-	void handleDistributionPlanEvent(final DistributionPlanEvent event)
+	public void handleDistributionPlanEvent(final DistributionPlanEvent event)
 	{
 		final DDOrder ddOrder = event.getDdOrder();
 		final Candidate.Status candidateStatus;

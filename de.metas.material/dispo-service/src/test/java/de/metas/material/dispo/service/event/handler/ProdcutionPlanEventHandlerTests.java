@@ -1,4 +1,4 @@
-package de.metas.material.dispo.service.event;
+package de.metas.material.dispo.service.event.handler;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
@@ -29,7 +29,6 @@ import de.metas.material.dispo.DispoTestUtils;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.service.CandidateChangeHandler;
 import de.metas.material.dispo.service.StockCandidateFactory;
-import de.metas.material.dispo.service.event.ProductionPlanEventHandler;
 import de.metas.material.event.EventDescr;
 import de.metas.material.event.MaterialEventService;
 import de.metas.material.event.pporder.PPOrder;

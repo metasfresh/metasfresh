@@ -1,4 +1,4 @@
-package de.metas.material.dispo.service.event;
+package de.metas.material.dispo.service.event.handler;
 
 import org.springframework.stereotype.Service;
 
@@ -10,6 +10,7 @@ import de.metas.material.dispo.CandidateService;
 import de.metas.material.dispo.DemandCandidateDetail;
 import de.metas.material.dispo.ProductionCandidateDetail;
 import de.metas.material.dispo.service.CandidateChangeHandler;
+import de.metas.material.dispo.service.event.EventUtil;
 import de.metas.material.event.EventDescr;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrderLine;
@@ -56,7 +57,7 @@ public class ProductionPlanEventHandler
 		this.candidateService = candidateService;
 	}
 
-	void handleProductionPlanEvent(final ProductionPlanEvent event)
+	public void handleProductionPlanEvent(final ProductionPlanEvent event)
 	{
 		final PPOrder ppOrder = event.getPpOrder();
 

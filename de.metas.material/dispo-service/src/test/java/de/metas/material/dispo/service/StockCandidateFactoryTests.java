@@ -20,9 +20,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 import de.metas.material.dispo.Candidate;
-import de.metas.material.dispo.CandidateRepository;
 import de.metas.material.dispo.Candidate.Type;
-import de.metas.material.dispo.service.StockCandidateFactory;
+import de.metas.material.dispo.CandidateRepository;
 
 /*
  * #%L
