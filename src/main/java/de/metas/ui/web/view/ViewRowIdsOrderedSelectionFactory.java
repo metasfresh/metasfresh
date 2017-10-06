@@ -4,7 +4,6 @@ import java.util.List;
 
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
-import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 
 /*
@@ -31,7 +30,7 @@ import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 
 public interface ViewRowIdsOrderedSelectionFactory
 {
-	ViewRowIdsOrderedSelection createOrderedSelection(ViewEvaluationCtx viewEvalCtx, WindowId windowId, List<DocumentFilter> filters, final List<DocumentQueryOrderBy> orderBys);
+	ViewRowIdsOrderedSelection createOrderedSelection(ViewEvaluationCtx viewEvalCtx, ViewId viewId, List<DocumentFilter> filters, final List<DocumentQueryOrderBy> orderBys);
 
 	/**
 	 * @return a new {@link ViewRowIdsOrderedSelection} from a given <code>fromSelection</code> ordered by <code>orderBys</code>

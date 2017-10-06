@@ -105,6 +105,7 @@ public class HUEditorView implements IView
 		parentViewId = builder.getParentViewId();
 		parentRowId = builder.getParentRowId();
 		viewType = builder.getViewType();
+		viewId = builder.getViewId();
 
 		final List<DocumentFilter> stickyFilters = builder.getStickyFilters();
 		final boolean isHighVolume = HUIdsFilterHelper.isHighVolume(stickyFilters);
@@ -118,7 +119,7 @@ public class HUEditorView implements IView
 		// Build the repository
 		referencingTableName = builder.getReferencingTableName();
 		final HUEditorViewRepository huEditorRepo = HUEditorViewRepository.builder()
-				.windowId(builder.getWindowId())
+				.windowId(viewId.getWindowId())
 				.referencingTableName(builder.getReferencingTableName())
 				.attributesProvider(huAttributesProvider)
 				.sqlViewBinding(builder.getSqlViewBinding())
@@ -132,8 +133,7 @@ public class HUEditorView implements IView
 
 		//
 		// Build rowsBuffer
-		rowsBuffer = createRowsBuffer(builder.getWindowId(), isHighVolume, huEditorRepo, stickyFilters, filters);
-		viewId = rowsBuffer.getViewId();
+		rowsBuffer = createRowsBuffer(viewId, isHighVolume, huEditorRepo, stickyFilters, filters);
 
 		referencingDocumentPaths = builder.getReferencingDocumentPaths();
 
@@ -144,7 +144,7 @@ public class HUEditorView implements IView
 	}
 
 	private static final HUEditorViewBuffer createRowsBuffer( //
-			final WindowId windowId //
+			final ViewId viewId //
 			, final boolean isHighVolume //
 			, final HUEditorViewRepository huEditorRepo //
 			, final List<DocumentFilter> stickyFilters //
@@ -153,11 +153,11 @@ public class HUEditorView implements IView
 	{
 		if (isHighVolume)
 		{
-			return new HUEditorViewBuffer_HighVolume(windowId, huEditorRepo, stickyFilters, filters);
+			return new HUEditorViewBuffer_HighVolume(viewId, huEditorRepo, stickyFilters, filters);
 		}
 		else
 		{
-			return new HUEditorViewBuffer_FullyCached(windowId, huEditorRepo, stickyFilters, filters);
+			return new HUEditorViewBuffer_FullyCached(viewId, huEditorRepo, stickyFilters, filters);
 		}
 
 	}
@@ -513,6 +513,8 @@ public class HUEditorView implements IView
 
 		private LinkedHashMap<String, Object> parameters;
 
+		private ViewId _viewId; // lazy
+
 		private Builder(@NonNull final SqlViewBinding sqlViewBinding)
 		{
 			this.sqlViewBinding = sqlViewBinding;
@@ -553,12 +555,17 @@ public class HUEditorView implements IView
 		public Builder setWindowId(final WindowId windowId)
 		{
 			this.windowId = windowId;
+			this._viewId = null;
 			return this;
 		}
 
-		private WindowId getWindowId()
+		private ViewId getViewId()
 		{
-			return windowId;
+			if(_viewId == null)
+			{
+				_viewId = ViewId.random(windowId);
+			}
+			return _viewId;
 		}
 
 		public Builder setViewType(final JSONViewDataType viewType)

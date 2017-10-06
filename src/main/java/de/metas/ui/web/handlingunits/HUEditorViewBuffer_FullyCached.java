@@ -25,7 +25,6 @@ import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.descriptor.SqlViewRowIdsConverter;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
-import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 import lombok.NonNull;
 
@@ -71,12 +70,12 @@ class HUEditorViewBuffer_FullyCached implements HUEditorViewBuffer
 	private final ExtendedMemorizingSupplier<IndexedHUEditorRows> rowsSupplier = ExtendedMemorizingSupplier.of(() -> retrieveHUEditorRows());
 
 	HUEditorViewBuffer_FullyCached(
-			@NonNull final WindowId windowId,
+			@NonNull final ViewId viewId,
 			@NonNull final HUEditorViewRepository huEditorRepo,
 			final List<DocumentFilter> stickyFilters,
 			final List<DocumentFilter> filters)
 	{
-		viewId = ViewId.random(windowId);
+		this.viewId = viewId;
 		this.huEditorRepo = huEditorRepo;
 
 		HUIdsFilterData huIdsFilterData = HUIdsFilterHelper.extractFilterDataOrNull(stickyFilters);

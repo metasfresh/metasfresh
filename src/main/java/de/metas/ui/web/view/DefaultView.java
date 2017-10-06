@@ -123,11 +123,11 @@ public class DefaultView implements IView
 		{
 			final ViewEvaluationCtx evalCtx = ViewEvaluationCtx.of(Env.getCtx());
 
+			final ViewId viewId = ViewId.random(builder.getWindowId());
 			defaultSelection = viewDataRepository.createOrderedSelection(
-					evalCtx //
-					, builder.getWindowId() //
-					, ImmutableList.copyOf(Iterables.concat(stickyFilters, filters)) //
-			);
+					evalCtx,
+					viewId,
+					ImmutableList.copyOf(Iterables.concat(stickyFilters, filters)));
 			selectionsByOrderBys.put(defaultSelection.getOrderBys(), defaultSelection);
 		}
 
@@ -164,7 +164,7 @@ public class DefaultView implements IView
 	{
 		return parentViewId;
 	}
-	
+
 	@Override
 	public DocumentId getParentRowId()
 	{
@@ -266,14 +266,14 @@ public class DefaultView implements IView
 
 		logger.debug("View closed: {}", this);
 	}
-	
+
 	@Override
 	public void invalidateAll()
 	{
 		// TODO recreate defaultSelection, clear selectionsByOrderBys etc
 		cache_rowsById.clear();
 	}
-	
+
 	@Override
 	public void invalidateRowById(final DocumentId rowId)
 	{
@@ -472,13 +472,13 @@ public class DefaultView implements IView
 			this.parentViewId = parentViewId;
 			return this;
 		}
-		
+
 		public Builder setParentRowId(final DocumentId parentRowId)
 		{
 			this.parentRowId = parentRowId;
 			return this;
 		}
-		
+
 		private DocumentId getParentRowId()
 		{
 			return parentRowId;
