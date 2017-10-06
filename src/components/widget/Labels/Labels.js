@@ -79,6 +79,47 @@ class Labels extends Component {
         });
     };
 
+    handleArrows = event => {
+        let suggestions;
+
+        if (this.state.suggestions.length) {
+            suggestions = this.state.suggestions;
+        } else {
+            suggestions = this.state.values;
+        }
+
+        suggestions = suggestions.filter(
+            this.unusedSuggestions()
+        );
+
+        switch (event.key) {
+            case 'ArrowUp': {
+                this.setState(({ cursorY }) => ({
+                    cursorY: Math.max(
+                        Math.min(cursorY, suggestions.length - 1) - 1,
+                        -1
+                    )
+                }));
+
+                // Prevent page from scrolling
+                event.preventDefault();
+
+                return;
+            }
+
+            case 'ArrowDown': {
+                this.setState(({ cursorY }) => ({
+                    cursorY: Math.min(cursorY + 1, suggestions.length - 1)
+                }));
+
+                // Prevent page from scrolling
+                event.preventDefault();
+
+                return;
+            }
+        }
+    };
+
     handleKeyUp = async event => {
         const typeAhead = event.target.innerHTML;
         const { windowId, docId, name } = this.props;
@@ -102,20 +143,20 @@ class Labels extends Component {
         const typeAhead = event.target.innerHTML;
         const { selected } = this.props;
 
-        let suggestions;
-
-        if (this.state.suggestions.length) {
-            suggestions = this.state.suggestions;
-        } else {
-            suggestions = this.state.values;
-        }
-
-        suggestions = suggestions.filter(
-            this.unusedSuggestions()
-        );
-
         if (event.key === 'Enter') {
             if (typeAhead || this.state.cursorY >= 0) {
+                let suggestions;
+
+                if (this.state.suggestions.length) {
+                    suggestions = this.state.suggestions;
+                } else {
+                    suggestions = this.state.values;
+                }
+
+                suggestions = suggestions.filter(
+                    this.unusedSuggestions()
+                );
+
                 this.props.onChange([
                     ...this.props.selected,
                     suggestions[
@@ -154,32 +195,12 @@ class Labels extends Component {
             return;
         }
 
-        if (['ArrowLeft', 'ArrowRight', 'Backspace'].includes(event.key)) {
-            return;
-        }
-
-        if (event.key === 'ArrowDown') {
-            this.setState(({ cursorY }) => ({
-                cursorY: Math.min(cursorY + 1, suggestions.length - 1)
-            }));
-
-            // Prevent page from scrolling
-            event.preventDefault();
-
-            return;
-        }
-
-        if (event.key === 'ArrowUp') {
-            this.setState(({ cursorY }) => ({
-                cursorY: Math.max(
-                    Math.min(cursorY, suggestions.length - 1) - 1,
-                    -1
-                )
-            }));
-
-            // Prevent page from scrolling
-            event.preventDefault();
-
+        if ([
+            'ArrowTop',
+            'ArrowRight',
+            'ArrowBottom',
+            'ArrowLeft'
+        ].includes(event.key)) {
             return;
         }
 
@@ -231,6 +252,7 @@ class Labels extends Component {
                 onFocus={this.handleFocus}
                 onBlur={this.handleBlur}
                 tabIndex={this.props.tabIndex}
+                onKeyDown={this.handleArrows}
             >
                 <span className="labels-wrap">
                     {this.props.selected.map(item => (
