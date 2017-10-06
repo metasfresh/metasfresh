@@ -144,12 +144,12 @@ class Labels extends Component {
             return;
         }
 
-        if (event.key === 'Backspace' && !typeAhead) {
+        if (event.key === 'Backspace') {
             if (selected.length < 1) {
                 return;
+            } else if (!typeAhead) {
+                this.props.onChange(selected.slice(0, selected.length - 1));
             }
-
-            this.props.onChange(selected.slice(0, selected.length - 1));
 
             return;
         }
