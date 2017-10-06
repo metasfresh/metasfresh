@@ -97,7 +97,7 @@ public class HUEditorViewFactory implements IViewFactory
 	private SqlViewBinding getSqlViewBinding()
 	{
 		final int key = 0; // not important
-		return sqlViewBindingCache.getOrLoad(key, () -> createSqlViewBinding());
+		return sqlViewBindingCache.getOrLoad(key, this::createSqlViewBinding);
 	}
 
 	private SqlViewBinding createSqlViewBinding()
@@ -113,7 +113,7 @@ public class HUEditorViewFactory implements IViewFactory
 
 			// Consider window tab's where clause if any
 			final I_AD_Tab huTab = Services.get(IADWindowDAO.class).retrieveFirstTab(WEBUI_HU_Constants.WEBUI_HU_Window_ID.toInt());
-			if(!Check.isEmpty(huTab.getWhereClause(), true))
+			if (!Check.isEmpty(huTab.getWhereClause(), true))
 			{
 				sqlWhereClause.append("\n AND (").append(huTab.getWhereClause()).append(")");
 			}
@@ -223,7 +223,7 @@ public class HUEditorViewFactory implements IViewFactory
 	public HUEditorView createView(final CreateViewRequest request)
 	{
 		final ViewId viewId = request.getViewId();
-		
+
 		if (!WEBUI_HU_Constants.WEBUI_HU_Window_ID.equals(viewId.getWindowId()))
 		{
 			throw new IllegalArgumentException("Invalid request's windowId: " + request);
