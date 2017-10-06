@@ -78,6 +78,23 @@ public class MaterialEventService
 		}
 	};
 
+	public static MaterialEventService createLocalServiceThatIsReadyToUse()
+	{
+		final MaterialEventService materialEventService = new MaterialEventService(Type.LOCAL);
+		materialEventService.subscribeToEventBus();
+		return materialEventService;
+	}
+
+	/**
+	 * Also see {@link #subscribeToEventBus()}.
+	 * 
+	 * @return
+	 */
+	public static MaterialEventService createDistributedServiceThatNeedsToSubscribe()
+	{
+		return new MaterialEventService(Type.REMOTE);
+	}
+
 	/**
 	 * Can be called to create a local-only event service which will not try to set up or connect to a message broker. Useful for testing.
 	 * <p>
@@ -85,7 +102,7 @@ public class MaterialEventService
 	 *
 	 * @param eventType
 	 */
-	public MaterialEventService(@NonNull final Type eventType)
+	private MaterialEventService(@NonNull final Type eventType)
 	{
 		eventBusTopic = Topic.builder()
 				.setName(MaterialEventBus.EVENTBUS_TOPIC_NAME)
@@ -102,7 +119,7 @@ public class MaterialEventService
 	 */
 	public synchronized void subscribeToEventBus()
 	{
-		if(subscribedToEventBus)
+		if (subscribedToEventBus)
 		{
 			return; // nothing to do
 		}
@@ -138,7 +155,7 @@ public class MaterialEventService
 	}
 
 	/**
-	 * Fires the given event using our (distributed) event framework. If {@link #subscribeToEventBus()} was not yet invoked, an exception is thorwn.
+	 * Fires the given event using our (distributed) event framework. If {@link #subscribeToEventBus()} was not yet invoked, an exception is thrown.
 	 *
 	 * @param event
 	 */

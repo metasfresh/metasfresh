@@ -21,7 +21,7 @@ import org.junit.rules.TestWatcher;
 import de.metas.material.dispo.Candidate;
 import de.metas.material.dispo.Candidate.Type;
 import de.metas.material.dispo.service.CandidateChangeHandler;
-import de.metas.material.dispo.service.CandidateFactory;
+import de.metas.material.dispo.service.StockCandidateFactory;
 import de.metas.material.dispo.service.event.DistributionPlanEventHandler;
 import de.metas.material.dispo.service.event.SupplyProposalEvaluator;
 import de.metas.material.dispo.service.event.SupplyProposalEvaluator.SupplyProposal;
@@ -96,7 +96,7 @@ public class SupplyProposalEvaluatorTests
 		candidateRepository = new CandidateRepository();
 		supplyProposalEvaluator = new SupplyProposalEvaluator(candidateRepository);
 
-		final CandidateChangeHandler candidateChangeHandler = new CandidateChangeHandler(candidateRepository, new CandidateFactory(candidateRepository), materialEventService);
+		final CandidateChangeHandler candidateChangeHandler = new CandidateChangeHandler(candidateRepository, new StockCandidateFactory(candidateRepository), materialEventService);
 
 		distributionPlanEventHandler = new DistributionPlanEventHandler(
 				candidateRepository,
@@ -192,7 +192,7 @@ public class SupplyProposalEvaluatorTests
 				.warehouseId(SUPPLY_WAREHOUSE_ID)
 				.build();
 
-		final Candidate supplyCandidateWithId = candidateRepository.addOrUpdate(supplyCandidate);
+		final Candidate supplyCandidateWithId = candidateRepository.addOrUpdateOverwriteStoredSeqNo(supplyCandidate);
 
 		final Candidate demandCandidate = Candidate.builder()
 				.clientId(org.getAD_Client_ID())
@@ -205,7 +205,7 @@ public class SupplyProposalEvaluatorTests
 				.warehouseId(DEMAND_WAREHOUSE_ID)
 				.build();
 
-		candidateRepository.addOrUpdate(demandCandidate);
+		candidateRepository.addOrUpdateOverwriteStoredSeqNo(demandCandidate);
 	}
 
 	/**

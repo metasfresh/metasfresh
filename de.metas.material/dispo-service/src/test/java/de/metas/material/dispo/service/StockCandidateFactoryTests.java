@@ -22,7 +22,7 @@ import org.junit.Test;
 import de.metas.material.dispo.Candidate;
 import de.metas.material.dispo.CandidateRepository;
 import de.metas.material.dispo.Candidate.Type;
-import de.metas.material.dispo.service.CandidateFactory;
+import de.metas.material.dispo.service.StockCandidateFactory;
 
 /*
  * #%L
@@ -46,7 +46,7 @@ import de.metas.material.dispo.service.CandidateFactory;
  * #L%
  */
 
-public class CandidateFactoryTests
+public class StockCandidateFactoryTests
 {
 	private final Date now = SystemTime.asDate();
 	private final Date earlier = TimeUtil.addMinutes(now, -10);
@@ -62,7 +62,7 @@ public class CandidateFactoryTests
 
 	private CandidateRepository candidateRepository;
 
-	private CandidateFactory candidateFactory;
+	private StockCandidateFactory candidateFactory;
 
 	@Before
 	public void init()
@@ -83,7 +83,7 @@ public class CandidateFactoryTests
 		InterfaceWrapperHelper.save(warehouse);
 
 		candidateRepository = new CandidateRepository();
-		candidateFactory = new CandidateFactory(candidateRepository);
+		candidateFactory = new StockCandidateFactory(candidateRepository);
 
 		final Candidate stockCandidate = Candidate.builder()
 				.type(Type.STOCK)
@@ -94,7 +94,7 @@ public class CandidateFactoryTests
 				.quantity(new BigDecimal("10"))
 				.date(now)
 				.build();
-		candidateRepository.addOrUpdate(stockCandidate);
+		candidateRepository.addOrUpdateOverwriteStoredSeqNo(stockCandidate);
 	}
 
 	/**

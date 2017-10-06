@@ -116,7 +116,7 @@ public class CandidateChangeHandlerTests
 		candidateRepository = new CandidateRepository();
 		candidateChangeHandler = new CandidateChangeHandler(
 				candidateRepository,
-				new CandidateFactory(candidateRepository),
+				new StockCandidateFactory(candidateRepository),
 				materialEventService);
 	}
 
@@ -143,10 +143,10 @@ public class CandidateChangeHandlerTests
 					.quantity(new BigDecimal("10"))
 					.date(t2)
 					.build();
-			candidateRepository.addOrUpdate(candidate);
+			candidateRepository.addOrUpdateOverwriteStoredSeqNo(candidate);
 
 			earlierCandidate = candidateRepository
-					.addOrUpdate(Candidate.builder()
+					.addOrUpdateOverwriteStoredSeqNo(Candidate.builder()
 							.type(Type.STOCK)
 							.clientId(org.getAD_Client_ID())
 							.orgId(org.getAD_Org_ID())
@@ -165,7 +165,7 @@ public class CandidateChangeHandlerTests
 					.quantity(new BigDecimal("10"))
 					.date(t3)
 					.build();
-			candidateRepository.addOrUpdate(laterCandidate);
+			candidateRepository.addOrUpdateOverwriteStoredSeqNo(laterCandidate);
 
 			evenLaterCandidate = Candidate.builder()
 					.type(Type.STOCK)
@@ -176,7 +176,7 @@ public class CandidateChangeHandlerTests
 					.quantity(new BigDecimal("12"))
 					.date(t4)
 					.build();
-			candidateRepository.addOrUpdate(evenLaterCandidate);
+			candidateRepository.addOrUpdateOverwriteStoredSeqNo(evenLaterCandidate);
 
 			evenLaterCandidateWithDifferentWarehouse = Candidate.builder()
 					.type(Type.STOCK)
@@ -187,7 +187,7 @@ public class CandidateChangeHandlerTests
 					.quantity(new BigDecimal("12"))
 					.date(t4)
 					.build();
-			candidateRepository.addOrUpdate(evenLaterCandidateWithDifferentWarehouse);
+			candidateRepository.addOrUpdateOverwriteStoredSeqNo(evenLaterCandidateWithDifferentWarehouse);
 		}
 
 		// do the test

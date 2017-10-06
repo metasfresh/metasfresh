@@ -105,30 +105,18 @@ public class DistributionPlanEventHandler
 			}
 
 			final EventDescr eventDescr = event.getEventDescr();
-			
-			final Candidate supplyCandidate = Candidate.builder()
+
+			final Candidate supplyCandidate = EventUtil.createCandidateBuilderFromEventDescr(eventDescr)
 					.type(Type.SUPPLY)
 					.status(candidateStatus)
 					.subType(SubType.DISTRIBUTION)
 					.date(ddOrder.getDatePromised())
-					.clientId(eventDescr.getClientId())
-					.orgId(eventDescr.getOrgId())
 					.productId(ddOrderLine.getProductId())
 					.quantity(ddOrderLine.getQty())
 					.warehouseId(event.getToWarehouseId())
 					.reference(event.getReference())
-					.demandDetail(DemandCandidateDetail.builder()
-							.orderLineId(ddOrderLine.getSalesOrderLineId())
-							.build())
-					.distributionDetail(DistributionCandidateDetail.builder()
-							.ddOrderDocStatus(ddOrder.getDocStatus())
-							.ddOrderId(ddOrder.getDdOrderId())
-							.ddOrderLineId(ddOrderLine.getDdOrderLineId())
-							.networkDistributionLineId(ddOrderLine.getNetworkDistributionLineId())
-							.plantId(ddOrder.getPlantId())
-							.productPlanningId(ddOrder.getProductPlanningId())
-							.shipperId(ddOrder.getShipperId())
-							.build())
+					.demandDetail(DemandCandidateDetail.forOrderLineId(ddOrderLine.getSalesOrderLineId()))
+					.distributionDetail(createCandidateDetailFromDDOrderAndLine(ddOrder, ddOrderLine))
 					.build();
 
 			final Candidate supplyCandidateWithId = candidateChangeHandler.onCandidateNewOrChange(supplyCandidate);
@@ -146,7 +134,6 @@ public class DistributionPlanEventHandler
 
 			final Candidate demandCandidate = supplyCandidate
 					.withType(Type.DEMAND)
-					.withSubType(SubType.DISTRIBUTION)
 					.withGroupId(groupId)
 					.withParentId(supplyCandidateWithId.getId())
 					.withQuantity(supplyCandidateWithId.getQuantity()) // what was added as supply in the destination warehouse needs to be registered as demand in the source warehouse
@@ -160,14 +147,12 @@ public class DistributionPlanEventHandler
 			if (expectedSeqNoForDemandCandidate != demandCandidateWithId.getSeqNo())
 			{
 				// update/override the SeqNo of both supplyCandidate and supplyCandidate's stock candidate.
-				candidateRepository.addOrUpdate(supplyCandidateWithId
-						.withSeqNo(demandCandidateWithId.getSeqNo() - 1),
-						false);
+				candidateRepository.addOrUpdateOverwriteStoredSeqNo(supplyCandidateWithId
+						.withSeqNo(demandCandidateWithId.getSeqNo() - 1));
 
-				candidateRepository.addOrUpdate(candidateRepository
+				candidateRepository.addOrUpdateOverwriteStoredSeqNo(candidateRepository
 						.retrieve(supplyCandidateWithId.getParentId())
-						.withSeqNo(demandCandidateWithId.getSeqNo() - 2),
-						false);
+						.withSeqNo(demandCandidateWithId.getSeqNo() - 2));
 			}
 
 			if (ddOrder.isCreateDDrder() && groupIdsWithRequestedPPOrders.add(groupId))
@@ -175,5 +160,20 @@ public class DistributionPlanEventHandler
 				candidateService.requestMaterialOrder(groupId);
 			}
 		}
+	}
+
+	private DistributionCandidateDetail createCandidateDetailFromDDOrderAndLine(
+			@NonNull final DDOrder ddOrder,
+			@NonNull final DDOrderLine ddOrderLine)
+	{
+		return DistributionCandidateDetail.builder()
+				.ddOrderDocStatus(ddOrder.getDocStatus())
+				.ddOrderId(ddOrder.getDdOrderId())
+				.ddOrderLineId(ddOrderLine.getDdOrderLineId())
+				.networkDistributionLineId(ddOrderLine.getNetworkDistributionLineId())
+				.plantId(ddOrder.getPlantId())
+				.productPlanningId(ddOrder.getProductPlanningId())
+				.shipperId(ddOrder.getShipperId())
+				.build();
 	}
 }

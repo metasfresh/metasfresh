@@ -10,6 +10,7 @@ import de.metas.material.dispo.service.CandidateChangeHandler;
 import de.metas.material.dispo.DemandCandidateDetail;
 import de.metas.material.event.DistributionPlanEvent;
 import de.metas.material.event.EventDescr;
+import de.metas.material.event.ForecastEvent;
 import de.metas.material.event.MaterialDescriptor;
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.MaterialEventListener;
@@ -49,16 +50,22 @@ public class MDEventListener implements MaterialEventListener
 
 	private final ProductionPlanEventHandler productionPlanEventHandler;
 
-	private DistributionPlanEventHandler distributionPlanEventHandler;
+	private final DistributionPlanEventHandler distributionPlanEventHandler;
+
+	private final ForecastEventHandler forecastEventHandler;
+	
+	
 
 	public MDEventListener(
 			@NonNull final CandidateChangeHandler candidateChangeHandler,
 			@NonNull final DistributionPlanEventHandler distributionPlanEventHandler,
-			@NonNull final ProductionPlanEventHandler productionPlanEventHandler)
+			@NonNull final ProductionPlanEventHandler productionPlanEventHandler,
+			@NonNull final ForecastEventHandler forecastEventHandler)
 	{
 		this.distributionPlanEventHandler = distributionPlanEventHandler;
 		this.productionPlanEventHandler = productionPlanEventHandler;
 		this.candidateChangeHandler = candidateChangeHandler;
+		this.forecastEventHandler = forecastEventHandler;
 	}
 
 	@Override
@@ -75,6 +82,10 @@ public class MDEventListener implements MaterialEventListener
 		else if (event instanceof ShipmentScheduleEvent)
 		{
 			handleShipmentScheduleEvent((ShipmentScheduleEvent)event);
+		}
+		else if (event instanceof ForecastEvent)
+		{
+			forecastEventHandler.handleForecastEvent((ForecastEvent)event);
 		}
 		else if (event instanceof DistributionPlanEvent)
 		{
@@ -161,9 +172,7 @@ public class MDEventListener implements MaterialEventListener
 				.productId(materialDescr.getProductId())
 				.quantity(materialDescr.getQty())
 				.reference(event.getReference())
-				.demandDetail(DemandCandidateDetail.builder()
-						.orderLineId(event.getOrderLineId())
-						.build())
+				.demandDetail(DemandCandidateDetail.forOrderLineId(event.getOrderLineId()))
 				.build();
 		candidateChangeHandler.onCandidateNewOrChange(candidate);
 	}

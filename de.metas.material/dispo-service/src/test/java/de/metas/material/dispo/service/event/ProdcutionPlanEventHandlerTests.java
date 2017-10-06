@@ -26,7 +26,7 @@ import de.metas.material.dispo.CandidateService;
 import de.metas.material.dispo.DispoTestUtils;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.service.CandidateChangeHandler;
-import de.metas.material.dispo.service.CandidateFactory;
+import de.metas.material.dispo.service.StockCandidateFactory;
 import de.metas.material.dispo.service.event.ProductionPlanEventHandler;
 import de.metas.material.event.EventDescr;
 import de.metas.material.event.MaterialEventService;
@@ -95,8 +95,10 @@ public class ProdcutionPlanEventHandlerTests
 		save(org);
 
 		final CandidateRepository candidateRepository = new CandidateRepository();
-		final CandidateChangeHandler candidateChangeHandler = new CandidateChangeHandler(candidateRepository, new CandidateFactory(candidateRepository), materialEventService);
-		final CandidateService candidateService = new CandidateService(candidateRepository, new MaterialEventService(de.metas.event.Type.LOCAL));
+		final CandidateChangeHandler candidateChangeHandler = new CandidateChangeHandler(candidateRepository, new StockCandidateFactory(candidateRepository), materialEventService);
+		final CandidateService candidateService = new CandidateService(
+				candidateRepository, 
+				MaterialEventService.createLocalServiceThatIsReadyToUse());
 
 		productionPlanEventHandler = new ProductionPlanEventHandler(candidateChangeHandler, candidateService);
 	}

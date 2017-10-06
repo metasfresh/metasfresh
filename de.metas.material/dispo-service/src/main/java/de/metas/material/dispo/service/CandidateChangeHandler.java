@@ -21,7 +21,7 @@ import de.metas.material.dispo.Candidate.Type;
 import de.metas.material.dispo.CandidatesSegment.DateOperator;
 import de.metas.material.event.EventDescr;
 import de.metas.material.event.MaterialDemandDescr;
-import de.metas.material.event.SalesOrderLineMaterialEvent;
+import de.metas.material.event.MaterialDemandEvent;
 import de.metas.material.event.MaterialDescriptor;
 import de.metas.material.event.MaterialEventService;
 import lombok.NonNull;
@@ -53,13 +53,13 @@ public class CandidateChangeHandler
 {
 	private final CandidateRepository candidateRepository;
 
-	private final CandidateFactory candidateFactory;
+	private final StockCandidateFactory candidateFactory;
 
 	private final MaterialEventService materialEventService;
 
 	public CandidateChangeHandler(
 			@NonNull final CandidateRepository candidateRepository,
-			@NonNull final CandidateFactory candidateFactory,
+			@NonNull final StockCandidateFactory candidateFactory,
 			@NonNull final MaterialEventService materialEventService)
 	{
 		this.candidateRepository = candidateRepository;
@@ -67,6 +67,12 @@ public class CandidateChangeHandler
 		this.materialEventService = materialEventService;
 	}
 
+	/**
+	 * Persists the given candidate and decides if further events shall be fired.
+	 * 
+	 * @param candidate
+	 * @return
+	 */
 	public Candidate onCandidateNewOrChange(@NonNull final Candidate candidate)
 	{
 		switch (candidate.getType())
@@ -94,7 +100,7 @@ public class CandidateChangeHandler
 	{
 		Preconditions.checkArgument(demandCandidate.getType() == Type.DEMAND, "Given parameter 'demandCandidate' has type=%s; demandCandidate=%s", demandCandidate.getType(), demandCandidate);
 
-		final Candidate demandCandidateWithId = candidateRepository.addOrUpdate(demandCandidate);
+		final Candidate demandCandidateWithId = candidateRepository.addOrUpdateOverwriteStoredSeqNo(demandCandidate);
 
 		if (demandCandidateWithId.getQuantity().signum() == 0)
 		{
@@ -141,20 +147,21 @@ public class CandidateChangeHandler
 			// keep it and in turn update the demandCandidate's seqNo accordingly
 			demandCandidateToReturn = demandCandidate
 					.withSeqNo(childStockWithDemand.getSeqNo() - 1);
-			candidateRepository.addOrUpdate(demandCandidateToReturn);
+			candidateRepository.addOrUpdateOverwriteStoredSeqNo(demandCandidateToReturn);
 		}
 		else
 		{
 			demandCandidateToReturn = demandCandidateWithId;
 		}
 
-		if (childStockWithDemand.getQuantity().signum() < 0)
+		final boolean demandExceedsAvailableQty = childStockWithDemand.getQuantity().signum() < 0;
+		if (demandExceedsAvailableQty)
 		{
 			// there would be no more stock left, so
 			// notify whoever is in charge that we have a demand to balance
 			final int orderLineId = demandCandidate.getDemandDetail() == null ? 0 : demandCandidate.getDemandDetail().getOrderLineId();
 
-			final SalesOrderLineMaterialEvent materialDemandEvent = SalesOrderLineMaterialEvent
+			final MaterialDemandEvent materialDemandEvent = MaterialDemandEvent
 					.builder()
 					.materialDemandDescr(MaterialDemandDescr.builder()
 							.eventDescr(new EventDescr(demandCandidate.getClientId(), demandCandidate.getOrgId()))
@@ -189,7 +196,7 @@ public class CandidateChangeHandler
 		Preconditions.checkArgument(supplyCandidate.getType() == Type.SUPPLY, "Given parameter 'supplyCandidate' has type=%s; supplyCandidate=%s", supplyCandidate.getType(), supplyCandidate);
 
 		// store the supply candidate and get both it's ID and qty-delta
-		final Candidate supplyCandidateDeltaWithId = candidateRepository.addOrUpdate(supplyCandidate);
+		final Candidate supplyCandidateDeltaWithId = candidateRepository.addOrUpdateOverwriteStoredSeqNo(supplyCandidate);
 
 		if (supplyCandidateDeltaWithId.getQuantity().signum() == 0)
 		{
@@ -221,7 +228,7 @@ public class CandidateChangeHandler
 
 		// set the stock candidate as parent for the supply candidate
 		// the return value would have qty=0, but in the repository we updated the parent-ID
-		candidateRepository.addOrUpdate(
+		candidateRepository.addOrUpdateOverwriteStoredSeqNo(
 				supplyCandidate
 						.withParentId(parentStockCandidateWithId.getId())
 						.withSeqNo(parentStockCandidateWithId.getSeqNo() + 1));
@@ -276,24 +283,23 @@ public class CandidateChangeHandler
 	 * It then updates the quantities of all "later" stock candidates that have the same product etc.<br>
 	 * according to the delta between the candidate's former value (or zero if it was only just added) and it's new value.
 	 *
-	 * @param candidate a candidate that can have any type and a quantity which is a <b>delta</b>, i.e. a quantity that is added or removed at the candidate's date.
+	 * @param relatedCandidate a candidate that can have any type and a quantity which is a <b>delta</b>, i.e. a quantity that is added or removed at the candidate's date.
 	 *
 	 * @return a candidate with type {@link Type#STOCK} that reflects what was persisted in the DB.<br>
 	 *         The candidate will have an ID and its quantity will not be a delta, but the "absolute" projected quantity at the given time.<br>
 	 *         Note: this method does not establish a parent-child relationship between any two records
 	 */
-	public Candidate addOrUpdateStock(@NonNull final Candidate candidate)
+	public Candidate addOrUpdateStock(@NonNull final Candidate relatedCandidate)
 	{
+		final Supplier<Candidate> stockCandidateToUpdate = () -> {
+			final Candidate stockCandidateToPersist = candidateFactory.createStockCandidate(relatedCandidate);
+			final Candidate persistedStockCandidate = candidateRepository.addOrUpdatePreserveExistingSeqNo(stockCandidateToPersist);
+			return persistedStockCandidate;
+		};
+		
 		return updateStock(
-				candidate,
-				() -> {
-					final Candidate stockCandidateToPersist = candidateFactory.createStockCandidate(candidate);
-
-					final boolean preserveExistingSeqNo = true; // there there is a stock record with a seqNo, then don't override it, because we will need to adapt to it in order to put our new data into the right sequence.
-					final Candidate persistedStockCandidate = candidateRepository.addOrUpdate(stockCandidateToPersist, preserveExistingSeqNo);
-
-					return persistedStockCandidate;
-				});
+				relatedCandidate,
+				stockCandidateToUpdate);
 	}
 
 	public void onCandidateDelete(@NonNull final TableRecordReference recordReference)
@@ -329,11 +335,11 @@ public class CandidateChangeHandler
 				.warehouseId(warehouseId)
 				.build();
 
-		final List<Candidate> candidatesToUpdate = candidateRepository.retrieveMatches(segment);
+		final List<Candidate> candidatesToUpdate = candidateRepository.retrieveMatchesOrderByDateAndSeqNo(segment);
 		for (final Candidate candidate : candidatesToUpdate)
 		{
 			final BigDecimal newQty = candidate.getQuantity().add(delta);
-			candidateRepository.addOrUpdate(candidate
+			candidateRepository.addOrUpdateOverwriteStoredSeqNo(candidate
 					.withQuantity(newQty)
 					.withGroupId(groupId));
 		}

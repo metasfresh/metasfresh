@@ -1,7 +1,5 @@
 package de.metas.material.event;
 
-import com.google.common.base.Preconditions;
-
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -29,31 +27,17 @@ import lombok.Value;
  */
 
 @Value
-public class SalesOrderLineMaterialEvent implements MaterialEvent
+@Builder
+public class MaterialDemandEvent implements MaterialEvent
 {
-	public static final String TYPE = "SalesOrderLineMaterialEvent";
+	public static final String TYPE = "MaterialDemandEvent";
 
 	@NonNull
 	MaterialDemandDescr materialDemandDescr;
 
-	@Builder // used by devs to make sure they know with parameter value does into which property
-	public SalesOrderLineMaterialEvent(MaterialDemandDescr materialDemandDescr)
-	{
-		Preconditions.checkArgument(materialDemandDescr.getOrderLineId() > 0,
-				"For this kind of event, the given materialDemandDescr needs to have OrderLineId>0, but it has OrderLineId=%s; materialDemandDescr=%s",
-				materialDemandDescr.getOrderLineId(), materialDemandDescr);
-		
-		this.materialDemandDescr = materialDemandDescr;
-	}
-
-	@Override
+	
 	public EventDescr getEventDescr()
 	{
 		return materialDemandDescr.getEventDescr();
-	}
-
-	public int getOrderLineId()
-	{
-		return materialDemandDescr.getOrderLineId();
 	}
 }

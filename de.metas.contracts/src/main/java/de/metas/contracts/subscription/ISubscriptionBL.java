@@ -46,16 +46,6 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 public interface ISubscriptionBL extends ISingletonService
 {
 	/**
-	 * 
-	 * Creates new {@link I_C_SubscriptionProgress} delivery records for the given <code>term</code>. The first of them has
-	 * the term's <code>StartDate</code> as EventDate.
-	 * 
-	 * @param term
-	 * @return the first <code>C_SubscriptionProgress</code> that has been created
-	 */
-	I_C_SubscriptionProgress createSubscriptionEntries(I_C_Flatrate_Term term);
-
-	/**
 	 * Iterates over all {@link I_C_SubscriptionProgress} (sp) records that represent a delivery which is due. Creates
 	 * an {@link I_M_ShipmentSchedule} record for each delivery, unless:
 	 * <ul>

@@ -51,7 +51,7 @@ public class Candidate
 	 */
 	public enum SubType
 	{
-		DISTRIBUTION, PRODUCTION, RECEIPT, SHIPMENT
+		DISTRIBUTION, PRODUCTION, RECEIPT, SHIPMENT, TODO_FORECAST
 	};
 
 	/**
@@ -88,7 +88,7 @@ public class Candidate
 	private final Type type;
 
 	/**
-	 * Currently this can be {@code null}, unless {@link #getType()} is {@link Type#SUPPLY}.
+	 * Should be {@code null} for stock candidates.
 	 */
 	private final SubType subType;
 
@@ -98,8 +98,14 @@ public class Candidate
 
 	private final Integer id;
 
+	/**
+	 * A supply candidate has a stock candidate as its parent. A demand candidate has a stock candidate as its child.  
+	 */
 	private final Integer parentId;
 
+	/**
+	 * A supply candidate and its corresponding demand candidate are associated by a common group id.
+	 */
 	private final Integer groupId;
 
 	private final Integer seqNo;
@@ -143,7 +149,7 @@ public class Candidate
 		return getParentId() == null ? 0 : getParentId();
 	}
 
-	public int getGroupIdNotNull()
+	public int getEffectiveGroupId()
 	{
 		if (type == Type.STOCK)
 		{

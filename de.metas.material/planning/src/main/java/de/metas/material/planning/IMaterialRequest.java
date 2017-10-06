@@ -25,12 +25,12 @@ package de.metas.material.planning;
 import java.math.BigDecimal;
 import java.util.Date;
 
-import de.metas.material.planning.event.SalesOrderLineEventListener;
+import de.metas.material.planning.event.MaterialDemandEventListener;
 
 /**
  * Instances of this interface specify a material demand. Currently there is no "real" service from which an instance can be obtained.
  * <p>
- * See {@link SalesOrderLineEventListener}.
+ * See {@link MaterialDemandEventListener}.
  *
  * Note that there is a sub interface in libero which contains additional fields and it therefore more tightly coupled to libero.
  *

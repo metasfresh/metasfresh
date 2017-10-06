@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service;
 import de.metas.logging.LogManager;
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.MaterialEventListener;
-import de.metas.material.event.SalesOrderLineMaterialEvent;
+import de.metas.material.event.MaterialDemandEvent;
 import lombok.NonNull;
 
 /*
@@ -32,20 +32,20 @@ import lombok.NonNull;
  * #L%
  */
 /**
- * This listener is dedicated to handle {@link SalesOrderLineMaterialEvent}s. It ignores and other {@link MaterialEvent}.
+ * This listener is dedicated to handle {@link MaterialDemandEvent}s. It ignores and other {@link MaterialEvent}.
  *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
 @Service
 @Lazy // .. because MaterialEventService needs to be lazy
-public class SalesOrderLineEventListener implements MaterialEventListener
+public class MaterialDemandEventListener implements MaterialEventListener
 {
-	private static final transient Logger logger = LogManager.getLogger(SalesOrderLineEventListener.class);
+	private static final transient Logger logger = LogManager.getLogger(MaterialDemandEventListener.class);
 
 	private final CommonDemandHandler commonDemandHandler;
 
-	public SalesOrderLineEventListener(
+	public MaterialDemandEventListener(
 			@NonNull final CommonDemandHandler commonDemandHandler)
 	{
 		this.commonDemandHandler = commonDemandHandler;
@@ -54,13 +54,13 @@ public class SalesOrderLineEventListener implements MaterialEventListener
 	@Override
 	public void onEvent(@NonNull final MaterialEvent event)
 	{
-		if (!(event instanceof SalesOrderLineMaterialEvent))
+		if (!(event instanceof MaterialDemandEvent))
 		{
 			return;
 		}
 		logger.info("Received event {}", event);
 
-		final SalesOrderLineMaterialEvent materialDemandEvent = (SalesOrderLineMaterialEvent)event;
+		final MaterialDemandEvent materialDemandEvent = (MaterialDemandEvent)event;
 
 		commonDemandHandler.handleMaterialDemandEvent(materialDemandEvent.getMaterialDemandDescr());
 	}

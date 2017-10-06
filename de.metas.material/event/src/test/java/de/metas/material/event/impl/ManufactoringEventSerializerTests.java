@@ -16,14 +16,15 @@ import org.junit.Test;
 
 import de.metas.event.SimpleObjectSerializer;
 import de.metas.material.event.EventDescr;
-import de.metas.material.event.ForecastLineMaterialEvent;
-import de.metas.material.event.MaterialDemandDescr;
+import de.metas.material.event.ForecastEvent;
 import de.metas.material.event.MaterialDescriptor;
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.PPOrderRequestedEvent;
 import de.metas.material.event.ProductionPlanEvent;
 import de.metas.material.event.ReceiptScheduleEvent;
 import de.metas.material.event.TransactionEvent;
+import de.metas.material.event.forecast.Forecast;
+import de.metas.material.event.forecast.ForecastLine;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrderLine;
 
@@ -215,20 +216,28 @@ public class ManufactoringEventSerializerTests
 				.warehouseId(30)
 				.build();
 
-		final ForecastLineMaterialEvent forecastLineMaterialEvent = ForecastLineMaterialEvent.builder()
-				.forecastLineId(12)
-				.materialDemandDescr(
-						MaterialDemandDescr.builder()
-								.eventDescr(new EventDescr(1, 2))
-								.materialDescr(materialDescriptor)
-								.reference(TableRecordReference.of("table", 24))
-								.build())
+		final ForecastLine forecastLine = ForecastLine.builder()
+				.forecastLineId(30)
+				.materialDescriptor(materialDescriptor)
+				.reference(TableRecordReference.of("table", 24))
+				.forecastLineDeleted(false)
+				.build();
+		
+		final Forecast forecast = Forecast.builder()
+				.forecastId(20)
+				.docStatus("docStatus")
+				.forecastLine(forecastLine)
+				.build();
+		final ForecastEvent forecastEvent = ForecastEvent
+				.builder()
+				.forecast(forecast)
+				.eventDescr(new EventDescr(1, 2))
 				.build();
 
-		final String serializedEvt = SimpleObjectSerializer.get().serialize(forecastLineMaterialEvent);
+		final String serializedEvt = SimpleObjectSerializer.get().serialize(forecastEvent);
 
 		final MaterialEvent deserializedEvt = SimpleObjectSerializer.get().deserialize(serializedEvt, MaterialEvent.class);
 
-		assertThat(deserializedEvt, is(forecastLineMaterialEvent));
+		assertThat(deserializedEvt, is(deserializedEvt));
 	}
 }

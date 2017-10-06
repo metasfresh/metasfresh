@@ -27,7 +27,7 @@ import de.metas.material.dispo.CandidateService;
 import de.metas.material.dispo.DispoTestUtils;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.service.CandidateChangeHandler;
-import de.metas.material.dispo.service.CandidateFactory;
+import de.metas.material.dispo.service.StockCandidateFactory;
 import de.metas.material.dispo.service.event.DistributionPlanEventHandler;
 import de.metas.material.dispo.service.event.MDEventListener;
 import de.metas.material.dispo.service.event.ProductionPlanEventHandler;
@@ -105,18 +105,27 @@ public class MDEventListenerTests
 		final CandidateRepository candidateRepository = new CandidateRepository();
 		final SupplyProposalEvaluator supplyProposalEvaluator = new SupplyProposalEvaluator(candidateRepository);
 
-		final CandidateChangeHandler candidateChangeHandler = new CandidateChangeHandler(candidateRepository, new CandidateFactory(candidateRepository), materialEventService);
+		final CandidateChangeHandler candidateChangeHandler = new CandidateChangeHandler(candidateRepository, new StockCandidateFactory(candidateRepository), materialEventService);
 
-		final CandidateService candidateService = new CandidateService(candidateRepository, new MaterialEventService(de.metas.event.Type.LOCAL));
+		final CandidateService candidateService = new CandidateService(
+				candidateRepository, 
+				MaterialEventService.createLocalServiceThatIsReadyToUse());
+
+		final DistributionPlanEventHandler distributionPlanEventHandler = new DistributionPlanEventHandler(
+				candidateRepository,
+				candidateChangeHandler,
+				supplyProposalEvaluator,
+				new CandidateService(candidateRepository, materialEventService));
+
+		final ProductionPlanEventHandler productionPlanEventHandler = new ProductionPlanEventHandler(candidateChangeHandler, candidateService);
+
+		final ForecastEventHandler forecastEventHandler = new ForecastEventHandler(candidateChangeHandler);
 
 		mdEventListener = new MDEventListener(
 				candidateChangeHandler,
-				new DistributionPlanEventHandler(
-						candidateRepository,
-						candidateChangeHandler,
-						supplyProposalEvaluator,
-						new CandidateService(candidateRepository, materialEventService)),
-				new ProductionPlanEventHandler(candidateChangeHandler, candidateService));
+				distributionPlanEventHandler,
+				productionPlanEventHandler,
+				forecastEventHandler);
 	}
 
 	/**
@@ -158,7 +167,7 @@ public class MDEventListenerTests
 	 * This test is more for myself, to figure out how the system works :-$
 	 */
 	@Test
-	public void testShipmentScheduleEven_then_DistributionPlanevent()
+	public void testShipmentScheduleEvent_then_DistributionPlanevent()
 	{
 		testShipmentScheduleEvent();
 

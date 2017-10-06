@@ -34,11 +34,11 @@ import lombok.NonNull;
  */
 
 @Service
-public class CandidateFactory
+public class StockCandidateFactory
 {
 	private final CandidateRepository candidateRepository;
 
-	public CandidateFactory(@NonNull final CandidateRepository candidateRepository)
+	public StockCandidateFactory(@NonNull final CandidateRepository candidateRepository)
 	{
 		this.candidateRepository = candidateRepository;
 	}

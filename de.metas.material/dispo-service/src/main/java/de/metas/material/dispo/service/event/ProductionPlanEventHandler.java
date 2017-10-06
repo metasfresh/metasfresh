@@ -6,10 +6,10 @@ import de.metas.material.dispo.Candidate;
 import de.metas.material.dispo.Candidate.Status;
 import de.metas.material.dispo.Candidate.SubType;
 import de.metas.material.dispo.Candidate.Type;
-import de.metas.material.dispo.service.CandidateChangeHandler;
 import de.metas.material.dispo.CandidateService;
 import de.metas.material.dispo.DemandCandidateDetail;
 import de.metas.material.dispo.ProductionCandidateDetail;
+import de.metas.material.dispo.service.CandidateChangeHandler;
 import de.metas.material.event.EventDescr;
 import de.metas.material.event.ProductionPlanEvent;
 import de.metas.material.event.pporder.PPOrder;
@@ -60,6 +60,59 @@ public class ProductionPlanEventHandler
 	{
 		final PPOrder ppOrder = event.getPpOrder();
 
+		final Candidate.Status candidateStatus = getCandidateStatus(ppOrder);
+
+		final EventDescr eventDescr = event.getEventDescr();
+		
+		final Candidate supplyCandidate = EventUtil.createCandidateBuilderFromEventDescr(eventDescr)
+				.type(Type.SUPPLY)
+				.subType(SubType.PRODUCTION)
+				.status(candidateStatus)
+				.date(ppOrder.getDatePromised())
+				.productId(ppOrder.getProductId())
+				.quantity(ppOrder.getQuantity())
+				.warehouseId(ppOrder.getWarehouseId())
+				.reference(event.getReference())
+				.productionDetail(createProductionDetailForPPOrder(ppOrder))
+				.demandDetail(DemandCandidateDetail.forOrderLineId(ppOrder.getOrderLineId()))
+				.build();
+
+		// this might cause 'candidateChangeHandler' to trigger another event
+		final Candidate candidateWithGroupId = candidateChangeHandler.onCandidateNewOrChange(supplyCandidate);
+
+		for (final PPOrderLine ppOrderLine : ppOrder.getLines())
+		{
+			final Candidate lineCandidate =  EventUtil.createCandidateBuilderFromEventDescr(eventDescr)
+					.type(ppOrderLine.isReceipt() ? Type.SUPPLY : Type.DEMAND)
+					.subType(SubType.PRODUCTION)
+					.status(candidateStatus)
+
+					.groupId(candidateWithGroupId.getGroupId())
+					.seqNo(candidateWithGroupId.getSeqNo() + 1)
+
+					.date(ppOrderLine.isReceipt() ? ppOrder.getDatePromised() : ppOrder.getDateStartSchedule())
+
+					.productId(ppOrderLine.getProductId())
+					.attributeSetInstanceId(ppOrderLine.getAttributeSetInstanceId())
+					.quantity(ppOrderLine.getQtyRequired())
+					.warehouseId(ppOrder.getWarehouseId())
+					.reference(event.getReference())
+					.productionDetail(createProductionDetailForPPOrderAndLine(ppOrder, ppOrderLine))
+					.demandDetail(DemandCandidateDetail.forOrderLineId(ppOrder.getOrderLineId()))
+					.build();
+
+			// might trigger further demand events
+			candidateChangeHandler.onCandidateNewOrChange(lineCandidate);
+		}
+
+		if (ppOrder.isCreatePPOrder())
+		{
+			candidateService.requestMaterialOrder(candidateWithGroupId.getGroupId());
+		}
+	}
+
+	private static Candidate.Status getCandidateStatus(@NonNull final PPOrder ppOrder)
+	{
 		final Candidate.Status candidateStatus;
 		final String docStatus = ppOrder.getDocStatus();
 
@@ -71,76 +124,33 @@ public class ProductionPlanEventHandler
 		{
 			candidateStatus = EventUtil.getCandidateStatus(docStatus);
 		}
+		return candidateStatus;
+	}
 
-		final EventDescr eventDescr = event.getEventDescr();
-		final Candidate supplyCandidate = Candidate.builder()
-				.type(Type.SUPPLY)
-				.subType(SubType.PRODUCTION)
-				.status(candidateStatus)
-
-				.date(ppOrder.getDatePromised())
-				.clientId(eventDescr.getClientId())
-				.orgId(eventDescr.getOrgId())
-				.productId(ppOrder.getProductId())
-				.quantity(ppOrder.getQuantity())
-				.warehouseId(ppOrder.getWarehouseId())
-				.reference(event.getReference())
-				.productionDetail(ProductionCandidateDetail.builder()
-						.plantId(ppOrder.getPlantId())
-						.productPlanningId(ppOrder.getProductPlanningId())
-						.ppOrderId(ppOrder.getPpOrderId())
-						.ppOrderDocStatus(docStatus)
-						.build())
-				.demandDetail(DemandCandidateDetail.builder()
-						.orderLineId(ppOrder.getOrderLineId())
-						.build())
+	private static ProductionCandidateDetail createProductionDetailForPPOrder(@NonNull final PPOrder ppOrder)
+	{
+		final ProductionCandidateDetail productionCandidateDetail = ProductionCandidateDetail.builder()
+				.plantId(ppOrder.getPlantId())
+				.productPlanningId(ppOrder.getProductPlanningId())
+				.ppOrderId(ppOrder.getPpOrderId())
+				.ppOrderDocStatus(ppOrder.getDocStatus())
 				.build();
+		return productionCandidateDetail;
+	}
 
-		// this might cause 'candidateChangeHandler' to trigger another event
-		final Candidate candidateWithGroupId = candidateChangeHandler.onCandidateNewOrChange(supplyCandidate);
-
-		for (final PPOrderLine ppOrderLine : ppOrder.getLines())
-		{
-			final Candidate lineCandidate = Candidate.builder()
-					.type(ppOrderLine.isReceipt() ? Type.SUPPLY : Type.DEMAND)
-					.subType(SubType.PRODUCTION)
-					.status(candidateStatus)
-
-					.groupId(candidateWithGroupId.getGroupId())
-					.seqNo(candidateWithGroupId.getSeqNo() + 1)
-
-					.date(ppOrderLine.isReceipt() ? ppOrder.getDatePromised() : ppOrder.getDateStartSchedule())
-
-					.clientId(eventDescr.getClientId())
-					.orgId(eventDescr.getOrgId())
-
-					.productId(ppOrderLine.getProductId())
-					.attributeSetInstanceId(ppOrderLine.getAttributeSetInstanceId())
-					.quantity(ppOrderLine.getQtyRequired())
-					.warehouseId(ppOrder.getWarehouseId())
-					.reference(event.getReference())
-					.productionDetail(ProductionCandidateDetail.builder()
-							.plantId(ppOrder.getPlantId())
-							.productPlanningId(ppOrder.getProductPlanningId())
-							.productBomLineId(ppOrderLine.getProductBomLineId())
-							.description(ppOrderLine.getDescription())
-							.ppOrderId(ppOrder.getPpOrderId())
-							.ppOrderDocStatus(docStatus)
-							.ppOrderLineId(ppOrderLine.getPpOrderLineId())
-							.build())
-					.demandDetail(DemandCandidateDetail.builder()
-							.orderLineId(ppOrder.getOrderLineId())
-							.build())
-					.build();
-
-			// might trigger further demand events
-			candidateChangeHandler.onCandidateNewOrChange(lineCandidate);
-		}
-
-		if (ppOrder.isCreatePPOrder())
-		{
-			candidateService.requestMaterialOrder(candidateWithGroupId.getGroupId());
-		}
+	private static ProductionCandidateDetail createProductionDetailForPPOrderAndLine(
+			@NonNull final PPOrder ppOrder,
+			@NonNull final PPOrderLine ppOrderLine)
+	{
+		return ProductionCandidateDetail.builder()
+				.plantId(ppOrder.getPlantId())
+				.productPlanningId(ppOrder.getProductPlanningId())
+				.productBomLineId(ppOrderLine.getProductBomLineId())
+				.description(ppOrderLine.getDescription())
+				.ppOrderId(ppOrder.getPpOrderId())
+				.ppOrderDocStatus(ppOrder.getDocStatus())
+				.ppOrderLineId(ppOrderLine.getPpOrderLineId())
+				.build();
 	}
 
 }

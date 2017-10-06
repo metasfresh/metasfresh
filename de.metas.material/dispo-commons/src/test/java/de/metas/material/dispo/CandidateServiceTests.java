@@ -88,7 +88,9 @@ public class CandidateServiceTests
 						.productBomLineId(600)
 						.build());
 
-		final CandidateService candidateService = new CandidateService(new CandidateRepository(), new MaterialEventService(de.metas.event.Type.LOCAL));
+		final CandidateService candidateService = new CandidateService(
+				new CandidateRepository(),
+				MaterialEventService.createLocalServiceThatIsReadyToUse());
 
 		final PPOrderRequestedEvent productionOrderEvent = candidateService.createPPOrderRequestEvent(ImmutableList.of(candidate, candidate2, candidate3));
 		assertThat(productionOrderEvent, notNullValue());
@@ -146,7 +148,9 @@ public class CandidateServiceTests
 						.networkDistributionLineId(501)
 						.build());
 
-		final CandidateService candidateService = new CandidateService(new CandidateRepository(), new MaterialEventService(de.metas.event.Type.LOCAL));
+		final CandidateService candidateService = new CandidateService(
+				new CandidateRepository(),
+				MaterialEventService.createLocalServiceThatIsReadyToUse());
 
 		final DDOrderRequestedEvent distributionOrderEvent = candidateService.createDDOrderRequestEvent(ImmutableList.of(candidate, candidate2, candidate3));
 		assertThat(distributionOrderEvent, notNullValue());
@@ -154,7 +158,7 @@ public class CandidateServiceTests
 		assertThat(distributionOrderEvent.getEventDescr(), notNullValue());
 		assertThat(distributionOrderEvent.getEventDescr().getClientId(), is(20));
 		assertThat(distributionOrderEvent.getEventDescr().getOrgId(), is(30));
-		
+
 		final DDOrder ddOrder = distributionOrderEvent.getDdOrder();
 		assertThat(ddOrder, notNullValue());
 		assertThat(ddOrder.getOrgId(), is(30));
