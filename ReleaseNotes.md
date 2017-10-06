@@ -65,6 +65,8 @@ Here come the actual release notes:
   * [#2657](https://github.com/metasfresh/metasfresh/issues/2657) don't show active hus in hu costprice report
   * [#2665](https://github.com/metasfresh/metasfresh/issues/2665) Translate Add URL Attachment
     * Adding the de_DE message Translations for The URL Attachment Handling.
+  * [#2666](https://github.com/metasfresh/metasfresh/issues/2666) Window Design Webui: Tanslations for the window Contract
+    * Translation Improvement for Subtab Recors. Now completed the Translation for Language/ Locale en_US.
 
 * metasfresh-webui-frontend
   * [#1138](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1138) frontend: Labels widget
