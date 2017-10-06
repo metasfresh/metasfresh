@@ -43,11 +43,11 @@ import de.metas.logging.LogManager;
 public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 {
 	/**
-	 * Flag which is set to true when shipment schedule updater is runing.
+	 * Flag which is set to true when shipment schedule updater is running.
 	 * 
 	 * This information is stored on thread level.
 	 */
-	final InheritableThreadLocal<Boolean> running = new InheritableThreadLocal<Boolean>();
+	private final InheritableThreadLocal<Boolean> running = new InheritableThreadLocal<Boolean>();
 
 	private static final Logger logger = LogManager.getLogger(ShipmentScheduleUpdater.class);
 

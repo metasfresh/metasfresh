@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 package org.compiere.model;
 
 
@@ -32,7 +16,7 @@ public interface I_M_Forecast
 
 //    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
 
-    /** AccessLevel = 3 - Client - Org 
+    /** AccessLevel = 3 - Client - Org
      */
 //    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(3);
 
@@ -48,7 +32,7 @@ public interface I_M_Forecast
 	 */
 	public int getAD_Client_ID();
 
-	public org.compiere.model.I_AD_Client getAD_Client() throws RuntimeException;
+	public org.compiere.model.I_AD_Client getAD_Client();
 
     /** Column definition for AD_Client_ID */
     public static final org.adempiere.model.ModelColumn<I_M_Forecast, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_M_Forecast, org.compiere.model.I_AD_Client>(I_M_Forecast.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
@@ -75,7 +59,7 @@ public interface I_M_Forecast
 	 */
 	public int getAD_Org_ID();
 
-	public org.compiere.model.I_AD_Org getAD_Org() throws RuntimeException;
+	public org.compiere.model.I_AD_Org getAD_Org();
 
 	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
 
@@ -104,7 +88,7 @@ public interface I_M_Forecast
 	 */
 	public int getC_Calendar_ID();
 
-	public org.compiere.model.I_C_Calendar getC_Calendar() throws RuntimeException;
+	public org.compiere.model.I_C_Calendar getC_Calendar();
 
 	public void setC_Calendar(org.compiere.model.I_C_Calendar C_Calendar);
 
@@ -133,7 +117,7 @@ public interface I_M_Forecast
 	 */
 	public int getC_Year_ID();
 
-	public org.compiere.model.I_C_Year getC_Year() throws RuntimeException;
+	public org.compiere.model.I_C_Year getC_Year();
 
 	public void setC_Year(org.compiere.model.I_C_Year C_Year);
 
@@ -194,6 +178,56 @@ public interface I_M_Forecast
     public static final org.adempiere.model.ModelColumn<I_M_Forecast, Object> COLUMN_Description = new org.adempiere.model.ModelColumn<I_M_Forecast, Object>(I_M_Forecast.class, "Description", null);
     /** Column name Description */
     public static final String COLUMNNAME_Description = "Description";
+
+	/**
+	 * Set Belegverarbeitung.
+	 * Der zukünftige Status des Belegs
+	 *
+	 * <br>Type: Button
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setDocAction (java.lang.String DocAction);
+
+	/**
+	 * Get Belegverarbeitung.
+	 * Der zukünftige Status des Belegs
+	 *
+	 * <br>Type: Button
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getDocAction();
+
+    /** Column definition for DocAction */
+    public static final org.adempiere.model.ModelColumn<I_M_Forecast, Object> COLUMN_DocAction = new org.adempiere.model.ModelColumn<I_M_Forecast, Object>(I_M_Forecast.class, "DocAction", null);
+    /** Column name DocAction */
+    public static final String COLUMNNAME_DocAction = "DocAction";
+
+	/**
+	 * Set Belegstatus.
+	 * The current status of the document
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setDocStatus (java.lang.String DocStatus);
+
+	/**
+	 * Get Belegstatus.
+	 * The current status of the document
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getDocStatus();
+
+    /** Column definition for DocStatus */
+    public static final org.adempiere.model.ModelColumn<I_M_Forecast, Object> COLUMN_DocStatus = new org.adempiere.model.ModelColumn<I_M_Forecast, Object>(I_M_Forecast.class, "DocStatus", null);
+    /** Column name DocStatus */
+    public static final String COLUMNNAME_DocStatus = "DocStatus";
 
 	/**
 	 * Set Kommentar/Hilfe.
@@ -315,7 +349,7 @@ public interface I_M_Forecast
 	 */
 	public int getM_PriceList_ID();
 
-	public org.compiere.model.I_M_PriceList getM_PriceList() throws RuntimeException;
+	public org.compiere.model.I_M_PriceList getM_PriceList();
 
 	public void setM_PriceList(org.compiere.model.I_M_PriceList M_PriceList);
 
@@ -348,6 +382,31 @@ public interface I_M_Forecast
     public static final org.adempiere.model.ModelColumn<I_M_Forecast, Object> COLUMN_Name = new org.adempiere.model.ModelColumn<I_M_Forecast, Object>(I_M_Forecast.class, "Name", null);
     /** Column name Name */
     public static final String COLUMNNAME_Name = "Name";
+
+	/**
+	 * Set Verarbeitet.
+	 * Checkbox sagt aus, ob der Beleg verarbeitet wurde.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setProcessed (boolean Processed);
+
+	/**
+	 * Get Verarbeitet.
+	 * Checkbox sagt aus, ob der Beleg verarbeitet wurde.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isProcessed();
+
+    /** Column definition for Processed */
+    public static final org.adempiere.model.ModelColumn<I_M_Forecast, Object> COLUMN_Processed = new org.adempiere.model.ModelColumn<I_M_Forecast, Object>(I_M_Forecast.class, "Processed", null);
+    /** Column name Processed */
+    public static final String COLUMNNAME_Processed = "Processed";
 
 	/**
 	 * Set Verarbeiten.

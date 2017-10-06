@@ -39,12 +39,6 @@ import de.metas.process.JavaProcess;
 public class M_ShipmentSchedule_CloseShipmentSchedules extends JavaProcess
 {
 	@Override
-	protected void prepare()
-	{
-
-	}
-
-	@Override
 	protected String doIt() throws Exception
 	{
 		final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
@@ -54,6 +48,7 @@ public class M_ShipmentSchedule_CloseShipmentSchedules extends JavaProcess
 
 		IQueryBuilder<I_M_ShipmentSchedule> queryBuilderForShipmentScheduleSelection = shipmentSchedulePA.createQueryForShipmentScheduleSelection(getCtx(), userSelectionFilter);
 
+		// TODO: filter for picking candidates!
 		final Iterator<I_M_ShipmentSchedule> schedulesToUpdateIterator = queryBuilderForShipmentScheduleSelection
 				.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_QtyPickList, BigDecimal.ZERO)
 				.create()

@@ -107,7 +107,7 @@ public class ShipmentScheduleHUPackingAware implements IHUPackingAware
 	public BigDecimal getQty()
 	{
 		// task 09005: make sure the correct qtyOrdered is taken from the shipmentSchedule
-		final BigDecimal qtyOrdered = Services.get(IShipmentScheduleEffectiveBL.class).getQtyOrdered(shipmentSchedule);
+		final BigDecimal qtyOrdered = Services.get(IShipmentScheduleEffectiveBL.class).computeQtyOrdered(shipmentSchedule);
 		
 		return qtyOrdered;
 

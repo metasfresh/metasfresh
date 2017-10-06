@@ -1,5 +1,7 @@
 package de.metas.inoutcandidate.modelvalidator;
 
+import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -32,7 +34,6 @@ import java.util.Set;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
-import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
@@ -47,6 +48,8 @@ import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;
 import org.compiere.model.ModelValidator;
 
+import com.google.common.collect.ImmutableList;
+
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
@@ -56,6 +59,9 @@ import de.metas.inoutcandidate.api.IShipmentScheduleUpdater;
 import de.metas.inoutcandidate.model.I_M_IolCandHandler_Log;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked;
+import de.metas.storage.IStorageBL;
+import de.metas.storage.IStorageSegment;
+import lombok.NonNull;
 
 /**
  * Shipment Schedule module: M_ShipmentSchedule
@@ -77,7 +83,7 @@ public class M_ShipmentSchedule
 	public void validate(final I_M_ShipmentSchedule schedule)
 	{
 		// task 09005: make sure the correct qtyOrdered is taken from the shipmentSchedule
-		final BigDecimal qtyOrderedEffective = Services.get(IShipmentScheduleEffectiveBL.class).getQtyOrdered(schedule);
+		final BigDecimal qtyOrderedEffective = Services.get(IShipmentScheduleEffectiveBL.class).computeQtyOrdered(schedule);
 
 		// task 07355: we allow QtyOrdered == 0, because an order could be closed before a delivery was made
 		Check.errorIf(qtyOrderedEffective.signum() < 0,
@@ -96,7 +102,7 @@ public class M_ShipmentSchedule
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
-	public void updateBPArtnerAddressOverride(final I_M_ShipmentSchedule schedule)
+	public void updateBPartnerAddressOverride(final I_M_ShipmentSchedule schedule)
 	{
 		if (InterfaceWrapperHelper.isValueChanged(schedule, I_M_ShipmentSchedule.COLUMNNAME_C_BPartner_Override_ID)
 				|| InterfaceWrapperHelper.isValueChanged(schedule, I_M_ShipmentSchedule.COLUMNNAME_C_BP_Location_Override_ID)
@@ -145,12 +151,80 @@ public class M_ShipmentSchedule
 		}
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE })
+	@ModelChange( //
+			timings = ModelValidator.TYPE_AFTER_CHANGE, //
+			ifColumnsChanged = {
+					I_M_ShipmentSchedule.COLUMNNAME_C_BPartner_ID,
+					I_M_ShipmentSchedule.COLUMNNAME_C_BPartner_Override_ID
+			})
+	public void invalidateIfBusinessPartnerChanged(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
+	{
+		// If shipment schedule updater is currently running in this thread, it means that updater changed this record so there is NO need to invalidate it again.
+		if (Services.get(IShipmentScheduleUpdater.class).isRunning())
+		{
+			return;
+		}
+
+		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
+		final int newBPartnerId = shipmentScheduleEffectiveBL.getC_BPartner_ID(shipmentSchedule);
+
+		final int oldBpartnerId = getOldBPartnerId(shipmentSchedule);
+		if (newBPartnerId == oldBpartnerId)
+		{
+			return;
+		}
+
+		invalidateForOldAndNewBPartners(shipmentSchedule, oldBpartnerId);
+	}
+
+	private int getOldBPartnerId(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
+	{
+		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
+		final I_M_ShipmentSchedule oldShipmentSchedule = InterfaceWrapperHelper.createOld(shipmentSchedule, I_M_ShipmentSchedule.class);
+		final int oldBpartnerId = shipmentScheduleEffectiveBL.getC_BPartner_ID(oldShipmentSchedule);
+		
+		return oldBpartnerId;
+	}
+	
+	private void invalidateForOldAndNewBPartners(
+			@NonNull final I_M_ShipmentSchedule shipmentSchedule,
+			final int oldBpartnerId)
+	{
+		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
+		final int newBPartnerId = shipmentScheduleEffectiveBL.getC_BPartner_ID(shipmentSchedule);
+
+		final IStorageBL storageBL = Services.get(IStorageBL.class);
+		final IStorageSegment storageSegment = storageBL.createStorageSegmentBuilder()
+				.addM_Product_ID(shipmentSchedule.getM_Product_ID())
+				.addC_BPartner_ID(newBPartnerId)
+				.addC_BPartner_ID(oldBpartnerId)
+				.addM_AttributeSetInstance_ID(shipmentSchedule.getM_AttributeSetInstance_ID())
+				.addM_Warehouse(shipmentScheduleEffectiveBL.getWarehouse(shipmentSchedule))
+				.build();
+
+		Services.get(IShipmentSchedulePA.class).invalidate(ImmutableList.of(storageSegment));
+	}
+
+	/**
+	 * Note: it's important the the schedule is only invalidated on certain value changes.
+	 * For example, a change of lock status or valid status may not cause an invalidation
+	 *
+	 * @param schedule
+	 */
+	@ModelChange( //
+			timings = ModelValidator.TYPE_AFTER_CHANGE, //
+			ifColumnsChanged = { //
+					I_M_ShipmentSchedule.COLUMNNAME_M_AttributeSetInstance_ID, // task 08746: found by lili
+					I_M_ShipmentSchedule.COLUMNNAME_AllowConsolidateInOut,
+					I_M_ShipmentSchedule.COLUMNNAME_PriorityRule_Override,
+					I_M_ShipmentSchedule.COLUMNNAME_QtyToDeliver_Override,
+					I_M_ShipmentSchedule.COLUMNNAME_DeliveryRule_Override,
+					I_M_ShipmentSchedule.COLUMNNAME_BPartnerAddress_Override,
+					I_M_ShipmentSchedule.COLUMNNAME_IsClosed
+			})
 	public void invalidate(final I_M_ShipmentSchedule schedule)
 	{
-		//
-		// If shipment schedule updater is currently running in this thread, it means that updater changed this record
-		// so there is NO need to invalidate it again.
+		// If shipment schedule updater is currently running in this thread, it means that updater changed this record so there is NO need to invalidate it again.
 		if (Services.get(IShipmentScheduleUpdater.class).isRunning())
 		{
 			return;
@@ -158,33 +232,34 @@ public class M_ShipmentSchedule
 
 		final String trxName = InterfaceWrapperHelper.getTrxName(schedule);
 
-		// Note: it's important the the schedule is only invalidated on certain value changes.
-		// For example, a change of lock status or valid status may not cause an invalidation
+		Services.get(IShipmentSchedulePA.class).invalidate( // 08746: make sure that at any rate, the sched itself is invalidated
+				Collections.singletonList(schedule),
+				trxName);
+		Services.get(IShipmentScheduleInvalidateBL.class).invalidateSegmentForShipmentSchedule(schedule);
 
-		if (InterfaceWrapperHelper.isValueChanged(schedule, I_M_ShipmentSchedule.COLUMNNAME_M_AttributeSetInstance_ID) // task 08746: found by lili
-				|| InterfaceWrapperHelper.isValueChanged(schedule, I_M_ShipmentSchedule.COLUMNNAME_AllowConsolidateInOut)
-				|| InterfaceWrapperHelper.isValueChanged(schedule, I_M_ShipmentSchedule.COLUMNNAME_PriorityRule_Override)
-				|| InterfaceWrapperHelper.isValueChanged(schedule, I_M_ShipmentSchedule.COLUMNNAME_QtyToDeliver_Override)
-				|| InterfaceWrapperHelper.isValueChanged(schedule, I_M_ShipmentSchedule.COLUMNNAME_DeliveryRule_Override)
-				|| InterfaceWrapperHelper.isValueChanged(schedule, I_M_ShipmentSchedule.COLUMNNAME_BPartnerAddress_Override))
+	}
+
+	@ModelChange( //
+			timings = ModelValidator.TYPE_AFTER_CHANGE, //
+			ifColumnsChanged = I_M_ShipmentSchedule.COLUMNNAME_HeaderAggregationKey)
+	public void invalidateSchedulesWithOldAndNewHeaderAggregationKey(final I_M_ShipmentSchedule schedule)
+	{
+		// If shipment schedule updater is currently running in this thread, it means that updater changed this record so there is NO need to invalidate it again.
+		if (Services.get(IShipmentScheduleUpdater.class).isRunning())
 		{
-			Services.get(IShipmentSchedulePA.class).invalidate( // 08746: make sure that at any rate, the sched itself is invalidated
-					Collections.singletonList(schedule),
-					trxName);
-			Services.get(IShipmentScheduleInvalidateBL.class).invalidateSegmentForShipmentSchedule(schedule);
+			return;
 		}
 
-		if (InterfaceWrapperHelper.isValueChanged(schedule, I_M_ShipmentSchedule.COLUMNNAME_HeaderAggregationKey))
-		{
-			// note: scheduleOld.getHeaderAggregationKey() being empty is also covered in the shipmentSchedulePA method
-			final I_M_ShipmentSchedule scheduleOld = InterfaceWrapperHelper.createOld(schedule, I_M_ShipmentSchedule.class);
-			final Set<String> headerAggregationKeys = new HashSet<String>();
-			headerAggregationKeys.add(scheduleOld.getHeaderAggregationKey());
-			headerAggregationKeys.add(schedule.getHeaderAggregationKey());
+		// note: scheduleOld.getHeaderAggregationKey() being empty is also covered in the shipmentSchedulePA method
+		final I_M_ShipmentSchedule scheduleOld = InterfaceWrapperHelper.createOld(schedule, I_M_ShipmentSchedule.class);
+		final Set<String> headerAggregationKeys = new HashSet<String>();
+		headerAggregationKeys.add(scheduleOld.getHeaderAggregationKey());
+		headerAggregationKeys.add(schedule.getHeaderAggregationKey());
 
-			final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
-			shipmentSchedulePA.invalidateForHeaderAggregationKeys(headerAggregationKeys, trxName);
-		}
+		final String trxName = InterfaceWrapperHelper.getTrxName(schedule);
+
+		final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
+		shipmentSchedulePA.invalidateForHeaderAggregationKeys(headerAggregationKeys, trxName);
 	}
 
 	/**
@@ -192,35 +267,43 @@ public class M_ShipmentSchedule
 	 *
 	 * @param shipmentSchedule
 	 */
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_M_ShipmentSchedule.COLUMNNAME_QtyOrdered_Calculated, I_M_ShipmentSchedule.COLUMNNAME_QtyOrdered_Override })
+	@ModelChange( //
+			timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, //
+			ifColumnsChanged = { //
+					I_M_ShipmentSchedule.COLUMNNAME_QtyOrdered_Calculated,
+					I_M_ShipmentSchedule.COLUMNNAME_QtyOrdered_Override,
+					I_M_ShipmentSchedule.COLUMNNAME_QtyDelivered,
+					I_M_ShipmentSchedule.COLUMNNAME_IsClosed
+			})
 	public void updateQtyOrdered(final I_M_ShipmentSchedule shipmentSchedule)
 	{
 		final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
-		final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
-		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
-
 		shipmentScheduleBL.updateQtyOrdered(shipmentSchedule);
 
 		final BigDecimal qtyDelivered = shipmentSchedule.getQtyDelivered();
+		final BigDecimal qtyOrdered = shipmentSchedule.getQtyOrdered();
 
-		// task 09005: make sure the correct qtyOrdered is taken from the shipmentSchedule
-		final BigDecimal qtyOrdered = shipmentScheduleEffectiveBL.getQtyOrdered(shipmentSchedule);
 		if (qtyDelivered.compareTo(qtyOrdered) > 0)
 		{
 			throw new AdempiereException(ERR_QtyDeliveredGreatedThanQtyOrdered, new Object[] { qtyDelivered });
 		}
 
-		if (adTableDAO.retrieveTableId(I_C_OrderLine.Table_Name) != shipmentSchedule.getAD_Table_ID())
+		updateQtyOrderedOfOrderLineAndReserveStock(shipmentSchedule);
+	}
+
+	private void updateQtyOrderedOfOrderLineAndReserveStock(final I_M_ShipmentSchedule shipmentSchedule)
+	{
+		if (shipmentSchedule.getAD_Table_ID() != getTableId(I_C_OrderLine.class))
 		{
 			return;
 		}
-
 		final I_C_OrderLine orderLine = shipmentSchedule.getC_OrderLine();
 		if (orderLine == null)
 		{
 			return;
 		}
 
+		final BigDecimal qtyOrdered = shipmentSchedule.getQtyOrdered();
 		if (orderLine.getQtyOrdered().compareTo(qtyOrdered) == 0)
 		{
 			return; // avoid unnecessary changes

@@ -59,7 +59,6 @@ public class AD_Table_ConvertToDocument extends JavaProcess
 				.setLogger(this)
 				.setTargetTable(documentTable)
 				.setSourceColumns(tableDAO.retrieveColumnsForTable(documentTemplateTable))
-				.setSyncToDatabase(true)
 				.create();
 
 		final I_AD_Process adProcess = processBL.createAndLinkDocumentSpecificProcess(documentTable);

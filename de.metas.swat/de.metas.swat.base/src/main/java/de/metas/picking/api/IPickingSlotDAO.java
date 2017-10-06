@@ -34,11 +34,7 @@ public interface IPickingSlotDAO extends ISingletonService
 	@Value
 	public static class PickingSlotQuery
 	{
-		/**
-		 * {@code null} means that {@link org.compiere.util.Env#getCtx()} is used. 
-		 */
-		@Default
-		Properties ctx = null;
+		public static final PickingSlotQuery ALL = builder().build();
 		
 		/**
 		 * {@code -1} means "no restriction".

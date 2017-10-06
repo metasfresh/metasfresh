@@ -30,7 +30,9 @@ import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_Trace;
 import de.metas.handlingunits.model.I_M_HU_Trx_Hdr;
 import de.metas.handlingunits.model.I_M_HU_Trx_Line;
+import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.model.X_M_HU;
+import de.metas.handlingunits.model.X_M_HU_Trace;
 import de.metas.handlingunits.trace.HUTraceEvent.HUTraceEventBuilder;
 import de.metas.logging.LogManager;
 import mockit.Expectations;
@@ -78,7 +80,7 @@ public class HUTraceEventsServiceTests
 	 * Create two records (AD_Users, but doesn't matter) and different {@link I_M_HU_Assignment} that reference them.
 	 */
 	@Test
-	public void testCreateAndAddEvents()
+	public void reateAndAddEventsWithTwoLUs()
 	{
 		final I_AD_User user1 = newInstance(I_AD_User.class);
 		user1.setLogin("user");
@@ -90,32 +92,32 @@ public class HUTraceEventsServiceTests
 		user1.setName("we-just-need-some-record-as-a-reference");
 		save(user2);
 
-		final I_M_HU luHu11 = saveFluend(newInstance(I_M_HU.class));
-		final I_M_HU vhu11 = saveFluend(newInstance(I_M_HU.class));
+		final I_M_HU luHu11 = saveFluent(newInstance(I_M_HU.class));
+		final I_M_HU vhu11 = saveFluent(newInstance(I_M_HU.class));
 		vhu11.setHUStatus(X_M_HU.HUSTATUS_Active);
 
-		final I_M_Product prod11 = saveFluend(newInstance(I_M_Product.class));
+		final I_M_Product prod11 = saveFluent(newInstance(I_M_Product.class));
 		final BigDecimal qty11 = BigDecimal.valueOf(11);
 
-		final I_M_HU luHu12 = saveFluend(newInstance(I_M_HU.class));
-		final I_M_HU vhu12 = saveFluend(newInstance(I_M_HU.class));
+		final I_M_HU luHu12 = saveFluent(newInstance(I_M_HU.class));
+		final I_M_HU vhu12 = saveFluent(newInstance(I_M_HU.class));
 		vhu12.setHUStatus(X_M_HU.HUSTATUS_Active);
 
-		final I_M_Product prod12 = saveFluend(newInstance(I_M_Product.class));
+		final I_M_Product prod12 = saveFluent(newInstance(I_M_Product.class));
 		final BigDecimal qty12 = BigDecimal.valueOf(12);
 
-		final I_M_HU luHu21 = saveFluend(newInstance(I_M_HU.class));
-		final I_M_HU vhu21 = saveFluend(newInstance(I_M_HU.class));
+		final I_M_HU luHu21 = saveFluent(newInstance(I_M_HU.class));
+		final I_M_HU vhu21 = saveFluent(newInstance(I_M_HU.class));
 		vhu21.setHUStatus(X_M_HU.HUSTATUS_Active);
 
-		final I_M_Product prod21 = saveFluend(newInstance(I_M_Product.class));
+		final I_M_Product prod21 = saveFluent(newInstance(I_M_Product.class));
 		final BigDecimal qty21 = BigDecimal.valueOf(21);
 
-		final I_M_HU luHu22 = saveFluend(newInstance(I_M_HU.class));
-		final I_M_HU vhu22 = saveFluend(newInstance(I_M_HU.class));
+		final I_M_HU luHu22 = saveFluent(newInstance(I_M_HU.class));
+		final I_M_HU vhu22 = saveFluent(newInstance(I_M_HU.class));
 		vhu22.setHUStatus(X_M_HU.HUSTATUS_Active);
 
-		final I_M_Product prod22 = saveFluend(newInstance(I_M_Product.class));
+		final I_M_Product prod22 = saveFluent(newInstance(I_M_Product.class));
 		final BigDecimal qty22 = BigDecimal.valueOf(22);
 
 		{
@@ -195,16 +197,18 @@ public class HUTraceEventsServiceTests
 
 		huTraceEventsService.createAndAddEvents(builder, ImmutableList.of(user1, user2));
 
-		final List<I_M_HU_Trace> allDBRecords = Services.get(IQueryBL.class).createQueryBuilder(I_M_HU_Trace.class)
+		final List<I_M_HU_Trace> allHuTraceRecords = Services.get(IQueryBL.class).createQueryBuilder(I_M_HU_Trace.class)
 				.create().list();
 
-		assertThat(allDBRecords).hasSize(4); // there shall be no record for the 5th assignment.
-		allDBRecords.sort(Comparator.comparing(I_M_HU_Trace::getM_HU_ID));
+		assertThat(allHuTraceRecords)
+				.as("there shall be no record for the 5th assignment")
+				.hasSize(4);
+		allHuTraceRecords.sort(Comparator.comparing(I_M_HU_Trace::getM_HU_ID));
 
-		assertThat(allDBRecords.get(0).getM_HU_ID()).isEqualTo(luHu11.getM_HU_ID());
-		assertThat(allDBRecords.get(1).getM_HU_ID()).isEqualTo(luHu12.getM_HU_ID());
-		assertThat(allDBRecords.get(2).getM_HU_ID()).isEqualTo(luHu21.getM_HU_ID());
-		assertThat(allDBRecords.get(3).getM_HU_ID()).isEqualTo(luHu22.getM_HU_ID());
+		assertThat(allHuTraceRecords.get(0).getM_HU_ID()).isEqualTo(luHu11.getM_HU_ID());
+		assertThat(allHuTraceRecords.get(1).getM_HU_ID()).isEqualTo(luHu12.getM_HU_ID());
+		assertThat(allHuTraceRecords.get(2).getM_HU_ID()).isEqualTo(luHu21.getM_HU_ID());
+		assertThat(allHuTraceRecords.get(3).getM_HU_ID()).isEqualTo(luHu22.getM_HU_ID());
 	}
 
 	@Test
@@ -257,17 +261,54 @@ public class HUTraceEventsServiceTests
 
 		final ImmutableList<I_M_HU_Trx_Line> trxLines = ImmutableList.of(trxLine, sourceTrxLine);
 
-		// guard: make sure they are not discarded for other reasons
-		assertThat(huTraceEventsService.filterTrxLinesToUse(trxLines)).isNotEmpty();
+		assertThat(huTraceEventsService.filterTrxLinesToUse(trxLines))
+				.as("guard: make sure they are not discarded for other reasons")
+				.isNotEmpty();
 
 		huTraceEventsService.createAndAddFor(trxHeader, trxLines);
 
 		final List<I_M_HU_Trace> allDBRecords = Services.get(IQueryBL.class).createQueryBuilder(I_M_HU_Trace.class)
 				.create().list();
-		assertThat(allDBRecords).isEmpty();
+		assertThat(allDBRecords)
+				.as("There shall be no HU_Trace records for HUs with stautus='planned'")
+				.isEmpty();
 	}
 
-	private static <T> T saveFluend(final T model)
+	@Test
+	public void createAndAddForShipmentScheduleQtyPicked()
+	{
+		final I_M_HU tu1 = saveFluent(newInstance(I_M_HU.class));
+		final I_M_HU vhu1 = newInstance(I_M_HU.class);
+		vhu1.setHUStatus(X_M_HU.HUSTATUS_Active);
+		save(vhu1);
+		final I_M_Product vhu1Product = saveFluent(newInstance(I_M_Product.class));
+		final BigDecimal vhu1Qty = new BigDecimal("11");
+		
+		final I_M_ShipmentSchedule_QtyPicked shipmentScheduleQtyPicked = newInstance(I_M_ShipmentSchedule_QtyPicked.class);
+		shipmentScheduleQtyPicked.setM_TU_HU(tu1);
+		shipmentScheduleQtyPicked.setVHU(vhu1);
+		save(shipmentScheduleQtyPicked);
+
+		// @formatter:off
+		new Expectations()
+		{{
+			huAccessService.retrieveTopLevelHuId(tu1);   minTimes=0; result = tu1.getM_HU_ID();
+			huAccessService.retrieveTopLevelHuId(vhu1);  minTimes=0; result = tu1.getM_HU_ID();
+			huAccessService.retrieveProductAndQty(vhu1); minTimes=0; result = Optional.of(ImmutablePair.of(vhu1Product, vhu1Qty));
+		}};
+		// @formatter:on
+
+		huTraceEventsService.createAndAddFor(shipmentScheduleQtyPicked);
+
+		final List<I_M_HU_Trace> allHuTraceRecords = Services.get(IQueryBL.class).createQueryBuilder(I_M_HU_Trace.class).create().list();
+		assertThat(allHuTraceRecords).hasSize(1);
+		
+		final I_M_HU_Trace trace = allHuTraceRecords.get(0);
+		assertThat(trace.getHUTraceType()).isEqualTo(X_M_HU_Trace.HUTRACETYPE_MATERIAL_PICKING);
+		assertThat(trace.getQty()).isEqualByComparingTo("11");
+	}
+
+	private static <T> T saveFluent(final T model)
 	{
 		save(model);
 		return model;

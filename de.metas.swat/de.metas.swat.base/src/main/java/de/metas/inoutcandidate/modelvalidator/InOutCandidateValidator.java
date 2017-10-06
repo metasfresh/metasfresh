@@ -16,15 +16,15 @@ import org.compiere.util.Env;
 
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.inoutcandidate.agg.key.impl.ShipmentScheduleKeyValueHandler;
-import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
+import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.impl.ShipmentScheduleHeaderAggregationKeyBuilder;
 import de.metas.inoutcandidate.housekeeping.sqi.impl.Reset_M_ShipmentSchedule_Recompute;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.spi.impl.DefaultCandidateProcessor;
 import de.metas.inoutcandidate.spi.impl.OnlyOneOpenInvoiceCandProcessor;
-import de.metas.inoutcandidate.spi.impl.OrderLineInOutCandHandler;
+import de.metas.order.inoutcandidate.OrderLineShipmentScheduleHandler;
 import de.metas.product.IProductBL;
 import de.metas.storage.IStorageListeners;
 import de.metas.storage.IStorageSegment;
@@ -93,7 +93,7 @@ public final class InOutCandidateValidator implements ModelValidator
 		shipmentScheduleBL.registerCandidateProcessor(new DefaultCandidateProcessor());
 		shipmentScheduleBL.registerCandidateProcessor(new OnlyOneOpenInvoiceCandProcessor());
 
-		Services.get(IShipmentScheduleHandlerBL.class).registerHandler(Env.getCtx(), new OrderLineInOutCandHandler());
+		Services.get(IShipmentScheduleHandlerBL.class).registerHandler(Env.getCtx(), new OrderLineShipmentScheduleHandler());
 
 		Services.get(IStorageListeners.class).addStorageListener(new StorageListenerAdapter()
 		{

@@ -114,7 +114,7 @@ public class M_ShipmentSchedule_OpenProcessed extends JavaProcess implements IPr
 					public void run(String localTrxName) throws Exception
 					{
 						InterfaceWrapperHelper.setThreadInheritedTrxName(shipmentSchedule);
-						shipmentScheduleBL.openProcessedShipmentSchedule(shipmentSchedule);
+						shipmentScheduleBL.openShipmentSchedule(shipmentSchedule);
 					}
 				});
 	}

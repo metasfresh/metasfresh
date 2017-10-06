@@ -22,11 +22,23 @@ Here come the actual release notes:
     * New Window for Dunning Candidates in WebUI, that allows the preparation and creation of Dunning Documents.
   * [#2614](https://github.com/metasfresh/metasfresh/issues/2614) Overhaul shipment schedule UI window
     * Additional shipment Schedule adjustments, new Quickactions and adding new Fields to Main View.
+  * [#2626](https://github.com/metasfresh/metasfresh/issues/2626) Window Design Webui: Translations and Improvements for DeliveryDays
+    * Improved Translations for Language/ Locale en_US in Delivery Days Window.
   * [#2628](https://github.com/metasfresh/metasfresh/issues/2628) Show fields product, qty, price and contractstatus in window contracts
     * Improvements for Subscription Contracts in Contract Window in WebUI. Adding Fields and Translations.
+  * [#2631](https://github.com/metasfresh/metasfresh/issues/2631) Window Design Webui: Improve Business Partner window
+    * Detailed Improvements to Business Partner Window in WebUI. Adapting current Design Guidelines. Translations added for en_US.
+  * [#2632](https://github.com/metasfresh/metasfresh/issues/2632) Window Design Webui: Translations for Tourversion window
+    * Additional Translations for Language/ Locale en_US in Window Tourversion in WebUI.
+  * [#2635](https://github.com/metasfresh/metasfresh/issues/2635) Window Design Webui: Translations for Bank Statement Line Reference
+    * Translations added for Language en_US in Bank Statement Line Reference Window in WebUI
   * [#2637](https://github.com/metasfresh/metasfresh/issues/2637) Webui Window Design: Improvements to Account Combinations
     * Additional Improvements to Account Combination Window in WebUI. Adding missing Translations for en_US.
 
+# Fixes
+* metasfresh-webui-frontend
+  * [#1234](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1234) Letter Window does not store template info
+    * Fixes a minor Bug in Letter component that prevented the usage of Text Snippets.
 
 # metasfresh 5.29 (2017-40)
 

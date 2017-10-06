@@ -16,57 +16,25 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.math.BigDecimal;
 
-import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.test.AdempiereTestWatcher;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.rules.TestWatcher;
-
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import lombok.experimental.UtilityClass;
 
-public abstract class ShipmentScheduleTestBase
+@UtilityClass
+public class ShipmentScheduleTestBase
 {
-	protected ShipmentScheduleBL shipmentScheduleBL;
-
-	// Masterdata
-	protected BigDecimal qtyOrdered;
-
-	/**
-	 * Watches current test and dumps the database to console in case of failure
-	 */
-	@Rule
-	public final TestWatcher testWatcher = new AdempiereTestWatcher();
-
-	@Before
-	public void init()
+	public static I_M_ShipmentSchedule createShipmentSchedule(final BigDecimal qty)
 	{
-		AdempiereTestHelper.get().init();
-
-		shipmentScheduleBL = new ShipmentScheduleBL();
-
-		setup();
-	}
-
-	protected void setup()
-	{
-		// nothing to do
-	}
-
-	protected I_M_ShipmentSchedule createShipmentSchedule(final BigDecimal qty)
-	{
-
 		final I_M_ShipmentSchedule shipmentSchedule = newInstance(I_M_ShipmentSchedule.class);
 		shipmentSchedule.setQtyOrdered_Calculated(qty);
 		shipmentSchedule.setAD_User_ID(123);
@@ -82,5 +50,4 @@ public abstract class ShipmentScheduleTestBase
 
 		return shipmentSchedule;
 	}
-
 }
