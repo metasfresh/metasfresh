@@ -1,4 +1,4 @@
-DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_HUBalance_Report_General_Day(date, numeric, numeric, numeric, numeric, character varying, numeric);
+﻿DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_HUBalance_Report_General_Day(date, numeric, numeric, numeric, numeric, character varying, numeric);
 DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_HUBalance_Report_General_Day(date, numeric, numeric, numeric, numeric, character varying, numeric, character varying(6));
 
 CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_HUBalance_Report_General_Day(refdate date, C_BPartner_ID numeric, C_BP_Group_ID numeric, M_Product_ID numeric, m_material_balance_config_id numeric, isGebindeFlatrate character varying, IN ad_org_id numeric, IN ad_language character varying(6)) RETURNS TABLE
