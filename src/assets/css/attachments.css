@@ -1,10 +1,36 @@
+.subheader-attachurl {
+    cursor: pointer;
+    position: relative;
+    width: 100%;
+    display: block;
+    padding: .75rem 1.25rem;
+    text-decoration: none !important;
+    background-color: $brand-light-color;
+    color: $brand-font-color;
+}
+
+.subheader-attachurl:hover {
+    background-color: $brand-color-primary;
+    color: #fff;
+}
+
+.subheader-attachurl:focus {
+    background-color: $brand-color-primary;
+    color: #fff;
+}
+
+.subheader-attachurl i {
+    margin-right: 5px;
+}
+
 .panel-attachurl {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
 
     /* create small window */
-    width: auto;
+    width: 50%;
+    min-width: 288px; /* 320px mobile * 90% */
     height: auto;
 }
 
