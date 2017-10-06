@@ -28,7 +28,7 @@ public class DemandCandidateDetail
 {
 	public static DemandCandidateDetail forOrderLineId(final int orderLineId)
 	{
-		return new DemandCandidateDetail(orderLineId, 1);
+		return new DemandCandidateDetail(orderLineId, -1);
 	}
 
 	public static DemandCandidateDetail forForecastLineId(final int forecastLineId)
