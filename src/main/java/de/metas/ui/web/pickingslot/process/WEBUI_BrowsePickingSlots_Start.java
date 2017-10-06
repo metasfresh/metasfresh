@@ -32,6 +32,13 @@ import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
  * #L%
  */
 
+/**
+ * Starts picking slots view in a modal window.
+ * 
+ * @author metas-dev <dev@metasfresh.com>
+ * @deprecated To be deleted after https://github.com/metasfresh/metasfresh-webui-frontend/issues/1239
+ */
+@Deprecated
 public class WEBUI_BrowsePickingSlots_Start extends ViewBasedProcessTemplate implements IProcessPrecondition
 {
 	@Override
@@ -45,7 +52,7 @@ public class WEBUI_BrowsePickingSlots_Start extends ViewBasedProcessTemplate imp
 	{
 		getResult()
 				.setRecordsToOpen(
-						TableRecordReference.ofRecordIds(I_M_PickingSlot.Table_Name, ImmutableList.of(1)),
+						TableRecordReference.ofRecordIds(I_M_PickingSlot.Table_Name, ImmutableList.of(1)), // the ID does not matter because we are not checking it
 						BrowsePickingSlotsViewFactory.WINDOW_ID.toInt());
 
 		return MSG_OK;
