@@ -122,7 +122,7 @@ class Labels extends Component {
                 return;
             }
         } else {
-            if (event.key === 'Backspace' && !typeAhead) {
+            if (event.key === 'Backspace') {
                 if (selected.length < 1) {
                     return;
                 }
