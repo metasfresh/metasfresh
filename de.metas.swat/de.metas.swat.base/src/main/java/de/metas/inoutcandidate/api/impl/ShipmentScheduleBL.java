@@ -43,9 +43,9 @@ import org.adempiere.inout.util.DeliveryGroupCandidate;
 import org.adempiere.inout.util.DeliveryLineCandidate;
 import org.adempiere.inout.util.IShipmentSchedulesDuringUpdate;
 import org.adempiere.inout.util.IShipmentSchedulesDuringUpdate.CompleteStatus;
-import org.adempiere.inout.util.ShipmentSchedulesDuringUpdate;
 import org.adempiere.inout.util.ShipmentScheduleQtyOnHandStorage;
 import org.adempiere.inout.util.ShipmentScheduleStorageRecord;
+import org.adempiere.inout.util.ShipmentSchedulesDuringUpdate;
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -57,6 +57,7 @@ import org.adempiere.util.agg.key.IAggregationKeyBuilder;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeSetInstance;
@@ -70,7 +71,6 @@ import org.slf4j.Logger;
 import com.google.common.annotations.VisibleForTesting;
 
 import de.metas.adempiere.model.I_AD_User;
-import de.metas.adempiere.model.I_C_Order;
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.inoutcandidate.api.IDeliverRequest;
@@ -635,7 +635,6 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			return;
 		}
 
-
 		final DeliveryGroupCandidate candidate = getOrCreateGroupCandidateForShipmentSchedule(sched, candidates);
 
 		//
@@ -916,7 +915,18 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			logger.debug("According to the effective C_BPartner of shipment candidate '" + sched + "', consolidation into one shipment is not allowed");
 			return false;
 		}
-		final I_C_Order order = InterfaceWrapperHelper.create(sched.getC_Order(), I_C_Order.class);
+		
+		return !isConsolidateVetoedByOrderOfSched(sched);
+	}
+
+	private boolean isConsolidateVetoedByOrderOfSched(final I_M_ShipmentSchedule sched)
+	{
+		if (sched.getC_Order_ID() < 0)
+		{
+			return false;
+		}
+
+		final I_C_Order order = sched.getC_Order();
 
 		final String docSubType = order.getC_DocType().getDocSubType();
 		final boolean isPrePayOrder = de.metas.prepayorder.model.I_C_DocType.DOCSUBTYPE_PrepayOrder_metas.equals(docSubType)
@@ -924,17 +934,16 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 		if (isPrePayOrder)
 		{
 			logger.debug("Because '" + order + "' is a prepay order, consolidation into one shipment is not allowed");
-			return false;
+			return true;
 		}
 
 		final boolean isCustomFreightCostRule = isCustomFreightCostRule(order);
 		if (isCustomFreightCostRule)
 		{
 			logger.debug("Because '" + order + "' has not the standard freight cost rule,  consolidation into one shipment is not allowed");
-			return false;
+			return true;
 		}
-
-		return true;
+		return false;
 	}
 
 	private boolean isCustomFreightCostRule(final I_C_Order order)
