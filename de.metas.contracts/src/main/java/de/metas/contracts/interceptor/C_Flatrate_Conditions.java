@@ -105,7 +105,8 @@ public class C_Flatrate_Conditions
 			}
 
 		}
-		if (!X_C_Flatrate_Transition.DOCSTATUS_Completed.equals(cond.getC_Flatrate_Transition().getDocStatus()))
+		final boolean hasHoCompletedTransition = cond.getC_Flatrate_Transition_ID() <= 0 || !X_C_Flatrate_Transition.DOCSTATUS_Completed.equals(cond.getC_Flatrate_Transition().getDocStatus());
+		if (hasHoCompletedTransition)
 		{
 			final Properties ctx = InterfaceWrapperHelper.getCtx(cond);
 			// note that the message itself contains the string '@C_Flatrate_Transition_ID@'
