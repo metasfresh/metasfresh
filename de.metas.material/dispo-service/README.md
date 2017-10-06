@@ -9,9 +9,10 @@ Candidates have different types:
 * `stock`
 * `demand`
 * `supply`
+* `stock-up`
 
 In addition to its type, the most notable properties of a candidate are
-* timestamp: the (future) time to which the given record relates
+* date: the (future) time to which the given record relates
 * warehouse
 * product
 * quantity
@@ -41,8 +42,13 @@ When a `stock` record for given product, warehouse and timestamp is changed, thi
 
 A demand record can directly relate e.g. to a shipment schedule, or to the "source" part of a distribution order, or to the "issue" part of a production order.
 
-It *decreases* the quantity of its child's `stock` record.
-It can be associated with a supply candidate via its
+It can be associated with a supply candidate via its groupid.
+It *decreases* the quantity of its child's `stock` record. That's because the demand candidate is about compensating for a planned removal of goods.
+
+* note: if the projected quantity sinks below zero, the system will trigger a "material demand event" that should lead to a new supply candidate (e.g. related to a planned production order) to balance the projected stock.
+
+
+Also see the explantion about `stock-up` candidate.
 
 ### `supply` candidate
 
@@ -50,7 +56,13 @@ A supply record can directly relate e.g. to a receipt schedule or to the "destin
 
 It *increases* the quantity of its parent `stock` record
 
-  
+### `stock-up` candidate
+
+A stock-up candidate can relate to a forecast document line and is somewhat similar to a demand candidate.
+The similariy is that the system will fire a "material demand event" if the stock-up quantity doesn't match the respective projected quantity.
+
+However, the stock-up quantity is not subtracted from the projected quantity.
+
 
 ## Sample workflow
 
