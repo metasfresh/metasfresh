@@ -1,21 +1,21 @@
 package de.metas.material.model.interceptor;
 
+import static org.adempiere.model.InterfaceWrapperHelper.getTrxName;
+
 import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.modelvalidator.DocTimingType;
+import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
-import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.Adempiere;
 import org.compiere.model.I_M_Forecast;
 import org.compiere.model.I_M_ForecastLine;
 import org.compiere.model.ModelValidator;
 
-import de.metas.material.event.EventDescr;
 import de.metas.material.event.ForecastEvent;
 import de.metas.material.event.MaterialEventService;
-import de.metas.material.event.forecast.Forecast.ForecastBuilder;
 import lombok.NonNull;
 
 @Interceptor(I_M_Forecast.class)
@@ -27,34 +27,29 @@ public class M_Forecast
 	{
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE, ModelValidator.TYPE_BEFORE_DELETE })
-	public void fireEvent(@NonNull final I_M_Forecast forecast, final int timing)
+	@DocValidate(timings = {
+			ModelValidator.TIMING_AFTER_CLOSE, // => send updated lines
+			ModelValidator.TIMING_AFTER_COMPLETE, // => send lines
+			ModelValidator.TIMING_AFTER_REACTIVATE, // delete
+			ModelValidator.TIMING_AFTER_UNCLOSE, // send updated lines
+			ModelValidator.TIMING_AFTER_REVERSEACCRUAL, // delete
+			ModelValidator.TIMING_AFTER_REVERSECORRECT, // delete
+			ModelValidator.TIMING_AFTER_VOID // delete
+	})
+	public void fireEvent2(@NonNull final I_M_Forecast forecast, final DocTimingType timing)
 	{
-		final ForecastEvent forecastEvent = createForecastEvent(forecast, timing);
+		final List<I_M_ForecastLine> forecastLines = retrieveForecastLines(forecast);
+		if(forecastLines.isEmpty())
+		{
+			return;
+		}
+		
+		final ForecastEvent forecastEvent = M_ForecastEventCreator.createEventWithLinesAndTiming(
+				forecastLines,
+				timing);
 
 		final MaterialEventService materialEventService = Adempiere.getBean(MaterialEventService.class);
-
-		final String trxName = InterfaceWrapperHelper.getTrxName(forecast);
-		materialEventService.fireEventAfterCommit(forecastEvent, trxName);
-	}
-
-	private ForecastEvent createForecastEvent(
-			@NonNull final I_M_Forecast forecast,
-			final int timing)
-	{
-		final boolean deleted = timing == ModelValidator.TYPE_BEFORE_DELETE || !forecast.isActive();
-
-		final ForecastBuilder forecastBuilder = M_ForecastEventUtil.createForecastBuilderWithLinesAndDeletedFlag(
-				forecast,
-				retrieveForecastLines(forecast),
-				deleted);
-
-		final ForecastEvent forecastEvent = ForecastEvent
-				.builder()
-				.forecast(forecastBuilder.build())
-				.eventDescr(EventDescr.createNew(forecast))
-				.build();
-		return forecastEvent;
+		materialEventService.fireEventAfterNextCommit(forecastEvent, getTrxName(forecast));
 	}
 
 	private List<I_M_ForecastLine> retrieveForecastLines(@NonNull final I_M_Forecast forecast)

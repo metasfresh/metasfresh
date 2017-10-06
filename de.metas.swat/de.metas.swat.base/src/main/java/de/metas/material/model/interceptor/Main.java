@@ -40,15 +40,17 @@ public class Main extends AbstractModuleInterceptor
 		engine.addModelValidator(M_ShipmentSchedule.INSTANCE, client);
 		engine.addModelValidator(M_Transaction.INSTANCE, client);
 		engine.addModelValidator(M_Forecast.INSTANCE, client);
-		engine.addModelValidator(M_ForecastLine.INSTANCE, client);
 	}
 
 	@Override
 	protected void onAfterInit()
 	{
-		// add ourselves to the eventbus so that we can fire events,
+		letOurselfFireAndReceiveEvents();
+	}
+
+	private void letOurselfFireAndReceiveEvents()
+	{
 		final MaterialEventService materialEventService = Adempiere.getBean(MaterialEventService.class);
 		materialEventService.subscribeToEventBus();
 	}
-
 }

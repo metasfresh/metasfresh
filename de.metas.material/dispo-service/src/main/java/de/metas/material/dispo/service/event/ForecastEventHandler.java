@@ -1,8 +1,5 @@
 package de.metas.material.dispo.service.event;
 
-import java.util.Calendar;
-import java.util.Date;
-
 import org.springframework.stereotype.Service;
 
 import de.metas.material.dispo.Candidate;
@@ -61,31 +58,16 @@ public class ForecastEventHandler
 
 		final CandidateBuilder candidateBuilder = EventUtil.createCandidateBuilderFromEventDescr(eventDescr)
 				.status(EventUtil.getCandidateStatus(forecast.getDocStatus()))
-				.subType(SubType.TODO_FORECAST);
+				.type(Candidate.Type.STOCK_UP)
+				.subType(SubType.FORECAST);
 
 		for (final ForecastLine forecastLine : forecast.getForecastLines())
 		{
 			complementBuilderFromForecastLine(candidateBuilder, forecastLine);
 
-			final Candidate supplyCandidate = candidateBuilder.type(Candidate.Type.SUPPLY).build();
-			final Candidate persistedSupplyCandidate = candidateChangeHandler.onCandidateNewOrChange(supplyCandidate);
-
-			final Candidate demandCandidate = candidateBuilder
-					.type(Candidate.Type.DEMAND)
-					.date(subtractOneSecondFrom(supplyCandidate.getDate()))
-					.groupId(persistedSupplyCandidate.getEffectiveGroupId())
-					.build();
+			final Candidate demandCandidate = candidateBuilder.build();
 			candidateChangeHandler.onCandidateNewOrChange(demandCandidate);
 		}
-	}
-
-	private Date subtractOneSecondFrom(@NonNull final Date date)
-	{
-		final Calendar calendar = Calendar.getInstance();
-		calendar.setTime(date);
-		calendar.set(Calendar.SECOND, (calendar.get(Calendar.SECOND) - 1));
-
-		return calendar.getTime();
 	}
 
 	private void complementBuilderFromForecastLine(

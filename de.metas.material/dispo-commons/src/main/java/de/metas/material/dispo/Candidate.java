@@ -43,7 +43,7 @@ public class Candidate
 	 */
 	public enum Type
 	{
-		DEMAND, SUPPLY, STOCK
+		DEMAND, SUPPLY, STOCK, STOCK_UP
 	};
 
 	/**
@@ -51,7 +51,7 @@ public class Candidate
 	 */
 	public enum SubType
 	{
-		DISTRIBUTION, PRODUCTION, RECEIPT, SHIPMENT, TODO_FORECAST
+		DISTRIBUTION, PRODUCTION, RECEIPT, SHIPMENT, FORECAST
 	};
 
 	/**

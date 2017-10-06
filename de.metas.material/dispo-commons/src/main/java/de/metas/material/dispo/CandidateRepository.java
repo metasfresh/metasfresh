@@ -582,28 +582,28 @@ public class CandidateRepository
 		return candidateRecordToUse;
 	}
 
-	private Optional<Candidate> fromCandidateRecord(@NonNull final I_MD_Candidate candidateRecord)
+	private Optional<Candidate> fromCandidateRecord(final I_MD_Candidate candidateRecordOrNull)
 	{
-		if (candidateRecord == null || isNew(candidateRecord))
+		if (candidateRecordOrNull == null || isNew(candidateRecordOrNull))
 		{
 			return Optional.empty();
 		}
 
-		final CandidateBuilder builder = createAndInitializeBuilder(candidateRecord);
+		final CandidateBuilder builder = createAndInitializeBuilder(candidateRecordOrNull);
 
-		final SubType subType = getSubTypeOrNull(candidateRecord);
+		final SubType subType = getSubTypeOrNull(candidateRecordOrNull);
 		builder.subType(subType);
 
 		if (subType == SubType.PRODUCTION)
 		{
-			builder.productionDetail(createProductionDetailOrNull(candidateRecord));
+			builder.productionDetail(createProductionDetailOrNull(candidateRecordOrNull));
 		}
 		else if (subType == SubType.DISTRIBUTION)
 		{
-			builder.distributionDetail(createDistributionDetailOrNull(candidateRecord));
+			builder.distributionDetail(createDistributionDetailOrNull(candidateRecordOrNull));
 		}
 
-		builder.demandDetail(createDemandDetailOrNull(candidateRecord));
+		builder.demandDetail(createDemandDetailOrNull(candidateRecordOrNull));
 
 		return Optional.of(builder.build());
 	}

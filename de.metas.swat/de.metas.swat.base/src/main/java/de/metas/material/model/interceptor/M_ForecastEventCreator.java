@@ -2,14 +2,20 @@ package de.metas.material.model.interceptor;
 
 import java.util.List;
 
+import org.adempiere.ad.modelvalidator.DocTimingType;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_M_Forecast;
 import org.compiere.model.I_M_ForecastLine;
 
+import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
+
+import de.metas.material.event.EventDescr;
+import de.metas.material.event.ForecastEvent;
 import de.metas.material.event.MaterialDescriptor;
 import de.metas.material.event.forecast.Forecast;
-import de.metas.material.event.forecast.ForecastLine;
 import de.metas.material.event.forecast.Forecast.ForecastBuilder;
+import de.metas.material.event.forecast.ForecastLine;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
@@ -26,35 +32,45 @@ import lombok.experimental.UtilityClass;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
 @UtilityClass
-public class M_ForecastEventUtil
+public class M_ForecastEventCreator
 {
-	public ForecastBuilder createForecastBuilderWithLinesAndDeletedFlag(
-			@NonNull final I_M_Forecast forecastModel,
-			@NonNull final List<I_M_ForecastLine> forecastLines,
-			final boolean deleted)
+	public ForecastEvent createEventWithLinesAndTiming(
+			@NonNull final List<I_M_ForecastLine> forecastLines, 
+			@NonNull final DocTimingType timing)
 	{
+		Preconditions.checkArgument(!forecastLines.isEmpty(), "Param 'forecastLines' may not be empty; timing=%s", timing);
+
+		final I_M_Forecast forecastModel = forecastLines.get(0).getM_Forecast();
+		final boolean deleted = isDeletedGivenThatTiming(timing);
+
 		final ForecastBuilder forecastBuilder = Forecast.builder()
 				.forecastId(forecastModel.getM_Forecast_ID())
-				.docStatus("CO"); // TODO: set the real one when it's there
-		
+				.docStatus(timing.getDocStatus());
+
 		for (final I_M_ForecastLine forecastLine : forecastLines)
 		{
 			forecastBuilder.forecastLine(
 					createForecastLineWithDeletedFlag(forecastLine, deleted));
 		}
-		return forecastBuilder;
+
+		final ForecastEvent forecastEvent = ForecastEvent
+				.builder()
+				.forecast(forecastBuilder.build())
+				.eventDescr(EventDescr.createNew(forecastModel))
+				.build();
+
+		return forecastEvent;
 	}
-	
 
 	private ForecastLine createForecastLineWithDeletedFlag(
 			@NonNull final I_M_ForecastLine forecastLine,
@@ -73,6 +89,16 @@ public class M_ForecastEventUtil
 				.materialDescriptor(materialDescriptor)
 				.reference(TableRecordReference.of(forecastLine))
 				.build();
+	}
+
+	private static boolean isDeletedGivenThatTiming(final DocTimingType timing)
+	{
+		final ImmutableList<DocTimingType> timingsForDelete = ImmutableList.of(
+				DocTimingType.AFTER_REACTIVATE,
+				DocTimingType.AFTER_REVERSEACCRUAL,
+				DocTimingType.AFTER_REVERSECORRECT,
+				DocTimingType.AFTER_VOID);
+		return timingsForDelete.contains(timing);
 	}
 
 }

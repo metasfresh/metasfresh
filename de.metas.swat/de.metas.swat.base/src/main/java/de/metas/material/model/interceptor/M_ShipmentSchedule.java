@@ -69,6 +69,6 @@ public class M_ShipmentSchedule
 		final MaterialEventService materialEventService = Adempiere.getBean(MaterialEventService.class);
 
 		final String trxName = InterfaceWrapperHelper.getTrxName(schedule);
-		materialEventService.fireEventAfterCommit(event, trxName);
+		materialEventService.fireEventAfterNextCommit(event, trxName);
 	}
 }

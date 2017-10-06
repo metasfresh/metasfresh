@@ -80,6 +80,9 @@ public class CandidateChangeHandler
 			case DEMAND:
 				return onDemandCandidateNewOrChange(candidate);
 
+			case STOCK_UP:
+				return onStockUpCandidateNewOrChange(candidate);
+
 			case SUPPLY:
 				return onSupplyCandidateNewOrChange(candidate);
 
@@ -159,26 +162,64 @@ public class CandidateChangeHandler
 		{
 			// there would be no more stock left, so
 			// notify whoever is in charge that we have a demand to balance
-			final int orderLineId = demandCandidate.getDemandDetail() == null ? 0 : demandCandidate.getDemandDetail().getOrderLineId();
+			final BigDecimal requiredAdditionalQty = childStockWithDemand.getQuantity().negate();
 
-			final MaterialDemandEvent materialDemandEvent = MaterialDemandEvent
-					.builder()
-					.materialDemandDescr(MaterialDemandDescr.builder()
-							.eventDescr(new EventDescr(demandCandidate.getClientId(), demandCandidate.getOrgId()))
-							.materialDescr(MaterialDescriptor.builder()
-									.productId(demandCandidate.getProductId())
-									.date(demandCandidate.getDate())
-									.qty(childStockWithDemand.getQuantity().negate())
-									.warehouseId(demandCandidate.getWarehouseId())
-									.build())
-							.reference(demandCandidate.getReference())
-							.orderLineId(orderLineId)
-							.build())
-					.build();
-
+			final MaterialDemandEvent materialDemandEvent = createMaterialDemandEvent(demandCandidate, requiredAdditionalQty);
 			materialEventService.fireEvent(materialDemandEvent);
 		}
 		return demandCandidateToReturn;
+	}
+
+
+	private Candidate onStockUpCandidateNewOrChange(@NonNull final Candidate candidate)
+	{
+		Preconditions.checkArgument(candidate.getType() == Type.STOCK_UP, "Given parameter 'demandCandidate' has type=%s; demandCandidate=%s", candidate.getType(), candidate);
+
+		final Candidate candidateWithQtyDelta = candidateRepository.addOrUpdateOverwriteStoredSeqNo(candidate);
+
+		if (candidateWithQtyDelta.getQuantity().signum() == 0)
+		{
+			return candidateWithQtyDelta; // this candidate didn't change anything
+		}
+
+		final Optional<Candidate> projectedStock = candidateRepository.retrieveLatestMatch(candidate
+				.mkSegmentBuilder()
+				.dateOperator(DateOperator.until)
+				.type(Type.STOCK)
+				.build());
+		final BigDecimal projectedQty = projectedStock.isPresent() ? projectedStock.get().getQuantity() : BigDecimal.ZERO;
+
+		final BigDecimal requiredAdditionalQty = candidateWithQtyDelta.getQuantity().subtract(projectedQty);
+		if (requiredAdditionalQty.signum() > 0)
+		{
+			final MaterialDemandEvent materialDemandEvent = createMaterialDemandEvent(candidate, requiredAdditionalQty);
+			materialEventService.fireEvent(materialDemandEvent);
+		}
+
+		return candidateWithQtyDelta;
+	}
+
+	private MaterialDemandEvent createMaterialDemandEvent(
+			@NonNull final Candidate demandCandidate, 
+			@NonNull final BigDecimal requiredAdditionalQty)
+	{
+		final int orderLineId = demandCandidate.getDemandDetail() == null ? 0 : demandCandidate.getDemandDetail().getOrderLineId();
+		
+		final MaterialDemandEvent materialDemandEvent = MaterialDemandEvent
+				.builder()
+				.materialDemandDescr(MaterialDemandDescr.builder()
+						.eventDescr(new EventDescr(demandCandidate.getClientId(), demandCandidate.getOrgId()))
+						.materialDescr(MaterialDescriptor.builder()
+								.productId(demandCandidate.getProductId())
+								.date(demandCandidate.getDate())
+								.qty(requiredAdditionalQty)
+								.warehouseId(demandCandidate.getWarehouseId())
+								.build())
+						.reference(demandCandidate.getReference())
+						.orderLineId(orderLineId)
+						.build())
+				.build();
+		return materialDemandEvent;
 	}
 
 	/**
@@ -296,7 +337,7 @@ public class CandidateChangeHandler
 			final Candidate persistedStockCandidate = candidateRepository.addOrUpdatePreserveExistingSeqNo(stockCandidateToPersist);
 			return persistedStockCandidate;
 		};
-		
+
 		return updateStock(
 				relatedCandidate,
 				stockCandidateToUpdate);

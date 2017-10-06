@@ -70,6 +70,6 @@ public class M_Transaction
 		final MaterialEventService materialEventService = Adempiere.getBean(MaterialEventService.class);
 
 		final String trxName = InterfaceWrapperHelper.getTrxName(transaction);
-		materialEventService.fireEventAfterCommit(event, trxName);
+		materialEventService.fireEventAfterNextCommit(event, trxName);
 	}
 }

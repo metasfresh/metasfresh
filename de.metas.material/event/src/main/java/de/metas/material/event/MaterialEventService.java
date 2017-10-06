@@ -145,13 +145,13 @@ public class MaterialEventService
 	 * @param event
 	 * @param trxName
 	 */
-	public void fireEventAfterCommit(final MaterialEvent event, final String trxName)
+	public void fireEventAfterNextCommit(final MaterialEvent event, final String trxName)
 	{
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 		trxManager
 				.getTrxListenerManager(trxName)
-				.onAfterCommit(() -> fireEvent(event));
+				.onAfterNextCommit(() -> fireEvent(event));
 	}
 
 	/**

@@ -85,7 +85,7 @@ public class PP_OrderFireMaterialEvent
 				.build();
 
 		final MaterialEventService materialEventService = Adempiere.getBean(MaterialEventService.class);
-		materialEventService.fireEventAfterCommit(event, InterfaceWrapperHelper.getTrxName(ppOrder));
+		materialEventService.fireEventAfterNextCommit(event, InterfaceWrapperHelper.getTrxName(ppOrder));
 	}
 
 }

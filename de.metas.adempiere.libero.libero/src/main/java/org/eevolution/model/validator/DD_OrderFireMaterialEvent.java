@@ -74,7 +74,7 @@ public class DD_OrderFireMaterialEvent
 					.build();
 
 			final MaterialEventService materialEventService = Adempiere.getBean(MaterialEventService.class);
-			materialEventService.fireEventAfterCommit(event, InterfaceWrapperHelper.getTrxName(ddOrder));
+			materialEventService.fireEventAfterNextCommit(event, InterfaceWrapperHelper.getTrxName(ddOrder));
 		}
 	}
 

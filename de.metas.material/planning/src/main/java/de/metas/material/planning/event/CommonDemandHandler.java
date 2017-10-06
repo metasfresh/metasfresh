@@ -20,6 +20,7 @@ import org.compiere.util.Env;
 import org.eevolution.model.I_DD_NetworkDistributionLine;
 import org.eevolution.model.I_PP_Product_Planning;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import de.metas.material.event.DemandHandlerAuditEvent;
 import de.metas.material.event.DistributionPlanEvent;
@@ -67,6 +68,7 @@ import lombok.NonNull;
  * #L%
  */
 
+@Service
 public class CommonDemandHandler
 {
 	@Autowired

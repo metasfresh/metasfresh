@@ -1,8 +1,11 @@
 package de.metas.material.dispo.service.event;
 
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
@@ -20,14 +23,20 @@ import de.metas.material.dispo.Candidate.Type;
 import de.metas.material.dispo.CandidateRepository;
 import de.metas.material.dispo.DispoTestUtils;
 import de.metas.material.dispo.model.I_MD_Candidate;
+import de.metas.material.dispo.model.X_MD_Candidate;
 import de.metas.material.dispo.service.CandidateChangeHandler;
 import de.metas.material.dispo.service.StockCandidateFactory;
 import de.metas.material.event.EventDescr;
 import de.metas.material.event.ForecastEvent;
+import de.metas.material.event.MaterialDemandEvent;
 import de.metas.material.event.MaterialDescriptor;
 import de.metas.material.event.MaterialEventService;
 import de.metas.material.event.forecast.Forecast;
 import de.metas.material.event.forecast.ForecastLine;
+import lombok.NonNull;
+import mockit.Delegate;
+import mockit.Expectations;
+import mockit.Mocked;
 
 /*
  * #%L
@@ -62,6 +71,9 @@ public class ForecastEventHandlerTest
 	private ForecastEventHandler forecastEventHandler;
 	private CandidateRepository candidateRepository;
 
+	@Mocked
+	private MaterialEventService materialEventService;
+
 	@Before
 	public void init()
 	{
@@ -73,11 +85,75 @@ public class ForecastEventHandlerTest
 				new CandidateChangeHandler(
 						candidateRepository,
 						new StockCandidateFactory(candidateRepository),
-						MaterialEventService.createLocalServiceThatIsReadyToUse()));
+						materialEventService));
 	}
 
+	/**
+	 * We create a forecast event with quantity = 8, and there is no projected stock quantity.<br>
+	 * We assert that the method under test fires a MaterialDemandEvent with a quantity of 8 - 0 = 8.
+	 */
 	@Test
-	public void test()
+	public void testWithoutProjectedQty()
+	{
+		final ForecastEvent forecastEvent = createForecastWithQtyOfEight();
+
+		// @formatter:off
+		new Expectations()
+		{{
+				materialEventService.fireEvent(with(eventQuantity("8"))); times = 1;
+		}};
+		// @formatter:on
+
+		forecastEventHandler.handleForecastEvent(forecastEvent);
+		final List<I_MD_Candidate> result = DispoTestUtils.retrieveAllRecords().stream().sorted(Comparator.comparing(I_MD_Candidate::getSeqNo)).collect(Collectors.toList());
+
+		assertThat(result).hasSize(1);
+
+		final I_MD_Candidate demandCandidate = result.get(0);
+		assertThat(demandCandidate.getMD_Candidate_Type()).isEqualTo(Type.STOCK_UP.toString());
+		assertThat(demandCandidate.getQty()).isEqualByComparingTo("8");
+	}
+
+	/**
+	 * We create a forecast event with quantity = 8, and there is already a projected stock quantity of 3.<br>
+	 * We assert that the method under test fires a MaterialDemandEvent with a quantity of 8 - 3 = 5.
+	 */
+	@Test
+	public void testWithProjectedQty()
+	{
+		final ForecastEvent forecastEvent = createForecastWithQtyOfEight();
+
+		final I_MD_Candidate stockCandidate = newInstance(I_MD_Candidate.class);
+		stockCandidate.setMD_Candidate_Type(X_MD_Candidate.MD_CANDIDATE_TYPE_STOCK);
+		stockCandidate.setM_Product_ID(PRODUCT_ID);
+		stockCandidate.setM_Warehouse_ID(WAREHOUSE_ID);
+		stockCandidate.setDateProjected(new Timestamp(DATE.getTime()));
+		stockCandidate.setQty(new BigDecimal("3"));
+		save(stockCandidate);
+
+		// @formatter:off
+		new Expectations()
+		{{
+				materialEventService.fireEvent(with(eventQuantity("5"))); times = 1;
+		}};
+		// @formatter:on
+
+		forecastEventHandler.handleForecastEvent(forecastEvent);
+		final List<I_MD_Candidate> result = DispoTestUtils.retrieveAllRecords().stream().sorted(Comparator.comparing(I_MD_Candidate::getSeqNo)).collect(Collectors.toList());
+
+		assertThat(result).hasSize(2);
+
+		assertThat(result)
+				.as("one of the two candidates has to be the stock candidate we created in the setup phase")
+				.anySatisfy(r -> assertThat(r.getMD_Candidate_Type()).isEqualTo(Type.STOCK.toString()));
+
+		assertThat(result).anySatisfy(demandCandidate -> {
+			assertThat(demandCandidate.getMD_Candidate_Type()).isEqualTo(Type.STOCK_UP.toString());
+			assertThat(demandCandidate.getQty()).isEqualByComparingTo("8");
+		});
+	}
+
+	private ForecastEvent createForecastWithQtyOfEight()
 	{
 		final ForecastLine forecastLine = ForecastLine.builder()
 				.forecastLineId(300)
@@ -96,44 +172,22 @@ public class ForecastEventHandlerTest
 				.forecastLine(forecastLine)
 				.build();
 
-		createAndHandleEvent(forecast);
-		final List<I_MD_Candidate> result = DispoTestUtils.retrieveAllRecords().stream().sorted(Comparator.comparing(I_MD_Candidate::getSeqNo)).collect(Collectors.toList());
-
-		assertThat(result).hasSize(4);
-
-		final I_MD_Candidate supplyStockCandidate = result.get(0);
-		assertThat(supplyStockCandidate.getMD_Candidate_Type()).isEqualTo(Type.STOCK.toString());
-		assertThat(supplyStockCandidate.getMD_Candidate_Parent_ID()).isLessThanOrEqualTo(0);
-		assertThat(supplyStockCandidate.getQty())
-				.as("The suply record's plus 8 needs to be neutralized by the demand's minus 8")
-				.isZero();
-
-		final I_MD_Candidate supplyCandidate = result.get(1);
-		assertThat(supplyCandidate.getMD_Candidate_Type()).isEqualTo(Type.SUPPLY.toString());
-		assertThat(supplyCandidate.getQty()).isEqualByComparingTo("8");
-		assertThat(supplyCandidate.getMD_Candidate_Parent_ID()).isEqualTo(supplyStockCandidate.getMD_Candidate_ID());
-
-		final I_MD_Candidate demandCandidate = result.get(2);
-		assertThat(demandCandidate.getMD_Candidate_Type()).isEqualTo(Type.DEMAND.toString());
-		assertThat(demandCandidate.getQty()).isEqualByComparingTo("8");
-		assertThat(demandCandidate.getMD_Candidate_GroupId()).isEqualTo(supplyCandidate.getMD_Candidate_GroupId());
-
-		final I_MD_Candidate demandStockCandidate = result.get(3);
-		assertThat(demandStockCandidate.getMD_Candidate_Type()).isEqualTo(Type.STOCK.toString());
-		assertThat(demandStockCandidate.getQty()).isEqualByComparingTo("-8");
-		assertThat(demandStockCandidate.getMD_Candidate_Parent_ID())
-				.as("demandStockCandidate needs to have demandCandidate as its parent, but has MD_Candidate_Parent_ID=%s; demandStockCandidate=%s",
-						demandStockCandidate.getMD_Candidate_Parent_ID(), demandStockCandidate)
-				.isEqualTo(demandCandidate.getMD_Candidate_ID());
-	}
-
-	private void createAndHandleEvent(final Forecast forecast)
-	{
-		final ForecastEvent forecastEvent = ForecastEvent.builder()
+		return ForecastEvent.builder()
 				.eventDescr(new EventDescr(1, 2))
 				.forecast(forecast)
 				.build();
-
-		forecastEventHandler.handleForecastEvent(forecastEvent);
 	}
+
+	private Delegate<MaterialDemandEvent> eventQuantity(@NonNull final String expectedEventQty)
+	{
+		return new Delegate<MaterialDemandEvent>()
+		{
+			@SuppressWarnings("unused")
+			public boolean verifyQty(@NonNull final MaterialDemandEvent event)
+			{
+				return event.getMaterialDemandDescr().getMaterialDescr().getQty().compareTo(new BigDecimal(expectedEventQty)) == 0;
+			}
+		};
+	}
+
 }
