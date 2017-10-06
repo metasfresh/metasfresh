@@ -61,13 +61,17 @@ Here come the actual release notes:
   * [#2468](https://github.com/metasfresh/metasfresh/issues/2468) Window Design WebUI: gridview with client
     * Improvements in different Windows, adapting the Layout to our current design Guidelines. Adding Translations for de_DE and en_US Locale/ Language.
   * [#2495](https://github.com/metasfresh/metasfresh/issues/2495) Pause subscription delivery for given timeframe
+    * New Functionality in Subscription, allowing to add a Pause Timeframe to a given Subscription.
   * [#2496](https://github.com/metasfresh/metasfresh/issues/2496) Different subscription Receiver for given timeframe
+    * New Functionality in Subscription that allows the user to define an alternative shipment Receiver for a chosen timeframe.
   * [#2499](https://github.com/metasfresh/metasfresh/issues/2499) Stop Subscription shipment after 2nd dunning
+    * Generic solution in Dunning, that allows to automatically stop Subscription Shipments after chosen amount of dunning Levels.
   * [#2560](https://github.com/metasfresh/metasfresh/issues/2560) Menu Window improvements in WebUI
     * New -Column Layout for the Menu maintenance Window in WebUI.
   * [#2565](https://github.com/metasfresh/metasfresh/issues/2565) Add attributes to subscription flatrate terms
-  * [#2566](https://github.com/metasfresh/metasfresh/issues/2566) Fix AD_RefList.ValueName value around subscription
+    * Functionality that allows to add Attributes to Subcription contracts.
   * [#2574](https://github.com/metasfresh/metasfresh/issues/2574) Provide data about a shipment schedule's source document
+    * Extension of Shipment Schedule, now adding more Transparences about the Shipment Schedule Trigger Document.
   * [#2580](https://github.com/metasfresh/metasfresh/issues/2580) Add Subscription history in Contract window WebUI
     * adding included Tab for Subscription History to Contract Window in WebUI.
   * [#2584](https://github.com/metasfresh/metasfresh/issues/2584) Remove remaining dependencies between shipment schedule and order line
@@ -85,6 +89,8 @@ Here come the actual release notes:
 
 ## Fixes
 * metasfresh-app
+  * [#2566](https://github.com/metasfresh/metasfresh/issues/2566) Fix AD_RefList.ValueName value around subscription
+    * Reference List Fix in Subscription.
   * [#2598](https://github.com/metasfresh/metasfresh/issues/2598) Fix the callout for CalloutProductCategory to comply with webui
   * [#2576](https://github.com/metasfresh/metasfresh/issues/2576) Swing Client. Window for Printing Queue does not open properly anymore
 
