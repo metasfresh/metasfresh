@@ -172,9 +172,9 @@ public interface IShipmentScheduleBL extends ISingletonService
 	IStorageQuery createStorageQuery(I_M_ShipmentSchedule shipmentSchedule, boolean considerAttributes);
 
 	/**
-	 * Reopen the processed shipment schedule given as parameter
+	 * Reopen the closed shipment schedule given as parameter
 	 * 
 	 * @param shipmentSchedule
 	 */
-	void openProcessedShipmentSchedule(I_M_ShipmentSchedule shipmentSchedule);
+	void openShipmentSchedule(I_M_ShipmentSchedule shipmentSchedule);
 }

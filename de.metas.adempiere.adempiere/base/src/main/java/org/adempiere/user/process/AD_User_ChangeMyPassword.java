@@ -44,7 +44,7 @@ import de.metas.process.ProcessPreconditionsResolution;
  */
 public class AD_User_ChangeMyPassword extends JavaProcess implements IProcessPrecondition
 {
-	@Param(parameterName = "OldPassword", mandatory = true)
+	@Param(parameterName = "OldPassword", mandatory = false)
 	private String oldPassword;
 	@Param(parameterName = "NewPassword", mandatory = true)
 	private String newPassword;

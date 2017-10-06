@@ -49,10 +49,10 @@ import lombok.NonNull;
  * @author ts
  *
  */
-public class ShipmentCandidates implements IShipmentSchedulesDuringUpdate
+public class ShipmentSchedulesDuringUpdate implements IShipmentSchedulesDuringUpdate
 {
 
-	static final Logger logger = LogManager.getLogger(ShipmentCandidates.class);
+	private static final Logger logger = LogManager.getLogger(ShipmentSchedulesDuringUpdate.class);
 
 	/**
 	 * List to store the shipments before it is decided if they are persisted to the database.
@@ -61,7 +61,7 @@ public class ShipmentCandidates implements IShipmentSchedulesDuringUpdate
 
 	private final Map<DeliveryLineCandidate, StringBuilder> line2StatusInfo = new HashMap<>();
 
-	private final Map<Integer, DeliveryLineCandidate> shipmentScheduleId2InOutLine = new HashMap<>();
+	private final Map<Integer, DeliveryLineCandidate> shipmentScheduleId2DeliveryLineCandidate = new HashMap<>();
 
 	private final Set<DeliveryLineCandidate> deliveryLineCandidates = new HashSet<>();
 
@@ -75,34 +75,33 @@ public class ShipmentCandidates implements IShipmentSchedulesDuringUpdate
 	 */
 	private final Map<ArrayKey, DeliveryGroupCandidate> orderKey2Candidate = new HashMap<>();
 
-
 	@Override
-	public void addInOut(@NonNull final DeliveryGroupCandidate inOut)
+	public void addGroup(@NonNull final DeliveryGroupCandidate deliveryGroupCandidate)
 	{
-		if (orderedCandidates.contains(inOut))
+		if (orderedCandidates.contains(deliveryGroupCandidate))
 		{
 			throw new IllegalArgumentException("Each input may be added only once");
 		}
 
-		orderedCandidates.add(inOut);
+		orderedCandidates.add(deliveryGroupCandidate);
 
 		final ArrayKey shipperKey = Util.mkKey(
-				inOut.getBPartnerAddress(),
-				inOut.getWarehouseId(),
-				inOut.getShipperId());
-		shipperKey2Candidate.put(shipperKey, inOut);
+				deliveryGroupCandidate.getBPartnerAddress(),
+				deliveryGroupCandidate.getWarehouseId(),
+				deliveryGroupCandidate.getShipperId());
+		shipperKey2Candidate.put(shipperKey, deliveryGroupCandidate);
 
 		final ArrayKey orderKey = Util.mkKey(
-				inOut.getBPartnerAddress(),
-				inOut.getWarehouseId(),
-				inOut.getGroupId());
-		orderKey2Candidate.put(orderKey, inOut);
+				deliveryGroupCandidate.getBPartnerAddress(),
+				deliveryGroupCandidate.getWarehouseId(),
+				deliveryGroupCandidate.getGroupId());
+		orderKey2Candidate.put(orderKey, deliveryGroupCandidate);
 	}
 
 	@Override
-	public void addLine(@NonNull final DeliveryLineCandidate inOutLine)
+	public void addLine(@NonNull final DeliveryLineCandidate deliveryLineCandidate)
 	{
-		final DeliveryGroupCandidate inOut = inOutLine.getGroup();
+		final DeliveryGroupCandidate inOut = deliveryLineCandidate.getGroup();
 
 		if (!orderedCandidates.contains(inOut))
 		{
@@ -111,40 +110,39 @@ public class ShipmentCandidates implements IShipmentSchedulesDuringUpdate
 					+ "\n orderedCandidates: " + orderedCandidates);
 		}
 
-		if (CompleteStatus.INCOMPLETE_ORDER.equals(inOutLine.getCompleteStatus()))
+		if (CompleteStatus.INCOMPLETE_ORDER.equals(deliveryLineCandidate.getCompleteStatus()))
 		{
 			throw new IllegalArgumentException("completeStatus may not be " + CompleteStatus.INCOMPLETE_ORDER + " (this will be figured out later by this class)");
 		}
 
-		final I_M_ShipmentSchedule sched = inOutLine.getShipmentSchedule();
+		final I_M_ShipmentSchedule sched = deliveryLineCandidate.getShipmentSchedule();
 
 		//
 		// C_OrderLine_ID to M_InOutLine mapping
 		{
-			final DeliveryLineCandidate inOutLine_Old = shipmentScheduleId2InOutLine.put(sched.getM_ShipmentSchedule_ID(), inOutLine);
-			if (inOutLine_Old != null && inOutLine_Old != inOutLine)
+			final DeliveryLineCandidate oldCandidate = shipmentScheduleId2DeliveryLineCandidate.put(sched.getM_ShipmentSchedule_ID(), deliveryLineCandidate);
+			if (oldCandidate != null && !oldCandidate.equals(deliveryLineCandidate))
 			{
-				throw new IllegalArgumentException("An InOutLine was already set for order line in orderLineId2InOutLine mapping"
-						+ "\n InOutLine: " + inOutLine
-						+ "\n InOutLine (old): " + inOutLine_Old
-						+ "\n shipmentScheduleId2InOutLine (after change): " + shipmentScheduleId2InOutLine);
+				throw new IllegalArgumentException("Aa deliveryLineCandidate was already set for order line in orderLineId2InOutLine mapping"
+						+ "\n deliveryLineCandidate: " + deliveryLineCandidate
+						+ "\n old deliveryLineCandidate: " + oldCandidate
+						+ "\n shipmentScheduleId2InOutLine (after change): " + shipmentScheduleId2DeliveryLineCandidate);
 			}
 		}
 
-		deliveryLineCandidates.add(inOutLine);
+		deliveryLineCandidates.add(deliveryLineCandidate);
 	}
 
 	public void removeLine(@NonNull final DeliveryLineCandidate deliveryLineCandidate)
 	{
 		final int shipmentScheduleId = deliveryLineCandidate.getShipmentSchedule().getM_ShipmentSchedule_ID();
-		boolean success = shipmentScheduleId2InOutLine.remove(shipmentScheduleId) != null;
+		boolean success = shipmentScheduleId2DeliveryLineCandidate.remove(shipmentScheduleId) != null;
 		if (!success)
 		{
 			throw new IllegalStateException("inOutLine wasn't in shipmentScheduleId2InOutLine."
-					+ "\n shipmentScheduleId2InOutLine: " + shipmentScheduleId2InOutLine);
+					+ "\n shipmentScheduleId2InOutLine: " + shipmentScheduleId2DeliveryLineCandidate);
 		}
-		//deliveryLineCandidate.hashCode() -1037930231
-//		deliveryLineCandidates.contains(deliveryLineCandidate)
+
 		success = deliveryLineCandidates.remove(deliveryLineCandidate);
 		if (!success)
 		{
@@ -208,16 +206,16 @@ public class ShipmentCandidates implements IShipmentSchedulesDuringUpdate
 
 	public DeliveryLineCandidate getInOutLineFor(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
 	{
-		return getInOutLineForOrderLine(shipmentSchedule.getM_ShipmentSchedule_ID());
+		return getLineCandidateForShipmentScheduleId(shipmentSchedule.getM_ShipmentSchedule_ID());
 	}
 
 	/**
 	 * Removes first the inoutLines with {@link DeliveryLineCandidate#getQtyEntered()} = 0 and afterwards the inouts that have no more lines.
 	 */
-	public void purgeLinesEmpty()
+	public void removeEmptyLineandGroupCandidates()
 	{
-		int rmInOuts = 0, rmInOutLines = 0;
-		// removing empty inOutLines
+		// removing empty DeliveryLineCandidate
+		int rmInOutLines = 0;
 		for (final DeliveryGroupCandidate inOut : getCandidates())
 		{
 			for (final DeliveryLineCandidate inOutLine : inOut.getLines())
@@ -230,7 +228,8 @@ public class ShipmentCandidates implements IShipmentSchedulesDuringUpdate
 			}
 		}
 
-		// removing empty inOuts
+		// removing empty DeliveryGroupCandidate
+		int rmInOuts = 0;
 		for (final DeliveryGroupCandidate inOut : getCandidates())
 		{
 			if (inOut.getLines().isEmpty())
@@ -251,54 +250,79 @@ public class ShipmentCandidates implements IShipmentSchedulesDuringUpdate
 	 */
 	public void updateCompleteStatusAndSetQtyToZeroWhereNeeded()
 	{
-		for (final DeliveryLineCandidate inOutLine : deliveryLineCandidates)
+		for (final DeliveryLineCandidate deliveryLineCandidate : deliveryLineCandidates)
 		{
-			if (inOutLine.isDiscarded())
-			{
-				continue;
-			}
+			updateCompleteStatusAndSetQtyToZeroIfNeeded(deliveryLineCandidate);
+		}
+	}
 
-			final String deliveryRule = inOutLine.getShipmentSchedule().getDeliveryRule();
+	private static void updateCompleteStatusAndSetQtyToZeroIfNeeded(@NonNull final DeliveryLineCandidate deliveryLineCandidate)
+	{
+		if (deliveryLineCandidate.isDiscarded())
+		{
+			return;
+		}
 
-			if (X_C_Order.DELIVERYRULE_CompleteLine.equals(deliveryRule))
-			{
-				// We only deliver if the line qty is same as the qty
-				// ordered by the customer
-				if (CompleteStatus.INCOMPLETE_LINE.equals(inOutLine.getCompleteStatus()))
-				{
-					inOutLine.setQtyToDeliver(BigDecimal.ZERO);
-					inOutLine.setDiscarded(true);
-				}
+		final String deliveryRule = deliveryLineCandidate.getShipmentSchedule().getDeliveryRule();
 
-			}
-			else if (X_C_Order.DELIVERYRULE_CompleteOrder.equals(deliveryRule))
-			{
-				// We only deliver any line at all if all line qtys as the
-				// same as the qty ordered by the customer
-				if (!CompleteStatus.OK.equals(inOutLine.getCompleteStatus()))
-				{
-					for (final DeliveryLineCandidate inOutLinee : inOutLine.getGroup().getLines())
-					{
-						inOutLinee.setQtyToDeliver(BigDecimal.ZERO);
-						inOutLinee.setDiscarded(true);
+		if (X_C_Order.DELIVERYRULE_CompleteLine.equals(deliveryRule))
+		{
+			discardLineCandidateIfIncomplete(deliveryLineCandidate);
+		}
+		else if (X_C_Order.DELIVERYRULE_CompleteOrder.equals(deliveryRule))
+		{
+			discardAllLinesFromSameGroupIfIncomplete(deliveryLineCandidate);
+		}
+		else
+		{
+			deliveryLineCandidate.setCompleteStatus(CompleteStatus.OK); // update the status to show that the "completeness" of this deliveryLineCandidate is irrelevant
+		}
+	}
 
-						// update the status to show why we set the quantity to zero
-						inOutLinee.setCompleteStatus(CompleteStatus.INCOMPLETE_ORDER);
-					}
-				}
-			}
-			else
-			{
-				// update the status to show that the "completeness" of this inOuLine is irrelevant
-				inOutLine.setCompleteStatus(CompleteStatus.OK);
-			}
+	/**
+	 * We only deliver if the line qty is same as the qty
+	 * ordered by the customer
+	 * 
+	 * @param deliveryLineCandidate
+	 */
+	private static void discardLineCandidateIfIncomplete(@NonNull final DeliveryLineCandidate deliveryLineCandidate)
+	{
+		final boolean lineIsIncompletelyDelivered = CompleteStatus.INCOMPLETE_LINE.equals(deliveryLineCandidate.getCompleteStatus());
+
+		if (lineIsIncompletelyDelivered)
+		{
+			deliveryLineCandidate.setQtyToDeliver(BigDecimal.ZERO);
+			deliveryLineCandidate.setDiscarded(true);
+		}
+	}
+
+	/**
+	 * We only deliver any line at all if all line qtys as the
+	 * same as the qty ordered by the customer
+	 * 
+	 * @param deliveryLineCandidate
+	 */
+	private static void discardAllLinesFromSameGroupIfIncomplete(@NonNull final DeliveryLineCandidate deliveryLineCandidate)
+	{
+		if (CompleteStatus.OK.equals(deliveryLineCandidate.getCompleteStatus()))
+		{
+			return;
+		}
+
+		for (final DeliveryLineCandidate inOutLinee : deliveryLineCandidate.getGroup().getLines())
+		{
+			inOutLinee.setQtyToDeliver(BigDecimal.ZERO);
+			inOutLinee.setDiscarded(true);
+
+			// update the status to show why we set the quantity to zero
+			inOutLinee.setCompleteStatus(CompleteStatus.INCOMPLETE_ORDER);
 		}
 	}
 
 	@Override
-	public DeliveryLineCandidate getInOutLineForOrderLine(final int shipmentScheduleId)
+	public DeliveryLineCandidate getLineCandidateForShipmentScheduleId(final int shipmentScheduleId)
 	{
-		return shipmentScheduleId2InOutLine.get(shipmentScheduleId);
+		return shipmentScheduleId2DeliveryLineCandidate.get(shipmentScheduleId);
 	}
 
 	@Override

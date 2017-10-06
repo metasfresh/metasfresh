@@ -166,6 +166,7 @@ public class SubscriptionBL implements ISubscriptionBL
 		Services.get(IAttributeSetInstanceBL.class).cloneASI(ol, newTerm);
 
 		newTerm.setContractStatus(X_C_Flatrate_Term.CONTRACTSTATUS_Waiting);
+		newTerm.setDocStatus(X_C_Flatrate_Term.DOCSTATUS_Drafted);
 		newTerm.setDocAction(X_C_Flatrate_Term.DOCACTION_Complete);
 
 		newTerm.setPriceActual(ol.getPriceActual());
