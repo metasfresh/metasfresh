@@ -225,7 +225,7 @@ export default function windowHandler(state = initialState, action) {
                 }
             });
 
-        case types.UPDATE_ROW_FIELD_PROPERTY:
+        case types.UPDATE_ROW_FIELD_PROPERTY: {
             const scope = action.scope;
             const tabid = action.tabid;
             const rowid = action.rowid;
@@ -266,6 +266,7 @@ export default function windowHandler(state = initialState, action) {
             else {
                 return state;
             }
+          }
 
          case types.UPDATE_ROW_PROPERTY:
             return update(state, {
