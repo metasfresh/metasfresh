@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
-<!-- 2016-07-26T12:20:59 -->
+<!-- 2017-10-06T12:14:02 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_details" pageWidth="782" pageHeight="595" orientation="Landscape" columnWidth="782" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/reports/openitems/report" uuid="4bf224c7-9529-4ce1-bff2-53e2cfe07aaa">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -586,13 +586,6 @@ DocumentNo]]>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{carry}]]></textFieldExpression>
 			</textField>
-			<staticText>
-				<reportElement key="textField-72" x="456" y="0" width="35" height="12" forecolor="#FFFFFF" uuid="24e2f765-435a-40d8-96f0-917ab8bd9fc0"/>
-				<textElement markup="none">
-					<font fontName="SansSerif" size="8"/>
-				</textElement>
-				<text><![CDATA[Währung]]></text>
-			</staticText>
 			<textField pattern="###0.00;-###0.00" isBlankWhenNull="false">
 				<reportElement key="textField-109" x="456" y="13" width="35" height="12" uuid="6a024cf8-c679-4673-89aa-f0d1c55ece36">
 					<printWhenExpression><![CDATA[new Boolean($V{PAGE_NUMBER}.intValue() != 1)]]></printWhenExpression>
@@ -608,15 +601,6 @@ DocumentNo]]>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{iso_code}]]></textFieldExpression>
 			</textField>
-			<staticText>
-				<reportElement key="textField-77" x="730" y="0" width="52" height="12" forecolor="#FFFFFF" uuid="0a9f4b5b-44f6-4e35-a7ad-3f2d780b9fd3">
-					<printWhenExpression><![CDATA[new Boolean($P{PassForPayment}.equals( "Y" ))]]></printWhenExpression>
-				</reportElement>
-				<textElement textAlignment="Right" markup="none">
-					<font fontName="SansSerif" size="8"/>
-				</textElement>
-				<text><![CDATA[Angewiesen]]></text>
-			</staticText>
 			<textField pattern="###0.00;-###0.00" isBlankWhenNull="true">
 				<reportElement key="textField-109" x="456" y="25" width="35" height="12" isRemoveLineWhenBlank="true" uuid="83467322-fead-40a7-b5e1-63766da3c3af">
 					<printWhenExpression><![CDATA[new Boolean($V{PAGE_NUMBER}.intValue() != 1)]]></printWhenExpression>
@@ -661,6 +645,22 @@ DocumentNo]]>
 					<font fontName="SansSerif" size="8" isItalic="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$V{open_bpartner_convert}.setScale( 2, RoundingMode.HALF_UP )]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement key="textField-72" x="456" y="0" width="35" height="12" forecolor="#FFFFFF" uuid="8956c53b-3973-4f12-be6f-ed5d0fd02eed"/>
+				<textElement markup="none">
+					<font fontName="SansSerif" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{currency}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement key="textField-77" x="730" y="0" width="52" height="12" forecolor="#FFFFFF" uuid="08985e2c-9a56-4215-9f5c-e2465a07b152">
+					<printWhenExpression><![CDATA[new Boolean($P{PassForPayment}.equals( "Y" ))]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right" markup="none">
+					<font fontName="SansSerif" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{instruction}]]></textFieldExpression>
 			</textField>
 		</band>
 	</pageHeader>
@@ -868,7 +868,7 @@ DocumentNo]]>
 				<textElement textAlignment="Right">
 					<font size="8" isBold="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{passforpayment}?"Ja":"Nein"]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{passforpayment}? $R{yes} : $R{no}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.00" isBlankWhenNull="true">
 				<reportElement key="textField-107" x="259" y="11" width="70" height="12" isRemoveLineWhenBlank="true" uuid="2b05bdbf-cf2b-4daf-81d1-3cae95a83437"/>

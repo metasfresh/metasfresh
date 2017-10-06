@@ -1,4 +1,4 @@
-DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.OpenItems_Report_Title(IN AD_Org_ID numeric, IN C_BPartner_ID numeric, IN IsSOTrx character varying, IN InvoiceCollectionType character varying);
+﻿DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.OpenItems_Report_Title(IN AD_Org_ID numeric, IN C_BPartner_ID numeric, IN IsSOTrx character varying, IN InvoiceCollectionType character varying);
 
 CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.OpenItems_Report_Title(IN AD_Org_ID numeric, IN C_BPartner_ID numeric, IN IsSOTrx character varying, IN InvoiceCollectionType character varying)
 	RETURNS TABLE ( 
