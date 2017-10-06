@@ -6,9 +6,15 @@ export default class Suggestion extends Component {
     }
 
     render() {
+        const classes = [this.props.className];
+
+        if (this.props.active) {
+            classes.push('active');
+        }
+
         return (
             <div
-                className={this.props.className}
+                className={classes.join(' ')}
                 onMouseDown={this.handleMouseDown}
             >
                 {Object.values(this.props.suggestion)[0]}

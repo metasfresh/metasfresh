@@ -42,7 +42,7 @@
         border-top: solid 1px $brand-light-color;
         cursor: pointer;
 
-        &:hover {
+        &.active, &:hover {
             background-color: $brand-color-secondary;
             color: white;
         }

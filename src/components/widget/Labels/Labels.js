@@ -28,7 +28,8 @@ class Labels extends Component {
     state = {
         focused: false,
         values: [],
-        suggestions: []
+        suggestions: [],
+        cursorY: -1
     };
 
     childClick = false;
@@ -73,7 +74,8 @@ class Labels extends Component {
         }
 
         this.setState({
-            focused: false
+            focused: false,
+            cursorY: -1
         });
     };
 
@@ -100,38 +102,84 @@ class Labels extends Component {
         const typeAhead = event.target.innerHTML;
         const { selected } = this.props;
 
-        if (typeAhead) {
-            if (event.key === 'Enter') {
-                let suggestions;
+        let suggestions;
 
-                if (this.state.suggestions.length) {
-                    suggestions = this.state.suggestions;
-                } else {
-                    suggestions = this.state.values;
+        if (this.state.suggestions.length) {
+            suggestions = this.state.suggestions;
+        } else {
+            suggestions = this.state.values;
+        }
+
+        suggestions = suggestions.filter(
+            this.unusedSuggestions()
+        );
+
+        if (event.key === 'Enter') {
+            if (typeAhead || this.state.cursorY >= 0) {
+                this.props.onChange([
+                    ...this.props.selected,
+                    suggestions[
+                        Math.max(
+                            0,
+                            Math.min(
+                                this.state.cursorY,
+                                suggestions.length - 1
+                            )
+                        )
+                    ]
+                ]);
+
+                if (typeAhead) {
+                    this.setState({
+                        cursorY: -1
+                    });
                 }
 
-                const suggestion = suggestions.filter(
-                    this.unusedSuggestions()
-                )[0];
-
-                this.props.onChange([...this.props.selected, suggestion]);
-
-                event.preventDefault();
                 this.input.innerHTML = '';
+            }
 
+            // Don't break contentEditable container with newline
+            event.preventDefault();
+
+            return;
+        }
+
+        if (event.key === 'Backspace' && !typeAhead) {
+            if (selected.length < 1) {
                 return;
             }
-        } else {
-            if (event.key === 'Backspace') {
-                if (selected.length < 1) {
-                    return;
-                }
 
-                this.props.onChange(selected.slice(0, selected.length - 1));
-            }
+            this.props.onChange(selected.slice(0, selected.length - 1));
+
+            return;
         }
 
         if (['ArrowLeft', 'ArrowRight', 'Backspace'].includes(event.key)) {
+            return;
+        }
+
+        if (event.key === 'ArrowDown') {
+            this.setState(({ cursorY }) => ({
+                cursorY: Math.min(cursorY + 1, suggestions.length - 1)
+            }));
+
+            // Prevent page from scrolling
+            event.preventDefault();
+
+            return;
+        }
+
+        if (event.key === 'ArrowUp') {
+            this.setState(({ cursorY }) => ({
+                cursorY: Math.max(
+                    Math.min(cursorY, suggestions.length - 1) - 1,
+                    -1
+                )
+            }));
+
+            // Prevent page from scrolling
+            event.preventDefault();
+
             return;
         }
 
@@ -203,14 +251,23 @@ class Labels extends Component {
                 </span>
                 {this.state.focused && (
                     <div className="labels-dropdown">
-                        {suggestions.map(suggestion => (
-                            <Suggestion
-                                className="labels-suggestion"
-                                key={Object.keys(suggestion)[0]}
-                                suggestion={suggestion}
-                                onAdd={this.handleSuggestionAdd}
-                            />
-                        ))}
+                        {suggestions.map((suggestion, index) => {
+                            const active = (
+                                index === this.state.cursorY ||
+                                index === suggestions.length - 1 &&
+                                index <= this.state.cursorY
+                            );
+
+                            return (
+                                <Suggestion
+                                    className="labels-suggestion"
+                                    key={Object.keys(suggestion)[0]}
+                                    suggestion={suggestion}
+                                    onAdd={this.handleSuggestionAdd}
+                                    active={active}
+                                />
+                            );
+                        })}
                     </div>
                 )}
             </div>
