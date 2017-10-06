@@ -919,9 +919,10 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 		return !isConsolidateVetoedByOrderOfSched(sched);
 	}
 
-	private boolean isConsolidateVetoedByOrderOfSched(final I_M_ShipmentSchedule sched)
+	@VisibleForTesting
+	boolean isConsolidateVetoedByOrderOfSched(final I_M_ShipmentSchedule sched)
 	{
-		if (sched.getC_Order_ID() < 0)
+		if (sched.getC_Order_ID() <= 0)
 		{
 			return false;
 		}
