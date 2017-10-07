@@ -67,6 +67,8 @@ Here come the actual release notes:
     * Adding the de_DE message Translations for The URL Attachment Handling.
   * [#2666](https://github.com/metasfresh/metasfresh/issues/2666) Window Design Webui: Tanslations for the window Contract
     * Translation Improvement for Subtab Recors. Now completed the Translation for Language/ Locale en_US.
+  * [#2667](https://github.com/metasfresh/metasfresh/issues/2667) Window Design Webui: Tanslations for the window Contractpartner
+    * Improvements in Window Layout, Sorting and Filtering. Now translated to Language/ Locale en_US.
 
 * metasfresh-webui-frontend
   * [#1138](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1138) frontend: Labels widget
