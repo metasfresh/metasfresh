@@ -168,3 +168,123 @@ UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-10-07 10:05:57'
 UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-10-07 10:06:12','YYYY-MM-DD HH24:MI:SS'),Name='Delivery Rule',Description='',Help='' WHERE AD_Field_ID=550569 AND AD_Language='en_US'
 ;
 
+-- 2017-10-07T10:08:11.912
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-10-07 10:08:11','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y' WHERE AD_Field_ID=550569 AND AD_Language='en_US'
+;
+
+-- 2017-10-07T10:08:26.400
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-10-07 10:08:26','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Delivery Via Rule',Description='',Help='' WHERE AD_Field_ID=550570 AND AD_Language='en_US'
+;
+
+-- 2017-10-07T10:08:44.963
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-10-07 10:08:44','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Start Date' WHERE AD_Field_ID=548458 AND AD_Language='en_US'
+;
+
+-- 2017-10-07T10:09:00.440
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-10-07 10:09:00','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Contract Transition',Description='' WHERE AD_Field_ID=548464 AND AD_Language='en_US'
+;
+
+-- 2017-10-07T10:09:13.091
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-10-07 10:09:13','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Notice Date',Description='' WHERE AD_Field_ID=548461 AND AD_Language='en_US'
+;
+
+-- 2017-10-07T16:53:00.715
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-10-07 16:53:00','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='User In Charge',Description='',Help='' WHERE AD_Field_ID=548494 AND AD_Language='en_US'
+;
+
+-- 2017-10-07T16:53:16.771
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-10-07 16:53:16','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='End Date' WHERE AD_Field_ID=548460 AND AD_Language='en_US'
+;
+
+-- 2017-10-07T16:53:28.969
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-10-07 16:53:28','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Auto Renew',Description='' WHERE AD_Field_ID=548462 AND AD_Language='en_US'
+;
+
+-- 2017-10-07T16:53:42.095
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-10-07 16:53:42','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Extend Contract' WHERE AD_Field_ID=548465 AND AD_Language='en_US'
+;
+
+-- 2017-10-07T16:53:56.202
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-10-07 16:53:56','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Change or Cancel' WHERE AD_Field_ID=550529 AND AD_Language='en_US'
+;
+
+-- 2017-10-07T16:54:10.026
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-10-07 16:54:10','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='End of Term' WHERE AD_Field_ID=548459 AND AD_Language='en_US'
+;
+
+-- 2017-10-07T16:54:22.890
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-10-07 16:54:22','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Next Term' WHERE AD_Field_ID=548463 AND AD_Language='en_US'
+;
+
+-- 2017-10-07T16:55:20.832
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-10-07 16:55:20','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Shipping Product' WHERE AD_Field_ID=556868 AND AD_Language='en_US'
+;
+
+-- 2017-10-07T16:55:38.036
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-10-07 16:55:38','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Qty Next Year' WHERE AD_Field_ID=556855 AND AD_Language='en_US'
+;
+
+-- 2017-10-07T16:55:52.629
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-10-07 16:55:52','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Status',Description='' WHERE AD_Field_ID=548134 AND AD_Language='en_US'
+;
+
+-- 2017-10-07T16:56:05.820
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-10-07 16:56:05','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Docaction',Description='' WHERE AD_Field_ID=548135 AND AD_Language='en_US'
+;
+
+-- 2017-10-07T16:56:30.964
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-10-07 16:56:30','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Close Invoice Candidate' WHERE AD_Field_ID=554230 AND AD_Language='en_US'
+;
+
+-- 2017-10-07T16:56:54.070
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-10-07 16:56:54','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Processed',Description='',Help='' WHERE AD_Field_ID=548137 AND AD_Language='en_US'
+;
+
+-- 2017-10-07T16:57:13.214
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-10-07 16:57:13','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y' WHERE AD_Field_ID=559886 AND AD_Language='en_US'
+;
+
+-- 2017-10-07T16:57:19.806
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-10-07 16:57:19','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y' WHERE AD_Field_ID=559885 AND AD_Language='en_US'
+;
+
+-- 2017-10-07T16:57:51.135
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-10-07 16:57:51','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y' WHERE AD_Field_ID=548136 AND AD_Language='en_US'
+;
+
+-- 2017-10-07T16:58:01.959
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-10-07 16:58:01','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Contract Status' WHERE AD_Field_ID=550488 AND AD_Language='en_US'
+;
+
+-- 2017-10-07T16:58:22.039
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-10-07 16:58:22','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Flatrate Term Priod' WHERE AD_Field_ID=548133 AND AD_Language='en_US'
+;
+
+-- 2017-10-07T16:59:01.296
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab SET IsInsertRecord='N',Updated=TO_TIMESTAMP('2017-10-07 16:59:01','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Tab_ID=540328
+;
+
