@@ -33,6 +33,7 @@ class Labels extends Component {
     };
 
     childClick = false;
+    lastTypeAhead = '';
 
     handleClick = async () => {
         this.input.focus();
@@ -122,21 +123,26 @@ class Labels extends Component {
 
     handleKeyUp = async event => {
         const typeAhead = event.target.innerHTML;
-        const { windowId, docId, name } = this.props;
 
-        const response = await autocompleteRequest({
-            docId,
-            entity: 'window',
-            propertyName: name,
-            query: typeAhead,
-            viewId: windowId
-        });
+        if (typeAhead !== this.lastTypeAhead) {
+            const { windowId, docId, name } = this.props;
 
-        const { values } = response.data;
+            const response = await autocompleteRequest({
+                docId,
+                entity: 'window',
+                propertyName: name,
+                query: typeAhead,
+                viewId: windowId
+            });
 
-        this.setState({
-            suggestions: values
-        });
+            const { values } = response.data;
+
+            this.setState({
+                suggestions: values
+            });
+
+            this.typeAhead = typeAhead;
+        }
     };
 
     handleKeyDown = event => {
