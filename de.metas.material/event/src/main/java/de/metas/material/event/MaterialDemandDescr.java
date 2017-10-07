@@ -39,7 +39,7 @@ public class MaterialDemandDescr
 	EventDescr eventDescr;
 
 	@NonNull
-	MaterialDescriptor materialDescr;
+	MaterialDescriptor materialDescriptor;
 
 	TableRecordReference reference;
 

@@ -11,7 +11,7 @@ import de.metas.material.dispo.DemandCandidateDetail;
 import de.metas.material.dispo.ProductionCandidateDetail;
 import de.metas.material.dispo.service.CandidateChangeHandler;
 import de.metas.material.dispo.service.event.EventUtil;
-import de.metas.material.event.EventDescr;
+import de.metas.material.event.MaterialDescriptor;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrderLine;
 import de.metas.material.event.pporder.ProductionPlanEvent;
@@ -63,19 +63,14 @@ public class ProductionPlanEventHandler
 
 		final Candidate.Status candidateStatus = getCandidateStatus(ppOrder);
 
-		final EventDescr eventDescr = event.getEventDescr();
-		
-		final Candidate supplyCandidate = EventUtil.createCandidateBuilderFromEventDescr(eventDescr)
+		final Candidate supplyCandidate = Candidate.builderForEventDescr(event.getEventDescr())
 				.type(Type.SUPPLY)
 				.subType(SubType.PRODUCTION)
 				.status(candidateStatus)
-				.date(ppOrder.getDatePromised())
-				.productId(ppOrder.getProductId())
-				.quantity(ppOrder.getQuantity())
-				.warehouseId(ppOrder.getWarehouseId())
 				.reference(event.getReference())
 				.productionDetail(createProductionDetailForPPOrder(ppOrder))
 				.demandDetail(DemandCandidateDetail.forOrderLineId(ppOrder.getOrderLineId()))
+				.materialDescr(createMAterialDescriptorFromPpOrder(ppOrder))
 				.build();
 
 		// this might cause 'candidateChangeHandler' to trigger another event
@@ -83,20 +78,13 @@ public class ProductionPlanEventHandler
 
 		for (final PPOrderLine ppOrderLine : ppOrder.getLines())
 		{
-			final Candidate lineCandidate =  EventUtil.createCandidateBuilderFromEventDescr(eventDescr)
+			final Candidate lineCandidate = Candidate.builderForEventDescr(event.getEventDescr())
 					.type(ppOrderLine.isReceipt() ? Type.SUPPLY : Type.DEMAND)
 					.subType(SubType.PRODUCTION)
 					.status(candidateStatus)
-
 					.groupId(candidateWithGroupId.getGroupId())
 					.seqNo(candidateWithGroupId.getSeqNo() + 1)
-
-					.date(ppOrderLine.isReceipt() ? ppOrder.getDatePromised() : ppOrder.getDateStartSchedule())
-
-					.productId(ppOrderLine.getProductId())
-					.attributeSetInstanceId(ppOrderLine.getAttributeSetInstanceId())
-					.quantity(ppOrderLine.getQtyRequired())
-					.warehouseId(ppOrder.getWarehouseId())
+					.materialDescr(createMaterialDescriptorForPpOrderAndLine(ppOrder, ppOrderLine))
 					.reference(event.getReference())
 					.productionDetail(createProductionDetailForPPOrderAndLine(ppOrder, ppOrderLine))
 					.demandDetail(DemandCandidateDetail.forOrderLineId(ppOrder.getOrderLineId()))
@@ -111,6 +99,29 @@ public class ProductionPlanEventHandler
 			candidateService.requestMaterialOrder(candidateWithGroupId.getGroupId());
 		}
 	}
+
+	private static MaterialDescriptor createMAterialDescriptorFromPpOrder(final PPOrder ppOrder)
+	{
+		final MaterialDescriptor materialDescriptor = MaterialDescriptor.builder()
+				.date(ppOrder.getDatePromised())
+				.productId(ppOrder.getProductId())
+				.quantity(ppOrder.getQuantity())
+				.warehouseId(ppOrder.getWarehouseId())
+				.build();
+		return materialDescriptor;
+	}
+	
+	private static MaterialDescriptor createMaterialDescriptorForPpOrderAndLine(final PPOrder ppOrder, final PPOrderLine ppOrderLine)
+	{
+		final MaterialDescriptor materialDescriptor = MaterialDescriptor.builder()
+				.date(ppOrderLine.isReceipt() ? ppOrder.getDatePromised() : ppOrder.getDateStartSchedule())
+				.productId(ppOrderLine.getProductId())
+				.quantity(ppOrderLine.getQtyRequired())
+				.warehouseId(ppOrder.getWarehouseId())
+				.build();
+		return materialDescriptor;
+	}
+
 
 	private static Candidate.Status getCandidateStatus(@NonNull final PPOrder ppOrder)
 	{

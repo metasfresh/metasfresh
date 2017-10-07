@@ -161,7 +161,7 @@ public class ForecastEventHandlerTest
 				.materialDescriptor(MaterialDescriptor.builder()
 						.productId(PRODUCT_ID)
 						.warehouseId(WAREHOUSE_ID)
-						.qty(new BigDecimal("8"))
+						.quantity(new BigDecimal("8"))
 						.date(DATE)
 						.build())
 				.reference(TableRecordReference.of("someTable", 300))
@@ -185,7 +185,7 @@ public class ForecastEventHandlerTest
 			@SuppressWarnings("unused")
 			public boolean verifyQty(@NonNull final MaterialDemandEvent event)
 			{
-				return event.getMaterialDemandDescr().getMaterialDescr().getQty().compareTo(new BigDecimal(expectedEventQty)) == 0;
+				return event.getMaterialDemandDescr().getMaterialDescriptor().getQuantity().compareTo(new BigDecimal(expectedEventQty)) == 0;
 			}
 		};
 	}

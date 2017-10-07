@@ -6,7 +6,6 @@ import de.metas.material.dispo.Candidate;
 import de.metas.material.event.EventDescr;
 import de.metas.material.event.MaterialDemandDescr;
 import de.metas.material.event.MaterialDemandEvent;
-import de.metas.material.event.MaterialDescriptor;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
@@ -23,11 +22,11 @@ import lombok.experimental.UtilityClass;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -36,33 +35,30 @@ import lombok.experimental.UtilityClass;
 public class MaterialDemandEventCreator
 {
 	public MaterialDemandEvent createMaterialDemandEvent(
-			@NonNull final Candidate demandCandidate, 
+			@NonNull final Candidate demandCandidate,
 			@NonNull final BigDecimal requiredAdditionalQty)
 	{
-		final int orderLineId = demandCandidate.getDemandDetail() == null ? 0 : demandCandidate.getDemandDetail().getOrderLineId();
-		
+		final int orderLineId = demandCandidate.getDemandDetail() == null ? 0
+				: demandCandidate.getDemandDetail().getOrderLineId();
+
 		final MaterialDemandEvent materialDemandEvent = MaterialDemandEvent
 				.builder()
-				.materialDemandDescr(MaterialDemandDescr.builder()
-						.eventDescr(new EventDescr(demandCandidate.getClientId(), demandCandidate.getOrgId()))
-						.materialDescr(createMaterialDescriptorForCandidateAndQty(demandCandidate, requiredAdditionalQty))
-						.reference(demandCandidate.getReference())
-						.orderLineId(orderLineId)
-						.build())
+				.materialDemandDescr(createMaterialDemandDescr(demandCandidate, requiredAdditionalQty, orderLineId))
 				.build();
 		return materialDemandEvent;
 	}
-	
 
-	private MaterialDescriptor createMaterialDescriptorForCandidateAndQty(
-			@NonNull final Candidate candidate, 
-			@NonNull final BigDecimal qty)
+	public MaterialDemandDescr createMaterialDemandDescr(
+			@NonNull final Candidate candidate,
+			@NonNull final BigDecimal qty,
+			final int orderLineId)
 	{
-		return MaterialDescriptor.builder()
-				.productId(candidate.getProductId())
-				.date(candidate.getDate())
-				.qty(qty)
-				.warehouseId(candidate.getWarehouseId())
+		return MaterialDemandDescr.builder()
+				.eventDescr(new EventDescr(candidate.getClientId(), candidate.getOrgId()))
+				.materialDescriptor(candidate.getMaterialDescr().withQuantity(qty))
+				.reference(candidate.getReference())
+				.orderLineId(orderLineId)
 				.build();
-	}	
+	}
+
 }

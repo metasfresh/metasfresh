@@ -2,9 +2,7 @@ package de.metas.material.dispo.service.event;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.hamcrest.Matchers.comparesEqualTo;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -12,9 +10,7 @@ import java.util.Date;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_AD_Org;
-import org.compiere.util.TimeUtil;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -75,10 +71,6 @@ public class MDEventListenerTests
 	/** Watches the current tests and dumps the database to console in case of failure */
 	@Rule
 	public final TestWatcher testWatcher = new AdempiereTestWatcher();
-
-	public static final Date t0 = SystemTime.asDate();
-
-	private static final Date t1 = TimeUtil.addMinutes(t0, 10);
 
 	public static final int fromWarehouseId = 10;
 	public static final int intermediateWarehouseId = 20;
@@ -144,6 +136,8 @@ public class MDEventListenerTests
 	public void testShipmentScheduleEvent_then_DistributionPlanevent()
 	{
 		final ShipmentScheduleEvent shipmentScheduleEvent = ShipmentScheduleEventHandlerTests.createShipmentScheduleTestEvent(org);
+		final Date shipmentScheduleEventTime = shipmentScheduleEvent.getMaterialDescr().getDate();
+
 		mdEventListener.onEvent(shipmentScheduleEvent);
 
 		// create a DistributionPlanEvent event which matches the shipmentscheduleEvent that we processed in testShipmentScheduleEvent()
@@ -157,7 +151,7 @@ public class MDEventListenerTests
 						.plantId(800)
 						.productPlanningId(810)
 						.shipperId(820)
-						.datePromised(t1)
+						.datePromised(shipmentScheduleEventTime)
 						.line(DDOrderLine.builder()
 								.productId(productId)
 								.qty(BigDecimal.TEN)
@@ -169,16 +163,16 @@ public class MDEventListenerTests
 				.build();
 		mdEventListener.onEvent(event);
 
-		assertThat(DispoTestUtils.retrieveAllRecords().size(), is(5)); // one for the shipment-schedule demand, two for the distribution demand + supply and 2 stocks (one of them shared between shipment-demand and distr-supply)
+		assertThat(DispoTestUtils.retrieveAllRecords()).hasSize(5); // one for the shipment-schedule demand, two for the distribution demand + supply and 2 stocks (one of them shared between shipment-demand and distr-supply)
 		final I_MD_Candidate toWarehouseDemand = DispoTestUtils.filter(Type.DEMAND, toWarehouseId).get(0);
 		final I_MD_Candidate toWarehouseSharedStock = DispoTestUtils.filter(Type.STOCK, toWarehouseId).get(0);
 		final I_MD_Candidate toWarehouseSupply = DispoTestUtils.filter(Type.SUPPLY, toWarehouseId).get(0);
 
-		assertThat(toWarehouseDemand.getSeqNo(), is(toWarehouseSharedStock.getSeqNo() - 1));
-		assertThat(toWarehouseSharedStock.getSeqNo(), is(toWarehouseSupply.getSeqNo() - 1));
+		assertThat(toWarehouseDemand.getSeqNo()).isEqualTo(toWarehouseSharedStock.getSeqNo() - 1);
+		assertThat(toWarehouseSharedStock.getSeqNo()).isEqualTo(toWarehouseSupply.getSeqNo() - 1);
 
-		assertThat(toWarehouseDemand.getQty(), comparesEqualTo(BigDecimal.TEN));
-		assertThat(toWarehouseSharedStock.getQty(), comparesEqualTo(BigDecimal.ZERO));
-		assertThat(toWarehouseSupply.getQty(), comparesEqualTo(BigDecimal.TEN));
+		assertThat(toWarehouseDemand.getQty()).isEqualByComparingTo(BigDecimal.TEN);
+		assertThat(toWarehouseSharedStock.getQty()).isZero();
+		assertThat(toWarehouseSupply.getQty()).isEqualByComparingTo(BigDecimal.TEN);
 	}
 }

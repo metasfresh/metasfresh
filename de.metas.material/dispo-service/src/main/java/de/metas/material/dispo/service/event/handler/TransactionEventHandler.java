@@ -6,8 +6,6 @@ import de.metas.material.dispo.Candidate;
 import de.metas.material.dispo.Candidate.Type;
 import de.metas.material.dispo.service.CandidateChangeHandler;
 import de.metas.material.dispo.service.StockCandidateFactory;
-import de.metas.material.event.EventDescr;
-import de.metas.material.event.MaterialDescriptor;
 import de.metas.material.event.TransactionEvent;
 import lombok.NonNull;
 
@@ -55,21 +53,11 @@ public class TransactionEventHandler
 			return;
 		}
 
-		final MaterialDescriptor materialDescr = event.getMaterialDescr();
-
-		final EventDescr eventDescr = event.getEventDescr();
-
-		final Candidate candidate = Candidate.builder()
+		final Candidate candidate = Candidate.builderForEventDescr(event.getEventDescr())
+				.materialDescr(event.getMaterialDescr())
 				.type(Type.STOCK)
-				.clientId(eventDescr.getClientId())
-				.orgId(eventDescr.getOrgId())
-				.warehouseId(materialDescr.getWarehouseId())
-				.date(materialDescr.getDate())
-				.productId(materialDescr.getProductId())
-				.quantity(materialDescr.getQty())
 				.reference(event.getReference())
 				.build();
-
 		stockCandidateService.addOrUpdateStock(candidate);
 	}
 

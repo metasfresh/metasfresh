@@ -105,7 +105,7 @@ public class CommonDemandHandler
 
 			final DemandHandlerAuditEvent demandHandlerAuditEvent = DemandHandlerAuditEvent.builder()
 					.eventDescr(materialDemandDescr.getEventDescr().createNew())
-					.descr(materialDemandDescr.getMaterialDescr())
+					.descr(materialDemandDescr.getMaterialDescriptor())
 					.orderLineId(materialDemandDescr.getOrderLineId())
 					.reference(materialDemandDescr.getReference())
 					.messages(singleMessages)
@@ -167,7 +167,7 @@ public class CommonDemandHandler
 	{
 		final EventDescr eventDescr = materialDemandEvent.getEventDescr();
 
-		final MaterialDescriptor materialDescr = materialDemandEvent.getMaterialDescr();
+		final MaterialDescriptor materialDescr = materialDemandEvent.getMaterialDescriptor();
 
 		final Properties ctx = Env.getCtx();
 		final String trxName = ITrx.TRXNAME_ThreadInherited;
@@ -213,11 +213,11 @@ public class CommonDemandHandler
 			@NonNull final IMaterialPlanningContext mrpContext)
 	{
 		return MaterialRequest.builder()
-				.qtyToSupply(materialDemandEvent.getMaterialDescr().getQty())
+				.qtyToSupply(materialDemandEvent.getMaterialDescriptor().getQuantity())
 				.mrpContext(mrpContext)
 				.mrpDemandBPartnerId(-1)
 				.mrpDemandOrderLineSOId(materialDemandEvent.getOrderLineId())
-				.demandDate(materialDemandEvent.getMaterialDescr().getDate())
+				.demandDate(materialDemandEvent.getMaterialDescriptor().getDate())
 				.build();
 	}
 

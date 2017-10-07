@@ -33,6 +33,7 @@ import de.metas.material.dispo.DispoTestUtils;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.service.StockCandidateFactory;
 import de.metas.material.dispo.service.candidatechangehandler.SupplyCandiateCangeHandler;
+import de.metas.material.event.MaterialDescriptor;
 import de.metas.material.event.MaterialEventService;
 import mockit.Mocked;
 
@@ -112,14 +113,18 @@ public class SupplyCandiateCangeHandlerTest
 		final BigDecimal qty = new BigDecimal("23");
 		final Date t = t1;
 
-		final Candidate candidate = Candidate.builder()
-				.type(Type.SUPPLY)
-				.clientId(org.getAD_Client_ID())
-				.orgId(org.getAD_Org_ID())
+		final MaterialDescriptor materialDescr = MaterialDescriptor.builder()
 				.productId(product.getM_Product_ID())
 				.warehouseId(warehouse.getM_Warehouse_ID())
 				.quantity(qty)
 				.date(t)
+				.build();
+		
+		final Candidate candidate = Candidate.builder()
+				.type(Type.SUPPLY)
+				.clientId(org.getAD_Client_ID())
+				.orgId(org.getAD_Org_ID())
+				.materialDescr(materialDescr)
 				.build();
 		supplyCandiateCangeHandler.onSupplyCandidateNewOrChange(candidate);
 
@@ -140,14 +145,18 @@ public class SupplyCandiateCangeHandlerTest
 		final BigDecimal qty = new BigDecimal("23");
 		final Date t = t1;
 
-		final Candidate candidatee = Candidate.builder()
-				.type(Type.SUPPLY)
-				.clientId(org.getAD_Client_ID())
-				.orgId(org.getAD_Org_ID())
+		final MaterialDescriptor materialDescr = MaterialDescriptor.builder()
 				.productId(product.getM_Product_ID())
 				.warehouseId(warehouse.getM_Warehouse_ID())
 				.quantity(qty)
 				.date(t)
+				.build();
+		
+		final Candidate candidatee = Candidate.builder()
+				.type(Type.SUPPLY)
+				.clientId(org.getAD_Client_ID())
+				.orgId(org.getAD_Org_ID())
+				.materialDescr(materialDescr)
 				.build();
 
 		final Consumer<Candidate> doTest = candidate -> {
@@ -176,14 +185,18 @@ public class SupplyCandiateCangeHandlerTest
 		final BigDecimal qty = new BigDecimal("23");
 		final Date t = t1;
 
-		final Candidate candidatee = Candidate.builder()
-				.type(Type.SUPPLY)
-				.clientId(org.getAD_Client_ID())
-				.orgId(org.getAD_Org_ID())
+		final MaterialDescriptor materialDescr = MaterialDescriptor.builder()
 				.productId(product.getM_Product_ID())
 				.warehouseId(warehouse.getM_Warehouse_ID())
 				.quantity(qty)
 				.date(t)
+				.build();
+		
+		final Candidate candidatee = Candidate.builder()
+				.type(Type.SUPPLY)
+				.clientId(org.getAD_Client_ID())
+				.orgId(org.getAD_Org_ID())
+				.materialDescr(materialDescr)
 				.build();
 
 		final BiConsumer<Candidate, BigDecimal> doTest = (candidate, exptectedQty) -> {
@@ -214,28 +227,36 @@ public class SupplyCandiateCangeHandlerTest
 	{
 		final BigDecimal olderStockQty = new BigDecimal("11");
 
-		final Candidate olderStockCandidate = Candidate.builder()
-				.type(Type.STOCK)
-				.clientId(org.getAD_Client_ID())
-				.orgId(org.getAD_Org_ID())
+		final MaterialDescriptor olderMaterialDescr = MaterialDescriptor.builder()
 				.productId(product.getM_Product_ID())
 				.warehouseId(warehouse.getM_Warehouse_ID())
 				.quantity(olderStockQty)
 				.date(t1)
 				.build();
+		
+		final Candidate olderStockCandidate = Candidate.builder()
+				.type(Type.STOCK)
+				.clientId(org.getAD_Client_ID())
+				.orgId(org.getAD_Org_ID())
+				.materialDescr(olderMaterialDescr)
+				.build();
 		stockCandidateService.addOrUpdateStock(olderStockCandidate);
 
 		final BigDecimal supplyQty = new BigDecimal("23");
 
-		final Candidate candidate = Candidate.builder()
-				.type(Type.SUPPLY)
-				.clientId(org.getAD_Client_ID())
-				.orgId(org.getAD_Org_ID())
-				.subType(SubType.PRODUCTION)
+		final MaterialDescriptor materialDescr = MaterialDescriptor.builder()
 				.productId(product.getM_Product_ID())
 				.warehouseId(warehouse.getM_Warehouse_ID())
 				.quantity(supplyQty)
 				.date(t2)
+				.build();
+		
+		final Candidate candidate = Candidate.builder()
+				.type(Type.SUPPLY)
+				.clientId(org.getAD_Client_ID())
+				.orgId(org.getAD_Org_ID())
+				.materialDescr(materialDescr)
+				.subType(SubType.PRODUCTION)
 				.build();
 		supplyCandiateCangeHandler.onSupplyCandidateNewOrChange(candidate);
 

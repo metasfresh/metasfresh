@@ -12,12 +12,9 @@ import org.junit.Test;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.material.dispo.Candidate;
-import de.metas.material.dispo.CandidateRepository;
-import de.metas.material.dispo.CandidateService;
-import de.metas.material.dispo.ProductionCandidateDetail;
 import de.metas.material.dispo.Candidate.SubType;
 import de.metas.material.dispo.Candidate.Type;
+import de.metas.material.event.MaterialDescriptor;
 import de.metas.material.event.MaterialEventService;
 import de.metas.material.event.ddorder.DDOrder;
 import de.metas.material.event.ddorder.DDOrderRequestedEvent;
@@ -51,15 +48,19 @@ public class CandidateServiceTests
 	@Test
 	public void testcreatePPOrderRequestEvent()
 	{
+		final MaterialDescriptor materialDescr = MaterialDescriptor.builder()
+				.productId(300)
+				.warehouseId(400)
+				.date(SystemTime.asDate())
+				.quantity(BigDecimal.valueOf(15))
+				.build();
+
 		final Candidate candidate = Candidate.builder()
 				.clientId(20)
 				.orgId(30)
 				.type(Type.SUPPLY)
 				.subType(SubType.PRODUCTION)
-				.productId(300)
-				.warehouseId(400)
-				.date(SystemTime.asDate())
-				.quantity(BigDecimal.valueOf(15))
+				.materialDescr(materialDescr)
 				.reference(TableRecordReference.of("someTable", 23))
 				.productionDetail(ProductionCandidateDetail.builder()
 						.plantId(210)
@@ -70,8 +71,9 @@ public class CandidateServiceTests
 
 		final Candidate candidate2 = candidate
 				.withType(Type.DEMAND)
-				.withProductId(310)
-				.withQuantity(BigDecimal.valueOf(20))
+				.withMaterialDescr(candidate.getMaterialDescr()
+						.withProductId(310)
+						.withQuantity(BigDecimal.valueOf(20)))
 				.withProductionDetail(ProductionCandidateDetail.builder()
 						.plantId(210)
 						.productPlanningId(220)
@@ -80,8 +82,9 @@ public class CandidateServiceTests
 
 		final Candidate candidate3 = candidate
 				.withType(Type.DEMAND)
-				.withProductId(320)
-				.withQuantity(BigDecimal.valueOf(10))
+				.withMaterialDescr(candidate.getMaterialDescr()
+						.withProductId(320)
+						.withQuantity(BigDecimal.valueOf(10)))
 				.withProductionDetail(ProductionCandidateDetail.builder()
 						.plantId(210)
 						.productPlanningId(220)
@@ -109,15 +112,19 @@ public class CandidateServiceTests
 	@Test
 	public void testcreateDDOrderRequestEvent()
 	{
+		final MaterialDescriptor materialDescr = MaterialDescriptor.builder()
+				.productId(300)
+				.warehouseId(400)
+				.date(SystemTime.asDate())
+				.quantity(BigDecimal.valueOf(15))
+				.build();
+
 		final Candidate candidate = Candidate.builder()
 				.clientId(20)
 				.orgId(30)
 				.type(Type.SUPPLY)
 				.subType(SubType.DISTRIBUTION)
-				.productId(300)
-				.warehouseId(400)
-				.date(SystemTime.asDate())
-				.quantity(BigDecimal.valueOf(15))
+				.materialDescr(materialDescr)
 				.reference(TableRecordReference.of("someTable", 23))
 				.distributionDetail(DistributionCandidateDetail.builder()
 						.productPlanningId(220)
@@ -128,8 +135,9 @@ public class CandidateServiceTests
 
 		final Candidate candidate2 = candidate
 				.withType(Type.DEMAND)
-				.withProductId(310)
-				.withQuantity(BigDecimal.valueOf(20))
+				.withMaterialDescr(candidate.getMaterialDescr()
+						.withProductId(310)
+						.withQuantity(BigDecimal.valueOf(20)))
 				.withDistributionDetail(DistributionCandidateDetail.builder()
 						.productPlanningId(220)
 						.plantId(230)
@@ -139,8 +147,9 @@ public class CandidateServiceTests
 
 		final Candidate candidate3 = candidate
 				.withType(Type.DEMAND)
-				.withProductId(320)
-				.withQuantity(BigDecimal.valueOf(10))
+				.withMaterialDescr(candidate.getMaterialDescr()
+						.withProductId(320)
+						.withQuantity(BigDecimal.valueOf(10)))
 				.withDistributionDetail(DistributionCandidateDetail.builder()
 						.productPlanningId(220)
 						.plantId(230)

@@ -121,7 +121,7 @@ public class ShipmentScheduleEventHandlerTests
 				.materialDescr(MaterialDescriptor.builder()
 						.date(t1)
 						.productId(productId)
-						.qty(BigDecimal.TEN)
+						.quantity(BigDecimal.TEN)
 						.warehouseId(toWarehouseId)
 						.build())
 				.reference(TableRecordReference.of("someTable", 4))

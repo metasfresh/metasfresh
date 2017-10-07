@@ -71,12 +71,12 @@ public class ManufactoringEventSerializerTests
 						.date(SystemTime.asDate())
 						.productId(13)
 						.warehouseId(15)
-						.qty(BigDecimal.TEN)
+						.quantity(BigDecimal.TEN)
 						.build())
 				.receiptScheduleDeleted(false)
 				.reference(TableRecordReference.of("someOtherTable", 100))
 				.build();
-		assertThat(evt.getMaterialDescr().getQty(), comparesEqualTo(BigDecimal.TEN)); // guard
+		assertThat(evt.getMaterialDescr().getQuantity(), comparesEqualTo(BigDecimal.TEN)); // guard
 
 		final String serializedEvt = SimpleObjectSerializer.get().serialize(evt);
 		final MaterialEvent deserializedEvt = SimpleObjectSerializer.get().deserialize(serializedEvt, MaterialEvent.class);
@@ -111,7 +111,7 @@ public class ManufactoringEventSerializerTests
 				.eventDescr(new EventDescr(1, 2))
 				.materialDescr(MaterialDescriptor.builder()
 						.productId(14)
-						.qty(BigDecimal.TEN)
+						.quantity(BigDecimal.TEN)
 						.date(SystemTime.asDate())
 						.warehouseId(12)
 						.build())
@@ -212,7 +212,7 @@ public class ManufactoringEventSerializerTests
 		final MaterialDescriptor materialDescriptor = MaterialDescriptor.builder()
 				.date(SystemTime.asDate())
 				.productId(20)
-				.qty(new BigDecimal("20"))
+				.quantity(new BigDecimal("20"))
 				.warehouseId(30)
 				.build();
 

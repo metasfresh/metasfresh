@@ -8,8 +8,6 @@ import de.metas.material.dispo.Candidate.SubType;
 import de.metas.material.dispo.DemandCandidateDetail;
 import de.metas.material.dispo.service.CandidateChangeHandler;
 import de.metas.material.dispo.service.event.EventUtil;
-import de.metas.material.event.EventDescr;
-import de.metas.material.event.MaterialDescriptor;
 import de.metas.material.event.forecast.Forecast;
 import de.metas.material.event.forecast.ForecastEvent;
 import de.metas.material.event.forecast.ForecastLine;
@@ -54,10 +52,9 @@ public class ForecastEventHandler
 
 	public void handleForecastEvent(@NonNull final ForecastEvent event)
 	{
-		final EventDescr eventDescr = event.getEventDescr();
 		final Forecast forecast = event.getForecast();
 
-		final CandidateBuilder candidateBuilder = EventUtil.createCandidateBuilderFromEventDescr(eventDescr)
+		final CandidateBuilder candidateBuilder = Candidate.builderForEventDescr(event.getEventDescr())
 				.status(EventUtil.getCandidateStatus(forecast.getDocStatus()))
 				.type(Candidate.Type.STOCK_UP)
 				.subType(SubType.FORECAST);
@@ -75,12 +72,7 @@ public class ForecastEventHandler
 			@NonNull final CandidateBuilder candidateBuilder,
 			@NonNull final ForecastLine forecastLine)
 	{
-		final MaterialDescriptor materialDescriptor = forecastLine.getMaterialDescriptor();
-		candidateBuilder
-				.date(materialDescriptor.getDate())
-				.quantity(materialDescriptor.getQty())
-				.productId(materialDescriptor.getProductId())
-				.warehouseId(materialDescriptor.getWarehouseId())
+		candidateBuilder.materialDescr(forecastLine.getMaterialDescriptor())
 				.reference(forecastLine.getReference())
 				.demandDetail(DemandCandidateDetail.forForecastLineId(forecastLine.getForecastLineId()));
 	}

@@ -30,6 +30,7 @@ import de.metas.material.dispo.DispoTestUtils;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.service.StockCandidateFactory;
 import de.metas.material.dispo.service.candidatechangehandler.DemandCandiateCangeHandler;
+import de.metas.material.event.MaterialDescriptor;
 import de.metas.material.event.MaterialEventService;
 import mockit.Mocked;
 
@@ -109,14 +110,18 @@ public class DemandCandiateCangeHandlerTest
 		final BigDecimal qty = new BigDecimal("23");
 		final Date t = t1;
 
-		final Candidate candidate = Candidate.builder()
-				.type(Type.DEMAND)
-				.clientId(org.getAD_Client_ID())
-				.orgId(org.getAD_Org_ID())
+		final MaterialDescriptor materialDescr = MaterialDescriptor.builder()
 				.productId(product.getM_Product_ID())
 				.warehouseId(warehouse.getM_Warehouse_ID())
 				.quantity(qty)
 				.date(t)
+				.build();
+		
+		final Candidate candidate = Candidate.builder()
+				.type(Type.DEMAND)
+				.clientId(org.getAD_Client_ID())
+				.orgId(org.getAD_Org_ID())
+				.materialDescr(materialDescr)
 				.reference(TableRecordReference.of(1, 2))
 				.build();
 		demandCandiateCangeHandler.onDemandCandidateNewOrChange(candidate);

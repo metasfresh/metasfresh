@@ -6,8 +6,6 @@ import de.metas.material.dispo.Candidate;
 import de.metas.material.dispo.Candidate.SubType;
 import de.metas.material.dispo.Candidate.Type;
 import de.metas.material.dispo.service.CandidateChangeHandler;
-import de.metas.material.event.EventDescr;
-import de.metas.material.event.MaterialDescriptor;
 import de.metas.material.event.ReceiptScheduleEvent;
 import lombok.NonNull;
 
@@ -50,22 +48,12 @@ public class ReceiptScheduleEventHandler
 			return;
 		}
 
-		final MaterialDescriptor materialDescr = event.getMaterialDescr();
-
-		final EventDescr eventDescr = event.getEventDescr();
-
-		final Candidate candidate = Candidate.builder()
+		final Candidate candidate = Candidate.builderForEventDescr(event.getEventDescr())
+				.materialDescr(event.getMaterialDescr())
 				.type(Type.SUPPLY)
 				.subType(SubType.RECEIPT)
-				.clientId(eventDescr.getClientId())
-				.orgId(eventDescr.getOrgId())
-				.date(materialDescr.getDate())
-				.warehouseId(materialDescr.getWarehouseId())
-				.productId(materialDescr.getProductId())
-				.quantity(materialDescr.getQty())
 				.reference(event.getReference())
 				.build();
-
 		candidateChangeHandler.onCandidateNewOrChange(candidate);
 	}
 

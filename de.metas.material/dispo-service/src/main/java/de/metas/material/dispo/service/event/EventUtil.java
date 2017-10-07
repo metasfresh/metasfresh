@@ -1,16 +1,15 @@
 package de.metas.material.dispo.service.event;
 
+import javax.annotation.Nullable;
+
 import de.metas.material.dispo.Candidate;
-import de.metas.material.dispo.Candidate.CandidateBuilder;
 import de.metas.material.dispo.Candidate.Status;
-import de.metas.material.event.EventDescr;
-import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
 @UtilityClass
 public class EventUtil
 {
-	public Candidate.Status getCandidateStatus(final String docStatus)
+	public Candidate.Status getCandidateStatus(@Nullable final String docStatus)
 	{
 		final Candidate.Status candidateStatus;
 		if ("DR".equals(docStatus) || "IP".equals(docStatus))
@@ -30,13 +29,5 @@ public class EventUtil
 			candidateStatus = Status.unexpected;
 		}
 		return candidateStatus;
-	}
-	
-
-	public CandidateBuilder createCandidateBuilderFromEventDescr(@NonNull final EventDescr eventDescr)
-	{
-		return Candidate.builder()
-				.clientId(eventDescr.getClientId())
-				.orgId(eventDescr.getOrgId());
 	}
 }

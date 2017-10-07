@@ -80,7 +80,7 @@ public class M_ForecastEventCreator
 				.date(forecastLine.getDatePromised())
 				.productId(forecastLine.getM_Product_ID())
 				.warehouseId(forecastLine.getM_Warehouse_ID())
-				.qty(forecastLine.getQty())
+				.quantity(forecastLine.getQty())
 				.build();
 
 		return ForecastLine.builder()

@@ -134,7 +134,7 @@ public class M_ForecastEventCreatorTest
 
 		assertThat(materialDescriptor.getDate()).isEqualTo(forecastLineRecord.getDatePromised());
 		assertThat(materialDescriptor.getProductId()).isEqualTo(forecastLineRecord.getM_Product_ID());
-		assertThat(materialDescriptor.getQty()).isEqualTo(forecastLineRecord.getQty());
+		assertThat(materialDescriptor.getQuantity()).isEqualTo(forecastLineRecord.getQty());
 		assertThat(materialDescriptor.getWarehouseId()).isEqualTo(forecastLineRecord.getM_Warehouse_ID());
 	}
 

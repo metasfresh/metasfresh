@@ -19,7 +19,7 @@ import de.metas.material.dispo.service.CandidateChangeHandler;
 import de.metas.material.dispo.service.event.EventUtil;
 import de.metas.material.dispo.service.event.SupplyProposalEvaluator;
 import de.metas.material.dispo.service.event.SupplyProposalEvaluator.SupplyProposal;
-import de.metas.material.event.EventDescr;
+import de.metas.material.event.MaterialDescriptor;
 import de.metas.material.event.ddorder.DDOrder;
 import de.metas.material.event.ddorder.DDOrderLine;
 import de.metas.material.event.ddorder.DistributionPlanEvent;
@@ -106,16 +106,18 @@ public class DistributionPlanEventHandler
 				return;
 			}
 
-			final EventDescr eventDescr = event.getEventDescr();
-
-			final Candidate supplyCandidate = EventUtil.createCandidateBuilderFromEventDescr(eventDescr)
-					.type(Type.SUPPLY)
-					.status(candidateStatus)
-					.subType(SubType.DISTRIBUTION)
+			final MaterialDescriptor materialDescriptor = MaterialDescriptor.builder()
 					.date(ddOrder.getDatePromised())
 					.productId(ddOrderLine.getProductId())
 					.quantity(ddOrderLine.getQty())
 					.warehouseId(event.getToWarehouseId())
+					.build();
+
+			final Candidate supplyCandidate = Candidate.builderForEventDescr(event.getEventDescr())
+					.type(Type.SUPPLY)
+					.status(candidateStatus)
+					.subType(SubType.DISTRIBUTION)
+					.materialDescr(materialDescriptor)
 					.reference(event.getReference())
 					.demandDetail(DemandCandidateDetail.forOrderLineId(ddOrderLine.getSalesOrderLineId()))
 					.distributionDetail(createCandidateDetailFromDDOrderAndLine(ddOrder, ddOrderLine))
@@ -140,8 +142,8 @@ public class DistributionPlanEventHandler
 					.withParentId(supplyCandidateWithId.getId())
 					.withQuantity(supplyCandidateWithId.getQuantity()) // what was added as supply in the destination warehouse needs to be registered as demand in the source warehouse
 					.withDate(orderLineStartDate)
-					.withSeqNo(expectedSeqNoForDemandCandidate)
-					.withWarehouseId(event.getFromWarehouseId());
+					.withWarehouseId(event.getFromWarehouseId())
+					.withSeqNo(expectedSeqNoForDemandCandidate);
 
 			// this might cause 'candidateChangeHandler' to trigger another event
 			final Candidate demandCandidateWithId = candidateChangeHandler.onCandidateNewOrChange(demandCandidate);

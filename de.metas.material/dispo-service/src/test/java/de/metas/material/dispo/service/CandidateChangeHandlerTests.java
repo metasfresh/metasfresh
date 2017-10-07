@@ -39,6 +39,7 @@ import de.metas.material.dispo.CandidatesSegment;
 import de.metas.material.dispo.CandidatesSegment.DateOperator;
 import de.metas.material.dispo.DispoTestUtils;
 import de.metas.material.dispo.model.I_MD_Candidate;
+import de.metas.material.event.MaterialDescriptor;
 import de.metas.material.event.MaterialEventService;
 import lombok.NonNull;
 import mockit.Mocked;
@@ -116,7 +117,7 @@ public class CandidateChangeHandlerTests
 
 		candidateRepository = new CandidateRepository();
 		stockCandidateService = new StockCandidateFactory(candidateRepository);
-		
+
 		candidateChangeHandler = new CandidateChangeHandler(
 				candidateRepository,
 				stockCandidateService,
@@ -137,58 +138,61 @@ public class CandidateChangeHandlerTests
 
 		// preparations
 		{
-			candidate = Candidate.builder()
-					.type(Type.STOCK)
-					.clientId(org.getAD_Client_ID())
-					.orgId(org.getAD_Org_ID())
+			final MaterialDescriptor materialDescr = MaterialDescriptor.builder()
 					.productId(product.getM_Product_ID())
 					.warehouseId(warehouse.getM_Warehouse_ID())
 					.quantity(new BigDecimal("10"))
 					.date(t2)
 					.build();
+
+			candidate = Candidate.builder()
+					.type(Type.STOCK)
+					.clientId(org.getAD_Client_ID())
+					.orgId(org.getAD_Org_ID())
+					.materialDescr(materialDescr)
+					.build();
 			candidateRepository.addOrUpdateOverwriteStoredSeqNo(candidate);
+
+			final MaterialDescriptor earlierMaterialDescr = materialDescr.withDate(t1);
 
 			earlierCandidate = candidateRepository
 					.addOrUpdateOverwriteStoredSeqNo(Candidate.builder()
 							.type(Type.STOCK)
 							.clientId(org.getAD_Client_ID())
 							.orgId(org.getAD_Org_ID())
-							.productId(product.getM_Product_ID())
-							.warehouseId(warehouse.getM_Warehouse_ID())
-							.quantity(new BigDecimal("10"))
-							.date(t1)
+							.materialDescr(earlierMaterialDescr)
 							.build());
+
+			final MaterialDescriptor laterMaterialDescr = materialDescr.withDate(t3);
 
 			final Candidate laterCandidate = Candidate.builder()
 					.type(Type.STOCK)
 					.clientId(org.getAD_Client_ID())
 					.orgId(org.getAD_Org_ID())
-					.productId(product.getM_Product_ID())
-					.warehouseId(warehouse.getM_Warehouse_ID())
-					.quantity(new BigDecimal("10"))
-					.date(t3)
+					.materialDescr(laterMaterialDescr)
 					.build();
 			candidateRepository.addOrUpdateOverwriteStoredSeqNo(laterCandidate);
+
+			final MaterialDescriptor evenLatermaterialDescr = materialDescr
+					.withQuantity(new BigDecimal("12"))
+					.withDate(t4);
 
 			evenLaterCandidate = Candidate.builder()
 					.type(Type.STOCK)
 					.clientId(org.getAD_Client_ID())
 					.orgId(org.getAD_Org_ID())
-					.productId(product.getM_Product_ID())
-					.warehouseId(warehouse.getM_Warehouse_ID())
-					.quantity(new BigDecimal("12"))
-					.date(t4)
+					.materialDescr(evenLatermaterialDescr)
 					.build();
 			candidateRepository.addOrUpdateOverwriteStoredSeqNo(evenLaterCandidate);
+
+			final MaterialDescriptor evenLatermaterialDescrWithDifferentWarehouse = evenLatermaterialDescr
+					.withWarehouseId(otherWarehouse.getM_Warehouse_ID());
 
 			evenLaterCandidateWithDifferentWarehouse = Candidate.builder()
 					.type(Type.STOCK)
 					.clientId(org.getAD_Client_ID())
 					.orgId(org.getAD_Org_ID())
-					.productId(product.getM_Product_ID())
-					.warehouseId(otherWarehouse.getM_Warehouse_ID())
-					.quantity(new BigDecimal("12"))
-					.date(t4)
+					.materialDescr(evenLatermaterialDescrWithDifferentWarehouse)
 					.build();
 			candidateRepository.addOrUpdateOverwriteStoredSeqNo(evenLaterCandidateWithDifferentWarehouse);
 		}
@@ -326,14 +330,18 @@ public class CandidateChangeHandlerTests
 
 	private Candidate invokeUpdateStock(final Date t, final BigDecimal qty)
 	{
-		final Candidate candidate = Candidate.builder()
-				.type(Type.STOCK)
-				.clientId(org.getAD_Client_ID())
-				.orgId(org.getAD_Org_ID())
+		final MaterialDescriptor materialDescr = MaterialDescriptor.builder()
 				.productId(product.getM_Product_ID())
 				.warehouseId(warehouse.getM_Warehouse_ID())
 				.quantity(qty)
 				.date(t)
+				.build();
+
+		final Candidate candidate = Candidate.builder()
+				.type(Type.STOCK)
+				.clientId(org.getAD_Client_ID())
+				.orgId(org.getAD_Org_ID())
+				.materialDescr(materialDescr)
 				.build();
 		final Candidate processedCandidate = stockCandidateService.addOrUpdateStock(candidate);
 		return processedCandidate;
@@ -421,22 +429,26 @@ public class CandidateChangeHandlerTests
 	@Test
 	public void testOnStockCandidateNewOrChangedNotStockType()
 	{
-		final Candidate candidate = Candidate.builder()
-				.type(Type.SUPPLY)
-				.clientId(org.getAD_Client_ID())
-				.orgId(org.getAD_Org_ID())
+		final MaterialDescriptor materialDescr = MaterialDescriptor.builder()
 				.productId(product.getM_Product_ID())
 				.warehouseId(warehouse.getM_Warehouse_ID())
 				.quantity(new BigDecimal("10"))
 				.date(t2)
 				.build();
 
+		final Candidate candidate = Candidate.builder()
+				.type(Type.SUPPLY)
+				.clientId(org.getAD_Client_ID())
+				.orgId(org.getAD_Org_ID())
+				.materialDescr(materialDescr)
+				.build();
+
 		final Candidate processedCandidate = stockCandidateService.addOrUpdateStock(candidate);
 		assertThat(processedCandidate.getType(), is(Type.STOCK));
-		assertThat(processedCandidate.getDate().getTime(), is(t2.getTime()));
-		assertThat(processedCandidate.getQuantity(), comparesEqualTo(BigDecimal.TEN));
-		assertThat(processedCandidate.getProductId(), is(product.getM_Product_ID()));
-		assertThat(processedCandidate.getWarehouseId(), is(warehouse.getM_Warehouse_ID()));
+		assertThat(processedCandidate.getMaterialDescr().getDate().getTime(), is(t2.getTime()));
+		assertThat(processedCandidate.getMaterialDescr().getQuantity(), comparesEqualTo(BigDecimal.TEN));
+		assertThat(processedCandidate.getMaterialDescr().getProductId(), is(product.getM_Product_ID()));
+		assertThat(processedCandidate.getMaterialDescr().getWarehouseId(), is(warehouse.getM_Warehouse_ID()));
 	}
 
 	/**
@@ -448,28 +460,36 @@ public class CandidateChangeHandlerTests
 		final BigDecimal qty = new BigDecimal("23");
 		final Date t = t1;
 
-		final Candidate candidate = Candidate.builder()
-				.type(Type.DEMAND)
-				.clientId(org.getAD_Client_ID())
-				.orgId(org.getAD_Org_ID())
+		final MaterialDescriptor materialDescr = MaterialDescriptor.builder()
 				.productId(product.getM_Product_ID())
 				.warehouseId(warehouse.getM_Warehouse_ID())
 				.quantity(qty)
 				.date(t)
+				.build();
+
+		final Candidate candidate = Candidate.builder()
+				.type(Type.DEMAND)
+				.clientId(org.getAD_Client_ID())
+				.orgId(org.getAD_Org_ID())
+				.materialDescr(materialDescr)
 				.reference(TableRecordReference.of(1, 2))
 				.build();
 		candidateChangeHandler.onCandidateNewOrChange(candidate);
 		// we don't really check here..this first part is already verified in testOnDemandCandidateCandidateNewOrChange_noOlderRecords()
 		assertThat(DispoTestUtils.retrieveAllRecords().size(), is(2)); // one demand, one stock
 
-		final Candidate supplyCandidate = Candidate.builder()
-				.type(Type.SUPPLY)
-				.clientId(org.getAD_Client_ID())
-				.orgId(org.getAD_Org_ID())
+		final MaterialDescriptor supplyMaterialDescr = MaterialDescriptor.builder()
 				.productId(product.getM_Product_ID())
 				.warehouseId(warehouse.getM_Warehouse_ID())
 				.quantity(qty)
 				.date(t)
+				.build();
+
+		final Candidate supplyCandidate = Candidate.builder()
+				.type(Type.SUPPLY)
+				.clientId(org.getAD_Client_ID())
+				.orgId(org.getAD_Org_ID())
+				.materialDescr(supplyMaterialDescr)
 				.reference(TableRecordReference.of(1, 2))
 				.build();
 
@@ -500,14 +520,18 @@ public class CandidateChangeHandlerTests
 		final BigDecimal qty = new BigDecimal("23");
 		final Date t = t1;
 
-		final Candidate supplyCandidate = Candidate.builder()
-				.type(Type.SUPPLY)
-				.clientId(org.getAD_Client_ID())
-				.orgId(org.getAD_Org_ID())
+		final MaterialDescriptor supplyMaterialDescr = MaterialDescriptor.builder()
 				.productId(product.getM_Product_ID())
 				.warehouseId(warehouse.getM_Warehouse_ID())
 				.quantity(qty)
 				.date(t)
+				.build();
+
+		final Candidate supplyCandidate = Candidate.builder()
+				.type(Type.SUPPLY)
+				.clientId(org.getAD_Client_ID())
+				.orgId(org.getAD_Org_ID())
+				.materialDescr(supplyMaterialDescr)
 				.reference(TableRecordReference.of(1, 2))
 				.build();
 		candidateChangeHandler.onCandidateNewOrChange(supplyCandidate);
@@ -521,14 +545,18 @@ public class CandidateChangeHandlerTests
 			assertThat(supplyRecord.getSeqNo(), is(stockRecord.getSeqNo() + 1));
 		}
 
-		final Candidate demandCandidate = Candidate.builder()
-				.type(Type.DEMAND)
-				.clientId(org.getAD_Client_ID())
-				.orgId(org.getAD_Org_ID())
+		final MaterialDescriptor demandMaterialDescr = MaterialDescriptor.builder()
 				.productId(product.getM_Product_ID())
 				.warehouseId(warehouse.getM_Warehouse_ID())
 				.quantity(qty)
 				.date(t)
+				.build();
+
+		final Candidate demandCandidate = Candidate.builder()
+				.type(Type.DEMAND)
+				.clientId(org.getAD_Client_ID())
+				.orgId(org.getAD_Org_ID())
+				.materialDescr(demandMaterialDescr)
 				.reference(TableRecordReference.of(1, 2))
 				.build();
 		candidateChangeHandler.onCandidateNewOrChange(demandCandidate);
@@ -557,14 +585,18 @@ public class CandidateChangeHandlerTests
 		final BigDecimal qty = new BigDecimal("23");
 		final Date t = t1;
 
-		final Candidate candidatee = Candidate.builder()
-				.type(Type.DEMAND)
-				.clientId(org.getAD_Client_ID())
-				.orgId(org.getAD_Org_ID())
+		final MaterialDescriptor materialDescr = MaterialDescriptor.builder()
 				.productId(product.getM_Product_ID())
 				.warehouseId(warehouse.getM_Warehouse_ID())
 				.quantity(qty)
 				.date(t)
+				.build();
+		
+		final Candidate candidatee = Candidate.builder()
+				.type(Type.DEMAND)
+				.clientId(org.getAD_Client_ID())
+				.orgId(org.getAD_Org_ID())
+				.materialDescr(materialDescr)
 				.reference(TableRecordReference.of(1, 2))
 				.build();
 
@@ -597,14 +629,18 @@ public class CandidateChangeHandlerTests
 		final BigDecimal qty = new BigDecimal("23");
 		final Date t = t1;
 
-		final Candidate candidatee = Candidate.builder()
-				.type(Type.DEMAND)
-				.clientId(org.getAD_Client_ID())
-				.orgId(org.getAD_Org_ID())
+		final MaterialDescriptor materialDescr = MaterialDescriptor.builder()
 				.productId(product.getM_Product_ID())
 				.warehouseId(warehouse.getM_Warehouse_ID())
 				.quantity(qty)
 				.date(t)
+				.build();
+		
+		final Candidate candidatee = Candidate.builder()
+				.type(Type.DEMAND)
+				.clientId(org.getAD_Client_ID())
+				.orgId(org.getAD_Org_ID())
+				.materialDescr(materialDescr)
 				.reference(TableRecordReference.of(1, 2))
 				.build();
 

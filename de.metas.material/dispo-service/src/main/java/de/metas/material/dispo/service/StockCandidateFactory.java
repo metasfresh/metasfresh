@@ -15,6 +15,7 @@ import de.metas.material.dispo.Candidate.Type;
 import de.metas.material.dispo.CandidateRepository;
 import de.metas.material.dispo.CandidatesSegment;
 import de.metas.material.dispo.CandidatesSegment.DateOperator;
+import de.metas.material.event.MaterialDescriptor;
 import lombok.NonNull;
 
 /*
@@ -63,10 +64,11 @@ public class StockCandidateFactory
 	 */
 	public Candidate createStockCandidate(@NonNull final Candidate candidate)
 	{
-		final Optional<Candidate> stock = candidateRepository.retrieveLatestMatch(candidate.mkSegmentBuilder()
-				.type(Type.STOCK)
-				.dateOperator(DateOperator.until)
-				.build());
+		final Optional<Candidate> stock = candidateRepository
+				.retrieveLatestMatch(candidate.mkSegmentBuilder()
+						.type(Type.STOCK)
+						.dateOperator(DateOperator.until)
+						.build());
 
 		final BigDecimal formerQuantity = stock.isPresent()
 				? stock.get().getQuantity()
@@ -76,21 +78,22 @@ public class StockCandidateFactory
 				? stock.get().getGroupId()
 				: null;
 
+		final MaterialDescriptor materialDescr = candidate
+				.getMaterialDescr()
+				.withQuantity(formerQuantity.add(candidate.getQuantity()));
+
 		return Candidate.builder()
 				.type(Type.STOCK)
 				.orgId(candidate.getOrgId())
 				.clientId(candidate.getClientId())
-				.productId(candidate.getProductId())
-				.warehouseId(candidate.getWarehouseId())
-				.date(candidate.getDate())
-				.quantity(formerQuantity.add(candidate.getQuantity()))
 				.reference(candidate.getReference())
+				.materialDescr(materialDescr)
 				.parentId(candidate.getParentId())
 				.seqNo(candidate.getSeqNo())
 				.groupId(groupId)
 				.build();
 	}
-	
+
 	/**
 	 * This method creates or updates a stock candidate according to the given candidate.
 	 * It then updates the quantities of all "later" stock candidates that have the same product etc.<br>
@@ -114,7 +117,7 @@ public class StockCandidateFactory
 				relatedCandidate,
 				stockCandidateToUpdate);
 	}
-	
+
 	/**
 	 * Updates the qty for the stock candidate returned by the given {@code stockCandidateToUpdate} and it's later stock candidates
 	 * 
@@ -142,14 +145,14 @@ public class StockCandidateFactory
 			delta = relatedCanidateWithDelta.getQuantity();
 		}
 		applyDeltaToLaterStockCandidates(
-				relatedCanidateWithDelta.getProductId(),
-				relatedCanidateWithDelta.getWarehouseId(),
-				relatedCanidateWithDelta.getDate(),
+				relatedCanidateWithDelta.getMaterialDescr().getProductId(),
+				relatedCanidateWithDelta.getMaterialDescr().getWarehouseId(),
+				relatedCanidateWithDelta.getMaterialDescr().getDate(),
 				persistedStockCandidate.getGroupId(),
 				delta);
 		return persistedStockCandidate;
 	}
-	
+
 	/**
 	 * Selects all stock candidates which have the same product and locator but a later timestamp than the one from the given {@code segment}.
 	 * Iterate them and add the given {@code delta} to their quantity.

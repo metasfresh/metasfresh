@@ -35,6 +35,7 @@ import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.I_MD_Candidate_Demand_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_Dist_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_Prod_Detail;
+import de.metas.material.event.MaterialDescriptor;
 import lombok.NonNull;
 
 /*
@@ -362,13 +363,15 @@ public class CandidateRepository
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
+		final MaterialDescriptor materialDescr = candidate.getMaterialDescr();
+
 		final IQueryBuilder<I_MD_Candidate> builder = queryBL
 				.createQueryBuilder(I_MD_Candidate.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_MD_Candidate.COLUMN_MD_Candidate_Type, candidate.getType().toString())
-				.addEqualsFilter(I_MD_Candidate.COLUMN_M_Warehouse_ID, candidate.getWarehouseId())
-				.addEqualsFilter(I_MD_Candidate.COLUMN_M_Product_ID, candidate.getProductId())
-				.addEqualsFilter(I_MD_Candidate.COLUMN_DateProjected, candidate.getDate());
+				.addEqualsFilter(I_MD_Candidate.COLUMN_M_Warehouse_ID, materialDescr.getWarehouseId())
+				.addEqualsFilter(I_MD_Candidate.COLUMN_M_Product_ID, materialDescr.getProductId())
+				.addEqualsFilter(I_MD_Candidate.COLUMN_DateProjected, materialDescr.getDate());
 
 		addReferenceToQueryBuilder(candidate, builder);
 
@@ -533,14 +536,15 @@ public class CandidateRepository
 				"The given MD_Candidate is not new and its ID is different from the ID of the given Candidate; MD_Candidate=%s; candidate=%s",
 				candidateRecord, candidate);
 
-		final I_MD_Candidate candidateRecordToUse = candidateRecord.orElse(InterfaceWrapperHelper.newInstance(I_MD_Candidate.class));
+		final MaterialDescriptor materialDescr = candidate.getMaterialDescr();
 
+		final I_MD_Candidate candidateRecordToUse = candidateRecord.orElse(InterfaceWrapperHelper.newInstance(I_MD_Candidate.class));
 		candidateRecordToUse.setAD_Org_ID(candidate.getOrgId());
 		candidateRecordToUse.setMD_Candidate_Type(candidate.getType().toString());
-		candidateRecordToUse.setM_Warehouse_ID(candidate.getWarehouseId());
-		candidateRecordToUse.setM_Product_ID(candidate.getProductId());
+		candidateRecordToUse.setM_Warehouse_ID(materialDescr.getWarehouseId());
+		candidateRecordToUse.setM_Product_ID(materialDescr.getProductId());
 		candidateRecordToUse.setQty(candidate.getQuantity());
-		candidateRecordToUse.setDateProjected(new Timestamp(candidate.getDate().getTime()));
+		candidateRecordToUse.setDateProjected(new Timestamp(materialDescr.getDate().getTime()));
 
 		if (candidate.getSubType() != null)
 		{
@@ -620,21 +624,25 @@ public class CandidateRepository
 
 	private CandidateBuilder createAndInitializeBuilder(@NonNull final I_MD_Candidate candidateRecord)
 	{
+		final MaterialDescriptor materialDescr = MaterialDescriptor.builder()
+		.productId(candidateRecord.getM_Product_ID())
+		.quantity(candidateRecord.getQty())
+		.warehouseId(candidateRecord.getM_Warehouse_ID())
+		// make sure to add a Date and not a Timestamp to avoid confusing Candidate's equals() and hashCode() methods
+		.date(new Date(candidateRecord.getDateProjected().getTime()))
+		.build();
+		
+		
 		final CandidateBuilder builder = Candidate.builder()
 				.id(candidateRecord.getMD_Candidate_ID())
 				.clientId(candidateRecord.getAD_Client_ID())
 				.orgId(candidateRecord.getAD_Org_ID())
-				.productId(candidateRecord.getM_Product_ID())
-				.quantity(candidateRecord.getQty())
 				.seqNo(candidateRecord.getSeqNo())
 				.type(Type.valueOf(candidateRecord.getMD_Candidate_Type()))
-				.warehouseId(candidateRecord.getM_Warehouse_ID())
 
 				// if the record has a group id, then set it. otherwise set null, because a "vanilla" candidate without groupId also has null here (null and not zero)
 				.groupId(candidateRecord.getMD_Candidate_GroupId() <= 0 ? null : candidateRecord.getMD_Candidate_GroupId())
-
-				// make sure to add a Date and not a Timestamp to avoid confusing Candidate's equals() and hashCode() methods
-				.date(new Date(candidateRecord.getDateProjected().getTime()));
+				.materialDescr(materialDescr);
 
 		if (candidateRecord.getMD_Candidate_Parent_ID() > 0)
 		{
