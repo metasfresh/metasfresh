@@ -473,3 +473,383 @@ UPDATE AD_UI_Element SET IsDisplayed_SideList='Y', SeqNo_SideList=30,Updated=TO_
 UPDATE AD_UI_Element SET IsDisplayed_SideList='Y', SeqNo_SideList=40,Updated=TO_TIMESTAMP('2017-10-07 17:53:31','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=546257
 ;
 
+-- 2017-10-07T17:56:56.757
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET IsDisplayedGrid='N', SeqNoGrid=0,Updated=TO_TIMESTAMP('2017-10-07 17:56:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=546282
+;
+
+-- 2017-10-07T17:56:56.760
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET IsDisplayedGrid='N', SeqNoGrid=0,Updated=TO_TIMESTAMP('2017-10-07 17:56:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=546283
+;
+
+-- 2017-10-07T17:56:56.763
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET IsDisplayedGrid='N', SeqNoGrid=0,Updated=TO_TIMESTAMP('2017-10-07 17:56:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=546284
+;
+
+-- 2017-10-07T17:56:56.770
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET IsDisplayedGrid='N', SeqNoGrid=0,Updated=TO_TIMESTAMP('2017-10-07 17:56:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=546285
+;
+
+-- 2017-10-07T17:56:56.773
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET IsDisplayedGrid='N', SeqNoGrid=0,Updated=TO_TIMESTAMP('2017-10-07 17:56:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=546286
+;
+
+-- 2017-10-07T17:56:56.778
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET IsDisplayedGrid='N', SeqNoGrid=0,Updated=TO_TIMESTAMP('2017-10-07 17:56:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=546287
+;
+
+-- 2017-10-07T17:56:56.782
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET IsDisplayedGrid='N', SeqNoGrid=0,Updated=TO_TIMESTAMP('2017-10-07 17:56:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=546292
+;
+
+-- 2017-10-07T17:56:56.786
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET IsDisplayedGrid='N', SeqNoGrid=0,Updated=TO_TIMESTAMP('2017-10-07 17:56:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=546293
+;
+
+-- 2017-10-07T17:56:56.790
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET IsDisplayedGrid='N', SeqNoGrid=0,Updated=TO_TIMESTAMP('2017-10-07 17:56:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=546294
+;
+
+-- 2017-10-07T17:56:56.794
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET IsDisplayedGrid='N', SeqNoGrid=0,Updated=TO_TIMESTAMP('2017-10-07 17:56:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=546295
+;
+
+-- 2017-10-07T17:56:56.797
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET IsDisplayedGrid='N', SeqNoGrid=0,Updated=TO_TIMESTAMP('2017-10-07 17:56:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=546296
+;
+
+-- 2017-10-07T17:56:56.799
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET IsDisplayedGrid='N', SeqNoGrid=0,Updated=TO_TIMESTAMP('2017-10-07 17:56:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=546290
+;
+
+-- 2017-10-07T17:56:56.801
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET IsDisplayedGrid='N', SeqNoGrid=0,Updated=TO_TIMESTAMP('2017-10-07 17:56:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=546291
+;
+
+-- 2017-10-07T17:56:56.803
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET IsDisplayedGrid='N', SeqNoGrid=0,Updated=TO_TIMESTAMP('2017-10-07 17:56:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=546298
+;
+
+-- 2017-10-07T17:56:56.805
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET IsDisplayedGrid='N', SeqNoGrid=0,Updated=TO_TIMESTAMP('2017-10-07 17:56:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=546301
+;
+
+-- 2017-10-07T17:56:56.806
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET IsDisplayedGrid='N', SeqNoGrid=0,Updated=TO_TIMESTAMP('2017-10-07 17:56:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=546302
+;
+
+-- 2017-10-07T17:56:56.807
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET IsDisplayedGrid='N', SeqNoGrid=0,Updated=TO_TIMESTAMP('2017-10-07 17:56:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=546299
+;
+
+-- 2017-10-07T17:56:56.809
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET IsDisplayedGrid='N', SeqNoGrid=0,Updated=TO_TIMESTAMP('2017-10-07 17:56:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=546303
+;
+
+-- 2017-10-07T17:56:56.810
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET IsDisplayedGrid='N', SeqNoGrid=0,Updated=TO_TIMESTAMP('2017-10-07 17:56:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=546304
+;
+
+-- 2017-10-07T17:56:56.812
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET IsDisplayedGrid='N', SeqNoGrid=0,Updated=TO_TIMESTAMP('2017-10-07 17:56:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=546305
+;
+
+-- 2017-10-07T17:56:56.813
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET IsDisplayedGrid='N', SeqNoGrid=0,Updated=TO_TIMESTAMP('2017-10-07 17:56:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=546307
+;
+
+-- 2017-10-07T17:56:56.814
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET IsDisplayedGrid='N', SeqNoGrid=0,Updated=TO_TIMESTAMP('2017-10-07 17:56:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=546309
+;
+
+-- 2017-10-07T17:56:56.815
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET IsDisplayedGrid='N', SeqNoGrid=0,Updated=TO_TIMESTAMP('2017-10-07 17:56:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=546311
+;
+
+-- 2017-10-07T17:56:56.816
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET IsDisplayedGrid='N', SeqNoGrid=0,Updated=TO_TIMESTAMP('2017-10-07 17:56:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=546314
+;
+
+-- 2017-10-07T17:56:56.818
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET IsDisplayedGrid='N', SeqNoGrid=0,Updated=TO_TIMESTAMP('2017-10-07 17:56:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=546317
+;
+
+-- 2017-10-07T17:56:56.819
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET IsDisplayedGrid='N', SeqNoGrid=0,Updated=TO_TIMESTAMP('2017-10-07 17:56:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=546319
+;
+
+-- 2017-10-07T17:56:56.820
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET IsDisplayedGrid='N', SeqNoGrid=0,Updated=TO_TIMESTAMP('2017-10-07 17:56:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=546320
+;
+
+-- 2017-10-07T17:56:56.821
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=10,Updated=TO_TIMESTAMP('2017-10-07 17:56:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=546310
+;
+
+-- 2017-10-07T17:56:56.822
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=20,Updated=TO_TIMESTAMP('2017-10-07 17:56:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=546300
+;
+
+-- 2017-10-07T17:56:56.823
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=30,Updated=TO_TIMESTAMP('2017-10-07 17:56:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=546312
+;
+
+-- 2017-10-07T17:56:56.823
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=40,Updated=TO_TIMESTAMP('2017-10-07 17:56:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=546313
+;
+
+-- 2017-10-07T17:56:56.824
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=50,Updated=TO_TIMESTAMP('2017-10-07 17:56:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=546308
+;
+
+-- 2017-10-07T17:56:56.825
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=60,Updated=TO_TIMESTAMP('2017-10-07 17:56:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=546288
+;
+
+-- 2017-10-07T17:56:56.826
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=70,Updated=TO_TIMESTAMP('2017-10-07 17:56:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=546297
+;
+
+-- 2017-10-07T17:56:56.827
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=80,Updated=TO_TIMESTAMP('2017-10-07 17:56:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=546316
+;
+
+-- 2017-10-07T17:56:56.827
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=90,Updated=TO_TIMESTAMP('2017-10-07 17:56:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=546289
+;
+
+-- 2017-10-07T17:56:56.828
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=100,Updated=TO_TIMESTAMP('2017-10-07 17:56:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=546318
+;
+
+-- 2017-10-07T17:56:56.829
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=110,Updated=TO_TIMESTAMP('2017-10-07 17:56:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=546315
+;
+
+-- 2017-10-07T17:57:11.748
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET IsDisplayed_SideList='Y', SeqNo_SideList=10,Updated=TO_TIMESTAMP('2017-10-07 17:57:11','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=546310
+;
+
+-- 2017-10-07T17:57:11.749
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET IsDisplayed_SideList='Y', SeqNo_SideList=20,Updated=TO_TIMESTAMP('2017-10-07 17:57:11','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=546312
+;
+
+-- 2017-10-07T17:57:11.750
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET IsDisplayed_SideList='Y', SeqNo_SideList=30,Updated=TO_TIMESTAMP('2017-10-07 17:57:11','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=546300
+;
+
+-- 2017-10-07T17:57:28.626
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-10-07 17:57:28','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Date Posted' WHERE AD_Field_ID=555063 AND AD_Language='en_US'
+;
+
+-- 2017-10-07T17:57:42.202
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-10-07 17:57:42','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Business Partner',Description='',Help='' WHERE AD_Field_ID=555074 AND AD_Language='en_US'
+;
+
+-- 2017-10-07T17:57:49.849
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-10-07 17:57:49','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Invoice' WHERE AD_Field_ID=555086 AND AD_Language='en_US'
+;
+
+-- 2017-10-07T17:58:14.070
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-10-07 17:58:14','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y' WHERE AD_Field_ID=555078 AND AD_Language='en_US'
+;
+
+-- 2017-10-07T17:58:24.326
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-10-07 17:58:24','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Action' WHERE AD_Field_ID=555071 AND AD_Language='en_US'
+;
+
+-- 2017-10-07T17:58:43.870
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-10-07 17:58:43','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Invoice Grandtotal',Description='' WHERE AD_Field_ID=555087 AND AD_Language='en_US'
+;
+
+-- 2017-10-07T17:58:57.841
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-10-07 17:58:57','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Open Amount',Description='' WHERE AD_Field_ID=555082 AND AD_Language='en_US'
+;
+
+-- 2017-10-07T17:59:09.310
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-10-07 17:59:09','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Amount',Description='',Help='' WHERE AD_Field_ID=555062 AND AD_Language='en_US'
+;
+
+-- 2017-10-07T17:59:20.532
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-10-07 17:59:20','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Error Message' WHERE AD_Field_ID=555073 AND AD_Language='en_US'
+;
+
+-- 2017-10-07T17:59:31.223
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-10-07 17:59:31','YYYY-MM-DD HH24:MI:SS'),Description='',Help='' WHERE AD_Field_ID=555083 AND AD_Language='en_US'
+;
+
+-- 2017-10-07T17:59:41.786
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-10-07 17:59:41','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Description' WHERE AD_Field_ID=555061 AND AD_Language='en_US'
+;
+
+-- 2017-10-07T17:59:58.880
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-10-07 17:59:58','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='ESR Reference No.',Description='' WHERE AD_Field_ID=555067 AND AD_Language='en_US'
+;
+
+-- 2017-10-07T18:00:06.552
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-10-07 18:00:06','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Payment' WHERE AD_Field_ID=555093 AND AD_Language='en_US'
+;
+
+-- 2017-10-07T18:00:15.342
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-10-07 18:00:15','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Date Payment' WHERE AD_Field_ID=555092 AND AD_Language='en_US'
+;
+
+-- 2017-10-07T18:00:23.157
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-10-07 18:00:23','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Allocated' WHERE AD_Field_ID=555060 AND AD_Language='en_US'
+;
+
+-- 2017-10-07T18:00:32.647
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-10-07 18:00:32','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Line',Description='' WHERE AD_Field_ID=555084 AND AD_Language='en_US'
+;
+
+-- 2017-10-07T18:00:41.971
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-10-07 18:00:41','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Transaction Type' WHERE AD_Field_ID=555090 AND AD_Language='en_US'
+;
+
+-- 2017-10-07T18:00:56.952
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-10-07 18:00:56','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Port Finance Member No.',Description='' WHERE AD_Field_ID=555085 AND AD_Language='en_US'
+;
+
+-- 2017-10-07T18:01:08.077
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-10-07 18:01:08','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Bankaccount',Description='' WHERE AD_Field_ID=555059 AND AD_Language='en_US'
+;
+
+-- 2017-10-07T18:01:19.406
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-10-07 18:01:19','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='ESR Invoice No.',Description='' WHERE AD_Field_ID=555066 AND AD_Language='en_US'
+;
+
+-- 2017-10-07T18:01:36.635
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-10-07 18:01:36','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Business Partner No.',Description='' WHERE AD_Field_ID=555075 AND AD_Language='en_US'
+;
+
+-- 2017-10-07T18:01:46.391
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-10-07 18:01:46','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='ESR Organisation' WHERE AD_Field_ID=555068 AND AD_Language='en_US'
+;
+
+-- 2017-10-07T18:01:58.853
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-10-07 18:01:58','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Processed',Description='',Help='' WHERE AD_Field_ID=555091 AND AD_Language='en_US'
+;
+
+-- 2017-10-07T18:02:08.909
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-10-07 18:02:08','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Valid',Description='',Help='' WHERE AD_Field_ID=555076 AND AD_Language='en_US'
+;
+
+-- 2017-10-07T18:02:30.774
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-10-07 18:02:30','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Manual Reference No.' WHERE AD_Field_ID=555072 AND AD_Language='en_US'
+;
+
+-- 2017-10-07T18:02:43.399
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-10-07 18:02:43','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Manual',Description='',Help='' WHERE AD_Field_ID=555081 AND AD_Language='en_US'
+;
+
+-- 2017-10-07T18:03:04.065
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-10-07 18:03:04','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Imported ESR Record',Description='' WHERE AD_Field_ID=555077 AND AD_Language='en_US'
+;
+
+-- 2017-10-07T18:03:16.834
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-10-07 18:03:16','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Allocation Error',Description='' WHERE AD_Field_ID=558658 AND AD_Language='nl_NL'
+;
+
+-- 2017-10-07T18:03:36.585
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-10-07 18:03:36','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='ESR Payment Import' WHERE AD_Field_ID=555069 AND AD_Language='en_US'
+;
+
+-- 2017-10-07T18:03:52.403
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-10-07 18:03:52','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Bank Account No.',Description='',Help='' WHERE AD_Field_ID=555079 AND AD_Language='en_US'
+;
+
+-- 2017-10-07T18:04:00.810
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-10-07 18:04:00','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Reference No.' WHERE AD_Field_ID=555088 AND AD_Language='en_US'
+;
+
+-- 2017-10-07T18:04:34.223
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-10-07 18:04:34','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='ESR Import Line' WHERE AD_Field_ID=555070 AND AD_Language='en_US'
+;
+
+-- 2017-10-07T18:05:25.173
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-10-07 18:05:25','YYYY-MM-DD HH24:MI:SS'),Name='Open Amount' WHERE AD_Field_ID=551779 AND AD_Language='en_US'
+;
+
+-- 2017-10-07T18:05:34.285
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-10-07 18:05:34','YYYY-MM-DD HH24:MI:SS'),Name='Transaction Type' WHERE AD_Field_ID=550794 AND AD_Language='en_US'
+;
+
+-- 2017-10-07T18:06:05.478
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-10-07 18:06:05','YYYY-MM-DD HH24:MI:SS'),Name='Business Partner' WHERE AD_Field_ID=550856 AND AD_Language='en_US'
+;
+
