@@ -123,3 +123,18 @@ UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-10-07 17:19:12'
 UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-10-07 17:19:24','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Price Limit',Description='',Help='' WHERE AD_Field_ID=558372 AND AD_Language='en_US'
 ;
 
+-- 2017-10-07T17:26:06.699
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_UI_Element WHERE AD_UI_Element_ID=541765
+;
+
+-- 2017-10-07T17:26:10.880
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_UI_ElementGroup WHERE AD_UI_ElementGroup_ID=540123
+;
+
+-- 2017-10-07T17:26:26.712
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_ElementGroup SET UIStyle='primary',Updated=TO_TIMESTAMP('2017-10-07 17:26:26','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_ElementGroup_ID=540340
+;
+
