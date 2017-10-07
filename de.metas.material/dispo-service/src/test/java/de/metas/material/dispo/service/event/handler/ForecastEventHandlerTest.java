@@ -69,7 +69,6 @@ public class ForecastEventHandlerTest
 	private static final Integer PRODUCT_ID = 31;
 	private static final Integer WAREHOUSE_ID = 41;
 	private ForecastEventHandler forecastEventHandler;
-	private CandidateRepository candidateRepository;
 
 	@Mocked
 	private MaterialEventService materialEventService;
@@ -79,7 +78,7 @@ public class ForecastEventHandlerTest
 	{
 		AdempiereTestHelper.get().init();
 
-		candidateRepository = new CandidateRepository();
+		final CandidateRepository candidateRepository = new CandidateRepository();
 
 		forecastEventHandler = new ForecastEventHandler(
 				new CandidateChangeHandler(

@@ -2,6 +2,7 @@ package de.metas.material.dispo;
 
 import static org.adempiere.model.InterfaceWrapperHelper.isNew;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 import java.math.BigDecimal;
@@ -16,7 +17,6 @@ import java.util.stream.Stream;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.ITableRecordReference;
@@ -102,15 +102,7 @@ public class CandidateRepository
 		final I_MD_Candidate synchedRecord = syncToRecord(oldCandidateRecord, candidate, preserveExistingSeqNo);
 		save(synchedRecord); // save now, because we need to have MD_Candidate_ID > 0
 
-		if (synchedRecord.getSeqNo() <= 0)
-		{
-			synchedRecord.setSeqNo(synchedRecord.getMD_Candidate_ID());
-		}
-		if (synchedRecord.getMD_Candidate_GroupId() <= 0)
-		{
-			synchedRecord.setMD_Candidate_GroupId(synchedRecord.getMD_Candidate_ID());
-		}
-		save(synchedRecord);
+		setFallBackSeqNoAndGroupIdIfNeeded(synchedRecord);
 
 		if (candidate.getSubType() == SubType.PRODUCTION && candidate.getProductionDetail() != null)
 		{
@@ -128,14 +120,36 @@ public class CandidateRepository
 			addOrRecplaceDemandDetail(candidate, synchedRecord);
 		}
 
-		final Integer parentId = synchedRecord.getMD_Candidate_Parent_ID() > 0 ? synchedRecord.getMD_Candidate_Parent_ID() : null;
+		return createNewCandidateWithIdsFromRecord(candidate, synchedRecord)
+				.withQuantity(qtyDelta);
+	}
+
+	public void setFallBackSeqNoAndGroupIdIfNeeded(@NonNull final I_MD_Candidate synchedRecord)
+	{
+		if (synchedRecord.getSeqNo() <= 0)
+		{
+			synchedRecord.setSeqNo(synchedRecord.getMD_Candidate_ID());
+		}
+		if (synchedRecord.getMD_Candidate_GroupId() <= 0)
+		{
+			synchedRecord.setMD_Candidate_GroupId(synchedRecord.getMD_Candidate_ID());
+		}
+		save(synchedRecord);
+	}
+
+	public Candidate createNewCandidateWithIdsFromRecord(
+			@NonNull final Candidate candidate,
+			@NonNull final I_MD_Candidate candidateRecord)
+	{
+		final Integer parentId = candidateRecord.getMD_Candidate_Parent_ID() > 0
+				? candidateRecord.getMD_Candidate_Parent_ID()
+				: null;
 
 		return candidate
-				.withId(synchedRecord.getMD_Candidate_ID())
+				.withId(candidateRecord.getMD_Candidate_ID())
 				.withParentId(parentId)
-				.withGroupId(synchedRecord.getMD_Candidate_GroupId())
-				.withSeqNo(synchedRecord.getSeqNo())
-				.withQuantity(qtyDelta);
+				.withGroupId(candidateRecord.getMD_Candidate_GroupId())
+				.withSeqNo(candidateRecord.getSeqNo());
 	}
 
 	/**
@@ -171,7 +185,7 @@ public class CandidateRepository
 		final I_MD_Candidate_Prod_Detail existingDetail = retrieveProductionDetail(synchedRecord);
 		if (existingDetail == null)
 		{
-			detailRecordToUpdate = InterfaceWrapperHelper.newInstance(I_MD_Candidate_Prod_Detail.class, synchedRecord);
+			detailRecordToUpdate = newInstance(I_MD_Candidate_Prod_Detail.class, synchedRecord);
 			detailRecordToUpdate.setMD_Candidate(synchedRecord);
 		}
 		else
@@ -198,7 +212,7 @@ public class CandidateRepository
 		final I_MD_Candidate_Dist_Detail existingDetail = retrieveDistributionDetail(synchedRecord);
 		if (existingDetail == null)
 		{
-			detailRecordToUpdate = InterfaceWrapperHelper.newInstance(I_MD_Candidate_Dist_Detail.class, synchedRecord);
+			detailRecordToUpdate = newInstance(I_MD_Candidate_Dist_Detail.class, synchedRecord);
 			detailRecordToUpdate.setMD_Candidate(synchedRecord);
 		}
 		else
@@ -251,7 +265,7 @@ public class CandidateRepository
 		final I_MD_Candidate_Demand_Detail existingDetail = retrieveDemandDetail(synchedRecord);
 		if (existingDetail == null)
 		{
-			detailRecordToUpdate = InterfaceWrapperHelper.newInstance(I_MD_Candidate_Demand_Detail.class, synchedRecord);
+			detailRecordToUpdate = newInstance(I_MD_Candidate_Demand_Detail.class, synchedRecord);
 			detailRecordToUpdate.setMD_Candidate(synchedRecord);
 		}
 		else
@@ -530,7 +544,7 @@ public class CandidateRepository
 	{
 		Preconditions.checkState(
 				!candidateRecord.isPresent()
-						|| InterfaceWrapperHelper.isNew(candidateRecord.get())
+						|| isNew(candidateRecord.get())
 						|| candidate.getId() == null
 						|| Objects.equals(candidateRecord.get().getMD_Candidate_ID(), candidate.getId()),
 				"The given MD_Candidate is not new and its ID is different from the ID of the given Candidate; MD_Candidate=%s; candidate=%s",
@@ -538,7 +552,7 @@ public class CandidateRepository
 
 		final MaterialDescriptor materialDescr = candidate.getMaterialDescr();
 
-		final I_MD_Candidate candidateRecordToUse = candidateRecord.orElse(InterfaceWrapperHelper.newInstance(I_MD_Candidate.class));
+		final I_MD_Candidate candidateRecordToUse = candidateRecord.orElse(newInstance(I_MD_Candidate.class));
 		candidateRecordToUse.setAD_Org_ID(candidate.getOrgId());
 		candidateRecordToUse.setMD_Candidate_Type(candidate.getType().toString());
 		candidateRecordToUse.setM_Warehouse_ID(materialDescr.getWarehouseId());
@@ -625,14 +639,13 @@ public class CandidateRepository
 	private CandidateBuilder createAndInitializeBuilder(@NonNull final I_MD_Candidate candidateRecord)
 	{
 		final MaterialDescriptor materialDescr = MaterialDescriptor.builder()
-		.productId(candidateRecord.getM_Product_ID())
-		.quantity(candidateRecord.getQty())
-		.warehouseId(candidateRecord.getM_Warehouse_ID())
-		// make sure to add a Date and not a Timestamp to avoid confusing Candidate's equals() and hashCode() methods
-		.date(new Date(candidateRecord.getDateProjected().getTime()))
-		.build();
-		
-		
+				.productId(candidateRecord.getM_Product_ID())
+				.quantity(candidateRecord.getQty())
+				.warehouseId(candidateRecord.getM_Warehouse_ID())
+				// make sure to add a Date and not a Timestamp to avoid confusing Candidate's equals() and hashCode() methods
+				.date(new Date(candidateRecord.getDateProjected().getTime()))
+				.build();
+
 		final CandidateBuilder builder = Candidate.builder()
 				.id(candidateRecord.getMD_Candidate_ID())
 				.clientId(candidateRecord.getAD_Client_ID())

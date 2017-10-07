@@ -8,7 +8,6 @@ import static org.junit.Assert.assertThat;
 import java.math.BigDecimal;
 import java.util.Date;
 
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_AD_Org;
@@ -54,13 +53,9 @@ public class StockCandidateFactoryTests
 
 	private I_AD_Org org;
 
-	private I_C_UOM uom;
-
 	private I_M_Product product;
 
 	private I_M_Warehouse warehouse;
-
-	private CandidateRepository candidateRepository;
 
 	private StockCandidateFactory candidateFactory;
 
@@ -72,17 +67,17 @@ public class StockCandidateFactoryTests
 		org = newInstance(I_AD_Org.class);
 		save(org);
 
-		uom = InterfaceWrapperHelper.newInstance(I_C_UOM.class);
-		InterfaceWrapperHelper.save(uom);
+		final I_C_UOM uom = newInstance(I_C_UOM.class);
+		save(uom);
 
-		product = InterfaceWrapperHelper.newInstance(I_M_Product.class);
+		product = newInstance(I_M_Product.class);
 		product.setC_UOM(uom);
-		InterfaceWrapperHelper.save(product);
+		save(product);
 
-		warehouse = InterfaceWrapperHelper.newInstance(I_M_Warehouse.class);
-		InterfaceWrapperHelper.save(warehouse);
+		warehouse = newInstance(I_M_Warehouse.class);
+		save(warehouse);
 
-		candidateRepository = new CandidateRepository();
+		final CandidateRepository candidateRepository = new CandidateRepository();
 		candidateFactory = new StockCandidateFactory(candidateRepository);
 
 		final MaterialDescriptor materialDescr = MaterialDescriptor.builder()
@@ -137,7 +132,7 @@ public class StockCandidateFactoryTests
 				.date(later)
 				.quantity(BigDecimal.ONE)
 				.build();
-		
+
 		final Candidate candidate = Candidate.builder()
 				.type(Type.STOCK)
 				.clientId(org.getAD_Client_ID())

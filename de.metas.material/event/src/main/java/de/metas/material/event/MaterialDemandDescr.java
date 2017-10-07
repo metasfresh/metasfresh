@@ -2,7 +2,6 @@ package de.metas.material.event;
 
 import org.adempiere.util.lang.impl.TableRecordReference;
 
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.NonNull;
@@ -30,8 +29,7 @@ import lombok.Value;
  * #L%
  */
 
-@Value
-@AllArgsConstructor // used by jackson when it deserializes a string
+@Value // includes @AllArgsCosntructor which is used by jackson when it deserializes a string
 @Builder
 public class MaterialDemandDescr
 {

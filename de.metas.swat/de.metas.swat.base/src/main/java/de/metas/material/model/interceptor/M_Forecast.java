@@ -21,7 +21,7 @@ import lombok.NonNull;
 @Interceptor(I_M_Forecast.class)
 public class M_Forecast
 {
-	static final M_Forecast INSTANCE = new M_Forecast();
+	public static final M_Forecast INSTANCE = new M_Forecast();
 
 	private M_Forecast()
 	{

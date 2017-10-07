@@ -71,7 +71,7 @@ public enum DocTimingType
 	private final String docStatus;
 	private final BeforeAfterType beforeAfter;
 
-	DocTimingType(final int timing, final String docAction, final String docStatus, final BeforeAfterType beforeAfter)
+	private DocTimingType(final int timing, final String docAction, final String docStatus, final BeforeAfterType beforeAfter)
 	{
 		this.timing = timing;
 		this.docAction = docAction;

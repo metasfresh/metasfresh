@@ -12,7 +12,6 @@ import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.util.time.SystemTime;
@@ -90,11 +89,11 @@ public class SupplyCandiateCangeHandlerTest
 		org = newInstance(I_AD_Org.class);
 		save(org);
 
-		product = InterfaceWrapperHelper.newInstance(I_M_Product.class);
-		InterfaceWrapperHelper.save(product);
+		product = newInstance(I_M_Product.class);
+		save(product);
 
-		warehouse = InterfaceWrapperHelper.newInstance(I_M_Warehouse.class);
-		InterfaceWrapperHelper.save(warehouse);
+		warehouse = newInstance(I_M_Warehouse.class);
+		save(warehouse);
 
 		final CandidateRepository candidateRepository = new CandidateRepository();
 
