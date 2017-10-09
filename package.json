@@ -4,7 +4,7 @@
     "coverage": "nyc --reporter=lcov --reporter=text-lcov npm test > /dev/null",
     "start": "node server.js",
     "test": "mocha --require babel-register src/**/*.test.js",
-    "lint": "eslint src --fix",
+    "lint": "eslint . --fix",
     "stylelint": "stylelint 'src/assets/**/*.css'",
     "storybook": "node .storybook/findStories && start-storybook -p 6006",
     "build-storybook": "build-storybook"
