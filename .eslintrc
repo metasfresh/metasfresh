@@ -31,8 +31,8 @@
     "react"
   ],
   "globals": {
-    "localStorage",
-    "Promise",
-    "config"
+    "localStorage": true,
+    "Promise": true,
+    "config": true
   }
 }
