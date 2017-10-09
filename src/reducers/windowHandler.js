@@ -210,22 +210,36 @@ export default function windowHandler(state = initialState, action) {
                 }
             });
 
-        case types.UPDATE_DATA_PROPERTY:
+        case types.UPDATE_DATA_PROPERTY: {
+            let value;
+
+            if (typeof action.value === 'string') {
+               value = action.value;
+
+            } else if (action.property === 'standardActions') {
+                // TODO: Evaluate if standardActions of type Set
+                // is worth this extra check
+                value = new Set(action.value);
+
+            } else {
+                value = Object.assign(
+                    {},
+                    state[action.scope] ?
+                        state[action.scope][action.property] : {},
+                    action.value,
+                );
+            }
+
             return update(state, {
                 [action.scope]: {
-                    [action.property]: {$set:
-                        typeof action.value === 'string' ?
-                            action.value :
-                            Object.assign({},
-                                state[action.scope] ?
-                                    state[action.scope][action.property] : {},
-                                action.value
-                            )
-                    }
-                }
+                    [action.property]: {
+                        $set: value,
+                    },
+                },
             });
+        }
 
-        case types.UPDATE_ROW_FIELD_PROPERTY:
+        case types.UPDATE_ROW_FIELD_PROPERTY: {
             const scope = action.scope;
             const tabid = action.tabid;
             const rowid = action.rowid;
@@ -266,6 +280,7 @@ export default function windowHandler(state = initialState, action) {
             else {
                 return state;
             }
+          }
 
          case types.UPDATE_ROW_PROPERTY:
             return update(state, {
