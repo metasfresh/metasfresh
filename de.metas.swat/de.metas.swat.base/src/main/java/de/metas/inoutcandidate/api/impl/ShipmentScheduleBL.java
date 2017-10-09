@@ -789,17 +789,19 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 		final int productId = sched.getM_Product_ID();
 		final de.metas.adempiere.model.I_M_Product product = InterfaceWrapperHelper.create(sched.getM_Product(), de.metas.adempiere.model.I_M_Product.class);
 
-		final int orderLineId;
+		final int adTableId;
+		final int recordId;
 		if (product.isDiverse())
 		{
-			// Diverse/misc products can't be merged into one pi
-			// because they could represent totally different products.
-			// So we are using order line ID (which is unique) to make the group unique.
-			orderLineId = sched.getC_OrderLine_ID();
+			// Diverse/misc products can't be merged into one pi because they could represent totally different products.
+			// So we are using (AD_Table_ID, Record_ID) (which are unique) to make the group unique.
+			adTableId = sched.getAD_Table_ID();
+			recordId = sched.getRecord_ID();
 		}
 		else
 		{
-			orderLineId = 0;
+			adTableId = 0;
+			recordId = 0;
 		}
 
 		final int bpartnerId;
@@ -817,7 +819,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			bpLocId = 0;
 		}
 
-		return Util.mkKey(productId, orderLineId, bpartnerId, bpLocId);
+		return Util.mkKey(productId, adTableId, recordId, bpartnerId, bpLocId);
 	}
 
 	/**
@@ -915,7 +917,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			logger.debug("According to the effective C_BPartner of shipment candidate '" + sched + "', consolidation into one shipment is not allowed");
 			return false;
 		}
-		
+
 		return !isConsolidateVetoedByOrderOfSched(sched);
 	}
 
