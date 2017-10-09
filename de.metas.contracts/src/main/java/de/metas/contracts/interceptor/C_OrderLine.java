@@ -1,5 +1,8 @@
 package de.metas.contracts.interceptor;
 
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+
 /*
  * #%L
  * de.metas.contracts
@@ -23,17 +26,10 @@ package de.metas.contracts.interceptor;
  */
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_Order;
-import org.compiere.model.MClient;
-import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
-import org.compiere.model.PO;
-import org.compiere.util.Env;
 
 import de.metas.contracts.subscription.model.I_C_OrderLine;
-import de.metas.i18n.IMsgBL;
 
 /**
  *
@@ -41,72 +37,27 @@ import de.metas.i18n.IMsgBL;
  * @see "<a href='http://dewiki908/mediawiki/index.php/Abonnement_Auftragsverwaltung_(2009_0015_G36)'>(2009_0015_G36)</a>"
  */
 // code used to be located in /sw01_swat_it/src/java/org/adempiere/order/subscription/modelvalidator/OrderValidator.java
-public class C_OrderLine implements ModelValidator
+@Interceptor(I_C_OrderLine.class)
+public class C_OrderLine
 {
-	public static final String MSG_SUBSCRIPTION_ORDERLINE_2P = "subscription.olHasSubscription_2P";
 
-	private int ad_Client_ID = -1;
-
-	@Override
-	public int getAD_Client_ID()
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_DELETE })
+	public void updateDataEntry(final I_C_OrderLine ol)
 	{
-		return ad_Client_ID;
-	}
-
-	@Override
-	public final void initialize(final ModelValidationEngine engine,
-			final MClient client)
-	{
-		if (client != null)
-		{
-			ad_Client_ID = client.getAD_Client_ID();
-		}
-
-		engine.addModelChange(I_C_OrderLine.Table_Name, this);
-	}
-
-	@Override
-	public String login(final int AD_Org_ID, final int AD_Role_ID,
-			final int AD_User_ID)
-	{
-		// nothing to do
-		return null;
-	}
-
-	@Override
-	public String docValidate(final PO po, final int timing)
-	{
-		return null; // nothing to do
-	}
-
-	@Override
-	public String modelChange(final PO po, final int type) throws Exception
-	{
-		if (type == TYPE_BEFORE_DELETE)
-		{
-			final I_C_OrderLine ol = InterfaceWrapperHelper.create(po, I_C_OrderLine.class);
-
 			if (ol.isProcessed())
+		{
+			final I_C_Order order = ol.getC_Order();
+
+			final Integer subscriptionId = ol.getC_Flatrate_Conditions_ID();
+
+			if (subscriptionId == null || subscriptionId <= 0)
 			{
-				final I_C_Order order = ol.getC_Order();
-
-				final Integer subscriptionId = ol.getC_Flatrate_Conditions_ID();
-
-				if (subscriptionId == null || subscriptionId <= 0)
-				{
-					// TODO figure out wtf this check and this error message mean
-					throw new AdempiereException("OrderLine " + ol.getLine()
-							+ " of order " + order.getDocumentNo()
-							+ " is processed, but I don't know why");
-				}
-
-				return Services.get(IMsgBL.class).getMsg(
-						Env.getCtx(),
-						MSG_SUBSCRIPTION_ORDERLINE_2P,
-						new Object[] { ol.getLine(), order.getDocumentNo() });
+				// TODO figure out wtf this check and this error message mean
+				throw new AdempiereException("OrderLine " + ol.getLine()
+						+ " of order " + order.getDocumentNo()
+						+ " is processed, but I don't know why");
 			}
 		}
-		return null;
-
 	}
+
 }
