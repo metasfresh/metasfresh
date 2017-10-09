@@ -138,9 +138,9 @@ public interface IHUShipmentScheduleBL extends ISingletonService
 	void updateEffectiveValues(I_M_ShipmentSchedule shipmentSchedule);
 
 	/**
-	 * Initialize the qtys and packvorschrift in shipment schedule
+	 * Initialize the qtys and HU PI Item product in shipment schedule
 	 *
 	 * @param shipmentSchedule
 	 */
-	void createEffectiveValues(I_M_ShipmentSchedule shipmentSchedule);
+	void updateHURelatedValuesFromOrderLine(I_M_ShipmentSchedule shipmentSchedule);
 }

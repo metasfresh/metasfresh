@@ -77,7 +77,6 @@ import de.metas.inoutcandidate.api.IShipmentScheduleUpdater;
 import de.metas.inoutcandidate.api.OlAndSched;
 import de.metas.inoutcandidate.async.UpdateInvalidShipmentSchedulesWorkpackageProcessor;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.inoutcandidate.model.MMShipmentSchedule;
 import de.metas.inoutcandidate.model.X_M_ShipmentSchedule;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
@@ -332,7 +331,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 
 			while (rs.next())
 			{
-				final MMShipmentSchedule shipmentSchedule = new MMShipmentSchedule(Env.getCtx(), rs, trxName);
+				final X_M_ShipmentSchedule shipmentSchedule = new X_M_ShipmentSchedule(Env.getCtx(), rs, trxName);
 				result.add(shipmentSchedule);
 			}
 			return result;
@@ -501,9 +500,12 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 
 		for (final I_M_ShipmentSchedule schedule : schedules)
 		{
+			final I_C_OrderLine orderLineOrNull = InterfaceWrapperHelper.create(
+					orderLines.get(schedule.getC_OrderLine_ID()), I_C_OrderLine.class);
+
 			final OlAndSched olAndSched = OlAndSched.builder()
 					.shipmentSchedule(schedule)
-					.orderLine(InterfaceWrapperHelper.create(orderLines.get(schedule.getC_OrderLine_ID()), I_C_OrderLine.class))
+					.orderLineOrNull(orderLineOrNull)
 					.build();
 			result.add(olAndSched);
 		}

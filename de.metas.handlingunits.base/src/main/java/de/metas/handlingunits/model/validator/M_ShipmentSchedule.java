@@ -108,7 +108,7 @@ public class M_ShipmentSchedule
 	public void createEffectiveValues(final I_M_ShipmentSchedule shipmentSchedule)
 	{
 		// create the effective values (calculated, override)
-		Services.get(IHUShipmentScheduleBL.class).createEffectiveValues(shipmentSchedule);
+		Services.get(IHUShipmentScheduleBL.class).updateHURelatedValuesFromOrderLine(shipmentSchedule);
 	}
 
 	@ModelChange(
