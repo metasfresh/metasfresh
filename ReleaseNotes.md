@@ -61,6 +61,7 @@ Here come the actual release notes:
 * metasfresh-app
   * [#2543](https://github.com/metasfresh/metasfresh/issues/2543) Businesspartner Import for different Partner with the same address
   * [#2678](https://github.com/metasfresh/metasfresh/issues/2678) Shipment Schedules not created for new flatrate terms
+  * [#2688](https://github.com/metasfresh/metasfresh/issues/2688) SQL syntax error in ShipmentSchedulePA.retrieveUnprocessedForRecord()
 
 * metasfresh-webui-frontend
   * [#1212](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1212) Selection using SHIFT does not work in Handling unit Editor
