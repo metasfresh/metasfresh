@@ -23,15 +23,14 @@ package de.metas.contracts.interceptor;
  */
 
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
+import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
+import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.impexp.IImportProcessFactory;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
+import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.MClient;
-import org.compiere.model.ModelValidationEngine;
-import org.compiere.model.ModelValidator;
-import org.compiere.model.PO;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
 
@@ -54,27 +53,50 @@ import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
 import de.metas.ordercandidate.api.IOLCandBL;
 
-public class MainValidator implements ModelValidator
+public class MainValidator extends AbstractModuleInterceptor
 {
 
 	public static final String MSG_FLATRATE_DOC_ACTION_NOT_SUPPORTED_0P = "Flatrate_DocAction_Not_Supported";
 
-	private int m_AD_Client_ID = -1;
-
 	@Override
-	public int getAD_Client_ID()
+	protected void onInit(final IModelValidationEngine engine, final I_AD_Client client)
 	{
-		return m_AD_Client_ID;
-	}
+		super.onInit(engine, client);
 
-	@Override
-	public void initialize(final ModelValidationEngine engine, final MClient client)
-	{
-		if (client != null)
+		if (!Ini.isClient())
 		{
-			m_AD_Client_ID = client.getAD_Client_ID();
+			ensureDataDestExists();
 		}
 
+		setupCallouts();
+
+		registerFactories();
+	}
+
+	private void ensureDataDestExists()
+	{
+		final I_AD_InputDataSource dest = Services.get(IInputDataSourceDAO.class).retrieveInputDataSource(Env.getCtx(), Contracts_Constants.DATA_DESTINATION_INTERNAL_NAME, false, ITrx.TRXNAME_None);
+		if (dest == null)
+		{
+			final I_AD_InputDataSource newDest = InterfaceWrapperHelper.create(Env.getCtx(), I_AD_InputDataSource.class, ITrx.TRXNAME_None);
+			newDest.setEntityType(Contracts_Constants.ENTITY_TYPE);
+			newDest.setInternalName(Contracts_Constants.DATA_DESTINATION_INTERNAL_NAME);
+			newDest.setIsDestination(true);
+			newDest.setName(Services.get(IMsgBL.class).translate(Env.getCtx(), "@C_Flatrate_Term_ID@"));
+			InterfaceWrapperHelper.save(newDest);
+		}
+	}
+
+	private void setupCallouts()
+	{
+		final IProgramaticCalloutProvider calloutProvider = Services.get(IProgramaticCalloutProvider.class);
+		calloutProvider.registerAnnotatedCallout(new de.metas.contracts.subscription.callout.C_OrderLine());
+
+		calloutProvider.registerAnnotatedCallout(new de.metas.contracts.flatrate.callout.C_Flatrate_Term());
+	}
+
+	public void registerFactories()
+	{
 		Services.get(IShipmentScheduleHandlerBL.class).registerVetoer(new ShipmentScheduleFromSubscriptionOrderLineVetoer(), I_C_OrderLine.Table_Name);
 		Services.get(IShipmentScheduleHandlerBL.class).registerHandler(Env.getCtx(), new SubscriptionShipmentScheduleHandler());
 
@@ -83,10 +105,22 @@ public class MainValidator implements ModelValidator
 		Services.get(IOLCandBL.class).registerCustomerGroupingValuesProvider(new FlatrateGroupingProvider());
 		Services.get(IOLCandBL.class).registerOLCandListener(new FlatrateOLCandListener());
 
+		// material balance matcher
+		Services.get(IMaterialBalanceConfigBL.class).addMaterialBalanceConfigMather(new FlatrateMaterialBalanceConfigMatcher());
+
+		Services.get(IImportProcessFactory.class).registerImportProcess(I_I_Flatrate_Term.class, FlatrateTermImportProcess.class);
+
+		ExcludeSubscriptionOrderLines.registerFilterForInvoiceCandidateCreation();
+		ExcludeSubscriptionInOutLines.registerFilterForInvoiceCandidateCreation();
+	}	
+
+	@Override
+	protected void registerInterceptors(IModelValidationEngine engine, I_AD_Client client)
+	{
 		engine.addModelValidator(new C_Flatrate_Conditions(), client);
 		engine.addModelValidator(C_SubscriptionProgress.instance, client);
-		engine.addModelValidator(new C_Flatrate_DataEntry(), client);
-		engine.addModelValidator(new C_Flatrate_Matching(), client);
+		engine.addModelValidator(C_Flatrate_DataEntry.instance, client);
+		engine.addModelValidator(C_Flatrate_Matching.instance, client);
 		engine.addModelValidator(new C_Flatrate_Term(), client);
 
 		engine.addModelValidator(new C_Invoice_Candidate(), client);
@@ -103,63 +137,9 @@ public class MainValidator implements ModelValidator
 		engine.addModelValidator(new M_InOutLine(), client);
 
 		engine.addModelValidator(new M_ShipmentSchedule_QtyPicked(), client);
-		
+
 		// 09869
 		engine.addModelValidator(new de.metas.contracts.interceptor.M_ShipmentSchedule(), client);
-
-		// material balance matcher
-		Services.get(IMaterialBalanceConfigBL.class).addMaterialBalanceConfigMather(new FlatrateMaterialBalanceConfigMatcher());
-
-		if (!Ini.isClient())
-		{
-			ensureDataDestExists();
-		}
-
-		setupCallouts();
-
-		Services.get(IImportProcessFactory.class).registerImportProcess(I_I_Flatrate_Term.class, FlatrateTermImportProcess.class);
-
-		ExcludeSubscriptionOrderLines.registerFilterForInvoiceCandidateCreation();
-		ExcludeSubscriptionInOutLines.registerFilterForInvoiceCandidateCreation();
 	}
 
-	private void setupCallouts()
-	{
-		final IProgramaticCalloutProvider calloutProvider = Services.get(IProgramaticCalloutProvider.class);
-		calloutProvider.registerAnnotatedCallout(new de.metas.contracts.subscription.callout.C_OrderLine());
-
-		calloutProvider.registerAnnotatedCallout(new de.metas.contracts.flatrate.callout.C_Flatrate_Term());
-	}
-
-	@Override
-	public String login(final int AD_Org_ID, final int AD_Role_ID, final int AD_User_ID)
-	{
-		return null; // nothing to do
-	}
-
-	@Override
-	public String modelChange(final PO po, final int type) throws Exception
-	{
-		return null; // nothing to do
-	}
-
-	@Override
-	public String docValidate(final PO po, final int timing)
-	{
-		return null; // nothing to do
-	}
-
-	private void ensureDataDestExists()
-	{
-		final I_AD_InputDataSource dest = Services.get(IInputDataSourceDAO.class).retrieveInputDataSource(Env.getCtx(), Contracts_Constants.DATA_DESTINATION_INTERNAL_NAME, false, ITrx.TRXNAME_None);
-		if (dest == null)
-		{
-			final I_AD_InputDataSource newDest = InterfaceWrapperHelper.create(Env.getCtx(), I_AD_InputDataSource.class, ITrx.TRXNAME_None);
-			newDest.setEntityType(Contracts_Constants.ENTITY_TYPE);
-			newDest.setInternalName(Contracts_Constants.DATA_DESTINATION_INTERNAL_NAME);
-			newDest.setIsDestination(true);
-			newDest.setName(Services.get(IMsgBL.class).translate(Env.getCtx(), "@C_Flatrate_Term_ID@"));
-			InterfaceWrapperHelper.save(newDest);
-		}
-	}
 }
