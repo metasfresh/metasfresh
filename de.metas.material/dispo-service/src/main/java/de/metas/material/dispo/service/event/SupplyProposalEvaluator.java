@@ -87,7 +87,7 @@ public class SupplyProposalEvaluator
 				.withParentProductId(proposal.getProductId())
 				.withParentWarehouseId(proposal.getSourceWarehouseId());
 
-		final List<Candidate> directReversals = candidateRepository.retrieveMatches(directReverseSegment);
+		final List<Candidate> directReversals = candidateRepository.retrieveMatchesOrderByDateAndSeqNo(directReverseSegment);
 		if (!directReversals.isEmpty())
 		{
 			return false;
@@ -99,7 +99,7 @@ public class SupplyProposalEvaluator
 				.withDateOperator(DateOperator.from)
 				.withWarehouseId(proposal.getSourceWarehouseId());
 
-		final List<Candidate> demands = candidateRepository.retrieveMatches(demandSegment);
+		final List<Candidate> demands = candidateRepository.retrieveMatchesOrderByDateAndSeqNo(demandSegment);
 		for (final Candidate demand : demands)
 		{
 			final Candidate indirectSupplyCandidate = searchRecursive(
@@ -143,9 +143,9 @@ public class SupplyProposalEvaluator
 			}
 		}
 		else /* the "else" is important to avoid a stack overflow error */
-		if (currentCandidate.getGroupIdNotNull() > 0)
+		if (currentCandidate.getEffectiveGroupId() > 0)
 		{
-			final List<Candidate> group = candidateRepository.retrieveGroup(currentCandidate.getGroupIdNotNull());
+			final List<Candidate> group = candidateRepository.retrieveGroup(currentCandidate.getEffectiveGroupId());
 			for (final Candidate groupMember : group)
 			{
 				if (groupMember.getId() <= currentCandidate.getId())

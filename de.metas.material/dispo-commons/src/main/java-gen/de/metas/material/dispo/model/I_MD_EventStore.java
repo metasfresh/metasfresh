@@ -128,52 +128,6 @@ public interface I_MD_EventStore
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Event UUID.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setEvent_UUID (java.lang.String Event_UUID);
-
-	/**
-	 * Get Event UUID.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getEvent_UUID();
-
-    /** Column definition for Event_UUID */
-    public static final org.adempiere.model.ModelColumn<I_MD_EventStore, Object> COLUMN_Event_UUID = new org.adempiere.model.ModelColumn<I_MD_EventStore, Object>(I_MD_EventStore.class, "Event_UUID", null);
-    /** Column name Event_UUID */
-    public static final String COLUMNNAME_Event_UUID = "Event_UUID";
-
-	/**
-	 * Set Daten.
-	 *
-	 * <br>Type: TextLong
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setEventData (java.lang.String EventData);
-
-	/**
-	 * Get Daten.
-	 *
-	 * <br>Type: TextLong
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getEventData();
-
-    /** Column definition for EventData */
-    public static final org.adempiere.model.ModelColumn<I_MD_EventStore, Object> COLUMN_EventData = new org.adempiere.model.ModelColumn<I_MD_EventStore, Object>(I_MD_EventStore.class, "EventData", null);
-    /** Column name EventData */
-    public static final String COLUMNNAME_EventData = "EventData";
-
-	/**
 	 * Set Zeitpunkt.
 	 *
 	 * <br>Type: DateTime
@@ -195,6 +149,29 @@ public interface I_MD_EventStore
     public static final org.adempiere.model.ModelColumn<I_MD_EventStore, Object> COLUMN_EventTime = new org.adempiere.model.ModelColumn<I_MD_EventStore, Object>(I_MD_EventStore.class, "EventTime", null);
     /** Column name EventTime */
     public static final String COLUMNNAME_EventTime = "EventTime";
+
+	/**
+	 * Set Event UUID.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setEvent_UUID (java.lang.String Event_UUID);
+
+	/**
+	 * Get Event UUID.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getEvent_UUID();
+
+    /** Column definition for Event_UUID */
+    public static final org.adempiere.model.ModelColumn<I_MD_EventStore, Object> COLUMN_Event_UUID = new org.adempiere.model.ModelColumn<I_MD_EventStore, Object>(I_MD_EventStore.class, "Event_UUID", null);
+    /** Column name Event_UUID */
+    public static final String COLUMNNAME_Event_UUID = "Event_UUID";
 
 	/**
 	 * Set Aktiv.

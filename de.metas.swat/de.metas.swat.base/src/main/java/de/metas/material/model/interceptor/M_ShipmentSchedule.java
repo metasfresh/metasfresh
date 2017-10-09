@@ -59,7 +59,7 @@ public class M_ShipmentSchedule
 						.date(preparationDate)
 						.productId(schedule.getM_Product_ID())
 						.warehouseId(shipmentScheduleEffectiveBL.getWarehouseId(schedule))
-						.qty(shipmentScheduleEffectiveBL.computeQtyOrdered(schedule))
+						.quantity(shipmentScheduleEffectiveBL.computeQtyOrdered(schedule))
 						.build())
 				.reference(TableRecordReference.of(schedule))
 				.shipmentScheduleDeleted(deleted)
@@ -69,6 +69,6 @@ public class M_ShipmentSchedule
 		final MaterialEventService materialEventService = Adempiere.getBean(MaterialEventService.class);
 
 		final String trxName = InterfaceWrapperHelper.getTrxName(schedule);
-		materialEventService.fireEventAfterCommit(event, trxName);
+		materialEventService.fireEventAfterNextCommit(event, trxName);
 	}
 }

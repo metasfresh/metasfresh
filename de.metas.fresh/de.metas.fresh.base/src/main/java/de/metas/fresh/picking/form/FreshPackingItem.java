@@ -139,16 +139,21 @@ public class FreshPackingItem extends AbstractPackingItem implements IFreshPacki
 		}
 
 		// all scheds must have the same pip
-		final de.metas.handlingunits.model.I_M_ShipmentSchedule ss = InterfaceWrapperHelper.create(shipmentSchedules.iterator().next(), de.metas.handlingunits.model.I_M_ShipmentSchedule.class);
-		final I_M_HU_PI_Item_Product pip = ss.getM_HU_PI_Item_Product();
+		final de.metas.handlingunits.model.I_M_ShipmentSchedule shipmentSchedule = InterfaceWrapperHelper.create(shipmentSchedules.iterator().next(), de.metas.handlingunits.model.I_M_ShipmentSchedule.class);
+		final I_M_HU_PI_Item_Product pip = shipmentSchedule.getM_HU_PI_Item_Product();
 		if (pip != null)
 		{
 			return pip;
 		}
 
-		// if is not set, return the one form order line
-		final I_C_OrderLine ol = InterfaceWrapperHelper.create(ss.getC_OrderLine(), I_C_OrderLine.class);
-		return ol.getM_HU_PI_Item_Product();
+		if (shipmentSchedule.getC_OrderLine_ID() <= 0)
+		{
+			// if is not set, return the one form order line
+			final I_C_OrderLine ol = InterfaceWrapperHelper.create(shipmentSchedule.getC_OrderLine(), I_C_OrderLine.class);
+			return ol.getM_HU_PI_Item_Product();
+		}
+
+		return null;
 	}
 
 	@Override

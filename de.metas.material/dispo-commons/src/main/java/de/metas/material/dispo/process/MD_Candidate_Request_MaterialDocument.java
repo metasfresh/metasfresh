@@ -6,6 +6,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.util.Services;
 import org.compiere.Adempiere;
 
+import de.metas.i18n.ITranslatableString;
 import de.metas.material.dispo.CandidateService;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.X_MD_Candidate;
@@ -45,13 +46,13 @@ import de.metas.process.ProcessPreconditionsResolution;
 public class MD_Candidate_Request_MaterialDocument extends JavaProcess implements IProcessPrecondition
 {
 
-	private final Predicate<I_MD_Candidate> subTypePredicate = r ->
-		{
-			final String subType = r.getMD_Candidate_SubType();
+	private static final String MSG_MISSING_PRODUCTION_OR_DISTRIBUTRION_RECORDS = "MD_Candidate_Request_MaterialDocument_Missing_Production_Or_Distributrion_Records";
+	private final Predicate<I_MD_Candidate> subTypePredicate = r -> {
+		final String subType = r.getMD_Candidate_SubType();
 
-			return X_MD_Candidate.MD_CANDIDATE_SUBTYPE_PRODUCTION.equals(subType)
-					|| X_MD_Candidate.MD_CANDIDATE_SUBTYPE_DISTRIBUTION.equals(subType);
-		};
+		return X_MD_Candidate.MD_CANDIDATE_SUBTYPE_PRODUCTION.equals(subType)
+				|| X_MD_Candidate.MD_CANDIDATE_SUBTYPE_DISTRIBUTION.equals(subType);
+	};
 
 	@Override
 	protected String doIt() throws Exception
@@ -68,10 +69,9 @@ public class MD_Candidate_Request_MaterialDocument extends JavaProcess implement
 				.map(r -> r.getMD_Candidate_GroupId())
 				.distinct()
 				.peek(groupId -> addLog("Calling {}.requestOrder() for groupId={}", CandidateService.class.getSimpleName(), groupId))
-				.forEach(groupId ->
-					{
-						service.requestMaterialOrder(groupId);
-					});
+				.forEach(groupId -> {
+					service.requestMaterialOrder(groupId);
+				});
 
 		return MSG_OK;
 	}
@@ -96,7 +96,8 @@ public class MD_Candidate_Request_MaterialDocument extends JavaProcess implement
 
 		if (!atLeastOneMaterialDocCandidateSelected)
 		{
-			return ProcessPreconditionsResolution.reject("None of the selected records had subtype=PRODUCTION or DISTRIBUTION");
+			final ITranslatableString translatable = msgBL.getTranslatableMsgText(MSG_MISSING_PRODUCTION_OR_DISTRIBUTRION_RECORDS);
+			return ProcessPreconditionsResolution.reject(translatable);
 		}
 
 		// todo: also check the candidates' status

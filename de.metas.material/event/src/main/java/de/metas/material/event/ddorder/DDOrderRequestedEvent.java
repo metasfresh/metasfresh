@@ -1,8 +1,9 @@
-package de.metas.material.event;
+package de.metas.material.event.ddorder;
 
 import org.adempiere.util.lang.impl.TableRecordReference;
 
-import de.metas.material.event.ddorder.DDOrder;
+import de.metas.material.event.EventDescr;
+import de.metas.material.event.MaterialEvent;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

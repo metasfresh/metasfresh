@@ -36,7 +36,7 @@ public class M_ReceiptSchedule
 						.productId(schedule.getM_Product_ID())
 						.warehouseId(schedule.getM_Warehouse_ID())
 						.date(schedule.getMovementDate())
-						.qty(schedule.getQtyOrdered())
+						.quantity(schedule.getQtyOrdered())
 						.build())
 				.receiptScheduleDeleted(deleted)
 				.build();
@@ -44,6 +44,6 @@ public class M_ReceiptSchedule
 		final MaterialEventService materialEventService = Adempiere.getBean(MaterialEventService.class);
 
 		final String trxName = InterfaceWrapperHelper.getTrxName(schedule);
-		materialEventService.fireEventAfterCommit(event, trxName);
+		materialEventService.fireEventAfterNextCommit(event, trxName);
 	}
 }

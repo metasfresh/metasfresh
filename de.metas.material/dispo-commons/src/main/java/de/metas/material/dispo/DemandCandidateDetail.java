@@ -1,7 +1,6 @@
 package de.metas.material.dispo;
 
-import lombok.Builder;
-import lombok.Data;
+import lombok.Value;
 
 /*
  * #%L
@@ -24,14 +23,25 @@ import lombok.Data;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-@Data
-@Builder
+@Value
 public class DemandCandidateDetail
 {
-	/**
-	 * This ID indicates that the demand candidate explicitly specifies "no order line id". All other values less or equal zero mean "i don't care".
-	 */
-	public static final int NO_ORDERLINE_ID = -99;
+	public static DemandCandidateDetail forOrderLineId(final int orderLineId)
+	{
+		return new DemandCandidateDetail(orderLineId, -1);
+	}
 
+	public static DemandCandidateDetail forForecastLineId(final int forecastLineId)
+	{
+		return new DemandCandidateDetail(-1, forecastLineId);
+	}
+
+	public static DemandCandidateDetail forOrderLineIdAndForecastLineId(final int orderLineId, final int forecastLineId)
+	{
+		return new DemandCandidateDetail(orderLineId, forecastLineId);
+	}
+	
 	private final int orderLineId;
+
+	private final int forecastLineId;
 }

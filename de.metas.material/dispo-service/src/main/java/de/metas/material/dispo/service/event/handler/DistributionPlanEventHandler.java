@@ -1,4 +1,4 @@
-package de.metas.material.dispo.service.event;
+package de.metas.material.dispo.service.event.handler;
 
 import java.sql.Timestamp;
 import java.util.HashSet;
@@ -15,12 +15,14 @@ import de.metas.material.dispo.CandidateRepository;
 import de.metas.material.dispo.CandidateService;
 import de.metas.material.dispo.DemandCandidateDetail;
 import de.metas.material.dispo.DistributionCandidateDetail;
-import de.metas.material.dispo.service.CandidateChangeHandler;
+import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
+import de.metas.material.dispo.service.event.EventUtil;
+import de.metas.material.dispo.service.event.SupplyProposalEvaluator;
 import de.metas.material.dispo.service.event.SupplyProposalEvaluator.SupplyProposal;
-import de.metas.material.event.DistributionPlanEvent;
-import de.metas.material.event.EventDescr;
+import de.metas.material.event.MaterialDescriptor;
 import de.metas.material.event.ddorder.DDOrder;
 import de.metas.material.event.ddorder.DDOrderLine;
+import de.metas.material.event.ddorder.DistributionPlanEvent;
 import lombok.NonNull;
 
 /*
@@ -49,7 +51,7 @@ public class DistributionPlanEventHandler
 {
 	private final CandidateRepository candidateRepository;
 	private final SupplyProposalEvaluator supplyProposalEvaluator;
-	private final CandidateChangeHandler candidateChangeHandler;
+	private final CandidateChangeService candidateChangeHandler;
 	private final CandidateService candidateService;
 
 	/**
@@ -60,7 +62,7 @@ public class DistributionPlanEventHandler
 	 */
 	public DistributionPlanEventHandler(
 			@NonNull final CandidateRepository candidateRepository,
-			@NonNull final CandidateChangeHandler candidateChangeHandler,
+			@NonNull final CandidateChangeService candidateChangeHandler,
 			@NonNull final SupplyProposalEvaluator supplyProposalEvaluator,
 			@NonNull final CandidateService candidateService)
 	{
@@ -70,7 +72,7 @@ public class DistributionPlanEventHandler
 		this.supplyProposalEvaluator = supplyProposalEvaluator;
 	}
 
-	void handleDistributionPlanEvent(final DistributionPlanEvent event)
+	public void handleDistributionPlanEvent(final DistributionPlanEvent event)
 	{
 		final DDOrder ddOrder = event.getDdOrder();
 		final Candidate.Status candidateStatus;
@@ -104,31 +106,21 @@ public class DistributionPlanEventHandler
 				return;
 			}
 
-			final EventDescr eventDescr = event.getEventDescr();
-			
-			final Candidate supplyCandidate = Candidate.builder()
-					.type(Type.SUPPLY)
-					.status(candidateStatus)
-					.subType(SubType.DISTRIBUTION)
+			final MaterialDescriptor materialDescriptor = MaterialDescriptor.builder()
 					.date(ddOrder.getDatePromised())
-					.clientId(eventDescr.getClientId())
-					.orgId(eventDescr.getOrgId())
 					.productId(ddOrderLine.getProductId())
 					.quantity(ddOrderLine.getQty())
 					.warehouseId(event.getToWarehouseId())
+					.build();
+
+			final Candidate supplyCandidate = Candidate.builderForEventDescr(event.getEventDescr())
+					.type(Type.SUPPLY)
+					.status(candidateStatus)
+					.subType(SubType.DISTRIBUTION)
+					.materialDescr(materialDescriptor)
 					.reference(event.getReference())
-					.demandDetail(DemandCandidateDetail.builder()
-							.orderLineId(ddOrderLine.getSalesOrderLineId())
-							.build())
-					.distributionDetail(DistributionCandidateDetail.builder()
-							.ddOrderDocStatus(ddOrder.getDocStatus())
-							.ddOrderId(ddOrder.getDdOrderId())
-							.ddOrderLineId(ddOrderLine.getDdOrderLineId())
-							.networkDistributionLineId(ddOrderLine.getNetworkDistributionLineId())
-							.plantId(ddOrder.getPlantId())
-							.productPlanningId(ddOrder.getProductPlanningId())
-							.shipperId(ddOrder.getShipperId())
-							.build())
+					.demandDetail(DemandCandidateDetail.forOrderLineId(ddOrderLine.getSalesOrderLineId()))
+					.distributionDetail(createCandidateDetailFromDDOrderAndLine(ddOrder, ddOrderLine))
 					.build();
 
 			final Candidate supplyCandidateWithId = candidateChangeHandler.onCandidateNewOrChange(supplyCandidate);
@@ -146,13 +138,12 @@ public class DistributionPlanEventHandler
 
 			final Candidate demandCandidate = supplyCandidate
 					.withType(Type.DEMAND)
-					.withSubType(SubType.DISTRIBUTION)
 					.withGroupId(groupId)
 					.withParentId(supplyCandidateWithId.getId())
 					.withQuantity(supplyCandidateWithId.getQuantity()) // what was added as supply in the destination warehouse needs to be registered as demand in the source warehouse
 					.withDate(orderLineStartDate)
-					.withSeqNo(expectedSeqNoForDemandCandidate)
-					.withWarehouseId(event.getFromWarehouseId());
+					.withWarehouseId(event.getFromWarehouseId())
+					.withSeqNo(expectedSeqNoForDemandCandidate);
 
 			// this might cause 'candidateChangeHandler' to trigger another event
 			final Candidate demandCandidateWithId = candidateChangeHandler.onCandidateNewOrChange(demandCandidate);
@@ -160,14 +151,12 @@ public class DistributionPlanEventHandler
 			if (expectedSeqNoForDemandCandidate != demandCandidateWithId.getSeqNo())
 			{
 				// update/override the SeqNo of both supplyCandidate and supplyCandidate's stock candidate.
-				candidateRepository.addOrUpdate(supplyCandidateWithId
-						.withSeqNo(demandCandidateWithId.getSeqNo() - 1),
-						false);
+				candidateRepository.addOrUpdateOverwriteStoredSeqNo(supplyCandidateWithId
+						.withSeqNo(demandCandidateWithId.getSeqNo() - 1));
 
-				candidateRepository.addOrUpdate(candidateRepository
+				candidateRepository.addOrUpdateOverwriteStoredSeqNo(candidateRepository
 						.retrieve(supplyCandidateWithId.getParentId())
-						.withSeqNo(demandCandidateWithId.getSeqNo() - 2),
-						false);
+						.withSeqNo(demandCandidateWithId.getSeqNo() - 2));
 			}
 
 			if (ddOrder.isCreateDDrder() && groupIdsWithRequestedPPOrders.add(groupId))
@@ -175,5 +164,20 @@ public class DistributionPlanEventHandler
 				candidateService.requestMaterialOrder(groupId);
 			}
 		}
+	}
+
+	private DistributionCandidateDetail createCandidateDetailFromDDOrderAndLine(
+			@NonNull final DDOrder ddOrder,
+			@NonNull final DDOrderLine ddOrderLine)
+	{
+		return DistributionCandidateDetail.builder()
+				.ddOrderDocStatus(ddOrder.getDocStatus())
+				.ddOrderId(ddOrder.getDdOrderId())
+				.ddOrderLineId(ddOrderLine.getDdOrderLineId())
+				.networkDistributionLineId(ddOrderLine.getNetworkDistributionLineId())
+				.plantId(ddOrder.getPlantId())
+				.productPlanningId(ddOrder.getProductPlanningId())
+				.shipperId(ddOrder.getShipperId())
+				.build();
 	}
 }

@@ -43,8 +43,11 @@ public class MaterialDescriptor
 	private final Integer productId;
 
 	@NonNull
-	private final BigDecimal qty;
+	private final BigDecimal quantity;
 
+	/**
+	 * The projected date at which we expect this candidate's {@link #getQuantity()}.
+	 */
 	@NonNull
 	private final Date date;
 }

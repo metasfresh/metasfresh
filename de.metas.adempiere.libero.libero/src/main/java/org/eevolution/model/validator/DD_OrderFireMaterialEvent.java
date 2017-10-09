@@ -13,12 +13,12 @@ import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_DD_OrderLine;
 import org.eevolution.model.I_PP_Order;
 
-import de.metas.material.event.DistributionPlanEvent;
 import de.metas.material.event.EventDescr;
 import de.metas.material.event.MaterialEventService;
 import de.metas.material.event.ddorder.DDOrder;
 import de.metas.material.event.ddorder.DDOrder.DDOrderBuilder;
 import de.metas.material.event.ddorder.DDOrderLine;
+import de.metas.material.event.ddorder.DistributionPlanEvent;
 import de.metas.material.planning.ddorder.DDOrderUtil;
 
 /**
@@ -74,7 +74,7 @@ public class DD_OrderFireMaterialEvent
 					.build();
 
 			final MaterialEventService materialEventService = Adempiere.getBean(MaterialEventService.class);
-			materialEventService.fireEventAfterCommit(event, InterfaceWrapperHelper.getTrxName(ddOrder));
+			materialEventService.fireEventAfterNextCommit(event, InterfaceWrapperHelper.getTrxName(ddOrder));
 		}
 	}
 

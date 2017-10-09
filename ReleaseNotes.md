@@ -16,6 +16,10 @@ Here come the actual release notes:
 
 ## Features
 * metasfresh-app
+  * [#2609](https://github.com/metasfresh/metasfresh/issues/2609) Window Design WebUI : Bank Statement Improvements
+    * Improving the Fields Translations and adding Layout adaptions to Bank Statement Window in WebUI.
+  * [#2636](https://github.com/metasfresh/metasfresh/issues/2636) Webui Report Design : Rüstliste translations
+    * Translation of Pick List Report Parms to en_US.
   * [#2660](https://github.com/metasfresh/metasfresh/issues/2660) Window Design Webui: Improvements in the window Forecast
     * Improvement of Forecast Window. Added Translations for en_US Language/ Locale and adapted Design Guidelines.
 

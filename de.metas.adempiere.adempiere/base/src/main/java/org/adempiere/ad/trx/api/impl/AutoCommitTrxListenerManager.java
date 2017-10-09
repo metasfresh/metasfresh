@@ -53,7 +53,7 @@ import org.adempiere.ad.trx.spi.ITrxListener;
 	 * Same as {@link #onAfterCommit(Runnable)}.
 	 */
 	@Override
-	public void onAfterFirstCommit(Runnable runnable)
+	public void onAfterNextCommit(Runnable runnable)
 	{
 		onAfterCommit(runnable);
 	}

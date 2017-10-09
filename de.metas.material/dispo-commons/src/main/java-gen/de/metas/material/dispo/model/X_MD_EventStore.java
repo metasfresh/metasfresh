@@ -14,7 +14,7 @@ public class X_MD_EventStore extends org.compiere.model.PO implements I_MD_Event
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 2128673728L;
+	private static final long serialVersionUID = -1195433555L;
 
     /** Standard Constructor */
     public X_MD_EventStore (Properties ctx, int MD_EventStore_ID, String trxName)
@@ -22,12 +22,10 @@ public class X_MD_EventStore extends org.compiere.model.PO implements I_MD_Event
       super (ctx, MD_EventStore_ID, trxName);
       /** if (MD_EventStore_ID == 0)
         {
-			setEvent_UUID (null);
-			setEventData (null);
 			setEventTime (new Timestamp( System.currentTimeMillis() ));
+			setEvent_UUID (null);
 			setMD_EventStore_ID (0);
-			setProcessed (false);
-// N
+			setProcessed (false); // N
         } */
     }
 
@@ -83,38 +81,6 @@ public class X_MD_EventStore extends org.compiere.model.PO implements I_MD_Event
 		return ii.intValue();
 	}
 
-	/** Set Event UUID.
-		@param Event_UUID Event UUID	  */
-	@Override
-	public void setEvent_UUID (java.lang.String Event_UUID)
-	{
-		set_ValueNoCheck (COLUMNNAME_Event_UUID, Event_UUID);
-	}
-
-	/** Get Event UUID.
-		@return Event UUID	  */
-	@Override
-	public java.lang.String getEvent_UUID () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_Event_UUID);
-	}
-
-	/** Set Daten.
-		@param EventData Daten	  */
-	@Override
-	public void setEventData (java.lang.String EventData)
-	{
-		set_ValueNoCheck (COLUMNNAME_EventData, EventData);
-	}
-
-	/** Get Daten.
-		@return Daten	  */
-	@Override
-	public java.lang.String getEventData () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_EventData);
-	}
-
 	/** Set Zeitpunkt.
 		@param EventTime Zeitpunkt	  */
 	@Override
@@ -129,6 +95,22 @@ public class X_MD_EventStore extends org.compiere.model.PO implements I_MD_Event
 	public java.sql.Timestamp getEventTime () 
 	{
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_EventTime);
+	}
+
+	/** Set Event UUID.
+		@param Event_UUID Event UUID	  */
+	@Override
+	public void setEvent_UUID (java.lang.String Event_UUID)
+	{
+		set_ValueNoCheck (COLUMNNAME_Event_UUID, Event_UUID);
+	}
+
+	/** Get Event UUID.
+		@return Event UUID	  */
+	@Override
+	public java.lang.String getEvent_UUID () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_Event_UUID);
 	}
 
 	@Override

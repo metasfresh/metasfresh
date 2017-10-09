@@ -20,13 +20,14 @@ import org.junit.rules.TestWatcher;
 
 import de.metas.material.dispo.Candidate;
 import de.metas.material.dispo.Candidate.Type;
-import de.metas.material.dispo.service.CandidateChangeHandler;
-import de.metas.material.dispo.service.CandidateFactory;
-import de.metas.material.dispo.service.event.DistributionPlanEventHandler;
-import de.metas.material.dispo.service.event.SupplyProposalEvaluator;
-import de.metas.material.dispo.service.event.SupplyProposalEvaluator.SupplyProposal;
 import de.metas.material.dispo.CandidateRepository;
 import de.metas.material.dispo.CandidateService;
+import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
+import de.metas.material.dispo.service.candidatechange.StockCandidateService;
+import de.metas.material.dispo.service.event.SupplyProposalEvaluator.SupplyProposal;
+import de.metas.material.dispo.service.event.handler.DistributionPlanEventHandler;
+import de.metas.material.dispo.service.event.handler.DistributionPlanEventHandlerTests;
+import de.metas.material.event.MaterialDescriptor;
 import de.metas.material.event.MaterialEventService;
 import mockit.Mocked;
 
@@ -57,8 +58,10 @@ public class SupplyProposalEvaluatorTests
 	/** Watches the current tests and dumps the database to console in case of failure */
 	@Rule
 	public final TestWatcher testWatcher = new AdempiereTestWatcher();
-
+	
 	private final Date t1 = SystemTime.asDate();
+	
+	private final Date t0 = TimeUtil.addMinutes(t1, -10);
 
 	private final Date t2 = TimeUtil.addMinutes(t1, 10);
 	private final Date t3 = TimeUtil.addMinutes(t1, 20);
@@ -96,7 +99,7 @@ public class SupplyProposalEvaluatorTests
 		candidateRepository = new CandidateRepository();
 		supplyProposalEvaluator = new SupplyProposalEvaluator(candidateRepository);
 
-		final CandidateChangeHandler candidateChangeHandler = new CandidateChangeHandler(candidateRepository, new CandidateFactory(candidateRepository), materialEventService);
+		final CandidateChangeService candidateChangeHandler = new CandidateChangeService(candidateRepository, new StockCandidateService(candidateRepository), materialEventService);
 
 		distributionPlanEventHandler = new DistributionPlanEventHandler(
 				candidateRepository,
@@ -182,30 +185,38 @@ public class SupplyProposalEvaluatorTests
 	 */
 	private void addSimpleSupplyDemand()
 	{
-		final Candidate supplyCandidate = Candidate.builder()
-				.clientId(org.getAD_Client_ID())
-				.orgId(org.getAD_Org_ID())
+		final MaterialDescriptor supplyMaterialDescr = MaterialDescriptor.builder()
 				.date(t3)
 				.productId(3)
 				.quantity(BigDecimal.TEN)
-				.type(Type.SUPPLY)
 				.warehouseId(SUPPLY_WAREHOUSE_ID)
 				.build();
 
-		final Candidate supplyCandidateWithId = candidateRepository.addOrUpdate(supplyCandidate);
+		final Candidate supplyCandidate = Candidate.builder()
+				.clientId(org.getAD_Client_ID())
+				.orgId(org.getAD_Org_ID())
+				.type(Type.SUPPLY)
+				.materialDescr(supplyMaterialDescr)
+				.build();
 
+		final Candidate supplyCandidateWithId = candidateRepository.addOrUpdateOverwriteStoredSeqNo(supplyCandidate);
+
+		final MaterialDescriptor demandDescr = MaterialDescriptor.builder()
+				.date(t2)
+				.productId(3)
+				.warehouseId(DEMAND_WAREHOUSE_ID)
+				.quantity(BigDecimal.TEN)
+				.build();
+		
 		final Candidate demandCandidate = Candidate.builder()
 				.clientId(org.getAD_Client_ID())
 				.orgId(org.getAD_Org_ID())
-				.date(t2)
 				.parentId(supplyCandidateWithId.getId())
-				.productId(3)
-				.quantity(BigDecimal.TEN)
 				.type(Type.DEMAND)
-				.warehouseId(DEMAND_WAREHOUSE_ID)
+				.materialDescr(demandDescr)
 				.build();
 
-		candidateRepository.addOrUpdate(demandCandidate);
+		candidateRepository.addOrUpdateOverwriteStoredSeqNo(demandCandidate);
 	}
 
 	/**
@@ -219,27 +230,27 @@ public class SupplyProposalEvaluatorTests
 		// propose what would create an additional demand on A and an additional supply on B. nothing wrong with that
 		final SupplyProposal supplyProposal1 = SupplyProposal.builder()
 				.date(t1)
-				.sourceWarehouseId(MDEventListenerTests.fromWarehouseId)
-				.destWarehouseId(MDEventListenerTests.intermediateWarehouseId)
-				.productId(MDEventListenerTests.productId)
+				.sourceWarehouseId(MaterialDispoEventListenerFacadeTests.fromWarehouseId)
+				.destWarehouseId(MaterialDispoEventListenerFacadeTests.intermediateWarehouseId)
+				.productId(MaterialDispoEventListenerFacadeTests.productId)
 				.build();
 		assertThat(supplyProposalEvaluator.evaluateSupply(supplyProposal1), is(true));
 
 		// propose what would create an additional demand on B and an additional supply on C. nothing wrong with that either
 		final SupplyProposal supplyProposal2 = SupplyProposal.builder()
 				.date(t1)
-				.sourceWarehouseId(MDEventListenerTests.intermediateWarehouseId)
-				.destWarehouseId(MDEventListenerTests.toWarehouseId)
-				.productId(MDEventListenerTests.productId)
+				.sourceWarehouseId(MaterialDispoEventListenerFacadeTests.intermediateWarehouseId)
+				.destWarehouseId(MaterialDispoEventListenerFacadeTests.toWarehouseId)
+				.productId(MaterialDispoEventListenerFacadeTests.productId)
 				.build();
 		assertThat(supplyProposalEvaluator.evaluateSupply(supplyProposal2), is(true));
 
 		// propose what would create an additional demand on A and an additional supply on C. nothing wrong with that either
 		final SupplyProposal supplyProposal3 = SupplyProposal.builder()
 				.date(t1)
-				.sourceWarehouseId(MDEventListenerTests.fromWarehouseId)
-				.destWarehouseId(MDEventListenerTests.toWarehouseId)
-				.productId(MDEventListenerTests.productId)
+				.sourceWarehouseId(MaterialDispoEventListenerFacadeTests.fromWarehouseId)
+				.destWarehouseId(MaterialDispoEventListenerFacadeTests.toWarehouseId)
+				.productId(MaterialDispoEventListenerFacadeTests.productId)
 				.build();
 		assertThat(supplyProposalEvaluator.evaluateSupply(supplyProposal3), is(true));
 	}
@@ -257,10 +268,10 @@ public class SupplyProposalEvaluatorTests
 		// now assume that the planner would create create another DistibutionPlanEvent that suggests to balance the -10 in "fromWarehouseId" with the +10 in "toWarehouseId"
 		// note that we don't need to look at the qty at all
 		final SupplyProposal supplyProposal1 = SupplyProposal.builder()
-				.date(MDEventListenerTests.t0) // the proposal needs to be made for the time before the two DistibutionPlanEvents occured
-				.sourceWarehouseId(MDEventListenerTests.toWarehouseId)
-				.destWarehouseId(MDEventListenerTests.fromWarehouseId)
-				.productId(MDEventListenerTests.productId)
+				.date(t0) // the proposal needs to be made for the time before the two DistibutionPlanEvents occured
+				.sourceWarehouseId(MaterialDispoEventListenerFacadeTests.toWarehouseId)
+				.destWarehouseId(MaterialDispoEventListenerFacadeTests.fromWarehouseId)
+				.productId(MaterialDispoEventListenerFacadeTests.productId)
 				.build();
 		assertThat(supplyProposalEvaluator.evaluateSupply(supplyProposal1), is(false));
 	}

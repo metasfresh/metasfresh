@@ -100,7 +100,7 @@ public class MockedMRPSupplyProducer implements IMRPSupplyProducer
 	@Override
 	public void createSupply(final IMRPCreateSupplyRequest request)
 	{
-		final IMaterialPlanningContext mrpContext = request.getMRPContext();
+		final IMaterialPlanningContext mrpContext = request.getMrpContext();
 		final I_PP_Product_Planning productPlanningData = mrpContext.getProductPlanning();
 
 		final BigDecimal qtyToSupply = request.getQtyToSupply();
