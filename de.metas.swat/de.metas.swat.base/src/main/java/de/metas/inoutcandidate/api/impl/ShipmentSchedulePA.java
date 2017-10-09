@@ -395,16 +395,15 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 	public List<I_M_ShipmentSchedule> retrieveUnprocessedForRecord(
 			final Properties ctx, final int adTableId, final int recordId, final String trxName)
 	{
-		final String wc = I_M_ShipmentSchedule.COLUMNNAME_AD_Table_ID + "=? AND " +
-				I_M_ShipmentSchedule.COLUMNNAME_Record_ID + "=?" +
-				I_M_ShipmentSchedule.COLUMNNAME_Processed + "='N'";
-
-		return new Query(ctx, I_M_ShipmentSchedule.Table_Name, wc, trxName)
-				.setParameters(adTableId, recordId)
-				.setOnlyActiveRecords(true)
-				.setClient_ID()
-				.setOrderBy(I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID)
-				.list(I_M_ShipmentSchedule.class);
+		return Services.get(IQueryBL.class).createQueryBuilder(I_M_ShipmentSchedule.class, ctx, trxName)
+				.addOnlyActiveRecordsFilter()
+				.addOnlyContextClient(ctx)
+				.addEqualsFilter(I_M_ShipmentSchedule.COLUMN_Processed, false)
+				.addEqualsFilter(I_M_ShipmentSchedule.COLUMN_AD_Table_ID, adTableId)
+				.addEqualsFilter(I_M_ShipmentSchedule.COLUMN_Record_ID, recordId)
+				.orderBy().addColumn(I_M_ShipmentSchedule.COLUMN_M_ShipmentSchedule_ID).endOrderBy()
+				.create()
+				.listImmutable(I_M_ShipmentSchedule.class);
 	}
 
 	@Override
