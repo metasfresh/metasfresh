@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
@@ -385,7 +386,9 @@ public class SubscriptionBL implements ISubscriptionBL
 	@Override
 	public I_C_SubscriptionProgress createSubscriptionEntries(@NonNull final I_C_Flatrate_Term term)
 	{
-		final I_C_Flatrate_Transition trans = term.getC_Flatrate_Transition();
+		final I_C_Flatrate_Conditions conditions = term.getC_Flatrate_Conditions();
+		Check.assume(conditions !=null, "Contions shall not be null!");
+		final I_C_Flatrate_Transition trans = conditions.getC_Flatrate_Transition();
 
 		final int numberOfRuns = computeNumberOfRuns(trans, term.getStartDate());
 		Check.assume(numberOfRuns > 0, trans + " has NumberOfEvents > 0");
@@ -820,17 +823,16 @@ public class SubscriptionBL implements ISubscriptionBL
 	{
 		Check.assume(product != null, "Param 'product' is null");
 
-		final String wc = I_C_Flatrate_Matching.COLUMNNAME_C_Flatrate_Conditions_ID + "=? AND " +
-				"COALESCE (" + I_C_Flatrate_Matching.COLUMNNAME_M_Product_Category_Matching_ID + ",0) IN (0,?) AND " +
-				"COALESCE (" + I_C_Flatrate_Matching.COLUMNNAME_M_Product_ID + ",0) IN (0,?)";
-
-		final I_C_Flatrate_Matching matching = new Query(ctx, I_C_Flatrate_Matching.Table_Name, wc, trxName)
-				.setParameters(flatrateConditionsId, product.getM_Product_Category_ID(), product.getM_Product_ID())
-				.setOnlyActiveRecords(true)
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		return queryBL
+				.createQueryBuilder(I_C_Flatrate_Matching.class, ctx, trxName)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Flatrate_Matching.COLUMNNAME_C_Flatrate_Conditions_ID, flatrateConditionsId)
+				.addInArrayFilter(I_C_Flatrate_Matching.COLUMNNAME_M_Product_Category_Matching_ID, product.getM_Product_Category_ID(), null)
+				.addInArrayFilter(I_C_Flatrate_Matching.COLUMNNAME_M_Product_ID, product.getM_Product_ID(), null)
+				.create()
 				.setClient_ID()
 				.firstOnly(I_C_Flatrate_Matching.class);
-
-		return matching;
 	}
 
 	@Override
