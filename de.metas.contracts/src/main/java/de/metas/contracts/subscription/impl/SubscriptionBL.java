@@ -382,8 +382,7 @@ public class SubscriptionBL implements ISubscriptionBL
 		return newTerm;
 	}
 
-	@Override
-	public I_C_SubscriptionProgress createSubscriptionEntries(@NonNull final I_C_Flatrate_Term term)
+	private I_C_SubscriptionProgress createSubscriptionEntries(@NonNull final I_C_Flatrate_Term term)
 	{
 		final I_C_Flatrate_Transition trans = term.getC_Flatrate_Transition();
 

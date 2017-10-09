@@ -14,7 +14,7 @@ public class X_MD_Candidate_Demand_Detail extends org.compiere.model.PO implemen
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -2122643939L;
+	private static final long serialVersionUID = -1087696937L;
 
     /** Standard Constructor */
     public X_MD_Candidate_Demand_Detail (Properties ctx, int MD_Candidate_Demand_Detail_ID, String trxName)
@@ -130,6 +130,43 @@ public class X_MD_Candidate_Demand_Detail extends org.compiere.model.PO implemen
 	public int getMD_Candidate_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_MD_Candidate_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_M_ForecastLine getM_ForecastLine() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_M_ForecastLine_ID, org.compiere.model.I_M_ForecastLine.class);
+	}
+
+	@Override
+	public void setM_ForecastLine(org.compiere.model.I_M_ForecastLine M_ForecastLine)
+	{
+		set_ValueFromPO(COLUMNNAME_M_ForecastLine_ID, org.compiere.model.I_M_ForecastLine.class, M_ForecastLine);
+	}
+
+	/** Set Prognose-Position.
+		@param M_ForecastLine_ID 
+		Prognose-Position
+	  */
+	@Override
+	public void setM_ForecastLine_ID (int M_ForecastLine_ID)
+	{
+		if (M_ForecastLine_ID < 1) 
+			set_Value (COLUMNNAME_M_ForecastLine_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_ForecastLine_ID, Integer.valueOf(M_ForecastLine_ID));
+	}
+
+	/** Get Prognose-Position.
+		@return Prognose-Position
+	  */
+	@Override
+	public int getM_ForecastLine_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_ForecastLine_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

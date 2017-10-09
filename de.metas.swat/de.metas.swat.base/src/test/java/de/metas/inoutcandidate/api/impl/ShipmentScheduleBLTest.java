@@ -120,7 +120,7 @@ public class ShipmentScheduleBLTest
 		assertThat(schedule.getQtyOrdered_Calculated())
 				.as("opening a shipmentschedule may not fiddle with its QtyOrdered_Calculated value")
 				.isEqualByComparingTo(BigDecimal.TEN);
-		
+
 		assertThat(schedule.getQtyOrdered())
 				.as("opening a shipmentschedule shall restore its QtyOrdered from its QtyOrdered_Override or .._Calculated value")
 				.isEqualByComparingTo("23");
@@ -139,5 +139,14 @@ public class ShipmentScheduleBLTest
 		shipmentScheduleBL.updateQtyOrdered(schedule);
 
 		assertThat(schedule.getQtyOrdered()).isEqualByComparingTo(BigDecimal.ONE);
+	}
+
+	@Test
+	public void isConsolidateVetoedByOrderOfSched_C_Order_ID_zero()
+	{
+		final I_M_ShipmentSchedule shipmentSchedule = newInstance(I_M_ShipmentSchedule.class);
+		shipmentSchedule.setC_Order_ID(0);
+		final ShipmentScheduleBL shipmentScheduleBL = new ShipmentScheduleBL();
+		assertThat(shipmentScheduleBL.isConsolidateVetoedByOrderOfSched(shipmentSchedule)).isFalse();
 	}
 }

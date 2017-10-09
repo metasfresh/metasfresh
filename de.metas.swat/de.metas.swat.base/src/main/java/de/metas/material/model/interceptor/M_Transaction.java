@@ -1,5 +1,6 @@
 package de.metas.material.model.interceptor;
 
+import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -12,6 +13,7 @@ import de.metas.material.event.EventDescr;
 import de.metas.material.event.MaterialDescriptor;
 import de.metas.material.event.MaterialEventService;
 import de.metas.material.event.TransactionEvent;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -53,23 +55,30 @@ public class M_Transaction
 			ModelValidator.TYPE_AFTER_NEW,
 			ModelValidator.TYPE_AFTER_CHANGE,
 			ModelValidator.TYPE_BEFORE_DELETE /* beforeDelete because we still need the M_TransAction_ID */ })
-	public void enqueuePurchaseCandidates(final I_M_Transaction transaction, final int timing)
+	public void enqueuePurchaseCandidates(
+			@NonNull final I_M_Transaction transaction,
+			@NonNull final ModelChangeType type)
 	{
 		final TransactionEvent event = TransactionEvent.builder()
 				.eventDescr(EventDescr.createNew(transaction))
-				.transactionDeleted(timing == ModelValidator.TYPE_BEFORE_DELETE)
-				.materialDescr(MaterialDescriptor.builder()
-						.warehouseId(transaction.getM_Locator().getM_Warehouse_ID())
-						.date(transaction.getMovementDate())
-						.productId(transaction.getM_Product_ID())
-						.qty(transaction.getMovementQty())
-						.build())
+				.transactionDeleted(type.isDelete())
+				.materialDescr(createMateriallDescriptor(transaction))
 				.reference(TableRecordReference.of(transaction))
 				.build();
 
 		final MaterialEventService materialEventService = Adempiere.getBean(MaterialEventService.class);
 
 		final String trxName = InterfaceWrapperHelper.getTrxName(transaction);
-		materialEventService.fireEventAfterCommit(event, trxName);
+		materialEventService.fireEventAfterNextCommit(event, trxName);
+	}
+
+	public MaterialDescriptor createMateriallDescriptor(@NonNull final I_M_Transaction transaction)
+	{
+		return MaterialDescriptor.builder()
+				.warehouseId(transaction.getM_Locator().getM_Warehouse_ID())
+				.date(transaction.getMovementDate())
+				.productId(transaction.getM_Product_ID())
+				.quantity(transaction.getMovementQty())
+				.build();
 	}
 }

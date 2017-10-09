@@ -63,7 +63,7 @@ public class TrxListenerManagerTest
 	}
 
 	@Test
-	public void testOnAfterFirstCommit() throws SQLException
+	public void testOnAfterNextCommit() throws SQLException
 	{
 		Services.get(ISysConfigBL.class).setValue(TrxConstraintsBL.SYSCONFIG_TRX_CONSTRAINTS_DISABLED, true, 0);
 				
@@ -73,7 +73,7 @@ public class TrxListenerManagerTest
 		assertThat(trxListenerManager).isInstanceOf(TrxListenerManager.class); // make sure that we test the right class
 
 		final TrxRrunnable runnable = new TrxRrunnable();
-		trxListenerManager.onAfterFirstCommit(runnable);
+		trxListenerManager.onAfterNextCommit(runnable);
 		trx.commit(false);
 		assertThat(runnable.timesInvoked).isEqualTo(1);
 		trx.commit(false);

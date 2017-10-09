@@ -19,13 +19,12 @@ import com.google.common.annotations.VisibleForTesting;
 
 import de.metas.document.engine.IDocumentBL;
 import de.metas.logging.LogManager;
-import de.metas.material.event.DDOrderRequestedEvent;
-import de.metas.material.event.MaterialDemandEvent;
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.MaterialEventListener;
-import de.metas.material.event.PPOrderRequestedEvent;
 import de.metas.material.event.ddorder.DDOrder;
+import de.metas.material.event.ddorder.DDOrderRequestedEvent;
 import de.metas.material.event.pporder.PPOrder;
+import de.metas.material.event.pporder.PPOrderRequestedEvent;
 import lombok.NonNull;
 
 /*
@@ -50,7 +49,8 @@ import lombok.NonNull;
  * #L%
  */
 /**
- * This listener is dedicated to handle {@link MaterialDemandEvent}s. It ignores and other {@link MaterialEvent}.
+ * This listener is dedicated to handle {@link PPOrderRequestedEvent} and {@link DDOrderRequestedEvent}s.<br>
+ * It ignores and other {@link MaterialEvent}.
  *
  * @author metas-dev <dev@metasfresh.com>
  *
@@ -93,7 +93,6 @@ public class MaterialDocumentListener implements MaterialEventListener
 					distributionOrderEvent.getDdOrder(),
 					Date.from(distributionOrderEvent.getEventDescr().getWhen()));
 		}
-
 	}
 
 	private I_PP_Order createProductionOrderInTrx(

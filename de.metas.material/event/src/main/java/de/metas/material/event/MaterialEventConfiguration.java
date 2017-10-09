@@ -6,8 +6,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.context.annotation.Profile;
 
-import de.metas.event.Type;
-
 /*
  * #%L
  * metasfresh-material-event
@@ -42,7 +40,7 @@ public class MaterialEventConfiguration
 	@Profile("test")
 	public MaterialEventService materialEventServiceLocal()
 	{
-		return new MaterialEventService(Type.LOCAL);
+		return MaterialEventService.createLocalServiceThatIsReadyToUse();
 	}
 
 	@Bean()
@@ -50,6 +48,6 @@ public class MaterialEventConfiguration
 	@Profile("!test")
 	public MaterialEventService materialEventService()
 	{
-		return new MaterialEventService(Type.REMOTE);
+		return MaterialEventService.createDistributedServiceThatNeedsToSubscribe();
 	}
 }

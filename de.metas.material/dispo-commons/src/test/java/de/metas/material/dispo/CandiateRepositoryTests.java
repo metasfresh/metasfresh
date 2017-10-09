@@ -2,13 +2,13 @@ package de.metas.material.dispo;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertThat;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -33,6 +33,7 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -46,6 +47,7 @@ import de.metas.material.dispo.model.I_MD_Candidate_Demand_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_Dist_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_Prod_Detail;
 import de.metas.material.dispo.model.X_MD_Candidate;
+import de.metas.material.event.MaterialDescriptor;
 
 /*
  * #%L
@@ -110,39 +112,44 @@ public class CandiateRepositoryTests
 		uom = newInstance(I_C_UOM.class);
 		save(uom);
 
-		// this not-stock candidate needs to be ignored
-		final Candidate someOtherCandidate = Candidate.builder()
-				.type(Type.DEMAND)
-				.clientId(org.getAD_Client_ID())
-				.orgId(org.getAD_Org_ID())
+		final MaterialDescriptor materialDescr = MaterialDescriptor.builder()
 				.productId(product.getM_Product_ID())
 				.warehouseId(warehouse.getM_Warehouse_ID())
 				.quantity(new BigDecimal("11"))
 				.date(now)
 				.build();
-		candidateRepository.addOrUpdate(someOtherCandidate);
+
+		// this not-stock candidate needs to be ignored
+		final Candidate someOtherCandidate = Candidate.builder()
+				.type(Type.DEMAND)
+				.clientId(org.getAD_Client_ID())
+				.orgId(org.getAD_Org_ID())
+				.materialDescr(materialDescr)
+				.build();
+		candidateRepository.addOrUpdateOverwriteStoredSeqNo(someOtherCandidate);
 
 		stockCandidate = Candidate.builder()
 				.type(Type.STOCK)
 				.clientId(org.getAD_Client_ID())
 				.orgId(org.getAD_Org_ID())
-				.productId(product.getM_Product_ID())
-				.warehouseId(warehouse.getM_Warehouse_ID())
-				.quantity(new BigDecimal("10"))
-				.date(now)
+				.materialDescr(materialDescr)
 				.build();
-		stockCandidate = candidateRepository.addOrUpdate(stockCandidate);
+		stockCandidate = candidateRepository.addOrUpdateOverwriteStoredSeqNo(stockCandidate);
 
-		laterStockCandidate = Candidate.builder()
-				.type(Type.STOCK)
-				.clientId(org.getAD_Client_ID())
-				.orgId(org.getAD_Org_ID())
+		final MaterialDescriptor laterMaterialDescrt = MaterialDescriptor.builder()
 				.productId(product.getM_Product_ID())
 				.warehouseId(warehouse.getM_Warehouse_ID())
 				.quantity(new BigDecimal("10"))
 				.date(later)
 				.build();
-		laterStockCandidate = candidateRepository.addOrUpdate(laterStockCandidate);
+
+		laterStockCandidate = Candidate.builder()
+				.type(Type.STOCK)
+				.clientId(org.getAD_Client_ID())
+				.orgId(org.getAD_Org_ID())
+				.materialDescr(laterMaterialDescrt)
+				.build();
+		laterStockCandidate = candidateRepository.addOrUpdateOverwriteStoredSeqNo(laterStockCandidate);
 	}
 
 	/**
@@ -152,19 +159,19 @@ public class CandiateRepositoryTests
 	public void addOrReplace_update()
 	{
 		// guard
-		assertThat(candidateRepository.retrieveLatestMatch(mkStockUntilSegment(now)).isPresent(), is(true));
-		assertThat(candidateRepository.retrieveLatestMatch(mkStockUntilSegment(now)).get(), is(stockCandidate));
-		final List<Candidate> stockBeforeReplacement = candidateRepository.retrieveMatches(mkStockFromSegment(now));
-		assertThat(stockBeforeReplacement.size(), is(2));
-		assertThat(stockBeforeReplacement.stream().collect(Collectors.toList()), contains(stockCandidate, laterStockCandidate));
+		Assert.assertThat(candidateRepository.retrieveLatestMatch(mkStockUntilSegment(now)).isPresent(), is(true));
+		Assert.assertThat(candidateRepository.retrieveLatestMatch(mkStockUntilSegment(now)).get(), is(stockCandidate));
+		final List<Candidate> stockBeforeReplacement = candidateRepository.retrieveMatchesOrderByDateAndSeqNo(mkStockFromSegment(now));
+		Assert.assertThat(stockBeforeReplacement.size(), is(2));
+		Assert.assertThat(stockBeforeReplacement.stream().collect(Collectors.toList()), contains(stockCandidate, laterStockCandidate));
 
 		final Candidate replacementCandidate = stockCandidate.withQuantity(BigDecimal.ONE);
-		candidateRepository.addOrUpdate(replacementCandidate);
+		candidateRepository.addOrUpdateOverwriteStoredSeqNo(replacementCandidate);
 
-		assertThat(candidateRepository.retrieveLatestMatch(mkStockUntilSegment(now)).get(), is(replacementCandidate));
-		final List<Candidate> stockAfterReplacement = candidateRepository.retrieveMatches(mkStockFromSegment(now));
-		assertThat(stockAfterReplacement.size(), is(2));
-		assertThat(stockAfterReplacement.stream().collect(Collectors.toList()), contains(replacementCandidate, laterStockCandidate));
+		Assert.assertThat(candidateRepository.retrieveLatestMatch(mkStockUntilSegment(now)).get(), is(replacementCandidate));
+		final List<Candidate> stockAfterReplacement = candidateRepository.retrieveMatchesOrderByDateAndSeqNo(mkStockFromSegment(now));
+		Assert.assertThat(stockAfterReplacement.size(), is(2));
+		Assert.assertThat(stockAfterReplacement.stream().collect(Collectors.toList()), contains(replacementCandidate, laterStockCandidate));
 	}
 
 	/**
@@ -173,17 +180,20 @@ public class CandiateRepositoryTests
 	@Test
 	public void addOrReplace_with_ProductionDetail()
 	{
+		final MaterialDescriptor materialDescr = MaterialDescriptor.builder()
+				.date(now)
+				.productId(23)
+				.quantity(BigDecimal.TEN)
+				.warehouseId(50)
+				.build();
+
 		final Candidate productionCandidate = Candidate.builder()
 				.type(Type.DEMAND)
 				.subType(SubType.PRODUCTION)
-				.date(now)
+				.materialDescr(materialDescr)
 				.clientId(org.getAD_Client_ID())
 				.orgId(org.getAD_Org_ID())
-				.productId(23)
-				.attributeSetInstanceId(35)
-				.quantity(BigDecimal.TEN)
 				.reference(TableRecordReference.of("someTable", 40))
-				.warehouseId(50)
 				.productionDetail(ProductionCandidateDetail.builder()
 						.description("description")
 						.plantId(60)
@@ -195,26 +205,26 @@ public class CandiateRepositoryTests
 						.ppOrderDocStatus("ppOrderDocStatus")
 						.build())
 				.build();
-		final Candidate addOrReplaceResult = candidateRepository.addOrUpdate(productionCandidate);
+		final Candidate addOrReplaceResult = candidateRepository.addOrUpdateOverwriteStoredSeqNo(productionCandidate);
 
 		final List<I_MD_Candidate> filtered = DispoTestUtils.filter(Type.DEMAND, now, 23);
-		assertThat(filtered.size(), is(1));
+		Assert.assertThat(filtered.size(), is(1));
 
 		final I_MD_Candidate record = filtered.get(0);
-		assertThat(record.getMD_Candidate_ID(), is(addOrReplaceResult.getId()));
-		assertThat(record.getMD_Candidate_SubType(), is(productionCandidate.getSubType().toString()));
-		assertThat(record.getM_Product_ID(), is(productionCandidate.getProductId()));
+		Assert.assertThat(record.getMD_Candidate_ID(), is(addOrReplaceResult.getId()));
+		Assert.assertThat(record.getMD_Candidate_SubType(), is(productionCandidate.getSubType().toString()));
+		Assert.assertThat(record.getM_Product_ID(), is(productionCandidate.getMaterialDescr().getProductId()));
 
 		final I_MD_Candidate_Prod_Detail productionDetailRecord = Services.get(IQueryBL.class).createQueryBuilder(I_MD_Candidate_Prod_Detail.class).create().firstOnly(I_MD_Candidate_Prod_Detail.class);
-		assertThat(productionDetailRecord, notNullValue());
-		assertThat(productionDetailRecord.getDescription(), is("description"));
-		assertThat(productionDetailRecord.getPP_Plant_ID(), is(60));
-		assertThat(productionDetailRecord.getPP_Product_BOMLine_ID(), is(70));
-		assertThat(productionDetailRecord.getPP_Product_Planning_ID(), is(80));
-		assertThat(productionDetailRecord.getC_UOM_ID(), is(90));
-		assertThat(productionDetailRecord.getPP_Order_ID(), is(100));
-		assertThat(productionDetailRecord.getPP_Order_BOMLine_ID(), is(110));
-		assertThat(productionDetailRecord.getPP_Order_DocStatus(), is("ppOrderDocStatus"));
+		Assert.assertThat(productionDetailRecord, notNullValue());
+		Assert.assertThat(productionDetailRecord.getDescription(), is("description"));
+		Assert.assertThat(productionDetailRecord.getPP_Plant_ID(), is(60));
+		Assert.assertThat(productionDetailRecord.getPP_Product_BOMLine_ID(), is(70));
+		Assert.assertThat(productionDetailRecord.getPP_Product_Planning_ID(), is(80));
+		Assert.assertThat(productionDetailRecord.getC_UOM_ID(), is(90));
+		Assert.assertThat(productionDetailRecord.getPP_Order_ID(), is(100));
+		Assert.assertThat(productionDetailRecord.getPP_Order_BOMLine_ID(), is(110));
+		Assert.assertThat(productionDetailRecord.getPP_Order_DocStatus(), is("ppOrderDocStatus"));
 	}
 
 	@Test
@@ -246,18 +256,18 @@ public class CandiateRepositoryTests
 		save(productionDetailRecord);
 
 		final Candidate cand = candidateRepository.retrieve(record.getMD_Candidate_ID());
-		assertThat(cand, notNullValue());
-		assertThat(cand.getProductId(), is(24));
-		assertThat(cand.getWarehouseId(), is(51));
-		assertThat(cand.getDate(), is(now));
-		assertThat(cand.getProductionDetail(), notNullValue());
-		assertThat(cand.getProductionDetail().getDescription(), is("description1"));
-		assertThat(cand.getProductionDetail().getProductBomLineId(), is(71));
-		assertThat(cand.getProductionDetail().getProductPlanningId(), is(81));
-		assertThat(cand.getProductionDetail().getUomId(), is(91));
-		assertThat(cand.getProductionDetail().getPpOrderId(), is(101));
-		assertThat(cand.getProductionDetail().getPpOrderLineId(), is(111));
-		assertThat(cand.getProductionDetail().getPpOrderDocStatus(), is("ppOrderDocStatus1"));
+		Assert.assertThat(cand, notNullValue());
+		Assert.assertThat(cand.getMaterialDescr().getProductId(), is(24));
+		Assert.assertThat(cand.getMaterialDescr().getWarehouseId(), is(51));
+		Assert.assertThat(cand.getMaterialDescr().getDate(), is(now));
+		Assert.assertThat(cand.getProductionDetail(), notNullValue());
+		Assert.assertThat(cand.getProductionDetail().getDescription(), is("description1"));
+		Assert.assertThat(cand.getProductionDetail().getProductBomLineId(), is(71));
+		Assert.assertThat(cand.getProductionDetail().getProductPlanningId(), is(81));
+		Assert.assertThat(cand.getProductionDetail().getUomId(), is(91));
+		Assert.assertThat(cand.getProductionDetail().getPpOrderId(), is(101));
+		Assert.assertThat(cand.getProductionDetail().getPpOrderLineId(), is(111));
+		Assert.assertThat(cand.getProductionDetail().getPpOrderDocStatus(), is("ppOrderDocStatus1"));
 
 		return ImmutablePair.of(cand, record);
 	}
@@ -283,12 +293,12 @@ public class CandiateRepositoryTests
 		save(otherRecord);
 
 		final Optional<I_MD_Candidate> expectedRecordWithProdDetails = candidateRepository.retrieveExact(cand);
-		assertThat(expectedRecordWithProdDetails.isPresent(), is(true));
-		assertThat(expectedRecordWithProdDetails.get().getMD_Candidate_ID(), is(record.getMD_Candidate_ID()));
+		Assert.assertThat(expectedRecordWithProdDetails.isPresent(), is(true));
+		Assert.assertThat(expectedRecordWithProdDetails.get().getMD_Candidate_ID(), is(record.getMD_Candidate_ID()));
 
 		final Optional<I_MD_Candidate> expectedRecordWithoutProdDetails = candidateRepository.retrieveExact(cand.withProductionDetail(null));
-		assertThat(expectedRecordWithoutProdDetails.isPresent(), is(true));
-		assertThat(expectedRecordWithoutProdDetails.get().getMD_Candidate_ID(), is(otherRecord.getMD_Candidate_ID()));
+		Assert.assertThat(expectedRecordWithoutProdDetails.isPresent(), is(true));
+		Assert.assertThat(expectedRecordWithoutProdDetails.get().getMD_Candidate_ID(), is(otherRecord.getMD_Candidate_ID()));
 	}
 
 	/**
@@ -297,17 +307,20 @@ public class CandiateRepositoryTests
 	@Test
 	public void addOrReplace_with_DistributionDetail()
 	{
+		final MaterialDescriptor materialDescr = MaterialDescriptor.builder()
+				.date(now)
+				.productId(23)
+				.quantity(BigDecimal.TEN)
+				.warehouseId(50)
+				.build();
+
 		final Candidate distributionCandidate = Candidate.builder()
 				.type(Type.DEMAND)
 				.subType(SubType.DISTRIBUTION)
-				.date(now)
 				.clientId(org.getAD_Client_ID())
 				.orgId(org.getAD_Org_ID())
-				.productId(23)
-				.attributeSetInstanceId(35)
-				.quantity(BigDecimal.TEN)
 				.reference(TableRecordReference.of("someTable", 40))
-				.warehouseId(50)
+				.materialDescr(materialDescr)
 				.distributionDetail(DistributionCandidateDetail.builder()
 						.productPlanningId(80)
 						.plantId(85)
@@ -318,25 +331,25 @@ public class CandiateRepositoryTests
 						.ddOrderDocStatus("ddOrderDocStatus")
 						.build())
 				.build();
-		final Candidate addOrReplaceResult = candidateRepository.addOrUpdate(distributionCandidate);
+		final Candidate addOrReplaceResult = candidateRepository.addOrUpdateOverwriteStoredSeqNo(distributionCandidate);
 
 		final List<I_MD_Candidate> filtered = DispoTestUtils.filter(Type.DEMAND, now, 23);
-		assertThat(filtered.size(), is(1));
+		Assert.assertThat(filtered.size(), is(1));
 
 		final I_MD_Candidate record = filtered.get(0);
-		assertThat(record.getMD_Candidate_ID(), is(addOrReplaceResult.getId()));
-		assertThat(record.getMD_Candidate_SubType(), is(distributionCandidate.getSubType().toString()));
-		assertThat(record.getM_Product_ID(), is(distributionCandidate.getProductId()));
+		Assert.assertThat(record.getMD_Candidate_ID(), is(addOrReplaceResult.getId()));
+		Assert.assertThat(record.getMD_Candidate_SubType(), is(distributionCandidate.getSubType().toString()));
+		Assert.assertThat(record.getM_Product_ID(), is(distributionCandidate.getMaterialDescr().getProductId()));
 
 		final I_MD_Candidate_Dist_Detail distributionDetailRecord = Services.get(IQueryBL.class).createQueryBuilder(I_MD_Candidate_Dist_Detail.class).create().firstOnly(I_MD_Candidate_Dist_Detail.class);
-		assertThat(distributionDetailRecord, notNullValue());
-		assertThat(distributionDetailRecord.getPP_Product_Planning_ID(), is(80));
-		assertThat(distributionDetailRecord.getPP_Plant_ID(), is(85));
-		assertThat(distributionDetailRecord.getDD_NetworkDistributionLine_ID(), is(90));
-		assertThat(distributionDetailRecord.getDD_Order_ID(), is(100));
-		assertThat(distributionDetailRecord.getDD_OrderLine_ID(), is(110));
-		assertThat(distributionDetailRecord.getM_Shipper_ID(), is(120));
-		assertThat(distributionDetailRecord.getDD_Order_DocStatus(), is("ddOrderDocStatus"));
+		Assert.assertThat(distributionDetailRecord, notNullValue());
+		Assert.assertThat(distributionDetailRecord.getPP_Product_Planning_ID(), is(80));
+		Assert.assertThat(distributionDetailRecord.getPP_Plant_ID(), is(85));
+		Assert.assertThat(distributionDetailRecord.getDD_NetworkDistributionLine_ID(), is(90));
+		Assert.assertThat(distributionDetailRecord.getDD_Order_ID(), is(100));
+		Assert.assertThat(distributionDetailRecord.getDD_OrderLine_ID(), is(110));
+		Assert.assertThat(distributionDetailRecord.getM_Shipper_ID(), is(120));
+		Assert.assertThat(distributionDetailRecord.getDD_Order_DocStatus(), is("ddOrderDocStatus"));
 	}
 
 	@Test
@@ -366,18 +379,18 @@ public class CandiateRepositoryTests
 		save(distributionDetailRecord);
 
 		final Candidate cand = candidateRepository.retrieve(record.getMD_Candidate_ID());
-		assertThat(cand, notNullValue());
-		assertThat(cand.getProductId(), is(24));
-		assertThat(cand.getWarehouseId(), is(51));
-		assertThat(cand.getDate(), is(now));
-		assertThat(cand.getProductionDetail(), nullValue());
-		assertThat(cand.getDistributionDetail(), notNullValue());
-		assertThat(cand.getDistributionDetail().getNetworkDistributionLineId(), is(71));
-		assertThat(cand.getDistributionDetail().getProductPlanningId(), is(81));
-		assertThat(cand.getDistributionDetail().getDdOrderId(), is(101));
-		assertThat(cand.getDistributionDetail().getDdOrderLineId(), is(111));
-		assertThat(cand.getDistributionDetail().getShipperId(), is(121));
-		assertThat(cand.getDistributionDetail().getDdOrderDocStatus(), is("ddOrderDocStatus1"));
+		Assert.assertThat(cand, notNullValue());
+		Assert.assertThat(cand.getMaterialDescr().getProductId(), is(24));
+		Assert.assertThat(cand.getMaterialDescr().getWarehouseId(), is(51));
+		Assert.assertThat(cand.getMaterialDescr().getDate(), is(now));
+		Assert.assertThat(cand.getProductionDetail(), nullValue());
+		Assert.assertThat(cand.getDistributionDetail(), notNullValue());
+		Assert.assertThat(cand.getDistributionDetail().getNetworkDistributionLineId(), is(71));
+		Assert.assertThat(cand.getDistributionDetail().getProductPlanningId(), is(81));
+		Assert.assertThat(cand.getDistributionDetail().getDdOrderId(), is(101));
+		Assert.assertThat(cand.getDistributionDetail().getDdOrderLineId(), is(111));
+		Assert.assertThat(cand.getDistributionDetail().getShipperId(), is(121));
+		Assert.assertThat(cand.getDistributionDetail().getDdOrderDocStatus(), is("ddOrderDocStatus1"));
 
 		return ImmutablePair.of(cand, record);
 	}
@@ -403,45 +416,49 @@ public class CandiateRepositoryTests
 		save(otherRecord);
 
 		final Optional<I_MD_Candidate> expectedRecordWithDistDetails = candidateRepository.retrieveExact(cand);
-		assertThat(expectedRecordWithDistDetails.isPresent(), is(true));
-		assertThat(expectedRecordWithDistDetails.get().getMD_Candidate_ID(), is(record.getMD_Candidate_ID()));
+		Assert.assertThat(expectedRecordWithDistDetails.isPresent(), is(true));
+		Assert.assertThat(expectedRecordWithDistDetails.get().getMD_Candidate_ID(), is(record.getMD_Candidate_ID()));
 
 		final Optional<I_MD_Candidate> expectedRecordWithoutDistDetails = candidateRepository.retrieveExact(cand.withProductionDetail(null));
-		assertThat(expectedRecordWithoutDistDetails.isPresent(), is(true));
-		assertThat(expectedRecordWithoutDistDetails.get().getMD_Candidate_ID(), is(otherRecord.getMD_Candidate_ID()));
+		Assert.assertThat(expectedRecordWithoutDistDetails.isPresent(), is(true));
+		Assert.assertThat(expectedRecordWithoutDistDetails.get().getMD_Candidate_ID(), is(otherRecord.getMD_Candidate_ID()));
 	}
 
+	/**
+	 * Verifies that also the candidate's {@link DemandCandidateDetailTests} is persisted.
+	 */
 	@Test
 	public void addOrReplace_with_DemandDetail()
 	{
+		final MaterialDescriptor materialDescr = MaterialDescriptor.builder()
+				.date(now)
+				.productId(23)
+				.quantity(BigDecimal.TEN)
+				.warehouseId(50)
+				.build();
+		
 		final Candidate productionCandidate = Candidate.builder()
 				.type(Type.DEMAND)
 				.subType(SubType.SHIPMENT)
-				.date(now)
 				.clientId(org.getAD_Client_ID())
 				.orgId(org.getAD_Org_ID())
-				.productId(23)
-				.attributeSetInstanceId(35)
-				.quantity(BigDecimal.TEN)
+				.materialDescr(materialDescr)
 				.reference(TableRecordReference.of("someTable", 40))
-				.warehouseId(50)
-				.demandDetail(DemandCandidateDetail.builder()
-						.orderLineId(61)
-						.build())
+				.demandDetail(DemandCandidateDetail.forOrderLineId(61))
 				.build();
-		final Candidate addOrReplaceResult = candidateRepository.addOrUpdate(productionCandidate);
+		final Candidate addOrReplaceResult = candidateRepository.addOrUpdateOverwriteStoredSeqNo(productionCandidate);
 
 		final List<I_MD_Candidate> filtered = DispoTestUtils.filter(Type.DEMAND, now, 23);
-		assertThat(filtered.size(), is(1));
+		Assert.assertThat(filtered.size(), is(1));
 
 		final I_MD_Candidate record = filtered.get(0);
-		assertThat(record.getMD_Candidate_ID(), is(addOrReplaceResult.getId()));
-		assertThat(record.getMD_Candidate_SubType(), is(productionCandidate.getSubType().toString()));
-		assertThat(record.getM_Product_ID(), is(productionCandidate.getProductId()));
+		Assert.assertThat(record.getMD_Candidate_ID(), is(addOrReplaceResult.getId()));
+		Assert.assertThat(record.getMD_Candidate_SubType(), is(productionCandidate.getSubType().toString()));
+		Assert.assertThat(record.getM_Product_ID(), is(productionCandidate.getMaterialDescr().getProductId()));
 
 		final I_MD_Candidate_Demand_Detail demandDetailRecord = Services.get(IQueryBL.class).createQueryBuilder(I_MD_Candidate_Demand_Detail.class).create().firstOnly(I_MD_Candidate_Demand_Detail.class);
-		assertThat(demandDetailRecord, notNullValue());
-		assertThat(demandDetailRecord.getC_OrderLine_ID(), is(61));
+		Assert.assertThat(demandDetailRecord, notNullValue());
+		Assert.assertThat(demandDetailRecord.getC_OrderLine_ID(), is(61));
 	}
 
 	@Test
@@ -463,15 +480,17 @@ public class CandiateRepositoryTests
 		final I_MD_Candidate_Demand_Detail demandDetailRecord = newInstance(I_MD_Candidate_Demand_Detail.class);
 		demandDetailRecord.setMD_Candidate(record);
 		demandDetailRecord.setC_OrderLine_ID(62);
+		demandDetailRecord.setM_ForecastLine_ID(72); // in production it doesn't make sense to set both, but here we get two for the price of one
 		save(demandDetailRecord);
 
 		final Candidate cand = candidateRepository.retrieve(record.getMD_Candidate_ID());
-		assertThat(cand, notNullValue());
-		assertThat(cand.getProductId(), is(24));
-		assertThat(cand.getWarehouseId(), is(51));
-		assertThat(cand.getDate(), is(now));
-		assertThat(cand.getProductionDetail(), nullValue());
-		assertThat(cand.getDemandDetail().getOrderLineId(), is(62));
+		assertThat(cand).isNotNull();
+		assertThat(cand.getMaterialDescr().getProductId()).isEqualTo(24);
+		assertThat(cand.getMaterialDescr().getWarehouseId()).isEqualTo(51);
+		assertThat(cand.getMaterialDescr().getDate()).isEqualTo(now);
+		assertThat(cand.getProductionDetail()).isNull();
+		assertThat(cand.getDemandDetail().getOrderLineId()).isEqualTo(62);
+		assertThat(cand.getDemandDetail().getForecastLineId()).isEqualTo(72);
 
 		return ImmutablePair.of(cand, record);
 	}
@@ -496,15 +515,21 @@ public class CandiateRepositoryTests
 		otherRecord.setMD_Candidate_SubType(X_MD_Candidate.MD_CANDIDATE_SUBTYPE_PRODUCTION);
 		save(otherRecord);
 
+		final I_MD_Candidate_Demand_Detail otherDemandDetailRecord = newInstance(I_MD_Candidate_Demand_Detail.class);
+		otherDemandDetailRecord.setMD_Candidate(otherRecord);
+		otherDemandDetailRecord.setC_OrderLine_ID(64);
+		otherDemandDetailRecord.setM_ForecastLine_ID(74); // in production it doesn't make sense to set both, but here we get two for the price of one
+		save(otherDemandDetailRecord);
+
 		final Optional<I_MD_Candidate> expectedRecordWithDemandDetails = candidateRepository.retrieveExact(cand);
-		assertThat(expectedRecordWithDemandDetails.isPresent(), is(true));
-		assertThat(expectedRecordWithDemandDetails.get().getMD_Candidate_ID(), is(record.getMD_Candidate_ID()));
+		Assert.assertThat(expectedRecordWithDemandDetails.isPresent(), is(true));
+		Assert.assertThat(expectedRecordWithDemandDetails.get().getMD_Candidate_ID(), is(record.getMD_Candidate_ID()));
 
 		final Optional<I_MD_Candidate> expectedRecordWithoutDemandDetails = candidateRepository
-				.retrieveExact(cand.withDemandDetail(DemandCandidateDetail.builder().orderLineId(DemandCandidateDetail.NO_ORDERLINE_ID).build()));
+				.retrieveExact(cand.withDemandDetail(DemandCandidateDetail.forForecastLineId(74)));
 
-		assertThat(expectedRecordWithoutDemandDetails.isPresent(), is(true));
-		assertThat(expectedRecordWithoutDemandDetails.get().getMD_Candidate_ID(), is(otherRecord.getMD_Candidate_ID()));
+		Assert.assertThat(expectedRecordWithoutDemandDetails.isPresent(), is(true));
+		Assert.assertThat(expectedRecordWithoutDemandDetails.get().getMD_Candidate_ID(), is(otherRecord.getMD_Candidate_ID()));
 	}
 
 	/**
@@ -519,28 +544,28 @@ public class CandiateRepositoryTests
 				.withDate(TimeUtil.addMinutes(later, 1)) // pick a different time from the other candidates
 				.withGroupId(null);
 
-		final Candidate result1 = candidateRepository.addOrUpdate(candidateWithOutGroupId);
+		final Candidate result1 = candidateRepository.addOrUpdateOverwriteStoredSeqNo(candidateWithOutGroupId);
 		// result1 was assigned an id and a groupId
-		assertThat(result1.getId(), greaterThan(0));
-		assertThat(result1.getGroupId(), is(result1.getId()));
+		Assert.assertThat(result1.getId(), greaterThan(0));
+		Assert.assertThat(result1.getGroupId(), is(result1.getId()));
 
 		final Candidate candidateWithGroupId = candidateWithOutGroupId
 				.withDate(TimeUtil.addMinutes(later, 2)) // pick a different time from the other candidates
 				.withGroupId(result1.getGroupId());
 
-		final Candidate result2 = candidateRepository.addOrUpdate(candidateWithGroupId);
+		final Candidate result2 = candidateRepository.addOrUpdateOverwriteStoredSeqNo(candidateWithGroupId);
 		// result2 also has id & groupId, but its ID is unique whereas its groupId is the same as result1's groupId
-		assertThat(result2.getId(), greaterThan(0));
-		assertThat(result2.getGroupId(), not(is(result2.getId())));
-		assertThat(result2.getGroupId(), is(result1.getGroupId()));
+		Assert.assertThat(result2.getId(), greaterThan(0));
+		Assert.assertThat(result2.getGroupId(), not(is(result2.getId())));
+		Assert.assertThat(result2.getGroupId(), is(result1.getGroupId()));
 
 		final I_MD_Candidate result1Record = InterfaceWrapperHelper.create(Env.getCtx(), result1.getId(), I_MD_Candidate.class, ITrx.TRXNAME_None);
-		assertThat(result1Record.getMD_Candidate_ID(), is(result1.getId()));
-		assertThat(result1Record.getMD_Candidate_GroupId(), is(result1.getGroupId()));
+		Assert.assertThat(result1Record.getMD_Candidate_ID(), is(result1.getId()));
+		Assert.assertThat(result1Record.getMD_Candidate_GroupId(), is(result1.getGroupId()));
 
 		final I_MD_Candidate result2Record = InterfaceWrapperHelper.create(Env.getCtx(), result2.getId(), I_MD_Candidate.class, ITrx.TRXNAME_None);
-		assertThat(result2Record.getMD_Candidate_ID(), is(result2.getId()));
-		assertThat(result2Record.getMD_Candidate_GroupId(), is(result2.getGroupId()));
+		Assert.assertThat(result2Record.getMD_Candidate_ID(), is(result2.getId()));
+		Assert.assertThat(result2Record.getMD_Candidate_GroupId(), is(result2.getGroupId()));
 	}
 
 	/**
@@ -553,13 +578,13 @@ public class CandiateRepositoryTests
 				.withDate(TimeUtil.addMinutes(later, 1)) // pick a different time from the other candidates
 				.withGroupId(null);
 
-		final Candidate result1 = candidateRepository.addOrUpdate(candidateWithOutGroupId);
-		assertThat(result1.getId(), greaterThan(0));
-		assertThat(result1.getGroupId(), greaterThan(0));
+		final Candidate result1 = candidateRepository.addOrUpdateOverwriteStoredSeqNo(candidateWithOutGroupId);
+		Assert.assertThat(result1.getId(), greaterThan(0));
+		Assert.assertThat(result1.getGroupId(), greaterThan(0));
 
 		final I_MD_Candidate result1Record = InterfaceWrapperHelper.create(Env.getCtx(), result1.getId(), I_MD_Candidate.class, ITrx.TRXNAME_None);
-		assertThat(result1Record.getMD_Candidate_ID(), is(result1.getId()));
-		assertThat(result1Record.getMD_Candidate_GroupId(), is(result1.getGroupId()));
+		Assert.assertThat(result1Record.getMD_Candidate_ID(), is(result1.getId()));
+		Assert.assertThat(result1Record.getMD_Candidate_GroupId(), is(result1.getGroupId()));
 	}
 
 	/**
@@ -570,17 +595,17 @@ public class CandiateRepositoryTests
 	{
 		final CandidatesSegment earlierQuery = mkStockUntilSegment(earlier);
 		final Optional<Candidate> earlierStock = candidateRepository.retrieveLatestMatch(earlierQuery);
-		assertThat(earlierStock.isPresent(), is(false));
+		Assert.assertThat(earlierStock.isPresent(), is(false));
 
 		final CandidatesSegment sameTimeQuery = mkStockUntilSegment(now);
 		final Optional<Candidate> sameTimeStock = candidateRepository.retrieveLatestMatch(sameTimeQuery);
-		assertThat(sameTimeStock.isPresent(), is(true));
-		assertThat(sameTimeStock.get(), is(stockCandidate));
+		Assert.assertThat(sameTimeStock.isPresent(), is(true));
+		Assert.assertThat(sameTimeStock.get(), is(stockCandidate));
 
 		final CandidatesSegment laterQuery = mkStockUntilSegment(later);
 		final Optional<Candidate> laterStock = candidateRepository.retrieveLatestMatch(laterQuery);
-		assertThat(laterStock.isPresent(), is(true));
-		assertThat(laterStock.get(), is(laterStockCandidate));
+		Assert.assertThat(laterStock.isPresent(), is(true));
+		Assert.assertThat(laterStock.get(), is(laterStockCandidate));
 	}
 
 	// /**
@@ -601,34 +626,34 @@ public class CandiateRepositoryTests
 		{
 			final CandidatesSegment earlierQuery = mkStockFromSegment(earlier);
 
-			final List<Candidate> stockFrom = candidateRepository.retrieveMatches(earlierQuery);
-			assertThat(stockFrom.size(), is(2));
+			final List<Candidate> stockFrom = candidateRepository.retrieveMatchesOrderByDateAndSeqNo(earlierQuery);
+			Assert.assertThat(stockFrom.size(), is(2));
 
 			// what we retrieved, but without the IDs. To be used to compare with our "originals"
 			final List<Candidate> stockFromWithOutIds = stockFrom.stream().collect(Collectors.toList());
 
-			assertThat(stockFromWithOutIds.contains(stockCandidate), is(true));
-			assertThat(stockFromWithOutIds.contains(laterStockCandidate), is(true));
+			Assert.assertThat(stockFromWithOutIds.contains(stockCandidate), is(true));
+			Assert.assertThat(stockFromWithOutIds.contains(laterStockCandidate), is(true));
 		}
 		{
 			final CandidatesSegment sameTimeQuery = mkStockFromSegment(now);
 
-			final List<Candidate> stockFrom = candidateRepository.retrieveMatches(sameTimeQuery);
-			assertThat(stockFrom.size(), is(2));
+			final List<Candidate> stockFrom = candidateRepository.retrieveMatchesOrderByDateAndSeqNo(sameTimeQuery);
+			Assert.assertThat(stockFrom.size(), is(2));
 
 			final List<Candidate> stockFromWithOutIds = stockFrom.stream().collect(Collectors.toList());
-			assertThat(stockFromWithOutIds.contains(stockCandidate), is(true));
-			assertThat(stockFromWithOutIds.contains(laterStockCandidate), is(true));
+			Assert.assertThat(stockFromWithOutIds.contains(stockCandidate), is(true));
+			Assert.assertThat(stockFromWithOutIds.contains(laterStockCandidate), is(true));
 		}
 
 		{
 			final CandidatesSegment laterQuery = mkStockFromSegment(later);
 
-			final List<Candidate> stockFrom = candidateRepository.retrieveMatches(laterQuery);
-			assertThat(stockFrom.size(), is(1));
+			final List<Candidate> stockFrom = candidateRepository.retrieveMatchesOrderByDateAndSeqNo(laterQuery);
+			Assert.assertThat(stockFrom.size(), is(1));
 
-			assertThat(stockFrom.contains(stockCandidate), is(false));
-			assertThat(stockFrom.contains(laterStockCandidate), is(true));
+			Assert.assertThat(stockFrom.contains(stockCandidate), is(false));
+			Assert.assertThat(stockFrom.contains(laterStockCandidate), is(true));
 		}
 	}
 

@@ -111,7 +111,7 @@ public class RequisitionMRPSupplyProducer extends AbstractMRPSupplyProducer
 	@Override
 	public void createSupply(final IMRPCreateSupplyRequest request)
 	{
-		final IMaterialPlanningContext mrpContext = request.getMRPContext();
+		final IMaterialPlanningContext mrpContext = request.getMrpContext();
 		final IMRPExecutor executor = request.getMRPExecutor();
 
 		final String trxName = mrpContext.getTrxName();

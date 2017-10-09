@@ -18,12 +18,15 @@ import de.metas.event.SimpleObjectSerializer;
 import de.metas.material.event.EventDescr;
 import de.metas.material.event.MaterialDescriptor;
 import de.metas.material.event.MaterialEvent;
-import de.metas.material.event.PPOrderRequestedEvent;
-import de.metas.material.event.ProductionPlanEvent;
 import de.metas.material.event.ReceiptScheduleEvent;
 import de.metas.material.event.TransactionEvent;
+import de.metas.material.event.forecast.Forecast;
+import de.metas.material.event.forecast.ForecastEvent;
+import de.metas.material.event.forecast.ForecastLine;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrderLine;
+import de.metas.material.event.pporder.PPOrderRequestedEvent;
+import de.metas.material.event.pporder.ProductionPlanEvent;
 
 /*
  * #%L
@@ -63,17 +66,17 @@ public class ManufactoringEventSerializerTests
 		InterfaceWrapperHelper.save(someOtherTable);
 
 		final ReceiptScheduleEvent evt = ReceiptScheduleEvent.builder()
-				.eventDescr(new EventDescr(1,2))
+				.eventDescr(new EventDescr(1, 2))
 				.materialDescr(MaterialDescriptor.builder()
 						.date(SystemTime.asDate())
 						.productId(13)
 						.warehouseId(15)
-						.qty(BigDecimal.TEN)
+						.quantity(BigDecimal.TEN)
 						.build())
 				.receiptScheduleDeleted(false)
 				.reference(TableRecordReference.of("someOtherTable", 100))
 				.build();
-		assertThat(evt.getMaterialDescr().getQty(), comparesEqualTo(BigDecimal.TEN)); // guard
+		assertThat(evt.getMaterialDescr().getQuantity(), comparesEqualTo(BigDecimal.TEN)); // guard
 
 		final String serializedEvt = SimpleObjectSerializer.get().serialize(evt);
 		final MaterialEvent deserializedEvt = SimpleObjectSerializer.get().deserialize(serializedEvt, MaterialEvent.class);
@@ -105,10 +108,10 @@ public class ManufactoringEventSerializerTests
 
 		final TransactionEvent evt = TransactionEvent
 				.builder()
-				.eventDescr(new EventDescr(1,2))
+				.eventDescr(new EventDescr(1, 2))
 				.materialDescr(MaterialDescriptor.builder()
 						.productId(14)
-						.qty(BigDecimal.TEN)
+						.quantity(BigDecimal.TEN)
 						.date(SystemTime.asDate())
 						.warehouseId(12)
 						.build())
@@ -121,7 +124,7 @@ public class ManufactoringEventSerializerTests
 	public void testProductionOrderEvent()
 	{
 		final PPOrderRequestedEvent event = PPOrderRequestedEvent.builder()
-				.eventDescr(new EventDescr(1,2))
+				.eventDescr(new EventDescr(1, 2))
 				.reference(TableRecordReference.of("table", 24))
 				.ppOrder(PPOrder.builder()
 						.datePromised(SystemTime.asDate())
@@ -164,7 +167,7 @@ public class ManufactoringEventSerializerTests
 	public void testProductionPlanEvent()
 	{
 		final ProductionPlanEvent event = ProductionPlanEvent.builder()
-				.eventDescr(new EventDescr(1,2))
+				.eventDescr(new EventDescr(1, 2))
 				.reference(TableRecordReference.of("table", 24))
 				.ppOrder(PPOrder.builder()
 						.datePromised(SystemTime.asDate())
@@ -201,5 +204,39 @@ public class ManufactoringEventSerializerTests
 		final MaterialEvent deserializedEvt = SimpleObjectSerializer.get().deserialize(serializedEvt, MaterialEvent.class);
 
 		assertThat(deserializedEvt, is(event));
+	}
+
+	@Test
+	public void testForecastEvent()
+	{
+		final MaterialDescriptor materialDescriptor = MaterialDescriptor.builder()
+				.date(SystemTime.asDate())
+				.productId(20)
+				.quantity(new BigDecimal("20"))
+				.warehouseId(30)
+				.build();
+
+		final ForecastLine forecastLine = ForecastLine.builder()
+				.forecastLineId(30)
+				.materialDescriptor(materialDescriptor)
+				.reference(TableRecordReference.of("table", 24))
+				.build();
+		
+		final Forecast forecast = Forecast.builder()
+				.forecastId(20)
+				.docStatus("docStatus")
+				.forecastLine(forecastLine)
+				.build();
+		final ForecastEvent forecastEvent = ForecastEvent
+				.builder()
+				.forecast(forecast)
+				.eventDescr(new EventDescr(1, 2))
+				.build();
+
+		final String serializedEvt = SimpleObjectSerializer.get().serialize(forecastEvent);
+
+		final MaterialEvent deserializedEvt = SimpleObjectSerializer.get().deserialize(serializedEvt, MaterialEvent.class);
+
+		assertThat(deserializedEvt, is(deserializedEvt));
 	}
 }

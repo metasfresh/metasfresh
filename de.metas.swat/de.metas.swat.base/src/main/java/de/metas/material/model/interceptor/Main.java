@@ -32,19 +32,25 @@ import de.metas.material.event.MaterialEventService;
 public class Main extends AbstractModuleInterceptor
 {
 	@Override
-	protected void registerInterceptors(final IModelValidationEngine engine, final I_AD_Client client)
+	protected void registerInterceptors(
+			final IModelValidationEngine engine, 
+			final I_AD_Client client)
 	{
 		engine.addModelValidator(M_ReceiptSchedule.INSTANCE, client);
 		engine.addModelValidator(M_ShipmentSchedule.INSTANCE, client);
-		engine.addModelValidator(M_Transaction.INSTANCE, client);
+		// engine.addModelValidator(M_Transaction.INSTANCE, client); // TODO https://github.com/metasfresh/metasfresh/issues/2684
+		engine.addModelValidator(M_Forecast.INSTANCE, client);
 	}
 
 	@Override
 	protected void onAfterInit()
 	{
-		// add ourselves to the eventbus so that we can fire events,
+		letOurselfFireAndReceiveEvents();
+	}
+
+	private void letOurselfFireAndReceiveEvents()
+	{
 		final MaterialEventService materialEventService = Adempiere.getBean(MaterialEventService.class);
 		materialEventService.subscribeToEventBus();
 	}
-
 }

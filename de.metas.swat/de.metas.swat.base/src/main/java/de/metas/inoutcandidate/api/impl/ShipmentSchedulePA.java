@@ -77,7 +77,6 @@ import de.metas.inoutcandidate.api.IShipmentScheduleUpdater;
 import de.metas.inoutcandidate.api.OlAndSched;
 import de.metas.inoutcandidate.async.UpdateInvalidShipmentSchedulesWorkpackageProcessor;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.inoutcandidate.model.MMShipmentSchedule;
 import de.metas.inoutcandidate.model.X_M_ShipmentSchedule;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
@@ -332,7 +331,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 
 			while (rs.next())
 			{
-				final MMShipmentSchedule shipmentSchedule = new MMShipmentSchedule(Env.getCtx(), rs, trxName);
+				final X_M_ShipmentSchedule shipmentSchedule = new X_M_ShipmentSchedule(Env.getCtx(), rs, trxName);
 				result.add(shipmentSchedule);
 			}
 			return result;
@@ -396,16 +395,15 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 	public List<I_M_ShipmentSchedule> retrieveUnprocessedForRecord(
 			final Properties ctx, final int adTableId, final int recordId, final String trxName)
 	{
-		final String wc = I_M_ShipmentSchedule.COLUMNNAME_AD_Table_ID + "=? AND " +
-				I_M_ShipmentSchedule.COLUMNNAME_Record_ID + "=?" +
-				I_M_ShipmentSchedule.COLUMNNAME_Processed + "='N'";
-
-		return new Query(ctx, I_M_ShipmentSchedule.Table_Name, wc, trxName)
-				.setParameters(adTableId, recordId)
-				.setOnlyActiveRecords(true)
-				.setClient_ID()
-				.setOrderBy(I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID)
-				.list(I_M_ShipmentSchedule.class);
+		return Services.get(IQueryBL.class).createQueryBuilder(I_M_ShipmentSchedule.class, ctx, trxName)
+				.addOnlyActiveRecordsFilter()
+				.addOnlyContextClient(ctx)
+				.addEqualsFilter(I_M_ShipmentSchedule.COLUMN_Processed, false)
+				.addEqualsFilter(I_M_ShipmentSchedule.COLUMN_AD_Table_ID, adTableId)
+				.addEqualsFilter(I_M_ShipmentSchedule.COLUMN_Record_ID, recordId)
+				.orderBy().addColumn(I_M_ShipmentSchedule.COLUMN_M_ShipmentSchedule_ID).endOrderBy()
+				.create()
+				.listImmutable(I_M_ShipmentSchedule.class);
 	}
 
 	@Override
@@ -501,9 +499,12 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 
 		for (final I_M_ShipmentSchedule schedule : schedules)
 		{
+			final I_C_OrderLine orderLineOrNull = InterfaceWrapperHelper.create(
+					orderLines.get(schedule.getC_OrderLine_ID()), I_C_OrderLine.class);
+
 			final OlAndSched olAndSched = OlAndSched.builder()
 					.shipmentSchedule(schedule)
-					.orderLine(InterfaceWrapperHelper.create(orderLines.get(schedule.getC_OrderLine_ID()), I_C_OrderLine.class))
+					.orderLineOrNull(orderLineOrNull)
 					.build();
 			result.add(olAndSched);
 		}
