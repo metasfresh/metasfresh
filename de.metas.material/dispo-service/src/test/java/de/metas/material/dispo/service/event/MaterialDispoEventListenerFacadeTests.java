@@ -5,13 +5,16 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.util.Date;
 
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_Org;
+import org.compiere.util.TimeUtil;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestWatcher;
@@ -33,6 +36,7 @@ import de.metas.material.dispo.service.event.handler.TransactionEventHandler;
 import de.metas.material.event.EventDescr;
 import de.metas.material.event.MaterialEventService;
 import de.metas.material.event.ShipmentScheduleEvent;
+import de.metas.material.event.TransactionEvent;
 import de.metas.material.event.ddorder.DDOrder;
 import de.metas.material.event.ddorder.DDOrderLine;
 import de.metas.material.event.ddorder.DistributionPlanEvent;
@@ -174,5 +178,29 @@ public class MaterialDispoEventListenerFacadeTests
 		assertThat(toWarehouseDemand.getQty()).isEqualByComparingTo(BigDecimal.TEN);
 		assertThat(toWarehouseSharedStock.getQty()).isZero();
 		assertThat(toWarehouseSupply.getQty()).isEqualByComparingTo(BigDecimal.TEN);
+	}
+
+	@Test
+	@Ignore("You can extend on this one when starting with https://github.com/metasfresh/metasfresh/issues/2684")
+	public void testShipmentScheduleEvent_then_Shipment()
+	{
+		final ShipmentScheduleEvent shipmentScheduleEvent = ShipmentScheduleEventHandlerTests.createShipmentScheduleTestEvent(org);
+		
+		final Date shipmentScheduleEventTime = shipmentScheduleEvent.getMaterialDescr().getDate();
+		final Timestamp twoHoursAfterShipmentSched = TimeUtil.addHours(shipmentScheduleEventTime, 2);
+
+		mdEventListener.onEvent(shipmentScheduleEvent);
+
+		final TransactionEvent transactionEvent = TransactionEvent.builder()
+				.eventDescr(EventDescr.createNew(org))
+				.materialDescr(shipmentScheduleEvent.getMaterialDescr().withDate(twoHoursAfterShipmentSched))
+				.reference(TableRecordReference.of("transactionTable", 3))
+				.transactionDeleted(false)
+				.build();
+
+		mdEventListener.onEvent(transactionEvent);
+		
+		assertThat(DispoTestUtils.filter(Type.DEMAND)).hasSize(1);
+		assertThat(DispoTestUtils.filter(Type.STOCK)).hasSize(2);
 	}
 }
