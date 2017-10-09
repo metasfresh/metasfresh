@@ -33,16 +33,10 @@ import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 
-/**
- * Shipment Schedule + LU and TU that are ready to be received
- *
- * @author tsa
- *
- */
 public interface IShipmentScheduleWithHU
 {
 	IHUContext getHUContext();
-	
+
 	int getM_Product_ID();
 
 	I_M_Product getM_Product();
@@ -51,8 +45,13 @@ public interface IShipmentScheduleWithHU
 
 	Object getAttributesAggregationKey();
 
+	/**
+	 * Might return a value less or equal to zero!
+	 * 
+	 * @return
+	 */
 	int getC_OrderLine_ID();
-
+	
 	/**
 	 *
 	 * @return shipment schedule
