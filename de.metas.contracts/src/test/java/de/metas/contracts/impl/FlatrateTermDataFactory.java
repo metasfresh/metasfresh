@@ -145,7 +145,7 @@ public class FlatrateTermDataFactory
 	}
 	
 	@Builder(builderMethodName = "bpartnerNew")
-	private static I_C_BPartner createBpartner(final String bpValue, final boolean isCustomer)
+	public static I_C_BPartner createBpartner(final String bpValue, final boolean isCustomer)
 	{
 		final I_C_BPartner bpartner = InterfaceWrapperHelper.newInstance(I_C_BPartner.class);
 		bpartner.setValue(bpValue);
@@ -155,7 +155,7 @@ public class FlatrateTermDataFactory
 	}
 
 	@Builder(builderMethodName = "productNew")
-	private static I_M_Product createProduct(final String value, final String name)
+	public static I_M_Product createProduct(final String value, final String name)
 	{
 		final I_M_Product product = InterfaceWrapperHelper.newInstance(I_M_Product.class);
 		product.setValue(value);
