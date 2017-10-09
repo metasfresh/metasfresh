@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
-<!-- 2016-11-17T10:22:12 -->
+<!-- 2017-10-09T16:13:07 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_details" pageWidth="750" pageHeight="842" columnWidth="750" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/reports/hubalancegeneral/report" uuid="352f38d2-10a9-47ea-be33-9b905ff1f8f6">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -36,7 +36,13 @@
 	 now() as now,
 	(select name from C_BPartner where C_BPartner_ID = $P{C_BPartner_ID} AND isActive = 'Y') as bpartnername,
 	(select name from C_BP_Group where C_BP_Group_ID = $P{C_BP_Group_ID} AND isActive = 'Y') as bpgroupname,
-	(select name from M_Product where M_Product_ID = $P{M_Product_ID} AND isActive = 'Y') as productname
+
+	(select COALESCe(pt.name, p.name) as name 
+		from M_Product p 
+		left join M_Product_Trl pt ON p.M_Product_ID = pt.M_Product_ID AND pt.ad_language = $P{ad_language} AND pt.isActive = 'Y'
+		where p.M_Product_ID = $P{M_Product_ID} AND p.isActive = 'Y'
+	) as productname
+	
 FROM
 	de_metas_endcustomer_fresh_reports.Docs_HUBalance_Report_General_Details(
 		$P{M_Material_Balance_Config_ID}, 
@@ -47,7 +53,8 @@ FROM
 		$P{StartDate}, 
 		$P{EndDate}, 
 		now()::date,
-		$P{AD_Org_ID}
+		$P{AD_Org_ID},
+		$P{ad_language}
 	)
 
 ;;]]>
@@ -62,6 +69,7 @@ FROM
 	<field name="carryoutgoing" class="java.math.BigDecimal"/>
 	<field name="carryincoming" class="java.math.BigDecimal"/>
 	<field name="uomsymbol" class="java.lang.String"/>
+	<field name="ad_org_id" class="java.math.BigDecimal"/>
 	<field name="now" class="java.sql.Timestamp"/>
 	<field name="bpartnername" class="java.lang.String"/>
 	<field name="bpgroupname" class="java.lang.String"/>
@@ -86,19 +94,19 @@ FROM
 		<groupExpression><![CDATA[$F{bpartner}]]></groupExpression>
 		<groupHeader>
 			<band height="50">
-				<staticText>
-					<reportElement key="textField-20" x="138" y="14" width="113" height="24" forecolor="#000000" uuid="8810b708-ecb1-4a33-91a8-9971754ada0b"/>
-					<textElement verticalAlignment="Bottom" markup="none">
-						<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
-					</textElement>
-					<text><![CDATA[Geschäftspartner]]></text>
-				</staticText>
 				<textField>
 					<reportElement key="textField-16" x="251" y="14" width="350" height="24" forecolor="#000000" uuid="b1531e1a-cb5c-4b6a-864e-971e6fd346b7"/>
 					<textElement verticalAlignment="Bottom" markup="none">
 						<font size="9" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{bpartner}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement key="textField-20" x="138" y="14" width="113" height="24" forecolor="#000000" uuid="e3908bf6-4e15-4363-b21f-78b1f22cce05"/>
+					<textElement verticalAlignment="Bottom" markup="none">
+						<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{bpartner}]]></textFieldExpression>
 				</textField>
 			</band>
 		</groupHeader>
@@ -107,13 +115,6 @@ FROM
 		<groupExpression><![CDATA[$F{name}]]></groupExpression>
 		<groupHeader>
 			<band height="50">
-				<staticText>
-					<reportElement key="textField-16" x="138" y="6" width="113" height="12" forecolor="#000000" uuid="578a9e2a-24cd-4647-806b-2d80c108ea91"/>
-					<textElement markup="none">
-						<font size="9" isBold="false"/>
-					</textElement>
-					<text><![CDATA[Saldo]]></text>
-				</staticText>
 				<textField pattern="dd.MM.yyyy" isBlankWhenNull="true">
 					<reportElement key="textField-16" x="251" y="6" width="80" height="12" forecolor="#000000" uuid="c9657899-0453-4f44-a3fc-b0cbd7eb9126"/>
 					<textElement markup="none">
@@ -142,17 +143,17 @@ FROM
 					</textElement>
 					<textFieldExpression><![CDATA[$F{name}]]></textFieldExpression>
 				</textField>
+				<textField>
+					<reportElement key="textField-16" x="138" y="6" width="113" height="12" forecolor="#000000" uuid="4a011ad2-d91e-467f-b239-38f752081b7e"/>
+					<textElement markup="none">
+						<font size="9" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{balance}]]></textFieldExpression>
+				</textField>
 			</band>
 		</groupHeader>
 		<groupFooter>
 			<band height="50">
-				<staticText>
-					<reportElement key="textField-16" x="138" y="10" width="113" height="12" forecolor="#000000" uuid="578a9e2a-24cd-4647-806b-2d80c108ea91"/>
-					<textElement markup="none">
-						<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
-					</textElement>
-					<text><![CDATA[Saldo]]></text>
-				</staticText>
 				<textField pattern="#,##0" isBlankWhenNull="true">
 					<reportElement key="textField-20" x="601" y="10" width="100" height="12" forecolor="#000000" uuid="ae2700b1-5858-4f9a-8dba-84a3b6f39645"/>
 					<textElement textAlignment="Right" markup="none">
@@ -181,81 +182,25 @@ FROM
 					</textElement>
 					<textFieldExpression><![CDATA[$F{name}]]></textFieldExpression>
 				</textField>
+				<textField>
+					<reportElement key="textField-16" x="138" y="10" width="113" height="12" forecolor="#000000" uuid="7ce25859-be89-4f0e-b2f5-8dd56d630d5a"/>
+					<textElement markup="none">
+						<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{balance}]]></textFieldExpression>
+				</textField>
 			</band>
 		</groupFooter>
 	</group>
 	<title>
 		<band height="180">
-			<staticText>
-				<reportElement key="textField-16" x="37" y="144" width="101" height="12" forecolor="#000000" uuid="ae6b9054-e9e0-47c1-bd00-0ed156301f00"/>
-				<textElement markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
-				</textElement>
-				<text><![CDATA[Beleg Nr.]]></text>
-			</staticText>
-			<staticText>
-				<reportElement key="textField-20" x="601" y="120" width="100" height="12" forecolor="#000000" uuid="8810b708-ecb1-4a33-91a8-9971754ada0b"/>
-				<textElement textAlignment="Right" markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
-				</textElement>
-				<text><![CDATA[Menge]]></text>
-			</staticText>
-			<staticText>
-				<reportElement key="textField-16" x="138" y="144" width="113" height="12" forecolor="#000000" uuid="ae6b9054-e9e0-47c1-bd00-0ed156301f00"/>
-				<textElement markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
-				</textElement>
-				<text><![CDATA[Belegart]]></text>
-			</staticText>
-			<staticText>
-				<reportElement key="textField-16" x="251" y="144" width="80" height="12" forecolor="#000000" uuid="ae6b9054-e9e0-47c1-bd00-0ed156301f00"/>
-				<textElement markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
-				</textElement>
-				<text><![CDATA[Datum]]></text>
-			</staticText>
-			<staticText>
-				<reportElement key="textField-16" x="331" y="144" width="170" height="12" forecolor="#000000" uuid="ae6b9054-e9e0-47c1-bd00-0ed156301f00"/>
-				<textElement markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
-				</textElement>
-				<text><![CDATA[Gebindeart]]></text>
-			</staticText>
-			<staticText>
-				<reportElement key="textField-20" x="601" y="132" width="100" height="12" forecolor="#000000" uuid="8810b708-ecb1-4a33-91a8-9971754ada0b"/>
-				<textElement textAlignment="Right" markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
-				</textElement>
-				<text><![CDATA[Zu Gunsten]]></text>
-			</staticText>
 			<textField>
 				<reportElement key="textField-20" x="601" y="144" width="100" height="12" forecolor="#000000" uuid="249e8f15-3d41-4509-b78b-1b420d5a4d29"/>
 				<textElement textAlignment="Right" markup="none">
 					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{vonuns}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{ofus}]]></textFieldExpression>
 			</textField>
-			<staticText>
-				<reportElement key="textField-20" x="501" y="120" width="100" height="12" forecolor="#000000" uuid="8810b708-ecb1-4a33-91a8-9971754ada0b"/>
-				<textElement textAlignment="Right" markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
-				</textElement>
-				<text><![CDATA[Menge]]></text>
-			</staticText>
-			<staticText>
-				<reportElement key="textField-20" x="501" y="144" width="100" height="12" forecolor="#000000" uuid="8810b708-ecb1-4a33-91a8-9971754ada0b"/>
-				<textElement textAlignment="Right" markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
-				</textElement>
-				<text><![CDATA[Geschäftspartner]]></text>
-			</staticText>
-			<staticText>
-				<reportElement key="textField-20" x="501" y="132" width="100" height="12" forecolor="#000000" uuid="8810b708-ecb1-4a33-91a8-9971754ada0b"/>
-				<textElement textAlignment="Right" markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
-				</textElement>
-				<text><![CDATA[Zu Gunsten]]></text>
-			</staticText>
 			<textField>
 				<reportElement key="textField-11" x="37" y="50" width="214" height="12" uuid="3adde3e6-99c2-4362-8c2a-4ceb2a0f46db"/>
 				<textElement textAlignment="Left" markup="none">
@@ -402,6 +347,69 @@ FROM
 					<font size="9"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{to}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement key="textField-16" x="37" y="144" width="101" height="12" forecolor="#000000" uuid="5d19a1bb-9b09-44bf-85a1-9e8f41e86913"/>
+				<textElement markup="none">
+					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{documentno}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement key="textField-16" x="138" y="144" width="113" height="12" forecolor="#000000" uuid="f56ebcc4-03ae-4fe8-ad85-c3c1b66c6b2f"/>
+				<textElement markup="none">
+					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{doctype}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement key="textField-16" x="251" y="144" width="80" height="12" forecolor="#000000" uuid="535d664e-02b8-4a1a-bbc0-761be3a00f7d"/>
+				<textElement markup="none">
+					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{date}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement key="textField-16" x="331" y="144" width="170" height="12" forecolor="#000000" uuid="f09cc352-d7bd-4562-8415-3beaaccd6c2b"/>
+				<textElement markup="none">
+					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{packageart}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement key="textField-20" x="501" y="120" width="100" height="12" forecolor="#000000" uuid="310e47e0-de5e-4a46-8de0-07fe43e59898"/>
+				<textElement textAlignment="Right" markup="none">
+					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{qty}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement key="textField-20" x="501" y="132" width="100" height="12" forecolor="#000000" uuid="cbda260e-3d84-4908-8c0a-c9b93338f269"/>
+				<textElement textAlignment="Right" markup="none">
+					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{infavourof}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement key="textField-20" x="501" y="144" width="100" height="12" forecolor="#000000" uuid="1e7502b5-73a8-43f4-a00b-a01c2d73981a"/>
+				<textElement textAlignment="Right" markup="none">
+					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{bpartner}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement key="textField-20" x="601" y="120" width="100" height="12" forecolor="#000000" uuid="a708b6cb-33b9-4567-8ca3-b14c0b4f1b87"/>
+				<textElement textAlignment="Right" markup="none">
+					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{qty}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement key="textField-20" x="601" y="132" width="100" height="12" forecolor="#000000" uuid="a91141bc-4687-44e7-a5ca-f252b65b5f36"/>
+				<textElement textAlignment="Right" markup="none">
+					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{infavourof}]]></textFieldExpression>
 			</textField>
 		</band>
 	</title>
