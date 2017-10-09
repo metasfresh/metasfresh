@@ -9,28 +9,17 @@
         "es6": true
     },
     "parser": "babel-eslint",
-    "extends": "eslint:recommended",
+    "extends": ["eslint:recommended", "plugin:react/recommended", "prettier"],
     "rules": {
-        "max-len": [
-            2,
+        "prettier/prettier": [
+            "error",
             {
-                "code": 80,
-                "ignorePattern": "^\\s*className=\"([\\s\\w-]*)\""
+                "tabWidth": 4,
+                "singleQuote": true
             }
-        ],
-        "quotes": [2, "single"],
-        "jsx-quotes": [2, "prefer-double"],
-        "no-console": [2, { allow: ["warn", "error"] }],
-        "strict": [2, "never"],
-        "no-class-assign": 0,
-        "no-trailing-spaces": 2,
-        "comma-spacing": 2,
-        "no-multiple-empty-lines": [2, { max: 1, maxEOF: 1, maxBOF: 0 }],
-        "react/jsx-uses-react": 2,
-        "react/jsx-uses-vars": 2,
-        "react/react-in-jsx-scope": 2
+        ]
     },
-    "plugins": ["react"],
+    "plugins": ["prettier", "react"],
     "globals": {
         "localStorage": true,
         "Promise": true,
