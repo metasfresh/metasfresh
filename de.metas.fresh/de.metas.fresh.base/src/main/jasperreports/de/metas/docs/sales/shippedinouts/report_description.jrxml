@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
-<!-- 2016-10-06T19:33:28 -->
+<!-- 2017-10-09T17:06:05 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_description" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/sales/shippedinouts/report" uuid="1a23dc24-c216-40e0-891b-a3648835dca6">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -57,13 +57,6 @@ WHERE
 				</textElement>
 				<textFieldExpression><![CDATA[$F{bp_value}]]></textFieldExpression>
 			</textField>
-			<staticText>
-				<reportElement key="textField-6" x="37" y="127" width="136" height="13" forecolor="#000000" uuid="ac08abbe-c03d-4cf8-ab70-0212a4d993b4"/>
-				<textElement textAlignment="Left" markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
-				</textElement>
-				<text><![CDATA[Rüstliste]]></text>
-			</staticText>
 			<textField isBlankWhenNull="false">
 				<reportElement key="textField-11" x="37" y="139" width="136" height="13" uuid="ab134a73-4b9a-426b-baea-75fb4e5be9a0">
 					<printWhenExpression><![CDATA[new Boolean($F{bp_value}!=null)]]></printWhenExpression>
@@ -91,6 +84,13 @@ WHERE
 					<font size="9"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$P{Date}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement key="textField-6" x="37" y="127" width="136" height="13" forecolor="#000000" uuid="b3e3d434-4737-49c4-8677-c8f6fffae346"/>
+				<textElement textAlignment="Left" markup="none">
+					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{title}]]></textFieldExpression>
 			</textField>
 		</band>
 	</title>
