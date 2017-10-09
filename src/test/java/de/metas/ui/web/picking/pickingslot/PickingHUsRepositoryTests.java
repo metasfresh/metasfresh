@@ -20,7 +20,7 @@ import de.metas.ui.web.handlingunits.HUEditorRow;
 import de.metas.ui.web.handlingunits.HUEditorRowId;
 import de.metas.ui.web.handlingunits.HUEditorRowType;
 import de.metas.ui.web.handlingunits.HUEditorViewRepository;
-import de.metas.ui.web.picking.pickingslot.PickingHuRowsRepository.PickedHUEditorRow;
+import de.metas.ui.web.picking.pickingslot.PickingHURowsRepository.PickedHUEditorRow;
 import de.metas.ui.web.window.datatypes.WindowId;
 import lombok.NonNull;
 import mockit.Expectations;
@@ -61,7 +61,7 @@ public class PickingHUsRepositoryTests
 	private HUEditorViewRepository huEditorViewRepository;
 
 	/**
-	 * Needed to test {@link PickingHuRowsRepository#retrieveSourceHUs(List)}.
+	 * Needed to test {@link PickingHURowsRepository#retrieveSourceHUs(List)}.
 	 */
 	@Mocked
 	private IHUPickingSlotBL huPickingSlotBL;
@@ -73,7 +73,7 @@ public class PickingHUsRepositoryTests
 	}
 
 	/**
-	 * Tests {@link PickingHuRowsRepository#retrievePickedHUsIndexedByPickingSlotId(PickingSlotRepoQuery)} with a simple mocked {@link HUEditorViewRepository} that returns one HURow.
+	 * Tests {@link PickingHURowsRepository#retrievePickedHUsIndexedByPickingSlotId(PickingSlotRepoQuery)} with a simple mocked {@link HUEditorViewRepository} that returns one HURow.
 	 * 
 	 * @param pickingCandidateStatus this value is given to the {@link I_M_Picking_Candidate} we test with, and we verify that this value is correctly translated it to the resulting {@link PickingSlotHUEditorRow#isProcessed()}.
 	 */
@@ -118,7 +118,7 @@ public class PickingHUsRepositoryTests
 			// @formatter:on
 		}
 
-		final PickingHuRowsRepository pickingHUsRepository = new PickingHuRowsRepository(huEditorViewRepository);
+		final PickingHURowsRepository pickingHUsRepository = new PickingHURowsRepository(huEditorViewRepository);
 		final ListMultimap<Integer, PickedHUEditorRow> result = pickingHUsRepository.retrievePickedHUsIndexedByPickingSlotId(PickingSlotRepoQuery.of(M_SHIPMENT_SCHEDULE_ID));
 
 		if (X_M_Picking_Candidate.STATUS_CL.equals(pickingCandidateStatus))
@@ -142,7 +142,7 @@ public class PickingHUsRepositoryTests
 	@Test
 	public void test_retrieveSourceHUs_empty_shipmentScheduleIds()
 	{
-		final PickingHuRowsRepository pickingHUsRepository = new PickingHuRowsRepository(huEditorViewRepository);
+		final PickingHURowsRepository pickingHUsRepository = new PickingHURowsRepository(huEditorViewRepository);
 		final List<HUEditorRow> sourceHUs = pickingHUsRepository.retrieveSourceHUs(ImmutableList.of());
 		assertThat(sourceHUs).isEmpty();
 	}

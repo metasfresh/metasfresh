@@ -25,7 +25,7 @@ import de.metas.picking.api.IPickingSlotDAO.PickingSlotQuery;
 import de.metas.picking.model.I_M_PickingSlot;
 import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.handlingunits.HUEditorRow;
-import de.metas.ui.web.picking.pickingslot.PickingHuRowsRepository.PickedHUEditorRow;
+import de.metas.ui.web.picking.pickingslot.PickingHURowsRepository.PickedHUEditorRow;
 import de.metas.ui.web.picking.pickingslot.PickingSlotRepoQuery.PickingCandidate;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.LookupDescriptorProvider.LookupScope;
@@ -65,7 +65,7 @@ import lombok.NonNull;
 @Component
 public class PickingSlotViewRepository
 {
-	private final PickingHuRowsRepository pickingHUsRepo;
+	private final PickingHURowsRepository pickingHUsRepo;
 
 	private final Supplier<LookupDataSource> warehouseLookup;
 	private final Supplier<LookupDataSource> bpartnerLookup;
@@ -75,7 +75,7 @@ public class PickingSlotViewRepository
 	 * @param pickingHUsRepo the "backend" repo to be used by this instance.
 	 */
 	@Autowired
-	public PickingSlotViewRepository(@NonNull final PickingHuRowsRepository pickingHUsRepo)
+	public PickingSlotViewRepository(@NonNull final PickingHURowsRepository pickingHUsRepo)
 	{
 		// creating those LookupDataSources requires DB access. so to allow this component to be initialized early during startup
 		// and also to allow it to be unit-tested (when the lookups are not part of the test), I use those suppliers
@@ -122,7 +122,7 @@ public class PickingSlotViewRepository
 
 	@VisibleForTesting
 	/* package */ PickingSlotViewRepository(
-			@NonNull final PickingHuRowsRepository pickingHUsRepo,
+			@NonNull final PickingHURowsRepository pickingHUsRepo,
 			@NonNull final Supplier<LookupDataSource> warehouseLookup,
 			@NonNull final Supplier<LookupDataSource> bpartnerLookup,
 			@NonNull final Supplier<LookupDataSource> bpartnerLocationLookup)
@@ -187,7 +187,7 @@ public class PickingSlotViewRepository
 	 * @param shipmentSchedule
 	 * @return
 	 */
-	private List<I_M_PickingSlot> retrievePickingSlotsForShipmentSchedule(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
+	private static List<I_M_PickingSlot> retrievePickingSlotsForShipmentSchedule(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
 	{
 		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 
@@ -202,7 +202,7 @@ public class PickingSlotViewRepository
 		return pickingSlots;
 	}
 
-	private Predicate<? super I_M_PickingSlot> createPickingCandiodatesFilter(final PickingSlotRepoQuery query, final ListMultimap<Integer, PickedHUEditorRow> huEditorRowsByPickingSlotId)
+	private static Predicate<? super I_M_PickingSlot> createPickingCandiodatesFilter(final PickingSlotRepoQuery query, final ListMultimap<Integer, PickedHUEditorRow> huEditorRowsByPickingSlotId)
 	{
 		final Predicate<? super I_M_PickingSlot> pickingCandidatesFilter = pickingSlot -> {
 
@@ -219,7 +219,7 @@ public class PickingSlotViewRepository
 	}
 	
 	@VisibleForTesting
-	PickingSlotRow createSourceHURow(@NonNull final HUEditorRow sourceHuEditorRow)
+	static PickingSlotRow createSourceHURow(@NonNull final HUEditorRow sourceHuEditorRow)
 	{
 		final PickingSlotRow pickingSourceHuRow = PickingSlotRow.fromSourceHUBuilder()
 				.huId(sourceHuEditorRow.getM_HU_ID())
@@ -241,7 +241,7 @@ public class PickingSlotViewRepository
 		return createPickingSlotRowWithIncludedRows(pickingSlot, pickedHuRows);
 	}
 
-	private List<PickingSlotRow> retrieveHuRowsToIncludeInPickingSlotRow(
+	private static List<PickingSlotRow> retrieveHuRowsToIncludeInPickingSlotRow(
 			@NonNull final I_M_PickingSlot pickingSlot,
 			@NonNull final ListMultimap<Integer, PickedHUEditorRow> huEditorRowsByPickingSlotId)
 	{
@@ -262,9 +262,7 @@ public class PickingSlotViewRepository
 	 * @param pickingSlotId
 	 * @return
 	 */
-	private final PickingSlotRow createPickedHURow(
-			@NonNull final PickedHUEditorRow from,
-			final int pickingSlotId)
+	private static final PickingSlotRow createPickedHURow(@NonNull final PickedHUEditorRow from, final int pickingSlotId)
 	{
 		final HUEditorRow huEditorRow = from.getHuEditorRow();
 
