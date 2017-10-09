@@ -96,6 +96,7 @@ Here come the actual release notes:
   * [#1212](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1212) Selection using SHIFT does not work in Handling unit Editor
   * [#1234](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1234) Letter Window does not store template info
     * Fixes a minor Bug in Letter component that prevented the usage of Text Snippets.
+  * [#1238](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1238) Bug in Partner window after setting Attributes (Labels)
 
 # metasfresh 5.29 (2017-40)
 
