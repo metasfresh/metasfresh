@@ -87,7 +87,7 @@ public class FlatrateTermImportProcess extends AbstractImportProcess<I_I_Flatrat
 	}
 
 	@Override
-	protected ImportRecordResult importRecord(final IMutable<Object> state, final I_I_Flatrate_Term importRecord) throws Exception
+	protected ImportRecordResult importRecord(final IMutable<Object> state, final I_I_Flatrate_Term importRecord)
 	{
 		flatRateImporter.importRecord(importRecord);
 		return ImportRecordResult.Inserted;
