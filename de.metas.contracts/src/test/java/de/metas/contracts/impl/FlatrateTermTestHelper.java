@@ -10,6 +10,7 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Client;
+import org.compiere.model.I_AD_Org;
 import org.compiere.util.Env;
 
 import de.metas.contracts.interceptor.MainValidator;
@@ -29,6 +30,7 @@ public class FlatrateTermTestHelper
 	private boolean initAdempiere = true;
 
 	public I_AD_Client adClient;
+	public I_AD_Org adOrg;
 
 	public Properties ctx;
 	public String trxName;
@@ -52,6 +54,11 @@ public class FlatrateTermTestHelper
 	public Properties getCtx()
 	{
 		return ctx;
+	}
+	
+	public String getTrxName()
+	{
+		return trxName;
 	}
 
 	public IContextAware getContextProvider()
@@ -104,12 +111,14 @@ public class FlatrateTermTestHelper
 
 		ctx = Env.getCtx();
 
-		//
-		// Setup context: #AD_Client_ID
 		adClient = InterfaceWrapperHelper.create(ctx, I_AD_Client.class, ITrx.TRXNAME_None);
 		InterfaceWrapperHelper.save(adClient);
 		Env.setContext(ctx, Env.CTXNAME_AD_Client_ID, adClient.getAD_Client_ID());
 
+		adOrg = InterfaceWrapperHelper.create(ctx, I_AD_Org.class, ITrx.TRXNAME_None);
+		InterfaceWrapperHelper.save(adOrg);
+		Env.setContext(ctx, Env.CTXNAME_AD_Org_ID, adOrg.getAD_Org_ID());
+		
 		initialized = true;
 
 		afterInitialized();

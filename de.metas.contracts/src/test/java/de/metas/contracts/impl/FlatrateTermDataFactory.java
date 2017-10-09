@@ -1,11 +1,14 @@
 package de.metas.contracts.impl;
 
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_AcctSchema;
+import org.compiere.model.I_C_Activity;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Calendar;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_Product_Acct;
 
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.adempiere.model.I_C_BPartner_Location;
@@ -173,5 +176,25 @@ public class FlatrateTermDataFactory
 		pricingSytem.setName(valuePricingSystem);
 		InterfaceWrapperHelper.save(pricingSytem);
 		return pricingSytem;
+	}
+	
+	@Builder(builderMethodName = "productAcctNew")
+	public static I_M_Product_Acct createProductAcct(final I_M_Product product, final I_C_AcctSchema acctSchema)
+	{
+		final I_M_Product_Acct productAcct = InterfaceWrapperHelper.newInstance(I_M_Product_Acct.class);
+		productAcct.setM_Product(product);
+		productAcct.setC_AcctSchema(acctSchema);
+		productAcct.setC_Activity(createActivity());
+		InterfaceWrapperHelper.save(productAcct);
+		return productAcct;
+	}
+	
+	private static I_C_Activity createActivity()
+	{
+		final I_C_Activity activity = InterfaceWrapperHelper.newInstance(I_C_Activity.class);
+		activity.setValue("Activity");
+		activity.setName("Activity");
+		InterfaceWrapperHelper.save(activity);
+		return activity;
 	}
 }
