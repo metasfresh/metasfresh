@@ -72,6 +72,7 @@ class Table extends Component {
             dispatch, mainTable, open, rowData, defaultSelected,
             disconnectFromState, type, refreshSelection,
             supportIncludedViewOnSelect, viewId, isModal, hasIncluded,
+            showIncludedViewOnSelect
         } = this.props;
 
         const {
@@ -127,7 +128,17 @@ class Table extends Component {
             this.setState({
                 selected: []
             });
+
+            this.deselectAllProducts();
+            showIncludedViewOnSelect && showIncludedViewOnSelect(false);
         }
+    }
+
+    componentWillUnmount() {
+        const { showIncludedViewOnSelect } = this.props;
+
+        this.deselectAllProducts();
+        showIncludedViewOnSelect && showIncludedViewOnSelect(false);
     }
 
     showSelectedIncludedView = (selected) => {

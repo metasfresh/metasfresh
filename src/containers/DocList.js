@@ -101,28 +101,48 @@ class DocList extends Component {
                 modalDescription={modalDescription}
                 showIndicator={!modal.visible && !rawModal.visible}
             >
-                 <DocumentList
-                     type="grid"
-                     updateUri={this.updateUriCallback}
-                     windowType={windowType}
-                     defaultViewId={query.viewId}
-                     defaultSort={query.sort}
-                     defaultPage={parseInt(query.page)}
-                     refType={query.refType}
-                     refId={query.refId}
-                     refTabId={query.refTabId}
-                     refRowIds={refRowIds}
-                     selectedWindowType={selectedWindowType}
-                     selected={selected}
-                     inBackground={rawModal.visible}
-                     inModal={modal.visible}
-                     fetchQuickActionsOnInit={true}
-                     processStatus={processStatus}
-                     disablePaginationShortcuts=
-                        {modal.visible || rawModal.visible}
-                    setNotFound={this.setNotFound}
-                    notfound={notfound}
-                 />
+                <div className="document-lists-wrapper">
+                    <DocumentList
+                        type="grid"
+                        updateUri={this.updateUriCallback}
+                        windowType={windowType}
+                        defaultViewId={query.viewId}
+                        defaultSort={query.sort}
+                        defaultPage={parseInt(query.page)}
+                        refType={query.refType}
+                        refId={query.refId}
+                        refTabId={query.refTabId}
+                        refRowIds={refRowIds}
+                        selectedWindowType={selectedWindowType}
+                        selected={selected}
+                        includedView={includedView}
+                        inBackground={rawModal.visible}
+                        inModal={modal.visible}
+                        fetchQuickActionsOnInit={true}
+                        processStatus={processStatus}
+                        disablePaginationShortcuts={
+                            modal.visible || rawModal.visible
+                        }
+                        setNotFound={this.setNotFound}
+                        notfound={notfound}
+                    />
+
+                    {(includedView && includedView.windowType &&
+                        includedView.viewId
+                    ) && (
+                        <DocumentList
+                            type="includedView"
+                            selected={selected}
+                            selectedWindowType={selectedWindowType}
+                            windowType={includedView.windowType}
+                            defaultViewId={includedView.viewId}
+                            fetchQuickActionsOnInit={true}
+                            processStatus={processStatus}
+                            inBackground={rawModal.visible}
+                            inModal={modal.visible}
+                        />
+                    )}
+                </div>
             </Container>
         );
     }

@@ -29,6 +29,7 @@ import {
 } from '../../actions/WindowActions';
 
 import {
+    closeListIncludedView,
     setSorting,
     setPagination,
     setListId,
@@ -504,13 +505,19 @@ class DocumentList extends Component {
         } = this.props;
 
         this.setState({
-            isShowIncluded: showIncludedView ? true : false,
-            hasShowIncluded: showIncludedView ? true : false
+            isShowIncluded: !!showIncludedView,
+            hasShowIncluded: !!showIncludedView,
         }, ()=> {
             if (showIncludedView) {
                 dispatch(setListIncludedView(data.windowId, data.viewId));
             }
         });
+
+        // can't use setState callback because component might be unmounted and
+        // callback is never called
+        if (!showIncludedView) {
+            dispatch(closeListIncludedView());
+        }
     }
 
     render() {
