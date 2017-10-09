@@ -14,6 +14,7 @@ import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
@@ -54,6 +55,7 @@ public class FlatrateTermImportProcess_SimpleCase_Test
 		ctx = Env.getCtx();
 	}
 
+	@Ignore
 	@Test
 	public void testImportActiveFlatrateTerms()
 	{
