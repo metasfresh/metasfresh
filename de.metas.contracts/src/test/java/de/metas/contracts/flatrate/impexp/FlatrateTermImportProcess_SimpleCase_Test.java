@@ -21,6 +21,7 @@ import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_I_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Conditions;
+import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.inout.invoicecandidate.InOutLinesWithMissingInvoiceCandidate;
 
 /*
@@ -53,7 +54,6 @@ public class FlatrateTermImportProcess_SimpleCase_Test extends AbstractFlatrateT
 	public void testImportActiveFlatrateTerms()
 	{
 		final Timestamp startDate = TimeUtil.parseTimestamp("2017-09-10");
-		final Timestamp endDate = TimeUtil.parseTimestamp("2017-12-10");
 		final Timestamp masterEndDate = TimeUtil.addDays(startDate, 90);
 		final Timestamp expectedEndDate = TimeUtil.parseTimestamp("2018-09-09");
 
@@ -80,9 +80,8 @@ public class FlatrateTermImportProcess_SimpleCase_Test extends AbstractFlatrateT
 				.price(BigDecimal.valueOf(10))
 				.qty(BigDecimal.valueOf(1))
 				.startDate(startDate)
-				.endDate(endDate)
-				.masterStartDate(masterEndDate)
-				.masterEndDate(startDate)
+				.masterStartDate(startDate)
+				.masterEndDate(masterEndDate)
 				.build();
 
 		final FlatrateTermImportProcess importProcess = new FlatrateTermImportProcess();
@@ -91,16 +90,66 @@ public class FlatrateTermImportProcess_SimpleCase_Test extends AbstractFlatrateT
 
 		final I_C_Flatrate_Term flatrateTerm = iflatrateTerm.getC_Flatrate_Term();
 		assertThat(flatrateTerm).isNotNull();
-		assertThat(flatrateTerm.getBill_BPartner()).isNotNull();
-		assertThat(flatrateTerm.getBill_Location()).isNotNull();
-		assertThat(flatrateTerm.getDropShip_BPartner()).isNotNull();
-		assertThat(flatrateTerm.getDropShip_Location()).isNotNull();
-		assertThat(flatrateTerm.getBill_User()).isNotNull();
-		assertThat(flatrateTerm.getDropShip_User()).isNotNull();
+		
+		assertPartnerData(iflatrateTerm);
 
 		assertThat(flatrateTerm.getStartDate()).isEqualTo(iflatrateTerm.getStartDate());
 		assertThat(flatrateTerm.getEndDate()).isEqualTo(expectedEndDate);
+		assertThat(flatrateTerm.getMasterStartDate()).isEqualTo(startDate);
+		assertThat(flatrateTerm.getMasterEndDate()).isEqualTo(masterEndDate);
+		
+	}
+	
+	@Test
+	public void testImportingInActiveFlatrateTerms()
+	{
+		final Timestamp startDate = TimeUtil.parseTimestamp("2017-03-10");
+		final Timestamp endDate = TimeUtil.parseTimestamp("2017-09-09");
+		final Timestamp masterEndDate = TimeUtil.addDays(startDate, 90);
 
+		final int bpartnerId = prepareBPartner();
+
+		final I_M_Product product = FlatrateTermDataFactory.productNew()
+				.value("01")
+				.name("testProduct")
+				.build();
+
+		final I_C_Flatrate_Conditions conditions = FlatrateTermDataFactory.flatrateConditionsNew()
+				.name("Abo")
+				.calendar(getCalendar())
+				.invoiceRule(X_C_Flatrate_Conditions.INVOICERULE_Sofort)
+				.typeConditions(X_C_Flatrate_Conditions.TYPE_CONDITIONS_Subscription)
+				.build();
+
+		final I_I_Flatrate_Term iflatrateTerm = IFlatrateTermFactory.builder()
+				.ctx(helper.getCtx())
+				.bartnerId(bpartnerId)
+				.dropShipBPartnerId(bpartnerId)
+				.productId(product.getM_Product_ID())
+				.flatrateConditionsId(conditions.getC_Flatrate_Conditions_ID())
+				.price(BigDecimal.valueOf(10))
+				.qty(BigDecimal.valueOf(1))
+				.startDate(startDate)
+				.endDate(endDate)
+				.masterStartDate(startDate)
+				.masterEndDate(masterEndDate)
+				.build();
+
+		final FlatrateTermImportProcess importProcess = new FlatrateTermImportProcess();
+		importProcess.setCtx(helper.getCtx());
+		importProcess.importRecord(new Mutable<>(), iflatrateTerm);
+
+		final I_C_Flatrate_Term flatrateTerm = iflatrateTerm.getC_Flatrate_Term();
+		assertThat(flatrateTerm).isNotNull();
+		
+		assertPartnerData(iflatrateTerm);
+
+		assertThat(flatrateTerm.getStartDate()).isEqualTo(iflatrateTerm.getStartDate());
+		assertThat(flatrateTerm.getEndDate()).isEqualTo(endDate);
+		assertThat(flatrateTerm.getMasterStartDate()).isEqualTo(startDate);
+		assertThat(flatrateTerm.getMasterEndDate()).isEqualTo(masterEndDate);
+		assertThat(flatrateTerm.getDocAction()).isEqualTo(X_C_Flatrate_Term.DOCACTION_None);
+		
 	}
 
 	private int prepareBPartner()
@@ -126,12 +175,23 @@ public class FlatrateTermImportProcess_SimpleCase_Test extends AbstractFlatrateT
 
 		return bpartner.getC_BPartner_ID();
 	}
+	
+	private void assertPartnerData(final I_I_Flatrate_Term iflatrateTerm )
+	{
+		final I_C_Flatrate_Term flatrateTerm = iflatrateTerm.getC_Flatrate_Term();
+		assertThat(flatrateTerm.getBill_BPartner()).isNotNull();
+		assertThat(flatrateTerm.getBill_BPartner()).isEqualToComparingFieldByField(iflatrateTerm.getDropShip_BPartner());
+		assertThat(flatrateTerm.getBill_Location()).isNotNull();
+		assertThat(flatrateTerm.getDropShip_BPartner()).isNotNull();
+		assertThat(flatrateTerm.getDropShip_BPartner_ID()).isEqualByComparingTo(iflatrateTerm.getDropShip_BPartner_ID());
+		assertThat(flatrateTerm.getDropShip_Location()).isNotNull();
+		assertThat(flatrateTerm.getBill_User()).isNotNull();
+		assertThat(flatrateTerm.getDropShip_User()).isNotNull();
+	}
 
 	@Override
 	protected void initialize()
 	{
-		// TODO Auto-generated method stub
-
 	}
 
 }
