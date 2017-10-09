@@ -7,15 +7,24 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 import java.sql.Timestamp;
+import java.util.Properties;
 
+import org.adempiere.acct.api.IAcctSchemaDAO;
+import org.adempiere.acct.api.impl.AcctSchemaDAO;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.util.Services;
+import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_Calendar;
 import org.compiere.model.I_C_Period;
+import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_Year;
 import org.compiere.util.TimeUtil;
 import org.junit.Before;
 import org.junit.BeforeClass;
+
+import de.metas.tax.api.ITaxDAO;
+import de.metas.tax.api.impl.TaxDAO;
 
 /*
  * #%L
@@ -54,6 +63,13 @@ public abstract class AbstractFlatrateTermTest
 	{
 		return calendar;
 	}
+	
+	private I_C_AcctSchema acctSchema;
+	
+	public I_C_AcctSchema getAcctSchema()
+	{
+		return acctSchema;
+	}
 
 	@BeforeClass
 	public final static void staticInit()
@@ -83,8 +99,9 @@ public abstract class AbstractFlatrateTermTest
 	protected void setupMasterData()
 	{
 		helper = createFlatrateTermTestHelper();
-		
 		prepareCalendar();
+		prepareAcctSchema();
+		prepareTax();
 	}
 
 	private void prepareCalendar()
@@ -123,7 +140,37 @@ public abstract class AbstractFlatrateTermTest
 			save(period);
 		}
 
-
+	}
+	
+	
+	private void prepareAcctSchema()
+	{
+		acctSchema = newInstance(I_C_AcctSchema.class);
+		save(acctSchema);
+		
+		Services.registerService(IAcctSchemaDAO.class, new AcctSchemaDAO()
+		{
+			@Override
+			public I_C_AcctSchema retrieveAcctSchema(final Properties ctx, final int ad_Client_ID, final int ad_Org_ID)
+			{
+				return acctSchema;
+			}
+		});
+	}
+	
+	private void prepareTax()
+	{
+		final I_C_Tax tax  = newInstance(I_C_Tax.class);
+		save(tax);
+		
+		Services.registerService(ITaxDAO.class, new TaxDAO()
+		{
+			@Override
+			public I_C_Tax retrieveNoTaxFound(Properties ctx)
+			{
+				return tax;
+			}
+		});
 	}
 
 }
