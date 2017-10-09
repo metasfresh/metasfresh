@@ -16,6 +16,8 @@ Here come the actual release notes:
 
 ## Features
 * metasfresh-app
+  * [#2660](https://github.com/metasfresh/metasfresh/issues/2660) Window Design Webui: Improvements in the window Forecast
+    * Improvement of Forecast Window. Added Translations for en_US Language/ Locale and adapted Design Guidelines.
 
 ## Fixes
 * metasfresh-app
