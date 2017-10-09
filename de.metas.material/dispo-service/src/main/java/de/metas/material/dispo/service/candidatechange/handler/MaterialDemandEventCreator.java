@@ -1,4 +1,4 @@
-package de.metas.material.dispo.service.candidatechangehandler;
+package de.metas.material.dispo.service.candidatechange.handler;
 
 import java.math.BigDecimal;
 

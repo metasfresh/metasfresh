@@ -8,12 +8,15 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.modelvalidator.DocTimingType;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
 import org.compiere.Adempiere;
 import org.compiere.model.I_M_Forecast;
 import org.compiere.model.I_M_ForecastLine;
 import org.compiere.model.ModelValidator;
+import org.compiere.util.Env;
 
+import de.metas.i18n.IMsgBL;
 import de.metas.material.event.MaterialEventService;
 import de.metas.material.event.forecast.ForecastEvent;
 import lombok.NonNull;
@@ -21,29 +24,41 @@ import lombok.NonNull;
 @Interceptor(I_M_Forecast.class)
 public class M_Forecast
 {
-	public static final M_Forecast INSTANCE = new M_Forecast();
+	private static final String MSG_DOC_ACTION_NOT_ALLOWED_AFTER_COMPLETION = "M_Forecast_DocAction_Not_Allowed_After_Completion";
+	static final M_Forecast INSTANCE = new M_Forecast();
 
 	private M_Forecast()
 	{
 	}
 
+	/**
+	 * 
+	 * @param forecast
+	 * @param timing
+	 */
 	@DocValidate(timings = {
-			ModelValidator.TIMING_AFTER_CLOSE, // => send updated lines
-			ModelValidator.TIMING_AFTER_COMPLETE, // => send lines
-			ModelValidator.TIMING_AFTER_REACTIVATE, // delete
-			ModelValidator.TIMING_AFTER_UNCLOSE, // send updated lines
-			ModelValidator.TIMING_AFTER_REVERSEACCRUAL, // delete
-			ModelValidator.TIMING_AFTER_REVERSECORRECT, // delete
-			ModelValidator.TIMING_AFTER_VOID // delete
+			ModelValidator.TIMING_BEFORE_CLOSE,
+			ModelValidator.TIMING_BEFORE_REACTIVATE,
+			ModelValidator.TIMING_BEFORE_REVERSEACCRUAL,
+			ModelValidator.TIMING_BEFORE_REVERSECORRECT,
+			ModelValidator.TIMING_BEFORE_VOID
 	})
-	public void fireEvent2(@NonNull final I_M_Forecast forecast, final DocTimingType timing)
+	public void preventUnsupportedDocActions(@NonNull final I_M_Forecast forecast)
+	{
+		final IMsgBL msgBL = Services.get(IMsgBL.class);
+		final String message = msgBL.getMsg(Env.getCtx(), MSG_DOC_ACTION_NOT_ALLOWED_AFTER_COMPLETION);
+		throw new AdempiereException(message);
+	}
+
+	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
+	public void fireForecastEventOnComplete(@NonNull final I_M_Forecast forecast, @NonNull final DocTimingType timing)
 	{
 		final List<I_M_ForecastLine> forecastLines = retrieveForecastLines(forecast);
-		if(forecastLines.isEmpty())
+		if (forecastLines.isEmpty())
 		{
 			return;
 		}
-		
+
 		final ForecastEvent forecastEvent = M_ForecastEventCreator.createEventWithLinesAndTiming(
 				forecastLines,
 				timing);

@@ -1,4 +1,4 @@
-package de.metas.material.dispo.service;
+package de.metas.material.dispo.service.candidatechange;
 
 import org.adempiere.util.Check;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -7,9 +7,9 @@ import org.springframework.stereotype.Service;
 
 import de.metas.material.dispo.Candidate;
 import de.metas.material.dispo.CandidateRepository;
-import de.metas.material.dispo.service.candidatechangehandler.DemandCandiateCangeHandler;
-import de.metas.material.dispo.service.candidatechangehandler.StockUpCandiateCangeHandler;
-import de.metas.material.dispo.service.candidatechangehandler.SupplyCandiateCangeHandler;
+import de.metas.material.dispo.service.candidatechange.handler.DemandCandiateCangeHandler;
+import de.metas.material.dispo.service.candidatechange.handler.StockUpCandiateCangeHandler;
+import de.metas.material.dispo.service.candidatechange.handler.SupplyCandiateCangeHandler;
 import de.metas.material.event.MaterialEventService;
 import lombok.NonNull;
 
@@ -36,14 +36,8 @@ import lombok.NonNull;
  */
 @Service
 @Lazy // .. because MaterialEventService needs to be lazy
-public class CandidateChangeHandler
+public class CandidateChangeService
 {
-	//private final CandidateRepository candidateRepository;
-
-	//private final StockCandidateFactory candidateFactory;
-
-	//private final MaterialEventService materialEventService;
-
 	private final DemandCandiateCangeHandler demandCandiateCangeHandler;
 	
 	private final StockUpCandiateCangeHandler stockUpCandiateCangeHandler;
@@ -52,9 +46,9 @@ public class CandidateChangeHandler
 	
 	private final CandidateRepository candidateRepository;
 	
-	public CandidateChangeHandler(
+	public CandidateChangeService(
 			@NonNull final CandidateRepository candidateRepository,
-			@NonNull final StockCandidateFactory stockCandidateService,
+			@NonNull final StockCandidateService stockCandidateService,
 			@NonNull final MaterialEventService materialEventService)
 	{
 		this.candidateRepository = candidateRepository;

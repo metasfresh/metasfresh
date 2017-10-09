@@ -42,7 +42,7 @@ import lombok.NonNull;
  */
 @Service
 @Lazy
-public class MDEventListener implements MaterialEventListener
+public class MaterialDispoEventListenerFacade implements MaterialEventListener
 {
 
 	private final ProductionPlanEventHandler productionPlanEventHandler;
@@ -57,7 +57,7 @@ public class MDEventListener implements MaterialEventListener
 
 	private final ShipmentScheduleEventHandler shipmentScheduleEventHandler;
 
-	public MDEventListener(
+	public MaterialDispoEventListenerFacade(
 			@NonNull final DistributionPlanEventHandler distributionPlanEventHandler,
 			@NonNull final ProductionPlanEventHandler productionPlanEventHandler,
 			@NonNull final ForecastEventHandler forecastEventHandler,

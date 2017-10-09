@@ -13,15 +13,14 @@ package de.metas.handlingunits.model.validator;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.Collections;
@@ -54,38 +53,45 @@ public class M_ShipmentSchedule
 	public void init()
 	{
 		final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
-		
+
 		// task 08959 register the HU qty update listener
 		shipmentScheduleBL.addShipmentScheduleQtyUpdateListener(HUShipmentScheduleQtyUpdateListener.instance);
 	}
-	
+
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW })
 	public void updateFromOrderline(final I_M_ShipmentSchedule shipmentSchedule)
 	{
-		final I_C_OrderLine orderLine = InterfaceWrapperHelper.create(shipmentSchedule.getC_OrderLine(), I_C_OrderLine.class);
-
 		final int itemProductId;
 		final String packDescription;
-		if (orderLine == null)
+
+		if (shipmentSchedule.getC_OrderLine_ID() > 0)
 		{
-			itemProductId = -1;
-			packDescription = null;
+			final I_C_OrderLine orderLine = InterfaceWrapperHelper.create(shipmentSchedule.getC_OrderLine(), I_C_OrderLine.class);
+			itemProductId = orderLine.getM_HU_PI_Item_Product_ID();
+			packDescription = orderLine.getPackDescription();
 		}
 		else
 		{
-			itemProductId = orderLine.getM_HU_PI_Item_Product_ID();
-			packDescription = orderLine.getPackDescription();
+			itemProductId = -1;
+			packDescription = null;
 		}
 
 		shipmentSchedule.setM_HU_PI_Item_Product_ID(itemProductId);
 		shipmentSchedule.setPackDescription(packDescription);
 
-		updateLUTUQtys(shipmentSchedule, orderLine);
+		updateLUTUQtys(shipmentSchedule);
 	}
 
-	private void updateLUTUQtys(final I_M_ShipmentSchedule shipmentSchedule, final I_C_OrderLine fromOrderLine)
+	private void updateLUTUQtys(final I_M_ShipmentSchedule shipmentSchedule)
 	{
-		final BigDecimal qtyOrderedTU = fromOrderLine.getQtyEnteredTU();
+		if (shipmentSchedule.getC_OrderLine_ID() <= 0)
+		{
+			return;
+		}
+
+		final I_C_OrderLine orderLine = InterfaceWrapperHelper.create(shipmentSchedule.getC_OrderLine(), I_C_OrderLine.class);
+
+		final BigDecimal qtyOrderedTU = orderLine.getQtyEnteredTU();
 		shipmentSchedule.setQtyOrdered_TU(qtyOrderedTU);
 
 		// guard: if there is no PI Item Product => do nothing
@@ -192,11 +198,11 @@ public class M_ShipmentSchedule
 	public void invalidate(final I_M_ShipmentSchedule shipmentSchedule)
 	{
 		// 08746: make sure that at any rate, the schedule itself is invalidated, even if it has delivery rule "force"
-		Services.get(IShipmentSchedulePA.class).invalidate( 
+		Services.get(IShipmentSchedulePA.class).invalidate(
 				Collections.singletonList(
 						InterfaceWrapperHelper.create(shipmentSchedule, de.metas.inoutcandidate.model.I_M_ShipmentSchedule.class)),
 				InterfaceWrapperHelper.getTrxName(shipmentSchedule));
-		
+
 		Services.get(IShipmentScheduleInvalidateBL.class).invalidateSegmentForShipmentSchedule(shipmentSchedule);
 	}
 }

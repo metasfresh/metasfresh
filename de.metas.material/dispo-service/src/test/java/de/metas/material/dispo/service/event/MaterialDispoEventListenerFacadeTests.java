@@ -21,8 +21,8 @@ import de.metas.material.dispo.CandidateRepository;
 import de.metas.material.dispo.CandidateService;
 import de.metas.material.dispo.DispoTestUtils;
 import de.metas.material.dispo.model.I_MD_Candidate;
-import de.metas.material.dispo.service.CandidateChangeHandler;
-import de.metas.material.dispo.service.StockCandidateFactory;
+import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
+import de.metas.material.dispo.service.candidatechange.StockCandidateService;
 import de.metas.material.dispo.service.event.handler.DistributionPlanEventHandler;
 import de.metas.material.dispo.service.event.handler.ForecastEventHandler;
 import de.metas.material.dispo.service.event.handler.ProductionPlanEventHandler;
@@ -66,7 +66,7 @@ import mockit.Mocked;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public class MDEventListenerTests
+public class MaterialDispoEventListenerFacadeTests
 {
 	/** Watches the current tests and dumps the database to console in case of failure */
 	@Rule
@@ -78,7 +78,7 @@ public class MDEventListenerTests
 
 	public static final int productId = 40;
 
-	private MDEventListener mdEventListener;
+	private MaterialDispoEventListenerFacade mdEventListener;
 
 	private I_AD_Org org;
 
@@ -96,9 +96,9 @@ public class MDEventListenerTests
 		final CandidateRepository candidateRepository = new CandidateRepository();
 		final SupplyProposalEvaluator supplyProposalEvaluator = new SupplyProposalEvaluator(candidateRepository);
 
-		final StockCandidateFactory stockCandidateService = new StockCandidateFactory(candidateRepository);
+		final StockCandidateService stockCandidateService = new StockCandidateService(candidateRepository);
 
-		final CandidateChangeHandler candidateChangeHandler = new CandidateChangeHandler(candidateRepository, stockCandidateService, materialEventService);
+		final CandidateChangeService candidateChangeHandler = new CandidateChangeService(candidateRepository, stockCandidateService, materialEventService);
 
 		final CandidateService candidateService = new CandidateService(
 				candidateRepository,
@@ -120,7 +120,7 @@ public class MDEventListenerTests
 
 		final ReceiptScheduleEventHandler receiptScheduleEventHandler = new ReceiptScheduleEventHandler(candidateChangeHandler);
 
-		mdEventListener = new MDEventListener(
+		mdEventListener = new MaterialDispoEventListenerFacade(
 				distributionPlanEventHandler,
 				productionPlanEventHandler,
 				forecastEventHandler,

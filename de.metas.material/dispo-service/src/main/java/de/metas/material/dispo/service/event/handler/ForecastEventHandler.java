@@ -6,7 +6,7 @@ import de.metas.material.dispo.Candidate;
 import de.metas.material.dispo.Candidate.CandidateBuilder;
 import de.metas.material.dispo.Candidate.SubType;
 import de.metas.material.dispo.DemandCandidateDetail;
-import de.metas.material.dispo.service.CandidateChangeHandler;
+import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.dispo.service.event.EventUtil;
 import de.metas.material.event.forecast.Forecast;
 import de.metas.material.event.forecast.ForecastEvent;
@@ -38,14 +38,14 @@ import lombok.NonNull;
 @Service
 public class ForecastEventHandler
 {
-	private final CandidateChangeHandler candidateChangeHandler;
+	private final CandidateChangeService candidateChangeHandler;
 
 	/**
 	 * 
 	 * @param candidateChangeHandler
 	 * 
 	 */
-	public ForecastEventHandler(@NonNull final CandidateChangeHandler candidateChangeHandler)
+	public ForecastEventHandler(@NonNull final CandidateChangeService candidateChangeHandler)
 	{
 		this.candidateChangeHandler = candidateChangeHandler;
 	}

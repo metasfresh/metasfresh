@@ -35,8 +35,6 @@ public class ForecastLine
 {
 	private int forecastLineId;
 	
-	private boolean forecastLineDeleted;
-	
 	@NonNull
 	MaterialDescriptor materialDescriptor;
 	

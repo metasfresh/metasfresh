@@ -4,8 +4,8 @@ import org.springframework.stereotype.Service;
 
 import de.metas.material.dispo.Candidate;
 import de.metas.material.dispo.Candidate.Type;
-import de.metas.material.dispo.service.CandidateChangeHandler;
-import de.metas.material.dispo.service.StockCandidateFactory;
+import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
+import de.metas.material.dispo.service.candidatechange.StockCandidateService;
 import de.metas.material.event.TransactionEvent;
 import lombok.NonNull;
 
@@ -33,13 +33,13 @@ import lombok.NonNull;
 @Service
 public class TransactionEventHandler
 {
-	private final StockCandidateFactory stockCandidateService;
+	private final StockCandidateService stockCandidateService;
 
-	private final CandidateChangeHandler candidateChangeHandler;
+	private final CandidateChangeService candidateChangeHandler;
 
 	public TransactionEventHandler(
-			@NonNull final StockCandidateFactory stockCandidateService,
-			@NonNull final CandidateChangeHandler candidateChangeHandler)
+			@NonNull final StockCandidateService stockCandidateService,
+			@NonNull final CandidateChangeService candidateChangeHandler)
 	{
 		this.candidateChangeHandler = candidateChangeHandler;
 		this.stockCandidateService = stockCandidateService;

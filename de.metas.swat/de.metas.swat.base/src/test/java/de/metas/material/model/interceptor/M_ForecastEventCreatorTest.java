@@ -100,12 +100,12 @@ public class M_ForecastEventCreatorTest
 
 		final ForecastEvent result = M_ForecastEventCreator.createEventWithLinesAndTiming(
 				ImmutableList.of(forecastLine1, forecastLine2),
-				DocTimingType.AFTER_REACTIVATE);
+				DocTimingType.AFTER_COMPLETE);
 		assertThat(result).isNotNull();
 
 		final Forecast forecast = result.getForecast();
 		assertThat(forecast).isNotNull();
-		assertThat(forecast.getDocStatus()).isEqualTo(IDocument.STATUS_InProgress);
+		assertThat(forecast.getDocStatus()).isEqualTo(IDocument.STATUS_Completed);
 		assertThat(forecast.getForecastId()).isEqualTo(forecastModel.getM_Forecast_ID());
 
 		final List<ForecastLine> forecastLines = forecast.getForecastLines();
@@ -126,9 +126,6 @@ public class M_ForecastEventCreatorTest
 			final I_M_ForecastLine forecastLineRecord)
 	{
 		assertThat(forecastLineEventPojo.getForecastLineId()).isEqualTo(forecastLineRecord.getM_ForecastLine_ID());
-		assertThat(forecastLineEventPojo.isForecastLineDeleted())
-				.as("We created the event with timing='after_reactivate, so 'deleted' needs to be true")
-				.isTrue();
 		assertThat(forecastLineEventPojo.getReference()).isEqualTo(TableRecordReference.of(forecastLineRecord));
 		final MaterialDescriptor materialDescriptor = forecastLineEventPojo.getMaterialDescriptor();
 

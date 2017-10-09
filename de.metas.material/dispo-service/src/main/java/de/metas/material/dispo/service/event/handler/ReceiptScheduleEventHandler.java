@@ -5,7 +5,7 @@ import org.springframework.stereotype.Service;
 import de.metas.material.dispo.Candidate;
 import de.metas.material.dispo.Candidate.SubType;
 import de.metas.material.dispo.Candidate.Type;
-import de.metas.material.dispo.service.CandidateChangeHandler;
+import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.event.ReceiptScheduleEvent;
 import lombok.NonNull;
 
@@ -33,9 +33,9 @@ import lombok.NonNull;
 @Service
 public class ReceiptScheduleEventHandler
 {
-	private final CandidateChangeHandler candidateChangeHandler;
+	private final CandidateChangeService candidateChangeHandler;
 
-	public ReceiptScheduleEventHandler(@NonNull final CandidateChangeHandler candidateChangeHandler)
+	public ReceiptScheduleEventHandler(@NonNull final CandidateChangeService candidateChangeHandler)
 	{
 		this.candidateChangeHandler = candidateChangeHandler;
 	}

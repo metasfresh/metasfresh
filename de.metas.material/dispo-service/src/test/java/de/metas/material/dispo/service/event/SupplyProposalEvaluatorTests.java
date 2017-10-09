@@ -22,8 +22,8 @@ import de.metas.material.dispo.Candidate;
 import de.metas.material.dispo.Candidate.Type;
 import de.metas.material.dispo.CandidateRepository;
 import de.metas.material.dispo.CandidateService;
-import de.metas.material.dispo.service.CandidateChangeHandler;
-import de.metas.material.dispo.service.StockCandidateFactory;
+import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
+import de.metas.material.dispo.service.candidatechange.StockCandidateService;
 import de.metas.material.dispo.service.event.SupplyProposalEvaluator.SupplyProposal;
 import de.metas.material.dispo.service.event.handler.DistributionPlanEventHandler;
 import de.metas.material.dispo.service.event.handler.DistributionPlanEventHandlerTests;
@@ -99,7 +99,7 @@ public class SupplyProposalEvaluatorTests
 		candidateRepository = new CandidateRepository();
 		supplyProposalEvaluator = new SupplyProposalEvaluator(candidateRepository);
 
-		final CandidateChangeHandler candidateChangeHandler = new CandidateChangeHandler(candidateRepository, new StockCandidateFactory(candidateRepository), materialEventService);
+		final CandidateChangeService candidateChangeHandler = new CandidateChangeService(candidateRepository, new StockCandidateService(candidateRepository), materialEventService);
 
 		distributionPlanEventHandler = new DistributionPlanEventHandler(
 				candidateRepository,
@@ -230,27 +230,27 @@ public class SupplyProposalEvaluatorTests
 		// propose what would create an additional demand on A and an additional supply on B. nothing wrong with that
 		final SupplyProposal supplyProposal1 = SupplyProposal.builder()
 				.date(t1)
-				.sourceWarehouseId(MDEventListenerTests.fromWarehouseId)
-				.destWarehouseId(MDEventListenerTests.intermediateWarehouseId)
-				.productId(MDEventListenerTests.productId)
+				.sourceWarehouseId(MaterialDispoEventListenerFacadeTests.fromWarehouseId)
+				.destWarehouseId(MaterialDispoEventListenerFacadeTests.intermediateWarehouseId)
+				.productId(MaterialDispoEventListenerFacadeTests.productId)
 				.build();
 		assertThat(supplyProposalEvaluator.evaluateSupply(supplyProposal1), is(true));
 
 		// propose what would create an additional demand on B and an additional supply on C. nothing wrong with that either
 		final SupplyProposal supplyProposal2 = SupplyProposal.builder()
 				.date(t1)
-				.sourceWarehouseId(MDEventListenerTests.intermediateWarehouseId)
-				.destWarehouseId(MDEventListenerTests.toWarehouseId)
-				.productId(MDEventListenerTests.productId)
+				.sourceWarehouseId(MaterialDispoEventListenerFacadeTests.intermediateWarehouseId)
+				.destWarehouseId(MaterialDispoEventListenerFacadeTests.toWarehouseId)
+				.productId(MaterialDispoEventListenerFacadeTests.productId)
 				.build();
 		assertThat(supplyProposalEvaluator.evaluateSupply(supplyProposal2), is(true));
 
 		// propose what would create an additional demand on A and an additional supply on C. nothing wrong with that either
 		final SupplyProposal supplyProposal3 = SupplyProposal.builder()
 				.date(t1)
-				.sourceWarehouseId(MDEventListenerTests.fromWarehouseId)
-				.destWarehouseId(MDEventListenerTests.toWarehouseId)
-				.productId(MDEventListenerTests.productId)
+				.sourceWarehouseId(MaterialDispoEventListenerFacadeTests.fromWarehouseId)
+				.destWarehouseId(MaterialDispoEventListenerFacadeTests.toWarehouseId)
+				.productId(MaterialDispoEventListenerFacadeTests.productId)
 				.build();
 		assertThat(supplyProposalEvaluator.evaluateSupply(supplyProposal3), is(true));
 	}
@@ -269,9 +269,9 @@ public class SupplyProposalEvaluatorTests
 		// note that we don't need to look at the qty at all
 		final SupplyProposal supplyProposal1 = SupplyProposal.builder()
 				.date(t0) // the proposal needs to be made for the time before the two DistibutionPlanEvents occured
-				.sourceWarehouseId(MDEventListenerTests.toWarehouseId)
-				.destWarehouseId(MDEventListenerTests.fromWarehouseId)
-				.productId(MDEventListenerTests.productId)
+				.sourceWarehouseId(MaterialDispoEventListenerFacadeTests.toWarehouseId)
+				.destWarehouseId(MaterialDispoEventListenerFacadeTests.fromWarehouseId)
+				.productId(MaterialDispoEventListenerFacadeTests.productId)
 				.build();
 		assertThat(supplyProposalEvaluator.evaluateSupply(supplyProposal1), is(false));
 	}

@@ -15,7 +15,7 @@ import de.metas.material.dispo.CandidateRepository;
 import de.metas.material.dispo.CandidateService;
 import de.metas.material.dispo.DemandCandidateDetail;
 import de.metas.material.dispo.DistributionCandidateDetail;
-import de.metas.material.dispo.service.CandidateChangeHandler;
+import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.dispo.service.event.EventUtil;
 import de.metas.material.dispo.service.event.SupplyProposalEvaluator;
 import de.metas.material.dispo.service.event.SupplyProposalEvaluator.SupplyProposal;
@@ -51,7 +51,7 @@ public class DistributionPlanEventHandler
 {
 	private final CandidateRepository candidateRepository;
 	private final SupplyProposalEvaluator supplyProposalEvaluator;
-	private final CandidateChangeHandler candidateChangeHandler;
+	private final CandidateChangeService candidateChangeHandler;
 	private final CandidateService candidateService;
 
 	/**
@@ -62,7 +62,7 @@ public class DistributionPlanEventHandler
 	 */
 	public DistributionPlanEventHandler(
 			@NonNull final CandidateRepository candidateRepository,
-			@NonNull final CandidateChangeHandler candidateChangeHandler,
+			@NonNull final CandidateChangeService candidateChangeHandler,
 			@NonNull final SupplyProposalEvaluator supplyProposalEvaluator,
 			@NonNull final CandidateService candidateService)
 	{

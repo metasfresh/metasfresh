@@ -1,4 +1,4 @@
-package de.metas.material.dispo.service.candidatechangehandler;
+package de.metas.material.dispo.service.candidatechange.handler;
 
 import java.math.BigDecimal;
 import java.util.Optional;
@@ -47,7 +47,7 @@ public class StockUpCandiateCangeHandler
 	
 	public Candidate onStockUpCandidateNewOrChange(@NonNull final Candidate candidate)
 	{
-		Preconditions.checkArgument(candidate.getType() == Type.STOCK_UP, "Given parameter 'demandCandidate' has type=%s; demandCandidate=%s", candidate.getType(), candidate);
+		Preconditions.checkArgument(candidate.getType() == Type.STOCK_UP, "Given parameter 'candidate' has type=%s; demandCandidate=%s", candidate.getType(), candidate);
 
 		final Candidate candidateWithQtyDelta = candidateRepository.addOrUpdateOverwriteStoredSeqNo(candidate);
 

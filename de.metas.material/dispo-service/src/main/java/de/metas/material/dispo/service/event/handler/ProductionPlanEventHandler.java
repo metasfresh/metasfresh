@@ -9,7 +9,7 @@ import de.metas.material.dispo.Candidate.Type;
 import de.metas.material.dispo.CandidateService;
 import de.metas.material.dispo.DemandCandidateDetail;
 import de.metas.material.dispo.ProductionCandidateDetail;
-import de.metas.material.dispo.service.CandidateChangeHandler;
+import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.dispo.service.event.EventUtil;
 import de.metas.material.event.MaterialDescriptor;
 import de.metas.material.event.pporder.PPOrder;
@@ -41,7 +41,7 @@ import lombok.NonNull;
 @Service
 public class ProductionPlanEventHandler
 {
-	private final CandidateChangeHandler candidateChangeHandler;
+	private final CandidateChangeService candidateChangeHandler;
 	private final CandidateService candidateService;
 
 	/**
@@ -50,7 +50,7 @@ public class ProductionPlanEventHandler
 	 * @param candidateService needed in case we directly request a {@link ProductionPlanEvent}'s proposed PP_Order to be created.
 	 */
 	public ProductionPlanEventHandler(
-			@NonNull final CandidateChangeHandler candidateChangeHandler,
+			@NonNull final CandidateChangeService candidateChangeHandler,
 			@NonNull final CandidateService candidateService)
 	{
 		this.candidateChangeHandler = candidateChangeHandler;

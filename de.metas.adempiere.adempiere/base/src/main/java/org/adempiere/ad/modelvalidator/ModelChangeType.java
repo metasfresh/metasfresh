@@ -48,10 +48,12 @@ public enum ModelChangeType
 	 * <li>This processing can take place immediately after the actual processing, but also later on (e.g. batch-processing on the server)</li>
 	 * <li>If the model validator's modelChange() method throws an exception or returns a string, an AD_Issue is created</li>
 	 * </ul>
+	 * 
+	 * @deprecated see {@link ModelValidator#TYPE_SUBSEQUENT}
 	 */
 	// metas-ts 0176
-	SUBSEQUENT(ModelValidator.TYPE_SUBSEQUENT),
-
+	@Deprecated
+	SUBSEQUENT(ModelValidator.TYPE_SUBSEQUENT)
 	;
 
 	//

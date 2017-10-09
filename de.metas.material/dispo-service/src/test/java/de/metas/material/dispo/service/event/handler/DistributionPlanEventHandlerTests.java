@@ -29,9 +29,9 @@ import de.metas.material.dispo.CandidateRepository;
 import de.metas.material.dispo.CandidateService;
 import de.metas.material.dispo.DispoTestUtils;
 import de.metas.material.dispo.model.I_MD_Candidate;
-import de.metas.material.dispo.service.CandidateChangeHandler;
-import de.metas.material.dispo.service.StockCandidateFactory;
-import de.metas.material.dispo.service.event.MDEventListener;
+import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
+import de.metas.material.dispo.service.candidatechange.StockCandidateService;
+import de.metas.material.dispo.service.event.MaterialDispoEventListenerFacade;
 import de.metas.material.dispo.service.event.SupplyProposalEvaluator;
 import de.metas.material.event.EventDescr;
 import de.metas.material.event.MaterialEventService;
@@ -121,7 +121,7 @@ public class DistributionPlanEventHandlerTests
 
 		distributionPlanEventHandler = new DistributionPlanEventHandler(
 				candidateRepository,
-				new CandidateChangeHandler(candidateRepository, new StockCandidateFactory(candidateRepository), materialEventService),
+				new CandidateChangeService(candidateRepository, new StockCandidateService(candidateRepository), materialEventService),
 				supplyProposalEvaluator,
 				new CandidateService(candidateRepository, materialEventService));
 	}
@@ -212,7 +212,7 @@ public class DistributionPlanEventHandlerTests
 	}
 
 	/**
-	 * Submits two DistributionPlanEvent to the {@link MDEventListener}.
+	 * Submits two DistributionPlanEvent to the {@link MaterialDispoEventListenerFacade}.
 	 */
 	@Test
 	public void testTwoDistibutionPlanEvents()

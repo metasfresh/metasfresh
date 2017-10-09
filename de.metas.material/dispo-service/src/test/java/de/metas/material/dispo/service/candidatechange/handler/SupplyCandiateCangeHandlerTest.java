@@ -1,4 +1,4 @@
-package de.metas.material.dispo.service.candidatechangehandlers;
+package de.metas.material.dispo.service.candidatechange.handler;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
@@ -30,8 +30,8 @@ import de.metas.material.dispo.Candidate.Type;
 import de.metas.material.dispo.CandidateRepository;
 import de.metas.material.dispo.DispoTestUtils;
 import de.metas.material.dispo.model.I_MD_Candidate;
-import de.metas.material.dispo.service.StockCandidateFactory;
-import de.metas.material.dispo.service.candidatechangehandler.SupplyCandiateCangeHandler;
+import de.metas.material.dispo.service.candidatechange.StockCandidateService;
+import de.metas.material.dispo.service.candidatechange.handler.SupplyCandiateCangeHandler;
 import de.metas.material.event.MaterialDescriptor;
 import de.metas.material.event.MaterialEventService;
 import mockit.Mocked;
@@ -79,7 +79,7 @@ public class SupplyCandiateCangeHandlerTest
 
 	private SupplyCandiateCangeHandler supplyCandiateCangeHandler;
 
-	private StockCandidateFactory stockCandidateService;
+	private StockCandidateService stockCandidateService;
 
 	@Before
 	public void init()
@@ -97,7 +97,7 @@ public class SupplyCandiateCangeHandlerTest
 
 		final CandidateRepository candidateRepository = new CandidateRepository();
 
-		stockCandidateService = new StockCandidateFactory(candidateRepository);
+		stockCandidateService = new StockCandidateService(candidateRepository);
 
 		supplyCandiateCangeHandler = SupplyCandiateCangeHandler.builder()
 				.candidateRepository(candidateRepository)

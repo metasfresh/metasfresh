@@ -24,8 +24,8 @@ import de.metas.material.dispo.CandidateRepository;
 import de.metas.material.dispo.DispoTestUtils;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.X_MD_Candidate;
-import de.metas.material.dispo.service.CandidateChangeHandler;
-import de.metas.material.dispo.service.StockCandidateFactory;
+import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
+import de.metas.material.dispo.service.candidatechange.StockCandidateService;
 import de.metas.material.event.EventDescr;
 import de.metas.material.event.MaterialDemandEvent;
 import de.metas.material.event.MaterialDescriptor;
@@ -81,9 +81,9 @@ public class ForecastEventHandlerTest
 		final CandidateRepository candidateRepository = new CandidateRepository();
 
 		forecastEventHandler = new ForecastEventHandler(
-				new CandidateChangeHandler(
+				new CandidateChangeService(
 						candidateRepository,
-						new StockCandidateFactory(candidateRepository),
+						new StockCandidateService(candidateRepository),
 						materialEventService));
 	}
 
@@ -156,7 +156,6 @@ public class ForecastEventHandlerTest
 	{
 		final ForecastLine forecastLine = ForecastLine.builder()
 				.forecastLineId(300)
-				.forecastLineDeleted(false)
 				.materialDescriptor(MaterialDescriptor.builder()
 						.productId(PRODUCT_ID)
 						.warehouseId(WAREHOUSE_ID)

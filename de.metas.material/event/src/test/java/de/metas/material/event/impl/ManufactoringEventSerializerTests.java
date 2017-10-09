@@ -220,7 +220,6 @@ public class ManufactoringEventSerializerTests
 				.forecastLineId(30)
 				.materialDescriptor(materialDescriptor)
 				.reference(TableRecordReference.of("table", 24))
-				.forecastLineDeleted(false)
 				.build();
 		
 		final Forecast forecast = Forecast.builder()

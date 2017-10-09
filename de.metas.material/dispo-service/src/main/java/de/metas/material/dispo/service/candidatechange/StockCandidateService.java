@@ -1,4 +1,4 @@
-package de.metas.material.dispo.service;
+package de.metas.material.dispo.service.candidatechange;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -41,11 +41,11 @@ import lombok.NonNull;
  */
 
 @Service
-public class StockCandidateFactory
+public class StockCandidateService
 {
 	private final CandidateRepository candidateRepository;
 
-	public StockCandidateFactory(@NonNull final CandidateRepository candidateRepository)
+	public StockCandidateService(@NonNull final CandidateRepository candidateRepository)
 	{
 		this.candidateRepository = candidateRepository;
 	}

@@ -1,4 +1,4 @@
-package de.metas.material.dispo.service;
+package de.metas.material.dispo.service.candidatechange;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
@@ -20,6 +20,7 @@ import org.junit.Test;
 
 import de.metas.material.dispo.Candidate;
 import de.metas.material.dispo.Candidate.Type;
+import de.metas.material.dispo.service.candidatechange.StockCandidateService;
 import de.metas.material.dispo.CandidateRepository;
 import de.metas.material.event.MaterialDescriptor;
 
@@ -45,7 +46,7 @@ import de.metas.material.event.MaterialDescriptor;
  * #L%
  */
 
-public class StockCandidateFactoryTests
+public class StockCandidateServiceTests
 {
 	private final Date now = SystemTime.asDate();
 	private final Date earlier = TimeUtil.addMinutes(now, -10);
@@ -57,7 +58,7 @@ public class StockCandidateFactoryTests
 
 	private I_M_Warehouse warehouse;
 
-	private StockCandidateFactory candidateFactory;
+	private StockCandidateService candidateFactory;
 
 	@Before
 	public void init()
@@ -78,7 +79,7 @@ public class StockCandidateFactoryTests
 		save(warehouse);
 
 		final CandidateRepository candidateRepository = new CandidateRepository();
-		candidateFactory = new StockCandidateFactory(candidateRepository);
+		candidateFactory = new StockCandidateService(candidateRepository);
 
 		final MaterialDescriptor materialDescr = MaterialDescriptor.builder()
 				.productId(product.getM_Product_ID())

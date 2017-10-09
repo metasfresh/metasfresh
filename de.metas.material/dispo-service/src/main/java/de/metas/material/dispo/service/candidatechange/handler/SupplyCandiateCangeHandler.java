@@ -1,11 +1,11 @@
-package de.metas.material.dispo.service.candidatechangehandler;
+package de.metas.material.dispo.service.candidatechange.handler;
 
 import com.google.common.base.Preconditions;
 
 import de.metas.material.dispo.Candidate;
 import de.metas.material.dispo.Candidate.Type;
+import de.metas.material.dispo.service.candidatechange.StockCandidateService;
 import de.metas.material.dispo.CandidateRepository;
-import de.metas.material.dispo.service.StockCandidateFactory;
 import de.metas.material.event.MaterialEventService;
 import lombok.Builder;
 import lombok.NonNull;
@@ -42,7 +42,7 @@ public class SupplyCandiateCangeHandler
 	private final MaterialEventService materialEventService;
 	
 	@NonNull
-	private final StockCandidateFactory stockCandidateService;
+	private final StockCandidateService stockCandidateService;
 	
 	/**
 	 * Call this one if the system was notified about a new or changed supply candidate.

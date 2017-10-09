@@ -1,4 +1,4 @@
-package de.metas.material.dispo.service;
+package de.metas.material.dispo.service.candidatechange;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
@@ -39,6 +39,7 @@ import de.metas.material.dispo.CandidatesSegment;
 import de.metas.material.dispo.CandidatesSegment.DateOperator;
 import de.metas.material.dispo.DispoTestUtils;
 import de.metas.material.dispo.model.I_MD_Candidate;
+import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.event.MaterialDescriptor;
 import de.metas.material.event.MaterialEventService;
 import lombok.NonNull;
@@ -88,12 +89,12 @@ public class CandidateChangeHandlerTests
 
 	private CandidateRepository candidateRepository;
 
-	private CandidateChangeHandler candidateChangeHandler;
+	private CandidateChangeService candidateChangeHandler;
 
 	@Mocked
 	private MaterialEventService materialEventService;
 
-	private StockCandidateFactory stockCandidateService;
+	private StockCandidateService stockCandidateService;
 
 	@Before
 	public void init()
@@ -116,16 +117,16 @@ public class CandidateChangeHandlerTests
 		InterfaceWrapperHelper.save(uom);
 
 		candidateRepository = new CandidateRepository();
-		stockCandidateService = new StockCandidateFactory(candidateRepository);
+		stockCandidateService = new StockCandidateService(candidateRepository);
 
-		candidateChangeHandler = new CandidateChangeHandler(
+		candidateChangeHandler = new CandidateChangeService(
 				candidateRepository,
 				stockCandidateService,
 				materialEventService);
 	}
 
 	/**
-	 * Verifies that {@link CandidateChangeHandler#applyDeltaToLaterStockCandidates(CandidatesSegment, BigDecimal)} applies the given delta to the right records.
+	 * Verifies that {@link CandidateChangeService#applyDeltaToLaterStockCandidates(CandidatesSegment, BigDecimal)} applies the given delta to the right records.
 	 * Only records that have a <i>different</i> M_Warenhouse_ID shall not be touched.
 	 */
 	@Test
@@ -424,7 +425,7 @@ public class CandidateChangeHandlerTests
 	}
 
 	/**
-	 * Verifies that {@link CandidateChangeHandler#addOrUpdateStock(Candidate)} also works if the candidate we update with is not a stock candidate.
+	 * Verifies that {@link CandidateChangeService#addOrUpdateStock(Candidate)} also works if the candidate we update with is not a stock candidate.
 	 */
 	@Test
 	public void testOnStockCandidateNewOrChangedNotStockType()

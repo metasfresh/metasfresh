@@ -8,13 +8,12 @@ import org.compiere.model.I_M_Forecast;
 import org.compiere.model.I_M_ForecastLine;
 
 import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableList;
 
 import de.metas.material.event.EventDescr;
 import de.metas.material.event.MaterialDescriptor;
 import de.metas.material.event.forecast.Forecast;
-import de.metas.material.event.forecast.ForecastEvent;
 import de.metas.material.event.forecast.Forecast.ForecastBuilder;
+import de.metas.material.event.forecast.ForecastEvent;
 import de.metas.material.event.forecast.ForecastLine;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
@@ -51,7 +50,6 @@ public class M_ForecastEventCreator
 		Preconditions.checkArgument(!forecastLines.isEmpty(), "Param 'forecastLines' may not be empty; timing=%s", timing);
 
 		final I_M_Forecast forecastModel = forecastLines.get(0).getM_Forecast();
-		final boolean deleted = isDeletedGivenThatTiming(timing);
 
 		final ForecastBuilder forecastBuilder = Forecast.builder()
 				.forecastId(forecastModel.getM_Forecast_ID())
@@ -59,8 +57,7 @@ public class M_ForecastEventCreator
 
 		for (final I_M_ForecastLine forecastLine : forecastLines)
 		{
-			forecastBuilder.forecastLine(
-					createForecastLineWithDeletedFlag(forecastLine, deleted));
+			forecastBuilder.forecastLine(createForecastLine(forecastLine));
 		}
 
 		final ForecastEvent forecastEvent = ForecastEvent
@@ -72,9 +69,7 @@ public class M_ForecastEventCreator
 		return forecastEvent;
 	}
 
-	private ForecastLine createForecastLineWithDeletedFlag(
-			@NonNull final I_M_ForecastLine forecastLine,
-			final boolean deleted)
+	private ForecastLine createForecastLine(@NonNull final I_M_ForecastLine forecastLine)
 	{
 		final MaterialDescriptor materialDescriptor = MaterialDescriptor.builder()
 				.date(forecastLine.getDatePromised())
@@ -85,20 +80,8 @@ public class M_ForecastEventCreator
 
 		return ForecastLine.builder()
 				.forecastLineId(forecastLine.getM_ForecastLine_ID())
-				.forecastLineDeleted(deleted)
 				.materialDescriptor(materialDescriptor)
 				.reference(TableRecordReference.of(forecastLine))
 				.build();
 	}
-
-	private static boolean isDeletedGivenThatTiming(final DocTimingType timing)
-	{
-		final ImmutableList<DocTimingType> timingsForDelete = ImmutableList.of(
-				DocTimingType.AFTER_REACTIVATE,
-				DocTimingType.AFTER_REVERSEACCRUAL,
-				DocTimingType.AFTER_REVERSECORRECT,
-				DocTimingType.AFTER_VOID);
-		return timingsForDelete.contains(timing);
-	}
-
 }

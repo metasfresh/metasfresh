@@ -1,4 +1,4 @@
-package de.metas.material.dispo.service.candidatechangehandler;
+package de.metas.material.dispo.service.candidatechange.handler;
 
 import java.math.BigDecimal;
 import java.util.Optional;
@@ -7,8 +7,8 @@ import com.google.common.base.Preconditions;
 
 import de.metas.material.dispo.Candidate;
 import de.metas.material.dispo.Candidate.Type;
+import de.metas.material.dispo.service.candidatechange.StockCandidateService;
 import de.metas.material.dispo.CandidateRepository;
-import de.metas.material.dispo.service.StockCandidateFactory;
 import de.metas.material.event.MaterialDemandEvent;
 import de.metas.material.event.MaterialEventService;
 import lombok.Builder;
@@ -46,7 +46,7 @@ public class DemandCandiateCangeHandler
 	private final MaterialEventService materialEventService;
 	
 	@NonNull
-	private final StockCandidateFactory stockCandidateService;
+	private final StockCandidateService stockCandidateService;
 
 	
 	/**
