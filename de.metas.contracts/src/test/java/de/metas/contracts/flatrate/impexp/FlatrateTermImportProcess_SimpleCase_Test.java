@@ -55,7 +55,7 @@ public class FlatrateTermImportProcess_SimpleCase_Test extends AbstractFlatrateT
 		final Timestamp startDate = TimeUtil.parseTimestamp("2017-09-10");
 		final Timestamp endDate = TimeUtil.parseTimestamp("2017-12-10");
 		final Timestamp masterEndDate = TimeUtil.addDays(startDate, 90);
-		final Timestamp expectedEndDate = TimeUtil.parseTimestamp("2018-09-10");
+		final Timestamp expectedEndDate = TimeUtil.parseTimestamp("2018-09-09");
 
 		final int bpartnerId = prepareBPartner();
 
