@@ -16,6 +16,10 @@ Here come the actual release notes:
 
 ## Features
 * metasfresh-app
+  * [#2607](https://github.com/metasfresh/metasfresh/issues/2607) Window Design Webui: Improve window Internal Use Inventory
+    * Adapting the Window to current Design Guidelines in WebUI, new Sorting and Filter Criteria. Adding Translations for en_US.
+  * [#2608](https://github.com/metasfresh/metasfresh/issues/2608) Window Design WebUI: Improve Payment Allocation window
+    * Improving Payment Allocation Window, adding Translations for en_US and adapting to current WebUI Guidelines.
   * [#2609](https://github.com/metasfresh/metasfresh/issues/2609) Window Design WebUI : Bank Statement Improvements
     * Improving the Fields Translations and adding Layout adaptions to Bank Statement Window in WebUI.
   * [#2636](https://github.com/metasfresh/metasfresh/issues/2636) Webui Report Design : Rüstliste translations
