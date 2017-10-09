@@ -58,8 +58,8 @@ public class C_Flatrate_DataEntry
 	private static final String MSG_DATA_ENTRY_EXISTING_CORRECTION_ENTRY_0P = "DataEntry_Existing_Correction_Entry";
 	public static final String MSG_DATA_ENTRY_EXISTING_CLOSING_ENTRY_0P = "DataEntry_Existing_Closing_Entry";
 
-	final transient IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
-	final transient IFlatrateDAO flatrateDB = Services.get(IFlatrateDAO.class);
+	final private static transient IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
+	final private static transient IFlatrateDAO flatrateDB = Services.get(IFlatrateDAO.class);
 
 	public static final transient C_Flatrate_DataEntry instance = new C_Flatrate_DataEntry();
 
