@@ -6,6 +6,7 @@ import java.util.function.Supplier;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
 import org.compiere.util.Env;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -73,8 +74,13 @@ public class PickingSlotViewFactory implements IViewFactory
 	{
 		// TODO: cache it
 
+		if (!PickingConstants.WINDOWID_PickingSlotView.equals(windowId))
+		{
+			throw new AdempiereException("windowId shall be " + PickingConstants.WINDOWID_PickingSlotView);
+		}
+
 		return ViewLayout.builder()
-				.setWindowId(PickingConstants.WINDOWID_PickingSlotView)
+				.setWindowId(windowId)
 				.setCaption("Picking slots")
 				.addElementsFromViewRowClass(PickingSlotRow.class, viewDataType)
 				.setHasTreeSupport(true)

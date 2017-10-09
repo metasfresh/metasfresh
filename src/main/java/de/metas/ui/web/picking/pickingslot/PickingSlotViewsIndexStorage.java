@@ -56,6 +56,11 @@ import lombok.NonNull;
 @Component
 public class PickingSlotViewsIndexStorage implements IViewsIndexStorage
 {
+	//@formatter:off
+	@Override
+	public WindowId getWindowId() { return PickingConstants.WINDOWID_PickingSlotView; }
+	//@formatter:off
+	
 	@Autowired
 	private PickingSlotViewFactory pickingSlotViewFactory;
 
@@ -73,12 +78,6 @@ public class PickingSlotViewsIndexStorage implements IViewsIndexStorage
 	private IViewsRepository getViewsRepository()
 	{
 		return viewsRepository;
-	}
-
-	@Override
-	public WindowId getWindowId()
-	{
-		return PickingConstants.WINDOWID_PickingSlotView;
 	}
 
 	@Override

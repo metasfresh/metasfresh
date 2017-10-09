@@ -142,7 +142,7 @@ public class PickingSlotViewRepository
 	 */
 	// when https://github.com/metasfresh/metasfresh-webui-api/issues/509 is done,
 	// we shall re-implement this method to use the view's streamByIds(DocumentIdsSelection.ALL) to avoid the DB access
-	// ..ad least for checkPreconditionsApplicable()
+	// ..at least for checkPreconditionsApplicable()
 	public List<PickingSlotRow> retrieveRows(@NonNull final PickingSlotRepoQuery query)
 	{
 		Check.errorIf(query.getShipmentScheduleIds().isEmpty(), "Given query has no shipmentScheduleIds; query={}", query);
