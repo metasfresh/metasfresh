@@ -60,14 +60,14 @@ import lombok.NonNull;
  *
  */
 @Service
-/* package */class PickingHuRowsRepository
+/* package */class PickingHURowsRepository
 {
 	private final HUEditorViewRepository huEditorRepo;
 
 	/**
 	 * Creates an instance that builds its own {@link HUEditorViewRepository}.
 	 */
-	public PickingHuRowsRepository()
+	public PickingHURowsRepository()
 	{
 		this(HUEditorViewRepository.builder()
 				.windowId(PickingConstants.WINDOWID_PickingSlotView)
@@ -82,7 +82,7 @@ import lombok.NonNull;
 	 * @param huEditorRepo
 	 */
 	@VisibleForTesting
-	PickingHuRowsRepository(@NonNull final HUEditorViewRepository huEditorRepo)
+	PickingHURowsRepository(@NonNull final HUEditorViewRepository huEditorRepo)
 	{
 		this.huEditorRepo = huEditorRepo;
 	}

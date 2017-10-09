@@ -171,7 +171,7 @@ public class PickingSlotViewRepository
 		// retrieve picked HU rows (if any) to be displayed below there respective picking slots
 		final ListMultimap<Integer, PickedHUEditorRow> huEditorRowsByPickingSlotId = pickingHUsRepo.retrievePickedHUsIndexedByPickingSlotId(query);
 
-		final Predicate<? super I_M_PickingSlot> pickingCandidatesFilter = createPickingCandiodatesFilter(query, huEditorRowsByPickingSlotId);
+		final Predicate<? super I_M_PickingSlot> pickingCandidatesFilter = createPickingCandidatesFilter(query, huEditorRowsByPickingSlotId);
 
 		final ImmutableList<PickingSlotRow> result = pickingSlots.stream() // get stream of I_M_PickingSlot
 				.filter(pickingCandidatesFilter)
@@ -202,7 +202,7 @@ public class PickingSlotViewRepository
 		return pickingSlots;
 	}
 
-	private static Predicate<? super I_M_PickingSlot> createPickingCandiodatesFilter(final PickingSlotRepoQuery query, final ListMultimap<Integer, PickedHUEditorRow> huEditorRowsByPickingSlotId)
+	private static Predicate<? super I_M_PickingSlot> createPickingCandidatesFilter(final PickingSlotRepoQuery query, final ListMultimap<Integer, PickedHUEditorRow> huEditorRowsByPickingSlotId)
 	{
 		final Predicate<? super I_M_PickingSlot> pickingCandidatesFilter = pickingSlot -> {
 
