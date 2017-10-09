@@ -11,17 +11,17 @@ import com.google.common.base.Preconditions;
 
 import de.metas.material.dispo.Candidate.SubType;
 import de.metas.material.dispo.Candidate.Type;
-import de.metas.material.event.DDOrderRequestedEvent;
 import de.metas.material.event.EventDescr;
 import de.metas.material.event.MaterialEventService;
-import de.metas.material.event.PPOrderRequestedEvent;
 import de.metas.material.event.ddorder.DDOrder;
 import de.metas.material.event.ddorder.DDOrder.DDOrderBuilder;
 import de.metas.material.event.ddorder.DDOrderLine;
+import de.metas.material.event.ddorder.DDOrderRequestedEvent;
 import de.metas.material.event.ddorder.DDOrderLine.DDOrderLineBuilder;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrder.PPOrderBuilder;
 import de.metas.material.event.pporder.PPOrderLine;
+import de.metas.material.event.pporder.PPOrderRequestedEvent;
 import lombok.NonNull;
 
 /*

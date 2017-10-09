@@ -1,4 +1,4 @@
-package de.metas.material.dispo.service;
+package de.metas.material.dispo.service.candidatechange;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
@@ -8,7 +8,6 @@ import static org.junit.Assert.assertThat;
 import java.math.BigDecimal;
 import java.util.Date;
 
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_AD_Org;
@@ -20,9 +19,10 @@ import org.junit.Before;
 import org.junit.Test;
 
 import de.metas.material.dispo.Candidate;
-import de.metas.material.dispo.CandidateRepository;
 import de.metas.material.dispo.Candidate.Type;
-import de.metas.material.dispo.service.CandidateFactory;
+import de.metas.material.dispo.service.candidatechange.StockCandidateService;
+import de.metas.material.dispo.CandidateRepository;
+import de.metas.material.event.MaterialDescriptor;
 
 /*
  * #%L
@@ -46,7 +46,7 @@ import de.metas.material.dispo.service.CandidateFactory;
  * #L%
  */
 
-public class CandidateFactoryTests
+public class StockCandidateServiceTests
 {
 	private final Date now = SystemTime.asDate();
 	private final Date earlier = TimeUtil.addMinutes(now, -10);
@@ -54,15 +54,11 @@ public class CandidateFactoryTests
 
 	private I_AD_Org org;
 
-	private I_C_UOM uom;
-
 	private I_M_Product product;
 
 	private I_M_Warehouse warehouse;
 
-	private CandidateRepository candidateRepository;
-
-	private CandidateFactory candidateFactory;
+	private StockCandidateService candidateFactory;
 
 	@Before
 	public void init()
@@ -72,29 +68,33 @@ public class CandidateFactoryTests
 		org = newInstance(I_AD_Org.class);
 		save(org);
 
-		uom = InterfaceWrapperHelper.newInstance(I_C_UOM.class);
-		InterfaceWrapperHelper.save(uom);
+		final I_C_UOM uom = newInstance(I_C_UOM.class);
+		save(uom);
 
-		product = InterfaceWrapperHelper.newInstance(I_M_Product.class);
+		product = newInstance(I_M_Product.class);
 		product.setC_UOM(uom);
-		InterfaceWrapperHelper.save(product);
+		save(product);
 
-		warehouse = InterfaceWrapperHelper.newInstance(I_M_Warehouse.class);
-		InterfaceWrapperHelper.save(warehouse);
+		warehouse = newInstance(I_M_Warehouse.class);
+		save(warehouse);
 
-		candidateRepository = new CandidateRepository();
-		candidateFactory = new CandidateFactory(candidateRepository);
+		final CandidateRepository candidateRepository = new CandidateRepository();
+		candidateFactory = new StockCandidateService(candidateRepository);
 
-		final Candidate stockCandidate = Candidate.builder()
-				.type(Type.STOCK)
-				.clientId(org.getAD_Client_ID())
-				.orgId(org.getAD_Org_ID())
+		final MaterialDescriptor materialDescr = MaterialDescriptor.builder()
 				.productId(product.getM_Product_ID())
 				.warehouseId(warehouse.getM_Warehouse_ID())
 				.quantity(new BigDecimal("10"))
 				.date(now)
 				.build();
-		candidateRepository.addOrUpdate(stockCandidate);
+
+		final Candidate stockCandidate = Candidate.builder()
+				.type(Type.STOCK)
+				.clientId(org.getAD_Client_ID())
+				.orgId(org.getAD_Org_ID())
+				.materialDescr(materialDescr)
+				.build();
+		candidateRepository.addOrUpdateOverwriteStoredSeqNo(stockCandidate);
 	}
 
 	/**
@@ -103,14 +103,18 @@ public class CandidateFactoryTests
 	@Test
 	public void createStockCandidate_before_existing()
 	{
-		final Candidate candidate = Candidate.builder()
-				.type(Type.STOCK)
-				.clientId(org.getAD_Client_ID())
-				.orgId(org.getAD_Org_ID())
+		final MaterialDescriptor materialDescr = MaterialDescriptor.builder()
 				.productId(product.getM_Product_ID())
 				.warehouseId(warehouse.getM_Warehouse_ID())
 				.date(earlier)
 				.quantity(BigDecimal.ONE)
+				.build();
+
+		final Candidate candidate = Candidate.builder()
+				.type(Type.STOCK)
+				.clientId(org.getAD_Client_ID())
+				.orgId(org.getAD_Org_ID())
+				.materialDescr(materialDescr)
 				.build();
 
 		final Candidate newCandidateBefore = candidateFactory.createStockCandidate(candidate);
@@ -123,14 +127,18 @@ public class CandidateFactoryTests
 	@Test
 	public void createStockCandidate_after_existing()
 	{
-		final Candidate candidate = Candidate.builder()
-				.type(Type.STOCK)
-				.clientId(org.getAD_Client_ID())
-				.orgId(org.getAD_Org_ID())
+		final MaterialDescriptor materialDescr = MaterialDescriptor.builder()
 				.productId(product.getM_Product_ID())
 				.warehouseId(warehouse.getM_Warehouse_ID())
 				.date(later)
 				.quantity(BigDecimal.ONE)
+				.build();
+
+		final Candidate candidate = Candidate.builder()
+				.type(Type.STOCK)
+				.clientId(org.getAD_Client_ID())
+				.orgId(org.getAD_Org_ID())
+				.materialDescr(materialDescr)
 				.build();
 
 		final Candidate newCandidateAfter = candidateFactory.createStockCandidate(candidate);

@@ -17,11 +17,11 @@ import java.util.stream.Stream;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -34,27 +34,32 @@ import com.google.common.annotations.VisibleForTesting;
 
 import de.metas.document.engine.IDocument;
 
+/**
+ * 
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
 public enum DocTimingType
 {
-	BEFORE_PREPARE(ModelValidator.TIMING_BEFORE_PREPARE, IDocument.ACTION_Prepare, BeforeAfterType.Before) //
-	, AFTER_PREPARE(ModelValidator.TIMING_AFTER_PREPARE, IDocument.ACTION_Prepare, BeforeAfterType.After) //
-	, BEFORE_VOID(ModelValidator.TIMING_BEFORE_VOID, IDocument.ACTION_Void, BeforeAfterType.Before) //
-	, AFTER_VOID(ModelValidator.TIMING_AFTER_VOID, IDocument.ACTION_Void, BeforeAfterType.After) //
-	, BEFORE_CLOSE(ModelValidator.TIMING_BEFORE_CLOSE, IDocument.ACTION_Close, BeforeAfterType.Before) //
-	, AFTER_CLOSE(ModelValidator.TIMING_AFTER_CLOSE, IDocument.ACTION_Close, BeforeAfterType.After) //
-	, BEFORE_REACTIVATE(ModelValidator.TIMING_BEFORE_REACTIVATE, IDocument.ACTION_ReActivate, BeforeAfterType.Before) //
-	, AFTER_REACTIVATE(ModelValidator.TIMING_AFTER_REACTIVATE, IDocument.ACTION_ReActivate, BeforeAfterType.After) //
-	, BEFORE_REVERSECORRECT(ModelValidator.TIMING_BEFORE_REVERSECORRECT, IDocument.ACTION_Reverse_Correct, BeforeAfterType.Before) //
-	, AFTER_REVERSECORRECT(ModelValidator.TIMING_AFTER_REVERSECORRECT, IDocument.ACTION_Reverse_Correct, BeforeAfterType.After) //
-	, BEFORE_REVERSEACCRUAL(ModelValidator.TIMING_BEFORE_REVERSEACCRUAL, IDocument.ACTION_Reverse_Accrual, BeforeAfterType.Before) //
-	, AFTER_REVERSEACCRUAL(ModelValidator.TIMING_AFTER_REVERSEACCRUAL, IDocument.ACTION_Reverse_Accrual, BeforeAfterType.After) //
-	, BEFORE_COMPLETE(ModelValidator.TIMING_BEFORE_COMPLETE, IDocument.ACTION_Complete, BeforeAfterType.Before) //
-	, AFTER_COMPLETE(ModelValidator.TIMING_AFTER_COMPLETE, IDocument.ACTION_Complete, BeforeAfterType.After) //
-	, AFTER_UNPOST(ModelValidator.TIMING_AFTER_UNPOST, IDocument.ACTION_UnPost, BeforeAfterType.After) //
-	, BEFORE_POST(ModelValidator.TIMING_BEFORE_POST, IDocument.ACTION_Post, BeforeAfterType.Before) //
-	, AFTER_POST(ModelValidator.TIMING_AFTER_POST, IDocument.ACTION_Post, BeforeAfterType.After) //
-	, BEFORE_UNCLOSE(ModelValidator.TIMING_BEFORE_UNCLOSE, IDocument.ACTION_UnClose, BeforeAfterType.Before) //
-	, AFTER_UNCLOSE(ModelValidator.TIMING_AFTER_UNCLOSE, IDocument.ACTION_UnClose, BeforeAfterType.After) //
+	BEFORE_PREPARE(ModelValidator.TIMING_BEFORE_PREPARE, IDocument.ACTION_Prepare, IDocument.STATUS_InProgress, BeforeAfterType.Before) //
+	, AFTER_PREPARE(ModelValidator.TIMING_AFTER_PREPARE, IDocument.ACTION_Prepare, IDocument.STATUS_InProgress, BeforeAfterType.After) //
+	, BEFORE_VOID(ModelValidator.TIMING_BEFORE_VOID, IDocument.ACTION_Void, IDocument.STATUS_Voided, BeforeAfterType.Before) //
+	, AFTER_VOID(ModelValidator.TIMING_AFTER_VOID, IDocument.ACTION_Void, IDocument.STATUS_Voided, BeforeAfterType.After) //
+	, BEFORE_CLOSE(ModelValidator.TIMING_BEFORE_CLOSE, IDocument.ACTION_Close, IDocument.STATUS_Closed, BeforeAfterType.Before) //
+	, AFTER_CLOSE(ModelValidator.TIMING_AFTER_CLOSE, IDocument.ACTION_Close, IDocument.STATUS_Closed, BeforeAfterType.After) //
+	, BEFORE_REACTIVATE(ModelValidator.TIMING_BEFORE_REACTIVATE, IDocument.ACTION_ReActivate, IDocument.STATUS_InProgress, BeforeAfterType.Before) //
+	, AFTER_REACTIVATE(ModelValidator.TIMING_AFTER_REACTIVATE, IDocument.ACTION_ReActivate, IDocument.STATUS_InProgress, BeforeAfterType.After) //
+	, BEFORE_REVERSECORRECT(ModelValidator.TIMING_BEFORE_REVERSECORRECT, IDocument.ACTION_Reverse_Correct, IDocument.STATUS_Reversed, BeforeAfterType.Before) //
+	, AFTER_REVERSECORRECT(ModelValidator.TIMING_AFTER_REVERSECORRECT, IDocument.ACTION_Reverse_Correct, IDocument.STATUS_Reversed, BeforeAfterType.After) //
+	, BEFORE_REVERSEACCRUAL(ModelValidator.TIMING_BEFORE_REVERSEACCRUAL, IDocument.ACTION_Reverse_Accrual, IDocument.STATUS_Reversed, BeforeAfterType.Before) //
+	, AFTER_REVERSEACCRUAL(ModelValidator.TIMING_AFTER_REVERSEACCRUAL, IDocument.ACTION_Reverse_Accrual, IDocument.STATUS_Reversed, BeforeAfterType.After) //
+	, BEFORE_COMPLETE(ModelValidator.TIMING_BEFORE_COMPLETE, IDocument.ACTION_Complete, IDocument.STATUS_Completed, BeforeAfterType.Before) //
+	, AFTER_COMPLETE(ModelValidator.TIMING_AFTER_COMPLETE, IDocument.ACTION_Complete, IDocument.STATUS_Completed, BeforeAfterType.After) //
+	, AFTER_UNPOST(ModelValidator.TIMING_AFTER_UNPOST, IDocument.ACTION_UnPost, IDocument.STATUS_Unknown, BeforeAfterType.After) //
+	, BEFORE_POST(ModelValidator.TIMING_BEFORE_POST, IDocument.ACTION_Post, IDocument.STATUS_Unknown, BeforeAfterType.Before) //
+	, AFTER_POST(ModelValidator.TIMING_AFTER_POST, IDocument.ACTION_Post, IDocument.STATUS_Unknown, BeforeAfterType.After) //
+	, BEFORE_UNCLOSE(ModelValidator.TIMING_BEFORE_UNCLOSE, IDocument.ACTION_UnClose, IDocument.STATUS_Completed, BeforeAfterType.Before) //
+	, AFTER_UNCLOSE(ModelValidator.TIMING_AFTER_UNCLOSE, IDocument.ACTION_UnClose, IDocument.STATUS_Completed, BeforeAfterType.After) //
 	;
 
 	//
@@ -63,12 +68,14 @@ public enum DocTimingType
 
 	private final int timing;
 	private final String docAction;
+	private final String docStatus;
 	private final BeforeAfterType beforeAfter;
 
-	DocTimingType(final int timing, final String docAction, final BeforeAfterType beforeAfter)
+	private DocTimingType(final int timing, final String docAction, final String docStatus, final BeforeAfterType beforeAfter)
 	{
 		this.timing = timing;
 		this.docAction = docAction;
+		this.docStatus = docStatus;
 		this.beforeAfter = beforeAfter;
 	}
 
@@ -82,6 +89,11 @@ public enum DocTimingType
 		return docAction;
 	}
 
+	public String getDocStatus()
+	{
+		return docStatus;
+	}
+	
 	public boolean isDocAction(final String docAction)
 	{
 		return Objects.equals(this.docAction, docAction);

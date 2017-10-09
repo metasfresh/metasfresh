@@ -74,7 +74,7 @@ public class DDOrderPojoSupplier
 
 		final List<DDOrder.DDOrderBuilder> builders = new ArrayList<>();
 
-		final IMaterialPlanningContext mrpContext = request.getMRPContext();
+		final IMaterialPlanningContext mrpContext = request.getMrpContext();
 
 		final Properties ctx = mrpContext.getCtx();
 		final I_PP_Product_Planning productPlanningData = mrpContext.getProductPlanning();
@@ -299,7 +299,7 @@ public class DDOrderPojoSupplier
 		final int durationDays = DDOrderUtil.calculateDurationDays(mrpContext.getProductPlanning(), networkLine);
 
 		final DDOrderLine ddOrderline = DDOrderLine.builder()
-				.salesOrderLineId(request.getMRPDemandOrderLineSOId())
+				.salesOrderLineId(request.getMrpDemandOrderLineSOId())
 				.productId(product.getM_Product_ID())
 				.qty(qtyToMove)
 				.networkDistributionLineId(networkLine.getDD_NetworkDistributionLine_ID())

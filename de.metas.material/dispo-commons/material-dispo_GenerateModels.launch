@@ -14,8 +14,8 @@
 <stringAttribute key="org.eclipse.jdt.launching.CLASSPATH_PROVIDER" value="org.eclipse.m2e.launchconfig.classpathProvider"/>
 <booleanAttribute key="org.eclipse.jdt.launching.DEFAULT_CLASSPATH" value="true"/>
 <stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="org.adempiere.util.GenerateModel"/>
-<stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="./src/main/java-gen/de/metas/manufacturing/dispo/model/&#13;&#10;de.metas.manufacturing.dispo.model&#13;&#10;'de.metas.manufacturing.dispo'"/>
+<stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="./src/main/java-gen/de/metas/material/dispo/model/&#13;&#10;de.metas.material.dispo.model&#13;&#10;'de.metas.material.dispo'"/>
 <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="metasfresh-material-dispo-commons"/>
 <stringAttribute key="org.eclipse.jdt.launching.SOURCE_PATH_PROVIDER" value="org.eclipse.m2e.launchconfig.sourcepathProvider"/>
-<stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-DPropertyFile=${project_loc:metasfresh-sp80}/metasfresh.properties"/>
+<stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-DPropertyFile=${project_loc:metasfresh-dist}/metasfresh.properties"/>
 </launchConfiguration>

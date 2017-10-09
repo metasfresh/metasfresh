@@ -141,7 +141,7 @@ public /* package */final class MRPCreateSupplyRequest implements IMRPCreateSupp
 	}
 
 	@Override
-	public IMaterialPlanningContext getMRPContext()
+	public IMaterialPlanningContext getMrpContext()
 	{
 		return mrpContext;
 	}
@@ -177,13 +177,13 @@ public /* package */final class MRPCreateSupplyRequest implements IMRPCreateSupp
 	}
 
 	@Override
-	public int getMRPDemandBPartnerId()
+	public int getMrpDemandBPartnerId()
 	{
 		return mrpDemandBPartnerId;
 	}
 
 	@Override
-	public int getMRPDemandOrderLineSOId()
+	public int getMrpDemandOrderLineSOId()
 	{
 		return mrpDemandOrderLineSOId;
 	}

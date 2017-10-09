@@ -62,7 +62,7 @@ public class M_Transaction
 						.warehouseId(transaction.getM_Locator().getM_Warehouse_ID())
 						.date(transaction.getMovementDate())
 						.productId(transaction.getM_Product_ID())
-						.qty(transaction.getMovementQty())
+						.quantity(transaction.getMovementQty())
 						.build())
 				.reference(TableRecordReference.of(transaction))
 				.build();
@@ -70,6 +70,6 @@ public class M_Transaction
 		final MaterialEventService materialEventService = Adempiere.getBean(MaterialEventService.class);
 
 		final String trxName = InterfaceWrapperHelper.getTrxName(transaction);
-		materialEventService.fireEventAfterCommit(event, trxName);
+		materialEventService.fireEventAfterNextCommit(event, trxName);
 	}
 }

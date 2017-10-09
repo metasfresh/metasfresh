@@ -1,4 +1,4 @@
-package de.metas.material.dispo.service.event;
+package de.metas.material.dispo.service.event.handler;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
@@ -13,11 +13,13 @@ import java.math.BigDecimal;
 import java.util.Date;
 
 import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_AD_Org;
 import org.compiere.util.TimeUtil;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 
 import de.metas.material.dispo.Candidate.Type;
@@ -25,14 +27,13 @@ import de.metas.material.dispo.CandidateRepository;
 import de.metas.material.dispo.CandidateService;
 import de.metas.material.dispo.DispoTestUtils;
 import de.metas.material.dispo.model.I_MD_Candidate;
-import de.metas.material.dispo.service.CandidateChangeHandler;
-import de.metas.material.dispo.service.CandidateFactory;
-import de.metas.material.dispo.service.event.ProductionPlanEventHandler;
+import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
+import de.metas.material.dispo.service.candidatechange.StockCandidateService;
 import de.metas.material.event.EventDescr;
 import de.metas.material.event.MaterialEventService;
-import de.metas.material.event.ProductionPlanEvent;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrderLine;
+import de.metas.material.event.pporder.ProductionPlanEvent;
 import mockit.Mocked;
 
 /*
@@ -59,6 +60,9 @@ import mockit.Mocked;
 
 public class ProdcutionPlanEventHandlerTests
 {
+	@Rule
+	public final AdempiereTestWatcher testWatcher = new AdempiereTestWatcher();
+	
 	public static final Date t0 = SystemTime.asDate();
 
 	private static final Date t1 = TimeUtil.addMinutes(t0, 10);
@@ -95,8 +99,10 @@ public class ProdcutionPlanEventHandlerTests
 		save(org);
 
 		final CandidateRepository candidateRepository = new CandidateRepository();
-		final CandidateChangeHandler candidateChangeHandler = new CandidateChangeHandler(candidateRepository, new CandidateFactory(candidateRepository), materialEventService);
-		final CandidateService candidateService = new CandidateService(candidateRepository, new MaterialEventService(de.metas.event.Type.LOCAL));
+		final CandidateChangeService candidateChangeHandler = new CandidateChangeService(candidateRepository, new StockCandidateService(candidateRepository), materialEventService);
+		final CandidateService candidateService = new CandidateService(
+				candidateRepository, 
+				MaterialEventService.createLocalServiceThatIsReadyToUse());
 
 		productionPlanEventHandler = new ProductionPlanEventHandler(candidateChangeHandler, candidateService);
 	}

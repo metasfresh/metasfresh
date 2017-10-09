@@ -6,6 +6,8 @@ import java.util.Date;
 import org.adempiere.util.lang.impl.TableRecordReference;
 
 import de.metas.material.dispo.model.X_MD_Candidate;
+import de.metas.material.event.EventDescr;
+import de.metas.material.event.MaterialDescriptor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
@@ -43,7 +45,7 @@ public class Candidate
 	 */
 	public enum Type
 	{
-		DEMAND, SUPPLY, STOCK
+		DEMAND, SUPPLY, STOCK, STOCK_UP
 	};
 
 	/**
@@ -51,7 +53,7 @@ public class Candidate
 	 */
 	public enum SubType
 	{
-		DISTRIBUTION, PRODUCTION, RECEIPT, SHIPMENT
+		DISTRIBUTION, PRODUCTION, RECEIPT, SHIPMENT, FORECAST
 	};
 
 	/**
@@ -64,31 +66,18 @@ public class Candidate
 
 	@NonNull
 	private final Integer clientId;
-	
+
 	@NonNull
 	private final Integer orgId;
 
 	@NonNull
-	private final Integer productId;
-
-	private final Integer attributeSetInstanceId;
-
-	@NonNull
-	private final Integer warehouseId;
-
-	/**
-	 * The meaning of this field might differ.
-	 * It can be the absolute stock quantity at a given time (if the type is "stock") or it can be a supply, demand or stock related <b>delta</b>,
-	 * i.e. one addition or removal that occurs at a particular time.
-	 */
-	@NonNull
-	private final BigDecimal quantity;
+	private final MaterialDescriptor materialDescr;
 
 	@NonNull
 	private final Type type;
 
 	/**
-	 * Currently this can be {@code null}, unless {@link #getType()} is {@link Type#SUPPLY}.
+	 * Should be {@code null} for stock candidates.
 	 */
 	private final SubType subType;
 
@@ -98,8 +87,14 @@ public class Candidate
 
 	private final Integer id;
 
+	/**
+	 * A supply candidate has a stock candidate as its parent. A demand candidate has a stock candidate as its child.
+	 */
 	private final Integer parentId;
 
+	/**
+	 * A supply candidate and its corresponding demand candidate are associated by a common group id.
+	 */
 	private final Integer groupId;
 
 	private final Integer seqNo;
@@ -113,17 +108,18 @@ public class Candidate
 	 * Used for additional infos if this candidate has the sub type {@link SubType#DISTRIBUTION}.
 	 */
 	private final DistributionCandidateDetail distributionDetail;
-	
+
 	/**
 	 * Used for additional infos if this candidate relates to particular demand
 	 */
 	private final DemandCandidateDetail demandDetail;
 
-	/**
-	 * The projected date at which we expect this candidate's {@link #getQuantity()}.
-	 */
-	@NonNull
-	private final Date date;
+	public static CandidateBuilder builderForEventDescr(@NonNull final EventDescr eventDescr)
+	{
+		return Candidate.builder()
+				.clientId(eventDescr.getClientId())
+				.orgId(eventDescr.getOrgId());
+	}
 
 	/**
 	 * Does not create a parent segment, even if this candidate has a parent.
@@ -133,9 +129,9 @@ public class Candidate
 	public CandidatesSegment.CandidatesSegmentBuilder mkSegmentBuilder()
 	{
 		return CandidatesSegment.builder()
-				.productId(productId)
-				.warehouseId(warehouseId)
-				.date(date);
+				.productId(materialDescr.getProductId())
+				.warehouseId(materialDescr.getWarehouseId())
+				.date(materialDescr.getDate());
 	}
 
 	public int getParentIdNotNull()
@@ -143,7 +139,27 @@ public class Candidate
 		return getParentId() == null ? 0 : getParentId();
 	}
 
-	public int getGroupIdNotNull()
+	public BigDecimal getQuantity()
+	{
+		return materialDescr.getQuantity();
+	}
+
+	public Candidate withQuantity(@NonNull final BigDecimal qtyDelta)
+	{
+		return this.withMaterialDescr(materialDescr.withQuantity(qtyDelta));
+	}
+
+	public Candidate withDate(@NonNull final Date date)
+	{
+		return this.withMaterialDescr(materialDescr.withDate(date));
+	}
+
+	public Candidate withWarehouseId(final int warehouseId)
+	{
+		return this.withMaterialDescr(materialDescr.withWarehouseId(warehouseId));
+	}
+
+	public int getEffectiveGroupId()
 	{
 		if (type == Type.STOCK)
 		{
@@ -155,4 +171,20 @@ public class Candidate
 		}
 		return id == null ? 0 : id;
 	}
+
+	public Date getDate()
+	{
+		return materialDescr.getDate();
+	}
+
+	public int getProductId()
+	{
+		return materialDescr.getProductId();
+	}
+
+	public int getWarehouseId()
+	{
+		return materialDescr.getWarehouseId();
+	}
+
 }

@@ -60,7 +60,7 @@ public class TrxListenerManager implements ITrxListenerManager
 	}
 
 	@Override
-	public void onAfterFirstCommit(Runnable runnable)
+	public void onAfterNextCommit(Runnable runnable)
 	{
 		registerListener(new TrxListenerAdapter()
 		{

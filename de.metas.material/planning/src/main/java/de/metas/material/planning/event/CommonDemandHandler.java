@@ -1,8 +1,8 @@
 package de.metas.material.planning.event;
 
-import java.math.BigDecimal;
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 
@@ -19,24 +19,19 @@ import org.compiere.model.I_S_Resource;
 import org.compiere.util.Env;
 import org.eevolution.model.I_DD_NetworkDistributionLine;
 import org.eevolution.model.I_PP_Product_Planning;
-import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
-import de.metas.logging.LogManager;
 import de.metas.material.event.DemandHandlerAuditEvent;
-import de.metas.material.event.DistributionPlanEvent;
 import de.metas.material.event.EventDescr;
-import de.metas.material.event.MaterialDemandEvent;
+import de.metas.material.event.MaterialDemandDescr;
 import de.metas.material.event.MaterialDescriptor;
-import de.metas.material.event.MaterialEvent;
-import de.metas.material.event.MaterialEventListener;
 import de.metas.material.event.MaterialEventService;
-import de.metas.material.event.ProductionPlanEvent;
 import de.metas.material.event.ddorder.DDOrder;
 import de.metas.material.event.ddorder.DDOrderLine;
+import de.metas.material.event.ddorder.DistributionPlanEvent;
 import de.metas.material.event.pporder.PPOrder;
+import de.metas.material.event.pporder.ProductionPlanEvent;
 import de.metas.material.planning.IMRPContextFactory;
 import de.metas.material.planning.IMRPNoteBuilder;
 import de.metas.material.planning.IMRPNotesCollector;
@@ -53,7 +48,7 @@ import lombok.NonNull;
 
 /*
  * #%L
- * metasfresh-mrp
+ * metasfresh-material-planning
  * %%
  * Copyright (C) 2017 metas GmbH
  * %%
@@ -61,29 +56,21 @@ import lombok.NonNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-/**
- * This listener is dedicated to handle {@link MaterialDemandEvent}s. It ignores and other {@link MaterialEvent}.
- *
- * @author metas-dev <dev@metasfresh.com>
- *
- */
-@Service
-@Lazy // .. because MaterialEventService needs to be lazy
-public class MaterialDemandListener implements MaterialEventListener
-{
-	private static final transient Logger logger = LogManager.getLogger(MaterialDemandListener.class);
 
+@Service
+public class CommonDemandHandler
+{
 	@Autowired
 	private DDOrderDemandMatcher ddOrderDemandMatcher;
 
@@ -99,21 +86,17 @@ public class MaterialDemandListener implements MaterialEventListener
 	@Autowired
 	private MaterialEventService materialEventService;
 
-	@Override
-	public void onEvent(@NonNull final MaterialEvent event)
+	/**
+	 * Invokes our {@link DDOrderPojoSupplier} and returns the resulting {@link DDOrder} pojo as {@link DistributionPlanEvent}
+	 * 
+	 * @param materialDemandEvent
+	 */
+	public void handleMaterialDemandEvent(@NonNull final MaterialDemandDescr materialDemandDescr)
 	{
-		if (!(event instanceof MaterialDemandEvent))
-		{
-			return;
-		}
-		logger.info("Received event {}", event);
-
-		final MaterialDemandEvent materialDemandEvent = (MaterialDemandEvent)event;
-
 		final PlainStringLoggable plainStringLoggable = new PlainStringLoggable();
 		try (final IAutoCloseable closable = Loggables.temporarySetLoggable(plainStringLoggable);)
 		{
-			handleMaterialDemandEvent(materialDemandEvent);
+			handleMaterialDemandEvent0(materialDemandDescr);
 		}
 
 		if (!plainStringLoggable.isEmpty())
@@ -121,31 +104,27 @@ public class MaterialDemandListener implements MaterialEventListener
 			final List<String> singleMessages = plainStringLoggable.getSingleMessages();
 
 			final DemandHandlerAuditEvent demandHandlerAuditEvent = DemandHandlerAuditEvent.builder()
-					.eventDescr(event.getEventDescr().createNew())
-					.descr(materialDemandEvent.getDescr())
-					.orderLineId(materialDemandEvent.getOrderLineId())
-					.reference(materialDemandEvent.getReference())
+					.eventDescr(materialDemandDescr.getEventDescr().createNew())
+					.descr(materialDemandDescr.getMaterialDescriptor())
+					.orderLineId(materialDemandDescr.getOrderLineId())
+					.reference(materialDemandDescr.getReference())
 					.messages(singleMessages)
 					.build();
 
 			materialEventService.fireEvent(demandHandlerAuditEvent);
 		}
 	}
-
-	/**
-	 * Invokes our {@link DDOrderPojoSupplier} and returns the resulting {@link DDOrder} pojo as {@link DistributionPlanEvent}
-	 * 
-	 * @param materialDemandEvent
-	 */
-	private void handleMaterialDemandEvent(@NonNull final MaterialDemandEvent materialDemandEvent)
+	
+	
+	public void handleMaterialDemandEvent0(@NonNull final MaterialDemandDescr materialDemandDescr)
 	{
-		final IMutableMRPContext mrpContext = mkMRPContext(materialDemandEvent);
+		final IMutableMRPContext mrpContext = mkMRPContext(materialDemandDescr);
 
 		if (ddOrderDemandMatcher.matches(mrpContext))
 		{
 			final List<DDOrder> ddOrders = ddOrderPojoSupplier
 					.supplyPojos(
-							mkRequest(materialDemandEvent, mrpContext),
+							mkRequest(materialDemandDescr, mrpContext),
 							mkMRPNotesCollector());
 
 			for (final DDOrder ddOrder : ddOrders)
@@ -155,10 +134,10 @@ public class MaterialDemandListener implements MaterialEventListener
 					final I_DD_NetworkDistributionLine networkLine = InterfaceWrapperHelper.create(mrpContext.getCtx(), ddOrderLine.getNetworkDistributionLineId(), I_DD_NetworkDistributionLine.class, mrpContext.getTrxName());
 
 					final DistributionPlanEvent distributionPlanEvent = DistributionPlanEvent.builder()
-							.eventDescr(materialDemandEvent.getEventDescr().createNew())
+							.eventDescr(materialDemandDescr.getEventDescr().createNew())
 							.fromWarehouseId(networkLine.getM_WarehouseSource_ID())
 							.toWarehouseId(networkLine.getM_Warehouse_ID())
-							.reference(materialDemandEvent.getReference())
+							.reference(materialDemandDescr.getReference())
 							.ddOrder(ddOrder)
 							.build();
 
@@ -171,12 +150,12 @@ public class MaterialDemandListener implements MaterialEventListener
 		{
 			final PPOrder ppOrder = ppOrderPojoSupplier
 					.supplyPPOrderPojoWithLines(
-							mkRequest(materialDemandEvent, mrpContext),
+							mkRequest(materialDemandDescr, mrpContext),
 							mkMRPNotesCollector());
 
 			final ProductionPlanEvent event = ProductionPlanEvent.builder()
-					.eventDescr(materialDemandEvent.getEventDescr().createNew())
-					.reference(materialDemandEvent.getReference())
+					.eventDescr(materialDemandDescr.getEventDescr().createNew())
+					.reference(materialDemandDescr.getReference())
 					.ppOrder(ppOrder)
 					.build();
 
@@ -184,16 +163,16 @@ public class MaterialDemandListener implements MaterialEventListener
 		}
 	}
 
-	private IMutableMRPContext mkMRPContext(@NonNull final MaterialDemandEvent materialDemandEvent)
+	private IMutableMRPContext mkMRPContext(@NonNull final MaterialDemandDescr materialDemandEvent)
 	{
 		final EventDescr eventDescr = materialDemandEvent.getEventDescr();
 
-		final MaterialDescriptor materialDescr = materialDemandEvent.getDescr();
+		final MaterialDescriptor materialDescr = materialDemandEvent.getMaterialDescriptor();
 
 		final Properties ctx = Env.getCtx();
 		final String trxName = ITrx.TRXNAME_ThreadInherited;
 
-		final I_AD_Org org = InterfaceWrapperHelper.create(ctx, eventDescr.getOrgId(), I_AD_Org.class, trxName);
+		final I_AD_Org org = load(eventDescr.getOrgId(), I_AD_Org.class);
 		final I_M_Warehouse warehouse = InterfaceWrapperHelper.create(ctx, materialDescr.getWarehouseId(), I_M_Warehouse.class, trxName);
 		final I_M_Product product = InterfaceWrapperHelper.create(ctx, materialDescr.getProductId(), I_M_Product.class, trxName);
 
@@ -230,42 +209,16 @@ public class MaterialDemandListener implements MaterialEventListener
 	}
 
 	private IMaterialRequest mkRequest(
-			@NonNull final MaterialDemandEvent materialDemandEvent,
+			@NonNull final MaterialDemandDescr materialDemandEvent,
 			@NonNull final IMaterialPlanningContext mrpContext)
 	{
-		return new IMaterialRequest()
-		{
-
-			@Override
-			public BigDecimal getQtyToSupply()
-			{
-				return materialDemandEvent.getDescr().getQty();
-			}
-
-			@Override
-			public int getMRPDemandOrderLineSOId()
-			{
-				return materialDemandEvent.getOrderLineId();
-			}
-
-			@Override
-			public int getMRPDemandBPartnerId()
-			{
-				return -1;
-			}
-
-			@Override
-			public IMaterialPlanningContext getMRPContext()
-			{
-				return mrpContext;
-			}
-
-			@Override
-			public Date getDemandDate()
-			{
-				return materialDemandEvent.getDescr().getDate();
-			}
-		};
+		return MaterialRequest.builder()
+				.qtyToSupply(materialDemandEvent.getMaterialDescriptor().getQuantity())
+				.mrpContext(mrpContext)
+				.mrpDemandBPartnerId(-1)
+				.mrpDemandOrderLineSOId(materialDemandEvent.getOrderLineId())
+				.demandDate(materialDemandEvent.getMaterialDescriptor().getDate())
+				.build();
 	}
 
 	private IMRPNotesCollector mkMRPNotesCollector()
@@ -286,5 +239,4 @@ public class MaterialDemandListener implements MaterialEventListener
 			}
 		};
 	}
-
 }

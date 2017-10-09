@@ -228,35 +228,6 @@ public interface I_MD_Candidate_Dist_Detail
     public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Lieferweg.
-	 * Methode oder Art der Warenlieferung
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setM_Shipper_ID (int M_Shipper_ID);
-
-	/**
-	 * Get Lieferweg.
-	 * Methode oder Art der Warenlieferung
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getM_Shipper_ID();
-
-	public org.compiere.model.I_M_Shipper getM_Shipper();
-
-	public void setM_Shipper(org.compiere.model.I_M_Shipper M_Shipper);
-
-    /** Column definition for M_Shipper_ID */
-    public static final org.adempiere.model.ModelColumn<I_MD_Candidate_Dist_Detail, org.compiere.model.I_M_Shipper> COLUMN_M_Shipper_ID = new org.adempiere.model.ModelColumn<I_MD_Candidate_Dist_Detail, org.compiere.model.I_M_Shipper>(I_MD_Candidate_Dist_Detail.class, "M_Shipper_ID", org.compiere.model.I_M_Shipper.class);
-    /** Column name M_Shipper_ID */
-    public static final String COLUMNNAME_M_Shipper_ID = "M_Shipper_ID";
-
-	/**
 	 * Set Dispo-Bereitstellungsdetail.
 	 *
 	 * <br>Type: ID
@@ -305,6 +276,35 @@ public interface I_MD_Candidate_Dist_Detail
     public static final org.adempiere.model.ModelColumn<I_MD_Candidate_Dist_Detail, de.metas.material.dispo.model.I_MD_Candidate> COLUMN_MD_Candidate_ID = new org.adempiere.model.ModelColumn<I_MD_Candidate_Dist_Detail, de.metas.material.dispo.model.I_MD_Candidate>(I_MD_Candidate_Dist_Detail.class, "MD_Candidate_ID", de.metas.material.dispo.model.I_MD_Candidate.class);
     /** Column name MD_Candidate_ID */
     public static final String COLUMNNAME_MD_Candidate_ID = "MD_Candidate_ID";
+
+	/**
+	 * Set Lieferweg.
+	 * Methode oder Art der Warenlieferung
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setM_Shipper_ID (int M_Shipper_ID);
+
+	/**
+	 * Get Lieferweg.
+	 * Methode oder Art der Warenlieferung
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getM_Shipper_ID();
+
+	public org.compiere.model.I_M_Shipper getM_Shipper();
+
+	public void setM_Shipper(org.compiere.model.I_M_Shipper M_Shipper);
+
+    /** Column definition for M_Shipper_ID */
+    public static final org.adempiere.model.ModelColumn<I_MD_Candidate_Dist_Detail, org.compiere.model.I_M_Shipper> COLUMN_M_Shipper_ID = new org.adempiere.model.ModelColumn<I_MD_Candidate_Dist_Detail, org.compiere.model.I_M_Shipper>(I_MD_Candidate_Dist_Detail.class, "M_Shipper_ID", org.compiere.model.I_M_Shipper.class);
+    /** Column name M_Shipper_ID */
+    public static final String COLUMNNAME_M_Shipper_ID = "M_Shipper_ID";
 
 	/**
 	 * Set Produktionsstätte.

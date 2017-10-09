@@ -4,7 +4,6 @@ package de.metas.material.dispo.model;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import org.compiere.util.Env;
 
 /** Generated Model for MD_Candidate
  *  @author Adempiere (generated) 
@@ -16,7 +15,7 @@ public class X_MD_Candidate extends org.compiere.model.PO implements I_MD_Candid
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1795260422L;
+	private static final long serialVersionUID = -1529474840L;
 
     /** Standard Constructor */
     public X_MD_Candidate (Properties ctx, int MD_Candidate_ID, String trxName)
@@ -25,10 +24,10 @@ public class X_MD_Candidate extends org.compiere.model.PO implements I_MD_Candid
       /** if (MD_Candidate_ID == 0)
         {
 			setDateProjected (new Timestamp( System.currentTimeMillis() ));
-			setM_Product_ID (0);
-			setM_Warehouse_ID (0);
 			setMD_Candidate_ID (0);
 			setMD_Candidate_Type (null);
+			setM_Product_ID (0);
+			setM_Warehouse_ID (0);
 			setQty (BigDecimal.ZERO);
 			setQty_Planner (BigDecimal.ZERO);
 			setSeqNo (0);
@@ -135,80 +134,6 @@ public class X_MD_Candidate extends org.compiere.model.PO implements I_MD_Candid
 	public int getM_AttributeSetInstance_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_AttributeSetInstance_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_M_Product getM_Product() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class);
-	}
-
-	@Override
-	public void setM_Product(org.compiere.model.I_M_Product M_Product)
-	{
-		set_ValueFromPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class, M_Product);
-	}
-
-	/** Set Produkt.
-		@param M_Product_ID 
-		Produkt, Leistung, Artikel
-	  */
-	@Override
-	public void setM_Product_ID (int M_Product_ID)
-	{
-		if (M_Product_ID < 1) 
-			set_Value (COLUMNNAME_M_Product_ID, null);
-		else 
-			set_Value (COLUMNNAME_M_Product_ID, Integer.valueOf(M_Product_ID));
-	}
-
-	/** Get Produkt.
-		@return Produkt, Leistung, Artikel
-	  */
-	@Override
-	public int getM_Product_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_Product_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_M_Warehouse getM_Warehouse() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_M_Warehouse_ID, org.compiere.model.I_M_Warehouse.class);
-	}
-
-	@Override
-	public void setM_Warehouse(org.compiere.model.I_M_Warehouse M_Warehouse)
-	{
-		set_ValueFromPO(COLUMNNAME_M_Warehouse_ID, org.compiere.model.I_M_Warehouse.class, M_Warehouse);
-	}
-
-	/** Set Lager.
-		@param M_Warehouse_ID 
-		Lager oder Ort für Dienstleistung
-	  */
-	@Override
-	public void setM_Warehouse_ID (int M_Warehouse_ID)
-	{
-		if (M_Warehouse_ID < 1) 
-			set_Value (COLUMNNAME_M_Warehouse_ID, null);
-		else 
-			set_Value (COLUMNNAME_M_Warehouse_ID, Integer.valueOf(M_Warehouse_ID));
-	}
-
-	/** Get Lager.
-		@return Lager oder Ort für Dienstleistung
-	  */
-	@Override
-	public int getM_Warehouse_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_Warehouse_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -332,6 +257,8 @@ public class X_MD_Candidate extends org.compiere.model.PO implements I_MD_Candid
 	public static final String MD_CANDIDATE_SUBTYPE_RECEIPT = "RECEIPT";
 	/** SHIPMENT = SHIPMENT */
 	public static final String MD_CANDIDATE_SUBTYPE_SHIPMENT = "SHIPMENT";
+	/** FORECAST = FORECAST */
+	public static final String MD_CANDIDATE_SUBTYPE_FORECAST = "FORECAST";
 	/** Set Untertyp.
 		@param MD_Candidate_SubType Untertyp	  */
 	@Override
@@ -360,6 +287,8 @@ public class X_MD_Candidate extends org.compiere.model.PO implements I_MD_Candid
 	public static final String MD_CANDIDATE_TYPE_DEMAND = "DEMAND";
 	/** SUPPLY = SUPPLY */
 	public static final String MD_CANDIDATE_TYPE_SUPPLY = "SUPPLY";
+	/** STOCK_UP = STOCK_UP */
+	public static final String MD_CANDIDATE_TYPE_STOCK_UP = "STOCK_UP";
 	/** Set Typ.
 		@param MD_Candidate_Type Typ	  */
 	@Override
@@ -375,6 +304,80 @@ public class X_MD_Candidate extends org.compiere.model.PO implements I_MD_Candid
 	public java.lang.String getMD_Candidate_Type () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_MD_Candidate_Type);
+	}
+
+	@Override
+	public org.compiere.model.I_M_Product getM_Product() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class);
+	}
+
+	@Override
+	public void setM_Product(org.compiere.model.I_M_Product M_Product)
+	{
+		set_ValueFromPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class, M_Product);
+	}
+
+	/** Set Produkt.
+		@param M_Product_ID 
+		Produkt, Leistung, Artikel
+	  */
+	@Override
+	public void setM_Product_ID (int M_Product_ID)
+	{
+		if (M_Product_ID < 1) 
+			set_Value (COLUMNNAME_M_Product_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_Product_ID, Integer.valueOf(M_Product_ID));
+	}
+
+	/** Get Produkt.
+		@return Produkt, Leistung, Artikel
+	  */
+	@Override
+	public int getM_Product_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_Product_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_M_Warehouse getM_Warehouse() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_M_Warehouse_ID, org.compiere.model.I_M_Warehouse.class);
+	}
+
+	@Override
+	public void setM_Warehouse(org.compiere.model.I_M_Warehouse M_Warehouse)
+	{
+		set_ValueFromPO(COLUMNNAME_M_Warehouse_ID, org.compiere.model.I_M_Warehouse.class, M_Warehouse);
+	}
+
+	/** Set Lager.
+		@param M_Warehouse_ID 
+		Lager oder Ort für Dienstleistung
+	  */
+	@Override
+	public void setM_Warehouse_ID (int M_Warehouse_ID)
+	{
+		if (M_Warehouse_ID < 1) 
+			set_Value (COLUMNNAME_M_Warehouse_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_Warehouse_ID, Integer.valueOf(M_Warehouse_ID));
+	}
+
+	/** Get Lager.
+		@return Lager oder Ort für Dienstleistung
+	  */
+	@Override
+	public int getM_Warehouse_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_Warehouse_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	/** Set Menge.
