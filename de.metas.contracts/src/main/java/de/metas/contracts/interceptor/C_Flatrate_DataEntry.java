@@ -49,6 +49,7 @@ import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.contracts.model.X_C_Flatrate_DataEntry;
 import de.metas.i18n.IMsgBL;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import lombok.NonNull;
 
 @Interceptor(I_C_Flatrate_DataEntry.class)
 public class C_Flatrate_DataEntry
@@ -64,7 +65,7 @@ public class C_Flatrate_DataEntry
 	public static final transient C_Flatrate_DataEntry instance = new C_Flatrate_DataEntry();
 
 	private static final List<String> DATAENTRY_TYPES_InvoiceCandidatesRelated = ImmutableList
-			.of(X_C_Flatrate_DataEntry.TYPE_Correction_PeriodBased, X_C_Flatrate_DataEntry.TYPE_Invoicing_PeriodBased);	
+			.of(X_C_Flatrate_DataEntry.TYPE_Correction_PeriodBased, X_C_Flatrate_DataEntry.TYPE_Invoicing_PeriodBased);
 
 	private C_Flatrate_DataEntry()
 	{
@@ -213,8 +214,8 @@ public class C_Flatrate_DataEntry
 
 		afterReactivate(dataEntry);
 	}
-	
-	private void beforeReactivate(final I_C_Flatrate_DataEntry dataEntry)
+
+	private void beforeReactivate(@NonNull final I_C_Flatrate_DataEntry dataEntry)
 	{
 		final String trxName = InterfaceWrapperHelper.getTrxName(dataEntry);
 
@@ -223,6 +224,35 @@ public class C_Flatrate_DataEntry
 		// (otherwise the DB's FK constraints wouldn't allow it).
 		Check.assume(trxName != null, dataEntry + " has a trxName!=null");
 
+		checkInvoiceCandidate(dataEntry);
+
+		final I_C_Flatrate_Term flatrateTerm = dataEntry.getC_Flatrate_Term();
+
+		if (X_C_Flatrate_DataEntry.TYPE_Invoicing_PeriodBased.equals(dataEntry.getType()) && flatrateTerm.isClosingWithCorrectionSum())
+		{
+			final Timestamp dataEntryStartDate = dataEntry.getC_Period().getStartDate();
+
+			final List<I_C_Flatrate_DataEntry> existingCorrectionEntries = flatrateDB.retrieveDataEntries(
+					flatrateTerm,
+					X_C_Flatrate_DataEntry.TYPE_Correction_PeriodBased,
+					dataEntry.getC_UOM());
+			for (final I_C_Flatrate_DataEntry corrEntry : existingCorrectionEntries)
+			{
+				final Timestamp corrEntryStartDate = corrEntry.getC_Period().getStartDate();
+				if (corrEntryStartDate.equals(dataEntryStartDate) || corrEntryStartDate.after(dataEntryStartDate))
+				{
+					throw new AdempiereException("@" + MSG_DATA_ENTRY_EXISTING_CORRECTION_ENTRY_0P + "@");
+				}
+			}
+		}
+
+		deleteInvoiceCandidate(dataEntry);
+		deleteInvoiceCandidateCorr(dataEntry);
+
+	}
+
+	private void checkInvoiceCandidate(final I_C_Flatrate_DataEntry dataEntry)
+	{
 		final I_C_Invoice_Candidate invoiceCandidate = dataEntry.getC_Invoice_Candidate();
 		if (invoiceCandidate != null && invoiceCandidate.getQtyInvoiced().signum() != 0)
 		{
@@ -234,46 +264,28 @@ public class C_Flatrate_DataEntry
 		{
 			throw new AdempiereException("@" + MSG_DATA_ENTRY_ALREADY_INVOICED_0P + "@");
 		}
+	}
 
-		final I_C_Flatrate_Term flatrateTerm = dataEntry.getC_Flatrate_Term();
-		final IFlatrateDAO flatrateDB = Services.get(IFlatrateDAO.class);
-
-		//
-		if (X_C_Flatrate_DataEntry.TYPE_Invoicing_PeriodBased.equals(dataEntry.getType()))
-		{
-			if (flatrateTerm.isClosingWithCorrectionSum())
-			{
-				final Timestamp dataEntryStartDate = dataEntry.getC_Period().getStartDate();
-
-				final List<I_C_Flatrate_DataEntry> existingCorrectionEntries = flatrateDB.retrieveDataEntries(
-						flatrateTerm,
-						X_C_Flatrate_DataEntry.TYPE_Correction_PeriodBased,
-						dataEntry.getC_UOM());
-				for (final I_C_Flatrate_DataEntry corrEntry : existingCorrectionEntries)
-				{
-					final Timestamp corrEntryStartDate = corrEntry.getC_Period().getStartDate();
-					if (corrEntryStartDate.equals(dataEntryStartDate) || corrEntryStartDate.after(dataEntryStartDate))
-					{
-						throw new AdempiereException("@" + MSG_DATA_ENTRY_EXISTING_CORRECTION_ENTRY_0P + "@");
-					}
-				}
-			}
-		}
-
+	private void deleteInvoiceCandidate(@NonNull final I_C_Flatrate_DataEntry dataEntry)
+	{
+		final I_C_Invoice_Candidate invoiceCandidate = dataEntry.getC_Invoice_Candidate();
 		if (invoiceCandidate != null)
 		{
 			dataEntry.setC_Invoice_Candidate_ID(0);
 			InterfaceWrapperHelper.delete(invoiceCandidate);
 		}
+	}
 
+	private void deleteInvoiceCandidateCorr(@NonNull final I_C_Flatrate_DataEntry dataEntry)
+	{
+		final I_C_Invoice_Candidate icCorr = dataEntry.getC_Invoice_Candidate_Corr();
 		if (icCorr != null)
 		{
 			dataEntry.setC_Invoice_Candidate_Corr_ID(0);
 			InterfaceWrapperHelper.delete(icCorr);
 		}
-
 	}
-	
+
 	private void afterReactivate(final I_C_Flatrate_DataEntry dataEntry)
 	{
 		if (X_C_Flatrate_DataEntry.TYPE_Invoicing_PeriodBased.equals(dataEntry.getType()))
@@ -289,6 +301,6 @@ public class C_Flatrate_DataEntry
 				InterfaceWrapperHelper.save(alloc);
 			}
 		}
-	}	
+	}
 
 }
