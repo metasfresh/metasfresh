@@ -73,6 +73,8 @@ Here come the actual release notes:
     * Translation Improvement for Subtab Recors. Now completed the Translation for Language/ Locale en_US.
   * [#2667](https://github.com/metasfresh/metasfresh/issues/2667) Window Design Webui: Tanslations for the window Contractpartner
     * Improvements in Window Layout, Sorting and Filtering. Now translated to Language/ Locale en_US.
+  * [#2669](https://github.com/metasfresh/metasfresh/issues/2669) Window Design Webui: Improvements and translations in Shipment Candidates
+    * Improvement of Translations for en_US Language/ Locale in shipment candidate window in WebUI.
 
 * metasfresh-webui-frontend
   * [#1138](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1138) frontend: Labels widget

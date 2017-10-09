@@ -44,7 +44,7 @@ public final class OlAndSched
 {
 	private final I_M_ShipmentSchedule shipmentSchedule;
 	@Nullable
-	private final I_C_OrderLine orderLine;
+	private final I_C_OrderLine orderLineOrNull;
 	private final IDeliverRequest deliverRequest;
 	private final BigDecimal initialSchedQtyDelivered;
 
@@ -60,11 +60,11 @@ public final class OlAndSched
 
 	@Builder
 	private OlAndSched(
-			@Nullable final org.compiere.model.I_C_OrderLine orderLine,
+			@Nullable final org.compiere.model.I_C_OrderLine orderLineOrNull,
 			@NonNull final I_M_ShipmentSchedule shipmentSchedule,
 			@Nullable final IDeliverRequest deliverRequest)
 	{
-		this.orderLine = InterfaceWrapperHelper.create(orderLine, I_C_OrderLine.class);
+		this.orderLineOrNull = InterfaceWrapperHelper.create(orderLineOrNull, I_C_OrderLine.class);
 		this.shipmentSchedule = shipmentSchedule;
 
 		if (deliverRequest == null)
@@ -86,7 +86,7 @@ public final class OlAndSched
 
 	public Optional<I_C_OrderLine> getOl()
 	{
-		return Optional.ofNullable(orderLine);
+		return Optional.ofNullable(orderLineOrNull);
 	}
 
 	public I_M_ShipmentSchedule getSched()
@@ -120,6 +120,6 @@ public final class OlAndSched
 	@Override
 	public String toString()
 	{
-		return String.valueOf(orderLine) + " / " + shipmentSchedule;
+		return String.valueOf(orderLineOrNull) + " / " + shipmentSchedule;
 	}
 }
