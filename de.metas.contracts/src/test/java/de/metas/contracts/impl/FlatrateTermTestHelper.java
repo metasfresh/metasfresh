@@ -60,7 +60,7 @@ public class FlatrateTermTestHelper
 	}
 	
 	/**
-	 * Invokes {@link #HUTestHelper(boolean)} with init=<code>true</code>.
+	 * Invokes {@link #FlatrateTermTestHelper(boolean)} with init=<code>true</code>.
 	 */
 	public FlatrateTermTestHelper()
 	{
