@@ -132,6 +132,11 @@ public class FlatrateTermInvoiceCandidateHandler extends AbstractInvoiceCandidat
 
 	private I_C_Invoice_Candidate createCandidateForTerm(final I_C_Flatrate_Term term)
 	{
+		if (X_C_Flatrate_Term.CONTRACTSTATUS_Quit.equals(term.getContractStatus()))
+		{
+			return null;
+		}
+		
 		final Properties ctx = InterfaceWrapperHelper.getCtx(term);
 		final String trxName = InterfaceWrapperHelper.getTrxName(term);
 

@@ -33,7 +33,6 @@ import org.slf4j.Logger;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.adempiere.model.I_C_Order;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_SubscriptionProgress;
@@ -98,15 +97,14 @@ public class SubscriptionShipmentScheduleHandler implements IShipmentScheduleHan
 		final IDocumentLocation documentLocation = InterfaceWrapperHelper.create(newSched, IDocumentLocation.class);
 		documentLocationBL.setBPartnerAddress(documentLocation);
 
-		final I_C_Order order = create(term.getC_Order_Term(), I_C_Order.class);
-		newSched.setDeliveryRule(order.getDeliveryRule());
-		newSched.setDeliveryViaRule(order.getDeliveryViaRule());
-
+		newSched.setDeliveryRule(term.getDeliveryRule());
+		newSched.setDeliveryViaRule(term.getDeliveryViaRule());
+		
 		newSched.setQtyOrdered(subscriptionLine.getQty());
 		newSched.setQtyOrdered_Calculated(subscriptionLine.getQty());
 		newSched.setQtyReserved(subscriptionLine.getQty());
 
-		newSched.setLineNetAmt(newSched.getQtyReserved().multiply(term.getC_OrderLine_Term().getPriceActual()));
+		newSched.setLineNetAmt(newSched.getQtyReserved().multiply(term.getPriceActual()));
 
 		newSched.setDateOrdered(subscriptionLine.getEventDate());
 
