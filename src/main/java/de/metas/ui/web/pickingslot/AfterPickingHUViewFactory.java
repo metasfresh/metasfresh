@@ -1,5 +1,7 @@
 package de.metas.ui.web.pickingslot;
 
+import java.util.stream.Stream;
+
 import org.adempiere.util.Services;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -9,10 +11,14 @@ import de.metas.ui.web.handlingunits.HUEditorView;
 import de.metas.ui.web.handlingunits.HUEditorViewFactory;
 import de.metas.ui.web.handlingunits.HUIdsFilterHelper;
 import de.metas.ui.web.view.CreateViewRequest;
+import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewFactory;
+import de.metas.ui.web.view.IViewsIndexStorage;
+import de.metas.ui.web.view.IViewsRepository;
 import de.metas.ui.web.view.ViewFactory;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.descriptor.ViewLayout;
+import de.metas.ui.web.view.event.ViewChangesCollector;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.WindowId;
 
@@ -39,7 +45,7 @@ import de.metas.ui.web.window.datatypes.WindowId;
  */
 
 @ViewFactory(windowId = AfterPickingHUViewFactory.WINDOW_ID_STRING)
-public class AfterPickingHUViewFactory implements IViewFactory
+public class AfterPickingHUViewFactory implements IViewFactory, IViewsIndexStorage
 {
 	static final String WINDOW_ID_STRING = "afterPickingHUs";
 	static final WindowId WINDOW_ID = WindowId.fromJson(WINDOW_ID_STRING);
@@ -60,7 +66,7 @@ public class AfterPickingHUViewFactory implements IViewFactory
 		throw new UnsupportedOperationException();
 	}
 
-	public HUEditorView createViewForAggregationPickingSlotView(final AggregationPickingSlotView pickingSlotsView)
+	private HUEditorView createViewForAggregationPickingSlotView(final AggregationPickingSlotView pickingSlotsView)
 	{
 		final IHUQueryBuilder huQuery = Services.get(IHandlingUnitsDAO.class)
 				.createHUQueryBuilder()
@@ -73,5 +79,84 @@ public class AfterPickingHUViewFactory implements IViewFactory
 				.build();
 
 		return huEditorViewFactory.createView(request);
+	}
+
+	//@formatter:off
+	@Override
+	public WindowId getWindowId() { return AfterPickingHUViewFactory.WINDOW_ID; }
+	//@formatter:on
+
+	private IViewsRepository viewsRepository;
+
+	@Override
+	public void setViewsRepository(final IViewsRepository viewsRepository)
+	{
+		this.viewsRepository = viewsRepository;
+	}
+
+	@Override
+	public void put(final IView husView)
+	{
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public HUEditorView getByIdOrNull(final ViewId huViewId)
+	{
+		return getHUsViewOrCreate(huViewId);
+	}
+
+	@Override
+	public void removeById(final ViewId huViewId)
+	{
+		getPickingSlotsView(huViewId).clearAfterPickingHUView();
+	}
+
+	@Override
+	public Stream<IView> streamAllViews()
+	{
+		return Stream.empty();
+	}
+
+	@Override
+	public void invalidateView(final ViewId huViewId)
+	{
+		final HUEditorView husView = getHUsViewOrNull(huViewId);
+		if (husView == null)
+		{
+			return;
+		}
+
+		husView.invalidateAll();
+		ViewChangesCollector.getCurrentOrAutoflush()
+				.collectFullyChanged(husView);
+	}
+
+	private HUEditorView getHUsViewOrCreate(final ViewId huViewId)
+	{
+		final AggregationPickingSlotView pickingSlotsView = getPickingSlotsView(huViewId);
+		return pickingSlotsView.getAfterPickingHUViewOrCreate(() -> createViewForAggregationPickingSlotView(pickingSlotsView));
+	}
+
+	private HUEditorView getHUsViewOrNull(final ViewId huViewId)
+	{
+		final AggregationPickingSlotView pickingSlotsView = getPickingSlotsView(huViewId);
+		return pickingSlotsView.getAfterPickingHUViewOrNull();
+	}
+
+	private AggregationPickingSlotView getPickingSlotsView(final ViewId huViewId)
+	{
+		final ViewId pickingSlotsViewId = extractPickingSlotsViewId(huViewId);
+		return viewsRepository.getView(pickingSlotsViewId, AggregationPickingSlotView.class);
+	}
+
+	private static ViewId extractPickingSlotsViewId(final ViewId huViewId)
+	{
+		return huViewId.deriveWithWindowId(AggregationPickingSlotsViewFactory.WINDOW_ID);
+	}
+
+	static ViewId extractAfterPickingHUsViewId(final ViewId pickingSlotViewId)
+	{
+		return pickingSlotViewId.deriveWithWindowId(AfterPickingHUViewFactory.WINDOW_ID);
 	}
 }

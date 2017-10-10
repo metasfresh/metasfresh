@@ -76,7 +76,7 @@ public class AggregationPickingSlotView implements IView, IViewRowOverrides
 		this.description = ITranslatableString.nullToEmpty(description);
 		this.rows = PickingSlotRowsCollection.ofSupplier(rows);
 
-		afterPickingHUViewId = AfterPickingHUViewIndexStorage.extractAfterPickingHUsViewId(viewId);
+		afterPickingHUViewId = AfterPickingHUViewFactory.extractAfterPickingHUsViewId(viewId);
 	}
 
 	@Override
