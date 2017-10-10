@@ -114,6 +114,11 @@ public interface ITranslatableString
 	{
 		return ImmutableTranslatableString.empty();
 	}
+	
+	public static ITranslatableString nullToEmpty(final ITranslatableString trl)
+	{
+		return trl != null ? trl : empty();
+	}
 
 	public String translate(final String adLanguage);
 
