@@ -225,7 +225,7 @@ import lombok.NonNull;
 	// the fully qualified annotations are a workaround for a javac problem with maven
 	@lombok.Value
 	@lombok.AllArgsConstructor
-	public static class PickedHUEditorRow
+	static class PickedHUEditorRow
 	{
 		HUEditorRow huEditorRow;
 		boolean processed;

@@ -17,10 +17,12 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.picking.model.I_M_PickingSlot;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
+import de.metas.ui.web.handlingunits.HUEditorView;
 import de.metas.ui.web.picking.pickingslot.PickingSlotRow;
 import de.metas.ui.web.picking.pickingslot.PickingSlotRowsCollection;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewRow;
+import de.metas.ui.web.view.IViewRowOverrides;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.ViewResult;
 import de.metas.ui.web.view.json.JSONViewDataType;
@@ -55,11 +57,14 @@ import lombok.NonNull;
  * #L%
  */
 
-public class AggregationPickingSlotView implements IView
+public class AggregationPickingSlotView implements IView, IViewRowOverrides
 {
 	private final ViewId viewId;
 	private final ITranslatableString description;
 	private final PickingSlotRowsCollection rows;
+
+	private final ViewId afterPickingHUViewId;
+	private HUEditorView _afterPickingHUView = null; // lazy
 
 	@Builder
 	private AggregationPickingSlotView(
@@ -70,6 +75,8 @@ public class AggregationPickingSlotView implements IView
 		this.viewId = viewId;
 		this.description = ITranslatableString.nullToEmpty(description);
 		this.rows = PickingSlotRowsCollection.ofSupplier(rows);
+
+		afterPickingHUViewId = AfterPickingHUViewFactory.extractAfterPickingHUsViewId(viewId);
 	}
 
 	@Override
@@ -214,4 +221,34 @@ public class AggregationPickingSlotView implements IView
 
 	}
 
+	@Override
+	public ViewId getIncludedViewId()
+	{
+		return afterPickingHUViewId;
+	}
+
+	public synchronized HUEditorView getAfterPickingHUViewOrNull()
+	{
+		return _afterPickingHUView;
+	}
+
+	public synchronized HUEditorView getAfterPickingHUViewOrCreate(final Supplier<HUEditorView> husViewFactory)
+	{
+		if (_afterPickingHUView == null)
+		{
+			_afterPickingHUView = husViewFactory.get();
+		}
+		return _afterPickingHUView;
+	}
+
+	public synchronized void clearAfterPickingHUView()
+	{
+		final HUEditorView afterPickingHUView = _afterPickingHUView;
+		_afterPickingHUView = null;
+
+		if (afterPickingHUView != null)
+		{
+			afterPickingHUView.close();
+		}
+	}
 }

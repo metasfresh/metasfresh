@@ -48,17 +48,19 @@ public class PickingSlotRowTests
 	@Test
 	public void createPickedHURow()
 	{
-		final PickingSlotRow sourceHURow = PickingSlotRow.fromPickedHUBuilder()
+		final PickingSlotRow pickedHURow = PickingSlotRow.fromPickedHUBuilder()
 				.huCode("124")
 				.pickingSlotId(54)
 				.huId(124)
 				.huEditorRowType(HUEditorRowType.TU)
+				.topLevelHU(true)
 				.build();
-		assertThat(sourceHURow.isPickingSlotRow()).isFalse();
-		assertThat(sourceHURow.isPickedHURow()).isTrue();
-		assertThat(sourceHURow.isPickingSourceHURow()).isFalse();
-		assertThat(sourceHURow.getType().getName()).isEqualTo(HUEditorRowType.TU.getName());
-		assertThat(sourceHURow.getDocumentPath().getDocumentId().toInt()).isEqualTo(124);
+		assertThat(pickedHURow.isPickingSlotRow()).isFalse();
+		assertThat(pickedHURow.isPickedHURow()).isTrue();
+		assertThat(pickedHURow.isPickingSourceHURow()).isFalse();
+		assertThat(pickedHURow.getType().getName()).isEqualTo(HUEditorRowType.TU.getName());
+		assertThat(pickedHURow.getDocumentPath().getDocumentId().toInt()).isEqualTo(124);
+		assertThat(pickedHURow.isTopLevelHU()).isTrue();
 	}
 	
 	@Test

@@ -59,6 +59,8 @@ public class AggregationPickingSlotsViewFactory implements IViewFactory
 				.setCaption("Picking slots")
 				.addElementsFromViewRowClass(PickingSlotRow.class, viewDataType)
 				.setHasTreeSupport(true)
+				.setHasIncludedViewSupport(true)
+				.setHasIncludedViewOnSelectSupport(true)
 				.build();
 
 	}
