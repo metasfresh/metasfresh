@@ -60,12 +60,19 @@ export default function listHandler(state = initialState, action) {
             });
 
         case types.CLOSE_LIST_INCLUDED_VIEW:
-            return Object.assign({}, state, {
-                includedView: Object.assign({}, state.includedView, {
-                    viewId: '',
-                    windowType: null
-                })
-            });
+            if ((state.includedView.windowType === action.windowType) &&
+                (state.includedView.viewId === action.viewId)
+            ) {
+                // only close includedView if it hasn't changed since
+                return Object.assign({}, state, {
+                    includedView: Object.assign({}, state.includedView, {
+                        viewId: '',
+                        windowType: null
+                    })
+                });
+            } else {
+                return state;
+            }
 
         default:
             return state;

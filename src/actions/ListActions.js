@@ -50,8 +50,10 @@ export function setListIncludedView(windowType, viewId) {
     }
 }
 
-export function closeListIncludedView() {
+export function closeListIncludedView(windowType, viewId) {
     return {
-        type: types.CLOSE_LIST_INCLUDED_VIEW
-    }
+        type: types.CLOSE_LIST_INCLUDED_VIEW,
+        windowType,
+        viewId,
+    };
 }
