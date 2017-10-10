@@ -518,3 +518,8 @@ UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-10-10 19:33:00'
 UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-10-10 19:33:14','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Dispo Supplydetail' WHERE AD_Field_ID=558424 AND AD_Language='en_US'
 ;
 
+-- 2017-10-10T19:42:43.418
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET IsReadOnly='Y',Updated=TO_TIMESTAMP('2017-10-10 19:42:43','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=558120
+;
+
