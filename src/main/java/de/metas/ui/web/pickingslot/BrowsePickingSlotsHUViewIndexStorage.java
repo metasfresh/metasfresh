@@ -139,7 +139,7 @@ public class BrowsePickingSlotsHUViewIndexStorage implements IViewsIndexStorage
 	private static ViewId extractPickingSlotsViewId(final ViewId huViewId)
 	{
 		final String viewIdPart = huViewId.getViewIdPart();
-		return ViewId.ofParts(BrowsePickingSlotsViewFactory.WINDOW_ID, viewIdPart);
+		return ViewId.ofParts(AggregationPickingSlotsViewFactory.WINDOW_ID, viewIdPart);
 	}
 
 	private static DocumentId extractPickingSlotRowId(final ViewId huViewId)

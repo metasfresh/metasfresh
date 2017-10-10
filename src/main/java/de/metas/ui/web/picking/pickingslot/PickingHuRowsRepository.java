@@ -198,6 +198,24 @@ import lombok.NonNull;
 		return false;
 	}
 
+	public ListMultimap<Integer, PickedHUEditorRow> retrieveAllPickedHUsIndexedByPickingSlotId(List<I_M_PickingSlot> pickingSlots)
+	{
+		final SetMultimap<Integer, Integer> huIdsByPickingSlotId = Services.get(IHUPickingSlotDAO.class).retrieveAllHUIdsIndexedByPickingSlotId(pickingSlots);
+
+		return huIdsByPickingSlotId.entries().stream()
+				.map(pickingSlotAndHU -> {
+					final int pickingSlotId = pickingSlotAndHU.getKey();
+					final int huId = pickingSlotAndHU.getValue();
+
+					final HUEditorRow huEditorRow = huEditorRepo.retrieveForHUId(huId);
+					final boolean pickingCandidateProcessed = true;
+					final PickedHUEditorRow row = new PickedHUEditorRow(huEditorRow, pickingCandidateProcessed);
+
+					return GuavaCollectors.entry(pickingSlotId, row);
+				})
+				.collect(GuavaCollectors.toImmutableListMultimap());
+	}
+
 	/**
 	 * Immutable pojo that contains the HU editor as retrieved from {@link HUEditorViewRepository} plus the the {@code processed} value from the respective {@link I_M_Picking_Candidate}.
 	 * 

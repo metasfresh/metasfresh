@@ -68,7 +68,7 @@ public class BrowsePickingSlotRow implements IViewRow
 		this.viewId = viewId;
 		this.pickingSlotId = pickingSlotId;
 		rowId = DocumentId.of(pickingSlotId);
-		documentPath = DocumentPath.rootDocumentPath(BrowsePickingSlotsViewFactory.WINDOW_ID, rowId);
+		documentPath = DocumentPath.rootDocumentPath(AggregationPickingSlotsViewFactory.WINDOW_ID, rowId);
 		includedHUsViewId = BrowsePickingSlotsHUViewIndexStorage.createHUsViewId(viewId, rowId);
 		this.name = name;
 	}

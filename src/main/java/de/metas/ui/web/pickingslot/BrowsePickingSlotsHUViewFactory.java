@@ -43,7 +43,7 @@ import de.metas.ui.web.window.datatypes.WindowId;
  * Browse selected picking slot's HUs
  * 
  * @author metas-dev <dev@metasfresh.com>
- * @see BrowsePickingSlotsViewFactory
+ * @see AggregationPickingSlotsViewFactory
  * @task https://github.com/metasfresh/metasfresh/issues/518
  */
 @ViewFactory(windowId = BrowsePickingSlotsHUViewFactory.WINDOW_ID_STRING)

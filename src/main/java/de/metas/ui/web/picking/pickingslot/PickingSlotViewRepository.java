@@ -307,4 +307,15 @@ public class PickingSlotViewRepository
 				//
 				.build();
 	}
+	
+	public List<PickingSlotRow> retrieveAllPickingSlotsRows()
+	{
+		final List<I_M_PickingSlot> pickingSlots = Services.get(IPickingSlotDAO.class).retrivePickingSlots(PickingSlotQuery.ALL);
+
+		final ListMultimap<Integer, PickedHUEditorRow> huEditorRowsByPickingSlotId = pickingHUsRepo.retrieveAllPickedHUsIndexedByPickingSlotId(pickingSlots);
+
+		return pickingSlots.stream() // get stream of I_M_PickingSlot
+				.map(pickingSlot -> createPickingSlotRow(pickingSlot, huEditorRowsByPickingSlotId)) // create the actual PickingSlotRows
+				.collect(ImmutableList.toImmutableList());
+	}
 }
