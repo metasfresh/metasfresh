@@ -5,22 +5,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import org.adempiere.util.Check;
-
-import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 
 import de.metas.i18n.ITranslatableString;
-import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.handlingunits.HUEditorRowType;
 import de.metas.ui.web.handlingunits.WEBUI_HU_Constants;
 import de.metas.ui.web.picking.PickingConstants;
 import de.metas.ui.web.view.IViewRow;
-import de.metas.ui.web.view.IViewRowAttributes;
 import de.metas.ui.web.view.IViewRowType;
 import de.metas.ui.web.view.descriptor.annotation.ViewColumn;
 import de.metas.ui.web.view.descriptor.annotation.ViewColumn.ViewColumnLayout;
@@ -32,8 +26,6 @@ import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import lombok.Builder;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
 import lombok.ToString;
 
 /*
@@ -74,48 +66,41 @@ public final class PickingSlotRow implements IViewRow
 
 	private final PickingSlotRowId pickingSlotRowId;
 	private final PickingSlotRowType type;
-
 	private final DocumentPath documentPath;
+	private final boolean processed;
+	private final ImmutableMap<PickingSlotRowId, PickingSlotRow> includedHURows;
+	private transient ImmutableMap<String, Object> _fieldNameAndJsonValues; // lazy
 
 	//
 	// Picking slot
-	private final boolean pickingSlotRow;
-	private final int pickingSlotId;
 	private final ITranslatableString pickingSlotCaption;
 	private final LookupValue pickingSlotWarehouse;
 
 	//
 	// HU
-	private final int huId;
-	private final int huStorageProductId;
-
-	//
-	// HU
 	@ViewColumn(captionKey = "HUCode", widgetType = DocumentFieldWidgetType.Text, layouts = {
+			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 10),
 			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 10)
 	})
 	private final String huCode;
 
-	private final boolean processed;
-
 	@ViewColumn(captionKey = "M_Product_ID", widgetType = DocumentFieldWidgetType.Lookup, layouts = {
+			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 30),
 			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 30)
 	})
 	private final JSONLookupValue huProduct;
 
 	@ViewColumn(captionKey = "M_HU_PI_Item_Product_ID", widgetType = DocumentFieldWidgetType.Text, layouts = {
+			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 40),
 			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 40)
 	})
 	private final String huPackingInfo;
 
 	@ViewColumn(captionKey = "QtyCU", widgetType = DocumentFieldWidgetType.Quantity, layouts = {
+			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 50),
 			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 50)
 	})
 	private final BigDecimal huQtyCU;
-
-	private transient ImmutableMap<String, Object> _fieldNameAndJsonValues;
-
-	private final ImmutableMap<PickingSlotRowId, PickingSlotRow> includedHURows;
 
 	@Builder(builderMethodName = "fromSourceHUBuilder", builderClassName = "FromSourceHUBuilder")
 	private PickingSlotRow(
@@ -134,8 +119,6 @@ public final class PickingSlotRow implements IViewRow
 
 		//
 		// HU
-		this.huId = huId;
-		this.huStorageProductId = -1;
 		this.huCode = huCode;
 		huProduct = product;
 		huPackingInfo = packingInfo;
@@ -143,8 +126,6 @@ public final class PickingSlotRow implements IViewRow
 
 		//
 		// Picking slot info
-		pickingSlotRow = false;
-		pickingSlotId = -1;
 		pickingSlotCaption = null;
 		pickingSlotWarehouse = null;
 
@@ -181,16 +162,12 @@ public final class PickingSlotRow implements IViewRow
 		documentPath = DocumentPath.rootDocumentPath(PickingConstants.WINDOWID_PickingSlotView, pickingSlotId);
 
 		// HU
-		huId = -1;
-		huStorageProductId = -1;
 		huCode = null;
 		huProduct = null;
 		huPackingInfo = null;
 		huQtyCU = null;
 
 		// Picking slot info
-		pickingSlotRow = true;
-		this.pickingSlotId = pickingSlotId;
 		pickingSlotCaption = buildPickingSlotCaption(pickingSlotName, pickingSlotBPartner, pickingSlotBPLocation);
 		this.pickingSlotWarehouse = pickingSlotWarehouse;
 
@@ -239,16 +216,12 @@ public final class PickingSlotRow implements IViewRow
 		documentPath = DocumentPath.rootDocumentPath(WEBUI_HU_Constants.WEBUI_HU_Window_ID, huId);
 
 		// HU
-		this.huId = huId;
-		this.huStorageProductId = huStorageProductId;
 		this.huCode = huCode;
 		huProduct = product;
 		huPackingInfo = packingInfo;
 		huQtyCU = qtyCU;
 
 		// Picking slot info
-		pickingSlotRow = false;
-		this.pickingSlotId = pickingSlotId;
 		pickingSlotCaption = null;
 		pickingSlotWarehouse = null;
 
@@ -309,17 +282,17 @@ public final class PickingSlotRow implements IViewRow
 		return ImmutableList.copyOf(includedHURows.values());
 	}
 
-	public Optional<PickingSlotRow> findIncludedRowById(final PickingSlotRowId id)
+	public Optional<PickingSlotRow> findIncludedRowById(final PickingSlotRowId includedRowId)
 	{
 		// This
-		if (this.pickingSlotRowId.equals(id))
+		if (this.pickingSlotRowId.equals(includedRowId))
 		{
 			return Optional.of(this);
 		}
 
 		// Direct children
 		{
-			final PickingSlotRow row = includedHURows.get(id);
+			final PickingSlotRow row = includedHURows.get(includedRowId);
 			if (row != null)
 			{
 				return Optional.of(row);
@@ -329,27 +302,9 @@ public final class PickingSlotRow implements IViewRow
 		// Ask all included HU rows
 		return includedHURows.values()
 				.stream()
-				.map(includedHURow -> includedHURow.findIncludedRowById(id).orElse(null))
+				.map(includedHURow -> includedHURow.findIncludedRowById(includedRowId).orElse(null))
 				.filter(row -> row != null)
 				.findFirst();
-	}
-
-	@Override
-	public boolean hasAttributes()
-	{
-		return false;
-	}
-
-	@Override
-	public IViewRowAttributes getAttributes() throws EntityNotFoundException
-	{
-		throw new EntityNotFoundException("Row does not support attributes");
-	}
-
-	@Override
-	public boolean hasIncludedView()
-	{
-		return false;
 	}
 
 	@Override
@@ -365,31 +320,29 @@ public final class PickingSlotRow implements IViewRow
 	}
 
 	/**
-	 * 
 	 * @return {@code true} if this row represents an actual picking slot and not any sort of HU that is also shown in this view.
 	 */
 	public boolean isPickingSlotRow()
 	{
-		return pickingSlotRow;
+		return pickingSlotRowId.isPickingSlotRow();
 	}
 
 	public int getPickingSlotId()
 	{
-		return pickingSlotId;
+		return getPickingSlotRowId().getPickingSlotId();
 	}
 
 	public int getHuId()
 	{
-		return huId;
+		return pickingSlotRowId.getHuId();
 	}
 
 	/**
-	 * 
 	 * @return {@code true} is this row represents an HU that is assigned to a picking slot
 	 */
 	public boolean isPickedHURow()
 	{
-		return getHuId() > 0 && getPickingSlotId() > 0;
+		return pickingSlotRowId.isPickedHURow();
 	}
 
 	/**
@@ -398,116 +351,12 @@ public final class PickingSlotRow implements IViewRow
 	 */
 	public boolean isPickingSourceHURow()
 	{
-		return getHuId() > 0 && getPickingSlotId() < 0;
+		return pickingSlotRowId.isPickingSourceHURow();
 	}
 
 	public int getPickingSlotWarehouseId()
 	{
 		return pickingSlotWarehouse != null ? pickingSlotWarehouse.getIdAsInt() : -1;
-	}
-
-	//
-	//
-	//
-	//
-	//
-	@EqualsAndHashCode
-	public static final class PickingSlotRowId
-	{
-		public static final PickingSlotRowId ofPickingSlotId(final int pickingSlotId)
-		{
-			Preconditions.checkArgument(pickingSlotId > 0, "pickingSlotId > 0");
-			return new PickingSlotRowId(pickingSlotId, -1, -1);
-		}
-
-		public static final PickingSlotRowId ofPickedHU(final int pickingSlotId, final int huId, final int huStorageProductId)
-		{
-			Preconditions.checkArgument(pickingSlotId > 0, "pickingSlotId > 0");
-			Preconditions.checkArgument(huId > 0, "huId > 0");
-
-			return new PickingSlotRowId(pickingSlotId, huId, huStorageProductId);
-		}
-
-		public static final PickingSlotRowId ofSourceHU(final int huId)
-		{
-			Preconditions.checkArgument(huId > 0, "huId > 0");
-			return new PickingSlotRowId(-1, huId, -1);
-		}
-
-		@Getter
-		private final int pickingSlotId;
-		@Getter
-		private final int huId;
-		@Getter
-		private final int huStorageProductId;
-
-		private transient DocumentId _documentId;
-
-		private static final String SEPARATOR = "-";
-
-		@Builder
-		private PickingSlotRowId(final int pickingSlotId, final int huId, final int huStorageProductId)
-		{
-			this.pickingSlotId = pickingSlotId > 0 ? pickingSlotId : 0;
-			this.huId = huId > 0 ? huId : 0;
-			this.huStorageProductId = huStorageProductId > 0 ? huStorageProductId : 0;
-		}
-
-		@Override
-		public String toString()
-		{
-			return toDocumentId().toJson();
-		}
-
-		public DocumentId toDocumentId()
-		{
-			DocumentId id = this._documentId;
-			if (id == null)
-			{
-				final String idStr = Joiner.on(SEPARATOR).skipNulls()
-						.join(
-								pickingSlotId,
-								huId > 0 ? huId : null,
-								huStorageProductId > 0 ? huStorageProductId : null);
-
-				id = _documentId = DocumentId.ofString(idStr);
-			}
-			return id;
-		}
-
-		public static final PickingSlotRowId fromDocumentId(final DocumentId documentId)
-		{
-			final List<String> parts = Splitter.on(SEPARATOR).splitToList(documentId.toJson());
-			final int partsCount = parts.size();
-			if (partsCount < 1)
-			{
-				throw new IllegalArgumentException("Invalid id: " + documentId);
-			}
-
-			final int pickingSlotId = !Check.isEmpty(parts.get(0), true) ? Integer.parseInt(parts.get(0)) : 0;
-			final int huId = partsCount >= 2 ? Integer.parseInt(parts.get(1)) : 0;
-			final int huStorageProductId = partsCount >= 3 ? Integer.parseInt(parts.get(2)) : 0;
-
-			return new PickingSlotRowId(pickingSlotId, huId, huStorageProductId);
-		}
-
-		public boolean isPickingSlotId()
-		{
-			return huId <= 0;
-		}
-
-		public PickingSlotRowId toPickingSlotId()
-		{
-			if (isPickingSlotId())
-			{
-				return this;
-			}
-			else
-			{
-				return new PickingSlotRowId(pickingSlotId, -1, -1);
-			}
-		}
-
 	}
 
 	public BigDecimal getHuQtyCU()

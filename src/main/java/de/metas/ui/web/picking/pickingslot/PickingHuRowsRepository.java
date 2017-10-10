@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.springframework.stereotype.Service;
 
@@ -17,12 +18,14 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableListMultimap.Builder;
 import com.google.common.collect.ListMultimap;
+import com.google.common.collect.SetMultimap;
 
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Picking_Candidate;
 import de.metas.handlingunits.model.X_M_Picking_Candidate;
 import de.metas.handlingunits.picking.IHUPickingSlotBL;
 import de.metas.handlingunits.picking.IHUPickingSlotBL.RetrieveActiveSourceHusQuery;
+import de.metas.handlingunits.picking.IHUPickingSlotDAO;
 import de.metas.picking.model.I_M_PickingSlot;
 import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.handlingunits.HUEditorRow;
@@ -98,7 +101,7 @@ import lombok.NonNull;
 		final List<de.metas.inoutcandidate.model.I_M_ShipmentSchedule> shipmentSchedules = shipmentScheduleIds.stream()
 				.map(id -> load(id, de.metas.inoutcandidate.model.I_M_ShipmentSchedule.class))
 				.collect(Collectors.toList());
-				
+
 		final IHUPickingSlotBL huPickingSlotBL = Services.get(IHUPickingSlotBL.class);
 		final List<I_M_HU> sourceHus = huPickingSlotBL.retrieveActiveSourceHUs(RetrieveActiveSourceHusQuery.fromShipmentSchedules(shipmentSchedules));
 		final Set<Integer> sourceHuIds = sourceHus.stream().map(I_M_HU::getM_HU_ID).collect(Collectors.toSet());
@@ -116,10 +119,10 @@ import lombok.NonNull;
 	public ListMultimap<Integer, PickedHUEditorRow> retrievePickedHUsIndexedByPickingSlotId(@NonNull final PickingSlotRepoQuery pickingSlotRowQuery)
 	{
 		final List<I_M_Picking_Candidate> pickingCandidates = retrievePickingCandidates(pickingSlotRowQuery);
-		return retriveHUEditorRowsAndMakePickingRows(pickingCandidates);
+		return retrievePickedHUsIndexedByPickingSlotId(pickingCandidates);
 	}
 
-	private List<I_M_Picking_Candidate> retrievePickingCandidates(@NonNull final PickingSlotRepoQuery pickingSlotRowQuery)
+	private static List<I_M_Picking_Candidate> retrievePickingCandidates(@NonNull final PickingSlotRepoQuery pickingSlotRowQuery)
 	{
 		// configure the query builder
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -149,13 +152,7 @@ import lombok.NonNull;
 				.list();
 	}
 
-	/**
-	 * 
-	 * @param pickingCandidates
-	 * @return a multimap with he keys being picking slot IDs and the values being a list of {@link PickedHUEditorRow}s.
-	 */
-	@VisibleForTesting
-	ListMultimap<Integer, PickedHUEditorRow> retriveHUEditorRowsAndMakePickingRows(@NonNull final List<I_M_Picking_Candidate> pickingCandidates)
+	private ListMultimap<Integer, PickedHUEditorRow> retrievePickedHUsIndexedByPickingSlotId(@NonNull final List<I_M_Picking_Candidate> pickingCandidates)
 	{
 		final Map<Integer, PickedHUEditorRow> huId2huRow = new HashMap<>();
 
@@ -181,7 +178,7 @@ import lombok.NonNull;
 		return builder.build();
 	}
 
-	private boolean isPickingCandidateProcessed(@NonNull final I_M_Picking_Candidate pc)
+	private static boolean isPickingCandidateProcessed(@NonNull final I_M_Picking_Candidate pc)
 	{
 		final String status = pc.getStatus();
 		if (X_M_Picking_Candidate.STATUS_CL.equals(status))
@@ -213,7 +210,6 @@ import lombok.NonNull;
 	public static class PickedHUEditorRow
 	{
 		HUEditorRow huEditorRow;
-
 		boolean processed;
 	}
 }
