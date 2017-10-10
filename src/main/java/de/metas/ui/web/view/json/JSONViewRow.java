@@ -13,7 +13,9 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import de.metas.ui.web.view.IViewRow;
+import de.metas.ui.web.view.IViewRowOverrides;
 import de.metas.ui.web.view.ViewId;
+import de.metas.ui.web.view.ViewRowOverridesHelper;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentBase;
@@ -50,14 +52,14 @@ import lombok.Value;
  */
 public class JSONViewRow extends JSONDocumentBase implements JSONViewRowBase
 {
-	public static List<JSONViewRow> ofViewRows(final List<? extends IViewRow> rows, final String adLanguage)
+	public static List<JSONViewRow> ofViewRows(final List<? extends IViewRow> rows, final IViewRowOverrides rowOverrides, final String adLanguage)
 	{
 		return rows.stream()
-				.map(row -> ofRow(row, adLanguage))
+				.map(row -> ofRow(row, rowOverrides, adLanguage))
 				.collect(Collectors.toList());
 	}
 
-	public static JSONViewRow ofRow(final IViewRow row, final String adLanguage)
+	public static JSONViewRow ofRow(final IViewRow row, final IViewRowOverrides rowOverrides, final String adLanguage)
 	{
 		//
 		// Document view record
@@ -102,7 +104,7 @@ public class JSONViewRow extends JSONDocumentBase implements JSONViewRowBase
 			{
 				jsonRow.includedDocuments = includedDocuments
 						.stream()
-						.map(includedRow -> ofRow(includedRow, adLanguage))
+						.map(includedRow -> ofRow(includedRow, rowOverrides, adLanguage))
 						.collect(GuavaCollectors.toImmutableList());
 			}
 		}
@@ -113,11 +115,11 @@ public class JSONViewRow extends JSONDocumentBase implements JSONViewRowBase
 
 		//
 		// Included views
-		if (row.hasIncludedView())
+		if(ViewRowOverridesHelper.extractSupportIncludedViews(row, rowOverrides))
 		{
 			jsonRow.supportIncludedViews = true;
 			
-			final ViewId includedViewId = row.getIncludedViewId();
+			final ViewId includedViewId = ViewRowOverridesHelper.extractIncludedViewId(row, rowOverrides);
 			if(includedViewId != null)
 			{
 				jsonRow.includedView = new JSONIncludedViewId(includedViewId.getWindowId(), includedViewId.getViewId());

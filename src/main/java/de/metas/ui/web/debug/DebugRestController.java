@@ -51,6 +51,7 @@ import de.metas.ui.web.process.ProcessRestController;
 import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.view.IViewsRepository;
 import de.metas.ui.web.view.ViewResult;
+import de.metas.ui.web.view.ViewRowOverridesHelper;
 import de.metas.ui.web.view.descriptor.annotation.ViewColumnHelper;
 import de.metas.ui.web.view.json.JSONViewResult;
 import de.metas.ui.web.websocket.WebsocketSender;
@@ -175,7 +176,7 @@ public class DebugRestController
 		return viewsRepo.getViews()
 				.stream()
 				.map(ViewResult::ofView)
-				.map(view -> JSONViewResult.of(view, adLanguage))
+				.map(viewResult -> JSONViewResult.of(viewResult, ViewRowOverridesHelper.NULL, adLanguage))
 				.collect(GuavaCollectors.toImmutableList());
 	}
 

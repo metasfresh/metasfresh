@@ -13,6 +13,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.ui.web.document.filter.json.JSONDocumentFilter;
 import de.metas.ui.web.document.filter.json.JSONStickyDocumentFilter;
 import de.metas.ui.web.view.IViewRow;
+import de.metas.ui.web.view.IViewRowOverrides;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.ViewResult;
 import de.metas.ui.web.window.datatypes.WindowId;
@@ -42,13 +43,13 @@ import de.metas.ui.web.window.datatypes.WindowId;
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public final class JSONViewResult
 {
-	public static final JSONViewResult of(final ViewResult viewResult, final String adLanguage)
+	public static final JSONViewResult of(final ViewResult viewResult, IViewRowOverrides rowOverrides, final String adLanguage)
 	{
 		List<? extends JSONViewRowBase> jsonRows;
 		if (viewResult.isPageLoaded())
 		{
 			final List<IViewRow> rows = viewResult.getPage();
-			jsonRows = JSONViewRow.ofViewRows(rows, adLanguage);
+			jsonRows = JSONViewRow.ofViewRows(rows, rowOverrides, adLanguage);
 		}
 		else
 		{

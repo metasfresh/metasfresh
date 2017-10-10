@@ -120,7 +120,8 @@ public class ViewRowEditRestController
 		documentsCollection.invalidateRootDocument(documentPath);
 
 		final IViewRow row = view.getById(rowId);
-		return JSONViewRow.ofRow(row, userSession.getAD_Language());
+		final IViewRowOverrides rowOverrides = ViewRowOverridesHelper.getViewRowOverrides(view);
+		return JSONViewRow.ofRow(row, rowOverrides, userSession.getAD_Language());
 	}
 
 	@GetMapping("/{fieldName}/typeahead")

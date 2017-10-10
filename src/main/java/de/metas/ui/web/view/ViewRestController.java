@@ -161,7 +161,8 @@ public class ViewRestController
 			result = ViewResult.ofView(view);
 		}
 
-		return JSONViewResult.of(result, userSession.getAD_Language());
+		final IViewRowOverrides rowOverrides = ViewRowOverridesHelper.getViewRowOverrides(view);
+		return JSONViewResult.of(result, rowOverrides, userSession.getAD_Language());
 	}
 
 	private static final WindowId extractWindowId(final String pathWindowIdStr, final WindowId requestWindowId)
@@ -193,7 +194,7 @@ public class ViewRestController
 		final ViewId viewId = ViewId.of(windowIdStr, viewIdStr);
 
 		final IView newView = viewsRepo.filterView(viewId, jsonRequest);
-		return JSONViewResult.of(ViewResult.ofView(newView), userSession.getAD_Language());
+		return JSONViewResult.of(ViewResult.ofView(newView), ViewRowOverridesHelper.getViewRowOverrides(newView), userSession.getAD_Language());
 	}
 
 	@DeleteMapping("/{viewId}/staticFilter/{filterId}")
@@ -202,7 +203,7 @@ public class ViewRestController
 		final ViewId viewId = ViewId.of(windowIdStr, viewIdStr);
 
 		final IView newView = viewsRepo.deleteStickyFilter(viewId, filterId);
-		return JSONViewResult.of(ViewResult.ofView(newView), userSession.getAD_Language());
+		return JSONViewResult.of(ViewResult.ofView(newView), ViewRowOverridesHelper.getViewRowOverrides(newView), userSession.getAD_Language());
 	}
 
 	@DeleteMapping("/{viewId}")
@@ -226,9 +227,10 @@ public class ViewRestController
 		userSession.assertLoggedIn();
 
 		final ViewId viewId = ViewId.of(windowId, viewIdStr);
-		final ViewResult result = viewsRepo.getView(viewId)
-				.getPage(firstRow, pageLength, DocumentQueryOrderBy.parseOrderBysList(orderBysListStr));
-		return JSONViewResult.of(result, userSession.getAD_Language());
+		final IView view = viewsRepo.getView(viewId);
+		final ViewResult result = view.getPage(firstRow, pageLength, DocumentQueryOrderBy.parseOrderBysList(orderBysListStr));
+		final IViewRowOverrides rowOverrides = ViewRowOverridesHelper.getViewRowOverrides(view);
+		return JSONViewResult.of(result, rowOverrides, userSession.getAD_Language());
 	}
 
 	@GetMapping("/layout")
@@ -261,9 +263,10 @@ public class ViewRestController
 		final DocumentIdsSelection rowIds = DocumentIdsSelection.ofCommaSeparatedString(idsListStr);
 
 		final ViewId viewId = ViewId.of(windowId, viewIdStr);
-		final List<? extends IViewRow> result = viewsRepo.getView(viewId)
-				.getByIds(rowIds);
-		return JSONViewRow.ofViewRows(result, userSession.getAD_Language());
+		final IView view = viewsRepo.getView(viewId);
+		final List<? extends IViewRow> result = view.getByIds(rowIds);
+		final IViewRowOverrides rowOverrides = ViewRowOverridesHelper.getViewRowOverrides(view);
+		return JSONViewRow.ofViewRows(result, rowOverrides, userSession.getAD_Language());
 	}
 
 	@GetMapping("/{viewId}/filter/{filterId}/field/{parameterName}/typeahead")

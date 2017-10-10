@@ -74,14 +74,14 @@ public final class ViewId
 			Preconditions.checkArgument(Objects.equals(windowId, expectedWindowId), "Invalid windowId: %s (viewId=%s)", windowId, viewIdStr);
 		}
 
-		return new ViewId(viewIdStr, parts, windowId);
+		return new ViewId(viewIdStr, ImmutableList.copyOf(parts), windowId);
 	}
 
 	public static ViewId random(@NonNull final WindowId windowId)
 	{
 		// TODO: find a way to generate smaller viewIds
 		final String viewIdPart = toString(UUID.randomUUID());
-		final List<String> parts = ImmutableList.of(windowId.toJson(), viewIdPart);
+		final ImmutableList<String> parts = ImmutableList.of(windowId.toJson(), viewIdPart);
 		final String viewIdStr = JOINER.join(parts);
 		return new ViewId(viewIdStr, parts, windowId);
 	}
@@ -138,9 +138,9 @@ public final class ViewId
 
 	private final WindowId windowId;
 	private final String viewId;
-	private final List<String> parts;
+	private final ImmutableList<String> parts;
 
-	private ViewId(@NonNull final String viewIdStr, @NonNull final List<String> parts, @NonNull final WindowId windowId)
+	private ViewId(@NonNull final String viewIdStr, @NonNull final ImmutableList<String> parts, @NonNull final WindowId windowId)
 	{
 		super();
 		this.windowId = windowId;
@@ -174,5 +174,15 @@ public final class ViewId
 	public String getViewIdPart()
 	{
 		return parts.get(1);
+	}
+
+	public ViewId deriveWithWindowId(@NonNull final WindowId windowId)
+	{
+		if (Objects.equals(this.windowId, windowId))
+		{
+			return this;
+		}
+
+		return new ViewId(viewId, parts, windowId);
 	}
 }
