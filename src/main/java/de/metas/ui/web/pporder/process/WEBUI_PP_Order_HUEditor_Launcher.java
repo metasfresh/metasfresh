@@ -17,6 +17,7 @@ import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.handlingunits.pporder.api.IHUPPOrderQtyDAO;
 import de.metas.handlingunits.sourcehu.ISourceHuService;
 import de.metas.process.IADProcessDAO;
+import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.handlingunits.HUIdsFilterHelper;
@@ -58,7 +59,9 @@ import de.metas.ui.web.view.json.JSONViewDataType;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public class WEBUI_PP_Order_HUEditor_Launcher extends ViewBasedProcessTemplate
+public class WEBUI_PP_Order_HUEditor_Launcher
+		extends ViewBasedProcessTemplate
+		implements IProcessPrecondition
 {
 	@Autowired
 	private IViewsRepository viewsRepo;

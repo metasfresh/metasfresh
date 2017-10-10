@@ -1,11 +1,11 @@
 package de.metas.ui.web.pporder;
 
 import java.math.BigDecimal;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
 import java.util.function.Supplier;
+
+import javax.annotation.Nullable;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_UOM;
@@ -16,11 +16,12 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.handlingunits.model.I_PP_Order_Qty;
+import de.metas.quantity.Quantity;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
-import de.metas.ui.web.handlingunits.HUEditorRow;
 import de.metas.ui.web.handlingunits.WEBUI_HU_Constants;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.IViewRowAttributes;
+import de.metas.ui.web.view.IViewRowAttributesProvider;
 import de.metas.ui.web.view.descriptor.annotation.ViewColumn;
 import de.metas.ui.web.view.descriptor.annotation.ViewColumn.ViewColumnLayout;
 import de.metas.ui.web.view.descriptor.annotation.ViewColumnHelper;
@@ -110,10 +111,8 @@ public class PPOrderLineRow implements IViewRow
 			@NonNull final String code,
 			@NonNull final JSONLookupValue product,
 			@NonNull final String packingInfo,
-			@NonNull final JSONLookupValue uom,
-			@NonNull final BigDecimal qty,
-			@NonNull final Collection<HUEditorRow> includedDocObjs,
-			@NonNull final Function<HUEditorRow, PPOrderLineRow> includedDocumentMapper)
+			@NonNull final Quantity quantity,
+			@NonNull final List<PPOrderLineRow> includedRows)
 	{
 		this.rowId = rowId;
 		this.type = type;
@@ -127,7 +126,7 @@ public class PPOrderLineRow implements IViewRow
 
 		// Values
 		this.product = product;
-		this.uom = uom;
+		this.uom = JSONLookupValueTool.createUOMLookupValue(quantity.getUOM());
 		this.packingInfo = packingInfo;
 		this.code = code;
 
@@ -136,26 +135,22 @@ public class PPOrderLineRow implements IViewRow
 
 		this.attributesSupplier = attributesSupplier;
 
-		this.includedDocuments = includedDocObjs.stream()
-				.map(includedDocumentMapper)
-				.collect(ImmutableList.toImmutableList());
+		this.includedDocuments = includedRows;
 
-		this.qty = qty;
+		this.qty = quantity.getQty();
 
 		this.documentPath = computeDocumentPath();
 	}
 
 	@lombok.Builder(builderMethodName = "builderForPPOrder", builderClassName = "BuilderForPPOrder")
 	private PPOrderLineRow(
-			@NonNull final DocumentId rowId,
 			@NonNull final I_PP_Order ppOrder,
 			@NonNull final Boolean processed,
-			@NonNull final String packingInfo,
-			@NonNull final Supplier<? extends IViewRowAttributes> attributesSupplier,
-			@NonNull final Collection<I_PP_Order_Qty> includedDocObjs,
-			@NonNull final Function<I_PP_Order_Qty, PPOrderLineRow> includedDocumentMapper)
+			@Nullable final String packingInfoOrNull,
+			@NonNull final IViewRowAttributesProvider attributesProvider,
+			@NonNull final List<PPOrderLineRow> includedRows)
 	{
-		this.rowId = rowId;
+		this.rowId = DocumentId.of(org.eevolution.model.I_PP_Order.Table_Name + "_" + ppOrder.getPP_Order_ID());
 		this.type = PPOrderLineType.MainProduct;
 
 		this.ppOrderId = ppOrder.getPP_Order_ID();
@@ -167,17 +162,17 @@ public class PPOrderLineRow implements IViewRow
 
 		this.product = JSONLookupValueTool.createProductLookupValue(ppOrder.getM_Product());
 		this.uom = JSONLookupValueTool.createUOMLookupValue(ppOrder.getC_UOM());
-		this.packingInfo = packingInfo;
+		this.packingInfo = packingInfoOrNull;
 		this.code = null;
 
 		this.sourceHU = false;
 		this.qtyPlan = ppOrder.getQtyOrdered();
 
-		this.attributesSupplier = attributesSupplier;
+		this.attributesSupplier = createASIAttributesSupplier(attributesProvider,
+				rowId,
+				ppOrder.getM_AttributeSetInstance_ID());
 
-		this.includedDocuments = includedDocObjs.stream()
-				.map(includedDocumentMapper)
-				.collect(ImmutableList.toImmutableList());
+		this.includedDocuments = includedRows;
 
 		this.qty = includedDocuments.stream()
 				.map(PPOrderLineRow::getQty)
@@ -188,17 +183,15 @@ public class PPOrderLineRow implements IViewRow
 
 	@lombok.Builder(builderMethodName = "builderForPPOrderBomLine", builderClassName = "BuilderForPPOrderBomLine")
 	private PPOrderLineRow(
-			@NonNull final DocumentId rowId,
 			@NonNull final I_PP_Order_BOMLine ppOrderBomLine,
 			@NonNull final PPOrderLineType type,
+			@Nullable final String packingInfoOrNull,
 			@NonNull final Boolean processed,
-			@NonNull final String packingInfo,
 			@NonNull final BigDecimal qtyPlan,
-			@NonNull final Supplier<? extends IViewRowAttributes> attributesSupplier,
-			@NonNull final Collection<I_PP_Order_Qty> includedDocObjs,
-			@NonNull final Function<I_PP_Order_Qty, PPOrderLineRow> includedDocumentMapper)
+			@NonNull final IViewRowAttributesProvider attributesProvider,
+			@NonNull final List<PPOrderLineRow> includedRows)
 	{
-		this.rowId = rowId;
+		this.rowId = DocumentId.of(org.eevolution.model.I_PP_Order_BOMLine.Table_Name + "_" + ppOrderBomLine.getPP_Order_BOMLine_ID());
 		this.type = type;
 
 		this.ppOrderId = ppOrderBomLine.getPP_Order_ID();
@@ -210,17 +203,18 @@ public class PPOrderLineRow implements IViewRow
 
 		this.product = JSONLookupValueTool.createProductLookupValue(ppOrderBomLine.getM_Product());
 		this.uom = JSONLookupValueTool.createUOMLookupValue(ppOrderBomLine.getC_UOM());
-		this.packingInfo = packingInfo;
+
+		this.packingInfo = packingInfoOrNull;
 		this.code = null;
 
 		this.sourceHU = false;
 		this.qtyPlan = qtyPlan;
 
-		this.attributesSupplier = attributesSupplier;
+		this.attributesSupplier = createASIAttributesSupplier(attributesProvider,
+				rowId,
+				ppOrderBomLine.getM_AttributeSetInstance_ID());
 
-		this.includedDocuments = includedDocObjs.stream()
-				.map(includedDocumentMapper)
-				.collect(ImmutableList.toImmutableList());
+		this.includedDocuments = includedRows;
 
 		this.qty = includedDocuments.stream()
 				.map(PPOrderLineRow::getQty)
@@ -239,8 +233,7 @@ public class PPOrderLineRow implements IViewRow
 			@NonNull final JSONLookupValue product,
 			@NonNull final String packingInfo,
 			@NonNull final JSONLookupValue uom,
-			@NonNull final BigDecimal qty
-			)
+			@NonNull final BigDecimal qty)
 	{
 		this.rowId = rowId;
 		this.type = type;
@@ -287,6 +280,21 @@ public class PPOrderLineRow implements IViewRow
 		else
 		{
 			throw new IllegalStateException("Unknown type: " + type);
+		}
+	}
+
+	private final Supplier<IViewRowAttributes> createASIAttributesSupplier(
+			@NonNull final IViewRowAttributesProvider asiAttributesProvider,
+			@NonNull final DocumentId documentId,
+			final int asiId)
+	{
+		if (asiId > 0)
+		{
+			return () -> asiAttributesProvider.getAttributes(documentId, DocumentId.of(asiId));
+		}
+		else
+		{
+			return null;
 		}
 	}
 
