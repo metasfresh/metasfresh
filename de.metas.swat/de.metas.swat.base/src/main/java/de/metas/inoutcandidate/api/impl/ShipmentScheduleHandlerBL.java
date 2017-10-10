@@ -28,13 +28,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
-import org.compiere.model.Query;
 import org.compiere.util.TrxRunnable;
 import org.slf4j.Logger;
 
@@ -106,13 +106,19 @@ public class ShipmentScheduleHandlerBL implements IShipmentScheduleHandlerBL
 			final String className,
 			final @CacheTrx String trxName)
 	{
-		final String wc = I_M_IolCandHandler.COLUMNNAME_Classname + "=?";
 
-		return new Query(ctx, I_M_IolCandHandler.Table_Name, wc, trxName)
-				.setParameters(className)
-				.setOnlyActiveRecords(true)
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		return queryBL
+				.createQueryBuilder(I_M_IolCandHandler.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_IolCandHandler.COLUMNNAME_Classname, className)
+				.orderBy()
+				.addColumn(I_M_IolCandHandler.Table_Name)
+				.endOrderBy()
+				.create()
 				.setApplyAccessFilter(true)
 				.firstOnly(I_M_IolCandHandler.class);
+		
 	}
 
 	@Override
