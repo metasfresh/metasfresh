@@ -9,6 +9,7 @@ import java.util.List;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 import com.jgoodies.common.base.Objects;
@@ -53,27 +54,29 @@ public class InsertPause
 
 	public void insertPause(
 			@NonNull final I_C_Flatrate_Term term,
-			@NonNull final Timestamp pauseFrom,
-			@NonNull final Timestamp pauseUntil)
+			@NonNull final Timestamp dateFrom,
+			@NonNull final Timestamp dateTo)
 	{
-		subscriptionCommand.removePauses(term, pauseFrom, pauseUntil);
+		Preconditions.checkArgument(!dateTo.before(dateFrom), "The given dateTo may not be before the given dateFrom; dateFrom=%s; dateTo=%s", dateFrom, dateTo);
 
-		final List<I_C_SubscriptionProgress> allSpsAfterBeginOfPause = subscriptionCommand.retrieveNextSPsAndLogIfEmpty(term, pauseFrom);
+		subscriptionCommand.removePauses(term, dateFrom, dateTo);
+
+		final List<I_C_SubscriptionProgress> allSpsAfterBeginOfPause = subscriptionCommand.retrieveNextSPsAndLogIfEmpty(term, dateFrom);
 		if (allSpsAfterBeginOfPause.isEmpty())
 		{
 			return;
 		}
 
 		final I_C_SubscriptionProgress firstSpAfterBeginOfPause = allSpsAfterBeginOfPause.get(0);
-		createBeginOfPause(term, pauseFrom, firstSpAfterBeginOfPause.getSeqNo());
+		createBeginOfPause(term, dateFrom, firstSpAfterBeginOfPause.getSeqNo());
 
-		final ImmutableList<I_C_SubscriptionProgress> updatedSpsWithinPause = processAndCollectRecordWithinPause(allSpsAfterBeginOfPause, pauseUntil);
+		final ImmutableList<I_C_SubscriptionProgress> updatedSpsWithinPause = processAndCollectRecordWithinPause(allSpsAfterBeginOfPause, dateTo);
 
 		final int endOfPauseSeqNo = computeEndOfPauseSeqNo(firstSpAfterBeginOfPause, updatedSpsWithinPause);
 
-		createEndOfPause(term, pauseUntil, endOfPauseSeqNo);
+		createEndOfPause(term, dateTo, endOfPauseSeqNo);
 
-		final ImmutableList<I_C_SubscriptionProgress> spsAfterEndOfPause = collectSpsAfterEndOfPause(allSpsAfterBeginOfPause, pauseUntil);
+		final ImmutableList<I_C_SubscriptionProgress> spsAfterEndOfPause = collectSpsAfterEndOfPause(allSpsAfterBeginOfPause, dateTo);
 
 		increaseSeqNosByTwo(spsAfterEndOfPause);
 

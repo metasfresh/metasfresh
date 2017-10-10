@@ -7,6 +7,8 @@ import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
 import org.compiere.util.Env;
 
+import com.google.common.base.Preconditions;
+
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_SubscriptionProgress;
 import de.metas.contracts.subscription.ISubscriptionDAO;
@@ -15,7 +17,7 @@ import de.metas.contracts.subscription.impl.subscriptioncommands.ChangeRecipient
 import de.metas.contracts.subscription.impl.subscriptioncommands.InsertPause;
 import de.metas.contracts.subscription.impl.subscriptioncommands.RemovePauses;
 import de.metas.i18n.IMsgBL;
-import lombok.Builder.Default;
+import lombok.Builder;
 import lombok.NonNull;
 
 /*
@@ -55,10 +57,10 @@ public class SubscriptionCommand
 
 	public void insertPause(
 			@NonNull final I_C_Flatrate_Term term,
-			@NonNull final Timestamp pauseFrom,
-			@NonNull final Timestamp pauseUntil)
+			@NonNull final Timestamp dateFrom,
+			@NonNull final Timestamp dateTo)
 	{
-		new InsertPause(this).insertPause(term, pauseFrom, pauseUntil);
+		new InsertPause(this).insertPause(term, dateFrom, dateTo);
 	}
 
 	public static int changeRecipient(@NonNull final ChangeRecipientsRequest changeRecipientsRequest)
@@ -66,7 +68,6 @@ public class SubscriptionCommand
 		return ChangeRecipient.changeRecipient(changeRecipientsRequest);
 	}
 
-	@lombok.Builder
 	@lombok.Value
 	public static final class ChangeRecipientsRequest
 	{
@@ -75,18 +76,35 @@ public class SubscriptionCommand
 
 		@NonNull
 		Timestamp dateFrom;
-
 		@NonNull
 		Timestamp dateTo;
 
-		@NonNull
-		Integer DropShip_BPartner_ID;
+		int DropShip_BPartner_ID;
+		int DropShip_Location_ID;
+		int DropShip_User_ID;
 
-		@NonNull
-		Integer DropShip_Location_ID;
-
-		@Default
-		Integer DropShip_User_ID = 0;
+		@Builder
+		private ChangeRecipientsRequest(
+				@NonNull final I_C_Flatrate_Term term,
+				@NonNull final Timestamp dateFrom,
+				@NonNull final Timestamp dateTo,
+				final int DropShip_BPartner_ID,
+				final int DropShip_Location_ID,
+				final int DropShip_User_ID)
+		{
+			this.term = term;
+			
+			Preconditions.checkArgument(!dateTo.before(dateFrom), "The given dateTo may not be before the given dateFrom; dateFrom=%s; dateTo=%s", dateFrom, dateTo);
+			this.dateFrom = dateFrom;
+			this.dateTo = dateTo;
+			
+			Preconditions.checkArgument(DropShip_BPartner_ID > 0, "The given DropShip_BPartner_ID may not be <= 0");
+			this.DropShip_BPartner_ID = DropShip_BPartner_ID;
+			
+			Preconditions.checkArgument(DropShip_Location_ID > 0, "The given DropShip_Location_ID may not be <= 0");
+			this.DropShip_Location_ID = DropShip_Location_ID;
+			this.DropShip_User_ID = DropShip_User_ID;
+		}
 	}
 
 	public void removePauses(
@@ -96,7 +114,7 @@ public class SubscriptionCommand
 	{
 		new RemovePauses(this).removePauses(term, pauseFrom, pauseUntil);
 	}
-	
+
 	public final List<I_C_SubscriptionProgress> retrieveNextSPsAndLogIfEmpty(
 			@NonNull final I_C_Flatrate_Term term,
 			@NonNull final Timestamp pauseFrom)
