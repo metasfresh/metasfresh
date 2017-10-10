@@ -59,9 +59,7 @@ public class C_Flatrate_DataEntry
 	private static final String MSG_DATA_ENTRY_EXISTING_CORRECTION_ENTRY_0P = "DataEntry_Existing_Correction_Entry";
 	public static final String MSG_DATA_ENTRY_EXISTING_CLOSING_ENTRY_0P = "DataEntry_Existing_Closing_Entry";
 
-	final private static transient IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
-	final private static transient IFlatrateDAO flatrateDB = Services.get(IFlatrateDAO.class);
-
+	
 	public static final transient C_Flatrate_DataEntry instance = new C_Flatrate_DataEntry();
 
 	private static final List<String> DATAENTRY_TYPES_InvoiceCandidatesRelated = ImmutableList
@@ -85,6 +83,7 @@ public class C_Flatrate_DataEntry
 
 		if (!X_C_Flatrate_Conditions.TYPE_CONDITIONS_Refundable.equals(conditions.getType_Conditions()))
 		{
+			final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 			flatrateBL.updateEntry(dataEntry);
 		}
 
@@ -105,6 +104,7 @@ public class C_Flatrate_DataEntry
 		if (mainEntry && !dataEntry.isSimulation() && isInvoiceCandidatesRelatedType(dataEntry))
 		{
 			// handle open clearing allocs
+			final IFlatrateDAO flatrateDB = Services.get(IFlatrateDAO.class);
 			final List<I_C_Invoice_Clearing_Alloc> allocsWithoutDataEntry = flatrateDB.retrieveOpenClearingAllocs(dataEntry);
 
 			for (final I_C_Invoice_Clearing_Alloc ica : allocsWithoutDataEntry)
@@ -139,6 +139,7 @@ public class C_Flatrate_DataEntry
 
 		if (dataEntry.isSimulation() || mainEntry)
 		{
+			final IFlatrateDAO flatrateDB = Services.get(IFlatrateDAO.class);
 			flatrateDB.updateQtyActualFromDataEntry(dataEntry);
 		}
 	}
@@ -155,6 +156,7 @@ public class C_Flatrate_DataEntry
 
 		if (isInvoiceCandidatesRelatedType(dataEntry))
 		{
+			final IFlatrateDAO flatrateDB = Services.get(IFlatrateDAO.class);
 			final List<I_C_Invoice_Clearing_Alloc> allocsOfDataEntry = flatrateDB.retrieveClearingAllocs(dataEntry);
 			for (final I_C_Invoice_Clearing_Alloc ica : allocsOfDataEntry)
 			{
@@ -189,7 +191,8 @@ public class C_Flatrate_DataEntry
 		{
 			return;
 		}
-
+		
+		final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 		flatrateBL.beforeCompleteDataEntry(dataEntry);
 	}
 
@@ -232,6 +235,7 @@ public class C_Flatrate_DataEntry
 		{
 			final Timestamp dataEntryStartDate = dataEntry.getC_Period().getStartDate();
 
+			final IFlatrateDAO flatrateDB = Services.get(IFlatrateDAO.class);
 			final List<I_C_Flatrate_DataEntry> existingCorrectionEntries = flatrateDB.retrieveDataEntries(
 					flatrateTerm,
 					X_C_Flatrate_DataEntry.TYPE_Correction_PeriodBased,
@@ -290,6 +294,7 @@ public class C_Flatrate_DataEntry
 	{
 		if (X_C_Flatrate_DataEntry.TYPE_Invoicing_PeriodBased.equals(dataEntry.getType()))
 		{
+			final IFlatrateDAO flatrateDB = Services.get(IFlatrateDAO.class);
 			final List<I_C_Invoice_Clearing_Alloc> allocLines = flatrateDB.retrieveClearingAllocs(dataEntry);
 			for (final I_C_Invoice_Clearing_Alloc alloc : allocLines)
 			{

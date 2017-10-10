@@ -85,7 +85,7 @@ import lombok.NonNull;
 				importRecord.getC_BPartner(), 
 				importRecord.getC_Flatrate_Conditions(),
 				importRecord.getStartDate(), 
-				(I_AD_User)null, 
+				(I_AD_User)null, // userInCharge
 				product, 
 				false 
 		);
@@ -94,10 +94,10 @@ import lombok.NonNull;
 			throw new AdempiereException("contract not created");
 		}
 
-		setBillUser(contract);
+		setBillUser(contract, getCtx());
 		setDropShipBPartner(importRecord, contract);
-		setDropShipUser(contract);
-		setDropShipLocation(contract);
+		setDropShipUser(contract, getCtx());
+		setDropShipLocation(contract, getCtx());
 		contract.setM_Product(product);
 		setUOM(contract, product);
 		contract.setPriceActual(importRecord.getPrice());
@@ -123,10 +123,10 @@ import lombok.NonNull;
 		return contract;
 	}
 	
-	private void setBillUser(@NonNull final I_C_Flatrate_Term contract)
+	private static void setBillUser(@NonNull final I_C_Flatrate_Term contract, final Properties ctx)
 	{
-		int billPartnerId = contract.getBill_BPartner_ID();
-		final I_AD_User billUser = FlatrateTermImportFinder.findBillUser(getCtx(), billPartnerId);
+		final int billPartnerId = contract.getBill_BPartner_ID();
+		final I_AD_User billUser = FlatrateTermImportFinder.findBillUser(ctx, billPartnerId);
 		if (billUser != null)
 		{
 			contract.setBill_User(billUser);
@@ -143,20 +143,20 @@ import lombok.NonNull;
 		contract.setDropShip_BPartner_ID(dropShipBPartnerId);
 	}
 
-	private void setDropShipUser(@NonNull final I_C_Flatrate_Term contract)
+	private static void setDropShipUser(@NonNull final I_C_Flatrate_Term contract, final Properties ctx)
 	{
 		int dropShipBPartnerId = contract.getDropShip_BPartner_ID();
-		final I_AD_User dropShipUser = FlatrateTermImportFinder.findDropShipUser(getCtx(), dropShipBPartnerId);
+		final I_AD_User dropShipUser = FlatrateTermImportFinder.findDropShipUser(ctx, dropShipBPartnerId);
 		if (dropShipUser != null)
 		{
 			contract.setDropShip_User(dropShipUser);
 		}
 	}
 	
-	private void setDropShipLocation(@NonNull final I_C_Flatrate_Term contract)
+	private static void setDropShipLocation(@NonNull final I_C_Flatrate_Term contract, final Properties ctx)
 	{
 		int dropShipBPartnerId = contract.getDropShip_BPartner_ID();
-		final I_C_BPartner_Location dropShipBPLocation = FlatrateTermImportFinder.findBPartnerShipToLocation(getCtx(), dropShipBPartnerId);
+		final I_C_BPartner_Location dropShipBPLocation = FlatrateTermImportFinder.findBPartnerShipToLocation(ctx, dropShipBPartnerId);
 		if (dropShipBPLocation != null)
 		{
 			contract.setDropShip_Location(dropShipBPLocation);
