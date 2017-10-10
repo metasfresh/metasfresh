@@ -1,5 +1,6 @@
 package de.metas.handlingunits.picking.impl;
 
+import java.util.Collection;
 import java.util.HashSet;
 
 /*
@@ -40,6 +41,11 @@ import org.adempiere.util.proxy.Cached;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Locator;
+
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSetMultimap;
+import com.google.common.collect.LinkedHashMultimap;
+import com.google.common.collect.SetMultimap;
 
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_PickingSlot;
@@ -134,6 +140,36 @@ public class HUPickingSlotDAO implements IHUPickingSlotDAO
 		}
 
 		return huIds;
+	}
+
+	@Override
+	public SetMultimap<Integer, Integer> retrieveAllHUIdsIndexedByPickingSlotId(final Collection<? extends de.metas.picking.model.I_M_PickingSlot> pickingSlots)
+	{
+		if (pickingSlots.isEmpty())
+		{
+			return ImmutableSetMultimap.of();
+		}
+
+		final Set<Integer> pickingSlotIds = pickingSlots.stream().map(pickingSlot -> pickingSlot.getM_PickingSlot_ID()).collect(ImmutableSet.toImmutableSet());
+
+		final LinkedHashMultimap<Integer, Integer> pickingSlotId2huIds = LinkedHashMultimap.create();
+
+		// Retrieve current picking slot HUs
+		pickingSlots.stream()
+				.map(pickingSlot -> InterfaceWrapperHelper.create(pickingSlot, I_M_PickingSlot.class))
+				.filter(pickingSlot -> pickingSlot.getM_HU_ID() > 0)
+				.forEach(pickingSlot -> pickingSlotId2huIds.put(pickingSlot.getM_PickingSlot_ID(), pickingSlot.getM_HU_ID()));
+
+		// Retrieve the HUs from picking slot queue.
+		Services.get(IQueryBL.class)
+				.createQueryBuilder(I_M_PickingSlot_HU.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_M_PickingSlot_HU.COLUMN_M_PickingSlot_ID, pickingSlotIds)
+				.create()
+				.stream(I_M_PickingSlot_HU.class)
+				.forEach(pickingSlotHU -> pickingSlotId2huIds.put(pickingSlotHU.getM_PickingSlot_ID(), pickingSlotHU.getM_HU_ID()));
+
+		return ImmutableSetMultimap.copyOf(pickingSlotId2huIds);
 	}
 
 	@Override

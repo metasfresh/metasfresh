@@ -42,7 +42,7 @@ public class ShipmentConstraintCreateRequest
 	public ShipmentConstraintCreateRequest(final int billPartnerId, @NonNull final TableRecordReference sourceDocRef, final boolean deliveryStop)
 	{
 		Preconditions.checkArgument(billPartnerId > 0, "billPartnerId > 0");
-		Preconditions.checkArgument(!deliveryStop, "at least one constraint shall be set");
+		Preconditions.checkArgument(deliveryStop, "at least one constraint shall be set");
 		
 		this.billPartnerId = billPartnerId;
 		this.sourceDocRef = sourceDocRef;

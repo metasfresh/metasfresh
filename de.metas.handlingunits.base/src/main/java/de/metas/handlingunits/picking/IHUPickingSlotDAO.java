@@ -1,5 +1,7 @@
 package de.metas.handlingunits.picking;
 
+import java.util.Collection;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -29,6 +31,8 @@ import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Locator;
+
+import com.google.common.collect.SetMultimap;
 
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_PickingSlot;
@@ -92,6 +96,8 @@ public interface IHUPickingSlotDAO extends ISingletonService
 	 * @return picking slots
 	 */
 	List<I_M_PickingSlot> retrievePickingSlots(I_C_BPartner partner, I_M_Locator locator);
+
+	SetMultimap<Integer, Integer> retrieveAllHUIdsIndexedByPickingSlotId(Collection<? extends de.metas.picking.model.I_M_PickingSlot> pickingSlots);
 
 	/**
 	 * Creates an {@link I_M_HU} query filter which will select only those HUs which are currently on a picking slot or are in a picking slot queue.
