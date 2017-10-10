@@ -194,6 +194,18 @@ public final class CreateViewRequest
 		return getFilters().getOrUnwrapFilters(descriptors);
 	}
 
+	public void assertNoParentViewOrRow()
+	{
+		if (parentViewId != null)
+		{
+			throw new AdempiereException("parentViewId '" + parentViewId + "' is not supported in " + this);
+		}
+		if (parentRowId != null)
+		{
+			throw new AdempiereException("parentViewId '" + parentRowId + "' is not supported in " + this);
+		}
+	}
+
 	//
 	//
 	//
