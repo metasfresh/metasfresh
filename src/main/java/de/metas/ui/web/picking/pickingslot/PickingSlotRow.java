@@ -15,7 +15,6 @@ import de.metas.ui.web.handlingunits.HUEditorRowType;
 import de.metas.ui.web.handlingunits.WEBUI_HU_Constants;
 import de.metas.ui.web.picking.PickingConstants;
 import de.metas.ui.web.view.IViewRow;
-import de.metas.ui.web.view.IViewRowType;
 import de.metas.ui.web.view.descriptor.annotation.ViewColumn;
 import de.metas.ui.web.view.descriptor.annotation.ViewColumn.ViewColumnLayout;
 import de.metas.ui.web.view.descriptor.annotation.ViewColumnHelper;
@@ -78,6 +77,8 @@ public final class PickingSlotRow implements IViewRow
 
 	//
 	// HU
+	private final boolean huTopLevel;
+	
 	@ViewColumn(captionKey = "HUCode", widgetType = DocumentFieldWidgetType.Text, layouts = {
 			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 10),
 			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 10)
@@ -109,7 +110,8 @@ public final class PickingSlotRow implements IViewRow
 			final String huCode,
 			final JSONLookupValue product,
 			final String packingInfo,
-			final BigDecimal qtyCU)
+			final BigDecimal qtyCU,
+			final boolean topLevelHU)
 	{
 		pickingSlotRowId = PickingSlotRowId.ofSourceHU(huId);
 
@@ -123,6 +125,7 @@ public final class PickingSlotRow implements IViewRow
 		huProduct = product;
 		huPackingInfo = packingInfo;
 		huQtyCU = qtyCU;
+		huTopLevel = topLevelHU;
 
 		//
 		// Picking slot info
@@ -166,6 +169,7 @@ public final class PickingSlotRow implements IViewRow
 		huProduct = null;
 		huPackingInfo = null;
 		huQtyCU = null;
+		huTopLevel = false;
 
 		// Picking slot info
 		pickingSlotCaption = buildPickingSlotCaption(pickingSlotName, pickingSlotBPartner, pickingSlotBPLocation);
@@ -202,6 +206,7 @@ public final class PickingSlotRow implements IViewRow
 			final JSONLookupValue product,
 			final String packingInfo,
 			final BigDecimal qtyCU,
+			final boolean topLevelHU,
 			//
 			final List<PickingSlotRow> includedHURows)
 	{
@@ -220,6 +225,7 @@ public final class PickingSlotRow implements IViewRow
 		huProduct = product;
 		huPackingInfo = packingInfo;
 		huQtyCU = qtyCU;
+		huTopLevel = topLevelHU;
 
 		// Picking slot info
 		pickingSlotCaption = null;
@@ -249,7 +255,7 @@ public final class PickingSlotRow implements IViewRow
 	}
 
 	@Override
-	public IViewRowType getType()
+	public PickingSlotRowType getType()
 	{
 		return type;
 	}
@@ -343,6 +349,11 @@ public final class PickingSlotRow implements IViewRow
 	public boolean isPickedHURow()
 	{
 		return pickingSlotRowId.isPickedHURow();
+	}
+	
+	public boolean isTopLevelHU()
+	{
+		return huTopLevel;
 	}
 
 	/**

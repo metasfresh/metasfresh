@@ -228,6 +228,7 @@ public class PickingSlotViewRepository
 				.product(sourceHuEditorRow.getProduct())
 				.packingInfo(sourceHuEditorRow.getPackingInfo())
 				.qtyCU(sourceHuEditorRow.getQtyCU())
+				.topLevelHU(sourceHuEditorRow.isTopLevel())
 				.build();
 
 		return pickingSourceHuRow;
@@ -286,6 +287,7 @@ public class PickingSlotViewRepository
 				.product(huEditorRow.getProduct())
 				.packingInfo(huEditorRow.getPackingInfo())
 				.qtyCU(huEditorRow.getQtyCU())
+				.topLevelHU(huEditorRow.isTopLevel())
 				//
 				.includedHURows(includedHURows)
 				//

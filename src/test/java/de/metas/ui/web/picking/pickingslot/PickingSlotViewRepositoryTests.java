@@ -176,7 +176,7 @@ public class PickingSlotViewRepositoryTests
 		assertThat(whuRow.getHuId(), is(101));
 	}
 
-	PickingSlotViewRepository createPickingSllotViewRepository()
+	private PickingSlotViewRepository createPickingSllotViewRepository()
 	{
 		final NullLookupDataSource nullDs = NullLookupDataSource.instance;
 
@@ -194,13 +194,13 @@ public class PickingSlotViewRepositoryTests
 				.setTopLevel(true)
 				.build();
 
-		final PickingSlotViewRepository pickingSlotViewRepository = createPickingSllotViewRepository();		
-		final PickingSlotRow sourceHURow = pickingSlotViewRepository.createSourceHURow(huEditorRow);
-		
+		final PickingSlotRow sourceHURow = PickingSlotViewRepository.createSourceHURow(huEditorRow);
+
 		assertThat(sourceHURow).isNotNull();
 		assertThat(sourceHURow.isPickingSlotRow()).isFalse();
 		assertThat(sourceHURow.isPickedHURow()).isFalse();
 		assertThat(sourceHURow.isPickingSourceHURow()).isTrue();
 		assertThat(sourceHURow.getId()).isEqualTo(DocumentId.of("0-100"));
+		assertThat(sourceHURow.isTopLevelHU()).isTrue();
 	}
 }
