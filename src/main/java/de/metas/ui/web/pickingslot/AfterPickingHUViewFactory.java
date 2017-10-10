@@ -70,7 +70,8 @@ public class AfterPickingHUViewFactory implements IViewFactory, IViewsIndexStora
 	{
 		final IHUQueryBuilder huQuery = Services.get(IHandlingUnitsDAO.class)
 				.createHUQueryBuilder()
-				.setIncludeAfterPickingLocator(true);
+				.setIncludeAfterPickingLocator(true)
+				.setExcludeHUsOnPickingSlot(true);
 
 		final ViewId viewId = pickingSlotsView.getIncludedViewId();
 		final CreateViewRequest request = CreateViewRequest.builder(viewId, JSONViewDataType.includedView)
