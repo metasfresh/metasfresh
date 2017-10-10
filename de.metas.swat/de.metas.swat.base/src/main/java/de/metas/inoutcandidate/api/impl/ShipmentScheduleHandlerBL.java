@@ -112,6 +112,9 @@ public class ShipmentScheduleHandlerBL implements IShipmentScheduleHandlerBL
 				.createQueryBuilder(I_M_IolCandHandler.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_IolCandHandler.COLUMNNAME_Classname, className)
+				.orderBy()
+				.addColumn(I_M_IolCandHandler.Table_Name)
+				.endOrderBy()
 				.create()
 				.setApplyAccessFilter(true)
 				.firstOnly(I_M_IolCandHandler.class);
