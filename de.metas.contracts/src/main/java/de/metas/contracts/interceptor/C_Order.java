@@ -55,14 +55,9 @@ public class C_Order
 
 	private static final String MSG_ORDER_DATE_ORDERED_CHANGE_FORBIDDEN_1P = "Order_DateOrdered_Change_Forbidden";
 
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE })
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE }, ignoreColumnsChanged= {I_C_Order.COLUMNNAME_DateOrdered} )
 	public void updateDataEntry(final I_C_Order order)
 	{
-		if (InterfaceWrapperHelper.isValueChanged(order, I_C_Order.COLUMNNAME_DateOrdered))
-		{
-			return;
-		}
-
 		final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 		final IInvoiceCandDAO invoiceCandDB = Services.get(IInvoiceCandDAO.class);
 		final Properties ctx = InterfaceWrapperHelper.getCtx(order);

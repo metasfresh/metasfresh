@@ -31,7 +31,6 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.exceptions.AdempiereException;
@@ -1416,7 +1415,7 @@ public class FlatrateBL implements IFlatrateBL
 				throw new AdempiereException(
 						"de.metas.flatrate.Org.Warehouse_Missing",
 						Env.getAD_Language(ctx),
-						new Object[] { msgBL.translate(ctx, I_AD_Org.COLUMNNAME_AD_Org_ID), InterfaceWrapperHelper.create(ctx, term.getAD_Org_ID(), I_AD_Org.class, ITrx.TRXNAME_None) });
+						new Object[] { msgBL.translate(ctx, I_AD_Org.COLUMNNAME_AD_Org_ID), InterfaceWrapperHelper.loadOutOfTrx(term.getAD_Org_ID(), I_AD_Org.class) });
 			}
 			warehouseId = warehousesForOrg.get(0).getM_Warehouse_ID();
 		}
