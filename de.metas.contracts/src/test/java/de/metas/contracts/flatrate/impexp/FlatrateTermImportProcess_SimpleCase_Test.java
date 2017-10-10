@@ -8,7 +8,6 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.List;
 
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.Mutable;
 import org.compiere.model.I_C_BPartner;
@@ -22,7 +21,6 @@ import org.springframework.test.context.junit4.SpringRunner;
 import de.metas.StartupListener;
 import de.metas.contracts.impl.AbstractFlatrateTermTest;
 import de.metas.contracts.impl.FlatrateTermDataFactory;
-import de.metas.contracts.invoicecandidate.FlatrateTermInvoiceCandidateHandler;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_I_Flatrate_Term;
@@ -30,9 +28,8 @@ import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.inout.invoicecandidate.InOutLinesWithMissingInvoiceCandidate;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
+import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
-import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateRequest;
-import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateResult;
 
 /*
  * #%L
@@ -167,9 +164,9 @@ public class FlatrateTermImportProcess_SimpleCase_Test extends AbstractFlatrateT
 		assertThat(flatrateTerm.getMasterEndDate()).isEqualTo(masterEndDate);
 		assertThat(flatrateTerm.getDocAction()).isEqualTo(X_C_Flatrate_Term.DOCACTION_None);
 		assertThat(flatrateTerm.getContractStatus()).isEqualTo(X_C_Flatrate_Term.CONTRACTSTATUS_Quit);
-
-		final InvoiceCandidateGenerateResult candidates = createInvoiceCandidates(flatrateTerm);
-		assertThat(candidates.getC_Invoice_Candidates()).hasSize(0);
+		
+		final List<I_C_Invoice_Candidate> candidates = createInvoiceCandidates(flatrateTerm);
+		assertThat(candidates).hasSize(0);
 	}
 
 	private int prepareBPartner()
@@ -211,12 +208,11 @@ public class FlatrateTermImportProcess_SimpleCase_Test extends AbstractFlatrateT
 
 	private void assertInvoiceCandidate(final I_C_Flatrate_Term flatrateTerm)
 	{
-		final InvoiceCandidateGenerateResult candidates = createInvoiceCandidates(flatrateTerm);
+		final List<I_C_Invoice_Candidate> candidates = createInvoiceCandidates(flatrateTerm);
 
-		assertThat(candidates.getC_Invoice_Candidates()).hasSize(1);
+		assertThat(candidates).hasSize(1);
 
-		final I_C_Invoice_Candidate invoiceCandidate = candidates.getC_Invoice_Candidates().get(0);
-		InterfaceWrapperHelper.save(invoiceCandidate);
+		final I_C_Invoice_Candidate invoiceCandidate = candidates.get(0);
 
 		assertThat(invoiceCandidate.getM_Product_ID()).isEqualTo(flatrateTerm.getM_Product_ID());
 		assertThat(invoiceCandidate.getRecord_ID()).isEqualByComparingTo(flatrateTerm.getC_Flatrate_Term_ID());
@@ -225,15 +221,8 @@ public class FlatrateTermImportProcess_SimpleCase_Test extends AbstractFlatrateT
 		assertThat(candsForTerm.size(), equalTo(1));
 	}
 
-	private InvoiceCandidateGenerateResult createInvoiceCandidates(final I_C_Flatrate_Term flatrateTerm)
+	private List<I_C_Invoice_Candidate> createInvoiceCandidates(final I_C_Flatrate_Term flatrateTerm)
 	{
-		final FlatrateTermInvoiceCandidateHandler flatrateTermHandler = new FlatrateTermInvoiceCandidateHandler();
-		return flatrateTermHandler.createCandidatesFor(InvoiceCandidateGenerateRequest.of(flatrateTermHandler, flatrateTerm));
+		return Services.get(IInvoiceCandidateHandlerBL.class).createMissingCandidatesFor(flatrateTerm);
 	}
-
-	@Override
-	protected void initialize()
-	{
-	}
-
 }
