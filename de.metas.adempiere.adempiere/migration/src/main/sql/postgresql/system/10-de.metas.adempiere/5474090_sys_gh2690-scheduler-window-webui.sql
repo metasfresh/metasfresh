@@ -1605,3 +1605,53 @@ UPDATE AD_Field SET Name='Prozess Instanz',Updated=TO_TIMESTAMP('2017-10-10 14:2
 UPDATE AD_Field SET Name='Ablauf Protokoll',Updated=TO_TIMESTAMP('2017-10-10 14:24:08','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=9451
 ;
 
+-- 2017-10-10T14:46:26.630
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Table_Process (AD_Client_ID,AD_Org_ID,AD_Process_ID,AD_Table_ID,AD_Window_ID,Created,CreatedBy,EntityType,IsActive,Updated,UpdatedBy,WEBUI_QuickAction,WEBUI_QuickAction_Default) VALUES (0,0,53235,688,305,TO_TIMESTAMP('2017-10-10 14:46:26','YYYY-MM-DD HH24:MI:SS'),100,'D','Y',TO_TIMESTAMP('2017-10-10 14:46:26','YYYY-MM-DD HH24:MI:SS'),100,'N','N')
+;
+
+-- 2017-10-10T14:50:18.072
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Table_Process (AD_Client_ID,AD_Org_ID,AD_Process_ID,AD_Table_ID,AD_Window_ID,Created,CreatedBy,EntityType,IsActive,Updated,UpdatedBy,WEBUI_QuickAction,WEBUI_QuickAction_Default) VALUES (0,0,540174,688,305,TO_TIMESTAMP('2017-10-10 14:50:18','YYYY-MM-DD HH24:MI:SS'),100,'D','Y',TO_TIMESTAMP('2017-10-10 14:50:18','YYYY-MM-DD HH24:MI:SS'),100,'N','N')
+;
+
+-- 2017-10-10T14:50:34.879
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Table_Process SET WEBUI_QuickAction='Y',Updated=TO_TIMESTAMP('2017-10-10 14:50:34','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=53235 AND AD_Table_ID=688
+;
+
+-- 2017-10-10T14:50:36.066
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Table_Process SET WEBUI_QuickAction='Y',Updated=TO_TIMESTAMP('2017-10-10 14:50:36','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=540174 AND AD_Table_ID=688
+;
+
+-- 2017-10-10T14:51:48.756
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET IsActive='N',Updated=TO_TIMESTAMP('2017-10-10 14:51:48','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=549028
+;
+
+-- 2017-10-10T14:51:53.763
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET IsActive='N',Updated=TO_TIMESTAMP('2017-10-10 14:51:53','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=549029
+;
+
+-- 2017-10-10T14:52:14.697
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_UI_Element WHERE AD_UI_Element_ID=549028
+;
+
+-- 2017-10-10T14:52:14.710
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_UI_Element WHERE AD_UI_Element_ID=549029
+;
+
+-- 2017-10-10T14:54:11.748
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Table_Process SET WEBUI_QuickAction='N',Updated=TO_TIMESTAMP('2017-10-10 14:54:11','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=53235 AND AD_Table_ID=688
+;
+
+-- 2017-10-10T14:54:12.980
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Table_Process SET WEBUI_QuickAction='N',Updated=TO_TIMESTAMP('2017-10-10 14:54:12','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=540174 AND AD_Table_ID=688
+;
+
