@@ -47,6 +47,7 @@ import de.metas.adempiere.model.I_AD_User;
 import de.metas.adempiere.service.ILocationBL;
 import de.metas.adempiere.service.impl.AddressBuilder;
 import de.metas.i18n.Language;
+import lombok.NonNull;
 
 
 public class BPartnerBL implements IBPartnerBL
@@ -57,7 +58,7 @@ public class BPartnerBL implements IBPartnerBL
 
 	@Override
 	public String mkFullAddress(
-			final org.compiere.model.I_C_BPartner bPartner,
+			@NonNull final org.compiere.model.I_C_BPartner bPartner,
 			final I_C_BPartner_Location location,
 			final I_AD_User user,
 			final String trxName)

@@ -41,10 +41,13 @@ public class C_SubscriptionProgress_ChangeRecipient
 	@Param(parameterName = "DateGeneral", mandatory = true, parameterTo = true)
 	private Timestamp dateTo;
 
+	@Param(parameterName = "DropShip_BPartner_ID", mandatory = true)
 	private int DropShip_BPartner_ID;
 
+	@Param(parameterName = "DropShip_Location_ID", mandatory = true)
 	private int DropShip_Location_ID;
 
+	@Param(parameterName = "DropShip_User_ID", mandatory = false)
 	private int DropShip_User_ID;
 
 	@Override
@@ -63,5 +66,4 @@ public class C_SubscriptionProgress_ChangeRecipient
 
 		return MSG_OK;
 	}
-
 }

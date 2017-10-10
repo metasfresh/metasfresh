@@ -55,7 +55,6 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.Lookup;
 import org.compiere.model.MNote;
-import org.compiere.model.MOrg;
 import org.compiere.model.MRefList;
 import org.compiere.model.POInfo;
 import org.compiere.util.Env;
@@ -1416,7 +1415,7 @@ public class FlatrateBL implements IFlatrateBL
 				throw new AdempiereException(
 						"de.metas.flatrate.Org.Warehouse_Missing",
 						Env.getAD_Language(ctx),
-						new Object[] { msgBL.translate(ctx, I_AD_Org.COLUMNNAME_AD_Org_ID), MOrg.get(ctx, term.getAD_Org_ID()) });
+						new Object[] { msgBL.translate(ctx, I_AD_Org.COLUMNNAME_AD_Org_ID), InterfaceWrapperHelper.loadOutOfTrx(term.getAD_Org_ID(), I_AD_Org.class) });
 			}
 			warehouseId = warehousesForOrg.get(0).getM_Warehouse_ID();
 		}
