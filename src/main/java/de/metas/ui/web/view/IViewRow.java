@@ -62,8 +62,8 @@ public interface IViewRow
 	//
 	// Attributes
 	// @formatter:off
-	boolean hasAttributes();
-	IViewRowAttributes getAttributes() throws EntityNotFoundException;
+	default boolean hasAttributes() { return false; }
+	default IViewRowAttributes getAttributes() { throw new EntityNotFoundException("Row does not support attributes"); };
 	// @formatter:on
 
 	//

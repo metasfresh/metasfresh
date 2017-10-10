@@ -154,7 +154,10 @@ public interface IView
 
 	String getSqlWhereClause(DocumentIdsSelection rowIds, SqlOptions sqlOpts);
 
-	boolean hasAttributesSupport();
+	default boolean hasAttributesSupport()
+	{
+		return false;
+	}
 
 	<T> List<T> retrieveModelsByIds(DocumentIdsSelection rowIds, Class<T> modelClass);
 
