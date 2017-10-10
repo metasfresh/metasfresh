@@ -11,7 +11,9 @@ import java.util.Properties;
 
 import org.adempiere.acct.api.IAcctSchemaDAO;
 import org.adempiere.acct.api.impl.AcctSchemaDAO;
+import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.ad.wrapper.POJOWrapper;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_AcctSchema;
@@ -23,6 +25,8 @@ import org.compiere.util.TimeUtil;
 import org.junit.Before;
 import org.junit.BeforeClass;
 
+import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.invoicecandidate.model.I_C_ILCandHandler;
 import de.metas.tax.api.ITaxDAO;
 import de.metas.tax.api.impl.TaxDAO;
 
@@ -54,7 +58,8 @@ import de.metas.tax.api.impl.TaxDAO;
  */
 public abstract class AbstractFlatrateTermTest
 {
-
+	private final String classname = "de.metas.contracts.invoicecandidate.FlatrateTermInvoiceCandidateHandler";
+	
 	public FlatrateTermTestHelper helper;
 	
 	private I_C_Calendar calendar;
@@ -81,15 +86,19 @@ public abstract class AbstractFlatrateTermTest
 	@Before
 	public final void init()
 	{
+		final POJOLookupMap db = POJOLookupMap.get();
+		db.clear();
+		
 		setupMasterData();
 
 		initialize();
 	}
 
-	/**
-	 * Balled by the test's {@link Before} method, after the basic master data was set up.
-	 */
-	abstract protected void initialize();
+	
+	protected void initialize()
+	{
+		createFlatrateTermHandler();
+	}
 
 	protected FlatrateTermTestHelper createFlatrateTermTestHelper()
 	{
@@ -99,12 +108,12 @@ public abstract class AbstractFlatrateTermTest
 	protected void setupMasterData()
 	{
 		helper = createFlatrateTermTestHelper();
-		prepareCalendar();
-		prepareAcctSchema();
-		prepareTax();
+		createCalendar();
+		createAcctSchema();
+		createTax();
 	}
 
-	private void prepareCalendar()
+	private void createCalendar()
 	{
 		calendar = newInstance(I_C_Calendar.class);
 		save(calendar);
@@ -143,7 +152,7 @@ public abstract class AbstractFlatrateTermTest
 	}
 	
 	
-	private void prepareAcctSchema()
+	private void createAcctSchema()
 	{
 		acctSchema = newInstance(I_C_AcctSchema.class);
 		save(acctSchema);
@@ -158,7 +167,7 @@ public abstract class AbstractFlatrateTermTest
 		});
 	}
 	
-	private void prepareTax()
+	private void createTax()
 	{
 		final I_C_Tax tax  = newInstance(I_C_Tax.class);
 		save(tax);
@@ -171,6 +180,15 @@ public abstract class AbstractFlatrateTermTest
 				return tax;
 			}
 		});
+	}
+	
+	private void createFlatrateTermHandler()
+	{
+		final I_C_ILCandHandler handler = InterfaceWrapperHelper.newInstance(I_C_ILCandHandler.class);
+		handler.setName(classname );
+		handler.setClassname(classname);
+		handler.setTableName(I_C_Flatrate_Term.Table_Name);
+		InterfaceWrapperHelper.save(handler);
 	}
 
 }
