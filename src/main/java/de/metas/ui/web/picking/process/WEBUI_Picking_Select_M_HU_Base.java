@@ -1,6 +1,6 @@
 package de.metas.ui.web.picking.process;
 
-import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_SELECT_ACTIVE_UNPICKED_UNSELECTED_HU;
+import static de.metas.ui.web.handlingunits.WEBUI_HU_Constants.MSG_WEBUI_SELECT_ACTIVE_UNSELECTED_HU;
 
 import java.util.List;
 import java.util.Optional;
@@ -10,6 +10,7 @@ import org.adempiere.util.Services;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import de.metas.handlingunits.picking.IHUPickingSlotDAO;
+import de.metas.handlingunits.sourcehu.ISourceHuService;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.process.ProcessPreconditionsResolution;
@@ -37,7 +38,7 @@ public abstract class WEBUI_Picking_Select_M_HU_Base extends ViewBasedProcessTem
 			return ProcessPreconditionsResolution.accept();
 		}
 
-		final ITranslatableString reason = Services.get(IMsgBL.class).getTranslatableMsgText(MSG_WEBUI_PICKING_SELECT_ACTIVE_UNPICKED_UNSELECTED_HU);
+		final ITranslatableString reason = Services.get(IMsgBL.class).getTranslatableMsgText(MSG_WEBUI_SELECT_ACTIVE_UNSELECTED_HU);
 		return ProcessPreconditionsResolution.reject(reason);
 	}
 
@@ -45,11 +46,12 @@ public abstract class WEBUI_Picking_Select_M_HU_Base extends ViewBasedProcessTem
 	{
 		final List<HUEditorRow> huEditorRows = getView().getByIds(getSelectedDocumentIds());
 		final IHUPickingSlotDAO huPickingSlotDAO = Services.get(IHUPickingSlotDAO.class);
+		final ISourceHuService sourceHuService = Services.get(ISourceHuService.class);
 
 		final Stream<HUEditorRow> stream = huEditorRows.stream()
 				.filter(huRow -> huRow.isTopLevel())
 				.filter(huRow -> huRow.isHUStatusActive())
-				.filter(huRow -> !huPickingSlotDAO.isSourceHU(huRow.getM_HU_ID())) // may not yet be a source-HU
+				.filter(huRow -> !sourceHuService.isSourceHU(huRow.getM_HU_ID())) // may not yet be a source-HU
 				.filter(huRow -> !huPickingSlotDAO.isHuIdPicked(huRow.getM_HU_ID()));
 
 		return stream;
@@ -86,7 +88,7 @@ public abstract class WEBUI_Picking_Select_M_HU_Base extends ViewBasedProcessTem
 		final PickingSlotView pickingSlotView = getPickingSlotViewOrNull();
 		return pickingSlotView.getById(pickingSlotRowId);
 	}
-	
+
 	protected final void invalidateViewsAndPrepareReturn()
 	{
 		invalidateView(); // picking slots view

@@ -16,6 +16,7 @@ import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.process.RunOutOfTrx;
+import de.metas.ui.web.handlingunits.HUEditorProcessTemplate;
 import de.metas.ui.web.window.model.DocumentCollection;
 
 /*

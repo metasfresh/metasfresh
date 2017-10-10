@@ -1,6 +1,10 @@
-package de.metas.ui.web.handlingunits;
+package de.metas.ui.web.pporder;
 
-import de.metas.ui.web.window.datatypes.WindowId;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Product;
+
+import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
+import lombok.experimental.UtilityClass;
 
 /*
  * #%L
@@ -24,21 +28,27 @@ import de.metas.ui.web.window.datatypes.WindowId;
  * #L%
  */
 
-public final class WEBUI_HU_Constants
+@UtilityClass
+public class JSONLookupValueTool
 {
-	public static final String WEBUI_HU_Window_ID_String = "540189"; // FIXME: hardcoded
-	public static final WindowId WEBUI_HU_Window_ID = WindowId.fromJson(WEBUI_HU_Window_ID_String);
-	
-	/**
-	 * This message has one parameter: QtyTU>
-	 */
-	public static final String MSG_NotEnoughTUsFound = "WEBUI_M_HU_MoveTUsToDirectWarehouse.NotEnoughTUsFound";
-
-	public static final String MSG_WEBUI_ONLY_TOP_LEVEL_HU = "WEBUI_Only_TopLevelHU";
-
-	public static final String MSG_WEBUI_SELECT_ACTIVE_UNSELECTED_HU = "WEBUI_Picking_Select_Active_UnSelected_HUs";
-	
-	private WEBUI_HU_Constants()
+	public JSONLookupValue createProductLookupValue(final I_M_Product product)
 	{
+		if (product == null)
+		{
+			return null;
+		}
+
+		final String displayName = product.getValue() + "_" + product.getName();
+		return JSONLookupValue.of(product.getM_Product_ID(), displayName);
+	}
+
+	public JSONLookupValue createUOMLookupValue(final I_C_UOM uom)
+	{
+		if (uom == null)
+		{
+			return null;
+		}
+
+		return JSONLookupValue.of(uom.getC_UOM_ID(), uom.getUOMSymbol());
 	}
 }

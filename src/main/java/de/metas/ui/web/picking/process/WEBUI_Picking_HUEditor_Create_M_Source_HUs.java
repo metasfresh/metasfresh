@@ -1,8 +1,8 @@
 package de.metas.ui.web.picking.process;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import org.adempiere.util.Services;
 
-import de.metas.handlingunits.picking.SourceHUsRepository;
+import de.metas.handlingunits.sourcehu.ISourceHuService;
 import de.metas.process.IProcessPrecondition;
 
 /*
@@ -28,7 +28,7 @@ import de.metas.process.IProcessPrecondition;
  */
 
 /**
- * This process is available from the HU editor window opened by {@link WEBUI_Picking_HUEditor_Open}.<br>
+ * This process is available from the HU editor window opened by {@link WEBUI_Picking_HUEditor_Launcher}.<br>
  * Its job is to flag the currently selected HUs so they are available as source-HUs for either {@link WEBUI_Picking_PickQtyToNewHU} or {@link WEBUI_Picking_PickQtyToExistingHU}.
  * 
  * @task https://github.com/metasfresh/metasfresh/issues/2298
@@ -36,21 +36,19 @@ import de.metas.process.IProcessPrecondition;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public class WEBUI_Picking_HUEditor_Create_M_Source_HU
+public class WEBUI_Picking_HUEditor_Create_M_Source_HUs
 		extends WEBUI_Picking_Select_M_HU_Base
 		implements IProcessPrecondition
 {
 
-	@Autowired
-	private SourceHUsRepository sourceHUsRepository;
-
 	@Override
 	protected String doIt() throws Exception
 	{
+		final ISourceHuService sourceHuService = Services.get(ISourceHuService.class);
+
 		retrieveEligibleHUEditorRows().forEach(
 				huEditorRow -> {
-
-					sourceHUsRepository.addSourceHu(huEditorRow.getM_HU_ID());
+					sourceHuService.addSourceHu(huEditorRow.getM_HU_ID());
 				});
 
 		invalidateViewsAndPrepareReturn();

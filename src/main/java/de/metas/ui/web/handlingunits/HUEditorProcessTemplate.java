@@ -1,4 +1,4 @@
-package de.metas.ui.web.handlingunits.process;
+package de.metas.ui.web.handlingunits;
 
 import java.util.List;
 import java.util.Set;
@@ -13,9 +13,7 @@ import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
-import de.metas.ui.web.handlingunits.HUEditorRow;
-import de.metas.ui.web.handlingunits.HUEditorView;
-import de.metas.ui.web.handlingunits.process.HUEditorProcessTemplate.HUEditorRowFilter.Select;
+import de.metas.ui.web.handlingunits.HUEditorProcessTemplate.HUEditorRowFilter.Select;
 import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import lombok.NonNull;
@@ -148,7 +146,7 @@ public abstract class HUEditorProcessTemplate extends ViewBasedProcessTemplate
 
 	@lombok.Builder(toBuilder = true)
 	@lombok.Value
-	protected static final class HUEditorRowFilter
+	public static final class HUEditorRowFilter
 	{
 		public static final HUEditorRowFilter ALL = builder().select(Select.ALL).build();
 		
@@ -162,7 +160,7 @@ public abstract class HUEditorProcessTemplate extends ViewBasedProcessTemplate
 		@Singular
 		private final ImmutableSet<String> onlyHUStatuses;
 
-		enum Select
+		public enum Select
 		{
 			ONLY_TOPLEVEL, ALL
 		}

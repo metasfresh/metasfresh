@@ -57,7 +57,7 @@ import de.metas.ui.web.view.json.JSONViewDataType;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public class WEBUI_Picking_HUEditor_Open extends ViewBasedProcessTemplate
+public class WEBUI_Picking_HUEditor_Launcher extends ViewBasedProcessTemplate
 {
 	@Autowired
 	private IViewsRepository viewsRepo;
@@ -98,7 +98,7 @@ public class WEBUI_Picking_HUEditor_Open extends ViewBasedProcessTemplate
 				.build();
 
 		final RelatedProcessDescriptor flagSelectedHUsAsSourceHUs = RelatedProcessDescriptor.builder()
-				.processId(adProcessDAO.retriveProcessIdByClassIfUnique(Env.getCtx(), WEBUI_Picking_HUEditor_Create_M_Source_HU.class))
+				.processId(adProcessDAO.retriveProcessIdByClassIfUnique(Env.getCtx(), WEBUI_Picking_HUEditor_Create_M_Source_HUs.class))
 				.webuiQuickAction(true)
 				.build();
 

@@ -54,7 +54,6 @@ public final class PickingConstants
 	 */
 	public static final String MSG_WEBUI_PICKING_SELECT_PICKED_CU = "WEBUI_Picking_SelectPickedCU";
 	
-	public static final String MSG_WEBUI_PICKING_SELECT_ACTIVE_UNPICKED_UNSELECTED_HU = "WEBUI_Picking_SelectActiveUnPickedUnSelectedHU";
 	public static final String MSG_WEBUI_PICKING_SELECT_PICKING_SLOT = "WEBUI_Picking_SelectPickingSlot";
 	
 	public static final String MSG_WEBUI_PICKING_PICK_SOMETHING = "WEBUI_Picking_PickSomething";

@@ -23,8 +23,8 @@ import com.google.common.collect.SetMultimap;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Picking_Candidate;
 import de.metas.handlingunits.model.X_M_Picking_Candidate;
-import de.metas.handlingunits.picking.IHUPickingSlotBL;
-import de.metas.handlingunits.picking.IHUPickingSlotBL.RetrieveActiveSourceHusQuery;
+import de.metas.handlingunits.sourcehu.ISourceHuService;
+import de.metas.handlingunits.sourcehu.ISourceHuService.ActiveSourceHusQuery;
 import de.metas.handlingunits.picking.IHUPickingSlotDAO;
 import de.metas.picking.model.I_M_PickingSlot;
 import de.metas.printing.esb.base.util.Check;
@@ -102,8 +102,8 @@ import lombok.NonNull;
 				.map(id -> load(id, de.metas.inoutcandidate.model.I_M_ShipmentSchedule.class))
 				.collect(Collectors.toList());
 
-		final IHUPickingSlotBL huPickingSlotBL = Services.get(IHUPickingSlotBL.class);
-		final List<I_M_HU> sourceHus = huPickingSlotBL.retrieveActiveSourceHUs(RetrieveActiveSourceHusQuery.fromShipmentSchedules(shipmentSchedules));
+		final ISourceHuService sourceHuService = Services.get(ISourceHuService.class);
+		final List<I_M_HU> sourceHus = sourceHuService.retrieveActiveSourceHUs(ActiveSourceHusQuery.fromShipmentSchedules(shipmentSchedules));
 		final Set<Integer> sourceHuIds = sourceHus.stream().map(I_M_HU::getM_HU_ID).collect(Collectors.toSet());
 
 		return huEditorRepo.retrieveHUEditorRows(sourceHuIds);

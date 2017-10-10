@@ -46,7 +46,7 @@ import lombok.NonNull;
  * #L%
  */
 
-public class WEBUI_Picking_Start extends ViewBasedProcessTemplate implements IProcessPrecondition
+public class WEBUI_Picking_Launcher extends ViewBasedProcessTemplate implements IProcessPrecondition
 {
 
 	@Override

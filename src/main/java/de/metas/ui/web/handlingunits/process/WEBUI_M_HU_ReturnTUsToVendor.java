@@ -21,7 +21,9 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.ui.web.handlingunits.HUEditorProcessTemplate;
 import de.metas.ui.web.handlingunits.HUEditorRow;
+import de.metas.ui.web.handlingunits.WEBUI_HU_Constants;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 
@@ -120,7 +122,7 @@ public class WEBUI_M_HU_ReturnTUsToVendor extends HUEditorProcessTemplate implem
 				.huExtractTUs(topLevelHU, p_QtyTU, isOwnPackingMaterials);
 		if (tusToReturn.size() != p_QtyTU)
 		{
-			throw new AdempiereException(WEBUI_M_HU_Messages.MSG_NotEnoughTUsFound, new Object[] { p_QtyTU, tusToReturn.size() });
+			throw new AdempiereException(WEBUI_HU_Constants.MSG_NotEnoughTUsFound, new Object[] { p_QtyTU, tusToReturn.size() });
 		}
 
 		//

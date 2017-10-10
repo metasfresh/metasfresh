@@ -1,11 +1,19 @@
 package de.metas.ui.web.pporder;
 
 import java.util.Collection;
+import java.util.List;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.Services;
 import org.compiere.util.CCache;
+import org.compiere.util.Env;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
+
+import de.metas.process.IADProcessDAO;
+import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
 import de.metas.ui.web.pattribute.ASIRepository;
 import de.metas.ui.web.view.ASIViewRowAttributesProvider;
@@ -19,6 +27,7 @@ import de.metas.ui.web.view.json.JSONFilterViewRequest;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.factory.standard.LayoutFactory;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -42,7 +51,7 @@ import de.metas.ui.web.window.descriptor.factory.standard.LayoutFactory;
  * #L%
  */
 
-@ViewFactory(windowId = WebPPOrderConfig.AD_WINDOW_ID_IssueReceipt_String, viewTypes = {})
+@ViewFactory(windowId = PPOrderConstants.AD_WINDOW_ID_IssueReceipt_String, viewTypes = {})
 public class PPOrderLinesViewFactory implements IViewFactory
 {
 	@Autowired
@@ -63,6 +72,7 @@ public class PPOrderLinesViewFactory implements IViewFactory
 				.referencingDocumentPaths(request.getReferencingDocumentPaths())
 				.ppOrderId(request.getSingleFilterOnlyId())
 				.asiAttributesProvider(ASIViewRowAttributesProvider.newInstance(asiRepository))
+				.additionalRelatedProcessDescriptors(createCdditionalRelatedProcessDescriptors())
 				.build();
 	}
 
@@ -108,6 +118,33 @@ public class PPOrderLinesViewFactory implements IViewFactory
 				//
 				.addElementsFromViewRowClass(PPOrderLineRow.class, JSONViewDataType.grid)
 				//
+				.build();
+	}
+
+	private List<RelatedProcessDescriptor> createCdditionalRelatedProcessDescriptors()
+	{
+		return ImmutableList.of(
+				createProcessDescriptorForIssueReceiptWindow(de.metas.ui.web.pporder.process.WEBUI_PP_Order_Receipt.class),
+				createProcessDescriptorForIssueReceiptWindow(de.metas.ui.web.pporder.process.WEBUI_PP_Order_ReverseCandidate.class),
+				createProcessDescriptorForIssueReceiptWindow(de.metas.ui.web.pporder.process.WEBUI_PP_Order_ChangePlanningStatus_Planning.class),
+				createProcessDescriptorForIssueReceiptWindow(de.metas.ui.web.pporder.process.WEBUI_PP_Order_ChangePlanningStatus_Review.class),
+				createProcessDescriptorForIssueReceiptWindow(de.metas.ui.web.pporder.process.WEBUI_PP_Order_ChangePlanningStatus_Complete.class),
+				createProcessDescriptorForIssueReceiptWindow(de.metas.ui.web.pporder.process.WEBUI_PP_Order_HUEditor_Launcher.class),
+				createProcessDescriptorForIssueReceiptWindow(de.metas.ui.web.pporder.process.WEBUI_PP_Order_M_Source_HU_Delete.class));
+	}
+
+	private static RelatedProcessDescriptor createProcessDescriptorForIssueReceiptWindow(@NonNull final Class<?> processClass)
+	{
+		final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
+
+		final int processId = adProcessDAO.retriveProcessIdByClassIfUnique(Env.getCtx(), processClass);
+		Preconditions.checkArgument(processId > 0, "No AD_Process_ID found for %s", processClass);
+
+		return RelatedProcessDescriptor.builder()
+				.processId(processId)
+				.windowId(PPOrderConstants.AD_WINDOW_ID_IssueReceipt.toInt())
+				.anyTable()
+				.webuiQuickAction(true)
 				.build();
 	}
 }

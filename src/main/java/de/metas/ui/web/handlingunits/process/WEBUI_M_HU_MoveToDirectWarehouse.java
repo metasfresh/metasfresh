@@ -10,7 +10,9 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RunOutOfTrx;
-import de.metas.ui.web.handlingunits.process.HUEditorProcessTemplate.HUEditorRowFilter.Select;
+import de.metas.ui.web.handlingunits.HUEditorProcessTemplate;
+import de.metas.ui.web.handlingunits.WEBUI_HU_Constants;
+import de.metas.ui.web.handlingunits.HUEditorProcessTemplate.HUEditorRowFilter.Select;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.model.DocumentCollection;
 
@@ -61,7 +63,7 @@ public class WEBUI_M_HU_MoveToDirectWarehouse extends HUEditorProcessTemplate im
 		final Set<Integer> huIds = getSelectedHUIds(rowsFilter);
 		if (huIds.isEmpty())
 		{
-			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(WEBUI_M_HU_Messages.MSG_WEBUI_ONLY_TOP_LEVEL_HU));
+			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(WEBUI_HU_Constants.MSG_WEBUI_ONLY_TOP_LEVEL_HU));
 		}
 
 		return ProcessPreconditionsResolution.accept();
