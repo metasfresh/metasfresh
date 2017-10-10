@@ -17,6 +17,7 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_Calendar;
+import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_Period;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_Year;
@@ -24,8 +25,8 @@ import org.compiere.util.TimeUtil;
 import org.junit.Before;
 import org.junit.BeforeClass;
 
-import de.metas.contracts.model.I_C_Flatrate_Term;
-import de.metas.invoicecandidate.model.I_C_ILCandHandler;
+import de.metas.contracts.flatrate.interfaces.I_C_DocType;
+import de.metas.interfaces.I_M_Warehouse;
 import de.metas.tax.api.ITaxDAO;
 import de.metas.tax.api.impl.TaxDAO;
 
@@ -57,22 +58,27 @@ import de.metas.tax.api.impl.TaxDAO;
  */
 public abstract class AbstractFlatrateTermTest
 {
-	private final String classname = "de.metas.contracts.invoicecandidate.FlatrateTermInvoiceCandidateHandler";
+	private final String sequence = "@BP@ @CON@ @A1@ @A2@ @A3@ @A4@ @P@ @C@ @CO@";
 	
 	public FlatrateTermTestHelper helper;
 	
 	private I_C_Calendar calendar;
+	private I_C_AcctSchema acctSchema;
+	private I_C_Country country;
 
 	public I_C_Calendar getCalendar()
 	{
 		return calendar;
 	}
 	
-	private I_C_AcctSchema acctSchema;
-	
 	public I_C_AcctSchema getAcctSchema()
 	{
 		return acctSchema;
+	}
+	
+	public I_C_Country getCountry()
+	{
+		return country;
 	}
 
 	@BeforeClass
@@ -87,16 +93,14 @@ public abstract class AbstractFlatrateTermTest
 	{
 		final POJOLookupMap db = POJOLookupMap.get();
 		db.clear();
-		
-		setupMasterData();
 
+		setupMasterData();
 		initialize();
 	}
 
 	
 	protected void initialize()
 	{
-		createFlatrateTermHandler();
 	}
 
 	protected FlatrateTermTestHelper createFlatrateTermTestHelper()
@@ -110,6 +114,9 @@ public abstract class AbstractFlatrateTermTest
 		createCalendar();
 		createAcctSchema();
 		createTax();
+		createWarehouse();
+		createDocType();
+		createCountry();
 	}
 
 	private void createCalendar()
@@ -181,13 +188,33 @@ public abstract class AbstractFlatrateTermTest
 		});
 	}
 	
-	private void createFlatrateTermHandler()
+	private void createWarehouse()
 	{
-		final I_C_ILCandHandler handler = newInstance(I_C_ILCandHandler.class);
-		handler.setName(classname );
-		handler.setClassname(classname);
-		handler.setTableName(I_C_Flatrate_Term.Table_Name);
-		save(handler);
+		final I_M_Warehouse warehouse = newInstance(I_M_Warehouse.class);
+		warehouse.setName("WH" );
+		warehouse.setAD_Org(helper.getOrg());
+		save(warehouse);
+	}
+
+	private void createDocType()
+	{
+		final I_C_DocType docType = newInstance(I_C_DocType.class);
+		docType.setAD_Org(helper.getOrg());
+		docType.setDocSubType(I_C_DocType.DocSubType_Abonnement);
+		docType.setDocBaseType(I_C_DocType.DocBaseType_CustomerContract);
+		save(docType);
+	}
+	
+	private void createCountry()
+	{
+		country = newInstance(I_C_Country.class);
+		country.setAD_Org(helper.getOrg());
+		country.setAD_Language("de_DE");
+		country.setCountryCode("DE");
+		country.setDisplaySequence(sequence);
+		country.setDisplaySequenceLocal(sequence);
+		country.setCaptureSequence(sequence);
+		save(country);
 	}
 
 }

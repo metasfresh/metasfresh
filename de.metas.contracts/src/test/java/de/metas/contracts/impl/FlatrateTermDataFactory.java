@@ -5,6 +5,7 @@ import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_Activity;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Calendar;
+import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.I_M_Product;
@@ -49,7 +50,6 @@ import lombok.NonNull;
 
 public class FlatrateTermDataFactory
 {
-	private static final int countryId = 101;
 	private static final String city = "Berlin";
 	private static final String valuePricingSystem = "Abo";
 
@@ -68,9 +68,9 @@ public class FlatrateTermDataFactory
 	}
 	
 	@Builder(builderMethodName = "bpLocationNew")
-	public static I_C_BPartner_Location createBPartnerLocation(@NonNull final I_C_BPartner bpartner,	final boolean isBillTo_Default,	final boolean isShipTo_Default)
+	public static I_C_BPartner_Location createBPartnerLocation(@NonNull final I_C_BPartner bpartner,	final boolean isBillTo_Default,	final boolean isShipTo_Default, final I_C_Country country)
 	{
-		final I_C_Location location = createLocation(bpartner);
+		final I_C_Location location = createLocation(bpartner, country);
 
 		final I_C_BPartner_Location bpartnerLocation = InterfaceWrapperHelper.newInstance(I_C_BPartner_Location.class, bpartner);
 		bpartnerLocation.setC_BPartner(bpartner);
@@ -85,11 +85,11 @@ public class FlatrateTermDataFactory
 		return bpartnerLocation;
 	}
 
-	private static I_C_Location createLocation(@NonNull final I_C_BPartner bpartner)
+	private static I_C_Location createLocation(@NonNull final I_C_BPartner bpartner, @NonNull final I_C_Country country)
 	{
 		final I_C_Location location = InterfaceWrapperHelper.newInstance(I_C_Location.class, bpartner);
 		location.setCity(city);
-		location.setC_Country_ID(countryId);
+		location.setC_Country(country);
 		InterfaceWrapperHelper.save(location);
 		return location;
 	}

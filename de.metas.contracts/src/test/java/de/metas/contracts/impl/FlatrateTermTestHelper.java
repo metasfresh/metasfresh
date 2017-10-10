@@ -1,5 +1,8 @@
 package de.metas.contracts.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+
 import java.util.Properties;
 
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
@@ -14,6 +17,10 @@ import org.compiere.model.I_AD_Org;
 import org.compiere.util.Env;
 
 import de.metas.contracts.interceptor.MainValidator;
+import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.contracts.model.I_C_SubscriptionProgress;
+import de.metas.inoutcandidate.model.I_M_IolCandHandler;
+import de.metas.invoicecandidate.model.I_C_ILCandHandler;
 
 /**
  * This class sets up basic master data like partners, addresses, users, flatrate conditions, flarate transitions that can be used in testing.
@@ -23,6 +30,8 @@ import de.metas.contracts.interceptor.MainValidator;
  */
 public class FlatrateTermTestHelper
 {
+	private final String invoiceCandClassname = "de.metas.contracts.invoicecandidate.FlatrateTermInvoiceCandidateHandler";
+	private final String shipmentCandClassname = "de.metas.contracts.inoutcandidate.SubscriptionShipmentScheduleHandler";
 
 	//
 	// Initialization flags
@@ -54,6 +63,16 @@ public class FlatrateTermTestHelper
 	public Properties getCtx()
 	{
 		return ctx;
+	}
+	
+	public I_AD_Client getClient()
+	{
+		return adClient;
+	}
+	
+	public I_AD_Org getOrg()
+	{
+		return adOrg;
 	}
 	
 	public String getTrxName()
@@ -119,6 +138,9 @@ public class FlatrateTermTestHelper
 		InterfaceWrapperHelper.save(adOrg);
 		Env.setContext(ctx, Env.CTXNAME_AD_Org_ID, adOrg.getAD_Org_ID());
 		
+		createCILCandHandler();
+		createMIolCandHandler();
+		
 		initialized = true;
 
 		afterInitialized();
@@ -147,4 +169,21 @@ public class FlatrateTermTestHelper
 				.addModelInterceptor(new MainValidator());
 	}
 	
+	private void createCILCandHandler()
+	{
+		final I_C_ILCandHandler handler = newInstance(I_C_ILCandHandler.class);
+		handler.setName(invoiceCandClassname );
+		handler.setClassname(invoiceCandClassname);
+		handler.setTableName(I_C_Flatrate_Term.Table_Name);
+		save(handler);
+	}
+	
+	private void createMIolCandHandler()
+	{
+		final I_M_IolCandHandler handler = newInstance(I_M_IolCandHandler.class);
+		handler.setClassname(shipmentCandClassname);
+		handler.setIsActive(true);
+		handler.setTableName(I_C_SubscriptionProgress.Table_Name);
+		save(handler);
+	}
 }
