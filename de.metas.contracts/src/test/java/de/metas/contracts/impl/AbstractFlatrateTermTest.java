@@ -13,7 +13,6 @@ import org.adempiere.acct.api.IAcctSchemaDAO;
 import org.adempiere.acct.api.impl.AcctSchemaDAO;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.ad.wrapper.POJOWrapper;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_AcctSchema;
@@ -184,11 +183,11 @@ public abstract class AbstractFlatrateTermTest
 	
 	private void createFlatrateTermHandler()
 	{
-		final I_C_ILCandHandler handler = InterfaceWrapperHelper.newInstance(I_C_ILCandHandler.class);
+		final I_C_ILCandHandler handler = newInstance(I_C_ILCandHandler.class);
 		handler.setName(classname );
 		handler.setClassname(classname);
 		handler.setTableName(I_C_Flatrate_Term.Table_Name);
-		InterfaceWrapperHelper.save(handler);
+		save(handler);
 	}
 
 }
