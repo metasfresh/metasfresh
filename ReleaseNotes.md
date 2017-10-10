@@ -28,6 +28,8 @@ Here come the actual release notes:
     * Translation of Pick List Report Parms to en_US.
   * [#2660](https://github.com/metasfresh/metasfresh/issues/2660) Window Design Webui: Improvements in the window Forecast
     * Improvement of Forecast Window. Added Translations for en_US Language/ Locale and adapted Design Guidelines.
+  * [#2690](https://github.com/metasfresh/metasfresh/issues/2690) New Window for AD_Scheduler in WebUI
+    * New Window for Scheduler Maintenance.
 
 ## Fixes
 * metasfresh-app
