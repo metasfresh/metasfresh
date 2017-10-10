@@ -9,8 +9,10 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
+import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
@@ -18,6 +20,7 @@ import com.google.common.collect.ImmutableMap;
 
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.ImmutableTranslatableString;
+import de.metas.logging.LogManager;
 import de.metas.ui.web.cache.ETag;
 import de.metas.ui.web.cache.ETagAware;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
@@ -61,6 +64,8 @@ public class ViewLayout implements ETagAware
 		return new Builder();
 	}
 
+	private static final Logger logger = LogManager.getLogger(ViewLayout.class);
+
 	private final WindowId windowId;
 	private final DetailId detailId;
 	private final ITranslatableString caption;
@@ -69,7 +74,7 @@ public class ViewLayout implements ETagAware
 	private final ITranslatableString emptyResultHint;
 
 	private final ImmutableList<DocumentFilterDescriptor> filters;
-	
+
 	private final ImmutableList<DocumentQueryOrderBy> defaultOrderBys;
 
 	private final ImmutableList<DocumentLayoutElementDescriptor> elements;
@@ -105,7 +110,7 @@ public class ViewLayout implements ETagAware
 		elements = ImmutableList.copyOf(builder.buildElements());
 
 		filters = ImmutableList.copyOf(builder.getFilters());
-		
+
 		defaultOrderBys = ImmutableList.copyOf(builder.getDefaultOrderBys());
 
 		idFieldName = builder.getIdFieldName();
@@ -118,7 +123,7 @@ public class ViewLayout implements ETagAware
 
 		hasIncludedViewSupport = builder.hasIncludedViewSupport;
 		hasIncludedViewOnSelectSupport = builder.hasIncludedViewOnSelectSupport;
-		
+
 		allowNewCaption = null;
 
 		eTag = ETag.of(nextETagVersionSupplier.getAndIncrement(), extractETagAttributes(filters, allowNewCaption));
@@ -151,10 +156,10 @@ public class ViewLayout implements ETagAware
 		this.hasTreeSupport = hasTreeSupport;
 		this.treeCollapsible = treeCollapsible;
 		this.treeExpandedDepth = treeExpandedDepth;
-		
+
 		hasIncludedViewSupport = from.hasIncludedViewSupport;
 		hasIncludedViewOnSelectSupport = from.hasIncludedViewOnSelectSupport;
-		
+
 		this.allowNewCaption = allowNewCaption;
 
 		eTag = from.eTag.overridingAttributes(extractETagAttributes(filters, allowNewCaption));
@@ -218,7 +223,7 @@ public class ViewLayout implements ETagAware
 	{
 		return filters;
 	}
-	
+
 	public List<DocumentQueryOrderBy> getDefaultOrderBys()
 	{
 		return defaultOrderBys;
@@ -284,7 +289,7 @@ public class ViewLayout implements ETagAware
 	{
 		return hasIncludedViewSupport;
 	}
-	
+
 	public boolean isIncludedViewOnSelectSupport()
 	{
 		return hasIncludedViewOnSelectSupport;
@@ -486,6 +491,13 @@ public class ViewLayout implements ETagAware
 			return this;
 		}
 
+		public Builder addElements(final Collection<DocumentLayoutElementDescriptor.Builder> elementBuilders)
+		{
+			Check.assumeNotNull(elementBuilders, "Parameter elementBuilders is not null");
+			elementBuilders.forEach(this::addElement);
+			return this;
+		}
+
 		public Builder addElements(final Stream<DocumentLayoutElementDescriptor.Builder> elementBuilders)
 		{
 			Check.assumeNotNull(elementBuilders, "Parameter elementBuilders is not null");
@@ -495,8 +507,14 @@ public class ViewLayout implements ETagAware
 
 		public <T extends IViewRow> Builder addElementsFromViewRowClass(final Class<T> viewRowClass, final JSONViewDataType viewType)
 		{
-			ViewColumnHelper.createLayoutElementsForClass(viewRowClass, viewType)
-					.forEach(this::addElement);
+			final List<DocumentLayoutElementDescriptor.Builder> elements = ViewColumnHelper.createLayoutElementsForClass(viewRowClass, viewType);
+			if (elements.isEmpty())
+			{
+				new AdempiereException("No elements found for viewRowClass=" + viewRowClass + " and viewType=" + viewType)
+						.throwIfDeveloperModeOrLogWarningElse(logger);
+			}
+			
+			addElements(elements);
 			return this;
 		}
 
@@ -529,7 +547,7 @@ public class ViewLayout implements ETagAware
 		{
 			return defaultOrderBys != null ? defaultOrderBys : ImmutableList.of();
 		}
-		
+
 		public Builder setDefaultOrderBys(final List<DocumentQueryOrderBy> defaultOrderBys)
 		{
 			this.defaultOrderBys = defaultOrderBys;
@@ -566,7 +584,7 @@ public class ViewLayout implements ETagAware
 			this.hasIncludedViewSupport = hasIncludedViewSupport;
 			return this;
 		}
-		
+
 		public Builder setHasIncludedViewOnSelectSupport(final boolean hasIncludedViewOnSelectSupport)
 		{
 			this.hasIncludedViewOnSelectSupport = hasIncludedViewOnSelectSupport;
