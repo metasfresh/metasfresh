@@ -128,7 +128,8 @@ class DocList extends Component {
                     />
 
                     {(includedView && includedView.windowType &&
-                        includedView.viewId
+                        includedView.viewId && !rawModal.visible &&
+                        !modal.visible
                     ) && (
                         <DocumentList
                             type="includedView"
@@ -138,8 +139,8 @@ class DocList extends Component {
                             defaultViewId={includedView.viewId}
                             fetchQuickActionsOnInit={true}
                             processStatus={processStatus}
-                            inBackground={rawModal.visible}
-                            inModal={modal.visible}
+                            inBackground={false}
+                            inModal={false}
                         />
                     )}
                 </div>
