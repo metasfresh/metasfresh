@@ -24,6 +24,7 @@ import org.adempiere.util.time.SystemTime;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.Env;
@@ -99,14 +100,31 @@ public class SubscriptionShipmentScheduleHandler implements IShipmentScheduleHan
 		documentLocationBL.setBPartnerAddress(documentLocation);
 
 		final I_C_Order order = create(term.getC_Order_Term(), I_C_Order.class);
-		newSched.setDeliveryRule(order.getDeliveryRule());
-		newSched.setDeliveryViaRule(order.getDeliveryViaRule());
+		if (order == null)
+		{
+			newSched.setDeliveryRule(term.getDeliveryRule());
+			newSched.setDeliveryViaRule(term.getDeliveryViaRule());
+		}
+		else
+		{
+			newSched.setDeliveryRule(order.getDeliveryRule());
+			newSched.setDeliveryViaRule(order.getDeliveryViaRule());         
+		}
+		
 
 		newSched.setQtyOrdered(subscriptionLine.getQty());
 		newSched.setQtyOrdered_Calculated(subscriptionLine.getQty());
 		newSched.setQtyReserved(subscriptionLine.getQty());
 
-		newSched.setLineNetAmt(newSched.getQtyReserved().multiply(term.getC_OrderLine_Term().getPriceActual()));
+		final  I_C_OrderLine orerLine =  term.getC_OrderLine_Term();
+		if (orerLine == null)
+		{
+			newSched.setLineNetAmt(newSched.getQtyReserved().multiply(term.getPriceActual()));
+		}
+		else
+		{
+			newSched.setLineNetAmt(newSched.getQtyReserved().multiply(term.getC_OrderLine_Term().getPriceActual()));
+		}
 
 		newSched.setDateOrdered(subscriptionLine.getEventDate());
 
