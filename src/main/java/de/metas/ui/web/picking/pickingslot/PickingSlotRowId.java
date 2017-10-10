@@ -131,6 +131,6 @@ public final class PickingSlotRowId
 	/** @return {@code true} if this row ID represents an HU that is a source-HU for fine-picking. */
 	public boolean isPickingSourceHURow()
 	{
-		return getHuId() > 0 && getPickingSlotId() < 0;
+		return getHuId() > 0 && getPickingSlotId() <= 0;
 	}
 }
