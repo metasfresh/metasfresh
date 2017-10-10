@@ -77,7 +77,6 @@ public final class Quantity
 
 	public Quantity(final BigDecimal qty, final I_C_UOM uom, final BigDecimal sourceQty, final I_C_UOM sourceUOM)
 	{
-		super();
 		Check.assumeNotNull(qty, "qty not null");
 		this.qty = qty;
 

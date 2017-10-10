@@ -212,7 +212,8 @@ public class HUTransformService
 			@NonNull final I_M_HU cuHU,
 			@NonNull final BigDecimal qtyCU)
 	{
-		if (qtyCU.compareTo(getMaximumQtyCU(cuHU)) >= 0)
+		final boolean qtyCuExceedsCuHU = qtyCU.compareTo(getMaximumQtyCU(cuHU)) >= 0;
+		if (qtyCuExceedsCuHU)
 		{
 			// deal with the complete cuHU, i.e. no partial quantity will remain at the source.
 			final I_M_HU_Item cuParentItem = handlingUnitsDAO.retrieveParentItem(cuHU);

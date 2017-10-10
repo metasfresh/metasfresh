@@ -1,4 +1,4 @@
-package de.metas.handlingunits.picking.impl;
+package de.metas.handlingunits.sourcehu.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
@@ -18,8 +18,6 @@ import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_Source_HU;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_HU_Item;
-import de.metas.handlingunits.picking.impl.HUPickingSlotBL;
-import de.metas.handlingunits.picking.impl.HUPickingSlotBLs.RetrieveAvailableHUsToPickFilters;
 
 /*
  * #%L
@@ -43,19 +41,16 @@ import de.metas.handlingunits.picking.impl.HUPickingSlotBLs.RetrieveAvailableHUs
  * #L%
  */
 
-/**
- * Tests for {@link HUPickingSlotBL#retrieveTopLevelAndFilterForActualSourceHUs(List)}.
- * 
- * @author metas-dev <dev@metasfresh.com>
- *
- */
-public class RetrieveAvailableHUsToPickFiltersTests
+public class SourceHuServiceRetrieveTopLevelButOnlyIfActualSourceHUTest
 {
+	private SourceHuService sourceHuService;
 
 	@Before
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
+
+		sourceHuService = new SourceHuService();
 	}
 
 	@Test
@@ -64,7 +59,7 @@ public class RetrieveAvailableHUsToPickFiltersTests
 		final I_M_HU hu = newInstance(I_M_HU.class);
 		save(hu);
 
-		final List<I_M_HU> result = RetrieveAvailableHUsToPickFilters.retrieveTopLevelAndFilterForActualSourceHUs(ImmutableList.of(hu));
+		final List<I_M_HU> result = sourceHuService.retrieveTopLevelButOnlyIfActualSourceHU(ImmutableList.of(hu));
 		assertThat(result).isEmpty();
 	}
 
@@ -82,8 +77,7 @@ public class RetrieveAvailableHUsToPickFiltersTests
 		sourceHU.setM_HU(hu);
 		save(sourceHU);
 
-		final List<I_M_HU> result = RetrieveAvailableHUsToPickFilters
-				.retrieveTopLevelAndFilterForActualSourceHUs(ImmutableList.of(hu));
+		final List<I_M_HU> result = sourceHuService.retrieveTopLevelButOnlyIfActualSourceHU(ImmutableList.of(hu));
 		assertThat(result).containsExactly(hu);
 	}
 
@@ -125,8 +119,7 @@ public class RetrieveAvailableHUsToPickFiltersTests
 		sourceHU.setM_HU(tu);
 		save(sourceHU);
 
-		final List<I_M_HU> result =
-				RetrieveAvailableHUsToPickFilters.retrieveTopLevelAndFilterForActualSourceHUs(ImmutableList.of(vhu));
+		final List<I_M_HU> result = sourceHuService.retrieveTopLevelButOnlyIfActualSourceHU(ImmutableList.of(vhu));
 		assertThat(result).containsExactly(tu);
 	}
 }

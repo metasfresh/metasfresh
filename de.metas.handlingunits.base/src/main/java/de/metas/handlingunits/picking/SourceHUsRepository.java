@@ -21,7 +21,8 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Source_HU;
-import de.metas.handlingunits.picking.IHUPickingSlotBL.RetrieveActiveSourceHusQuery;
+import de.metas.handlingunits.sourcehu.ISourceHuService;
+import de.metas.handlingunits.sourcehu.ISourceHuService.ActiveSourceHusQuery;
 import de.metas.handlingunits.trace.HUTraceEvent;
 import de.metas.handlingunits.trace.HUTraceRepository;
 import de.metas.handlingunits.trace.HUTraceSpecification;
@@ -138,10 +139,10 @@ public class SourceHUsRepository
 	public Collection<I_M_HU> retrieveMatchingSourceHUs(final int huId)
 	{
 		final List<I_M_ShipmentSchedule> scheds = pickingCandidateRepo.retrieveShipmentSchedulesViaPickingCandidates(huId);
-		final RetrieveActiveSourceHusQuery query = RetrieveActiveSourceHusQuery.fromShipmentSchedules(scheds);
+		final ActiveSourceHusQuery query = ActiveSourceHusQuery.fromShipmentSchedules(scheds);
 
-		final IHUPickingSlotBL huPickingSlotBL = Services.get(IHUPickingSlotBL.class);
-		final List<I_M_HU> sourceHUs = huPickingSlotBL.retrieveActiveSourceHUs(query);
+		final ISourceHuService sourceHuService = Services.get(ISourceHuService.class);
+		final List<I_M_HU> sourceHUs = sourceHuService.retrieveActiveSourceHUs(query);
 
 		return sourceHUs;
 	}
@@ -168,33 +169,6 @@ public class SourceHUsRepository
 			}
 			map.put(sourceHU.getM_HU_ID(), sourceHU);
 		}
-	}
-
-	public I_M_Source_HU addSourceHu(final int huId)
-	{
-		final I_M_Source_HU sourceHU = newInstance(I_M_Source_HU.class);
-		sourceHU.setM_HU_ID(huId);
-		save(sourceHU);
-
-		logger.info("Created one M_Source_HU record for M_HU_ID={}", huId);
-		return sourceHU;
-	}
-
-	/**
-	 * 
-	 * @param huId
-	 * @return {@code true} if anything was deleted.
-	 */
-	public boolean removeSourceHu(final int huId)
-	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-
-		final int deleteCount = queryBL.createQueryBuilder(I_M_Source_HU.class)
-				.addEqualsFilter(I_M_Source_HU.COLUMN_M_HU_ID, huId)
-				.create()
-				.delete();
-
-		return deleteCount > 0;
 	}
 
 }

@@ -82,7 +82,7 @@ public class PickingCandidateCommand
 		BigDecimal qtyCU = Quantity.QTY_INFINITE;
 
 		@NonNull
-		Integer huId;
+		Integer targetHuId;
 
 		@NonNull
 		Integer pickingSlotId;
