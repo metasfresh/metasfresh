@@ -7,7 +7,10 @@ import static org.junit.Assert.assertThat;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.List;
+import java.util.Properties;
 
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.Mutable;
 import org.compiere.model.I_C_BPartner;
@@ -21,12 +24,15 @@ import org.springframework.test.context.junit4.SpringRunner;
 import de.metas.StartupListener;
 import de.metas.contracts.impl.AbstractFlatrateTermTest;
 import de.metas.contracts.impl.FlatrateTermDataFactory;
+import de.metas.contracts.inoutcandidate.ShipmentScheduleOrderDocForSubscriptionLine;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_I_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.inout.invoicecandidate.InOutLinesWithMissingInvoiceCandidate;
+import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
@@ -54,9 +60,13 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
  */
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = { StartupListener.class, InOutLinesWithMissingInvoiceCandidate.class })
+@SpringBootTest(classes = { StartupListener.class, InOutLinesWithMissingInvoiceCandidate.class, ShipmentScheduleOrderDocForSubscriptionLine.class })
 public class FlatrateTermImportProcess_SimpleCase_Test extends AbstractFlatrateTermTest
 {
+	private final transient IInvoiceCandDAO iinvoiceCandDAO = Services.get(IInvoiceCandDAO.class);
+	private final transient IInvoiceCandidateHandlerBL iinvoiceCandidateHandlerBL = Services.get(IInvoiceCandidateHandlerBL.class);
+	private final transient IShipmentScheduleHandlerBL inOutCandHandlerBL = Services.get(IShipmentScheduleHandlerBL.class);
+	
 	@Test
 	public void testImportActiveFlatrateTerms()
 	{
@@ -112,6 +122,8 @@ public class FlatrateTermImportProcess_SimpleCase_Test extends AbstractFlatrateT
 		assertThat(flatrateTerm.isCloseInvoiceCandidate()).isFalse();
 
 		assertInvoiceCandidate(flatrateTerm);
+		
+		assertShipmentSchedules(flatrateTerm, true);
 	}
 
 	@Test
@@ -167,6 +179,8 @@ public class FlatrateTermImportProcess_SimpleCase_Test extends AbstractFlatrateT
 		
 		final List<I_C_Invoice_Candidate> candidates = createInvoiceCandidates(flatrateTerm);
 		assertThat(candidates).hasSize(0);
+		
+		assertShipmentSchedules(flatrateTerm, false);
 	}
 
 	private int prepareBPartner()
@@ -180,6 +194,7 @@ public class FlatrateTermImportProcess_SimpleCase_Test extends AbstractFlatrateT
 				.bpartner(bpartner)
 				.isBillTo_Default(true)
 				.isShipTo_Default(true)
+				.country(getCountry())
 				.build();
 
 		FlatrateTermDataFactory.userNew()
@@ -217,12 +232,33 @@ public class FlatrateTermImportProcess_SimpleCase_Test extends AbstractFlatrateT
 		assertThat(invoiceCandidate.getM_Product_ID()).isEqualTo(flatrateTerm.getM_Product_ID());
 		assertThat(invoiceCandidate.getRecord_ID()).isEqualByComparingTo(flatrateTerm.getC_Flatrate_Term_ID());
 
-		final List<I_C_Invoice_Candidate> candsForTerm = Services.get(IInvoiceCandDAO.class).retrieveReferencing(flatrateTerm);
+		final List<I_C_Invoice_Candidate> candsForTerm = iinvoiceCandDAO.retrieveReferencing(flatrateTerm);
 		assertThat(candsForTerm.size(), equalTo(1));
 	}
 
 	private List<I_C_Invoice_Candidate> createInvoiceCandidates(final I_C_Flatrate_Term flatrateTerm)
 	{
-		return Services.get(IInvoiceCandidateHandlerBL.class).createMissingCandidatesFor(flatrateTerm);
+		return iinvoiceCandidateHandlerBL.createMissingCandidatesFor(flatrateTerm);
 	}
+	
+	private void assertShipmentSchedules(final I_C_Flatrate_Term flatrateTerm, final boolean isActiveFT)	
+	{
+		List<I_M_ShipmentSchedule> createdShipmentCands = createMissingShipmentSchedules(flatrateTerm);
+		if (isActiveFT)
+		{
+			assertThat(createdShipmentCands).hasSize(1);
+		}
+		else
+		{
+			assertThat(createdShipmentCands).hasSize(0);
+		}
+		
+	}
+
+	private List<I_M_ShipmentSchedule> createMissingShipmentSchedules(final I_C_Flatrate_Term flatrateTerm)
+	{
+		final Properties ctx = InterfaceWrapperHelper.getCtx(flatrateTerm);
+		return inOutCandHandlerBL.createMissingCandidates(ctx, ITrx.TRXNAME_ThreadInherited);
+	}
+	
 }
