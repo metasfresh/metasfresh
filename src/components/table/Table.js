@@ -1066,7 +1066,8 @@ class Table extends Component {
                             {...{handleChangePage, size,
                                 selected, page, orderBy, queryLimitHit,
                                 disablePaginationShortcuts}}
-                            pageLength={rows ? rows.length : pageLength}
+                            pageLength={pageLength}
+                            rowLength={rows ? rows.length : 0}
                             handleSelectAll={this.selectAll}
                             handleSelectRange={this.selectRangeProduct}
                             deselect={this.deselectAllProducts}

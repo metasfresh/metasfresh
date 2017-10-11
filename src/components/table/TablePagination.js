@@ -203,9 +203,11 @@ class TablePagination extends Component {
 
     renderSelectAll = () => {
         const {
-            selected, handleSelectAll, handleSelectRange, size, pageLength
+            selected, handleSelectAll, handleSelectRange, size, rowLength
         } = this.props;
-        const selectedWholePage = selected && (selected.length === pageLength);
+
+        const selectedWholePage = selected && (selected.length === rowLength);
+
         return (
             <div className="hidden-sm-down">
                 <div>{selected.length > 0 ?
