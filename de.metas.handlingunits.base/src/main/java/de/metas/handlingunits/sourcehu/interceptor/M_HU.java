@@ -26,7 +26,7 @@ public class M_HU
 	public void preventMovingSourceHu(@NonNull final I_M_HU hu)
 	{
 		final ISourceHuService sourceHuService = Services.get(ISourceHuService.class);
-		final boolean sourceHU = sourceHuService.isSourceHU(hu.getM_HU_ID());
+		final boolean sourceHU = sourceHuService.isHuMarkedAsSourceHu(hu.getM_HU_ID());
 		if (sourceHU)
 		{
 			throw new SourceHuMayNotBeRemovedException(hu);

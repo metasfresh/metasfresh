@@ -146,7 +146,7 @@ public class RetrieveAvailableHUsToPick
 		}
 
 		final ISourceHuService sourceHuService = Services.get(ISourceHuService.class);
-		if (sourceHuService.isSourceHU(vhu.getM_HU_ID()))
+		if (sourceHuService.isHuMarkedAsSourceHu(vhu.getM_HU_ID()))
 		{
 			return;
 		}

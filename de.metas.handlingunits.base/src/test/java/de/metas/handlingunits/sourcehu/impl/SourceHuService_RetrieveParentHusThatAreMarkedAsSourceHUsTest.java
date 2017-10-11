@@ -41,7 +41,7 @@ import de.metas.handlingunits.model.X_M_HU_Item;
  * #L%
  */
 
-public class SourceHuServiceRetrieveTopLevelButOnlyIfActualSourceHUTest
+public class SourceHuService_RetrieveParentHusThatAreMarkedAsSourceHUsTest
 {
 	private SourceHuService sourceHuService;
 
@@ -54,12 +54,12 @@ public class SourceHuServiceRetrieveTopLevelButOnlyIfActualSourceHUTest
 	}
 
 	@Test
-	public void testHuAndNoPickingSourceForHu()
+	public void testHuAndNoSourceHuRecord()
 	{
 		final I_M_HU hu = newInstance(I_M_HU.class);
 		save(hu);
 
-		final List<I_M_HU> result = sourceHuService.retrieveTopLevelButOnlyIfActualSourceHU(ImmutableList.of(hu));
+		final List<I_M_HU> result = sourceHuService.retrieveParentHusThatAreMarkedAsSourceHUs(ImmutableList.of(hu));
 		assertThat(result).isEmpty();
 	}
 
@@ -68,7 +68,7 @@ public class SourceHuServiceRetrieveTopLevelButOnlyIfActualSourceHUTest
 	 * Verify that this HU is returned.
 	 */
 	@Test
-	public void testHuAndPickingSourceForHu()
+	public void testHuWithSourceHuRecord()
 	{
 		final I_M_HU hu = newInstance(I_M_HU.class);
 		save(hu);
@@ -77,7 +77,7 @@ public class SourceHuServiceRetrieveTopLevelButOnlyIfActualSourceHUTest
 		sourceHU.setM_HU(hu);
 		save(sourceHU);
 
-		final List<I_M_HU> result = sourceHuService.retrieveTopLevelButOnlyIfActualSourceHU(ImmutableList.of(hu));
+		final List<I_M_HU> result = sourceHuService.retrieveParentHusThatAreMarkedAsSourceHUs(ImmutableList.of(hu));
 		assertThat(result).containsExactly(hu);
 	}
 
@@ -86,7 +86,7 @@ public class SourceHuServiceRetrieveTopLevelButOnlyIfActualSourceHUTest
 	 * Verify that only the TU is returned.
 	 */
 	@Test
-	public void testVhuWithTuAndLuAndPickingSourceForTu()
+	public void testVhuWithTuAndLuAndSourceHuRecordForTu()
 	{
 		final I_M_HU lu = newInstance(I_M_HU.class);
 		lu.setHUStatus(X_M_HU.HUSTATUS_Active);
@@ -119,7 +119,7 @@ public class SourceHuServiceRetrieveTopLevelButOnlyIfActualSourceHUTest
 		sourceHU.setM_HU(tu);
 		save(sourceHU);
 
-		final List<I_M_HU> result = sourceHuService.retrieveTopLevelButOnlyIfActualSourceHU(ImmutableList.of(vhu));
+		final List<I_M_HU> result = sourceHuService.retrieveParentHusThatAreMarkedAsSourceHUs(ImmutableList.of(vhu));
 		assertThat(result).containsExactly(tu);
 	}
 }

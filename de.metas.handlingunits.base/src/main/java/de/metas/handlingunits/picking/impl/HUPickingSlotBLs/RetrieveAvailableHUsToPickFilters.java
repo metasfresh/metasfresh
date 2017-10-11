@@ -53,9 +53,11 @@ public class RetrieveAvailableHUsToPickFilters
 {
 
 	private static final Predicate<I_M_HU> NOT_PICKED_NOT_SOURCE_HU = hu -> {
+
 		final IHUPickingSlotDAO huPickingSlotDAO = Services.get(IHUPickingSlotDAO.class);
 		final ISourceHuService sourceHuService = Services.get(ISourceHuService.class);
-		return !huPickingSlotDAO.isHuIdPicked(hu.getM_HU_ID()) && !sourceHuService.isSourceHU(hu.getM_HU_ID());
+
+		return !huPickingSlotDAO.isHuIdPicked(hu.getM_HU_ID()) && !sourceHuService.isHuMarkedAsSourceHu(hu.getM_HU_ID());
 	};
 
 	/**

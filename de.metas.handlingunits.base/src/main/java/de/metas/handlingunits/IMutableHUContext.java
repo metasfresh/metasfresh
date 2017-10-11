@@ -29,6 +29,7 @@ import com.google.common.annotations.VisibleForTesting;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
 import de.metas.handlingunits.impl.CompositeHUTrxListener;
 import de.metas.handlingunits.spi.IHUPackingMaterialCollectorSource;
+import de.metas.handlingunits.storage.EmptyHUListener;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 
 public interface IMutableHUContext extends IHUContext
@@ -67,4 +68,5 @@ public interface IMutableHUContext extends IHUContext
 	@VisibleForTesting
 	IMutableHUContext setHUPackingMaterialsCollector(IHUPackingMaterialsCollector<IHUPackingMaterialCollectorSource> huPackingMaterialsCollector);
 
+	void addEmptyHUListener(EmptyHUListener emptyHUListener);
 }

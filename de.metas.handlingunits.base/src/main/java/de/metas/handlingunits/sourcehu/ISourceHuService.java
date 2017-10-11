@@ -45,11 +45,38 @@ public interface ISourceHuService extends ISingletonService
 	 * @param huId
 	 * @return
 	 */
-	boolean isSourceHU(int huId);
+	boolean isHuMarkedAsSourceHu(int huId);
 
-	List<I_M_HU> retrieveTopLevelButOnlyIfActualSourceHU(List<I_M_HU> vhus);
+	boolean isHuOrAnyParentMarkedAsSourceHu(int huId);
 
-	boolean isSourceHUOrChildOfSourceHU(int huId);
+	List<I_M_HU> retrieveParentHusThatAreMarkedAsSourceHUs(List<I_M_HU> vhus);
+
+	I_M_Source_HU retrieveSourceHuOrNull(I_M_HU hu);
+
+	I_M_Source_HU addSourceHu(int huId);
+
+	/**
+	 * @return {@code true} if anything was deleted.
+	 */
+	boolean removeSourceHu(int huId);
+
+	void snapshotSourceHU(I_M_Source_HU sourceHU);
+
+	default void snapshotHuIfMarkedAsSourceHu(@NonNull final I_M_HU hu)
+	{
+		final I_M_Source_HU sourceHu = retrieveSourceHuOrNull(hu);
+		if (sourceHu != null)
+		{
+			snapshotSourceHU(sourceHu);
+		}
+	}
+
+	/**
+	 * Restores the given destroyed HU from the snapshot ID stored in its {@link I_M_Source_HU} record.
+	 * 
+	 * @param sourceHU
+	 */
+	void restoreHuFromSourceHuIfPossible(I_M_HU sourceHU);
 
 	/**
 	 * Returns those fine picking source HUs whose location and product match any the given query.
@@ -57,7 +84,9 @@ public interface ISourceHuService extends ISingletonService
 	 * @param query
 	 * @return
 	 */
-	List<I_M_HU> retrieveActiveSourceHUs(ActiveSourceHusQuery query);
+	List<I_M_HU> retrieveActiveHusthatAreMarkedAsSourceHu(ActiveSourceHusQuery query);
+
+	List<I_M_Source_HU> retrieveActiveSourceHUs(ActiveSourceHusQuery query);
 
 	/**
 	 * Specifies which source HUs (products and warehouse) to retrieve in particular
@@ -87,13 +116,4 @@ public interface ISourceHuService extends ISingletonService
 			return new ActiveSourceHusQuery(productIds, effectiveWarehouseId);
 		}
 	}
-
-	I_M_Source_HU addSourceHu(int huId);
-
-	/**
-	 * 
-	 * @param huId
-	 * @return {@code true} if anything was deleted.
-	 */
-	boolean removeSourceHu(int huId);
 }

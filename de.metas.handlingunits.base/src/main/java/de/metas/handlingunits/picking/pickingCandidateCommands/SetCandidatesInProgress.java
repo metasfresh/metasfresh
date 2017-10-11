@@ -1,24 +1,19 @@
 package de.metas.handlingunits.picking.pickingCandidateCommands;
 
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-
 import java.util.Collection;
 import java.util.List;
 
 import org.adempiere.ad.dao.ICompositeQueryUpdater;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Services;
-import org.adempiere.util.time.SystemTime;
 import org.compiere.model.IQuery;
 
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Picking_Candidate;
-import de.metas.handlingunits.model.I_M_Source_HU;
 import de.metas.handlingunits.model.X_M_Picking_Candidate;
 import de.metas.handlingunits.picking.SourceHUsRepository;
-import de.metas.handlingunits.snapshot.IHUSnapshotDAO;
+import de.metas.handlingunits.sourcehu.ISourceHuService;
 import lombok.NonNull;
 
 /*
@@ -68,7 +63,7 @@ public class SetCandidatesInProgress
 			{
 				continue;
 			}
-			restoreHu(sourceHU);
+			Services.get(ISourceHuService.class).restoreHuFromSourceHuIfPossible(sourceHU);
 		}
 
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -84,36 +79,4 @@ public class SetCandidatesInProgress
 
 		return query.updateDirectly(updater);
 	}
-
-	/**
-	 * Restores the given destroyed HU from the snapshot ID stored in its {@link I_M_Source_HU} record.
-	 * 
-	 * @param sourceHU
-	 */
-	private void restoreHu(@NonNull final I_M_HU sourceHU)
-	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-		final IHUSnapshotDAO huSnapshotDAO = Services.get(IHUSnapshotDAO.class);
-
-		final I_M_Source_HU sourceHuRecord = queryBL.createQueryBuilder(I_M_Source_HU.class)
-				.addEqualsFilter(I_M_Source_HU.COLUMN_M_HU_ID, sourceHU.getM_HU_ID())
-				.create()
-				.firstOnly(I_M_Source_HU.class);
-		if (sourceHuRecord == null)
-		{
-			return;
-		}
-
-		huSnapshotDAO.restoreHUs()
-				.addModel(sourceHU)
-				.setContext(PlainContextAware.newWithThreadInheritedTrx())
-				.setDateTrx(SystemTime.asDate())
-				.setSnapshotId(sourceHuRecord.getPreDestroy_Snapshot_UUID())
-				.restoreFromSnapshot();
-
-		sourceHuRecord.setPreDestroy_Snapshot_UUID(null);
-		save(sourceHuRecord);
-
-	}
-
 }

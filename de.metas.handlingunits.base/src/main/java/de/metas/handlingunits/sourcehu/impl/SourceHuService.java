@@ -13,8 +13,11 @@ import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
+import org.adempiere.util.time.SystemTime;
+import org.compiere.model.IQuery;
 import org.slf4j.Logger;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -25,6 +28,7 @@ import de.metas.handlingunits.IHandlingUnitsBL.TopLevelHusQuery;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Source_HU;
+import de.metas.handlingunits.snapshot.IHUSnapshotDAO;
 import de.metas.handlingunits.sourcehu.ISourceHuService;
 import de.metas.logging.LogManager;
 import lombok.NonNull;
@@ -53,12 +57,12 @@ import lombok.NonNull;
 
 public class SourceHuService implements ISourceHuService
 {
-	
+
 	private static final Logger logger = LogManager.getLogger(SourceHuService.class);
-	
+
 	@Override
 	@Cached(cacheName = I_M_Source_HU.Table_Name + "#by#" + I_M_Source_HU.COLUMNNAME_M_HU_ID)
-	public boolean isSourceHU(final int huId)
+	public boolean isHuMarkedAsSourceHu(final int huId)
 	{
 		final boolean isSourceHU = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_M_Source_HU.class)
@@ -70,15 +74,15 @@ public class SourceHuService implements ISourceHuService
 	}
 
 	@Override
-	public List<I_M_HU> retrieveTopLevelButOnlyIfActualSourceHU(@NonNull final List<I_M_HU> vhus)
+	public List<I_M_HU> retrieveParentHusThatAreMarkedAsSourceHUs(@NonNull final List<I_M_HU> vhus)
 	{
 		final ISourceHuService sourceHuService = Services.get(ISourceHuService.class); // get the interface because we want to benefit from caching
 
 		final TreeSet<I_M_HU> sourceHUs = new TreeSet<>(Comparator.comparing(I_M_HU::getM_HU_ID));
 
-		// this filter's real job is to collect those HUs that are flagged as "picking source"
+		// this filter's real job is to collect those HUs that are flagged as "source"
 		final Predicate<I_M_HU> filter = hu -> {
-			if (sourceHuService.isSourceHU(hu.getM_HU_ID()))
+			if (sourceHuService.isHuMarkedAsSourceHu(hu.getM_HU_ID()))
 			{
 				sourceHUs.add(hu);
 			}
@@ -96,12 +100,12 @@ public class SourceHuService implements ISourceHuService
 
 		return ImmutableList.copyOf(sourceHUs);
 	}
-	
+
 	@Override
-	public boolean isSourceHUOrChildOfSourceHU(final int huId)
+	public boolean isHuOrAnyParentMarkedAsSourceHu(final int huId)
 	{
 		final ISourceHuService sourceHuService = Services.get(ISourceHuService.class); // benefit from caching
-		if (sourceHuService.isSourceHU(huId)) // check if there is a quick answer
+		if (sourceHuService.isHuMarkedAsSourceHu(huId)) // check if there is a quick answer
 		{
 			return true;
 		}
@@ -115,7 +119,7 @@ public class SourceHuService implements ISourceHuService
 	private static List<I_M_HU> retrieveTopLevelHuIfNoSourceHuIsOnThePath(final int huId, final ISourceHuService sourceHuService)
 	{
 		final Predicate<I_M_HU> filterToExcludeSourceHus = //
-				currentHu -> !sourceHuService.isSourceHU(currentHu.getM_HU_ID());
+				currentHu -> !sourceHuService.isHuMarkedAsSourceHu(currentHu.getM_HU_ID());
 
 		final TopLevelHusQuery query = TopLevelHusQuery.builder()
 				.includeAll(false)
@@ -126,19 +130,17 @@ public class SourceHuService implements ISourceHuService
 		final List<I_M_HU> topLevelHuThatHasNoSourceHuInItsPath = Services.get(IHandlingUnitsBL.class).getTopLevelHUs(query);
 		return topLevelHuThatHasNoSourceHuInItsPath;
 	}
-	
+
 	@Override
-	public List<I_M_HU> retrieveActiveSourceHUs(@NonNull final ActiveSourceHusQuery query)
+	public List<I_M_HU> retrieveActiveHusthatAreMarkedAsSourceHu(@NonNull final ActiveSourceHusQuery query)
 	{
 		if (query.getProductIds().isEmpty())
 		{
 			return ImmutableList.of();
 		}
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		final ICompositeQueryFilter<I_M_HU> huFilters = createHuFilter(query);
 
-		final ICompositeQueryFilter<I_M_HU> huFilters = createHuFiltersForScheds(query);
-
-		final IQueryBuilder<I_M_HU> queryBuilder = queryBL.createQueryBuilder(I_M_Source_HU.class)
+		final IQueryBuilder<I_M_HU> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_M_Source_HU.class)
 				.addOnlyActiveRecordsFilter()
 				.andCollect(I_M_Source_HU.COLUMN_M_HU_ID)
 				.filter(huFilters);
@@ -148,8 +150,29 @@ public class SourceHuService implements ISourceHuService
 		return result;
 	}
 
+	@Override
+	public List<I_M_Source_HU> retrieveActiveSourceHUs(@NonNull final ActiveSourceHusQuery query)
+	{
+		if (query.getProductIds().isEmpty())
+		{
+			return ImmutableList.of();
+		}
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+		final IQuery<I_M_HU> huQuery = queryBL.createQueryBuilder(I_M_HU.class)
+				.addOnlyActiveRecordsFilter()
+				.filter(createHuFilter(query))
+				.create();
+
+		return queryBL.createQueryBuilder(I_M_Source_HU.class)
+				.addOnlyActiveRecordsFilter()
+				.addInSubQueryFilter(I_M_Source_HU.COLUMN_M_HU_ID, I_M_HU.COLUMN_M_HU_ID, huQuery)
+				.create()
+				.list();
+	}
+
 	@VisibleForTesting
-	static ICompositeQueryFilter<I_M_HU> createHuFiltersForScheds(@NonNull final ActiveSourceHusQuery query)
+	static ICompositeQueryFilter<I_M_HU> createHuFilter(@NonNull final ActiveSourceHusQuery query)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
@@ -168,7 +191,7 @@ public class SourceHuService implements ISourceHuService
 
 		return huFilters;
 	}
-	
+
 	@Override
 	public I_M_Source_HU addSourceHu(final int huId)
 	{
@@ -191,5 +214,50 @@ public class SourceHuService implements ISourceHuService
 				.delete();
 
 		return deleteCount > 0;
+	}
+
+	@Override
+	public void snapshotSourceHU(@NonNull final I_M_Source_HU sourceHU)
+	{
+		final IHUSnapshotDAO huSnapshotDAO = Services.get(IHUSnapshotDAO.class);
+
+		final String snapshotId = huSnapshotDAO.createSnapshot()
+				.setContext(PlainContextAware.newWithThreadInheritedTrx())
+				.addModel(sourceHU.getM_HU())
+				.createSnapshots()
+				.getSnapshotId();
+		sourceHU.setPreDestroy_Snapshot_UUID(snapshotId);
+		save(sourceHU);
+	}
+
+	@Override
+	public I_M_Source_HU retrieveSourceHuOrNull(@NonNull final I_M_HU hu)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_M_Source_HU.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_Source_HU.COLUMN_M_HU_ID, hu.getM_HU_ID())
+				.create()
+				.firstOnly(I_M_Source_HU.class);
+	}
+
+	@Override
+	public void restoreHuFromSourceHuIfPossible(I_M_HU destroyedHU)
+	{
+		final I_M_Source_HU sourceHuRecord = retrieveSourceHuOrNull(destroyedHU);
+		if (sourceHuRecord == null)
+		{
+			return;
+		}
+
+		Services.get(IHUSnapshotDAO.class).restoreHUs()
+				.addModel(destroyedHU)
+				.setContext(PlainContextAware.newWithThreadInheritedTrx())
+				.setDateTrx(SystemTime.asDate())
+				.setSnapshotId(sourceHuRecord.getPreDestroy_Snapshot_UUID())
+				.restoreFromSnapshot();
+
+		sourceHuRecord.setPreDestroy_Snapshot_UUID(null);
+		save(sourceHuRecord);
 	}
 }

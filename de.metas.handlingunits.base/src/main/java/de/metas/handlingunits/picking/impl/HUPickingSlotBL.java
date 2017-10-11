@@ -562,7 +562,7 @@ public class HUPickingSlotBL
 		final ISourceHuService sourceHuService = Services.get(ISourceHuService.class);
 
 		final Function<List<I_M_HU>, List<I_M_HU>> vhuToEndResultFunction = //
-				vhus -> sourceHuService.retrieveTopLevelButOnlyIfActualSourceHU(vhus);
+				vhus -> sourceHuService.retrieveParentHusThatAreMarkedAsSourceHUs(vhus);
 
 		return RetrieveAvailableHUsToPick.retrieveAvailableHUsToPick(query, vhuToEndResultFunction);
 	}

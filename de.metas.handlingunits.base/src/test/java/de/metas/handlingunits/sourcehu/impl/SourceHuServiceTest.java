@@ -46,7 +46,7 @@ import de.metas.handlingunits.sourcehu.ISourceHuService.ActiveSourceHusQuery;
  * #L%
  */
 
-public class SourceHuServiceRetrieveActiveSourceHUsTest
+public class SourceHuServiceTest
 {
 	private I_M_Warehouse wh;
 	private I_M_Locator locator;
@@ -91,12 +91,11 @@ public class SourceHuServiceRetrieveActiveSourceHUsTest
 	@Test
 	public void testCreateHuFiltersForScheds()
 	{
-
 		final ActiveSourceHusQuery query = ActiveSourceHusQuery.builder()
 				.productId(product.getM_Product_ID())
 				.warehouseId(wh.getM_Warehouse_ID()).build();
-		new SourceHuService();
-		final ICompositeQueryFilter<I_M_HU> huFilters = SourceHuService.createHuFiltersForScheds(query);
+
+		final ICompositeQueryFilter<I_M_HU> huFilters = SourceHuService.createHuFilter(query);
 		assertThat(huFilters.accept(hus.get(0))).isTrue();
 		assertThat(huFilters.accept(hus.get(1))).isTrue();
 		assertThat(huFilters.accept(hus.get(2))).isFalse();
@@ -114,7 +113,7 @@ public class SourceHuServiceRetrieveActiveSourceHUsTest
 		final ActiveSourceHusQuery query = ActiveSourceHusQuery.builder()
 				.productId(product.getM_Product_ID())
 				.warehouseId(wh.getM_Warehouse_ID()).build();
-		final List<I_M_HU> result = new SourceHuService().retrieveActiveSourceHUs(query);
+		final List<I_M_HU> result = new SourceHuService().retrieveActiveHusthatAreMarkedAsSourceHu(query);
 
 		assertThat(result).hasSize(1);
 		assertThat(result.get(0).getM_HU_ID()).isEqualTo(hus.get(0).getM_HU_ID());

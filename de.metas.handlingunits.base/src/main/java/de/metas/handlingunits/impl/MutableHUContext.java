@@ -1,5 +1,7 @@
 package de.metas.handlingunits.impl;
 
+import java.util.ArrayList;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -13,18 +15,18 @@ package de.metas.handlingunits.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
@@ -35,6 +37,8 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
 
+import com.google.common.collect.ImmutableList;
+
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUPackingMaterialsCollector;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -42,9 +46,9 @@ import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactoryService;
 import de.metas.handlingunits.hutransaction.IHUTrxBL;
-import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.handlingunits.spi.IHUPackingMaterialCollectorSource;
 import de.metas.handlingunits.spi.impl.HUPackingMaterialsCollector;
+import de.metas.handlingunits.storage.EmptyHUListener;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import lombok.NonNull;
 
@@ -64,6 +68,8 @@ import lombok.NonNull;
 
 	final IHUContext huCtx = null; // task 07734: we don't want to track M_MaterialTrackings, so we don't need to provide a HU context.
 	private IHUPackingMaterialsCollector<IHUPackingMaterialCollectorSource> _destroyedHUPackingMaterialsCollector = new HUPackingMaterialsCollector(null);
+
+	private final List<EmptyHUListener> emptyHUListeners = new ArrayList<>();
 
 	public MutableHUContext(final Object contextProvider)
 	{
@@ -141,6 +147,8 @@ import lombok.NonNull;
 		huContextCopy.setDate(getDate());
 		huContextCopy.setHUPackingMaterialsCollector(_destroyedHUPackingMaterialsCollector);
 		huContextCopy._trxListeners = getTrxListeners().copy(); // using the getter to make sure they are loaded
+
+		emptyHUListeners.forEach(l -> huContextCopy.addEmptyHUListener(l));
 
 		return huContextCopy;
 	}
@@ -272,5 +280,16 @@ import lombok.NonNull;
 			_trxListeners = trxListeners;
 		}
 		return _trxListeners;
+	}
+
+	public void addEmptyHUListener(@NonNull final EmptyHUListener emptyHUListener)
+	{
+		emptyHUListeners.add(emptyHUListener);
+	}
+
+	@Override
+	public List<EmptyHUListener> getEmptyHUListeners()
+	{
+		return ImmutableList.copyOf(emptyHUListeners);
 	}
 }

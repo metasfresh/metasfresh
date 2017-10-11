@@ -1,8 +1,6 @@
 package de.metas.handlingunits.picking;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 import java.util.Collection;
 import java.util.Comparator;
@@ -12,15 +10,12 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.util.Services;
-import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableList;
 
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.I_M_Source_HU;
 import de.metas.handlingunits.sourcehu.ISourceHuService;
 import de.metas.handlingunits.sourcehu.ISourceHuService.ActiveSourceHusQuery;
 import de.metas.handlingunits.trace.HUTraceEvent;
@@ -28,7 +23,6 @@ import de.metas.handlingunits.trace.HUTraceRepository;
 import de.metas.handlingunits.trace.HUTraceSpecification;
 import de.metas.handlingunits.trace.HUTraceType;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.logging.LogManager;
 import lombok.NonNull;
 
 /*
@@ -61,8 +55,6 @@ import lombok.NonNull;
 @Service
 public class SourceHUsRepository
 {
-	private static final Logger logger = LogManager.getLogger(SourceHUsRepository.class);
-
 	private final HUTraceRepository huTraceRepository;
 
 	private final PickingCandidateRepository pickingCandidateRepo;
@@ -142,7 +134,7 @@ public class SourceHUsRepository
 		final ActiveSourceHusQuery query = ActiveSourceHusQuery.fromShipmentSchedules(scheds);
 
 		final ISourceHuService sourceHuService = Services.get(ISourceHuService.class);
-		final List<I_M_HU> sourceHUs = sourceHuService.retrieveActiveSourceHUs(query);
+		final List<I_M_HU> sourceHUs = sourceHuService.retrieveActiveHusthatAreMarkedAsSourceHu(query);
 
 		return sourceHUs;
 	}
