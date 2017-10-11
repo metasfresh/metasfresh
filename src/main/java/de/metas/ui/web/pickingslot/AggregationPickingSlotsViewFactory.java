@@ -18,6 +18,7 @@ import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IViewFactory;
 import de.metas.ui.web.view.ViewFactory;
 import de.metas.ui.web.view.ViewId;
+import de.metas.ui.web.view.descriptor.IncludedViewLayout;
 import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.WindowId;
@@ -69,8 +70,10 @@ public class AggregationPickingSlotsViewFactory implements IViewFactory
 				.setCaption("Picking slots")
 				.addElementsFromViewRowClass(PickingSlotRow.class, viewDataType)
 				.setHasTreeSupport(true)
-				.setHasIncludedViewSupport(true)
-				.setHasIncludedViewOnSelectSupport(true)
+				.setIncludedViewLayout(IncludedViewLayout.builder()
+						.openOnSelect(true)
+						.blurWhenOpen(false)
+						.build())
 				.build();
 
 	}

@@ -9,6 +9,8 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
@@ -82,8 +84,7 @@ public class ViewLayout implements ETagAware
 	private final String idFieldName;
 
 	private final boolean hasAttributesSupport;
-	private final boolean hasIncludedViewSupport;
-	private final boolean hasIncludedViewOnSelectSupport;
+	private final IncludedViewLayout includedViewLayout;
 	private final String allowNewCaption;
 
 	private final boolean hasTreeSupport;
@@ -121,8 +122,7 @@ public class ViewLayout implements ETagAware
 		treeCollapsible = builder.treeCollapsible;
 		treeExpandedDepth = builder.treeExpandedDepth;
 
-		hasIncludedViewSupport = builder.hasIncludedViewSupport;
-		hasIncludedViewOnSelectSupport = builder.hasIncludedViewOnSelectSupport;
+		includedViewLayout = builder.includedViewLayout;
 
 		allowNewCaption = null;
 
@@ -157,8 +157,7 @@ public class ViewLayout implements ETagAware
 		this.treeCollapsible = treeCollapsible;
 		this.treeExpandedDepth = treeExpandedDepth;
 
-		hasIncludedViewSupport = from.hasIncludedViewSupport;
-		hasIncludedViewOnSelectSupport = from.hasIncludedViewOnSelectSupport;
+		includedViewLayout = from.includedViewLayout;
 
 		this.allowNewCaption = allowNewCaption;
 
@@ -285,14 +284,10 @@ public class ViewLayout implements ETagAware
 		return treeExpandedDepth;
 	}
 
-	public boolean isIncludedViewSupport()
+	@Nullable
+	public IncludedViewLayout getIncludedViewLayout()
 	{
-		return hasIncludedViewSupport;
-	}
-
-	public boolean isIncludedViewOnSelectSupport()
-	{
-		return hasIncludedViewOnSelectSupport;
+		return includedViewLayout;
 	}
 
 	public boolean isAllowNew()
@@ -397,8 +392,7 @@ public class ViewLayout implements ETagAware
 		private List<DocumentQueryOrderBy> defaultOrderBys = null;
 
 		private boolean hasAttributesSupport = false;
-		private boolean hasIncludedViewSupport = false;
-		private boolean hasIncludedViewOnSelectSupport = false;
+		private IncludedViewLayout includedViewLayout;
 
 		private boolean hasTreeSupport = false;
 		private boolean treeCollapsible = false;
@@ -513,7 +507,7 @@ public class ViewLayout implements ETagAware
 				new AdempiereException("No elements found for viewRowClass=" + viewRowClass + " and viewType=" + viewType)
 						.throwIfDeveloperModeOrLogWarningElse(logger);
 			}
-			
+
 			addElements(elements);
 			return this;
 		}
@@ -579,15 +573,9 @@ public class ViewLayout implements ETagAware
 			return this;
 		}
 
-		public Builder setHasIncludedViewSupport(final boolean hasIncludedViewSupport)
+		public Builder setIncludedViewLayout(IncludedViewLayout includedViewLayout)
 		{
-			this.hasIncludedViewSupport = hasIncludedViewSupport;
-			return this;
-		}
-
-		public Builder setHasIncludedViewOnSelectSupport(final boolean hasIncludedViewOnSelectSupport)
-		{
-			this.hasIncludedViewOnSelectSupport = hasIncludedViewOnSelectSupport;
+			this.includedViewLayout = includedViewLayout;
 			return this;
 		}
 

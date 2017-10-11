@@ -14,6 +14,7 @@ import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewFactory;
 import de.metas.ui.web.view.ViewFactory;
 import de.metas.ui.web.view.ViewId;
+import de.metas.ui.web.view.descriptor.IncludedViewLayout;
 import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.DocumentId;
@@ -49,8 +50,7 @@ import lombok.NonNull;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-@ViewFactory(windowId = PickingConstants.WINDOWID_PickingView_String, viewTypes =
-	{ JSONViewDataType.grid, JSONViewDataType.includedView })
+@ViewFactory(windowId = PickingConstants.WINDOWID_PickingView_String, viewTypes = { JSONViewDataType.grid, JSONViewDataType.includedView })
 public class PackageableViewFactory implements IViewFactory
 {
 	private final PackageableViewRepository pickingViewRepo;
@@ -85,8 +85,9 @@ public class PackageableViewFactory implements IViewFactory
 				//
 				.setHasAttributesSupport(false)
 				.setHasTreeSupport(false)
-				.setHasIncludedViewSupport(true)
-				.setHasIncludedViewOnSelectSupport(true)
+				.setIncludedViewLayout(IncludedViewLayout.builder()
+						.openOnSelect(true)
+						.build())
 				//
 				.addElementsFromViewRowClass(PackageableRow.class, viewDataType)
 				//
