@@ -500,23 +500,28 @@ class DocumentList extends Component {
     }
 
     showIncludedViewOnSelect = (showIncludedView, data) => {
-        const {
-            dispatch
-        } = this.props;
+        const { dispatch } = this.props;
 
         this.setState({
             isShowIncluded: !!showIncludedView,
             hasShowIncluded: !!showIncludedView,
-        }, ()=> {
+        }, () => {
             if (showIncludedView) {
-                dispatch(setListIncludedView(data.windowId, data.viewId));
+                dispatch(setListIncludedView(
+                    // some events pass windowId, some pass windowType
+                    data.windowId || data.windowType,
+                    data.viewId,
+                ));
             }
         });
 
         // can't use setState callback because component might be unmounted and
         // callback is never called
         if (!showIncludedView) {
-            dispatch(closeListIncludedView());
+            dispatch(closeListIncludedView(
+                data.windowId || data.windowType,
+                data.viewId,
+            ));
         }
     }
 
@@ -665,7 +670,7 @@ class DocumentList extends Component {
                                 {...{isIncluded, disconnectFromState, autofocus,
                                     open, page, closeOverlays, inBackground,
                                     disablePaginationShortcuts, isModal,
-                                    hasIncluded, viewId
+                                    hasIncluded, viewId, windowType,
                                 }}
                             >
                                 {layout.supportAttributes && !isIncluded &&

@@ -92,11 +92,11 @@ class RawModal extends Component {
     }
 
     removeModal = () => {
-        const {dispatch, modalVisible} = this.props;
+        const { dispatch, modalVisible, windowType, viewId } = this.props;
 
         dispatch(closeRawModal());
         dispatch(closeModal());
-        dispatch(closeListIncludedView());
+        dispatch(closeListIncludedView(windowType, viewId));
 
         if (!modalVisible){
             document.body.style.overflow = 'auto';

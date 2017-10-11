@@ -130,15 +130,20 @@ class Table extends Component {
             });
 
             this.deselectAllProducts();
-            showIncludedViewOnSelect && showIncludedViewOnSelect(false);
+            showIncludedViewOnSelect && showIncludedViewOnSelect(false, {
+                windowType: prevProps.windowType,
+                viewId: prevProps.viewid,
+            });
         }
     }
 
     componentWillUnmount() {
-        const { showIncludedViewOnSelect } = this.props;
+        const { showIncludedViewOnSelect, viewId, windowType } = this.props;
 
         this.deselectAllProducts();
-        showIncludedViewOnSelect && showIncludedViewOnSelect(false);
+        if (showIncludedViewOnSelect) {
+            showIncludedViewOnSelect(false, { windowType, viewId });
+        }
     }
 
     showSelectedIncludedView = (selected) => {
@@ -351,7 +356,7 @@ class Table extends Component {
     }
 
     handleClickOutside = (event) => {
-        const { showIncludedViewOnSelect } = this.props;
+        const { showIncludedViewOnSelect, viewId, windowType } = this.props;
         if(
             event.target.parentNode !== document &&
             (event.target.parentNode &&
@@ -370,7 +375,9 @@ class Table extends Component {
             }
 
             this.deselectAllProducts();
-            showIncludedViewOnSelect && showIncludedViewOnSelect(false);
+            if (showIncludedViewOnSelect) {
+                showIncludedViewOnSelect(false, { windowType, viewId });
+            }
         }
     }
 
