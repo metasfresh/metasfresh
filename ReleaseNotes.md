@@ -34,6 +34,10 @@ Here come the actual release notes:
 ## Fixes
 * metasfresh-app
 
+* metasfresh.webui-frontend
+  * [#1243](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1243) Opening a new included view is broken
+    * Fix for the included view in Picking Window. Now working in Non-Modal Views too.
+
 # metasfresh 5.30 (2017-41)
 
 **release for week 2017-41**
