@@ -1,5 +1,12 @@
 package de.metas.contracts.interceptor;
 
+import java.util.Properties;
+
+import org.adempiere.ad.modelvalidator.annotations.DocValidate;
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.exceptions.AdempiereException;
+
 /*
  * #%L
  * de.metas.contracts
@@ -13,82 +20,55 @@ package de.metas.contracts.interceptor;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
-import org.compiere.model.MClient;
-import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
-import org.compiere.model.PO;
 
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Matching;
 import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.i18n.IMsgBL;
 
-public class C_Flatrate_Matching implements ModelValidator
+@Interceptor(I_C_Flatrate_Matching.class)
+public class C_Flatrate_Matching
 {
 
-	private int m_AD_Client_ID = -1;
+	public static final transient C_Flatrate_Matching instance = new C_Flatrate_Matching();
 
-	@Override
-	public int getAD_Client_ID()
+	private C_Flatrate_Matching()
 	{
-		return m_AD_Client_ID;
 	}
 
-	@Override
-	public void initialize(final ModelValidationEngine engine, final MClient client)
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
+	public void updateDataEntry(final I_C_Flatrate_Matching matching)
 	{
-		if (client != null)
-			m_AD_Client_ID = client.getAD_Client_ID();
+		final I_C_Flatrate_Conditions fc = matching.getC_Flatrate_Conditions();
 
-		engine.addModelChange(I_C_Flatrate_Matching.Table_Name, this);
-	}
-
-	@Override
-	public String login(final int AD_Org_ID, final int AD_Role_ID, final int AD_User_ID)
-	{
-		return null;
-	}
-
-	@Override
-	public String modelChange(final PO po, final int type) throws Exception
-	{
-		if (type == TYPE_BEFORE_NEW || type == TYPE_BEFORE_CHANGE)
+		if (matching.getM_Product_Category_Matching_ID() <= 0
+				&& X_C_Flatrate_Conditions.TYPE_CONDITIONS_HoldingFee.equals(fc.getType_Conditions()))
 		{
-			final I_C_Flatrate_Matching matching = InterfaceWrapperHelper.create(po, I_C_Flatrate_Matching.class);
-
-			final I_C_Flatrate_Conditions fc = matching.getC_Flatrate_Conditions();
-
-			if (matching.getM_Product_Category_Matching_ID() <= 0
-					&& X_C_Flatrate_Conditions.TYPE_CONDITIONS_HoldingFee.equals(fc.getType_Conditions()))
-			{
-				throw new FillMandatoryException(I_C_Flatrate_Matching.COLUMNNAME_M_Product_Category_Matching_ID);
-			}
-		}
-		return null;
-	}
-
-	@Override
-	public String docValidate(PO po, int timing)
-	{
-		if (TIMING_BEFORE_VOID == timing || TIMING_BEFORE_CLOSE == timing)
-		{
-			return Services.get(IMsgBL.class).getMsg(po.getCtx(), MainValidator.MSG_FLATRATE_DOC_ACTION_NOT_SUPPORTED_0P);
+			throw new FillMandatoryException(I_C_Flatrate_Matching.COLUMNNAME_M_Product_Category_Matching_ID);
 		}
 
-		// nothing to do
-		return null;
 	}
+
+	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_VOID, ModelValidator.TIMING_BEFORE_CLOSE })
+	public void disallowNotSupportedDocActions(final I_C_Flatrate_Matching matching)
+	{
+		final Properties ctx = InterfaceWrapperHelper.getCtx(matching);
+		final String msg = Services.get(IMsgBL.class).getMsg(ctx, MainValidator.MSG_FLATRATE_DOC_ACTION_NOT_SUPPORTED_0P);
+		throw new AdempiereException(msg);
+	}
+	
+
 }
