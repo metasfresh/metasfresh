@@ -957,7 +957,7 @@ class Table extends Component {
         } = this.props;
 
         const {
-            contextMenu, selected, promptOpen, isBatchEntry
+            contextMenu, selected, promptOpen, isBatchEntry, rows
         } = this.state;
 
         return (
@@ -1060,13 +1060,14 @@ class Table extends Component {
                         this.props.children
                     }
                 </div>
-
                 {page && pageLength &&
                     <div>
                         <TablePagination
-                            {...{handleChangePage, pageLength, size,
+                            {...{handleChangePage, size,
                                 selected, page, orderBy, queryLimitHit,
                                 disablePaginationShortcuts}}
+                            pageLength={pageLength}
+                            rowLength={rows ? rows.length : 0}
                             handleSelectAll={this.selectAll}
                             handleSelectRange={this.selectRangeProduct}
                             deselect={this.deselectAllProducts}
