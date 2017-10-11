@@ -64,9 +64,10 @@ public class ADProcessDAO implements IADProcessDAO
 	}
 
 	@Override
-	public int retriveProcessIdByClassIfUnique(final Properties ctx, final String processClassname)
+	@Cached(cacheName = I_AD_Process.Table_Name + "#by#Classname", expireMinutes = Cached.EXPIREMINUTES_Never)
+	public int retriveProcessIdByClassIfUnique(@CacheCtx final Properties ctx, final String processClassname)
 	{
-		List<Integer> processIds = Services.get(IQueryBL.class)
+		final List<Integer> processIds = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_AD_Process.class, ctx, ITrx.TRXNAME_None)
 				.addEqualsFilter(I_AD_Process.COLUMN_Classname, processClassname)
 				.addOnlyActiveRecordsFilter()
