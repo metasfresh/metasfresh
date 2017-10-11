@@ -169,7 +169,8 @@ node('agent && linux')
         mvnUpdateParentPomVersion mvnJacocoConf
         sh "mvn --settings ${mvnJacocoConf.settingsFile} --file ${mvnJacocoConf.pomFile} --batch-mode ${mvnJacocoConf.resolveParams} org.jacoco:jacoco-maven-plugin:0.7.9:report-aggregate"
 
-        collectTestResultsAndReportCoverage('./target/site/jacoco-aggregate/jacoco.xml')
+        collectTestResultsAndReportCoverage()
+        uploadCoverageResultsForCodacy('target/site/jacoco-aggregate', 'jacoco.xml')
 			}
 		} // withMaven
     } // withEnv
@@ -314,24 +315,24 @@ stage('Invoke downstream jobs')
 /**
   *	collect the test results for the two preceeding stages. call this once to avoid counting the tests twice.
   */
-void collectTestResultsAndReportCoverage(final String aggregatedJacocoFilename)
+void collectTestResultsAndReportCoverage()
 {
   junit '**/target/surefire-reports/*.xml'
-
   jacoco exclusionPattern: '**/src/main/java-gen' // collect coverage results for jenkins
-
-  uploadCoverageResultsForCodacy(aggregatedJacocoFilename)
 }
 
-void uploadCoverageResultsForCodacy(final String aggregatedJacocoFilename)
+void uploadCoverageResultsForCodacy(final String aggregatedJacocoFilePath, final String aggregatedJacocoFilename)
 {
   withCredentials([string(credentialsId: 'codacy_project_token_for_metasfresh_repo', variable: 'CODACY_PROJECT_TOKEN')])
   {
     withEnv(['CODACY_PROJECT_TOKEN=${CODACY_PROJECT_TOKEN}'])
     {
       final String version='2.0.1'
+      final String classpathParam = "-cp codacy-coverage-reporter-${version}-assembly.jar"
+      final String reportFileParam = "-r ${aggregatedJacocoFilePath}/${aggregatedJacocoFilename}"
+      final String prefixParam = "--prefix ${aggregatedJacocoFilePath}" // thx to https://github.com/codacy/codacy-coverage-reporter#failed-to-upload-report-not-found
       sh "wget --quiet https://repo.metasfresh.com/service/local/repositories/mvn-3rdparty/content/com/codacy/codacy-coverage-reporter/${version}/codacy-coverage-reporter-${version}-assembly.jar"
-      sh "java -cp codacy-coverage-reporter-${version}-assembly.jar com.codacy.CodacyCoverageReporter -l Java -r ${aggregatedJacocoFilename}"
+      sh "java $${classpathParam} com.codacy.CodacyCoverageReporter -l Java ${reportFileParam} ${prefixParam}"
     }
   }
 }
