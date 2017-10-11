@@ -33,6 +33,7 @@ import de.metas.adempiere.service.IBPartnerOrgBL;
 import de.metas.logging.LogManager;
 
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.IClientDAO;
 import org.adempiere.service.IOrgDAO;
 import org.adempiere.util.Services;
@@ -43,6 +44,7 @@ import org.compiere.model.I_AD_OrgInfo;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.util.Env;
 
+import com.google.common.base.MoreObjects;
 import com.google.common.base.Optional;
 
 /**
@@ -69,9 +71,19 @@ class OrgLogoLocalFileLoader implements Callable<Optional<File>>
 	}
 
 	@Override
+	public String toString()
+	{
+		return MoreObjects.toStringHelper(this).add("AD_Org_ID", _adOrgId).toString();
+	}
+
+	@Override
 	public Optional<File> call() throws Exception
 	{
 		final File logoFile = createAndGetLocalLogoFile();
+		if (logoFile == null)
+		{
+			new AdempiereException("Cannot find logo for " + this + ", please add a logo file to the organization.").throwIfDeveloperModeOrLogWarningElse(logger);
+		}
 		return Optional.fromNullable(logoFile);
 	}
 
