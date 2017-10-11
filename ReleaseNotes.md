@@ -30,6 +30,8 @@ Here come the actual release notes:
     * Improvement of Forecast Window. Added Translations for en_US Language/ Locale and adapted Design Guidelines.
   * [#2690](https://github.com/metasfresh/metasfresh/issues/2690) New Window for AD_Scheduler in WebUI
     * New Window for Scheduler Maintenance.
+  * [#2691](https://github.com/metasfresh/metasfresh/issues/2691) Adjustments in Materialdispo Window in WebUI
+    * Improved Materuia Dispo Window. Removed deprecated Fields and added Translations for en_US and de_DE Locale/ Language,
 
 ## Fixes
 * metasfresh-app
