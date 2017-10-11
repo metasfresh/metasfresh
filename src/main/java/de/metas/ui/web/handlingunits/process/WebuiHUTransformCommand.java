@@ -162,8 +162,9 @@ public class WebuiHUTransformCommand
 
 	private final HUTransformService newHUTransformation()
 	{
-		return HUTransformService.get()
-				.withReferencedObjects(getContextDocumentLines());
+		return HUTransformService.builder()
+				.referencedObjects(getContextDocumentLines())
+				.build();
 	}
 
 	public final WebuiHUTransformCommandResult execute()
@@ -339,7 +340,7 @@ public class WebuiHUTransformCommand
 		// TODO: if qtyTU is the "maximum", then don't do anything, but show a user message
 		final I_M_HU sourceTuHU = tuRow.getM_HU();
 
-		final List<I_M_HU> createdHUs = newHUTransformation().tuToNewTUs(sourceTuHU, qtyTU, sourceTuHU.isHUPlanningReceiptOwnerPM());
+		final List<I_M_HU> createdHUs = newHUTransformation().tuToNewTUs(sourceTuHU, qtyTU);
 
 		return WebuiHUTransformCommandResult.builder()
 				.huIdsToAddToView(createdHUs.stream().map(I_M_HU::getM_HU_ID).collect(ImmutableSet.toImmutableSet()))

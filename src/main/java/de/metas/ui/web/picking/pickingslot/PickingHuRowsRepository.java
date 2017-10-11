@@ -103,7 +103,7 @@ import lombok.NonNull;
 				.collect(Collectors.toList());
 
 		final ISourceHuService sourceHuService = Services.get(ISourceHuService.class);
-		final List<I_M_HU> sourceHus = sourceHuService.retrieveActiveSourceHUs(ActiveSourceHusQuery.fromShipmentSchedules(shipmentSchedules));
+		final List<I_M_HU> sourceHus = sourceHuService.retrieveActiveHusthatAreMarkedAsSourceHu(ActiveSourceHusQuery.fromShipmentSchedules(shipmentSchedules));
 		final Set<Integer> sourceHuIds = sourceHus.stream().map(I_M_HU::getM_HU_ID).collect(Collectors.toSet());
 
 		return huEditorRepo.retrieveHUEditorRows(sourceHuIds);

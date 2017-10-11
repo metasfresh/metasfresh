@@ -51,7 +51,7 @@ public abstract class WEBUI_Picking_Select_M_HU_Base extends ViewBasedProcessTem
 		final Stream<HUEditorRow> stream = huEditorRows.stream()
 				.filter(huRow -> huRow.isTopLevel())
 				.filter(huRow -> huRow.isHUStatusActive())
-				.filter(huRow -> !sourceHuService.isSourceHU(huRow.getM_HU_ID())) // may not yet be a source-HU
+				.filter(huRow -> !sourceHuService.isHuMarkedAsSourceHu(huRow.getM_HU_ID())) // may not yet be a source-HU
 				.filter(huRow -> !huPickingSlotDAO.isHuIdPicked(huRow.getM_HU_ID()));
 
 		return stream;

@@ -34,7 +34,7 @@ public abstract class WEBUI_PP_Order_HUEditor_ProcessBase extends HUEditorProces
 
 		final Stream<HUEditorRow> resultStream = inputStream
 				.filter(huRow -> huRow.isHUStatusActive())
-				.filter(huRow -> !sourceHuService.isSourceHUOrChildOfSourceHU(huRow.getM_HU_ID()))
+				.filter(huRow -> !sourceHuService.isHuOrAnyParentMarkedAsSourceHu(huRow.getM_HU_ID()))
 				.filter(huRow -> !huPpOrderQtyDAO.isHuIdIssued(huRow.getM_HU_ID()));
 
 		return resultStream;

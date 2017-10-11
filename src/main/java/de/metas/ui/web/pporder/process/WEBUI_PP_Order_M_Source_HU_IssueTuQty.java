@@ -3,26 +3,25 @@ package de.metas.ui.web.pporder.process;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 import java.math.BigDecimal;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
 import org.adempiere.util.StringUtils;
-import org.adempiere.util.time.SystemTime;
-import org.compiere.util.Env;
 import org.eevolution.model.I_PP_Order;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableList.Builder;
 
-import de.metas.handlingunits.HUIteratorListenerAdapter;
-import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.allocation.transfer.HUTransformService;
-import de.metas.handlingunits.impl.HUIterator;
+import de.metas.handlingunits.allocation.transfer.HUTransformService.HUsToNewTUsRequest;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_Source_HU;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.handlingunits.sourcehu.ISourceHuService;
 import de.metas.handlingunits.sourcehu.ISourceHuService.ActiveSourceHusQuery;
+import de.metas.handlingunits.storage.EmptyHUListener;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
@@ -52,12 +51,12 @@ import lombok.NonNull;
  * #L%
  */
 
-public class WEBUI_PP_Order_IssueQty
+public class WEBUI_PP_Order_M_Source_HU_IssueTuQty
 		extends WEBUI_PP_Order_Template
 		implements IProcessPrecondition
 {
-	@Param(parameterName = "QtyCU", mandatory = true)
-	private BigDecimal qtyCU;
+	@Param(parameterName = "QtyTU", mandatory = true)
+	private BigDecimal qtyTU;
 
 	@Override
 	public final ProcessPreconditionsResolution checkPreconditionsApplicable()
@@ -87,13 +86,36 @@ public class WEBUI_PP_Order_IssueQty
 	{
 		final PPOrderLineRow row = getSingleSelectedRow();
 
-		final List<I_M_HU> sourceHus = retrieveActiveSourceHus(row);
+		final List<I_M_Source_HU> sourceHus = retrieveActiveSourceHus(row);
 		if (sourceHus.isEmpty())
 		{
 			throw new AdempiereException("@NoSelection@");
 		}
 
-		final ImmutableList<I_M_HU> extractedCUs = extractCuHUs(retrieveCuHUs());
+		final Map<Integer, I_M_Source_HU> huId2SourceHu = new HashMap<>();
+
+		final ImmutableList<I_M_HU> husThatAreFlaggedAsSource = sourceHus.stream()
+				.peek(sourceHu -> huId2SourceHu.put(sourceHu.getM_HU_ID(), sourceHu))
+				.map(I_M_Source_HU::getM_HU)
+				.collect(ImmutableList.toImmutableList());
+
+		final HUsToNewTUsRequest request = HUsToNewTUsRequest.builder()
+				.sourceHUs(husThatAreFlaggedAsSource)
+				.qtyTU(qtyTU.intValue())
+				.build();
+
+		EmptyHUListener emptyHUListener = EmptyHUListener
+				.doBeforeDestroyed(hu -> {
+					if (huId2SourceHu.containsKey(hu.getM_HU_ID()))
+					{
+						Services.get(ISourceHuService.class).snapshotSourceHU(huId2SourceHu.get(hu.getM_HU_ID()));
+					}
+				}, "Create snapshot of source-HU before it is destroyed");
+
+		final List<I_M_HU> extractedTUs = HUTransformService.builder()
+				.emptyHUListener(emptyHUListener)
+				.build()
+				.husToNewTUs(request);
 
 		final PPOrderLinesView ppOrderView = getView();
 
@@ -101,7 +123,7 @@ public class WEBUI_PP_Order_IssueQty
 		Services.get(IHUPPOrderBL.class)
 				.createIssueProducer()
 				.setTargetOrderBOMLinesByPPOrderId(ppOrderId)
-				.createDraftIssues(extractedCUs);
+				.createDraftIssues(extractedTUs);
 
 		getView().invalidateAll();
 		ppOrderView.invalidateAll();
@@ -109,57 +131,13 @@ public class WEBUI_PP_Order_IssueQty
 		return MSG_OK;
 	}
 
-	private static List<I_M_HU> retrieveActiveSourceHus(@NonNull final PPOrderLineRow row)
+	private static List<I_M_Source_HU> retrieveActiveSourceHus(@NonNull final PPOrderLineRow row)
 	{
 		final I_PP_Order ppOrder = load(row.getPP_Order_ID(), I_PP_Order.class);
 
-		return Services.get(ISourceHuService.class).retrieveActiveSourceHUs(ActiveSourceHusQuery.builder().productId(row.getM_Product_ID()).warehouseId(ppOrder.getM_Warehouse_ID()).build());
-	}
-
-	private static ImmutableList<I_M_HU> retrieveCuHUs()
-	{
-		final Builder<I_M_HU> cuHUs = ImmutableList.builder();
-		new HUIterator().setEnableStorageIteration(false)
-				.setCtx(Env.getCtx())
-				.setDate(SystemTime.asTimestamp())
-				.setListener(new HUIteratorListenerAdapter()
-				{
-					@Override
-					public Result afterHU(final I_M_HU hu)
-					{
-						final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-						if (handlingUnitsBL.isAggregateHU(hu) || handlingUnitsBL.isVirtual(hu))
-						{
-							cuHUs.add(hu);
-						}
-						return getDefaultResult();
-					}
-				});
-		return cuHUs.build();
-	}
-
-
-	private ImmutableList<I_M_HU> extractCuHUs(@NonNull final ImmutableList<I_M_HU> sourceCuHUs)
-	{
-		BigDecimal qtyLeftToExtract = qtyCU;
-		
-		final HUTransformService huTransformService = HUTransformService.get(Env.getCtx());
-		
-		final Builder<I_M_HU> extractedCUs = ImmutableList.builder();
-		for (I_M_HU sourceCuHU : sourceCuHUs)
-		{
-			final BigDecimal sourceCuHuQty = huTransformService.getMaximumQtyCU(sourceCuHU);
-			final BigDecimal qtyToExtractFromSourceCuHu = sourceCuHuQty.min(qtyCU);
-			
-			final List<I_M_HU> newlyExtractedCUs = huTransformService.cuToNewCU(sourceCuHU, qtyToExtractFromSourceCuHu);
-			extractedCUs.addAll(newlyExtractedCUs);
-			
-			qtyLeftToExtract = qtyLeftToExtract.subtract(qtyToExtractFromSourceCuHu);
-			if (qtyLeftToExtract.signum() <= 0)
-			{
-				break;
-			}
-		}
-		return extractedCUs.build();
+		final ActiveSourceHusQuery query = ActiveSourceHusQuery.builder()
+				.productId(row.getM_Product_ID())
+				.warehouseId(ppOrder.getM_Warehouse_ID()).build();
+		return Services.get(ISourceHuService.class).retrieveActiveSourceHUs(query);
 	}
 }

@@ -7,6 +7,7 @@ import org.adempiere.exceptions.FillMandatoryException;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import de.metas.handlingunits.allocation.transfer.HUTransformService;
+import de.metas.handlingunits.allocation.transfer.HUTransformService.HUsToNewTUsRequest;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.Param;
@@ -99,9 +100,8 @@ public class WEBUI_M_HU_MoveTUsToDirectWarehouse extends HUEditorProcessTemplate
 
 		final I_M_HU topLevelHU = getRecord(I_M_HU.class);
 
-		final boolean isOwnPackingMaterials = true;
-		final List<I_M_HU> tus = HUTransformService.getWithThreadInheritedTrx()
-				.huExtractTUs(topLevelHU, p_QtyTU, isOwnPackingMaterials);
+		final HUsToNewTUsRequest request = HUsToNewTUsRequest.forSourceHuAndQty(topLevelHU, p_QtyTU);
+		final List<I_M_HU> tus = HUTransformService.get().husToNewTUs(request);
 		if (tus.size() != p_QtyTU)
 		{
 			throw new AdempiereException(WEBUI_HU_Constants.MSG_NotEnoughTUsFound, new Object[] { p_QtyTU, tus.size() });

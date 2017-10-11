@@ -6,9 +6,9 @@ import java.util.List;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
-import org.compiere.util.Env;
 
 import de.metas.handlingunits.allocation.transfer.HUTransformService;
+import de.metas.handlingunits.allocation.transfer.HUTransformService.HUsToNewTUsRequest;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.i18n.IMsgBL;
@@ -74,8 +74,8 @@ public class WEBUI_PP_Order_HUEditor_IssueTUs
 
 		final I_M_HU sourceLUorTU = row.getM_HU();
 
-		final List<I_M_HU> extractedTUs = HUTransformService.get(Env.getCtx())
-				.huExtractTUs(sourceLUorTU, qtyTUs, sourceLUorTU.isHUPlanningReceiptOwnerPM());
+		final HUsToNewTUsRequest request = HUsToNewTUsRequest.forSourceHuAndQty(sourceLUorTU, qtyTUs);
+		final List<I_M_HU> extractedTUs = HUTransformService.get().husToNewTUs(request);
 		if (extractedTUs.isEmpty())
 		{
 			throw new AdempiereException("@NoSelection@");

@@ -132,7 +132,7 @@ public class WEBUI_PP_Order_HUEditor_Launcher
 		final IHUQueryBuilder huIdsToAvailableToIssueQuery = huppOrderBL.createHUsAvailableToIssueQuery(ppOrderBomLine);
 
 		final List<Integer> availableHUsIDs = huIdsToAvailableToIssueQuery.createQuery().listIds().stream()
-				.filter(huId -> !Services.get(ISourceHuService.class).isSourceHUOrChildOfSourceHU(huId))
+				.filter(huId -> !Services.get(ISourceHuService.class).isHuOrAnyParentMarkedAsSourceHu(huId))
 				.filter(huId -> !Services.get(IHUPPOrderQtyDAO.class).isHuIdIssued(huId))
 				.collect(ImmutableList.toImmutableList());
 		return availableHUsIDs;

@@ -175,7 +175,7 @@ public class PPOrderLinesLoader
 				.productIds(issueProductIds)
 				.warehouseId(m_Warehouse_ID).build();
 
-		for (final I_M_HU sourceHu : Services.get(ISourceHuService.class).retrieveActiveSourceHUs(sourceHusQuery))
+		for (final I_M_HU sourceHu : Services.get(ISourceHuService.class).retrieveActiveHusthatAreMarkedAsSourceHu(sourceHusQuery))
 		{
 			final HUEditorRow huEditorRow = huEditorRepo.retrieveForHUId(sourceHu.getM_HU_ID());
 			result.add(createRowForSourceHU(huEditorRow));
