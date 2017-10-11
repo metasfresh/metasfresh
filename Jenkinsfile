@@ -14,15 +14,17 @@ void collectTestResultsAndMeasureCoverage()
 {
   junit '**/target/surefire-reports/*.xml'
   jacoco exclusionPattern: '**/src/main/java-gen'
+  /*
   withCredentials([string(credentialsId: 'codacy_project_token_for_metasfresh_repo', variable: 'CODACY_PROJECT_TOKEN')])
   {
     withEnv(['CODACY_PROJECT_TOKEN=${CODACY_PROJECT_TOKEN}'])
     {
       final String version='2.0.0'
-      sh "wget https://github.com/codacy/codacy-coverage-reporter/releases/download/${version}/codacy-coverage-reporter-${version}-assembly.jar"
+      sh "wget --quiet https://github.com/codacy/codacy-coverage-reporter/releases/download/${version}/codacy-coverage-reporter-${version}-assembly.jar"
       sh "java -cp codacy-coverage-reporter-${version}-assembly.jar com.codacy.CodacyCoverageReporter -l Java -r jacoco.xml"
     }
   }
+  */
 }
 
 /**
