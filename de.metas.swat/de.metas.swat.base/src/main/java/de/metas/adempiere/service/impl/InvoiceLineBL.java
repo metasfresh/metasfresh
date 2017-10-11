@@ -398,9 +398,11 @@ public class InvoiceLineBL implements IInvoiceLineBL
 
 		//
 		// Discount
-
-		invoiceLine.setDiscount(pricingResult.getDiscount());
-
+		if (invoiceLine.getDiscount().signum() == 0)   
+		{
+			invoiceLine.setDiscount(pricingResult.getDiscount());
+		}
+		
 		//
 		// Calculate PriceActual from PriceEntered and Discount
 		calculatePriceActual(invoiceLine, pricingResult.getPrecision());

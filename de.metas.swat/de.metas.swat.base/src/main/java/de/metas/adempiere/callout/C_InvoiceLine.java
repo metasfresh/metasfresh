@@ -60,13 +60,13 @@ public class C_InvoiceLine
 	}
 
 	/**
-	 * update prices on ASI change
+	 * update prices on ASI or discount change
 	 * 
 	 * @param invoiceLine
 	 * @param field
 	 */
-	@CalloutMethod(columnNames = { I_C_InvoiceLine.COLUMNNAME_M_AttributeSetInstance_ID })
-	public void onASIChange(final I_C_InvoiceLine invoiceLine, final ICalloutField field)
+	@CalloutMethod(columnNames = { I_C_InvoiceLine.COLUMNNAME_M_AttributeSetInstance_ID, I_C_InvoiceLine.COLUMNNAME_Discount })
+	public void onASIorDiscountChange(final I_C_InvoiceLine invoiceLine, final ICalloutField field)
 	{
 		Services.get(IInvoiceLineBL.class).updatePrices(invoiceLine);
 
