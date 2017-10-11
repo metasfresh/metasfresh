@@ -2,6 +2,12 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
+	<parent>
+		<artifactId>de.metas.parent.general</artifactId>
+		<groupId>de.metas</groupId>
+		<version>[1,10.0.0]</version>
+	</parent>
+	
 	<groupId>de.metas</groupId>
 	<artifactId>de.metas.testcoveragereport</artifactId>
 	<version>10.0.0</version>
