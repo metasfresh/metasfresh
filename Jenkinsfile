@@ -148,7 +148,6 @@ node('agent && linux')
         final MvnConf mvnEsbConf = mvnConf.withPomFile('de.metas.esb/pom.xml');
         echo "mvnEsbConf=${mvnEsbConf}"
 
-				// update the parent pom version
  				mvnUpdateParentPomVersion mvnEsbConf
 
 				// set the artifact version of everything below de.metas.esb/pom.xml
@@ -166,7 +165,11 @@ node('agent && linux')
 
 			if(!params.MF_SKIP_TO_DIST)
 			{
-        collectTestResultsAndMeasureCoverage()
+        final MvnConf mvnJacocoConf = mvnConf.withPomFile('pom_for_jacoco_aggregate_coverage_report.xml');
+        mvnUpdateParentPomVersion mvnJacocoConf
+        sh "mvn --settings ${mvnJacocoConf.settingsFile} --file ${mvnJacocoConf.pomFile} --batch-mode ${mvnJacocoConf.resolveParams} org.jacoco:jacoco-maven-plugin:0.7.9:report-aggregate"
+
+        collectTestResultsAndReportCoverage('./target/site/jacoco-aggregate/jacoco.xml')
 			}
 		} // withMaven
     } // withEnv
@@ -311,28 +314,24 @@ stage('Invoke downstream jobs')
 /**
   *	collect the test results for the two preceeding stages. call this once to avoid counting the tests twice.
   */
-void collectTestResultsAndMeasureCoverage()
+void collectTestResultsAndReportCoverage(final String aggregatedJacocoFilename)
 {
   junit '**/target/surefire-reports/*.xml'
 
   jacoco exclusionPattern: '**/src/main/java-gen' // collect coverage results for jenkins
 
-  aggregateAndUploadCoverageResultsForCodacy()
+  uploadCoverageResultsForCodacy(aggregatedJacocoFilename)
 }
 
-void aggregateAndUploadCoverageResultsForCodacy()
+void uploadCoverageResultsForCodacy(final String aggregatedJacocoFilename)
 {
-  withMaven(jdk: 'java-8', maven: 'maven-3.5.0', mavenLocalRepo: '.repository', mavenOpts: '-Xmx1536M')
-  {
-    sh 'mvn -f pom_for_jacoco_aggregate_coverage_report.xml -DoutputDirectory=jacoco-aggregate org.jacoco:jacoco-maven-plugin:0.7.9:report-aggregate'
-  }
   withCredentials([string(credentialsId: 'codacy_project_token_for_metasfresh_repo', variable: 'CODACY_PROJECT_TOKEN')])
   {
     withEnv(['CODACY_PROJECT_TOKEN=${CODACY_PROJECT_TOKEN}'])
     {
       final String version='2.0.1'
       sh "wget --quiet https://repo.metasfresh.com/service/local/repositories/mvn-3rdparty/content/com/codacy/codacy-coverage-reporter/${version}/codacy-coverage-reporter-${version}-assembly.jar"
-      sh "java -cp codacy-coverage-reporter-${version}-assembly.jar com.codacy.CodacyCoverageReporter -l Java -r ./target/site/jacoco-aggregate/jacoco.xml"
+      sh "java -cp codacy-coverage-reporter-${version}-assembly.jar com.codacy.CodacyCoverageReporter -l Java -r ${aggregatedJacocoFilename}"
     }
   }
 }
