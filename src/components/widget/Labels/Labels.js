@@ -28,10 +28,12 @@ class Labels extends Component {
     state = {
         focused: false,
         values: [],
-        suggestions: []
+        suggestions: [],
+        cursorY: -1
     };
 
     childClick = false;
+    lastTypeAhead = '';
 
     handleClick = async () => {
         this.input.focus();
@@ -73,35 +75,82 @@ class Labels extends Component {
         }
 
         this.setState({
-            focused: false
+            focused: false,
+            cursorY: -1
         });
+    };
+
+    handleArrows = event => {
+        let suggestions;
+
+        if (this.state.suggestions.length) {
+            suggestions = this.state.suggestions;
+        } else {
+            suggestions = this.state.values;
+        }
+
+        suggestions = suggestions.filter(
+            this.unusedSuggestions()
+        );
+
+        switch (event.key) {
+            case 'ArrowUp': {
+                this.setState(({ cursorY }) => ({
+                    cursorY: Math.max(
+                        Math.min(cursorY, suggestions.length - 1) - 1,
+                        -1
+                    )
+                }));
+
+                // Prevent page from scrolling
+                event.preventDefault();
+
+                return;
+            }
+
+            case 'ArrowDown': {
+                this.setState(({ cursorY }) => ({
+                    cursorY: Math.min(cursorY + 1, suggestions.length - 1)
+                }));
+
+                // Prevent page from scrolling
+                event.preventDefault();
+
+                return;
+            }
+        }
     };
 
     handleKeyUp = async event => {
         const typeAhead = event.target.innerHTML;
-        const { windowId, docId, name } = this.props;
 
-        const response = await autocompleteRequest({
-            docId,
-            entity: 'window',
-            propertyName: name,
-            query: typeAhead,
-            viewId: windowId
-        });
+        if (typeAhead !== this.lastTypeAhead) {
+            const { windowId, docId, name } = this.props;
 
-        const { values } = response.data;
+            const response = await autocompleteRequest({
+                docId,
+                entity: 'window',
+                propertyName: name,
+                query: typeAhead,
+                viewId: windowId
+            });
 
-        this.setState({
-            suggestions: values
-        });
+            const { values } = response.data;
+
+            this.setState({
+                suggestions: values
+            });
+
+            this.typeAhead = typeAhead;
+        }
     };
 
     handleKeyDown = event => {
         const typeAhead = event.target.innerHTML;
         const { selected } = this.props;
 
-        if (typeAhead) {
-            if (event.key === 'Enter') {
+        if (event.key === 'Enter') {
+            if (typeAhead || this.state.cursorY >= 0) {
                 let suggestions;
 
                 if (this.state.suggestions.length) {
@@ -110,28 +159,54 @@ class Labels extends Component {
                     suggestions = this.state.values;
                 }
 
-                const suggestion = suggestions.filter(
+                suggestions = suggestions.filter(
                     this.unusedSuggestions()
-                )[0];
+                );
 
-                this.props.onChange([...this.props.selected, suggestion]);
+                this.props.onChange([
+                    ...this.props.selected,
+                    suggestions[
+                        Math.max(
+                            0,
+                            Math.min(
+                                this.state.cursorY,
+                                suggestions.length - 1
+                            )
+                        )
+                    ]
+                ]);
 
-                event.preventDefault();
-                this.input.innerHTML = '';
-
-                return;
-            }
-        } else {
-            if (event.key === 'Backspace' && !typeAhead) {
-                if (selected.length < 1) {
-                    return;
+                if (typeAhead) {
+                    this.setState({
+                        cursorY: -1
+                    });
                 }
 
-                this.props.onChange(selected.slice(0, selected.length - 1));
+                this.input.innerHTML = '';
             }
+
+            // Don't break contentEditable container with newline
+            event.preventDefault();
+
+            return;
         }
 
-        if (['ArrowLeft', 'ArrowRight', 'Backspace'].includes(event.key)) {
+        if (event.key === 'Backspace') {
+            if (selected.length < 1) {
+                return;
+            } else if (!typeAhead) {
+                this.props.onChange(selected.slice(0, selected.length - 1));
+            }
+
+            return;
+        }
+
+        if ([
+            'ArrowTop',
+            'ArrowRight',
+            'ArrowBottom',
+            'ArrowLeft'
+        ].includes(event.key)) {
             return;
         }
 
@@ -183,6 +258,7 @@ class Labels extends Component {
                 onFocus={this.handleFocus}
                 onBlur={this.handleBlur}
                 tabIndex={this.props.tabIndex}
+                onKeyDown={this.handleArrows}
             >
                 <span className="labels-wrap">
                     {this.props.selected.map(item => (
@@ -203,14 +279,23 @@ class Labels extends Component {
                 </span>
                 {this.state.focused && (
                     <div className="labels-dropdown">
-                        {suggestions.map(suggestion => (
-                            <Suggestion
-                                className="labels-suggestion"
-                                key={Object.keys(suggestion)[0]}
-                                suggestion={suggestion}
-                                onAdd={this.handleSuggestionAdd}
-                            />
-                        ))}
+                        {suggestions.map((suggestion, index) => {
+                            const active = (
+                                index === this.state.cursorY ||
+                                index === suggestions.length - 1 &&
+                                index <= this.state.cursorY
+                            );
+
+                            return (
+                                <Suggestion
+                                    className="labels-suggestion"
+                                    key={Object.keys(suggestion)[0]}
+                                    suggestion={suggestion}
+                                    onAdd={this.handleSuggestionAdd}
+                                    active={active}
+                                />
+                            );
+                        })}
                     </div>
                 )}
             </div>
