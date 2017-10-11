@@ -1,10 +1,15 @@
-package de.metas.contracts.flatrate.impexp;
+package de.metas.contracts.impl;
 
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_AcctSchema;
+import org.compiere.model.I_C_Activity;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_Calendar;
+import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_Product_Acct;
 
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.adempiere.model.I_C_BPartner_Location;
@@ -14,7 +19,6 @@ import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.contracts.model.X_C_Flatrate_Transition;
 import lombok.Builder;
 import lombok.NonNull;
-import lombok.experimental.UtilityClass;
 
 /*
  * #%L
@@ -43,14 +47,13 @@ import lombok.experimental.UtilityClass;
  * 
  * @author metas-dev <dev@metasfresh.com>
  */
-@UtilityClass
-/* package */class PrepareImportDataFactory
+
+public class FlatrateTermDataFactory
 {
-	private static final int countryId = 101;
 	private static final String city = "Berlin";
 	private static final String valuePricingSystem = "Abo";
 
-	@Builder(builderMethodName = "userBuilder")
+	@Builder(builderMethodName = "userNew")
 	public static I_AD_User createADUser(@NonNull final I_C_BPartner bpartner, final String lastName, final String firstName, final boolean isBillToContact_Default, final boolean isShipToContact_Default)
 	{
 		final I_AD_User user = InterfaceWrapperHelper.newInstance(I_AD_User.class, bpartner);
@@ -64,10 +67,10 @@ import lombok.experimental.UtilityClass;
 		return user;
 	}
 	
-	@Builder(builderMethodName = "bpLocationBuilder")
-	public static I_C_BPartner_Location createBPartnerLocation(@NonNull final I_C_BPartner bpartner,	final boolean isBillTo_Default,	final boolean isShipTo_Default)
+	@Builder(builderMethodName = "bpLocationNew")
+	public static I_C_BPartner_Location createBPartnerLocation(@NonNull final I_C_BPartner bpartner,	final boolean isBillTo_Default,	final boolean isShipTo_Default, final I_C_Country country)
 	{
-		final I_C_Location location = createLocation(bpartner);
+		final I_C_Location location = createLocation(bpartner, country);
 
 		final I_C_BPartner_Location bpartnerLocation = InterfaceWrapperHelper.newInstance(I_C_BPartner_Location.class, bpartner);
 		bpartnerLocation.setC_BPartner(bpartner);
@@ -82,18 +85,18 @@ import lombok.experimental.UtilityClass;
 		return bpartnerLocation;
 	}
 
-	private I_C_Location createLocation(@NonNull final I_C_BPartner bpartner)
+	private static I_C_Location createLocation(@NonNull final I_C_BPartner bpartner, @NonNull final I_C_Country country)
 	{
 		final I_C_Location location = InterfaceWrapperHelper.newInstance(I_C_Location.class, bpartner);
 		location.setCity(city);
-		location.setC_Country_ID(countryId);
+		location.setC_Country(country);
 		InterfaceWrapperHelper.save(location);
 		return location;
 	}
 	
 
-	@Builder(builderMethodName = "flatrateConditionsBuilder")
-	public static  I_C_Flatrate_Conditions createFlatrateConditions(final String name, final String invoiceRule, final String typeConditions)
+	@Builder(builderMethodName = "flatrateConditionsNew")
+	public static  I_C_Flatrate_Conditions createFlatrateConditions(final String name, final String invoiceRule, final String typeConditions, final I_C_Calendar calendar)
 	{
 		final I_C_Flatrate_Conditions conditions = InterfaceWrapperHelper.newInstance(I_C_Flatrate_Conditions.class);
 		conditions.setM_PricingSystem(createPricingSystem());
@@ -102,8 +105,9 @@ import lombok.experimental.UtilityClass;
 		conditions.setName(name);
 		InterfaceWrapperHelper.save(conditions);
 
-		final I_C_Flatrate_Transition transition = flatrateTransitionBuilder()
+		final I_C_Flatrate_Transition transition = flatrateTransitionNew()
 				.conditions(conditions)
+				.calendar(calendar)
 				.deliveryInterval(1)
 				.deliveryIntervalUnit(X_C_Flatrate_Transition.DELIVERYINTERVALUNIT_JahrE)
 				.termDuration(1)
@@ -121,25 +125,29 @@ import lombok.experimental.UtilityClass;
 		return conditions;
 	}
 	
-	@Builder(builderMethodName = "flatrateTransitionBuilder")
-	private static I_C_Flatrate_Transition createFlatrateTransition(@NonNull final I_C_Flatrate_Conditions conditions, final int termDuration, final String termDurationUnit,
+	@Builder(builderMethodName = "flatrateTransitionNew")
+	private static I_C_Flatrate_Transition createFlatrateTransition(@NonNull final I_C_Flatrate_Conditions conditions, @NonNull final I_C_Calendar calendar, final int termDuration, final String termDurationUnit,
 			final int deliveryInterval, final String deliveryIntervalUnit, final boolean isAutoRenew, final boolean isAutoCompleteNewTerm)
 	{
 		final I_C_Flatrate_Transition transition = InterfaceWrapperHelper.newInstance(I_C_Flatrate_Transition.class);
-		transition.setC_Calendar_Contract_ID(1);
-		transition.setTermDuration(1);
+		transition.setC_Calendar_Contract(calendar);
+		transition.setTermDuration(termDuration);
 		transition.setTermDurationUnit(termDurationUnit);
 		transition.setDeliveryInterval(deliveryInterval);
 		transition.setDeliveryIntervalUnit(deliveryIntervalUnit);
 		transition.setIsAutoRenew(isAutoRenew);
 		transition.setIsAutoCompleteNewTerm(isAutoCompleteNewTerm);
 		transition.setC_Flatrate_Conditions_Next(conditions);
+		transition.setTermOfNotice(0);
+		transition.setTermOfNoticeUnit(X_C_Flatrate_Transition.TERMOFNOTICEUNIT_TagE);
 		transition.setProcessed(true);
 		transition.setDocStatus(X_C_Flatrate_Transition.DOCSTATUS_Completed);
 		transition.setDocAction(X_C_Flatrate_Transition.DOCACTION_Re_Activate);
+		InterfaceWrapperHelper.save(transition);
 		return transition;
 	}
 	
+	@Builder(builderMethodName = "bpartnerNew")
 	public static I_C_BPartner createBpartner(final String bpValue, final boolean isCustomer)
 	{
 		final I_C_BPartner bpartner = InterfaceWrapperHelper.newInstance(I_C_BPartner.class);
@@ -149,6 +157,7 @@ import lombok.experimental.UtilityClass;
 		return bpartner;
 	}
 
+	@Builder(builderMethodName = "productNew")
 	public static I_M_Product createProduct(final String value, final String name)
 	{
 		final I_M_Product product = InterfaceWrapperHelper.newInstance(I_M_Product.class);
@@ -160,12 +169,32 @@ import lombok.experimental.UtilityClass;
 	}
 
 
-	private I_M_PricingSystem createPricingSystem()
+	private static I_M_PricingSystem createPricingSystem()
 	{
 		final I_M_PricingSystem pricingSytem = InterfaceWrapperHelper.newInstance(I_M_PricingSystem.class);
 		pricingSytem.setValue(valuePricingSystem);
 		pricingSytem.setName(valuePricingSystem);
 		InterfaceWrapperHelper.save(pricingSytem);
 		return pricingSytem;
+	}
+	
+	@Builder(builderMethodName = "productAcctNew")
+	public static I_M_Product_Acct createProductAcct(final I_M_Product product, final I_C_AcctSchema acctSchema)
+	{
+		final I_M_Product_Acct productAcct = InterfaceWrapperHelper.newInstance(I_M_Product_Acct.class);
+		productAcct.setM_Product(product);
+		productAcct.setC_AcctSchema(acctSchema);
+		productAcct.setC_Activity(createActivity());
+		InterfaceWrapperHelper.save(productAcct);
+		return productAcct;
+	}
+	
+	private static I_C_Activity createActivity()
+	{
+		final I_C_Activity activity = InterfaceWrapperHelper.newInstance(I_C_Activity.class);
+		activity.setValue("Activity");
+		activity.setName("Activity");
+		InterfaceWrapperHelper.save(activity);
+		return activity;
 	}
 }

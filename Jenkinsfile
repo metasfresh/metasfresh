@@ -8,6 +8,26 @@ import de.metas.jenkins.MvnConf
 import de.metas.jenkins.Misc
 
 /**
+  *	collect the test results for the two preceeding stages. call this once to avoid counting the tests twice.
+  */
+void collectTestResultsAndMeasureCoverage()
+{
+  junit '**/target/surefire-reports/*.xml'
+  jacoco exclusionPattern: '**/src/main/java-gen'
+  /*
+  withCredentials([string(credentialsId: 'codacy_project_token_for_metasfresh_repo', variable: 'CODACY_PROJECT_TOKEN')])
+  {
+    withEnv(['CODACY_PROJECT_TOKEN=${CODACY_PROJECT_TOKEN}'])
+    {
+      final String version='2.0.0'
+      sh "wget --quiet https://github.com/codacy/codacy-coverage-reporter/releases/download/${version}/codacy-coverage-reporter-${version}-assembly.jar"
+      sh "java -cp codacy-coverage-reporter-${version}-assembly.jar com.codacy.CodacyCoverageReporter -l Java -r jacoco.xml"
+    }
+  }
+  */
+}
+
+/**
  * This method will be used further down to call additional jobs such as metasfresh-procurement and metasfresh-webui.
  *
  * @return the the build result's buildVariables (a map) which ususally also contain (to be set by our Jenkinsfiles):
@@ -249,11 +269,8 @@ node('agent && linux')
 
 			if(!params.MF_SKIP_TO_DIST)
 			{
-				// collect the test results for the two preceeding stages. call this step once to avoid counting the tests twice.
-				junit '**/target/surefire-reports/*.xml'
-        jacoco exclusionPattern: '**/src/main/java-gen'
+        collectTestResultsAndMeasureCoverage()
 			}
-
 		} // withMaven
     } // withEnv
 	} // configFileProvider

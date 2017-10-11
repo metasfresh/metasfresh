@@ -1,16 +1,16 @@
 package de.metas.contracts.interceptor;
 
 import java.util.List;
+import java.util.Properties;
 
+import org.adempiere.ad.modelvalidator.annotations.DocValidate;
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.model.MClient;
-import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
-import org.compiere.model.PO;
-import org.compiere.util.DB;
 import org.compiere.util.Env;
 
 /*
@@ -48,52 +48,19 @@ import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.logging.LogManager;
 
-public class C_Order implements ModelValidator
+@Interceptor(I_C_Order.class)
+public class C_Order
 {
 	private static final Logger logger = LogManager.getLogger(C_OrderLine.class);
 
 	private static final String MSG_ORDER_DATE_ORDERED_CHANGE_FORBIDDEN_1P = "Order_DateOrdered_Change_Forbidden";
 
-	private int m_AD_Client_ID = -1;
-
-	@Override
-	public int getAD_Client_ID()
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE }, ignoreColumnsChanged= {I_C_Order.COLUMNNAME_DateOrdered} )
+	public void updateDataEntry(final I_C_Order order)
 	{
-		return m_AD_Client_ID;
-	}
-
-	@Override
-	public void initialize(final ModelValidationEngine engine, final MClient client)
-	{
-		if (client != null)
-			m_AD_Client_ID = client.getAD_Client_ID();
-
-		engine.addModelChange(I_C_Order.Table_Name, this);
-		engine.addDocValidate(I_C_Order.Table_Name, this);
-	}
-
-	@Override
-	public String login(final int AD_Org_ID, final int AD_Role_ID, final int AD_User_ID)
-	{
-		return null;
-	}
-
-	@Override
-	public String modelChange(final PO po, final int type) throws Exception
-	{
-		if (type != TYPE_BEFORE_CHANGE)
-		{
-			return null;
-		}
-
-		final I_C_Order order = InterfaceWrapperHelper.create(po, I_C_Order.class);
-
-		if (po.is_ValueChanged(I_C_Invoice_Candidate.COLUMNNAME_DateOrdered))
-		{
-			return null;
-		}
 		final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 		final IInvoiceCandDAO invoiceCandDB = Services.get(IInvoiceCandDAO.class);
+		final Properties ctx = InterfaceWrapperHelper.getCtx(order);
 
 		for (final I_C_OrderLine ol : orderDAO.retrieveOrderLines(order, I_C_OrderLine.class))
 		{
@@ -101,30 +68,15 @@ public class C_Order implements ModelValidator
 			{
 				if (icOfOl.isToClear())
 				{
-					// If the column was updatable, we would have to
-					// *check if new and old term are the same
-					// *check if ICAs need update, creation or deletion and do it;
-					// *check which dataEntries' ActualQty needs update and make sure that they are not yet
-					// completed
-					// *check is isToClear needs update;
-					throw new AdempiereException(Env.getAD_Language(po.getCtx()), MSG_ORDER_DATE_ORDERED_CHANGE_FORBIDDEN_1P, new Object[] { ol.getLine() });
+					throw new AdempiereException(Env.getAD_Language(ctx), MSG_ORDER_DATE_ORDERED_CHANGE_FORBIDDEN_1P, new Object[] { ol.getLine() });
 				}
 			}
 		}
-		return null;
 	}
 
-	@Override
-	public String docValidate(final PO po, final int timing)
+	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE })
+	public void handleComplete(final I_C_Order order)
 	{
-		if (timing != TIMING_AFTER_COMPLETE && timing != TIMING_AFTER_REACTIVATE)
-		{
-			return null;
-		}
-
-		final String trxName = po.get_TrxName();
-		final I_C_Order order = InterfaceWrapperHelper.create(po, I_C_Order.class);
-
 		final List<I_C_OrderLine> orderLines = Services.get(IOrderDAO.class).retrieveOrderLines(order, I_C_OrderLine.class);
 		for (final I_C_OrderLine ol : orderLines)
 		{
@@ -133,22 +85,11 @@ public class C_Order implements ModelValidator
 				logger.debug("Order line " + ol + " has no subscription");
 				continue;
 			}
-			if (timing == TIMING_AFTER_COMPLETE)
-			{
-				handleOrderLineComplete(order, ol, trxName);
-			}
-			else if (timing == TIMING_AFTER_REACTIVATE)
-			{
-				handleOrderLineReactivate(ol, trxName);
-			}
+			handleOrderLineComplete(ol);
 		}
-		return null;
 	}
 
-	private void handleOrderLineComplete(
-			final I_C_Order order,
-			final I_C_OrderLine ol,
-			final String trxName)
+	private void handleOrderLineComplete(final I_C_OrderLine ol)
 	{
 		final ISubscriptionDAO subscriptionDAO = Services.get(ISubscriptionDAO.class);
 		if (subscriptionDAO.existsTermForOl(ol))
@@ -159,7 +100,6 @@ public class C_Order implements ModelValidator
 
 		logger.info("Creating new {} entry", I_C_Flatrate_Term.Table_Name);
 
-		// Note that order.getDocStatus() might still return 'IP' at this point
 		final boolean completeIt = true;
 		final I_C_Flatrate_Term newSc = Services.get(ISubscriptionBL.class).createSubscriptionTerm(ol, completeIt);
 
@@ -167,6 +107,21 @@ public class C_Order implements ModelValidator
 				X_C_Flatrate_Term.DOCSTATUS_Completed.equals(newSc.getDocStatus()),
 				"{} has DocStatus={}", newSc, newSc.getDocStatus());
 		logger.info("Created and completed {}", newSc);
+	}
+
+	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE })
+	public void handleReactivate(final I_C_Order order)
+	{
+		final List<I_C_OrderLine> orderLines = Services.get(IOrderDAO.class).retrieveOrderLines(order, I_C_OrderLine.class);
+		for (final I_C_OrderLine ol : orderLines)
+		{
+			if (ol.getC_Flatrate_Conditions_ID() <= 0)
+			{
+				logger.debug("Order line " + ol + " has no subscription");
+				continue;
+			}
+			handleOrderLineReactivate(ol);
+		}
 	}
 
 	/**
@@ -177,14 +132,11 @@ public class C_Order implements ModelValidator
 	 * @param ol
 	 * @param trxName
 	 */
-	private void handleOrderLineReactivate(
-			final I_C_OrderLine ol,
-			final String trxName)
+	private void handleOrderLineReactivate(final I_C_OrderLine ol)
 	{
 		logger.info("Setting processed status of subscription order line " + ol + " back to Processed='Y'");
 
-		final String sql = "UPDATE C_OrderLine SET Processed='Y' WHERE C_OrderLine_ID=?";
-		final int no = DB.executeUpdateEx(sql, new Object[] { ol.getC_OrderLine_ID() }, trxName);
-		logger.trace("Update result: " + no);
+		ol.setProcessed(true);
+		InterfaceWrapperHelper.save(ol);
 	}
 }

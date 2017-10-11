@@ -28,9 +28,17 @@ Here come the actual release notes:
     * Translation of Pick List Report Parms to en_US.
   * [#2660](https://github.com/metasfresh/metasfresh/issues/2660) Window Design Webui: Improvements in the window Forecast
     * Improvement of Forecast Window. Added Translations for en_US Language/ Locale and adapted Design Guidelines.
+  * [#2690](https://github.com/metasfresh/metasfresh/issues/2690) New Window for AD_Scheduler in WebUI
+    * New Window for Scheduler Maintenance.
+  * [#2691](https://github.com/metasfresh/metasfresh/issues/2691) Adjustments in Materialdispo Window in WebUI
+    * Improved Materuia Dispo Window. Removed deprecated Fields and added Translations for en_US and de_DE Locale/ Language,
 
 ## Fixes
 * metasfresh-app
+
+* metasfresh.webui-frontend
+  * [#1243](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1243) Opening a new included view is broken
+    * Fix for the included view in Picking Window. Now working in Non-Modal Views too.
 
 # metasfresh 5.30 (2017-41)
 

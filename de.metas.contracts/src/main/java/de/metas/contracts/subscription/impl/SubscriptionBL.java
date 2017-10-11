@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
@@ -55,6 +56,8 @@ import org.compiere.util.Env;
 import org.compiere.util.Trx;
 import org.compiere.util.TrxRunnable2;
 import org.slf4j.Logger;
+
+import com.google.common.base.Preconditions;
 
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.adempiere.model.I_C_Order;
@@ -384,7 +387,10 @@ public class SubscriptionBL implements ISubscriptionBL
 
 	private I_C_SubscriptionProgress createSubscriptionEntries(@NonNull final I_C_Flatrate_Term term)
 	{
-		final I_C_Flatrate_Transition trans = term.getC_Flatrate_Transition();
+		Preconditions.checkArgument(term.getC_Flatrate_Conditions_ID() > 0, "Given term has C_Flatrate_Conditions_ID<=0; term=%s", term);
+
+		final I_C_Flatrate_Conditions conditions = term.getC_Flatrate_Conditions();
+		final I_C_Flatrate_Transition trans = conditions.getC_Flatrate_Transition();
 
 		final int numberOfRuns = computeNumberOfRuns(trans, term.getStartDate());
 		Check.assume(numberOfRuns > 0, trans + " has NumberOfEvents > 0");
@@ -776,13 +782,10 @@ public class SubscriptionBL implements ISubscriptionBL
 	}
 
 	private I_C_SubscriptionProgress createDelivery(
-			final I_C_Flatrate_Term term,
-			final Timestamp eventDate,
+			@NonNull final I_C_Flatrate_Term term,
+			@NonNull final Timestamp eventDate,
 			final int seqNo)
 	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(term);
-		final String trxName = InterfaceWrapperHelper.getTrxName(term);
-
 		final I_C_SubscriptionProgress delivery = InterfaceWrapperHelper.newInstance(I_C_SubscriptionProgress.class, term);
 
 		delivery.setAD_Org_ID(term.getAD_Org_ID());
@@ -795,15 +798,15 @@ public class SubscriptionBL implements ISubscriptionBL
 
 		delivery.setEventDate(eventDate);
 
-		delivery.setDropShip_Location_ID(term.getDropShip_Location_ID());
-		delivery.setDropShip_BPartner_ID(term.getDropShip_BPartner_ID());
-		delivery.setDropShip_User_ID(term.getDropShip_User_ID());
+		setDeliveryDropShipValuesFromTerm(delivery, term);
 
 		delivery.setSeqNo(seqNo);
 
 		final int flatrateConditionsId = term.getC_Flatrate_Conditions_ID();
 		final I_M_Product product = term.getM_Product();
 
+		final Properties ctx = InterfaceWrapperHelper.getCtx(term);
+		final String trxName = InterfaceWrapperHelper.getTrxName(term);
 		final I_C_Flatrate_Matching matching = retrieveMatching(ctx, flatrateConditionsId, product, trxName);
 
 		final BigDecimal qtyPerDelivery = matching == null ? BigDecimal.ONE : matching.getQtyPerDelivery();
@@ -814,22 +817,33 @@ public class SubscriptionBL implements ISubscriptionBL
 		return delivery;
 	}
 
+	private void setDeliveryDropShipValuesFromTerm(
+			@NonNull final I_C_SubscriptionProgress delivery, 
+			@NonNull final I_C_Flatrate_Term term)
+	{
+		Preconditions.checkArgument(term.getDropShip_Location_ID() > 0, "The given term has DropShip_Location_ID<=0; term=%s", term);
+		Preconditions.checkArgument(term.getDropShip_BPartner_ID() > 0, "The given term has DropShip_BPartner_ID<=0; term=%s", term);
+		
+		delivery.setDropShip_Location_ID(term.getDropShip_Location_ID());
+		delivery.setDropShip_BPartner_ID(term.getDropShip_BPartner_ID());
+		delivery.setDropShip_User_ID(term.getDropShip_User_ID());
+	}
+
 	@Override
 	public I_C_Flatrate_Matching retrieveMatching(final Properties ctx, final int flatrateConditionsId, final I_M_Product product, final String trxName)
 	{
 		Check.assume(product != null, "Param 'product' is null");
 
-		final String wc = I_C_Flatrate_Matching.COLUMNNAME_C_Flatrate_Conditions_ID + "=? AND " +
-				"COALESCE (" + I_C_Flatrate_Matching.COLUMNNAME_M_Product_Category_Matching_ID + ",0) IN (0,?) AND " +
-				"COALESCE (" + I_C_Flatrate_Matching.COLUMNNAME_M_Product_ID + ",0) IN (0,?)";
-
-		final I_C_Flatrate_Matching matching = new Query(ctx, I_C_Flatrate_Matching.Table_Name, wc, trxName)
-				.setParameters(flatrateConditionsId, product.getM_Product_Category_ID(), product.getM_Product_ID())
-				.setOnlyActiveRecords(true)
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		return queryBL
+				.createQueryBuilder(I_C_Flatrate_Matching.class, ctx, trxName)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Flatrate_Matching.COLUMNNAME_C_Flatrate_Conditions_ID, flatrateConditionsId)
+				.addInArrayFilter(I_C_Flatrate_Matching.COLUMNNAME_M_Product_Category_Matching_ID, product.getM_Product_Category_ID(), null)
+				.addInArrayFilter(I_C_Flatrate_Matching.COLUMNNAME_M_Product_ID, product.getM_Product_ID(), null)
+				.create()
 				.setClient_ID()
 				.firstOnly(I_C_Flatrate_Matching.class);
-
-		return matching;
 	}
 
 	@Override
