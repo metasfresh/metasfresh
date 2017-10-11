@@ -7,106 +7,6 @@
 import de.metas.jenkins.MvnConf
 import de.metas.jenkins.Misc
 
-/**
-  *	collect the test results for the two preceeding stages. call this once to avoid counting the tests twice.
-  */
-void collectTestResultsAndMeasureCoverage()
-{
-  junit '**/target/surefire-reports/*.xml'
-  jacoco exclusionPattern: '**/src/main/java-gen'
-  withCredentials([string(credentialsId: 'codacy_project_token_for_metasfresh_repo', variable: 'CODACY_PROJECT_TOKEN')])
-  {
-    withEnv(['CODACY_PROJECT_TOKEN=${CODACY_PROJECT_TOKEN}'])
-    {
-      final String version='2.0.0'
-      sh "wget https://github.com/codacy/codacy-coverage-reporter/releases/download/${version}/codacy-coverage-reporter-${version}-assembly.jar"
-      sh "java -cp codacy-coverage-reporter-${version}-assembly.jar com.codacy.CodacyCoverageReporter -l Java -r jacoco.xml"
-    }
-  }
-}
-
-/**
- * This method will be used further down to call additional jobs such as metasfresh-procurement and metasfresh-webui.
- *
- * @return the the build result's buildVariables (a map) which ususally also contain (to be set by our Jenkinsfiles):
- * <li>{@code MF_BUILD_VERSION}: the version the maven artifacts were deployed with
- * <li>{@code BUILD_ARTIFACT_URL}: the URL on our nexus repos from where one can download the "main" artifact that was build and deplyoed
- *
- */
-Map invokeDownStreamJobs(
-          final String buildId,
-          final String upstreamBranch,
-          final String parentPomVersion,
-          final String metasfreshVersion,
-          final boolean wait,
-          final String jobFolderName
-        )
-{
-  final def misc = new de.metas.jenkins.Misc();
-	final String jobName = misc.getEffectiveDownStreamJobName(jobFolderName, upstreamBranch);
-
-	final buildResult = build job: jobName,
-		parameters: [
-			string(name: 'MF_UPSTREAM_BRANCH', value: upstreamBranch),
-			string(name: 'MF_UPSTREAM_BUILDNO', value: buildId), // can be used together with the upstream branch name to construct this upstream job's URL
-			string(name: 'MF_UPSTREAM_VERSION', value: metasfreshVersion), // the downstream job shall use *this* metasfresh.version, as opposed to whatever is the latest at the time it runs
-			booleanParam(name: 'MF_TRIGGER_DOWNSTREAM_BUILDS', value: false) // the job shall just run but not trigger further builds because we are doing all the orchestration
-		], wait: wait
-
-	echo "Job invokation done; buildResult.getBuildVariables()=${buildResult.getBuildVariables()}"
-	return buildResult.getBuildVariables();
-}
-
-void invokeZapier(
-  final String upstreamBuildNo,
-  final String upstreamBranch,
-  final String metasfreshVersion,
-  final String metasfreshProcurementWebuiVersion,
-  final String metasfreshWebuiApiVersion,
-  final String metasfreshWebuiFrontendVersion
-    )
-{
-  // now that the "basic" build is done, notify zapier so we can do further things external to this jenkins instance
-  // note: even with "skiptodist=true we do this, because we still want to make the notifcations
-
-  echo "Going to notify external systems via zapier webhook"
-  withCredentials([string(credentialsId: 'zapier-metasfresh-build-notification-webhook', variable: 'zapier_WEBHOOK_SECRET')])
-  {
-    // the zapier secret contains a trailing slash and one that is somewhere in the middle.
-  	final zapierUrl = "https://hooks.zapier.com/hooks/catch/${zapier_WEBHOOK_SECRET}"
-
-    //input id: 'Zapier-input-ok', message: 'Were the external donstream builds OK?'
-    final def hook = registerWebhook()
-    echo "Waiting for POST to ${hook.getURL()}"
-
-  	/* we need to make sure we know "our own" MF_METASFRESH_VERSION, also if we were called by e.g. metasfresh-webui-api or metasfresh-webui--frontend */
-  	final jsonPayload = """{
-  			\"MF_UPSTREAM_BUILDNO\":\"${upstreamBuildNo}\",
-  			\"MF_UPSTREAM_BRANCH\":\"${upstreamBranch}\",
-  			\"MF_METASFRESH_VERSION\":\"${metasfreshVersion}\",
-  			\"MF_METASFRESH_PROCUREMENT_WEBUI_VERSION\":\"${metasfreshProcurementWebuiVersion}\",
-  			\"MF_METASFRESH_WEBUI_API_VERSION\":\"${metasfreshWebuiApiVersion}\",
-  			\"MF_METASFRESH_WEBUI_FRONTEND_VERSION\":\"${metasfreshWebuiFrontendVersion}\",
-  			\"MF_WEBHOOK_CALLBACK_URL\":\"${hook.getURL()}\"
-  	}"""
-
-  	nodeIfNeeded('linux')
-  	{
-  			sh "curl -X POST -d \'${jsonPayload}\' ${zapierUrl}";
-  	}
-
-    echo "Wait 30 minutes for the zapier-triggered downstream jobs to succeed or fail"
-    timeout(time: 30, unit: 'MINUTES')
-    {
-      final def message = waitForWebhook hook // to stop and wait, for someone to do e.g. curl -X POST -d 'OK' <hook-URL>
-      if(message != 'OK')
-      {
-        error "An external job that was invoked by zapier failed; message=${message}; hook-URL=${hook.getURL()}"
-      }
-    }
-  } // withCredentials
-}
-
 final String MF_UPSTREAM_BRANCH = params.MF_UPSTREAM_BRANCH ?: env.BRANCH_NAME
 echo "params.MF_UPSTREAM_BRANCH=${params.MF_UPSTREAM_BRANCH}; env.BRANCH_NAME=${env.BRANCH_NAME}; => MF_UPSTREAM_BRANCH=${MF_UPSTREAM_BRANCH}"
 
@@ -143,7 +43,6 @@ try
 {
 timestamps
 {
-
 	// https://github.com/metasfresh/metasfresh/issues/2110 make version/build infos more transparent
 	final String MF_VERSION=retrieveArtifactVersion(MF_UPSTREAM_BRANCH, env.BUILD_NUMBER)
 	currentBuild.displayName="artifact-version ${MF_VERSION}";
@@ -406,4 +305,116 @@ stage('Invoke downstream jobs')
     }
   }
   throw all
+}
+
+
+/**
+  *	collect the test results for the two preceeding stages. call this once to avoid counting the tests twice.
+  */
+void collectTestResultsAndMeasureCoverage()
+{
+  junit '**/target/surefire-reports/*.xml'
+
+  jacoco exclusionPattern: '**/src/main/java-gen' // collect coverage results for jenkins
+
+  aggregateAndUploadCoverageResultsForCodacy()
+}
+
+void aggregateAndUploadCoverageResultsForCodacy()
+{
+  withMaven(jdk: 'java-8', maven: 'maven-3.5.0', mavenLocalRepo: '.repository', mavenOpts: '-Xmx1536M')
+  {
+    sh 'mvn -f pom_for_jacoco_aggregate_coverage_report.xml -DoutputDirectory=jacoco-aggregate org.jacoco:jacoco-maven-plugin:0.7.9:report-aggregate'
+  }
+  withCredentials([string(credentialsId: 'codacy_project_token_for_metasfresh_repo', variable: 'CODACY_PROJECT_TOKEN')])
+  {
+    withEnv(['CODACY_PROJECT_TOKEN=${CODACY_PROJECT_TOKEN}'])
+    {
+      final String version='2.0.1'
+      sh "wget --quiet https://repo.metasfresh.com/service/local/repositories/mvn-3rdparty/content/com/codacy/codacy-coverage-reporter/${version}/codacy-coverage-reporter-${version}-assembly.jar"
+      sh "java -cp codacy-coverage-reporter-${version}-assembly.jar com.codacy.CodacyCoverageReporter -l Java -r ./target/site/jacoco-aggregate/jacoco.xml"
+    }
+  }
+}
+
+/**
+ * This method will be used further down to call additional jobs such as metasfresh-procurement and metasfresh-webui.
+ *
+ * @return the the build result's buildVariables (a map) which ususally also contain (to be set by our Jenkinsfiles):
+ * <li>{@code MF_BUILD_VERSION}: the version the maven artifacts were deployed with
+ * <li>{@code BUILD_ARTIFACT_URL}: the URL on our nexus repos from where one can download the "main" artifact that was build and deplyoed
+ *
+ */
+Map invokeDownStreamJobs(
+          final String buildId,
+          final String upstreamBranch,
+          final String parentPomVersion,
+          final String metasfreshVersion,
+          final boolean wait,
+          final String jobFolderName
+        )
+{
+  final def misc = new de.metas.jenkins.Misc();
+	final String jobName = misc.getEffectiveDownStreamJobName(jobFolderName, upstreamBranch);
+
+	final buildResult = build job: jobName,
+		parameters: [
+			string(name: 'MF_UPSTREAM_BRANCH', value: upstreamBranch),
+			string(name: 'MF_UPSTREAM_BUILDNO', value: buildId), // can be used together with the upstream branch name to construct this upstream job's URL
+			string(name: 'MF_UPSTREAM_VERSION', value: metasfreshVersion), // the downstream job shall use *this* metasfresh.version, as opposed to whatever is the latest at the time it runs
+			booleanParam(name: 'MF_TRIGGER_DOWNSTREAM_BUILDS', value: false) // the job shall just run but not trigger further builds because we are doing all the orchestration
+		], wait: wait
+
+	echo "Job invokation done; buildResult.getBuildVariables()=${buildResult.getBuildVariables()}"
+	return buildResult.getBuildVariables();
+}
+
+void invokeZapier(
+  final String upstreamBuildNo,
+  final String upstreamBranch,
+  final String metasfreshVersion,
+  final String metasfreshProcurementWebuiVersion,
+  final String metasfreshWebuiApiVersion,
+  final String metasfreshWebuiFrontendVersion
+    )
+{
+  // now that the "basic" build is done, notify zapier so we can do further things external to this jenkins instance
+  // note: even with "skiptodist=true we do this, because we still want to make the notifcations
+
+  echo "Going to notify external systems via zapier webhook"
+  withCredentials([string(credentialsId: 'zapier-metasfresh-build-notification-webhook', variable: 'zapier_WEBHOOK_SECRET')])
+  {
+    // the zapier secret contains a trailing slash and one that is somewhere in the middle.
+  	final zapierUrl = "https://hooks.zapier.com/hooks/catch/${zapier_WEBHOOK_SECRET}"
+
+    //input id: 'Zapier-input-ok', message: 'Were the external donstream builds OK?'
+    final def hook = registerWebhook()
+    echo "Waiting for POST to ${hook.getURL()}"
+
+  	/* we need to make sure we know "our own" MF_METASFRESH_VERSION, also if we were called by e.g. metasfresh-webui-api or metasfresh-webui--frontend */
+  	final jsonPayload = """{
+  			\"MF_UPSTREAM_BUILDNO\":\"${upstreamBuildNo}\",
+  			\"MF_UPSTREAM_BRANCH\":\"${upstreamBranch}\",
+  			\"MF_METASFRESH_VERSION\":\"${metasfreshVersion}\",
+  			\"MF_METASFRESH_PROCUREMENT_WEBUI_VERSION\":\"${metasfreshProcurementWebuiVersion}\",
+  			\"MF_METASFRESH_WEBUI_API_VERSION\":\"${metasfreshWebuiApiVersion}\",
+  			\"MF_METASFRESH_WEBUI_FRONTEND_VERSION\":\"${metasfreshWebuiFrontendVersion}\",
+  			\"MF_WEBHOOK_CALLBACK_URL\":\"${hook.getURL()}\"
+  	}"""
+
+  	nodeIfNeeded('linux')
+  	{
+  			sh "curl -X POST -d \'${jsonPayload}\' ${zapierUrl}";
+  	}
+
+    echo "Wait 30 minutes for the zapier-triggered downstream jobs to succeed or fail"
+    timeout(time: 30, unit: 'MINUTES')
+    {
+      final def message = waitForWebhook hook // to stop and wait, for someone to do e.g. curl -X POST -d 'OK' <hook-URL>
+      if(message != 'OK')
+      {
+        error "An external job that was invoked by zapier failed; message=${message}; hook-URL=${hook.getURL()}"
+      }
+    }
+  } // withCredentials
 }
