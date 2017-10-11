@@ -139,6 +139,7 @@ class DocList extends Component {
                             defaultViewId={includedView.viewId}
                             fetchQuickActionsOnInit={true}
                             processStatus={processStatus}
+                            isIncluded={true}
                             inBackground={false}
                             inModal={false}
                         />
