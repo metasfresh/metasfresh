@@ -41,6 +41,8 @@ Here come the actual release notes:
 * metasfresh-app
 
 * metasfresh.webui-frontend
+  * [#1221](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1221) Handling Unit Editor "Select all rows" missing
+    * Fixes the missing "Select all" Functionality in Handling Unit Editor.
   * [#1243](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1243) Opening a new included view is broken
     * Fix for the included view in Picking Window. Now working in Non-Modal Views too.
 
