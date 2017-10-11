@@ -32,6 +32,8 @@ Here come the actual release notes:
     * New Window for Scheduler Maintenance.
   * [#2691](https://github.com/metasfresh/metasfresh/issues/2691) Adjustments in Materialdispo Window in WebUI
     * Improved Materuia Dispo Window. Removed deprecated Fields and added Translations for en_US and de_DE Locale/ Language
+  * [#2694](https://github.com/metasfresh/metasfresh/issues/2694) Window Design Webui: Improvements in Dunning Type window
+    * New Translations added for Language en_US for Action and Referencelist.
   * [#2696](https://github.com/metasfresh/metasfresh/issues/2696) Window Design Webui: Add subscription details in Shipment Candidate window
     * New Fields for Subscription/ Flatrate Terms in Shipment Disposition Window. Improved Translations for en_US.
 
