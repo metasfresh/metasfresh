@@ -85,7 +85,10 @@ public class ADProcessDAO implements IADProcessDAO
 		else
 		{
 			// more then one AD_Process_IDs matched => return -1
-			return -1;
+			// we are logging a warning because it's not a common case.
+			final int adProcessId = -1;
+			logger.warn("retriveProcessIdByClassIfUnique: More then one AD_Process_ID found for {}: {} => considering {}", processClassname, processIds, adProcessId);
+			return adProcessId;
 		}
 	}
 
