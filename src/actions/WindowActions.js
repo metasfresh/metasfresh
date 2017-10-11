@@ -317,7 +317,7 @@ export function createWindow(
                     standardActions: response.data[0].standardActions,
                     validStatus: response.data[0].validStatus,
                     includedTabsInfo: response.data[0].includedTabsInfo,
-                    websocketEndpoint: response.data[0].websocketEndpoint
+                    websocket: response.data[0].websocketEndpoint
                 }));
 
                 if (isModal) {
