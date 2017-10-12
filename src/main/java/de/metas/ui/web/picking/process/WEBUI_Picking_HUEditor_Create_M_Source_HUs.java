@@ -1,8 +1,6 @@
 package de.metas.ui.web.picking.process;
 
-import org.adempiere.util.Services;
-
-import de.metas.handlingunits.sourcehu.ISourceHuService;
+import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.process.IProcessPrecondition;
 
 /*
@@ -44,11 +42,11 @@ public class WEBUI_Picking_HUEditor_Create_M_Source_HUs
 	@Override
 	protected String doIt() throws Exception
 	{
-		final ISourceHuService sourceHuService = Services.get(ISourceHuService.class);
+		final SourceHUsService sourceHuService = SourceHUsService.get();
 
 		retrieveEligibleHUEditorRows().forEach(
 				huEditorRow -> {
-					sourceHuService.addSourceHu(huEditorRow.getM_HU_ID());
+					sourceHuService.addSourceHuMarker(huEditorRow.getM_HU_ID());
 				});
 
 		invalidateViewsAndPrepareReturn();

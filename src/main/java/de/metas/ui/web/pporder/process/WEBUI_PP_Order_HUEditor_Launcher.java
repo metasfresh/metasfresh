@@ -15,7 +15,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.handlingunits.pporder.api.IHUPPOrderQtyDAO;
-import de.metas.handlingunits.sourcehu.ISourceHuService;
+import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;
@@ -88,12 +88,12 @@ public class WEBUI_PP_Order_HUEditor_Launcher
 		if (!singleSelectedRow.isIssue())
 		{
 			final String internalReason = StringUtils.formatMessage("The selected ppOrderLineRow is not an issue row; selectedRow={}", singleSelectedRow);
-			ProcessPreconditionsResolution.rejectWithInternalReason(internalReason);
+			return ProcessPreconditionsResolution.rejectWithInternalReason(internalReason);
 		}
 		if (singleSelectedRow.isProcessed())
 		{
 			final String internalReason = StringUtils.formatMessage("The selected ppOrderLineRow is already flagged as processed; selectedRow={}", singleSelectedRow);
-			ProcessPreconditionsResolution.rejectWithInternalReason(internalReason);
+			return ProcessPreconditionsResolution.rejectWithInternalReason(internalReason);
 		}
 		return ProcessPreconditionsResolution.accept();
 	}
@@ -132,7 +132,7 @@ public class WEBUI_PP_Order_HUEditor_Launcher
 		final IHUQueryBuilder huIdsToAvailableToIssueQuery = huppOrderBL.createHUsAvailableToIssueQuery(ppOrderBomLine);
 
 		final List<Integer> availableHUsIDs = huIdsToAvailableToIssueQuery.createQuery().listIds().stream()
-				.filter(huId -> !Services.get(ISourceHuService.class).isHuOrAnyParentMarkedAsSourceHu(huId))
+				.filter(huId -> !SourceHUsService.get().isHuOrAnyParentSourceHu(huId))
 				.filter(huId -> !Services.get(IHUPPOrderQtyDAO.class).isHuIdIssued(huId))
 				.collect(ImmutableList.toImmutableList());
 		return availableHUsIDs;

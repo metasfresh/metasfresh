@@ -29,8 +29,8 @@ import de.metas.handlingunits.model.I_PP_Order_BOMLine;
 import de.metas.handlingunits.model.I_PP_Order_Qty;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.handlingunits.pporder.api.IHUPPOrderQtyDAO;
-import de.metas.handlingunits.sourcehu.ISourceHuService;
-import de.metas.handlingunits.sourcehu.ISourceHuService.ActiveSourceHusQuery;
+import de.metas.handlingunits.sourcehu.SourceHUsService;
+import de.metas.handlingunits.sourcehu.SourceHUsService.MatchingSourceHusQuery;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.ImmutableTranslatableString;
@@ -171,11 +171,11 @@ public class PPOrderLinesLoader
 
 		final ImmutableList.Builder<PPOrderLineRow> result = ImmutableList.builder();
 
-		final ActiveSourceHusQuery sourceHusQuery = ActiveSourceHusQuery.builder()
+		final MatchingSourceHusQuery sourceHusQuery = MatchingSourceHusQuery.builder()
 				.productIds(issueProductIds)
 				.warehouseId(m_Warehouse_ID).build();
 
-		for (final I_M_HU sourceHu : Services.get(ISourceHuService.class).retrieveActiveHusthatAreMarkedAsSourceHu(sourceHusQuery))
+		for (final I_M_HU sourceHu : SourceHUsService.get().retrieveMatchingSourceHus(sourceHusQuery))
 		{
 			final HUEditorRow huEditorRow = huEditorRepo.retrieveForHUId(sourceHu.getM_HU_ID());
 			result.add(createRowForSourceHU(huEditorRow));

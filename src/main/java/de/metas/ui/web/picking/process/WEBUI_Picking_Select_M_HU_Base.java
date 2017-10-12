@@ -10,7 +10,7 @@ import org.adempiere.util.Services;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import de.metas.handlingunits.picking.IHUPickingSlotDAO;
-import de.metas.handlingunits.sourcehu.ISourceHuService;
+import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.process.ProcessPreconditionsResolution;
@@ -46,12 +46,12 @@ public abstract class WEBUI_Picking_Select_M_HU_Base extends ViewBasedProcessTem
 	{
 		final List<HUEditorRow> huEditorRows = getView().getByIds(getSelectedDocumentIds());
 		final IHUPickingSlotDAO huPickingSlotDAO = Services.get(IHUPickingSlotDAO.class);
-		final ISourceHuService sourceHuService = Services.get(ISourceHuService.class);
+		final SourceHUsService sourceHuService = SourceHUsService.get();
 
 		final Stream<HUEditorRow> stream = huEditorRows.stream()
 				.filter(huRow -> huRow.isTopLevel())
 				.filter(huRow -> huRow.isHUStatusActive())
-				.filter(huRow -> !sourceHuService.isHuMarkedAsSourceHu(huRow.getM_HU_ID())) // may not yet be a source-HU
+				.filter(huRow -> !sourceHuService.isSourceHu(huRow.getM_HU_ID())) // may not yet be a source-HU
 				.filter(huRow -> !huPickingSlotDAO.isHuIdPicked(huRow.getM_HU_ID()));
 
 		return stream;

@@ -2,9 +2,7 @@ package de.metas.ui.web.picking.process;
 
 import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_SELECT_SOURCE_HU;
 
-import org.adempiere.util.Services;
-
-import de.metas.handlingunits.sourcehu.ISourceHuService;
+import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.picking.pickingslot.PickingSlotRow;
@@ -61,7 +59,7 @@ public class WEBUI_Picking_M_Source_HU_Delete
 		final int huId = rowToProcess.getHuId();
 
 		// unselect the row we just deleted the record of, to avoid an 'EntityNotFoundException'
-		final boolean sourceWasDeleted = Services.get(ISourceHuService.class).removeSourceHu(huId);
+		final boolean sourceWasDeleted = SourceHUsService.get().deleteSourceHuMarker(huId);
 		if (sourceWasDeleted)
 		{
 			getView().invalidateAll();

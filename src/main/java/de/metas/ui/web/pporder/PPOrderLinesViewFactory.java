@@ -72,7 +72,7 @@ public class PPOrderLinesViewFactory implements IViewFactory
 				.referencingDocumentPaths(request.getReferencingDocumentPaths())
 				.ppOrderId(request.getSingleFilterOnlyId())
 				.asiAttributesProvider(ASIViewRowAttributesProvider.newInstance(asiRepository))
-				.additionalRelatedProcessDescriptors(createCdditionalRelatedProcessDescriptors())
+				.additionalRelatedProcessDescriptors(createAdditionalRelatedProcessDescriptors())
 				.build();
 	}
 
@@ -121,7 +121,7 @@ public class PPOrderLinesViewFactory implements IViewFactory
 				.build();
 	}
 
-	private List<RelatedProcessDescriptor> createCdditionalRelatedProcessDescriptors()
+	private List<RelatedProcessDescriptor> createAdditionalRelatedProcessDescriptors()
 	{
 		return ImmutableList.of(
 				createProcessDescriptorForIssueReceiptWindow(de.metas.ui.web.pporder.process.WEBUI_PP_Order_Receipt.class),
@@ -130,7 +130,8 @@ public class PPOrderLinesViewFactory implements IViewFactory
 				createProcessDescriptorForIssueReceiptWindow(de.metas.ui.web.pporder.process.WEBUI_PP_Order_ChangePlanningStatus_Review.class),
 				createProcessDescriptorForIssueReceiptWindow(de.metas.ui.web.pporder.process.WEBUI_PP_Order_ChangePlanningStatus_Complete.class),
 				createProcessDescriptorForIssueReceiptWindow(de.metas.ui.web.pporder.process.WEBUI_PP_Order_HUEditor_Launcher.class),
-				createProcessDescriptorForIssueReceiptWindow(de.metas.ui.web.pporder.process.WEBUI_PP_Order_M_Source_HU_Delete.class));
+				createProcessDescriptorForIssueReceiptWindow(de.metas.ui.web.pporder.process.WEBUI_PP_Order_M_Source_HU_Delete.class),
+				createProcessDescriptorForIssueReceiptWindow(de.metas.ui.web.pporder.process.WEBUI_PP_Order_M_Source_HU_IssueTuQty.class));
 	}
 
 	private static RelatedProcessDescriptor createProcessDescriptorForIssueReceiptWindow(@NonNull final Class<?> processClass)

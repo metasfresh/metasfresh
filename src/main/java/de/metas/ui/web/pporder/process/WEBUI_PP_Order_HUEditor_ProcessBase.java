@@ -8,7 +8,7 @@ import org.adempiere.util.Services;
 import org.compiere.Adempiere;
 
 import de.metas.handlingunits.pporder.api.IHUPPOrderQtyDAO;
-import de.metas.handlingunits.sourcehu.ISourceHuService;
+import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.ui.web.handlingunits.HUEditorProcessTemplate;
 import de.metas.ui.web.handlingunits.HUEditorRow;
 import de.metas.ui.web.handlingunits.HUEditorView;
@@ -29,12 +29,12 @@ public abstract class WEBUI_PP_Order_HUEditor_ProcessBase extends HUEditorProces
 
 	protected final static Stream<HUEditorRow> retrieveEligibleHUEditorRows(@NonNull final Stream<HUEditorRow> inputStream)
 	{
-		final ISourceHuService sourceHuService = Services.get(ISourceHuService.class);
+		final SourceHUsService sourceHuService = SourceHUsService.get();
 		final IHUPPOrderQtyDAO huPpOrderQtyDAO = Services.get(IHUPPOrderQtyDAO.class);
 
 		final Stream<HUEditorRow> resultStream = inputStream
 				.filter(huRow -> huRow.isHUStatusActive())
-				.filter(huRow -> !sourceHuService.isHuOrAnyParentMarkedAsSourceHu(huRow.getM_HU_ID()))
+				.filter(huRow -> !sourceHuService.isHuOrAnyParentSourceHu(huRow.getM_HU_ID()))
 				.filter(huRow -> !huPpOrderQtyDAO.isHuIdIssued(huRow.getM_HU_ID()));
 
 		return resultStream;

@@ -19,8 +19,8 @@ import de.metas.handlingunits.allocation.transfer.HUTransformService.HUsToNewTUs
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Source_HU;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
-import de.metas.handlingunits.sourcehu.ISourceHuService;
-import de.metas.handlingunits.sourcehu.ISourceHuService.ActiveSourceHusQuery;
+import de.metas.handlingunits.sourcehu.SourceHUsService;
+import de.metas.handlingunits.sourcehu.SourceHUsService.MatchingSourceHusQuery;
 import de.metas.handlingunits.storage.EmptyHUListener;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.Param;
@@ -77,7 +77,12 @@ public class WEBUI_PP_Order_M_Source_HU_IssueTuQty
 			return ProcessPreconditionsResolution.rejectWithInternalReason(internalReason);
 		}
 
-		// TODO check if we have a matching source HU
+		final List<I_M_Source_HU> sourceHus = retrieveActiveSourceHus(singleSelectedRow);
+		if (sourceHus.isEmpty())
+		{
+			final String internalReason = StringUtils.formatMessage("There are no sourceHU records for the selected row; row={}", singleSelectedRow);
+			return ProcessPreconditionsResolution.rejectWithInternalReason(internalReason);
+		}
 		return ProcessPreconditionsResolution.accept();
 	}
 
@@ -108,7 +113,7 @@ public class WEBUI_PP_Order_M_Source_HU_IssueTuQty
 				.doBeforeDestroyed(hu -> {
 					if (huId2SourceHu.containsKey(hu.getM_HU_ID()))
 					{
-						Services.get(ISourceHuService.class).snapshotSourceHU(huId2SourceHu.get(hu.getM_HU_ID()));
+						SourceHUsService.get().snapshotSourceHU(huId2SourceHu.get(hu.getM_HU_ID()));
 					}
 				}, "Create snapshot of source-HU before it is destroyed");
 
@@ -135,9 +140,9 @@ public class WEBUI_PP_Order_M_Source_HU_IssueTuQty
 	{
 		final I_PP_Order ppOrder = load(row.getPP_Order_ID(), I_PP_Order.class);
 
-		final ActiveSourceHusQuery query = ActiveSourceHusQuery.builder()
+		final MatchingSourceHusQuery query = MatchingSourceHusQuery.builder()
 				.productId(row.getM_Product_ID())
 				.warehouseId(ppOrder.getM_Warehouse_ID()).build();
-		return Services.get(ISourceHuService.class).retrieveActiveSourceHUs(query);
+		return SourceHUsService.get().retrieveMatchingSourceHuMarkers(query);
 	}
 }

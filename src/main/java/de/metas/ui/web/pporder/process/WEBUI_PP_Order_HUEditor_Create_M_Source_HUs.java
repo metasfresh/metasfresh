@@ -4,7 +4,7 @@ import static de.metas.ui.web.handlingunits.WEBUI_HU_Constants.MSG_WEBUI_SELECT_
 
 import org.adempiere.util.Services;
 
-import de.metas.handlingunits.sourcehu.ISourceHuService;
+import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.process.IProcessPrecondition;
@@ -62,11 +62,11 @@ public class WEBUI_PP_Order_HUEditor_Create_M_Source_HUs
 	@Override
 	protected String doIt() throws Exception
 	{
-		final ISourceHuService sourceHuService = Services.get(ISourceHuService.class);
+		final SourceHUsService sourceHuService = SourceHUsService.get();
 		
 		retrieveSelectedAndEligibleHUEditorRows().forEach(
 				huEditorRow -> {
-					sourceHuService.addSourceHu(huEditorRow.getM_HU_ID());
+					sourceHuService.addSourceHuMarker(huEditorRow.getM_HU_ID());
 				});
 
 		invalidateViewsAndPrepareReturn();
