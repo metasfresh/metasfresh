@@ -130,7 +130,8 @@ class Table extends Component {
             });
 
             this.deselectAllProducts();
-            showIncludedViewOnSelect && showIncludedViewOnSelect(false, {
+            showIncludedViewOnSelect && showIncludedViewOnSelect({
+                showIncludedView: false,
                 windowType: prevProps.windowType,
                 viewId: prevProps.viewid,
             });
@@ -142,7 +143,11 @@ class Table extends Component {
 
         this.deselectAllProducts();
         if (showIncludedViewOnSelect) {
-            showIncludedViewOnSelect(false, { windowType, viewId });
+            showIncludedViewOnSelect({
+                showIncludedView: false,
+                windowType,
+                viewId,
+            });
         }
     }
 
@@ -153,10 +158,12 @@ class Table extends Component {
         if (selected.length === 1) {
             rows.forEach((item) => {
                 if (item.id === selected[0]) {
-                    showIncludedViewOnSelect(
-                        item.supportIncludedViews,
-                        item.includedView,
-                    );
+                    showIncludedViewOnSelect({
+                        showIncludedView: item.supportIncludedViews,
+                        windowType: item.includedView.windowType ||
+                            item.includedView.windowId,
+                        viewId: item.includedView.viewId,
+                    });
                 }
             });
         }
@@ -376,7 +383,11 @@ class Table extends Component {
 
             this.deselectAllProducts();
             if (showIncludedViewOnSelect) {
-                showIncludedViewOnSelect(false, { windowType, viewId });
+                showIncludedViewOnSelect({
+                    showIncludedView: false,
+                    windowType,
+                    viewId,
+                });
             }
         }
     }
@@ -882,11 +893,14 @@ class Table extends Component {
                         }
                         onMouseDown={(e) => {
                             this.handleClick(e, item[keyProperty]);
-                            supportIncludedViewOnSelect &&
-                                showIncludedViewOnSelect(
-                                    item.supportIncludedViews,
-                                    item.includedView
-                                )
+                            if (supportIncludedViewOnSelect) {
+                                showIncludedViewOnSelect({
+                                    showIncludedView: item.supportIncludedViews,
+                                    windowType: item.includedView.windowType ||
+                                        item.includedView.windowId,
+                                    viewId: item.includedView.viewId,
+                                });
+                            }
                         }}
                         handleRightClick={(e, fieldName, supportZoomInto,
                                            supportFieldEdit) =>

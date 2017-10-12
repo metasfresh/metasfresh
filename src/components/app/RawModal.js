@@ -96,7 +96,10 @@ class RawModal extends Component {
 
         dispatch(closeRawModal());
         dispatch(closeModal());
-        dispatch(closeListIncludedView(windowType, viewId));
+        dispatch(closeListIncludedView({
+          windowType,
+          viewId,
+        }));
 
         if (!modalVisible){
             document.body.style.overflow = 'auto';

@@ -51,28 +51,39 @@ export default function listHandler(state = initialState, action) {
                 })
             });
 
-        case types.SET_LIST_INCLUDED_VIEW:
+        case types.SET_LIST_INCLUDED_VIEW: {
+            const { windowType, viewId } = action.payload;
+
             return Object.assign({}, state, {
                 includedView: Object.assign({}, state.includedView, {
-                    viewId: action.viewId,
-                    windowType: action.windowType
-                })
+                    viewId,
+                    windowType,
+                }),
             });
+        }
 
-        case types.CLOSE_LIST_INCLUDED_VIEW:
-            if ((state.includedView.windowType === action.windowType) &&
-                (state.includedView.viewId === action.viewId)
-            ) {
+        case types.CLOSE_LIST_INCLUDED_VIEW: {
+            const { windowType, viewId } = state.includedView;
+            const {
+                windowType: newWindowType,
+                viewId: newViewId,
+                forceClose,
+            } = action.payload;
+
+            if (forceClose || (
+                windowType === newWindowType && viewId === newViewId
+            )) {
                 // only close includedView if it hasn't changed since
                 return Object.assign({}, state, {
                     includedView: Object.assign({}, state.includedView, {
                         viewId: '',
                         windowType: null
-                    })
+                    }),
                 });
             } else {
                 return state;
             }
+        }
 
         default:
             return state;
