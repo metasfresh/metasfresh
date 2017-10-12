@@ -517,7 +517,7 @@ class DocumentList extends Component {
 
         // can't use setState callback because component might be unmounted and
         // callback is never called
-        if (!showIncludedView) {
+        if (!showIncludedView && data) {
             dispatch(closeListIncludedView(
                 data.windowId || data.windowType,
                 data.viewId,
