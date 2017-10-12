@@ -2,6 +2,7 @@ package de.metas.ui.web.window.descriptor.sql;
 
 import org.adempiere.ad.expression.api.IStringExpression;
 
+import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterDecoratorProvider;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverters;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConvertersList;
 
@@ -32,9 +33,9 @@ public interface SqlEntityBinding
 	String getTableName();
 
 	String getTableAlias();
-	
+
 	String getKeyColumnName();
-	
+
 	IStringExpression getSqlWhereClause();
 
 	/** @return field binding or throws exception in case it was not found */
@@ -50,5 +51,10 @@ public interface SqlEntityBinding
 	default SqlDocumentFilterConvertersList getFilterConverters()
 	{
 		return SqlDocumentFilterConverters.emptyList();
+	}
+
+	default SqlDocumentFilterConverterDecoratorProvider getFilterConverterDecoratorProvider()
+	{
+		return new SqlDocumentFilterConverterDecoratorProvider();
 	}
 }

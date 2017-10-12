@@ -10,12 +10,15 @@ import java.util.function.Supplier;
 
 import org.adempiere.ad.expression.api.NullStringExpression;
 import org.compiere.util.CCache;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMap.Builder;
 
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptorsProvider;
+import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterDecoratorProvider;
 import de.metas.ui.web.view.CreateViewRequest.DocumentFiltersList;
 import de.metas.ui.web.view.descriptor.SqlViewBinding;
 import de.metas.ui.web.view.descriptor.SqlViewGroupingBinding;
@@ -69,10 +72,24 @@ import lombok.Value;
 @Service
 public class SqlViewFactory implements IViewFactory
 {
-	@Autowired
-	private DocumentDescriptorFactory documentDescriptorFactory;
-	@Autowired
-	private DocumentReferencesService documentReferencesService;
+	private final DocumentDescriptorFactory documentDescriptorFactory;
+
+	private final DocumentReferencesService documentReferencesService;
+
+	private final ImmutableMap<WindowId, SqlDocumentFilterConverterDecoratorProvider> windowId2CustomConverter;
+
+	public SqlViewFactory(
+			@NonNull final DocumentDescriptorFactory documentDescriptorFactory,
+			@NonNull final DocumentReferencesService documentReferencesService,
+			@NonNull final Collection<WindowSpecificSqlDocumentFilterConverterDecoratorProvider> windowSpecificSqlDocumentFilterConverters)
+	{
+		this.documentDescriptorFactory = documentDescriptorFactory;
+		this.documentReferencesService = documentReferencesService;
+
+		final Builder<WindowId, SqlDocumentFilterConverterDecoratorProvider> builder = ImmutableMap.builder();
+		windowSpecificSqlDocumentFilterConverters.forEach(c -> builder.put(c.getWindowId(), c.getConverter()));
+		windowId2CustomConverter = builder.build();
+	}
 
 	@Value
 	private static final class SqlViewBindingKey
@@ -173,7 +190,7 @@ public class SqlViewFactory implements IViewFactory
 		}
 	}
 
-	private SqlViewBinding getViewBinding(final SqlViewBindingKey key)
+	private SqlViewBinding getViewBinding(@NonNull final SqlViewBindingKey key)
 	{
 		return viewBindings.getOrLoad(key, () -> createViewBinding(key));
 	}
@@ -204,6 +221,11 @@ public class SqlViewFactory implements IViewFactory
 				.setOrderBys(entityBinding.getDefaultOrderBys())
 				.setGroupingBinding(groupingBinding);
 
+		if (windowId2CustomConverter.containsKey(key.getWindowId()))
+		{
+			builder.setFilterConverterDecoratorProvider(windowId2CustomConverter.get(key.getWindowId()));
+		}
+		
 		entityBinding.getFields()
 				.stream()
 				.map(documentField -> createViewFieldBinding(documentField, displayFieldNames))

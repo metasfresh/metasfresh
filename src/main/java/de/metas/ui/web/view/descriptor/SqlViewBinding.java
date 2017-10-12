@@ -24,6 +24,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.document.filter.NullDocumentFilterDescriptorsProvider;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverter;
+import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterDecoratorProvider;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverters;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConvertersList;
 import de.metas.ui.web.view.ViewEvaluationCtx;
@@ -76,15 +77,15 @@ public class SqlViewBinding implements SqlEntityBinding
 
 	private final ImmutableList<DocumentQueryOrderBy> defaultOrderBys;
 	private final DocumentFilterDescriptorsProvider viewFilterDescriptors;
-	private final SqlDocumentFilterConvertersList viewFilterConverters;
+	private final SqlDocumentFilterConvertersList filterConverters;
 
 	private final SqlViewRowIdsConverter rowIdsConverter;
 
 	private final SqlViewGroupingBinding groupingBinding;
+	private final SqlDocumentFilterConverterDecoratorProvider filterConverterDecoratorProvider;
 
 	private SqlViewBinding(final Builder builder)
 	{
-		super();
 		_tableName = builder.getTableName();
 		_tableAlias = builder.getTableAlias();
 
@@ -151,8 +152,10 @@ public class SqlViewBinding implements SqlEntityBinding
 
 		defaultOrderBys = ImmutableList.copyOf(builder.getDefaultOrderBys());
 		viewFilterDescriptors = builder.getViewFilterDescriptors();
-		viewFilterConverters = builder.buildViewFilterConverters();
-		
+		filterConverters = builder.buildViewFilterConverters();
+
+		filterConverterDecoratorProvider = builder.sqlDocumentFilterConverterDecoratorProvider;
+
 		rowIdsConverter = builder.getRowIdsConverter();
 	}
 
@@ -253,9 +256,15 @@ public class SqlViewBinding implements SqlEntityBinding
 	@Override
 	public SqlDocumentFilterConvertersList getFilterConverters()
 	{
-		return viewFilterConverters;
+		return filterConverters;
 	}
-	
+
+	@Override
+	public SqlDocumentFilterConverterDecoratorProvider getFilterConverterDecoratorProvider()
+	{
+		return filterConverterDecoratorProvider;
+	}
+
 	public SqlViewRowIdsConverter getRowIdsConverter()
 	{
 		return rowIdsConverter;
@@ -341,11 +350,11 @@ public class SqlViewBinding implements SqlEntityBinding
 		private List<DocumentQueryOrderBy> defaultOrderBys;
 		private DocumentFilterDescriptorsProvider viewFilterDescriptors = NullDocumentFilterDescriptorsProvider.instance;
 		private SqlDocumentFilterConvertersList.Builder viewFilterConverters = null;
-		
+
 		private SqlViewRowIdsConverter rowIdsConverter = DefaultSqlViewRowIdsConverter.instance;
 
-
 		private SqlViewGroupingBinding groupingBinding;
+		private SqlDocumentFilterConverterDecoratorProvider sqlDocumentFilterConverterDecoratorProvider = new SqlDocumentFilterConverterDecoratorProvider();
 
 		private Builder()
 		{
@@ -469,7 +478,9 @@ public class SqlViewBinding implements SqlEntityBinding
 			return viewFilterDescriptors;
 		}
 
-		public Builder addViewFilterConverter(final String filterId, final SqlDocumentFilterConverter converter)
+		public Builder addFilterConverter(
+				@NonNull final String filterId,
+				@NonNull final SqlDocumentFilterConverter converter)
 		{
 			if (viewFilterConverters == null)
 			{
@@ -487,13 +498,13 @@ public class SqlViewBinding implements SqlEntityBinding
 			}
 			return viewFilterConverters.build();
 		}
-		
+
 		public Builder setRowIdsConverter(@NonNull SqlViewRowIdsConverter rowIdsConverter)
 		{
 			this.rowIdsConverter = rowIdsConverter;
 			return this;
 		}
-		
+
 		private SqlViewRowIdsConverter getRowIdsConverter()
 		{
 			return rowIdsConverter;
@@ -502,6 +513,13 @@ public class SqlViewBinding implements SqlEntityBinding
 		public Builder setGroupingBinding(SqlViewGroupingBinding groupingBinding)
 		{
 			this.groupingBinding = groupingBinding;
+			return this;
+		}
+
+		public Builder setFilterConverterDecoratorProvider(
+				@NonNull final SqlDocumentFilterConverterDecoratorProvider sqlDocumentFilterConverterDecoratorProvider)
+		{
+			this.sqlDocumentFilterConverterDecoratorProvider = sqlDocumentFilterConverterDecoratorProvider;
 			return this;
 		}
 	}
