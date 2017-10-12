@@ -41,13 +41,13 @@ import lombok.NonNull;
  */
 
 @Service
-public class PickingCandidateCommand
+public class PickingCandidateService
 {
 	private final HuId2SourceHUsService sourceHUsRepository;
 
 	private PickingCandidateRepository pickingCandidateRepository;
 
-	public PickingCandidateCommand(
+	public PickingCandidateService(
 			@NonNull final PickingCandidateRepository pickingCandidateRepository,
 			@NonNull final HuId2SourceHUsService sourceHUsRepository)
 	{
