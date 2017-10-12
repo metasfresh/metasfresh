@@ -36,16 +36,16 @@ public class ValidationRuleFactory implements IValidationRuleFactory
 	private static final int ROWINDEX_None = -1;
 
 	private final Map<String, CopyOnWriteArrayList<IValidationRule>> tableRulesMap = new ConcurrentHashMap<>();
-	
+
 	private final Map<String, IValidationRule> classname2rulesCache = new ConcurrentHashMap<>();
 
 	@Override
-	public void registerTableValidationRule(final String tableName, IValidationRule rule)
+	public void registerTableValidationRule(final String tableName, final IValidationRule rule)
 	{
 		Check.assume(rule != null, "rule not null");
-		
+
 		final boolean added = tableRulesMap
-				.computeIfAbsent(tableName, key->new CopyOnWriteArrayList<>())
+				.computeIfAbsent(tableName, key -> new CopyOnWriteArrayList<>())
 				.addIfAbsent(rule);
 		if (added)
 		{
@@ -60,7 +60,7 @@ public class ValidationRuleFactory implements IValidationRuleFactory
 
 		//
 		// Add primary validation rule
-		if(adValRuleId > 0)
+		if (adValRuleId > 0)
 		{
 			final I_AD_Val_Rule valRule = Services.get(IValidationRuleDAO.class).retriveValRule(adValRuleId);
 			final IValidationRule validationRule = create(tableName, valRule);
@@ -111,7 +111,7 @@ public class ValidationRuleFactory implements IValidationRuleFactory
 			logger.warn("No Classname found for {}", valRule.getName());
 			return NullValidationRule.instance;
 		}
-		
+
 		return classname2rulesCache.computeIfAbsent(classname, newClassname -> Util.getInstance(IValidationRule.class, newClassname));
 	}
 
@@ -120,16 +120,16 @@ public class ValidationRuleFactory implements IValidationRuleFactory
 	{
 		final String name = null; // N/A
 		return createSQLValidationRule(name, whereClause);
-		
+
 	}
-	
+
 	public IValidationRule createSQLValidationRule(final String name, final String whereClause)
 	{
 		if (Check.isEmpty(whereClause, true))
 		{
 			return NullValidationRule.instance;
 		}
-		
+
 		return new SQLValidationRule(name, whereClause);
 	}
 
@@ -152,7 +152,7 @@ public class ValidationRuleFactory implements IValidationRuleFactory
 		{
 			return ImmutableList.of();
 		}
-		
+
 		return ImmutableList.copyOf(rules);
 	}
 
@@ -243,5 +243,4 @@ public class ValidationRuleFactory implements IValidationRuleFactory
 	{
 		return new EvaluateeValidationContext(evaluatee);
 	}
-
 }
