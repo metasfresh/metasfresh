@@ -1,4 +1,4 @@
-package de.metas.fresh.picking.service;
+package de.metas.picking.service;
 
 /*
  * #%L
@@ -29,7 +29,6 @@ import java.util.Properties;
 
 import org.adempiere.util.ISingletonService;
 
-import de.metas.fresh.picking.form.IFreshPackingItem;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 

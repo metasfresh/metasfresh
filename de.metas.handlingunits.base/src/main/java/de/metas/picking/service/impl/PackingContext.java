@@ -1,4 +1,4 @@
-package de.metas.fresh.picking.service.impl;
+package de.metas.picking.service.impl;
 
 /*
  * #%L
@@ -27,7 +27,7 @@ import java.util.Properties;
 
 import org.adempiere.util.Check;
 
-import de.metas.fresh.picking.service.IPackingContext;
+import de.metas.picking.service.IPackingContext;
 import de.metas.picking.service.PackingItemsMap;
 
 public class PackingContext implements IPackingContext
