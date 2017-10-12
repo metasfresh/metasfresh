@@ -54,4 +54,6 @@ public interface IHUPPOrderQtyDAO extends ISingletonService
 	{
 		return retrieveOrderQtys(ppOrderId).stream();
 	}
+
+	boolean isHuIdIssued(int huId);
 }

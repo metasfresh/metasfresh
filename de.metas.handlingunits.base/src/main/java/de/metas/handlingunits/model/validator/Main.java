@@ -70,6 +70,7 @@ import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.handlingunits.model.I_M_PickingSlot_HU;
 import de.metas.handlingunits.model.I_M_Picking_Candidate;
 import de.metas.handlingunits.model.I_M_Source_HU;
+import de.metas.handlingunits.model.I_PP_Order_Qty;
 import de.metas.handlingunits.ordercandidate.spi.impl.OLCandPIIPListener;
 import de.metas.handlingunits.ordercandidate.spi.impl.OLCandPIIPValidator;
 import de.metas.handlingunits.picking.interceptor.M_ShipmentSchedule_QtyPicked;
@@ -167,6 +168,8 @@ public final class Main extends AbstractModuleInterceptor
 		// 08743: M_ShipperTransportation
 		engine.addModelValidator(new M_ShipperTransportation(), client);
 
+		engine.addModelValidator(de.metas.handlingunits.sourcehu.interceptor.M_HU.INSTANCE, client);
+		
 		//
 		// 08255: M_ShipmentSchedule update qtys
 		programaticCalloutProvider.registerAnnotatedCallout(de.metas.handlingunits.inoutcandidate.callout.M_ShipmentSchedule.instance);
@@ -267,8 +270,11 @@ public final class Main extends AbstractModuleInterceptor
 		cacheMgt.enableRemoteCacheInvalidationForTableName(I_M_HU_PackingMaterial.Table_Name);
 
 		cacheMgt.enableRemoteCacheInvalidationForTableName(I_M_Source_HU.Table_Name);
-		cacheMgt.enableRemoteCacheInvalidationForTableName(I_M_Picking_Candidate.Table_Name);
+
+		cacheMgt.enableRemoteCacheInvalidationForTableName(I_PP_Order_Qty.Table_Name);
+
 		cacheMgt.enableRemoteCacheInvalidationForTableName(I_M_PickingSlot_HU.Table_Name);
+		cacheMgt.enableRemoteCacheInvalidationForTableName(I_M_Picking_Candidate.Table_Name);
 	}
 
 	/**

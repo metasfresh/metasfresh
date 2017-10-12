@@ -1,16 +1,11 @@
 package de.metas.handlingunits.picking.impl.HUPickingSlotBLs;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
-import java.util.TreeSet;
 import java.util.function.Predicate;
 
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IMutable;
-
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableList;
 
 import de.metas.handlingunits.HUIteratorListenerAdapter;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -19,6 +14,7 @@ import de.metas.handlingunits.impl.HUIterator;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.picking.IHUPickingSlotDAO;
 import de.metas.handlingunits.picking.impl.HUPickingSlotBL;
+import de.metas.handlingunits.sourcehu.SourceHUsService;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
@@ -57,8 +53,11 @@ public class RetrieveAvailableHUsToPickFilters
 {
 
 	private static final Predicate<I_M_HU> NOT_PICKED_NOT_SOURCE_HU = hu -> {
+
 		final IHUPickingSlotDAO huPickingSlotDAO = Services.get(IHUPickingSlotDAO.class);
-		return !huPickingSlotDAO.isHuIdPicked(hu.getM_HU_ID()) && !huPickingSlotDAO.isSourceHU(hu.getM_HU_ID());
+		final SourceHUsService sourceHuService = SourceHUsService.get();
+
+		return !huPickingSlotDAO.isHuIdPicked(hu.getM_HU_ID()) && !sourceHuService.isSourceHu(hu.getM_HU_ID());
 	};
 
 	/**
@@ -125,33 +124,4 @@ public class RetrieveAvailableHUsToPickFilters
 		}
 		return result;
 	}
-
-	@VisibleForTesting
-	public List<I_M_HU> retrieveTopLevelAndFilterForActualSourceHUs(@NonNull final List<I_M_HU> vhus)
-	{
-		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-		final IHUPickingSlotDAO huPickingSlotDAO = Services.get(IHUPickingSlotDAO.class);
-
-		final TreeSet<I_M_HU> sourceHUs = new TreeSet<>(Comparator.comparing(I_M_HU::getM_HU_ID));
-
-		//
-		// this filter's real job is to collect those HUs that are flagged as "picking source"
-		final Predicate<I_M_HU> filter = hu -> {
-			if (huPickingSlotDAO.isSourceHU(hu.getM_HU_ID()))
-			{
-				sourceHUs.add(hu);
-			}
-			return true;
-		};
-
-		final TopLevelHusQuery topLevelHusRequest = TopLevelHusQuery.builder()
-				.hus(vhus)
-				.includeAll(false)
-				.filter(filter)
-				.build();
-		handlingUnitsBL.getTopLevelHUs(topLevelHusRequest);
-
-		return ImmutableList.copyOf(sourceHUs);
-	}
-
 }

@@ -192,19 +192,13 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 				final IHUStorage storage = storageFactory.getStorage(currentHU);
 				if (storage.isEmpty())
 				{
+					huContext.getEmptyHUListeners().forEach(l -> l.beforeDestroyEmptyHu(currentHU));
+
 					//
 					// In case the current HU is the one that we got as parameter (i.e. huToDestroy)
-					// then we need to check if parent got empty after our removal and in that case, destroy it.
+					// then we need to check if its parent becomes empty after our removal and in that case, destroy it.
 					// else do nothing because destroying is performed recursively here.
-					final boolean destroyOldParentIfEmptyStorage;
-					if (huIterator.getDepth() == IHUIterator.DEPTH_STARTING_HU)
-					{
-						destroyOldParentIfEmptyStorage = true;
-					}
-					else
-					{
-						destroyOldParentIfEmptyStorage = false;
-					}
+					final boolean destroyOldParentIfEmptyStorage = huIterator.getDepth() == IHUIterator.DEPTH_STARTING_HU;
 
 					//
 					// Take out currentHU from it's parent
@@ -216,12 +210,10 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 					// Mark current HU as destroyed
 					markDestroyed(huContext, currentHU);
 				}
-
 				return Result.CONTINUE;
 			}
 
 		});
-
 		iterator.iterateInTrx(Collections.singleton(huToDestroy));
 
 		return isDestroyed(huToDestroy);

@@ -17,9 +17,10 @@ import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsBL.TopLevelHusQuery;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
-import de.metas.handlingunits.picking.IHUPickingSlotDAO;
 import de.metas.handlingunits.picking.IHUPickingSlotBL.PickingHUsQuery;
+import de.metas.handlingunits.picking.IHUPickingSlotDAO;
 import de.metas.handlingunits.picking.impl.HUPickingSlotBL;
+import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.storage.IStorageEngine;
@@ -43,11 +44,11 @@ import lombok.experimental.UtilityClass;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -73,7 +74,7 @@ public class RetrieveAvailableHUsToPick
 		}
 
 		final List<I_M_HU> vhus = retrieveVHUsFromStorage(
-				query.getShipmentSchedules(), 
+				query.getShipmentSchedules(),
 				query.isOnlyIfAttributesMatchWithShipmentSchedules());
 
 		final List<I_M_HU> result = vhuToEndResultFunction.apply(vhus);
@@ -109,7 +110,7 @@ public class RetrieveAvailableHUsToPick
 		final IStorageEngine storageEngine = storageEngineProvider.getStorageEngine();
 		final IContextAware context = PlainContextAware.createUsingOutOfTransaction();
 		final Collection<IStorageRecord> storageRecords = storageEngine.retrieveStorageRecords(context, storageQueries);
-		
+
 		//
 		// Fetch VHUs from storage records
 		final List<I_M_HU> vhus = new ArrayList<>();
@@ -139,10 +140,17 @@ public class RetrieveAvailableHUsToPick
 		}
 
 		final IHUPickingSlotDAO huPickingSlotDAO = Services.get(IHUPickingSlotDAO.class);
-		if (huPickingSlotDAO.isHuIdPicked(vhu.getM_HU_ID()) && huPickingSlotDAO.isSourceHU(vhu.getM_HU_ID()))
+		if (huPickingSlotDAO.isHuIdPicked(vhu.getM_HU_ID()))
 		{
 			return;
 		}
+
+		final SourceHUsService sourceHuService = SourceHUsService.get();
+		if (sourceHuService.isSourceHu(vhu.getM_HU_ID()))
+		{
+			return;
+		}
+
 		vhus.add(vhu);
 	}
 }

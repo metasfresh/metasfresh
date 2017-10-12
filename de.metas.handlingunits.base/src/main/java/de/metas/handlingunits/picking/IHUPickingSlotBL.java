@@ -23,11 +23,8 @@ package de.metas.handlingunits.picking;
  */
 
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.adempiere.util.ISingletonService;
-import org.adempiere.util.Services;
 
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
@@ -36,12 +33,10 @@ import de.metas.handlingunits.model.I_M_PickingSlot_HU;
 import de.metas.handlingunits.model.I_M_PickingSlot_Trx;
 import de.metas.handlingunits.model.I_M_Source_HU;
 import de.metas.handlingunits.model.X_M_HU;
-import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.picking.api.IPickingSlotBL;
 import lombok.Builder.Default;
 import lombok.NonNull;
-import lombok.Singular;
 
 /**
  * Note: Please use this interface in this module instead of {@link IPickingSlotBL}.
@@ -199,41 +194,5 @@ public interface IHUPickingSlotBL extends IPickingSlotBL, ISingletonService
 		 */
 		@Default
 		boolean onlyTopLevelHUs = true;
-	}
-
-	/**
-	 * Returns those fine picking source HUs whose location and product match any the given query.
-	 * 
-	 * @param query
-	 * @return
-	 */
-	List<I_M_HU> retrieveActiveSourceHUs(RetrieveActiveSourceHusQuery query);
-
-	/**
-	 * Specifies which source HUs (products and warehouse) to retrieve in particular
-	 */
-	@lombok.Value
-	class RetrieveActiveSourceHusQuery
-	{
-		/**
-		 * Query for HUs that have any of the given product IDs. Empty means that no HUs will be found.
-		 */
-		@Singular
-		Set<Integer> productIds;
-
-		int warehouseId;
-
-		/**
-		 * @param shipmentSchedules the schedules to make the new instance from; may not be {@code null}. Empty means that no HUs will be found.
-		 */
-		public static RetrieveActiveSourceHusQuery fromShipmentSchedules(@NonNull final List<I_M_ShipmentSchedule> shipmentSchedules)
-		{
-			final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
-			final Set<Integer> productIds = shipmentSchedules.stream().map(s -> s.getM_Product_ID()).collect(Collectors.toSet());
-
-			final int effectiveWarehouseId = shipmentSchedules.isEmpty() ? -1 : shipmentScheduleEffectiveBL.getWarehouseId(shipmentSchedules.get(0));
-
-			return new RetrieveActiveSourceHusQuery(productIds, effectiveWarehouseId);
-		}
 	}
 }

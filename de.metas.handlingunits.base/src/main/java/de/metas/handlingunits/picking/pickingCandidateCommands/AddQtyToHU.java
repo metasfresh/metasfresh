@@ -81,7 +81,7 @@ public class AddQtyToHU
 
 		final int shipmentScheduleId = addQtyToHURequest.getShipmentScheduleId();
 		final int pickingSlotId = addQtyToHURequest.getPickingSlotId();
-		final int huId = addQtyToHURequest.getHuId();
+		final int huId = addQtyToHURequest.getTargetHuId();
 
 		final I_M_ShipmentSchedule shipmentSchedule = load(shipmentScheduleId, I_M_ShipmentSchedule.class);
 		final I_M_Product product = shipmentSchedule.getM_Product();
