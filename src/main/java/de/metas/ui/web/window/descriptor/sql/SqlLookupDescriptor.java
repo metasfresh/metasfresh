@@ -1,5 +1,8 @@
 package de.metas.ui.web.window.descriptor.sql;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -277,7 +280,8 @@ public final class SqlLookupDescriptor implements LookupDescriptor
 		private boolean numericKey;
 		private Set<String> dependsOnFieldNames;
 
-		private IValidationRule validationRule = NullValidationRule.instance;
+		private List<IValidationRule> validationRules = new ArrayList<>();
+		private IValidationRule validationRuleEffective = NullValidationRule.instance;
 		private String sqlTableName;
 		private ICachedStringExpression sqlForFetchingExpression;
 		private ICachedStringExpression sqlForFetchingDisplayNameByIdExpression;
@@ -294,7 +298,7 @@ public final class SqlLookupDescriptor implements LookupDescriptor
 		{
 			Check.assumeNotNull(displayType, "Parameter displayType is not null");
 
-			return buildProvider(columnName, widgetType, displayType, AD_Reference_Value_ID, AD_Val_Rule_ID);
+			return buildProvider(columnName, widgetType, displayType, AD_Reference_Value_ID, AD_Val_Rule_ID, validationRules);
 		}
 
 		public LookupDescriptor buildForScope(final LookupScope scope)
@@ -308,11 +312,11 @@ public final class SqlLookupDescriptor implements LookupDescriptor
 		}
 
 		private static LookupDescriptorProvider buildProvider(
-				final String sqlColumnName //
-				, final DocumentFieldWidgetType widgetType, final int displayType //
-				, final int AD_Reference_Value_ID //
-				, final int AD_Val_Rule_ID //
-		)
+				final String sqlColumnName,
+				final DocumentFieldWidgetType widgetType, final int displayType,
+				final int AD_Reference_Value_ID,
+				final int AD_Val_Rule_ID,
+				final List<IValidationRule> additionalValidationRules)
 		{
 			if (widgetType == DocumentFieldWidgetType.ProcessButton)
 			{
@@ -328,6 +332,7 @@ public final class SqlLookupDescriptor implements LookupDescriptor
 						.setAD_Reference_Value_ID(AD_Reference_Value_ID)
 						.setAD_Val_Rule_ID(AD_Val_Rule_ID)
 						.setScope(scope)
+						.addValidationRules(additionalValidationRules)
 						.build());
 			}
 			return LookupDescriptorProvider.NULL;
@@ -342,40 +347,50 @@ public final class SqlLookupDescriptor implements LookupDescriptor
 			if (displayType == DisplayType.PAttribute && AD_Reference_Value_ID <= 0)
 			{
 				numericKey = true;
-				setSqlExpressions_PAttribute(columnName);
-				validationRule = NullValidationRule.instance;
+				validationRuleEffective = NullValidationRule.instance;
 				dependsOnFieldNames = ImmutableSet.of();
+				setSqlExpressions_PAttribute();
 			}
 			else
 			{
 				final MLookupInfo lookupInfo = MLookupFactory.getLookupInfo(WINDOWNO_Dummy, displayType, columnName, AD_Reference_Value_ID, IsParent, AD_Val_Rule_ID);
 
 				numericKey = lookupInfo.isNumericKey();
-				setSqlExpressions(lookupInfo);
-				validationRule = lookupInfo.getValidationRule();
-
-				//
-				// Case: DocAction button => inject the DocActionValidationRule
-				// FIXME: hardcoded
-				if (displayType == DisplayType.Button && WindowConstants.FIELDNAME_DocAction.equals(columnName))
-				{
-					validationRule = CompositeValidationRule.compose(validationRule, DocActionValidationRule.instance);
-				}
-
+				validationRuleEffective = extractValidationRule(lookupInfo);
 				dependsOnFieldNames = ImmutableSet.<String> builder()
-						.addAll(validationRule.getPrefilterWhereClause().getParameterNames())
-						.addAll(validationRule.getPostQueryFilter().getParameters())
+						.addAll(validationRuleEffective.getPrefilterWhereClause().getParameterNames())
+						.addAll(validationRuleEffective.getPostQueryFilter().getParameters())
 						.build();
+				setSqlExpressions(lookupInfo);
 			}
 
 			return new SqlLookupDescriptor(this);
+		}
+
+		private IValidationRule extractValidationRule(final MLookupInfo lookupInfo)
+		{
+			final CompositeValidationRule.Builder validationRuleBuilder = CompositeValidationRule.builder();
+			validationRuleBuilder.add(lookupInfo.getValidationRule());
+
+			//
+			// Case: DocAction button => inject the DocActionValidationRule
+			// FIXME: hardcoded
+			if (displayType == DisplayType.Button && WindowConstants.FIELDNAME_DocAction.equals(columnName))
+			{
+				validationRuleBuilder.add(DocActionValidationRule.instance);
+			}
+
+			// Additional validation rules registered
+			validationRules.forEach(validationRuleBuilder::add);
+
+			return validationRuleBuilder.build();
 		}
 
 		private void setSqlExpressions(final MLookupInfo lookupInfo)
 		{
 			//
 			// WHERE
-			final IStringExpression sqlWhereFinal = buildSqlWhere(lookupInfo, scope);
+			final IStringExpression sqlWhereFinal = buildSqlWhere(lookupInfo, scope, validationRuleEffective);
 
 			//
 			// ORDER BY
@@ -402,7 +417,7 @@ public final class SqlLookupDescriptor implements LookupDescriptor
 			}
 		}
 
-		private void setSqlExpressions_PAttribute(final String columnName)
+		private void setSqlExpressions_PAttribute()
 		{
 			final String tableName = I_M_AttributeSetInstance.Table_Name;
 			final String keyColumnNameFQ = tableName + "." + I_M_AttributeSetInstance.COLUMNNAME_M_AttributeSetInstance_ID;
@@ -420,7 +435,7 @@ public final class SqlLookupDescriptor implements LookupDescriptor
 			final CompositeStringExpression.Builder sqlWhereFinal = IStringExpression.composer();
 			{
 				// Validation Rule's WHERE
-				final IStringExpression validationRuleWhereClause = buildSqlWhereClauseFromValidationRule(validationRule, scope);
+				final IStringExpression validationRuleWhereClause = buildSqlWhereClauseFromValidationRule(validationRuleEffective, scope);
 				if (!validationRuleWhereClause.isNullExpression())
 				{
 					sqlWhereFinal.appendIfNotEmpty("\n AND ");
@@ -465,7 +480,7 @@ public final class SqlLookupDescriptor implements LookupDescriptor
 			}
 		}
 
-		private static final IStringExpression buildSqlWhere(final MLookupInfo lookupInfo, final LookupScope scope)
+		private static final IStringExpression buildSqlWhere(final MLookupInfo lookupInfo, final LookupScope scope, final IValidationRule validationRuleEffective)
 		{
 			final String tableName = lookupInfo.getTableName();
 			final String lookup_SqlWhere = lookupInfo.getWhereClauseSqlPart();
@@ -480,7 +495,7 @@ public final class SqlLookupDescriptor implements LookupDescriptor
 			}
 
 			// Validation Rule's WHERE
-			final IStringExpression validationRuleWhereClause = buildSqlWhereClauseFromValidationRule(lookupInfo.getValidationRule(), scope);
+			final IStringExpression validationRuleWhereClause = buildSqlWhereClauseFromValidationRule(validationRuleEffective, scope);
 			if (!validationRuleWhereClause.isNullExpression())
 			{
 				sqlWhereFinal.appendIfNotEmpty("\n AND ");
@@ -555,7 +570,7 @@ public final class SqlLookupDescriptor implements LookupDescriptor
 
 		private INamePairPredicate getPostQueryPredicate()
 		{
-			final INamePairPredicate postQueryPredicate = validationRule.getPostQueryFilter();
+			final INamePairPredicate postQueryPredicate = validationRuleEffective.getPostQueryFilter();
 			if (postQueryPredicate == null)
 			{
 				return INamePairPredicate.NULL;
@@ -650,6 +665,18 @@ public final class SqlLookupDescriptor implements LookupDescriptor
 
 			// Default: all entries on which current user has at least readonly access
 			return IUserRolePermissions.SQL_RO;
+		}
+
+		public Builder addValidationRule(final IValidationRule validationRule)
+		{
+			validationRules.add(validationRule);
+			return this;
+		}
+
+		public Builder addValidationRules(final Collection<IValidationRule> validationRules)
+		{
+			this.validationRules.addAll(validationRules);
+			return this;
 		}
 
 	}
