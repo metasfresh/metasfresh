@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.Test;
 
 import de.metas.ui.web.document.filter.DocumentFilter;
+import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.sql.SqlEntityBinding;
 import de.metas.ui.web.window.model.sql.SqlOptions;
 import mockit.Expectations;
@@ -55,7 +56,7 @@ public class SqlDocumentFilterConvertersTest
 		// @formatter:off
 		new Expectations()
 		{{
-			sqlEntityBinding.getFilterConverterDecoratorProvider(); result = new CustomDocumentFilterConverterDecoratorProvider();
+			sqlEntityBinding.getFilterConverterDecoratorProviderOrNull(); result = new CustomDocumentFilterConverterDecoratorProvider();
 		}};
 		// @formatter:on
 
@@ -66,14 +67,20 @@ public class SqlDocumentFilterConvertersTest
 				.isSameAs(customConverter);
 	}
 
-	private static class CustomDocumentFilterConverterDecoratorProvider extends SqlDocumentFilterConverterDecoratorProvider
+	private static class CustomDocumentFilterConverterDecoratorProvider implements SqlDocumentFilterConverterDecoratorProvider
 	{
 		/**
 		 * @return {@link SqlDocumentFilterConvertersTest#converter} so we have something very particular to check for in our test.
 		 */
-		public SqlDocumentFilterConverter provideDecoratorFor(SqlDocumentFilterConverter converter)
+		public SqlDocumentFilterConverter decorate(SqlDocumentFilterConverter converter)
 		{
 			return customConverter;
+		}
+
+		@Override
+		public WindowId getWindowId()
+		{
+			throw new UnsupportedOperationException("getWindowId is not supposed to be called within this test");
 		}
 	}
 }

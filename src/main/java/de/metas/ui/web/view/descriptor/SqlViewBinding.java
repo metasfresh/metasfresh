@@ -260,7 +260,7 @@ public class SqlViewBinding implements SqlEntityBinding
 	}
 
 	@Override
-	public SqlDocumentFilterConverterDecoratorProvider getFilterConverterDecoratorProvider()
+	public SqlDocumentFilterConverterDecoratorProvider getFilterConverterDecoratorProviderOrNull()
 	{
 		return filterConverterDecoratorProvider;
 	}
@@ -354,11 +354,10 @@ public class SqlViewBinding implements SqlEntityBinding
 		private SqlViewRowIdsConverter rowIdsConverter = DefaultSqlViewRowIdsConverter.instance;
 
 		private SqlViewGroupingBinding groupingBinding;
-		private SqlDocumentFilterConverterDecoratorProvider sqlDocumentFilterConverterDecoratorProvider = new SqlDocumentFilterConverterDecoratorProvider();
+		private SqlDocumentFilterConverterDecoratorProvider sqlDocumentFilterConverterDecoratorProvider = null;
 
 		private Builder()
 		{
-			super();
 		}
 
 		public SqlViewBinding build()

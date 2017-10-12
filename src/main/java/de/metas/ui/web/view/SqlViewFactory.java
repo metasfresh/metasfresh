@@ -13,6 +13,7 @@ import org.compiere.util.CCache;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
@@ -80,13 +81,13 @@ public class SqlViewFactory implements IViewFactory
 	public SqlViewFactory(
 			@NonNull final DocumentDescriptorFactory documentDescriptorFactory,
 			@NonNull final DocumentReferencesService documentReferencesService,
-			@NonNull final Collection<WindowSpecificSqlDocumentFilterConverterDecoratorProvider> providers)
+			@NonNull final Collection<SqlDocumentFilterConverterDecoratorProvider> providers)
 	{
 		this.documentDescriptorFactory = documentDescriptorFactory;
 		this.documentReferencesService = documentReferencesService;
 
-		this.windowId2SqlDocumentFilterConverterDecoratorProvider = providers.stream()
-				.collect(ImmutableMap.toImmutableMap(p -> p.getWindowId(), p -> p.getConverter()));
+		this.windowId2SqlDocumentFilterConverterDecoratorProvider = //
+				Maps.uniqueIndex(providers, SqlDocumentFilterConverterDecoratorProvider::getWindowId);
 	}
 
 	@Value

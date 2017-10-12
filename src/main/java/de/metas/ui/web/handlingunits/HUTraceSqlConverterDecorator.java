@@ -6,7 +6,6 @@ import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverter;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterDecoratorProvider;
 import de.metas.ui.web.document.filter.sql.SqlParamsCollector;
-import de.metas.ui.web.view.WindowSpecificSqlDocumentFilterConverterDecoratorProvider;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.model.sql.SqlOptions;
 import lombok.NonNull;
@@ -40,28 +39,17 @@ import lombok.NonNull;
  * 
  */
 @Component
-public class HUTraceSqlConverterDecorator implements WindowSpecificSqlDocumentFilterConverterDecoratorProvider
+public class HUTraceSqlConverterDecorator implements SqlDocumentFilterConverterDecoratorProvider
 {
-	private static final HUTraceResultExtenderProvider INSTANCE = new HUTraceResultExtenderProvider();
-
 	@Override
 	public WindowId getWindowId()
 	{
 		return WEBUI_HU_Constants.WEBUI_HU_Trace_Window_ID;
 	}
 
-	@Override
-	public SqlDocumentFilterConverterDecoratorProvider getConverter()
+	public SqlDocumentFilterConverter decorate(@NonNull final SqlDocumentFilterConverter converter)
 	{
-		return INSTANCE;
-	}
-
-	public static class HUTraceResultExtenderProvider extends SqlDocumentFilterConverterDecoratorProvider
-	{
-		public SqlDocumentFilterConverter provideDecoratorFor(@NonNull final SqlDocumentFilterConverter converter)
-		{
-			return new HUTraceResultExtender(converter);
-		}
+		return new HUTraceResultExtender(converter);
 	}
 
 	public static class HUTraceResultExtender implements SqlDocumentFilterConverter

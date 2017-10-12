@@ -53,8 +53,8 @@ public interface SqlEntityBinding
 		return SqlDocumentFilterConverters.emptyList();
 	}
 
-	default SqlDocumentFilterConverterDecoratorProvider getFilterConverterDecoratorProvider()
+	default SqlDocumentFilterConverterDecoratorProvider getFilterConverterDecoratorProviderOrNull()
 	{
-		return new SqlDocumentFilterConverterDecoratorProvider();
+		return null;
 	}
 }
