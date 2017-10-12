@@ -48,8 +48,17 @@ public final class SqlDocumentFilterConverters
 	public static final SqlDocumentFilterConverter createEntityBindingEffectiveConverter(@NonNull final SqlEntityBinding entityBinding)
 	{
 		final SqlDocumentFilterConvertersList converters = entityBinding.getFilterConverters();
-		final SqlDocumentFilterConverter defaultConverter = SqlDefaultDocumentFilterConverter.newInstance(entityBinding);
-		return SqlDocumentFilterConvertersListWithFallback.newInstance(converters, defaultConverter);
+		final SqlDocumentFilterConverter fallBackConverter = SqlDefaultDocumentFilterConverter.newInstance(entityBinding);
+
+		final SqlDocumentFilterConvertersListWithFallback sqlDocumentFilterConverter = //
+				SqlDocumentFilterConvertersListWithFallback.newInstance(converters, fallBackConverter);
+
+		final SqlDocumentFilterConverterDecoratorProvider decoratorProvider = entityBinding.getFilterConverterDecoratorProviderOrNull();
+		if (decoratorProvider == null)
+		{
+			return sqlDocumentFilterConverter;
+		}
+		return decoratorProvider.decorate(sqlDocumentFilterConverter);
 	}
 
 	public static final SqlDocumentFilterConvertersList.Builder listBuilder()

@@ -24,6 +24,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.document.filter.NullDocumentFilterDescriptorsProvider;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverter;
+import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterDecoratorProvider;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverters;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConvertersList;
 import de.metas.ui.web.view.ViewEvaluationCtx;
@@ -56,11 +57,6 @@ import lombok.NonNull;
 
 public class SqlViewBinding implements SqlEntityBinding
 {
-	public static final Builder builder()
-	{
-		return new Builder();
-	}
-
 	private final String _tableName;
 	private final String _tableAlias;
 
@@ -75,16 +71,21 @@ public class SqlViewBinding implements SqlEntityBinding
 	private final List<SqlViewRowFieldLoader> rowFieldLoaders;
 
 	private final ImmutableList<DocumentQueryOrderBy> defaultOrderBys;
-	private final DocumentFilterDescriptorsProvider viewFilterDescriptors;
-	private final SqlDocumentFilterConvertersList viewFilterConverters;
+	private final DocumentFilterDescriptorsProvider filterDescriptors;
+	private final SqlDocumentFilterConvertersList filterConverters;
 
 	private final SqlViewRowIdsConverter rowIdsConverter;
 
 	private final SqlViewGroupingBinding groupingBinding;
+	private final SqlDocumentFilterConverterDecoratorProvider filterConverterDecoratorProvider;
+
+	public static final Builder builder()
+	{
+		return new Builder();
+	}
 
 	private SqlViewBinding(final Builder builder)
 	{
-		super();
 		_tableName = builder.getTableName();
 		_tableAlias = builder.getTableAlias();
 
@@ -150,16 +151,17 @@ public class SqlViewBinding implements SqlEntityBinding
 		this.rowFieldLoaders = ImmutableList.copyOf(rowFieldLoaders);
 
 		defaultOrderBys = ImmutableList.copyOf(builder.getDefaultOrderBys());
-		viewFilterDescriptors = builder.getViewFilterDescriptors();
-		viewFilterConverters = builder.buildViewFilterConverters();
-		
+		filterDescriptors = builder.getViewFilterDescriptors();
+		filterConverters = builder.buildViewFilterConverters();
+
+		filterConverterDecoratorProvider = builder.sqlDocumentFilterConverterDecoratorProvider;
+
 		rowIdsConverter = builder.getRowIdsConverter();
 	}
 
 	@Override
-	public String toString()
+	public String toString() // NOTE: keep it short
 	{
-		// NOTE: keep it short
 		return MoreObjects.toStringHelper(this)
 				.add("tableName", _tableName)
 				.toString();
@@ -179,8 +181,7 @@ public class SqlViewBinding implements SqlEntityBinding
 
 	private SqlViewRowFieldBinding getKeyField()
 	{
-		Preconditions.checkNotNull(_keyField, "View %s does not have a key column defined", this);
-		return _keyField;
+		return Preconditions.checkNotNull(_keyField, "View %s does not have a key column defined", this);
 	}
 
 	@Override
@@ -247,15 +248,21 @@ public class SqlViewBinding implements SqlEntityBinding
 
 	public DocumentFilterDescriptorsProvider getViewFilterDescriptors()
 	{
-		return viewFilterDescriptors;
+		return filterDescriptors;
 	}
 
 	@Override
 	public SqlDocumentFilterConvertersList getFilterConverters()
 	{
-		return viewFilterConverters;
+		return filterConverters;
 	}
-	
+
+	@Override
+	public SqlDocumentFilterConverterDecoratorProvider getFilterConverterDecoratorProviderOrNull()
+	{
+		return filterConverterDecoratorProvider;
+	}
+
 	public SqlViewRowIdsConverter getRowIdsConverter()
 	{
 		return rowIdsConverter;
@@ -322,12 +329,6 @@ public class SqlViewBinding implements SqlEntityBinding
 		return groupingBinding.isAggregated(fieldName);
 	}
 
-	//
-	//
-	//
-	//
-	//
-
 	public static final class Builder
 	{
 		private String _sqlTableName;
@@ -339,17 +340,16 @@ public class SqlViewBinding implements SqlEntityBinding
 		private SqlViewRowFieldBinding _keyField;
 
 		private List<DocumentQueryOrderBy> defaultOrderBys;
-		private DocumentFilterDescriptorsProvider viewFilterDescriptors = NullDocumentFilterDescriptorsProvider.instance;
-		private SqlDocumentFilterConvertersList.Builder viewFilterConverters = null;
-		
+		private DocumentFilterDescriptorsProvider filterDescriptors = NullDocumentFilterDescriptorsProvider.instance;
+		private SqlDocumentFilterConvertersList.Builder filterConverters = null;
+
 		private SqlViewRowIdsConverter rowIdsConverter = DefaultSqlViewRowIdsConverter.instance;
 
-
 		private SqlViewGroupingBinding groupingBinding;
+		private SqlDocumentFilterConverterDecoratorProvider sqlDocumentFilterConverterDecoratorProvider = null;
 
 		private Builder()
 		{
-			super();
 		}
 
 		public SqlViewBinding build()
@@ -458,42 +458,44 @@ public class SqlViewBinding implements SqlEntityBinding
 			return defaultOrderBys == null ? ImmutableList.of() : defaultOrderBys;
 		}
 
-		public Builder setViewFilterDescriptors(@NonNull final DocumentFilterDescriptorsProvider viewFilterDescriptors)
+		public Builder setFilterDescriptors(@NonNull final DocumentFilterDescriptorsProvider filterDescriptors)
 		{
-			this.viewFilterDescriptors = viewFilterDescriptors;
+			this.filterDescriptors = filterDescriptors;
 			return this;
 		}
 
 		private DocumentFilterDescriptorsProvider getViewFilterDescriptors()
 		{
-			return viewFilterDescriptors;
+			return filterDescriptors;
 		}
 
-		public Builder addViewFilterConverter(final String filterId, final SqlDocumentFilterConverter converter)
+		public Builder addFilterConverter(
+				@NonNull final String filterId,
+				@NonNull final SqlDocumentFilterConverter converter)
 		{
-			if (viewFilterConverters == null)
+			if (filterConverters == null)
 			{
-				viewFilterConverters = SqlDocumentFilterConverters.listBuilder();
+				filterConverters = SqlDocumentFilterConverters.listBuilder();
 			}
-			viewFilterConverters.addConverter(filterId, converter);
+			filterConverters.addConverter(filterId, converter);
 			return this;
 		}
 
 		private SqlDocumentFilterConvertersList buildViewFilterConverters()
 		{
-			if (viewFilterConverters == null)
+			if (filterConverters == null)
 			{
 				return SqlDocumentFilterConverters.emptyList();
 			}
-			return viewFilterConverters.build();
+			return filterConverters.build();
 		}
-		
+
 		public Builder setRowIdsConverter(@NonNull SqlViewRowIdsConverter rowIdsConverter)
 		{
 			this.rowIdsConverter = rowIdsConverter;
 			return this;
 		}
-		
+
 		private SqlViewRowIdsConverter getRowIdsConverter()
 		{
 			return rowIdsConverter;
@@ -502,6 +504,13 @@ public class SqlViewBinding implements SqlEntityBinding
 		public Builder setGroupingBinding(SqlViewGroupingBinding groupingBinding)
 		{
 			this.groupingBinding = groupingBinding;
+			return this;
+		}
+
+		public Builder setFilterConverterDecoratorProvider(
+				@NonNull final SqlDocumentFilterConverterDecoratorProvider sqlDocumentFilterConverterDecoratorProvider)
+		{
+			this.sqlDocumentFilterConverterDecoratorProvider = sqlDocumentFilterConverterDecoratorProvider;
 			return this;
 		}
 	}
