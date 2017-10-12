@@ -167,10 +167,11 @@ node('agent && linux')
 			{
         final MvnConf mvnJacocoConf = mvnConf.withPomFile('pom_for_jacoco_aggregate_coverage_report.xml');
         mvnUpdateParentPomVersion mvnJacocoConf
-        sh "mvn --settings ${mvnJacocoConf.settingsFile} --file ${mvnJacocoConf.pomFile} --batch-mode ${mvnJacocoConf.resolveParams} org.jacoco:jacoco-maven-plugin:0.7.9:report-aggregate"
-
         collectTestResultsAndReportCoverage()
-        uploadCoverageResultsForCodacy('target/site/jacoco-aggregate', 'jacoco.xml')
+
+        // creating one aggregated jacoco.xml and uploading it to codacy doesn't work right now :-(
+        // sh "mvn --settings ${mvnJacocoConf.settingsFile} --file ${mvnJacocoConf.pomFile} --batch-mode ${mvnJacocoConf.resolveParams} org.jacoco:jacoco-maven-plugin:0.7.9:report-aggregate"
+        // uploadCoverageResultsForCodacy('./target/site/jacoco-aggregate', 'jacoco.xml')
 			}
 		} // withMaven
     } // withEnv
@@ -332,7 +333,7 @@ void uploadCoverageResultsForCodacy(final String aggregatedJacocoFilePath, final
       final String reportFileParam = "-r ${aggregatedJacocoFilePath}/${aggregatedJacocoFilename}"
       final String prefixParam = "--prefix ${aggregatedJacocoFilePath}" // thx to https://github.com/codacy/codacy-coverage-reporter#failed-to-upload-report-not-found
       sh "wget --quiet https://repo.metasfresh.com/service/local/repositories/mvn-3rdparty/content/com/codacy/codacy-coverage-reporter/${version}/codacy-coverage-reporter-${version}-assembly.jar"
-      sh "java $${classpathParam} com.codacy.CodacyCoverageReporter -l Java ${reportFileParam} ${prefixParam}"
+      sh "java ${classpathParam} com.codacy.CodacyCoverageReporter -l Java ${reportFileParam} ${prefixParam}"
     }
   }
 }
