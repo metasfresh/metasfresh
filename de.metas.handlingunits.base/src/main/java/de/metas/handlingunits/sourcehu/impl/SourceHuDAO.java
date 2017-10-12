@@ -13,9 +13,9 @@ import org.compiere.model.IQuery;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 
+import de.metas.adempiere.util.CacheModel;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.I_M_HU_Storage;
 import de.metas.handlingunits.model.I_M_Source_HU;
 import de.metas.handlingunits.sourcehu.ISourceHuDAO;
 import de.metas.handlingunits.sourcehu.SourceHUsService.MatchingSourceHusQuery;
@@ -60,7 +60,7 @@ public class SourceHuDAO implements ISourceHuDAO
 
 	@Override
 	@Cached(cacheName = I_M_Source_HU.Table_Name + "#by#" + I_M_Source_HU.COLUMNNAME_M_HU_ID)
-	public I_M_Source_HU retrieveSourceHuMarkerOrNull(@NonNull final I_M_HU hu)
+	public I_M_Source_HU retrieveSourceHuMarkerOrNull(@NonNull @CacheModel final I_M_HU hu)
 	{
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_M_Source_HU.class)
@@ -71,7 +71,6 @@ public class SourceHuDAO implements ISourceHuDAO
 	}
 	
 	@Override
-	@Cached(cacheName = I_M_Source_HU.Table_Name + "#by#" + I_M_Source_HU.COLUMNNAME_M_HU_ID + "#AND#" + I_M_HU.Table_Name + "#AND#" + I_M_HU_Storage.Table_Name)
 	public List<I_M_HU> retrieveActiveSourceHus(@NonNull final MatchingSourceHusQuery query)
 	{
 		if (query.getProductIds().isEmpty())
@@ -92,7 +91,6 @@ public class SourceHuDAO implements ISourceHuDAO
 	}
 
 	@Override
-	@Cached(cacheName = I_M_Source_HU.Table_Name + "#by#" + I_M_Source_HU.COLUMNNAME_M_HU_ID + "#And#" + I_M_HU.Table_Name + "#And#" + I_M_HU_Storage.Table_Name)
 	public List<I_M_Source_HU> retrieveActiveSourceHuMarkers(@NonNull final MatchingSourceHusQuery query)
 	{
 		if (query.getProductIds().isEmpty())

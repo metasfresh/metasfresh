@@ -6,9 +6,10 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 import java.util.Comparator;
 import java.util.List;
-import java.util.Set;
 import java.util.TreeSet;
 import java.util.function.Predicate;
+
+import javax.annotation.concurrent.Immutable;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.PlainContextAware;
@@ -210,13 +211,14 @@ public class SourceHUsService
 	 */
 	@lombok.Value
 	@lombok.Builder
+	@Immutable
 	public static class MatchingSourceHusQuery
 	{
 		/**
 		 * Query for HUs that have any of the given product IDs. Empty means that no HUs will be found.
 		 */
 		@Singular
-		Set<Integer> productIds;
+		ImmutableSet<Integer> productIds;
 
 		int warehouseId;
 
