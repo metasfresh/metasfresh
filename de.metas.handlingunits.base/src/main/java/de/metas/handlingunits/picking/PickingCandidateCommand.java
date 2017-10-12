@@ -13,6 +13,7 @@ import de.metas.handlingunits.picking.pickingCandidateCommands.RemoveQtyFromHU;
 import de.metas.handlingunits.picking.pickingCandidateCommands.SetCandidatesClosed;
 import de.metas.handlingunits.picking.pickingCandidateCommands.SetCandidatesInProgress;
 import de.metas.handlingunits.picking.pickingCandidateCommands.SetCandidatesProcessed;
+import de.metas.handlingunits.sourcehu.HuId2SourceHUsService;
 import de.metas.quantity.Quantity;
 import lombok.Builder.Default;
 import lombok.NonNull;
@@ -42,13 +43,13 @@ import lombok.NonNull;
 @Service
 public class PickingCandidateCommand
 {
-	private final SourceHUsRepository sourceHUsRepository;
+	private final HuId2SourceHUsService sourceHUsRepository;
 
 	private PickingCandidateRepository pickingCandidateRepository;
 
 	public PickingCandidateCommand(
 			@NonNull final PickingCandidateRepository pickingCandidateRepository,
-			@NonNull final SourceHUsRepository sourceHUsRepository)
+			@NonNull final HuId2SourceHUsService sourceHUsRepository)
 	{
 		this.sourceHUsRepository = sourceHUsRepository;
 		this.pickingCandidateRepository = pickingCandidateRepository;

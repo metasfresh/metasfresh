@@ -12,8 +12,8 @@ import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Picking_Candidate;
 import de.metas.handlingunits.model.X_M_Picking_Candidate;
-import de.metas.handlingunits.picking.SourceHUsRepository;
-import de.metas.handlingunits.sourcehu.ISourceHuService;
+import de.metas.handlingunits.sourcehu.SourceHUsService;
+import de.metas.handlingunits.sourcehu.HuId2SourceHUsService;
 import lombok.NonNull;
 
 /*
@@ -41,9 +41,9 @@ import lombok.NonNull;
 public class SetCandidatesInProgress
 {
 
-	private final SourceHUsRepository sourceHUsRepository;
+	private final HuId2SourceHUsService sourceHUsRepository;
 
-	public SetCandidatesInProgress(@NonNull final SourceHUsRepository sourceHUsRepository)
+	public SetCandidatesInProgress(@NonNull final HuId2SourceHUsService sourceHUsRepository)
 	{
 		this.sourceHUsRepository = sourceHUsRepository;
 	}
@@ -56,14 +56,14 @@ public class SetCandidatesInProgress
 		}
 		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
-		final Collection<I_M_HU> sourceHUs = sourceHUsRepository.retrieveSourceHUsViaTracing(huIds);
+		final Collection<I_M_HU> sourceHUs = sourceHUsRepository.retrieveActualSourceHUs(huIds);
 		for (final I_M_HU sourceHU : sourceHUs)
 		{
 			if (!handlingUnitsBL.isDestroyed(sourceHU))
 			{
 				continue;
 			}
-			Services.get(ISourceHuService.class).restoreHuFromSourceHuIfPossible(sourceHU);
+			SourceHUsService.get().restoreHuFromSourceHuMarkerIfPossible(sourceHU);
 		}
 
 		final IQueryBL queryBL = Services.get(IQueryBL.class);

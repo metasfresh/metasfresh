@@ -65,7 +65,7 @@ import de.metas.handlingunits.picking.IHUPickingSlotBL;
 import de.metas.handlingunits.picking.IHUPickingSlotDAO;
 import de.metas.handlingunits.picking.impl.HUPickingSlotBLs.RetrieveAvailableHUsToPick;
 import de.metas.handlingunits.picking.impl.HUPickingSlotBLs.RetrieveAvailableHUsToPickFilters;
-import de.metas.handlingunits.sourcehu.ISourceHuService;
+import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.picking.api.impl.PickingSlotBL;
 import lombok.NonNull;
 
@@ -559,10 +559,10 @@ public class HUPickingSlotBL
 	@Override
 	public List<I_M_HU> retrieveAvailableSourceHUs(@NonNull final PickingHUsQuery query)
 	{
-		final ISourceHuService sourceHuService = Services.get(ISourceHuService.class);
+		final SourceHUsService sourceHuService = SourceHUsService.get();
 
 		final Function<List<I_M_HU>, List<I_M_HU>> vhuToEndResultFunction = //
-				vhus -> sourceHuService.retrieveParentHusThatAreMarkedAsSourceHUs(vhus);
+				vhus -> sourceHuService.retrieveParentHusThatAreSourceHUs(vhus);
 
 		return RetrieveAvailableHUsToPick.retrieveAvailableHUsToPick(query, vhuToEndResultFunction);
 	}

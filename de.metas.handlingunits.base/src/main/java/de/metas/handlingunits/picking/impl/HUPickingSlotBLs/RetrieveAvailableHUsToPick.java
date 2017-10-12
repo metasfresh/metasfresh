@@ -20,7 +20,7 @@ import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.picking.IHUPickingSlotBL.PickingHUsQuery;
 import de.metas.handlingunits.picking.IHUPickingSlotDAO;
 import de.metas.handlingunits.picking.impl.HUPickingSlotBL;
-import de.metas.handlingunits.sourcehu.ISourceHuService;
+import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.storage.IStorageEngine;
@@ -145,8 +145,8 @@ public class RetrieveAvailableHUsToPick
 			return;
 		}
 
-		final ISourceHuService sourceHuService = Services.get(ISourceHuService.class);
-		if (sourceHuService.isHuMarkedAsSourceHu(vhu.getM_HU_ID()))
+		final SourceHUsService sourceHuService = SourceHUsService.get();
+		if (sourceHuService.isSourceHu(vhu.getM_HU_ID()))
 		{
 			return;
 		}

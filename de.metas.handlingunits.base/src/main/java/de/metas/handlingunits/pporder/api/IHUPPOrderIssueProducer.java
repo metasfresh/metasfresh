@@ -48,7 +48,7 @@ public interface IHUPPOrderIssueProducer
 	 * @param hus
 	 * @return generated manufacturing order issue cost collectors
 	 */
-	List<I_PP_Order_Qty> createDraftIssues(final Collection<I_M_HU> hus);
+	List<I_PP_Order_Qty> createDraftIssues(Collection<I_M_HU> hus);
 
 	/**
 	 * Convenient way of calling {@link #createDraftIssues(Collection)}.

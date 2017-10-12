@@ -14,8 +14,8 @@ import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Picking_Candidate;
 import de.metas.handlingunits.model.X_M_Picking_Candidate;
-import de.metas.handlingunits.picking.SourceHUsRepository;
-import de.metas.handlingunits.sourcehu.ISourceHuService;
+import de.metas.handlingunits.sourcehu.SourceHUsService;
+import de.metas.handlingunits.sourcehu.HuId2SourceHUsService;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.logging.LogManager;
 import lombok.NonNull;
@@ -46,9 +46,9 @@ public class SetCandidatesProcessed
 {
 	private static final Logger logger = LogManager.getLogger(SetCandidatesProcessed.class);
 
-	private final SourceHUsRepository sourceHUsRepository;
+	private final HuId2SourceHUsService sourceHUsRepository;
 
-	public SetCandidatesProcessed(@NonNull final SourceHUsRepository sourceHUsRepository)
+	public SetCandidatesProcessed(@NonNull final HuId2SourceHUsService sourceHUsRepository)
 	{
 		this.sourceHUsRepository = sourceHUsRepository;
 
@@ -61,7 +61,7 @@ public class SetCandidatesProcessed
 			return 0;
 		}
 
-		final Collection<I_M_HU> sourceHuIds = sourceHUsRepository.retrieveSourceHUsViaTracing(huIds);
+		final Collection<I_M_HU> sourceHuIds = sourceHUsRepository.retrieveActualSourceHUs(huIds);
 		destroyEmptySourceHUs(sourceHuIds);
 
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -95,7 +95,7 @@ public class SetCandidatesProcessed
 
 	private void takeSnapShotAndDestroyHu(@NonNull final I_M_HU sourceHu)
 	{
-		final ISourceHuService sourceHuService = Services.get(ISourceHuService.class);
+		final SourceHUsService sourceHuService = SourceHUsService.get();
 		sourceHuService.snapshotHuIfMarkedAsSourceHu(sourceHu);
 
 		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);

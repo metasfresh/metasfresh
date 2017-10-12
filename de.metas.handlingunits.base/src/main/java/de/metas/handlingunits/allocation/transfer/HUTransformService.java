@@ -604,7 +604,9 @@ public class HUTransformService
 		}
 
 		@lombok.Builder
-		private HUsToNewTUsRequest(@Singular("sourceHU") @NonNull List<I_M_HU> sourceHUs, int qtyTU)
+		private HUsToNewTUsRequest(
+				@Singular("sourceHU") @NonNull final List<I_M_HU> sourceHUs,
+				final int qtyTU)
 		{
 			this.sourceHUs = sourceHUs;
 
@@ -613,6 +615,14 @@ public class HUTransformService
 		}
 	}
 
+	/**
+	 * Extract a given amount of TUs from an LU or TU/AggregatedTU.
+	 * 
+	 * @param sourceHU LU/TU from where the TUs shall be extracted
+	 * @param qtyTU how many TUs to extract
+	 * @param isOwnPackingMaterials
+	 * @return extracted TUs
+	 */
 	public List<I_M_HU> husToNewTUs(@NonNull final HUsToNewTUsRequest newTUsRequest)
 	{
 		int qtyTuLeft = newTUsRequest.getQtyTU();
@@ -632,15 +642,7 @@ public class HUTransformService
 
 		return result.build();
 	}
-
-	/**
-	 * Extract a given amount of TUs from an LU or TU/AggregatedTU.
-	 * 
-	 * @param sourceHU LU/TU from where the TUs shall be extracted
-	 * @param qtyTU how many TUs to extract
-	 * @param isOwnPackingMaterials
-	 * @return extracted TUs
-	 */
+	
 	private List<I_M_HU> huToNewTUs(@NonNull final I_M_HU sourceHU, final int qtyTU)
 	{
 		if (handlingUnitsBL.isLoadingUnit(sourceHU))
@@ -653,8 +655,7 @@ public class HUTransformService
 		}
 		else
 		{
-			throw new HUException("Cannot extract TUs from CU")
-					.setParameter("sourceHU", sourceHU);
+			throw new HUException("Cannot extract TUs from CU").setParameter("sourceHU", sourceHU);
 		}
 	}
 
@@ -864,9 +865,6 @@ public class HUTransformService
 			final I_M_HU_PI_Item luPIItem,
 			final boolean newPackingMaterialsAreOurOwn)
 	{
-		Preconditions.checkNotNull(sourceTuHU, "Param 'tuHU' may not be null");
-		Preconditions.checkNotNull(qtyTU, "Param 'qtyTU' may not be null");
-
 		final List<IHUProductStorage> productStorages = retrieveAllProductStorages(sourceTuHU);
 
 		final List<I_M_HU> createdTUs;

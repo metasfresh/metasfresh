@@ -73,3 +73,43 @@ UPDATE AD_Process_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-10-11 12:09:0
 UPDATE AD_Process_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-10-11 12:09:11','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Verarbeiten' WHERE AD_Process_ID=540783 AND AD_Language='de_CH'
 ;
 
+-- 2017-10-11T17:30:45.627
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process SET Name='TUs aus Quell-HUs hinzufügen',Updated=TO_TIMESTAMP('2017-10-11 17:30:45','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=540873
+;
+
+-- 2017-10-11T17:30:53.502
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-10-11 17:30:53','YYYY-MM-DD HH24:MI:SS'),Name='TUs aus Quell-HUs hinzufügen' WHERE AD_Process_ID=540873 AND AD_Language='de_CH'
+;
+
+-- 2017-10-11T17:31:00.611
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-10-11 17:31:00','YYYY-MM-DD HH24:MI:SS'),Name='TUs aus Quell-HUs hinzufügen' WHERE AD_Process_ID=540873 AND AD_Language='nl_NL'
+;
+
+-- 2017-10-12T12:21:37.819
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process SET Name='HU aus Produktion entfernen',Updated=TO_TIMESTAMP('2017-10-12 12:21:37','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=540791
+;
+
+-- 2017-10-12T12:22:11.801
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-10-12 12:22:11','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='HU aus Produktion entfernen' WHERE AD_Process_ID=540791 AND AD_Language='de_CH'
+;
+
+-- 2017-10-12T12:22:27.011
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-10-12 12:22:27','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Remove HU' WHERE AD_Process_ID=540791 AND AD_Language='en_US'
+;
+
+-- 2017-10-12T12:22:33.582
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process SET Name='HU entfernen',Updated=TO_TIMESTAMP('2017-10-12 12:22:33','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=540791
+;
+
+-- 2017-10-12T12:22:40.852
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-10-12 12:22:40','YYYY-MM-DD HH24:MI:SS'),Name='HU entfernen' WHERE AD_Process_ID=540791 AND AD_Language='de_CH'
+;
+

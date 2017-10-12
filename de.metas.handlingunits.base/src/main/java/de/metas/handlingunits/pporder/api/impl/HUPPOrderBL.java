@@ -75,7 +75,7 @@ public class HUPPOrderBL implements IHUPPOrderBL
 			.put(X_PP_Order.PLANNINGSTATUS_Planning, X_PP_Order.PLANNINGSTATUS_Complete)
 			.put(X_PP_Order.PLANNINGSTATUS_Review, X_PP_Order.PLANNINGSTATUS_Planning)
 			.put(X_PP_Order.PLANNINGSTATUS_Review, X_PP_Order.PLANNINGSTATUS_Complete)
-			.put(X_PP_Order.PLANNINGSTATUS_Complete, X_PP_Order.PLANNINGSTATUS_Planning) // mainly for testing
+			//.put(X_PP_Order.PLANNINGSTATUS_Complete, X_PP_Order.PLANNINGSTATUS_Planning) // don't allow this transition unless https://github.com/metasfresh/metasfresh/issues/2708 is done
 			.build();
 
 	@Override

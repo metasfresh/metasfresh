@@ -876,9 +876,8 @@ public class HUTransformServiceTests
 	}
 
 	@Test
-	public void husToNewTUs_source_is_aggregated()
+	public void husToNewTUs_source_is_aggregated_aggregate_never()
 	{
-		final LUTUProducerDestinationTestSupport data = testsBase.getData();
 
 		final I_M_HU aggregateHU1 = testsBase.mkAggregateHUWithTotalQtyCUandCustomQtyCUsPerTU("16", 8); // 2 TUs
 		final I_M_HU aggregateHU2 = testsBase.mkAggregateHUWithTotalQtyCUandCustomQtyCUsPerTU("24", 8); // 3 TUs
@@ -887,17 +886,19 @@ public class HUTransformServiceTests
 				.sourceHU(aggregateHU1)
 				.sourceHU(aggregateHU2)
 				.qtyTU(3).build();
+
+		final LUTUProducerDestinationTestSupport data = testsBase.getData();
 		final List<I_M_HU> extractedTUs = HUTransformService.get(data.helper.getHUContext()).husToNewTUs(request);
 
 		assertThat(extractedTUs).hasSize(3);
-		assertThat(extractedTUs).allSatisfy(tu -> {
-			assertThat(handlingUnitsBL.isAggregateHU(tu)).isFalse();
-		});
+		assertThat(extractQty(extractedTUs.get(0))).isEqualByComparingTo("8");
+		assertThat(extractQty(extractedTUs.get(1))).isEqualByComparingTo("8");
+		assertThat(extractQty(extractedTUs.get(2))).isEqualByComparingTo("8");
 
 		refresh(aggregateHU1);
 		refresh(aggregateHU2);
-		assertThat(handlingUnitsBL.getStorageFactory().getStorage(aggregateHU1).getQtyForProductStorages()).isZero();
-		assertThat(handlingUnitsBL.getStorageFactory().getStorage(aggregateHU2).getQtyForProductStorages()).isEqualByComparingTo("16");
+		assertThat(extractQty(aggregateHU1)).isZero();
+		assertThat(extractQty(aggregateHU2)).isEqualByComparingTo("16");
 
 		assertThat(aggregateHU1.getHUStatus()).isEqualTo(X_M_HU.HUSTATUS_Destroyed);
 		assertThat(aggregateHU2.getHUStatus()).isEqualTo(X_M_HU.HUSTATUS_Active);
@@ -932,9 +933,9 @@ public class HUTransformServiceTests
 		refresh(realTU2);
 		refresh(aggregateHU3);
 
-		assertThat(handlingUnitsBL.getStorageFactory().getStorage(aggregateHU1).getQtyForProductStorages()).isZero();
-		assertThat(handlingUnitsBL.getStorageFactory().getStorage(realTU2).getQtyForProductStorages()).isEqualByComparingTo("6");
-		assertThat(handlingUnitsBL.getStorageFactory().getStorage(aggregateHU3).getQtyForProductStorages()).isEqualByComparingTo("8");
+		assertThat(extractQty(aggregateHU1)).isZero();
+		assertThat(extractQty(realTU2)).isEqualByComparingTo("6");
+		assertThat(extractQty(aggregateHU3)).isEqualByComparingTo("8");
 
 		assertThat(aggregateHU1.getHUStatus()).isEqualTo(X_M_HU.HUSTATUS_Destroyed);
 		assertThat(realTU2.getHUStatus()).isEqualTo(X_M_HU.HUSTATUS_Active);
@@ -1022,5 +1023,10 @@ public class HUTransformServiceTests
 		refresh(aggregateHU1);
 		assertThat(aggregateHU1.getHUStatus()).isEqualTo(X_M_HU.HUSTATUS_Destroyed);
 		assertThat(huId2listenerFiredCounters.get(aggregateHU1.getM_HU_ID())).isEqualTo(1);
+	}
+
+	private BigDecimal extractQty(final I_M_HU hu)
+	{
+		return handlingUnitsBL.getStorageFactory().getStorage(hu).getQtyForProductStorages();
 	}
 }

@@ -14,7 +14,7 @@ import de.metas.handlingunits.impl.HUIterator;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.picking.IHUPickingSlotDAO;
 import de.metas.handlingunits.picking.impl.HUPickingSlotBL;
-import de.metas.handlingunits.sourcehu.ISourceHuService;
+import de.metas.handlingunits.sourcehu.SourceHUsService;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
@@ -55,9 +55,9 @@ public class RetrieveAvailableHUsToPickFilters
 	private static final Predicate<I_M_HU> NOT_PICKED_NOT_SOURCE_HU = hu -> {
 
 		final IHUPickingSlotDAO huPickingSlotDAO = Services.get(IHUPickingSlotDAO.class);
-		final ISourceHuService sourceHuService = Services.get(ISourceHuService.class);
+		final SourceHUsService sourceHuService = SourceHUsService.get();
 
-		return !huPickingSlotDAO.isHuIdPicked(hu.getM_HU_ID()) && !sourceHuService.isHuMarkedAsSourceHu(hu.getM_HU_ID());
+		return !huPickingSlotDAO.isHuIdPicked(hu.getM_HU_ID()) && !sourceHuService.isSourceHu(hu.getM_HU_ID());
 	};
 
 	/**

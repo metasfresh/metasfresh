@@ -1,4 +1,4 @@
-package de.metas.handlingunits.picking;
+package de.metas.handlingunits.sourcehu;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
@@ -16,13 +16,11 @@ import org.springframework.stereotype.Service;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.sourcehu.ISourceHuService;
-import de.metas.handlingunits.sourcehu.ISourceHuService.ActiveSourceHusQuery;
+import de.metas.handlingunits.sourcehu.SourceHUsService.MatchingSourceHusQuery;
 import de.metas.handlingunits.trace.HUTraceEvent;
 import de.metas.handlingunits.trace.HUTraceRepository;
 import de.metas.handlingunits.trace.HUTraceSpecification;
 import de.metas.handlingunits.trace.HUTraceType;
-import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import lombok.NonNull;
 
 /*
@@ -53,18 +51,37 @@ import lombok.NonNull;
  *
  */
 @Service
-public class SourceHUsRepository
+public class HuId2SourceHUsService
 {
 	private final HUTraceRepository huTraceRepository;
 
-	private final PickingCandidateRepository pickingCandidateRepo;
-
-	public SourceHUsRepository(
-			@NonNull final HUTraceRepository huTraceRepository,
-			@NonNull final PickingCandidateRepository pickingCandidateRepo)
+	public HuId2SourceHUsService(@NonNull final HUTraceRepository huTraceRepository)
 	{
 		this.huTraceRepository = huTraceRepository;
-		this.pickingCandidateRepo = pickingCandidateRepo;
+	}
+
+	public List<I_M_HU> retrieveActualSourceHUsFollowedByMatchingSourceHUs(final int huId)
+	{
+		final LinkedHashMap<Integer, I_M_HU> map = new LinkedHashMap<>();
+
+		addToMapIfMissing(map, retrieveActualSourceHUs(ImmutableList.of(huId)));
+		addToMapIfMissing(map, retrieveMatchingSourceHUs(huId));
+
+		return ImmutableList.copyOf(map.values());
+	}
+
+	private void addToMapIfMissing(
+			@NonNull final LinkedHashMap<Integer, I_M_HU> map,
+			@NonNull final Collection<I_M_HU> sourceHUs)
+	{
+		for (final I_M_HU sourceHU : sourceHUs)
+		{
+			if (map.containsKey(sourceHU.getM_HU_ID()))
+			{
+				continue;
+			}
+			map.put(sourceHU.getM_HU_ID(), sourceHU);
+		}
 	}
 
 	/**
@@ -73,7 +90,7 @@ public class SourceHUsRepository
 	 * @param huIds
 	 * @return
 	 */
-	public Collection<I_M_HU> retrieveSourceHUsViaTracing(@NonNull final List<Integer> huIds)
+	public Collection<I_M_HU> retrieveActualSourceHUs(@NonNull final List<Integer> huIds)
 	{
 		final Set<Integer> vhuSourceIds = retrieveVhus(huIds);
 
@@ -127,40 +144,13 @@ public class SourceHUsRepository
 		return topLevelSourceHus;
 	}
 
-
 	public Collection<I_M_HU> retrieveMatchingSourceHUs(final int huId)
 	{
-		final List<I_M_ShipmentSchedule> scheds = pickingCandidateRepo.retrieveShipmentSchedulesViaPickingCandidates(huId);
-		final ActiveSourceHusQuery query = ActiveSourceHusQuery.fromShipmentSchedules(scheds);
+		final MatchingSourceHusQuery query = MatchingSourceHusQuery.fromHuId(huId);
 
-		final ISourceHuService sourceHuService = Services.get(ISourceHuService.class);
-		final List<I_M_HU> sourceHUs = sourceHuService.retrieveActiveHusthatAreMarkedAsSourceHu(query);
+		final ISourceHuDAO sourceHuDAO = Services.get(ISourceHuDAO.class);
+		final List<I_M_HU> sourceHUs = sourceHuDAO.retrieveActiveSourceHus(query);
 
 		return sourceHUs;
 	}
-
-	public Collection<I_M_HU> retrieveSourceHUs(final int huId)
-	{
-		final LinkedHashMap<Integer, I_M_HU> map = new LinkedHashMap<>();
-
-		addToMapIfMissing(map, retrieveSourceHUsViaTracing(ImmutableList.of(huId)));
-		addToMapIfMissing(map, retrieveMatchingSourceHUs(huId));
-
-		return map.values();
-	}
-
-	void addToMapIfMissing(
-			@NonNull final LinkedHashMap<Integer, I_M_HU> map,
-			@NonNull final Collection<I_M_HU> sourceHUs)
-	{
-		for (final I_M_HU sourceHU : sourceHUs)
-		{
-			if (map.containsKey(sourceHU.getM_HU_ID()))
-			{
-				continue;
-			}
-			map.put(sourceHU.getM_HU_ID(), sourceHU);
-		}
-	}
-
 }

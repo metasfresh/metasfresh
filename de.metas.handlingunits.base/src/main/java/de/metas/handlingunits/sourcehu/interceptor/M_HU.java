@@ -7,7 +7,7 @@ import org.adempiere.util.Services;
 import org.compiere.model.ModelValidator;
 
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.sourcehu.ISourceHuService;
+import de.metas.handlingunits.sourcehu.ISourceHuDAO;
 import lombok.NonNull;
 
 @Interceptor(I_M_HU.class)
@@ -25,8 +25,8 @@ public class M_HU
 	)
 	public void preventMovingSourceHu(@NonNull final I_M_HU hu)
 	{
-		final ISourceHuService sourceHuService = Services.get(ISourceHuService.class);
-		final boolean sourceHU = sourceHuService.isHuMarkedAsSourceHu(hu.getM_HU_ID());
+		final ISourceHuDAO sourceHuDAO = Services.get(ISourceHuDAO.class);
+		final boolean sourceHU = sourceHuDAO.isSourceHu(hu.getM_HU_ID());
 		if (sourceHU)
 		{
 			throw new SourceHuMayNotBeRemovedException(hu);
