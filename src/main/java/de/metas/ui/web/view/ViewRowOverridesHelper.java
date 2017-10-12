@@ -29,7 +29,7 @@ public final class ViewRowOverridesHelper
 {
 	public static final IViewRowOverrides getViewRowOverrides(final IView view)
 	{
-		if(view instanceof IViewRowOverrides)
+		if (view instanceof IViewRowOverrides)
 		{
 			return (IViewRowOverrides)view;
 		}
@@ -41,26 +41,29 @@ public final class ViewRowOverridesHelper
 
 	public static final boolean extractSupportIncludedViews(final IViewRow row, final IViewRowOverrides rowOverrides)
 	{
-		if(rowOverrides != null)
+		if (rowOverrides != null)
 		{
-			return rowOverrides.getIncludedViewId() != null;
+			if(rowOverrides.getIncludedViewId() != null)
+			{
+				return true;
+			}
 		}
-		else
-		{
-			return row.hasIncludedView();
-		}
+		
+		return row.hasIncludedView();
 	}
-	
+
 	public static final ViewId extractIncludedViewId(final IViewRow row, final IViewRowOverrides rowOverrides)
 	{
-		if(rowOverrides != null)
+		if (rowOverrides != null)
 		{
-			return rowOverrides.getIncludedViewId();
+			final ViewId includedViewId = rowOverrides.getIncludedViewId();
+			if (includedViewId != null)
+			{
+				return includedViewId;
+			}
 		}
-		else
-		{
-			return row.getIncludedViewId();
-		}
+		
+		return row.getIncludedViewId();
 	}
 
 	private static final class NullViewRowOverrides implements IViewRowOverrides
