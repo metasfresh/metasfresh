@@ -1,5 +1,5 @@
 /**
- * Contains business logic that is invoked by {@link de.metas.handlingunits.picking.PickingCandidateCommand}
+ * Contains business logic that is invoked by {@link de.metas.handlingunits.picking.PickingCandidateService}
  * 
  * @author metas-dev <dev@metasfresh.com>
  *

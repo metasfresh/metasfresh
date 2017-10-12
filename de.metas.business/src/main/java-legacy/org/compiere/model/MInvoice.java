@@ -54,6 +54,8 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
+import com.google.common.base.Joiner;
+
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.allocation.api.IAllocationDAO;
@@ -182,7 +184,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 	} // get
 
 	/** Cache */
-	private static CCache<Integer, MInvoice> s_cache = new CCache<Integer, MInvoice>("C_Invoice", 20, 2);	// 2 minutes
+	private static CCache<Integer, MInvoice> s_cache = new CCache<>("C_Invoice", 20, 2);	// 2 minutes
 
 	/**************************************************************************
 	 * Invoice Constructor
@@ -946,9 +948,10 @@ public class MInvoice extends X_C_Invoice implements IDocument
 	@Override
 	public String getDocumentInfo()
 	{
-		MDocType dt = MDocType.get(getCtx(), getC_DocType_ID());
-		return dt.getName() + " " + getDocumentNo();
-	}	// getDocumentInfo
+		final I_C_DocType dt = MDocType.get(getCtx(), getC_DocType_ID());
+		final String docTypeName = dt != null ? dt.getName() : null;
+		return Joiner.on(" ").skipNulls().join(docTypeName, getDocumentNo());
+	}
 
 	/**
 	 * After Save
@@ -1094,7 +1097,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 	 */
 	public static void setIsPaid(Properties ctx, int C_BPartner_ID, String trxName)
 	{
-		List<Object> params = new ArrayList<Object>();
+		List<Object> params = new ArrayList<>();
 		StringBuffer whereClause = new StringBuffer("IsPaid='N' AND DocStatus IN ('CO','CL')");
 		if (C_BPartner_ID > 1)
 		{
@@ -1503,7 +1506,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 
 		// Lines
 		BigDecimal totalLines = Env.ZERO;
-		final Set<Integer> taxIds = new HashSet<Integer>();
+		final Set<Integer> taxIds = new HashSet<>();
 		MInvoiceLine[] lines = getLines(false);
 		for (final MInvoiceLine line : lines)
 		{

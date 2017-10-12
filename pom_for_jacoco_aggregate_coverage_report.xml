@@ -1,0 +1,29 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<artifactId>de.metas.parent.general</artifactId>
+		<groupId>de.metas</groupId>
+		<version>[1,10.0.0]</version>
+	</parent>
+	
+	<groupId>de.metas</groupId>
+	<artifactId>de.metas.testcoveragereport</artifactId>
+	<version>10.0.0</version>
+
+	<description>
+		This pom is used from the Jenkinsfile, to create one aggregated jacoco.xml file.
+		That file is then uploaded to codacy.
+		As I'm writing this, what we invoke from the Jenkinsfile is simply
+		mvn -f pom_for_jacoco_aggregate_coverage_report.xml jacoco-maven-plugin:0.7.9:report-aggregate
+	</description>
+	
+	<packaging>pom</packaging>
+	
+	<modules>
+		<module>de.metas.reactor</module>
+		<module>de.metas.esb</module>
+	</modules>
+
+</project>

@@ -30,7 +30,7 @@ import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.picking.IHUPickingSlotBL;
 import de.metas.handlingunits.picking.IHUPickingSlotBL.PickingHUsQuery;
-import de.metas.handlingunits.picking.PickingCandidateCommand.AddQtyToHURequest;
+import de.metas.handlingunits.picking.PickingCandidateService.AddQtyToHURequest;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.logging.LogManager;
@@ -81,7 +81,7 @@ public class AddQtyToHU
 
 		final int shipmentScheduleId = addQtyToHURequest.getShipmentScheduleId();
 		final int pickingSlotId = addQtyToHURequest.getPickingSlotId();
-		final int huId = addQtyToHURequest.getHuId();
+		final int huId = addQtyToHURequest.getTargetHuId();
 
 		final I_M_ShipmentSchedule shipmentSchedule = load(shipmentScheduleId, I_M_ShipmentSchedule.class);
 		final I_M_Product product = shipmentSchedule.getM_Product();

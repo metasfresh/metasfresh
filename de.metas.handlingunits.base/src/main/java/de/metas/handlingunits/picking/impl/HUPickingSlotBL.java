@@ -30,10 +30,6 @@ import java.util.List;
 import java.util.Properties;
 import java.util.function.Function;
 
-import org.adempiere.ad.dao.ICompositeQueryFilter;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
@@ -47,9 +43,6 @@ import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.TrxRunnable;
-
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableList;
 
 import de.metas.handlingunits.HUIteratorListenerAdapter;
 import de.metas.handlingunits.IHUBuilder;
@@ -66,13 +59,13 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_PickingSlot;
 import de.metas.handlingunits.model.I_M_PickingSlot_HU;
 import de.metas.handlingunits.model.I_M_PickingSlot_Trx;
-import de.metas.handlingunits.model.I_M_Source_HU;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_PickingSlot_Trx;
 import de.metas.handlingunits.picking.IHUPickingSlotBL;
 import de.metas.handlingunits.picking.IHUPickingSlotDAO;
 import de.metas.handlingunits.picking.impl.HUPickingSlotBLs.RetrieveAvailableHUsToPick;
 import de.metas.handlingunits.picking.impl.HUPickingSlotBLs.RetrieveAvailableHUsToPickFilters;
+import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.picking.api.impl.PickingSlotBL;
 import lombok.NonNull;
 
@@ -564,11 +557,14 @@ public class HUPickingSlotBL
 	}
 
 	@Override
-	public List<I_M_HU> retrieveAvailableSourceHUs(@NonNull final PickingHUsQuery request)
+	public List<I_M_HU> retrieveAvailableSourceHUs(@NonNull final PickingHUsQuery query)
 	{
-		final Function<List<I_M_HU>, List<I_M_HU>> vhuToEndResultFunction = vhus -> RetrieveAvailableHUsToPickFilters.retrieveTopLevelAndFilterForActualSourceHUs(vhus);
+		final SourceHUsService sourceHuService = SourceHUsService.get();
 
-		return RetrieveAvailableHUsToPick.retrieveAvailableHUsToPick(request, vhuToEndResultFunction);
+		final Function<List<I_M_HU>, List<I_M_HU>> vhuToEndResultFunction = //
+				vhus -> sourceHuService.retrieveParentHusThatAreSourceHUs(vhus);
+
+		return RetrieveAvailableHUsToPick.retrieveAvailableHUsToPick(query, vhuToEndResultFunction);
 	}
 
 	@Override
@@ -577,47 +573,5 @@ public class HUPickingSlotBL
 		final Function<List<I_M_HU>, List<I_M_HU>> vhuToEndResultFunction = vhus -> RetrieveAvailableHUsToPickFilters.retrieveFullTreeAndExcludePickingHUs(vhus);
 
 		return RetrieveAvailableHUsToPick.retrieveAvailableHUsToPick(request, vhuToEndResultFunction);
-	}
-
-	@Override
-	public List<I_M_HU> retrieveActiveSourceHUs(@NonNull final RetrieveActiveSourceHusQuery query)
-	{
-		if (query.getProductIds().isEmpty())
-		{
-			return ImmutableList.of();
-		}
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-
-		final ICompositeQueryFilter<I_M_HU> huFilters = createHuFiltersForScheds(query);
-
-		final IQueryBuilder<I_M_HU> queryBuilder = queryBL.createQueryBuilder(I_M_Source_HU.class)
-				.addOnlyActiveRecordsFilter()
-				.andCollect(I_M_Source_HU.COLUMN_M_HU_ID)
-				.filter(huFilters);
-
-		final List<I_M_HU> result = queryBuilder.create()
-				.list();
-		return result;
-	}
-
-	@VisibleForTesting
-	ICompositeQueryFilter<I_M_HU> createHuFiltersForScheds(@NonNull final RetrieveActiveSourceHusQuery query)
-	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-
-		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-
-		final ICompositeQueryFilter<I_M_HU> huFilters = queryBL.createCompositeQueryFilter(I_M_HU.class)
-				.setJoinOr();
-
-		final IQueryFilter<I_M_HU> huFilter = handlingUnitsDAO.createHUQueryBuilder()
-				.setOnlyActiveHUs(true)
-				.setAllowEmptyStorage()
-				.addOnlyWithProductIds(query.getProductIds())
-				.addOnlyInWarehouseId(query.getWarehouseId())
-				.createQueryFilter();
-		huFilters.addFilter(huFilter);
-
-		return huFilters;
 	}
 }

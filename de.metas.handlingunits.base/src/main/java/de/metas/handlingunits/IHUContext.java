@@ -13,29 +13,29 @@ package de.metas.handlingunits;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.util.Date;
+import java.util.List;
 
 import org.adempiere.model.IContextAware;
 
 import de.metas.adempiere.form.terminal.context.IPropertiesContainer;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
 import de.metas.handlingunits.hutransaction.IHUTrxListener;
-import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.handlingunits.spi.IHUPackingMaterialCollectorSource;
+import de.metas.handlingunits.storage.EmptyHUListener;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 
 /**
- * Immutable Handling Unit Context. Use {@link IHUContextFactory} to create an instance. 
+ * Immutable Handling Unit Context. Use {@link IHUContextFactory} to create an instance.
  * <p>
  * Implementations do not propagate anything back to the database. It is supposed to be used to pass already loaded things, transaction names etc. Will be extended as
  * required in future (e.g. to also pass on options).
@@ -53,7 +53,7 @@ public interface IHUContext extends IContextAware, IPropertiesContainer
 	HUContextDateTrxProvider DateTrxProvider = new HUContextDateTrxProvider();
 
 	String PROPERTY_Configured = "Configured";
-	
+
 	/**
 	 * {@link Boolean} flag used to advice the HU transaction processor that we are doing Weight to Storage Qty adjustments.
 	 * 
@@ -98,4 +98,7 @@ public interface IHUContext extends IContextAware, IPropertiesContainer
 
 	/** @return transaction listeners */
 	IHUTrxListener getTrxListeners();
+
+	/** @return previously added listeners that want to be notified before an empty HU is destroyed */
+	List<EmptyHUListener> getEmptyHUListeners();
 }
