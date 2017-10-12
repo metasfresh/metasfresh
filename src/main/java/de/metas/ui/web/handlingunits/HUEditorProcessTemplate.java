@@ -113,7 +113,7 @@ public abstract class HUEditorProcessTemplate extends ViewBasedProcessTemplate
 				.createQuery()
 				.list(I_M_HU.class);
 	}
-	
+
 	private static final IHUQueryBuilder toHUQueryBuilder(final HUEditorRowFilter filter)
 	{
 		return Services.get(IHandlingUnitsDAO.class)
@@ -136,33 +136,35 @@ public abstract class HUEditorProcessTemplate extends ViewBasedProcessTemplate
 		}
 
 		final Set<String> onlyHUStatuses = filter.getOnlyHUStatuses();
-		if (!onlyHUStatuses.isEmpty() && !onlyHUStatuses.contains(row.getHUStatusKey()))
+		final boolean huStatusDoesntMatter = onlyHUStatuses.isEmpty();
+		if (huStatusDoesntMatter)
 		{
-			return false;
+			return true;
 		}
 
-		return true;
+		return onlyHUStatuses.contains(row.getHUStatusKey());
 	}
 
 	@lombok.Builder(toBuilder = true)
 	@lombok.Value
 	public static final class HUEditorRowFilter
 	{
-		public static final HUEditorRowFilter ALL = builder().select(Select.ALL).build();
-		
-		public static final HUEditorRowFilter select(Select select)
-		{
-			return builder().select(select).build();
-		}
-
 		@NonNull
 		private final Select select;
+
 		@Singular
 		private final ImmutableSet<String> onlyHUStatuses;
 
 		public enum Select
 		{
 			ONLY_TOPLEVEL, ALL
+		}
+
+		public static final HUEditorRowFilter ALL = builder().select(Select.ALL).build();
+
+		public static final HUEditorRowFilter select(Select select)
+		{
+			return builder().select(select).build();
 		}
 
 		public static final class HUEditorRowFilterBuilder

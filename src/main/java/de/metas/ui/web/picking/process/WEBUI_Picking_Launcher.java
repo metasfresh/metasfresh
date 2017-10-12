@@ -71,7 +71,7 @@ public class WEBUI_Picking_Launcher extends ViewBasedProcessTemplate implements 
 				.stream()
 				.flatMap(selectedRow -> selectedRow.getIncludedRows().stream())
 				.map(IViewRow::getId)
-				.map(rowId -> rowId.removePrefixAndConvertToInt("D")) // FIXME: hardcoded
+				.map(rowId -> rowId.removeDocumentPrefixAndConvertToInt())
 				.collect(ImmutableList.toImmutableList());
 
 		if (rowIds.isEmpty())

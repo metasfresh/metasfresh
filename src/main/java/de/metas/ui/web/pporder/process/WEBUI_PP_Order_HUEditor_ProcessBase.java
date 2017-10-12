@@ -59,7 +59,6 @@ public abstract class WEBUI_PP_Order_HUEditor_ProcessBase extends HUEditorProces
 		invalidateParentView();  // picking view
 
 		// After this process finished successfully go back to picking slots view
-		// TODO verify that this is OK
 		getResult().setWebuiIncludedViewIdToOpen(getPPOrderView().get().getViewId().getViewId());
 	}
 }

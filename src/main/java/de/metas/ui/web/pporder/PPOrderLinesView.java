@@ -67,11 +67,6 @@ import lombok.NonNull;
 
 public class PPOrderLinesView implements IView
 {
-	public static PPOrderLinesView cast(final IView view)
-	{
-		return (PPOrderLinesView)view;
-	}
-
 	private final ViewId parentViewId;
 	private final DocumentId parentRowId;
 
@@ -86,6 +81,11 @@ public class PPOrderLinesView implements IView
 
 	final List<RelatedProcessDescriptor> additionalRelatedProcessDescriptors;
 
+	public static PPOrderLinesView cast(final IView view)
+	{
+		return (PPOrderLinesView)view;
+	}
+	
 	@Builder
 	private PPOrderLinesView(
 			final ViewId parentViewId,

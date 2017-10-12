@@ -58,11 +58,6 @@ import lombok.ToString;
 @ToString
 public class PPOrderLineRow implements IViewRow
 {
-	public static final PPOrderLineRow cast(final IViewRow viewRecord)
-	{
-		return (PPOrderLineRow)viewRecord;
-	}
-
 	private final DocumentPath documentPath;
 	private final DocumentId rowId;
 
@@ -100,6 +95,11 @@ public class PPOrderLineRow implements IViewRow
 	private final JSONLookupValue uom;
 
 	private transient ImmutableMap<String, Object> _values;
+
+	public static final PPOrderLineRow cast(final IViewRow viewRecord)
+	{
+		return (PPOrderLineRow)viewRecord;
+	}
 
 	@lombok.Builder(builderMethodName = "builderForIssuedOrReceivedHU", builderClassName = "BuilderForIssuedOrReceivedHU")
 	private PPOrderLineRow(
@@ -150,7 +150,7 @@ public class PPOrderLineRow implements IViewRow
 			@NonNull final IViewRowAttributesProvider attributesProvider,
 			@NonNull final List<PPOrderLineRow> includedRows)
 	{
-		this.rowId = DocumentId.of(org.eevolution.model.I_PP_Order.Table_Name + "_" + ppOrder.getPP_Order_ID());
+		this.rowId = DocumentId.of(I_PP_Order.Table_Name + "_" + ppOrder.getPP_Order_ID());
 		this.type = PPOrderLineType.MainProduct;
 
 		this.ppOrderId = ppOrder.getPP_Order_ID();
@@ -191,7 +191,7 @@ public class PPOrderLineRow implements IViewRow
 			@NonNull final IViewRowAttributesProvider attributesProvider,
 			@NonNull final List<PPOrderLineRow> includedRows)
 	{
-		this.rowId = DocumentId.of(org.eevolution.model.I_PP_Order_BOMLine.Table_Name + "_" + ppOrderBomLine.getPP_Order_BOMLine_ID());
+		this.rowId = DocumentId.of(I_PP_Order_BOMLine.Table_Name + "_" + ppOrderBomLine.getPP_Order_BOMLine_ID());
 		this.type = type;
 
 		this.ppOrderId = ppOrderBomLine.getPP_Order_ID();
