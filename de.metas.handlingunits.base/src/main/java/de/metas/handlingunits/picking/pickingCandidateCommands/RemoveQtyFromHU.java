@@ -26,7 +26,7 @@ import de.metas.handlingunits.allocation.impl.HULoader;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Picking_Candidate;
 import de.metas.handlingunits.model.X_M_HU;
-import de.metas.handlingunits.picking.PickingCandidateCommand.RemoveQtyFromHURequest;
+import de.metas.handlingunits.picking.PickingCandidateService.RemoveQtyFromHURequest;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
 import de.metas.handlingunits.picking.SourceHUsRepository;
 import de.metas.logging.LogManager;

@@ -30,7 +30,7 @@ import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.picking.IHUPickingSlotBL;
 import de.metas.handlingunits.picking.IHUPickingSlotBL.PickingHUsQuery;
-import de.metas.handlingunits.picking.PickingCandidateCommand.AddQtyToHURequest;
+import de.metas.handlingunits.picking.PickingCandidateService.AddQtyToHURequest;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.logging.LogManager;
