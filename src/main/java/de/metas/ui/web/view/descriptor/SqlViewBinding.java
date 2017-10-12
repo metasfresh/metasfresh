@@ -76,7 +76,7 @@ public class SqlViewBinding implements SqlEntityBinding
 	private final List<SqlViewRowFieldLoader> rowFieldLoaders;
 
 	private final ImmutableList<DocumentQueryOrderBy> defaultOrderBys;
-	private final DocumentFilterDescriptorsProvider viewFilterDescriptors;
+	private final DocumentFilterDescriptorsProvider filterDescriptors;
 	private final SqlDocumentFilterConvertersList filterConverters;
 
 	private final SqlViewRowIdsConverter rowIdsConverter;
@@ -151,7 +151,7 @@ public class SqlViewBinding implements SqlEntityBinding
 		this.rowFieldLoaders = ImmutableList.copyOf(rowFieldLoaders);
 
 		defaultOrderBys = ImmutableList.copyOf(builder.getDefaultOrderBys());
-		viewFilterDescriptors = builder.getViewFilterDescriptors();
+		filterDescriptors = builder.getViewFilterDescriptors();
 		filterConverters = builder.buildViewFilterConverters();
 
 		filterConverterDecoratorProvider = builder.sqlDocumentFilterConverterDecoratorProvider;
@@ -250,7 +250,7 @@ public class SqlViewBinding implements SqlEntityBinding
 
 	public DocumentFilterDescriptorsProvider getViewFilterDescriptors()
 	{
-		return viewFilterDescriptors;
+		return filterDescriptors;
 	}
 
 	@Override
@@ -348,8 +348,8 @@ public class SqlViewBinding implements SqlEntityBinding
 		private SqlViewRowFieldBinding _keyField;
 
 		private List<DocumentQueryOrderBy> defaultOrderBys;
-		private DocumentFilterDescriptorsProvider viewFilterDescriptors = NullDocumentFilterDescriptorsProvider.instance;
-		private SqlDocumentFilterConvertersList.Builder viewFilterConverters = null;
+		private DocumentFilterDescriptorsProvider filterDescriptors = NullDocumentFilterDescriptorsProvider.instance;
+		private SqlDocumentFilterConvertersList.Builder filterConverters = null;
 
 		private SqlViewRowIdsConverter rowIdsConverter = DefaultSqlViewRowIdsConverter.instance;
 
@@ -467,36 +467,36 @@ public class SqlViewBinding implements SqlEntityBinding
 			return defaultOrderBys == null ? ImmutableList.of() : defaultOrderBys;
 		}
 
-		public Builder setViewFilterDescriptors(@NonNull final DocumentFilterDescriptorsProvider viewFilterDescriptors)
+		public Builder setFilterDescriptors(@NonNull final DocumentFilterDescriptorsProvider filterDescriptors)
 		{
-			this.viewFilterDescriptors = viewFilterDescriptors;
+			this.filterDescriptors = filterDescriptors;
 			return this;
 		}
 
 		private DocumentFilterDescriptorsProvider getViewFilterDescriptors()
 		{
-			return viewFilterDescriptors;
+			return filterDescriptors;
 		}
 
 		public Builder addFilterConverter(
 				@NonNull final String filterId,
 				@NonNull final SqlDocumentFilterConverter converter)
 		{
-			if (viewFilterConverters == null)
+			if (filterConverters == null)
 			{
-				viewFilterConverters = SqlDocumentFilterConverters.listBuilder();
+				filterConverters = SqlDocumentFilterConverters.listBuilder();
 			}
-			viewFilterConverters.addConverter(filterId, converter);
+			filterConverters.addConverter(filterId, converter);
 			return this;
 		}
 
 		private SqlDocumentFilterConvertersList buildViewFilterConverters()
 		{
-			if (viewFilterConverters == null)
+			if (filterConverters == null)
 			{
 				return SqlDocumentFilterConverters.emptyList();
 			}
-			return viewFilterConverters.build();
+			return filterConverters.build();
 		}
 
 		public Builder setRowIdsConverter(@NonNull SqlViewRowIdsConverter rowIdsConverter)

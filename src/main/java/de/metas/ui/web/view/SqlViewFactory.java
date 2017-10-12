@@ -13,7 +13,6 @@ import org.compiere.util.CCache;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableMap.Builder;
 
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
@@ -76,19 +75,18 @@ public class SqlViewFactory implements IViewFactory
 
 	private final DocumentReferencesService documentReferencesService;
 
-	private final ImmutableMap<WindowId, SqlDocumentFilterConverterDecoratorProvider> windowId2CustomConverter;
+	private final ImmutableMap<WindowId, SqlDocumentFilterConverterDecoratorProvider> windowId2SqlDocumentFilterConverterDecoratorProvider;
 
 	public SqlViewFactory(
 			@NonNull final DocumentDescriptorFactory documentDescriptorFactory,
 			@NonNull final DocumentReferencesService documentReferencesService,
-			@NonNull final Collection<WindowSpecificSqlDocumentFilterConverterDecoratorProvider> windowSpecificSqlDocumentFilterConverters)
+			@NonNull final Collection<WindowSpecificSqlDocumentFilterConverterDecoratorProvider> providers)
 	{
 		this.documentDescriptorFactory = documentDescriptorFactory;
 		this.documentReferencesService = documentReferencesService;
 
-		final Builder<WindowId, SqlDocumentFilterConverterDecoratorProvider> builder = ImmutableMap.builder();
-		windowSpecificSqlDocumentFilterConverters.forEach(c -> builder.put(c.getWindowId(), c.getConverter()));
-		windowId2CustomConverter = builder.build();
+		this.windowId2SqlDocumentFilterConverterDecoratorProvider = providers.stream()
+				.collect(ImmutableMap.toImmutableMap(p -> p.getWindowId(), p -> p.getConverter()));
 	}
 
 	@Value
@@ -216,16 +214,16 @@ public class SqlViewFactory implements IViewFactory
 				.setTableName(entityBinding.getTableName())
 				.setTableAlias(entityBinding.getTableAlias())
 				.setDisplayFieldNames(displayFieldNames)
-				.setViewFilterDescriptors(filterDescriptors)
+				.setFilterDescriptors(filterDescriptors)
 				.setSqlWhereClause(entityBinding.getSqlWhereClause())
 				.setOrderBys(entityBinding.getDefaultOrderBys())
 				.setGroupingBinding(groupingBinding);
 
-		if (windowId2CustomConverter.containsKey(key.getWindowId()))
+		if (windowId2SqlDocumentFilterConverterDecoratorProvider.containsKey(key.getWindowId()))
 		{
-			builder.setFilterConverterDecoratorProvider(windowId2CustomConverter.get(key.getWindowId()));
+			builder.setFilterConverterDecoratorProvider(windowId2SqlDocumentFilterConverterDecoratorProvider.get(key.getWindowId()));
 		}
-		
+
 		entityBinding.getFields()
 				.stream()
 				.map(documentField -> createViewFieldBinding(documentField, displayFieldNames))

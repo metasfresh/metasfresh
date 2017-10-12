@@ -145,7 +145,7 @@ public class HUEditorViewFactory implements IViewFactory
 		{
 			final Collection<DocumentFilterDescriptor> huStandardFilters = huEntityDescriptor.getFilterDescriptors().getAll();
 			sqlViewBinding
-					.setViewFilterDescriptors(ImmutableDocumentFilterDescriptorsProvider.builder()
+					.setFilterDescriptors(ImmutableDocumentFilterDescriptorsProvider.builder()
 							.addDescriptors(huStandardFilters)
 							.addDescriptor(HUBarcodeSqlDocumentFilterConverter.createDocumentFilterDescriptor())
 							.build())

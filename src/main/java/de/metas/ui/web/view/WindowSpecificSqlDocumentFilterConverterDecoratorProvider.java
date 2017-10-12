@@ -28,7 +28,7 @@ import de.metas.ui.web.window.datatypes.WindowId;
  */
 
 /**
- * Implementors shall be discovered by spring and be autowired into {@link SqlViewFactory}.
+ * Implementors shall be discovered annotated with {@link Component}, discovered by spring and be autowired into {@link SqlViewFactory}.
  * <p>
  * When a view is created for the implementor's {@link WindowId}, the respective filter results are then augmented<br>
  * using the converter that is provided by the impementor's {@link SqlDocumentFilterConverterDecoratorProvider}.
@@ -36,7 +36,7 @@ import de.metas.ui.web.window.datatypes.WindowId;
  * @author metas-dev <dev@metasfresh.com>
  * @task Extend framework to allow modification of standard filter results https://github.com/metasfresh/metasfresh-webui-api/issues/628
  */
-@Component
+
 public interface WindowSpecificSqlDocumentFilterConverterDecoratorProvider
 {
 	WindowId getWindowId();
