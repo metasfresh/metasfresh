@@ -11,10 +11,8 @@ import java.util.stream.Stream;
 import javax.annotation.Nullable;
 
 import org.adempiere.util.GuavaCollectors;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.Adempiere;
 import org.compiere.util.Evaluatee;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
@@ -24,21 +22,13 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.handlingunits.IHUQueryBuilder;
-import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.i18n.ITranslatableString;
-import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
-import de.metas.ui.web.handlingunits.HUIdsFilterHelper;
-import de.metas.ui.web.handlingunits.WEBUI_HU_Constants;
-import de.metas.ui.web.process.ProcessInstanceResult.OpenIncludedViewAction;
-import de.metas.ui.web.process.view.ViewAction;
 import de.metas.ui.web.view.ASIViewRowAttributesProvider;
-import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewRow;
-import de.metas.ui.web.view.IViewsRepository;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.ViewResult;
 import de.metas.ui.web.view.event.ViewChangesCollector;
@@ -77,11 +67,6 @@ import lombok.NonNull;
 
 public class PPOrderLinesView implements IView
 {
-	public static PPOrderLinesView cast(final IView view)
-	{
-		return (PPOrderLinesView)view;
-	}
-
 	private final ViewId parentViewId;
 	private final DocumentId parentRowId;
 
@@ -94,6 +79,13 @@ public class PPOrderLinesView implements IView
 	private final ASIViewRowAttributesProvider asiAttributesProvider;
 	private final ExtendedMemorizingSupplier<PPOrderLinesViewData> dataSupplier;
 
+	final List<RelatedProcessDescriptor> additionalRelatedProcessDescriptors;
+
+	public static PPOrderLinesView cast(final IView view)
+	{
+		return (PPOrderLinesView)view;
+	}
+	
 	@Builder
 	private PPOrderLinesView(
 			final ViewId parentViewId,
@@ -102,13 +94,16 @@ public class PPOrderLinesView implements IView
 			@NonNull final JSONViewDataType viewType,
 			final Set<DocumentPath> referencingDocumentPaths,
 			final int ppOrderId,
-			final ASIViewRowAttributesProvider asiAttributesProvider)
+			final ASIViewRowAttributesProvider asiAttributesProvider,
+			@NonNull final List<RelatedProcessDescriptor> additionalRelatedProcessDescriptors)
 	{
 		this.parentViewId = parentViewId; // might be null
 		this.parentRowId = parentRowId; // might be null
 		this.viewId = viewId;
 		this.viewType = viewType;
 		this.referencingDocumentPaths = referencingDocumentPaths == null ? ImmutableSet.of() : ImmutableSet.copyOf(referencingDocumentPaths);
+
+		this.additionalRelatedProcessDescriptors = ImmutableList.copyOf(additionalRelatedProcessDescriptors);
 
 		Preconditions.checkArgument(ppOrderId > 0, "PP_Order_ID not provided");
 		this.ppOrderId = ppOrderId;
@@ -344,6 +339,12 @@ public class PPOrderLinesView implements IView
 	}
 
 	@Override
+	public List<RelatedProcessDescriptor> getAdditionalRelatedProcessDescriptors()
+	{
+		return additionalRelatedProcessDescriptors;
+	}
+
+	@Override
 	public void invalidateAll()
 	{
 		invalidateAllNoNotify();
@@ -366,66 +367,5 @@ public class PPOrderLinesView implements IView
 	{
 		return dataSupplier.get();
 	}
-
-	@ViewAction(caption = "PPOrderLinesView.openViewsToIssue", precondition = IsSingleIssueLine.class)
-	public OpenIncludedViewAction actionOpenViewForHUsToIssue(final DocumentIdsSelection selectedDocumentIds)
-	{
-		final DocumentId selectedRowId = selectedDocumentIds.getSingleDocumentId();
-		final PPOrderLineRow selectedRow = getById(selectedRowId);
-
-		if (!selectedRow.isIssue())
-		{
-			throw new IllegalStateException("Only issue lines are supported");
-		}
-		if (selectedRow.isProcessed())
-		{
-			throw new IllegalStateException("Row processed");
-		}
-
-		final I_PP_Order_BOMLine ppOrderBomLine = load(selectedRow.getPP_Order_BOMLine_ID(), I_PP_Order_BOMLine.class);
-
-		final IHUPPOrderBL huppOrderBL = Services.get(IHUPPOrderBL.class);
-		final IHUQueryBuilder huIdsToAvailableToIssueQuery = huppOrderBL.createHUsAvailableToIssueQuery(ppOrderBomLine);
-
-		final IViewsRepository viewsRepo = Adempiere.getSpringApplicationContext().getBean(IViewsRepository.class); // TODO dirty workaround
-		final IView husToIssueView = viewsRepo.createView(CreateViewRequest.builder(WEBUI_HU_Constants.WEBUI_HU_Window_ID, JSONViewDataType.includedView)
-				.setParentViewId(getViewId())
-				.addStickyFilters(HUIdsFilterHelper.createFilter(huIdsToAvailableToIssueQuery))
-				.addActionsFromUtilityClass(PPOrderHUsToIssueActions.class)
-				.build());
-
-		return OpenIncludedViewAction.builder()
-				.viewId(husToIssueView.getViewId())
-				.build();
-	}
-
-	public static final class IsSingleIssueLine implements ViewAction.Precondition
-	{
-		@Override
-		public ProcessPreconditionsResolution matches(final IView view, final DocumentIdsSelection selectedDocumentIds)
-		{
-			if (!selectedDocumentIds.isSingleDocumentId())
-			{
-				return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
-			}
-
-			final PPOrderLinesView ppOrder = cast(view);
-			if (!(ppOrder.isStatusPlanning() || ppOrder.isStatusReview()))
-			{
-				return ProcessPreconditionsResolution.rejectWithInternalReason("not in planning or in review");
-			}
-
-			final DocumentId selectedDocumentId = selectedDocumentIds.getSingleDocumentId();
-			final PPOrderLineRow ppOrderLine = ppOrder.getById(selectedDocumentId);
-			if (!ppOrderLine.isIssue())
-			{
-				return ProcessPreconditionsResolution.reject("not an issue line");
-			}
-			if (ppOrderLine.isProcessed())
-			{
-				return ProcessPreconditionsResolution.rejectWithInternalReason("row processed");
-			}
-			return ProcessPreconditionsResolution.accept();
-		}
-	}
+	
 }

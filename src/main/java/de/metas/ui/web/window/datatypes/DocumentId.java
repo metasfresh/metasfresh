@@ -43,6 +43,8 @@ import lombok.NonNull;
 // JSON
 public abstract class DocumentId implements Serializable
 {
+	private static final transient String DOCUMENT_ID_PREFIX = "D";
+
 	private static final transient int NEW_ID = -1;
 	
 	/**
@@ -152,22 +154,17 @@ public abstract class DocumentId implements Serializable
 
 	public abstract int toInt();
 
-	public int removePrefixAndConvertToInt(@NonNull final String idPrefix)
+	public int removeDocumentPrefixAndConvertToInt()
 	{
 		if (isInt())
 		{
 			return toInt();
 		}
 
-		if (idPrefix.isEmpty())
-		{
-			return toInt();
-		}
-
 		String idStr = toJson();
-		if (idStr.startsWith(idPrefix))
+		if (idStr.startsWith(DOCUMENT_ID_PREFIX))
 		{
-			idStr = idStr.substring(idPrefix.length());
+			idStr = idStr.substring(DOCUMENT_ID_PREFIX.length());
 		}
 
 		return Integer.parseInt(idStr);

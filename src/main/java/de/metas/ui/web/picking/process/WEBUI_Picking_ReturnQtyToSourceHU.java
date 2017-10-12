@@ -13,7 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.handlingunits.picking.PickingCandidateService.RemoveQtyFromHURequest;
-import de.metas.handlingunits.picking.SourceHUsRepository;
+import de.metas.handlingunits.sourcehu.HuId2SourceHUsService;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
@@ -49,8 +49,9 @@ public class WEBUI_Picking_ReturnQtyToSourceHU
 	@Autowired
 	private PickingCandidateService pickingCandidateService;
 
-	@Autowired private SourceHUsRepository sourceHUsRepository;
-	
+	@Autowired
+	private HuId2SourceHUsService sourceHUsRepository;
+
 	private static final String PARAM_QTY_CU = "QtyCU";
 	@Param(parameterName = PARAM_QTY_CU, mandatory = true)
 	private BigDecimal qtyCU;

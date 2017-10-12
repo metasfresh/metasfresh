@@ -1,4 +1,4 @@
-package de.metas.ui.web.handlingunits.process;
+package de.metas.ui.web.handlingunits;
 
 import java.util.List;
 import java.util.Set;
@@ -13,9 +13,7 @@ import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
-import de.metas.ui.web.handlingunits.HUEditorRow;
-import de.metas.ui.web.handlingunits.HUEditorView;
-import de.metas.ui.web.handlingunits.process.HUEditorProcessTemplate.HUEditorRowFilter.Select;
+import de.metas.ui.web.handlingunits.HUEditorProcessTemplate.HUEditorRowFilter.Select;
 import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import lombok.NonNull;
@@ -115,7 +113,7 @@ public abstract class HUEditorProcessTemplate extends ViewBasedProcessTemplate
 				.createQuery()
 				.list(I_M_HU.class);
 	}
-	
+
 	private static final IHUQueryBuilder toHUQueryBuilder(final HUEditorRowFilter filter)
 	{
 		return Services.get(IHandlingUnitsDAO.class)
@@ -138,33 +136,35 @@ public abstract class HUEditorProcessTemplate extends ViewBasedProcessTemplate
 		}
 
 		final Set<String> onlyHUStatuses = filter.getOnlyHUStatuses();
-		if (!onlyHUStatuses.isEmpty() && !onlyHUStatuses.contains(row.getHUStatusKey()))
+		final boolean huStatusDoesntMatter = onlyHUStatuses.isEmpty();
+		if (huStatusDoesntMatter)
 		{
-			return false;
+			return true;
 		}
 
-		return true;
+		return onlyHUStatuses.contains(row.getHUStatusKey());
 	}
 
 	@lombok.Builder(toBuilder = true)
 	@lombok.Value
-	protected static final class HUEditorRowFilter
+	public static final class HUEditorRowFilter
 	{
-		public static final HUEditorRowFilter ALL = builder().select(Select.ALL).build();
-		
-		public static final HUEditorRowFilter select(Select select)
-		{
-			return builder().select(select).build();
-		}
-
 		@NonNull
 		private final Select select;
+
 		@Singular
 		private final ImmutableSet<String> onlyHUStatuses;
 
-		enum Select
+		public enum Select
 		{
 			ONLY_TOPLEVEL, ALL
+		}
+
+		public static final HUEditorRowFilter ALL = builder().select(Select.ALL).build();
+
+		public static final HUEditorRowFilter select(Select select)
+		{
+			return builder().select(select).build();
 		}
 
 		public static final class HUEditorRowFilterBuilder

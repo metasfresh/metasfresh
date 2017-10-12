@@ -1,7 +1,6 @@
 package de.metas.ui.web.picking.pickingslot;
 
 import java.util.List;
-import java.util.Properties;
 import java.util.function.Supplier;
 
 import javax.annotation.Nullable;
@@ -11,13 +10,14 @@ import org.adempiere.util.Services;
 import org.compiere.util.Env;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.printing.esb.base.util.Check;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.picking.PickingConstants;
-import de.metas.ui.web.picking.process.WEBUI_Picking_HUEditor_Open;
+import de.metas.ui.web.picking.process.WEBUI_Picking_HUEditor_Launcher;
 import de.metas.ui.web.picking.process.WEBUI_Picking_M_Picking_Candidate_Process;
 import de.metas.ui.web.picking.process.WEBUI_Picking_M_Picking_Candidate_Unprocess;
 import de.metas.ui.web.picking.process.WEBUI_Picking_M_Source_HU_Delete;
@@ -72,8 +72,6 @@ public class PickingSlotViewFactory implements IViewFactory
 	@Override
 	public ViewLayout getViewLayout(final WindowId windowId, final JSONViewDataType viewDataType)
 	{
-		// TODO: cache it
-
 		if (!PickingConstants.WINDOWID_PickingSlotView.equals(windowId))
 		{
 			throw new AdempiereException("windowId shall be " + PickingConstants.WINDOWID_PickingSlotView);
@@ -144,61 +142,38 @@ public class PickingSlotViewFactory implements IViewFactory
 
 	private List<RelatedProcessDescriptor> createAdditionalRelatedProcessDescriptors()
 	{
-		// TODO: cache it
-
-		final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
-		final Properties ctx = Env.getCtx();
-
 		return ImmutableList.of(
 				// allow to open the HU-editor for various picking related purposes
-				RelatedProcessDescriptor.builder()
-						.processId(adProcessDAO.retriveProcessIdByClass(ctx, WEBUI_Picking_HUEditor_Open.class))
-						.anyTable().anyWindow()
-						.webuiQuickAction(true)
-						.build(),
-				//
+				createProcessDescriptorForPickingSlotView(WEBUI_Picking_HUEditor_Launcher.class),
+
 				// fine-picking related processes
-				RelatedProcessDescriptor.builder()
-						.processId(adProcessDAO.retriveProcessIdByClassIfUnique(ctx, WEBUI_Picking_PickQtyToNewHU.class))
-						.anyTable().anyWindow()
-						.webuiQuickAction(true)
-						.build(),
-				RelatedProcessDescriptor.builder()
-						.processId(adProcessDAO.retriveProcessIdByClass(ctx, WEBUI_Picking_PickQtyToExistingHU.class))
-						.anyTable().anyWindow()
-						.webuiQuickAction(true)
-						.build(),
-				RelatedProcessDescriptor.builder()
-						.processId(adProcessDAO.retriveProcessIdByClass(ctx, WEBUI_Picking_ReturnQtyToSourceHU.class))
-						.anyTable().anyWindow()
-						.webuiQuickAction(true)
-						.build(),
+				createProcessDescriptorForPickingSlotView(WEBUI_Picking_PickQtyToNewHU.class),
+				createProcessDescriptorForPickingSlotView(WEBUI_Picking_PickQtyToExistingHU.class),
+				createProcessDescriptorForPickingSlotView(WEBUI_Picking_ReturnQtyToSourceHU.class),
+
 				// note that WEBUI_Picking_M_Source_HU_Create is called from the HU-editor
-				RelatedProcessDescriptor.builder()
-						.processId(adProcessDAO.retriveProcessIdByClass(ctx, WEBUI_Picking_M_Source_HU_Delete.class))
-						.anyTable().anyWindow()
-						.webuiQuickAction(true)
-						.build(),
+				createProcessDescriptorForPickingSlotView(WEBUI_Picking_M_Source_HU_Delete.class),
 
-				//
 				// complete-HU-picking related processes; note that the add to-slot-process is called from the HU-editor
-				RelatedProcessDescriptor.builder()
-						.processId(adProcessDAO.retriveProcessIdByClass(ctx, WEBUI_Picking_RemoveHUFromPickingSlot.class))
-						.anyTable().anyWindow()
-						.webuiQuickAction(true)
-						.build(),
+				createProcessDescriptorForPickingSlotView(WEBUI_Picking_RemoveHUFromPickingSlot.class),
 
-				//
 				// "picking-lifecycle" processes
-				RelatedProcessDescriptor.builder()
-						.processId(adProcessDAO.retriveProcessIdByClass(ctx, WEBUI_Picking_M_Picking_Candidate_Process.class))
-						.anyTable().anyWindow()
+				createProcessDescriptorForPickingSlotView(WEBUI_Picking_M_Picking_Candidate_Process.class),
+				createProcessDescriptorForPickingSlotView(WEBUI_Picking_M_Picking_Candidate_Unprocess.class));
+	}
+
+	private static RelatedProcessDescriptor createProcessDescriptorForPickingSlotView(@NonNull final Class<?> processClass)
+	{
+		final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
+
+		final int processId = adProcessDAO.retriveProcessIdByClassIfUnique(Env.getCtx(), processClass);
+		Preconditions.checkArgument(processId > 0, "No AD_Process_ID found for %s", processClass);
+
+		return RelatedProcessDescriptor.builder()
+				.processId(processId)
+				.windowId(PickingConstants.WINDOWID_PickingSlotView.toInt())
+				.anyTable()
 						.webuiQuickAction(true)
-						.build(),
-				RelatedProcessDescriptor.builder()
-						.processId(adProcessDAO.retriveProcessIdByClass(ctx, WEBUI_Picking_M_Picking_Candidate_Unprocess.class))
-						.anyTable().anyWindow()
-						.webuiQuickAction(true)
-						.build());
+				.build();
 	}
 }

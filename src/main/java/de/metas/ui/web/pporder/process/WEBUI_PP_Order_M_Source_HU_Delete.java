@@ -1,12 +1,11 @@
-package de.metas.ui.web.picking.process;
+package de.metas.ui.web.pporder.process;
 
 import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_SELECT_SOURCE_HU;
 
 import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.ui.web.picking.pickingslot.PickingSlotRow;
-import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
+import de.metas.ui.web.pporder.PPOrderLineRow;
 
 /*
  * #%L
@@ -30,8 +29,8 @@ import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
  * #L%
  */
 
-public class WEBUI_Picking_M_Source_HU_Delete
-		extends ViewBasedProcessTemplate
+public class WEBUI_PP_Order_M_Source_HU_Delete
+		extends WEBUI_PP_Order_Template
 		implements IProcessPrecondition
 {
 
@@ -43,8 +42,8 @@ public class WEBUI_Picking_M_Source_HU_Delete
 			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
 		}
 
-		final PickingSlotRow pickingSlotRow = getSingleSelectedRow();
-		if (!pickingSlotRow.isPickingSourceHURow())
+		final PPOrderLineRow pickingSlotRow = getSingleSelectedRow();
+		if (!pickingSlotRow.isSourceHU())
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason(MSG_WEBUI_PICKING_SELECT_SOURCE_HU);
 		}
@@ -55,8 +54,8 @@ public class WEBUI_Picking_M_Source_HU_Delete
 	@Override
 	protected String doIt() throws Exception
 	{
-		final PickingSlotRow rowToProcess = getSingleSelectedRow();
-		final int huId = rowToProcess.getHuId();
+		final PPOrderLineRow rowToProcess = getSingleSelectedRow();
+		final int huId = rowToProcess.getM_HU_ID();
 
 		// unselect the row we just deleted the record of, to avoid an 'EntityNotFoundException'
 		final boolean sourceWasDeleted = SourceHUsService.get().deleteSourceHuMarker(huId);
@@ -69,9 +68,5 @@ public class WEBUI_Picking_M_Source_HU_Delete
 		return MSG_OK;
 	}
 
-	@Override
-	protected PickingSlotRow getSingleSelectedRow()
-	{
-		return PickingSlotRow.cast(super.getSingleSelectedRow());
-	}
+
 }

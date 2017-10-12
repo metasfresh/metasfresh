@@ -16,12 +16,15 @@ import de.metas.edi.model.I_M_InOutLine;
 import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.IHUAssignmentDAO;
 import de.metas.handlingunits.allocation.transfer.HUTransformService;
+import de.metas.handlingunits.allocation.transfer.HUTransformService.HUsToNewTUsRequest;
 import de.metas.handlingunits.inout.IHUInOutBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.ui.web.handlingunits.HUEditorProcessTemplate;
 import de.metas.ui.web.handlingunits.HUEditorRow;
+import de.metas.ui.web.handlingunits.WEBUI_HU_Constants;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 
@@ -115,12 +118,11 @@ public class WEBUI_M_HU_ReturnTUsToVendor extends HUEditorProcessTemplate implem
 
 		//
 		// Split out the TUs we need to return
-		final boolean isOwnPackingMaterials = true;
-		tusToReturn = HUTransformService.getWithThreadInheritedTrx()
-				.huExtractTUs(topLevelHU, p_QtyTU, isOwnPackingMaterials);
+		final HUsToNewTUsRequest request = HUsToNewTUsRequest.forSourceHuAndQty(topLevelHU, p_QtyTU);
+		tusToReturn = HUTransformService.get().husToNewTUs(request);
 		if (tusToReturn.size() != p_QtyTU)
 		{
-			throw new AdempiereException(WEBUI_M_HU_Messages.MSG_NotEnoughTUsFound, new Object[] { p_QtyTU, tusToReturn.size() });
+			throw new AdempiereException(WEBUI_HU_Constants.MSG_NotEnoughTUsFound, new Object[] { p_QtyTU, tusToReturn.size() });
 		}
 
 		//

@@ -124,7 +124,7 @@ public class WEBUI_Picking_PickQtyToNewHU
 		{
 			final AddQtyToHURequest request = AddQtyToHURequest.builder()
 					.qtyCU(qtyCU)
-					.huId(hu.getM_HU_ID())
+					.targetHuId(hu.getM_HU_ID())
 					.pickingSlotId(pickingSlotRow.getPickingSlotId())
 					.shipmentScheduleId(getView().getCurrentShipmentScheduleId())
 					.build();
