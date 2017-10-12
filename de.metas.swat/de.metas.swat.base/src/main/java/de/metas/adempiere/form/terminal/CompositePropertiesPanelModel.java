@@ -39,10 +39,10 @@ import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
-import de.metas.adempiere.form.IInputMethod;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.adempiere.form.terminal.field.constraint.ITerminalFieldConstraint;
 import de.metas.logging.LogManager;
+import de.metas.picking.legacy.form.IInputMethod;
 
 /**
  * Class used to aggregate together {@link IPropertiesPanelModel}s and behave like on single {@link IPropertiesPanelModel}.

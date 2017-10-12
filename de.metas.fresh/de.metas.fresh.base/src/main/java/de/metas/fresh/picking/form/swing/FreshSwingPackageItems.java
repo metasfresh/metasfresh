@@ -41,10 +41,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 
-import de.metas.adempiere.form.IPackingItem;
-import de.metas.adempiere.form.ITableRowSearchSelectionMatcher;
-import de.metas.adempiere.form.PackingItemsMap;
-import de.metas.adempiere.form.PackingMd;
 import de.metas.adempiere.form.terminal.IContainer;
 import de.metas.adempiere.form.terminal.ITerminalButton;
 import de.metas.adempiere.form.terminal.ITerminalDialog;
@@ -74,6 +70,10 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_PickingSlot;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.picking.legacy.form.IPackingItem;
+import de.metas.picking.legacy.form.ITableRowSearchSelectionMatcher;
+import de.metas.picking.legacy.form.PackingMd;
+import de.metas.picking.service.PackingItemsMap;
 import de.metas.picking.terminal.DefaultPackingStateAggregator;
 import de.metas.picking.terminal.IPackingStateAggregator;
 import de.metas.picking.terminal.ProductLayout;
@@ -430,9 +430,9 @@ public class FreshSwingPackageItems extends SwingPackageBoxesItems
 			return PackingStates.unpacked;
 		}
 
-		final List<IPackingItem> allQtyremainingitems = new ArrayList<IPackingItem>();
+		final List<IPackingItem> allQtyremainingitems = new ArrayList<>();
 
-		final List<IPackingItem> partialQtyremainingitems = new ArrayList<IPackingItem>();
+		final List<IPackingItem> partialQtyremainingitems = new ArrayList<>();
 
 		for (final IPackingItem upItem : unpackedItems)
 		{
@@ -549,7 +549,7 @@ public class FreshSwingPackageItems extends SwingPackageBoxesItems
 		IPackingItem itemUnpacked = null;
 		if (itemsUnpacked == null)
 		{
-			itemsUnpacked = new ArrayList<IPackingItem>();
+			itemsUnpacked = new ArrayList<>();
 			packItems.put(PackingItemsMap.KEY_UnpackedItems, itemsUnpacked);
 		}
 		else
@@ -570,7 +570,7 @@ public class FreshSwingPackageItems extends SwingPackageBoxesItems
 		final List<IPackingItem> itemsPacked = packItems.remove(key);
 		Check.assumeNotNull(itemsPacked, "Packed items shall exist for key={}", key);
 
-		final List<IPackingItem> itemsPackedRemaining = new ArrayList<IPackingItem>();
+		final List<IPackingItem> itemsPackedRemaining = new ArrayList<>();
 
 		for (final IPackingItem itemPacked : itemsPacked)
 		{

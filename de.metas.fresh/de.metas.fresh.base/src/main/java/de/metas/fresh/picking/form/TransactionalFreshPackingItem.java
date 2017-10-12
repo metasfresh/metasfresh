@@ -8,8 +8,8 @@ import org.compiere.util.Util;
 
 import com.google.common.base.MoreObjects;
 
-import de.metas.adempiere.form.IPackingItem;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.picking.legacy.form.IPackingItem;
 
 /*
  * #%L

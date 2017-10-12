@@ -35,7 +35,6 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 
-import de.metas.adempiere.form.IPackingItem;
 import de.metas.fresh.picking.form.IFreshPackingItem;
 import de.metas.fresh.picking.service.IPackingContext;
 import de.metas.fresh.picking.service.IPackingHandler;
@@ -58,6 +57,7 @@ import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.model.X_M_ShipmentSchedule;
+import de.metas.picking.legacy.form.IPackingItem;
 import lombok.NonNull;
 
 /**

@@ -1,7 +1,7 @@
 package de.metas.fresh.picking.service;
 
-import de.metas.adempiere.form.IPackingItem;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.picking.legacy.form.IPackingItem;
 
 /*
  * #%L

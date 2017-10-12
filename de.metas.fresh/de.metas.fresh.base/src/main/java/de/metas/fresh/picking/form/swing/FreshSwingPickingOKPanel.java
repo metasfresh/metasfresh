@@ -48,8 +48,6 @@ import org.compiere.minigrid.MiniTable;
 import org.compiere.util.Util.ArrayKey;
 
 import de.metas.adempiere.form.IClientUI;
-import de.metas.adempiere.form.IPackingDetailsModel;
-import de.metas.adempiere.form.IPackingItem;
 import de.metas.adempiere.form.terminal.IConfirmPanel;
 import de.metas.adempiere.form.terminal.ITerminalTable;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
@@ -64,6 +62,8 @@ import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.OlAndSched;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.picking.legacy.form.IPackingDetailsModel;
+import de.metas.picking.legacy.form.IPackingItem;
 import de.metas.picking.terminal.form.swing.AbstractPackageTerminal;
 import de.metas.picking.terminal.form.swing.SwingPickingOKPanel;
 import de.metas.picking.terminal.form.swing.SwingPickingTerminalPanel;

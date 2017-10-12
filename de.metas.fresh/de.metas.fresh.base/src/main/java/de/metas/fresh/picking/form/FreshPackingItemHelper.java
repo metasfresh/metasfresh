@@ -5,8 +5,8 @@ import java.util.Map;
 
 import org.adempiere.util.Check;
 
-import de.metas.adempiere.form.IPackingItem;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.picking.legacy.form.IPackingItem;
 
 /*
  * #%L

@@ -40,12 +40,12 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.I_M_PackagingContainer;
 import org.adempiere.model.InterfaceWrapperHelper;
 
-import de.metas.adempiere.form.IPackingItem;
-import de.metas.adempiere.form.PackingItemsMap;
-import de.metas.adempiere.form.UsedBin;
 import de.metas.adempiere.form.terminal.ITerminalKey;
 import de.metas.adempiere.form.terminal.KeyLayout;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
+import de.metas.picking.legacy.form.IPackingItem;
+import de.metas.picking.legacy.form.UsedBin;
+import de.metas.picking.service.PackingItemsMap;
 import de.metas.picking.terminal.Utils.PackingStates;
 import de.metas.picking.terminal.form.swing.AbstractPackageTerminalPanel;
 
@@ -111,7 +111,7 @@ public class BoxLayout extends KeyLayout
 	@Override
 	public void addKey(ITerminalKey key)
 	{
-		List<ITerminalKey> list = new ArrayList<ITerminalKey>(keys);
+		List<ITerminalKey> list = new ArrayList<>(keys);
 		Collections.copy(list, keys);
 		((BoxKey)key).setBoxNo(getBoxesNo() + 1);
 		list.add(key);
@@ -122,7 +122,7 @@ public class BoxLayout extends KeyLayout
 
 	public void removeKey(ITerminalKey key)
 	{
-		List<ITerminalKey> list = new ArrayList<ITerminalKey>(keys);
+		List<ITerminalKey> list = new ArrayList<>(keys);
 		Collections.copy(list, keys);
 		list.remove(key);
 		int i = 1;
@@ -141,7 +141,7 @@ public class BoxLayout extends KeyLayout
 	{
 		final Map<Integer, DefaultMutableTreeNode> results = ((AbstractPackageTerminalPanel)getBasePanel()).getBoxes();
 
-		List<ITerminalKey> list = new ArrayList<ITerminalKey>();
+		List<ITerminalKey> list = new ArrayList<>();
 		for (int i = 0; i < results.size(); i++)
 		{
 			final UsedBin usedBin = (UsedBin)results.get(i + 1).getUserObject();

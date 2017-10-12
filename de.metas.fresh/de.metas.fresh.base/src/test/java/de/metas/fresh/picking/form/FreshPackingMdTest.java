@@ -36,14 +36,14 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import de.metas.adempiere.form.TableRow;
-import de.metas.adempiere.form.TableRowKey;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.adempiere.form.terminal.context.TerminalContextFactory;
 import de.metas.inoutcandidate.api.IPackageable;
 import de.metas.inoutcandidate.api.IPackagingDAO;
 import de.metas.inoutcandidate.api.impl.MockedPackagingDAO;
 import de.metas.inoutcandidate.api.impl.Packageable;
+import de.metas.picking.legacy.form.TableRow;
+import de.metas.picking.legacy.form.TableRowKey;
 
 public class FreshPackingMdTest
 {

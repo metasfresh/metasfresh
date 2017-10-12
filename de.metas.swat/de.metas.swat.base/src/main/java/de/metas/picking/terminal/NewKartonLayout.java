@@ -37,10 +37,10 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.I_M_PackagingContainer;
 import org.adempiere.model.InterfaceWrapperHelper;
 
-import de.metas.adempiere.form.AvailableBins;
 import de.metas.adempiere.form.terminal.ITerminalKey;
 import de.metas.adempiere.form.terminal.KeyLayout;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
+import de.metas.picking.legacy.form.AvailableBins;
 import de.metas.picking.terminal.form.swing.AbstractPackageTerminalPanel;
 
 /**

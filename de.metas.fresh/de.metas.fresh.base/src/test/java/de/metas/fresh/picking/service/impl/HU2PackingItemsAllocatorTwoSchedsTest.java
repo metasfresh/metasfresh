@@ -26,8 +26,6 @@ import org.junit.Test;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.adempiere.form.IPackingItem;
-import de.metas.adempiere.form.PackingItemsMap;
 import de.metas.fresh.picking.form.FreshPackingItemHelper;
 import de.metas.fresh.picking.form.IFreshPackingItem;
 import de.metas.fresh.picking.service.IPackingContext;
@@ -42,6 +40,8 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.shipmentschedule.util.ShipmentScheduleHelper;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.picking.legacy.form.IPackingItem;
+import de.metas.picking.service.PackingItemsMap;
 
 /*
  * #%L

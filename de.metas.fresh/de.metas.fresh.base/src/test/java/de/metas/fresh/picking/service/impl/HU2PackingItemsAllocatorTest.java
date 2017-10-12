@@ -50,7 +50,6 @@ import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Test;
 
-import de.metas.adempiere.form.PackingItemsMap;
 import de.metas.fresh.picking.form.FreshPackingItemHelper;
 import de.metas.fresh.picking.form.IFreshPackingItem;
 import de.metas.fresh.picking.service.IPackingContext;
@@ -71,6 +70,7 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.shipmentschedule.util.ShipmentScheduleHelper;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.picking.service.PackingItemsMap;
 
 public class HU2PackingItemsAllocatorTest extends AbstractHUTest
 {
@@ -120,7 +120,7 @@ public class HU2PackingItemsAllocatorTest extends AbstractHUTest
 		//
 		// Create Item to Pack
 		{
-			final Map<I_M_ShipmentSchedule, BigDecimal> scheds2Qtys = new HashMap<I_M_ShipmentSchedule, BigDecimal>();
+			final Map<I_M_ShipmentSchedule, BigDecimal> scheds2Qtys = new HashMap<>();
 			this.shipmentSchedule = createAndAppendShipmentSchedule(scheds2Qtys, qtyToDeliver);
 
 			this.itemToPack = FreshPackingItemHelper.create(scheds2Qtys);
