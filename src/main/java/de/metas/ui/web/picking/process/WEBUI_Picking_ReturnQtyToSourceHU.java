@@ -11,9 +11,9 @@ import java.util.Objects;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.picking.PickingCandidateCommand;
+import de.metas.handlingunits.picking.PickingCandidateService;
+import de.metas.handlingunits.picking.PickingCandidateService.RemoveQtyFromHURequest;
 import de.metas.handlingunits.picking.SourceHUsRepository;
-import de.metas.handlingunits.picking.PickingCandidateCommand.RemoveQtyFromHURequest;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
@@ -47,7 +47,7 @@ public class WEBUI_Picking_ReturnQtyToSourceHU
 		implements IProcessPrecondition
 {
 	@Autowired
-	private PickingCandidateCommand pickingCandidateCommand;
+	private PickingCandidateService pickingCandidateService;
 
 	@Autowired private SourceHUsRepository sourceHUsRepository;
 	
@@ -96,7 +96,7 @@ public class WEBUI_Picking_ReturnQtyToSourceHU
 				.productId(pickingSlotRow.getHuProductId())
 				.build();
 
-		pickingCandidateCommand.removeQtyFromHU(request);
+		pickingCandidateService.removeQtyFromHU(request);
 
 		invalidateView();
 		invalidateParentView();

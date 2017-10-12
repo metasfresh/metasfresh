@@ -5,7 +5,7 @@ import static org.junit.Assert.assertThat;
 
 import org.junit.Test;
 
-import de.metas.handlingunits.picking.PickingCandidateCommand;
+import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.ui.web.picking.packageable.PackageableViewFactory;
 import de.metas.ui.web.picking.packageable.PackageableViewRepository;
 import de.metas.ui.web.view.CreateViewRequest;
@@ -41,7 +41,7 @@ public class PickingViewFactoryTests
 	private PackageableViewRepository pickingViewRepo;
 	
 	@Mocked
-	private PickingCandidateCommand pickingCandidateCommand;
+	private PickingCandidateService pickingCandidateService;
 	
 	/**
 	 * Verifies that {@link PackageableViewFactory#createView(de.metas.ui.web.view.CreateViewRequest)} still works,<br>
@@ -50,7 +50,7 @@ public class PickingViewFactoryTests
 	@Test
 	public void testCreateView()
 	{
-		final PackageableViewFactory pickingViewFactory = new PackageableViewFactory(pickingViewRepo, pickingCandidateCommand);
+		final PackageableViewFactory pickingViewFactory = new PackageableViewFactory(pickingViewRepo, pickingCandidateService);
 		final IView view = pickingViewFactory.createView(CreateViewRequest.builder(PickingConstants.WINDOWID_PickingView, JSONViewDataType.grid).build());
 		assertThat(view, notNullValue());
 	}

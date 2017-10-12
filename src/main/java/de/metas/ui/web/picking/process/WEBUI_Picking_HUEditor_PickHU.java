@@ -3,7 +3,7 @@ package de.metas.ui.web.picking.process;
 import org.adempiere.exceptions.AdempiereException;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import de.metas.handlingunits.picking.PickingCandidateCommand;
+import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.process.IProcessPrecondition;
 import de.metas.ui.web.handlingunits.HUEditorRow;
 import de.metas.ui.web.picking.pickingslot.PickingSlotRow;
@@ -44,7 +44,7 @@ public class WEBUI_Picking_HUEditor_PickHU
 		implements IProcessPrecondition
 {
 	@Autowired
-	private PickingCandidateCommand pickingCandidateCommand;
+	private PickingCandidateService pickingCandidateService;
 
 	@Override
 	protected String doIt() throws Exception
@@ -73,6 +73,6 @@ public class WEBUI_Picking_HUEditor_PickHU
 		final int pickingSlotId = pickingSlotRow.getPickingSlotId();
 		final int shipmentScheduleId = pickingSlotsView.getCurrentShipmentScheduleId();
 
-		pickingCandidateCommand.addHUToPickingSlot(huId, pickingSlotId, shipmentScheduleId);
+		pickingCandidateService.addHUToPickingSlot(huId, pickingSlotId, shipmentScheduleId);
 	}
 }

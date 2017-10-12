@@ -6,7 +6,7 @@ import java.util.function.Supplier;
 
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.handlingunits.picking.PickingCandidateCommand;
+import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.i18n.ITranslatableString;
 import de.metas.ui.web.picking.PickingConstants;
 import de.metas.ui.web.view.CreateViewRequest;
@@ -55,19 +55,19 @@ public class PackageableViewFactory implements IViewFactory
 {
 	private final PackageableViewRepository pickingViewRepo;
 
-	private final PickingCandidateCommand pickingCandidateCommand;
+	private final PickingCandidateService pickingCandidateService;
 
 	/**
 	 * 
 	 * @param pickingViewRepo
-	 * @param pickingCandidateCommand when a new view is created, this stateless instance is given to that view
+	 * @param pickingCandidateService when a new view is created, this stateless instance is given to that view
 	 */
 	public PackageableViewFactory(
 			@NonNull final PackageableViewRepository pickingViewRepo,
-			@NonNull final PickingCandidateCommand pickingCandidateCommand)
+			@NonNull final PickingCandidateService pickingCandidateService)
 	{
 		this.pickingViewRepo = pickingViewRepo;
-		this.pickingCandidateCommand = pickingCandidateCommand;
+		this.pickingCandidateService = pickingCandidateService;
 	}
 
 	@Override
@@ -115,7 +115,7 @@ public class PackageableViewFactory implements IViewFactory
 				.viewId(viewId)
 				.description(ITranslatableString.empty())
 				.rowsSupplier(rowsSupplier)
-				.pickingCandidateCommand(pickingCandidateCommand)
+				.pickingCandidateService(pickingCandidateService)
 				.build();
 	}
 

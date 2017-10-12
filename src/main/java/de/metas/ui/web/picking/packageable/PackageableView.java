@@ -24,7 +24,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 
-import de.metas.handlingunits.picking.PickingCandidateCommand;
+import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.i18n.ITranslatableString;
 import de.metas.inoutcandidate.model.I_M_Packageable_V;
 import de.metas.ui.web.document.filter.DocumentFilter;
@@ -77,7 +77,7 @@ import lombok.NonNull;
  */
 public class PackageableView implements IView
 {
-	private final PickingCandidateCommand pickingCandidateCommand;
+	private final PickingCandidateService pickingCandidateService;
 
 	public static PackageableView cast(final IView view)
 	{
@@ -94,12 +94,12 @@ public class PackageableView implements IView
 	private PackageableView(@NonNull final ViewId viewId,
 			@NonNull final ITranslatableString description,
 			@NonNull final Supplier<List<PackageableRow>> rowsSupplier,
-			@NonNull final PickingCandidateCommand pickingCandidateCommand)
+			@NonNull final PickingCandidateService pickingCandidateService)
 	{
 		this.viewId = viewId;
 		this.description = description != null ? description : ITranslatableString.empty();
 		this.rowsSupplier = ExtendedMemorizingSupplier.of(() -> Maps.uniqueIndex(rowsSupplier.get(), PackageableRow::getId));
-		this.pickingCandidateCommand = pickingCandidateCommand;
+		this.pickingCandidateService = pickingCandidateService;
 	}
 
 	@Override
@@ -175,7 +175,7 @@ public class PackageableView implements IView
 				.map(row -> row.getShipmentScheduleId())
 				.collect(Collectors.toList());
 
-		pickingCandidateCommand.setCandidatesClosed(shipmentScheduleIds);
+		pickingCandidateService.setCandidatesClosed(shipmentScheduleIds);
 	}
 
 	@Override

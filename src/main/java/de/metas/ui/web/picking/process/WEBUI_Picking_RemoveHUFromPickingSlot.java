@@ -5,7 +5,7 @@ import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_SELECT_
 
 import org.springframework.beans.factory.annotation.Autowired;
 
-import de.metas.handlingunits.picking.PickingCandidateCommand;
+import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.picking.pickingslot.PickingSlotRow;
@@ -48,7 +48,7 @@ public class WEBUI_Picking_RemoveHUFromPickingSlot
 		implements IProcessPrecondition
 {
 	@Autowired
-	private PickingCandidateCommand pickingCandidateCommand;
+	private PickingCandidateService pickingCandidateService;
 
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
@@ -76,7 +76,7 @@ public class WEBUI_Picking_RemoveHUFromPickingSlot
 	protected String doIt()
 	{
 		final PickingSlotRow huRow = getSingleSelectedRow();
-		pickingCandidateCommand.removeHUFromPickingSlot(huRow.getHuId());
+		pickingCandidateService.removeHUFromPickingSlot(huRow.getHuId());
 
 		invalidateView();
 
