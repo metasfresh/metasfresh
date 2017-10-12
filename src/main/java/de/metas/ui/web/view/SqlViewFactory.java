@@ -211,26 +211,41 @@ public class SqlViewFactory implements IViewFactory
 			groupingBinding = null;
 		}
 
-		final SqlViewBinding.Builder builder = SqlViewBinding.builder()
-				.setTableName(entityBinding.getTableName())
-				.setTableAlias(entityBinding.getTableAlias())
-				.setDisplayFieldNames(displayFieldNames)
-				.setFilterDescriptors(filterDescriptors)
-				.setSqlWhereClause(entityBinding.getSqlWhereClause())
-				.setOrderBys(entityBinding.getDefaultOrderBys())
-				.setGroupingBinding(groupingBinding);
+		final SqlViewBinding.Builder builder = createBuilderForEntityBindingAndFieldNames(entityBinding, displayFieldNames);
+
+		builder.setFilterDescriptors(filterDescriptors)
+				.setGroupingBinding(groupingBinding);;
 
 		if (windowId2SqlDocumentFilterConverterDecoratorProvider.containsKey(key.getWindowId()))
 		{
 			builder.setFilterConverterDecoratorProvider(windowId2SqlDocumentFilterConverterDecoratorProvider.get(key.getWindowId()));
 		}
 
+		return builder.build();
+	}
+
+	private SqlViewBinding.Builder createBuilderForEntityBindingAndFieldNames(
+			@NonNull final SqlDocumentEntityDataBindingDescriptor entityBinding,
+			@NonNull final Set<String> displayFieldNames)
+	{
+		final SqlViewBinding.Builder builder = createBuilderForEntityBinding(entityBinding);
+
 		entityBinding.getFields()
 				.stream()
 				.map(documentField -> createViewFieldBinding(documentField, displayFieldNames))
 				.forEach(fieldBinding -> builder.addField(fieldBinding));
+		builder.setDisplayFieldNames(displayFieldNames);
+		return builder;
+	}
 
-		return builder.build();
+	private SqlViewBinding.Builder createBuilderForEntityBinding(@NonNull final SqlDocumentEntityDataBindingDescriptor entityBinding)
+	{
+		final SqlViewBinding.Builder builder = SqlViewBinding.builder()
+				.setTableName(entityBinding.getTableName())
+				.setTableAlias(entityBinding.getTableAlias())
+				.setSqlWhereClause(entityBinding.getSqlWhereClause())
+				.setOrderBys(entityBinding.getDefaultOrderBys());
+		return builder;
 	}
 
 	private static final SqlViewRowFieldBinding createViewFieldBinding(final SqlDocumentFieldDataBindingDescriptor documentField, final Collection<String> availableDisplayColumnNames)

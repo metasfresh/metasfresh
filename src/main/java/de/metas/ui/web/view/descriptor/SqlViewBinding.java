@@ -57,11 +57,6 @@ import lombok.NonNull;
 
 public class SqlViewBinding implements SqlEntityBinding
 {
-	public static final Builder builder()
-	{
-		return new Builder();
-	}
-
 	private final String _tableName;
 	private final String _tableAlias;
 
@@ -83,6 +78,11 @@ public class SqlViewBinding implements SqlEntityBinding
 
 	private final SqlViewGroupingBinding groupingBinding;
 	private final SqlDocumentFilterConverterDecoratorProvider filterConverterDecoratorProvider;
+
+	public static final Builder builder()
+	{
+		return new Builder();
+	}
 
 	private SqlViewBinding(final Builder builder)
 	{
@@ -160,9 +160,8 @@ public class SqlViewBinding implements SqlEntityBinding
 	}
 
 	@Override
-	public String toString()
+	public String toString() // NOTE: keep it short
 	{
-		// NOTE: keep it short
 		return MoreObjects.toStringHelper(this)
 				.add("tableName", _tableName)
 				.toString();
@@ -182,8 +181,7 @@ public class SqlViewBinding implements SqlEntityBinding
 
 	private SqlViewRowFieldBinding getKeyField()
 	{
-		Preconditions.checkNotNull(_keyField, "View %s does not have a key column defined", this);
-		return _keyField;
+		return Preconditions.checkNotNull(_keyField, "View %s does not have a key column defined", this);
 	}
 
 	@Override
@@ -330,12 +328,6 @@ public class SqlViewBinding implements SqlEntityBinding
 		}
 		return groupingBinding.isAggregated(fieldName);
 	}
-
-	//
-	//
-	//
-	//
-	//
 
 	public static final class Builder
 	{
