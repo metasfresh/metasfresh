@@ -134,6 +134,7 @@ class Table extends Component {
                 showIncludedView: false,
                 windowType: prevProps.windowType,
                 viewId: prevProps.viewid,
+                forceClose: true,
             });
         }
     }

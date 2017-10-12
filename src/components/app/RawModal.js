@@ -99,6 +99,7 @@ class RawModal extends Component {
         dispatch(closeListIncludedView({
           windowType,
           viewId,
+          forceClose: true,
         }));
 
         if (!modalVisible){
