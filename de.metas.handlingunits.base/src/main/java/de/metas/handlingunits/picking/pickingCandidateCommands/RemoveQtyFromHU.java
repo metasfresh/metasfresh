@@ -26,9 +26,9 @@ import de.metas.handlingunits.allocation.impl.HULoader;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Picking_Candidate;
 import de.metas.handlingunits.model.X_M_HU;
-import de.metas.handlingunits.picking.PickingCandidateCommand.RemoveQtyFromHURequest;
+import de.metas.handlingunits.picking.PickingCandidateService.RemoveQtyFromHURequest;
+import de.metas.handlingunits.sourcehu.HuId2SourceHUsService;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
-import de.metas.handlingunits.picking.SourceHUsRepository;
 import de.metas.logging.LogManager;
 import de.metas.quantity.Quantity;
 import lombok.NonNull;
@@ -59,12 +59,12 @@ public class RemoveQtyFromHU
 {
 	private static final Logger logger = LogManager.getLogger(RemoveQtyFromHU.class);
 
-	private final SourceHUsRepository sourceHUsRepository;
+	private final HuId2SourceHUsService sourceHUsRepository;
 
 	private final PickingCandidateRepository pickingCandidateRepository;
 
 	public RemoveQtyFromHU(
-			@NonNull final SourceHUsRepository sourceHUsRepository,
+			@NonNull final HuId2SourceHUsService sourceHUsRepository,
 			@NonNull final PickingCandidateRepository pickingCandidateRepository)
 	{
 		this.sourceHUsRepository = sourceHUsRepository;
@@ -73,7 +73,7 @@ public class RemoveQtyFromHU
 
 	public void perform(@NonNull final RemoveQtyFromHURequest removeQtyFromHURequest)
 	{
-		final Collection<I_M_HU> sourceHUs = sourceHUsRepository.retrieveSourceHUsViaTracing(ImmutableList.of(removeQtyFromHURequest.getHuId()));
+		final Collection<I_M_HU> sourceHUs = sourceHUsRepository.retrieveActualSourceHUs(ImmutableList.of(removeQtyFromHURequest.getHuId()));
 		removeQtyFromHU0(removeQtyFromHURequest, sourceHUs);
 	}
 

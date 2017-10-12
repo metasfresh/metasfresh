@@ -1,4 +1,4 @@
-package de.metas.handlingunits.picking.impl;
+package de.metas.handlingunits.sourcehu.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
@@ -13,18 +13,15 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Storage;
 import de.metas.handlingunits.model.I_M_Locator;
-import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.model.I_M_Source_HU;
 import de.metas.handlingunits.model.I_M_Warehouse;
 import de.metas.handlingunits.model.X_M_HU;
-import de.metas.handlingunits.picking.IHUPickingSlotBL.RetrieveActiveSourceHusQuery;
-import de.metas.handlingunits.picking.impl.HUPickingSlotBL;
+import de.metas.handlingunits.sourcehu.SourceHUsService.MatchingSourceHusQuery;
 
 /*
  * #%L
@@ -48,7 +45,7 @@ import de.metas.handlingunits.picking.impl.HUPickingSlotBL;
  * #L%
  */
 
-public class HUPickingSlotBLTest
+public class SourceHuDAOTest
 {
 	private I_M_Warehouse wh;
 	private I_M_Locator locator;
@@ -81,7 +78,7 @@ public class HUPickingSlotBLTest
 
 		otherProduct = newInstance(I_M_Product.class);
 		save(otherProduct);
-		
+
 		hus = ImmutableList.of(
 				createHU("locator-product", locator, product),
 				createHU("locator-product-nosourceHU", locator, product),
@@ -93,30 +90,35 @@ public class HUPickingSlotBLTest
 	@Test
 	public void testCreateHuFiltersForScheds()
 	{
-	
-		final RetrieveActiveSourceHusQuery query = new RetrieveActiveSourceHusQuery(ImmutableSet.of(product.getM_Product_ID()), wh.getM_Warehouse_ID());
-		final ICompositeQueryFilter<I_M_HU> huFilters = new HUPickingSlotBL().createHuFiltersForScheds(query);
+		final MatchingSourceHusQuery query = MatchingSourceHusQuery.builder()
+				.productId(product.getM_Product_ID())
+				.warehouseId(wh.getM_Warehouse_ID()).build();
+
+		final ICompositeQueryFilter<I_M_HU> huFilters = SourceHuDAO.createHuFilter(query);
 		assertThat(huFilters.accept(hus.get(0))).isTrue();
 		assertThat(huFilters.accept(hus.get(1))).isTrue();
 		assertThat(huFilters.accept(hus.get(2))).isFalse();
 		assertThat(huFilters.accept(hus.get(3))).isFalse();
 		assertThat(huFilters.accept(hus.get(4))).isFalse();
 	}
-	
+
 	@Test
 	public void testRetrieveActiveSourceHUs()
 	{
 		final I_M_Source_HU sourceHu = newInstance(I_M_Source_HU.class);
 		sourceHu.setM_HU(hus.get(0));
 		save(sourceHu);
-		
-		final RetrieveActiveSourceHusQuery query = new RetrieveActiveSourceHusQuery(ImmutableSet.of(product.getM_Product_ID()), wh.getM_Warehouse_ID());
-		final List<I_M_HU> result = new HUPickingSlotBL().retrieveActiveSourceHUs(query);
+
+		final MatchingSourceHusQuery query = MatchingSourceHusQuery.builder()
+				.productId(product.getM_Product_ID())
+				.warehouseId(wh.getM_Warehouse_ID()).build();
+		final List<I_M_HU> result = new SourceHuDAO().retrieveActiveSourceHus(query);
+
 		assertThat(result).hasSize(1);
 		assertThat(result.get(0).getM_HU_ID()).isEqualTo(hus.get(0).getM_HU_ID());
 	}
 
-	I_M_HU createHU(
+	private static I_M_HU createHU(
 			final String instanceName,
 			final I_M_Locator locator,
 			final I_M_Product product)
@@ -134,25 +136,4 @@ public class HUPickingSlotBLTest
 
 		return hu;
 	}
-
-	@Test
-	public void testRetrieveActiveSourceHusQuery_fromShipmentSchedules()
-	{
-		final I_M_ShipmentSchedule shipmentSchedule1 = newInstance(I_M_ShipmentSchedule.class);
-		shipmentSchedule1.setM_Warehouse(wh);
-		shipmentSchedule1.setM_Product(product);
-		save(shipmentSchedule1);
-
-		final I_M_ShipmentSchedule shipmentSchedule2 = newInstance(I_M_ShipmentSchedule.class);
-		shipmentSchedule2.setM_Warehouse(wh);
-		shipmentSchedule2.setM_Product(product);
-		save(shipmentSchedule2);
-		
-		final RetrieveActiveSourceHusQuery query = RetrieveActiveSourceHusQuery.fromShipmentSchedules(ImmutableList.of(shipmentSchedule1, shipmentSchedule2));
-		
-		assertThat(query.getWarehouseId()).isEqualTo(wh.getM_Warehouse_ID());
-		assertThat(query.getProductIds()).containsExactly(product.getM_Product_ID());
-	}
-	
-	
 }

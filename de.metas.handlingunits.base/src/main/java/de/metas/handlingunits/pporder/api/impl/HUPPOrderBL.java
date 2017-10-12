@@ -75,7 +75,7 @@ public class HUPPOrderBL implements IHUPPOrderBL
 			.put(X_PP_Order.PLANNINGSTATUS_Planning, X_PP_Order.PLANNINGSTATUS_Complete)
 			.put(X_PP_Order.PLANNINGSTATUS_Review, X_PP_Order.PLANNINGSTATUS_Planning)
 			.put(X_PP_Order.PLANNINGSTATUS_Review, X_PP_Order.PLANNINGSTATUS_Complete)
-			.put(X_PP_Order.PLANNINGSTATUS_Complete, X_PP_Order.PLANNINGSTATUS_Planning) // mainly for testing
+			//.put(X_PP_Order.PLANNINGSTATUS_Complete, X_PP_Order.PLANNINGSTATUS_Planning) // don't allow this transition unless https://github.com/metasfresh/metasfresh/issues/2708 is done
 			.build();
 
 	@Override
@@ -85,7 +85,7 @@ public class HUPPOrderBL implements IHUPPOrderBL
 	}
 
 	@Override
-	public void processPlanning(String targetPlanningStatus, int ppOrderId)
+	public void processPlanning(@NonNull final String targetPlanningStatus, int ppOrderId)
 	{
 		Services.get(ITrxManager.class).assertThreadInheritedTrxExists();
 
@@ -97,7 +97,7 @@ public class HUPPOrderBL implements IHUPPOrderBL
 		}
 		if (!canChangePlanningStatus(planningStatus, targetPlanningStatus))
 		{
-			throw new IllegalStateException("Cannot chagen planning status from " + planningStatus + " to " + targetPlanningStatus);
+			throw new IllegalStateException("Cannot change planning status from " + planningStatus + " to " + targetPlanningStatus);
 		}
 
 		if (X_PP_Order.PLANNINGSTATUS_Planning.equals(targetPlanningStatus))

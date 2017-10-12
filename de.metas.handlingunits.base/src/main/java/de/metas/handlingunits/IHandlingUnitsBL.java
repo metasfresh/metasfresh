@@ -214,11 +214,11 @@ public interface IHandlingUnitsBL extends ISingletonService
 	/**
 	 * Gets top level HUs of given HUs (i.e. the top of hierarchy).
 	 *
-	 * @param request see {@link TopLevelHusQuery}.
+	 * @param query see {@link TopLevelHusQuery}.
 	 * 
 	 * @return top level HUs; never return {@code null}
 	 */
-	List<I_M_HU> getTopLevelHUs(TopLevelHusQuery request);
+	List<I_M_HU> getTopLevelHUs(TopLevelHusQuery query);
 
 	@lombok.Builder
 	@lombok.Value
@@ -237,7 +237,7 @@ public interface IHandlingUnitsBL extends ISingletonService
 		boolean includeAll;
 
 		/**
-		 * Optional, if not provided, then every hu passes the default filter.<br>
+		 * Optional; if not provided, then every hu passes the default filter.<br>
 		 * If the filter returns {@code false} for a given HU, then neither that HU or its parents will be added to the result.
 		 */
 		@Default

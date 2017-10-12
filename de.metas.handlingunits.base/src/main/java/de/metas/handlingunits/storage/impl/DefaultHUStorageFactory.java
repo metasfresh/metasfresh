@@ -59,7 +59,6 @@ public class DefaultHUStorageFactory implements IHUStorageFactory
 	public IHUStorage getStorage(@NonNull final I_M_HU hu)
 	{
 		final HUStorage huStorage = new HUStorage(this, hu);
-		// huStorage.addHUStorageListener(listeners);
 		return huStorage;
 	}
 
