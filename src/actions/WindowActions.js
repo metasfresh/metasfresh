@@ -25,7 +25,8 @@ import {
 } from './AppActions';
 
 import {
-    setListIncludedView
+    closeListIncludedView,
+    setListIncludedView,
 } from './ListActions';
 
 export function setLatestNewDocument(id) {
@@ -764,12 +765,16 @@ export function handleProcessResponse(response, type, id, successCallback) {
                         }
                         break;
                     case 'openIncludedView':
-                        dispatch(setListIncludedView(
-                            action.windowId, action.viewId
-                        ));
+                        dispatch(setListIncludedView({
+                            windowType: action.windowId,
+                            viewId: action.viewId,
+                        }));
                         break;
                     case 'closeIncludedView':
-                        dispatch(setListIncludedView());
+                        dispatch(closeListIncludedView({
+                            windowType: action.windowId,
+                            viewId: action.viewId,
+                        }));
                         break;
                     case 'selectViewRows':
                         dispatch(selectTableItems(

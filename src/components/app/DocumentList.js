@@ -190,7 +190,7 @@ class DocumentList extends Component {
             (layout && layout.supportIncludedView) &&
             !_.isEqual(this.props.selected, selected)
         ) {
-            dispatch(setListIncludedView());
+            dispatch(closeListIncludedView({ windowType, viewId }));
         }
     }
 
@@ -499,7 +499,9 @@ class DocumentList extends Component {
         }
     }
 
-    showIncludedViewOnSelect = (showIncludedView, data) => {
+    showIncludedViewOnSelect = ({
+        showIncludedView, windowType, viewId, forceClose,
+    } = {}) => {
         const { dispatch } = this.props;
 
         this.setState({
@@ -507,21 +509,14 @@ class DocumentList extends Component {
             hasShowIncluded: !!showIncludedView,
         }, () => {
             if (showIncludedView) {
-                dispatch(setListIncludedView(
-                    // some events pass windowId, some pass windowType
-                    data.windowId || data.windowType,
-                    data.viewId,
-                ));
+                dispatch(setListIncludedView({ windowType, viewId }));
             }
         });
 
         // can't use setState callback because component might be unmounted and
         // callback is never called
-        if (!showIncludedView && data) {
-            dispatch(closeListIncludedView(
-                data.windowId || data.windowType,
-                data.viewId,
-            ));
+        if (!showIncludedView) {
+            dispatch(closeListIncludedView({ windowType, viewId, forceClose }));
         }
     }
 
