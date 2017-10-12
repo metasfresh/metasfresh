@@ -37,12 +37,12 @@ import javax.swing.tree.DefaultMutableTreeNode;
 
 import org.compiere.util.Env;
 
-import de.metas.adempiere.form.AvailableBins;
-import de.metas.adempiere.form.IPackingItem;
-import de.metas.adempiere.form.LegacyPackingItem;
-import de.metas.adempiere.form.PackingDetailsMd;
-import de.metas.adempiere.form.PackingItemsMap;
-import de.metas.adempiere.form.UsedBin;
+import de.metas.picking.legacy.form.AvailableBins;
+import de.metas.picking.legacy.form.IPackingItem;
+import de.metas.picking.legacy.form.LegacyPackingItem;
+import de.metas.picking.legacy.form.PackingDetailsMd;
+import de.metas.picking.legacy.form.UsedBin;
+import de.metas.picking.service.PackingItemsMap;
 import de.metas.picking.terminal.Utils;
 
 /**
@@ -64,8 +64,8 @@ public class SwingPackageTerminal extends AbstractPackageTerminal
 		final PackingDetailsMd packingDetailsModel = (PackingDetailsMd)model;
 		
 		final PackingItemsMap packItems = new PackingItemsMap();
-		final Map<Integer, DefaultMutableTreeNode> boxes = new HashMap<Integer, DefaultMutableTreeNode>();
-		final List<DefaultMutableTreeNode> availBoxes = new ArrayList<DefaultMutableTreeNode>();
+		final Map<Integer, DefaultMutableTreeNode> boxes = new HashMap<>();
+		final List<DefaultMutableTreeNode> availBoxes = new ArrayList<>();
 
 		final Enumeration<DefaultMutableTreeNode> enu = packingDetailsModel.getPackingTreeModel().getUsedBins().children();
 		int boxNo = 1;

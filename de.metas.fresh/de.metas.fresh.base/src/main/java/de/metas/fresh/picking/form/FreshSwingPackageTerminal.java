@@ -29,10 +29,10 @@ package de.metas.fresh.picking.form;
 import java.math.BigDecimal;
 import java.util.Collection;
 
-import de.metas.adempiere.form.IPackingItem;
-import de.metas.adempiere.form.PackingItemsMap;
 import de.metas.fresh.picking.FreshPackingDetailsMd;
 import de.metas.fresh.picking.form.swing.FreshSwingPickingOKPanel;
+import de.metas.picking.legacy.form.IPackingItem;
+import de.metas.picking.service.PackingItemsMap;
 import de.metas.picking.terminal.form.swing.AbstractPackageDataPanel;
 import de.metas.picking.terminal.form.swing.AbstractPackageTerminal;
 import de.metas.picking.terminal.form.swing.AbstractPackageTerminalPanel;

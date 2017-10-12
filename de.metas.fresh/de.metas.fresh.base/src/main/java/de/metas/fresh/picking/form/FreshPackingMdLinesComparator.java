@@ -29,8 +29,8 @@ import java.util.Set;
 
 import org.adempiere.util.Check;
 
-import de.metas.adempiere.form.ITableRowSearchSelectionMatcher;
-import de.metas.adempiere.form.TableRowKey;
+import de.metas.picking.legacy.form.ITableRowSearchSelectionMatcher;
+import de.metas.picking.legacy.form.TableRowKey;
 
 /**
  * 

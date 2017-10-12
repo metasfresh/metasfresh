@@ -53,7 +53,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.adempiere.form.IClientUI;
-import de.metas.adempiere.form.IInputMethod;
 import de.metas.adempiere.form.terminal.AbstractPropertiesPanelModel;
 import de.metas.adempiere.form.terminal.IPropertiesPanelModelConfigurator;
 import de.metas.adempiere.form.terminal.ITerminalLookup;
@@ -74,6 +73,7 @@ import de.metas.handlingunits.attribute.storage.impl.AttributeStorageListenerAda
 import de.metas.handlingunits.attribute.storage.impl.NullAttributeStorage;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.logging.LogManager;
+import de.metas.picking.legacy.form.IInputMethod;
 
 public class HUAttributeSetPropertiesModel extends AbstractPropertiesPanelModel
 {

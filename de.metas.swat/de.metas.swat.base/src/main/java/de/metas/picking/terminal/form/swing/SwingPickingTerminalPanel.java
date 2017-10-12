@@ -41,7 +41,6 @@ import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
-import de.metas.adempiere.form.PackingMd;
 import de.metas.adempiere.form.terminal.IComponent;
 import de.metas.adempiere.form.terminal.IConfirmPanel;
 import de.metas.adempiere.form.terminal.IContainer;
@@ -58,6 +57,7 @@ import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.adempiere.form.terminal.swing.SwingTerminalFactory;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
+import de.metas.picking.legacy.form.PackingMd;
 import de.metas.picking.terminal.PickingOKPanel;
 import de.metas.picking.terminal.PickingTerminalPanel;
 

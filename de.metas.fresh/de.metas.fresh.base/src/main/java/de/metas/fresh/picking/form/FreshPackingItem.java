@@ -42,14 +42,14 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.Env;
 
-import de.metas.adempiere.form.AbstractPackingItem;
-import de.metas.adempiere.form.IPackingItem;
 import de.metas.adempiere.model.I_C_BPartner_Location;
 import de.metas.handlingunits.model.I_C_OrderLine;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.picking.legacy.form.AbstractPackingItem;
+import de.metas.picking.legacy.form.IPackingItem;
 import lombok.NonNull;
 
 /**

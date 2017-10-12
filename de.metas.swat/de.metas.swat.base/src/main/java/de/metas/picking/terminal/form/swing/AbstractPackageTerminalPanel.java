@@ -43,8 +43,6 @@ import org.compiere.apps.form.FormFrame;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
-import de.metas.adempiere.form.IPackingDetailsModel;
-import de.metas.adempiere.form.PackingItemsMap;
 import de.metas.adempiere.form.terminal.IComponent;
 import de.metas.adempiere.form.terminal.IContainer;
 import de.metas.adempiere.form.terminal.IKeyLayout;
@@ -60,6 +58,8 @@ import de.metas.adempiere.form.terminal.swing.SwingTerminalFactory;
 import de.metas.adempiere.form.terminal.swing.TerminalSplitPane;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
+import de.metas.picking.legacy.form.IPackingDetailsModel;
+import de.metas.picking.service.PackingItemsMap;
 import de.metas.process.ProcessExecutor;
 import net.miginfocom.swing.MigLayout;
 

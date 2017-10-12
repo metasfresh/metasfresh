@@ -24,7 +24,7 @@ package de.metas.fresh.picking.service;
 
 import java.util.Properties;
 
-import de.metas.adempiere.form.PackingItemsMap;
+import de.metas.picking.service.PackingItemsMap;
 
 /**
  * Packing Context.

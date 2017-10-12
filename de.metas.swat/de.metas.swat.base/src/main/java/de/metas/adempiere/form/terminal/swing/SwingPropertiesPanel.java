@@ -40,7 +40,6 @@ import org.compiere.util.Util;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.form.IClientUIAsyncInvoker.IClientUIAsyncExecutor;
-import de.metas.adempiere.form.IInputMethod;
 import de.metas.adempiere.form.terminal.IContainer;
 import de.metas.adempiere.form.terminal.IPropertiesPanel;
 import de.metas.adempiere.form.terminal.IPropertiesPanelModel;
@@ -63,6 +62,7 @@ import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.adempiere.form.terminal.event.UIAsyncPropertyChangeListener;
 import de.metas.adempiere.form.terminal.field.constraint.ITerminalFieldConstraint;
 import de.metas.logging.LogManager;
+import de.metas.picking.legacy.form.IInputMethod;
 
 /* package */final class SwingPropertiesPanel implements IPropertiesPanel
 {
