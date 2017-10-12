@@ -1,13 +1,24 @@
 package de.metas.ui.web.pickingslot;
 
+import java.util.List;
+import java.util.Properties;
+
+import org.adempiere.util.Services;
+import org.compiere.util.Env;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.google.common.collect.ImmutableList;
+
+import de.metas.process.IADProcessDAO;
+import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.picking.pickingslot.PickingSlotRow;
 import de.metas.ui.web.picking.pickingslot.PickingSlotViewRepository;
+import de.metas.ui.web.pickingslot.process.WEBUI_PickingSlot_TakeOutHU;
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IViewFactory;
 import de.metas.ui.web.view.ViewFactory;
 import de.metas.ui.web.view.ViewId;
+import de.metas.ui.web.view.descriptor.IncludedViewLayout;
 import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.WindowId;
@@ -59,8 +70,10 @@ public class AggregationPickingSlotsViewFactory implements IViewFactory
 				.setCaption("Picking slots")
 				.addElementsFromViewRowClass(PickingSlotRow.class, viewDataType)
 				.setHasTreeSupport(true)
-				.setHasIncludedViewSupport(true)
-				.setHasIncludedViewOnSelectSupport(true)
+				.setIncludedViewLayout(IncludedViewLayout.builder()
+						.openOnSelect(true)
+						.blurWhenOpen(false)
+						.build())
 				.build();
 
 	}
@@ -75,6 +88,24 @@ public class AggregationPickingSlotsViewFactory implements IViewFactory
 		return AggregationPickingSlotView.builder()
 				.viewId(viewId)
 				.rows(() -> pickingSlotRepo.retrieveAllPickingSlotsRows())
+				.additionalRelatedProcessDescriptors(createAdditionalRelatedProcessDescriptors())
 				.build();
 	}
+
+	private List<RelatedProcessDescriptor> createAdditionalRelatedProcessDescriptors()
+	{
+		// TODO: cache it
+
+		final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
+		final Properties ctx = Env.getCtx();
+
+		return ImmutableList.of(
+				// allow to open the HU-editor for various picking related purposes
+				RelatedProcessDescriptor.builder()
+						.processId(adProcessDAO.retriveProcessIdByClass(ctx, WEBUI_PickingSlot_TakeOutHU.class))
+						.anyTable().anyWindow()
+						.webuiQuickAction(true)
+						.build());
+	}
+
 }

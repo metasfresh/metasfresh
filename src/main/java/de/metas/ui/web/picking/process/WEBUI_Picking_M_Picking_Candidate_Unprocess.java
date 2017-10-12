@@ -27,7 +27,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Picking_Candidate;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.model.X_M_HU;
-import de.metas.handlingunits.picking.PickingCandidateCommand;
+import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleDAO;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.process.IProcessPrecondition;
@@ -78,7 +78,7 @@ public class WEBUI_Picking_M_Picking_Candidate_Unprocess
 		implements IProcessPrecondition
 {
 	@Autowired
-	private PickingCandidateCommand pickingCandidateCommand;
+	private PickingCandidateService pickingCandidateService;
 
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
@@ -114,7 +114,7 @@ public class WEBUI_Picking_M_Picking_Candidate_Unprocess
 		// if everything is OK, go ahead
 		qtyPickedList.forEach(InterfaceWrapperHelper::delete);
 		updateHuStatus(hu);
-		pickingCandidateCommand.setCandidatesInProgress(ImmutableList.of(hu.getM_HU_ID()));
+		pickingCandidateService.setCandidatesInProgress(ImmutableList.of(hu.getM_HU_ID()));
 
 		invalidateView();
 		invalidateParentView();

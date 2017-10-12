@@ -10,8 +10,8 @@ import java.util.Objects;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
-import de.metas.handlingunits.picking.PickingCandidateCommand;
-import de.metas.handlingunits.picking.PickingCandidateCommand.AddQtyToHURequest;
+import de.metas.handlingunits.picking.PickingCandidateService;
+import de.metas.handlingunits.picking.PickingCandidateService.AddQtyToHURequest;
 import de.metas.process.IProcessDefaultParameter;
 import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.IProcessPrecondition;
@@ -56,7 +56,7 @@ public class WEBUI_Picking_PickQtyToExistingHU
 		implements IProcessPrecondition, IProcessDefaultParametersProvider
 {
 	@Autowired
-	private PickingCandidateCommand pickingCandidateCommand;
+	private PickingCandidateService pickingCandidateService;
 
 	private static final String PARAM_QTY_CU = "QtyCU";
 	@Param(parameterName = PARAM_QTY_CU, mandatory = true)
@@ -101,7 +101,7 @@ public class WEBUI_Picking_PickQtyToExistingHU
 				.shipmentScheduleId(getView().getCurrentShipmentScheduleId())
 				.build();
 
-		pickingCandidateCommand.addQtyToHU(request);
+		pickingCandidateService.addQtyToHU(request);
 
 		invalidateView();
 		invalidateParentView();

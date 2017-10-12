@@ -23,8 +23,8 @@ import de.metas.fresh.picking.service.IPackingService;
 import de.metas.fresh.picking.service.impl.HU2PackingItemsAllocator;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Picking_Candidate;
-import de.metas.handlingunits.picking.PickingCandidateCommand;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
+import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;
@@ -75,7 +75,7 @@ public class WEBUI_Picking_M_Picking_Candidate_Process
 {
 
 	@Autowired
-	private PickingCandidateCommand pickingCandidateCommand;
+	private PickingCandidateService pickingCandidateService;
 
 	@Autowired
 	private PickingCandidateRepository pickingCandidateRepository;
@@ -123,7 +123,7 @@ public class WEBUI_Picking_M_Picking_Candidate_Process
 				rowToProcess.getPickingSlotId(),
 				hu);
 
-		pickingCandidateCommand.setCandidatesProcessed(ImmutableList.of(rowToProcess.getHuId()));
+		pickingCandidateService.setCandidatesProcessed(ImmutableList.of(rowToProcess.getHuId()));
 
 		invalidateView();
 		invalidateParentView();

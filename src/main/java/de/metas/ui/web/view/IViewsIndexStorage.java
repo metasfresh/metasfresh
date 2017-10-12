@@ -34,7 +34,7 @@ import de.metas.ui.web.window.datatypes.WindowId;
  */
 public interface IViewsIndexStorage
 {
-	/** @return the window ID for whom this storge is storing the {@link IView} reference */
+	/** @return the window ID for whom this storage is storing the {@link IView} references. This method will be called by API on registration time. */
 	WindowId getWindowId();
 
 	/** Don't call it directly. Will be called by API. */

@@ -22,8 +22,8 @@ import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.model.X_M_HU;
-import de.metas.handlingunits.picking.PickingCandidateCommand;
-import de.metas.handlingunits.picking.PickingCandidateCommand.AddQtyToHURequest;
+import de.metas.handlingunits.picking.PickingCandidateService;
+import de.metas.handlingunits.picking.PickingCandidateService.AddQtyToHURequest;
 import de.metas.process.IProcessDefaultParameter;
 import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.IProcessPrecondition;
@@ -71,7 +71,7 @@ public class WEBUI_Picking_PickQtyToNewHU
 		implements IProcessPrecondition, IProcessDefaultParametersProvider
 {
 	@Autowired
-	private PickingCandidateCommand pickingCandidateCommand;
+	private PickingCandidateService pickingCandidateService;
 
 	@Param(parameterName = I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_Product_ID, mandatory = true)
 	private I_M_HU_PI_Item_Product huPIItemProduct;
@@ -129,7 +129,7 @@ public class WEBUI_Picking_PickQtyToNewHU
 					.shipmentScheduleId(getView().getCurrentShipmentScheduleId())
 					.build();
 
-			pickingCandidateCommand.addQtyToHU(request);
+			pickingCandidateService.addQtyToHU(request);
 		}
 	}
 
@@ -144,7 +144,7 @@ public class WEBUI_Picking_PickQtyToNewHU
 		final int pickingSlotId = pickingSlotRow.getPickingSlotId();
 		final int shipmentScheduleId = getView().getCurrentShipmentScheduleId();
 
-		pickingCandidateCommand.addHUToPickingSlot(hu.getM_HU_ID(), pickingSlotId, shipmentScheduleId);
+		pickingCandidateService.addHUToPickingSlot(hu.getM_HU_ID(), pickingSlotId, shipmentScheduleId);
 
 		return hu;
 	}

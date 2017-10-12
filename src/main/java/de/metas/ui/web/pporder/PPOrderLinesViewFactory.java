@@ -22,6 +22,7 @@ import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewFactory;
 import de.metas.ui.web.view.ViewFactory;
 import de.metas.ui.web.view.ViewId;
+import de.metas.ui.web.view.descriptor.IncludedViewLayout;
 import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.view.json.JSONFilterViewRequest;
 import de.metas.ui.web.view.json.JSONViewDataType;
@@ -114,7 +115,7 @@ public class PPOrderLinesViewFactory implements IViewFactory
 				//
 				.setHasAttributesSupport(true)
 				.setHasTreeSupport(true)
-				.setHasIncludedViewSupport(true)
+				.setIncludedViewLayout(IncludedViewLayout.DEFAULT)
 				//
 				.addElementsFromViewRowClass(PPOrderLineRow.class, JSONViewDataType.grid)
 				//

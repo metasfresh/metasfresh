@@ -15,6 +15,7 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.i18n.ITranslatableString;
 import de.metas.picking.model.I_M_PickingSlot;
+import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.handlingunits.HUEditorView;
@@ -61,6 +62,8 @@ public class AggregationPickingSlotView implements IView, IViewRowOverrides
 {
 	private final ViewId viewId;
 	private final ITranslatableString description;
+	private final ImmutableList<RelatedProcessDescriptor> additionalRelatedProcessDescriptors;
+
 	private final PickingSlotRowsCollection rows;
 
 	private final ViewId afterPickingHUViewId;
@@ -70,13 +73,15 @@ public class AggregationPickingSlotView implements IView, IViewRowOverrides
 	private AggregationPickingSlotView(
 			@NonNull final ViewId viewId,
 			@Nullable final ITranslatableString description,
-			@NonNull final Supplier<List<PickingSlotRow>> rows)
+			@NonNull final Supplier<List<PickingSlotRow>> rows,
+			@Nullable final List<RelatedProcessDescriptor> additionalRelatedProcessDescriptors)
 	{
 		this.viewId = viewId;
 		this.description = ITranslatableString.nullToEmpty(description);
 		this.rows = PickingSlotRowsCollection.ofSupplier(rows);
 
 		afterPickingHUViewId = AfterPickingHUViewFactory.extractAfterPickingHUsViewId(viewId);
+		this.additionalRelatedProcessDescriptors = additionalRelatedProcessDescriptors != null ? ImmutableList.copyOf(additionalRelatedProcessDescriptors) : ImmutableList.of();
 	}
 
 	@Override
@@ -95,6 +100,12 @@ public class AggregationPickingSlotView implements IView, IViewRowOverrides
 	public ITranslatableString getDescription()
 	{
 		return description;
+	}
+
+	@Override
+	public List<RelatedProcessDescriptor> getAdditionalRelatedProcessDescriptors()
+	{
+		return additionalRelatedProcessDescriptors;
 	}
 
 	@Override
