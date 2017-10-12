@@ -61,7 +61,7 @@ public @interface ProcessParamLookupValuesProvider
 	String parameterName();
 
 	/** list of parameter names on which the lookup values fetching depends on */
-	String[] dependsOn();
+	String[] dependsOn() default {};
 
 	/** true if we will provide {@link IntegerLookupValue}s, else {@link StringLookupValue}s are assumed */
 	boolean numericKey();
