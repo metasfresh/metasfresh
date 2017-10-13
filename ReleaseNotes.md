@@ -33,7 +33,7 @@ Here come the actual release notes:
   * [#2690](https://github.com/metasfresh/metasfresh/issues/2690) New Window for AD_Scheduler in WebUI
     * New Window for Scheduler Maintenance.
   * [#2691](https://github.com/metasfresh/metasfresh/issues/2691) Adjustments in Materialdispo Window in WebUI
-    * Improved Materuia Dispo Window. Removed deprecated Fields and added Translations for en_US and de_DE Locale/ Language
+    * Improved Materuial Dispo Window. Removed deprecated Fields and added Translations for en_US and de_DE Locale/ Language
   * [#2694](https://github.com/metasfresh/metasfresh/issues/2694) Window Design Webui: Improvements in Dunning Type window
     * New Translations added for Language en_US for Action and Referencelist.
   * [#2695](https://github.com/metasfresh/metasfresh/issues/2695) Window Design Webui: Introduce the window Shipment Restrictions in the Webui menu
@@ -61,15 +61,15 @@ Here come the actual release notes:
   * [#1339](https://github.com/metasfresh/metasfresh/issues/1339) Forecast Window as Document
     * Forecast Look&Feel is now adapted to real document.
   * [#2152](https://github.com/metasfresh/metasfresh/issues/2152) Prepare Default Filters for Retraceability window
-    * The Retraceability Window has now a defaulst subset of filters that allow the user to find the wanted data records quickly.
+    * The Retraceability Window has now a default Subset of filters that allow the user to find the wanted data records quickly.
   * [#2212](https://github.com/metasfresh/metasfresh/issues/2212) Take out password field from user window and use process instead
     * Removing the Password Field from User Window, now only changeable via Password Change Action.
   * [#2432](https://github.com/metasfresh/metasfresh/issues/2432) Process for converting any table to a document
     * New Housekeeping and development Functionality that transforms any selected table into a document table.
   * [#2494](https://github.com/metasfresh/metasfresh/issues/2494) Prices changing in FlatrateTerms after Prolongation
-    * New Pricechange Functionality in Subscription after Prolongation step.
+    * New Price change Functionality in Subscription after Prolongation step.
   * [#2517](https://github.com/metasfresh/metasfresh/issues/2517) Freigabe zur Fakturierung as standard filter
-    * Adding default further Filter to Invoice Candidate Window in WebUI.
+    * Adding further default Filter to Invoice Candidate Window in WebUI.
   * [#2525](https://github.com/metasfresh/metasfresh/issues/2525) Generate Picking Document
     * New Jasper Report that allows to create and print a Picklist.
   * [#2590](https://github.com/metasfresh/metasfresh/issues/2590) Make use of product documentnote on Quotation and Order Document
@@ -91,7 +91,7 @@ Here come the actual release notes:
   * [#2626](https://github.com/metasfresh/metasfresh/issues/2626) Window Design Webui: Translations and Improvements for DeliveryDays
     * Improved Translations for Language/ Locale en_US in Delivery Days Window.
   * [#2627](https://github.com/metasfresh/metasfresh/issues/2627) Create Zoom Across Reference between Flatrate Term and Invoice Candidate
-    * New references added to Flatrate Term Window, allowing the user to quickly zoom into the other refeences data.
+    * New references added to Flatrate Term Window, allowing the user to quickly zoom into the other references data.
   * [#2628](https://github.com/metasfresh/metasfresh/issues/2628) Show fields product, qty, price and contractstatus in window contracts
     * Improvements for Subscription Contracts in Contract Window in WebUI. Adding Fields and Translations.
   * [#2631](https://github.com/metasfresh/metasfresh/issues/2631) Window Design Webui: Improve Business Partner window
@@ -102,30 +102,30 @@ Here come the actual release notes:
     * Translations added for Language en_US in Bank Statement Line Reference Window in WebUI
   * [#2637](https://github.com/metasfresh/metasfresh/issues/2637) WebUI Window Design: Improvements to Account Combinations
     * Additional Improvements to Account Combination Window in WebUI. Adding missing Translations for en_US.
-  * [#2639](https://github.com/metasfresh/metasfresh/issues/2639) Rename default Account Values to be sorted last
-    * Moving the 5-digit Default Accounts to the end of table.
+  * [#2639](https://github.com/metasfresh/metasfresh/issues/2639) Rename default Account values to be sorted last
+    * Moving the 5-digit default Accounts to the end of table.
   * [#2642](https://github.com/metasfresh/metasfresh/issues/2642) Flatrate Import: Support explicit enddate and terminated contracts
     * Enhancement of the Flatrate/ Subscription migration Feature, now allowing to import an explicit enddate and automatically terminate contracts.
   * [#2644](https://github.com/metasfresh/metasfresh/issues/2644) Window Design Webui: Improvements to ESR window
     * Layout Improvements and Translations added for Language en_US.
   * [#2650](https://github.com/metasfresh/metasfresh/issues/2650) Allow subscription pause and recipient change with existing shipment scheds
     * New Functionality in Subscription Feature, that allows to set a delivery pause and receipient change for a given timeframe.
-  * [#2655](https://github.com/metasfresh/metasfresh/issues/2655) Window Design Webui: Translations and Improvements for Product Prices
+  * [#2655](https://github.com/metasfresh/metasfresh/issues/2655) Window Design WebUI: Translations and Improvements for Product Prices
     * New Translations for en_US in Product Prices Window. Adjusting Layout.
-  * [#2657](https://github.com/metasfresh/metasfresh/issues/2657) Don't show inactive hus in hu costprice report
+  * [#2657](https://github.com/metasfresh/metasfresh/issues/2657) Don't show inactive HUs in HU costprice report
     * Removing inactive Handling Units from the Costprice Report.
   * [#2665](https://github.com/metasfresh/metasfresh/issues/2665) Translate Add URL Attachment
-    * Adding the de_DE message Translations for The URL Attachment Handling.
+    * Adding the de_DE message Translations for the URL Attachment Handling.
   * [#2666](https://github.com/metasfresh/metasfresh/issues/2666) Window Design Webui: Tanslations for the window Contract
     * Translation Improvement for Subtab Recors. Now completed the Translation for Language/ Locale en_US.
   * [#2667](https://github.com/metasfresh/metasfresh/issues/2667) Window Design Webui: Tanslations for the window Contractpartner
     * Improvements in Window Layout, Sorting and Filtering. Now translated to Language/ Locale en_US.
-  * [#2669](https://github.com/metasfresh/metasfresh/issues/2669) Window Design Webui: Improvements and translations in Shipment Candidates
+  * [#2669](https://github.com/metasfresh/metasfresh/issues/2669) Window Design WebUI: Improvements and Translations in Shipment Candidates
     * Improvement of Translations for en_US Language/ Locale in shipment candidate window in WebUI.
 
 * metasfresh-webui-frontend
   * [#1138](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1138) Frontend: Labels widget
-    * New Lookup widget in WebUI. Now allowing to search, select and use Labels in a Main View. Fully customizable via Application Disctionary.
+    * New Lookup widget in WebUI. Now allowing to search, select and use Labels in a Main View. Fully customizable via Application Dictionary.
   * [#1220](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1220) Frontend: Attach URL support
     * New Functionality in Document Attachments, now being able to record Bookmarks/ URL instead of attaching a document.
 
