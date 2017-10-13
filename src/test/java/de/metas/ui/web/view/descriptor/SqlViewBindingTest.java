@@ -4,7 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Test;
 
-import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterDecoratorProvider;
+import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterDecorator;
 import de.metas.ui.web.view.descriptor.SqlViewBinding.Builder;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
@@ -35,12 +35,12 @@ public class SqlViewBindingTest
 {
 
 	@Test
-	public void createSqlViewBinding_Has_Null_Provider_By_Default()
+	public void createSqlViewBinding_Has_Null_Decorator_By_Default()
 	{
 		final SqlViewBinding sqlViewBinding = createMinimalBuilder().build();
 
 		assertThat(sqlViewBinding).isNotNull();
-		assertThat(sqlViewBinding.getFilterConverterDecoratorProviderOrNull()).isNull();
+		assertThat(sqlViewBinding.getFilterConverterDecoratorOrNull()).isNull();
 	}
 
 	@Test
@@ -49,11 +49,11 @@ public class SqlViewBindingTest
 		final CustomSqlDocumentFilterConverterDecoratorProvider customDecoratorProvider = new CustomSqlDocumentFilterConverterDecoratorProvider();
 		
 		final SqlViewBinding sqlViewBinding = createMinimalBuilder()
-				.setFilterConverterDecoratorProvider(customDecoratorProvider)
+				.setFilterConverterDecorator(customDecoratorProvider)
 				.build();
 
 		assertThat(sqlViewBinding).isNotNull();
-		assertThat(sqlViewBinding.getFilterConverterDecoratorProviderOrNull()).isSameAs(customDecoratorProvider);
+		assertThat(sqlViewBinding.getFilterConverterDecoratorOrNull()).isSameAs(customDecoratorProvider);
 	}
 
 	private Builder createMinimalBuilder()
@@ -73,7 +73,7 @@ public class SqlViewBindingTest
 		return builder;
 	}
 
-	public static class CustomSqlDocumentFilterConverterDecoratorProvider implements SqlDocumentFilterConverterDecoratorProvider
+	public static class CustomSqlDocumentFilterConverterDecoratorProvider implements SqlDocumentFilterConverterDecorator
 	{
 		@Override
 		public WindowId getWindowId()

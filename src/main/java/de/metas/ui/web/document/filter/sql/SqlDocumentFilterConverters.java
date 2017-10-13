@@ -53,12 +53,12 @@ public final class SqlDocumentFilterConverters
 		final SqlDocumentFilterConvertersListWithFallback sqlDocumentFilterConverter = //
 				SqlDocumentFilterConvertersListWithFallback.newInstance(converters, fallBackConverter);
 
-		final SqlDocumentFilterConverterDecoratorProvider decoratorProvider = entityBinding.getFilterConverterDecoratorProviderOrNull();
-		if (decoratorProvider == null)
+		final SqlDocumentFilterConverterDecorator decoratorOrNull = entityBinding.getFilterConverterDecoratorOrNull();
+		if (decoratorOrNull == null)
 		{
 			return sqlDocumentFilterConverter;
 		}
-		return decoratorProvider.decorate(sqlDocumentFilterConverter);
+		return decoratorOrNull.decorate(sqlDocumentFilterConverter);
 	}
 
 	public static final SqlDocumentFilterConvertersList.Builder listBuilder()

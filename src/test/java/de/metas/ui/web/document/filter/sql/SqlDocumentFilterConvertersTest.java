@@ -51,12 +51,12 @@ public class SqlDocumentFilterConvertersTest
 	};
 
 	@Test
-	public void createEntityBindingEffectiveConverter_uses_decoratoryProvider_of_entityBinding()
+	public void createEntityBindingEffectiveConverter_uses_decorator_of_entityBinding()
 	{
 		// @formatter:off
 		new Expectations()
 		{{
-			sqlEntityBinding.getFilterConverterDecoratorProviderOrNull(); result = new CustomDocumentFilterConverterDecoratorProvider();
+			sqlEntityBinding.getFilterConverterDecoratorOrNull(); result = new CustomDocumentFilterConverterDecorator();
 		}};
 		// @formatter:on
 
@@ -67,7 +67,7 @@ public class SqlDocumentFilterConvertersTest
 				.isSameAs(customConverter);
 	}
 
-	private static class CustomDocumentFilterConverterDecoratorProvider implements SqlDocumentFilterConverterDecoratorProvider
+	private static class CustomDocumentFilterConverterDecorator implements SqlDocumentFilterConverterDecorator
 	{
 		/**
 		 * @return {@link SqlDocumentFilterConvertersTest#converter} so we have something very particular to check for in our test.

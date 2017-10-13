@@ -2,7 +2,7 @@ package de.metas.ui.web.window.descriptor.sql;
 
 import org.adempiere.ad.expression.api.IStringExpression;
 
-import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterDecoratorProvider;
+import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterDecorator;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverters;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConvertersList;
 
@@ -53,7 +53,7 @@ public interface SqlEntityBinding
 		return SqlDocumentFilterConverters.emptyList();
 	}
 
-	default SqlDocumentFilterConverterDecoratorProvider getFilterConverterDecoratorProviderOrNull()
+	default SqlDocumentFilterConverterDecorator getFilterConverterDecoratorOrNull()
 	{
 		return null;
 	}

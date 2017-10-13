@@ -9,6 +9,7 @@ import java.util.Set;
 import java.util.function.Supplier;
 
 import org.adempiere.ad.expression.api.NullStringExpression;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.CCache;
 import org.springframework.stereotype.Service;
 
@@ -18,7 +19,7 @@ import com.google.common.collect.Maps;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptorsProvider;
-import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterDecoratorProvider;
+import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterDecorator;
 import de.metas.ui.web.view.CreateViewRequest.DocumentFiltersList;
 import de.metas.ui.web.view.descriptor.SqlViewBinding;
 import de.metas.ui.web.view.descriptor.SqlViewGroupingBinding;
@@ -64,7 +65,8 @@ import lombok.Value;
  */
 
 /**
- * View factory which is based on {@link DocumentEntityDescriptor} having SQL repository.
+ * View factory which is based on {@link DocumentEntityDescriptor} having SQL repository.<br>
+ * Creates {@link DefaultView}s with are backed by a {@link SqlViewBinding}.
  *
  * @author metas-dev <dev@metasfresh.com>
  *
@@ -76,18 +78,33 @@ public class SqlViewFactory implements IViewFactory
 
 	private final DocumentReferencesService documentReferencesService;
 
-	private final ImmutableMap<WindowId, SqlDocumentFilterConverterDecoratorProvider> windowId2SqlDocumentFilterConverterDecoratorProvider;
+	private final ImmutableMap<WindowId, SqlDocumentFilterConverterDecorator> windowId2SqlDocumentFilterConverterDecorator;
 
 	public SqlViewFactory(
 			@NonNull final DocumentDescriptorFactory documentDescriptorFactory,
 			@NonNull final DocumentReferencesService documentReferencesService,
-			@NonNull final Collection<SqlDocumentFilterConverterDecoratorProvider> providers)
+			@NonNull final Collection<SqlDocumentFilterConverterDecorator> converterDecorators)
 	{
 		this.documentDescriptorFactory = documentDescriptorFactory;
 		this.documentReferencesService = documentReferencesService;
 
-		this.windowId2SqlDocumentFilterConverterDecoratorProvider = //
-				Maps.uniqueIndex(providers, SqlDocumentFilterConverterDecoratorProvider::getWindowId);
+		this.windowId2SqlDocumentFilterConverterDecorator = makeDecoratorsMapAndHandleDuplicates(converterDecorators);
+	}
+
+	private static ImmutableMap<WindowId, SqlDocumentFilterConverterDecorator> makeDecoratorsMapAndHandleDuplicates(
+			@NonNull final Collection<SqlDocumentFilterConverterDecorator> providers)
+	{
+		try
+		{
+			return Maps.uniqueIndex(providers, SqlDocumentFilterConverterDecorator::getWindowId);
+		}
+		catch (IllegalArgumentException e)
+		{
+			final String message = "The given collection of SqlDocumentFilterConverterDecoratorProvider implementors contains more than one element with the same window-id";
+			throw new AdempiereException(message, e)
+					.setParameter("sqlDocumentFilterConverterDecoratorProviders", providers)
+					.appendParametersToMessage();
+		}
 	}
 
 	@Value
@@ -216,9 +233,9 @@ public class SqlViewFactory implements IViewFactory
 		builder.setFilterDescriptors(filterDescriptors)
 				.setGroupingBinding(groupingBinding);;
 
-		if (windowId2SqlDocumentFilterConverterDecoratorProvider.containsKey(key.getWindowId()))
+		if (windowId2SqlDocumentFilterConverterDecorator.containsKey(key.getWindowId()))
 		{
-			builder.setFilterConverterDecoratorProvider(windowId2SqlDocumentFilterConverterDecoratorProvider.get(key.getWindowId()));
+			builder.setFilterConverterDecorator(windowId2SqlDocumentFilterConverterDecorator.get(key.getWindowId()));
 		}
 
 		return builder.build();

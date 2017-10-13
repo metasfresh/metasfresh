@@ -37,7 +37,7 @@ import de.metas.ui.web.window.datatypes.WindowId;
  * 
  * @task Extend framework to allow modification of standard filter results https://github.com/metasfresh/metasfresh-webui-api/issues/628
  */
-public interface SqlDocumentFilterConverterDecoratorProvider
+public interface SqlDocumentFilterConverterDecorator
 {
 	public WindowId getWindowId();
 

@@ -4,7 +4,7 @@ import org.springframework.stereotype.Component;
 
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverter;
-import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterDecoratorProvider;
+import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterDecorator;
 import de.metas.ui.web.document.filter.sql.SqlParamsCollector;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.model.sql.SqlOptions;
@@ -39,7 +39,7 @@ import lombok.NonNull;
  * 
  */
 @Component
-public class HUTraceSqlConverterDecorator implements SqlDocumentFilterConverterDecoratorProvider
+public class HUTraceSqlConverterDecorator implements SqlDocumentFilterConverterDecorator
 {
 	@Override
 	public WindowId getWindowId()

@@ -24,7 +24,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.document.filter.NullDocumentFilterDescriptorsProvider;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverter;
-import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterDecoratorProvider;
+import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterDecorator;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverters;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConvertersList;
 import de.metas.ui.web.view.ViewEvaluationCtx;
@@ -77,7 +77,7 @@ public class SqlViewBinding implements SqlEntityBinding
 	private final SqlViewRowIdsConverter rowIdsConverter;
 
 	private final SqlViewGroupingBinding groupingBinding;
-	private final SqlDocumentFilterConverterDecoratorProvider filterConverterDecoratorProvider;
+	private final SqlDocumentFilterConverterDecorator filterConverterDecorator;
 
 	public static final Builder builder()
 	{
@@ -154,7 +154,7 @@ public class SqlViewBinding implements SqlEntityBinding
 		filterDescriptors = builder.getViewFilterDescriptors();
 		filterConverters = builder.buildViewFilterConverters();
 
-		filterConverterDecoratorProvider = builder.sqlDocumentFilterConverterDecoratorProvider;
+		filterConverterDecorator = builder.sqlDocumentFilterConverterDecorator;
 
 		rowIdsConverter = builder.getRowIdsConverter();
 	}
@@ -258,9 +258,9 @@ public class SqlViewBinding implements SqlEntityBinding
 	}
 
 	@Override
-	public SqlDocumentFilterConverterDecoratorProvider getFilterConverterDecoratorProviderOrNull()
+	public SqlDocumentFilterConverterDecorator getFilterConverterDecoratorOrNull()
 	{
-		return filterConverterDecoratorProvider;
+		return filterConverterDecorator;
 	}
 
 	public SqlViewRowIdsConverter getRowIdsConverter()
@@ -346,7 +346,7 @@ public class SqlViewBinding implements SqlEntityBinding
 		private SqlViewRowIdsConverter rowIdsConverter = DefaultSqlViewRowIdsConverter.instance;
 
 		private SqlViewGroupingBinding groupingBinding;
-		private SqlDocumentFilterConverterDecoratorProvider sqlDocumentFilterConverterDecoratorProvider = null;
+		private SqlDocumentFilterConverterDecorator sqlDocumentFilterConverterDecorator = null;
 
 		private Builder()
 		{
@@ -507,10 +507,10 @@ public class SqlViewBinding implements SqlEntityBinding
 			return this;
 		}
 
-		public Builder setFilterConverterDecoratorProvider(
-				@NonNull final SqlDocumentFilterConverterDecoratorProvider sqlDocumentFilterConverterDecoratorProvider)
+		public Builder setFilterConverterDecorator(
+				@NonNull final SqlDocumentFilterConverterDecorator sqlDocumentFilterConverterDecorator)
 		{
-			this.sqlDocumentFilterConverterDecoratorProvider = sqlDocumentFilterConverterDecoratorProvider;
+			this.sqlDocumentFilterConverterDecorator = sqlDocumentFilterConverterDecorator;
 			return this;
 		}
 	}
