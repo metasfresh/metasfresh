@@ -41,8 +41,5 @@ public interface SqlDocumentFilterConverterDecorator
 {
 	public WindowId getWindowId();
 
-	default SqlDocumentFilterConverter decorate(SqlDocumentFilterConverter converter)
-	{
-		return converter;
-	}
+	public SqlDocumentFilterConverter decorate(SqlDocumentFilterConverter converter);
 }
