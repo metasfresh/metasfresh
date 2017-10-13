@@ -73,7 +73,10 @@ import lombok.NonNull;
 
 	/** Build document filter where clause */
 	@Override
-	public String getSql(final SqlParamsCollector sqlParams, final DocumentFilter filter, final SqlOptions sqlOpts)
+	public String getSql(
+			@NonNull final SqlParamsCollector sqlParams, 
+			@NonNull final DocumentFilter filter, 
+			@NonNull final SqlOptions sqlOpts)
 	{
 		final StringBuilder sql = new StringBuilder();
 

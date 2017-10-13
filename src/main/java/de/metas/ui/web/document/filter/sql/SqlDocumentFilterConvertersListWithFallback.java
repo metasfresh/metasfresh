@@ -51,7 +51,10 @@ import lombok.ToString;
 	}
 
 	@Override
-	public String getSql(final SqlParamsCollector sqlParamsOut, final DocumentFilter filter, final SqlOptions sqlOpts)
+	public String getSql(
+			@NonNull final SqlParamsCollector sqlParamsOut, 
+			@NonNull final DocumentFilter filter, 
+			@NonNull final SqlOptions sqlOpts)
 	{
 		// Find the effective converter to be used for given filter
 		final String filterId = filter.getFilterId();

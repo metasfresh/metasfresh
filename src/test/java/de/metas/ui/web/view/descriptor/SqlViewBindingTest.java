@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Test;
 
+import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverter;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterDecorator;
 import de.metas.ui.web.view.descriptor.SqlViewBinding.Builder;
 import de.metas.ui.web.window.datatypes.WindowId;
@@ -79,6 +80,12 @@ public class SqlViewBindingTest
 		public WindowId getWindowId()
 		{
 			return WindowId.of(23);
+		}
+
+		@Override
+		public SqlDocumentFilterConverter decorate(SqlDocumentFilterConverter converter)
+		{
+			throw new UnsupportedOperationException("The decorate method is not supposed to be called in this test");
 		}
 
 	}
