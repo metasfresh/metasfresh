@@ -1,4 +1,4 @@
-package de.metas.fresh.picking.model;
+package de.metas.fresh.picking.form.swing;
 
 /*
  * #%L

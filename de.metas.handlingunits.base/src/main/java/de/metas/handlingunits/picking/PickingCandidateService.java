@@ -2,6 +2,7 @@ package de.metas.handlingunits.picking;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.OptionalInt;
 
 import org.springframework.stereotype.Service;
 
@@ -133,9 +134,9 @@ public class PickingCandidateService
 	 * 
 	 * @return the number of updated {@link I_M_Picking_Candidate}s
 	 */
-	public int setCandidatesProcessed(@NonNull final List<Integer> huIds)
+	public int setCandidatesProcessed(@NonNull final List<Integer> huIds, final int pickingSlotId, final OptionalInt shipmentScheduleId)
 	{
-		return new SetCandidatesProcessed(sourceHUsRepository).perform(huIds);
+		return new SetCandidatesProcessed(sourceHUsRepository, pickingCandidateRepository).perform(huIds, pickingSlotId, shipmentScheduleId);
 	}
 
 	public int setCandidatesInProgress(@NonNull final List<Integer> huIds)

@@ -1,4 +1,4 @@
-package de.metas.fresh.picking.service;
+package de.metas.picking.service;
 
 /*
  * #%L

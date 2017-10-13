@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.util.ISingletonService;
+import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
 
 import de.metas.handlingunits.IHUAssignmentBL;
@@ -38,6 +39,8 @@ public interface IHUMovementBL extends ISingletonService
 	 * Create movements to move given HUs to warehouseTo
 	 */
 	HUMovementResult moveHUsToWarehouse(List<I_M_HU> hus, I_M_Warehouse warehouseTo);
+
+	HUMovementResult moveHUsToLocator(List<I_M_HU> hus, I_M_Locator locatorTo);
 
 	/**
 	 * Method uses <code>AD_SysConfig</code> {@value #SYSCONFIG_DirectMove_Warehouse_ID} to get the {@link I_M_Warehouse} for direct movements.

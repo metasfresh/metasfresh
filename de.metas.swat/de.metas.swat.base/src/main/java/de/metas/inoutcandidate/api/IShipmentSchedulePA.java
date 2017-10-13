@@ -53,11 +53,14 @@ import de.metas.storage.IStorageSegment;
 public interface IShipmentSchedulePA extends ISingletonService
 {
 	/**
-	 *
-	 * @param orderLine
 	 * @return the shipment schedule entry that refers to the given order line or <code>null</code>
 	 */
-	List<I_M_ShipmentSchedule> retrieveForOrderLine(org.compiere.model.I_C_OrderLine orderLine);
+	I_M_ShipmentSchedule retrieveForOrderLine(org.compiere.model.I_C_OrderLine orderLine);
+
+	/**
+	 * @return the shipment schedule entry that refers to the given order line or <code>null</code>
+	 */
+	I_M_ShipmentSchedule retrieveForOrderLine(int orderLineId);
 
 	/**
 	 * @param ctx

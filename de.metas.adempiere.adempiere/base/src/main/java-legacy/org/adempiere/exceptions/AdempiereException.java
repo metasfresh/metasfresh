@@ -167,6 +167,7 @@ public class AdempiereException extends RuntimeException
 	private Integer adIssueId = null;
 
 	private Map<String, Object> parameters = null;
+	private boolean appendParametersToMessage = false;
 
 	/**
 	 * Default Constructor (saved logger error will be used as message)
@@ -277,8 +278,13 @@ public class AdempiereException extends RuntimeException
 	 */
 	protected String buildMessage()
 	{
-		// NOTE: by default we are not appending the parameterss
-		return super.getMessage();
+		final StringBuilder message = new StringBuilder();
+		message.append(getOriginalMessage());
+		if (appendParametersToMessage)
+		{
+			appendParameters(message);
+		}
+		return message.toString();
 	}
 
 	/**
@@ -475,6 +481,20 @@ public class AdempiereException extends RuntimeException
 			return ImmutableMap.of();
 		}
 		return ImmutableMap.copyOf(parameters);
+	}
+
+	/**
+	 * Ask the exception to also include the parameters in it's message.
+	 */
+	@OverridingMethodsMustInvokeSuper
+	public AdempiereException appendParametersToMessage()
+	{
+		if (!appendParametersToMessage)
+		{
+			appendParametersToMessage = true;
+			resetMessageBuilt();
+		}
+		return this;
 	}
 
 	/**

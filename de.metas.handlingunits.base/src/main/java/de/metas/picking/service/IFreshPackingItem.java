@@ -1,4 +1,4 @@
-package de.metas.fresh.picking.form;
+package de.metas.picking.service;
 
 import java.math.BigDecimal;
 import java.util.Set;

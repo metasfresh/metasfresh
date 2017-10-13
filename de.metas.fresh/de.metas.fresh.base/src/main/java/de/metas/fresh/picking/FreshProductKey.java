@@ -1,7 +1,7 @@
 /**
  * 
  */
-package de.metas.fresh.picking.terminal;
+package de.metas.fresh.picking;
 
 /*
  * #%L
@@ -34,8 +34,6 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
 
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
-import de.metas.fresh.picking.form.FreshPackingItemHelper;
-import de.metas.fresh.picking.form.IFreshPackingItem;
 import de.metas.handlingunits.IHUPIItemProductBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
@@ -43,6 +41,8 @@ import de.metas.handlingunits.picking.IHUPickingSlotBL;
 import de.metas.handlingunits.picking.IHUPickingSlotBL.PickingHUsQuery;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.picking.legacy.form.IPackingItem;
+import de.metas.picking.service.FreshPackingItemHelper;
+import de.metas.picking.service.IFreshPackingItem;
 import de.metas.picking.terminal.ProductKey;
 
 /**
