@@ -27,7 +27,6 @@ import static org.junit.Assert.assertEquals;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.MOrderLine;
 import org.compiere.util.DB;
@@ -45,7 +44,7 @@ import de.metas.document.engine.IDocument;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.OlAndSched;
 import de.metas.inoutcandidate.api.impl.ShipmentSchedulePA;
-import de.metas.interfaces.I_C_OrderLine;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 
 @RunWith(IntegrationTestRunner.class)
 public class ShipmentTests extends AIntegrationTestDriver
@@ -144,17 +143,19 @@ public class ShipmentTests extends AIntegrationTestDriver
 				.createOrder();
 		getHelper().runProcess_UpdateShipmentScheds();
 
-		final List<OlAndSched> olsAndSchedsToLock = new ArrayList<OlAndSched>();
+		final List<OlAndSched> olsAndSchedsToLock = new ArrayList<>();
 
 		final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
 		for (final MOrderLine ol : orderHelper.getOrderPO(order).getLines())
 		{
-			shipmentSchedulePA.retrieveForOrderLine(ol)
-					.forEach(sched -> {
-						olsAndSchedsToLock.add(new OlAndSched(
-								InterfaceWrapperHelper.create(ol, I_C_OrderLine.class),
-								sched));
-					});
+			final I_M_ShipmentSchedule schedForOrderLine = shipmentSchedulePA.retrieveForOrderLine(ol);
+			if (schedForOrderLine != null)
+			{
+				olsAndSchedsToLock.add(OlAndSched.builder()
+						.orderLineOrNull(ol)
+						.shipmentSchedule(schedForOrderLine)
+						.build());
+			}
 		}
 		return olsAndSchedsToLock;
 	}
