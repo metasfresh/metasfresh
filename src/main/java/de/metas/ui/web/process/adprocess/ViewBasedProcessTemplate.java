@@ -1,5 +1,7 @@
 package de.metas.ui.web.process.adprocess;
 
+import java.util.List;
+
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
 import org.adempiere.util.Check;
@@ -179,5 +181,12 @@ public abstract class ViewBasedProcessTemplate extends JavaProcess
 		final DocumentIdsSelection selectedDocumentIds = getSelectedDocumentIds();
 		final DocumentId documentId = selectedDocumentIds.getSingleDocumentId();
 		return getView().getById(documentId);
+	}
+	
+	@OverridingMethodsMustInvokeSuper
+	protected List<? extends IViewRow> getSelectedRows()
+	{
+		final DocumentIdsSelection selectedDocumentIds = getSelectedDocumentIds();
+		return getView().getByIds(selectedDocumentIds);
 	}
 }
