@@ -16,6 +16,7 @@ import org.junit.Test;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.handlingunits.model.I_PP_Order_Qty;
+import de.metas.handlingunits.model.X_M_HU;
 import de.metas.quantity.Quantity;
 import de.metas.ui.web.view.IViewRowAttributesProvider;
 import de.metas.ui.web.window.datatypes.DocumentId;
@@ -69,6 +70,8 @@ public class PPOrderLineRowTest
 				.processed(true)
 				.build();
 		assertThat(result.getPackingInfo()).isEqualTo("packingInfo");
+		assertThat(result.isTopLevelHU()).isFalse();
+		assertThat(result.isHUStatusActive()).isFalse();
 	}
 
 	@Test
@@ -92,6 +95,8 @@ public class PPOrderLineRowTest
 				.build();
 		assertThat(result.getPackingInfo()).isNull();
 		assertThat(result.getType()).isEqualTo(PPOrderLineType.BOMLine_Component);
+		assertThat(result.isTopLevelHU()).isFalse();
+		assertThat(result.isHUStatusActive()).isFalse();
 	}
 
 	@Test
@@ -107,8 +112,12 @@ public class PPOrderLineRowTest
 				.type(PPOrderLineType.HU_TU)
 				.uom(JSONLookupValue.of(50, "uom"))
 				.attributesSupplier(() -> null)
+				.topLevelHU(false)
+				.huStatus(X_M_HU.HUSTATUS_Planning)
 				.build();
 		assertThat(result.getPackingInfo()).isEqualTo("packingInfo");
+		assertThat(result.isTopLevelHU()).isFalse();
+		assertThat(result.isHUStatusActive()).isFalse();
 	}
 
 	@Test
@@ -129,7 +138,11 @@ public class PPOrderLineRowTest
 				.quantity(new Quantity(BigDecimal.TEN, uom))
 				.rowId(DocumentId.of(40))
 				.type(PPOrderLineType.HU_TU)
+				.topLevelHU(true)
+				.huStatus(X_M_HU.HUSTATUS_Active)
 				.build();
 		assertThat(result.getPackingInfo()).isEqualTo("packingInfo");
+		assertThat(result.isTopLevelHU()).isTrue();
+		assertThat(result.isHUStatusActive()).isTrue();
 	}
 }
