@@ -12,16 +12,18 @@ import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.handlingunits.picking.PickingCandidateService;
-import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.logging.LogManager;
-import de.metas.picking.model.I_M_PickingSlot;
+import de.metas.process.IProcessDefaultParameter;
+import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.handlingunits.HUEditorRow;
 import de.metas.ui.web.pporder.PPOrderLineRow;
+import de.metas.ui.web.pporder.PPOrderLinesView;
 import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
 import de.metas.ui.web.process.descriptor.ProcessParamLookupValuesProvider;
+import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.LookupSource;
@@ -51,19 +53,17 @@ import lombok.Value;
  * #L%
  */
 
-public class WEBUI_M_HU_Pick extends ViewBasedProcessTemplate implements IProcessPrecondition
+public class WEBUI_M_HU_Pick extends ViewBasedProcessTemplate implements IProcessPrecondition, IProcessDefaultParametersProvider
 {
 	private static final Logger logger = LogManager.getLogger(WEBUI_M_HU_Pick.class);
 
 	@Autowired
 	private PickingCandidateService pickingCandidateService;
 
-	private static final String PARAM_M_PickingSlot_ID = I_M_PickingSlot.COLUMNNAME_M_PickingSlot_ID;
-	@Param(parameterName = PARAM_M_PickingSlot_ID, mandatory = true)
+	@Param(parameterName = WEBUI_M_HU_Pick_ParametersFiller.PARAM_M_PickingSlot_ID, mandatory = true)
 	private int pickingSlotId;
 
-	private static final String PARAM_M_ShipmentSchedule_ID = I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID;
-	@Param(parameterName = PARAM_M_ShipmentSchedule_ID, mandatory = true)
+	@Param(parameterName = WEBUI_M_HU_Pick_ParametersFiller.PARAM_M_ShipmentSchedule_ID, mandatory = true)
 	private int shipmentScheduleId;
 
 	private WEBUI_M_HU_Pick_ParametersFiller _parametersFiller; // lazy
@@ -103,6 +103,24 @@ public class WEBUI_M_HU_Pick extends ViewBasedProcessTemplate implements IProces
 		return ListUtils.singleElement(rows); // shall not fail because we assume we already validated before
 	}
 
+	@Override
+	public Object getParameterDefaultValue(final IProcessDefaultParameter parameter)
+	{
+		return getParametersFiller().getDefaultValue(parameter);
+	}
+
+	@ProcessParamLookupValuesProvider(parameterName = WEBUI_M_HU_Pick_ParametersFiller.PARAM_M_ShipmentSchedule_ID, numericKey = true, lookupSource = LookupSource.lookup)
+	private LookupValuesList getShipmentScheduleValues(final LookupDataSourceContext context)
+	{
+		return getParametersFiller().getShipmentScheduleValues(context);
+	}
+
+	@ProcessParamLookupValuesProvider(parameterName = WEBUI_M_HU_Pick_ParametersFiller.PARAM_M_PickingSlot_ID, numericKey = true, lookupSource = LookupSource.lookup)
+	private LookupValuesList getPickingSlotValues(final LookupDataSourceContext context)
+	{
+		return getParametersFiller().getPickingSlotValues(context);
+	}
+
 	private WEBUI_M_HU_Pick_ParametersFiller getParametersFiller()
 	{
 		if (_parametersFiller == null)
@@ -110,21 +128,24 @@ public class WEBUI_M_HU_Pick extends ViewBasedProcessTemplate implements IProces
 			final HURow row = getSingleHURow();
 			_parametersFiller = WEBUI_M_HU_Pick_ParametersFiller.builder()
 					.huId(row.getHuId())
+					.salesOrderLineId(getSalesOrderLineId())
 					.build();
 		}
 		return _parametersFiller;
 	}
 
-	@ProcessParamLookupValuesProvider(parameterName = PARAM_M_ShipmentSchedule_ID, numericKey = true, lookupSource = LookupSource.lookup)
-	private LookupValuesList getShipmentScheduleValues(final LookupDataSourceContext context)
+	private int getSalesOrderLineId()
 	{
-		return getParametersFiller().getShipmentScheduleValues(context);
-	}
-
-	@ProcessParamLookupValuesProvider(parameterName = PARAM_M_PickingSlot_ID, numericKey = true, lookupSource = LookupSource.lookup)
-	private LookupValuesList getPickingSlotValues(final LookupDataSourceContext context)
-	{
-		return getParametersFiller().getPickingSlotValues(context);
+		final IView view = getView();
+		if (view instanceof PPOrderLinesView)
+		{
+			final PPOrderLinesView ppOrderLinesView = PPOrderLinesView.cast(view);
+			return ppOrderLinesView.getSalesOrderLineId();
+		}
+		else
+		{
+			return -1;
+		}
 	}
 
 	@Override

@@ -15,8 +15,11 @@ import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.storage.IHUProductStorage;
+import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.picking.model.I_M_PickingSlot;
+import de.metas.process.IProcessDefaultParameter;
+import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
@@ -47,14 +50,19 @@ import lombok.Builder;
  * #L%
  */
 
-public final class WEBUI_M_HU_Pick_ParametersFiller
+final class WEBUI_M_HU_Pick_ParametersFiller
 {
+	public static final String PARAM_M_PickingSlot_ID = I_M_PickingSlot.COLUMNNAME_M_PickingSlot_ID;
+	public static final String PARAM_M_ShipmentSchedule_ID = I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID;
+
+	private final int salesOrderLineId;
 	private final LookupDataSource shipmentScheduleDataSource;
 	private final LookupDataSource pickingSlotDataSource;
 
 	@Builder
-	private WEBUI_M_HU_Pick_ParametersFiller(final int huId)
+	private WEBUI_M_HU_Pick_ParametersFiller(final int huId, final int salesOrderLineId)
 	{
+		this.salesOrderLineId = salesOrderLineId;
 		shipmentScheduleDataSource = createShipmentScheduleDataSource(huId);
 		pickingSlotDataSource = createPickingSlotDataSource();
 	}
@@ -130,6 +138,37 @@ public final class WEBUI_M_HU_Pick_ParametersFiller
 		// TODO: filter by selected shipment schedule's BPartner. Don't show already reserved picking slots.
 
 		return LookupDataSourceFactory.instance.getLookupDataSource(lookupDescriptor);
+	}
+
+	public Object getDefaultValue(final IProcessDefaultParameter parameter)
+	{
+		if (PARAM_M_ShipmentSchedule_ID.equals(parameter.getColumnName()))
+		{
+			final int defaultShipmentScheduleId = getDefaultShipmentScheduleId();
+			if (defaultShipmentScheduleId > 0)
+			{
+				return defaultShipmentScheduleId;
+			}
+		}
+
+		// Fallback
+		return IProcessDefaultParametersProvider.DEFAULT_VALUE_NOTAVAILABLE;
+	}
+
+	private int getDefaultShipmentScheduleId()
+	{
+		if (salesOrderLineId <= 0)
+		{
+			return -1;
+		}
+
+		final I_M_ShipmentSchedule schedForOrderLine = Services.get(IShipmentSchedulePA.class).retrieveForOrderLine(salesOrderLineId);
+		if (schedForOrderLine == null)
+		{
+			return -1;
+		}
+
+		return schedForOrderLine.getM_ShipmentSchedule_ID();
 	}
 
 }

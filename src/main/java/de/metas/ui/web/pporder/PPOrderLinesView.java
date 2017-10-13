@@ -75,6 +75,7 @@ public class PPOrderLinesView implements IView
 	private final ImmutableSet<DocumentPath> referencingDocumentPaths;
 
 	private final int ppOrderId;
+	private final int salesOrderLineId;
 
 	private final ASIViewRowAttributesProvider asiAttributesProvider;
 	private final ExtendedMemorizingSupplier<PPOrderLinesViewData> dataSupplier;
@@ -107,6 +108,8 @@ public class PPOrderLinesView implements IView
 
 		Preconditions.checkArgument(ppOrderId > 0, "PP_Order_ID not provided");
 		this.ppOrderId = ppOrderId;
+		final I_PP_Order ppOrder = load(ppOrderId, I_PP_Order.class);
+		this.salesOrderLineId = ppOrder.getC_OrderLine_ID();
 
 		this.asiAttributesProvider = asiAttributesProvider;
 
@@ -190,6 +193,11 @@ public class PPOrderLinesView implements IView
 	public int getPP_Order_ID()
 	{
 		return ppOrderId;
+	}
+	
+	public int getSalesOrderLineId()
+	{
+		return salesOrderLineId;
 	}
 
 	@Override
