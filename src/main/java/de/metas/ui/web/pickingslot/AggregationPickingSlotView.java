@@ -235,6 +235,11 @@ public class AggregationPickingSlotView implements IView, IViewRowOverrides
 	@Override
 	public ViewId getIncludedViewId()
 	{
+		return getAfterPickingHUViewId();
+	}
+
+	public ViewId getAfterPickingHUViewId()
+	{
 		return afterPickingHUViewId;
 	}
 
