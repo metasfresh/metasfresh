@@ -112,7 +112,8 @@ Here come the actual release notes:
     * New Functionality in Subscription Feature, that allows to set a delivery pause and receipient change for a given timeframe.
   * [#2655](https://github.com/metasfresh/metasfresh/issues/2655) Window Design Webui: Translations and Improvements for Product Prices
     * New Translations for en_US in Product Prices Window. Adjusting Layout.
-  * [#2657](https://github.com/metasfresh/metasfresh/issues/2657) don't show active hus in hu costprice report
+  * [#2657](https://github.com/metasfresh/metasfresh/issues/2657) don't show inactive hus in hu costprice report
+    * Removing inactive Handling Units from the Costprice Report.
   * [#2665](https://github.com/metasfresh/metasfresh/issues/2665) Translate Add URL Attachment
     * Adding the de_DE message Translations for The URL Attachment Handling.
   * [#2666](https://github.com/metasfresh/metasfresh/issues/2666) Window Design Webui: Tanslations for the window Contract
@@ -124,20 +125,27 @@ Here come the actual release notes:
 
 * metasfresh-webui-frontend
   * [#1138](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1138) frontend: Labels widget
+    * New Lookup widget in WebUI. Now allowing to search, select and use Labels in a Main View. Fully customizable via Application Disctionary.
   * [#1220](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1220) frontend: Attach URL support
+    * New Functionality in Document Attachments, now being able to record Bookmarks/ URL instead of attaching a document.
 
 
 ## Fixes
 * metasfresh-app
   * [#2543](https://github.com/metasfresh/metasfresh/issues/2543) Businesspartner Import for different Partner with the same address
+    * Fixes the Businesspartner Import Feature, now allowing to import different Businesspartners with the same address.
   * [#2678](https://github.com/metasfresh/metasfresh/issues/2678) Shipment Schedules not created for new flatrate terms
+    * Bugfix for the shipment Schedule creation for new Subscriptions/ Contracts.
   * [#2688](https://github.com/metasfresh/metasfresh/issues/2688) SQL syntax error in ShipmentSchedulePA.retrieveUnprocessedForRecord()
+    * Internal Housekeeping. Fix for a SQL syntax error in Shipment Schedule.
 
 * metasfresh-webui-frontend
   * [#1212](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1212) Selection using SHIFT does not work in Handling unit Editor
+    * Keyboard Seleection Fix in WebUI now allowing to use shift key in handling unit editor.
   * [#1234](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1234) Letter Window does not store template info
     * Fixes a minor Bug in Letter component that prevented the usage of Text Snippets.
   * [#1238](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1238) Bug in Partner window after setting Attributes (Labels)
+    * Fixes a Bug that occurred in Business Partner window after setting new Labels via Label Lookup widget.
 
 # metasfresh 5.29 (2017-40)
 
