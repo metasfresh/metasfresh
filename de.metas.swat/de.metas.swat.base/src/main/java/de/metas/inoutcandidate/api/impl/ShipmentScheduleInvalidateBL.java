@@ -33,6 +33,8 @@ import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 
+import com.google.common.collect.ImmutableList;
+
 import de.metas.inout.IInOutDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
@@ -55,7 +57,7 @@ public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidate
 		final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
 		final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 
-		final Map<Integer, I_M_ShipmentSchedule> id2sched = new HashMap<Integer, I_M_ShipmentSchedule>();
+		final Map<Integer, I_M_ShipmentSchedule> id2sched = new HashMap<>();
 
 		for (final I_M_InOutLine inoutLine : inOutDAO.retrieveLines(shipment))
 		{
@@ -69,7 +71,7 @@ public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidate
 	{
 		final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
 
-		final Map<Integer, I_M_ShipmentSchedule> id2sched = new HashMap<Integer, I_M_ShipmentSchedule>();
+		final Map<Integer, I_M_ShipmentSchedule> id2sched = new HashMap<>();
 
 		addSchedsForInOutLine(id2sched, shipmentLine);
 		shipmentSchedulePA.invalidate(id2sched.values(), InterfaceWrapperHelper.getTrxName(shipmentLine));
@@ -96,7 +98,7 @@ public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidate
 	{
 		final IStorageListeners storageListeners = Services.get(IStorageListeners.class);
 
-		final List<IStorageSegment> storageSegments = new ArrayList<IStorageSegment>();
+		final List<IStorageSegment> storageSegments = new ArrayList<>();
 
 		for (final I_M_InOutLine inoutLine : Services.get(IInOutDAO.class).retrieveLines(shipment))
 		{
@@ -197,8 +199,13 @@ public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidate
 	public void invalidateJustForOrderLine(@NonNull final I_C_OrderLine orderLine)
 	{
 		final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
-		final List<I_M_ShipmentSchedule> scheds = shipmentSchedulePA.retrieveForOrderLine(orderLine);
-		shipmentSchedulePA.invalidate(scheds, InterfaceWrapperHelper.getTrxName(orderLine));
+		final I_M_ShipmentSchedule sched = shipmentSchedulePA.retrieveForOrderLine(orderLine);
+		if(sched == null)
+		{
+			return;
+		}
+		
+		shipmentSchedulePA.invalidate(ImmutableList.of(sched), InterfaceWrapperHelper.getTrxName(orderLine));
 	}
 
 }

@@ -10,12 +10,21 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.31 (2017-43)
+
+**release for week 2017-43**
+
+## Features
+
+## Fixes
+
 # metasfresh 5.31 (2017-42)
 
 **release for week 2017-42**
 
 ## Features
 * metasfresh-app
+  * [#518](https://github.com/metasfresh/metasfresh/issues/518) Easier solution to clear the Picking Slots
   * [#2603](https://github.com/metasfresh/metasfresh/issues/2603) Window Design Webui : Translate fields of Purchase Candidates
     * Improved Translations for Languages/ Locales de_DE and en_US added to the Purchase Candidates Window.
   * [#2606](https://github.com/metasfresh/metasfresh/issues/2606) Window Design Webui: Translate GL Journal window in English
@@ -28,6 +37,8 @@ Here come the actual release notes:
     * Improving the Fields Translations and adding Layout adaptions to Bank Statement Window in WebUI.
   * [#2636](https://github.com/metasfresh/metasfresh/issues/2636) Webui Report Design : Rüstliste translations
     * Translation of Pick List Report Parms to en_US.
+  * [#2643](https://github.com/metasfresh/metasfresh/issues/2643) Forecast in Material Disposition
+  * [#2645](https://github.com/metasfresh/metasfresh/issues/2645) Source HU Automatism for Manufacturing Issue
   * [#2660](https://github.com/metasfresh/metasfresh/issues/2660) Window Design Webui: Improvements in the window Forecast
     * Improvement of Forecast Window. Added Translations for en_US Language/ Locale and adapted Design Guidelines.
   * [#2690](https://github.com/metasfresh/metasfresh/issues/2690) New Window for AD_Scheduler in WebUI
@@ -40,13 +51,26 @@ Here come the actual release notes:
     * New Window in WebUI Menu. Now allowing the user to maintain Shipment Restrictions.
   * [#2696](https://github.com/metasfresh/metasfresh/issues/2696) Window Design Webui: Add subscription details in Shipment Candidate window
     * New Fields for Subscription/ Flatrate Terms in Shipment Disposition Window. Improved Translations for en_US.
+  * [#2700](https://github.com/metasfresh/metasfresh/issues/2700) Set correct identifiers in the table M_ShipmentSchedule
+  * [#2704](https://github.com/metasfresh/metasfresh/issues/2704) Show an explicit error message when reports don't open because of logo missing
+  * [#2711](https://github.com/metasfresh/metasfresh/issues/2711) productdescription in sales order jasper
+
+* metasfresh-webui-api
+  * [#628](https://github.com/metasfresh/metasfresh-webui-api/issues/628) Extend framework to allow modification of standard filter results
 
 ## Fixes
 * metasfresh-app
+  * [#2400](https://github.com/metasfresh/metasfresh/issues/2400) discount in manual sales invoice
+  * [#2693](https://github.com/metasfresh/metasfresh/issues/2693) C_Flatrate_Conditions.C_Flatrate_Transition_ID needs to be mandatory
+  * [#2699](https://github.com/metasfresh/metasfresh/issues/2699) NPE when pressing Complete for an invoice with no lines
 
-* metasfresh.webui-frontend
+* metasfresh-webui-frontend
+  * [#1216](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1216) hu lines appear only after refresh
   * [#1221](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1221) Handling Unit Editor "Select all rows" missing
     * Fixes the missing "Select all" Functionality in Handling Unit Editor.
+  * [#1224](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1224) Error when pressing Action after completing an invalid document
+  * [#1232](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1232) Labels widget: keyboard support
+  * [#1239](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1239) Included views are not working in non-modal windows
   * [#1243](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1243) Opening a new included view is broken
     * Fix for the included view in Picking Window. Now working in Non-Modal Views too.
   * [#1254](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1254) Error when navigating with up and down arrows in grid view
@@ -128,7 +152,6 @@ Here come the actual release notes:
     * New Lookup widget in WebUI. Now allowing to search, select and use Labels in a Main View. Fully customizable via Application Dictionary.
   * [#1220](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1220) Frontend: Attach URL support
     * New Functionality in Document Attachments, now being able to record Bookmarks/ URL instead of attaching a document.
-
 
 ## Fixes
 * metasfresh-app

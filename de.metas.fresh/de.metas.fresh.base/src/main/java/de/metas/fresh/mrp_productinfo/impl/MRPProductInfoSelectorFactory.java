@@ -1,10 +1,8 @@
 package de.metas.fresh.mrp_productinfo.impl;
 
 import java.sql.Timestamp;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.adempiere.ad.trx.api.ITrx;
@@ -147,17 +145,13 @@ public class MRPProductInfoSelectorFactory implements IMRPProductInfoSelectorFac
 
 	private Timestamp getDateForOrderLine(final I_C_OrderLine orderLine)
 	{
-		final List<I_M_ShipmentSchedule> shipmentScheds = Services.get(IShipmentSchedulePA.class).retrieveForOrderLine(orderLine);
-		if (shipmentScheds.isEmpty())
+		final I_M_ShipmentSchedule schedForOrderLine = Services.get(IShipmentSchedulePA.class).retrieveForOrderLine(orderLine);
+		if (schedForOrderLine != null)
 		{
-			final Optional<Timestamp> date = shipmentScheds.stream()
-					.map(sched -> Services.get(IShipmentScheduleEffectiveBL.class).getPreparationDate(sched))
-					.filter(prepDate -> prepDate != null)
-					.min(Comparator.naturalOrder());
-
-			if (date.isPresent()) // don't blindly assume that the sched is already initialized
+			final Timestamp date = Services.get(IShipmentScheduleEffectiveBL.class).getPreparationDate(schedForOrderLine);
+			if (date != null)
 			{
-				return date.get();
+				return date;
 			}
 		}
 
