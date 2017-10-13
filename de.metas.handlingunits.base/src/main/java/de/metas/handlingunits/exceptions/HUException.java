@@ -45,16 +45,19 @@ public class HUException extends AdempiereException
 	public HUException(final String message, final Throwable cause)
 	{
 		super(message, cause);
+		appendParametersToMessage(); // preserve HUException's historical behavior
 	}
 
 	public HUException(final String message)
 	{
 		super(message);
+		appendParametersToMessage(); // preserve HUException's historical behavior
 	}
 
 	public HUException(final Throwable cause)
 	{
 		super(cause);
+		appendParametersToMessage(); // preserve HUException's historical behavior
 	}
 
 	@Override
@@ -65,7 +68,7 @@ public class HUException extends AdempiereException
 	}
 
 	@Override
-	public HUException appendParametersToMessage()
+	public final HUException appendParametersToMessage()
 	{
 		super.appendParametersToMessage();
 		return this;
