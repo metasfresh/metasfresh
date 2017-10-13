@@ -171,9 +171,7 @@ public class PickingSlotViewFactory implements IViewFactory
 
 		return RelatedProcessDescriptor.builder()
 				.processId(processId)
-				.windowId(PickingConstants.WINDOWID_PickingSlotView.toInt())
-				.anyTable()
-						.webuiQuickAction(true)
+				.webuiQuickAction(true)
 				.build();
 	}
 }
