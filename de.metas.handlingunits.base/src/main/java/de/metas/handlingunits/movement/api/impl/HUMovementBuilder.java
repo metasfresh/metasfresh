@@ -157,9 +157,8 @@ public class HUMovementBuilder
 		return this;
 	}
 
-	public HUMovementBuilder setLocatorFrom(final I_M_Locator locatorFrom)
+	public HUMovementBuilder setLocatorFrom(@NonNull final I_M_Locator locatorFrom)
 	{
-		Check.assumeNotNull(locatorFrom, "locatorFrom not null");
 		_warehouseFrom = locatorFrom.getM_Warehouse();
 		_locatorFrom = locatorFrom;
 		return this;
@@ -192,6 +191,13 @@ public class HUMovementBuilder
 	{
 		Check.assumeNotNull(_warehouseTo, "_warehouseTo not null");
 		return _warehouseTo;
+	}
+	
+	public HUMovementBuilder setLocatorTo(@NonNull final I_M_Locator locatorTo)
+	{
+		_warehouseTo = locatorTo.getM_Warehouse();
+		_locatorTo = locatorTo;
+		return this;
 	}
 
 	private final I_M_Locator getLocatorTo()
