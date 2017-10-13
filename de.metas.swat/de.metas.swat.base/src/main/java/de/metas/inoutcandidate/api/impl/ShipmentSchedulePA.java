@@ -357,7 +357,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 		}
 	}
 
-	/* package */ List<I_M_ShipmentSchedule> retrieveForOrderLine(
+	/* package */ I_M_ShipmentSchedule retrieveForOrderLine(
 			final Properties ctx,
 			final int orderLineId,
 			final String trxName)
@@ -366,20 +366,27 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_M_ShipmentSchedule.class, PlainContextAware.newWithTrxName(ctx, trxName))
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_C_OrderLine_ID, orderLineId)
+				.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_AD_Table_ID, InterfaceWrapperHelper.getTableId(I_C_OrderLine.class))
+				.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_Record_ID, orderLineId)
 				.orderBy().addColumn(I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID).endOrderBy()
 				.create()
-				.list();
+				.firstOnly(I_M_ShipmentSchedule.class);
 	}
 
 	@Override
-	public List<I_M_ShipmentSchedule> retrieveForOrderLine(final org.compiere.model.I_C_OrderLine orderLine)
+	public I_M_ShipmentSchedule retrieveForOrderLine(final org.compiere.model.I_C_OrderLine orderLine)
 	{
 		Check.assumeNotNull(orderLine, "orderLine not null");
 		final Properties ctx = InterfaceWrapperHelper.getCtx(orderLine);
 		final String trxName = InterfaceWrapperHelper.getTrxName(orderLine);
 		final int orderLineId = orderLine.getC_OrderLine_ID();
 		return retrieveForOrderLine(ctx, orderLineId, trxName);
+	}
+	
+	@Override
+	public I_M_ShipmentSchedule retrieveForOrderLine(final int orderLineId)
+	{
+		return retrieveForOrderLine(Env.getCtx(), orderLineId, ITrx.TRXNAME_ThreadInherited);
 	}
 
 	@Override
@@ -1510,7 +1517,8 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 		if (tableID == InterfaceWrapperHelper.getTableId(I_C_OrderLine.class))
 		{
 			Check.errorIf(candidate.getC_OrderLine_ID() <= 0, "C_Invoice_Candidate has AD_Table_ID=>C_OrderLine, but does not reference any C_OrderLine_ID; candidate={}", candidate);
-			schedules = ImmutableSet.copyOf(retrieveForOrderLine(candidate.getC_OrderLine()));
+			final I_M_ShipmentSchedule shipmentSchedule = retrieveForOrderLine(candidate.getC_OrderLine());
+			schedules = shipmentSchedule != null ? ImmutableSet.of(shipmentSchedule) : ImmutableSet.of();
 		}
 
 		// invoice candidate references an inoutline
@@ -1546,7 +1554,11 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 		// this happens when we create manual Shipments
 		if (inoutLine.getC_OrderLine_ID() > 0)
 		{
-			retrieveForOrderLine(inoutLine.getC_OrderLine()).forEach(sched -> schedules.put(sched.getM_ShipmentSchedule_ID(), sched));
+			final I_M_ShipmentSchedule schedForOrderLine = retrieveForOrderLine(inoutLine.getC_OrderLine());
+			if(schedForOrderLine != null)
+			{
+				schedules.put(schedForOrderLine.getM_ShipmentSchedule_ID(), schedForOrderLine);
+			}
 		}
 
 		return ImmutableSet.copyOf(schedules.values());
