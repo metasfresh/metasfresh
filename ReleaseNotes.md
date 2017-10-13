@@ -59,27 +59,39 @@ Here come the actual release notes:
 ## Features
 * metasfresh-app
   * [#1339](https://github.com/metasfresh/metasfresh/issues/1339) Forecast Window as Document
+    * Forecast Look&Feel is now adapted to real document.
   * [#2152](https://github.com/metasfresh/metasfresh/issues/2152) Prepare Default Filters for Retraceability window
+    * The Retraceability Window has now a defaulst subset of filters that allow the user to find the wanted data records quickly.
   * [#2212](https://github.com/metasfresh/metasfresh/issues/2212) take out password field from user window and use process instead
     * Removing the Password Field from User Window, now only changeable via Password Change Action.
   * [#2432](https://github.com/metasfresh/metasfresh/issues/2432) Process for converting any table to a document
+    * New Housekeeping and development Functionality that transforms aany selected table into a document table.
   * [#2494](https://github.com/metasfresh/metasfresh/issues/2494) Prices changing in FlatrateTerms after Prolongation
+    * New Pricechange Functionality in Subscription after Prolongation step.
   * [#2517](https://github.com/metasfresh/metasfresh/issues/2517) Freigabe zur Fakturierung as standard filter
     * Adding default further Filter to Invoice Candidate Window in WebUI.
   * [#2525](https://github.com/metasfresh/metasfresh/issues/2525) Generate Picking Document
+    * New Jasper Report that allows to create and print a Picklist.
   * [#2590](https://github.com/metasfresh/metasfresh/issues/2590) Make use of product documentnote on Quotation and Order Document
+    * New Field in Product that describes additional Information about a product and shall be printed on Quotation and Order reports.
   * [#2592](https://github.com/metasfresh/metasfresh/issues/2592) Make letter print preview work with AD_BoilerPlate jasper process
+    * New Functioanlity in Letter feature, now allowing to use Textsnippets and the Boilerplate proces in there.
   * [#2594](https://github.com/metasfresh/metasfresh/issues/2594) New Window for Dunning Candidates in WebUI
     * New Window for Dunning Candidates in WebUI, that allows the preparation and creation of Dunning Documents.
   * [#2604](https://github.com/metasfresh/metasfresh/issues/2604) Printing via standalone client takes too long
+    * Improvements of printing performance when printing via Standalone Client.
   * [#2611](https://github.com/metasfresh/metasfresh/issues/2611) Business Partner Import with empty location
+    * Adjustment of the Businesspartner Import, now allowing to leave the location empty.
   * [#2614](https://github.com/metasfresh/metasfresh/issues/2614) Overhaul shipment schedule UI window
     * Additional shipment Schedule adjustments, new Quickactions and adding new Fields to Main View.
   * [#2615](https://github.com/metasfresh/metasfresh/issues/2615) Make the callout C_Flatrate_Matching.onC_Flatrate_Transition_ID comply with webui
+    * Adapting the Flatrate Transition callout in WebUI to match with the behavior in Swing Client.
   * [#2623](https://github.com/metasfresh/metasfresh/issues/2623) overhaul shipment schedule closing
+    * Improvement of the shipment Schedule closing Feature, now allowing the user to reopen alraedy closed records.
   * [#2626](https://github.com/metasfresh/metasfresh/issues/2626) Window Design Webui: Translations and Improvements for DeliveryDays
     * Improved Translations for Language/ Locale en_US in Delivery Days Window.
   * [#2627](https://github.com/metasfresh/metasfresh/issues/2627) Create Zoom Across Reference between Flatrate Term and Invoice Candidate
+    * New references added to Flatrate Term Window, allowing the user to quickly zoom into the other refeences data.
   * [#2628](https://github.com/metasfresh/metasfresh/issues/2628) Show fields product, qty, price and contractstatus in window contracts
     * Improvements for Subscription Contracts in Contract Window in WebUI. Adding Fields and Translations.
   * [#2631](https://github.com/metasfresh/metasfresh/issues/2631) Window Design Webui: Improve Business Partner window
