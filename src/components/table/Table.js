@@ -161,9 +161,15 @@ class Table extends Component {
                 if (item.id === selected[0]) {
                     showIncludedViewOnSelect({
                         showIncludedView: item.supportIncludedViews,
-                        windowType: item.includedView.windowType ||
-                            item.includedView.windowId,
-                        viewId: item.includedView.viewId,
+
+                        windowType: item.supportIncludedViews ? (
+                            item.includedView.windowType ||
+                            item.includedView.windowId
+                        ) : null,
+
+                        viewId: item.supportIncludedViews ? (
+                            item.includedView.viewId
+                        ) : '',
                     });
                 }
             });
@@ -897,9 +903,15 @@ class Table extends Component {
                             if (supportIncludedViewOnSelect) {
                                 showIncludedViewOnSelect({
                                     showIncludedView: item.supportIncludedViews,
-                                    windowType: item.includedView.windowType ||
-                                        item.includedView.windowId,
-                                    viewId: item.includedView.viewId,
+
+                                    windowType: item.supportIncludedViews ? (
+                                        item.includedView.windowType ||
+                                        item.includedView.windowId
+                                    ) : null,
+
+                                    viewId: item.supportIncludedViews ? (
+                                        item.includedView.viewId
+                                    ) : '',
                                 });
                             }
                         }}
