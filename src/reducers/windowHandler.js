@@ -41,7 +41,7 @@ const initialState = {
     latestNewDocument: null,
     viewId: null,
     selected: [],
-    selectedWindowType: null
+    selections: {},
 };
 
 export default function windowHandler(state = initialState, action) {
@@ -356,11 +356,23 @@ export default function windowHandler(state = initialState, action) {
 
         // END OF INDICATOR ACTIONS
 
-        case types.SELECT_TABLE_ITEMS:
-            return Object.assign({}, state, {
-                selected: action.ids,
-                selectedWindowType: action.windowType
-            });
+        case types.SELECT_TABLE_ITEMS: {
+            const { windowType, viewId, ids } = action.payload;
+
+            return {
+                ...state,
+
+                selections: {
+                    ...state.selections,
+
+                    [windowType]: {
+                        ...state.selections[windowType],
+
+                        [viewId]: ids,
+                    },
+                },
+            };
+        }
 
         // LATEST NEW DOCUMENT CACHE
         case types.SET_LATEST_NEW_DOCUMENT:

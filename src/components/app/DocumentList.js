@@ -115,13 +115,17 @@ class DocumentList extends Component {
             (refId !== this.props.refId)
         ) {
             this.setState({
-                data:null,
-                layout:null,
+                data: null,
+                layout: null,
                 filters: null,
-                viewId: null
+                viewId: null,
             }, () => {
                 if (!disconnectFromState) {
-                    dispatch(selectTableItems([], null));
+                    dispatch(selectTableItems({
+                        windowType,
+                        viewId,
+                        ids: [],
+                    }));
                 }
 
                 this.fetchLayoutAndData();
@@ -167,19 +171,14 @@ class DocumentList extends Component {
         ) {
             if (!inBackground) {
                 // In case of preventing cached selection restore
-                if (
-                    !disconnectFromState &&
-                    this.cachedSelection
-                ) {
-                    dispatch(
-                        selectTableItems(
-                            this.cachedSelection,
-                            this.props.windowType
-                        )
-                    );
+                if (!disconnectFromState && this.cachedSelection) {
+                    dispatch(selectTableItems({
+                        windowType,
+                        viewId,
+                        ids: this.cachedSelection,
+                    }));
                 }
-            }
-            else {
+            } else {
                 this.cachedSelection = selected;
             }
         }
@@ -374,6 +373,7 @@ class DocumentList extends Component {
         const {
             dispatch, windowType, updateUri, setNotFound, type, isIncluded
         } = this.props;
+        const { viewId } = this.state;
 
         setNotFound && setNotFound(false);
         dispatch(indicatorState('pending'));
@@ -413,9 +413,11 @@ class DocumentList extends Component {
 
                         this.cachedSelection = null;
 
-                        dispatch(
-                            selectTableItems(selection, windowType)
-                        );
+                        dispatch(selectTableItems({
+                            windowType,
+                            viewId,
+                            ids: selection,
+                        }));
                     }
 
                     this.connectWS(response.data.viewId);

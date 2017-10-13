@@ -19,22 +19,23 @@ import {
 } from '../actions/WindowActions';
 
 class DocList extends Component {
-    constructor(props){
-        super(props);
-
-        this.state = {
-            modalTitle: '',
-            modalDescription: '',
-            notfound: false
-        }
+    state = {
+        modalTitle: '',
+        modalDescription: '',
+        notfound: false,
     }
 
     componentDidMount = () => {
-        const {dispatch, windowType, latestNewDocument} = this.props;
+        const { dispatch, windowType, latestNewDocument, query } = this.props;
+
         dispatch(getWindowBreadcrumb(windowType));
 
-        if(latestNewDocument){
-            dispatch(selectTableItems([latestNewDocument], windowType));
+        if (latestNewDocument) {
+            dispatch(selectTableItems({
+                windowType,
+                viewId: query.viewId,
+                ids: [latestNewDocument],
+            }));
             dispatch(setLatestNewDocument(null));
         }
     }
