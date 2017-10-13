@@ -1,5 +1,7 @@
 package de.metas.handlingunits.trace;
 
+import de.metas.handlingunits.model.X_M_HU_Trace;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -22,6 +24,12 @@ package de.metas.handlingunits.trace;
  * #L%
  */
 
+/**
+ * <b>Please</b> keep this in sync with the trace types of {@code M_HU_Trace}, or bad things will happen {@link X_M_HU_Trace#HUTRACETYPE_AD_Reference_ID}.
+ * 
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
 public enum HUTraceType
 {
 	/**
@@ -53,12 +61,12 @@ public enum HUTraceType
 	 * Used for records/events related to HUs coming out of production
 	 */
 	PRODUCTION_RECEIPT,
-	
+
 	/**
 	 * Used for records/events related HU-loading (e.g. split of qtys from an aggregate HU).
 	 */
 	TRANSFORM_LOAD,
-	
+
 	/**
 	 * Used for records/events related zo changes in the parent HU relation.
 	 */

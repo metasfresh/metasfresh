@@ -1,5 +1,6 @@
 package de.metas.handlingunits.trace;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
@@ -8,18 +9,23 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.OptionalInt;
 
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
+import org.adempiere.util.Services;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestWatcher;
 
 import de.metas.event.SimpleObjectSerializer;
+import de.metas.handlingunits.model.I_M_HU_Trace;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.trace.HUTraceEvent.HUTraceEventBuilder;
-import de.metas.handlingunits.trace.HUTraceSpecification.RecursionMode;
+import de.metas.handlingunits.trace.HUTraceEventQuery.RecursionMode;
 
 /*
  * #%L
@@ -50,6 +56,7 @@ public class HUTraceRepositoryTests
 	public final TestWatcher testWatcher = new AdempiereTestWatcher();
 
 	private final HUTraceEventBuilder commonEventBuilder = HUTraceEvent.builder()
+			.orgId(10)
 			.vhuStatus(X_M_HU.HUSTATUS_Active)
 			.qty(BigDecimal.valueOf(100))
 			.productId(23)
@@ -71,7 +78,7 @@ public class HUTraceRepositoryTests
 	{
 		createAndAddEvents(); // just use this method to store some events. we don't want to see and of them in the result..
 
-		final HUTraceSpecification query = HUTraceSpecification.builder()
+		final HUTraceEventQuery query = HUTraceEventQuery.builder()
 				.recursionMode(RecursionMode.NONE)
 				.build();
 
@@ -89,6 +96,7 @@ public class HUTraceRepositoryTests
 		final Instant eventTime = Instant.now();
 
 		huTraceRepository.addEvent(HUTraceEvent.builder()
+				.orgId(13)
 				.eventTime(eventTime)
 				.topLevelHuId(2)
 				.productId(23)
@@ -98,17 +106,20 @@ public class HUTraceRepositoryTests
 				.type(HUTraceType.TRANSFORM_LOAD)
 				.build());
 
-		final HUTraceSpecification query = HUTraceSpecification.builder()
+		final HUTraceEventQuery query = HUTraceEventQuery.builder()
 				.vhuId(12)
 				.recursionMode(RecursionMode.NONE)
 				.build();
 
 		final List<HUTraceEvent> result = huTraceRepository.query(query);
 		assertThat(result.size(), is(1));
+		assertThat(result.get(0).getHuTraceEventId().isPresent(), is(true));
 		assertThat(result.get(0).getVhuId(), is(12));
+		assertThat(result.get(0).getOrgId(), is(13));
 
 		// add an equal event, again
 		huTraceRepository.addEvent(HUTraceEvent.builder()
+				.orgId(13)
 				.eventTime(eventTime)
 				.topLevelHuId(2)
 				.productId(23)
@@ -120,6 +131,7 @@ public class HUTraceRepositoryTests
 
 		final List<HUTraceEvent> result2 = huTraceRepository.query(query);
 		assertThat(result2.size(), is(1)); // still just one..
+		assertThat(result.get(0), is(result2.get(0)));
 	}
 
 	/**
@@ -137,7 +149,7 @@ public class HUTraceRepositoryTests
 				.vhuSourceId(13)
 				.build());
 
-		final HUTraceSpecification query = HUTraceSpecification.builder()
+		final HUTraceEventQuery query = HUTraceEventQuery.builder()
 				.vhuId(12)
 				.recursionMode(RecursionMode.NONE)
 				.build();
@@ -173,7 +185,7 @@ public class HUTraceRepositoryTests
 				.build();
 		huTraceRepository.addEvent(event2);
 
-		final HUTraceSpecification query = HUTraceSpecification.builder()
+		final HUTraceEventQuery query = HUTraceEventQuery.builder()
 				.vhuSourceId(14)
 				.recursionMode(RecursionMode.NONE)
 				.build();
@@ -193,7 +205,7 @@ public class HUTraceRepositoryTests
 
 		// query with the huId of the first event from the "middle" group.
 		// the first group has no event with getHuSourceId > 0, that's why we go with the middle one
-		final List<HUTraceEvent> result = huTraceRepository.query(HUTraceSpecification.builder()
+		final List<HUTraceEvent> result = huTraceRepository.query(HUTraceEventQuery.builder()
 				.vhuId(events.get(5).getVhuId())
 				.recursionMode(RecursionMode.NONE)
 				.build());
@@ -219,7 +231,7 @@ public class HUTraceRepositoryTests
 
 		// query with the huId of the first event from the "middle" group.
 		// that means that we expect a record for each event of that group plus a record for each event of the "preceding" group
-		final List<HUTraceEvent> result = huTraceRepository.query(HUTraceSpecification.builder()
+		final List<HUTraceEvent> result = huTraceRepository.query(HUTraceEventQuery.builder()
 				.vhuId(events.get(5).getVhuId())
 				.recursionMode(RecursionMode.BACKWARD)
 				.build());
@@ -252,7 +264,7 @@ public class HUTraceRepositoryTests
 
 		// query with the huId of the first event from the "last" group.
 		// that means that we expect a record for each event event we added (because there is one directly preceding group and one indirectly preceding group).
-		final List<HUTraceEvent> result = huTraceRepository.query(HUTraceSpecification.builder()
+		final List<HUTraceEvent> result = huTraceRepository.query(HUTraceEventQuery.builder()
 				.vhuId(events.get(11).getVhuId())
 				.recursionMode(RecursionMode.BACKWARD)
 				.build());
@@ -283,7 +295,7 @@ public class HUTraceRepositoryTests
 
 		// query with the huId of the first event from the "middle" group.
 		// that means that we expect a record for each event of that group plus a record for each event of the "following" group
-		final List<HUTraceEvent> result = huTraceRepository.query(HUTraceSpecification.builder()
+		final List<HUTraceEvent> result = huTraceRepository.query(HUTraceEventQuery.builder()
 				.vhuId(events.get(5).getVhuId())
 				.recursionMode(RecursionMode.FORWARD)
 				.build());
@@ -309,7 +321,7 @@ public class HUTraceRepositoryTests
 
 		// query with the huId of the first event from the "first" group.
 		// that means that we expect a record for each event event we added (because there is one directly preceding group and one indirectly preceding group).
-		final List<HUTraceEvent> result = huTraceRepository.query(HUTraceSpecification.builder()
+		final List<HUTraceEvent> result = huTraceRepository.query(HUTraceEventQuery.builder()
 				.vhuId(events.get(0).getVhuId())
 				.recursionMode(RecursionMode.FORWARD)
 				.build());
@@ -339,7 +351,7 @@ public class HUTraceRepositoryTests
 
 		// this invocation is borrowed from testRetrieveForwardRecursiveTwoHops.
 		// it should return records for all events we added
-		final List<HUTraceEvent> result = huTraceRepository.query(HUTraceSpecification.builder()
+		final List<HUTraceEvent> result = huTraceRepository.query(HUTraceEventQuery.builder()
 				.vhuId(events.get(0).getVhuId())
 				.recursionMode(RecursionMode.FORWARD)
 				.build());
@@ -392,5 +404,28 @@ public class HUTraceRepositoryTests
 		result.forEach(e -> huTraceRepository.addEvent(e));
 
 		return result;
+	}
+
+	@Test
+	public void configureQueryBuilder_orgId()
+	{
+		final HUTraceEventQuery query = HUTraceEventQuery.builder().orgId(30).build();
+		final boolean emptyQuery = HUTraceRepository.configureQueryBuilder(query, createInitialQuerybuilder());
+		assertThat(emptyQuery).isFalse();
+	}
+
+	@Test
+	public void configureQueryBuilder_huTraceEventId()
+	{
+		final HUTraceEventQuery query = HUTraceEventQuery.builder().huTraceEventId(OptionalInt.of(30)).build();
+		final boolean emptyQuery = HUTraceRepository.configureQueryBuilder(query, createInitialQuerybuilder());
+		assertThat(emptyQuery).isFalse();
+	}
+
+	private IQueryBuilder<I_M_HU_Trace> createInitialQuerybuilder()
+	{
+		final IQueryBuilder<I_M_HU_Trace> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_M_HU_Trace.class)
+				.addOnlyActiveRecordsFilter();
+		return queryBuilder;
 	}
 }

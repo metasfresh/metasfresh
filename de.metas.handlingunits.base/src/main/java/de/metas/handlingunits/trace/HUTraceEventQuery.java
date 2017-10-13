@@ -2,11 +2,12 @@ package de.metas.handlingunits.trace;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.OptionalInt;
 
 import lombok.Builder;
 import lombok.Builder.Default;
-import lombok.Data;
 import lombok.NonNull;
+import lombok.Value;
 import lombok.experimental.Wither;
 
 /*
@@ -32,7 +33,7 @@ import lombok.experimental.Wither;
  */
 
 /**
- * Used to pass to {@link HUTraceRepository#query(HUTraceSpecification)} to retrieve {@link HUTraceEvent}s.
+ * Used to pass to {@link HUTraceRepository#query(HUTraceEventQuery)} to retrieve {@link HUTraceEvent}s.
  * 
  * This class has the properties that {@link HUTraceEvent} has, but the following differences:
  * <ul>
@@ -43,52 +44,77 @@ import lombok.experimental.Wither;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-@Data
+@Value
 @Builder
 @Wither
-public class HUTraceSpecification
+public class HUTraceEventQuery
 {
 	enum RecursionMode
 	{
 		BACKWARD, FORWARD, NONE
 	}
 
+	public enum EventTimeOperator
+	{
+		/**
+		 * only expects {@link #eventTime} to be set .
+		 */
+		EQUAL,
+
+		/**
+		 * Expects both {@link #eventTime} and {@link #eventTimeTo} to be set .
+		 */
+		BETWEEN
+	}
+
 	@NonNull
 	@Default
-	private RecursionMode recursionMode = RecursionMode.NONE;
+	RecursionMode recursionMode = RecursionMode.NONE;
 
-	private final HUTraceType type;
+	@NonNull
+	@Default
+	OptionalInt huTraceEventId = OptionalInt.empty();
 
-	private final Instant eventTime;
+	int orgId;
 
-	private final int vhuId;
+	HUTraceType type;
 
-	private final int productId;
+	Instant eventTime;
 
-	private final BigDecimal qty;
+	Instant eventTimeTo;
 
-	private final String vhuStatus;
+	EventTimeOperator eventTimeOperator;
 
-	private final int topLevelHuId;
+	int vhuId;
 
-	private final int vhuSourceId;
+	int productId;
 
-	private final int inOutId;
+	BigDecimal qty;
 
-	private final int shipmentScheduleId;
+	String vhuStatus;
 
-	private final int movementId;
+	int topLevelHuId;
 
-	private final int costCollectorId;
+	int vhuSourceId;
 
-	private final int ppOrderId;
+	int inOutId;
 
-	private final String docStatus;
+	int shipmentScheduleId;
+
+	int movementId;
+
+	int ppCostCollectorId;
+
+	int ppOrderId;
+
+	String docStatus;
 
 	/**
-	 * Needs to be {@code null} if not set, because {@code C_DocType_ID=0} means "new".
+	 * Can't be zero if not set, because {@code C_DocType_ID=0} means "new".
 	 */
-	private final Integer docTypeId;
+	@NonNull
+	@Default
+	OptionalInt docTypeId = OptionalInt.empty();
 
-	private final int huTrxLineId;
+	int huTrxLineId;
 }

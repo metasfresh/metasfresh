@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.OptionalInt;
 import java.util.Set;
 import java.util.function.Function;
 
@@ -106,7 +107,7 @@ public class HUTraceEventsService
 		final HUTraceEventBuilder builder = HUTraceEvent.builder()
 				.costCollectorId(costCollector.getPP_Cost_Collector_ID())
 				.ppOrderId(costCollector.getPP_Order_ID())
-				.docTypeId(costCollector.getC_DocType_ID())
+				.docTypeId(OptionalInt.of(costCollector.getC_DocType_ID()))
 				.docStatus(costCollector.getDocStatus())
 				.eventTime(costCollector.getMovementDate().toInstant());
 
@@ -128,7 +129,7 @@ public class HUTraceEventsService
 	{
 		final HUTraceEventBuilder builder = HUTraceEvent.builder()
 				.inOutId(inOut.getM_InOut_ID())
-				.docTypeId(inOut.getC_DocType_ID())
+				.docTypeId(OptionalInt.of(inOut.getC_DocType_ID()))
 				.docStatus(inOut.getDocStatus())
 				.eventTime(inOut.getMovementDate().toInstant());
 
@@ -151,7 +152,7 @@ public class HUTraceEventsService
 	{
 		final HUTraceEventBuilder builder = HUTraceEvent.builder()
 				.movementId(movement.getM_Movement_ID())
-				.docTypeId(movement.getC_DocType_ID())
+				.docTypeId(OptionalInt.of(movement.getC_DocType_ID()))
 				.docStatus(movement.getDocStatus())
 				.type(HUTraceType.MATERIAL_MOVEMENT)
 				.eventTime(movement.getMovementDate().toInstant());
@@ -249,21 +250,20 @@ public class HUTraceEventsService
 
 		// gets the VHU IDs
 		// this code is called twice, but I don't want to pollute the class with a method
-		final Function<I_M_HU_Trx_Line, List<I_M_HU>> getVhus = huTrxLine ->
+		final Function<I_M_HU_Trx_Line, List<I_M_HU>> getVhus = huTrxLine -> {
+			if (huTrxLine.getVHU_Item_ID() > 0)
 			{
-				if (huTrxLine.getVHU_Item_ID() > 0)
-				{
-					return ImmutableList.of(huTrxLine.getVHU_Item().getM_HU());
-				}
-				else if (huTrxLine.getM_HU_ID() > 0)
-				{
-					return huAccessService.retrieveVhus(huTrxLine.getM_HU());
-				}
-				else
-				{
-					return ImmutableList.of();
-				}
-			};
+				return ImmutableList.of(huTrxLine.getVHU_Item().getM_HU());
+			}
+			else if (huTrxLine.getM_HU_ID() > 0)
+			{
+				return huAccessService.retrieveVhus(huTrxLine.getM_HU());
+			}
+			else
+			{
+				return ImmutableList.of();
+			}
+		};
 
 		final Map<Boolean, List<HUTraceEvent>> result = new HashMap<>();
 		result.put(true, new ArrayList<>());
@@ -351,7 +351,7 @@ public class HUTraceEventsService
 
 	/**
 	 * Filters for the trx lines we actually want to create events from.
-	 *  
+	 * 
 	 * @param trxLines
 	 * @return
 	 */

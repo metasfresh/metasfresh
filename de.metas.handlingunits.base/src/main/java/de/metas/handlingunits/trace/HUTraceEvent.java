@@ -2,11 +2,14 @@ package de.metas.handlingunits.trace;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.OptionalInt;
 
-import de.metas.handlingunits.trace.HUTraceSpecification.RecursionMode;
+import de.metas.handlingunits.trace.HUTraceEventQuery.EventTimeOperator;
+import de.metas.handlingunits.trace.HUTraceEventQuery.RecursionMode;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Builder.Default;
 import lombok.NonNull;
+import lombok.Value;
 import lombok.experimental.Wither;
 
 /*
@@ -30,60 +33,76 @@ import lombok.experimental.Wither;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-@Data
+@Value
 @Builder
 @Wither
 public class HUTraceEvent
 {
+	/**
+	 * If the event is coming out of the repo, the ID is present. If we create a new huTraceEvent to be added to the repo, it's not.
+	 */
 	@NonNull
-	private final HUTraceType type;
+	@Default
+	OptionalInt	huTraceEventId = OptionalInt.empty();
+	
+	@NonNull
+	Integer orgId;
 
 	@NonNull
-	private final Instant eventTime;
+	HUTraceType type;
 
 	@NonNull
-	private final Integer vhuId;
-
-	private final int productId;
+	Instant eventTime;
 
 	@NonNull
-	private final BigDecimal qty;
+	Integer vhuId;
+
+	int productId;
 
 	@NonNull
-	private final String vhuStatus;
+	BigDecimal qty;
+
+	@NonNull
+	String vhuStatus;
 
 	/**
 	 * The topmost HU as seen from the vhu.
 	 */
 	@NonNull
-	private final Integer topLevelHuId;
+	Integer topLevelHuId;
 
-	private final int vhuSourceId;
+	int vhuSourceId;
 
-	private final int inOutId;
+	int inOutId;
 
-	private final int shipmentScheduleId;
+	int shipmentScheduleId;
 
-	private final int movementId;
+	int movementId;
 
-	private final int costCollectorId;
+	int costCollectorId;
 
-	private final int ppOrderId;
+	int ppOrderId;
 
-	private final String docStatus;
+	String docStatus;
 
 	/**
 	 * Needs to be {@code null} if not set, because {@code C_DocType_ID=0} means "new".
 	 */
-	private final Integer docTypeId;
+	@NonNull
+	@Default
+	OptionalInt docTypeId = OptionalInt.empty();
 
-	private final int huTrxLineId;
+	int huTrxLineId;
 
-	public HUTraceSpecification asQuery()
+	public HUTraceEventQuery asQuery()
 	{
-		return new HUTraceSpecification(RecursionMode.NONE,
+		return new HUTraceEventQuery(RecursionMode.NONE,
+				huTraceEventId,
+				orgId,
 				type,
 				eventTime,
+				null,
+				EventTimeOperator.EQUAL,
 				vhuId,
 				productId,
 				qty,

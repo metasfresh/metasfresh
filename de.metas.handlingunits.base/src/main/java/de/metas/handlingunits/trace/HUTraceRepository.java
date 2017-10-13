@@ -6,6 +6,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 import java.sql.Timestamp;
 import java.util.List;
+import java.util.OptionalInt;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
@@ -13,6 +14,7 @@ import java.util.stream.Collectors;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.model.util.ModelByIdComparator;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.Adempiere;
@@ -25,7 +27,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.handlingunits.model.I_M_HU_Trace;
 import de.metas.handlingunits.trace.HUTraceEvent.HUTraceEventBuilder;
-import de.metas.handlingunits.trace.HUTraceSpecification.RecursionMode;
+import de.metas.handlingunits.trace.HUTraceEventQuery.RecursionMode;
 import de.metas.logging.LogManager;
 import lombok.NonNull;
 
@@ -65,7 +67,7 @@ public class HUTraceRepository
 	 */
 	public boolean addEvent(@NonNull final HUTraceEvent huTraceEvent)
 	{
-		final HUTraceSpecification query = huTraceEvent.asQuery();
+		final HUTraceEventQuery query = huTraceEvent.asQuery();
 
 		final I_M_HU_Trace dbRecord;
 		final List<I_M_HU_Trace> existingDbRecords = queryDbRecord(query);
@@ -96,9 +98,9 @@ public class HUTraceRepository
 	 * 
 	 * @param query
 	 * @return
-	 * @see HUTraceSpecification
+	 * @see HUTraceEventQuery
 	 */
-	public List<HUTraceEvent> query(@NonNull final HUTraceSpecification query)
+	public List<HUTraceEvent> query(@NonNull final HUTraceEventQuery query)
 	{
 		return queryDbRecord(query)
 				.stream()
@@ -115,7 +117,7 @@ public class HUTraceRepository
 	/* package */ List<HUTraceEvent> queryAll()
 	{
 		Check.errorUnless(Adempiere.isUnitTestMode(), "The method queryAll() shall only be invoked from test code");
-		
+
 		final IQueryBuilder<I_M_HU_Trace> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_M_HU_Trace.class)
 				.orderBy().addColumn(I_M_HU_Trace.COLUMN_M_HU_Trace_ID).endOrderBy();
 
@@ -125,9 +127,10 @@ public class HUTraceRepository
 				.collect(Collectors.toList());
 	}
 
-	private List<I_M_HU_Trace> queryDbRecord(@NonNull final HUTraceSpecification query)
+	private List<I_M_HU_Trace> queryDbRecord(@NonNull final HUTraceEventQuery query)
 	{
-		final IQueryBuilder<I_M_HU_Trace> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_M_HU_Trace.class)
+		final IQueryBuilder<I_M_HU_Trace> queryBuilder = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_M_HU_Trace.class)
 				.addOnlyActiveRecordsFilter();
 
 		final boolean emptySpec = configureQueryBuilder(query, queryBuilder);
@@ -162,7 +165,7 @@ public class HUTraceRepository
 						.collect(Collectors.toList());
 				for (final int vhuSourceId : vhuSourceIDs)
 				{
-					result.addAll(queryDbRecord(HUTraceSpecification.builder()
+					result.addAll(queryDbRecord(HUTraceEventQuery.builder()
 							.vhuId(vhuSourceId)
 							.recursionMode(RecursionMode.BACKWARD)
 							.build()));
@@ -177,7 +180,7 @@ public class HUTraceRepository
 				for (final int vhuId : vhuIDs)
 				{
 					// get the records where our M_HU_IDs are the M_HU_Source_IDs
-					final List<I_M_HU_Trace> directFollowupRecords = queryDbRecord(HUTraceSpecification.builder()
+					final List<I_M_HU_Trace> directFollowupRecords = queryDbRecord(HUTraceEventQuery.builder()
 							.vhuSourceId(vhuId)
 							.recursionMode(RecursionMode.NONE)
 							.build());
@@ -190,7 +193,7 @@ public class HUTraceRepository
 					// and now expand on those direct follow ups
 					for (final int directFollowupVhuID : directFollowupVhuIDs)
 					{
-						result.addAll(queryDbRecord(HUTraceSpecification.builder()
+						result.addAll(queryDbRecord(HUTraceEventQuery.builder()
 								.vhuId(directFollowupVhuID)
 								.recursionMode(RecursionMode.FORWARD)
 								.build()));
@@ -204,8 +207,9 @@ public class HUTraceRepository
 		return ImmutableList.copyOf(result);
 	}
 
-	private boolean configureQueryBuilder(
-			@NonNull final HUTraceSpecification query, 
+	@VisibleForTesting
+	static boolean configureQueryBuilder(
+			@NonNull final HUTraceEventQuery query,
 			@NonNull final IQueryBuilder<I_M_HU_Trace> queryBuilder)
 	{
 		boolean emptySpec = true;
@@ -213,7 +217,32 @@ public class HUTraceRepository
 		if (query.getEventTime() != null)
 		{
 			final Timestamp eventTime = TimeUtil.asTimestamp(query.getEventTime());
-			queryBuilder.addEqualsFilter(I_M_HU_Trace.COLUMN_EventTime, eventTime);
+			final Timestamp eventTimeTo = TimeUtil.asTimestamp(query.getEventTimeTo());
+
+			switch (query.getEventTimeOperator())
+			{
+				case EQUAL:
+					queryBuilder.addEqualsFilter(I_M_HU_Trace.COLUMN_EventTime, eventTime);
+					break;
+				case BETWEEN:
+					queryBuilder.addBetweenFilter(I_M_HU_Trace.COLUMN_EventTime, eventTime, eventTimeTo);
+					break;
+				default:
+					throw new AdempiereException("Unexpected EventTimeOperator=" + query.getEventTimeOperator())
+							.appendParametersToMessage()
+							.setParameter("HUTraceEventQuery", query)
+							.setParameter("IQueryBuilder", queryBuilder);
+			}
+			emptySpec = false;
+		}
+		if (query.getHuTraceEventId().isPresent())
+		{
+			queryBuilder.addEqualsFilter(I_M_HU_Trace.COLUMN_M_HU_Trace_ID, query.getHuTraceEventId().getAsInt());
+			emptySpec = false;
+		}
+		if (query.getOrgId() > 0)
+		{
+			queryBuilder.addEqualsFilter(I_M_HU_Trace.COLUMN_AD_Org_ID, query.getOrgId());
 			emptySpec = false;
 		}
 		if (query.getVhuId() > 0)
@@ -256,9 +285,9 @@ public class HUTraceRepository
 			queryBuilder.addEqualsFilter(I_M_HU_Trace.COLUMN_M_Movement_ID, query.getMovementId());
 			emptySpec = false;
 		}
-		if (query.getCostCollectorId() > 0)
+		if (query.getPpCostCollectorId() > 0)
 		{
-			queryBuilder.addEqualsFilter(I_M_HU_Trace.COLUMN_PP_Cost_Collector_ID, query.getCostCollectorId());
+			queryBuilder.addEqualsFilter(I_M_HU_Trace.COLUMN_PP_Cost_Collector_ID, query.getPpCostCollectorId());
 			emptySpec = false;
 		}
 		if (query.getPpOrderId() > 0)
@@ -292,6 +321,7 @@ public class HUTraceRepository
 	private HUTraceEvent asHuTraceEvent(@NonNull final I_M_HU_Trace dbRecord)
 	{
 		final HUTraceEventBuilder builder = HUTraceEvent.builder()
+				.orgId(dbRecord.getAD_Org_ID())
 				.costCollectorId(dbRecord.getPP_Cost_Collector_ID())
 				.ppOrderId(dbRecord.getPP_Order_ID())
 				.docStatus(dbRecord.getDocStatus())
@@ -308,9 +338,18 @@ public class HUTraceRepository
 				.shipmentScheduleId(dbRecord.getM_ShipmentSchedule_ID())
 				.type(HUTraceType.valueOf(dbRecord.getHUTraceType()));
 
+		if (dbRecord.getM_HU_Trace_ID() > 0)
+		{
+			builder.huTraceEventId(OptionalInt.of(dbRecord.getM_HU_Trace_ID()));
+		}
+
 		if (!isNull(dbRecord, I_M_HU_Trace.COLUMNNAME_C_DocType_ID))
 		{
-			builder.docTypeId(dbRecord.getC_DocType_ID()); // note that zero means "new", and not "nothing" or null
+			builder.docTypeId(OptionalInt.empty());
+		}
+		else
+		{
+			builder.docTypeId(OptionalInt.of(dbRecord.getC_DocType_ID())); // note that zero means "new", and not "nothing" or null
 		}
 
 		return builder.build();
@@ -320,10 +359,12 @@ public class HUTraceRepository
 			@NonNull final HUTraceEvent huTraceRecord,
 			@NonNull final I_M_HU_Trace dbRecord)
 	{
-		if (huTraceRecord.getDocTypeId() != null)
+		if (huTraceRecord.getDocTypeId().isPresent())
 		{
-			dbRecord.setC_DocType_ID(huTraceRecord.getDocTypeId()); // note that zero means "new", and not "nothing" or null
+			dbRecord.setC_DocType_ID(huTraceRecord.getDocTypeId().getAsInt()); // note that zero means "new", and not "nothing" or null
 		}
+		// HU_TraceEvent_ID is not copied to the dbRecord! because the dbREcord is where it always comes from
+		dbRecord.setAD_Org_ID(huTraceRecord.getOrgId());
 		dbRecord.setDocStatus(huTraceRecord.getDocStatus());
 		dbRecord.setEventTime(TimeUtil.asTimestamp(huTraceRecord.getEventTime()));
 		dbRecord.setHUTraceType(huTraceRecord.getType().toString());

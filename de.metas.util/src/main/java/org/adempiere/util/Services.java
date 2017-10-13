@@ -47,6 +47,8 @@ import com.google.common.cache.LoadingCache;
 import com.google.common.cache.RemovalListener;
 import com.google.common.cache.RemovalNotification;
 
+import lombok.NonNull;
+
 /**
  * The metasfresh service registry.<br>
  * Under the hood, this registry is a map that associates interfaces which extend either {@link ISingletonService} or {@link IMultitonService} with their respective implementations.<br>
@@ -178,9 +180,8 @@ public class Services
 	 *         </ul>
 	 * @throws ServicesException if a service implementation was not found or could not be instantiated
 	 */
-	public static <T extends IService> T get(final Class<T> serviceInterfaceClass)
+	public static <T extends IService> T get( @NonNull final Class<T> serviceInterfaceClass)
 	{
-		Check.assumeNotNull(serviceInterfaceClass, "Param 'clazz' not null");
 		Check.assume(serviceInterfaceClass.isInterface(), "Param 'clazz' shall be an interface: {}", serviceInterfaceClass);
 
 		if (IMultitonService.class.isAssignableFrom(serviceInterfaceClass))

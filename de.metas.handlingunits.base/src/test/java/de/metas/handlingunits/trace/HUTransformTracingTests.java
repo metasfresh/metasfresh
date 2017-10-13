@@ -139,7 +139,7 @@ public class HUTransformTracingTests
 
 		// retrieve the events that were added to the repo and make sure they are as expected
 
-		final HUTraceSpecification tuTraceQuery = HUTraceSpecification.builder().topLevelHuId(parentTU.getM_HU_ID()).build();
+		final HUTraceEventQuery tuTraceQuery = HUTraceEventQuery.builder().topLevelHuId(parentTU.getM_HU_ID()).build();
 		final List<HUTraceEvent> tuTraceEvents = huTraceRepository.query(tuTraceQuery);
 		assertThat(tuTraceEvents.size(), is(1));
 
@@ -156,7 +156,7 @@ public class HUTransformTracingTests
 						.topLevelHuId(parentTU.getM_HU_ID())
 						.build()));
 
-		final HUTraceSpecification cuTraceQuery = HUTraceSpecification.builder().topLevelHuId(cuToSplit.getM_HU_ID()).build();
+		final HUTraceEventQuery cuTraceQuery = HUTraceEventQuery.builder().topLevelHuId(cuToSplit.getM_HU_ID()).build();
 		final List<HUTraceEvent> cuTraceEvents = huTraceRepository.query(cuTraceQuery);
 		assertThat(cuTraceEvents.size(), is(1));
 		assertThat(cuTraceEvents.get(0),
