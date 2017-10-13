@@ -16,6 +16,8 @@ Here come the actual release notes:
 
 ## Features
 * metasfresh-app
+  * [#2603](https://github.com/metasfresh/metasfresh/issues/2603) Window Design Webui : Translate fields of Purchase Candidates
+    * Improved Translations for Languages/ Locales de_DE and en_US added to the Purchase Candidates Window.
   * [#2606](https://github.com/metasfresh/metasfresh/issues/2606) Window Design Webui: Translate GL Journal window in English
     * New Window and Fields Translation for en_US Language/ Locale. Adapting WebUI Design Guidelines. New Filter and Sorting Criteria.
   * [#2607](https://github.com/metasfresh/metasfresh/issues/2607) Window Design Webui: Improve window Internal Use Inventory
@@ -34,6 +36,8 @@ Here come the actual release notes:
     * Improved Materuia Dispo Window. Removed deprecated Fields and added Translations for en_US and de_DE Locale/ Language
   * [#2694](https://github.com/metasfresh/metasfresh/issues/2694) Window Design Webui: Improvements in Dunning Type window
     * New Translations added for Language en_US for Action and Referencelist.
+  * [#2695](https://github.com/metasfresh/metasfresh/issues/2695) Window Design Webui: Introduce the window Shipment Restrictions in the Webui menu
+    * New Window in WebUI Menu. Now allowing the user to maintain Shipment Restrictions.
   * [#2696](https://github.com/metasfresh/metasfresh/issues/2696) Window Design Webui: Add subscription details in Shipment Candidate window
     * New Fields for Subscription/ Flatrate Terms in Shipment Disposition Window. Improved Translations for en_US.
 
