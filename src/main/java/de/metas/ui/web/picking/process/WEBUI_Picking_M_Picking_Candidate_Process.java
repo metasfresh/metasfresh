@@ -15,17 +15,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.fresh.picking.form.FreshPackingItemHelper;
-import de.metas.fresh.picking.form.IFreshPackingItem;
-import de.metas.fresh.picking.service.IPackingContext;
-import de.metas.fresh.picking.service.IPackingService;
-import de.metas.fresh.picking.service.impl.HU2PackingItemsAllocator;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Picking_Candidate;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
 import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.picking.service.FreshPackingItemHelper;
+import de.metas.picking.service.IFreshPackingItem;
+import de.metas.picking.service.IPackingContext;
+import de.metas.picking.service.IPackingService;
 import de.metas.picking.service.PackingItemsMap;
+import de.metas.picking.service.impl.HU2PackingItemsAllocator;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.picking.pickingslot.PickingSlotRow;
