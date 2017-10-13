@@ -16,6 +16,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.handlingunits.model.I_PP_Order_Qty;
+import de.metas.handlingunits.model.X_M_HU;
 import de.metas.quantity.Quantity;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.handlingunits.WEBUI_HU_Constants;
@@ -73,6 +74,8 @@ public class PPOrderLineRow implements IViewRow
 
 	private final int huId;
 	private final boolean sourceHU;
+	private final boolean topLevelHU;
+	private final String huStatus;
 
 	@ViewColumn(captionKey = "M_Product_ID", widgetType = DocumentFieldWidgetType.Lookup, layouts = @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 10))
 	private final JSONLookupValue product;
@@ -113,7 +116,9 @@ public class PPOrderLineRow implements IViewRow
 			@NonNull final JSONLookupValue product,
 			@Nullable final String packingInfo,  // can be null if type=HU_Storage
 			@NonNull final Quantity quantity,
-			@NonNull final List<PPOrderLineRow> includedRows)
+			@NonNull final List<PPOrderLineRow> includedRows,
+			@NonNull final Boolean topLevelHU,
+			@NonNull final String huStatus)
 	{
 		this.rowId = rowId;
 		this.type = type;
@@ -132,6 +137,9 @@ public class PPOrderLineRow implements IViewRow
 		this.code = code;
 
 		this.sourceHU = false;
+		this.topLevelHU = topLevelHU;
+		this.huStatus = huStatus;
+		
 		this.qtyPlan = null;
 
 		this.attributesSupplier = attributesSupplier;
@@ -167,6 +175,9 @@ public class PPOrderLineRow implements IViewRow
 		this.code = null;
 
 		this.sourceHU = false;
+		this.topLevelHU = false;
+		this.huStatus = null;
+		
 		this.qtyPlan = ppOrder.getQtyOrdered();
 
 		this.attributesSupplier = createASIAttributesSupplier(attributesProvider,
@@ -209,6 +220,9 @@ public class PPOrderLineRow implements IViewRow
 		this.code = null;
 
 		this.sourceHU = false;
+		this.topLevelHU = false;
+		this.huStatus = null;
+		
 		this.qtyPlan = qtyPlan;
 
 		this.attributesSupplier = createASIAttributesSupplier(attributesProvider,
@@ -234,7 +248,9 @@ public class PPOrderLineRow implements IViewRow
 			@NonNull final JSONLookupValue product,
 			@NonNull final String packingInfo,
 			@NonNull final JSONLookupValue uom,
-			@NonNull final BigDecimal qty)
+			@NonNull final BigDecimal qty,
+			@NonNull final Boolean topLevelHU,
+			@NonNull final String huStatus)
 	{
 		this.rowId = rowId;
 		this.type = type;
@@ -253,6 +269,9 @@ public class PPOrderLineRow implements IViewRow
 		this.code = code;
 
 		this.sourceHU = true;
+		this.topLevelHU = topLevelHU;
+		this.huStatus = huStatus;
+		
 		this.qtyPlan = null;
 
 		this.attributesSupplier = attributesSupplier;
@@ -411,6 +430,16 @@ public class PPOrderLineRow implements IViewRow
 	public boolean isSourceHU()
 	{
 		return sourceHU;
+	}
+
+	public boolean isTopLevelHU()
+	{
+		return topLevelHU;
+	}
+	
+	public boolean isHUStatusActive()
+	{
+		return X_M_HU.HUSTATUS_Active.equals(huStatus);
 	}
 
 	@Override

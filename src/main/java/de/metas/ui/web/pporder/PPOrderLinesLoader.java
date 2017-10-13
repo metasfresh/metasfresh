@@ -336,6 +336,8 @@ public class PPOrderLinesLoader
 				.code(huEditorRow.getValue())
 				.product(huEditorRow.getProduct())
 				.packingInfo(huEditorRow.getPackingInfo())
+				.topLevelHU(huEditorRow.isTopLevel())
+				.huStatus(huEditorRow.getHUStatusKey())
 				.quantity(quantity)
 				.includedRows(includedRows)
 				.build();
