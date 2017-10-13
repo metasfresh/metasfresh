@@ -105,9 +105,11 @@ Here come the actual release notes:
   * [#2639](https://github.com/metasfresh/metasfresh/issues/2639) Rename default Account Values to be sorted last
     * Moving the 5-digit Default Accounts to the end of table.
   * [#2642](https://github.com/metasfresh/metasfresh/issues/2642) Flatrate Import: Support explicit enddate and terminated contracts
+    * Enhancement of the Flatrate/ Subscription migration Feature, now allowing to import an explicit enddate and automatically terminate contracts.
   * [#2644](https://github.com/metasfresh/metasfresh/issues/2644) Window Design Webui: Improvements to ESR window
     * Layout Improvements and Translations added for Language en_US.
   * [#2650](https://github.com/metasfresh/metasfresh/issues/2650) allow subscription pause and recipient change with existing shipment scheds
+    * New Functionality in Subscription Feature, that allows to set a delivery pause and receipient change for a given timeframe.
   * [#2655](https://github.com/metasfresh/metasfresh/issues/2655) Window Design Webui: Translations and Improvements for Product Prices
     * New Translations for en_US in Product Prices Window. Adjusting Layout.
   * [#2657](https://github.com/metasfresh/metasfresh/issues/2657) don't show active hus in hu costprice report
