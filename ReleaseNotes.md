@@ -33,7 +33,7 @@ Here come the actual release notes:
   * [#2690](https://github.com/metasfresh/metasfresh/issues/2690) New Window for AD_Scheduler in WebUI
     * New Window for Scheduler Maintenance.
   * [#2691](https://github.com/metasfresh/metasfresh/issues/2691) Adjustments in Materialdispo Window in WebUI
-    * Improved Materuia Dispo Window. Removed deprecated Fields and added Translations for en_US and de_DE Locale/ Language
+    * Improved Materuial Dispo Window. Removed deprecated Fields and added Translations for en_US and de_DE Locale/ Language
   * [#2694](https://github.com/metasfresh/metasfresh/issues/2694) Window Design Webui: Improvements in Dunning Type window
     * New Translations added for Language en_US for Action and Referencelist.
   * [#2695](https://github.com/metasfresh/metasfresh/issues/2695) Window Design Webui: Introduce the window Shipment Restrictions in the Webui menu
@@ -59,27 +59,39 @@ Here come the actual release notes:
 ## Features
 * metasfresh-app
   * [#1339](https://github.com/metasfresh/metasfresh/issues/1339) Forecast Window as Document
+    * Forecast Look&Feel is now adapted to real document.
   * [#2152](https://github.com/metasfresh/metasfresh/issues/2152) Prepare Default Filters for Retraceability window
-  * [#2212](https://github.com/metasfresh/metasfresh/issues/2212) take out password field from user window and use process instead
+    * The Retraceability Window has now a default Subset of filters that allow the user to find the wanted data records quickly.
+  * [#2212](https://github.com/metasfresh/metasfresh/issues/2212) Take out password field from user window and use process instead
     * Removing the Password Field from User Window, now only changeable via Password Change Action.
   * [#2432](https://github.com/metasfresh/metasfresh/issues/2432) Process for converting any table to a document
+    * New Housekeeping and development Functionality that transforms any selected table into a document table.
   * [#2494](https://github.com/metasfresh/metasfresh/issues/2494) Prices changing in FlatrateTerms after Prolongation
+    * New Price change Functionality in Subscription after Prolongation step.
   * [#2517](https://github.com/metasfresh/metasfresh/issues/2517) Freigabe zur Fakturierung as standard filter
-    * Adding default further Filter to Invoice Candidate Window in WebUI.
+    * Adding further default Filter to Invoice Candidate Window in WebUI.
   * [#2525](https://github.com/metasfresh/metasfresh/issues/2525) Generate Picking Document
+    * New Jasper Report that allows to create and print a Picklist.
   * [#2590](https://github.com/metasfresh/metasfresh/issues/2590) Make use of product documentnote on Quotation and Order Document
+    * New Field in Product that describes additional Information about a product and shall be printed on Quotation and Order reports.
   * [#2592](https://github.com/metasfresh/metasfresh/issues/2592) Make letter print preview work with AD_BoilerPlate jasper process
+    * New Functioanlity in Letter feature, now allowing to use Textsnippets and the Boilerplate proces in there.
   * [#2594](https://github.com/metasfresh/metasfresh/issues/2594) New Window for Dunning Candidates in WebUI
     * New Window for Dunning Candidates in WebUI, that allows the preparation and creation of Dunning Documents.
   * [#2604](https://github.com/metasfresh/metasfresh/issues/2604) Printing via standalone client takes too long
+    * Improvements of printing performance when printing via Standalone Client.
   * [#2611](https://github.com/metasfresh/metasfresh/issues/2611) Business Partner Import with empty location
+    * Adjustment of the Businesspartner Import, now allowing to leave the location empty.
   * [#2614](https://github.com/metasfresh/metasfresh/issues/2614) Overhaul shipment schedule UI window
     * Additional shipment Schedule adjustments, new Quickactions and adding new Fields to Main View.
   * [#2615](https://github.com/metasfresh/metasfresh/issues/2615) Make the callout C_Flatrate_Matching.onC_Flatrate_Transition_ID comply with webui
-  * [#2623](https://github.com/metasfresh/metasfresh/issues/2623) overhaul shipment schedule closing
+    * Adapting the Flatrate Transition callout in WebUI to match with the behavior in Swing Client.
+  * [#2623](https://github.com/metasfresh/metasfresh/issues/2623) Overhaul shipment schedule closing
+    * Improvement of the shipment Schedule closing Feature, now allowing the user to reopen alraedy closed records.
   * [#2626](https://github.com/metasfresh/metasfresh/issues/2626) Window Design Webui: Translations and Improvements for DeliveryDays
     * Improved Translations for Language/ Locale en_US in Delivery Days Window.
   * [#2627](https://github.com/metasfresh/metasfresh/issues/2627) Create Zoom Across Reference between Flatrate Term and Invoice Candidate
+    * New references added to Flatrate Term Window, allowing the user to quickly zoom into the other references data.
   * [#2628](https://github.com/metasfresh/metasfresh/issues/2628) Show fields product, qty, price and contractstatus in window contracts
     * Improvements for Subscription Contracts in Contract Window in WebUI. Adding Fields and Translations.
   * [#2631](https://github.com/metasfresh/metasfresh/issues/2631) Window Design Webui: Improve Business Partner window
@@ -88,42 +100,52 @@ Here come the actual release notes:
     * Additional Translations for Language/ Locale en_US in Window Tourversion in WebUI.
   * [#2635](https://github.com/metasfresh/metasfresh/issues/2635) Window Design Webui: Translations for Bank Statement Line Reference
     * Translations added for Language en_US in Bank Statement Line Reference Window in WebUI
-  * [#2637](https://github.com/metasfresh/metasfresh/issues/2637) Webui Window Design: Improvements to Account Combinations
+  * [#2637](https://github.com/metasfresh/metasfresh/issues/2637) WebUI Window Design: Improvements to Account Combinations
     * Additional Improvements to Account Combination Window in WebUI. Adding missing Translations for en_US.
-  * [#2639](https://github.com/metasfresh/metasfresh/issues/2639) Rename default Account Values to be sorted last
-    * Moving the 5-digit Default Accounts to the end of table.
+  * [#2639](https://github.com/metasfresh/metasfresh/issues/2639) Rename default Account values to be sorted last
+    * Moving the 5-digit default Accounts to the end of table.
   * [#2642](https://github.com/metasfresh/metasfresh/issues/2642) Flatrate Import: Support explicit enddate and terminated contracts
+    * Enhancement of the Flatrate/ Subscription migration Feature, now allowing to import an explicit enddate and automatically terminate contracts.
   * [#2644](https://github.com/metasfresh/metasfresh/issues/2644) Window Design Webui: Improvements to ESR window
     * Layout Improvements and Translations added for Language en_US.
-  * [#2650](https://github.com/metasfresh/metasfresh/issues/2650) allow subscription pause and recipient change with existing shipment scheds
-  * [#2655](https://github.com/metasfresh/metasfresh/issues/2655) Window Design Webui: Translations and Improvements for Product Prices
+  * [#2650](https://github.com/metasfresh/metasfresh/issues/2650) Allow subscription pause and recipient change with existing shipment scheds
+    * New Functionality in Subscription Feature, that allows to set a delivery pause and receipient change for a given timeframe.
+  * [#2655](https://github.com/metasfresh/metasfresh/issues/2655) Window Design WebUI: Translations and Improvements for Product Prices
     * New Translations for en_US in Product Prices Window. Adjusting Layout.
-  * [#2657](https://github.com/metasfresh/metasfresh/issues/2657) don't show active hus in hu costprice report
+  * [#2657](https://github.com/metasfresh/metasfresh/issues/2657) Don't show inactive HUs in HU costprice report
+    * Removing inactive Handling Units from the Costprice Report.
   * [#2665](https://github.com/metasfresh/metasfresh/issues/2665) Translate Add URL Attachment
-    * Adding the de_DE message Translations for The URL Attachment Handling.
+    * Adding the de_DE message Translations for the URL Attachment Handling.
   * [#2666](https://github.com/metasfresh/metasfresh/issues/2666) Window Design Webui: Tanslations for the window Contract
     * Translation Improvement for Subtab Recors. Now completed the Translation for Language/ Locale en_US.
   * [#2667](https://github.com/metasfresh/metasfresh/issues/2667) Window Design Webui: Tanslations for the window Contractpartner
     * Improvements in Window Layout, Sorting and Filtering. Now translated to Language/ Locale en_US.
-  * [#2669](https://github.com/metasfresh/metasfresh/issues/2669) Window Design Webui: Improvements and translations in Shipment Candidates
+  * [#2669](https://github.com/metasfresh/metasfresh/issues/2669) Window Design WebUI: Improvements and Translations in Shipment Candidates
     * Improvement of Translations for en_US Language/ Locale in shipment candidate window in WebUI.
 
 * metasfresh-webui-frontend
-  * [#1138](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1138) frontend: Labels widget
-  * [#1220](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1220) frontend: Attach URL support
+  * [#1138](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1138) Frontend: Labels widget
+    * New Lookup widget in WebUI. Now allowing to search, select and use Labels in a Main View. Fully customizable via Application Dictionary.
+  * [#1220](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1220) Frontend: Attach URL support
+    * New Functionality in Document Attachments, now being able to record Bookmarks/ URL instead of attaching a document.
 
 
 ## Fixes
 * metasfresh-app
   * [#2543](https://github.com/metasfresh/metasfresh/issues/2543) Businesspartner Import for different Partner with the same address
+    * Fixes the Businesspartner Import Feature, now allowing to import different Businesspartners with the same address.
   * [#2678](https://github.com/metasfresh/metasfresh/issues/2678) Shipment Schedules not created for new flatrate terms
+    * Bugfix for the shipment Schedule creation for new Subscriptions/ Contracts.
   * [#2688](https://github.com/metasfresh/metasfresh/issues/2688) SQL syntax error in ShipmentSchedulePA.retrieveUnprocessedForRecord()
+    * Internal Housekeeping. Fix for a SQL syntax error in Shipment Schedule.
 
 * metasfresh-webui-frontend
   * [#1212](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1212) Selection using SHIFT does not work in Handling unit Editor
+    * Keyboard Selection Fix in WebUI now allowing to use shift key in handling unit editor.
   * [#1234](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1234) Letter Window does not store template info
     * Fixes a minor Bug in Letter component that prevented the usage of Text Snippets.
   * [#1238](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1238) Bug in Partner window after setting Attributes (Labels)
+    * Fixes a Bug that occurred in Business Partner window after setting new Labels via Label Lookup widget.
 
 # metasfresh 5.29 (2017-40)
 
