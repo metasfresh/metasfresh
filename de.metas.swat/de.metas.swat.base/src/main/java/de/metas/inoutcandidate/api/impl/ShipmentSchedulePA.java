@@ -61,7 +61,6 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.MOrderLine;
-import org.compiere.model.Query;
 import org.compiere.util.CPreparedStatement;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -358,14 +357,6 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 		}
 	}
 
-	/**
-	 *
-	 * @param orderLineId
-	 * @param trxName may be <code>null</code>.
-	 *
-	 * @return <code>null</code> if no {@link MMShipmentSchedule} exists for the given orderLineId.
-	 * @throws IllegalArgumentException if <code>orderLineId</code> is below 1
-	 */
 	/* package */ List<I_M_ShipmentSchedule> retrieveForOrderLine(
 			final Properties ctx,
 			final int orderLineId,
