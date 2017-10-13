@@ -1,5 +1,6 @@
 package de.metas.ui.web.window.datatypes;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -107,8 +108,15 @@ public final class WindowId
 		int valueInt = this.valueInt;
 		if (valueInt < 0)
 		{
-			valueInt = Integer.parseInt(value);
-			this.valueInt = valueInt;
+			try
+			{
+				valueInt = Integer.parseInt(value);
+				this.valueInt = valueInt;
+			}
+			catch (final NumberFormatException ex)
+			{
+				throw new AdempiereException("WindowId cannot be converted to int: " + this, ex);
+			}
 		}
 		return valueInt;
 	}

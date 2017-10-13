@@ -3,35 +3,20 @@ package de.metas.ui.web.picking.process;
 import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_NO_UNPROCESSED_RECORDS;
 import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_PICK_SOMETHING;
 import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_SELECT_PICKED_HU;
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
-import java.math.BigDecimal;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.OptionalInt;
 
-import org.adempiere.util.Services;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Picking_Candidate;
-import de.metas.handlingunits.picking.PickingCandidateRepository;
 import de.metas.handlingunits.picking.PickingCandidateService;
-import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.picking.service.FreshPackingItemHelper;
-import de.metas.picking.service.IFreshPackingItem;
-import de.metas.picking.service.IPackingContext;
-import de.metas.picking.service.IPackingService;
-import de.metas.picking.service.PackingItemsMap;
-import de.metas.picking.service.impl.HU2PackingItemsAllocator;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.picking.pickingslot.PickingSlotRow;
 import de.metas.ui.web.picking.pickingslot.PickingSlotViewFactory;
 import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
-import lombok.NonNull;
 
 /*
  * #%L
@@ -77,9 +62,6 @@ public class WEBUI_Picking_M_Picking_Candidate_Process
 	@Autowired
 	private PickingCandidateService pickingCandidateService;
 
-	@Autowired
-	private PickingCandidateRepository pickingCandidateRepository;
-
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
@@ -117,56 +99,12 @@ public class WEBUI_Picking_M_Picking_Candidate_Process
 	{
 		final PickingSlotRow rowToProcess = getSingleSelectedRow();
 
-		final I_M_HU hu = loadOutOfTrx(rowToProcess.getHuId(), I_M_HU.class); // HU2PackingItemsAllocator wants them to be out of trx
-
-		allocateHuToShipmentSchedule(
-				rowToProcess.getPickingSlotId(),
-				hu);
-
-		pickingCandidateService.setCandidatesProcessed(ImmutableList.of(rowToProcess.getHuId()));
+		pickingCandidateService.setCandidatesProcessed(ImmutableList.of(rowToProcess.getHuId()), rowToProcess.getPickingSlotId(), OptionalInt.empty());
 
 		invalidateView();
 		invalidateParentView();
 
 		return MSG_OK;
-	}
-
-	private void allocateHuToShipmentSchedule(
-			final int pickingSlotId,
-			@NonNull final I_M_HU hu)
-	{
-		final IFreshPackingItem itemToPack = createItemToPack(hu);
-
-		final PackingItemsMap packingItemsMap = new PackingItemsMap();
-		packingItemsMap.addUnpackedItem(itemToPack);
-
-		final IPackingService packingService = Services.get(IPackingService.class);
-		final IPackingContext packingContext = packingService.createPackingContext(getCtx());
-		packingContext.setPackingItemsMap(packingItemsMap); // don't know what to do with it, but i saw that it can't be null
-		packingContext.setPackingItemsMapKey(pickingSlotId);
-
-		// Allocate given HUs to "itemToPack"
-		new HU2PackingItemsAllocator()
-				.setItemToPack(itemToPack)
-				.setPackingContext(packingContext)
-				.setFromHUs(ImmutableList.of(hu))
-				.allocate();
-	}
-
-	private IFreshPackingItem createItemToPack(@NonNull final I_M_HU hu)
-	{
-		final Map<I_M_ShipmentSchedule, BigDecimal> scheds2Qtys = new HashMap<>();
-
-		final List<I_M_Picking_Candidate> pickingCandidates = pickingCandidateRepository.retrievePickingCandidates(hu.getM_HU_ID());
-		for (final I_M_Picking_Candidate pc : pickingCandidates)
-		{
-			final I_M_ShipmentSchedule shipmentSchedule = pc.getM_ShipmentSchedule();
-			final BigDecimal qty = pc.getQtyPicked();
-			scheds2Qtys.put(shipmentSchedule, qty);
-		}
-
-		final IFreshPackingItem itemToPack = FreshPackingItemHelper.create(scheds2Qtys);
-		return itemToPack;
 	}
 
 	@Override

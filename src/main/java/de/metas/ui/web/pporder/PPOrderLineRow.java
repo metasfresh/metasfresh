@@ -61,6 +61,7 @@ public class PPOrderLineRow implements IViewRow
 	private final DocumentPath documentPath;
 	private final DocumentId rowId;
 
+	@Nullable
 	private final Supplier<? extends IViewRowAttributes> attributesSupplier;
 
 	private final List<PPOrderLineRow> includedDocuments;
@@ -107,7 +108,7 @@ public class PPOrderLineRow implements IViewRow
 			@NonNull final PPOrderLineType type,
 			@NonNull final I_PP_Order_Qty ppOrderQty,
 			@NonNull final Boolean processed,
-			@NonNull final Supplier<? extends IViewRowAttributes> attributesSupplier,
+			@Nullable final Supplier<? extends IViewRowAttributes> attributesSupplier,
 			@Nullable final String code, // can be null if type=HU_Storage
 			@NonNull final JSONLookupValue product,
 			@Nullable final String packingInfo,  // can be null if type=HU_Storage
@@ -228,7 +229,7 @@ public class PPOrderLineRow implements IViewRow
 			@NonNull final DocumentId rowId,
 			@NonNull final PPOrderLineType type,
 			@NonNull final Integer huId,
-			@NonNull final Supplier<? extends IViewRowAttributes> attributesSupplier,
+			@Nullable final Supplier<? extends IViewRowAttributes> attributesSupplier,
 			@NonNull final String code,
 			@NonNull final JSONLookupValue product,
 			@NonNull final String packingInfo,
@@ -283,7 +284,8 @@ public class PPOrderLineRow implements IViewRow
 		}
 	}
 
-	private final Supplier<IViewRowAttributes> createASIAttributesSupplier(
+	@Nullable
+	private static final Supplier<IViewRowAttributes> createASIAttributesSupplier(
 			@NonNull final IViewRowAttributesProvider asiAttributesProvider,
 			@NonNull final DocumentId documentId,
 			final int asiId)
