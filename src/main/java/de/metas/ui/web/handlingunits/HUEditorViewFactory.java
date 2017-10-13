@@ -144,14 +144,13 @@ public class HUEditorViewFactory implements IViewFactory
 		// View filters and converters
 		{
 			final Collection<DocumentFilterDescriptor> huStandardFilters = huEntityDescriptor.getFilterDescriptors().getAll();
-
 			sqlViewBinding
-					.setViewFilterDescriptors(ImmutableDocumentFilterDescriptorsProvider.builder()
+					.setFilterDescriptors(ImmutableDocumentFilterDescriptorsProvider.builder()
 							.addDescriptors(huStandardFilters)
 							.addDescriptor(HUBarcodeSqlDocumentFilterConverter.createDocumentFilterDescriptor())
 							.build())
-					.addViewFilterConverter(HUBarcodeSqlDocumentFilterConverter.FILTER_ID, HUBarcodeSqlDocumentFilterConverter.instance)
-					.addViewFilterConverter(HUIdsFilterHelper.FILTER_ID, HUIdsFilterHelper.SQL_DOCUMENT_FILTER_CONVERTER);
+					.addFilterConverter(HUBarcodeSqlDocumentFilterConverter.FILTER_ID, HUBarcodeSqlDocumentFilterConverter.instance)
+					.addFilterConverter(HUIdsFilterHelper.FILTER_ID, HUIdsFilterHelper.SQL_DOCUMENT_FILTER_CONVERTER);
 		}
 
 		//
