@@ -40,7 +40,6 @@ import de.metas.adempiere.form.terminal.KeyLayout;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.fresh.picking.form.FreshSwingPackageTerminalPanel;
 import de.metas.fresh.picking.form.swing.FreshSwingPackageItems;
-import de.metas.fresh.picking.terminal.FreshProductKey;
 
 /**
  * @author cg

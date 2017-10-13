@@ -38,13 +38,13 @@ import org.adempiere.util.lang.ObjectUtils;
 import org.adempiere.util.time.SystemTime;
 
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
-import de.metas.fresh.picking.form.FreshPackingItemHelper;
-import de.metas.fresh.picking.form.IFreshPackingItem;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.picking.legacy.form.IPackingDetailsModel;
 import de.metas.picking.legacy.form.IPackingItem;
 import de.metas.picking.legacy.form.PackingTreeModel;
 import de.metas.picking.model.I_M_PickingSlot;
+import de.metas.picking.service.FreshPackingItemHelper;
+import de.metas.picking.service.IFreshPackingItem;
 
 /**
  * 

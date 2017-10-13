@@ -1,7 +1,7 @@
 /**
  *
  */
-package de.metas.fresh.picking.form;
+package de.metas.picking.service;
 
 /*
  * #%L

@@ -1,4 +1,4 @@
-package de.metas.fresh.picking.service.impl;
+package de.metas.picking.service.impl;
 
 /*
  * #%L
@@ -35,11 +35,6 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 
-import de.metas.fresh.picking.form.IFreshPackingItem;
-import de.metas.fresh.picking.service.IPackingContext;
-import de.metas.fresh.picking.service.IPackingHandler;
-import de.metas.fresh.picking.service.IPackingService;
-import de.metas.fresh.picking.service.PackingHandlerAdapter;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IMutableHUContext;
@@ -58,6 +53,11 @@ import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.model.X_M_ShipmentSchedule;
 import de.metas.picking.legacy.form.IPackingItem;
+import de.metas.picking.service.IFreshPackingItem;
+import de.metas.picking.service.IPackingContext;
+import de.metas.picking.service.IPackingHandler;
+import de.metas.picking.service.IPackingService;
+import de.metas.picking.service.PackingHandlerAdapter;
 import lombok.NonNull;
 
 /**

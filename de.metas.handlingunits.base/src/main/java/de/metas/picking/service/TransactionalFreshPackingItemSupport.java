@@ -1,4 +1,4 @@
-package de.metas.fresh.picking.form;
+package de.metas.picking.service;
 
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
