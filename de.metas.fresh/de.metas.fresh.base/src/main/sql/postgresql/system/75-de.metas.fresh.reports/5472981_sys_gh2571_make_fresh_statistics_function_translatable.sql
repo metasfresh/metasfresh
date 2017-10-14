@@ -232,5 +232,5 @@ ORDER BY
 $BODY$
 LANGUAGE sql VOLATILE;
 
-COMMENT ON FUNCTION report.fresh_product_statistics_report(numeric, character varying, numeric, numeric, numeric, numeric, numeric,numeric, character varying) IS 'Making this function volatile is currently our only known way to avoid
+COMMENT ON FUNCTION report.fresh_statistics(numeric, character varying, numeric, numeric, numeric, numeric, numeric,numeric, character varying (6)) IS 'Making this function volatile is currently our only known way to avoid
 http://postgresql.nabble.com/BUG-8393-quot-ERROR-failed-to-locate-grouping-columns-quot-on-grouping-by-varchar-returned-from-funcn-td5768367.html';
