@@ -1,4 +1,4 @@
-package de.metas.ui.web.handlingunits;
+package de.metas.ui.web.handlingunits.trace;
 
 import java.util.Date;
 import java.util.Map;
@@ -24,11 +24,10 @@ import de.metas.ui.web.document.filter.DocumentFilterParam;
 import de.metas.ui.web.document.filter.DocumentFilterParam.Operator;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverter;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterDecorator;
-import de.metas.ui.web.document.filter.sql.SqlParamsCollector;
+import de.metas.ui.web.handlingunits.WEBUI_HU_Constants;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.WindowId;
-import de.metas.ui.web.window.model.sql.SqlOptions;
 import lombok.NonNull;
 
 /*
@@ -77,37 +76,7 @@ public class HUTraceSqlConverterDecorator implements SqlDocumentFilterConverterD
 
 	public SqlDocumentFilterConverter decorate(@NonNull final SqlDocumentFilterConverter converter)
 	{
-		return new HUTraceResultExtender(converter, huTraceRepository);
-	}
-
-	public static class HUTraceResultExtender implements SqlDocumentFilterConverter
-	{
-		private final SqlDocumentFilterConverter converter;
-
-		private final HUTraceRepository huTraceRepository;
-
-		private HUTraceResultExtender(
-				@NonNull final SqlDocumentFilterConverter converter,
-				@NonNull final HUTraceRepository huTraceRepository)
-		{
-			this.converter = converter;
-			this.huTraceRepository = huTraceRepository;
-		}
-
-		@Override
-		public String getSql(
-				@NonNull final SqlParamsCollector sqlParamsOut,
-				@NonNull final DocumentFilter filter,
-				@NonNull final SqlOptions sqlOpts)
-		{
-			//final HUTraceEventQuery huTraceQuery = createTraceQueryFromDocumentFilter(filter);
-			// huTraceRepository.query(huTraceQuery); 
-			// TODO: 
-			// * extend huTraceRepository to make a (T_)Selection and return its ID;
-			// * build SQL& params for that (T_)Selection
-
-			return converter.getSql(sqlParamsOut, filter, sqlOpts);
-		}
+		return HUTraceResultExtender.createForRepositoryAndconverter(huTraceRepository, converter);
 	}
 
 	public static HUTraceEventQuery createTraceQueryFromDocumentFilter(@NonNull final DocumentFilter documentFilter)

@@ -38,7 +38,7 @@ import lombok.NonNull;
  */
 
 /**
- * Helper class used to collect SQL parameters between method calls.
+ * Helper class used to collect SQL parameters and convert parameter values to strings with correct SQL syntax. See the unit tests for usage examples.
  * 
  * @author metas-dev <dev@metasfresh.com>
  *
@@ -52,7 +52,10 @@ public final class SqlParamsCollector
 	}
 
 	/**
-	 * Wraps the given list. All changes will be directed to that list.
+	 * Wraps the given list if not {@code null}. All changes will be directed the list.
+	 * If the list is null, the new instance is in "not-collecting" mode.
+	 * 
+	 * @param list may be {@code null}, but not immutable.
 	 */
 	public static SqlParamsCollector wrapNullable(@Nullable final List<Object> list)
 	{
@@ -79,7 +82,7 @@ public final class SqlParamsCollector
 		this.params = params;
 		paramsRO = params != null ? Collections.unmodifiableList(params) : null;
 	}
-	
+
 	@Override
 	public String toString()
 	{
@@ -126,7 +129,7 @@ public final class SqlParamsCollector
 		}
 		params.addAll(sqlParams);
 	}
-	
+
 	public void collect(final SqlParamsCollector from)
 	{
 		collectAll(from.params);

@@ -112,6 +112,9 @@ public final class DocumentFilter
 		return caption != null ? caption.translate(adLanguage) : null;
 	}
 
+	/**
+	 * @return never returns {@code null}
+	 */
 	public List<DocumentFilterParam> getParameters()
 	{
 		return parameters;
