@@ -19,7 +19,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestWatcher;
 
-import de.metas.event.SimpleObjectSerializer;
 import de.metas.handlingunits.model.I_M_HU_Trace;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.trace.HUTraceEvent.HUTraceEventBuilder;
@@ -340,21 +339,6 @@ public class HUTraceRepositoryTests
 			assertThat("i=" + i + ";\nevent=" + events.get(i) + ";\nresult=" + result.get(i), result.get(i).getCostCollectorId(), is(events.get(i).getCostCollectorId()));
 			assertThat("i=" + i + ";\nevent=" + events.get(i) + ";\nresult=" + result.get(i), result.get(i).getShipmentScheduleId(), is(events.get(i).getShipmentScheduleId()));
 		}
-	}
-
-	@Test
-	public void printJson()
-	{
-		final List<HUTraceEvent> events = createAndAddEvents();
-
-		// this invocation is borrowed from testRetrieveForwardRecursiveTwoHops.
-		// it should return records for all events we added
-		final List<HUTraceEvent> result = huTraceRepository.query(HUTraceEventQuery.builder()
-				.vhuId(events.get(0).getVhuId())
-				.recursionMode(RecursionMode.FORWARD)
-				.build());
-		final String resultJsonString = SimpleObjectSerializer.get().serialize(result);
-		System.out.println(resultJsonString);
 	}
 
 	private List<HUTraceEvent> createAndAddEvents()

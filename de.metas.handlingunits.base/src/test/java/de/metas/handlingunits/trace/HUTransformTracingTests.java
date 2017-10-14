@@ -161,7 +161,7 @@ public class HUTransformTracingTests
 		final HUTraceEventQuery cuTraceQuery = HUTraceEventQuery.builder().topLevelHuId(cuToSplit.getM_HU_ID()).build();
 		final List<HUTraceEvent> cuTraceEvents = huTraceRepository.query(cuTraceQuery);
 		assertThat(cuTraceEvents.size(), is(1));
-		assertThat(cuTraceEvents.get(0),
+		assertThat(cuTraceEvents.get(0).withHuTraceEventId(OptionalInt.empty()), // when comparing with "common", we needs to keep the ID out
 				is(common
 						.qty(new BigDecimal("3"))
 						.topLevelHuId(cuToSplit.getM_HU_ID())
