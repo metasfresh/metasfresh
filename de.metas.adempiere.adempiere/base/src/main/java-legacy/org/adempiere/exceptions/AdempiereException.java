@@ -21,6 +21,7 @@ import java.util.Properties;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Supplier;
 
+import javax.annotation.Nullable;
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
 import org.adempiere.ad.service.IDeveloperModeBL;
@@ -444,7 +445,7 @@ public class AdempiereException extends RuntimeException
 	 * @param value parameter value or <code>null</code> if you want the parameter to be removed.
 	 */
 	@OverridingMethodsMustInvokeSuper
-	public AdempiereException setParameter(@NonNull final String name, final Object value)
+	public AdempiereException setParameter(@NonNull final String name, @Nullable final Object value)
 	{
 		// avoid setting null values because it will fail on getParameters() which is returning an ImmutableMap
 		if (value == null)
@@ -454,7 +455,6 @@ public class AdempiereException extends RuntimeException
 			{
 				parameters.remove(name);
 			}
-
 			return this;
 		}
 
