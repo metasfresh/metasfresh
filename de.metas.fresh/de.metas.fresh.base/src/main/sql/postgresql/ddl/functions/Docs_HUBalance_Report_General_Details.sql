@@ -1,6 +1,6 @@
 
-DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_HUBalance_Report_General_Details(numeric, numeric, numeric, numeric, character varying, date, date, date);
 DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_HUBalance_Report_General_Details(numeric, numeric, numeric, numeric, character varying, date, date, date, numeric);
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_HUBalance_Report_General_Details(numeric, numeric, numeric, numeric, character varying, date, date, date, numeric, character varying(6));
 
 DROP TABLE IF EXISTS de_metas_endcustomer_fresh_reports.Docs_HUBalance_Report_General_Details;
 
@@ -37,7 +37,8 @@ CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_HUBalance_Rep
 	startdate date,  --$6
 	enddate date,  --$7
 	refdate date,  --$8
-	ad_org_id numeric
+	ad_org_id numeric, --$9
+	ad_language character varying (6) --$10
 )
   RETURNS SETOF de_metas_endcustomer_fresh_reports.Docs_HUBalance_Report_General_Details AS
 $BODY$
@@ -78,7 +79,7 @@ FROM
 		null as PrintName,
 		null as MovementDate,
 		p.M_Product_ID,
-		p.Name, --Product
+		COALESCE(pt.Name,p.Name) AS Name, --Product
 		SUM (mbd.QtyOutgoing) AS CarryOutgoing,
 		SUM (mbd.QtyIncoming) AS CarryIncoming,
 		null as Outgoing,
@@ -90,7 +91,7 @@ FROM
 			INNER JOIN M_Material_Balance_Config mbc ON mbd.M_Material_Balance_Config_ID = mbc.M_Material_Balance_Config_ID AND mbc.isActive = 'Y'
 			INNER JOIN C_BPartner bp on mbd.C_BPartner_ID = bp.C_BPartner_ID AND bp.isActive = 'Y'
 			INNER JOIN M_Product p ON mbd.M_Product_ID = p.M_Product_ID and case when  $4 >0 then p.M_Product_ID = $4 else 1=1 end AND p.isActive = 'Y'
-
+			LEFT JOIN M_Product_Trl pt ON p.M_Product_ID = pt.M_Product_ID and pt.ad_language = $10 and pt.isActive = 'Y'
 
 		WHERE	MovementDate::date < $6 AND ( mbd.IsReset = 'N' OR ( mbd.IsReset = 'Y' AND mbd.ResetDateEffective > $7 )) AND mbd.isActive = 'Y'
 				AND mbd.ad_org_id = $9
@@ -98,7 +99,7 @@ FROM
 		GROUP BY  mbd. C_BPartner_ID,
 	bp.name, 
 	p.M_Product_ID,
-	p.Name,
+	COALESCE(pt.Name,p.Name),
 	mbd.ad_org_id
 	
 	
@@ -109,10 +110,10 @@ FROM
 		mbd. C_BPartner_ID,
 		bp.name as bpartner, 
 		mbd.DocumentNo,
-		dt.PrintName,
+		COALESCE(dtt.PrintName,dt.PrintName) AS PrintName,
 		mbd.MovementDate::date,
 		p.M_Product_ID,
-		p.Name, --Product
+		COALESCE(pt.Name,p.Name) AS Name, --Product
 		null AS CarryOutgoing,
 		null AS CarryIncoming,
 		SUM (mbd.QtyOutgoing) AS Outgoing,
@@ -126,7 +127,9 @@ FROM
 		INNER JOIN C_BPartner bp on mbd.C_BPartner_ID = bp.C_BPartner_ID AND bp.isActive = 'Y'
 		INNER JOIN C_UOM uom ON mbd.C_UOM_ID = uom.C_UOM_ID AND uom.isActive = 'Y'
 		INNER JOIN C_DocType dt ON mbd.C_DocType_ID = dt.C_DocType_ID AND dt.isActive = 'Y'
+		LEFT JOIN C_DocType_Trl dtt ON dt.C_DocType_ID = dtt.C_DocType_ID and dtt.ad_language = $10 and dtt.isActive = 'Y'
 		INNER JOIN M_Product p ON mbd.M_Product_ID = p.M_Product_ID and case when  $4 >0 then p.M_Product_ID = $4 else 1=1 end AND p.isActive = 'Y'
+		LEFT JOIN M_Product_Trl pt ON p.M_Product_ID = pt.M_Product_ID and pt.ad_language = $10 and pt.isActive = 'Y'
 		INNER JOIN M_InOutLine iol ON mbd.M_InOutLine_ID = iol.M_InOutLine_ID AND iol.isActive = 'Y'
 		
 	WHERE
@@ -154,9 +157,9 @@ GROUP BY
 	mbd. C_BPartner_ID,
 	bp.name, 
 	p.M_Product_ID,
-	p.Name,
+	COALESCE(pt.Name,p.Name),
 	mbd.DocumentNo,
-	dt.PrintName,
+	COALESCE(dtt.PrintName,dt.PrintName),
 	mbd.MovementDate,
 	
 	UOMSymbol,
@@ -271,7 +274,7 @@ $BODY$
 	rec.carryoutgoing,
 	rec.ad_org_id
 FROM
-	de_metas_endcustomer_fresh_reports.Docs_HUBalance_Report_General_Details($1, $2, $3, $4, $5, $6, $7, $8, $9) rec
+	de_metas_endcustomer_fresh_reports.Docs_HUBalance_Report_General_Details($1, $2, $3, $4, $5, $6, $7, $8, $9, null) rec
 	
 GROUP BY
 	
@@ -299,7 +302,7 @@ SELECT
 	rec.ad_org_id
 
 FROM
-	de_metas_endcustomer_fresh_reports.Docs_HUBalance_Report_General_Details($1, $2, $3, $4, $5, $6, $7, $8, $9) rec
+	de_metas_endcustomer_fresh_reports.Docs_HUBalance_Report_General_Details($1, $2, $3, $4, $5, $6, $7, $8, $9, null) rec
 	
 GROUP BY
 	

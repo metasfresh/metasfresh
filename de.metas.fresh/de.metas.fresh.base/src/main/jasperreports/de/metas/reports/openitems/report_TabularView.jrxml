@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
-<!-- 2016-07-26T12:09:13 -->
+<!-- 2017-10-06T12:21:40 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="1200" pageHeight="595" orientation="Landscape" columnWidth="1200" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/reports/openitems/report" uuid="4bf224c7-9529-4ce1-bff2-53e2cfe07aaa">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -430,15 +430,6 @@ ORDER BY
 				</textElement>
 				<textFieldExpression><![CDATA[$R{discountdays}]]></textFieldExpression>
 			</textField>
-			<staticText>
-				<reportElement key="textField-77" x="971" y="170" width="70" height="12" forecolor="#000000" uuid="0a9f4b5b-44f6-4e35-a7ad-3f2d780b9fd3">
-					<printWhenExpression><![CDATA[new Boolean($P{PassForPayment}.equals( "Y" ))]]></printWhenExpression>
-				</reportElement>
-				<textElement textAlignment="Right" markup="none">
-					<font fontName="SansSerif" size="8"/>
-				</textElement>
-				<text><![CDATA[Angewiesen]]></text>
-			</staticText>
 			<textField isBlankWhenNull="false">
 				<reportElement key="textField-69" x="197" y="170" width="250" height="12" forecolor="#000000" uuid="d0d86baf-aa32-4d59-9184-1f3bfbf6c4ad"/>
 				<box>
@@ -491,13 +482,6 @@ ORDER BY
 				</textElement>
 				<textFieldExpression><![CDATA[$R{discountdate}]]></textFieldExpression>
 			</textField>
-			<staticText>
-				<reportElement key="textField-72" x="657" y="170" width="47" height="12" forecolor="#000000" uuid="24e2f765-435a-40d8-96f0-917ab8bd9fc0"/>
-				<textElement markup="none">
-					<font fontName="SansSerif" size="8"/>
-				</textElement>
-				<text><![CDATA[Währung]]></text>
-			</staticText>
 			<textField isBlankWhenNull="false">
 				<reportElement key="textField-76" x="868" y="170" width="55" height="12" forecolor="#000000" uuid="13a4a371-3566-4e76-aedc-9fda6b924acb"/>
 				<box>
@@ -550,15 +534,6 @@ ORDER BY
 				</textElement>
 				<textFieldExpression><![CDATA[$F{bpartner}]]></textFieldExpression>
 			</textField>
-			<staticText>
-				<reportElement key="textField-5" x="37" y="119" width="105" height="12" uuid="b69d3780-c577-4309-9ebb-29b8ed5f1177">
-					<printWhenExpression><![CDATA[new Boolean($P{PassForPayment}.equals( "N" ))]]></printWhenExpression>
-				</reportElement>
-				<textElement markup="none">
-					<font size="8"/>
-				</textElement>
-				<text><![CDATA[Zahlung Angewiesen]]></text>
-			</staticText>
 			<textField isBlankWhenNull="false">
 				<reportElement key="textField-9" x="37" y="95" width="105" height="12" uuid="68fc9843-c088-4975-8115-51c1eb1f5ddf"/>
 				<box>
@@ -572,42 +547,6 @@ ORDER BY
 				</textElement>
 				<textFieldExpression><![CDATA[$R{parm4}]]></textFieldExpression>
 			</textField>
-			<staticText>
-				<reportElement x="142" y="83" width="100" height="12" uuid="0a26c99a-4f9a-43de-9911-b9b2bd2f7db2">
-					<printWhenExpression><![CDATA[new Boolean($P{DaysDue}.intValue() == -999999)]]></printWhenExpression>
-				</reportElement>
-				<textElement>
-					<font size="8"/>
-				</textElement>
-				<text><![CDATA[Unbegrenzt]]></text>
-			</staticText>
-			<staticText>
-				<reportElement key="textField-5" x="142" y="107" width="45" height="12" uuid="739e1610-e93f-426a-b55b-47fdc1bfc127">
-					<printWhenExpression><![CDATA[new Boolean($P{StartDate} != null)]]></printWhenExpression>
-				</reportElement>
-				<textElement markup="none">
-					<font size="8"/>
-				</textElement>
-				<text><![CDATA[Von]]></text>
-			</staticText>
-			<staticText>
-				<reportElement key="textField-5" x="142" y="107" width="45" height="12" uuid="914a1f36-afa9-4d75-82cd-e65f98b99879">
-					<printWhenExpression><![CDATA[new Boolean($P{EndDate} != null && $P{StartDate} == null)]]></printWhenExpression>
-				</reportElement>
-				<textElement markup="none">
-					<font size="8"/>
-				</textElement>
-				<text><![CDATA[Bis]]></text>
-			</staticText>
-			<staticText>
-				<reportElement key="textField-5" x="142" y="119" width="100" height="12" uuid="85ee221e-b8a7-4d2e-976f-1003c8a96ae4">
-					<printWhenExpression><![CDATA[new Boolean($P{PassForPayment}.equals( "N" ))]]></printWhenExpression>
-				</reportElement>
-				<textElement markup="none">
-					<font size="8"/>
-				</textElement>
-				<text><![CDATA[Nein]]></text>
-			</staticText>
 			<textField isBlankWhenNull="false">
 				<reportElement key="textField-10" x="37" y="47" width="205" height="12" uuid="c39dc60c-e212-4620-9158-33798e04d3c8"/>
 				<box>
@@ -621,22 +560,6 @@ ORDER BY
 				</textElement>
 				<textFieldExpression><![CDATA[$R{org}+" "+$F{org}]]></textFieldExpression>
 			</textField>
-			<staticText>
-				<reportElement key="textField-5" x="37" y="131" width="105" height="12" uuid="b69d3780-c577-4309-9ebb-29b8ed5f1177"/>
-				<textElement markup="none">
-					<font size="8"/>
-				</textElement>
-				<text><![CDATA[Stichtag]]></text>
-			</staticText>
-			<staticText>
-				<reportElement key="textField-5" x="242" y="107" width="45" height="12" uuid="914a1f36-afa9-4d75-82cd-e65f98b99879">
-					<printWhenExpression><![CDATA[new Boolean($P{EndDate} != null && $P{StartDate} != null)]]></printWhenExpression>
-				</reportElement>
-				<textElement markup="none">
-					<font size="8"/>
-				</textElement>
-				<text><![CDATA[Bis]]></text>
-			</staticText>
 			<textField isBlankWhenNull="true">
 				<reportElement key="textField-3" x="142" y="59" width="100" height="12" uuid="f0b3e4c0-0ca0-495f-8ab9-83c533574c8b"/>
 				<box>
@@ -678,22 +601,6 @@ ORDER BY
 				</textElement>
 				<textFieldExpression><![CDATA[$P{DaysDue}]]></textFieldExpression>
 			</textField>
-			<staticText>
-				<reportElement key="textField-5" x="37" y="107" width="105" height="12" uuid="b69d3780-c577-4309-9ebb-29b8ed5f1177"/>
-				<textElement markup="none">
-					<font size="8"/>
-				</textElement>
-				<text><![CDATA[Zeitraum]]></text>
-			</staticText>
-			<staticText>
-				<reportElement key="textField-5" x="142" y="107" width="100" height="12" uuid="b69d3780-c577-4309-9ebb-29b8ed5f1177">
-					<printWhenExpression><![CDATA[new Boolean($P{StartDate} == null && $P{EndDate} == null)]]></printWhenExpression>
-				</reportElement>
-				<textElement markup="none">
-					<font size="8"/>
-				</textElement>
-				<text><![CDATA[Unbegrenzt]]></text>
-			</staticText>
 			<textField isBlankWhenNull="false">
 				<reportElement key="textField-5" x="37" y="71" width="105" height="12" uuid="de0e7bd4-55d2-4aeb-84a5-1bd1cacffad9"/>
 				<box>
@@ -824,6 +731,99 @@ ORDER BY
 					<font size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$P{EndDate}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement key="textField-5" x="37" y="107" width="105" height="12" uuid="ccf65122-f62b-413f-9692-3fc4087cbb0f"/>
+				<textElement markup="none">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{timeframe}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement key="textField-5" x="37" y="119" width="105" height="12" uuid="6c653640-3506-4133-8159-5113bd1cc71a">
+					<printWhenExpression><![CDATA[new Boolean($P{PassForPayment}.equals( "N" ))]]></printWhenExpression>
+				</reportElement>
+				<textElement markup="none">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{payment_instruction}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement key="textField-5" x="37" y="131" width="105" height="12" uuid="c5f18927-78d4-46a4-a494-3eac408cb82c"/>
+				<textElement markup="none">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{duedate}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement key="textField-5" x="142" y="119" width="100" height="12" uuid="0934331f-65f8-4dbf-accc-993e13966f0d">
+					<printWhenExpression><![CDATA[new Boolean($P{PassForPayment}.equals( "N" ))]]></printWhenExpression>
+				</reportElement>
+				<textElement markup="none">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{no}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement key="textField-5" x="242" y="107" width="45" height="12" uuid="7638ed69-b67c-45de-95e2-790c50ac31c5">
+					<printWhenExpression><![CDATA[new Boolean($P{EndDate} != null && $P{StartDate} != null)]]></printWhenExpression>
+				</reportElement>
+				<textElement markup="none">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{to}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement key="textField-5" x="142" y="107" width="100" height="12" uuid="60ca60a4-088d-4ca4-a97a-6b205c5ed5b1">
+					<printWhenExpression><![CDATA[new Boolean($P{StartDate} == null && $P{EndDate} == null)]]></printWhenExpression>
+				</reportElement>
+				<textElement markup="none">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{unlimited}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement key="textField-77" x="971" y="170" width="70" height="12" forecolor="#000000" uuid="2d106edb-b6f7-4017-b99f-8592ff8b57f1">
+					<printWhenExpression><![CDATA[new Boolean($P{PassForPayment}.equals( "Y" ))]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right" markup="none">
+					<font fontName="SansSerif" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{instruction}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement key="textField-72" x="657" y="170" width="47" height="12" forecolor="#000000" uuid="7a96d78e-6859-49c2-a176-fe42c36c8b53"/>
+				<textElement markup="none">
+					<font fontName="SansSerif" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{currency}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="142" y="83" width="100" height="12" uuid="005c28f8-2463-4a80-90a3-a05eecc21bf9">
+					<printWhenExpression><![CDATA[new Boolean($P{DaysDue}.intValue() == -999999)]]></printWhenExpression>
+				</reportElement>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{unlimited}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement key="textField-5" x="142" y="107" width="45" height="12" uuid="73f9eaa9-bccf-4f44-b7fa-30e991c31b5e">
+					<printWhenExpression><![CDATA[new Boolean($P{StartDate} != null)]]></printWhenExpression>
+				</reportElement>
+				<textElement markup="none">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{from}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement key="textField-5" x="142" y="107" width="45" height="12" uuid="35155ce5-064e-4fdb-938d-3cfd877f0cce">
+					<printWhenExpression><![CDATA[new Boolean($P{EndDate} != null && $P{StartDate} == null)]]></printWhenExpression>
+				</reportElement>
+				<textElement markup="none">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{to}]]></textFieldExpression>
 			</textField>
 		</band>
 	</title>

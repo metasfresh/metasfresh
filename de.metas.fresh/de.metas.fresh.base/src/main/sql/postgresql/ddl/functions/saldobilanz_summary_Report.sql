@@ -14,6 +14,7 @@ CREATE TABLE report.saldobilanz_summary_Report
 	L1_lastyearsum numeric,
 	
 	ad_org_id numeric,
+	currency character(3),
 	unionorder integer
 )
 WITH (
@@ -33,6 +34,7 @@ UNION ALL SELECT
 	SUM(L1_sameyearsum) AS total_SameYearSum,
 	SUM(L1_lastyearsum) AS total_LastYearSum,
 	$4 as ad_org_id,
+	null as currency,
 	2 as unionorder
 FROM report.saldobilanz_summary_Report_sub($1,$2,$3,$4,$5,$6)
 GROUP BY ad_org_id, unionorder

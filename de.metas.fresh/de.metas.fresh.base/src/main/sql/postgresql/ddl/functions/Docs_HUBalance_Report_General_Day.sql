@@ -1,7 +1,7 @@
-DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_HUBalance_Report_General_Day(date, numeric, numeric, numeric, numeric, character varying);
 DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_HUBalance_Report_General_Day(date, numeric, numeric, numeric, numeric, character varying, numeric);
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_HUBalance_Report_General_Day(date, numeric, numeric, numeric, numeric, character varying, numeric, character varying(6));
 
-CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_HUBalance_Report_General_Day(refdate date, C_BPartner_ID numeric, C_BP_Group_ID numeric, M_Product_ID numeric, m_material_balance_config_id numeric, isGebindeFlatrate character varying, IN ad_org_id numeric) RETURNS TABLE
+CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_HUBalance_Report_General_Day(refdate date, C_BPartner_ID numeric, C_BP_Group_ID numeric, M_Product_ID numeric, m_material_balance_config_id numeric, isGebindeFlatrate character varying, IN ad_org_id numeric, IN ad_language character varying(6)) RETURNS TABLE
 	(
   bpartnerno character varying, 
   bpartner character varying, 	
@@ -22,13 +22,16 @@ SELECT
 	bp.name as bpartner, 
 	bpg.Name as bpartner_group,
 	CASE WHEN fm.C_Flatrate_Matching_ID IS NOT NULL THEN fc.name ELSE NULL END as art_contract,
-	p.Name as art_name, --Product
+	COALESCE(pt.Name, p.Name) as art_name, --Product
 	SUM (mbd.QtyOutgoing) AS Outgoing,
 	SUM (mbd.QtyIncoming) AS Incoming,
 
 	(select name from C_BPartner where C_BPartner_ID = $2 AND isActive = 'Y') as bpartner_param,
 	(select name from C_BP_Group where C_BP_Group_ID = $3 AND isActive = 'Y') as bpartner_group_param,
-	(select name from M_Product where M_Product_ID = $4 AND isActive = 'Y') as product_param,
+	(select COALESCE(pt.name, p.Name) 
+		from M_Product p
+		left join m_product_trl pt on p.m_product_id = pt.m_product_id and pt.ad_language=$8 and pt.isActive = 'Y'
+		where p.M_Product_ID = $4 AND p.isActive = 'Y') as product_param,
 
 	mbd.ad_org_id	
 FROM
@@ -36,6 +39,7 @@ FROM
 	INNER JOIN M_Material_Balance_Detail mbd ON mbc.M_Material_Balance_Config_ID = mbd.M_Material_Balance_Config_ID
 	INNER JOIN C_BPartner bp on mbd.C_BPartner_ID = bp.C_BPartner_ID AND bp.isActive = 'Y'
 	INNER JOIN M_Product p ON mbd.M_Product_ID = p.M_Product_ID and case when  $4 >0 then p.M_Product_ID = $4 else 1=1 end AND p.isActive = 'Y'
+	LEFT JOIN M_Product_Trl pt ON p.M_Product_ID = pt.M_Product_ID AND pt.ad_language = $8 AND pt.isActive = 'Y'
 	INNER JOIN M_InOutLine iol ON mbd.M_InOutLine_ID = iol.M_InOutLine_ID AND iol.isActive = 'Y'
 	LEFT OUTER JOIN c_bp_group bpg on bpg.c_bp_group_id = bp.c_bp_group_id AND bpg.isActive = 'Y'
 	LEFT OUTER JOIN C_FLatrate_Data fd on fd.C_BPartner_ID = mbd.C_BPartner_ID AND fd.isActive = 'Y'
@@ -82,13 +86,13 @@ GROUP BY
 	bp.name, 
 	bpg.Name,
 	fc.name,
-	p.Name,
+	COALESCE(pt.Name, p.Name),
 	fm.C_Flatrate_Matching_ID,
 	mbd.ad_org_id
 
 ORDER BY
     bp.name,
-	p.Name
+    COALESCE(pt.Name, p.Name)
 			
 $$
   LANGUAGE sql STABLE

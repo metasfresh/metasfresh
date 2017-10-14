@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
-<!-- 2016-10-06T19:26:52 -->
+<!-- 2017-10-09T17:06:14 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_page_header" pageWidth="534" pageHeight="842" columnWidth="534" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/sales/shippedinouts/report" uuid="3e37de0f-dc4b-413d-8d15-10a99f5ce3f9">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -70,13 +70,6 @@ WHERE
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Date}]]></textFieldExpression>
 			</textField>
-			<staticText>
-				<reportElement key="textField-6" x="37" y="0" width="136" height="12" forecolor="#000000" uuid="ac08abbe-c03d-4cf8-ab70-0212a4d993b4"/>
-				<textElement textAlignment="Left" markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
-				</textElement>
-				<text><![CDATA[Rüstliste]]></text>
-			</staticText>
 			<textField isBlankWhenNull="false">
 				<reportElement key="textField-10" x="172" y="12" width="91" height="12" uuid="bb712730-1ec3-406c-b259-045c9e03f407">
 					<printWhenExpression><![CDATA[new Boolean($F{bp_value}!=null)]]></printWhenExpression>
@@ -91,6 +84,13 @@ WHERE
 					<font size="9"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{bp_value}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement key="textField-6" x="37" y="0" width="136" height="12" forecolor="#000000" uuid="323bca2a-4935-461c-90f7-35ed356ce63b"/>
+				<textElement textAlignment="Left" markup="none">
+					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{title}]]></textFieldExpression>
 			</textField>
 		</band>
 	</title>

@@ -1,15 +1,11 @@
 DROP FUNCTION IF EXISTS report.umsatzliste_bpartner_report
 	(
-		IN Base_Period_Start date,
-		IN Base_Period_End date, 
-		IN Comp_Period_Start date, 
-		IN Comp_Period_End date, 
-		IN issotrx character varying,
-		IN C_BPartner_ID numeric, 
-		IN C_Activity_ID numeric,
-		IN M_Product_ID numeric,
-		IN M_Product_Category_ID numeric,
-		IN M_AttributeSetInstance_ID numeric
+		IN Base_Period_Start date,IN Base_Period_End date, IN Comp_Period_Start date, IN Comp_Period_End date, IN issotrx character varying,IN C_BPartner_ID numeric, IN C_Activity_ID numeric,IN M_Product_ID numeric,IN M_Product_Category_ID numeric,IN M_AttributeSetInstance_ID numeric,IN AD_Org_ID numeric
+	);
+
+DROP FUNCTION IF EXISTS report.umsatzliste_bpartner_report_sub
+	(
+		IN Base_Period_Start date,IN Base_Period_End date, IN Comp_Period_Start date, IN Comp_Period_End date, IN issotrx character varying,IN C_BPartner_ID numeric, IN C_Activity_ID numeric,	IN M_Product_ID numeric,IN M_Product_Category_ID numeric,IN M_AttributeSetInstance_ID numeric,IN AD_Org_ID numeric
 	);
 DROP FUNCTION IF EXISTS report.umsatzliste_bpartner_report
 	(
@@ -23,21 +19,10 @@ DROP FUNCTION IF EXISTS report.umsatzliste_bpartner_report
 		IN M_Product_ID numeric,
 		IN M_Product_Category_ID numeric,
 		IN M_AttributeSetInstance_ID numeric,
-		IN AD_Org_ID numeric
+		IN AD_Org_ID numeric,
+		IN AD_Language Character Varying (6)
 	);
-DROP FUNCTION IF EXISTS report.umsatzliste_bpartner_report_sub
-	(
-		IN Base_Period_Start date,
-		IN Base_Period_End date, 
-		IN Comp_Period_Start date, 
-		IN Comp_Period_End date, 
-		IN issotrx character varying,
-		IN C_BPartner_ID numeric, 
-		IN C_Activity_ID numeric,
-		IN M_Product_ID numeric,
-		IN M_Product_Category_ID numeric,
-		IN M_AttributeSetInstance_ID numeric
-	);
+
 DROP FUNCTION IF EXISTS report.umsatzliste_bpartner_report_sub
 	(
 		IN Base_Period_Start date,
@@ -50,8 +35,9 @@ DROP FUNCTION IF EXISTS report.umsatzliste_bpartner_report_sub
 		IN M_Product_ID numeric,
 		IN M_Product_Category_ID numeric,
 		IN M_AttributeSetInstance_ID numeric,
-		IN AD_Org_ID numeric
-	);
+		IN AD_Org_ID numeric,
+		IN AD_Language Character Varying (6)
+	);	
 DROP TABLE IF EXISTS report.umsatzliste_bpartner_report;
 DROP TABLE IF EXISTS report.umsatzliste_bpartner_report_sub;
 
@@ -78,7 +64,6 @@ CREATE TABLE report.umsatzliste_bpartner_report_sub
 	Base_Period_End character varying(10),
 	Comp_Period_Start character varying(10),
 	Comp_Period_End character varying(10),
-	param_IsSOTrx  character varying,
 	param_bp character varying(60),
 	param_Activity character varying(60),
 	param_product character varying(255),
@@ -103,14 +88,15 @@ CREATE FUNCTION report.umsatzliste_bpartner_report_sub
 		IN M_Product_ID numeric,
 		IN M_Product_Category_ID numeric,
 		IN M_AttributeSetInstance_ID numeric,
-		IN AD_Org_ID numeric
+		IN AD_Org_ID numeric,
+		IN AD_Language Character Varying (6)
 	) 
 	RETURNS SETOF report.umsatzliste_bpartner_report_sub AS
 $BODY$
 SELECT
 	bp.Name AS bp_name,
 	pc.Name AS pc_name, 
-	p.Name AS P_name,
+	COALESCE(pt.Name, p.Name) AS P_name,
 	SamePeriodSum,
 	CompPeriodSum,
 	SamePeriodQtySum,
@@ -129,13 +115,15 @@ SELECT
 	to_char($2, 'DD.MM.YYYY') AS Base_Period_End,
 	COALESCE( to_char($3, 'DD.MM.YYYY'), '') AS Comp_Period_Start,
 	COALESCE( to_char($4, 'DD.MM.YYYY'), '') AS Comp_Period_End,
-	CASE WHEN $5 = 'N' THEN 'Einkauf' WHEN $5 = 'Y' THEN 'Verkauf' ELSE 'alle' END AS param_IsSOTrx,
-
-	COALESCE ((SELECT name FROM C_BPartner WHERE C_BPartner_ID = $6 and isActive = 'Y'), 'alle' ) AS param_bp,
-	COALESCE ((SELECT name FROM C_Activity WHERE C_Activity_ID = $7 and isActive = 'Y'), 'alle' ) AS param_Activity,
-	COALESCE ((SELECT name FROM M_Product WHERE M_Product_ID = $8 and isActive = 'Y'), 'alle' ) AS param_product,
-	COALESCE ((SELECT name FROM M_Product_Category WHERE M_Product_Category_ID = $9 and isActive = 'Y'), 'alle' ) AS param_Product_Category,
-	COALESCE ((SELECT String_Agg(ai_value, ', ' ORDER BY ai_Value) FROM Report.fresh_Attributes WHERE M_AttributeSetInstance_ID = $10), 'alle') AS Param_Attributes,
+	
+	(SELECT name FROM C_BPartner WHERE C_BPartner_ID = $6 and isActive = 'Y') AS param_bp,
+	(SELECT name FROM C_Activity WHERE C_Activity_ID = $7 and isActive = 'Y') AS param_Activity,
+	(SELECT COALESCE(pt.name, p.name) FROM M_Product p 
+		LEFT OUTER JOIN M_Product_Trl pt ON p.M_Product_ID = pt.M_Product_ID AND pt.AD_Language = $12 AND pt.isActive = 'Y'
+		WHERE p.M_Product_ID = $8 AND p.isActive = 'Y'
+	) AS param_product,
+	(SELECT name FROM M_Product_Category WHERE M_Product_Category_ID = $9 and isActive = 'Y') AS param_Product_Category,
+	(SELECT String_Agg(ai_value, ', ' ORDER BY ai_Value) FROM Report.fresh_Attributes WHERE M_AttributeSetInstance_ID = $10) AS Param_Attributes,
 
 	c.iso_code AS currency,
 	a.ad_org_id
@@ -209,7 +197,8 @@ FROM
 	) a
 
 	INNER JOIN C_BPartner bp ON a.C_BPartner_ID = bp.C_BPartner_ID AND bp.isActive = 'Y'
-	INNER JOIN M_Product p ON a.M_Product_ID = p.M_Product_ID AND p.isActive = 'Y'
+	INNER JOIN M_Product p ON a.M_Product_ID = p.M_Product_ID AND p.isActive = 'Y'	
+	LEFT OUTER JOIN M_Product_Trl pt ON p.M_Product_ID = pt.M_Product_ID AND pt.AD_Language = $12 AND pt.isActive = 'Y'
 	INNER JOIN M_Product_Category pc ON p.M_Product_Category_ID = pc.M_Product_Category_ID AND pc.isActive = 'Y'
 	--taking the currency of the client
 	LEFT OUTER JOIN AD_ClientInfo ci ON ci.AD_Client_ID=bp.ad_client_id AND ci.isActive = 'Y'
@@ -241,7 +230,6 @@ CREATE TABLE report.umsatzliste_bpartner_report
 	Base_Period_End character varying(10),
 	Comp_Period_Start character varying(10),
 	Comp_Period_End character varying(10),
-	param_IsSOTrx  character varying,
 	param_bp character varying(60),
 	param_Activity character varying(60),
 	param_product character varying(255),
@@ -267,14 +255,16 @@ CREATE FUNCTION report.umsatzliste_bpartner_report
 		IN M_Product_ID numeric,
 		IN M_Product_Category_ID numeric,
 		IN M_AttributeSetInstance_ID numeric,
-		IN AD_Org_ID numeric
+		IN AD_Org_ID numeric,
+		IN AD_Language Character Varying (6)
+		
 	) 
 	RETURNS SETOF report.umsatzliste_bpartner_report AS
 $BODY$
 	SELECT 
 		*, 1 AS UnionOrder
 	FROM 	
-		report.umsatzliste_bpartner_report_sub ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+		report.umsatzliste_bpartner_report_sub ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
 UNION ALL
 	SELECT 
 		bp_name, pc_name, null AS P_name,
@@ -295,14 +285,14 @@ UNION ALL
 			THEN (SUM( SamePeriodQtySum ) - SUM( CompPeriodQtySum )) / SUM( CompPeriodQtySum ) * 100 ELSE NULL
 		END AS PeriodQtyDiffPercentage,		
 		
-		Base_Period_Start, Base_Period_End, Comp_Period_Start, Comp_Period_End, param_IsSOTrx, 
+		Base_Period_Start, Base_Period_End, Comp_Period_Start, Comp_Period_End, 
 		param_bp, param_Activity, param_product, param_Product_Category, Param_Attributes, currency, ad_org_id,
 		2 AS UnionOrder
 	FROM 	
-		report.umsatzliste_bpartner_report_sub ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+		report.umsatzliste_bpartner_report_sub ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
 	GROUP BY
 		bp_name, pc_name, 
-		Base_Period_Start, Base_Period_End, Comp_Period_Start, Comp_Period_End, param_IsSOTrx, 
+		Base_Period_Start, Base_Period_End, Comp_Period_Start, Comp_Period_End, 
 		param_bp, param_Activity, param_product, param_Product_Category, Param_Attributes, currency, ad_org_id
 UNION ALL
 	SELECT 
@@ -324,14 +314,14 @@ UNION ALL
 			THEN (SUM( SamePeriodQtySum ) - SUM( CompPeriodQtySum )) / SUM( CompPeriodQtySum ) * 100 ELSE NULL
 		END AS PeriodQtyDiffPercentage,
 		
-		Base_Period_Start, Base_Period_End, Comp_Period_Start, Comp_Period_End, param_IsSOTrx, 
+		Base_Period_Start, Base_Period_End, Comp_Period_Start, Comp_Period_End, 
 		param_bp, param_Activity, param_product, param_Product_Category, Param_Attributes, currency, ad_org_id,
 		3 AS UnionOrder
 	FROM 	
-		report.umsatzliste_bpartner_report_sub ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+		report.umsatzliste_bpartner_report_sub ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
 	GROUP BY
 		bp_name, 
-		Base_Period_Start, Base_Period_End, Comp_Period_Start, Comp_Period_End, param_IsSOTrx, 
+		Base_Period_Start, Base_Period_End, Comp_Period_Start, Comp_Period_End, 
 		param_bp, param_Activity, param_product, param_Product_Category, Param_Attributes, currency, ad_org_id
 ORDER BY
 	bp_name, pc_name NULLS LAST, UnionOrder, p_name
