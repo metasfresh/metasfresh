@@ -12,6 +12,7 @@ import org.adempiere.ad.model.util.ModelByIdComparator;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.compiere.Adempiere;
 import org.compiere.model.IQuery;
 import org.compiere.util.TimeUtil;
 
@@ -230,6 +231,11 @@ public class RetrieveDbRecordsUtil
 				.create();
 		noRecursiveResult.executeQueryAndAddAll(query);
 
+		if (huTraceEventQuery.isExpandOnVhuId())
+		{
+
+		}
+
 		// no matter which recursion mode, we can always add the records we already have
 		resultOut.addAll(noRecursiveResult);
 
@@ -262,29 +268,8 @@ public class RetrieveDbRecordsUtil
 		final IQueryBuilder<I_M_HU_Trace> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_M_HU_Trace.class)
 				.addOnlyActiveRecordsFilter();
 
-		boolean queryIsEmpty = true;
+		boolean queryIsEmpty = updateQueryBuilderForQueryEventTime(queryBuilder, query);
 
-		if (query.getEventTime() != null)
-		{
-			final Timestamp eventTime = TimeUtil.asTimestamp(query.getEventTime());
-			final Timestamp eventTimeTo = TimeUtil.asTimestamp(query.getEventTimeTo());
-
-			switch (query.getEventTimeOperator())
-			{
-				case EQUAL:
-					queryBuilder.addEqualsFilter(I_M_HU_Trace.COLUMN_EventTime, eventTime);
-					break;
-				case BETWEEN:
-					queryBuilder.addBetweenFilter(I_M_HU_Trace.COLUMN_EventTime, eventTime, eventTimeTo);
-					break;
-				default:
-					throw new AdempiereException("Unexpected EventTimeOperator=" + query.getEventTimeOperator())
-							.appendParametersToMessage()
-							.setParameter("HUTraceEventQuery", query)
-							.setParameter("IQueryBuilder", queryBuilder);
-			}
-			queryIsEmpty = false;
-		}
 		if (query.getHuTraceEventId().isPresent())
 		{
 			queryBuilder.addEqualsFilter(I_M_HU_Trace.COLUMN_M_HU_Trace_ID, query.getHuTraceEventId().getAsInt());
@@ -373,6 +358,35 @@ public class RetrieveDbRecordsUtil
 		return queryBuilder;
 	}
 
+	private static boolean updateQueryBuilderForQueryEventTime(
+			@NonNull final IQueryBuilder<I_M_HU_Trace> queryBuilder,
+			@NonNull final HUTraceEventQuery query)
+	{
+		if (query.getEventTime() == null)
+		{
+			return true;
+		}
+
+		final Timestamp eventTime = TimeUtil.asTimestamp(query.getEventTime());
+		final Timestamp eventTimeTo = TimeUtil.asTimestamp(query.getEventTimeTo());
+
+		switch (query.getEventTimeOperator())
+		{
+			case EQUAL:
+				queryBuilder.addEqualsFilter(I_M_HU_Trace.COLUMN_EventTime, eventTime);
+				break;
+			case BETWEEN:
+				queryBuilder.addBetweenFilter(I_M_HU_Trace.COLUMN_EventTime, eventTime, eventTimeTo);
+				break;
+			default:
+				throw new AdempiereException("Unexpected EventTimeOperator=" + query.getEventTimeOperator())
+						.appendParametersToMessage()
+						.setParameter("HUTraceEventQuery", query)
+						.setParameter("IQueryBuilder", queryBuilder);
+		}
+		return false;
+	}
+
 	private Result recurseBackwards(@NonNull final Result resultIn)
 	{
 		final Result resultOut = resultIn.newEmptyResult();
@@ -418,5 +432,24 @@ public class RetrieveDbRecordsUtil
 			}
 		}
 		return resultOut;
+	}
+
+	/**
+	 * Return all records; this makes absolutely no sense in production; Intended to be used only use for testing.
+	 *
+	 * @return
+	 */
+	@VisibleForTesting
+	public List<HUTraceEvent> queryAll()
+	{
+		Check.errorUnless(Adempiere.isUnitTestMode(), "The method queryAll() shall only be invoked from test code");
+
+		final IQueryBuilder<I_M_HU_Trace> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_M_HU_Trace.class)
+				.orderBy().addColumn(I_M_HU_Trace.COLUMN_M_HU_Trace_ID).endOrderBy();
+
+		return queryBuilder.create()
+				.stream()
+				.map(HuTraceEventToDbRecordUtil::fromDbRecord)
+				.collect(Collectors.toList());
 	}
 }

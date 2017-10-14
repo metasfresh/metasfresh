@@ -54,22 +54,35 @@ public class HUTraceEventQuery
 		BACKWARD, FORWARD, BOTH, NONE
 	}
 
+	@NonNull
+	@Default
+	RecursionMode recursionMode = RecursionMode.NONE;
+
 	public enum EventTimeOperator
 	{
 		/**
-		 * only expects {@link #eventTime} to be set .
+		 * only expects {@link #eventTime} to be set.
 		 */
 		EQUAL,
 
 		/**
-		 * Expects both {@link #eventTime} and {@link #eventTimeTo} to be set .
+		 * Expects both {@link #eventTime} and {@link #eventTimeTo} to be set.
 		 */
 		BETWEEN
 	}
 
-	@NonNull
 	@Default
-	RecursionMode recursionMode = RecursionMode.NONE;
+	EventTimeOperator eventTimeOperator = EventTimeOperator.EQUAL;
+
+	Instant eventTime;
+
+	Instant eventTimeTo;
+
+	/**
+	 * If {@code true}, then also query for all records with that have the same VHU_ID as the "primary" matches.
+	 */
+	@Default
+	boolean expandOnVhuId = false;
 
 	@NonNull
 	@Default
@@ -78,12 +91,6 @@ public class HUTraceEventQuery
 	int orgId;
 
 	HUTraceType type;
-
-	Instant eventTime;
-
-	Instant eventTimeTo;
-
-	EventTimeOperator eventTimeOperator;
 
 	int vhuId;
 

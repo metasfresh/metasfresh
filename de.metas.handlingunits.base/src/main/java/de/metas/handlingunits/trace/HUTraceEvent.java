@@ -4,8 +4,7 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.OptionalInt;
 
-import de.metas.handlingunits.trace.HUTraceEventQuery.EventTimeOperator;
-import de.metas.handlingunits.trace.HUTraceEventQuery.RecursionMode;
+import de.metas.handlingunits.trace.HUTraceEventQuery.HUTraceEventQueryBuilder;
 import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.NonNull;
@@ -43,8 +42,8 @@ public class HUTraceEvent
 	 */
 	@NonNull
 	@Default
-	OptionalInt	huTraceEventId = OptionalInt.empty();
-	
+	OptionalInt huTraceEventId = OptionalInt.empty();
+
 	@NonNull
 	Integer orgId;
 
@@ -79,7 +78,7 @@ public class HUTraceEvent
 
 	int movementId;
 
-	int costCollectorId;
+	int ppCostCollectorId;
 
 	int ppOrderId;
 
@@ -94,28 +93,25 @@ public class HUTraceEvent
 
 	int huTrxLineId;
 
-	public HUTraceEventQuery asQuery()
+	public HUTraceEventQueryBuilder asQueryBuilder()
 	{
-		return new HUTraceEventQuery(RecursionMode.NONE,
-				huTraceEventId,
-				orgId,
-				type,
-				eventTime,
-				null,
-				EventTimeOperator.EQUAL,
-				vhuId,
-				productId,
-				qty,
-				vhuStatus,
-				topLevelHuId,
-				vhuSourceId,
-				inOutId,
-				shipmentScheduleId,
-				movementId,
-				costCollectorId,
-				ppOrderId,
-				docStatus,
-				docTypeId,
-				huTrxLineId);
+		return HUTraceEventQuery.builder()
+				.huTraceEventId(huTraceEventId)
+				.orgId(orgId)
+				.type(type)
+				.eventTime(eventTime)
+				.vhuId(vhuId)
+				.productId(productId)
+				.qty(qty)
+				.vhuStatus(vhuStatus)
+				.inOutId(inOutId)
+				.shipmentScheduleId(shipmentScheduleId)
+				.movementId(movementId)
+				.ppCostCollectorId(ppCostCollectorId)
+				.ppOrderId(ppOrderId)
+				.docStatus(docStatus)
+				.docTypeId(docTypeId)
+				.huTrxLineId(huTrxLineId);
+
 	}
 }

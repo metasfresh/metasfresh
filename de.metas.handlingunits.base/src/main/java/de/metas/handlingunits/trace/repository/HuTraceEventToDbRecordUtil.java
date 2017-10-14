@@ -40,7 +40,7 @@ public class HuTraceEventToDbRecordUtil
 	{
 		final HUTraceEventBuilder builder = HUTraceEvent.builder()
 				.orgId(dbRecord.getAD_Org_ID())
-				.costCollectorId(dbRecord.getPP_Cost_Collector_ID())
+				.ppCostCollectorId(dbRecord.getPP_Cost_Collector_ID())
 				.ppOrderId(dbRecord.getPP_Order_ID())
 				.docStatus(dbRecord.getDocStatus())
 				.eventTime(dbRecord.getEventTime().toInstant()) // EeventTime is a mandatory column, so no NPE
@@ -96,7 +96,7 @@ public class HuTraceEventToDbRecordUtil
 		dbRecord.setM_InOut_ID(huTraceRecord.getInOutId());
 		dbRecord.setM_Movement_ID(huTraceRecord.getMovementId());
 		dbRecord.setM_ShipmentSchedule_ID(huTraceRecord.getShipmentScheduleId());
-		dbRecord.setPP_Cost_Collector_ID(huTraceRecord.getCostCollectorId());
+		dbRecord.setPP_Cost_Collector_ID(huTraceRecord.getPpCostCollectorId());
 		dbRecord.setPP_Order_ID(huTraceRecord.getPpOrderId());
 	}
 }

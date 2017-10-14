@@ -28,6 +28,7 @@ import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.spi.IHUPackingMaterialCollectorSource;
 import de.metas.handlingunits.trace.HUTraceEvent.HUTraceEventBuilder;
 import de.metas.handlingunits.trace.interceptor.HUTraceModuleInterceptor;
+import de.metas.handlingunits.trace.repository.RetrieveDbRecordsUtil;
 import mockit.Mocked;
 
 /*
@@ -99,7 +100,7 @@ public class HUTransformTracingTests
 	{
 		final TestHUs result = testsBase.testCU_To_NewCU_1Tomato_DoIt();
 
-		final List<HUTraceEvent> traceEvents = huTraceRepository.queryAll();
+		final List<HUTraceEvent> traceEvents = RetrieveDbRecordsUtil.queryAll();
 		assertThat(traceEvents.size(), is(2));
 
 		{
@@ -172,8 +173,7 @@ public class HUTransformTracingTests
 	public void testCU_To_NewCU_MaxValueNoParent()
 	{
 		testsBase.testCU_To_NewCU_MaxValueNoParent_DoIt();
-
-		assertThat(huTraceRepository.queryAll().isEmpty(), is(true));
+		assertThat(RetrieveDbRecordsUtil.queryAll().isEmpty(), is(true));
 	}
 
 	/**
@@ -184,7 +184,7 @@ public class HUTransformTracingTests
 	{
 		testsBase.testAggregateCU_To_NewTUs_1Tomato_DoIt(false); // isOwnPackingMaterials = false
 
-		final List<HUTraceEvent> huTraceEvents = huTraceRepository.queryAll();
+		final List<HUTraceEvent> huTraceEvents = RetrieveDbRecordsUtil.queryAll();
 		assertThat(huTraceEvents.size(), is(4));
 	}
 

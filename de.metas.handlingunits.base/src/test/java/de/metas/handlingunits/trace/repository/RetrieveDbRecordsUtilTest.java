@@ -2,13 +2,22 @@ package de.metas.handlingunits.trace.repository;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.time.Instant;
+import java.util.List;
 import java.util.OptionalInt;
 
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.util.Services;
+import org.junit.Before;
 import org.junit.Test;
 
 import de.metas.handlingunits.model.I_M_HU_Trace;
+import de.metas.handlingunits.trace.HUTraceEvent;
 import de.metas.handlingunits.trace.HUTraceEventQuery;
+import de.metas.handlingunits.trace.HUTraceRepository;
+import de.metas.handlingunits.trace.HUTraceRepositoryTests;
 
 /*
  * #%L
@@ -35,6 +44,15 @@ import de.metas.handlingunits.trace.HUTraceEventQuery;
 public class RetrieveDbRecordsUtilTest
 {
 
+	private HUTraceRepository huTraceRepository;
+
+	@Before
+	public void init()
+	{
+		AdempiereTestHelper.get().init();
+		huTraceRepository = new HUTraceRepository();
+	}
+
 	@Test
 	public void configureQueryBuilder_orgId()
 	{
@@ -52,4 +70,60 @@ public class RetrieveDbRecordsUtilTest
 		final IQueryBuilder<I_M_HU_Trace> queryBuilder = RetrieveDbRecordsUtil.createQueryBuilderOrNull(query);
 		assertThat(queryBuilder).isNotNull();
 	}
+
+	@Test
+	public void queryToSelection()
+	{
+		final Instant eventTime = Instant.now();
+
+		final HUTraceEvent event1 = HUTraceRepositoryTests.commonEventBuilder
+				.eventTime(eventTime)
+				.topLevelHuId(2)
+				.vhuId(12)
+				.build();
+		huTraceRepository.addEvent(event1);
+
+		final int selectionId = RetrieveDbRecordsUtil.queryToSelection(event1.asQueryBuilder().build());
+		assertThat(selectionId).isGreaterThan(0);
+
+		final List<I_M_HU_Trace> result = Services.get(IQueryBL.class).createQueryBuilder(I_M_HU_Trace.class)
+				.setOnlySelection(selectionId)
+				.create()
+				.list();
+
+		assertThat(result).hasSize(1);
+	}
+
+	@Test
+	public void test()
+
+	{
+		final Instant eventTime = Instant.now();
+		final HUTraceEvent event1 = HUTraceRepositoryTests.commonEventBuilder
+				.eventTime(eventTime)
+				.topLevelHuId(2)
+				.vhuId(12)
+				.inOutId(30)
+				.build();
+
+		final HUTraceEvent event2 = HUTraceRepositoryTests.commonEventBuilder
+				.eventTime(eventTime)
+				.topLevelHuId(2)
+				.vhuId(12)
+				.shipmentScheduleId(40)
+				.build();
+		
+		final HUTraceEvent event3 = event2.withVhuId(13);
+		
+		huTraceRepository.addEvent(event1);
+		huTraceRepository.addEvent(event2);
+		huTraceRepository.addEvent(event3);	
+		
+		assertThat(RetrieveDbRecordsUtil.queryAll()).hasSize(3);
+		
+		final HUTraceEventQuery query = event1.asQueryBuilder().expandOnVhuId(true).build();
+		final List<HUTraceEvent> result = RetrieveDbRecordsUtil.query(query);
+		assertThat(result).hasSize(2);
+	}
+
 }

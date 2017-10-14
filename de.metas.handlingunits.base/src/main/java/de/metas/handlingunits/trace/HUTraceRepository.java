@@ -4,17 +4,11 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
-import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.util.Check;
-import org.adempiere.util.Services;
-import org.compiere.Adempiere;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
-
-import com.google.common.annotations.VisibleForTesting;
 
 import de.metas.handlingunits.model.I_M_HU_Trace;
 import de.metas.handlingunits.trace.repository.HuTraceEventToDbRecordUtil;
@@ -57,9 +51,9 @@ public class HUTraceRepository
 	 */
 	public boolean addEvent(@NonNull final HUTraceEvent huTraceEvent)
 	{
-		final HUTraceEventQuery query = huTraceEvent.asQuery();
+		final HUTraceEventQuery query = huTraceEvent.asQueryBuilder().build();
 
-		final List<HUTraceEvent> existingDbRecords = RetrieveDbRecordsUtil.query(huTraceEvent.asQuery());
+		final List<HUTraceEvent> existingDbRecords = RetrieveDbRecordsUtil.query(query);
 		final boolean inserted = existingDbRecords.isEmpty();
 
 		if (inserted)
@@ -99,24 +93,5 @@ public class HUTraceRepository
 	public int queryToSelection(@NonNull final HUTraceEventQuery query)
 	{
 		return RetrieveDbRecordsUtil.queryToSelection(query);
-	}
-
-	/**
-	 * Return all records; this makes absolutely no sense in production; Intended to be used only use for testing.
-	 *
-	 * @return
-	 */
-	@VisibleForTesting
-	/* package */ List<HUTraceEvent> queryAll()
-	{
-		Check.errorUnless(Adempiere.isUnitTestMode(), "The method queryAll() shall only be invoked from test code");
-
-		final IQueryBuilder<I_M_HU_Trace> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_M_HU_Trace.class)
-				.orderBy().addColumn(I_M_HU_Trace.COLUMN_M_HU_Trace_ID).endOrderBy();
-
-		return queryBuilder.create()
-				.stream()
-				.map(HuTraceEventToDbRecordUtil::fromDbRecord)
-				.collect(Collectors.toList());
 	}
 }

@@ -10,16 +10,13 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
-import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
-import org.adempiere.util.Services;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestWatcher;
 
-import de.metas.handlingunits.model.I_M_HU_Trace;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.trace.HUTraceEvent.HUTraceEventBuilder;
 import de.metas.handlingunits.trace.HUTraceEventQuery.RecursionMode;
@@ -52,7 +49,7 @@ public class HUTraceRepositoryTests
 	@Rule
 	public final TestWatcher testWatcher = new AdempiereTestWatcher();
 
-	private final HUTraceEventBuilder commonEventBuilder = HUTraceEvent.builder()
+	public static final HUTraceEventBuilder commonEventBuilder = HUTraceEvent.builder()
 			.orgId(10)
 			.vhuStatus(X_M_HU.HUSTATUS_Active)
 			.qty(BigDecimal.valueOf(100))
@@ -65,9 +62,7 @@ public class HUTraceRepositoryTests
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
-
 		huTraceRepository = new HUTraceRepository();
-
 	}
 
 	@Test
@@ -215,7 +210,7 @@ public class HUTraceRepositoryTests
 			assertThat("i=" + i, result.get(i).getVhuSourceId(), is(events.get(i + 5).getVhuSourceId()));
 			assertThat("i=" + i, result.get(i).getInOutId(), is(events.get(i + 5).getInOutId()));
 			assertThat("i=" + i, result.get(i).getMovementId(), is(events.get(i + 5).getMovementId()));
-			assertThat("i=" + i, result.get(i).getCostCollectorId(), is(events.get(i + 5).getCostCollectorId()));
+			assertThat("i=" + i, result.get(i).getPpCostCollectorId(), is(events.get(i + 5).getPpCostCollectorId()));
 			assertThat("i=" + i, result.get(i).getShipmentScheduleId(), is(events.get(i + 5).getShipmentScheduleId()));
 		}
 	}
@@ -248,7 +243,7 @@ public class HUTraceRepositoryTests
 			assertThat("i=" + i, result.get(i).getVhuSourceId(), is(events.get(i).getVhuSourceId()));
 			assertThat("i=" + i, result.get(i).getInOutId(), is(events.get(i).getInOutId()));
 			assertThat("i=" + i, result.get(i).getMovementId(), is(events.get(i).getMovementId()));
-			assertThat("i=" + i, result.get(i).getCostCollectorId(), is(events.get(i).getCostCollectorId()));
+			assertThat("i=" + i, result.get(i).getPpCostCollectorId(), is(events.get(i).getPpCostCollectorId()));
 			assertThat("i=" + i, result.get(i).getShipmentScheduleId(), is(events.get(i).getShipmentScheduleId()));
 		}
 	}
@@ -279,7 +274,7 @@ public class HUTraceRepositoryTests
 			assertThat("i=" + i + ";\nevent=" + events.get(i) + ";\nresult=" + result.get(i), result.get(i).getVhuSourceId(), is(events.get(i).getVhuSourceId()));
 			assertThat("i=" + i + ";\nevent=" + events.get(i) + ";\nresult=" + result.get(i), result.get(i).getInOutId(), is(events.get(i).getInOutId()));
 			assertThat("i=" + i + ";\nevent=" + events.get(i) + ";\nresult=" + result.get(i), result.get(i).getMovementId(), is(events.get(i).getMovementId()));
-			assertThat("i=" + i + ";\nevent=" + events.get(i) + ";\nresult=" + result.get(i), result.get(i).getCostCollectorId(), is(events.get(i).getCostCollectorId()));
+			assertThat("i=" + i + ";\nevent=" + events.get(i) + ";\nresult=" + result.get(i), result.get(i).getPpCostCollectorId(), is(events.get(i).getPpCostCollectorId()));
 			assertThat("i=" + i + ";\nevent=" + events.get(i) + ";\nresult=" + result.get(i), result.get(i).getShipmentScheduleId(), is(events.get(i).getShipmentScheduleId()));
 		}
 	}
@@ -305,7 +300,7 @@ public class HUTraceRepositoryTests
 			assertThat("i=" + i + ";\nevent=" + events.get(i + 5) + ";\nresult=" + result.get(i), result.get(i).getVhuSourceId(), is(events.get(i + 5).getVhuSourceId()));
 			assertThat("i=" + i + ";\nevent=" + events.get(i + 5) + ";\nresult=" + result.get(i), result.get(i).getInOutId(), is(events.get(i + 5).getInOutId()));
 			assertThat("i=" + i + ";\nevent=" + events.get(i + 5) + ";\nresult=" + result.get(i), result.get(i).getMovementId(), is(events.get(i + 5).getMovementId()));
-			assertThat("i=" + i + ";\nevent=" + events.get(i + 5) + ";\nresult=" + result.get(i), result.get(i).getCostCollectorId(), is(events.get(i + 5).getCostCollectorId()));
+			assertThat("i=" + i + ";\nevent=" + events.get(i + 5) + ";\nresult=" + result.get(i), result.get(i).getPpCostCollectorId(), is(events.get(i + 5).getPpCostCollectorId()));
 			assertThat("i=" + i + ";\nevent=" + events.get(i + 5) + ";\nresult=" + result.get(i), result.get(i).getShipmentScheduleId(), is(events.get(i + 5).getShipmentScheduleId()));
 		}
 	}
@@ -336,7 +331,7 @@ public class HUTraceRepositoryTests
 			assertThat("i=" + i + ";\nevent=" + events.get(i) + ";\nresult=" + result.get(i), result.get(i).getVhuSourceId(), is(events.get(i).getVhuSourceId()));
 			assertThat("i=" + i + ";\nevent=" + events.get(i) + ";\nresult=" + result.get(i), result.get(i).getInOutId(), is(events.get(i).getInOutId()));
 			assertThat("i=" + i + ";\nevent=" + events.get(i) + ";\nresult=" + result.get(i), result.get(i).getMovementId(), is(events.get(i).getMovementId()));
-			assertThat("i=" + i + ";\nevent=" + events.get(i) + ";\nresult=" + result.get(i), result.get(i).getCostCollectorId(), is(events.get(i).getCostCollectorId()));
+			assertThat("i=" + i + ";\nevent=" + events.get(i) + ";\nresult=" + result.get(i), result.get(i).getPpCostCollectorId(), is(events.get(i).getPpCostCollectorId()));
 			assertThat("i=" + i + ";\nevent=" + events.get(i) + ";\nresult=" + result.get(i), result.get(i).getShipmentScheduleId(), is(events.get(i).getShipmentScheduleId()));
 		}
 	}
@@ -355,7 +350,7 @@ public class HUTraceRepositoryTests
 		result.add(eventBefore.build());
 		result.add(eventBefore.eventTime(eventTime.plusSeconds(1)).inOutId(24).build());
 		result.add(eventBefore.eventTime(eventTime.plusSeconds(2)).movementId(34).build());
-		result.add(eventBefore.eventTime(eventTime.plusSeconds(3)).costCollectorId(44).build());
+		result.add(eventBefore.eventTime(eventTime.plusSeconds(3)).ppCostCollectorId(44).build());
 		result.add(eventBefore.eventTime(eventTime.plusSeconds(4)).shipmentScheduleId(54).build());
 		// eventBefore is the first of three and therefore has no sourceHuId
 
@@ -367,7 +362,7 @@ public class HUTraceRepositoryTests
 		result.add(eventMiddle.build());
 		result.add(eventMiddle.eventTime(eventTime.plusSeconds(6)).inOutId(25).build());
 		result.add(eventMiddle.eventTime(eventTime.plusSeconds(7)).movementId(35).build());
-		result.add(eventMiddle.eventTime(eventTime.plusSeconds(8)).costCollectorId(45).build());
+		result.add(eventMiddle.eventTime(eventTime.plusSeconds(8)).ppCostCollectorId(45).build());
 		result.add(eventMiddle.eventTime(eventTime.plusSeconds(9)).shipmentScheduleId(55).build());
 		result.add(eventMiddle.eventTime(eventTime.plusSeconds(10)).vhuSourceId(14).build()); // this event is the middle one of three and has the M_HU_ID of 'eventBefore' as its source
 
@@ -379,34 +374,12 @@ public class HUTraceRepositoryTests
 		result.add(eventAfter.build());
 		result.add(eventAfter.eventTime(eventTime.plusSeconds(12)).inOutId(26).build());
 		result.add(eventAfter.eventTime(eventTime.plusSeconds(13)).movementId(36).build());
-		result.add(eventAfter.eventTime(eventTime.plusSeconds(14)).costCollectorId(46).build());
+		result.add(eventAfter.eventTime(eventTime.plusSeconds(14)).ppCostCollectorId(46).build());
 		result.add(eventAfter.eventTime(eventTime.plusSeconds(15)).shipmentScheduleId(56).build());
 		result.add(eventAfter.eventTime(eventTime.plusSeconds(16)).vhuSourceId(15).build()); // this event is the last of three and has the M_HU_ID of 'eventMiddle' as its source
 
 		result.forEach(e -> huTraceRepository.addEvent(e));
 
 		return result;
-	}
-
-	@Test
-	public void queryToSelection()
-	{
-		final Instant eventTime = Instant.now();
-
-		final HUTraceEvent event1 = commonEventBuilder
-				.eventTime(eventTime)
-				.topLevelHuId(2)
-				.vhuId(12)
-				.build();
-		huTraceRepository.addEvent(event1);
-		final int selectionId = huTraceRepository.queryToSelection(event1.asQuery());
-		assertThat(selectionId).isGreaterThan(0);
-
-		final List<I_M_HU_Trace> result = Services.get(IQueryBL.class).createQueryBuilder(I_M_HU_Trace.class)
-				.setOnlySelection(selectionId)
-				.create()
-				.list();
-
-		assertThat(result).hasSize(1);
 	}
 }

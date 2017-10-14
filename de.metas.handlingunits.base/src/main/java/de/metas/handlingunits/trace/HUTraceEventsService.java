@@ -104,7 +104,7 @@ public class HUTraceEventsService
 			@NonNull final I_PP_Cost_Collector costCollector)
 	{
 		final HUTraceEventBuilder builder = HUTraceEvent.builder()
-				.costCollectorId(costCollector.getPP_Cost_Collector_ID())
+				.ppCostCollectorId(costCollector.getPP_Cost_Collector_ID())
 				.ppOrderId(costCollector.getPP_Order_ID())
 				.docTypeId(OptionalInt.of(costCollector.getC_DocType_ID()))
 				.docStatus(costCollector.getDocStatus())
