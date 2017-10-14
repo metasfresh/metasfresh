@@ -59,8 +59,6 @@ public final class PickingConstants
 	public static final String MSG_WEBUI_PICKING_PICK_SOMETHING = "WEBUI_Picking_PickSomething";
 	public static final String MSG_WEBUI_PICKING_NO_UNPROCESSED_RECORDS = "WEBUI_Picking_No_Unprocessed_Records";
 	public static final String MSG_WEBUI_PICKING_NOT_TOP_LEVEL_HU = "WEBUI_Picking_Not_TopLevelHU";
-	public static final String MSG_WEBUI_PICKING_WRONG_HU_STATUS_3P = "WEBUI_Picking_Wrong_HU_Status";
-	public static final String MSG_WEBUI_PICKING_ALREADY_SHIPPED_2P = "WEBUI_Picking_Already_Shipped";
 	public static final String MSG_WEBUI_PICKING_DIVERGING_LOCATIONS = "WEBUI_Picking_Diverging_Locations";
 	public static final String MSG_WEBUI_PICKING_TOO_MANY_PACKAGEABLES_1P = "WEBUI_Picking_Too_Many_Packageables";
 	public static final String MSG_WEBUI_PICKING_CANNOT_PICK_INCLUDED_ROWS = "WEBUI_Picking_CannotPickIncludedRows";
