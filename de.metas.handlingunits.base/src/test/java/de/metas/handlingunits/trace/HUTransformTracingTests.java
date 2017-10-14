@@ -7,6 +7,7 @@ import static org.junit.Assert.assertThat;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.OptionalInt;
 
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.test.AdempiereTestWatcher;
@@ -144,13 +145,14 @@ public class HUTransformTracingTests
 		assertThat(tuTraceEvents.size(), is(1));
 
 		final HUTraceEventBuilder common = HUTraceEvent.builder()
+				.orgId(cuToSplit.getAD_Org_ID())
 				.vhuId(cuToSplit.getM_HU_ID())
 				.vhuStatus(cuToSplit.getHUStatus())
 				.eventTime(tuTraceEvents.get(0).getEventTime())
 				.productId(tuTraceEvents.get(0).getProductId())
 				.type(HUTraceType.TRANSFORM_PARENT);
 
-		assertThat(tuTraceEvents.get(0),
+		assertThat(tuTraceEvents.get(0).withHuTraceEventId(OptionalInt.empty()), // when comparing with "common", we needs to keep the ID out
 				is(common
 						.qty(new BigDecimal("-3"))
 						.topLevelHuId(parentTU.getM_HU_ID())

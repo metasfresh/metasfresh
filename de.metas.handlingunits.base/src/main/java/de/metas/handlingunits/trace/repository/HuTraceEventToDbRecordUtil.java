@@ -43,7 +43,7 @@ public class HuTraceEventToDbRecordUtil
 				.costCollectorId(dbRecord.getPP_Cost_Collector_ID())
 				.ppOrderId(dbRecord.getPP_Order_ID())
 				.docStatus(dbRecord.getDocStatus())
-				.eventTime(dbRecord.getEventTime().toInstant())
+				.eventTime(dbRecord.getEventTime().toInstant()) // EeventTime is a mandatory column, so no NPE
 				.vhuId(dbRecord.getVHU_ID())
 				.productId(dbRecord.getM_Product_ID())
 				.qty(dbRecord.getQty())
@@ -54,14 +54,14 @@ public class HuTraceEventToDbRecordUtil
 				.inOutId(dbRecord.getM_InOut_ID())
 				.movementId(dbRecord.getM_Movement_ID())
 				.shipmentScheduleId(dbRecord.getM_ShipmentSchedule_ID())
-				.type(HUTraceType.valueOf(dbRecord.getHUTraceType()));
+				.type(HUTraceType.valueOf(dbRecord.getHUTraceType())); // HUTraceType is also a mandatory column, so no NPE
 
 		if (dbRecord.getM_HU_Trace_ID() > 0)
 		{
 			builder.huTraceEventId(OptionalInt.of(dbRecord.getM_HU_Trace_ID()));
 		}
 
-		if (!isNull(dbRecord, I_M_HU_Trace.COLUMNNAME_C_DocType_ID))
+		if (isNull(dbRecord, I_M_HU_Trace.COLUMNNAME_C_DocType_ID))
 		{
 			builder.docTypeId(OptionalInt.empty());
 		}

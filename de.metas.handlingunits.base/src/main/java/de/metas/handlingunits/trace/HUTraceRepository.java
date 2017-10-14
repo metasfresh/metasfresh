@@ -77,7 +77,7 @@ public class HUTraceRepository
 					existingDbRecords.size(), query, existingDbRecords);
 
 			HUTraceEvent existingHuTraceEvent = existingDbRecords.get(0);
-			logger.info("Found exiting HUTraceEvent record with ID={}; nothing to do; query={}", existingHuTraceEvent.getHuTraceEventId(), query);
+			logger.info("Found exiting HUTraceEvent record with ID={}; nothing to do; query={}", existingHuTraceEvent.getHuTraceEventId().getAsInt(), query);
 		}
 
 		return inserted;

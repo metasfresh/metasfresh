@@ -52,5 +52,4 @@ public class RetrieveDbRecordsUtilTest
 		final IQueryBuilder<I_M_HU_Trace> queryBuilder = RetrieveDbRecordsUtil.createQueryBuilderOrNull(query);
 		assertThat(queryBuilder).isNotNull();
 	}
-
 }
