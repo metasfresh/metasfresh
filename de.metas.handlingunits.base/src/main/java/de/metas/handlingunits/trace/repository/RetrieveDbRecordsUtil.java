@@ -231,11 +231,6 @@ public class RetrieveDbRecordsUtil
 				.create();
 		noRecursiveResult.executeQueryAndAddAll(query);
 
-		if (huTraceEventQuery.isExpandOnVhuId())
-		{
-
-		}
-
 		// no matter which recursion mode, we can always add the records we already have
 		resultOut.addAll(noRecursiveResult);
 

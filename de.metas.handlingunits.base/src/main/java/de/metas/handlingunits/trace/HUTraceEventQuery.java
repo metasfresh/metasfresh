@@ -78,12 +78,6 @@ public class HUTraceEventQuery
 
 	Instant eventTimeTo;
 
-	/**
-	 * If {@code true}, then also query for all records with that have the same VHU_ID as the "primary" matches.
-	 */
-	@Default
-	boolean expandOnVhuId = false;
-
 	@NonNull
 	@Default
 	OptionalInt huTraceEventId = OptionalInt.empty();

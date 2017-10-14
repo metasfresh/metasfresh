@@ -93,37 +93,4 @@ public class RetrieveDbRecordsUtilTest
 
 		assertThat(result).hasSize(1);
 	}
-
-	@Test
-	public void test()
-
-	{
-		final Instant eventTime = Instant.now();
-		final HUTraceEvent event1 = HUTraceRepositoryTests.commonEventBuilder
-				.eventTime(eventTime)
-				.topLevelHuId(2)
-				.vhuId(12)
-				.inOutId(30)
-				.build();
-
-		final HUTraceEvent event2 = HUTraceRepositoryTests.commonEventBuilder
-				.eventTime(eventTime)
-				.topLevelHuId(2)
-				.vhuId(12)
-				.shipmentScheduleId(40)
-				.build();
-		
-		final HUTraceEvent event3 = event2.withVhuId(13);
-		
-		huTraceRepository.addEvent(event1);
-		huTraceRepository.addEvent(event2);
-		huTraceRepository.addEvent(event3);	
-		
-		assertThat(RetrieveDbRecordsUtil.queryAll()).hasSize(3);
-		
-		final HUTraceEventQuery query = event1.asQueryBuilder().expandOnVhuId(true).build();
-		final List<HUTraceEvent> result = RetrieveDbRecordsUtil.query(query);
-		assertThat(result).hasSize(2);
-	}
-
 }
