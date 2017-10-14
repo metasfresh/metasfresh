@@ -14,47 +14,48 @@
  * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
  * or via info@compiere.org or http://www.compiere.org/license.html           *
  *****************************************************************************/
-package org.compiere.db;
+package org.compiere.db.connectiondialog.i18n;
 
 import java.util.ListResourceBundle;
 
 /**
- *  Connection Resource Strings
+ *  Norwegian Connection Resource Strings
  *
- *  @author     Jorg Janke
- *  @version    $Id: DBRes_ro.java,v 1.2 2006/07/30 00:55:13 jjanke Exp $
+ *  @author     Olaf Slazak L�ken
+ *  @version    $Id: DBRes_no.java,v 1.2 2006/07/30 00:55:13 jjanke Exp $
  */
-public class DBRes_ro extends ListResourceBundle
+public class DBRes_no extends ListResourceBundle
 {
 	/** Data        */
-	static final Object[][] contents = new String[][]{
-	{ "CConnectionDialog", 	"Conexiune" },
-	{ "Name", 				"Nume" },
-	{ "AppsHost", 			"Server de aplica\u0163ie" },
-	{ "AppsPort", 			"Port de aplica\u0163ie" },
-	{ "TestApps", 			"Testare a serverului de aplica\u0163ie" },
-	{ "DBHost", 			"Server de baz\u0103 de date" },
-	{ "DBPort", 			"Port de baz\u0103 de date" },
-	{ "DBName", 			"Numele bazei de date" },
-	{ "DBUidPwd", 			"Utilizator / parol\u0103" },
-	{ "ViaFirewall", 		"Prin firewall" },
-	{ "FWHost", 			"Gazd\u0103 de firewall" },
-	{ "FWPort", 			"Port de firewall" },
-	{ "TestConnection", 	"Testare a bazei de date" },
-	{ "Type", 				"Tip al bazei de date" },
-	{ "BequeathConnection", "Cedare de conexiune" },
-	{ "Overwrite", 			"Suprascriere" },
-	{ "ConnectionProfile",	"Profil conexiune" },
+	static final Object[][] contents = new String[][]
+	{
+	{ "CConnectionDialog",  "Forbindelse" },
+	{ "Name",               "Navn" },
+	{ "AppsHost",           "Applikasjon  Maskine" },
+	{ "AppsPort",           "Applikasjon  Port" },
+	{ "TestApps",           "Test Applikasjon " },
+	{ "DBHost",             "Database Maskin" },
+	{ "DBPort",             "Database Port" },
+	{ "DBName",             "Database Navn" },
+	{ "DBUidPwd",           "Bruker /Passord" },
+	{ "ViaFirewall",        "Gjennom Brannmur" },
+	{ "FWHost",             "Brannmur Maskin" },
+	{ "FWPort",             "Brannmur Port" },
+	{ "TestConnection",     "Test Database" },
+	{ "Type",               "Database Type" },
+	{ "BequeathConnection", "Bequeath Forbindelse" },
+	{ "Overwrite",          "Overskriv" },
+	{ "ConnectionProfile",	"Connection" },
 	{ "LAN",		 		"LAN" },
 	{ "TerminalServer",		"Terminal Server" },
 	{ "VPN",		 		"VPN" },
 	{ "WAN", 				"WAN" },
-	{ "ConnectionError", 	"Eroare de conexiune" },
-	{ "ServerNotActive", 	"Serverul este inactiv" }
+	{ "ConnectionError",    "Feil ved Oppkobling" },
+	{ "ServerNotActive",    "Server Ikke Aktivert" }
 	};
 
 	/**
-	 * Get Contents
+	 * Get Contsnts
 	 * @return contents
 	 */
 	public Object[][] getContents()

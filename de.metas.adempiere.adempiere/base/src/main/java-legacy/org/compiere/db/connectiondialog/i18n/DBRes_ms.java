@@ -14,43 +14,44 @@
  * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
  * or via info@compiere.org or http://www.compiere.org/license.html           *
  *****************************************************************************/
-package org.compiere.db;
+package org.compiere.db.connectiondialog.i18n;
 
 import java.util.ListResourceBundle;
 
 /**
  *  Connection Resource Strings
  *
- *  @author     Matja\u017e Godec
- *  @version    $Id: DBRes_sl.java,v 1.2 2006/07/30 00:55:13 jjanke Exp $
+ *  @author     .
+ *  @version    $Id: DBRes_ml.java,v 1.2 2006/07/30 00:55:13 jjanke Exp $
  */
-public class DBRes_sl extends ListResourceBundle
+public class DBRes_ms extends ListResourceBundle
 {
 	/** Data        */
-	static final Object[][] contents = new String[][]{
-	{ "CConnectionDialog", 	"Server povezava" },
-	{ "Name", 				"Ime" },
-	{ "AppsHost", 			"Programski stre\u017enik" },
-	{ "AppsPort", 			"Vrata programskega stre\u017enika" },
-	{ "TestApps", 			"Test programskega stre\u017enika" },
-	{ "DBHost", 			"Stre\u017enik baze podatkov" },
-	{ "DBPort", 			"Vrata baze podatkov" },
-	{ "DBName", 			"Ime baze podatkov" },
-	{ "DBUidPwd", 			"Uporabnik / geslo" },
-	{ "ViaFirewall", 		"Skozi po\u017earni zid" },
-	{ "FWHost", 			"Po\u017earni zid" },
-	{ "FWPort", 			"Vrata po\u017earnega zidu" },
-	{ "TestConnection", 	"Testiranje baze podatkov" },
-	{ "Type", 				"Tip baze podatkov" },
-	{ "BequeathConnection", "Bequeath Connection" },
-	{ "Overwrite", 			"Prepi\u0161i" },
-	{ "ConnectionProfile",	"Povezava" },
-	{ "LAN",		 		"LAN" },
-	{ "TerminalServer",		"Terminal Server" },
-	{ "VPN",		 		"VPN" },
-	{ "WAN", 				"WAN" },
-	{ "ConnectionError", 	"Napaka na povezavi" },
-	{ "ServerNotActive", 	"Stre\u017enik ni aktiven" }
+	static final Object[][] contents = new String[][]
+	{
+	{ "CConnectionDialog",  "Kotak Sambungan" },
+	{ "Name",               "Nama" },
+	{ "AppsHost",           "Aplikasi Induk" },
+	{ "AppsPort",           "Port Aplikasi" },
+	{ "TestApps",           "Uji Aplikasi" },
+	{ "DBHost",             "Hos Pengkalan Data" },
+	{ "DBPort",             "Port Pengkalan Data" },
+	{ "DBName",             "Nama Pengkalan Data" },
+	{ "DBUidPwd",           "Pengguna / Kata-laluan" },
+	{ "ViaFirewall",        "menerusi Pendinding" },
+	{ "FWHost",             "Hos Pendinding" },
+	{ "FWPort",             "Port Pendinding" },
+	{ "TestConnection",     "Uji Pengkalan Data" },
+	{ "Type",               "Jenis Pengkalan Data" },
+	{ "BequeathConnection", "Memberi Sambungan" },
+	{ "Overwrite",          "Mengatasi" },
+	{ "ConnectionProfile",	"Sambungan" },
+	{ "LAN",		 		"Rangkaian Dalaman" },
+	{ "TerminalServer",		"Pelayan Terminal" },
+	{ "VPN",		 		"Rangkaian Maya" },
+	{ "WAN", 				"Rangkaian Luar" },
+	{ "ConnectionError",    "Kesilapan Sambungan" },
+	{ "ServerNotActive",    "Pelayan Tidak Aktif" }
 	};
 
 	/**
@@ -62,4 +63,3 @@ public class DBRes_sl extends ListResourceBundle
 		return contents;
 	}   //  getContent
 }   //  Res
-

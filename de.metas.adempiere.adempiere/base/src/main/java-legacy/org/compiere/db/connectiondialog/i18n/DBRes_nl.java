@@ -14,44 +14,44 @@
  * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
  * or via info@compiere.org or http://www.compiere.org/license.html           *
  *****************************************************************************/
-package org.compiere.db;
+package org.compiere.db.connectiondialog.i18n;
 
 import java.util.ListResourceBundle;
 
 /**
- *  Connection Resource Strings (French)
+ *  Connection Resource Strings
  *
- *  @author     Jean-Luc SCHEIDEGGER
- *  @version    $Id: DBRes_fr.java,v 1.2 2006/07/30 00:55:13 jjanke Exp $
+ *  @author     Eldir Tomassen
+ *  @version    $Id: DBRes_nl.java,v 1.2 2006/07/30 00:55:13 jjanke Exp $
  */
-public class DBRes_fr extends ListResourceBundle
+public class DBRes_nl extends ListResourceBundle
 {
-	/** Translation Content     */
+	/** Data        */
 	static final Object[][] contents = new String[][]
 	{
-	{ "CConnectionDialog",      "Connexion Server" },
-	{ "Name",                   "Nom" },
-	{ "AppsHost",               "Hote d'Application" },
-	{ "AppsPort",               "Port de l'Application" },
-	{ "TestApps",               "Application de Test" },
-	{ "DBHost",                 "Hote Base de Donn\u00E9es" },
-	{ "DBPort",                 "Port Base de Donn\u00E9es" },
-	{ "DBName",                 "Nom Base de Donn\u00E9es" },
-	{ "DBUidPwd",               "Utilisateur / Mot de Passe" },
-	{ "ViaFirewall",            "via Firewall" },
-	{ "FWHost",                 "Hote Firewall" },
-	{ "FWPort",                 "Port Firewall" },
-	{ "TestConnection",         "Test Base de Donn\u00E9es" },
-	{ "Type",                   "Type Base de Donn\u00E9es" },
-	{ "BequeathConnection",     "Connexion d\u00E9di\u00E9e" },
-	{ "Overwrite",              "Ecraser" },
+	{ "CConnectionDialog",  "Verbinding met Server" },
+	{ "Name",               "Naam" },
+	{ "AppsHost",           "Applicatie Server" },
+	{ "AppsPort",           "Applicatie Poort" },
+	{ "TestApps",           "Test Applicatie" },
+	{ "DBHost",             "Database Server" },
+	{ "DBPort",             "Database Poort" },
+	{ "DBName",             "Database Naam" },
+	{ "DBUidPwd",           "Gebruikersnaam / Wachtwoord" },
+	{ "ViaFirewall",        "via Firewall" },
+	{ "FWHost",             "Firewall" },
+	{ "FWPort",             "Firewall Poort" },
+	{ "TestConnection",     "Test Database" },
+	{ "Type",               "Database Type" },
+	{ "BequeathConnection", "Lokale Connectie" },
+	{ "Overwrite",          "Overschrijven" },
 	{ "ConnectionProfile",	"Connection" },
 	{ "LAN",		 		"LAN" },
 	{ "TerminalServer",		"Terminal Server" },
 	{ "VPN",		 		"VPN" },
 	{ "WAN", 				"WAN" },
-	{ "ConnectionError",        "Erreur Connexion" },
-	{ "ServerNotActive",        "Serveur Non Actif" }
+	{ "ConnectionError",    "Fout bij verbinden" },
+	{ "ServerNotActive",    "Server Niet Actief" }
 	};
 
 	/**
@@ -61,5 +61,5 @@ public class DBRes_fr extends ListResourceBundle
 	public Object[][] getContents()
 	{
 		return contents;
-	}   //  getContents
-}   //  DBRes_fr
+	}   //  getContent
+}   //  Res

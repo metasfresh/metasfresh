@@ -14,7 +14,7 @@
  * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
  * or via info@compiere.org or http://www.compiere.org/license.html           *
  *****************************************************************************/
-package org.compiere.db;
+package org.compiere.db.connectiondialog.i18n;
 
 import java.util.ListResourceBundle;
 
@@ -24,33 +24,33 @@ import java.util.ListResourceBundle;
  *  @author     Jorg Janke
  *  @version    $Id: DBRes.java,v 1.2 2006/07/30 00:55:13 jjanke Exp $
  */
-public class DBRes extends ListResourceBundle
+public class DBRes_hu extends ListResourceBundle
 {
 	/** Data        */
 	static final Object[][] contents = new String[][]{
-	{ "CConnectionDialog", 	"Server Connection" },
-	{ "Name", 				"Name" },
-	{ "AppsHost", 			"Application Host" },
-	{ "AppsPort", 			"Application Port" },
-	{ "TestApps", 			"Test Application Server" },
-	{ "DBHost", 			"Database Host" },
-	{ "DBPort", 			"Database Port" },
-	{ "DBName", 			"Database Name" },
-	{ "DBUidPwd", 			"User / Password" },
-	{ "ViaFirewall", 		"via Firewall" },
-	{ "FWHost", 			"Firewall Host" },
-	{ "FWPort", 			"Firewall Port" },
-	{ "TestConnection", 	"Test Database" },
-	{ "Type", 				"Database Type" },
-	{ "BequeathConnection", "Bequeath Connection" },
-	{ "Overwrite", 			"Overwrite" },
-	{ "ConnectionProfile",	"Connection" },
+	{ "CConnectionDialog", 	"Szerver kapcsolat" },
+	{ "Name", 				"Név" },
+	{ "AppsHost", 			"Alkalmazás szerver" },
+	{ "AppsPort", 			"Alkalmazás port" },
+	{ "TestApps", 			"Teszt alkalmazás szerver" },
+	{ "DBHost", 			"Adatbázis szerver" },
+	{ "DBPort", 			"Adatbázis port" },
+	{ "DBName", 			"Adatbázis név" },
+	{ "DBUidPwd", 			"Felhasználó / Jelszó" },
+	{ "ViaFirewall", 		"Firewallon keresztül" },
+	{ "FWHost", 			"Firewall cím" },
+	{ "FWPort", 			"Firewall port" },
+	{ "TestConnection", 	"Test Adatbázis" },
+	{ "Type", 				"Adatbázis típus" },
+	{ "BequeathConnection", "Kapcsolat hagyományozása" },
+	{ "Overwrite", 			"Felülír" },
+	{ "ConnectionProfile",	"Kapcsolat profil" },
 	{ "LAN",		 		"LAN" },
-	{ "TerminalServer",		"Terminal Server" },
+	{ "TerminalServer",		"Terminál szerver" },
 	{ "VPN",		 		"VPN" },
 	{ "WAN", 				"WAN" },
-	{ "ConnectionError", 	"Connection Error" },
-	{ "ServerNotActive", 	"Server Not Active" }
+	{ "ConnectionError", 	"Kapcsolat hiba" },
+	{ "ServerNotActive", 	"Szerver nem aktív" }
 	};
 
 	/**
@@ -62,3 +62,4 @@ public class DBRes extends ListResourceBundle
 		return contents;
 	}   //  getContent
 }   //  Res
+

@@ -14,44 +14,43 @@
  * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
  * or via info@compiere.org or http://www.compiere.org/license.html           *
  *****************************************************************************/
-package org.compiere.db;
+package org.compiere.db.connectiondialog.i18n;
 
 import java.util.ListResourceBundle;
 
 /**
  *  Connection Resource Strings
  *
- *  @author Jaume Teixi
- *  @author		Jordi Luna
- *  @version    $Id: DBRes_ca.java,v 1.2 2006/07/30 00:55:13 jjanke Exp $
+ *  @author     Matja\u017e Godec
+ *  @version    $Id: DBRes_sl.java,v 1.2 2006/07/30 00:55:13 jjanke Exp $
  */
-public class DBRes_ca extends ListResourceBundle
+public class DBRes_sl extends ListResourceBundle
 {
 	/** Data        */
 	static final Object[][] contents = new String[][]{
-	{ "CConnectionDialog",  "Connexi\u00f3 Server" },
-	{ "Name",               "Nom" },
-	{ "AppsHost",           "Servidor Aplicaci\u00f3" },
-	{ "AppsPort",           "Port Aplicaci\u00f3" },
-	{ "TestApps",           "Provar Servidor Aplicaci\u00f3" },
-	{ "DBHost",             "Servidor Base de Dades" },
-	{ "DBPort",             "Port Base de Dades" },
-	{ "DBName",             "Nom Base de Dades" },
-	{ "DBUidPwd",           "Usuari / Contrasenya" },
-	{ "ViaFirewall",        "via Firewall" },
-	{ "FWHost",             "Servidor Firewall" },
-	{ "FWPort",             "Port Firewall" },
-	{ "TestConnection",     "Provar Base de Dades" },
-	{ "Type",               "Tipus Base de Dades" },
-	{ "BequeathConnection", "Delegar Connexi\u00f3" },
-	{ "Overwrite",          "Sobrescriure" },
-	{ "ConnectionProfile",	"Connexi\u00f3" },
+	{ "CConnectionDialog", 	"Server povezava" },
+	{ "Name", 				"Ime" },
+	{ "AppsHost", 			"Programski stre\u017enik" },
+	{ "AppsPort", 			"Vrata programskega stre\u017enika" },
+	{ "TestApps", 			"Test programskega stre\u017enika" },
+	{ "DBHost", 			"Stre\u017enik baze podatkov" },
+	{ "DBPort", 			"Vrata baze podatkov" },
+	{ "DBName", 			"Ime baze podatkov" },
+	{ "DBUidPwd", 			"Uporabnik / geslo" },
+	{ "ViaFirewall", 		"Skozi po\u017earni zid" },
+	{ "FWHost", 			"Po\u017earni zid" },
+	{ "FWPort", 			"Vrata po\u017earnega zidu" },
+	{ "TestConnection", 	"Testiranje baze podatkov" },
+	{ "Type", 				"Tip baze podatkov" },
+	{ "BequeathConnection", "Bequeath Connection" },
+	{ "Overwrite", 			"Prepi\u0161i" },
+	{ "ConnectionProfile",	"Povezava" },
 	{ "LAN",		 		"LAN" },
 	{ "TerminalServer",		"Terminal Server" },
 	{ "VPN",		 		"VPN" },
 	{ "WAN", 				"WAN" },
-	{ "ConnectionError",    "Error Connexi\u00f3" },
-	{ "ServerNotActive",    "Servidor no Actiu" }
+	{ "ConnectionError", 	"Napaka na povezavi" },
+	{ "ServerNotActive", 	"Stre\u017enik ni aktiven" }
 	};
 
 	/**
@@ -63,3 +62,4 @@ public class DBRes_ca extends ListResourceBundle
 		return contents;
 	}   //  getContent
 }   //  Res
+

@@ -14,52 +14,52 @@
  * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
  * or via info@compiere.org or http://www.compiere.org/license.html           *
  *****************************************************************************/
-package org.compiere.db;
+package org.compiere.db.connectiondialog.i18n;
 
 import java.util.ListResourceBundle;
 
 /**
- *  Connection Resource Strings (German)
+ *  Connection Resource Strings
  *
- *  @author     Jorg Janke
- *  @version    $Id: DBRes_de.java,v 1.3 2006/08/30 20:30:44 comdivision Exp $
+ *  @author     Marko Bubalo
+ *  @version    $Id: DBRes_hr.java,v 1.2 2006/07/30 00:55:13 jjanke Exp $
  */
-public class DBRes_de extends ListResourceBundle
+public class DBRes_hr extends ListResourceBundle
 {
 	/** Data        */
-	static final Object[][] contents = new String[][]
-	{
-	{ "CConnectionDialog",  "Verbindung" },
-	{ "Name",               "Name" },
-	{ "AppsHost",           "Applikations-Server" },
-	{ "AppsPort",           "Applikations-Port" },
-	{ "TestApps",           "Teste Verbindung zur Applikation" },
-	{ "DBHost",             "Datenbank-Server" },
-	{ "DBPort",             "Datenbank-Port" },
-	{ "DBName",             "Datenbank-Name" },
-	{ "DBUidPwd",           "Nutzer / Passwort" },
-	{ "ViaFirewall",        "\u00fcber Firewall" },
-	{ "FWHost",             "Firewall-Server" },
-	{ "FWPort",             "Firewall-Port" },
-	{ "TestConnection",     "Teste Verbindung zur Datenbank" },
-	{ "Type",               "Datenbank-Typ" },
-	{ "BequeathConnection", "Bequeath-Verbindung" },
-	{ "Overwrite",          "\u00fcberschreiben" },
-	{ "ConnectionProfile",	"Verbindungsprofil" },
+	static final Object[][] contents = new String[][]{
+	{ "CConnectionDialog", 	"Server veza" },
+	{ "Name", 				"Naziv" },
+	{ "AppsHost", 			"Host aplikacije" },
+	{ "AppsPort", 			"Port aplikacije" },
+	{ "TestApps", 			"Testiranje servera" },
+	{ "DBHost", 			"Host baze" },
+	{ "DBPort", 			"Port baze" },
+	{ "DBName", 			"Naziv baze" },
+	{ "DBUidPwd", 			"Korisnik / lozinka" },
+	{ "ViaFirewall", 		"via Firewall" },
+	{ "FWHost", 			"Firewall Host" },
+	{ "FWPort", 			"Firewall Port" },
+	{ "TestConnection", 	"Tesiranje baze" },
+	{ "Type", 				"Tip baze" },
+	{ "BequeathConnection", "Bequeath Connection" },
+	{ "Overwrite", 			"Prebrisati" },
+	{ "ConnectionProfile",	"Connection" },
 	{ "LAN",		 		"LAN" },
 	{ "TerminalServer",		"Terminal Server" },
 	{ "VPN",		 		"VPN" },
 	{ "WAN", 				"WAN" },
-	{ "ConnectionError",    "Verbindungsfehler" },
-	{ "ServerNotActive",    "Server nicht erreichbar" }
+	{ "ConnectionError", 	"Gre�ka u vezi" },
+	{ "ServerNotActive", 	"Server nije aktivan" }
 	};
 
 	/**
-	 * Get Contents
+	 * Get Contsnts
 	 * @return contents
 	 */
 	public Object[][] getContents()
 	{
 		return contents;
-	}   //  getContents
-}   //  Res_de
+	}   //  getContent
+}   //  Res
+

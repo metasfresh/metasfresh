@@ -14,43 +14,45 @@
  * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
  * or via info@compiere.org or http://www.compiere.org/license.html           *
  *****************************************************************************/
-package org.compiere.db;
+package org.compiere.db.connectiondialog.i18n;
 
 import java.util.ListResourceBundle;
 
 /**
  *  Connection Resource Strings
  *
- *  @author     Alessandro Riolo 
- *  @version    $Id: DBRes_it.java,v 1.2 2006/07/30 00:55:13 jjanke Exp $
+ *  @author     Adam Bodurka
+ *  @version    $Id: DBRes_pl.java,v 1.2 2006/07/30 00:55:13 jjanke Exp $
  */
-public class DBRes_it extends ListResourceBundle
+public class DBRes_pl extends ListResourceBundle
 {
 	/** Data        */
-	static final Object[][] contents = new String[][]{
-	  { "CConnectionDialog",  "Connessione a Server" },
-	  { "Name",               "Nome" },
-	  { "AppsHost",           "Host dell'Applicativo" },
-	  { "AppsPort",           "Porta dell'Applicativo" }, 
-	  { "TestApps",           "Applicazione di Test" },
-	  { "DBHost",             "Host del Database" },
-	  { "DBPort",             "Porta del Database" },
-	  { "DBName",             "Nome del Database" },
-	  { "DBUidPwd",           "Utente / Password" },
-	  { "ViaFirewall",        "via Firewall" },
-	  { "FWHost",             "Host del Firewall" },
-	  { "FWPort",             "Porta del Firewall" },
-	  { "TestConnection",     "Database di Test" },
-	  { "Type",               "Tipo di Database" },
-	  { "BequeathConnection", "Connessione Dedicata" },
-	  { "Overwrite",          "Sovrascri" }, 
-		{ "ConnectionProfile",	"Connection" },
-		{ "LAN",		 		"LAN" },
-		{ "TerminalServer",		"Terminal Server" },
-		{ "VPN",		 		"VPN" },
-		{ "WAN", 				"WAN" },
-	  { "ConnectionError",    "Errore di Connessione" },
-	  { "ServerNotActive",    "Server non Attivo" }};
+	static final Object[][] contents = new String[][]
+	{
+	{ "CConnectionDialog",  "Po\u0142\u0105czenie z Server" },
+	{ "Name",               "Nazwa" },
+	{ "AppsHost",           "Host Aplikacji" },
+	{ "AppsPort",           "Port Aplikacji" },
+	{ "TestApps",           "Test Aplikacji" },
+	{ "DBHost",             "Host Bazy Danych" },
+	{ "DBPort",             "Port Bazy Danych" },
+	{ "DBName",             "Nazwa Bazy Danych" },
+	{ "DBUidPwd",           "U\u017cytkownik / Has\u0142o" },
+	{ "ViaFirewall",        "via Firewall" },
+	{ "FWHost",             "Host Firewall-a" },
+	{ "FWPort",             "Port Firewall-a" },
+	{ "TestConnection",     "Test Bazy Danych" },
+	{ "Type",               "Typ Bazy Danych" },
+	{ "BequeathConnection", "Zapisuj Po\u0142\u0105czenie" },
+	{ "Overwrite",          "Nadpisuj" },
+	{ "ConnectionProfile",	"Connection" },
+	{ "LAN",		 		"LAN" },
+	{ "TerminalServer",		"Terminal Server" },
+	{ "VPN",		 		"VPN" },
+	{ "WAN", 				"WAN" },
+	{ "ConnectionError",    "B\u0142\u0105d po\u0142\u0105czenia" },
+	{ "ServerNotActive",    "Serwer nie jest aktywny" }
+	};
 
 	/**
 	 * Get Contsnts
@@ -59,5 +61,5 @@ public class DBRes_it extends ListResourceBundle
 	public Object[][] getContents()
 	{
 		return contents;
-	}
+	}   //  getContent
 }   //  Res

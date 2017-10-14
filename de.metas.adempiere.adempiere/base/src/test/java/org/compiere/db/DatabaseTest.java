@@ -26,7 +26,7 @@ package org.compiere.db;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class DB_PostgreSQL_Test
+public class DatabaseTest
 {
 	@Test
 	public void test_convertDecimalPatternToPG()
@@ -40,7 +40,7 @@ public class DB_PostgreSQL_Test
 
 	private void test_convertDecimalPatternToPG(final String javaDecimalFormat, final String expectedPGFormat)
 	{
-		final String actualPGFormat = DB_PostgreSQL.convertDecimalPatternToPG(javaDecimalFormat);
+		final String actualPGFormat = Database.convertDecimalPatternToPG(javaDecimalFormat);
 		Assert.assertEquals("Invalid converted PG format for java format: " + javaDecimalFormat, expectedPGFormat, actualPGFormat);
 	}
 }

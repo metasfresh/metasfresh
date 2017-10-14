@@ -14,44 +14,44 @@
  * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
  * or via info@compiere.org or http://www.compiere.org/license.html           *
  *****************************************************************************/
-package org.compiere.db;
+package org.compiere.db.connectiondialog.i18n;
 
 import java.util.ListResourceBundle;
 
 /**
  *  Connection Resource Strings
  *
- *  @author     .
- *  @version    $Id: DBRes_ml.java,v 1.2 2006/07/30 00:55:13 jjanke Exp $
+ *  @author     kirinlin
+ *  @version    $Id: DBRes_zh.java,v 1.2 2006/07/30 00:55:13 jjanke Exp $
  */
-public class DBRes_ms extends ListResourceBundle
+public class DBRes_zh extends ListResourceBundle
 {
 	/** Data        */
 	static final Object[][] contents = new String[][]
 	{
-	{ "CConnectionDialog",  "Kotak Sambungan" },
-	{ "Name",               "Nama" },
-	{ "AppsHost",           "Aplikasi Induk" },
-	{ "AppsPort",           "Port Aplikasi" },
-	{ "TestApps",           "Uji Aplikasi" },
-	{ "DBHost",             "Hos Pengkalan Data" },
-	{ "DBPort",             "Port Pengkalan Data" },
-	{ "DBName",             "Nama Pengkalan Data" },
-	{ "DBUidPwd",           "Pengguna / Kata-laluan" },
-	{ "ViaFirewall",        "menerusi Pendinding" },
-	{ "FWHost",             "Hos Pendinding" },
-	{ "FWPort",             "Port Pendinding" },
-	{ "TestConnection",     "Uji Pengkalan Data" },
-	{ "Type",               "Jenis Pengkalan Data" },
-	{ "BequeathConnection", "Memberi Sambungan" },
-	{ "Overwrite",          "Mengatasi" },
-	{ "ConnectionProfile",	"Sambungan" },
-	{ "LAN",		 		"Rangkaian Dalaman" },
-	{ "TerminalServer",		"Pelayan Terminal" },
-	{ "VPN",		 		"Rangkaian Maya" },
-	{ "WAN", 				"Rangkaian Luar" },
-	{ "ConnectionError",    "Kesilapan Sambungan" },
-	{ "ServerNotActive",    "Pelayan Tidak Aktif" }
+	{ "CConnectionDialog",  "\u9023\u7dda" },
+	{ "Name",               "\u540d\u7a31" },
+	{ "AppsHost",           "\u61c9\u7528\u7a0b\u5f0f\u4e3b\u6a5f" },
+	{ "AppsPort",           "\u61c9\u7528\u7a0b\u5f0f\u57e0" },
+	{ "TestApps",           "\u6e2c\u8a66" },
+	{ "DBHost",             "\u8cc7\u6599\u5eab\u4e3b\u6a5f" },
+	{ "DBPort",             "\u8cc7\u6599\u5eab\u9023\u63a5\u57e0" },
+	{ "DBName",             "\u8cc7\u6599\u5eab\u540d\u7a31" },
+	{ "DBUidPwd",           "\u5e33\u865f / \u5bc6\u78bc" },
+	{ "ViaFirewall",        "\u7d93\u904e\u9632\u706b\u7246" },
+	{ "FWHost",             "\u9632\u706b\u7246\u4e3b\u6a5f" },
+	{ "FWPort",             "\u9632\u706b\u7246\u57e0" },
+	{ "TestConnection",     "\u6e2c\u8a66\u8cc7\u6599\u5eab" },
+	{ "Type",               "\u8cc7\u6599\u5eab\u7a2e\u985e" },
+	{ "BequeathConnection", "\u907a\u7559\u9023\u7dda" },
+	{ "Overwrite",          "\u8986\u5beb" },
+	{ "ConnectionProfile",	"Connection" },
+	{ "LAN",		 		"LAN" },
+	{ "TerminalServer",		"Terminal Server" },
+	{ "VPN",		 		"VPN" },
+	{ "WAN", 				"WAN" },
+	{ "ConnectionError",    "\u9023\u7dda\u932f\u8aa4" },
+	{ "ServerNotActive",    "\u4f3a\u670d\u5668\u672a\u52d5\u4f5c" }
 	};
 
 	/**

@@ -14,44 +14,43 @@
  * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
  * or via info@compiere.org or http://www.compiere.org/license.html           *
  *****************************************************************************/
-package org.compiere.db;
+package org.compiere.db.connectiondialog.i18n;
 
 import java.util.ListResourceBundle;
 
 /**
  *  Connection Resource Strings
  *
- *  @author     Jorg Janke
- *  @version    $Id: DBRes.java,v 1.2 2006/07/30 00:55:13 jjanke Exp $
+ *  @author     Alessandro Riolo 
+ *  @version    $Id: DBRes_it.java,v 1.2 2006/07/30 00:55:13 jjanke Exp $
  */
-public class DBRes_hu extends ListResourceBundle
+public class DBRes_it extends ListResourceBundle
 {
 	/** Data        */
 	static final Object[][] contents = new String[][]{
-	{ "CConnectionDialog", 	"Szerver kapcsolat" },
-	{ "Name", 				"Név" },
-	{ "AppsHost", 			"Alkalmazás szerver" },
-	{ "AppsPort", 			"Alkalmazás port" },
-	{ "TestApps", 			"Teszt alkalmazás szerver" },
-	{ "DBHost", 			"Adatbázis szerver" },
-	{ "DBPort", 			"Adatbázis port" },
-	{ "DBName", 			"Adatbázis név" },
-	{ "DBUidPwd", 			"Felhasználó / Jelszó" },
-	{ "ViaFirewall", 		"Firewallon keresztül" },
-	{ "FWHost", 			"Firewall cím" },
-	{ "FWPort", 			"Firewall port" },
-	{ "TestConnection", 	"Test Adatbázis" },
-	{ "Type", 				"Adatbázis típus" },
-	{ "BequeathConnection", "Kapcsolat hagyományozása" },
-	{ "Overwrite", 			"Felülír" },
-	{ "ConnectionProfile",	"Kapcsolat profil" },
-	{ "LAN",		 		"LAN" },
-	{ "TerminalServer",		"Terminál szerver" },
-	{ "VPN",		 		"VPN" },
-	{ "WAN", 				"WAN" },
-	{ "ConnectionError", 	"Kapcsolat hiba" },
-	{ "ServerNotActive", 	"Szerver nem aktív" }
-	};
+	  { "CConnectionDialog",  "Connessione a Server" },
+	  { "Name",               "Nome" },
+	  { "AppsHost",           "Host dell'Applicativo" },
+	  { "AppsPort",           "Porta dell'Applicativo" }, 
+	  { "TestApps",           "Applicazione di Test" },
+	  { "DBHost",             "Host del Database" },
+	  { "DBPort",             "Porta del Database" },
+	  { "DBName",             "Nome del Database" },
+	  { "DBUidPwd",           "Utente / Password" },
+	  { "ViaFirewall",        "via Firewall" },
+	  { "FWHost",             "Host del Firewall" },
+	  { "FWPort",             "Porta del Firewall" },
+	  { "TestConnection",     "Database di Test" },
+	  { "Type",               "Tipo di Database" },
+	  { "BequeathConnection", "Connessione Dedicata" },
+	  { "Overwrite",          "Sovrascri" }, 
+		{ "ConnectionProfile",	"Connection" },
+		{ "LAN",		 		"LAN" },
+		{ "TerminalServer",		"Terminal Server" },
+		{ "VPN",		 		"VPN" },
+		{ "WAN", 				"WAN" },
+	  { "ConnectionError",    "Errore di Connessione" },
+	  { "ServerNotActive",    "Server non Attivo" }};
 
 	/**
 	 * Get Contsnts
@@ -60,6 +59,5 @@ public class DBRes_hu extends ListResourceBundle
 	public Object[][] getContents()
 	{
 		return contents;
-	}   //  getContent
+	}
 }   //  Res
-

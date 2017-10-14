@@ -14,44 +14,44 @@
  * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
  * or via info@compiere.org or http://www.compiere.org/license.html           *
  *****************************************************************************/
-package org.compiere.db;
+package org.compiere.db.connectiondialog.i18n;
 
 import java.util.ListResourceBundle;
 
 /**
- *  Connection Resource Strings
+ *  Swedish Connection Resource Strings
  *
- *  @author     Bui Chi Trung
- *  @version    $Id: DBRes_vi.java,v 1.2 2006/07/30 00:55:13 jjanke Exp $
+ *  @author     Thomas Dilts
+ *  @version    $Id: DBRes_sv.java,v 1.2 2006/07/30 00:55:13 jjanke Exp $
  */
-public class DBRes_vi extends ListResourceBundle
+public class DBRes_sv extends ListResourceBundle
 {
 	/** Data        */
 	static final Object[][] contents = new String[][]
 	{
-	{ "CConnectionDialog",  "K\u1EBFt n\u1ED1i" },
-	{ "Name",               "T�n" },
-	{ "AppsHost",           "M�y ch\u1EE7 \u1EE9ng d\u1EE5ng" },
-	{ "AppsPort",           "C\u1ED5ng \u1EE9ng d\u1EE5ng" },
-	{ "TestApps",           "Th\u1EED nghi\u1EC7m \u1EE9ng d\u1EE5ng" },
-	{ "DBHost",             "M�y ch\u1EE7 CSDL" },
-	{ "DBPort",             "C\u1ED5ng CSDL" },
-	{ "DBName",             "T�n CSDL" },
-	{ "DBUidPwd",           "Ng\u01B0\u1EDDi d�ng / M\u1EADt kh\u1EA9u" },
-	{ "ViaFirewall",        "Qua b\u1EE9c t\u01B0\u1EDDng l\u1EEDa" },
-	{ "FWHost",             "M�y ch\u1EE7 b\u1EE9c t\u01B0\u1EDDng l\u1EEDa" },
-	{ "FWPort",             "C\u1ED5ng v�o b\u1EE9c t\u01B0\u1EDDng l\u1EEDa" },
-	{ "TestConnection",     "Ki\u1EC3m tra CSDL" },
-	{ "Type",               "Lo\u1EA1i CSDL" },
-	{ "BequeathConnection", "Truy\u1EC1n l\u1EA1i k\u1EBFt n\u1ED1i" },
-	{ "Overwrite",          "Ghi \u0111�" },
-	{ "ConnectionProfile",	"Connection" },
+	{ "CConnectionDialog",  "Anslutning till Server" },
+	{ "Name",               "Namn" },
+	{ "AppsHost",           "Applikationsserver" },
+	{ "AppsPort",           "Serverport" },
+	{ "TestApps",           "Testa anslutning" },
+	{ "DBHost",             "Databasserver" },
+	{ "DBPort",             "Databasport" },
+	{ "DBName",             "Databasnamn" },
+	{ "DBUidPwd",           "Anv\u00e4ndarnamn / l\u00f6senord" },
+	{ "ViaFirewall",        "Via brandv\u00e4gg" },
+	{ "FWHost",             "Adress brandv\u00e4gg" },
+	{ "FWPort",             "Port p\u00e5 brandv\u00e4gg" },
+	{ "TestConnection",     "Testa databasanslutning" },
+	{ "Type",               "Databastyp" },
+	{ "BequeathConnection", "Efterl\u00e4mna anslutning" },
+	{ "Overwrite",          "Skriv \u00f6ver" },
+	{ "ConnectionProfile",	"Anslutningstyp" },
 	{ "LAN",		 		"LAN" },
 	{ "TerminalServer",		"Terminal Server" },
 	{ "VPN",		 		"VPN" },
 	{ "WAN", 				"WAN" },
-	{ "ConnectionError",    "L\u1ED7i k\u1EBFt n\u1ED1i" },
-	{ "ServerNotActive",    "M�y ch\u1EE7 hi\u1EC7n kh�ng ho\u1EA1t \u0111\u1ED9ng" }
+	{ "ConnectionError",    "Anslutningsfel" },
+	{ "ServerNotActive",    "Server ej aktiv" }
 	};
 
 	/**

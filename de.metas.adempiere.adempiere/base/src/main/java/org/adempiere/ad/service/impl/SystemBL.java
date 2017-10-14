@@ -36,7 +36,6 @@ import org.adempiere.exceptions.DBException;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
-import org.compiere.db.LDAP;
 import org.compiere.model.I_AD_System;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;

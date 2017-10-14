@@ -14,44 +14,44 @@
  * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
  * or via info@compiere.org or http://www.compiere.org/license.html           *
  *****************************************************************************/
-package org.compiere.db;
+package org.compiere.db.connectiondialog.i18n;
 
 import java.util.ListResourceBundle;
 
 /**
  *  Connection Resource Strings
  *
- *  @author     Erwin Cortes
- *  @author     Jordi Luna
- *  @version    $Id: DBRes_es.java,v 1.2 2006/07/30 00:55:13 jjanke Exp $
+ *  @author     ZhaoXing Meng
+ *  @version    $Id: DBRes_zh_CN.java,v 1.2 2006/07/30 00:55:13 jjanke Exp $
  */
-public class DBRes_es extends ListResourceBundle
+public class DBRes_zh_CN extends ListResourceBundle
 {
 	/** Data        */
-	static final Object[][] contents = new String[][]{
-	{ "CConnectionDialog",  "Conexi\u00f3n Server" },
-	{ "Name",               "Nombre" },
-	{ "AppsHost",           "Servidor de Aplicaciones" },
-	{ "AppsPort",           "Puerto de Aplicaci\u00f3n" },
-	{ "TestApps",           "Prueba Servidor de Aplicaciones" },
-	{ "DBHost",             "Servidor de Base de Datos" },
-	{ "DBPort",             "Puerto de Base de Datos" },
-	{ "DBName",             "Nombre de Base de datos" },
-	{ "DBUidPwd",           "Usuario / Contrase\u00f1a" },
-	{ "ViaFirewall",        "v\u00eda Firewall" },
-	{ "FWHost",             "Servidor de Firewall" },
-	{ "FWPort",             "Puerto de Firewall" },
-	{ "TestConnection",     "Prueba de Base de Datos" },
-	{ "Type",               "Tipo de Base de Datos" },
-	{ "BequeathConnection", "Conexi\u00f3n Delegada" },
-	{ "Overwrite",          "Sobreescribir" },
-	{ "ConnectionProfile",	"Conexi\u00f3n" },
-	{ "LAN",		 		"Red de Area Local" },
-	{ "TerminalServer",		"Servidor de Terminales" },
-	{ "VPN",		 		"Red Privada Virtual" },
-	{ "WAN", 				"Red de Area Amplia" },
-	{ "ConnectionError",    "Error de Conexi\u00f3n" },
-	{ "ServerNotActive",    "Servidor no Activo" }
+	static final Object[][] contents = new String[][]
+	{
+	{ "CConnectionDialog",  "\u8fde\u673a" },
+	{ "Name",               "\u540d\u79f0" },
+	{ "AppsHost",           "\u5e94\u7528\u670d\u52a1\u5668\u4e3b\u673a" },
+	{ "AppsPort",           "\u5e94\u7528\u670d\u52a1\u5668\u7aef\u53e3" },
+	{ "TestApps",           "\u6d4b\u8bd5\u5e94\u7528\u670d\u52a1\u5668" },
+	{ "DBHost",             "\u6570\u636e\u5e93\u4e3b\u673a" },
+	{ "DBPort",             "\u6570\u636e\u5e93\u7aef\u53e3" },
+	{ "DBName",             "\u6570\u636e\u5e93\u540d" },
+	{ "DBUidPwd",           "\u7528\u6237\u53f7 / \u53e3\u4ee4" },
+	{ "ViaFirewall",        "\u901a\u8fc7\u9632\u706b\u5899" },
+	{ "FWHost",             "\u9632\u706b\u5899\u4e3b\u673a" },
+	{ "FWPort",             "\u9632\u706b\u5899\u7aef\u53e3" },
+	{ "TestConnection",     "\u6d4b\u8bd5\u6570\u636e\u5e93" },
+	{ "Type",               "\u6570\u636e\u5e93\u7c7b\u578b" },
+	{ "BequeathConnection", "\u9057\u7559\u8fde\u7ebf" },
+	{ "Overwrite",          "\u8986\u5199" },
+	{ "ConnectionProfile",	"Connection" },
+	{ "LAN",		 		"LAN" },
+	{ "TerminalServer",		"Terminal Server" },
+	{ "VPN",		 		"VPN" },
+	{ "WAN", 				"WAN" },
+	{ "ConnectionError",    "\u8fde\u673a\u9519\u8bef" },
+	{ "ServerNotActive",    "\u670d\u52a1\u5668\u6ca1\u53cd\u5e94" }
 	};
 
 	/**
@@ -61,5 +61,5 @@ public class DBRes_es extends ListResourceBundle
 	public Object[][] getContents()
 	{
 		return contents;
-	}
+	}   //  getContent
 }   //  Res

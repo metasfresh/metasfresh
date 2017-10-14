@@ -14,52 +14,52 @@
  * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
  * or via info@compiere.org or http://www.compiere.org/license.html           *
  *****************************************************************************/
-package org.compiere.db;
+package org.compiere.db.connectiondialog.i18n;
 
 import java.util.ListResourceBundle;
 
 /**
- *  Connection Resource Strings
+ *  Connection Resource Strings (German)
  *
  *  @author     Jorg Janke
- *  @version    $Id: DBRes_da.java,v 1.2 2006/07/30 00:55:13 jjanke Exp $
+ *  @version    $Id: DBRes_de.java,v 1.3 2006/08/30 20:30:44 comdivision Exp $
  */
-public class DBRes_da extends ListResourceBundle
+public class DBRes_de extends ListResourceBundle
 {
 	/** Data        */
 	static final Object[][] contents = new String[][]
 	{
-	{ "CConnectionDialog",  "Forbindelse" },
-	{ "Name",               "Navn" },
-	{ "AppsHost",           "Programvært" },
-	{ "AppsPort",           "Programport" },
-	{ "TestApps",           "Test programserver" },
-	{ "DBHost",             "Databasevært" },
-	{ "DBPort",             "Databaseport" },
-	{ "DBName",             "Databasenavn" },
-	{ "DBUidPwd",           "Bruger/adgangskode" },
-	{ "ViaFirewall",        "via Firewall" },
-	{ "FWHost",             "Firewall-vært" },
-	{ "FWPort",             "Firewall-port" },
-	{ "TestConnection",     "Test database" },
-	{ "Type",               "Databasetype" },
-	{ "BequeathConnection", "Nedarv forbindelse" },
-	{ "Overwrite",          "Overskriv" },
-	{ "ConnectionProfile",	"Connection" },
+	{ "CConnectionDialog",  "Verbindung" },
+	{ "Name",               "Name" },
+	{ "AppsHost",           "Applikations-Server" },
+	{ "AppsPort",           "Applikations-Port" },
+	{ "TestApps",           "Teste Verbindung zur Applikation" },
+	{ "DBHost",             "Datenbank-Server" },
+	{ "DBPort",             "Datenbank-Port" },
+	{ "DBName",             "Datenbank-Name" },
+	{ "DBUidPwd",           "Nutzer / Passwort" },
+	{ "ViaFirewall",        "\u00fcber Firewall" },
+	{ "FWHost",             "Firewall-Server" },
+	{ "FWPort",             "Firewall-Port" },
+	{ "TestConnection",     "Teste Verbindung zur Datenbank" },
+	{ "Type",               "Datenbank-Typ" },
+	{ "BequeathConnection", "Bequeath-Verbindung" },
+	{ "Overwrite",          "\u00fcberschreiben" },
+	{ "ConnectionProfile",	"Verbindungsprofil" },
 	{ "LAN",		 		"LAN" },
 	{ "TerminalServer",		"Terminal Server" },
 	{ "VPN",		 		"VPN" },
 	{ "WAN", 				"WAN" },
-	{ "ConnectionError",    "Fejl i forbindelse" },
-	{ "ServerNotActive",    "Server er ikke aktiv" }
+	{ "ConnectionError",    "Verbindungsfehler" },
+	{ "ServerNotActive",    "Server nicht erreichbar" }
 	};
 
 	/**
-	 * Get Contsnts
+	 * Get Contents
 	 * @return contents
 	 */
 	public Object[][] getContents()
 	{
 		return contents;
-	}   //  getContent
-}   //  Res
+	}   //  getContents
+}   //  Res_de

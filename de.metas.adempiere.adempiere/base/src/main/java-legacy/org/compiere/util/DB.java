@@ -59,6 +59,7 @@ import org.adempiere.util.trxConstraints.api.ITrxConstraints;
 import org.adempiere.util.trxConstraints.api.ITrxConstraintsBL;
 import org.compiere.db.AdempiereDatabase;
 import org.compiere.db.CConnection;
+import org.compiere.db.Database;
 import org.compiere.dbPort.Convert;
 import org.compiere.model.I_AD_System;
 import org.compiere.model.MAcctSchema;
@@ -465,7 +466,9 @@ public final class DB
 	{
 		final CConnection s_cc = getCConnection();
 		if (s_cc != null)
+		{
 			return s_cc.getDatabase();
+		}
 		log.error("No Database Connection (getDatabase). Returning null.");
 		return null;
 	}   // getDatabase
@@ -1807,8 +1810,8 @@ public final class DB
 	 */
 	public static String TO_DATE(Timestamp time, boolean dayOnly)
 	{
-		return getDatabase().TO_DATE(time, dayOnly);
-	}   // TO_DATE
+		return Database.TO_DATE(time, dayOnly);
+	}
 
 	/**
 	 * Create SQL TO Date String from Timestamp
@@ -1819,7 +1822,7 @@ public final class DB
 	public static String TO_DATE(Timestamp day)
 	{
 		return TO_DATE(day, true);
-	}   // TO_DATE
+	} 
 
 	/**
 	 * Create SQL for formatted Date, Number
@@ -1835,16 +1838,16 @@ public final class DB
 	 */
 	public static String TO_CHAR(String columnName, final int displayType, @Nullable final String AD_Language_NOTUSED)
 	{
-		return getDatabase().TO_CHAR(columnName, displayType);
-	}   // TO_CHAR
+		return Database.TO_CHAR(columnName, displayType);
+	}
 
 	/**
 	 * @see #TO_CHAR(String, int, String)
 	 */
 	public static String TO_CHAR(String columnName, final int displayType)
 	{
-		return getDatabase().TO_CHAR(columnName, displayType);
-	}   // TO_CHAR
+		return Database.TO_CHAR(columnName, displayType);
+	}
 
 	/**
 	 * Create SQL for formatted Date, Number.
@@ -1862,7 +1865,7 @@ public final class DB
 	{
 		if (columnName == null || columnName.length() == 0)
 			throw new IllegalArgumentException("Required parameter missing");
-		return getDatabase().TO_CHAR(columnName, displayType, formatPattern);
+		return Database.TO_CHAR(columnName, displayType, formatPattern);
 	}   // TO_CHAR
 
 	/**
@@ -1874,8 +1877,8 @@ public final class DB
 	 */
 	public static String TO_NUMBER(BigDecimal number, int displayType)
 	{
-		return getDatabase().TO_NUMBER(number, displayType);
-	}	// TO_NUMBER
+		return Database.TO_NUMBER(number, displayType);
+	}
 
 	/**
 	 * Package Strings for SQL command in quotes
@@ -2530,7 +2533,7 @@ public final class DB
 		if (returnType.isAssignableFrom(BigDecimal.class))
 		{
 			value = (AT)rs.getBigDecimal(columnIndex);
-			defaultValue = (AT)Env.ZERO;
+			defaultValue = (AT)BigDecimal.ZERO;
 		}
 		else if (returnType.isAssignableFrom(Integer.class) || returnType == int.class)
 		{

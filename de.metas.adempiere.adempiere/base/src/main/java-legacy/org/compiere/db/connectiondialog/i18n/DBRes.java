@@ -14,44 +14,43 @@
  * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
  * or via info@compiere.org or http://www.compiere.org/license.html           *
  *****************************************************************************/
-package org.compiere.db;
+package org.compiere.db.connectiondialog.i18n;
 
 import java.util.ListResourceBundle;
 
 /**
  *  Connection Resource Strings
  *
- *  @author     Adam Bodurka
- *  @version    $Id: DBRes_pl.java,v 1.2 2006/07/30 00:55:13 jjanke Exp $
+ *  @author     Jorg Janke
+ *  @version    $Id: DBRes.java,v 1.2 2006/07/30 00:55:13 jjanke Exp $
  */
-public class DBRes_pl extends ListResourceBundle
+public class DBRes extends ListResourceBundle
 {
 	/** Data        */
-	static final Object[][] contents = new String[][]
-	{
-	{ "CConnectionDialog",  "Po\u0142\u0105czenie z Server" },
-	{ "Name",               "Nazwa" },
-	{ "AppsHost",           "Host Aplikacji" },
-	{ "AppsPort",           "Port Aplikacji" },
-	{ "TestApps",           "Test Aplikacji" },
-	{ "DBHost",             "Host Bazy Danych" },
-	{ "DBPort",             "Port Bazy Danych" },
-	{ "DBName",             "Nazwa Bazy Danych" },
-	{ "DBUidPwd",           "U\u017cytkownik / Has\u0142o" },
-	{ "ViaFirewall",        "via Firewall" },
-	{ "FWHost",             "Host Firewall-a" },
-	{ "FWPort",             "Port Firewall-a" },
-	{ "TestConnection",     "Test Bazy Danych" },
-	{ "Type",               "Typ Bazy Danych" },
-	{ "BequeathConnection", "Zapisuj Po\u0142\u0105czenie" },
-	{ "Overwrite",          "Nadpisuj" },
+	static final Object[][] contents = new String[][]{
+	{ "CConnectionDialog", 	"Server Connection" },
+	{ "Name", 				"Name" },
+	{ "AppsHost", 			"Application Host" },
+	{ "AppsPort", 			"Application Port" },
+	{ "TestApps", 			"Test Application Server" },
+	{ "DBHost", 			"Database Host" },
+	{ "DBPort", 			"Database Port" },
+	{ "DBName", 			"Database Name" },
+	{ "DBUidPwd", 			"User / Password" },
+	{ "ViaFirewall", 		"via Firewall" },
+	{ "FWHost", 			"Firewall Host" },
+	{ "FWPort", 			"Firewall Port" },
+	{ "TestConnection", 	"Test Database" },
+	{ "Type", 				"Database Type" },
+	{ "BequeathConnection", "Bequeath Connection" },
+	{ "Overwrite", 			"Overwrite" },
 	{ "ConnectionProfile",	"Connection" },
 	{ "LAN",		 		"LAN" },
 	{ "TerminalServer",		"Terminal Server" },
 	{ "VPN",		 		"VPN" },
 	{ "WAN", 				"WAN" },
-	{ "ConnectionError",    "B\u0142\u0105d po\u0142\u0105czenia" },
-	{ "ServerNotActive",    "Serwer nie jest aktywny" }
+	{ "ConnectionError", 	"Connection Error" },
+	{ "ServerNotActive", 	"Server Not Active" }
 	};
 
 	/**
