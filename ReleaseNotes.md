@@ -28,6 +28,7 @@ Here come the actual release notes:
 ## Features
 * metasfresh-app
   * [#518](https://github.com/metasfresh/metasfresh/issues/518) Easier solution to clear the Picking Slots
+    * New Feature for the clearing of Picking Slots and Preparing Handling Units for Logistics.
   * [#2603](https://github.com/metasfresh/metasfresh/issues/2603) Window Design Webui : Translate fields of Purchase Candidates
     * Improved Translations for Languages/ Locales de_DE and en_US added to the Purchase Candidates Window.
   * [#2606](https://github.com/metasfresh/metasfresh/issues/2606) Window Design Webui: Translate GL Journal window in English
@@ -41,7 +42,9 @@ Here come the actual release notes:
   * [#2636](https://github.com/metasfresh/metasfresh/issues/2636) Webui Report Design : Rüstliste translations
     * Translation of Pick List Report Parms to en_US.
   * [#2643](https://github.com/metasfresh/metasfresh/issues/2643) Forecast in Material Disposition
+    * Adding the new Forecast Demand into Material Disposition workflow.
   * [#2645](https://github.com/metasfresh/metasfresh/issues/2645) Source HU Automatism for Manufacturing Issue
+    * New automatic Source Handling Unit Functionality now available in manufcaturing Issue.
   * [#2660](https://github.com/metasfresh/metasfresh/issues/2660) Window Design Webui: Improvements in the window Forecast
     * Improvement of Forecast Window. Added Translations for en_US Language/ Locale and adapted Design Guidelines.
   * [#2690](https://github.com/metasfresh/metasfresh/issues/2690) New Window for AD_Scheduler in WebUI
@@ -55,8 +58,11 @@ Here come the actual release notes:
   * [#2696](https://github.com/metasfresh/metasfresh/issues/2696) Window Design Webui: Add subscription details in Shipment Candidate window
     * New Fields for Subscription/ Flatrate Terms in Shipment Disposition Window. Improved Translations for en_US.
   * [#2700](https://github.com/metasfresh/metasfresh/issues/2700) Set correct identifiers in the table M_ShipmentSchedule
+    * Improved Shipment Schedule Identifier, now showing valuable Information about it to the user.
   * [#2704](https://github.com/metasfresh/metasfresh/issues/2704) Show an explicit error message when reports don't open because of logo missing
+    * Improved Error Handling in Jasper Report Generation.
   * [#2711](https://github.com/metasfresh/metasfresh/issues/2711) productdescription in sales order jasper
+    * New Product Description Field in Sales Order Jasper Report.
 
 * metasfresh-webui-api
   * [#628](https://github.com/metasfresh/metasfresh-webui-api/issues/628) Extend framework to allow modification of standard filter results
