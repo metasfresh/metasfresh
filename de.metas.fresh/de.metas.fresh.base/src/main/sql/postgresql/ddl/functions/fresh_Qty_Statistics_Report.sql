@@ -1,24 +1,12 @@
 DROP FUNCTION IF EXISTS report.fresh_qty_statistics_report
 	(
-		IN C_Period_ID numeric, 
-		IN issotrx character varying,
-		IN C_BPartner_ID numeric, 
-		IN C_Activity_ID numeric,
-		IN M_Product_ID numeric,
-		IN M_Product_Category_ID numeric,
-		IN M_AttributeSetInstance_ID numeric
+		IN C_Period_ID numeric, IN issotrx character varying,IN C_BPartner_ID numeric, IN C_Activity_ID numeric,IN M_Product_ID numeric,IN M_Product_Category_ID numeric,IN M_AttributeSetInstance_ID numeric,IN AD_Org_ID numeric
 	);
 DROP FUNCTION IF EXISTS report.fresh_qty_statistics_report
 	(
-		IN C_Period_ID numeric, 
-		IN issotrx character varying,
-		IN C_BPartner_ID numeric, 
-		IN C_Activity_ID numeric,
-		IN M_Product_ID numeric,
-		IN M_Product_Category_ID numeric,
-		IN M_AttributeSetInstance_ID numeric,
-		IN AD_Org_ID numeric
+		IN C_Period_ID numeric, IN issotrx character varying,IN C_BPartner_ID numeric, IN C_Activity_ID numeric,IN M_Product_ID numeric,IN M_Product_Category_ID numeric,IN M_AttributeSetInstance_ID numeric,IN AD_Org_ID numeric, IN AD_Language Character Varying (6)
 	);
+	
 
 DROP TABLE IF EXISTS report.fresh_qty_statistics_report;
 
@@ -58,13 +46,13 @@ CREATE TABLE report.fresh_qty_statistics_report
 	TotalAmt numeric,
 	StartDate Text,
 	EndDate Text,
-	param_IsSOTrx character varying,
 	param_bp character varying(60),
 	param_Activity character varying(60),
 	param_product character varying(255),
 	param_Product_Category character varying(60),
 	Param_Attributes character varying(255),
 	ad_org_id numeric,
+	iso_code char(3),
 	unionorder integer
 	
 )
@@ -82,14 +70,15 @@ CREATE OR REPLACE FUNCTION report.fresh_qty_statistics_report
 		IN M_Product_ID numeric,
 		IN M_Product_Category_ID numeric,
 		IN M_AttributeSetInstance_ID numeric,
-		IN AD_Org_ID numeric
+		IN AD_Org_ID numeric,
+		IN AD_Language Character Varying (6) 
 	) 
 	RETURNS SETOF report.fresh_qty_statistics_report AS
 $BODY$
 	SELECT 
 		*, 1 AS UnionOrder
 	FROM 	
-		report.fresh_statistics ($1, $2, $3, $4, $5, $6, $7, $8)
+		report.fresh_statistics ($1, $2, $3, $4, $5, $6, $7, $8, $9)
 UNION ALL
 	SELECT 
 		bp_name, bp_Value, pc_name, null AS P_name, null AS P_value, UOMSymbol,
@@ -99,14 +88,14 @@ UNION ALL
 		SUM( Period7Sum ) AS Period7Sum, SUM( Period8Sum ) AS Period8Sum, SUM( Period9Sum ) AS Period9Sum,
 		SUM( Period10Sum ) AS Period10Sum, SUM( Period11Sum ) AS Period11Sum, SUM( Period12Sum ) AS Period12Sum,
 		SUM( TotalSum ) AS TotalSum, SUM( TotalAmt ) AS TotalAmt,
-		StartDate, EndDate, param_IsSOTrx, param_bp, param_Activity, param_product, param_Product_Category, Param_Attributes,ad_org_id,
+		StartDate, EndDate, param_bp, param_Activity, param_product, param_Product_Category, Param_Attributes,ad_org_id,iso_code,
 		2 AS UnionOrder
 	FROM 	
-		report.fresh_statistics ($1, $2, $3, $4, $5, $6, $7, $8)
+		report.fresh_statistics ($1, $2, $3, $4, $5, $6, $7, $8, $9)
 	GROUP BY
 		bp_name, bp_Value, pc_name, UOMSymbol,
 		Col1, Col2, Col3, Col4, Col5, Col6, Col7, Col8, Col9, Col10, Col11, Col12,
-		StartDate, EndDate, param_IsSOTrx, param_bp, param_Activity, param_product, param_Product_Category, Param_Attributes,ad_org_id
+		StartDate, EndDate, param_bp, param_Activity, param_product, param_Product_Category, Param_Attributes,ad_org_id,iso_code
 UNION ALL
 	SELECT 
 		bp_name, bp_Value, null, null, null, UOMSymbol,
@@ -116,28 +105,28 @@ UNION ALL
 		SUM( Period7Sum ) AS Period7Sum, SUM( Period8Sum ) AS Period8Sum, SUM( Period9Sum ) AS Period9Sum,
 		SUM( Period10Sum ) AS Period10Sum, SUM( Period11Sum ) AS Period11Sum, SUM( Period12Sum ) AS Period12Sum,
 		SUM( TotalSum ) AS TotalSum, SUM( TotalAmt ) AS TotalAmt,
-		StartDate, EndDate, param_IsSOTrx, param_bp, param_Activity, param_product, param_Product_Category, Param_Attributes,ad_org_id,
+		StartDate, EndDate, param_bp, param_Activity, param_product, param_Product_Category, Param_Attributes,ad_org_id,iso_code,
 		3 AS UnionOrder
 	FROM 	
-		report.fresh_statistics ($1, $2, $3, $4, $5, $6, $7, $8)
+		report.fresh_statistics ($1, $2, $3, $4, $5, $6, $7, $8, $9)
 	GROUP BY
 		bp_name, bp_Value, UOMSymbol,
 		Col1, Col2, Col3, Col4, Col5, Col6, Col7, Col8, Col9, Col10, Col11, Col12,
-		StartDate, EndDate, param_IsSOTrx, param_bp, param_Activity, param_product, param_Product_Category, Param_Attributes,ad_org_id
+		StartDate, EndDate, param_bp, param_Activity, param_product, param_Product_Category, Param_Attributes,ad_org_id,iso_code
 UNION ALL
 	SELECT 
 		bp_name, bp_Value, null, null, null, null,
 		Col1, Col2, Col3, Col4, Col5, Col6, Col7, Col8, Col9, Col10, Col11, Col12,
 		null, null, null, null, null, null, null, null, null, null, null, null,
 		null, SUM( TotalAmt ) AS TotalAmt,
-		StartDate, EndDate, param_IsSOTrx, param_bp, param_Activity, param_product, param_Product_Category, Param_Attributes,ad_org_id,
+		StartDate, EndDate, param_bp, param_Activity, param_product, param_Product_Category, Param_Attributes,ad_org_id,iso_code,
 		4 AS UnionOrder
 	FROM 	
-		report.fresh_statistics ($1, $2, $3, $4, $5, $6, $7, $8)
+		report.fresh_statistics ($1, $2, $3, $4, $5, $6, $7, $8, $9)
 	GROUP BY
 		bp_name, bp_Value,
 		Col1, Col2, Col3, Col4, Col5, Col6, Col7, Col8, Col9, Col10, Col11, Col12,
-		StartDate, EndDate, param_IsSOTrx, param_bp, param_Activity, param_product, param_Product_Category, Param_Attributes,ad_org_id
+		StartDate, EndDate, param_bp, param_Activity, param_product, param_Product_Category, Param_Attributes,ad_org_id,iso_code
 	HAVING
 		count(DISTINCT UOMSymbol) > 1
 ORDER BY

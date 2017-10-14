@@ -39,7 +39,8 @@ CREATE TABLE report.saldobilanz_Report
 	C_Calendar_ID numeric,
 	C_ElementValue_ID numeric,
 	
-	ad_org_id numeric
+	ad_org_id numeric,
+	currency character(3)
 )
 WITH (
 	OIDS=FALSE
@@ -83,7 +84,8 @@ SELECT
 	C_Calendar_ID
 	, C_ElementValue_ID,
 	
-	$4 as ad_org_id
+	$4 as ad_org_id,
+	a.iso_code
 FROM
 	(
 		SELECT
@@ -123,6 +125,7 @@ FROM
 			
 			, ci.C_Calendar_ID
 			, lvl.C_ElementValue_ID
+			, c.iso_code
 		FROM
 			C_Period p 
 				-- Get last period of previous year
@@ -141,6 +144,7 @@ FROM
 				) ev ON (lvl.C_ElementValue_ID = ev.C_ElementValue_ID)
 				LEFT OUTER JOIN AD_ClientInfo ci ON (ci.AD_Client_ID=ev.AD_Client_ID) AND ci.isActive = 'Y'
 				LEFT OUTER JOIN C_AcctSchema acs ON (acs.C_AcctSchema_ID=ci.C_AcctSchema1_ID) AND acs.isActive = 'Y'
+				LEFT OUTER JOIN C_Currency c ON acs.C_Currency_ID=c.C_Currency_ID AND c.isActive = 'Y'
 		--
 		WHERE true
 			-- Period: determine it by DateAcct

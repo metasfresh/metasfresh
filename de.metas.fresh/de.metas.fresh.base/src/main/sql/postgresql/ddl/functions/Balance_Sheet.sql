@@ -30,7 +30,8 @@ RETURNS TABLE
 	C_Calendar_ID numeric,
 	C_ElementValue_ID numeric,
 	
-	ad_org_id numeric
+	ad_org_id numeric,
+	iso_code character(3)
 )
 AS
 $$

@@ -1,14 +1,3 @@
-
-DROP FUNCTION IF EXISTS report.fresh_product_statistics_report
-	(
-		IN C_Period_ID numeric, 
-		IN issotrx character varying,
-		IN C_BPartner_ID numeric, 
-		IN C_Activity_ID numeric,
-		IN M_Product_ID numeric,
-		IN M_Product_Category_ID numeric,
-		IN M_AttributeSetInstance_ID numeric
-	);
 	
 DROP FUNCTION IF EXISTS report.fresh_product_statistics_report
 	(
@@ -21,6 +10,20 @@ DROP FUNCTION IF EXISTS report.fresh_product_statistics_report
 		IN M_AttributeSetInstance_ID numeric,
 		IN AD_Org_ID numeric
 	);	
+		
+DROP FUNCTION IF EXISTS report.fresh_product_statistics_report
+	(
+		IN C_Period_ID numeric, 
+		IN issotrx character varying,
+		IN C_BPartner_ID numeric, 
+		IN C_Activity_ID numeric,
+		IN M_Product_ID numeric,
+		IN M_Product_Category_ID numeric,
+		IN M_AttributeSetInstance_ID numeric,
+		IN AD_Org_ID numeric,
+		IN AD_Language Character Varying (6)
+	);	
+
 
 DROP TABLE IF EXISTS report.fresh_product_statistics_report;
 
@@ -60,13 +63,13 @@ CREATE TABLE report.fresh_product_statistics_report
   totalamt numeric,
   startdate text,
   enddate text,
-  param_issotrx character varying,
   param_bp character varying,
   param_activity character varying,
   param_product character varying,
   param_product_category character varying,
   param_attributes character varying,
   ad_org_id numeric,
+  iso_code char(3),
   unionorder integer
 )
 WITH (
@@ -83,14 +86,15 @@ CREATE OR REPLACE FUNCTION report.fresh_product_statistics_report
 		IN M_Product_ID numeric,
 		IN M_Product_Category_ID numeric,
 		IN M_AttributeSetInstance_ID numeric,
-		IN AD_Org_ID numeric
+		IN AD_Org_ID numeric,
+		IN AD_Language Character Varying (6)
 	) 
   RETURNS SETOF report.fresh_product_statistics_report AS
 $BODY$
 	SELECT 
 		*, 1 AS UnionOrder
 	FROM 	
-		report.fresh_statistics ($1, $2, $3, $4, $5, $6, $7, $8)
+		report.fresh_statistics ($1, $2, $3, $4, $5, $6, $7, $8, $9)
 UNION ALL
 	SELECT 
 		null, null, pc_name, P_name, P_value, UOMSymbol,
@@ -100,18 +104,18 @@ UNION ALL
 		SUM( Period7Sum ) AS Period7Sum, SUM( Period8Sum ) AS Period8Sum, SUM( Period9Sum ) AS Period9Sum,
 		SUM( Period10Sum ) AS Period10Sum, SUM( Period11Sum ) AS Period11Sum, SUM( Period12Sum ) AS Period12Sum,
 		SUM( TotalSum ) AS TotalSum, SUM( TotalAmt ) AS TotalAmt,
-		StartDate, EndDate, param_IsSOTrx, param_bp, param_Activity, param_product, param_Product_Category, Param_Attributes,ad_org_id,
+		StartDate, EndDate, param_bp, param_Activity, param_product, param_Product_Category, Param_Attributes,ad_org_id, iso_code,
 		2 AS UnionOrder
 	FROM 	
-		report.fresh_statistics ($1, $2, $3, $4, $5, $6, $7, $8)
+		report.fresh_statistics ($1, $2, $3, $4, $5, $6, $7, $8, $9)
 	GROUP BY
 		pc_name, P_name, P_value, UOMSymbol,
 		Col1, Col2, Col3, Col4, Col5, Col6, Col7, Col8, Col9, Col10, Col11, Col12,
-		StartDate, EndDate, param_IsSOTrx, param_bp, param_Activity, param_product, param_Product_Category, Param_Attributes,ad_org_id
+		StartDate, EndDate, param_bp, param_Activity, param_product, param_Product_Category, Param_Attributes,ad_org_id, iso_code
 ORDER BY
 	p_name, UnionOrder, TotalSum DESC
 $BODY$
 LANGUAGE sql VOLATILE;
 
-COMMENT ON FUNCTION report.fresh_product_statistics_report(numeric, character varying, numeric, numeric, numeric, numeric, numeric, numeric) IS 'Making this function volatile is currently our only known way to avoid
+COMMENT ON FUNCTION report.fresh_product_statistics_report(numeric, character varying, numeric, numeric, numeric, numeric, numeric, numeric,character varying) IS 'Making this function volatile is currently our only known way to avoid
 http://postgresql.nabble.com/BUG-8393-quot-ERROR-failed-to-locate-grouping-columns-quot-on-grouping-by-varchar-returned-from-funcn-td5768367.html';

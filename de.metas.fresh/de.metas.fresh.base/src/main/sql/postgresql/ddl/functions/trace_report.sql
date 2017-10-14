@@ -1,6 +1,8 @@
 -- Function: de_metas_endcustomer_fresh_reports.trace_report(numeric, numeric, numeric, numeric, numeric, numeric, character varying, numeric)
 
- DROP FUNCTION de_metas_endcustomer_fresh_reports.trace_report(numeric, numeric, numeric, numeric, numeric, numeric, character varying, numeric);
+ DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.trace_report(numeric, numeric, numeric, numeric, numeric, numeric, character varying, numeric);
+ 
+ DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.trace_report(numeric, numeric, numeric, numeric, numeric, numeric, character varying, numeric, character varying (3));
 
 CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.trace_report(
     IN ad_org_id numeric,
@@ -10,7 +12,8 @@ CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.trace_report(
     IN c_bpartner_id numeric,
     IN m_product_id numeric,
     IN issotrx character varying,
-    IN m_attributesetinstance_id numeric)
+    IN m_attributesetinstance_id numeric,
+    IN AD_Language Character Varying (6))
   RETURNS TABLE(
 		dateordered timestamp without time zone, 
 		documentno character varying, 
@@ -64,12 +67,12 @@ SELECT distinct
 	bp.Value AS bp_value,
 	bp.Name AS bp_name,
 	p.Value AS p_value,
-	p.Name AS p_name,
+	COALESCE(pt.Name, p.Name) AS p_name,
 	(select attributes_value from de_metas_endcustomer_fresh_reports.get_attributes_value(o_iol.M_AttributeSetInstance_ID)) AS attributes,
 	ol.PriceEntered AS price,	
 	ol.linenetamt AS total,
 	c.iso_code AS currency,
-	uom.uomsymbol,
+	COALESCE(uomt.uomsymbol, uom.uomsymbol) AS uomsymbol,
 	ol.qtyEntered AS qty,
 
 	--inout part
@@ -78,7 +81,7 @@ SELECT distinct
 	c_bp.value as io_bp_value,
 	c_bp.name as io_bp_name,
 	c_iol.qtyentered as io_qty,
-	c_uom.uomsymbol as io_uom,
+	COALESCE(c_uomt.uomsymbol, c_uom.uomsymbol) as io_uom,
 
 	--order and sales inout docno (for tracing purpose). Not used in reports
 	c_io.DocumentNo AS counterdocno
@@ -90,8 +93,11 @@ FROM C_Order o
 INNER JOIN C_OrderLine ol ON o.C_Order_ID = ol.C_Order_ID AND ol.isActive = 'Y'
 INNER JOIN C_BPartner bp ON o.C_BPartner_ID = bp.C_BPartner_ID AND bp.isActive = 'Y'
 INNER JOIN M_Product p ON ol.M_Product_ID = p.M_Product_ID AND p.isActive = 'Y'
+LEFT OUTER JOIN M_Product_Trl pt ON p.M_Product_ID = pt.M_Product_ID AND pt.AD_Language = $9 AND pt.isActive = 'Y'
+
 LEFT OUTER JOIN M_Product_Category pc ON p.M_Product_Category_ID = pc.M_Product_Category_ID AND pc.isActive = 'Y'
 INNER JOIN C_UOM uom ON ol.Price_UOM_ID = uom.C_UOM_ID AND uom.isActive = 'Y'
+LEFT OUTER JOIN C_UOM_Trl uomt ON uom.C_UOM_ID = uomt.C_UOM_ID AND uomt.AD_Language = $9 AND uomt.isActive = 'Y'
 INNER JOIN C_Currency c ON ol.C_Currency_ID = c.C_Currency_ID AND c.isActive = 'Y'
 
 		
@@ -116,7 +122,7 @@ INNER JOIN C_OrderLine c_ol ON c_iol.C_OrderLine_ID = c_ol.C_OrderLine_ID AND c_
 INNER JOIN C_Order c_o ON c_ol.C_Order_ID = c_o.C_Order_ID AND c_o.isActive = 'Y'
 INNER JOIN C_BPartner c_bp ON c_bp.C_BPartner_ID = c_io.C_BPartner_ID AND c_bp.isActive = 'Y'
 INNER JOIN C_UOM c_uom ON ic.price_UOM_ID = c_uom.C_UOM_ID AND c_uom.isActive = 'Y'
-
+LEFT OUTER JOIN C_UOM_Trl c_uomt ON c_uom.C_UOM_ID = c_uomt.C_UOM_ID AND c_uomt.AD_Language = $9 AND c_uomt.isActive = 'Y'
 
 
 WHERE 
@@ -197,12 +203,12 @@ select
 	bp.Value AS bp_value,
 	bp.Name AS bp_name,
 	p.Value AS p_value,
-	p.Name AS p_name,
+	COALESCE(pt.Name, p.Name) AS p_name,
 	(select attributes_value from de_metas_endcustomer_fresh_reports.get_attributes_value(ol.M_AttributeSetInstance_ID)) AS attributes,
 	ol.PriceEntered AS price,	
 	ol.linenetamt AS total,
 	c.iso_code AS currency,
-	uom.uomsymbol,
+	COALESCE(uomt.uomsymbol, uom.uomsymbol) AS uomsymbol,
 	ol.qtyEntered AS qty,
 
 	--inout part
@@ -211,7 +217,7 @@ select
 	c_bp.value as io_bp_value,
 	c_bp.name as io_bp_name,
 	c_ol.qtyentered as io_qty,
-	c_uom.uomsymbol as io_uom,
+	COALESCE(c_uomt.uomsymbol, c_uom.uomsymbol) as io_uom,
 	'Y' AS isPOfromSO
 
 	
@@ -222,8 +228,10 @@ join C_Order c_o on c_ol.C_Order_ID = c_o.C_Order_ID AND c_o.isActive = 'Y'
 
 INNER JOIN C_BPartner bp ON o.C_BPartner_ID = bp.C_BPartner_ID AND bp.isActive = 'Y'
 INNER JOIN M_Product p ON ol.M_Product_ID = p.M_Product_ID AND p.isActive = 'Y'
+LEFT OUTER JOIN M_Product_Trl pt ON p.M_Product_ID = pt.M_Product_ID AND pt.AD_Language = $9 AND pt.isActive = 'Y'
 LEFT OUTER JOIN M_Product_Category pc ON p.M_Product_Category_ID = pc.M_Product_Category_ID AND pc.isActive = 'Y'
 INNER JOIN C_UOM uom ON ol.Price_UOM_ID = uom.C_UOM_ID AND uom.isActive = 'Y'
+LEFT OUTER JOIN C_UOM_Trl uomt ON uom.C_UOM_ID = uomt.C_UOM_ID AND uomt.AD_Language = $9 AND uomt.isActive = 'Y'
 INNER JOIN C_Currency c ON ol.C_Currency_ID = c.C_Currency_ID AND c.isActive = 'Y'
 
 		
@@ -232,6 +240,7 @@ INNER JOIN C_Period per_end ON $3 = per_end.C_Period_ID AND per_end.isActive = '
 
 INNER JOIN C_BPartner c_bp ON c_bp.C_BPartner_ID = c_o.C_BPartner_ID AND c_bp.isActive = 'Y'
 INNER JOIN C_UOM c_uom ON c_ol.price_UOM_ID = c_uom.C_UOM_ID AND c_uom.isActive = 'Y'
+LEFT OUTER JOIN C_UOM_Trl c_uomt ON c_uom.C_UOM_ID = c_uomt.C_UOM_ID AND c_uomt.AD_Language = $9 AND c_uomt.isActive = 'Y'
 
 WHERE 
 	o.AD_Org_ID = (CASE WHEN $1 IS NULL THEN o.AD_Org_ID ELSE $1 END)

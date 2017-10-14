@@ -1,10 +1,16 @@
-
-
-DROP FUNCTION IF EXISTS HU_CostPrice_Function (IN keydate timestamp with time zone, IN M_Product_ID numeric(10,0), IN M_Warehouse_ID numeric(10,0), showDetails character varying, IN ad_org_id numeric);
-
 DROP FUNCTION IF EXISTS HU_CostPrice_Function (IN keydate timestamp with time zone, IN M_Product_ID numeric(10,0), IN M_Warehouse_ID numeric(10,0), showDetails character varying);
 
-CREATE OR REPLACE FUNCTION HU_CostPrice_Function (IN keydate timestamp with time zone, IN M_Product_ID numeric(10,0), IN M_Warehouse_ID numeric(10,0), showDetails character varying)
+DROP FUNCTION IF EXISTS report.HU_CostPrice_Function (IN keydate timestamp with time zone, IN M_Product_ID numeric(10,0), IN M_Warehouse_ID numeric(10,0), showDetails character varying, IN ad_language character varying(6));
+
+
+
+CREATE OR REPLACE FUNCTION report.HU_CostPrice_Function 
+(	
+	IN keydate timestamp with time zone, 
+	IN M_Product_ID numeric(10,0), 
+	IN M_Warehouse_ID numeric(10,0), 
+	IN showDetails character varying, 
+	IN ad_language character varying(6))
 
 RETURNS TABLE
 (
@@ -30,11 +36,11 @@ SELECT
 	vc.description,
 	a.name AS Activity,
 	wh.name AS WH_Name,
-	p.name AS P_Name,
+	COALESCE(pt.Name, p.Name) AS P_Name,
 	p.value AS P_Value,
 	qty,
 	qty * CostPrice AS linesum,
-	uom.UOMSymbol,
+	COALESCE(uomt.UOMSymbol, uom.UOMSymbol) AS UOMSymbol,
 	CostPrice
 FROM
 	(
@@ -97,10 +103,12 @@ FROM
 		COALESCE( pp.PriceStd, 0::numeric )
 	) dat
 	LEFT OUTER JOIN M_Product p ON dat.M_Product_ID = p.M_Product_ID AND p.isActive = 'Y'
+	LEFT OUTER JOIN M_Product_Trl pt ON p.M_Product_ID = pt.M_Product_ID AND pt.ad_language = $5 AND pt.isActive = 'Y'
 	LEFT OUTER JOIN M_Warehouse wh ON dat.M_Warehouse_ID = wh.M_Warehouse_ID AND wh.isActive = 'Y'
 	LEFT OUTER JOIN C_Activity a ON dat.C_Activity_ID = a.C_Activity_ID AND a.isActive = 'Y'
 	LEFT OUTER JOIN C_ValidCombination vc ON dat.C_ValidCombination_ID = vc.C_ValidCombination_ID AND vc.isActive = 'Y'
 	LEFT OUTER JOIN C_UOM uom ON dat.C_UOM_ID = uom.C_UOM_ID AND uom.isActive = 'Y'
+	LEFT OUTER JOIN C_UOM_Trl uomt ON uom.C_UOM_ID = uomt.C_UOM_ID AND uomt.ad_language = $5 AND uomt.isActive = 'Y'
 WHERE
 	qty != 0
 	AND CASE WHEN $2 IS NULL THEN p.M_Product_ID ELSE $2 END = p.M_Product_ID

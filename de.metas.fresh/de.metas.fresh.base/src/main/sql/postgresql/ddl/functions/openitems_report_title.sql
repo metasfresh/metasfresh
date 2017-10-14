@@ -13,18 +13,14 @@ $$
 
 SELECT
 	getDate() AS today,
-	COALESCE((SELECT Name FROM AD_Org WHERE $1 = AD_Org_ID AND isActive = 'Y'), 'Alle') AS org,
-	COALESCE((
+	(SELECT Name FROM AD_Org WHERE $1 = AD_Org_ID AND isActive = 'Y') AS org,
+	(
 		SELECT Value || ' ' || Name FROM C_BPartner WHERE $2 = C_BPartner_ID AND isActive = 'Y'
-	), 'Alle') as BPartner,
-	COALESCE((SELECT Name FROM AD_Ref_List WHERE $4 = Value AND AD_Reference_ID = (
+	) as BPartner,
+	(SELECT Name FROM AD_Ref_List WHERE $4 = Value AND AD_Reference_ID = (
 		SELECT AD_Reference_ID FROM AD_Reference WHERE name = 'C_Invoice InvoiceCollectionType' AND isActive = 'Y') AND isActive = 'Y'
-	), 'Alle') AS InvColType,
-	CASE
-		WHEN $3 = 'Y' THEN 'Ja'
-		WHEN $3 = 'N' THEN 'Nein'
-		WHEN $3 IS NULL THEN 'Alle'
-	END AS IsSOTrx
+	) AS InvColType,
+	$3 AS IsSOTrx
 ;
 
 $$ 

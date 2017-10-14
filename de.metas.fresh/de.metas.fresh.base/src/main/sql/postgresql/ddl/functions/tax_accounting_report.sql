@@ -1,5 +1,6 @@
 DROP FUNCTION IF EXISTS report.tax_accounting_report(IN c_period_id numeric, IN vatcode numeric, IN account_id numeric, IN org_id numeric, IN showdetails character varying);
-CREATE OR REPLACE FUNCTION report.tax_accounting_report(IN c_period_id numeric, IN vatcode numeric, IN account_id numeric, IN org_id numeric, IN showdetails character varying)
+DROP FUNCTION IF EXISTS report.tax_accounting_report(IN c_period_id numeric, IN vatcode numeric, IN account_id numeric, IN org_id numeric, IN showdetails character varying, IN ad_language character varying (6));
+CREATE OR REPLACE FUNCTION report.tax_accounting_report(IN c_period_id numeric, IN vatcode numeric, IN account_id numeric, IN org_id numeric, IN showdetails character varying, IN ad_language character varying (6))
 RETURNS TABLE ( 
 kontono character varying(40),
 kontoname character varying(60),
@@ -53,10 +54,18 @@ SELECT
 	hdr.taxbaseamt AS hdr_baseamt,
 
 	fa.vatcode AS vatcode,
-	( CASE WHEN ( fa.C_DocType_ID!=0 AND fa.C_DocType_ID is not null) THEN
-	(select dt.Name from C_DocType dt where dt.C_DocType_ID=fa.C_DocType_ID and dt.isActive = 'Y') ELSE
-	 (select Name from AD_Ref_List rl where rl.AD_Reference_ID=183 and rl.Value=fa.DocBaseType and rl.isActive = 'Y') 
-	END) as DocType_DisplayName,
+	( 	CASE WHEN (fa.C_DocType_ID!=0 AND fa.C_DocType_ID IS NOT NULL) THEN
+			(SELECT COALESCE(dtt.Name, dt.Name) AS Name 
+			FROM C_DocType dt 
+			LEFT JOIN C_DocType_Trl dtt ON dt.C_DocType_ID = dtt.C_DocType_ID AND dtt.ad_language = $6 AND dtt.isActive = 'Y'
+			WHERE dt.C_DocType_ID=fa.C_DocType_ID and dt.isActive = 'Y') 
+		ELSE
+			(SELECT COALESCE(rlt.Name, rl.Name) AS Name 
+			FROM AD_Ref_List rl
+			LEFT JOIN AD_Ref_List_Trl rlt ON rl.AD_Ref_List_ID = rlt.AD_Ref_List_ID AND rlt.ad_language = $6 AND rlt.isActive = 'Y'
+			WHERE rl.AD_Reference_ID=183 AND rl.Value=fa.DocBaseType AND rl.isActive = 'Y') 
+		END
+	) AS DocType_DisplayName,
 
 	(fa.amtacctdr - fa.amtacctcr) AS amt,
 	

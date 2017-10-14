@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
-<!-- 2016-11-16T17:35:02 -->
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="1000" pageHeight="842" columnWidth="1000" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/reports/umsatzreport_bpartner_week/report" uuid="9ee5152e-1472-4ae4-ac36-02ca94f79b5d">
+<!-- 2017-09-28T17:47:26 -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="1000" pageHeight="842" columnWidth="1000" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/reports/umsatzreport_bpartner_week_with_qty/report" uuid="9ee5152e-1472-4ae4-ac36-02ca94f79b5d">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="1.9487171000000079"/>
@@ -45,6 +45,9 @@
 		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
 	</parameter>
 	<parameter name="AD_Org_ID" class="java.math.BigDecimal"/>
+	<parameter name="ad_language" class="java.lang.String">
+		<defaultValueExpression><![CDATA[$P{REPORT_LOCALE}.toString()]]></defaultValueExpression>
+	</parameter>
 	<queryString>
 		<![CDATA[SELECT * FROM report.umsatzliste_bpartner_week_report(
 	$P{Base_Year_Start},
@@ -60,7 +63,8 @@
 	$P{M_Product_Category_ID},
 	$P{M_AttributeSetInstance_ID},
 	$P{C_Currency_ID},
-	$P{AD_Org_ID}
+	$P{AD_Org_ID},
+	$P{ad_language}
 );]]>
 	</queryString>
 	<field name="bp_name" class="java.lang.String"/>
@@ -155,35 +159,35 @@
 					<textElement>
 						<font size="8" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA["Umsatzreport Geschäftspartner Woche"]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$R{title}]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement x="37" y="44" width="200" height="12" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
 					<textElement>
 						<font size="8" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA["Geschäftspartner"]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$R{bp_name}]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement x="37" y="56" width="200" height="12" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
 					<textElement>
 						<font size="8" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA["Art"]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$R{type}]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement x="37" y="68" width="200" height="12" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
 					<textElement>
 						<font size="8" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA["Zeitperiode"]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$R{timeperiod}]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement x="37" y="80" width="200" height="12" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
 					<textElement>
 						<font size="8" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA["Vergleichsperiode"]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$R{comparedperiod}]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement x="237" y="68" width="180" height="12" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
@@ -225,7 +229,7 @@
 					<textElement>
 						<font size="8" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA["Artikelkategorie"]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$R{articlecategory}]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement x="507" y="68" width="180" height="12" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
@@ -239,7 +243,7 @@
 					<textElement>
 						<font size="8" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA["Artikel"]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$R{article}]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement x="507" y="80" width="180" height="12" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
@@ -253,35 +257,35 @@
 					<textElement>
 						<font size="8" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA["Merkmal"]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$R{attribute}]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement x="37" y="104" width="200" height="12" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
 					<textElement>
 						<font size="8" isBold="false"/>
 					</textElement>
-					<textFieldExpression><![CDATA["Artikel"]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$R{article}]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement x="237" y="104" width="90" height="12" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
 					<textElement textAlignment="Right">
 						<font size="8" isBold="false"/>
 					</textElement>
-					<textFieldExpression><![CDATA["Zeitperiode"]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$R{timeperiod}]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement x="417" y="104" width="90" height="12" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
 					<textElement textAlignment="Right">
 						<font size="8" isBold="false"/>
 					</textElement>
-					<textFieldExpression><![CDATA["Vergleichsperiode"]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$R{comparedperiod}]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement x="597" y="104" width="90" height="12" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
 					<textElement textAlignment="Right">
 						<font size="8" isBold="false"/>
 					</textElement>
-					<textFieldExpression><![CDATA["Differenz"]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$R{difference}]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement x="777" y="104" width="70" height="12" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
@@ -337,7 +341,7 @@
 					<textElement>
 						<font size="8" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA["Währung"]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$R{currency}]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement x="507" y="44" width="180" height="12" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
@@ -372,21 +376,21 @@
 					<textElement textAlignment="Right">
 						<font size="8" isBold="false"/>
 					</textElement>
-					<textFieldExpression><![CDATA["Zeitperiode"]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$R{timeperiod}]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement x="507" y="104" width="90" height="12" uuid="5a4d8abf-7bad-4317-a0c6-bacf8640f4d8"/>
 					<textElement textAlignment="Right">
 						<font size="8" isBold="false"/>
 					</textElement>
-					<textFieldExpression><![CDATA["Vergleichsperiode"]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$R{comparedperiod}]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement x="687" y="104" width="90" height="12" uuid="e9c14cf0-932e-40fb-b07a-d9979e8a14fb"/>
 					<textElement textAlignment="Right">
 						<font size="8" isBold="false"/>
 					</textElement>
-					<textFieldExpression><![CDATA["Differenz"]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$R{difference}]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement x="847" y="104" width="70" height="12" uuid="f3988d8d-82e9-41eb-bccd-689633125e29"/>
@@ -400,28 +404,28 @@
 					<textElement textAlignment="Right">
 						<font size="8" isBold="false"/>
 					</textElement>
-					<textFieldExpression><![CDATA["Menge"]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$R{qty}]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement x="507" y="116" width="90" height="12" uuid="bd5cfc21-d276-40fa-81fc-1630fd2e4d65"/>
 					<textElement textAlignment="Right">
 						<font size="8" isBold="false"/>
 					</textElement>
-					<textFieldExpression><![CDATA["Menge"]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$R{qty}]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement x="687" y="116" width="90" height="12" uuid="171502f1-205e-412f-8078-2a2ec3bdef03"/>
 					<textElement textAlignment="Right">
 						<font size="8" isBold="false"/>
 					</textElement>
-					<textFieldExpression><![CDATA["Menge"]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$R{qty}]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement x="847" y="116" width="70" height="12" uuid="dc82d2f8-d46b-4e9a-a6f2-4cbc66d61566"/>
 					<textElement textAlignment="Right">
 						<font size="8" isBold="false"/>
 					</textElement>
-					<textFieldExpression><![CDATA["Menge"]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$R{qty}]]></textFieldExpression>
 				</textField>
 			</band>
 			<band height="36">
@@ -438,28 +442,28 @@
 					<textElement textAlignment="Right">
 						<font size="8" isBold="false"/>
 					</textElement>
-					<textFieldExpression><![CDATA["Differenz"]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$R{difference}]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement x="237" y="12" width="90" height="12" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
 					<textElement textAlignment="Right">
 						<font size="8" isBold="false"/>
 					</textElement>
-					<textFieldExpression><![CDATA["Zeitperiode"]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$R{timeperiod}]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement x="37" y="12" width="200" height="12" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
 					<textElement>
 						<font size="8" isBold="false"/>
 					</textElement>
-					<textFieldExpression><![CDATA["Artikel"]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$R{article}]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement x="417" y="12" width="90" height="12" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
 					<textElement textAlignment="Right">
 						<font size="8" isBold="false"/>
 					</textElement>
-					<textFieldExpression><![CDATA["Vergleichsperiode"]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$R{comparedperiod}]]></textFieldExpression>
 				</textField>
 				<staticText>
 					<reportElement x="37" y="0" width="200" height="12" uuid="0b1339b5-489c-46e8-8352-de5c9dc7c837"/>
@@ -501,21 +505,21 @@
 					<textElement textAlignment="Right">
 						<font size="8" isBold="false"/>
 					</textElement>
-					<textFieldExpression><![CDATA["Zeitperiode"]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$R{timeperiod}]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement x="507" y="12" width="90" height="12" uuid="ab002f21-b0bf-4a5b-b43c-f06177033c54"/>
 					<textElement textAlignment="Right">
 						<font size="8" isBold="false"/>
 					</textElement>
-					<textFieldExpression><![CDATA["Vergleichsperiode"]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$R{comparedperiod}]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement x="687" y="12" width="90" height="12" uuid="63ecdb51-bb40-46e1-b5f1-f85f93ff98ad"/>
 					<textElement textAlignment="Right">
 						<font size="8" isBold="false"/>
 					</textElement>
-					<textFieldExpression><![CDATA["Differenz"]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$R{difference}]]></textFieldExpression>
 				</textField>
 				<textField isBlankWhenNull="false">
 					<reportElement x="847" y="12" width="70" height="12" uuid="c95fd342-3201-4739-8b9f-c8b28f977633"/>
@@ -529,28 +533,28 @@
 					<textElement textAlignment="Right">
 						<font size="8" isBold="false"/>
 					</textElement>
-					<textFieldExpression><![CDATA["Menge"]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$R{qty}]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement x="507" y="24" width="90" height="12" uuid="d161c9c1-320e-4b59-ae66-cfc83ff9e73e"/>
 					<textElement textAlignment="Right">
 						<font size="8" isBold="false"/>
 					</textElement>
-					<textFieldExpression><![CDATA["Menge"]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$R{qty}]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement x="687" y="24" width="90" height="12" uuid="9a9fbecf-ad7c-4ee5-b2e5-3d092f0c8603"/>
 					<textElement textAlignment="Right">
 						<font size="8" isBold="false"/>
 					</textElement>
-					<textFieldExpression><![CDATA["Menge"]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$R{qty}]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement x="847" y="24" width="70" height="12" uuid="54f1b77e-bb16-4d44-bbdc-f26402a9ad1c"/>
 					<textElement textAlignment="Right">
 						<font size="8" isBold="false"/>
 					</textElement>
-					<textFieldExpression><![CDATA["Menge"]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$R{qty}]]></textFieldExpression>
 				</textField>
 			</band>
 		</groupHeader>
@@ -562,7 +566,7 @@
 					<textElement>
 						<font size="8" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA["Total"]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$R{total}]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0">
 					<reportElement x="597" y="0" width="90" height="12" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
@@ -660,7 +664,7 @@
 					<textElement>
 						<font size="8" isBold="false"/>
 					</textElement>
-					<textFieldExpression><![CDATA["Total " + $F{pc_name}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$R{total} +" "+ $F{pc_name}]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0.00" isBlankWhenNull="true">
 					<reportElement x="777" y="0" width="70" height="12" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
