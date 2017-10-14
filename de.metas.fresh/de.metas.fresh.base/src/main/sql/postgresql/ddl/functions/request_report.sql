@@ -1,6 +1,9 @@
 --DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.request_report(IN ad_org_id numeric, IN R_RequestType_ID numeric, IN StartDate Date, IN EndDate Date, IN C_BPartner_ID numeric, IN QualityNote numeric, IN performanceType character varying(50), IN isMaterialReturned character(1),IN R_Resolution_ID numeric, IN R_Status_ID numeric, IN M_Product_ID numeric);
 
---DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.request_report(IN ad_org_id numeric, IN R_RequestType_ID numeric, IN StartDate Date, IN EndDate Date, IN C_BPartner_ID numeric, IN QualityNote numeric, IN performanceType character varying(50), IN isMaterialReturned character(1), IN R_Status_ID numeric, IN M_Product_ID numeric);
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.request_report(IN ad_org_id numeric, IN R_RequestType_ID numeric, IN StartDate Date, IN EndDate Date, IN C_BPartner_ID numeric, IN QualityNote numeric, IN performanceType character varying(50), IN isMaterialReturned character(1), IN R_Status_ID numeric, IN M_Product_ID numeric);
+
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.request_report(IN ad_org_id numeric, IN R_RequestType_ID numeric, IN StartDate Date, IN EndDate Date, IN C_BPartner_ID numeric, IN QualityNote numeric, IN performanceType character varying(50), IN isMaterialReturned character(1), IN R_Status_ID numeric, IN M_Product_ID numeric, IN AD_Language Character Varying (6));
+
 CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.request_report(
 	IN ad_org_id numeric, --$1
 	IN R_RequestType_ID numeric, --$2
@@ -11,7 +14,8 @@ CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.request_report(
 	IN performanceType character varying(50), --$7
 	IN isMaterialReturned character(1), --$8
 	IN R_Status_ID numeric, --$9
-	IN M_Product_ID numeric --$10
+	IN M_Product_ID numeric, --$10
+	IN AD_Language Character Varying (6) --$11 
 	)
 
 RETURNS TABLE
@@ -50,7 +54,7 @@ SELECT
 	First_agg ( DISTINCT io.DocumentNo ORDER BY io.DocumentNo ) ||
 				CASE WHEN Count(DISTINCT io.documentNo) > 1 THEN ' ff.' ELSE '' END AS IO_Docno,
 	p.Value AS P_Value,
-	p.Name AS P_Name,
+	COALESCE(pt.Name,p.Name) AS P_Name,
 	qn.Name AS QualityNote,
 	req.performanceType AS Performance,
 	req.isMaterialReturned AS isMaterialReturned,
@@ -66,7 +70,10 @@ SELECT
 	$7 AS p_performancetype,
 	$8 AS p_ismaterialreturned,
 	(SELECT Name FROM R_Status WHERE R_Status_ID = $9 AND isActive = 'Y') AS p_status,
-	(SELECT Name FROM M_Product WHERE M_Product_ID = $10 AND isActive = 'Y') AS p_product
+	(SELECT COALESCE(pt.name, p.name) FROM M_Product p 
+		LEFT OUTER JOIN M_Product_Trl pt ON p.M_Product_ID = pt.M_Product_ID AND pt.AD_Language = $11 AND pt.isActive = 'Y'
+		WHERE p.M_Product_ID = $10 AND p.isActive = 'Y'
+	) AS p_product
 	
 
 FROM R_Request req
@@ -74,6 +81,7 @@ FROM R_Request req
 LEFT OUTER JOIN C_BPartner bp ON req.C_BPartner_ID = bp.C_BPartner_ID AND bp.isActive = 'Y'
 LEFT OUTER JOIN M_InOut io ON req.Record_ID = io.M_InOut_ID AND io.isActive = 'Y'
 LEFT OUTER JOIN M_Product p ON req.M_Product_ID = p.M_Product_ID AND p.isActive = 'Y'
+LEFT OUTER JOIN M_Product_Trl pt ON p.M_Product_ID = pt.M_Product_ID AND pt.AD_Language = $11 AND pt.isActive = 'Y'
 
 LEFT OUTER JOIN R_Status r ON req.R_Status_ID = r.R_Status_ID AND r.isActive = 'Y'
 
@@ -81,7 +89,6 @@ LEFT OUTER JOIN M_QualityNote qn ON req.M_QualityNote_ID = qn.M_QualityNote_ID
 
 
 WHERE 
-	--req.AD_Table_ID = get_table_ID ('M_InOut') AND
 	req.isActive = 'Y'
 	AND req.DateDelivered::date >= $3 AND req.DateDelivered::date <= $4
 	AND (CASE WHEN $1 IS NOT NULL THEN req.AD_Org_ID = $1 ELSE TRUE END)
@@ -118,7 +125,7 @@ ORDER BY req.DateDelivered::Date,
 	bp.Name,
 	IO_Docno,
 	p.Value,
-	p.Name
+	P_Name
 	
 $$
 LANGUAGE sql STABLE;	

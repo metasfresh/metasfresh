@@ -16,7 +16,8 @@ CREATE TABLE report.saldobilanz_summary_Report_Sub
 	L1_sameyearsum numeric,
 	L1_lastyearsum numeric,
 	
-	ad_org_id numeric
+	ad_org_id numeric,
+	currency character(3)
 )
 WITH (
 	OIDS=FALSE
@@ -30,7 +31,8 @@ SELECT
 	SUM(CASE WHEN ParentValue1 IS NOT NULL THEN SameYearSum ELSE NULL END) AS L1_SameYearSum,
 	SUM(CASE WHEN ParentValue1 IS NOT NULL THEN LastYearSum ELSE NULL END) AS L1_LastYearSum,
 	
-	$4 as ad_org_id
+	$4 as ad_org_id,
+	a.iso_code
 
 
 FROM
@@ -42,7 +44,7 @@ FROM
 			
 			, (de_metas_acct.acctBalanceToDate(ev.C_ElementValue_ID, acs.C_AcctSchema_ID, $1::date, $4, $5, $6)).Balance * ev.Multiplicator as SameYearSum
 			, (de_metas_acct.acctBalanceToDate(ev.C_ElementValue_ID, acs.C_AcctSchema_ID, period_LastYearEnd.EndDate::date, $4, $5, $6)).Balance * ev.Multiplicator as LastYearSum
-				
+			, c.iso_code	
 		FROM
 			C_Period p 
 				-- Get last period of previous year
@@ -61,6 +63,7 @@ FROM
 				) ev ON (lvl.C_ElementValue_ID = ev.C_ElementValue_ID)
 				LEFT OUTER JOIN AD_ClientInfo ci ON (ci.AD_Client_ID=ev.AD_Client_ID) AND ci.isActive = 'Y'
 				LEFT OUTER JOIN C_AcctSchema acs ON (acs.C_AcctSchema_ID=ci.C_AcctSchema1_ID) AND acs.isActive = 'Y'
+				LEFT OUTER JOIN C_Currency c ON acs.C_Currency_ID=c.C_Currency_ID AND c.isActive = 'Y'
 		--
 		WHERE true
 			-- Period: determine it by DateAcct
@@ -72,7 +75,8 @@ FROM
 GROUP BY 	
 parentname1,
 	parentvalue1,
-	ad_org_id	
+	ad_org_id,
+	iso_code	
 ORDER BY
 	parentValue1
 $BODY$

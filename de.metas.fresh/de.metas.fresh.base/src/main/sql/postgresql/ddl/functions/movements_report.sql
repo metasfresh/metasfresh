@@ -1,7 +1,8 @@
-DROP FUNCTION IF EXISTS report.movements_report( numeric,  numeric,  numeric) ;
 
 DROP FUNCTION IF EXISTS report.movements_report(c_period_id numeric, c_activityfrom_id numeric, c_activityto_id numeric, ad_org_id numeric(10,0)) ;
-CREATE OR REPLACE FUNCTION report.movements_report (c_period_id numeric, c_activityfrom_id numeric, c_activityto_id numeric, ad_org_id numeric(10,0)) RETURNS TABLE
+DROP FUNCTION IF EXISTS report.movements_report(c_period_id numeric, c_activityfrom_id numeric, c_activityto_id numeric, ad_org_id numeric(10,0), ad_language character varying (6)) ;
+
+CREATE OR REPLACE FUNCTION report.movements_report (c_period_id numeric, c_activityfrom_id numeric, c_activityto_id numeric, ad_org_id numeric(10,0),ad_language character varying (6)) RETURNS TABLE
 	(
 	P_Value Character Varying, 
 	P_Name Character Varying, 
@@ -45,8 +46,8 @@ FROM
 
 SELECT
 	p.value AS P_Value, 
-	p.name AS P_Name, 
-	uom.UOMSymbol AS UOMSymbol, 
+	COALESCE(pt.name, p.name) AS P_Name, 
+	COALESCE(uomt.UOMSymbol, uom.UOMSymbol) AS UOMSymbol, 
 	ml.MovementQty AS MovementQty,
 	per.StartDate::DATE AS StartDate,
 	per.EndDate::DATE AS EndDate,
@@ -72,11 +73,11 @@ FROM
 	LEFT OUTER JOIN M_Locator l_to ON ml.M_LocatorTo_ID = l_to.M_Locator_ID AND l_to.isActive = 'Y'
 	LEFT OUTER JOIN M_Warehouse wh_to ON l_to.M_Warehouse_ID=wh_to.m_warehouse_ID AND wh_to.isActive = 'Y'
 	LEFT OUTER JOIN M_Product p ON ml.M_Product_ID = p.M_Product_ID AND p.isActive = 'Y'
+	LEFT OUTER JOIN M_Product_Trl pt ON p.M_Product_ID = pt.M_Product_ID AND pt.ad_language = $5 AND pt.isActive = 'Y'
 	LEFT OUTER JOIN M_Product_Category pc ON pc.M_Product_Category_ID = p.M_Product_Category_ID AND pc.isActive = 'Y'
 	LEFT OUTER JOIN C_UOM uom ON p.C_UOM_ID = uom.C_UOM_ID AND uom.isActive = 'Y'
+	LEFT OUTER JOIN C_UOM_Trl uomt ON uom.C_UOM_ID = uomt.C_UOM_ID AND uomt.ad_language = $5 AND uomt.isActive = 'Y'
 	
-	
-
 	LEFT OUTER JOIN Fact_Acct fa ON fa.Record_ID = mov.M_Movement_ID AND fa.AD_Table_ID = (SELECT Get_Table_ID('M_Movement')) AND fa.Line_ID = ml.M_MovementLine_ID  AND fa.isActive = 'Y'
 	LEFT OUTER JOIN C_Period per ON fa.C_Period_ID = per.C_Period_ID AND per.isActive = 'Y'
 	LEFT OUTER JOIN C_ElementValue ev ON fa.Account_ID = ev.C_ElementValue_ID AND ev.isActive = 'Y'
@@ -116,8 +117,8 @@ WHERE
 	AND fa.ad_org_id = $4
 GROUP BY 
 	p.value, 
-	p.name, 
-	uom.UOMSymbol,
+	COALESCE(pt.name, p.name),
+	COALESCE(uomt.UOMSymbol, uom.UOMSymbol),
 	per.StartDate::DATE,
 	per.EndDate::DATE,
 	ac_to.value||' - '|| ac_to.name,

@@ -25,21 +25,28 @@ import lombok.NonNull;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
 public class SetCandidatesClosed
 {
+	private final transient IHUPickingSlotBL huPickingSlotBL = Services.get(IHUPickingSlotBL.class);
+	private final transient IQueryBL queryBL = Services.get(IQueryBL.class);
+
 	public void perform(@NonNull final List<Integer> shipmentScheduleIds)
 	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		final List<I_M_Picking_Candidate> pickingCandidates = markCandidatesAsClosed(shipmentScheduleIds);
+		addToPickingSlotQueue(pickingCandidates);
+	}
 
+	private List<I_M_Picking_Candidate> markCandidatesAsClosed(@NonNull final List<Integer> shipmentScheduleIds)
+	{
 		final IQuery<I_M_Picking_Candidate> query = queryBL.createQueryBuilder(I_M_Picking_Candidate.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_Picking_Candidate.COLUMNNAME_Status, X_M_Picking_Candidate.STATUS_PR)
@@ -52,10 +59,15 @@ public class SetCandidatesClosed
 		// note that we only closed "processed" candidates. what's still open shall stay open.
 
 		final List<I_M_Picking_Candidate> pickingCandidates = query.list();
+		return pickingCandidates;
+	}
+
+	private void addToPickingSlotQueue(List<I_M_Picking_Candidate> pickingCandidates)
+	{
 		for (final I_M_Picking_Candidate pickingCandidate : pickingCandidates)
 		{
-			final IHUPickingSlotBL huPickingSlotBL = Services.get(IHUPickingSlotBL.class);
 			huPickingSlotBL.addToPickingSlotQueue(pickingCandidate.getM_PickingSlot(), pickingCandidate.getM_HU());
 		}
+
 	}
 }

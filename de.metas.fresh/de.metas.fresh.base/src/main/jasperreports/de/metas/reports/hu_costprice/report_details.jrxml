@@ -1,13 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
-<!-- 2016-11-07T11:53:43 -->
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_details" pageWidth="782" pageHeight="595" orientation="Landscape" columnWidth="782" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/reports/openitems/report" uuid="4bf224c7-9529-4ce1-bff2-53e2cfe07aaa">
+<!-- 2017-10-03T11:40:49 -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_details" pageWidth="782" pageHeight="595" orientation="Landscape" columnWidth="782" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/reports/hu_costprice/report" uuid="4bf224c7-9529-4ce1-bff2-53e2cfe07aaa">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="1.6528925619834718"/>
 	<property name="ireport.x" value="380"/>
 	<property name="ireport.y" value="0"/>
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="metasfresh"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
@@ -15,13 +16,17 @@
 	<parameter name="M_Warehouse_ID" class="java.math.BigDecimal"/>
 	<parameter name="ShowDetails" class="java.lang.String"/>
 	<parameter name="keydate" class="java.sql.Timestamp"/>
+	<parameter name="ad_language" class="java.lang.String">
+		<defaultValueExpression><![CDATA[$P{REPORT_LOCALE}.toString()]]></defaultValueExpression>
+	</parameter>
 	<queryString>
-		<![CDATA[SELECT * FROM HU_CostPrice_Function
+		<![CDATA[SELECT * FROM report.HU_CostPrice_Function
 (
 $P{keydate},
 $P{M_Product_ID},
 $P{M_Warehouse_ID},
-$P{ShowDetails}
+$P{ShowDetails},
+$P{ad_language}
 );]]>
 	</queryString>
 	<field name="combination" class="java.lang.String"/>
@@ -80,13 +85,6 @@ $P{ShowDetails}
 					</textElement>
 					<textFieldExpression><![CDATA[$F{combination} + " " + $F{description}]]></textFieldExpression>
 				</textField>
-				<staticText>
-					<reportElement key="textField-106" x="0" y="0" width="50" height="15" uuid="b89509ae-607c-42ed-ac7c-58ddf9ccc421"/>
-					<textElement markup="none">
-						<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
-					</textElement>
-					<text><![CDATA[Konto:]]></text>
-				</staticText>
 				<textField evaluationTime="Group" evaluationGroup="Account" pattern="#,##0.00" isBlankWhenNull="false">
 					<reportElement key="textField-109" x="578" y="0" width="149" height="15" uuid="6a024cf8-c679-4673-89aa-f0d1c55ece36"/>
 					<box>
@@ -99,6 +97,13 @@ $P{ShowDetails}
 						<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$V{Account_LineSum}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement key="textField-106" x="0" y="0" width="50" height="15" uuid="5de18e02-d8d7-4e4b-ba20-b1df1c1d6e52"/>
+					<textElement markup="none">
+						<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{account}]]></textFieldExpression>
 				</textField>
 			</band>
 		</groupHeader>
@@ -121,15 +126,8 @@ $P{ShowDetails}
 					<textElement>
 						<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{activity} != null ? $F{activity} : "Keine"]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{activity} != null ? $F{activity} : $R{none}]]></textFieldExpression>
 				</textField>
-				<staticText>
-					<reportElement key="textField-106" x="50" y="0" width="75" height="15" uuid="e4994f46-1caa-4672-91a3-de36bd597f5c"/>
-					<textElement markup="none">
-						<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
-					</textElement>
-					<text><![CDATA[Kostenstelle:]]></text>
-				</staticText>
 				<textField evaluationTime="Group" evaluationGroup="Activity" pattern="#,##0.00" isBlankWhenNull="false">
 					<reportElement key="textField-109" x="578" y="0" width="149" height="15" uuid="6a024cf8-c679-4673-89aa-f0d1c55ece36"/>
 					<box>
@@ -142,6 +140,13 @@ $P{ShowDetails}
 						<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$V{Activity_LineSum}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement key="textField-106" x="50" y="0" width="75" height="15" uuid="2ea699ac-1ba1-4012-8774-0f8269c48285"/>
+					<textElement markup="none">
+						<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{activity}]]></textFieldExpression>
 				</textField>
 			</band>
 		</groupHeader>
@@ -290,42 +295,6 @@ $P{ShowDetails}
 					<pen lineWidth="0.0" lineStyle="Solid"/>
 				</graphicElement>
 			</rectangle>
-			<staticText>
-				<reportElement key="textField-68" x="208" y="0" width="50" height="12" forecolor="#FFFFFF" uuid="add1607b-a473-4181-9bbd-296cb974527f"/>
-				<textElement textAlignment="Left" markup="none">
-					<font fontName="SansSerif" size="8"/>
-				</textElement>
-				<text><![CDATA[Artikel-Nr.]]></text>
-			</staticText>
-			<staticText>
-				<reportElement key="textField-69" x="258" y="0" width="149" height="12" forecolor="#FFFFFF" uuid="3ae84862-b1f9-4ffb-91e1-22d464180850"/>
-				<textElement textAlignment="Left" markup="none">
-					<font fontName="SansSerif" size="8"/>
-				</textElement>
-				<text><![CDATA[Artikelname]]></text>
-			</staticText>
-			<staticText>
-				<reportElement key="textField-70" x="458" y="0" width="60" height="12" forecolor="#FFFFFF" uuid="3b297cf9-c3ee-4060-876b-1dbce13b2ef2"/>
-				<textElement textAlignment="Right" markup="none">
-					<font fontName="SansSerif" size="8"/>
-				</textElement>
-				<text><![CDATA[Menge]]></text>
-			</staticText>
-			<staticText>
-				<reportElement key="textField-71" x="518" y="0" width="60" height="12" forecolor="#FFFFFF" uuid="219940c0-9528-4eff-a829-a07222a5086c"/>
-				<box leftPadding="5"/>
-				<textElement markup="none">
-					<font fontName="SansSerif" size="8"/>
-				</textElement>
-				<text><![CDATA[Einheit]]></text>
-			</staticText>
-			<staticText>
-				<reportElement key="textField-72" x="578" y="0" width="90" height="12" forecolor="#FFFFFF" uuid="cf5f88c4-d351-4227-90aa-9edbc41ffa2f"/>
-				<textElement textAlignment="Right" markup="none">
-					<font fontName="SansSerif" size="8"/>
-				</textElement>
-				<text><![CDATA[Durchschnittswert]]></text>
-			</staticText>
 			<textField pattern="#,##0.00" isBlankWhenNull="false">
 				<reportElement key="textField-79" x="668" y="15" width="60" height="12" uuid="24072eb3-203d-4dd6-9074-d9f5a673b69d">
 					<printWhenExpression><![CDATA[new Boolean( $V{PAGE_NUMBER}.intValue() != 1
@@ -358,22 +327,58 @@ $P{ShowDetails}
 				</textElement>
 				<textFieldExpression><![CDATA[$R{carry}]]></textFieldExpression>
 			</textField>
-			<staticText>
-				<reportElement key="textField-72" x="668" y="0" width="60" height="12" forecolor="#FFFFFF" uuid="94bca9c4-7408-47a0-a464-60202b1c8101"/>
-				<textElement textAlignment="Right" markup="none">
+			<textField>
+				<reportElement key="textField-68" x="208" y="0" width="50" height="12" forecolor="#FFFFFF" uuid="8bb169c1-b0e1-4830-a16e-c5387ab31b5c"/>
+				<textElement textAlignment="Left" markup="none">
 					<font fontName="SansSerif" size="8"/>
 				</textElement>
-				<text><![CDATA[Gesamtwert]]></text>
-			</staticText>
-			<staticText>
-				<reportElement key="textField-70" x="408" y="0" width="50" height="12" forecolor="#FFFFFF" uuid="3b297cf9-c3ee-4060-876b-1dbce13b2ef2">
+				<textFieldExpression><![CDATA[$R{articleno}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement key="textField-69" x="258" y="0" width="149" height="12" forecolor="#FFFFFF" uuid="a0463faa-c117-4ec8-9678-cbbf50fffcb3"/>
+				<textElement textAlignment="Left" markup="none">
+					<font fontName="SansSerif" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{articlename}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement key="textField-70" x="408" y="0" width="50" height="12" forecolor="#FFFFFF" uuid="9a53fd3a-5d8f-4ec4-b87b-df60e4ab9c53">
 					<printWhenExpression><![CDATA[new Boolean(false)]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right" markup="none">
 					<font fontName="SansSerif" size="8"/>
 				</textElement>
-				<text><![CDATA[Gebinde]]></text>
-			</staticText>
+				<textFieldExpression><![CDATA[$R{HUs}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement key="textField-70" x="458" y="0" width="60" height="12" forecolor="#FFFFFF" uuid="94b7d933-c56e-4794-9087-933cc5d97169"/>
+				<textElement textAlignment="Right" markup="none">
+					<font fontName="SansSerif" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{qty}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement key="textField-71" x="518" y="0" width="60" height="12" forecolor="#FFFFFF" uuid="d3e364c9-6f14-4b39-87d4-d1f7caf5deba"/>
+				<box leftPadding="5"/>
+				<textElement markup="none">
+					<font fontName="SansSerif" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{uom}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement key="textField-72" x="578" y="0" width="90" height="12" forecolor="#FFFFFF" uuid="624a767b-88eb-4341-bb65-23ce11790f6c"/>
+				<textElement textAlignment="Right" markup="none">
+					<font fontName="SansSerif" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{averagesum}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement key="textField-72" x="668" y="0" width="60" height="12" forecolor="#FFFFFF" uuid="eb5f6938-a2ca-47a8-a215-fe301fb17ab7"/>
+				<textElement textAlignment="Right" markup="none">
+					<font fontName="SansSerif" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{totalsum}]]></textFieldExpression>
+			</textField>
 		</band>
 	</pageHeader>
 	<detail>

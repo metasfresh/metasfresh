@@ -139,9 +139,9 @@ public class PickingCandidateService
 		return new SetCandidatesProcessed(sourceHUsRepository, pickingCandidateRepository).perform(huIds, pickingSlotId, shipmentScheduleId);
 	}
 
-	public int setCandidatesInProgress(@NonNull final List<Integer> huIds)
+	public void setCandidatesInProgress(final int huId)
 	{
-		return new SetCandidatesInProgress(sourceHUsRepository).perform(huIds);
+		new SetCandidatesInProgress(sourceHUsRepository).perform(huId);
 	}
 
 	/**

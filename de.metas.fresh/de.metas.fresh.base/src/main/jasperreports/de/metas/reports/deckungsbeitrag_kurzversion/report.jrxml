@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="1190" pageHeight="842" orientation="Landscape" columnWidth="1150" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="0b939d51-6cf3-4522-bbec-a180da593001">
+<!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
+<!-- 2017-10-04T15:43:23 -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="1190" pageHeight="842" orientation="Landscape" columnWidth="1150" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" resourceBundle="de/metas/reports/deckungsbeitrag_kurzversion/report" uuid="0b939d51-6cf3-4522-bbec-a180da593001">
 	<property name="ireport.zoom" value="2.4200000000000004"/>
 	<property name="ireport.x" value="54"/>
 	<property name="ireport.y" value="0"/>
@@ -119,14 +121,14 @@
 			<band height="18">
 				<printWhenExpression><![CDATA[$F{isdisplaymarginsum}]]></printWhenExpression>
 				<textField>
-					<reportElement uuid="37089bac-f93c-409f-aca4-040f95ed715e" x="38" y="9" width="236" height="9"/>
+					<reportElement x="38" y="9" width="236" height="9" uuid="37089bac-f93c-409f-aca4-040f95ed715e"/>
 					<textElement>
 						<font size="6" isBold="true" pdfFontName="Helvetica-Bold"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{margin}]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0">
-					<reportElement uuid="eb85075c-0bd7-4d67-a315-8b14c2200704" x="274" y="9" width="62" height="9">
+					<reportElement x="274" y="9" width="62" height="9" uuid="eb85075c-0bd7-4d67-a315-8b14c2200704">
 						<printWhenExpression><![CDATA[new Boolean( $F{margin_incr_1000}.floatValue() != 0 )]]></printWhenExpression>
 					</reportElement>
 					<textElement textAlignment="Right">
@@ -135,7 +137,7 @@
 					<textFieldExpression><![CDATA[$F{margin_incr_1000}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0">
-					<reportElement uuid="f9a878b1-36ca-4262-bacd-95072af38e66" x="336" y="9" width="62" height="9">
+					<reportElement x="336" y="9" width="62" height="9" uuid="f9a878b1-36ca-4262-bacd-95072af38e66">
 						<printWhenExpression><![CDATA[new Boolean( $F{margin_incr_2000}.floatValue() != 0 )]]></printWhenExpression>
 					</reportElement>
 					<textElement textAlignment="Right">
@@ -144,7 +146,7 @@
 					<textFieldExpression><![CDATA[$F{margin_incr_2000}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0">
-					<reportElement uuid="6c1c40dc-94ba-44ef-af8f-bb7519507c7b" x="398" y="9" width="62" height="9">
+					<reportElement x="398" y="9" width="62" height="9" uuid="6c1c40dc-94ba-44ef-af8f-bb7519507c7b">
 						<printWhenExpression><![CDATA[new Boolean( $F{margin_incr_100}.floatValue() != 0 )]]></printWhenExpression>
 					</reportElement>
 					<textElement textAlignment="Right">
@@ -153,7 +155,7 @@
 					<textFieldExpression><![CDATA[$F{margin_incr_100}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0">
-					<reportElement uuid="dd94209b-51c7-4176-93c3-5ed226967c88" x="460" y="9" width="62" height="9">
+					<reportElement x="460" y="9" width="62" height="9" uuid="dd94209b-51c7-4176-93c3-5ed226967c88">
 						<printWhenExpression><![CDATA[new Boolean( $F{margin_incr_150}.floatValue() != 0 )]]></printWhenExpression>
 					</reportElement>
 					<textElement textAlignment="Right">
@@ -162,7 +164,7 @@
 					<textFieldExpression><![CDATA[$F{margin_incr_150}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0">
-					<reportElement uuid="b1710835-603d-447b-8638-3c64d89d2304" x="522" y="9" width="62" height="9">
+					<reportElement x="522" y="9" width="62" height="9" uuid="b1710835-603d-447b-8638-3c64d89d2304">
 						<printWhenExpression><![CDATA[new Boolean( $F{margin_incr_other}.floatValue() != 0 )]]></printWhenExpression>
 					</reportElement>
 					<textElement textAlignment="Right">
@@ -171,7 +173,7 @@
 					<textFieldExpression><![CDATA[$F{margin_incr_other}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0">
-					<reportElement uuid="3ef98846-a71d-4432-a4f6-412e13081c44" x="584" y="9" width="62" height="9">
+					<reportElement x="584" y="9" width="62" height="9" uuid="3ef98846-a71d-4432-a4f6-412e13081c44">
 						<printWhenExpression><![CDATA[new Boolean( $F{margin_incr_all}.floatValue() != 0 )]]></printWhenExpression>
 					</reportElement>
 					<textElement textAlignment="Right">
@@ -180,7 +182,7 @@
 					<textFieldExpression><![CDATA[$F{margin_incr_all}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0">
-					<reportElement uuid="6c1c40dc-94ba-44ef-af8f-bb7519507c7b" x="866" y="9" width="62" height="9">
+					<reportElement x="866" y="9" width="62" height="9" uuid="6c1c40dc-94ba-44ef-af8f-bb7519507c7b">
 						<printWhenExpression><![CDATA[new Boolean( $F{margin_budget_incr_100}.floatValue() != 0 )]]></printWhenExpression>
 					</reportElement>
 					<textElement textAlignment="Right">
@@ -189,7 +191,7 @@
 					<textFieldExpression><![CDATA[$F{margin_budget_incr_100}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0">
-					<reportElement uuid="3ef98846-a71d-4432-a4f6-412e13081c44" x="990" y="9" width="62" height="9">
+					<reportElement x="990" y="9" width="62" height="9" uuid="3ef98846-a71d-4432-a4f6-412e13081c44">
 						<printWhenExpression><![CDATA[new Boolean( $F{margin_budget_incr_all}.floatValue() != 0 )]]></printWhenExpression>
 					</reportElement>
 					<textElement textAlignment="Right">
@@ -198,7 +200,7 @@
 					<textFieldExpression><![CDATA[$F{margin_budget_incr_all}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0">
-					<reportElement uuid="eb85075c-0bd7-4d67-a315-8b14c2200704" x="742" y="9" width="62" height="9">
+					<reportElement x="742" y="9" width="62" height="9" uuid="eb85075c-0bd7-4d67-a315-8b14c2200704">
 						<printWhenExpression><![CDATA[new Boolean( $F{margin_budget_incr_1000}.floatValue() != 0 )]]></printWhenExpression>
 					</reportElement>
 					<textElement textAlignment="Right">
@@ -207,7 +209,7 @@
 					<textFieldExpression><![CDATA[$F{margin_budget_incr_1000}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0">
-					<reportElement uuid="f9a878b1-36ca-4262-bacd-95072af38e66" x="804" y="9" width="62" height="9">
+					<reportElement x="804" y="9" width="62" height="9" uuid="f9a878b1-36ca-4262-bacd-95072af38e66">
 						<printWhenExpression><![CDATA[new Boolean( $F{margin_budget_incr_2000}.floatValue() != 0 )]]></printWhenExpression>
 					</reportElement>
 					<textElement textAlignment="Right">
@@ -216,7 +218,7 @@
 					<textFieldExpression><![CDATA[$F{margin_budget_incr_2000}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0">
-					<reportElement uuid="dd94209b-51c7-4176-93c3-5ed226967c88" x="928" y="9" width="62" height="9">
+					<reportElement x="928" y="9" width="62" height="9" uuid="dd94209b-51c7-4176-93c3-5ed226967c88">
 						<printWhenExpression><![CDATA[new Boolean( $F{margin_budget_incr_150}.floatValue() != 0 )]]></printWhenExpression>
 					</reportElement>
 					<textElement textAlignment="Right">
@@ -225,7 +227,7 @@
 					<textFieldExpression><![CDATA[$F{margin_budget_incr_150}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
 				</textField>
 				<textField pattern="0.00">
-					<reportElement uuid="2860c27f-2676-4847-8a41-79c46b9657cf" x="1052" y="9" width="62" height="9">
+					<reportElement x="1052" y="9" width="62" height="9" uuid="2860c27f-2676-4847-8a41-79c46b9657cf">
 						<printWhenExpression><![CDATA[new Boolean($F{margin_budget_percentage_all}.floatValue() != 0 ||     $F{margin_budget_incr_all}.floatValue() != 0 )]]></printWhenExpression>
 					</reportElement>
 					<textElement textAlignment="Right">
@@ -234,69 +236,69 @@
 					<textFieldExpression><![CDATA[$F{margin_budget_percentage_all}]]></textFieldExpression>
 				</textField>
 				<line>
-					<reportElement uuid="194c3870-6bc4-4eed-8827-f03e48acd73d" x="664" y="0" width="1" height="18"/>
+					<reportElement x="664" y="0" width="1" height="18" uuid="194c3870-6bc4-4eed-8827-f03e48acd73d"/>
 				</line>
 			</band>
 			<band height="45">
 				<printWhenExpression><![CDATA[!$F{isdisplaymarginsum}]]></printWhenExpression>
 				<textField pattern="#,##0">
-					<reportElement uuid="6c1c40dc-94ba-44ef-af8f-bb7519507c7b" x="398" y="14" width="62" height="9"/>
+					<reportElement x="398" y="14" width="62" height="9" uuid="6c1c40dc-94ba-44ef-af8f-bb7519507c7b"/>
 					<textElement textAlignment="Right">
 						<font size="6" isBold="true" pdfFontName="Helvetica-Bold"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{margin_incr_100}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0">
-					<reportElement uuid="f9a878b1-36ca-4262-bacd-95072af38e66" x="804" y="14" width="62" height="9"/>
+					<reportElement x="804" y="14" width="62" height="9" uuid="f9a878b1-36ca-4262-bacd-95072af38e66"/>
 					<textElement textAlignment="Right">
 						<font size="6" isBold="true" pdfFontName="Helvetica-Bold"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{margin_budget_incr_2000}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0" isBlankWhenNull="false">
-					<reportElement uuid="6c1c40dc-94ba-44ef-af8f-bb7519507c7b" x="866" y="14" width="62" height="9"/>
+					<reportElement x="866" y="14" width="62" height="9" uuid="6c1c40dc-94ba-44ef-af8f-bb7519507c7b"/>
 					<textElement textAlignment="Right">
 						<font size="6" isBold="true" pdfFontName="Helvetica-Bold"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{margin_budget_incr_100}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0">
-					<reportElement uuid="3ef98846-a71d-4432-a4f6-412e13081c44" x="584" y="14" width="62" height="9"/>
+					<reportElement x="584" y="14" width="62" height="9" uuid="3ef98846-a71d-4432-a4f6-412e13081c44"/>
 					<textElement textAlignment="Right">
 						<font size="6" isBold="true" pdfFontName="Helvetica-Bold"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{margin_incr_all}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0">
-					<reportElement uuid="eb85075c-0bd7-4d67-a315-8b14c2200704" x="274" y="14" width="62" height="9"/>
+					<reportElement x="274" y="14" width="62" height="9" uuid="eb85075c-0bd7-4d67-a315-8b14c2200704"/>
 					<textElement textAlignment="Right">
 						<font size="6" isBold="true" pdfFontName="Helvetica-Bold"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{margin_incr_1000}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0">
-					<reportElement uuid="f9a878b1-36ca-4262-bacd-95072af38e66" x="336" y="14" width="62" height="9"/>
+					<reportElement x="336" y="14" width="62" height="9" uuid="f9a878b1-36ca-4262-bacd-95072af38e66"/>
 					<textElement textAlignment="Right">
 						<font size="6" isBold="true" pdfFontName="Helvetica-Bold"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{margin_incr_2000}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0">
-					<reportElement uuid="dd94209b-51c7-4176-93c3-5ed226967c88" x="460" y="14" width="62" height="9"/>
+					<reportElement x="460" y="14" width="62" height="9" uuid="dd94209b-51c7-4176-93c3-5ed226967c88"/>
 					<textElement textAlignment="Right">
 						<font size="6" isBold="true" pdfFontName="Helvetica-Bold"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{margin_incr_150}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0">
-					<reportElement uuid="b1710835-603d-447b-8638-3c64d89d2304" x="522" y="14" width="62" height="9"/>
+					<reportElement x="522" y="14" width="62" height="9" uuid="b1710835-603d-447b-8638-3c64d89d2304"/>
 					<textElement textAlignment="Right">
 						<font size="6" isBold="true" pdfFontName="Helvetica-Bold"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{margin_incr_other}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
 				</textField>
 				<textField pattern="0.00">
-					<reportElement uuid="2860c27f-2676-4847-8a41-79c46b9657cf" x="1052" y="14" width="62" height="9">
+					<reportElement x="1052" y="14" width="62" height="9" uuid="2860c27f-2676-4847-8a41-79c46b9657cf">
 						<printWhenExpression><![CDATA[new Boolean($F{margin_budget_percentage_all}.floatValue() != 0 ||     $F{margin_budget_incr_all}.floatValue() != 0 )]]></printWhenExpression>
 					</reportElement>
 					<textElement textAlignment="Right">
@@ -305,42 +307,42 @@
 					<textFieldExpression><![CDATA[$F{margin_budget_percentage_all}]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement uuid="37089bac-f93c-409f-aca4-040f95ed715e" x="38" y="14" width="196" height="9"/>
+					<reportElement x="38" y="14" width="196" height="9" uuid="37089bac-f93c-409f-aca4-040f95ed715e"/>
 					<textElement>
 						<font size="6" isBold="true" pdfFontName="Helvetica-Bold"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{margin}]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0">
-					<reportElement uuid="eb85075c-0bd7-4d67-a315-8b14c2200704" x="742" y="14" width="62" height="9"/>
+					<reportElement x="742" y="14" width="62" height="9" uuid="eb85075c-0bd7-4d67-a315-8b14c2200704"/>
 					<textElement textAlignment="Right">
 						<font size="6" isBold="true" pdfFontName="Helvetica-Bold"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{margin_budget_incr_1000}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0">
-					<reportElement uuid="3ef98846-a71d-4432-a4f6-412e13081c44" x="990" y="14" width="62" height="9"/>
+					<reportElement x="990" y="14" width="62" height="9" uuid="3ef98846-a71d-4432-a4f6-412e13081c44"/>
 					<textElement textAlignment="Right">
 						<font size="6" isBold="true" pdfFontName="Helvetica-Bold"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{margin_budget_incr_all}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0">
-					<reportElement uuid="dd94209b-51c7-4176-93c3-5ed226967c88" x="928" y="14" width="62" height="9"/>
+					<reportElement x="928" y="14" width="62" height="9" uuid="dd94209b-51c7-4176-93c3-5ed226967c88"/>
 					<textElement textAlignment="Right">
 						<font size="6" isBold="true" pdfFontName="Helvetica-Bold"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{margin_budget_incr_150}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
 				</textField>
 				<staticText>
-					<reportElement uuid="4f575af7-f3ab-4cdf-b95a-d195106e9f7b" x="234" y="14" width="40" height="9"/>
+					<reportElement x="234" y="14" width="40" height="9" uuid="4f575af7-f3ab-4cdf-b95a-d195106e9f7b"/>
 					<textElement textAlignment="Center" markup="none">
 						<font size="6" isBold="true" pdfFontName="Helvetica-Bold"/>
 					</textElement>
 					<text><![CDATA[9]]></text>
 				</staticText>
 				<line>
-					<reportElement uuid="194c3870-6bc4-4eed-8827-f03e48acd73d" x="664" y="0" width="1" height="45"/>
+					<reportElement x="664" y="0" width="1" height="45" uuid="194c3870-6bc4-4eed-8827-f03e48acd73d"/>
 				</line>
 			</band>
 		</groupFooter>
@@ -354,14 +356,14 @@
 			<band height="18">
 				<printWhenExpression><![CDATA[$F{isdisplayl1sum}]]></printWhenExpression>
 				<textField>
-					<reportElement uuid="909090fe-b971-4832-af32-72940ff5fe6f" x="38" y="9" width="196" height="9"/>
+					<reportElement x="38" y="9" width="196" height="9" uuid="909090fe-b971-4832-af32-72940ff5fe6f"/>
 					<textElement>
 						<font size="6" isBold="true" pdfFontName="Helvetica-Bold"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{l1_name}]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0">
-					<reportElement uuid="2a90ce34-fb60-47b2-92c4-23acf2632939" x="990" y="9" width="62" height="9">
+					<reportElement x="990" y="9" width="62" height="9" uuid="2a90ce34-fb60-47b2-92c4-23acf2632939">
 						<printWhenExpression><![CDATA[new Boolean ($F{l1_budget_all}.multiply( $F{l1_multiplicator} ).floatValue() != 0)]]></printWhenExpression>
 					</reportElement>
 					<textElement textAlignment="Right">
@@ -370,14 +372,14 @@
 					<textFieldExpression><![CDATA[$F{l1_budget_all}.multiply( $F{l1_multiplicator} ).setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement uuid="74e79ade-a7c1-4e52-beab-fc9afd844523" x="234" y="9" width="40" height="9"/>
+					<reportElement x="234" y="9" width="40" height="9" uuid="74e79ade-a7c1-4e52-beab-fc9afd844523"/>
 					<textElement textAlignment="Center">
 						<font size="6" isBold="true" pdfFontName="Helvetica-Bold"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{l1_value}]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0">
-					<reportElement uuid="b84adefd-c439-476f-b860-a25405b6a500" x="274" y="9" width="62" height="9">
+					<reportElement x="274" y="9" width="62" height="9" uuid="b84adefd-c439-476f-b860-a25405b6a500">
 						<printWhenExpression><![CDATA[new Boolean ($F{l1_1000}.multiply( $F{l1_multiplicator} ).floatValue() != 0)]]></printWhenExpression>
 					</reportElement>
 					<textElement textAlignment="Right">
@@ -386,7 +388,7 @@
 					<textFieldExpression><![CDATA[$F{l1_1000}.multiply( $F{l1_multiplicator} ).setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0">
-					<reportElement uuid="e0d70c0f-eccd-4ea6-83a1-af313abee2c5" x="742" y="9" width="62" height="9">
+					<reportElement x="742" y="9" width="62" height="9" uuid="e0d70c0f-eccd-4ea6-83a1-af313abee2c5">
 						<printWhenExpression><![CDATA[new Boolean ($F{l1_budget_1000}.multiply( $F{l1_multiplicator} ).floatValue() != 0)]]></printWhenExpression>
 					</reportElement>
 					<textElement textAlignment="Right">
@@ -395,7 +397,7 @@
 					<textFieldExpression><![CDATA[$F{l1_budget_1000}.multiply( $F{l1_multiplicator} ).setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0">
-					<reportElement uuid="ecbe95f1-7e2f-43c3-a0fc-0e6a78d06dad" x="584" y="9" width="62" height="9">
+					<reportElement x="584" y="9" width="62" height="9" uuid="ecbe95f1-7e2f-43c3-a0fc-0e6a78d06dad">
 						<printWhenExpression><![CDATA[new Boolean ($F{l1_all}.multiply( $F{l1_multiplicator} ).floatValue() != 0)]]></printWhenExpression>
 					</reportElement>
 					<textElement textAlignment="Right">
@@ -404,7 +406,7 @@
 					<textFieldExpression><![CDATA[$F{l1_all}.multiply( $F{l1_multiplicator} ).setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
 				</textField>
 				<textField pattern="0.00">
-					<reportElement uuid="3a29bf92-e6f3-4810-bcfe-f95c1a631075" x="1052" y="9" width="62" height="9">
+					<reportElement x="1052" y="9" width="62" height="9" uuid="3a29bf92-e6f3-4810-bcfe-f95c1a631075">
 						<printWhenExpression><![CDATA[new Boolean($F{l1_budget_percentage_all}.floatValue() != 0 ||     $F{l1_budget_all}.floatValue() != 0 )]]></printWhenExpression>
 					</reportElement>
 					<textElement textAlignment="Right">
@@ -413,7 +415,7 @@
 					<textFieldExpression><![CDATA[$F{l1_budget_percentage_all}]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0">
-					<reportElement uuid="abc1feb1-6365-4098-b3e2-b56291882fa9" x="398" y="9" width="62" height="9">
+					<reportElement x="398" y="9" width="62" height="9" uuid="abc1feb1-6365-4098-b3e2-b56291882fa9">
 						<printWhenExpression><![CDATA[new Boolean ($F{l1_100}.multiply( $F{l1_multiplicator} ).floatValue() != 0)]]></printWhenExpression>
 					</reportElement>
 					<textElement textAlignment="Right">
@@ -422,7 +424,7 @@
 					<textFieldExpression><![CDATA[$F{l1_100}.multiply( $F{l1_multiplicator} ).setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0">
-					<reportElement uuid="801b683a-d414-4742-8598-163f85d082e3" x="866" y="9" width="62" height="9">
+					<reportElement x="866" y="9" width="62" height="9" uuid="801b683a-d414-4742-8598-163f85d082e3">
 						<printWhenExpression><![CDATA[new Boolean ($F{l1_budget_100}.multiply( $F{l1_multiplicator} ).floatValue() != 0)]]></printWhenExpression>
 					</reportElement>
 					<textElement textAlignment="Right">
@@ -431,7 +433,7 @@
 					<textFieldExpression><![CDATA[$F{l1_budget_100}.multiply( $F{l1_multiplicator} ).setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0">
-					<reportElement uuid="c6cdec76-3886-45f7-b459-26ff05a9e037" x="928" y="9" width="62" height="9">
+					<reportElement x="928" y="9" width="62" height="9" uuid="c6cdec76-3886-45f7-b459-26ff05a9e037">
 						<printWhenExpression><![CDATA[new Boolean ($F{l1_budget_150}.multiply( $F{l1_multiplicator} ).floatValue() != 0)]]></printWhenExpression>
 					</reportElement>
 					<textElement textAlignment="Right">
@@ -440,7 +442,7 @@
 					<textFieldExpression><![CDATA[$F{l1_budget_150}.multiply( $F{l1_multiplicator} ).setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0">
-					<reportElement uuid="aa6da84c-e51a-43cd-922b-ce69c491d159" x="336" y="9" width="62" height="9">
+					<reportElement x="336" y="9" width="62" height="9" uuid="aa6da84c-e51a-43cd-922b-ce69c491d159">
 						<printWhenExpression><![CDATA[new Boolean ($F{l1_2000}.multiply( $F{l1_multiplicator} ).floatValue() != 0)]]></printWhenExpression>
 					</reportElement>
 					<textElement textAlignment="Right">
@@ -449,7 +451,7 @@
 					<textFieldExpression><![CDATA[$F{l1_2000}.multiply( $F{l1_multiplicator} ).setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0">
-					<reportElement uuid="9dfbd0c1-9a4f-4a24-b8f9-0cf78710c08c" x="460" y="9" width="62" height="9">
+					<reportElement x="460" y="9" width="62" height="9" uuid="9dfbd0c1-9a4f-4a24-b8f9-0cf78710c08c">
 						<printWhenExpression><![CDATA[new Boolean ($F{l1_150}.multiply( $F{l1_multiplicator} ).floatValue() != 0)]]></printWhenExpression>
 					</reportElement>
 					<textElement textAlignment="Right">
@@ -458,7 +460,7 @@
 					<textFieldExpression><![CDATA[$F{l1_150}.multiply( $F{l1_multiplicator} ).setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0">
-					<reportElement uuid="519db982-8eb5-4578-b8e7-f5ee1a5ee7a0" x="522" y="9" width="62" height="9">
+					<reportElement x="522" y="9" width="62" height="9" uuid="519db982-8eb5-4578-b8e7-f5ee1a5ee7a0">
 						<printWhenExpression><![CDATA[new Boolean ($F{l1_other}.multiply( $F{l1_multiplicator} ).floatValue() != 0)]]></printWhenExpression>
 					</reportElement>
 					<textElement textAlignment="Right">
@@ -467,7 +469,7 @@
 					<textFieldExpression><![CDATA[$F{l1_other}.multiply( $F{l1_multiplicator} ).setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0">
-					<reportElement uuid="5012efb5-d303-40aa-bcf0-cd9d0afc8936" x="804" y="9" width="62" height="9">
+					<reportElement x="804" y="9" width="62" height="9" uuid="5012efb5-d303-40aa-bcf0-cd9d0afc8936">
 						<printWhenExpression><![CDATA[new Boolean ($F{l1_budget_2000}.multiply( $F{l1_multiplicator} ).floatValue() != 0)]]></printWhenExpression>
 					</reportElement>
 					<textElement textAlignment="Right">
@@ -476,7 +478,7 @@
 					<textFieldExpression><![CDATA[$F{l1_budget_2000}.multiply( $F{l1_multiplicator} ).setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
 				</textField>
 				<line>
-					<reportElement uuid="194c3870-6bc4-4eed-8827-f03e48acd73d" x="664" y="0" width="1" height="18"/>
+					<reportElement x="664" y="0" width="1" height="18" uuid="194c3870-6bc4-4eed-8827-f03e48acd73d"/>
 				</line>
 			</band>
 		</groupFooter>
@@ -486,21 +488,21 @@
 		<groupHeader>
 			<band height="9">
 				<textField>
-					<reportElement uuid="909090fe-b971-4832-af32-72940ff5fe6f" x="38" y="0" width="196" height="9"/>
+					<reportElement x="38" y="0" width="196" height="9" uuid="909090fe-b971-4832-af32-72940ff5fe6f"/>
 					<textElement>
 						<font size="6"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{l2_name}]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement uuid="74e79ade-a7c1-4e52-beab-fc9afd844523" x="234" y="0" width="40" height="9"/>
+					<reportElement x="234" y="0" width="40" height="9" uuid="74e79ade-a7c1-4e52-beab-fc9afd844523"/>
 					<textElement textAlignment="Center">
 						<font size="6"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{l2_value}]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0">
-					<reportElement uuid="aa6da84c-e51a-43cd-922b-ce69c491d159" x="336" y="0" width="62" height="9">
+					<reportElement x="336" y="0" width="62" height="9" uuid="aa6da84c-e51a-43cd-922b-ce69c491d159">
 						<printWhenExpression><![CDATA[new Boolean ($F{l2_2000}.multiply( $F{l2_multiplicator} ).floatValue() != 0)]]></printWhenExpression>
 					</reportElement>
 					<textElement textAlignment="Right">
@@ -509,7 +511,7 @@
 					<textFieldExpression><![CDATA[$F{l2_2000}.multiply( $F{l2_multiplicator} ).setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0">
-					<reportElement uuid="b84adefd-c439-476f-b860-a25405b6a500" x="274" y="0" width="62" height="9">
+					<reportElement x="274" y="0" width="62" height="9" uuid="b84adefd-c439-476f-b860-a25405b6a500">
 						<printWhenExpression><![CDATA[new Boolean ($F{l2_1000}.multiply( $F{l2_multiplicator} ).floatValue() != 0)]]></printWhenExpression>
 					</reportElement>
 					<textElement textAlignment="Right">
@@ -518,7 +520,7 @@
 					<textFieldExpression><![CDATA[$F{l2_1000}.multiply( $F{l2_multiplicator} ).setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0">
-					<reportElement uuid="9dfbd0c1-9a4f-4a24-b8f9-0cf78710c08c" x="460" y="0" width="62" height="9">
+					<reportElement x="460" y="0" width="62" height="9" uuid="9dfbd0c1-9a4f-4a24-b8f9-0cf78710c08c">
 						<printWhenExpression><![CDATA[new Boolean ($F{l2_150}.multiply( $F{l2_multiplicator} ).floatValue() != 0)]]></printWhenExpression>
 					</reportElement>
 					<textElement textAlignment="Right">
@@ -527,7 +529,7 @@
 					<textFieldExpression><![CDATA[$F{l2_150}.multiply( $F{l2_multiplicator} ).setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0">
-					<reportElement uuid="519db982-8eb5-4578-b8e7-f5ee1a5ee7a0" x="522" y="0" width="62" height="9">
+					<reportElement x="522" y="0" width="62" height="9" uuid="519db982-8eb5-4578-b8e7-f5ee1a5ee7a0">
 						<printWhenExpression><![CDATA[new Boolean ($F{l2_other}.multiply( $F{l2_multiplicator} ).floatValue() != 0)]]></printWhenExpression>
 					</reportElement>
 					<textElement textAlignment="Right">
@@ -536,7 +538,7 @@
 					<textFieldExpression><![CDATA[$F{l2_other}.multiply( $F{l2_multiplicator} ).setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0">
-					<reportElement uuid="ecbe95f1-7e2f-43c3-a0fc-0e6a78d06dad" x="584" y="0" width="62" height="9">
+					<reportElement x="584" y="0" width="62" height="9" uuid="ecbe95f1-7e2f-43c3-a0fc-0e6a78d06dad">
 						<printWhenExpression><![CDATA[new Boolean ($F{l2_all}.multiply( $F{l2_multiplicator} ).floatValue() != 0)]]></printWhenExpression>
 					</reportElement>
 					<textElement textAlignment="Right">
@@ -545,7 +547,7 @@
 					<textFieldExpression><![CDATA[$F{l2_all}.multiply( $F{l2_multiplicator} ).setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0">
-					<reportElement uuid="5012efb5-d303-40aa-bcf0-cd9d0afc8936" x="804" y="0" width="62" height="9">
+					<reportElement x="804" y="0" width="62" height="9" uuid="5012efb5-d303-40aa-bcf0-cd9d0afc8936">
 						<printWhenExpression><![CDATA[new Boolean ($F{l2_budget_2000}.multiply( $F{l2_multiplicator} ).floatValue() != 0)]]></printWhenExpression>
 					</reportElement>
 					<textElement textAlignment="Right">
@@ -554,7 +556,7 @@
 					<textFieldExpression><![CDATA[$F{l2_budget_2000}.multiply( $F{l2_multiplicator} ).setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0">
-					<reportElement uuid="e0d70c0f-eccd-4ea6-83a1-af313abee2c5" x="742" y="0" width="62" height="9">
+					<reportElement x="742" y="0" width="62" height="9" uuid="e0d70c0f-eccd-4ea6-83a1-af313abee2c5">
 						<printWhenExpression><![CDATA[new Boolean ($F{l2_budget_1000}.multiply( $F{l2_multiplicator} ).floatValue() != 0)]]></printWhenExpression>
 					</reportElement>
 					<textElement textAlignment="Right">
@@ -563,7 +565,7 @@
 					<textFieldExpression><![CDATA[$F{l2_budget_1000}.multiply( $F{l2_multiplicator} ).setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0">
-					<reportElement uuid="801b683a-d414-4742-8598-163f85d082e3" x="866" y="0" width="62" height="9">
+					<reportElement x="866" y="0" width="62" height="9" uuid="801b683a-d414-4742-8598-163f85d082e3">
 						<printWhenExpression><![CDATA[new Boolean ($F{l2_budget_100}.multiply( $F{l2_multiplicator} ).floatValue() != 0)]]></printWhenExpression>
 					</reportElement>
 					<textElement textAlignment="Right">
@@ -572,7 +574,7 @@
 					<textFieldExpression><![CDATA[$F{l2_budget_100}.multiply( $F{l2_multiplicator} ).setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0">
-					<reportElement uuid="c6cdec76-3886-45f7-b459-26ff05a9e037" x="928" y="0" width="62" height="9">
+					<reportElement x="928" y="0" width="62" height="9" uuid="c6cdec76-3886-45f7-b459-26ff05a9e037">
 						<printWhenExpression><![CDATA[new Boolean ($F{l2_budget_150}.multiply( $F{l2_multiplicator} ).floatValue() != 0)]]></printWhenExpression>
 					</reportElement>
 					<textElement textAlignment="Right">
@@ -581,7 +583,7 @@
 					<textFieldExpression><![CDATA[$F{l2_budget_150}.multiply( $F{l2_multiplicator} ).setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0">
-					<reportElement uuid="2a90ce34-fb60-47b2-92c4-23acf2632939" x="990" y="0" width="62" height="9">
+					<reportElement x="990" y="0" width="62" height="9" uuid="2a90ce34-fb60-47b2-92c4-23acf2632939">
 						<printWhenExpression><![CDATA[new Boolean ($F{l2_budget_all}.multiply( $F{l2_multiplicator} ).floatValue() != 0)]]></printWhenExpression>
 					</reportElement>
 					<textElement textAlignment="Right">
@@ -590,7 +592,7 @@
 					<textFieldExpression><![CDATA[$F{l2_budget_all}.multiply( $F{l2_multiplicator} ).setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
 				</textField>
 				<textField pattern="0.00">
-					<reportElement uuid="3a29bf92-e6f3-4810-bcfe-f95c1a631075" x="1052" y="0" width="62" height="9">
+					<reportElement x="1052" y="0" width="62" height="9" uuid="3a29bf92-e6f3-4810-bcfe-f95c1a631075">
 						<printWhenExpression><![CDATA[new Boolean($F{l2_budget_percentage_all}.floatValue() != 0 ||     $F{l2_budget_all}.floatValue() != 0 )]]></printWhenExpression>
 					</reportElement>
 					<textElement textAlignment="Right">
@@ -599,10 +601,10 @@
 					<textFieldExpression><![CDATA[$F{l2_budget_percentage_all}]]></textFieldExpression>
 				</textField>
 				<line>
-					<reportElement uuid="194c3870-6bc4-4eed-8827-f03e48acd73d" x="664" y="0" width="1" height="9"/>
+					<reportElement x="664" y="0" width="1" height="9" uuid="194c3870-6bc4-4eed-8827-f03e48acd73d"/>
 				</line>
 				<textField pattern="#,##0">
-					<reportElement uuid="abc1feb1-6365-4098-b3e2-b56291882fa9" x="398" y="0" width="62" height="9">
+					<reportElement x="398" y="0" width="62" height="9" uuid="abc1feb1-6365-4098-b3e2-b56291882fa9">
 						<printWhenExpression><![CDATA[new Boolean ($F{l2_100}.multiply( $F{l2_multiplicator} ).floatValue() != 0)]]></printWhenExpression>
 					</reportElement>
 					<textElement textAlignment="Right">
@@ -622,60 +624,60 @@
 	<title>
 		<band height="40" splitType="Stretch">
 			<textField pattern="">
-				<reportElement uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6" x="81" y="15" width="30" height="9"/>
+				<reportElement x="81" y="15" width="30" height="9" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
 				<textElement>
 					<font size="6" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
-				<textFieldExpression><![CDATA["von"]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{from}]]></textFieldExpression>
 			</textField>
 			<textField pattern="dd.MM.yyyy" isBlankWhenNull="true">
-				<reportElement uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6" x="111" y="23" width="123" height="9"/>
+				<reportElement x="111" y="23" width="123" height="9" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
 				<textElement>
 					<font size="6" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{enddate}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6" x="36" y="15" width="46" height="9"/>
+				<reportElement x="36" y="15" width="46" height="9" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
 				<textElement>
 					<font size="6" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
-				<textFieldExpression><![CDATA["Zeitperiode"]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{timeperiod}]]></textFieldExpression>
 			</textField>
-			<staticText>
-				<reportElement uuid="344b0bb0-0840-4fa2-b03d-7fb1465c766e" x="36" y="0" width="198" height="14"/>
-				<textElement markup="none">
-					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
-				</textElement>
-				<text><![CDATA[Deckungsbeitrag Kurzversion]]></text>
-			</staticText>
 			<textField pattern="dd.MM.yyyy" isBlankWhenNull="true">
-				<reportElement uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6" x="111" y="15" width="123" height="9"/>
+				<reportElement x="111" y="15" width="123" height="9" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
 				<textElement>
 					<font size="6" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{startdate}]]></textFieldExpression>
 			</textField>
 			<textField pattern="">
-				<reportElement uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6" x="81" y="23" width="30" height="9"/>
+				<reportElement x="81" y="23" width="30" height="9" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
 				<textElement>
 					<font size="6" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
-				<textFieldExpression><![CDATA["bis"]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{to}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="36" y="0" width="198" height="14" uuid="c9960ff4-2c63-4ce1-9359-8f82eea4b60d"/>
+				<textElement markup="none">
+					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{marginalcosting}]]></textFieldExpression>
 			</textField>
 		</band>
 	</title>
 	<pageHeader>
 		<band height="20" splitType="Stretch">
 			<textField pattern="">
-				<reportElement uuid="b8f331b0-8509-4047-917b-10046463e375" x="234" y="1" width="40" height="9"/>
+				<reportElement x="234" y="1" width="40" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
 				<textElement textAlignment="Center">
 					<font size="6" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
-				<textFieldExpression><![CDATA["KST"]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{activity}]]></textFieldExpression>
 			</textField>
 			<textField pattern="">
-				<reportElement uuid="b8f331b0-8509-4047-917b-10046463e375" x="460" y="1" width="62" height="9"/>
+				<reportElement x="460" y="1" width="62" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
 				<box rightPadding="1"/>
 				<textElement textAlignment="Right">
 					<font size="6" isBold="true" pdfFontName="Helvetica-Bold"/>
@@ -683,7 +685,7 @@
 				<textFieldExpression><![CDATA["150"]]></textFieldExpression>
 			</textField>
 			<textField pattern="">
-				<reportElement uuid="b8f331b0-8509-4047-917b-10046463e375" x="336" y="1" width="62" height="9"/>
+				<reportElement x="336" y="1" width="62" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
 				<box rightPadding="1"/>
 				<textElement textAlignment="Right">
 					<font size="6" isBold="true" pdfFontName="Helvetica-Bold"/>
@@ -691,7 +693,7 @@
 				<textFieldExpression><![CDATA["2000"]]></textFieldExpression>
 			</textField>
 			<textField pattern="">
-				<reportElement uuid="b8f331b0-8509-4047-917b-10046463e375" x="398" y="1" width="62" height="9"/>
+				<reportElement x="398" y="1" width="62" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
 				<box rightPadding="1"/>
 				<textElement textAlignment="Right">
 					<font size="6" isBold="true" pdfFontName="Helvetica-Bold"/>
@@ -699,7 +701,7 @@
 				<textFieldExpression><![CDATA["100"]]></textFieldExpression>
 			</textField>
 			<textField pattern="">
-				<reportElement uuid="b8f331b0-8509-4047-917b-10046463e375" x="274" y="1" width="62" height="9"/>
+				<reportElement x="274" y="1" width="62" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
 				<box rightPadding="1"/>
 				<textElement textAlignment="Right">
 					<font size="6" isBold="true" pdfFontName="Helvetica-Bold"/>
@@ -707,32 +709,32 @@
 				<textFieldExpression><![CDATA["1000"]]></textFieldExpression>
 			</textField>
 			<textField pattern="">
-				<reportElement uuid="b8f331b0-8509-4047-917b-10046463e375" x="584" y="1" width="62" height="9"/>
+				<reportElement x="584" y="1" width="62" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
 				<box rightPadding="1"/>
 				<textElement textAlignment="Right">
 					<font size="6" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
-				<textFieldExpression><![CDATA["Total"]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{total}]]></textFieldExpression>
 			</textField>
 			<textField pattern="">
-				<reportElement uuid="b8f331b0-8509-4047-917b-10046463e375" x="522" y="1" width="62" height="9">
+				<reportElement x="522" y="1" width="62" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375">
 					<printWhenExpression><![CDATA[$F{isdisplayother}]]></printWhenExpression>
 				</reportElement>
 				<box rightPadding="1"/>
 				<textElement textAlignment="Right">
 					<font size="6" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
-				<textFieldExpression><![CDATA["Andere"]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{other}]]></textFieldExpression>
 			</textField>
 			<textField pattern="">
-				<reportElement uuid="b8f331b0-8509-4047-917b-10046463e375" x="680" y="1" width="62" height="9"/>
+				<reportElement x="680" y="1" width="62" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
 				<textElement textAlignment="Center">
 					<font size="6" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
-				<textFieldExpression><![CDATA["Budget"]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{budget}]]></textFieldExpression>
 			</textField>
 			<textField pattern="">
-				<reportElement uuid="b8f331b0-8509-4047-917b-10046463e375" x="742" y="1" width="62" height="9"/>
+				<reportElement x="742" y="1" width="62" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
 				<box rightPadding="1"/>
 				<textElement textAlignment="Right">
 					<font size="6" isBold="true" pdfFontName="Helvetica-Bold"/>
@@ -740,7 +742,7 @@
 				<textFieldExpression><![CDATA["1000"]]></textFieldExpression>
 			</textField>
 			<textField pattern="">
-				<reportElement uuid="b8f331b0-8509-4047-917b-10046463e375" x="866" y="1" width="62" height="9"/>
+				<reportElement x="866" y="1" width="62" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
 				<box rightPadding="1"/>
 				<textElement textAlignment="Right">
 					<font size="6" isBold="true" pdfFontName="Helvetica-Bold"/>
@@ -748,7 +750,7 @@
 				<textFieldExpression><![CDATA["100"]]></textFieldExpression>
 			</textField>
 			<textField pattern="">
-				<reportElement uuid="b8f331b0-8509-4047-917b-10046463e375" x="928" y="1" width="62" height="9"/>
+				<reportElement x="928" y="1" width="62" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
 				<box rightPadding="1"/>
 				<textElement textAlignment="Right">
 					<font size="6" isBold="true" pdfFontName="Helvetica-Bold"/>
@@ -756,15 +758,15 @@
 				<textFieldExpression><![CDATA["150"]]></textFieldExpression>
 			</textField>
 			<textField pattern="">
-				<reportElement uuid="b8f331b0-8509-4047-917b-10046463e375" x="990" y="1" width="62" height="9"/>
+				<reportElement x="990" y="1" width="62" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
 				<box rightPadding="1"/>
 				<textElement textAlignment="Right">
 					<font size="6" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
-				<textFieldExpression><![CDATA["Total"]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{total}]]></textFieldExpression>
 			</textField>
 			<textField pattern="">
-				<reportElement uuid="b8f331b0-8509-4047-917b-10046463e375" x="804" y="1" width="62" height="9"/>
+				<reportElement x="804" y="1" width="62" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
 				<box rightPadding="1"/>
 				<textElement textAlignment="Right">
 					<font size="6" isBold="true" pdfFontName="Helvetica-Bold"/>
@@ -772,7 +774,7 @@
 				<textFieldExpression><![CDATA["2000"]]></textFieldExpression>
 			</textField>
 			<textField pattern="">
-				<reportElement uuid="b8f331b0-8509-4047-917b-10046463e375" x="1052" y="1" width="62" height="9"/>
+				<reportElement x="1052" y="1" width="62" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
 				<box rightPadding="1"/>
 				<textElement textAlignment="Right">
 					<font size="6" isBold="true" pdfFontName="Helvetica-Bold"/>
@@ -780,14 +782,14 @@
 				<textFieldExpression><![CDATA["%"]]></textFieldExpression>
 			</textField>
 			<textField pattern="">
-				<reportElement uuid="b8f331b0-8509-4047-917b-10046463e375" x="234" y="10" width="40" height="9"/>
+				<reportElement x="234" y="10" width="40" height="9" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
 				<textElement textAlignment="Center">
 					<font size="6" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
-				<textFieldExpression><![CDATA["Konto"]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{account}]]></textFieldExpression>
 			</textField>
 			<line>
-				<reportElement uuid="194c3870-6bc4-4eed-8827-f03e48acd73d" x="664" y="0" width="1" height="20"/>
+				<reportElement x="664" y="0" width="1" height="20" uuid="194c3870-6bc4-4eed-8827-f03e48acd73d"/>
 			</line>
 		</band>
 	</pageHeader>
