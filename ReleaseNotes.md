@@ -10,11 +10,14 @@ Additional notes:
 
 Here come the actual release notes:
 
-# metasfresh 5.31 (2017-43)
+# metasfresh 5.32 (2017-43)
 
 **release for week 2017-43**
 
 ## Features
+* metasfresh-app
+  * [#2729](https://github.com/metasfresh/metasfresh/issues/2729) Window Design Webui: Add missing fields to window Tourversion
+    * New Fields added to Tourversion widnow in WebUI. Translations for en_US improved.
 
 ## Fixes
 
