@@ -9,10 +9,8 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.OptionalInt;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.util.Services;
@@ -130,8 +128,8 @@ public class HUTraceRepositoryTests
 				.build());
 
 		final List<HUTraceEvent> result2 = huTraceRepository.query(query);
-		assertThat(result2.size(), is(1)); // still just one..
-		assertThat(result.get(0), is(result2.get(0)));
+		assertThat(result2).hasSize(1); // still just one!
+		assertThat(result.get(0)).isEqualTo(result2.get(0));
 	}
 
 	/**
@@ -407,25 +405,24 @@ public class HUTraceRepositoryTests
 	}
 
 	@Test
-	public void configureQueryBuilder_orgId()
+	public void queryToSelection()
 	{
-		final HUTraceEventQuery query = HUTraceEventQuery.builder().orgId(30).build();
-		final boolean emptyQuery = HUTraceRepository.configureQueryBuilder(query, createInitialQuerybuilder());
-		assertThat(emptyQuery).isFalse();
-	}
+		final Instant eventTime = Instant.now();
 
-	@Test
-	public void configureQueryBuilder_huTraceEventId()
-	{
-		final HUTraceEventQuery query = HUTraceEventQuery.builder().huTraceEventId(OptionalInt.of(30)).build();
-		final boolean emptyQuery = HUTraceRepository.configureQueryBuilder(query, createInitialQuerybuilder());
-		assertThat(emptyQuery).isFalse();
-	}
+		final HUTraceEvent event1 = commonEventBuilder
+				.eventTime(eventTime)
+				.topLevelHuId(2)
+				.vhuId(12)
+				.build();
+		huTraceRepository.addEvent(event1);
+		final int selectionId = huTraceRepository.queryToSelection(event1.asQuery());
+		assertThat(selectionId).isGreaterThan(0);
 
-	private IQueryBuilder<I_M_HU_Trace> createInitialQuerybuilder()
-	{
-		final IQueryBuilder<I_M_HU_Trace> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_M_HU_Trace.class)
-				.addOnlyActiveRecordsFilter();
-		return queryBuilder;
+		final List<I_M_HU_Trace> result = Services.get(IQueryBL.class).createQueryBuilder(I_M_HU_Trace.class)
+				.setOnlySelection(selectionId)
+				.create()
+				.list();
+
+		assertThat(result).hasSize(1);
 	}
 }

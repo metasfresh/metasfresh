@@ -49,9 +49,9 @@ import lombok.experimental.Wither;
 @Wither
 public class HUTraceEventQuery
 {
-	enum RecursionMode
+	public enum RecursionMode
 	{
-		BACKWARD, FORWARD, NONE
+		BACKWARD, FORWARD, BOTH, NONE
 	}
 
 	public enum EventTimeOperator
