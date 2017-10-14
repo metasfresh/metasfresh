@@ -62,7 +62,7 @@ public class HUTraceResultExtender implements SqlDocumentFilterConverter
 		{
 			return converter.getSql(sqlParamsOut, filter, sqlOpts); // do whatever the system usually does
 		}
-		final HUTraceEventQuery huTraceQuery = HUTraceSqlConverterDecorator.createTraceQueryFromDocumentFilter(filter);
+		final HUTraceEventQuery huTraceQuery = HuTraceQueryCreator.createTraceQueryFromDocumentFilter(filter);
 		final int selectionId = huTraceRepository.queryToSelection(huTraceQuery);
 
 		final String sqlPlaceHolder = sqlParamsOut.placeholder(selectionId);

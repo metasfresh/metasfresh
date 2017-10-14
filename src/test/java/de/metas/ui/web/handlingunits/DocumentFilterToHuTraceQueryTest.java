@@ -2,10 +2,6 @@ package de.metas.ui.web.handlingunits;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.time.LocalDate;
-import java.time.Month;
-import java.time.Period;
-import java.time.temporal.ChronoUnit;
 import java.util.Date;
 
 import org.adempiere.exceptions.AdempiereException;
@@ -21,7 +17,7 @@ import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilterParam;
 import de.metas.ui.web.document.filter.DocumentFilterParam.Operator;
-import de.metas.ui.web.handlingunits.trace.HUTraceSqlConverterDecorator;
+import de.metas.ui.web.handlingunits.trace.HuTraceQueryCreator;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
 
@@ -47,7 +43,7 @@ import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
  * #L%
  */
 
-public class HUTraceSqlConverterDecoratorTest
+public class DocumentFilterToHuTraceQueryTest
 {
 
 	@Before
@@ -60,7 +56,7 @@ public class HUTraceSqlConverterDecoratorTest
 	public void createTraceQueryFromDocumentFilter_empty()
 	{
 		final DocumentFilter emptyFilter = DocumentFilter.builder().setFilterId("emptyFilter").build();
-		final HUTraceEventQuery huTraceQuery = HUTraceSqlConverterDecorator.createTraceQueryFromDocumentFilter(emptyFilter);
+		final HUTraceEventQuery huTraceQuery = HuTraceQueryCreator.createTraceQueryFromDocumentFilter(emptyFilter);
 		assertThat(huTraceQuery).isNotNull();
 	}
 
@@ -71,7 +67,7 @@ public class HUTraceSqlConverterDecoratorTest
 				.setFilterId("simple-M_InOut_ID-filter")
 				.addParameter(DocumentFilterParam.ofNameOperatorValue(I_M_HU_Trace.COLUMNNAME_M_InOut_ID, Operator.EQUAL, IntegerLookupValue.of(20, "test-inout-id")))
 				.build();
-		final HUTraceEventQuery huTraceQuery = HUTraceSqlConverterDecorator.createTraceQueryFromDocumentFilter(emptyFilter);
+		final HUTraceEventQuery huTraceQuery = HuTraceQueryCreator.createTraceQueryFromDocumentFilter(emptyFilter);
 		assertThat(huTraceQuery).isNotNull();
 		assertThat(huTraceQuery.getInOutId()).isEqualTo(20);
 	}
@@ -84,7 +80,7 @@ public class HUTraceSqlConverterDecoratorTest
 				.addParameter(DocumentFilterParam.ofNameOperatorValue(I_M_HU_Trace.COLUMNNAME_M_InOut_ID, Operator.EQUAL, IntegerLookupValue.of(23, "test-inout-id")))
 				.addParameter(DocumentFilterParam.ofNameOperatorValue(I_M_HU_Trace.COLUMNNAME_M_InOut_ID, Operator.EQUAL, IntegerLookupValue.of(24, "inconsistent-other-test-inout-id")))
 				.build();
-		HUTraceSqlConverterDecorator.createTraceQueryFromDocumentFilter(emptyFilter);
+		HuTraceQueryCreator.createTraceQueryFromDocumentFilter(emptyFilter);
 	}
 
 	@Test
@@ -105,14 +101,12 @@ public class HUTraceSqlConverterDecoratorTest
 				.addParameter(DocumentFilterParam.ofNameOperatorValue(I_M_HU_Trace.COLUMNNAME_M_ShipmentSchedule_ID, Operator.EQUAL, IntegerLookupValue.of(120, "test-M_ShipmentSchedule_ID")))
 				.addParameter(DocumentFilterParam.ofNameOperatorValue(I_M_HU_Trace.COLUMNNAME_PP_Cost_Collector_ID, Operator.EQUAL, IntegerLookupValue.of(130, "test-PP_Cost_Collector_ID")))
 				.addParameter(DocumentFilterParam.ofNameOperatorValue(I_M_HU_Trace.COLUMNNAME_PP_Order_ID, Operator.EQUAL, IntegerLookupValue.of(140, "test-PP_Order_ID")))
-				// TODO: handle eventdate and qty
-				// .addParameter(DocumentFilterParam.ofNameOperatorValue(I_M_HU_Trace.COLUMNNAME_Qty, Operator.EQUAL, IntegerLookupValue.of(150, "test-inout-id")))
 				.addParameter(DocumentFilterParam.ofNameOperatorValue(I_M_HU_Trace.COLUMNNAME_EventTime, Operator.EQUAL, TimeUtil.parseTimestamp("2017-10-13")))
 				.addParameter(DocumentFilterParam.ofNameOperatorValue(I_M_HU_Trace.COLUMNNAME_VHU_ID, Operator.EQUAL, IntegerLookupValue.of(160, "test-VHU_ID")))
 				.addParameter(DocumentFilterParam.ofNameOperatorValue(I_M_HU_Trace.COLUMNNAME_VHU_Source_ID, Operator.EQUAL, IntegerLookupValue.of(170, "test-VHU_Source_ID")))
 				.addParameter(DocumentFilterParam.ofNameOperatorValue(I_M_HU_Trace.COLUMNNAME_VHUStatus, Operator.EQUAL, StringLookupValue.of(X_M_HU_Trace.VHUSTATUS_Active, "test-VHUStatus")))
 				.build();
-		final HUTraceEventQuery huTraceQuery = HUTraceSqlConverterDecorator.createTraceQueryFromDocumentFilter(filter);
+		final HUTraceEventQuery huTraceQuery = HuTraceQueryCreator.createTraceQueryFromDocumentFilter(filter);
 		assertThat(huTraceQuery).isNotNull();
 		assertThat(huTraceQuery.getOrgId()).isEqualTo(20);
 		assertThat(huTraceQuery.getDocTypeId().getAsInt()).isEqualTo(30);
@@ -142,7 +136,7 @@ public class HUTraceSqlConverterDecoratorTest
 				.setFilterId("filter")
 				.addParameter(createEventTimeBetweenParameter(date, dateTo))
 				.build();
-		final HUTraceEventQuery huTraceQuery = HUTraceSqlConverterDecorator.createTraceQueryFromDocumentFilter(filter);
+		final HUTraceEventQuery huTraceQuery = HuTraceQueryCreator.createTraceQueryFromDocumentFilter(filter);
 		assertThat(huTraceQuery.getEventTime()).isEqualTo(date.toInstant());
 		assertThat(huTraceQuery.getEventTimeOperator()).isEqualTo(EventTimeOperator.BETWEEN);
 		assertThat(huTraceQuery.getEventTimeTo()).isEqualTo(dateTo.toInstant());
@@ -155,19 +149,5 @@ public class HUTraceSqlConverterDecoratorTest
 				.setOperator(Operator.BETWEEN)
 				.setValue(date)
 				.setValueTo(dateTo).build();
-	}
-
-	@Test
-	public void test()
-	{
-		LocalDate today = LocalDate.now();
-		LocalDate birthday = LocalDate.of(1979, Month.FEBRUARY, 5); // You are 38 years, 8 months, and 8 days old. (14130 days total)
-
-
-		Period p = Period.between(birthday, today);
-		long p2 = ChronoUnit.DAYS.between(birthday, today);
-		System.out.println("You are " + p.getYears() + " years, " + p.getMonths() +
-				" months, and " + p.getDays() +
-				" days old. (" + p2 + " days total)");
 	}
 }
