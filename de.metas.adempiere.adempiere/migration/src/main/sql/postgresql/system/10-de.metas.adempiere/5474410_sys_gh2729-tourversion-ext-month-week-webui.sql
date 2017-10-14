@@ -273,3 +273,38 @@ UPDATE AD_UI_Element SET AD_UI_ElementGroup_ID=541213, SeqNo=10,Updated=TO_TIMES
 UPDATE AD_UI_Element SET AD_UI_ElementGroup_ID=541213, SeqNo=20,Updated=TO_TIMESTAMP('2017-10-14 14:04:35','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=549088
 ;
 
+-- 2017-10-14T14:09:40.766
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Wöchentlich',Updated=TO_TIMESTAMP('2017-10-14 14:09:40','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=558085
+;
+
+-- 2017-10-14T14:10:03.003
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Wochenintervall',Updated=TO_TIMESTAMP('2017-10-14 14:10:03','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=558086
+;
+
+-- 2017-10-14T14:10:10.473
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Monatlich',Updated=TO_TIMESTAMP('2017-10-14 14:10:10','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=558102
+;
+
+-- 2017-10-14T14:11:53.916
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Tag im Monat',Updated=TO_TIMESTAMP('2017-10-14 14:11:53','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=558103
+;
+
+-- 2017-10-14T14:12:35.772
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Monatsintervall',Updated=TO_TIMESTAMP('2017-10-14 14:12:35','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=558102
+;
+
+-- 2017-10-14T14:15:56.337
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,558103,0,540800,541212,549091,'F',TO_TIMESTAMP('2017-10-14 14:15:56','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','Y','N','N','Tag im Monat',20,0,0,TO_TIMESTAMP('2017-10-14 14:15:56','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-10-14T14:15:59.196
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET SeqNo=30,Updated=TO_TIMESTAMP('2017-10-14 14:15:59','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=549090
+;
+
