@@ -4851,10 +4851,6 @@ react-dropzone@~4.2.0:
     attr-accept "^1.0.3"
     prop-types "^15.5.7"
 
-react-file-input@~0.2.5:
-  version "0.2.5"
-  resolved "https://registry.yarnpkg.com/react-file-input/-/react-file-input-0.2.5.tgz#a355367d9323d5c6352ddd3cd7ec3582e5c9b245"
-
 react-hot-loader@~3.0.0:
   version "3.0.0"
   resolved "https://registry.yarnpkg.com/react-hot-loader/-/react-hot-loader-3.0.0.tgz#6e28da9d459da8085f5ee8bdd775046ba4b5cd0b"
