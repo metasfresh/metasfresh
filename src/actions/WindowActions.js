@@ -661,96 +661,118 @@ export function getZoomIntoWindow(entity, windowId, docId, tabId, rowId, field){
 
 export function createProcess(processType, viewId, type, ids, tabId, rowId) {
     let pid = null;
-    return (dispatch) => {
-        dispatch(setProcessPending());
 
-        return getProcessData(
-            processType, viewId, type, ids, tabId, rowId
-        ).then( (response) => {
-            if (response.data) {
-                const preparedData = parseToDisplay(response.data.fieldsByName);
+    return async (dispatch) => {
+        await dispatch(setProcessPending());
 
-                pid = response.data.pinstanceId;
+        let response;
 
-                if (Object.keys(preparedData).length === 0) {
-                    startProcess(processType, pid).then(response => {
-                        dispatch(handleProcessResponse(response, processType, pid));
-                    }).catch(err => {
-                        dispatch(closeModal());
+        try {
+            response = await getProcessData(
+                processType,
+                viewId,
+                type,
+                ids,
+                tabId,
+                rowId
+            );
+        } catch (error) {
+            // Close process modal in case when process start failed
+            await dispatch(closeModal());
+            await dispatch(setProcessSaved());
 
-                        dispatch(setProcessSaved());
+            throw error;
+        }
 
-                        throw err;
-                    });
+        if (response.data) {
+            const preparedData = parseToDisplay(response.data.fieldsByName);
+
+            pid = response.data.pinstanceId;
+
+            if (Object.keys(preparedData).length === 0) {
+                let response;
+
+                try {
+                    response = await startProcess(processType, pid);
+
+                    await dispatch(
+                        handleProcessResponse(response, processType, pid)
+                    );
+                } catch (error) {
+                    await dispatch(closeModal());
+                    await dispatch(setProcessSaved());
+
+                    throw error;
                 }
-                else {
-                    dispatch(initDataSuccess({
-                        data: preparedData,
-                        scope: 'modal'
-                    }));
-                    initLayout('process', processType).then(response => {
-                        dispatch(setProcessSaved());
+            } else {
+                await dispatch(initDataSuccess({
+                    data: preparedData,
+                    scope: 'modal'
+                }));
 
-                        const preparedLayout = Object.assign({}, response.data, {
-                            pinstanceId: pid
-                        });
+                let response;
 
-                        return dispatch(initLayoutSuccess(preparedLayout, 'modal'))
-                    }).catch(err => {
-                        dispatch(setProcessSaved());
+                try {
+                    response = await initLayout('process', processType);
 
-                        throw err;
+                    await dispatch(setProcessSaved());
+
+                    const preparedLayout = Object.assign({}, response.data, {
+                        pinstanceId: pid
                     });
+
+                    await dispatch(initLayoutSuccess(preparedLayout, 'modal'));
+                } catch (error) {
+                    await dispatch(setProcessSaved());
+
+                    throw error;
                 }
             }
-        }).catch(err => {
-            // Close process modal in case when process start failed
-            dispatch(closeModal());
-
-            dispatch(setProcessSaved());
-
-            throw err;
-        });
+        }
     }
 }
 
 export function handleProcessResponse(response, type, id, successCallback) {
-    return (dispatch) => {
+    return async dispatch => {
         const {
             error, summary, action
         } = response.data;
 
-        if(error){
-            dispatch(addNotification('Process error', summary, 5000, 'error'));
-            dispatch(setProcessSaved());
+        if (error) {
+            await dispatch(
+                addNotification('Process error', summary, 5000, 'error')
+            );
+            await dispatch(setProcessSaved());
 
             // Close process modal in case when process has failed
-            dispatch(closeModal());
-        }
-        else {
+            await dispatch(closeModal());
+        } else {
             let closeProcessModal = true;
 
-            if(action){
-                switch(action.type){
+            if (action) {
+                switch (action.type) {
                     case 'openView':
-                        dispatch(closeModal());
+                        await dispatch(closeModal());
 
-                        dispatch(openRawModal(action.windowId, action.viewId));
+                        await dispatch(
+                            openRawModal(action.windowId, action.viewId)
+                        );
 
                         break;
                     case 'openReport':
                         openFile(
                             'process', type, id, 'print', action.filename
                         );
+
                         break;
                     case 'openDocument':
-                        dispatch(closeModal());
+                        await dispatch(closeModal());
 
-                        if(action.modal) {
+                        if (action.modal) {
                             // Do not close process modal, since it will be re-used with document view
                             closeProcessModal = false;
 
-                            dispatch(
+                            await dispatch(
                                 openModal(
                                     '', action.windowId, 'window', null, null,
                                     action.advanced ? action.advanced : false,
@@ -758,40 +780,45 @@ export function handleProcessResponse(response, type, id, successCallback) {
                                 )
                             );
                         } else {
-                            dispatch(push(
+                            await dispatch(push(
                                 '/window/' + action.windowId +
                                 '/' + action.documentId
                             ));
                         }
                         break;
                     case 'openIncludedView':
-                        dispatch(setListIncludedView({
+                        await dispatch(setListIncludedView({
                             windowType: action.windowId,
                             viewId: action.viewId,
                         }));
+
                         break;
                     case 'closeIncludedView':
-                        dispatch(closeListIncludedView({
+                        await dispatch(setListIncludedView({
                             windowType: action.windowId,
                             viewId: action.viewId,
                         }));
+
                         break;
                     case 'selectViewRows':
-                        dispatch(selectTableItems(
+                        await dispatch(selectTableItems(
                             action.rowIds, action.windowId
                         ));
+
                         break;
                 }
             }
 
-            if(summary){
-                dispatch(addNotification('Process', summary, 5000, 'primary'))
+            if (summary) {
+                await dispatch(
+                    addNotification('Process', summary, 5000, 'primary')
+                );
             }
 
-            dispatch(setProcessSaved());
+            await dispatch(setProcessSaved());
 
             if (closeProcessModal) {
-                dispatch(closeModal());
+                await dispatch(closeModal());
             }
 
             successCallback && successCallback();
