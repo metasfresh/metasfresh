@@ -1,5 +1,7 @@
 package de.metas.async.processor.impl;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 /*
  * #%L
  * de.metas.async
@@ -13,15 +15,14 @@ package de.metas.async.processor.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.List;
 
@@ -58,10 +59,8 @@ public class SynchronousQueueProcessorTest extends QueueProcessorTestBase
 		final MockedWorkpackageProcessor workpackageProcessor = StaticMockedWorkpackageProcessor.getMockedWorkpackageProcessor();
 		workpackageProcessor
 				.setDefaultResult(Result.SUCCESS)
-				.setException(workpackages.get(5), "test error")
-		// .setResult(workpackages.get(7), Result.SKIPPED)
-		;
-		
+				.setException(workpackages.get(5), "test error");
+
 		workpackages.get(7).setPriority(X_C_Queue_WorkPackage.PRIORITY_Urgent);
 		InterfaceWrapperHelper.save(workpackages.get(7));
 
@@ -80,7 +79,7 @@ public class SynchronousQueueProcessorTest extends QueueProcessorTestBase
 			if (errorExpected != null)
 			{
 				// Exception
-				Assert.assertEquals("Workpackage - Invalid ErrorMsg: " + wp, errorExpected, wp.getErrorMsg());
+				assertThat(wp.getErrorMsg()).as("Workpackage - Invalid ErrorMsg: %s", wp).startsWith(errorExpected);
 				Assert.assertEquals("Workpackage - Invalid Processed: " + wp, false, wp.isProcessed());
 				Assert.assertEquals("Workpackage - Invalid IsError: " + wp, true, wp.isError());
 			}
@@ -114,7 +113,7 @@ public class SynchronousQueueProcessorTest extends QueueProcessorTestBase
 			return null; // no BL needed here.
 		}
 	}
-	
+
 	/**
 	 * @task http://dewiki908/mediawiki/index.php/04298_Async_shall_handle_correctly_workpackage_processor_instantionation_failure_%282013052310000119%29
 	 */
@@ -122,11 +121,11 @@ public class SynchronousQueueProcessorTest extends QueueProcessorTestBase
 	public void test_WorkpackageProcessorClassNotFound()
 	{
 		final IWorkPackageQueueFactory workPackageQueueFactory = Services.get(IWorkPackageQueueFactory.class);
-		
+
 		//
 		// Setup Queue Processor and Work Package processors
 		final I_C_Queue_Processor queueProcessorDef = helper.createQueueProcessor("Test_" + testName.getMethodName(), 10, 10, 1000);
-		
+
 		// create a package processor with a wrong class name.
 		final I_C_Queue_PackageProcessor packageProcessor1 = helper.createPackageProcessor(ctx, StaticMockedWorkpackageProcessor.class);
 		helper.assignPackageProcessor(queueProcessorDef, packageProcessor1);
@@ -137,7 +136,6 @@ public class SynchronousQueueProcessorTest extends QueueProcessorTestBase
 		Assert.assertFalse("Package processor " + packageProcessor1 + " shall not be blacklisted yet",
 				workpackageProcessorFactory.isWorkpackageProcessorBlacklisted(packageProcessor1.getC_Queue_PackageProcessor_ID()));
 
-		
 		//
 		// Create Queue, and fill it with some dummy items
 		final IWorkPackageQueue workpackageQueueForEnqueuing = workPackageQueueFactory.getQueueForEnqueuing(ctx, StaticMockedWorkpackageProcessor.class);
@@ -145,7 +143,7 @@ public class SynchronousQueueProcessorTest extends QueueProcessorTestBase
 
 		// emulate that the class can't be found
 		TestingClassInstanceProvider.instance.throwExceptionForClassName(
-				StaticMockedWorkpackageProcessor.class.getName(), 
+				StaticMockedWorkpackageProcessor.class.getName(),
 				new ClassNotFoundException("unit test method test_WorkpackageProcessorClassNotFound("));
 		final IWorkPackageQueue workpackageQueueForProcessing = workPackageQueueFactory.getQueueForPackageProcessing(queueProcessorDef);
 
