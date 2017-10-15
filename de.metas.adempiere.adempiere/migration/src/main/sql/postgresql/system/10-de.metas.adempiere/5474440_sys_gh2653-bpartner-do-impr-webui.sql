@@ -1023,3 +1023,12 @@ UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-10-15 12:23:51'
 UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-10-15 12:24:11','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Shipment Business Partner' WHERE AD_Field_ID=560267 AND AD_Language='en_US'
 ;
 
+-- 2017-10-15T12:34:34.479
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Beginn Hauptvertrag',Updated=TO_TIMESTAMP('2017-10-15 12:34:34','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=560286
+;
+
+-- 2017-10-15T12:34:40.627
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Ende Hauptvertrag',Updated=TO_TIMESTAMP('2017-10-15 12:34:40','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=560287
+;
