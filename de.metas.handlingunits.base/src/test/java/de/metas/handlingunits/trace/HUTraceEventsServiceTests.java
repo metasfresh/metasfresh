@@ -193,6 +193,7 @@ public class HUTraceEventsServiceTests
 		}
 
 		final HUTraceEventBuilder builder = HUTraceEvent.builder()
+				.orgId(10)
 				.inOutId(12).type(HUTraceType.MATERIAL_SHIPMENT); // note: inOutId and type don't really matter for this test
 
 		huTraceEventsService.createAndAddEvents(builder, ImmutableList.of(user1, user2));

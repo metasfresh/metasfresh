@@ -4,7 +4,6 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.OptionalInt;
 
-import de.metas.handlingunits.trace.HUTraceEventQuery.HUTraceEventQueryBuilder;
 import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.NonNull;
@@ -32,43 +31,70 @@ import lombok.experimental.Wither;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+/**
+ * Used to pass to {@link HUTraceRepository#query(HUTraceEventQuery)} to retrieve {@link HUTraceEvent}s.
+ * 
+ * This class has the properties that {@link HUTraceEvent} has, but the following differences:
+ * <ul>
+ * <li>none of those properties is mandatory, all may be {@code null}
+ * <li>there is the mandatory {@link RecursionMode}
+ * </ul>
+ * 
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
 @Value
 @Builder
 @Wither
-public class HUTraceEvent
+public class HUTraceEventQuery
 {
-	/**
-	 * If the event is coming out of the repo, the ID is present. If we create a new huTraceEvent to be added to the repo, it's not.
-	 */
+	public enum RecursionMode
+	{
+		BACKWARD, FORWARD, BOTH, NONE
+	}
+
+	@NonNull
+	@Default
+	RecursionMode recursionMode = RecursionMode.NONE;
+
+	public enum EventTimeOperator
+	{
+		/**
+		 * only expects {@link #eventTime} to be set.
+		 */
+		EQUAL,
+
+		/**
+		 * Expects both {@link #eventTime} and {@link #eventTimeTo} to be set.
+		 */
+		BETWEEN
+	}
+
+	@Default
+	EventTimeOperator eventTimeOperator = EventTimeOperator.EQUAL;
+
+	Instant eventTime;
+
+	Instant eventTimeTo;
+
 	@NonNull
 	@Default
 	OptionalInt huTraceEventId = OptionalInt.empty();
 
-	@NonNull
-	Integer orgId;
+	int orgId;
 
-	@NonNull
 	HUTraceType type;
 
-	@NonNull
-	Instant eventTime;
-
-	@NonNull
-	Integer vhuId;
+	int vhuId;
 
 	int productId;
 
-	@NonNull
 	BigDecimal qty;
 
-	@NonNull
 	String vhuStatus;
 
-	/**
-	 * The topmost HU as seen from the vhu.
-	 */
-	@NonNull
-	Integer topLevelHuId;
+	int topLevelHuId;
 
 	int vhuSourceId;
 
@@ -85,33 +111,11 @@ public class HUTraceEvent
 	String docStatus;
 
 	/**
-	 * Needs to be {@code null} if not set, because {@code C_DocType_ID=0} means "new".
+	 * Can't be zero if not set, because {@code C_DocType_ID=0} means "new".
 	 */
 	@NonNull
 	@Default
 	OptionalInt docTypeId = OptionalInt.empty();
 
 	int huTrxLineId;
-
-	public HUTraceEventQueryBuilder asQueryBuilder()
-	{
-		return HUTraceEventQuery.builder()
-				.huTraceEventId(huTraceEventId)
-				.orgId(orgId)
-				.type(type)
-				.eventTime(eventTime)
-				.vhuId(vhuId)
-				.productId(productId)
-				.qty(qty)
-				.vhuStatus(vhuStatus)
-				.inOutId(inOutId)
-				.shipmentScheduleId(shipmentScheduleId)
-				.movementId(movementId)
-				.ppCostCollectorId(ppCostCollectorId)
-				.ppOrderId(ppOrderId)
-				.docStatus(docStatus)
-				.docTypeId(docTypeId)
-				.huTrxLineId(huTrxLineId);
-
-	}
 }

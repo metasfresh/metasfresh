@@ -19,7 +19,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.sourcehu.SourceHUsService.MatchingSourceHusQuery;
 import de.metas.handlingunits.trace.HUTraceEvent;
 import de.metas.handlingunits.trace.HUTraceRepository;
-import de.metas.handlingunits.trace.HUTraceSpecification;
+import de.metas.handlingunits.trace.HUTraceEventQuery;
 import de.metas.handlingunits.trace.HUTraceType;
 import lombok.NonNull;
 
@@ -105,7 +105,7 @@ public class HuId2SourceHUsService
 
 		for (final int huId : huIds)
 		{
-			final HUTraceSpecification query = HUTraceSpecification.builder()
+			final HUTraceEventQuery query = HUTraceEventQuery.builder()
 					.type(HUTraceType.TRANSFORM_LOAD)
 					.topLevelHuId(huId)
 					.build();
@@ -130,7 +130,7 @@ public class HuId2SourceHUsService
 		final Set<I_M_HU> topLevelSourceHus = new TreeSet<>(Comparator.comparing(I_M_HU::getM_HU_ID));
 		for (int vhuSourceId : vhuSourceIds)
 		{
-			final HUTraceSpecification query = HUTraceSpecification.builder()
+			final HUTraceEventQuery query = HUTraceEventQuery.builder()
 					.type(HUTraceType.TRANSFORM_LOAD)
 					.vhuId(vhuSourceId)
 					.build();

@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.OptionalInt;
 import java.util.Set;
 import java.util.function.Function;
 
@@ -70,7 +71,6 @@ import lombok.NonNull;
 @Service
 public class HUTraceEventsService
 {
-
 	private static final Logger logger = LogManager.getLogger(HUTraceEventsService.class);
 
 	/**
@@ -104,9 +104,9 @@ public class HUTraceEventsService
 			@NonNull final I_PP_Cost_Collector costCollector)
 	{
 		final HUTraceEventBuilder builder = HUTraceEvent.builder()
-				.costCollectorId(costCollector.getPP_Cost_Collector_ID())
+				.ppCostCollectorId(costCollector.getPP_Cost_Collector_ID())
 				.ppOrderId(costCollector.getPP_Order_ID())
-				.docTypeId(costCollector.getC_DocType_ID())
+				.docTypeId(OptionalInt.of(costCollector.getC_DocType_ID()))
 				.docStatus(costCollector.getDocStatus())
 				.eventTime(costCollector.getMovementDate().toInstant());
 
@@ -128,7 +128,7 @@ public class HUTraceEventsService
 	{
 		final HUTraceEventBuilder builder = HUTraceEvent.builder()
 				.inOutId(inOut.getM_InOut_ID())
-				.docTypeId(inOut.getC_DocType_ID())
+				.docTypeId(OptionalInt.of(inOut.getC_DocType_ID()))
 				.docStatus(inOut.getDocStatus())
 				.eventTime(inOut.getMovementDate().toInstant());
 
@@ -151,7 +151,7 @@ public class HUTraceEventsService
 	{
 		final HUTraceEventBuilder builder = HUTraceEvent.builder()
 				.movementId(movement.getM_Movement_ID())
-				.docTypeId(movement.getC_DocType_ID())
+				.docTypeId(OptionalInt.of(movement.getC_DocType_ID()))
 				.docStatus(movement.getDocStatus())
 				.type(HUTraceType.MATERIAL_MOVEMENT)
 				.eventTime(movement.getMovementDate().toInstant());
@@ -163,6 +163,7 @@ public class HUTraceEventsService
 			@NonNull final I_M_ShipmentSchedule_QtyPicked shipmentScheduleQtyPicked)
 	{
 		final HUTraceEventBuilder builder = HUTraceEvent.builder()
+				.orgId(shipmentScheduleQtyPicked.getAD_Org_ID())
 				.eventTime(shipmentScheduleQtyPicked.getUpdated().toInstant())
 				.shipmentScheduleId(shipmentScheduleQtyPicked.getM_ShipmentSchedule_ID())
 				.type(HUTraceType.MATERIAL_PICKING);
@@ -249,21 +250,20 @@ public class HUTraceEventsService
 
 		// gets the VHU IDs
 		// this code is called twice, but I don't want to pollute the class with a method
-		final Function<I_M_HU_Trx_Line, List<I_M_HU>> getVhus = huTrxLine ->
+		final Function<I_M_HU_Trx_Line, List<I_M_HU>> getVhus = huTrxLine -> {
+			if (huTrxLine.getVHU_Item_ID() > 0)
 			{
-				if (huTrxLine.getVHU_Item_ID() > 0)
-				{
-					return ImmutableList.of(huTrxLine.getVHU_Item().getM_HU());
-				}
-				else if (huTrxLine.getM_HU_ID() > 0)
-				{
-					return huAccessService.retrieveVhus(huTrxLine.getM_HU());
-				}
-				else
-				{
-					return ImmutableList.of();
-				}
-			};
+				return ImmutableList.of(huTrxLine.getVHU_Item().getM_HU());
+			}
+			else if (huTrxLine.getM_HU_ID() > 0)
+			{
+				return huAccessService.retrieveVhus(huTrxLine.getM_HU());
+			}
+			else
+			{
+				return ImmutableList.of();
+			}
+		};
 
 		final Map<Boolean, List<HUTraceEvent>> result = new HashMap<>();
 		result.put(true, new ArrayList<>());
@@ -323,13 +323,16 @@ public class HUTraceEventsService
 					}
 
 					// create a trace record for the split's "destination"
-					final HUTraceEvent splitDestEvent = traceEventBuilder.build();
+					final HUTraceEvent splitDestEvent = traceEventBuilder
+							.orgId(trxLine.getAD_Org_ID())
+							.build();
 
 					final int sourceVhuTopLevelHuId = huAccessService.retrieveTopLevelHuId(sourceVhu);
 					Check.errorIf(sourceVhuTopLevelHuId <= 0, "sourceVhuTopLevelHuId returned by HUAccessService.retrieveTopLevelHuId has to be >0, but is {}; vhu={}", sourceVhuTopLevelHuId, sourceVhu);
 
 					// create a trace record for the split's "source"
 					final HUTraceEvent splitSourceEvent = traceEventBuilder
+							.orgId(sourceTrxLine.getAD_Org_ID())
 							.huTrxLineId(sourceTrxLine.getM_HU_Trx_Line_ID())
 							.vhuId(sourceVhu.getM_HU_ID())
 							.topLevelHuId(sourceVhuTopLevelHuId)
@@ -351,7 +354,7 @@ public class HUTraceEventsService
 
 	/**
 	 * Filters for the trx lines we actually want to create events from.
-	 *  
+	 * 
 	 * @param trxLines
 	 * @return
 	 */
@@ -402,6 +405,7 @@ public class HUTraceEventsService
 		}
 
 		final HUTraceEventBuilder builder = HUTraceEvent.builder()
+				.orgId(hu.getAD_Org_ID())
 				.type(HUTraceType.TRANSFORM_PARENT)
 				.eventTime(Instant.now());
 
@@ -454,7 +458,6 @@ public class HUTraceEventsService
 			@NonNull final HUTraceEventBuilder builder,
 			@NonNull final List<?> models)
 	{
-
 		for (final Object model : models)
 		{
 			final List<I_M_HU_Assignment> huAssignments = huAccessService.retrieveHuAssignments(model);
@@ -464,8 +467,9 @@ public class HUTraceEventsService
 				final int topLevelHuId = huAccessService.retrieveTopLevelHuId(huAssignment.getM_HU());
 				Check.errorIf(topLevelHuId <= 0, "topLevelHuId returned by HUAccessService.retrieveTopLevelHuId has to be >0, but is {}; huAssignment={}", topLevelHuId, huAssignment);
 
-				builder.topLevelHuId(topLevelHuId);
-				builder.eventTime(huAssignment.getUpdated().toInstant());
+				builder.orgId(huAssignment.getAD_Org_ID())
+						.eventTime(huAssignment.getUpdated().toInstant())
+						.topLevelHuId(topLevelHuId);
 
 				final List<I_M_HU> vhus;
 				if (huAssignment.getVHU_ID() > 0)

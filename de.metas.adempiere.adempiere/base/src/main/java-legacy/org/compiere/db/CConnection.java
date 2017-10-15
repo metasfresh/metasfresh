@@ -1,18 +1,18 @@
 /******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
+ * Product: Adempiere ERP & CRM Smart Business Solution *
+ * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved. *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms version 2 of the GNU General Public License as published *
+ * by the Free Software Foundation. This program is distributed in the hope *
  * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
+ * See the GNU General Public License for more details. *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
+ * For the text or an alternative of this public license, you may reach us *
+ * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
+ * or via info@compiere.org or http://www.compiere.org/license.html *
  *****************************************************************************/
 package org.compiere.db;
 
@@ -20,6 +20,7 @@ import java.io.Serializable;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.naming.CommunicationException;
@@ -121,7 +122,7 @@ public final class CConnection implements Serializable, Cloneable
 
 		//
 		// Ask user to provide the configuration if not already configured
-		while(cc == null || !cc.isDatabaseOK())
+		while (cc == null || !cc.isDatabaseOK())
 		{
 			cc = createInstance_FromUI(cc);
 			cc.testDatabaseIfNeeded();
@@ -156,7 +157,7 @@ public final class CConnection implements Serializable, Cloneable
 		}
 		else
 		{
-			 ccTemplateToUse = ccTemplate;
+			ccTemplateToUse = ccTemplate;
 		}
 
 		// Ask the user (UI!) to provide the parameters
@@ -262,7 +263,7 @@ public final class CConnection implements Serializable, Cloneable
 	 */
 	void setAppsHost(String apps_host)
 	{
-		if (Check.equals(attrs.getAppsHost(), apps_host))
+		if (Objects.equals(attrs.getAppsHost(), apps_host))
 		{
 			return;
 		}
@@ -315,7 +316,7 @@ public final class CConnection implements Serializable, Cloneable
 	 */
 	public void setAppsPort(int apps_port)
 	{
-		if (Check.equals(attrs.getAppsPort(), apps_port))
+		if (Objects.equals(attrs.getAppsPort(), apps_port))
 		{
 			return;
 		}
@@ -480,7 +481,7 @@ public final class CConnection implements Serializable, Cloneable
 	 */
 	void setDbHost(String db_host)
 	{
-		if (Check.equals(attrs.getDbHost(), db_host))
+		if (Objects.equals(attrs.getDbHost(), db_host))
 		{
 			return;
 		}
@@ -507,7 +508,7 @@ public final class CConnection implements Serializable, Cloneable
 	 */
 	void setDbName(String db_name)
 	{
-		if (Check.equals(attrs.getDbName(), db_name))
+		if (Objects.equals(attrs.getDbName(), db_name))
 		{
 			return;
 		}
@@ -533,7 +534,7 @@ public final class CConnection implements Serializable, Cloneable
 	 */
 	void setDbPort(int db_port)
 	{
-		if (Check.equals(attrs.getDbPort(), db_port))
+		if (Objects.equals(attrs.getDbPort(), db_port))
 		{
 			return;
 		}
@@ -580,7 +581,7 @@ public final class CConnection implements Serializable, Cloneable
 	 */
 	void setDbPwd(String db_pwd)
 	{
-		if (Check.equals(attrs.getDbPwd(), db_pwd))
+		if (Objects.equals(attrs.getDbPwd(), db_pwd))
 		{
 			return;
 		}
@@ -605,7 +606,7 @@ public final class CConnection implements Serializable, Cloneable
 	 */
 	void setDbUid(String db_uid)
 	{
-		if (Check.equals(attrs.getDbUid(), db_uid))
+		if (Objects.equals(attrs.getDbUid(), db_uid))
 		{
 			return;
 		}
@@ -613,7 +614,6 @@ public final class CConnection implements Serializable, Cloneable
 		setName();
 		closeDataSource();
 	}	// setDbUid
-
 
 	/**
 	 * Get Database Type
@@ -625,36 +625,21 @@ public final class CConnection implements Serializable, Cloneable
 		return Database.DB_POSTGRESQL;
 	}
 
-	/**
-	 * Set Database Type and default settings.
-	 * Checked against installed databases
-	 *
-	 * @param type database Type, e.g. Database.DB_ORACLE
-	 */
 	synchronized void setType(final String type)
 	{
-		for (int i = 0; i < Database.DB_NAMES.length; i++)
+		Database.assertThatTypeIsPostgres(type);
+
+		if (!Objects.equals(attrs.getDbType(), type))
 		{
-			if (Database.DB_NAMES[i].equals(type))
-			{
-				if (!Check.equals(attrs.getDbType(), type))
-				{
-					attrs.setDbType(type);
-					closeDataSource();
-				}
-				break;
-			}
+			attrs.setDbType(type);
+			closeDataSource();
 		}
 
-		// begin vpj-cd e-evolution 09 ene 2006
-		// PostgreSQL
-		if (isPostgreSQL())
+		if (getDbPort() != DB_PostgreSQL.DEFAULT_PORT)
 		{
-			if (getDbPort() != DB_PostgreSQL.DEFAULT_PORT)
-				setDbPort(DB_PostgreSQL.DEFAULT_PORT);
+			setDbPort(DB_PostgreSQL.DEFAULT_PORT);
 		}
-		// end vpj-cd e-evolution 09 ene 2006
-	} 	// setType
+	}
 
 	/**
 	 * Supports BLOB
@@ -667,7 +652,7 @@ public final class CConnection implements Serializable, Cloneable
 	} // supportsBLOB
 
 	/**
-
+	 * 
 	 * Is PostgreSQL DB
 	 *
 	 * @return true if PostgreSQL
@@ -1044,11 +1029,10 @@ public final class CConnection implements Serializable, Cloneable
 
 			if (Ini.isClient())
 			{
-				if (JOptionPane.YES_OPTION == JOptionPane.showConfirmDialog
-						(null, "There is a configuration error:\n" + ee
-								+ "\nDo you want to reset the saved configuration?",
-								"Adempiere Configuration Error",
-								JOptionPane.YES_NO_OPTION, JOptionPane.ERROR_MESSAGE))
+				if (JOptionPane.YES_OPTION == JOptionPane.showConfirmDialog(null, "There is a configuration error:\n" + ee
+						+ "\nDo you want to reset the saved configuration?",
+						"Adempiere Configuration Error",
+						JOptionPane.YES_NO_OPTION, JOptionPane.ERROR_MESSAGE))
 				{
 					Ini.deletePropertyFile();
 				}
