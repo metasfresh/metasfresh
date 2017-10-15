@@ -64,6 +64,13 @@ Here come the actual release notes:
   * [#2711](https://github.com/metasfresh/metasfresh/issues/2711) productdescription in sales order jasper
     * New Product Description Field in Sales Order Jasper Report.
 
+* metasfresh-webui-frontend
+  * [#1232](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1232) Labels widget: keyboard support
+    * Adding the keyboard support for the new Labels widget.
+  * [#1239](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1239) Included views are not working in non-modal windows
+    * Now also allowing the usage of included views in non-modal windows.
+
+	
 * metasfresh-webui-api
   * [#628](https://github.com/metasfresh/metasfresh-webui-api/issues/628) Extend framework to allow modification of standard filter results
     * Extension for Filter mechanism in WebUI, now allowing to register a component that enhances the filter result. Needed first in new Handling Unit Tracing window.
@@ -79,11 +86,11 @@ Here come the actual release notes:
 
 * metasfresh-webui-frontend
   * [#1216](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1216) hu lines appear only after refresh
+    * Fix for the missing refresh in Handling Unit editor after using quickactions.
   * [#1221](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1221) Handling Unit Editor "Select all rows" missing
     * Fixes the missing "Select all" Functionality in Handling Unit Editor.
   * [#1224](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1224) Error when pressing Action after completing an invalid document
-  * [#1232](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1232) Labels widget: keyboard support
-  * [#1239](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1239) Included views are not working in non-modal windows
+    * Improving the error Handling in Document Processing, avoiding errors after completing an invalid document.
   * [#1243](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1243) Opening a new included view is broken
     * Fix for the included view in Picking Window. Now working in Non-Modal Views too.
   * [#1254](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1254) Error when navigating with up and down arrows in grid view
