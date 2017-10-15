@@ -46,7 +46,7 @@
     "moment": "~2.16.0",
     "numeral": "^2.0.6",
     "prop-types": "^15.5.6",
-    "react": "~15.5.4",
+    "react": "~16.0.0",
     "react-addons-css-transition-group": "~15.3.1",
     "react-addons-transition-group": "~15.4.2",
     "react-addons-update": "~15.3.1",
