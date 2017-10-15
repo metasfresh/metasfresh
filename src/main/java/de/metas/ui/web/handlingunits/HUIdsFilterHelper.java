@@ -275,7 +275,10 @@ public final class HUIdsFilterHelper
 		}
 
 		@Override
-		public String getSql(final SqlParamsCollector sqlParamsOut, final DocumentFilter filter, final SqlOptions sqlOpts_NOTUSED)
+		public String getSql(
+				@NonNull final SqlParamsCollector sqlParamsOut, 
+				@NonNull final DocumentFilter filter, 
+				final SqlOptions sqlOpts_NOTUSED)
 		{
 			final HUIdsFilterData huIdsFilter = extractFilterData(filter);
 			final ImmutableList<Integer> onlyHUIds;

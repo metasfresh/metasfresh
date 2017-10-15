@@ -39,19 +39,6 @@ import lombok.NonNull;
 @EqualsAndHashCode // required for (ETag) caching
 public class DocumentFilterParam
 {
-	public static final Builder builder()
-	{
-		return new Builder();
-	}
-
-	public static final DocumentFilterParam ofSqlWhereClause(final boolean joinAnd, final String sqlWhereClause)
-	{
-		// NOTE: avoid having sqlWhereClauseParams because they might introduce issues when we have to convert to SQL code without params.
-		final List<Object> sqlWhereClauseParams = ImmutableList.of();
-		return new DocumentFilterParam(joinAnd, sqlWhereClause, sqlWhereClauseParams);
-	}
-
-	
 	public static enum Operator
 	{
 		EQUAL, NOT_EQUAL, //
@@ -84,10 +71,31 @@ public class DocumentFilterParam
 	private final String sqlWhereClause;
 	private final List<Object> sqlWhereClauseParams;
 
+	public static final Builder builder()
+	{
+		return new Builder();
+	}
+
+	public static final DocumentFilterParam ofSqlWhereClause(final boolean joinAnd, final String sqlWhereClause)
+	{
+		// NOTE: avoid having sqlWhereClauseParams because they might introduce issues when we have to convert to SQL code without params.
+		final List<Object> sqlWhereClauseParams = ImmutableList.of();
+		return new DocumentFilterParam(joinAnd, sqlWhereClause, sqlWhereClauseParams);
+	}
+
+	/**
+	 * Shortcut to create an often-used kind of parameters.
+	 */
+	public static final DocumentFilterParam ofNameOperatorValue(
+			@NonNull final String fieldName,
+			@NonNull final Operator operator,
+			@NonNull final Object value)
+	{
+		return builder().setFieldName(fieldName).setOperator(operator).setValue(value).build();
+	}
+
 	private DocumentFilterParam(final Builder builder)
 	{
-		super();
-
 		joinAnd = builder.joinAnd;
 
 		fieldName = builder.fieldName;
@@ -105,8 +113,6 @@ public class DocumentFilterParam
 
 	private DocumentFilterParam(final boolean joinAnd, final String sqlWhereClause, final List<Object> sqlWhereClauseParams)
 	{
-		super();
-
 		this.joinAnd = joinAnd;
 
 		fieldName = null;
@@ -147,7 +153,7 @@ public class DocumentFilterParam
 	{
 		return sqlWhereClause;
 	}
-	
+
 	public List<Object> getSqlWhereClauseParams()
 	{
 		return sqlWhereClauseParams;
@@ -191,8 +197,8 @@ public class DocumentFilterParam
 		{
 			throw new IllegalStateException("Cannot convert null value to List<Integer>");
 		}
-		
-		if(valueAsCollection.isEmpty())
+
+		if (valueAsCollection.isEmpty())
 		{
 			return ImmutableList.of();
 		}

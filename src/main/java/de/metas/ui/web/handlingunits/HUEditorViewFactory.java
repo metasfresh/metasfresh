@@ -322,7 +322,10 @@ public class HUEditorViewFactory implements IViewFactory
 		}
 
 		@Override
-		public String getSql(final SqlParamsCollector sqlParamsOut, final DocumentFilter filter, final SqlOptions sqlOpts_NOTUSED)
+		public String getSql(
+				@NonNull final SqlParamsCollector sqlParamsOut, 
+				@NonNull final DocumentFilter filter, 
+				final SqlOptions sqlOpts_NOTUSED)
 		{
 			final Object barcodeObj = filter.getParameter(PARAM_Barcode).getValue();
 			if (barcodeObj == null)

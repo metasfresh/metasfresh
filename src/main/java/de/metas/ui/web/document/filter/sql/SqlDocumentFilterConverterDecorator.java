@@ -39,7 +39,7 @@ import de.metas.ui.web.window.datatypes.WindowId;
  */
 public interface SqlDocumentFilterConverterDecorator
 {
-	public WindowId getWindowId();
+	WindowId getWindowId();
 
-	public SqlDocumentFilterConverter decorate(SqlDocumentFilterConverter converter);
+	SqlDocumentFilterConverter decorate(SqlDocumentFilterConverter converter);
 }
