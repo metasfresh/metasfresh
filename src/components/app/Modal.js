@@ -27,6 +27,8 @@ import {
 } from '../../actions/GenericActions';
 
 class Modal extends Component {
+    mounted = false;
+
     constructor(props) {
         super(props);
 
@@ -46,6 +48,8 @@ class Modal extends Component {
     }
 
     async componentDidMount() {
+        this.mounted = true;
+
         await this.init();
 
         // Dirty solution, but use only if you need to
@@ -53,12 +57,18 @@ class Modal extends Component {
         // because body is out of react app range
         // and css dont affect parents
         // but we have to change scope of scrollbar
+        if (!this.mounted) {
+            return;
+        }
+
         document.body.style.overflow = 'hidden';
 
         this.initEventListeners();
     }
 
     componentWillUnmount() {
+        this.mounted = false;
+
         this.removeEventListeners();
     }
 
