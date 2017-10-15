@@ -49,12 +49,6 @@ public class HUTraceRepositoryTests
 	@Rule
 	public final TestWatcher testWatcher = new AdempiereTestWatcher();
 
-	public static final HUTraceEventBuilder commonEventBuilder = HUTraceEvent.builder()
-			.orgId(10)
-			.vhuStatus(X_M_HU.HUSTATUS_Active)
-			.qty(BigDecimal.valueOf(100))
-			.productId(23)
-			.type(HUTraceType.TRANSFORM_LOAD);
 
 	private HUTraceRepository huTraceRepository;
 
@@ -63,6 +57,16 @@ public class HUTraceRepositoryTests
 	{
 		AdempiereTestHelper.get().init();
 		huTraceRepository = new HUTraceRepository();
+	}
+	
+	public static HUTraceEventBuilder createCommonEventBuilder()
+	{
+		return HUTraceEvent.builder()
+				.orgId(10)
+				.vhuStatus(X_M_HU.HUSTATUS_Active)
+				.qty(BigDecimal.valueOf(100))
+				.productId(23)
+				.type(HUTraceType.TRANSFORM_LOAD);
 	}
 
 	@Test
@@ -134,7 +138,7 @@ public class HUTraceRepositoryTests
 	{
 		final Instant eventTime = Instant.now();
 
-		huTraceRepository.addEvent(commonEventBuilder
+		huTraceRepository.addEvent(createCommonEventBuilder()
 				.eventTime(eventTime)
 				.topLevelHuId(2)
 				.vhuId(12)
@@ -162,14 +166,14 @@ public class HUTraceRepositoryTests
 	{
 		final Instant eventTime = Instant.now();
 
-		final HUTraceEvent event1 = commonEventBuilder
+		final HUTraceEvent event1 = createCommonEventBuilder()
 				.eventTime(eventTime)
 				.topLevelHuId(2)
 				.vhuId(12)
 				.build();
 		huTraceRepository.addEvent(event1);
 
-		final HUTraceEvent event2 = commonEventBuilder
+		final HUTraceEvent event2 = createCommonEventBuilder()
 				.eventTime(eventTime)
 				.topLevelHuId(3)
 				.vhuId(13)
@@ -342,7 +346,7 @@ public class HUTraceRepositoryTests
 
 		final Instant eventTime = Instant.now();
 
-		final HUTraceEventBuilder eventBefore = commonEventBuilder
+		final HUTraceEventBuilder eventBefore = createCommonEventBuilder()
 				.eventTime(eventTime)
 				.topLevelHuId(4)
 				.vhuId(14);
@@ -354,7 +358,7 @@ public class HUTraceRepositoryTests
 		result.add(eventBefore.eventTime(eventTime.plusSeconds(4)).shipmentScheduleId(54).build());
 		// eventBefore is the first of three and therefore has no sourceHuId
 
-		final HUTraceEventBuilder eventMiddle = commonEventBuilder
+		final HUTraceEventBuilder eventMiddle = createCommonEventBuilder()
 				.eventTime(eventTime.plusSeconds(5))
 				.topLevelHuId(5)
 				.vhuId(15);
@@ -366,7 +370,7 @@ public class HUTraceRepositoryTests
 		result.add(eventMiddle.eventTime(eventTime.plusSeconds(9)).shipmentScheduleId(55).build());
 		result.add(eventMiddle.eventTime(eventTime.plusSeconds(10)).vhuSourceId(14).build()); // this event is the middle one of three and has the M_HU_ID of 'eventBefore' as its source
 
-		final HUTraceEventBuilder eventAfter = commonEventBuilder
+		final HUTraceEventBuilder eventAfter = createCommonEventBuilder()
 				.eventTime(eventTime.plusSeconds(11))
 				.topLevelHuId(6)
 				.vhuId(16);

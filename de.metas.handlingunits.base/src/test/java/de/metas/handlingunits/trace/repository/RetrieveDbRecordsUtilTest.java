@@ -76,7 +76,7 @@ public class RetrieveDbRecordsUtilTest
 	{
 		final Instant eventTime = Instant.now();
 
-		final HUTraceEvent event1 = HUTraceRepositoryTests.commonEventBuilder
+		final HUTraceEvent event1 = HUTraceRepositoryTests.createCommonEventBuilder()
 				.eventTime(eventTime)
 				.topLevelHuId(2)
 				.vhuId(12)
