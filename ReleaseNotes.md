@@ -66,12 +66,16 @@ Here come the actual release notes:
 
 * metasfresh-webui-api
   * [#628](https://github.com/metasfresh/metasfresh-webui-api/issues/628) Extend framework to allow modification of standard filter results
+    * Extension for Filter mechanism in WebUI, now allowing to register a component that enhances the filter result. Needed first in new Handling Unit Tracing window.
 
 ## Fixes
 * metasfresh-app
   * [#2400](https://github.com/metasfresh/metasfresh/issues/2400) discount in manual sales invoice
+    * Fixes the bahavior of discount field in Sales Invoice.
   * [#2693](https://github.com/metasfresh/metasfresh/issues/2693) C_Flatrate_Conditions.C_Flatrate_Transition_ID needs to be mandatory
+    * Fixing the mandatory Logic in table/ window Flatrate Conditions.
   * [#2699](https://github.com/metasfresh/metasfresh/issues/2699) NPE when pressing Complete for an invoice with no lines
+    * Improves a Cornercase, now avoiding a Null Pointer Exception when completing an Invoice with no lines.
 
 * metasfresh-webui-frontend
   * [#1216](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1216) hu lines appear only after refresh
