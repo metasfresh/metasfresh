@@ -1,4 +1,4 @@
-package de.metas.handlingunits.impl;
+package de.metas.quantity;
 
 /*
  * #%L
@@ -13,15 +13,14 @@ package de.metas.handlingunits.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 
@@ -38,8 +37,30 @@ import de.metas.handlingunits.IHUCapacityDefinition;
  *
  * @author al
  */
-/* package */class HUCapacityDefinition implements IHUCapacityDefinition
+public class HUCapacityDefinition
 {
+
+	public static HUCapacityDefinition createInfiniteCapacity(final I_M_Product product, final I_C_UOM uom)
+	{
+		return new HUCapacityDefinition(product, uom);
+	}
+
+	public static HUCapacityDefinition createZeroCapacity(final I_M_Product product, final I_C_UOM uom, final boolean allowNegativeCapacity)
+	{
+		return new HUCapacityDefinition(BigDecimal.ZERO, product, uom, allowNegativeCapacity);
+	}
+
+	public static HUCapacityDefinition createCapacity(final BigDecimal qty, final I_M_Product product, final I_C_UOM uom, final boolean allowNegativeCapacity)
+	{
+		return new HUCapacityDefinition(qty, product, uom, allowNegativeCapacity);
+
+	}
+
+	/**
+	 * Signals the logic to use the default capacity.
+	 */
+	BigDecimal DEFAULT = new BigDecimal(Long.MAX_VALUE);
+
 	private final I_M_Product product;
 	private final I_C_UOM uom;
 	private final BigDecimal capacity;
@@ -50,12 +71,11 @@ import de.metas.handlingunits.IHUCapacityDefinition;
 	/**
 	 * Constructs a finite capacity definition
 	 */
-	public HUCapacityDefinition(final BigDecimal capacity,
+	private HUCapacityDefinition(
+			final BigDecimal capacity,
 			final I_M_Product product, final I_C_UOM uom,
 			final boolean allowNegativeCapacity)
 	{
-		super();
-
 		this.product = product;
 		this.uom = uom;
 
@@ -69,10 +89,8 @@ import de.metas.handlingunits.IHUCapacityDefinition;
 	/**
 	 * Constructs an infinite capacity definition
 	 */
-	public HUCapacityDefinition(final I_M_Product product, final I_C_UOM uom)
+	private HUCapacityDefinition(final I_M_Product product, final I_C_UOM uom)
 	{
-		super();
-
 		this.product = product;
 		this.uom = uom;
 
@@ -82,33 +100,74 @@ import de.metas.handlingunits.IHUCapacityDefinition;
 		allowNegativeCapacity = true;
 	}
 
-	@Override
 	public boolean isInfiniteCapacity()
 	{
 		return infiniteCapacity;
 	}
 
-	@Override
 	public boolean isAllowNegativeCapacity()
 	{
 		Check.assume(!isInfiniteCapacity(), "Cannot retrieve if it's infinite for {}", this);
 		return allowNegativeCapacity;
 	}
 
-	@Override
 	public BigDecimal getCapacity()
 	{
 		Check.assume(!isInfiniteCapacity(), "Cannot retrieve capacity Qty if it's infinite for {}", this);
 		return capacity;
 	}
 
-	@Override
+	/**
+	 * Convert given capacity to <code>uomTo</code>
+	 *
+	 * @param customCapacity
+	 * @param uom
+	 * @return capacity converted to <code>uomTo</code>
+	 */
+	HUCapacityDefinition convertToUOM(public I_C_UOM uomTo)
+	{
+		
+	}
+
+	/**
+	 * Evaluate the given {@code capacityDefinition} and create a new one based how much the given {@code qtyUsed} and {@code qtyUsedUOM} would take away.
+	 * 
+	 * @param qtyUsed
+	 * @param qtyUsedUOM
+	 * @param capacityDefinition
+	 * @return
+	 */
+	HUCapacityDefinition getAvailableCapacity(BigDecimal qtyUsed, I_C_UOM qtyUsedUOM, HUCapacityDefinition capacityDefinition)
+	{
+		
+	}
+
+	/**
+	 * Calculates how many capacities like <code>capacityDef</code> do we need to cover given <code>qty</code>
+	 *
+	 * <p>
+	 * e.g. if Qty=13 and Capacity=10 then QtyPacks=2 (13/10 rounded up).
+	 *
+	 * @param qty
+	 * @param uom quantity's unit of measure
+	 * @param capacityDef
+	 * @return how many capacities are required or NULL if capacity is not available
+	 */
+	Integer calculateQtyPacks(BigDecimal qty, I_C_UOM uom, HUCapacityDefinition capacityDef)
+	{
+		
+	}
+
+	HUCapacityDefinition multiply(final HUCapacityDefinition capacityDef, int multiplier)
+	{
+		
+	}
+
 	public I_M_Product getM_Product()
 	{
 		return product;
 	}
 
-	@Override
 	public I_C_UOM getC_UOM()
 	{
 		return uom;

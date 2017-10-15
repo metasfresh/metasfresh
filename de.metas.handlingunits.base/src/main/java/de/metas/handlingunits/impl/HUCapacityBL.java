@@ -39,26 +39,10 @@ import de.metas.handlingunits.IStatefulHUCapacityDefinition;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.quantity.HUCapacityDefinition;
 
 public class HUCapacityBL implements IHUCapacityBL
 {
-	@Override
-	public IHUCapacityDefinition createInfiniteCapacity(final I_M_Product product, final I_C_UOM uom)
-	{
-		return new HUCapacityDefinition(product, uom);
-	}
-
-	private IHUCapacityDefinition createZeroCapacity(final I_M_Product product, final I_C_UOM uom, final boolean allowNegativeCapacity)
-	{
-		return new HUCapacityDefinition(BigDecimal.ZERO, product, uom, allowNegativeCapacity);
-	}
-
-	@Override
-	public IHUCapacityDefinition createCapacity(final BigDecimal qty, final I_M_Product product, final I_C_UOM uom, final boolean allowNegativeCapacity)
-	{
-		return new HUCapacityDefinition(qty, product, uom, allowNegativeCapacity);
-
-	}
 
 	@Override
 	public IStatefulHUCapacityDefinition createStatefulCapacity(final IHUCapacityDefinition capacity, final BigDecimal qtyUsed)
@@ -148,7 +132,7 @@ public class HUCapacityBL implements IHUCapacityBL
 	}
 
 	private IHUCapacityDefinition getAvailableCapacity(
-			final BigDecimal qtyUsed, 
+			final BigDecimal qtyUsed,
 			final I_C_UOM qtyUsedUOM,
 			final IHUCapacityDefinition capacityDefinition,
 			final boolean allowNegativeCapacityThisTime)

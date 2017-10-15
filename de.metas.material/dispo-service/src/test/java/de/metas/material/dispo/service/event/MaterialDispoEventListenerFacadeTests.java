@@ -195,7 +195,6 @@ public class MaterialDispoEventListenerFacadeTests
 				.eventDescr(EventDescr.createNew(org))
 				.materialDescr(shipmentScheduleEvent.getMaterialDescr().withDate(twoHoursAfterShipmentSched))
 				.reference(TableRecordReference.of("transactionTable", 3))
-				.transactionDeleted(false)
 				.build();
 
 		mdEventListener.onEvent(transactionEvent);

@@ -45,5 +45,4 @@ public class TransactionEvent implements MaterialEvent
 	private final MaterialDescriptor materialDescr;
 
 	private final boolean transactionDeleted;
-
 }

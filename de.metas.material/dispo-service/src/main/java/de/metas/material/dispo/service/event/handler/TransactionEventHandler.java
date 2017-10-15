@@ -47,12 +47,8 @@ public class TransactionEventHandler
 
 	public void handleTransactionEvent(final TransactionEvent event)
 	{
-		if (event.isTransactionDeleted())
-		{
-			candidateChangeHandler.onCandidateDelete(event.getReference());
-			return;
-		}
-
+		
+		
 		final Candidate candidate = Candidate.builderForEventDescr(event.getEventDescr())
 				.materialDescr(event.getMaterialDescr())
 				.type(Type.STOCK)

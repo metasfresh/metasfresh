@@ -33,6 +33,7 @@ import org.junit.Test;
 
 import de.metas.handlingunits.AbstractHUTest;
 import de.metas.handlingunits.IStatefulHUCapacityDefinition;
+import de.metas.quantity.HUCapacityDefinition;
 import de.metas.quantity.Quantity;
 
 public class StatefulHUCapacityDefinitionTest extends AbstractHUTest

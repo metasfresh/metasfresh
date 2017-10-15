@@ -54,7 +54,6 @@ public class MTransactionProductStorage extends AbstractProductStorage
 
 	public MTransactionProductStorage(final I_M_Transaction mtrx, final I_C_UOM uom)
 	{
-		super();
 		setConsiderForceQtyAllocationFromRequest(false); // TODO: consider changing it to "true" (default)
 
 		this.mtrx = mtrx;

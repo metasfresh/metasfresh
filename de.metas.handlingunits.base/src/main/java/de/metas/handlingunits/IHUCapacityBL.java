@@ -35,16 +35,7 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 
 public interface IHUCapacityBL extends ISingletonService
 {
-	/**
-	 * Create Infinite capacity
-	 *
-	 * @param product
-	 * @param uom
-	 * @return inifinite capacity
-	 */
-	IHUCapacityDefinition createInfiniteCapacity(I_M_Product product, I_C_UOM uom);
-
-	IHUCapacityDefinition createCapacity(BigDecimal qty, I_M_Product product, I_C_UOM uom, boolean allowNegativeCapacity);
+	
 
 	IStatefulHUCapacityDefinition createStatefulCapacity(IHUCapacityDefinition capacity, BigDecimal qtyUsed);
 
@@ -75,40 +66,5 @@ public interface IHUCapacityBL extends ISingletonService
 
 	boolean isInfiniteCapacity(I_M_HU_PI_Item_Product itemDefProduct);
 
-	/**
-	 * Evaluate the given {@code capacityDefinition} and create a new one based how much the given {@code qtyUsed} and {@code qtyUsedUOM} would take away.
-	 * 
-	 * @param qtyUsed
-	 * @param qtyUsedUOM
-	 * @param capacityDefinition
-	 * @return
-	 */
-	IHUCapacityDefinition getAvailableCapacity(BigDecimal qtyUsed, I_C_UOM qtyUsedUOM, IHUCapacityDefinition capacityDefinition);
-
-	/**
-	 * Calculates how many capacities like <code>capacityDef</code> do we need to cover given <code>qty</code>
-	 *
-	 * <p>
-	 * e.g. if Qty=13 and Capacity=10 then QtyPacks=2 (13/10 rounded up).
-	 *
-	 * @param qty
-	 * @param uom quantity's unit of measure
-	 * @param capacityDef
-	 * @return how many capacities are required or NULL if capacity is not available
-	 */
-	Integer calculateQtyPacks(BigDecimal qty, I_C_UOM uom, IHUCapacityDefinition capacityDef);
-
-	IHUCapacityDefinition multiply(final IHUCapacityDefinition capacityDef, int multiplier);
-
 	boolean isValidItemProduct(final I_M_HU_PI_Item_Product itemDefProduct);
-
-	/**
-	 * Convert given capacity to <code>uomTo</code>
-	 *
-	 * @param customCapacity
-	 * @param uom
-	 * @return capacity converted to <code>uomTo</code>
-	 */
-	IHUCapacityDefinition convertToUOM(IHUCapacityDefinition capacity, I_C_UOM uomTo);
-
 }
