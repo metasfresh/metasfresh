@@ -732,7 +732,7 @@ export function createProcess(processType, viewId, type, ids, tabId, rowId) {
     }
 }
 
-export function handleProcessResponse(response, type, id, successCallback) {
+export function handleProcessResponse(response, type, id) {
     return async dispatch => {
         const {
             error, summary, action
@@ -820,8 +820,6 @@ export function handleProcessResponse(response, type, id, successCallback) {
             if (closeProcessModal) {
                 await dispatch(closeModal());
             }
-
-            successCallback && successCallback();
         }
     }
 }

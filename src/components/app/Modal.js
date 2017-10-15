@@ -251,14 +251,15 @@ class Modal extends Component {
                 response = await startProcess(windowType, layout.pinstanceId);
 
                 const action = handleProcessResponse(
-                    response, windowType, layout.pinstanceId,
-                    () => this.removeModal()
+                    response, windowType, layout.pinstanceId
                 );
 
                 await dispatch(action);
             } catch(error) {
                 throw error;
             } finally {
+                this.removeModal();
+
                 this.setState({
                     pending: false
                 });
