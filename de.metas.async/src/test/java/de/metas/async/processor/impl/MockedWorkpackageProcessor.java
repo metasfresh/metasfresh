@@ -155,13 +155,13 @@ public class MockedWorkpackageProcessor implements IWorkpackageProcessor
 	 * Configure processor to throw an exception when given workpackage will be processed
 	 *
 	 * @param workpackage
-	 * @param message exception message
+	 * @param messageStartingWith exception message
 	 * @return
 	 */
-	public MockedWorkpackageProcessor setException(I_C_Queue_WorkPackage workpackage, String message)
+	public MockedWorkpackageProcessor setException(I_C_Queue_WorkPackage workpackage, String messageStartingWith)
 	{
 		final int workpackageId = workpackage.getC_Queue_WorkPackage_ID();
-		exceptions.put(workpackageId, message);
+		exceptions.put(workpackageId, messageStartingWith);
 		return this;
 	}
 

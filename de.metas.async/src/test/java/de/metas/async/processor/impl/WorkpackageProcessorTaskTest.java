@@ -3,6 +3,7 @@
  */
 package de.metas.async.processor.impl;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.startsWith;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -142,7 +143,7 @@ public class WorkpackageProcessorTaskTest extends QueueProcessorTestBase
 		assertAfterWorkpackageProcessedInvoked(task);
 		Assert.assertEquals("Invalid Processed", false, workpackage.isProcessed());
 		Assert.assertEquals("Invalid IsError", true, workpackage.isError());
-		Assert.assertEquals("Invalid ErrorMsg", processingErrorMsg, workpackage.getErrorMsg());
+		assertThat(workpackage.getErrorMsg()).as("Invalid ErrorMsg").startsWith(processingErrorMsg);
 		Assert.assertNotNull("Invalid AD_Issue", workpackage.getAD_Issue());
 	}
 
@@ -170,7 +171,7 @@ public class WorkpackageProcessorTaskTest extends QueueProcessorTestBase
 		Assert.assertEquals("Invalid Processed", false, workpackage.isProcessed());
 		Assert.assertEquals("Invalid IsError", false, workpackage.isError());
 		Assert.assertNotNull("Invalid SkippedAt", workpackage.getSkippedAt());
-		Assert.assertEquals("Invalid Skipped_Last_Reason", skipReason, workpackage.getSkipped_Last_Reason());
+		assertThat(workpackage.getSkipped_Last_Reason()).as("Invalid Skipped_Last_Reason").startsWith(skipReason);
 		Assert.assertEquals("Invalid SkipTimeoutMillis", skipTimeoutMillis, workpackage.getSkipTimeoutMillis());
 		Assert.assertEquals("Invalid Skipped_Count", 1, workpackage.getSkipped_Count());
 	}

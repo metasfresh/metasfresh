@@ -1,5 +1,7 @@
 package de.metas.async.processor.impl;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 /*
  * #%L
  * de.metas.async
@@ -111,7 +113,7 @@ public class ThreadPoolQueueProcessorTest extends QueueProcessorTestBase
 			if (errorExpected != null)
 			{
 				// Exception
-				Assert.assertEquals("Workpackage - Invalid ErrorMsg: " + wp, errorExpected, wp.getErrorMsg());
+				assertThat(wp.getErrorMsg()).as("Workpackage - Invalid ErrorMsg: %s", wp).startsWith(errorExpected);
 				Assert.assertEquals("Workpackage - Invalid Processed: " + wp, false, wp.isProcessed());
 				Assert.assertEquals("Workpackage - Invalid IsError: " + wp, true, wp.isError());
 			}
