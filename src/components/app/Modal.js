@@ -13,6 +13,7 @@ import {
     handleProcessResponse,
     patch,
 } from '../../actions/WindowActions';
+import { getSelection } from '../../reducers/windowHandler';
 import keymap from '../../keymap.js';
 
 import Process from '../Process';
@@ -24,6 +25,14 @@ import Indicator from './Indicator';
 import OverlayField from './OverlayField';
 
 const shortcutManager = new ShortcutManager(keymap);
+
+const mapStateToProps = (state, props) => ({
+    selected: getSelection({
+        state,
+        windowType: props.windowType,
+        viewId: props.viewId,
+    }),
+});
 
 class Modal extends Component {
     mounted = false;
@@ -495,4 +504,4 @@ class Modal extends Component {
     }
 }
 
-export default connect()(Modal);
+export default connect(mapStateToProps)(Modal);

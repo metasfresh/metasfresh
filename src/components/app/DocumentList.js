@@ -30,6 +30,7 @@ import {
     connectWS,
     disconnectWS,
 } from '../../actions/WindowActions';
+import { getSelection } from '../../reducers/windowHandler';
 
 import BlankPage from '../BlankPage';
 import DataLayoutWrapper from '../DataLayoutWrapper';
@@ -39,6 +40,14 @@ import Table from '../table/Table';
 
 import QuickActions from './QuickActions';
 import SelectionAttributes from './SelectionAttributes';
+
+const mapStateToProps = (state, props) => ({
+    selected: getSelection({
+        state,
+        windowType: props.windowType,
+        viewId: props.defaultViewId,
+    }),
+});
 
 class DocumentList extends Component {
     static propTypes = {
@@ -69,8 +78,6 @@ class DocumentList extends Component {
             hasShowIncluded: false
         };
 
-        this.cachedSelection = null;
-
         this.fetchLayoutAndData();
     }
 
@@ -95,8 +102,7 @@ class DocumentList extends Component {
     componentWillReceiveProps(props) {
         const {
             windowType, defaultViewId, defaultSort, defaultPage, selected,
-            inBackground, dispatch, includedView, selectedWindowType,
-            disconnectFromState, refId
+            dispatch, includedView, disconnectFromState, refId,
         } = props;
         const { page, sort, viewId, layout } = this.state;
 
@@ -150,33 +156,7 @@ class DocumentList extends Component {
             this.setState({ viewId: defaultViewId });
         }
 
-        /*
-         * It is case when we need refersh global selection state,
-         * because scope is changed
-         *
-         * After opening modal cache current selection
-         * After closing modal with gridview, refresh selected.
-         */
-        if (
-            (inBackground !== this.props.inBackground)
-        ) {
-            if (!inBackground) {
-                // In case of preventing cached selection restore
-                if (!disconnectFromState && this.cachedSelection) {
-                    dispatch(selectTableItems({
-                        windowType,
-                        viewId,
-                        ids: this.cachedSelection,
-                    }));
-                }
-            } else {
-                this.cachedSelection = selected;
-            }
-        }
-
-        if (
-            (selectedWindowType === windowType) &&
-            (includedView && includedView.windowType && includedView.viewId) &&
+        if ((includedView && includedView.windowType && includedView.viewId) &&
             (layout && layout.supportIncludedView) &&
             !_.isEqual(this.props.selected, selected)
         ) {
@@ -407,8 +387,6 @@ class DocumentList extends Component {
                             response.data.result[0].id
                         ];
 
-                        this.cachedSelection = null;
-
                         dispatch(selectTableItems({
                             windowType,
                             viewId,
@@ -528,7 +506,7 @@ class DocumentList extends Component {
             windowType, open, closeOverlays, selected, inBackground,
             fetchQuickActionsOnInit, isModal, processStatus, readonly,
             includedView, isIncluded, disablePaginationShortcuts,
-            notfound, disconnectFromState, autofocus, selectedWindowType,
+            notfound, disconnectFromState, autofocus,
             inModal
         } = this.props;
 
@@ -596,7 +574,6 @@ class DocumentList extends Component {
 
                             {showQuickActions && (
                                 <QuickActions
-                                    selectedWindowType={selectedWindowType}
                                     refresh={refresh}
                                     processStatus={processStatus}
                                     ref={ (c) => {
@@ -647,8 +624,7 @@ class DocumentList extends Component {
                                 tabIndex={0}
                                 indentSupported={layout.supportTree}
                                 disableOnClickOutside={clickOutsideLock}
-                                defaultSelected={this.cachedSelection ?
-                                    this.cachedSelection : selected}
+                                defaultSelected={selected}
                                 refreshSelection={refreshSelection}
                                 queryLimitHit={data.queryLimitHit}
                                 doesSelectionExist={this.doesSelectionExist}
@@ -696,4 +672,4 @@ class DocumentList extends Component {
     }
 }
 
-export default connect()(DocumentList);
+export default connect(mapStateToProps)(DocumentList);

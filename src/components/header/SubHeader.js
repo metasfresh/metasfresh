@@ -8,13 +8,19 @@ import {
   elementPathRequest,
   updateBreadcrumb,
 } from '../../actions/MenuActions';
+import { getSelection } from '../../reducers/windowHandler';
 import keymap from '../../keymap.js';
 
 import Actions from './Actions';
 import BookmarkButton from './BookmarkButton';
 
-const mapStateToProps = state => ({
-    standardActions: state.windowHandler.master.standardActions
+const mapStateToProps = (state, props) => ({
+    standardActions: state.windowHandler.master.standardActions,
+    selected: getSelection({
+        state,
+        windowType: props.windowType,
+        viewId: props.viewId,
+    }),
 });
 
 class Subheader extends Component {
@@ -331,8 +337,8 @@ class Subheader extends Component {
 
     renderActionsColumn = () => {
         const {
-            windowType, dataId, selected, selectedWindowType, entity, query,
-            openModal, openModalRow, closeSubheader, notfound, activeTab,
+            windowType, dataId, selected, entity, query, openModal,
+            openModalRow, closeSubheader, notfound, activeTab,
         } = this.props;
 
         return (
@@ -345,9 +351,11 @@ class Subheader extends Component {
                 closeSubheader={closeSubheader}
                 notfound={notfound}
                 docId={dataId ? dataId : query && query.viewId}
-                rowId={selectedWindowType === windowType ? selected : []}
+                rowId={selected}
                 activeTab={activeTab}
-                activeTabSelected={(activeTab && selected && (selected.length === 1)) ? selected: []}
+                activeTabSelected={(
+                    activeTab && selected && (selected.length === 1)
+                ) ? selected : []}
             />
         );
 

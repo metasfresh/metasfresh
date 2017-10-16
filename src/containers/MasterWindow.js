@@ -24,8 +24,6 @@ const mapStateToProps = state => ({
     master: state.windowHandler.master,
     modal: state.windowHandler.modal,
     rawModal: state.windowHandler.rawModal,
-    selected: state.windowHandler.selected,
-    selectedWindowType: state.windowHandler.selectedWindowType,
     indicator: state.windowHandler.indicator,
     includedView: state.listHandler.includedView,
     enableTutorial: state.appHandler.enableTutorial,
@@ -55,7 +53,6 @@ class MasterWindow extends Component {
         master: PropTypes.object.isRequired,
         breadcrumb: PropTypes.array.isRequired,
         dispatch: PropTypes.func.isRequired,
-        selected: PropTypes.array,
         rawModal: PropTypes.object.isRequired,
         indicator: PropTypes.string.isRequired,
         me: PropTypes.object.isRequired,
@@ -306,8 +303,8 @@ class MasterWindow extends Component {
 
     render() {
         const {
-            master, modal, breadcrumb, params, rawModal, selected,
-            selectedWindowType, includedView, processStatus, enableTutorial,
+            master, modal, breadcrumb, params, rawModal, includedView,
+            processStatus, enableTutorial,
         } = this.props;
         const {
             dropzoneFocused, newRow, modalTitle,
@@ -351,8 +348,6 @@ class MasterWindow extends Component {
                 docNoData={docNoData}
                 isDocumentNotSaved={isDocumentNotSaved}
                 rawModal={rawModal}
-                selected={selected}
-                selectedWindowType={selectedWindowType}
                 modalTitle={modalTitle}
                 includedView={includedView}
                 processStatus={processStatus}

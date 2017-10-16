@@ -44,6 +44,15 @@ const initialState = {
     selections: {},
 };
 
+export const NO_SELECTION = [];
+export const getSelection = ({ state, windowType, viewId }) => {
+    const windowTypeSelections = state.windowHandler.selections[windowType];
+
+    return (
+        windowTypeSelections && windowTypeSelections[viewId]
+    ) || NO_SELECTION;
+};
+
 export default function windowHandler(state = initialState, action) {
 
     switch(action.type){

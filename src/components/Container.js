@@ -23,9 +23,9 @@ class Container extends Component {
             showSidelist, siteName, connectionError, noMargin, entity, children,
             query, attachments, showIndicator, isDocumentNotSaved, hideHeader,
             handleDeletedStatus, dropzoneFocused, notfound, rawModal, modal,
-            selected, selectedWindowType, indicator, modalTitle, setModalTitle,
-            includedView, closeModalCallback, setModalDescription,
-            modalDescription, editmode, handleEditModeToggle, activeTab
+            indicator, modalTitle, setModalTitle, includedView,
+            closeModalCallback, setModalDescription, modalDescription, editmode,
+            handleEditModeToggle, activeTab,
         } = this.props;
 
         return (
@@ -87,7 +87,6 @@ class Container extends Component {
                             relativeDataId={dataId}
                             triggerField={modal.triggerField}
                             query={query}
-                            selected={selected}
                             viewId={query && query.viewId}
                             rawModalVisible={rawModal.visible}
                             indicator={indicator}
@@ -118,8 +117,6 @@ class Container extends Component {
                                     type="grid"
                                     windowType={rawModal.type}
                                     defaultViewId={rawModal.viewId}
-                                    selected={selected}
-                                    selectedWindowType={selectedWindowType}
                                     setModalTitle={setModalTitle}
                                     setModalDescription={setModalDescription}
                                     fetchQuickActionsOnInit={!(
@@ -142,8 +139,6 @@ class Container extends Component {
                                 ) && (
                                     <DocumentList
                                         type="includedView"
-                                        selected={selected}
-                                        selectedWindowType={selectedWindowType}
                                         windowType={includedView.windowType}
                                         defaultViewId={includedView.viewId}
                                         fetchQuickActionsOnInit

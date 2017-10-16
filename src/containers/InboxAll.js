@@ -10,7 +10,6 @@ const mapStateToProps = state => ({
     processStatus: state.appHandler.processStatus,
     modal: state.windowHandler.modal,
     rawModal: state.windowHandler.rawModal,
-    selected: state.windowHandler.selected,
     indicator: state.windowHandler.indicator,
     includedView: state.listHandler.includedView,
 });

@@ -10,7 +10,6 @@ import DraggableWrapper from '../components/dashboard/DraggableWrapper';
 const mapStateToProps = state => ({
     modal: state.windowHandler.modal,
     rawModal: state.windowHandler.rawModal,
-    selected: state.windowHandler.selected,
     indicator: state.windowHandler.indicator,
     includedView: state.listHandler.includedView,
     enableTutorial: state.appHandler.enableTutorial,
@@ -57,8 +56,8 @@ export class Dashboard extends Component {
 
     render() {
         const {
-            location, modal, selected, rawModal, indicator, processStatus,
-            includedView, enableTutorial,
+            location, modal, rawModal, indicator, processStatus, includedView,
+            enableTutorial,
         } = this.props;
         const { editmode, hintsEnabled, introHints } = this.state;
 
@@ -69,7 +68,6 @@ export class Dashboard extends Component {
                 handleEditModeToggle={this.toggleEditMode}
                 modal={modal}
                 rawModal={rawModal}
-                selected={selected}
                 indicator={indicator}
                 processStatus={processStatus}
                 includedView={includedView}

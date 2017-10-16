@@ -31,8 +31,6 @@ import UserDropdown from './UserDropdown';
 const shortcutManager = new ShortcutManager(keymap);
 
 const mapStateToProps = state => ({
-    selected: state.windowHandler.selected,
-    selectedWindowType: state.windowHandler.selectedWindowType,
     inbox: state.appHandler.inbox,
     me: state.appHandler.me,
     pathname: state.routing.locationBeforeTransitions.pathname,
@@ -59,7 +57,6 @@ class Header extends Component {
 
     static propTypes = {
         dispatch: PropTypes.func.isRequired,
-        selected: PropTypes.array.isRequired,
         inbox: PropTypes.object.isRequired,
         me: PropTypes.object.isRequired,
     }
@@ -307,9 +304,8 @@ class Header extends Component {
         const {
             docSummaryData, siteName, docNoData, docStatus,
             docStatusData, windowType, dataId, breadcrumb, showSidelist,
-            inbox, selected, entity, query, showIndicator, isDocumentNotSaved,
-            selectedWindowType, notfound, docId, me, editmode,
-            handleEditModeToggle, activeTab,
+            inbox, entity, query, showIndicator, isDocumentNotSaved, notfound,
+            docId, me, editmode, handleEditModeToggle, activeTab,
         } = this.props;
         const {
             isSubheaderShow, isSideListShow, menuOverlay, isInboxOpen, scrolled,
@@ -596,10 +592,9 @@ class Header extends Component {
                     notfound={notfound}
                     query={query}
                     entity={entity}
-                    selectedWindowType={selectedWindowType}
-                    selected={selected}
                     dataId={dataId}
                     windowType={windowType}
+                    viewId={query.viewId}
                     siteName={siteName}
                     editmode={editmode}
                     handleEditModeToggle={handleEditModeToggle}

@@ -14,8 +14,6 @@ import Container from '../components/Container';
 const mapStateToProps = state => ({
     modal: state.windowHandler.modal,
     rawModal: state.windowHandler.rawModal,
-    selected: state.windowHandler.selected,
-    selectedWindowType: state.windowHandler.selectedWindowType,
     latestNewDocument: state.windowHandler.latestNewDocument,
     indicator: state.windowHandler.indicator,
     includedView: state.listHandler.includedView,
@@ -39,7 +37,6 @@ class DocList extends Component {
         pathname: PropTypes.string.isRequired,
         modal: PropTypes.object.isRequired,
         rawModal: PropTypes.object.isRequired,
-        selected: PropTypes.array,
         indicator: PropTypes.string.isRequired,
         processStatus: PropTypes.string.isRequired,
     }
@@ -87,8 +84,8 @@ class DocList extends Component {
 
     render() {
         const {
-            windowType, breadcrumb, query, modal, selected, rawModal,
-            indicator, processStatus, includedView, selectedWindowType,
+            windowType, breadcrumb, query, modal, rawModal, indicator,
+            processStatus, includedView,
         } = this.props;
         const { modalTitle, notfound, modalDescription } = this.state;
         let refRowIds = [];
@@ -110,8 +107,6 @@ class DocList extends Component {
                 windowType={windowType}
                 query={query}
                 notfound={notfound}
-                selected={selected}
-                selectedWindowType={selectedWindowType}
                 indicator={indicator}
                 modalTitle={modalTitle}
                 processStatus={processStatus}
@@ -133,8 +128,6 @@ class DocList extends Component {
                         refId={query.refId}
                         refTabId={query.refTabId}
                         refRowIds={refRowIds}
-                        selectedWindowType={selectedWindowType}
-                        selected={selected}
                         includedView={includedView}
                         inBackground={rawModal.visible}
                         inModal={modal.visible}
@@ -153,8 +146,6 @@ class DocList extends Component {
                     ) && (
                         <DocumentList
                             type="includedView"
-                            selected={selected}
-                            selectedWindowType={selectedWindowType}
                             windowType={includedView.windowType}
                             defaultViewId={includedView.viewId}
                             fetchQuickActionsOnInit
