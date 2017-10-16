@@ -3,6 +3,7 @@ package de.metas.ui.web.picking.pickingslot;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 import java.util.List;
+import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -26,7 +27,6 @@ import de.metas.picking.model.I_M_PickingSlot;
 import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.handlingunits.HUEditorRow;
 import de.metas.ui.web.picking.pickingslot.PickingHURowsRepository.PickedHUEditorRow;
-import de.metas.ui.web.picking.pickingslot.PickingSlotRepoQuery.PickingCandidate;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.LookupDescriptorProvider.LookupScope;
 import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
@@ -96,7 +96,6 @@ public class PickingSlotViewRepository
 						.buildProvider()
 						.provideForScope(LookupScope.DocumentField)));
 	}
-	
 
 	private static Supplier<LookupDataSource> createBPartnerLookup()
 	{
@@ -171,7 +170,7 @@ public class PickingSlotViewRepository
 		// retrieve picked HU rows (if any) to be displayed below there respective picking slots
 		final ListMultimap<Integer, PickedHUEditorRow> huEditorRowsByPickingSlotId = pickingHUsRepo.retrievePickedHUsIndexedByPickingSlotId(query);
 
-		final Predicate<? super I_M_PickingSlot> pickingCandidatesFilter = createPickingCandidatesFilter(query, huEditorRowsByPickingSlotId);
+		final Predicate<? super I_M_PickingSlot> pickingCandidatesFilter = createPickingCandidatesFilter(query, huEditorRowsByPickingSlotId.keySet());
 
 		final ImmutableList<PickingSlotRow> result = pickingSlots.stream() // get stream of I_M_PickingSlot
 				.filter(pickingCandidatesFilter)
@@ -202,22 +201,12 @@ public class PickingSlotViewRepository
 		return pickingSlots;
 	}
 
-	private static Predicate<? super I_M_PickingSlot> createPickingCandidatesFilter(final PickingSlotRepoQuery query, final ListMultimap<Integer, PickedHUEditorRow> huEditorRowsByPickingSlotId)
+	private static Predicate<? super I_M_PickingSlot> createPickingCandidatesFilter(final PickingSlotRepoQuery query, final Set<Integer> availablePickingSlotIds)
 	{
-		final Predicate<? super I_M_PickingSlot> pickingCandidatesFilter = pickingSlot -> {
-
-			if (query.getPickingCandidates() == PickingCandidate.ONLY_NOT_CLOSED)
-			{
-				return true;
-			}
-
-			// For any other PickingCandidate enum value, huEditorRowsByPickingSlotId only contains items which match that value.
-			// That's because we already invoked pickingHUsRepo with the same query.
-			return huEditorRowsByPickingSlotId.containsKey(pickingSlot.getM_PickingSlot_ID());
-		};
+		final Predicate<? super I_M_PickingSlot> pickingCandidatesFilter = pickingSlot -> availablePickingSlotIds.contains(pickingSlot.getM_PickingSlot_ID());
 		return pickingCandidatesFilter;
 	}
-	
+
 	@VisibleForTesting
 	static PickingSlotRow createSourceHURow(@NonNull final HUEditorRow sourceHuEditorRow)
 	{
@@ -309,7 +298,7 @@ public class PickingSlotViewRepository
 				//
 				.build();
 	}
-	
+
 	public List<PickingSlotRow> retrieveAllPickingSlotsRows()
 	{
 		final List<I_M_PickingSlot> pickingSlots = Services.get(IPickingSlotDAO.class).retrivePickingSlots(PickingSlotQuery.ALL);
