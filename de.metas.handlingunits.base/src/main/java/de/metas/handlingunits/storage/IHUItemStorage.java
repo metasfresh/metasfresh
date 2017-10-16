@@ -29,12 +29,12 @@ import java.util.List;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 
-import de.metas.handlingunits.IHUCapacityDefinition;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_Item_Storage;
+import de.metas.quantity.HUCapacityDefinition;
 
 /**
  * HU Item Storage
@@ -85,7 +85,7 @@ public interface IHUItemStorage extends IGenericHUStorage
 	 * @param date
 	 * @return total capacity
 	 */
-	IHUCapacityDefinition getCapacity(I_M_Product product, I_C_UOM uom, Date date);
+	HUCapacityDefinition getCapacity(I_M_Product product, I_C_UOM uom, Date date);
 
 	/**
 	 * Override current total capacity settings
@@ -93,7 +93,7 @@ public interface IHUItemStorage extends IGenericHUStorage
 	 * @param capacity
 	 * @see #getCapacity(I_M_Product, I_C_UOM, Date)
 	 */
-	void setCustomCapacity(IHUCapacityDefinition capacity);
+	void setCustomCapacity(HUCapacityDefinition capacity);
 
 	/**
 	 * Gets available capacity (i.e. how much is free)
@@ -104,7 +104,7 @@ public interface IHUItemStorage extends IGenericHUStorage
 	 * 
 	 * @return available capacity
 	 */
-	IHUCapacityDefinition getAvailableCapacity(I_M_Product product, I_C_UOM uom, Date date);
+	HUCapacityDefinition getAvailableCapacity(I_M_Product product, I_C_UOM uom, Date date);
 
 	/**
 	 * 

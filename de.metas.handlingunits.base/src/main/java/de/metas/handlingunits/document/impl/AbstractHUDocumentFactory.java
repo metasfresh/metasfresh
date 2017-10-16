@@ -27,18 +27,18 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
-import de.metas.process.ProcessInfo;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.collections.SingletonIterator;
+import org.slf4j.Logger;
 
-import de.metas.handlingunits.IHUCapacityDefinition;
 import de.metas.handlingunits.document.IHUDocument;
 import de.metas.handlingunits.document.IHUDocumentFactory;
+import de.metas.logging.LogManager;
+import de.metas.process.ProcessInfo;
+import de.metas.quantity.HUCapacityDefinition;
 
 public abstract class AbstractHUDocumentFactory<T> implements IHUDocumentFactory
 {
@@ -57,7 +57,7 @@ public abstract class AbstractHUDocumentFactory<T> implements IHUDocumentFactory
 	protected class HUDocumentsCollector
 	{
 		private final List<IHUDocument> documents = new ArrayList<IHUDocument>();
-		private final List<IHUCapacityDefinition> targetCapacities = new ArrayList<IHUCapacityDefinition>();
+		private final List<HUCapacityDefinition> targetCapacities = new ArrayList<>();
 
 		public HUDocumentsCollector()
 		{
@@ -69,7 +69,7 @@ public abstract class AbstractHUDocumentFactory<T> implements IHUDocumentFactory
 			return documents;
 		}
 
-		public List<IHUCapacityDefinition> getTargetCapacities()
+		public List<HUCapacityDefinition> getTargetCapacities()
 		{
 			return targetCapacities;
 		}

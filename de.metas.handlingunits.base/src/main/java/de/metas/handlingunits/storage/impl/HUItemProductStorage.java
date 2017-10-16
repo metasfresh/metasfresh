@@ -32,10 +32,11 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 
-import de.metas.handlingunits.IHUCapacityDefinition;
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.storage.IHUItemStorage;
 import de.metas.handlingunits.storage.IProductStorage;
+import de.metas.quantity.HUCapacityDefinition;
+import de.metas.quantity.Quantity;
 
 /**
  * It's an {@link IHUItemStorage} but on given product level.
@@ -82,7 +83,7 @@ import de.metas.handlingunits.storage.IProductStorage;
 
 	}
 
-	public IHUCapacityDefinition getTotalCapacity()
+	public HUCapacityDefinition getTotalCapacity()
 	{
 		return itemStorage.getCapacity(product, uom, date);
 	}
@@ -102,10 +103,10 @@ import de.metas.handlingunits.storage.IProductStorage;
 	@Override
 	public BigDecimal getQtyFree()
 	{
-		final IHUCapacityDefinition capacityAvailable = itemStorage.getAvailableCapacity(getM_Product(), getC_UOM(), date);
+		final HUCapacityDefinition capacityAvailable = itemStorage.getAvailableCapacity(getM_Product(), getC_UOM(), date);
 		if (capacityAvailable.isInfiniteCapacity())
 		{
-			return IHUCapacityDefinition.INFINITY;
+			return Quantity.QTY_INFINITE;
 		}
 		return capacityAvailable.getCapacity();
 	}
@@ -129,7 +130,7 @@ import de.metas.handlingunits.storage.IProductStorage;
 	@Override
 	public BigDecimal getQtyCapacity()
 	{
-		final IHUCapacityDefinition capacityTotal = getTotalCapacity();
+		final HUCapacityDefinition capacityTotal = getTotalCapacity();
 		return capacityTotal.getCapacity();
 	}
 

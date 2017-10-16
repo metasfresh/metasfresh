@@ -23,20 +23,23 @@ package de.metas.quantity;
  */
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
+import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.util.Check;
-import org.adempiere.util.lang.EqualsBuilder;
-import org.adempiere.util.lang.HashcodeBuilder;
+import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 
-import de.metas.handlingunits.IHUCapacityDefinition;
+import lombok.EqualsAndHashCode;
+import lombok.NonNull;
 
 /**
  * Container used when making decisions between limited capacity Handling Units Packing Instructions Item Product definitions, and unlimited capacity ones.
  *
  * @author al
  */
+@EqualsAndHashCode
 public class HUCapacityDefinition
 {
 
@@ -59,7 +62,7 @@ public class HUCapacityDefinition
 	/**
 	 * Signals the logic to use the default capacity.
 	 */
-	BigDecimal DEFAULT = new BigDecimal(Long.MAX_VALUE);
+	public static BigDecimal DEFAULT = new BigDecimal(Long.MAX_VALUE);
 
 	private final I_M_Product product;
 	private final I_C_UOM uom;
@@ -124,9 +127,23 @@ public class HUCapacityDefinition
 	 * @param uom
 	 * @return capacity converted to <code>uomTo</code>
 	 */
-	HUCapacityDefinition convertToUOM(public I_C_UOM uomTo)
+	public HUCapacityDefinition convertToUOM(@NonNull final I_C_UOM uomTo)
 	{
-		
+		if (uom.getC_UOM_ID() == uomTo.getC_UOM_ID())
+		{
+			return this;
+		}
+		if (isInfiniteCapacity())
+		{
+			return createInfiniteCapacity(product, uomTo);
+		}
+
+		final BigDecimal qtyCapacityTo = Services.get(IUOMConversionBL.class).convertQty(product,
+				capacity,
+				uom,
+				uomTo);
+
+		return createCapacity(qtyCapacityTo, product, uomTo, allowNegativeCapacity);
 	}
 
 	/**
@@ -137,9 +154,45 @@ public class HUCapacityDefinition
 	 * @param capacityDefinition
 	 * @return
 	 */
-	HUCapacityDefinition getAvailableCapacity(BigDecimal qtyUsed, I_C_UOM qtyUsedUOM, HUCapacityDefinition capacityDefinition)
+	public HUCapacityDefinition getAvailableCapacity(BigDecimal qtyUsed, I_C_UOM qtyUsedUOM)
 	{
-		
+		// If it's infinite capacity, there is nothing to adjust
+		if (infiniteCapacity)
+		{
+			return this;
+		}
+
+		// Qty used is ZERO so there is nothing to adjust
+		if (qtyUsed.signum() == 0)
+		{
+			return this;
+		}
+
+		final BigDecimal qtyUsedConv = Services.get(IUOMConversionBL.class)
+				.convertQty(product, qtyUsed, qtyUsedUOM, uom);
+
+		final BigDecimal capacityAvailable = capacity.subtract(qtyUsedConv);
+
+		// We got negative capacity
+		if (capacityAvailable.signum() <= 0)
+		{
+			final boolean mustCreateZeroCapacity =
+					// Yes, if capacity definition does not allow negative capacity
+					!allowNegativeCapacity
+							// note: if *both* capacityAvailable and qtyUsed/qtyOsedConf we negative, it would not influence the sign of the resulting capacity
+							&& qtyUsedConv.signum() > 0;
+			if (!mustCreateZeroCapacity)
+			{
+				return createZeroCapacity(product,
+						uom,
+						allowNegativeCapacity);
+			}
+		}
+
+		return createCapacity(capacityAvailable,
+				product,
+				uom,
+				allowNegativeCapacity);
 	}
 
 	/**
@@ -153,14 +206,50 @@ public class HUCapacityDefinition
 	 * @param capacityDef
 	 * @return how many capacities are required or NULL if capacity is not available
 	 */
-	Integer calculateQtyPacks(BigDecimal qty, I_C_UOM uom, HUCapacityDefinition capacityDef)
+	public Integer calculateQtyPacks(BigDecimal qty, I_C_UOM uom)
 	{
-		
+		// Infinite capacity => one pack would be sufficient
+		if (infiniteCapacity)
+		{
+			return 1;
+		}
+
+		// Qty is zero => zero packs
+		if (qty.signum() == 0)
+		{
+			return 0;
+		}
+
+		// Capacity is ZERO => N/A
+		if (capacity.signum() <= 0)
+		{
+			return null;
+		}
+
+		// Convert Qty to Capacity's UOM
+		final BigDecimal qtyConv = Services.get(IUOMConversionBL.class).convertQty(product, qty, uom, uom);
+
+		final BigDecimal qtyPacks = qtyConv.divide(capacity, 0, RoundingMode.UP);
+		return qtyPacks.intValueExact();
 	}
 
-	HUCapacityDefinition multiply(final HUCapacityDefinition capacityDef, int multiplier)
+	public HUCapacityDefinition multiply(final int multiplier)
 	{
-		
+		Check.assume(multiplier >= 0, "multiplier = {} needs to be 0", multiplier);
+
+		// If capacity is infinite, there is no point to multiply it
+		if (infiniteCapacity)
+		{
+			return this;
+		}
+
+		final BigDecimal capacityNew = capacity.multiply(BigDecimal.valueOf(multiplier));
+
+		return createCapacity(
+				capacityNew,
+				product,
+				uom,
+				allowNegativeCapacity);
 	}
 
 	public I_M_Product getM_Product()
@@ -171,41 +260,6 @@ public class HUCapacityDefinition
 	public I_C_UOM getC_UOM()
 	{
 		return uom;
-	}
-
-	@Override
-	public int hashCode()
-	{
-		return new HashcodeBuilder()
-				.append(product)
-				.append(uom)
-				.append(capacity)
-				.append(infiniteCapacity)
-				.append(allowNegativeCapacity)
-				.toHashcode();
-	}
-
-	@Override
-	public boolean equals(final Object obj)
-	{
-		if (this == obj)
-		{
-			return true;
-		}
-
-		final HUCapacityDefinition other = EqualsBuilder.getOther(this, obj);
-		if (other == null)
-		{
-			return false;
-		}
-
-		return new EqualsBuilder()
-				.append(product, other.product)
-				.append(uom, other.uom)
-				.append(capacity, other.capacity)
-				.append(infiniteCapacity, other.infiniteCapacity)
-				.append(allowNegativeCapacity, other.allowNegativeCapacity)
-				.isEqual();
 	}
 
 	@Override

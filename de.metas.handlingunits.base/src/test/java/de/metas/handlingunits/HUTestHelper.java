@@ -143,6 +143,8 @@ import de.metas.inoutcandidate.modelvalidator.InOutCandidateValidator;
 import de.metas.inoutcandidate.modelvalidator.ReceiptScheduleValidator;
 import de.metas.interfaces.I_M_Warehouse;
 import de.metas.javaclasses.model.I_AD_JavaClass;
+import de.metas.quantity.HUCapacityDefinition;
+import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
@@ -1472,7 +1474,7 @@ public class HUTestHelper
 			final I_C_UOM uom,
 			final boolean fullyLoaded)
 	{
-		final IHUCapacityDefinition capacity = Services.get(IHUCapacityBL.class).createCapacity(
+		final HUCapacityDefinition capacity = HUCapacityDefinition.createCapacity(
 				qtyCapacity,
 				product,
 				uom,
@@ -1539,12 +1541,12 @@ public class HUTestHelper
 			final ILUTUProducerAllocationDestination allocationDestination,
 			final BigDecimal cuQty)
 	{
-		final IHUCapacityDefinition tuCapacity = allocationDestination.getTUCapacity();
+		final HUCapacityDefinition tuCapacity = allocationDestination.getTUCapacity();
 		final I_M_Product cuProduct = tuCapacity.getM_Product();
 		final I_C_UOM cuUOM = tuCapacity.getC_UOM();
 
 		final AbstractAllocationSourceDestination allocationSource = createDummySourceDestination(cuProduct,
-				IHUCapacityDefinition.INFINITY,
+				Quantity.QTY_INFINITE,
 				cuProduct.getC_UOM(),
 				true // fullyLoaded
 		);
@@ -1695,7 +1697,7 @@ public class HUTestHelper
 
 	public final void load(TestHelperLoadRequest r)
 	{
-		final IAllocationSource source = createDummySourceDestination(r.getCuProduct(), IHUCapacityDefinition.INFINITY, r.getLoadCuUOM(), true);
+		final IAllocationSource source = createDummySourceDestination(r.getCuProduct(), Quantity.QTY_INFINITE, r.getLoadCuUOM(), true);
 
 		final HULoader huLoader = HULoader.of(source, r.getProducer())
 				.setAllowPartialUnloads(false)

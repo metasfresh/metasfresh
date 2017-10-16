@@ -6,7 +6,6 @@ import java.util.OptionalInt;
 
 import org.springframework.stereotype.Service;
 
-import de.metas.handlingunits.IHUCapacityDefinition;
 import de.metas.handlingunits.model.I_M_Picking_Candidate;
 import de.metas.handlingunits.picking.pickingCandidateCommands.AddHUToPickingSlot;
 import de.metas.handlingunits.picking.pickingCandidateCommands.AddQtyToHU;
@@ -104,7 +103,7 @@ public class PickingCandidateService
 	{
 		@NonNull
 		@Default
-		BigDecimal qtyCU = IHUCapacityDefinition.INFINITY;
+		BigDecimal qtyCU = Quantity.QTY_INFINITE;
 
 		@NonNull
 		Integer huId;

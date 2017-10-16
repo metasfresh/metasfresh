@@ -23,7 +23,6 @@ package de.metas.handlingunits.impl;
  */
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.Date;
 
 import org.adempiere.uom.api.IUOMConversionBL;
@@ -33,9 +32,7 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 
 import de.metas.handlingunits.IHUCapacityBL;
-import de.metas.handlingunits.IHUCapacityDefinition;
 import de.metas.handlingunits.IHUPIItemProductDAO;
-import de.metas.handlingunits.IStatefulHUCapacityDefinition;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
@@ -45,13 +42,7 @@ public class HUCapacityBL implements IHUCapacityBL
 {
 
 	@Override
-	public IStatefulHUCapacityDefinition createStatefulCapacity(final IHUCapacityDefinition capacity, final BigDecimal qtyUsed)
-	{
-		return new StatefulHUCapacityDefinition(capacity, qtyUsed);
-	}
-
-	@Override
-	public IHUCapacityDefinition getCapacity(final I_M_HU_PI_Item_Product itemDefProduct, final I_M_Product product, final I_C_UOM uom)
+	public HUCapacityDefinition getCapacity(final I_M_HU_PI_Item_Product itemDefProduct, final I_M_Product product, final I_C_UOM uom)
 	{
 		final I_M_Product productToUse;
 		if (itemDefProduct.isAllowAnyProduct())
@@ -90,7 +81,7 @@ public class HUCapacityBL implements IHUCapacityBL
 		final boolean infiniteCapacity = isInfiniteCapacity(itemDefProduct);
 		if (infiniteCapacity)
 		{
-			return createInfiniteCapacity(productToUse, uom);
+			return HUCapacityDefinition.createInfiniteCapacity(productToUse, uom);
 		}
 
 		final BigDecimal qty = itemDefProduct.getQty();
@@ -99,11 +90,11 @@ public class HUCapacityBL implements IHUCapacityBL
 
 		final boolean allowNegativeCapacity = false;
 
-		return createCapacity(qtyConv, productToUse, uom, allowNegativeCapacity);
+		return HUCapacityDefinition.createCapacity(qtyConv, productToUse, uom, allowNegativeCapacity);
 	}
 
 	@Override
-	public IHUCapacityDefinition getCapacity(final I_M_HU_Item huItem, final I_M_Product product, final I_C_UOM uom, final Date date)
+	public HUCapacityDefinition getCapacity(final I_M_HU_Item huItem, final I_M_Product product, final I_C_UOM uom, final Date date)
 	{
 		Check.assumeNotNull(huItem, "huItem not null");
 
@@ -111,7 +102,7 @@ public class HUCapacityBL implements IHUCapacityBL
 		if (itemDefProduct == null)
 		{
 			final boolean allowNegativeCapacity = false;
-			return createZeroCapacity(product, uom, allowNegativeCapacity);
+			return HUCapacityDefinition.createZeroCapacity(product, uom, allowNegativeCapacity);
 		}
 
 		return getCapacity(itemDefProduct, product, uom);
@@ -121,119 +112,6 @@ public class HUCapacityBL implements IHUCapacityBL
 	public boolean isInfiniteCapacity(final I_M_HU_PI_Item_Product itemDefProduct)
 	{
 		return itemDefProduct.isInfiniteCapacity();
-	}
-
-	@Override
-	public IHUCapacityDefinition getAvailableCapacity(final BigDecimal qtyUsed, final I_C_UOM qtyUsedUOM,
-			final IHUCapacityDefinition capacityDefinition)
-	{
-		final boolean allowNegativeCapacityThisTime = false;
-		return getAvailableCapacity(qtyUsed, qtyUsedUOM, capacityDefinition, allowNegativeCapacityThisTime);
-	}
-
-	private IHUCapacityDefinition getAvailableCapacity(
-			final BigDecimal qtyUsed,
-			final I_C_UOM qtyUsedUOM,
-			final IHUCapacityDefinition capacityDefinition,
-			final boolean allowNegativeCapacityThisTime)
-	{
-		// If it's infinite capacity, there is nothing to adjust
-		if (capacityDefinition.isInfiniteCapacity())
-		{
-			return capacityDefinition;
-		}
-
-		// Qty used is ZERO so there is nothing to adjust
-		if (qtyUsed.signum() == 0)
-		{
-			return capacityDefinition;
-		}
-
-		final BigDecimal capacity = capacityDefinition.getCapacity();
-
-		final BigDecimal qtyUsedConv = Services.get(IUOMConversionBL.class)
-				.convertQty(capacityDefinition.getM_Product(),
-						qtyUsed,
-						qtyUsedUOM, capacityDefinition.getC_UOM());
-
-		final BigDecimal capacityAvailable = capacity.subtract(qtyUsedConv);
-
-		// We got negative capacity
-		if (capacityAvailable.signum() <= 0)
-		{
-			// Do we allow negative capacity?
-			final boolean allowNegativeCapacity = false
-					// Yes, if allow this time only is set
-					|| allowNegativeCapacityThisTime
-					// Yes, if capacity definition allows negative capacity
-					|| capacityDefinition.isAllowNegativeCapacity()
-					// Yes, if adjustment qty was negative so it did not influenced the sign of resulting capacity
-					|| qtyUsedConv.signum() <= 0;
-
-			if (!allowNegativeCapacity)
-			{
-				return createZeroCapacity(capacityDefinition.getM_Product(),
-						capacityDefinition.getC_UOM(),
-						capacityDefinition.isAllowNegativeCapacity());
-			}
-		}
-
-		return createCapacity(capacityAvailable,
-				capacityDefinition.getM_Product(),
-				capacityDefinition.getC_UOM(),
-				capacityDefinition.isAllowNegativeCapacity());
-	}
-
-	@Override
-	public Integer calculateQtyPacks(final BigDecimal qty, final I_C_UOM uom, final IHUCapacityDefinition capacityDef)
-	{
-		// Infinite capacity => one pack would be sufficient
-		if (capacityDef.isInfiniteCapacity())
-		{
-			return 1;
-		}
-
-		// Qty is zero => zero packs
-		if (qty.signum() == 0)
-		{
-			return 0;
-		}
-
-		// Capacity is ZERO => N/A
-		final BigDecimal capacity = capacityDef.getCapacity();
-		if (capacity.signum() <= 0)
-		{
-			return null;
-		}
-
-		// Convert Qty to Capacity's UOM
-		final BigDecimal qtyConv = Services.get(IUOMConversionBL.class).convertQty(capacityDef.getM_Product(), qty, uom, capacityDef.getC_UOM());
-
-		final BigDecimal qtyPacks = qtyConv.divide(capacity, 0, RoundingMode.UP);
-		return qtyPacks.intValueExact();
-	}
-
-	@Override
-	public IHUCapacityDefinition multiply(final IHUCapacityDefinition capacityDef, final int multiplier)
-	{
-		Check.assumeNotNull(capacityDef, "capacityDef not null");
-		Check.assume(multiplier >= 0, "multiplier >= 0");
-
-		// If capacity is infinite, there is no point to multiply it
-		if (capacityDef.isInfiniteCapacity())
-		{
-			return capacityDef;
-		}
-
-		final BigDecimal multiplierBD = BigDecimal.valueOf(multiplier);
-		final BigDecimal capacity = capacityDef.getCapacity();
-		final BigDecimal capacityNew = capacity.multiply(multiplierBD);
-
-		return createCapacity(
-				capacityNew,
-				capacityDef.getM_Product(),
-				capacityDef.getC_UOM(),
-				capacityDef.isAllowNegativeCapacity());
 	}
 
 	@Override
@@ -254,33 +132,5 @@ public class HUCapacityBL implements IHUCapacityBL
 
 		// If it's not infinite capacity, quantity must be > 0
 		return itemDefProduct.getQty().signum() > 0;
-	}
-
-	@Override
-	public IHUCapacityDefinition convertToUOM(final IHUCapacityDefinition capacity, final I_C_UOM uomTo)
-	{
-		Check.assumeNotNull(capacity, "capacity not null");
-		Check.assumeNotNull(uomTo, "uomTo not null");
-
-		final I_C_UOM uomFrom = capacity.getC_UOM();
-		if (uomFrom.getC_UOM_ID() == uomTo.getC_UOM_ID())
-		{
-			return capacity;
-		}
-
-		final I_M_Product product = capacity.getM_Product();
-		if (capacity.isInfiniteCapacity())
-		{
-			return createInfiniteCapacity(product, uomTo);
-		}
-
-		final BigDecimal qtyCapacityFrom = capacity.getCapacity();
-		final BigDecimal qtyCapacityTo = Services.get(IUOMConversionBL.class).convertQty(product,
-				qtyCapacityFrom,
-				uomFrom,
-				uomTo);
-
-		final boolean allowNegativeCapacity = capacity.isAllowNegativeCapacity();
-		return createCapacity(qtyCapacityTo, product, uomTo, allowNegativeCapacity);
 	}
 }

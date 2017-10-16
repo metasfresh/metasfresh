@@ -35,12 +35,11 @@ import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_Transaction;
 import org.compiere.model.X_M_InOut;
 
-import de.metas.handlingunits.IHUCapacityBL;
-import de.metas.handlingunits.IHUCapacityDefinition;
 import de.metas.handlingunits.document.IHUDocument;
 import de.metas.handlingunits.document.IHUDocumentLine;
 import de.metas.handlingunits.document.impl.AbstractHUDocumentFactory;
 import de.metas.inout.IInOutDAO;
+import de.metas.quantity.HUCapacityDefinition;
 
 public class MInOutHUDocumentFactory extends AbstractHUDocumentFactory<I_M_InOut>
 {
@@ -98,7 +97,7 @@ public class MInOutHUDocumentFactory extends AbstractHUDocumentFactory<I_M_InOut
 
 			//
 			// Create Target Qty
-			final IHUCapacityDefinition targetCapacity = Services.get(IHUCapacityBL.class).createCapacity(
+			final HUCapacityDefinition targetCapacity = HUCapacityDefinition.createCapacity(
 					ioLine.getMovementQty(), // qty
 					ioLine.getM_Product(),
 					ioLine.getC_UOM(),

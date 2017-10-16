@@ -27,12 +27,12 @@ import java.math.BigDecimal;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 
-import de.metas.handlingunits.IHUCapacityDefinition;
 import de.metas.handlingunits.document.IHUAllocations;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
+import de.metas.quantity.HUCapacityDefinition;
 import de.metas.quantity.Quantity;
 
 /**
@@ -57,7 +57,7 @@ public interface ILUTUProducerAllocationDestination extends IHUProducerAllocatio
 	 * 
 	 * @param tuCapacity
 	 */
-	void addTUCapacity(IHUCapacityDefinition tuCapacity);
+	void addTUCapacity(HUCapacityDefinition tuCapacity);
 
 	/**
 	 *
@@ -74,7 +74,7 @@ public interface ILUTUProducerAllocationDestination extends IHUProducerAllocatio
 	 *
 	 * @return TU capacity
 	 */
-	IHUCapacityDefinition getTUCapacity();
+	HUCapacityDefinition getTUCapacity();
 
 	/**
 	 * Gets TU defined capacity for given product
@@ -82,7 +82,7 @@ public interface ILUTUProducerAllocationDestination extends IHUProducerAllocatio
 	 * @param cuProduct
 	 * @return TU capacity or <code>null</code>
 	 */
-	IHUCapacityDefinition getTUCapacity(I_M_Product cuProduct);
+	HUCapacityDefinition getTUCapacity(I_M_Product cuProduct);
 
 	I_M_HU_PI getLUPI();
 

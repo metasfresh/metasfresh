@@ -31,21 +31,22 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.slf4j.Logger;
-import de.metas.quantity.Quantity;
+
 import de.metas.handlingunits.IHUCapacityBL;
-import de.metas.handlingunits.IHUCapacityDefinition;
 import de.metas.handlingunits.IStatefulHUCapacityDefinition;
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.impl.AllocationUtils;
 import de.metas.handlingunits.storage.IProductStorage;
 import de.metas.logging.LogManager;
+import de.metas.quantity.HUCapacityDefinition;
+import de.metas.quantity.Quantity;
 
 public abstract class AbstractProductStorage implements IProductStorage
 {
 	protected final transient Logger logger = LogManager.getLogger(getClass());
 	protected final IHUCapacityBL capacityBL = Services.get(IHUCapacityBL.class);
 
-	private IHUCapacityDefinition _capacityTotal = null;
+	private HUCapacityDefinition _capacityTotal = null;
 	private IStatefulHUCapacityDefinition _capacity = null;
 
 	/** NOTE: this flag was introduced for backward compatibility (support those storages which does not support considering ForceQtyAllocation) */
@@ -63,11 +64,11 @@ public abstract class AbstractProductStorage implements IProductStorage
 
 	}
 
-	protected abstract IHUCapacityDefinition retrieveTotalCapacity();
+	protected abstract HUCapacityDefinition retrieveTotalCapacity();
 
 	protected abstract BigDecimal retrieveQtyInitial();
 
-	protected final IHUCapacityDefinition getTotalCapacity()
+	protected final HUCapacityDefinition getTotalCapacity()
 	{
 		if (_capacityTotal == null)
 		{
@@ -101,7 +102,7 @@ public abstract class AbstractProductStorage implements IProductStorage
 	{
 		if (_capacity == null)
 		{
-			final IHUCapacityDefinition capacityTotal = getTotalCapacity();
+			final HUCapacityDefinition capacityTotal = getTotalCapacity();
 			final BigDecimal qtyUsedInitial = retrieveQtyInitial();
 			_capacity = capacityBL.createStatefulCapacity(capacityTotal, qtyUsedInitial);
 		}
@@ -146,10 +147,10 @@ public abstract class AbstractProductStorage implements IProductStorage
 	@Override
 	public final BigDecimal getQtyCapacity()
 	{
-		final IHUCapacityDefinition capacity = getCapacity();
+		final HUCapacityDefinition capacity = getCapacity();
 		if (capacity.isInfiniteCapacity())
 		{
-			return IHUCapacityDefinition.INFINITY;
+			return Quantity.QTY_INFINITE;
 		}
 		return capacity.getCapacity();
 	}
@@ -160,7 +161,7 @@ public abstract class AbstractProductStorage implements IProductStorage
 		final IStatefulHUCapacityDefinition capacity = getCapacity();
 		if (capacity.isInfiniteCapacity())
 		{
-			return IHUCapacityDefinition.INFINITY;
+			return Quantity.QTY_INFINITE;
 		}
 
 		return capacity.getQtyFree();

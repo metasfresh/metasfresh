@@ -28,7 +28,6 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.handlingunits.IHUCapacityBL;
-import de.metas.handlingunits.IHUCapacityDefinition;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -61,6 +60,7 @@ import de.metas.handlingunits.storage.EmptyHUListener;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
+import de.metas.quantity.HUCapacityDefinition;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -530,7 +530,7 @@ public class HUTransformService
 		destination.setIsHUPlanningReceiptOwnerPM(isOwnPackingMaterials);
 
 		// gh #1759: explicitly take the capacity from the tuPIItemProduct which the user selected
-		final IHUCapacityDefinition capacity = Services.get(IHUCapacityBL.class).getCapacity(tuPIItemProduct, tuPIItemProduct.getM_Product(), tuPIItemProduct.getC_UOM());
+		final HUCapacityDefinition capacity = Services.get(IHUCapacityBL.class).getCapacity(tuPIItemProduct, tuPIItemProduct.getM_Product(), tuPIItemProduct.getC_UOM());
 		destination.addTUCapacity(capacity);
 
 		destination.setNoLU();

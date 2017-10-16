@@ -32,13 +32,10 @@ import org.compiere.model.I_M_Product;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.quantity.HUCapacityDefinition;
 
 public interface IHUCapacityBL extends ISingletonService
 {
-	
-
-	IStatefulHUCapacityDefinition createStatefulCapacity(IHUCapacityDefinition capacity, BigDecimal qtyUsed);
-
 	/**
 	 *
 	 * @param itemDefProduct
@@ -49,7 +46,7 @@ public interface IHUCapacityBL extends ISingletonService
 	 * @throws HUException if <code>product!=null</code> and the product's ID is different from <code>itemDefProduct</code>'s <code>M_Product_ID</code>.
 	 *             Also, if <code>product==null</code> and <code>itemDefProduct</code> does not reference any product either.
 	 */
-	IHUCapacityDefinition getCapacity(I_M_HU_PI_Item_Product itemDefProduct, I_M_Product product, I_C_UOM uom);
+	HUCapacityDefinition getCapacity(I_M_HU_PI_Item_Product itemDefProduct, I_M_Product product, I_C_UOM uom);
 
 	/**
 	 * Retrieve the and evaluate the {@link I_M_HU_PI_Item_Product} for the given <code>huItem</code>, <code>product</code> and <code>date</code>. If there is no such record, if returns a capacity definition with a
@@ -62,7 +59,7 @@ public interface IHUCapacityBL extends ISingletonService
 	 * @return
 	 * @see IHUPIItemProductDAO#retrievePIMaterialItemProduct(I_M_HU_Item, I_M_Product, Date) to learn which I_M_HU_PI_Item_Product's capacitiy is returned if there is more than one.
 	 */
-	IHUCapacityDefinition getCapacity(I_M_HU_Item huItem, I_M_Product product, I_C_UOM uom, final Date date);
+	HUCapacityDefinition getCapacity(I_M_HU_Item huItem, I_M_Product product, I_C_UOM uom, final Date date);
 
 	boolean isInfiniteCapacity(I_M_HU_PI_Item_Product itemDefProduct);
 

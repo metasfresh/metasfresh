@@ -35,17 +35,17 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Transaction;
 
 import de.metas.handlingunits.HUConstants;
-import de.metas.handlingunits.IHUCapacityDefinition;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.hutransaction.IHUTrxDAO;
 import de.metas.handlingunits.model.I_M_HU_Trx_Line;
+import de.metas.quantity.HUCapacityDefinition;
 
 public class MTransactionProductStorage extends AbstractProductStorage
 {
 	private final I_M_Transaction mtrx;
 	private final boolean inbound;
 	private final boolean reversal;
-	private final IHUCapacityDefinition capacityTotal;
+	private final HUCapacityDefinition capacityTotal;
 
 	public MTransactionProductStorage(final I_M_Transaction mtrx)
 	{
@@ -85,7 +85,7 @@ public class MTransactionProductStorage extends AbstractProductStorage
 			qtyCapacity = qtyCapacity.negate();
 		}
 
-		capacityTotal = capacityBL.createCapacity(qtyCapacity,
+		capacityTotal = HUCapacityDefinition.createCapacity(qtyCapacity,
 				product, uomMTransaction,
 				false// allowNegativeCapacity
 				);
@@ -156,7 +156,7 @@ public class MTransactionProductStorage extends AbstractProductStorage
 	}
 
 	@Override
-	protected IHUCapacityDefinition retrieveTotalCapacity()
+	protected HUCapacityDefinition retrieveTotalCapacity()
 	{
 		return capacityTotal;
 	}

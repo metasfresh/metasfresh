@@ -32,12 +32,12 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 
-import de.metas.handlingunits.IHUCapacityBL;
-import de.metas.handlingunits.IHUCapacityDefinition;
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorage;
+import de.metas.quantity.HUCapacityDefinition;
+import de.metas.quantity.Quantity;
 
 /**
  * Read-only HU Product Storage based on {@link IHUStorage} and a particular product.
@@ -50,7 +50,7 @@ import de.metas.handlingunits.storage.IHUStorage;
 	private final IHUStorage huStorage;
 	private final I_M_Product product;
 	private final I_C_UOM uom;
-	private final IHUCapacityDefinition capacityTotal;
+	private final HUCapacityDefinition capacityTotal;
 
 	public HUProductStorage(final IHUStorage huStorage,
 			final I_M_Product product,
@@ -69,7 +69,7 @@ import de.metas.handlingunits.storage.IHUStorage;
 
 		// NOTE: we are creating infinite capacity because we cannot determine the capacity at HU Storage Level
 		// Capacity is defined only on HU_Item_Storage level.
-		capacityTotal = Services.get(IHUCapacityBL.class).createInfiniteCapacity(product, uom);
+		capacityTotal = HUCapacityDefinition.createInfiniteCapacity(product, uom);
 	}
 
 	@Override
@@ -99,10 +99,10 @@ import de.metas.handlingunits.storage.IHUStorage;
 	@Override
 	public BigDecimal getQtyFree()
 	{
-		final IHUCapacityDefinition capacityAvailable = Services.get(IHUCapacityBL.class).getAvailableCapacity(getQty(), getC_UOM(), capacityTotal);
+		final HUCapacityDefinition capacityAvailable = capacityTotal.getAvailableCapacity(getQty(), getC_UOM());
 		if (capacityAvailable.isInfiniteCapacity())
 		{
-			return IHUCapacityDefinition.INFINITY;
+			return Quantity.QTY_INFINITE;
 		}
 		return capacityAvailable.getCapacity();
 	}

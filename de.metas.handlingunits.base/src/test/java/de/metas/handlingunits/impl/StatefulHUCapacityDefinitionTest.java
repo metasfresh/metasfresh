@@ -35,6 +35,7 @@ import de.metas.handlingunits.AbstractHUTest;
 import de.metas.handlingunits.IStatefulHUCapacityDefinition;
 import de.metas.quantity.HUCapacityDefinition;
 import de.metas.quantity.Quantity;
+import de.metas.quantity.StatefulHUCapacityDefinition;
 
 public class StatefulHUCapacityDefinitionTest extends AbstractHUTest
 {
@@ -52,7 +53,7 @@ public class StatefulHUCapacityDefinitionTest extends AbstractHUTest
 	{
 		final BigDecimal qtyTotal = new BigDecimal("10");
 		final boolean allowNegativeCapacity = false;
-		final HUCapacityDefinition capacityTotal = new HUCapacityDefinition(qtyTotal, pTomato, uomEach, allowNegativeCapacity);
+		final HUCapacityDefinition capacityTotal = HUCapacityDefinition.createCapacity(qtyTotal, pTomato, uomEach, allowNegativeCapacity);
 		final IStatefulHUCapacityDefinition capacity = new StatefulHUCapacityDefinition(capacityTotal, BigDecimal.ZERO);
 
 		addQtyAndTest(capacity, uomEach, "3", "3");
@@ -68,7 +69,7 @@ public class StatefulHUCapacityDefinitionTest extends AbstractHUTest
 	@Test
 	public void addQty_InfiniteCapacity()
 	{
-		final HUCapacityDefinition capacityTotal = new HUCapacityDefinition(pTomato, uomEach);
+		final HUCapacityDefinition capacityTotal = HUCapacityDefinition.createInfiniteCapacity(pTomato, uomEach);
 		Assert.assertTrue("Shall be infinite capacity: " + capacityTotal, capacityTotal.isInfiniteCapacity());
 
 		final IStatefulHUCapacityDefinition capacity = new StatefulHUCapacityDefinition(capacityTotal, BigDecimal.ZERO);
@@ -88,7 +89,7 @@ public class StatefulHUCapacityDefinitionTest extends AbstractHUTest
 	{
 		final BigDecimal qtyTotal = new BigDecimal("10");
 		final boolean allowNegativeCapacity = false;
-		final HUCapacityDefinition capacityTotal = new HUCapacityDefinition(qtyTotal, pTomato, uomEach, allowNegativeCapacity);
+		final HUCapacityDefinition capacityTotal = HUCapacityDefinition.createCapacity(qtyTotal, pTomato, uomEach, allowNegativeCapacity);
 		final IStatefulHUCapacityDefinition capacity = new StatefulHUCapacityDefinition(capacityTotal, BigDecimal.ZERO);
 
 		// NOTE: usually this shall thrown an exception
@@ -103,7 +104,7 @@ public class StatefulHUCapacityDefinitionTest extends AbstractHUTest
 	{
 		final BigDecimal qtyTotal = new BigDecimal("10");
 		final boolean allowNegativeCapacity = false;
-		final HUCapacityDefinition capacityTotal = new HUCapacityDefinition(qtyTotal, pTomato, uomEach, allowNegativeCapacity);
+		final HUCapacityDefinition capacityTotal = HUCapacityDefinition.createCapacity(qtyTotal, pTomato, uomEach, allowNegativeCapacity);
 		final IStatefulHUCapacityDefinition capacity = new StatefulHUCapacityDefinition(capacityTotal, BigDecimal.ZERO);
 
 		addQtyAndTest(capacity, uomEach, "-10", "DOES NOT MATTER");
@@ -120,7 +121,7 @@ public class StatefulHUCapacityDefinitionTest extends AbstractHUTest
 		final BigDecimal qtyTotal = new BigDecimal("10");
 		final BigDecimal qty = new BigDecimal("13"); // > qtyTotal
 		final boolean allowNegativeCapacity = false;
-		final HUCapacityDefinition capacityTotal = new HUCapacityDefinition(qtyTotal, pTomato, uomEach, allowNegativeCapacity);
+		final HUCapacityDefinition capacityTotal = HUCapacityDefinition.createCapacity(qtyTotal, pTomato, uomEach, allowNegativeCapacity);
 		final IStatefulHUCapacityDefinition capacity = new StatefulHUCapacityDefinition(capacityTotal, qty);
 
 		// Make sure our configuration is right
@@ -137,7 +138,7 @@ public class StatefulHUCapacityDefinitionTest extends AbstractHUTest
 	{
 		final BigDecimal qtyTotal = new BigDecimal("10");
 		final boolean allowNegativeCapacity = false;
-		final HUCapacityDefinition capacityTotal = new HUCapacityDefinition(qtyTotal, pTomato, uomEach, allowNegativeCapacity);
+		final HUCapacityDefinition capacityTotal = HUCapacityDefinition.createCapacity(qtyTotal, pTomato, uomEach, allowNegativeCapacity);
 		final IStatefulHUCapacityDefinition capacity = new StatefulHUCapacityDefinition(capacityTotal, qtyTotal);
 
 		removeQtyAndTest(capacity, uomEach, "3", "3");
@@ -155,7 +156,7 @@ public class StatefulHUCapacityDefinitionTest extends AbstractHUTest
 	{
 		final BigDecimal qtyTotal = new BigDecimal("10");
 		final boolean allowNegativeCapacity = false;
-		final HUCapacityDefinition capacityTotal = new HUCapacityDefinition(qtyTotal, pTomato, uomEach, allowNegativeCapacity);
+		final HUCapacityDefinition capacityTotal = HUCapacityDefinition.createCapacity(qtyTotal, pTomato, uomEach, allowNegativeCapacity);
 		final IStatefulHUCapacityDefinition capacity = new StatefulHUCapacityDefinition(capacityTotal, BigDecimal.ZERO);
 
 		// NOTE: usually this shall thrown an exception
@@ -170,16 +171,16 @@ public class StatefulHUCapacityDefinitionTest extends AbstractHUTest
 	{
 		final BigDecimal qtyTotal = new BigDecimal("10");
 		final boolean allowNegativeCapacity = false;
-		final HUCapacityDefinition capacityTotal = new HUCapacityDefinition(qtyTotal, pTomato, uomEach, allowNegativeCapacity);
+		final HUCapacityDefinition capacityTotal = HUCapacityDefinition.createCapacity(qtyTotal, pTomato, uomEach, allowNegativeCapacity);
 		final IStatefulHUCapacityDefinition capacity = new StatefulHUCapacityDefinition(capacityTotal, BigDecimal.ZERO);
 
 		removeQtyAndTest(capacity, uomEach, "-10", "DOES NOT MATTER");
 	}
-
+	
 	@Test
 	public void removeQty_InfiniteCapacity()
 	{
-		final HUCapacityDefinition capacityTotal = new HUCapacityDefinition(pTomato, uomEach);
+		final HUCapacityDefinition capacityTotal = HUCapacityDefinition.createInfiniteCapacity(pTomato, uomEach);
 		Assert.assertTrue("Shall be infinite capacity: " + capacityTotal, capacityTotal.isInfiniteCapacity());
 
 		final IStatefulHUCapacityDefinition capacity = new StatefulHUCapacityDefinition(capacityTotal, BigDecimal.ZERO);
@@ -199,7 +200,7 @@ public class StatefulHUCapacityDefinitionTest extends AbstractHUTest
 	{
 		final BigDecimal qtyTotal = new BigDecimal("10");
 		final boolean allowNegativeCapacity = true;
-		final HUCapacityDefinition capacityTotal = new HUCapacityDefinition(qtyTotal, pTomato, uomEach, allowNegativeCapacity);
+		final HUCapacityDefinition capacityTotal = HUCapacityDefinition.createCapacity(qtyTotal, pTomato, uomEach, allowNegativeCapacity);
 		final IStatefulHUCapacityDefinition capacity = new StatefulHUCapacityDefinition(capacityTotal, qtyTotal);
 
 		removeQtyAndTest(capacity, uomEach, "3", "3");
@@ -212,7 +213,7 @@ public class StatefulHUCapacityDefinitionTest extends AbstractHUTest
 		assertCapacityLevels(capacity, "10", "-2", "12");
 	}
 
-	private void addQtyAndTest(final IStatefulHUCapacityDefinition capacity,
+	private void addQtyAndTest(final StatefulHUCapacityDefinition capacity,
 			final I_C_UOM uom,
 			final String qtyToAddStr,
 			final String qtyAddedExpectedStr)
@@ -230,7 +231,7 @@ public class StatefulHUCapacityDefinitionTest extends AbstractHUTest
 		Assert.assertEquals("Invalid Added Source UOM: ", capacity.getC_UOM(), qtyAdded.getSourceUOM());
 	}
 
-	private void removeQtyAndTest(final IStatefulHUCapacityDefinition capacity,
+	private void removeQtyAndTest(final StatefulHUCapacityDefinition capacity,
 			final I_C_UOM uom,
 			final String qtyToRemoveStr,
 			final String qtyRemovedExpectedStr)
@@ -247,7 +248,7 @@ public class StatefulHUCapacityDefinitionTest extends AbstractHUTest
 		Assert.assertEquals("Invalid Removed Source UOM: ", capacity.getC_UOM(), qtyRemoved.getSourceUOM());
 	}
 
-	private void assertCapacityLevels(final IStatefulHUCapacityDefinition capacity,
+	private void assertCapacityLevels(final StatefulHUCapacityDefinition capacity,
 			final String qtyCapacityExpectedStr,
 			final String qtyExpectedStr,
 			final String qtyFreeExpectedStr)
@@ -263,7 +264,7 @@ public class StatefulHUCapacityDefinitionTest extends AbstractHUTest
 				Matchers.comparesEqualTo(new BigDecimal(qtyFreeExpectedStr)));
 	}
 
-	private void assertQty(final IStatefulHUCapacityDefinition capacity, final String qtyExpectedStr)
+	private void assertQty(final StatefulHUCapacityDefinition capacity, final String qtyExpectedStr)
 	{
 		Assert.assertThat("Invalid Qty: " + capacity,
 				capacity.getQty(),

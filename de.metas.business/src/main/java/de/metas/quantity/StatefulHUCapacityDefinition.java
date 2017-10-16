@@ -1,4 +1,4 @@
-package de.metas.handlingunits.impl;
+package de.metas.quantity;
 
 /*
  * #%L
@@ -31,23 +31,28 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 
-import de.metas.handlingunits.IHUCapacityDefinition;
-import de.metas.handlingunits.IStatefulHUCapacityDefinition;
-import de.metas.quantity.Quantity;
+import lombok.NonNull;
 
-/* package */class StatefulHUCapacityDefinition implements IStatefulHUCapacityDefinition
+
+public class StatefulHUCapacityDefinition
 {
+
+	public static StatefulHUCapacityDefinition createStatefulCapacity(
+			@NonNull final HUCapacityDefinition capacity, 
+			@NonNull final BigDecimal qtyUsed)
+	{
+		return new StatefulHUCapacityDefinition(capacity, qtyUsed);
+	}
+	
 	// Services
 	private final transient IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 
-	private final IHUCapacityDefinition _capacityTotal;
+	private final HUCapacityDefinition _capacityTotal;
 	private BigDecimal _qty = BigDecimal.ZERO;
 	private BigDecimal _qtyFree = BigDecimal.ZERO;
 
-	public StatefulHUCapacityDefinition(final IHUCapacityDefinition capacityTotal, final BigDecimal qtyInitial)
+	private StatefulHUCapacityDefinition(final HUCapacityDefinition capacityTotal, final BigDecimal qtyInitial)
 	{
-		super();
-
 		Check.assumeNotNull(capacityTotal, "capacityTotal not null");
 		_capacityTotal = capacityTotal;
 
@@ -65,13 +70,11 @@ import de.metas.quantity.Quantity;
 				+ "]";
 	}
 
-	@Override
 	public final boolean isInfiniteCapacity()
 	{
 		return _capacityTotal.isInfiniteCapacity();
 	}
 
-	@Override
 	public final boolean isAllowNegativeCapacity()
 	{
 		return _capacityTotal.isAllowNegativeCapacity();
@@ -102,25 +105,21 @@ import de.metas.quantity.Quantity;
 		}
 	}
 
-	@Override
 	public final BigDecimal getCapacity()
 	{
 		return _capacityTotal.getCapacity();
 	}
 
-	@Override
 	public final I_M_Product getM_Product()
 	{
 		return _capacityTotal.getM_Product();
 	}
 
-	@Override
 	public final I_C_UOM getC_UOM()
 	{
 		return _capacityTotal.getC_UOM();
 	}
 
-	@Override
 	public final BigDecimal getQty()
 	{
 		return _qty;
@@ -137,7 +136,7 @@ import de.metas.quantity.Quantity;
 		// Update Qty Free
 		if (isInfiniteCapacity())
 		{
-			_qtyFree = INFINITY;
+			_qtyFree = Quantity.QTY_INFINITE;
 		}
 		else
 		{
@@ -146,20 +145,17 @@ import de.metas.quantity.Quantity;
 		}
 	}
 
-	@Override
-	public final BigDecimal getQtyFree()
+public final BigDecimal getQtyFree()
 	{
 		return _qtyFree;
 	}
 
-	@Override
 	public Quantity addQty(final Quantity qtyToAdd)
 	{
 		final Boolean allowCapacityOverload = null; // default
 		return addQty(qtyToAdd, allowCapacityOverload);
 	}
 
-	@Override
 	public Quantity addQty(final Quantity qtyToAdd, final Boolean allowCapacityOverload)
 	{
 		Check.assumeNotNull(qtyToAdd, "qtyToAdd not null");
@@ -225,17 +221,14 @@ import de.metas.quantity.Quantity;
 		return new Quantity(qtyToAddActual, qtyToAdd_UOM, qtyToAddActualBaseUom, baseUOM);
 	}
 
-	@Override
 	public Quantity removeQty(final Quantity qtyToRemove)
 	{
 		final Boolean allowNegativeCapacityOverride = null; // default
 		return removeQty(qtyToRemove, allowNegativeCapacityOverride);
 	}
 
-	@Override
 	public Quantity removeQty(final Quantity qtyToRemove, final Boolean allowNegativeCapacityOverride)
 	{
-		// if (true) throw new RuntimeException("STOP!");
 		Check.assumeNotNull(qtyToRemove, "qtyToRemove not null");
 		Check.assume(qtyToRemove.signum() >= 0, "qtyToRemove({}) >= 0", qtyToRemove);
 

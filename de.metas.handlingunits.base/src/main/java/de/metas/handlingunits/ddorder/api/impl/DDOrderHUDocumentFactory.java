@@ -35,14 +35,13 @@ import org.eevolution.api.IDDOrderDAO;
 import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_DD_OrderLine;
 
-import de.metas.handlingunits.IHUCapacityBL;
-import de.metas.handlingunits.IHUCapacityDefinition;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.document.IHUDocument;
 import de.metas.handlingunits.document.IHUDocumentFactory;
 import de.metas.handlingunits.document.impl.AbstractHUDocumentFactory;
 import de.metas.handlingunits.document.impl.HandlingUnitHUDocumentFactory;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.quantity.HUCapacityDefinition;
 
 /**
  * Creates {@link IHUDocument}s from {@link I_DD_Order}.
@@ -101,7 +100,7 @@ public class DDOrderHUDocumentFactory extends AbstractHUDocumentFactory<I_DD_Ord
 			//
 			// Create target Capacities
 			final BigDecimal qtyToDeliver = line.getQtyOrdered().subtract(line.getQtyDelivered());
-			final IHUCapacityDefinition targetCapacity = Services.get(IHUCapacityBL.class).createCapacity(
+			final HUCapacityDefinition targetCapacity = HUCapacityDefinition.createCapacity(
 					qtyToDeliver, // qty
 					line.getM_Product(),
 					line.getC_UOM(),
