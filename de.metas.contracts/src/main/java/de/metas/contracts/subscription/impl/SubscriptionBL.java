@@ -62,7 +62,6 @@ import com.google.common.base.Preconditions;
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.adempiere.service.IBPartnerOrgBL;
-import de.metas.adempiere.service.impl.OrderBL;
 import de.metas.contracts.Contracts_Constants;
 import de.metas.contracts.FlatrateTermPricing;
 import de.metas.contracts.IFlatrateDAO;
@@ -150,7 +149,7 @@ public class SubscriptionBL implements ISubscriptionBL
 		{
 			existingData = InterfaceWrapperHelper.newInstance(I_C_Flatrate_Data.class, ol);
 			existingData.setC_BPartner_ID(order.getBill_BPartner_ID());
-			InterfaceWrapperHelper.save(existingData);
+			save(existingData);
 		}
 
 		newTerm.setC_Flatrate_Data(existingData);
@@ -171,7 +170,7 @@ public class SubscriptionBL implements ISubscriptionBL
 		newTerm.setDocStatus(X_C_Flatrate_Term.DOCSTATUS_Drafted);
 		newTerm.setDocAction(X_C_Flatrate_Term.DOCACTION_Complete);
 
-		InterfaceWrapperHelper.save(newTerm);
+		save(newTerm);
 
 		if (completeIt)
 		{
@@ -192,9 +191,9 @@ public class SubscriptionBL implements ISubscriptionBL
 	@lombok.Value
 	private static class PricingSystemTaxCategoryAndIsTaxIncluded
 	{
-		int pricingSystemId;
-		int taxCategoryId;
-		boolean isTaxIncluded;
+		private int pricingSystemId;
+		private int taxCategoryId;
+		private boolean isTaxIncluded;
 	}
 	
 	private PricingSystemTaxCategoryAndIsTaxIncluded computePricingSystemTaxCategAndIsTaxIncluded(@NonNull final I_C_OrderLine ol, @NonNull final I_C_Flatrate_Term newTerm)
@@ -202,32 +201,26 @@ public class SubscriptionBL implements ISubscriptionBL
 		final I_C_Order order = InterfaceWrapperHelper.create(ol.getC_Order(), I_C_Order.class);
 
 		final I_C_Flatrate_Conditions cond = ol.getC_Flatrate_Conditions();
-		
-		int pricingSystemId = cond.getM_PricingSystem_ID();
-		final int taxCategoryId;
-		final boolean isTaxIncluded;
-		
-		if (pricingSystemId > 0)
+
+		if (cond.getM_PricingSystem_ID() > 0)
 		{
-			final IPricingResult pricingInfo = FlatrateTermPricing.builder()
-					.termRelatedProduct(ol.getM_Product())
-					.qty(ol.getQtyEntered())
-					.term(newTerm)
-					.priceDate(order.getDateOrdered())
-					.build()
-					.computeOrThrowEx();
-			
-			taxCategoryId = pricingInfo.getC_TaxCategory_ID();
-			isTaxIncluded = pricingInfo.isTaxIncluded();
+			final IPricingResult pricingInfo = calculateFlatrateTermPrice(ol, newTerm);
+			return new PricingSystemTaxCategoryAndIsTaxIncluded(cond.getM_PricingSystem_ID(), pricingInfo.getC_TaxCategory_ID(), pricingInfo.isTaxIncluded());
 		}
-		else
-		{
-			pricingSystemId = order.getM_PricingSystem_ID();
-			taxCategoryId = ol.getC_TaxCategory_ID();
-			isTaxIncluded = order.isTaxIncluded();
-		}
-		
-		return new PricingSystemTaxCategoryAndIsTaxIncluded(pricingSystemId, taxCategoryId, isTaxIncluded);
+
+		return new PricingSystemTaxCategoryAndIsTaxIncluded(order.getM_PricingSystem_ID(), ol.getC_TaxCategory_ID(), order.isTaxIncluded());
+	}
+
+	private IPricingResult calculateFlatrateTermPrice(@NonNull final I_C_OrderLine ol, @NonNull final I_C_Flatrate_Term newTerm)
+	{
+		final I_C_Order order = InterfaceWrapperHelper.create(ol.getC_Order(), I_C_Order.class);
+		return FlatrateTermPricing.builder()
+				.termRelatedProduct(ol.getM_Product())
+				.qty(ol.getQtyEntered())
+				.term(newTerm)
+				.priceDate(order.getDateOrdered())
+				.build()
+				.computeOrThrowEx();
 	}
 	
 
@@ -306,7 +299,7 @@ public class SubscriptionBL implements ISubscriptionBL
 							}
 						});
 
-				InterfaceWrapperHelper.save(olCand);
+				save(olCand);
 				counter++;
 			}
 
@@ -450,7 +443,7 @@ public class SubscriptionBL implements ISubscriptionBL
 		{
 			final I_C_SubscriptionProgress delivery = createDelivery(term, eventDate, seqNo);
 
-			InterfaceWrapperHelper.save(delivery);
+			save(delivery);
 			deliveries.add(delivery);
 
 			seqNo += 10;
@@ -476,7 +469,7 @@ public class SubscriptionBL implements ISubscriptionBL
 
 		while (!currentProgressRecord.getEventDate().after(currentDate))
 		{
-			markPlannedPauseRecordAsExecuted(term, currentDate, currentProgressRecord);
+			markPlannedPauseRecordAsExecuted(currentDate, currentProgressRecord);
 
 			term.setContractStatus(currentProgressRecord.getContractStatus());
 
@@ -537,8 +530,7 @@ public class SubscriptionBL implements ISubscriptionBL
 		return createSubscriptionEntries(term);
 	}
 
-	private boolean markPlannedPauseRecordAsExecuted(
-			@NonNull final I_C_Flatrate_Term term,
+	private boolean markPlannedPauseRecordAsExecuted(			
 			@NonNull final Timestamp currentDate,
 			@NonNull final I_C_SubscriptionProgress sp)
 	{
@@ -638,7 +630,7 @@ public class SubscriptionBL implements ISubscriptionBL
 			{
 				logger.info("An earlier SP of " + sc + " is delayed => also delaying " + sd);
 				sd.setStatus(X_C_SubscriptionProgress.STATUS_Delayed);
-				InterfaceWrapperHelper.save(sd);
+				save(sd);
 				continue;
 			}
 
@@ -653,14 +645,14 @@ public class SubscriptionBL implements ISubscriptionBL
 				{
 					logger.info(sd + " is not delayed anymore");
 					sd.setStatus(X_C_SubscriptionProgress.STATUS_Planned);
-					InterfaceWrapperHelper.save(sd);
+					save(sd);
 				}
 			}
 			else
 			{
 				logger.debug(sd + " is deplayed because there is at least on open delivery");
 				sd.setStatus(X_C_SubscriptionProgress.STATUS_Delayed);
-				InterfaceWrapperHelper.save(sd);
+				save(sd);
 
 				delayedControlIds.add(sd.getC_Flatrate_Term_ID());
 				continue;
@@ -824,7 +816,7 @@ public class SubscriptionBL implements ISubscriptionBL
 
 		// TODO why not use OrderLineBL to compute prices?
 		setPrices(ol, subscriptionPL.getM_PriceList_ID(), priceQty, ol.getQtyEntered());
-		InterfaceWrapperHelper.save(ol);
+		save(ol);
 	}
 
 	private I_C_SubscriptionProgress createDelivery(
@@ -975,10 +967,10 @@ public class SubscriptionBL implements ISubscriptionBL
 		alloc.setC_OLCand_ID(olCand.getC_OLCand_ID());
 		alloc.setC_Flatrate_Term_ID(newTerm.getC_Flatrate_Term_ID());
 		alloc.setAD_PInstance_ID(AD_PInstance_ID);
-		InterfaceWrapperHelper.save(alloc);
+		save(alloc);
 
 		olCand.setProcessed(true);
-		InterfaceWrapperHelper.save(olCand);
+		save(olCand);
 
 		Services.get(IWFExecutionFactory.class).notifyActivityPerformed(olCand, newTerm); // 03745
 
