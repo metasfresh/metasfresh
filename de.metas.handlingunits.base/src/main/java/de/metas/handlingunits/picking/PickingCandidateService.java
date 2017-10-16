@@ -11,11 +11,11 @@ import de.metas.handlingunits.model.I_M_Picking_Candidate;
 import de.metas.handlingunits.model.X_M_Picking_Candidate;
 import de.metas.handlingunits.picking.pickingCandidateCommands.AddHUToPickingSlot;
 import de.metas.handlingunits.picking.pickingCandidateCommands.AddQtyToHU;
+import de.metas.handlingunits.picking.pickingCandidateCommands.ClosePickingCandidateCommand;
+import de.metas.handlingunits.picking.pickingCandidateCommands.ClosePickingCandidateCommand.ClosePickingCandidateCommandBuilder;
+import de.metas.handlingunits.picking.pickingCandidateCommands.ProcessPickingCandidateCommand;
 import de.metas.handlingunits.picking.pickingCandidateCommands.RemoveQtyFromHU;
-import de.metas.handlingunits.picking.pickingCandidateCommands.SetCandidatesClosed;
-import de.metas.handlingunits.picking.pickingCandidateCommands.SetCandidatesClosed.SetCandidatesClosedBuilder;
-import de.metas.handlingunits.picking.pickingCandidateCommands.SetCandidatesInProgress;
-import de.metas.handlingunits.picking.pickingCandidateCommands.SetCandidatesProcessed;
+import de.metas.handlingunits.picking.pickingCandidateCommands.UnProcessPickingCandidateCommand;
 import de.metas.handlingunits.sourcehu.HuId2SourceHUsService;
 import de.metas.quantity.Quantity;
 import lombok.Builder.Default;
@@ -131,11 +131,11 @@ public class PickingCandidateService
 	 * No model interceptors etc will be fired.</li>
 	 * </ul>
 	 */
-	public void setCandidatesProcessed(@NonNull final List<Integer> huIds, final int pickingSlotId, final OptionalInt shipmentScheduleId)
+	public void processForHUIds(@NonNull final List<Integer> huIds, final int pickingSlotId, final OptionalInt shipmentScheduleId)
 	{
 		//
 		// Process those picking candidates
-		final SetCandidatesProcessed processCmd = SetCandidatesProcessed.builder()
+		final ProcessPickingCandidateCommand processCmd = ProcessPickingCandidateCommand.builder()
 				.sourceHUsRepository(sourceHUsRepository)
 				.pickingCandidateRepository(pickingCandidateRepository)
 				.huIds(huIds)
@@ -146,16 +146,16 @@ public class PickingCandidateService
 
 		//
 		// Automatically close those processed picking candidates which are NOT on a rack system picking slot. (gh2740)
-		SetCandidatesClosed.builder()
+		ClosePickingCandidateCommand.builder()
 				.pickingCandidates(processCmd.getProcessedPickingCandidates())
 				.pickingSlotIsRackSystem(false)
 				.build()
 				.perform();
 	}
 
-	public void setCandidatesInProgress(final int huId)
+	public void unprocessForHUId(final int huId)
 	{
-		SetCandidatesInProgress.builder()
+		UnProcessPickingCandidateCommand.builder()
 				.sourceHUsRepository(sourceHUsRepository)
 				.pickingCandidateRepository(pickingCandidateRepository)
 				.huId(huId)
@@ -163,10 +163,10 @@ public class PickingCandidateService
 				.perform();
 	}
 
-	public SetCandidatesClosedBuilder prepareCloseForShipmentSchedules(@NonNull final List<Integer> shipmentScheduleIds)
+	public ClosePickingCandidateCommandBuilder prepareCloseForShipmentSchedules(@NonNull final List<Integer> shipmentScheduleIds)
 	{
 		final List<I_M_Picking_Candidate> pickingCandidates = pickingCandidateRepository.retrievePickingCandidatesByShipmentScheduleIdsAndStatus(shipmentScheduleIds, X_M_Picking_Candidate.STATUS_PR);
-		return SetCandidatesClosed.builder()
+		return ClosePickingCandidateCommand.builder()
 				.pickingCandidates(pickingCandidates);
 	}
 }
