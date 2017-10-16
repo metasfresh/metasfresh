@@ -18,6 +18,8 @@ Here come the actual release notes:
 * metasfresh-app
   * [#2653](https://github.com/metasfresh/metasfresh/issues/2653) Window Design Webui: Improve Businesspartner Dist-Orgs window
     * Improved Translations for en_US. New Fielsd added for Subscription progress Subtab.
+  * [#2728](https://github.com/metasfresh/metasfresh/issues/2728) Webui Design Window: Add Translations to Business Partner
+    * Improved Translation for en_US Language/ Locale in Window, Fields and Actions.
   * [#2729](https://github.com/metasfresh/metasfresh/issues/2729) Window Design Webui: Add missing fields to window Tourversion
     * New Fields added to Tourversion widnow in WebUI. Translations for en_US improved.
 
