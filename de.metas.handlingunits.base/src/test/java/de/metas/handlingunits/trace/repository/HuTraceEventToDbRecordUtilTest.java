@@ -42,35 +42,32 @@ public class HuTraceEventToDbRecordUtilTest
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
-
 	}
 
+	@Test
+	public void fromDbRecord_no_id()
+	{
+		final I_M_HU_Trace dbRecord = createM_HU_Trace();
 
+		final HUTraceEvent trace = HuTraceEventToDbRecordUtil.fromDbRecord(dbRecord);
+		assertThat(trace.getHuTraceEventId().isPresent()).isFalse();
+	}
 
 	@Test
 	public void fromDbRecord_id()
 	{
 		final I_M_HU_Trace dbRecord = createM_HU_Trace();
-		
-		final HUTraceEvent trace = HuTraceEventToDbRecordUtil.fromDbRecord(dbRecord);
-		assertThat(trace.getHuTraceEventId().isPresent()).isFalse();
-	}
-	
-	@Test
-	public void fromDbRecord_no_id()
-	{
-		final I_M_HU_Trace dbRecord = createM_HU_Trace();
 		save(dbRecord);
-		
+
 		final HUTraceEvent trace = HuTraceEventToDbRecordUtil.fromDbRecord(dbRecord);
 		assertThat(trace.getHuTraceEventId().getAsInt()).isEqualTo(dbRecord.getM_HU_Trace_ID());
 	}
-	
+
 	@Test
 	public void fromDbRecord_no_doctype()
 	{
 		final I_M_HU_Trace dbRecord = createM_HU_Trace();
-		
+
 		final HUTraceEvent trace = HuTraceEventToDbRecordUtil.fromDbRecord(dbRecord);
 		assertThat(trace.getDocTypeId().isPresent()).isFalse();
 	}
@@ -81,7 +78,8 @@ public class HuTraceEventToDbRecordUtilTest
 		dbRecord.setEventTime(SystemTime.asTimestamp());
 		dbRecord.setHUTraceType(X_M_HU_Trace.HUTRACETYPE_MATERIAL_MOVEMENT);
 		dbRecord.setVHUStatus(X_M_HU_Trace.VHUSTATUS_Active);
-				
+		// save(dbRecord); we might nor might not save in the individual tests
+
 		return dbRecord;
 	}
 
