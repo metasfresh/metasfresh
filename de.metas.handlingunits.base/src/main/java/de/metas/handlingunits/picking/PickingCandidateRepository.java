@@ -3,6 +3,7 @@ package de.metas.handlingunits.picking;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 import java.math.BigDecimal;
+import java.util.Collection;
 import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
@@ -11,9 +12,12 @@ import org.adempiere.util.Services;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
+import com.google.common.collect.ImmutableList;
+
 import de.metas.handlingunits.model.I_M_Picking_Candidate;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.logging.LogManager;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -47,7 +51,7 @@ import de.metas.logging.LogManager;
 public class PickingCandidateRepository
 {
 	private static final Logger logger = LogManager.getLogger(PickingCandidateRepository.class);
-	
+
 	public List<I_M_ShipmentSchedule> retrieveShipmentSchedulesViaPickingCandidates(final int huId)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -60,18 +64,23 @@ public class PickingCandidateRepository
 		return scheds;
 	}
 
-	public List<I_M_Picking_Candidate> retrievePickingCandidates(final int huId)
+	public List<I_M_Picking_Candidate> retrievePickingCandidatesByHUIds(@NonNull final Collection<Integer> huIds)
 	{
+		// tolerate empty
+		if (huIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		final List<I_M_Picking_Candidate> result = queryBL.createQueryBuilder(I_M_Picking_Candidate.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_Picking_Candidate.COLUMN_M_HU_ID, huId)
-				
+				.addInArrayFilter(I_M_Picking_Candidate.COLUMN_M_HU_ID, huIds)
 				.create()
 				.list();
 		return result;
 	}
-	
+
 	public I_M_Picking_Candidate getCreateCandidate(final int huId, final int pickingSlotId, final int shipmentScheduleId)
 	{
 		I_M_Picking_Candidate pickingCandidate = Services.get(IQueryBL.class)
@@ -99,14 +108,27 @@ public class PickingCandidateRepository
 
 		return pickingCandidate;
 	}
-	
+
 	public void deletePickingCandidate(final int huId)
 	{
 		Services.get(IQueryBL.class)
 				.createQueryBuilder(I_M_Picking_Candidate.class)
-
 				.addEqualsFilter(I_M_Picking_Candidate.COLUMNNAME_M_HU_ID, huId)
 				.create()
 				.delete();
 	}
+
+	public List<I_M_Picking_Candidate> retrievePickingCandidatesByShipmentScheduleIdsAndStatus(
+			@NonNull final List<Integer> shipmentScheduleIds,
+			@NonNull final String status)
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		return queryBL.createQueryBuilder(I_M_Picking_Candidate.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_Picking_Candidate.COLUMNNAME_Status, status)
+				.addInArrayFilter(I_M_Picking_Candidate.COLUMN_M_ShipmentSchedule_ID, shipmentScheduleIds)
+				.create()
+				.list(I_M_Picking_Candidate.class);
+	}
+
 }
