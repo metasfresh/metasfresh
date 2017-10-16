@@ -18,6 +18,8 @@ Here come the actual release notes:
 * metasfresh-app
   * [#2653](https://github.com/metasfresh/metasfresh/issues/2653) Window Design Webui: Improve Businesspartner Dist-Orgs window
     * Improved Translations for en_US. New Fielsd added for Subscription progress Subtab.
+  * [#2725](https://github.com/metasfresh/metasfresh/issues/2725) Webui Window Design: Improvements in window ESR Payment Import
+    * New Field Translations added to ESR Payment Import window. Now haveing a completed Translations for Window, Fields and Actions for en_US Language.
   * [#2728](https://github.com/metasfresh/metasfresh/issues/2728) Webui Design Window: Add Translations to Business Partner
     * Improved Translation for en_US Language/ Locale in Window, Fields and Actions.
   * [#2729](https://github.com/metasfresh/metasfresh/issues/2729) Window Design Webui: Add missing fields to window Tourversion
