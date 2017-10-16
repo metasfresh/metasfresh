@@ -331,7 +331,7 @@ public final class HUEditorRow implements IViewRow
 		return code;
 	}
 
-	private JSONLookupValue getHUStatus()
+	public JSONLookupValue getHUStatus()
 	{
 		return huStatus;
 	}

@@ -113,7 +113,7 @@ public class PPOrderLineRowTest
 				.uom(JSONLookupValue.of(50, "uom"))
 				.attributesSupplier(() -> null)
 				.topLevelHU(false)
-				.huStatus(X_M_HU.HUSTATUS_Planning)
+				.huStatus(JSONLookupValue.of(X_M_HU.HUSTATUS_Planning, "Planning"))
 				.build();
 		assertThat(result.getPackingInfo()).isEqualTo("packingInfo");
 		assertThat(result.isTopLevelHU()).isFalse();
@@ -139,7 +139,7 @@ public class PPOrderLineRowTest
 				.rowId(DocumentId.of(40))
 				.type(PPOrderLineType.HU_TU)
 				.topLevelHU(true)
-				.huStatus(X_M_HU.HUSTATUS_Active)
+				.huStatus(JSONLookupValue.of(X_M_HU.HUSTATUS_Active, "Active"))
 				.build();
 		assertThat(result.getPackingInfo()).isEqualTo("packingInfo");
 		assertThat(result.isTopLevelHU()).isTrue();

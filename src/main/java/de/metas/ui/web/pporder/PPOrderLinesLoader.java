@@ -337,7 +337,7 @@ public class PPOrderLinesLoader
 				.product(huEditorRow.getProduct())
 				.packingInfo(huEditorRow.getPackingInfo())
 				.topLevelHU(huEditorRow.isTopLevel())
-				.huStatus(huEditorRow.getHUStatusKey())
+				.huStatus(huEditorRow.getHUStatus())
 				.quantity(quantity)
 				.includedRows(includedRows)
 				.build();
@@ -383,6 +383,7 @@ public class PPOrderLinesLoader
 				.packingInfo(huEditorRow.getPackingInfo())
 				.uom(huEditorRow.getUOM())
 				.qty(huEditorRow.getQtyCU())
+				.huStatus(huEditorRow.getHUStatus())
 				.build();
 	}
 }

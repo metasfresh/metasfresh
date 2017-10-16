@@ -75,7 +75,6 @@ public class PPOrderLineRow implements IViewRow
 	private final int huId;
 	private final boolean sourceHU;
 	private final boolean topLevelHU;
-	private final String huStatus;
 
 	@ViewColumn(captionKey = "M_Product_ID", widgetType = DocumentFieldWidgetType.Lookup, layouts = @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 10))
 	private final JSONLookupValue product;
@@ -98,6 +97,9 @@ public class PPOrderLineRow implements IViewRow
 	@ViewColumn(captionKey = "C_UOM_ID", widgetType = DocumentFieldWidgetType.Lookup, layouts = @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 70))
 	private final JSONLookupValue uom;
 
+	@ViewColumn(captionKey = "HUStatus", widgetType = DocumentFieldWidgetType.Lookup, layouts = @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 80))
+	private final JSONLookupValue huStatus;
+
 	private transient ImmutableMap<String, Object> _values;
 
 	public static final PPOrderLineRow cast(final IViewRow viewRecord)
@@ -118,7 +120,7 @@ public class PPOrderLineRow implements IViewRow
 			@NonNull final Quantity quantity,
 			@NonNull final List<PPOrderLineRow> includedRows,
 			@NonNull final Boolean topLevelHU,
-			@NonNull final String huStatus)
+			@NonNull final JSONLookupValue huStatus)
 	{
 		this.rowId = rowId;
 		this.type = type;
@@ -139,7 +141,7 @@ public class PPOrderLineRow implements IViewRow
 		this.sourceHU = false;
 		this.topLevelHU = topLevelHU;
 		this.huStatus = huStatus;
-		
+
 		this.qtyPlan = null;
 
 		this.attributesSupplier = attributesSupplier;
@@ -177,7 +179,7 @@ public class PPOrderLineRow implements IViewRow
 		this.sourceHU = false;
 		this.topLevelHU = false;
 		this.huStatus = null;
-		
+
 		this.qtyPlan = ppOrder.getQtyOrdered();
 
 		this.attributesSupplier = createASIAttributesSupplier(attributesProvider,
@@ -222,7 +224,7 @@ public class PPOrderLineRow implements IViewRow
 		this.sourceHU = false;
 		this.topLevelHU = false;
 		this.huStatus = null;
-		
+
 		this.qtyPlan = qtyPlan;
 
 		this.attributesSupplier = createASIAttributesSupplier(attributesProvider,
@@ -250,7 +252,7 @@ public class PPOrderLineRow implements IViewRow
 			@NonNull final JSONLookupValue uom,
 			@NonNull final BigDecimal qty,
 			@NonNull final Boolean topLevelHU,
-			@NonNull final String huStatus)
+			@NonNull final JSONLookupValue huStatus)
 	{
 		this.rowId = rowId;
 		this.type = type;
@@ -271,7 +273,7 @@ public class PPOrderLineRow implements IViewRow
 		this.sourceHU = true;
 		this.topLevelHU = topLevelHU;
 		this.huStatus = huStatus;
-		
+
 		this.qtyPlan = null;
 
 		this.attributesSupplier = attributesSupplier;
@@ -436,10 +438,10 @@ public class PPOrderLineRow implements IViewRow
 	{
 		return topLevelHU;
 	}
-	
+
 	public boolean isHUStatusActive()
 	{
-		return X_M_HU.HUSTATUS_Active.equals(huStatus);
+		return huStatus != null && X_M_HU.HUSTATUS_Active.equals(huStatus.getKey());
 	}
 
 	@Override
