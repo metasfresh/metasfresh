@@ -82,7 +82,7 @@ public class WEBUI_Picking_M_Picking_Candidate_Unprocess
 	{
 		final PickingSlotRow rowToProcess = getSingleSelectedRow();
 		final int huId = rowToProcess.getHuId();
-		pickingCandidateService.setCandidatesInProgress(huId);
+		pickingCandidateService.unprocessForHUId(huId);
 
 		return MSG_OK;
 	}

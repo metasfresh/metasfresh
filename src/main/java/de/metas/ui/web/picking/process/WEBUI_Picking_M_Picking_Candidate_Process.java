@@ -99,7 +99,7 @@ public class WEBUI_Picking_M_Picking_Candidate_Process
 	{
 		final PickingSlotRow rowToProcess = getSingleSelectedRow();
 
-		pickingCandidateService.setCandidatesProcessed(ImmutableList.of(rowToProcess.getHuId()), rowToProcess.getPickingSlotId(), OptionalInt.empty());
+		pickingCandidateService.processForHUIds(ImmutableList.of(rowToProcess.getHuId()), rowToProcess.getPickingSlotId(), OptionalInt.empty());
 
 		invalidateView();
 		invalidateParentView();

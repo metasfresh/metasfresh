@@ -163,7 +163,7 @@ public class WEBUI_M_HU_Pick extends ViewBasedProcessTemplate implements IProces
 		pickingCandidateService.addHUToPickingSlot(huId, pickingSlotId, shipmentScheduleId);
 		// NOTE: we are not moving the HU to shipment schedule's locator.
 
-		pickingCandidateService.setCandidatesProcessed(ImmutableList.of(huId), pickingSlotId, OptionalInt.of(shipmentScheduleId));
+		pickingCandidateService.processForHUIds(ImmutableList.of(huId), pickingSlotId, OptionalInt.of(shipmentScheduleId));
 	}
 
 	@Override
