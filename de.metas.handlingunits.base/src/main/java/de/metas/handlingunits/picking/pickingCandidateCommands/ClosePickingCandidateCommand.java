@@ -42,9 +42,17 @@ import lombok.NonNull;
  * #L%
  */
 
-public class SetCandidatesClosed
+/**
+ * Close picking candidate.
+ * 
+ * The status will be changed from Processed to Closed.
+ * 
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
+public class ClosePickingCandidateCommand
 {
-	private static final transient Logger logger = LogManager.getLogger(SetCandidatesClosed.class);
+	private static final transient Logger logger = LogManager.getLogger(ClosePickingCandidateCommand.class);
 	private final transient IHUPickingSlotBL huPickingSlotBL = Services.get(IHUPickingSlotBL.class);
 	private final transient IHUPickingSlotDAO huPickingSlotDAO = Services.get(IHUPickingSlotDAO.class);
 
@@ -53,7 +61,7 @@ public class SetCandidatesClosed
 	private final boolean failOnError;
 
 	@Builder
-	private SetCandidatesClosed(
+	private ClosePickingCandidateCommand(
 			@NonNull final Collection<I_M_Picking_Candidate> pickingCandidates,
 			@Nullable final Boolean pickingSlotIsRackSystem,
 			@Nullable final Boolean failOnError)
@@ -66,7 +74,7 @@ public class SetCandidatesClosed
 	}
 
 	/**
-	 * Note to dev: keep in sync with {@link UnClosePickingCandidate#perform()}
+	 * Note to dev: keep in sync with {@link UnClosePickingCandidateCommand#perform()}
 	 */
 	public void perform()
 	{

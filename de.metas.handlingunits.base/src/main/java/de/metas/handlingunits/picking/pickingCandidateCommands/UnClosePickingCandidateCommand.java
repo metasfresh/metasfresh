@@ -32,7 +32,15 @@ import lombok.NonNull;
  * #L%
  */
 
-class UnClosePickingCandidate
+/**
+ * Unclose picking candidate.
+ * 
+ * The status will be changed from Closed to Processed.
+ * 
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
+class UnClosePickingCandidateCommand
 {
 	private final transient IHUPickingSlotDAO huPickingSlotDAO = Services.get(IHUPickingSlotDAO.class);
 	private final transient IHUPickingSlotBL huPickingSlotBL = Services.get(IHUPickingSlotBL.class);
@@ -40,13 +48,13 @@ class UnClosePickingCandidate
 	private final I_M_Picking_Candidate pickingCandidate;
 
 	@Builder
-	private UnClosePickingCandidate(@NonNull final I_M_Picking_Candidate pickingCandidate)
+	private UnClosePickingCandidateCommand(@NonNull final I_M_Picking_Candidate pickingCandidate)
 	{
 		this.pickingCandidate = pickingCandidate;
 	}
 
 	/**
-	 * Note to dev: keep in sync with {@link SetCandidatesClosed#perform()}
+	 * Note to dev: keep in sync with {@link ClosePickingCandidateCommand#perform()}
 	 */
 	public void perform()
 	{

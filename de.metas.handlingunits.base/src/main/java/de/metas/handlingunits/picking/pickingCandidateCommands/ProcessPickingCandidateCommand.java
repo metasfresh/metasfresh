@@ -60,9 +60,17 @@ import lombok.Singular;
  * #L%
  */
 
-public class SetCandidatesProcessed
+/**
+ * Process picking candidate.
+ * 
+ * The status will be changed from InProgress to Processed.
+ * 
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
+public class ProcessPickingCandidateCommand
 {
-	private static final Logger logger = LogManager.getLogger(SetCandidatesProcessed.class);
+	private static final Logger logger = LogManager.getLogger(ProcessPickingCandidateCommand.class);
 	private final transient IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final transient IPackingService packingService = Services.get(IPackingService.class);
 	private final transient IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
@@ -77,7 +85,7 @@ public class SetCandidatesProcessed
 	private ImmutableListMultimap<Integer, I_M_Picking_Candidate> pickingCandidatesByHUId = null; // lazy
 
 	@Builder
-	private SetCandidatesProcessed(
+	private ProcessPickingCandidateCommand(
 			@NonNull final HuId2SourceHUsService sourceHUsRepository,
 			@NonNull final PickingCandidateRepository pickingCandidateRepository,
 			@NonNull @Singular final List<Integer> huIds,

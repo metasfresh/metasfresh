@@ -54,7 +54,15 @@ import lombok.NonNull;
  * #L%
  */
 
-public class SetCandidatesInProgress
+/**
+ * Unprocess picking candidate.
+ * 
+ * The status will be changed from Processed to InProgress.
+ * 
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
+public class UnProcessPickingCandidateCommand
 {
 	private static final String MSG_WEBUI_PICKING_WRONG_HU_STATUS_3P = "WEBUI_Picking_Wrong_HU_Status";
 	private static final String MSG_WEBUI_PICKING_ALREADY_SHIPPED_2P = "WEBUI_Picking_Already_Shipped";
@@ -68,7 +76,7 @@ public class SetCandidatesInProgress
 	private I_M_HU _hu = null; // lazy
 
 	@Builder
-	public SetCandidatesInProgress(
+	public UnProcessPickingCandidateCommand(
 			@NonNull final HuId2SourceHUsService sourceHUsRepository,
 			@NonNull final PickingCandidateRepository pickingCandidateRepository,
 			final int huId)
@@ -122,7 +130,7 @@ public class SetCandidatesInProgress
 		}
 		else if (X_M_Picking_Candidate.STATUS_CL.equals(pickingCandidate.getStatus()))
 		{
-			UnClosePickingCandidate.builder()
+			UnClosePickingCandidateCommand.builder()
 					.pickingCandidate(pickingCandidate)
 					.build()
 					.perform();
