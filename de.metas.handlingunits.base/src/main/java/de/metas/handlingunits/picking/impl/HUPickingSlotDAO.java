@@ -296,4 +296,29 @@ public class HUPickingSlotDAO implements IHUPickingSlotDAO
 				.match();
 		return isAlreadyPicked;
 	}
+
+	@Override
+	public boolean isPickingRackSystem(final int pickingSlotId)
+	{
+		if (pickingSlotId <= 0)
+		{
+			return false;
+		}
+
+		return retrieveAllPickingSlotIdsWhichAreRackSystems().contains(pickingSlotId);
+	}
+
+	@Cached(cacheName = I_M_PickingSlot.Table_Name + "#by#" + I_M_PickingSlot.COLUMNNAME_IsPickingRackSystem, expireMinutes = Cached.EXPIREMINUTES_Never)
+	@Override
+	public Set<Integer> retrieveAllPickingSlotIdsWhichAreRackSystems()
+	{
+		final List<Integer> pickingSlotIds = Services.get(IQueryBL.class)
+				.createQueryBuilderOutOfTrx(I_M_PickingSlot.class)
+				.addEqualsFilter(I_M_PickingSlot.COLUMNNAME_IsPickingRackSystem, true)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.listIds();
+
+		return ImmutableSet.copyOf(pickingSlotIds);
+	}
 }

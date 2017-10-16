@@ -30,13 +30,12 @@ import org.adempiere.util.ISingletonService;
 
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
-import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 
 public interface IHUShipmentScheduleDAO extends ISingletonService
 {
-	List<I_M_ShipmentSchedule_QtyPicked> retrieveSchedsQtyPickedForHU(I_M_HU tuHU);
+	List<I_M_ShipmentSchedule_QtyPicked> retrieveSchedsQtyPickedForHU(I_M_HU hu);
 
-	List<I_M_ShipmentSchedule_QtyPicked> retrieveSchedsQtyPickedForTU(I_M_ShipmentSchedule shipmentSchedule, I_M_HU tuHU, String trxName);
+	List<I_M_ShipmentSchedule_QtyPicked> retrieveSchedsQtyPickedForTU(int shipmentScheduleId, int tuHUId, String trxName);
 
 	List<I_M_ShipmentSchedule_QtyPicked> retrieveSchedsQtyPickedForVHU(I_M_HU vhu);
 

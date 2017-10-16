@@ -1,15 +1,23 @@
 package de.metas.handlingunits.picking.pickingCandidateCommands;
 
+import java.util.Collection;
 import java.util.List;
 
-import org.adempiere.ad.dao.ICompositeQueryUpdater;
-import org.adempiere.ad.dao.IQueryBL;
+import javax.annotation.Nullable;
+
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
-import org.compiere.model.IQuery;
+import org.slf4j.Logger;
+
+import com.google.common.collect.ImmutableList;
 
 import de.metas.handlingunits.model.I_M_Picking_Candidate;
 import de.metas.handlingunits.model.X_M_Picking_Candidate;
 import de.metas.handlingunits.picking.IHUPickingSlotBL;
+import de.metas.handlingunits.picking.IHUPickingSlotDAO;
+import de.metas.logging.LogManager;
+import lombok.Builder;
 import lombok.NonNull;
 
 /*
@@ -22,12 +30,12 @@ import lombok.NonNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -36,38 +44,76 @@ import lombok.NonNull;
 
 public class SetCandidatesClosed
 {
+	private static final transient Logger logger = LogManager.getLogger(SetCandidatesClosed.class);
 	private final transient IHUPickingSlotBL huPickingSlotBL = Services.get(IHUPickingSlotBL.class);
-	private final transient IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final transient IHUPickingSlotDAO huPickingSlotDAO = Services.get(IHUPickingSlotDAO.class);
 
-	public void perform(@NonNull final List<Integer> shipmentScheduleIds)
+	private final List<I_M_Picking_Candidate> pickingCandidates;
+	private final Boolean pickingSlotIsRackSystem;
+	private final boolean failOnError;
+
+	@Builder
+	private SetCandidatesClosed(
+			@NonNull final Collection<I_M_Picking_Candidate> pickingCandidates,
+			@Nullable final Boolean pickingSlotIsRackSystem,
+			@Nullable final Boolean failOnError)
 	{
-		final List<I_M_Picking_Candidate> pickingCandidates = markCandidatesAsClosed(shipmentScheduleIds);
-		addToPickingSlotQueue(pickingCandidates);
+		// NOTE: tolerate empty pickingCandidates list.
+		this.pickingCandidates = ImmutableList.copyOf(pickingCandidates);
+		this.pickingSlotIsRackSystem = pickingSlotIsRackSystem;
+
+		this.failOnError = failOnError != null ? failOnError : true;
 	}
 
-	private List<I_M_Picking_Candidate> markCandidatesAsClosed(@NonNull final List<Integer> shipmentScheduleIds)
+	/**
+	 * Note to dev: keep in sync with {@link UnClosePickingCandidate#perform()}
+	 */
+	public void perform()
 	{
-		final IQuery<I_M_Picking_Candidate> query = queryBL.createQueryBuilder(I_M_Picking_Candidate.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_Picking_Candidate.COLUMNNAME_Status, X_M_Picking_Candidate.STATUS_PR)
-				.addInArrayFilter(I_M_Picking_Candidate.COLUMN_M_ShipmentSchedule_ID, shipmentScheduleIds)
-				.create();
-
-		final ICompositeQueryUpdater<I_M_Picking_Candidate> updater = queryBL.createCompositeQueryUpdater(I_M_Picking_Candidate.class)
-				.addSetColumnValue(I_M_Picking_Candidate.COLUMNNAME_Status, X_M_Picking_Candidate.STATUS_CL);
-		query.updateDirectly(updater);
-		// note that we only closed "processed" candidates. what's still open shall stay open.
-
-		final List<I_M_Picking_Candidate> pickingCandidates = query.list();
-		return pickingCandidates;
+		pickingCandidates.stream()
+				.filter(this::isEligible)
+				.forEach(this::close);
 	}
 
-	private void addToPickingSlotQueue(List<I_M_Picking_Candidate> pickingCandidates)
+	private boolean isEligible(final I_M_Picking_Candidate pickingCandidate)
 	{
-		for (final I_M_Picking_Candidate pickingCandidate : pickingCandidates)
+		if (!X_M_Picking_Candidate.STATUS_PR.equals(pickingCandidate.getStatus()))
 		{
-			huPickingSlotBL.addToPickingSlotQueue(pickingCandidate.getM_PickingSlot(), pickingCandidate.getM_HU());
+			return false;
 		}
 
+		if (pickingSlotIsRackSystem != null && pickingSlotIsRackSystem != huPickingSlotDAO.isPickingRackSystem(pickingCandidate.getM_PickingSlot_ID()))
+		{
+			return false;
+		}
+
+		return true;
+	}
+
+	private void close(final I_M_Picking_Candidate pickingCandidate)
+	{
+		try
+		{
+			huPickingSlotBL.addToPickingSlotQueue(pickingCandidate.getM_PickingSlot(), pickingCandidate.getM_HU());
+
+			markCandidateAsClosed(pickingCandidate);
+		}
+		catch (final Exception ex)
+		{
+			if (failOnError)
+			{
+				throw AdempiereException.wrapIfNeeded(ex).setParameter("pickingCandidate", pickingCandidate);
+			}
+			else
+			{
+				logger.warn("Failed closing {}. Skipped", pickingCandidate, ex);
+			}
+		}
+	}
+
+	private void markCandidateAsClosed(final I_M_Picking_Candidate pickingCandidate)
+	{
+		pickingCandidate.setStatus(X_M_Picking_Candidate.STATUS_CL);
+		InterfaceWrapperHelper.save(pickingCandidate);
 	}
 }
