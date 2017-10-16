@@ -114,7 +114,6 @@ public class PickingSlotViewFactory implements IViewFactory
 		final int shipmentScheduleId = extractCurrentShipmentScheduleId(request);
 		
 		final PickingSlotRepoQuery query = createPickingSlotRowsQuery(request, allShipmentScheduleIds);
-		// notice for noobs such as me: this is executed each time the view is revalidated. and it's not executed when this createView method runs
 		final Supplier<List<PickingSlotRow>> rowsSupplier = () -> pickingSlotRepo.retrieveRows(query);
 
 		return PickingSlotView.builder()
@@ -122,7 +121,7 @@ public class PickingSlotViewFactory implements IViewFactory
 				.parentViewId(pickingViewId)
 				.parentRowId(pickingRowId)
 				.currentShipmentScheduleId(shipmentScheduleId)
-				.rows(rowsSupplier)
+				.rowsSupplier(rowsSupplier)
 				.additionalRelatedProcessDescriptors(createAdditionalRelatedProcessDescriptors())
 				.build();
 	}

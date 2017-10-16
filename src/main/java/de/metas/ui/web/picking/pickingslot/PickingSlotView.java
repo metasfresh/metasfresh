@@ -89,7 +89,7 @@ public class PickingSlotView implements IView
 			@Nullable final DocumentId parentRowId,
 			@Nullable final ITranslatableString description,
 			@Nullable final int currentShipmentScheduleId,
-			@NonNull final Supplier<List<PickingSlotRow>> rows,
+			@NonNull final Supplier<List<PickingSlotRow>> rowsSupplier,
 			@Nullable final List<RelatedProcessDescriptor> additionalRelatedProcessDescriptors)
 	{
 		Preconditions.checkArgument(currentShipmentScheduleId > 0, "shipmentScheduleId > 0");
@@ -99,7 +99,7 @@ public class PickingSlotView implements IView
 		this.parentRowId = parentRowId;
 		this.description = ITranslatableString.nullToEmpty(description);
 		this.currentShipmentScheduleId = currentShipmentScheduleId;
-		this.rows = PickingSlotRowsCollection.ofSupplier(rows);
+		this.rows = PickingSlotRowsCollection.ofSupplier(rowsSupplier);
 		this.additionalRelatedProcessDescriptors = additionalRelatedProcessDescriptors != null ? ImmutableList.copyOf(additionalRelatedProcessDescriptors) : ImmutableList.of();
 	}
 
