@@ -27,6 +27,8 @@ import {
 } from '../../actions/GenericActions';
 
 class Modal extends Component {
+    mounted = false;
+
     constructor(props) {
         super(props);
 
@@ -45,32 +47,40 @@ class Modal extends Component {
         }
     }
 
-    componentDidMount() {
-        this.init();
+    async componentDidMount() {
+        this.mounted = true;
+
+        await this.init();
 
         // Dirty solution, but use only if you need to
         // there is no way to affect body
         // because body is out of react app range
         // and css dont affect parents
         // but we have to change scope of scrollbar
+        if (!this.mounted) {
+            return;
+        }
+
         document.body.style.overflow = 'hidden';
 
         this.initEventListeners();
     }
 
     componentWillUnmount() {
+        this.mounted = false;
+
         this.removeEventListeners();
     }
 
-    componentDidUpdate (prevProps) {
+    async componentDidUpdate (prevProps) {
         const {
             windowType, indicator
         } = this.props;
 
         const {waitingFetch} = this.state;
 
-        if(prevProps.windowType !== windowType){
-            this.init();
+        if (prevProps.windowType !== windowType) {
+            await this.init();
         }
 
         // Case when we have to trigger pending start request
@@ -113,7 +123,7 @@ class Modal extends Component {
         }
     }
 
-    init = () => {
+    init = async () => {
         const {
             dispatch, windowType, dataId, tabId, rowId, modalType, selected,
             relativeType, isAdvanced, modalViewId, modalViewDocumentIds
@@ -121,30 +131,44 @@ class Modal extends Component {
 
         switch(modalType){
             case 'window':
-                dispatch(createWindow(
-                    windowType, dataId, tabId, rowId, true, isAdvanced
-                )).catch(err => {
+                try {
+                    await dispatch(createWindow(
+                        windowType, dataId, tabId, rowId, true, isAdvanced
+                    ));
+                } catch (error) {
                     this.handleClose();
-                    throw err;
-                });
+
+                    throw error;
+                }
+
                 break;
             case 'process':
                 // We have 3 cases of processes (prioritized):
                 // - with viewDocumentIds: on single page with rawModal
                 // - with dataId: on single document page
                 // - with selected : on gridviews
-                dispatch(
-                    createProcess(
-                        windowType, modalViewId, relativeType,
-                        modalViewDocumentIds || (dataId ? [dataId] : selected),
-                        tabId, rowId
+
+                try {
+                    await dispatch(
+                        createProcess(
+                            windowType,
+                            modalViewId,
+                            relativeType,
+                            (
+                                modalViewDocumentIds ||
+                                (dataId ? [dataId] : selected)
+                            ),
+                            tabId, rowId
+                        )
                     )
-                ).catch(err => {
+                } catch (error) {
                     this.handleClose();
-                    if(err.toString() !== 'Error: close_modal'){
-                        throw err;
+
+                    if (error.toString() !== 'Error: close_modal') {
+                        throw error;
                     }
-                });
+                }
+
                 break;
         }
     }
@@ -230,23 +254,26 @@ class Modal extends Component {
 
         this.setState({
             pending: true
-        }, () => {
-            startProcess(
-                windowType, layout.pinstanceId
-            ).then(response => {
+        }, async () => {
+            let response;
+
+            try {
+                response = await startProcess(windowType, layout.pinstanceId);
+
+                const action = handleProcessResponse(
+                    response, windowType, layout.pinstanceId
+                );
+
+                await dispatch(action);
+            } catch(error) {
+                throw error;
+            } finally {
+                this.removeModal();
+
                 this.setState({
                     pending: false
-                }, () => {
-                    dispatch(handleProcessResponse(
-                        response, windowType, layout.pinstanceId,
-                        () => this.removeModal()
-                    ));
                 });
-            }).catch(() => {
-                this.setState({
-                    pending: false
-                });
-            });
+            }
         });
     }
 
@@ -344,15 +371,15 @@ class Modal extends Component {
                             }
                             onMouseLeave={this.toggleTooltip}
                         >
-                            {modalType === 'process' ? 
-                                counterpart.translate('modal.actions.cancel') : 
+                            {modalType === 'process' ?
+                                counterpart.translate('modal.actions.cancel') :
                                 counterpart.translate('modal.actions.done')
                             }
                             {isTooltipShow === (modalType === 'process' ? keymap.MODAL_CONTEXT.CANCEL : keymap.MODAL_CONTEXT.APPLY) &&
                                 <Tooltips
                                     name={modalType === 'process' ? keymap.MODAL_CONTEXT.CANCEL : keymap.MODAL_CONTEXT.APPLY}
-                                    action={modalType === 'process' ? 
-                                        counterpart.translate('modal.actions.cancel') : 
+                                    action={modalType === 'process' ?
+                                        counterpart.translate('modal.actions.cancel') :
                                         counterpart.translate('modal.actions.done')
                                     }
                                     type={''}
