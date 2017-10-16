@@ -189,7 +189,7 @@ public class FlatrateTermInvoiceCandidateHandler extends AbstractInvoiceCandidat
 
 		ic.setC_Activity(activity);
 
-		final int taxCategoryId = -1; // FIXME for accuracy, we will need the tax category
+		final int taxCategoryId = term.getC_TaxCategory_ID();
 		final I_M_Warehouse warehouse = null;
 		final boolean isSOTrx = true;
 
