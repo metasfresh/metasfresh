@@ -205,7 +205,7 @@ import de.metas.quantity.CapacityInterface;
 			final CapacityInterface exceedingCapacityOfTU = capacityPerTU.subtractQuantity(request.getQuantity());
 
 			if (HandlingUnitsDAO.VIRTUAL_HU_PI_ID == parentPIItem.getIncluded_HU_PI_ID()
-					|| exceedingCapacityOfTU.getCapacity().signum() > 0)
+					|| exceedingCapacityOfTU.getCapacityQty().signum() > 0)
 			{
 				// Either this loading is about putting CUs directly on an LU which can be done, but then an aggregate HU is not supported and doesn't make sense (issue gh #1194). 
 				// or the request's capacity is less than a full TU. 

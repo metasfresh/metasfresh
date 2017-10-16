@@ -125,8 +125,13 @@ public class Capacity implements CapacityInterface
 		return allowNegativeCapacity;
 	}
 
+	/**
+	 * Will throw "Assumption Failure" if capacity is unlimited (should never be called without first checking with {@link #isInfiniteCapacity()} first)
+	 *
+	 * @return capacity
+	 */
 	@Override
-	public BigDecimal getCapacity()
+	public BigDecimal getCapacityQty()
 	{
 		Check.assume(!isInfiniteCapacity(), "Cannot retrieve capacity Qty if it's infinite for {}", this);
 		return capacity;

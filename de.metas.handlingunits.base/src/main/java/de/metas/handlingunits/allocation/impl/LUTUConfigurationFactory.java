@@ -197,7 +197,7 @@ public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 		else
 		{
 			lutuConfiguration.setIsInfiniteQtyCU(false);
-			lutuConfiguration.setQtyCU(tuCapacity.getCapacity());
+			lutuConfiguration.setQtyCU(tuCapacity.getCapacityQty());
 		}
 
 		

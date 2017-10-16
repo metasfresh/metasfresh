@@ -79,7 +79,7 @@ public class UpperBoundAllocationStrategy extends AbstractFIFOStrategy
 		}
 		else
 		{
-			qty = capacity.getCapacity();
+			qty = capacity.getCapacityQty();
 		}
 
 		return Util.same(Capacity.DEFAULT, qty);

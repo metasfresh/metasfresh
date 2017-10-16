@@ -293,7 +293,7 @@ public class FreshSwingPackageTerminalPanel extends AbstractPackageTerminalPanel
 		if (pickingSlotCapacity != null
 				&& !pickingSlotCapacity.isInfiniteCapacity())
 		{
-			final BigDecimal qtyCapacity = pickingSlotCapacity.getCapacity();
+			final BigDecimal qtyCapacity = pickingSlotCapacity.getCapacityQty();
 			return qtyCapacity.min(qtyUnallocated); // qtyCapacity, but if it's bigger then our qty to allocate, then qty to allocate would be smart to set
 		}
 

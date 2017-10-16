@@ -322,7 +322,7 @@ public class HUItemStorage implements IHUItemStorage
 			return request;
 		}
 
-		final BigDecimal capacityAvailable = availableCapacityDefinition.getCapacity();
+		final BigDecimal capacityAvailable = availableCapacityDefinition.getCapacityQty();
 		if (capacityAvailable.signum() == 0)
 		{
 			return AllocationUtils.createZeroQtyRequest(request);

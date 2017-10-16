@@ -62,7 +62,7 @@ import de.metas.quantity.Capacity;
 
 		//
 		// Capacity is the total Qty required on receipt schedule
-		final BigDecimal qtyCapacity = getTotalCapacity().getCapacity();
+		final BigDecimal qtyCapacity = getTotalCapacity().getCapacityQty();
 		final BigDecimal qtyMoved = receiptScheduleBL.getQtyMoved(schedule);
 		// final BigDecimal qtyAllocatedOnHUs = Services.get(IHUReceiptScheduleDAO.class).getQtyAllocatedOnHUs(schedule);
 		final BigDecimal qtyAllocatedOnHUs = BigDecimal.ZERO;

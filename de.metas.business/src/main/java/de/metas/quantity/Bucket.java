@@ -102,7 +102,7 @@ public class Bucket
 
 	public final BigDecimal getCapacity()
 	{
-		return capacity.getCapacity();
+		return capacity.getCapacityQty();
 	}
 
 	public final I_C_UOM getC_UOM()

@@ -108,7 +108,7 @@ import de.metas.quantity.Quantity;
 		{
 			return Quantity.QTY_INFINITE;
 		}
-		return capacityAvailable.getCapacity();
+		return capacityAvailable.getCapacityQty();
 	}
 
 	@Override
@@ -131,7 +131,7 @@ import de.metas.quantity.Quantity;
 	public BigDecimal getQtyCapacity()
 	{
 		final CapacityInterface capacityTotal = getTotalCapacity();
-		return capacityTotal.getCapacity();
+		return capacityTotal.getCapacityQty();
 	}
 
 	@Override

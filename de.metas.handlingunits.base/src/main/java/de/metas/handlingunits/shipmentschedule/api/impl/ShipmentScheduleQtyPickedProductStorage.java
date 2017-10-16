@@ -72,7 +72,7 @@ public class ShipmentScheduleQtyPickedProductStorage extends AbstractProductStor
 		// But in our case we need to have how much is Picked but not delivered because we want to let the API/user to "un-pick" that quantity if he wants.
 
 		final CapacityInterface capacityTotal = getTotalCapacity();
-		final BigDecimal qtyTarget = capacityTotal.getCapacity();
+		final BigDecimal qtyTarget = capacityTotal.getCapacityQty();
 		BigDecimal qtyToPick = qtyTarget;
 
 		// NOTE: we shall consider QtyDelivered and QtyPickedNotDelivered only if the QtyToDeliver_Override is not set,

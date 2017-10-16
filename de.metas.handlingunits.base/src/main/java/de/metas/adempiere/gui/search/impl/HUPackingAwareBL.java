@@ -171,7 +171,7 @@ public class HUPackingAwareBL implements IHUPackingAwareBL
 			return null;
 		}
 
-		return capacityMult.getCapacity();
+		return capacityMult.getCapacityQty();
 	}
 
 	@Override
