@@ -28,7 +28,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.inout.service.IMTransactionDAO;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
@@ -39,6 +38,7 @@ import de.metas.handlingunits.document.IHUDocument;
 import de.metas.handlingunits.document.IHUDocumentLine;
 import de.metas.handlingunits.document.impl.AbstractHUDocumentFactory;
 import de.metas.inout.IInOutDAO;
+import de.metas.materialtransaction.IMTransactionDAO;
 import de.metas.quantity.Capacity;
 
 public class MInOutHUDocumentFactory extends AbstractHUDocumentFactory<I_M_InOut>

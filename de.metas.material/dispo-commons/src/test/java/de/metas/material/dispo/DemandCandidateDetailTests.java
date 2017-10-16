@@ -2,7 +2,16 @@ package de.metas.material.dispo;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.Optional;
+
+import org.adempiere.util.time.SystemTime;
 import org.junit.Test;
+
+import de.metas.material.event.EventDescr;
+import de.metas.material.event.MaterialDemandDescr;
+import de.metas.material.event.MaterialDescriptor;
 
 /*
  * #%L
@@ -28,32 +37,31 @@ import org.junit.Test;
 
 public class DemandCandidateDetailTests
 {
-	@Test
-	public void testForOrderLine()
+		@Test
+	public void createOrNull_when_empty_optional_then_null()
 	{
-		DemandCandidateDetail result;
-
-		result = DemandCandidateDetail.forOrderLineId(0);
-		assertThat(result.getOrderLineId()).isZero();
-		assertThat(result.getForecastLineId()).isLessThanOrEqualTo(0);
-
-		result = DemandCandidateDetail.forOrderLineId(23);
-		assertThat(result.getOrderLineId()).isEqualTo(23);
-		assertThat(result.getForecastLineId()).isLessThanOrEqualTo(0);
-
+		final Optional<MaterialDemandDescr> materialDemandDescr = Optional.empty();
+		assertThat(DemandCandidateDetail.createOrNull(materialDemandDescr)).isNull();
 	}
 
 	@Test
-	public void testForForecastLine()
+	public void createOrNull_when_not_empty()
 	{
-		DemandCandidateDetail result;
+		final MaterialDemandDescr descriptor = MaterialDemandDescr.builder()
+				.eventDescr(new EventDescr(10, 20))
+				.forecastLineId(1)
+				.shipmentScheduleId(2)
+				.orderLineId(3)
+				.materialDescriptor(MaterialDescriptor.builder()
+						.date(SystemTime.asTimestamp())
+						.productId(20)
+						.quantity(BigDecimal.TEN)
+						.warehouseId(30).build())
+				.build();
 
-		result = DemandCandidateDetail.forForecastLineId(0);
-		assertThat(result.getForecastLineId()).isZero();
-		assertThat(result.getOrderLineId()).isLessThanOrEqualTo(0);
-
-		result = DemandCandidateDetail.forForecastLineId(23);
-		assertThat(result.getForecastLineId()).isEqualTo(23);
-		assertThat(result.getOrderLineId()).isLessThanOrEqualTo(0);
+		final DemandCandidateDetail demandCandidateDetail = DemandCandidateDetail.createOrNull(Optional.of(descriptor));
+		assertThat(demandCandidateDetail.getForecastLineId()).isEqualTo(1);
+		assertThat(demandCandidateDetail.getShipmentScheduleId()).isEqualTo(2);
+		assertThat(demandCandidateDetail.getOrderLineId()).isEqualTo(3);
 	}
 }

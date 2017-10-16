@@ -43,7 +43,6 @@ import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.DBException;
-import org.adempiere.inout.service.IMTransactionBL;
 import org.adempiere.mm.attributes.api.impl.LotNumberDateAttributeDAO;
 import org.adempiere.mm.attributes.spi.impl.WeightGrossAttributeValueCallout;
 import org.adempiere.mm.attributes.spi.impl.WeightNetAttributeValueCallout;
@@ -143,6 +142,7 @@ import de.metas.inoutcandidate.modelvalidator.InOutCandidateValidator;
 import de.metas.inoutcandidate.modelvalidator.ReceiptScheduleValidator;
 import de.metas.interfaces.I_M_Warehouse;
 import de.metas.javaclasses.model.I_AD_JavaClass;
+import de.metas.materialtransaction.MTransactionUtil;
 import de.metas.quantity.Capacity;
 import de.metas.quantity.Quantity;
 import lombok.Builder;
@@ -1750,7 +1750,7 @@ public class HUTestHelper
 	 */
 	public List<I_M_HU> createHUsFromSimplePI(final I_M_Transaction mtrx, final I_M_HU_PI huPI)
 	{
-		Check.assume(Services.get(IMTransactionBL.class).isInboundTransaction(mtrx),
+		Check.assume(MTransactionUtil.isInboundTransaction(mtrx),
 				"mtrx shall be inbound transaction: {}", mtrx);
 
 		final IContextAware contextProvider = InterfaceWrapperHelper.getContextAware(mtrx);
@@ -1907,8 +1907,7 @@ public class HUTestHelper
 	@Deprecated
 	public List<I_M_HU> transferIncomingToHUs(final I_M_Transaction mtrx, final I_M_HU_PI huPI)
 	{
-		Check.assume(Services.get(IMTransactionBL.class).isInboundTransaction(mtrx),
-				"mtrx shall be inbound transaction: {}", mtrx);
+		Check.assume(MTransactionUtil.isInboundTransaction(mtrx), "mtrx shall be inbound transaction: {}", mtrx);
 
 		final IAllocationSource source = new MTransactionAllocationSourceDestination(mtrx);
 		final HUProducerDestination destination = HUProducerDestination.of(huPI);

@@ -2,7 +2,10 @@ package de.metas.material.dispo.service.candidatechange.handler;
 
 import java.math.BigDecimal;
 
+import com.google.common.base.Preconditions;
+
 import de.metas.material.dispo.Candidate;
+import de.metas.material.dispo.Candidate.Type;
 import de.metas.material.event.EventDescr;
 import de.metas.material.event.MaterialDemandDescr;
 import de.metas.material.event.MaterialDemandEvent;
@@ -48,15 +51,16 @@ public class MaterialDemandEventCreator
 		return materialDemandEvent;
 	}
 
-	public MaterialDemandDescr createMaterialDemandDescr(
+	private MaterialDemandDescr createMaterialDemandDescr(
 			@NonNull final Candidate candidate,
 			@NonNull final BigDecimal qty,
 			final int orderLineId)
 	{
+		Preconditions.checkArgument(candidate.getType().equals(Type.DEMAND), "given candidate needs to be a demand candidate; candidate=%s", candidate);
+
 		return MaterialDemandDescr.builder()
 				.eventDescr(new EventDescr(candidate.getClientId(), candidate.getOrgId()))
 				.materialDescriptor(candidate.getMaterialDescr().withQuantity(qty))
-				.reference(candidate.getReference())
 				.orderLineId(orderLineId)
 				.build();
 	}

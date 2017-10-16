@@ -115,7 +115,6 @@ public class ManufactoringEventSerializerTests
 						.date(SystemTime.asDate())
 						.warehouseId(12)
 						.build())
-				.reference(TableRecordReference.of(1, 2))
 				.build();
 		return evt;
 	}
@@ -168,7 +167,6 @@ public class ManufactoringEventSerializerTests
 	{
 		final ProductionPlanEvent event = ProductionPlanEvent.builder()
 				.eventDescr(new EventDescr(1, 2))
-				.reference(TableRecordReference.of("table", 24))
 				.ppOrder(PPOrder.builder()
 						.datePromised(SystemTime.asDate())
 						.dateStartSchedule(SystemTime.asDate())

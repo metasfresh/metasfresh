@@ -1,4 +1,4 @@
-package org.adempiere.inout.service;
+package de.metas.materialtransaction;
 
 /*
  * #%L
@@ -23,12 +23,16 @@ package org.adempiere.inout.service;
  */
 
 
+import java.util.List;
+
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_M_Transaction;
 
-public interface IMTransactionBL extends ISingletonService
+public interface IMTransactionDAO extends ISingletonService
 {
 
-	boolean isInboundTransaction(I_M_Transaction mtrx);
+	List<I_M_Transaction> retrieveReferenced(Object referencedModel);
+
+	I_M_Transaction retrieveReversalTransaction(Object referencedModelReversal, I_M_Transaction originalTrx);
 
 }

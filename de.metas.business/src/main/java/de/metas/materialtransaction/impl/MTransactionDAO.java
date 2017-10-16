@@ -1,4 +1,4 @@
-package org.adempiere.inout.service.impl;
+package de.metas.materialtransaction.impl;
 
 /*
  * #%L
@@ -30,7 +30,6 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.impl.EqualsQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.inout.service.IMTransactionDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -41,6 +40,8 @@ import org.compiere.model.I_M_MovementLine;
 import org.compiere.model.I_M_ProductionLine;
 import org.compiere.model.I_M_Transaction;
 import org.eevolution.model.I_PP_Cost_Collector;
+
+import de.metas.materialtransaction.IMTransactionDAO;
 
 public class MTransactionDAO implements IMTransactionDAO
 {

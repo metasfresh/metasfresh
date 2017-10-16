@@ -11,6 +11,7 @@ import de.metas.material.dispo.DemandCandidateDetail;
 import de.metas.material.dispo.ProductionCandidateDetail;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.dispo.service.event.EventUtil;
+import de.metas.material.event.MaterialDemandDescr;
 import de.metas.material.event.MaterialDescriptor;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrderLine;
@@ -63,6 +64,8 @@ public class ProductionPlanEventHandler
 
 		final Candidate.Status candidateStatus = getCandidateStatus(ppOrder);
 
+		
+		
 		final Candidate supplyCandidate = Candidate.builderForEventDescr(event.getEventDescr())
 				.type(Type.SUPPLY)
 				.subType(SubType.PRODUCTION)

@@ -26,7 +26,6 @@ package de.metas.handlingunits.storage.impl;
 import java.math.BigDecimal;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.inout.service.IMTransactionBL;
 import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -38,6 +37,7 @@ import de.metas.handlingunits.HUConstants;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.hutransaction.IHUTrxDAO;
 import de.metas.handlingunits.model.I_M_HU_Trx_Line;
+import de.metas.materialtransaction.MTransactionUtil;
 import de.metas.quantity.Capacity;
 
 public class MTransactionProductStorage extends AbstractProductStorage
@@ -57,7 +57,7 @@ public class MTransactionProductStorage extends AbstractProductStorage
 		setConsiderForceQtyAllocationFromRequest(false); // TODO: consider changing it to "true" (default)
 
 		this.mtrx = mtrx;
-		inbound = Services.get(IMTransactionBL.class).isInboundTransaction(mtrx);
+		inbound = MTransactionUtil.isInboundTransaction(mtrx);
 
 		final I_M_Product product = mtrx.getM_Product();
 

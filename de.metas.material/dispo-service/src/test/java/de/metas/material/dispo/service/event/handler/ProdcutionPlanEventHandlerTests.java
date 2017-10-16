@@ -14,7 +14,6 @@ import java.util.Date;
 
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
-import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_AD_Org;
 import org.compiere.util.TimeUtil;
@@ -77,8 +76,6 @@ public class ProdcutionPlanEventHandlerTests
 
 	public static final int intermediateWarehouseId = 20;
 
-	private TableRecordReference reference;
-
 	private final BigDecimal eleven = BigDecimal.TEN.add(BigDecimal.ONE);
 
 	private I_AD_Org org;
@@ -92,8 +89,6 @@ public class ProdcutionPlanEventHandlerTests
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
-
-		reference = TableRecordReference.of("someTable", 4);
 
 		org = newInstance(I_AD_Org.class);
 		save(org);
@@ -205,7 +200,6 @@ public class ProdcutionPlanEventHandlerTests
 								.receipt(false)
 								.build())
 						.build())
-				.reference(reference)
 				.build();
 		return productionPlanEvent;
 	}

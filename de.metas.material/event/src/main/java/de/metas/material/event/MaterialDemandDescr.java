@@ -1,7 +1,5 @@
 package de.metas.material.event;
 
-import org.adempiere.util.lang.impl.TableRecordReference;
-
 import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.NonNull;
@@ -29,7 +27,7 @@ import lombok.Value;
  * #L%
  */
 
-@Value // includes @AllArgsCosntructor which is used by jackson when it deserializes a string
+@Value // includes @AllArgsConstructor which is used by jackson when it deserializes a string
 @Builder
 public class MaterialDemandDescr
 {
@@ -39,8 +37,17 @@ public class MaterialDemandDescr
 	@NonNull
 	MaterialDescriptor materialDescriptor;
 
-	TableRecordReference reference;
+	@NonNull
+	MaterialDemandId materialDemandId;
+	
+	int demandCandidateId;
+	
+	@Default
+	int shipmentScheduleId = -1;
 
+	@Default
+	int forecastLineId = -1;
+	
 	@Default
 	int orderLineId = -1;
 }

@@ -13,6 +13,7 @@ import de.metas.material.event.EventDescr;
 import de.metas.material.event.MaterialDescriptor;
 import de.metas.material.event.MaterialEventService;
 import de.metas.material.event.TransactionEvent;
+import de.metas.materialtransaction.MTransactionUtil;
 import lombok.NonNull;
 
 /*
@@ -72,13 +73,13 @@ public class M_Transaction
 		materialEventService.fireEventAfterNextCommit(event, trxName);
 	}
 
-	public MaterialDescriptor createMateriallDescriptor(@NonNull final I_M_Transaction transaction)
-	{
+	private MaterialDescriptor createMateriallDescriptor(@NonNull final I_M_Transaction transaction)
+	{		
 		return MaterialDescriptor.builder()
 				.warehouseId(transaction.getM_Locator().getM_Warehouse_ID())
 				.date(transaction.getMovementDate())
 				.productId(transaction.getM_Product_ID())
-				.quantity(transaction.getMovementQty())
+				.quantity(MTransactionUtil.getEffectiveMovementQty(transaction))
 				.build();
 	}
 }

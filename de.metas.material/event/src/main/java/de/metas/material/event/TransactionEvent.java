@@ -1,11 +1,14 @@
 package de.metas.material.event;
 
+import java.util.Optional;
+
 import org.adempiere.util.lang.impl.TableRecordReference;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
+import lombok.Value;
 
 /*
  * #%L
@@ -28,8 +31,8 @@ import lombok.NonNull;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-@Data
-@AllArgsConstructor // used by jackson when it deserializes a string
+
+@Value // implies @AllArgsConstructor that is used by jackson when it deserializes a string
 @Builder // used by devs to make sure they know with parameter-value goes into which property
 public class TransactionEvent implements MaterialEvent
 {
@@ -39,10 +42,13 @@ public class TransactionEvent implements MaterialEvent
 	private final EventDescr eventDescr;
 
 	@NonNull
-	private final TableRecordReference reference;
-
-	@NonNull
 	private final MaterialDescriptor materialDescr;
+
+	// ids used to mat the transaction to the respective shipment, ddOrder or ppOrder event (demand if qty is negative), supply if qty is positive
+	int shipmentScheduleId = -1;
+	int ddOrderLineId = -1;
+	int ppOrderId = -1;
+	int ppOrderBomLineId = -1;
 
 	private final boolean transactionDeleted;
 }
