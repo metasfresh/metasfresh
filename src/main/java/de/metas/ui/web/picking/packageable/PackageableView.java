@@ -2,7 +2,6 @@ package de.metas.ui.web.picking.packageable;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
@@ -13,11 +12,9 @@ import javax.annotation.Nullable;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
 
 import com.google.common.collect.ImmutableList;
@@ -161,21 +158,17 @@ public class PackageableView implements IView
 	@Override
 	public void close()
 	{
-		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-		
-		final Properties ctx = Env.getCtx();
-		final boolean closeCandidatesNow = sysConfigBL.getBooleanValue("WEBUI_Picking.Close_PickingCandidatesOnWindowClose", false, Env.getAD_Client_ID(ctx), Env.getAD_Org_ID(ctx));
-		if (!closeCandidatesNow)
-		{
-			return; // nothing to do.
-		}
-
 		final List<Integer> shipmentScheduleIds = getRows()
 				.values().stream()
-				.map(row -> row.getShipmentScheduleId())
+				.map(PackageableRow::getShipmentScheduleId)
 				.collect(Collectors.toList());
 
-		pickingCandidateService.setCandidatesClosed(shipmentScheduleIds);
+		// Close all picking candidates which are on a rack system picking slot (gh2740)
+		pickingCandidateService.prepareCloseForShipmentSchedules(shipmentScheduleIds)
+				.pickingSlotIsRackSystem(true)
+				.failOnError(false) // close as much candidates as it's possible
+				.build()
+				.perform();
 	}
 
 	@Override
