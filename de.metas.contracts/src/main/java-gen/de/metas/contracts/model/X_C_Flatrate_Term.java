@@ -15,7 +15,7 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1666422159L;
+	private static final long serialVersionUID = -1011301877L;
 
     /** Standard Constructor */
     public X_C_Flatrate_Term (Properties ctx, int C_Flatrate_Term_ID, String trxName)
@@ -34,6 +34,7 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 			setDocStatus (null); // DR
 			setIsAutoRenew (false); // N
 			setIsSimulation (false); // N
+			setIsTaxIncluded (false); // N
 			setPlannedQtyPerUnit (BigDecimal.ZERO);
 			setProcessing (false); // N
 			setStartDate (new Timestamp( System.currentTimeMillis() ));
@@ -1161,6 +1162,32 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	public boolean isSimulation () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsSimulation);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set Preis inklusive Steuern.
+		@param IsTaxIncluded 
+		Tax is included in the price 
+	  */
+	@Override
+	public void setIsTaxIncluded (boolean IsTaxIncluded)
+	{
+		set_Value (COLUMNNAME_IsTaxIncluded, Boolean.valueOf(IsTaxIncluded));
+	}
+
+	/** Get Preis inklusive Steuern.
+		@return Tax is included in the price 
+	  */
+	@Override
+	public boolean isTaxIncluded () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsTaxIncluded);
 		if (oo != null) 
 		{
 			 if (oo instanceof Boolean) 

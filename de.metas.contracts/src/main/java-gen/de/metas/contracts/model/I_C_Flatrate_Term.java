@@ -1064,6 +1064,31 @@ public interface I_C_Flatrate_Term
     public static final String COLUMNNAME_IsSimulation = "IsSimulation";
 
 	/**
+	 * Set Preis inklusive Steuern.
+	 * Tax is included in the price
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsTaxIncluded (boolean IsTaxIncluded);
+
+	/**
+	 * Get Preis inklusive Steuern.
+	 * Tax is included in the price
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isTaxIncluded();
+
+    /** Column definition for IsTaxIncluded */
+    public static final org.adempiere.model.ModelColumn<I_C_Flatrate_Term, Object> COLUMN_IsTaxIncluded = new org.adempiere.model.ModelColumn<I_C_Flatrate_Term, Object>(I_C_Flatrate_Term.class, "IsTaxIncluded", null);
+    /** Column name IsTaxIncluded */
+    public static final String COLUMNNAME_IsTaxIncluded = "IsTaxIncluded";
+
+	/**
 	 * Set Merkmale.
 	 * Merkmals Ausprägungen zum Produkt
 	 *
