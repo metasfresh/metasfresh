@@ -62,7 +62,9 @@ import com.google.common.base.Preconditions;
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.adempiere.service.IBPartnerOrgBL;
+import de.metas.adempiere.service.impl.OrderBL;
 import de.metas.contracts.Contracts_Constants;
+import de.metas.contracts.FlatrateTermPricing;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.flatrate.interfaces.I_C_OLCand;
 import de.metas.contracts.model.I_C_Contract_Term_Alloc;
@@ -100,6 +102,7 @@ public class SubscriptionBL implements ISubscriptionBL
 
 	public static final Logger logger = LogManager.getLogger(SubscriptionBL.class);
 
+	
 	@Override
 	public I_C_Flatrate_Term createSubscriptionTerm(
 			@NonNull final I_C_OrderLine ol,
@@ -117,15 +120,6 @@ public class SubscriptionBL implements ISubscriptionBL
 		newTerm.setC_OrderLine_Term_ID(ol.getC_OrderLine_ID());
 		newTerm.setC_Flatrate_Conditions_ID(cond.getC_Flatrate_Conditions_ID());
 
-		if (cond.getM_PricingSystem_ID() > 0)
-		{
-			newTerm.setM_PricingSystem_ID(cond.getM_PricingSystem_ID());
-		}
-		else
-		{
-			newTerm.setM_PricingSystem_ID(order.getM_PricingSystem_ID());
-		}
-
 		// important: we need to use qtyEntered here, because qtyOrdered (which
 		// is used for pricing) contains the number of goods to be delivered
 		// over the whole subscription term
@@ -141,7 +135,7 @@ public class SubscriptionBL implements ISubscriptionBL
 		newTerm.setBill_BPartner_ID(order.getBill_BPartner_ID());
 		newTerm.setBill_Location_ID(order.getBill_Location_ID());
 		newTerm.setBill_User_ID(order.getBill_User_ID());
-
+		
 		newTerm.setDropShip_BPartner_ID(ol.getC_BPartner_ID());
 		newTerm.setDropShip_Location_ID(ol.getC_BPartner_Location_ID());
 		newTerm.setDropShip_User_ID(ol.getAD_User_ID());
@@ -168,12 +162,14 @@ public class SubscriptionBL implements ISubscriptionBL
 		newTerm.setM_Product_ID(ol.getM_Product_ID());
 		Services.get(IAttributeSetInstanceBL.class).cloneASI(ol, newTerm);
 
+		newTerm.setPriceActual(ol.getPriceActual());
+		newTerm.setC_Currency(ol.getC_Currency());
+		
+		setPricingSystemTaxCategAndIsTaxIncluded(ol, newTerm);
+		
 		newTerm.setContractStatus(X_C_Flatrate_Term.CONTRACTSTATUS_Waiting);
 		newTerm.setDocStatus(X_C_Flatrate_Term.DOCSTATUS_Drafted);
 		newTerm.setDocAction(X_C_Flatrate_Term.DOCACTION_Complete);
-
-		newTerm.setPriceActual(ol.getPriceActual());
-		newTerm.setC_Currency(ol.getC_Currency());
 
 		InterfaceWrapperHelper.save(newTerm);
 
@@ -184,6 +180,52 @@ public class SubscriptionBL implements ISubscriptionBL
 
 		return newTerm;
 	}
+	
+	private void setPricingSystemTaxCategAndIsTaxIncluded(@NonNull final I_C_OrderLine ol, @NonNull final I_C_Flatrate_Term newTerm)
+	{
+		newTerm.setM_PricingSystem_ID(computed.getPricingSystemId());
+		newTerm.setC_TaxCategory_ID(computed.getTaxCategoryId());
+		newTerm.setIsTaxIncluded(computed.isTaxIncluded());
+	}	
+	
+	@lombok.Value
+	{
+		int pricingSystemId;
+		int taxCategoryId;
+		boolean isTaxIncluded;
+	}
+	
+	{
+		final I_C_Order order = InterfaceWrapperHelper.create(ol.getC_Order(), I_C_Order.class);
+
+		final I_C_Flatrate_Conditions cond = ol.getC_Flatrate_Conditions();
+		
+		int pricingSystemId = cond.getM_PricingSystem_ID();
+		final int taxCategoryId;
+		final boolean isTaxIncluded;
+		
+		if (pricingSystemId > 0)
+		{
+			final IPricingResult pricingInfo = FlatrateTermPricing.builder()
+					.termRelatedProduct(ol.getM_Product())
+					.qty(ol.getQtyEntered())
+					.term(newTerm)
+					.priceDate(order.getDateOrdered())
+					.build()
+					.computeOrThrowEx();
+			
+			taxCategoryId = pricingInfo.getC_TaxCategory_ID();
+			isTaxIncluded = pricingInfo.isTaxIncluded();
+		}
+		else
+		{
+			pricingSystemId = order.getM_PricingSystem_ID();
+			taxCategoryId = ol.getC_TaxCategory_ID();
+			isTaxIncluded = order.isTaxIncluded();
+		}
+		
+	}
+	
 
 	@Override
 	public int createMissingTermsForOLCands(
