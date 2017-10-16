@@ -20,6 +20,8 @@ Here come the actual release notes:
     * Improved Translations for en_US. New Fielsd added for Subscription progress Subtab.
   * [#2725](https://github.com/metasfresh/metasfresh/issues/2725) Webui Window Design: Improvements in window ESR Payment Import
     * New Field Translations added to ESR Payment Import window. Now haveing a completed Translations for Window, Fields and Actions for en_US Language.
+  * [#2732](https://github.com/metasfresh/metasfresh/issues/2732) Window Design Webui : Add description field in sales order line
+    * New Field Description added to Sales Orderline Grid View and Advanced edit in WebUI.
   * [#2728](https://github.com/metasfresh/metasfresh/issues/2728) Webui Design Window: Add Translations to Business Partner
     * Improved Translation for en_US Language/ Locale in Window, Fields and Actions.
   * [#2729](https://github.com/metasfresh/metasfresh/issues/2729) Window Design Webui: Add missing fields to window Tourversion
