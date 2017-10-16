@@ -3,8 +3,6 @@ package de.metas.ui.web.picking.pickingslot;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 import java.util.List;
-import java.util.Set;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.adempiere.util.Services;
@@ -170,10 +168,7 @@ public class PickingSlotViewRepository
 		// retrieve picked HU rows (if any) to be displayed below there respective picking slots
 		final ListMultimap<Integer, PickedHUEditorRow> huEditorRowsByPickingSlotId = pickingHUsRepo.retrievePickedHUsIndexedByPickingSlotId(query);
 
-		final Predicate<? super I_M_PickingSlot> pickingCandidatesFilter = createPickingCandidatesFilter(query, huEditorRowsByPickingSlotId.keySet());
-
 		final ImmutableList<PickingSlotRow> result = pickingSlots.stream() // get stream of I_M_PickingSlot
-				.filter(pickingCandidatesFilter)
 				.map(pickingSlot -> createPickingSlotRow(pickingSlot, huEditorRowsByPickingSlotId)) // create the actual PickingSlotRows
 				.collect(ImmutableList.toImmutableList());
 		return result;
@@ -199,12 +194,6 @@ public class PickingSlotViewRepository
 		final IPickingSlotDAO pickingSlotDAO = Services.get(IPickingSlotDAO.class);
 		final List<I_M_PickingSlot> pickingSlots = pickingSlotDAO.retrivePickingSlots(pickingSlotquery);
 		return pickingSlots;
-	}
-
-	private static Predicate<? super I_M_PickingSlot> createPickingCandidatesFilter(final PickingSlotRepoQuery query, final Set<Integer> availablePickingSlotIds)
-	{
-		final Predicate<? super I_M_PickingSlot> pickingCandidatesFilter = pickingSlot -> availablePickingSlotIds.contains(pickingSlot.getM_PickingSlot_ID());
-		return pickingCandidatesFilter;
 	}
 
 	@VisibleForTesting

@@ -21,7 +21,6 @@ import de.metas.ui.web.handlingunits.HUEditorRow;
 import de.metas.ui.web.handlingunits.HUEditorRowId;
 import de.metas.ui.web.handlingunits.HUEditorRowType;
 import de.metas.ui.web.picking.pickingslot.PickingHURowsRepository.PickedHUEditorRow;
-import de.metas.ui.web.picking.pickingslot.PickingSlotRepoQuery.PickingCandidate;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.model.lookup.NullLookupDataSource;
@@ -66,12 +65,13 @@ public class PickingSlotViewRepositoryTests
 	 * when there are no HUs (no picking candidates) assigned to a picking slot, but still the picking slot itself shall be shown.
 	 */
 	@Test
-	public void testRetrievePickingSlotRows_No_HUs_show_all()
+	public void testRetrievePickingSlotRows_No_HUs_show_PickingSlotsOnly()
 	{
 		final I_M_ShipmentSchedule shipmentSchedule = newInstance(I_M_ShipmentSchedule.class);
 		save(shipmentSchedule);
 
 		final I_M_PickingSlot pickingSlot = newInstance(I_M_PickingSlot.class);
+		pickingSlot.setIsPickingRackSystem(true);
 		save(pickingSlot);
 
 		final PickingSlotRepoQuery query = PickingSlotRepoQuery.of(shipmentSchedule.getM_ShipmentSchedule_ID());
@@ -80,41 +80,15 @@ public class PickingSlotViewRepositoryTests
 		new Expectations() {{ pickingHUsRepo.retrievePickedHUsIndexedByPickingSlotId(query); result = ImmutableListMultimap.of(); }};
 		// @formatter:on
 
-		final NullLookupDataSource nullDs = NullLookupDataSource.instance;
+		final NullLookupDataSource nullDS = NullLookupDataSource.instance;
 
-		final PickingSlotViewRepository pickingSlotViewRepository = new PickingSlotViewRepository(pickingHUsRepo, () -> nullDs, () -> nullDs, () -> nullDs);
-		final List<PickingSlotRow> rowsByShipmentScheduleId = pickingSlotViewRepository.retrievePickingSlotRows(query);
+		final PickingSlotViewRepository pickingSlotViewRepository = new PickingSlotViewRepository(pickingHUsRepo, () -> nullDS, () -> nullDS, () -> nullDS);
+		final List<PickingSlotRow> pickingSlotRows = pickingSlotViewRepository.retrievePickingSlotRows(query);
 
-		assertThat(rowsByShipmentScheduleId.size(), is(1)); // even if there are no HUs, there shall still be a row for our picking slot.
-	}
+		assertThat(pickingSlotRows.size(), is(1)); // even if there are no HUs, there shall still be a row for our picking slot.
 
-	/**
-	 * Similar to {@link #testRetrievePickingSlotRows_No_HUs_show_all()}, but here the {@link PickingSlotRepoQuery} is created with {@link PickingCandidate#ONLY_PROCESSED}.
-	 */
-	@Test
-	public void testRetrievePickingSlotRows_No_HUs_show_none()
-	{
-		final I_M_ShipmentSchedule shipmentSchedule = newInstance(I_M_ShipmentSchedule.class);
-		save(shipmentSchedule);
-
-		final I_M_PickingSlot pickingSlot = newInstance(I_M_PickingSlot.class);
-		save(pickingSlot);
-
-		final PickingSlotRepoQuery query = PickingSlotRepoQuery.builder()
-				.shipmentScheduleId(shipmentSchedule.getM_ShipmentSchedule_ID())
-				.pickingCandidates(PickingCandidate.ONLY_PROCESSED)
-				.build();
-
-		// @formatter:off there are no picked HUs yet
-		new Expectations() {{ pickingHUsRepo.retrievePickedHUsIndexedByPickingSlotId(query); result = ImmutableListMultimap.of(); }};
-		// @formatter:on
-
-		final NullLookupDataSource nullDs = NullLookupDataSource.instance;
-
-		final PickingSlotViewRepository pickingSlotViewRepository = new PickingSlotViewRepository(pickingHUsRepo, () -> nullDs, () -> nullDs, () -> nullDs);
-		final List<PickingSlotRow> rowsByShipmentScheduleId = pickingSlotViewRepository.retrievePickingSlotRows(query);
-
-		assertThat(rowsByShipmentScheduleId.isEmpty(), is(true));
+		final PickingSlotRow pickingSlotRow = pickingSlotRows.get(0);
+		assertThat(pickingSlotRow.getType()).isEqualTo(PickingSlotRowType.forPickingSlotRow());
 	}
 
 	@Test
