@@ -198,22 +198,20 @@ public class SubscriptionBL implements ISubscriptionBL
 	
 	private PricingSystemTaxCategoryAndIsTaxIncluded computePricingSystemTaxCategAndIsTaxIncluded(@NonNull final I_C_OrderLine ol, @NonNull final I_C_Flatrate_Term newTerm)
 	{
-		final I_C_Order order = InterfaceWrapperHelper.create(ol.getC_Order(), I_C_Order.class);
-
 		final I_C_Flatrate_Conditions cond = ol.getC_Flatrate_Conditions();
-
 		if (cond.getM_PricingSystem_ID() > 0)
 		{
 			final IPricingResult pricingInfo = calculateFlatrateTermPrice(ol, newTerm);
 			return new PricingSystemTaxCategoryAndIsTaxIncluded(cond.getM_PricingSystem_ID(), pricingInfo.getC_TaxCategory_ID(), pricingInfo.isTaxIncluded());
 		}
 
+		final org.compiere.model.I_C_Order order = ol.getC_Order();
 		return new PricingSystemTaxCategoryAndIsTaxIncluded(order.getM_PricingSystem_ID(), ol.getC_TaxCategory_ID(), order.isTaxIncluded());
 	}
 
 	private IPricingResult calculateFlatrateTermPrice(@NonNull final I_C_OrderLine ol, @NonNull final I_C_Flatrate_Term newTerm)
 	{
-		final I_C_Order order = InterfaceWrapperHelper.create(ol.getC_Order(), I_C_Order.class);
+		final org.compiere.model.I_C_Order order = ol.getC_Order();
 		return FlatrateTermPricing.builder()
 				.termRelatedProduct(ol.getM_Product())
 				.qty(ol.getQtyEntered())
@@ -397,7 +395,7 @@ public class SubscriptionBL implements ISubscriptionBL
 		newTerm.setContractStatus(X_C_Flatrate_Term.CONTRACTSTATUS_Waiting);
 		newTerm.setDocAction(X_C_Flatrate_Term.DOCACTION_Complete);
 
-		InterfaceWrapperHelper.save(newTerm);
+		save(newTerm);
 
 		if (olCand.getM_PricingSystem_ID() > 0)
 		{
