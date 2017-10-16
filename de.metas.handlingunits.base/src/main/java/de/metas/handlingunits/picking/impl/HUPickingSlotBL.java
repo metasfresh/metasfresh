@@ -340,6 +340,7 @@ public class HUPickingSlotBL
 
 		//
 		// Change HU status to Picked
+		// (the HU will be saved a couple of lines below)
 		handlingUnitsBL.setHUStatus(huContext, hu, X_M_HU.HUSTATUS_Picked);
 
 		// Take it out from it's parent, if any

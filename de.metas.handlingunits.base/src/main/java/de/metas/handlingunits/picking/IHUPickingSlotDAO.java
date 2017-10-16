@@ -114,4 +114,8 @@ public interface IHUPickingSlotDAO extends ISingletonService
 	 * @return
 	 */
 	boolean isHuIdPicked(int huId);
+	
+	boolean isPickingRackSystem(final int pickingSlotId);
+
+	Set<Integer> retrieveAllPickingSlotIdsWhichAreRackSystems();
 }
