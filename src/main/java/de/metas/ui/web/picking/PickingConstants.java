@@ -34,8 +34,6 @@ public final class PickingConstants
 	public static final String WINDOWID_PickingSlotView_String = "pickingSlot";
 	public static final WindowId WINDOWID_PickingSlotView = WindowId.fromJson(WINDOWID_PickingSlotView_String);
 
-	public static final String CFG_WEBUI_PICKING_CLOSE_CANDIDATES_ON_WINDOW_CLOSE = "WEBUI_Picking_Close_PickingCandidatesOnWindowClose";
-
 	public static final String MSG_WEBUI_PICKING_NO_PROCESSED_RECORDS = "WEBUI_Picking_No_Processed_Records";
 	public static final String MSG_WEBUI_PICKING_SELECT_PICKED_HU = "WEBUI_Picking_SelectPickedHU";
 	

@@ -25,6 +25,7 @@ import java.util.List;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.handlingunits.model.I_M_Picking_Candidate;
 import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.NonNull;
@@ -50,7 +51,7 @@ public class PickingSlotRepoQuery
 	{
 		return builder().shipmentScheduleIds(shipmentScheduleIds).build();
 	}
-	
+
 	@NonNull
 	@Singular
 	ImmutableList<Integer> shipmentScheduleIds;
@@ -66,16 +67,21 @@ public class PickingSlotRepoQuery
 		 * Only retrieve picking slot items that have an unprocessed {@link I_M_Picking_Candidate} assigned to their underlying {@link I_M_PickingSlot}.
 		 */
 		ONLY_UNPROCESSED,
-		
+
 		/**
 		 * Retrieve all picking slot items, no matter whether they have a {@link I_M_Picking_Candidate} assigned to their underlying {@link I_M_PickingSlot} or not.
 		 */
-		ONLY_NOT_CLOSED
+		ONLY_NOT_CLOSED,
+
+		/**
+		 * Retrieve all picking slot items which are not closed (see {@link #ONLY_NOT_CLOSED}) or their picking slot it is NOT a rack system (gh2740).
+		 */
+		ONLY_NOT_CLOSED_OR_NOT_RACK_SYSTEM,
 	}
 
 	/**
 	 * Optional; a <code>null</code> value means "return both with and without"
 	 */
 	@Default
-	PickingCandidate pickingCandidates = PickingCandidate.ONLY_NOT_CLOSED;
+	PickingCandidate pickingCandidates = PickingCandidate.ONLY_NOT_CLOSED_OR_NOT_RACK_SYSTEM;
 }

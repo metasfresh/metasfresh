@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.springframework.stereotype.Service;
@@ -156,6 +157,13 @@ import lombok.NonNull;
 			case ONLY_NOT_CLOSED:
 				queryBuilder.addNotEqualsFilter(I_M_Picking_Candidate.COLUMN_Status, X_M_Picking_Candidate.STATUS_CL); // even if we don't care, we *do not* want to show closed picking candidates
 				break;
+			case ONLY_NOT_CLOSED_OR_NOT_RACK_SYSTEM:
+				final Set<Integer> rackSystemPickingSlotIds = Services.get(IHUPickingSlotDAO.class).retrieveAllPickingSlotIdsWhichAreRackSystems();
+				queryBuilder.addCompositeQueryFilter()
+						.setJoinOr()
+						.addNotEqualsFilter(I_M_Picking_Candidate.COLUMN_Status, X_M_Picking_Candidate.STATUS_CL)
+						.addNotInArrayFilter(I_M_Picking_Candidate.COLUMN_M_PickingSlot_ID, rackSystemPickingSlotIds);
+				break;
 			case ONLY_PROCESSED:
 				queryBuilder.addEqualsFilter(I_M_Picking_Candidate.COLUMN_Status, X_M_Picking_Candidate.STATUS_PR);
 				break;
@@ -212,9 +220,10 @@ import lombok.NonNull;
 		{
 			return false;
 		}
-
-		Check.errorIf(true, "Unexpected M_Picking_Candidate.Status={}; pc={}", status, pc);
-		return false;
+		else
+		{
+			throw new AdempiereException("Unexpected M_Picking_Candidate.Status=" + status).setParameter("pc", pc);
+		}
 	}
 
 	public ListMultimap<Integer, PickedHUEditorRow> retrieveAllPickedHUsIndexedByPickingSlotId(List<I_M_PickingSlot> pickingSlots)
