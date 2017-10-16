@@ -384,6 +384,7 @@ public class PPOrderLinesLoader
 				.uom(huEditorRow.getUOM())
 				.qty(huEditorRow.getQtyCU())
 				.huStatus(huEditorRow.getHUStatus())
+				.topLevelHU(huEditorRow.isTopLevel())
 				.build();
 	}
 }
