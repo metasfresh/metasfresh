@@ -15,7 +15,7 @@ import com.google.common.collect.ListMultimap;
 
 import de.metas.handlingunits.model.I_M_Picking_Candidate;
 import de.metas.handlingunits.model.X_M_Picking_Candidate;
-import de.metas.handlingunits.picking.IHUPickingSlotBL;
+import de.metas.picking.model.I_M_PickingSlot;
 import de.metas.ui.web.handlingunits.HUEditorRow;
 import de.metas.ui.web.handlingunits.HUEditorRowId;
 import de.metas.ui.web.handlingunits.HUEditorRowType;
@@ -48,23 +48,13 @@ import mockit.Mocked;
  * #L%
  */
 
-
 public class PickingHUsRepositoryTests
 {
 	private static final int M_HU_ID = 223;
-
-	private static final int M_PICKINGSLOT_ID = 323;
-
 	private static final int M_SHIPMENT_SCHEDULE_ID = 123;
 
 	@Mocked
 	private HUEditorViewRepository huEditorViewRepository;
-
-	/**
-	 * Needed to test {@link PickingHURowsRepository#retrieveSourceHUs(List)}.
-	 */
-	@Mocked
-	private IHUPickingSlotBL huPickingSlotBL;
 
 	@Before
 	public void init()
@@ -78,29 +68,55 @@ public class PickingHUsRepositoryTests
 	 * @param pickingCandidateStatus this value is given to the {@link I_M_Picking_Candidate} we test with, and we verify that this value is correctly translated it to the resulting {@link PickingSlotHUEditorRow#isProcessed()}.
 	 */
 	@Test
-	public void test_retrieveHUsIndexedByPickingSlotId_IP()
+	public void test_retrieveHUsIndexedByPickingSlotId_IP_RackSystem()
 	{
-		test_retrieveHUsIndexedByPickingSlotId(X_M_Picking_Candidate.STATUS_IP);
+		final boolean pickingRackSystem = true;
+		test_retrieveHUsIndexedByPickingSlotId(X_M_Picking_Candidate.STATUS_IP, pickingRackSystem);
 	}
 
 	@Test
-	public void test_retrieveHUsIndexedByPickingSlotId_PR()
+	public void test_retrieveHUsIndexedByPickingSlotId_IP_NotRackSystem()
 	{
-		test_retrieveHUsIndexedByPickingSlotId(X_M_Picking_Candidate.STATUS_PR);
+		final boolean pickingRackSystem = false;
+		test_retrieveHUsIndexedByPickingSlotId(X_M_Picking_Candidate.STATUS_IP, pickingRackSystem);
 	}
-	
+
 	@Test
-	public void test_retrieveHUsIndexedByPickingSlotId_CL()
+	public void test_retrieveHUsIndexedByPickingSlotId_PR_RackSystem()
 	{
-		test_retrieveHUsIndexedByPickingSlotId(X_M_Picking_Candidate.STATUS_CL);
+		final boolean pickingRackSystem = true;
+		test_retrieveHUsIndexedByPickingSlotId(X_M_Picking_Candidate.STATUS_PR, pickingRackSystem);
 	}
-	
-	private void test_retrieveHUsIndexedByPickingSlotId(@NonNull final String pickingCandidateStatus)
+
+	@Test
+	public void test_retrieveHUsIndexedByPickingSlotId_PR_NotRackSystem()
 	{
+		final boolean pickingRackSystem = false;
+		test_retrieveHUsIndexedByPickingSlotId(X_M_Picking_Candidate.STATUS_PR, pickingRackSystem);
+	}
+
+	@Test
+	public void test_retrieveHUsIndexedByPickingSlotId_CL_RackSystem()
+	{
+		final boolean pickingRackSystem = true;
+		test_retrieveHUsIndexedByPickingSlotId(X_M_Picking_Candidate.STATUS_CL, pickingRackSystem);
+	}
+
+	@Test
+	public void test_retrieveHUsIndexedByPickingSlotId_CL_NotRackSystem()
+	{
+		final boolean pickingRackSystem = false;
+		test_retrieveHUsIndexedByPickingSlotId(X_M_Picking_Candidate.STATUS_CL, pickingRackSystem);
+	}
+
+	private void test_retrieveHUsIndexedByPickingSlotId(@NonNull final String pickingCandidateStatus, final boolean pickingRackSystem)
+	{
+		final int pickingSlotId = createPickingSlot(pickingRackSystem).getM_PickingSlot_ID();
+
 		final I_M_Picking_Candidate pickingCandidate = newInstance(I_M_Picking_Candidate.class);
 		pickingCandidate.setM_ShipmentSchedule_ID(M_SHIPMENT_SCHEDULE_ID);
 		pickingCandidate.setM_HU_ID(M_HU_ID);
-		pickingCandidate.setM_PickingSlot_ID(M_PICKINGSLOT_ID);
+		pickingCandidate.setM_PickingSlot_ID(pickingSlotId);
 		pickingCandidate.setStatus(pickingCandidateStatus);
 		save(pickingCandidate);
 
@@ -111,7 +127,8 @@ public class PickingHUsRepositoryTests
 				.setTopLevel(true)
 				.build();
 
-		if (!X_M_Picking_Candidate.STATUS_CL.equals(pickingCandidateStatus))
+		final boolean expectNoRows = X_M_Picking_Candidate.STATUS_CL.equals(pickingCandidateStatus) && pickingRackSystem;
+		if (!expectNoRows)
 		{
 			// @formatter:off
 			new Expectations() {{ huEditorViewRepository.retrieveForHUId(M_HU_ID); result = huEditorRow; }};
@@ -121,7 +138,7 @@ public class PickingHUsRepositoryTests
 		final PickingHURowsRepository pickingHUsRepository = new PickingHURowsRepository(huEditorViewRepository);
 		final ListMultimap<Integer, PickedHUEditorRow> result = pickingHUsRepository.retrievePickedHUsIndexedByPickingSlotId(PickingSlotRepoQuery.of(M_SHIPMENT_SCHEDULE_ID));
 
-		if (X_M_Picking_Candidate.STATUS_CL.equals(pickingCandidateStatus))
+		if (expectNoRows)
 		{
 			// if 'pickingCandidate' is "closed", then nothing shall be returned
 			assertThat(result.isEmpty()).isTrue();
@@ -129,11 +146,11 @@ public class PickingHUsRepositoryTests
 		else
 		{
 			assertThat(result.size()).isEqualTo(1);
-			assertThat(result.get(M_PICKINGSLOT_ID)).hasSize(1);
+			assertThat(result.get(pickingSlotId)).hasSize(1);
 
 			final boolean expectedProcessed = !X_M_Picking_Candidate.STATUS_IP.equals(pickingCandidateStatus);
 
-			final PickedHUEditorRow resultRow = result.get(M_PICKINGSLOT_ID).get(0);
+			final PickedHUEditorRow resultRow = result.get(pickingSlotId).get(0);
 			final PickedHUEditorRow expectedRow = new PickedHUEditorRow(huEditorRow, expectedProcessed);
 			assertThat(resultRow).isEqualTo(expectedRow);
 		}
@@ -145,5 +162,13 @@ public class PickingHUsRepositoryTests
 		final PickingHURowsRepository pickingHUsRepository = new PickingHURowsRepository(huEditorViewRepository);
 		final List<HUEditorRow> sourceHUs = pickingHUsRepository.retrieveSourceHUs(ImmutableList.of());
 		assertThat(sourceHUs).isEmpty();
+	}
+
+	private static final I_M_PickingSlot createPickingSlot(final boolean pickingRackSystem)
+	{
+		final I_M_PickingSlot pickingSlot = newInstance(I_M_PickingSlot.class);
+		pickingSlot.setIsPickingRackSystem(pickingRackSystem);
+		save(pickingSlot);
+		return pickingSlot;
 	}
 }
