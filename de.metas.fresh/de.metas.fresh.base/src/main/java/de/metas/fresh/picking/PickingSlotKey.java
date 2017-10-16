@@ -54,7 +54,7 @@ import de.metas.logging.LogManager;
 import de.metas.picking.service.IFreshPackingItem;
 import de.metas.picking.terminal.Utils;
 import de.metas.picking.terminal.Utils.PackingStates;
-import de.metas.quantity.HUCapacityDefinition;
+import de.metas.quantity.CapacityInterface;
 
 /**
  * Picking Slot Terminal Key
@@ -346,7 +346,7 @@ public class PickingSlotKey extends TerminalKey
 	 *         <li>or <code>null</code> if the capacity information is not available
 	 *         </ul>
 	 */
-	public HUCapacityDefinition getHUTotalCapacity(final I_M_Product product, final I_C_UOM uom)
+	public CapacityInterface getHUTotalCapacity(final I_M_Product product, final I_C_UOM uom)
 	{
 		final I_M_HU_PI_Item_Product piItemProduct = getM_HU_PI_Item_Product();
 		if (piItemProduct == null)

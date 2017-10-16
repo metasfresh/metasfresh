@@ -39,7 +39,7 @@ import de.metas.handlingunits.document.IHUDocument;
 import de.metas.handlingunits.document.IHUDocumentLine;
 import de.metas.handlingunits.document.impl.AbstractHUDocumentFactory;
 import de.metas.inout.IInOutDAO;
-import de.metas.quantity.HUCapacityDefinition;
+import de.metas.quantity.Capacity;
 
 public class MInOutHUDocumentFactory extends AbstractHUDocumentFactory<I_M_InOut>
 {
@@ -97,7 +97,7 @@ public class MInOutHUDocumentFactory extends AbstractHUDocumentFactory<I_M_InOut
 
 			//
 			// Create Target Qty
-			final HUCapacityDefinition targetCapacity = HUCapacityDefinition.createCapacity(
+			final Capacity targetCapacity = Capacity.createCapacity(
 					ioLine.getMovementQty(), // qty
 					ioLine.getM_Product(),
 					ioLine.getC_UOM(),

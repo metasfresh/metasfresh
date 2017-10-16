@@ -143,7 +143,7 @@ import de.metas.inoutcandidate.modelvalidator.InOutCandidateValidator;
 import de.metas.inoutcandidate.modelvalidator.ReceiptScheduleValidator;
 import de.metas.interfaces.I_M_Warehouse;
 import de.metas.javaclasses.model.I_AD_JavaClass;
-import de.metas.quantity.HUCapacityDefinition;
+import de.metas.quantity.Capacity;
 import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.Data;
@@ -1474,7 +1474,7 @@ public class HUTestHelper
 			final I_C_UOM uom,
 			final boolean fullyLoaded)
 	{
-		final HUCapacityDefinition capacity = HUCapacityDefinition.createCapacity(
+		final Capacity capacity = Capacity.createCapacity(
 				qtyCapacity,
 				product,
 				uom,
@@ -1541,7 +1541,7 @@ public class HUTestHelper
 			final ILUTUProducerAllocationDestination allocationDestination,
 			final BigDecimal cuQty)
 	{
-		final HUCapacityDefinition tuCapacity = allocationDestination.getTUCapacity();
+		final Capacity tuCapacity = allocationDestination.getTUCapacity();
 		final I_M_Product cuProduct = tuCapacity.getM_Product();
 		final I_C_UOM cuUOM = tuCapacity.getC_UOM();
 

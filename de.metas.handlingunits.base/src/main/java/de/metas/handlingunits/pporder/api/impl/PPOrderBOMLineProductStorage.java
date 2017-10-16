@@ -34,7 +34,7 @@ import org.eevolution.model.I_PP_Order_BOMLine;
 import de.metas.handlingunits.storage.impl.AbstractProductStorage;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.PPOrderUtil;
-import de.metas.quantity.HUCapacityDefinition;
+import de.metas.quantity.Capacity;
 
 /**
  * Product storage for a manufacturing order BOM Line.
@@ -60,13 +60,13 @@ public class PPOrderBOMLineProductStorage extends AbstractProductStorage
 
 	/** @return infinite capacity because we don't want to enforce how many items we can allocate on this storage */
 	@Override
-	protected HUCapacityDefinition retrieveTotalCapacity()
+	protected Capacity retrieveTotalCapacity()
 	{
 		checkStaled();
 		
 		final I_M_Product product = orderBOMLine.getM_Product();
 		final I_C_UOM uom = orderBOMLine.getC_UOM();
-		return HUCapacityDefinition.createInfiniteCapacity(product, uom);
+		return Capacity.createInfiniteCapacity(product, uom);
 	}
 
 	/** @return quantity that was already issued/received on this order BOM Line */

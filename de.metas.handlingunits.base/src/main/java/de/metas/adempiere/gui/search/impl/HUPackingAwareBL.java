@@ -35,7 +35,8 @@ import de.metas.adempiere.gui.search.IHUPackingAware;
 import de.metas.adempiere.gui.search.IHUPackingAwareBL;
 import de.metas.handlingunits.IHUCapacityBL;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
-import de.metas.quantity.HUCapacityDefinition;
+import de.metas.quantity.Capacity;
+import de.metas.quantity.CapacityInterface;
 
 public class HUPackingAwareBL implements IHUPackingAwareBL
 {
@@ -162,8 +163,8 @@ public class HUPackingAwareBL implements IHUPackingAwareBL
 		final I_M_Product product = record.getM_Product();
 		final I_C_UOM uom = record.getC_UOM();
 		final IHUCapacityBL capacityBL = Services.get(IHUCapacityBL.class);
-		final HUCapacityDefinition capacity = capacityBL.getCapacity(huPIItemProduct, product, uom);
-		final HUCapacityDefinition capacityMult = capacity.multiply(qtyPacks);
+		final Capacity capacity = capacityBL.getCapacity(huPIItemProduct, product, uom);
+		final CapacityInterface capacityMult = capacity.multiply(qtyPacks);
 
 		if (capacityMult.isInfiniteCapacity())
 		{
@@ -220,7 +221,7 @@ public class HUPackingAwareBL implements IHUPackingAwareBL
 		}
 
 		final IHUCapacityBL capacityBL = Services.get(IHUCapacityBL.class);
-		final HUCapacityDefinition capacityDef = capacityBL.getCapacity(huPiItemProduct, product, uom);
+		final Capacity capacityDef = capacityBL.getCapacity(huPiItemProduct, product, uom);
 
 		final Integer qtyPacks = capacityDef.calculateQtyPacks(qty, uom);
 		if (qtyPacks == null)

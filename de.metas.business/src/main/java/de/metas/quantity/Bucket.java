@@ -13,15 +13,14 @@ package de.metas.quantity;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 
@@ -29,62 +28,58 @@ import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
 
+import lombok.EqualsAndHashCode;
 import lombok.NonNull;
+import lombok.ToString;
 
-
-public class StatefulHUCapacityDefinition
+/**
+ * This is {@link CapacityInterface} that also has "level", i.e. a quantity that already occupates a part of it.
+ * 
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
+@ToString
+@EqualsAndHashCode
+public class Bucket
 {
-
-	public static StatefulHUCapacityDefinition createStatefulCapacity(
-			@NonNull final HUCapacityDefinition capacity, 
-			@NonNull final BigDecimal qtyUsed)
+	public static Bucket createEmptyBucketWithCapacity(@NonNull final Capacity capacity)
 	{
-		return new StatefulHUCapacityDefinition(capacity, qtyUsed);
+		return new Bucket(capacity, BigDecimal.ZERO);
 	}
-	
-	// Services
-	private final transient IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 
-	private final HUCapacityDefinition _capacityTotal;
+	public static Bucket createBucketWithCapacityAndQty(
+			@NonNull final Capacity capacity,
+			@NonNull final BigDecimal qty)
+	{
+		return new Bucket(capacity, qty);
+	}
+
+	private final Capacity capacity;
 	private BigDecimal _qty = BigDecimal.ZERO;
 	private BigDecimal _qtyFree = BigDecimal.ZERO;
 
-	private StatefulHUCapacityDefinition(final HUCapacityDefinition capacityTotal, final BigDecimal qtyInitial)
+	private Bucket(@NonNull final Capacity capacity, @NonNull final BigDecimal qtyInitial)
 	{
-		Check.assumeNotNull(capacityTotal, "capacityTotal not null");
-		_capacityTotal = capacityTotal;
-
-		Check.assumeNotNull(qtyInitial, "qtyInitial not null");
+		this.capacity = capacity;
 		adjustQty(qtyInitial);
-	}
-
-	@Override
-	public String toString()
-	{
-		return getClass().getSimpleName() + " ["
-				+ "qty=" + _qty
-				+ ", qtyFree=" + _qtyFree
-				+ ", capacity=" + _capacityTotal
-				+ "]";
 	}
 
 	public final boolean isInfiniteCapacity()
 	{
-		return _capacityTotal.isInfiniteCapacity();
+		return capacity.isInfiniteCapacity();
 	}
 
 	public final boolean isAllowNegativeCapacity()
 	{
-		return _capacityTotal.isAllowNegativeCapacity();
+		return capacity.isAllowNegativeCapacity();
 	}
 
 	private final boolean isAllowNegativeCapacity(final Boolean allowNegativeCapacityOverride)
 	{
 		if (allowNegativeCapacityOverride == null)
 		{
-			return _capacityTotal.isAllowNegativeCapacity();
+			return capacity.isAllowNegativeCapacity();
 		}
 		else
 		{
@@ -107,17 +102,12 @@ public class StatefulHUCapacityDefinition
 
 	public final BigDecimal getCapacity()
 	{
-		return _capacityTotal.getCapacity();
-	}
-
-	public final I_M_Product getM_Product()
-	{
-		return _capacityTotal.getM_Product();
+		return capacity.getCapacity();
 	}
 
 	public final I_C_UOM getC_UOM()
 	{
-		return _capacityTotal.getC_UOM();
+		return capacity.getC_UOM();
 	}
 
 	public final BigDecimal getQty()
@@ -145,7 +135,7 @@ public class StatefulHUCapacityDefinition
 		}
 	}
 
-public final BigDecimal getQtyFree()
+	public final BigDecimal getQtyFree()
 	{
 		return _qtyFree;
 	}
@@ -304,29 +294,28 @@ public final BigDecimal getQtyFree()
 		return new Quantity(qtyToRemoveActual, qtyToRemove_UOM, qtyToRemoveActualBaseUom, baseUOM);
 	}
 
-	protected BigDecimal convertToBaseUOM(final BigDecimal qty, final I_C_UOM qtyUOM)
+	private BigDecimal convertToBaseUOM(final BigDecimal qty, final I_C_UOM qtyUOM)
 	{
 		final I_C_UOM baseUOM = getC_UOM();
-		final I_M_Product product = getM_Product();
-		final BigDecimal qtyConv = uomConversionBL.convertQty(
-				product,
+
+		final BigDecimal qtyConv = Services.get(IUOMConversionBL.class).convertQty(
+				capacity.getM_Product(),
 				qty,
 				qtyUOM, // uomFrom,
 				baseUOM// uomTo
-				);
+		);
 		return qtyConv;
 	}
 
-	protected BigDecimal convertFromBaseUOM(final BigDecimal qty, final I_C_UOM uomTo)
+	private BigDecimal convertFromBaseUOM(final BigDecimal qty, final I_C_UOM uomTo)
 	{
 		final I_C_UOM baseUOM = getC_UOM();
-		final I_M_Product product = getM_Product();
-		final BigDecimal qtyConv = uomConversionBL.convertQty(
-				product,
+		final BigDecimal qtyConv = Services.get(IUOMConversionBL.class).convertQty(
+				capacity.getM_Product(),
 				qty,
 				baseUOM, // uomFrom,
 				uomTo// uomTo
-				);
+		);
 		return qtyConv;
 	}
 }

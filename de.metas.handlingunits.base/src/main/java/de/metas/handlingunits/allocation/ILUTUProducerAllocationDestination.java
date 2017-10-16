@@ -32,7 +32,8 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
-import de.metas.quantity.HUCapacityDefinition;
+import de.metas.quantity.Capacity;
+import de.metas.quantity.CapacityInterface;
 import de.metas.quantity.Quantity;
 
 /**
@@ -57,7 +58,7 @@ public interface ILUTUProducerAllocationDestination extends IHUProducerAllocatio
 	 * 
 	 * @param tuCapacity
 	 */
-	void addTUCapacity(HUCapacityDefinition tuCapacity);
+	void addTUCapacity(Capacity tuCapacity);
 
 	/**
 	 *
@@ -74,7 +75,7 @@ public interface ILUTUProducerAllocationDestination extends IHUProducerAllocatio
 	 *
 	 * @return TU capacity
 	 */
-	HUCapacityDefinition getTUCapacity();
+	Capacity getTUCapacity();
 
 	/**
 	 * Gets TU defined capacity for given product
@@ -82,7 +83,7 @@ public interface ILUTUProducerAllocationDestination extends IHUProducerAllocatio
 	 * @param cuProduct
 	 * @return TU capacity or <code>null</code>
 	 */
-	HUCapacityDefinition getTUCapacity(I_M_Product cuProduct);
+	CapacityInterface getTUCapacity(I_M_Product cuProduct);
 
 	I_M_HU_PI getLUPI();
 

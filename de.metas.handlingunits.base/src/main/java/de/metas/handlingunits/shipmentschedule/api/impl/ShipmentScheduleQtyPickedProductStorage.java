@@ -36,7 +36,8 @@ import de.metas.inoutcandidate.api.IShipmentScheduleAllocBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.quantity.HUCapacityDefinition;
+import de.metas.quantity.Capacity;
+import de.metas.quantity.CapacityInterface;
 
 /**
  * Product storage oriented on {@link I_M_ShipmentSchedule}'s QtyPicked.
@@ -70,7 +71,7 @@ public class ShipmentScheduleQtyPickedProductStorage extends AbstractProductStor
 		// NOTE: we cannot relly on QtyToDeliver because that one is about what it needs to be delivered and we are able to deliver it.
 		// But in our case we need to have how much is Picked but not delivered because we want to let the API/user to "un-pick" that quantity if he wants.
 
-		final HUCapacityDefinition capacityTotal = getTotalCapacity();
+		final CapacityInterface capacityTotal = getTotalCapacity();
 		final BigDecimal qtyTarget = capacityTotal.getCapacity();
 		BigDecimal qtyToPick = qtyTarget;
 
@@ -89,7 +90,7 @@ public class ShipmentScheduleQtyPickedProductStorage extends AbstractProductStor
 	}
 
 	@Override
-	protected HUCapacityDefinition retrieveTotalCapacity()
+	protected Capacity retrieveTotalCapacity()
 	{
 		checkStaled();
 
@@ -113,7 +114,7 @@ public class ShipmentScheduleQtyPickedProductStorage extends AbstractProductStor
 		// Create the total capacity based on qtyTarget
 		final I_M_Product product = shipmentSchedule.getM_Product();
 		final I_C_UOM uom = shipmentScheduleBL.getUomOfProduct(shipmentSchedule);
-		return HUCapacityDefinition.createCapacity(
+		return Capacity.createCapacity(
 				qtyTarget, // qty
 				product, // product
 				uom, // uom

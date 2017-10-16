@@ -31,14 +31,14 @@ import org.adempiere.util.Services;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.handlingunits.storage.impl.AbstractProductStorage;
 import de.metas.inoutcandidate.api.IReceiptScheduleBL;
-import de.metas.quantity.HUCapacityDefinition;
+import de.metas.quantity.Capacity;
 
 /* package */class ReceiptScheduleProductStorage extends AbstractProductStorage
 {
 	private final transient IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
 
 	private final I_M_ReceiptSchedule schedule;
-	private final HUCapacityDefinition capacityTotal;
+	private final Capacity capacityTotal;
 	private boolean staled = false;
 
 	public ReceiptScheduleProductStorage(final de.metas.inoutcandidate.model.I_M_ReceiptSchedule schedule, final boolean enforceCapacity)
@@ -47,7 +47,7 @@ import de.metas.quantity.HUCapacityDefinition;
 		this.schedule = InterfaceWrapperHelper.create(schedule, I_M_ReceiptSchedule.class);
 
 		final boolean allowNegativeCapacity = !enforceCapacity; // true because we want to over/under allocate on this receipt schedule
-		capacityTotal = HUCapacityDefinition.createCapacity(
+		capacityTotal = Capacity.createCapacity(
 				receiptScheduleBL.getQtyOrdered(schedule), // qty
 				schedule.getM_Product(), // product
 				schedule.getC_UOM(), // uom
@@ -76,7 +76,7 @@ import de.metas.quantity.HUCapacityDefinition;
 	}
 
 	@Override
-	protected HUCapacityDefinition retrieveTotalCapacity()
+	protected Capacity retrieveTotalCapacity()
 	{
 		return capacityTotal;
 	}

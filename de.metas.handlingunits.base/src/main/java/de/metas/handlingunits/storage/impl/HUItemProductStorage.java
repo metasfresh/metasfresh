@@ -35,7 +35,7 @@ import org.compiere.model.I_M_Product;
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.storage.IHUItemStorage;
 import de.metas.handlingunits.storage.IProductStorage;
-import de.metas.quantity.HUCapacityDefinition;
+import de.metas.quantity.CapacityInterface;
 import de.metas.quantity.Quantity;
 
 /**
@@ -83,7 +83,7 @@ import de.metas.quantity.Quantity;
 
 	}
 
-	public HUCapacityDefinition getTotalCapacity()
+	public CapacityInterface getTotalCapacity()
 	{
 		return itemStorage.getCapacity(product, uom, date);
 	}
@@ -103,7 +103,7 @@ import de.metas.quantity.Quantity;
 	@Override
 	public BigDecimal getQtyFree()
 	{
-		final HUCapacityDefinition capacityAvailable = itemStorage.getAvailableCapacity(getM_Product(), getC_UOM(), date);
+		final CapacityInterface capacityAvailable = itemStorage.getAvailableCapacity(getM_Product(), getC_UOM(), date);
 		if (capacityAvailable.isInfiniteCapacity())
 		{
 			return Quantity.QTY_INFINITE;
@@ -130,7 +130,7 @@ import de.metas.quantity.Quantity;
 	@Override
 	public BigDecimal getQtyCapacity()
 	{
-		final HUCapacityDefinition capacityTotal = getTotalCapacity();
+		final CapacityInterface capacityTotal = getTotalCapacity();
 		return capacityTotal.getCapacity();
 	}
 

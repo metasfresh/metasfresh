@@ -33,7 +33,7 @@ import org.eevolution.api.IPPOrderBL;
 import org.eevolution.model.I_PP_Order;
 
 import de.metas.handlingunits.storage.impl.AbstractProductStorage;
-import de.metas.quantity.HUCapacityDefinition;
+import de.metas.quantity.Capacity;
 
 /**
  * Product storage for {@link I_PP_Order} header (i.e. finished goods).
@@ -62,7 +62,7 @@ public class PPOrderProductStorage extends AbstractProductStorage
 	}
 
 	@Override
-	protected HUCapacityDefinition retrieveTotalCapacity()
+	protected Capacity retrieveTotalCapacity()
 	{
 		final I_M_Product product = ppOrder.getM_Product();
 		final I_C_UOM uom = ppOrder.getC_UOM();
@@ -70,7 +70,7 @@ public class PPOrderProductStorage extends AbstractProductStorage
 		final boolean allowNegativeCapacity = true;
 		final BigDecimal qtyCapacity = ppOrder.getQtyOrdered(); // i.e. target Qty To Receive
 
-		return HUCapacityDefinition.createCapacity(
+		return Capacity.createCapacity(
 				qtyCapacity, // qty
 				product, // product
 				uom, // uom

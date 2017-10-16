@@ -38,7 +38,7 @@ import de.metas.handlingunits.document.IHUDocument;
 import de.metas.handlingunits.document.IHUDocumentFactory;
 import de.metas.logging.LogManager;
 import de.metas.process.ProcessInfo;
-import de.metas.quantity.HUCapacityDefinition;
+import de.metas.quantity.Capacity;
 
 public abstract class AbstractHUDocumentFactory<T> implements IHUDocumentFactory
 {
@@ -57,7 +57,7 @@ public abstract class AbstractHUDocumentFactory<T> implements IHUDocumentFactory
 	protected class HUDocumentsCollector
 	{
 		private final List<IHUDocument> documents = new ArrayList<IHUDocument>();
-		private final List<HUCapacityDefinition> targetCapacities = new ArrayList<>();
+		private final List<Capacity> targetCapacities = new ArrayList<>();
 
 		public HUDocumentsCollector()
 		{
@@ -69,7 +69,7 @@ public abstract class AbstractHUDocumentFactory<T> implements IHUDocumentFactory
 			return documents;
 		}
 
-		public List<HUCapacityDefinition> getTargetCapacities()
+		public List<Capacity> getTargetCapacities()
 		{
 			return targetCapacities;
 		}

@@ -38,14 +38,14 @@ import de.metas.handlingunits.HUConstants;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.hutransaction.IHUTrxDAO;
 import de.metas.handlingunits.model.I_M_HU_Trx_Line;
-import de.metas.quantity.HUCapacityDefinition;
+import de.metas.quantity.Capacity;
 
 public class MTransactionProductStorage extends AbstractProductStorage
 {
 	private final I_M_Transaction mtrx;
 	private final boolean inbound;
 	private final boolean reversal;
-	private final HUCapacityDefinition capacityTotal;
+	private final Capacity capacityTotal;
 
 	public MTransactionProductStorage(final I_M_Transaction mtrx)
 	{
@@ -85,7 +85,7 @@ public class MTransactionProductStorage extends AbstractProductStorage
 			qtyCapacity = qtyCapacity.negate();
 		}
 
-		capacityTotal = HUCapacityDefinition.createCapacity(qtyCapacity,
+		capacityTotal = Capacity.createCapacity(qtyCapacity,
 				product, uomMTransaction,
 				false// allowNegativeCapacity
 				);
@@ -156,7 +156,7 @@ public class MTransactionProductStorage extends AbstractProductStorage
 	}
 
 	@Override
-	protected HUCapacityDefinition retrieveTotalCapacity()
+	protected Capacity retrieveTotalCapacity()
 	{
 		return capacityTotal;
 	}

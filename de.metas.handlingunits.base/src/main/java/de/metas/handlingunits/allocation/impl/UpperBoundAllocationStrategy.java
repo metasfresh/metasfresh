@@ -36,7 +36,8 @@ import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.handlingunits.storage.IHUItemStorage;
-import de.metas.quantity.HUCapacityDefinition;
+import de.metas.quantity.Capacity;
+import de.metas.quantity.CapacityInterface;
 import de.metas.quantity.Quantity;
 
 /**
@@ -51,20 +52,20 @@ public class UpperBoundAllocationStrategy extends AbstractFIFOStrategy
 	// services
 	private final transient IDeveloperModeBL developerModeBL = Services.get(IDeveloperModeBL.class);
 
-	private final HUCapacityDefinition _capacityOverride;
+	private final Capacity _capacityOverride;
 
 	/**
 	 * 
 	 * @param capacityOverride optional capacity that can override the one from the packing instructions.
 	 */
-	public UpperBoundAllocationStrategy(final HUCapacityDefinition capacityOverride)
+	public UpperBoundAllocationStrategy(final Capacity capacityOverride)
 	{
 		super(false); // outTrx=false
 
 		_capacityOverride = isUseDefaultCapacity(capacityOverride) ? null : capacityOverride;
 	}
 
-	private static final boolean isUseDefaultCapacity(final HUCapacityDefinition capacity)
+	private static final boolean isUseDefaultCapacity(final CapacityInterface capacity)
 	{
 		if (capacity == null)
 		{
@@ -81,7 +82,7 @@ public class UpperBoundAllocationStrategy extends AbstractFIFOStrategy
 			qty = capacity.getCapacity();
 		}
 
-		return Util.same(HUCapacityDefinition.DEFAULT, qty);
+		return Util.same(Capacity.DEFAULT, qty);
 	}
 
 	@Override
@@ -102,7 +103,7 @@ public class UpperBoundAllocationStrategy extends AbstractFIFOStrategy
 
 		// make sure that the capacity is forced by the user, not the system
 		// If capacityOverride is null it means that we were asked to take the defaults
-		final HUCapacityDefinition capacityOverride = getCapacityOverride();
+		final Capacity capacityOverride = getCapacityOverride();
 		if (capacityOverride != null && !storage.isPureVirtual())
 		{
 			storage.setCustomCapacity(capacityOverride);
@@ -111,7 +112,7 @@ public class UpperBoundAllocationStrategy extends AbstractFIFOStrategy
 		return storage;
 	}
 
-	private final HUCapacityDefinition getCapacityOverride()
+	private final Capacity getCapacityOverride()
 	{
 		return _capacityOverride;
 	}

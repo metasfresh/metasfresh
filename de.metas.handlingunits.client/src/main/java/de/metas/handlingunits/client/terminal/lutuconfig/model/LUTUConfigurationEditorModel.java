@@ -44,7 +44,6 @@ import de.metas.adempiere.form.terminal.IKeyLayout;
 import de.metas.adempiere.form.terminal.ITerminalKey;
 import de.metas.adempiere.form.terminal.TerminalKeyByNameComparator;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
-import de.metas.handlingunits.IHUCapacityDefinition;
 import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.ILUTUConfigurationEditor;
 import de.metas.handlingunits.client.terminal.mmovement.exception.MaterialMovementException;
@@ -55,6 +54,7 @@ import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
+import de.metas.quantity.Quantity;
 
 public class LUTUConfigurationEditorModel extends AbstractLTCUModel
 {
@@ -625,7 +625,7 @@ public class LUTUConfigurationEditorModel extends AbstractLTCUModel
 		final I_M_HU_PI_Item virtualPIItem = handlingUnitsDAO.retrieveVirtualPIItem(ctx);
 		final I_M_HU_PI virtualPI = virtualPIItem.getM_HU_PI_Version().getM_HU_PI();
 		final I_M_HU_PI_Item_Product virtualItemProduct = itemProductDAO.retrieveVirtualPIMaterialItemProduct(ctx);
-		final BigDecimal qtyCUsPerTU = IHUCapacityDefinition.INFINITY;
+		final BigDecimal qtyCUsPerTU = Quantity.QTY_INFINITE;
 
 		final I_M_Product cuProduct = lutuConfiguration.getM_Product();
 		final I_C_UOM cuUOM = lutuConfiguration.getC_UOM();

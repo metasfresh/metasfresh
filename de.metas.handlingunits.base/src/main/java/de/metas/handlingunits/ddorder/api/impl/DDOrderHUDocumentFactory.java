@@ -41,7 +41,7 @@ import de.metas.handlingunits.document.IHUDocumentFactory;
 import de.metas.handlingunits.document.impl.AbstractHUDocumentFactory;
 import de.metas.handlingunits.document.impl.HandlingUnitHUDocumentFactory;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.quantity.HUCapacityDefinition;
+import de.metas.quantity.Capacity;
 
 /**
  * Creates {@link IHUDocument}s from {@link I_DD_Order}.
@@ -100,7 +100,7 @@ public class DDOrderHUDocumentFactory extends AbstractHUDocumentFactory<I_DD_Ord
 			//
 			// Create target Capacities
 			final BigDecimal qtyToDeliver = line.getQtyOrdered().subtract(line.getQtyDelivered());
-			final HUCapacityDefinition targetCapacity = HUCapacityDefinition.createCapacity(
+			final Capacity targetCapacity = Capacity.createCapacity(
 					qtyToDeliver, // qty
 					line.getM_Product(),
 					line.getC_UOM(),

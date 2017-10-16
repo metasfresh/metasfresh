@@ -29,11 +29,11 @@ import org.adempiere.util.Check;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 
-import de.metas.quantity.HUCapacityDefinition;
+import de.metas.quantity.Capacity;
 
 public class PlainProductStorage extends AbstractProductStorage
 {
-	private final HUCapacityDefinition capacityTotal;
+	private final Capacity capacityTotal;
 	private BigDecimal qtyInitial;
 
 	public PlainProductStorage(final I_M_Product product,
@@ -52,7 +52,7 @@ public class PlainProductStorage extends AbstractProductStorage
 			final BigDecimal qtyTotal,
 			final BigDecimal qtyInitial)
 	{
-		capacityTotal = HUCapacityDefinition.createCapacity(qtyTotal,
+		capacityTotal = Capacity.createCapacity(qtyTotal,
 				product, uom,
 				false // allowNegativeCapacity
 				);
@@ -61,7 +61,7 @@ public class PlainProductStorage extends AbstractProductStorage
 		this.qtyInitial = qtyInitial;
 	}
 
-	public PlainProductStorage(final HUCapacityDefinition capacity, final BigDecimal qtyInitial)
+	public PlainProductStorage(final Capacity capacity, final BigDecimal qtyInitial)
 	{
 		capacityTotal = capacity;
 
@@ -70,7 +70,7 @@ public class PlainProductStorage extends AbstractProductStorage
 	}
 
 	@Override
-	protected HUCapacityDefinition retrieveTotalCapacity()
+	protected Capacity retrieveTotalCapacity()
 	{
 		return capacityTotal;
 	}

@@ -33,21 +33,21 @@ import org.compiere.model.I_M_Product;
 import org.slf4j.Logger;
 
 import de.metas.handlingunits.IHUCapacityBL;
-import de.metas.handlingunits.IStatefulHUCapacityDefinition;
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.impl.AllocationUtils;
 import de.metas.handlingunits.storage.IProductStorage;
 import de.metas.logging.LogManager;
-import de.metas.quantity.HUCapacityDefinition;
+import de.metas.quantity.Capacity;
 import de.metas.quantity.Quantity;
+import de.metas.quantity.Bucket;
 
 public abstract class AbstractProductStorage implements IProductStorage
 {
 	protected final transient Logger logger = LogManager.getLogger(getClass());
 	protected final IHUCapacityBL capacityBL = Services.get(IHUCapacityBL.class);
 
-	private HUCapacityDefinition _capacityTotal = null;
-	private IStatefulHUCapacityDefinition _capacity = null;
+	private Capacity _capacityTotal = null;
+	private Bucket _capacity = null;
 
 	/** NOTE: this flag was introduced for backward compatibility (support those storages which does not support considering ForceQtyAllocation) */
 	private boolean _considerForceQtyAllocationFromRequest = true;
@@ -64,11 +64,11 @@ public abstract class AbstractProductStorage implements IProductStorage
 
 	}
 
-	protected abstract HUCapacityDefinition retrieveTotalCapacity();
+	protected abstract Capacity retrieveTotalCapacity();
 
 	protected abstract BigDecimal retrieveQtyInitial();
 
-	protected final HUCapacityDefinition getTotalCapacity()
+	protected final Capacity getTotalCapacity()
 	{
 		if (_capacityTotal == null)
 		{
@@ -93,18 +93,18 @@ public abstract class AbstractProductStorage implements IProductStorage
 	@Override
 	public final boolean isAllowNegativeStorage()
 	{
-		final IStatefulHUCapacityDefinition capacity = getCapacity();
+		final Bucket capacity = getCapacity();
 		return capacity.isAllowNegativeCapacity();
 
 	}
 
-	private final IStatefulHUCapacityDefinition getCapacity()
+	private final Bucket getCapacity()
 	{
 		if (_capacity == null)
 		{
-			final HUCapacityDefinition capacityTotal = getTotalCapacity();
+			final Capacity capacityTotal = getTotalCapacity();
 			final BigDecimal qtyUsedInitial = retrieveQtyInitial();
-			_capacity = capacityBL.createStatefulCapacity(capacityTotal, qtyUsedInitial);
+			_capacity = Bucket.createBucketWithCapacityAndQty(capacityTotal, qtyUsedInitial);
 		}
 		return _capacity;
 	}
@@ -147,7 +147,7 @@ public abstract class AbstractProductStorage implements IProductStorage
 	@Override
 	public final BigDecimal getQtyCapacity()
 	{
-		final HUCapacityDefinition capacity = getCapacity();
+		final Bucket capacity = getCapacity();
 		if (capacity.isInfiniteCapacity())
 		{
 			return Quantity.QTY_INFINITE;
@@ -158,7 +158,7 @@ public abstract class AbstractProductStorage implements IProductStorage
 	@Override
 	public final BigDecimal getQtyFree()
 	{
-		final IStatefulHUCapacityDefinition capacity = getCapacity();
+		final Bucket capacity = getCapacity();
 		if (capacity.isInfiniteCapacity())
 		{
 			return Quantity.QTY_INFINITE;
@@ -175,7 +175,7 @@ public abstract class AbstractProductStorage implements IProductStorage
 			return AllocationUtils.createZeroQtyRequest(request);
 		}
 
-		final IStatefulHUCapacityDefinition capacity = getCapacity();
+		final Bucket capacity = getCapacity();
 		final Quantity qtyToAdd = request.getQuantity();
 		final Boolean allowCapacityOverload = getAllowCapacityOverload(request);
 		final Quantity qtyToAddActual = capacity.addQty(qtyToAdd, allowCapacityOverload);
@@ -204,7 +204,7 @@ public abstract class AbstractProductStorage implements IProductStorage
 			return AllocationUtils.createZeroQtyRequest(request);
 		}
 
-		final IStatefulHUCapacityDefinition capacity = getCapacity();
+		final Bucket capacity = getCapacity();
 		final Quantity qtyToRemove = request.getQuantity();
 		final Boolean allowNegativeCapacityOverride = getAllowNegativeCapacityOverride(request);
 		final Quantity qtyToRemoveActual = capacity.removeQty(qtyToRemove, allowNegativeCapacityOverride);

@@ -55,7 +55,7 @@ import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
-import de.metas.quantity.HUCapacityDefinition;
+import de.metas.quantity.CapacityInterface;
 import de.metas.quantity.Quantity;
 import lombok.NonNull;
 
@@ -183,7 +183,7 @@ public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 		//
 		// TU Configuration
 		final I_M_HU_PI tuPI = tuPIItemProduct.getM_HU_PI_Item().getM_HU_PI_Version().getM_HU_PI();
-		final HUCapacityDefinition tuCapacity = huCapacityBL.getCapacity(tuPIItemProduct, cuProduct, cuUOM);
+		final CapacityInterface tuCapacity = huCapacityBL.getCapacity(tuPIItemProduct, cuProduct, cuUOM);
 		//
 		lutuConfiguration.setM_HU_PI_Item_Product(tuPIItemProduct);
 		lutuConfiguration.setM_TU_HU_PI(tuPI);

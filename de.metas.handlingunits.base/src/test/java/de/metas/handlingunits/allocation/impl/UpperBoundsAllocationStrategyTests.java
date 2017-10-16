@@ -14,7 +14,6 @@ import org.junit.Test;
 
 import de.metas.handlingunits.HUTestHelper;
 import de.metas.handlingunits.IHUCapacityBL;
-import de.metas.handlingunits.IHUCapacityDefinition;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.allocation.IAllocationRequest;
@@ -23,6 +22,7 @@ import de.metas.handlingunits.hutransaction.IHUTransaction;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.X_M_HU_Item;
+import de.metas.quantity.Capacity;
 
 /*
  * #%L
@@ -112,7 +112,7 @@ public class UpperBoundsAllocationStrategyTests
 
 		final IAllocationRequest request = mkRequest(requestQty);
 
-		final IHUCapacityDefinition capacity = Services.get(IHUCapacityBL.class).createCapacity(sixThousand, helper.pTomato, helper.uomKg, false);
+		final Capacity capacity = Capacity.createCapacity(sixThousand, helper.pTomato, helper.uomKg, false);
 
 		final UpperBoundAllocationStrategy testee = new UpperBoundAllocationStrategy(capacity);
 		final IAllocationResult result = testee.execute(vhu, request);

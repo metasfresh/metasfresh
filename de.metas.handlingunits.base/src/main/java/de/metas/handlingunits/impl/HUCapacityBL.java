@@ -36,13 +36,14 @@ import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
-import de.metas.quantity.HUCapacityDefinition;
+import de.metas.quantity.Capacity;
+import de.metas.quantity.CapacityInterface;
 
 public class HUCapacityBL implements IHUCapacityBL
 {
 
 	@Override
-	public HUCapacityDefinition getCapacity(final I_M_HU_PI_Item_Product itemDefProduct, final I_M_Product product, final I_C_UOM uom)
+	public Capacity getCapacity(final I_M_HU_PI_Item_Product itemDefProduct, final I_M_Product product, final I_C_UOM uom)
 	{
 		final I_M_Product productToUse;
 		if (itemDefProduct.isAllowAnyProduct())
@@ -81,7 +82,7 @@ public class HUCapacityBL implements IHUCapacityBL
 		final boolean infiniteCapacity = isInfiniteCapacity(itemDefProduct);
 		if (infiniteCapacity)
 		{
-			return HUCapacityDefinition.createInfiniteCapacity(productToUse, uom);
+			return Capacity.createInfiniteCapacity(productToUse, uom);
 		}
 
 		final BigDecimal qty = itemDefProduct.getQty();
@@ -90,11 +91,11 @@ public class HUCapacityBL implements IHUCapacityBL
 
 		final boolean allowNegativeCapacity = false;
 
-		return HUCapacityDefinition.createCapacity(qtyConv, productToUse, uom, allowNegativeCapacity);
+		return Capacity.createCapacity(qtyConv, productToUse, uom, allowNegativeCapacity);
 	}
 
 	@Override
-	public HUCapacityDefinition getCapacity(final I_M_HU_Item huItem, final I_M_Product product, final I_C_UOM uom, final Date date)
+	public CapacityInterface getCapacity(final I_M_HU_Item huItem, final I_M_Product product, final I_C_UOM uom, final Date date)
 	{
 		Check.assumeNotNull(huItem, "huItem not null");
 
@@ -102,7 +103,7 @@ public class HUCapacityBL implements IHUCapacityBL
 		if (itemDefProduct == null)
 		{
 			final boolean allowNegativeCapacity = false;
-			return HUCapacityDefinition.createZeroCapacity(product, uom, allowNegativeCapacity);
+			return Capacity.createZeroCapacity(product, uom, allowNegativeCapacity);
 		}
 
 		return getCapacity(itemDefProduct, product, uom);

@@ -48,7 +48,7 @@ import de.metas.picking.terminal.form.swing.AbstractPackageDataPanel;
 import de.metas.picking.terminal.form.swing.AbstractPackageTerminal;
 import de.metas.picking.terminal.form.swing.AbstractPackageTerminalPanel;
 import de.metas.picking.terminal.form.swing.SwingPackageBoxesItems;
-import de.metas.quantity.HUCapacityDefinition;
+import de.metas.quantity.CapacityInterface;
 
 /**
  * Packing window main panel (second window)
@@ -289,7 +289,7 @@ public class FreshSwingPackageTerminalPanel extends AbstractPackageTerminalPanel
 		//
 		// Case: our picking slot has a finite capacity defined
 		// => use the capacity
-		final HUCapacityDefinition pickingSlotCapacity = pickingSlotKey.getHUTotalCapacity(productKey.getM_Product(), productKey.getQtyUnallocatedUOM());
+		final CapacityInterface pickingSlotCapacity = pickingSlotKey.getHUTotalCapacity(productKey.getM_Product(), productKey.getQtyUnallocatedUOM());
 		if (pickingSlotCapacity != null
 				&& !pickingSlotCapacity.isInfiniteCapacity())
 		{

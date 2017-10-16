@@ -36,7 +36,8 @@ import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorage;
-import de.metas.quantity.HUCapacityDefinition;
+import de.metas.quantity.Capacity;
+import de.metas.quantity.CapacityInterface;
 import de.metas.quantity.Quantity;
 
 /**
@@ -50,7 +51,7 @@ import de.metas.quantity.Quantity;
 	private final IHUStorage huStorage;
 	private final I_M_Product product;
 	private final I_C_UOM uom;
-	private final HUCapacityDefinition capacityTotal;
+	private final CapacityInterface capacityTotal;
 
 	public HUProductStorage(final IHUStorage huStorage,
 			final I_M_Product product,
@@ -69,7 +70,7 @@ import de.metas.quantity.Quantity;
 
 		// NOTE: we are creating infinite capacity because we cannot determine the capacity at HU Storage Level
 		// Capacity is defined only on HU_Item_Storage level.
-		capacityTotal = HUCapacityDefinition.createInfiniteCapacity(product, uom);
+		capacityTotal = Capacity.createInfiniteCapacity(product, uom);
 	}
 
 	@Override
@@ -99,7 +100,7 @@ import de.metas.quantity.Quantity;
 	@Override
 	public BigDecimal getQtyFree()
 	{
-		final HUCapacityDefinition capacityAvailable = capacityTotal.getAvailableCapacity(getQty(), getC_UOM());
+		final CapacityInterface capacityAvailable = capacityTotal.subtractQuantity(Quantity.of(getQty(), getC_UOM()));
 		if (capacityAvailable.isInfiniteCapacity())
 		{
 			return Quantity.QTY_INFINITE;
