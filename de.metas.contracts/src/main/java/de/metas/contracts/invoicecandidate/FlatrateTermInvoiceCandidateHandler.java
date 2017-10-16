@@ -188,6 +188,7 @@ public class FlatrateTermInvoiceCandidateHandler extends AbstractInvoiceCandidat
 		final I_C_Activity activity = Services.get(IProductAcctDAO.class).retrieveActivityForAcct(contextProvider, term.getAD_Org(), term.getM_Product());
 
 		ic.setC_Activity(activity);
+		ic.setIsTaxIncluded(term.isTaxIncluded()); 
 
 		final int taxCategoryId = term.getC_TaxCategory_ID();
 		final I_M_Warehouse warehouse = null;
