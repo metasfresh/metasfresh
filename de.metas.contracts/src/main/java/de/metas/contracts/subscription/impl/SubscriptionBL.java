@@ -135,11 +135,11 @@ public class SubscriptionBL implements ISubscriptionBL
 		newTerm.setBill_BPartner_ID(order.getBill_BPartner_ID());
 		newTerm.setBill_Location_ID(order.getBill_Location_ID());
 		newTerm.setBill_User_ID(order.getBill_User_ID());
-		
+
 		newTerm.setDropShip_BPartner_ID(ol.getC_BPartner_ID());
 		newTerm.setDropShip_Location_ID(ol.getC_BPartner_Location_ID());
 		newTerm.setDropShip_User_ID(ol.getAD_User_ID());
-
+		
 		final String wcData = I_C_Flatrate_Data.COLUMNNAME_C_BPartner_ID + "=?";
 		I_C_Flatrate_Data existingData = new Query(ctx, I_C_Flatrate_Data.Table_Name, wcData, trxName)
 				.setParameters(order.getBill_BPartner_ID())
@@ -183,18 +183,21 @@ public class SubscriptionBL implements ISubscriptionBL
 	
 	private void setPricingSystemTaxCategAndIsTaxIncluded(@NonNull final I_C_OrderLine ol, @NonNull final I_C_Flatrate_Term newTerm)
 	{
+		final PricingSystemTaxCategoryAndIsTaxIncluded computed = computePricingSystemTaxCategAndIsTaxIncluded(ol, newTerm);
 		newTerm.setM_PricingSystem_ID(computed.getPricingSystemId());
 		newTerm.setC_TaxCategory_ID(computed.getTaxCategoryId());
 		newTerm.setIsTaxIncluded(computed.isTaxIncluded());
 	}	
 	
 	@lombok.Value
+	private static class PricingSystemTaxCategoryAndIsTaxIncluded
 	{
 		int pricingSystemId;
 		int taxCategoryId;
 		boolean isTaxIncluded;
 	}
 	
+	private PricingSystemTaxCategoryAndIsTaxIncluded computePricingSystemTaxCategAndIsTaxIncluded(@NonNull final I_C_OrderLine ol, @NonNull final I_C_Flatrate_Term newTerm)
 	{
 		final I_C_Order order = InterfaceWrapperHelper.create(ol.getC_Order(), I_C_Order.class);
 
@@ -224,6 +227,7 @@ public class SubscriptionBL implements ISubscriptionBL
 			isTaxIncluded = order.isTaxIncluded();
 		}
 		
+		return new PricingSystemTaxCategoryAndIsTaxIncluded(pricingSystemId, taxCategoryId, isTaxIncluded);
 	}
 	
 
