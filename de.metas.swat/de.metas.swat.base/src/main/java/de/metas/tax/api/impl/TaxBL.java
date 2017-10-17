@@ -49,6 +49,7 @@ import org.compiere.model.I_C_Location;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.MBPartnerLocation;
+import org.compiere.model.X_C_Tax;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
@@ -228,11 +229,11 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 
 		if (isSOTrx)
 		{
-			queryBuilder.addInArrayFilter(I_C_Tax.COLUMNNAME_SOPOType, 'B', 'S');
+			queryBuilder.addInArrayFilter(I_C_Tax.COLUMNNAME_SOPOType, X_C_Tax.SOPOTYPE_Both, X_C_Tax.SOPOTYPE_SalesTax);
 		}
 		else
 		{
-			queryBuilder.addInArrayFilter(I_C_Tax.COLUMNNAME_SOPOType, 'B', 'P');
+			queryBuilder.addInArrayFilter(I_C_Tax.COLUMNNAME_SOPOType, X_C_Tax.SOPOTYPE_Both , X_C_Tax.SOPOTYPE_PurchaseTax);
 		}
 
 		if (orgId > 0)
