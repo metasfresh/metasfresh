@@ -33,84 +33,91 @@ class NavigationTree extends Component {
 
     componentDidMount = () => {
         this.getData();
+
         document.getElementById('search-input').focus();
     }
 
-    getData = (callback, doNotResetState) => {
-        const {query} = this.state;
+    getData = async (doNotResetState) => {
+        const { query } = this.state;
 
-        if(doNotResetState && query){
-            this.queryRequest(query);
+        if (doNotResetState && query) {
+            await this.queryRequest(query);
         } else {
-            rootRequest().then(response => {
-                this.setState(Object.assign({}, this.state, {
+            try {
+                const response = await rootRequest();
+
+                await new Promise(resolve => this.setState({
+                    ...this.state,
                     rootResults: response.data,
                     queriedResults: response.data.children,
                     query: ''
-                }), () => {
-                    callback();
-                })
-            }).catch((err) => {
-                if(err.response && err.response.status === 404) {
-                    this.setState(Object.assign({}, this.state, {
+                }, resolve));
+            } catch (error) {
+                if (error.response && error.response.status === 404) {
+                    await new Promise(resolve => this.setState({
+                        ...this.state,
                         queriedResults: [],
                         rootResults: {},
                         query: ''
-                    }), () => {
-                        callback();
-                    })
+                    }, resolve));
                 }
-            });
+            }
         }
     }
 
-
-    updateData = () => {
-        this.getData(false, true);
+    updateData = async () => {
+        await this.getData(true);
     }
 
     openModal = (windowType, type, caption, isAdvanced) => {
-        const {dispatch} = this.props;
+        const { dispatch } = this.props;
+
         dispatch(openModal(caption, windowType, type, null, null, isAdvanced));
     }
 
-    handleQuery = (e) => {
-        e.preventDefault();
-        if(e.target.value){
-            this.setState({
-                query: e.target.value
-            });
+    handleQuery = async (event) => {
+        event.preventDefault();
 
-            this.queryRequest(e.target.value);
+        if (event.target.value) {
+            await new Promise(resolve => this.setState({
+                query: event.target.value
+            }, resolve));
 
-        }else{
-            this.getData(this.clearValue);
+            await this.queryRequest(event.target.value);
+        } else {
+            await this.getData();
+
+            this.clearValue();
         }
     }
 
-    queryRequest = (value) => {
-        queryPathsRequest(value, '', true)
-            .then(response => {
-                this.setState({
-                    queriedResults: response.data.children
-                })
-            }).catch((err) => {
-                if(err.response && err.response.status === 404) {
-                    this.setState({
-                        queriedResults: [],
-                        rootResults: {}
-                    })
-                }
-            });
+    queryRequest = async (value) => {
+        try {
+            const response = await queryPathsRequest(value, '', true);
+
+            await new Promise(resolve => this.setState({
+                queriedResults: response.data.children
+            }, resolve));
+        } catch (error) {
+            if (error.response && error.response.status === 404) {
+                await new Promise(resolve => this.setState({
+                    queriedResults: [],
+                    rootResults: {}
+                }, resolve));
+            }
+        }
     }
 
     clearValue = () => {
-        document.getElementById('search-input').value=''
+        document.getElementById('search-input').value = '';
     }
 
-    handleClear = (e) => {
-        e.preventDefault();
-        this.getData(this.clearValue);
+    handleClear = async (event) => {
+        event.preventDefault();
+
+        await this.getData();
+
+        this.clearValue();
     }
 
     handleKeyDown = (e) => {
