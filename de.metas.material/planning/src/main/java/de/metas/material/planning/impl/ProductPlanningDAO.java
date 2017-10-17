@@ -1,5 +1,7 @@
 package de.metas.material.planning.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+
 /*
  * #%L
  * de.metas.adempiere.libero.libero
@@ -39,6 +41,8 @@ import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_S_Resource;
 import org.eevolution.model.I_PP_Product_Planning;
+
+import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.material.planning.IProductPlanningDAO;
@@ -128,37 +132,33 @@ public class ProductPlanningDAO implements IProductPlanningDAO
 
 		//
 		// Try searching for a product planning file and get the warehouse from there
-		final int warehouseId = warehouse == null ? -1 : warehouse.getM_Warehouse_ID();
-		final List<I_PP_Product_Planning> productPlannings = createQueryBuilder(ctx, adOrgId, warehouseId, ANY_S_Resource_ID, productId, ITrx.TRXNAME_None)
-				.create()
-				.list();
-
-		final int foundPlantId = -1;
-		I_S_Resource foundPlant = null;
-		for (final I_PP_Product_Planning pp : productPlannings)
 		{
-			final int plantId = pp.getS_Resource_ID();
-			if (plantId <= 0)
+			final int warehouseId = warehouse == null ? -1 : warehouse.getM_Warehouse_ID();
+			final List<Integer> plantIds = createQueryBuilder(ctx, adOrgId, warehouseId, ANY_S_Resource_ID, productId, ITrx.TRXNAME_None)
+					.create()
+					.stream(I_PP_Product_Planning.class)
+					.map(I_PP_Product_Planning::getS_Resource_ID) // get plant
+					.filter(plantId -> plantId > 0)
+					.distinct()
+					.collect(ImmutableList.toImmutableList());
+			if (plantIds.isEmpty())
 			{
-				continue;
+				throw new NoPlantForWarehouseException(adOrgId, warehouseId, productId);
 			}
-
+			else if (plantIds.size() > 1)
+			{
+				// we found more then one Plant => consider it as no plant was found
+				throw new NoPlantForWarehouseException(adOrgId, warehouseId, productId);
+			}
 			//
-			// We found more then one Plant => consider it as no plant was found
-			if (foundPlantId > 0 && foundPlantId != plantId)
+			final I_S_Resource foundPlant = load(plantIds.get(0), I_S_Resource.class);
+			if (foundPlant == null)
 			{
 				throw new NoPlantForWarehouseException(adOrgId, warehouseId, productId);
 			}
 
-			foundPlant = pp.getS_Resource();
+			return foundPlant;
 		}
-
-		if (foundPlant == null)
-		{
-			throw new NoPlantForWarehouseException(adOrgId, warehouseId, productId);
-		}
-
-		return foundPlant;
 	}
 
 	@Override
