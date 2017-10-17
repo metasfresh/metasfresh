@@ -37,7 +37,7 @@ class NavigationTree extends Component {
         document.getElementById('search-input').focus();
     }
 
-    getData = async (callback, doNotResetState) => {
+    getData = async (doNotResetState) => {
         const { query } = this.state;
 
         if (doNotResetState && query) {
@@ -52,8 +52,6 @@ class NavigationTree extends Component {
                     queriedResults: response.data.children,
                     query: ''
                 }, resolve));
-
-                callback();
             } catch (error) {
                 if (error.response && error.response.status === 404) {
                     await new Promise(resolve => this.setState({
@@ -62,15 +60,13 @@ class NavigationTree extends Component {
                         rootResults: {},
                         query: ''
                     }, resolve));
-
-                    callback();
                 }
             }
         }
     }
 
     updateData = async () => {
-        await this.getData(false, true);
+        await this.getData(true);
     }
 
     openModal = (windowType, type, caption, isAdvanced) => {
@@ -89,7 +85,9 @@ class NavigationTree extends Component {
 
             await this.queryRequest(event.target.value);
         } else {
-            await this.getData(this.clearValue);
+            await this.getData();
+
+            this.clearValue();
         }
     }
 
@@ -111,13 +109,15 @@ class NavigationTree extends Component {
     }
 
     clearValue = () => {
-        document.getElementById('search-input').value=''
+        document.getElementById('search-input').value = '';
     }
 
     handleClear = async (event) => {
         event.preventDefault();
 
-        await this.getData(this.clearValue);
+        await this.getData();
+
+        this.clearValue();
     }
 
     handleKeyDown = (e) => {
