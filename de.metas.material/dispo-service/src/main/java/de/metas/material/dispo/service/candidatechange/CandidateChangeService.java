@@ -1,16 +1,18 @@
 package de.metas.material.dispo.service.candidatechange;
 
-import org.adempiere.util.Check;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import de.metas.material.dispo.Candidate;
+import de.metas.material.dispo.Candidate.Type;
 import de.metas.material.dispo.CandidateRepository;
-import de.metas.material.dispo.service.candidatechange.handler.DemandCandiateCangeHandler;
-import de.metas.material.dispo.service.candidatechange.handler.StockUpCandiateCangeHandler;
-import de.metas.material.dispo.service.candidatechange.handler.SupplyCandiateCangeHandler;
-import de.metas.material.event.MaterialEventService;
+import de.metas.material.dispo.service.candidatechange.handler.CandidateChangeHandler;
 import lombok.NonNull;
 
 /*
@@ -38,37 +40,19 @@ import lombok.NonNull;
 @Lazy // .. because MaterialEventService needs to be lazy
 public class CandidateChangeService
 {
-	private final DemandCandiateCangeHandler demandCandiateCangeHandler;
-	
-	private final StockUpCandiateCangeHandler stockUpCandiateCangeHandler;
-	
-	private final SupplyCandiateCangeHandler supplyCandiateCangeHandler;
-	
+
 	private final CandidateRepository candidateRepository;
-	
+
+	private final Map<Type, CandidateChangeHandler> type2handler;
+
 	public CandidateChangeService(
 			@NonNull final CandidateRepository candidateRepository,
-			@NonNull final StockCandidateService stockCandidateService,
-			@NonNull final MaterialEventService materialEventService)
+			@NonNull final Collection<CandidateChangeHandler> candidateChangeHandlers)
 	{
 		this.candidateRepository = candidateRepository;
-		
-		this.demandCandiateCangeHandler = DemandCandiateCangeHandler.builder()
-				.candidateRepository(candidateRepository)
-				.materialEventService(materialEventService)
-				.stockCandidateService(stockCandidateService)
-				.build();
-		
-		this.supplyCandiateCangeHandler = SupplyCandiateCangeHandler.builder()
-				.candidateRepository(candidateRepository)
-				.materialEventService(materialEventService)
-				.stockCandidateService(stockCandidateService)
-				.build();
-		
-		this.stockUpCandiateCangeHandler = StockUpCandiateCangeHandler.builder()
-				.candidateRepository(candidateRepository)
-				.materialEventService(materialEventService)
-				.build();
+
+		type2handler = new HashMap<>();
+		candidateChangeHandlers.forEach(handler -> type2handler.put(handler.getHandeledType(), handler));
 	}
 
 	/**
@@ -79,23 +63,19 @@ public class CandidateChangeService
 	 */
 	public Candidate onCandidateNewOrChange(@NonNull final Candidate candidate)
 	{
-		switch (candidate.getType())
+
+		final CandidateChangeHandler candidateChangeHandler = type2handler.get(candidate.getType());
+		if (candidateChangeHandler == null)
 		{
-			case DEMAND:
-				return demandCandiateCangeHandler.onDemandCandidateNewOrChange(candidate);
-				
-			case SUPPLY:
-				return supplyCandiateCangeHandler.onSupplyCandidateNewOrChange(candidate);
 
-			case STOCK_UP:
-				return stockUpCandiateCangeHandler.onStockUpCandidateNewOrChange(candidate);
-
-			default:
-				Check.errorIf(true, "Param 'candidate' has unexpected type={}; candidate={}", candidate.getType(), candidate);
-				return null;
+			throw new AdempiereException("Given 'candidate' parameter has an unsupported type").appendParametersToMessage()
+					.setParameter("type", candidate.getType())
+					.setParameter("candidate", candidate);
 		}
+
+		return candidateChangeHandler.onCandidateNewOrChange(candidate);
 	}
-	
+
 	public void onCandidateDelete(@NonNull final TableRecordReference recordReference)
 	{
 		candidateRepository.deleteForReference(recordReference);

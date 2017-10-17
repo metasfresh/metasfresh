@@ -3,6 +3,8 @@ package de.metas.material.dispo.service.candidatechange.handler;
 import java.math.BigDecimal;
 import java.util.Optional;
 
+import org.springframework.stereotype.Service;
+
 import com.google.common.base.Preconditions;
 
 import de.metas.material.dispo.Candidate;
@@ -11,7 +13,6 @@ import de.metas.material.dispo.CandidateRepository;
 import de.metas.material.dispo.CandidatesSegment.DateOperator;
 import de.metas.material.event.MaterialDemandEvent;
 import de.metas.material.event.MaterialEventService;
-import lombok.Builder;
 import lombok.NonNull;
 
 /*
@@ -27,27 +28,47 @@ import lombok.NonNull;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-@Builder
-public class StockUpCandiateCangeHandler
+/**
+ * This handler might create a {@link MaterialDemandEvent}, but does not decrease the protected stock quantity.
+ * 
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
+@Service
+public class StockUpCandiateChangeHandler implements CandidateChangeHandler
 {
 	@NonNull
 	private final CandidateRepository candidateRepository;
-	
+
 	@NonNull
 	private final MaterialEventService materialEventService;
-	
-	public Candidate onStockUpCandidateNewOrChange(@NonNull final Candidate candidate)
+
+	public StockUpCandiateChangeHandler(CandidateRepository candidateRepository, MaterialEventService materialEventService)
 	{
-		Preconditions.checkArgument(candidate.getType() == Type.STOCK_UP, "Given parameter 'candidate' has type=%s; demandCandidate=%s", candidate.getType(), candidate);
+		this.candidateRepository = candidateRepository;
+		this.materialEventService = materialEventService;
+	}
+
+	@Override
+	public Type getHandeledType()
+	{
+		return Type.STOCK_UP;
+	}
+	
+	public Candidate onCandidateNewOrChange(@NonNull final Candidate candidate)
+	{
+		Preconditions.checkArgument(candidate.getType() == Type.STOCK_UP,
+				"Given parameter 'candidate' has type=%s; demandCandidate=%s",
+				candidate.getType(), candidate);
 
 		final Candidate candidateWithQtyDeltaAndId = candidateRepository.addOrUpdateOverwriteStoredSeqNo(candidate);
 

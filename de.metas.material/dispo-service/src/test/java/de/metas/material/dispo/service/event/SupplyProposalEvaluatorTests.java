@@ -18,12 +18,16 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestWatcher;
 
+import com.google.common.collect.ImmutableList;
+
 import de.metas.material.dispo.Candidate;
 import de.metas.material.dispo.Candidate.Type;
 import de.metas.material.dispo.CandidateRepository;
 import de.metas.material.dispo.CandidateService;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
+import de.metas.material.dispo.service.candidatechange.handler.DemandCandiateChangeHandler;
+import de.metas.material.dispo.service.candidatechange.handler.SupplyCandiateChangeHandler;
 import de.metas.material.dispo.service.event.SupplyProposalEvaluator.SupplyProposal;
 import de.metas.material.dispo.service.event.handler.DistributionPlanEventHandler;
 import de.metas.material.dispo.service.event.handler.DistributionPlanEventHandlerTests;
@@ -58,9 +62,9 @@ public class SupplyProposalEvaluatorTests
 	/** Watches the current tests and dumps the database to console in case of failure */
 	@Rule
 	public final TestWatcher testWatcher = new AdempiereTestWatcher();
-	
+
 	private final Date t1 = SystemTime.asDate();
-	
+
 	private final Date t0 = TimeUtil.addMinutes(t1, -10);
 
 	private final Date t2 = TimeUtil.addMinutes(t1, 10);
@@ -99,7 +103,11 @@ public class SupplyProposalEvaluatorTests
 		candidateRepository = new CandidateRepository();
 		supplyProposalEvaluator = new SupplyProposalEvaluator(candidateRepository);
 
-		final CandidateChangeService candidateChangeHandler = new CandidateChangeService(candidateRepository, new StockCandidateService(candidateRepository), materialEventService);
+		final StockCandidateService stockCandidateService = new StockCandidateService(candidateRepository);
+
+		final CandidateChangeService candidateChangeHandler = new CandidateChangeService(candidateRepository, ImmutableList.of(
+				new SupplyCandiateChangeHandler(candidateRepository, materialEventService, stockCandidateService),
+				new DemandCandiateChangeHandler(candidateRepository, materialEventService, stockCandidateService)));
 
 		distributionPlanEventHandler = new DistributionPlanEventHandler(
 				candidateRepository,
@@ -207,7 +215,7 @@ public class SupplyProposalEvaluatorTests
 				.warehouseId(DEMAND_WAREHOUSE_ID)
 				.quantity(BigDecimal.TEN)
 				.build();
-		
+
 		final Candidate demandCandidate = Candidate.builder()
 				.clientId(org.getAD_Client_ID())
 				.orgId(org.getAD_Org_ID())

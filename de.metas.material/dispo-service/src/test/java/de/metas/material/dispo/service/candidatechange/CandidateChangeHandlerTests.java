@@ -31,6 +31,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestWatcher;
 
+import com.google.common.collect.ImmutableList;
+
 import de.metas.material.dispo.Candidate;
 import de.metas.material.dispo.Candidate.Type;
 import de.metas.material.dispo.CandidateRepository;
@@ -38,6 +40,8 @@ import de.metas.material.dispo.CandidatesSegment;
 import de.metas.material.dispo.CandidatesSegment.DateOperator;
 import de.metas.material.dispo.DispoTestUtils;
 import de.metas.material.dispo.model.I_MD_Candidate;
+import de.metas.material.dispo.service.candidatechange.handler.DemandCandiateChangeHandler;
+import de.metas.material.dispo.service.candidatechange.handler.SupplyCandiateChangeHandler;
 import de.metas.material.event.MaterialDescriptor;
 import de.metas.material.event.MaterialEventService;
 import lombok.NonNull;
@@ -119,8 +123,9 @@ public class CandidateChangeHandlerTests
 
 		candidateChangeHandler = new CandidateChangeService(
 				candidateRepository,
-				stockCandidateService,
-				materialEventService);
+				ImmutableList.of(
+						new DemandCandiateChangeHandler(candidateRepository, materialEventService, stockCandidateService),
+						new SupplyCandiateChangeHandler(candidateRepository, materialEventService, stockCandidateService)));
 	}
 
 	/**
@@ -586,7 +591,7 @@ public class CandidateChangeHandlerTests
 				.quantity(qty)
 				.date(t)
 				.build();
-		
+
 		final Candidate candidatee = Candidate.builder()
 				.type(Type.DEMAND)
 				.clientId(org.getAD_Client_ID())
@@ -629,7 +634,7 @@ public class CandidateChangeHandlerTests
 				.quantity(qty)
 				.date(t)
 				.build();
-		
+
 		final Candidate candidatee = Candidate.builder()
 				.type(Type.DEMAND)
 				.clientId(org.getAD_Client_ID())

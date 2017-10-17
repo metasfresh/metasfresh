@@ -20,7 +20,6 @@ import org.junit.Test;
 
 import de.metas.material.dispo.Candidate;
 import de.metas.material.dispo.Candidate.Type;
-import de.metas.material.dispo.service.candidatechange.StockCandidateService;
 import de.metas.material.dispo.CandidateRepository;
 import de.metas.material.event.MaterialDescriptor;
 

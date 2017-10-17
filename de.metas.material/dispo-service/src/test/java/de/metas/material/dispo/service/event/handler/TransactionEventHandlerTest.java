@@ -10,15 +10,20 @@ import org.compiere.util.TimeUtil;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.google.common.collect.ImmutableList;
+
 import de.metas.material.dispo.CandidateRepository;
 import de.metas.material.dispo.DispoTestUtils;
 import de.metas.material.dispo.model.I_MD_Candidate;
+import de.metas.material.dispo.model.X_MD_Candidate;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
+import de.metas.material.dispo.service.candidatechange.handler.DemandCandiateChangeHandler;
 import de.metas.material.event.EventDescr;
 import de.metas.material.event.MaterialDescriptor;
 import de.metas.material.event.MaterialEventService;
 import de.metas.material.event.TransactionEvent;
+import mockit.Mocked;
 
 /*
  * #%L
@@ -46,20 +51,24 @@ public class TransactionEventHandlerTest
 {
 	private TransactionEventHandler transactionEventHandler;
 
+	@Mocked
+	private MaterialEventService materialEventService;
+	
 	@Before
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
-		
+
 		final CandidateRepository candidateRepository = new CandidateRepository();
 		final StockCandidateService stockCandidateService = new StockCandidateService(candidateRepository);
 
+		
+		
 		transactionEventHandler = new TransactionEventHandler(
 				stockCandidateService,
-				new CandidateChangeService(
-						candidateRepository,
-						stockCandidateService,
-						MaterialEventService.createLocalServiceThatIsReadyToUse()));
+				new CandidateChangeService(candidateRepository, ImmutableList.of(
+						new DemandCandiateChangeHandler(candidateRepository, materialEventService, new StockCandidateService(candidateRepository))
+						)));
 	}
 
 	@Test
@@ -75,12 +84,18 @@ public class TransactionEventHandlerTest
 						.build())
 				.build();
 		transactionEventHandler.handleTransactionEvent(event);
-		
-		// TODO: verify that we have:
-		// one stock record
-		// one unrelated-trx-record as th stock record's child and +10
-		
+
 		final List<I_MD_Candidate> allRecords = DispoTestUtils.retrieveAllRecords();
 		assertThat(allRecords).hasSize(2);
+
+		final I_MD_Candidate unrelatedTransactionCandidate = allRecords.get(0);
+		assertThat(unrelatedTransactionCandidate.getMD_Candidate_Type()).isEqualTo(X_MD_Candidate.MD_CANDIDATE_TYPE_UNRELATED_TRANSACTION);
+		assertThat(unrelatedTransactionCandidate.getQty()).isEqualByComparingTo("10");
+
+		final I_MD_Candidate stockCandidate = allRecords.get(1);
+		assertThat(stockCandidate.getMD_Candidate_Type()).isEqualTo(X_MD_Candidate.MD_CANDIDATE_TYPE_STOCK);
+		assertThat(stockCandidate.getQty()).isEqualByComparingTo("10");
+		assertThat(unrelatedTransactionCandidate.getMD_Candidate_Parent_ID()).isEqualTo(stockCandidate.getMD_Candidate_ID());
+
 	}
 }

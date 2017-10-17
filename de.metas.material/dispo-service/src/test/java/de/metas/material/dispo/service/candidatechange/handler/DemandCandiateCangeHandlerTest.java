@@ -67,14 +67,10 @@ public class DemandCandiateCangeHandlerTest
 
 	private I_M_Warehouse warehouse;
 
-
-
-
 	@Mocked
 	private MaterialEventService materialEventService;
 
-	private DemandCandiateCangeHandler demandCandiateCangeHandler;
-
+	private DemandCandiateChangeHandler demandCandiateCangeHandler;
 
 	@Before
 	public void init()
@@ -94,13 +90,9 @@ public class DemandCandiateCangeHandlerTest
 
 		final StockCandidateService stockCandidateService = new StockCandidateService(candidateRepository);
 
-		demandCandiateCangeHandler = DemandCandiateCangeHandler.builder()
-				.candidateRepository(candidateRepository)
-				.materialEventService(materialEventService)
-				.stockCandidateService(stockCandidateService)
-				.build();
+		demandCandiateCangeHandler = new DemandCandiateChangeHandler(candidateRepository, materialEventService, stockCandidateService);
 	}
-	
+
 	@Test
 	public void testOnDemandCandidateCandidateNewOrChange_noOlderRecords()
 	{
@@ -113,14 +105,14 @@ public class DemandCandiateCangeHandlerTest
 				.quantity(qty)
 				.date(t)
 				.build();
-		
+
 		final Candidate candidate = Candidate.builder()
 				.type(Type.DEMAND)
 				.clientId(org.getAD_Client_ID())
 				.orgId(org.getAD_Org_ID())
 				.materialDescr(materialDescr)
 				.build();
-		demandCandiateCangeHandler.onDemandCandidateNewOrChange(candidate);
+		demandCandiateCangeHandler.onCandidateNewOrChange(candidate);
 
 		final List<I_MD_Candidate> records = DispoTestUtils.retrieveAllRecords();
 		assertThat(records.size(), is(2));

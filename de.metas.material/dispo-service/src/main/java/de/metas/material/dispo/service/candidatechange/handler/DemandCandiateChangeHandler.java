@@ -3,15 +3,16 @@ package de.metas.material.dispo.service.candidatechange.handler;
 import java.math.BigDecimal;
 import java.util.Optional;
 
+import org.springframework.stereotype.Service;
+
 import com.google.common.base.Preconditions;
 
 import de.metas.material.dispo.Candidate;
 import de.metas.material.dispo.Candidate.Type;
-import de.metas.material.dispo.service.candidatechange.StockCandidateService;
 import de.metas.material.dispo.CandidateRepository;
+import de.metas.material.dispo.service.candidatechange.StockCandidateService;
 import de.metas.material.event.MaterialDemandEvent;
 import de.metas.material.event.MaterialEventService;
-import lombok.Builder;
 import lombok.NonNull;
 
 /*
@@ -36,8 +37,8 @@ import lombok.NonNull;
  * #L%
  */
 
-@Builder
-public class DemandCandiateCangeHandler
+@Service
+public class DemandCandiateChangeHandler implements CandidateChangeHandler
 {
 	@NonNull
 	private final CandidateRepository candidateRepository;
@@ -49,13 +50,26 @@ public class DemandCandiateCangeHandler
 	private final StockCandidateService stockCandidateService;
 
 	
+	public DemandCandiateChangeHandler(CandidateRepository candidateRepository, MaterialEventService materialEventService, StockCandidateService stockCandidateService)
+	{
+		this.candidateRepository = candidateRepository;
+		this.materialEventService = materialEventService;
+		this.stockCandidateService = stockCandidateService;
+	}
+
+	@Override
+	public Type getHandeledType()
+	{
+		return Type.DEMAND;
+	}
+
 	/**
 	 * Persists (updates or creates) the given demand candidate and also it's <b>child</b> stock candidate.
 	 * 
 	 * @param demandCandidate
 	 * @return
 	 */
-	public Candidate onDemandCandidateNewOrChange(@NonNull final Candidate demandCandidate)
+	public Candidate onCandidateNewOrChange(@NonNull final Candidate demandCandidate)
 	{
 		Preconditions.checkArgument(demandCandidate.getType() == Type.DEMAND, "Given parameter 'demandCandidate' has type=%s; demandCandidate=%s", demandCandidate.getType(), demandCandidate);
 

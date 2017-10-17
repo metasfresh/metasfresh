@@ -1,13 +1,14 @@
 package de.metas.material.dispo.service.candidatechange.handler;
 
+import org.springframework.stereotype.Service;
+
 import com.google.common.base.Preconditions;
 
 import de.metas.material.dispo.Candidate;
 import de.metas.material.dispo.Candidate.Type;
-import de.metas.material.dispo.service.candidatechange.StockCandidateService;
 import de.metas.material.dispo.CandidateRepository;
+import de.metas.material.dispo.service.candidatechange.StockCandidateService;
 import de.metas.material.event.MaterialEventService;
-import lombok.Builder;
 import lombok.NonNull;
 
 /*
@@ -23,26 +24,38 @@ import lombok.NonNull;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
-@Builder
-public class SupplyCandiateCangeHandler
+@Service
+public class SupplyCandiateChangeHandler implements CandidateChangeHandler
 {
 	@NonNull
 	private final CandidateRepository candidateRepository;
-	
+
 	@NonNull
 	private final MaterialEventService materialEventService;
-	
+
 	@NonNull
 	private final StockCandidateService stockCandidateService;
+
+	public SupplyCandiateChangeHandler(CandidateRepository candidateRepository, MaterialEventService materialEventService, StockCandidateService stockCandidateService)
+	{
+		this.candidateRepository = candidateRepository;
+		this.materialEventService = materialEventService;
+		this.stockCandidateService = stockCandidateService;
+	}
+
+	@Override
+	public Type getHandeledType()
+	{
+		return Type.SUPPLY;
+	}
 	
 	/**
 	 * Call this one if the system was notified about a new or changed supply candidate.
@@ -53,8 +66,8 @@ public class SupplyCandiateCangeHandler
 	 *
 	 * @param supplyCandidate
 	 */
-	
-	public Candidate onSupplyCandidateNewOrChange(@NonNull final Candidate supplyCandidate)
+
+	public Candidate onCandidateNewOrChange(@NonNull final Candidate supplyCandidate)
 	{
 		Preconditions.checkArgument(supplyCandidate.getType() == Type.SUPPLY, "Given parameter 'supplyCandidate' has type=%s; supplyCandidate=%s", supplyCandidate.getType(), supplyCandidate);
 

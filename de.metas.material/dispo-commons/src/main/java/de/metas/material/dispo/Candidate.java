@@ -45,7 +45,7 @@ public class Candidate
 	 */
 	public enum Type
 	{
-		DEMAND, SUPPLY, STOCK, STOCK_UP
+		DEMAND, SUPPLY, STOCK, STOCK_UP, UNRELATED_TRANSACTION
 	};
 
 	/**

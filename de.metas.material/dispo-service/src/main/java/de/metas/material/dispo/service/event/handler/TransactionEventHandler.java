@@ -47,12 +47,13 @@ public class TransactionEventHandler
 
 	public void handleTransactionEvent(final TransactionEvent event)
 	{
-	
+		// TODO: decide if we can map the given event to an existing candidate, or if it's going to be an "unrelated transaction"
+		
 		final Candidate candidate = Candidate.builderForEventDescr(event.getEventDescr())
 				.materialDescr(event.getMaterialDescr())
-				.type(Type.STOCK)
+				.type(Type.UNRELATED_TRANSACTION)
 				.build();
-		stockCandidateService.addOrUpdateStock(candidate);
+		candidateChangeHandler.onCandidateNewOrChange(candidate);
 	}
 
 }

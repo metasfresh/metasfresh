@@ -31,7 +31,6 @@ import de.metas.material.dispo.CandidateRepository;
 import de.metas.material.dispo.DispoTestUtils;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
-import de.metas.material.dispo.service.candidatechange.handler.SupplyCandiateCangeHandler;
 import de.metas.material.event.MaterialDescriptor;
 import de.metas.material.event.MaterialEventService;
 import mockit.Mocked;
@@ -77,7 +76,7 @@ public class SupplyCandiateCangeHandlerTest
 	@Mocked
 	private MaterialEventService materialEventService;
 
-	private SupplyCandiateCangeHandler supplyCandiateCangeHandler;
+	private SupplyCandiateChangeHandler supplyCandiateCangeHandler;
 
 	private StockCandidateService stockCandidateService;
 
@@ -99,11 +98,7 @@ public class SupplyCandiateCangeHandlerTest
 
 		stockCandidateService = new StockCandidateService(candidateRepository);
 
-		supplyCandiateCangeHandler = SupplyCandiateCangeHandler.builder()
-				.candidateRepository(candidateRepository)
-				.materialEventService(materialEventService)
-				.stockCandidateService(stockCandidateService)
-				.build();
+		supplyCandiateCangeHandler = new SupplyCandiateChangeHandler(candidateRepository,materialEventService,stockCandidateService);
 	}
 
 	@Test
@@ -125,7 +120,7 @@ public class SupplyCandiateCangeHandlerTest
 				.orgId(org.getAD_Org_ID())
 				.materialDescr(materialDescr)
 				.build();
-		supplyCandiateCangeHandler.onSupplyCandidateNewOrChange(candidate);
+		supplyCandiateCangeHandler.onCandidateNewOrChange(candidate);
 
 		final List<I_MD_Candidate> records = DispoTestUtils.retrieveAllRecords();
 		assertThat(records.size(), is(2));
@@ -160,7 +155,7 @@ public class SupplyCandiateCangeHandlerTest
 
 		final Consumer<Candidate> doTest = candidate -> {
 
-			supplyCandiateCangeHandler.onSupplyCandidateNewOrChange(candidate);
+			supplyCandiateCangeHandler.onCandidateNewOrChange(candidate);
 
 			final List<I_MD_Candidate> records = DispoTestUtils.retrieveAllRecords();
 			assertThat(records.size(), is(2));
@@ -200,7 +195,7 @@ public class SupplyCandiateCangeHandlerTest
 
 		final BiConsumer<Candidate, BigDecimal> doTest = (candidate, exptectedQty) -> {
 
-			supplyCandiateCangeHandler.onSupplyCandidateNewOrChange(candidate);
+			supplyCandiateCangeHandler.onCandidateNewOrChange(candidate);
 
 			final List<I_MD_Candidate> records = DispoTestUtils.retrieveAllRecords();
 			assertThat(records.size(), is(2));
@@ -257,7 +252,7 @@ public class SupplyCandiateCangeHandlerTest
 				.materialDescr(materialDescr)
 				.subType(SubType.PRODUCTION)
 				.build();
-		supplyCandiateCangeHandler.onSupplyCandidateNewOrChange(candidate);
+		supplyCandiateCangeHandler.onCandidateNewOrChange(candidate);
 
 		final List<I_MD_Candidate> records = DispoTestUtils.retrieveAllRecords();
 		assertThat(records.size(), is(3));
