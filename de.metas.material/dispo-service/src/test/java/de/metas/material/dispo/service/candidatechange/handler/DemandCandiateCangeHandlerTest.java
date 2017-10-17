@@ -70,7 +70,7 @@ public class DemandCandiateCangeHandlerTest
 	@Mocked
 	private MaterialEventService materialEventService;
 
-	private DemandCandiateChangeHandler demandCandiateCangeHandler;
+	private DemandCandiateHandler demandCandiateCangeHandler;
 
 	@Before
 	public void init()
@@ -90,7 +90,7 @@ public class DemandCandiateCangeHandlerTest
 
 		final StockCandidateService stockCandidateService = new StockCandidateService(candidateRepository);
 
-		demandCandiateCangeHandler = new DemandCandiateChangeHandler(candidateRepository, materialEventService, stockCandidateService);
+		demandCandiateCangeHandler = new DemandCandiateHandler(candidateRepository, materialEventService, stockCandidateService);
 	}
 
 	@Test

@@ -38,7 +38,7 @@ import lombok.NonNull;
  */
 
 @Service
-public class DemandCandiateChangeHandler implements CandidateChangeHandler
+public class DemandCandiateHandler implements CandidateHandler
 {
 	@NonNull
 	private final CandidateRepository candidateRepository;
@@ -50,7 +50,7 @@ public class DemandCandiateChangeHandler implements CandidateChangeHandler
 	private final StockCandidateService stockCandidateService;
 
 	
-	public DemandCandiateChangeHandler(
+	public DemandCandiateHandler(
 			@NonNull final CandidateRepository candidateRepository, 
 			@NonNull final MaterialEventService materialEventService, 
 			@NonNull final StockCandidateService stockCandidateService)

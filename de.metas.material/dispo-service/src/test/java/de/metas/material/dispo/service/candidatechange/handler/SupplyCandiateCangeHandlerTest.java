@@ -76,7 +76,7 @@ public class SupplyCandiateCangeHandlerTest
 	@Mocked
 	private MaterialEventService materialEventService;
 
-	private SupplyCandiateChangeHandler supplyCandiateCangeHandler;
+	private SupplyCandiateHandler supplyCandiateCangeHandler;
 
 	private StockCandidateService stockCandidateService;
 
@@ -98,7 +98,7 @@ public class SupplyCandiateCangeHandlerTest
 
 		stockCandidateService = new StockCandidateService(candidateRepository);
 
-		supplyCandiateCangeHandler = new SupplyCandiateChangeHandler(candidateRepository,materialEventService,stockCandidateService);
+		supplyCandiateCangeHandler = new SupplyCandiateHandler(candidateRepository,materialEventService,stockCandidateService);
 	}
 
 	@Test

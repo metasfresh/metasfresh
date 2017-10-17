@@ -26,7 +26,7 @@ import de.metas.material.dispo.DispoTestUtils;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
-import de.metas.material.dispo.service.candidatechange.handler.DemandCandiateChangeHandler;
+import de.metas.material.dispo.service.candidatechange.handler.DemandCandiateHandler;
 import de.metas.material.event.EventDescr;
 import de.metas.material.event.MaterialDescriptor;
 import de.metas.material.event.MaterialEventService;
@@ -92,7 +92,7 @@ public class ShipmentScheduleEventHandlerTests
 		final CandidateRepository candidateRepository = new CandidateRepository();
 
 		final CandidateChangeService candidateChangeHandler = new CandidateChangeService(ImmutableList.of(
-				new DemandCandiateChangeHandler(candidateRepository, materialEventService, new StockCandidateService(candidateRepository))
+				new DemandCandiateHandler(candidateRepository, materialEventService, new StockCandidateService(candidateRepository))
 				));
 
 		shipmentScheduleEventHandler = new ShipmentScheduleEventHandler(candidateChangeHandler);

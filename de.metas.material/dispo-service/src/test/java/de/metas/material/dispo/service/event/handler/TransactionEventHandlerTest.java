@@ -5,7 +5,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.math.BigDecimal;
 
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.util.lang.Mutable;
 import org.compiere.util.TimeUtil;
 import org.junit.Before;
 import org.junit.Test;
@@ -17,10 +16,13 @@ import de.metas.material.dispo.Candidate.Type;
 import de.metas.material.dispo.CandidateRepository;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
-import de.metas.material.dispo.service.candidatechange.handler.UnrelatedTransactionCandidateChangeHandler;
+import de.metas.material.dispo.service.candidatechange.handler.DemandCandiateHandler;
+import de.metas.material.dispo.service.candidatechange.handler.UnrelatedTransactionCandidateHandler;
 import de.metas.material.event.EventDescr;
 import de.metas.material.event.MaterialDescriptor;
+import de.metas.material.event.MaterialEventService;
 import de.metas.material.event.TransactionEvent;
+import de.metas.material.event.TransactionEvent.TransactionEventBuilder;
 
 /*
  * #%L
@@ -48,18 +50,37 @@ public class TransactionEventHandlerTest
 {
 	private TransactionEventHandler transactionEventHandler;
 
-	private Mutable<Candidate> handlerMethodParameter;
+	private MockedUnrelatedTransactionCandidateHandler mockedUnrelatedTransactionCandidateHandler;
 
-	private UnrelatedTransactionCandidateChangeHandler unrelatedTransactionChangeHandler = new UnrelatedTransactionCandidateChangeHandler()
+	private static final class MockedUnrelatedTransactionCandidateHandler extends UnrelatedTransactionCandidateHandler
 	{
+		private Candidate candidateParameter;
+
 		@Override
 		public Candidate onCandidateNewOrChange(Candidate candidate)
 		{
-			handlerMethodParameter.setValue(candidate);
+			candidateParameter = candidate;
 			return candidate;
 		}
-	};
+	}
 
+	private static final class MockedDemandCandidateHandler extends DemandCandiateHandler
+	{
+		public MockedDemandCandidateHandler(CandidateRepository candidateRepository, MaterialEventService materialEventService, StockCandidateService stockCandidateService)
+		{
+			super(candidateRepository, materialEventService, stockCandidateService);
+		}
+
+		private Candidate candidateParameter;
+
+		@Override
+		public Candidate onCandidateNewOrChange(Candidate candidate)
+		{
+			candidateParameter = candidate;
+			return candidate;
+		}
+	}
+	
 	@Before
 	public void init()
 	{
@@ -68,29 +89,21 @@ public class TransactionEventHandlerTest
 		final CandidateRepository candidateRepository = new CandidateRepository();
 		final StockCandidateService stockCandidateService = new StockCandidateService(candidateRepository);
 
-		handlerMethodParameter = new Mutable<>();
+		mockedUnrelatedTransactionCandidateHandler = new MockedUnrelatedTransactionCandidateHandler();
 
 		transactionEventHandler = new TransactionEventHandler(
 				stockCandidateService,
-				new CandidateChangeService(ImmutableList.of(unrelatedTransactionChangeHandler)));
+				new CandidateChangeService(ImmutableList.of(mockedUnrelatedTransactionCandidateHandler)));
 	}
 
 	@Test
 	public void unrelatedTransaction()
 	{
-		final TransactionEvent event = TransactionEvent.builder()
-				.eventDescr(new EventDescr(10, 20))
-				.materialDescr(MaterialDescriptor.builder()
-						.date(TimeUtil.parseTimestamp("2017-10-15"))
-						.productId(40)
-						.quantity(BigDecimal.TEN)
-						.warehouseId(50)
-						.build())
-				.build();
+		final TransactionEvent unrelatedEvent = createTransactionEventBuilder().build();
 
-		transactionEventHandler.handleTransactionEvent(event);
+		transactionEventHandler.handleTransactionEvent(unrelatedEvent);
 
-		final Candidate candidateParameter = handlerMethodParameter.getValue();
+		final Candidate candidateParameter = mockedUnrelatedTransactionCandidateHandler.candidateParameter;
 		assertThat(candidateParameter).isNotNull();
 		assertThat(candidateParameter.getType()).isEqualTo(Type.UNRELATED_TRANSACTION);
 		assertThat(candidateParameter.getMaterialDescr()).isNotNull();
@@ -101,5 +114,24 @@ public class TransactionEventHandlerTest
 		assertThat(candidateParameter.getDemandDetail()).isNull();
 		assertThat(candidateParameter.getDistributionDetail()).isNull();
 		assertThat(candidateParameter.getProductionDetail()).isNull();
+	}
+
+	@Test
+	public void relatedTransaction()
+	{
+		createTransactionEventBuilder().shipmentScheduleId(40);
+	}
+
+	private TransactionEventBuilder createTransactionEventBuilder()
+	{
+		return TransactionEvent.builder()
+				.eventDescr(new EventDescr(10, 20))
+				.materialDescr(MaterialDescriptor.builder()
+						.date(TimeUtil.parseTimestamp("2017-10-15"))
+						.productId(40)
+						.quantity(BigDecimal.TEN)
+						.warehouseId(50)
+						.build());
+
 	}
 }

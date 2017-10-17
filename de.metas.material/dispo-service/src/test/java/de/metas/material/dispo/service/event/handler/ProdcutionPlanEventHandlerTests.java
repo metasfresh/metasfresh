@@ -28,8 +28,8 @@ import de.metas.material.dispo.DispoTestUtils;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
-import de.metas.material.dispo.service.candidatechange.handler.DemandCandiateChangeHandler;
-import de.metas.material.dispo.service.candidatechange.handler.SupplyCandiateChangeHandler;
+import de.metas.material.dispo.service.candidatechange.handler.DemandCandiateHandler;
+import de.metas.material.dispo.service.candidatechange.handler.SupplyCandiateHandler;
 import de.metas.material.event.EventDescr;
 import de.metas.material.event.MaterialEventService;
 import de.metas.material.event.pporder.PPOrder;
@@ -99,8 +99,8 @@ public class ProdcutionPlanEventHandlerTests
 		final StockCandidateService stockCandidateService = new StockCandidateService(candidateRepository);
 		
 		final CandidateChangeService candidateChangeHandler = new CandidateChangeService(ImmutableList.of(
-				new SupplyCandiateChangeHandler(candidateRepository, materialEventService, stockCandidateService),
-				new DemandCandiateChangeHandler(candidateRepository, materialEventService, stockCandidateService)
+				new SupplyCandiateHandler(candidateRepository, materialEventService, stockCandidateService),
+				new DemandCandiateHandler(candidateRepository, materialEventService, stockCandidateService)
 				));
 		
 		final CandidateService candidateService = new CandidateService(

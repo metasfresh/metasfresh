@@ -27,7 +27,7 @@ import de.metas.material.dispo.DispoTestUtils;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.X_MD_Candidate;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
-import de.metas.material.dispo.service.candidatechange.handler.StockUpCandiateChangeHandler;
+import de.metas.material.dispo.service.candidatechange.handler.StockUpCandiateHandler;
 import de.metas.material.event.EventDescr;
 import de.metas.material.event.MaterialDemandEvent;
 import de.metas.material.event.MaterialDescriptor;
@@ -84,7 +84,7 @@ public class ForecastEventHandlerTest
 
 		forecastEventHandler = new ForecastEventHandler(
 				new CandidateChangeService(ImmutableList.of(
-						new StockUpCandiateChangeHandler(candidateRepository, materialEventService))));
+						new StockUpCandiateHandler(candidateRepository, materialEventService))));
 	}
 
 	/**

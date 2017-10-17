@@ -42,13 +42,13 @@ import de.metas.material.event.MaterialDescriptor;
 public class UnrelatedTransactionCandidateChangeHandlerTest
 {
 
-	private UnrelatedTransactionCandidateChangeHandler unrelatedTransactionCandidateChangeHandler;
+	private UnrelatedTransactionCandidateHandler unrelatedTransactionCandidateChangeHandler;
 
 	@Before
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
-		unrelatedTransactionCandidateChangeHandler = new UnrelatedTransactionCandidateChangeHandler();
+		unrelatedTransactionCandidateChangeHandler = new UnrelatedTransactionCandidateHandler();
 	}
 
 	@Test

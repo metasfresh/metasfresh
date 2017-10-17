@@ -29,7 +29,7 @@ import lombok.NonNull;
  */
 
 @Service
-public class UnrelatedTransactionCandidateChangeHandler implements CandidateChangeHandler
+public class UnrelatedTransactionCandidateHandler implements CandidateHandler
 {
 
 	@Override

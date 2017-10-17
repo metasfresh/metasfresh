@@ -26,8 +26,8 @@ import de.metas.material.dispo.CandidateRepository;
 import de.metas.material.dispo.CandidateService;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
-import de.metas.material.dispo.service.candidatechange.handler.DemandCandiateChangeHandler;
-import de.metas.material.dispo.service.candidatechange.handler.SupplyCandiateChangeHandler;
+import de.metas.material.dispo.service.candidatechange.handler.DemandCandiateHandler;
+import de.metas.material.dispo.service.candidatechange.handler.SupplyCandiateHandler;
 import de.metas.material.dispo.service.event.SupplyProposalEvaluator.SupplyProposal;
 import de.metas.material.dispo.service.event.handler.DistributionPlanEventHandler;
 import de.metas.material.dispo.service.event.handler.DistributionPlanEventHandlerTests;
@@ -106,8 +106,8 @@ public class SupplyProposalEvaluatorTests
 		final StockCandidateService stockCandidateService = new StockCandidateService(candidateRepository);
 
 		final CandidateChangeService candidateChangeHandler = new CandidateChangeService(ImmutableList.of(
-				new SupplyCandiateChangeHandler(candidateRepository, materialEventService, stockCandidateService),
-				new DemandCandiateChangeHandler(candidateRepository, materialEventService, stockCandidateService)));
+				new SupplyCandiateHandler(candidateRepository, materialEventService, stockCandidateService),
+				new DemandCandiateHandler(candidateRepository, materialEventService, stockCandidateService)));
 
 		distributionPlanEventHandler = new DistributionPlanEventHandler(
 				candidateRepository,

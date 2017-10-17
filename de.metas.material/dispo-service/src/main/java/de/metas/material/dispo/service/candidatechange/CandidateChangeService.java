@@ -10,7 +10,7 @@ import com.google.common.collect.Maps;
 
 import de.metas.material.dispo.Candidate;
 import de.metas.material.dispo.Candidate.Type;
-import de.metas.material.dispo.service.candidatechange.handler.CandidateChangeHandler;
+import de.metas.material.dispo.service.candidatechange.handler.CandidateHandler;
 import lombok.NonNull;
 
 /*
@@ -38,12 +38,12 @@ import lombok.NonNull;
 public class CandidateChangeService
 {
 
-	private final Map<Type, CandidateChangeHandler> type2handler;
+	private final Map<Type, CandidateHandler> type2handler;
 
 	public CandidateChangeService(
-			@NonNull final Collection<CandidateChangeHandler> candidateChangeHandlers)
+			@NonNull final Collection<CandidateHandler> candidateChangeHandlers)
 	{
-		type2handler = Maps.uniqueIndex(candidateChangeHandlers, CandidateChangeHandler::getHandeledType);
+		type2handler = Maps.uniqueIndex(candidateChangeHandlers, CandidateHandler::getHandeledType);
 	}
 
 	/**
@@ -55,7 +55,7 @@ public class CandidateChangeService
 	public Candidate onCandidateNewOrChange(@NonNull final Candidate candidate)
 	{
 
-		final CandidateChangeHandler candidateChangeHandler = type2handler.get(candidate.getType());
+		final CandidateHandler candidateChangeHandler = type2handler.get(candidate.getType());
 		if (candidateChangeHandler == null)
 		{
 

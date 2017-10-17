@@ -25,7 +25,7 @@ import lombok.NonNull;
  * #L%
  */
 
-public interface CandidateChangeHandler
+public interface CandidateHandler
 {
 	Candidate.Type getHandeledType();
 	

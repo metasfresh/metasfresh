@@ -40,8 +40,8 @@ import de.metas.material.dispo.CandidatesSegment;
 import de.metas.material.dispo.CandidatesSegment.DateOperator;
 import de.metas.material.dispo.DispoTestUtils;
 import de.metas.material.dispo.model.I_MD_Candidate;
-import de.metas.material.dispo.service.candidatechange.handler.DemandCandiateChangeHandler;
-import de.metas.material.dispo.service.candidatechange.handler.SupplyCandiateChangeHandler;
+import de.metas.material.dispo.service.candidatechange.handler.DemandCandiateHandler;
+import de.metas.material.dispo.service.candidatechange.handler.SupplyCandiateHandler;
 import de.metas.material.event.MaterialDescriptor;
 import de.metas.material.event.MaterialEventService;
 import lombok.NonNull;
@@ -123,8 +123,8 @@ public class CandidateChangeHandlerTests
 
 		candidateChangeHandler = new CandidateChangeService(
 								ImmutableList.of(
-						new DemandCandiateChangeHandler(candidateRepository, materialEventService, stockCandidateService),
-						new SupplyCandiateChangeHandler(candidateRepository, materialEventService, stockCandidateService)));
+						new DemandCandiateHandler(candidateRepository, materialEventService, stockCandidateService),
+						new SupplyCandiateHandler(candidateRepository, materialEventService, stockCandidateService)));
 	}
 
 	/**

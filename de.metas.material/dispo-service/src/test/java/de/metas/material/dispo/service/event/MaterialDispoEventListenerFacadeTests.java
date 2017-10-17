@@ -27,8 +27,8 @@ import de.metas.material.dispo.DispoTestUtils;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
-import de.metas.material.dispo.service.candidatechange.handler.DemandCandiateChangeHandler;
-import de.metas.material.dispo.service.candidatechange.handler.SupplyCandiateChangeHandler;
+import de.metas.material.dispo.service.candidatechange.handler.DemandCandiateHandler;
+import de.metas.material.dispo.service.candidatechange.handler.SupplyCandiateHandler;
 import de.metas.material.dispo.service.event.handler.DistributionPlanEventHandler;
 import de.metas.material.dispo.service.event.handler.ForecastEventHandler;
 import de.metas.material.dispo.service.event.handler.ProductionPlanEventHandler;
@@ -105,8 +105,8 @@ public class MaterialDispoEventListenerFacadeTests
 		final StockCandidateService stockCandidateService = new StockCandidateService(candidateRepository);
 
 		final CandidateChangeService candidateChangeHandler = new CandidateChangeService(ImmutableList.of(
-				new DemandCandiateChangeHandler(candidateRepository, materialEventService, stockCandidateService),
-				new SupplyCandiateChangeHandler(candidateRepository, materialEventService, stockCandidateService)));
+				new DemandCandiateHandler(candidateRepository, materialEventService, stockCandidateService),
+				new SupplyCandiateHandler(candidateRepository, materialEventService, stockCandidateService)));
 
 		final CandidateService candidateService = new CandidateService(
 				candidateRepository,

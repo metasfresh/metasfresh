@@ -1,12 +1,7 @@
 package de.metas.material.event;
 
-import java.util.Optional;
-
-import org.adempiere.util.lang.impl.TableRecordReference;
-
-import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Builder.Default;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -39,17 +34,24 @@ public class TransactionEvent implements MaterialEvent
 	public static final String TYPE = "TransactionEvent";
 
 	@NonNull
-	private final EventDescr eventDescr;
+	EventDescr eventDescr;
 
 	@NonNull
-	private final MaterialDescriptor materialDescr;
+	MaterialDescriptor materialDescr;
 
 	// ids used to match the transaction to the respective shipment, ddOrder or ppOrder event (demand if qty is negative), supply if qty is positive
 	// if *none of those are set* then the transaction will be recorded as "unplanned"
+	@Default
 	int shipmentScheduleId = -1;
+	
+	@Default
 	int ddOrderLineId = -1;
+	
+	@Default
 	int ppOrderId = -1;
+	
+	@Default
 	int ppOrderBomLineId = -1;
 
-	private final boolean transactionDeleted;
+	boolean transactionDeleted;
 }
