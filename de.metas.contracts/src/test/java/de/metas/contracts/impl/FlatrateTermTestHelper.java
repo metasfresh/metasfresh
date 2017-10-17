@@ -142,7 +142,7 @@ public class FlatrateTermTestHelper
 		adOrg = InterfaceWrapperHelper.create(ctx, I_AD_Org.class, ITrx.TRXNAME_None);
 		InterfaceWrapperHelper.save(adOrg);
 		Env.setContext(ctx, Env.CTXNAME_AD_Org_ID, adOrg.getAD_Org_ID());
-		
+
 		final I_AD_OrgInfo orgInfo = newInstance(I_AD_OrgInfo.class);
 		orgInfo.setAD_Org(adOrg);
 		save(orgInfo);
@@ -161,7 +161,7 @@ public class FlatrateTermTestHelper
 	private void addPricingRules()
 	{
 		// skipping this for now because is using directly the DB
-        //	pricingRules.put("PriceListVersion + Vendor Break", "org.adempiere.pricing.spi.impl.rules.PriceListVersionVB");
+		// pricingRules.put("PriceListVersion + Vendor Break", "org.adempiere.pricing.spi.impl.rules.PriceListVersionVB");
 		pricingRules.put("PriceListVersion", "org.adempiere.pricing.spi.impl.rules.PriceListVersion");
 		pricingRules.put("PriceList + VendorBreak", "org.adempiere.pricing.spi.impl.rules.PriceListVB");
 		pricingRules.put("PriceList", "org.adempiere.pricing.spi.impl.rules.PriceList");
