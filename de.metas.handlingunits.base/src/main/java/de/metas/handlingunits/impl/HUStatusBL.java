@@ -60,7 +60,9 @@ public class HUStatusBL implements IHUStatusBL
 			.put(X_M_HU.HUSTATUS_Active, X_M_HU.HUSTATUS_Picked)
 			.put(X_M_HU.HUSTATUS_Active, X_M_HU.HUSTATUS_Issued)
 			.put(X_M_HU.HUSTATUS_Active, X_M_HU.HUSTATUS_Destroyed)
-			.put(X_M_HU.HUSTATUS_Active, X_M_HU.HUSTATUS_Shipped) // this transition is used in vendor returns
+			
+			// this transition is used in vendor returns
+			.put(X_M_HU.HUSTATUS_Active, X_M_HU.HUSTATUS_Shipped)
 
 			.put(X_M_HU.HUSTATUS_Picked, X_M_HU.HUSTATUS_Active)
 			.put(X_M_HU.HUSTATUS_Picked, X_M_HU.HUSTATUS_Shipped)
@@ -71,6 +73,9 @@ public class HUStatusBL implements IHUStatusBL
 			.put(X_M_HU.HUSTATUS_Destroyed, X_M_HU.HUSTATUS_Active)
 			.put(X_M_HU.HUSTATUS_Destroyed, X_M_HU.HUSTATUS_Issued)
 
+			// this transition is used e.g. when reverse-correcting a vendor return https://github.com/metasfresh/metasfresh/issues/2755
+			.put(X_M_HU.HUSTATUS_Shipped, X_M_HU.HUSTATUS_Active)
+			
 			.build();
 
 	private final static List<String> ALLOWED_STATUSES_FOR_LOCATOR_CHANGE = ImmutableList.of(
