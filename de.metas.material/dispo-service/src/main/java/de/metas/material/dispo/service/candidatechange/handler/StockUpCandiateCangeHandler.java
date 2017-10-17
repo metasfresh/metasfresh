@@ -49,11 +49,11 @@ public class StockUpCandiateCangeHandler
 	{
 		Preconditions.checkArgument(candidate.getType() == Type.STOCK_UP, "Given parameter 'candidate' has type=%s; demandCandidate=%s", candidate.getType(), candidate);
 
-		final Candidate candidateWithQtyDelta = candidateRepository.addOrUpdateOverwriteStoredSeqNo(candidate);
+		final Candidate candidateWithQtyDeltaAndId = candidateRepository.addOrUpdateOverwriteStoredSeqNo(candidate);
 
-		if (candidateWithQtyDelta.getQuantity().signum() == 0)
+		if (candidateWithQtyDeltaAndId.getQuantity().signum() == 0)
 		{
-			return candidateWithQtyDelta; // this candidate didn't change anything
+			return candidateWithQtyDeltaAndId; // this candidate didn't change anything
 		}
 
 		final Optional<Candidate> projectedStock = candidateRepository.retrieveLatestMatch(candidate
@@ -63,13 +63,13 @@ public class StockUpCandiateCangeHandler
 				.build());
 		final BigDecimal projectedQty = projectedStock.isPresent() ? projectedStock.get().getQuantity() : BigDecimal.ZERO;
 
-		final BigDecimal requiredAdditionalQty = candidateWithQtyDelta.getQuantity().subtract(projectedQty);
+		final BigDecimal requiredAdditionalQty = candidateWithQtyDeltaAndId.getQuantity().subtract(projectedQty);
 		if (requiredAdditionalQty.signum() > 0)
 		{
-			final MaterialDemandEvent materialDemandEvent = MaterialDemandEventCreator.createMaterialDemandEvent(candidate, requiredAdditionalQty);
+			final MaterialDemandEvent materialDemandEvent = MaterialDemandEventCreator.createMaterialDemandEvent(candidateWithQtyDeltaAndId, requiredAdditionalQty);
 			materialEventService.fireEvent(materialDemandEvent);
 		}
 
-		return candidateWithQtyDelta;
+		return candidateWithQtyDeltaAndId;
 	}
 }

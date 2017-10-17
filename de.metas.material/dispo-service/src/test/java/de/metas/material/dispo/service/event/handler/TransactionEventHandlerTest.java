@@ -6,7 +6,6 @@ import java.math.BigDecimal;
 import java.util.List;
 
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.util.TimeUtil;
 import org.junit.Before;
 import org.junit.Test;
@@ -68,7 +67,6 @@ public class TransactionEventHandlerTest
 	{
 		final TransactionEvent event = TransactionEvent.builder()
 				.eventDescr(new EventDescr(10, 20))
-				.reference(TableRecordReference.of("the-transaction-table", 30))
 				.materialDescr(MaterialDescriptor.builder()
 						.date(TimeUtil.parseTimestamp("2017-10-15"))
 						.productId(40)

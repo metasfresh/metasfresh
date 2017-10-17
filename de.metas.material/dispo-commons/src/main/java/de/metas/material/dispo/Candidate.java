@@ -83,7 +83,7 @@ public class Candidate
 
 	private final Status status;
 
-	private final TableRecordReference reference;
+	// private final TableRecordReference reference;
 
 	private final Integer id;
 

@@ -10,7 +10,6 @@ import java.util.List;
 
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
-import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_AD_Org;
 import org.compiere.util.TimeUtil;
@@ -56,6 +55,8 @@ import mockit.Mocked;
 
 public class ShipmentScheduleEventHandlerTests
 {
+	private static final int shipmentScheduleId = 76;
+	
 	private static final int orderLineId = 86;
 
 	/** Watches the current tests and dumps the database to console in case of failure */
@@ -124,7 +125,7 @@ public class ShipmentScheduleEventHandlerTests
 						.quantity(BigDecimal.TEN)
 						.warehouseId(toWarehouseId)
 						.build())
-				.reference(TableRecordReference.of("someTable", 4))
+				.shipmentScheduleId(shipmentScheduleId)
 				.orderLineId(orderLineId)
 				.build();
 		return event;

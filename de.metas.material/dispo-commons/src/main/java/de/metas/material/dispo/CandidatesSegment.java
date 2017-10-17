@@ -126,11 +126,6 @@ public class CandidatesSegment
 			return false;
 		}
 
-		if (getReference() != null && !Objects.equals(getReference(), candidate.getReference()))
-		{
-			return false;
-		}
-
 		if (getType() != null && !Objects.equals(getType(), candidate.getType()))
 		{
 			return false;

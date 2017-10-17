@@ -3,7 +3,6 @@ package de.metas.material.dispo;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
 import java.util.Optional;
 
 import org.adempiere.util.time.SystemTime;
@@ -37,7 +36,7 @@ import de.metas.material.event.MaterialDescriptor;
 
 public class DemandCandidateDetailTests
 {
-		@Test
+	@Test
 	public void createOrNull_when_empty_optional_then_null()
 	{
 		final Optional<MaterialDemandDescr> materialDemandDescr = Optional.empty();
@@ -52,11 +51,12 @@ public class DemandCandidateDetailTests
 				.forecastLineId(1)
 				.shipmentScheduleId(2)
 				.orderLineId(3)
+				.demandCandidateId(30)
 				.materialDescriptor(MaterialDescriptor.builder()
 						.date(SystemTime.asTimestamp())
-						.productId(20)
+						.productId(40)
 						.quantity(BigDecimal.TEN)
-						.warehouseId(30).build())
+						.warehouseId(50).build())
 				.build();
 
 		final DemandCandidateDetail demandCandidateDetail = DemandCandidateDetail.createOrNull(Optional.of(descriptor));

@@ -120,7 +120,7 @@ public class DemandCandiateCangeHandler
 			// notify whoever is in charge that we have a demand to balance
 			final BigDecimal requiredAdditionalQty = childStockWithDemand.getQuantity().negate();
 
-			final MaterialDemandEvent materialDemandEvent = MaterialDemandEventCreator.createMaterialDemandEvent(demandCandidate, requiredAdditionalQty);
+			final MaterialDemandEvent materialDemandEvent = MaterialDemandEventCreator.createMaterialDemandEvent(demandCandidateWithId, requiredAdditionalQty);
 			materialEventService.fireEvent(materialDemandEvent);
 		}
 		return demandCandidateToReturn;

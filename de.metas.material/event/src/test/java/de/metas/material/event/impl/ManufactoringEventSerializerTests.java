@@ -1,10 +1,11 @@
 package de.metas.material.event.impl;
 
-import static org.hamcrest.Matchers.comparesEqualTo;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
 import java.math.BigDecimal;
+import java.util.Optional;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
@@ -18,7 +19,6 @@ import de.metas.event.SimpleObjectSerializer;
 import de.metas.material.event.EventDescr;
 import de.metas.material.event.MaterialDescriptor;
 import de.metas.material.event.MaterialEvent;
-import de.metas.material.event.ReceiptScheduleEvent;
 import de.metas.material.event.TransactionEvent;
 import de.metas.material.event.forecast.Forecast;
 import de.metas.material.event.forecast.ForecastEvent;
@@ -56,32 +56,6 @@ public class ManufactoringEventSerializerTests
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
-	}
-
-	@Test
-	public void testReceiptScheduleEvent()
-	{
-		final I_AD_Table someOtherTable = InterfaceWrapperHelper.newInstance(I_AD_Table.class);
-		someOtherTable.setTableName("someOtherTable");
-		InterfaceWrapperHelper.save(someOtherTable);
-
-		final ReceiptScheduleEvent evt = ReceiptScheduleEvent.builder()
-				.eventDescr(new EventDescr(1, 2))
-				.materialDescr(MaterialDescriptor.builder()
-						.date(SystemTime.asDate())
-						.productId(13)
-						.warehouseId(15)
-						.quantity(BigDecimal.TEN)
-						.build())
-				.receiptScheduleDeleted(false)
-				.reference(TableRecordReference.of("someOtherTable", 100))
-				.build();
-		assertThat(evt.getMaterialDescr().getQuantity(), comparesEqualTo(BigDecimal.TEN)); // guard
-
-		final String serializedEvt = SimpleObjectSerializer.get().serialize(evt);
-		final MaterialEvent deserializedEvt = SimpleObjectSerializer.get().deserialize(serializedEvt, MaterialEvent.class);
-
-		assertThat(deserializedEvt, is(evt));
 	}
 
 	@Test
@@ -124,7 +98,7 @@ public class ManufactoringEventSerializerTests
 	{
 		final PPOrderRequestedEvent event = PPOrderRequestedEvent.builder()
 				.eventDescr(new EventDescr(1, 2))
-				.reference(TableRecordReference.of("table", 24))
+				.groupId(30)
 				.ppOrder(PPOrder.builder()
 						.datePromised(SystemTime.asDate())
 						.dateStartSchedule(SystemTime.asDate())
@@ -159,7 +133,7 @@ public class ManufactoringEventSerializerTests
 
 		final MaterialEvent deserializedEvt = SimpleObjectSerializer.get().deserialize(serializedEvt, MaterialEvent.class);
 
-		assertThat(deserializedEvt, is(event));
+		assertThat(deserializedEvt).isEqualTo(event);
 	}
 
 	@Test
@@ -167,6 +141,7 @@ public class ManufactoringEventSerializerTests
 	{
 		final ProductionPlanEvent event = ProductionPlanEvent.builder()
 				.eventDescr(new EventDescr(1, 2))
+				.materialDemandDescr(Optional.empty())
 				.ppOrder(PPOrder.builder()
 						.datePromised(SystemTime.asDate())
 						.dateStartSchedule(SystemTime.asDate())
@@ -198,10 +173,8 @@ public class ManufactoringEventSerializerTests
 				.build();
 
 		final String serializedEvt = SimpleObjectSerializer.get().serialize(event);
-
 		final MaterialEvent deserializedEvt = SimpleObjectSerializer.get().deserialize(serializedEvt, MaterialEvent.class);
-
-		assertThat(deserializedEvt, is(event));
+		assertThat(deserializedEvt).isEqualTo(event);
 	}
 
 	@Test
@@ -219,7 +192,7 @@ public class ManufactoringEventSerializerTests
 				.materialDescriptor(materialDescriptor)
 				.reference(TableRecordReference.of("table", 24))
 				.build();
-		
+
 		final Forecast forecast = Forecast.builder()
 				.forecastId(20)
 				.docStatus("docStatus")
@@ -235,6 +208,8 @@ public class ManufactoringEventSerializerTests
 
 		final MaterialEvent deserializedEvt = SimpleObjectSerializer.get().deserialize(serializedEvt, MaterialEvent.class);
 
-		assertThat(deserializedEvt, is(deserializedEvt));
+		assertThat(deserializedEvt).isEqualTo(forecastEvent);
 	}
+	
+	// TODO: add serialize/deserialize tesxts for the other events
 }

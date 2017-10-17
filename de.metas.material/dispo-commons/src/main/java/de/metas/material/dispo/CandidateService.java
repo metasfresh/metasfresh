@@ -152,7 +152,7 @@ public class CandidateService
 		return PPOrderRequestedEvent.builder()
 				.eventDescr(new EventDescr(firstGroupMember.getClientId(), firstGroupMember.getOrgId()))
 				.ppOrder(ppOrderBuilder.build())
-				.reference(firstGroupMember.getReference())
+				.groupId(firstGroupMember.getEffectiveGroupId())
 				.build();
 	}
 
@@ -217,7 +217,7 @@ public class CandidateService
 								.durationDays(durationDays)
 								.build())
 						.build())
-				.reference(firstGroupMember.getReference())
+				.groupId(firstGroupMember.getEffectiveGroupId())
 				.build();
 	}
 }

@@ -41,6 +41,8 @@ public class MaterialDemandEventCreator
 			@NonNull final Candidate demandCandidate,
 			@NonNull final BigDecimal requiredAdditionalQty)
 	{
+		verifyCandidateType(demandCandidate);
+
 		final int orderLineId = demandCandidate.getDemandDetail() == null ? 0
 				: demandCandidate.getDemandDetail().getOrderLineId();
 
@@ -51,14 +53,20 @@ public class MaterialDemandEventCreator
 		return materialDemandEvent;
 	}
 
+	private void verifyCandidateType(final Candidate demandCandidate)
+	{
+		final Type candidateType = demandCandidate.getType();
+		Preconditions.checkArgument(candidateType == Type.DEMAND || candidateType == Type.STOCK_UP,
+				"Given parameter demandCandidate needs to have DEMAND or STOCK_UP as type; demandCandidate=%s", demandCandidate);
+	}
+
 	private MaterialDemandDescr createMaterialDemandDescr(
 			@NonNull final Candidate candidate,
 			@NonNull final BigDecimal qty,
 			final int orderLineId)
 	{
-		Preconditions.checkArgument(candidate.getType().equals(Type.DEMAND), "given candidate needs to be a demand candidate; candidate=%s", candidate);
-
 		return MaterialDemandDescr.builder()
+				.demandCandidateId(candidate.getId())
 				.eventDescr(new EventDescr(candidate.getClientId(), candidate.getOrgId()))
 				.materialDescriptor(candidate.getMaterialDescr().withQuantity(qty))
 				.orderLineId(orderLineId)

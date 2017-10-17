@@ -44,7 +44,8 @@ public class TransactionEvent implements MaterialEvent
 	@NonNull
 	private final MaterialDescriptor materialDescr;
 
-	// ids used to mat the transaction to the respective shipment, ddOrder or ppOrder event (demand if qty is negative), supply if qty is positive
+	// ids used to match the transaction to the respective shipment, ddOrder or ppOrder event (demand if qty is negative), supply if qty is positive
+	// if *none of those are set* then the transaction will be recorded as "unplanned"
 	int shipmentScheduleId = -1;
 	int ddOrderLineId = -1;
 	int ppOrderId = -1;

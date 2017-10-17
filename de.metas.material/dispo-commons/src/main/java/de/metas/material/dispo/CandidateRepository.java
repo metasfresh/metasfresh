@@ -19,7 +19,6 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.apache.ecs.xhtml.code;
 import org.springframework.stereotype.Service;
@@ -387,8 +386,6 @@ public class CandidateRepository
 				.addEqualsFilter(I_MD_Candidate.COLUMN_M_Product_ID, materialDescr.getProductId())
 				.addEqualsFilter(I_MD_Candidate.COLUMN_DateProjected, materialDescr.getDate());
 
-		addReferenceToQueryBuilder(candidate, builder);
-
 		addDemandDetailToBuilder(candidate, builder);
 
 		// filter by productionDetail; if there is none, *don't* ignore, but filter for "not-existing"
@@ -402,16 +399,6 @@ public class CandidateRepository
 				.firstOnly(I_MD_Candidate.class); // note that we have a UC to make sure there is just one
 
 		return Optional.ofNullable(candidateRecord);
-	}
-
-	private void addReferenceToQueryBuilder(final Candidate candidate, final IQueryBuilder<I_MD_Candidate> builder)
-	{
-		final TableRecordReference referencedRecord = candidate.getReference();
-		if (referencedRecord != null)
-		{
-			builder.addEqualsFilter(I_MD_Candidate.COLUMN_AD_Table_ID, referencedRecord.getAD_Table_ID());
-			builder.addEqualsFilter(I_MD_Candidate.COLUMN_Record_ID, referencedRecord.getRecord_ID());
-		}
 	}
 
 	/**
@@ -580,13 +567,6 @@ public class CandidateRepository
 			}
 		}
 
-		final ITableRecordReference referencedRecord = candidate.getReference();
-		if (referencedRecord != null)
-		{
-			candidateRecordToUse.setAD_Table_ID(referencedRecord.getAD_Table_ID());
-			candidateRecordToUse.setRecord_ID(referencedRecord.getRecord_ID());
-		}
-
 		if (candidate.getGroupId() != null)
 		{
 			candidateRecordToUse.setMD_Candidate_GroupId(candidate.getGroupId());
@@ -646,7 +626,7 @@ public class CandidateRepository
 				.date(new Date(candidateRecord.getDateProjected().getTime()))
 				.build();
 
-		final CandidateBuilder builder = Candidate.builder()
+		final CandidateBuilder candidateBuilder = Candidate.builder()
 				.id(candidateRecord.getMD_Candidate_ID())
 				.clientId(candidateRecord.getAD_Client_ID())
 				.orgId(candidateRecord.getAD_Org_ID())
@@ -659,14 +639,9 @@ public class CandidateRepository
 
 		if (candidateRecord.getMD_Candidate_Parent_ID() > 0)
 		{
-			builder.parentId(candidateRecord.getMD_Candidate_Parent_ID());
+			candidateBuilder.parentId(candidateRecord.getMD_Candidate_Parent_ID());
 		}
-
-		if (candidateRecord.getRecord_ID() > 0)
-		{
-			builder.reference(TableRecordReference.ofReferenced(candidateRecord));
-		}
-		return builder;
+		return candidateBuilder;
 	}
 
 	private ProductionCandidateDetail createProductionDetailOrNull(@NonNull final I_MD_Candidate candidateRecord)
@@ -717,9 +692,7 @@ public class CandidateRepository
 			return null;
 		}
 
-		return DemandCandidateDetail.forOrderLineIdAndForecastLineId(
-				demandDetailRecord.getC_OrderLine_ID(),
-				demandDetailRecord.getM_ForecastLine_ID());
+		return DemandCandidateDetail.forDemandDetailRecord(demandDetailRecord);
 	}
 
 	/**

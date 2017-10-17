@@ -47,12 +47,10 @@ public class TransactionEventHandler
 
 	public void handleTransactionEvent(final TransactionEvent event)
 	{
-		
-		
+	
 		final Candidate candidate = Candidate.builderForEventDescr(event.getEventDescr())
 				.materialDescr(event.getMaterialDescr())
 				.type(Type.STOCK)
-				.reference(event.getReference())
 				.build();
 		stockCandidateService.addOrUpdateStock(candidate);
 	}

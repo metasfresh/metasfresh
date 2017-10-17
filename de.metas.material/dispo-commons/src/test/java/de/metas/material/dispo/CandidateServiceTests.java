@@ -6,7 +6,6 @@ import static org.junit.Assert.assertThat;
 
 import java.math.BigDecimal;
 
-import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.time.SystemTime;
 import org.junit.Test;
 
@@ -61,7 +60,6 @@ public class CandidateServiceTests
 				.type(Type.SUPPLY)
 				.subType(SubType.PRODUCTION)
 				.materialDescr(materialDescr)
-				.reference(TableRecordReference.of("someTable", 23))
 				.productionDetail(ProductionCandidateDetail.builder()
 						.plantId(210)
 						.productPlanningId(220)
@@ -125,7 +123,6 @@ public class CandidateServiceTests
 				.type(Type.SUPPLY)
 				.subType(SubType.DISTRIBUTION)
 				.materialDescr(materialDescr)
-				.reference(TableRecordReference.of("someTable", 23))
 				.distributionDetail(DistributionCandidateDetail.builder()
 						.productPlanningId(220)
 						.plantId(230)

@@ -64,7 +64,6 @@ public class M_Transaction
 				.eventDescr(EventDescr.createNew(transaction))
 				.transactionDeleted(type.isDelete())
 				.materialDescr(createMateriallDescriptor(transaction))
-				.reference(TableRecordReference.of(transaction))
 				.build();
 
 		final MaterialEventService materialEventService = Adempiere.getBean(MaterialEventService.class);

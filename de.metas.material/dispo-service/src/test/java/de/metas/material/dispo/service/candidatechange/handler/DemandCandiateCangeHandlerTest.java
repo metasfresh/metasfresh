@@ -12,7 +12,6 @@ import java.util.List;
 
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
-import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_M_Product;
@@ -28,7 +27,6 @@ import de.metas.material.dispo.CandidateRepository;
 import de.metas.material.dispo.DispoTestUtils;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
-import de.metas.material.dispo.service.candidatechange.handler.DemandCandiateCangeHandler;
 import de.metas.material.event.MaterialDescriptor;
 import de.metas.material.event.MaterialEventService;
 import mockit.Mocked;
@@ -121,7 +119,6 @@ public class DemandCandiateCangeHandlerTest
 				.clientId(org.getAD_Client_ID())
 				.orgId(org.getAD_Org_ID())
 				.materialDescr(materialDescr)
-				.reference(TableRecordReference.of(1, 2))
 				.build();
 		demandCandiateCangeHandler.onDemandCandidateNewOrChange(candidate);
 

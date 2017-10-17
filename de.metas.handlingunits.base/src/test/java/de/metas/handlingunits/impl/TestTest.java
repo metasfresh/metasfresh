@@ -1,12 +1,12 @@
-package de.metas.material.event;
+package de.metas.handlingunits.impl;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.*;
 
 import org.junit.Test;
 
 /*
  * #%L
- * metasfresh-material-event
+ * de.metas.handlingunits.base
  * %%
  * Copyright (C) 2017 metas GmbH
  * %%
@@ -26,22 +26,13 @@ import org.junit.Test;
  * #L%
  */
 
-public class MaterialDemandIdTest
+public class TestTest
 {
 
 	@Test
-	public void forForecastLineId()
+	public void test()
 	{
-		final MaterialDemandId result = MaterialDemandId.forForecastLineId(30);
-		assertThat(result.getForecastLineId()).isEqualTo(30);
-		assertThat(result.getShipmentScheduleId()).isLessThanOrEqualTo(0);
+		fail("Not yet implemented");
 	}
-	@Test
-	
-	public void forShipmentScheduleId()
-	{
-		final MaterialDemandId result = MaterialDemandId.forShipmentScheduleId(20);
-		assertThat(result.getForecastLineId()).isLessThanOrEqualTo(0);
-		assertThat(result.getShipmentScheduleId()).isEqualTo(20);
-	}
+
 }

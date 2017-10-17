@@ -128,6 +128,29 @@ public interface I_MD_EventStore
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
+	 * Set Daten.
+	 *
+	 * <br>Type: TextLong
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setEventData (java.lang.String EventData);
+
+	/**
+	 * Get Daten.
+	 *
+	 * <br>Type: TextLong
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getEventData();
+
+    /** Column definition for EventData */
+    public static final org.adempiere.model.ModelColumn<I_MD_EventStore, Object> COLUMN_EventData = new org.adempiere.model.ModelColumn<I_MD_EventStore, Object>(I_MD_EventStore.class, "EventData", null);
+    /** Column name EventData */
+    public static final String COLUMNNAME_EventData = "EventData";
+
+	/**
 	 * Set Zeitpunkt.
 	 *
 	 * <br>Type: DateTime

@@ -20,7 +20,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.util.Services;
-import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_UOM;
@@ -39,7 +38,6 @@ import de.metas.material.dispo.CandidatesSegment;
 import de.metas.material.dispo.CandidatesSegment.DateOperator;
 import de.metas.material.dispo.DispoTestUtils;
 import de.metas.material.dispo.model.I_MD_Candidate;
-import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.event.MaterialDescriptor;
 import de.metas.material.event.MaterialEventService;
 import lombok.NonNull;
@@ -473,7 +471,6 @@ public class CandidateChangeHandlerTests
 				.clientId(org.getAD_Client_ID())
 				.orgId(org.getAD_Org_ID())
 				.materialDescr(materialDescr)
-				.reference(TableRecordReference.of(1, 2))
 				.build();
 		candidateChangeHandler.onCandidateNewOrChange(candidate);
 		// we don't really check here..this first part is already verified in testOnDemandCandidateCandidateNewOrChange_noOlderRecords()
@@ -491,7 +488,6 @@ public class CandidateChangeHandlerTests
 				.clientId(org.getAD_Client_ID())
 				.orgId(org.getAD_Org_ID())
 				.materialDescr(supplyMaterialDescr)
-				.reference(TableRecordReference.of(1, 2))
 				.build();
 
 		candidateChangeHandler.onCandidateNewOrChange(supplyCandidate);
@@ -533,7 +529,6 @@ public class CandidateChangeHandlerTests
 				.clientId(org.getAD_Client_ID())
 				.orgId(org.getAD_Org_ID())
 				.materialDescr(supplyMaterialDescr)
-				.reference(TableRecordReference.of(1, 2))
 				.build();
 		candidateChangeHandler.onCandidateNewOrChange(supplyCandidate);
 
@@ -558,7 +553,6 @@ public class CandidateChangeHandlerTests
 				.clientId(org.getAD_Client_ID())
 				.orgId(org.getAD_Org_ID())
 				.materialDescr(demandMaterialDescr)
-				.reference(TableRecordReference.of(1, 2))
 				.build();
 		candidateChangeHandler.onCandidateNewOrChange(demandCandidate);
 
@@ -598,7 +592,6 @@ public class CandidateChangeHandlerTests
 				.clientId(org.getAD_Client_ID())
 				.orgId(org.getAD_Org_ID())
 				.materialDescr(materialDescr)
-				.reference(TableRecordReference.of(1, 2))
 				.build();
 
 		final Consumer<Candidate> doTest = candidate -> {
@@ -642,7 +635,6 @@ public class CandidateChangeHandlerTests
 				.clientId(org.getAD_Client_ID())
 				.orgId(org.getAD_Org_ID())
 				.materialDescr(materialDescr)
-				.reference(TableRecordReference.of(1, 2))
 				.build();
 
 		final BiConsumer<Candidate, BigDecimal> doTest = (candidate, expectedQty) -> {

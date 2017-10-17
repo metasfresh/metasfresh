@@ -86,7 +86,6 @@ public class StockCandidateService
 				.type(Type.STOCK)
 				.orgId(candidate.getOrgId())
 				.clientId(candidate.getClientId())
-				.reference(candidate.getReference())
 				.materialDescr(materialDescr)
 				.parentId(candidate.getParentId())
 				.seqNo(candidate.getSeqNo())

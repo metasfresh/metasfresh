@@ -25,7 +25,6 @@ import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ImmutablePair;
-import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_UOM;
@@ -193,7 +192,6 @@ public class CandiateRepositoryTests
 				.materialDescr(materialDescr)
 				.clientId(org.getAD_Client_ID())
 				.orgId(org.getAD_Org_ID())
-				.reference(TableRecordReference.of("someTable", 40))
 				.productionDetail(ProductionCandidateDetail.builder()
 						.description("description")
 						.plantId(60)
@@ -319,7 +317,6 @@ public class CandiateRepositoryTests
 				.subType(SubType.DISTRIBUTION)
 				.clientId(org.getAD_Client_ID())
 				.orgId(org.getAD_Org_ID())
-				.reference(TableRecordReference.of("someTable", 40))
 				.materialDescr(materialDescr)
 				.distributionDetail(DistributionCandidateDetail.builder()
 						.productPlanningId(80)
@@ -443,8 +440,7 @@ public class CandiateRepositoryTests
 				.clientId(org.getAD_Client_ID())
 				.orgId(org.getAD_Org_ID())
 				.materialDescr(materialDescr)
-				.reference(TableRecordReference.of("someTable", 40))
-				.demandDetail(DemandCandidateDetail.forOrderLineId(61))
+				.demandDetail(DemandCandidateDetail.forOrderLineIdOrNull(61))
 				.build();
 		final Candidate addOrReplaceResult = candidateRepository.addOrUpdateOverwriteStoredSeqNo(productionCandidate);
 

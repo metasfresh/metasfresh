@@ -45,8 +45,6 @@ public class DemandHandlerAuditEvent implements MaterialEvent
 	@NonNull
 	private final MaterialDescriptor descr;
 
-	private final TableRecordReference reference;
-
 	private int orderLineId;
 
 	private final List<String> messages; 

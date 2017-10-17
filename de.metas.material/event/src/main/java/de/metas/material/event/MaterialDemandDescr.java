@@ -1,7 +1,8 @@
 package de.metas.material.event;
 
+import com.google.common.base.Preconditions;
+
 import lombok.Builder;
-import lombok.Builder.Default;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -28,7 +29,6 @@ import lombok.Value;
  */
 
 @Value // includes @AllArgsConstructor which is used by jackson when it deserializes a string
-@Builder
 public class MaterialDemandDescr
 {
 	@NonNull
@@ -37,17 +37,31 @@ public class MaterialDemandDescr
 	@NonNull
 	MaterialDescriptor materialDescriptor;
 
-	@NonNull
-	MaterialDemandId materialDemandId;
-	
 	int demandCandidateId;
-	
-	@Default
-	int shipmentScheduleId = -1;
 
-	@Default
-	int forecastLineId = -1;
-	
-	@Default
-	int orderLineId = -1;
+	int shipmentScheduleId;
+
+	int forecastLineId;
+
+	int orderLineId;
+
+	@Builder
+	private MaterialDemandDescr(
+			@NonNull final EventDescr eventDescr,
+			@NonNull MaterialDescriptor materialDescriptor,
+			int demandCandidateId,
+			int shipmentScheduleId,
+			int forecastLineId,
+			int orderLineId)
+	{
+		Preconditions.checkArgument(demandCandidateId > 0, "The given demandCandidateId=%s has to be >0", demandCandidateId);
+		this.demandCandidateId = demandCandidateId;
+
+		this.shipmentScheduleId = shipmentScheduleId > 0 ? shipmentScheduleId : -1;
+		this.forecastLineId = forecastLineId > 0 ? forecastLineId : -1;
+		this.orderLineId = orderLineId > 0 ? orderLineId : -1;
+
+		this.eventDescr = eventDescr;
+		this.materialDescriptor = materialDescriptor;
+	}
 }

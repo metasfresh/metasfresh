@@ -72,9 +72,9 @@ public class DistributionPlanEventHandler
 		this.supplyProposalEvaluator = supplyProposalEvaluator;
 	}
 
-	public void handleDistributionPlanEvent(final DistributionPlanEvent event)
+	public void handleDistributionPlanEvent(final DistributionPlanEvent distributionPlanEvent)
 	{
-		final DDOrder ddOrder = event.getDdOrder();
+		final DDOrder ddOrder = distributionPlanEvent.getDdOrder();
 		final Candidate.Status candidateStatus;
 		if (ddOrder.getDdOrderId() <= 0)
 		{
@@ -94,8 +94,8 @@ public class DistributionPlanEventHandler
 			final SupplyProposal proposal = SupplyProposal.builder()
 					.date(orderLineStartDate)
 					.productId(ddOrderLine.getProductId())
-					.destWarehouseId(event.getToWarehouseId())
-					.sourceWarehouseId(event.getFromWarehouseId())
+					.destWarehouseId(distributionPlanEvent.getToWarehouseId())
+					.sourceWarehouseId(distributionPlanEvent.getFromWarehouseId())
 					.build();
 			if (!supplyProposalEvaluator.evaluateSupply(proposal))
 			{
@@ -110,16 +110,15 @@ public class DistributionPlanEventHandler
 					.date(ddOrder.getDatePromised())
 					.productId(ddOrderLine.getProductId())
 					.quantity(ddOrderLine.getQty())
-					.warehouseId(event.getToWarehouseId())
+					.warehouseId(distributionPlanEvent.getToWarehouseId())
 					.build();
 
-			final Candidate supplyCandidate = Candidate.builderForEventDescr(event.getEventDescr())
+			final Candidate supplyCandidate = Candidate.builderForEventDescr(distributionPlanEvent.getEventDescr())
 					.type(Type.SUPPLY)
 					.status(candidateStatus)
 					.subType(SubType.DISTRIBUTION)
 					.materialDescr(materialDescriptor)
-					.reference(event.getReference())
-					.demandDetail(DemandCandidateDetail.forOrderLineId(ddOrderLine.getSalesOrderLineId()))
+					.demandDetail(DemandCandidateDetail.forOrderLineIdOrNull(ddOrderLine.getSalesOrderLineId()))
 					.distributionDetail(createCandidateDetailFromDDOrderAndLine(ddOrder, ddOrderLine))
 					.build();
 
@@ -142,7 +141,7 @@ public class DistributionPlanEventHandler
 					.withParentId(supplyCandidateWithId.getId())
 					.withQuantity(supplyCandidateWithId.getQuantity()) // what was added as supply in the destination warehouse needs to be registered as demand in the source warehouse
 					.withDate(orderLineStartDate)
-					.withWarehouseId(event.getFromWarehouseId())
+					.withWarehouseId(distributionPlanEvent.getFromWarehouseId())
 					.withSeqNo(expectedSeqNoForDemandCandidate);
 
 			// this might cause 'candidateChangeHandler' to trigger another event

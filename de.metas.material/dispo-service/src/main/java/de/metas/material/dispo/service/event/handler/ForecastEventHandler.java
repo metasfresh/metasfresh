@@ -72,8 +72,8 @@ public class ForecastEventHandler
 			@NonNull final CandidateBuilder candidateBuilder,
 			@NonNull final ForecastLine forecastLine)
 	{
+
 		candidateBuilder.materialDescr(forecastLine.getMaterialDescriptor())
-				.reference(forecastLine.getReference())
 				.demandDetail(DemandCandidateDetail.forForecastLineId(forecastLine.getForecastLineId()));
 	}
 }

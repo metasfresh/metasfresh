@@ -43,18 +43,11 @@ public class ShipmentScheduleEventHandler
 
 	public void handleShipmentScheduleEvent(@NonNull final ShipmentScheduleEvent event)
 	{
-		if (event.isShipmentScheduleDeleted())
-		{
-			candidateChangeHandler.onCandidateDelete(event.getReference());
-			return;
-		}
-
 		final Candidate candidate = Candidate.builderForEventDescr(event.getEventDescr())
 				.materialDescr(event.getMaterialDescr())
 				.type(Type.DEMAND)
 				.subType(SubType.SHIPMENT)
-				.reference(event.getReference())
-				.demandDetail(DemandCandidateDetail.forOrderLineId(event.getOrderLineId()))
+				.demandDetail(DemandCandidateDetail.forShipmentScheduleEvent(event))
 				.build();
 		candidateChangeHandler.onCandidateNewOrChange(candidate);
 	}
