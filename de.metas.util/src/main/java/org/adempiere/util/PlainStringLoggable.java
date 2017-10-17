@@ -3,6 +3,7 @@ package org.adempiere.util;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 
 /*
@@ -57,15 +58,7 @@ public final class PlainStringLoggable implements ILoggable
 
 	public String getConcatenatedMessages()
 	{
-		final StringBuilder sb = new StringBuilder();
-
-		messages.forEach(msg ->
-			{
-				sb.append(msg);
-				sb.append("\n");
-			});
-
-		return sb.toString();
+		return Joiner.on("\n").join(messages);
 	}
 
 }
