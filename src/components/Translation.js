@@ -1,16 +1,16 @@
 import React, { Component } from 'react';
+import deepForceUpdate from 'react-deep-force-update';
 import counterpart from 'counterpart';
 
 import {
-    getMessages,
-    deepForceUpdate
+    getMessages
 } from '../actions/AppActions';
 
 class Translation extends Component {
     constructor(props) {
         super(props);
     }
-    
+
     componentWillMount = () => {
         getMessages().then(response => {
             counterpart.registerTranslations('lang', response.data);

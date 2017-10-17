@@ -54,6 +54,7 @@
     "react-bootstrap-daterangepicker": "~3.4.1",
     "react-datetime": "2.10.3",
     "react-debounce-input": "~3.1.0",
+    "react-deep-force-update": "^2.1.1",
     "react-dnd": "~2.5.4",
     "react-dnd-html5-backend": "~2.5.4",
     "react-dom": "~16.0.0",
