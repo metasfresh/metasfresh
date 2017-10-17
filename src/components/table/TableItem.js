@@ -205,7 +205,7 @@ class TableItem extends Component {
                         }}
                         disableOnClickOutside={edited !== property}
                         onKeyDown = {(!mainTable || forceKeysBind) ?
-                            (e) => this.handleKey(e, property) : ''
+                            (e) => this.handleKey(e, property) : null
                         }
                         onCellChange={onItemChange}
                         updatedRow={updatedRow || newRow}

@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import counterpart from 'counterpart';
-import FileInput from 'react-file-input';
+import FileInput from '../FileInput';
 
 import {
     addAttachment

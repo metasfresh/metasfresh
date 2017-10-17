@@ -128,7 +128,7 @@ class TableCell extends Component {
             <td
                 tabIndex={tabIndex}
                 ref={(c) => this.cell = c}
-                onDoubleClick={!readonly && onDoubleClick}
+                onDoubleClick={readonly ? null : onDoubleClick}
                 onKeyDown={onKeyDown}
                 onContextMenu={handleRightClick}
                 className={

@@ -498,9 +498,9 @@ class RawList extends Component {
                     ((rowId && !isModal) ? 'input-table ' : '')
                 }
                 tabIndex={tabIndex ? tabIndex : 0}
-                onFocus={!readonly && this.handleFocus}
+                onFocus={readonly ? null : this.handleFocus}
                 onBlur={this.handleBlur}
-                onClick={!readonly && this.handleClick}
+                onClick={readonly ? null : this.handleClick}
                 onKeyDown={this.handleKeyDown}
             >
                 <div className={
