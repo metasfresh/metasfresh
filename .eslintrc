@@ -9,7 +9,12 @@
         "es6": true
     },
     "parser": "babel-eslint",
-    "extends": ["eslint:recommended", "plugin:react/recommended", "prettier"],
+    "extends": [
+        "eslint:recommended",
+        "plugin:react/recommended",
+        "airbnb",
+        "prettier"
+    ],
     "rules": {
         "prettier/prettier": [
             "error",
@@ -25,4 +30,4 @@
         "Promise": true,
         "config": true
     }
-} 
+}
