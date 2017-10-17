@@ -1,91 +1,99 @@
-import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import React, { Component } from 'react';
 import {connect} from 'react-redux';
 
+import { updateUri } from '../actions/AppActions';
+import { getWindowBreadcrumb } from '../actions/MenuActions';
+import {
+    selectTableItems,
+    setLatestNewDocument,
+} from '../actions/WindowActions';
 import DocumentList from '../components/app/DocumentList';
 import Container from '../components/Container';
 
-import {
-    getWindowBreadcrumb
-} from '../actions/MenuActions';
-
-import {
-    updateUri
-} from '../actions/AppActions';
-
-import {
-    selectTableItems,
-    setLatestNewDocument
-} from '../actions/WindowActions';
+const mapStateToProps = state => ({
+    modal: state.windowHandler.modal,
+    rawModal: state.windowHandler.rawModal,
+    latestNewDocument: state.windowHandler.latestNewDocument,
+    indicator: state.windowHandler.indicator,
+    includedView: state.listHandler.includedView,
+    processStatus: state.appHandler.processStatus,
+    breadcrumb: state.menuHandler.breadcrumb,
+    pathname: state.routing.locationBeforeTransitions.pathname,
+});
 
 class DocList extends Component {
-    constructor(props){
-        super(props);
+    state = {
+        modalTitle: '',
+        modalDescription: '',
+        notfound: false,
+    }
 
-        this.state = {
-            modalTitle: '',
-            modalDescription: '',
-            notfound: false
-        }
+    static propTypes = {
+        dispatch: PropTypes.func.isRequired,
+        breadcrumb: PropTypes.array.isRequired,
+        query: PropTypes.object.isRequired,
+        includedView: PropTypes.object.isRequired,
+        pathname: PropTypes.string.isRequired,
+        modal: PropTypes.object.isRequired,
+        rawModal: PropTypes.object.isRequired,
+        indicator: PropTypes.string.isRequired,
+        processStatus: PropTypes.string.isRequired,
     }
 
     componentDidMount = () => {
-        const {dispatch, windowType, latestNewDocument} = this.props;
+        const { dispatch, windowType, latestNewDocument, query } = this.props;
+
         dispatch(getWindowBreadcrumb(windowType));
 
-        if(latestNewDocument){
-            dispatch(selectTableItems([latestNewDocument], windowType));
+        if (latestNewDocument) {
+            dispatch(selectTableItems({
+                windowType,
+                viewId: query.viewId,
+                ids: [latestNewDocument],
+            }));
             dispatch(setLatestNewDocument(null));
         }
     }
 
     componentDidUpdate = (prevProps) => {
-        const {dispatch, windowType} = this.props;
+        const { dispatch, windowType } = this.props;
 
-        if(prevProps.windowType !== windowType){
+        if (prevProps.windowType !== windowType) {
             dispatch(getWindowBreadcrumb(windowType));
         }
     }
 
     updateUriCallback = (prop, value) => {
-        const {dispatch, query, pathname} = this.props;
+        const { dispatch, query, pathname } = this.props;
+
         dispatch(updateUri(pathname, query, prop, value));
     }
 
     setModalTitle = (title) => {
-        this.setState({
-            modalTitle: title
-        })
+        this.setState({ modalTitle: title });
     }
 
     setModalDescription = (desc) => {
-        this.setState({
-            modalDescription: desc
-        })
+        this.setState({ modalDescription: desc });
     }
 
     setNotFound = (isNotFound) => {
-        this.setState({
-            notfound: isNotFound
-        })
+        this.setState({ notfound: isNotFound });
     }
 
     render() {
         const {
-            windowType, breadcrumb, query, modal, selected, rawModal,
-            indicator, processStatus, includedView, selectedWindowType
+            windowType, breadcrumb, query, modal, rawModal, indicator,
+            processStatus, includedView,
         } = this.props;
-
-        const {
-            modalTitle, notfound, modalDescription
-        } = this.state;
-
+        const { modalTitle, notfound, modalDescription } = this.state;
         let refRowIds = [];
+
         if (query && query.refRowIds) {
             try {
                 refRowIds = JSON.parse(query.refRowIds);
-            }
-            catch (e) {
+            } catch (e) {
                 refRowIds = [];
             }
         }
@@ -93,9 +101,16 @@ class DocList extends Component {
         return (
             <Container
                 entity="documentView"
-                {...{modal, rawModal, breadcrumb, windowType, query, notfound,
-                    selected, selectedWindowType, indicator, modalTitle,
-                    processStatus, includedView}}
+                modal={modal}
+                rawModal={rawModal}
+                breadcrumb={breadcrumb}
+                windowType={windowType}
+                query={query}
+                notfound={notfound}
+                indicator={indicator}
+                modalTitle={modalTitle}
+                processStatus={processStatus}
+                includedView={includedView}
                 setModalTitle={this.setModalTitle}
                 setModalDescription={this.setModalDescription}
                 modalDescription={modalDescription}
@@ -113,12 +128,10 @@ class DocList extends Component {
                         refId={query.refId}
                         refTabId={query.refTabId}
                         refRowIds={refRowIds}
-                        selectedWindowType={selectedWindowType}
-                        selected={selected}
                         includedView={includedView}
                         inBackground={rawModal.visible}
                         inModal={modal.visible}
-                        fetchQuickActionsOnInit={true}
+                        fetchQuickActionsOnInit
                         processStatus={processStatus}
                         disablePaginationShortcuts={
                             modal.visible || rawModal.visible
@@ -133,13 +146,11 @@ class DocList extends Component {
                     ) && (
                         <DocumentList
                             type="includedView"
-                            selected={selected}
-                            selectedWindowType={selectedWindowType}
                             windowType={includedView.windowType}
                             defaultViewId={includedView.viewId}
-                            fetchQuickActionsOnInit={true}
+                            fetchQuickActionsOnInit
                             processStatus={processStatus}
-                            isIncluded={true}
+                            isIncluded
                             inBackground={false}
                             inModal={false}
                         />
@@ -150,70 +161,4 @@ class DocList extends Component {
     }
 }
 
-DocList.propTypes = {
-    dispatch: PropTypes.func.isRequired,
-    breadcrumb: PropTypes.array.isRequired,
-    query: PropTypes.object.isRequired,
-    includedView: PropTypes.object.isRequired,
-    pathname: PropTypes.string.isRequired,
-    modal: PropTypes.object.isRequired,
-    rawModal: PropTypes.object.isRequired,
-    selected: PropTypes.array,
-    indicator: PropTypes.string.isRequired,
-    processStatus: PropTypes.string.isRequired
-}
-
-function mapStateToProps(state) {
-    const {
-        windowHandler, menuHandler, listHandler, appHandler, routing
-    } = state;
-
-    const {
-        modal,
-        rawModal,
-        selected,
-        selectedWindowType,
-        latestNewDocument,
-        indicator
-    } = windowHandler || {
-        modal: false,
-        rawModal: false,
-        selected: [],
-        selectedWindowType: null,
-        latestNewDocument: null,
-        indicator: ''
-    }
-
-    const {
-        includedView
-    } = listHandler || {
-        includedView: {}
-    }
-
-    const {
-        processStatus
-    } = appHandler || {
-        processStatus: ''
-    }
-
-    const {
-        breadcrumb
-    } = menuHandler || {
-        breadcrumb: []
-    }
-
-    const {
-        pathname
-    } = routing.locationBeforeTransitions || {
-        pathname: ''
-    }
-
-    return {
-        modal, breadcrumb, pathname, selected, indicator, includedView,
-        latestNewDocument, rawModal, processStatus, selectedWindowType
-    }
-}
-
-DocList = connect(mapStateToProps)(DocList)
-
-export default DocList;
+export default connect(mapStateToProps)(DocList);

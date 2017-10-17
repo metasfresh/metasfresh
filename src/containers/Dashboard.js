@@ -1,28 +1,39 @@
-import React, { Component } from 'react';
+import { Hints } from 'intro.js-react';
 import PropTypes from 'prop-types';
+import React, { Component } from 'react';
 import {connect} from 'react-redux';
+
 import Container from '../components/Container';
 import DraggableWrapper from '../components/dashboard/DraggableWrapper';
+// import { introHints } from '../components/intro/intro';
 
-import { Steps, Hints } from 'intro.js-react';
-import { introSteps, introHints } from '../components/intro/intro';
+const mapStateToProps = state => ({
+    modal: state.windowHandler.modal,
+    rawModal: state.windowHandler.rawModal,
+    indicator: state.windowHandler.indicator,
+    includedView: state.listHandler.includedView,
+    enableTutorial: state.appHandler.enableTutorial,
+    processStatus: state.appHandler.processStatus,
+    me: state.appHandler.me,
+});
 
 export class Dashboard extends Component {
-    constructor(props){
-        super(props);
+    state = {
+        editmode: false,
+        hintsEnabled: null,
+        introHints: null,
+    }
 
-        this.state = {
-            editmode: false,
-            hintsEnabled: null,
-            introHints: null
-        };
+    static propTypes = {
+        dispatch: PropTypes.func.isRequired,
     }
 
     componentDidUpdate() {
         // TODO: Resolve this hotfix
         return;
 
-        const {me} = this.props;
+        /*
+        const { me } = this.props;
 
         if (me) {
             let docIntroHints;
@@ -33,97 +44,49 @@ export class Dashboard extends Component {
 
             this.setState({
                 hintsEnabled: (docIntroHints && (docIntroHints.length > 0)),
-                introHints: docIntroHints
+                introHints: docIntroHints,
             });
         }
+        */
     }
 
-    toggleEditMode = () => this.setState(prev => ({editmode: !prev.editmode}));
+    toggleEditMode = () => {
+        this.setState(prevState => ({ editmode: !prevState.editmode }));
+    }
 
     render() {
         const {
-            location, modal, selected, rawModal, indicator, processStatus,
-            includedView, enableTutorial
-    } = this.props;
-
+            location, modal, rawModal, indicator, processStatus, includedView,
+            enableTutorial,
+        } = this.props;
         const { editmode, hintsEnabled, introHints } = this.state;
 
         return (
             <Container
                 siteName="Dashboard"
-                noMargin={true}
+                noMargin
                 handleEditModeToggle={this.toggleEditMode}
-                {...{modal, rawModal, selected, indicator, processStatus,
-                    includedView, editmode}}
+                modal={modal}
+                rawModal={rawModal}
+                indicator={indicator}
+                processStatus={processStatus}
+                includedView={includedView}
+                editmode={editmode}
             >
                 <div className="container-fluid dashboard-wrapper">
                     <DraggableWrapper
-                        {...{editmode}}
+                        editmode={editmode}
                         toggleEditMode={this.toggleEditMode}
                         dashboard={location.pathname}
                     />
                 </div>
 
-                { (enableTutorial && introHints && (introHints.length > 0)) && (
-                    <Hints
-                        enabled={hintsEnabled}
-                        hints={introHints}
-                    />
+                {(enableTutorial && introHints && (introHints.length > 0)) && (
+                    <Hints enabled={hintsEnabled} hints={introHints} />
                 )}
             </Container>
         );
     }
 }
 
-Dashboard.propTypes = {
-    dispatch: PropTypes.func.isRequired
-};
-
-function mapStateToProps(state) {
-    const {
-        windowHandler, listHandler, appHandler
-    } = state;
-
-    const {
-        modal,
-        rawModal,
-        selected,
-        indicator,
-    } = windowHandler || {
-        modal: false,
-        rawModal: false,
-        selected: [],
-        indicator: ''
-    }
-
-    const {
-        includedView
-    } = listHandler || {
-        includedView: {}
-    }
-
-    const {
-        enableTutorial,
-        processStatus,
-        me
-    } = appHandler || {
-        enableTutorial: false,
-        processStatus: '',
-        me: {}
-    }
-
-    return {
-        modal,
-        selected,
-        indicator,
-        rawModal,
-        processStatus,
-        includedView,
-        enableTutorial,
-        me
-    }
-}
-
-Dashboard = connect(mapStateToProps)(Dashboard);
-
-export default Dashboard
+export default connect(mapStateToProps)(Dashboard);

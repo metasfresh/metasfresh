@@ -1,72 +1,48 @@
-import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import React, { Component } from 'react';
 import {connect} from 'react-redux';
 
 import Container from '../components/Container';
-
 import Inbox from '../components/inbox/Inbox';
 
+const mapStateToProps = state => ({
+    inbox: state.appHandler.inbox,
+    processStatus: state.appHandler.processStatus,
+    modal: state.windowHandler.modal,
+    rawModal: state.windowHandler.rawModal,
+    indicator: state.windowHandler.indicator,
+    includedView: state.listHandler.includedView,
+});
+
 class InboxAll extends Component {
+    static propTypes = {
+        dispatch: PropTypes.func.isRequired,
+        inbox: PropTypes.object.isRequired,
+    }
+
     render() {
         const {
-            inbox, modal, rawModal, processStatus, indicator, selected,
-            includedView
+            inbox,
+            modal,
+            rawModal,
+            processStatus,
+            indicator,
+            includedView,
         } = this.props;
 
         return (
             <Container
-                siteName = "Inbox"
-                {...{modal, rawModal, processStatus, indicator, selected,
-                    includedView}}
+                siteName="Inbox"
+                modal={modal}
+                rawModal={rawModal}
+                processStatus={processStatus}
+                indicator={indicator}
+                includedView={includedView}
             >
-                <Inbox
-                    all={true}
-                    inbox={inbox}
-                />
+                <Inbox all inbox={inbox} />
             </Container>
         );
     }
 }
 
-function mapStateToProps(state) {
-    const { appHandler, windowHandler, listHandler  } = state;
-
-    const {
-        inbox,
-        processStatus
-    } = appHandler || {
-        inbox: {},
-        processStatus: ''
-    }
-
-    const {
-        modal,
-        rawModal,
-        selected,
-        indicator,
-    } = windowHandler || {
-        modal: false,
-        rawModal: false,
-        selected: [],
-        indicator: ''
-    }
-
-    const {
-        includedView
-    } = listHandler || {
-        includedView: {}
-    }
-
-    return {
-        inbox, modal, rawModal, selected, indicator, includedView, processStatus
-    }
-}
-
-InboxAll.propTypes = {
-    dispatch: PropTypes.func.isRequired,
-    inbox: PropTypes.object.isRequired
-};
-
-InboxAll = connect(mapStateToProps)(InboxAll);
-
-export default InboxAll
+export default connect(mapStateToProps)(InboxAll);

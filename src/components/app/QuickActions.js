@@ -49,10 +49,6 @@ class QuickActions extends Component {
             selected, viewId, windowType
         } = this.props;
 
-        if (nextProps.selectedWindowType && (nextProps.selectedWindowType !== nextProps.windowType)) {
-            return;
-        }
-
         if (
             (nextProps.selected && (JSON.stringify(nextProps.selected) !== JSON.stringify(selected))) ||
             (nextProps.viewId && (nextProps.viewId !== viewId)) ||

@@ -107,7 +107,11 @@ class Table extends Component {
             !disconnectFromState &&
             !_.isEqual(prevState.selected, selected)
         ) {
-            dispatch(selectTableItems(selected, type));
+            dispatch(selectTableItems({
+                windowType: type,
+                viewId,
+                ids: selected,
+            }));
         }
 
         if (!_.isEqual(prevProps.rowData, rowData)) {
@@ -274,7 +278,13 @@ class Table extends Component {
     }
 
     selectProduct = (id, idFocused, idFocusedDown) => {
-        const {dispatch, type, disconnectFromState, tabInfo} = this.props;
+        const {
+            dispatch,
+            type,
+            disconnectFromState,
+            tabInfo,
+            viewId,
+        } = this.props;
 
         this.setState(prevState => ({
             selected: prevState.selected.concat([id])
@@ -285,7 +295,14 @@ class Table extends Component {
                 dispatch(selectRow(selected));
             }
 
-            !disconnectFromState && dispatch(selectTableItems(selected, type))
+            if (!disconnectFromState) {
+                dispatch(selectTableItems({
+                    windowType: type,
+                    viewId,
+                    ids: selected,
+                }));
+            }
+
             this.triggerFocus(idFocused, idFocusedDown);
         })
     }

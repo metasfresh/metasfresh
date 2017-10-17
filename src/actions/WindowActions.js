@@ -261,12 +261,11 @@ export function indicatorState(state) {
 
 //SELECT ON TABLE
 
-export function selectTableItems(ids, windowType) {
+export function selectTableItems({ ids, windowType, viewId }) {
     return {
         type: types.SELECT_TABLE_ITEMS,
-        ids,
-        windowType
-    }
+        payload: { ids, windowType, viewId },
+    };
 }
 
 // THUNK ACTIONS

@@ -1,25 +1,36 @@
-import React, { Component } from 'react';
-import PropTypes from 'prop-types';
-import {connect} from 'react-redux';
-import onClickOutside from 'react-onclickoutside';
 import counterpart from 'counterpart';
+import PropTypes from 'prop-types';
+import React, { Component } from 'react';
+import onClickOutside from 'react-onclickoutside';
+import { connect } from 'react-redux';
 
-import {updateBreadcrumb, elementPathRequest} from '../../actions/MenuActions';
-
-import Actions from './Actions';
-
-import BookmarkButton from './BookmarkButton';
-
+import {
+  elementPathRequest,
+  updateBreadcrumb,
+} from '../../actions/MenuActions';
+import { getSelection } from '../../reducers/windowHandler';
 import keymap from '../../keymap.js';
 
-class Subheader extends Component {
-    constructor(props){
-        super(props);
+import Actions from './Actions';
+import BookmarkButton from './BookmarkButton';
 
-        this.state = {
-            pdfSrc: null,
-            elementPath: ''
-        }
+const mapStateToProps = (state, props) => ({
+    standardActions: state.windowHandler.master.standardActions,
+    selected: getSelection({
+        state,
+        windowType: props.windowType,
+        viewId: props.viewId,
+    }),
+});
+
+class Subheader extends Component {
+    static propTypes = {
+        dispatch: PropTypes.func.isRequired,
+    }
+
+    state = {
+        pdfSrc: null,
+        elementPath: '',
     }
 
     componentDidMount() {
@@ -28,58 +39,61 @@ class Subheader extends Component {
         const entity = (this.props.entity === 'board') ? 'board' : 'window';
 
         elementPathRequest(entity, this.props.windowType).then(response => {
-            this.setState({
-                elementPath: response.data
-            });
+            this.setState({ elementPath: response.data });
         });
     }
 
     handleKeyDown = (e) => {
-        const {closeSubheader} = this.props;
+        const { closeSubheader } = this.props;
 
-        switch(e.key){
+        switch (e.key) {
             case 'ArrowDown': {
                 e.preventDefault();
                 const activeElem = this.getItemActiveElem();
-                if(activeElem.nextSibling) {
+                if (activeElem.nextSibling) {
                     activeElem.nextSibling.focus();
                 }
                 break;
             }
+
             case 'ArrowUp': {
                 e.preventDefault();
                 const activeEl = this.getItemActiveElem();
-                if(activeEl.previousSibling) {
+                if (activeEl.previousSibling) {
                     activeEl.previousSibling.focus();
                 }
                 break;
             }
+
             case 'ArrowLeft': {
                 e.preventDefault();
                 const activeColumn = this.getColumnActiveElem();
-                if(activeColumn.previousSibling) {
+                if (activeColumn.previousSibling) {
                     activeColumn.previousSibling.focus();
-                    if(this.getItemActiveElem().nextSibling) {
+                    if (this.getItemActiveElem().nextSibling) {
                          this.getItemActiveElem().nextSibling.focus();
                     }
                 }
                 break;
             }
+
             case 'ArrowRight': {
                 e.preventDefault();
                 const activeCol = this.getColumnActiveElem();
-                if(activeCol.nextSibling) {
+                if (activeCol.nextSibling) {
                     activeCol.nextSibling.focus();
-                    if(this.getItemActiveElem().nextSibling){
+                    if (this.getItemActiveElem().nextSibling){
                         this.getItemActiveElem().nextSibling.focus();
                     }
                 }
                 break;
             }
+
             case 'Enter':
                 e.preventDefault();
                 document.activeElement.click();
                 break;
+
             case 'Escape':
                 e.preventDefault();
                 closeSubheader();
@@ -93,25 +107,22 @@ class Subheader extends Component {
     }
 
     toggleAttachmentDelete = (value) => {
-        this.setState({
-            attachmentHovered: value
-        })
+        this.setState({ attachmentHovered: value });
     }
 
     getColumnActiveElem = () => {
         const active = document.activeElement;
-        if(active.classList.contains('js-subheader-item')) {
+        if (active.classList.contains('js-subheader-item')) {
             return active.parentNode;
         } else {
-             return active;
+            return active;
         }
     }
 
     getItemActiveElem = () => {
         const active = document.activeElement;
-        if(
-            active.classList.contains('js-subheader-column')
-        ) {
+
+        if (active.classList.contains('js-subheader-column')) {
             return active.childNodes[1];
         } else {
             return active;
@@ -119,11 +130,11 @@ class Subheader extends Component {
     }
 
     handleUpdateBreadcrumb = (nodes) => {
-        const {dispatch} = this.props;
+        const { dispatch } = this.props;
         nodes.map(node => dispatch(updateBreadcrumb(node)));
     }
 
-    handleDownloadSelected = event => {
+    handleDownloadSelected = (event) => {
         if (this.props.selected.length === 0) {
             event.preventDefault();
         }
@@ -143,10 +154,10 @@ class Subheader extends Component {
                 }}
             >
                 <i className={icon} />
+
                 {caption}
-                <span className="tooltip-inline">
-                    {hotkey}
-                </span>
+
+                <span className="tooltip-inline">{hotkey}</span>
             </div>
         );
     }
@@ -162,7 +173,7 @@ class Subheader extends Component {
             handlePrint,
             openModal,
             standardActions,
-            windowType
+            windowType,
         } = this.props;
 
         if (!dataId) {
@@ -236,12 +247,9 @@ class Subheader extends Component {
             redirect,
             selected,
             siteName,
-            windowType
+            windowType,
         } = this.props;
-
-        const {
-            elementPath
-        } = this.state;
+        const { elementPath } = this.state;
 
         let currentNode = elementPath;
         if (currentNode && currentNode.children) {
@@ -255,9 +263,7 @@ class Subheader extends Component {
                 className="subheader-column js-subheader-column"
                 tabIndex={0}
             >
-                <div
-                    className="subheader-header"
-                >
+                <div className="subheader-header">
                     <BookmarkButton
                         isBookmark={currentNode && currentNode.favorite}
                         nodeId={currentNode && currentNode.nodeId}
@@ -268,25 +274,34 @@ class Subheader extends Component {
                             title={
                                 currentNode ? currentNode.caption : siteName
                             }
-                            className="subheader-title">
-                                {currentNode ? currentNode.caption : siteName}
+                            className="subheader-title"
+                        >
+                            {currentNode ? currentNode.caption : siteName}
                         </span>
                     </BookmarkButton>
                 </div>
+
                 <div className="subheader-break" />
-                {windowType && <div
-                    className="subheader-item js-subheader-item"
-                    tabIndex={0}
-                    onClick={() => { redirect(
-                        '/window/'+ windowType + '/new'
-                    ); closeSubheader()}
-                }>
-                    <i className="meta-icon-report-1" />
-                    {counterpart.translate('window.new.caption')}
-                    <span className="tooltip-inline">
-                        {keymap.GLOBAL_CONTEXT.NEW_DOCUMENT}
-                    </span>
-                </div>}
+
+                {windowType && (
+                    <div
+                        className="subheader-item js-subheader-item"
+                        tabIndex={0}
+                        onClick={() => {
+                            redirect('/window/'+ windowType + '/new');
+                            closeSubheader();
+                        }}
+                    >
+                        <i className="meta-icon-report-1" />
+
+                        {counterpart.translate('window.new.caption')}
+
+                        <span className="tooltip-inline">
+                            {keymap.GLOBAL_CONTEXT.NEW_DOCUMENT}
+                        </span>
+                    </div>
+                )}
+
                 {windowType && query && query.viewId && (
                     <a
                         className="subheader-item js-subheader-item"
@@ -322,33 +337,37 @@ class Subheader extends Component {
 
     renderActionsColumn = () => {
         const {
-            windowType, dataId, selected, selectedWindowType, entity, query,
-            openModal, openModalRow, closeSubheader, notfound, activeTab
+            windowType, dataId, selected, entity, query, openModal,
+            openModalRow, closeSubheader, notfound, activeTab,
         } = this.props;
 
         return (
             <Actions
                 key={1}
-                {...{
-                    windowType, entity, openModal, openModalRow, closeSubheader, notfound
-                }}
+                windowType={windowType}
+                entity={entity}
+                openModal={openModal}
+                openModalRow={openModalRow}
+                closeSubheader={closeSubheader}
+                notfound={notfound}
                 docId={dataId ? dataId : query && query.viewId}
-                rowId={selectedWindowType === windowType ? selected : []}
+                rowId={selected}
                 activeTab={activeTab}
-                activeTabSelected={(activeTab && selected && (selected.length === 1)) ? selected: []}
+                activeTabSelected={(
+                    activeTab && selected && (selected.length === 1)
+                ) ? selected : []}
             />
         );
 
     }
 
     render() {
-
         return (
             <div
                 className="subheader-container overlay-shadow subheader-open js-not-unselect"
                 tabIndex={0}
                 onKeyDown={this.handleKeyDown}
-                ref={(c)=> this.subHeader = c}
+                ref={(c) => { this.subHeader = c; }}
             >
                 <div className="container-fluid-subheader container-fluid">
                     <div className="subheader-row">
@@ -361,12 +380,4 @@ class Subheader extends Component {
     }
 }
 
-Subheader.propTypes = {
-    dispatch: PropTypes.func.isRequired
-};
-
-Subheader = connect(state => ({
-    standardActions: state.windowHandler.master.standardActions
-}))(onClickOutside(Subheader));
-
-export default Subheader;
+export default connect(mapStateToProps)(onClickOutside(Subheader));

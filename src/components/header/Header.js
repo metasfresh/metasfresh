@@ -1,58 +1,64 @@
-import React, { Component } from 'react';
-import PropTypes from 'prop-types';
-import {connect} from 'react-redux';
-import {push, replace} from 'react-router-redux';
 import counterpart from 'counterpart';
-
-import logo from '../../assets/images/metasfresh_logo_green_thumb.png';
-
-import Subheader from './SubHeader';
-import UserDropdown from './UserDropdown';
-import Breadcrumb from './Breadcrumb';
-import MasterWidget from '../widget/MasterWidget';
-import SideList from './SideList';
-import Indicator from '../app/Indicator';
-import Inbox from '../inbox/Inbox';
-import Tooltips from '../tooltips/Tooltips';
-import Prompt from '../app/Prompt';
-import NewEmail from '../email/NewEmail';
-import NewLetter from '../letter/NewLetter';
-
-import {
-    openModal,
-    closeModal
-} from '../../actions/WindowActions';
+import PropTypes from 'prop-types';
+import React, { Component } from 'react';
+import { connect } from 'react-redux';
+import { push } from 'react-router-redux';
+import { ShortcutManager } from 'react-shortcuts';
 
 import {
     deleteRequest,
     duplicateRequest,
-    openFile
+    openFile,
 } from '../../actions/GenericActions';
+import { openModal } from '../../actions/WindowActions';
+import logo from '../../assets/images/metasfresh_logo_green_thumb.png';
+import keymap from '../../keymap';
 
-import keymap from '../../keymap.js';
+import Indicator from '../app/Indicator';
+import Prompt from '../app/Prompt';
+import NewEmail from '../email/NewEmail';
+import Inbox from '../inbox/Inbox';
+import NewLetter from '../letter/NewLetter';
 import GlobalContextShortcuts from '../shortcuts/GlobalContextShortcuts';
-import { ShortcutManager } from 'react-shortcuts';
+import Tooltips from '../tooltips/Tooltips';
+import MasterWidget from '../widget/MasterWidget';
+
+import Breadcrumb from './Breadcrumb';
+import SideList from './SideList';
+import Subheader from './SubHeader';
+import UserDropdown from './UserDropdown';
+
 const shortcutManager = new ShortcutManager(keymap);
 
-class Header extends Component {
-    constructor(props){
-        super(props);
+const mapStateToProps = state => ({
+    inbox: state.appHandler.inbox,
+    me: state.appHandler.me,
+    pathname: state.routing.locationBeforeTransitions.pathname,
+});
 
-        this.state = {
-            isSubheaderShow: false,
-            isSideListShow: false,
-            sideListTab: null,
-            isMenuOverlayShow: false,
-            menuOverlay: null,
-            scrolled: false,
-            isInboxOpen: false,
-            isUDOpen: false,
-            tooltipOpen: '',
-            isEmailOpen: false,
-            prompt: {
-                open: false
-            }
-        }
+class Header extends Component {
+    state = {
+        isSubheaderShow: false,
+        isSideListShow: false,
+        sideListTab: null,
+        isMenuOverlayShow: false,
+        menuOverlay: null,
+        scrolled: false,
+        isInboxOpen: false,
+        isUDOpen: false,
+        tooltipOpen: '',
+        isEmailOpen: false,
+        prompt: { open: false },
+    }
+
+    static childContextTypes = {
+        shortcuts: PropTypes.object.isRequired,
+    }
+
+    static propTypes = {
+        dispatch: PropTypes.func.isRequired,
+        inbox: PropTypes.object.isRequired,
+        me: PropTypes.object.isRequired,
     }
 
     componentDidMount() {
@@ -64,34 +70,35 @@ class Header extends Component {
         this.removeEventListeners();
     }
 
-    componentWillUpdate = (nextProps) => {
-        const {dropzoneFocused} = this.props;
-        if(
-            nextProps.dropzoneFocused !== dropzoneFocused &&
+    componentWillUpdate(nextProps) {
+        const { dropzoneFocused } = this.props;
+
+        if (nextProps.dropzoneFocused !== dropzoneFocused &&
             nextProps.dropzoneFocused
-        ){
+        ) {
             this.closeOverlays();
         }
     }
 
-    componentDidUpdate = (prevProps) => {
-        const {dispatch, pathname} = this.props;
-        if(
-            prevProps.me.language !== undefined &&
+    componentDidUpdate(prevProps) {
+        // const {dispatch, pathname} = this.props;
+
+        if (prevProps.me.language !== undefined &&
             JSON.stringify(prevProps.me.language) !==
             JSON.stringify(this.props.me.language)
         ) {
-/*
+            /*
             dispatch(replace(''));
             dispatch(replace(pathname));
-*/
+            */
+
             // Need to reload page completely when current locale gets changed
             window.location.reload(false);
         }
     }
 
     getChildContext = () => {
-        return { shortcuts: shortcutManager }
+        return { shortcuts: shortcutManager };
     }
 
     initEventListeners = () => {
@@ -103,38 +110,33 @@ class Header extends Component {
     }
 
     handleInboxOpen = (state) => {
-        this.setState({
-            isInboxOpen: !!state
-        });
+        this.setState({ isInboxOpen: !!state });
     }
 
     handleUDOpen = (state) => {
-        this.setState({
-            isUDOpen: !!state
-        })
+        this.setState({ isUDOpen: !!state })
     }
 
     handleMenuOverlay = (e, nodeId) => {
-        const {isSubheaderShow, isSideListShow} = this.state;
-        e && e.preventDefault();
+        const { isSubheaderShow, isSideListShow } = this.state;
+
+        if (e) {
+            e.preventDefault();
+        }
 
         let toggleBreadcrumb = () => {
             this.setState({
-                menuOverlay: nodeId
+                menuOverlay: nodeId,
             }, () => {
-                if(nodeId !== '') {
-                    this.setState({
-                        isMenuOverlayShow: true
-                    });
+                if (nodeId !== '') {
+                    this.setState({ isMenuOverlayShow: true });
                 } else {
-                    this.setState({
-                        isMenuOverlayShow: false
-                    });
+                    this.setState({ isMenuOverlayShow: false });
                 }
             });
         }
 
-        if(!isSubheaderShow && !isSideListShow){
+        if (!isSubheaderShow && !isSideListShow) {
             toggleBreadcrumb();
         }
     }
@@ -143,45 +145,39 @@ class Header extends Component {
         const target = event.srcElement;
         let scrollTop = target && target.body.scrollTop;
 
-        if(!scrollTop){
+        if (!scrollTop) {
             scrollTop = document.documentElement.scrollTop;
         }
 
-        if(scrollTop > 0) {
-            this.setState({
-                scrolled: true
-            })
+        if (scrollTop > 0) {
+            this.setState({ scrolled: true });
         } else {
-            this.setState({
-                scrolled: false
-            })
+            this.setState({ scrolled: false });
         }
     }
 
     handleDashboardLink = () => {
-        const {dispatch} = this.props;
+        const { dispatch } = this.props;
         dispatch(push('/'));
     }
 
     toggleScrollScope = (open) => {
-        if(!open){
+        if (!open) {
             document.body.style.overflow = 'auto';
-        }else{
+        } else {
             document.body.style.overflow = 'hidden';
         }
     }
 
     toggleTooltip = (tooltip) => {
-        this.setState({
-            tooltipOpen: tooltip
-        });
+        this.setState({ tooltipOpen: tooltip });
     }
 
     openModal = (windowType, type, caption, isAdvanced) => {
-        const {dispatch, query} = this.props;
+        const { dispatch, query } = this.props;
         dispatch(openModal(
             caption, windowType, type, null, null, isAdvanced,
-            query && query.viewId
+            query && query.viewId,
         ));
     }
 
@@ -189,14 +185,14 @@ class Header extends Component {
         const { dispatch } = this.props;
 
         dispatch(openModal(
-            caption, windowType, type, tabId, rowId
+            caption, windowType, type, tabId, rowId,
         ));
     }
 
     handlePrint = (windowType, docId, docNo) => {
         openFile(
             'window', windowType, docId, 'print',
-            windowType + '_' + (docNo ? docNo : docId) + '.pdf'
+            windowType + '_' + (docNo ? docNo : docId) + '.pdf',
         );
     }
 
@@ -204,62 +200,46 @@ class Header extends Component {
         const { dispatch } = this.props;
 
         duplicateRequest('window', windowType, docId)
-            .then( (response) => {
+            .then((response) => {
                 if (response && response.data && response.data.id) {
-                    dispatch(
-                        push(`/window/${windowType}/${response.data.id}`)
-                    );
+                    dispatch(push(`/window/${windowType}/${response.data.id}`));
                 }
             });
     }
 
     handleDelete = () => {
         this.setState({
-            prompt: Object.assign({}, this.state.prompt, {
-                open: true
-            })
+            prompt: Object.assign({}, this.state.prompt, { open: true }),
         });
     }
 
     handleEmail = () => {
-        this.setState({
-            isEmailOpen: true
-        });
+        this.setState({ isEmailOpen: true });
     }
 
     handleLetter = () => {
-        this.setState({
-            isLetterOpen: true
-        });
+        this.setState({ isLetterOpen: true });
     }
 
     handleCloseEmail = () => {
-        this.setState({
-            isEmailOpen: false
-        });
+        this.setState({ isEmailOpen: false });
     }
 
     handleCloseLetter = () => {
-        this.setState({
-            isLetterOpen: false
-        });
+        this.setState({ isLetterOpen: false });
     }
 
     handlePromptCancelClick = () => {
         this.setState({
-            prompt: Object.assign({}, this.state.prompt, {
-                open: false
-            })
+            prompt: Object.assign({}, this.state.prompt, { open: false }),
         });
     }
 
     handlePromptSubmitClick = (windowType, docId) => {
-        const {dispatch, handleDeletedStatus} = this.props;
+        const { dispatch, handleDeletedStatus } = this.props;
 
         this.setState({
-            prompt: Object.assign({}, this.state.prompt, {
-                open: false
-            })
+            prompt: Object.assign({}, this.state.prompt, { open: false }),
         }, () => {
             deleteRequest('window', windowType, null, null, [docId])
                 .then(() => {
@@ -273,10 +253,10 @@ class Header extends Component {
     handleDocStatusToggle = (close) => {
         const elem = document.getElementsByClassName('js-dropdown-toggler')[0];
 
-        if(close) {
+        if (close) {
             elem.blur();
         } else {
-            if(document.activeElement === elem) {
+            if (document.activeElement === elem) {
                 elem.blur();
             } else {
                 elem.focus();
@@ -285,17 +265,16 @@ class Header extends Component {
     }
 
     handleSidelistToggle = (id = null, sideListTab) => {
-
         this.toggleScrollScope(id !== null);
 
         this.setState({
             isSideListShow: id !== null && id !== sideListTab,
-            sideListTab: id !== sideListTab ? id : null
+            sideListTab: id !== sideListTab ? id : null,
         });
     }
 
     closeOverlays = (clickedItem, callback) => {
-        const {isSubheaderShow} = this.state;
+        const { isSubheaderShow } = this.state;
 
         this.setState({
             menuOverlay: null,
@@ -306,19 +285,18 @@ class Header extends Component {
             sideListTab: null,
             isSubheaderShow:
                 (clickedItem == 'isSubheaderShow' ? !isSubheaderShow : false),
-            tooltipOpen: ''
+            tooltipOpen: '',
         }, callback);
 
-        if(
-            document.getElementsByClassName('js-dropdown-toggler')[0] &&
-            (clickedItem != 'dropdown')
-        ){
+        if (document.getElementsByClassName('js-dropdown-toggler')[0] &&
+            (clickedItem !== 'dropdown')
+        ) {
             this.handleDocStatusToggle(true);
         }
     }
 
     redirect = (where) => {
-        const {dispatch} = this.props;
+        const { dispatch } = this.props;
         dispatch(push(where));
     }
 
@@ -326,31 +304,28 @@ class Header extends Component {
         const {
             docSummaryData, siteName, docNoData, docStatus,
             docStatusData, windowType, dataId, breadcrumb, showSidelist,
-            inbox, selected, entity, query, showIndicator, isDocumentNotSaved,
-            selectedWindowType, notfound, docId, me, editmode,
-            handleEditModeToggle, activeTab
+            inbox, entity, query, showIndicator, isDocumentNotSaved, notfound,
+            docId, me, editmode, handleEditModeToggle, activeTab,
         } = this.props;
-
         const {
             isSubheaderShow, isSideListShow, menuOverlay, isInboxOpen, scrolled,
             isMenuOverlayShow, tooltipOpen, prompt, sideListTab, isUDOpen,
-            isEmailOpen, isLetterOpen
+            isEmailOpen, isLetterOpen,
         } = this.state;
 
         return (
             <div>
-            {
-                prompt.open &&
-                <Prompt
-                    title="Delete"
-                    text="Are you sure?"
-                    buttons={{submit: 'Delete', cancel: 'Cancel'}}
-                    onCancelClick={this.handlePromptCancelClick}
-                    onSubmitClick={() =>
-                        this.handlePromptSubmitClick(windowType, dataId)
-                    }
-                />
-            }
+                {prompt.open && (
+                    <Prompt
+                        title="Delete"
+                        text="Are you sure?"
+                        buttons={{ submit: 'Delete', cancel: 'Cancel' }}
+                        onCancelClick={this.handlePromptCancelClick}
+                        onSubmitClick={() =>
+                            this.handlePromptSubmitClick(windowType, dataId)
+                        }
+                    />
+                )}
 
                 <nav
                     className={
@@ -397,14 +372,19 @@ class Header extends Component {
                                                 'mainScreen.actionMenu.tooltip'
                                                 )
                                             }
-                                            type={''}
+                                            type=""
                                         /> }
                                 </div>
 
                                 <Breadcrumb
-                                    {...{breadcrumb, windowType, docSummaryData,
-                                        dataId, siteName, menuOverlay, docId,
-                                        isDocumentNotSaved}}
+                                    breadcrumb={breadcrumb}
+                                    windowType={windowType}
+                                    docSummaryData={docSummaryData}
+                                    dataId={dataId}
+                                    siteName={siteName}
+                                    menuOverlay={menuOverlay}
+                                    docId={docId}
+                                    isDocumentNotSaved={isDocumentNotSaved}
                                     handleMenuOverlay={this.handleMenuOverlay}
                                     openModal={this.openModal}
                                 />
@@ -414,7 +394,7 @@ class Header extends Component {
                                 <img
                                     src={logo}
                                     className="header-logo pointer"
-                                    onClick={() => this.handleDashboardLink()}
+                                    onClick={this.handleDashboardLink}
                                 />
                             </div>
                             <div className="header-right-side">
@@ -438,7 +418,7 @@ class Header extends Component {
                                             windowType={windowType}
                                             dataId={dataId}
                                             widgetData={[docStatusData]}
-                                            noLabel={true}
+                                            noLabel
                                             type="primary"
                                             dropdownOpenCallback={()=>{
                                                 this.closeOverlays('dropdown')
@@ -460,7 +440,7 @@ class Header extends Component {
                                                 'mainScreen.docStatus.tooltip'
                                                 )
                                                 }
-                                                type={''}
+                                                type=""
                                             />
                                         }
                                     </div>
@@ -533,9 +513,11 @@ class Header extends Component {
                                     disableOnClickOutside={!isUDOpen}
                                     redirect={this.redirect}
                                     shortcut={
-                                        keymap.GLOBAL_CONTEXT.OPEN_AVATAR_MENU}
+                                        keymap.GLOBAL_CONTEXT.OPEN_AVATAR_MENU
+                                    }
                                     toggleTooltip={this.toggleTooltip}
-                                    {...{tooltipOpen, me}}
+                                    tooltipOpen={tooltipOpen}
+                                    me={me}
                                 />
 
                                 {showSidelist &&
@@ -574,12 +556,12 @@ class Header extends Component {
                                                         .GLOBAL_CONTEXT
                                                         .OPEN_SIDEBAR_MENU_0
                                                 }
-                                                action={
-                                                    counterpart.translate(
+                                                action={counterpart.translate(
+                                                    /* eslint-disable max-len */
                                                     'mainScreen.sideList.tooltip'
-                                                    )
-                                                }
-                                                type={''}
+                                                    /* eslint-enable max-len */
+                                                )}
+                                                type=""
                                             />
                                         }
 
@@ -588,7 +570,10 @@ class Header extends Component {
                             </div>
                         </div>
                     </div>
-                    {showIndicator && <Indicator {...{isDocumentNotSaved}}/>}
+
+                    {showIndicator && (
+                        <Indicator isDocumentNotSaved={isDocumentNotSaved} />
+                    )}
                 </nav>
 
                 {isSubheaderShow && <Subheader
@@ -603,10 +588,17 @@ class Header extends Component {
                     handleLetter={this.handleLetter}
                     redirect={this.redirect}
                     disableOnClickOutside={!isSubheaderShow}
-                    {...{breadcrumb, notfound, query, entity,
-                        selectedWindowType, selected, dataId, windowType,
-                        siteName, editmode, handleEditModeToggle, activeTab
-                    }}
+                    breadcrumb={breadcrumb}
+                    notfound={notfound}
+                    query={query}
+                    entity={entity}
+                    dataId={dataId}
+                    windowType={windowType}
+                    viewId={query.viewId}
+                    siteName={siteName}
+                    editmode={editmode}
+                    handleEditModeToggle={handleEditModeToggle}
+                    activeTab={activeTab}
                 />}
 
                 {showSidelist && isSideListShow && <SideList
@@ -617,7 +609,7 @@ class Header extends Component {
                     disableOnClickOutside={!showSidelist}
                     docId={dataId}
                     defaultTab={sideListTab}
-                    open={true}
+                    open
                 />}
 
                 {   isEmailOpen &&
@@ -641,7 +633,7 @@ class Header extends Component {
                     handleMenuOverlay={isMenuOverlayShow ?
                         () => this.handleMenuOverlay('', '') :
                         () => this.closeOverlays('',
-                            ()=> this.handleMenuOverlay('', '0')
+                            () => this.handleMenuOverlay('', '0')
                         )
                     }
                     handleInboxOpen = {isInboxOpen ?
@@ -678,51 +670,4 @@ class Header extends Component {
     }
 }
 
-Header.propTypes = {
-    dispatch: PropTypes.func.isRequired,
-    selected: PropTypes.array.isRequired,
-    inbox: PropTypes.object.isRequired,
-    me: PropTypes.object.isRequired
-};
-
-function mapStateToProps(state) {
-    const {windowHandler, appHandler, routing} = state;
-
-    const {
-        inbox,
-        me
-    } = appHandler || {
-        inbox: {},
-        me: {}
-    }
-
-    const {
-        selected,
-        selectedWindowType
-    } = windowHandler || {
-        selected: [],
-        selectedWindowType: null
-    }
-
-    const {
-        pathname
-    } = routing.locationBeforeTransitions || {
-        pathname: ''
-    }
-
-    return {
-        selected,
-        inbox,
-        selectedWindowType,
-        me,
-        pathname
-    }
-}
-
-Header.childContextTypes = {
-    shortcuts: PropTypes.object.isRequired
-}
-
-Header = connect(mapStateToProps)(Header)
-
-export default Header
+export default connect(mapStateToProps)(Header);

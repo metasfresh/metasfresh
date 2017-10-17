@@ -1,53 +1,64 @@
-import React, { Component } from 'react';
-import PropTypes from 'prop-types';
-import {push} from 'react-router-redux';
-import {connect} from 'react-redux';
 import counterpart from 'counterpart';
-
-import QuickActions from './QuickActions';
-import BlankPage from '../BlankPage';
-import Table from '../table/Table';
-import Filters from '../filters/Filters';
-import FiltersStatic from '../filters/FiltersStatic';
-import SelectionAttributes from './SelectionAttributes';
-import DataLayoutWrapper from '../DataLayoutWrapper';
-
 import * as _ from 'lodash';
+import PropTypes from 'prop-types';
+import React, { Component } from 'react';
+import { push } from 'react-router-redux';
+import { connect } from 'react-redux';
 
 import {
+    createViewRequest,
+    browseViewRequest,
+    filterViewRequest,
+    deleteStaticFilter,
+} from '../../actions/AppActions';
+import {
     initLayout,
-    getDataByIds
+    getDataByIds,
 } from '../../actions/GenericActions';
-
+import {
+    closeListIncludedView,
+    setSorting,
+    setPagination,
+    setListId,
+    setListIncludedView,
+} from '../../actions/ListActions';
 import {
     selectTableItems,
     getItemsByProperty,
     mapIncluded,
     indicatorState,
     connectWS,
-    disconnectWS
+    disconnectWS,
 } from '../../actions/WindowActions';
+import { getSelection } from '../../reducers/windowHandler';
 
-import {
-    closeListIncludedView,
-    setSorting,
-    setPagination,
-    setListId,
-    setListIncludedView
-} from '../../actions/ListActions';
+import BlankPage from '../BlankPage';
+import DataLayoutWrapper from '../DataLayoutWrapper';
+import Filters from '../filters/Filters';
+import FiltersStatic from '../filters/FiltersStatic';
+import Table from '../table/Table';
 
-import {
-    createViewRequest,
-    browseViewRequest,
-    filterViewRequest,
-    deleteStaticFilter
-} from '../../actions/AppActions';
+import QuickActions from './QuickActions';
+import SelectionAttributes from './SelectionAttributes';
+
+const mapStateToProps = (state, props) => ({
+    selected: getSelection({
+        state,
+        windowType: props.windowType,
+        viewId: props.defaultViewId,
+    }),
+});
 
 class DocumentList extends Component {
-    constructor(props){
+    static propTypes = {
+        windowType: PropTypes.string.isRequired,
+        dispatch: PropTypes.func.isRequired,
+    }
+
+    constructor(props) {
         super(props);
 
-        const {defaultViewId, defaultPage, defaultSort} = this.props;
+        const { defaultViewId, defaultPage, defaultSort } = props;
 
         this.pageLength = 20;
 
@@ -67,20 +78,19 @@ class DocumentList extends Component {
             hasShowIncluded: false
         };
 
-        this.cachedSelection = null;
-
         this.fetchLayoutAndData();
     }
 
     componentDidMount = () => {
-        this.mounted = true
+        this.mounted = true;
     }
 
     componentDidUpdate(prevProps, prevState) {
         const { setModalDescription } = this.props;
         const { data } = this.state;
-        if(prevState.data !== data){
-            setModalDescription && setModalDescription(data.description);
+
+        if (prevState.data !== data && setModalDescription) {
+            setModalDescription(data.description);
         }
     }
 
@@ -92,13 +102,9 @@ class DocumentList extends Component {
     componentWillReceiveProps(props) {
         const {
             windowType, defaultViewId, defaultSort, defaultPage, selected,
-            inBackground, dispatch, includedView, selectedWindowType,
-            disconnectFromState, refId
+            dispatch, includedView, disconnectFromState, refId,
         } = props;
-
-        const {
-            page, sort, viewId, layout
-        } = this.state;
+        const { page, sort, viewId, layout } = this.state;
 
         /*
          * If we browse list of docs, changing type of Document
@@ -109,84 +115,48 @@ class DocumentList extends Component {
          * OR
          * The reference ID is changed
          */
-        if (
-            (windowType !== this.props.windowType) ||
-            ((defaultViewId === undefined) && (defaultViewId !== this.props.defaultViewId)) ||
-            (refId !== this.props.refId)
+        if ((windowType !== this.props.windowType) || (
+                (defaultViewId === undefined) &&
+                (defaultViewId !== this.props.defaultViewId)
+            ) || (refId !== this.props.refId)
         ) {
             this.setState({
-                data:null,
-                layout:null,
+                data: null,
+                layout: null,
                 filters: null,
-                viewId: null
+                viewId: null,
             }, () => {
                 if (!disconnectFromState) {
-                    dispatch(selectTableItems([], null));
+                    dispatch(selectTableItems({
+                        windowType,
+                        viewId,
+                        ids: [],
+                    }));
                 }
 
                 this.fetchLayoutAndData();
             });
         }
 
-        if (
-            (defaultSort !== this.props.defaultSort) &&
+        if ((defaultSort !== this.props.defaultSort) &&
             (defaultSort !== sort)
         ) {
-            this.setState({
-                sort: defaultSort
-            });
+            this.setState({ sort: defaultSort });
         }
 
-        if (
-            (defaultPage !== this.props.defaultPage) &&
+        if ((defaultPage !== this.props.defaultPage) &&
             (defaultPage !== page)
         ) {
-            this.setState({
-                page: defaultPage || 1
-            });
+            this.setState({ page: defaultPage || 1 });
         }
 
-        if (
-            (defaultViewId !== this.props.defaultViewId) &&
+        if ((defaultViewId !== this.props.defaultViewId) &&
             (defaultViewId !== viewId)
         ) {
-            this.setState({
-                viewId: defaultViewId
-            });
+            this.setState({ viewId: defaultViewId });
         }
 
-        /*
-         * It is case when we need refersh global selection state,
-         * because scope is changed
-         *
-         * After opening modal cache current selection
-         * After closing modal with gridview, refresh selected.
-         */
-        if (
-            (inBackground !== this.props.inBackground)
-        ) {
-            if (!inBackground) {
-                // In case of preventing cached selection restore
-                if (
-                    !disconnectFromState &&
-                    this.cachedSelection
-                ) {
-                    dispatch(
-                        selectTableItems(
-                            this.cachedSelection,
-                            this.props.windowType
-                        )
-                    );
-                }
-            }
-            else {
-                this.cachedSelection = selected;
-            }
-        }
-
-        if (
-            (selectedWindowType === windowType) &&
-            (includedView && includedView.windowType && includedView.viewId) &&
+        if ((includedView && includedView.windowType && includedView.viewId) &&
             (layout && layout.supportIncludedView) &&
             !_.isEqual(this.props.selected, selected)
         ) {
@@ -273,7 +243,9 @@ class DocumentList extends Component {
         const {viewId} = this.state;
 
         deleteStaticFilter(windowType, viewId, filterId).then(response => {
-            dispatch(push('/window/' + windowType + '?viewId=' + response.data.viewId));
+            dispatch(push(
+                '/window/' + windowType + '?viewId=' + response.data.viewId,
+            ));
         });
     }
 
@@ -340,7 +312,8 @@ class DocumentList extends Component {
         const {page, sort, filters} = this.state;
 
         createViewRequest(
-            windowType, type, this.pageLength, filters, refType, refId, refTabId, refRowIds
+            windowType, type, this.pageLength, filters, refType, refId,
+            refTabId, refRowIds,
         ).then(response => {
             this.mounted && this.setState({
                 data: response.data,
@@ -370,12 +343,15 @@ class DocumentList extends Component {
         })
     }
 
-    getData = (id, page, sortingQuery, refresh) => {
+    getData = (id, page, sortingQuery) => {
         const {
-            dispatch, windowType, updateUri, setNotFound, type, isIncluded
+            dispatch, windowType, updateUri, setNotFound, type, isIncluded,
         } = this.props;
+        const { viewId } = this.state;
 
-        setNotFound && setNotFound(false);
+        if (setNotFound) {
+            setNotFound(false);
+        }
         dispatch(indicatorState('pending'));
 
         if (updateUri) {
@@ -411,11 +387,11 @@ class DocumentList extends Component {
                             response.data.result[0].id
                         ];
 
-                        this.cachedSelection = null;
-
-                        dispatch(
-                            selectTableItems(selection, windowType)
-                        );
+                        dispatch(selectTableItems({
+                            windowType,
+                            viewId,
+                            ids: selection,
+                        }));
                     }
 
                     this.connectWS(response.data.viewId);
@@ -530,7 +506,7 @@ class DocumentList extends Component {
             windowType, open, closeOverlays, selected, inBackground,
             fetchQuickActionsOnInit, isModal, processStatus, readonly,
             includedView, isIncluded, disablePaginationShortcuts,
-            notfound, disconnectFromState, autofocus, selectedWindowType,
+            notfound, disconnectFromState, autofocus,
             inModal
         } = this.props;
 
@@ -598,11 +574,8 @@ class DocumentList extends Component {
 
                             {showQuickActions && (
                                 <QuickActions
-                                    {...{
-                                        selectedWindowType,
-                                        refresh,
-                                        processStatus
-                                    }}
+                                    refresh={refresh}
+                                    processStatus={processStatus}
                                     ref={ (c) => {
                                         this.quickActionsComponent = (
                                             c && c.getWrappedInstance()
@@ -651,8 +624,7 @@ class DocumentList extends Component {
                                 tabIndex={0}
                                 indentSupported={layout.supportTree}
                                 disableOnClickOutside={clickOutsideLock}
-                                defaultSelected={this.cachedSelection ?
-                                    this.cachedSelection : selected}
+                                defaultSelected={selected}
                                 refreshSelection={refreshSelection}
                                 queryLimitHit={data.queryLimitHit}
                                 doesSelectionExist={this.doesSelectionExist}
@@ -700,11 +672,4 @@ class DocumentList extends Component {
     }
 }
 
-DocumentList.propTypes = {
-    windowType: PropTypes.string.isRequired,
-    dispatch: PropTypes.func.isRequired
-}
-
-DocumentList = connect()(DocumentList);
-
-export default DocumentList;
+export default connect(mapStateToProps)(DocumentList);
