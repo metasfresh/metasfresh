@@ -594,7 +594,7 @@ class Header extends Component {
                     entity={entity}
                     dataId={dataId}
                     windowType={windowType}
-                    viewId={query.viewId}
+                    viewId={query && query.viewId}
                     siteName={siteName}
                     editmode={editmode}
                     handleEditModeToggle={handleEditModeToggle}
