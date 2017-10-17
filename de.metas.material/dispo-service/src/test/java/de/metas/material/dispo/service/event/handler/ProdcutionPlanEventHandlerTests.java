@@ -98,7 +98,7 @@ public class ProdcutionPlanEventHandlerTests
 		final CandidateRepository candidateRepository = new CandidateRepository();
 		final StockCandidateService stockCandidateService = new StockCandidateService(candidateRepository);
 		
-		final CandidateChangeService candidateChangeHandler = new CandidateChangeService(candidateRepository, ImmutableList.of(
+		final CandidateChangeService candidateChangeHandler = new CandidateChangeService(ImmutableList.of(
 				new SupplyCandiateChangeHandler(candidateRepository, materialEventService, stockCandidateService),
 				new DemandCandiateChangeHandler(candidateRepository, materialEventService, stockCandidateService)
 				));

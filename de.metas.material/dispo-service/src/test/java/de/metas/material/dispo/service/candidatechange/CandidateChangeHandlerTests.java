@@ -122,8 +122,7 @@ public class CandidateChangeHandlerTests
 		stockCandidateService = new StockCandidateService(candidateRepository);
 
 		candidateChangeHandler = new CandidateChangeService(
-				candidateRepository,
-				ImmutableList.of(
+								ImmutableList.of(
 						new DemandCandiateChangeHandler(candidateRepository, materialEventService, stockCandidateService),
 						new SupplyCandiateChangeHandler(candidateRepository, materialEventService, stockCandidateService)));
 	}

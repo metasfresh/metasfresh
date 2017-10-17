@@ -83,7 +83,7 @@ public class ForecastEventHandlerTest
 		final CandidateRepository candidateRepository = new CandidateRepository();
 
 		forecastEventHandler = new ForecastEventHandler(
-				new CandidateChangeService(candidateRepository, ImmutableList.of(
+				new CandidateChangeService(ImmutableList.of(
 						new StockUpCandiateChangeHandler(candidateRepository, materialEventService))));
 	}
 

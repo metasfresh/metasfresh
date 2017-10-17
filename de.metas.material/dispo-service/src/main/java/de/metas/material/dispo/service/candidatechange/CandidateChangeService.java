@@ -1,17 +1,15 @@
 package de.metas.material.dispo.service.candidatechange;
 
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Map;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
+
+import com.google.common.collect.Maps;
 
 import de.metas.material.dispo.Candidate;
 import de.metas.material.dispo.Candidate.Type;
-import de.metas.material.dispo.CandidateRepository;
 import de.metas.material.dispo.service.candidatechange.handler.CandidateChangeHandler;
 import lombok.NonNull;
 
@@ -37,22 +35,15 @@ import lombok.NonNull;
  * #L%
  */
 @Service
-@Lazy // .. because MaterialEventService needs to be lazy
 public class CandidateChangeService
 {
-
-	private final CandidateRepository candidateRepository;
 
 	private final Map<Type, CandidateChangeHandler> type2handler;
 
 	public CandidateChangeService(
-			@NonNull final CandidateRepository candidateRepository,
 			@NonNull final Collection<CandidateChangeHandler> candidateChangeHandlers)
 	{
-		this.candidateRepository = candidateRepository;
-
-		type2handler = new HashMap<>();
-		candidateChangeHandlers.forEach(handler -> type2handler.put(handler.getHandeledType(), handler));
+		type2handler = Maps.uniqueIndex(candidateChangeHandlers, CandidateChangeHandler::getHandeledType);
 	}
 
 	/**
@@ -76,8 +67,4 @@ public class CandidateChangeService
 		return candidateChangeHandler.onCandidateNewOrChange(candidate);
 	}
 
-	public void onCandidateDelete(@NonNull final TableRecordReference recordReference)
-	{
-		candidateRepository.deleteForReference(recordReference);
-	}
 }

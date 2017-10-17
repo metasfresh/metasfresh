@@ -123,7 +123,7 @@ public class DistributionPlanEventHandlerTests
 		final StockCandidateService stockCandidateService = new StockCandidateService(candidateRepository);
 		distributionPlanEventHandler = new DistributionPlanEventHandler(
 				candidateRepository,
-				new CandidateChangeService(candidateRepository, ImmutableList.of(
+				new CandidateChangeService(ImmutableList.of(
 						new DemandCandiateChangeHandler(candidateRepository, materialEventService, stockCandidateService),
 						new SupplyCandiateChangeHandler(candidateRepository, materialEventService, stockCandidateService)
 						)),

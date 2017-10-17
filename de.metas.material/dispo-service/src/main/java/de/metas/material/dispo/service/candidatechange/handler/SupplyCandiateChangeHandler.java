@@ -44,7 +44,10 @@ public class SupplyCandiateChangeHandler implements CandidateChangeHandler
 	@NonNull
 	private final StockCandidateService stockCandidateService;
 
-	public SupplyCandiateChangeHandler(CandidateRepository candidateRepository, MaterialEventService materialEventService, StockCandidateService stockCandidateService)
+	public SupplyCandiateChangeHandler(
+			@NonNull final CandidateRepository candidateRepository, 
+			@NonNull final MaterialEventService materialEventService, 
+			@NonNull final StockCandidateService stockCandidateService)
 	{
 		this.candidateRepository = candidateRepository;
 		this.materialEventService = materialEventService;

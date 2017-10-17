@@ -3,8 +3,6 @@ package de.metas.material.dispo;
 import java.math.BigDecimal;
 import java.util.Date;
 
-import org.adempiere.util.lang.impl.TableRecordReference;
-
 import de.metas.material.dispo.model.X_MD_Candidate;
 import de.metas.material.event.EventDescr;
 import de.metas.material.event.MaterialDescriptor;
@@ -186,5 +184,4 @@ public class Candidate
 	{
 		return materialDescr.getWarehouseId();
 	}
-
 }

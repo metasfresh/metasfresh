@@ -3,27 +3,24 @@ package de.metas.material.dispo.service.event.handler;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
-import java.util.List;
 
 import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.util.lang.Mutable;
 import org.compiere.util.TimeUtil;
 import org.junit.Before;
 import org.junit.Test;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.material.dispo.Candidate;
+import de.metas.material.dispo.Candidate.Type;
 import de.metas.material.dispo.CandidateRepository;
-import de.metas.material.dispo.DispoTestUtils;
-import de.metas.material.dispo.model.I_MD_Candidate;
-import de.metas.material.dispo.model.X_MD_Candidate;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
-import de.metas.material.dispo.service.candidatechange.handler.DemandCandiateChangeHandler;
+import de.metas.material.dispo.service.candidatechange.handler.UnrelatedTransactionCandidateChangeHandler;
 import de.metas.material.event.EventDescr;
 import de.metas.material.event.MaterialDescriptor;
-import de.metas.material.event.MaterialEventService;
 import de.metas.material.event.TransactionEvent;
-import mockit.Mocked;
 
 /*
  * #%L
@@ -51,9 +48,18 @@ public class TransactionEventHandlerTest
 {
 	private TransactionEventHandler transactionEventHandler;
 
-	@Mocked
-	private MaterialEventService materialEventService;
-	
+	private Mutable<Candidate> handlerMethodParameter;
+
+	private UnrelatedTransactionCandidateChangeHandler unrelatedTransactionChangeHandler = new UnrelatedTransactionCandidateChangeHandler()
+	{
+		@Override
+		public Candidate onCandidateNewOrChange(Candidate candidate)
+		{
+			handlerMethodParameter.setValue(candidate);
+			return candidate;
+		}
+	};
+
 	@Before
 	public void init()
 	{
@@ -62,17 +68,15 @@ public class TransactionEventHandlerTest
 		final CandidateRepository candidateRepository = new CandidateRepository();
 		final StockCandidateService stockCandidateService = new StockCandidateService(candidateRepository);
 
-		
-		
+		handlerMethodParameter = new Mutable<>();
+
 		transactionEventHandler = new TransactionEventHandler(
 				stockCandidateService,
-				new CandidateChangeService(candidateRepository, ImmutableList.of(
-						new DemandCandiateChangeHandler(candidateRepository, materialEventService, new StockCandidateService(candidateRepository))
-						)));
+				new CandidateChangeService(ImmutableList.of(unrelatedTransactionChangeHandler)));
 	}
 
 	@Test
-	public void unrelatedTransaction_increase_stock()
+	public void unrelatedTransaction()
 	{
 		final TransactionEvent event = TransactionEvent.builder()
 				.eventDescr(new EventDescr(10, 20))
@@ -83,19 +87,19 @@ public class TransactionEventHandlerTest
 						.warehouseId(50)
 						.build())
 				.build();
+
 		transactionEventHandler.handleTransactionEvent(event);
 
-		final List<I_MD_Candidate> allRecords = DispoTestUtils.retrieveAllRecords();
-		assertThat(allRecords).hasSize(2);
+		final Candidate candidateParameter = handlerMethodParameter.getValue();
+		assertThat(candidateParameter).isNotNull();
+		assertThat(candidateParameter.getType()).isEqualTo(Type.UNRELATED_TRANSACTION);
+		assertThat(candidateParameter.getMaterialDescr()).isNotNull();
+		assertThat(candidateParameter.getQuantity()).isEqualByComparingTo("10");
+		assertThat(candidateParameter.getProductId()).isEqualByComparingTo(40);
+		assertThat(candidateParameter.getWarehouseId()).isEqualByComparingTo(50);
 
-		final I_MD_Candidate unrelatedTransactionCandidate = allRecords.get(0);
-		assertThat(unrelatedTransactionCandidate.getMD_Candidate_Type()).isEqualTo(X_MD_Candidate.MD_CANDIDATE_TYPE_UNRELATED_TRANSACTION);
-		assertThat(unrelatedTransactionCandidate.getQty()).isEqualByComparingTo("10");
-
-		final I_MD_Candidate stockCandidate = allRecords.get(1);
-		assertThat(stockCandidate.getMD_Candidate_Type()).isEqualTo(X_MD_Candidate.MD_CANDIDATE_TYPE_STOCK);
-		assertThat(stockCandidate.getQty()).isEqualByComparingTo("10");
-		assertThat(unrelatedTransactionCandidate.getMD_Candidate_Parent_ID()).isEqualTo(stockCandidate.getMD_Candidate_ID());
-
+		assertThat(candidateParameter.getDemandDetail()).isNull();
+		assertThat(candidateParameter.getDistributionDetail()).isNull();
+		assertThat(candidateParameter.getProductionDetail()).isNull();
 	}
 }

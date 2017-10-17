@@ -91,7 +91,7 @@ public class ShipmentScheduleEventHandlerTests
 
 		final CandidateRepository candidateRepository = new CandidateRepository();
 
-		final CandidateChangeService candidateChangeHandler = new CandidateChangeService(candidateRepository, ImmutableList.of(
+		final CandidateChangeService candidateChangeHandler = new CandidateChangeService(ImmutableList.of(
 				new DemandCandiateChangeHandler(candidateRepository, materialEventService, new StockCandidateService(candidateRepository))
 				));
 

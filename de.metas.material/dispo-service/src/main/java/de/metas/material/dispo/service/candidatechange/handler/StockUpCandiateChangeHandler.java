@@ -52,7 +52,9 @@ public class StockUpCandiateChangeHandler implements CandidateChangeHandler
 	@NonNull
 	private final MaterialEventService materialEventService;
 
-	public StockUpCandiateChangeHandler(CandidateRepository candidateRepository, MaterialEventService materialEventService)
+	public StockUpCandiateChangeHandler(
+			@NonNull final CandidateRepository candidateRepository, 
+			@NonNull final MaterialEventService materialEventService)
 	{
 		this.candidateRepository = candidateRepository;
 		this.materialEventService = materialEventService;
