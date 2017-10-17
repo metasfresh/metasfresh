@@ -24,6 +24,8 @@ import org.compiere.util.TimeUtil;
 import org.junit.Before;
 import org.junit.BeforeClass;
 
+import de.metas.adempiere.model.I_C_CountryArea;
+import de.metas.adempiere.service.ICountryAreaBL;
 import de.metas.contracts.flatrate.interfaces.I_C_DocType;
 import de.metas.interfaces.I_M_Warehouse;
 
@@ -112,7 +114,7 @@ public abstract class AbstractFlatrateTermTest
 		createAcctSchema();
 		createWarehouse();
 		createDocType();
-		createCountry();
+		createCountryAndCountryArea();
 	}
 
 	private void createCalendar()
@@ -187,7 +189,7 @@ public abstract class AbstractFlatrateTermTest
 		save(docType);
 	}
 	
-	private void createCountry()
+	private void createCountryAndCountryArea()
 	{
 		country = newInstance(I_C_Country.class);
 		country.setAD_Org(helper.getOrg());
@@ -197,6 +199,10 @@ public abstract class AbstractFlatrateTermTest
 		country.setDisplaySequenceLocal(sequence);
 		country.setCaptureSequence(sequence);
 		save(country);
+		
+		final I_C_CountryArea countryArea = newInstance(I_C_CountryArea.class, country);
+		countryArea.setValue(ICountryAreaBL.COUNTRYAREAKEY_EU);
+		save(countryArea);
 	}
 
 }

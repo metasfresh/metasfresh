@@ -21,6 +21,7 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_ProductPrice;
 import org.compiere.model.I_M_Product_Acct;
 import org.compiere.model.X_C_Tax;
+import org.compiere.util.TimeUtil;
 
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.adempiere.model.I_C_BPartner_Location;
@@ -191,7 +192,7 @@ public class FlatrateTermDataFactory
 		final I_C_Tax tax  = taxNew()
 				.country(country)
 				.taxCategory(taxCategory)
-				.validFrom(validFrom)
+				.validFrom(TimeUtil.addDays(validFrom, -10))
 				.build();
 		
 		final I_M_Product product = productNew()
@@ -242,6 +243,7 @@ public class FlatrateTermDataFactory
 	{
 		final I_C_Tax tax  = newInstance(I_C_Tax.class);
 		tax.setC_Country(country);
+		tax.setTo_Country(country);
 		tax.setC_TaxCategory(taxCategory);
 		tax.setIsDocumentLevel(true);
 		tax.setIsSalesTax(true);

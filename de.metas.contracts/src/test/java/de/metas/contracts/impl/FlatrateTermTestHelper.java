@@ -17,6 +17,7 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_Org;
+import org.compiere.model.I_AD_OrgInfo;
 import org.compiere.util.Env;
 
 import de.metas.contracts.interceptor.MainValidator;
@@ -141,6 +142,10 @@ public class FlatrateTermTestHelper
 		adOrg = InterfaceWrapperHelper.create(ctx, I_AD_Org.class, ITrx.TRXNAME_None);
 		InterfaceWrapperHelper.save(adOrg);
 		Env.setContext(ctx, Env.CTXNAME_AD_Org_ID, adOrg.getAD_Org_ID());
+		
+		final I_AD_OrgInfo orgInfo = newInstance(I_AD_OrgInfo.class);
+		orgInfo.setAD_Org(adOrg);
+		save(orgInfo);
 
 		addPricingRules();
 		createPricingRules();
@@ -165,8 +170,6 @@ public class FlatrateTermTestHelper
 		pricingRules.put("Discount", "org.adempiere.pricing.spi.impl.rules.Discount");
 		pricingRules.put("Product Scale Price", "de.metas.adempiere.pricing.spi.impl.rules.ProductScalePrice");
 		pricingRules.put("Attribute pricing rule", "de.metas.pricing.attributebased.impl.AttributePricing");
-		pricingRules.put("HU pricing rule", "de.metas.handlingunits.pricing.spi.impl.HUPricing");
-		pricingRules.put("ProcurementFlatrateRule", "de.metas.procurement.base.pricing.spi.impl.ProcurementFlatrateRule");
 		pricingRules.put("de.metas.contracts Discount", "de.metas.contracts.pricing.ContractDiscount");
 		pricingRules.put("de.metas.contracts Subscription", "de.metas.contracts.pricing.SubscriptionPricingRule");
 	}
