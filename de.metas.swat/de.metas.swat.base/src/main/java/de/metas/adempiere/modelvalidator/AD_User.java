@@ -4,8 +4,8 @@ import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.annotations.Init;
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.user.api.IUserBL;
 import org.adempiere.util.Services;
 import org.compiere.model.ModelValidator;
@@ -20,7 +20,7 @@ import de.metas.adempiere.model.I_AD_User;
  * </ul>
  * 
  */
-@Validator(I_AD_User.class)
+@Interceptor(I_AD_User.class)
 @Callout(value = I_AD_User.class)
 public class AD_User
 {

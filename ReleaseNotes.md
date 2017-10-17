@@ -18,6 +18,18 @@ Here come the actual release notes:
 * metasfresh-app
   * [#2653](https://github.com/metasfresh/metasfresh/issues/2653) Window Design Webui: Improve Businesspartner Dist-Orgs window
     * Improved Translations for en_US. New Fielsd added for Subscription progress Subtab.
+  * [#2725](https://github.com/metasfresh/metasfresh/issues/2725) Webui Window Design: Improvements in window ESR Payment Import
+    * New Field Translations added to ESR Payment Import window. Now haveing a completed Translations for Window, Fields and Actions for en_US Language.
+  * [#2726](https://github.com/metasfresh/metasfresh/issues/2726) Set correct identifiers in the table M_ShipmentSchedule v2
+    * Setting a readable and searchable Identifier for Shipment Schedule Records.
+  * [#2728](https://github.com/metasfresh/metasfresh/issues/2728) Webui Design Window: Add Translations to Business Partner
+    * Improved Translation for en_US Language/ Locale in Window, Fields and Actions.
+  * [#2730](https://github.com/metasfresh/metasfresh/issues/2730) Window Design Webui: Improvements in window Purchase order
+    * Translation improved in Purchase Order window  for Language en_US.
+  * [#2731](https://github.com/metasfresh/metasfresh/issues/2731) Window Design Webui: Improve window Shipment Restrictions
+    * Improved Translation of en_US Language in Shipment Restrictions Window and Actions.
+  * [#2732](https://github.com/metasfresh/metasfresh/issues/2732) Window Design Webui : Add description field in sales order line
+    * New Field Description added to Sales Orderline Grid View and Advanced edit in WebUI.
   * [#2729](https://github.com/metasfresh/metasfresh/issues/2729) Window Design Webui: Add missing fields to window Tourversion
     * New Fields added to Tourversion widnow in WebUI. Translations for en_US improved.
 

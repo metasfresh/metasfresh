@@ -27,16 +27,17 @@ import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.compiere.util.Env;
+
+import com.google.common.base.Preconditions;
 
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleDAO;
-import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import lombok.NonNull;
 
 public class HUShipmentScheduleDAO implements IHUShipmentScheduleDAO
@@ -126,17 +127,16 @@ public class HUShipmentScheduleDAO implements IHUShipmentScheduleDAO
 	}
 
 	@Override
-	public List<I_M_ShipmentSchedule_QtyPicked> retrieveSchedsQtyPickedForTU(
-			@NonNull final I_M_ShipmentSchedule shipmentSchedule, 
-			@NonNull final I_M_HU tuHU, 
-			final String trxName)
+	public List<I_M_ShipmentSchedule_QtyPicked> retrieveSchedsQtyPickedForTU(final int shipmentScheduleId, final int tuHUId, final String trxName)
 	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(tuHU);
-
+		Preconditions.checkArgument(shipmentScheduleId > 0, "shipmentScheduleId > 0");
+		Preconditions.checkArgument(tuHUId > 0, "tuHUId > 0");
+		
+		final Properties ctx = Env.getCtx();
 		final IQueryBuilder<I_M_ShipmentSchedule_QtyPicked> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_M_ShipmentSchedule_QtyPicked.class, ctx, trxName)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_M_ShipmentSchedule_ID, shipmentSchedule.getM_ShipmentSchedule_ID())
-				.addEqualsFilter(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_M_TU_HU_ID, tuHU.getM_HU_ID())
+				.addEqualsFilter(de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_M_ShipmentSchedule_ID, shipmentScheduleId)
+				.addEqualsFilter(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_M_TU_HU_ID, tuHUId)
 				.orderBy()
 				.addColumn(de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_M_ShipmentSchedule_QtyPicked_ID).endOrderBy();
 
