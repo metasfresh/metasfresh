@@ -30,27 +30,33 @@ class NewLetter extends Component {
         }
     }
 
-    componentWillMount = () => {
+    async componentWillMount() {
         const { windowId, docId, handleCloseLetter } = this.props;
 
-        createLetter(windowId, docId).then(res => {
+        try {
+            const res = await createLetter(windowId, docId);
+
             this.setState({
                 ...res.data,
                 init: true,
                 cached: res.data
-            })
+            });
 
-            this.getTemplates();
-        }).catch(() => {
+            try {
+                await this.getTemplates();
+            } catch (error) {
+                console.error(error);
+            }
+        } catch (error) {
             handleCloseLetter();
-        });
+        }
     }
 
-    getTemplates = () => {
-        getTemplates().then(res => {
-            this.setState({
-                templates: res.data.values
-            });
+    getTemplates = async () => {
+        const res = await getTemplates();
+
+        this.setState({
+            templates: res.data.values
         });
     }
 
@@ -60,56 +66,56 @@ class NewLetter extends Component {
         });
     }
 
-    handleBlur = ({ target: { value: message } }) => {
+    handleBlur = async ({ target: { value: message } }) => {
         const { letterId } = this.state;
 
         if (this.state.cached.message === message) {
             return;
         }
 
-        patchRequest({
+        const response = await patchRequest({
             entity: 'letter',
             docType: letterId,
             property: 'message',
             value: message
-        }).then(response => {
-            this.setState({
-                ...response.data,
-                cached: response.data
-            });
+        });
+
+        this.setState({
+            ...response.data,
+            cached: response.data
         });
     }
 
-    complete = () => {
+    complete = async () => {
         const { letterId } = this.state;
         const { handleCloseLetter, dispatch } = this.props;
 
-        completeLetter(letterId).then(() => {
-            handleCloseLetter();
+        await completeLetter(letterId);
 
-            dispatch(addNotification(
-                'Letter', 'Letter has been sent.', 5000, 'success'
-            ));
-        });
+        handleCloseLetter();
+
+        await dispatch(addNotification(
+            'Letter', 'Letter has been sent.', 5000, 'success'
+        ));
     }
 
-    handleTemplate = option => {
+    handleTemplate = async option => {
         const { letterId, template } = this.state;
 
         if (template === option) {
             return;
         }
 
-        patchRequest({
+        const response = await patchRequest({
             entity: 'letter',
             docType: letterId,
             property: 'templateId',
             value: option
-        }).then(response => {
-           this.setState({
-               ...response.data,
-                template: option
-            });
+        });
+
+        this.setState({
+           ...response.data,
+            template: option
         });
     }
 
@@ -133,7 +139,6 @@ class NewLetter extends Component {
                                 href={`${config.API_URL}/letter/${letterId}/printPreview`}
                                 target="_blank"
                                 className="input-icon input-icon-lg letter-icon-print"
-                                onClick={handleCloseLetter}
                             >
                                 <i className="meta-icon-print"/>
                             </a>
