@@ -76,10 +76,15 @@ public class FlatrateTermImportProcess_SimpleCase_Test extends AbstractFlatrateT
 
 		final int bpartnerId = prepareBPartner();
 
-		final I_M_Product product = FlatrateTermDataFactory.productNew()
-				.value("01")
-				.name("testProduct")
+		final FlatrateTermDataFactory.ProductAndPricingSystem productAndPricingSystem = FlatrateTermDataFactory.productAndPricingNew()
+				.productValue("01")
+				.productName("testProduct")
+				.country(getCountry())
+				.isTaxInclcuded(false)
+				.validFrom(startDate)
 				.build();
+		
+		final I_M_Product product = productAndPricingSystem.getProduct();
 
 		FlatrateTermDataFactory.productAcctNew()
 				.product(product)
@@ -89,6 +94,7 @@ public class FlatrateTermImportProcess_SimpleCase_Test extends AbstractFlatrateT
 		final I_C_Flatrate_Conditions conditions = FlatrateTermDataFactory.flatrateConditionsNew()
 				.name("Abo")
 				.calendar(getCalendar())
+				.pricingSystem(productAndPricingSystem.getPricingSystem())
 				.invoiceRule(X_C_Flatrate_Conditions.INVOICERULE_Sofort)
 				.typeConditions(X_C_Flatrate_Conditions.TYPE_CONDITIONS_Subscription)
 				.build();
@@ -135,14 +141,20 @@ public class FlatrateTermImportProcess_SimpleCase_Test extends AbstractFlatrateT
 
 		final int bpartnerId = prepareBPartner();
 
-		final I_M_Product product = FlatrateTermDataFactory.productNew()
-				.value("01")
-				.name("testProduct")
+		final FlatrateTermDataFactory.ProductAndPricingSystem productAndPricingSystem = FlatrateTermDataFactory.productAndPricingNew()
+				.productValue("01")
+				.productName("testProduct")
+				.country(getCountry())
+				.isTaxInclcuded(false)
+				.validFrom(startDate)
 				.build();
-
+		
+		final I_M_Product product = productAndPricingSystem.getProduct();
+		
 		final I_C_Flatrate_Conditions conditions = FlatrateTermDataFactory.flatrateConditionsNew()
 				.name("Abo")
 				.calendar(getCalendar())
+				.pricingSystem(productAndPricingSystem.getPricingSystem())
 				.invoiceRule(X_C_Flatrate_Conditions.INVOICERULE_Sofort)
 				.typeConditions(X_C_Flatrate_Conditions.TYPE_CONDITIONS_Subscription)
 				.build();

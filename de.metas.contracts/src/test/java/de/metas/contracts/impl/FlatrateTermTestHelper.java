@@ -3,12 +3,15 @@ package de.metas.contracts.impl;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.pricing.model.I_C_PricingRule;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -33,6 +36,8 @@ public class FlatrateTermTestHelper
 	private final String invoiceCandClassname = "de.metas.contracts.invoicecandidate.FlatrateTermInvoiceCandidateHandler";
 	private final String shipmentCandClassname = "de.metas.contracts.inoutcandidate.SubscriptionShipmentScheduleHandler";
 
+	private final Map<String, String> pricingRules = new HashMap<>();
+
 	//
 	// Initialization flags
 	private boolean initialized = false;
@@ -43,7 +48,6 @@ public class FlatrateTermTestHelper
 
 	public Properties ctx;
 	public String trxName;
-	
 
 	public final IContextAware contextProvider = new IContextAware()
 	{
@@ -64,17 +68,17 @@ public class FlatrateTermTestHelper
 	{
 		return ctx;
 	}
-	
+
 	public I_AD_Client getClient()
 	{
 		return adClient;
 	}
-	
+
 	public I_AD_Org getOrg()
 	{
 		return adOrg;
 	}
-	
+
 	public String getTrxName()
 	{
 		return trxName;
@@ -84,7 +88,7 @@ public class FlatrateTermTestHelper
 	{
 		return contextProvider;
 	}
-	
+
 	/**
 	 * Invokes {@link #FlatrateTermTestHelper(boolean)} with init=<code>true</code>.
 	 */
@@ -103,7 +107,7 @@ public class FlatrateTermTestHelper
 		{
 			init();
 		}
-		
+
 		setupModuleInterceptors_Contracts_Full();
 	}
 
@@ -137,13 +141,45 @@ public class FlatrateTermTestHelper
 		adOrg = InterfaceWrapperHelper.create(ctx, I_AD_Org.class, ITrx.TRXNAME_None);
 		InterfaceWrapperHelper.save(adOrg);
 		Env.setContext(ctx, Env.CTXNAME_AD_Org_ID, adOrg.getAD_Org_ID());
-		
+
+		addPricingRules();
+		createPricingRules();
+
 		createCILCandHandler();
 		createMIolCandHandler();
-		
+
 		initialized = true;
 
 		afterInitialized();
+	}
+
+	private void addPricingRules()
+	{
+		// skipping this for now because is using directly the DB
+        //	pricingRules.put("PriceListVersion + Vendor Break", "org.adempiere.pricing.spi.impl.rules.PriceListVersionVB");
+		pricingRules.put("PriceListVersion", "org.adempiere.pricing.spi.impl.rules.PriceListVersion");
+		pricingRules.put("PriceList + VendorBreak", "org.adempiere.pricing.spi.impl.rules.PriceListVB");
+		pricingRules.put("PriceList", "org.adempiere.pricing.spi.impl.rules.PriceList");
+		pricingRules.put("BasePriceList + Vendor Break", "org.adempiere.pricing.spi.impl.rules.BasePriceListVB");
+		pricingRules.put("BasePriceList", "org.adempiere.pricing.spi.impl.rules.BasePriceList");
+		pricingRules.put("Discount", "org.adempiere.pricing.spi.impl.rules.Discount");
+		pricingRules.put("Product Scale Price", "de.metas.adempiere.pricing.spi.impl.rules.ProductScalePrice");
+		pricingRules.put("Attribute pricing rule", "de.metas.pricing.attributebased.impl.AttributePricing");
+		pricingRules.put("HU pricing rule", "de.metas.handlingunits.pricing.spi.impl.HUPricing");
+		pricingRules.put("ProcurementFlatrateRule", "de.metas.procurement.base.pricing.spi.impl.ProcurementFlatrateRule");
+		pricingRules.put("de.metas.contracts Discount", "de.metas.contracts.pricing.ContractDiscount");
+		pricingRules.put("de.metas.contracts Subscription", "de.metas.contracts.pricing.SubscriptionPricingRule");
+	}
+
+	private void createPricingRules()
+	{
+		pricingRules.forEach((name, classname) -> {
+			final I_C_PricingRule priceRule = newInstance(I_C_PricingRule.class);
+			priceRule.setName(name);
+			priceRule.setClassname(classname);
+			priceRule.setEntityType("D");
+			save(priceRule);
+		});
 	}
 
 	protected void afterInitialized()
@@ -168,16 +204,16 @@ public class FlatrateTermTestHelper
 		Services.get(IModelInterceptorRegistry.class)
 				.addModelInterceptor(new MainValidator());
 	}
-	
+
 	private void createCILCandHandler()
 	{
 		final I_C_ILCandHandler handler = newInstance(I_C_ILCandHandler.class);
-		handler.setName(invoiceCandClassname );
+		handler.setName(invoiceCandClassname);
 		handler.setClassname(invoiceCandClassname);
 		handler.setTableName(I_C_Flatrate_Term.Table_Name);
 		save(handler);
 	}
-	
+
 	private void createMIolCandHandler()
 	{
 		final I_M_IolCandHandler handler = newInstance(I_M_IolCandHandler.class);

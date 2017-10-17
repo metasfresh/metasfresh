@@ -19,7 +19,6 @@ import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_Calendar;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_Period;
-import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_Year;
 import org.compiere.util.TimeUtil;
 import org.junit.Before;
@@ -27,8 +26,6 @@ import org.junit.BeforeClass;
 
 import de.metas.contracts.flatrate.interfaces.I_C_DocType;
 import de.metas.interfaces.I_M_Warehouse;
-import de.metas.tax.api.ITaxDAO;
-import de.metas.tax.api.impl.TaxDAO;
 
 /*
  * #%L
@@ -113,7 +110,6 @@ public abstract class AbstractFlatrateTermTest
 		helper = createFlatrateTermTestHelper();
 		createCalendar();
 		createAcctSchema();
-		createTax();
 		createWarehouse();
 		createDocType();
 		createCountry();
@@ -173,20 +169,6 @@ public abstract class AbstractFlatrateTermTest
 		});
 	}
 	
-	private void createTax()
-	{
-		final I_C_Tax tax  = newInstance(I_C_Tax.class);
-		save(tax);
-		
-		Services.registerService(ITaxDAO.class, new TaxDAO()
-		{
-			@Override
-			public I_C_Tax retrieveNoTaxFound(Properties ctx)
-			{
-				return tax;
-			}
-		});
-	}
 	
 	private void createWarehouse()
 	{
