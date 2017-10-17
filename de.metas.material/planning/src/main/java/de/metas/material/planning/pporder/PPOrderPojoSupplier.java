@@ -75,7 +75,6 @@ public class PPOrderPojoSupplier
 			@NonNull final IMRPNotesCollector mrpNotesCollector)
 	{
 		final IMaterialPlanningContext mrpContext = request.getMrpContext();
-		// final IMRPExecutor executor = request.getMRPExecutor();
 
 		final I_PP_Product_Planning productPlanningData = mrpContext.getProductPlanning();
 		final I_M_Product product = mrpContext.getM_Product();
