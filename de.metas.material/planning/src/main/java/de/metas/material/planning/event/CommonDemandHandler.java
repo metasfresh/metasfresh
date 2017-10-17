@@ -116,7 +116,7 @@ public class CommonDemandHandler
 	}
 	
 	
-	public void handleMaterialDemandEvent0(@NonNull final MaterialDemandDescr materialDemandDescr)
+	private void handleMaterialDemandEvent0(@NonNull final MaterialDemandDescr materialDemandDescr)
 	{
 		final IMutableMRPContext mrpContext = mkMRPContext(materialDemandDescr);
 
