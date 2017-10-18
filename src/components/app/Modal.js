@@ -228,7 +228,14 @@ class Modal extends Component {
     }
 
     handleScroll = (event) => {
-        this.setState({ scrolled: event.target.scrollTop > 0 });
+        this.setState(prevState => {
+            const scrolled = (event.target.scrollTop > 0);
+
+            // return nothing if state did not change
+            if (scrolled !== prevState.scrolled) {
+                return { scrolled };
+            }
+        });
     }
 
     setFetchOnTrue = () => {
