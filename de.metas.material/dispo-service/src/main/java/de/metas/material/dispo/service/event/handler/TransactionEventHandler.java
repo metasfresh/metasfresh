@@ -2,10 +2,14 @@ package de.metas.material.dispo.service.event.handler;
 
 import org.springframework.stereotype.Service;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import de.metas.material.dispo.Candidate;
+import de.metas.material.dispo.CandidateRepository;
+import de.metas.material.dispo.Candidate.CandidateBuilder;
 import de.metas.material.dispo.Candidate.Type;
+import de.metas.material.dispo.DemandCandidateDetail;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
-import de.metas.material.dispo.service.candidatechange.StockCandidateService;
 import de.metas.material.event.TransactionEvent;
 import lombok.NonNull;
 
@@ -33,27 +37,50 @@ import lombok.NonNull;
 @Service
 public class TransactionEventHandler
 {
-	private final StockCandidateService stockCandidateService;
-
 	private final CandidateChangeService candidateChangeHandler;
+	private final CandidateRepository candidateRepository;
 
 	public TransactionEventHandler(
-			@NonNull final StockCandidateService stockCandidateService,
-			@NonNull final CandidateChangeService candidateChangeHandler)
+			@NonNull final CandidateChangeService candidateChangeHandler,
+			@NonNull final CandidateRepository candidateRepository
+			)
 	{
 		this.candidateChangeHandler = candidateChangeHandler;
-		this.stockCandidateService = stockCandidateService;
+		this.candidateRepository = candidateRepository;
 	}
 
-	public void handleTransactionEvent(final TransactionEvent event)
+	public void handleTransactionEvent(@NonNull final TransactionEvent event)
 	{
-		// TODO: decide if we can map the given event to an existing candidate, or if it's going to be an "unrelated transaction"
-		
-		final Candidate candidate = Candidate.builderForEventDescr(event.getEventDescr())
-				.materialDescr(event.getMaterialDescr())
-				.type(Type.UNRELATED_TRANSACTION)
-				.build();
+
+		final Candidate candidate = createCandidate(event);
 		candidateChangeHandler.onCandidateNewOrChange(candidate);
+	}
+
+	@VisibleForTesting
+	Candidate createCandidate(@NonNull final TransactionEvent event)
+	{
+		final Candidate candidate;
+		if (event.getShipmentScheduleId() > 0)
+		{
+			candidate = createCommonCandidateBuilder(event)
+					.type(Type.DEMAND)
+					.demandDetail(DemandCandidateDetail.forShipmentScheduleIdAndOrderLineId(event.getShipmentScheduleId(), -1))
+					.build();
+			
+		}
+		else
+		{
+			candidate = createCommonCandidateBuilder(event)
+					.type(Type.UNRELATED_TRANSACTION)
+					.build();
+		}
+		return candidate;
+	}
+
+	private CandidateBuilder createCommonCandidateBuilder(@NonNull final TransactionEvent event)
+	{
+		return Candidate.builderForEventDescr(event.getEventDescr())
+				.materialDescr(event.getMaterialDescr());
 	}
 
 }

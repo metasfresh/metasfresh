@@ -4,7 +4,6 @@ import java.util.Optional;
 
 import de.metas.material.dispo.model.I_MD_Candidate_Demand_Detail;
 import de.metas.material.event.MaterialDemandDescr;
-import de.metas.material.event.ShipmentScheduleEvent;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -30,6 +29,7 @@ import lombok.Value;
  * #L%
  */
 @Value
+
 public class DemandCandidateDetail
 {
 	public static DemandCandidateDetail createOrNull(@NonNull final Optional<MaterialDemandDescr> materialDemandDescr)
@@ -47,14 +47,16 @@ public class DemandCandidateDetail
 	public static DemandCandidateDetail forDemandDetailRecord(@NonNull final I_MD_Candidate_Demand_Detail demandDetailRecord)
 	{
 		return new DemandCandidateDetail(
-				demandDetailRecord.getM_ForecastLine_ID(), 
+				demandDetailRecord.getM_ForecastLine_ID(),
 				demandDetailRecord.getM_ShipmentSchedule_ID(),
 				demandDetailRecord.getC_OrderLine_ID());
 	}
-	
-	public static DemandCandidateDetail forShipmentScheduleEvent(ShipmentScheduleEvent event)
+
+	public static DemandCandidateDetail forShipmentScheduleIdAndOrderLineId(
+			final int shipmentScheduleId,
+			final int orderLineId)
 	{
-		return new DemandCandidateDetail(-1, event.getShipmentScheduleId(), event.getOrderLineId());
+		return new DemandCandidateDetail(-1, shipmentScheduleId, orderLineId);
 	}
 
 	public static DemandCandidateDetail forOrderLineIdOrNull(int salesOrderLineId)
@@ -76,6 +78,5 @@ public class DemandCandidateDetail
 	int shipmentScheduleId;
 
 	private final int orderLineId;
-
 
 }

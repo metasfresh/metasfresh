@@ -47,7 +47,7 @@ public class ShipmentScheduleEventHandler
 				.materialDescr(event.getMaterialDescr())
 				.type(Type.DEMAND)
 				.subType(SubType.SHIPMENT)
-				.demandDetail(DemandCandidateDetail.forShipmentScheduleEvent(event))
+				.demandDetail(DemandCandidateDetail.forShipmentScheduleIdAndOrderLineId(event.getShipmentScheduleId(), event.getOrderLineId()))
 				.build();
 		candidateChangeHandler.onCandidateNewOrChange(candidate);
 	}

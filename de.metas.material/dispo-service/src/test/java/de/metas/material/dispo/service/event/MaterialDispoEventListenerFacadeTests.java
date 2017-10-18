@@ -122,7 +122,7 @@ public class MaterialDispoEventListenerFacadeTests
 
 		final ForecastEventHandler forecastEventHandler = new ForecastEventHandler(candidateChangeHandler);
 
-		final TransactionEventHandler transactionEventHandler = new TransactionEventHandler(stockCandidateService, candidateChangeHandler);
+		final TransactionEventHandler transactionEventHandler = new TransactionEventHandler(candidateChangeHandler, candidateRepository);
 
 		final ShipmentScheduleEventHandler shipmentScheduleEventHandler = new ShipmentScheduleEventHandler(candidateChangeHandler);
 
