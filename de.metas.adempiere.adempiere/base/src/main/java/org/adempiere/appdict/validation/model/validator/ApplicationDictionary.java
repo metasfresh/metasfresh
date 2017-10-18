@@ -44,9 +44,10 @@ import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.PO;
 import org.compiere.model.Query;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.Ini;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
 
 /**
  * @author tsa
@@ -73,6 +74,7 @@ public class ApplicationDictionary implements ModelValidator
 
 		engine.addModelChange(I_AD_Tab.Table_Name, this);
 		engine.addModelChange(I_AD_Ref_Table.Table_Name, this);
+		engine.addModelValidator(new AD_Column(), client);
 	}
 
 	@Override
