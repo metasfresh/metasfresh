@@ -21,7 +21,10 @@ package de.metas.handlingunits.receiptschedule.integrationtest;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
+import static de.metas.business.BusinessTestHelper.createBPartner;
+import static de.metas.business.BusinessTestHelper.createBPartnerLocation;
+import static de.metas.business.BusinessTestHelper.createWarehouse;
+import static de.metas.business.BusinessTestHelper.uomKg;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -100,16 +103,16 @@ public abstract class AbstractHUReceiptProcessIntegrationTest
 		//
 		// Product/UOM
 		product = huTestHelper.pTomato;
-		productUOM = huTestHelper.uomKg;
+		productUOM = uomKg;
 
 		//
 		// BPartner
-		bpartner = huTestHelper.createBPartner("BPartner01");
-		bpartnerLocation = huTestHelper.createBPartnerLocation(bpartner);
+		bpartner = createBPartner("BPartner01");
+		bpartnerLocation = createBPartnerLocation(bpartner);
 
 		//
 		// Warehouse & Locator
-		warehouse = huTestHelper.createWarehouse("Warehouse01");
+		warehouse = createWarehouse("Warehouse01");
 
 		//
 		// Handling Units Definition

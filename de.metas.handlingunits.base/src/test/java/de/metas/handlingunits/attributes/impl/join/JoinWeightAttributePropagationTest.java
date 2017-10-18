@@ -1,5 +1,8 @@
 package de.metas.handlingunits.attributes.impl.join;
 
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThat;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -29,8 +32,6 @@ import java.util.stream.Collectors;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.junit.Assert;
-import static org.junit.Assert.*;
-import static org.hamcrest.Matchers.*;
 import org.junit.Test;
 
 import de.metas.handlingunits.IHandlingUnitsBL;

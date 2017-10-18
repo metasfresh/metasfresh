@@ -1,6 +1,7 @@
 package de.metas.fresh.picking.service.impl;
 
 import java.math.BigDecimal;
+import static de.metas.business.BusinessTestHelper.*;
 import java.util.List;
 
 import org.adempiere.ad.trx.api.ITrx;
@@ -68,7 +69,7 @@ public class HU2PackingItemTestCommons
 		final I_M_HU_PI huDefIFCO = helper.createHUDefinition(HUTestHelper.NAME_IFCO_Product, X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
 
 		final I_M_HU_PI_Item itemMA = helper.createHU_PI_Item_Material(huDefIFCO);
-		final I_M_HU_PI_Item_Product huPiItemProduct = helper.assignProduct(itemMA, helper.pTomato, BigDecimal.valueOf(cuQty), helper.uomEach);
+		final I_M_HU_PI_Item_Product huPiItemProduct = helper.assignProduct(itemMA, helper.pTomato, BigDecimal.valueOf(cuQty), uomEach);
 
 		return huPiItemProduct;
 	}
@@ -138,7 +139,7 @@ public class HU2PackingItemTestCommons
 
 		final IHUContext huContext = helper.createMutableHUContextForProcessing(ITrx.TRXNAME_None);
 		final BigDecimal qtyToLoadBD = BigDecimal.valueOf(qtyToLoad);
-		final List<I_M_HU> hus = helper.createHUs(huContext, tuHuDef.getM_HU_PI_Item().getM_HU_PI_Version().getM_HU_PI(), helper.pTomato, qtyToLoadBD, helper.uomEach);
+		final List<I_M_HU> hus = helper.createHUs(huContext, tuHuDef.getM_HU_PI_Item().getM_HU_PI_Version().getM_HU_PI(), helper.pTomato, qtyToLoadBD, uomEach);
 
 		return hus;
 	}

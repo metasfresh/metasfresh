@@ -1,5 +1,6 @@
 package de.metas.inoutcandidate.spi.impl;
 
+import static de.metas.business.BusinessTestHelper.uomKg;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
@@ -32,11 +33,11 @@ import de.metas.handlingunits.spi.impl.HUPackingMaterialsCollector;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -46,7 +47,6 @@ public class HUPackingMaterialsCollectorTest
 	private LUTUProducerDestinationTestSupport data;
 	private IHandlingUnitsDAO handlingUnitsDAO;
 	private IHandlingUnitsBL handlingUnitsBL;
-
 
 	@Before
 	public void Init()
@@ -79,7 +79,7 @@ public class HUPackingMaterialsCollectorTest
 		final int collectedCountTUs = collector.getAndResetCountTUs();
 		assertThat(collectedCountTUs, is(countTUs));
 	}
-	
+
 	private I_M_HU createLU(final String totalQtyCU)
 	{
 		final LUTUProducerDestination lutuProducer = new LUTUProducerDestination();
@@ -87,13 +87,13 @@ public class HUPackingMaterialsCollectorTest
 		lutuProducer.setLUPI(data.piLU);
 		lutuProducer.setTUPI(data.piTU_IFCO);
 		lutuProducer.setMaxTUsPerLU(Integer.MAX_VALUE); // allow as many TUs on that one palette as we want
-		data.helper.load(lutuProducer, data.helper.pTomato, new BigDecimal(totalQtyCU), data.helper.uomKg);
+		data.helper.load(lutuProducer, data.helper.pTomato, new BigDecimal(totalQtyCU), uomKg);
 		final List<I_M_HU> createdLUs = lutuProducer.getCreatedHUs();
 
 		assertThat(createdLUs.size(), is(1));
 		return createdLUs.get(0);
 	}
-	
+
 	private int extractAggregatedTUsCount(final I_M_HU luHU)
 	{
 		final List<I_M_HU> aggregatedHUs = handlingUnitsDAO.retrieveIncludedHUs(luHU);
@@ -102,7 +102,7 @@ public class HUPackingMaterialsCollectorTest
 		final I_M_HU aggregatedHU = aggregatedHUs.get(0);
 		assertThat(handlingUnitsBL.isAggregateHU(aggregatedHU), is(true));
 		assertThat(aggregatedHU.getM_HU_Item_Parent().getM_HU_PI_Item_ID(), is(data.piLU_Item_IFCO.getM_HU_PI_Item_ID()));
-		
+
 		return handlingUnitsDAO.retrieveParentItem(aggregatedHU).getQty().intValueExact();
 	}
 

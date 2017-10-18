@@ -32,7 +32,6 @@ import java.util.Objects;
 import java.util.Set;
 
 import org.adempiere.mm.attributes.api.IAttributesBL;
-import org.compiere.model.I_M_Attribute;
 import org.adempiere.mm.attributes.spi.IAttributeValueCallout;
 import org.adempiere.mm.attributes.spi.IAttributeValueContext;
 import org.adempiere.mm.attributes.spi.IAttributeValueGenerator;
@@ -42,6 +41,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Attribute;
 import org.compiere.model.X_M_Attribute;
 import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;

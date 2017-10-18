@@ -37,9 +37,9 @@ import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.impl.AllocationUtils;
 import de.metas.handlingunits.storage.IProductStorage;
 import de.metas.logging.LogManager;
+import de.metas.quantity.Bucket;
 import de.metas.quantity.Capacity;
 import de.metas.quantity.Quantity;
-import de.metas.quantity.Bucket;
 
 public abstract class AbstractProductStorage implements IProductStorage
 {

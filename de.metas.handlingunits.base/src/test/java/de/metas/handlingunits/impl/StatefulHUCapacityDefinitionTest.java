@@ -1,5 +1,7 @@
 package de.metas.handlingunits.impl;
 
+import static de.metas.business.BusinessTestHelper.uomEach;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -13,38 +15,44 @@ package de.metas.handlingunits.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.math.BigDecimal;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Product;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 
-import de.metas.handlingunits.AbstractHUTest;
+import de.metas.business.BusinessTestHelper;
+import de.metas.handlingunits.HUTestHelper;
+import de.metas.quantity.Bucket;
 import de.metas.quantity.Capacity;
 import de.metas.quantity.Quantity;
-import de.metas.quantity.Bucket;
 
-public class StatefulHUCapacityDefinitionTest extends AbstractHUTest
+public class StatefulHUCapacityDefinitionTest
 {
 
 	private I_C_UOM uomUnknown;
+	private I_M_Product pTomato;
 
-	@Override
-	protected void initialize()
+	@Before
+	public void init()
 	{
-		uomUnknown = helper.createUOM("UnknownUOM");
+		AdempiereTestHelper.get().init();
+		uomUnknown = BusinessTestHelper.createUOM("UnknownUOM");
+		pTomato = BusinessTestHelper.createProduct(HUTestHelper.NAME_Tomato_Product, uomEach);
 	}
 
 	@Test
@@ -175,7 +183,7 @@ public class StatefulHUCapacityDefinitionTest extends AbstractHUTest
 
 		removeQtyAndTest(capacity, uomEach, "-10", "DOES NOT MATTER");
 	}
-	
+
 	@Test
 	public void removeQty_InfiniteCapacity()
 	{

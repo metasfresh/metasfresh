@@ -1,5 +1,6 @@
 package de.metas.handlingunits.inventory.impl;
 
+import static de.metas.business.BusinessTestHelper.uomKg;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -132,7 +133,7 @@ public class HUInternalUseInventoryProducerTests
 			final int qtyCUsPerTU)
 	{
 		final I_M_Product cuProduct = data.helper.pTomato;
-		final I_C_UOM cuUOM = data.helper.uomKg;
+		final I_C_UOM cuUOM =uomKg;
 		final BigDecimal totalQtyCU = new BigDecimal(totalQtyCUStr);
 
 		final LUTUProducerDestination lutuProducer = new LUTUProducerDestination();
@@ -195,7 +196,7 @@ public class HUInternalUseInventoryProducerTests
 				.producer(producer)
 				.cuProduct(data.helper.pTomato)
 				.loadCuQty(new BigDecimal(strCuQty))
-				.loadCuUOM(data.helper.uomKg)
+				.loadCuUOM(uomKg)
 				.huPackingMaterialsCollector(noopPackingMaterialsCollector)
 				.build();
 
@@ -218,7 +219,7 @@ public class HUInternalUseInventoryProducerTests
 		lutuProducer.setTUPI(data.piTU_IFCO);
 
 		final BigDecimal cuQty = new BigDecimal(strCuQty);
-		data.helper.load(lutuProducer, data.helper.pTomato, cuQty, data.helper.uomKg);
+		data.helper.load(lutuProducer, data.helper.pTomato, cuQty, uomKg);
 		final List<I_M_HU> createdTUs = lutuProducer.getCreatedHUs();
 		assertThat(createdTUs.size(), is(1));
 

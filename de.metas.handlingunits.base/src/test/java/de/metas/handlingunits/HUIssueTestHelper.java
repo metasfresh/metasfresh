@@ -1,5 +1,10 @@
 package de.metas.handlingunits;
 
+import static de.metas.business.BusinessTestHelper.createLocator;
+import static de.metas.business.BusinessTestHelper.createProduct;
+import static de.metas.business.BusinessTestHelper.createWarehouse;
+import static de.metas.business.BusinessTestHelper.uomEach;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -33,6 +38,7 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_S_Resource;
 import org.compiere.model.X_C_DocType;
 import org.eevolution.model.I_M_Warehouse_Routing;
@@ -49,7 +55,6 @@ import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.test.misc.builders.HUPIAttributeBuilder;
-import de.metas.interfaces.I_M_Warehouse;
 
 public class HUIssueTestHelper extends HUTestHelper
 {

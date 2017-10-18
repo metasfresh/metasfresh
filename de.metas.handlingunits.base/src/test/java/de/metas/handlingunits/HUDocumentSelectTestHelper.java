@@ -1,5 +1,9 @@
 package de.metas.handlingunits;
 
+import static de.metas.business.BusinessTestHelper.createM_Attribute;
+import static de.metas.business.BusinessTestHelper.createWarehouse;
+import static de.metas.business.BusinessTestHelper.uomEach;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -49,6 +53,7 @@ import org.eevolution.model.X_M_Warehouse_Routing;
 import de.metas.adempiere.form.IClientUI;
 import de.metas.adempiere.form.swing.SwingClientUI;
 import de.metas.adempiere.model.I_C_Order;
+import de.metas.business.BusinessTestHelper;
 import de.metas.handlingunits.attribute.strategy.impl.SumAggregationStrategy;
 import de.metas.handlingunits.attributes.impl.WeightAttributeValueCalloutTest;
 import de.metas.handlingunits.model.I_M_HU;
@@ -282,7 +287,7 @@ public class HUDocumentSelectTestHelper extends HUTestHelper
 			// Add some more Text attributes to this PI (just to see how it works in UI)
 			for (int i = 1; i <= 10; i++)
 			{
-				final I_M_Attribute attr_Text = this.createM_Attribute("Text" + i, X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40, true);
+				final I_M_Attribute attr_Text = createM_Attribute("Text" + i, X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40, true);
 				createM_HU_PI_Attribute(new HUPIAttributeBuilder(attr_Text)
 						.setM_HU_PI(huDefNone));
 			}
@@ -363,7 +368,6 @@ public class HUDocumentSelectTestHelper extends HUTestHelper
 	/**
 	 * Creates Customer
 	 */
-	@Override
 	public I_C_BPartner createBPartner(final String name)
 	{
 		final I_C_BPartner bpartner = InterfaceWrapperHelper.create(ctx, I_C_BPartner.class, ITrx.TRXNAME_None);
@@ -407,7 +411,7 @@ public class HUDocumentSelectTestHelper extends HUTestHelper
 		rSched.setM_Warehouse(warehouse);
 		rSched.setM_Warehouse_Dest(warehouseDest);
 		rSched.setProcessed(false);
-		rSched.setC_UOM(uomEach);
+		rSched.setC_UOM(BusinessTestHelper.uomEach);
 		rSched.setQtyOrdered(BigDecimal.valueOf(qtyInt));
 
 		//

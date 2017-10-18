@@ -1,5 +1,8 @@
 package de.metas.handlingunits.impl;
 
+import static de.metas.business.BusinessTestHelper.createLocator;
+import static de.metas.business.BusinessTestHelper.createWarehouse;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -36,6 +39,8 @@ import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.adempiere.util.collections.ListUtils;
+import org.compiere.model.I_M_Locator;
+import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.TrxRunnable;
@@ -50,8 +55,8 @@ import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Trx_Line;
-import de.metas.handlingunits.model.I_M_Locator;
-import de.metas.interfaces.I_M_Warehouse;
+
+
 
 public class HandlingUnitsBL_MoveHU_Test extends AbstractHUTest
 {
@@ -62,10 +67,10 @@ public class HandlingUnitsBL_MoveHU_Test extends AbstractHUTest
 	@Override
 	protected void initialize()
 	{
-		final I_M_Warehouse warehouse1 = helper.createWarehouse("TestWH1");
-		this.locator1 = helper.createLocator("TestLocator1", warehouse1);
-		final I_M_Warehouse warehouse2 = helper.createWarehouse("TestWH2");
-		this.locator2 = helper.createLocator("TestLocator1", warehouse2);
+		final I_M_Warehouse warehouse1 = createWarehouse("TestWH1");
+		this.locator1 = createLocator("TestLocator1", warehouse1);
+		final I_M_Warehouse warehouse2 = createWarehouse("TestWH2");
+		this.locator2 = createLocator("TestLocator1", warehouse2);
 	}
 
 	@Override
@@ -107,7 +112,7 @@ public class HandlingUnitsBL_MoveHU_Test extends AbstractHUTest
 					helper.huDefVirtual,
 					helper.pTomato,
 					BigDecimal.ONE, // qtyToLoad,
-					helper.uomKg);
+					uomKg);
 			vhu = ListUtils.singleElement(vhus);
 
 			vhu.setM_Locator(locator1);

@@ -1,5 +1,12 @@
 package de.metas.handlingunits.movement.api;
 
+import static de.metas.business.BusinessTestHelper.createLocator;
+import static de.metas.business.BusinessTestHelper.createWarehouse;
+import static de.metas.business.BusinessTestHelper.uomKg;
+import static org.hamcrest.Matchers.hasXPath;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThat;
+
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Properties;
@@ -13,7 +20,9 @@ import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_AcctSchema;
+import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_MovementLine;
+import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.Env;
 import org.junit.Before;
 import org.junit.Test;
@@ -23,13 +32,8 @@ import de.metas.handlingunits.HUXmlConverter;
 import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestination;
 import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestinationTestSupport;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.I_M_Locator;
 import de.metas.handlingunits.movement.api.impl.HUMovementBuilder;
 import de.metas.interfaces.I_M_Movement;
-import de.metas.interfaces.I_M_Warehouse;
-
-import static org.junit.Assert.*;
-import static org.hamcrest.Matchers.*;
 
 /*
  * #%L
@@ -117,10 +121,10 @@ public class HUMovementBuilderTests
 			final BigDecimal expectedTULineQty)
 	{
 
-		final I_M_Warehouse warehouseFrom = testsupport.helper.createWarehouse("testWarehouseFrom");
-		final I_M_Locator locatorFrom = testsupport.helper.createLocator("testLocatorFrom", warehouseFrom);
+		final I_M_Warehouse warehouseFrom = createWarehouse("testWarehouseFrom");
+		final I_M_Locator locatorFrom = createLocator("testLocatorFrom", warehouseFrom);
 
-		final I_M_Warehouse warehouseTo = testsupport.helper.createWarehouse("testWarehouseTo");
+		final I_M_Warehouse warehouseTo = createWarehouse("testWarehouseTo");
 
 		assertThat(warehouseFrom.getAD_Org_ID(), is(org.getAD_Org_ID()));
 		assertThat(locatorFrom.getAD_Org_ID(), is(org.getAD_Org_ID()));
@@ -132,7 +136,7 @@ public class HUMovementBuilderTests
 		lutuProducer.setLUItemPI(testsupport.piLU_Item_IFCO);
 		lutuProducer.setTUPI(testsupport.piTU_IFCO);
 
-		testsupport.helper.load(lutuProducer, testsupport.helper.pTomato, loadCuQty, testsupport.helper.uomKg);
+		testsupport.helper.load(lutuProducer, testsupport.helper.pTomato, loadCuQty, uomKg);
 		final List<I_M_HU> hus = lutuProducer.getCreatedHUs();
 
 		assertThat(hus.size(), is(1));

@@ -8,8 +8,8 @@ import org.compiere.util.TimeUtil;
 
 import de.metas.handlingunits.model.I_M_HU_Trace;
 import de.metas.handlingunits.trace.HUTraceEvent;
-import de.metas.handlingunits.trace.HUTraceType;
 import de.metas.handlingunits.trace.HUTraceEvent.HUTraceEventBuilder;
+import de.metas.handlingunits.trace.HUTraceType;
 import lombok.NonNull;
 
 /*
