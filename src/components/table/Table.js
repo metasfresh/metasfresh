@@ -207,8 +207,10 @@ class Table extends Component {
             }, () => {
                 const {rows} = this.state;
 
-                if(selectFirst){
-                    this.selectOneProduct(rows[0].id);
+                const firstRow = rows[0];
+
+                if (selectFirst && firstRow) {
+                    this.selectOneProduct(firstRow.id);
                     document.getElementsByClassName('js-table')[0].focus();
                 }
 
