@@ -4,7 +4,6 @@ import java.util.Date;
 import java.util.Objects;
 
 import org.adempiere.util.Check;
-import org.adempiere.util.lang.impl.TableRecordReference;
 
 import de.metas.material.dispo.Candidate.Type;
 import lombok.Builder;
@@ -43,7 +42,7 @@ import lombok.experimental.Wither;
 @Builder
 @Data
 @Wither
-public class CandidatesSegment
+public class CandidatesQuery
 {
 	public enum DateOperator
 	{
@@ -87,8 +86,6 @@ public class CandidatesSegment
 	 * If set, then this segment is about {@link Candidate}s that have a parent candidate which has the given warehouse ID.
 	 */
 	private final Integer parentWarehouseId;
-
-	private final TableRecordReference reference;
 
 	/**
 	 * This method ignores parent {@link #getParentProductId()}, {@link #getParentWarehouseId()},

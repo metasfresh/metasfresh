@@ -66,7 +66,7 @@ public class TransactionEventHandler
 					.type(Type.DEMAND)
 					.demandDetail(DemandCandidateDetail.forShipmentScheduleIdAndOrderLineId(event.getShipmentScheduleId(), -1))
 					.build();
-			
+			//candidateRepository.retrieveLatestMatch(segment)
 		}
 		else
 		{

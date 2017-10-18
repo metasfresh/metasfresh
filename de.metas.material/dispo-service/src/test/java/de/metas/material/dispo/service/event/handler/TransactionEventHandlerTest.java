@@ -13,16 +13,18 @@ import org.junit.Test;
 
 import de.metas.material.dispo.Candidate;
 import de.metas.material.dispo.Candidate.Type;
+import de.metas.material.dispo.CandidateRepository;
+import de.metas.material.dispo.CandidatesQuery;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.I_MD_Candidate_Demand_Detail;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
-import de.metas.material.dispo.service.candidatechange.StockCandidateService;
 import de.metas.material.event.EventDescr;
 import de.metas.material.event.MaterialDescriptor;
 import de.metas.material.event.TransactionEvent;
 import de.metas.material.event.TransactionEvent.TransactionEventBuilder;
 import mockit.Injectable;
 import mockit.Tested;
+import mockit.Verifications;
 
 /*
  * #%L
@@ -55,7 +57,7 @@ public class TransactionEventHandlerTest
 	private CandidateChangeService candidateChangeService;
 
 	@Injectable
-	private StockCandidateService stockCandidateService;
+	private CandidateRepository candidateRepository;
 
 	@Before
 	public void init()
@@ -85,13 +87,21 @@ public class TransactionEventHandlerTest
 		final Candidate candidate = transactionEventHandler.createCandidate(relatedEvent);
 		makeCommonAssertions(candidate);
 
+		new Verifications()
+		{{
+				CandidatesQuery segment;
+				candidateRepository.retrieveMatchesOrderByDateAndSeqNo(segment = withCapture());
+				assertThat(segment).isNotNull();
+				assertThat(segment.getProductId()).isEqualTo(relatedEvent.getMaterialDescr().getProductId());
+		}};
+
 		assertThat(candidate.getType()).isEqualTo(Type.UNRELATED_TRANSACTION);
 		assertThat(candidate.getDistributionDetail()).isNull();
 		assertThat(candidate.getProductionDetail()).isNull();
 		assertThat(candidate.getDemandDetail()).isNotNull();
 		assertThat(candidate.getDemandDetail().getShipmentScheduleId()).isEqualTo(40);
 	}
-	
+
 	@Test
 	public void createCandidate_related_transaction_with_shipmentSchedule()
 	{
@@ -102,7 +112,7 @@ public class TransactionEventHandlerTest
 		demandDetailRecord.setMD_Candidate(demandCandidateRecord);
 		demandDetailRecord.setM_ShipmentSchedule_ID(40);
 		save(demandDetailRecord);
-		
+
 		final TransactionEvent relatedEvent = createTransactionEventBuilder().shipmentScheduleId(40).build();
 
 		final Candidate candidate = transactionEventHandler.createCandidate(relatedEvent);

@@ -36,8 +36,8 @@ import com.google.common.collect.ImmutableList;
 import de.metas.material.dispo.Candidate;
 import de.metas.material.dispo.Candidate.Type;
 import de.metas.material.dispo.CandidateRepository;
-import de.metas.material.dispo.CandidatesSegment;
-import de.metas.material.dispo.CandidatesSegment.DateOperator;
+import de.metas.material.dispo.CandidatesQuery;
+import de.metas.material.dispo.CandidatesQuery.DateOperator;
 import de.metas.material.dispo.DispoTestUtils;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.service.candidatechange.handler.DemandCandiateHandler;
@@ -128,7 +128,7 @@ public class CandidateChangeHandlerTests
 	}
 
 	/**
-	 * Verifies that {@link CandidateChangeService#applyDeltaToLaterStockCandidates(CandidatesSegment, BigDecimal)} applies the given delta to the right records.
+	 * Verifies that {@link CandidateChangeService#applyDeltaToLaterStockCandidates(CandidatesQuery, BigDecimal)} applies the given delta to the right records.
 	 * Only records that have a <i>different</i> M_Warenhouse_ID shall not be touched.
 	 */
 	@Test
@@ -235,9 +235,9 @@ public class CandidateChangeHandlerTests
 
 	}
 
-	private CandidatesSegment mkStockUntilSegment(@NonNull final Date timestamp, @NonNull final I_M_Warehouse warehouse)
+	private CandidatesQuery mkStockUntilSegment(@NonNull final Date timestamp, @NonNull final I_M_Warehouse warehouse)
 	{
-		return CandidatesSegment.builder()
+		return CandidatesQuery.builder()
 				.type(Type.STOCK)
 				.productId(product.getM_Product_ID())
 				.warehouseId(warehouse.getM_Warehouse_ID())

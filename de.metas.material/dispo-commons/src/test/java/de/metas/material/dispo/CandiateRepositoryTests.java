@@ -40,7 +40,7 @@ import org.junit.rules.TestWatcher;
 
 import de.metas.material.dispo.Candidate.SubType;
 import de.metas.material.dispo.Candidate.Type;
-import de.metas.material.dispo.CandidatesSegment.DateOperator;
+import de.metas.material.dispo.CandidatesQuery.DateOperator;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.I_MD_Candidate_Demand_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_Dist_Detail;
@@ -584,21 +584,21 @@ public class CandiateRepositoryTests
 	}
 
 	/**
-	 * Verifies that {@link CandidateRepository#retrieveStockAt(CandidatesSegment)} returns the oldest stock candidate with a date before the given {@link CandidatesSegment}'s date
+	 * Verifies that {@link CandidateRepository#retrieveStockAt(CandidatesQuery)} returns the oldest stock candidate with a date before the given {@link CandidatesQuery}'s date
 	 */
 	@Test
 	public void retrieveStockAt()
 	{
-		final CandidatesSegment earlierQuery = mkStockUntilSegment(earlier);
+		final CandidatesQuery earlierQuery = mkStockUntilSegment(earlier);
 		final Optional<Candidate> earlierStock = candidateRepository.retrieveLatestMatch(earlierQuery);
 		Assert.assertThat(earlierStock.isPresent(), is(false));
 
-		final CandidatesSegment sameTimeQuery = mkStockUntilSegment(now);
+		final CandidatesQuery sameTimeQuery = mkStockUntilSegment(now);
 		final Optional<Candidate> sameTimeStock = candidateRepository.retrieveLatestMatch(sameTimeQuery);
 		Assert.assertThat(sameTimeStock.isPresent(), is(true));
 		Assert.assertThat(sameTimeStock.get(), is(stockCandidate));
 
-		final CandidatesSegment laterQuery = mkStockUntilSegment(later);
+		final CandidatesQuery laterQuery = mkStockUntilSegment(later);
 		final Optional<Candidate> laterStock = candidateRepository.retrieveLatestMatch(laterQuery);
 		Assert.assertThat(laterStock.isPresent(), is(true));
 		Assert.assertThat(laterStock.get(), is(laterStockCandidate));
@@ -620,7 +620,7 @@ public class CandiateRepositoryTests
 	public void retrieveStockFrom()
 	{
 		{
-			final CandidatesSegment earlierQuery = mkStockFromSegment(earlier);
+			final CandidatesQuery earlierQuery = mkStockFromSegment(earlier);
 
 			final List<Candidate> stockFrom = candidateRepository.retrieveMatchesOrderByDateAndSeqNo(earlierQuery);
 			Assert.assertThat(stockFrom.size(), is(2));
@@ -632,7 +632,7 @@ public class CandiateRepositoryTests
 			Assert.assertThat(stockFromWithOutIds.contains(laterStockCandidate), is(true));
 		}
 		{
-			final CandidatesSegment sameTimeQuery = mkStockFromSegment(now);
+			final CandidatesQuery sameTimeQuery = mkStockFromSegment(now);
 
 			final List<Candidate> stockFrom = candidateRepository.retrieveMatchesOrderByDateAndSeqNo(sameTimeQuery);
 			Assert.assertThat(stockFrom.size(), is(2));
@@ -643,7 +643,7 @@ public class CandiateRepositoryTests
 		}
 
 		{
-			final CandidatesSegment laterQuery = mkStockFromSegment(later);
+			final CandidatesQuery laterQuery = mkStockFromSegment(later);
 
 			final List<Candidate> stockFrom = candidateRepository.retrieveMatchesOrderByDateAndSeqNo(laterQuery);
 			Assert.assertThat(stockFrom.size(), is(1));
@@ -653,9 +653,9 @@ public class CandiateRepositoryTests
 		}
 	}
 
-	private CandidatesSegment mkStockUntilSegment(final Date date)
+	private CandidatesQuery mkStockUntilSegment(final Date date)
 	{
-		return CandidatesSegment.builder()
+		return CandidatesQuery.builder()
 				.type(Type.STOCK)
 				.productId(product.getM_Product_ID())
 				.warehouseId(warehouse.getM_Warehouse_ID())
@@ -663,9 +663,9 @@ public class CandiateRepositoryTests
 				.build();
 	}
 
-	private CandidatesSegment mkStockFromSegment(final Date date)
+	private CandidatesQuery mkStockFromSegment(final Date date)
 	{
-		return CandidatesSegment.builder()
+		return CandidatesQuery.builder()
 				.type(Type.STOCK)
 				.productId(product.getM_Product_ID())
 				.warehouseId(warehouse.getM_Warehouse_ID())

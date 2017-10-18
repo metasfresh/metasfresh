@@ -700,7 +700,7 @@ public class CandidateRepository
 	 * @param segment
 	 * @return the "oldest" stock candidate that matches the given {@code segment}.
 	 */
-	public Optional<Candidate> retrieveLatestMatch(@NonNull final CandidatesSegment segment)
+	public Optional<Candidate> retrieveLatestMatch(@NonNull final CandidatesQuery segment)
 	{
 		final IQueryBuilder<I_MD_Candidate> builder = mkQueryBuilder(segment);
 
@@ -717,7 +717,7 @@ public class CandidateRepository
 		return fromCandidateRecord(candidateRecordOrNull);
 	}
 
-	public List<Candidate> retrieveMatchesOrderByDateAndSeqNo(@NonNull final CandidatesSegment segment)
+	public List<Candidate> retrieveMatchesOrderByDateAndSeqNo(@NonNull final CandidatesQuery segment)
 	{
 		final IQueryBuilder<I_MD_Candidate> builder = mkQueryBuilder(segment);
 
@@ -740,7 +740,7 @@ public class CandidateRepository
 	 * @param segment
 	 * @return
 	 */
-	private IQueryBuilder<I_MD_Candidate> mkQueryBuilder(final CandidatesSegment segment)
+	private IQueryBuilder<I_MD_Candidate> mkQueryBuilder(final CandidatesQuery segment)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
@@ -797,12 +797,6 @@ public class CandidateRepository
 			builder.addInSubQueryFilter(I_MD_Candidate.COLUMN_MD_Candidate_Parent_ID, I_MD_Candidate.COLUMN_MD_Candidate_ID, parentBuilder.create());
 		}
 
-		if (segment.getReference() != null)
-		{
-			builder
-					.addEqualsFilter(I_MD_Candidate.COLUMN_AD_Table_ID, segment.getReference().getAD_Table_ID())
-					.addEqualsFilter(I_MD_Candidate.COLUMN_Record_ID, segment.getReference().getRecord_ID());
-		}
 		return builder;
 	}
 

@@ -10,8 +10,8 @@ import org.springframework.stereotype.Service;
 import de.metas.material.dispo.Candidate;
 import de.metas.material.dispo.Candidate.Type;
 import de.metas.material.dispo.CandidateRepository;
-import de.metas.material.dispo.CandidatesSegment;
-import de.metas.material.dispo.CandidatesSegment.DateOperator;
+import de.metas.material.dispo.CandidatesQuery;
+import de.metas.material.dispo.CandidatesQuery.DateOperator;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
@@ -75,7 +75,7 @@ public class SupplyProposalEvaluator
 	 */
 	public boolean evaluateSupply(@NonNull final SupplyProposal proposal)
 	{
-		final CandidatesSegment demandSegment = CandidatesSegment.builder()
+		final CandidatesQuery demandSegment = CandidatesQuery.builder()
 				.type(Type.DEMAND)
 				.date(proposal.getDate())
 				.dateOperator(DateOperator.from)
@@ -83,7 +83,7 @@ public class SupplyProposalEvaluator
 				.warehouseId(proposal.getDestWarehouseId())
 				.build();
 
-		final CandidatesSegment directReverseSegment = demandSegment
+		final CandidatesQuery directReverseSegment = demandSegment
 				.withParentProductId(proposal.getProductId())
 				.withParentWarehouseId(proposal.getSourceWarehouseId());
 
@@ -93,7 +93,7 @@ public class SupplyProposalEvaluator
 			return false;
 		}
 
-		final CandidatesSegment supplySegment = demandSegment
+		final CandidatesQuery supplySegment = demandSegment
 				.withType(Type.SUPPLY)
 				.withDate(proposal.getDate())
 				.withDateOperator(DateOperator.from)
@@ -118,7 +118,7 @@ public class SupplyProposalEvaluator
 
 	private Candidate searchRecursive(
 			@NonNull final Candidate currentCandidate,
-			@NonNull final CandidatesSegment searchTarget,
+			@NonNull final CandidatesQuery searchTarget,
 			@NonNull final Set<Candidate> alreadySeen)
 	{
 		if (!alreadySeen.add(currentCandidate))

@@ -124,9 +124,9 @@ public class Candidate
 	 *
 	 * @return
 	 */
-	public CandidatesSegment.CandidatesSegmentBuilder mkSegmentBuilder()
+	public CandidatesQuery.CandidatesQueryBuilder mkSegmentBuilder()
 	{
-		return CandidatesSegment.builder()
+		return CandidatesQuery.builder()
 				.productId(materialDescr.getProductId())
 				.warehouseId(materialDescr.getWarehouseId())
 				.date(materialDescr.getDate());

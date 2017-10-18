@@ -10,7 +10,7 @@ import com.google.common.base.Preconditions;
 import de.metas.material.dispo.Candidate;
 import de.metas.material.dispo.Candidate.Type;
 import de.metas.material.dispo.CandidateRepository;
-import de.metas.material.dispo.CandidatesSegment.DateOperator;
+import de.metas.material.dispo.CandidatesQuery.DateOperator;
 import de.metas.material.event.MaterialDemandEvent;
 import de.metas.material.event.MaterialEventService;
 import lombok.NonNull;

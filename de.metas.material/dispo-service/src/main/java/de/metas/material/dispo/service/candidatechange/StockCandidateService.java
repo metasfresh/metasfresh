@@ -13,8 +13,8 @@ import com.google.common.annotations.VisibleForTesting;
 import de.metas.material.dispo.Candidate;
 import de.metas.material.dispo.Candidate.Type;
 import de.metas.material.dispo.CandidateRepository;
-import de.metas.material.dispo.CandidatesSegment;
-import de.metas.material.dispo.CandidatesSegment.DateOperator;
+import de.metas.material.dispo.CandidatesQuery;
+import de.metas.material.dispo.CandidatesQuery.DateOperator;
 import de.metas.material.event.MaterialDescriptor;
 import lombok.NonNull;
 
@@ -172,7 +172,7 @@ public class StockCandidateService
 			@NonNull final Integer groupId,
 			@NonNull final BigDecimal delta)
 	{
-		final CandidatesSegment segment = CandidatesSegment.builder()
+		final CandidatesQuery segment = CandidatesQuery.builder()
 				.type(Type.STOCK)
 				.date(date)
 				.dateOperator(DateOperator.after)
