@@ -16,6 +16,7 @@ import org.eevolution.api.IProductBOMDAO;
 import org.eevolution.exceptions.BOMCycleException;
 import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_BOMLine;
+import org.eevolution.model.X_PP_Product_BOMLine;
 
 /**
  * Calculates product's low level code (LLC) and also checks for BOM cycles (it is throwing {@link BOMCycleException} in that case).
@@ -65,6 +66,12 @@ import org.eevolution.model.I_PP_Product_BOMLine;
 		boolean first = true;
 		for (final I_PP_Product_BOMLine productBOMLine : productBOMLines)
 		{
+			// Don't navigate the Co/ByProduct lines (gh480)
+			if(isByOrCoProduct(productBOMLine))
+			{
+				continue;
+			}
+
 			// If not the first bom line at this level
 			if (!first)
 			{
@@ -81,6 +88,13 @@ import org.eevolution.model.I_PP_Product_BOMLine;
 		}
 
 		return productNode;
+	}
+
+	private static final boolean isByOrCoProduct(final I_PP_Product_BOMLine bomLine)
+	{
+		final String componentType = bomLine.getComponentType();
+		return X_PP_Product_BOMLine.COMPONENTTYPE_By_Product.equals(componentType)
+				|| X_PP_Product_BOMLine.COMPONENTTYPE_Co_Product.equals(componentType);
 	}
 
 	private DefaultMutableTreeNode createParentProductNodeForBOMLine(final I_PP_Product_BOMLine bomLine)
