@@ -25,7 +25,6 @@ package org.eevolution.api.impl;
 
 import java.math.BigDecimal;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.compiere.model.I_M_Product;
 import org.eevolution.exceptions.BOMCycleException;
@@ -140,7 +139,7 @@ public class ProductLowLevelCalculatorTest
 
 	private void assertLLC(final int llcExpected, final I_M_Product product)
 	{
-		final ProductLowLevelCalculator llcCalculator = new ProductLowLevelCalculator(helper.ctx, ITrx.TRXNAME_None);
+		final ProductLowLevelCalculator llcCalculator = ProductLowLevelCalculator.newInstance();
 		final int llcActual = llcCalculator.getLowLevel(product.getM_Product_ID());
 		Assert.assertEquals("Invalid LLC for product " + product.getValue(), llcExpected, llcActual);
 	}
