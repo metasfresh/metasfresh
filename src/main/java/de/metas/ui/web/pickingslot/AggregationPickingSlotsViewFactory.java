@@ -3,6 +3,7 @@ package de.metas.ui.web.pickingslot;
 import java.util.List;
 import java.util.Properties;
 
+import org.adempiere.ad.window.api.IADWindowDAO;
 import org.adempiere.util.Services;
 import org.compiere.util.Env;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -67,7 +68,7 @@ public class AggregationPickingSlotsViewFactory implements IViewFactory
 
 		return ViewLayout.builder()
 				.setWindowId(WINDOW_ID)
-				.setCaption("Picking slots")
+				.setCaption(Services.get(IADWindowDAO.class).retrieveWindowName(WINDOW_ID.toInt()))
 				.addElementsFromViewRowClass(PickingSlotRow.class, viewDataType)
 				.setHasTreeSupport(true)
 				.setIncludedViewLayout(IncludedViewLayout.builder()
