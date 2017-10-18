@@ -54,7 +54,7 @@ import de.metas.ui.web.window.datatypes.WindowId;
 @ViewFactory(windowId = AggregationPickingSlotsViewFactory.WINDOW_ID_STRING)
 public class AggregationPickingSlotsViewFactory implements IViewFactory
 {
-	static final String WINDOW_ID_STRING = "540206";
+	static final String WINDOW_ID_STRING = "540371"; // Picking Tray Clearing
 	public static final WindowId WINDOW_ID = WindowId.fromJson(WINDOW_ID_STRING);
 
 	@Autowired
