@@ -389,19 +389,21 @@ class Table extends Component {
     }
 
     handleClickOutside = (event) => {
-        const { showIncludedViewOnSelect, viewId, windowType } = this.props;
-        if(
-            event.target.parentNode !== document &&
-            (event.target.parentNode &&
-            !event.target.parentNode.className.includes('notification'))
+        const {
+            showIncludedViewOnSelect, viewId, windowType, inBackground,
+        } = this.props;
+
+        if (event.target.parentNode !== document && event.target.parentNode &&
+            !event.target.parentNode.className.includes('notification') &&
+            !inBackground
         ) {
             const item = event.path;
-            if(item) {
-                for(let i = 0; i < item.length; i++){
-                    if(
-                        item[i].classList &&
+
+            if (item) {
+                for (let i = 0; i < item.length; i++) {
+                    if (item[i].classList &&
                         item[i].classList.contains('js-not-unselect')
-                    ){
+                    ) {
                         return;
                     }
                 }
