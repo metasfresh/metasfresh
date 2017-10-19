@@ -3,6 +3,7 @@ package org.adempiere.ad.column.callout;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.api.ICalloutField;
+import org.adempiere.util.Check;
 import org.compiere.model.I_AD_Column;
 
 /*
@@ -43,6 +44,11 @@ public class AD_Column
 	public void onColumnName(final I_AD_Column column, final ICalloutField field)
 	{
 		final String columnName = column.getColumnName();
+		if (Check.isEmpty(columnName, true))
+		{
+			return;
+		}
+		
 		if (columnName.equalsIgnoreCase(I_AD_Column.COLUMNNAME_Created)
 				|| columnName.equalsIgnoreCase(I_AD_Column.COLUMNNAME_CreatedBy)
 				|| columnName.equalsIgnoreCase(I_AD_Column.COLUMNNAME_Updated)
@@ -51,4 +57,4 @@ public class AD_Column
 			column.setIsAllowLogging(false);
 		}
 	}
-	}
+}
