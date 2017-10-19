@@ -357,6 +357,14 @@ public class TableCreateColumns extends JavaProcess
 					|| columnName.toUpperCase().equals("UPDATED") ))
 				column.setIsUpdateable(false);
 
+			if (columnName.equalsIgnoreCase ("Created")
+					|| columnName.equalsIgnoreCase ("Updated")
+					|| columnName.equalsIgnoreCase ("CreatedBy")
+					|| columnName.equalsIgnoreCase ("UpdatedBy"))
+				{
+					column.setIsAllowLogging(false);
+				}
+			
 			//	Done
 			if (column.save ())
 			{

@@ -74,7 +74,6 @@ public class ApplicationDictionary implements ModelValidator
 
 		engine.addModelChange(I_AD_Tab.Table_Name, this);
 		engine.addModelChange(I_AD_Ref_Table.Table_Name, this);
-		engine.addModelValidator(new AD_Column(), client);
 	}
 
 	@Override

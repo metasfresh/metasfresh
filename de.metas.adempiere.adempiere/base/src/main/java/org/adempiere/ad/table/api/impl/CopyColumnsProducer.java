@@ -175,6 +175,7 @@ public class CopyColumnsProducer
 			colTarget.setName(sourceColumn.getName());
 			colTarget.setDescription(sourceColumn.getDescription());
 			colTarget.setHelp(sourceColumn.getHelp());
+			
 		}
 
 		// metas: begin
@@ -219,5 +220,16 @@ public class CopyColumnsProducer
 		// TODO: Copy translations
 
 		return colTarget;
+	}
+	
+	{
+		final String columnName = sourceColumn.getColumnName();
+		if (columnName.equalsIgnoreCase(I_AD_Column.COLUMNNAME_Created)
+				|| columnName.equalsIgnoreCase(I_AD_Column.COLUMNNAME_CreatedBy)
+				|| columnName.equalsIgnoreCase(I_AD_Column.COLUMNNAME_Updated)
+				|| columnName.equalsIgnoreCase(I_AD_Column.COLUMNNAME_UpdatedBy))
+		{
+			colTarget.setIsAllowLogging(false);
+		}
 	}
 }
