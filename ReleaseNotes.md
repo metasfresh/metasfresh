@@ -30,6 +30,8 @@ Here come the actual release notes:
     * Improved Translation of en_US Language in Shipment Restrictions Window and Actions.
   * [#2732](https://github.com/metasfresh/metasfresh/issues/2732) Window Design Webui : Add description field in sales order line
     * New Field Description added to Sales Orderline Grid View and Advanced edit in WebUI.
+  * [#2768](https://github.com/metasfresh/metasfresh/issues/2768) Translate window for process "Change Password" into EN
+    * Translations added to Parms in Change Password Process.
   * [#2729](https://github.com/metasfresh/metasfresh/issues/2729) Window Design Webui: Add missing fields to window Tourversion
     * New Fields added to Tourversion widnow in WebUI. Translations for en_US improved.
 
