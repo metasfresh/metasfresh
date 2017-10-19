@@ -4,7 +4,10 @@ import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.util.Check;
+import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Column;
+
+import de.metas.adempiere.service.IColumnBL;
 
 /*
  * #%L

@@ -17,6 +17,7 @@ import org.compiere.util.Env;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.adempiere.service.IColumnBL;
 import lombok.NonNull;
 
 /**
@@ -36,6 +37,7 @@ public class CopyColumnsProducer
 	// Services
 	private final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 	private final IADColumnCalloutBL adColumnCalloutBL = Services.get(IADColumnCalloutBL.class);
+	private final IColumnBL columnBL = Services.get(IColumnBL.class);
 
 	private ILoggable _logger;
 	private I_AD_Table _targetTable;
@@ -175,8 +177,7 @@ public class CopyColumnsProducer
 			colTarget.setName(sourceColumn.getName());
 			colTarget.setDescription(sourceColumn.getDescription());
 			colTarget.setHelp(sourceColumn.getHelp());
-			
-			disallowLogging(sourceColumn, colTarget);
+			colTarget.setIsAllowLogging(columnBL.getDefaultAllowLoggingByColumnName(colTarget.getColumnName()));
 		}
 
 		// metas: begin
@@ -221,17 +222,5 @@ public class CopyColumnsProducer
 		// TODO: Copy translations
 
 		return colTarget;
-	}
-	
-	private void disallowLogging(@NonNull final I_AD_Column sourceColumn, @NonNull final I_AD_Column colTarget)
-	{
-		final String columnName = sourceColumn.getColumnName();
-		if (columnName.equalsIgnoreCase(I_AD_Column.COLUMNNAME_Created)
-				|| columnName.equalsIgnoreCase(I_AD_Column.COLUMNNAME_CreatedBy)
-				|| columnName.equalsIgnoreCase(I_AD_Column.COLUMNNAME_Updated)
-				|| columnName.equalsIgnoreCase(I_AD_Column.COLUMNNAME_UpdatedBy))
-		{
-			colTarget.setIsAllowLogging(false);
-		}
 	}
 }
