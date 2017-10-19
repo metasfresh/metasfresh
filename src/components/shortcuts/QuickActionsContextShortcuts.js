@@ -27,6 +27,7 @@ class QuickActionsContextShortcuts extends Component {
                 global
                 preventDefault
                 stopPropagation
+                alwaysFireHandler
             />
         );
     }
