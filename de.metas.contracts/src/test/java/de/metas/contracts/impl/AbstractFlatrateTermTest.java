@@ -19,16 +19,15 @@ import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_Calendar;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_Period;
-import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_Year;
 import org.compiere.util.TimeUtil;
 import org.junit.Before;
 import org.junit.BeforeClass;
 
+import de.metas.adempiere.model.I_C_CountryArea;
+import de.metas.adempiere.service.ICountryAreaBL;
 import de.metas.contracts.flatrate.interfaces.I_C_DocType;
 import de.metas.interfaces.I_M_Warehouse;
-import de.metas.tax.api.ITaxDAO;
-import de.metas.tax.api.impl.TaxDAO;
 
 /*
  * #%L
@@ -113,10 +112,9 @@ public abstract class AbstractFlatrateTermTest
 		helper = createFlatrateTermTestHelper();
 		createCalendar();
 		createAcctSchema();
-		createTax();
 		createWarehouse();
 		createDocType();
-		createCountry();
+		createCountryAndCountryArea();
 	}
 
 	private void createCalendar()
@@ -173,20 +171,6 @@ public abstract class AbstractFlatrateTermTest
 		});
 	}
 	
-	private void createTax()
-	{
-		final I_C_Tax tax  = newInstance(I_C_Tax.class);
-		save(tax);
-		
-		Services.registerService(ITaxDAO.class, new TaxDAO()
-		{
-			@Override
-			public I_C_Tax retrieveNoTaxFound(Properties ctx)
-			{
-				return tax;
-			}
-		});
-	}
 	
 	private void createWarehouse()
 	{
@@ -205,7 +189,7 @@ public abstract class AbstractFlatrateTermTest
 		save(docType);
 	}
 	
-	private void createCountry()
+	private void createCountryAndCountryArea()
 	{
 		country = newInstance(I_C_Country.class);
 		country.setAD_Org(helper.getOrg());
@@ -215,6 +199,10 @@ public abstract class AbstractFlatrateTermTest
 		country.setDisplaySequenceLocal(sequence);
 		country.setCaptureSequence(sequence);
 		save(country);
+		
+		final I_C_CountryArea countryArea = newInstance(I_C_CountryArea.class, country);
+		countryArea.setValue(ICountryAreaBL.COUNTRYAREAKEY_EU);
+		save(countryArea);
 	}
 
 }

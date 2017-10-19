@@ -76,10 +76,15 @@ public class FlatrateTermImportProcess_SimpleCase_Test extends AbstractFlatrateT
 
 		final int bpartnerId = prepareBPartner();
 
-		final I_M_Product product = FlatrateTermDataFactory.productNew()
-				.value("01")
-				.name("testProduct")
+		final FlatrateTermDataFactory.ProductAndPricingSystem productAndPricingSystem = FlatrateTermDataFactory.productAndPricingNew()
+				.productValue("01")
+				.productName("testProduct")
+				.country(getCountry())
+				.isTaxInclcuded(false)
+				.validFrom(startDate)
 				.build();
+		
+		final I_M_Product product = productAndPricingSystem.getProduct();
 
 		FlatrateTermDataFactory.productAcctNew()
 				.product(product)
@@ -89,6 +94,72 @@ public class FlatrateTermImportProcess_SimpleCase_Test extends AbstractFlatrateT
 		final I_C_Flatrate_Conditions conditions = FlatrateTermDataFactory.flatrateConditionsNew()
 				.name("Abo")
 				.calendar(getCalendar())
+				.pricingSystem(productAndPricingSystem.getPricingSystem())
+				.invoiceRule(X_C_Flatrate_Conditions.INVOICERULE_Sofort)
+				.typeConditions(X_C_Flatrate_Conditions.TYPE_CONDITIONS_Subscription)
+				.build();
+
+		final I_I_Flatrate_Term iflatrateTerm = IFlatrateTermFactory.builder()
+				.ctx(helper.getCtx())
+				.bartnerId(bpartnerId)
+				.dropShipBPartnerId(bpartnerId)
+				.productId(product.getM_Product_ID())
+				.flatrateConditionsId(conditions.getC_Flatrate_Conditions_ID())
+				.price(BigDecimal.valueOf(10))
+				.qty(BigDecimal.valueOf(1))
+				.startDate(startDate)
+				.masterStartDate(startDate)
+				.masterEndDate(masterEndDate)
+				.build();
+
+		final FlatrateTermImportProcess importProcess = new FlatrateTermImportProcess();
+		importProcess.setCtx(helper.getCtx());
+		importProcess.importRecord(new Mutable<>(), iflatrateTerm);
+
+		final I_C_Flatrate_Term flatrateTerm = iflatrateTerm.getC_Flatrate_Term();
+		assertThat(flatrateTerm).isNotNull();
+
+		assertPartnerData(iflatrateTerm);
+
+		assertThat(flatrateTerm.getStartDate()).isEqualTo(iflatrateTerm.getStartDate());
+		assertThat(flatrateTerm.getEndDate()).isEqualTo(expectedEndDate);
+		assertThat(flatrateTerm.getMasterStartDate()).isEqualTo(startDate);
+		assertThat(flatrateTerm.getMasterEndDate()).isEqualTo(masterEndDate);
+		assertThat(flatrateTerm.isCloseInvoiceCandidate()).isFalse();
+
+		assertInvoiceCandidate(flatrateTerm);
+		
+		assertShipmentSchedules(flatrateTerm, true);
+	}
+	
+	@Test
+	public void testImportActiveFlatrateTermsWithTaxIncluded()
+	{
+		final Timestamp startDate = TimeUtil.parseTimestamp("2017-09-10");
+		final Timestamp masterEndDate = TimeUtil.addDays(startDate, 90);
+		final Timestamp expectedEndDate = TimeUtil.parseTimestamp("2018-09-09");
+
+		final int bpartnerId = prepareBPartner();
+
+		final FlatrateTermDataFactory.ProductAndPricingSystem productAndPricingSystem = FlatrateTermDataFactory.productAndPricingNew()
+				.productValue("02")
+				.productName("testProduct")
+				.country(getCountry())
+				.isTaxInclcuded(true)
+				.validFrom(startDate)
+				.build();
+		
+		final I_M_Product product = productAndPricingSystem.getProduct();
+
+		FlatrateTermDataFactory.productAcctNew()
+				.product(product)
+				.acctSchema(getAcctSchema())
+				.build();
+
+		final I_C_Flatrate_Conditions conditions = FlatrateTermDataFactory.flatrateConditionsNew()
+				.name("Abos")
+				.calendar(getCalendar())
+				.pricingSystem(productAndPricingSystem.getPricingSystem())
 				.invoiceRule(X_C_Flatrate_Conditions.INVOICERULE_Sofort)
 				.typeConditions(X_C_Flatrate_Conditions.TYPE_CONDITIONS_Subscription)
 				.build();
@@ -135,14 +206,20 @@ public class FlatrateTermImportProcess_SimpleCase_Test extends AbstractFlatrateT
 
 		final int bpartnerId = prepareBPartner();
 
-		final I_M_Product product = FlatrateTermDataFactory.productNew()
-				.value("01")
-				.name("testProduct")
+		final FlatrateTermDataFactory.ProductAndPricingSystem productAndPricingSystem = FlatrateTermDataFactory.productAndPricingNew()
+				.productValue("01")
+				.productName("testProduct")
+				.country(getCountry())
+				.isTaxInclcuded(false)
+				.validFrom(startDate)
 				.build();
-
+		
+		final I_M_Product product = productAndPricingSystem.getProduct();
+		
 		final I_C_Flatrate_Conditions conditions = FlatrateTermDataFactory.flatrateConditionsNew()
 				.name("Abo")
 				.calendar(getCalendar())
+				.pricingSystem(productAndPricingSystem.getPricingSystem())
 				.invoiceRule(X_C_Flatrate_Conditions.INVOICERULE_Sofort)
 				.typeConditions(X_C_Flatrate_Conditions.TYPE_CONDITIONS_Subscription)
 				.build();
@@ -231,6 +308,8 @@ public class FlatrateTermImportProcess_SimpleCase_Test extends AbstractFlatrateT
 
 		assertThat(invoiceCandidate.getM_Product_ID()).isEqualTo(flatrateTerm.getM_Product_ID());
 		assertThat(invoiceCandidate.getRecord_ID()).isEqualByComparingTo(flatrateTerm.getC_Flatrate_Term_ID());
+		assertThat(invoiceCandidate.getPriceActual()).isEqualByComparingTo(flatrateTerm.getPriceActual());
+		assertThat(invoiceCandidate.isTaxIncluded()).isEqualTo(flatrateTerm.isTaxIncluded());
 
 		final List<I_C_Invoice_Candidate> candsForTerm = iinvoiceCandDAO.retrieveReferencing(flatrateTerm);
 		assertThat(candsForTerm.size(), equalTo(1));

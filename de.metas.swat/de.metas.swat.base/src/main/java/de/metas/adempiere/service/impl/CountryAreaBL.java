@@ -28,10 +28,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
+import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.Query;
@@ -92,27 +94,27 @@ public class CountryAreaBL implements ICountryAreaBL
 	@Cached(cacheName = I_C_CountryArea.Table_Name)
 	public I_C_CountryArea retrieveCountryAreaByValue(@CacheCtx Properties ctx, String countryAreaKey, @CacheTrx String trxName)
 	{
-		final String whereClauseRegion = I_C_CountryArea.COLUMNNAME_Value + " =? ";
-		final I_C_CountryArea countryArea = new Query(ctx, I_C_CountryArea.Table_Name, whereClauseRegion, trxName)
-				.setParameters(countryAreaKey)
-				.setOnlyActiveRecords(true)
-				// 03362: return the first result, ordered by "AD_Client_ID DESC"
-				// note that there is a unique idx on "(AD_Client_ID, Value) WHERE IsActive='Y'"
-				.setOrderBy(I_C_CountryArea.COLUMNNAME_AD_Client_ID + " DESC ")
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_CountryArea.class, ctx, ITrx.TRXNAME_None)
+				.addEqualsFilter(I_C_CountryArea.COLUMNNAME_Value, countryAreaKey)
+				.addOnlyActiveRecordsFilter()
+				.orderBy()
+				.addColumnDescending(I_C_CountryArea.COLUMNNAME_AD_Client_ID)
+				.endOrderBy()
+				.create()
 				.first(I_C_CountryArea.class);
-		return countryArea;
+
 	}
 
-	@Cached(cacheName=I_C_CountryArea_Assign.Table_Name+"_ByCountryArea")
+	@Cached(cacheName = I_C_CountryArea_Assign.Table_Name + "_ByCountryArea")
 	/* package */ List<I_C_CountryArea_Assign> retrieveCountryAreaAssignments(@CacheCtx final Properties ctx, final int countryAreaId, @CacheTrx final String trxName)
 	{
-		final String whereClause = I_C_CountryArea_Assign.COLUMNNAME_C_CountryArea_ID + "=?";
-		List<I_C_CountryArea_Assign> result = new Query(ctx, I_C_CountryArea_Assign.Table_Name, whereClause, trxName)
-				.setParameters(countryAreaId)
-				.setOnlyActiveRecords(true)
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_CountryArea_Assign.class, ctx, ITrx.TRXNAME_None)
+				.addEqualsFilter(I_C_CountryArea_Assign.COLUMNNAME_C_CountryArea_ID, countryAreaId)
+				.addOnlyActiveRecordsFilter()
+				.create()
 				.list(I_C_CountryArea_Assign.class);
-
-		return result;
 	}
 	
 	@Override
@@ -140,10 +142,13 @@ public class CountryAreaBL implements ICountryAreaBL
 	@Cached(cacheName = I_C_Country.Table_Name)
 	public I_C_Country retrieveCountryByCode(@CacheCtx Properties ctx, String countryCode, @CacheTrx String trxName)
 	{
-		return new Query(ctx, I_C_Country.Table_Name, I_C_Country.COLUMNNAME_CountryCode + "=?", trxName)
-				.setParameters(countryCode)
-				.setOnlyActiveRecords(true)
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_Country.class, ctx, ITrx.TRXNAME_None)
+				.addEqualsFilter(I_C_Country.COLUMNNAME_CountryCode, countryCode)
+				.addOnlyActiveRecordsFilter()
+				.create()
 				.firstOnly(I_C_Country.class);
+
 	}
 
 	@Override
