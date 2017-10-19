@@ -120,6 +120,7 @@ class Container extends Component {
                                     setModalTitle={setModalTitle}
                                     setModalDescription={setModalDescription}
                                     fetchQuickActionsOnInit={!(
+                                        includedView &&
                                         includedView.windowType &&
                                         includedView.viewId
                                     )}
@@ -128,8 +129,9 @@ class Container extends Component {
                                     processStatus={processStatus}
                                     includedView={includedView}
                                     inBackground={
+                                        includedView &&
                                         includedView.windowType &&
-                                           includedView.viewId
+                                        includedView.viewId
                                     }
                                     inModal={modal.visible}
                                 />
