@@ -31,6 +31,7 @@ class TableContextShortcuts extends Component {
                 preventDefault
                 stopPropagation
                 alwaysFireHandler
+                global
             />
         )
     }
