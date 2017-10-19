@@ -40,7 +40,6 @@ const initialState = {
     indicator: 'saved',
     latestNewDocument: null,
     viewId: null,
-    selected: [],
     selections: {},
 };
 
@@ -198,11 +197,6 @@ export default function windowHandler(state = initialState, action) {
                         }
                     }
                 }
-            });
-
-        case types.SELECT_ROW:
-            return Object.assign({}, state, {
-                selected: action.selected
             });
 
         case types.UPDATE_DATA_FIELD_PROPERTY:

@@ -13,7 +13,6 @@ import {
     mapIncluded,
     collapsedMap,
     getZoomIntoWindow,
-    selectRow
 } from '../../actions/WindowActions';
 import { deleteRequest } from '../../actions/GenericActions';
 import keymap from '../../keymap.js';
@@ -294,7 +293,11 @@ class Table extends Component {
             const {selected} = this.state;
 
             if (tabInfo) {
-                dispatch(selectRow(selected));
+                dispatch(selectTableItems({
+                    windowType: type,
+                    viewId,
+                    ids: selected,
+                }));
             }
 
             if (!disconnectFromState) {
@@ -310,14 +313,18 @@ class Table extends Component {
     }
 
     selectRangeProduct = (ids) => {
-        const { dispatch, tabInfo } = this.props;
+        const { dispatch, tabInfo, type, viewId } = this.props;
 
         this.setState({
             selected: ids
         });
 
         if (tabInfo) {
-            dispatch(selectRow(ids));
+            dispatch(selectTableItems({
+                windowType: type,
+                viewId,
+                ids,
+            }));
         }
     }
 
@@ -331,13 +338,17 @@ class Table extends Component {
     }
 
     selectOneProduct = (id, idFocused, idFocusedDown, cb) => {
-        const { dispatch, tabInfo } = this.props;
+        const { dispatch, tabInfo, type, viewId } = this.props;
 
         this.setState({
             selected: [id]
         }, () => {
             if (tabInfo) {
-                dispatch(selectRow([id]));
+                dispatch(selectTableItems({
+                    windowType: type,
+                    viewId,
+                    ids: [id],
+                }));
             }
 
             this.triggerFocus(idFocused, idFocusedDown);
@@ -346,27 +357,35 @@ class Table extends Component {
     }
 
     deselectProduct = (id) => {
-        const { dispatch, tabInfo } = this.props;
+        const { dispatch, tabInfo, type, viewId } = this.props;
         const index = this.state.selected.indexOf(id);
 
         this.setState(update(this.state, {
             selected: {$splice: [[index, 1]]}
         }), () => {
             if (tabInfo) {
-                dispatch(selectRow(this.state.selected));
+                dispatch(selectTableItems({
+                    windowType: type,
+                    viewId,
+                    ids: this.state.selected,
+                }));
             }
         })
     }
 
     deselectAllProducts = (cb) => {
-        const { dispatch, tabInfo } = this.props;
+        const { dispatch, tabInfo, type, viewId } = this.props;
 
         this.setState({
             selected: []
         }, cb && cb());
 
         if (tabInfo) {
-            dispatch(selectRow([]));
+            dispatch(selectTableItems({
+                windowType: type,
+                viewId,
+                ids: [],
+            }));
         }
     }
 
