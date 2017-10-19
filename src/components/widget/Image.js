@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { getImageAction, postImageAction } from '../../actions/AppActions';
 import Loader from '../app/Loader';
+import counterpart from 'counterpart';
 
 const Placeholder = (props) => (
     <div className="image-placeholder">
@@ -193,7 +194,7 @@ class Image extends Component{
                 onClick={() => this.handleCamera()}
             >
                 <i className="meta-icon-photo"/>
-                Take from camera
+                {counterpart.translate('widget.takeFromCamera.caption')}
             </div>
     }
     
@@ -245,7 +246,7 @@ class Image extends Component{
                         />
                         <div className="text-content">
                             <i className="meta-icon-upload" />
-                            Upload a photo
+                            {counterpart.translate('widget.uploadPhoto.caption')}
                         </div>
                     </label>
                     {this.isCameraAvailable() &&
@@ -256,7 +257,7 @@ class Image extends Component{
                             onClick={() => this.handleClear()}
                         >
                             <i className="meta-icon-close-alt"/>
-                            Clear
+                            {counterpart.translate('widget.clearPhoto.caption')}
                         </div>}
                 </div>}
             </div>
