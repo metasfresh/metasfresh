@@ -13,11 +13,11 @@ package org.adempiere.ad.persistence;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -28,8 +28,7 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
+import java.util.Set;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
@@ -39,9 +38,13 @@ import org.compiere.model.I_AD_EntityType;
 import org.compiere.util.CCache;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
+import org.slf4j.Logger;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+
+import de.metas.logging.LogManager;
 
 /**
  * Default implementation of {@link IEntityTypesCache}, which is retrieving the entity types from database.
@@ -64,10 +67,21 @@ public class EntityTypesCache implements IEntityTypesCache
 			, 0 // NoExpire (NOTE: this is important because we don't want some of our records to get stale, because we would never load them again partially)
 	);
 
-	/**
-	 * First Not System Entity ID 10=D, 20=C, 100=U, 110=CUST, 200=A, 210=EXT, 220=XX etc
-	 */
-	private static final int MAX_SystemMaintained_AD_EntityType_ID = 1000000;
+	// FIXME HARDCODED. We shall introduce AD_EntityType.IsSystemMaintained... or better, AD_EntityType_Dependency table
+	private static final Set<String> SYSTEM_MAINTAINED_ENTITY_TYPES = ImmutableSet.<String> builder()
+			.add("D")
+			.add("C")
+			.add("U")
+			.add("CUST")
+			.add("A")
+			.add("EXT")
+			.add("XX")
+			.add("EE01")
+			.add("EE02")
+			.add("EE04")
+			.add("EE05")
+			.add("de.metas.order")
+			.build();
 
 	@VisibleForTesting
 	EntityTypesCache()
@@ -150,9 +164,7 @@ public class EntityTypesCache implements IEntityTypesCache
 		final String modelPackage = rs.getString(I_AD_EntityType.COLUMNNAME_ModelPackage);
 		final String webUIServletListenerClass = rs.getString(I_AD_EntityType.COLUMNNAME_WebUIServletListenerClass);
 		final boolean displayedInUI = DisplayType.toBoolean(rs.getString(I_AD_EntityType.COLUMNNAME_IsDisplayed));
-
-		final int adEntityTypeId = rs.getInt(I_AD_EntityType.COLUMNNAME_AD_EntityType_ID);
-		final boolean systemMaintained = adEntityTypeId < MAX_SystemMaintained_AD_EntityType_ID;
+		final boolean systemMaintained = extractSystemMaintainedEntityType(entityType);
 
 		final EntityTypeEntry entry = EntityTypeEntry.builder()
 				.setEntityType(entityType)
@@ -164,11 +176,21 @@ public class EntityTypesCache implements IEntityTypesCache
 		return entry;
 	}
 
+	private static final boolean extractSystemMaintainedEntityType(final String entityType)
+	{
+		return SYSTEM_MAINTAINED_ENTITY_TYPES.contains(entityType);
+	}
+
 	@Override
 	public List<String> getEntityTypeNames()
 	{
 		loadIfNeeded();
 		return ImmutableList.copyOf(cache.keySet());
+	}
+
+	public Set<String> getSystemMaintainedEntityTypeNames()
+	{
+		return SYSTEM_MAINTAINED_ENTITY_TYPES;
 	}
 
 	private EntityTypeEntry getEntityTypeEntryOrNull(final String entityType)
@@ -239,7 +261,7 @@ public class EntityTypesCache implements IEntityTypesCache
 	{
 		return getEntityTypeEntry(entityType).isSystemMaintained();
 	}
-	
+
 	public String getWebUIServletListenerClass(final String entityType)
 	{
 		return getEntityTypeEntry(entityType).getWebUIServletListenerClass();
@@ -292,7 +314,7 @@ public class EntityTypesCache implements IEntityTypesCache
 		{
 			return displayedInUI;
 		}
-		
+
 		public String getWebUIServletListenerClass()
 		{
 			return webUIServletListenerClass;
