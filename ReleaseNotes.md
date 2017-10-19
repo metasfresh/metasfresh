@@ -34,6 +34,9 @@ Here come the actual release notes:
     * New Fields added to Tourversion widnow in WebUI. Translations for en_US improved.
 
 ## Fixes
+* metasfresh-webui-frontend
+  * [#1281](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1281) Translations of Photo Widget in User WIndow
+    * Fixing the Translation of the Photo Widget Buttons in User Window.
 
 # metasfresh 5.31 (2017-42)
 
