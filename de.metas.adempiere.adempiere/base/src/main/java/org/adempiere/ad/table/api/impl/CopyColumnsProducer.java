@@ -176,6 +176,7 @@ public class CopyColumnsProducer
 			colTarget.setDescription(sourceColumn.getDescription());
 			colTarget.setHelp(sourceColumn.getHelp());
 			
+			disallowLogging(sourceColumn, colTarget);
 		}
 
 		// metas: begin
@@ -222,6 +223,7 @@ public class CopyColumnsProducer
 		return colTarget;
 	}
 	
+	private void disallowLogging(@NonNull final I_AD_Column sourceColumn, @NonNull final I_AD_Column colTarget)
 	{
 		final String columnName = sourceColumn.getColumnName();
 		if (columnName.equalsIgnoreCase(I_AD_Column.COLUMNNAME_Created)
