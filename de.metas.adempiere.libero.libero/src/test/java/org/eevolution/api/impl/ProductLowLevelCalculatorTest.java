@@ -13,22 +13,21 @@ package org.eevolution.api.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.math.BigDecimal;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.compiere.model.I_M_Product;
 import org.eevolution.exceptions.BOMCycleException;
+import org.eevolution.model.X_PP_Product_BOMLine;
 import org.eevolution.mrp.api.impl.MRPTestHelper;
 import org.junit.Assert;
 import org.junit.Before;
@@ -138,9 +137,44 @@ public class ProductLowLevelCalculatorTest
 				.build();
 	}
 
+	/**
+	 * Test rotated BOM with co-product.
+	 * 
+	 * <pre>
+	 * 		        A                   B                   
+	 *           /     \              /    \
+	 *          B(CP)   C            A(CP)  C
+	 * </pre>
+	 * 
+	 * @task https://github.com/metasfresh/metasfresh/issues/480
+	 */
+	@Test
+	public void testCoProducts()
+	{
+		final I_M_Product pA = helper.createProduct("A");
+		final I_M_Product pB = helper.createProduct("B");
+		final I_M_Product pC = helper.createProduct("C");
+
+		helper.newProductBOM()
+				.product(pA)
+				.newBOMLine().product(pB).setIsQtyPercentage(false).setQtyBOM(BigDecimal.ONE).componentType(X_PP_Product_BOMLine.COMPONENTTYPE_Co_Product).endLine()
+				.newBOMLine().product(pC).setIsQtyPercentage(false).setQtyBOM(BigDecimal.ONE).endLine()
+				.build();
+
+		helper.newProductBOM()
+				.product(pB)
+				.newBOMLine().product(pA).setIsQtyPercentage(false).setQtyBOM(BigDecimal.ONE).componentType(X_PP_Product_BOMLine.COMPONENTTYPE_Co_Product).endLine()
+				.newBOMLine().product(pC).setIsQtyPercentage(false).setQtyBOM(BigDecimal.ONE).endLine()
+				.build();
+
+		assertLLC(0, pA);
+		assertLLC(0, pB);
+		assertLLC(1, pC);
+	}
+
 	private void assertLLC(final int llcExpected, final I_M_Product product)
 	{
-		final ProductLowLevelCalculator llcCalculator = new ProductLowLevelCalculator(helper.ctx, ITrx.TRXNAME_None);
+		final ProductLowLevelCalculator llcCalculator = ProductLowLevelCalculator.newInstance();
 		final int llcActual = llcCalculator.getLowLevel(product.getM_Product_ID());
 		Assert.assertEquals("Invalid LLC for product " + product.getValue(), llcExpected, llcActual);
 	}

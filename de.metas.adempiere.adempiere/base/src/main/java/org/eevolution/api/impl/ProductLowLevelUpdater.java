@@ -24,8 +24,6 @@ package org.eevolution.api.impl;
 
 
 import java.util.Iterator;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -38,6 +36,9 @@ import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.model.I_M_Product;
 import org.eevolution.api.IProductBOMBL;
 import org.eevolution.api.IProductLowLevelUpdater;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
 
 /*package */class ProductLowLevelUpdater implements IProductLowLevelUpdater
 {
@@ -92,7 +93,7 @@ import org.eevolution.api.IProductLowLevelUpdater;
 	{
 		try
 		{
-			final int lowlevel = productBOMBL.calculateProductLowestLevel(product);
+			final int lowlevel = productBOMBL.calculateProductLowestLevel(product.getM_Product_ID());
 			product.setLowLevel(lowlevel);
 			InterfaceWrapperHelper.save(product);
 			count_ok++;

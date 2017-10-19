@@ -1121,9 +1121,6 @@ public class FlatrateBL implements IFlatrateBL
 			nextTerm.setDropShip_BPartner_ID(currentTerm.getDropShip_BPartner_ID());
 			nextTerm.setDropShip_Location_ID(currentTerm.getDropShip_Location_ID());
 
-			nextTerm.setC_TaxCategory_ID(currentTerm.getC_TaxCategory_ID());
-			nextTerm.setIsTaxIncluded(currentTerm.isTaxIncluded());
-			
 			nextTerm.setM_Product_ID(currentTerm.getM_Product_ID());
 			Services.get(IAttributeSetInstanceBL.class).cloneASI(currentTerm, nextTerm);
 
