@@ -1,74 +1,50 @@
 package org.eevolution.api.impl;
 
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 
-
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Properties;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
 
 import javax.swing.tree.DefaultMutableTreeNode;
 
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.Services;
+import org.compiere.model.I_M_Product;
+import org.compiere.util.Env;
 import org.eevolution.api.IProductBOMDAO;
 import org.eevolution.exceptions.BOMCycleException;
 import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_BOMLine;
+import org.eevolution.model.X_PP_Product_BOMLine;
 
+/**
+ * Calculates product's low level code (LLC) and also checks for BOM cycles (it is throwing {@link BOMCycleException} in that case).
+ * 
+ * @author metas-dev <dev@metasfresh.com>
+ */
 /* package */class ProductLowLevelCalculator
 {
-	/**
-	 * Map of M_Product_ID to PP_Product_BOM_ID.
-	 */
-	private Map<Integer, Integer> tableproduct = new HashMap<Integer, Integer>();
-	private Properties m_ctx = null;
-	private String m_trxName = null;
-
-	public ProductLowLevelCalculator(final Properties ctx, final String trxName)
+	public static final ProductLowLevelCalculator newInstance()
 	{
-		super();
+		return new ProductLowLevelCalculator();
+	}
 
-		m_ctx = ctx;
-		m_trxName = trxName;
+	private final Set<Integer> seenProductIds = new LinkedHashSet<>();
+
+	private ProductLowLevelCalculator()
+	{
 	}
 
 	/**
-	 * get low level of a Product
-	 * 
-	 * @param ID Product
-	 * @return int low level
+	 * Calculate the low level of given product
 	 */
-	public int getLowLevel(int M_Product_ID)
+	public int getLowLevel(final int productId)
 	{
-		// int AD_Client_ID = Env.getAD_Client_ID(m_ctx);
-		tableproduct.clear(); // reset tableproduct cache
-		DefaultMutableTreeNode ibom = null;
+		clearSeenProducts();
+		markProductAsSeen(productId);
 
-		final int productBOMId = 0;
-		tableproduct.put(M_Product_ID, productBOMId); // insert parent into cache
-		ibom = iparent(M_Product_ID, productBOMId); // start traversing tree
-
+		final DefaultMutableTreeNode ibom = createParentProductNode(productId); // start traversing tree
 		return ibom.getDepth();
 	}
 
@@ -79,49 +55,49 @@ import org.eevolution.model.I_PP_Product_BOMLine;
 	 * @param ID BOM
 	 * @return DefaultMutableTreeNode Tree with all parent product
 	 */
-	private DefaultMutableTreeNode iparent(final int M_Product_ID, final int PP_Product_BOM_ID)
+	private DefaultMutableTreeNode createParentProductNode(final int productId)
 	{
+		final DefaultMutableTreeNode productNode = new DefaultMutableTreeNode(productId);
 
-		final DefaultMutableTreeNode parentNode = new DefaultMutableTreeNode(Integer.toString(M_Product_ID) + "|" + Integer.toString(PP_Product_BOM_ID));
-
-		final Iterator<I_PP_Product_BOMLine> productBOMLines = Services.get(IProductBOMDAO.class)
-				.retrieveBOMLinesForProductQuery(m_ctx, M_Product_ID, m_trxName)
-				.iterate(I_PP_Product_BOMLine.class);
+		final List<I_PP_Product_BOMLine> productBOMLines = Services.get(IProductBOMDAO.class)
+				.retrieveBOMLinesForProductQuery(Env.getCtx(), productId, ITrx.TRXNAME_ThreadInherited)
+				.list();
 
 		boolean first = true;
-		while (productBOMLines.hasNext())
+		for (final I_PP_Product_BOMLine productBOMLine : productBOMLines)
 		{
-			final I_PP_Product_BOMLine bomLine = productBOMLines.next();
+			// Don't navigate the Co/ByProduct lines (gh480)
+			if(isByOrCoProduct(productBOMLine))
+			{
+				continue;
+			}
 
 			// If not the first bom line at this level
 			if (!first)
 			{
-				// need to reset tableproduct cache
-				tableproduct.clear();
-				tableproduct.put(M_Product_ID, PP_Product_BOM_ID); // insert parent into cache
+				clearSeenProducts();
+				markProductAsSeen(productId);
 			}
 			first = false;
 
-			final DefaultMutableTreeNode bomNode = icomponent(bomLine, M_Product_ID, parentNode);
+			final DefaultMutableTreeNode bomNode = createParentProductNodeForBOMLine(productBOMLine);
 			if (bomNode != null)
 			{
-				parentNode.add(bomNode);
+				productNode.add(bomNode);
 			}
 		}
 
-		return parentNode;
+		return productNode;
 	}
 
-	/**
-	 * get an implotion the product
-	 * 
-	 * @param ID Product
-	 * @param ID BOM
-	 * @return DefaultMutableTreeNode Tree with all parent product
-	 */
-	private DefaultMutableTreeNode icomponent(final I_PP_Product_BOMLine bomLine,
-			final int M_Product_ID,
-			final DefaultMutableTreeNode bomNode)
+	private static final boolean isByOrCoProduct(final I_PP_Product_BOMLine bomLine)
+	{
+		final String componentType = bomLine.getComponentType();
+		return X_PP_Product_BOMLine.COMPONENTTYPE_By_Product.equals(componentType)
+				|| X_PP_Product_BOMLine.COMPONENTTYPE_Co_Product.equals(componentType);
+	}
+
+	private DefaultMutableTreeNode createParentProductNodeForBOMLine(final I_PP_Product_BOMLine bomLine)
 	{
 		final I_PP_Product_BOM bom = bomLine.getPP_Product_BOM();
 		if (!bom.isActive())
@@ -129,42 +105,31 @@ import org.eevolution.model.I_PP_Product_BOMLine;
 			return null;
 		}
 
-		final int bomProductId = bom.getM_Product_ID();
-		if (M_Product_ID != bomProductId)
+		// Check Child = Parent error
+		final int productId = bomLine.getM_Product_ID();
+		final int parentProductId = bom.getM_Product_ID();
+		if (productId == parentProductId)
 		{
-			// BOM Loop Error
-			if (!tableproduct(bomProductId, bom.getPP_Product_BOM_ID()))
-			{
-				bomNode.add(iparent(bomProductId, bom.getPP_Product_BOM_ID()));
-			}
-			else
-			{
-				throw new BOMCycleException(bom, bom.getM_Product());
-			}
-		}
-		else
-		{
-			// Child = Parent error
-			throw new BOMCycleException(bom, bomLine.getM_Product());
+			throw new BOMCycleException(bom, load(productId, I_M_Product.class));
 		}
 
-		return null;
+		// Check BOM Loop Error
+		if (!markProductAsSeen(parentProductId))
+		{
+			throw new BOMCycleException(bom, load(parentProductId, I_M_Product.class));
+		}
+
+		return createParentProductNode(parentProductId);
 	}
 
-	/**
-	 * find a product in cache
-	 * 
-	 * @param ID Product
-	 * @param ID BOM
-	 * @return true if product is found
-	 */
-	private boolean tableproduct(int M_Product_ID, int PP_Product_BOM_ID)
+	private void clearSeenProducts()
 	{
-		if (tableproduct.containsKey(M_Product_ID))
-		{
-			return true;
-		}
-		tableproduct.put(M_Product_ID, PP_Product_BOM_ID);
-		return false;
+		seenProductIds.clear();
+	}
+
+	/** @return true if not already seen */
+	private boolean markProductAsSeen(final int productId)
+	{
+		return seenProductIds.add(productId);
 	}
 }

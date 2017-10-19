@@ -118,7 +118,7 @@ public class PP_Product_BOMLine
 	public void updateProductLowestLevelCode(final I_PP_Product_BOMLine bomLine)
 	{
 		final I_M_Product product = bomLine.getM_Product();
-		final int lowLevel = Services.get(IProductBOMBL.class).calculateProductLowestLevel(product);
+		final int lowLevel = Services.get(IProductBOMBL.class).calculateProductLowestLevel(product.getM_Product_ID());
 
 		product.setLowLevel(lowLevel); // update lowlevel
 		InterfaceWrapperHelper.save(product);

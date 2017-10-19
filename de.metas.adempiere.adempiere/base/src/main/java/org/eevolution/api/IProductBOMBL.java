@@ -13,15 +13,14 @@ package org.eevolution.api;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -40,7 +39,14 @@ public interface IProductBOMBL extends ISingletonService
 
 	void setIsBOM(I_M_Product product);
 
-	int calculateProductLowestLevel(I_M_Product product);
+	/**
+	 * Calculates low level code (LLC) for given product.
+	 * It also checks for BOM cycles.
+	 * 
+	 * @param productId
+	 * @return low level code (LLC)
+	 */
+	int calculateProductLowestLevel(int productId);
 
 	IProductLowLevelUpdater updateProductLowLevels();
 
