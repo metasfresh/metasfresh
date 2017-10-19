@@ -9,6 +9,7 @@ import java.util.Properties;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
+import org.adempiere.pricing.api.IPricingResult;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_UOM;
@@ -17,6 +18,7 @@ import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.adempiere.model.I_C_BPartner_Location;
+import de.metas.contracts.FlatrateTermPricing;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_I_Flatrate_Term;
@@ -105,6 +107,7 @@ import lombok.NonNull;
 		setEndDate(importRecord, contract);
 		setMasterStartdDate(importRecord, contract);
 		setMasterEnddDate(importRecord, contract);
+		setTaxCategoryAndIsTaxIncluded(contract);
 		// important to ended if needed, before saving
 		endContractIfNeeded(importRecord, contract);
 		InterfaceWrapperHelper.save(contract);
@@ -220,5 +223,23 @@ import lombok.NonNull;
 			contract.setDocAction(X_C_Flatrate_Term.DOCACTION_None);
 			contract.setDocStatus(X_C_Flatrate_Term.DOCSTATUS_Completed);
 		}
+	}
+	
+	private void setTaxCategoryAndIsTaxIncluded(@NonNull final I_C_Flatrate_Term newTerm)
+	{
+		final IPricingResult pricingResult = calculateFlatrateTermPrice(newTerm);
+		newTerm.setC_TaxCategory_ID(pricingResult.getC_TaxCategory_ID());
+		newTerm.setIsTaxIncluded(pricingResult.isTaxIncluded());
+	}
+	
+	private IPricingResult calculateFlatrateTermPrice(@NonNull final I_C_Flatrate_Term newTerm)
+	{
+		return FlatrateTermPricing.builder()
+				.termRelatedProduct(newTerm.getM_Product())
+				.qty(newTerm.getPlannedQtyPerUnit())
+				.term(newTerm)
+				.priceDate(newTerm.getStartDate())
+				.build()
+				.computeOrThrowEx();
 	}
 }
