@@ -2,9 +2,6 @@ import React, { Component } from 'react';
 import { Shortcuts } from 'react-shortcuts';
 
 class QuickActionsContextShortcuts extends Component {
-    constructor(props){
-        super(props);
-    }
     handleShortcuts = (action, event) => {
         const {handleClick, onClick} = this.props;
 
