@@ -46,6 +46,8 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Properties;
 
+import org.adempiere.ad.callout.api.ICalloutField;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -59,48 +61,57 @@ import org.compiere.model.I_C_Payment;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
+import com.google.common.base.MoreObjects;
+
 import de.metas.banking.interfaces.I_C_BankStatementLine_Ref;
 import de.metas.banking.model.IBankStatementLineOrRef;
 import de.metas.banking.model.I_C_BankStatementLine;
 import de.metas.banking.payment.IBankStatmentPaymentBL;
+import de.metas.banking.service.IBankStatementBL;
 import de.metas.currency.ConversionType;
 import de.metas.currency.ICurrencyBL;
 import de.metas.currency.ICurrencyConversionContext;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.currency.ICurrencyRate;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
 
 public class CalloutBankStatement extends CalloutEngine
 {
+	final private transient IBankStatementBL bankStatementBL = Services.get(IBankStatementBL.class);
+	
 	/**
 	 * Called on C_BankStatementLine: "ChargeAmt", "InterestAmt", "StmtAmt", "DiscountAmt", "WriteOffAmt", "OverUnderAmt"
 	 */
-	public String amount(Properties ctx, int WindowNo, GridTab mTab, GridField mField, Object value)
+	public String amount(final ICalloutField calloutField)
 	{
 		if (isCalloutActive())
 			return "";
 
-		final I_C_BankStatementLine bsl = InterfaceWrapperHelper.create(mTab, I_C_BankStatementLine.class);
+		final I_C_BankStatementLine bsl = calloutField.getModel(I_C_BankStatementLine.class);
 
 		// Get Stmt & Trx & Discount & WriteOff & OverUnder
 		final BigDecimal stmt = bsl.getStmtAmt();
 		final BigDecimal trx = bsl.getTrxAmt();
 		final BigDecimal discount = bsl.getDiscountAmt();
 		final BigDecimal writeOff = bsl.getWriteOffAmt();
-		final BigDecimal overUnder = bsl.isOverUnderPayment() ? bsl.getOverUnderAmt() : Env.ZERO;
+		final BigDecimal overUnder = bsl.isOverUnderPayment() ? bsl.getOverUnderAmt() : BigDecimal.ZERO;
 
 		BigDecimal bd = stmt.subtract(trx).subtract(discount).subtract(writeOff).subtract(overUnder);
 
+		final String columnName = calloutField.getColumnName();
 		// Charge - calculate Interest
-		if (mField.getColumnName().equals(I_C_BankStatementLine.COLUMNNAME_ChargeAmt))
+		if (columnName.equals(I_C_BankStatementLine.COLUMNNAME_ChargeAmt))
 		{
 			BigDecimal charge = bsl.getChargeAmt();
 			if (charge == null)
-				charge = Env.ZERO;
+				charge = BigDecimal.ZERO;
 			bd = bd.subtract(charge);
 			bsl.setInterestAmt(bd);
 		}
 		// Calculate Charge
-		else if (mField.getColumnName().equals(I_C_BankStatementLine.COLUMNNAME_InterestAmt))
+		else if (columnName.equals(I_C_BankStatementLine.COLUMNNAME_InterestAmt))
 		{
 			BigDecimal interest = bsl.getInterestAmt();
 			bd = bd.subtract(interest);
@@ -111,116 +122,229 @@ public class CalloutBankStatement extends CalloutEngine
 		{
 			bsl.setTrxAmt(trx.add(bd));
 		}
-		return "";
-	} // amount
+		return NO_ERROR;
+	} 
 
 	/**
 	 * Called on C_BankStatementLine: C_Payment_ID
 	 */
-	public String payment(Properties ctx, int WindowNo, GridTab mTab, GridField mField, Object value)
+	public String payment(final ICalloutField calloutField)
 	{
-		final I_C_BankStatementLine line = InterfaceWrapperHelper.create(mTab, I_C_BankStatementLine.class);
+		final I_C_BankStatementLine line = calloutField.getModel(I_C_BankStatementLine.class);
 		setPaymentDetails(line);
-		amount(ctx, WindowNo, mTab, mField, value);// Recalculate Amounts
-		return "";
+		amount(calloutField);// Recalculate Amounts
+		return NO_ERROR;
 	} // payment
 
 	/**
 	 * C_BankStatementLine_Ref: "C_Payment_ID"
 	 */
-	public String paymentRef(Properties ctx, int WindowNo, GridTab mTab, GridField mField, Object value)
+	public String paymentRef(final ICalloutField calloutField)
 	{
-		final I_C_BankStatementLine_Ref ref = InterfaceWrapperHelper.create(mTab, I_C_BankStatementLine_Ref.class);
+		final I_C_BankStatementLine_Ref ref = calloutField.getModel(I_C_BankStatementLine_Ref.class);
 		setPaymentDetails(ref);
-		return "";
+		return NO_ERROR;
 	}
 
-	public String invoice(Properties ctx, int WindowNo, GridTab mTab, GridField mField, Object value)
+	private void setPaymentDetails(IBankStatementLineOrRef line)
 	{
-		final Integer C_Invoice_ID = (Integer)value;
-		if (isCalloutActive() // assuming it is resetting value
-				|| C_Invoice_ID == null || C_Invoice_ID.intValue() <= 0)
-			return "";
-
-		Timestamp dateTrx;
-
-		final I_C_BankStatementLine line;
-		final I_C_BankStatementLine_Ref ref;
-		final IBankStatementLineOrRef lineOrRef;
-		if (I_C_BankStatementLine_Ref.Table_Name.equals(mTab.getTableName()))
+		I_C_Payment payment = null;
+		if (line.getC_Payment_ID() > 0)
 		{
-			line = null;
-			ref = InterfaceWrapperHelper.create(mTab, I_C_BankStatementLine_Ref.class);
-			lineOrRef = ref;
-			dateTrx = ref.getC_BankStatementLine().getStatementLineDate();
+			payment = line.getC_Payment();
 		}
-		else if (I_C_BankStatementLine.Table_Name.equals(mTab.getTableName()))
+
+		Services.get(IBankStatmentPaymentBL.class).setC_Payment(line, payment);
+	}
+	
+	
+	public String invoice(final ICalloutField calloutField)
+	{
+		final Integer invoiceId = (Integer)calloutField.getValue();
+		if (isCalloutActive() // assuming it is resetting value
+				|| invoiceId == null || invoiceId.intValue() <= 0)
+			return NO_ERROR;
+
+
+		final IBankStatementLineOrRef lineOrRef;
+		if (I_C_BankStatementLine_Ref.Table_Name.equals(calloutField.getTableName()))
 		{
-			line = InterfaceWrapperHelper.create(mTab, I_C_BankStatementLine.class);
-			ref = null;
-			lineOrRef = line;
-			dateTrx = line.getStatementLineDate();
+			lineOrRef = calloutField.getModel(I_C_BankStatementLine_Ref.class);
+		}
+		else if (I_C_BankStatementLine.Table_Name.equals(calloutField.getTableName()))
+		{
+			lineOrRef = calloutField.getModel(I_C_BankStatementLine.class);
 		}
 		else
 		{
-			throw new IllegalStateException("" + mTab + " is not supported");
+			throw new IllegalStateException("" + calloutField.getTableName() + " is not supported");
 		}
-
-		if (dateTrx == null)
+		
+		setBankStatementLineOrRefFields(lineOrRef, invoiceId);
+		
+		return NO_ERROR;
+	} 
+	
+	
+	private void setBankStatementLineOrRefFields(@NonNull final IBankStatementLineOrRef lineOrRef, @NonNull final Integer invoiceId)
+	{
+		final Properties ctx = InterfaceWrapperHelper.getCtx(lineOrRef);
+		final Timestamp dateTrx;
+		if (lineOrRef instanceof org.compiere.model.I_C_BankStatementLine)
 		{
-			dateTrx = SystemTime.asTimestamp();
+			final I_C_BankStatementLine line = (I_C_BankStatementLine)lineOrRef;
+			dateTrx = MoreObjects.firstNonNull(line.getStatementLineDate(), SystemTime.asTimestamp());
 		}
+		else
+		{
+			final I_C_BankStatementLine_Ref ref = (I_C_BankStatementLine_Ref)lineOrRef;
+			dateTrx = MoreObjects.firstNonNull(ref.getC_BankStatementLine().getStatementLineDate(), SystemTime.asTimestamp());
+		}
+		
 		log.debug("DateTrx=" + dateTrx);
+		
+		setBankStatementLineOrRefAmountsZero(lineOrRef);
 
-		//
-		lineOrRef.setDiscountAmt(Env.ZERO);
-		lineOrRef.setWriteOffAmt(Env.ZERO);
+		int invoicePayScheduleId = getC_InvoicePaySchedule_ID(ctx, invoiceId);
+		final InvoiceInfoVO invoiceInfo = fetchInvoiceInfo(invoiceId, invoicePayScheduleId, dateTrx);
+		setBankStatementLineOrRefAmounts(lineOrRef, invoiceInfo);
+	}
+	
+	private void setBankStatementLineOrRefAmountsZero(@NonNull final IBankStatementLineOrRef lineOrRef)
+	{
+		lineOrRef.setDiscountAmt(BigDecimal.ZERO);
+		lineOrRef.setWriteOffAmt(BigDecimal.ZERO);
 		lineOrRef.setIsOverUnderPayment(false);
-		lineOrRef.setOverUnderAmt(Env.ZERO);
-		if (ref != null)
+		lineOrRef.setOverUnderAmt(BigDecimal.ZERO);
+		lineOrRef.setTrxAmt(BigDecimal.ZERO);
+
+		if (lineOrRef instanceof org.compiere.model.I_C_BankStatementLine)
 		{
-			ref.setTrxAmt(Env.ZERO);
+			final I_C_BankStatementLine line = (I_C_BankStatementLine)lineOrRef;
+			line.setStmtAmt(BigDecimal.ZERO);
 		}
-		else if (line != null)
+	}
+	
+	private static int getC_InvoicePaySchedule_ID(Properties ctx, int C_Invoice_ID)
+	{
+		// TODO: refactor
+		int C_InvoicePaySchedule_ID = 0;
+		if (Env.getContextAsInt(ctx, Env.WINDOW_INFO, Env.TAB_INFO, "C_Invoice_ID") == C_Invoice_ID
+				&& Env.getContextAsInt(ctx, Env.WINDOW_INFO, Env.TAB_INFO, "C_InvoicePaySchedule_ID") != 0)
 		{
-			line.setTrxAmt(Env.ZERO);
-			line.setStmtAmt(Env.ZERO);
+			C_InvoicePaySchedule_ID = Env.getContextAsInt(ctx, Env.WINDOW_INFO, Env.TAB_INFO, "C_InvoicePaySchedule_ID");
+		}
+		return C_InvoicePaySchedule_ID;
+	}
+	
+	@Builder
+	@Value
+	private static class InvoiceInfoVO
+	{
+		private final int currencyId ;
+		private final int bpartnerId;
+		private final int invoiceId ;
+		private final BigDecimal openAmt;
+		private final BigDecimal discountAmt;
+
+		@Override
+		public String toString()
+		{
+			return "InvoiceInfoVO [invoiceId=" + invoiceId + ", currencyId=" + currencyId + ", bpartnerId=" + bpartnerId + ", openAmt=" + openAmt + ", discountAmt=" + discountAmt + "]";
+		}
+	}
+	
+	private static InvoiceInfoVO fetchInvoiceInfo(int invoiceId, int invoicePayScheduleId, Timestamp dateTrx)
+	{
+		if (invoiceId <= 0)
+		{
+			return null;
 		}
 
-		int C_InvoicePaySchedule_ID = getC_InvoicePaySchedule_ID(ctx, C_Invoice_ID);
-		final InvoiceInfoVO invoiceInfo = fetchInvoiceInfo(C_Invoice_ID, C_InvoicePaySchedule_ID, dateTrx);
-		if (invoiceInfo != null)
+		final PreparedStatementParams params = PreparedStatementParams.builder()
+				.dateTrx(dateTrx)
+				.invoicePayScheduleId(invoicePayScheduleId)
+				.invoiceId(invoiceId)
+				.build();
+		
+		
+		try(PreparedStatement pstmt = createPreparedStatement(params);
+			ResultSet rs = 	pstmt.executeQuery())
 		{
-			final BigDecimal openAmtActual = invoiceInfo.openAmt.subtract(invoiceInfo.discountAmt);
-			lineOrRef.setC_BPartner_ID(invoiceInfo.bpartnerId);
-			lineOrRef.setC_Currency_ID(invoiceInfo.currencyId);
-			if (ref != null)
+			if (rs.next())
 			{
-				ref.setTrxAmt(openAmtActual);
+				return InvoiceInfoVO.builder()
+						.invoiceId(invoiceId)
+						.bpartnerId(rs.getInt(1))
+						.currencyId(rs.getInt(2))
+						.openAmt(MoreObjects.firstNonNull(rs.getBigDecimal(3), BigDecimal.ZERO))
+						.discountAmt(MoreObjects.firstNonNull(rs.getBigDecimal(4), BigDecimal.ZERO))
+						.build();
 			}
-			else if (line != null)
-			{
-				line.setTrxAmt(openAmtActual);
-				line.setStmtAmt(openAmtActual);
-			}
-			lineOrRef.setDiscountAmt(invoiceInfo.discountAmt);
-			lineOrRef.setC_Invoice_ID(C_Invoice_ID);
+		}
+		catch (SQLException e)
+		{
+			throw new DBException(e);
 		}
 
-		return "";
-	} // invoice
+		return null;
+		
+	}
+	
+	private void setBankStatementLineOrRefAmounts(@NonNull final IBankStatementLineOrRef lineOrRef, @NonNull final InvoiceInfoVO invoiceInfo)
+	{
+		final BigDecimal openAmount = invoiceInfo.getOpenAmt();
+		final BigDecimal discount = invoiceInfo.getDiscountAmt();
+		final BigDecimal openAmtActual = openAmount.subtract(discount);
+		lineOrRef.setC_BPartner_ID(invoiceInfo.getBpartnerId());
+		lineOrRef.setC_Currency_ID(invoiceInfo.getCurrencyId());
+		lineOrRef.setTrxAmt(openAmtActual);
+		lineOrRef.setDiscountAmt(invoiceInfo.getDiscountAmt());
+		lineOrRef.setC_Invoice_ID(invoiceInfo.getInvoiceId());
+		if (lineOrRef instanceof org.compiere.model.I_C_BankStatementLine)
+		{
+			final I_C_BankStatementLine line = (I_C_BankStatementLine)lineOrRef;
+			line.setStmtAmt(openAmtActual);
+		}
+	}
+	
+	@Builder
+	@Value
+	private static class PreparedStatementParams
+	{
+		private final int invoicePayScheduleId;
+		private final int invoiceId ;
+		private final Timestamp dateTrx;
+	}
+	
+	private static PreparedStatement createPreparedStatement(PreparedStatementParams params) throws SQLException 
+	{
+		final StringBuilder sql = new StringBuilder()
+				.append("SELECT C_BPartner_ID,C_Currency_ID,") // 1..2
+				.append(" invoiceOpen(C_Invoice_ID, ?),") // 3 #1
+				.append(" invoiceDiscount(C_Invoice_ID,?,?), IsSOTrx ") // 4..5 #2/3
+				.append("FROM C_Invoice WHERE C_Invoice_ID=?"); // #4 
+		
+		final PreparedStatement pstmt = DB.prepareStatement(sql.toString(), ITrx.TRXNAME_None);
+		pstmt.setInt(1, params.getInvoicePayScheduleId());
+		pstmt.setTimestamp(2, params.getDateTrx());
+		pstmt.setInt(3, params.getInvoicePayScheduleId());
+		pstmt.setInt(4, params.getInvoiceId());
+	    return pstmt;
+	}
+	
 
 	/**
 	 * Called by C_BankStatementLine_Ref: "Amount", "C_Currency_ID", "DiscountAmt", "IsOverUnderPayment", "OverUnderAmt", "WriteOffAmt"
 	 * 
 	 */
-	public String paymentAmounts(Properties ctx, int WindowNo, GridTab mTab, GridField mField, Object value, Object oldValue)
+	public String paymentAmounts(final ICalloutField calloutField)
 	{
 		if (isCalloutActive()) // assuming it is resetting value
 			return "";
 
-		final int C_Invoice_ID = Env.getContextAsInt(ctx, WindowNo, "C_Invoice_ID");
-		String amtColumn = (I_C_BankStatementLine.Table_Name.equals(mTab.getTableName())) ? I_C_BankStatementLine.COLUMNNAME_TrxAmt : I_C_BankStatementLine_Ref.COLUMNNAME_TrxAmt;
+		final int invoiceId = Env.getContextAsInt(calloutField.getCtx(), calloutField.getWindowNo(), I_C_BankStatementLine.COLUMNNAME_C_Invoice_ID);
+		String amtColumn = (I_C_BankStatementLine.Table_Name.equals(calloutField.getTableName())) ? I_C_BankStatementLine.COLUMNNAME_TrxAmt : I_C_BankStatementLine_Ref.COLUMNNAME_TrxAmt;
 
 		final I_C_BankStatementLine line;
 		final I_C_BankStatementLine_Ref ref;
@@ -230,17 +354,17 @@ public class CalloutBankStatement extends CalloutEngine
 		Timestamp dateTrx = null;
 		Timestamp ConvDate = null;
 
-		if (I_C_BankStatementLine_Ref.Table_Name.equals(mTab.getTableName()))
+		if (I_C_BankStatementLine_Ref.Table_Name.equals(calloutField.getTableName()))
 		{
 			line = null;
-			ref = InterfaceWrapperHelper.create(mTab, I_C_BankStatementLine_Ref.class);
+			ref = calloutField.getModel(I_C_BankStatementLine_Ref.class);
 			lineOrRef = ref;
 			PayAmt = ref.getTrxAmt();
 			dateTrx = ref.getC_BankStatementLine().getStatementLineDate();
 		}
-		else if (I_C_BankStatementLine.Table_Name.equals(mTab.getTableName()))
+		else if (I_C_BankStatementLine.Table_Name.equals(calloutField.getTableName()))
 		{
-			line = InterfaceWrapperHelper.create(mTab, I_C_BankStatementLine.class);
+			line = calloutField.getModel(I_C_BankStatementLine.class);
 			ref = null;
 			lineOrRef = line;
 			PayAmt = line.getTrxAmt();
@@ -248,7 +372,7 @@ public class CalloutBankStatement extends CalloutEngine
 		}
 		else
 		{
-			throw new IllegalStateException("" + mTab + " is not supported");
+			throw new IllegalStateException("" + calloutField.getTableName() + " is not supported");
 		}
 
 		if (dateTrx == null)
@@ -257,41 +381,37 @@ public class CalloutBankStatement extends CalloutEngine
 			ConvDate = dateTrx;
 
 		// Changed Column
-		final String colName = mField.getColumnName();
+		final String colName = calloutField.getColumnName();
 		if (I_C_BankStatementLine.COLUMNNAME_IsOverUnderPayment.equals(colName) && !lineOrRef.isOverUnderPayment())
 		{
-			lineOrRef.setOverUnderAmt(Env.ZERO);
+			lineOrRef.setOverUnderAmt(BigDecimal.ZERO);
 		}
 
-		int C_InvoicePaySchedule_ID = getC_InvoicePaySchedule_ID(ctx, C_Invoice_ID);
-		final InvoiceInfoVO invoiceInfo = fetchInvoiceInfo(C_Invoice_ID, C_InvoicePaySchedule_ID, dateTrx);
+		int invoicePayScheduleId = getC_InvoicePaySchedule_ID(calloutField.getCtx(), invoiceId);
+		final InvoiceInfoVO invoiceInfo = fetchInvoiceInfo(invoiceId, invoicePayScheduleId, dateTrx);
 		log.debug("" + invoiceInfo);
 
 		// Get Info from Tab
-		BigDecimal InvoiceOpenAmt = invoiceInfo != null ? invoiceInfo.openAmt : Env.ZERO;
+		BigDecimal InvoiceOpenAmt = invoiceInfo != null ? invoiceInfo.openAmt : BigDecimal.ZERO;
 		BigDecimal DiscountAmt = lineOrRef.getDiscountAmt();
 		BigDecimal WriteOffAmt = lineOrRef.getWriteOffAmt();
 		BigDecimal OverUnderAmt = lineOrRef.getOverUnderAmt();
 		log.debug("Pay=" + PayAmt + ", Discount=" + DiscountAmt + ", WriteOff=" + WriteOffAmt + ", OverUnderAmt=" + OverUnderAmt);
 		final int C_Currency_ID = lineOrRef.getC_Currency_ID();
-		final I_C_Currency currency = Services.get(ICurrencyDAO.class).retrieveCurrency(ctx, C_Currency_ID);
-		int C_ConversionType_ID = 0;
-		Integer ii = (Integer)mTab.getValue("C_ConversionType_ID"); // TODO: this column is missing?
-		if (ii != null)
-			C_ConversionType_ID = ii.intValue();
+		final I_C_Currency currency = Services.get(ICurrencyDAO.class).retrieveCurrency(calloutField.getCtx(), C_Currency_ID);
+
 		// Get Currency Rate
-		BigDecimal CurrencyRate = Env.ONE;
+		BigDecimal CurrencyRate = BigDecimal.ONE;
 		if ((invoiceInfo != null && C_Currency_ID > 0 && invoiceInfo.currencyId > 0 && C_Currency_ID != invoiceInfo.currencyId)
-				|| colName.equals(I_C_BankStatementLine.COLUMNNAME_C_Currency_ID)
-				|| colName.equals("C_ConversionType_ID")) // TODO: this column is missing
+				|| colName.equals(I_C_BankStatementLine.COLUMNNAME_C_Currency_ID))
 		{
-			log.debug("InvInfo=" + invoiceInfo + ", PayCurrency=" + C_Currency_ID + ", Date=" + ConvDate + ", Type=" + C_ConversionType_ID);
+			log.debug("InvInfo=" + invoiceInfo + ", PayCurrency=" + C_Currency_ID + ", Date=" + ConvDate );
 			if (invoiceInfo != null)
 			{
 				final ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
 				
 				CurrencyRate =  currencyConversionBL.getRate(invoiceInfo.currencyId,
-						C_Currency_ID, ConvDate, C_ConversionType_ID,
+						C_Currency_ID, ConvDate, 0,
 						lineOrRef.getAD_Client_ID(), lineOrRef.getAD_Org_ID());
 			}
 			if (CurrencyRate == null || CurrencyRate.signum() == 0)
@@ -304,11 +424,11 @@ public class CalloutBankStatement extends CalloutEngine
 		}
 
 		// Currency Changed - convert all
-		if (colName.equals(I_C_BankStatementLine.COLUMNNAME_C_Currency_ID)
-				|| colName.equals("C_ConversionType_ID")) // TODO: missing column
+		if (colName.equals(I_C_BankStatementLine.COLUMNNAME_C_Currency_ID))
 		{
 			PayAmt = PayAmt.multiply(CurrencyRate).setScale(currency.getStdPrecision(), BigDecimal.ROUND_HALF_UP);
-			mTab.setValue(amtColumn, PayAmt);
+			lineOrRef.setTrxAmt(PayAmt);
+
 			DiscountAmt = DiscountAmt.multiply(CurrencyRate).setScale(currency.getStdPrecision(), BigDecimal.ROUND_HALF_UP);
 			lineOrRef.setDiscountAmt(DiscountAmt);
 			WriteOffAmt = WriteOffAmt.multiply(CurrencyRate).setScale(currency.getStdPrecision(), BigDecimal.ROUND_HALF_UP);
@@ -317,12 +437,12 @@ public class CalloutBankStatement extends CalloutEngine
 			lineOrRef.setOverUnderAmt(OverUnderAmt);
 		}
 		// No Invoice - Set Discount, Witeoff, Under/Over to 0
-		else if (C_Invoice_ID <= 0)
+		else if (invoiceId <= 0)
 		{
-			lineOrRef.setDiscountAmt(Env.ZERO);
-			lineOrRef.setWriteOffAmt(Env.ZERO);
+			lineOrRef.setDiscountAmt(BigDecimal.ZERO);
+			lineOrRef.setWriteOffAmt(BigDecimal.ZERO);
 			lineOrRef.setIsOverUnderPayment(false);
-			lineOrRef.setOverUnderAmt(Env.ZERO);
+			lineOrRef.setOverUnderAmt(BigDecimal.ZERO);
 		}
 		// PayAmt - calculate write off
 		else if (colName.equals(amtColumn) && lineOrRef.isOverUnderPayment())
@@ -340,31 +460,31 @@ public class CalloutBankStatement extends CalloutEngine
 			if (lineOrRef.isOverUnderPayment())
 			{
 				OverUnderAmt = InvoiceOpenAmt.subtract(PayAmt).subtract(DiscountAmt);
-				lineOrRef.setWriteOffAmt(Env.ZERO);
+				lineOrRef.setWriteOffAmt(BigDecimal.ZERO);
 				lineOrRef.setOverUnderAmt(OverUnderAmt);
 			}
 			else
 			{
 				WriteOffAmt = InvoiceOpenAmt.subtract(PayAmt).subtract(DiscountAmt);
 				lineOrRef.setWriteOffAmt(WriteOffAmt);
-				lineOrRef.setOverUnderAmt(Env.ZERO);
+				lineOrRef.setOverUnderAmt(BigDecimal.ZERO);
 			}
 		}
 		else
 		// calculate PayAmt
 		{
 			PayAmt = InvoiceOpenAmt.subtract(DiscountAmt).subtract(WriteOffAmt).subtract(OverUnderAmt);
-			mTab.setValue(amtColumn, PayAmt);
+			lineOrRef.setTrxAmt(PayAmt);
 		}
-		return "";
+		return NO_ERROR;
 	} // amounts
 
 	/**
 	 * C_BankStatementLine: C_BP_BankAccountTo_ID
 	 */
-	public String onC_BP_BankAccountTo_ID(Properties ctx, int WindowNo, GridTab mTab, GridField mField, Object value, Object oldValue)
+	public String onC_BP_BankAccountTo_ID(final ICalloutField calloutField)
 	{
-		final I_C_BankStatementLine bsl = InterfaceWrapperHelper.create(mTab, I_C_BankStatementLine.class);
+		final I_C_BankStatementLine bsl = calloutField.getModel(I_C_BankStatementLine.class);
 		
 		// If user unselected the Bank account To => reset the linked Bank Statement Line
 		if (bsl.getC_BP_BankAccountTo_ID() <= 0)
@@ -379,9 +499,9 @@ public class CalloutBankStatement extends CalloutEngine
 	/**
 	 * C_BankStatementLine: Link_BankStatement_ID
 	 */
-	public String onLink_BankStatement_ID(Properties ctx, int WindowNo, GridTab mTab, GridField mField, Object value, Object oldValue)
+	public String onLink_BankStatement_ID(final ICalloutField calloutField)
 	{
-		final I_C_BankStatementLine bsl = InterfaceWrapperHelper.create(mTab, I_C_BankStatementLine.class);
+		final I_C_BankStatementLine bsl = calloutField.getModel(I_C_BankStatementLine.class);
 		if (bsl.getLink_BankStatementLine_ID() <= 0)
 		{
 			bsl.setCurrencyRate(null); // reset
@@ -419,88 +539,4 @@ public class CalloutBankStatement extends CalloutEngine
 		return NO_ERROR;
 	}
 
-	private static int getC_InvoicePaySchedule_ID(Properties ctx, int C_Invoice_ID)
-	{
-		// TODO: refactor
-		int C_InvoicePaySchedule_ID = 0;
-		if (Env.getContextAsInt(ctx, Env.WINDOW_INFO, Env.TAB_INFO, "C_Invoice_ID") == C_Invoice_ID
-				&& Env.getContextAsInt(ctx, Env.WINDOW_INFO, Env.TAB_INFO, "C_InvoicePaySchedule_ID") != 0)
-		{
-			C_InvoicePaySchedule_ID = Env.getContextAsInt(ctx, Env.WINDOW_INFO, Env.TAB_INFO, "C_InvoicePaySchedule_ID");
-		}
-		return C_InvoicePaySchedule_ID;
-	}
-
-	private InvoiceInfoVO fetchInvoiceInfo(int C_Invoice_ID, int C_InvoicePaySchedule_ID, Timestamp dateTrx)
-	{
-		if (C_Invoice_ID <= 0)
-			return null;
-
-		final String sql = "SELECT C_BPartner_ID,C_Currency_ID," // 1..2
-				+ " invoiceOpen(C_Invoice_ID, ?)," // 3 #1
-				+ " invoiceDiscount(C_Invoice_ID,?,?), IsSOTrx " // 4..5 #2/3
-				+ "FROM C_Invoice WHERE C_Invoice_ID=?"; // #4
-		PreparedStatement pstmt = null;
-		ResultSet rs = null;
-		try
-		{
-			pstmt = DB.prepareStatement(sql, null);
-			pstmt.setInt(1, C_InvoicePaySchedule_ID);
-			pstmt.setTimestamp(2, dateTrx);
-			pstmt.setInt(3, C_InvoicePaySchedule_ID);
-			pstmt.setInt(4, C_Invoice_ID);
-			rs = pstmt.executeQuery();
-			if (rs.next())
-			{
-				final InvoiceInfoVO invoiceInfo = new InvoiceInfoVO();
-				invoiceInfo.invoiceId = C_Invoice_ID;
-				invoiceInfo.bpartnerId = rs.getInt(1);
-				invoiceInfo.currencyId = rs.getInt(2); // Set Invoice Currency
-				invoiceInfo.openAmt = rs.getBigDecimal(3); // Set Invoice
-				if (invoiceInfo.openAmt == null)
-					invoiceInfo.openAmt = Env.ZERO;
-				invoiceInfo.discountAmt = rs.getBigDecimal(4); // Set Discount
-				if (invoiceInfo.discountAmt == null)
-					invoiceInfo.discountAmt = Env.ZERO;
-				return invoiceInfo;
-			}
-		}
-		catch (SQLException e)
-		{
-			throw new DBException(e, sql);
-		}
-		finally
-		{
-			DB.close(rs, pstmt);
-		}
-
-		return null;
-	}
-
-	private void setPaymentDetails(IBankStatementLineOrRef line)
-	{
-		I_C_Payment payment = null;
-		if (line.getC_Payment_ID() > 0)
-		{
-			payment = line.getC_Payment();
-		}
-
-		Services.get(IBankStatmentPaymentBL.class).setC_Payment(line, payment);
-	}
-
-	private static class InvoiceInfoVO
-	{
-		public int invoiceId = -1;
-		public int currencyId = -1;
-		public int bpartnerId = -1;
-		public BigDecimal openAmt = Env.ZERO;
-		public BigDecimal discountAmt = Env.ZERO;
-
-		@Override
-		public String toString()
-		{
-			return "InvoiceInfoVO [invoiceId=" + invoiceId + ", currencyId=" + currencyId + ", bpartnerId=" + bpartnerId + ", openAmt=" + openAmt + ", discountAmt=" + discountAmt + "]";
-		}
-
-	}
 } // CalloutBankStatement

@@ -27,6 +27,7 @@ import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_C_BankStatementLine;
 
+import de.metas.banking.model.IBankStatementLineOrRef;
 import de.metas.banking.model.I_C_BankStatementLine_Ref;
 
 public interface IBankStatementBL extends ISingletonService
@@ -92,4 +93,6 @@ public interface IBankStatementBL extends ISingletonService
 	 * @param bankStatement
 	 */
 	void unpost(I_C_BankStatement bankStatement);
+
+	boolean isLine(IBankStatementLineOrRef lineOrRef);
 }

@@ -39,10 +39,10 @@ import org.compiere.model.MBankStatement;
 import org.compiere.model.MBankStatementLine;
 import org.compiere.model.MPeriod;
 import org.compiere.model.X_C_DocType;
-import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import de.metas.banking.interfaces.I_C_BankStatementLine_Ref;
+import de.metas.banking.model.IBankStatementLineOrRef;
 import de.metas.banking.model.I_C_BankStatementLine;
 import de.metas.banking.service.IBankStatementBL;
 import de.metas.banking.service.IBankStatementDAO;
@@ -51,6 +51,7 @@ import de.metas.banking.service.IBankStatementListenerService;
 import de.metas.currency.ICurrencyBL;
 import de.metas.currency.ICurrencyConversionContext;
 import de.metas.logging.LogManager;
+import lombok.NonNull;
 
 public class BankStatementBL implements IBankStatementBL
 {
@@ -158,11 +159,11 @@ public class BankStatementBL implements IBankStatementBL
 
 		//
 		// Aggregated amounts from reference lines:
-		BigDecimal totalStmtAmt = Env.ZERO;
-		BigDecimal totalTrxAmt = Env.ZERO;
-		BigDecimal totalDiscountAmt = Env.ZERO;
-		BigDecimal totalWriteOffAmt = Env.ZERO;
-		BigDecimal totalOverUnderAmt = Env.ZERO;
+		BigDecimal totalStmtAmt = BigDecimal.ZERO;
+		BigDecimal totalTrxAmt = BigDecimal.ZERO;
+		BigDecimal totalDiscountAmt = BigDecimal.ZERO;
+		BigDecimal totalWriteOffAmt = BigDecimal.ZERO;
+		BigDecimal totalOverUnderAmt = BigDecimal.ZERO;
 
 		//
 		// Iterate all reference lines and build up the aggregated amounts
@@ -262,4 +263,9 @@ public class BankStatementBL implements IBankStatementBL
 		InterfaceWrapperHelper.save(bankStatement);
 	}
 
+	@Override
+	public boolean isLine(@NonNull final IBankStatementLineOrRef lineOrRef) 
+	{
+	   return I_C_BankStatementLine.Table_Name.equals(InterfaceWrapperHelper.getModelTableName(lineOrRef)); 
+	}
 }
