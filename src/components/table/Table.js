@@ -71,7 +71,6 @@ class Table extends Component {
             dispatch, mainTable, open, rowData, defaultSelected,
             disconnectFromState, type, refreshSelection,
             supportIncludedViewOnSelect, viewId, isModal, hasIncluded,
-            showIncludedViewOnSelect
         } = this.props;
 
         const {
@@ -103,6 +102,14 @@ class Table extends Component {
         }
 
         if (
+            !_.isEqual(prevProps.defaultSelected, defaultSelected) ||
+            (prevProps.refreshSelection !== refreshSelection) &&
+            refreshSelection
+        ) {
+            this.setState({
+                selected: defaultSelected
+            });
+        } else if (
             !disconnectFromState &&
             !_.isEqual(prevState.selected, selected)
         ) {
@@ -117,36 +124,18 @@ class Table extends Component {
             this.getIndentData();
         }
 
-        if (
-            !_.isEqual(prevProps.defaultSelected, defaultSelected) ||
-            (prevProps.refreshSelection !== refreshSelection) &&
-            refreshSelection
-        ) {
-            this.setState({
-                selected: defaultSelected
-            });
-        }
-
-        if (prevProps.viewId !== viewId) {
-            this.setState({
-                selected: []
-            });
-
-            this.deselectAllProducts();
-            showIncludedViewOnSelect && showIncludedViewOnSelect({
-                showIncludedView: false,
-                windowType: prevProps.windowType,
-                viewId: prevProps.viewid,
-                forceClose: true,
-            });
+        if (prevProps.viewId !== viewId && defaultSelected.length === 0) {
+            this.getIndentData(true);
         }
     }
 
     componentWillUnmount() {
-        const { showIncludedViewOnSelect, viewId, windowType } = this.props;
+        const {
+            showIncludedViewOnSelect, viewId, windowType, isIncluded
+        } = this.props;
 
         this.deselectAllProducts();
-        if (showIncludedViewOnSelect) {
+        if (showIncludedViewOnSelect && !isIncluded) {
             showIncludedViewOnSelect({
                 showIncludedView: false,
                 windowType,

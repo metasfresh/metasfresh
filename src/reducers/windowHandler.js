@@ -86,26 +86,17 @@ export default function windowHandler(state = initialState, action) {
                 })
             });
 
+        case types.CLOSE_PROCESS_MODAL:
+            if (state.modal.modalType === 'process') {
+                return Object.assign({}, state, {
+                    modal: Object.assign({}, state.modal, initialState.modal),
+                });
+            }
+            return state;
+
         case types.CLOSE_MODAL:
             return Object.assign({}, state, {
-                modal: Object.assign({}, state.modal, {
-                    visible: false,
-                    tabId: null,
-                    rowId: null,
-                    viewId: null,
-                    viewDocumentIds: null,
-                    layout: {},
-                    data: [],
-                    rowData: {},
-                    isAdvanced: false,
-                    title: '',
-                    type: '',
-                    modalType: '',
-                    saveStatus: {},
-                    validStatus: {},
-                    includedTabsInfo: {},
-                    triggerField: null
-                })
+                modal: Object.assign({}, state.modal, initialState.modal),
             });
 
         // SCOPED ACTIONS
