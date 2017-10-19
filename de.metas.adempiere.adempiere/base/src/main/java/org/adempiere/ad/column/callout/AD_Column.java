@@ -51,13 +51,6 @@ public class AD_Column
 		{
 			return;
 		}
-		
-		if (columnName.equalsIgnoreCase(I_AD_Column.COLUMNNAME_Created)
-				|| columnName.equalsIgnoreCase(I_AD_Column.COLUMNNAME_CreatedBy)
-				|| columnName.equalsIgnoreCase(I_AD_Column.COLUMNNAME_Updated)
-				|| columnName.equalsIgnoreCase(I_AD_Column.COLUMNNAME_UpdatedBy))
-		{
-			column.setIsAllowLogging(false);
-		}
+		column.setIsAllowLogging(Services.get(IColumnBL.class).getDefaultAllowLoggingByColumnName(columnName));
 	}
 }
