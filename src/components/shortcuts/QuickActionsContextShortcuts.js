@@ -22,16 +22,16 @@ class QuickActionsContextShortcuts extends Component {
 
     render() {
         return (
-        <Shortcuts
-            name="QUICK_ACTIONS"
-            handler = { this.handleShortcuts }
-            targetNodeSelector = "body"
-            isolate = { true }
-            global = { true }
-            preventDefault = { true }
-            stopPropagation = { true }
-        />
-        )
+            <Shortcuts
+                name="QUICK_ACTIONS"
+                handler={this.handleShortcuts}
+                targetNodeSelector = "body"
+                isolate
+                global
+                preventDefault
+                stopPropagation
+            />
+        );
     }
 }
 
