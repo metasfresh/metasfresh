@@ -70,7 +70,7 @@ class Table extends Component {
         const {
             dispatch, mainTable, open, rowData, defaultSelected,
             disconnectFromState, type, refreshSelection,
-            supportIncludedViewOnSelect, viewId, isModal, hasIncluded,
+            openIncludedViewOnSelect, viewId, isModal, hasIncluded,
         } = this.props;
 
         const {
@@ -85,7 +85,7 @@ class Table extends Component {
                     let firstRow = rows[0];
 
                     if (firstRow) {
-                        if (supportIncludedViewOnSelect) {
+                        if (openIncludedViewOnSelect) {
                             this.showSelectedIncludedView([firstRow.id]);
                         }
 
@@ -891,7 +891,7 @@ class Table extends Component {
         const {
             tabid, cols, type, docId, readonly, keyProperty, onDoubleClick,
             mainTable, newRow, tabIndex, entity, indentSupported, collapsible,
-            showIncludedViewOnSelect, supportIncludedViewOnSelect
+            showIncludedViewOnSelect, openIncludedViewOnSelect
         } = this.props;
 
         const {
@@ -929,7 +929,7 @@ class Table extends Component {
                         }
                         onMouseDown={(e) => {
                             this.handleClick(e, item[keyProperty]);
-                            if (supportIncludedViewOnSelect) {
+                            if (openIncludedViewOnSelect) {
                                 showIncludedViewOnSelect({
                                     showIncludedView: item.supportIncludedViews,
 
