@@ -70,7 +70,7 @@ class Table extends Component {
         const {
             dispatch, mainTable, open, rowData, defaultSelected,
             disconnectFromState, type, refreshSelection,
-            supportIncludedViewOnSelect, viewId, isModal, hasIncluded,
+            openIncludedViewOnSelect, viewId, isModal, hasIncluded,
         } = this.props;
 
         const {
@@ -85,7 +85,7 @@ class Table extends Component {
                     let firstRow = rows[0];
 
                     if (firstRow) {
-                        if (supportIncludedViewOnSelect) {
+                        if (openIncludedViewOnSelect) {
                             this.showSelectedIncludedView([firstRow.id]);
                         }
 
@@ -891,7 +891,7 @@ class Table extends Component {
         const {
             tabid, cols, type, docId, readonly, keyProperty, onDoubleClick,
             mainTable, newRow, tabIndex, entity, indentSupported, collapsible,
-            showIncludedViewOnSelect, supportIncludedViewOnSelect
+            showIncludedViewOnSelect, openIncludedViewOnSelect
         } = this.props;
 
         const {
@@ -929,7 +929,7 @@ class Table extends Component {
                         }
                         onMouseDown={(e) => {
                             this.handleClick(e, item[keyProperty]);
-                            if (supportIncludedViewOnSelect) {
+                            if (openIncludedViewOnSelect) {
                                 showIncludedViewOnSelect({
                                     showIncludedView: item.supportIncludedViews,
 
@@ -1009,7 +1009,7 @@ class Table extends Component {
             pageLength, page, mainTable, updateDocList, sort, orderBy,
             toggleFullScreen, fullScreen, tabIndex, indentSupported, isModal,
             queryLimitHit, supportQuickInput, tabInfo,
-            disablePaginationShortcuts, hasIncluded
+            disablePaginationShortcuts, hasIncluded, blurOnIncludedView
         } = this.props;
 
         const {
@@ -1084,7 +1084,8 @@ class Table extends Component {
                                 'table table-bordered-vertically ' +
                                 'table-striped js-table ' +
                                 (readonly ? 'table-read-only ' : '') +
-                                (hasIncluded ? 'table-fade-out': '')
+                                ((hasIncluded && blurOnIncludedView) ?
+                                    'table-fade-out': '')
                             }
                             onKeyDown={this.handleKeyDown}
                             tabIndex={tabIndex}
