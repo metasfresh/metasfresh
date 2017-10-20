@@ -13,23 +13,24 @@ package org.adempiere.ad.persistence.modelgen;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
+import org.adempiere.ad.persistence.EntityTypesCache;
 import org.adempiere.ad.security.TableAccessLevel;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
@@ -185,7 +186,7 @@ public class TableAndColumnInfoRepository
 							.setAD_Table_ID(adTableId)
 							.setAccessLevel(accessLevel);
 				}
-				
+
 				final boolean isLazyLoading = DisplayType.toBoolean(rs.getString("IsLazyLoading")); // 22
 
 				final ColumnInfo columnInfo = new ColumnInfo(tableName,
@@ -244,14 +245,15 @@ public class TableAndColumnInfoRepository
 	{
 		if ("true".equals(System.getProperty("org.adempiere.util.GenerateModel.OnlySystemColumns")))
 		{
-			String entityType = DB.getSQLValueStringEx(null, "SELECT EntityType FROM AD_Table WHERE AD_Table_ID=?", AD_Table_ID);
-			int AD_EntityType_ID = DB.getSQLValueEx(null, "SELECT AD_EntityType_ID FROM AD_EntityType WHERE EntityType=?", entityType);
-			boolean isSystemEntity = AD_EntityType_ID < 500000;
-			if (!isSystemEntity)
+			final String tableEntityType = DB.getSQLValueStringEx(null, "SELECT EntityType FROM AD_Table WHERE AD_Table_ID=?", AD_Table_ID);
+			if (!EntityTypesCache.instance.isSystemMaintained(tableEntityType))
+			{
 				return "";
+			}
 
 			// only columns from system entity type
-			return " AND EXISTS (SELECT 1 FROM AD_EntityType et WHERE et.EntityType=c.EntityType AND et.AD_EntityType_ID < 500000) ";
+			final Set<String> systemMaintainedEntityTypes = EntityTypesCache.instance.getSystemMaintainedEntityTypeNames();
+			return " AND c.EntityType IN " + DB.buildSqlList(systemMaintainedEntityTypes);
 		}
 		// Strict column's EntityType - same entity type as it's table
 		else
