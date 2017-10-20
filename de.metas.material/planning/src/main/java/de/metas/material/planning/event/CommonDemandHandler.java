@@ -22,6 +22,8 @@ import org.eevolution.model.I_PP_Product_Planning;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import de.metas.material.event.DemandHandlerAuditEvent;
 import de.metas.material.event.EventDescr;
 import de.metas.material.event.MaterialDemandDescr;
@@ -218,7 +220,8 @@ public class CommonDemandHandler
 				.build();
 	}
 
-	private IMRPNotesCollector mkMRPNotesCollector()
+	@VisibleForTesting
+	IMRPNotesCollector mkMRPNotesCollector()
 	{
 		return new IMRPNotesCollector()
 		{
@@ -232,7 +235,9 @@ public class CommonDemandHandler
 			@Override
 			public void collectNote(final IMRPNoteBuilder noteBuilder)
 			{
-				noteBuilder.collect();
+				// as long as newMRPNoteBuilder() creates a SimpleMRPNoteBuilder with *this* as its node collector,
+				// the following invocation would cause a StackOverFlowError. Plus, idk if and what to actually collect in this use case.
+				// noteBuilder.collect();
 			}
 		};
 	}
