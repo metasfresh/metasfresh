@@ -644,6 +644,10 @@ class DocumentList extends Component {
                                     layout.includedView &&
                                     layout.includedView.openOnSelect
                                 }
+                                blurOnIncludedView={
+                                    layout.includedView &&
+                                    layout.includedView.blurWhenOpen
+                                }
                                 {...{isIncluded, disconnectFromState, autofocus,
                                     open, page, closeOverlays, inBackground,
                                     disablePaginationShortcuts, isModal,
