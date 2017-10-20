@@ -198,3 +198,23 @@ UPDATE AD_UI_ElementGroup SET SeqNo=10, UIStyle='primary',Updated=TO_TIMESTAMP('
 DELETE FROM AD_UI_ElementGroup WHERE AD_UI_ElementGroup_ID=541215
 ;
 
+-- 2017-10-20T07:02:07.472
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Table_Process (AD_Client_ID,AD_Org_ID,AD_Process_ID,AD_Table_ID,Created,CreatedBy,EntityType,IsActive,Updated,UpdatedBy,WEBUI_QuickAction,WEBUI_QuickAction_Default) VALUES (0,0,210,318,TO_TIMESTAMP('2017-10-20 07:02:07','YYYY-MM-DD HH24:MI:SS'),100,'D','Y',TO_TIMESTAMP('2017-10-20 07:02:07','YYYY-MM-DD HH24:MI:SS'),100,'N','N')
+;
+
+-- 2017-10-20T07:02:42.416
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Table_Process (AD_Client_ID,AD_Org_ID,AD_Process_ID,AD_Table_ID,Created,CreatedBy,EntityType,IsActive,Updated,UpdatedBy,WEBUI_QuickAction,WEBUI_QuickAction_Default) VALUES (0,0,142,318,TO_TIMESTAMP('2017-10-20 07:02:42','YYYY-MM-DD HH24:MI:SS'),100,'D','Y',TO_TIMESTAMP('2017-10-20 07:02:42','YYYY-MM-DD HH24:MI:SS'),100,'N','N')
+;
+
+-- 2017-10-20T07:03:15.876
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_UI_Element WHERE AD_UI_Element_ID=542658
+;
+
+-- 2017-10-20T07:03:20.418
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_UI_Element WHERE AD_UI_Element_ID=542643
+;
+
