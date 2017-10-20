@@ -64,7 +64,6 @@ import de.metas.banking.interfaces.I_C_BankStatementLine_Ref;
 import de.metas.banking.model.IBankStatementLineOrRef;
 import de.metas.banking.model.I_C_BankStatementLine;
 import de.metas.banking.payment.IBankStatmentPaymentBL;
-import de.metas.banking.service.IBankStatementBL;
 import de.metas.currency.ConversionType;
 import de.metas.currency.ICurrencyBL;
 import de.metas.currency.ICurrencyConversionContext;
@@ -77,7 +76,7 @@ import lombok.Value;
 
 public class CalloutBankStatement extends CalloutEngine
 {
-	final private transient IBankStatementBL bankStatementBL = Services.get(IBankStatementBL.class);
+	final private ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
 
 	/**
 	 * Called on C_BankStatementLine: C_Payment_ID
@@ -198,19 +197,24 @@ public class CalloutBankStatement extends CalloutEngine
 
 		log.debug("DateTrx=" + dateTrx);
 
-		setBankStatementLineOrRefAmountsZero(lineOrRef);
+		setBankStatementLineOrRefAmountsToZero(lineOrRef);
+		setBankStatementLineOrRefTrxAndStmtAmountsToZero(lineOrRef);
 
 		int invoicePayScheduleId = getC_InvoicePaySchedule_ID(ctx, invoiceId);
 		final InvoiceInfoVO invoiceInfo = fetchInvoiceInfo(invoiceId, invoicePayScheduleId, dateTrx);
-		setBankStatementLineOrRefAmounts(lineOrRef, invoiceInfo);
+		setBankStatementLineOrRefAmountsForInvoice(lineOrRef, invoiceInfo);
 	}
 
-	private void setBankStatementLineOrRefAmountsZero(@NonNull final IBankStatementLineOrRef lineOrRef)
+	private void setBankStatementLineOrRefAmountsToZero(@NonNull final IBankStatementLineOrRef lineOrRef)
 	{
 		lineOrRef.setDiscountAmt(BigDecimal.ZERO);
 		lineOrRef.setWriteOffAmt(BigDecimal.ZERO);
 		lineOrRef.setIsOverUnderPayment(false);
 		lineOrRef.setOverUnderAmt(BigDecimal.ZERO);
+	}
+
+	private void setBankStatementLineOrRefTrxAndStmtAmountsToZero(@NonNull final IBankStatementLineOrRef lineOrRef)
+	{
 		lineOrRef.setTrxAmt(BigDecimal.ZERO);
 
 		if (lineOrRef instanceof org.compiere.model.I_C_BankStatementLine)
@@ -285,7 +289,7 @@ public class CalloutBankStatement extends CalloutEngine
 
 	}
 
-	private void setBankStatementLineOrRefAmounts(@NonNull final IBankStatementLineOrRef lineOrRef, final InvoiceInfoVO invoiceInfo)
+	private void setBankStatementLineOrRefAmountsForInvoice(@NonNull final IBankStatementLineOrRef lineOrRef, final InvoiceInfoVO invoiceInfo)
 	{
 		if (invoiceInfo == null)
 		{
@@ -332,6 +336,115 @@ public class CalloutBankStatement extends CalloutEngine
 		return pstmt;
 	}
 
+	
+	/**
+	 * Called by C_BankStatementLine_Ref: "Amount", "C_Currency_ID", "DiscountAmt", "IsOverUnderPayment", "OverUnderAmt", "WriteOffAmt"
+	 * 
+	 */
+	public String paymentAmounts(final ICalloutField calloutField)
+	{
+		if (isCalloutActive()) // assuming it is resetting value
+		{
+			return "";
+		}
+
+		final IBankStatementLineOrRef lineOrRef;
+		if (I_C_BankStatementLine_Ref.Table_Name.equals(calloutField.getTableName()))
+		{
+			lineOrRef = calloutField.getModel(I_C_BankStatementLine_Ref.class);
+		}
+		else if (I_C_BankStatementLine.Table_Name.equals(calloutField.getTableName()))
+		{
+			lineOrRef = calloutField.getModel(I_C_BankStatementLine.class);
+		}
+		else
+		{
+			throw new IllegalStateException("" + calloutField.getTableName() + " is not supported");
+		}
+
+		final int invoiceId = Env.getContextAsInt(calloutField.getCtx(), calloutField.getWindowNo(), I_C_BankStatementLine.COLUMNNAME_C_Invoice_ID);
+		final String colName = calloutField.getColumnName();
+		
+		setBankStatementLineOrRefFieldsForPaymentAmounts(lineOrRef, colName, invoiceId);
+		
+		return NO_ERROR;
+	} // amounts
+	
+	
+	private void setBankStatementLineOrRefFieldsForPaymentAmounts(@NonNull final IBankStatementLineOrRef lineOrRef, @NonNull final String colName, final int invoiceId)
+	{
+		if (invoiceId <= 0)
+		{
+			setBankStatementLineOrRefAmountsToZero(lineOrRef);
+		}
+		else
+		{
+			final PaymentAmounts paymentAmounts = computeBankStatementLineOrRefAmountsForPayment(lineOrRef, colName, invoiceId);
+			setBankStatementLineOrRefAmountsForPayment(lineOrRef, paymentAmounts);
+		}
+	}
+	
+	@Data
+	@Builder
+	private static class PaymentAmounts
+	{
+		private BigDecimal invoiceOpenAmt;
+		private BigDecimal discountAmt;
+		private BigDecimal writeOffAmt;
+		private BigDecimal overUnderAmt;
+		private BigDecimal payAmt;
+	}
+	
+	private PaymentAmounts computeBankStatementLineOrRefAmountsForPayment(@NonNull final IBankStatementLineOrRef lineOrRef, @NonNull final String colName, final int invoiceId)
+	{
+		final Properties ctx = InterfaceWrapperHelper.getCtx(lineOrRef);
+		final Timestamp dateTrx = getTrxDate(lineOrRef);
+
+		final int invoicePayScheduleId = getC_InvoicePaySchedule_ID(ctx, invoiceId);
+		final InvoiceInfoVO invoiceInfo = fetchInvoiceInfo(invoiceId, invoicePayScheduleId, dateTrx);
+
+		BigDecimal invoiceOpenAmt = invoiceInfo != null ? invoiceInfo.getOpenAmt() : BigDecimal.ZERO;
+		BigDecimal discountAmt = lineOrRef.getDiscountAmt();
+		BigDecimal writeOffAmt = lineOrRef.getWriteOffAmt();
+		BigDecimal overUnderAmt = lineOrRef.getOverUnderAmt();
+		BigDecimal payAmt = lineOrRef.getTrxAmt();
+
+		final PaymentAmounts paymentAmounts = PaymentAmounts.builder()
+				.payAmt(payAmt)
+				.invoiceOpenAmt(invoiceOpenAmt)
+				.discountAmt(discountAmt)
+				.writeOffAmt(writeOffAmt)
+				.overUnderAmt(overUnderAmt)
+				.build();
+		
+		computeInvoiceOpenAmtIfNeeded(lineOrRef, invoiceInfo, paymentAmounts);
+
+		if (colName.equals(I_C_BankStatementLine.COLUMNNAME_C_Currency_ID))
+		{
+			columnCurrencyChanged(lineOrRef, invoiceInfo, paymentAmounts);
+		}
+		else if (colName.equals(I_C_BankStatementLine.COLUMNNAME_TrxAmt))
+		{
+			columnTrxAmtChanged(lineOrRef, paymentAmounts);
+		}
+		else if (colName.equals(I_C_BankStatementLine.COLUMNNAME_IsOverUnderPayment))
+		{
+			columnIsOverUnderPaymentChanged(lineOrRef, paymentAmounts);
+		}
+		else
+		{
+			invoiceOpenAmt = paymentAmounts.getInvoiceOpenAmt();
+			discountAmt = lineOrRef.getDiscountAmt();
+			writeOffAmt = lineOrRef.getWriteOffAmt();
+			overUnderAmt = lineOrRef.getOverUnderAmt();
+			
+			payAmt = invoiceOpenAmt.subtract(discountAmt).subtract(writeOffAmt).subtract(overUnderAmt);
+			paymentAmounts.setPayAmt(payAmt);
+		}
+
+		return paymentAmounts;
+	}
+	
 	private Timestamp getTrxDate(@NonNull final IBankStatementLineOrRef lineOrRef)
 	{
 		if (lineOrRef instanceof org.compiere.model.I_C_BankStatementLine)
@@ -345,61 +458,43 @@ public class CalloutBankStatement extends CalloutEngine
 			return MoreObjects.firstNonNull(ref.getC_BankStatementLine().getStatementLineDate(), SystemTime.asTimestamp());
 		}
 	}
-
-	private void setBankStatementLineOrRefFieldsForPaymentAmounts(@NonNull final IBankStatementLineOrRef lineOrRef, final int invoiceId)
+	
+	private void setBankStatementLineOrRefAmountsForPayment(@NonNull final IBankStatementLineOrRef lineOrRef, @NonNull final PaymentAmounts paymentAmounts)
 	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(lineOrRef);
-		final Timestamp dateTrx = getTrxDate(lineOrRef);
-
-		BigDecimal payAmt = lineOrRef.getTrxAmt();
-
-		final int invoicePayScheduleId = getC_InvoicePaySchedule_ID(ctx, invoiceId);
-		final InvoiceInfoVO invoiceInfo = fetchInvoiceInfo(invoiceId, invoicePayScheduleId, dateTrx);
-
-		BigDecimal invoiceOpenAmt = invoiceInfo != null ? invoiceInfo.getOpenAmt() : BigDecimal.ZERO;
-		BigDecimal discountAmt = lineOrRef.getDiscountAmt();
-		BigDecimal writeOffAmt = lineOrRef.getWriteOffAmt();
-		BigDecimal overUnderAmt = lineOrRef.getOverUnderAmt();
-
-		log.debug("Pay=" + payAmt + ", Discount=" + discountAmt + ", WriteOff=" + writeOffAmt + ", OverUnderAmt=" + overUnderAmt);
-
-		final PaymentAmounts paymentAmounts = PaymentAmounts.builder()
-				.payAmt(payAmt)
-				.invoiceOpenAmt(invoiceOpenAmt)
-				.discountAmt(discountAmt)
-				.writeOffAmt(writeOffAmt)
-				.overUnderAmt(overUnderAmt)
-				.build();
-
-		currencyChanged(lineOrRef, invoiceInfo, paymentAmounts);
+		lineOrRef.setTrxAmt(paymentAmounts.getPayAmt());
+		lineOrRef.setOverUnderAmt(paymentAmounts.getOverUnderAmt());
+		lineOrRef.setWriteOffAmt(paymentAmounts.getWriteOffAmt());
+		lineOrRef.setDiscountAmt(paymentAmounts.getDiscountAmt());
 	}
 
-	@Data
-	@Builder
-	private static class PaymentAmounts
-	{
-		private BigDecimal invoiceOpenAmt;
-		private BigDecimal discountAmt;
-		private BigDecimal writeOffAmt;
-		private BigDecimal overUnderAmt;
-		private BigDecimal payAmt;
-	}
 
-	private void currencyChanged(@NonNull final IBankStatementLineOrRef lineOrRef, final InvoiceInfoVO invoiceInfo, @NonNull final PaymentAmounts paymentAmounts)
+	private void computeInvoiceOpenAmtIfNeeded(@NonNull final IBankStatementLineOrRef lineOrRef, final InvoiceInfoVO invoiceInfo, @NonNull final PaymentAmounts paymentAmounts)
 	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(lineOrRef);
-
-		final Timestamp convDate = getTrxDate(lineOrRef);
 		final int currencyId = lineOrRef.getC_Currency_ID();
-		final I_C_Currency currency = Services.get(ICurrencyDAO.class).retrieveCurrency(ctx, currencyId);
 
-		// Get Currency Rate
-		BigDecimal currencyRate = BigDecimal.ONE;
-		if (invoiceInfo != null && currencyId > 0 && invoiceInfo.currencyId > 0 && currencyId != invoiceInfo.currencyId)
+		if (invoiceInfo != null && currencyId > 0
+				&& invoiceInfo.getCurrencyId() > 0
+				&& currencyId != invoiceInfo.getCurrencyId())
 		{
-			log.debug("InvInfo=" + invoiceInfo + ", PayCurrency=" + currencyId + ", Date=" + convDate);
-			final ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
+			final Properties ctx = InterfaceWrapperHelper.getCtx(lineOrRef);
+			final I_C_Currency currency = Services.get(ICurrencyDAO.class).retrieveCurrency(ctx, currencyId);
+			final BigDecimal currencyRate = computeCurrencyRate(lineOrRef, invoiceInfo);
+			BigDecimal invoiceOpenAmt = paymentAmounts.getInvoiceOpenAmt();
+			invoiceOpenAmt = invoiceOpenAmt.multiply(currencyRate).setScale(currency.getStdPrecision(), BigDecimal.ROUND_HALF_UP);
+			paymentAmounts.setInvoiceOpenAmt(invoiceOpenAmt);
+		}
+	}
+	
+	private BigDecimal computeCurrencyRate(final IBankStatementLineOrRef lineOrRef, final InvoiceInfoVO invoiceInfo)
+	{
+		final int currencyId = lineOrRef.getC_Currency_ID();
+		final Timestamp convDate = getTrxDate(lineOrRef);
 
+		BigDecimal currencyRate = BigDecimal.ONE;
+		if (invoiceInfo != null && currencyId > 0
+				&& invoiceInfo.getCurrencyId() > 0
+				&& currencyId != invoiceInfo.getCurrencyId())
+		{
 			currencyRate = currencyConversionBL.getRate(invoiceInfo.currencyId,
 					currencyId, convDate, 0,
 					lineOrRef.getAD_Client_ID(), lineOrRef.getAD_Org_ID());
@@ -407,195 +502,83 @@ public class CalloutBankStatement extends CalloutEngine
 			{
 				throw new AdempiereException("@NoCurrencyConversion@");
 			}
-			//
-			BigDecimal invoiceOpenAmt = paymentAmounts.getInvoiceOpenAmt();
-			invoiceOpenAmt = invoiceOpenAmt.multiply(currencyRate).setScale(currency.getStdPrecision(), BigDecimal.ROUND_HALF_UP);
-			log.debug("Rate=" + currencyRate + ", InvoiceOpenAmt=" + invoiceOpenAmt);
 		}
-
-		BigDecimal payAmt = paymentAmounts.getPayAmt();
-		payAmt = payAmt.multiply(currencyRate).setScale(currency.getStdPrecision(), BigDecimal.ROUND_HALF_UP);
-		paymentAmounts.setPayAmt(payAmt);
-
-		BigDecimal discountAmt = paymentAmounts.getDiscountAmt();
-		discountAmt = discountAmt.multiply(currencyRate).setScale(currency.getStdPrecision(), BigDecimal.ROUND_HALF_UP);
-		paymentAmounts.setDiscountAmt(discountAmt);
-
-		BigDecimal writeOffAmt = paymentAmounts.getWriteOffAmt();
-		writeOffAmt = writeOffAmt.multiply(currencyRate).setScale(currency.getStdPrecision(), BigDecimal.ROUND_HALF_UP);
-		paymentAmounts.setWriteOffAmt(writeOffAmt);
-
-		BigDecimal overUnderAmt = paymentAmounts.getOverUnderAmt();
-		overUnderAmt = overUnderAmt.multiply(currencyRate).setScale(currency.getStdPrecision(), BigDecimal.ROUND_HALF_UP);
-		paymentAmounts.setOverUnderAmt(overUnderAmt);
+		return currencyRate;
 	}
 
-	private void trxAmtChanged(final IBankStatementLineOrRef lineOrRef, @NonNull final PaymentAmounts paymentAmounts)
+	private void columnCurrencyChanged(@NonNull final IBankStatementLineOrRef lineOrRef, final InvoiceInfoVO invoiceInfo, @NonNull final PaymentAmounts paymentAmounts)
 	{
-		BigDecimal InvoiceOpenAmt = paymentAmounts.getInvoiceOpenAmt();
-		BigDecimal PayAmt = paymentAmounts.getPayAmt();
-		BigDecimal DiscountAmt = paymentAmounts.getDiscountAmt();
-		BigDecimal WriteOffAmt = paymentAmounts.getWriteOffAmt();
-		BigDecimal OverUnderAmt = paymentAmounts.getOverUnderAmt();
+		final Properties ctx = InterfaceWrapperHelper.getCtx(lineOrRef);
+
+		BigDecimal invoiceOpenAmt = paymentAmounts.getInvoiceOpenAmt();
+		BigDecimal payAmt = paymentAmounts.getPayAmt();
+		BigDecimal discountAmt = paymentAmounts.getDiscountAmt();
+		BigDecimal writeOffAmt = paymentAmounts.getWriteOffAmt();
+		BigDecimal overUnderAmt = paymentAmounts.getOverUnderAmt();
+
+		final BigDecimal currencyRate = computeCurrencyRate(lineOrRef, invoiceInfo);
+
+		final I_C_Currency currency = Services.get(ICurrencyDAO.class).retrieveCurrency(ctx, lineOrRef.getC_Currency_ID());
+
+		invoiceOpenAmt = invoiceOpenAmt.multiply(currencyRate).setScale(currency.getStdPrecision(), BigDecimal.ROUND_HALF_UP);
+		payAmt = payAmt.multiply(currencyRate).setScale(currency.getStdPrecision(), BigDecimal.ROUND_HALF_UP);
+		discountAmt = discountAmt.multiply(currencyRate).setScale(currency.getStdPrecision(), BigDecimal.ROUND_HALF_UP);
+		writeOffAmt = writeOffAmt.multiply(currencyRate).setScale(currency.getStdPrecision(), BigDecimal.ROUND_HALF_UP);
+		overUnderAmt = overUnderAmt.multiply(currencyRate).setScale(currency.getStdPrecision(), BigDecimal.ROUND_HALF_UP);
+
+		paymentAmounts.setPayAmt(payAmt);
+		paymentAmounts.setDiscountAmt(discountAmt);
+		paymentAmounts.setWriteOffAmt(writeOffAmt);
+		paymentAmounts.setOverUnderAmt(overUnderAmt);
+		paymentAmounts.setInvoiceOpenAmt(invoiceOpenAmt);
+	}
+
+	private void columnTrxAmtChanged(final IBankStatementLineOrRef lineOrRef, @NonNull final PaymentAmounts paymentAmounts)
+	{
+		BigDecimal invoiceOpenAmt = paymentAmounts.getInvoiceOpenAmt();
+		BigDecimal payAmt = paymentAmounts.getPayAmt();
+		BigDecimal discountAmt = paymentAmounts.getDiscountAmt();
+		BigDecimal writeOffAmt = paymentAmounts.getWriteOffAmt();
+		BigDecimal overUnderAmt = paymentAmounts.getOverUnderAmt();
 
 		if (lineOrRef.isOverUnderPayment())
 		{
-			OverUnderAmt = InvoiceOpenAmt.subtract(PayAmt).subtract(DiscountAmt).subtract(WriteOffAmt);
+			overUnderAmt = invoiceOpenAmt.subtract(payAmt).subtract(discountAmt).subtract(writeOffAmt);
 		}
 		else
 		{
-			OverUnderAmt = BigDecimal.ZERO;
-			WriteOffAmt = InvoiceOpenAmt.subtract(PayAmt).subtract(DiscountAmt).subtract(OverUnderAmt);
+			overUnderAmt = BigDecimal.ZERO;
+			writeOffAmt = invoiceOpenAmt.subtract(payAmt).subtract(discountAmt).subtract(overUnderAmt);
 		}
+
+		paymentAmounts.setOverUnderAmt(overUnderAmt);
+		paymentAmounts.setWriteOffAmt(writeOffAmt);
 
 	}
 
-	
-	/**
-	 * Called by C_BankStatementLine_Ref: "Amount", "C_Currency_ID", "DiscountAmt", "IsOverUnderPayment", "OverUnderAmt", "WriteOffAmt"
-	 * 
-	 */
-	public String paymentAmounts(final ICalloutField calloutField)
+	private void columnIsOverUnderPaymentChanged(final IBankStatementLineOrRef lineOrRef, @NonNull final PaymentAmounts paymentAmounts)
 	{
-		if (isCalloutActive()) // assuming it is resetting value
-			return "";
+		BigDecimal invoiceOpenAmt = paymentAmounts.getInvoiceOpenAmt();
+		BigDecimal payAmt = paymentAmounts.getPayAmt();
+		BigDecimal discountAmt = paymentAmounts.getDiscountAmt();
+		BigDecimal writeOffAmt = paymentAmounts.getWriteOffAmt();
+		BigDecimal overUnderAmt = paymentAmounts.getOverUnderAmt();
 
-		final int invoiceId = Env.getContextAsInt(calloutField.getCtx(), calloutField.getWindowNo(), I_C_BankStatementLine.COLUMNNAME_C_Invoice_ID);
-		String amtColumn = (I_C_BankStatementLine.Table_Name.equals(calloutField.getTableName())) ? I_C_BankStatementLine.COLUMNNAME_TrxAmt : I_C_BankStatementLine_Ref.COLUMNNAME_TrxAmt;
-
-		final I_C_BankStatementLine line;
-		final I_C_BankStatementLine_Ref ref;
-		final IBankStatementLineOrRef lineOrRef;
-
-		BigDecimal PayAmt;
-		Timestamp dateTrx = null;
-		Timestamp ConvDate = null;
-
-		if (I_C_BankStatementLine_Ref.Table_Name.equals(calloutField.getTableName()))
+		if (lineOrRef.isOverUnderPayment())
 		{
-			line = null;
-			ref = calloutField.getModel(I_C_BankStatementLine_Ref.class);
-			lineOrRef = ref;
-			PayAmt = ref.getTrxAmt();
-			dateTrx = ref.getC_BankStatementLine().getStatementLineDate();
-		}
-		else if (I_C_BankStatementLine.Table_Name.equals(calloutField.getTableName()))
-		{
-			line = calloutField.getModel(I_C_BankStatementLine.class);
-			ref = null;
-			lineOrRef = line;
-			PayAmt = line.getTrxAmt();
-			dateTrx = line.getStatementLineDate();
+			overUnderAmt = invoiceOpenAmt.subtract(payAmt).subtract(discountAmt);
+			writeOffAmt = BigDecimal.ZERO;
 		}
 		else
 		{
-			throw new IllegalStateException("" + calloutField.getTableName() + " is not supported");
+			writeOffAmt = invoiceOpenAmt.subtract(payAmt).subtract(discountAmt);
+			overUnderAmt = BigDecimal.ZERO;
 		}
 
-		if (dateTrx == null)
-			dateTrx = SystemTime.asTimestamp();
-		if (ConvDate == null)
-			ConvDate = dateTrx;
+		paymentAmounts.setWriteOffAmt(writeOffAmt);
+		paymentAmounts.setOverUnderAmt(overUnderAmt);
 
-		// Changed Column
-		final String colName = calloutField.getColumnName();
-		if (I_C_BankStatementLine.COLUMNNAME_IsOverUnderPayment.equals(colName) && !lineOrRef.isOverUnderPayment())
-		{
-			lineOrRef.setOverUnderAmt(BigDecimal.ZERO);
-		}
-
-		int invoicePayScheduleId = getC_InvoicePaySchedule_ID(calloutField.getCtx(), invoiceId);
-		final InvoiceInfoVO invoiceInfo = fetchInvoiceInfo(invoiceId, invoicePayScheduleId, dateTrx);
-		log.debug("" + invoiceInfo);
-
-		// Get Info from Tab
-		BigDecimal InvoiceOpenAmt = invoiceInfo != null ? invoiceInfo.getOpenAmt() : BigDecimal.ZERO;
-		BigDecimal DiscountAmt = lineOrRef.getDiscountAmt();
-		BigDecimal WriteOffAmt = lineOrRef.getWriteOffAmt();
-		BigDecimal OverUnderAmt = lineOrRef.getOverUnderAmt();
-		log.debug("Pay=" + PayAmt + ", Discount=" + DiscountAmt + ", WriteOff=" + WriteOffAmt + ", OverUnderAmt=" + OverUnderAmt);
-
-		final int C_Currency_ID = lineOrRef.getC_Currency_ID();
-		final I_C_Currency currency = Services.get(ICurrencyDAO.class).retrieveCurrency(calloutField.getCtx(), C_Currency_ID);
-
-		// Get Currency Rate
-		BigDecimal CurrencyRate = BigDecimal.ONE;
-		if ((invoiceInfo != null && C_Currency_ID > 0 && invoiceInfo.currencyId > 0 && C_Currency_ID != invoiceInfo.currencyId)
-				|| colName.equals(I_C_BankStatementLine.COLUMNNAME_C_Currency_ID))
-		{
-			log.debug("InvInfo=" + invoiceInfo + ", PayCurrency=" + C_Currency_ID + ", Date=" + ConvDate);
-			if (invoiceInfo != null)
-			{
-				final ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
-
-				CurrencyRate = currencyConversionBL.getRate(invoiceInfo.currencyId,
-						C_Currency_ID, ConvDate, 0,
-						lineOrRef.getAD_Client_ID(), lineOrRef.getAD_Org_ID());
-			}
-			if (CurrencyRate == null || CurrencyRate.signum() == 0)
-			{
-				throw new AdempiereException("@NoCurrencyConversion@");
-			}
-			//
-			InvoiceOpenAmt = InvoiceOpenAmt.multiply(CurrencyRate).setScale(currency.getStdPrecision(), BigDecimal.ROUND_HALF_UP);
-			log.debug("Rate=" + CurrencyRate + ", InvoiceOpenAmt=" + InvoiceOpenAmt);
-		}
-
-		// Currency Changed - convert all
-		if (colName.equals(I_C_BankStatementLine.COLUMNNAME_C_Currency_ID))
-		{
-			PayAmt = PayAmt.multiply(CurrencyRate).setScale(currency.getStdPrecision(), BigDecimal.ROUND_HALF_UP);
-			lineOrRef.setTrxAmt(PayAmt);
-
-			DiscountAmt = DiscountAmt.multiply(CurrencyRate).setScale(currency.getStdPrecision(), BigDecimal.ROUND_HALF_UP);
-			lineOrRef.setDiscountAmt(DiscountAmt);
-			WriteOffAmt = WriteOffAmt.multiply(CurrencyRate).setScale(currency.getStdPrecision(), BigDecimal.ROUND_HALF_UP);
-			lineOrRef.setWriteOffAmt(WriteOffAmt);
-			OverUnderAmt = OverUnderAmt.multiply(CurrencyRate).setScale(currency.getStdPrecision(), BigDecimal.ROUND_HALF_UP);
-			lineOrRef.setOverUnderAmt(OverUnderAmt);
-		}
-		// No Invoice - Set Discount, Writeoff, Under/Over to 0
-		else if (invoiceId <= 0)
-		{
-			lineOrRef.setDiscountAmt(BigDecimal.ZERO);
-			lineOrRef.setWriteOffAmt(BigDecimal.ZERO);
-			lineOrRef.setIsOverUnderPayment(false);
-			lineOrRef.setOverUnderAmt(BigDecimal.ZERO);
-		}
-		// PayAmt - calculate write off
-		else if (colName.equals(amtColumn) && lineOrRef.isOverUnderPayment())
-		{
-			OverUnderAmt = InvoiceOpenAmt.subtract(PayAmt).subtract(DiscountAmt).subtract(WriteOffAmt);
-			lineOrRef.setOverUnderAmt(OverUnderAmt);
-		}
-		else if (colName.equals(amtColumn))
-		{
-			WriteOffAmt = InvoiceOpenAmt.subtract(PayAmt).subtract(DiscountAmt).subtract(OverUnderAmt);
-			lineOrRef.setWriteOffAmt(WriteOffAmt);
-		}
-		else if (colName.equals(I_C_BankStatementLine.COLUMNNAME_IsOverUnderPayment))
-		{
-			if (lineOrRef.isOverUnderPayment())
-			{
-				OverUnderAmt = InvoiceOpenAmt.subtract(PayAmt).subtract(DiscountAmt);
-				lineOrRef.setWriteOffAmt(BigDecimal.ZERO);
-				lineOrRef.setOverUnderAmt(OverUnderAmt);
-			}
-			else
-			{
-				WriteOffAmt = InvoiceOpenAmt.subtract(PayAmt).subtract(DiscountAmt);
-				lineOrRef.setWriteOffAmt(WriteOffAmt);
-				lineOrRef.setOverUnderAmt(BigDecimal.ZERO);
-			}
-		}
-		else
-		// calculate PayAmt
-		{
-			PayAmt = InvoiceOpenAmt.subtract(DiscountAmt).subtract(WriteOffAmt).subtract(OverUnderAmt);
-			lineOrRef.setTrxAmt(PayAmt);
-		}
-		return NO_ERROR;
-	} // amounts
+	}
 
 	/**
 	 * C_BankStatementLine: C_BP_BankAccountTo_ID

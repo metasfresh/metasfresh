@@ -42,7 +42,6 @@ import org.compiere.model.X_C_DocType;
 import org.slf4j.Logger;
 
 import de.metas.banking.interfaces.I_C_BankStatementLine_Ref;
-import de.metas.banking.model.IBankStatementLineOrRef;
 import de.metas.banking.model.I_C_BankStatementLine;
 import de.metas.banking.service.IBankStatementBL;
 import de.metas.banking.service.IBankStatementDAO;
@@ -51,7 +50,6 @@ import de.metas.banking.service.IBankStatementListenerService;
 import de.metas.currency.ICurrencyBL;
 import de.metas.currency.ICurrencyConversionContext;
 import de.metas.logging.LogManager;
-import lombok.NonNull;
 
 public class BankStatementBL implements IBankStatementBL
 {
@@ -261,11 +259,5 @@ public class BankStatementBL implements IBankStatementBL
 		
 		bankStatement.setPosted(false);
 		InterfaceWrapperHelper.save(bankStatement);
-	}
-
-	@Override
-	public boolean isLine(@NonNull final IBankStatementLineOrRef lineOrRef) 
-	{
-	   return I_C_BankStatementLine.Table_Name.equals(InterfaceWrapperHelper.getModelTableName(lineOrRef)); 
 	}
 }
