@@ -39,8 +39,6 @@ public class Fresh_AvailableSingletonServices_Test
 	public void test()
 	{
 		AvailableSingletonServicesTester.newInstance()
-				.skipServiceInterface(org.adempiere.model.virtualColumn.IVirtualColumnProvider.class) // TODO service shall be deleted
-				.skipServiceInterface(org.adempiere.model.virtualColumn.IStorageService.class) // TODO service shall be deleted
 				.skipServiceInterface(de.metas.request.service.IRequestCreator.class) // is registered programmatically
 				.skipServiceInterface(de.metas.dpd.service.IDPDRoutingservice.class) // is registered programmatically
 				.skipServiceInterface(de.metas.adempiere.service.IPackageInfoService.class) // is registered programmatically, see DPDRoutingService...
