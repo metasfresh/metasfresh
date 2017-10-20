@@ -982,20 +982,37 @@ export function collapsedMap(
 }
 
 export function connectWS(topic, cb) {
-    (this.sockClient && this.sockClient.connected) &&
-        this.sockClient.disconnect();
+    const subscribe = ({ tries = 3 } = {}) => {
+        if (this.sockClient.connected || tries <= 0) {
+            this.sockSubscription = this.sockClient.subscribe(topic, (msg) => {
+                cb(JSON.parse(msg.body));
+            });
+        } else {
+            // not ready yet
+            setTimeout(() => { subscribe({ tries: tries - 1 }); }, 200);
+        }
+    };
+    const connect = () => {
+        this.sock = new SockJs(config.WS_URL);
+        this.sockClient = Stomp.Stomp.over(this.sock);
+        this.sockClient.debug = null;
+        this.sockClient.connect({}, subscribe);
+    }
+    const connected = disconnectWS.call(this, connect);
 
-    this.sock = new SockJs(config.WS_URL);
-    this.sockClient = Stomp.Stomp.over(this.sock);
-    this.sockClient.debug = null;
-    this.sockClient.connect({}, () => {
-        this.sockClient.subscribe(topic, msg => {
-            cb(JSON.parse(msg.body));
-        });
-    });
+    if (!connected) {
+        connect();
+    }
 }
 
-export function disconnectWS() {
-    (this.sockClient && this.sockClient.connected) &&
-        this.sockClient.disconnect();
+export function disconnectWS(callback) {
+    const connected = this.sockClient && this.sockClient.connected &&
+        this.sockSubscription;
+
+    if (connected) {
+        this.sockSubscription.unsubscribe();
+        this.sockClient.disconnect(callback);
+    }
+
+    return connected;
 }
