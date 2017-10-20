@@ -1,26 +1,9 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
 package org.compiere.model;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import org.compiere.util.Env;
 
 /** Generated Model for C_OrderLine
  *  @author Adempiere (generated) 
@@ -32,7 +15,7 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1152049930L;
+	private static final long serialVersionUID = -1615035630L;
 
     /** Standard Constructor */
     public X_C_OrderLine (Properties ctx, int C_OrderLine_ID, String trxName)
@@ -40,48 +23,37 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
       super (ctx, C_OrderLine_ID, trxName);
       /** if (C_OrderLine_ID == 0)
         {
-			setC_BPartner_ID (0);
-// @SQL=SELECT (CASE WHEN IsSOTrx='Y' AND IsDropShip='Y' THEN DropShip_BPartner_ID ELSE C_BPartner_ID END) AS DefaultValue FROM C_Order WHERE C_Order_ID=@C_Order_ID@
-			setC_BPartner_Location_ID (0);
-// @SQL=SELECT (CASE WHEN IsSOTrx='Y' AND IsDropShip='Y' THEN DropShip_Location_ID ELSE C_BPartner_Location_ID END) AS DefaultValue FROM C_Order WHERE C_Order_ID=@C_Order_ID@
+			setC_BPartner_ID (0); // @SQL=SELECT (CASE WHEN IsSOTrx='Y' AND IsDropShip='Y' THEN DropShip_BPartner_ID ELSE C_BPartner_ID END) AS DefaultValue FROM C_Order WHERE C_Order_ID=@C_Order_ID@
+			setC_BPartner_Location_ID (0); // @SQL=SELECT (CASE WHEN IsSOTrx='Y' AND IsDropShip='Y' THEN DropShip_Location_ID ELSE C_BPartner_Location_ID END) AS DefaultValue FROM C_Order WHERE C_Order_ID=@C_Order_ID@
 
 
-			setC_Currency_ID (0);
-// @C_Currency_ID@
+			setC_Currency_ID (0); // @C_Currency_ID@
 			setC_Order_ID (0);
 			setC_OrderLine_ID (0);
 			setC_Tax_ID (0);
-			setC_UOM_ID (0);
-// @#C_UOM_ID@
-			setDateOrdered (new Timestamp( System.currentTimeMillis() ));
-// @DateOrdered@
-			setFreightAmt (Env.ZERO);
-			setFrequencyType (null);
-// M
-			setIsDescription (false);
-// N
-			setIsSubscription (false);
-// N
-			setLine (0);
-// @SQL=SELECT COALESCE(MAX(Line),0)+10 AS DefaultValue FROM C_OrderLine WHERE C_Order_ID=@C_Order_ID@
-			setLineNetAmt (Env.ZERO);
-			setM_AttributeSetInstance_ID (0);
-			setPriceActual (Env.ZERO);
-			setPriceEntered (Env.ZERO);
-			setPriceLimit (Env.ZERO);
-			setPriceList (Env.ZERO);
-			setProcessed (false);
-// N
-			setQtyDelivered (Env.ZERO);
-			setQtyEntered (Env.ZERO);
-// 1
-			setQtyInvoiced (Env.ZERO);
-			setQtyLostSales (Env.ZERO);
-			setQtyOrdered (Env.ZERO);
-// 1
-			setQtyReserved (Env.ZERO);
-			setRunsMax (0);
-// 12
+			setC_UOM_ID (0); // @#C_UOM_ID@
+			setDateOrdered (new Timestamp( System.currentTimeMillis() )); // @DateOrdered@
+			setFreightAmt (BigDecimal.ZERO);
+			setFrequencyType (null); // M
+			setIsDescription (false); // N
+			setIsGroupCompensationLine (false); // N
+			setIsManualPrice (false); // N
+			setIsSubscription (false); // N
+			setLine (0); // @SQL=SELECT COALESCE(MAX(Line),0)+10 AS DefaultValue FROM C_OrderLine WHERE C_Order_ID=@C_Order_ID@
+			setLineNetAmt (BigDecimal.ZERO);
+			setM_Product_ID (0);
+			setPriceActual (BigDecimal.ZERO);
+			setPriceEntered (BigDecimal.ZERO);
+			setPriceLimit (BigDecimal.ZERO);
+			setPriceList (BigDecimal.ZERO);
+			setProcessed (false); // N
+			setQtyDelivered (BigDecimal.ZERO);
+			setQtyEntered (BigDecimal.ZERO); // 1
+			setQtyInvoiced (BigDecimal.ZERO);
+			setQtyLostSales (BigDecimal.ZERO);
+			setQtyOrdered (BigDecimal.ZERO); // 1
+			setQtyReserved (BigDecimal.ZERO);
+			setRunsMax (0); // 12
         } */
     }
 
@@ -98,14 +70,6 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
     {
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
-    }
-
-    @Override
-    public String toString()
-    {
-      StringBuilder sb = new StringBuilder ("X_C_OrderLine[")
-        .append(get_ID()).append("]");
-      return sb.toString();
     }
 
 	@Override
@@ -651,6 +615,25 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 		return ii.intValue();
 	}
 
+	/** Set Group Discount.
+		@param CompensationGroupDiscount Group Discount	  */
+	@Override
+	public void setCompensationGroupDiscount (java.math.BigDecimal CompensationGroupDiscount)
+	{
+		set_Value (COLUMNNAME_CompensationGroupDiscount, CompensationGroupDiscount);
+	}
+
+	/** Get Group Discount.
+		@return Group Discount	  */
+	@Override
+	public java.math.BigDecimal getCompensationGroupDiscount () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_CompensationGroupDiscount);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
+	}
+
 	/** Set Lieferdatum.
 		@param DateDelivered 
 		Date when the product was delivered
@@ -761,7 +744,7 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Discount);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -783,7 +766,7 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_FreightAmt);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -820,6 +803,77 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 		return (java.lang.String)get_Value(COLUMNNAME_FrequencyType);
 	}
 
+	/** 
+	 * GroupCompensationAmtType AD_Reference_ID=540759
+	 * Reference name: GroupCompensationAmtType
+	 */
+	public static final int GROUPCOMPENSATIONAMTTYPE_AD_Reference_ID=540759;
+	/** Percent = P */
+	public static final String GROUPCOMPENSATIONAMTTYPE_Percent = "P";
+	/** PriceAndQty = Q */
+	public static final String GROUPCOMPENSATIONAMTTYPE_PriceAndQty = "Q";
+	/** Set Compensation Amount Type.
+		@param GroupCompensationAmtType Compensation Amount Type	  */
+	@Override
+	public void setGroupCompensationAmtType (java.lang.String GroupCompensationAmtType)
+	{
+
+		set_Value (COLUMNNAME_GroupCompensationAmtType, GroupCompensationAmtType);
+	}
+
+	/** Get Compensation Amount Type.
+		@return Compensation Amount Type	  */
+	@Override
+	public java.lang.String getGroupCompensationAmtType () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_GroupCompensationAmtType);
+	}
+
+	/** 
+	 * GroupCompensationType AD_Reference_ID=540758
+	 * Reference name: GroupCompensationType
+	 */
+	public static final int GROUPCOMPENSATIONTYPE_AD_Reference_ID=540758;
+	/** Surcharge = S */
+	public static final String GROUPCOMPENSATIONTYPE_Surcharge = "S";
+	/** Discount = D */
+	public static final String GROUPCOMPENSATIONTYPE_Discount = "D";
+	/** Set Compensation Type.
+		@param GroupCompensationType Compensation Type	  */
+	@Override
+	public void setGroupCompensationType (java.lang.String GroupCompensationType)
+	{
+
+		set_Value (COLUMNNAME_GroupCompensationType, GroupCompensationType);
+	}
+
+	/** Get Compensation Type.
+		@return Compensation Type	  */
+	@Override
+	public java.lang.String getGroupCompensationType () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_GroupCompensationType);
+	}
+
+	/** Set Group.
+		@param GroupNo Group	  */
+	@Override
+	public void setGroupNo (int GroupNo)
+	{
+		set_Value (COLUMNNAME_GroupNo, Integer.valueOf(GroupNo));
+	}
+
+	/** Get Group.
+		@return Group	  */
+	@Override
+	public int getGroupNo () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_GroupNo);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
 	/** Set Description Only.
 		@param IsDescription 
 		if true, the line is just description and no transaction
@@ -846,6 +900,29 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 		return false;
 	}
 
+	/** Set Group Compensation Line.
+		@param IsGroupCompensationLine Group Compensation Line	  */
+	@Override
+	public void setIsGroupCompensationLine (boolean IsGroupCompensationLine)
+	{
+		set_Value (COLUMNNAME_IsGroupCompensationLine, Boolean.valueOf(IsGroupCompensationLine));
+	}
+
+	/** Get Group Compensation Line.
+		@return Group Compensation Line	  */
+	@Override
+	public boolean isGroupCompensationLine () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsGroupCompensationLine);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
 	/** Set Prod.-Beschr. ändern.
 		@param IsIndividualDescription Prod.-Beschr. ändern	  */
 	@Override
@@ -860,6 +937,29 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	public boolean isIndividualDescription () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsIndividualDescription);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set Manueller Preis.
+		@param IsManualPrice Manueller Preis	  */
+	@Override
+	public void setIsManualPrice (boolean IsManualPrice)
+	{
+		set_Value (COLUMNNAME_IsManualPrice, Boolean.valueOf(IsManualPrice));
+	}
+
+	/** Get Manueller Preis.
+		@return Manueller Preis	  */
+	@Override
+	public boolean isManualPrice () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsManualPrice);
 		if (oo != null) 
 		{
 			 if (oo instanceof Boolean) 
@@ -932,7 +1032,7 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_LineNetAmt);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -948,21 +1048,21 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 		set_ValueFromPO(COLUMNNAME_Link_OrderLine_ID, org.compiere.model.I_C_OrderLine.class, Link_OrderLine);
 	}
 
-	/** Set Linked Order Line.
+	/** Set Zugehörige Bestellposition.
 		@param Link_OrderLine_ID 
-		This field links a sales order line to the purchase order line that is generated from it.
+		Mit diesem Feld kann eine Auftragsposition die ihr zugehörige Bestellposition referenzieren.
 	  */
 	@Override
 	public void setLink_OrderLine_ID (int Link_OrderLine_ID)
 	{
 		if (Link_OrderLine_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_Link_OrderLine_ID, null);
+			set_Value (COLUMNNAME_Link_OrderLine_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_Link_OrderLine_ID, Integer.valueOf(Link_OrderLine_ID));
+			set_Value (COLUMNNAME_Link_OrderLine_ID, Integer.valueOf(Link_OrderLine_ID));
 	}
 
-	/** Get Linked Order Line.
-		@return This field links a sales order line to the purchase order line that is generated from it.
+	/** Get Zugehörige Bestellposition.
+		@return Mit diesem Feld kann eine Auftragsposition die ihr zugehörige Bestellposition referenzieren.
 	  */
 	@Override
 	public int getLink_OrderLine_ID () 
@@ -985,9 +1085,9 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 		set_ValueFromPO(COLUMNNAME_M_AttributeSetInstance_ID, org.compiere.model.I_M_AttributeSetInstance.class, M_AttributeSetInstance);
 	}
 
-	/** Set Ausprägung Merkmals-Satz.
+	/** Set Merkmale.
 		@param M_AttributeSetInstance_ID 
-		Product Attribute Set Instance
+		Merkmals Ausprägungen zum Produkt
 	  */
 	@Override
 	public void setM_AttributeSetInstance_ID (int M_AttributeSetInstance_ID)
@@ -998,8 +1098,8 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 			set_Value (COLUMNNAME_M_AttributeSetInstance_ID, Integer.valueOf(M_AttributeSetInstance_ID));
 	}
 
-	/** Get Ausprägung Merkmals-Satz.
-		@return Product Attribute Set Instance
+	/** Get Merkmale.
+		@return Merkmals Ausprägungen zum Produkt
 	  */
 	@Override
 	public int getM_AttributeSetInstance_ID () 
@@ -1170,7 +1270,7 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_OrderDiscount);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -1242,7 +1342,7 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PriceActual);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -1264,7 +1364,7 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PriceCost);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -1286,7 +1386,7 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PriceEntered);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -1308,7 +1408,7 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PriceLimit);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -1330,7 +1430,7 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PriceList);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -1352,7 +1452,7 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PriceList_Std);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -1419,7 +1519,7 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyDelivered);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -1441,7 +1541,7 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyEntered);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -1463,7 +1563,7 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyInvoiced);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -1485,7 +1585,7 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyLostSales);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -1507,7 +1607,7 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyOrdered);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -1526,7 +1626,7 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyOrderedOverUnder);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -1548,7 +1648,7 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyReserved);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -1564,9 +1664,9 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 		set_ValueFromPO(COLUMNNAME_Ref_OrderLine_ID, org.compiere.model.I_C_OrderLine.class, Ref_OrderLine);
 	}
 
-	/** Set Referenced Order Line.
+	/** Set Gegenbelegzeile-Fremdorganisation.
 		@param Ref_OrderLine_ID 
-		Reference to corresponding Sales/Purchase Order
+		Mit diesem Feld kann eine Auftragsposition die ihr zugehörige Gegenbeleg-Position aus einer anderen Organisation referenzieren
 	  */
 	@Override
 	public void setRef_OrderLine_ID (int Ref_OrderLine_ID)
@@ -1577,8 +1677,8 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 			set_Value (COLUMNNAME_Ref_OrderLine_ID, Integer.valueOf(Ref_OrderLine_ID));
 	}
 
-	/** Get Referenced Order Line.
-		@return Reference to corresponding Sales/Purchase Order
+	/** Get Gegenbelegzeile-Fremdorganisation.
+		@return Mit diesem Feld kann eine Auftragsposition die ihr zugehörige Gegenbeleg-Position aus einer anderen Organisation referenzieren
 	  */
 	@Override
 	public int getRef_OrderLine_ID () 
@@ -1607,7 +1707,7 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_RRAmt);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
