@@ -115,6 +115,7 @@ class DocumentList extends Component {
             includedView,
             refId,
             windowType,
+            dispatch,
         } = this.props;
 
         const {
@@ -122,6 +123,11 @@ class DocumentList extends Component {
             sort,
             viewId,
         } = this.state;
+
+        const included = includedView && includedView.windowType &&
+            includedView.viewId;
+        const nextIncluded = nextIncludedView && nextIncludedView.windowType &&
+            nextIncludedView.viewId;
 
         /*
          * If we browse list of docs, changing type of Document
@@ -143,6 +149,10 @@ class DocumentList extends Component {
                 filters: null,
                 viewId: null,
             }, () => {
+                if (included) {
+                    dispatch(closeListIncludedView(includedView));
+                }
+
                 this.fetchLayoutAndData();
             });
         }
@@ -164,11 +174,6 @@ class DocumentList extends Component {
         ) {
             this.setState({ viewId: nextDefaultViewId });
         }
-
-        const included = includedView && includedView.windowType &&
-            includedView.viewId;
-        const nextIncluded = nextIncludedView && nextIncludedView.windowType &&
-            nextIncludedView.viewId;
 
         if (included && !nextIncluded) {
             this.setState({ isShowIncluded: false, hasShowIncluded: false });
