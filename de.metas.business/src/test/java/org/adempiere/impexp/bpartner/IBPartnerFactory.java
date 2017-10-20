@@ -50,6 +50,8 @@ import lombok.Value;
 	// Location
 	private final String address1;
 	private final String address2;
+	private final String address3;
+	private final String address4;
 	private final String city;
 	private final String region;
 	private final String countryCode;

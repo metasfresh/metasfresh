@@ -77,6 +77,8 @@ import lombok.experimental.UtilityClass;
 		assertThat(location).isNotNull();
 		assertThat(location.getAddress1()).isEqualTo(ibpartner.getAddress1());
 		assertThat(location.getAddress2()).isEqualTo(ibpartner.getAddress2());
+		assertThat(location.getAddress3()).isEqualTo(ibpartner.getAddress3());
+		assertThat(location.getAddress4()).isEqualTo(ibpartner.getAddress4());
 		assertThat(location.getCity()).isEqualTo(ibpartner.getCity());
 		assertThat(location.getC_Region_ID()).isEqualTo(ibpartner.getC_Region_ID());
 		assertThat(location.getC_Country_ID()).isEqualTo(ibpartner.getC_Country_ID());
