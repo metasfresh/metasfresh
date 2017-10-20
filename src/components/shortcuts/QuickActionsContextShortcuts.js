@@ -2,9 +2,6 @@ import React, { Component } from 'react';
 import { Shortcuts } from 'react-shortcuts';
 
 class QuickActionsContextShortcuts extends Component {
-    constructor(props){
-        super(props);
-    }
     handleShortcuts = (action, event) => {
         const {handleClick, onClick} = this.props;
 
@@ -22,16 +19,17 @@ class QuickActionsContextShortcuts extends Component {
 
     render() {
         return (
-        <Shortcuts
-            name="QUICK_ACTIONS"
-            handler = { this.handleShortcuts }
-            targetNodeSelector = "body"
-            isolate = { true }
-            global = { true }
-            preventDefault = { true }
-            stopPropagation = { true }
-        />
-        )
+            <Shortcuts
+                name="QUICK_ACTIONS"
+                handler={this.handleShortcuts}
+                targetNodeSelector = "body"
+                isolate
+                global
+                preventDefault
+                stopPropagation
+                alwaysFireHandler
+            />
+        );
     }
 }
 
