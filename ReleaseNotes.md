@@ -16,6 +16,8 @@ Here come the actual release notes:
 
 ## Features
 * metasfresh-app
+  * [#2311](https://github.com/metasfresh/metasfresh/issues/2311) Customer Invoices and Invoice Candidates adjustments
+    * Improved Translations for en_US, de_DE and Layout in Invoice Candidates Window and Customer Invoice.
   * [#2653](https://github.com/metasfresh/metasfresh/issues/2653) Window Design Webui: Improve Businesspartner Dist-Orgs window
     * Improved Translations for en_US. New Fielsd added for Subscription progress Subtab.
   * [#2725](https://github.com/metasfresh/metasfresh/issues/2725) Webui Window Design: Improvements in window ESR Payment Import
@@ -30,10 +32,17 @@ Here come the actual release notes:
     * Improved Translation of en_US Language in Shipment Restrictions Window and Actions.
   * [#2732](https://github.com/metasfresh/metasfresh/issues/2732) Window Design Webui : Add description field in sales order line
     * New Field Description added to Sales Orderline Grid View and Advanced edit in WebUI.
+  * [#2768](https://github.com/metasfresh/metasfresh/issues/2768) Translate window for process "Change Password" into EN
+    * Translations added to Parms in Change Password Process.
   * [#2729](https://github.com/metasfresh/metasfresh/issues/2729) Window Design Webui: Add missing fields to window Tourversion
     * New Fields added to Tourversion widnow in WebUI. Translations for en_US improved.
+  * [#2774](https://github.com/metasfresh/metasfresh/issues/2774) Vendor Invoice Layout and Translations in WebUI
+    * Improved Window Vendor Invoice Layout to adapt current Design Guidelines and Translations for en_US added.
 
 ## Fixes
+* metasfresh-webui-frontend
+  * [#1281](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1281) Translations of Photo Widget in User WIndow
+    * Fixing the Translation of the Photo Widget Buttons in User Window.
 
 # metasfresh 5.31 (2017-42)
 
@@ -83,7 +92,6 @@ Here come the actual release notes:
     * Adding the keyboard support for the new Labels widget.
   * [#1239](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1239) Included views are not working in non-modal windows
     * Now also allowing the usage of included views in non-modal windows.
-
 	
 * metasfresh-webui-api
   * [#628](https://github.com/metasfresh/metasfresh-webui-api/issues/628) Extend framework to allow modification of standard filter results
