@@ -24,10 +24,7 @@ import {
     setProcessPending
 } from './AppActions';
 
-import {
-    closeListIncludedView,
-    setListIncludedView,
-} from './ListActions';
+import { setListIncludedView } from './ListActions';
 
 export function setLatestNewDocument(id) {
     return {
@@ -183,13 +180,6 @@ export function deleteRow(tabid, rowid, scope) {
     }
 }
 
-export function selectRow(selected) {
-    return {
-        type: types.SELECT_ROW,
-        selected
-    }
-}
-
 export function updateDataFieldProperty(property, item, scope) {
     return {
         type: types.UPDATE_DATA_FIELD_PROPERTY,
@@ -233,6 +223,12 @@ export function openModal(
         isAdvanced: isAdvanced,
         viewDocumentIds: viewDocumentIds,
         triggerField: triggerField
+    }
+}
+
+export function closeProcessModal() {
+    return {
+        type: types.CLOSE_PROCESS_MODAL
     }
 }
 
@@ -746,7 +742,7 @@ export function handleProcessResponse(response, type, id) {
             // Close process modal in case when process has failed
             await dispatch(closeModal());
         } else {
-            let closeProcessModal = true;
+            let keepProcessModal = false;
 
             if (action) {
                 switch (action.type) {
@@ -769,7 +765,7 @@ export function handleProcessResponse(response, type, id) {
 
                         if (action.modal) {
                             // Do not close process modal, since it will be re-used with document view
-                            closeProcessModal = false;
+                            keepProcessModal = true;
 
                             await dispatch(
                                 openModal(
@@ -816,8 +812,8 @@ export function handleProcessResponse(response, type, id) {
 
             await dispatch(setProcessSaved());
 
-            if (closeProcessModal) {
-                await dispatch(closeModal());
+            if (!keepProcessModal) {
+                await dispatch(closeProcessModal());
             }
         }
     }

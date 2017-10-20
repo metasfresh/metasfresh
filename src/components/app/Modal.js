@@ -86,11 +86,13 @@ class Modal extends Component {
         this.removeEventListeners();
     }
 
-    async componentDidUpdate (prevProps) {
-        const { windowType, indicator } = this.props;
+    async componentDidUpdate(prevProps) {
+        const { windowType, viewId, indicator } = this.props;
         const { waitingFetch } = this.state;
 
-        if (prevProps.windowType !== windowType) {
+        if (prevProps.windowType !== windowType ||
+            prevProps.viewId !== viewId
+        ) {
             await this.init();
         }
 

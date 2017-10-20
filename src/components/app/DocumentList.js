@@ -1,5 +1,4 @@
 import counterpart from 'counterpart';
-import * as _ from 'lodash';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { push } from 'react-router-redux';
@@ -99,12 +98,30 @@ class DocumentList extends Component {
         disconnectWS.call(this);
     }
 
-    componentWillReceiveProps(props) {
+    componentWillReceiveProps(nextProps) {
         const {
-            windowType, defaultViewId, defaultSort, defaultPage, selected,
-            dispatch, includedView, disconnectFromState, refId,
-        } = props;
-        const { page, sort, viewId, layout } = this.state;
+            defaultPage: nextDefaultPage,
+            defaultSort: nextDefaultSort,
+            defaultViewId: nextDefaultViewId,
+            includedView: nextIncludedView,
+            refId: nextRefId,
+            windowType: nextWindowType,
+        } = nextProps;
+
+        const {
+            defaultPage,
+            defaultSort,
+            defaultViewId,
+            includedView,
+            refId,
+            windowType,
+        } = this.props;
+
+        const {
+            page,
+            sort,
+            viewId,
+        } = this.state;
 
         /*
          * If we browse list of docs, changing type of Document
@@ -115,10 +132,10 @@ class DocumentList extends Component {
          * OR
          * The reference ID is changed
          */
-        if ((windowType !== this.props.windowType) || (
-                (defaultViewId === undefined) &&
-                (defaultViewId !== this.props.defaultViewId)
-            ) || (refId !== this.props.refId)
+        if ((nextWindowType !== windowType) || (
+                (nextDefaultViewId === undefined) &&
+                (nextDefaultViewId !== defaultViewId)
+            ) || (nextRefId !== refId)
         ) {
             this.setState({
                 data: null,
@@ -126,41 +143,35 @@ class DocumentList extends Component {
                 filters: null,
                 viewId: null,
             }, () => {
-                if (!disconnectFromState) {
-                    dispatch(selectTableItems({
-                        windowType,
-                        viewId,
-                        ids: [],
-                    }));
-                }
-
                 this.fetchLayoutAndData();
             });
         }
 
-        if ((defaultSort !== this.props.defaultSort) &&
-            (defaultSort !== sort)
+        if ((nextDefaultSort !== defaultSort) &&
+            (nextDefaultSort !== sort)
         ) {
-            this.setState({ sort: defaultSort });
+            this.setState({ sort: nextDefaultSort });
         }
 
-        if ((defaultPage !== this.props.defaultPage) &&
-            (defaultPage !== page)
+        if ((nextDefaultPage !== defaultPage) &&
+            (nextDefaultPage !== page)
         ) {
-            this.setState({ page: defaultPage || 1 });
+            this.setState({ page: nextDefaultPage || 1 });
         }
 
-        if ((defaultViewId !== this.props.defaultViewId) &&
-            (defaultViewId !== viewId)
+        if ((nextDefaultViewId !== defaultViewId) &&
+            (nextDefaultViewId !== viewId)
         ) {
-            this.setState({ viewId: defaultViewId });
+            this.setState({ viewId: nextDefaultViewId });
         }
 
-        if ((includedView && includedView.windowType && includedView.viewId) &&
-            (layout && layout.supportIncludedView) &&
-            !_.isEqual(this.props.selected, selected)
-        ) {
-            dispatch(closeListIncludedView({ windowType, viewId }));
+        const included = includedView && includedView.windowType &&
+            includedView.viewId;
+        const nextIncluded = nextIncludedView && nextIncludedView.windowType &&
+            nextIncludedView.viewId;
+
+        if (included && !nextIncluded) {
+            this.setState({ isShowIncluded: false, hasShowIncluded: false });
         }
     }
 

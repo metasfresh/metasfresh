@@ -40,7 +40,6 @@ const initialState = {
     indicator: 'saved',
     latestNewDocument: null,
     viewId: null,
-    selected: [],
     selections: {},
 };
 
@@ -87,26 +86,17 @@ export default function windowHandler(state = initialState, action) {
                 })
             });
 
+        case types.CLOSE_PROCESS_MODAL:
+            if (state.modal.modalType === 'process') {
+                return Object.assign({}, state, {
+                    modal: Object.assign({}, state.modal, initialState.modal),
+                });
+            }
+            return state;
+
         case types.CLOSE_MODAL:
             return Object.assign({}, state, {
-                modal: Object.assign({}, state.modal, {
-                    visible: false,
-                    tabId: null,
-                    rowId: null,
-                    viewId: null,
-                    viewDocumentIds: null,
-                    layout: {},
-                    data: [],
-                    rowData: {},
-                    isAdvanced: false,
-                    title: '',
-                    type: '',
-                    modalType: '',
-                    saveStatus: {},
-                    validStatus: {},
-                    includedTabsInfo: {},
-                    triggerField: null
-                })
+                modal: Object.assign({}, state.modal, initialState.modal),
             });
 
         // SCOPED ACTIONS
@@ -198,11 +188,6 @@ export default function windowHandler(state = initialState, action) {
                         }
                     }
                 }
-            });
-
-        case types.SELECT_ROW:
-            return Object.assign({}, state, {
-                selected: action.selected
             });
 
         case types.UPDATE_DATA_FIELD_PROPERTY:
