@@ -36,6 +36,8 @@ Here come the actual release notes:
     * Translations added to Parms in Change Password Process.
   * [#2729](https://github.com/metasfresh/metasfresh/issues/2729) Window Design Webui: Add missing fields to window Tourversion
     * New Fields added to Tourversion widnow in WebUI. Translations for en_US improved.
+  * [#2774](https://github.com/metasfresh/metasfresh/issues/2774) Vendor Invoice Layout and Translations in WebUI
+    * Improved Window Vendor Invoice Layout to adapt current Design Guidelines and Translations for en_US added.
 
 ## Fixes
 * metasfresh-webui-frontend
