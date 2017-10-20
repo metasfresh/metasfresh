@@ -5,8 +5,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.adempiere.test.AdempiereTestWatcher;
-import org.junit.Rule;
 import org.springframework.stereotype.Service;
 
 import de.metas.material.dispo.CandidateRepository;
@@ -50,9 +48,6 @@ import lombok.NonNull;
 @Service
 public class SupplyProposalEvaluator
 {
-	@Rule
-	private AdempiereTestWatcher adempiereTestWatcher = new AdempiereTestWatcher();
-	
 	/**
 	 * Needed so the evaluator can check what's already there.
 	 */
