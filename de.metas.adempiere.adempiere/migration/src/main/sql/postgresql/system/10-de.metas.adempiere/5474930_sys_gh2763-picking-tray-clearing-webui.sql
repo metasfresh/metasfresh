@@ -133,3 +133,103 @@ UPDATE AD_Window_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-10-20 13:08:27
 UPDATE AD_Menu_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-10-20 13:09:20','YYYY-MM-DD HH24:MI:SS'),WEBUI_NameBrowse='Picking Tray Clearing (Prototype)' WHERE AD_Menu_ID=540971 AND AD_Language='en_US'
 ;
 
+-- 2017-10-20T13:18:42.275
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,543459,0,'HUCode',TO_TIMESTAMP('2017-10-20 13:18:42','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','HUCode','HUCode',TO_TIMESTAMP('2017-10-20 13:18:42','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-10-20T13:18:42.276
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, Description,Help,Name,PO_Description,PO_Help,PO_Name,PO_PrintName,PrintName, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language,t.AD_Element_ID, t.Description,t.Help,t.Name,t.PO_Description,t.PO_Help,t.PO_Name,t.PO_PrintName,t.PrintName, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Element t WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N' AND t.AD_Element_ID=543459 AND NOT EXISTS (SELECT 1 FROM AD_Element_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Element_ID=t.AD_Element_ID)
+;
+
+-- 2017-10-20T13:19:51.016
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element SET Name='Packvorschrift', PrintName='Packvorschrift',Updated=TO_TIMESTAMP('2017-10-20 13:19:51','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=542132
+;
+
+-- 2017-10-20T13:19:51.021
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET ColumnName='M_HU_PI_Item_Product_ID', Name='Packvorschrift', Description=NULL, Help=NULL WHERE AD_Element_ID=542132
+;
+
+-- 2017-10-20T13:19:51.052
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='M_HU_PI_Item_Product_ID', Name='Packvorschrift', Description=NULL, Help=NULL, AD_Element_ID=542132 WHERE UPPER(ColumnName)='M_HU_PI_ITEM_PRODUCT_ID' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
+;
+
+-- 2017-10-20T13:19:51.055
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='M_HU_PI_Item_Product_ID', Name='Packvorschrift', Description=NULL, Help=NULL WHERE AD_Element_ID=542132 AND IsCentrallyMaintained='Y'
+;
+
+-- 2017-10-20T13:19:51.056
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Packvorschrift', Description=NULL, Help=NULL WHERE AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=542132) AND IsCentrallyMaintained='Y'
+;
+
+-- 2017-10-20T13:19:51.080
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_PrintFormatItem pi SET PrintName='Packvorschrift', Name='Packvorschrift' WHERE IsCentrallyMaintained='Y' AND EXISTS (SELECT * FROM AD_Column c WHERE c.AD_Column_ID=pi.AD_Column_ID AND c.AD_Element_ID=542132)
+;
+
+-- 2017-10-20T13:20:44.490
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-10-20 13:20:44','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Packing Item',PrintName='Packing Item' WHERE AD_Element_ID=542132 AND AD_Language='en_US'
+;
+
+-- 2017-10-20T13:20:44.514
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(542132,'en_US') 
+;
+
+-- 2017-10-20T13:22:28.137
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-10-20 13:22:28','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Qty CU',PrintName='Qty CU' WHERE AD_Element_ID=542492 AND AD_Language='en_US'
+;
+
+-- 2017-10-20T13:22:28.145
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(542492,'en_US') 
+;
+
+-- 2017-10-20T13:23:38.658
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-10-20 13:23:38','YYYY-MM-DD HH24:MI:SS'),Name='Code',PrintName='Code' WHERE AD_Element_ID=543459 AND AD_Language='en_US'
+;
+
+-- 2017-10-20T13:23:38.666
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(543459,'en_US') 
+;
+
+-- 2017-10-20T13:23:50.642
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element SET Name='Code', PrintName='Code',Updated=TO_TIMESTAMP('2017-10-20 13:23:50','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=543459
+;
+
+-- 2017-10-20T13:23:50.648
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET ColumnName='HUCode', Name='Code', Description=NULL, Help=NULL WHERE AD_Element_ID=543459
+;
+
+-- 2017-10-20T13:23:50.678
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='HUCode', Name='Code', Description=NULL, Help=NULL, AD_Element_ID=543459 WHERE UPPER(ColumnName)='HUCODE' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
+;
+
+-- 2017-10-20T13:23:50.681
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='HUCode', Name='Code', Description=NULL, Help=NULL WHERE AD_Element_ID=543459 AND IsCentrallyMaintained='Y'
+;
+
+-- 2017-10-20T13:23:50.683
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Code', Description=NULL, Help=NULL WHERE AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=543459) AND IsCentrallyMaintained='Y'
+;
+
+-- 2017-10-20T13:23:50.696
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_PrintFormatItem pi SET PrintName='Code', Name='Code' WHERE IsCentrallyMaintained='Y' AND EXISTS (SELECT * FROM AD_Column c WHERE c.AD_Column_ID=pi.AD_Column_ID AND c.AD_Element_ID=543459)
+;
+
