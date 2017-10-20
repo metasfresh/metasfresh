@@ -75,7 +75,7 @@ Here come the actual release notes:
   * [#2690](https://github.com/metasfresh/metasfresh/issues/2690) New Window for AD_Scheduler in WebUI
     * New Window for Scheduler Maintenance.
   * [#2691](https://github.com/metasfresh/metasfresh/issues/2691) Adjustments in Materialdispo Window in WebUI
-    * Improved Materuial Dispo Window. Removed deprecated Fields and added Translations for en_US and de_DE Locale/ Language
+    * Improved Material Dispo Window. Removed deprecated Fields and added Translations for en_US and de_DE Locale/ Language
   * [#2694](https://github.com/metasfresh/metasfresh/issues/2694) Window Design Webui: Improvements in Dunning Type window
     * New Translations added for Language en_US for Action and Referencelist.
   * [#2695](https://github.com/metasfresh/metasfresh/issues/2695) Window Design Webui: Introduce the window Shipment Restrictions in the Webui menu
@@ -86,7 +86,7 @@ Here come the actual release notes:
     * Improved Shipment Schedule Identifier, now showing valuable Information about it to the user.
   * [#2704](https://github.com/metasfresh/metasfresh/issues/2704) Show an explicit error message when reports don't open because of logo missing
     * Improved Error Handling in Jasper Report Generation.
-  * [#2711](https://github.com/metasfresh/metasfresh/issues/2711) productdescription in sales order jasper
+  * [#2711](https://github.com/metasfresh/metasfresh/issues/2711) Productdescription in sales order jasper
     * New Product Description Field in Sales Order Jasper Report.
 
 * metasfresh-webui-frontend
@@ -101,15 +101,15 @@ Here come the actual release notes:
 
 ## Fixes
 * metasfresh-app
-  * [#2400](https://github.com/metasfresh/metasfresh/issues/2400) discount in manual sales invoice
-    * Fixes the bahavior of discount field in Sales Invoice.
+  * [#2400](https://github.com/metasfresh/metasfresh/issues/2400) Discount in manual sales invoice
+    * Fixes the behavior of discount field in Sales Invoice.
   * [#2693](https://github.com/metasfresh/metasfresh/issues/2693) C_Flatrate_Conditions.C_Flatrate_Transition_ID needs to be mandatory
     * Fixing the mandatory Logic in table/ window Flatrate Conditions.
   * [#2699](https://github.com/metasfresh/metasfresh/issues/2699) NPE when pressing Complete for an invoice with no lines
     * Improves a Cornercase, now avoiding a Null Pointer Exception when completing an Invoice with no lines.
 
 * metasfresh-webui-frontend
-  * [#1216](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1216) hu lines appear only after refresh
+  * [#1216](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1216) HU lines appear only after refresh
     * Fix for the missing refresh in Handling Unit editor after using quickactions.
   * [#1221](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1221) Handling Unit Editor "Select all rows" missing
     * Fixes the missing "Select all" Functionality in Handling Unit Editor.
