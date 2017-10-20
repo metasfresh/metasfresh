@@ -334,7 +334,7 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 		{
 			rq.setC_Invoice_ID(parent_record_id);
 		}
-		else if (parent_table_id == I_M_Product.Table_ID)
+		else if (parent_table_id == InterfaceWrapperHelper.getTableId(I_M_Product.class))
 		{
 			rq.setM_Product_ID(parent_record_id);
 		}

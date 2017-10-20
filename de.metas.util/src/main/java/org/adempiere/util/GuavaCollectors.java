@@ -23,6 +23,9 @@ import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
+import lombok.NonNull;
+import lombok.experimental.UtilityClass;
+
 /*
  * #%L
  * de.metas.util
@@ -50,6 +53,7 @@ import com.google.common.collect.ImmutableSet;
  * @author based on https://gist.github.com/JakeWharton/9734167
  * @author metas-dev <dev@metasfresh.com>
  */
+@UtilityClass
 public final class GuavaCollectors
 {
 	/**
@@ -328,7 +332,22 @@ public final class GuavaCollectors
 		return Collector.of(supplier, accumulator, combiner, finisher);
 	}
 
-	private GuavaCollectors()
+	public static <T> Collector<T, ?, T> singleElementOrThrow(@NonNull final Supplier<? extends RuntimeException> exceptionSupplier)
 	{
+		final Supplier<List<T>> supplier = ArrayList::new;
+		final BiConsumer<List<T>, T> accumulator = (list, value) -> list.add(value);
+		final BinaryOperator<List<T>> combiner = (l, r) -> {
+			l.addAll(r);
+			return l;
+		};
+		final Function<List<T>, T> finisher = list -> {
+			if (list.size() != 1)
+			{
+				throw exceptionSupplier.get();
+			}
+			return list.get(0);
+		};
+
+		return Collector.of(supplier, accumulator, combiner, finisher);
 	}
 }
