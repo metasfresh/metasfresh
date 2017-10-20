@@ -46,7 +46,6 @@ public class Fresh_AvailableSingletonServices_Test
 				.skipServiceInterface(de.metas.adempiere.service.IAppDictionaryBL.class) // is registered programmatically
 				.skipServiceInterface(de.metas.letters.api.ITextTemplateBL.class) // is registered programmatically
 				.skipServiceInterface(de.metas.procurement.base.IAgentSyncBL.class) // JAX-RS
-				.skipServiceInterface(de.metas.handlingunits.IHUDocumentHandler.class) // TODO: shall not impl ISingletonService
 				.skipServiceInterface(org.eevolution.mrp.api.ILiberoMRPContextFactory.class) // skip for now because the impl it's coming from spring context
 				.skipServiceInterface(de.metas.material.planning.IMRPContextFactory.class) // skip for now because the impl it's coming from spring context
 				//
