@@ -7,10 +7,10 @@ import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_Product;
 
 import de.metas.adempiere.model.I_C_Order;
-import de.metas.adempiere.service.IOrderBL;
 import de.metas.handlingunits.IHUDocumentHandler;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_ProductPrice;
+import de.metas.order.IOrderBL;
 import de.metas.pricing.ProductPrices;
 
 public class OrderPricingHUDocumentHandler implements IHUDocumentHandler

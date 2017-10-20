@@ -37,11 +37,11 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_PriceList;
 
-import de.metas.adempiere.service.IOrderLineBL;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Matching;
 import de.metas.contracts.subscription.ISubscriptionBL;
 import de.metas.contracts.subscription.model.I_C_OrderLine;
+import de.metas.order.IOrderLineBL;
 import de.metas.product.IProductPA;
 
 @Callout(I_C_OrderLine.class)

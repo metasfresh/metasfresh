@@ -30,9 +30,9 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.ModelValidator;
 
-import de.metas.adempiere.service.IOrderDAO;
 import de.metas.fresh.mrp_productinfo.async.spi.impl.UpdateMRPProductInfoTableWorkPackageProcessor;
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.order.IOrderDAO;
 
 @Interceptor(I_C_Order.class)
 public class C_Order

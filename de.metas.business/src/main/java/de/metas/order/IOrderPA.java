@@ -34,8 +34,6 @@ import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.MOrderLine;
 import org.compiere.model.X_C_Order;
 
-import de.metas.adempiere.service.IOrderDAO;
-
 /**
  * 
  * @author metas-dev <dev@metasfresh.com>

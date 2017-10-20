@@ -21,7 +21,7 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_AttributeSetInstance;
 
-import de.metas.adempiere.service.IOrderLineBL;
+import de.metas.order.IOrderLineBL;
 import de.metas.order.process.IC_Order_CreatePOFromSOsBL;
 import lombok.NonNull;
 

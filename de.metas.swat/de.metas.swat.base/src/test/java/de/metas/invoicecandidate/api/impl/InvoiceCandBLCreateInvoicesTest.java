@@ -43,7 +43,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import de.metas.adempiere.service.IOrderLineBL;
 import de.metas.invoicecandidate.AbstractICTestSupport;
 import de.metas.invoicecandidate.api.IInvoiceCandAggregate;
 import de.metas.invoicecandidate.api.IInvoiceCandBL.IInvoiceGenerateResult;
@@ -52,6 +51,7 @@ import de.metas.invoicecandidate.api.impl.InvoiceCandBLCreateInvoices.IInvoiceGe
 import de.metas.invoicecandidate.expectations.InvoiceCandidateExpectation;
 import de.metas.invoicecandidate.model.I_C_Invoice;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.order.IOrderLineBL;
 
 public class InvoiceCandBLCreateInvoicesTest extends AbstractICTestSupport
 {

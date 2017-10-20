@@ -25,10 +25,10 @@ package de.metas.inoutcandidate.spi.impl;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_OrderLine;
 
-import de.metas.adempiere.service.IOrderBL;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.spi.IReceiptScheduleProducer;
 import de.metas.inoutcandidate.spi.ReceiptScheduleListenerAdapter;
+import de.metas.order.IOrderBL;
 
 public class OrderLineReceiptScheduleListener extends ReceiptScheduleListenerAdapter
 {
