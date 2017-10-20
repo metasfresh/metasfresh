@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 import Moment from 'moment';
 import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
 import DatePicker from './DatePicker';
@@ -16,6 +17,14 @@ import DevicesWidget from './Devices/DevicesWidget';
 import {DATE_FORMAT}  from '../../constants/Constants';
 
 class RawWidget extends Component {
+    static propTypes = {
+        handleZoomInto: PropTypes.func
+    };
+
+    static defaultProps = {
+        handleZoomInto: () => {}
+    };
+
     constructor(props) {
         super(props);
 

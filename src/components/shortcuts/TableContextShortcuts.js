@@ -25,12 +25,13 @@ class TableContextShortcuts extends Component {
         return (
             <Shortcuts
                 name="TABLE_CONTEXT"
-                handler = { this.handleShortcuts }
-                targetNodeSelector = "body"
-                isolate = { true }
-                preventDefault = { true }
-                stopPropagation = { true }
-                alwaysFireHandler = { true }
+                handler={this.handleShortcuts}
+                targetNodeSelector="body"
+                isolate
+                preventDefault
+                stopPropagation
+                alwaysFireHandler
+                global
             />
         )
     }
