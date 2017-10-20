@@ -35,10 +35,10 @@ import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.adempiere.service.IBPartnerOrgBL;
-import de.metas.adempiere.service.IOrderLineBL;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoice.IMatchInvDAO;
 import de.metas.logging.LogManager;
+import de.metas.order.IOrderLineBL;
 import de.metas.tax.api.ITaxBL;
 
 /**

@@ -1,0 +1,1 @@
+UPDATE AD_Column SET IsAllowLogging='N' WHERE ColumnName IN ('Updated', 'UpdatedBy');

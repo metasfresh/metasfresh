@@ -30,8 +30,8 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_Order;
 
-import de.metas.adempiere.service.IOrderDAO;
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.order.IOrderDAO;
 
 /**
  * 

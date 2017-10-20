@@ -1,4 +1,4 @@
-package de.metas.adempiere.service.impl;
+package de.metas.order.impl;
 
 /*
  * #%L
@@ -34,9 +34,9 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.X_C_Order;
 
-import de.metas.adempiere.service.IOrderDAO;
 import de.metas.adempiere.util.CacheModel;
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.order.IOrderDAO;
 import lombok.NonNull;
 
 public abstract class AbstractOrderDAO implements IOrderDAO

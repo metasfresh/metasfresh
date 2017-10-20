@@ -57,8 +57,6 @@ import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
 
 import de.metas.adempiere.model.ILineNetAmtAware;
-import de.metas.adempiere.service.IOrderDAO;
-import de.metas.adempiere.service.IOrderLineBL;
 import de.metas.commission.model.IInstanceTrigger;
 import de.metas.commission.model.I_C_AdvComCorrection;
 import de.metas.commission.model.I_C_AdvCommissionPayrollLine;
@@ -67,6 +65,8 @@ import de.metas.commission.model.I_C_Sponsor_SalesRep;
 import de.metas.commission.model.MCAdvComCorrection;
 import de.metas.commission.service.IFieldAccessBL;
 import de.metas.inout.IInOutDAO;
+import de.metas.order.IOrderDAO;
+import de.metas.order.IOrderLineBL;
 
 public class FieldAccessBL implements IFieldAccessBL
 {

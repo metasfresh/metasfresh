@@ -34,7 +34,6 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_M_Product;
 import org.slf4j.Logger;
 
-import de.metas.adempiere.service.IOrderLineBL;
 import de.metas.handlingunits.IHUCapacityBL;
 import de.metas.handlingunits.IHUDocumentHandler;
 import de.metas.handlingunits.IHUDocumentHandlerFactory;
@@ -47,6 +46,7 @@ import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.order.api.IHUOrderBL;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.logging.LogManager;
+import de.metas.order.IOrderLineBL;
 import de.metas.product.IProductDAO;
 
 public class HUOrderBL implements IHUOrderBL

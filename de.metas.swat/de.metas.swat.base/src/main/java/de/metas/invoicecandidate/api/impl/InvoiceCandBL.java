@@ -88,8 +88,6 @@ import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.adempiere.model.I_M_DiscountSchemaBreak;
-import de.metas.adempiere.service.IOrderDAO;
-import de.metas.adempiere.service.IOrderLineBL;
 import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.processor.IQueueProcessor;
 import de.metas.async.processor.IQueueProcessorFactory;
@@ -126,6 +124,8 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Detail;
 import de.metas.invoicecandidate.model.I_C_Invoice_Line_Alloc;
 import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.X_C_Invoice_Line_Alloc;
+import de.metas.order.IOrderDAO;
+import de.metas.order.IOrderLineBL;
 import de.metas.tax.api.ITaxBL;
 
 /**

@@ -16,12 +16,12 @@ import org.compiere.model.X_C_OrderLine;
 import org.compiere.util.Env;
 
 import de.metas.adempiere.model.I_C_Order;
-import de.metas.adempiere.service.IOrderBL;
-import de.metas.adempiere.service.impl.OrderBL;
 import de.metas.document.IDocumentLocationBL;
 import de.metas.document.documentNo.IDocumentNoBuilderFactory;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.order.IOrderBL;
+import de.metas.order.impl.OrderBL;
 
 /**
  * This model validator checks for each new invoice line if there needs to be an additional invoice line for freight cost.

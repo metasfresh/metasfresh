@@ -70,7 +70,6 @@ import org.eevolution.mrp.api.IMRPSourceEvent;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import de.metas.adempiere.service.IOrderDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.IMsgBL;
@@ -81,6 +80,7 @@ import de.metas.material.planning.ProductPlanningBL;
 import de.metas.material.planning.RoutingService;
 import de.metas.material.planning.RoutingServiceFactory;
 import de.metas.material.planning.exception.NoPlantForWarehouseException;
+import de.metas.order.IOrderDAO;
 
 public class OrderMRPSupplyProducer extends AbstractMRPSupplyProducer
 {

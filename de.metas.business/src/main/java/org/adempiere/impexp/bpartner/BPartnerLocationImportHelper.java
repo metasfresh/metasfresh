@@ -193,6 +193,8 @@ import lombok.NonNull;
 	{
 		location.setAddress1(importRecord.getAddress1());
 		location.setAddress2(importRecord.getAddress2());
+		location.setAddress3(importRecord.getAddress3());
+		location.setAddress4(importRecord.getAddress4());
 		location.setPostal(importRecord.getPostal());
 		location.setPostal_Add(importRecord.getPostal_Add());
 		location.setCity(importRecord.getCity());
