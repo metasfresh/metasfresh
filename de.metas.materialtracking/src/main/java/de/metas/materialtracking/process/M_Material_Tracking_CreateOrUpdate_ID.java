@@ -32,7 +32,6 @@ import org.adempiere.util.api.IParams;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 
-import de.metas.adempiere.service.IOrderDAO;
 import de.metas.i18n.IMsgBL;
 import de.metas.inout.IInOutDAO;
 import de.metas.inoutcandidate.api.IReceiptScheduleDAO;
@@ -45,6 +44,7 @@ import de.metas.materialtracking.MTLinkRequest;
 import de.metas.materialtracking.model.I_C_Invoice_Candidate;
 import de.metas.materialtracking.model.I_M_InOutLine;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
+import de.metas.order.IOrderDAO;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;

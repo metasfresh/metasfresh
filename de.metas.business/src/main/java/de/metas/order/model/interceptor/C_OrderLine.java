@@ -35,10 +35,10 @@ import org.compiere.model.CalloutOrder;
 import org.compiere.model.ModelValidator;
 import org.slf4j.Logger;
 
-import de.metas.adempiere.service.IOrderBL;
-import de.metas.adempiere.service.IOrderLineBL;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.logging.LogManager;
+import de.metas.order.IOrderBL;
+import de.metas.order.IOrderLineBL;
 
 @Interceptor(I_C_OrderLine.class)
 public class C_OrderLine

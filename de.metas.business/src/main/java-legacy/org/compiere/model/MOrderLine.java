@@ -34,10 +34,10 @@ import org.compiere.util.DB;
 import org.compiere.util.TrxRunnableAdapter;
 import org.slf4j.Logger;
 
-import de.metas.adempiere.service.IOrderBL;
-import de.metas.adempiere.service.IOrderLineBL;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.logging.LogManager;
+import de.metas.order.IOrderBL;
+import de.metas.order.IOrderLineBL;
 import de.metas.tax.api.ITaxBL;
 
 /**

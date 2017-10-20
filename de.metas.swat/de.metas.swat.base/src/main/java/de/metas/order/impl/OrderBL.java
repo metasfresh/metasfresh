@@ -1,4 +1,4 @@
-package de.metas.adempiere.service.impl;
+package de.metas.order.impl;
 
 /*
  * #%L
@@ -60,13 +60,13 @@ import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_C_BPartner_Location;
-import de.metas.adempiere.service.IOrderBL;
-import de.metas.adempiere.service.IOrderDAO;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.freighcost.api.IFreightCostBL;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.logging.LogManager;
+import de.metas.order.IOrderBL;
+import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderPA;
 import de.metas.product.IProductPA;
 

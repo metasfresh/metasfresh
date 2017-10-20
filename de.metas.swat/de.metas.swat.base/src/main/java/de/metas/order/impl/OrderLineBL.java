@@ -1,4 +1,4 @@
-package de.metas.adempiere.service.impl;
+package de.metas.order.impl;
 
 /*
  * #%L
@@ -59,14 +59,14 @@ import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_M_Product;
-import de.metas.adempiere.service.IOrderBL;
-import de.metas.adempiere.service.IOrderLineBL;
 import de.metas.document.IDocTypeBL;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.IMsgBL;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.logging.LogManager;
+import de.metas.order.IOrderBL;
+import de.metas.order.IOrderLineBL;
 import de.metas.product.IProductDAO;
 import de.metas.tax.api.ITaxBL;
 import lombok.NonNull;
