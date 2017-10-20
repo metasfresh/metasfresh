@@ -173,6 +173,56 @@ public interface I_I_BPartner
     public static final String COLUMNNAME_Address2 = "Address2";
 
 	/**
+	 * Set Adresszeile 3.
+	 * Adresszeilee 3 für diesen Standort
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setAddress3 (java.lang.String Address3);
+
+	/**
+	 * Get Adresszeile 3.
+	 * Adresszeilee 3 für diesen Standort
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getAddress3();
+
+    /** Column definition for Address3 */
+    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_Address3 = new org.adempiere.model.ModelColumn<I_I_BPartner, Object>(I_I_BPartner.class, "Address3", null);
+    /** Column name Address3 */
+    public static final String COLUMNNAME_Address3 = "Address3";
+
+	/**
+	 * Set Adresszusatz.
+	 * Adresszeile 4 für diesen Standort
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setAddress4 (java.lang.String Address4);
+
+	/**
+	 * Get Adresszusatz.
+	 * Adresszeile 4 für diesen Standort
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getAddress4();
+
+    /** Column definition for Address4 */
+    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_Address4 = new org.adempiere.model.ModelColumn<I_I_BPartner, Object>(I_I_BPartner.class, "Address4", null);
+    /** Column name Address4 */
+    public static final String COLUMNNAME_Address4 = "Address4";
+
+	/**
 	 * Set Geburtstag.
 	 * Birthday or Anniversary day
 	 *
@@ -1437,7 +1487,7 @@ public interface I_I_BPartner
 
 	/**
 	 * Get Aktualisiert.
-	 * Date this record was updated
+	 * Datum, an dem dieser Eintrag aktualisiert wurde
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
