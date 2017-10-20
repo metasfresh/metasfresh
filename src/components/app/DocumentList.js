@@ -522,6 +522,8 @@ class DocumentList extends Component {
         const hasIncluded = layout && layout.includedView && includedView &&
             includedView.windowType && includedView.viewId;
         const selectionValid = this.doesSelectionExist(selected, hasIncluded);
+        const blurWhenOpen = layout && layout.includedView &&
+            layout.includedView.blurWhenOpen;
 
         if (notfound || layout === 'notfound' || data === 'notfound') {
             return (
@@ -594,7 +596,7 @@ class DocumentList extends Component {
                                     viewId={viewId}
                                     windowType={windowType}
                                     fetchOnInit={fetchQuickActionsOnInit}
-                                    disabled={hasIncluded}
+                                    disabled={hasIncluded && blurWhenOpen}
                                     shouldNotUpdate={
                                         inBackground && !hasIncluded
                                     }
@@ -644,10 +646,7 @@ class DocumentList extends Component {
                                     layout.includedView &&
                                     layout.includedView.openOnSelect
                                 }
-                                blurOnIncludedView={
-                                    layout.includedView &&
-                                    layout.includedView.blurWhenOpen
-                                }
+                                blurOnIncludedView={blurWhenOpen}
                                 {...{isIncluded, disconnectFromState, autofocus,
                                     open, page, closeOverlays, inBackground,
                                     disablePaginationShortcuts, isModal,
