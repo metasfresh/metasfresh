@@ -1,12 +1,13 @@
 package de.metas.material.model.interceptor;
 
+import static org.adempiere.model.InterfaceWrapperHelper.getTrxName;
+
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 
 import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.Adempiere;
 import org.compiere.model.ModelValidator;
@@ -48,24 +49,23 @@ public class M_ShipmentSchedule
 			I_M_ShipmentSchedule.COLUMNNAME_PreparationDate_Override,
 			I_M_ShipmentSchedule.COLUMNNAME_PreparationDate,
 			I_M_ShipmentSchedule.COLUMNNAME_IsActive /* IsActive=N shall be threaded like a deletion */ })
-	public void createAndFireEvent(@NonNull final I_M_ShipmentSchedule schedule, @NonNull final ModelChangeType timing)
+	public void createAndFireEvent(
+			@NonNull final I_M_ShipmentSchedule schedule, 
+			@NonNull final ModelChangeType timing)
 	{
 		final ShipmentScheduleEvent event = createShipmentscheduleEvent(schedule, timing);
 
 		final MaterialEventService materialEventService = Adempiere.getBean(MaterialEventService.class);
-		final String trxName = InterfaceWrapperHelper.getTrxName(schedule);
-		materialEventService.fireEventAfterNextCommit(event, trxName);
+		materialEventService.fireEventAfterNextCommit(event, getTrxName(schedule));
 	}
 
 	private ShipmentScheduleEvent createShipmentscheduleEvent(
-			@NonNull final I_M_ShipmentSchedule schedule, 
+			@NonNull final I_M_ShipmentSchedule schedule,
 			@NonNull final ModelChangeType timing)
 	{
+		final BigDecimal quantity = computeEffectiveQuantity(schedule, timing);
+
 		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
-
-		final boolean deleted = timing.isDelete() || !schedule.isActive();
-		final BigDecimal quantity = deleted ? BigDecimal.ZERO : shipmentScheduleEffectiveBL.computeQtyOrdered(schedule);
-
 		final Timestamp preparationDate = shipmentScheduleEffectiveBL.getPreparationDate(schedule);
 
 		final ShipmentScheduleEvent event = ShipmentScheduleEvent.builder()
@@ -80,5 +80,25 @@ public class M_ShipmentSchedule
 				.orderLineId(schedule.getC_OrderLine_ID())
 				.build();
 		return event;
+	}
+
+	private BigDecimal computeEffectiveQuantity(
+			@NonNull final I_M_ShipmentSchedule schedule, 
+			@NonNull final ModelChangeType timing)
+	{
+		final BigDecimal quantity;
+		final boolean deleted = timing.isDelete() || !schedule.isActive();
+		if (deleted)
+		{
+			quantity = BigDecimal.ZERO;
+		}
+		else
+		{
+			final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
+			quantity = schedule.getQtyDelivered()
+					.max(schedule.getQtyToDeliver())
+					.max(shipmentScheduleEffectiveBL.computeQtyOrdered(schedule));
+		}
+		return quantity;
 	}
 }

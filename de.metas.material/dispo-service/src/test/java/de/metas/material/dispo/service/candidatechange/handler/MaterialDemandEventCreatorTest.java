@@ -7,10 +7,10 @@ import java.math.BigDecimal;
 import org.adempiere.util.time.SystemTime;
 import org.junit.Test;
 
-import de.metas.material.dispo.Candidate;
-import de.metas.material.dispo.Candidate.Status;
-import de.metas.material.dispo.Candidate.SubType;
-import de.metas.material.dispo.Candidate.Type;
+import de.metas.material.dispo.CandidateSpecification.Status;
+import de.metas.material.dispo.CandidateSpecification.SubType;
+import de.metas.material.dispo.CandidateSpecification.Type;
+import de.metas.material.dispo.candidate.Candidate;
 import de.metas.material.event.EventDescr;
 import de.metas.material.event.MaterialDemandEvent;
 import de.metas.material.event.MaterialDescriptor;

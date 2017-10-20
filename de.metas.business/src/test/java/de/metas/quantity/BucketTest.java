@@ -1,4 +1,4 @@
-package de.metas.handlingunits.impl;
+package de.metas.quantity;
 
 import static de.metas.business.BusinessTestHelper.uomEach;
 
@@ -36,12 +36,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 import de.metas.business.BusinessTestHelper;
-import de.metas.handlingunits.HUTestHelper;
-import de.metas.quantity.Bucket;
-import de.metas.quantity.Capacity;
-import de.metas.quantity.Quantity;
 
-public class StatefulHUCapacityDefinitionTest
+public class BucketTest
 {
 
 	private I_C_UOM uomUnknown;
@@ -52,7 +48,7 @@ public class StatefulHUCapacityDefinitionTest
 	{
 		AdempiereTestHelper.get().init();
 		uomUnknown = BusinessTestHelper.createUOM("UnknownUOM");
-		pTomato = BusinessTestHelper.createProduct(HUTestHelper.NAME_Tomato_Product, uomEach);
+		pTomato = BusinessTestHelper.createProduct("tomato", uomEach);
 	}
 
 	@Test

@@ -18,9 +18,9 @@ import org.compiere.util.TimeUtil;
 import org.junit.Before;
 import org.junit.Test;
 
-import de.metas.material.dispo.Candidate;
-import de.metas.material.dispo.Candidate.Type;
 import de.metas.material.dispo.CandidateRepository;
+import de.metas.material.dispo.CandidateSpecification.Type;
+import de.metas.material.dispo.candidate.Candidate;
 import de.metas.material.event.MaterialDescriptor;
 
 /*
@@ -65,6 +65,7 @@ public class StockCandidateServiceTests
 		AdempiereTestHelper.get().init();
 
 		org = newInstance(I_AD_Org.class);
+		
 		save(org);
 
 		final I_C_UOM uom = newInstance(I_C_UOM.class);

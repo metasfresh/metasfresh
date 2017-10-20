@@ -1,13 +1,27 @@
 package de.metas.material.model.interceptor;
 
+import java.math.BigDecimal;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.TreeMap;
+
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.Services;
 import org.compiere.Adempiere;
 import org.compiere.model.I_M_Transaction;
 import org.compiere.model.ModelValidator;
 
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableList.Builder;
+
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.material.event.EventDescr;
 import de.metas.material.event.MaterialDescriptor;
 import de.metas.material.event.MaterialEventService;
@@ -59,25 +73,89 @@ public class M_Transaction
 			@NonNull final I_M_Transaction transaction,
 			@NonNull final ModelChangeType type)
 	{
-		final TransactionEvent event = TransactionEvent.builder()
-				.eventDescr(EventDescr.createNew(transaction))
-				.transactionDeleted(type.isDelete())
-				.materialDescr(createMateriallDescriptor(transaction))
-				.build();
+		if (transaction.getPP_Cost_Collector_ID() > 0 || transaction.getM_MovementLine_ID() > 0)
+		{
+			return;
+		}
 
 		final MaterialEventService materialEventService = Adempiere.getBean(MaterialEventService.class);
-
 		final String trxName = InterfaceWrapperHelper.getTrxName(transaction);
-		materialEventService.fireEventAfterNextCommit(event, trxName);
+
+		final Collection<TransactionEvent> events = createTransactionEvents(transaction, type);
+		events.forEach(event -> materialEventService.fireEventAfterNextCommit(event, trxName));
 	}
 
-	private MaterialDescriptor createMateriallDescriptor(@NonNull final I_M_Transaction transaction)
-	{		
+	@VisibleForTesting
+	static List<TransactionEvent> createTransactionEvents(
+			@NonNull final I_M_Transaction transaction,
+			@NonNull final ModelChangeType type)
+	{
+		final Builder<TransactionEvent> result = ImmutableList.builder();
+
+		final Map<Integer, BigDecimal> shipmentScheduleId2qty = retrieveShipmentScheduleId(transaction);
+
+		for (final Entry<Integer, BigDecimal> entries : shipmentScheduleId2qty.entrySet())
+		{
+			final BigDecimal quantity = type.isDelete() ? BigDecimal.ZERO : entries.getValue();
+
+			final TransactionEvent event = TransactionEvent.builder()
+					.eventDescr(EventDescr.createNew(transaction))
+					.transactionId(transaction.getM_Transaction_ID())
+					.materialDescr(createMateriallDescriptor(transaction, quantity))
+					.shipmentScheduleId(entries.getKey())
+					.build();
+			result.add(event);
+		}
+		return result.build();
+	}
+
+	private static Map<Integer, BigDecimal> retrieveShipmentScheduleId(@NonNull final I_M_Transaction transaction)
+	{
+		final Map<Integer, BigDecimal> result = new TreeMap<>();
+
+		BigDecimal qtyLeftToDistribute = transaction.getMovementQty();
+
+		if (transaction.getM_InOutLine_ID() <= 0)
+		{
+			result.put(0, qtyLeftToDistribute);
+			return result;
+		}
+
+		final List<I_M_ShipmentSchedule_QtyPicked> shipmentScheduleQtysPicked = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_M_ShipmentSchedule_QtyPicked.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_ShipmentSchedule_QtyPicked.COLUMN_M_InOutLine_ID, transaction.getM_InOutLine_ID())
+				.create()
+				.list();
+		for (final I_M_ShipmentSchedule_QtyPicked shipmentScheduleQtyPicked : shipmentScheduleQtysPicked)
+		{
+			result.merge(
+					shipmentScheduleQtyPicked.getM_ShipmentSchedule_ID(),
+					shipmentScheduleQtyPicked.getQtyPicked(),
+					BigDecimal::add);
+			qtyLeftToDistribute = qtyLeftToDistribute.subtract(shipmentScheduleQtyPicked.getQtyPicked());
+		}
+
+		if (qtyLeftToDistribute.signum() > 0)
+		{
+			result.put(0, qtyLeftToDistribute);
+		}
+		return result;
+	}
+
+	private static MaterialDescriptor createMateriallDescriptor(
+			@NonNull final I_M_Transaction transaction,
+			@NonNull final BigDecimal quantity)
+	{
+		final BigDecimal effectiveQty = MTransactionUtil.isInboundTransaction(transaction)
+				? quantity
+				: quantity.negate();
+
 		return MaterialDescriptor.builder()
 				.warehouseId(transaction.getM_Locator().getM_Warehouse_ID())
 				.date(transaction.getMovementDate())
 				.productId(transaction.getM_Product_ID())
-				.quantity(MTransactionUtil.getEffectiveMovementQty(transaction))
+				.quantity(effectiveQty)
 				.build();
 	}
 }

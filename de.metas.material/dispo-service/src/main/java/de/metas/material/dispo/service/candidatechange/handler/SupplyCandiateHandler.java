@@ -1,12 +1,16 @@
 package de.metas.material.dispo.service.candidatechange.handler;
 
+import java.util.Collection;
+
 import org.springframework.stereotype.Service;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
 
-import de.metas.material.dispo.Candidate;
-import de.metas.material.dispo.Candidate.Type;
 import de.metas.material.dispo.CandidateRepository;
+import de.metas.material.dispo.CandidateSpecification.Type;
+import de.metas.material.dispo.CandidatesQuery;
+import de.metas.material.dispo.candidate.Candidate;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
 import de.metas.material.event.MaterialEventService;
 import lombok.NonNull;
@@ -45,8 +49,8 @@ public class SupplyCandiateHandler implements CandidateHandler
 	private final StockCandidateService stockCandidateService;
 
 	public SupplyCandiateHandler(
-			@NonNull final CandidateRepository candidateRepository, 
-			@NonNull final MaterialEventService materialEventService, 
+			@NonNull final CandidateRepository candidateRepository,
+			@NonNull final MaterialEventService materialEventService,
 			@NonNull final StockCandidateService stockCandidateService)
 	{
 		this.candidateRepository = candidateRepository;
@@ -55,11 +59,11 @@ public class SupplyCandiateHandler implements CandidateHandler
 	}
 
 	@Override
-	public Type getHandeledType()
+	public Collection<Type> getHandeledTypes()
 	{
-		return Type.SUPPLY;
+		return ImmutableList.of(Type.SUPPLY, Type.UNRELATED_INCREASE);
 	}
-	
+
 	/**
 	 * Call this one if the system was notified about a new or changed supply candidate.
 	 * <p>
@@ -72,7 +76,7 @@ public class SupplyCandiateHandler implements CandidateHandler
 
 	public Candidate onCandidateNewOrChange(@NonNull final Candidate supplyCandidate)
 	{
-		Preconditions.checkArgument(supplyCandidate.getType() == Type.SUPPLY, "Given parameter 'supplyCandidate' has type=%s; supplyCandidate=%s", supplyCandidate.getType(), supplyCandidate);
+		assertCorrectCandidateType(supplyCandidate);
 
 		// store the supply candidate and get both it's ID and qty-delta
 		final Candidate supplyCandidateDeltaWithId = candidateRepository.addOrUpdateOverwriteStoredSeqNo(supplyCandidate);
@@ -83,14 +87,14 @@ public class SupplyCandiateHandler implements CandidateHandler
 		}
 
 		final Candidate parentStockCandidateWithId;
-		if (supplyCandidateDeltaWithId.getParentIdNotNull() > 0)
+		if (supplyCandidateDeltaWithId.getParentId() > 0)
 		{
 			// this supply candidate is not new and already has a stock candidate as its parent. be sure to update exactly *that* scandidate
 			parentStockCandidateWithId = stockCandidateService.updateStock(
 					supplyCandidateDeltaWithId,
 					() -> {
 						// don't check if we might create a new stock candidate, because we know we don't. Get the one that already exists and just update its quantity
-						final Candidate stockCandidate = candidateRepository.retrieve(supplyCandidateDeltaWithId.getParentId());
+						final Candidate stockCandidate = candidateRepository.retrieveLatestMatchOrNull(CandidatesQuery.fromId(supplyCandidateDeltaWithId.getParentId()));
 						return candidateRepository.updateQty(
 								stockCandidate.withQuantity(
 										stockCandidate.getQuantity().add(supplyCandidateDeltaWithId.getQuantity())));
@@ -102,7 +106,7 @@ public class SupplyCandiateHandler implements CandidateHandler
 			parentStockCandidateWithId = stockCandidateService.addOrUpdateStock(supplyCandidateDeltaWithId
 					// but don't provide the supply's SeqNo, because there might already be a stock record which we might override (even if the supply candidate is not yet linked to it);
 					// plus, the supply's seqNo shall depend on the stock's anyways
-					.withSeqNo(null));
+					.withSeqNo(-1));
 		}
 
 		// set the stock candidate as parent for the supply candidate
@@ -120,5 +124,13 @@ public class SupplyCandiateHandler implements CandidateHandler
 		// supply-candidate with 23 (i.e. +23)
 		// parent-stockCandidate used to have -44 (because of "earlier" candidate)
 		// now has -21
+	}
+
+	private void assertCorrectCandidateType(@NonNull final Candidate supplyCandidate)
+	{
+		Preconditions.checkArgument(
+				supplyCandidate.getType() == Type.SUPPLY || supplyCandidate.getType() == Type.UNRELATED_INCREASE,
+				"Given parameter 'supplyCandidate' has type=%s; supplyCandidate=%s",
+				supplyCandidate.getType(), supplyCandidate);
 	}
 }

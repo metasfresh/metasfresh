@@ -2,6 +2,7 @@ package de.metas.material.dispo.service.candidatechange.handler;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.comparesEqualTo;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
@@ -24,12 +25,13 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestWatcher;
 
-import de.metas.material.dispo.Candidate;
-import de.metas.material.dispo.Candidate.SubType;
-import de.metas.material.dispo.Candidate.Type;
 import de.metas.material.dispo.CandidateRepository;
+import de.metas.material.dispo.CandidateSpecification.SubType;
+import de.metas.material.dispo.CandidateSpecification.Type;
+import de.metas.material.dispo.candidate.Candidate;
 import de.metas.material.dispo.DispoTestUtils;
 import de.metas.material.dispo.model.I_MD_Candidate;
+import de.metas.material.dispo.model.X_MD_Candidate;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
 import de.metas.material.event.MaterialDescriptor;
 import de.metas.material.event.MaterialEventService;
@@ -267,4 +269,37 @@ public class SupplyCandiateCangeHandlerTest
 		assertThat(supplyRecord.getSeqNo(), is(stockRecord.getSeqNo() + 1)); // when we sort by SeqNo, the stock needs to be first and thus have the smaller value
 	}
 
+	@Test
+	public void increase_stock()
+	{
+		final Candidate candidate = createCandidateWithType(Type.UNRELATED_INCREASE);
+
+		supplyCandiateCangeHandler.onCandidateNewOrChange(candidate);
+
+		final List<I_MD_Candidate> allRecords = DispoTestUtils.retrieveAllRecords();
+		assertThat(allRecords).hasSize(2);
+
+		final I_MD_Candidate unrelatedTransactionCandidate = allRecords.get(0);
+		assertThat(unrelatedTransactionCandidate.getMD_Candidate_Type()).isEqualTo(X_MD_Candidate.MD_CANDIDATE_TYPE_UNRELATED_INCREASE);
+		assertThat(unrelatedTransactionCandidate.getQty()).isEqualByComparingTo("10");
+
+		final I_MD_Candidate stockCandidate = allRecords.get(1);
+		assertThat(stockCandidate.getMD_Candidate_Type()).isEqualTo(X_MD_Candidate.MD_CANDIDATE_TYPE_STOCK);
+		assertThat(stockCandidate.getQty()).isEqualByComparingTo("10");
+		assertThat(unrelatedTransactionCandidate.getMD_Candidate_Parent_ID()).isEqualTo(stockCandidate.getMD_Candidate_ID());
+	}
+	
+	private Candidate createCandidateWithType(final Type type)
+	{
+		final Candidate candidate = Candidate.builder()
+				.type(type)
+				.materialDescr(MaterialDescriptor.builder()
+						.productId(20)
+						.date(SystemTime.asTimestamp())
+						.warehouseId(30)
+						.quantity(BigDecimal.TEN)
+						.build())
+				.build();
+		return candidate;
+	}
 }

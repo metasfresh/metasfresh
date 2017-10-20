@@ -3,11 +3,12 @@ package de.metas.material.event;
 import java.math.BigDecimal;
 import java.util.Date;
 
+import com.google.common.base.Preconditions;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
 import lombok.NonNull;
-import lombok.experimental.Wither;
+import lombok.Value;
 
 /*
  * #%L
@@ -30,24 +31,95 @@ import lombok.experimental.Wither;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-@Data
-@Builder
-@AllArgsConstructor
-@Wither
+@Value
+@AllArgsConstructor // needed for jackson
 public class MaterialDescriptor
 {
-	@NonNull
-	private final Integer warehouseId;
+	/**
+	 * @return a builder where you don't have to set all the properties.
+	 */
+	public static MaterialDescriptorBuilder builderForQuery()
+	{
+		return MaterialDescriptor.builder().complete(false);
+	}
 
-	@NonNull
-	private final Integer productId;
+	/**
+	 * @return a builder where you need to set all the properties.
+	 */
+	public static MaterialDescriptorBuilder builderForCandidate()
+	{
+		return MaterialDescriptor.builder().complete(true);
+	}
 
-	@NonNull
-	private final BigDecimal quantity;
+	int warehouseId;
+
+	int productId;
+
+	BigDecimal quantity;
 
 	/**
 	 * The projected date at which we expect this candidate's {@link #getQuantity()}.
 	 */
-	@NonNull
-	private final Date date;
+	Date date;
+
+	boolean complete;
+
+	@Builder
+	public MaterialDescriptor(final int warehouseId, final int productId,
+			final BigDecimal quantity, final Date date, final Boolean complete)
+	{
+		this.complete = complete == null || complete;
+
+		this.warehouseId = warehouseId;
+		this.productId = productId;
+		this.quantity = quantity;
+		this.date = date;
+
+		asssertCompleteness();
+	}
+
+	private MaterialDescriptor asssertCompleteness()
+	{
+		if (complete)
+		{
+			Preconditions.checkArgument(warehouseId > 0,
+					"Given parameter warehouseId=%s needs to be >0, because complete=true", warehouseId);
+			Preconditions.checkArgument(productId > 0,
+					"Given parameter productId=%s needs to be >0, because complete=true", productId);
+			Preconditions.checkNotNull(quantity,
+					"Given parameter quantity needs to be not-null, because complete=true");
+			Preconditions.checkNotNull(date,
+					"Given parameter date needs to not-null, because complete=true");
+		}
+		return this;
+	}
+
+	public MaterialDescriptor withoutQuantity()
+	{
+		return MaterialDescriptor.builderForQuery().date(date).productId(productId).warehouseId(warehouseId).build();
+	}
+
+	public MaterialDescriptor withQuantity(@NonNull final BigDecimal quantity)
+	{
+		final MaterialDescriptor result = MaterialDescriptor.builder().complete(complete).date(date).productId(productId).warehouseId(warehouseId).quantity(quantity).build();
+		return result.asssertCompleteness();
+	}
+
+	public MaterialDescriptor withDate(Date date)
+	{
+		final MaterialDescriptor result = MaterialDescriptor.builder().complete(complete).date(date).productId(productId).warehouseId(warehouseId).quantity(quantity).build();
+		return result.asssertCompleteness();
+	}
+
+	public MaterialDescriptor withProductId(int productId)
+	{
+		final MaterialDescriptor result = MaterialDescriptor.builder().complete(complete).date(date).productId(productId).warehouseId(warehouseId).quantity(quantity).build();
+		return result.asssertCompleteness();
+	}
+
+	public MaterialDescriptor withWarehouseId(int warehouseId)
+	{
+		final MaterialDescriptor result = MaterialDescriptor.builder().complete(complete).date(date).productId(productId).warehouseId(warehouseId).quantity(quantity).build();
+		return result.asssertCompleteness();
+	}
 }

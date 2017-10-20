@@ -174,6 +174,31 @@ public interface I_MD_Candidate_Transaction_Detail
     public static final String COLUMNNAME_MD_Candidate_Transaction_Detail_ID = "MD_Candidate_Transaction_Detail_ID";
 
 	/**
+	 * Set Bewegungs-Menge.
+	 * Menge eines bewegten Produktes.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setMovementQty (java.math.BigDecimal MovementQty);
+
+	/**
+	 * Get Bewegungs-Menge.
+	 * Menge eines bewegten Produktes.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getMovementQty();
+
+    /** Column definition for MovementQty */
+    public static final org.adempiere.model.ModelColumn<I_MD_Candidate_Transaction_Detail, Object> COLUMN_MovementQty = new org.adempiere.model.ModelColumn<I_MD_Candidate_Transaction_Detail, Object>(I_MD_Candidate_Transaction_Detail.class, "MovementQty", null);
+    /** Column name MovementQty */
+    public static final String COLUMNNAME_MovementQty = "MovementQty";
+
+	/**
 	 * Set Bestands-Transaktion.
 	 *
 	 * <br>Type: Search

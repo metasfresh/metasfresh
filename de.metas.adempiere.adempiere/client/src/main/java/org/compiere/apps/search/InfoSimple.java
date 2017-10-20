@@ -46,6 +46,7 @@ import java.util.Properties;
 import javax.swing.BorderFactory;
 import javax.swing.table.TableModel;
 
+import org.adempiere.ad.expression.api.ConstantLogicExpression;
 import org.adempiere.ad.expression.api.IExpressionFactory;
 import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.ad.service.IADInfoWindowBL;
@@ -359,7 +360,7 @@ public class InfoSimple extends Info
 		{
 			if (!Check.isEmpty(col.getParameterDisplayLogic(), true))
 			{
-				final ILogicExpression expression = expressionFactory.compileOrDefault(col.getParameterDisplayLogic(), ILogicExpression.FALSE, ILogicExpression.class);
+				final ILogicExpression expression = expressionFactory.compileOrDefault(col.getParameterDisplayLogic(), ConstantLogicExpression.FALSE, ILogicExpression.class);
 
 				// don't fail on missing parameter because we want to be compatible with old org.compiere.util.Evaluator.evaluateLogic(Evaluatee, String) method
 				final boolean ignoreUnparsable = true;

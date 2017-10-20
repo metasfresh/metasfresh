@@ -1,15 +1,17 @@
 package de.metas.material.dispo.service.candidatechange.handler;
 
 import java.math.BigDecimal;
+import java.util.Collection;
 import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
 
-import de.metas.material.dispo.Candidate;
-import de.metas.material.dispo.Candidate.Type;
 import de.metas.material.dispo.CandidateRepository;
+import de.metas.material.dispo.CandidateSpecification.Type;
+import de.metas.material.dispo.candidate.Candidate;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
 import de.metas.material.event.MaterialDemandEvent;
 import de.metas.material.event.MaterialEventService;
@@ -28,11 +30,11 @@ import lombok.NonNull;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -42,17 +44,16 @@ public class DemandCandiateHandler implements CandidateHandler
 {
 	@NonNull
 	private final CandidateRepository candidateRepository;
-	
+
 	@NonNull
 	private final MaterialEventService materialEventService;
-	
+
 	@NonNull
 	private final StockCandidateService stockCandidateService;
 
-	
 	public DemandCandiateHandler(
-			@NonNull final CandidateRepository candidateRepository, 
-			@NonNull final MaterialEventService materialEventService, 
+			@NonNull final CandidateRepository candidateRepository,
+			@NonNull final MaterialEventService materialEventService,
 			@NonNull final StockCandidateService stockCandidateService)
 	{
 		this.candidateRepository = candidateRepository;
@@ -61,9 +62,9 @@ public class DemandCandiateHandler implements CandidateHandler
 	}
 
 	@Override
-	public Type getHandeledType()
+	public Collection<Type> getHandeledTypes()
 	{
-		return Type.DEMAND;
+		return ImmutableList.of(Type.DEMAND, Type.UNRELATED_DECREASE);
 	}
 
 	/**
@@ -74,7 +75,7 @@ public class DemandCandiateHandler implements CandidateHandler
 	 */
 	public Candidate onCandidateNewOrChange(@NonNull final Candidate demandCandidate)
 	{
-		Preconditions.checkArgument(demandCandidate.getType() == Type.DEMAND, "Given parameter 'demandCandidate' has type=%s; demandCandidate=%s", demandCandidate.getType(), demandCandidate);
+		assertTCorrectCandidateType(demandCandidate);
 
 		final Candidate demandCandidateWithId = candidateRepository.addOrUpdateOverwriteStoredSeqNo(demandCandidate);
 
@@ -131,7 +132,7 @@ public class DemandCandiateHandler implements CandidateHandler
 		}
 
 		final boolean demandExceedsAvailableQty = childStockWithDemand.getQuantity().signum() < 0;
-		if (demandExceedsAvailableQty)
+		if (demandExceedsAvailableQty && demandCandidate.getType() == Type.DEMAND)
 		{
 			// there would be no more stock left, so
 			// notify whoever is in charge that we have a demand to balance
@@ -141,5 +142,15 @@ public class DemandCandiateHandler implements CandidateHandler
 			materialEventService.fireEvent(materialDemandEvent);
 		}
 		return demandCandidateToReturn;
+	}
+
+	private void assertTCorrectCandidateType(@NonNull final Candidate demandCandidate)
+	{
+		final Type type = demandCandidate.getType();
+
+		Preconditions.checkArgument(
+				type == Type.DEMAND || type == Type.UNRELATED_DECREASE,
+				"Given parameter 'demandCandidate' has type=%s; demandCandidate=%s",
+				type, demandCandidate);
 	}
 }

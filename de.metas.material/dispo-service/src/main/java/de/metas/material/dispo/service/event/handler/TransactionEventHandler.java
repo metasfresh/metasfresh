@@ -1,14 +1,18 @@
 package de.metas.material.dispo.service.event.handler;
 
+import java.math.BigDecimal;
+
 import org.springframework.stereotype.Service;
 
 import com.google.common.annotations.VisibleForTesting;
 
-import de.metas.material.dispo.Candidate;
 import de.metas.material.dispo.CandidateRepository;
-import de.metas.material.dispo.Candidate.CandidateBuilder;
-import de.metas.material.dispo.Candidate.Type;
-import de.metas.material.dispo.DemandCandidateDetail;
+import de.metas.material.dispo.CandidateSpecification.Type;
+import de.metas.material.dispo.candidate.Candidate;
+import de.metas.material.dispo.candidate.DemandDetail;
+import de.metas.material.dispo.candidate.TransactionDetail;
+import de.metas.material.dispo.candidate.Candidate.CandidateBuilder;
+import de.metas.material.dispo.CandidatesQuery;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.event.TransactionEvent;
 import lombok.NonNull;
@@ -42,8 +46,7 @@ public class TransactionEventHandler
 
 	public TransactionEventHandler(
 			@NonNull final CandidateChangeService candidateChangeHandler,
-			@NonNull final CandidateRepository candidateRepository
-			)
+			@NonNull final CandidateRepository candidateRepository)
 	{
 		this.candidateChangeHandler = candidateChangeHandler;
 		this.candidateRepository = candidateRepository;
@@ -51,7 +54,6 @@ public class TransactionEventHandler
 
 	public void handleTransactionEvent(@NonNull final TransactionEvent event)
 	{
-
 		final Candidate candidate = createCandidate(event);
 		candidateChangeHandler.onCandidateNewOrChange(candidate);
 	}
@@ -59,28 +61,59 @@ public class TransactionEventHandler
 	@VisibleForTesting
 	Candidate createCandidate(@NonNull final TransactionEvent event)
 	{
+		final TransactionDetail transactionDetail = new TransactionDetail(event.getMaterialDescr().getQuantity(), event.getTransactionId());
+
 		final Candidate candidate;
 		if (event.getShipmentScheduleId() > 0)
 		{
-			candidate = createCommonCandidateBuilder(event)
-					.type(Type.DEMAND)
-					.demandDetail(DemandCandidateDetail.forShipmentScheduleIdAndOrderLineId(event.getShipmentScheduleId(), -1))
+			final DemandDetail demandDetail = DemandDetail.forShipmentScheduleIdAndOrderLineId(event.getShipmentScheduleId(), -1);
+
+			final CandidatesQuery query = CandidatesQuery.builder().type(Type.DEMAND)
+					.demandDetail(demandDetail)
+					.materialDescr(event.getMaterialDescr().withoutQuantity())
 					.build();
-			//candidateRepository.retrieveLatestMatch(segment)
+
+			final Candidate existingCandidate = candidateRepository.retrieveLatestMatchOrNull(query);
+			if (existingCandidate == null)
+			{
+				candidate = createCommonCandidateBuilder(event)
+						.demandDetail(demandDetail)
+						.transactionDetail(transactionDetail)
+						.build();
+			}
+			else
+			{
+				// override materialDescriptor because the quantity might differ in the existing candidate
+				candidate = existingCandidate
+						.withTransactionDetail(transactionDetail);
+			}
 		}
 		else
 		{
 			candidate = createCommonCandidateBuilder(event)
-					.type(Type.UNRELATED_TRANSACTION)
+					.transactionDetail(transactionDetail)
 					.build();
 		}
 		return candidate;
 	}
 
-	private CandidateBuilder createCommonCandidateBuilder(@NonNull final TransactionEvent event)
+	@VisibleForTesting
+	static CandidateBuilder createCommonCandidateBuilder(@NonNull final TransactionEvent event)
 	{
-		return Candidate.builderForEventDescr(event.getEventDescr())
-				.materialDescr(event.getMaterialDescr());
+		final BigDecimal eventQuantity = event.getMaterialDescr().getQuantity();
+
+		final CandidateBuilder builder = Candidate
+				.builderForEventDescr(event.getEventDescr());
+		if (eventQuantity.signum() <= 0)
+		{
+			return builder.type(Type.UNRELATED_DECREASE)
+					.materialDescr(event.getMaterialDescr().withQuantity(eventQuantity.negate()));
+		}
+		else
+		{
+			return builder.type(Type.UNRELATED_INCREASE)
+					.materialDescr(event.getMaterialDescr());
+		}
 	}
 
 }

@@ -7,14 +7,15 @@ import java.util.Set;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
-import de.metas.material.dispo.Candidate;
-import de.metas.material.dispo.Candidate.Status;
-import de.metas.material.dispo.Candidate.SubType;
-import de.metas.material.dispo.Candidate.Type;
 import de.metas.material.dispo.CandidateRepository;
 import de.metas.material.dispo.CandidateService;
-import de.metas.material.dispo.DemandCandidateDetail;
-import de.metas.material.dispo.DistributionCandidateDetail;
+import de.metas.material.dispo.CandidateSpecification.Status;
+import de.metas.material.dispo.CandidateSpecification.SubType;
+import de.metas.material.dispo.CandidateSpecification.Type;
+import de.metas.material.dispo.candidate.Candidate;
+import de.metas.material.dispo.candidate.DemandDetail;
+import de.metas.material.dispo.candidate.DistributionDetail;
+import de.metas.material.dispo.CandidatesQuery;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.dispo.service.event.EventUtil;
 import de.metas.material.dispo.service.event.SupplyProposalEvaluator;
@@ -75,7 +76,7 @@ public class DistributionPlanEventHandler
 	public void handleDistributionPlanEvent(final DistributionPlanEvent distributionPlanEvent)
 	{
 		final DDOrder ddOrder = distributionPlanEvent.getDdOrder();
-		final Candidate.Status candidateStatus;
+		final Status candidateStatus;
 		if (ddOrder.getDdOrderId() <= 0)
 		{
 			candidateStatus = Status.doc_planned;
@@ -118,7 +119,7 @@ public class DistributionPlanEventHandler
 					.status(candidateStatus)
 					.subType(SubType.DISTRIBUTION)
 					.materialDescr(materialDescriptor)
-					.demandDetail(DemandCandidateDetail.forOrderLineIdOrNull(ddOrderLine.getSalesOrderLineId()))
+					.demandDetail(DemandDetail.forOrderLineIdOrNull(ddOrderLine.getSalesOrderLineId()))
 					.distributionDetail(createCandidateDetailFromDDOrderAndLine(ddOrder, ddOrderLine))
 					.build();
 
@@ -153,9 +154,13 @@ public class DistributionPlanEventHandler
 				candidateRepository.addOrUpdateOverwriteStoredSeqNo(supplyCandidateWithId
 						.withSeqNo(demandCandidateWithId.getSeqNo() - 1));
 
-				candidateRepository.addOrUpdateOverwriteStoredSeqNo(candidateRepository
-						.retrieve(supplyCandidateWithId.getParentId())
-						.withSeqNo(demandCandidateWithId.getSeqNo() - 2));
+				final Candidate parentOfSupplyCandidate = candidateRepository
+						.retrieveLatestMatchOrNull(CandidatesQuery.fromId(supplyCandidateWithId.getParentId()));
+
+				candidateRepository
+						.addOrUpdateOverwriteStoredSeqNo(
+								parentOfSupplyCandidate
+										.withSeqNo(demandCandidateWithId.getSeqNo() - 2));
 			}
 
 			if (ddOrder.isCreateDDrder() && groupIdsWithRequestedPPOrders.add(groupId))
@@ -165,11 +170,11 @@ public class DistributionPlanEventHandler
 		}
 	}
 
-	private DistributionCandidateDetail createCandidateDetailFromDDOrderAndLine(
+	private DistributionDetail createCandidateDetailFromDDOrderAndLine(
 			@NonNull final DDOrder ddOrder,
 			@NonNull final DDOrderLine ddOrderLine)
 	{
-		return DistributionCandidateDetail.builder()
+		return DistributionDetail.builder()
 				.ddOrderDocStatus(ddOrder.getDocStatus())
 				.ddOrderId(ddOrder.getDdOrderId())
 				.ddOrderLineId(ddOrderLine.getDdOrderLineId())

@@ -1,16 +1,17 @@
 package de.metas.material.dispo.service.candidatechange.handler;
 
 import java.math.BigDecimal;
-import java.util.Optional;
+import java.util.Collection;
 
 import org.springframework.stereotype.Service;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
 
-import de.metas.material.dispo.Candidate;
-import de.metas.material.dispo.Candidate.Type;
 import de.metas.material.dispo.CandidateRepository;
+import de.metas.material.dispo.CandidateSpecification.Type;
 import de.metas.material.dispo.CandidatesQuery.DateOperator;
+import de.metas.material.dispo.candidate.Candidate;
 import de.metas.material.event.MaterialDemandEvent;
 import de.metas.material.event.MaterialEventService;
 import lombok.NonNull;
@@ -53,7 +54,7 @@ public class StockUpCandiateHandler implements CandidateHandler
 	private final MaterialEventService materialEventService;
 
 	public StockUpCandiateHandler(
-			@NonNull final CandidateRepository candidateRepository, 
+			@NonNull final CandidateRepository candidateRepository,
 			@NonNull final MaterialEventService materialEventService)
 	{
 		this.candidateRepository = candidateRepository;
@@ -61,11 +62,11 @@ public class StockUpCandiateHandler implements CandidateHandler
 	}
 
 	@Override
-	public Type getHandeledType()
+	public Collection<Type> getHandeledTypes()
 	{
-		return Type.STOCK_UP;
+		return ImmutableList.of(Type.STOCK_UP);
 	}
-	
+
 	public Candidate onCandidateNewOrChange(@NonNull final Candidate candidate)
 	{
 		Preconditions.checkArgument(candidate.getType() == Type.STOCK_UP,
@@ -79,12 +80,12 @@ public class StockUpCandiateHandler implements CandidateHandler
 			return candidateWithQtyDeltaAndId; // this candidate didn't change anything
 		}
 
-		final Optional<Candidate> projectedStock = candidateRepository.retrieveLatestMatch(candidate
+		final Candidate projectedStockOrNull = candidateRepository.retrieveLatestMatchOrNull(candidate
 				.mkSegmentBuilder()
-				.dateOperator(DateOperator.until)
+				.dateOperator(DateOperator.UNTIL)
 				.type(Type.STOCK)
 				.build());
-		final BigDecimal projectedQty = projectedStock.isPresent() ? projectedStock.get().getQuantity() : BigDecimal.ZERO;
+		final BigDecimal projectedQty = projectedStockOrNull != null ? projectedStockOrNull.getQuantity() : BigDecimal.ZERO;
 
 		final BigDecimal requiredAdditionalQty = candidateWithQtyDeltaAndId.getQuantity().subtract(projectedQty);
 		if (requiredAdditionalQty.signum() > 0)

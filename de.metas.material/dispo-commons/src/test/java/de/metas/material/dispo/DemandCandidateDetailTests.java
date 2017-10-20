@@ -8,6 +8,7 @@ import java.util.Optional;
 import org.adempiere.util.time.SystemTime;
 import org.junit.Test;
 
+import de.metas.material.dispo.candidate.DemandDetail;
 import de.metas.material.event.EventDescr;
 import de.metas.material.event.MaterialDemandDescr;
 import de.metas.material.event.MaterialDescriptor;
@@ -40,7 +41,7 @@ public class DemandCandidateDetailTests
 	public void createOrNull_when_empty_optional_then_null()
 	{
 		final Optional<MaterialDemandDescr> materialDemandDescr = Optional.empty();
-		assertThat(DemandCandidateDetail.createOrNull(materialDemandDescr)).isNull();
+		assertThat(DemandDetail.createOrNull(materialDemandDescr)).isNull();
 	}
 
 	@Test
@@ -59,7 +60,7 @@ public class DemandCandidateDetailTests
 						.warehouseId(50).build())
 				.build();
 
-		final DemandCandidateDetail demandCandidateDetail = DemandCandidateDetail.createOrNull(Optional.of(descriptor));
+		final DemandDetail demandCandidateDetail = DemandDetail.createOrNull(Optional.of(descriptor));
 		assertThat(demandCandidateDetail.getForecastLineId()).isEqualTo(1);
 		assertThat(demandCandidateDetail.getShipmentScheduleId()).isEqualTo(2);
 		assertThat(demandCandidateDetail.getOrderLineId()).isEqualTo(3);

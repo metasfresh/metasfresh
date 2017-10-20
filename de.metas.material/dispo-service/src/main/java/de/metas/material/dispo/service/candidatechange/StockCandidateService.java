@@ -3,18 +3,17 @@ package de.metas.material.dispo.service.candidatechange;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
-import java.util.Optional;
 import java.util.function.Supplier;
 
 import org.springframework.stereotype.Service;
 
 import com.google.common.annotations.VisibleForTesting;
 
-import de.metas.material.dispo.Candidate;
-import de.metas.material.dispo.Candidate.Type;
 import de.metas.material.dispo.CandidateRepository;
+import de.metas.material.dispo.CandidateSpecification.Type;
 import de.metas.material.dispo.CandidatesQuery;
 import de.metas.material.dispo.CandidatesQuery.DateOperator;
+import de.metas.material.dispo.candidate.Candidate;
 import de.metas.material.event.MaterialDescriptor;
 import lombok.NonNull;
 
@@ -64,19 +63,19 @@ public class StockCandidateService
 	 */
 	public Candidate createStockCandidate(@NonNull final Candidate candidate)
 	{
-		final Optional<Candidate> stock = candidateRepository
-				.retrieveLatestMatch(candidate.mkSegmentBuilder()
+		final Candidate stockOrNull = candidateRepository
+				.retrieveLatestMatchOrNull(candidate.mkSegmentBuilder()
 						.type(Type.STOCK)
-						.dateOperator(DateOperator.until)
+						.dateOperator(DateOperator.UNTIL)
 						.build());
 
-		final BigDecimal formerQuantity = stock.isPresent()
-				? stock.get().getQuantity()
+		final BigDecimal formerQuantity = stockOrNull != null
+				? stockOrNull.getQuantity()
 				: BigDecimal.ZERO;
 
-		final Integer groupId = stock.isPresent()
-				? stock.get().getGroupId()
-				: null;
+		final Integer groupId = stockOrNull != null
+				? stockOrNull.getGroupId()
+				: 0;
 
 		final MaterialDescriptor materialDescr = candidate
 				.getMaterialDescr()
@@ -120,20 +119,21 @@ public class StockCandidateService
 	/**
 	 * Updates the qty for the stock candidate returned by the given {@code stockCandidateToUpdate} and it's later stock candidates
 	 * 
-	 * @param relatedCanidateWithDelta
+	 * @param relatedCandiateWithDelta
 	 * @param stockCandidateToUpdate
 	 * @return
 	 */
 	public Candidate updateStock(
-			@NonNull final Candidate relatedCanidateWithDelta,
+			@NonNull final Candidate relatedCandiateWithDelta,
 			@NonNull final Supplier<Candidate> stockCandidateToUpdate)
 	{
-		final Optional<Candidate> previousCandidate = candidateRepository.retrieve(relatedCanidateWithDelta);
+		final CandidatesQuery query = CandidatesQuery.fromCandidate(relatedCandiateWithDelta);
+		final Candidate previousCandidateOrNull = candidateRepository.retrieveLatestMatchOrNull(query);
 
 		final Candidate persistedStockCandidate = stockCandidateToUpdate.get();
 
 		final BigDecimal delta;
-		if (previousCandidate.isPresent())
+		if (previousCandidateOrNull != null)
 		{
 			// there was already a persisted candidate. This means that the addOrReplace already did the work of providing our delta between the old and the current status.
 			delta = persistedStockCandidate.getQuantity();
@@ -141,12 +141,12 @@ public class StockCandidateService
 		else
 		{
 			// there was no persisted candidate, so we basically propagate the full qty (positive or negative) of the given candidate upwards
-			delta = relatedCanidateWithDelta.getQuantity();
+			delta = relatedCandiateWithDelta.getQuantity();
 		}
 		applyDeltaToLaterStockCandidates(
-				relatedCanidateWithDelta.getMaterialDescr().getProductId(),
-				relatedCanidateWithDelta.getMaterialDescr().getWarehouseId(),
-				relatedCanidateWithDelta.getMaterialDescr().getDate(),
+				relatedCandiateWithDelta.getMaterialDescr().getProductId(),
+				relatedCandiateWithDelta.getMaterialDescr().getWarehouseId(),
+				relatedCandiateWithDelta.getMaterialDescr().getDate(),
 				persistedStockCandidate.getGroupId(),
 				delta);
 		return persistedStockCandidate;
@@ -174,13 +174,14 @@ public class StockCandidateService
 	{
 		final CandidatesQuery segment = CandidatesQuery.builder()
 				.type(Type.STOCK)
-				.date(date)
-				.dateOperator(DateOperator.after)
-				.productId(productId)
-				.warehouseId(warehouseId)
+				.materialDescr(MaterialDescriptor.builderForQuery()
+						.date(date)
+						.productId(productId)
+						.warehouseId(warehouseId).build())
+				.dateOperator(DateOperator.AFTER)
 				.build();
 
-		final List<Candidate> candidatesToUpdate = candidateRepository.retrieveMatchesOrderByDateAndSeqNo(segment);
+		final List<Candidate> candidatesToUpdate = candidateRepository.retrieveOrderedByDateAndSeqNo(segment);
 		for (final Candidate candidate : candidatesToUpdate)
 		{
 			final BigDecimal newQty = candidate.getQuantity().add(delta);

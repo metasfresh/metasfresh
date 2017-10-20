@@ -2,9 +2,6 @@ package de.metas.material.event.pporder;
 
 import org.eevolution.model.I_PP_Order;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.base.Preconditions;
-
 import de.metas.material.event.EventDescr;
 import de.metas.material.event.MaterialEvent;
 import lombok.Builder;

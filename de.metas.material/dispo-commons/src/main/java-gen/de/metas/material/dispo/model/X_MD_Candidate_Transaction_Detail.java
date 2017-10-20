@@ -1,6 +1,7 @@
 /** Generated Model - DO NOT CHANGE */
 package de.metas.material.dispo.model;
 
+import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
 
@@ -14,7 +15,7 @@ public class X_MD_Candidate_Transaction_Detail extends org.compiere.model.PO imp
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 935915398L;
+	private static final long serialVersionUID = -770068999L;
 
     /** Standard Constructor */
     public X_MD_Candidate_Transaction_Detail (Properties ctx, int MD_Candidate_Transaction_Detail_ID, String trxName)
@@ -24,6 +25,7 @@ public class X_MD_Candidate_Transaction_Detail extends org.compiere.model.PO imp
         {
 			setMD_Candidate_ID (0);
 			setMD_Candidate_Transaction_Detail_ID (0);
+			setMovementQty (BigDecimal.ZERO);
         } */
     }
 
@@ -96,6 +98,28 @@ public class X_MD_Candidate_Transaction_Detail extends org.compiere.model.PO imp
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set Bewegungs-Menge.
+		@param MovementQty 
+		Menge eines bewegten Produktes.
+	  */
+	@Override
+	public void setMovementQty (java.math.BigDecimal MovementQty)
+	{
+		set_Value (COLUMNNAME_MovementQty, MovementQty);
+	}
+
+	/** Get Bewegungs-Menge.
+		@return Menge eines bewegten Produktes.
+	  */
+	@Override
+	public java.math.BigDecimal getMovementQty () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_MovementQty);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
 	}
 
 	@Override

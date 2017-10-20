@@ -2,8 +2,6 @@ package de.metas.material.event;
 
 import java.util.List;
 
-import org.adempiere.util.lang.impl.TableRecordReference;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

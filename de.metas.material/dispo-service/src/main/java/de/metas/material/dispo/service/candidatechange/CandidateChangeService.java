@@ -6,10 +6,11 @@ import java.util.Map;
 import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Service;
 
-import com.google.common.collect.Maps;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMap.Builder;
 
-import de.metas.material.dispo.Candidate;
-import de.metas.material.dispo.Candidate.Type;
+import de.metas.material.dispo.CandidateSpecification.Type;
+import de.metas.material.dispo.candidate.Candidate;
 import de.metas.material.dispo.service.candidatechange.handler.CandidateHandler;
 import lombok.NonNull;
 
@@ -43,7 +44,7 @@ public class CandidateChangeService
 	public CandidateChangeService(
 			@NonNull final Collection<CandidateHandler> candidateChangeHandlers)
 	{
-		type2handler = Maps.uniqueIndex(candidateChangeHandlers, CandidateHandler::getHandeledType);
+		type2handler = createHandlersMap(candidateChangeHandlers);
 	}
 
 	/**
@@ -65,6 +66,20 @@ public class CandidateChangeService
 		}
 
 		return candidateChangeHandler.onCandidateNewOrChange(candidate);
+	}
+
+	static Map<Type, CandidateHandler> createHandlersMap(
+			@NonNull final Collection<CandidateHandler> candidateChangeHandlers)
+	{
+		final Builder<Type, CandidateHandler> builder = ImmutableMap.builder();
+		for (final CandidateHandler handler : candidateChangeHandlers)
+		{
+			for (final Type type : handler.getHandeledTypes())
+			{
+				builder.put(type, handler); // builder already prohibits duplicate keys :-)
+			}
+		}
+		return builder.build();
 	}
 
 }

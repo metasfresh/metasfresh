@@ -5,10 +5,14 @@ import java.util.Objects;
 
 import org.adempiere.util.Check;
 
-import de.metas.material.dispo.Candidate.Type;
+import de.metas.material.dispo.candidate.Candidate;
+import de.metas.material.dispo.candidate.DemandDetail;
+import de.metas.material.dispo.candidate.DistributionDetail;
+import de.metas.material.dispo.candidate.ProductionDetail;
+import de.metas.material.event.MaterialDescriptor;
 import lombok.Builder;
-import lombok.Data;
 import lombok.NonNull;
+import lombok.Value;
 import lombok.experimental.Wither;
 
 /*
@@ -40,52 +44,114 @@ import lombok.experimental.Wither;
  *
  */
 @Builder
-@Data
+@Value
 @Wither
-public class CandidatesQuery
+public class CandidatesQuery implements CandidateSpecification
 {
 	public enum DateOperator
 	{
 		/**
 		 * With this operator, the segment is supposed to match records with a date <b>before</b> the segment's {@link CandidatesSegment#getDate()}.
 		 */
-		until,
+		UNTIL,
 
 		/**
 		 * With this operator, the segment is supposed to match records with a date <b>after</b> the segment's {@link CandidatesSegment#getDate()}.
 		 */
-		after,
+		AFTER,
 
 		/**
 		 * With this operator the segment matches records with a date <b>after</b> and also exactly <b>at</b> the segment's {@link CandidatesSegment#getDate()}.
 		 */
-		from
+		FROM,
+
+		AT
 	}
 
-	private final Type type;
+	public static final ProductionDetail NO_PRODUCTION_DETAIL = ProductionDetail.builder().build();
+	
+	public static final DistributionDetail NO_DISTRIBUTION_DETAIL = DistributionDetail.builder().build();
 
-	private final Integer productId;
+	public static CandidatesQuery fromCandidate(@NonNull final Candidate candidate)
+	{
+		return CandidatesQuery.builder()
+				.dateOperator(DateOperator.AT)
+				.demandDetail(candidate.getDemandDetail())
+				.distributionDetail(candidate.getDistributionDetail())
+				.groupId(candidate.getGroupId())
+				.id(candidate.getId())
+				.materialDescr(candidate.getMaterialDescr())
+				.orgId(candidate.getOrgId())
+				.parentId(candidate.getParentId())
+				.productionDetail(candidate.getProductionDetail())
+				.seqNo(candidate.getSeqNo())
+				.status(candidate.getStatus())
+				.subType(candidate.getSubType())
+				.type(candidate.getType())
+				.build();
+	}
 
-	private final Integer warehouseId;
-
-	@NonNull
-	private final Date date;
+	public static CandidatesQuery fromId(final int id)
+	{
+		return CandidatesQuery.builder().id(id).build();
+	}
 
 	/**
-	 * This mandatory property specifies how to interpret the date.
+	 * This property specifies how to interpret the date.
 	 */
-	@NonNull
 	private final DateOperator dateOperator;
 
 	/**
 	 * If set, then this segment is about {@link Candidate}s that have a parent candidate which has the given product ID.
 	 */
-	private final Integer parentProductId;
+	private final int parentProductId;
 
 	/**
 	 * If set, then this segment is about {@link Candidate}s that have a parent candidate which has the given warehouse ID.
 	 */
-	private final Integer parentWarehouseId;
+	private final int parentWarehouseId;
+
+	private final int orgId;
+
+	private final Type type;
+
+	/**
+	 * Should be {@code null} for stock candidates.
+	 */
+	private final SubType subType;
+
+	private final Status status;
+
+	private final int id;
+
+	/**
+	 * A supply candidate has a stock candidate as its parent. A demand candidate has a stock candidate as its child.
+	 */
+	private final int parentId;
+
+	/**
+	 * A supply candidate and its corresponding demand candidate are associated by a common group id.
+	 */
+	private final int groupId;
+
+	private final int seqNo;
+
+	private final MaterialDescriptor materialDescr;
+
+	/**
+	 * Used for additional infos if this candidate has the sub type {@link SubType#PRODUCTION}.
+	 */
+	private final ProductionDetail productionDetail;
+
+	/**
+	 * Used for additional infos if this candidate has the sub type {@link SubType#DISTRIBUTION}.
+	 */
+	private final DistributionDetail distributionDetail;
+
+	/**
+	 * Used for additional infos if this candidate relates to particular demand
+	 */
+	private final DemandDetail demandDetail;
 
 	/**
 	 * This method ignores parent {@link #getParentProductId()}, {@link #getParentWarehouseId()},
@@ -99,14 +165,17 @@ public class CandidatesQuery
 		final boolean dateMatches;
 		switch (dateOperator)
 		{
-			case after:
+			case AFTER:
 				dateMatches = candidate.getDate().getTime() > getDate().getTime();
 				break;
-			case from:
+			case FROM:
 				dateMatches = candidate.getDate().getTime() >= getDate().getTime();
 				break;
-			case until:
+			case UNTIL:
 				dateMatches = candidate.getDate().getTime() <= getDate().getTime();
+				break;
+			case AT:
+				dateMatches = candidate.getDate().getTime() == getDate().getTime();
 				break;
 			default:
 				Check.errorIf(true, "Unexpected date operator={}; this={}", dateOperator, this);
@@ -118,7 +187,7 @@ public class CandidatesQuery
 			return false;
 		}
 
-		if (getProductId() != null && !Objects.equals(getProductId(), candidate.getProductId()))
+		if (isProductIdSpecified() && !Objects.equals(materialDescr.getProductId(), candidate.getProductId()))
 		{
 			return false;
 		}
@@ -128,7 +197,7 @@ public class CandidatesQuery
 			return false;
 		}
 
-		if (getWarehouseId() != null && !Objects.equals(getWarehouseId(), candidate.getWarehouseId()))
+		if (isWarehouseIdSpecitified() && !Objects.equals(materialDescr.getWarehouseId(), candidate.getWarehouseId()))
 		{
 			return false;
 		}
@@ -136,4 +205,28 @@ public class CandidatesQuery
 		return true;
 	}
 
+	public Date getDate()
+	{
+		return materialDescr == null ? null : materialDescr.getDate();
+	}
+
+	private boolean isProductIdSpecified()
+	{
+		return materialDescr != null && materialDescr.getProductId() > 0;
+	}
+
+	private boolean isWarehouseIdSpecitified()
+	{
+		return materialDescr != null && materialDescr.getWarehouseId() > 0;
+	}
+
+	public int getProductId()
+	{
+		return materialDescr == null ? 0 : materialDescr.getProductId();
+	}
+
+	public int getWarehouseId()
+	{
+		return materialDescr == null ? 0 : materialDescr.getWarehouseId();
+	}
 }

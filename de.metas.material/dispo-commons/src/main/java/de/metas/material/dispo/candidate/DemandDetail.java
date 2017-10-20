@@ -1,4 +1,4 @@
-package de.metas.material.dispo;
+package de.metas.material.dispo.candidate;
 
 import java.util.Optional;
 
@@ -29,54 +29,53 @@ import lombok.Value;
  * #L%
  */
 @Value
-
-public class DemandCandidateDetail
+public class DemandDetail
 {
-	public static DemandCandidateDetail createOrNull(@NonNull final Optional<MaterialDemandDescr> materialDemandDescr)
+	public static DemandDetail createOrNull(@NonNull final Optional<MaterialDemandDescr> materialDemandDescr)
 	{
 		if (!materialDemandDescr.isPresent())
 		{
 			return null;
 		}
-		return new DemandCandidateDetail(
+		return new DemandDetail(
 				materialDemandDescr.get().getForecastLineId(),
 				materialDemandDescr.get().getShipmentScheduleId(),
 				materialDemandDescr.get().getOrderLineId());
 	}
 
-	public static DemandCandidateDetail forDemandDetailRecord(@NonNull final I_MD_Candidate_Demand_Detail demandDetailRecord)
+	public static DemandDetail forDemandDetailRecord(@NonNull final I_MD_Candidate_Demand_Detail demandDetailRecord)
 	{
-		return new DemandCandidateDetail(
+		return new DemandDetail(
 				demandDetailRecord.getM_ForecastLine_ID(),
 				demandDetailRecord.getM_ShipmentSchedule_ID(),
 				demandDetailRecord.getC_OrderLine_ID());
 	}
 
-	public static DemandCandidateDetail forShipmentScheduleIdAndOrderLineId(
+	public static DemandDetail forShipmentScheduleIdAndOrderLineId(
 			final int shipmentScheduleId,
 			final int orderLineId)
 	{
-		return new DemandCandidateDetail(-1, shipmentScheduleId, orderLineId);
+		return new DemandDetail(-1, shipmentScheduleId, orderLineId);
 	}
 
-	public static DemandCandidateDetail forOrderLineIdOrNull(int salesOrderLineId)
+	public static DemandDetail forOrderLineIdOrNull(int salesOrderLineId)
 	{
 		if (salesOrderLineId <= 0)
 		{
 			return null;
 		}
-		return new DemandCandidateDetail(-1, -1, salesOrderLineId);
+		return new DemandDetail(-1, -1, salesOrderLineId);
 	}
 
-	public static DemandCandidateDetail forForecastLineId(final int forecastLineId)
+	public static DemandDetail forForecastLineId(final int forecastLineId)
 	{
-		return new DemandCandidateDetail(forecastLineId, -1, -1);
+		return new DemandDetail(forecastLineId, -1, -1);
 	}
 
 	int forecastLineId;
 
 	int shipmentScheduleId;
 
-	private final int orderLineId;
+	int orderLineId;
 
 }

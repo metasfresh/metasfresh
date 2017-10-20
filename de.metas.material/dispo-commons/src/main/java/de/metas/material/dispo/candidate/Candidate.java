@@ -1,14 +1,19 @@
-package de.metas.material.dispo;
+package de.metas.material.dispo.candidate;
 
 import java.math.BigDecimal;
 import java.util.Date;
 
-import de.metas.material.dispo.model.X_MD_Candidate;
+import com.google.common.base.Preconditions;
+
+import de.metas.material.dispo.CandidateSpecification.Status;
+import de.metas.material.dispo.CandidateSpecification.SubType;
+import de.metas.material.dispo.CandidateSpecification.Type;
+import de.metas.material.dispo.CandidatesQuery;
 import de.metas.material.event.EventDescr;
 import de.metas.material.event.MaterialDescriptor;
 import lombok.Builder;
-import lombok.Data;
 import lombok.NonNull;
+import lombok.Value;
 import lombok.experimental.Wither;
 
 /*
@@ -33,91 +38,67 @@ import lombok.experimental.Wither;
  * #L%
  */
 
-@Data
+@Value
 @Builder
 @Wither
 public class Candidate
 {
-	/**
-	 * Please keep in sync with the values of {@link X_MD_Candidate#MD_CANDIDATE_TYPE_AD_Reference_ID}
-	 */
-	public enum Type
-	{
-		DEMAND, SUPPLY, STOCK, STOCK_UP, UNRELATED_TRANSACTION
-	};
-
-	/**
-	 * Please keep in sync with the values of {@link X_MD_Candidate#MD_CANDIDATE_SUBTYPE_AD_Reference_ID}
-	 */
-	public enum SubType
-	{
-		DISTRIBUTION, PRODUCTION, RECEIPT, SHIPMENT, FORECAST
-	};
-
-	/**
-	 * Please keep in sync with the values of {@link X_MD_Candidate#MD_CANDIDATE_STATUS_AD_Reference_ID}
-	 */
-	public enum Status
-	{
-		doc_planned, doc_created, doc_completed, doc_closed, unexpected
-	}
-
-	@NonNull
-	private final Integer clientId;
-
-	@NonNull
-	private final Integer orgId;
-
-	@NonNull
-	private final MaterialDescriptor materialDescr;
-
-	@NonNull
-	private final Type type;
-
-	/**
-	 * Should be {@code null} for stock candidates.
-	 */
-	private final SubType subType;
-
-	private final Status status;
-
-	// private final TableRecordReference reference;
-
-	private final Integer id;
-
-	/**
-	 * A supply candidate has a stock candidate as its parent. A demand candidate has a stock candidate as its child.
-	 */
-	private final Integer parentId;
-
-	/**
-	 * A supply candidate and its corresponding demand candidate are associated by a common group id.
-	 */
-	private final Integer groupId;
-
-	private final Integer seqNo;
-
-	/**
-	 * Used for additional infos if this candidate has the sub type {@link SubType#PRODUCTION}.
-	 */
-	private final ProductionCandidateDetail productionDetail;
-
-	/**
-	 * Used for additional infos if this candidate has the sub type {@link SubType#DISTRIBUTION}.
-	 */
-	private final DistributionCandidateDetail distributionDetail;
-
-	/**
-	 * Used for additional infos if this candidate relates to particular demand
-	 */
-	private final DemandCandidateDetail demandDetail;
-
 	public static CandidateBuilder builderForEventDescr(@NonNull final EventDescr eventDescr)
 	{
 		return Candidate.builder()
 				.clientId(eventDescr.getClientId())
 				.orgId(eventDescr.getOrgId());
 	}
+
+	int clientId;
+
+	int orgId;
+
+	@NonNull
+	Type type;
+
+	/**
+	 * Should be {@code null} for stock candidates.
+	 */
+	SubType subType;
+
+	Status status;
+
+	// private final TableRecordReference reference;
+
+	int id;
+
+	/**
+	 * A supply candidate has a stock candidate as its parent. A demand candidate has a stock candidate as its child.
+	 */
+	int parentId;
+
+	/**
+	 * A supply candidate and its corresponding demand candidate are associated by a common group id.
+	 */
+	int groupId;
+
+	int seqNo;
+
+	@NonNull
+	MaterialDescriptor materialDescr;
+
+	/**
+	 * Used for additional infos if this candidate has the sub type {@link SubType#PRODUCTION}.
+	 */
+	ProductionDetail productionDetail;
+
+	/**
+	 * Used for additional infos if this candidate has the sub type {@link SubType#DISTRIBUTION}.
+	 */
+	DistributionDetail distributionDetail;
+
+	/**
+	 * Used for additional infos if this candidate relates to particular demand
+	 */
+	DemandDetail demandDetail;
+	
+	TransactionDetail transactionDetail;
 
 	/**
 	 * Does not create a parent segment, even if this candidate has a parent.
@@ -126,15 +107,7 @@ public class Candidate
 	 */
 	public CandidatesQuery.CandidatesQueryBuilder mkSegmentBuilder()
 	{
-		return CandidatesQuery.builder()
-				.productId(materialDescr.getProductId())
-				.warehouseId(materialDescr.getWarehouseId())
-				.date(materialDescr.getDate());
-	}
-
-	public int getParentIdNotNull()
-	{
-		return getParentId() == null ? 0 : getParentId();
+		return CandidatesQuery.builder().materialDescr(materialDescr.withoutQuantity());
 	}
 
 	public BigDecimal getQuantity()
@@ -142,19 +115,19 @@ public class Candidate
 		return materialDescr.getQuantity();
 	}
 
-	public Candidate withQuantity(@NonNull final BigDecimal qtyDelta)
+	public Candidate withQuantity(@NonNull final BigDecimal quantity)
 	{
-		return this.withMaterialDescr(materialDescr.withQuantity(qtyDelta));
+		return withMaterialDescr(materialDescr.withQuantity(quantity));
 	}
 
 	public Candidate withDate(@NonNull final Date date)
 	{
-		return this.withMaterialDescr(materialDescr.withDate(date));
+		return withMaterialDescr(materialDescr.withDate(date));
 	}
 
 	public Candidate withWarehouseId(final int warehouseId)
 	{
-		return this.withMaterialDescr(materialDescr.withWarehouseId(warehouseId));
+		return withMaterialDescr(materialDescr.withWarehouseId(warehouseId));
 	}
 
 	public int getEffectiveGroupId()
@@ -163,11 +136,11 @@ public class Candidate
 		{
 			return 0;
 		}
-		if (groupId != null && groupId > 0)
+		if (groupId > 0)
 		{
 			return groupId;
 		}
-		return id == null ? 0 : id;
+		return id;
 	}
 
 	public Date getDate()
@@ -183,5 +156,39 @@ public class Candidate
 	public int getWarehouseId()
 	{
 		return materialDescr.getWarehouseId();
+	}
+
+	private Candidate(final int clientId, final int orgId,
+			@NonNull final Type type,
+			final SubType subType,
+			final Status status,
+			final int id,
+			final int parentId,
+			final int groupId,
+			final int seqNo,
+			@NonNull final MaterialDescriptor materialDescriptor,
+			final ProductionDetail productionDetail,
+			final DistributionDetail distributionDetail,
+			final DemandDetail demandDetail,
+			final TransactionDetail transactionDetail)
+	{
+		this.clientId = clientId;
+		this.orgId = orgId;
+		this.type = type;
+		this.subType = subType;
+		this.status = status;
+		this.id = id;
+		this.parentId = parentId;
+		this.groupId = groupId;
+		this.seqNo = seqNo;
+		
+		Preconditions.checkArgument(materialDescriptor.isComplete(), 
+				"Given parameter materialDescriptor needs to have iscomplete==true; materialDescriptor=%s", materialDescriptor);
+		this.materialDescr = materialDescriptor;
+		
+		this.productionDetail = productionDetail;
+		this.distributionDetail = distributionDetail;
+		this.demandDetail = demandDetail;
+		this.transactionDetail = transactionDetail;
 	}
 }
