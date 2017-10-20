@@ -146,7 +146,7 @@ public class FreshPackingItem extends AbstractPackingItem implements IFreshPacki
 			return pip;
 		}
 
-		if (shipmentSchedule.getC_OrderLine_ID() <= 0)
+		if (shipmentSchedule.getC_OrderLine_ID() > 0)
 		{
 			// if is not set, return the one form order line
 			final I_C_OrderLine ol = InterfaceWrapperHelper.create(shipmentSchedule.getC_OrderLine(), I_C_OrderLine.class);
