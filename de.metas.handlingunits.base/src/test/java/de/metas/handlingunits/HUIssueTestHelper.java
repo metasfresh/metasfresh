@@ -49,7 +49,6 @@ import org.eevolution.model.X_M_Warehouse_Routing;
 
 import de.metas.adempiere.form.IClientUI;
 import de.metas.adempiere.form.swing.SwingClientUI;
-import de.metas.business.BusinessTestHelper;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
@@ -155,9 +154,7 @@ public class HUIssueTestHelper extends HUTestHelper
 	protected void setupMasterData()
 	{
 		super.setupMasterData();
-
-		uomEach = BusinessTestHelper.get().createUomEach();
-
+	
 		//
 		// Document Types
 		{

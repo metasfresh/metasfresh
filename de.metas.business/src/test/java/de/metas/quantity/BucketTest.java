@@ -1,5 +1,7 @@
 package de.metas.quantity;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -48,7 +50,7 @@ public class BucketTest
 		AdempiereTestHelper.get().init();
 		uomUnknown = BusinessTestHelper.createUOM("UnknownUOM");
 		
-		uomEach = BusinessTestHelper.get().createUomEach();
+		uomEach = BusinessTestHelper.createUomEach();
 		pTomato = BusinessTestHelper.createProduct("tomato", uomEach);
 	}
 
@@ -244,9 +246,7 @@ public class BucketTest
 		final Quantity qtyRemoved = capacity.removeQty(qtyToRemove);
 
 		// Validate Quantity Value and UOM
-		Assert.assertThat("Invalid Removed Qty: " + capacity,
-				qtyRemoved.getQty(),
-				Matchers.comparesEqualTo(new BigDecimal(qtyRemovedExpectedStr)));
+		assertThat(qtyRemoved.getQty()).as("Invalid Removed Qty: " + capacity).isEqualByComparingTo(qtyRemovedExpectedStr);
 
 		// Validate Quantity Value and UOM
 		Assert.assertEquals("Invalid Removed Source UOM: ", capacity.getC_UOM(), qtyRemoved.getSourceUOM());

@@ -24,7 +24,6 @@ package de.metas.handlingunits.receiptschedule.integrationtest;
 import static de.metas.business.BusinessTestHelper.createBPartner;
 import static de.metas.business.BusinessTestHelper.createBPartnerLocation;
 import static de.metas.business.BusinessTestHelper.createWarehouse;
-import static de.metas.business.BusinessTestHelper.*;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -103,7 +102,7 @@ public abstract class AbstractHUReceiptProcessIntegrationTest
 		//
 		// Product/UOM
 		product = huTestHelper.pTomato;
-		productUOM = createUomKg();
+		productUOM = huTestHelper.pTomato.getC_UOM();
 
 		//
 		// BPartner

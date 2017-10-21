@@ -62,7 +62,6 @@ public class HUMovementBuilderTests
 {
 	private LUTUProducerDestinationTestSupport testsupport;
 	private I_AD_Org org;
-	private I_C_UOM uomKg;
 
 	@Before
 	public void init()
@@ -72,9 +71,7 @@ public class HUMovementBuilderTests
 		// we need this to make sure that movementLine.getAD_Org() does not fail with the created M_MovementLines.
 		org = InterfaceWrapperHelper.newInstance(I_AD_Org.class);
 		InterfaceWrapperHelper.save(org);
-		
-		uomKg = createUomKg();
-		
+			
 		Env.setContext(testsupport.helper.ctx, Env.CTXNAME_AD_Org_ID, org.getAD_Org_ID());
 
 		// we need this too, to avoid a DBNoConnectionException
@@ -141,7 +138,7 @@ public class HUMovementBuilderTests
 		lutuProducer.setLUItemPI(testsupport.piLU_Item_IFCO);
 		lutuProducer.setTUPI(testsupport.piTU_IFCO);
 
-		testsupport.helper.load(lutuProducer, testsupport.helper.pTomato, loadCuQty, uomKg);
+		testsupport.helper.load(lutuProducer, testsupport.helper.pTomato, loadCuQty, testsupport.helper.uomKg);
 		final List<I_M_HU> hus = lutuProducer.getCreatedHUs();
 
 		assertThat(hus.size(), is(1));

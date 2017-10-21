@@ -4,7 +4,6 @@ package de.metas.handlingunits.allocation.transfer;
 import static de.metas.business.BusinessTestHelper.createBPartner;
 import static de.metas.business.BusinessTestHelper.createBPartnerLocation;
 import static de.metas.business.BusinessTestHelper.createLocator;
-import static de.metas.business.BusinessTestHelper.createUomKg;
 import static de.metas.business.BusinessTestHelper.createWarehouse;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.hamcrest.Matchers.hasXPath;
@@ -84,8 +83,6 @@ public class HUTransformTestsBase
 
 	private final IHUPackingMaterialsCollector<IHUPackingMaterialCollectorSource> noopPackingMaterialsCollector;
 
-	private I_C_UOM uomKg;
-
 	public HUTransformTestsBase(IHUPackingMaterialsCollector<IHUPackingMaterialCollectorSource> noopPackingMaterialsCollector)
 	{
 		this.noopPackingMaterialsCollector = noopPackingMaterialsCollector;
@@ -95,8 +92,6 @@ public class HUTransformTestsBase
 
 		handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 		handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-		
-		uomKg = createUomKg();
 	}
 
 	public final TestHUs testCU_To_NewCU_1Tomato_DoIt()
@@ -122,7 +117,7 @@ public class HUTransformTestsBase
 			lutuProducer.setM_Locator(locator);
 			lutuProducer.setC_BPartner_Location_ID(bPartnerLocation.getC_BPartner_Location_ID());
 
-			data.helper.load(lutuProducer, data.helper.pTomato, new BigDecimal("2"), uomKg);
+			data.helper.load(lutuProducer, data.helper.pTomato, new BigDecimal("2"), data.helper.uomKg);
 			final List<I_M_HU> createdTUs = lutuProducer.getCreatedHUs();
 
 			assertThat(createdTUs.size(), is(1));
@@ -250,7 +245,7 @@ public class HUTransformTestsBase
 				.producer(producer)
 				.cuProduct(data.helper.pTomato)
 				.loadCuQty(new BigDecimal(strCuQty))
-				.loadCuUOM(uomKg)
+				.loadCuUOM(data.helper.uomKg)
 				.huPackingMaterialsCollector(noopPackingMaterialsCollector)
 				.build();
 
@@ -273,7 +268,7 @@ public class HUTransformTestsBase
 		lutuProducer.setTUPI(data.piTU_IFCO);
 
 		final BigDecimal cuQty = new BigDecimal(strCuQty);
-		data.helper.load(lutuProducer, data.helper.pTomato, cuQty, uomKg);
+		data.helper.load(lutuProducer, data.helper.pTomato, cuQty, data.helper.uomKg);
 		final List<I_M_HU> createdTUs = lutuProducer.getCreatedHUs();
 		assertThat(createdTUs.size(), is(1));
 
@@ -311,7 +306,7 @@ public class HUTransformTestsBase
 	public I_M_HU mkAggregateHUWithTotalQtyCUandCustomQtyCUsPerTU(final String totalQtyCUStr, final int customQtyCUsPerTU)
 	{
 		final I_M_Product cuProduct = data.helper.pTomato;
-		final I_C_UOM cuUOM = uomKg;
+		final I_C_UOM cuUOM = data.helper.uomKg;
 		final BigDecimal totalQtyCU = new BigDecimal(totalQtyCUStr);
 
 		final LUTUProducerDestination lutuProducer = new LUTUProducerDestination();

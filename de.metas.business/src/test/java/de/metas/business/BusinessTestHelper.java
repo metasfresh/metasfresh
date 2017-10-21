@@ -46,12 +46,6 @@ import de.metas.javaclasses.model.I_AD_JavaClass;
 
 public final class BusinessTestHelper
 {
-
-	public static final BusinessTestHelper get()
-	{
-		return new BusinessTestHelper();
-	}
-
 	/**
 	 * Default precision
 	 */

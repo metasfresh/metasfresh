@@ -52,7 +52,6 @@ import org.eevolution.model.X_M_Warehouse_Routing;
 import de.metas.adempiere.form.IClientUI;
 import de.metas.adempiere.form.swing.SwingClientUI;
 import de.metas.adempiere.model.I_C_Order;
-import de.metas.business.BusinessTestHelper;
 import de.metas.handlingunits.attribute.strategy.impl.SumAggregationStrategy;
 import de.metas.handlingunits.attributes.impl.WeightAttributeValueCalloutTest;
 import de.metas.handlingunits.model.I_M_HU;
@@ -145,8 +144,6 @@ public class HUDocumentSelectTestHelper extends HUTestHelper
 	 * A palet definition that can contains {@link #huDefIFCO2}.
 	 */
 	public I_M_HU_PI huDefPalet2;
-
-	private final BusinessTestHelper businessTestHelper = BusinessTestHelper.get();
 	
 	public HUDocumentSelectTestHelper()
 	{
@@ -299,11 +296,11 @@ public class HUDocumentSelectTestHelper extends HUTestHelper
 		huDefIFCO = createHUDefinition(HUTestHelper.NAME_IFCO_Product, X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
 		{
 			final I_M_HU_PI_Item itemMA = this.createHU_PI_Item_Material(huDefIFCO);
-			huDefIFCO_pip_Tomato = assignProduct(itemMA, pTomato, BigDecimal.TEN, businessTestHelper.createUomEach());
+			huDefIFCO_pip_Tomato = assignProduct(itemMA, pTomato, BigDecimal.TEN, uomEach);
 
 			createHU_PI_Item_PackingMaterial(huDefIFCO, pmIFCO);
 			pmIFCO.setAllowedPackingWeight(new BigDecimal("100"));
-			pmIFCO.setC_UOM_Weight(businessTestHelper.createUomEach());
+			pmIFCO.setC_UOM_Weight(uomEach);
 			InterfaceWrapperHelper.save(pmIFCO);
 
 			createM_HU_PI_Attribute(new HUPIAttributeBuilder(attr_CountryMadeIn)
@@ -318,8 +315,8 @@ public class HUDocumentSelectTestHelper extends HUTestHelper
 		huDefIFCO2 = createHUDefinition(HUTestHelper.NAME_IFCO_Product + "_2", X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
 		{
 			final I_M_HU_PI_Item itemMA = this.createHU_PI_Item_Material(huDefIFCO2);
-			huDefIFCO2_pip_Tomato = assignProduct(itemMA, pTomato, BigDecimal.TEN, businessTestHelper.createUomEach());
-			huDefIFCO2_pip_Salad = assignProduct(itemMA, pSalad, BigDecimal.TEN, businessTestHelper.createUomEach());
+			huDefIFCO2_pip_Tomato = assignProduct(itemMA, pTomato, BigDecimal.TEN,uomEach);
+			huDefIFCO2_pip_Salad = assignProduct(itemMA, pSalad, BigDecimal.TEN, uomEach);
 
 			createHU_PI_Item_PackingMaterial(huDefIFCO2, pmIFCO);
 
@@ -338,7 +335,7 @@ public class HUDocumentSelectTestHelper extends HUTestHelper
 
 			createHU_PI_Item_PackingMaterial(huDefPalet, pmPalet);
 			pmPalet.setAllowedPackingWeight(new BigDecimal("400"));
-			pmPalet.setC_UOM_Weight(businessTestHelper.createUomEach());
+			pmPalet.setC_UOM_Weight(uomEach);
 			InterfaceWrapperHelper.save(pmPalet);
 
 			createM_HU_PI_Attribute(new HUPIAttributeBuilder(attr_CountryMadeIn)
@@ -412,7 +409,7 @@ public class HUDocumentSelectTestHelper extends HUTestHelper
 		rSched.setM_Warehouse(warehouse);
 		rSched.setM_Warehouse_Dest(warehouseDest);
 		rSched.setProcessed(false);
-		rSched.setC_UOM(businessTestHelper.createUomEach());
+		rSched.setC_UOM(uomEach);
 		rSched.setQtyOrdered(BigDecimal.valueOf(qtyInt));
 
 		//

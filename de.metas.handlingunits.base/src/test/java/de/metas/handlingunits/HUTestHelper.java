@@ -190,6 +190,7 @@ public class HUTestHelper
 	public IHUTrxBL trxBL;
 
 	public I_C_UOM uomKg;
+	public I_C_UOM uomEach;
 
 	/**
 	 * Value: Palet
@@ -547,7 +548,8 @@ public class HUTestHelper
 	protected void setupMasterData()
 	{
 		uomKg = createUomKg();
-
+		uomEach = createUomEach();
+		
 		attr_CountryMadeIn = createM_Attribute(HUTestHelper.NAME_CountryMadeIn_Attribute, X_M_Attribute.ATTRIBUTEVALUETYPE_List, true);
 		createAttributeListValues(attr_CountryMadeIn,
 				HUTestHelper.COUNTRYMADEIN_RO,
@@ -557,7 +559,6 @@ public class HUTestHelper
 		attr_Volume = createM_Attribute(HUTestHelper.NAME_Volume_Attribute, X_M_Attribute.ATTRIBUTEVALUETYPE_Number, true);
 		attr_FragileSticker = createM_Attribute(HUTestHelper.NAME_FragileSticker_Attribute, X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40, false);
 
-		final I_C_UOM uomKg = createUomKg();
 		attr_WeightGross = createM_Attribute(HUTestHelper.NAME_WeightGross_Attribute, X_M_Attribute.ATTRIBUTEVALUETYPE_Number, WeightGrossAttributeValueCallout.class, uomKg, true);
 		attr_WeightNet = createM_Attribute(HUTestHelper.NAME_WeightNet_Attribute, X_M_Attribute.ATTRIBUTEVALUETYPE_Number, WeightNetAttributeValueCallout.class, uomKg, true);
 		attr_WeightTare = createM_Attribute(HUTestHelper.NAME_WeightTare_Attribute, X_M_Attribute.ATTRIBUTEVALUETYPE_Number, WeightTareAttributeValueCallout.class, uomKg, true);
@@ -588,7 +589,7 @@ public class HUTestHelper
 		// FIXME: this is a workaround because we are not handling the UOM conversions in our HU tests
 		createUOMConversion(
 				null,  // product,
-				createUomEach(),  // uomFrom,
+				uomEach,  // uomFrom,
 				uomKg, // uomTo,
 				BigDecimal.ONE,
 				BigDecimal.ONE);
@@ -596,33 +597,33 @@ public class HUTestHelper
 		// Create 1-to-1 conversion between "Each" and PCE / Stk
 		createUOMConversion(
 				null,  // product,
-				createUomEach(),  // uomFrom,
+				uomEach,  // uomFrom,
 				createUomPCE(), // uomTo,
 				BigDecimal.ONE,
 				BigDecimal.ONE);
 
 		//
 		// Create and configure Pallete
-		pPalet = createProduct(HUTestHelper.NAME_Palet_Product, createUomEach(), pPalet_Weight_25kg); // Pallets are our packing material
+		pPalet = createProduct(HUTestHelper.NAME_Palet_Product, uomEach, pPalet_Weight_25kg); // Pallets are our packing material
 		pmPalet = createPackingMaterial("Palet-PM", pPalet);
 
 		//
 		// Create and configure IFCO
-		pIFCO = createProduct(HUTestHelper.NAME_IFCO_Product, createUomEach(), pIFCO_Weight_1kg); // IFCOs are another kind of packing material
+		pIFCO = createProduct(HUTestHelper.NAME_IFCO_Product, uomEach, pIFCO_Weight_1kg); // IFCOs are another kind of packing material
 		pmIFCO = createPackingMaterial("IFCO-PM", pIFCO);
 
 		//
 		// Create and configure Bag
-		pBag = createProduct(HUTestHelper.NAME_Bag_Product, createUomEach(), pBag_Weight_0_5Kg); // Bags are another kind of packing material
+		pBag = createProduct(HUTestHelper.NAME_Bag_Product, uomEach, pBag_Weight_0_5Kg); // Bags are another kind of packing material
 		pmBag = createPackingMaterial("Bag-PM", pBag);
 
 		//
 		// Create and configure Paloxe
-		pPaloxe = createProduct(HUTestHelper.NAME_Paloxe_Product, createUomEach(), pPaloxe_Weight_75kg); // Paloxes are another kind of packing material
+		pPaloxe = createProduct(HUTestHelper.NAME_Paloxe_Product, uomEach, pPaloxe_Weight_75kg); // Paloxes are another kind of packing material
 		pmPaloxe = createPackingMaterial("Paloxe-PM", pPaloxe);
 
-		pTomato = createProduct(HUTestHelper.NAME_Tomato_Product, createUomEach());
-		pSalad = createProduct(HUTestHelper.NAME_Salad_Product, createUomEach());
+		pTomato = createProduct(HUTestHelper.NAME_Tomato_Product, uomEach);
+		pSalad = createProduct(HUTestHelper.NAME_Salad_Product, uomEach);
 
 		//
 		// No-PI
@@ -1263,7 +1264,7 @@ public class HUTestHelper
 			final BigDecimal qtyCapacity,
 			final boolean fullyLoaded)
 	{
-		return createDummySourceDestination(product, qtyCapacity, createUomEach(), fullyLoaded);
+		return createDummySourceDestination(product, qtyCapacity, uomEach, fullyLoaded);
 	}
 
 	public AbstractAllocationSourceDestination createDummySourceDestination(

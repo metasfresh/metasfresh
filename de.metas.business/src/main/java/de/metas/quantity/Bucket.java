@@ -31,7 +31,6 @@ import org.compiere.model.I_C_UOM;
 
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
-import lombok.ToString;
 
 /**
  * This is {@link CapacityInterface} that also has "level", i.e. a quantity that already occupates a part of it.
@@ -39,7 +38,6 @@ import lombok.ToString;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-@ToString
 @EqualsAndHashCode
 public class Bucket
 {
@@ -65,6 +63,16 @@ public class Bucket
 		adjustQty(qtyInitial);
 	}
 
+	@Override
+	public String toString()
+	{
+		return getClass().getSimpleName() + " ["
+				+ "qty=" + _qty
+				+ ", qtyFree=" + _qtyFree
+				+ ", capacity=" + capacity
+				+ "]";
+	}
+	
 	public final boolean isInfiniteCapacity()
 	{
 		return capacity.isInfiniteCapacity();

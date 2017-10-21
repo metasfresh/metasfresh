@@ -88,14 +88,11 @@ public class HUTransformServiceTests
 	@Mocked
 	private IHUPackingMaterialsCollector<IHUPackingMaterialCollectorSource> noopPackingMaterialsCollector;
 
-	private I_C_UOM uomKg;
-
 	@Before
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
 		handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-		uomKg = createUomKg();
 		testsBase = new HUTransformTestsBase(noopPackingMaterialsCollector);
 	}
 
@@ -771,7 +768,7 @@ public class HUTransformServiceTests
 		Assert.assertThat(existingTU.getHUStatus(), is(X_M_HU.HUSTATUS_Active));
 
 		final HUProducerDestination producer = HUProducerDestination.ofVirtualPI();
-		data.helper.load(producer, data.helper.pSalad, new BigDecimal("3"), uomKg);
+		data.helper.load(producer, data.helper.pSalad, new BigDecimal("3"), data.helper.uomKg);
 		final I_M_HU cu2 = producer.getCreatedHUs().get(0);
 		handlingUnitsBL.setHUStatus(data.helper.getHUContext(), cu2, X_M_HU.HUSTATUS_Active);
 		save(cu2);
@@ -809,7 +806,7 @@ public class HUTransformServiceTests
 
 		// create a standalone-CU
 		final HUProducerDestination producer = HUProducerDestination.ofVirtualPI();
-		data.helper.load(producer, data.helper.pSalad, four, uomKg);
+		data.helper.load(producer, data.helper.pSalad, four, data.helper.uomKg);
 
 		final I_M_HU cu2 = producer.getCreatedHUs().get(0);
 
@@ -847,10 +844,10 @@ public class HUTransformServiceTests
 		lutuProducer.setLUPI(data.piLU);
 		lutuProducer.setLUItemPI(piLU_Item_20_IFCO);
 		lutuProducer.setTUPI(data.piTU_IFCO);
-		lutuProducer.addTUCapacity(data.helper.pTomato, new BigDecimal("5.47"), uomKg); // set the TU capacity to be 109.4 / 20
+		lutuProducer.addTUCapacity(data.helper.pTomato, new BigDecimal("5.47"), data.helper.uomKg); // set the TU capacity to be 109.4 / 20
 
 		// load the tomatoes into HUs
-		data.helper.load(lutuProducer, data.helper.pTomato, new BigDecimal("109.4"), uomKg);
+		data.helper.load(lutuProducer, data.helper.pTomato, new BigDecimal("109.4"), data.helper.uomKg);
 		Assert.assertThat(lutuProducer.getCreatedHUs().size(), is(1));
 		final I_M_HU createdLU = lutuProducer.getCreatedHUs().get(0);
 

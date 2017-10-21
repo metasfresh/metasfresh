@@ -74,7 +74,7 @@ public class HUTrxBLTests
 		huDefIFCO = helper.createHUDefinition(HUTestHelper.NAME_IFCO_Product, X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
 		{
 			final I_M_HU_PI_Item itemMA = helper.createHU_PI_Item_Material(huDefIFCO);
-			helper.assignProduct(itemMA, helper.pTomato, TOMATOS_PER_IFCO, createUomEach());
+			helper.assignProduct(itemMA, helper.pTomato, TOMATOS_PER_IFCO, helper.uomEach);
 			helper.createHU_PI_Item_PackingMaterial(huDefIFCO, helper.pmIFCO);
 		}
 
@@ -120,7 +120,7 @@ public class HUTrxBLTests
 							.newIncludedVirtualHU()
 								.newVirtualHUItemExpectation()
 									.newItemStorageExpectation()
-										.qty("6").uom(createUomEach()).product(helper.pTomato)
+										.qty("6").uom(helper.uomEach).product(helper.pTomato)
 									.endExpectation()
 								.endExpectation()
 							.endExpectation()
@@ -141,7 +141,7 @@ public class HUTrxBLTests
 						.newHUItemExpectation()
 							.itemType(X_M_HU_Item.ITEMTYPE_Material)
 							.newItemStorageExpectation()
-								.qty("80").uom(createUomEach()).product(helper.pTomato)
+								.qty("80").uom(helper.uomEach).product(helper.pTomato)
 							.endExpectation() // itemStorageExcpectation
 						.endExpectation() // material item
 						.newHUItemExpectation()

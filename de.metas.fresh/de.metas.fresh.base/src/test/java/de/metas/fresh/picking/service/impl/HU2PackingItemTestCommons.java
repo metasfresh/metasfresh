@@ -6,9 +6,7 @@ import java.util.List;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_UOM;
 
-import de.metas.business.BusinessTestHelper;
 import de.metas.handlingunits.HUTestHelper;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.model.I_M_HU;
@@ -47,7 +45,6 @@ public class HU2PackingItemTestCommons
 {
 	final static int COUNT_IFCOs_Per_Palet = 5;
 	final static int COUNT_Tomatoes_Per_IFCO = 10;
-	private static I_C_UOM uomEach = BusinessTestHelper.get().createUomEach();
 
 	private HU2PackingItemTestCommons()
 	{
@@ -71,7 +68,7 @@ public class HU2PackingItemTestCommons
 		final I_M_HU_PI huDefIFCO = helper.createHUDefinition(HUTestHelper.NAME_IFCO_Product, X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
 
 		final I_M_HU_PI_Item itemMA = helper.createHU_PI_Item_Material(huDefIFCO);
-		final I_M_HU_PI_Item_Product huPiItemProduct = helper.assignProduct(itemMA, helper.pTomato, BigDecimal.valueOf(cuQty), uomEach );
+		final I_M_HU_PI_Item_Product huPiItemProduct = helper.assignProduct(itemMA, helper.pTomato, BigDecimal.valueOf(cuQty), helper.uomEach );
 
 		return huPiItemProduct;
 	}
@@ -141,7 +138,7 @@ public class HU2PackingItemTestCommons
 
 		final IHUContext huContext = helper.createMutableHUContextForProcessing(ITrx.TRXNAME_None);
 		final BigDecimal qtyToLoadBD = BigDecimal.valueOf(qtyToLoad);
-		final List<I_M_HU> hus = helper.createHUs(huContext, tuHuDef.getM_HU_PI_Item().getM_HU_PI_Version().getM_HU_PI(), helper.pTomato, qtyToLoadBD, uomEach);
+		final List<I_M_HU> hus = helper.createHUs(huContext, tuHuDef.getM_HU_PI_Item().getM_HU_PI_Version().getM_HU_PI(), helper.pTomato, qtyToLoadBD, helper.uomEach);
 
 		return hus;
 	}

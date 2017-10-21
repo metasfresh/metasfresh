@@ -98,7 +98,7 @@ public class FIFOAllocationDeallocationStrategyTest
 		huTestHelper = new HUTestHelper();
 
 		product = huTestHelper.pTomato;
-		productUOM = createUomKg();
+		productUOM = huTestHelper.uomKg;
 
 		strategyFactory = new AllocationStrategyFactory();
 	}

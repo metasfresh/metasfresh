@@ -61,7 +61,7 @@ public class M_TransactionTest
 
 		wh = BusinessTestHelper.createWarehouse("wh");
 		locator = BusinessTestHelper.createLocator("l", wh);
-		product = BusinessTestHelper.createProduct("product", BusinessTestHelper.uomEach);
+		product = BusinessTestHelper.createProduct("product", BusinessTestHelper.createUomEach());
 		movementDate = SystemTime.asTimestamp();
 	}
 

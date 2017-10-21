@@ -87,8 +87,6 @@ public class HUInternalUseInventoryProducerTests
 
 	private I_M_Locator locator;
 
-	private I_C_UOM uomKg;
-
 	@Before
 	public void init()
 	{
@@ -108,8 +106,6 @@ public class HUInternalUseInventoryProducerTests
 		locator = newInstance(I_M_Locator.class);
 		locator.setM_Warehouse(wh);
 		save(locator);
-		
-		uomKg=createUomKg();
 	}
 
 	/**
@@ -137,7 +133,7 @@ public class HUInternalUseInventoryProducerTests
 			final int qtyCUsPerTU)
 	{
 		final I_M_Product cuProduct = data.helper.pTomato;
-		final I_C_UOM cuUOM =uomKg;
+		final I_C_UOM cuUOM =data.helper.uomKg;
 		final BigDecimal totalQtyCU = new BigDecimal(totalQtyCUStr);
 
 		final LUTUProducerDestination lutuProducer = new LUTUProducerDestination();
@@ -200,7 +196,7 @@ public class HUInternalUseInventoryProducerTests
 				.producer(producer)
 				.cuProduct(data.helper.pTomato)
 				.loadCuQty(new BigDecimal(strCuQty))
-				.loadCuUOM(uomKg)
+				.loadCuUOM(data.helper.uomKg)
 				.huPackingMaterialsCollector(noopPackingMaterialsCollector)
 				.build();
 
@@ -223,7 +219,7 @@ public class HUInternalUseInventoryProducerTests
 		lutuProducer.setTUPI(data.piTU_IFCO);
 
 		final BigDecimal cuQty = new BigDecimal(strCuQty);
-		data.helper.load(lutuProducer, data.helper.pTomato, cuQty, uomKg);
+		data.helper.load(lutuProducer, data.helper.pTomato, cuQty, data.helper.uomKg);
 		final List<I_M_HU> createdTUs = lutuProducer.getCreatedHUs();
 		assertThat(createdTUs.size(), is(1));
 

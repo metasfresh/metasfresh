@@ -1,6 +1,5 @@
 package de.metas.inoutcandidate.spi.impl;
 
-import static de.metas.business.BusinessTestHelper.createUomKg;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
@@ -9,7 +8,6 @@ import java.math.BigDecimal;
 import java.util.List;
 
 import org.adempiere.util.Services;
-import org.compiere.model.I_C_UOM;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -48,7 +46,6 @@ public class HUPackingMaterialsCollectorTest
 	private LUTUProducerDestinationTestSupport data;
 	private IHandlingUnitsDAO handlingUnitsDAO;
 	private IHandlingUnitsBL handlingUnitsBL;
-	private I_C_UOM uomKg;
 
 	@Before
 	public void Init()
@@ -56,8 +53,6 @@ public class HUPackingMaterialsCollectorTest
 		data = new LUTUProducerDestinationTestSupport();
 		handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 		handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-		
-		uomKg = createUomKg();
 	}
 
 	/**
@@ -91,7 +86,7 @@ public class HUPackingMaterialsCollectorTest
 		lutuProducer.setLUPI(data.piLU);
 		lutuProducer.setTUPI(data.piTU_IFCO);
 		lutuProducer.setMaxTUsPerLU(Integer.MAX_VALUE); // allow as many TUs on that one palette as we want
-		data.helper.load(lutuProducer, data.helper.pTomato, new BigDecimal(totalQtyCU), uomKg);
+		data.helper.load(lutuProducer, data.helper.pTomato, new BigDecimal(totalQtyCU), data.helper.uomKg);
 		final List<I_M_HU> createdLUs = lutuProducer.getCreatedHUs();
 
 		assertThat(createdLUs.size(), is(1));

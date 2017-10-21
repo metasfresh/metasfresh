@@ -566,7 +566,7 @@ public class LUTUProducerDestinationLoadTests
 		lutuConfiguration.setIsInfiniteQtyTU(false);
 		lutuConfiguration.setQtyTU(BigDecimal.ONE);
 		lutuConfiguration.setM_Product(data.helper.pSalad); // differs from real world
-		lutuConfiguration.setC_UOM(createUomEach());
+		lutuConfiguration.setC_UOM(data.helper.uomEach);
 		lutuConfiguration.setIsInfiniteQtyCU(false);
 		lutuConfiguration.setQtyCU(new BigDecimal("252"));
 		lutuConfiguration.setHUStatus(X_M_HU_LUTU_Configuration.HUSTATUS_Planning);
@@ -577,7 +577,7 @@ public class LUTUProducerDestinationLoadTests
 
 		final ILUTUProducerAllocationDestination lutuProducer = Services.get(ILUTUConfigurationFactory.class).createLUTUProducerAllocationDestination(lutuConfiguration);
 
-		data.helper.load(lutuProducer, data.helper.pTomato, new BigDecimal("252"), createUomEach());
+		data.helper.load(lutuProducer, data.helper.pTomato, new BigDecimal("252"), data.helper.uomEach);
 
 		final List<I_M_HU> createdLUs = lutuProducer.getCreatedHUs();
 		assertThat(createdLUs.size(), is(1));
