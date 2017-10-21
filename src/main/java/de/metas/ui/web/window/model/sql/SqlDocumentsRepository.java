@@ -907,8 +907,9 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 		final int linkId = document.getFieldView(lookup.getLinkColumnName()).getValueAsInt(-1);
 		final Set<Object> listValuesInDatabase = lookup.retrieveExistingValues(linkId).getKeys();
 
-		final Set<Object> listValuesToSave = new HashSet<>(documentField.getValueAs(LookupValuesList.class).getKeys());
-
+        final LookupValuesList lookupValuesList = documentField.getValueAs(LookupValuesList.class);
+        final Set<Object> listValuesToSave = lookupValuesList != null ? new HashSet<>(lookupValuesList.getKeys()) : new HashSet<>();
+        
 		//
 		// Delete removed labels
 		{
