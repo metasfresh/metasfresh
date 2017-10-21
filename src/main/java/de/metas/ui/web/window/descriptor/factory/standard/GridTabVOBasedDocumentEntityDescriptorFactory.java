@@ -127,14 +127,14 @@ import lombok.NonNull;
 	{
 		if (gridTabVO.isView())
 		{
-			return ILogicExpression.TRUE;
+			return ConstantLogicExpression.TRUE;
 		}
 
 		//
 		// Check if tab is always readonly
 		if (gridTabVO.isReadOnly())
 		{
-			return ILogicExpression.TRUE;
+			return ConstantLogicExpression.TRUE;
 		}
 
 		//
@@ -142,7 +142,7 @@ import lombok.NonNull;
 		final ILogicExpression tabReadonlyLogic = gridTabVO.getReadOnlyLogic();
 		if (tabReadonlyLogic.isConstantTrue())
 		{
-			return ILogicExpression.TRUE;
+			return ConstantLogicExpression.TRUE;
 		}
 
 		return tabReadonlyLogic;

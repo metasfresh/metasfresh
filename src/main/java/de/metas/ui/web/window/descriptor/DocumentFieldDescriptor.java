@@ -720,12 +720,12 @@ public final class DocumentFieldDescriptor implements Serializable
 		private Optional<IExpression<?>> defaultValueExpression = Optional.empty();
 
 		private final Set<Characteristic> characteristics = new TreeSet<>();
-		private ILogicExpression _entityReadonlyLogic = ILogicExpression.FALSE;
-		private ILogicExpression _readonlyLogic = ILogicExpression.FALSE;
+		private ILogicExpression _entityReadonlyLogic = ConstantLogicExpression.FALSE;
+		private ILogicExpression _readonlyLogic = ConstantLogicExpression.FALSE;
 		private ILogicExpression _readonlyLogicEffective = null;
 		private boolean alwaysUpdateable = false;
-		private ILogicExpression displayLogic = ILogicExpression.TRUE;
-		private ILogicExpression _mandatoryLogic = ILogicExpression.FALSE;
+		private ILogicExpression displayLogic = ConstantLogicExpression.TRUE;
+		private ILogicExpression _mandatoryLogic = ConstantLogicExpression.FALSE;
 		private ILogicExpression _mandatoryLogicEffective = null;
 
 		private Optional<DocumentFieldDataBindingDescriptor> _dataBinding = Optional.empty();
@@ -1088,55 +1088,55 @@ public final class DocumentFieldDescriptor implements Serializable
 		{
 			if (isParentLinkEffective())
 			{
-				return ILogicExpression.TRUE;
+				return ConstantLogicExpression.TRUE;
 			}
 
 			if (isVirtualField())
 			{
-				return ILogicExpression.TRUE;
+				return ConstantLogicExpression.TRUE;
 			}
 
 			if (isKey())
 			{
-				return ILogicExpression.TRUE;
+				return ConstantLogicExpression.TRUE;
 			}
 
 			// If the tab is always readonly, we can assume any field in that tab is readonly
 			final ILogicExpression entityReadonlyLogic = getEntityReadonlyLogic();
 			if (entityReadonlyLogic.isConstantTrue())
 			{
-				return ILogicExpression.TRUE;
+				return ConstantLogicExpression.TRUE;
 			}
 
 			// Case: DocumentNo/Value special field not be readonly
 			if (hasCharacteristic(Characteristic.SpecialField_DocumentNo))
 			{
-				return ILogicExpression.FALSE;
+				return ConstantLogicExpression.FALSE;
 			}
 
 			// Case: DocAction
 			if (hasCharacteristic(Characteristic.SpecialField_DocAction))
 			{
-				return ILogicExpression.FALSE;
+				return ConstantLogicExpression.FALSE;
 			}
 
 			final ILogicExpression fieldReadonlyLogic = getReadonlyLogic();
 			if (fieldReadonlyLogic.isConstantTrue())
 			{
-				return ILogicExpression.TRUE;
+				return ConstantLogicExpression.TRUE;
 			}
 
 			final String fieldName = getFieldName();
 			if (WindowConstants.FIELDNAMES_CreatedUpdated.contains(fieldName))
 			{
 				// NOTE: from UI perspective those are readonly (i.e. it will be managed by persistence layer)
-				return ILogicExpression.TRUE;
+				return ConstantLogicExpression.TRUE;
 			}
 
 			if (hasCharacteristic(Characteristic.SpecialField_DocStatus))
 			{
 				// NOTE: DocStatus field shall always be readonly
-				return ILogicExpression.TRUE;
+				return ConstantLogicExpression.TRUE;
 			}
 
 			ILogicExpression readonlyLogic = fieldReadonlyLogic;
@@ -1230,19 +1230,19 @@ public final class DocumentFieldDescriptor implements Serializable
 		{
 			if (isParentLinkEffective())
 			{
-				return ILogicExpression.TRUE;
+				return ConstantLogicExpression.TRUE;
 			}
 
 			final String fieldName = getFieldName();
 			if (WindowConstants.FIELDNAMES_CreatedUpdated.contains(fieldName))
 			{
 				// NOTE: from UI perspective those are not mandatory (i.e. it will be managed by persistence layer)
-				return ILogicExpression.FALSE;
+				return ConstantLogicExpression.FALSE;
 			}
 
 			if (isVirtualField())
 			{
-				return ILogicExpression.FALSE;
+				return ConstantLogicExpression.FALSE;
 			}
 
 			// FIXME: hardcoded M_AttributeSetInstance_ID mandatory logic = false
@@ -1250,7 +1250,7 @@ public final class DocumentFieldDescriptor implements Serializable
 			// and then the document saving API is failing because it considers this column as NOT filled.
 			if (WindowConstants.FIELDNAME_M_AttributeSetInstance_ID.equals(fieldName))
 			{
-				return ILogicExpression.FALSE;
+				return ConstantLogicExpression.FALSE;
 			}
 
 			// Corner case:
@@ -1264,18 +1264,18 @@ public final class DocumentFieldDescriptor implements Serializable
 			final boolean mandatoryDB = fieldDataBinding != null && fieldDataBinding.isMandatory();
 			if (!publicField && mandatory && !mandatoryDB)
 			{
-				return ILogicExpression.FALSE;
+				return ConstantLogicExpression.FALSE;
 			}
 
 			// Case: DocumentNo special field shall always be mandatory
 			if (hasCharacteristic(Characteristic.SpecialField_DocumentNo))
 			{
-				return ILogicExpression.TRUE;
+				return ConstantLogicExpression.TRUE;
 			}
 
 			if (mandatory)
 			{
-				return ILogicExpression.TRUE;
+				return ConstantLogicExpression.TRUE;
 			}
 
 			return mandatoryLogic;

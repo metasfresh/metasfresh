@@ -21,6 +21,7 @@ import org.adempiere.ad.callout.api.impl.CalloutExecutor;
 import org.adempiere.ad.callout.api.impl.NullCalloutExecutor;
 import org.adempiere.ad.callout.spi.ICalloutProvider;
 import org.adempiere.ad.callout.spi.ImmutablePlainCalloutProvider;
+import org.adempiere.ad.expression.api.ConstantLogicExpression;
 import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.ad.ui.api.ITabCalloutFactory;
 import org.adempiere.ad.ui.spi.ITabCallout;
@@ -457,10 +458,10 @@ public class DocumentEntityDescriptor
 
 		private DetailId _detailId;
 
-		private ILogicExpression _allowCreateNewLogic = ILogicExpression.TRUE;
-		private ILogicExpression _allowDeleteLogic = ILogicExpression.TRUE;
-		private ILogicExpression _displayLogic = ILogicExpression.TRUE;
-		private ILogicExpression _readonlyLogic = ILogicExpression.FALSE;
+		private ILogicExpression _allowCreateNewLogic = ConstantLogicExpression.TRUE;
+		private ILogicExpression _allowDeleteLogic = ConstantLogicExpression.TRUE;
+		private ILogicExpression _displayLogic = ConstantLogicExpression.TRUE;
+		private ILogicExpression _readonlyLogic = ConstantLogicExpression.FALSE;
 
 		//
 		// Callouts

@@ -3,7 +3,7 @@ package de.metas.ui.web.quickinput.orderline;
 import java.util.Set;
 
 import org.adempiere.ad.callout.api.ICalloutField;
-import org.adempiere.ad.expression.api.ILogicExpression;
+import org.adempiere.ad.expression.api.ConstantLogicExpression;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_Product;
@@ -108,10 +108,10 @@ import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
 						.dateParamName(I_C_Order.COLUMNNAME_DatePromised)
 						.build())
 				.setValueClass(IntegerLookupValue.class)
-				.setReadonlyLogic(ILogicExpression.FALSE)
+				.setReadonlyLogic(ConstantLogicExpression.FALSE)
 				.setAlwaysUpdateable(true)
-				.setMandatoryLogic(ILogicExpression.TRUE)
-				.setDisplayLogic(ILogicExpression.TRUE)
+				.setMandatoryLogic(ConstantLogicExpression.TRUE)
+				.setDisplayLogic(ConstantLogicExpression.TRUE)
 				.addCallout(OrderLineQuickInputDescriptorFactory::onProductChangedCallout)
 				.addCharacteristic(Characteristic.PublicField);
 		return productFieldBuilder;
@@ -144,10 +144,10 @@ import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
 						.setAD_Val_Rule_ID(540199) // FIXME: hardcoded "M_HU_PI_Item_Product_For_Org_and_Product_and_DateOrdered"
 						.buildProvider())
 				.setValueClass(IntegerLookupValue.class)
-				.setReadonlyLogic(ILogicExpression.FALSE)
+				.setReadonlyLogic(ConstantLogicExpression.FALSE)
 				.setAlwaysUpdateable(true)
-				.setMandatoryLogic(ILogicExpression.FALSE)
-				.setDisplayLogic(ILogicExpression.TRUE)
+				.setMandatoryLogic(ConstantLogicExpression.FALSE)
+				.setDisplayLogic(ConstantLogicExpression.TRUE)
 				.addCharacteristic(Characteristic.PublicField);
 		return packingInstructionFieldBuilder;
 	}
@@ -157,10 +157,10 @@ import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
 		final Builder qtyFieldBuilder = DocumentFieldDescriptor.builder(IOrderLineQuickInput.COLUMNNAME_Qty)
 				.setCaption(Services.get(IMsgBL.class).translatable(IOrderLineQuickInput.COLUMNNAME_Qty))
 				.setWidgetType(DocumentFieldWidgetType.Quantity)
-				.setReadonlyLogic(ILogicExpression.FALSE)
+				.setReadonlyLogic(ConstantLogicExpression.FALSE)
 				.setAlwaysUpdateable(true)
-				.setMandatoryLogic(ILogicExpression.TRUE)
-				.setDisplayLogic(ILogicExpression.TRUE)
+				.setMandatoryLogic(ConstantLogicExpression.TRUE)
+				.setDisplayLogic(ConstantLogicExpression.TRUE)
 				.addCharacteristic(Characteristic.PublicField);
 		return qtyFieldBuilder;
 	}

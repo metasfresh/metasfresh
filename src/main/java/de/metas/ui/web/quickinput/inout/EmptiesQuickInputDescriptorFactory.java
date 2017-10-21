@@ -2,7 +2,7 @@ package de.metas.ui.web.quickinput.inout;
 
 import java.util.Set;
 
-import org.adempiere.ad.expression.api.ILogicExpression;
+import org.adempiere.ad.expression.api.ConstantLogicExpression;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.util.DisplayType;
@@ -91,19 +91,19 @@ public class EmptiesQuickInputDescriptorFactory implements IQuickInputDescriptor
 						.setDisplayType(DisplayType.Search)
 						.buildProvider())
 				.setValueClass(IntegerLookupValue.class)
-				.setReadonlyLogic(ILogicExpression.FALSE)
+				.setReadonlyLogic(ConstantLogicExpression.FALSE)
 				.setAlwaysUpdateable(true)
-				.setMandatoryLogic(ILogicExpression.TRUE)
-				.setDisplayLogic(ILogicExpression.TRUE)
+				.setMandatoryLogic(ConstantLogicExpression.TRUE)
+				.setDisplayLogic(ConstantLogicExpression.TRUE)
 				.addCharacteristic(Characteristic.PublicField));
 
 		entityDescriptor.addField(DocumentFieldDescriptor.builder(IEmptiesQuickInput.COLUMNNAME_Qty)
 				.setCaption(msgBL.translatable(IEmptiesQuickInput.COLUMNNAME_Qty))
 				.setWidgetType(DocumentFieldWidgetType.Integer)
-				.setReadonlyLogic(ILogicExpression.FALSE)
+				.setReadonlyLogic(ConstantLogicExpression.FALSE)
 				.setAlwaysUpdateable(true)
-				.setMandatoryLogic(ILogicExpression.TRUE)
-				.setDisplayLogic(ILogicExpression.TRUE)
+				.setMandatoryLogic(ConstantLogicExpression.TRUE)
+				.setDisplayLogic(ConstantLogicExpression.TRUE)
 				.addCharacteristic(Characteristic.PublicField));
 
 		return entityDescriptor.build();

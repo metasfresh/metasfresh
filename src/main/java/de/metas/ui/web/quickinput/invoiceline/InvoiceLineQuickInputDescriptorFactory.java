@@ -2,7 +2,7 @@ package de.metas.ui.web.quickinput.invoiceline;
 
 import java.util.Set;
 
-import org.adempiere.ad.expression.api.ILogicExpression;
+import org.adempiere.ad.expression.api.ConstantLogicExpression;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_InvoiceLine;
 import org.springframework.stereotype.Component;
@@ -84,7 +84,7 @@ public class InvoiceLineQuickInputDescriptorFactory implements IQuickInputDescri
 						.dateParamName(I_C_Invoice.COLUMNNAME_DateInvoiced)
 						.build())
 				.setMandatoryLogic(true)
-				.setDisplayLogic(ILogicExpression.TRUE)
+				.setDisplayLogic(ConstantLogicExpression.TRUE)
 				.addCharacteristic(Characteristic.PublicField));
 
 		entityDescriptor.addField(DocumentFieldDescriptor.builder(IInvoiceLineQuickInput.COLUMNNAME_Qty)
