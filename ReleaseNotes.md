@@ -18,6 +18,8 @@ Here come the actual release notes:
 * metasfresh-app
   * [#2283](https://github.com/metasfresh/metasfresh/issues/2283) Window Design WebUI : Order Candidates Improvements
     * Improved Translations for de_DE and en_US and Layout adapted to current Design Guidelines.
+  * [#2724](https://github.com/metasfresh/metasfresh/issues/2724) Window Design Webui: Please, add translations to the window Contract Term
+    * Improved Layout for Window Contract Terms, adapting current Guidelist. New Translation added for en_US Language/ Locale.
   * [#2764](https://github.com/metasfresh/metasfresh/issues/2764) Window Design Webui : Material receipt
     * Layout adapted to current WebUI Design Guidelines. Improved Translation for en_US, de_DE Language/ Locale.
 
