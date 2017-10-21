@@ -16,10 +16,10 @@ import org.compiere.model.I_M_PriceList;
 import org.compiere.model.ModelValidator;
 
 import de.metas.adempiere.model.I_C_Order;
-import de.metas.adempiere.service.IOrderBL;
-import de.metas.adempiere.service.IOrderDAO;
-import de.metas.adempiere.service.IOrderLineBL;
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.order.IOrderBL;
+import de.metas.order.IOrderDAO;
+import de.metas.order.IOrderLineBL;
 import de.metas.order.IOrderPA;
 
 /*

@@ -37,12 +37,12 @@ import org.compiere.util.Env;
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.adempiere.model.I_C_BPartner_Location;
 import de.metas.adempiere.service.IBPartnerOrgBL;
-import de.metas.adempiere.service.IOrderBL;
-import de.metas.adempiere.service.IOrderLineBL;
 import de.metas.document.documentNo.IDocumentNoBuilderFactory;
 import de.metas.document.documentNo.impl.IDocumentNoInfo;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.logging.MetasfreshLastError;
+import de.metas.order.IOrderBL;
+import de.metas.order.IOrderLineBL;
 import de.metas.product.IProductBL;
 
 /**

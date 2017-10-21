@@ -34,9 +34,9 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 
 import de.metas.adempiere.gui.search.IHUPackingAware;
-import de.metas.adempiere.service.IOrderLineBL;
 import de.metas.handlingunits.model.I_C_OrderLine;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.order.IOrderLineBL;
 
 /**
  * Wraps an {@link I_C_OrderLine} and makes it behave like an {@link IHUPackingAware}.

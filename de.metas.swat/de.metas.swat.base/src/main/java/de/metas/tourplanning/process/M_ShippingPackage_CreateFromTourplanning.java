@@ -38,7 +38,7 @@ import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_Shipper;
 
-import de.metas.adempiere.service.IOrderDAO;
+import de.metas.order.IOrderDAO;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;

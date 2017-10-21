@@ -29,15 +29,11 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
 import java.util.function.Function;
 
 import javax.swing.event.TableModelListener;
@@ -49,10 +45,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.CopyRecordFactory;
 import org.adempiere.model.CopyRecordSupport;
-import org.adempiere.model.virtualColumn.IVirtualColumn;
-import org.adempiere.model.virtualColumn.IVirtualColumnEvent;
-import org.adempiere.model.virtualColumn.IVirtualColumnListener;
-import org.adempiere.model.virtualColumn.IVirtualColumnProvider;
 import org.adempiere.util.Check;
 import org.adempiere.util.GridRowCtx;
 import org.adempiere.util.Services;
@@ -65,13 +57,11 @@ import org.compiere.util.Ini;
 import org.compiere.util.MSort;
 import org.compiere.util.SecureEngine;
 import org.compiere.util.Trx;
-import org.compiere.util.Util;
 import org.compiere.util.ValueNamePair;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.service.IColumnBL;
 import de.metas.document.documentNo.IDocumentNoBuilderFactory;
-import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;
 import de.metas.translation.api.IElementTranslationBL;
@@ -111,7 +101,6 @@ import de.metas.translation.api.IElementTranslationBL;
 // metas: synched with rev 11113
 public class GridTable extends AbstractTableModel
 	implements Serializable
-	,IVirtualColumnListener // metas
 {
 	/**
 	 * generated
@@ -177,8 +166,8 @@ public class GridTable extends AbstractTableModel
 	private boolean				m_compareDB = true;		//	set to true after every save
 
 	//	The buffer for all data
-	private volatile ArrayList<Object[]>	m_buffer = new ArrayList<Object[]>(100);
-	private volatile ArrayList<MSort>		m_sort = new ArrayList<MSort>(100);
+	private volatile ArrayList<Object[]>	m_buffer = new ArrayList<>(100);
+	private volatile ArrayList<MSort>		m_sort = new ArrayList<>(100);
 	/** Original row data               */
 	private Object[]			m_rowData = null;
 	/** Original data [row,col,data]    */
@@ -187,7 +176,7 @@ public class GridTable extends AbstractTableModel
 	private Loader		        m_loader = null;
 
 	/**	Columns                 		*/
-	private ArrayList<GridField>	m_fields = new ArrayList<GridField>(30);
+	private ArrayList<GridField>	m_fields = new ArrayList<>(30);
 //	private ArrayList<Object>	m_parameterSELECT = new ArrayList<Object>(5);
 //	private ArrayList<Object>	m_parameterWHERE = new ArrayList<Object>(5);
 
@@ -695,13 +684,13 @@ public class GridTable extends AbstractTableModel
 		m_rowCount = m_loader.open(maxRows, query);
 		if (m_virtual)
 		{
-			m_buffer = new ArrayList<Object[]>(210);
+			m_buffer = new ArrayList<>(210);
 		}
 		else
 		{
-			m_buffer = new ArrayList<Object[]>(m_rowCount+10);
+			m_buffer = new ArrayList<>(m_rowCount+10);
 		}
-		m_sort = new ArrayList<MSort>(m_rowCount+10);
+		m_sort = new ArrayList<>(m_rowCount+10);
 		m_cacheStart = m_cacheEnd = -1;
 		if (m_rowCount > 0)
 		{
@@ -1080,7 +1069,7 @@ public class GridTable extends AbstractTableModel
 			.append(" IN (");
 		m_cacheStart = start;
 		m_cacheEnd = m_cacheStart - 1;
-		Map<Integer, Integer> rowmap = new LinkedHashMap<Integer, Integer>(200);
+		Map<Integer, Integer> rowmap = new LinkedHashMap<>(200);
 		for (int i = start; i < start + 200 && i < m_sort.size(); i++)
 		{
 			if(i > start)
@@ -1089,7 +1078,7 @@ public class GridTable extends AbstractTableModel
 			rowmap.put(m_sort.get(i).index, i);
 		}
 		sql.append(")");
-		m_buffer = new ArrayList<Object[]>(210);
+		m_buffer = new ArrayList<>(210);
 		for (int i = 0; i < 200; i++)
 			m_buffer.add(null);
 		PreparedStatement stmt = null;
@@ -1107,7 +1096,7 @@ public class GridTable extends AbstractTableModel
 			}
 			if (!rowmap.isEmpty())
 			{
-				List<Integer> toremove = new ArrayList<Integer>();
+				List<Integer> toremove = new ArrayList<>();
 				for(Map.Entry<Integer, Integer> entry : rowmap.entrySet())
 				{
 					toremove.add(entry.getValue());
@@ -2332,8 +2321,8 @@ public class GridTable extends AbstractTableModel
 	
 	/*************************************************************************/
 
-	private ArrayList<String>	m_createSqlColumn = new ArrayList<String>();
-	private ArrayList<String>	m_createSqlValue = new ArrayList<String>();
+	private ArrayList<String>	m_createSqlColumn = new ArrayList<>();
+	private ArrayList<String>	m_createSqlValue = new ArrayList<>();
 
 	/**
 	 * 	Prepare SQL creation
@@ -2397,8 +2386,8 @@ public class GridTable extends AbstractTableModel
 	 */
 	private void createUpdateSqlReset()
 	{
-		m_createSqlColumn = new ArrayList<String>();
-		m_createSqlValue = new ArrayList<String>();
+		m_createSqlColumn = new ArrayList<>();
+		m_createSqlValue = new ArrayList<>();
 	}	//	createUpdateSqlReset
 
 	/**
@@ -2457,7 +2446,7 @@ public class GridTable extends AbstractTableModel
 	{
 		log.debug("LOB=" + lob);
 		if (m_lobInfo == null)
-			m_lobInfo = new ArrayList<PO_LOB>();
+			m_lobInfo = new ArrayList<>();
 		m_lobInfo.add(lob);
 	}	//	lobAdd
 	
@@ -3602,7 +3591,7 @@ public class GridTable extends AbstractTableModel
 			// metas: compute virtual column values if there are any and if
 			// there is no preceding SQL-Column value.
 			if (m_indexKeyColumn > -1) {
-				final ArrayList<Integer> recordIds = new ArrayList<Integer>(
+				final ArrayList<Integer> recordIds = new ArrayList<>(
 						m_rowCount);
 				for (final Object[] row : m_buffer) {
 
@@ -3893,145 +3882,6 @@ public class GridTable extends AbstractTableModel
 		return this.m_gridTab;
 	}
 
-	/**
-	 * @param initWithRecordIds
-	 *            may not be <code>null</code>. If not null, the virtual column
-	 *            instances {@link IVirtualColumn#init(Collection)} metods are
-	 *            called with this collection.
-	 * @param rowIdx
-	 * @param myQuery
-	 *            may be <code>null</code>. If not null, a map consisting of the
-	 *            queries restrictions is created to invoke
-	 *            {@link IVirtualColumn#init(Collection, String, Map)} with.
-	 * @deprecated metas: method no longer used
-	 */
-	@SuppressWarnings("unused")
-	@Deprecated
-	private void computeVirtualColumns(
-			final Collection<Integer> initWithRecordIds, final int rowIdx,
-			final MQuery myQuery) {
-
-		final String trxName = Trx.createTrxName("computeVirtualColumns");
-
-		final IVirtualColumnProvider virtualColumnProvider = Services
-				.get(IVirtualColumnProvider.class);
-
-		// one virtual column can compute the values for more than one actual
-		// column. We need to make sure that it is invoked only once.
-		final Set<IVirtualColumn> alreadyInvoked = new HashSet<IVirtualColumn>();
-
-		for (int columnIdx = 0; columnIdx < m_fields.size(); columnIdx++) {
-
-			final String columnSQL = m_fields.get(columnIdx).getVO().ColumnSQL;
-			if (!Util.isEmpty(columnSQL) && !"NULL".equals(columnSQL)) {
-				continue;
-			}
-
-			final String columnClass = m_fields.get(columnIdx).getVO().ColumnClass;
-			if (Util.isEmpty(columnClass)) {
-				continue;
-			}
-
-			final IVirtualColumn virtualColumn = virtualColumnProvider
-					.getForClassName(columnClass);
-
-			if (!alreadyInvoked.contains(virtualColumn)) {
-
-				// let's see if we can get anything useful for our computation
-				// params from the query
-				final Map<String, Object> params = new HashMap<String, Object>();
-				if (myQuery != null) {
-					for (int i = 0; i < query.getRestrictionCount(); i++) {
-						params.put(query.getInfoName(i), query.getCode(i));
-					}
-				}
-
-				virtualColumn.addVirtualColumnListener(this);
-				virtualColumn.addRecords(initWithRecordIds, trxName, params);
-				alreadyInvoked.add(virtualColumn);
-			}
-
-			final String columnName = m_fields.get(columnIdx).getColumnName();
-
-			if (rowIdx < 0) {
-
-				// get the virtual column value for all rows
-				int currentRowIdx = 0;
-				for (Object[] row : m_buffer) {
-
-					final Integer recordId = (Integer) row[m_indexKeyColumn];
-					if (recordId == null) {
-						// this happens if the row is a new PO that hasn't been
-						// stored yet.
-						continue;
-					}
-					final Object virtualValue = virtualColumn.getValue(
-							columnName, recordId);
-
-					row[columnIdx] = virtualValue;
-					currentRowIdx++;
-				}
-				fireTableRowsUpdated(0, m_rowCount - 1);
-			} else {
-				Object[] row = m_buffer.get(rowIdx);
-				final Integer recordId = (Integer) row[m_indexKeyColumn];
-				if (recordId == null) {
-					// this happens if the row is a new PO that hasn't been
-					// stored yet.
-					continue;
-				}
-				final Object virtualValue = virtualColumn.getValue(columnName,
-						recordId);
-
-				row[columnIdx] = virtualValue;
-				fireTableRowsUpdated(rowIdx, rowIdx);
-			}
-		}
-
-		Trx.get(trxName, false).commit();
-		Trx.get(trxName, false).close();
-	}
-
-	/**
-	 * @deprecated method no longer used
-	 */
-	// metas: inform listeners about the status of the virtual columns
-	@Deprecated
-	@Override
-	public void virtualcolumnEvent(final IVirtualColumnEvent evt) {
-
-		final IVirtualColumn virtualColumn = (IVirtualColumn) evt.getSource();
-
-		// final DataStatusEvent dse = new DataStatusEvent(GridTable.this,
-		// m_rowCount, true, Env.isAutoCommit(m_ctx, m_WindowNo), false);
-		//		
-		final StringBuilder columnNames = new StringBuilder();
-
-		for (String colName : virtualColumn.getColumnNames()) {
-
-			if (columnNames.length() > 0) {
-				columnNames.append(", ");
-			}
-			columnNames.append(Services.get(IMsgBL.class).translate(Env.getCtx(), colName));
-		}
-
-		if (IVirtualColumnEvent.START_INIT.equals(evt.getStatus())) {
-			// dse.setInfo("VirtualColumn.StartInit", columnName, false, false);
-			fireDataStatusIEvent("VirtualColumn.StartInit", columnNames
-					.toString());
-
-		} else if (IVirtualColumnEvent.FINISH_INIT.equals(evt.getStatus())) {
-
-			// dse.setInfo("VirtualColumn.FinishInit", columnName, false,
-			// false);
-			fireDataStatusIEvent("VirtualColumn.FinishInit", columnNames
-					.toString());
-		}
-
-		// dse.setLoading(evt.getProgessAbs());
-		// fireDataStatusChanged(dse);
-	}
-	// metas end
 	
 	private String createSelectSql(int oneRow) {
 		if (m_fields.size() == 0 || m_tableName == null
@@ -4162,8 +4012,8 @@ public class GridTable extends AbstractTableModel
 		// Start Loading
 		m_loader = new Loader();
 		m_rowCount = m_loader.open(maxRows, query);
-		m_buffer = new ArrayList<Object[]>(m_rowCount + 10);
-		m_sort = new ArrayList<MSort>(m_rowCount + 10);
+		m_buffer = new ArrayList<>(m_rowCount + 10);
+		m_sort = new ArrayList<>(m_rowCount + 10);
 		if (m_rowCount > 0)
 			m_loader.start();
 		else
@@ -4197,7 +4047,7 @@ public class GridTable extends AbstractTableModel
 		if (Check.isEmpty(whereClause, true))
 			return;
 		if (m_whereClauseNewRecords == null)
-			m_whereClauseNewRecords = new ArrayList<String>();
+			m_whereClauseNewRecords = new ArrayList<>();
 		if (!m_whereClauseNewRecords.contains(whereClause))
 			m_whereClauseNewRecords.add(whereClause);
 	}

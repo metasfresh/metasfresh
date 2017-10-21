@@ -23,6 +23,7 @@ package org.adempiere.model.validator;
  */
 
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
+import org.adempiere.ad.column.callout.AD_Column;
 import org.adempiere.ad.dao.cache.IModelCacheService;
 import org.adempiere.ad.dao.cache.ITableCacheConfig;
 import org.adempiere.ad.dao.cache.ITableCacheConfig.TrxLevel;
@@ -177,6 +178,8 @@ public final class AdempiereBaseValidator extends AbstractModuleInterceptor
 		calloutsRegistry.registerAnnotatedCallout(new de.metas.javaclasses.model.interceptor.AD_JavaClass_Type());
 		
 		calloutsRegistry.registerAnnotatedCallout(new de.metas.process.callout.AD_Process_Para()); // FRESH-727
+		
+		calloutsRegistry.registerAnnotatedCallout(AD_Column.instance);
 	}
 
 	@Override

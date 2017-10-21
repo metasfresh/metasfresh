@@ -44,9 +44,10 @@ import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.PO;
 import org.compiere.model.Query;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.Ini;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
 
 /**
  * @author tsa

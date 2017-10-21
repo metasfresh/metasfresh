@@ -1,4 +1,4 @@
-package de.metas.adempiere.service;
+package de.metas.order;
 
 /*
  * #%L

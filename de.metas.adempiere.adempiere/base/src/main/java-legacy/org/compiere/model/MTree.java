@@ -33,6 +33,7 @@ import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.tree.IPOTreeSupportFactory;
 import org.adempiere.model.tree.spi.IPOTreeSupport;
 import org.adempiere.util.Check;
@@ -102,7 +103,7 @@ public class MTree extends MTree_Base
 	/** Root Node */
 	private MTreeNode m_root = null;
 	/** Buffer while loading tree */
-	private final List<MTreeNode> m_buffer = new ArrayList<MTreeNode>();
+	private final List<MTreeNode> m_buffer = new ArrayList<>();
 	/** Prepared Statement for Node Details */
 	private RowSet m_nodeRowSet;
 	/** The tree is displayed on the Java Client (i.e. not web) */
@@ -445,7 +446,7 @@ public class MTree extends MTree_Base
 		log.debug("SQL={}", sql);
 
 		m_nodeRowSet = DB.getRowSet(sql, sqlParams);
-		m_nodeIdMap = new HashMap<Integer, List<Integer>>(50);
+		m_nodeIdMap = new HashMap<>(50);
 		try
 		{
 			m_nodeRowSet.beforeFirst();
@@ -655,7 +656,7 @@ public class MTree extends MTree_Base
 		{
 			nodeTableName += "BP";
 		}
-		else if (I_M_Product.Table_ID == AD_Table_ID)
+		else if (AD_Table_ID == InterfaceWrapperHelper.getTableId(I_M_Product.class))
 		{
 			nodeTableName += "PR";
 		}
