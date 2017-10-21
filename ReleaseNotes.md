@@ -18,6 +18,8 @@ Here come the actual release notes:
 * metasfresh-app
   * [#2283](https://github.com/metasfresh/metasfresh/issues/2283) Window Design WebUI : Order Candidates Improvements
     * Improved Translations for de_DE and en_US and Layout adapted to current Design Guidelines.
+  * [#2764](https://github.com/metasfresh/metasfresh/issues/2764) Window Design Webui : Material receipt
+    * Layout adapted to current WebUI Design Guidelines. Improved Translation for en_US, de_DE Language/ Locale.
 
 # metasfresh 5.32 (2017-43)
 
