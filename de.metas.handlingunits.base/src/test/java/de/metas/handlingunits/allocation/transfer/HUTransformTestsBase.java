@@ -4,8 +4,8 @@ package de.metas.handlingunits.allocation.transfer;
 import static de.metas.business.BusinessTestHelper.createBPartner;
 import static de.metas.business.BusinessTestHelper.createBPartnerLocation;
 import static de.metas.business.BusinessTestHelper.createLocator;
+import static de.metas.business.BusinessTestHelper.createUomKg;
 import static de.metas.business.BusinessTestHelper.createWarehouse;
-import static de.metas.business.BusinessTestHelper.uomKg;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.hamcrest.Matchers.hasXPath;
 import static org.hamcrest.Matchers.is;
@@ -84,6 +84,8 @@ public class HUTransformTestsBase
 
 	private final IHUPackingMaterialsCollector<IHUPackingMaterialCollectorSource> noopPackingMaterialsCollector;
 
+	private I_C_UOM uomKg;
+
 	public HUTransformTestsBase(IHUPackingMaterialsCollector<IHUPackingMaterialCollectorSource> noopPackingMaterialsCollector)
 	{
 		this.noopPackingMaterialsCollector = noopPackingMaterialsCollector;
@@ -93,6 +95,8 @@ public class HUTransformTestsBase
 
 		handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 		handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+		
+		uomKg = createUomKg();
 	}
 
 	public final TestHUs testCU_To_NewCU_1Tomato_DoIt()

@@ -2,7 +2,6 @@ package de.metas.handlingunits;
 
 import static de.metas.business.BusinessTestHelper.createM_Attribute;
 import static de.metas.business.BusinessTestHelper.createWarehouse;
-import static de.metas.business.BusinessTestHelper.uomEach;
 
 /*
  * #%L
@@ -147,6 +146,8 @@ public class HUDocumentSelectTestHelper extends HUTestHelper
 	 */
 	public I_M_HU_PI huDefPalet2;
 
+	private final BusinessTestHelper businessTestHelper = BusinessTestHelper.get();
+	
 	public HUDocumentSelectTestHelper()
 	{
 		super(false);
@@ -298,11 +299,11 @@ public class HUDocumentSelectTestHelper extends HUTestHelper
 		huDefIFCO = createHUDefinition(HUTestHelper.NAME_IFCO_Product, X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
 		{
 			final I_M_HU_PI_Item itemMA = this.createHU_PI_Item_Material(huDefIFCO);
-			huDefIFCO_pip_Tomato = assignProduct(itemMA, pTomato, BigDecimal.TEN, uomEach);
+			huDefIFCO_pip_Tomato = assignProduct(itemMA, pTomato, BigDecimal.TEN, businessTestHelper.createUomEach());
 
 			createHU_PI_Item_PackingMaterial(huDefIFCO, pmIFCO);
 			pmIFCO.setAllowedPackingWeight(new BigDecimal("100"));
-			pmIFCO.setC_UOM_Weight(uomEach);
+			pmIFCO.setC_UOM_Weight(businessTestHelper.createUomEach());
 			InterfaceWrapperHelper.save(pmIFCO);
 
 			createM_HU_PI_Attribute(new HUPIAttributeBuilder(attr_CountryMadeIn)
@@ -317,8 +318,8 @@ public class HUDocumentSelectTestHelper extends HUTestHelper
 		huDefIFCO2 = createHUDefinition(HUTestHelper.NAME_IFCO_Product + "_2", X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
 		{
 			final I_M_HU_PI_Item itemMA = this.createHU_PI_Item_Material(huDefIFCO2);
-			huDefIFCO2_pip_Tomato = assignProduct(itemMA, pTomato, BigDecimal.TEN, uomEach);
-			huDefIFCO2_pip_Salad = assignProduct(itemMA, pSalad, BigDecimal.TEN, uomEach);
+			huDefIFCO2_pip_Tomato = assignProduct(itemMA, pTomato, BigDecimal.TEN, businessTestHelper.createUomEach());
+			huDefIFCO2_pip_Salad = assignProduct(itemMA, pSalad, BigDecimal.TEN, businessTestHelper.createUomEach());
 
 			createHU_PI_Item_PackingMaterial(huDefIFCO2, pmIFCO);
 
@@ -337,7 +338,7 @@ public class HUDocumentSelectTestHelper extends HUTestHelper
 
 			createHU_PI_Item_PackingMaterial(huDefPalet, pmPalet);
 			pmPalet.setAllowedPackingWeight(new BigDecimal("400"));
-			pmPalet.setC_UOM_Weight(uomEach);
+			pmPalet.setC_UOM_Weight(businessTestHelper.createUomEach());
 			InterfaceWrapperHelper.save(pmPalet);
 
 			createM_HU_PI_Attribute(new HUPIAttributeBuilder(attr_CountryMadeIn)
@@ -411,7 +412,7 @@ public class HUDocumentSelectTestHelper extends HUTestHelper
 		rSched.setM_Warehouse(warehouse);
 		rSched.setM_Warehouse_Dest(warehouseDest);
 		rSched.setProcessed(false);
-		rSched.setC_UOM(BusinessTestHelper.uomEach);
+		rSched.setC_UOM(businessTestHelper.createUomEach());
 		rSched.setQtyOrdered(BigDecimal.valueOf(qtyInt));
 
 		//

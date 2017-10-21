@@ -1,6 +1,6 @@
 package de.metas.handlingunits.materialtracking.spi.impl;
 
-import static de.metas.business.BusinessTestHelper.uomKg;
+import static de.metas.business.BusinessTestHelper.*;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
@@ -234,7 +234,7 @@ public class PPOrderMInOutLineRetrievalServiceTest
 
 	private List<I_M_HU> createHUs(final I_M_Product product, final BigDecimal qty)
 	{
-		return helper.createHUs(helper.getHUContext(), helper.huDefPalet2, product, qty, uomKg);
+		return helper.createHUs(helper.getHUContext(), helper.huDefPalet2, product, qty, helper.uomKg);
 	}
 
 	/**

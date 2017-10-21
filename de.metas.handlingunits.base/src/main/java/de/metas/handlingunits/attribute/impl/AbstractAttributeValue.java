@@ -58,6 +58,7 @@ import de.metas.handlingunits.attribute.IHUAttributesDAO;
 import de.metas.handlingunits.attribute.exceptions.InvalidAttributeValueException;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.logging.LogManager;
+import lombok.NonNull;
 
 /**
  * Generic {@link IAttributeValue} value implementation
@@ -83,14 +84,11 @@ public abstract class AbstractAttributeValue implements IAttributeValue
 
 	private final CompositeAttributeValueListener listeners = new CompositeAttributeValueListener();
 
-	public AbstractAttributeValue(final IAttributeStorage attributeStorage, final org.compiere.model.I_M_Attribute attribute)
+	public AbstractAttributeValue(
+			@NonNull final IAttributeStorage attributeStorage, 
+			@NonNull final org.compiere.model.I_M_Attribute attribute)
 	{
-		super();
-
-		Check.assumeNotNull(attributeStorage, "attributeStorage not null");
 		this.attributeStorage = attributeStorage;
-
-		Check.assumeNotNull(attribute, "attribute not null");
 		this.attribute = InterfaceWrapperHelper.create(attribute, I_M_Attribute.class);
 
 		_attributeValuesProvider = Services.get(IAttributesBL.class).createAttributeValuesProvider(this.attribute);

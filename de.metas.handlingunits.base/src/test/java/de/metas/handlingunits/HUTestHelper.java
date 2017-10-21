@@ -1,13 +1,6 @@
 package de.metas.handlingunits;
 
-import static de.metas.business.BusinessTestHelper.createBPartner;
-import static de.metas.business.BusinessTestHelper.createM_Attribute;
-import static de.metas.business.BusinessTestHelper.createProduct;
-import static de.metas.business.BusinessTestHelper.createUOMConversion;
-import static de.metas.business.BusinessTestHelper.createWarehouse;
-import static de.metas.business.BusinessTestHelper.uomEach;
-import static de.metas.business.BusinessTestHelper.uomKg;
-import static de.metas.business.BusinessTestHelper.uomPCE;
+import static de.metas.business.BusinessTestHelper.*;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
@@ -195,6 +188,8 @@ public class HUTestHelper
 	public static final String NAME_Issue_Warehouse = "IssueWarehouse";
 
 	public IHUTrxBL trxBL;
+
+	public I_C_UOM uomKg;
 
 	/**
 	 * Value: Palet
@@ -477,9 +472,10 @@ public class HUTestHelper
 	 * <b>Important:</b> if you do the full monty with interceptors, then you also need to annotate the respective test class like this:
 	 * 
 	 * <pre>
-&#64;RunWith(SpringRunner.class)
-&#64;SpringBootTest(classes= HandlingUnitsConfiguration.class)
+	&#64;RunWith(SpringRunner.class)
+	&#64;SpringBootTest(classes= HandlingUnitsConfiguration.class)
 	 * </pre>
+	 * 
 	 * Otherwise, tests will probably fail due to spring application context.
 	 */
 	protected final void setupModuleInterceptors_HU_Full()
@@ -550,6 +546,8 @@ public class HUTestHelper
 	 */
 	protected void setupMasterData()
 	{
+		uomKg = createUomKg();
+
 		attr_CountryMadeIn = createM_Attribute(HUTestHelper.NAME_CountryMadeIn_Attribute, X_M_Attribute.ATTRIBUTEVALUETYPE_List, true);
 		createAttributeListValues(attr_CountryMadeIn,
 				HUTestHelper.COUNTRYMADEIN_RO,
@@ -559,6 +557,7 @@ public class HUTestHelper
 		attr_Volume = createM_Attribute(HUTestHelper.NAME_Volume_Attribute, X_M_Attribute.ATTRIBUTEVALUETYPE_Number, true);
 		attr_FragileSticker = createM_Attribute(HUTestHelper.NAME_FragileSticker_Attribute, X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40, false);
 
+		final I_C_UOM uomKg = createUomKg();
 		attr_WeightGross = createM_Attribute(HUTestHelper.NAME_WeightGross_Attribute, X_M_Attribute.ATTRIBUTEVALUETYPE_Number, WeightGrossAttributeValueCallout.class, uomKg, true);
 		attr_WeightNet = createM_Attribute(HUTestHelper.NAME_WeightNet_Attribute, X_M_Attribute.ATTRIBUTEVALUETYPE_Number, WeightNetAttributeValueCallout.class, uomKg, true);
 		attr_WeightTare = createM_Attribute(HUTestHelper.NAME_WeightTare_Attribute, X_M_Attribute.ATTRIBUTEVALUETYPE_Number, WeightTareAttributeValueCallout.class, uomKg, true);
@@ -589,7 +588,7 @@ public class HUTestHelper
 		// FIXME: this is a workaround because we are not handling the UOM conversions in our HU tests
 		createUOMConversion(
 				null,  // product,
-				uomEach,  // uomFrom,
+				createUomEach(),  // uomFrom,
 				uomKg, // uomTo,
 				BigDecimal.ONE,
 				BigDecimal.ONE);
@@ -597,33 +596,33 @@ public class HUTestHelper
 		// Create 1-to-1 conversion between "Each" and PCE / Stk
 		createUOMConversion(
 				null,  // product,
-				uomEach,  // uomFrom,
-				uomPCE, // uomTo,
+				createUomEach(),  // uomFrom,
+				createUomPCE(), // uomTo,
 				BigDecimal.ONE,
 				BigDecimal.ONE);
 
 		//
 		// Create and configure Pallete
-		pPalet = createProduct(HUTestHelper.NAME_Palet_Product, uomEach, pPalet_Weight_25kg); // Pallets are our packing material
+		pPalet = createProduct(HUTestHelper.NAME_Palet_Product, createUomEach(), pPalet_Weight_25kg); // Pallets are our packing material
 		pmPalet = createPackingMaterial("Palet-PM", pPalet);
 
 		//
 		// Create and configure IFCO
-		pIFCO = createProduct(HUTestHelper.NAME_IFCO_Product, uomEach, pIFCO_Weight_1kg); // IFCOs are another kind of packing material
+		pIFCO = createProduct(HUTestHelper.NAME_IFCO_Product, createUomEach(), pIFCO_Weight_1kg); // IFCOs are another kind of packing material
 		pmIFCO = createPackingMaterial("IFCO-PM", pIFCO);
 
 		//
 		// Create and configure Bag
-		pBag = createProduct(HUTestHelper.NAME_Bag_Product, uomEach, pBag_Weight_0_5Kg); // Bags are another kind of packing material
+		pBag = createProduct(HUTestHelper.NAME_Bag_Product, createUomEach(), pBag_Weight_0_5Kg); // Bags are another kind of packing material
 		pmBag = createPackingMaterial("Bag-PM", pBag);
 
 		//
 		// Create and configure Paloxe
-		pPaloxe = createProduct(HUTestHelper.NAME_Paloxe_Product, uomEach, pPaloxe_Weight_75kg); // Paloxes are another kind of packing material
+		pPaloxe = createProduct(HUTestHelper.NAME_Paloxe_Product, createUomEach(), pPaloxe_Weight_75kg); // Paloxes are another kind of packing material
 		pmPaloxe = createPackingMaterial("Paloxe-PM", pPaloxe);
 
-		pTomato = createProduct(HUTestHelper.NAME_Tomato_Product, uomEach);
-		pSalad = createProduct(HUTestHelper.NAME_Salad_Product, uomEach);
+		pTomato = createProduct(HUTestHelper.NAME_Tomato_Product, createUomEach());
+		pSalad = createProduct(HUTestHelper.NAME_Salad_Product, createUomEach());
 
 		//
 		// No-PI
@@ -967,8 +966,6 @@ public class HUTestHelper
 		return today;
 	}
 
-	
-
 	public I_M_HU_PackingMaterial createPackingMaterial(final String name, final I_M_Product product)
 	{
 		final I_M_HU_PackingMaterial packingMaterial = InterfaceWrapperHelper.create(ctx, I_M_HU_PackingMaterial.class, ITrx.TRXNAME_None);
@@ -1191,7 +1188,6 @@ public class HUTestHelper
 		return new HUListAssertsBuilder(null, name, list);
 	}
 
-	
 	/**
 	 * Create an {@link I_M_HU_Attribute} for the given {@link HUPIAttributeBuilder}.
 	 *
@@ -1267,7 +1263,7 @@ public class HUTestHelper
 			final BigDecimal qtyCapacity,
 			final boolean fullyLoaded)
 	{
-		return createDummySourceDestination(product, qtyCapacity, uomEach, fullyLoaded);
+		return createDummySourceDestination(product, qtyCapacity, createUomEach(), fullyLoaded);
 	}
 
 	public AbstractAllocationSourceDestination createDummySourceDestination(
@@ -1400,9 +1396,9 @@ public class HUTestHelper
 
 		final ILUTUConfigurationFactory lutuConfigurationFactory = Services.get(ILUTUConfigurationFactory.class);
 		final I_M_HU_LUTU_Configuration lutuConfiguration = lutuConfigurationFactory.createLUTUConfiguration(
-				tuPIItemProduct, 
-				cuProduct, 
-				cuUOM, 
+				tuPIItemProduct,
+				cuProduct,
+				cuUOM,
 				bpartner,
 				false); // noLUForVirtualTU == false => allow placing the CU (e.g. a packing material product) directly on the LU
 		lutuConfiguration.setC_BPartner(bpartner);
@@ -1759,8 +1755,6 @@ public class HUTestHelper
 		// Execute transfer
 		loader.load(request);
 	}
-
-	
 
 	public boolean isNoPI(final I_M_HU_PI pi)
 	{

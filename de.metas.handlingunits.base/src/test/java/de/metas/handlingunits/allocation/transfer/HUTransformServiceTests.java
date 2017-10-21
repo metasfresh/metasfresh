@@ -1,6 +1,6 @@
 package de.metas.handlingunits.allocation.transfer;
 
-import static de.metas.business.BusinessTestHelper.uomKg;
+import static de.metas.business.BusinessTestHelper.*;
 import static org.adempiere.model.InterfaceWrapperHelper.refresh;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -17,7 +17,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
+import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.Services;
+import org.compiere.model.I_C_UOM;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -30,6 +32,7 @@ import org.w3c.dom.Node;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.business.BusinessTestHelper;
 import de.metas.handlingunits.HUXmlConverter;
 import de.metas.handlingunits.IHUPackingMaterialsCollector;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -85,11 +88,14 @@ public class HUTransformServiceTests
 	@Mocked
 	private IHUPackingMaterialsCollector<IHUPackingMaterialCollectorSource> noopPackingMaterialsCollector;
 
+	private I_C_UOM uomKg;
+
 	@Before
 	public void init()
 	{
+		AdempiereTestHelper.get().init();
 		handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-
+		uomKg = createUomKg();
 		testsBase = new HUTransformTestsBase(noopPackingMaterialsCollector);
 	}
 
@@ -765,7 +771,7 @@ public class HUTransformServiceTests
 		Assert.assertThat(existingTU.getHUStatus(), is(X_M_HU.HUSTATUS_Active));
 
 		final HUProducerDestination producer = HUProducerDestination.ofVirtualPI();
-		data.helper.load(producer, data.helper.pSalad, new BigDecimal("3"),uomKg);
+		data.helper.load(producer, data.helper.pSalad, new BigDecimal("3"), uomKg);
 		final I_M_HU cu2 = producer.getCreatedHUs().get(0);
 		handlingUnitsBL.setHUStatus(data.helper.getHUContext(), cu2, X_M_HU.HUSTATUS_Active);
 		save(cu2);

@@ -1,7 +1,6 @@
 package de.metas.handlingunits.allocation.transfer.impl;
 
-import static de.metas.business.BusinessTestHelper.uomEach;
-import static de.metas.business.BusinessTestHelper.uomKg;
+import static de.metas.business.BusinessTestHelper.createUomEach;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -114,8 +113,8 @@ public class LUTUProducerDestinationTestSupport
 			piTU_IFCO = helper.createHUDefinition("TU_IFCO", X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
 
 			piTU_Item_IFCO = helper.createHU_PI_Item_Material(piTU_IFCO);
-			piTU_Item_Product_IFCO_40KgTomatoes = helper.assignProduct(piTU_Item_IFCO, helper.pTomato, new BigDecimal("40"), uomKg);
-			helper.assignProduct(piTU_Item_IFCO, helper.pSalad, new BigDecimal("7"), uomEach);
+			piTU_Item_Product_IFCO_40KgTomatoes = helper.assignProduct(piTU_Item_IFCO, helper.pTomato, new BigDecimal("40"), helper.uomKg);
+			helper.assignProduct(piTU_Item_IFCO, helper.pSalad, new BigDecimal("7"), createUomEach());
 
 			helper.createHU_PI_Item_PackingMaterial(piTU_IFCO, helper.pmIFCO);
 		}
@@ -125,8 +124,8 @@ public class LUTUProducerDestinationTestSupport
 			piTU_Bag = helper.createHUDefinition("TU_Bag", X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
 
 			piTU_Item_Bag = helper.createHU_PI_Item_Material(piTU_Bag);
-			piTU_Item_Product_Bag_8KgTomatoes = helper.assignProduct(piTU_Item_Bag, helper.pTomato, new BigDecimal("8"), uomKg);
-			helper.assignProduct(piTU_Item_Bag, helper.pSalad, new BigDecimal("5"), uomEach);
+			piTU_Item_Product_Bag_8KgTomatoes = helper.assignProduct(piTU_Item_Bag, helper.pTomato, new BigDecimal("8"), helper.uomKg);
+			helper.assignProduct(piTU_Item_Bag, helper.pSalad, new BigDecimal("5"), createUomEach());
 
 			helper.createHU_PI_Item_PackingMaterial(piTU_Bag, helper.pmBag);
 		}
@@ -143,7 +142,7 @@ public class LUTUProducerDestinationTestSupport
 			piTruckUnlimitedCapacity = helper.createHUDefinition(HUTestHelper.NAME_Truck_Product);
 
 			piTruck_UnlimitedCapacity_Item = helper.createHU_PI_Item_Material(piTruckUnlimitedCapacity);
-			final I_M_HU_PI_Item_Product piItemProduct = helper.assignProduct(piTruck_UnlimitedCapacity_Item, helper.pTomato, new BigDecimal("6"), uomEach);
+			final I_M_HU_PI_Item_Product piItemProduct = helper.assignProduct(piTruck_UnlimitedCapacity_Item, helper.pTomato, new BigDecimal("6"), createUomEach());
 			piItemProduct.setIsInfiniteCapacity(true);
 			InterfaceWrapperHelper.save(piItemProduct);
 
@@ -179,13 +178,13 @@ public class LUTUProducerDestinationTestSupport
 		// TU
 		lutuProducer.setLUItemPI(piLU_Item_IFCO);
 		lutuProducer.setTUPI(piTU_IFCO);
-		lutuProducer.addTUCapacity(helper.pTomato, BigDecimal.valueOf(qtyCUPerTU), uomKg);
+		lutuProducer.addTUCapacity(helper.pTomato, BigDecimal.valueOf(qtyCUPerTU), helper.uomKg);
 
 		producerCustomizer.accept(lutuProducer);
 
 		final int qtyCUTotal = qtyTUs * qtyCUPerTU;
 
-		helper.load(lutuProducer, helper.pTomato, BigDecimal.valueOf(qtyCUTotal), uomKg);
+		helper.load(lutuProducer, helper.pTomato, BigDecimal.valueOf(qtyCUTotal), helper.uomKg);
 
 		final List<I_M_HU> hus = lutuProducer.getCreatedHUs();
 		return ListUtils.singleElement(hus);

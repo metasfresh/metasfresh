@@ -47,7 +47,10 @@ import de.metas.javaclasses.model.I_AD_JavaClass;
 public final class BusinessTestHelper
 {
 
-	public static final BusinessTestHelper INSTANCE = new BusinessTestHelper();
+	public static final BusinessTestHelper get()
+	{
+		return new BusinessTestHelper();
+	}
 
 	/**
 	 * Default precision
@@ -59,22 +62,28 @@ public final class BusinessTestHelper
 	 */
 	private static final int UOM_Precision_3 = 3;
 
-	public static final I_C_UOM uomEach = createUOM("Ea", X_C_UOM.UOMTYPE_Weigth, UOM_Precision_0);
-	public static final I_C_UOM uomKg = createUomKg();
-	public static final I_C_UOM uomPCE = createUOM("PCE", null, UOM_Precision_0);;
 
 	private BusinessTestHelper()
 	{
-
 	}
 
-	private static I_C_UOM createUomKg()
+	public static I_C_UOM createUomKg()
 	{
 		final I_C_UOM uomKg = createUOM("Kg", X_C_UOM.UOMTYPE_Weigth, UOM_Precision_3);
 		uomKg.setX12DE355("KGM");
 		save(uomKg);
 		return uomKg;
 	};
+
+	public static I_C_UOM createUomEach()
+	{
+		return createUOM("Ea", X_C_UOM.UOMTYPE_Weigth, UOM_Precision_0);
+	}
+
+	public static I_C_UOM createUomPCE()
+	{
+		return createUOM("PCE", null, UOM_Precision_0);
+	}
 
 	public static I_C_UOM createUOM(final String name, final String uomType, final int stdPrecision)
 	{

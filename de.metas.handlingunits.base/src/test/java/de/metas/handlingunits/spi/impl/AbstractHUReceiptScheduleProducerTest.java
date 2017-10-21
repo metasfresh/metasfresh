@@ -34,7 +34,6 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.junit.Assert;
 
-import de.metas.business.BusinessTestHelper;
 import de.metas.handlingunits.HUTestHelper;
 import de.metas.handlingunits.IHUAssignmentDAO;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -98,7 +97,7 @@ public abstract class AbstractHUReceiptScheduleProducerTest extends OrderReceipt
 	protected void setupData()
 	{
 		product = huTestHelper.pTomato;
-		productUOM = BusinessTestHelper.uomKg;
+		productUOM = huTestHelper.uomKg;
 
 		w1 = createWarehouse("Warehouse1");
 

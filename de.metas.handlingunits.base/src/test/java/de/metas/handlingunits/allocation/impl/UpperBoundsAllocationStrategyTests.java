@@ -1,6 +1,5 @@
 package de.metas.handlingunits.allocation.impl;
 
-import static de.metas.business.BusinessTestHelper.uomKg;
 import static org.hamcrest.Matchers.comparesEqualTo;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
@@ -97,7 +96,7 @@ public class UpperBoundsAllocationStrategyTests
 		final IHUTransaction huTransaction = result.getTransactions().get(0);
 		assertThat(huTransaction.getProduct(), is(helper.pTomato));
 		assertThat(huTransaction.getQuantity().getQty(), is(requestQty));
-		assertThat(huTransaction.getQuantity().getUOM(), is(uomKg));
+		assertThat(huTransaction.getQuantity().getUOM(), is(helper.uomKg));
 		assertThat(huTransaction.getM_HU(), is(vhu));
 	}
 
@@ -112,7 +111,7 @@ public class UpperBoundsAllocationStrategyTests
 
 		final IAllocationRequest request = mkRequest(requestQty);
 
-		final Capacity capacity = Capacity.createCapacity(sixThousand, helper.pTomato, uomKg, false);
+		final Capacity capacity = Capacity.createCapacity(sixThousand, helper.pTomato, helper.uomKg, false);
 
 		final UpperBoundAllocationStrategy testee = new UpperBoundAllocationStrategy(capacity);
 		final IAllocationResult result = testee.execute(vhu, request);
@@ -125,7 +124,7 @@ public class UpperBoundsAllocationStrategyTests
 		final IHUTransaction huTransaction = result.getTransactions().get(0);
 		assertThat(huTransaction.getProduct(), is(helper.pTomato));
 		assertThat(huTransaction.getQuantity().getQty(), is(sixThousand));
-		assertThat(huTransaction.getQuantity().getUOM(), is(uomKg));
+		assertThat(huTransaction.getQuantity().getUOM(), is(helper.uomKg));
 		assertThat(huTransaction.getM_HU(), is(vhu));
 	}
 
@@ -136,7 +135,7 @@ public class UpperBoundsAllocationStrategyTests
 		final IAllocationRequest request = AllocationUtils.createQtyRequest(huContext0,
 				helper.pTomato, // product
 				qtyTomatoes, // qty
-				uomKg, // uom
+				helper.uomKg, // uom
 				SystemTime.asTimestamp());
 		return request;
 	}

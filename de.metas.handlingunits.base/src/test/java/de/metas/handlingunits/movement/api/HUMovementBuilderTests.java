@@ -2,7 +2,7 @@ package de.metas.handlingunits.movement.api;
 
 import static de.metas.business.BusinessTestHelper.createLocator;
 import static de.metas.business.BusinessTestHelper.createWarehouse;
-import static de.metas.business.BusinessTestHelper.uomKg;
+import static de.metas.business.BusinessTestHelper.*;
 import static org.hamcrest.Matchers.hasXPath;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
@@ -20,6 +20,7 @@ import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_AcctSchema;
+import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_MovementLine;
 import org.compiere.model.I_M_Warehouse;
@@ -61,6 +62,7 @@ public class HUMovementBuilderTests
 {
 	private LUTUProducerDestinationTestSupport testsupport;
 	private I_AD_Org org;
+	private I_C_UOM uomKg;
 
 	@Before
 	public void init()
@@ -70,6 +72,9 @@ public class HUMovementBuilderTests
 		// we need this to make sure that movementLine.getAD_Org() does not fail with the created M_MovementLines.
 		org = InterfaceWrapperHelper.newInstance(I_AD_Org.class);
 		InterfaceWrapperHelper.save(org);
+		
+		uomKg = createUomKg();
+		
 		Env.setContext(testsupport.helper.ctx, Env.CTXNAME_AD_Org_ID, org.getAD_Org_ID());
 
 		// we need this too, to avoid a DBNoConnectionException

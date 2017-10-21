@@ -77,12 +77,12 @@ public class HUKeyNameBuilderTests
 		helper = new HUTestHelper();
 		helper.init();
 
-		pTomatoKg = createProduct(HUTestHelper.NAME_Tomato_Product, uomKg);
+		pTomatoKg = createProduct(HUTestHelper.NAME_Tomato_Product, helper.uomKg);
 
 		huDefIFCO = helper.createHUDefinition(HUTestHelper.NAME_IFCO_Product, X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
 		{
 			final I_M_HU_PI_Item itemMA = helper.createHU_PI_Item_Material(huDefIFCO);
-			helper.assignProduct(itemMA, pTomatoKg, BigDecimal.TEN, uomKg);
+			helper.assignProduct(itemMA, pTomatoKg, BigDecimal.TEN, helper.uomKg);
 			helper.createHU_PI_Item_PackingMaterial(huDefIFCO, helper.pmIFCO);
 		}
 

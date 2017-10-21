@@ -1,6 +1,6 @@
 package de.metas.handlingunits.allocation.transfer;
 
-import static de.metas.business.BusinessTestHelper.uomKg;
+import static de.metas.business.BusinessTestHelper.*;
 import static org.hamcrest.Matchers.comparesEqualTo;
 import static org.hamcrest.Matchers.hasXPath;
 import static org.hamcrest.Matchers.is;
@@ -21,6 +21,7 @@ import org.adempiere.util.Services;
 import org.adempiere.util.lang.Mutable;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.time.SystemTime;
+import org.compiere.model.I_C_UOM;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.theories.DataPoints;
@@ -92,6 +93,8 @@ public class HUTransformServiceReceiptCandidatesTests
 	private IHandlingUnitsBL handlingUnitsBL;
 	private IHUDocumentFactoryService huDocumentFactoryService;
 
+	private I_C_UOM uomKg;
+
 	@Before
 	public void init()
 	{
@@ -99,6 +102,7 @@ public class HUTransformServiceReceiptCandidatesTests
 		handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 		handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 		huDocumentFactoryService = Services.get(IHUDocumentFactoryService.class);
+		uomKg = createUomKg();
 	}
 
 	private I_M_ReceiptSchedule create_receiptSchedule_for_CU(final I_M_HU cu, final String cuQtyStr)

@@ -1,7 +1,5 @@
 package de.metas.quantity;
 
-import static de.metas.business.BusinessTestHelper.uomEach;
-
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -42,12 +40,15 @@ public class BucketTest
 
 	private I_C_UOM uomUnknown;
 	private I_M_Product pTomato;
+	private I_C_UOM uomEach;
 
 	@Before
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
 		uomUnknown = BusinessTestHelper.createUOM("UnknownUOM");
+		
+		uomEach = BusinessTestHelper.get().createUomEach();
 		pTomato = BusinessTestHelper.createProduct("tomato", uomEach);
 	}
 

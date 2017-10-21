@@ -1,11 +1,6 @@
 package de.metas.handlingunits.allocation.transfer.impl;
 
-import static de.metas.business.BusinessTestHelper.createBPartner;
-import static de.metas.business.BusinessTestHelper.createBPartnerLocation;
-import static de.metas.business.BusinessTestHelper.createLocator;
-import static de.metas.business.BusinessTestHelper.createWarehouse;
-import static de.metas.business.BusinessTestHelper.uomEach;
-import static de.metas.business.BusinessTestHelper.uomKg;
+import static de.metas.business.BusinessTestHelper.*;
 import static org.hamcrest.Matchers.hasXPath;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
@@ -40,6 +35,7 @@ import java.util.function.Consumer;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
 import org.junit.Before;
@@ -75,6 +71,8 @@ public class LUTUProducerDestinationLoadTests
 	public static boolean[] isOwnPackingMaterials = { true, false };
 
 	private LUTUProducerDestinationTestSupport data;
+
+	private I_C_UOM uomKg;
 
 	@Before
 	public void init()
@@ -568,7 +566,7 @@ public class LUTUProducerDestinationLoadTests
 		lutuConfiguration.setIsInfiniteQtyTU(false);
 		lutuConfiguration.setQtyTU(BigDecimal.ONE);
 		lutuConfiguration.setM_Product(data.helper.pSalad); // differs from real world
-		lutuConfiguration.setC_UOM(uomEach);
+		lutuConfiguration.setC_UOM(createUomEach());
 		lutuConfiguration.setIsInfiniteQtyCU(false);
 		lutuConfiguration.setQtyCU(new BigDecimal("252"));
 		lutuConfiguration.setHUStatus(X_M_HU_LUTU_Configuration.HUSTATUS_Planning);
@@ -579,7 +577,7 @@ public class LUTUProducerDestinationLoadTests
 
 		final ILUTUProducerAllocationDestination lutuProducer = Services.get(ILUTUConfigurationFactory.class).createLUTUProducerAllocationDestination(lutuConfiguration);
 
-		data.helper.load(lutuProducer, data.helper.pTomato, new BigDecimal("252"), uomEach);
+		data.helper.load(lutuProducer, data.helper.pTomato, new BigDecimal("252"), createUomEach());
 
 		final List<I_M_HU> createdLUs = lutuProducer.getCreatedHUs();
 		assertThat(createdLUs.size(), is(1));

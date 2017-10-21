@@ -1,6 +1,6 @@
 package de.metas.inoutcandidate.spi.impl;
 
-import static de.metas.business.BusinessTestHelper.uomKg;
+import static de.metas.business.BusinessTestHelper.createUomKg;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
@@ -9,6 +9,7 @@ import java.math.BigDecimal;
 import java.util.List;
 
 import org.adempiere.util.Services;
+import org.compiere.model.I_C_UOM;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -47,6 +48,7 @@ public class HUPackingMaterialsCollectorTest
 	private LUTUProducerDestinationTestSupport data;
 	private IHandlingUnitsDAO handlingUnitsDAO;
 	private IHandlingUnitsBL handlingUnitsBL;
+	private I_C_UOM uomKg;
 
 	@Before
 	public void Init()
@@ -54,6 +56,8 @@ public class HUPackingMaterialsCollectorTest
 		data = new LUTUProducerDestinationTestSupport();
 		handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 		handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+		
+		uomKg = createUomKg();
 	}
 
 	/**

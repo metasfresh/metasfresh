@@ -181,8 +181,8 @@ public abstract class AbstractHUTest
 		// #654
 		attr_LotNumber = helper.attr_LotNumber;
 
-		uomEach = BusinessTestHelper.uomEach;
-		uomKg = BusinessTestHelper.uomKg;
+		uomEach = BusinessTestHelper.createUomEach();
+		uomKg = BusinessTestHelper.createUomKg();
 
 		pPallets = helper.pPalet;
 		pmPallets = helper.pmPalet;

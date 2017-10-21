@@ -1,6 +1,6 @@
 package de.metas.handlingunits.allocation.impl;
 
-import static de.metas.business.BusinessTestHelper.uomKg;
+import static de.metas.business.BusinessTestHelper.*;
 
 /*
  * #%L
@@ -98,7 +98,7 @@ public class FIFOAllocationDeallocationStrategyTest
 		huTestHelper = new HUTestHelper();
 
 		product = huTestHelper.pTomato;
-		productUOM = uomKg;
+		productUOM = createUomKg();
 
 		strategyFactory = new AllocationStrategyFactory();
 	}
