@@ -47,19 +47,16 @@ import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.model.POWrapper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.trxConstraints.api.ITrxConstraintsBL;
 import org.compiere.Adempiere;
-import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_Table;
-import org.compiere.model.I_AD_User;
 import org.compiere.model.PO;
 import org.compiere.util.Env;
 import org.compiere.util.Evaluatee2;
 import org.slf4j.Logger;
-
-import com.google.common.collect.ImmutableSet;
 
 import de.metas.logging.LogManager;
 import lombok.NonNull;
@@ -73,10 +70,6 @@ import lombok.NonNull;
 public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 {
 	private static final transient Logger log = LogManager.getLogger(POJOWrapper.class);
-
-	public static final Set<String> ID_COLUMNNAMES_WHERE_ZERO_IS_NOT_NULL = ImmutableSet.of(
-			I_AD_User.COLUMNNAME_AD_User_ID,
-			I_AD_Org.COLUMNNAME_AD_Org_ID);
 
 	public static final int DEFAULT_VALUE_int = 0;
 	public static final int DEFAULT_VALUE_ID = 0;
@@ -1235,8 +1228,7 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 		// Special case: lookup columns
 		if (columnName.endsWith("_ID")
 				&& value instanceof Integer
-				&& (Integer)value == DEFAULT_VALUE_ID
-				&& !ID_COLUMNNAMES_WHERE_ZERO_IS_NOT_NULL.contains(columnName))
+				&& POWrapper.getFirstValidIdByColumnName(columnName) < (Integer)value)
 		{
 			return true;
 		}
