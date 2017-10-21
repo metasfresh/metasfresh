@@ -213,3 +213,28 @@ UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-10-21 14:58:11'
 UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-10-21 14:58:36','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Allocation Line' WHERE AD_Field_ID=548102 AND AD_Language='en_US'
 ;
 
+-- 2017-10-21T15:04:45.169
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,548100,0,540339,540759,549121,'F',TO_TIMESTAMP('2017-10-21 15:04:45','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','Y','N','N','Sektion',80,0,0,TO_TIMESTAMP('2017-10-21 15:04:45','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-10-21T15:04:56.851
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,548099,0,540339,540759,549122,'F',TO_TIMESTAMP('2017-10-21 15:04:56','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','Y','N','N','Mandant',90,0,0,TO_TIMESTAMP('2017-10-21 15:04:56','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-10-21T15:05:01.740
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET WidgetSize='M',Updated=TO_TIMESTAMP('2017-10-21 15:05:01','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=549121
+;
+
+-- 2017-10-21T15:05:05.937
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET WidgetSize='M',Updated=TO_TIMESTAMP('2017-10-21 15:05:05','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=549122
+;
+
+-- 2017-10-21T15:05:15.687
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=80,Updated=TO_TIMESTAMP('2017-10-21 15:05:15','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=549121
+;
+
