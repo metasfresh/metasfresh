@@ -46,7 +46,6 @@ import org.compiere.model.X_C_Invoice;
 
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.adempiere.model.I_C_Order;
-import de.metas.adempiere.service.IOrderDAO;
 import de.metas.aggregation.api.IAggregation;
 import de.metas.aggregation.model.X_C_Aggregation;
 import de.metas.edi.api.IEDIDocumentBL;
@@ -69,6 +68,7 @@ import de.metas.i18n.IMsgBL;
 import de.metas.inout.IInOutDAO;
 import de.metas.invoicecandidate.api.IInvoiceAggregationFactory;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.order.IOrderDAO;
 import de.metas.purchasing.api.IBPartnerProductDAO;
 
 public class EDIDocumentBL implements IEDIDocumentBL

@@ -32,10 +32,14 @@ Here come the actual release notes:
     * Improved Translation of en_US Language in Shipment Restrictions Window and Actions.
   * [#2732](https://github.com/metasfresh/metasfresh/issues/2732) Window Design Webui : Add description field in sales order line
     * New Field Description added to Sales Orderline Grid View and Advanced edit in WebUI.
+  * [#2763](https://github.com/metasfresh/metasfresh/issues/2763) New Window Picking Tray Clearing
+    * New Window for the Picking Tray Clearing, allowing the user to maintain content of Picking Trays, do Handling Unit Compression and Preparation for Shipper Transportation.
   * [#2768](https://github.com/metasfresh/metasfresh/issues/2768) Translate window for process "Change Password" into EN
     * Translations added to Parms in Change Password Process.
   * [#2729](https://github.com/metasfresh/metasfresh/issues/2729) Window Design Webui: Add missing fields to window Tourversion
     * New Fields added to Tourversion widnow in WebUI. Translations for en_US improved.
+  * [#2774](https://github.com/metasfresh/metasfresh/issues/2774) Vendor Invoice Layout and Translations in WebUI
+    * Improved Window Vendor Invoice Layout to adapt current Design Guidelines and Translations for en_US added.
 
 ## Fixes
 * metasfresh-webui-frontend

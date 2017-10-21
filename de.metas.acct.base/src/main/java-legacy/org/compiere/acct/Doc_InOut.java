@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Set;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
+import de.metas.order.IOrderLineBL;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.service.ISysConfigBL;
@@ -43,7 +44,6 @@ import org.compiere.model.ProductCost;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
-import de.metas.adempiere.service.IOrderLineBL;
 import de.metas.inout.IInOutBL;
 import de.metas.product.IProductBL;
 import de.metas.tax.api.ITaxBL;

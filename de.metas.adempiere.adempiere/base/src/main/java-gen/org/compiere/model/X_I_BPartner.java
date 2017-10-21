@@ -14,7 +14,7 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -479195364L;
+	private static final long serialVersionUID = 43477797L;
 
     /** Standard Constructor */
     public X_I_BPartner (Properties ctx, int I_BPartner_ID, String trxName)
@@ -141,6 +141,44 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 	public java.lang.String getAddress2 () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Address2);
+	}
+
+	/** Set Adresszeile 3.
+		@param Address3 
+		Adresszeilee 3 für diesen Standort
+	  */
+	@Override
+	public void setAddress3 (java.lang.String Address3)
+	{
+		set_Value (COLUMNNAME_Address3, Address3);
+	}
+
+	/** Get Adresszeile 3.
+		@return Adresszeilee 3 für diesen Standort
+	  */
+	@Override
+	public java.lang.String getAddress3 () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_Address3);
+	}
+
+	/** Set Adresszusatz.
+		@param Address4 
+		Adresszeile 4 für diesen Standort
+	  */
+	@Override
+	public void setAddress4 (java.lang.String Address4)
+	{
+		set_Value (COLUMNNAME_Address4, Address4);
+	}
+
+	/** Get Adresszusatz.
+		@return Adresszeile 4 für diesen Standort
+	  */
+	@Override
+	public java.lang.String getAddress4 () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_Address4);
 	}
 
 	/** Set Geburtstag.

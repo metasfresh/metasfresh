@@ -68,8 +68,8 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.ReplenishInterface;
 
-import de.metas.adempiere.service.IOrderBL;
 import de.metas.i18n.Msg;
+import de.metas.order.IOrderBL;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
 

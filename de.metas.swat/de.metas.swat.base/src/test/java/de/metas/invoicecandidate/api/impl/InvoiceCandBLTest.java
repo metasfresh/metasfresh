@@ -47,10 +47,10 @@ import org.compiere.model.I_M_InOutLine;
 import org.junit.Before;
 import org.junit.Test;
 
-import de.metas.adempiere.service.IOrderLineBL;
 import de.metas.document.engine.IDocument;
 import de.metas.invoicecandidate.AbstractICTestSupport;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.order.IOrderLineBL;
 
 /**
  * @author cg

@@ -29,9 +29,9 @@ import org.compiere.util.Env;
 import org.slf4j.Logger;
 import org.slf4j.Logger;
 
-import de.metas.adempiere.service.IOrderLineBL;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.logging.LogManager;
+import de.metas.order.IOrderLineBL;
 import de.metas.logging.LogManager;
 import de.metas.tax.api.ITaxBL;
 

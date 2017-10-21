@@ -40,11 +40,11 @@ import org.slf4j.Logger;
 
 import de.metas.adempiere.callout.OrderFastInput;
 import de.metas.adempiere.model.I_C_Order;
-import de.metas.adempiere.service.IOrderBL;
-import de.metas.adempiere.service.IOrderLineBL;
-import de.metas.adempiere.service.impl.OrderLineBL;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.logging.LogManager;
+import de.metas.order.IOrderBL;
+import de.metas.order.IOrderLineBL;
+import de.metas.order.impl.OrderLineBL;
 
 /**
  * @deprecated the code form this class shall be moved a new MV de.metas.modelvalidator.C_OrderLine.

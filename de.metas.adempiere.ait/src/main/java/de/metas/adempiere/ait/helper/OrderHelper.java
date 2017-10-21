@@ -52,13 +52,13 @@ import org.slf4j.Logger;
 
 import de.metas.adempiere.ait.helper.ProductPriceVO.LineType;
 import de.metas.adempiere.model.I_C_Order;
-import de.metas.adempiere.service.IOrderBL;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.interfaces.I_M_Shipper;
 import de.metas.logging.LogManager;
+import de.metas.order.IOrderBL;
 
 public class OrderHelper
 {

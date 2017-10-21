@@ -32,10 +32,10 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
-import de.metas.adempiere.service.IOrderLineBL;
 import de.metas.currency.ICurrencyBL;
 import de.metas.invoice.IMatchInvDAO;
 import de.metas.logging.LogManager;
+import de.metas.order.IOrderLineBL;
 import de.metas.tax.api.ITaxBL;
 
 /**

@@ -36,12 +36,12 @@ import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.ModelValidator;
 
-import de.metas.adempiere.service.IOrderDAO;
 import de.metas.i18n.IMsgBL;
 import de.metas.materialtracking.IMaterialTrackingDAO;
 import de.metas.materialtracking.IMaterialTrackingQuery;
 import de.metas.materialtracking.IMaterialTrackingQuery.OnMoreThanOneFound;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
+import de.metas.order.IOrderDAO;
 
 @Interceptor(I_C_Order.class)
 public class C_Order extends MaterialTrackableDocumentByASIInterceptor<I_C_Order, I_C_OrderLine>

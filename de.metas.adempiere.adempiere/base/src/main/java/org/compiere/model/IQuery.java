@@ -267,6 +267,12 @@ public interface IQuery<T>
 		return aggregate(columnName, sqlFunction, returnType);
 	}
 
+	/** @return maximum int of <code>columnName</code> or ZERO */
+	default int maxInt(final String columnName)
+	{
+		return aggregate(columnName, AGGREGATE_MAX, Integer.class);
+	}
+
 	/**
 	 * Turn on/off the data access filter.
 	 * 
@@ -401,7 +407,7 @@ public interface IQuery<T>
 	 * 
 	 * @param columnName
 	 * @param valueType
-	 * @return <code>columnName</code>'s value on first records; if there are no records, null will be returned. 
+	 * @return <code>columnName</code>'s value on first records; if there are no records, null will be returned.
 	 */
 	@Nullable
 	<AT> AT first(final String columnName, final Class<AT> valueType);

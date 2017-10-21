@@ -39,7 +39,6 @@ import org.compiere.model.MProductCategory;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.model.IProductAware;
-import de.metas.adempiere.service.IOrderLineBL;
 import de.metas.commission.interfaces.I_C_InvoiceLine;
 import de.metas.commission.interfaces.I_C_OrderLine;
 import de.metas.commission.model.IInstanceTrigger;
@@ -49,6 +48,7 @@ import de.metas.commission.service.IContractBL;
 import de.metas.commission.service.IInstanceTriggerBL;
 import de.metas.commission.util.CommissionTools;
 import de.metas.logging.LogManager;
+import de.metas.order.IOrderLineBL;
 
 public class InstanceTriggerBL implements IInstanceTriggerBL
 {
@@ -274,7 +274,7 @@ public class InstanceTriggerBL implements IInstanceTriggerBL
 			return;
 		}
 
-		final de.metas.adempiere.service.IOrderLineBL swatOrderLineBL = Services.get(de.metas.adempiere.service.IOrderLineBL.class);
+		final de.metas.order.IOrderLineBL swatOrderLineBL = Services.get(de.metas.order.IOrderLineBL.class);
 
 		final BigDecimal commissionPointsNetPerUnit =
 				swatOrderLineBL.subtractDiscount(it.getCommissionPoints(), it.getDiscount(), 2);

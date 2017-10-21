@@ -25,8 +25,7 @@ import org.adempiere.pricing.api.IPricingResult;
 import org.adempiere.util.Services;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
-
-import de.metas.adempiere.service.IOrderLineBL;
+import de.metas.order.IOrderLineBL;
 
 /**
  * Product Price Calculations

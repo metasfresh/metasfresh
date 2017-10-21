@@ -246,8 +246,8 @@ public class OrderLineBL implements IOrderLineBL
 			}
 			if (updateDiscount(currentOl, newDs, precision))
 			{
-				final de.metas.adempiere.service.IOrderLineBL swatOrderLineBL =
-						Services.get(de.metas.adempiere.service.IOrderLineBL.class);
+				final de.metas.order.IOrderLineBL swatOrderLineBL =
+						Services.get(de.metas.order.IOrderLineBL.class);
 
 				ignore(currentOl.getC_OrderLine_ID());
 				swatOrderLineBL.ignore(currentOl.getC_OrderLine_ID());

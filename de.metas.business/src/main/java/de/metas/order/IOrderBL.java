@@ -1,4 +1,4 @@
-package de.metas.adempiere.service;
+package de.metas.order;
 
 import java.util.Properties;
 
@@ -13,8 +13,6 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_M_PriceList_Version;
-
-import de.metas.order.IOrderPA;
 
 public interface IOrderBL extends ISingletonService
 {
