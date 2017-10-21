@@ -428,3 +428,43 @@ UPDATE AD_UI_Element SET SeqNo=140,Updated=TO_TIMESTAMP('2017-10-21 12:09:57','Y
 UPDATE AD_UI_Element SET SeqNo=150,Updated=TO_TIMESTAMP('2017-10-21 12:10:03','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=549120
 ;
 
+-- 2017-10-21T12:16:25.816
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-10-21 12:16:25','YYYY-MM-DD HH24:MI:SS'),Name='Status' WHERE AD_Field_ID=3505 AND AD_Language='en_US'
+;
+
+-- 2017-10-21T12:19:03.072
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Druck Datum',Updated=TO_TIMESTAMP('2017-10-21 12:19:03','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=3492
+;
+
+-- 2017-10-21T12:19:08.726
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-10-21 12:19:08','YYYY-MM-DD HH24:MI:SS'),Name='Date' WHERE AD_Field_ID=3481 AND AD_Language='en_US'
+;
+
+-- 2017-10-21T12:19:29
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-10-21 12:19:29','YYYY-MM-DD HH24:MI:SS'),Name='Reference' WHERE AD_Field_ID=3502 AND AD_Language='en_US'
+;
+
+-- 2017-10-21T12:20:08.904
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-10-21 12:20:08','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Address' WHERE AD_Field_ID=547290 AND AD_Language='en_US'
+;
+
+-- 2017-10-21T12:20:29.963
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-10-21 12:20:29','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Destination Warehouse' WHERE AD_Field_ID=553953 AND AD_Language='en_US'
+;
+
+-- 2017-10-21T12:20:52.548
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-10-21 12:20:52','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Delivery Address' WHERE AD_Field_ID=547292 AND AD_Language='en_US'
+;
+
+-- 2017-10-21T12:21:14.238
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-10-21 12:21:14','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Receipt Approval' WHERE AD_Field_ID=555478 AND AD_Language='en_US'
+;
+
