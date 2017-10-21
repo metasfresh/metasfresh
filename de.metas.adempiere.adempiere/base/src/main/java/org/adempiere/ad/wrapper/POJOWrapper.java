@@ -1226,13 +1226,15 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 
 		//
 		// Special case: lookup columns
-		if (columnName.endsWith("_ID")
-				&& value instanceof Integer
-				&& POWrapper.getFirstValidIdByColumnName(columnName) < (Integer)value)
+		if (columnName.endsWith("_ID") && value instanceof Integer)
 		{
-			return true;
+			final int id = (Integer)value;
+			final boolean idIsNotValidForGivenColumnName = POWrapper.getFirstValidIdByColumnName(columnName) > id;
+			if (idIsNotValidForGivenColumnName)
+			{
+				return true;
+			}
 		}
-
 		return false;
 	}
 
