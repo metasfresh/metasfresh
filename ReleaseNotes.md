@@ -10,6 +10,15 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.33 (2017-44)
+
+**release for week 2017-44**
+
+## Features
+* metasfresh-app
+  * [#2283](https://github.com/metasfresh/metasfresh/issues/2283) Window Design WebUI : Order Candidates Improvements
+    * Improved Translations for de_DE and en_US and Layout adapted to current Design Guidelines.
+
 # metasfresh 5.32 (2017-43)
 
 **release for week 2017-43**
