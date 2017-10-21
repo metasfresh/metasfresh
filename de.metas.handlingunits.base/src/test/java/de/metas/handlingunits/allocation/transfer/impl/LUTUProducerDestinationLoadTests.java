@@ -1,6 +1,9 @@
 package de.metas.handlingunits.allocation.transfer.impl;
 
-import static de.metas.business.BusinessTestHelper.*;
+import static de.metas.business.BusinessTestHelper.createBPartner;
+import static de.metas.business.BusinessTestHelper.createBPartnerLocation;
+import static de.metas.business.BusinessTestHelper.createLocator;
+import static de.metas.business.BusinessTestHelper.createWarehouse;
 import static org.hamcrest.Matchers.hasXPath;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
@@ -35,7 +38,6 @@ import java.util.function.Consumer;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
 import org.junit.Before;
@@ -72,8 +74,6 @@ public class LUTUProducerDestinationLoadTests
 
 	private LUTUProducerDestinationTestSupport data;
 
-	private I_C_UOM uomKg;
-
 	@Before
 	public void init()
 	{
@@ -95,7 +95,7 @@ public class LUTUProducerDestinationLoadTests
 		lutuProducer.setCreateTUsForRemainingQty(true);
 
 		// one IFCO can hold 40kg tomatoes
-		data.helper.load(lutuProducer, data.helper.pTomato, new BigDecimal("35"), uomKg);
+		data.helper.load(lutuProducer, data.helper.pTomato, new BigDecimal("35"), data.helper.uomKg);
 
 		final List<I_M_HU> createdHUs = lutuProducer.getCreatedHUs();
 		assertThat(createdHUs.size(), is(1));
@@ -136,7 +136,7 @@ public class LUTUProducerDestinationLoadTests
 		lutuProducer.setC_BPartner_Location_ID(bPartnerLocation.getC_BPartner_Location_ID());
 
 		// one IFCO can hold 40kg tomatoes
-		data.helper.load(lutuProducer, data.helper.pTomato, new BigDecimal("35"), uomKg);
+		data.helper.load(lutuProducer, data.helper.pTomato, new BigDecimal("35"), data.helper.uomKg);
 
 		final List<I_M_HU> createdHUs = lutuProducer.getCreatedHUs();
 		assertThat(createdHUs.size(), is(1));
@@ -191,7 +191,7 @@ public class LUTUProducerDestinationLoadTests
 		lutuProducer.setIsHUPlanningReceiptOwnerPM(isOwnPackingMaterials);
 
 		// load the tomatoes into HUs
-		data.helper.load(lutuProducer, data.helper.pTomato, new BigDecimal("20"), uomKg);
+		data.helper.load(lutuProducer, data.helper.pTomato, new BigDecimal("20"), data.helper.uomKg);
 		assertThat(lutuProducer.getCreatedLUsCount(), is(0));
 		assertThat(lutuProducer.getCreatedHUsCount(), is(1));
 		final List<I_M_HU> createdHUs = lutuProducer.getCreatedHUs();
@@ -237,10 +237,10 @@ public class LUTUProducerDestinationLoadTests
 		lutuProducer.setLUPI(data.piLU);
 		lutuProducer.setLUItemPI(piLU_Item_20_IFCO);
 		lutuProducer.setTUPI(data.piTU_IFCO);
-		lutuProducer.addTUCapacity(data.helper.pTomato, new BigDecimal("5.47"), uomKg); // set the TU capacity to be 109.4 / 20
+		lutuProducer.addTUCapacity(data.helper.pTomato, new BigDecimal("5.47"), data.helper.uomKg); // set the TU capacity to be 109.4 / 20
 
 		// load the tomatoes into HUs
-		data.helper.load(lutuProducer, data.helper.pTomato, new BigDecimal("109.4"), uomKg);
+		data.helper.load(lutuProducer, data.helper.pTomato, new BigDecimal("109.4"), data.helper.uomKg);
 		assertThat(lutuProducer.getCreatedHUs().size(), is(1));
 		final I_M_HU createdLU = lutuProducer.getCreatedHUs().get(0);
 
@@ -282,7 +282,7 @@ public class LUTUProducerDestinationLoadTests
 							.newIncludedVirtualHU()
 								.newVirtualHUItemExpectation()
 									.newItemStorageExpectation()
-										.qty("39").uom(uomKg).product(data.helper.pTomato)
+										.qty("39").uom(data.helper.uomKg).product(data.helper.pTomato)
 									.endExpectation()
 								.endExpectation()
 							.endExpectation()
@@ -305,7 +305,7 @@ public class LUTUProducerDestinationLoadTests
 							.itemType(X_M_HU_Item.ITEMTYPE_Material)
 							.newItemStorageExpectation()
 								// the 160 kg tomatoes that completely fill their respective IFCOS
-								.qty("160").uom(uomKg).product(data.helper.pTomato)
+								.qty("160").uom(data.helper.uomKg).product(data.helper.pTomato)
 							.endExpectation() // itemStorageExcpectation
 						.endExpectation() // newHUItemExpectation;
 						.newHUItemExpectation()
@@ -371,7 +371,7 @@ public class LUTUProducerDestinationLoadTests
 									.newIncludedVirtualHU()
 										.newVirtualHUItemExpectation()
 											.newItemStorageExpectation()
-												.qty("10").uom(uomKg).product(data.helper.pTomato)
+												.qty("10").uom(data.helper.uomKg).product(data.helper.pTomato)
 											.endExpectation()
 										.endExpectation()
 									.endExpectation()
@@ -395,7 +395,7 @@ public class LUTUProducerDestinationLoadTests
 									.newItemStorageExpectation()
 										.product(data.helper.pTomato)
 										.qty("40") // the 40 kg tomatos that went into a full aggregated IFCO-VHU
-										.uom(uomKg)
+										.uom(data.helper.uomKg)
 									.endExpectation() // itemStorageExcpectation
 								.endExpectation() // newHUItemExpectation;
 								.newHUItemExpectation()
@@ -440,11 +440,11 @@ public class LUTUProducerDestinationLoadTests
 		// TU capacity
 		if (tuCapacityOverride != null)
 		{
-			lutuProducer.addTUCapacity(data.helper.pTomato, tuCapacityOverride, uomKg);
+			lutuProducer.addTUCapacity(data.helper.pTomato, tuCapacityOverride, data.helper.uomKg);
 		}
 
 		// load the tomatoes into HUs
-		data.helper.load(lutuProducer, data.helper.pTomato, new BigDecimal(cuQty), uomKg);
+		data.helper.load(lutuProducer, data.helper.pTomato, new BigDecimal(cuQty), data.helper.uomKg);
 
 		final List<I_M_HU> createdHUs = lutuProducer.getCreatedHUs();
 
@@ -474,7 +474,7 @@ public class LUTUProducerDestinationLoadTests
 								.newItemStorageExpectation()
 									.product(data.helper.pTomato)
 									.qty("200")
-									.uom(uomKg)
+									.uom(data.helper.uomKg)
 								.endExpectation() // itemStorageExcpectation
 							.endExpectation() // newHUItemExpectation;
 							.newHUItemExpectation()
@@ -522,7 +522,7 @@ public class LUTUProducerDestinationLoadTests
 		lutuProducer.setMaxLUs(0);
 		lutuProducer.setCreateTUsForRemainingQty(true);
 
-		data.helper.load(lutuProducer, data.helper.pTomato, new BigDecimal("999999"), uomKg);
+		data.helper.load(lutuProducer, data.helper.pTomato, new BigDecimal("999999"), data.helper.uomKg);
 		final List<I_M_HU> huTruck = lutuProducer.getCreatedHUs();
 
 		//

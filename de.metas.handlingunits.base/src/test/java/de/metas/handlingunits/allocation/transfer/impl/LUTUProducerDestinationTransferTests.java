@@ -622,7 +622,7 @@ public class LUTUProducerDestinationTransferTests
 
 			// guard: we did not need lutuConfig.
 			assertThat(lutuProducer.getM_HU_LUTU_Configuration(), nullValue());
-			final int lutu_Configuration_ID = -1;
+			final int lutu_Configuration_ID = 0;
 
 			assertThat(lutuProducer.getCreatedHUsCount(), is(1));
 

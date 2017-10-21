@@ -191,7 +191,8 @@ public class HUTestHelper
 
 	public I_C_UOM uomKg;
 	public I_C_UOM uomEach;
-
+	public I_C_UOM uomPCE;
+	
 	/**
 	 * Value: Palet
 	 */
@@ -343,6 +344,7 @@ public class HUTestHelper
 		}
 	};
 	private IMutableHUContext huContext;
+
 
 	/**
 	 * Invokes {@link #HUTestHelper(boolean)} with init=<code>true</code>.
@@ -549,6 +551,7 @@ public class HUTestHelper
 	{
 		uomKg = createUomKg();
 		uomEach = createUomEach();
+		uomPCE = createUomPCE();
 		
 		attr_CountryMadeIn = createM_Attribute(HUTestHelper.NAME_CountryMadeIn_Attribute, X_M_Attribute.ATTRIBUTEVALUETYPE_List, true);
 		createAttributeListValues(attr_CountryMadeIn,
@@ -598,7 +601,7 @@ public class HUTestHelper
 		createUOMConversion(
 				null,  // product,
 				uomEach,  // uomFrom,
-				createUomPCE(), // uomTo,
+				uomPCE, // uomTo,
 				BigDecimal.ONE,
 				BigDecimal.ONE);
 
