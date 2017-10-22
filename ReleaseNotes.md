@@ -16,7 +16,7 @@ Here come the actual release notes:
 
 ## Features
 * metasfresh-app
-	
+
 ## Fixes
 * metasfresh-app
 
@@ -80,6 +80,7 @@ Here come the actual release notes:
 * metasfresh-app
   * [#2240](https://github.com/metasfresh/metasfresh/issues/2240) npe on zoom into header aggregation
   * [#2727](https://github.com/metasfresh/metasfresh/issues/2727) Tax is not set properly when creating ICs from flatrate term
+  * [#2794](https://github.com/metasfresh/metasfresh/issues/2794) Problem with picking for subscription deliveries
 
 * metasfresh-webui-api
   * [#625](https://github.com/metasfresh/metasfresh-webui-api/issues/625) WebUI Scheduler Window Log Subtab: Invalid Client ID=0
