@@ -16,12 +16,9 @@ Here come the actual release notes:
 
 ## Features
 * metasfresh-app
-  * [#2283](https://github.com/metasfresh/metasfresh/issues/2283) Window Design WebUI : Order Candidates Improvements
-    * Improved Translations for de_DE and en_US and Layout adapted to current Design Guidelines.
-  * [#2724](https://github.com/metasfresh/metasfresh/issues/2724) Window Design Webui: Please, add translations to the window Contract Term
-    * Improved Layout for Window Contract Terms, adapting current Guidelist. New Translation added for en_US Language/ Locale.
-  * [#2764](https://github.com/metasfresh/metasfresh/issues/2764) Window Design Webui : Material receipt
-    * Layout adapted to current WebUI Design Guidelines. Improved Translation for en_US, de_DE Language/ Locale.
+	
+## Fixes
+* metasfresh-app
 
 # metasfresh 5.32 (2017-43)
 
@@ -29,6 +26,8 @@ Here come the actual release notes:
 
 ## Features
 * metasfresh-app
+  * [#2283](https://github.com/metasfresh/metasfresh/issues/2283) Window Design WebUI : Order Candidates Improvements
+    * Improved Translations for de_DE and en_US and Layout adapted to current Design Guidelines.
   * [#2311](https://github.com/metasfresh/metasfresh/issues/2311) Customer Invoices and Invoice Candidates adjustments
     * Improved Translations for en_US, de_DE and Layout in Invoice Candidates Window and Customer Invoice.
   * [#2653](https://github.com/metasfresh/metasfresh/issues/2653) Window Design Webui: Improve Businesspartner Dist-Orgs window
@@ -53,6 +52,10 @@ Here come the actual release notes:
     * New Fields added to Tourversion widnow in WebUI. Translations for en_US improved.
   * [#2774](https://github.com/metasfresh/metasfresh/issues/2774) Vendor Invoice Layout and Translations in WebUI
     * Improved Window Vendor Invoice Layout to adapt current Design Guidelines and Translations for en_US added.
+  * [#2724](https://github.com/metasfresh/metasfresh/issues/2724) Window Design Webui: Please, add translations to the window Contract Term
+    * Improved Layout for Window Contract Terms, adapting current Guidelist. New Translation added for en_US Language/ Locale.
+  * [#2764](https://github.com/metasfresh/metasfresh/issues/2764) Window Design Webui : Material receipt
+    * Layout adapted to current WebUI Design Guidelines. Improved Translation for en_US, de_DE Language/ Locale.
 
 ## Fixes
 * metasfresh-webui-frontend
