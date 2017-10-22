@@ -17,6 +17,7 @@ import org.compiere.util.Env;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.adempiere.service.IColumnBL;
 import lombok.NonNull;
 
 /**
@@ -36,6 +37,7 @@ public class CopyColumnsProducer
 	// Services
 	private final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 	private final IADColumnCalloutBL adColumnCalloutBL = Services.get(IADColumnCalloutBL.class);
+	private final IColumnBL columnBL = Services.get(IColumnBL.class);
 
 	private ILoggable _logger;
 	private I_AD_Table _targetTable;
@@ -175,6 +177,7 @@ public class CopyColumnsProducer
 			colTarget.setName(sourceColumn.getName());
 			colTarget.setDescription(sourceColumn.getDescription());
 			colTarget.setHelp(sourceColumn.getHelp());
+			colTarget.setIsAllowLogging(columnBL.getDefaultAllowLoggingByColumnName(colTarget.getColumnName()));
 		}
 
 		// metas: begin

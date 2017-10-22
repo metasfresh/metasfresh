@@ -75,7 +75,7 @@ public class BPartnerImportProcess_SimpleCase_Test
 				//
 				// Location:
 				.shipToContact(true).billToContact(false)
-				.address1("street 997").address2("").city("Berlin").region("").countryCode("DE")
+				.address1("street 997").address2("addr2").address3("addr3").address4("addr4").city("Berlin").region("").countryCode("DE")
 				.shipToDefaultAddress(false).billToDefaultAddress(true)
 				.locationPhone("phone1")
 				.locationPhone2("phone2")

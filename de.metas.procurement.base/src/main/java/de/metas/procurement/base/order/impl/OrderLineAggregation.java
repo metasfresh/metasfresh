@@ -15,7 +15,7 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
 
-import de.metas.adempiere.service.IOrderLineBL;
+import de.metas.order.IOrderLineBL;
 import de.metas.procurement.base.order.model.I_C_OrderLine;
 
 /*

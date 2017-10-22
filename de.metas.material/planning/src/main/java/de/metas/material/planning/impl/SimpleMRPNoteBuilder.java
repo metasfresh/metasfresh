@@ -71,7 +71,7 @@ public class SimpleMRPNoteBuilder implements IMRPNoteBuilder
 	private final transient IMsgBL msgBL = Services.get(IMsgBL.class);
 
 	// @Autowired this annotation doesn't work unless this class is a component
-	private transient ProductPlanningBL productPlanningBL = Adempiere.getSpringApplicationContext().getBean(ProductPlanningBL.class);
+	private transient ProductPlanningBL productPlanningBL = Adempiere.getBean(ProductPlanningBL.class);
 
 	//
 	// Parameters: context

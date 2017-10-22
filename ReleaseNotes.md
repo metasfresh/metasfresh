@@ -10,12 +10,26 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.33 (2017-44)
+
+**release for week 2017-44**
+
+## Features
+* metasfresh-app
+	
+## Fixes
+* metasfresh-app
+
 # metasfresh 5.32 (2017-43)
 
 **release for week 2017-43**
 
 ## Features
 * metasfresh-app
+  * [#2283](https://github.com/metasfresh/metasfresh/issues/2283) Window Design WebUI : Order Candidates Improvements
+    * Improved Translations for de_DE and en_US and Layout adapted to current Design Guidelines.
+  * [#2311](https://github.com/metasfresh/metasfresh/issues/2311) Customer Invoices and Invoice Candidates adjustments
+    * Improved Translations for en_US, de_DE and Layout in Invoice Candidates Window and Customer Invoice.
   * [#2653](https://github.com/metasfresh/metasfresh/issues/2653) Window Design Webui: Improve Businesspartner Dist-Orgs window
     * Improved Translations for en_US. New Fielsd added for Subscription progress Subtab.
   * [#2725](https://github.com/metasfresh/metasfresh/issues/2725) Webui Window Design: Improvements in window ESR Payment Import
@@ -30,10 +44,23 @@ Here come the actual release notes:
     * Improved Translation of en_US Language in Shipment Restrictions Window and Actions.
   * [#2732](https://github.com/metasfresh/metasfresh/issues/2732) Window Design Webui : Add description field in sales order line
     * New Field Description added to Sales Orderline Grid View and Advanced edit in WebUI.
+  * [#2763](https://github.com/metasfresh/metasfresh/issues/2763) New Window Picking Tray Clearing
+    * New Window for the Picking Tray Clearing, allowing the user to maintain content of Picking Trays, do Handling Unit Compression and Preparation for Shipper Transportation.
+  * [#2768](https://github.com/metasfresh/metasfresh/issues/2768) Translate window for process "Change Password" into EN
+    * Translations added to Parms in Change Password Process.
   * [#2729](https://github.com/metasfresh/metasfresh/issues/2729) Window Design Webui: Add missing fields to window Tourversion
     * New Fields added to Tourversion widnow in WebUI. Translations for en_US improved.
+  * [#2774](https://github.com/metasfresh/metasfresh/issues/2774) Vendor Invoice Layout and Translations in WebUI
+    * Improved Window Vendor Invoice Layout to adapt current Design Guidelines and Translations for en_US added.
+  * [#2724](https://github.com/metasfresh/metasfresh/issues/2724) Window Design Webui: Please, add translations to the window Contract Term
+    * Improved Layout for Window Contract Terms, adapting current Guidelist. New Translation added for en_US Language/ Locale.
+  * [#2764](https://github.com/metasfresh/metasfresh/issues/2764) Window Design Webui : Material receipt
+    * Layout adapted to current WebUI Design Guidelines. Improved Translation for en_US, de_DE Language/ Locale.
 
 ## Fixes
+* metasfresh-webui-frontend
+  * [#1281](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1281) Translations of Photo Widget in User WIndow
+    * Fixing the Translation of the Photo Widget Buttons in User Window.
 
 # metasfresh 5.31 (2017-42)
 
@@ -64,7 +91,7 @@ Here come the actual release notes:
   * [#2690](https://github.com/metasfresh/metasfresh/issues/2690) New Window for AD_Scheduler in WebUI
     * New Window for Scheduler Maintenance.
   * [#2691](https://github.com/metasfresh/metasfresh/issues/2691) Adjustments in Materialdispo Window in WebUI
-    * Improved Materuial Dispo Window. Removed deprecated Fields and added Translations for en_US and de_DE Locale/ Language
+    * Improved Material Dispo Window. Removed deprecated Fields and added Translations for en_US and de_DE Locale/ Language
   * [#2694](https://github.com/metasfresh/metasfresh/issues/2694) Window Design Webui: Improvements in Dunning Type window
     * New Translations added for Language en_US for Action and Referencelist.
   * [#2695](https://github.com/metasfresh/metasfresh/issues/2695) Window Design Webui: Introduce the window Shipment Restrictions in the Webui menu
@@ -75,7 +102,7 @@ Here come the actual release notes:
     * Improved Shipment Schedule Identifier, now showing valuable Information about it to the user.
   * [#2704](https://github.com/metasfresh/metasfresh/issues/2704) Show an explicit error message when reports don't open because of logo missing
     * Improved Error Handling in Jasper Report Generation.
-  * [#2711](https://github.com/metasfresh/metasfresh/issues/2711) productdescription in sales order jasper
+  * [#2711](https://github.com/metasfresh/metasfresh/issues/2711) Productdescription in sales order jasper
     * New Product Description Field in Sales Order Jasper Report.
 
 * metasfresh-webui-frontend
@@ -83,7 +110,6 @@ Here come the actual release notes:
     * Adding the keyboard support for the new Labels widget.
   * [#1239](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1239) Included views are not working in non-modal windows
     * Now also allowing the usage of included views in non-modal windows.
-
 	
 * metasfresh-webui-api
   * [#628](https://github.com/metasfresh/metasfresh-webui-api/issues/628) Extend framework to allow modification of standard filter results
@@ -91,15 +117,15 @@ Here come the actual release notes:
 
 ## Fixes
 * metasfresh-app
-  * [#2400](https://github.com/metasfresh/metasfresh/issues/2400) discount in manual sales invoice
-    * Fixes the bahavior of discount field in Sales Invoice.
+  * [#2400](https://github.com/metasfresh/metasfresh/issues/2400) Discount in manual sales invoice
+    * Fixes the behavior of discount field in Sales Invoice.
   * [#2693](https://github.com/metasfresh/metasfresh/issues/2693) C_Flatrate_Conditions.C_Flatrate_Transition_ID needs to be mandatory
     * Fixing the mandatory Logic in table/ window Flatrate Conditions.
   * [#2699](https://github.com/metasfresh/metasfresh/issues/2699) NPE when pressing Complete for an invoice with no lines
     * Improves a Cornercase, now avoiding a Null Pointer Exception when completing an Invoice with no lines.
 
 * metasfresh-webui-frontend
-  * [#1216](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1216) hu lines appear only after refresh
+  * [#1216](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1216) HU lines appear only after refresh
     * Fix for the missing refresh in Handling Unit editor after using quickactions.
   * [#1221](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1221) Handling Unit Editor "Select all rows" missing
     * Fixes the missing "Select all" Functionality in Handling Unit Editor.

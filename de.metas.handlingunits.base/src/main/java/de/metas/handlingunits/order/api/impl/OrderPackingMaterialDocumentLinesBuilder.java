@@ -31,13 +31,13 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_Order;
 
-import de.metas.adempiere.service.IOrderDAO;
-import de.metas.adempiere.service.IOrderLineBL;
 import de.metas.handlingunits.IPackingMaterialDocumentLine;
 import de.metas.handlingunits.IPackingMaterialDocumentLineSource;
 import de.metas.handlingunits.impl.AbstractPackingMaterialDocumentLinesBuilder;
 import de.metas.handlingunits.model.I_C_OrderLine;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
+import de.metas.order.IOrderDAO;
+import de.metas.order.IOrderLineBL;
 
 /**
  * Iterates an order's lines and creates additional lines for the HU packing material.

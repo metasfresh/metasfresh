@@ -9,10 +9,12 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.Adempiere;
+import org.compiere.model.I_AD_Column;
 import org.compiere.model.POInfo;
 import org.compiere.util.Env;
 
 import de.metas.adempiere.service.IColumnBL;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -164,4 +166,20 @@ public class ColumnBL implements IColumnBL
 		}
 		return keyColumnNames.get(0);
 	}
+	
+	@Override
+	public boolean getDefaultAllowLoggingByColumnName(@NonNull final String columnName)
+	{
+				
+		if (columnName.equalsIgnoreCase(I_AD_Column.COLUMNNAME_Created)
+				|| columnName.equalsIgnoreCase(I_AD_Column.COLUMNNAME_CreatedBy)
+				|| columnName.equalsIgnoreCase(I_AD_Column.COLUMNNAME_Updated)
+				|| columnName.equalsIgnoreCase(I_AD_Column.COLUMNNAME_UpdatedBy))
+		{
+			return false;
+		}
+		
+		return true;
+	}
+	
 }

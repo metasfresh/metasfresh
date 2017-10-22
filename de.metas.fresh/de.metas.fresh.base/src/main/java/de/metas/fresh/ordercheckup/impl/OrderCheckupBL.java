@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
+import de.metas.order.IOrderDAO;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -40,7 +41,6 @@ import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
 import org.eevolution.model.I_PP_Product_Planning;
 
-import de.metas.adempiere.service.IOrderDAO;
 import de.metas.fresh.model.I_C_Order_MFGWarehouse_Report;
 import de.metas.fresh.model.X_C_Order_MFGWarehouse_Report;
 import de.metas.fresh.ordercheckup.IOrderCheckupBL;

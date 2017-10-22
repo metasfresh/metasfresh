@@ -40,12 +40,12 @@ import org.compiere.model.ModelValidator;
 import de.metas.adempiere.gui.search.IHUPackingAware;
 import de.metas.adempiere.gui.search.IHUPackingAwareBL;
 import de.metas.adempiere.gui.search.impl.OrderLineHUPackingAware;
-import de.metas.adempiere.service.IOrderLineBL;
-import de.metas.adempiere.service.impl.OrderLineBL;
 import de.metas.handlingunits.IHUDocumentHandler;
 import de.metas.handlingunits.IHUDocumentHandlerFactory;
 import de.metas.handlingunits.model.I_C_OrderLine;
 import de.metas.handlingunits.order.api.IHUOrderBL;
+import de.metas.order.IOrderLineBL;
+import de.metas.order.impl.OrderLineBL;
 
 /**
  * @author cg

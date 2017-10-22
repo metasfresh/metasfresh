@@ -32,7 +32,7 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 
-import de.metas.adempiere.service.IOrderDAO;
+import de.metas.order.IOrderDAO;
 
 public class OrderInAusLandModelAttributeSetInstanceListener implements IModelAttributeSetInstanceListener
 {
