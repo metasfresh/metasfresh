@@ -26,10 +26,13 @@ Here come the actual release notes:
 
 ## Features
 * metasfresh-app
+  * [#472](https://github.com/metasfresh/metasfresh/issues/472) Picking from Handling Unit Editor (WebUI)
   * [#2283](https://github.com/metasfresh/metasfresh/issues/2283) Window Design WebUI : Order Candidates Improvements
     * Improved Translations for de_DE and en_US and Layout adapted to current Design Guidelines.
   * [#2311](https://github.com/metasfresh/metasfresh/issues/2311) Customer Invoices and Invoice Candidates adjustments
     * Improved Translations for en_US, de_DE and Layout in Invoice Candidates Window and Customer Invoice.
+  * [#2379](https://github.com/metasfresh/metasfresh/issues/2379) Procurement Candidates generate Purchase Order
+  * [#2564](https://github.com/metasfresh/metasfresh/issues/2564) Concept for entering multiple discounts for order and subscription  
   * [#2653](https://github.com/metasfresh/metasfresh/issues/2653) Window Design Webui: Improve Businesspartner Dist-Orgs window
     * Improved Translations for en_US. New Fielsd added for Subscription progress Subtab.
   * [#2725](https://github.com/metasfresh/metasfresh/issues/2725) Webui Window Design: Improvements in window ESR Payment Import
@@ -38,18 +41,25 @@ Here come the actual release notes:
     * Setting a readable and searchable Identifier for Shipment Schedule Records.
   * [#2728](https://github.com/metasfresh/metasfresh/issues/2728) Webui Design Window: Add Translations to Business Partner
     * Improved Translation for en_US Language/ Locale in Window, Fields and Actions.
+  * [#2729](https://github.com/metasfresh/metasfresh/issues/2729) Window Design Webui: Add missing fields to window Tourversion
+    * New Fields added to Tourversion widnow in WebUI. Translations for en_US improved.
   * [#2730](https://github.com/metasfresh/metasfresh/issues/2730) Window Design Webui: Improvements in window Purchase order
     * Translation improved in Purchase Order window  for Language en_US.
   * [#2731](https://github.com/metasfresh/metasfresh/issues/2731) Window Design Webui: Improve window Shipment Restrictions
     * Improved Translation of en_US Language in Shipment Restrictions Window and Actions.
   * [#2732](https://github.com/metasfresh/metasfresh/issues/2732) Window Design Webui : Add description field in sales order line
     * New Field Description added to Sales Orderline Grid View and Advanced edit in WebUI.
+  * [#2739](https://github.com/metasfresh/metasfresh/issues/2739) Add context into if exception happens in WorkpackageProcessorTask.processWorkpackage
+  * [#2740](https://github.com/metasfresh/metasfresh/issues/2740) Picking slot Rack System flag
+  * [#2750](https://github.com/metasfresh/metasfresh/issues/2750) Flatrate Import: Support tax category
+  * [#2751](https://github.com/metasfresh/metasfresh/issues/2571) Report Translations to en_US: menu reports
+  * [#2752](https://github.com/metasfresh/metasfresh/issues/2752) Inherit C_Taxcategory_ID and IsTaxIncluded from orderline to FT
+  * [#2755](https://github.com/metasfresh/metasfresh/issues/2755) error on hu changing status from shipped to active
   * [#2763](https://github.com/metasfresh/metasfresh/issues/2763) New Window Picking Tray Clearing
     * New Window for the Picking Tray Clearing, allowing the user to maintain content of Picking Trays, do Handling Unit Compression and Preparation for Shipper Transportation.
   * [#2768](https://github.com/metasfresh/metasfresh/issues/2768) Translate window for process "Change Password" into EN
     * Translations added to Parms in Change Password Process.
-  * [#2729](https://github.com/metasfresh/metasfresh/issues/2729) Window Design Webui: Add missing fields to window Tourversion
-    * New Fields added to Tourversion widnow in WebUI. Translations for en_US improved.
+  * [#2769](https://github.com/metasfresh/metasfresh/issues/2769) model generator: wrong columns are generated
   * [#2774](https://github.com/metasfresh/metasfresh/issues/2774) Vendor Invoice Layout and Translations in WebUI
     * Improved Window Vendor Invoice Layout to adapt current Design Guidelines and Translations for en_US added.
   * [#2724](https://github.com/metasfresh/metasfresh/issues/2724) Window Design Webui: Please, add translations to the window Contract Term
@@ -57,8 +67,34 @@ Here come the actual release notes:
   * [#2764](https://github.com/metasfresh/metasfresh/issues/2764) Window Design Webui : Material receipt
     * Layout adapted to current WebUI Design Guidelines. Improved Translation for en_US, de_DE Language/ Locale.
 
-## Fixes
+* metasfresh-webui-api
+  * [#632](https://github.com/metasfresh/metasfresh-webui-api/issues/632) HU-Trace: show all connected records
+  * [#637](https://github.com/metasfresh/metasfresh-webui-api/issues/637) Move Picking Tray Clearing Functionality to new window
+
 * metasfresh-webui-frontend
+  * [#1092](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1092) Prepare Update to React 16
+  * [#1249](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1249) included view: blurWhenOpen support
+
+
+## Fixes
+* metasfresh-app
+  * [#2240](https://github.com/metasfresh/metasfresh/issues/2240) npe on zoom into header aggregation
+  * [#2727](https://github.com/metasfresh/metasfresh/issues/2727) Tax is not set properly when creating ICs from flatrate term
+
+* metasfresh-webui-api
+  * [#625](https://github.com/metasfresh/metasfresh-webui-api/issues/625) WebUI Scheduler Window Log Subtab: Invalid Client ID=0
+  * [#639](https://github.com/metasfresh/metasfresh-webui-api/issues/639) Can't save a new partner
+
+* metasfresh-webui-frontend
+  * [#1223](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1223) Scrollbar missing in Handling Unit Editor after "Internal Usage Action"
+  * [#1227](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1227) The Letter window dissapears after Print Preview
+  * [#1232](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1232) Labels widget: keyboard support
+  * [#1239](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1239) Included views are not working in non-modal windows
+  * [#1248](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1248) included view: wrong selectedIds when calling quickActions
+  * [#1268](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1268) Sitemap broken
+  * [#1271](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1271) Open ANY included view broken
+  * [#1275](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1275) Scrolling in Modal window throws errors
+  * [#1278](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1278) Shortcuts for New, Batch and Expand are broken
   * [#1281](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1281) Translations of Photo Widget in User WIndow
     * Fixing the Translation of the Photo Widget Buttons in User Window.
 
@@ -110,7 +146,7 @@ Here come the actual release notes:
     * Adding the keyboard support for the new Labels widget.
   * [#1239](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1239) Included views are not working in non-modal windows
     * Now also allowing the usage of included views in non-modal windows.
-	
+
 * metasfresh-webui-api
   * [#628](https://github.com/metasfresh/metasfresh-webui-api/issues/628) Extend framework to allow modification of standard filter results
     * Extension for Filter mechanism in WebUI, now allowing to register a component that enhances the filter result. Needed first in new Handling Unit Tracing window.
