@@ -239,7 +239,14 @@
 			<artifactId>lombok</artifactId>
 			<scope>provided</scope>
 		</dependency>
-		
+
+		<dependency>
+			<groupId>io.takari.junit</groupId>
+			<artifactId>takari-cpsuite </artifactId>
+			<version>1.2.7</version>
+			<scope>test</scope>
+		</dependency>
+
 	</dependencies>
 
 </project>
