@@ -16,6 +16,8 @@ Here come the actual release notes:
 
 ## Features
 * metasfresh-app
+  * [#2564](https://github.com/metasfresh/metasfresh/issues/2564) Concept for entering multiple discounts for order and subscription
+    * New Feature that allows to add Discount Grouping and Discount rows to Sales Order Lines. These Lines allow the createtion of discounts based on LineNetAmt Aggregations.
 
 ## Fixes
 * metasfresh-app
@@ -34,8 +36,6 @@ Here come the actual release notes:
     * Improved Translations for en_US, de_DE and Layout in Invoice Candidates Window and Customer Invoice.
   * [#2379](https://github.com/metasfresh/metasfresh/issues/2379) Procurement Candidates generate Purchase Order
     * New Action in Procurement Candidates window of WebUI, allowing to create Purchase Orders from selected Procurement Candidates.
-  * [#2564](https://github.com/metasfresh/metasfresh/issues/2564) Concept for entering multiple discounts for order and subscription  
-    * New Feature that allows to add Discount Grouping and Discount rows to Sales Order Lines. These Lines allow the createtion of discounts based on LineNetAmt Aggregations.
   * [#2653](https://github.com/metasfresh/metasfresh/issues/2653) Window Design Webui: Improve Businesspartner Dist-Orgs window
     * Improved Translations for en_US. New Fielsd added for Subscription progress Subtab.
   * [#2725](https://github.com/metasfresh/metasfresh/issues/2725) Webui Window Design: Improvements in window ESR Payment Import
@@ -69,6 +69,7 @@ Here come the actual release notes:
   * [#2768](https://github.com/metasfresh/metasfresh/issues/2768) Translate window for process "Change Password" into EN
     * Translations added to Parms in Change Password Process.
   * [#2769](https://github.com/metasfresh/metasfresh/issues/2769) model generator: wrong columns are generated
+    * Internal Housekeeping Improvements in Model Generator. Now creating the correct columns.
   * [#2774](https://github.com/metasfresh/metasfresh/issues/2774) Vendor Invoice Layout and Translations in WebUI
     * Improved Window Vendor Invoice Layout to adapt current Design Guidelines and Translations for en_US added.
   * [#2724](https://github.com/metasfresh/metasfresh/issues/2724) Window Design Webui: Please, add translations to the window Contract Term
@@ -78,33 +79,51 @@ Here come the actual release notes:
 
 * metasfresh-webui-api
   * [#632](https://github.com/metasfresh/metasfresh-webui-api/issues/632) HU-Trace: show all connected records
+    * Improvement of Handling Unit Trace Functionality, now showing all connected record for a given Filter Criteria.
   * [#637](https://github.com/metasfresh/metasfresh-webui-api/issues/637) Move Picking Tray Clearing Functionality to new window
+    * New Window for the Picking Tray Clearing Functionality.
 
 * metasfresh-webui-frontend
   * [#1092](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1092) Prepare Update to React 16
-  * [#1249](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1249) included view: blurWhenOpen support
+    * Preparation Work for the Update to React 16.
+  * [#1232](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1232) Labels widget: keyboard support
+    * Adding Support for the new Labels wiget Lookup.
+  * [#1249](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1249) Included view: blurWhenOpen support
+    * New Functionality allowing to switch the blur effect on included views in Main Grid View.
 
 
 ## Fixes
 * metasfresh-app
   * [#2240](https://github.com/metasfresh/metasfresh/issues/2240) npe on zoom into header aggregation
+    * Bugfix in Zoom To Function when jumping to Header Aggregation.
   * [#2727](https://github.com/metasfresh/metasfresh/issues/2727) Tax is not set properly when creating ICs from flatrate term
+    * Fix for the Invoice Candidate generation from Flatrate Terms. Now the Tax is set properly.
   * [#2794](https://github.com/metasfresh/metasfresh/issues/2794) Problem with picking for subscription deliveries
+    * Improvement of the Picking workflow when picking subscription shipments.
 
 * metasfresh-webui-api
   * [#625](https://github.com/metasfresh/metasfresh-webui-api/issues/625) WebUI Scheduler Window Log Subtab: Invalid Client ID=0
+    * Internal Housekeeping, fix in Schedule Window Log included Tab.
   * [#639](https://github.com/metasfresh/metasfresh-webui-api/issues/639) Can't save a new partner
+    * Fixes a Bug that prevented to create and save new Business Partners in WebUI.
 
 * metasfresh-webui-frontend
   * [#1223](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1223) Scrollbar missing in Handling Unit Editor after "Internal Usage Action"
+    * Fix for WebUI Windows. Her Handling Unit Editor. Now the Window Scrollbar is shown after the usage of Internal Usage Action.
   * [#1227](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1227) The Letter window dissapears after Print Preview
-  * [#1232](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1232) Labels widget: keyboard support
+    * Fix for the Letter Window. now still visible after choosing Print Preview.
   * [#1239](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1239) Included views are not working in non-modal windows
+    * Fixes the Included Views Functionality in WebUI. Now it's also possible to use them in non-modal windows.
   * [#1248](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1248) included view: wrong selectedIds when calling quickActions
+    * Fix in Included View. Now retrieving the correct Record/ Row ID's when calling Quick Actions.
   * [#1268](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1268) Sitemap broken
+    * Fix for the Sitemap creation.
   * [#1271](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1271) Open ANY included view broken
+    * Fixes the Included Views after issues occured for React 16 Refactoring.
   * [#1275](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1275) Scrolling in Modal window throws errors
+    * Fixes the errors that occured when scrolling in Modal Overlays.
   * [#1278](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1278) Shortcuts for New, Batch and Expand are broken
+    * Fixes the shortcuts for different shortcut keys.
   * [#1281](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1281) Translations of Photo Widget in User WIndow
     * Fixing the Translation of the Photo Widget Buttons in User Window.
 

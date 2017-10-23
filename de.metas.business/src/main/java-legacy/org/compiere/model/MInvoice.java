@@ -21,7 +21,6 @@ import static org.adempiere.util.CustomColNames.C_Invoice_DESCRIPTION_BOTTOM;
 import static org.adempiere.util.CustomColNames.C_Invoice_INCOTERM;
 import static org.adempiere.util.CustomColNames.C_Invoice_INCOTERMLOCATION;
 import static org.adempiere.util.CustomColNames.C_Invoice_ISUSE_BPARTNER_ADDRESS;
-import static org.adempiere.util.CustomColNames.C_Order_DESCRIPTION_BOTTOM;
 
 import java.io.File;
 import java.math.BigDecimal;
@@ -300,7 +299,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 		final IPOService poService = Services.get(IPOService.class);
 		poService.copyValue(ship, this, I_C_Order.COLUMNNAME_Incoterm);
 		poService.copyValue(ship, this, C_Invoice_INCOTERMLOCATION);
-		poService.copyValue(ship, this, C_Order_DESCRIPTION_BOTTOM);
+		ship.setDescriptionBottom(getDescriptionBottom());
 		poService.copyValue(ship, this, C_Invoice_ISUSE_BPARTNER_ADDRESS);
 		poService.copyValue(ship, this, C_Invoice_BPARTNERADDRESS);
 
