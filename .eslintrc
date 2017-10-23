@@ -20,7 +20,8 @@
                 "trailingComma": "all"
             }
         ],
-        "react/prop-types": "warn"
+        "react/prop-types": "warn",
+        "react/jsx-filename-extension": "off"
     },
     "plugins": ["prettier", "react"],
     "globals": {
