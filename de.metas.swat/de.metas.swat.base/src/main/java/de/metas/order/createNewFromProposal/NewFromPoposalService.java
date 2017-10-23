@@ -1,30 +1,5 @@
 package de.metas.order.createNewFromProposal;
 
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-
-import static org.adempiere.util.CustomColNames.C_Order_COMPLETE_ORDER_DISCOUNT;
-import static org.adempiere.util.CustomColNames.C_Order_DESCRIPTION_BOTTOM;
 import static org.adempiere.util.CustomColNames.C_Order_REF_PROPOSAL_ID;
 import static org.adempiere.util.CustomColNames.M_Product_Category_C_DOCTYPE_ID;
 
@@ -52,6 +27,7 @@ public final class NewFromPoposalService implements INewFromPoposalService {
 
 	private String poReference;
 
+	@Override
 	public I_C_Order create(final MOrder proposal, String newOrderDocSubType,
 			final String trxName) {
 
@@ -69,7 +45,7 @@ public final class NewFromPoposalService implements INewFromPoposalService {
 
 		final int defaultDoctypeID = retriveDocSubType(newOrderDocSubType)
 				.getC_DocType_ID();
-		final HashMap<Integer, MOrder> categoryDocTypes = new HashMap<Integer, MOrder>();
+		final HashMap<Integer, MOrder> categoryDocTypes = new HashMap<>();
 
 		final IPOService poService = Services.get(IPOService.class);
 
@@ -100,7 +76,7 @@ public final class NewFromPoposalService implements INewFromPoposalService {
 				poService.setValue(newOrder, C_Order_REF_PROPOSAL_ID, proposal
 						.get_ID());
 
-				setParms(proposal, (MOrder) newOrder);
+				setParms(proposal, newOrder);
 
 				if (c_doctype_id != null && c_doctype_id > 0) {
 					newOrder.setC_DocType_ID(c_doctype_id);
@@ -194,22 +170,22 @@ public final class NewFromPoposalService implements INewFromPoposalService {
 		newOrder.setWeight(proposal.getWeight());
 		newOrder.setDeliveryViaRule(proposal.getDeliveryViaRule());
 
-		final IPOService poService = Services.get(IPOService.class);
-
-		poService
-				.copyValue(proposal, newOrder, C_Order_COMPLETE_ORDER_DISCOUNT);
-		poService.copyValue(proposal, newOrder, C_Order_DESCRIPTION_BOTTOM);
+		newOrder.setCompleteOrderDiscount(proposal.getCompleteOrderDiscount());
+		newOrder.setDescriptionBottom(proposal.getDescriptionBottom());
 
 	}
 
+	@Override
 	public void setCompleteNewOrder(boolean newOrderClompleteIt) {
 		this.newOrderClompleteIt = newOrderClompleteIt;
 	}
 
+	@Override
 	public void setNewOrderDateOrdered(Timestamp newOrderDateOrdered) {
 		this.newOrderDateOrdered = newOrderDateOrdered;
 	}
 
+	@Override
 	public void setPOReference(String poReference) {
 		this.poReference = poReference;
 	}
