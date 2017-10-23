@@ -1,5 +1,6 @@
 package de.metas.ui.web.process.adprocess;
 
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
@@ -21,6 +22,7 @@ import org.springframework.stereotype.Component;
 import com.google.common.base.Strings;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.printing.esb.base.util.Check;
 import de.metas.process.IADPInstanceDAO;
@@ -269,11 +271,18 @@ public class ADProcessInstancesRepository implements IProcessInstancesRepository
 			sqlWhereClause = null;
 		}
 
+		//
+		final Set<TableRecordReference> selectedIncludedRecords = request.getSelectedIncludedDocumentPaths()
+				.stream()
+				.map(documentDescriptorFactory::getTableRecordReference)
+				.collect(ImmutableSet.toImmutableSet());
+
 		return ProcessInfo.builder()
 				.setCtx(Env.getCtx())
 				.setCreateTemporaryCtx()
 				.setAD_Process_ID(request.getProcessIdAsInt())
 				.setRecord(tableName, recordId)
+				.setSelectedIncludedRecords(selectedIncludedRecords)
 				.setWhereClause(sqlWhereClause)
 				//
 				.setLoadParametersFromDB(true) // important: we need to load the existing parameters from database, besides the internal ones we are adding here

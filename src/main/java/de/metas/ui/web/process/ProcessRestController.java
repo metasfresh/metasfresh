@@ -175,6 +175,7 @@ public class ProcessRestController
 		final CreateProcessInstanceRequest request = CreateProcessInstanceRequest.builder()
 				.processId(ProcessId.fromJson(processIdStr))
 				.singleDocumentPath(singleDocumentPath)
+				.selectedIncludedDocumentPaths(jsonRequest.getSelectedIncludedDocumentPaths())
 				.viewId(viewId)
 				.viewDocumentIds(viewDocumentIds)
 				.build();

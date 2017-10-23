@@ -1,8 +1,12 @@
 package de.metas.ui.web.process;
 
+import java.util.List;
 import java.util.Objects;
 
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
+
+import com.google.common.collect.ImmutableList;
 
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
@@ -47,20 +51,23 @@ public final class CreateProcessInstanceRequest
 
 	private final DocumentPath singleDocumentPath;
 
+	private final List<DocumentPath> selectedIncludedDocumentPaths;
+
 	private ViewId viewId;
 	private DocumentIdsSelection viewDocumentIds;
 
 	@Builder
-	private CreateProcessInstanceRequest( //
-			@NonNull final ProcessId processId //
-			, final DocumentPath singleDocumentPath //
-			, final ViewId viewId //
-			, final DocumentIdsSelection viewDocumentIds //
-	)
+	private CreateProcessInstanceRequest(
+			@NonNull final ProcessId processId,
+			@Nullable final DocumentPath singleDocumentPath,
+			@Nullable final List<DocumentPath> selectedIncludedDocumentPaths,
+			@Nullable final ViewId viewId,
+			@Nullable final DocumentIdsSelection viewDocumentIds)
 	{
 		this.processId = processId;
 
 		this.singleDocumentPath = singleDocumentPath;
+		this.selectedIncludedDocumentPaths = selectedIncludedDocumentPaths != null ? ImmutableList.copyOf(selectedIncludedDocumentPaths) : ImmutableList.of();
 
 		this.viewId = viewId;
 		this.viewDocumentIds = viewDocumentIds;

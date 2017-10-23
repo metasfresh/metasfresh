@@ -1,10 +1,12 @@
 package de.metas.ui.web.window.controller;
 
 import java.util.List;
+import java.util.Set;
 
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -22,6 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.WebRequest;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.i18n.IMsgBL;
 import de.metas.ui.web.cache.ETagResponseEntityBuilder;
@@ -36,6 +39,7 @@ import de.metas.ui.web.process.json.JSONDocumentActionsList;
 import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.websocket.WebsocketSender;
 import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONDocument;
@@ -334,9 +338,9 @@ public class WindowRestController
 			@RequestParam(name = PARAM_Advanced, required = false, defaultValue = PARAM_Advanced_DefaultValue) final boolean advanced)
 	{
 		userSession.assertLoggedIn();
-		
+
 		final DocumentPath fromDocumentPath = DocumentPath.rootDocumentPath(WindowId.fromJson(windowIdStr), DocumentId.of(documentIdStr));
-		
+
 		final Document documentCopy = documentCollection.duplicateDocument(fromDocumentPath);
 		return JSONDocument.ofDocument(documentCopy, newJSONOptions().setShowAdvancedFields(advanced).build());
 	}
@@ -600,15 +604,27 @@ public class WindowRestController
 	}
 
 	@GetMapping("/{windowId}/{documentId}/actions")
-	public JSONDocumentActionsList getDocumentActions(@PathVariable("windowId") final String windowIdStr, @PathVariable("documentId") final String documentId)
+	public JSONDocumentActionsList getDocumentActions(
+			@PathVariable("windowId") final String windowIdStr,
+			@PathVariable("documentId") final String documentId,
+			@RequestParam(name = "selectedTabId", required = false) final String selectedTabIdStr,
+			@RequestParam(name = "selectedRowIds", required = false) final String selectedRowIdsAsStr)
 	{
 		final WindowId windowId = WindowId.fromJson(windowIdStr);
 		final DocumentPath documentPath = DocumentPath.rootDocumentPath(windowId, documentId);
-		return getDocumentActions(documentPath);
+
+		final DetailId selectedTabId = DetailId.fromJson(selectedTabIdStr);
+		final DocumentIdsSelection selectedRowIds = DocumentIdsSelection.ofCommaSeparatedString(selectedRowIdsAsStr);
+		final Set<TableRecordReference> selectedIncludedRecords = selectedRowIds.stream()
+				.map(rowId -> documentPath.createChildPath(selectedTabId, rowId))
+				.map(documentCollection::getTableRecordReference)
+				.collect(ImmutableSet.toImmutableSet());
+
+		return getDocumentActions(documentPath, selectedIncludedRecords);
 	}
 
 	@GetMapping("/{windowId}/{documentId}/{tabId}/{rowId}/actions")
-	public JSONDocumentActionsList getDocumentActions(
+	public JSONDocumentActionsList getIncludedDocumentActions(
 			@PathVariable("windowId") final String windowIdStr,
 			@PathVariable("documentId") final String documentIdStr,
 			@PathVariable("tabId") final String tabIdStr,
@@ -616,16 +632,17 @@ public class WindowRestController
 	{
 		final WindowId windowId = WindowId.fromJson(windowIdStr);
 		final DocumentPath documentPath = DocumentPath.includedDocumentPath(windowId, documentIdStr, tabIdStr, rowIdStr);
-		return getDocumentActions(documentPath);
+		final Set<TableRecordReference> selectedIncludedRecords = ImmutableSet.of();
+		return getDocumentActions(documentPath, selectedIncludedRecords);
 	}
 
-	private JSONDocumentActionsList getDocumentActions(final DocumentPath documentPath)
+	private JSONDocumentActionsList getDocumentActions(final DocumentPath documentPath, final Set<TableRecordReference> selectedIncludedRecords)
 	{
 		userSession.assertLoggedIn();
 
 		final IDocumentChangesCollector changesCollector = NullDocumentChangesCollector.instance;
 		return documentCollection.forDocumentReadonly(documentPath, changesCollector, document -> {
-			final DocumentPreconditionsAsContext preconditionsContext = DocumentPreconditionsAsContext.of(document);
+			final DocumentPreconditionsAsContext preconditionsContext = DocumentPreconditionsAsContext.of(document, selectedIncludedRecords);
 
 			return processRestController.streamDocumentRelatedProcesses(preconditionsContext)
 					.filter(WebuiRelatedProcessDescriptor::isEnabledOrNotSilent)
