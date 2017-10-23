@@ -13,11 +13,20 @@ Here come the actual release notes:
 # metasfresh 5.33 (2017-44)
 
 **release for week 2017-44**
+* metasfresh-app
+  * [#2719](https://github.com/metasfresh/metasfresh/issues/2719) Window Design Webui: Improve window Schedules
+    * Improving Schedules Window in WebUI, adding adjusted Mandatory Lofic for Cron-Pattern Field and Translation for en_US.
+  * [#2723](https://github.com/metasfresh/metasfresh/issues/2723) Webui Design Window: Improve window Internal Use
+    * Improvement for the Internal Usage Window, adding Field Translations for Language/ Locale en_US.
+  * [#2781](https://github.com/metasfresh/metasfresh/issues/2781) Change Default Address Layout for B2C Partners for country CH
+    * Adjusting the Adress Layout/ Capture Sequence for Locations in Switzerland.
+  * [#2790](https://github.com/metasfresh/metasfresh/issues/2790) Show LoginasUserHostkey in webui window user
+    * New Field "Login as User Hostkey" in User Window.
+  * [#2783](https://github.com/metasfresh/metasfresh/issues/2783) WebUI design: Invoice Candidates adjustments
+    * Improving the Invoice Candidates Window. Adding missing Translation for Field in en_US.
 
 ## Features
 * metasfresh-app
-  * [#2564](https://github.com/metasfresh/metasfresh/issues/2564) Concept for entering multiple discounts for order and subscription
-    * New Feature that allows to add Discount Grouping and Discount rows to Sales Order Lines. These Lines allow the createtion of discounts based on LineNetAmt Aggregations.
 
 ## Fixes
 * metasfresh-app
@@ -36,6 +45,8 @@ Here come the actual release notes:
     * Improved Translations for en_US, de_DE and Layout in Invoice Candidates Window and Customer Invoice.
   * [#2379](https://github.com/metasfresh/metasfresh/issues/2379) Procurement Candidates generate Purchase Order
     * New Action in Procurement Candidates window of WebUI, allowing to create Purchase Orders from selected Procurement Candidates.
+  * [#2564](https://github.com/metasfresh/metasfresh/issues/2564) Concept for entering multiple discounts for order and subscription  
+    * New Feature that allows to add Discount Grouping and Discount rows to Sales Order Lines. These Lines allow the createtion of discounts based on LineNetAmt Aggregations.
   * [#2653](https://github.com/metasfresh/metasfresh/issues/2653) Window Design Webui: Improve Businesspartner Dist-Orgs window
     * Improved Translations for en_US. New Fielsd added for Subscription progress Subtab.
   * [#2725](https://github.com/metasfresh/metasfresh/issues/2725) Webui Window Design: Improvements in window ESR Payment Import
