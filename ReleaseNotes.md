@@ -113,11 +113,17 @@ Here come the actual release notes:
   * [#1227](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1227) The Letter window dissapears after Print Preview
     * Fix for the Letter Window. now still visible after choosing Print Preview.
   * [#1239](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1239) Included views are not working in non-modal windows
+    * Fixes the Included Views Functionality in WebUI. Now it's also possible to use them in non-modal windows.
   * [#1248](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1248) included view: wrong selectedIds when calling quickActions
+    * Fix in Included View. Now retrieving the correct Record/ Row ID's when calling Quick Actions.
   * [#1268](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1268) Sitemap broken
+    * Fix for the Sitemap creation.
   * [#1271](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1271) Open ANY included view broken
+    * Fixes the Included Views after issues occured for React 16 Refactoring.
   * [#1275](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1275) Scrolling in Modal window throws errors
+    * Fixes the errors that occured when scrolling in Modal Overlays.
   * [#1278](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1278) Shortcuts for New, Batch and Expand are broken
+    * Fixes the shortcuts for different shortcut keys.
   * [#1281](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1281) Translations of Photo Widget in User WIndow
     * Fixing the Translation of the Photo Widget Buttons in User Window.
 
