@@ -24,10 +24,10 @@ package de.metas.invoicecandidate.api;
 
 import java.util.List;
 
-import org.adempiere.mm.attributes.model.I_M_Attribute;
 import org.adempiere.util.IProcessor;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_InvoiceCandidate_InOutLine;
+import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_InOutLine;
 
 import de.metas.aggregation.api.IAggregationKey;
