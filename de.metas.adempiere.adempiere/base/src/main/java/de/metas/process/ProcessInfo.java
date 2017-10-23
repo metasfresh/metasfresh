@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.Set;
 
 import javax.annotation.Nullable;
 
@@ -51,6 +52,7 @@ import org.slf4j.Logger;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.adempiere.report.jasper.OutputType;
 import de.metas.document.engine.IDocumentBL;
@@ -99,6 +101,7 @@ public final class ProcessInfo implements Serializable
 		adTableId = builder.getAD_Table_ID();
 		recordId = builder.getRecord_ID();
 		whereClause = builder.getWhereClause();
+		selectedIncludedRecords = ImmutableSet.copyOf(builder.getSelectedIncludedRecords());
 
 		windowNo = builder.getWindowNo();
 		tabNo = builder.getTabNo();
@@ -136,10 +139,13 @@ public final class ProcessInfo implements Serializable
 	private final String title;
 	/** AD_Process_ID */
 	private final int adProcessId;
+
 	/** Table ID if the Process */
 	private final int adTableId;
 	/** Record ID if the Process */
 	private final int recordId;
+	private final Set<TableRecordReference> selectedIncludedRecords;
+
 	private final String whereClause;
 	private final int adClientId;
 	private final int adOrgId;
@@ -615,9 +621,9 @@ public final class ProcessInfo implements Serializable
 		if (Check.isEmpty(whereClause, true))
 		{
 			whereFilter = defaultQueryFilter;
-			
+
 			// In case te default filter is null, return null
-			if(whereFilter == null)
+			if (whereFilter == null)
 			{
 				return null;
 			}
@@ -637,7 +643,7 @@ public final class ProcessInfo implements Serializable
 		final TypedSqlQueryFilter<T> clientFilter = TypedSqlQueryFilter.of(role.getClientWhere(true));
 
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
-		
+
 		// Note that getTableNameOrNull() might as well return null, plus the method does not need the table name in this case
 		final ICompositeQueryFilter<T> compositeFilter = queryBL.createCompositeQueryFilter((String)null);
 
@@ -646,6 +652,12 @@ public final class ProcessInfo implements Serializable
 				.addFilter(orgFilter);
 
 		return compositeFilter;
+	}
+
+	/** @return selected included rows of current single selected document */
+	public Set<TableRecordReference> getSelectedIncludedRecords()
+	{
+		return selectedIncludedRecords;
 	}
 
 	/**
@@ -719,6 +731,8 @@ public final class ProcessInfo implements Serializable
 
 		private Integer adTableId;
 		private Integer recordId;
+
+		private Set<TableRecordReference> selectedIncludedRecords;
 
 		private Optional<String> whereClause = null;
 
@@ -1253,6 +1267,28 @@ public final class ProcessInfo implements Serializable
 			}
 
 			return TableRecordReference.of(adTableId, recordId);
+		}
+
+		public ProcessInfoBuilder setSelectedIncludedRecords(final Set<TableRecordReference> selectedIncludedRecords)
+		{
+			this.selectedIncludedRecords = selectedIncludedRecords != null ? selectedIncludedRecords : ImmutableSet.of();
+			return this;
+		}
+
+		private Set<TableRecordReference> getSelectedIncludedRecords()
+		{
+			if(selectedIncludedRecords != null)
+			{
+				return selectedIncludedRecords;
+			}
+			
+			final int adPInstanceId = getAD_PInstance_ID();
+			if(adPInstanceId > 0)
+			{
+				return Services.get(IADPInstanceDAO.class).retrieveSelectedIncludedRecords(adPInstanceId);
+			}
+			
+			return ImmutableSet.of();
 		}
 
 		/**
