@@ -86,6 +86,8 @@ Here come the actual release notes:
 * metasfresh-webui-frontend
   * [#1092](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1092) Prepare Update to React 16
     * Preparation Work for the Update to React 16.
+  * [#1232](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1232) Labels widget: keyboard support
+    * Adding Support for the new Labels wiget Lookup.
   * [#1249](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1249) Included view: blurWhenOpen support
     * New Functionality allowing to switch the blur effect on included views in Main Grid View.
 
@@ -93,17 +95,23 @@ Here come the actual release notes:
 ## Fixes
 * metasfresh-app
   * [#2240](https://github.com/metasfresh/metasfresh/issues/2240) npe on zoom into header aggregation
+    * Bugfix in Zoom To Function when jumping to Header Aggregation.
   * [#2727](https://github.com/metasfresh/metasfresh/issues/2727) Tax is not set properly when creating ICs from flatrate term
+    * Fix for the Invoice Candidate generation from Flatrate Terms. Now the Tax is set properly.
   * [#2794](https://github.com/metasfresh/metasfresh/issues/2794) Problem with picking for subscription deliveries
+    * Improvement of the Picking workflow when picking subscription shipments.
 
 * metasfresh-webui-api
   * [#625](https://github.com/metasfresh/metasfresh-webui-api/issues/625) WebUI Scheduler Window Log Subtab: Invalid Client ID=0
+    * Internal Housekeeping, fix in Schedule Window Log included Tab.
   * [#639](https://github.com/metasfresh/metasfresh-webui-api/issues/639) Can't save a new partner
+    * Fixes a Bug that prevented to create and save new Business Partners in WebUI.
 
 * metasfresh-webui-frontend
   * [#1223](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1223) Scrollbar missing in Handling Unit Editor after "Internal Usage Action"
+    * Fix for WebUI Windows. Her Handling Unit Editor. Now the Window Scrollbar is shown after the usage of Internal Usage Action.
   * [#1227](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1227) The Letter window dissapears after Print Preview
-  * [#1232](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1232) Labels widget: keyboard support
+    * Fix for the Letter Window. now still visible after choosing Print Preview.
   * [#1239](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1239) Included views are not working in non-modal windows
   * [#1248](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1248) included view: wrong selectedIds when calling quickActions
   * [#1268](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1268) Sitemap broken
