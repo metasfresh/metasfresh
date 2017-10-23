@@ -1,5 +1,6 @@
 package de.metas.material.event;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
@@ -65,10 +66,8 @@ public class MetasfreshEventSerializerTests
 
 		final MaterialEvent deserializedInOutEvent = SimpleObjectSerializer.get().deserialize(deserializedInOutEventStr, MaterialEvent.class);
 
-		assertThat(deserializedInOutEvent instanceof TransactionEvent, is(true));
-		assertThat(((TransactionEvent)deserializedInOutEvent)
-				.getMaterialDescr()
-				.getProductId(), is(14)); // "spot check": picking the productId of the 2nd line
+		assertThat(deserializedInOutEvent).isInstanceOf(TransactionEvent.class);
+		assertThat(((TransactionEvent)deserializedInOutEvent).getMaterialDescr().getProductId()).isEqualTo(20); // "spot check": picking the productId
 		assertThat(deserializedInOutEvent, is(transactionEvent));
 	}
 }
