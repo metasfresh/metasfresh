@@ -47,7 +47,7 @@ import lombok.NonNull;
 @Service
 public class MaterialEventService
 {
-	public static final String MANUFACTURING_DISPOSITION_EVENT = "ManufacturingDispositionEvent";
+	public static final String MATERIAL_DISPOSITION_EVENT = "MaterialDispositionEvent";
 
 	private final List<MaterialEventListener> listeners = new ArrayList<>();
 
@@ -61,7 +61,7 @@ public class MaterialEventService
 		@Override
 		public void onEvent(final IEventBus eventBus, final Event event)
 		{
-			final String lightWeigthEventStr = event.getProperty(MANUFACTURING_DISPOSITION_EVENT);
+			final String lightWeigthEventStr = event.getProperty(MATERIAL_DISPOSITION_EVENT);
 			final MaterialEvent lightWeightEvent = SimpleObjectSerializer.get().deserialize(lightWeigthEventStr, MaterialEvent.class);
 
 			//
@@ -166,7 +166,7 @@ public class MaterialEventService
 		final String eventStr = SimpleObjectSerializer.get().serialize(event);
 
 		final Event realEvent = Event.builder()
-				.putProperty(MANUFACTURING_DISPOSITION_EVENT, eventStr)
+				.putProperty(MATERIAL_DISPOSITION_EVENT, eventStr)
 				.build();
 
 		getEventBus().postEvent(realEvent);

@@ -1,5 +1,7 @@
 package de.metas.material.event;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Preconditions;
 
 import lombok.Builder;
@@ -45,11 +47,12 @@ public class ShipmentScheduleEvent implements MaterialEvent
 	@Default
 	int orderLineId = -1;
 
+	@JsonCreator
 	public ShipmentScheduleEvent(
-			@NonNull final EventDescr eventDescr,
-			@NonNull final MaterialDescriptor materialDescr,
-			int shipmentScheduleId,
-			int orderLineId)
+			@JsonProperty("eventDescr") @NonNull final EventDescr eventDescr,
+			@JsonProperty("materialDescr") @NonNull final MaterialDescriptor materialDescr,
+			@JsonProperty("shipmentScheduleId") int shipmentScheduleId,
+			@JsonProperty("orderLineId") int orderLineId)
 	{
 		Preconditions.checkArgument(shipmentScheduleId > 0, "Given parameter shipmentScheduleId=%s needs to be >0", shipmentScheduleId);
 		this.shipmentScheduleId = shipmentScheduleId;
