@@ -64,9 +64,9 @@ public class ExportArchivePDF extends JavaProcess implements IProcessPreconditio
 	
 	private void openPdfFile(@NonNull final byte[] data, @NonNull final String contentType, @NonNull final String filename)
 	{
-		final boolean backEndorSwingMode = Ini.getRunMode() == RunMode.BACKEND || Ini.isClient();
+		final boolean backEndOrSwing = Ini.getRunMode() == RunMode.BACKEND || Ini.isClient();
 		
-		if (backEndorSwingMode)
+		if (backEndOrSwing)
 		{
 			Services.get(IClientUI.class).download(data, contentType, filename);	
 		}
