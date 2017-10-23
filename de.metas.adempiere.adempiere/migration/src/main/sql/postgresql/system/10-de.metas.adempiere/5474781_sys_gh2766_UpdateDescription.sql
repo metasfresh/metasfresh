@@ -1,0 +1,1 @@
+update C_DocType_Trl trl set Description=dt.Description from C_DocType dt where trl.C_DocType_ID=dt.C_DocType_ID;

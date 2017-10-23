@@ -1,0 +1,1 @@
+delete from ad_changelog where AD_Column_ID IN (select AD_Column_ID from AD_Column where ColumnName IN ('Updated', 'UpdatedBy'));
