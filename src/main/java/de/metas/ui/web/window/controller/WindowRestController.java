@@ -2,6 +2,7 @@ package de.metas.ui.web.window.controller;
 
 import java.util.List;
 import java.util.Set;
+import java.util.function.Predicate;
 
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
@@ -608,7 +609,8 @@ public class WindowRestController
 			@PathVariable("windowId") final String windowIdStr,
 			@PathVariable("documentId") final String documentId,
 			@RequestParam(name = "selectedTabId", required = false) final String selectedTabIdStr,
-			@RequestParam(name = "selectedRowIds", required = false) final String selectedRowIdsAsStr)
+			@RequestParam(name = "selectedRowIds", required = false) final String selectedRowIdsAsStr,
+			@RequestParam(name = "disabled", defaultValue = "false") final boolean returnDisabled)
 	{
 		final WindowId windowId = WindowId.fromJson(windowIdStr);
 		final DocumentPath documentPath = DocumentPath.rootDocumentPath(windowId, documentId);
@@ -620,7 +622,7 @@ public class WindowRestController
 				.map(documentCollection::getTableRecordReference)
 				.collect(ImmutableSet.toImmutableSet());
 
-		return getDocumentActions(documentPath, selectedIncludedRecords);
+		return getDocumentActions(documentPath, selectedIncludedRecords, returnDisabled);
 	}
 
 	@GetMapping("/{windowId}/{documentId}/{tabId}/{rowId}/actions")
@@ -628,24 +630,38 @@ public class WindowRestController
 			@PathVariable("windowId") final String windowIdStr,
 			@PathVariable("documentId") final String documentIdStr,
 			@PathVariable("tabId") final String tabIdStr,
-			@PathVariable("rowId") final String rowIdStr)
+			@PathVariable("rowId") final String rowIdStr,
+			@RequestParam(name = "disabled", defaultValue = "false") final boolean returnDisabled)
 	{
 		final WindowId windowId = WindowId.fromJson(windowIdStr);
 		final DocumentPath documentPath = DocumentPath.includedDocumentPath(windowId, documentIdStr, tabIdStr, rowIdStr);
 		final Set<TableRecordReference> selectedIncludedRecords = ImmutableSet.of();
-		return getDocumentActions(documentPath, selectedIncludedRecords);
+		return getDocumentActions(documentPath, selectedIncludedRecords, returnDisabled);
 	}
 
-	private JSONDocumentActionsList getDocumentActions(final DocumentPath documentPath, final Set<TableRecordReference> selectedIncludedRecords)
+	private JSONDocumentActionsList getDocumentActions(
+			final DocumentPath documentPath,
+			final Set<TableRecordReference> selectedIncludedRecords,
+			final boolean returnDisabled)
 	{
 		userSession.assertLoggedIn();
+
+		final Predicate<WebuiRelatedProcessDescriptor> filter;
+		if (returnDisabled)
+		{
+			filter = WebuiRelatedProcessDescriptor::isEnabledOrNotSilent;
+		}
+		else
+		{
+			filter = WebuiRelatedProcessDescriptor::isEnabled;
+		}
 
 		final IDocumentChangesCollector changesCollector = NullDocumentChangesCollector.instance;
 		return documentCollection.forDocumentReadonly(documentPath, changesCollector, document -> {
 			final DocumentPreconditionsAsContext preconditionsContext = DocumentPreconditionsAsContext.of(document, selectedIncludedRecords);
 
 			return processRestController.streamDocumentRelatedProcesses(preconditionsContext)
-					.filter(WebuiRelatedProcessDescriptor::isEnabledOrNotSilent)
+					.filter(filter)
 					.collect(JSONDocumentActionsList.collect(newJSONOptions().build()));
 		});
 	}
