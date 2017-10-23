@@ -1,5 +1,7 @@
 package de.metas.material.event;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Preconditions;
 
 import lombok.Builder;
@@ -28,7 +30,8 @@ import lombok.Value;
  * #L%
  */
 
-@Value // implies @AllArgsConstructor that is used by jackson when it deserializes a string
+@Value
+@Builder
 public class TransactionEvent implements MaterialEvent
 {
 	public static final String TYPE = "TransactionEvent";
@@ -45,12 +48,13 @@ public class TransactionEvent implements MaterialEvent
 
 	int transactionId;
 
+	@JsonCreator
 	@Builder
 	public TransactionEvent(
-			@NonNull final EventDescr eventDescr,
-			@NonNull final MaterialDescriptor materialDescr,
-			final int shipmentScheduleId,
-			final int transactionId)
+			@JsonProperty("eventDescr") @NonNull final EventDescr eventDescr,
+			@JsonProperty("materialDescr") @NonNull final MaterialDescriptor materialDescr,
+			@JsonProperty("shipmentScheduleId") final int shipmentScheduleId,
+			@JsonProperty("transactionId") final int transactionId)
 	{
 		Preconditions.checkArgument(transactionId > 0, "The given parameter transactionId=%s needs to be > 0", transactionId);
 		this.transactionId = transactionId;

@@ -1,5 +1,7 @@
 package de.metas.material.event;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Preconditions;
 
 import lombok.Builder;
@@ -45,14 +47,15 @@ public class MaterialDemandDescr
 
 	int orderLineId;
 
+	@JsonCreator
 	@Builder
 	private MaterialDemandDescr(
-			@NonNull final EventDescr eventDescr,
-			@NonNull MaterialDescriptor materialDescriptor,
-			int demandCandidateId,
-			int shipmentScheduleId,
-			int forecastLineId,
-			int orderLineId)
+			@JsonProperty("eventDescr") @NonNull final EventDescr eventDescr,
+			@JsonProperty("materialDescriptor") @NonNull MaterialDescriptor materialDescriptor,
+			@JsonProperty("demandCandidateId") int demandCandidateId,
+			@JsonProperty("shipmentScheduleId") int shipmentScheduleId,
+			@JsonProperty("forecastLineId") int forecastLineId,
+			@JsonProperty("orderLineId") int orderLineId)
 	{
 		Preconditions.checkArgument(demandCandidateId > 0, "The given demandCandidateId=%s has to be >0", demandCandidateId);
 		this.demandCandidateId = demandCandidateId;
