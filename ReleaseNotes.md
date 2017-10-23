@@ -69,6 +69,7 @@ Here come the actual release notes:
   * [#2768](https://github.com/metasfresh/metasfresh/issues/2768) Translate window for process "Change Password" into EN
     * Translations added to Parms in Change Password Process.
   * [#2769](https://github.com/metasfresh/metasfresh/issues/2769) model generator: wrong columns are generated
+    * Internal Housekeeping Improvements in Model Generator. Now creating the correct columns.
   * [#2774](https://github.com/metasfresh/metasfresh/issues/2774) Vendor Invoice Layout and Translations in WebUI
     * Improved Window Vendor Invoice Layout to adapt current Design Guidelines and Translations for en_US added.
   * [#2724](https://github.com/metasfresh/metasfresh/issues/2724) Window Design Webui: Please, add translations to the window Contract Term
@@ -78,11 +79,15 @@ Here come the actual release notes:
 
 * metasfresh-webui-api
   * [#632](https://github.com/metasfresh/metasfresh-webui-api/issues/632) HU-Trace: show all connected records
+    * Improvement of Handling Unit Trace Functionality, now showing all connected record for a given Filter Criteria.
   * [#637](https://github.com/metasfresh/metasfresh-webui-api/issues/637) Move Picking Tray Clearing Functionality to new window
+    * New Window for the Picking Tray Clearing Functionality.
 
 * metasfresh-webui-frontend
   * [#1092](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1092) Prepare Update to React 16
-  * [#1249](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1249) included view: blurWhenOpen support
+    * Preparation Work for the Update to React 16.
+  * [#1249](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1249) Included view: blurWhenOpen support
+    * New Functionality allowing to switch the blur effect on included views in Main Grid View.
 
 
 ## Fixes
