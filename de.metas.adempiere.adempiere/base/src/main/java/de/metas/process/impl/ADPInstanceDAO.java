@@ -13,11 +13,11 @@ package de.metas.process.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.adempiere.ad.dao.IQueryBL;
@@ -42,6 +43,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
 import org.compiere.model.I_AD_PInstance;
 import org.compiere.model.I_AD_PInstance_Log;
@@ -54,6 +56,7 @@ import org.compiere.util.Util;
 import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
@@ -62,6 +65,7 @@ import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessInfo;
 import de.metas.process.ProcessInfoLog;
 import de.metas.process.ProcessInfoParameter;
+import de.metas.process.model.I_AD_PInstance_SelectedIncludedRecords;
 
 public class ADPInstanceDAO implements IADPInstanceDAO
 {
@@ -302,7 +306,7 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 		// Check which type of Parameter we have, and if the instPara value differs from the piPara value
 		// apply the piPara Value to the instPara value and save. If not, do nothing.
 
-		if(value == null && valueTo == null)
+		if (value == null && valueTo == null)
 		{
 			hasChanges = true;
 		}
@@ -573,12 +577,12 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 
 		saveProcessInfoLogs(adPInstanceId, result.getCurrentLogs());
 	}
-	
+
 	@Override
 	public void saveProcessInfo(final ProcessInfo pi)
 	{
 		saveProcessInfoOnly(pi);
-		
+
 		//
 		// Save Parameters to AD_PInstance_Para, if needed
 		final List<ProcessInfoParameter> parameters = pi.getParametersNoLoad();
@@ -586,7 +590,8 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 		{
 			saveParameterToDB(pi.getAD_PInstance_ID(), parameters);
 		}
-
+		
+		saveSelectedIncludedRecords(pi.getAD_PInstance_ID(), pi.getSelectedIncludedRecords());
 	}
 
 	@Override
@@ -670,5 +675,100 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 			throw new AdempiereException("@NotFound@ @AD_PInstance_ID@ (ID=" + adPInstanceId + ")");
 		}
 		return adPInstance;
+	}
+
+	private static final String SQL_SelectAll_AD_PInstance_SelectedIncludedRecords = "SELECT * FROM " + I_AD_PInstance_SelectedIncludedRecords.Table_Name
+			+ " WHERE " + I_AD_PInstance_SelectedIncludedRecords.COLUMNNAME_AD_PInstance_ID + "=?"
+			+ " ORDER BY " + I_AD_PInstance_SelectedIncludedRecords.COLUMNNAME_SeqNo;
+
+	@Override
+	public Set<TableRecordReference> retrieveSelectedIncludedRecords(final int adPInstanceId)
+	{
+		final Object[] sqlParams = new Object[] { adPInstanceId };
+
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		try
+		{
+			pstmt = DB.prepareStatement(SQL_SelectAll_AD_PInstance_SelectedIncludedRecords, ITrx.TRXNAME_ThreadInherited);
+			DB.setParameters(pstmt, sqlParams);
+			rs = pstmt.executeQuery();
+
+			final ImmutableSet.Builder<TableRecordReference> recordRefs = ImmutableSet.builder();
+			while (rs.next())
+			{
+				final int adTableId = rs.getInt(I_AD_PInstance_SelectedIncludedRecords.COLUMNNAME_AD_Table_ID);
+				final int recordId = rs.getInt(I_AD_PInstance_SelectedIncludedRecords.COLUMNNAME_Record_ID);
+				final TableRecordReference recordRef = TableRecordReference.of(adTableId, recordId);
+				recordRefs.add(recordRef);
+			}
+			return recordRefs.build();
+		}
+		catch (final SQLException ex)
+		{
+			throw new DBException(ex, SQL_SelectAll_AD_PInstance_SelectedIncludedRecords, sqlParams);
+		}
+		finally
+		{
+			DB.close(rs, pstmt);
+		}
+	}
+
+	@Override
+	public void saveSelectedIncludedRecords(final int adPInstanceId, final Set<TableRecordReference> recordRefs)
+	{
+		deleteSelectedIncludedRecords(adPInstanceId);
+		insertSelectedIncludedRecords(adPInstanceId, recordRefs);
+	}
+
+	private static final String SQL_InsertInto_AD_PInstance_SelectedIncludedRecords = "INSERT INTO " + I_AD_PInstance_SelectedIncludedRecords.Table_Name
+			+ "(" + I_AD_PInstance_SelectedIncludedRecords.COLUMNNAME_AD_PInstance_ID
+			+ "," + I_AD_PInstance_SelectedIncludedRecords.COLUMNNAME_AD_Table_ID
+			+ "," + I_AD_PInstance_SelectedIncludedRecords.COLUMNNAME_Record_ID
+			+ "," + I_AD_PInstance_SelectedIncludedRecords.COLUMNNAME_SeqNo
+			+ ") VALUES (?, ?, ?, ?)";
+
+	private void insertSelectedIncludedRecords(final int adPInstanceId, final Set<TableRecordReference> recordRefs)
+	{
+		if (recordRefs.isEmpty())
+		{
+			return;
+		}
+
+		PreparedStatement pstmt = null;
+		final ResultSet rs = null;
+		try
+		{
+			pstmt = DB.prepareStatement(SQL_InsertInto_AD_PInstance_SelectedIncludedRecords, ITrx.TRXNAME_ThreadInherited);
+
+			int nextSeqNo = 1;
+			for (final TableRecordReference recordRef : recordRefs)
+			{
+				final int seqNo = nextSeqNo;
+				nextSeqNo++;
+
+				final Object[] sqlParams = new Object[] { adPInstanceId, recordRef.getAD_Table_ID(), recordRef.getRecord_ID(), seqNo };
+				DB.setParameters(pstmt, sqlParams);
+				pstmt.addBatch();
+			}
+
+			pstmt.executeBatch();
+		}
+		catch (final SQLException ex)
+		{
+			throw new DBException(ex, SQL_SelectAll_AD_PInstance_SelectedIncludedRecords);
+		}
+		finally
+		{
+			DB.close(rs, pstmt);
+		}
+	}
+
+	private static final String SQL_DeleteFrom_AD_PInstance_SelectedIncludedRecords = "DELETE FROM " + I_AD_PInstance_SelectedIncludedRecords.Table_Name
+			+ " WHERE " + I_AD_PInstance_SelectedIncludedRecords.COLUMNNAME_AD_PInstance_ID + "=?";
+
+	private final void deleteSelectedIncludedRecords(final int adPInstanceId)
+	{
+		DB.executeUpdateEx(SQL_DeleteFrom_AD_PInstance_SelectedIncludedRecords, new Object[] { adPInstanceId }, ITrx.TRXNAME_ThreadInherited);
 	}
 }
