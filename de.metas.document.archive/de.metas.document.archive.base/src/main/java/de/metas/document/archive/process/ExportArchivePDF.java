@@ -4,6 +4,9 @@ import org.adempiere.archive.api.IArchiveBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.adempiere.util.StringUtils;
+import org.compiere.Adempiere.RunMode;
+import org.compiere.util.Ini;
 
 import de.metas.adempiere.form.IClientUI;
 import de.metas.document.archive.model.IArchiveAware;
@@ -12,6 +15,7 @@ import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessPreconditionsResolution;
+import lombok.NonNull;
 
 public class ExportArchivePDF extends JavaProcess implements IProcessPrecondition
 {
@@ -51,9 +55,24 @@ public class ExportArchivePDF extends JavaProcess implements IProcessPreconditio
 		final IArchiveBL archiveBL = Services.get(IArchiveBL.class);
 		final byte[] data = archiveBL.getBinaryData(archive);
 		final String contentType = archiveBL.getContentType(archive);
-		final String filename = null;
+		final String filename = String.valueOf(archive.getRecord_ID());
 
-		Services.get(IClientUI.class).download(data, contentType, filename);
+		openPdfFile(data, contentType, filename);
+		
 		return "OK";
+	}
+	
+	private void openPdfFile(@NonNull final byte[] data, @NonNull final String contentType, @NonNull final String filename)
+	{
+		final boolean backEndorSwingMode = Ini.getRunMode() == RunMode.BACKEND || Ini.isClient();
+		
+		if (backEndorSwingMode)
+		{
+			Services.get(IClientUI.class).download(data, contentType, filename);	
+		}
+		else
+		{
+			getResult().setReportData(data, filename, contentType);
+		}
 	}
 }
