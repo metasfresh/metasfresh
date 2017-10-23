@@ -27,12 +27,15 @@ Here come the actual release notes:
 ## Features
 * metasfresh-app
   * [#472](https://github.com/metasfresh/metasfresh/issues/472) Picking from Handling Unit Editor (WebUI)
+    * New Functionality that allows a flexible Picking from Handling Unit Editor.
   * [#2283](https://github.com/metasfresh/metasfresh/issues/2283) Window Design WebUI : Order Candidates Improvements
     * Improved Translations for de_DE and en_US and Layout adapted to current Design Guidelines.
   * [#2311](https://github.com/metasfresh/metasfresh/issues/2311) Customer Invoices and Invoice Candidates adjustments
     * Improved Translations for en_US, de_DE and Layout in Invoice Candidates Window and Customer Invoice.
   * [#2379](https://github.com/metasfresh/metasfresh/issues/2379) Procurement Candidates generate Purchase Order
+    * New Action in Procurement Candidates window of WebUI, allowing to create Purchase Orders from selected Procurement Candidates.
   * [#2564](https://github.com/metasfresh/metasfresh/issues/2564) Concept for entering multiple discounts for order and subscription  
+    * New Feature that allows to add Discount Grouping and Discount rows to Sales Order Lines. These Lines allow the createtion of discounts based on LineNetAmt Aggregations.
   * [#2653](https://github.com/metasfresh/metasfresh/issues/2653) Window Design Webui: Improve Businesspartner Dist-Orgs window
     * Improved Translations for en_US. New Fielsd added for Subscription progress Subtab.
   * [#2725](https://github.com/metasfresh/metasfresh/issues/2725) Webui Window Design: Improvements in window ESR Payment Import
@@ -50,11 +53,17 @@ Here come the actual release notes:
   * [#2732](https://github.com/metasfresh/metasfresh/issues/2732) Window Design Webui : Add description field in sales order line
     * New Field Description added to Sales Orderline Grid View and Advanced edit in WebUI.
   * [#2739](https://github.com/metasfresh/metasfresh/issues/2739) Add context into if exception happens in WorkpackageProcessorTask.processWorkpackage
+    * Internal Housekeeping Feature that improves the analysis of failes Workpackage Processor Tasks.
   * [#2740](https://github.com/metasfresh/metasfresh/issues/2740) Picking slot Rack System flag
+    * New Feature that enables the Configration of Picking Slots as Rack System. This enables the possbility to reopen an already closed Handling Unit in Picking Slot or restricting it.
   * [#2750](https://github.com/metasfresh/metasfresh/issues/2750) Flatrate Import: Support tax category
+    * Adding Support of Tax Categories in Flatrate Contracts Import process.
   * [#2751](https://github.com/metasfresh/metasfresh/issues/2571) Report Translations to en_US: menu reports
+    * Translation of default Jasper Reports to en_US.
   * [#2752](https://github.com/metasfresh/metasfresh/issues/2752) Inherit C_Taxcategory_ID and IsTaxIncluded from orderline to FT
+    * Functionality allowing the inheritance of Tax relevant infomraiton from Orderline to Flatrate Terms.
   * [#2755](https://github.com/metasfresh/metasfresh/issues/2755) error on hu changing status from shipped to active
+    * Fixes an error in Handling Units when transforming HU from shipped back to active status.
   * [#2763](https://github.com/metasfresh/metasfresh/issues/2763) New Window Picking Tray Clearing
     * New Window for the Picking Tray Clearing, allowing the user to maintain content of Picking Trays, do Handling Unit Compression and Preparation for Shipper Transportation.
   * [#2768](https://github.com/metasfresh/metasfresh/issues/2768) Translate window for process "Change Password" into EN
