@@ -16,6 +16,8 @@ Here come the actual release notes:
 * metasfresh-app
   * [#2719](https://github.com/metasfresh/metasfresh/issues/2719) Window Design Webui: Improve window Schedules
     * Improving Schedules Window in WebUI, adding adjusted Mandatory Lofic for Cron-Pattern Field and Translation for en_US.
+  * [#2723](https://github.com/metasfresh/metasfresh/issues/2723) Webui Design Window: Improve window Internal Use
+    * Improvement for the Internal Usage Window, adding Field Translations for Language/ Locale en_US.
   * [#2781](https://github.com/metasfresh/metasfresh/issues/2781) Change Default Address Layout for B2C Partners for country CH
     * Adjusting the Adress Layout/ Capture Sequence for Locations in Switzerland.
   * [#2790](https://github.com/metasfresh/metasfresh/issues/2790) Show LoginasUserHostkey in webui window user
