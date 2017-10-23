@@ -24,30 +24,16 @@ package org.adempiere.misc.service.impl;
 
 
 import org.adempiere.misc.service.IPOService;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.MiscUtils;
 import org.compiere.model.PO;
 
 public final class POService implements IPOService
 {
-
-	/**
-	 * Tries to save the given PO with the given transaction. Throws a {@link RuntimeException}, if
-	 * {@link PO#save(String)} returns <code>false</code>.
-	 * 
-	 * @param po
-	 * @param trxName
-	 * @throws RuntimeException
-	 *             if the po's save fails
-	 * @throws IllegalArgumentException
-	 *             if the given object is not <code>instanceof PO</code>
-	 * 
-	 */
+	@Override
 	public void save(final Object po, final String trxName)
 	{
-		if (!MiscUtils.asPO(po).save(trxName))
-		{
-			throw new RuntimeException("Unable to save PO " + po + MiscUtils.loggerMsgs());
-		}
+		InterfaceWrapperHelper.save(po, trxName);
 	}
 
 	/**
@@ -62,6 +48,7 @@ public final class POService implements IPOService
 	 * @throws IllegalArgumentException
 	 *             if the given object is not <code>instanceof PO</code>
 	 */
+	@Override
 	public void delete(final Object po, final boolean force, final String trxName)
 	{
 		if (!MiscUtils.asPO(po).delete(force, trxName))
@@ -82,6 +69,7 @@ public final class POService implements IPOService
 	 * @throws IllegalArgumentException
 	 *             if the given object is not <code>instanceof PO</code>
 	 */
+	@Override
 	public Object getValue(final Object po, final String columnName)
 	{
 		doChecks(po, columnName);
@@ -106,6 +94,7 @@ public final class POService implements IPOService
 		}
 	}
 
+	@Override
 	public Object getOldValue(final Object po, final String columnName)
 	{
 		doChecks(po, columnName);
@@ -128,6 +117,7 @@ public final class POService implements IPOService
 	 * @param value
 	 *            may be <code>null</code>
 	 */
+	@Override
 	public void setValue(final Object po, final String columnName,
 			final Object value)
 	{
@@ -147,43 +137,51 @@ public final class POService implements IPOService
 		}
 	}
 
+	@Override
 	public void copyValue(final Object source, final Object dest, final String columnName)
 	{
 		setValue(dest, columnName, getValue(source, columnName));
 	}
 
+	@Override
 	public void setClientOrg(final Object po, final int adClientId, final int adOrgId)
 	{
 		setValue(po, AD_CLIENT_ID, adClientId);
 		setValue(po, AD_ORG_ID, adOrgId);
 	}
 
+	@Override
 	public void copyClientOrg(final Object source, final Object dest)
 	{
 		copyValue(source, dest, AD_CLIENT_ID);
 		copyValue(source, dest, AD_ORG_ID);
 	}
 
+	@Override
 	public void setIsActive(final Object po, final boolean active)
 	{
 		setValue(po, IS_ACTIVE, active);
 	}
 
+	@Override
 	public String[] getKeyColumns(final Object po)
 	{
 		return MiscUtils.asPO(po).get_KeyColumns();
 	}
 
+	@Override
 	public int getID(final Object po)
 	{
 		return MiscUtils.asPO(po).get_ID();
 	}
 
+	@Override
 	public void copyValues(final Object poFrom, final Object poTo)
 	{
 		PO.copyValues(MiscUtils.asPO(poFrom), MiscUtils.asPO(poTo));
 	}
 
+	@Override
 	public String getTrxName(final Object po)
 	{
 		return MiscUtils.asPO(po).get_TrxName();
