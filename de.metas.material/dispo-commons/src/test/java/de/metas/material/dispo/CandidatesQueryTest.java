@@ -49,7 +49,7 @@ public class CandidatesQueryTest
 	{
 		final Timestamp date = SystemTime.asTimestamp();
 		final Candidate cand = Candidate.builder().type(Type.STOCK)
-				.materialDescr(MaterialDescriptor.builderForCandidate()
+				.materialDescr(MaterialDescriptor.builderForCandidateOrQuery()
 						.date(date)
 						.productId(20)
 						.quantity(BigDecimal.TEN)

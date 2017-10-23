@@ -97,7 +97,7 @@ public class Candidate
 	 * Used for additional infos if this candidate relates to particular demand
 	 */
 	DemandDetail demandDetail;
-	
+
 	TransactionDetail transactionDetail;
 
 	/**
@@ -181,14 +181,17 @@ public class Candidate
 		this.parentId = parentId;
 		this.groupId = groupId;
 		this.seqNo = seqNo;
-		
-		Preconditions.checkArgument(materialDescriptor.isComplete(), 
+
+		Preconditions.checkArgument(materialDescriptor.isComplete(),
 				"Given parameter materialDescriptor needs to have iscomplete==true; materialDescriptor=%s", materialDescriptor);
 		this.materialDescr = materialDescriptor;
-		
+
 		this.productionDetail = productionDetail;
 		this.distributionDetail = distributionDetail;
 		this.demandDetail = demandDetail;
+
+		Preconditions.checkArgument(transactionDetail == null || transactionDetail.isComplete(),
+				"Given parameter transactionDetail needs to have iscomplete==true; transactionDetail=%s", transactionDetail);
 		this.transactionDetail = transactionDetail;
 	}
 }

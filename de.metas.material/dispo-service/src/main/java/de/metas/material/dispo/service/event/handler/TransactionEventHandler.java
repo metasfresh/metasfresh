@@ -61,7 +61,7 @@ public class TransactionEventHandler
 	@VisibleForTesting
 	Candidate createCandidate(@NonNull final TransactionEvent event)
 	{
-		final TransactionDetail transactionDetail = new TransactionDetail(event.getMaterialDescr().getQuantity(), event.getTransactionId());
+		final TransactionDetail transactionDetail = TransactionDetail.forCandidateOrQuery(event.getMaterialDescr().getQuantity(), event.getTransactionId());
 
 		final Candidate candidate;
 		if (event.getShipmentScheduleId() > 0)
@@ -83,16 +83,28 @@ public class TransactionEventHandler
 			}
 			else
 			{
-				// override materialDescriptor because the quantity might differ in the existing candidate
 				candidate = existingCandidate
 						.withTransactionDetail(transactionDetail);
 			}
 		}
 		else
 		{
-			candidate = createCommonCandidateBuilder(event)
-					.transactionDetail(transactionDetail)
+			final CandidatesQuery query = CandidatesQuery.builder()
+					.materialDescr(event.getMaterialDescr().withoutQuantity())
+					.transactionDetail(TransactionDetail.forQuery(event.getTransactionId()))
 					.build();
+			final Candidate existingCandidate = candidateRepository.retrieveLatestMatchOrNull(query);
+			if (existingCandidate == null)
+			{
+				candidate = createCommonCandidateBuilder(event)
+						.transactionDetail(transactionDetail)
+						.build();
+			}
+			else
+			{
+				candidate = existingCandidate
+						.withTransactionDetail(transactionDetail);
+			}
 		}
 		return candidate;
 	}

@@ -46,11 +46,13 @@ public class MaterialDescriptor
 	/**
 	 * @return a builder where you need to set all the properties.
 	 */
-	public static MaterialDescriptorBuilder builderForCandidate()
+	public static MaterialDescriptorBuilder builderForCandidateOrQuery()
 	{
 		return MaterialDescriptor.builder().complete(true);
 	}
 
+	boolean complete;
+	
 	int warehouseId;
 
 	int productId;
@@ -62,11 +64,13 @@ public class MaterialDescriptor
 	 */
 	Date date;
 
-	boolean complete;
-
 	@Builder
-	public MaterialDescriptor(final int warehouseId, final int productId,
-			final BigDecimal quantity, final Date date, final Boolean complete)
+	public MaterialDescriptor(
+			final int warehouseId, 
+			final int productId,
+			final BigDecimal quantity, 
+			final Date date, 
+			final Boolean complete)
 	{
 		this.complete = complete == null || complete;
 

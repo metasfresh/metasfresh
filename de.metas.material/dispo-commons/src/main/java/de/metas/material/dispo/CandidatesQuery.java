@@ -9,6 +9,7 @@ import de.metas.material.dispo.candidate.Candidate;
 import de.metas.material.dispo.candidate.DemandDetail;
 import de.metas.material.dispo.candidate.DistributionDetail;
 import de.metas.material.dispo.candidate.ProductionDetail;
+import de.metas.material.dispo.candidate.TransactionDetail;
 import de.metas.material.event.MaterialDescriptor;
 import lombok.Builder;
 import lombok.NonNull;
@@ -99,60 +100,62 @@ public class CandidatesQuery implements CandidateSpecification
 	/**
 	 * This property specifies how to interpret the date.
 	 */
-	private final DateOperator dateOperator;
+	DateOperator dateOperator;
 
 	/**
 	 * If set, then this segment is about {@link Candidate}s that have a parent candidate which has the given product ID.
 	 */
-	private final int parentProductId;
+	int parentProductId;
 
 	/**
 	 * If set, then this segment is about {@link Candidate}s that have a parent candidate which has the given warehouse ID.
 	 */
-	private final int parentWarehouseId;
+	int parentWarehouseId;
 
-	private final int orgId;
+	int orgId;
 
-	private final Type type;
+	Type type;
 
 	/**
 	 * Should be {@code null} for stock candidates.
 	 */
-	private final SubType subType;
+	SubType subType;
 
-	private final Status status;
+	Status status;
 
-	private final int id;
+	int id;
 
 	/**
 	 * A supply candidate has a stock candidate as its parent. A demand candidate has a stock candidate as its child.
 	 */
-	private final int parentId;
+	int parentId;
 
 	/**
 	 * A supply candidate and its corresponding demand candidate are associated by a common group id.
 	 */
-	private final int groupId;
+	int groupId;
 
-	private final int seqNo;
+	int seqNo;
 
-	private final MaterialDescriptor materialDescr;
+	MaterialDescriptor materialDescr;
 
 	/**
 	 * Used for additional infos if this candidate has the sub type {@link SubType#PRODUCTION}.
 	 */
-	private final ProductionDetail productionDetail;
+	ProductionDetail productionDetail;
 
 	/**
 	 * Used for additional infos if this candidate has the sub type {@link SubType#DISTRIBUTION}.
 	 */
-	private final DistributionDetail distributionDetail;
+	DistributionDetail distributionDetail;
 
 	/**
 	 * Used for additional infos if this candidate relates to particular demand
 	 */
-	private final DemandDetail demandDetail;
+	DemandDetail demandDetail;
 
+	TransactionDetail transactionDetail;
+	
 	/**
 	 * This method ignores parent {@link #getParentProductId()}, {@link #getParentWarehouseId()},
 	 * because we don't need it right now and it would mean that we had to fetch the given {@code candidate}'s parent from the repo.

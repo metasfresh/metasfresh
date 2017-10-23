@@ -82,7 +82,10 @@ public class M_Transaction
 		final String trxName = InterfaceWrapperHelper.getTrxName(transaction);
 
 		final Collection<TransactionEvent> events = createTransactionEvents(transaction, type);
-		events.forEach(event -> materialEventService.fireEventAfterNextCommit(event, trxName));
+		for (final TransactionEvent event : events)
+		{
+			materialEventService.fireEventAfterNextCommit(event, trxName);
+		}
 	}
 
 	@VisibleForTesting

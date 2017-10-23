@@ -33,23 +33,45 @@ import lombok.Value;
 @Value
 public class TransactionDetail
 {
-	public static TransactionDetail forTransactionDetailRecord(
+	public static TransactionDetail fromTransactionDetailRecord(
 			@NonNull final I_MD_Candidate_Transaction_Detail transactionDetailRecord)
 	{
 		return new TransactionDetail(
 				transactionDetailRecord.getMovementQty(),
-				transactionDetailRecord.getM_Transaction_ID());
+				transactionDetailRecord.getM_Transaction_ID(),
+				true); // complete
 	}
+	
+	public static TransactionDetail forCandidateOrQuery(@NonNull final BigDecimal quantity, final int transactionId)
+	{
+		return new TransactionDetail(
+				quantity,
+				transactionId,
+				true); // complete
+	}
+	
+	public static TransactionDetail forQuery(final int transactionId)
+	{
+		return new TransactionDetail(
+				null,
+				transactionId,
+				false); // complete
+	}
+
+	boolean complete;
 
 	BigDecimal quantity;
 
 	int transactionId;
 
-	public TransactionDetail(@NonNull final BigDecimal quantity, final int transactionId)
+	public TransactionDetail(final BigDecimal quantity, final int transactionId, final boolean complete)
 	{
+		this.complete = complete;
+
 		Preconditions.checkArgument(transactionId > 0, "The given parameter transactionId=%s needs to be > 0", transactionId);
 		this.transactionId = transactionId;
 
+		Preconditions.checkArgument(!complete || quantity != null, "The given parameter quantity may not be null because complete=true; transactionId=%s", transactionId);
 		this.quantity = quantity;
 	}
 }

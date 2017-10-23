@@ -89,7 +89,7 @@ public class SupplyCandiateHandler implements CandidateHandler
 		final Candidate parentStockCandidateWithId;
 		if (supplyCandidateDeltaWithId.getParentId() > 0)
 		{
-			// this supply candidate is not new and already has a stock candidate as its parent. be sure to update exactly *that* scandidate
+			// this supply candidate is not new and already has a stock candidate as its parent. be sure to update exactly *that* stock candidate
 			parentStockCandidateWithId = stockCandidateService.updateStock(
 					supplyCandidateDeltaWithId,
 					() -> {

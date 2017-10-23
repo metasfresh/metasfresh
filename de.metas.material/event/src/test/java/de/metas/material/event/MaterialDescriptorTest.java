@@ -43,14 +43,14 @@ public class MaterialDescriptorTest
 	@Test(expected = RuntimeException.class)
 	public void builderForCandidate_fail()
 	{
-		MaterialDescriptor.builderForCandidate().build();
+		MaterialDescriptor.builderForCandidateOrQuery().build();
 	}
 
 	@Test
 	public void builderForCandidate_succeed()
 	{
 		final Date date = SystemTime.asDate();
-		final MaterialDescriptor result = MaterialDescriptor.builderForCandidate()
+		final MaterialDescriptor result = MaterialDescriptor.builderForCandidateOrQuery()
 				.date(date)
 				.productId(10)
 				.quantity(BigDecimal.TEN)
@@ -67,7 +67,7 @@ public class MaterialDescriptorTest
 	public void withouQuantity()
 	{
 		final Date date = SystemTime.asDate();
-		final MaterialDescriptor materialDescr = MaterialDescriptor.builderForCandidate()
+		final MaterialDescriptor materialDescr = MaterialDescriptor.builderForCandidateOrQuery()
 				.date(date)
 				.productId(10)
 				.quantity(BigDecimal.TEN)

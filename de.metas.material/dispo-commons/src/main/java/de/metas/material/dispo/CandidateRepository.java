@@ -126,11 +126,11 @@ public class CandidateRepository
 			addOrRecplaceDemandDetail(candidate, synchedRecord);
 		}
 
-		if(candidate.getTransactionDetail() != null)
+		if (candidate.getTransactionDetail() != null)
 		{
 			addOrReplaceTransactionDetail(candidate, synchedRecord);
 		}
-		
+
 		return createNewCandidateWithIdsFromRecord(candidate, synchedRecord)
 				.withQuantity(qtyDelta);
 	}
@@ -328,7 +328,6 @@ public class CandidateRepository
 		save(detailRecordToUpdate);
 	}
 
-
 	@VisibleForTesting
 	void addOrReplaceTransactionDetail(
 			@NonNull final Candidate candidate,
@@ -340,9 +339,9 @@ public class CandidateRepository
 		}
 
 		final TransactionDetail transactionDetail = candidate.getTransactionDetail();
-		
+
 		final I_MD_Candidate_Transaction_Detail detailRecordToUpdate;
-		
+
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		final I_MD_Candidate_Transaction_Detail existingDetail = queryBL.createQueryBuilder(I_MD_Candidate_Transaction_Detail.class)
 				.addOnlyActiveRecordsFilter()
@@ -350,7 +349,7 @@ public class CandidateRepository
 				.addEqualsFilter(I_MD_Candidate_Transaction_Detail.COLUMN_M_Transaction_ID, transactionDetail.getTransactionId())
 				.create()
 				.firstOnly(I_MD_Candidate_Transaction_Detail.class); // TODO we don't yet have a UC in place..
-		
+
 		if (existingDetail == null)
 		{
 			detailRecordToUpdate = newInstance(I_MD_Candidate_Transaction_Detail.class, synchedRecord);
@@ -514,10 +513,10 @@ public class CandidateRepository
 	}
 
 	private void addDistributionDetailToFilter(
-			final CandidateSpecification candidate,
-			final IQueryBuilder<I_MD_Candidate> builder)
+			@NonNull final CandidateSpecification query,
+			@NonNull final IQueryBuilder<I_MD_Candidate> builder)
 	{
-		final DistributionDetail distributionDetail = candidate.getDistributionDetail();
+		final DistributionDetail distributionDetail = query.getDistributionDetail();
 		if (distributionDetail == null)
 		{
 			return;
@@ -551,6 +550,35 @@ public class CandidateRepository
 				builder.addInSubQueryFilter(I_MD_Candidate.COLUMN_MD_Candidate_ID, I_MD_Candidate_Dist_Detail.COLUMN_MD_Candidate_ID, distDetailSubQueryBuilder.create());
 			}
 		}
+	}
+
+	private void addTransactionDetailToFilter(
+			@NonNull final CandidatesQuery query,
+			@NonNull final IQueryBuilder<I_MD_Candidate> builder)
+	{
+		final TransactionDetail transactionDetail = query.getTransactionDetail();
+		if (transactionDetail == null)
+		{
+			return;
+		}
+
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+		final IQueryBuilder<I_MD_Candidate_Transaction_Detail> transactionDetailSubQueryBuilder = queryBL
+				.createQueryBuilder(I_MD_Candidate_Transaction_Detail.class)
+				.addOnlyActiveRecordsFilter();
+
+		Preconditions.checkArgument(
+				transactionDetail.getTransactionId() > 0,
+				"Every transactionDetail instance needs to have transactionId>0; transactionDetail=%s", transactionDetail);
+		transactionDetailSubQueryBuilder.addEqualsFilter(I_MD_Candidate_Transaction_Detail.COLUMN_M_Transaction_ID, transactionDetail.getTransactionId());
+
+		if (transactionDetail.getQuantity() != null)
+		{
+			transactionDetailSubQueryBuilder.addEqualsFilter(I_MD_Candidate_Transaction_Detail.COLUMN_MovementQty, transactionDetail.getQuantity());
+		}
+
+		builder.addInSubQueryFilter(I_MD_Candidate.COLUMN_MD_Candidate_ID, I_MD_Candidate_Transaction_Detail.COLUMN_MD_Candidate_ID, transactionDetailSubQueryBuilder.create());
 	}
 
 	@VisibleForTesting
@@ -601,7 +629,7 @@ public class CandidateRepository
 				"Given parameter candidateRecord needs to have a not-null MD_Candidate_Type; candidateRecord=%s",
 				candidateRecord);
 
-		final MaterialDescriptor materialDescr = MaterialDescriptor.builderForCandidate()
+		final MaterialDescriptor materialDescr = MaterialDescriptor.builderForCandidateOrQuery()
 				.productId(candidateRecord.getM_Product_ID())
 				.quantity(candidateRecord.getQty())
 				.warehouseId(candidateRecord.getM_Warehouse_ID())
@@ -678,7 +706,8 @@ public class CandidateRepository
 		return DemandDetail.forDemandDetailRecord(demandDetailRecord);
 	}
 
-	private TransactionDetail createTransactionDetailOrNull(@NonNull final I_MD_Candidate candidateRecord)
+	@VisibleForTesting
+	TransactionDetail createTransactionDetailOrNull(@NonNull final I_MD_Candidate candidateRecord)
 	{
 		final I_MD_Candidate_Transaction_Detail transactionDetailRecord = retrieveCandidateDetail(candidateRecord, I_MD_Candidate_Transaction_Detail.class);
 		if (transactionDetailRecord == null)
@@ -686,7 +715,7 @@ public class CandidateRepository
 			return null;
 		}
 
-		return TransactionDetail.forTransactionDetailRecord(transactionDetailRecord);
+		return TransactionDetail.fromTransactionDetailRecord(transactionDetailRecord);
 	}
 
 	/**
@@ -810,6 +839,8 @@ public class CandidateRepository
 		addProductionDetailToFilter(query, builder);
 
 		addDistributionDetailToFilter(query, builder);
+
+		addTransactionDetailToFilter(query, builder);
 
 		return builder;
 	}

@@ -1,7 +1,31 @@
 
-## Candidate records
+## material-dispo data flow and dependencies
+
+The components are:
+
+* event
+  * contains event-pojos
+  * events are currently send via the metasfresh distributed event framework (using JMS)
   
-The materal disposition framework's data mostly consists of *candidate* records (table name `MD_Candidate`). 
+* common
+  * depends on event
+  
+* service(standalone)
+  * gets events from model interceptors (swing, app etc), not communicating back with swing, app etc; it's one way communication
+  * gets recomandations events from PLANNING about the demands events which were send earlier
+  * sends a demand event to PLANNING, gets back a recomandation and 
+  * depsends on: commons and event
+  
+* planning:
+  * gets an demand event from SERVICE, sends back a recomendation
+  * depends on event, libero
+
+
+## Candidate records
+
+Note: this is taking place in metasfresh-material-dispo-service
+
+The material disposition framework's data mostly consists of *candidate* records (table name `MD_Candidate`). 
 They are created by the system in an *incremental* fashion, accordingly to the system's master data (BOMs, Distribution networks etc) and can be inspected and changed by users.
 
 

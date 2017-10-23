@@ -96,13 +96,28 @@ public class TransactionEventHandlerTest
 	}
 
 	@Test
-	public void createCandidate_unrelated_transaction()
+	public void createCandidate_unrelated_transaction_no_existing_candiate()
 	{
 		final TransactionEvent unrelatedEvent = createTransactionEventBuilderWithQuantity(BigDecimal.TEN).build();
 
+		// @formatter:off
+		new Expectations()
+		{{
+				candidateRepository.retrieveLatestMatchOrNull((CandidatesQuery)any); times = 1; result = null;
+		}}; // @formatter:on
+		
 		final Candidate candidate = transactionEventHandler.createCandidate(unrelatedEvent);
 		makeCommonAssertions(candidate);
 
+		// @formatter:off verify that candidateRepository was called to decide if the event is related to anything we know
+				new Verifications()
+				{{
+						CandidatesQuery query;
+						candidateRepository.retrieveLatestMatchOrNull(query = withCapture());
+						assertThat(query).isNotNull();
+						assertThat(query.getTransactionDetail().getTransactionId()).isEqualTo(TRANSACTION_ID);
+				}}; // @formatter:on
+		
 		assertThat(candidate.getType()).isEqualTo(Type.UNRELATED_INCREASE);
 		assertThat(candidate.getDemandDetail()).isNull();
 		assertThat(candidate.getDistributionDetail()).isNull();
@@ -110,6 +125,49 @@ public class TransactionEventHandlerTest
 		assertThat(candidate.getTransactionDetail().getQuantity()).isEqualByComparingTo("10");
 	}
 
+	@Test
+	public void createCandidate_unrelated_transaction_already_existing_candiate()
+	{
+		final TransactionEvent unrelatedEvent = createTransactionEventBuilderWithQuantity(BigDecimal.TEN).build();
+
+		final Candidate exisitingCandidate = Candidate.builder()
+				.type(Type.UNRELATED_INCREASE)
+				.id(11)
+				.materialDescr(MaterialDescriptor.builderForCandidateOrQuery()
+						.productId(PRODUCT_ID)
+						.warehouseId(WAREHOUSE_ID)
+						.quantity(new BigDecimal("63"))
+						.date(SystemTime.asTimestamp())
+						.build())
+				.build();
+		
+		// @formatter:off
+		new Expectations()
+		{{
+				candidateRepository.retrieveLatestMatchOrNull((CandidatesQuery)any); times = 1; result = exisitingCandidate;
+		}}; // @formatter:on
+		
+		final Candidate candidate = transactionEventHandler.createCandidate(unrelatedEvent);
+		makeCommonAssertions(candidate);
+
+		// @formatter:off verify that candidateRepository was called to decide if the event is related to anything we know
+				new Verifications()
+				{{
+						CandidatesQuery query;
+						candidateRepository.retrieveLatestMatchOrNull(query = withCapture());
+						assertThat(query).isNotNull();
+						assertThat(query.getTransactionDetail().getTransactionId()).isEqualTo(TRANSACTION_ID);
+				}}; // @formatter:on
+		
+		assertThat(candidate.getType()).isEqualTo(Type.UNRELATED_INCREASE);
+		assertThat(candidate.getId()).isEqualTo(11);
+		assertThat(candidate.getDemandDetail()).isNull();
+		assertThat(candidate.getDistributionDetail()).isNull();
+		assertThat(candidate.getProductionDetail()).isNull();
+		assertThat(candidate.getTransactionDetail().getTransactionId()).isEqualTo(TRANSACTION_ID);
+		assertThat(candidate.getTransactionDetail().getQuantity()).isEqualByComparingTo("10");
+	}
+	
 	@Test
 	public void createCandidate_unrelated_transaction_with_shipmentSchedule()
 	{
@@ -147,8 +205,9 @@ public class TransactionEventHandlerTest
 	public void createCandidate_related_transaction_with_shipmentSchedule()
 	{
 		final Candidate exisitingCandidate = Candidate.builder()
+				.id(11)
 				.type(Type.DEMAND)
-				.materialDescr(MaterialDescriptor.builderForCandidate()
+				.materialDescr(MaterialDescriptor.builderForCandidateOrQuery()
 						.productId(PRODUCT_ID)
 						.warehouseId(WAREHOUSE_ID)
 						.quantity(new BigDecimal("63"))
@@ -169,6 +228,7 @@ public class TransactionEventHandlerTest
 				.build();
 
 		final Candidate candidate = transactionEventHandler.createCandidate(relatedEvent);
+		assertThat(candidate.getId()).isEqualTo(11);
 		assertThat(candidate.getType()).isEqualTo(Type.DEMAND);
 		assertThat(candidate.getQuantity()).isEqualByComparingTo("63");
 		makeCommonAssertions(candidate);

@@ -69,6 +69,8 @@ import de.metas.material.event.MaterialDescriptor;
 public class CandiateRepositoryTests
 {
 
+	private static final int TRANSACTION_ID = 60;
+
 	private static final int WAHREHOUSE_ID = 51;
 
 	private static final int PRODUCT_ID = 24;
@@ -207,7 +209,7 @@ public class CandiateRepositoryTests
 	}
 
 	@Test
-	public void fromCandidateRecord_record_and_transactiondetail_to_candidate()
+	public void fromCandidateRecord_record_and_transactiondetails_to_candidate()
 	{
 		final Timestamp dateProjected = SystemTime.asTimestamp();
 		final I_MD_Candidate candidateRecord = newInstance(I_MD_Candidate.class);
@@ -512,12 +514,39 @@ public class CandiateRepositoryTests
 				.fromCandidate(cand)
 				.withId(0)
 				.withDistributionDetail(CandidatesQuery.NO_DISTRIBUTION_DETAIL);
-
 		final Candidate expectedRecordWithoutDistDetails = candidateRepository
 				.retrieveLatestMatchOrNull(withoutdistDetailsQuery);
+
 		assertThat(expectedRecordWithoutDistDetails).isNotNull();
 		assertThat(expectedRecordWithoutDistDetails.getDistributionDetail()).isNull();
 		assertThat(expectedRecordWithoutDistDetails.getId()).isEqualTo(otherRecord.getMD_Candidate_ID());
+	}
+
+	@Test
+	public void retrieve_with_TransactionDetail()
+	{
+		final I_MD_Candidate record = newInstance(I_MD_Candidate.class);
+		record.setM_Product_ID(PRODUCT_ID);
+		record.setM_Warehouse_ID(WAHREHOUSE_ID);
+		record.setDateProjected(new Timestamp(now.getTime()));
+		record.setMD_Candidate_Type(X_MD_Candidate.MD_CANDIDATE_TYPE_UNRELATED_DECREASE);
+		save(record);
+
+		final I_MD_Candidate_Transaction_Detail transactionDetailRecord = newInstance(I_MD_Candidate_Transaction_Detail.class);
+		transactionDetailRecord.setMD_Candidate(record);
+		transactionDetailRecord.setM_Transaction_ID(TRANSACTION_ID);
+		transactionDetailRecord.setMovementQty(BigDecimal.TEN);
+		save(transactionDetailRecord);
+
+		final CandidatesQuery query = CandidatesQuery
+				.builder().transactionDetail(TransactionDetail.forQuery(TRANSACTION_ID))
+				.build();
+
+		final List<Candidate> expectedCandidates = candidateRepository.retrieveOrderedByDateAndSeqNo(query);
+		assertThat(expectedCandidates).hasSize(1);
+		assertThat(expectedCandidates.get(0).getId()).isEqualTo(record.getMD_Candidate_ID());
+		assertThat(expectedCandidates.get(0).getTransactionDetail().getTransactionId()).isEqualTo(TRANSACTION_ID);
+		assertThat(expectedCandidates.get(0).getTransactionDetail().getQuantity()).isEqualByComparingTo("10");
 	}
 
 	@Test
@@ -813,7 +842,7 @@ public class CandiateRepositoryTests
 	{
 		final Candidate candidate = Candidate.builder()
 				.type(Type.DEMAND)
-				.materialDescr(MaterialDescriptor.builderForCandidate()
+				.materialDescr(MaterialDescriptor.builderForCandidateOrQuery()
 						.productId(PRODUCT_ID)
 						.warehouseId(WAHREHOUSE_ID)
 						.quantity(BigDecimal.TEN)
@@ -839,13 +868,13 @@ public class CandiateRepositoryTests
 	{
 		final Candidate candidate = Candidate.builder()
 				.type(Type.DEMAND)
-				.materialDescr(MaterialDescriptor.builderForCandidate()
+				.materialDescr(MaterialDescriptor.builderForCandidateOrQuery()
 						.productId(PRODUCT_ID)
 						.warehouseId(WAHREHOUSE_ID)
 						.quantity(BigDecimal.TEN)
 						.date(SystemTime.asTimestamp())
 						.build())
-				.transactionDetail(new TransactionDetail(BigDecimal.ONE, 15))
+				.transactionDetail(TransactionDetail.forCandidateOrQuery(BigDecimal.ONE, 15))
 				.build();
 
 		final I_MD_Candidate candidateRecord = newInstance(I_MD_Candidate.class);
@@ -859,7 +888,6 @@ public class CandiateRepositoryTests
 		assertThat(allTransactionDetails.get(0).getMovementQty()).isEqualByComparingTo("1");
 	}
 
-	
 	@Test
 	public void retrieveMatches_by_forecastLineId()
 	{
@@ -918,7 +946,7 @@ public class CandiateRepositoryTests
 				.orgId(org.getAD_Org_ID())
 				.materialDescr(materialDescr)
 				.demandDetail(DemandDetail.forOrderLineIdOrNull(61))
-				.transactionDetail(new TransactionDetail(BigDecimal.ONE, 33))
+				.transactionDetail(TransactionDetail.forCandidateOrQuery(BigDecimal.ONE, 33))
 				.build();
 		final Candidate addOrReplaceResult = candidateRepository.addOrUpdateOverwriteStoredSeqNo(productionCandidate);
 
