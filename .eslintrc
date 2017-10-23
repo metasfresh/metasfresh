@@ -19,7 +19,8 @@
                 "singleQuote": true,
                 "trailingComma": "all"
             }
-        ]
+        ],
+        "react/prop-types": "warn"
     },
     "plugins": ["prettier", "react"],
     "globals": {
