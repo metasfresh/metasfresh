@@ -2,6 +2,7 @@ package de.metas.material.dispo.candidate;
 
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.List;
 
 import com.google.common.base.Preconditions;
 
@@ -13,6 +14,7 @@ import de.metas.material.event.EventDescr;
 import de.metas.material.event.MaterialDescriptor;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.Singular;
 import lombok.Value;
 import lombok.experimental.Wither;
 
@@ -98,7 +100,8 @@ public class Candidate
 	 */
 	DemandDetail demandDetail;
 
-	TransactionDetail transactionDetail;
+	@Singular
+	List<TransactionDetail> transactionDetails;
 
 	/**
 	 * Does not create a parent segment, even if this candidate has a parent.
@@ -170,7 +173,7 @@ public class Candidate
 			final ProductionDetail productionDetail,
 			final DistributionDetail distributionDetail,
 			final DemandDetail demandDetail,
-			final TransactionDetail transactionDetail)
+			final List<TransactionDetail> transactionDetails)
 	{
 		this.clientId = clientId;
 		this.orgId = orgId;
@@ -190,8 +193,12 @@ public class Candidate
 		this.distributionDetail = distributionDetail;
 		this.demandDetail = demandDetail;
 
-		Preconditions.checkArgument(transactionDetail == null || transactionDetail.isComplete(),
-				"Given parameter transactionDetail needs to have iscomplete==true; transactionDetail=%s", transactionDetail);
-		this.transactionDetail = transactionDetail;
+		for (final TransactionDetail transactionDetail : transactionDetails)
+		{
+			Preconditions.checkArgument(transactionDetail == null || transactionDetail.isComplete(),
+					"Every element from the given parameter transactionDetails needs to have iscomplete==true; transactionDetail=%s", 
+					transactionDetail);
+		}
+		this.transactionDetails = transactionDetails;
 	}
 }

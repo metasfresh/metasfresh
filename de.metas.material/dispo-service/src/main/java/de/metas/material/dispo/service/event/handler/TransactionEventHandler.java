@@ -5,6 +5,8 @@ import java.math.BigDecimal;
 import org.springframework.stereotype.Service;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableList.Builder;
 
 import de.metas.material.dispo.CandidateRepository;
 import de.metas.material.dispo.CandidateSpecification.Type;
@@ -54,14 +56,14 @@ public class TransactionEventHandler
 
 	public void handleTransactionEvent(@NonNull final TransactionEvent event)
 	{
-		final Candidate candidate = createCandidate(event);
+		final Candidate candidate = createCandidateForTransactionEvent(event);
 		candidateChangeHandler.onCandidateNewOrChange(candidate);
 	}
 
 	@VisibleForTesting
-	Candidate createCandidate(@NonNull final TransactionEvent event)
+	Candidate createCandidateForTransactionEvent(@NonNull final TransactionEvent event)
 	{
-		final TransactionDetail transactionDetail = TransactionDetail.forCandidateOrQuery(event.getMaterialDescr().getQuantity(), event.getTransactionId());
+		final TransactionDetail transactionDetailOfEvent = TransactionDetail.forCandidateOrQuery(event.getMaterialDescr().getQuantity(), event.getTransactionId());
 
 		final Candidate candidate;
 		if (event.getShipmentScheduleId() > 0)
@@ -78,13 +80,14 @@ public class TransactionEventHandler
 			{
 				candidate = createCommonCandidateBuilder(event)
 						.demandDetail(demandDetail)
-						.transactionDetail(transactionDetail)
+						.transactionDetail(transactionDetailOfEvent)
 						.build();
 			}
 			else
 			{
-				candidate = existingCandidate
-						.withTransactionDetail(transactionDetail);
+				candidate = newCandidateWithAddedTransactionDetail(
+						existingCandidate,
+						transactionDetailOfEvent);
 			}
 		}
 		else
@@ -97,16 +100,42 @@ public class TransactionEventHandler
 			if (existingCandidate == null)
 			{
 				candidate = createCommonCandidateBuilder(event)
-						.transactionDetail(transactionDetail)
+						.transactionDetail(transactionDetailOfEvent)
 						.build();
 			}
 			else
 			{
-				candidate = existingCandidate
-						.withTransactionDetail(transactionDetail);
+				candidate = newCandidateWithAddedTransactionDetailAndQuantity(
+						existingCandidate,
+						transactionDetailOfEvent);
 			}
 		}
 		return candidate;
+	}
+
+	private Candidate newCandidateWithAddedTransactionDetailAndQuantity(
+			@NonNull final Candidate candidate,
+			@NonNull final TransactionDetail transactionDetail)
+	{
+		final BigDecimal newQuantity = candidate
+				.getQuantity()
+				.add(transactionDetail.getQuantity());
+
+		Candidate newCandidate = candidate.withQuantity(newQuantity);
+		newCandidate = newCandidateWithAddedTransactionDetail(newCandidate, transactionDetail);
+		return newCandidate;
+	}
+
+	private Candidate newCandidateWithAddedTransactionDetail(
+			@NonNull final Candidate candidate,
+			@NonNull final TransactionDetail transactionDetail)
+	{
+		final Builder<TransactionDetail> newTransactionDetailsList = //
+				ImmutableList.<TransactionDetail> builder()
+						.addAll(candidate.getTransactionDetails())
+						.add(transactionDetail);
+
+		return candidate.withTransactionDetails(newTransactionDetailsList.build());
 	}
 
 	@VisibleForTesting

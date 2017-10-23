@@ -209,7 +209,7 @@ public class CandiateRepositoryTests
 	}
 
 	@Test
-	public void fromCandidateRecord_record_and_transactiondetails_to_candidate()
+	public void fromCandidateRecord_RecordAndTransactiondetails_to_candidate()
 	{
 		final Timestamp dateProjected = SystemTime.asTimestamp();
 		final I_MD_Candidate candidateRecord = newInstance(I_MD_Candidate.class);
@@ -226,15 +226,29 @@ public class CandiateRepositoryTests
 		transactionDetailRecord.setMovementQty(BigDecimal.TEN);
 		save(transactionDetailRecord);
 
+		final I_MD_Candidate_Transaction_Detail transactionDetailRecord2 = newInstance(I_MD_Candidate_Transaction_Detail.class);
+		transactionDetailRecord2.setMD_Candidate(candidateRecord);
+		transactionDetailRecord2.setM_Transaction_ID(31);
+		transactionDetailRecord2.setMovementQty(BigDecimal.ONE);
+		save(transactionDetailRecord2);
+
 		final Optional<Candidate> result = candidateRepository.fromCandidateRecord(candidateRecord);
 
 		assertThat(result.isPresent());
 		final Candidate candidate = result.get();
 		assertThat(candidate.getParentId()).isEqualTo(0);
 		assertThat(candidate.getDate()).isEqualTo(dateProjected);
-		assertThat(candidate.getTransactionDetail()).isNotNull();
-		assertThat(candidate.getTransactionDetail().getQuantity()).isEqualByComparingTo("10");
-		assertThat(candidate.getTransactionDetail().getTransactionId()).isEqualByComparingTo(30);
+		assertThat(candidate.getTransactionDetails()).hasSize(2);
+
+		assertThat(candidate.getTransactionDetails()).anySatisfy(transactionDetail -> {
+			assertThat(transactionDetail.getTransactionId()).isEqualByComparingTo(30);
+			assertThat(transactionDetail.getQuantity()).isEqualByComparingTo("10");
+		});
+
+		assertThat(candidate.getTransactionDetails()).anySatisfy(transactionDetail -> {
+			assertThat(transactionDetail.getTransactionId()).isEqualByComparingTo(31);
+			assertThat(transactionDetail.getQuantity()).isEqualByComparingTo("1");
+		});
 	}
 
 	/**
@@ -544,9 +558,11 @@ public class CandiateRepositoryTests
 
 		final List<Candidate> expectedCandidates = candidateRepository.retrieveOrderedByDateAndSeqNo(query);
 		assertThat(expectedCandidates).hasSize(1);
-		assertThat(expectedCandidates.get(0).getId()).isEqualTo(record.getMD_Candidate_ID());
-		assertThat(expectedCandidates.get(0).getTransactionDetail().getTransactionId()).isEqualTo(TRANSACTION_ID);
-		assertThat(expectedCandidates.get(0).getTransactionDetail().getQuantity()).isEqualByComparingTo("10");
+		final Candidate expectedCandidate = expectedCandidates.get(0);
+		assertThat(expectedCandidate.getId()).isEqualTo(record.getMD_Candidate_ID());
+		assertThat(expectedCandidate.getTransactionDetails()).hasSize(1);
+		assertThat(expectedCandidate.getTransactionDetails().get(0).getTransactionId()).isEqualTo(TRANSACTION_ID);
+		assertThat(expectedCandidate.getTransactionDetails().get(0).getQuantity()).isEqualByComparingTo("10");
 	}
 
 	@Test
@@ -864,7 +880,7 @@ public class CandiateRepositoryTests
 	}
 
 	@Test
-	public void addOrRecplaceTransactionDetail()
+	public void addOrRecplaceTransactionDetails()
 	{
 		final Candidate candidate = Candidate.builder()
 				.type(Type.DEMAND)
@@ -875,6 +891,7 @@ public class CandiateRepositoryTests
 						.date(SystemTime.asTimestamp())
 						.build())
 				.transactionDetail(TransactionDetail.forCandidateOrQuery(BigDecimal.ONE, 15))
+				.transactionDetail(TransactionDetail.forCandidateOrQuery(BigDecimal.TEN, 16))
 				.build();
 
 		final I_MD_Candidate candidateRecord = newInstance(I_MD_Candidate.class);
@@ -882,10 +899,18 @@ public class CandiateRepositoryTests
 
 		candidateRepository.addOrReplaceTransactionDetail(candidate, candidateRecord);
 
-		final List<I_MD_Candidate_Transaction_Detail> allTransactionDetails = Services.get(IQueryBL.class).createQueryBuilder(I_MD_Candidate_Transaction_Detail.class).create().list();
-		assertThat(allTransactionDetails).hasSize(1);
-		assertThat(allTransactionDetails.get(0).getM_Transaction_ID()).isEqualTo(15);
-		assertThat(allTransactionDetails.get(0).getMovementQty()).isEqualByComparingTo("1");
+		final List<I_MD_Candidate_Transaction_Detail> allTransactionDetailRecords = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_MD_Candidate_Transaction_Detail.class).create().list();
+		assertThat(allTransactionDetailRecords).hasSize(2);
+
+		assertThat(allTransactionDetailRecords).anySatisfy(transactionDetailRecord -> {
+			assertThat(transactionDetailRecord.getM_Transaction_ID()).isEqualTo(15);
+			assertThat(transactionDetailRecord.getMovementQty()).isEqualByComparingTo("1");
+		});
+		assertThat(allTransactionDetailRecords).anySatisfy(transactionDetailRecord -> {
+			assertThat(transactionDetailRecord.getM_Transaction_ID()).isEqualTo(16);
+			assertThat(transactionDetailRecord.getMovementQty()).isEqualByComparingTo("10");
+		});
 	}
 
 	@Test

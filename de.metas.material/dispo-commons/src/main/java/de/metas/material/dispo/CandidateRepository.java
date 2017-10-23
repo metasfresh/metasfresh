@@ -21,6 +21,7 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.apache.ecs.xhtml.code;
+import org.compiere.model.IQuery;
 import org.springframework.stereotype.Service;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -126,10 +127,7 @@ public class CandidateRepository
 			addOrRecplaceDemandDetail(candidate, synchedRecord);
 		}
 
-		if (candidate.getTransactionDetail() != null)
-		{
-			addOrReplaceTransactionDetail(candidate, synchedRecord);
-		}
+		addOrReplaceTransactionDetail(candidate, synchedRecord);
 
 		return createNewCandidateWithIdsFromRecord(candidate, synchedRecord)
 				.withQuantity(qtyDelta);
@@ -333,46 +331,54 @@ public class CandidateRepository
 			@NonNull final Candidate candidate,
 			@NonNull final I_MD_Candidate synchedRecord)
 	{
-		if (candidate.getTransactionDetail() == null)
+		for (final TransactionDetail transactionDetail : candidate.getTransactionDetails())
 		{
-			return; // nothing to do
+			final I_MD_Candidate_Transaction_Detail detailRecordToUpdate;
+
+			final IQueryBL queryBL = Services.get(IQueryBL.class);
+			final I_MD_Candidate_Transaction_Detail existingDetail = //
+					queryBL.createQueryBuilder(I_MD_Candidate_Transaction_Detail.class)
+							.addOnlyActiveRecordsFilter()
+							.addEqualsFilter(I_MD_Candidate_Transaction_Detail.COLUMN_MD_Candidate_ID, synchedRecord.getMD_Candidate_ID())
+							.addEqualsFilter(I_MD_Candidate_Transaction_Detail.COLUMN_M_Transaction_ID, transactionDetail.getTransactionId())
+							.create()
+							.firstOnly(I_MD_Candidate_Transaction_Detail.class); // TODO we don't yet have a UC in place..
+
+			if (existingDetail == null)
+			{
+				detailRecordToUpdate = newInstance(I_MD_Candidate_Transaction_Detail.class, synchedRecord);
+				detailRecordToUpdate.setMD_Candidate(synchedRecord);
+				detailRecordToUpdate.setM_Transaction_ID(transactionDetail.getTransactionId());
+			}
+			else
+			{
+				detailRecordToUpdate = existingDetail;
+			}
+			detailRecordToUpdate.setMovementQty(transactionDetail.getQuantity());
+			save(detailRecordToUpdate);
 		}
-
-		final TransactionDetail transactionDetail = candidate.getTransactionDetail();
-
-		final I_MD_Candidate_Transaction_Detail detailRecordToUpdate;
-
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-		final I_MD_Candidate_Transaction_Detail existingDetail = queryBL.createQueryBuilder(I_MD_Candidate_Transaction_Detail.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_MD_Candidate_Transaction_Detail.COLUMN_MD_Candidate_ID, synchedRecord.getMD_Candidate_ID())
-				.addEqualsFilter(I_MD_Candidate_Transaction_Detail.COLUMN_M_Transaction_ID, transactionDetail.getTransactionId())
-				.create()
-				.firstOnly(I_MD_Candidate_Transaction_Detail.class); // TODO we don't yet have a UC in place..
-
-		if (existingDetail == null)
-		{
-			detailRecordToUpdate = newInstance(I_MD_Candidate_Transaction_Detail.class, synchedRecord);
-			detailRecordToUpdate.setMD_Candidate(synchedRecord);
-			detailRecordToUpdate.setM_Transaction_ID(transactionDetail.getTransactionId());
-		}
-		else
-		{
-			detailRecordToUpdate = existingDetail;
-		}
-		detailRecordToUpdate.setMovementQty(transactionDetail.getQuantity());
-		save(detailRecordToUpdate);
 	}
 
-	private static <T> T retrieveCandidateDetail(I_MD_Candidate candidateRecord, Class<T> detailClass)
+	private static <T> T retrieveCandidateDetail(
+			@NonNull final I_MD_Candidate candidateRecord,
+			@NonNull final Class<T> modelClass)
+	{
+		final IQuery<T> candidateDetailQueryBuilder = createCandidateDetailQueryBuilder(candidateRecord, modelClass);
+		final T existingDetail = candidateDetailQueryBuilder
+				.firstOnly(modelClass); // TODO we don't yet have a UC in place..
+		return existingDetail;
+	}
+
+	private static <T> IQuery<T> createCandidateDetailQueryBuilder(
+			@NonNull final I_MD_Candidate candidateRecord,
+			@NonNull final Class<T> modelClass)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
-		final T existingDetail = queryBL.createQueryBuilder(detailClass)
+		final IQuery<T> candidateDetailQueryBuilder = queryBL.createQueryBuilder(modelClass)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_MD_Candidate.COLUMNNAME_MD_Candidate_ID, candidateRecord.getMD_Candidate_ID())
-				.create()
-				.firstOnly(detailClass); // TODO we don't yet have a UC in place..
-		return existingDetail;
+				.create();
+		return candidateDetailQueryBuilder;
 	}
 
 	/**
@@ -570,7 +576,8 @@ public class CandidateRepository
 
 		Preconditions.checkArgument(
 				transactionDetail.getTransactionId() > 0,
-				"Every transactionDetail instance needs to have transactionId>0; transactionDetail=%s", transactionDetail);
+				"Every transactionDetail instance needs to have transactionId>0; transactionDetail=%s",
+				transactionDetail);
 		transactionDetailSubQueryBuilder.addEqualsFilter(I_MD_Candidate_Transaction_Detail.COLUMN_M_Transaction_ID, transactionDetail.getTransactionId());
 
 		if (transactionDetail.getQuantity() != null)
@@ -605,7 +612,7 @@ public class CandidateRepository
 
 		builder.demandDetail(createDemandDetailOrNull(candidateRecordOrNull));
 
-		builder.transactionDetail(createTransactionDetailOrNull(candidateRecordOrNull));
+		builder.transactionDetails(retrieveTransactionDetails(candidateRecordOrNull));
 
 		return Optional.of(builder.build());
 	}
@@ -706,16 +713,18 @@ public class CandidateRepository
 		return DemandDetail.forDemandDetailRecord(demandDetailRecord);
 	}
 
-	@VisibleForTesting
-	TransactionDetail createTransactionDetailOrNull(@NonNull final I_MD_Candidate candidateRecord)
+	private List<TransactionDetail> retrieveTransactionDetails(@NonNull final I_MD_Candidate candidateRecord)
 	{
-		final I_MD_Candidate_Transaction_Detail transactionDetailRecord = retrieveCandidateDetail(candidateRecord, I_MD_Candidate_Transaction_Detail.class);
-		if (transactionDetailRecord == null)
-		{
-			return null;
-		}
+		final List<I_MD_Candidate_Transaction_Detail> transactionDetailRecords = //
+				createCandidateDetailQueryBuilder(candidateRecord, I_MD_Candidate_Transaction_Detail.class)
+						.list();
 
-		return TransactionDetail.fromTransactionDetailRecord(transactionDetailRecord);
+		final ImmutableList.Builder<TransactionDetail> result = ImmutableList.builder();
+		for (final I_MD_Candidate_Transaction_Detail transactionDetailRecord : transactionDetailRecords)
+		{
+			result.add(TransactionDetail.fromTransactionDetailRecord(transactionDetailRecord));
+		}
+		return result.build();
 	}
 
 	/**
