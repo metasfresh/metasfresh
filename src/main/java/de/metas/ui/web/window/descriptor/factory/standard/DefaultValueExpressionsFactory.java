@@ -13,7 +13,7 @@ import org.adempiere.ad.expression.api.impl.BooleanStringExpressionSupport.Boole
 import org.adempiere.ad.expression.api.impl.DateStringExpressionSupport.DateStringExpression;
 import org.adempiere.ad.expression.api.impl.IntegerStringExpressionSupport.IntegerStringExpression;
 import org.adempiere.ad.expression.api.impl.SysDateDateExpression;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.util.Services;
 import org.compiere.util.DisplayType;
 import org.slf4j.Logger;
@@ -88,7 +88,7 @@ public class DefaultValueExpressionsFactory
 		DEFAULT_VALUE_EXPRESSION_No = Optional.of(expressionFactory.compile(DisplayType.toBooleanString(false), BooleanStringExpression.class));
 		DEFAULT_VALUE_EXPRESSION_Zero_BigDecimal = Optional.of(expressionFactory.compile("0", BigDecimalStringExpression.class));
 		DEFAULT_VALUE_EXPRESSION_Zero_Integer = Optional.of(expressionFactory.compile("0", IntegerStringExpression.class));
-		DEFAULT_VALUE_EXPRESSION_M_AttributeSetInstance_ID = Optional.of(expressionFactory.compile(String.valueOf(IAttributeDAO.M_AttributeSetInstance_ID_None), IntegerStringExpression.class));
+		DEFAULT_VALUE_EXPRESSION_M_AttributeSetInstance_ID = Optional.of(expressionFactory.compile(String.valueOf(AttributeConstants.M_AttributeSetInstance_ID_None), IntegerStringExpression.class));
 		DEFAULT_VALUE_EXPRESSION_NextLineNo = Optional.of(expressionFactory.compile("@" + WindowConstants.CONTEXTVAR_NextLineNo + "@", IntegerStringExpression.class));
 
 		DEFAULT_VALUE_AD_Client_ID = Optional.of(expressionFactory.compile("@" + WindowConstants.FIELDNAME_AD_Client_ID + "@", IntegerStringExpression.class));
