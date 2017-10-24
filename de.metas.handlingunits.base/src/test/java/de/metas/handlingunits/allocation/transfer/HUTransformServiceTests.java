@@ -1,6 +1,5 @@
 package de.metas.handlingunits.allocation.transfer;
 
-import static de.metas.business.BusinessTestHelper.*;
 import static org.adempiere.model.InterfaceWrapperHelper.refresh;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -19,7 +18,6 @@ import java.util.function.Consumer;
 
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.Services;
-import org.compiere.model.I_C_UOM;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -32,7 +30,6 @@ import org.w3c.dom.Node;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.business.BusinessTestHelper;
 import de.metas.handlingunits.HUXmlConverter;
 import de.metas.handlingunits.IHUPackingMaterialsCollector;
 import de.metas.handlingunits.IHandlingUnitsBL;

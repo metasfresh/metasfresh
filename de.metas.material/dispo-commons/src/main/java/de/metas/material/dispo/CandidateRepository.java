@@ -250,7 +250,7 @@ public class CandidateRepository
 			@NonNull final I_MD_Candidate synchedRecord)
 	{
 		final I_MD_Candidate_Prod_Detail detailRecordToUpdate;
-		final I_MD_Candidate_Prod_Detail existingDetail = retrieveCandidateDetail(synchedRecord, I_MD_Candidate_Prod_Detail.class);
+		final I_MD_Candidate_Prod_Detail existingDetail = retrieveSingleCandidateDetail(synchedRecord, I_MD_Candidate_Prod_Detail.class);
 		if (existingDetail == null)
 		{
 			detailRecordToUpdate = newInstance(I_MD_Candidate_Prod_Detail.class, synchedRecord);
@@ -277,7 +277,7 @@ public class CandidateRepository
 			@NonNull final I_MD_Candidate synchedRecord)
 	{
 		final I_MD_Candidate_Dist_Detail detailRecordToUpdate;
-		final I_MD_Candidate_Dist_Detail existingDetail = retrieveCandidateDetail(synchedRecord, I_MD_Candidate_Dist_Detail.class);
+		final I_MD_Candidate_Dist_Detail existingDetail = retrieveSingleCandidateDetail(synchedRecord, I_MD_Candidate_Dist_Detail.class);
 		if (existingDetail == null)
 		{
 			detailRecordToUpdate = newInstance(I_MD_Candidate_Dist_Detail.class, synchedRecord);
@@ -309,7 +309,7 @@ public class CandidateRepository
 		}
 
 		final I_MD_Candidate_Demand_Detail detailRecordToUpdate;
-		final I_MD_Candidate_Demand_Detail existingDetail = retrieveCandidateDetail(synchedRecord, I_MD_Candidate_Demand_Detail.class);
+		final I_MD_Candidate_Demand_Detail existingDetail = retrieveSingleCandidateDetail(synchedRecord, I_MD_Candidate_Demand_Detail.class);
 		if (existingDetail == null)
 		{
 			detailRecordToUpdate = newInstance(I_MD_Candidate_Demand_Detail.class, synchedRecord);
@@ -342,7 +342,7 @@ public class CandidateRepository
 							.addEqualsFilter(I_MD_Candidate_Transaction_Detail.COLUMN_MD_Candidate_ID, synchedRecord.getMD_Candidate_ID())
 							.addEqualsFilter(I_MD_Candidate_Transaction_Detail.COLUMN_M_Transaction_ID, transactionDetail.getTransactionId())
 							.create()
-							.firstOnly(I_MD_Candidate_Transaction_Detail.class); // TODO we don't yet have a UC in place..
+							.firstOnly(I_MD_Candidate_Transaction_Detail.class);
 
 			if (existingDetail == null)
 			{
@@ -359,13 +359,13 @@ public class CandidateRepository
 		}
 	}
 
-	private static <T> T retrieveCandidateDetail(
+	private static <T> T retrieveSingleCandidateDetail(
 			@NonNull final I_MD_Candidate candidateRecord,
 			@NonNull final Class<T> modelClass)
 	{
 		final IQuery<T> candidateDetailQueryBuilder = createCandidateDetailQueryBuilder(candidateRecord, modelClass);
 		final T existingDetail = candidateDetailQueryBuilder
-				.firstOnly(modelClass); // TODO we don't yet have a UC in place..
+				.firstOnly(modelClass);
 		return existingDetail;
 	}
 
@@ -664,7 +664,7 @@ public class CandidateRepository
 
 	private ProductionDetail createProductionDetailOrNull(@NonNull final I_MD_Candidate candidateRecord)
 	{
-		final I_MD_Candidate_Prod_Detail productionDetail = retrieveCandidateDetail(candidateRecord, I_MD_Candidate_Prod_Detail.class);
+		final I_MD_Candidate_Prod_Detail productionDetail = retrieveSingleCandidateDetail(candidateRecord, I_MD_Candidate_Prod_Detail.class);
 		if (productionDetail == null)
 		{
 			return null;
@@ -684,7 +684,7 @@ public class CandidateRepository
 
 	private DistributionDetail createDistributionDetailOrNull(@NonNull final I_MD_Candidate candidateRecord)
 	{
-		final I_MD_Candidate_Dist_Detail distributionDetail = retrieveCandidateDetail(candidateRecord, I_MD_Candidate_Dist_Detail.class);
+		final I_MD_Candidate_Dist_Detail distributionDetail = retrieveSingleCandidateDetail(candidateRecord, I_MD_Candidate_Dist_Detail.class);
 		if (distributionDetail == null)
 		{
 			return null;
@@ -704,7 +704,7 @@ public class CandidateRepository
 
 	private static DemandDetail createDemandDetailOrNull(@NonNull final I_MD_Candidate candidateRecord)
 	{
-		final I_MD_Candidate_Demand_Detail demandDetailRecord = retrieveCandidateDetail(candidateRecord, I_MD_Candidate_Demand_Detail.class);
+		final I_MD_Candidate_Demand_Detail demandDetailRecord = retrieveSingleCandidateDetail(candidateRecord, I_MD_Candidate_Demand_Detail.class);
 		if (demandDetailRecord == null)
 		{
 			return null;

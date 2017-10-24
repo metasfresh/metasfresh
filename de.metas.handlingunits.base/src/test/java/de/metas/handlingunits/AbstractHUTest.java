@@ -36,7 +36,6 @@ import org.junit.Rule;
 import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
 
-import de.metas.business.BusinessTestHelper;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 
 public abstract class AbstractHUTest

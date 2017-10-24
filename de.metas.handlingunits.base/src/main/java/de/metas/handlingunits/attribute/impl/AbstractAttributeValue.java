@@ -86,7 +86,7 @@ public abstract class AbstractAttributeValue implements IAttributeValue
 
 	public AbstractAttributeValue(
 			@NonNull final IAttributeStorage attributeStorage, 
-			@NonNull final org.compiere.model.I_M_Attribute attribute)
+			@NonNull final I_M_Attribute attribute)
 	{
 		this.attributeStorage = attributeStorage;
 		this.attribute = InterfaceWrapperHelper.create(attribute, I_M_Attribute.class);
@@ -230,7 +230,7 @@ public abstract class AbstractAttributeValue implements IAttributeValue
 
 		//
 		// Set internal values
-		// FIXME: set order is important because of org.compiere.model.MAttributeInstance.setValueNumber(BigDecimal)
+		// FIXME: set order is important because of MAttributeInstance.setValueNumber(BigDecimal)
 		setInternalValueNumber(valueBD);
 		setInternalValueDate(valueDate);
 		setInternalValueString(valueStr);
@@ -299,7 +299,7 @@ public abstract class AbstractAttributeValue implements IAttributeValue
 
 		//
 		// Set internal values
-		// FIXME: set order is important because of org.compiere.model.MAttributeInstance.setValueNumber(BigDecimal)
+		// FIXME: set order is important because of MAttributeInstance.setValueNumber(BigDecimal)
 		setInternalValueNumberInitial(valueBD);
 		setInternalValueStringInitial(valueStr);
 		setInternalValueDateInitial(valueDate);

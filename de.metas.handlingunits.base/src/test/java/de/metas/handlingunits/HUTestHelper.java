@@ -1,6 +1,13 @@
 package de.metas.handlingunits;
 
-import static de.metas.business.BusinessTestHelper.*;
+import static de.metas.business.BusinessTestHelper.createBPartner;
+import static de.metas.business.BusinessTestHelper.createM_Attribute;
+import static de.metas.business.BusinessTestHelper.createProduct;
+import static de.metas.business.BusinessTestHelper.createUOMConversion;
+import static de.metas.business.BusinessTestHelper.createUomEach;
+import static de.metas.business.BusinessTestHelper.createUomKg;
+import static de.metas.business.BusinessTestHelper.createUomPCE;
+import static de.metas.business.BusinessTestHelper.createWarehouse;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 

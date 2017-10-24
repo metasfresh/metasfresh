@@ -6,6 +6,7 @@ import java.util.Map;
 import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Service;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
 
@@ -44,7 +45,7 @@ public class CandidateChangeService
 	public CandidateChangeService(
 			@NonNull final Collection<CandidateHandler> candidateChangeHandlers)
 	{
-		type2handler = createHandlersMap(candidateChangeHandlers);
+		type2handler = createMapOfHandlers(candidateChangeHandlers);
 	}
 
 	/**
@@ -68,7 +69,8 @@ public class CandidateChangeService
 		return candidateChangeHandler.onCandidateNewOrChange(candidate);
 	}
 
-	static Map<Type, CandidateHandler> createHandlersMap(
+	@VisibleForTesting
+	static Map<Type, CandidateHandler> createMapOfHandlers(
 			@NonNull final Collection<CandidateHandler> candidateChangeHandlers)
 	{
 		final Builder<Type, CandidateHandler> builder = ImmutableMap.builder();

@@ -1,6 +1,5 @@
 package de.metas.handlingunits.impl;
 
-import static de.metas.business.BusinessTestHelper.createUomEach;
 import static org.hamcrest.Matchers.comparesEqualTo;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;

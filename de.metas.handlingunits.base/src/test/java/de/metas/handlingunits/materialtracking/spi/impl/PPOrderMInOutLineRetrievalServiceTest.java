@@ -1,6 +1,5 @@
 package de.metas.handlingunits.materialtracking.spi.impl;
 
-import static de.metas.business.BusinessTestHelper.*;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 

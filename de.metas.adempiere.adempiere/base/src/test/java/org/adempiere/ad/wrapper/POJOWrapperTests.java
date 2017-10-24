@@ -91,8 +91,8 @@ public class POJOWrapperTests
 	@Test
 	public void test_DefaultValues()
 	{
-		Assert.assertEquals("Invalid Default Value for Integer", POJOWrapper.DEFAULT_VALUE_int, 0);
-		Assert.assertEquals("Invalid Default Value for IDs", POJOWrapper.DEFAULT_VALUE_ID, 0);
+		assertEquals("Invalid Default Value for Integer", POJOWrapper.DEFAULT_VALUE_int, 0);
+		assertEquals("Invalid Default Value for IDs", POJOWrapper.DEFAULT_VALUE_ID, 0);
 	}
 
 	@Test
@@ -133,7 +133,7 @@ public class POJOWrapperTests
 		ITable2 table2 = POJOWrapper.create(contextProvider.getCtx(), ITable2.class);
 
 		table2.setTable1(table1);
-		Assert.assertEquals("Invalid Table1_ID", POJOWrapper.DEFAULT_VALUE_ID, table2.getTable1_ID());
+		assertEquals("Invalid Table1_ID", POJOWrapper.DEFAULT_VALUE_ID, table2.getTable1_ID());
 		Assert.assertSame("Invalid Table1", table1, table2.getTable1());
 	}
 
@@ -161,12 +161,12 @@ public class POJOWrapperTests
 		ITable2 table2 = POJOWrapper.create(contextProvider.getCtx(), ITable2.class);
 
 		table2.setTable1(table1);
-		Assert.assertEquals("Invalid Table1_ID", table1.getTable1_ID(), table2.getTable1_ID());
+		assertEquals("Invalid Table1_ID", table1.getTable1_ID(), table2.getTable1_ID());
 		Assert.assertSame("Invalid Table1", table1, table2.getTable1());
 
 		table2.setTable1_ID(-1);
-		Assert.assertEquals("Invalid Table1_ID", -1, table2.getTable1_ID());
-		Assert.assertEquals("Invalid Table1", null, table2.getTable1());
+		assertEquals("Invalid Table1_ID", -1, table2.getTable1_ID());
+		assertEquals("Invalid Table1", null, table2.getTable1());
 	}
 
 	@Test
@@ -176,12 +176,12 @@ public class POJOWrapperTests
 		ITable2 table2 = POJOWrapper.create(contextProvider.getCtx(), ITable2.class);
 
 		table2.setTable1(table1);
-		Assert.assertEquals("Invalid Table1_ID", POJOWrapper.DEFAULT_VALUE_ID, table2.getTable1_ID());
+		assertEquals("Invalid Table1_ID", POJOWrapper.DEFAULT_VALUE_ID, table2.getTable1_ID());
 		Assert.assertSame("Invalid Table1", table1, table2.getTable1());
 
 		table2.setTable1(null);
-		Assert.assertEquals("Invalid Table1_ID", POJOWrapper.DEFAULT_VALUE_ID, table2.getTable1_ID());
-		Assert.assertEquals("Invalid Table1", null, table2.getTable1());
+		assertEquals("Invalid Table1_ID", POJOWrapper.DEFAULT_VALUE_ID, table2.getTable1_ID());
+		assertEquals("Invalid Table1", null, table2.getTable1());
 	}
 
 	@Test
@@ -193,12 +193,12 @@ public class POJOWrapperTests
 		ITable2 table2 = POJOWrapper.create(contextProvider.getCtx(), ITable2.class);
 
 		table2.setTable1(table1);
-		Assert.assertEquals("Invalid Table1_ID", table1.getTable1_ID(), table2.getTable1_ID());
+		assertEquals("Invalid Table1_ID", table1.getTable1_ID(), table2.getTable1_ID());
 		Assert.assertSame("Invalid Table1", table1, table2.getTable1());
 
 		table2.setTable1(null);
-		Assert.assertEquals("Invalid Table1_ID", POJOWrapper.DEFAULT_VALUE_ID, table2.getTable1_ID());
-		Assert.assertEquals("Invalid Table1", null, table2.getTable1());
+		assertEquals("Invalid Table1_ID", POJOWrapper.DEFAULT_VALUE_ID, table2.getTable1_ID());
+		assertEquals("Invalid Table1", null, table2.getTable1());
 	}
 
 	@Test
@@ -212,11 +212,11 @@ public class POJOWrapperTests
 		ITable2 table2 = POJOWrapper.create(contextProvider.getCtx(), ITable2.class);
 
 		table2.setTable1(table1_1);
-		Assert.assertEquals("Invalid Table1_ID", table1_1.getTable1_ID(), table2.getTable1_ID());
+		assertEquals("Invalid Table1_ID", table1_1.getTable1_ID(), table2.getTable1_ID());
 		Assert.assertSame("Invalid Table1", table1_1, table2.getTable1());
 
 		table2.setTable1_ID(-1);
-		Assert.assertEquals("Invalid Table1_ID", -1, table2.getTable1_ID());
+		assertEquals("Invalid Table1_ID", -1, table2.getTable1_ID());
 		Assert.assertNull("Invalid Table1", table2.getTable1());
 	}
 
@@ -229,15 +229,15 @@ public class POJOWrapperTests
 		final ITable2 table2 = POJOWrapper.create(contextProvider.getCtx(), ITable2.class);
 
 		table2.setTable1(table1);
-		Assert.assertEquals("Invalid Table1_ID", POJOWrapper.DEFAULT_VALUE_ID, table2.getTable1_ID());
+		assertEquals("Invalid Table1_ID", POJOWrapper.DEFAULT_VALUE_ID, table2.getTable1_ID());
 		Assert.assertSame("Invalid Table1", table1, table2.getTable1());
 
 		final ITable1 table1_saved = POJOWrapper.create(contextProvider.getCtx(), ITable1.class);
 		POJOWrapper.save(table1_saved);
 
 		table2.setTable1_ID(table1_saved.getTable1_ID());
-		Assert.assertEquals("Invalid Table1_ID", table1_saved.getTable1_ID(), table2.getTable1_ID());
-		Assert.assertEquals("Invalid Table1 value", table1_saved, table2.getTable1());
+		assertEquals("Invalid Table1_ID", table1_saved.getTable1_ID(), table2.getTable1_ID());
+		assertEquals("Invalid Table1 value", table1_saved, table2.getTable1());
 		Assert.assertNotSame("Invalid Table1 value; shall not be same", table1_saved, table2.getTable1());
 	}
 
@@ -247,7 +247,7 @@ public class POJOWrapperTests
 		final ITable1 table1 = POJOWrapper.create(contextProvider.getCtx(), ITable1.class);
 
 		table1.setValueInt(123);
-		Assert.assertEquals("Invalid ValueInt", 123, table1.getValueInt());
+		assertEquals("Invalid ValueInt", 123, table1.getValueInt());
 	}
 
 	@Test
@@ -256,7 +256,7 @@ public class POJOWrapperTests
 		final ITable1 table1 = POJOWrapper.create(contextProvider.getCtx(), ITable1.class);
 		POJOWrapper.disableStrictValues(table1);
 
-		Assert.assertEquals("Invalid Default ValueInt", POJOWrapper.DEFAULT_VALUE_int, table1.getValueInt());
+		assertEquals("Invalid Default ValueInt", POJOWrapper.DEFAULT_VALUE_int, table1.getValueInt());
 	}
 
 	@Test
@@ -283,18 +283,18 @@ public class POJOWrapperTests
 		POJOWrapper.save(table2);
 
 		// We assume that Table1 has the right ValueInt
-		Assert.assertEquals("Table1 shall be refreshed before returned",
+		assertEquals("Table1 shall be refreshed before returned",
 				100, // expected
 				table2.getTable1().getValueInt());
 
 		final ITable1 table1_reloaded = POJOWrapper.create(Env.getCtx(), table1.getTable1_ID(), ITable1.class, ITrx.TRXNAME_None);
-		Assert.assertEquals("Invalid Table1 ValueInt", 100, table1_reloaded.getValueInt());
+		assertEquals("Invalid Table1 ValueInt", 100, table1_reloaded.getValueInt());
 
 		table1_reloaded.setValueInt(123);
 		POJOWrapper.save(table1_reloaded);
 
 		// We assume that Table1 is refreshed before retrieved even if it was cached
-		Assert.assertEquals("Table1 shall be refreshed before returned",
+		assertEquals("Table1 shall be refreshed before returned",
 				123, // expected
 				table2.getTable1().getValueInt());
 	}

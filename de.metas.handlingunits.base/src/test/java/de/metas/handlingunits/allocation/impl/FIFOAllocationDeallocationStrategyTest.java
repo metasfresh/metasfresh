@@ -1,7 +1,5 @@
 package de.metas.handlingunits.allocation.impl;
 
-import static de.metas.business.BusinessTestHelper.*;
-
 /*
  * #%L
  * de.metas.handlingunits.base

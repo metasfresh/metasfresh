@@ -283,6 +283,4 @@ public class MaterialEventSerializerTests
 				.build();
 		return materialDescriptor;
 	}
-
-	// TODO: add serialize/deserialize tesxts for the other events
 }

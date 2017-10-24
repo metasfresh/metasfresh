@@ -26,6 +26,7 @@ import de.metas.material.event.EventDescr;
 import de.metas.material.event.MaterialDescriptor;
 import de.metas.material.event.MaterialEventService;
 import de.metas.material.event.TransactionEvent;
+import de.metas.materialtransaction.MTransactionUtil;
 import lombok.NonNull;
 
 /*
@@ -105,7 +106,7 @@ public class M_Transaction
 			final TransactionEvent event = TransactionEvent.builder()
 					.eventDescr(EventDescr.createNew(transaction))
 					.transactionId(transaction.getM_Transaction_ID())
-					.materialDescr(createMateriallDescriptor(transaction, quantity))
+					.materialDescr(createMaterialDescriptor(transaction, quantity))
 					.shipmentScheduleId(entries.getKey())
 					.build();
 			result.add(event);
@@ -135,11 +136,16 @@ public class M_Transaction
 		for (final I_M_ShipmentSchedule_QtyPicked shipmentScheduleQtyPicked : shipmentScheduleQtysPicked)
 		{
 			assertSignumsOfQuantitiesMatch(shipmentScheduleQtyPicked, transaction);
+			
+			final BigDecimal qtyPicked = shipmentScheduleQtyPicked.getQtyPicked();
+			final BigDecimal quantityForMaterialDescriptor = MTransactionUtil.isInboundTransaction(transaction) ? qtyPicked : qtyPicked.negate();
+			
 			shipmentScheduleId2quantity.merge(
 					shipmentScheduleQtyPicked.getM_ShipmentSchedule_ID(),
-					shipmentScheduleQtyPicked.getQtyPicked(),
+					quantityForMaterialDescriptor,
 					BigDecimal::add);
-			qtyLeftToDistribute = qtyLeftToDistribute.add(shipmentScheduleQtyPicked.getQtyPicked());
+
+			qtyLeftToDistribute = qtyLeftToDistribute.subtract(quantityForMaterialDescriptor);
 		}
 
 		if (qtyLeftToDistribute.signum() != 0)
@@ -174,7 +180,7 @@ public class M_Transaction
 						.setParameter("transaction", transaction);
 	}
 
-	private static MaterialDescriptor createMateriallDescriptor(
+	private static MaterialDescriptor createMaterialDescriptor(
 			@NonNull final I_M_Transaction transaction,
 			@NonNull final BigDecimal quantity)
 	{
@@ -182,7 +188,7 @@ public class M_Transaction
 				.warehouseId(transaction.getM_Locator().getM_Warehouse_ID())
 				.date(transaction.getMovementDate())
 				.productId(transaction.getM_Product_ID())
-				.quantity(transaction.getMovementQty())
+				.quantity(quantity)
 				.build();
 	}
 }

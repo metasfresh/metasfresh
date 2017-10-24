@@ -1,6 +1,5 @@
 package de.metas.handlingunits.inventory.impl;
 
-import static de.metas.business.BusinessTestHelper.*;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;

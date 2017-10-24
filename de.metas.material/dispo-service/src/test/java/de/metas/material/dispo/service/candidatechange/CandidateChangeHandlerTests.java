@@ -130,12 +130,12 @@ public class CandidateChangeHandlerTests
 	}
 
 	@Test
-	public void createHandlersMap()
+	public void createMapOfHandlers()
 	{
 		final CandidateHandler handler1 = createHandlerThatSupportsTypes(ImmutableList.of(Type.DEMAND, Type.SUPPLY));
 		final CandidateHandler handler2 = createHandlerThatSupportsTypes(ImmutableList.of(Type.STOCK_UP, Type.UNRELATED_DECREASE));
 
-		final Map<Type, CandidateHandler> result = CandidateChangeService.createHandlersMap(ImmutableList.of(handler1, handler2));
+		final Map<Type, CandidateHandler> result = CandidateChangeService.createMapOfHandlers(ImmutableList.of(handler1, handler2));
 		assertThat(result).hasSize(4);
 		assertThat(result.get(Type.DEMAND)).isSameAs(handler1);
 		assertThat(result.get(Type.SUPPLY)).isSameAs(handler1);
@@ -144,12 +144,12 @@ public class CandidateChangeHandlerTests
 	}
 
 	@Test(expected = RuntimeException.class)
-	public void createHandlersMapCollission()
+	public void createMapOfHandlers_when_typeColission_then_exception()
 	{
 		final CandidateHandler handler1 = createHandlerThatSupportsTypes(ImmutableList.of(Type.DEMAND, Type.SUPPLY));
 		final CandidateHandler handler2 = createHandlerThatSupportsTypes(ImmutableList.of(Type.DEMAND, Type.UNRELATED_DECREASE));
 
-		CandidateChangeService.createHandlersMap(ImmutableList.of(handler1, handler2));
+		CandidateChangeService.createMapOfHandlers(ImmutableList.of(handler1, handler2));
 	}
 
 	private CandidateHandler createHandlerThatSupportsTypes(final ImmutableList<Type> types)
