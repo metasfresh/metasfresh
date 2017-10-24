@@ -4,7 +4,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.UnaryOperator;
 
-import org.compiere.model.I_AD_User;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Evaluatee;
 import org.compiere.util.Evaluatees;
