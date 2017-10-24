@@ -26,7 +26,7 @@ package de.metas.aggregation.api.impl;
 import java.util.Arrays;
 import java.util.List;
 
-import org.adempiere.ad.expression.api.ILogicExpression;
+import org.adempiere.ad.expression.api.ConstantLogicExpression;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
@@ -83,7 +83,7 @@ public class GenericAggregationKeyBuilder_BooleanWithOverrideColumn_Test
 						I_ModelWithBooleanOverride.COLUMNNAME_IsTaxIncluded,
 						DisplayType.YesNo,
 						IAggregationAttribute.NULL,
-						ILogicExpression.TRUE)
+						ConstantLogicExpression.TRUE)
 				);
 		this.aggregation = new Aggregation(
 				I_ModelWithBooleanOverride.Table_Name,

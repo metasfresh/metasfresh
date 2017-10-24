@@ -32,7 +32,6 @@ import org.adempiere.bpartner.service.IBPartnerStatsBL;
 import org.adempiere.bpartner.service.IBPartnerStatsDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.ProductASIMandatoryException;
-import org.adempiere.inout.service.IMTransactionDAO;
 import org.adempiere.invoice.service.IInvoiceDAO;
 import org.adempiere.misc.service.IPOService;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
@@ -57,6 +56,7 @@ import de.metas.document.engine.IDocumentBL;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
 import de.metas.invoice.IMatchInvBL;
+import de.metas.materialtransaction.IMTransactionDAO;
 import de.metas.product.IProductBL;
 import de.metas.product.IStorageBL;
 

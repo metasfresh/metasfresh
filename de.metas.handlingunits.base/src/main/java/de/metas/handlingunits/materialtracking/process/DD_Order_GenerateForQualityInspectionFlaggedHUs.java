@@ -16,8 +16,8 @@ import de.metas.handlingunits.materialtracking.IHUMaterialTrackingBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Warehouse;
 import de.metas.handlingunits.model.X_M_HU;
-import de.metas.process.RunOutOfTrx;
 import de.metas.process.JavaProcess;
+import de.metas.process.RunOutOfTrx;
 
 /*
  * #%L

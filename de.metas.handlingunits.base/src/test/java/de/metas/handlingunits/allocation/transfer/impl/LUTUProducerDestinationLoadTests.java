@@ -1,5 +1,9 @@
 package de.metas.handlingunits.allocation.transfer.impl;
 
+import static de.metas.business.BusinessTestHelper.createBPartner;
+import static de.metas.business.BusinessTestHelper.createBPartnerLocation;
+import static de.metas.business.BusinessTestHelper.createLocator;
+import static de.metas.business.BusinessTestHelper.createWarehouse;
 import static org.hamcrest.Matchers.hasXPath;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
@@ -34,6 +38,8 @@ import java.util.function.Consumer;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_M_Locator;
+import org.compiere.model.I_M_Warehouse;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.theories.DataPoints;
@@ -51,10 +57,8 @@ import de.metas.handlingunits.expectations.HUsExpectation;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
-import de.metas.handlingunits.model.I_M_Locator;
 import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.handlingunits.model.X_M_HU_LUTU_Configuration;
-import de.metas.interfaces.I_M_Warehouse;
 
 /**
  * Note the "load" means "to create HUs and load qty into them from somewhere else". It's not about performance and stuff.
@@ -114,11 +118,11 @@ public class LUTUProducerDestinationLoadTests
 	@Theory
 	public void testLUWithPartiallyLoadedTU(final boolean isOwnPackingMaterials)
 	{
-		final I_C_BPartner bpartner = data.helper.createBPartner("testVendor");
-		final I_C_BPartner_Location bPartnerLocation = data.helper.createBPartnerLocation(bpartner);
+		final I_C_BPartner bpartner = createBPartner("testVendor");
+		final I_C_BPartner_Location bPartnerLocation = createBPartnerLocation(bpartner);
 
-		final I_M_Warehouse warehouse = data.helper.createWarehouse("testWarehouse");
-		final I_M_Locator locator = data.helper.createLocator("testLocator", warehouse);
+		final I_M_Warehouse warehouse = createWarehouse("testWarehouse");
+		final I_M_Locator locator = createLocator("testLocator", warehouse);
 
 		final LUTUProducerDestination lutuProducer = new LUTUProducerDestination();
 
@@ -545,11 +549,11 @@ public class LUTUProducerDestinationLoadTests
 	@Test
 	public void testLoadCUonLU()
 	{
-		final I_M_Warehouse wh = data.helper.createWarehouse("testWarehouse");
-		final I_M_Locator l = data.helper.createLocator("testLocator", wh);
+		final I_M_Warehouse wh = createWarehouse("testWarehouse");
+		final I_M_Locator l = createLocator("testLocator", wh);
 
-		final I_C_BPartner bpartner = data.helper.createBPartner("testPartner");
-		final I_C_BPartner_Location bpLocation = data.helper.createBPartnerLocation(bpartner);
+		final I_C_BPartner bpartner = createBPartner("testPartner");
+		final I_C_BPartner_Location bpLocation = createBPartnerLocation(bpartner);
 
 		final I_M_HU_PI_Item piLU_Item_Virtual = data.helper.createHU_PI_Item_IncludedHU(data.piLU, data.helper.huDefVirtual, BigDecimal.ONE);
 

@@ -1,27 +1,26 @@
 package de.metas.material.event.ddorder;
 
-import org.adempiere.util.lang.impl.TableRecordReference;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import de.metas.material.event.EventDescr;
 import de.metas.material.event.MaterialEvent;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
 import lombok.NonNull;
+import lombok.Value;
 
-@Data
-@AllArgsConstructor
+@Value
 @Builder
 public class DDOrderRequestedEvent implements MaterialEvent
 {
 	public static final String TYPE = "DDOrderRequestedEvent";
 
 	@NonNull
-	private final EventDescr eventDescr;
+	EventDescr eventDescr;
 
-	private final TableRecordReference reference;
-
+	@JsonProperty
+	int groupId;
+	
 	@NonNull
-	private final DDOrder ddOrder;
+	DDOrder ddOrder;
 
 }

@@ -206,7 +206,6 @@ public class UOMConversionBL implements IUOMConversionBL
 		if (product.getC_UOM_ID() == uomFrom.getC_UOM_ID())
 		{
 			// convertProductFrom: converts Qty from stocking UOM to given UOM
-			// result = MUOMConversion.convertFromProductUOM(ctx, product, uomTo, qty);
 			result = convertFromProductUOM(ctx, product, uomTo, qty);
 		}
 		//

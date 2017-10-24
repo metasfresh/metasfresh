@@ -465,7 +465,7 @@ public class HUTraceEventsService
 			for (final I_M_HU_Assignment huAssignment : huAssignments)
 			{
 				final int topLevelHuId = huAccessService.retrieveTopLevelHuId(huAssignment.getM_HU());
-				Check.errorIf(topLevelHuId <= 0, "topLevelHuId returned by HUAccessService.retrieveTopLevelHuId has to be >0, but is {}; huAssignment={}", topLevelHuId, huAssignment);
+				Check.errorIf(topLevelHuId <= 0, "topLevelHuId returned by HUAccessService.retrieveTopLevelHuId has to be > 0, but is {}; huAssignment={}", topLevelHuId, huAssignment);
 
 				builder.orgId(huAssignment.getAD_Org_ID())
 						.eventTime(huAssignment.getUpdated().toInstant())

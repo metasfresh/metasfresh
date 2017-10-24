@@ -13,15 +13,14 @@ package de.metas.handlingunits.allocation.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -47,14 +46,14 @@ import de.metas.handlingunits.model.I_M_HU_PI_Version;
 public class LULoader
 {
 	private final IHUContext huContext;
-	
+
 	private final List<LULoaderInstance> luInstances = new ArrayList<LULoaderInstance>();
 
 	public LULoader(final IHUContext huContext)
 	{
 		Check.assumeNotNull(huContext, "huContext not null");
 		Services.get(ITrxManager.class).assertTrxNotNull(huContext);
-		
+
 		this.huContext = huContext;
 	}
 
@@ -87,7 +86,10 @@ public class LULoader
 		if (!luInstance.addTU(tuHU))
 		{
 			// shall not happen
-			throw new AdempiereException("Internal error: LU " + luInstance + " is not accepting our TU " + tuHU + " even if it was created for it");
+			throw new AdempiereException("Internal error: LU is not accepting our TU even if it was created for it")
+					.appendParametersToMessage()
+					.setParameter("LU", luInstance)
+					.setParameter("TU", tuHU);
 		}
 	}
 

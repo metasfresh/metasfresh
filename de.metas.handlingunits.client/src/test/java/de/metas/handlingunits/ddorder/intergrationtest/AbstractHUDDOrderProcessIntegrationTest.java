@@ -24,6 +24,7 @@ package de.metas.handlingunits.ddorder.intergrationtest;
 
 
 import java.math.BigDecimal;
+import static de.metas.business.BusinessTestHelper.*;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -141,7 +142,7 @@ public abstract class AbstractHUDDOrderProcessIntegrationTest extends AbstractHU
 		setupMiscWorkaroundsAndMocks();
 
 		// Misc masterdata
-		bpartner_Customer01 = helper.createBPartner("BP_Customer01");
+		bpartner_Customer01 = createBPartner("BP_Customer01");
 		bpartner_Customer01.setIsCustomer(true);
 		bpartner_Customer01.setIsVendor(false);
 		InterfaceWrapperHelper.save(bpartner_Customer01);

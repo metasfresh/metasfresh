@@ -19,22 +19,29 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.apache.ecs.xhtml.code;
+import org.compiere.model.IQuery;
 import org.springframework.stereotype.Service;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
-import de.metas.material.dispo.Candidate.CandidateBuilder;
-import de.metas.material.dispo.Candidate.SubType;
-import de.metas.material.dispo.Candidate.Type;
+import de.metas.material.dispo.CandidateSpecification.SubType;
+import de.metas.material.dispo.CandidateSpecification.Type;
+import de.metas.material.dispo.CandidatesQuery.DateOperator;
+import de.metas.material.dispo.candidate.Candidate;
+import de.metas.material.dispo.candidate.DemandDetail;
+import de.metas.material.dispo.candidate.DistributionDetail;
+import de.metas.material.dispo.candidate.ProductionDetail;
+import de.metas.material.dispo.candidate.TransactionDetail;
+import de.metas.material.dispo.candidate.Candidate.CandidateBuilder;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.I_MD_Candidate_Demand_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_Dist_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_Prod_Detail;
+import de.metas.material.dispo.model.I_MD_Candidate_Transaction_Detail;
 import de.metas.material.event.MaterialDescriptor;
 import lombok.NonNull;
 
@@ -94,12 +101,12 @@ public class CandidateRepository
 
 	private Candidate addOrUpdate(@NonNull final Candidate candidate, final boolean preserveExistingSeqNo)
 	{
-		final Optional<I_MD_Candidate> oldCandidateRecord = retrieveExact(candidate);
+		final I_MD_Candidate oldCandidateRecord = rerieveLatestMatchRecord(CandidatesQuery.fromCandidate(candidate));
 
-		final BigDecimal oldqty = oldCandidateRecord.isPresent() ? oldCandidateRecord.get().getQty() : BigDecimal.ZERO;
+		final BigDecimal oldqty = oldCandidateRecord != null ? oldCandidateRecord.getQty() : BigDecimal.ZERO;
 		final BigDecimal qtyDelta = candidate.getQuantity().subtract(oldqty);
 
-		final I_MD_Candidate synchedRecord = syncToRecord(oldCandidateRecord, candidate, preserveExistingSeqNo);
+		final I_MD_Candidate synchedRecord = updateOrCreateCandidateRecord(oldCandidateRecord, candidate, preserveExistingSeqNo);
 		save(synchedRecord); // save now, because we need to have MD_Candidate_ID > 0
 
 		setFallBackSeqNoAndGroupIdIfNeeded(synchedRecord);
@@ -120,8 +127,73 @@ public class CandidateRepository
 			addOrRecplaceDemandDetail(candidate, synchedRecord);
 		}
 
+		addOrReplaceTransactionDetail(candidate, synchedRecord);
+
 		return createNewCandidateWithIdsFromRecord(candidate, synchedRecord)
 				.withQuantity(qtyDelta);
+	}
+
+	/**
+	 * Writes the given {@code candidate}'s properties to the given {@code candidateRecord}, but does not save that record.
+	 *
+	 * @param candidateRecord
+	 * @param candidate
+	 * @return either returns the record contained in the given candidateRecord (but updated) or a new record.
+	 */
+	private I_MD_Candidate updateOrCreateCandidateRecord(
+			final I_MD_Candidate candidateRecord,
+			@NonNull final Candidate candidate,
+			final boolean preserveExistingSeqNo)
+	{
+		Preconditions.checkState(
+				candidateRecord == null
+						|| isNew(candidateRecord)
+						|| candidate.getId() <= 0
+						|| Objects.equals(candidateRecord.getMD_Candidate_ID(), candidate.getId()),
+				"The given MD_Candidate is not new and its ID is different from the ID of the given Candidate; MD_Candidate=%s; candidate=%s",
+				candidateRecord, candidate);
+
+		final MaterialDescriptor materialDescr = candidate.getMaterialDescr();
+
+		final I_MD_Candidate candidateRecordToUse = candidateRecord == null ? newInstance(I_MD_Candidate.class) : candidateRecord;
+		candidateRecordToUse.setAD_Org_ID(candidate.getOrgId());
+		candidateRecordToUse.setMD_Candidate_Type(candidate.getType().toString());
+		candidateRecordToUse.setM_Warehouse_ID(materialDescr.getWarehouseId());
+		candidateRecordToUse.setM_Product_ID(materialDescr.getProductId());
+		candidateRecordToUse.setQty(candidate.getQuantity());
+		candidateRecordToUse.setDateProjected(new Timestamp(materialDescr.getDate().getTime()));
+
+		if (candidate.getSubType() != null)
+		{
+			candidateRecordToUse.setMD_Candidate_SubType(candidate.getSubType().toString());
+		}
+
+		if (candidate.getParentId() > 0)
+		{
+			candidateRecordToUse.setMD_Candidate_Parent_ID(candidate.getParentId());
+		}
+
+		// if the candidate has a SeqNo to sync and
+		// if candidateRecordToUse does not yet have one, or if the existing seqNo is not protected by 'preserveExistingSeqNo', then (over)write it.
+		if (candidate.getSeqNo() > 0)
+		{
+			if (candidateRecordToUse.getSeqNo() <= 0 || !preserveExistingSeqNo)
+			{
+				candidateRecordToUse.setSeqNo(candidate.getSeqNo());
+			}
+		}
+
+		if (candidate.getGroupId() > 0)
+		{
+			candidateRecordToUse.setMD_Candidate_GroupId(candidate.getGroupId());
+		}
+
+		if (candidate.getStatus() != null)
+		{
+			candidateRecordToUse.setMD_Candidate_Status(candidate.getStatus().toString());
+		}
+
+		return candidateRecordToUse;
 	}
 
 	public void setFallBackSeqNoAndGroupIdIfNeeded(@NonNull final I_MD_Candidate synchedRecord)
@@ -141,13 +213,9 @@ public class CandidateRepository
 			@NonNull final Candidate candidate,
 			@NonNull final I_MD_Candidate candidateRecord)
 	{
-		final Integer parentId = candidateRecord.getMD_Candidate_Parent_ID() > 0
-				? candidateRecord.getMD_Candidate_Parent_ID()
-				: null;
-
 		return candidate
 				.withId(candidateRecord.getMD_Candidate_ID())
-				.withParentId(parentId)
+				.withParentId(candidateRecord.getMD_Candidate_Parent_ID())
 				.withGroupId(candidateRecord.getMD_Candidate_GroupId())
 				.withSeqNo(candidateRecord.getSeqNo());
 	}
@@ -155,7 +223,7 @@ public class CandidateRepository
 	/**
 	 * Updates the qty of the given candidate.
 	 * Differs from {@link #addOrUpdateOverwriteStoredSeqNo(Candidate)} in that
-	 * no matching id done, and if there is no existing persisted record, then an exception is thrown. Instead, it just updates the underyling persisted record of the given {@code candidateToUpdate}.
+	 * no matching id done, and if there is no existing persisted record, then an exception is thrown. Instead, it just updates the underlying persisted record of the given {@code candidateToUpdate}.
 	 *
 	 *
 	 * @param candidateToUpdate the candidate to update. Needs to have {@link Candidate#getId() > 0}.
@@ -164,7 +232,7 @@ public class CandidateRepository
 	 */
 	public Candidate updateQty(@NonNull final Candidate candidateToUpdate)
 	{
-		Preconditions.checkState(candidateToUpdate.getId() != null && candidateToUpdate.getId() > 0, "Parameter 'candidateToUpdate' has Id=%s; candidateToUpdate=%s", candidateToUpdate.getId(), candidateToUpdate);
+		Preconditions.checkState(candidateToUpdate.getId() > 0, "Parameter 'candidateToUpdate' has Id=%s; candidateToUpdate=%s", candidateToUpdate.getId(), candidateToUpdate);
 
 		final I_MD_Candidate candidateRecord = load(candidateToUpdate.getId(), I_MD_Candidate.class);
 		final BigDecimal oldQty = candidateRecord.getQty();
@@ -182,7 +250,7 @@ public class CandidateRepository
 			@NonNull final I_MD_Candidate synchedRecord)
 	{
 		final I_MD_Candidate_Prod_Detail detailRecordToUpdate;
-		final I_MD_Candidate_Prod_Detail existingDetail = retrieveProductionDetail(synchedRecord);
+		final I_MD_Candidate_Prod_Detail existingDetail = retrieveSingleCandidateDetail(synchedRecord, I_MD_Candidate_Prod_Detail.class);
 		if (existingDetail == null)
 		{
 			detailRecordToUpdate = newInstance(I_MD_Candidate_Prod_Detail.class, synchedRecord);
@@ -192,7 +260,7 @@ public class CandidateRepository
 		{
 			detailRecordToUpdate = existingDetail;
 		}
-		final ProductionCandidateDetail productionDetail = candidate.getProductionDetail();
+		final ProductionDetail productionDetail = candidate.getProductionDetail();
 		detailRecordToUpdate.setDescription(productionDetail.getDescription());
 		detailRecordToUpdate.setPP_Plant_ID(productionDetail.getPlantId());
 		detailRecordToUpdate.setPP_Product_BOMLine_ID(productionDetail.getProductBomLineId());
@@ -209,7 +277,7 @@ public class CandidateRepository
 			@NonNull final I_MD_Candidate synchedRecord)
 	{
 		final I_MD_Candidate_Dist_Detail detailRecordToUpdate;
-		final I_MD_Candidate_Dist_Detail existingDetail = retrieveDistributionDetail(synchedRecord);
+		final I_MD_Candidate_Dist_Detail existingDetail = retrieveSingleCandidateDetail(synchedRecord, I_MD_Candidate_Dist_Detail.class);
 		if (existingDetail == null)
 		{
 			detailRecordToUpdate = newInstance(I_MD_Candidate_Dist_Detail.class, synchedRecord);
@@ -219,7 +287,7 @@ public class CandidateRepository
 		{
 			detailRecordToUpdate = existingDetail;
 		}
-		final DistributionCandidateDetail distributionDetail = candidate.getDistributionDetail();
+		final DistributionDetail distributionDetail = candidate.getDistributionDetail();
 		detailRecordToUpdate.setDD_NetworkDistributionLine_ID(distributionDetail.getNetworkDistributionLineId());
 		detailRecordToUpdate.setPP_Plant_ID(distributionDetail.getPlantId());
 		detailRecordToUpdate.setPP_Product_Planning_ID(distributionDetail.getProductPlanningId());
@@ -230,39 +298,18 @@ public class CandidateRepository
 		save(detailRecordToUpdate);
 	}
 
-	private I_MD_Candidate_Dist_Detail retrieveDistributionDetail(@NonNull final I_MD_Candidate candidateRecord)
-	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-		final I_MD_Candidate_Dist_Detail existingDetail = queryBL.createQueryBuilder(I_MD_Candidate_Dist_Detail.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_MD_Candidate_Dist_Detail.COLUMN_MD_Candidate_ID, candidateRecord.getMD_Candidate_ID())
-				.create()
-				.firstOnly(I_MD_Candidate_Dist_Detail.class); // we have a UC in place..
-		return existingDetail;
-	}
-
-	private I_MD_Candidate_Prod_Detail retrieveProductionDetail(@NonNull final I_MD_Candidate candidateRecord)
-	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-		final I_MD_Candidate_Prod_Detail existingDetail = queryBL.createQueryBuilder(I_MD_Candidate_Prod_Detail.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_MD_Candidate_Prod_Detail.COLUMN_MD_Candidate_ID, candidateRecord.getMD_Candidate_ID())
-				.create()
-				.firstOnly(I_MD_Candidate_Prod_Detail.class); // we have a UC in place..
-		return existingDetail;
-	}
-
-	private void addOrRecplaceDemandDetail(
+	@VisibleForTesting
+	void addOrRecplaceDemandDetail(
 			@NonNull final Candidate candidate,
 			@NonNull final I_MD_Candidate synchedRecord)
 	{
-		if (candidate.getDemandDetail() == null || candidate.getDemandDetail().getOrderLineId() <= 0)
+		if (candidate.getDemandDetail() == null)
 		{
 			return; // nothing to do
 		}
 
 		final I_MD_Candidate_Demand_Detail detailRecordToUpdate;
-		final I_MD_Candidate_Demand_Detail existingDetail = retrieveDemandDetail(synchedRecord);
+		final I_MD_Candidate_Demand_Detail existingDetail = retrieveSingleCandidateDetail(synchedRecord, I_MD_Candidate_Demand_Detail.class);
 		if (existingDetail == null)
 		{
 			detailRecordToUpdate = newInstance(I_MD_Candidate_Demand_Detail.class, synchedRecord);
@@ -272,39 +319,66 @@ public class CandidateRepository
 		{
 			detailRecordToUpdate = existingDetail;
 		}
-		final DemandCandidateDetail demandDetail = candidate.getDemandDetail();
+		final DemandDetail demandDetail = candidate.getDemandDetail();
+		detailRecordToUpdate.setM_ForecastLine_ID(demandDetail.getForecastLineId());
+		detailRecordToUpdate.setM_ShipmentSchedule_ID(demandDetail.getShipmentScheduleId());
 		detailRecordToUpdate.setC_OrderLine_ID(demandDetail.getOrderLineId());
 		save(detailRecordToUpdate);
 	}
 
-	private static I_MD_Candidate_Demand_Detail retrieveDemandDetail(@NonNull final I_MD_Candidate synchedRecord)
+	@VisibleForTesting
+	void addOrReplaceTransactionDetail(
+			@NonNull final Candidate candidate,
+			@NonNull final I_MD_Candidate synchedRecord)
 	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-		final I_MD_Candidate_Demand_Detail existingDetail = queryBL.createQueryBuilder(I_MD_Candidate_Demand_Detail.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_MD_Candidate_Demand_Detail.COLUMN_MD_Candidate_ID, synchedRecord.getMD_Candidate_ID())
-				.create()
-				.firstOnly(I_MD_Candidate_Demand_Detail.class); // TODO we don't yet have a UC in place..
+		for (final TransactionDetail transactionDetail : candidate.getTransactionDetails())
+		{
+			final I_MD_Candidate_Transaction_Detail detailRecordToUpdate;
+
+			final IQueryBL queryBL = Services.get(IQueryBL.class);
+			final I_MD_Candidate_Transaction_Detail existingDetail = //
+					queryBL.createQueryBuilder(I_MD_Candidate_Transaction_Detail.class)
+							.addOnlyActiveRecordsFilter()
+							.addEqualsFilter(I_MD_Candidate_Transaction_Detail.COLUMN_MD_Candidate_ID, synchedRecord.getMD_Candidate_ID())
+							.addEqualsFilter(I_MD_Candidate_Transaction_Detail.COLUMN_M_Transaction_ID, transactionDetail.getTransactionId())
+							.create()
+							.firstOnly(I_MD_Candidate_Transaction_Detail.class);
+
+			if (existingDetail == null)
+			{
+				detailRecordToUpdate = newInstance(I_MD_Candidate_Transaction_Detail.class, synchedRecord);
+				detailRecordToUpdate.setMD_Candidate(synchedRecord);
+				detailRecordToUpdate.setM_Transaction_ID(transactionDetail.getTransactionId());
+			}
+			else
+			{
+				detailRecordToUpdate = existingDetail;
+			}
+			detailRecordToUpdate.setMovementQty(transactionDetail.getQuantity());
+			save(detailRecordToUpdate);
+		}
+	}
+
+	private static <T> T retrieveSingleCandidateDetail(
+			@NonNull final I_MD_Candidate candidateRecord,
+			@NonNull final Class<T> modelClass)
+	{
+		final IQuery<T> candidateDetailQueryBuilder = createCandidateDetailQueryBuilder(candidateRecord, modelClass);
+		final T existingDetail = candidateDetailQueryBuilder
+				.firstOnly(modelClass);
 		return existingDetail;
 	}
 
-	public Optional<Candidate> retrieve(@NonNull final Candidate candidate)
+	private static <T> IQuery<T> createCandidateDetailQueryBuilder(
+			@NonNull final I_MD_Candidate candidateRecord,
+			@NonNull final Class<T> modelClass)
 	{
-		final I_MD_Candidate candidateRecordOrNull = retrieveExact(candidate).orElse(null);
-
-		return fromCandidateRecord(candidateRecordOrNull);
-	}
-
-	/**
-	 * Load and return the candidate with the given ID.
-	 *
-	 * @param id
-	 * @return
-	 */
-	public Candidate retrieve(@NonNull final Integer id)
-	{
-		final I_MD_Candidate candidateRecord = load(id, I_MD_Candidate.class);
-		return fromCandidateRecord(candidateRecord).get();
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		final IQuery<T> candidateDetailQueryBuilder = queryBL.createQueryBuilder(modelClass)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_MD_Candidate.COLUMNNAME_MD_Candidate_ID, candidateRecord.getMD_Candidate_ID())
+				.create();
+		return candidateDetailQueryBuilder;
 	}
 
 	/**
@@ -355,84 +429,23 @@ public class CandidateRepository
 	}
 
 	/**
-	 * Retrieves the <b>one</b> record that matches the given candidate's
-	 * <ul>
-	 * <li>type</li>
-	 * <li>warehouse</li>
-	 * <li>product</li>
-	 * <li>date</li>
-	 * <li>tableId and record (only if set)</li>
-	 * <li>demand details</li>
-	 * <li>production details: if {@link Candidate#getProductionDetail()} is {@code null}, then only records without product detail are selected.<br>
-	 * If it's not null and either a product plan ID or BOM line ID is set, then only records with a matching detail record are selected. Note that those two don't change (unlike ppOrder ID and ppOrder BOM line ID which can change from zero to an actual reference)</li>
-	 * <li>distribution details:if {@link Candidate#getDistributionDetail()} is {@link code null}, then only records without product detail are selected.<br>
-	 * If it's not null and either a product plan ID or network distribution line ID is set, then only records with a matching detail record are selected. Note that those two don't change (unlike ddOrder ID and ddOrderLine ID which can change from zero to an actual reference)</li>
-	 * </ul>
-	 *
-	 * @param candidate
-	 * @return
-	 */
-	@VisibleForTesting
-	/* package */ Optional<I_MD_Candidate> retrieveExact(@NonNull final Candidate candidate)
-	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-
-		final MaterialDescriptor materialDescr = candidate.getMaterialDescr();
-
-		final IQueryBuilder<I_MD_Candidate> builder = queryBL
-				.createQueryBuilder(I_MD_Candidate.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_MD_Candidate.COLUMN_MD_Candidate_Type, candidate.getType().toString())
-				.addEqualsFilter(I_MD_Candidate.COLUMN_M_Warehouse_ID, materialDescr.getWarehouseId())
-				.addEqualsFilter(I_MD_Candidate.COLUMN_M_Product_ID, materialDescr.getProductId())
-				.addEqualsFilter(I_MD_Candidate.COLUMN_DateProjected, materialDescr.getDate());
-
-		addReferenceToQueryBuilder(candidate, builder);
-
-		addDemandDetailToBuilder(candidate, builder);
-
-		// filter by productionDetail; if there is none, *don't* ignore, but filter for "not-existing"
-		addProductionDetailToFilter(candidate, builder);
-
-		// filter by distributionDetail; if there is none, *don't* ignore, but filter for "not-existing"
-		addDistributionDetailToFilter(candidate, builder);
-
-		final I_MD_Candidate candidateRecord = builder
-				.create()
-				.firstOnly(I_MD_Candidate.class); // note that we have a UC to make sure there is just one
-
-		return Optional.ofNullable(candidateRecord);
-	}
-
-	private void addReferenceToQueryBuilder(final Candidate candidate, final IQueryBuilder<I_MD_Candidate> builder)
-	{
-		final TableRecordReference referencedRecord = candidate.getReference();
-		if (referencedRecord != null)
-		{
-			builder.addEqualsFilter(I_MD_Candidate.COLUMN_AD_Table_ID, referencedRecord.getAD_Table_ID());
-			builder.addEqualsFilter(I_MD_Candidate.COLUMN_Record_ID, referencedRecord.getRecord_ID());
-		}
-	}
-
-	/**
 	 * filter by demand detail ignore if there is none!
 	 *
 	 * @param candidate
 	 * @param builder
 	 */
 	private void addDemandDetailToBuilder(
-			final Candidate candidate,
+			final CandidateSpecification candidate,
 			final IQueryBuilder<I_MD_Candidate> builder)
 	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-		final DemandCandidateDetail demandDetail = candidate.getDemandDetail();
+		final DemandDetail demandDetail = candidate.getDemandDetail();
 		if (demandDetail == null)
 		{
 			return;
 		}
 
-		final IQueryBuilder<I_MD_Candidate_Demand_Detail> demandDetailsSubQueryBuilder = queryBL
+		final IQueryBuilder<I_MD_Candidate_Demand_Detail> demandDetailsSubQueryBuilder = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_MD_Candidate_Demand_Detail.class)
 				.addOnlyActiveRecordsFilter();
 
@@ -443,6 +456,13 @@ public class CandidateRepository
 					.addEqualsFilter(I_MD_Candidate_Demand_Detail.COLUMN_C_OrderLine_ID, demandDetail.getOrderLineId());
 		}
 
+		final boolean hasShipmentschedule = demandDetail.getShipmentScheduleId() > 0;
+		if (hasShipmentschedule)
+		{
+			demandDetailsSubQueryBuilder
+					.addEqualsFilter(I_MD_Candidate_Demand_Detail.COLUMNNAME_M_ShipmentSchedule_ID, demandDetail.getShipmentScheduleId());
+		}
+
 		final boolean hasForecastLine = demandDetail.getForecastLineId() > 0;
 		if (hasForecastLine)
 		{
@@ -450,7 +470,7 @@ public class CandidateRepository
 					.addEqualsFilter(I_MD_Candidate_Demand_Detail.COLUMN_M_ForecastLine_ID, demandDetail.getForecastLineId());
 		}
 
-		if (hasOrderLine || hasForecastLine)
+		if (hasOrderLine || hasForecastLine || hasShipmentschedule)
 		{
 			builder.addInSubQueryFilter(I_MD_Candidate.COLUMN_MD_Candidate_ID,
 					I_MD_Candidate_Demand_Detail.COLUMN_MD_Candidate_ID,
@@ -459,18 +479,22 @@ public class CandidateRepository
 	}
 
 	private void addProductionDetailToFilter(
-			final Candidate candidate,
+			final CandidateSpecification candidate,
 			final IQueryBuilder<I_MD_Candidate> builder)
 	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		final ProductionDetail productionDetail = candidate.getProductionDetail();
+		if (productionDetail == null)
+		{
+			return;
+		}
 
-		final ProductionCandidateDetail productionDetail = candidate.getProductionDetail();
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 		final IQueryBuilder<I_MD_Candidate_Prod_Detail> productDetailSubQueryBuilder = queryBL
 				.createQueryBuilder(I_MD_Candidate_Prod_Detail.class)
 				.addOnlyActiveRecordsFilter();
 
-		if (productionDetail == null)
+		if (productionDetail == CandidatesQuery.NO_PRODUCTION_DETAIL)
 		{
 			builder.addNotInSubQueryFilter(I_MD_Candidate.COLUMN_MD_Candidate_ID, I_MD_Candidate_Prod_Detail.COLUMN_MD_Candidate_ID, productDetailSubQueryBuilder.create());
 		}
@@ -495,18 +519,22 @@ public class CandidateRepository
 	}
 
 	private void addDistributionDetailToFilter(
-			final Candidate candidate,
-			final IQueryBuilder<I_MD_Candidate> builder)
+			@NonNull final CandidateSpecification query,
+			@NonNull final IQueryBuilder<I_MD_Candidate> builder)
 	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		final DistributionDetail distributionDetail = query.getDistributionDetail();
+		if (distributionDetail == null)
+		{
+			return;
+		}
 
-		final DistributionCandidateDetail distributionDetail = candidate.getDistributionDetail();
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 		final IQueryBuilder<I_MD_Candidate_Dist_Detail> distDetailSubQueryBuilder = queryBL
 				.createQueryBuilder(I_MD_Candidate_Dist_Detail.class)
 				.addOnlyActiveRecordsFilter();
 
-		if (distributionDetail == null)
+		if (distributionDetail == CandidatesQuery.NO_DISTRIBUTION_DETAIL)
 		{
 			builder.addNotInSubQueryFilter(I_MD_Candidate.COLUMN_MD_Candidate_ID, I_MD_Candidate_Dist_Detail.COLUMN_MD_Candidate_ID, distDetailSubQueryBuilder.create());
 		}
@@ -530,77 +558,38 @@ public class CandidateRepository
 		}
 	}
 
-	/**
-	 * Writes the given {@code candidate}'s properties to the given {@code candidateRecord}, but does not save that record.
-	 *
-	 * @param candidateRecord
-	 * @param candidate
-	 * @return either returns the record contained in the given candidateRecord (but updated) or a new record.
-	 */
-	private I_MD_Candidate syncToRecord(
-			@NonNull final Optional<I_MD_Candidate> candidateRecord,
-			@NonNull final Candidate candidate,
-			final boolean preserveExistingSeqNo)
+	private void addTransactionDetailToFilter(
+			@NonNull final CandidatesQuery query,
+			@NonNull final IQueryBuilder<I_MD_Candidate> builder)
 	{
-		Preconditions.checkState(
-				!candidateRecord.isPresent()
-						|| isNew(candidateRecord.get())
-						|| candidate.getId() == null
-						|| Objects.equals(candidateRecord.get().getMD_Candidate_ID(), candidate.getId()),
-				"The given MD_Candidate is not new and its ID is different from the ID of the given Candidate; MD_Candidate=%s; candidate=%s",
-				candidateRecord, candidate);
-
-		final MaterialDescriptor materialDescr = candidate.getMaterialDescr();
-
-		final I_MD_Candidate candidateRecordToUse = candidateRecord.orElse(newInstance(I_MD_Candidate.class));
-		candidateRecordToUse.setAD_Org_ID(candidate.getOrgId());
-		candidateRecordToUse.setMD_Candidate_Type(candidate.getType().toString());
-		candidateRecordToUse.setM_Warehouse_ID(materialDescr.getWarehouseId());
-		candidateRecordToUse.setM_Product_ID(materialDescr.getProductId());
-		candidateRecordToUse.setQty(candidate.getQuantity());
-		candidateRecordToUse.setDateProjected(new Timestamp(materialDescr.getDate().getTime()));
-
-		if (candidate.getSubType() != null)
+		final TransactionDetail transactionDetail = query.getTransactionDetail();
+		if (transactionDetail == null)
 		{
-			candidateRecordToUse.setMD_Candidate_SubType(candidate.getSubType().toString());
+			return;
 		}
 
-		if (candidate.getParentId() != null)
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+		final IQueryBuilder<I_MD_Candidate_Transaction_Detail> transactionDetailSubQueryBuilder = queryBL
+				.createQueryBuilder(I_MD_Candidate_Transaction_Detail.class)
+				.addOnlyActiveRecordsFilter();
+
+		Preconditions.checkArgument(
+				transactionDetail.getTransactionId() > 0,
+				"Every transactionDetail instance needs to have transactionId>0; transactionDetail=%s",
+				transactionDetail);
+		transactionDetailSubQueryBuilder.addEqualsFilter(I_MD_Candidate_Transaction_Detail.COLUMN_M_Transaction_ID, transactionDetail.getTransactionId());
+
+		if (transactionDetail.getQuantity() != null)
 		{
-			candidateRecordToUse.setMD_Candidate_Parent_ID(candidate.getParentId());
+			transactionDetailSubQueryBuilder.addEqualsFilter(I_MD_Candidate_Transaction_Detail.COLUMN_MovementQty, transactionDetail.getQuantity());
 		}
 
-		// if the candidate has a SeqNo to sync and
-		// if candidateRecordToUse does not yet have one, or if the existing seqNo is not protected by 'preserveExistingSeqNo', then (over)write it.
-		if (candidate.getSeqNo() != null)
-		{
-			if (candidateRecordToUse.getSeqNo() <= 0 || !preserveExistingSeqNo)
-			{
-				candidateRecordToUse.setSeqNo(candidate.getSeqNo());
-			}
-		}
-
-		final ITableRecordReference referencedRecord = candidate.getReference();
-		if (referencedRecord != null)
-		{
-			candidateRecordToUse.setAD_Table_ID(referencedRecord.getAD_Table_ID());
-			candidateRecordToUse.setRecord_ID(referencedRecord.getRecord_ID());
-		}
-
-		if (candidate.getGroupId() != null)
-		{
-			candidateRecordToUse.setMD_Candidate_GroupId(candidate.getGroupId());
-		}
-
-		if (candidate.getStatus() != null)
-		{
-			candidateRecordToUse.setMD_Candidate_Status(candidate.getStatus().toString());
-		}
-
-		return candidateRecordToUse;
+		builder.addInSubQueryFilter(I_MD_Candidate.COLUMN_MD_Candidate_ID, I_MD_Candidate_Transaction_Detail.COLUMN_MD_Candidate_ID, transactionDetailSubQueryBuilder.create());
 	}
 
-	private Optional<Candidate> fromCandidateRecord(final I_MD_Candidate candidateRecordOrNull)
+	@VisibleForTesting
+	Optional<Candidate> fromCandidateRecord(final I_MD_Candidate candidateRecordOrNull)
 	{
 		if (candidateRecordOrNull == null || isNew(candidateRecordOrNull))
 		{
@@ -623,6 +612,8 @@ public class CandidateRepository
 
 		builder.demandDetail(createDemandDetailOrNull(candidateRecordOrNull));
 
+		builder.transactionDetails(retrieveTransactionDetails(candidateRecordOrNull));
+
 		return Optional.of(builder.build());
 	}
 
@@ -638,45 +629,47 @@ public class CandidateRepository
 
 	private CandidateBuilder createAndInitializeBuilder(@NonNull final I_MD_Candidate candidateRecord)
 	{
-		final MaterialDescriptor materialDescr = MaterialDescriptor.builder()
+		final Timestamp dateProjected = Preconditions.checkNotNull(candidateRecord.getDateProjected(),
+				"Given parameter candidateRecord needs to have a not-null dateProjected; candidateRecord=%s",
+				candidateRecord);
+		final String md_candidate_type = Preconditions.checkNotNull(candidateRecord.getMD_Candidate_Type(),
+				"Given parameter candidateRecord needs to have a not-null MD_Candidate_Type; candidateRecord=%s",
+				candidateRecord);
+
+		final MaterialDescriptor materialDescr = MaterialDescriptor.builderForCandidateOrQuery()
 				.productId(candidateRecord.getM_Product_ID())
 				.quantity(candidateRecord.getQty())
 				.warehouseId(candidateRecord.getM_Warehouse_ID())
 				// make sure to add a Date and not a Timestamp to avoid confusing Candidate's equals() and hashCode() methods
-				.date(new Date(candidateRecord.getDateProjected().getTime()))
+				.date(new Date(dateProjected.getTime()))
 				.build();
 
-		final CandidateBuilder builder = Candidate.builder()
+		final CandidateBuilder candidateBuilder = Candidate.builder()
 				.id(candidateRecord.getMD_Candidate_ID())
 				.clientId(candidateRecord.getAD_Client_ID())
 				.orgId(candidateRecord.getAD_Org_ID())
 				.seqNo(candidateRecord.getSeqNo())
-				.type(Type.valueOf(candidateRecord.getMD_Candidate_Type()))
+				.type(Type.valueOf(md_candidate_type))
 
-				// if the record has a group id, then set it. otherwise set null, because a "vanilla" candidate without groupId also has null here (null and not zero)
-				.groupId(candidateRecord.getMD_Candidate_GroupId() <= 0 ? null : candidateRecord.getMD_Candidate_GroupId())
+				// if the record has a group id, then set it.
+				.groupId(candidateRecord.getMD_Candidate_GroupId())
 				.materialDescr(materialDescr);
 
 		if (candidateRecord.getMD_Candidate_Parent_ID() > 0)
 		{
-			builder.parentId(candidateRecord.getMD_Candidate_Parent_ID());
+			candidateBuilder.parentId(candidateRecord.getMD_Candidate_Parent_ID());
 		}
-
-		if (candidateRecord.getRecord_ID() > 0)
-		{
-			builder.reference(TableRecordReference.ofReferenced(candidateRecord));
-		}
-		return builder;
+		return candidateBuilder;
 	}
 
-	private ProductionCandidateDetail createProductionDetailOrNull(@NonNull final I_MD_Candidate candidateRecord)
+	private ProductionDetail createProductionDetailOrNull(@NonNull final I_MD_Candidate candidateRecord)
 	{
-		final I_MD_Candidate_Prod_Detail productionDetail = retrieveProductionDetail(candidateRecord);
+		final I_MD_Candidate_Prod_Detail productionDetail = retrieveSingleCandidateDetail(candidateRecord, I_MD_Candidate_Prod_Detail.class);
 		if (productionDetail == null)
 		{
 			return null;
 		}
-		final ProductionCandidateDetail productionCandidateDetail = ProductionCandidateDetail.builder()
+		final ProductionDetail productionCandidateDetail = ProductionDetail.builder()
 				.description(productionDetail.getDescription())
 				.plantId(productionDetail.getPP_Plant_ID())
 				.productBomLineId(productionDetail.getPP_Product_BOMLine_ID())
@@ -689,15 +682,15 @@ public class CandidateRepository
 		return productionCandidateDetail;
 	}
 
-	private DistributionCandidateDetail createDistributionDetailOrNull(@NonNull final I_MD_Candidate candidateRecord)
+	private DistributionDetail createDistributionDetailOrNull(@NonNull final I_MD_Candidate candidateRecord)
 	{
-		final I_MD_Candidate_Dist_Detail distributionDetail = retrieveDistributionDetail(candidateRecord);
+		final I_MD_Candidate_Dist_Detail distributionDetail = retrieveSingleCandidateDetail(candidateRecord, I_MD_Candidate_Dist_Detail.class);
 		if (distributionDetail == null)
 		{
 			return null;
 		}
 
-		final DistributionCandidateDetail distributionCandidateDetail = DistributionCandidateDetail.builder()
+		final DistributionDetail distributionCandidateDetail = DistributionDetail.builder()
 				.networkDistributionLineId(distributionDetail.getDD_NetworkDistributionLine_ID())
 				.productPlanningId(distributionDetail.getPP_Product_Planning_ID())
 				.plantId(distributionDetail.getPP_Plant_ID())
@@ -709,27 +702,45 @@ public class CandidateRepository
 		return distributionCandidateDetail;
 	}
 
-	private static DemandCandidateDetail createDemandDetailOrNull(@NonNull final I_MD_Candidate candidateRecord)
+	private static DemandDetail createDemandDetailOrNull(@NonNull final I_MD_Candidate candidateRecord)
 	{
-		final I_MD_Candidate_Demand_Detail demandDetailRecord = retrieveDemandDetail(candidateRecord);
+		final I_MD_Candidate_Demand_Detail demandDetailRecord = retrieveSingleCandidateDetail(candidateRecord, I_MD_Candidate_Demand_Detail.class);
 		if (demandDetailRecord == null)
 		{
 			return null;
 		}
 
-		return DemandCandidateDetail.forOrderLineIdAndForecastLineId(
-				demandDetailRecord.getC_OrderLine_ID(),
-				demandDetailRecord.getM_ForecastLine_ID());
+		return DemandDetail.forDemandDetailRecord(demandDetailRecord);
+	}
+
+	private List<TransactionDetail> retrieveTransactionDetails(@NonNull final I_MD_Candidate candidateRecord)
+	{
+		final List<I_MD_Candidate_Transaction_Detail> transactionDetailRecords = //
+				createCandidateDetailQueryBuilder(candidateRecord, I_MD_Candidate_Transaction_Detail.class)
+						.list();
+
+		final ImmutableList.Builder<TransactionDetail> result = ImmutableList.builder();
+		for (final I_MD_Candidate_Transaction_Detail transactionDetailRecord : transactionDetailRecords)
+		{
+			result.add(TransactionDetail.fromTransactionDetailRecord(transactionDetailRecord));
+		}
+		return result.build();
 	}
 
 	/**
 	 *
-	 * @param segment
+	 * @param query
 	 * @return the "oldest" stock candidate that matches the given {@code segment}.
 	 */
-	public Optional<Candidate> retrieveLatestMatch(@NonNull final CandidatesSegment segment)
+	public Candidate retrieveLatestMatchOrNull(@NonNull final CandidatesQuery query)
 	{
-		final IQueryBuilder<I_MD_Candidate> builder = mkQueryBuilder(segment);
+		final I_MD_Candidate candidateRecordOrNull = rerieveLatestMatchRecord(query);
+		return fromCandidateRecord(candidateRecordOrNull).orElse(null);
+	}
+
+	private I_MD_Candidate rerieveLatestMatchRecord(@NonNull final CandidatesQuery query)
+	{
+		final IQueryBuilder<I_MD_Candidate> builder = mkQueryBuilder(query);
 
 		final I_MD_Candidate candidateRecordOrNull = builder
 				.orderBy()
@@ -740,13 +751,30 @@ public class CandidateRepository
 				.endOrderBy()
 				.create()
 				.first();
-
-		return fromCandidateRecord(candidateRecordOrNull);
+		return candidateRecordOrNull;
 	}
 
-	public List<Candidate> retrieveMatchesOrderByDateAndSeqNo(@NonNull final CandidatesSegment segment)
+	/**
+	 * Retrieves the record(s) that matches the given candidate's
+	 * <ul>
+	 * <li>type</li>
+	 * <li>warehouse</li>
+	 * <li>product</li>
+	 * <li>date</li>
+	 * <li>tableId and record (only if set)</li>
+	 * <li>demand details</li>
+	 * <li>production details: if {@link Candidate#getProductionDetail()} is {@code null}, then only records without product detail are selected.<br>
+	 * If it's not null and either a product plan ID or BOM line ID is set, then only records with a matching detail record are selected. Note that those two don't change (unlike ppOrder ID and ppOrder BOM line ID which can change from zero to an actual reference)</li>
+	 * <li>distribution details:if {@link Candidate#getDistributionDetail()} is {@link code null}, then only records without product detail are selected.<br>
+	 * If it's not null and either a product plan ID or network distribution line ID is set, then only records with a matching detail record are selected. Note that those two don't change (unlike ddOrder ID and ddOrderLine ID which can change from zero to an actual reference)</li>
+	 * </ul>
+	 *
+	 * @param candidate
+	 * @return
+	 */
+	public List<Candidate> retrieveOrderedByDateAndSeqNo(@NonNull final CandidatesQuery query)
 	{
-		final IQueryBuilder<I_MD_Candidate> builder = mkQueryBuilder(segment);
+		final IQueryBuilder<I_MD_Candidate> builder = mkQueryBuilder(query);
 
 		final Stream<I_MD_Candidate> candidateRecords = builder
 				.orderBy()
@@ -764,73 +792,96 @@ public class CandidateRepository
 	/**
 	 * turns the given segment into the "where part" of a big query builder. Does not specify the ordering.
 	 *
-	 * @param segment
+	 * @param query
 	 * @return
 	 */
-	private IQueryBuilder<I_MD_Candidate> mkQueryBuilder(final CandidatesSegment segment)
+	private IQueryBuilder<I_MD_Candidate> mkQueryBuilder(@NonNull final CandidatesQuery query)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 		final IQueryBuilder<I_MD_Candidate> builder = queryBL.createQueryBuilder(I_MD_Candidate.class)
 				.addOnlyActiveRecordsFilter();
 
-		switch (segment.getDateOperator())
+		configureBuilderDateFilters(builder, query);
+
+		if (query.getType() != null)
 		{
-			case until:
-				builder.addCompareFilter(I_MD_Candidate.COLUMN_DateProjected, Operator.LESS_OR_EQUAL, segment.getDate());
-				break;
-			case from:
-				builder.addCompareFilter(I_MD_Candidate.COLUMN_DateProjected, Operator.GREATER_OR_EQUAL, segment.getDate());
-				break;
-			case after:
-				builder.addCompareFilter(I_MD_Candidate.COLUMN_DateProjected, Operator.GREATER, segment.getDate());
-				break;
-			default:
-				Check.errorIf(true, "segment has unexpected DateOperator {}; segment={}", segment.getDateOperator(), segment);
-				break;
+			builder.addEqualsFilter(I_MD_Candidate.COLUMN_MD_Candidate_Type, query.getType().toString());
 		}
 
-		if (segment.getType() != null)
+		if (query.getId() > 0)
 		{
-			builder.addEqualsFilter(I_MD_Candidate.COLUMN_MD_Candidate_Type, segment.getType().toString());
+			builder.addEqualsFilter(I_MD_Candidate.COLUMN_MD_Candidate_ID, query.getId());
 		}
 
-		if (segment.getProductId() != null)
+		if (query.getProductId() > 0)
 		{
-			builder.addEqualsFilter(I_MD_Candidate.COLUMN_M_Product_ID, segment.getProductId());
+			builder.addEqualsFilter(I_MD_Candidate.COLUMN_M_Product_ID, query.getProductId());
 		}
 
-		if (segment.getWarehouseId() != null)
+		if (query.getWarehouseId() > 0)
 		{
-			builder.addEqualsFilter(I_MD_Candidate.COLUMN_M_Warehouse_ID, segment.getWarehouseId());
+			builder.addEqualsFilter(I_MD_Candidate.COLUMN_M_Warehouse_ID, query.getWarehouseId());
 		}
 
-		if (segment.getParentProductId() != null || segment.getParentWarehouseId() != null)
+		if (query.getParentProductId() > 0 || query.getParentWarehouseId() > 0)
 		{
 			final IQueryBuilder<I_MD_Candidate> parentBuilder = queryBL.createQueryBuilder(I_MD_Candidate.class)
 					.addOnlyActiveRecordsFilter();
 
-			if (segment.getParentProductId() != null)
+			if (query.getParentProductId() > 0)
 			{
-				parentBuilder.addEqualsFilter(I_MD_Candidate.COLUMN_M_Product_ID, segment.getParentProductId());
+				parentBuilder.addEqualsFilter(I_MD_Candidate.COLUMN_M_Product_ID, query.getParentProductId());
 			}
 
-			if (segment.getParentWarehouseId() != null)
+			if (query.getParentWarehouseId() > 0)
 			{
-				parentBuilder.addEqualsFilter(I_MD_Candidate.COLUMN_M_Warehouse_ID, segment.getParentWarehouseId());
+				parentBuilder.addEqualsFilter(I_MD_Candidate.COLUMN_M_Warehouse_ID, query.getParentWarehouseId());
 			}
 
 			// restrict our set of matches to those records that reference a parent record which have the give product and/or warehouse.
 			builder.addInSubQueryFilter(I_MD_Candidate.COLUMN_MD_Candidate_Parent_ID, I_MD_Candidate.COLUMN_MD_Candidate_ID, parentBuilder.create());
 		}
 
-		if (segment.getReference() != null)
-		{
-			builder
-					.addEqualsFilter(I_MD_Candidate.COLUMN_AD_Table_ID, segment.getReference().getAD_Table_ID())
-					.addEqualsFilter(I_MD_Candidate.COLUMN_Record_ID, segment.getReference().getRecord_ID());
-		}
+		addDemandDetailToBuilder(query, builder);
+
+		addProductionDetailToFilter(query, builder);
+
+		addDistributionDetailToFilter(query, builder);
+
+		addTransactionDetailToFilter(query, builder);
+
 		return builder;
+	}
+
+	private void configureBuilderDateFilters(
+			@NonNull final IQueryBuilder<I_MD_Candidate> builder,
+			@NonNull final CandidatesQuery query)
+	{
+		if (query.getDate() == null)
+		{
+			return;
+		}
+		final DateOperator dateOperator = Preconditions.checkNotNull(query.getDateOperator(),
+				"As the given parameter query spefifies a date, it also needs to have a not-null dateOperator; query=%s", query);
+		switch (dateOperator)
+		{
+			case UNTIL:
+				builder.addCompareFilter(I_MD_Candidate.COLUMN_DateProjected, Operator.LESS_OR_EQUAL, query.getDate());
+				break;
+			case FROM:
+				builder.addCompareFilter(I_MD_Candidate.COLUMN_DateProjected, Operator.GREATER_OR_EQUAL, query.getDate());
+				break;
+			case AFTER:
+				builder.addCompareFilter(I_MD_Candidate.COLUMN_DateProjected, Operator.GREATER, query.getDate());
+				break;
+			case AT:
+				builder.addEqualsFilter(I_MD_Candidate.COLUMN_DateProjected, query.getDate());
+				break;
+			default:
+				Check.errorIf(true, "segment has a unexpected dateOperator {}; segment={}", query.getDateOperator(), query);
+				break;
+		}
 	}
 
 	/**

@@ -1,5 +1,10 @@
 package de.metas.handlingunits.allocation.transfer;
 
+
+import static de.metas.business.BusinessTestHelper.createBPartner;
+import static de.metas.business.BusinessTestHelper.createBPartnerLocation;
+import static de.metas.business.BusinessTestHelper.createLocator;
+import static de.metas.business.BusinessTestHelper.createWarehouse;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.hamcrest.Matchers.hasXPath;
 import static org.hamcrest.Matchers.is;
@@ -13,7 +18,9 @@ import java.util.List;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_Warehouse;
 import org.w3c.dom.Node;
 
 import de.metas.adempiere.model.I_C_BPartner_Location;
@@ -30,12 +37,11 @@ import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestination;
 import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestinationTestSupport;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
-import de.metas.handlingunits.model.I_M_Locator;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.validator.M_HU;
 import de.metas.handlingunits.spi.IHUPackingMaterialCollectorSource;
 import de.metas.handlingunits.trace.HUTransformTracingTests;
-import de.metas.interfaces.I_M_Warehouse;
+
 
 
 /*
@@ -92,11 +98,11 @@ public class HUTransformTestsBase
 	{
 		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 
-		final I_C_BPartner bpartner = data.helper.createBPartner("testVendor");
-		final I_C_BPartner_Location bPartnerLocation = data.helper.createBPartnerLocation(bpartner);
+		final I_C_BPartner bpartner =createBPartner("testVendor");
+		final I_C_BPartner_Location bPartnerLocation = createBPartnerLocation(bpartner);
 
-		final I_M_Warehouse warehouse = data.helper.createWarehouse("testWarehouse");
-		final I_M_Locator locator = data.helper.createLocator("testLocator", warehouse);
+		final I_M_Warehouse warehouse = createWarehouse("testWarehouse");
+		final I_M_Locator locator = createLocator("testLocator", warehouse);
 
 		final TestHUsBuilder testHUsBuilder = TestHUs.builder();
 

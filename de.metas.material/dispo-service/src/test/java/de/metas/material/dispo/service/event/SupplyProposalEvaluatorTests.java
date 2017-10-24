@@ -2,8 +2,7 @@ package de.metas.material.dispo.service.event;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -18,12 +17,16 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestWatcher;
 
-import de.metas.material.dispo.Candidate;
-import de.metas.material.dispo.Candidate.Type;
+import com.google.common.collect.ImmutableList;
+
 import de.metas.material.dispo.CandidateRepository;
 import de.metas.material.dispo.CandidateService;
+import de.metas.material.dispo.CandidateSpecification.Type;
+import de.metas.material.dispo.candidate.Candidate;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
+import de.metas.material.dispo.service.candidatechange.handler.DemandCandiateHandler;
+import de.metas.material.dispo.service.candidatechange.handler.SupplyCandiateHandler;
 import de.metas.material.dispo.service.event.SupplyProposalEvaluator.SupplyProposal;
 import de.metas.material.dispo.service.event.handler.DistributionPlanEventHandler;
 import de.metas.material.dispo.service.event.handler.DistributionPlanEventHandlerTests;
@@ -58,9 +61,9 @@ public class SupplyProposalEvaluatorTests
 	/** Watches the current tests and dumps the database to console in case of failure */
 	@Rule
 	public final TestWatcher testWatcher = new AdempiereTestWatcher();
-	
+
 	private final Date t1 = SystemTime.asDate();
-	
+
 	private final Date t0 = TimeUtil.addMinutes(t1, -10);
 
 	private final Date t2 = TimeUtil.addMinutes(t1, 10);
@@ -99,7 +102,11 @@ public class SupplyProposalEvaluatorTests
 		candidateRepository = new CandidateRepository();
 		supplyProposalEvaluator = new SupplyProposalEvaluator(candidateRepository);
 
-		final CandidateChangeService candidateChangeHandler = new CandidateChangeService(candidateRepository, new StockCandidateService(candidateRepository), materialEventService);
+		final StockCandidateService stockCandidateService = new StockCandidateService(candidateRepository);
+
+		final CandidateChangeService candidateChangeHandler = new CandidateChangeService(ImmutableList.of(
+				new SupplyCandiateHandler(candidateRepository, materialEventService, stockCandidateService),
+				new DemandCandiateHandler(candidateRepository, materialEventService, stockCandidateService)));
 
 		distributionPlanEventHandler = new DistributionPlanEventHandler(
 				candidateRepository,
@@ -121,7 +128,7 @@ public class SupplyProposalEvaluatorTests
 				.productId(3)
 				.build();
 
-		assertThat(supplyProposalEvaluator.evaluateSupply(supplyProposal), is(true));
+		assertThat(supplyProposalEvaluator.evaluateSupply(supplyProposal)).isTrue();
 	}
 
 	/**
@@ -139,7 +146,7 @@ public class SupplyProposalEvaluatorTests
 				.productId(3)
 				.build();
 
-		assertThat(supplyProposalEvaluator.evaluateSupply(supplyProposal), is(true));
+		assertThat(supplyProposalEvaluator.evaluateSupply(supplyProposal)).isTrue();
 	}
 
 	@Test
@@ -158,7 +165,7 @@ public class SupplyProposalEvaluatorTests
 				.productId(3)
 				.build();
 
-		assertThat(supplyProposalEvaluator.evaluateSupply(supplyProposal), is(true));
+		assertThat(supplyProposalEvaluator.evaluateSupply(supplyProposal)).isTrue();
 	}
 
 	@Test
@@ -177,7 +184,7 @@ public class SupplyProposalEvaluatorTests
 				.productId(3)
 				.build();
 
-		assertThat(supplyProposalEvaluator.evaluateSupply(supplyProposal), is(false));
+		assertThat(supplyProposalEvaluator.evaluateSupply(supplyProposal)).isFalse();
 	}
 
 	/**
@@ -207,7 +214,7 @@ public class SupplyProposalEvaluatorTests
 				.warehouseId(DEMAND_WAREHOUSE_ID)
 				.quantity(BigDecimal.TEN)
 				.build();
-		
+
 		final Candidate demandCandidate = Candidate.builder()
 				.clientId(org.getAD_Client_ID())
 				.orgId(org.getAD_Org_ID())
@@ -234,7 +241,7 @@ public class SupplyProposalEvaluatorTests
 				.destWarehouseId(MaterialDispoEventListenerFacadeTests.intermediateWarehouseId)
 				.productId(MaterialDispoEventListenerFacadeTests.productId)
 				.build();
-		assertThat(supplyProposalEvaluator.evaluateSupply(supplyProposal1), is(true));
+		assertThat(supplyProposalEvaluator.evaluateSupply(supplyProposal1)).isTrue();
 
 		// propose what would create an additional demand on B and an additional supply on C. nothing wrong with that either
 		final SupplyProposal supplyProposal2 = SupplyProposal.builder()
@@ -243,7 +250,7 @@ public class SupplyProposalEvaluatorTests
 				.destWarehouseId(MaterialDispoEventListenerFacadeTests.toWarehouseId)
 				.productId(MaterialDispoEventListenerFacadeTests.productId)
 				.build();
-		assertThat(supplyProposalEvaluator.evaluateSupply(supplyProposal2), is(true));
+		assertThat(supplyProposalEvaluator.evaluateSupply(supplyProposal2)).isTrue();
 
 		// propose what would create an additional demand on A and an additional supply on C. nothing wrong with that either
 		final SupplyProposal supplyProposal3 = SupplyProposal.builder()
@@ -252,7 +259,7 @@ public class SupplyProposalEvaluatorTests
 				.destWarehouseId(MaterialDispoEventListenerFacadeTests.toWarehouseId)
 				.productId(MaterialDispoEventListenerFacadeTests.productId)
 				.build();
-		assertThat(supplyProposalEvaluator.evaluateSupply(supplyProposal3), is(true));
+		assertThat(supplyProposalEvaluator.evaluateSupply(supplyProposal3)).isTrue();
 	}
 
 	/**
@@ -265,7 +272,7 @@ public class SupplyProposalEvaluatorTests
 		// we now have an unbalanced demand with a stock of -10 in "fromWarehouseId" (because that's where the "last" demand of the "last" DistibutionPlan is)
 		// and we have a stock of +10 in "toWarehouseId"
 
-		// now assume that the planner would create create another DistibutionPlanEvent that suggests to balance the -10 in "fromWarehouseId" with the +10 in "toWarehouseId"
+		// now assume that the planner would create  another DistibutionPlanEvent that suggests to balance the -10 in "fromWarehouseId" with the +10 in "toWarehouseId"
 		// note that we don't need to look at the qty at all
 		final SupplyProposal supplyProposal1 = SupplyProposal.builder()
 				.date(t0) // the proposal needs to be made for the time before the two DistibutionPlanEvents occured
@@ -273,6 +280,6 @@ public class SupplyProposalEvaluatorTests
 				.destWarehouseId(MaterialDispoEventListenerFacadeTests.fromWarehouseId)
 				.productId(MaterialDispoEventListenerFacadeTests.productId)
 				.build();
-		assertThat(supplyProposalEvaluator.evaluateSupply(supplyProposal1), is(false));
+		assertThat(supplyProposalEvaluator.evaluateSupply(supplyProposal1)).isFalse();
 	}
 }

@@ -27,7 +27,7 @@ import de.metas.event.QueueableForwardingEventBus;
 
 public class MaterialEventBus extends QueueableForwardingEventBus
 {
-	public static final String EVENTBUS_TOPIC_NAME = "de.metas.manufacturing.dispo";
+	public static final String EVENTBUS_TOPIC_NAME = "de.metas.material.dispo";
 
 	private MaterialEventBus(final IEventBus delegate)
 	{

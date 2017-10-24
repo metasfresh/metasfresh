@@ -32,7 +32,6 @@ public final class ConstantLogicExpression implements ILogicExpression
 
 	private ConstantLogicExpression(final boolean value)
 	{
-		super();
 		this.value = value;
 		expressionString = value ? "1=1" : "1=0";
 		toStringValue = value ? "TRUE" : "FALSE";

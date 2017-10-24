@@ -24,7 +24,6 @@ package de.metas.handlingunits.hutransaction.impl;
 
 import java.util.Date;
 import java.util.UUID;
-import de.metas.quantity.Quantity;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -39,6 +38,7 @@ import de.metas.handlingunits.hutransaction.IHUTransaction;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.logging.LogManager;
+import de.metas.quantity.Quantity;
 
 public final class HUTransaction implements IHUTransaction
 {

@@ -1,5 +1,7 @@
 package de.metas.handlingunits.attribute.storage.impl;
 
+import static de.metas.business.BusinessTestHelper.createM_Attribute;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -114,7 +116,7 @@ public class HUAttributeStorage_generateInitialAttributes_Integration_Test exten
 		}
 
 		final boolean isInstanceAttribute = true;
-		final I_M_Attribute attribute = helper.createM_Attribute(
+		final I_M_Attribute attribute = createM_Attribute(
 				"ATTR_" + attributeValueGeneratorClass.getSimpleName(), // Attribute Name
 				attributeValueGenerator.getAttributeValueType(), // Attribute Type
 				attributeValueGeneratorClass,

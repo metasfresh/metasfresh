@@ -201,7 +201,7 @@ public class InvoiceHeaderImplBuilder
 
 	public int getC_Order_ID()
 	{
-		return ListUtils.singleElementOrDefault(C_Order_IDs, -1);
+		return ListUtils.singleElementOrDefault(C_Order_IDs, 0);
 	}
 
 	public void setC_Order_ID(final int orderId)

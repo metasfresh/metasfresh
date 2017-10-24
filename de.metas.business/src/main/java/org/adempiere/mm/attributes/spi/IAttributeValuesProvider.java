@@ -26,7 +26,7 @@ package org.adempiere.mm.attributes.spi;
 import java.util.List;
 
 import org.adempiere.mm.attributes.api.IAttributeSet;
-import org.adempiere.mm.attributes.model.I_M_Attribute;
+import org.compiere.model.I_M_Attribute;
 import org.compiere.model.X_M_Attribute;
 import org.compiere.util.CCache.CCacheStats;
 import org.compiere.util.Evaluatee;

@@ -29,6 +29,7 @@ import java.util.Properties;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.ad.expression.api.ConstantLogicExpression;
 import org.adempiere.ad.expression.api.IExpressionFactory;
 import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.ad.expression.api.IStringExpression;
@@ -730,7 +731,7 @@ public class GridFieldVO implements Serializable
 		//  Not null fields
 		if (DisplayLogic == null)
 			DisplayLogic = "";
-		DisplayLogicExpr = expressionFactory.compileOrDefault(DisplayLogic, ILogicExpression.TRUE, ILogicExpression.class); // metas: 03093
+		DisplayLogicExpr = expressionFactory.compileOrDefault(DisplayLogic, ConstantLogicExpression.TRUE, ILogicExpression.class); // metas: 03093
 
 		// metas-2009_0021_AP1_CR045: begin
 		if (ColorLogic == null)
@@ -749,7 +750,7 @@ public class GridFieldVO implements Serializable
 
 		if (ReadOnlyLogic == null)
 			ReadOnlyLogic = "";
-		ReadOnlyLogicExpr = expressionFactory.compileOrDefault(ReadOnlyLogic, ILogicExpression.FALSE, ILogicExpression.class); // metas: 03093
+		ReadOnlyLogicExpr = expressionFactory.compileOrDefault(ReadOnlyLogic, ConstantLogicExpression.FALSE, ILogicExpression.class); // metas: 03093
 
 		//
 		// If EntityType is not displayed, hide this field
@@ -953,7 +954,7 @@ public class GridFieldVO implements Serializable
 		//  Not null fields
 		if (DisplayLogic == null)
 			DisplayLogic = "";
-		DisplayLogicExpr = expressionFactory.compileOrDefault(DisplayLogic, ILogicExpression.TRUE, ILogicExpression.class); // metas: 03093
+		DisplayLogicExpr = expressionFactory.compileOrDefault(DisplayLogic, ConstantLogicExpression.TRUE, ILogicExpression.class); // metas: 03093
 	}
 
 	public ILogicExpression getReadOnlyLogic()
@@ -963,7 +964,7 @@ public class GridFieldVO implements Serializable
 
 	public ILogicExpression getMandatoryLogic()
 	{
-		return mandatoryLogicExpr != null ? mandatoryLogicExpr : ILogicExpression.FALSE;
+		return mandatoryLogicExpr != null ? mandatoryLogicExpr : ConstantLogicExpression.FALSE;
 	}
 	
 	public boolean isMandatoryLogicExpression()
