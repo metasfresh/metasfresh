@@ -16,7 +16,7 @@ const writeFile = promisify(writeFileCb);
             .map(storyPath => {
                 const storyName = fileNameRegex.exec(storyPath)[0];
 
-                return `['${storyName}', require('${join(__dirname, '..', storyPath)}').default]`;
+                return `['${storyName}', require('${join(__dirname, '..', storyPath)}')]`;
             })
             .join(',\n')
         );
