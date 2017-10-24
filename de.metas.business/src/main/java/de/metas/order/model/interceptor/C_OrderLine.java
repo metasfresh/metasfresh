@@ -64,6 +64,13 @@ public class C_OrderLine
 	private C_OrderLine()
 	{
 		Adempiere.autowire(this);
+		
+		// NOTE: in unit test mode the groupsRepo is not autowired so we have to instantiate it directly
+		if(Adempiere.isUnitTestMode())
+		{
+			groupsRepo = new OrderGroupRepository();
+		}
+		
 		groupChangesHandler = OrderGroupCompensationChangesHandler.builder()
 				.groupsRepo(groupsRepo)
 				.build();
