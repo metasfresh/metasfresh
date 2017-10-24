@@ -63,11 +63,11 @@ public class C_BankStatementLine_Ref
 	{
 		if (lineOrRef.getC_Invoice_ID() <= 0)
 		{
-			BankStatementHelper.setBankStatementLineOrRefAmountsToZero(lineOrRef);
+			BankStatementLineOrRefHelper.setBankStatementLineOrRefAmountsToZero(lineOrRef);
 		}
 		else
 		{
-			BankStatementHelper.setBankStatementLineOrRefAmountsWhenSomeAmountChanged(lineOrRef, colName);
+			BankStatementLineOrRefHelper.setBankStatementLineOrRefAmountsWhenSomeAmountChanged(lineOrRef, colName);
 		}
 	}
 
@@ -80,7 +80,7 @@ public class C_BankStatementLine_Ref
 		{
 			return;
 		}
-		BankStatementHelper.setBankStatementLineOrRefFieldsWhenInvoiceChanged(line);
+		BankStatementLineOrRefHelper.setBankStatementLineOrRefFieldsWhenInvoiceChanged(line);
 	}
 
 	@CalloutMethod(columnNames = {
@@ -88,6 +88,6 @@ public class C_BankStatementLine_Ref
 	})
 	public void onPaymentIdChanged(final I_C_BankStatementLine_Ref line)
 	{
-		BankStatementHelper.setPaymentDetails(line);
+		BankStatementLineOrRefHelper.setPaymentDetails(line);
 	}
 }

@@ -59,7 +59,7 @@ import lombok.Value;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public class BankStatementHelper
+public class BankStatementLineOrRefHelper
 {
 	final static private ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
 	
