@@ -19,7 +19,6 @@ import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_C_Payment;
-import org.compiere.model.I_M_ProductPrice;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
