@@ -35,7 +35,6 @@ public final class FilterWarehouseByDocTypeValidationRule extends AbstractJavaVa
 
 	private FilterWarehouseByDocTypeValidationRule()
 	{
-		super();
 	}
 
 	@Override
