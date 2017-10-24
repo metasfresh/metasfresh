@@ -330,7 +330,7 @@ public final class SqlLookupDescriptor implements LookupDescriptor
 					|| DisplayType.Button == displayType && AD_Reference_Value_ID > 0)
 			{
 				return LookupDescriptorProvider.fromMemoizingFunction(scope -> SqlLookupDescriptor.builder()
-						.setCtxTableName(null)
+						.setCtxTableName(sqlTableName)
 						.setCtxColumnName(sqlColumnName)
 						.setDisplayType(displayType)
 						.setAD_Reference_Value_ID(AD_Reference_Value_ID)

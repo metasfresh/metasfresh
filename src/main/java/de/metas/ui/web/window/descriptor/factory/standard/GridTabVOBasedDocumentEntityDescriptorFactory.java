@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 import org.adempiere.ad.expression.api.ConstantLogicExpression;
 import org.adempiere.ad.expression.api.IExpression;
 import org.adempiere.ad.expression.api.ILogicExpression;
+import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -274,10 +275,13 @@ import lombok.NonNull;
 			widgetType = DescriptorsFactoryHelper.extractWidgetType(sqlColumnName, displayType);
 
 			alwaysUpdateable = extractAlwaysUpdateable(gridFieldVO);
+
+			final String ctxTableName = Services.get(IADTableDAO.class).retrieveTableName(gridFieldVO.getAD_Table_ID());
 			
 			lookupDescriptorProvider = SqlLookupDescriptor.builder()
-					.setCtxTableName(null)
+					.setCtxTableName(ctxTableName)
 					.setCtxColumnName(sqlColumnName)
+
 					.setWidgetType(widgetType)
 					.setDisplayType(displayType)
 					.setAD_Reference_Value_ID(gridFieldVO.getAD_Reference_Value_ID())
