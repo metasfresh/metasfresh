@@ -1,6 +1,11 @@
 package de.metas.process;
 
 import java.util.List;
+import java.util.Set;
+
+import org.adempiere.util.lang.impl.TableRecordReference;
+
+import com.google.common.collect.ImmutableSet;
 
 /*
  * #%L
@@ -81,5 +86,11 @@ public interface IProcessPreconditionsContext
 	default boolean isMoreThanOneSelected()
 	{
 		return getSelectionSize() > 1;
+	}
+
+	/** @return selected included rows of current single selected document */
+	default Set<TableRecordReference> getSelectedIncludedRecords()
+	{
+		return ImmutableSet.of();
 	}
 }
