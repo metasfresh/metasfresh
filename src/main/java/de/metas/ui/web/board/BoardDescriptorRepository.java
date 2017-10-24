@@ -181,6 +181,8 @@ public class BoardDescriptorRepository
 		// Board document lookup provider
 		final int adValRuleId = boardPO.getAD_Val_Rule_ID();
 		final LookupDescriptorProvider documentLookupDescriptorProvider = SqlLookupDescriptor.builder()
+				.setCtxTableName(null)
+				.setCtxColumnName(keyColumnName)
 				.setDisplayType(DisplayType.Search)
 				.setWidgetType(DocumentFieldWidgetType.Lookup)
 				.setAD_Val_Rule_ID(adValRuleId)
