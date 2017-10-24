@@ -1,8 +1,10 @@
 package de.metas.handlingunits.impl;
 
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThat;
+
 import org.junit.Test;
-import static org.junit.Assert.*;
-import static org.hamcrest.Matchers.*;
+
 import de.metas.handlingunits.model.I_M_HU;
 
 /*

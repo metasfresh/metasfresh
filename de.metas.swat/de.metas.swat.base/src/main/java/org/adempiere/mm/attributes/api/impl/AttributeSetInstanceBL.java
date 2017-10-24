@@ -26,6 +26,7 @@ import java.text.DateFormat;
 import java.util.List;
 import java.util.Properties;
 
+import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAwareFactoryService;
@@ -69,7 +70,7 @@ public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 		//
 		// Get the M_AttributeSet
 		I_M_AttributeSet as = asi.getM_AttributeSet();
-		if (as == null && asi.getM_AttributeSet_ID() == IAttributeDAO.M_AttributeSet_ID_None)
+		if (as == null && asi.getM_AttributeSet_ID() == AttributeConstants.M_AttributeSet_ID_None)
 		{
 			// FIXME: this is a workaround because our persistance engine returns NULL in case
 			// the ID=0, even if is existing in database

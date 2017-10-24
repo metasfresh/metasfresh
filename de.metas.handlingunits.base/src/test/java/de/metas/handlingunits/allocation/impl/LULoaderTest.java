@@ -21,6 +21,7 @@ package de.metas.handlingunits.allocation.impl;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+import static de.metas.business.BusinessTestHelper.createBPartner;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -65,9 +66,9 @@ public class LULoaderTest extends AbstractHUTest
 	@Override
 	protected void initialize()
 	{
-		bpartner1 = helper.createBPartner("BPartner1");
-		bpartner2 = helper.createBPartner("BPartner2");
-		helper.createBPartner("BPartner3");
+		bpartner1 = createBPartner("BPartner1");
+		bpartner2 = createBPartner("BPartner2");
+		createBPartner("BPartner3");
 
 		tuPI1 = helper.createHUDefinition("TU1", X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
 		tuPI2 = helper.createHUDefinition("TU2", X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);

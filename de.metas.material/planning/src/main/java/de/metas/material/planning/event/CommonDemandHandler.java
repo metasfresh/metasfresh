@@ -109,7 +109,6 @@ public class CommonDemandHandler
 					.eventDescr(materialDemandDescr.getEventDescr().createNew())
 					.descr(materialDemandDescr.getMaterialDescriptor())
 					.orderLineId(materialDemandDescr.getOrderLineId())
-					.reference(materialDemandDescr.getReference())
 					.messages(singleMessages)
 					.build();
 
@@ -139,7 +138,6 @@ public class CommonDemandHandler
 							.eventDescr(materialDemandDescr.getEventDescr().createNew())
 							.fromWarehouseId(networkLine.getM_WarehouseSource_ID())
 							.toWarehouseId(networkLine.getM_Warehouse_ID())
-							.reference(materialDemandDescr.getReference())
 							.ddOrder(ddOrder)
 							.build();
 
@@ -157,7 +155,6 @@ public class CommonDemandHandler
 
 			final ProductionPlanEvent event = ProductionPlanEvent.builder()
 					.eventDescr(materialDemandDescr.getEventDescr().createNew())
-					.reference(materialDemandDescr.getReference())
 					.ppOrder(ppOrder)
 					.build();
 

@@ -10,7 +10,6 @@ import java.util.Date;
 
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
-import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_Org;
 import org.compiere.util.TimeUtil;
 import org.junit.Before;
@@ -19,17 +18,20 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestWatcher;
 
-import de.metas.material.dispo.Candidate.Type;
+import com.google.common.collect.ImmutableList;
+
 import de.metas.material.dispo.CandidateRepository;
 import de.metas.material.dispo.CandidateService;
+import de.metas.material.dispo.CandidateSpecification.Type;
 import de.metas.material.dispo.DispoTestUtils;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
+import de.metas.material.dispo.service.candidatechange.handler.DemandCandiateHandler;
+import de.metas.material.dispo.service.candidatechange.handler.SupplyCandiateHandler;
 import de.metas.material.dispo.service.event.handler.DistributionPlanEventHandler;
 import de.metas.material.dispo.service.event.handler.ForecastEventHandler;
 import de.metas.material.dispo.service.event.handler.ProductionPlanEventHandler;
-import de.metas.material.dispo.service.event.handler.ReceiptScheduleEventHandler;
 import de.metas.material.dispo.service.event.handler.ShipmentScheduleEventHandler;
 import de.metas.material.dispo.service.event.handler.ShipmentScheduleEventHandlerTests;
 import de.metas.material.dispo.service.event.handler.TransactionEventHandler;
@@ -102,7 +104,9 @@ public class MaterialDispoEventListenerFacadeTests
 
 		final StockCandidateService stockCandidateService = new StockCandidateService(candidateRepository);
 
-		final CandidateChangeService candidateChangeHandler = new CandidateChangeService(candidateRepository, stockCandidateService, materialEventService);
+		final CandidateChangeService candidateChangeHandler = new CandidateChangeService(ImmutableList.of(
+				new DemandCandiateHandler(candidateRepository, materialEventService, stockCandidateService),
+				new SupplyCandiateHandler(candidateRepository, materialEventService, stockCandidateService)));
 
 		final CandidateService candidateService = new CandidateService(
 				candidateRepository,
@@ -118,18 +122,15 @@ public class MaterialDispoEventListenerFacadeTests
 
 		final ForecastEventHandler forecastEventHandler = new ForecastEventHandler(candidateChangeHandler);
 
-		final TransactionEventHandler transactionEventHandler = new TransactionEventHandler(stockCandidateService, candidateChangeHandler);
+		final TransactionEventHandler transactionEventHandler = new TransactionEventHandler(candidateChangeHandler, candidateRepository);
 
 		final ShipmentScheduleEventHandler shipmentScheduleEventHandler = new ShipmentScheduleEventHandler(candidateChangeHandler);
-
-		final ReceiptScheduleEventHandler receiptScheduleEventHandler = new ReceiptScheduleEventHandler(candidateChangeHandler);
 
 		mdEventListener = new MaterialDispoEventListenerFacade(
 				distributionPlanEventHandler,
 				productionPlanEventHandler,
 				forecastEventHandler,
 				transactionEventHandler,
-				receiptScheduleEventHandler,
 				shipmentScheduleEventHandler);
 	}
 
@@ -145,7 +146,6 @@ public class MaterialDispoEventListenerFacadeTests
 		mdEventListener.onEvent(shipmentScheduleEvent);
 
 		// create a DistributionPlanEvent event which matches the shipmentscheduleEvent that we processed in testShipmentScheduleEvent()
-		final TableRecordReference reference = TableRecordReference.of("someTable", 4);
 		final DistributionPlanEvent event = DistributionPlanEvent.builder()
 				.eventDescr(new EventDescr(org.getAD_Client_ID(), org.getAD_Org_ID()))
 				.fromWarehouseId(fromWarehouseId)
@@ -163,7 +163,6 @@ public class MaterialDispoEventListenerFacadeTests
 								.networkDistributionLineId(900)
 								.build())
 						.build())
-				.reference(reference)
 				.build();
 		mdEventListener.onEvent(event);
 
@@ -185,7 +184,7 @@ public class MaterialDispoEventListenerFacadeTests
 	public void testShipmentScheduleEvent_then_Shipment()
 	{
 		final ShipmentScheduleEvent shipmentScheduleEvent = ShipmentScheduleEventHandlerTests.createShipmentScheduleTestEvent(org);
-		
+
 		final Date shipmentScheduleEventTime = shipmentScheduleEvent.getMaterialDescr().getDate();
 		final Timestamp twoHoursAfterShipmentSched = TimeUtil.addHours(shipmentScheduleEventTime, 2);
 
@@ -194,12 +193,10 @@ public class MaterialDispoEventListenerFacadeTests
 		final TransactionEvent transactionEvent = TransactionEvent.builder()
 				.eventDescr(EventDescr.createNew(org))
 				.materialDescr(shipmentScheduleEvent.getMaterialDescr().withDate(twoHoursAfterShipmentSched))
-				.reference(TableRecordReference.of("transactionTable", 3))
-				.transactionDeleted(false)
 				.build();
 
 		mdEventListener.onEvent(transactionEvent);
-		
+
 		assertThat(DispoTestUtils.filter(Type.DEMAND)).hasSize(1);
 		assertThat(DispoTestUtils.filter(Type.STOCK)).hasSize(2);
 	}

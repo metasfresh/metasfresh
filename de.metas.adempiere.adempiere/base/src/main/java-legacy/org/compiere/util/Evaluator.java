@@ -18,6 +18,7 @@ package org.compiere.util;
 
 import java.util.List;
 
+import org.adempiere.ad.expression.api.ConstantLogicExpression;
 import org.adempiere.ad.expression.api.IExpression;
 import org.adempiere.ad.expression.api.IExpressionFactory;
 import org.adempiere.ad.expression.api.ILogicExpression;
@@ -97,7 +98,7 @@ public class Evaluator
 	@Deprecated
 	public static boolean evaluateLogic (final Evaluatee source, final String logic)
 	{
-		final ILogicExpression expression = Services.get(IExpressionFactory.class).compileOrDefault(logic, ILogicExpression.FALSE, ILogicExpression.class);
+		final ILogicExpression expression = Services.get(IExpressionFactory.class).compileOrDefault(logic, ConstantLogicExpression.FALSE, ILogicExpression.class);
 
 		// don't fail on missing parameter because we want to be compatible with old org.compiere.util.Evaluator.evaluateLogic(Evaluatee, String) method
 		final boolean ignoreUnparsable = true;

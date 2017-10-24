@@ -21,7 +21,9 @@ package de.metas.handlingunits.shipmentschedule.integrationtest;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
+import static de.metas.business.BusinessTestHelper.createBPartner;
+import static de.metas.business.BusinessTestHelper.createBPartnerLocation;
+import static de.metas.business.BusinessTestHelper.createWarehouse;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -168,12 +170,12 @@ public abstract class AbstractHUShipmentProcessIntegrationTest extends AbstractH
 
 		//
 		// BPartner
-		bpartner = helper.createBPartner("BPartner01");
-		bpartnerLocation = helper.createBPartnerLocation(bpartner);
+		bpartner = createBPartner("BPartner01");
+		bpartnerLocation = createBPartnerLocation(bpartner);
 
 		//
 		// Warehouse & Locator
-		warehouse = helper.createWarehouse("Warehouse01");
+		warehouse = createWarehouse("Warehouse01");
 
 		//
 		// Handling Units Definition

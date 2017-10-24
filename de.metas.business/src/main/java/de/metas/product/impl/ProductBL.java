@@ -27,7 +27,7 @@ import java.math.RoundingMode;
 import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.IClientDAO;
 import org.adempiere.uom.api.IUOMConversionBL;
@@ -47,9 +47,7 @@ import org.compiere.model.MProductCategoryAcct;
 import org.compiere.model.X_M_Product;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
-import org.slf4j.Logger;
 
-import de.metas.logging.LogManager;
 import de.metas.logging.LogManager;
 import de.metas.product.IProductBL;
 
@@ -177,13 +175,13 @@ public final class ProductBL implements IProductBL
 		}
 		if (product.getM_Product_Category_ID() <= 0) // guard against NPE which might happen in unit tests
 		{
-			return IAttributeDAO.M_AttributeSet_ID_None;
+			return AttributeConstants.M_AttributeSet_ID_None;
 		}
 
 		attributeSet_ID = product.getM_Product_Category().getM_AttributeSet_ID();
 		if (attributeSet_ID <= 0)
 		{
-			return IAttributeDAO.M_AttributeSet_ID_None;
+			return AttributeConstants.M_AttributeSet_ID_None;
 		}
 		return attributeSet_ID;
 	}

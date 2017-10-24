@@ -34,6 +34,7 @@ import java.util.Set;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.processor.api.ITrxItemProcessorContext;
+import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
@@ -545,7 +546,7 @@ public class InOutProducer implements IInOutProducer
 		final I_M_AttributeSetInstance rsASI = receiptScheduleBL.getM_AttributeSetInstance_Effective(rs);
 		if (rsASI == null || rsASI.getM_AttributeSetInstance_ID() == 0)
 		{
-			line.setM_AttributeSetInstance_ID(IAttributeDAO.M_AttributeSetInstance_ID_None);
+			line.setM_AttributeSetInstance_ID(AttributeConstants.M_AttributeSetInstance_ID_None);
 		}
 		else
 		{

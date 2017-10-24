@@ -25,11 +25,11 @@ package org.adempiere.mm.attributes.countryattribute.impl;
 
 import org.adempiere.mm.attributes.api.AttributeAction;
 import org.adempiere.mm.attributes.api.impl.ModelAttributeSetInstanceListenerTestHelper;
-import org.adempiere.mm.attributes.model.I_M_Attribute;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_InOutLine;
 import org.junit.Before;
 import org.junit.Test;

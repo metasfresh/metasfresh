@@ -24,8 +24,6 @@ package de.metas.picking.service;
 
 import java.util.Properties;
 
-import de.metas.picking.service.PackingItemsMap;
-
 /**
  * Packing Context.
  * 

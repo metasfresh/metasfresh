@@ -1,11 +1,22 @@
 package de.metas.material.dispo.service.event.handler;
 
+import java.math.BigDecimal;
+
 import org.springframework.stereotype.Service;
 
-import de.metas.material.dispo.Candidate;
-import de.metas.material.dispo.Candidate.Type;
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableList.Builder;
+
+import de.metas.material.dispo.CandidateRepository;
+import de.metas.material.dispo.CandidateSpecification.Type;
+import de.metas.material.dispo.candidate.Candidate;
+import de.metas.material.dispo.candidate.DemandDetail;
+import de.metas.material.dispo.candidate.TransactionDetail;
+import de.metas.material.dispo.candidate.Candidate.CandidateBuilder;
+import de.metas.material.dispo.CandidatesQuery;
+import de.metas.material.dispo.CandidatesQuery.DateOperator;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
-import de.metas.material.dispo.service.candidatechange.StockCandidateService;
 import de.metas.material.event.TransactionEvent;
 import lombok.NonNull;
 
@@ -33,32 +44,118 @@ import lombok.NonNull;
 @Service
 public class TransactionEventHandler
 {
-	private final StockCandidateService stockCandidateService;
-
 	private final CandidateChangeService candidateChangeHandler;
+	private final CandidateRepository candidateRepository;
 
 	public TransactionEventHandler(
-			@NonNull final StockCandidateService stockCandidateService,
-			@NonNull final CandidateChangeService candidateChangeHandler)
+			@NonNull final CandidateChangeService candidateChangeHandler,
+			@NonNull final CandidateRepository candidateRepository)
 	{
 		this.candidateChangeHandler = candidateChangeHandler;
-		this.stockCandidateService = stockCandidateService;
+		this.candidateRepository = candidateRepository;
 	}
 
-	public void handleTransactionEvent(final TransactionEvent event)
+	public void handleTransactionEvent(@NonNull final TransactionEvent event)
 	{
-		if (event.isTransactionDeleted())
-		{
-			candidateChangeHandler.onCandidateDelete(event.getReference());
-			return;
-		}
+		final Candidate candidate = createCandidateForTransactionEvent(event);
+		candidateChangeHandler.onCandidateNewOrChange(candidate);
+	}
 
-		final Candidate candidate = Candidate.builderForEventDescr(event.getEventDescr())
-				.materialDescr(event.getMaterialDescr())
-				.type(Type.STOCK)
-				.reference(event.getReference())
-				.build();
-		stockCandidateService.addOrUpdateStock(candidate);
+	@VisibleForTesting
+	Candidate createCandidateForTransactionEvent(@NonNull final TransactionEvent event)
+	{
+		final TransactionDetail transactionDetailOfEvent = TransactionDetail.forCandidateOrQuery(event.getMaterialDescr().getQuantity(), event.getTransactionId());
+
+		final Candidate candidate;
+		if (event.getShipmentScheduleId() > 0)
+		{
+			final DemandDetail demandDetail = DemandDetail.forShipmentScheduleIdAndOrderLineId(event.getShipmentScheduleId(), -1);
+
+			final CandidatesQuery query = CandidatesQuery.builder().type(Type.DEMAND)
+					.demandDetail(demandDetail) // only search via demand detail, ..the product and warehouse will also match, but e.g. the date probably won't!
+					.build();
+
+			final Candidate existingCandidate = candidateRepository.retrieveLatestMatchOrNull(query);
+			if (existingCandidate == null)
+			{
+				candidate = createCommonCandidateBuilder(event)
+						.demandDetail(demandDetail)
+						.transactionDetail(transactionDetailOfEvent)
+						.build();
+			}
+			else
+			{
+				candidate = newCandidateWithAddedTransactionDetail(
+						existingCandidate,
+						transactionDetailOfEvent);
+			}
+		}
+		else
+		{
+			final CandidatesQuery query = CandidatesQuery.builder()
+					.materialDescr(event.getMaterialDescr().withoutQuantity())
+					.dateOperator(DateOperator.AT)
+					.transactionDetail(TransactionDetail.forQuery(event.getTransactionId()))
+					.build();
+			final Candidate existingCandidate = candidateRepository.retrieveLatestMatchOrNull(query);
+			if (existingCandidate == null)
+			{
+				candidate = createCommonCandidateBuilder(event)
+						.transactionDetail(transactionDetailOfEvent)
+						.build();
+			}
+			else
+			{
+				candidate = newCandidateWithAddedTransactionDetailAndQuantity(
+						existingCandidate,
+						transactionDetailOfEvent);
+			}
+		}
+		return candidate;
+	}
+
+	private Candidate newCandidateWithAddedTransactionDetailAndQuantity(
+			@NonNull final Candidate candidate,
+			@NonNull final TransactionDetail transactionDetail)
+	{
+		final BigDecimal newQuantity = candidate
+				.getQuantity()
+				.add(transactionDetail.getQuantity());
+
+		Candidate newCandidate = candidate.withQuantity(newQuantity);
+		newCandidate = newCandidateWithAddedTransactionDetail(newCandidate, transactionDetail);
+		return newCandidate;
+	}
+
+	private Candidate newCandidateWithAddedTransactionDetail(
+			@NonNull final Candidate candidate,
+			@NonNull final TransactionDetail transactionDetail)
+	{
+		final Builder<TransactionDetail> newTransactionDetailsList = //
+				ImmutableList.<TransactionDetail> builder()
+						.addAll(candidate.getTransactionDetails())
+						.add(transactionDetail);
+
+		return candidate.withTransactionDetails(newTransactionDetailsList.build());
+	}
+
+	@VisibleForTesting
+	static CandidateBuilder createCommonCandidateBuilder(@NonNull final TransactionEvent event)
+	{
+		final BigDecimal eventQuantity = event.getMaterialDescr().getQuantity();
+
+		final CandidateBuilder builder = Candidate
+				.builderForEventDescr(event.getEventDescr());
+		if (eventQuantity.signum() <= 0)
+		{
+			return builder.type(Type.UNRELATED_DECREASE)
+					.materialDescr(event.getMaterialDescr().withQuantity(eventQuantity.negate()));
+		}
+		else
+		{
+			return builder.type(Type.UNRELATED_INCREASE)
+					.materialDescr(event.getMaterialDescr());
+		}
 	}
 
 }

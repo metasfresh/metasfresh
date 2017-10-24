@@ -13,6 +13,7 @@ import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_M_Forecast;
 import org.compiere.model.I_M_ForecastLine;
+import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.TimeUtil;
 import org.junit.Before;
 import org.junit.Rule;
@@ -22,7 +23,6 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.document.engine.IDocument;
-import de.metas.interfaces.I_M_Warehouse;
 import de.metas.material.event.MaterialDescriptor;
 import de.metas.material.event.forecast.Forecast;
 import de.metas.material.event.forecast.ForecastEvent;
