@@ -15,7 +15,7 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1615035630L;
+	private static final long serialVersionUID = -1925762097L;
 
     /** Standard Constructor */
     public X_C_OrderLine (Properties ctx, int C_OrderLine_ID, String trxName)
@@ -615,25 +615,6 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 		return ii.intValue();
 	}
 
-	/** Set Group Discount.
-		@param CompensationGroupDiscount Group Discount	  */
-	@Override
-	public void setCompensationGroupDiscount (java.math.BigDecimal CompensationGroupDiscount)
-	{
-		set_Value (COLUMNNAME_CompensationGroupDiscount, CompensationGroupDiscount);
-	}
-
-	/** Get Group Discount.
-		@return Group Discount	  */
-	@Override
-	public java.math.BigDecimal getCompensationGroupDiscount () 
-	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_CompensationGroupDiscount);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
-	}
-
 	/** Set Lieferdatum.
 		@param DateDelivered 
 		Date when the product was delivered
@@ -827,6 +808,47 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	public java.lang.String getGroupCompensationAmtType () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_GroupCompensationAmtType);
+	}
+
+	/** Set Compensation base amount.
+		@param GroupCompensationBaseAmt 
+		Base amount for calculating percentage group compensation
+	  */
+	@Override
+	public void setGroupCompensationBaseAmt (java.math.BigDecimal GroupCompensationBaseAmt)
+	{
+		set_Value (COLUMNNAME_GroupCompensationBaseAmt, GroupCompensationBaseAmt);
+	}
+
+	/** Get Compensation base amount.
+		@return Base amount for calculating percentage group compensation
+	  */
+	@Override
+	public java.math.BigDecimal getGroupCompensationBaseAmt () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_GroupCompensationBaseAmt);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
+	}
+
+	/** Set Compensation percentage.
+		@param GroupCompensationPercentage Compensation percentage	  */
+	@Override
+	public void setGroupCompensationPercentage (java.math.BigDecimal GroupCompensationPercentage)
+	{
+		set_Value (COLUMNNAME_GroupCompensationPercentage, GroupCompensationPercentage);
+	}
+
+	/** Get Compensation percentage.
+		@return Compensation percentage	  */
+	@Override
+	public java.math.BigDecimal getGroupCompensationPercentage () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_GroupCompensationPercentage);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
 	}
 
 	/** 

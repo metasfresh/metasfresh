@@ -500,29 +500,6 @@ public interface I_C_OrderLine
     public static final String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
 
 	/**
-	 * Set Group Discount.
-	 *
-	 * <br>Type: Number
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setCompensationGroupDiscount (java.math.BigDecimal CompensationGroupDiscount);
-
-	/**
-	 * Get Group Discount.
-	 *
-	 * <br>Type: Number
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.math.BigDecimal getCompensationGroupDiscount();
-
-    /** Column definition for CompensationGroupDiscount */
-    public static final org.adempiere.model.ModelColumn<I_C_OrderLine, Object> COLUMN_CompensationGroupDiscount = new org.adempiere.model.ModelColumn<>(I_C_OrderLine.class, "CompensationGroupDiscount", null);
-    /** Column name CompensationGroupDiscount */
-    public static final String COLUMNNAME_CompensationGroupDiscount = "CompensationGroupDiscount";
-
-	/**
 	 * Get Erstellt.
 	 * Date this record was created
 	 *
@@ -772,6 +749,54 @@ public interface I_C_OrderLine
     public static final org.adempiere.model.ModelColumn<I_C_OrderLine, Object> COLUMN_GroupCompensationAmtType = new org.adempiere.model.ModelColumn<>(I_C_OrderLine.class, "GroupCompensationAmtType", null);
     /** Column name GroupCompensationAmtType */
     public static final String COLUMNNAME_GroupCompensationAmtType = "GroupCompensationAmtType";
+
+	/**
+	 * Set Compensation base amount.
+	 * Base amount for calculating percentage group compensation
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setGroupCompensationBaseAmt (java.math.BigDecimal GroupCompensationBaseAmt);
+
+	/**
+	 * Get Compensation base amount.
+	 * Base amount for calculating percentage group compensation
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getGroupCompensationBaseAmt();
+
+    /** Column definition for GroupCompensationBaseAmt */
+    public static final org.adempiere.model.ModelColumn<I_C_OrderLine, Object> COLUMN_GroupCompensationBaseAmt = new org.adempiere.model.ModelColumn<>(I_C_OrderLine.class, "GroupCompensationBaseAmt", null);
+    /** Column name GroupCompensationBaseAmt */
+    public static final String COLUMNNAME_GroupCompensationBaseAmt = "GroupCompensationBaseAmt";
+
+	/**
+	 * Set Compensation percentage.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setGroupCompensationPercentage (java.math.BigDecimal GroupCompensationPercentage);
+
+	/**
+	 * Get Compensation percentage.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getGroupCompensationPercentage();
+
+    /** Column definition for GroupCompensationPercentage */
+    public static final org.adempiere.model.ModelColumn<I_C_OrderLine, Object> COLUMN_GroupCompensationPercentage = new org.adempiere.model.ModelColumn<>(I_C_OrderLine.class, "GroupCompensationPercentage", null);
+    /** Column name GroupCompensationPercentage */
+    public static final String COLUMNNAME_GroupCompensationPercentage = "GroupCompensationPercentage";
 
 	/**
 	 * Set Compensation Type.
