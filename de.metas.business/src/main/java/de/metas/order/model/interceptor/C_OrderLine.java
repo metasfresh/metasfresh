@@ -24,6 +24,8 @@ package de.metas.order.model.interceptor;
 
 import java.math.BigDecimal;
 
+import org.adempiere.ad.callout.annotations.Callout;
+import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryUpdater;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
@@ -31,26 +33,40 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
+import org.compiere.Adempiere;
 import org.compiere.model.CalloutOrder;
 import org.compiere.model.ModelValidator;
 import org.slf4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.logging.LogManager;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderLineBL;
+import de.metas.order.compensationGroup.Group;
+import de.metas.order.compensationGroup.OrderGroupCompensationChangesHandler;
+import de.metas.order.compensationGroup.OrderGroupRepository;
+import de.metas.order.compensationGroup.OrderGroupRepository.OrderLinesStorage;
 
 @Interceptor(I_C_OrderLine.class)
+@Callout(I_C_OrderLine.class)
 public class C_OrderLine
 {
 	public static final C_OrderLine INSTANCE = new C_OrderLine();
 
 	private static final Logger logger = LogManager.getLogger(C_OrderLine.class);
+	@Autowired
+	private OrderGroupRepository groupsRepo;
+	private OrderGroupCompensationChangesHandler groupChangesHandler;
 
 	public static final String ERR_NEGATIVE_QTY_RESERVED = "MSG_NegativeQtyReserved";
 
 	private C_OrderLine()
 	{
+		Adempiere.autowire(this);
+		groupChangesHandler = OrderGroupCompensationChangesHandler.builder()
+				.groupsRepo(groupsRepo)
+				.build();
 	};
 
 	/**
@@ -197,5 +213,26 @@ public class C_OrderLine
 	public void updateQuantities(final I_C_OrderLine orderLine)
 	{
 		Services.get(IOrderBL.class).updateOrderQtySums(orderLine.getC_Order());
+	}
+
+	@CalloutMethod(columnNames = I_C_OrderLine.COLUMNNAME_GroupCompensationPercentage)
+	public void onGroupCompensationPercentageChanged(final I_C_OrderLine orderLine)
+	{
+		final Group group = groupsRepo.createPartialGroupFromCompensationLine(orderLine);
+		group.updateAllPercentageLines();
+
+		final OrderLinesStorage orderLinesStorage = groupsRepo.createNotSaveableSingleOrderLineStorage(orderLine);
+		groupsRepo.saveGroup(group, orderLinesStorage);
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = {
+			I_C_OrderLine.COLUMNNAME_IsGroupCompensationLine,
+			I_C_OrderLine.COLUMNNAME_GroupNo,
+			I_C_OrderLine.COLUMNNAME_LineNetAmt,
+			I_C_OrderLine.COLUMNNAME_GroupCompensationPercentage
+	})
+	public void handleCompensantionGroupChange(final I_C_OrderLine orderLine)
+	{
+		groupChangesHandler.onOrderLineChanged(orderLine);
 	}
 }
