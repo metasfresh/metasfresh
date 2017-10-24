@@ -7,3 +7,6 @@ dist
 /static
 .vscode
 .history
+
+# Dynamic storybook configuration file
+.storybook/foundStories.js
