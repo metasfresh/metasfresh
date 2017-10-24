@@ -256,7 +256,6 @@ public class BankStatementLineOrRefHelper
 				.build();
 
 		computeInvoiceOpenAmtIfNeeded(lineOrRef, invoiceInfo, paymentAmounts);
-
 		if (colName.equals(I_C_BankStatementLine.COLUMNNAME_C_Currency_ID))
 		{
 			computeAmountsWhenCurrencyChanged(lineOrRef, invoiceInfo, paymentAmounts);
@@ -273,7 +272,6 @@ public class BankStatementLineOrRefHelper
 		{
 			computeTrxAmtAmount(lineOrRef, paymentAmounts);
 		}
-
 		return paymentAmounts;
 	}
 
@@ -326,7 +324,6 @@ public class BankStatementLineOrRefHelper
 		BigDecimal overUnderAmt = paymentAmounts.getOverUnderAmt();
 
 		final BigDecimal currencyRate = computeCurrencyRate(lineOrRef, invoiceInfo);
-
 		final I_C_Currency currency = InterfaceWrapperHelper.loadOutOfTrx(lineOrRef.getC_Currency_ID(), I_C_Currency.class);
 
 		invoiceOpenAmt = invoiceOpenAmt.multiply(currencyRate).setScale(currency.getStdPrecision(), BigDecimal.ROUND_HALF_UP);
@@ -386,7 +383,6 @@ public class BankStatementLineOrRefHelper
 
 		paymentAmounts.setWriteOffAmt(writeOffAmt);
 		paymentAmounts.setOverUnderAmt(overUnderAmt);
-
 	}
 
 	private static void computeTrxAmtAmount(@NonNull final IBankStatementLineOrRef lineOrRef, @NonNull final Amounts paymentAmounts)
@@ -395,7 +391,6 @@ public class BankStatementLineOrRefHelper
 		final BigDecimal discountAmt = lineOrRef.getDiscountAmt();
 		final BigDecimal writeOffAmt = lineOrRef.getWriteOffAmt();
 		final BigDecimal overUnderAmt = lineOrRef.getOverUnderAmt();
-
 		final BigDecimal payAmt = invoiceOpenAmt.subtract(discountAmt).subtract(writeOffAmt).subtract(overUnderAmt);
 		paymentAmounts.setPayAmt(payAmt);
 	}
