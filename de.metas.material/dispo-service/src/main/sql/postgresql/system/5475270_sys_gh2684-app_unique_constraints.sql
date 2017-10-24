@@ -13,11 +13,6 @@ INSERT INTO AD_Index_Table_Trl (AD_Language,AD_Index_Table_ID, ErrorMsg, IsTrans
 INSERT INTO AD_Index_Column (AD_Client_ID,AD_Column_ID,AD_Index_Column_ID,AD_Index_Table_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,SeqNo,Updated,UpdatedBy) VALUES (0,556581,540819,540411,0,TO_TIMESTAMP('2017-10-24 11:37:23','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.material.dispo','Y',10,TO_TIMESTAMP('2017-10-24 11:37:23','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
--- 2017-10-24T11:37:36.956
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-DELETE FROM AD_PInstance_SelectedIncludedRecords WHERE AD_PInstance_ID=?
-;
-
 -- 2017-10-24T11:37:37.020
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 CREATE UNIQUE INDEX MD_Candidate_Demand_Detail_UC ON MD_Candidate_Demand_Detail (MD_Candidate_ID) WHERE IsActive='Y'
@@ -38,11 +33,6 @@ INSERT INTO AD_Index_Table_Trl (AD_Language,AD_Index_Table_ID, ErrorMsg, IsTrans
 INSERT INTO AD_Index_Column (AD_Client_ID,AD_Column_ID,AD_Index_Column_ID,AD_Index_Table_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,SeqNo,Updated,UpdatedBy) VALUES (0,556799,540820,540412,0,TO_TIMESTAMP('2017-10-24 11:38:59','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.material.dispo','Y',10,TO_TIMESTAMP('2017-10-24 11:38:59','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
--- 2017-10-24T11:39:08.966
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-DELETE FROM AD_PInstance_SelectedIncludedRecords WHERE AD_PInstance_ID=?
-;
-
 -- 2017-10-24T11:39:09.013
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 CREATE UNIQUE INDEX MD_Candidate_Dist_Detail_UC ON MD_Candidate_Dist_Detail (MD_Candidate_ID) WHERE IsActive='Y'
@@ -58,11 +48,6 @@ INSERT INTO AD_Index_Column (AD_Client_ID,AD_Column_ID,AD_Index_Column_ID,AD_Ind
 DELETE FROM AD_Index_Column WHERE AD_Index_Column_ID=540821
 ;
 
--- 2017-10-24T11:40:27.446
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-DELETE FROM AD_PInstance_SelectedIncludedRecords WHERE AD_PInstance_ID=?
-;
-
 -- 2017-10-24T11:40:27.499
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 DROP INDEX IF EXISTS md_candidate_transaction_detail_uc
@@ -71,11 +56,6 @@ DROP INDEX IF EXISTS md_candidate_transaction_detail_uc
 -- 2017-10-24T11:40:27.502
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 CREATE UNIQUE INDEX MD_Candidate_Transaction_Detail_UC ON MD_Candidate_Transaction_Detail (MD_Candidate_ID,M_Transaction_ID) WHERE IsActive='Y'
-;
-
--- 2017-10-24T11:40:49.039
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-DELETE FROM AD_PInstance_SelectedIncludedRecords WHERE AD_PInstance_ID=?
 ;
 
 -- 2017-10-24T11:40:49.094
@@ -88,19 +68,9 @@ DROP INDEX IF EXISTS md_candidate_transaction_detail_uc
 CREATE UNIQUE INDEX MD_Candidate_Transaction_Detail_UC ON MD_Candidate_Transaction_Detail (MD_Candidate_ID,M_Transaction_ID) WHERE IsActive='Y'
 ;
 
--- 2017-10-24T11:40:55.317
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-DELETE FROM AD_PInstance_SelectedIncludedRecords WHERE AD_PInstance_ID=?
-;
-
 -- 2017-10-24T11:40:55.361
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 CREATE UNIQUE INDEX MD_Candidate_Prod_Detail_UC ON MD_Candidate_Prod_Detail (MD_Candidate_ID) WHERE IsActive='Y'
-;
-
--- 2017-10-24T11:41:02.012
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-DELETE FROM AD_PInstance_SelectedIncludedRecords WHERE AD_PInstance_ID=?
 ;
 
 -- 2017-10-24T11:41:02.058
@@ -111,11 +81,6 @@ DROP INDEX IF EXISTS md_candidate_dist_detail_uc
 -- 2017-10-24T11:41:02.059
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 CREATE UNIQUE INDEX MD_Candidate_Dist_Detail_UC ON MD_Candidate_Dist_Detail (MD_Candidate_ID) WHERE IsActive='Y'
-;
-
--- 2017-10-24T11:41:10.965
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-DELETE FROM AD_PInstance_SelectedIncludedRecords WHERE AD_PInstance_ID=?
 ;
 
 -- 2017-10-24T11:41:11.014
@@ -131,11 +96,6 @@ CREATE UNIQUE INDEX MD_Candidate_Demand_Detail_UC ON MD_Candidate_Demand_Detail 
 -- 2017-10-24T11:41:51.977
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 INSERT INTO AD_Index_Column (AD_Client_ID,AD_Column_ID,AD_Index_Column_ID,AD_Index_Table_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,SeqNo,Updated,UpdatedBy) VALUES (0,556482,540822,540397,0,TO_TIMESTAMP('2017-10-24 11:41:51','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.material.dispo','Y',40,TO_TIMESTAMP('2017-10-24 11:41:51','YYYY-MM-DD HH24:MI:SS'),100)
-;
-
--- 2017-10-24T11:41:57.965
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-DELETE FROM AD_PInstance_SelectedIncludedRecords WHERE AD_PInstance_ID=?
 ;
 
 -- 2017-10-24T11:41:58.023
