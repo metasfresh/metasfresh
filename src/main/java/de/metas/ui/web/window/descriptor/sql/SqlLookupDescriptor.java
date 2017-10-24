@@ -267,7 +267,9 @@ public final class SqlLookupDescriptor implements LookupDescriptor
 	public static final class Builder
 	{
 		// Parameters
-		private String columnName;
+		private String ctxColumnName;
+		private String ctxTableName;
+
 		private DocumentFieldWidgetType widgetType;
 		private Integer displayType;
 		private int AD_Reference_Value_ID = -1;
@@ -298,7 +300,7 @@ public final class SqlLookupDescriptor implements LookupDescriptor
 		{
 			Check.assumeNotNull(displayType, "Parameter displayType is not null");
 
-			return buildProvider(columnName, widgetType, displayType, AD_Reference_Value_ID, AD_Val_Rule_ID, validationRules);
+			return buildProvider( ctxTableName, ctxColumnName, widgetType, displayType, AD_Reference_Value_ID, AD_Val_Rule_ID, validationRules);
 		}
 
 		public LookupDescriptor buildForScope(final LookupScope scope)
@@ -312,6 +314,7 @@ public final class SqlLookupDescriptor implements LookupDescriptor
 		}
 
 		private static LookupDescriptorProvider buildProvider(
+				final String sqlTableName,
 				final String sqlColumnName,
 				final DocumentFieldWidgetType widgetType, final int displayType,
 				final int AD_Reference_Value_ID,
@@ -327,7 +330,8 @@ public final class SqlLookupDescriptor implements LookupDescriptor
 					|| DisplayType.Button == displayType && AD_Reference_Value_ID > 0)
 			{
 				return LookupDescriptorProvider.fromMemoizingFunction(scope -> SqlLookupDescriptor.builder()
-						.setColumnName(sqlColumnName)
+						.setCtxTableName(sqlTableName)
+						.setCtxColumnName(sqlColumnName)
 						.setDisplayType(displayType)
 						.setAD_Reference_Value_ID(AD_Reference_Value_ID)
 						.setAD_Val_Rule_ID(AD_Val_Rule_ID)
@@ -340,7 +344,7 @@ public final class SqlLookupDescriptor implements LookupDescriptor
 
 		private SqlLookupDescriptor build()
 		{
-			Check.assumeNotEmpty(columnName, "columnName is not empty");
+			Check.assumeNotEmpty(ctxColumnName, "columnName is not empty");
 
 			final boolean IsParent = false;
 
@@ -353,7 +357,7 @@ public final class SqlLookupDescriptor implements LookupDescriptor
 			}
 			else
 			{
-				final MLookupInfo lookupInfo = MLookupFactory.getLookupInfo(WINDOWNO_Dummy, displayType, columnName, AD_Reference_Value_ID, IsParent, AD_Val_Rule_ID);
+				final MLookupInfo lookupInfo = MLookupFactory.getLookupInfo(WINDOWNO_Dummy, displayType, ctxTableName, ctxColumnName, AD_Reference_Value_ID, IsParent, AD_Val_Rule_ID);
 
 				numericKey = lookupInfo.isNumericKey();
 				validationRuleEffective = extractValidationRule(lookupInfo);
@@ -375,7 +379,7 @@ public final class SqlLookupDescriptor implements LookupDescriptor
 			//
 			// Case: DocAction button => inject the DocActionValidationRule
 			// FIXME: hardcoded
-			if (displayType == DisplayType.Button && WindowConstants.FIELDNAME_DocAction.equals(columnName))
+			if (displayType == DisplayType.Button && WindowConstants.FIELDNAME_DocAction.equals(ctxColumnName))
 			{
 				validationRuleBuilder.add(DocActionValidationRule.instance);
 			}
@@ -584,9 +588,15 @@ public final class SqlLookupDescriptor implements LookupDescriptor
 			return postQueryPredicate;
 		}
 
-		public Builder setColumnName(final String columnName)
+		public Builder setCtxColumnName(final String columnName)
 		{
-			this.columnName = columnName;
+			this.ctxColumnName = columnName;
+			return this;
+		}
+
+		public Builder setCtxTableName(final String tableName)
+		{
+			this.ctxTableName = tableName;
 			return this;
 		}
 

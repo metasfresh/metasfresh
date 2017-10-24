@@ -4,6 +4,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.UnaryOperator;
 
+import org.compiere.model.I_AD_User;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Evaluatee;
 import org.compiere.util.Evaluatees;
@@ -69,7 +70,8 @@ public class WebuiMailRepository
 	public WebuiMailRepository()
 	{
 		final LookupDescriptor emailToLookupDescriptor = SqlLookupDescriptor.builder()
-				.setColumnName(org.compiere.model.I_AD_User.COLUMNNAME_AD_User_ID)
+				.setCtxTableName(I_AD_User.Table_Name)
+				.setCtxColumnName(org.compiere.model.I_AD_User.COLUMNNAME_AD_User_ID)
 				.setDisplayType(DisplayType.Search)
 				.setWidgetType(DocumentFieldWidgetType.Lookup)
 				.buildProvider()

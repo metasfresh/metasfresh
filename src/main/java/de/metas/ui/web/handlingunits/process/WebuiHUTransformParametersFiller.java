@@ -312,7 +312,8 @@ public class WebuiHUTransformParametersFiller
 			// TODO: filter by TUs
 			// TODO: search by barcode too
 			final LookupDescriptor lookupDescriptor = SqlLookupDescriptor.builder()
-					.setColumnName("M_HU_ID")
+					.setCtxTableName(null) // ctxTableName
+					.setCtxColumnName("M_HU_ID")
 					.setDisplayType(DisplayType.Search)
 					.buildForDefaultScope();
 			LookupDataSource dataSource = LookupDataSourceFactory.instance.getLookupDataSource(lookupDescriptor);
@@ -367,7 +368,8 @@ public class WebuiHUTransformParametersFiller
 			// TODO: filter by LUs
 			// TODO: search by barcode too
 			final LookupDescriptor lookupDescriptor = SqlLookupDescriptor.builder()
-					.setColumnName("M_HU_ID")
+					.setCtxTableName(null) //ctxTableName
+					.setCtxColumnName("M_HU_ID")
 					.setDisplayType(DisplayType.Search)
 					.buildForDefaultScope();
 			LookupDataSource dataSource = LookupDataSourceFactory.instance.getLookupDataSource(lookupDescriptor);

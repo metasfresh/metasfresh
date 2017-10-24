@@ -157,7 +157,7 @@ public class BoardDescriptorRepository
 		{
 			throw new EntityNotFoundException("No board found for ID=" + boardId);
 		}
-
+		
 		//
 		// Board document mappings
 		final String tableName = Services.get(IADTableDAO.class).retrieveTableName(boardPO.getAD_Table_ID());
@@ -181,7 +181,6 @@ public class BoardDescriptorRepository
 		// Board document lookup provider
 		final int adValRuleId = boardPO.getAD_Val_Rule_ID();
 		final LookupDescriptorProvider documentLookupDescriptorProvider = SqlLookupDescriptor.builder()
-				.setColumnName(keyColumnName)
 				.setDisplayType(DisplayType.Search)
 				.setWidgetType(DocumentFieldWidgetType.Lookup)
 				.setAD_Val_Rule_ID(adValRuleId)
@@ -208,7 +207,12 @@ public class BoardDescriptorRepository
 		// Source document filters: AD_Val_Rule_ID
 		if (adValRuleId > 0)
 		{
-			final IValidationRule validationRule = Services.get(IValidationRuleFactory.class).create(tableName, adValRuleId);
+			final IValidationRule validationRule = Services.get(IValidationRuleFactory.class).create(
+					tableName
+					, adValRuleId
+					, null // ctx table name
+					, null // ctx column name
+					);
 			final String sqlWhereClause = validationRule.getPrefilterWhereClause()
 					.evaluate(Evaluatees.ofCtx(Env.getCtx()), OnVariableNotFound.Fail);
 
