@@ -175,7 +175,7 @@ public class M_TransactionTest
 		transaction.setMovementType(X_M_Transaction.MOVEMENTTYPE_CustomerShipment);
 		transaction.setM_Product(product);
 		transaction.setMovementDate(movementDate);
-		transaction.setMovementQty(BigDecimal.TEN);
+		transaction.setMovementQty(BigDecimal.TEN.negate());
 		save(transaction);
 		return transaction;
 	}
@@ -188,5 +188,4 @@ public class M_TransactionTest
 		assertThat(result.getMaterialDescr().getProductId()).isEqualTo(product.getM_Product_ID());
 		assertThat(result.getMaterialDescr().getDate()).isEqualTo(movementDate);
 	}
-
 }

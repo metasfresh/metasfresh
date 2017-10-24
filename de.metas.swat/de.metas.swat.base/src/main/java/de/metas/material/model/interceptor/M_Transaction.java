@@ -11,7 +11,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
 import org.compiere.Adempiere;
 import org.compiere.model.I_M_Transaction;
@@ -26,7 +26,6 @@ import de.metas.material.event.EventDescr;
 import de.metas.material.event.MaterialDescriptor;
 import de.metas.material.event.MaterialEventService;
 import de.metas.material.event.TransactionEvent;
-import de.metas.materialtransaction.MTransactionUtil;
 import lombok.NonNull;
 
 /*
@@ -67,24 +66,26 @@ public class M_Transaction
 	 */
 	@ModelChange(timings = {
 			ModelValidator.TYPE_AFTER_NEW,
-			ModelValidator.TYPE_AFTER_CHANGE,
-			ModelValidator.TYPE_BEFORE_DELETE /* beforeDelete because we still need the M_TransAction_ID */ })
+			ModelValidator.TYPE_AFTER_CHANGE
+			// ModelValidator.TYPE_BEFORE_DELETE /* beforeDelete because we still need the M_TransAction_ID */
+	}, //
+			afterCommit = true // need to run after commit because the M_transaction is stored because a possible shipment schedule is linked to the inoutline via M_ShipmentSchedule_QtyPicked
+	)
 	public void fireTransactionEvent(
 			@NonNull final I_M_Transaction transaction,
 			@NonNull final ModelChangeType type)
 	{
 		if (transaction.getPP_Cost_Collector_ID() > 0 || transaction.getM_MovementLine_ID() > 0)
 		{
-			return;
+			return; // they are handled in dedicated interceptors
 		}
 
 		final MaterialEventService materialEventService = Adempiere.getBean(MaterialEventService.class);
-		final String trxName = InterfaceWrapperHelper.getTrxName(transaction);
 
 		final Collection<TransactionEvent> events = createTransactionEvents(transaction, type);
 		for (final TransactionEvent event : events)
 		{
-			materialEventService.fireEventAfterNextCommit(event, trxName);
+			materialEventService.fireEvent(event);
 		}
 	}
 
@@ -112,16 +113,17 @@ public class M_Transaction
 		return result.build();
 	}
 
-	private static Map<Integer, BigDecimal> retrieveShipmentScheduleId(@NonNull final I_M_Transaction transaction)
+	@VisibleForTesting
+	static Map<Integer, BigDecimal> retrieveShipmentScheduleId(@NonNull final I_M_Transaction transaction)
 	{
-		final Map<Integer, BigDecimal> result = new TreeMap<>();
+		final Map<Integer, BigDecimal> shipmentScheduleId2quantity = new TreeMap<>();
 
 		BigDecimal qtyLeftToDistribute = transaction.getMovementQty();
 
 		if (transaction.getM_InOutLine_ID() <= 0)
 		{
-			result.put(0, qtyLeftToDistribute);
-			return result;
+			shipmentScheduleId2quantity.put(0, qtyLeftToDistribute);
+			return shipmentScheduleId2quantity;
 		}
 
 		final List<I_M_ShipmentSchedule_QtyPicked> shipmentScheduleQtysPicked = Services.get(IQueryBL.class)
@@ -132,33 +134,55 @@ public class M_Transaction
 				.list();
 		for (final I_M_ShipmentSchedule_QtyPicked shipmentScheduleQtyPicked : shipmentScheduleQtysPicked)
 		{
-			result.merge(
+			assertSignumsOfQuantitiesMatch(shipmentScheduleQtyPicked, transaction);
+			shipmentScheduleId2quantity.merge(
 					shipmentScheduleQtyPicked.getM_ShipmentSchedule_ID(),
 					shipmentScheduleQtyPicked.getQtyPicked(),
 					BigDecimal::add);
-			qtyLeftToDistribute = qtyLeftToDistribute.subtract(shipmentScheduleQtyPicked.getQtyPicked());
+			qtyLeftToDistribute = qtyLeftToDistribute.add(shipmentScheduleQtyPicked.getQtyPicked());
 		}
 
-		if (qtyLeftToDistribute.signum() > 0)
+		if (qtyLeftToDistribute.signum() != 0)
 		{
-			result.put(0, qtyLeftToDistribute);
+			shipmentScheduleId2quantity.put(0, qtyLeftToDistribute);
 		}
-		return result;
+		return shipmentScheduleId2quantity;
+	}
+
+	private static void assertSignumsOfQuantitiesMatch(
+			@NonNull final I_M_ShipmentSchedule_QtyPicked shipmentScheduleQtyPicked,
+			@NonNull final I_M_Transaction transaction)
+	{
+		final BigDecimal qtyPicked = shipmentScheduleQtyPicked.getQtyPicked();
+		final BigDecimal movementQty = transaction.getMovementQty();
+
+		if (qtyPicked.signum() == 0 || movementQty.signum() == 0)
+		{
+			return; // at least one of them is zero
+		}
+		if (qtyPicked.signum() != movementQty.signum())
+		{
+			return;
+		}
+
+		throw new AdempiereException(
+				"For the given shipmentScheduleQtyPicked and transaction, one needs to be positive and one needs to be negative")
+						.appendParametersToMessage()
+						.setParameter("qtyPicked", qtyPicked)
+						.setParameter("movementQty", movementQty)
+						.setParameter("shipmentScheduleQtyPicked", shipmentScheduleQtyPicked)
+						.setParameter("transaction", transaction);
 	}
 
 	private static MaterialDescriptor createMateriallDescriptor(
 			@NonNull final I_M_Transaction transaction,
 			@NonNull final BigDecimal quantity)
 	{
-		final BigDecimal effectiveQty = MTransactionUtil.isInboundTransaction(transaction)
-				? quantity
-				: quantity.negate();
-
 		return MaterialDescriptor.builder()
 				.warehouseId(transaction.getM_Locator().getM_Warehouse_ID())
 				.date(transaction.getMovementDate())
 				.productId(transaction.getM_Product_ID())
-				.quantity(effectiveQty)
+				.quantity(transaction.getMovementQty())
 				.build();
 	}
 }

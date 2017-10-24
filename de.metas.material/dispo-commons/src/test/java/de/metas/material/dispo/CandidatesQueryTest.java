@@ -64,4 +64,12 @@ public class CandidatesQueryTest
 		assertThat(query.getType()).isEqualTo(Type.STOCK);
 		assertThat(query.getParentId()).isEqualTo(0);
 	}
+
+	@Test(expected = RuntimeException.class)
+	public void build_when_dateAndNoDateOverator_then_throwsException()
+	{
+		CandidatesQuery.builder()
+				.materialDescr(MaterialDescriptor.builderForQuery().date(SystemTime.asTimestamp()).build())
+				.build();
+	}
 }

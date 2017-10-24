@@ -5,6 +5,8 @@ import java.util.Objects;
 
 import org.adempiere.util.Check;
 
+import com.google.common.base.Preconditions;
+
 import de.metas.material.dispo.candidate.Candidate;
 import de.metas.material.dispo.candidate.DemandDetail;
 import de.metas.material.dispo.candidate.DistributionDetail;
@@ -47,7 +49,7 @@ import lombok.experimental.Wither;
 @Builder
 @Value
 @Wither
-public class CandidatesQuery implements CandidateSpecification
+public final class CandidatesQuery implements CandidateSpecification
 {
 	public enum DateOperator
 	{
@@ -70,7 +72,7 @@ public class CandidatesQuery implements CandidateSpecification
 	}
 
 	public static final ProductionDetail NO_PRODUCTION_DETAIL = ProductionDetail.builder().build();
-	
+
 	public static final DistributionDetail NO_DISTRIBUTION_DETAIL = DistributionDetail.builder().build();
 
 	public static CandidatesQuery fromCandidate(@NonNull final Candidate candidate)
@@ -155,7 +157,46 @@ public class CandidatesQuery implements CandidateSpecification
 	DemandDetail demandDetail;
 
 	TransactionDetail transactionDetail;
-	
+
+	public CandidatesQuery(
+			final DateOperator dateOperator,
+			final int parentProductId,
+			final int parentWarehouseId,
+			final int orgId,
+			final Type type,
+			final SubType subType,
+			final Status status,
+			final int id,
+			final int parentId,
+			final int groupId,
+			final int seqNo,
+			final MaterialDescriptor materialDescr,
+			final ProductionDetail productionDetail,
+			final DistributionDetail distributionDetail,
+			final DemandDetail demandDetail,
+			final TransactionDetail transactionDetail)
+	{
+		this.dateOperator = dateOperator;
+		this.parentProductId = parentProductId;
+		this.parentWarehouseId = parentWarehouseId;
+		this.orgId = orgId;
+		this.type = type;
+		this.subType = subType;
+		this.status = status;
+		this.id = id;
+		this.parentId = parentId;
+		this.groupId = groupId;
+		this.seqNo = seqNo;
+
+		Preconditions.checkArgument(materialDescr == null || materialDescr.getDate() == null || dateOperator != null,
+				"If a date ist specified in the materialDescriptor, then dateOperator may not be null; materialDescriptor", materialDescr);
+		this.materialDescr = materialDescr;
+		this.productionDetail = productionDetail;
+		this.distributionDetail = distributionDetail;
+		this.demandDetail = demandDetail;
+		this.transactionDetail = transactionDetail;
+	}
+
 	/**
 	 * This method ignores parent {@link #getParentProductId()}, {@link #getParentWarehouseId()},
 	 * because we don't need it right now and it would mean that we had to fetch the given {@code candidate}'s parent from the repo.

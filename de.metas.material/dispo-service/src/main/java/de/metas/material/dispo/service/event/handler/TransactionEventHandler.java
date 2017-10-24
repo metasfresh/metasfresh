@@ -15,6 +15,7 @@ import de.metas.material.dispo.candidate.DemandDetail;
 import de.metas.material.dispo.candidate.TransactionDetail;
 import de.metas.material.dispo.candidate.Candidate.CandidateBuilder;
 import de.metas.material.dispo.CandidatesQuery;
+import de.metas.material.dispo.CandidatesQuery.DateOperator;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.event.TransactionEvent;
 import lombok.NonNull;
@@ -71,8 +72,7 @@ public class TransactionEventHandler
 			final DemandDetail demandDetail = DemandDetail.forShipmentScheduleIdAndOrderLineId(event.getShipmentScheduleId(), -1);
 
 			final CandidatesQuery query = CandidatesQuery.builder().type(Type.DEMAND)
-					.demandDetail(demandDetail)
-					.materialDescr(event.getMaterialDescr().withoutQuantity())
+					.demandDetail(demandDetail) // only search via demand detail, ..the product and warehouse will also match, but e.g. the date probably won't!
 					.build();
 
 			final Candidate existingCandidate = candidateRepository.retrieveLatestMatchOrNull(query);
@@ -94,6 +94,7 @@ public class TransactionEventHandler
 		{
 			final CandidatesQuery query = CandidatesQuery.builder()
 					.materialDescr(event.getMaterialDescr().withoutQuantity())
+					.dateOperator(DateOperator.AT)
 					.transactionDetail(TransactionDetail.forQuery(event.getTransactionId()))
 					.build();
 			final Candidate existingCandidate = candidateRepository.retrieveLatestMatchOrNull(query);

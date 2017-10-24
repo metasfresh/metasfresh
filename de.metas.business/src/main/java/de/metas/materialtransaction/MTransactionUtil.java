@@ -44,14 +44,4 @@ public class MTransactionUtil
 		}
 		return movementQty.signum() >= 0;
 	}
-
-	public static BigDecimal getEffectiveMovementQty(@NonNull final I_M_Transaction transaction)
-	{
-		if (isInboundTransaction(transaction))
-		{
-			return transaction.getMovementQty();
-		}
-		return transaction.getMovementQty().negate();
-	}
-
 }

@@ -203,7 +203,8 @@ public class TransactionEventHandlerTest
 				candidateRepository.retrieveLatestMatchOrNull(query = withCapture());
 				assertThat(query).isNotNull();
 				assertThat(query.getDemandDetail().getShipmentScheduleId()).isEqualTo(SHIPMENT_SCHEDULE_ID);
-				assertThat(query.getProductId()).isEqualTo(relatedEvent.getMaterialDescr().getProductId());
+				assertThat(query.getProductId()).as("only search via the demand detail, if we have one").isLessThanOrEqualTo(0);
+				assertThat(query.getTransactionDetail()).as("only search via the demand detail, if we have one").isNull();
 		}}; // @formatter:on
 
 		assertThat(candidate.getType()).isEqualTo(Type.UNRELATED_DECREASE);
@@ -242,6 +243,18 @@ public class TransactionEventHandlerTest
 				.build();
 
 		final Candidate candidate = transactionEventHandler.createCandidateForTransactionEvent(relatedEvent);
+		
+		// @formatter:off verify that candidateRepository was called to decide if the event is related to anything we know
+		new Verifications()
+		{{
+				CandidatesQuery query;
+				candidateRepository.retrieveLatestMatchOrNull(query = withCapture());
+				assertThat(query).isNotNull();
+				assertThat(query.getDemandDetail().getShipmentScheduleId()).isEqualTo(SHIPMENT_SCHEDULE_ID);
+				assertThat(query.getProductId()).as("only search via the demand detail, if we have one").isLessThanOrEqualTo(0);
+				assertThat(query.getTransactionDetail()).as("only search via the demand detail, if we have one").isNull();
+		}}; // @formatter:on
+		
 		assertThat(candidate.getId()).isEqualTo(11);
 		assertThat(candidate.getType()).isEqualTo(Type.DEMAND);
 		assertThat(candidate.getQuantity())
