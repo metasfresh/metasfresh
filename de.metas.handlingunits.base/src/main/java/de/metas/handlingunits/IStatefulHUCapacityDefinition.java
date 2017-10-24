@@ -33,7 +33,7 @@ import de.metas.quantity.Quantity;
  * @author tsa
  *
  */
-public interface IStatefulHUCapacityDefinition extends IHUCapacityDefinition
+public interface IStatefulHUCapacityDefinition
 {
 	/**
 	 * Add qty to this capacity.

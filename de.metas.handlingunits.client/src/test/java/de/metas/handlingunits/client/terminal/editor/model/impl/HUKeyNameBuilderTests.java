@@ -1,6 +1,7 @@
 package de.metas.handlingunits.client.terminal.editor.model.impl;
 
 import static org.hamcrest.Matchers.is;
+import static de.metas.business.BusinessTestHelper.*;
 import static org.junit.Assert.assertThat;
 
 import java.math.BigDecimal;
@@ -76,7 +77,7 @@ public class HUKeyNameBuilderTests
 		helper = new HUTestHelper();
 		helper.init();
 
-		pTomatoKg = helper.createProduct(HUTestHelper.NAME_Tomato_Product, helper.uomKg);
+		pTomatoKg = createProduct(HUTestHelper.NAME_Tomato_Product, helper.uomKg);
 
 		huDefIFCO = helper.createHUDefinition(HUTestHelper.NAME_IFCO_Product, X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
 		{

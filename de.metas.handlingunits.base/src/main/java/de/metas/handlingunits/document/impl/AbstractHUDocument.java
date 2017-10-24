@@ -30,11 +30,11 @@ import java.util.List;
 import java.util.Set;
 
 import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import de.metas.handlingunits.document.IHUDocument;
 import de.metas.handlingunits.document.IHUDocumentLine;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.logging.LogManager;
 
 public abstract class AbstractHUDocument implements IHUDocument
 {

@@ -28,8 +28,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -39,6 +37,7 @@ import org.adempiere.util.Services;
 import org.adempiere.util.lang.IReference;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
 
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.attribute.IHUTransactionAttributeProcessor;
@@ -52,6 +51,7 @@ import de.metas.handlingunits.model.I_M_HU_Trx_Attribute;
 import de.metas.handlingunits.model.I_M_HU_Trx_Hdr;
 import de.metas.handlingunits.model.I_M_HU_Trx_Line;
 import de.metas.handlingunits.model.X_M_HU_Trx_Attribute;
+import de.metas.logging.LogManager;
 
 public class HUTransactionAttributeProcessor implements IHUTransactionAttributeProcessor
 {

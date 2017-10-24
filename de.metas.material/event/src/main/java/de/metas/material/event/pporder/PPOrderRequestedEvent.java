@@ -1,14 +1,12 @@
 package de.metas.material.event.pporder;
 
-import org.adempiere.util.lang.impl.TableRecordReference;
 import org.eevolution.model.I_PP_Order;
 
 import de.metas.material.event.EventDescr;
 import de.metas.material.event.MaterialEvent;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
 import lombok.NonNull;
+import lombok.Value;
 
 /*
  * #%L
@@ -40,19 +38,17 @@ import lombok.NonNull;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-@Data
-@AllArgsConstructor
+@Value
 @Builder
 public class PPOrderRequestedEvent implements MaterialEvent
 {
 	public static final String TYPE = "PPOrderRequestedEvent";
 
 	@NonNull
-	private final EventDescr eventDescr;
-
-	private final TableRecordReference reference;
+	EventDescr eventDescr;
 
 	@NonNull
-	private final PPOrder ppOrder;
+	PPOrder ppOrder;
 
+	int groupId;
 }

@@ -1,5 +1,7 @@
 package de.metas.handlingunits.impl;
 
+import static de.metas.business.BusinessTestHelper.createBPartner;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -71,9 +73,9 @@ public class HandlingUnitsDAOTest extends AbstractHUTest
 	public void test_retrivePIItems()
 	{
 		final I_C_BPartner bpartner_NULL = null;
-		final I_C_BPartner bpartner1 = helper.createBPartner("BP1");
-		final I_C_BPartner bpartner2 = helper.createBPartner("BP2");
-		final I_C_BPartner bpartner3 = helper.createBPartner("BP3");
+		final I_C_BPartner bpartner1 = createBPartner("BP1");
+		final I_C_BPartner bpartner2 = createBPartner("BP2");
+		final I_C_BPartner bpartner3 = createBPartner("BP3");
 		final I_M_HU_PI piIncluded = null; // not relevant
 		final I_M_HU_PI pi = helper.createHUDefinition("PI");
 

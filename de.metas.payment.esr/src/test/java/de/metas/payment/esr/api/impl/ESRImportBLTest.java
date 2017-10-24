@@ -198,15 +198,6 @@ public class ESRImportBLTest extends ESRTestBase
 		esrReferenceNumberDocument.setC_ReferenceNo(referenceNo);
 		save(esrReferenceNumberDocument);
 
-		// final I_C_AllocationHdr allocHdr = newInstance(I_C_AllocationHdr.class);
-		// allocHdr.setC_Currency_ID(currencyEUR.getC_Currency_ID());
-		// save(allocHdr);
-		//
-		// final I_C_AllocationLine allocAmt = newInstance(I_C_AllocationLine.class);
-		// allocAmt.setWriteOffAmt(new BigDecimal(10.0));
-		// allocAmt.setC_Invoice_ID(invoice.getC_Invoice_ID());
-		// save(allocAmt);
-
 		// invoke the code under test
 		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream(esrImportLineText.getBytes()));
 		refresh(esrImport, true);
@@ -437,18 +428,18 @@ public class ESRImportBLTest extends ESRTestBase
 		refresh(esrImportLine3, true);
 		final I_C_Payment esrLine1Payment = esrImportLine1.getC_Payment();
 		assertThat(esrLine1Payment.getPayAmt(), comparesEqualTo(new BigDecimal(31.0)));
-		assertThat(esrLine1Payment.getC_Invoice_ID(), is(-1));
+		assertThat(esrLine1Payment.getC_Invoice_ID(), is(0));
 
 		final I_C_Payment esrLine2Payment = esrImportLine2.getC_Payment();
 		assertThat(esrLine2Payment, not(esrLine1Payment));
 		assertThat(esrLine2Payment.getPayAmt(), comparesEqualTo(new BigDecimal(31.5)));
-		assertThat(esrLine2Payment.getC_Invoice_ID(), is(-1));
+		assertThat(esrLine2Payment.getC_Invoice_ID(), is(0));
 
 		final I_C_Payment esrLine3Payment = esrImportLine3.getC_Payment();
 		assertThat(esrLine3Payment, not(esrLine1Payment));
 		assertThat(esrLine3Payment, not(esrLine2Payment));
 		assertThat(esrLine3Payment.getPayAmt(), comparesEqualTo(new BigDecimal(62.50)));
-		assertThat(esrLine3Payment.getC_Invoice_ID(), is(-1));
+		assertThat(esrLine3Payment.getC_Invoice_ID(), is(0));
 
 		// check the line's status and open amounts
 		assert3Lines_123Order_Correct(esrImportLine1, esrImportLine2, esrImportLine3);
@@ -496,17 +487,17 @@ public class ESRImportBLTest extends ESRTestBase
 		refresh(esrImportLine3, true);
 		final I_C_Payment esrLine1Payment = esrImportLine1.getC_Payment();
 		assertThat(esrLine1Payment.getPayAmt(), comparesEqualTo(new BigDecimal(31.0)));
-		assertThat(esrLine1Payment.getC_Invoice_ID(), is(-1));
+		assertThat(esrLine1Payment.getC_Invoice_ID(), is(0));
 
 		final I_C_Payment esrLine2Payment = esrImportLine2.getC_Payment();
 		assertThat(esrLine2Payment, not(esrLine1Payment));
 		assertThat(esrLine2Payment.getPayAmt(), comparesEqualTo(new BigDecimal(31.5)));
-		assertThat(esrLine2Payment.getC_Invoice_ID(), is(-1));
+		assertThat(esrLine2Payment.getC_Invoice_ID(), is(0));
 
 		final I_C_Payment esrLine3Payment = esrImportLine3.getC_Payment();
 		assertThat(esrLine3Payment, not(esrLine2Payment));
 		assertThat(esrLine3Payment.getPayAmt(), comparesEqualTo(new BigDecimal(62.50)));
-		assertThat(esrLine3Payment.getC_Invoice_ID(), is(-1));
+		assertThat(esrLine3Payment.getC_Invoice_ID(), is(0));
 
 		// check the line's status and open amounts
 		assert3Lines_123Order_Correct(esrImportLine1, esrImportLine2, esrImportLine3);
@@ -584,17 +575,17 @@ public class ESRImportBLTest extends ESRTestBase
 
 		final I_C_Payment esrLine1Payment = esrImportLine1.getC_Payment();
 		assertThat(esrLine1Payment.getPayAmt(), comparesEqualTo(new BigDecimal(31.0)));
-		assertThat(esrLine1Payment.getC_Invoice_ID(), is(-1));
+		assertThat(esrLine1Payment.getC_Invoice_ID(), is(0));
 
 		final I_C_Payment esrLine2Payment = esrImportLine2.getC_Payment();
 		assertThat(esrLine2Payment, not(esrLine1Payment));
 		assertThat(esrLine2Payment.getPayAmt(), comparesEqualTo(new BigDecimal(31.5)));
-		assertThat(esrLine2Payment.getC_Invoice_ID(), is(-1));
+		assertThat(esrLine2Payment.getC_Invoice_ID(), is(0));
 
 		final I_C_Payment esrLine3Payment = esrImportLine3.getC_Payment();
 		assertThat(esrLine3Payment, not(esrLine1Payment));
 		assertThat(esrLine3Payment.getPayAmt(), comparesEqualTo(new BigDecimal(62.50)));
-		assertThat(esrLine3Payment.getC_Invoice_ID(), is(-1));
+		assertThat(esrLine3Payment.getC_Invoice_ID(), is(0));
 	}
 
 	private void assert3Lines_123Order_Correct(final I_ESR_ImportLine esrImportLine1, final I_ESR_ImportLine esrImportLine2, final I_ESR_ImportLine esrImportLine3)

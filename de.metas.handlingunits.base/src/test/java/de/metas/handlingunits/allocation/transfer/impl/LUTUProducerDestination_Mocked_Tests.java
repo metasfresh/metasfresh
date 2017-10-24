@@ -31,7 +31,6 @@ import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.IAllocationResult;
 import de.metas.handlingunits.allocation.impl.AllocationUtils;
 import de.metas.handlingunits.allocation.impl.IMutableAllocationResult;
-import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestination;
 import de.metas.handlingunits.hutransaction.IHUTransaction;
 import de.metas.handlingunits.hutransaction.IHUTransactionBL;
 import de.metas.handlingunits.model.I_M_HU;

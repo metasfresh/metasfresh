@@ -26,6 +26,7 @@ package org.adempiere.ad.dao.impl;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryFilter;
@@ -210,7 +211,7 @@ public class CompareQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 
 	private final int compareValues(Object value1, Object value2)
 	{
-		if (Check.equals(value1, value2))
+		if (Objects.equals(value1, value2))
 		{
 			return 0;
 		}

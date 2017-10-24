@@ -2,7 +2,10 @@ package de.metas.material.dispo.service.candidatechange.handler;
 
 import java.math.BigDecimal;
 
-import de.metas.material.dispo.Candidate;
+import com.google.common.base.Preconditions;
+
+import de.metas.material.dispo.CandidateSpecification.Type;
+import de.metas.material.dispo.candidate.Candidate;
 import de.metas.material.event.EventDescr;
 import de.metas.material.event.MaterialDemandDescr;
 import de.metas.material.event.MaterialDemandEvent;
@@ -38,6 +41,8 @@ public class MaterialDemandEventCreator
 			@NonNull final Candidate demandCandidate,
 			@NonNull final BigDecimal requiredAdditionalQty)
 	{
+		verifyCandidateType(demandCandidate);
+
 		final int orderLineId = demandCandidate.getDemandDetail() == null ? 0
 				: demandCandidate.getDemandDetail().getOrderLineId();
 
@@ -48,15 +53,22 @@ public class MaterialDemandEventCreator
 		return materialDemandEvent;
 	}
 
-	public MaterialDemandDescr createMaterialDemandDescr(
+	private void verifyCandidateType(final Candidate demandCandidate)
+	{
+		final Type candidateType = demandCandidate.getType();
+		Preconditions.checkArgument(candidateType == Type.DEMAND || candidateType == Type.STOCK_UP,
+				"Given parameter demandCandidate needs to have DEMAND or STOCK_UP as type; demandCandidate=%s", demandCandidate);
+	}
+
+	private MaterialDemandDescr createMaterialDemandDescr(
 			@NonNull final Candidate candidate,
 			@NonNull final BigDecimal qty,
 			final int orderLineId)
 	{
 		return MaterialDemandDescr.builder()
+				.demandCandidateId(candidate.getId())
 				.eventDescr(new EventDescr(candidate.getClientId(), candidate.getOrgId()))
 				.materialDescriptor(candidate.getMaterialDescr().withQuantity(qty))
-				.reference(candidate.getReference())
 				.orderLineId(orderLineId)
 				.build();
 	}

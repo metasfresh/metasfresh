@@ -47,6 +47,7 @@ import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.model.POWrapper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.trxConstraints.api.ITrxConstraintsBL;
@@ -71,7 +72,7 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 	private static final transient Logger log = LogManager.getLogger(POJOWrapper.class);
 
 	public static final int DEFAULT_VALUE_int = 0;
-	public static final int DEFAULT_VALUE_ID = -1;
+	public static final int DEFAULT_VALUE_ID = 0;
 	public static final BigDecimal DEFAULT_VALUE_BigDecimal = BigDecimal.ZERO;
 	private static final AtomicLong nextInstanceId = new AtomicLong(0);
 
@@ -546,8 +547,8 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 
 	@Override
 	public Object invoke(
-			final Object proxy, 
-			@NonNull final Method method, 
+			final Object proxy,
+			@NonNull final Method method,
 			@Nullable final Object[] args) throws Throwable
 	{
 		try
@@ -561,7 +562,7 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 	}
 
 	private Object invoke0(
-			@NonNull final Method method, 
+			@NonNull final Method method,
 			@Nullable final Object[] args)
 	{
 		final String methodName = method.getName();
@@ -607,8 +608,8 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 	}
 
 	private Object invokeSet(
-			@NonNull final Method method, 
-			@NonNull final Object[] args, 
+			@NonNull final Method method,
+			@NonNull final Object[] args,
 			@NonNull final String methodName)
 	{
 		final String propertyNameLowerCase = methodName.substring(3);
@@ -642,7 +643,6 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 			{
 				final String referencedObjectTrxName = getTrxName(referencedObject);
 				Check.assume(Objects.equals(this.getTrxName(), referencedObjectTrxName), "Invalid transaction"); // shall not happen, never ever
-				// POJOWrapper.setTrxName(referencedObject, POJOWrapper.getTrxName(this));
 			}
 			return referencedObject;
 		}
@@ -701,7 +701,7 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 		// System.out.println("values="+values+", propertyName="+propertyName+" => value="+value);
 		return value == null ? false : (Boolean)value;
 	}
-	
+
 	void setReferencedObject(final String propertyName, final Object value)
 	{
 		final String idPropertyName = propertyName + "_ID";
@@ -851,11 +851,11 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 			final Integer idObj = (Integer)getValue(idColumnName, Integer.class);
 			if (idObj == null)
 			{
-				id = -1;
+				id = DEFAULT_VALUE_ID;
 			}
-			else if (idObj < 0)
+			else if (idObj <= 0)
 			{
-				id = -1;
+				id = DEFAULT_VALUE_ID;
 			}
 			else
 			{
@@ -864,7 +864,7 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 		}
 		else
 		{
-			id = -1;
+			id = DEFAULT_VALUE_ID;
 		}
 
 		//
@@ -875,7 +875,7 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 		final int valueCachedId;
 		if (valueCachedObj == null)
 		{
-			valueCachedId = -1;
+			valueCachedId = DEFAULT_VALUE_ID;
 			valueCached = null;
 			valueCachedWrapper = null;
 		}
@@ -884,14 +884,14 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 			final POJOWrapper wrapper = getWrapper(valueCachedObj);
 			if (wrapper == null)
 			{
-				valueCachedId = -1;
+				valueCachedId = DEFAULT_VALUE_ID;
 				valueCached = null;
 				valueCachedWrapper = wrapper;
 			}
 			else if (wrapper.getId() <= 0)
 			{
-				valueCachedId = -1;
-				if (id >= 0)
+				valueCachedId = DEFAULT_VALUE_ID;
+				if (id > 0)
 				{
 					// Case: we have a cached object which was not saved, but in meantime we have an ID set there
 					valueCached = null;
@@ -931,7 +931,7 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 			return valueCached;
 		}
 
-		if (id < 0)
+		if (id <= DEFAULT_VALUE_ID)
 		{
 			return null;
 		}
@@ -1003,7 +1003,7 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 		if (propertyName.endsWith("_ID"))
 		{
 			final int id = toId(value);
-			if (id < 0)
+			if (id <= 0)
 			{
 				final String modelPropertyName = propertyName.substring(0, propertyName.length() - 3);
 				values.put(modelPropertyName, null);
@@ -1034,7 +1034,7 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 	public int getId()
 	{
 		final Integer id = (Integer)getValue(idColumnName, Integer.class, false); // enforceStrictValues=false
-		return id == null ? -1 : id.intValue();
+		return id == null ? DEFAULT_VALUE_ID : id.intValue();
 	}
 
 	public void setId(final int id)
@@ -1226,13 +1226,15 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 
 		//
 		// Special case: lookup columns
-		if (columnName.endsWith("_ID")
-				&& value instanceof Integer
-				&& (Integer)value == DEFAULT_VALUE_ID)
+		if (columnName.endsWith("_ID") && value instanceof Integer)
 		{
-			return true;
+			final int id = (Integer)value;
+			final boolean idIsNotValidForGivenColumnName = POWrapper.getFirstValidIdByColumnName(columnName) > id;
+			if (idIsNotValidForGivenColumnName)
+			{
+				return true;
+			}
 		}
-
 		return false;
 	}
 
@@ -1515,14 +1517,14 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 	{
 		if (value == null)
 		{
-			return -1;
+			return DEFAULT_VALUE_ID;
 		}
 		else if (value instanceof Integer)
 		{
 			final Integer valueInt = (Integer)value;
 			if (valueInt <= 0)
 			{
-				return -1;
+				return DEFAULT_VALUE_ID;
 			}
 			else
 			{
@@ -1533,7 +1535,7 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 		{
 			// Case: C_BPartner.AD_OrgBP_ID
 			final int valueInt = Integer.parseInt(value.toString());
-			return valueInt <= 0 ? -1 : valueInt;
+			return valueInt <= 0 ? DEFAULT_VALUE_ID : valueInt;
 		}
 		else
 		{

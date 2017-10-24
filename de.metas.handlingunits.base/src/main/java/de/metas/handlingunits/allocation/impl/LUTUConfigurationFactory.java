@@ -43,7 +43,6 @@ import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
 
 import de.metas.handlingunits.IHUCapacityBL;
-import de.metas.handlingunits.IHUCapacityDefinition;
 import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
@@ -56,6 +55,7 @@ import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
+import de.metas.quantity.CapacityInterface;
 import de.metas.quantity.Quantity;
 import lombok.NonNull;
 
@@ -132,7 +132,7 @@ public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 		final I_M_Product cuProduct = lutuConfiguration.getM_Product();
 		final I_C_UOM cuUOM = lutuConfiguration.getC_UOM();
 		final boolean qtyCUInfinite = lutuConfiguration.isInfiniteQtyCU();
-		final BigDecimal qtyCUPerTU = qtyCUInfinite ? IHUCapacityDefinition.INFINITY : lutuConfiguration.getQtyCU();
+		final BigDecimal qtyCUPerTU = qtyCUInfinite ? Quantity.QTY_INFINITE : lutuConfiguration.getQtyCU();
 		luProducerDestination.addTUCapacity(cuProduct, qtyCUPerTU, cuUOM);
 
 		//
@@ -183,7 +183,7 @@ public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 		//
 		// TU Configuration
 		final I_M_HU_PI tuPI = tuPIItemProduct.getM_HU_PI_Item().getM_HU_PI_Version().getM_HU_PI();
-		final IHUCapacityDefinition tuCapacity = huCapacityBL.getCapacity(tuPIItemProduct, cuProduct, cuUOM);
+		final CapacityInterface tuCapacity = huCapacityBL.getCapacity(tuPIItemProduct, cuProduct, cuUOM);
 		//
 		lutuConfiguration.setM_HU_PI_Item_Product(tuPIItemProduct);
 		lutuConfiguration.setM_TU_HU_PI(tuPI);
@@ -197,7 +197,7 @@ public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 		else
 		{
 			lutuConfiguration.setIsInfiniteQtyCU(false);
-			lutuConfiguration.setQtyCU(tuCapacity.getCapacity());
+			lutuConfiguration.setQtyCU(tuCapacity.getCapacityQty());
 		}
 
 		

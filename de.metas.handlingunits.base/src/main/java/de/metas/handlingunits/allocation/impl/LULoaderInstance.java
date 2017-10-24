@@ -221,7 +221,7 @@ import de.metas.handlingunits.model.X_M_HU_PI_Version;
 	private LULoaderItemInstance addLUItemIfPossible(final I_M_HU_Item luItem)
 	{
 		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-		
+
 		//
 		// Check if it's a handling unit item
 		if (!Objects.equals(handlingUnitsBL.getItemType(luItem), X_M_HU_Item.ITEMTYPE_HandlingUnit))
@@ -249,36 +249,21 @@ import de.metas.handlingunits.model.X_M_HU_PI_Version;
 	{
 		//
 		// Check same BPartner
-		int bpartnerId = tuHU.getC_BPartner_ID();
-		if (bpartnerId <= 0)
-		{
-			bpartnerId = -1;
-		}
-		if (bpartnerId != getC_BPartner_ID())
+		if (tuHU.getC_BPartner_ID() != getC_BPartner_ID())
 		{
 			return false;
 		}
 
 		//
 		// Check same BPartner Location
-		int bpartnerLocationId = tuHU.getC_BPartner_Location_ID();
-		if (bpartnerLocationId <= 0)
-		{
-			bpartnerLocationId = -1;
-		}
-		if (bpartnerLocationId != this.bpartnerLocationId)
+		if (tuHU.getC_BPartner_Location_ID() != this.bpartnerLocationId)
 		{
 			return false;
 		}
 
 		//
 		// Check same Locator
-		int locatorId = tuHU.getM_Locator_ID();
-		if (locatorId <= 0)
-		{
-			locatorId = -1;
-		}
-		if (locatorId != getM_Locator_ID())
+		if (tuHU.getM_Locator_ID() != getM_Locator_ID())
 		{
 			return false;
 		}
@@ -300,21 +285,21 @@ import de.metas.handlingunits.model.X_M_HU_PI_Version;
 	{
 		if (bpartner == null)
 		{
-			return -1;
+			return 0;
 		}
 
 		final int bpartnerId = bpartner.getC_BPartner_ID();
-		return bpartnerId <= 0 ? -1 : bpartnerId;
+		return bpartnerId;
 	}
 
 	private int getM_Locator_ID()
 	{
 		if (locator == null)
 		{
-			return -1;
+			return 0;
 		}
 
 		final int locatorId = locator.getM_Locator_ID();
-		return locatorId <= 0 ? -1 : locatorId;
+		return locatorId;
 	}
 }

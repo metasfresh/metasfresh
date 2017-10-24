@@ -26,6 +26,7 @@ import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 
+import org.adempiere.ad.expression.api.ConstantLogicExpression;
 import org.adempiere.ad.expression.api.IExpressionFactory;
 import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.ad.security.IUserRolePermissions;
@@ -472,10 +473,10 @@ public class GridTabVO implements Evaluatee, Serializable
 	/** Order by		*/
 	public  String      OrderByClause;
 	/** Tab Read Only	*/
-	private static final ILogicExpression DEFAULT_ReadOnlyLogicExpr = ILogicExpression.FALSE;
+	private static final ILogicExpression DEFAULT_ReadOnlyLogicExpr = ConstantLogicExpression.FALSE;
 	private ILogicExpression ReadOnlyLogicExpr = DEFAULT_ReadOnlyLogicExpr;
 	/** Tab Display		*/
-	private static final ILogicExpression DEFAULT_DisplayLogic = ILogicExpression.TRUE;
+	private static final ILogicExpression DEFAULT_DisplayLogic = ConstantLogicExpression.TRUE;
 	private ILogicExpression DisplayLogicExpr = DEFAULT_DisplayLogic;
 	/** Tab Level */
 	private int TabLevel = 0;

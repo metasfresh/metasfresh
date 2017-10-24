@@ -9,15 +9,18 @@ import org.springframework.stereotype.Service;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 
-import de.metas.material.dispo.Candidate.SubType;
-import de.metas.material.dispo.Candidate.Type;
+import de.metas.material.dispo.CandidateSpecification.SubType;
+import de.metas.material.dispo.CandidateSpecification.Type;
+import de.metas.material.dispo.candidate.Candidate;
+import de.metas.material.dispo.candidate.DistributionDetail;
+import de.metas.material.dispo.candidate.ProductionDetail;
 import de.metas.material.event.EventDescr;
 import de.metas.material.event.MaterialEventService;
 import de.metas.material.event.ddorder.DDOrder;
 import de.metas.material.event.ddorder.DDOrder.DDOrderBuilder;
 import de.metas.material.event.ddorder.DDOrderLine;
-import de.metas.material.event.ddorder.DDOrderRequestedEvent;
 import de.metas.material.event.ddorder.DDOrderLine.DDOrderLineBuilder;
+import de.metas.material.event.ddorder.DDOrderRequestedEvent;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrder.PPOrderBuilder;
 import de.metas.material.event.pporder.PPOrderLine;
@@ -78,7 +81,6 @@ public class CandidateService
 			default:
 				break;
 		}
-
 	}
 
 	/**
@@ -109,7 +111,7 @@ public class CandidateService
 				ppOrderBuilder.orderLineId(groupMember.getDemandDetail().getOrderLineId());
 			}
 
-			final ProductionCandidateDetail prodDetail = groupMember.getProductionDetail();
+			final ProductionDetail prodDetail = groupMember.getProductionDetail();
 			if (prodDetail.getProductBomLineId() <= 0)
 			{
 				// we talk about a ppOrder (header)
@@ -152,7 +154,7 @@ public class CandidateService
 		return PPOrderRequestedEvent.builder()
 				.eventDescr(new EventDescr(firstGroupMember.getClientId(), firstGroupMember.getOrgId()))
 				.ppOrder(ppOrderBuilder.build())
-				.reference(firstGroupMember.getReference())
+				.groupId(firstGroupMember.getEffectiveGroupId())
 				.build();
 	}
 
@@ -195,7 +197,7 @@ public class CandidateService
 				ddOrderLineBuilder.salesOrderLineId(groupMember.getDemandDetail().getOrderLineId());
 			}
 
-			final DistributionCandidateDetail distributionDetail = groupMember.getDistributionDetail();
+			final DistributionDetail distributionDetail = groupMember.getDistributionDetail();
 			ddOrderBuilder
 					.plantId(distributionDetail.getPlantId())
 					.productPlanningId(distributionDetail.getProductPlanningId())
@@ -217,7 +219,7 @@ public class CandidateService
 								.durationDays(durationDays)
 								.build())
 						.build())
-				.reference(firstGroupMember.getReference())
+				.groupId(firstGroupMember.getEffectiveGroupId())
 				.build();
 	}
 }

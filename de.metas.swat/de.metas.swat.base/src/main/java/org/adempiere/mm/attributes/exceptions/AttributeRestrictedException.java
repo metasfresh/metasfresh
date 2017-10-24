@@ -26,7 +26,6 @@ package org.adempiere.mm.attributes.exceptions;
 import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.mm.attributes.AttributeConstants;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_AttributeValue;
 import org.compiere.util.Env;
@@ -41,6 +40,9 @@ public class AttributeRestrictedException extends AdempiereException
 	private static final long serialVersionUID = 7812550089813860111L;
 
 	public static final String MSG = "de.metas.swat.Attribute.attributeRestricted";
+
+	public static final String MSG_SOTransaction = "de.metas.swat.SOTrx";
+	public static final String MSG_POTransaction = "de.metas.swat.POTrx";
 
 	/**
 	 * 
@@ -57,7 +59,7 @@ public class AttributeRestrictedException extends AdempiereException
 
 	private static String buildMsg(Properties ctx, boolean isSOTrx, I_M_AttributeValue attributeValue, final String referenceName)
 	{
-		final String transactionType = Services.get(IMsgBL.class).getMsg(ctx, (isSOTrx ? AttributeConstants.MSG_SOTransaction : AttributeConstants.MSG_POTransaction));
+		final String transactionType = Services.get(IMsgBL.class).getMsg(ctx, (isSOTrx ? MSG_SOTransaction : MSG_POTransaction));
 
 		final String adLanguage = Env.getAD_Language(ctx);
 		return Services.get(IMsgBL.class).getMsg(adLanguage,

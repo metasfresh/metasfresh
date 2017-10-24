@@ -30,7 +30,6 @@ import java.util.Properties;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.mm.attributes.api.impl.LotNumberDateAttributeDAO;
-import org.adempiere.mm.attributes.model.I_M_Attribute;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
@@ -43,6 +42,7 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
@@ -280,12 +280,12 @@ public abstract class ReceiptScheduleTestBase
 		final I_C_Order order = InterfaceWrapperHelper.create(ctx, I_C_Order.class, ITrx.TRXNAME_None);
 		order.setC_Order_ID(0);
 		order.setAD_Org_ID(warehouse == null ? 0 : warehouse.getAD_Org_ID()); // 07629
-		order.setAD_User_ID(-1);
-		order.setBill_BPartner_ID(-1);
-		order.setBill_Location_ID(-1);
-		order.setBill_User_ID(-1);
+		order.setAD_User_ID(0);
+		order.setBill_BPartner_ID(0);
+		order.setBill_Location_ID(0);
+		order.setBill_User_ID(0);
 		order.setC_BPartner_ID(bpartner1.getC_BPartner_ID()); // needed to avoid an NPE in InOutGeneratedEventBus
-		order.setC_BPartner_Location_ID(-1);
+		order.setC_BPartner_Location_ID(0);
 
 		if (warehouse != null)
 		{

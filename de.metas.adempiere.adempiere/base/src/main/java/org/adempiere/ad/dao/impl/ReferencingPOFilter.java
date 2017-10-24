@@ -29,8 +29,10 @@ import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.ISqlQueryFilter;
+import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
+import org.adempiere.util.Services;
 import org.compiere.model.MTable;
 
 import de.metas.adempiere.model.IPOReferenceAware;
@@ -64,9 +66,9 @@ public class ReferencingPOFilter<T extends IPOReferenceAware> implements IQueryF
 			return false;
 		}
 		final IPOReferenceAware referencingModel = InterfaceWrapperHelper.create(model, IPOReferenceAware.class);
-		
+		final int tableId = Services.get(IADTableDAO.class).retrieveTableId(InterfaceWrapperHelper.getModelTableName(referencedModel));
 		return 
-				referencingModel.getAD_Table_ID() == MTable.getTable_ID(InterfaceWrapperHelper.getModelTableName(referencedModel))
+				referencingModel.getAD_Table_ID() == tableId
 				&& referencingModel.getRecord_ID() == InterfaceWrapperHelper.getId(referencedModel);
 	}
 

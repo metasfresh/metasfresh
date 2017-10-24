@@ -1,13 +1,15 @@
 package de.metas.handlingunits.storage.impl;
 
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.nullValue;
+import static org.junit.Assert.assertThat;
+
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_UOM;
 import org.junit.Before;
 import org.junit.Test;
-
-import static org.junit.Assert.*;
-import static org.hamcrest.Matchers.*;
 
 import com.google.common.collect.ImmutableList;
 

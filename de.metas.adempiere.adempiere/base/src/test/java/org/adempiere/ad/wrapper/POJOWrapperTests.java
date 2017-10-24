@@ -1,5 +1,7 @@
 package org.adempiere.ad.wrapper;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -13,15 +15,14 @@ package org.adempiere.ad.wrapper;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -43,44 +44,35 @@ public class POJOWrapperTests
 
 	public static interface ITable1
 	{
+		// @formatter:off
 		String Table_Name = "Table1";
-
 		String COLUMNNNAME_Table1_ID = "Table1_ID";
-
 		void setTable1_ID(int value);
-
 		int getTable1_ID();
-
+		
 		String COLUMNNNAME_Name = "Name";
-
 		String getName();
-
 		void setName(String name);
 
 		String COLUMNNNAME_ValueInt = "ValueInt";
-
 		int getValueInt();
-
 		void setValueInt(int value);
+		// @formatter:on
 	}
 
 	public static interface ITable2
 	{
+		// @formatter:off
 		String Table_Name = "Table2";
-
 		String COLUMNNNAME_Table2_ID = "Table2_ID";
-
 		int getTable2_ID();
 
 		String COLUMNNNAME_Table1_ID = "Table1_ID";
-
 		int getTable1_ID();
-
 		void setTable1_ID(int Table1_ID);
-
 		ITable1 getTable1();
-
 		void setTable1(ITable1 table1);
+		// @formatter:on
 	}
 
 	@Before
@@ -93,176 +85,185 @@ public class POJOWrapperTests
 		// Tests will un-set this setting if necessary
 		POJOWrapper.setDefaultStrictValues(true);
 
-		contextProvider = new PlainContextAware(Env.getCtx(), ITrx.TRXNAME_None);
+		contextProvider = PlainContextAware.newOutOfTrx();
 	}
 
 	@Test
 	public void test_DefaultValues()
 	{
-		Assert.assertEquals("Invalid Default Value for Integer", POJOWrapper.DEFAULT_VALUE_int, 0);
-		Assert.assertEquals("Invalid Default Value for IDs", POJOWrapper.DEFAULT_VALUE_ID, -1);
+		assertEquals("Invalid Default Value for Integer", POJOWrapper.DEFAULT_VALUE_int, 0);
+		assertEquals("Invalid Default Value for IDs", POJOWrapper.DEFAULT_VALUE_ID, 0);
+	}
+
+	@Test
+	public void create_return_instance_with_default_values()
+	{
+		POJOWrapper.setDefaultStrictValues(false);
+		final ITable2 table2 = POJOWrapper.create(contextProvider.getCtx(), ITable2.class);
+		assertThat(table2.getTable2_ID()).isEqualTo(POJOWrapper.DEFAULT_VALUE_ID);
+		assertThat(table2.getTable1_ID()).isEqualTo(POJOWrapper.DEFAULT_VALUE_ID);
 	}
 
 	@Test
 	public void test_SetGet_IDColumn()
 	{
-		ITable2 table2 = InterfaceWrapperHelper.newInstance(ITable2.class, contextProvider);
+		ITable2 table2 = POJOWrapper.create(contextProvider.getCtx(), ITable2.class);
+		assertThat(table2.getTable2_ID()).isEqualTo(POJOWrapper.DEFAULT_VALUE_ID);
 
 		table2.setTable1_ID(123);
-		Assert.assertEquals("Invalid Table1_ID", 123, table2.getTable1_ID());
+		assertThat(table2.getTable1_ID()).as("Invalid Table1_ID").isEqualTo(123);
 
-		InterfaceWrapperHelper.save(table2);
-
+		POJOWrapper.save(table2);
 		//
 		// Reload
-		table2 = InterfaceWrapperHelper.create(contextProvider.getCtx(),
+		table2 = POJOWrapper.create(contextProvider.getCtx(),
 				table2.getTable2_ID(),
 				ITable2.class,
 				contextProvider.getTrxName());
 
 		//
 		// Revalidate
-		Assert.assertEquals("Invalid Table1_ID", 123, table2.getTable1_ID());
+		assertThat(table2.getTable1_ID()).as("Invalid Table1_ID").isEqualTo(123);
 	}
 
 	@Test
 	public void test_SetGetModel_Unsaved()
 	{
-		final ITable1 table1 = InterfaceWrapperHelper.newInstance(ITable1.class, contextProvider);
-		ITable2 table2 = InterfaceWrapperHelper.newInstance(ITable2.class, contextProvider);
+		final ITable1 table1 = POJOWrapper.create(contextProvider.getCtx(), ITable1.class);
+		ITable2 table2 = POJOWrapper.create(contextProvider.getCtx(), ITable2.class);
 
 		table2.setTable1(table1);
-		Assert.assertEquals("Invalid Table1_ID", -1, table2.getTable1_ID());
+		assertEquals("Invalid Table1_ID", POJOWrapper.DEFAULT_VALUE_ID, table2.getTable1_ID());
 		Assert.assertSame("Invalid Table1", table1, table2.getTable1());
 	}
 
 	@Test
 	public void test_SetGetModel_Unsaved_ResetID()
 	{
-		final ITable1 table1 = InterfaceWrapperHelper.newInstance(ITable1.class, contextProvider);
-		ITable2 table2 = InterfaceWrapperHelper.newInstance(ITable2.class, contextProvider);
+		final ITable1 table1 = POJOWrapper.create(contextProvider.getCtx(), ITable1.class);
+		ITable2 table2 = POJOWrapper.create(contextProvider.getCtx(), ITable2.class);
 
 		table2.setTable1(table1);
-		Assert.assertEquals("Invalid Table1_ID", -1, table2.getTable1_ID());
-		Assert.assertSame("Invalid Table1", table1, table2.getTable1());
+		assertThat(table2.getTable1_ID()).as("Invalid Table1_ID").isEqualTo(POJOWrapper.DEFAULT_VALUE_ID);
+		assertThat(table2.getTable1()).as("Invalid Table1").isSameAs(table1);
 
-		table2.setTable1_ID(-1);
-		Assert.assertEquals("Invalid Table1_ID", -1, table2.getTable1_ID());
-		Assert.assertEquals("Invalid Table1", null, table2.getTable1());
+		table2.setTable1_ID(POJOWrapper.DEFAULT_VALUE_ID);
+		assertThat(table2.getTable1_ID()).as("Invalid Table1_ID").isEqualTo(POJOWrapper.DEFAULT_VALUE_ID);
+		assertThat(table2.getTable1()).as("Invalid Table1").isNull();
 	}
 
 	@Test
 	public void test_SetGetModel_Saved_ResetID()
 	{
-		final ITable1 table1 = InterfaceWrapperHelper.newInstance(ITable1.class, contextProvider);
-		InterfaceWrapperHelper.save(table1);
+		final ITable1 table1 = POJOWrapper.create(contextProvider.getCtx(), ITable1.class);
+		POJOWrapper.save(table1);
 
-		ITable2 table2 = InterfaceWrapperHelper.newInstance(ITable2.class, contextProvider);
+		ITable2 table2 = POJOWrapper.create(contextProvider.getCtx(), ITable2.class);
 
 		table2.setTable1(table1);
-		Assert.assertEquals("Invalid Table1_ID", table1.getTable1_ID(), table2.getTable1_ID());
+		assertEquals("Invalid Table1_ID", table1.getTable1_ID(), table2.getTable1_ID());
 		Assert.assertSame("Invalid Table1", table1, table2.getTable1());
 
 		table2.setTable1_ID(-1);
-		Assert.assertEquals("Invalid Table1_ID", -1, table2.getTable1_ID());
-		Assert.assertEquals("Invalid Table1", null, table2.getTable1());
+		assertEquals("Invalid Table1_ID", -1, table2.getTable1_ID());
+		assertEquals("Invalid Table1", null, table2.getTable1());
 	}
 
 	@Test
 	public void test_SetGetModel_Unsaved_ResetModel()
 	{
-		final ITable1 table1 = InterfaceWrapperHelper.newInstance(ITable1.class, contextProvider);
-		ITable2 table2 = InterfaceWrapperHelper.newInstance(ITable2.class, contextProvider);
+		final ITable1 table1 = POJOWrapper.create(contextProvider.getCtx(), ITable1.class);
+		ITable2 table2 = POJOWrapper.create(contextProvider.getCtx(), ITable2.class);
 
 		table2.setTable1(table1);
-		Assert.assertEquals("Invalid Table1_ID", -1, table2.getTable1_ID());
+		assertEquals("Invalid Table1_ID", POJOWrapper.DEFAULT_VALUE_ID, table2.getTable1_ID());
 		Assert.assertSame("Invalid Table1", table1, table2.getTable1());
 
 		table2.setTable1(null);
-		Assert.assertEquals("Invalid Table1_ID", POJOWrapper.DEFAULT_VALUE_ID, table2.getTable1_ID());
-		Assert.assertEquals("Invalid Table1", null, table2.getTable1());
+		assertEquals("Invalid Table1_ID", POJOWrapper.DEFAULT_VALUE_ID, table2.getTable1_ID());
+		assertEquals("Invalid Table1", null, table2.getTable1());
 	}
 
 	@Test
 	public void test_SetGetModel_Saved_ResetModel()
 	{
-		final ITable1 table1 = InterfaceWrapperHelper.newInstance(ITable1.class, contextProvider);
-		InterfaceWrapperHelper.save(table1);
+		final ITable1 table1 = POJOWrapper.create(contextProvider.getCtx(), ITable1.class);
+		POJOWrapper.save(table1);
 
-		ITable2 table2 = InterfaceWrapperHelper.newInstance(ITable2.class, contextProvider);
+		ITable2 table2 = POJOWrapper.create(contextProvider.getCtx(), ITable2.class);
 
 		table2.setTable1(table1);
-		Assert.assertEquals("Invalid Table1_ID", table1.getTable1_ID(), table2.getTable1_ID());
+		assertEquals("Invalid Table1_ID", table1.getTable1_ID(), table2.getTable1_ID());
 		Assert.assertSame("Invalid Table1", table1, table2.getTable1());
 
 		table2.setTable1(null);
-		Assert.assertEquals("Invalid Table1_ID", POJOWrapper.DEFAULT_VALUE_ID, table2.getTable1_ID());
-		Assert.assertEquals("Invalid Table1", null, table2.getTable1());
+		assertEquals("Invalid Table1_ID", POJOWrapper.DEFAULT_VALUE_ID, table2.getTable1_ID());
+		assertEquals("Invalid Table1", null, table2.getTable1());
 	}
 
 	@Test
 	public void test_SetGetModel_Changed()
 	{
-		final ITable1 table1_1 = InterfaceWrapperHelper.newInstance(ITable1.class, contextProvider);
-		InterfaceWrapperHelper.save(table1_1);
-		final ITable1 table1_2 = InterfaceWrapperHelper.newInstance(ITable1.class, contextProvider);
-		InterfaceWrapperHelper.save(table1_2);
+		final ITable1 table1_1 = POJOWrapper.create(contextProvider.getCtx(), ITable1.class);
+		POJOWrapper.save(table1_1);
+		final ITable1 table1_2 = POJOWrapper.create(contextProvider.getCtx(), ITable1.class);
+		POJOWrapper.save(table1_2);
 
-		ITable2 table2 = InterfaceWrapperHelper.newInstance(ITable2.class, contextProvider);
+		ITable2 table2 = POJOWrapper.create(contextProvider.getCtx(), ITable2.class);
 
 		table2.setTable1(table1_1);
-		Assert.assertEquals("Invalid Table1_ID", table1_1.getTable1_ID(), table2.getTable1_ID());
+		assertEquals("Invalid Table1_ID", table1_1.getTable1_ID(), table2.getTable1_ID());
 		Assert.assertSame("Invalid Table1", table1_1, table2.getTable1());
 
 		table2.setTable1_ID(-1);
-		Assert.assertEquals("Invalid Table1_ID", -1, table2.getTable1_ID());
+		assertEquals("Invalid Table1_ID", -1, table2.getTable1_ID());
 		Assert.assertNull("Invalid Table1", table2.getTable1());
 	}
 
 	@Test
 	public void test_SetGetModel_ChangedAfterSet()
 	{
-		final ITable1 table1 = InterfaceWrapperHelper.newInstance(ITable1.class, contextProvider);
+		final ITable1 table1 = POJOWrapper.create(contextProvider.getCtx(), ITable1.class);
 		// NOTE: we are not saving it
 
-		final ITable2 table2 = InterfaceWrapperHelper.newInstance(ITable2.class, contextProvider);
+		final ITable2 table2 = POJOWrapper.create(contextProvider.getCtx(), ITable2.class);
 
 		table2.setTable1(table1);
-		Assert.assertEquals("Invalid Table1_ID", POJOWrapper.DEFAULT_VALUE_ID, table2.getTable1_ID());
+		assertEquals("Invalid Table1_ID", POJOWrapper.DEFAULT_VALUE_ID, table2.getTable1_ID());
 		Assert.assertSame("Invalid Table1", table1, table2.getTable1());
 
-		final ITable1 table1_saved = InterfaceWrapperHelper.newInstance(ITable1.class, contextProvider);
-		InterfaceWrapperHelper.save(table1_saved);
+		final ITable1 table1_saved = POJOWrapper.create(contextProvider.getCtx(), ITable1.class);
+		POJOWrapper.save(table1_saved);
 
 		table2.setTable1_ID(table1_saved.getTable1_ID());
-		Assert.assertEquals("Invalid Table1_ID", table1_saved.getTable1_ID(), table2.getTable1_ID());
-		Assert.assertEquals("Invalid Table1 value", table1_saved, table2.getTable1());
+		assertEquals("Invalid Table1_ID", table1_saved.getTable1_ID(), table2.getTable1_ID());
+		assertEquals("Invalid Table1 value", table1_saved, table2.getTable1());
 		Assert.assertNotSame("Invalid Table1 value; shall not be same", table1_saved, table2.getTable1());
 	}
 
 	@Test
 	public void test_SetGet_ValueInt()
 	{
-		final ITable1 table1 = InterfaceWrapperHelper.newInstance(ITable1.class, contextProvider);
+		final ITable1 table1 = POJOWrapper.create(contextProvider.getCtx(), ITable1.class);
 
 		table1.setValueInt(123);
-		Assert.assertEquals("Invalid ValueInt", 123, table1.getValueInt());
+		assertEquals("Invalid ValueInt", 123, table1.getValueInt());
 	}
 
 	@Test
 	public void test_SetGet_ValueInt_Default()
 	{
-		final ITable1 table1 = InterfaceWrapperHelper.newInstance(ITable1.class, contextProvider);
+		final ITable1 table1 = POJOWrapper.create(contextProvider.getCtx(), ITable1.class);
 		POJOWrapper.disableStrictValues(table1);
 
-		Assert.assertEquals("Invalid Default ValueInt", POJOWrapper.DEFAULT_VALUE_int, table1.getValueInt());
+		assertEquals("Invalid Default ValueInt", POJOWrapper.DEFAULT_VALUE_int, table1.getValueInt());
 	}
 
 	@Test
 	public void setId_Again()
 	{
-		final ITable1 table1 = InterfaceWrapperHelper.newInstance(ITable1.class, contextProvider);
-		InterfaceWrapperHelper.save(table1);
+		final ITable1 table1 = POJOWrapper.create(contextProvider.getCtx(), ITable1.class);
+		POJOWrapper.save(table1);
 
 		Assert.assertTrue("ID was not set: " + table1, table1.getTable1_ID() > 0);
 
@@ -273,27 +274,27 @@ public class POJOWrapperTests
 	@Test
 	public void test_GetModel_CachedModelShallRefresh()
 	{
-		final ITable1 table1 = InterfaceWrapperHelper.newInstance(ITable1.class, contextProvider);
+		final ITable1 table1 = POJOWrapper.create(contextProvider.getCtx(), ITable1.class);
 		table1.setValueInt(100);
-		InterfaceWrapperHelper.save(table1);
+		POJOWrapper.save(table1);
 
-		final ITable2 table2 = InterfaceWrapperHelper.newInstance(ITable2.class, contextProvider);
+		final ITable2 table2 = POJOWrapper.create(contextProvider.getCtx(), ITable2.class);
 		table2.setTable1(table1);
-		InterfaceWrapperHelper.save(table2);
+		POJOWrapper.save(table2);
 
 		// We assume that Table1 has the right ValueInt
-		Assert.assertEquals("Table1 shall be refreshed before returned",
+		assertEquals("Table1 shall be refreshed before returned",
 				100, // expected
 				table2.getTable1().getValueInt());
 
-		final ITable1 table1_reloaded = InterfaceWrapperHelper.create(Env.getCtx(), table1.getTable1_ID(), ITable1.class, ITrx.TRXNAME_None);
-		Assert.assertEquals("Invalid Table1 ValueInt", 100, table1_reloaded.getValueInt());
+		final ITable1 table1_reloaded = POJOWrapper.create(Env.getCtx(), table1.getTable1_ID(), ITable1.class, ITrx.TRXNAME_None);
+		assertEquals("Invalid Table1 ValueInt", 100, table1_reloaded.getValueInt());
 
 		table1_reloaded.setValueInt(123);
-		InterfaceWrapperHelper.save(table1_reloaded);
+		POJOWrapper.save(table1_reloaded);
 
 		// We assume that Table1 is refreshed before retrieved even if it was cached
-		Assert.assertEquals("Table1 shall be refreshed before returned",
+		assertEquals("Table1 shall be refreshed before returned",
 				123, // expected
 				table2.getTable1().getValueInt());
 	}
@@ -308,7 +309,7 @@ public class POJOWrapperTests
 	public void testRefreshSetsTrxName()
 	{
 		final I_C_BPartner bp = POJOWrapper.create(Env.getCtx(), I_C_BPartner.class);
-		InterfaceWrapperHelper.save(bp);
+		POJOWrapper.save(bp);
 		assertNull(POJOWrapper.getTrxName(bp)); // guard
 
 		final boolean discardChanges = false;
