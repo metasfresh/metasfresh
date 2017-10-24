@@ -29,7 +29,6 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Client;
 
 import de.metas.acct.api.IDocumentRepostingBL;
-import de.metas.banking.callout.C_BankStatementLine_Ref;
 import de.metas.banking.service.IBankStatementListenerService;
 import de.metas.banking.spi.impl.BankStatementDocumentRepostingHandler;
 
