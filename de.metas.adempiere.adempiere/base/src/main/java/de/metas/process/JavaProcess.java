@@ -847,21 +847,27 @@ public abstract class JavaProcess implements IProcess, ILoggable, IContextAware
 
 		return getProcessInfo().getRecord(modelClass, trxName);
 	}
+	
+	/** @return selected included row IDs of current single selected document */
+	protected final <T> Set<Integer> getSelectedIncludedRecordIds(final Class<T> modelClass)
+	{
+		final String tableName = InterfaceWrapperHelper.getTableName(modelClass);
+		return getProcessInfo().getSelectedIncludedRecords().stream()
+				.filter(recordRef -> recordRef.getTableName().equals(tableName))
+				.map(TableRecordReference::getRecord_ID)
+				.collect(ImmutableSet.toImmutableSet());
+	}
 
 	/** @return selected included rows of current single selected document */
 	protected final <T> List<T> getSelectedIncludedRecords(final Class<T> modelClass)
 	{
-		final String tableName = InterfaceWrapperHelper.getTableName(modelClass);
-		final Set<Integer> recordIds = getProcessInfo().getSelectedIncludedRecords().stream()
-				.filter(recordRef -> recordRef.getTableName().equals(tableName))
-				.map(TableRecordReference::getRecord_ID)
-				.collect(ImmutableSet.toImmutableSet());
+		final Set<Integer> recordIds = getSelectedIncludedRecordIds(modelClass);
 		if (recordIds.isEmpty())
 		{
 			return ImmutableList.of();
 		}
 
-		final String keyColumnName = InterfaceWrapperHelper.getKeyColumnName(tableName);
+		final String keyColumnName = InterfaceWrapperHelper.getKeyColumnName(modelClass);
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(modelClass)
 				.addInArrayFilter(keyColumnName, recordIds)
