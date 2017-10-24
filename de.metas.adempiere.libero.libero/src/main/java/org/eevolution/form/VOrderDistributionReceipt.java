@@ -225,7 +225,7 @@ public class VOrderDistributionReceipt extends CPanel
 				, m_WindowNo
 				, MColumn.getColumn_ID(MDDOrder.Table_Name,MDDOrder.COLUMNNAME_DD_Order_ID) 
 				, DisplayType.Search 
-				, MDDOrder.Table_Name
+				, null // tablename
 				, MDDOrder.COLUMNNAME_DD_Order_ID 
 				,  0 
 				, false

@@ -1,36 +1,9 @@
 package de.metas.adempiere.service.impl;
 
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import static org.adempiere.model.I_M_PackagingContainer.COLUMNNAME_M_PackagingContainer_ID;
-import static org.adempiere.model.I_M_PackagingContainer.Table_ID;
-
 import java.util.Properties;
 
-import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.validationRule.IValidationRule;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Column;
@@ -81,7 +54,7 @@ public class PackagingBL implements IPackagingBL
 					-1, // WindowNo
 					0, // Column_ID,
 					DisplayType.Table, // AD_Reference_ID,
-					Services.get(IADTableDAO.class).retrieveTableName(c.getAD_Table_ID()),
+					null, //ctx  tablename
 					c.getColumnName(), // ColumnName
 					c.getAD_Reference_Value_ID(), // AD_Reference_Value_ID,
 					false, // IsParent,
