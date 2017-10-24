@@ -104,6 +104,7 @@ public abstract class AbstractInfoQueryCriteriaGeneral implements IInfoQueryCrit
 						windowNo,
 						0, // Column_ID,
 						infoColumn.getAD_Reference_ID(),
+						null, // tableName
 						columnName,
 						infoColumn.getAD_Reference_Value_ID(),
 						false, // IsParent

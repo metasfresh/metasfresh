@@ -187,6 +187,7 @@ class ReadPaymentDocumentPanel
 				WindowNo,
 				bpartnerColumn.getAD_Column_ID(),
 				DisplayType.Search,
+				I_C_BPartner.Table_Name,
 				I_C_BPartner.COLUMNNAME_C_BPartner_ID,
 				138, // C_BPartner (trx)
 				false,
