@@ -791,7 +791,9 @@ public class GridFieldVO implements Serializable
 				else
 				{
 					lookupInfo = MLookupFactory.getLookupInfo(WindowNo, displayType,
-							ColumnName, AD_Reference_Value_ID,
+							null, //tableName
+							ColumnName,
+							AD_Reference_Value_ID,
 							IsParent, AD_Val_Rule_ID); // metas: 03271
 				}
 				lookupInfo.InfoFactoryClass = this.InfoFactoryClass;
