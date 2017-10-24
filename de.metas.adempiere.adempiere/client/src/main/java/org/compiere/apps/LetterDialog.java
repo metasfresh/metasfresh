@@ -126,7 +126,7 @@ public class LetterDialog
 				getWindowNo(),
 				0, // Column_ID
 				DisplayType.TableDir,
-				null, // tablename
+				I_C_BPartner.Table_Name,
 				I_C_BPartner.COLUMNNAME_C_BPartner_ID,
 				0, // AD_Reference_Value_ID,
 				false, // IsParent,
