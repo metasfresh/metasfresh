@@ -8,6 +8,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.util.Optional;
 import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
@@ -18,6 +19,7 @@ import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_C_Payment;
+import org.compiere.model.I_M_ProductPrice;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
@@ -46,11 +48,11 @@ import lombok.Value;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -62,18 +64,17 @@ import lombok.Value;
 public class BankStatementLineOrRefHelper
 {
 	final static private ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
-	
+
 	public static void setBankStatementLineOrRefFieldsWhenInvoiceChanged(@NonNull final IBankStatementLineOrRef lineOrRef)
 	{
 		setBankStatementLineOrRefAmountsToZero(lineOrRef);
 		setBankStatementLineOrRefTrxAndStmtAmountsToZero(lineOrRef);
-		
+
 		final InvoiceInfoVO invoiceInfo = fetchInvoiceCurrencyBpartnerAndAmounts(lineOrRef);
 		setBankStatementLineOrRefCurrencyBPartneAndInvoiceWhenInvoiceChanged(lineOrRef, invoiceInfo);
 		setBankStatementLineOrRefAmountsWhenInvoiceChanged(lineOrRef, invoiceInfo);
 	}
 
-	
 	public static void setBankStatementLineOrRefAmountsToZero(@NonNull final IBankStatementLineOrRef lineOrRef)
 	{
 		lineOrRef.setDiscountAmt(BigDecimal.ZERO);
@@ -92,7 +93,7 @@ public class BankStatementLineOrRefHelper
 			line.setStmtAmt(BigDecimal.ZERO);
 		}
 	}
-	
+
 	private static InvoiceInfoVO fetchInvoiceCurrencyBpartnerAndAmounts(@NonNull final IBankStatementLineOrRef lineOrRef)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(lineOrRef);
@@ -113,7 +114,7 @@ public class BankStatementLineOrRefHelper
 		lineOrRef.setC_Currency_ID(invoiceInfo.getCurrencyId());
 		lineOrRef.setC_Invoice_ID(invoiceInfo.getInvoiceId());
 	}
-	
+
 	private static void setBankStatementLineOrRefAmountsWhenInvoiceChanged(@NonNull final IBankStatementLineOrRef lineOrRef, final InvoiceInfoVO invoiceInfo)
 	{
 		if (invoiceInfo == null)
@@ -132,10 +133,9 @@ public class BankStatementLineOrRefHelper
 			line.setStmtAmt(openAmtActual);
 		}
 	}
-	
+
 	private static int getC_InvoicePaySchedule_ID(Properties ctx, int C_Invoice_ID)
 	{
-		// TODO: refactor
 		int C_InvoicePaySchedule_ID = 0;
 		if (Env.getContextAsInt(ctx, Env.WINDOW_INFO, Env.TAB_INFO, "C_Invoice_ID") == C_Invoice_ID
 				&& Env.getContextAsInt(ctx, Env.WINDOW_INFO, Env.TAB_INFO, "C_InvoicePaySchedule_ID") != 0)
@@ -205,9 +205,9 @@ public class BankStatementLineOrRefHelper
 	{
 		final StringBuilder sql = new StringBuilder()
 				.append("SELECT C_BPartner_ID,C_Currency_ID,")
-				.append(" invoiceOpen(C_Invoice_ID, ?),") 
-				.append(" invoiceDiscount(C_Invoice_ID,?,?), IsSOTrx ") 
-				.append("FROM C_Invoice WHERE C_Invoice_ID=?"); 
+				.append(" invoiceOpen(C_Invoice_ID, ?),")
+				.append(" invoiceDiscount(C_Invoice_ID,?,?), IsSOTrx ")
+				.append("FROM C_Invoice WHERE C_Invoice_ID=?");
 
 		final PreparedStatement pstmt = DB.prepareStatement(sql.toString(), ITrx.TRXNAME_None);
 		pstmt.setInt(1, params.getInvoicePayScheduleId());
@@ -216,18 +216,17 @@ public class BankStatementLineOrRefHelper
 		pstmt.setInt(4, params.getInvoiceId());
 		return pstmt;
 	}
-	
-	
+
 	public static void setBankStatementLineOrRefAmountsWhenSomeAmountChanged(@NonNull final IBankStatementLineOrRef lineOrRef, @NonNull final String colName)
 	{
 		final Amounts paymentAmounts = computeBankStatementLineOrRefAmounts(lineOrRef, colName);
-		
+
 		lineOrRef.setTrxAmt(paymentAmounts.getPayAmt());
 		lineOrRef.setOverUnderAmt(paymentAmounts.getOverUnderAmt());
 		lineOrRef.setWriteOffAmt(paymentAmounts.getWriteOffAmt());
 		lineOrRef.setDiscountAmt(paymentAmounts.getDiscountAmt());
 	}
-	
+
 	@Data
 	@Builder
 	private static class Amounts
@@ -238,7 +237,7 @@ public class BankStatementLineOrRefHelper
 		private BigDecimal overUnderAmt;
 		private BigDecimal payAmt;
 	}
-	
+
 	private static Amounts computeBankStatementLineOrRefAmounts(@NonNull final IBankStatementLineOrRef lineOrRef, @NonNull final String colName)
 	{
 		final InvoiceInfoVO invoiceInfo = fetchInvoiceCurrencyBpartnerAndAmounts(lineOrRef);
@@ -256,7 +255,7 @@ public class BankStatementLineOrRefHelper
 				.writeOffAmt(writeOffAmt)
 				.overUnderAmt(overUnderAmt)
 				.build();
-		
+
 		computeInvoiceOpenAmtIfNeeded(lineOrRef, invoiceInfo, paymentAmounts);
 
 		if (colName.equals(I_C_BankStatementLine.COLUMNNAME_C_Currency_ID))
@@ -278,7 +277,7 @@ public class BankStatementLineOrRefHelper
 
 		return paymentAmounts;
 	}
-	
+
 	private static Timestamp getTrxDate(@NonNull final IBankStatementLineOrRef lineOrRef)
 	{
 		if (lineOrRef instanceof org.compiere.model.I_C_BankStatementLine)
@@ -289,10 +288,19 @@ public class BankStatementLineOrRefHelper
 		else
 		{
 			final I_C_BankStatementLine_Ref ref = (I_C_BankStatementLine_Ref)lineOrRef;
-			return MoreObjects.firstNonNull(ref.getC_BankStatementLine().getStatementLineDate(), SystemTime.asTimestamp());
+			return getStatementLineDateOrCurrentDate(ref);
 		}
 	}
-	
+
+	private static Timestamp getStatementLineDateOrCurrentDate(@NonNull final I_C_BankStatementLine_Ref ref)
+	{
+		final Optional<org.compiere.model.I_C_BankStatementLine> line = Optional.ofNullable(ref.getC_BankStatementLine());
+		if (line.isPresent())
+		{
+			return MoreObjects.firstNonNull(line.get().getStatementLineDate(), SystemTime.asTimestamp());
+		}
+		return SystemTime.asTimestamp();
+	}
 
 	private static void computeInvoiceOpenAmtIfNeeded(@NonNull final IBankStatementLineOrRef lineOrRef, final InvoiceInfoVO invoiceInfo, @NonNull final Amounts paymentAmounts)
 	{
@@ -309,7 +317,7 @@ public class BankStatementLineOrRefHelper
 			paymentAmounts.setInvoiceOpenAmt(invoiceOpenAmt);
 		}
 	}
-	
+
 	private static void computeAmountsWhenCurrencyChanged(@NonNull final IBankStatementLineOrRef lineOrRef, final InvoiceInfoVO invoiceInfo, @NonNull final Amounts paymentAmounts)
 	{
 		BigDecimal invoiceOpenAmt = paymentAmounts.getInvoiceOpenAmt();
@@ -381,18 +389,18 @@ public class BankStatementLineOrRefHelper
 		paymentAmounts.setOverUnderAmt(overUnderAmt);
 
 	}
-	
+
 	private static void computeTrxAmtAmount(@NonNull final IBankStatementLineOrRef lineOrRef, @NonNull final Amounts paymentAmounts)
 	{
 		final BigDecimal invoiceOpenAmt = paymentAmounts.getInvoiceOpenAmt();
 		final BigDecimal discountAmt = lineOrRef.getDiscountAmt();
 		final BigDecimal writeOffAmt = lineOrRef.getWriteOffAmt();
 		final BigDecimal overUnderAmt = lineOrRef.getOverUnderAmt();
-		
+
 		final BigDecimal payAmt = invoiceOpenAmt.subtract(discountAmt).subtract(writeOffAmt).subtract(overUnderAmt);
 		paymentAmounts.setPayAmt(payAmt);
 	}
-	
+
 	private static BigDecimal computeCurrencyRate(final IBankStatementLineOrRef lineOrRef, final InvoiceInfoVO invoiceInfo)
 	{
 		final int currencyId = lineOrRef.getC_Currency_ID();
