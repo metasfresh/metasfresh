@@ -1,7 +1,7 @@
 /**
  * 
  */
-package de.metas.callout;
+package de.metas.banking.callout;
 
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
