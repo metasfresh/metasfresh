@@ -233,8 +233,6 @@ public class C_OrderLine
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = {
-			I_C_OrderLine.COLUMNNAME_IsGroupCompensationLine,
-			I_C_OrderLine.COLUMNNAME_GroupNo,
 			I_C_OrderLine.COLUMNNAME_LineNetAmt,
 			I_C_OrderLine.COLUMNNAME_GroupCompensationPercentage
 	})
