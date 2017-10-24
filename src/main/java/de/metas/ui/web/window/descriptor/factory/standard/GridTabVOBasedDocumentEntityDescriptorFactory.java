@@ -279,7 +279,7 @@ import lombok.NonNull;
 			final String ctxTableName = Services.get(IADTableDAO.class).retrieveTableName(gridFieldVO.getAD_Table_ID());
 			
 			lookupDescriptorProvider = SqlLookupDescriptor.builder()
-					.setCtxTableName(ctxTableName)
+					.setCtxTableName(null)
 					.setCtxColumnName(sqlColumnName)
 					.setWidgetType(widgetType)
 					.setDisplayType(displayType)

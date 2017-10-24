@@ -66,7 +66,7 @@ public class PackageableViewRepository
 		// and also to allow it to be unit-tested (when the lookups are not part of the test), I use those suppliers.
 
 		orderLookup = Suppliers.memoize(() -> LookupDataSourceFactory.instance.getLookupDataSource(SqlLookupDescriptor.builder()
-				.setCtxTableName(I_M_Packageable_V.Table_Name)
+				.setCtxTableName(null)
 				.setCtxColumnName(I_M_Packageable_V.COLUMNNAME_C_Order_ID)
 				.setDisplayType(DisplayType.Search)
 				.setWidgetType(DocumentFieldWidgetType.Lookup)
@@ -74,7 +74,7 @@ public class PackageableViewRepository
 				.provideForScope(LookupScope.DocumentField)));
 
 		productLookup = Suppliers.memoize(() -> LookupDataSourceFactory.instance.getLookupDataSource(SqlLookupDescriptor.builder()
-				.setCtxTableName(I_M_Packageable_V.Table_Name)
+				.setCtxTableName(null)
 				.setCtxColumnName(I_M_Packageable_V.COLUMNNAME_M_Product_ID)
 				.setDisplayType(DisplayType.Search)
 				.setWidgetType(DocumentFieldWidgetType.Lookup)
