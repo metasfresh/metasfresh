@@ -1,16 +1,18 @@
 package de.metas.material.dispo.service.candidatechange;
 
-import org.adempiere.util.Check;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.springframework.context.annotation.Lazy;
+import java.util.Collection;
+import java.util.Map;
+
+import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Service;
 
-import de.metas.material.dispo.Candidate;
-import de.metas.material.dispo.CandidateRepository;
-import de.metas.material.dispo.service.candidatechange.handler.DemandCandiateCangeHandler;
-import de.metas.material.dispo.service.candidatechange.handler.StockUpCandiateCangeHandler;
-import de.metas.material.dispo.service.candidatechange.handler.SupplyCandiateCangeHandler;
-import de.metas.material.event.MaterialEventService;
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMap.Builder;
+
+import de.metas.material.dispo.CandidateSpecification.Type;
+import de.metas.material.dispo.candidate.Candidate;
+import de.metas.material.dispo.service.candidatechange.handler.CandidateHandler;
 import lombok.NonNull;
 
 /*
@@ -35,40 +37,15 @@ import lombok.NonNull;
  * #L%
  */
 @Service
-@Lazy // .. because MaterialEventService needs to be lazy
 public class CandidateChangeService
 {
-	private final DemandCandiateCangeHandler demandCandiateCangeHandler;
-	
-	private final StockUpCandiateCangeHandler stockUpCandiateCangeHandler;
-	
-	private final SupplyCandiateCangeHandler supplyCandiateCangeHandler;
-	
-	private final CandidateRepository candidateRepository;
-	
+
+	private final Map<Type, CandidateHandler> type2handler;
+
 	public CandidateChangeService(
-			@NonNull final CandidateRepository candidateRepository,
-			@NonNull final StockCandidateService stockCandidateService,
-			@NonNull final MaterialEventService materialEventService)
+			@NonNull final Collection<CandidateHandler> candidateChangeHandlers)
 	{
-		this.candidateRepository = candidateRepository;
-		
-		this.demandCandiateCangeHandler = DemandCandiateCangeHandler.builder()
-				.candidateRepository(candidateRepository)
-				.materialEventService(materialEventService)
-				.stockCandidateService(stockCandidateService)
-				.build();
-		
-		this.supplyCandiateCangeHandler = SupplyCandiateCangeHandler.builder()
-				.candidateRepository(candidateRepository)
-				.materialEventService(materialEventService)
-				.stockCandidateService(stockCandidateService)
-				.build();
-		
-		this.stockUpCandiateCangeHandler = StockUpCandiateCangeHandler.builder()
-				.candidateRepository(candidateRepository)
-				.materialEventService(materialEventService)
-				.build();
+		type2handler = createMapOfHandlers(candidateChangeHandlers);
 	}
 
 	/**
@@ -79,25 +56,32 @@ public class CandidateChangeService
 	 */
 	public Candidate onCandidateNewOrChange(@NonNull final Candidate candidate)
 	{
-		switch (candidate.getType())
+
+		final CandidateHandler candidateChangeHandler = type2handler.get(candidate.getType());
+		if (candidateChangeHandler == null)
 		{
-			case DEMAND:
-				return demandCandiateCangeHandler.onDemandCandidateNewOrChange(candidate);
-				
-			case SUPPLY:
-				return supplyCandiateCangeHandler.onSupplyCandidateNewOrChange(candidate);
 
-			case STOCK_UP:
-				return stockUpCandiateCangeHandler.onStockUpCandidateNewOrChange(candidate);
-
-			default:
-				Check.errorIf(true, "Param 'candidate' has unexpected type={}; candidate={}", candidate.getType(), candidate);
-				return null;
+			throw new AdempiereException("Given 'candidate' parameter has an unsupported type").appendParametersToMessage()
+					.setParameter("type", candidate.getType())
+					.setParameter("candidate", candidate);
 		}
+
+		return candidateChangeHandler.onCandidateNewOrChange(candidate);
 	}
-	
-	public void onCandidateDelete(@NonNull final TableRecordReference recordReference)
+
+	@VisibleForTesting
+	static Map<Type, CandidateHandler> createMapOfHandlers(
+			@NonNull final Collection<CandidateHandler> candidateChangeHandlers)
 	{
-		candidateRepository.deleteForReference(recordReference);
+		final Builder<Type, CandidateHandler> builder = ImmutableMap.builder();
+		for (final CandidateHandler handler : candidateChangeHandlers)
+		{
+			for (final Type type : handler.getHandeledTypes())
+			{
+				builder.put(type, handler); // builder already prohibits duplicate keys :-)
+			}
+		}
+		return builder.build();
 	}
+
 }

@@ -26,9 +26,9 @@ package de.metas.handlingunits.attribute.strategy.impl;
 import java.util.Collections;
 import java.util.List;
 
-import org.compiere.model.I_M_Attribute;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
+import org.compiere.model.I_M_Attribute;
 
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.strategy.IAttributeSplitRequest;

@@ -32,7 +32,9 @@ import org.adempiere.ad.validationRule.IValidationRuleFactory;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.adempiere.util.agg.key.IAggregationKeyBuilder;
+
 import org.adempiere.warehouse.validationrule.FilterWarehouseByDocTypeValidationRule;
+
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.ModelValidator;
 

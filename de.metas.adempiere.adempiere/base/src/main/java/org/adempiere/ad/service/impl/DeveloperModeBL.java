@@ -161,7 +161,8 @@ public class DeveloperModeBL implements IDeveloperModeBL
 			messageNew.setEntityType(getEntityType(ctx));
 			// The save will trigger CCache reset for "AD_Message" which will clear message from Msg class
 			InterfaceWrapperHelper.save(messageNew);
-			logger.warn("Created: " + messageNew + ", Value=" + messageNew.getValue() + ", EntityType=" + messageNew.getEntityType(), new Exception());
+			logger.warn("This is not an exception, just a warn message! Created: " + messageNew 
+					+ ", Value=" + messageNew.getValue() + ", EntityType=" + messageNew.getEntityType(), new Exception());
 		}
 		if (createElement)
 		{
@@ -171,7 +172,8 @@ public class DeveloperModeBL implements IDeveloperModeBL
 			elementNew.setPrintName(text);
 			elementNew.setEntityType(getEntityType(ctx));
 			elementNew.saveEx();
-			logger.warn("Created: " + element + ", ColumnName=" + elementNew.getColumnName() + ", EntityType=" + elementNew.getEntityType(), new Exception());
+			logger.warn("\"This is not an exception, just a warn message! Created: " + element 
+					+ ", ColumnName=" + elementNew.getColumnName() + ", EntityType=" + elementNew.getEntityType(), new Exception());
 		}
 		return createMessage || createElement;
 	}

@@ -32,7 +32,6 @@ import java.util.Objects;
 import java.util.Set;
 
 import org.adempiere.mm.attributes.api.IAttributesBL;
-import org.compiere.model.I_M_Attribute;
 import org.adempiere.mm.attributes.spi.IAttributeValueCallout;
 import org.adempiere.mm.attributes.spi.IAttributeValueContext;
 import org.adempiere.mm.attributes.spi.IAttributeValueGenerator;
@@ -42,6 +41,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Attribute;
 import org.compiere.model.X_M_Attribute;
 import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
@@ -58,6 +58,7 @@ import de.metas.handlingunits.attribute.IHUAttributesDAO;
 import de.metas.handlingunits.attribute.exceptions.InvalidAttributeValueException;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.logging.LogManager;
+import lombok.NonNull;
 
 /**
  * Generic {@link IAttributeValue} value implementation
@@ -83,14 +84,11 @@ public abstract class AbstractAttributeValue implements IAttributeValue
 
 	private final CompositeAttributeValueListener listeners = new CompositeAttributeValueListener();
 
-	public AbstractAttributeValue(final IAttributeStorage attributeStorage, final org.compiere.model.I_M_Attribute attribute)
+	public AbstractAttributeValue(
+			@NonNull final IAttributeStorage attributeStorage, 
+			@NonNull final I_M_Attribute attribute)
 	{
-		super();
-
-		Check.assumeNotNull(attributeStorage, "attributeStorage not null");
 		this.attributeStorage = attributeStorage;
-
-		Check.assumeNotNull(attribute, "attribute not null");
 		this.attribute = InterfaceWrapperHelper.create(attribute, I_M_Attribute.class);
 
 		_attributeValuesProvider = Services.get(IAttributesBL.class).createAttributeValuesProvider(this.attribute);
@@ -232,7 +230,7 @@ public abstract class AbstractAttributeValue implements IAttributeValue
 
 		//
 		// Set internal values
-		// FIXME: set order is important because of org.compiere.model.MAttributeInstance.setValueNumber(BigDecimal)
+		// FIXME: set order is important because of MAttributeInstance.setValueNumber(BigDecimal)
 		setInternalValueNumber(valueBD);
 		setInternalValueDate(valueDate);
 		setInternalValueString(valueStr);
@@ -301,7 +299,7 @@ public abstract class AbstractAttributeValue implements IAttributeValue
 
 		//
 		// Set internal values
-		// FIXME: set order is important because of org.compiere.model.MAttributeInstance.setValueNumber(BigDecimal)
+		// FIXME: set order is important because of MAttributeInstance.setValueNumber(BigDecimal)
 		setInternalValueNumberInitial(valueBD);
 		setInternalValueStringInitial(valueStr);
 		setInternalValueDateInitial(valueDate);

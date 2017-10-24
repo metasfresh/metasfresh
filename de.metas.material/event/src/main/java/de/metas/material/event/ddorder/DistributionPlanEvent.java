@@ -1,14 +1,12 @@
 package de.metas.material.event.ddorder;
 
-import org.adempiere.util.lang.impl.TableRecordReference;
 import org.eevolution.model.I_DD_Order;
 
 import de.metas.material.event.EventDescr;
 import de.metas.material.event.MaterialEvent;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
 import lombok.NonNull;
+import lombok.Value;
 
 /*
  * #%L
@@ -36,31 +34,28 @@ import lombok.NonNull;
  *
  * @author metas-dev <dev@metasfresh.com>
  */
-@Data
+@Value
 @Builder
-@AllArgsConstructor
 public class DistributionPlanEvent implements MaterialEvent
 {
 	public static final String TYPE = "DistributionPlanEvent";
 
 	@NonNull
-	private final EventDescr eventDescr;
+	EventDescr eventDescr;
 
-	private final TableRecordReference reference;
 
 	@NonNull
-	private final DDOrder ddOrder;
-
+	DDOrder ddOrder;
 
 	/**
 	 * Note: this field is a bit redundant because the {@link #getPpOrder()}'s lines contain a network distribution line with this info. However, the material-dispo code doesn't know or care about how to get to that information.
 	 */
 	@NonNull
-	private final Integer fromWarehouseId;
+	Integer fromWarehouseId;
 
 	/**
 	 * Also check the note about {@link #getFromWarehouseId()}.
 	 */
 	@NonNull
-	private final Integer toWarehouseId;
+	Integer toWarehouseId;
 }

@@ -135,7 +135,7 @@ public class HUOrderBL implements IHUOrderBL
 			if (!Services.get(IHUCapacityBL.class).isInfiniteCapacity(pip))
 			{
 				final I_M_Product product = ol.getM_Product();
-				qtyCap = Services.get(IHUCapacityBL.class).getCapacity(pip, product, pip.getC_UOM()).getCapacity();
+				qtyCap = Services.get(IHUCapacityBL.class).getCapacity(pip, product, pip.getC_UOM()).getCapacityQty();
 				Check.assume(qtyCap.signum() != 0, "Zero capacity for M_HU_PI_Item_Product {}", pip.getM_HU_PI_Item_Product_ID());
 			}
 			final String description = pip.getDescription();

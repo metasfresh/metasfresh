@@ -43,16 +43,6 @@ import org.compiere.model.I_M_AttributeValue_Mapping;
 public interface IAttributeDAO extends ISingletonService
 {
 	/**
-	 * No ASI (record which actually exists in M_AttributeSetInstance table)
-	 */
-	int M_AttributeSetInstance_ID_None = 0;
-
-	/**
-	 * No Attribute Set (record which actually exists in M_AttributeSet table)
-	 */
-	int M_AttributeSet_ID_None = 0;
-
-	/**
 	 * Retrieves the "No Attribute Set" instance (i.e. M_AttributeSet_ID = {@link #M_AttributeSet_ID_None}).
 	 * 
 	 * @param ctx

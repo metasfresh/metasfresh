@@ -20,6 +20,7 @@ import org.compiere.model.I_C_Calendar;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_Period;
 import org.compiere.model.I_C_Year;
+import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.TimeUtil;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -27,7 +28,6 @@ import org.junit.BeforeClass;
 import de.metas.adempiere.model.I_C_CountryArea;
 import de.metas.adempiere.service.ICountryAreaBL;
 import de.metas.contracts.flatrate.interfaces.I_C_DocType;
-import de.metas.interfaces.I_M_Warehouse;
 
 /*
  * #%L
@@ -171,7 +171,7 @@ public abstract class AbstractFlatrateTermTest
 		});
 	}
 	
-	
+		
 	private void createWarehouse()
 	{
 		final I_M_Warehouse warehouse = newInstance(I_M_Warehouse.class);

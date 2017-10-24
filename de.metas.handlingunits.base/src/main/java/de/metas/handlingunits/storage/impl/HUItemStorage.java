@@ -36,7 +36,6 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 
 import de.metas.handlingunits.IHUCapacityBL;
-import de.metas.handlingunits.IHUCapacityDefinition;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.impl.AllocationUtils;
@@ -52,6 +51,8 @@ import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IHUStorageDAO;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.handlingunits.storage.IProductStorage;
+import de.metas.quantity.Capacity;
+import de.metas.quantity.CapacityInterface;
 import de.metas.quantity.Quantity;
 
 public class HUItemStorage implements IHUItemStorage
@@ -74,7 +75,7 @@ public class HUItemStorage implements IHUItemStorage
 	 */
 	private final boolean allowRequestReleaseIncludedHU;
 
-	private final Map<Integer, IHUCapacityDefinition> productId2customCapacity = new HashMap<Integer, IHUCapacityDefinition>();
+	private final Map<Integer, Capacity> productId2customCapacity = new HashMap<>();
 
 	/**
 	 * Creates a new instance. Actual {@link I_M_HU_Item_Storage} records will be loaded and saved only when needed.
@@ -210,11 +211,11 @@ public class HUItemStorage implements IHUItemStorage
 	}
 
 	@Override
-	public IHUCapacityDefinition getCapacity(final I_M_Product product, final I_C_UOM uom, final Date date)
+	public CapacityInterface getCapacity(final I_M_Product product, final I_C_UOM uom, final Date date)
 	{
 		//
 		// In case there is a custom capacity set, we use that right away
-		final IHUCapacityDefinition customCapacity = getCustomCapacityOrNull(product, uom);
+		final CapacityInterface customCapacity = getCustomCapacityOrNull(product, uom);
 		if (customCapacity != null)
 		{
 			return customCapacity;
@@ -222,24 +223,24 @@ public class HUItemStorage implements IHUItemStorage
 
 		//
 		// Get directly
-		final IHUCapacityDefinition capacity = capacityBL.getCapacity(item, product, uom, date);
+		final CapacityInterface capacity = capacityBL.getCapacity(item, product, uom, date);
 		return capacity;
 	}
 
-	private final IHUCapacityDefinition getCustomCapacityOrNull(final I_M_Product product, final I_C_UOM uom)
+	private final CapacityInterface getCustomCapacityOrNull(final I_M_Product product, final I_C_UOM uom)
 	{
 		if (product == null)
 		{
 			return null;
 		}
 
-		final IHUCapacityDefinition customCapacity = productId2customCapacity.get(product.getM_Product_ID());
+		final CapacityInterface customCapacity = productId2customCapacity.get(product.getM_Product_ID());
 		if (customCapacity == null)
 		{
 			return null;
 		}
 
-		final IHUCapacityDefinition customCapacityConv = capacityBL.convertToUOM(customCapacity, uom);
+		final CapacityInterface customCapacityConv = customCapacity.convertToUOM(uom);
 		return customCapacityConv;
 	}
 
@@ -250,12 +251,12 @@ public class HUItemStorage implements IHUItemStorage
 			return false;
 		}
 
-		final IHUCapacityDefinition customCapacity = productId2customCapacity.get(product.getM_Product_ID());
+		final CapacityInterface customCapacity = productId2customCapacity.get(product.getM_Product_ID());
 		return customCapacity != null;
 	}
 
 	@Override
-	public void setCustomCapacity(final IHUCapacityDefinition capacity)
+	public void setCustomCapacity(final Capacity capacity)
 	{
 		final I_M_Product product = capacity.getM_Product();
 		Check.assumeNotNull(product, "product not null");
@@ -265,9 +266,9 @@ public class HUItemStorage implements IHUItemStorage
 	}
 
 	@Override
-	public IHUCapacityDefinition getAvailableCapacity(final I_M_Product product, final I_C_UOM uom, final Date date)
+	public CapacityInterface getAvailableCapacity(final I_M_Product product, final I_C_UOM uom, final Date date)
 	{
-		final IHUCapacityDefinition capacity = getCapacity(product, uom, date);
+		final CapacityInterface capacity = getCapacity(product, uom, date);
 		if (handlingUnitsBL.isAggregateHU(getM_HU_Item().getM_HU()))
 		{
 			// if this is an aggregate HU's item, then ignore the qty that was already added and ignore the item's full capacity
@@ -277,7 +278,7 @@ public class HUItemStorage implements IHUItemStorage
 		}
 		final BigDecimal qty = getQty(product, uom);
 
-		final IHUCapacityDefinition capacityAvailable = capacityBL.getAvailableCapacity(qty, uom, capacity);
+		final CapacityInterface capacityAvailable = capacity.subtractQuantity(Quantity.of(qty, uom));
 		return capacityAvailable;
 	}
 
@@ -306,7 +307,7 @@ public class HUItemStorage implements IHUItemStorage
 
 		final I_M_Product product = request.getProduct();
 		final I_C_UOM uom = request.getC_UOM();
-		final IHUCapacityDefinition availableCapacityDefinition = getAvailableCapacity(product, uom, request.getDate());
+		final CapacityInterface availableCapacityDefinition = getAvailableCapacity(product, uom, request.getDate());
 
 		//
 		// Infinite capacity check
@@ -321,7 +322,7 @@ public class HUItemStorage implements IHUItemStorage
 			return request;
 		}
 
-		final BigDecimal capacityAvailable = availableCapacityDefinition.getCapacity();
+		final BigDecimal capacityAvailable = availableCapacityDefinition.getCapacityQty();
 		if (capacityAvailable.signum() == 0)
 		{
 			return AllocationUtils.createZeroQtyRequest(request);

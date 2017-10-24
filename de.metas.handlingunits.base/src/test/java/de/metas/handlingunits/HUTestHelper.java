@@ -1,5 +1,13 @@
 package de.metas.handlingunits;
 
+import static de.metas.business.BusinessTestHelper.createBPartner;
+import static de.metas.business.BusinessTestHelper.createM_Attribute;
+import static de.metas.business.BusinessTestHelper.createProduct;
+import static de.metas.business.BusinessTestHelper.createUOMConversion;
+import static de.metas.business.BusinessTestHelper.createUomEach;
+import static de.metas.business.BusinessTestHelper.createUomKg;
+import static de.metas.business.BusinessTestHelper.createUomPCE;
+import static de.metas.business.BusinessTestHelper.createWarehouse;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
@@ -43,7 +51,6 @@ import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.DBException;
-import org.adempiere.inout.service.IMTransactionBL;
 import org.adempiere.mm.attributes.api.impl.LotNumberDateAttributeDAO;
 import org.adempiere.mm.attributes.spi.impl.WeightGrossAttributeValueCallout;
 import org.adempiere.mm.attributes.spi.impl.WeightNetAttributeValueCallout;
@@ -61,14 +68,13 @@ import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_Role;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_C_UOM_Conversion;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeValue;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Shipper;
 import org.compiere.model.I_M_Transaction;
+import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_Test;
-import org.compiere.model.X_C_UOM;
 import org.compiere.model.X_M_Attribute;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -76,7 +82,6 @@ import org.eevolution.util.DDNetworkBuilder;
 import org.eevolution.util.ProductBOMBuilder;
 import org.junit.Assert;
 
-import de.metas.adempiere.model.I_C_BPartner_Location;
 import de.metas.handlingunits.allocation.IAllocationDestination;
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.IAllocationResult;
@@ -132,7 +137,6 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.handlingunits.model.I_M_HU_Trx_Hdr;
-import de.metas.handlingunits.model.I_M_Locator;
 import de.metas.handlingunits.model.X_M_HU_PI_Attribute;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.handlingunits.spi.IHUPackingMaterialCollectorSource;
@@ -141,8 +145,9 @@ import de.metas.handlingunits.test.HUListAssertsBuilder;
 import de.metas.handlingunits.test.misc.builders.HUPIAttributeBuilder;
 import de.metas.inoutcandidate.modelvalidator.InOutCandidateValidator;
 import de.metas.inoutcandidate.modelvalidator.ReceiptScheduleValidator;
-import de.metas.interfaces.I_M_Warehouse;
-import de.metas.javaclasses.model.I_AD_JavaClass;
+import de.metas.materialtransaction.MTransactionUtil;
+import de.metas.quantity.Capacity;
+import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
@@ -155,16 +160,6 @@ import lombok.NonNull;
  */
 public class HUTestHelper
 {
-	/**
-	 * Default precision
-	 */
-	private static final int UOM_Precision_0 = 0;
-
-	/**
-	 * Standard in ADempiere
-	 */
-	private static final int UOM_Precision_3 = 3;
-
 	//
 	// Initialization flags
 	private boolean initialized = false;
@@ -201,10 +196,10 @@ public class HUTestHelper
 
 	public IHUTrxBL trxBL;
 
-	public I_C_UOM uomEach;
 	public I_C_UOM uomKg;
+	public I_C_UOM uomEach;
 	public I_C_UOM uomPCE;
-
+	
 	/**
 	 * Value: Palet
 	 */
@@ -357,6 +352,7 @@ public class HUTestHelper
 	};
 	private IMutableHUContext huContext;
 
+
 	/**
 	 * Invokes {@link #HUTestHelper(boolean)} with init=<code>true</code>.
 	 */
@@ -486,9 +482,10 @@ public class HUTestHelper
 	 * <b>Important:</b> if you do the full monty with interceptors, then you also need to annotate the respective test class like this:
 	 * 
 	 * <pre>
-&#64;RunWith(SpringRunner.class)
-&#64;SpringBootTest(classes= HandlingUnitsConfiguration.class)
+	&#64;RunWith(SpringRunner.class)
+	&#64;SpringBootTest(classes= HandlingUnitsConfiguration.class)
 	 * </pre>
+	 * 
 	 * Otherwise, tests will probably fail due to spring application context.
 	 */
 	protected final void setupModuleInterceptors_HU_Full()
@@ -559,14 +556,10 @@ public class HUTestHelper
 	 */
 	protected void setupMasterData()
 	{
-		uomEach = createUOM("Ea", X_C_UOM.UOMTYPE_Weigth, UOM_Precision_0);
-
-		uomKg = createUOM("Kg", X_C_UOM.UOMTYPE_Weigth, UOM_Precision_3);
-		uomKg.setX12DE355("KGM");
-		InterfaceWrapperHelper.save(uomKg);
-
-		uomPCE = createUOM("PCE", null, UOM_Precision_0);
-
+		uomKg = createUomKg();
+		uomEach = createUomEach();
+		uomPCE = createUomPCE();
+		
 		attr_CountryMadeIn = createM_Attribute(HUTestHelper.NAME_CountryMadeIn_Attribute, X_M_Attribute.ATTRIBUTEVALUETYPE_List, true);
 		createAttributeListValues(attr_CountryMadeIn,
 				HUTestHelper.COUNTRYMADEIN_RO,
@@ -984,93 +977,6 @@ public class HUTestHelper
 		return today;
 	}
 
-	public I_C_UOM createUOM(final String name, final String uomType, final int stdPrecision)
-	{
-		final I_C_UOM uom = createUOM(name, stdPrecision, 0);
-		uom.setUOMType(uomType);
-
-		InterfaceWrapperHelper.save(uom);
-		return uom;
-	}
-
-	public I_C_UOM createUOM(final String name, final int stdPrecision, final int costingPrecission)
-	{
-		final I_C_UOM uom = createUOM(name);
-		uom.setStdPrecision(stdPrecision);
-		uom.setCostingPrecision(costingPrecission);
-		InterfaceWrapperHelper.save(uom);
-		return uom;
-	}
-
-	public I_C_UOM createUOM(final String name)
-	{
-		final String x12de355 = name;
-		return createUOM(name, x12de355);
-	}
-
-	public I_C_UOM createUOM(final String name, final String x12de355)
-	{
-		final I_C_UOM uom = InterfaceWrapperHelper.create(ctx, I_C_UOM.class, ITrx.TRXNAME_None);
-		uom.setName(name);
-		uom.setUOMSymbol(name);
-		uom.setX12DE355(x12de355);
-
-		InterfaceWrapperHelper.save(uom);
-
-		return uom;
-	}
-
-	public I_C_UOM_Conversion createUOMConversion(
-			final I_M_Product product,
-			final I_C_UOM uomFrom,
-			final I_C_UOM uomTo,
-			final BigDecimal multiplyRate,
-			final BigDecimal divideRate)
-	{
-		final I_C_UOM_Conversion conversion = InterfaceWrapperHelper.create(Env.getCtx(), I_C_UOM_Conversion.class, ITrx.TRXNAME_None);
-
-		if (product != null)
-		{
-			conversion.setM_Product_ID(product.getM_Product_ID());
-		}
-		conversion.setC_UOM_ID(uomFrom.getC_UOM_ID());
-		conversion.setC_UOM_To_ID(uomTo.getC_UOM_ID());
-		conversion.setMultiplyRate(multiplyRate);
-		conversion.setDivideRate(divideRate);
-
-		InterfaceWrapperHelper.save(conversion, ITrx.TRXNAME_None);
-
-		return conversion;
-	}
-
-	/**
-	 *
-	 * @param name
-	 * @param uom
-	 * @param weightKg product weight (Kg); mainly used for packing materials
-	 * @return
-	 */
-	public I_M_Product createProduct(final String name, final I_C_UOM uom, final BigDecimal weightKg)
-	{
-		final I_M_Product product = InterfaceWrapperHelper.create(ctx, I_M_Product.class, ITrx.TRXNAME_None);
-		product.setValue(name);
-		product.setName(name);
-		product.setC_UOM_ID(uom.getC_UOM_ID());
-		if (weightKg != null)
-		{
-			product.setWeight(weightKg);
-		}
-		InterfaceWrapperHelper.save(product);
-
-		return product;
-	}
-
-	public I_M_Product createProduct(final String name, final I_C_UOM uom)
-	{
-		final BigDecimal weightKg = null; // N/A
-		return createProduct(name, uom, weightKg);
-	}
-
 	public I_M_HU_PackingMaterial createPackingMaterial(final String name, final I_M_Product product)
 	{
 		final I_M_HU_PackingMaterial packingMaterial = InterfaceWrapperHelper.create(ctx, I_M_HU_PackingMaterial.class, ITrx.TRXNAME_None);
@@ -1293,101 +1199,6 @@ public class HUTestHelper
 		return new HUListAssertsBuilder(null, name, list);
 	}
 
-	public I_M_Attribute createM_Attribute(final String name,
-			final String valueType,
-			final boolean isInstanceAttribute)
-	{
-		final Class<?> javaClass = null;
-		final I_M_Attribute attr = createM_Attribute(name, valueType, javaClass, isInstanceAttribute);
-		InterfaceWrapperHelper.save(attr);
-
-		return attr;
-	}
-
-	public I_M_Attribute createM_Attribute(final String name,
-			final String valueType,
-			final Class<?> javaClass,
-			final boolean isInstanceAttribute)
-	{
-		final I_C_UOM uom = null;
-		return createM_Attribute(name, valueType, javaClass, uom, isInstanceAttribute);
-	}
-
-	public I_M_Attribute createM_Attribute(final String name,
-			final String valueType,
-			final Class<?> javaClass,
-			final I_C_UOM uom,
-			final boolean isInstanceAttribute)
-	{
-
-		// make sure the attribute was not already defined
-		final I_M_Attribute existingAttribute = retrieveAttributeBuValue(name);
-
-		final I_AD_JavaClass javaClassDef;
-		if (javaClass != null)
-		{
-			javaClassDef = InterfaceWrapperHelper.newInstance(I_AD_JavaClass.class, contextProvider);
-			javaClassDef.setName(javaClass.getName());
-			javaClassDef.setClassname(javaClass.getName());
-			InterfaceWrapperHelper.save(javaClassDef);
-		}
-		else
-		{
-			javaClassDef = null;
-		}
-
-		final I_M_Attribute attr;
-
-		if (existingAttribute != null)
-		{
-			attr = existingAttribute;
-		}
-
-		else
-		{
-			attr = InterfaceWrapperHelper.newInstance(I_M_Attribute.class, contextProvider);
-		}
-		attr.setValue(name);
-		attr.setName(name);
-		attr.setAttributeValueType(valueType);
-
-		//
-		// Assume all attributes active and non-mandatory
-		attr.setIsActive(true);
-		attr.setIsMandatory(false);
-
-		//
-		// Configure ASI usage
-		attr.setIsInstanceAttribute(isInstanceAttribute);
-
-		//
-		// Configure JC
-		attr.setAD_JavaClass(javaClassDef);
-
-		//
-		// Configure UOM
-		attr.setC_UOM(uom);
-
-		InterfaceWrapperHelper.save(attr);
-		return attr;
-	}
-
-	/**
-	 * Method needed to make sure the attribute was not already created
-	 * Normally, this will never happen anywhere else except testing
-	 *
-	 * @param name
-	 * @return
-	 */
-	private I_M_Attribute retrieveAttributeBuValue(String name)
-	{
-		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_Attribute.class, ctx, ITrx.TRXNAME_None).addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_Attribute.COLUMNNAME_Value, name)
-				.create()
-				.firstOnly(I_M_Attribute.class);
-	}
-
 	/**
 	 * Create an {@link I_M_HU_Attribute} for the given {@link HUPIAttributeBuilder}.
 	 *
@@ -1472,7 +1283,7 @@ public class HUTestHelper
 			final I_C_UOM uom,
 			final boolean fullyLoaded)
 	{
-		final IHUCapacityDefinition capacity = Services.get(IHUCapacityBL.class).createCapacity(
+		final Capacity capacity = Capacity.createCapacity(
 				qtyCapacity,
 				product,
 				uom,
@@ -1539,12 +1350,12 @@ public class HUTestHelper
 			final ILUTUProducerAllocationDestination allocationDestination,
 			final BigDecimal cuQty)
 	{
-		final IHUCapacityDefinition tuCapacity = allocationDestination.getTUCapacity();
+		final Capacity tuCapacity = allocationDestination.getTUCapacity();
 		final I_M_Product cuProduct = tuCapacity.getM_Product();
 		final I_C_UOM cuUOM = tuCapacity.getC_UOM();
 
 		final AbstractAllocationSourceDestination allocationSource = createDummySourceDestination(cuProduct,
-				IHUCapacityDefinition.INFINITY,
+				Quantity.QTY_INFINITE,
 				cuProduct.getC_UOM(),
 				true // fullyLoaded
 		);
@@ -1596,9 +1407,9 @@ public class HUTestHelper
 
 		final ILUTUConfigurationFactory lutuConfigurationFactory = Services.get(ILUTUConfigurationFactory.class);
 		final I_M_HU_LUTU_Configuration lutuConfiguration = lutuConfigurationFactory.createLUTUConfiguration(
-				tuPIItemProduct, 
-				cuProduct, 
-				cuUOM, 
+				tuPIItemProduct,
+				cuProduct,
+				cuUOM,
 				bpartner,
 				false); // noLUForVirtualTU == false => allow placing the CU (e.g. a packing material product) directly on the LU
 		lutuConfiguration.setC_BPartner(bpartner);
@@ -1695,7 +1506,7 @@ public class HUTestHelper
 
 	public final void load(TestHelperLoadRequest r)
 	{
-		final IAllocationSource source = createDummySourceDestination(r.getCuProduct(), IHUCapacityDefinition.INFINITY, r.getLoadCuUOM(), true);
+		final IAllocationSource source = createDummySourceDestination(r.getCuProduct(), Quantity.QTY_INFINITE, r.getLoadCuUOM(), true);
 
 		final HULoader huLoader = HULoader.of(source, r.getProducer())
 				.setAllowPartialUnloads(false)
@@ -1748,7 +1559,7 @@ public class HUTestHelper
 	 */
 	public List<I_M_HU> createHUsFromSimplePI(final I_M_Transaction mtrx, final I_M_HU_PI huPI)
 	{
-		Check.assume(Services.get(IMTransactionBL.class).isInboundTransaction(mtrx),
+		Check.assume(MTransactionUtil.isInboundTransaction(mtrx),
 				"mtrx shall be inbound transaction: {}", mtrx);
 
 		final IContextAware contextProvider = InterfaceWrapperHelper.getContextAware(mtrx);
@@ -1905,8 +1716,7 @@ public class HUTestHelper
 	@Deprecated
 	public List<I_M_HU> transferIncomingToHUs(final I_M_Transaction mtrx, final I_M_HU_PI huPI)
 	{
-		Check.assume(Services.get(IMTransactionBL.class).isInboundTransaction(mtrx),
-				"mtrx shall be inbound transaction: {}", mtrx);
+		Check.assume(MTransactionUtil.isInboundTransaction(mtrx), "mtrx shall be inbound transaction: {}", mtrx);
 
 		final IAllocationSource source = new MTransactionAllocationSourceDestination(mtrx);
 		final HUProducerDestination destination = HUProducerDestination.of(huPI);
@@ -1955,77 +1765,6 @@ public class HUTestHelper
 		//
 		// Execute transfer
 		loader.load(request);
-	}
-
-	/**
-	 * Creates and saves a simple {@link I_C_BPartner}
-	 *
-	 * @param nameAndValue
-	 * @return
-	 */
-	public I_C_BPartner createBPartner(final String nameAndValue)
-	{
-		final I_C_BPartner bpartner = InterfaceWrapperHelper.newInstance(I_C_BPartner.class, contextProvider);
-		bpartner.setValue(nameAndValue);
-		bpartner.setName(nameAndValue);
-		InterfaceWrapperHelper.save(bpartner);
-
-		return bpartner;
-	}
-
-	public I_C_BPartner_Location createBPartnerLocation(final I_C_BPartner bpartner)
-	{
-		final I_C_BPartner_Location bpl = InterfaceWrapperHelper.newInstance(I_C_BPartner_Location.class, bpartner);
-		bpl.setC_BPartner_ID(bpartner.getC_BPartner_ID());
-		bpl.setIsShipTo(true);
-		bpl.setIsBillTo(true);
-		InterfaceWrapperHelper.save(bpl);
-		return bpl;
-	}
-
-	/**
-	 * Calls {@link #createWarehouse(String, boolean)} with {@code isIssueWarehouse == false}
-	 *
-	 * @param name
-	 * @return
-	 */
-	public I_M_Warehouse createWarehouse(final String name)
-	{
-		final boolean isIssueWarehouse = false;
-		return createWarehouse(name, isIssueWarehouse);
-	}
-
-	/**
-	 * Creates a warehouse and one (default) locator.
-	 *
-	 * @param name
-	 * @param isIssueWarehouse
-	 * @return
-	 */
-	public I_M_Warehouse createWarehouse(final String name, final boolean isIssueWarehouse)
-	{
-		final de.metas.interfaces.I_M_Warehouse warehouse = InterfaceWrapperHelper.newInstance(de.metas.interfaces.I_M_Warehouse.class, contextProvider);
-		warehouse.setValue(name);
-		warehouse.setName(name);
-		warehouse.setIsIssueWarehouse(isIssueWarehouse);
-		InterfaceWrapperHelper.save(warehouse);
-
-		final I_M_Locator locator = createLocator(name + "-default", warehouse);
-		locator.setIsDefault(true);
-		InterfaceWrapperHelper.save(locator);
-
-		return warehouse;
-	}
-
-	public I_M_Locator createLocator(final String name, final I_M_Warehouse warehouse)
-	{
-		final I_M_Locator locator = InterfaceWrapperHelper.newInstance(I_M_Locator.class, contextProvider);
-		locator.setIsDefault(true);
-		locator.setValue(name);
-		locator.setIsActive(true);
-		locator.setM_Warehouse_ID(warehouse.getM_Warehouse_ID());
-		InterfaceWrapperHelper.save(locator);
-		return locator;
 	}
 
 	public boolean isNoPI(final I_M_HU_PI pi)

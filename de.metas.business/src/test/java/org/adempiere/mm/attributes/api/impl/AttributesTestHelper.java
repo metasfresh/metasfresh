@@ -27,11 +27,11 @@ import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.callout.M_Attribute;
-import org.adempiere.mm.attributes.model.I_M_Attribute;
 import org.adempiere.mm.attributes.spi.IAttributeValueGenerator;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.compiere.model.I_AD_Ref_List;
+import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeSet;
 import org.compiere.model.I_M_AttributeUse;
 import org.compiere.model.I_M_AttributeValue;
@@ -59,9 +59,8 @@ public class AttributesTestHelper
 
 	public AttributesTestHelper()
 	{
-		super();
 		ctx = Env.getCtx();
-		context = new PlainContextAware(ctx);
+		context = PlainContextAware.newOutOfTrx(ctx);
 
 		attributeGeneratorType = createAD_JavaClass_Type(IAttributeValueGenerator.class.getName());
 
@@ -89,7 +88,7 @@ public class AttributesTestHelper
 
 	public I_M_Attribute createM_Attribute(final I_AD_JavaClass javaClass)
 	{
-		final org.adempiere.mm.attributes.model.I_M_Attribute attribute = InterfaceWrapperHelper.create(ctx, org.adempiere.mm.attributes.model.I_M_Attribute.class, ITrx.TRXNAME_None);
+		final I_M_Attribute attribute = InterfaceWrapperHelper.create(ctx, I_M_Attribute.class, ITrx.TRXNAME_None);
 		attribute.setAD_JavaClass(javaClass);
 		InterfaceWrapperHelper.save(attribute);
 		return attribute;

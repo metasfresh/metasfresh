@@ -7,9 +7,11 @@ import java.util.List;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.test.AdempiereTestWatcher;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 
 import de.metas.handlingunits.model.I_M_HU;
@@ -38,6 +40,9 @@ import de.metas.handlingunits.model.I_M_HU;
 
 public class MovementsAnyWarehouseTests
 {
+	@Rule
+	public AdempiereTestWatcher adempiereTestWatcher = new AdempiereTestWatcher();
+
 	@Before
 	public void init()
 	{

@@ -1,5 +1,9 @@
 package de.metas.handlingunits.attributes.impl;
 
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -32,10 +36,6 @@ import org.compiere.model.I_M_Transaction;
 import org.compiere.model.X_M_Transaction;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
-
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
-
 import org.junit.Test;
 
 import de.metas.handlingunits.AbstractHUTest;

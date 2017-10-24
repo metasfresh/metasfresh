@@ -1,5 +1,8 @@
 package de.metas.handlingunits;
 
+import static de.metas.business.BusinessTestHelper.createM_Attribute;
+import static de.metas.business.BusinessTestHelper.createWarehouse;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -141,7 +144,7 @@ public class HUDocumentSelectTestHelper extends HUTestHelper
 	 * A palet definition that can contains {@link #huDefIFCO2}.
 	 */
 	public I_M_HU_PI huDefPalet2;
-
+	
 	public HUDocumentSelectTestHelper()
 	{
 		super(false);
@@ -282,7 +285,7 @@ public class HUDocumentSelectTestHelper extends HUTestHelper
 			// Add some more Text attributes to this PI (just to see how it works in UI)
 			for (int i = 1; i <= 10; i++)
 			{
-				final I_M_Attribute attr_Text = this.createM_Attribute("Text" + i, X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40, true);
+				final I_M_Attribute attr_Text = createM_Attribute("Text" + i, X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40, true);
 				createM_HU_PI_Attribute(new HUPIAttributeBuilder(attr_Text)
 						.setM_HU_PI(huDefNone));
 			}
@@ -312,7 +315,7 @@ public class HUDocumentSelectTestHelper extends HUTestHelper
 		huDefIFCO2 = createHUDefinition(HUTestHelper.NAME_IFCO_Product + "_2", X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
 		{
 			final I_M_HU_PI_Item itemMA = this.createHU_PI_Item_Material(huDefIFCO2);
-			huDefIFCO2_pip_Tomato = assignProduct(itemMA, pTomato, BigDecimal.TEN, uomEach);
+			huDefIFCO2_pip_Tomato = assignProduct(itemMA, pTomato, BigDecimal.TEN,uomEach);
 			huDefIFCO2_pip_Salad = assignProduct(itemMA, pSalad, BigDecimal.TEN, uomEach);
 
 			createHU_PI_Item_PackingMaterial(huDefIFCO2, pmIFCO);
@@ -363,7 +366,6 @@ public class HUDocumentSelectTestHelper extends HUTestHelper
 	/**
 	 * Creates Customer
 	 */
-	@Override
 	public I_C_BPartner createBPartner(final String name)
 	{
 		final I_C_BPartner bpartner = InterfaceWrapperHelper.create(ctx, I_C_BPartner.class, ITrx.TRXNAME_None);

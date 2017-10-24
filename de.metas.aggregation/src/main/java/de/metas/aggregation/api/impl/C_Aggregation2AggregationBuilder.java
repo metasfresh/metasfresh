@@ -28,8 +28,10 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
+import org.adempiere.ad.expression.api.ConstantLogicExpression;
 import org.adempiere.ad.expression.api.IExpressionFactory;
 import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.exceptions.AdempiereException;
@@ -193,7 +195,7 @@ import de.metas.aggregation.model.X_C_Aggregation_Attribute;
 		final ILogicExpression includeLogic;
 		if (Check.isEmpty(includeLogicStr, true))
 		{
-			includeLogic = ILogicExpression.TRUE;
+			includeLogic = ConstantLogicExpression.TRUE;
 		}
 		else
 		{
@@ -300,7 +302,7 @@ import de.metas.aggregation.model.X_C_Aggregation_Attribute;
 
 		final String tableName = aggregationDef.getAD_Table().getTableName();
 		final String tableNameExpected = getTableName();
-		if (!Check.equals(tableNameExpected, tableName))
+		if (!Objects.equals(tableNameExpected, tableName))
 		{
 			throw new AdempiereException("Aggregation's table name does not match"
 					+ "\n @C_Aggregation_ID@: " + aggregationDef

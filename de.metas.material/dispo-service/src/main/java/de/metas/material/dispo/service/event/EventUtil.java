@@ -2,16 +2,15 @@ package de.metas.material.dispo.service.event;
 
 import javax.annotation.Nullable;
 
-import de.metas.material.dispo.Candidate;
-import de.metas.material.dispo.Candidate.Status;
+import de.metas.material.dispo.CandidateSpecification.Status;
 import lombok.experimental.UtilityClass;
 
 @UtilityClass
 public class EventUtil
 {
-	public Candidate.Status getCandidateStatus(@Nullable final String docStatus)
+	public Status getCandidateStatus(@Nullable final String docStatus)
 	{
-		final Candidate.Status candidateStatus;
+		final Status candidateStatus;
 		if ("DR".equals(docStatus) || "IP".equals(docStatus))
 		{
 			candidateStatus = Status.doc_created;

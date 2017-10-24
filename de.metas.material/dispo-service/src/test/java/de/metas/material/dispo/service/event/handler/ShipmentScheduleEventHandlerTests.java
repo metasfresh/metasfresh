@@ -10,7 +10,6 @@ import java.util.List;
 
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
-import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_AD_Org;
 import org.compiere.util.TimeUtil;
@@ -19,12 +18,15 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestWatcher;
 
-import de.metas.material.dispo.Candidate.Type;
+import com.google.common.collect.ImmutableList;
+
 import de.metas.material.dispo.CandidateRepository;
+import de.metas.material.dispo.CandidateSpecification.Type;
 import de.metas.material.dispo.DispoTestUtils;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
+import de.metas.material.dispo.service.candidatechange.handler.DemandCandiateHandler;
 import de.metas.material.event.EventDescr;
 import de.metas.material.event.MaterialDescriptor;
 import de.metas.material.event.MaterialEventService;
@@ -56,6 +58,8 @@ import mockit.Mocked;
 
 public class ShipmentScheduleEventHandlerTests
 {
+	private static final int shipmentScheduleId = 76;
+	
 	private static final int orderLineId = 86;
 
 	/** Watches the current tests and dumps the database to console in case of failure */
@@ -87,7 +91,9 @@ public class ShipmentScheduleEventHandlerTests
 
 		final CandidateRepository candidateRepository = new CandidateRepository();
 
-		final CandidateChangeService candidateChangeHandler = new CandidateChangeService(candidateRepository, new StockCandidateService(candidateRepository), materialEventService);
+		final CandidateChangeService candidateChangeHandler = new CandidateChangeService(ImmutableList.of(
+				new DemandCandiateHandler(candidateRepository, materialEventService, new StockCandidateService(candidateRepository))
+				));
 
 		shipmentScheduleEventHandler = new ShipmentScheduleEventHandler(candidateChangeHandler);
 	}
@@ -124,7 +130,7 @@ public class ShipmentScheduleEventHandlerTests
 						.quantity(BigDecimal.TEN)
 						.warehouseId(toWarehouseId)
 						.build())
-				.reference(TableRecordReference.of("someTable", 4))
+				.shipmentScheduleId(shipmentScheduleId)
 				.orderLineId(orderLineId)
 				.build();
 		return event;

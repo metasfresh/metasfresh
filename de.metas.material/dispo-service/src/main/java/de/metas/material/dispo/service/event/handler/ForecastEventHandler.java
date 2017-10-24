@@ -2,10 +2,11 @@ package de.metas.material.dispo.service.event.handler;
 
 import org.springframework.stereotype.Service;
 
-import de.metas.material.dispo.Candidate;
-import de.metas.material.dispo.Candidate.CandidateBuilder;
-import de.metas.material.dispo.Candidate.SubType;
-import de.metas.material.dispo.DemandCandidateDetail;
+import de.metas.material.dispo.CandidateSpecification.SubType;
+import de.metas.material.dispo.CandidateSpecification.Type;
+import de.metas.material.dispo.candidate.Candidate;
+import de.metas.material.dispo.candidate.DemandDetail;
+import de.metas.material.dispo.candidate.Candidate.CandidateBuilder;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.dispo.service.event.EventUtil;
 import de.metas.material.event.forecast.Forecast;
@@ -56,7 +57,7 @@ public class ForecastEventHandler
 
 		final CandidateBuilder candidateBuilder = Candidate.builderForEventDescr(event.getEventDescr())
 				.status(EventUtil.getCandidateStatus(forecast.getDocStatus()))
-				.type(Candidate.Type.STOCK_UP)
+				.type(Type.STOCK_UP)
 				.subType(SubType.FORECAST);
 
 		for (final ForecastLine forecastLine : forecast.getForecastLines())
@@ -72,8 +73,8 @@ public class ForecastEventHandler
 			@NonNull final CandidateBuilder candidateBuilder,
 			@NonNull final ForecastLine forecastLine)
 	{
+
 		candidateBuilder.materialDescr(forecastLine.getMaterialDescriptor())
-				.reference(forecastLine.getReference())
-				.demandDetail(DemandCandidateDetail.forForecastLineId(forecastLine.getForecastLineId()));
+				.demandDetail(DemandDetail.forForecastLineId(forecastLine.getForecastLineId()));
 	}
 }
