@@ -186,11 +186,8 @@ public class C_BankStatementLine
 		bsl.setStmtAmt(trxAmt);
 		bsl.setTrxAmt(trxAmt);
 		bsl.setCurrencyRate(currencyRate.getConversionRate());
-		bsl.setDiscountAmt(BigDecimal.ZERO);
 		bsl.setChargeAmt(BigDecimal.ZERO);
-		bsl.setWriteOffAmt(BigDecimal.ZERO);
-		bsl.setOverUnderAmt(BigDecimal.ZERO);
-		bsl.setIsOverUnderPayment(false);
+		BankStatementLineOrRefHelper.setBankStatementLineOrRefAmountsToZero(bsl);
 	}
 
 	@CalloutMethod(columnNames = {

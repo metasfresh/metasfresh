@@ -56,10 +56,10 @@ public class C_BankStatementLine_Ref
 	public void onAmountsChanged(final I_C_BankStatementLine_Ref line, final ICalloutField field)
 	{
 		final String colName = field.getColumnName();
-		setBankStatementLineOrRefFieldsForPaymentAmounts(line, colName);
+		setBankStatementLineOrRefFieldsAmounts(line, colName);
 	}
 
-	private void setBankStatementLineOrRefFieldsForPaymentAmounts(@NonNull final IBankStatementLineOrRef lineOrRef, @NonNull final String colName)
+	private void setBankStatementLineOrRefFieldsAmounts(@NonNull final IBankStatementLineOrRef lineOrRef, @NonNull final String colName)
 	{
 		if (lineOrRef.getC_Invoice_ID() <= 0)
 		{
