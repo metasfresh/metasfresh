@@ -135,7 +135,7 @@ public class C_BankStatementLine
 	@CalloutMethod(columnNames = {
 			I_C_BankStatementLine.COLUMNNAME_C_Payment_ID
 	})
-	public void whenPaymentIdChanged(final I_C_BankStatementLine line, final ICalloutField field)
+	public void onPaymentIdChanged(final I_C_BankStatementLine line, final ICalloutField field)
 	{
 		BankStatementLineOrRefHelper.setPaymentDetails(line);
 		onAmountsChanged(line, field);
@@ -144,7 +144,7 @@ public class C_BankStatementLine
 	@CalloutMethod(columnNames = {
 			I_C_BankStatementLine.COLUMNNAME_C_Invoice_ID
 	})
-	public void whenInvoiceIdChanged(final I_C_BankStatementLine line, final ICalloutField field)
+	public void onInvoiceIdChanged(final I_C_BankStatementLine line, final ICalloutField field)
 	{
 		if (line.getC_Invoice_ID() <= 0)
 		{
@@ -156,7 +156,7 @@ public class C_BankStatementLine
 	@CalloutMethod(columnNames = {
 			I_C_BankStatementLine.COLUMNNAME_Link_BankStatementLine_ID
 	})
-	public void whenLink_BankStatement_IDChanged(final I_C_BankStatementLine bsl, final ICalloutField calloutField)
+	public void onLink_BankStatement_IDChangedResetAmounts(final I_C_BankStatementLine bsl, final ICalloutField calloutField)
 	{
 		if (bsl.getLink_BankStatementLine_ID() <= 0)
 		{
@@ -196,7 +196,7 @@ public class C_BankStatementLine
 	@CalloutMethod(columnNames = {
 			I_C_BankStatementLine.COLUMNNAME_C_BP_BankAccountTo_ID
 	})
-	public void whenC_BP_BankAccountTo_IDChanged(final I_C_BankStatementLine bsl)
+	public void onC_BP_BankAccountTo_IDChanged(final I_C_BankStatementLine bsl)
 	{
 		if (bsl.getC_BP_BankAccountTo_ID() <= 0)
 		{
