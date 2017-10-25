@@ -26,6 +26,8 @@ Here come the actual release notes:
     * New Field "Login as User Hostkey" in User Window.
   * [#2783](https://github.com/metasfresh/metasfresh/issues/2783) WebUI design: Invoice Candidates adjustments
     * Improving the Invoice Candidates Window. Adding missing Translation for Field in en_US.
+  * [#2815](https://github.com/metasfresh/metasfresh/issues/2815) New flag in Picking Tray window
+    * New Field to define the Rack System in Picking Tray Window in WebUI.
 
 ## Features
 * metasfresh-app
