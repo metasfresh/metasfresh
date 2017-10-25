@@ -309,6 +309,25 @@ class RawWidget extends Component {
                         </div>
                     )
                 }
+            case 'DateRange': {
+                return (
+                    <DatetimeRange
+                        onChange={(value, valueTo) => (
+                            this.handlePatch(widgetField, {
+                                ...(value && { value }),
+                                ...(valueTo && { valueTo })
+                            })
+                        )}
+                        mandatory={widgetData[0].mandatory}
+                        validStatus={widgetData[0].validStatus}
+                        onShow={onShow}
+                        onHide={onHide}
+                        value={widgetData[0].value}
+                        valueTo={widgetData[0].valueTo}
+                        tabIndex={fullScreen ? -1 : tabIndex}
+                     />
+                );
+            }
             case 'Time':
                 return (
                     <div className={this.getClassNames({ icon: true })}>
