@@ -18,6 +18,8 @@ Here come the actual release notes:
     * Improving Schedules Window in WebUI, adding adjusted Mandatory Lofic for Cron-Pattern Field and Translation for en_US.
   * [#2723](https://github.com/metasfresh/metasfresh/issues/2723) Webui Design Window: Improve window Internal Use
     * Improvement for the Internal Usage Window, adding Field Translations for Language/ Locale en_US.
+  * [#2758](https://github.com/metasfresh/metasfresh/issues/2758) remaining static element Translations
+    * Improving the Translations of de_DE Language/ Locale for static elements in WebUI.
   * [#2781](https://github.com/metasfresh/metasfresh/issues/2781) Change Default Address Layout for B2C Partners for country CH
     * Adjusting the Adress Layout/ Capture Sequence for Locations in Switzerland.
   * [#2790](https://github.com/metasfresh/metasfresh/issues/2790) Show LoginasUserHostkey in webui window user
