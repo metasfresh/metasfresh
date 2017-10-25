@@ -27,9 +27,9 @@ import OverlayField from './OverlayField';
 const shortcutManager = new ShortcutManager(keymap);
 
 const mapStateToProps = (state, props) => ({
-    relativeSelection: getSelection({
+    parentSelection: getSelection({
         state,
-        windowType: props.relativeType,
+        windowType: props.parentType,
         viewId: props.viewId,
     }),
 });
@@ -134,7 +134,7 @@ class Modal extends Component {
     init = async () => {
         const {
             dispatch, windowType, dataId, tabId, rowId, modalType,
-            relativeSelection, relativeType, isAdvanced, modalViewId,
+            parentSelection, parentType, isAdvanced, modalViewId,
             modalViewDocumentIds,
         } = this.props;
 
@@ -156,16 +156,16 @@ class Modal extends Component {
                 // We have 3 cases of processes (prioritized):
                 // - with viewDocumentIds: on single page with rawModal
                 // - with dataId: on single document page
-                // - with relativeSelection: on parent gridviews
+                // - with parentSelection: on parent gridviews
 
                 try {
                     await dispatch(createProcess({
                         processType: windowType,
                         viewId: modalViewId,
-                        type: relativeType,
+                        type: parentType,
                         ids: (
                             modalViewDocumentIds ||
-                            (dataId ? [dataId] : relativeSelection)
+                            (dataId ? [dataId] : parentSelection)
                         ),
                         tabId,
                         rowId
@@ -184,15 +184,15 @@ class Modal extends Component {
 
     closeModal = () => {
         const {
-            dispatch, closeCallback, dataId, windowType, relativeType,
-            relativeDataId, triggerField,
+            dispatch, closeCallback, dataId, windowType, parentType,
+            parentDataId, triggerField,
         } = this.props;
         const { isNew, isNewDoc } = this.state;
 
         if (isNewDoc) {
             processNewRecord('window', windowType, dataId).then(response => {
                 dispatch(patch(
-                    'window', relativeType, relativeDataId, null, null,
+                    'window', parentType, parentDataId, null, null,
                     triggerField, { [response.data]: '' },
                 )).then(() => {
                     this.removeModal();
