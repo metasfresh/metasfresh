@@ -670,14 +670,14 @@ export function createProcess({
         let response;
 
         try {
-            response = await getProcessData(
-                processType,
-                viewId,
-                type,
+            response = await getProcessData({
                 ids,
+                processId: processType,
+                rowId,
                 tabId,
-                rowId
-            );
+                type,
+                viewId
+            });
         } catch (error) {
             // Close process modal in case when process start failed
             await dispatch(closeModal());
@@ -826,7 +826,7 @@ export function handleProcessResponse(response, type, id) {
     }
 }
 
-function getProcessData(processId, viewId, type, ids, tabId, rowId) {
+function getProcessData({ processId, viewId, type, ids, tabId, rowId }) {
     return axios.post(
         config.API_URL +
         '/process/' + processId,
