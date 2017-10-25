@@ -350,7 +350,7 @@ public final class POInfo implements Serializable
 				final boolean isSelectionColumn = "Y".equals(rs.getString(I_AD_Column.COLUMNNAME_IsSelectionColumn));
 
 				final POInfoColumn col = new POInfoColumn(
-						AD_Column_ID, ColumnName, ColumnSQL, AD_Reference_ID,
+						AD_Column_ID, m_TableName, ColumnName, ColumnSQL, AD_Reference_ID,
 						IsMandatory, IsUpdateable,
 						DefaultLogic,
 						Name, // ColumnLabel
