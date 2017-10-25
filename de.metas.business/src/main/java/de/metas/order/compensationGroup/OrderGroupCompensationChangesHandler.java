@@ -45,7 +45,13 @@ public class OrderGroupCompensationChangesHandler
 		{
 			return;
 		}
-
+		
+		// Don't touch processed lines (e.g. completed orders)
+		if(orderLine.isProcessed())
+		{
+			return;
+		}
+		
 		final boolean groupCompensationLine = orderLine.isGroupCompensationLine();
 		final String amtType = orderLine.getGroupCompensationAmtType();
 		if (!groupCompensationLine)
