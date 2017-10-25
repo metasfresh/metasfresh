@@ -139,7 +139,8 @@ import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
 				//
 				.setWidgetType(DocumentFieldWidgetType.Lookup)
 				.setLookupDescriptorProvider(SqlLookupDescriptor.builder()
-						.setColumnName(IOrderLineQuickInput.COLUMNNAME_M_HU_PI_Item_Product_ID)
+						.setCtxTableName(null) // ctxTableName
+						.setCtxColumnName(IOrderLineQuickInput.COLUMNNAME_M_HU_PI_Item_Product_ID)
 						.setDisplayType(DisplayType.TableDir)
 						.setAD_Val_Rule_ID(540199) // FIXME: hardcoded "M_HU_PI_Item_Product_For_Org_and_Product_and_DateOrdered"
 						.buildProvider())

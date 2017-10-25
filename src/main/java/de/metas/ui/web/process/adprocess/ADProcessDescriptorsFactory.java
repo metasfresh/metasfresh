@@ -203,7 +203,8 @@ import lombok.NonNull;
 		if (lookupDescriptorProvider == null)
 		{
 			lookupDescriptorProvider = SqlLookupDescriptor.builder()
-					.setColumnName(parameterName)
+					.setCtxTableName(null)
+					.setCtxColumnName(parameterName)
 					.setDisplayType(adProcessParam.getAD_Reference_ID())
 					.setAD_Reference_Value_ID(adProcessParam.getAD_Reference_Value_ID())
 					.setAD_Val_Rule_ID(adProcessParam.getAD_Val_Rule_ID())

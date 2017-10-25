@@ -76,7 +76,8 @@ final class WEBUI_M_HU_Pick_ParametersFiller
 	private static final LookupDataSource createShipmentScheduleDataSource(final int huId)
 	{
 		final LookupDescriptor lookupDescriptor = SqlLookupDescriptor.builder()
-				.setColumnName(I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID)
+				.setCtxTableName(null)
+				.setCtxColumnName(I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID)				
 				.setDisplayType(DisplayType.Search)
 				.addValidationRule(createShipmentSchedulesValidationRule(huId))
 				.buildForDefaultScope();
@@ -131,7 +132,8 @@ final class WEBUI_M_HU_Pick_ParametersFiller
 	private static final LookupDataSource createPickingSlotDataSource()
 	{
 		final LookupDescriptor lookupDescriptor = SqlLookupDescriptor.builder()
-				.setColumnName(I_M_PickingSlot.COLUMNNAME_M_PickingSlot_ID)
+				.setCtxTableName(null)
+				.setCtxColumnName(I_M_PickingSlot.COLUMNNAME_M_PickingSlot_ID)
 				.setDisplayType(DisplayType.Search)
 				.buildForDefaultScope();
 

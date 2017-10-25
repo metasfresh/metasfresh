@@ -87,7 +87,8 @@ public class EmptiesQuickInputDescriptorFactory implements IQuickInputDescriptor
 				//
 				.setWidgetType(DocumentFieldWidgetType.Lookup)
 				.setLookupDescriptorProvider(SqlLookupDescriptor.builder()
-						.setColumnName(IEmptiesQuickInput.COLUMNNAME_M_HU_PackingMaterial_ID)
+						.setCtxTableName(null) // ctxTableName
+						.setCtxColumnName(IEmptiesQuickInput.COLUMNNAME_M_HU_PackingMaterial_ID)
 						.setDisplayType(DisplayType.Search)
 						.buildProvider())
 				.setValueClass(IntegerLookupValue.class)

@@ -88,7 +88,8 @@ public class PickingSlotViewRepository
 	{
 		return Suppliers.memoize(() -> LookupDataSourceFactory.instance
 				.getLookupDataSource(SqlLookupDescriptor.builder()
-						.setColumnName(I_M_PickingSlot.COLUMNNAME_M_Warehouse_ID)
+						.setCtxTableName(null)
+						.setCtxColumnName(I_M_PickingSlot.COLUMNNAME_M_Warehouse_ID)
 						.setDisplayType(DisplayType.Search)
 						.setWidgetType(DocumentFieldWidgetType.Lookup)
 						.buildProvider()
@@ -99,7 +100,8 @@ public class PickingSlotViewRepository
 	{
 		return Suppliers.memoize(() -> LookupDataSourceFactory.instance
 				.getLookupDataSource(SqlLookupDescriptor.builder()
-						.setColumnName(I_M_PickingSlot.COLUMNNAME_C_BPartner_ID)
+						.setCtxTableName(null)
+						.setCtxColumnName(I_M_PickingSlot.COLUMNNAME_C_BPartner_ID)
 						.setDisplayType(DisplayType.Search)
 						.setWidgetType(DocumentFieldWidgetType.Lookup)
 						.buildProvider()
@@ -110,7 +112,8 @@ public class PickingSlotViewRepository
 	{
 		return Suppliers.memoize(() -> LookupDataSourceFactory.instance
 				.getLookupDataSource(SqlLookupDescriptor.builder()
-						.setColumnName(I_M_PickingSlot.COLUMNNAME_C_BPartner_Location_ID)
+						.setCtxTableName(null)
+						.setCtxColumnName(I_M_PickingSlot.COLUMNNAME_C_BPartner_Location_ID)
 						.setDisplayType(DisplayType.Search)
 						.setWidgetType(DocumentFieldWidgetType.Lookup)
 						.buildProvider()
