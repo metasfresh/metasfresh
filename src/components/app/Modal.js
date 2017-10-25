@@ -27,9 +27,9 @@ import OverlayField from './OverlayField';
 const shortcutManager = new ShortcutManager(keymap);
 
 const mapStateToProps = (state, props) => ({
-    selected: getSelection({
+    relativeSelection: getSelection({
         state,
-        windowType: props.windowType,
+        windowType: props.relativeType,
         viewId: props.viewId,
     }),
 });
@@ -133,8 +133,9 @@ class Modal extends Component {
 
     init = async () => {
         const {
-            dispatch, windowType, dataId, tabId, rowId, modalType, selected,
-            relativeType, isAdvanced, modalViewId, modalViewDocumentIds,
+            dispatch, windowType, dataId, tabId, rowId, modalType,
+            relativeSelection, relativeType, isAdvanced, modalViewId,
+            modalViewDocumentIds,
         } = this.props;
 
         switch (modalType) {
@@ -155,7 +156,7 @@ class Modal extends Component {
                 // We have 3 cases of processes (prioritized):
                 // - with viewDocumentIds: on single page with rawModal
                 // - with dataId: on single document page
-                // - with selected : on gridviews
+                // - with relativeSelection: on parent gridviews
 
                 try {
                     await dispatch(createProcess({
@@ -164,7 +165,7 @@ class Modal extends Component {
                         type: relativeType,
                         ids: (
                             modalViewDocumentIds ||
-                            (dataId ? [dataId] : selected)
+                            (dataId ? [dataId] : relativeSelection)
                         ),
                         tabId,
                         rowId
