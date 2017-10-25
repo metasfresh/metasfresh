@@ -396,9 +396,9 @@ public class ModelValidationEngine implements IModelValidationEngine
 				}
 			}
 		}
-		catch (Exception e)
+		catch (final Throwable ex)
 		{
-			addModelInterceptorInitError(className, client, e);
+			addModelInterceptorInitError(className, client, ex);
 		}
 
 	}
