@@ -794,7 +794,7 @@ public class GridFieldVO implements Serializable
 				{
 					final String tablename = Services.get(IADTableDAO.class).retrieveTableName(getAD_Table_ID());
 					lookupInfo = MLookupFactory.getLookupInfo(WindowNo, displayType,
-							tablename, //tableName
+							tablename,
 							ColumnName,
 							AD_Reference_Value_ID,
 							IsParent, AD_Val_Rule_ID); // metas: 03271
