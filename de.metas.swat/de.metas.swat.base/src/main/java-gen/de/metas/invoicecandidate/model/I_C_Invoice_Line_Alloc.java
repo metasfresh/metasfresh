@@ -288,7 +288,7 @@ public interface I_C_Invoice_Line_Alloc
 	/**
 	 * Set Preis Abw..
 	 *
-	 * <br>Type: Amount
+	 * <br>Type: CostPrice
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -297,7 +297,7 @@ public interface I_C_Invoice_Line_Alloc
 	/**
 	 * Get Preis Abw..
 	 *
-	 * <br>Type: Amount
+	 * <br>Type: CostPrice
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
