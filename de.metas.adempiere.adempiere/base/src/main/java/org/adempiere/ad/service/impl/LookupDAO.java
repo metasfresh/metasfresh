@@ -62,6 +62,7 @@ import org.compiere.model.MLookup;
 import org.compiere.model.MLookupFactory;
 import org.compiere.model.MLookupInfo;
 import org.compiere.model.MQuery;
+import org.compiere.model.X_AD_Column;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.KeyNamePair;
@@ -91,14 +92,16 @@ public class LookupDAO implements ILookupDAO
 	/* package */static class ColumnInfo implements IColumnInfo
 	{
 		private final String ColumnName;
+		private final String TableName;
 		private final int AD_Reference_Value_ID;
 		private final boolean parent;
 		// String ValidationCode = "";
 		private final int AD_Val_Rule_ID;
 
-		public ColumnInfo(final String columnName, final int adReferenceValueId, final boolean isParent, final int adValRuleId)
+		public ColumnInfo(final String tableName, final String columnName, final int adReferenceValueId, final boolean isParent, final int adValRuleId)
 		{
 			super();
+			TableName = tableName;
 			ColumnName = columnName;
 			AD_Reference_Value_ID = adReferenceValueId;
 			parent = isParent;
@@ -127,6 +130,12 @@ public class LookupDAO implements ILookupDAO
 		public int getAD_Val_Rule_ID()
 		{
 			return AD_Val_Rule_ID;
+		}
+
+		@Override
+		public String getTableName()
+		{
+			return TableName;
 		}
 	}
 
@@ -534,7 +543,9 @@ public class LookupDAO implements ILookupDAO
 			return null;
 		}
 
-		final String sql = "SELECT c.ColumnName, c.AD_Reference_Value_ID, c.IsParent, c.AD_Val_Rule_ID "
+		final String sql = "SELECT c.ColumnName, "
+				+ "c.AD_Reference_Value_ID, c.IsParent, c.AD_Val_Rule_ID "
+				+ ", c." + X_AD_Column.COLUMNNAME_AD_Table_ID
 				+ " FROM AD_Column c"
 				+ " WHERE c.AD_Column_ID=?";
 		PreparedStatement pstmt = null;
@@ -547,12 +558,16 @@ public class LookupDAO implements ILookupDAO
 			rs = pstmt.executeQuery();
 			if (rs.next())
 			{
-				final String ColumnName = rs.getString(1);
+				final String columnName = rs.getString(1);
 				final int AD_Reference_Value_ID = rs.getInt(2);
 				final boolean IsParent = "Y".equals(rs.getString(3));
 				final int AD_Val_Rule_ID = rs.getInt(4);
+				
+				final int tableID = rs.getInt(5);
+				
+				final String tableName = Services.get(IADTableDAO.class).retrieveTableName(tableID);
 
-				final IColumnInfo columnInfo = new ColumnInfo(ColumnName, AD_Reference_Value_ID, IsParent, AD_Val_Rule_ID);
+				final IColumnInfo columnInfo = new ColumnInfo(tableName, columnName, AD_Reference_Value_ID, IsParent, AD_Val_Rule_ID);
 				return columnInfo;
 			}
 			else

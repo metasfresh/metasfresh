@@ -13,15 +13,14 @@ package org.compiere.grid.ed;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,10 +28,12 @@ import java.util.Set;
 
 import org.adempiere.ad.expression.api.IExpressionFactory;
 import org.adempiere.ad.expression.api.IStringExpression;
-import org.adempiere.ad.validationRule.IValidationRule;
 import org.adempiere.ad.validationRule.INamePairPredicate;
+import org.adempiere.ad.validationRule.IValidationRule;
 import org.adempiere.util.Services;
+import org.compiere.util.ValueNamePair;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 /* package */class VLookupAutoCompleterValidationRule implements IValidationRule
@@ -71,7 +72,7 @@ import com.google.common.collect.ImmutableSet;
 	{
 		return ImmutableSet.of();
 	}
-	
+
 	public List<Object> getParameterValues(final String searchSQL)
 	{
 		final List<Object> params = new ArrayList<Object>(paramsTemplate);
@@ -89,10 +90,22 @@ import com.google.common.collect.ImmutableSet;
 		}
 		return params;
 	}
-	
+
 	@Override
 	public INamePairPredicate getPostQueryFilter()
 	{
 		return INamePairPredicate.NULL;
+	}
+
+	@Override
+	public List<ValueNamePair> getExceptionTableAndColumns()
+	{
+		return ImmutableList.of();
+	}
+
+	@Override
+	public void registerException(final String tableName, final String columnName)
+	{
+		throw new UnsupportedOperationException("There is no implementation for registering esceptions in the VLookupAutoCompleterValidationRule class: " + this);
 	}
 }

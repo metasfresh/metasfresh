@@ -80,23 +80,22 @@ public class MLookupFactory
 	 * 
 	 * @throws AdempiereException if Lookup could not be created
 	 */
-	public static MLookup get(final Properties ctx, final int WindowNo, final int Column_ID, final int AD_Reference_ID,
-			final String ColumnName, final int AD_Reference_Value_ID,
+	public static MLookup get(final Properties ctx, final int WindowNo, final int Column_ID, final int AD_Reference_ID, final String ctxTableName, final String ctxColumnName, final int AD_Reference_Value_ID,
 			final boolean IsParent, final String ValidationCode)
 
 	{
-		MLookupInfo info = getLookupInfo(WindowNo, AD_Reference_ID, ColumnName, AD_Reference_Value_ID, IsParent, ValidationCode);
+		MLookupInfo info = getLookupInfo(WindowNo, AD_Reference_ID, ctxTableName, ctxColumnName, AD_Reference_Value_ID, IsParent, ValidationCode);
 		if (info == null)
 			throw new AdempiereException("MLookup.create - no LookupInfo");
 		return new MLookup(ctx, Column_ID, info, 0);
 	}   // create
 
-	public static MLookup get(final Properties ctx, final int WindowNo, final int Column_ID, final int AD_Reference_ID,
-			final String ColumnName, final int AD_Reference_Value_ID,
+	public static MLookup get(final Properties ctx, final int WindowNo, final int Column_ID, final int AD_Reference_ID, final String ctxTableName, final String ctxColumnName, final int AD_Reference_Value_ID,
 			final boolean IsParent, final int AD_Val_Rule_ID)
+
 			throws AdempiereException
 	{
-		final MLookupInfo lookupInfo = getLookupInfo(WindowNo, AD_Reference_ID, ColumnName, AD_Reference_Value_ID, IsParent, AD_Val_Rule_ID);
+		final MLookupInfo lookupInfo = getLookupInfo(WindowNo, AD_Reference_ID, ctxTableName, ctxColumnName, AD_Reference_Value_ID, IsParent, AD_Val_Rule_ID);
 		return ofLookupInfo(ctx, lookupInfo, Column_ID);
 	}   // create
 
@@ -118,6 +117,7 @@ public class MLookupFactory
 		final MLookupInfo info = getLookupInfo(
 				WindowNo,
 				AD_Reference_ID,
+				columnInfo.getTableName(),
 				columnInfo.getColumnName(),
 				columnInfo.getAD_Reference_Value_ID(),
 				columnInfo.isParent(),
@@ -164,18 +164,21 @@ public class MLookupFactory
 	 */
 	static public MLookupInfo getLookupInfo(final int WindowNo,
 			final int AD_Reference_ID,
-			final String ColumnName, final int AD_Reference_Value_ID,
+			final String ctxTableName,
+			final String ctxColumnName,
+			final int AD_Reference_Value_ID,
 			final boolean IsParent, final String ValidationCode)
 	{
 		final int adValRuleId = -1;
-		final MLookupInfo info = getLookupInfo(WindowNo, AD_Reference_ID, ColumnName, AD_Reference_Value_ID, IsParent, adValRuleId);
-		Check.assumeNotNull(info, "lookupInfo not null for ColumnName={}, AD_Reference_ID={}, AD_Reference_Value_ID={}", ColumnName, AD_Reference_ID, AD_Reference_Value_ID);
+		final MLookupInfo info = getLookupInfo(WindowNo, AD_Reference_ID, ctxTableName,  ctxColumnName, AD_Reference_Value_ID, IsParent, adValRuleId);
+		Check.assumeNotNull(info, "lookupInfo not null for TableName={}, ColumnName={}, AD_Reference_ID={}, AD_Reference_Value_ID={}", ctxTableName, ctxColumnName, AD_Reference_ID, AD_Reference_Value_ID);
 		info.setValidationRule(Services.get(IValidationRuleFactory.class).createSQLValidationRule(ValidationCode));
 		info.getValidationRule(); // make sure the effective validation rule is built here (optimization)
 		return info;
 	}
 
-	static public MLookupInfo getLookupInfo(final int WindowNo, final int AD_Reference_ID, final String ColumnName, final int AD_Reference_Value_ID, final boolean IsParent, final int AD_Val_Rule_ID)
+	static public MLookupInfo getLookupInfo(
+			final int WindowNo, final int AD_Reference_ID, final String ctxTableName, final String ctxColumnName,final int AD_Reference_Value_ID, final boolean IsParent, final int AD_Val_Rule_ID)
 	{
 		final MLookupInfo info;
 		// List
@@ -211,12 +214,12 @@ public class MLookupFactory
 		// TableDir, Search, ID, ...
 		else
 		{
-			info = getLookup_TableDir(WindowNo, ColumnName);
+			info = getLookup_TableDir(WindowNo, ctxColumnName);
 		}
 		// do we have basic info?
 		if (info == null)
 		{
-			s_log.error("No SQL - {}", ColumnName);
+			s_log.error("No SQL - {}", ctxColumnName);
 			return null;
 		}
 
@@ -226,7 +229,7 @@ public class MLookupFactory
 		info.setDisplayType(AD_Reference_ID);
 		info.setAD_Reference_Value_ID(AD_Reference_Value_ID);
 		info.setIsParent(IsParent);
-		info.setValidationRule(Services.get(IValidationRuleFactory.class).create(info.getTableName(), AD_Val_Rule_ID));
+		info.setValidationRule(Services.get(IValidationRuleFactory.class).create(info.getTableName(), AD_Val_Rule_ID, ctxTableName, ctxColumnName));
 		info.getValidationRule(); // make sure the effective validation rule is built here (optimization)
 
 		// Direct Query - NO Validation/Security
@@ -757,7 +760,7 @@ public class MLookupFactory
 			{
 				return null;
 			}
-		}		
+		}
 		// number
 		else if (DisplayType.isNumeric(ldc.getDisplayType()))
 		{

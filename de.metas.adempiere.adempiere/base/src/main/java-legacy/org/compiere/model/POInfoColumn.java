@@ -69,7 +69,8 @@ public final class POInfoColumn implements Serializable
 	 * @param isEncrypted encrypted
 	 * @param isAllowLogging allow logging
 	 */
-	public POInfoColumn(int ad_Column_ID, String columnName, String columnSQL, int displayType,
+	public POInfoColumn(
+			int ad_Column_ID, String tableName, String columnName, String columnSQL, int displayType,
 			boolean isMandatory, boolean isUpdateable, String defaultLogic,
 			String columnLabel, String columnDescription,
 			boolean isKey, boolean isParent,
@@ -80,6 +81,7 @@ public final class POInfoColumn implements Serializable
 		super();
 		AD_Column_ID = ad_Column_ID;
 		ColumnName = columnName;
+		TableName = tableName;
 		this.virtualColumn = !Check.isEmpty(columnSQL, false); // trimWhitespaces=false to preserve back compatibility
 		if (virtualColumn)
 		{
@@ -190,6 +192,9 @@ public final class POInfoColumn implements Serializable
 	final int AD_Column_ID;
 	/** Column Name */
 	private final String ColumnName;
+	
+	private final String TableName;
+	
 	/** Virtual Column SQL */
 	private final String ColumnSQL;
 	/** Is Virtual Column */
@@ -392,13 +397,27 @@ public final class POInfoColumn implements Serializable
 			{
 				if(_lookupInfoForWindowNone == null)
 				{
-					final MLookupInfo lookupInfoCached = MLookupFactory.getLookupInfo(Env.WINDOW_None, DisplayType, ColumnName, AD_Reference_Value_ID, IsParent, AD_Val_Rule_ID);
+					final MLookupInfo lookupInfoCached = MLookupFactory.getLookupInfo(
+							Env.WINDOW_None
+							, DisplayType
+							, TableName
+							, ColumnName
+							, AD_Reference_Value_ID
+							, IsParent
+							, AD_Val_Rule_ID);
 					_lookupInfoForWindowNone = Optional.ofNullable(lookupInfoCached);
 				}
 				return _lookupInfoForWindowNone.orElse(null);
 			}
 			
-			final MLookupInfo lookupInfo = MLookupFactory.getLookupInfo(windowNo, DisplayType, ColumnName, AD_Reference_Value_ID, IsParent, AD_Val_Rule_ID);
+			final MLookupInfo lookupInfo = MLookupFactory.getLookupInfo(
+					windowNo
+					, DisplayType
+					, TableName
+					, ColumnName
+					, AD_Reference_Value_ID
+					, IsParent
+					, AD_Val_Rule_ID);
 			return lookupInfo;
 		}
 		else
