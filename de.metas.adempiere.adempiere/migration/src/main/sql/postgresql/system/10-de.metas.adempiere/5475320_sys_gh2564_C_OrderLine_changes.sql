@@ -107,11 +107,6 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 /* DDL */ SELECT public.db_alter_table('C_OrderLine','ALTER TABLE public.C_OrderLine ADD COLUMN GroupCompensationBaseAmt NUMERIC')
 ;
 
--- 2017-10-24T16:05:06.528
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-DELETE FROM AD_PInstance_SelectedIncludedRecords WHERE AD_PInstance_ID=?
-;
-
 -- 2017-10-24T16:05:06.731
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 INSERT INTO AD_Field (AD_Tab_ID,IsDisplayed,DisplayLength,IsSameLine,IsHeading,IsFieldOnly,IsEncrypted,AD_Client_ID,IsActive,Created,CreatedBy,IsReadOnly,IsCentrallyMaintained,AD_Field_ID,AD_Column_ID,Description,AD_Org_ID,Name,EntityType,Updated,UpdatedBy) VALUES (187,'Y',10,'N','N','N','N',0,'Y',TO_TIMESTAMP('2017-10-24 16:05:06','YYYY-MM-DD HH24:MI:SS'),100,'N','Y',560415,557787,'Base amount for calculating percentage group compensation',0,'Compensation base amount','D',TO_TIMESTAMP('2017-10-24 16:05:06','YYYY-MM-DD HH24:MI:SS'),100)

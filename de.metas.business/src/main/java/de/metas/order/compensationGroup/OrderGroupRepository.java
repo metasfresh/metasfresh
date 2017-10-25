@@ -55,8 +55,9 @@ import lombok.Singular;
 @Component
 public class OrderGroupRepository implements GroupRepository
 {
-	private final transient IOrderBL orderBL = Services.get(IOrderBL.class);
-	private final transient IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
+	// NOTE: we cannot have it here because the impl is not in the same package and unit tests are failing
+	// private final transient IOrderBL orderBL = Services.get(IOrderBL.class);
+	// private final transient IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 	private final transient IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	public GroupId extractGroupId(final I_C_OrderLine orderLine)
@@ -99,7 +100,9 @@ public class OrderGroupRepository implements GroupRepository
 	private Group createGroupFromOrderLines(final List<I_C_OrderLine> groupOrderLines)
 	{
 		final GroupId groupId = extractSingleGroupId(groupOrderLines);
+
 		final I_C_Order order = groupOrderLines.get(0).getC_Order();
+		final IOrderBL orderBL = Services.get(IOrderBL.class);
 		final int precision = orderBL.getPrecision(order);
 
 		final GroupBuilder groupBuilder = Group.builder()
@@ -215,6 +218,7 @@ public class OrderGroupRepository implements GroupRepository
 			if (compensationLinePO == null)
 			{
 				// new line or missing line(in case orderLineId > 0)
+				final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 				compensationLinePO = orderLineBL.createOrderLine(order);
 			}
 
@@ -304,6 +308,7 @@ public class OrderGroupRepository implements GroupRepository
 				.lineNetAmt(compensationLine.getBaseAmt())
 				.build();
 
+		final IOrderBL orderBL = Services.get(IOrderBL.class);
 		final int precision = orderBL.getPrecision(compensationLinePO.getC_Order());
 
 		return Group.builder()
