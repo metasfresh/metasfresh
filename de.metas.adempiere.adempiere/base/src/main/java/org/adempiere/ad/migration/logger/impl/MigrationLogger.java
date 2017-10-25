@@ -153,7 +153,7 @@ public class MigrationLogger implements IMigrationLogger
 				// FIXME: find a way to fine tune this
 				// "AD_SEQUENCE"
 
-				I_AD_PInstance_SelectedIncludedRecords.Table_Name // https://github.com/metasfresh/metasfresh-webui-api/issues/645
+				I_AD_PInstance_SelectedIncludedRecords.Table_Name.toUpperCase() // https://github.com/metasfresh/metasfresh-webui-api/issues/645
 			);
 
 		//
