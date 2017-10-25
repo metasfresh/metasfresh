@@ -28,6 +28,8 @@ Here come the actual release notes:
     * Improving the Invoice Candidates Window. Adding missing Translation for Field in en_US.
   * [#2815](https://github.com/metasfresh/metasfresh/issues/2815) New flag in Picking Tray window
     * New Field to define the Rack System in Picking Tray Window in WebUI.
+  *[#2826](https://github.com/metasfresh/metasfresh/issues/2826) WebUI: Orderlines adjustment for new Discount Groups
+    * New Fields in Orderlines allowing to use and define Groups Discounts in Sales Orderlines.
 
 ## Features
 * metasfresh-app
