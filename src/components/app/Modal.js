@@ -158,18 +158,17 @@ class Modal extends Component {
                 // - with selected : on gridviews
 
                 try {
-                    await dispatch(
-                        createProcess(
-                            windowType,
-                            modalViewId,
-                            relativeType,
-                            (
-                                modalViewDocumentIds ||
-                                (dataId ? [dataId] : selected)
-                            ),
-                            tabId, rowId
-                        )
-                    )
+                    await dispatch(createProcess({
+                        processType: windowType,
+                        viewId: modalViewId,
+                        type: relativeType,
+                        ids: (
+                            modalViewDocumentIds ||
+                            (dataId ? [dataId] : selected)
+                        ),
+                        tabId,
+                        rowId
+                    }));
                 } catch (error) {
                     this.handleClose();
 
