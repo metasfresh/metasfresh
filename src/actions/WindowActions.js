@@ -654,7 +654,14 @@ export function getZoomIntoWindow(entity, windowId, docId, tabId, rowId, field){
 
 // PROCESS ACTIONS
 
-export function createProcess(processType, viewId, type, ids, tabId, rowId) {
+export function createProcess({
+    ids,
+    processType,
+    rowId,
+    tabId,
+    type,
+    viewId
+}) {
     let pid = null;
 
     return async (dispatch) => {
