@@ -183,6 +183,7 @@ class Modal extends Component {
     }
 
     closeModal = () => {
+        // TODO: parentDataId (formerly relativeDataId) is not passed in as prop
         const {
             dispatch, closeCallback, dataId, windowType, relativeType,
             relativeDataId, triggerField,
