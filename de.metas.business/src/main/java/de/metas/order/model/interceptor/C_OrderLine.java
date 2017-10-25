@@ -65,8 +65,10 @@ public class C_OrderLine
 	{
 		Adempiere.autowire(this);
 		
-		// NOTE: in unit test mode the groupsRepo is not autowired so we have to instantiate it directly
-		if(Adempiere.isUnitTestMode())
+		// NOTE: in unit test mode and while running tools like model generators,
+		// the groupsRepo is not Autowired because there is no spring context,
+		// so we have to instantiate it directly
+		if(groupsRepo == null)
 		{
 			groupsRepo = new OrderGroupRepository();
 		}
