@@ -88,11 +88,6 @@ UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=100,Updated=TO_TIMESTAMP
 UPDATE AD_Field SET Name='Durchlaufregal',Updated=TO_TIMESTAMP('2017-10-25 14:41:45','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=560392
 ;
 
--- 2017-10-25T14:42:52.965
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-DELETE FROM AD_PInstance_SelectedIncludedRecords WHERE AD_PInstance_ID=?
-;
-
 -- 2017-10-25T14:42:53.042
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 UPDATE AD_UI_Element SET AD_UI_ElementGroup_ID=541090, SeqNo=60,Updated=TO_TIMESTAMP('2017-10-25 14:42:53','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=548138
