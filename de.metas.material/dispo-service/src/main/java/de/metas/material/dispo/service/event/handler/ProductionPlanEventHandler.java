@@ -2,13 +2,14 @@ package de.metas.material.dispo.service.event.handler;
 
 import org.springframework.stereotype.Service;
 
-import de.metas.material.dispo.Candidate;
-import de.metas.material.dispo.Candidate.Status;
-import de.metas.material.dispo.Candidate.SubType;
-import de.metas.material.dispo.Candidate.Type;
 import de.metas.material.dispo.CandidateService;
-import de.metas.material.dispo.DemandCandidateDetail;
-import de.metas.material.dispo.ProductionCandidateDetail;
+import de.metas.material.dispo.CandidateSpecification.Status;
+import de.metas.material.dispo.CandidateSpecification.SubType;
+import de.metas.material.dispo.CandidateSpecification.Type;
+import de.metas.material.dispo.candidate.Candidate;
+import de.metas.material.dispo.candidate.DemandDetail;
+import de.metas.material.dispo.candidate.ProductionDetail;
+import de.metas.material.dispo.candidate.Candidate.CandidateBuilder;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.dispo.service.event.EventUtil;
 import de.metas.material.event.MaterialDescriptor;
@@ -61,15 +62,14 @@ public class ProductionPlanEventHandler
 	{
 		final PPOrder ppOrder = event.getPpOrder();
 
-		final Candidate.Status candidateStatus = getCandidateStatus(ppOrder);
+		final Status candidateStatus = getCandidateStatus(ppOrder);
 
 		final Candidate supplyCandidate = Candidate.builderForEventDescr(event.getEventDescr())
 				.type(Type.SUPPLY)
 				.subType(SubType.PRODUCTION)
 				.status(candidateStatus)
-				.reference(event.getReference())
 				.productionDetail(createProductionDetailForPPOrder(ppOrder))
-				.demandDetail(DemandCandidateDetail.forOrderLineId(ppOrder.getOrderLineId()))
+				.demandDetail(DemandDetail.forOrderLineIdOrNull(ppOrder.getOrderLineId()))
 				.materialDescr(createMAterialDescriptorFromPpOrder(ppOrder))
 				.build();
 
@@ -78,20 +78,18 @@ public class ProductionPlanEventHandler
 
 		for (final PPOrderLine ppOrderLine : ppOrder.getLines())
 		{
-			final Candidate lineCandidate = Candidate.builderForEventDescr(event.getEventDescr())
+			final CandidateBuilder builder = Candidate.builderForEventDescr(event.getEventDescr())
 					.type(ppOrderLine.isReceipt() ? Type.SUPPLY : Type.DEMAND)
 					.subType(SubType.PRODUCTION)
 					.status(candidateStatus)
 					.groupId(candidateWithGroupId.getGroupId())
 					.seqNo(candidateWithGroupId.getSeqNo() + 1)
 					.materialDescr(createMaterialDescriptorForPpOrderAndLine(ppOrder, ppOrderLine))
-					.reference(event.getReference())
-					.productionDetail(createProductionDetailForPPOrderAndLine(ppOrder, ppOrderLine))
-					.demandDetail(DemandCandidateDetail.forOrderLineId(ppOrder.getOrderLineId()))
-					.build();
-
+					.demandDetail(DemandDetail.forOrderLineIdOrNull(ppOrder.getOrderLineId()))
+					.productionDetail(createProductionDetailForPPOrderAndLine(ppOrder, ppOrderLine));
+			
 			// might trigger further demand events
-			candidateChangeHandler.onCandidateNewOrChange(lineCandidate);
+			candidateChangeHandler.onCandidateNewOrChange(builder.build());
 		}
 
 		if (ppOrder.isCreatePPOrder())
@@ -110,7 +108,7 @@ public class ProductionPlanEventHandler
 				.build();
 		return materialDescriptor;
 	}
-	
+
 	private static MaterialDescriptor createMaterialDescriptorForPpOrderAndLine(final PPOrder ppOrder, final PPOrderLine ppOrderLine)
 	{
 		final MaterialDescriptor materialDescriptor = MaterialDescriptor.builder()
@@ -122,10 +120,9 @@ public class ProductionPlanEventHandler
 		return materialDescriptor;
 	}
 
-
-	private static Candidate.Status getCandidateStatus(@NonNull final PPOrder ppOrder)
+	private static Status getCandidateStatus(@NonNull final PPOrder ppOrder)
 	{
-		final Candidate.Status candidateStatus;
+		final Status candidateStatus;
 		final String docStatus = ppOrder.getDocStatus();
 
 		if (ppOrder.getPpOrderId() <= 0)
@@ -139,9 +136,9 @@ public class ProductionPlanEventHandler
 		return candidateStatus;
 	}
 
-	private static ProductionCandidateDetail createProductionDetailForPPOrder(@NonNull final PPOrder ppOrder)
+	private static ProductionDetail createProductionDetailForPPOrder(@NonNull final PPOrder ppOrder)
 	{
-		final ProductionCandidateDetail productionCandidateDetail = ProductionCandidateDetail.builder()
+		final ProductionDetail productionCandidateDetail = ProductionDetail.builder()
 				.plantId(ppOrder.getPlantId())
 				.productPlanningId(ppOrder.getProductPlanningId())
 				.ppOrderId(ppOrder.getPpOrderId())
@@ -150,11 +147,11 @@ public class ProductionPlanEventHandler
 		return productionCandidateDetail;
 	}
 
-	private static ProductionCandidateDetail createProductionDetailForPPOrderAndLine(
+	private static ProductionDetail createProductionDetailForPPOrderAndLine(
 			@NonNull final PPOrder ppOrder,
 			@NonNull final PPOrderLine ppOrderLine)
 	{
-		return ProductionCandidateDetail.builder()
+		return ProductionDetail.builder()
 				.plantId(ppOrder.getPlantId())
 				.productPlanningId(ppOrder.getProductPlanningId())
 				.productBomLineId(ppOrderLine.getProductBomLineId())

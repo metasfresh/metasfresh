@@ -60,9 +60,9 @@ public class ReferencingPOFilterTest
 
 		ol1 = InterfaceWrapperHelper.create(ctx, I_C_OrderLine.class, ITrx.TRXNAME_None);
 		InterfaceWrapperHelper.save(ol1);
-
+		
 		final I_AD_Note note1 = InterfaceWrapperHelper.create(ctx, I_AD_Note.class, ITrx.TRXNAME_None);
-		note1.setAD_Table_ID(I_C_OrderLine.Table_ID);
+		note1.setAD_Table_ID(InterfaceWrapperHelper.getTableId(I_C_OrderLine.class));
 		note1.setRecord_ID(ol1.getC_OrderLine_ID());
 		InterfaceWrapperHelper.save(note1);
 		referencing1 = InterfaceWrapperHelper.create(note1, IPOReferenceAware.class);
@@ -71,7 +71,7 @@ public class ReferencingPOFilterTest
 		InterfaceWrapperHelper.save(ol2);
 
 		final I_AD_Note note2 = InterfaceWrapperHelper.create(ctx, I_AD_Note.class, ITrx.TRXNAME_None);
-		note2.setAD_Table_ID(I_C_OrderLine.Table_ID);
+		note2.setAD_Table_ID(InterfaceWrapperHelper.getTableId(I_C_OrderLine.class));
 		note2.setRecord_ID(ol2.getC_OrderLine_ID());
 		InterfaceWrapperHelper.save(note2);
 		referencing2 = InterfaceWrapperHelper.create(note2, IPOReferenceAware.class);

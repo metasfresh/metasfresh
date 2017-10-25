@@ -37,9 +37,9 @@ import org.eevolution.mrp.api.impl.MRPTestHelper;
 import org.junit.Before;
 import org.junit.Test;
 
-import de.metas.handlingunits.IHUCapacityDefinition;
 import de.metas.handlingunits.storage.ProductStorageExpectation;
 import de.metas.material.planning.pporder.impl.PPOrderBOMBL;
+import de.metas.quantity.Quantity;
 
 /**
  * Tests {@link PPOrderBOMBL#calculateQtyToIssueBasedOnFinishedGoodReceipt(I_PP_Order_BOMLine, I_C_UOM)}.
@@ -158,9 +158,9 @@ public class PPOrderBOMLineProductStorageTest
 					// NOTE: we assume infinite capacity because we don't want to enforce how many items we can allocate on this storage
 					final PPOrderBOMLineProductStorage storage = new PPOrderBOMLineProductStorage(ppOrderBOMLine);
 					new ProductStorageExpectation()
-							.qtyCapacity(IHUCapacityDefinition.INFINITY)
+							.qtyCapacity(Quantity.QTY_INFINITE)
 							.qty(ppOrderBOMLine.getQtyDelivered())
-							.qtyFree(IHUCapacityDefinition.INFINITY)
+							.qtyFree(Quantity.QTY_INFINITE)
 							.assertExpected(storage);
 				}
 			}

@@ -71,6 +71,7 @@ import org.compiere.util.Ini;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
+import de.metas.process.model.I_AD_PInstance_SelectedIncludedRecords;
 
 public class MigrationLogger implements IMigrationLogger
 {
@@ -144,13 +145,15 @@ public class MigrationLogger implements IMigrationLogger
 				// Don't log migration scripts tables - 02662
 				"AD_MIGRATION",
 				"AD_MIGRATIONSTEP",
-				"AD_MIGRATIONDATA"
+				"AD_MIGRATIONDATA",
 				
 				// Don't log AD_Sequence because these will be created automatically (at least for Table_ID)
 				// NOTE: while this is applying for XML migrations, we need this to be logged in SQL migrations
 				// and currently we use SQL migrations
 				// FIXME: find a way to fine tune this
 				// "AD_SEQUENCE"
+
+				I_AD_PInstance_SelectedIncludedRecords.Table_Name.toUpperCase() // https://github.com/metasfresh/metasfresh-webui-api/issues/645
 			);
 
 		//

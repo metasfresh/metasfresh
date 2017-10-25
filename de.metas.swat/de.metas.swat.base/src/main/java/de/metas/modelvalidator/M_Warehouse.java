@@ -32,9 +32,8 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.ModelValidator;
-
-import de.metas.interfaces.I_M_Warehouse;
 
 @Validator(I_M_Warehouse.class)
 @Callout(I_M_Warehouse.class)

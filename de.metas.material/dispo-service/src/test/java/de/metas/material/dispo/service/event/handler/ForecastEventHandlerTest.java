@@ -19,13 +19,15 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
-import de.metas.material.dispo.Candidate.Type;
+import com.google.common.collect.ImmutableList;
+
 import de.metas.material.dispo.CandidateRepository;
+import de.metas.material.dispo.CandidateSpecification.Type;
 import de.metas.material.dispo.DispoTestUtils;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.X_MD_Candidate;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
-import de.metas.material.dispo.service.candidatechange.StockCandidateService;
+import de.metas.material.dispo.service.candidatechange.handler.StockUpCandiateHandler;
 import de.metas.material.event.EventDescr;
 import de.metas.material.event.MaterialDemandEvent;
 import de.metas.material.event.MaterialDescriptor;
@@ -81,10 +83,8 @@ public class ForecastEventHandlerTest
 		final CandidateRepository candidateRepository = new CandidateRepository();
 
 		forecastEventHandler = new ForecastEventHandler(
-				new CandidateChangeService(
-						candidateRepository,
-						new StockCandidateService(candidateRepository),
-						materialEventService));
+				new CandidateChangeService(ImmutableList.of(
+						new StockUpCandiateHandler(candidateRepository, materialEventService))));
 	}
 
 	/**

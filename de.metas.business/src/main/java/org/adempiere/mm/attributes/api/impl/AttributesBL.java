@@ -32,7 +32,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.AttributeAction;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributesBL;
-import org.adempiere.mm.attributes.model.I_M_Attribute;
 import org.adempiere.mm.attributes.spi.IAttributeValueGenerator;
 import org.adempiere.mm.attributes.spi.IAttributeValuesProvider;
 import org.adempiere.mm.attributes.spi.IAttributeValuesProviderFactory;
@@ -42,6 +41,7 @@ import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeSet;
 import org.compiere.model.I_M_AttributeValue;
 import org.compiere.model.I_M_Product;
@@ -92,7 +92,7 @@ public class AttributesBL implements IAttributesBL
 	{
 		Check.assumeNotNull(attributeParam, "attributeParam not null");
 
-		final org.adempiere.mm.attributes.model.I_M_Attribute attribute = InterfaceWrapperHelper.create(attributeParam, org.adempiere.mm.attributes.model.I_M_Attribute.class);
+		final I_M_Attribute attribute = InterfaceWrapperHelper.create(attributeParam, I_M_Attribute.class);
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(attribute);
 		final I_AD_JavaClass javaClassDef = Services.get(IJavaClassDAO.class).retriveJavaClassOrNull(ctx, attribute.getAD_JavaClass_ID());

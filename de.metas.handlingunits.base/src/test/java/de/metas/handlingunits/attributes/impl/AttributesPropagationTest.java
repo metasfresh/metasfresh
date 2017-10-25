@@ -1,5 +1,7 @@
 package de.metas.handlingunits.attributes.impl;
 
+import static de.metas.business.BusinessTestHelper.createM_Attribute;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -262,7 +264,7 @@ public class AttributesPropagationTest extends AbstractHUTest
 	{
 		//
 		// Create and assign an attribute with "invalid propagation"
-		final I_M_Attribute attr_InvalidPropagation = helper.createM_Attribute("InvalidPropagation_Attribute",
+		final I_M_Attribute attr_InvalidPropagation = createM_Attribute("InvalidPropagation_Attribute",
 				X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40,
 				true // isInstanceAttribute
 				);
@@ -287,7 +289,7 @@ public class AttributesPropagationTest extends AbstractHUTest
 	{
 		//
 		// Create and assign attribute
-		final I_M_Attribute attr_CopyValueNoParent = helper.createM_Attribute("InheritValueNoParent_Attribute",
+		final I_M_Attribute attr_CopyValueNoParent = createM_Attribute("InheritValueNoParent_Attribute",
 				X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40,
 				true // instance attribute
 				);

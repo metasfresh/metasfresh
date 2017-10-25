@@ -6,14 +6,16 @@ import static org.junit.Assert.assertThat;
 
 import java.math.BigDecimal;
 
-import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.time.SystemTime;
 import org.junit.Test;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.material.dispo.Candidate.SubType;
-import de.metas.material.dispo.Candidate.Type;
+import de.metas.material.dispo.CandidateSpecification.SubType;
+import de.metas.material.dispo.CandidateSpecification.Type;
+import de.metas.material.dispo.candidate.Candidate;
+import de.metas.material.dispo.candidate.DistributionDetail;
+import de.metas.material.dispo.candidate.ProductionDetail;
 import de.metas.material.event.MaterialDescriptor;
 import de.metas.material.event.MaterialEventService;
 import de.metas.material.event.ddorder.DDOrder;
@@ -61,8 +63,7 @@ public class CandidateServiceTests
 				.type(Type.SUPPLY)
 				.subType(SubType.PRODUCTION)
 				.materialDescr(materialDescr)
-				.reference(TableRecordReference.of("someTable", 23))
-				.productionDetail(ProductionCandidateDetail.builder()
+				.productionDetail(ProductionDetail.builder()
 						.plantId(210)
 						.productPlanningId(220)
 						.uomId(230)
@@ -74,7 +75,7 @@ public class CandidateServiceTests
 				.withMaterialDescr(candidate.getMaterialDescr()
 						.withProductId(310)
 						.withQuantity(BigDecimal.valueOf(20)))
-				.withProductionDetail(ProductionCandidateDetail.builder()
+				.withProductionDetail(ProductionDetail.builder()
 						.plantId(210)
 						.productPlanningId(220)
 						.productBomLineId(500)
@@ -85,7 +86,7 @@ public class CandidateServiceTests
 				.withMaterialDescr(candidate.getMaterialDescr()
 						.withProductId(320)
 						.withQuantity(BigDecimal.valueOf(10)))
-				.withProductionDetail(ProductionCandidateDetail.builder()
+				.withProductionDetail(ProductionDetail.builder()
 						.plantId(210)
 						.productPlanningId(220)
 						.productBomLineId(600)
@@ -125,8 +126,7 @@ public class CandidateServiceTests
 				.type(Type.SUPPLY)
 				.subType(SubType.DISTRIBUTION)
 				.materialDescr(materialDescr)
-				.reference(TableRecordReference.of("someTable", 23))
-				.distributionDetail(DistributionCandidateDetail.builder()
+				.distributionDetail(DistributionDetail.builder()
 						.productPlanningId(220)
 						.plantId(230)
 						.shipperId(240)
@@ -138,7 +138,7 @@ public class CandidateServiceTests
 				.withMaterialDescr(candidate.getMaterialDescr()
 						.withProductId(310)
 						.withQuantity(BigDecimal.valueOf(20)))
-				.withDistributionDetail(DistributionCandidateDetail.builder()
+				.withDistributionDetail(DistributionDetail.builder()
 						.productPlanningId(220)
 						.plantId(230)
 						.shipperId(240)
@@ -150,7 +150,7 @@ public class CandidateServiceTests
 				.withMaterialDescr(candidate.getMaterialDescr()
 						.withProductId(320)
 						.withQuantity(BigDecimal.valueOf(10)))
-				.withDistributionDetail(DistributionCandidateDetail.builder()
+				.withDistributionDetail(DistributionDetail.builder()
 						.productPlanningId(220)
 						.plantId(230)
 						.shipperId(240)

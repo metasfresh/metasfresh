@@ -28,9 +28,9 @@ import java.math.BigDecimal;
 import org.adempiere.util.Check;
 
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
-import de.metas.handlingunits.IHUCapacityDefinition;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
+import de.metas.quantity.Quantity;
 
 public class LUKey extends AbstractLUTUKey
 {
@@ -60,7 +60,7 @@ public class LUKey extends AbstractLUTUKey
 		}
 		if (isVirtualPI())
 		{
-			return IHUCapacityDefinition.INFINITY;
+			return Quantity.QTY_INFINITE;
 		}
 
 		final I_M_HU_PI_Item piItem = getM_HU_PI_Item_ForChildJoin();

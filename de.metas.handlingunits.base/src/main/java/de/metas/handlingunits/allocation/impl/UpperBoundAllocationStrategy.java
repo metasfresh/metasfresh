@@ -30,13 +30,15 @@ import org.adempiere.util.Services;
 import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.util.Util;
 
-import de.metas.handlingunits.IHUCapacityDefinition;
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.IAllocationResult;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.handlingunits.storage.IHUItemStorage;
+import de.metas.quantity.Capacity;
+import de.metas.quantity.CapacityInterface;
+import de.metas.quantity.Quantity;
 
 /**
  * This classe's {@link #getHUItemStorage(I_M_HU_Item, IAllocationRequest)} can return a storage with an
@@ -50,20 +52,20 @@ public class UpperBoundAllocationStrategy extends AbstractFIFOStrategy
 	// services
 	private final transient IDeveloperModeBL developerModeBL = Services.get(IDeveloperModeBL.class);
 
-	private final IHUCapacityDefinition _capacityOverride;
+	private final Capacity _capacityOverride;
 
 	/**
 	 * 
 	 * @param capacityOverride optional capacity that can override the one from the packing instructions.
 	 */
-	public UpperBoundAllocationStrategy(final IHUCapacityDefinition capacityOverride)
+	public UpperBoundAllocationStrategy(final Capacity capacityOverride)
 	{
 		super(false); // outTrx=false
 
 		_capacityOverride = isUseDefaultCapacity(capacityOverride) ? null : capacityOverride;
 	}
 
-	private static final boolean isUseDefaultCapacity(final IHUCapacityDefinition capacity)
+	private static final boolean isUseDefaultCapacity(final CapacityInterface capacity)
 	{
 		if (capacity == null)
 		{
@@ -73,14 +75,14 @@ public class UpperBoundAllocationStrategy extends AbstractFIFOStrategy
 		final BigDecimal qty;
 		if (capacity.isInfiniteCapacity())
 		{
-			qty = IHUCapacityDefinition.INFINITY;
+			qty = Quantity.QTY_INFINITE;
 		}
 		else
 		{
-			qty = capacity.getCapacity();
+			qty = capacity.getCapacityQty();
 		}
 
-		return Util.same(IHUCapacityDefinition.DEFAULT, qty);
+		return Util.same(Capacity.DEFAULT, qty);
 	}
 
 	@Override
@@ -101,7 +103,7 @@ public class UpperBoundAllocationStrategy extends AbstractFIFOStrategy
 
 		// make sure that the capacity is forced by the user, not the system
 		// If capacityOverride is null it means that we were asked to take the defaults
-		final IHUCapacityDefinition capacityOverride = getCapacityOverride();
+		final Capacity capacityOverride = getCapacityOverride();
 		if (capacityOverride != null && !storage.isPureVirtual())
 		{
 			storage.setCustomCapacity(capacityOverride);
@@ -110,7 +112,7 @@ public class UpperBoundAllocationStrategy extends AbstractFIFOStrategy
 		return storage;
 	}
 
-	private final IHUCapacityDefinition getCapacityOverride()
+	private final Capacity getCapacityOverride()
 	{
 		return _capacityOverride;
 	}

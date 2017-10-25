@@ -35,6 +35,7 @@ import javax.annotation.concurrent.Immutable;
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.security.permissions.UIDisplayedEntityTypes;
+import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.ad.service.ILookupDAO;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
@@ -760,7 +761,7 @@ public class LookupDAO implements ILookupDAO
 	{
 		Check.assumeNotNull(tableRefInfo, "tableRefInfo not null");
 
-		final List<ILookupDisplayColumn> lookupDisplayColumns = new ArrayList<ILookupDisplayColumn>();
+		final List<ILookupDisplayColumn> lookupDisplayColumns = new ArrayList<>();
 		boolean isTranslated = false;
 		int ZoomWindow = 0;
 		int ZoomWindowPO = 0;
@@ -768,9 +769,9 @@ public class LookupDAO implements ILookupDAO
 		//
 		// Column filter
 		final StringBuilder sqlWhereClauseColumn = new StringBuilder();
-		final List<Object> sqlWhereClauseColumnParams = new ArrayList<Object>();
+		final List<Object> sqlWhereClauseColumnParams = new ArrayList<>();
 		final StringBuilder sqlOrderBy = new StringBuilder();
-		final List<Object> sqlOrderByParams = new ArrayList<Object>();
+		final List<Object> sqlOrderByParams = new ArrayList<>();
 		//
 		if (tableRefInfo.isValueDisplayed())
 		{
@@ -787,6 +788,19 @@ public class LookupDAO implements ILookupDAO
 			}
 			sqlOrderBy.append("(CASE WHEN c.").append(I_AD_Column.COLUMNNAME_ColumnName).append("=? THEN 0 ELSE 1 END)");
 			sqlOrderByParams.add(COLUMNNAME_Value);
+		}
+		//
+		if(Services.get(IDeveloperModeBL.class).isEnabled())
+		{
+			if(I_AD_Table.Table_Name.equals(tableRefInfo.getTableName()))
+			{
+				if (sqlWhereClauseColumn.length() > 0)
+				{
+					sqlWhereClauseColumn.append(" OR ");
+				}
+				sqlWhereClauseColumn.append("c.").append(I_AD_Column.COLUMNNAME_ColumnName).append("=?");
+				sqlWhereClauseColumnParams.add(I_AD_Table.COLUMNNAME_TableName);
+			}
 		}
 		//
 		if (Check.isEmpty(tableRefInfo.getDisplayColumn(), true))
@@ -815,7 +829,7 @@ public class LookupDAO implements ILookupDAO
 			sqlWhereClauseColumnParams.add(tableRefInfo.getDisplayColumn());
 		}
 
-		final List<Object> sqlParams = new ArrayList<Object>();
+		final List<Object> sqlParams = new ArrayList<>();
 		final StringBuilder sql = new StringBuilder("SELECT "
 				+ " c." + I_AD_Column.COLUMNNAME_ColumnName
 				+ ",c." + I_AD_Column.COLUMNNAME_IsTranslated

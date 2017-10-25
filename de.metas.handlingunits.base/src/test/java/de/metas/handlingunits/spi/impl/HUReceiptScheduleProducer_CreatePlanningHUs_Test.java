@@ -472,9 +472,9 @@ public class HUReceiptScheduleProducer_CreatePlanningHUs_Test extends AbstractHU
 	private I_M_ReceiptSchedule_Alloc removeReceiptScheduleAllocFromList(final List<I_M_ReceiptSchedule_Alloc> rsAllocs,
 			final I_M_HU luHU, final I_M_HU tuHU, final I_M_HU vhu)
 	{
-		final int luHUId = luHU == null ? -1 : luHU.getM_HU_ID();
-		final int tuHUId = tuHU == null ? -1 : tuHU.getM_HU_ID();
-		final int vhuId = vhu == null ? -1 : vhu.getM_HU_ID();
+		final int luHUId = luHU == null ? 0 : luHU.getM_HU_ID();
+		final int tuHUId = tuHU == null ? 0 : tuHU.getM_HU_ID();
+		final int vhuId = vhu == null ? 0 : vhu.getM_HU_ID();
 
 		I_M_ReceiptSchedule_Alloc allocFound = null;
 
@@ -482,9 +482,9 @@ public class HUReceiptScheduleProducer_CreatePlanningHUs_Test extends AbstractHU
 		{
 			final I_M_ReceiptSchedule_Alloc alloc = it.next();
 
-			final int alloc_luHUId = alloc.getM_LU_HU_ID() <= 0 ? -1 : alloc.getM_LU_HU_ID();
-			final int alloc_tuHUId = alloc.getM_TU_HU_ID() <= 0 ? -1 : alloc.getM_TU_HU_ID();
-			final int alloc_vhuId = alloc.getVHU_ID() <= 0 ? -1 : alloc.getVHU_ID();
+			final int alloc_luHUId = alloc.getM_LU_HU_ID() <= 0 ? 0 : alloc.getM_LU_HU_ID();
+			final int alloc_tuHUId = alloc.getM_TU_HU_ID() <= 0 ? 0 : alloc.getM_TU_HU_ID();
+			final int alloc_vhuId = alloc.getVHU_ID() <= 0 ? 0 : alloc.getVHU_ID();
 
 			if (luHUId != alloc_luHUId)
 			{

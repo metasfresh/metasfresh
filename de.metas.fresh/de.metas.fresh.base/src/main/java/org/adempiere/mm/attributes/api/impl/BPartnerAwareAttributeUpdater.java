@@ -74,6 +74,11 @@ public class BPartnerAwareAttributeUpdater
 			return;
 		}
 
+		if (asiAware.getM_Product_ID() <= 0)
+		{
+			return;
+		}
+		
 		final IBPartnerAware bpartnerAware = getBPartnerAwareFactory().createBPartnerAware(sourceModel);
 		if (bpartnerAware == null)
 		{

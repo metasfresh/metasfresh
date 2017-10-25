@@ -49,7 +49,6 @@ public final class NullQueryFilterModifier implements IQueryFilterModifier
 
 	private NullQueryFilterModifier()
 	{
-		super();
 	}
 
 	@Override

@@ -75,7 +75,7 @@ public class InOutLineExpectation<ParentExpectationType> extends de.metas.inoutc
 		{
 			if (referencedPackagingMaterialLineIdx <= 0)
 			{
-				assertEquals(message.expect("Not referencing packaging line"), -1, inoutLine.getM_PackingMaterial_InOutLine_ID());
+				assertEquals(message.expect("Not referencing packaging line"), 0, inoutLine.getM_PackingMaterial_InOutLine_ID());
 			}
 			else
 			{

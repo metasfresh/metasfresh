@@ -28,6 +28,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.adempiere.ad.expression.api.ConstantLogicExpression;
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.ad.expression.exceptions.ExpressionCompileException;
@@ -108,12 +109,10 @@ public class LogicExpressionEvaluatorTests
 	public static void staticInit()
 	{
 		// needed in case we throw AdempiereExceptions which are checking the database for translating the messages
-		AdempiereTestHelper.get().staticInit();
+		AdempiereTestHelper.get().init();
 	}
 
 	private LogicExpressionCompiler compiler;
-
-	// private LogicExpressionEvaluator evaluator;
 
 	@Before
 	public void init()
@@ -711,12 +710,12 @@ public class LogicExpressionEvaluatorTests
 			// Pure constant expressions
 			test_evaluateLogic_OnVariableNotFound(
 					true // expectedValue
-					, ILogicExpression.TRUE // expression
+					, ConstantLogicExpression.TRUE // expression
 					, onVariableNotFound //
 					, params);
 			test_evaluateLogic_OnVariableNotFound(
 					false // expectedValue
-					, ILogicExpression.FALSE // expression
+					, ConstantLogicExpression.FALSE // expression
 					, onVariableNotFound //
 					, params);
 		}

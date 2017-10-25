@@ -18,6 +18,7 @@ import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.impl.HUIterator;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Assignment;
+import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import lombok.NonNull;
@@ -99,11 +100,13 @@ public class HUAccessService
 	public int retrieveTopLevelHuId(@NonNull final I_M_HU hu)
 	{
 		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-		if (!handlingUnitsBL.isPhysicalHU(hu.getHUStatus()))
+
+		final String huStatus = hu.getHUStatus();
+		if (handlingUnitsBL.isPhysicalHU(huStatus) || X_M_HU.HUSTATUS_Shipped.equals(huStatus))
 		{
-			return -1;
+			return handlingUnitsBL.getTopLevelParent(hu).getM_HU_ID();
 		}
-		return handlingUnitsBL.getTopLevelParent(hu).getM_HU_ID();
+		return -1;
 	}
 
 	public Optional<IPair<I_M_Product, BigDecimal>> retrieveProductAndQty(@NonNull final I_M_HU vhu)

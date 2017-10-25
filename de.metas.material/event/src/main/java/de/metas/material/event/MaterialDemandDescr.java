@@ -1,9 +1,10 @@
 package de.metas.material.event;
 
-import org.adempiere.util.lang.impl.TableRecordReference;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.Preconditions;
 
 import lombok.Builder;
-import lombok.Builder.Default;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -29,8 +30,7 @@ import lombok.Value;
  * #L%
  */
 
-@Value // includes @AllArgsCosntructor which is used by jackson when it deserializes a string
-@Builder
+@Value // includes @AllArgsConstructor which is used by jackson when it deserializes a string
 public class MaterialDemandDescr
 {
 	@NonNull
@@ -39,8 +39,32 @@ public class MaterialDemandDescr
 	@NonNull
 	MaterialDescriptor materialDescriptor;
 
-	TableRecordReference reference;
+	int demandCandidateId;
 
-	@Default
-	int orderLineId = -1;
+	int shipmentScheduleId;
+
+	int forecastLineId;
+
+	int orderLineId;
+
+	@JsonCreator
+	@Builder
+	private MaterialDemandDescr(
+			@JsonProperty("eventDescr") @NonNull final EventDescr eventDescr,
+			@JsonProperty("materialDescriptor") @NonNull MaterialDescriptor materialDescriptor,
+			@JsonProperty("demandCandidateId") int demandCandidateId,
+			@JsonProperty("shipmentScheduleId") int shipmentScheduleId,
+			@JsonProperty("forecastLineId") int forecastLineId,
+			@JsonProperty("orderLineId") int orderLineId)
+	{
+		Preconditions.checkArgument(demandCandidateId > 0, "The given demandCandidateId=%s has to be >0", demandCandidateId);
+		this.demandCandidateId = demandCandidateId;
+
+		this.shipmentScheduleId = shipmentScheduleId > 0 ? shipmentScheduleId : -1;
+		this.forecastLineId = forecastLineId > 0 ? forecastLineId : -1;
+		this.orderLineId = orderLineId > 0 ? orderLineId : -1;
+
+		this.eventDescr = eventDescr;
+		this.materialDescriptor = materialDescriptor;
+	}
 }

@@ -1,0 +1,387 @@
+package de.metas.order.compensationGroup;
+
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.Check;
+import org.adempiere.util.GuavaCollectors;
+import org.adempiere.util.Services;
+import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_OrderLine;
+import org.springframework.stereotype.Component;
+
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+
+import de.metas.order.IOrderBL;
+import de.metas.order.IOrderLineBL;
+import de.metas.order.compensationGroup.Group.GroupBuilder;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.Singular;
+
+/*
+ * #%L
+ * de.metas.business
+ * %%
+ * Copyright (C) 2017 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+@Component
+public class OrderGroupRepository implements GroupRepository
+{
+	// NOTE: we cannot have it here because the impl is not in the same package and unit tests are failing
+	// private final transient IOrderBL orderBL = Services.get(IOrderBL.class);
+	// private final transient IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
+	private final transient IQueryBL queryBL = Services.get(IQueryBL.class);
+
+	public GroupId extractGroupId(final I_C_OrderLine orderLine)
+	{
+		OrderGroupCompensationUtils.assertInGroup(orderLine);
+		return GroupId.of(I_C_Order.Table_Name, orderLine.getC_Order_ID(), orderLine.getGroupNo());
+	}
+
+	private GroupId extractSingleGroupId(final List<I_C_OrderLine> orderLines)
+	{
+		Check.assumeNotEmpty(orderLines, "orderLines is not empty");
+		return orderLines.stream()
+				.map(this::extractGroupId)
+				.distinct()
+				.collect(GuavaCollectors.singleElementOrThrow(() -> new AdempiereException("Order lines are not part of the same group: " + orderLines)));
+	}
+
+	@Override
+	public Group retrieveGroup(@NonNull final GroupId groupId)
+	{
+		groupId.assertDocumentTableName(I_C_Order.Table_Name);
+
+		final List<I_C_OrderLine> groupOrderLines = retrieveGroupOrderLines(groupId);
+		if (groupOrderLines.isEmpty())
+		{
+			throw new AdempiereException("No order lines found for " + groupId);
+		}
+
+		final Group group = createGroupFromOrderLines(groupOrderLines);
+		if (!group.getGroupId().equals(groupId))
+		{
+			// shall not happen
+			throw new AdempiereException("Invalid groupId for group " + group)
+					.setParameter("expectedGroupId", groupId)
+					.appendParametersToMessage();
+		}
+		return group;
+	}
+
+	private Group createGroupFromOrderLines(final List<I_C_OrderLine> groupOrderLines)
+	{
+		final GroupId groupId = extractSingleGroupId(groupOrderLines);
+
+		final I_C_Order order = groupOrderLines.get(0).getC_Order();
+		final IOrderBL orderBL = Services.get(IOrderBL.class);
+		final int precision = orderBL.getPrecision(order);
+
+		final GroupBuilder groupBuilder = Group.builder()
+				.groupId(groupId)
+				.precision(precision);
+
+		for (final I_C_OrderLine groupOrderLine : groupOrderLines)
+		{
+			if (!groupOrderLine.isGroupCompensationLine())
+			{
+				final GroupRegularLine regularLine = createReqularLine(groupOrderLine);
+				groupBuilder.regularLine(regularLine);
+			}
+			else
+			{
+				final GroupCompensationLine compensationLine = createCompensationLine(groupOrderLine);
+				groupBuilder.compensationLine(compensationLine);
+			}
+		}
+
+		return groupBuilder.build();
+	}
+
+	private List<I_C_OrderLine> retrieveGroupOrderLines(final GroupId groupId)
+	{
+		final List<I_C_OrderLine> groupOrderLines = retrieveGroupOrderLinesQuery(groupId)
+				.create()
+				.list(I_C_OrderLine.class);
+		return groupOrderLines;
+	}
+
+	private IQueryBuilder<I_C_OrderLine> retrieveGroupOrderLinesQuery(@NonNull final GroupId groupId)
+	{
+		final int orderId = groupId.getDocumentIdAssumingTableName(I_C_Order.Table_Name);
+		return queryBL
+				.createQueryBuilder(I_C_OrderLine.class)
+				.addEqualsFilter(org.compiere.model.I_C_OrderLine.COLUMNNAME_C_Order_ID, orderId)
+				.addEqualsFilter(org.compiere.model.I_C_OrderLine.COLUMNNAME_GroupNo, groupId.getGroupNo())
+				.orderBy()
+				.addColumn(org.compiere.model.I_C_OrderLine.COLUMNNAME_Line)
+				.endOrderBy();
+	}
+
+	private OrderLinesStorage retrieveOrderLinesStorage(@NonNull final GroupId groupId)
+	{
+		final List<I_C_OrderLine> orderLines = retrieveGroupOrderLinesQuery(groupId)
+				.addEqualsFilter(org.compiere.model.I_C_OrderLine.COLUMNNAME_IsGroupCompensationLine, true)
+				.create()
+				.list(I_C_OrderLine.class);
+
+		return OrderLinesStorage.builder()
+				.groupId(groupId)
+				.orderLines(orderLines)
+				.performDatabaseChanges(true)
+				.build();
+	}
+
+	public final OrderLinesStorage createNotSaveableSingleOrderLineStorage(final I_C_OrderLine compensationLinePO)
+	{
+		return OrderLinesStorage.builder()
+				.groupId(extractGroupId(compensationLinePO))
+				.orderLine(compensationLinePO)
+				.performDatabaseChanges(false)
+				.build();
+	}
+
+	private GroupRegularLine createReqularLine(final I_C_OrderLine groupOrderLine)
+	{
+		return GroupRegularLine.builder()
+				.lineNetAmt(groupOrderLine.getLineNetAmt())
+				.build();
+	}
+
+	/**
+	 * note to dev: keep in sync with {@link #saveCompensationLine(I_C_OrderLine, GroupCompensationLine, GroupId)}
+	 */
+	private GroupCompensationLine createCompensationLine(final I_C_OrderLine groupOrderLine)
+	{
+		return GroupCompensationLine.builder()
+				.repoId(groupOrderLine.getC_OrderLine_ID())
+				.productId(groupOrderLine.getM_Product_ID())
+				.uomId(groupOrderLine.getC_UOM_ID())
+				.type(GroupCompensationType.ofAD_Ref_List_Value(groupOrderLine.getGroupCompensationType()))
+				.amtType(GroupCompensationAmtType.ofAD_Ref_List_Value(groupOrderLine.getGroupCompensationAmtType()))
+				.percentage(groupOrderLine.getGroupCompensationPercentage())
+				.baseAmt(groupOrderLine.getGroupCompensationBaseAmt())
+				.price(groupOrderLine.getPriceEntered())
+				.qty(groupOrderLine.getQtyEntered())
+				.build();
+	}
+
+	@Override
+	public void saveGroup(@NonNull final Group group)
+	{
+		final GroupId groupId = group.getGroupId();
+		final OrderLinesStorage orderLinesStorage = retrieveOrderLinesStorage(groupId);
+		saveGroup(group, orderLinesStorage);
+	}
+
+	public void saveGroup(@NonNull final Group group, final OrderLinesStorage orderLinesStorage)
+	{
+		final GroupId groupId = group.getGroupId();
+		final int orderId = groupId.getDocumentIdAssumingTableName(I_C_Order.Table_Name);
+		final I_C_Order order = load(orderId, I_C_Order.class);
+		assertOrderNotProcessed(order);
+
+		// Save compensation lines
+		final Set<Integer> savedOrderLineIds = new HashSet<>();
+		for (final GroupCompensationLine compensationLine : group.getCompensationLines())
+		{
+			int orderLineId = compensationLine.getRepoId();
+			I_C_OrderLine compensationLinePO = orderLinesStorage.getOrderLineByIdIfPresent(orderLineId);
+			if (compensationLinePO == null)
+			{
+				// new line or missing line(in case orderLineId > 0)
+				final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
+				compensationLinePO = orderLineBL.createOrderLine(order);
+			}
+
+			updateOrderLineFromCompensationLine(compensationLinePO, compensationLine, groupId);
+			orderLinesStorage.save(compensationLinePO);
+
+			orderLineId = compensationLinePO.getC_OrderLine_ID();
+			compensationLine.setRepoId(orderLineId);
+			savedOrderLineIds.add(orderLineId);
+		}
+
+		// Remove remaining lines
+		orderLinesStorage.deleteAllNotIn(savedOrderLineIds);
+	}
+
+	private void assertOrderNotProcessed(final I_C_Order order)
+	{
+		Check.assume(!order.isProcessed(), "order not processed: {}", order);
+	}
+
+	/**
+	 * note to dev: keep in sync with {@link #createCompensationLine(I_C_OrderLine)}
+	 */
+	private void updateOrderLineFromCompensationLine(final I_C_OrderLine compensationLinePO, final GroupCompensationLine compensationLine, final GroupId groupId)
+	{
+		compensationLinePO.setGroupNo(groupId.getGroupNo());
+		compensationLinePO.setIsGroupCompensationLine(true);
+		compensationLinePO.setGroupCompensationType(compensationLine.getType().getAdRefListValue());
+		compensationLinePO.setGroupCompensationAmtType(compensationLine.getAmtType().getAdRefListValue());
+		compensationLinePO.setGroupCompensationPercentage(compensationLine.getPercentage());
+		compensationLinePO.setGroupCompensationBaseAmt(compensationLine.getBaseAmt());
+
+		compensationLinePO.setM_Product_ID(compensationLine.getProductId());
+		compensationLinePO.setC_UOM_ID(compensationLine.getUomId());
+
+		compensationLinePO.setQtyEntered(compensationLine.getQty());
+		compensationLinePO.setQtyOrdered(compensationLine.getQty());
+		compensationLinePO.setIsManualPrice(true);
+		compensationLinePO.setPriceEntered(compensationLine.getPrice());
+		compensationLinePO.setPriceActual(compensationLine.getPrice());
+	}
+
+	@Override
+	public Group createNewGroup(final Collection<Integer> regularOrderLineIds)
+	{
+		Check.assumeNotEmpty(regularOrderLineIds, "regularOrderLineIds is not empty");
+		final List<I_C_OrderLine> regularOrderLines = queryBL.createQueryBuilder(I_C_OrderLine.class)
+				.addInArrayFilter(I_C_OrderLine.COLUMN_C_OrderLine_ID, regularOrderLineIds)
+				.create()
+				.list(I_C_OrderLine.class);
+
+		Check.assumeNotEmpty(regularOrderLines, "regularOrderLines is not empty");
+		regularOrderLines.forEach(OrderGroupCompensationUtils::assertNotInGroup);
+
+		final int orderId = regularOrderLines.stream()
+				.map(I_C_OrderLine::getC_Order_ID)
+				.distinct()
+				.collect(GuavaCollectors.singleElementOrThrow(() -> new AdempiereException("All order lines shall be from same order")));
+		final I_C_Order order = load(orderId, I_C_Order.class);
+		assertOrderNotProcessed(order);
+
+		final int lastGroup = retrieveLastGroup(orderId);
+		final int group = lastGroup + 1;
+
+		regularOrderLines.forEach(regularLinePO -> {
+			regularLinePO.setGroupNo(group);
+			save(regularLinePO);
+		});
+
+		return createGroupFromOrderLines(regularOrderLines);
+	}
+
+	private int retrieveLastGroup(final int orderId)
+	{
+		return queryBL.createQueryBuilder(I_C_OrderLine.class)
+				.addEqualsFilter(I_C_OrderLine.COLUMNNAME_C_Order_ID, orderId)
+				.create()
+				.maxInt(I_C_OrderLine.COLUMNNAME_GroupNo);
+	}
+
+	public Group createPartialGroupFromCompensationLine(final I_C_OrderLine compensationLinePO)
+	{
+		OrderGroupCompensationUtils.assertCompensationLine(compensationLinePO);
+
+		final GroupCompensationLine compensationLine = createCompensationLine(compensationLinePO);
+		final GroupRegularLine aggregatedRegularLine = GroupRegularLine.builder()
+				.lineNetAmt(compensationLine.getBaseAmt())
+				.build();
+
+		final IOrderBL orderBL = Services.get(IOrderBL.class);
+		final int precision = orderBL.getPrecision(compensationLinePO.getC_Order());
+
+		return Group.builder()
+				.groupId(extractGroupId(compensationLinePO))
+				.precision(precision)
+				.regularLine(aggregatedRegularLine)
+				.compensationLine(compensationLine)
+				.build();
+	}
+
+	public static final class OrderLinesStorage
+	{
+		@Getter
+		private GroupId groupId;
+		private final boolean performDatabaseChanges;
+		private final ImmutableMap<Integer, I_C_OrderLine> orderLinesById;
+
+		@Builder
+		private OrderLinesStorage(
+				@NonNull final GroupId groupId,
+				@NonNull @Singular final List<I_C_OrderLine> orderLines,
+				@NonNull final Boolean performDatabaseChanges)
+		{
+			this.groupId = groupId;
+			this.performDatabaseChanges = performDatabaseChanges;
+			orderLinesById = orderLines.stream()
+					.peek(OrderGroupCompensationUtils::assertCompensationLine)
+					.collect(GuavaCollectors.toImmutableMapByKey(I_C_OrderLine::getC_OrderLine_ID));
+		}
+
+		public void save(final I_C_OrderLine compensationLinePO)
+		{
+			Check.assume(!compensationLinePO.isProcessed(), "Changing a processed line is not allowed: {}", compensationLinePO); // shall not happen
+
+			setGroupNoToOrderLine(compensationLinePO);
+
+			if (performDatabaseChanges)
+			{
+				InterfaceWrapperHelper.save(compensationLinePO);
+			}
+		}
+
+		private void setGroupNoToOrderLine(I_C_OrderLine compensationLinePO)
+		{
+			if (compensationLinePO.getGroupNo() <= 0)
+			{
+				compensationLinePO.setGroupNo(groupId.getGroupNo());
+			}
+			else if (compensationLinePO.getGroupNo() != groupId.getGroupNo())
+			{
+				throw new AdempiereException("Order line has already another groupNo set: " + compensationLinePO)
+						.setParameter("expectedGroupNo", groupId.getGroupNo())
+						.appendParametersToMessage();
+			}
+		}
+
+		public I_C_OrderLine getOrderLineByIdIfPresent(final int orderLineId)
+		{
+			return orderLinesById.get(orderLineId);
+		}
+
+		public void deleteAllNotIn(final Collection<Integer> orderIdsToSkipDeleting)
+		{
+			if (!performDatabaseChanges)
+			{
+				return;
+			}
+
+			final List<I_C_OrderLine> orderLinesToDelete = orderLinesById.values()
+					.stream()
+					.filter(orderLine -> !orderIdsToSkipDeleting.contains(orderLine.getC_OrderLine_ID()))
+					.collect(ImmutableList.toImmutableList());
+			orderLinesToDelete.forEach(InterfaceWrapperHelper::delete);
+		}
+	}
+}

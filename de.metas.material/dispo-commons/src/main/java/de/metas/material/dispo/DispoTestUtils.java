@@ -7,8 +7,9 @@ import java.util.stream.Collectors;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.util.Services;
 
-import de.metas.material.dispo.Candidate.Type;
+import de.metas.material.dispo.CandidateSpecification.Type;
 import de.metas.material.dispo.model.I_MD_Candidate;
+import de.metas.material.dispo.model.X_MD_Candidate;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
@@ -44,6 +45,15 @@ public class DispoTestUtils
 				.collect(Collectors.toList());
 	}
 
+	public static List<I_MD_Candidate> filterExclStock()
+	{
+		final List<I_MD_Candidate> allRecords = retrieveAllRecords();
+		return allRecords.stream()
+				.filter(r -> !r.getMD_Candidate_Type().equals(X_MD_Candidate.MD_CANDIDATE_TYPE_STOCK))
+				.collect(Collectors.toList());
+	}
+
+	
 	public List<I_MD_Candidate> filter(@NonNull final Type type, @NonNull final Date date)
 	{
 		return filter(type).stream()

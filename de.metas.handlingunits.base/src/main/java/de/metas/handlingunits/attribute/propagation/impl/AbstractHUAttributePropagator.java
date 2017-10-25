@@ -1,5 +1,11 @@
 package de.metas.handlingunits.attribute.propagation.impl;
 
+import java.util.Objects;
+
+import org.adempiere.mm.attributes.spi.IAttributeValueContext;
+import org.adempiere.util.Check;
+import org.compiere.model.I_M_Attribute;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -24,18 +30,13 @@ package de.metas.handlingunits.attribute.propagation.impl;
 
 
 import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
-import java.util.Objects;
-
-import org.adempiere.mm.attributes.spi.IAttributeValueContext;
-import org.adempiere.util.Check;
-import org.compiere.model.I_M_Attribute;
 import de.metas.handlingunits.attribute.IAttributeValue;
 import de.metas.handlingunits.attribute.IAttributeValueListener;
 import de.metas.handlingunits.attribute.propagation.IHUAttributePropagator;
 import de.metas.handlingunits.attribute.propagation.IHUAttributePropagatorFactory;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
+import de.metas.logging.LogManager;
 
 public abstract class AbstractHUAttributePropagator implements IHUAttributePropagator
 {

@@ -70,7 +70,6 @@ public class DD_OrderFireMaterialEvent
 					.ddOrder(ddOrderPojoBuilder.build())
 					.fromWarehouseId(line.getM_Locator().getM_Warehouse_ID())
 					.toWarehouseId(line.getM_LocatorTo().getM_Warehouse_ID())
-					// .reference(reference) // we don't know the reference here, but we expect that the event-receiver (i.e. material-dispo) will be able to sort out which record(s) to update via date, orderLineId etc
 					.build();
 
 			final MaterialEventService materialEventService = Adempiere.getBean(MaterialEventService.class);
