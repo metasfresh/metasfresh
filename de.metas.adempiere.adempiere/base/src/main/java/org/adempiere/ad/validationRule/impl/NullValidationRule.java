@@ -6,7 +6,6 @@ import java.util.Set;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.validationRule.INamePairPredicate;
 import org.adempiere.ad.validationRule.IValidationRule;
-import org.apache.commons.lang3.NotImplementedException;
 import org.compiere.util.ValueNamePair;
 
 import com.google.common.collect.ImmutableList;
@@ -65,6 +64,6 @@ public final class NullValidationRule implements IValidationRule
 	@Override
 	public void registerException(final String tableName, final String columnName)
 	{
-		throw new NotImplementedException("There is no implementation for registering esceptions in the null validation rule class: " + this);
+		throw new UnsupportedOperationException("There is no implementation for registering esceptions in the null validation rule class: " + this);
 	}
 };

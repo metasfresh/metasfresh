@@ -31,7 +31,6 @@ import org.adempiere.ad.expression.api.impl.CompositeStringExpression;
 import org.adempiere.ad.validationRule.INamePairPredicate;
 import org.adempiere.ad.validationRule.IValidationRule;
 import org.adempiere.ad.validationRule.NamePairPredicates;
-import org.apache.commons.lang3.NotImplementedException;
 import org.compiere.util.ValueNamePair;
 
 import com.google.common.base.MoreObjects;
@@ -135,7 +134,7 @@ public final class CompositeValidationRule implements IValidationRule
 	@Override
 	public void registerException(final String tableName, final String columnName)
 	{
-		throw new NotImplementedException("There is no implementation for registering exceptions in the composite validation rule class: " + this);
+		throw new UnsupportedOperationException("There is no implementation for registering exceptions in the composite validation rule class: " + this);
 	}
 
 	@Override

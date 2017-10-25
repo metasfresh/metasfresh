@@ -28,10 +28,9 @@ import java.util.Set;
 
 import org.adempiere.ad.expression.api.IExpressionFactory;
 import org.adempiere.ad.expression.api.IStringExpression;
-import org.adempiere.ad.validationRule.IValidationRule;
 import org.adempiere.ad.validationRule.INamePairPredicate;
+import org.adempiere.ad.validationRule.IValidationRule;
 import org.adempiere.util.Services;
-import org.apache.commons.lang3.NotImplementedException;
 import org.compiere.util.ValueNamePair;
 
 import com.google.common.collect.ImmutableList;
@@ -107,6 +106,6 @@ import com.google.common.collect.ImmutableSet;
 	@Override
 	public void registerException(final String tableName, final String columnName)
 	{
-		throw new NotImplementedException("There is no implementation for registering esceptions in the VLookupAutoCompleterValidationRule class: " + this);
+		throw new UnsupportedOperationException("There is no implementation for registering esceptions in the VLookupAutoCompleterValidationRule class: " + this);
 	}
 }
