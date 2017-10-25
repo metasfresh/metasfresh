@@ -133,6 +133,7 @@ public class OrderLineCreate extends CDialog implements VetoableChangeListener {
 							I_C_OrderLine.COLUMNNAME_M_Product_ID);
 			fProductLookup = MLookupFactory.get(Env.getCtx(), windowNo, c
 					.getAD_Column_ID(), DisplayType.Search,
+					c.get_TableName(),
 					c.getColumnName(),
 					c.getAD_Reference_Value_ID(), c.isParent(),
 					c.getAD_Val_Rule_ID());

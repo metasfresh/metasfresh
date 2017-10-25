@@ -27,8 +27,10 @@ import static org.adempiere.model.I_M_PackagingContainer.Table_ID;
 
 import java.util.Properties;
 
+import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.validationRule.IValidationRule;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Column;
@@ -79,6 +81,7 @@ public class PackagingBL implements IPackagingBL
 					-1, // WindowNo
 					0, // Column_ID,
 					DisplayType.Table, // AD_Reference_ID,
+					Services.get(IADTableDAO.class).retrieveTableName(c.getAD_Table_ID()),
 					c.getColumnName(), // ColumnName
 					c.getAD_Reference_Value_ID(), // AD_Reference_Value_ID,
 					false, // IsParent,

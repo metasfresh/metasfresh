@@ -101,7 +101,12 @@ public class ValidationRuleQueryFilter<T> implements IQueryFilter<T>, ISqlQueryF
 
 		final IValidationRuleFactory validationRuleFactory = Services.get(IValidationRuleFactory.class);
 		final IValidationContext evalCtx = validationRuleFactory.createValidationContext(ctx, windowNo, tabNo, tableName);
-		final IValidationRule valRule = validationRuleFactory.create(tableName, adValRuleId);
+		final IValidationRule valRule = validationRuleFactory.create(
+				tableName
+				, adValRuleId
+				, null // ctx table name
+				, null // ctx column name
+				);
 		
 		final IStringExpression prefilterWhereClauseExpr = valRule.getPrefilterWhereClause();
 		final String prefilterWhereClause = prefilterWhereClauseExpr.evaluate(evalCtx, OnVariableNotFound.ReturnNoResult);

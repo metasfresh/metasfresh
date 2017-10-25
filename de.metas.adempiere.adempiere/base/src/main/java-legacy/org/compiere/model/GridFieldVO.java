@@ -36,6 +36,7 @@ import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.security.asp.IASPFiltersFactory;
 import org.adempiere.ad.security.permissions.UIDisplayedEntityTypes;
 import org.adempiere.ad.service.IDeveloperModeBL;
+import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.FieldGroupVO.FieldGroupType;
@@ -791,8 +792,11 @@ public class GridFieldVO implements Serializable
 				}
 				else
 				{
+					final String tablename = Services.get(IADTableDAO.class).retrieveTableName(getAD_Table_ID());
 					lookupInfo = MLookupFactory.getLookupInfo(WindowNo, displayType,
-							ColumnName, AD_Reference_Value_ID,
+							tablename,
+							ColumnName,
+							AD_Reference_Value_ID,
 							IsParent, AD_Val_Rule_ID); // metas: 03271
 				}
 				lookupInfo.InfoFactoryClass = this.InfoFactoryClass;
