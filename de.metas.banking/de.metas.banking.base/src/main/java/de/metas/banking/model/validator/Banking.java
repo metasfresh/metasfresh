@@ -85,5 +85,8 @@ public class Banking extends AbstractModuleInterceptor
 	{
 		calloutsRegistry.registerAnnotatedCallout(de.metas.banking.callout.C_BankStatement.instance);
 		calloutsRegistry.registerAnnotatedCallout(de.metas.banking.payment.callout.C_PaySelectionLine.instance);
+		calloutsRegistry.registerAnnotatedCallout(de.metas.banking.callout.C_BankStatementLine.instance);
+		calloutsRegistry.registerAnnotatedCallout(de.metas.banking.callout.C_BankStatementLine_Ref.instance);
+		
 	}
 }
