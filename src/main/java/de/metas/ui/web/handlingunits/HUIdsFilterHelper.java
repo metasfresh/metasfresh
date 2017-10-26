@@ -92,7 +92,7 @@ public final class HUIdsFilterHelper
 		private final IHUQueryBuilder initialHUQuery;
 
 		/**
-		 * Empty list means "no restricton".
+		 * Empty list means "no restriction".
 		 */
 		private final Set<Integer> mustHUIds;
 		private final Set<Integer> shallNotHUIds;
@@ -102,7 +102,7 @@ public final class HUIdsFilterHelper
 				@Nullable final IHUQueryBuilder initialHUQuery)
 		{
 			this.initialHUIds = initialHUIds == null ? null : ImmutableSet.copyOf(initialHUIds);
-			this.initialHUQuery = initialHUQuery;
+			this.initialHUQuery = initialHUQuery != null ? initialHUQuery.copy() : null;
 			mustHUIds = new HashSet<>();
 			shallNotHUIds = new HashSet<>();
 		}
