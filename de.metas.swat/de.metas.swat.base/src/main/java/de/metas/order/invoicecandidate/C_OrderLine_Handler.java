@@ -53,6 +53,7 @@ import de.metas.invoicecandidate.spi.AbstractInvoiceCandidateHandler;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateRequest;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateResult;
+import de.metas.order.compensationGroup.OrderGroupCompensationUtils;
 import de.metas.product.acct.api.IProductAcctDAO;
 import de.metas.tax.api.ITaxBL;
 
@@ -145,6 +146,7 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		final I_C_Order order = InterfaceWrapperHelper.create(orderLine.getC_Order(), I_C_Order.class);
 
 		setBPartnerData(ic, orderLine);
+		setGroupCompensationData(ic, orderLine);
 
 		//
 		// Invoice Rule(s)
@@ -199,8 +201,9 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 
 		Services.get(IInvoiceCandBL.class).setQualityDiscountPercent_Override(ic, instances);
 
+		
 		// Don't save.
-		// That's done by the invoking API-impl, because we want to avoid C_Invoice_Candidate.invalidateCandidates() from beeing called on every single IC that is created here.
+		// That's done by the invoking API-impl, because we want to avoid C_Invoice_Candidate.invalidateCandidates() from being called on every single IC that is created here.
 		// Because it's a performance nightmare for orders with a lot of lines
 		// InterfaceWrapperHelper.save(ic);
 
@@ -329,16 +332,19 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 
 		setDeliveredDataFromFirstInOut(ic, firstInOut);
 	}
-
+	
 	@Override
-	public void setPriceActual(final I_C_Invoice_Candidate ic)
+	public PriceAndTax calculatePriceAndTax(final I_C_Invoice_Candidate ic)
 	{
 		final I_C_OrderLine orderLine = InterfaceWrapperHelper.create(ic.getC_OrderLine(), I_C_OrderLine.class);
-
+		
 		// ts: we *must* use the order line's data
-		ic.setIsTaxIncluded(orderLine.getC_Order().isTaxIncluded());
-		ic.setPriceActual(orderLine.getPriceActual());
-		ic.setPrice_UOM_ID(orderLine.getPrice_UOM_ID());
+		return PriceAndTax.builder()
+				.priceEntered(orderLine.getPriceEntered())
+				.priceActual(orderLine.getPriceActual())
+				.priceUOMId(orderLine.getPrice_UOM_ID())
+				.taxIncluded(orderLine.getC_Order().isTaxIncluded())
+				.build();
 	}
 
 	@Override
@@ -367,11 +373,18 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		final org.compiere.model.I_C_OrderLine orderLine = ic.getC_OrderLine();
 		ic.setC_UOM_ID(orderLine.getC_UOM_ID());
 	}
-
-	@Override
-	public void setPriceEntered(final I_C_Invoice_Candidate ic)
+	
+	private void setGroupCompensationData(final I_C_Invoice_Candidate ic, final I_C_OrderLine fromOrderLine)
 	{
-		final org.compiere.model.I_C_OrderLine orderLine = ic.getC_OrderLine();
-		ic.setPriceEntered(orderLine.getPriceEntered());
+		if(!OrderGroupCompensationUtils.isInGroup(fromOrderLine))
+		{
+			return;
+		}
+		
+		ic.setGroupNo(fromOrderLine.getGroupNo());
+		ic.setIsGroupCompensationLine(fromOrderLine.isGroupCompensationLine());
+		ic.setGroupCompensationType(fromOrderLine.getGroupCompensationType());
+		ic.setGroupCompensationAmtType(fromOrderLine.getGroupCompensationAmtType());
+		ic.setGroupCompensationPercentage(fromOrderLine.getGroupCompensationPercentage());
 	}
 }
