@@ -83,8 +83,8 @@ class Container extends Component {
                             modalType={modal.modalType}
                             modalViewId={modal.viewId}
                             isAdvanced={modal.isAdvanced}
-                            relativeType={windowType}
-                            relativeDataId={dataId}
+                            parentType={windowType}
+                            parentDataId={dataId}
                             triggerField={modal.triggerField}
                             query={query}
                             viewId={query && query.viewId}
