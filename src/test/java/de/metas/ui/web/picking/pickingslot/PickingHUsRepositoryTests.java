@@ -13,7 +13,9 @@ import org.junit.Test;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ListMultimap;
 
+import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Picking_Candidate;
+import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_Picking_Candidate;
 import de.metas.picking.model.I_M_PickingSlot;
 import de.metas.ui.web.handlingunits.HUEditorRow;
@@ -50,7 +52,7 @@ import mockit.Mocked;
 
 public class PickingHUsRepositoryTests
 {
-	private static final int M_HU_ID = 223;
+//	private static final int M_HU_ID = 223;
 	private static final int M_SHIPMENT_SCHEDULE_ID = 123;
 
 	@Mocked
@@ -112,17 +114,22 @@ public class PickingHUsRepositoryTests
 	private void test_retrieveHUsIndexedByPickingSlotId(@NonNull final String pickingCandidateStatus, final boolean pickingRackSystem)
 	{
 		final int pickingSlotId = createPickingSlot(pickingRackSystem).getM_PickingSlot_ID();
+		
+		final I_M_HU hu = newInstance(I_M_HU.class);
+		hu.setHUStatus(X_M_HU.HUSTATUS_Active);
+		save(hu);
+		final int huId = hu.getM_HU_ID();
 
 		final I_M_Picking_Candidate pickingCandidate = newInstance(I_M_Picking_Candidate.class);
 		pickingCandidate.setM_ShipmentSchedule_ID(M_SHIPMENT_SCHEDULE_ID);
-		pickingCandidate.setM_HU_ID(M_HU_ID);
+		pickingCandidate.setM_HU_ID(huId);
 		pickingCandidate.setM_PickingSlot_ID(pickingSlotId);
 		pickingCandidate.setStatus(pickingCandidateStatus);
 		save(pickingCandidate);
 
 		final HUEditorRow huEditorRow = HUEditorRow
 				.builder(WindowId.of(423))
-				.setRowId(HUEditorRowId.ofTopLevelHU(M_HU_ID))
+				.setRowId(HUEditorRowId.ofTopLevelHU(huId))
 				.setType(HUEditorRowType.LU)
 				.setTopLevel(true)
 				.build();
@@ -131,7 +138,7 @@ public class PickingHUsRepositoryTests
 		if (!expectNoRows)
 		{
 			// @formatter:off
-			new Expectations() {{ huEditorViewRepository.retrieveForHUId(M_HU_ID); result = huEditorRow; }};
+			new Expectations() {{ huEditorViewRepository.retrieveForHUId(huId); result = huEditorRow; }};
 			// @formatter:on
 		}
 
