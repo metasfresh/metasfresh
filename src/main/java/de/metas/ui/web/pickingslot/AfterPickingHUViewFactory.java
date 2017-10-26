@@ -18,7 +18,6 @@ import de.metas.ui.web.view.IViewsRepository;
 import de.metas.ui.web.view.ViewFactory;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.descriptor.ViewLayout;
-import de.metas.ui.web.view.event.ViewChangesCollector;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.WindowId;
 
@@ -129,8 +128,7 @@ public class AfterPickingHUViewFactory implements IViewFactory, IViewsIndexStora
 		}
 
 		husView.invalidateAll();
-		ViewChangesCollector.getCurrentOrAutoflush()
-				.collectFullyChanged(husView);
+		// ViewChangesCollector.getCurrentOrAutoflush().collectFullyChanged(husView); // event already fired
 	}
 
 	private HUEditorView getHUsViewOrCreate(final ViewId huViewId)
