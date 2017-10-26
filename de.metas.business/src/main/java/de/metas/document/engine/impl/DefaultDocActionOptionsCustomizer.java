@@ -349,14 +349,7 @@ import de.metas.shipping.model.I_M_ShipperTransportation;
 				docActions.add(IDocument.ACTION_ReActivate);
 			}
 		}
-		// metas: end
-		// metas us050: Allow to reactivate document by default (required for C_AdvcomDoc)
-		else
-		{
-			docActions.add(IDocument.ACTION_ReActivate);
-		}
-		// metas: end
-
+		
 		//
 		// Set configured options in the context
 		optionsCtx.setDocActions(docActions);
