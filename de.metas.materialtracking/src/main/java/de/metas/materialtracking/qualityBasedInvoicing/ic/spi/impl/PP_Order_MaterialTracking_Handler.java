@@ -24,7 +24,6 @@ package de.metas.materialtracking.qualityBasedInvoicing.ic.spi.impl;
 
 import java.util.Iterator;
 import java.util.List;
-import java.util.Properties;
 
 import org.adempiere.ad.modelvalidator.DocTimingType;
 import org.adempiere.ad.trx.api.ITrx;
@@ -161,12 +160,6 @@ public class PP_Order_MaterialTracking_Handler extends AbstractInvoiceCandidateH
 	}
 
 	@Override
-	public void setPriceActual(final I_C_Invoice_Candidate ic)
-	{
-		// nothing to do; the value won't change
-	}
-
-	@Override
 	public void setBPartnerData(final I_C_Invoice_Candidate ic)
 	{
 		// nothing to do; the value won't change
@@ -176,12 +169,6 @@ public class PP_Order_MaterialTracking_Handler extends AbstractInvoiceCandidateH
 	public void setC_UOM_ID(final I_C_Invoice_Candidate ic)
 	{
 		// nothing to do; the value won't change
-	}
-
-	@Override
-	public void setPriceEntered(final I_C_Invoice_Candidate ic)
-	{
-		ic.setPriceEntered(ic.getPriceActual());
 	}
 
 	/**

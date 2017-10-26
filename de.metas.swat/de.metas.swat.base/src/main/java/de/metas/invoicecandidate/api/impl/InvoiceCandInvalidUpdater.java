@@ -52,7 +52,9 @@ import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
 import de.metas.invoicecandidate.api.InvoiceCandRecomputeTag;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_M_InOutLine;
+import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler.PriceAndTax;
 import de.metas.lock.api.ILock;
+import lombok.NonNull;
 
 /* package */class InvoiceCandInvalidUpdater implements IInvoiceCandInvalidUpdater
 {
@@ -79,9 +81,8 @@ import de.metas.lock.api.ILock;
 	// State
 	private boolean executed = false;
 
-	InvoiceCandInvalidUpdater(final InvoiceCandBL invoiceCandBL)
+	InvoiceCandInvalidUpdater(@NonNull final InvoiceCandBL invoiceCandBL)
 	{
-		super();
 		this.invoiceCandBL = invoiceCandBL;
 
 		icTagger = invoiceCandDAO.tagToRecompute();
@@ -264,23 +265,18 @@ import de.metas.lock.api.ILock;
 		invoiceCandidateHandlerBL.setDeliveredData(ic);
 
 		//
-		// Update Price Actual and Price Entered,
-		// only if this invoice candidate was NOT approved for invoicing (08610)
+		// Update Price and Quantity only if this invoice candidate was NOT approved for invoicing (08610)
 		if (!ic.isApprovalForInvoicing())
 		{
-			// update the PriceActual value of 'ic'
-			// NOTE: this could fail and in case it fails, we don't want to stop updating the other fields
 			try
 			{
-				invoiceCandidateHandlerBL.setPriceActual(ic);
+				final PriceAndTax priceAndTax = invoiceCandidateHandlerBL.calculatePriceAndTax(ic);
+				IInvoiceCandInvalidUpdater.updatePriceAndTax(ic, priceAndTax);
 			}
-			catch (final Exception e)
+			catch (final Exception ex)
 			{
-				invoiceCandBL.setError(ic, e);
+				invoiceCandBL.setError(ic, ex);
 			}
-
-			// update the PriceEntered value of 'ic'
-			invoiceCandidateHandlerBL.setPriceEntered(ic); // task 06727
 		}
 
 		// update BPartner data from 'ic'
@@ -341,7 +337,7 @@ import de.metas.lock.api.ILock;
 		// Save it
 		invoiceCandDAO.save(ic);
 	}
-
+	
 	/**
 	 * Link all orderLine's inoutLine to our invoice candidate.
 	 *
