@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 package de.metas.invoicecandidate.model;
 
 
@@ -229,7 +213,9 @@ public interface I_C_Invoice_Candidate
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
 	 */
+	@Deprecated
 	public void setBill_BPartner_Name (java.lang.String Bill_BPartner_Name);
 
 	/**
@@ -618,7 +604,9 @@ public interface I_C_Invoice_Candidate
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
 	 */
+	@Deprecated
 	public void setC_InvoiceSchedule_ID (int C_InvoiceSchedule_ID);
 
 	/**
@@ -633,6 +621,7 @@ public interface I_C_Invoice_Candidate
 
 	public org.compiere.model.I_C_InvoiceSchedule getC_InvoiceSchedule();
 
+	@Deprecated
 	public void setC_InvoiceSchedule(org.compiere.model.I_C_InvoiceSchedule C_InvoiceSchedule);
 
     /** Column definition for C_InvoiceSchedule_ID */
@@ -647,7 +636,9 @@ public interface I_C_Invoice_Candidate
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
 	 */
+	@Deprecated
 	public void setC_Order_BPartner (int C_Order_BPartner);
 
 	/**
@@ -662,6 +653,7 @@ public interface I_C_Invoice_Candidate
 
 	public org.compiere.model.I_C_BPartner getC_Order_BPart();
 
+	@Deprecated
 	public void setC_Order_BPart(org.compiere.model.I_C_BPartner C_Order_BPart);
 
     /** Column definition for C_Order_BPartner */
@@ -733,7 +725,9 @@ public interface I_C_Invoice_Candidate
 	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
 	 */
+	@Deprecated
 	public void setC_Tax_Effective_ID (int C_Tax_Effective_ID);
 
 	/**
@@ -747,6 +741,7 @@ public interface I_C_Invoice_Candidate
 
 	public org.compiere.model.I_C_Tax getC_Tax_Effective();
 
+	@Deprecated
 	public void setC_Tax_Effective(org.compiere.model.I_C_Tax C_Tax_Effective);
 
     /** Column definition for C_Tax_Effective_ID */
@@ -947,6 +942,35 @@ public interface I_C_Invoice_Candidate
     public static final String COLUMNNAME_DateOrdered = "DateOrdered";
 
 	/**
+	 * Set Zugesagter Termin.
+	 * Zugesagter Termin für diesen Auftrag
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	public void setDatePromised (java.sql.Timestamp DatePromised);
+
+	/**
+	 * Get Zugesagter Termin.
+	 * Zugesagter Termin für diesen Auftrag
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 */
+	@Deprecated
+	public java.sql.Timestamp getDatePromised();
+
+    /** Column definition for DatePromised */
+    public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_DatePromised = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, Object>(I_C_Invoice_Candidate.class, "DatePromised", null);
+    /** Column name DatePromised */
+    public static final String COLUMNNAME_DatePromised = "DatePromised";
+
+	/**
 	 * Set Abrechnung ab.
 	 * Termin ab dem die Rechnung erstellt werden darf
 	 *
@@ -978,7 +1002,9 @@ public interface I_C_Invoice_Candidate
 	 * <br>Type: Date
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
 	 */
+	@Deprecated
 	public void setDateToInvoice_Effective (java.sql.Timestamp DateToInvoice_Effective);
 
 	/**
@@ -1216,6 +1242,123 @@ public interface I_C_Invoice_Candidate
     public static final String COLUMNNAME_First_Ship_BPLocation_ID = "First_Ship_BPLocation_ID";
 
 	/**
+	 * Set Compensation Amount Type.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setGroupCompensationAmtType (java.lang.String GroupCompensationAmtType);
+
+	/**
+	 * Get Compensation Amount Type.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getGroupCompensationAmtType();
+
+    /** Column definition for GroupCompensationAmtType */
+    public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_GroupCompensationAmtType = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, Object>(I_C_Invoice_Candidate.class, "GroupCompensationAmtType", null);
+    /** Column name GroupCompensationAmtType */
+    public static final String COLUMNNAME_GroupCompensationAmtType = "GroupCompensationAmtType";
+
+	/**
+	 * Set Compensation base amount.
+	 * Base amount for calculating percentage group compensation
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setGroupCompensationBaseAmt (java.math.BigDecimal GroupCompensationBaseAmt);
+
+	/**
+	 * Get Compensation base amount.
+	 * Base amount for calculating percentage group compensation
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getGroupCompensationBaseAmt();
+
+    /** Column definition for GroupCompensationBaseAmt */
+    public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_GroupCompensationBaseAmt = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, Object>(I_C_Invoice_Candidate.class, "GroupCompensationBaseAmt", null);
+    /** Column name GroupCompensationBaseAmt */
+    public static final String COLUMNNAME_GroupCompensationBaseAmt = "GroupCompensationBaseAmt";
+
+	/**
+	 * Set Compensation percentage.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setGroupCompensationPercentage (java.math.BigDecimal GroupCompensationPercentage);
+
+	/**
+	 * Get Compensation percentage.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getGroupCompensationPercentage();
+
+    /** Column definition for GroupCompensationPercentage */
+    public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_GroupCompensationPercentage = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, Object>(I_C_Invoice_Candidate.class, "GroupCompensationPercentage", null);
+    /** Column name GroupCompensationPercentage */
+    public static final String COLUMNNAME_GroupCompensationPercentage = "GroupCompensationPercentage";
+
+	/**
+	 * Set Compensation Type.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setGroupCompensationType (java.lang.String GroupCompensationType);
+
+	/**
+	 * Get Compensation Type.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getGroupCompensationType();
+
+    /** Column definition for GroupCompensationType */
+    public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_GroupCompensationType = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, Object>(I_C_Invoice_Candidate.class, "GroupCompensationType", null);
+    /** Column name GroupCompensationType */
+    public static final String COLUMNNAME_GroupCompensationType = "GroupCompensationType";
+
+	/**
+	 * Set Group.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setGroupNo (int GroupNo);
+
+	/**
+	 * Get Group.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getGroupNo();
+
+    /** Column definition for GroupNo */
+    public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_GroupNo = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, Object>(I_C_Invoice_Candidate.class, "GroupNo", null);
+    /** Column name GroupNo */
+    public static final String COLUMNNAME_GroupNo = "GroupNo";
+
+	/**
 	 * Set Kopf-Aggregationsmerkmal.
 	 *
 	 * <br>Type: String
@@ -1279,12 +1422,8 @@ public interface I_C_Invoice_Candidate
 	 */
 	public int getHeaderAggregationKeyBuilder_ID();
 
-	public de.metas.aggregation.model.I_C_Aggregation getHeaderAggregationKeyBuilder();
-
-	public void setHeaderAggregationKeyBuilder(de.metas.aggregation.model.I_C_Aggregation HeaderAggregationKeyBuilder);
-
     /** Column definition for HeaderAggregationKeyBuilder_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, de.metas.aggregation.model.I_C_Aggregation> COLUMN_HeaderAggregationKeyBuilder_ID = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, de.metas.aggregation.model.I_C_Aggregation>(I_C_Invoice_Candidate.class, "HeaderAggregationKeyBuilder_ID", de.metas.aggregation.model.I_C_Aggregation.class);
+    public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_HeaderAggregationKeyBuilder_ID = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, Object>(I_C_Invoice_Candidate.class, "HeaderAggregationKeyBuilder_ID", null);
     /** Column name HeaderAggregationKeyBuilder_ID */
     public static final String COLUMNNAME_HeaderAggregationKeyBuilder_ID = "HeaderAggregationKeyBuilder_ID";
 
@@ -1319,7 +1458,9 @@ public interface I_C_Invoice_Candidate
 	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
 	 */
+	@Deprecated
 	public void setInvoiceRule_Effective (java.lang.String InvoiceRule_Effective);
 
 	/**
@@ -1462,6 +1603,29 @@ public interface I_C_Invoice_Candidate
     public static final String COLUMNNAME_IsError = "IsError";
 
 	/**
+	 * Set Group Compensation Line.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsGroupCompensationLine (boolean IsGroupCompensationLine);
+
+	/**
+	 * Get Group Compensation Line.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isGroupCompensationLine();
+
+    /** Column definition for IsGroupCompensationLine */
+    public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_IsGroupCompensationLine = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, Object>(I_C_Invoice_Candidate.class, "IsGroupCompensationLine", null);
+    /** Column name IsGroupCompensationLine */
+    public static final String COLUMNNAME_IsGroupCompensationLine = "IsGroupCompensationLine";
+
+	/**
 	 * Set In Dispute.
 	 * Document is in dispute
 	 *
@@ -1540,7 +1704,9 @@ public interface I_C_Invoice_Candidate
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
 	 */
+	@Deprecated
 	public void setIsMaterialTracking (boolean IsMaterialTracking);
 
 	/**
@@ -1558,7 +1724,7 @@ public interface I_C_Invoice_Candidate
     public static final String COLUMNNAME_IsMaterialTracking = "IsMaterialTracking";
 
 	/**
-	 * Set Packaging Material .
+	 * Set Verpackungsmaterial.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1567,7 +1733,7 @@ public interface I_C_Invoice_Candidate
 	public void setIsPackagingMaterial (boolean IsPackagingMaterial);
 
 	/**
-	 * Get Packaging Material .
+	 * Get Verpackungsmaterial.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1581,7 +1747,7 @@ public interface I_C_Invoice_Candidate
     public static final String COLUMNNAME_IsPackagingMaterial = "IsPackagingMaterial";
 
 	/**
-	 * Set Gedruckt.
+	 * Set andrucken.
 	 * Indicates if this document / line is printed
 	 *
 	 * <br>Type: YesNo
@@ -1591,7 +1757,7 @@ public interface I_C_Invoice_Candidate
 	public void setIsPrinted (boolean IsPrinted);
 
 	/**
-	 * Get Gedruckt.
+	 * Get andrucken.
 	 * Indicates if this document / line is printed
 	 *
 	 * <br>Type: YesNo
@@ -1712,7 +1878,9 @@ public interface I_C_Invoice_Candidate
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
 	 */
+	@Deprecated
 	public void setIsToRecompute (boolean IsToRecompute);
 
 	/**
@@ -1823,12 +1991,8 @@ public interface I_C_Invoice_Candidate
 	 */
 	public int getLineAggregationKeyBuilder_ID();
 
-	public de.metas.aggregation.model.I_C_Aggregation getLineAggregationKeyBuilder();
-
-	public void setLineAggregationKeyBuilder(de.metas.aggregation.model.I_C_Aggregation LineAggregationKeyBuilder);
-
     /** Column definition for LineAggregationKeyBuilder_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, de.metas.aggregation.model.I_C_Aggregation> COLUMN_LineAggregationKeyBuilder_ID = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, de.metas.aggregation.model.I_C_Aggregation>(I_C_Invoice_Candidate.class, "LineAggregationKeyBuilder_ID", de.metas.aggregation.model.I_C_Aggregation.class);
+    public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_LineAggregationKeyBuilder_ID = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, Object>(I_C_Invoice_Candidate.class, "LineAggregationKeyBuilder_ID", null);
     /** Column name LineAggregationKeyBuilder_ID */
     public static final String COLUMNNAME_LineAggregationKeyBuilder_ID = "LineAggregationKeyBuilder_ID";
 
@@ -1839,7 +2003,9 @@ public interface I_C_Invoice_Candidate
 	 * <br>Type: Amount
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
 	 */
+	@Deprecated
 	public void setLineNetAmt (java.math.BigDecimal LineNetAmt);
 
 	/**
@@ -1919,7 +2085,7 @@ public interface I_C_Invoice_Candidate
 	 * Set Preissystem.
 	 * Ein Preissystem enthält beliebig viele, Länder-abhängige Preislisten.
 	 *
-	 * <br>Type: Search
+	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1929,7 +2095,7 @@ public interface I_C_Invoice_Candidate
 	 * Get Preissystem.
 	 * Ein Preissystem enthält beliebig viele, Länder-abhängige Preislisten.
 	 *
-	 * <br>Type: Search
+	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1951,7 +2117,9 @@ public interface I_C_Invoice_Candidate
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
 	 */
+	@Deprecated
 	public void setM_Product_Category_ID (int M_Product_Category_ID);
 
 	/**
@@ -1966,6 +2134,7 @@ public interface I_C_Invoice_Candidate
 
 	public org.compiere.model.I_M_Product_Category getM_Product_Category();
 
+	@Deprecated
 	public void setM_Product_Category(org.compiere.model.I_M_Product_Category M_Product_Category);
 
     /** Column definition for M_Product_Category_ID */
@@ -2225,19 +2394,31 @@ public interface I_C_Invoice_Candidate
     /** Column name PriceEntered_Override */
     public static final String COLUMNNAME_PriceEntered_Override = "PriceEntered_Override";
 
-	/** Column name Priority */
-	public static final String COLUMNNAME_Priority = "Priority";
-
 	/**
-	 * Set Priority. Indicates if this request is of a high, medium or low priority.
+	 * Set Priority.
+	 * Indicates if this request is of a high, medium or low priority.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
 	 */
-	public void setPriority(java.lang.String Priority);
+	public void setPriority (java.lang.String Priority);
 
 	/**
-	 * Get Priority. Indicates if this request is of a high, medium or low priority.
+	 * Get Priority.
+	 * Indicates if this request is of a high, medium or low priority.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
 	 */
 	public java.lang.String getPriority();
-    
+
+    /** Column definition for Priority */
+    public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_Priority = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, Object>(I_C_Invoice_Candidate.class, "Priority", null);
+    /** Column name Priority */
+    public static final String COLUMNNAME_Priority = "Priority";
+
 	/**
 	 * Set Verarbeitet.
 	 * Checkbox sagt aus, ob der Beleg verarbeitet wurde.
@@ -2315,7 +2496,9 @@ public interface I_C_Invoice_Candidate
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
 	 */
+	@Deprecated
 	public void setProcessing (boolean Processing);
 
 	/**
@@ -2339,7 +2522,9 @@ public interface I_C_Invoice_Candidate
 	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
 	 */
+	@Deprecated
 	public void setProductType (java.lang.String ProductType);
 
 	/**
@@ -2657,7 +2842,9 @@ public interface I_C_Invoice_Candidate
 	 * <br>Type: Number
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
 	 */
+	@Deprecated
 	public void setQualityDiscountPercent_Effective (java.math.BigDecimal QualityDiscountPercent_Effective);
 
 	/**
@@ -2696,6 +2883,29 @@ public interface I_C_Invoice_Candidate
     public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_QualityDiscountPercent_Override = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, Object>(I_C_Invoice_Candidate.class, "QualityDiscountPercent_Override", null);
     /** Column name QualityDiscountPercent_Override */
     public static final String COLUMNNAME_QualityDiscountPercent_Override = "QualityDiscountPercent_Override";
+
+	/**
+	 * Set Rechnungspositionsart.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setQualityInvoiceLineGroupType (java.lang.String QualityInvoiceLineGroupType);
+
+	/**
+	 * Get Rechnungspositionsart.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getQualityInvoiceLineGroupType();
+
+    /** Column definition for QualityInvoiceLineGroupType */
+    public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_QualityInvoiceLineGroupType = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, Object>(I_C_Invoice_Candidate.class, "QualityInvoiceLineGroupType", null);
+    /** Column name QualityInvoiceLineGroupType */
+    public static final String COLUMNNAME_QualityInvoiceLineGroupType = "QualityInvoiceLineGroupType";
 
 	/**
 	 * Set ReasonDiscount.
@@ -2799,7 +3009,9 @@ public interface I_C_Invoice_Candidate
 	 * <br>Type: Amount
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
 	 */
+	@Deprecated
 	public void setTotalOfOrder (java.math.BigDecimal TotalOfOrder);
 
 	/**
@@ -2822,7 +3034,9 @@ public interface I_C_Invoice_Candidate
 	 * <br>Type: Amount
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
 	 */
+	@Deprecated
 	public void setTotalOfOrderExcludingDiscount (java.math.BigDecimal TotalOfOrderExcludingDiscount);
 
 	/**

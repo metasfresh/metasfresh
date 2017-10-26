@@ -58,6 +58,7 @@ import de.metas.invoicecandidate.model.I_C_ILCandHandler;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler.OnInvalidateForModelAction;
+import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler.PriceAndTax;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateRequest;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateResult;
 import de.metas.lock.api.ILock;
@@ -505,19 +506,12 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 			}
 		}
 	}
-
+	
 	@Override
-	public void setPriceActual(final I_C_Invoice_Candidate ic)
+	public PriceAndTax calculatePriceAndTax(final I_C_Invoice_Candidate ic)
 	{
 		final IInvoiceCandidateHandler handler = createInvoiceCandidateHandler(ic);
-		handler.setPriceActual(ic);
-	}
-
-	@Override
-	public void setPriceEntered(final I_C_Invoice_Candidate ic)
-	{
-		final IInvoiceCandidateHandler handler = createInvoiceCandidateHandler(ic);
-		handler.setPriceEntered(ic);
+		return handler.calculatePriceAndTax(ic);
 	}
 
 	@Override

@@ -60,6 +60,7 @@ import de.metas.inout.IInOutBL;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
+import de.metas.invoicecandidate.api.IInvoiceCandInvalidUpdater;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_M_InOutLine;
 import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
@@ -197,7 +198,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 
 		//
 		// Pricing Informations
-		final IPricingResult pricingResult = setPricingInfo(ic, inOutLine);
+		final PriceAndTax priceAndQty = calculatePriceAndQuantityAndUpdate(ic, inOutLine);
 
 		//
 		// Description
@@ -235,7 +236,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 
 		//
 		// Set C_Tax from Product (07442)
-		final int taxCategoryId = pricingResult != null ? pricingResult.getC_TaxCategory_ID() : -1;
+		final int taxCategoryId = priceAndQty != null ? priceAndQty.getTaxCategoryId() : -1;
 		final Timestamp shipDate = inOut.getMovementDate();
 		final Timestamp billDate = inOut.getDateAcct();
 		final int locationId = inOut.getC_BPartner_Location_ID();
@@ -479,70 +480,74 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 	}
 
 	@Override
-	public void setPriceEntered(final I_C_Invoice_Candidate ic)
+	public PriceAndTax calculatePriceAndTax(final I_C_Invoice_Candidate ic)
 	{
-		// nothing to do
+		final I_M_InOutLine inoutLine = getM_InOutLine(ic);
+		return calculatePriceAndQuantity(ic, inoutLine);
 	}
-
-	@Override
-	public void setPriceActual(final I_C_Invoice_Candidate ic)
+	
+	public static PriceAndTax calculatePriceAndQuantity(final I_C_Invoice_Candidate ic, final org.compiere.model.I_M_InOutLine inoutLine)
 	{
-		final I_M_InOutLine inOutLine = getM_InOutLine(ic);
-		setPricingInfo(ic, inOutLine);
+		final IPricingResult pricingResult = calculatePricingResult(inoutLine);
+		
+		final boolean taxIncluded;
+		if (ic.getC_Order_ID() > 0)
+		{
+			// task 08451: if the ic has an order, we use the order's IsTaxIncuded value, to make sure that we will be able to invoice them together
+			taxIncluded = ic.getC_Order().isTaxIncluded();
+		}
+		else
+		{
+			taxIncluded = pricingResult.isTaxIncluded();
+		}
+		
+		return PriceAndTax.builder()
+				.pricingSystemId(pricingResult.getM_PricingSystem_ID())
+				// #367: there is a corner case where we need to know the PLV is order to later know the correct M_PriceList_ID.
+				// also see the javadoc of inOutBL.createPricingCtx(fromInOutLine)
+				.priceListVersionId(pricingResult.getM_PriceList_Version_ID())
+				.currencyId(pricingResult.getC_Currency_ID())
+				.taxCategoryId(pricingResult.getC_TaxCategory_ID())
+				//
+				.priceEntered(pricingResult.getPriceStd())
+				.priceActual(pricingResult.getPriceStd())
+				.priceUOMId(pricingResult.getPrice_UOM_ID()) // 07090 when we set PriceActual, we shall also set PriceUOM.
+				.taxIncluded(taxIncluded)
+				//
+				.discount(pricingResult.getDiscount())
+				.build();
 	}
-
-	/**
-	 * Set pricing info on invoice candidate
-	 *
-	 * @param ic
-	 * @param fromInOutLine
-	 *
-	 * @return pricing result (computed) or null if exception occurred
-	 */
-	private IPricingResult setPricingInfo(final I_C_Invoice_Candidate ic, final I_M_InOutLine fromInOutLine)
+	
+	private static IPricingResult calculatePricingResult(final org.compiere.model.I_M_InOutLine fromInOutLine)
 	{
-		IPricingResult pricingResult = null;
+		final IInOutBL inOutBL = Services.get(IInOutBL.class);
+		final IPricingContext pricingCtx = inOutBL.createPricingCtx(fromInOutLine);
+		return inOutBL.getProductPrice(pricingCtx);
+	}
+	
+	public static PriceAndTax calculatePriceAndQuantityAndUpdate(final I_C_Invoice_Candidate ic, final org.compiere.model.I_M_InOutLine fromInOutLine)
+	{
 		try
 		{
-			final IPricingContext pricingCtx = inOutBL.createPricingCtx(fromInOutLine);
-			pricingResult = inOutBL.getProductPrice(pricingCtx);
-
-			ic.setM_PricingSystem_ID(pricingResult.getM_PricingSystem_ID());
-
-			// #367: there is a corner case where we need to know the PLV is order to later know the correct M_PriceList_ID.
-			// also see the javadoc of inOutBL.createPricingCtx(fromInOutLine)
-			ic.setM_PriceList_Version_ID(pricingResult.getM_PriceList_Version_ID());
-
-			ic.setPriceEntered(pricingResult.getPriceStd());
-			ic.setPriceActual(pricingResult.getPriceStd());
-			ic.setPrice_UOM_ID(pricingResult.getPrice_UOM_ID()); // 07090 when we set PriceActual, we shall also set PriceUOM.
-			ic.setDiscount(pricingResult.getDiscount());
-			ic.setC_Currency_ID(pricingResult.getC_Currency_ID());
-
-			if (ic.getC_Order_ID() > 0)
-			{
-				// task 08451: if the ic has an order, we use the order's IsTaxIncuded value, to make sure that we will be able to invoice them together
-				ic.setIsTaxIncluded(ic.getC_Order().isTaxIncluded());
-			}
-			else
-			{
-				ic.setIsTaxIncluded(pricingResult.isTaxIncluded());
-			}
+			final PriceAndTax priceAndQty = calculatePriceAndQuantity(ic, fromInOutLine);
+			IInvoiceCandInvalidUpdater.updatePriceAndTax(ic, priceAndQty);
+			return priceAndQty;
 		}
 		catch (final ProductNotOnPriceListException e)
 		{
 			final boolean askForDeleteRegeneration = true; // ask for re-generation
 			setError(ic, e, askForDeleteRegeneration);
+			return null;
 		}
 		catch (final Exception e)
 		{
 			final boolean askForDeleteRegeneration = false; // default; don't ask for re-generation
 			setError(ic, e, askForDeleteRegeneration);
+			return null;
 		}
-		return pricingResult;
 	}
 
-	private final void setError(final I_C_Invoice_Candidate ic, final Exception ex, final boolean askForDeleteRegeneration)
+	private static final void setError(final I_C_Invoice_Candidate ic, final Exception ex, final boolean askForDeleteRegeneration)
 	{
 		ic.setIsInDispute(true); // 07193 - Mark's request
 

@@ -285,22 +285,18 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 		ic.setQtyDelivered(ic.getQtyOrdered());
 		ic.setDeliveryDate(ic.getDateOrdered());
 	}
-
+	
 	@Override
-	public void setPriceActual(final I_C_Invoice_Candidate ic)
+	public PriceAndTax calculatePriceAndTax(I_C_Invoice_Candidate ic)
 	{
 		final I_C_OLCand olc = getOLCand(ic);
 		final IPricingResult pricingResult = Services.get(IOLCandBL.class).computePriceActual(olc, null, 0, olc.getDateCandidate());
-
-		ic.setPrice_UOM_ID(pricingResult.getPrice_UOM_ID());
-		ic.setPriceActual(pricingResult.getPriceStd());
-		ic.setIsTaxIncluded(pricingResult.isTaxIncluded());
-	}
-
-	@Override
-	public void setPriceEntered(final I_C_Invoice_Candidate ic)
-	{
-		// nothing to do
+		
+		return PriceAndTax.builder()
+				.priceUOMId(pricingResult.getPrice_UOM_ID())
+				.priceActual(pricingResult.getPriceStd())
+				.taxIncluded(pricingResult.isTaxIncluded())
+				.build();
 	}
 
 	@Override
