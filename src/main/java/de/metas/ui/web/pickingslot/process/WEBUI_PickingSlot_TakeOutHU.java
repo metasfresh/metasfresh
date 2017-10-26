@@ -1,5 +1,8 @@
 package de.metas.ui.web.pickingslot.process;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 
@@ -13,6 +16,7 @@ import de.metas.handlingunits.movement.api.IHUMovementBL;
 import de.metas.handlingunits.picking.IHUPickingSlotBL;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.ui.web.handlingunits.HUEditorView;
 import de.metas.ui.web.picking.pickingslot.PickingSlotRow;
 import de.metas.ui.web.pickingslot.AggregationPickingSlotView;
 import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
@@ -42,6 +46,7 @@ import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 
 public class WEBUI_PickingSlot_TakeOutHU extends ViewBasedProcessTemplate implements IProcessPrecondition
 {
+	private final List<Integer> huIdsRemoved = new ArrayList<>();
 
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
@@ -87,14 +92,31 @@ public class WEBUI_PickingSlot_TakeOutHU extends ViewBasedProcessTemplate implem
 			huMovementBL.moveHUsToLocator(ImmutableList.of(hu), afterPickingLocator);
 		}
 
+		huIdsRemoved.add(hu.getM_HU_ID());
+
+		return MSG_OK;
+	}
+
+	@Override
+	protected void postProcess(final boolean success)
+	{
+		if (!success)
+		{
+			return;
+		}
+
 		//
 		// Invalidate the views
 		// Expectation: the HU shall disappear from picking slots view (left side) and shall appear on after picking HUs view (right side).
 		final AggregationPickingSlotView pickingSlotsView = getView(AggregationPickingSlotView.class);
+		pickingSlotsView.invalidateAll();
 		invalidateView(pickingSlotsView.getViewId());
-		invalidateView(pickingSlotsView.getAfterPickingHUViewId());
-
-		return MSG_OK;
+		//
+		final HUEditorView afterPickingHUsView = pickingSlotsView.getAfterPickingHUViewOrNull();
+		if (afterPickingHUsView != null)
+		{
+			afterPickingHUsView.addHUIdsAndInvalidate(huIdsRemoved);
+		}
 	}
 
 }

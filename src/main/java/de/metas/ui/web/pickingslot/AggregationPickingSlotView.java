@@ -26,6 +26,7 @@ import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.IViewRowOverrides;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.ViewResult;
+import de.metas.ui.web.view.event.ViewChangesCollector;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
@@ -160,6 +161,7 @@ public class AggregationPickingSlotView implements IView, IViewRowOverrides
 	public void invalidateAll()
 	{
 		rows.invalidateAll();
+		ViewChangesCollector.getCurrentOrAutoflush().collectFullyChanged(this);
 	}
 
 	@Override
