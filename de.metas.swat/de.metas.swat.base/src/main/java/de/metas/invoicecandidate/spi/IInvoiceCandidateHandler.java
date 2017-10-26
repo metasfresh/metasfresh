@@ -260,5 +260,7 @@ public interface IInvoiceCandidateHandler
 
 		int taxCategoryId;
 		Boolean taxIncluded;
+		
+		BigDecimal compensationGroupBaseAmt;
 	}
 }

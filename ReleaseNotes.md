@@ -32,6 +32,8 @@ Here come the actual release notes:
     * New Fields in Orderlines allowing to use and define Groups Discounts in Sales Orderlines.
   * [#2838](https://github.com/metasfresh/metasfresh/issues/2838) Linenet amount not updated in sales order after changing flatrate condition
     * New Read-Only Logic for Flatrate Terms Fields in Orderlines.
+  * [#2821](https://github.com/metasfresh/metasfresh/issues/2821) Window Material Dispo in WebUI
+    * Improvement of Materialdispo window in WebUI, adding new Fields and Translations.
 
 ## Features
 * metasfresh-app
