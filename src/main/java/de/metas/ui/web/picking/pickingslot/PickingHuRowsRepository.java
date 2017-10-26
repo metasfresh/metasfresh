@@ -13,6 +13,7 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
+import org.compiere.model.IQuery;
 import org.springframework.stereotype.Service;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -23,6 +24,7 @@ import com.google.common.collect.SetMultimap;
 
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Picking_Candidate;
+import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_Picking_Candidate;
 import de.metas.handlingunits.picking.IHUPickingSlotDAO;
 import de.metas.handlingunits.sourcehu.SourceHUsService;
@@ -173,6 +175,13 @@ import lombok.NonNull;
 			default:
 				Check.errorIf(true, "Query has unexpected pickingCandidates={}; query={}", pickingSlotRowQuery.getPickingCandidates(), pickingSlotRowQuery);
 		}
+
+		//
+		// HU filter
+		final IQuery<I_M_HU> husQuery = queryBL.createQueryBuilder(I_M_HU.class)
+				.addNotEqualsFilter(I_M_HU.COLUMNNAME_HUStatus, X_M_HU.HUSTATUS_Shipped) // not already shipped (https://github.com/metasfresh/metasfresh-webui-api/issues/647)
+				.create();
+		queryBuilder.addInSubQueryFilter(I_M_Picking_Candidate.COLUMN_M_HU_ID, I_M_HU.COLUMN_M_HU_ID, husQuery);
 
 		return queryBuilder
 				.create()
