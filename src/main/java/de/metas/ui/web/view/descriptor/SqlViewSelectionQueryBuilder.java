@@ -635,7 +635,7 @@ public final class SqlViewSelectionQueryBuilder
 				+ ")"
 				+ " SELECT "
 				+ " ? as UUID " // UUID
-				+ ", (select max(Line) from T_WEBUI_ViewSelection z where z.UUID=?) as Line" // Line
+				+ ", (select coalesce(max(Line), 0) + 1 from T_WEBUI_ViewSelection z where z.UUID=?) as Line" // Line
 				+ ", ? as Record_ID"  // Record_ID
 				+ " WHERE "
 				+ " NOT EXISTS(select 1 from " + I_T_WEBUI_ViewSelection.Table_Name + " z where z.UUID=? and z.Record_ID=?)";
