@@ -3,18 +3,23 @@
   "scripts": {
     "start": "node server.js",
     "lint": "eslint src --fix",
-    "stylelint": "stylelint 'src/assets/**/*.css'"
+    "stylelint": "stylelint 'src/assets/**/*.css'",
+    "storybook": "node .storybook/findStories && start-storybook -p 6006",
+    "build-storybook": "build-storybook"
   },
   "devDependencies": {
+    "@storybook/react": "^3.2.13",
     "autoprefixer": "~6.3.6",
     "babel-core": "^6.21.0",
     "babel-eslint": "^6.0.0-beta.6",
     "babel-loader": "^6.2.10",
     "babel-preset-es2017": "^6.24.1",
     "babel-preset-react": "~6.16.0",
+    "common-tags": "^1.4.0",
     "css-loader": "~0.23.1",
     "eslint": "~3.16.0",
     "eslint-plugin-react": "~6.10.0",
+    "globby": "^6.1.0",
     "html-loader": "~0.4.4",
     "html-webpack-plugin": "~2.26.0",
     "postcss-color-function": "~2.0.1",

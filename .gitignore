@@ -3,7 +3,10 @@ npm-debug.log*
 .DS_Store
 dist
 .idea
-config.js
+/config.js
 /static
 .vscode
 .history
+
+# Dynamic storybook configuration file
+.storybook/foundStories.js
