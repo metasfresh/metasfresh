@@ -106,14 +106,8 @@ import de.metas.shipping.model.I_M_ShipperTransportation;
 		// Complete .. CO
 		else if (IDocument.STATUS_Completed.equals(docStatus))
 		{
-			if (I_M_InOut.Table_Name.equals(tableName))  // 08656: Default action Re-Activate
-			{
-				docActions.add(IDocument.ACTION_ReActivate);
-			}
-			else
-			{
-				docActions.add(IDocument.ACTION_Close);
-			}
+			docActions.add(IDocument.ACTION_ReActivate);
+			docActions.add(IDocument.ACTION_Close);
 		}
 		// Waiting Payment
 		else if (IDocument.STATUS_WaitingPayment.equals(docStatus)
