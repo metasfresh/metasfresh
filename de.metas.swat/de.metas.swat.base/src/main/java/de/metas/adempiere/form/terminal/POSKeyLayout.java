@@ -146,6 +146,7 @@ public class POSKeyLayout extends KeyLayout
 							Env.WINDOW_None, // WindowNo
 							0, // Column_ID,
 							DisplayType.Table, // DisplayType
+							null, // tableName
 							"ID", // ColumnName,
 							key.getAD_Reference_ID(), // AD_Reference_Value_ID,
 							false, // IsParent,

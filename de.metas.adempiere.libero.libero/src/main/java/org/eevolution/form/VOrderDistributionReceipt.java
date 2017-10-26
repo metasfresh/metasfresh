@@ -220,7 +220,16 @@ public class VOrderDistributionReceipt extends CPanel
 	 */
 	private void fillPicks() throws Exception
 	{
-		MLookup orderL = 	MLookupFactory.get(Env.getCtx(), m_WindowNo, MColumn.getColumn_ID(MDDOrder.Table_Name,MDDOrder.COLUMNNAME_DD_Order_ID) , DisplayType.Search , MDDOrder.COLUMNNAME_DD_Order_ID , 0 , false, "DocStatus='CO'");
+		MLookup orderL = 	MLookupFactory.get(
+				Env.getCtx()
+				, m_WindowNo
+				, MColumn.getColumn_ID(MDDOrder.Table_Name,MDDOrder.COLUMNNAME_DD_Order_ID) 
+				, DisplayType.Search 
+				, null // tablename
+				, MDDOrder.COLUMNNAME_DD_Order_ID 
+				,  0 
+				, false
+				, "DocStatus='CO'");
 		fOrder = new VLookup (MDDOrder.COLUMNNAME_DD_Order_ID, true, false, true, orderL);
 		lOrder.setText(Msg.translate(Env.getCtx(), MDDOrder.COLUMNNAME_DD_Order_ID));
 		fOrder.addVetoableChangeListener(this);

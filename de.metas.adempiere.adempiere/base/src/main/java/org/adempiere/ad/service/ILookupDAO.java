@@ -51,6 +51,8 @@ public interface ILookupDAO extends ISingletonService
 		int getAD_Reference_Value_ID();
 
 		String getColumnName();
+		
+		String getTableName();
 	}
 
 	/**

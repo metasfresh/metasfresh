@@ -96,6 +96,7 @@ public class TableRefKeyLayout extends KeyLayout
 					getTerminalContext().getWindowNo(), // WindowNo,
 					0, // Column_ID,
 					DisplayType.Table, // AD_Reference_ID,
+					null, // tableName
 					"Record_ID", // ColumnName,
 					adReferenceId, // AD_Reference_Value_ID,
 					false, // IsParent,
