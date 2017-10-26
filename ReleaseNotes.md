@@ -34,6 +34,8 @@ Here come the actual release notes:
     * New Read-Only Logic for Flatrate Terms Fields in Orderlines.
   * [#2821](https://github.com/metasfresh/metasfresh/issues/2821) Window Material Dispo in WebUI
     * Improvement of Materialdispo window in WebUI, adding new Fields and Translations.
+  * [#2843](https://github.com/metasfresh/metasfresh/issues/2843) WebUI: Add new Fields for SQL Columns to Material Dispo Transaction Subtab
+    * Improving Transaction included Subtab in Materialdispo Window. Now showing the Shipment/ Receipt Information in there.
 
 ## Features
 * metasfresh-app
