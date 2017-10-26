@@ -176,6 +176,7 @@ final class SelectPaySelectionDialog
 					windowNo,
 					paySelectionColumn.getAD_Column_ID(),
 					DisplayType.Search,
+					null, //table name
 					paySelectionColumnName,
 					paySelectionColumn.getAD_Reference_Value_ID(),
 					false, // IsParent,

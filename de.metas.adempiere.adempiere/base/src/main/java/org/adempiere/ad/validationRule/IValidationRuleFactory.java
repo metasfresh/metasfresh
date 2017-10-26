@@ -13,15 +13,14 @@ package org.adempiere.ad.validationRule;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Properties;
 
@@ -41,14 +40,15 @@ public interface IValidationRuleFactory extends ISingletonService
 {
 
 	/**
-	 * Create {@link IValidationRule} for given AD_ValRule_ID
+	 * Create {@link IValidationRule} for given AD_ValRule_ID, context table and column name
 	 * 
-	 * @param ctx
 	 * @param tableName
 	 * @param adValRuleId
+	 * @param ctxTableName
+	 * @param ctxColumnName
 	 * @return
 	 */
-	IValidationRule create(String tableName, int adValRuleId);
+	IValidationRule create(String tableName, int adValRuleId, String ctxTableName, String ctxColumnName);
 
 	/**
 	 * Create SQL {@link IValidationRule} for given whereClause
@@ -70,6 +70,15 @@ public interface IValidationRuleFactory extends ISingletonService
 	 */
 	void registerTableValidationRule(String tableName, IValidationRule rule);
 
+	/**
+	 * Register a table+column pair that is an exception from a table-wide validation rule ( see {@code org.adempiere.ad.validationRule.IValidationRuleFactory.registerTableValidationRule(String, IValidationRule)}).
+	 * 
+	 * @param rule
+	 * @param ctxTableName
+	 * @param ctxColumnName
+	 */
+	void registerValidationRuleException(IValidationRule rule, String ctxTableName, String ctxColumnName);
+
 	IValidationContext createValidationContext(Properties ctx, int windowNo, int tabNo, String tableName);
 
 	IValidationContext createValidationContext(Properties ctx, String tableName, GridTab gridTab, int rowIndex);
@@ -87,4 +96,5 @@ public interface IValidationRuleFactory extends ISingletonService
 	IValidationContext createValidationContext(GridField gridField, int rowIndex);
 
 	IValidationContext createValidationContext(Evaluatee evaluatee);
+
 }
