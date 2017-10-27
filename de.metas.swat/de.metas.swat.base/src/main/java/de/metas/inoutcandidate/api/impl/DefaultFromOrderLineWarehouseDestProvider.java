@@ -2,7 +2,7 @@ package de.metas.inoutcandidate.api.impl;
 
 import java.util.List;
 
-import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
@@ -84,7 +84,7 @@ import de.metas.material.planning.ddorder.IDistributionNetworkDAO;
 	private I_M_Warehouse getDistributionNetworkWarehouseDestination(final IContext context)
 	{
 		final int attributeSetInstanceId = context.getM_AttributeSetInstance() == null
-				? IProductPlanningDAO.ANY_M_ATRIBUTE_SET_INSTANCE_ID
+				? AttributeConstants.M_AttributeSetInstance_ID_None
 				: context.getM_AttributeSetInstance().getM_AttributeSetInstance_ID();
 
 		final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);

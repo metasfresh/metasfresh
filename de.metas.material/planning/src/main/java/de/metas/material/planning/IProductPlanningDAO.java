@@ -35,8 +35,6 @@ import de.metas.material.planning.exception.NoPlantForWarehouseException;
 
 public interface IProductPlanningDAO extends ISingletonService
 {
-	int ANY_M_ATRIBUTE_SET_INSTANCE_ID = -100;
-	
 	/**
 	 * Find best matching product planning.
 	 *
