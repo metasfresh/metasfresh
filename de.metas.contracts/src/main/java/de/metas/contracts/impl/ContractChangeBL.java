@@ -69,8 +69,6 @@ public class ContractChangeBL implements IContractChangeBL
 	{
 		final Timestamp changeDate = contractChangeParameters.getChangeDate();
 		final boolean isCloseInvoiceCandidate = contractChangeParameters.isCloseInvoiceCandidate();
-		final String terminationMemo = contractChangeParameters.getTerminationMemo();
-		final String terminationReason = contractChangeParameters.getTerminationReason();
 		
 		Check.assumeNotNull(currentTerm, "Param 'currentTerm' not null");
 		Check.assumeNotNull(changeDate, "Param 'changeDate' not null");
@@ -138,20 +136,12 @@ public class ContractChangeBL implements IContractChangeBL
 				currentTerm.setEndDate(new Timestamp(changeDate.getTime()));
 			}
 			
-			if (!Check.isEmpty(terminationReason, true))
-			{
-				currentTerm.setTerminationReason(terminationReason);
-			}
-			
-			if (!Check.isEmpty(terminationMemo, true))
-			{
-				currentTerm.setTerminationMemo(terminationMemo);
-			}
-			
 			// update contract status
 			currentTerm.setContractStatus(X_C_Flatrate_Term.CONTRACTSTATUS_Quit);
 		}
 
+		setTerminatioReasonAndMemo(currentTerm, contractChangeParameters);
+		currentTerm.setMasterEndDate(currentTerm.getEndDate());		
 		currentTerm.setIsCloseInvoiceCandidate(isCloseInvoiceCandidate); 
 		
 		if (currentTerm.getC_FlatrateTerm_Next_ID() > 0)
@@ -166,11 +156,28 @@ public class ContractChangeBL implements IContractChangeBL
 			currentTerm.setContractStatus(X_C_Flatrate_Term.CONTRACTSTATUS_Quit);
 		}
 
+		
 		InterfaceWrapperHelper.save(currentTerm);
 		
  		Services.get(IInvoiceCandidateHandlerBL.class).invalidateCandidatesFor(currentTerm);
 	}
 
+	private void setTerminatioReasonAndMemo(@NonNull final I_C_Flatrate_Term currentTerm, final @NonNull ContractChangeParameters contractChangeParameters)
+	{
+		final String terminationMemo = contractChangeParameters.getTerminationMemo();
+		final String terminationReason = contractChangeParameters.getTerminationReason();
+		if (!Check.isEmpty(terminationReason, true))
+		{
+			currentTerm.setTerminationReason(terminationReason);
+		}
+		
+		if (!Check.isEmpty(terminationMemo, true))
+		{
+			currentTerm.setTerminationMemo(terminationMemo);
+		}
+	}
+	
+	
 	private void deleteDeliveriesAdjustOrderLine(
 			final List<I_C_SubscriptionProgress> sps,
 			final I_C_Order oldOrder,
