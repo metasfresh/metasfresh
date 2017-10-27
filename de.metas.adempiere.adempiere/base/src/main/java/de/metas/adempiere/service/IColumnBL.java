@@ -76,4 +76,6 @@ public interface IColumnBL extends ISingletonService
 
 	boolean getDefaultAllowLoggingByColumnName(String columnName);
 
+	boolean getDefaultIsCalculatedByColumnName(String columnName);
+
 }

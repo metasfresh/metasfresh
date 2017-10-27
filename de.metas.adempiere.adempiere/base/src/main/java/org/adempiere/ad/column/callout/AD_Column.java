@@ -46,11 +46,12 @@ public class AD_Column
 	@CalloutMethod(columnNames = { I_AD_Column.COLUMNNAME_ColumnName })
 	public void onColumnName(final I_AD_Column column, final ICalloutField field)
 	{
-		final String columnName = column.getColumnName();
-		if (Check.isEmpty(columnName, true))
+		if (column == null || Check.isEmpty(column.getColumnName(), true))
 		{
 			return;
 		}
+		
+		final String columnName = column.getColumnName();
 		column.setIsAllowLogging(Services.get(IColumnBL.class).getDefaultAllowLoggingByColumnName(columnName));
 	}
 }

@@ -5,7 +5,6 @@ import java.math.BigDecimal;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 
-import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
@@ -38,7 +37,7 @@ import lombok.ToString;
 public final class GroupCompensationLine
 {
 	@Getter
-	@Setter(AccessLevel.PACKAGE)
+	@Setter
 	private int repoId;
 
 	@Getter
