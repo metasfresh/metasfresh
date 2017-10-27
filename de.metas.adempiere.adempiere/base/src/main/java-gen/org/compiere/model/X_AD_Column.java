@@ -15,7 +15,7 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1855727632L;
+	private static final long serialVersionUID = 1000035018L;
 
     /** Standard Constructor */
     public X_AD_Column (Properties ctx, int AD_Column_ID, String trxName)
@@ -33,6 +33,7 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 			setEntityType (null); // U
 			setIsAlwaysUpdateable (false); // N
 			setIsAutocomplete (false); // N
+			setIsCalculated (false); // N
 			setIsEncrypted (null); // N
 			setIsIdentifier (false);
 			setIsKey (false);
@@ -606,6 +607,32 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 	public boolean isAutocomplete () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsAutocomplete);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set Berechnet.
+		@param IsCalculated 
+		The value is calculated by the system
+	  */
+	@Override
+	public void setIsCalculated (boolean IsCalculated)
+	{
+		set_Value (COLUMNNAME_IsCalculated, Boolean.valueOf(IsCalculated));
+	}
+
+	/** Get Berechnet.
+		@return The value is calculated by the system
+	  */
+	@Override
+	public boolean isCalculated () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsCalculated);
 		if (oo != null) 
 		{
 			 if (oo instanceof Boolean) 

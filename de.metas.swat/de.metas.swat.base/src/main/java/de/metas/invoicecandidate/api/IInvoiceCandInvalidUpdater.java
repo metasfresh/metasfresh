@@ -100,47 +100,54 @@ public interface IInvoiceCandInvalidUpdater
 	IInvoiceCandInvalidUpdater setOnlyC_Invoice_Candidates(Iterable<? extends I_C_Invoice_Candidate> invoiceCandidates);
 
 	// TODO: find a better place for this method
-	static void updatePriceAndTax(final I_C_Invoice_Candidate ic, final PriceAndTax pricingResult)
+	static void updatePriceAndTax(final I_C_Invoice_Candidate ic, final PriceAndTax priceAndTax)
 	{
 		//
 		// Pricing System & Currency 
-		if (pricingResult.getPricingSystemId() > 0)
+		if (priceAndTax.getPricingSystemId() > 0)
 		{
-			ic.setM_PricingSystem_ID(pricingResult.getPricingSystemId());
+			ic.setM_PricingSystem_ID(priceAndTax.getPricingSystemId());
 		}
-		if (pricingResult.getPriceListVersionId() > 0)
+		if (priceAndTax.getPriceListVersionId() > 0)
 		{
-			ic.setM_PriceList_Version_ID(pricingResult.getPriceListVersionId());
+			ic.setM_PriceList_Version_ID(priceAndTax.getPriceListVersionId());
 		}
-		if (pricingResult.getCurrencyId() > 0)
+		if (priceAndTax.getCurrencyId() > 0)
 		{
-			ic.setC_Currency_ID(pricingResult.getCurrencyId());
+			ic.setC_Currency_ID(priceAndTax.getCurrencyId());
 		}
 
 		//
 		// Price & Discount
-		if (pricingResult.getPriceEntered() != null)
+		if (priceAndTax.getPriceEntered() != null)
 		{
-			ic.setPriceEntered(pricingResult.getPriceEntered()); // task 06727
+			ic.setPriceEntered(priceAndTax.getPriceEntered()); // task 06727
 		}
-		if (pricingResult.getPriceActual() != null)
+		if (priceAndTax.getPriceActual() != null)
 		{
-			ic.setPriceActual(pricingResult.getPriceActual());
+			ic.setPriceActual(priceAndTax.getPriceActual());
 		}
-		if (pricingResult.getPriceUOMId() > 0)
+		if (priceAndTax.getPriceUOMId() > 0)
 		{
-			ic.setPrice_UOM_ID(pricingResult.getPriceUOMId());
+			ic.setPrice_UOM_ID(priceAndTax.getPriceUOMId());
 		}
-		if (pricingResult.getDiscount() != null)
+		if (priceAndTax.getDiscount() != null)
 		{
-			ic.setDiscount(pricingResult.getDiscount());
+			ic.setDiscount(priceAndTax.getDiscount());
 		}
 
 		//
 		// Tax
-		if (pricingResult.getTaxIncluded() != null)
+		if (priceAndTax.getTaxIncluded() != null)
 		{
-			ic.setIsTaxIncluded(pricingResult.getTaxIncluded());
+			ic.setIsTaxIncluded(priceAndTax.getTaxIncluded());
+		}
+		
+		//
+		// Compensation group
+		if(priceAndTax.getCompensationGroupBaseAmt() != null)
+		{
+			ic.setGroupCompensationBaseAmt(priceAndTax.getCompensationGroupBaseAmt());
 		}
 	}
 
