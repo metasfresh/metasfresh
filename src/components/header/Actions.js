@@ -12,24 +12,32 @@ import {
 
 class Actions extends Component {
     state = {
-        data: null,
-    }
+        data: null
+    };
 
-    componentDidMount = () => {
+    async componentDidMount() {
         const {
-            windowType, entity, docId, rowId, notfound, activeTab,
-            activeTabSelected,
+            windowType,
+            entity,
+            docId,
+            rowId,
+            notfound,
+            activeTab,
+            activeTabSelected
         } = this.props;
 
         if(!windowType || docId === 'notfound' || notfound){
             this.setState({
                 data: []
             });
+
             return;
         }
 
-        const requestRowActions = activeTab && activeTabSelected && (
-            activeTabSelected.length > 0
+        const requestRowActions = (
+            activeTab &&
+            activeTabSelected &&
+            (activeTabSelected.length > 0)
         );
 
         if (entity === 'board') {
@@ -40,52 +48,63 @@ class Actions extends Component {
             return;
         }
 
-        actionsRequest({
-            entity,
-            type: windowType,
-            id: docId,
-            selected: rowId
-        }).then((response) => {
-            let actions = response.data.actions;
+        let actionsResponse;
 
-            if (requestRowActions) {
-                rowActionsRequest({
+        try {
+            actionsResponse = await actionsRequest({
+                entity,
+                type: windowType,
+                id: docId,
+                selected: rowId
+            });
+        } catch (error) {
+            this.setState({
+                data: []
+            });
+        }
+
+        let actions = actionsResponse.data.actions;
+
+        if (requestRowActions) {
+            let rowActionsResponse;
+
+            try {
+                rowActionsResponse = await rowActionsRequest({
                     windowId: windowType,
                     documentId: docId,
                     tabId: activeTab,
                     selected: activeTabSelected
-                }).then((response) => {
-                    if (response.data && response.data.actions && (
-                        response.data.actions.length > 0)
-                    ) {
-                        let mergeActions = response.data.actions.map((item) => {
-                            return Object.assign(item, {
-                                rowId: activeTabSelected,
-                                tabId: activeTab
-                            });
-                        });
-                        actions = actions.concat([null], mergeActions);
-                    }
-
-                    this.setState({
-                        data: actions
-                    });
-                }).catch(() => {
-                    this.setState({
-                        data: actions
-                    });
                 });
-            }
-            else {
+            } catch (error) {
                 this.setState({
                     data: actions
                 });
             }
-        }).catch(() => {
+
+            if (
+                rowActionsResponse.data &&
+                rowActionsResponse.data.actions &&
+                (rowActionsResponse.data.actions.length > 0)
+            ) {
+                let mergeActions = rowActionsResponse.data.actions.map(item => {
+                    return {
+                        ...item,
+                        rowId: activeTabSelected,
+                        tabId: activeTab
+                    };
+                });
+
+                actions = actions.concat([null], mergeActions);
+            }
+
             this.setState({
-                data: []
-            })
-        })
+                data: actions
+            });
+        } else {
+            this.setState({
+                data: actions
+            });
+        }
     }
 
     renderData = () => {
@@ -138,7 +157,7 @@ class Actions extends Component {
             <div className="subheader-item subheader-item-disabled">
                 {counterpart.translate('window.actions.emptyText')}
             </div>
-        )
+        );
     }
 
     render() {
