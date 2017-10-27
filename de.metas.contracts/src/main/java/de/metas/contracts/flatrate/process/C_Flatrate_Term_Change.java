@@ -49,14 +49,16 @@ public class C_Flatrate_Term_Change extends JavaProcess
 
 	public static final String PARAM_ACTION = I_C_Contract_Change.COLUMNNAME_Action;
 	
-	public static final String PARAM_NOTE = I_C_Flatrate_Term.COLUMNNAME_Note;
+	public static final String PARAM_TERMINATION_MEMO = I_C_Flatrate_Term.COLUMNNAME_TerminationMemo;
+	public static final String PARAM_TERMINATION_REASON = I_C_Flatrate_Term.COLUMNNAME_TerminationReason;
 
 	@SuppressWarnings("unused")
 	private int newSubscriptionId = 0;
 
 	private String action;
 	private Timestamp changeDate;
-	private String note;
+	private String terminationMemo;
+	private String terminationReason;
 
 	@Override
 	protected String doIt()
@@ -72,7 +74,8 @@ public class C_Flatrate_Term_Change extends JavaProcess
 		final ContractChangeParameters contractChangeParameters = ContractChangeParameters.builder()
 																.changeDate(changeDate)
 																.isCloseInvoiceCandidate(true)
-																.note(note)
+																.terminationMemo(terminationMemo)
+																.terminationReason(terminationReason)
 																.build();
 		
 		Services.get(IContractChangeBL.class).cancelContract(currentTerm, contractChangeParameters);
@@ -105,9 +108,13 @@ public class C_Flatrate_Term_Change extends JavaProcess
 			{
 				changeDate = (Timestamp)para[i].getParameter();
 			}
-			else if (name.equals(PARAM_NOTE))
+			else if (name.equals(PARAM_TERMINATION_REASON))
 			{
-				note = (String)para[i].getParameter();
+				terminationReason = (String)para[i].getParameter();
+			}
+			else if (name.equals(PARAM_TERMINATION_MEMO))
+			{
+				terminationMemo = (String)para[i].getParameter();
 			}
 			else
 			{

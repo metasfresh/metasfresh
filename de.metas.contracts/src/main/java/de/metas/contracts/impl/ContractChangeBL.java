@@ -69,7 +69,8 @@ public class ContractChangeBL implements IContractChangeBL
 	{
 		final Timestamp changeDate = contractChangeParameters.getChangeDate();
 		final boolean isCloseInvoiceCandidate = contractChangeParameters.isCloseInvoiceCandidate();
-		final String note = contractChangeParameters.getNote();
+		final String terminationMemo = contractChangeParameters.getTerminationMemo();
+		final String terminationReason = contractChangeParameters.getTerminationReason();
 		
 		Check.assumeNotNull(currentTerm, "Param 'currentTerm' not null");
 		Check.assumeNotNull(changeDate, "Param 'changeDate' not null");
@@ -137,9 +138,14 @@ public class ContractChangeBL implements IContractChangeBL
 				currentTerm.setEndDate(new Timestamp(changeDate.getTime()));
 			}
 			
-			if (Check.isEmpty(note, true))
+			if (Check.isEmpty(terminationReason, true))
 			{
-				currentTerm.setNote(note);
+				currentTerm.setTerminationReason(terminationReason);
+			}
+			
+			if (Check.isEmpty(terminationMemo, true))
+			{
+				currentTerm.setTerminationMemo(terminationMemo);
 			}
 			
 			// update contract status

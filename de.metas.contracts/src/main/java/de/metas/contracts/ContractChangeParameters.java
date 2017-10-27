@@ -45,5 +45,6 @@ public class ContractChangeParameters
 {
 	final Timestamp changeDate;
 	final boolean isCloseInvoiceCandidate;
-	final String note;
+	final String terminationMemo;
+	final String terminationReason;
 }

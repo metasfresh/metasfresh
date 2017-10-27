@@ -42,6 +42,7 @@ import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_Flatrate_Transition;
 import de.metas.contracts.model.I_C_SubscriptionProgress;
 import de.metas.contracts.model.X_C_Contract_Change;
+import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Transition;
 
 public class ContractChangeBLTest extends ContractsTestBase
@@ -94,7 +95,8 @@ public class ContractChangeBLTest extends ContractsTestBase
 		final ContractChangeParameters contractChangeParameters = ContractChangeParameters.builder()
 				.changeDate(changeTime)
 				.isCloseInvoiceCandidate(true)
-				.note("note: cancelContract_test")
+				.terminationReason(X_C_Flatrate_Term.TERMINATIONREASON_General)
+				.terminationMemo("note: cancelContract_test")
 				.build();
 		
 		contractChangeBL.cancelContract(currentTerm, contractChangeParameters);
