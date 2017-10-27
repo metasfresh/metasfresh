@@ -81,7 +81,7 @@ public class PaymentBL implements IPaymentBL
 		final I_SEPA_Export_Line exportLine = InterfaceWrapperHelper.newInstance(I_SEPA_Export_Line.class, line);
 
 		exportLine.setAD_Org_ID(line.getAD_Org_ID());
-		exportLine.setAD_Table_ID(I_C_PaySelectionLine.Table_ID);
+		exportLine.setAD_Table_ID(InterfaceWrapperHelper.getTableId(I_C_PaySelectionLine.class));
 		exportLine.setRecord_ID(line.getC_PaySelectionLine_ID());
 		exportLine.setAmt(line.getPayAmt());
 		exportLine.setC_BP_BankAccount(bpBankAccount); // 07789: also setting the BP bank account so the following model validator(s) can more easily see evaluate what it is.
