@@ -440,7 +440,6 @@ final class SelectPaySelectionDialog
 		//
 		// Commented-out lines below are left not completed (not required / default / we don't have data to auto-complete them)
 		//
-		// paySelectionLine.setC_PaySelectionCheck_ID(int); // auto
 		// paySelectionLine.setDescription(String); // auto
 		// paySelectionLine.setIsActive(boolean); // auto
 		// paySelectionLine.setIsManual(boolean); // auto

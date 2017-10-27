@@ -2238,63 +2238,6 @@ public final class MPayment extends X_C_Payment
 				Services.get(IMsgBL.class).translate(getCtx(), "C_Payment_ID") + ": " + getDocumentNo() + " [n]", get_TrxName());
 		alloc.setAD_Org_ID(getAD_Org_ID());
 
-		String sql = "SELECT psc.C_BPartner_ID, psl.C_Invoice_ID, psl.IsSOTrx, "	// 1..3
-				+ " psl.PayAmt, psl.DiscountAmt, psl.DifferenceAmt, psl.OpenAmt "
-				+ "FROM C_PaySelectionLine psl"
-				+ " INNER JOIN C_PaySelectionCheck psc ON (psl.C_PaySelectionCheck_ID=psc.C_PaySelectionCheck_ID) "
-				+ "WHERE psc.C_Payment_ID=?";
-		PreparedStatement pstmt = null;
-		ResultSet rs = null;
-		try
-		{
-			pstmt = DB.prepareStatement(sql, get_TrxName());
-			pstmt.setInt(1, getC_Payment_ID());
-			rs = pstmt.executeQuery();
-			while (rs.next())
-			{
-				int C_BPartner_ID = rs.getInt(1);
-				int C_Invoice_ID = rs.getInt(2);
-				if (C_BPartner_ID == 0 && C_Invoice_ID == 0)
-					continue;
-				boolean isSOTrx = "Y".equals(rs.getString(3));
-				BigDecimal PayAmt = rs.getBigDecimal(4);
-				BigDecimal DiscountAmt = rs.getBigDecimal(5);
-				BigDecimal WriteOffAmt = BigDecimal.ZERO;
-				BigDecimal OpenAmt = rs.getBigDecimal(7);
-				BigDecimal OverUnderAmt = OpenAmt.subtract(PayAmt)
-						.subtract(DiscountAmt).subtract(WriteOffAmt);
-				//
-				if (alloc.get_ID() == 0 && !alloc.save(get_TrxName()))
-				{
-					log.error("Could not create Allocation Hdr");
-					rs.close();
-					pstmt.close();
-					return false;
-				}
-				MAllocationLine aLine = null;
-				if (isSOTrx)
-					aLine = new MAllocationLine(alloc, PayAmt,
-							DiscountAmt, WriteOffAmt, OverUnderAmt);
-				else
-					aLine = new MAllocationLine(alloc, PayAmt.negate(),
-							DiscountAmt.negate(), WriteOffAmt.negate(), OverUnderAmt.negate());
-				aLine.setDocInfo(C_BPartner_ID, 0, C_Invoice_ID);
-				aLine.setC_Payment_ID(getC_Payment_ID());
-				if (!aLine.save(get_TrxName()))
-					log.error("Could not create Allocation Line");
-			}
-		}
-		catch (Exception e)
-		{
-			log.error("allocatePaySelection", e);
-		}
-		finally
-		{
-			DB.close(rs, pstmt);
-			rs = null;
-			pstmt = null;
-		}
-
 		// Should start WF
 		boolean ok = true;
 		if (alloc.get_ID() == 0)
