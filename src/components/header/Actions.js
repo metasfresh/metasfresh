@@ -40,15 +40,21 @@ class Actions extends Component {
             return;
         }
 
-        actionsRequest(
-            entity, windowType, docId, rowId
-        ).then((response) => {
+        actionsRequest({
+            entity,
+            type: windowType,
+            id: docId,
+            selected: rowId
+        }).then((response) => {
             let actions = response.data.actions;
 
             if (requestRowActions) {
-                rowActionsRequest(
-                    windowType, docId, activeTab, activeTabSelected
-                ).then((response) => {
+                rowActionsRequest({
+                    windowId: windowType,
+                    documentId: docId,
+                    tabId: activeTab,
+                    selected: activeTabSelected
+                }).then((response) => {
                     if (response.data && response.data.actions && (
                         response.data.actions.length > 0)
                     ) {

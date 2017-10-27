@@ -212,7 +212,7 @@ export function duplicateRequest(
     );
 }
 
-export function actionsRequest(entity, type, id, selected){
+export function actionsRequest({ entity, type, id, selected }) {
     let query = '';
     for (let item of selected) {
        query+=','+item;
@@ -230,7 +230,7 @@ export function actionsRequest(entity, type, id, selected){
     );
 }
 
-export function rowActionsRequest(windowId, documentId, tabId, selected) {
+export function rowActionsRequest({ windowId, documentId, tabId, selected }) {
     let query = selected.join(',');
 
     return axios.get(
