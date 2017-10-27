@@ -213,20 +213,31 @@ export function duplicateRequest(
 }
 
 export function actionsRequest({ entity, type, id, selected }) {
-    let query = '';
-    for (let item of selected) {
-       query+=','+item;
+    const query = {
+        disabled: true
+    };
+
+    if (selected.length > 0 && entity == 'documentView') {
+        query.selectedIds = selected.join(',');
     }
-    query = query.substring(1);
+
+    let queryString = '';
+    const queryEntries = Object.entries(query);
+
+    if (queryEntries.length > 0) {
+        queryString = '?' + (queryEntries
+            .map(([key, value]) => `${key}=${value}`)
+            .join('&')
+        );
+    }
 
     return axios.get(
         config.API_URL + '/' +
         entity + '/' +
         type + '/' +
         id +
-        '/actions?disabled=true' +
-        (selected.length > 0 && entity=='documentView' ?
-            '&selectedIds='+ query :'')
+        '/actions' +
+        queryString
     );
 }
 
