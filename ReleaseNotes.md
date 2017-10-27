@@ -76,7 +76,7 @@ Here come the actual release notes:
   * [#2732](https://github.com/metasfresh/metasfresh/issues/2732) Window Design Webui : Add description field in sales order line
     * New Field Description added to Sales Orderline Grid View and Advanced edit in WebUI.
   * [#2739](https://github.com/metasfresh/metasfresh/issues/2739) Add context into if exception happens in WorkpackageProcessorTask.processWorkpackage
-    * Internal Housekeeping Feature that improves the analysis of failes Workpackage Processor Tasks.
+    * Internal Housekeeping Feature that improves the analysis of failed Workpackage Processor Tasks.
   * [#2740](https://github.com/metasfresh/metasfresh/issues/2740) Picking slot Rack System flag
     * New Feature that enables the Configration of Picking Slots as Rack System. This enables the possbility to reopen an already closed Handling Unit in Picking Slot or restricting it.
   * [#2750](https://github.com/metasfresh/metasfresh/issues/2750) Flatrate Import: Support tax category
@@ -84,14 +84,14 @@ Here come the actual release notes:
   * [#2751](https://github.com/metasfresh/metasfresh/issues/2571) Report Translations to en_US: menu reports
     * Translation of default Jasper Reports to en_US.
   * [#2752](https://github.com/metasfresh/metasfresh/issues/2752) Inherit C_Taxcategory_ID and IsTaxIncluded from orderline to FT
-    * Functionality allowing the inheritance of Tax relevant infomraiton from Orderline to Flatrate Terms.
-  * [#2755](https://github.com/metasfresh/metasfresh/issues/2755) error on hu changing status from shipped to active
+    * Functionality allowing the inheritance of Tax relevant information from Orderline to Flatrate Terms.
+  * [#2755](https://github.com/metasfresh/metasfresh/issues/2755) Error on hu changing status from shipped to active
     * Fixes an error in Handling Units when transforming HU from shipped back to active status.
   * [#2763](https://github.com/metasfresh/metasfresh/issues/2763) New Window Picking Tray Clearing
     * New Window for the Picking Tray Clearing, allowing the user to maintain content of Picking Trays, do Handling Unit Compression and Preparation for Shipper Transportation.
   * [#2768](https://github.com/metasfresh/metasfresh/issues/2768) Translate window for process "Change Password" into EN
     * Translations added to Parms in Change Password Process.
-  * [#2769](https://github.com/metasfresh/metasfresh/issues/2769) model generator: wrong columns are generated
+  * [#2769](https://github.com/metasfresh/metasfresh/issues/2769) Model generator: wrong columns are generated
     * Internal Housekeeping Improvements in Model Generator. Now creating the correct columns.
   * [#2774](https://github.com/metasfresh/metasfresh/issues/2774) Vendor Invoice Layout and Translations in WebUI
     * Improved Window Vendor Invoice Layout to adapt current Design Guidelines and Translations for en_US added.
@@ -117,7 +117,7 @@ Here come the actual release notes:
 
 ## Fixes
 * metasfresh-app
-  * [#2240](https://github.com/metasfresh/metasfresh/issues/2240) npe on zoom into header aggregation
+  * [#2240](https://github.com/metasfresh/metasfresh/issues/2240) NPE on zoom into header aggregation
     * Bugfix in Zoom To Function when jumping to Header Aggregation.
   * [#2727](https://github.com/metasfresh/metasfresh/issues/2727) Tax is not set properly when creating ICs from flatrate term
     * Fix for the Invoice Candidate generation from Flatrate Terms. Now the Tax is set properly.
@@ -137,7 +137,7 @@ Here come the actual release notes:
     * Fix for the Letter Window. now still visible after choosing Print Preview.
   * [#1239](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1239) Included views are not working in non-modal windows
     * Fixes the Included Views Functionality in WebUI. Now it's also possible to use them in non-modal windows.
-  * [#1248](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1248) included view: wrong selectedIds when calling quickActions
+  * [#1248](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1248) Included view: wrong selectedIds when calling quickActions
     * Fix in Included View. Now retrieving the correct Record/ Row ID's when calling Quick Actions.
   * [#1268](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1268) Sitemap broken
     * Fix for the Sitemap creation.
