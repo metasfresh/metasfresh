@@ -42,7 +42,14 @@ public class CompareQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 	 */
 	public static enum Operator
 	{
-		EQUAL("=", MQuery.Operator.EQUAL), NOT_EQUAL("<>", MQuery.Operator.NOT_EQUAL), LESS("<", MQuery.Operator.LESS), LESS_OR_EQUAL("<=", MQuery.Operator.LESS_EQUAL), GREATER(">", MQuery.Operator.GREATER), GREATER_OR_EQUAL(">=", MQuery.Operator.GREATER_EQUAL), CONTAINS_SUBSTRING("LIKE", MQuery.Operator.LIKE), CONTAINS_SUBSTRING_IGNORECASE("ILIKE", MQuery.Operator.LIKE_I);
+		EQUAL("=", MQuery.Operator.EQUAL), //
+		NOT_EQUAL("<>", MQuery.Operator.NOT_EQUAL), //
+		LESS("<", MQuery.Operator.LESS), //
+		LESS_OR_EQUAL("<=", MQuery.Operator.LESS_EQUAL), //
+		GREATER(">", MQuery.Operator.GREATER), //
+		GREATER_OR_EQUAL(">=", MQuery.Operator.GREATER_EQUAL), //
+		STRING_LIKE("LIKE", MQuery.Operator.LIKE), //
+		STRING_LIKE_IGNORECASE("ILIKE", MQuery.Operator.LIKE_I);
 
 		private final String sql;
 		private final MQuery.Operator mqueryOperator;
@@ -141,7 +148,7 @@ public class CompareQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 		final Object operand2Value = getModelValue(model, operand2);
 		final Object operand2ValuePrepared = operand2Modifier.convertValue(IQueryFilterModifier.COLUMNNAME_Constant, operand2Value, model);
 
-		if (Operator.CONTAINS_SUBSTRING == operator || Operator.CONTAINS_SUBSTRING_IGNORECASE == operator)
+		if (Operator.STRING_LIKE == operator || Operator.STRING_LIKE_IGNORECASE == operator)
 		{
 			if (operand1ValuePrepared instanceof String && operand2ValuePrepared instanceof String)
 			{

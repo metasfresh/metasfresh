@@ -33,17 +33,17 @@ import lombok.NonNull;
  * 
  * @param <T> the type of the class we filter for.
  */
-public class SubstringFilter<T> extends CompareQueryFilter<T>
+public class StringLikeFilter<T> extends CompareQueryFilter<T>
 {
 	/**
 	 * Modified the given parameters for for the substring-SQL
 	 *
 	 */
-	private static class SubstringQueryFilterModifier implements IQueryFilterModifier
+	private static class StringLikeQueryFilterModifier implements IQueryFilterModifier
 	{
 		private final boolean ignoreCase;
 
-		private SubstringQueryFilterModifier(final boolean ignoreCase)
+		private StringLikeQueryFilterModifier(final boolean ignoreCase)
 		{
 			this.ignoreCase = ignoreCase;
 		}
@@ -114,14 +114,14 @@ public class SubstringFilter<T> extends CompareQueryFilter<T>
 	 * @param substring
 	 * @param ignoreCase
 	 */
-	/* package */ SubstringFilter(
+	StringLikeFilter(
 			@NonNull final String columnName,
 			@NonNull final String substring,
 			final boolean ignoreCase)
 	{
 		super(columnName,
-				ignoreCase ? Operator.CONTAINS_SUBSTRING_IGNORECASE : Operator.CONTAINS_SUBSTRING,
+				ignoreCase ? Operator.STRING_LIKE_IGNORECASE : Operator.STRING_LIKE,
 				substring,
-				new SubstringQueryFilterModifier(ignoreCase));
+				new StringLikeQueryFilterModifier(ignoreCase));
 	}
 }

@@ -167,7 +167,7 @@ public class ProductPlanningDAO implements IProductPlanningDAO
 		filters.addEqualsFilter(I_PP_Product_Planning.COLUMNNAME_M_Product_ID, productId);
 
 		final String attributesKey = createAttributeLikeExpression(attributeSetInstanceId);
-		queryBuilder.addSubstringFilter(I_PP_Product_Planning.COLUMN_StorageAttributesKey, attributesKey, false);
+		queryBuilder.addStringLikeFilter(I_PP_Product_Planning.COLUMN_StorageAttributesKey, attributesKey, false);
 
 		//
 		// Only active records

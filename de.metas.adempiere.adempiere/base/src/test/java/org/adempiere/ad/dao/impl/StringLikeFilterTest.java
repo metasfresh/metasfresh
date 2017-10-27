@@ -33,7 +33,7 @@ import lombok.NonNull;
  * #L%
  */
 
-public class SubstringFilterTest
+public class StringLikeFilterTest
 {
 
 	@Before
@@ -46,7 +46,7 @@ public class SubstringFilterTest
 	public void accept_substring()
 	{
 		final I_AD_Column column = createColumn("BLAHblahMySUBStringblah");
-		final SubstringFilter<Object> substringFilter = new SubstringFilter<>(I_AD_Column.COLUMNNAME_Name, "MySubString", true);
+		final StringLikeFilter<Object> substringFilter = new StringLikeFilter<>(I_AD_Column.COLUMNNAME_Name, "MySubString", true);
 
 		final boolean accepted = substringFilter.accept(column);
 
@@ -57,7 +57,7 @@ public class SubstringFilterTest
 	public void accept_like_expression()
 	{
 		final I_AD_Column column = createColumn("BLAHblahMySUBStringblah");
-		final SubstringFilter<Object> substringFilter = new SubstringFilter<>(I_AD_Column.COLUMNNAME_Name, "My%str_ng", true);
+		final StringLikeFilter<Object> substringFilter = new StringLikeFilter<>(I_AD_Column.COLUMNNAME_Name, "My%str_ng", true);
 
 		final boolean accepted = substringFilter.accept(column);
 
@@ -67,7 +67,7 @@ public class SubstringFilterTest
 	@Test
 	public void toSql()
 	{
-		final SubstringFilter<Object> substringFilter = new SubstringFilter<>(I_AD_Column.COLUMNNAME_Name, "My%Str_ng", true);
+		final StringLikeFilter<Object> substringFilter = new StringLikeFilter<>(I_AD_Column.COLUMNNAME_Name, "My%Str_ng", true);
 		
 		final String filterSql = substringFilter.getSql();
 		

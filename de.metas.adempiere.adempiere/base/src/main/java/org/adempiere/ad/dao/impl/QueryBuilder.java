@@ -520,17 +520,17 @@ import com.google.common.collect.ImmutableMap;
 	}
 
 	@Override
-	public IQueryBuilder<T> addSubstringFilter(final String columnname, final String substring, final boolean ignoreCase)
+	public IQueryBuilder<T> addStringLikeFilter(final String columnname, final String substring, final boolean ignoreCase)
 	{
-		filters.addSubstringFilter(columnname, substring, ignoreCase);
+		filters.addStringLikeFilter(columnname, substring, ignoreCase);
 		return this;
 	}
 
 	@Override
-	public IQueryBuilder<T> addSubstringFilter(final ModelColumn<T, ?> column, final String substring, final boolean ignoreCase)
+	public IQueryBuilder<T> addStringLikeFilter(final ModelColumn<T, ?> column, final String substring, final boolean ignoreCase)
 	{
 		final String columnName = column.getColumnName();
-		return addSubstringFilter(columnName, substring, ignoreCase);
+		return addStringLikeFilter(columnName, substring, ignoreCase);
 	}
 
 	@Override
