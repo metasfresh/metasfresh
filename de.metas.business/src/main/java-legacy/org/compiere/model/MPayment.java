@@ -252,33 +252,6 @@ public final class MPayment extends X_C_Payment
 				MPaymentValidate.getCreditCardExpYY(creditCardExp));
 	}   // setCreditCard
 
-	/**
-	 * Set ACH BankAccount Info
-	 *
-	 * @param preparedPayment
-	 *
-	 * @return true if valid
-	 */
-	public boolean setBankACH(MPaySelectionCheck preparedPayment)
-	{
-		// Our Bank
-		setC_BP_BankAccount_ID(preparedPayment.getParent().getC_BP_BankAccount_ID());
-		// Target Bank
-		int C_BP_BankAccount_ID = preparedPayment.getC_BP_BankAccount_ID();
-		MBPBankAccount ba = new MBPBankAccount(preparedPayment.getCtx(), C_BP_BankAccount_ID, null);
-		setRoutingNo(ba.getRoutingNo());
-		setAccountNo(ba.getAccountNo());
-		setIsReceipt(X_C_Order.PAYMENTRULE_DirectDebit.equals	// AR only
-		(preparedPayment.getPaymentRule()));
-		if (MPaySelectionCheck.PAYMENTRULE_DirectDebit.equals(preparedPayment.getPaymentRule()))
-			setTenderType(MPayment.TENDERTYPE_DirectDebit);
-		else if (MPaySelectionCheck.PAYMENTRULE_DirectDeposit.equals(preparedPayment.getPaymentRule()))
-			setTenderType(MPayment.TENDERTYPE_DirectDeposit);
-		//
-		int check = MPaymentValidate.validateRoutingNo(getRoutingNo()).length()
-				+ MPaymentValidate.validateAccountNo(getAccountNo()).length();
-		return check == 0;
-	}	// setBankACH
 
 	/**
 	 * Set ACH BankAccount Info
@@ -1663,12 +1636,6 @@ public final class MPayment extends X_C_Payment
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_PREPARE);
 		if (m_processMsg != null)
 			return IDocument.STATUS_Invalid;
-
-		if (!MPaySelectionCheck.deleteGeneratedDraft(getCtx(), getC_Payment_ID(), get_TrxName()))
-		{
-			m_processMsg = "Could not delete draft generated payment selection lines";
-			return IDocument.STATUS_Invalid;
-		}
 
 		// Std Period open?
 		if (!MPeriod.isOpen(getCtx(), getDateAcct(),

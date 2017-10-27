@@ -310,28 +310,6 @@ public final class ReportCtl
 		}
 	}
 
-	/**
-	 * @return C_PaySelectionCheck_ID
-	 */
-	private static final int prepareCheckPrint(final int C_Payment_ID)
-	{
-		// FIXME: HARDCODED: this code shall go in process implementation or deleted because it's not used!
-		throw new UnsupportedOperationException();
-//
-//		// afalcone - [ 1871567 ] Wrong value in Payment document
-//		final Properties ctx = Env.getCtx();
-//		MPaySelectionCheck.deleteGeneratedDraft(ctx, C_Payment_ID, ITrx.TRXNAME_None);
-//		//
-//
-//		MPaySelectionCheck psc = MPaySelectionCheck.getOfPayment(ctx, C_Payment_ID, ITrx.TRXNAME_None);
-//		if (psc == null)
-//		{
-//			psc = MPaySelectionCheck.createForPayment(ctx, C_Payment_ID, ITrx.TRXNAME_None);
-//		}
-//
-//		return psc == null ? -1 : psc.getC_PaySelectionCheck_ID();
-	}
-
 	private static void createOutput(final ReportEngine re, final boolean printPreview, final String printerName)
 	{
 		if (printPreview)
