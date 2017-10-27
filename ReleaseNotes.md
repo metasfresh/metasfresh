@@ -56,21 +56,21 @@ Here come the actual release notes:
   * [#2311](https://github.com/metasfresh/metasfresh/issues/2311) Customer Invoices and Invoice Candidates adjustments
     * Improved Translations for en_US, de_DE and Layout in Invoice Candidates Window and Customer Invoice.
   * [#2379](https://github.com/metasfresh/metasfresh/issues/2379) Procurement Candidates generate Purchase Order
-    * New Action in Procurement Candidates window of WebUI, allowing to create Purchase Orders from selected Procurement Candidates.
+    * New Action in Procurement Candidates Window of WebUI, allowing to create Purchase Orders from selected Procurement Candidates.
   * [#2564](https://github.com/metasfresh/metasfresh/issues/2564) Concept for entering multiple discounts for order and subscription  
-    * New Feature that allows to add Discount Grouping and Discount rows to Sales Order Lines. These Lines allow the createtion of discounts based on LineNetAmt Aggregations.
+    * New Feature that allows to add Discount Grouping and Discount Rows to Sales Order Lines. These Lines allow the createtion of discounts based on LineNetAmt Aggregations.
   * [#2653](https://github.com/metasfresh/metasfresh/issues/2653) Window Design Webui: Improve Businesspartner Dist-Orgs window
-    * Improved Translations for en_US. New Fielsd added for Subscription progress Subtab.
+    * Improved Translations for en_US. New Fields added for Subscription progress Subtab.
   * [#2725](https://github.com/metasfresh/metasfresh/issues/2725) Webui Window Design: Improvements in window ESR Payment Import
-    * New Field Translations added to ESR Payment Import window. Now haveing a completed Translations for Window, Fields and Actions for en_US Language.
+    * New Field Translations added to ESR Payment Import window. Now having a completed Translation for Window, Fields and Actions for en_US Language.
   * [#2726](https://github.com/metasfresh/metasfresh/issues/2726) Set correct identifiers in the table M_ShipmentSchedule v2
     * Setting a readable and searchable Identifier for Shipment Schedule Records.
   * [#2728](https://github.com/metasfresh/metasfresh/issues/2728) Webui Design Window: Add Translations to Business Partner
     * Improved Translation for en_US Language/ Locale in Window, Fields and Actions.
   * [#2729](https://github.com/metasfresh/metasfresh/issues/2729) Window Design Webui: Add missing fields to window Tourversion
-    * New Fields added to Tourversion widnow in WebUI. Translations for en_US improved.
+    * New Fields added to Tourversion window in WebUI. Translations for en_US improved.
   * [#2730](https://github.com/metasfresh/metasfresh/issues/2730) Window Design Webui: Improvements in window Purchase order
-    * Translation improved in Purchase Order window  for Language en_US.
+    * Translation improved in Purchase Order window for Language en_US.
   * [#2731](https://github.com/metasfresh/metasfresh/issues/2731) Window Design Webui: Improve window Shipment Restrictions
     * Improved Translation of en_US Language in Shipment Restrictions Window and Actions.
   * [#2732](https://github.com/metasfresh/metasfresh/issues/2732) Window Design Webui : Add description field in sales order line
@@ -102,7 +102,7 @@ Here come the actual release notes:
 
 * metasfresh-webui-api
   * [#632](https://github.com/metasfresh/metasfresh-webui-api/issues/632) HU-Trace: show all connected records
-    * Improvement of Handling Unit Trace Functionality, now showing all connected record for a given Filter Criteria.
+    * Improvement of Handling Unit Trace Functionality, now showing all connected records for a given Filter Criteria.
   * [#637](https://github.com/metasfresh/metasfresh-webui-api/issues/637) Move Picking Tray Clearing Functionality to new window
     * New Window for the Picking Tray Clearing Functionality.
 
@@ -110,7 +110,7 @@ Here come the actual release notes:
   * [#1092](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1092) Prepare Update to React 16
     * Preparation Work for the Update to React 16.
   * [#1232](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1232) Labels widget: keyboard support
-    * Adding Support for the new Labels wiget Lookup.
+    * Adding Support for the new Labels widget Lookup.
   * [#1249](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1249) Included view: blurWhenOpen support
     * New Functionality allowing to switch the blur effect on included views in Main Grid View.
 
