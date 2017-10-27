@@ -138,12 +138,12 @@ public class ContractChangeBL implements IContractChangeBL
 				currentTerm.setEndDate(new Timestamp(changeDate.getTime()));
 			}
 			
-			if (Check.isEmpty(terminationReason, true))
+			if (!Check.isEmpty(terminationReason, true))
 			{
 				currentTerm.setTerminationReason(terminationReason);
 			}
 			
-			if (Check.isEmpty(terminationMemo, true))
+			if (!Check.isEmpty(terminationMemo, true))
 			{
 				currentTerm.setTerminationMemo(terminationMemo);
 			}
