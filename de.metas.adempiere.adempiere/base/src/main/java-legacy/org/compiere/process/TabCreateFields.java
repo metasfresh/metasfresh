@@ -21,8 +21,6 @@ import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.impl.InSubQueryFilter;
-import org.adempiere.ad.dao.impl.NotQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
@@ -111,7 +109,7 @@ public class TabCreateFields extends JavaProcess
 				.addEqualsFilter(I_AD_Column.COLUMNNAME_AD_Table_ID, adTab.getAD_Table_ID())
 				//
 				// Columns that were not already added to Tab
-				.filter(new NotQueryFilter<I_AD_Column>(new InSubQueryFilter<I_AD_Column>(I_AD_Column.COLUMN_AD_Column_ID, I_AD_Field.COLUMNNAME_AD_Column_ID, queryTabFields)));
+				.addNotInSubQueryFilter(I_AD_Column.COLUMN_AD_Column_ID, I_AD_Field.COLUMN_AD_Column_ID, queryTabFields);
 		
 		//
 		// Filter by AD_Column's EntityType (if any)
