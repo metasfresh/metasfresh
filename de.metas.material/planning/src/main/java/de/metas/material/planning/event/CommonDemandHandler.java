@@ -26,7 +26,7 @@ import com.google.common.annotations.VisibleForTesting;
 
 import de.metas.material.event.DemandHandlerAuditEvent;
 import de.metas.material.event.EventDescr;
-import de.metas.material.event.MaterialDemandDescr;
+import de.metas.material.event.MaterialDemandDescriptor;
 import de.metas.material.event.MaterialDescriptor;
 import de.metas.material.event.MaterialEventService;
 import de.metas.material.event.ddorder.DDOrder;
@@ -93,7 +93,7 @@ public class CommonDemandHandler
 	 * 
 	 * @param materialDemandEvent
 	 */
-	public void handleMaterialDemandEvent(@NonNull final MaterialDemandDescr materialDemandDescr)
+	public void handleMaterialDemandEvent(@NonNull final MaterialDemandDescriptor materialDemandDescr)
 	{
 		final PlainStringLoggable plainStringLoggable = new PlainStringLoggable();
 		try (final IAutoCloseable closable = Loggables.temporarySetLoggable(plainStringLoggable);)
@@ -115,9 +115,8 @@ public class CommonDemandHandler
 			materialEventService.fireEvent(demandHandlerAuditEvent);
 		}
 	}
-	
-	
-	private void handleMaterialDemandEvent0(@NonNull final MaterialDemandDescr materialDemandDescr)
+
+	private void handleMaterialDemandEvent0(@NonNull final MaterialDemandDescriptor materialDemandDescr)
 	{
 		final IMutableMRPContext mrpContext = mkMRPContext(materialDemandDescr);
 
@@ -162,7 +161,7 @@ public class CommonDemandHandler
 		}
 	}
 
-	private IMutableMRPContext mkMRPContext(@NonNull final MaterialDemandDescr materialDemandEvent)
+	private IMutableMRPContext mkMRPContext(@NonNull final MaterialDemandDescriptor materialDemandEvent)
 	{
 		final EventDescr eventDescr = materialDemandEvent.getEventDescr();
 
@@ -172,27 +171,29 @@ public class CommonDemandHandler
 		final String trxName = ITrx.TRXNAME_ThreadInherited;
 
 		final I_AD_Org org = load(eventDescr.getOrgId(), I_AD_Org.class);
-		final I_M_Warehouse warehouse = InterfaceWrapperHelper.create(ctx, materialDescr.getWarehouseId(), I_M_Warehouse.class, trxName);
-		final I_M_Product product = InterfaceWrapperHelper.create(ctx, materialDescr.getProductId(), I_M_Product.class, trxName);
+		final I_M_Warehouse warehouse = load(materialDescr.getWarehouseId(), I_M_Warehouse.class);
 
 		final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
 
 		final I_S_Resource plant = productPlanningDAO.findPlant(ctx,
 				eventDescr.getOrgId(),
 				warehouse,
-				materialDescr.getProductId());
+				materialDescr.getProductId(),
+				materialDescr.getAttributeSetInstanceId());
 
 		final I_PP_Product_Planning productPlanning = productPlanningDAO.find(ctx,
 				eventDescr.getOrgId(),
 				materialDescr.getWarehouseId(),
 				plant.getS_Resource_ID(),
 				materialDescr.getProductId(),
-				trxName);
+				materialDescr.getAttributeSetInstanceId());
 
 		final IMRPContextFactory mrpContextFactory = Services.get(IMRPContextFactory.class);
 		final IMutableMRPContext mrpContext = mrpContextFactory.createInitialMRPContext();
 
+		final I_M_Product product = load(materialDescr.getProductId(), I_M_Product.class);
 		mrpContext.setM_Product(product);
+		mrpContext.setM_AttributeSetInstance_ID(materialDescr.getAttributeSetInstanceId());
 		mrpContext.setM_Warehouse(warehouse);
 		mrpContext.setDate(materialDescr.getDate());
 		mrpContext.setCtx(ctx);
@@ -208,7 +209,7 @@ public class CommonDemandHandler
 	}
 
 	private IMaterialRequest mkRequest(
-			@NonNull final MaterialDemandDescr materialDemandEvent,
+			@NonNull final MaterialDemandDescriptor materialDemandEvent,
 			@NonNull final IMaterialPlanningContext mrpContext)
 	{
 		return MaterialRequest.builder()

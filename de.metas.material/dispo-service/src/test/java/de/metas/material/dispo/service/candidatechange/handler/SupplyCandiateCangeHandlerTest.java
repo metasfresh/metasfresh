@@ -1,5 +1,7 @@
 package de.metas.material.dispo.service.candidatechange.handler;
 
+import static de.metas.material.event.EventTestHelper.WAREHOUSE_ID;
+import static de.metas.material.event.EventTestHelper.createProductDescriptor;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -17,8 +19,6 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_AD_Org;
-import org.compiere.model.I_M_Product;
-import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.TimeUtil;
 import org.junit.Before;
 import org.junit.Rule;
@@ -28,13 +28,14 @@ import org.junit.rules.TestWatcher;
 import de.metas.material.dispo.CandidateRepository;
 import de.metas.material.dispo.CandidateSpecification.SubType;
 import de.metas.material.dispo.CandidateSpecification.Type;
-import de.metas.material.dispo.candidate.Candidate;
 import de.metas.material.dispo.DispoTestUtils;
+import de.metas.material.dispo.candidate.Candidate;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.X_MD_Candidate;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
 import de.metas.material.event.MaterialDescriptor;
 import de.metas.material.event.MaterialEventService;
+import de.metas.material.event.ProductDescriptorFactory;
 import mockit.Mocked;
 
 /*
@@ -71,10 +72,6 @@ public class SupplyCandiateCangeHandlerTest
 
 	private I_AD_Org org;
 
-	private I_M_Product product;
-
-	private I_M_Warehouse warehouse;
-
 	@Mocked
 	private MaterialEventService materialEventService;
 
@@ -90,17 +87,11 @@ public class SupplyCandiateCangeHandlerTest
 		org = newInstance(I_AD_Org.class);
 		save(org);
 
-		product = newInstance(I_M_Product.class);
-		save(product);
-
-		warehouse = newInstance(I_M_Warehouse.class);
-		save(warehouse);
-
-		final CandidateRepository candidateRepository = new CandidateRepository();
+		final CandidateRepository candidateRepository = new CandidateRepository(ProductDescriptorFactory.TESTING_INSTANCE);
 
 		stockCandidateService = new StockCandidateService(candidateRepository);
 
-		supplyCandiateCangeHandler = new SupplyCandiateHandler(candidateRepository,materialEventService,stockCandidateService);
+		supplyCandiateCangeHandler = new SupplyCandiateHandler(candidateRepository, materialEventService, stockCandidateService);
 	}
 
 	@Test
@@ -110,12 +101,12 @@ public class SupplyCandiateCangeHandlerTest
 		final Date t = t1;
 
 		final MaterialDescriptor materialDescr = MaterialDescriptor.builder()
-				.productId(product.getM_Product_ID())
-				.warehouseId(warehouse.getM_Warehouse_ID())
+				.productDescriptor(createProductDescriptor())
+				.warehouseId(WAREHOUSE_ID)
 				.quantity(qty)
 				.date(t)
 				.build();
-		
+
 		final Candidate candidate = Candidate.builder()
 				.type(Type.SUPPLY)
 				.clientId(org.getAD_Client_ID())
@@ -142,12 +133,12 @@ public class SupplyCandiateCangeHandlerTest
 		final Date t = t1;
 
 		final MaterialDescriptor materialDescr = MaterialDescriptor.builder()
-				.productId(product.getM_Product_ID())
-				.warehouseId(warehouse.getM_Warehouse_ID())
+				.productDescriptor(createProductDescriptor())
+				.warehouseId(WAREHOUSE_ID)
 				.quantity(qty)
 				.date(t)
 				.build();
-		
+
 		final Candidate candidatee = Candidate.builder()
 				.type(Type.SUPPLY)
 				.clientId(org.getAD_Client_ID())
@@ -182,12 +173,12 @@ public class SupplyCandiateCangeHandlerTest
 		final Date t = t1;
 
 		final MaterialDescriptor materialDescr = MaterialDescriptor.builder()
-				.productId(product.getM_Product_ID())
-				.warehouseId(warehouse.getM_Warehouse_ID())
+				.productDescriptor(createProductDescriptor())
+				.warehouseId(WAREHOUSE_ID)
 				.quantity(qty)
 				.date(t)
 				.build();
-		
+
 		final Candidate candidatee = Candidate.builder()
 				.type(Type.SUPPLY)
 				.clientId(org.getAD_Client_ID())
@@ -224,12 +215,12 @@ public class SupplyCandiateCangeHandlerTest
 		final BigDecimal olderStockQty = new BigDecimal("11");
 
 		final MaterialDescriptor olderMaterialDescr = MaterialDescriptor.builder()
-				.productId(product.getM_Product_ID())
-				.warehouseId(warehouse.getM_Warehouse_ID())
+				.productDescriptor(createProductDescriptor())
+				.warehouseId(WAREHOUSE_ID)
 				.quantity(olderStockQty)
 				.date(t1)
 				.build();
-		
+
 		final Candidate olderStockCandidate = Candidate.builder()
 				.type(Type.STOCK)
 				.clientId(org.getAD_Client_ID())
@@ -241,12 +232,12 @@ public class SupplyCandiateCangeHandlerTest
 		final BigDecimal supplyQty = new BigDecimal("23");
 
 		final MaterialDescriptor materialDescr = MaterialDescriptor.builder()
-				.productId(product.getM_Product_ID())
-				.warehouseId(warehouse.getM_Warehouse_ID())
+				.productDescriptor(createProductDescriptor())
+				.warehouseId(WAREHOUSE_ID)
 				.quantity(supplyQty)
 				.date(t2)
 				.build();
-		
+
 		final Candidate candidate = Candidate.builder()
 				.type(Type.SUPPLY)
 				.clientId(org.getAD_Client_ID())
@@ -288,15 +279,15 @@ public class SupplyCandiateCangeHandlerTest
 		assertThat(stockCandidate.getQty()).isEqualByComparingTo("10");
 		assertThat(unrelatedTransactionCandidate.getMD_Candidate_Parent_ID()).isEqualTo(stockCandidate.getMD_Candidate_ID());
 	}
-	
+
 	private Candidate createCandidateWithType(final Type type)
 	{
 		final Candidate candidate = Candidate.builder()
 				.type(type)
 				.materialDescr(MaterialDescriptor.builder()
-						.productId(20)
+						.productDescriptor(createProductDescriptor())
 						.date(SystemTime.asTimestamp())
-						.warehouseId(30)
+						.warehouseId(WAREHOUSE_ID)
 						.quantity(BigDecimal.TEN)
 						.build())
 				.build();

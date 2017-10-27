@@ -15,7 +15,7 @@ public class X_MD_Candidate extends org.compiere.model.PO implements I_MD_Candid
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 846841184L;
+	private static final long serialVersionUID = -13470090L;
 
     /** Standard Constructor */
     public X_MD_Candidate (Properties ctx, int MD_Candidate_ID, String trxName)
@@ -31,6 +31,7 @@ public class X_MD_Candidate extends org.compiere.model.PO implements I_MD_Candid
 			setQty (BigDecimal.ZERO);
 			setQty_Planner (BigDecimal.ZERO);
 			setSeqNo (0);
+			setStorageAttributesKey (null); // EMPTY
         } */
     }
 
@@ -489,5 +490,21 @@ public class X_MD_Candidate extends org.compiere.model.PO implements I_MD_Candid
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set StorageAttributesKey (technical).
+		@param StorageAttributesKey StorageAttributesKey (technical)	  */
+	@Override
+	public void setStorageAttributesKey (java.lang.String StorageAttributesKey)
+	{
+		set_Value (COLUMNNAME_StorageAttributesKey, StorageAttributesKey);
+	}
+
+	/** Get StorageAttributesKey (technical).
+		@return StorageAttributesKey (technical)	  */
+	@Override
+	public java.lang.String getStorageAttributesKey () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_StorageAttributesKey);
 	}
 }

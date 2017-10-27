@@ -14,6 +14,8 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
@@ -30,19 +32,21 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.material.dispo.CandidateSpecification.SubType;
 import de.metas.material.dispo.CandidateSpecification.Type;
-import de.metas.material.dispo.CandidatesQuery.DateOperator;
 import de.metas.material.dispo.candidate.Candidate;
+import de.metas.material.dispo.candidate.Candidate.CandidateBuilder;
 import de.metas.material.dispo.candidate.DemandDetail;
 import de.metas.material.dispo.candidate.DistributionDetail;
 import de.metas.material.dispo.candidate.ProductionDetail;
 import de.metas.material.dispo.candidate.TransactionDetail;
-import de.metas.material.dispo.candidate.Candidate.CandidateBuilder;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.I_MD_Candidate_Demand_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_Dist_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_Prod_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_Transaction_Detail;
 import de.metas.material.event.MaterialDescriptor;
+import de.metas.material.event.MaterialDescriptor.DateOperator;
+import de.metas.material.event.ProductDescriptor;
+import de.metas.material.event.ProductDescriptorFactory;
 import lombok.NonNull;
 
 /*
@@ -69,6 +73,14 @@ import lombok.NonNull;
 @Service
 public class CandidateRepository
 {
+	private final ProductDescriptorFactory productDescriptorFactory;
+
+	// TODO split out candidate-creation stuff and candidate MD_candidate creation stuff etc
+	public CandidateRepository(@NonNull final ProductDescriptorFactory productDescriptorFactory)
+	{
+		this.productDescriptorFactory = productDescriptorFactory;
+	}
+
 	/**
 	 * Stores the given {@code candidate}.
 	 * If there is already an existing candidate in the store, it is loaded, its fields are updated and the result is saved.<br>
@@ -153,47 +165,61 @@ public class CandidateRepository
 				"The given MD_Candidate is not new and its ID is different from the ID of the given Candidate; MD_Candidate=%s; candidate=%s",
 				candidateRecord, candidate);
 
-		final MaterialDescriptor materialDescr = candidate.getMaterialDescr();
-
 		final I_MD_Candidate candidateRecordToUse = candidateRecord == null ? newInstance(I_MD_Candidate.class) : candidateRecord;
-		candidateRecordToUse.setAD_Org_ID(candidate.getOrgId());
-		candidateRecordToUse.setMD_Candidate_Type(candidate.getType().toString());
-		candidateRecordToUse.setM_Warehouse_ID(materialDescr.getWarehouseId());
-		candidateRecordToUse.setM_Product_ID(materialDescr.getProductId());
-		candidateRecordToUse.setQty(candidate.getQuantity());
-		candidateRecordToUse.setDateProjected(new Timestamp(materialDescr.getDate().getTime()));
+
+		updateCandidateRecordFromCandidate(candidateRecordToUse, candidate, preserveExistingSeqNo);
+
+		return candidateRecordToUse;
+	}
+
+	@VisibleForTesting
+	void updateCandidateRecordFromCandidate(
+			@NonNull final I_MD_Candidate candidateRecord,
+			@NonNull final Candidate candidate,
+			final boolean preserveExistingSeqNo)
+	{
+		final MaterialDescriptor materialDescriptor = candidate.getMaterialDescr();
+
+		candidateRecord.setAD_Org_ID(candidate.getOrgId());
+		candidateRecord.setMD_Candidate_Type(candidate.getType().toString());
+		candidateRecord.setM_Warehouse_ID(materialDescriptor.getWarehouseId());
+
+		candidateRecord.setM_Product_ID(materialDescriptor.getProductId());
+		candidateRecord.setM_AttributeSetInstance_ID(materialDescriptor.getAttributeSetInstanceId());
+		candidateRecord.setStorageAttributesKey(materialDescriptor.getStorageAttributesKey());
+
+		candidateRecord.setQty(candidate.getQuantity());
+		candidateRecord.setDateProjected(new Timestamp(materialDescriptor.getDate().getTime()));
 
 		if (candidate.getSubType() != null)
 		{
-			candidateRecordToUse.setMD_Candidate_SubType(candidate.getSubType().toString());
+			candidateRecord.setMD_Candidate_SubType(candidate.getSubType().toString());
 		}
 
 		if (candidate.getParentId() > 0)
 		{
-			candidateRecordToUse.setMD_Candidate_Parent_ID(candidate.getParentId());
+			candidateRecord.setMD_Candidate_Parent_ID(candidate.getParentId());
 		}
 
 		// if the candidate has a SeqNo to sync and
 		// if candidateRecordToUse does not yet have one, or if the existing seqNo is not protected by 'preserveExistingSeqNo', then (over)write it.
 		if (candidate.getSeqNo() > 0)
 		{
-			if (candidateRecordToUse.getSeqNo() <= 0 || !preserveExistingSeqNo)
+			if (candidateRecord.getSeqNo() <= 0 || !preserveExistingSeqNo)
 			{
-				candidateRecordToUse.setSeqNo(candidate.getSeqNo());
+				candidateRecord.setSeqNo(candidate.getSeqNo());
 			}
 		}
 
 		if (candidate.getGroupId() > 0)
 		{
-			candidateRecordToUse.setMD_Candidate_GroupId(candidate.getGroupId());
+			candidateRecord.setMD_Candidate_GroupId(candidate.getGroupId());
 		}
 
 		if (candidate.getStatus() != null)
 		{
-			candidateRecordToUse.setMD_Candidate_Status(candidate.getStatus().toString());
+			candidateRecord.setMD_Candidate_Status(candidate.getStatus().toString());
 		}
-
-		return candidateRecordToUse;
 	}
 
 	public void setFallBackSeqNoAndGroupIdIfNeeded(@NonNull final I_MD_Candidate synchedRecord)
@@ -635,9 +661,17 @@ public class CandidateRepository
 		final String md_candidate_type = Preconditions.checkNotNull(candidateRecord.getMD_Candidate_Type(),
 				"Given parameter candidateRecord needs to have a not-null MD_Candidate_Type; candidateRecord=%s",
 				candidateRecord);
+		final String storageAttributesKey = Preconditions.checkNotNull(candidateRecord.getStorageAttributesKey(),
+				"Given parameter storageAttributesKey needs to have a not-null StorageAttributesKey; candidateRecord=%s",
+				candidateRecord);
+
+		final ProductDescriptor productDescriptor = productDescriptorFactory.forProductAndAttributes(
+				candidateRecord.getM_Product_ID(),
+				storageAttributesKey,
+				candidateRecord.getM_AttributeSetInstance_ID());
 
 		final MaterialDescriptor materialDescr = MaterialDescriptor.builderForCandidateOrQuery()
-				.productId(candidateRecord.getM_Product_ID())
+				.productDescriptor(productDescriptor)
 				.quantity(candidateRecord.getQty())
 				.warehouseId(candidateRecord.getM_Warehouse_ID())
 				// make sure to add a Date and not a Timestamp to avoid confusing Candidate's equals() and hashCode() methods
@@ -727,11 +761,6 @@ public class CandidateRepository
 		return result.build();
 	}
 
-	/**
-	 *
-	 * @param query
-	 * @return the "oldest" stock candidate that matches the given {@code segment}.
-	 */
 	public Candidate retrieveLatestMatchOrNull(@NonNull final CandidatesQuery query)
 	{
 		final I_MD_Candidate candidateRecordOrNull = rerieveLatestMatchRecord(query);
@@ -802,8 +831,6 @@ public class CandidateRepository
 		final IQueryBuilder<I_MD_Candidate> builder = queryBL.createQueryBuilder(I_MD_Candidate.class)
 				.addOnlyActiveRecordsFilter();
 
-		configureBuilderDateFilters(builder, query);
-
 		if (query.getType() != null)
 		{
 			builder.addEqualsFilter(I_MD_Candidate.COLUMN_MD_Candidate_Type, query.getType().toString());
@@ -814,33 +841,20 @@ public class CandidateRepository
 			builder.addEqualsFilter(I_MD_Candidate.COLUMN_MD_Candidate_ID, query.getId());
 		}
 
-		if (query.getProductId() > 0)
-		{
-			builder.addEqualsFilter(I_MD_Candidate.COLUMN_M_Product_ID, query.getProductId());
-		}
+		addMaterialDescriptorToQueryBuilderIfNotNull(query.getMaterialDescr(), builder);
 
-		if (query.getWarehouseId() > 0)
-		{
-			builder.addEqualsFilter(I_MD_Candidate.COLUMN_M_Warehouse_ID, query.getWarehouseId());
-		}
-
-		if (query.getParentProductId() > 0 || query.getParentWarehouseId() > 0)
+		if (query.hasParentMaterialDescriptor())
 		{
 			final IQueryBuilder<I_MD_Candidate> parentBuilder = queryBL.createQueryBuilder(I_MD_Candidate.class)
 					.addOnlyActiveRecordsFilter();
 
-			if (query.getParentProductId() > 0)
-			{
-				parentBuilder.addEqualsFilter(I_MD_Candidate.COLUMN_M_Product_ID, query.getParentProductId());
-			}
+			final boolean atLeastOneFilterAdded = addMaterialDescriptorToQueryBuilderIfNotNull(query.getParentMaterialDescriptor(), parentBuilder);
 
-			if (query.getParentWarehouseId() > 0)
+			if (atLeastOneFilterAdded)
 			{
-				parentBuilder.addEqualsFilter(I_MD_Candidate.COLUMN_M_Warehouse_ID, query.getParentWarehouseId());
+				// restrict our set of matches to those records that reference a parent record which have the give product and/or warehouse.
+				builder.addInSubQueryFilter(I_MD_Candidate.COLUMN_MD_Candidate_Parent_ID, I_MD_Candidate.COLUMN_MD_Candidate_ID, parentBuilder.create());
 			}
-
-			// restrict our set of matches to those records that reference a parent record which have the give product and/or warehouse.
-			builder.addInSubQueryFilter(I_MD_Candidate.COLUMN_MD_Candidate_Parent_ID, I_MD_Candidate.COLUMN_MD_Candidate_ID, parentBuilder.create());
 		}
 
 		addDemandDetailToBuilder(query, builder);
@@ -854,34 +868,68 @@ public class CandidateRepository
 		return builder;
 	}
 
-	private void configureBuilderDateFilters(
-			@NonNull final IQueryBuilder<I_MD_Candidate> builder,
-			@NonNull final CandidatesQuery query)
+	private boolean addMaterialDescriptorToQueryBuilderIfNotNull(
+			@Nullable final MaterialDescriptor materialDescriptor,
+			@NonNull final IQueryBuilder<I_MD_Candidate> builder)
 	{
-		if (query.getDate() == null)
+		boolean atLeastOneFilterAdded = false;
+
+		if (materialDescriptor == null)
 		{
-			return;
+			return atLeastOneFilterAdded;
 		}
-		final DateOperator dateOperator = Preconditions.checkNotNull(query.getDateOperator(),
-				"As the given parameter query spefifies a date, it also needs to have a not-null dateOperator; query=%s", query);
+
+		if (materialDescriptor.getWarehouseId() > 0)
+		{
+			builder.addEqualsFilter(I_MD_Candidate.COLUMN_M_Warehouse_ID, materialDescriptor.getWarehouseId());
+			atLeastOneFilterAdded = true;
+		}
+		if (materialDescriptor.getProductId() > 0)
+		{
+			builder.addEqualsFilter(I_MD_Candidate.COLUMN_M_Product_ID, materialDescriptor.getProductId());
+			atLeastOneFilterAdded = true;
+		}
+		if (!Objects.equals(materialDescriptor.getStorageAttributesKey(), ProductDescriptor.STORAGE_ATTRIBUTES_KEY_EMPTY))
+		{
+			// TODO test how the "like" expression is created
+			builder.addEqualsFilter(I_MD_Candidate.COLUMNNAME_StorageAttributesKey, materialDescriptor.getStorageAttributesKey());
+			atLeastOneFilterAdded = true;
+		}
+
+		atLeastOneFilterAdded = atLeastOneFilterAdded || configureBuilderDateFilters(materialDescriptor, builder);
+
+		return atLeastOneFilterAdded;
+	}
+
+	private boolean configureBuilderDateFilters(
+			@NonNull final MaterialDescriptor materialDescriptor,
+			@NonNull final IQueryBuilder<I_MD_Candidate> builder)
+	{
+		if (materialDescriptor.getDate() == null)
+		{
+			return false;
+		}
+		final DateOperator dateOperator = Preconditions.checkNotNull(materialDescriptor.getDateOperator(),
+				"As the given parameter query spefifies a date, it also needs to have a not-null dateOperator; query=%s", materialDescriptor);
 		switch (dateOperator)
 		{
 			case UNTIL:
-				builder.addCompareFilter(I_MD_Candidate.COLUMN_DateProjected, Operator.LESS_OR_EQUAL, query.getDate());
+				builder.addCompareFilter(I_MD_Candidate.COLUMN_DateProjected, Operator.LESS_OR_EQUAL, materialDescriptor.getDate());
 				break;
 			case FROM:
-				builder.addCompareFilter(I_MD_Candidate.COLUMN_DateProjected, Operator.GREATER_OR_EQUAL, query.getDate());
+				builder.addCompareFilter(I_MD_Candidate.COLUMN_DateProjected, Operator.GREATER_OR_EQUAL, materialDescriptor.getDate());
 				break;
 			case AFTER:
-				builder.addCompareFilter(I_MD_Candidate.COLUMN_DateProjected, Operator.GREATER, query.getDate());
+				builder.addCompareFilter(I_MD_Candidate.COLUMN_DateProjected, Operator.GREATER, materialDescriptor.getDate());
 				break;
 			case AT:
-				builder.addEqualsFilter(I_MD_Candidate.COLUMN_DateProjected, query.getDate());
+				builder.addEqualsFilter(I_MD_Candidate.COLUMN_DateProjected, materialDescriptor.getDate());
 				break;
 			default:
-				Check.errorIf(true, "segment has a unexpected dateOperator {}; segment={}", query.getDateOperator(), query);
+				Check.errorIf(true, "segment has a unexpected dateOperator {}; segment={}", materialDescriptor.getDateOperator(), materialDescriptor);
 				break;
 		}
+		return true;
 	}
 
 	/**

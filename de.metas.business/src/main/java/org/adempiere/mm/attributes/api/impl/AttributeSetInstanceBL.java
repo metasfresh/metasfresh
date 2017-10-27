@@ -1,5 +1,11 @@
 package org.adempiere.mm.attributes.api.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -13,21 +19,24 @@ package org.adempiere.mm.attributes.api.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
 import java.text.DateFormat;
+import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAwareFactoryService;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
@@ -40,9 +49,13 @@ import org.compiere.model.I_M_AttributeSet;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_AttributeValue;
 import org.compiere.model.I_M_Product;
+import org.compiere.model.X_M_Attribute;
 import org.compiere.util.DisplayType;
 
+import com.google.common.collect.ImmutableList;
+
 import de.metas.product.IProductBL;
+import lombok.NonNull;
 
 public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 {
@@ -72,7 +85,7 @@ public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 		I_M_AttributeSet as = asi.getM_AttributeSet();
 		if (as == null && asi.getM_AttributeSet_ID() == AttributeConstants.M_AttributeSet_ID_None)
 		{
-			// FIXME: this is a workaround because our persistance engine returns NULL in case
+			// FIXME: this is a workaround because our persistence engine returns NULL in case
 			// the ID=0, even if is existing in database
 			// Also see task http://dewiki908/mediawiki/index.php/08765_Introduce_AD_Table.IDRangeStart_%28107200611713%29
 			final Properties ctx = InterfaceWrapperHelper.getCtx(asi);
@@ -102,7 +115,7 @@ public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 				// after all we are just creating a description here that just contains of AI values..not even the attribute name is included.
 				value = instance.getValueNumber().toString();
 			}
-			
+
 			if (!Check.isEmpty(value, false))
 			{
 				if (sb.length() > 0)
@@ -293,4 +306,62 @@ public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 			toASIAware.setM_AttributeSetInstance(asiCopy);
 		}
 	}
+
+	@Override
+	public I_M_AttributeSetInstance createAttributeSetInstanceFromAttributeSet(@NonNull final IAttributeSet attributeSet)
+	{
+		// TODO test this
+		final I_M_AttributeSetInstance attributeSetInstance = newInstance(I_M_AttributeSetInstance.class);
+		save(attributeSetInstance);
+
+		final ImmutableList<I_M_Attribute> attributesOrderedById = attributeSet.getAttributes().stream()
+				.sorted(Comparator.comparing(I_M_Attribute::getM_Attribute_ID))
+				.collect(ImmutableList.toImmutableList());
+
+		for (final I_M_Attribute atttribute : attributesOrderedById)
+		{
+			final I_M_AttributeInstance attributeInstance = //
+					createAttributeInstanceForAttributeAndAttributeSet(atttribute, attributeSet);
+
+			attributeInstance.setM_AttributeSetInstance(attributeSetInstance);
+			save(attributeInstance);
+		}
+		return attributeSetInstance;
+	}
+
+	private I_M_AttributeInstance createAttributeInstanceForAttributeAndAttributeSet(
+			@NonNull final I_M_Attribute attribute,
+			@NonNull final IAttributeSet attributeSet)
+	{
+		final I_M_AttributeInstance attributeInstance = newInstance(I_M_AttributeInstance.class);
+		attributeInstance.setM_Attribute(attribute);
+
+		final String attributeValueType = attributeSet.getAttributeValueType(attribute);
+		if (X_M_Attribute.ATTRIBUTEVALUETYPE_Date.equals(attributeValueType))
+		{
+			final Date dateValue = attributeSet.getValueAsDate(attribute);
+			attributeInstance.setValueDate(new Timestamp(dateValue.getTime()));
+		}
+		else if (X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40.equals(attributeValueType))
+		{
+			final String stringValue = attributeSet.getValueAsString(attribute);
+			attributeInstance.setValue(stringValue);
+		}
+		else if (X_M_Attribute.ATTRIBUTEVALUETYPE_List.equals(attributeValueType))
+		{
+			final String stringValue = attributeSet.getValueAsString(attribute);
+			attributeInstance.setValue(stringValue);
+
+			final I_M_AttributeValue attributeValue = Services.get(IAttributeDAO.class).retrieveAttributeValueOrNull(attribute, stringValue);
+			attributeInstance.setM_AttributeValue(attributeValue);
+		}
+		else if (X_M_Attribute.ATTRIBUTEVALUETYPE_Number.equals(attributeValueType))
+		{
+			final BigDecimal bigDecimalValue = attributeSet.getValueAsBigDecimal(attribute);
+			attributeInstance.setValueNumber(bigDecimalValue);
+		}
+
+		return attributeInstance;
+	}
+
 }

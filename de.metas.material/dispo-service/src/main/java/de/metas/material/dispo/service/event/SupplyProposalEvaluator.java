@@ -10,12 +10,13 @@ import org.springframework.stereotype.Service;
 import de.metas.material.dispo.CandidateRepository;
 import de.metas.material.dispo.CandidateSpecification.Type;
 import de.metas.material.dispo.CandidatesQuery;
-import de.metas.material.dispo.CandidatesQuery.DateOperator;
 import de.metas.material.dispo.candidate.Candidate;
 import de.metas.material.event.MaterialDescriptor;
+import de.metas.material.event.MaterialDescriptor.DateOperator;
+import de.metas.material.event.ProductDescriptor;
 import lombok.Builder;
-import lombok.Data;
 import lombok.NonNull;
+import lombok.Value;
 
 /*
  * #%L
@@ -80,14 +81,18 @@ public class SupplyProposalEvaluator
 				.type(Type.DEMAND)
 				.materialDescr(MaterialDescriptor.builderForQuery()
 						.date(proposal.getDate())
-						.productId(proposal.getProductId())
+						.dateOperator(DateOperator.FROM)
+						.productDescriptor(proposal.getProductDescriptor())
 						.warehouseId(proposal.getDestWarehouseId()).build())
-				.dateOperator(DateOperator.FROM)
 				.build();
 
+		final MaterialDescriptor sourceMaterialDescriptor = MaterialDescriptor.builderForQuery()
+		.productDescriptor(proposal.getProductDescriptor())
+		.warehouseId(proposal.getSourceWarehouseId())
+		.build();
+		
 		final CandidatesQuery directReverseForDemandQuery = demandQuery
-				.withParentProductId(proposal.getProductId())
-				.withParentWarehouseId(proposal.getSourceWarehouseId());
+				.withParentMaterialDescriptor(sourceMaterialDescriptor);
 
 		final List<Candidate> directReversals = candidateRepository.retrieveOrderedByDateAndSeqNo(directReverseForDemandQuery);
 		if (!directReversals.isEmpty())
@@ -99,8 +104,8 @@ public class SupplyProposalEvaluator
 				.withType(Type.SUPPLY)
 				.withMaterialDescr(demandQuery.getMaterialDescr()
 						.withDate(proposal.getDate())
-						.withWarehouseId(proposal.getSourceWarehouseId()))
-				.withDateOperator(DateOperator.FROM);
+						.withDateOperator(DateOperator.FROM)
+						.withWarehouseId(proposal.getSourceWarehouseId()));
 
 		final List<Candidate> demands = candidateRepository.retrieveOrderedByDateAndSeqNo(demandQuery);
 		for (final Candidate demand : demands)
@@ -178,20 +183,20 @@ public class SupplyProposalEvaluator
 	 * @author metas-dev <dev@metasfresh.com>
 	 *
 	 */
-	@Data
+	@Value
 	@Builder
 	public static class SupplyProposal
 	{
 		@NonNull
-		private final Integer productId;
+		ProductDescriptor productDescriptor;
 
 		@NonNull
-		private final Integer sourceWarehouseId;
+		Integer sourceWarehouseId;
 
 		@NonNull
-		private final Integer destWarehouseId;
+		Integer destWarehouseId;
 
 		@NonNull
-		private final Date date;
+		Date date;
 	}
 }

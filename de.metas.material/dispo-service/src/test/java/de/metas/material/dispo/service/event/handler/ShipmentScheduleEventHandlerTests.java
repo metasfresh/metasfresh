@@ -1,5 +1,6 @@
 package de.metas.material.dispo.service.event.handler;
 
+import static de.metas.material.event.EventTestHelper.createProductDescriptor;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -30,6 +31,7 @@ import de.metas.material.dispo.service.candidatechange.handler.DemandCandiateHan
 import de.metas.material.event.EventDescr;
 import de.metas.material.event.MaterialDescriptor;
 import de.metas.material.event.MaterialEventService;
+import de.metas.material.event.ProductDescriptorFactory;
 import de.metas.material.event.ShipmentScheduleEvent;
 import lombok.NonNull;
 import mockit.Mocked;
@@ -72,8 +74,6 @@ public class ShipmentScheduleEventHandlerTests
 
 	private static final int toWarehouseId = 30;
 
-	private static final int productId = 40;
-
 	private I_AD_Org org;
 
 	@Mocked
@@ -89,7 +89,7 @@ public class ShipmentScheduleEventHandlerTests
 		org = newInstance(I_AD_Org.class);
 		save(org);
 
-		final CandidateRepository candidateRepository = new CandidateRepository();
+		final CandidateRepository candidateRepository = new CandidateRepository(ProductDescriptorFactory.TESTING_INSTANCE);
 
 		final CandidateChangeService candidateChangeHandler = new CandidateChangeService(ImmutableList.of(
 				new DemandCandiateHandler(candidateRepository, materialEventService, new StockCandidateService(candidateRepository))
@@ -126,7 +126,7 @@ public class ShipmentScheduleEventHandlerTests
 				.eventDescr(new EventDescr(org.getAD_Client_ID(), org.getAD_Org_ID()))
 				.materialDescr(MaterialDescriptor.builder()
 						.date(t1)
-						.productId(productId)
+						.productDescriptor(createProductDescriptor())
 						.quantity(BigDecimal.TEN)
 						.warehouseId(toWarehouseId)
 						.build())

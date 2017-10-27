@@ -1,8 +1,9 @@
 package de.metas.material.event;
 
+import static de.metas.material.event.MaterialEventUtils.checkIdGreaterThanZero;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.base.Preconditions;
 
 import lombok.Builder;
 import lombok.NonNull;
@@ -56,11 +57,13 @@ public class TransactionEvent implements MaterialEvent
 			@JsonProperty("shipmentScheduleId") final int shipmentScheduleId,
 			@JsonProperty("transactionId") final int transactionId)
 	{
-		Preconditions.checkArgument(transactionId > 0, "The given parameter transactionId=%s needs to be > 0", transactionId);
-		this.transactionId = transactionId;
+		this.transactionId = checkIdGreaterThanZero("transactionId",transactionId);
 
 		this.eventDescr = eventDescr;
+
+		materialDescr.asssertMaterialDescriptorComplete();
 		this.materialDescr = materialDescr;
+
 		this.shipmentScheduleId = shipmentScheduleId;
 	}
 

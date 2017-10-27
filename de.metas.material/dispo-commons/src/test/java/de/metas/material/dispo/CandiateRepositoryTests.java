@@ -1,5 +1,14 @@
 package de.metas.material.dispo;
 
+import static de.metas.material.event.EventTestHelper.STORAGE_ATTRIBUTES_KEY;
+import static de.metas.material.event.EventTestHelper.ATTRIBUTE_SET_INSTANCE_ID;
+import static de.metas.material.event.EventTestHelper.CLIENT_ID;
+import static de.metas.material.event.EventTestHelper.ORG_ID;
+import static de.metas.material.event.EventTestHelper.PRODUCT_ID;
+import static de.metas.material.event.EventTestHelper.TRANSACTION_ID;
+import static de.metas.material.event.EventTestHelper.WAREHOUSE_ID;
+import static de.metas.material.event.EventTestHelper.createMaterialDescriptor;
+import static de.metas.material.event.EventTestHelper.createProductDescriptor;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
@@ -18,10 +27,6 @@ import org.adempiere.util.Services;
 import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ImmutablePair;
 import org.adempiere.util.time.SystemTime;
-import org.compiere.model.I_AD_Org;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
-import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.TimeUtil;
 import org.junit.Before;
 import org.junit.Rule;
@@ -30,7 +35,6 @@ import org.junit.rules.TestWatcher;
 
 import de.metas.material.dispo.CandidateSpecification.SubType;
 import de.metas.material.dispo.CandidateSpecification.Type;
-import de.metas.material.dispo.CandidatesQuery.DateOperator;
 import de.metas.material.dispo.candidate.Candidate;
 import de.metas.material.dispo.candidate.DemandDetail;
 import de.metas.material.dispo.candidate.DistributionDetail;
@@ -43,6 +47,8 @@ import de.metas.material.dispo.model.I_MD_Candidate_Prod_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_Transaction_Detail;
 import de.metas.material.dispo.model.X_MD_Candidate;
 import de.metas.material.event.MaterialDescriptor;
+import de.metas.material.event.MaterialDescriptor.DateOperator;
+import de.metas.material.event.ProductDescriptorFactory;
 
 /*
  * #%L
@@ -68,13 +74,6 @@ import de.metas.material.event.MaterialDescriptor;
 
 public class CandiateRepositoryTests
 {
-
-	private static final int TRANSACTION_ID = 60;
-
-	private static final int WAHREHOUSE_ID = 51;
-
-	private static final int PRODUCT_ID = 24;
-
 	/** Watches the current tests and dumps the database to console in case of failure */
 	@Rule
 	public final TestWatcher testWatcher = new AdempiereTestWatcher();
@@ -83,39 +82,23 @@ public class CandiateRepositoryTests
 	private final Date earlier = TimeUtil.addMinutes(now, -10);
 	private final Date later = TimeUtil.addMinutes(now, +10);
 
-	private I_M_Product product;
-
-	private I_M_Warehouse warehouse;
-
-	private I_C_UOM uom;
-
-	private I_AD_Org org;
-
 	private Candidate stockCandidate;
 	private Candidate laterStockCandidate;
 
-	private CandidateRepository candidateRepository = new CandidateRepository();
+	private CandidateRepository candidateRepository = new CandidateRepository(ProductDescriptorFactory.TESTING_INSTANCE);
+
+	private ProductDescriptorFactory productDescriptorFactory;
 
 	@Before
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
 
-		org = newInstance(I_AD_Org.class);
-		save(org);
-
-		product = newInstance(I_M_Product.class);
-		save(product);
-
-		warehouse = newInstance(I_M_Warehouse.class);
-		save(warehouse);
-
-		uom = newInstance(I_C_UOM.class);
-		save(uom);
-
+		productDescriptorFactory = ProductDescriptorFactory.TESTING_INSTANCE;
+		
 		final MaterialDescriptor materialDescr = MaterialDescriptor.builder()
-				.productId(product.getM_Product_ID())
-				.warehouseId(warehouse.getM_Warehouse_ID())
+				.productDescriptor(createProductDescriptor())
+				.warehouseId(WAREHOUSE_ID)
 				.quantity(new BigDecimal("11"))
 				.date(now)
 				.build();
@@ -123,32 +106,32 @@ public class CandiateRepositoryTests
 		// this not-stock candidate needs to be ignored
 		final Candidate someOtherCandidate = Candidate.builder()
 				.type(Type.DEMAND)
-				.clientId(org.getAD_Client_ID())
-				.orgId(org.getAD_Org_ID())
+				.clientId(CLIENT_ID)
+				.orgId(ORG_ID)
 				.materialDescr(materialDescr)
 				.build();
 		candidateRepository.addOrUpdateOverwriteStoredSeqNo(someOtherCandidate);
 
 		stockCandidate = Candidate.builder()
 				.type(Type.STOCK)
-				.clientId(org.getAD_Client_ID())
-				.orgId(org.getAD_Org_ID())
+				.clientId(CLIENT_ID)
+				.orgId(ORG_ID)
 				.materialDescr(materialDescr)
 				.build();
 		stockCandidate = candidateRepository.addOrUpdateOverwriteStoredSeqNo(stockCandidate);
 
-		final MaterialDescriptor laterMaterialDescrt = MaterialDescriptor.builder()
-				.productId(product.getM_Product_ID())
-				.warehouseId(warehouse.getM_Warehouse_ID())
+		final MaterialDescriptor laterMaterialDescriptor = MaterialDescriptor.builder()
+				.productDescriptor(createProductDescriptor())
+				.warehouseId(WAREHOUSE_ID)
 				.quantity(new BigDecimal("10"))
 				.date(later)
 				.build();
 
 		laterStockCandidate = Candidate.builder()
 				.type(Type.STOCK)
-				.clientId(org.getAD_Client_ID())
-				.orgId(org.getAD_Org_ID())
-				.materialDescr(laterMaterialDescrt)
+				.clientId(CLIENT_ID)
+				.orgId(ORG_ID)
+				.materialDescr(laterMaterialDescriptor)
 				.build();
 		laterStockCandidate = candidateRepository.addOrUpdateOverwriteStoredSeqNo(laterStockCandidate);
 	}
@@ -156,18 +139,11 @@ public class CandiateRepositoryTests
 	@Test
 	public void addOrUpdateOverwriteStoredSeqNo_returns_equal_candidate()
 	{
-		final MaterialDescriptor materialDescriptor = MaterialDescriptor.builder()
-				.date(now)
-				.productId(23)
-				.quantity(BigDecimal.TEN)
-				.warehouseId(50)
-				.build();
-
 		final Candidate originalCandidate = Candidate.builder()
 				.type(Type.STOCK)
-				.clientId(org.getAD_Client_ID())
-				.orgId(org.getAD_Org_ID())
-				.materialDescr(materialDescriptor)
+				.clientId(CLIENT_ID)
+				.orgId(ORG_ID)
+				.materialDescr(createMaterialDescriptor())
 				.build();
 		final Candidate candidateReturnedfromRepo = candidateRepository.addOrUpdateOverwriteStoredSeqNo(originalCandidate);
 		assertThat(candidateReturnedfromRepo
@@ -194,8 +170,10 @@ public class CandiateRepositoryTests
 		final Timestamp dateProjected = SystemTime.asTimestamp();
 		final I_MD_Candidate candidateRecord = newInstance(I_MD_Candidate.class);
 		candidateRecord.setDateProjected(dateProjected);
-		candidateRecord.setM_Warehouse_ID(10);
-		candidateRecord.setM_Product_ID(20);
+		candidateRecord.setM_Warehouse_ID(WAREHOUSE_ID);
+		candidateRecord.setM_Product_ID(PRODUCT_ID);
+		candidateRecord.setM_AttributeSetInstance_ID(ATTRIBUTE_SET_INSTANCE_ID);
+		candidateRecord.setStorageAttributesKey(STORAGE_ATTRIBUTES_KEY);
 		candidateRecord.setQty(BigDecimal.TEN);
 		candidateRecord.setMD_Candidate_Type(X_MD_Candidate.MD_CANDIDATE_TYPE_DEMAND);
 		save(candidateRecord);
@@ -206,16 +184,20 @@ public class CandiateRepositoryTests
 		final Candidate candidate = result.get();
 		assertThat(candidate.getParentId()).isEqualTo(0);
 		assertThat(candidate.getDate()).isEqualTo(dateProjected);
+
+		final MaterialDescriptor materialDescriptor = candidate.getMaterialDescr();
+
+		assertThat(materialDescriptor.getProductId()).isEqualTo(PRODUCT_ID);
+		assertThat(materialDescriptor.getStorageAttributesKey()).isEqualTo(STORAGE_ATTRIBUTES_KEY);
+		assertThat(materialDescriptor.getAttributeSetInstanceId()).isEqualTo(ATTRIBUTE_SET_INSTANCE_ID);
 	}
 
 	@Test
 	public void fromCandidateRecord_RecordAndTransactiondetails_to_candidate()
 	{
 		final Timestamp dateProjected = SystemTime.asTimestamp();
-		final I_MD_Candidate candidateRecord = newInstance(I_MD_Candidate.class);
+		final I_MD_Candidate candidateRecord = createCandidateRecordWithWarehouseId(WAREHOUSE_ID);
 		candidateRecord.setDateProjected(dateProjected);
-		candidateRecord.setM_Warehouse_ID(10);
-		candidateRecord.setM_Product_ID(20);
 		candidateRecord.setQty(BigDecimal.TEN);
 		candidateRecord.setMD_Candidate_Type(X_MD_Candidate.MD_CANDIDATE_TYPE_DEMAND);
 		save(candidateRecord);
@@ -277,19 +259,12 @@ public class CandiateRepositoryTests
 	@Test
 	public void addOrReplace_with_ProductionDetail()
 	{
-		final MaterialDescriptor materialDescr = MaterialDescriptor.builder()
-				.date(now)
-				.productId(23)
-				.quantity(BigDecimal.TEN)
-				.warehouseId(50)
-				.build();
-
 		final Candidate productionCandidate = Candidate.builder()
 				.type(Type.DEMAND)
 				.subType(SubType.PRODUCTION)
-				.materialDescr(materialDescr)
-				.clientId(org.getAD_Client_ID())
-				.orgId(org.getAD_Org_ID())
+				.materialDescr(createMaterialDescriptor())
+				.clientId(CLIENT_ID)
+				.orgId(ORG_ID)
 				.productionDetail(ProductionDetail.builder()
 						.description("description")
 						.plantId(60)
@@ -303,7 +278,7 @@ public class CandiateRepositoryTests
 				.build();
 		final Candidate addOrReplaceResult = candidateRepository.addOrUpdateOverwriteStoredSeqNo(productionCandidate);
 
-		final List<I_MD_Candidate> filtered = DispoTestUtils.filter(Type.DEMAND, now, 23);
+		final List<I_MD_Candidate> filtered = DispoTestUtils.filter(Type.DEMAND, now, PRODUCT_ID);
 		assertThat(filtered).hasSize(1);
 
 		final I_MD_Candidate record = filtered.get(0);
@@ -331,10 +306,7 @@ public class CandiateRepositoryTests
 
 	private IPair<Candidate, I_MD_Candidate> perform_retrieve_with_ProductionDetail()
 	{
-		final I_MD_Candidate record = newInstance(I_MD_Candidate.class);
-		record.setM_Product_ID(PRODUCT_ID);
-		record.setM_Warehouse_ID(WAHREHOUSE_ID);
-		record.setDateProjected(new Timestamp(now.getTime()));
+		final I_MD_Candidate record = createCandidateRecordWithWarehouseId(WAREHOUSE_ID);
 		record.setMD_Candidate_Type(X_MD_Candidate.MD_CANDIDATE_TYPE_DEMAND);
 		record.setMD_Candidate_SubType(X_MD_Candidate.MD_CANDIDATE_SUBTYPE_PRODUCTION);
 		save(record);
@@ -354,7 +326,7 @@ public class CandiateRepositoryTests
 		final Candidate cand = candidateRepository.retrieveLatestMatchOrNull(CandidatesQuery.fromId(record.getMD_Candidate_ID()));
 		assertThat(cand).isNotNull();
 		assertThat(cand.getMaterialDescr().getProductId()).isEqualTo(PRODUCT_ID);
-		assertThat(cand.getMaterialDescr().getWarehouseId()).isEqualTo(WAHREHOUSE_ID);
+		assertThat(cand.getMaterialDescr().getWarehouseId()).isEqualTo(WAREHOUSE_ID);
 		assertThat(cand.getMaterialDescr().getDate()).isEqualTo(now);
 		assertThat(cand.getProductionDetail()).isNotNull();
 		assertThat(cand.getProductionDetail().getDescription()).isEqualTo("description1");
@@ -380,10 +352,7 @@ public class CandiateRepositoryTests
 		final I_MD_Candidate record = pair.getRight();
 
 		// make another record, just like "record", but without a proeductionDetailRecord
-		final I_MD_Candidate otherRecord = newInstance(I_MD_Candidate.class);
-		otherRecord.setM_Product_ID(PRODUCT_ID);
-		otherRecord.setM_Warehouse_ID(WAHREHOUSE_ID);
-		otherRecord.setDateProjected(new Timestamp(now.getTime()));
+		final I_MD_Candidate otherRecord = createCandidateRecordWithWarehouseId(WAREHOUSE_ID);
 		otherRecord.setMD_Candidate_Type(X_MD_Candidate.MD_CANDIDATE_TYPE_DEMAND);
 		otherRecord.setMD_Candidate_SubType(X_MD_Candidate.MD_CANDIDATE_SUBTYPE_PRODUCTION);
 		save(otherRecord);
@@ -409,19 +378,12 @@ public class CandiateRepositoryTests
 	@Test
 	public void addOrUpdateOverwriteStoredSeqNo_with_DistributionDetail()
 	{
-		final MaterialDescriptor materialDescr = MaterialDescriptor.builder()
-				.date(now)
-				.productId(23)
-				.quantity(BigDecimal.TEN)
-				.warehouseId(50)
-				.build();
-
 		final Candidate distributionCandidate = Candidate.builder()
 				.type(Type.DEMAND)
 				.subType(SubType.DISTRIBUTION)
-				.clientId(org.getAD_Client_ID())
-				.orgId(org.getAD_Org_ID())
-				.materialDescr(materialDescr)
+				.clientId(CLIENT_ID)
+				.orgId(ORG_ID)
+				.materialDescr(createMaterialDescriptor())
 				.distributionDetail(DistributionDetail.builder()
 						.productPlanningId(80)
 						.plantId(85)
@@ -434,7 +396,7 @@ public class CandiateRepositoryTests
 				.build();
 		final Candidate addOrReplaceResult = candidateRepository.addOrUpdateOverwriteStoredSeqNo(distributionCandidate);
 
-		final List<I_MD_Candidate> filtered = DispoTestUtils.filter(Type.DEMAND, now, 23);
+		final List<I_MD_Candidate> filtered = DispoTestUtils.filter(Type.DEMAND, now, PRODUCT_ID);
 		assertThat(filtered).hasSize(1);
 
 		final I_MD_Candidate record = filtered.get(0);
@@ -461,10 +423,7 @@ public class CandiateRepositoryTests
 
 	private IPair<Candidate, I_MD_Candidate> perform_retrieve_with_DistributionDetail()
 	{
-		final I_MD_Candidate record = newInstance(I_MD_Candidate.class);
-		record.setM_Product_ID(PRODUCT_ID);
-		record.setM_Warehouse_ID(WAHREHOUSE_ID);
-		record.setDateProjected(new Timestamp(now.getTime()));
+		final I_MD_Candidate record = createCandidateRecordWithWarehouseId(WAREHOUSE_ID);
 		record.setMD_Candidate_Type(X_MD_Candidate.MD_CANDIDATE_TYPE_DEMAND);
 		record.setMD_Candidate_SubType(X_MD_Candidate.MD_CANDIDATE_SUBTYPE_DISTRIBUTION);
 		save(record);
@@ -482,7 +441,7 @@ public class CandiateRepositoryTests
 		final Candidate cand = candidateRepository.retrieveLatestMatchOrNull(CandidatesQuery.fromId(record.getMD_Candidate_ID()));
 		assertThat(cand).isNotNull();
 		assertThat(cand.getMaterialDescr().getProductId()).isEqualTo(PRODUCT_ID);
-		assertThat(cand.getMaterialDescr().getWarehouseId()).isEqualTo(WAHREHOUSE_ID);
+		assertThat(cand.getMaterialDescr().getWarehouseId()).isEqualTo(WAREHOUSE_ID);
 		assertThat(cand.getMaterialDescr().getDate()).isEqualTo(now);
 		assertThat(cand.getProductionDetail()).isNull();
 		assertThat(cand.getDistributionDetail()).isNotNull();
@@ -510,10 +469,7 @@ public class CandiateRepositoryTests
 		final I_MD_Candidate record = pair.getRight();
 
 		// make another record, just like "record", but without a distributionDetailRecord
-		final I_MD_Candidate otherRecord = newInstance(I_MD_Candidate.class);
-		otherRecord.setM_Product_ID(PRODUCT_ID);
-		otherRecord.setM_Warehouse_ID(WAHREHOUSE_ID);
-		otherRecord.setDateProjected(new Timestamp(now.getTime()));
+		final I_MD_Candidate otherRecord = createCandidateRecordWithWarehouseId(WAREHOUSE_ID);
 		otherRecord.setMD_Candidate_Type(X_MD_Candidate.MD_CANDIDATE_TYPE_DEMAND);
 		otherRecord.setMD_Candidate_SubType(X_MD_Candidate.MD_CANDIDATE_SUBTYPE_DISTRIBUTION);
 		save(otherRecord);
@@ -539,10 +495,7 @@ public class CandiateRepositoryTests
 	@Test
 	public void retrieve_with_TransactionDetail()
 	{
-		final I_MD_Candidate record = newInstance(I_MD_Candidate.class);
-		record.setM_Product_ID(PRODUCT_ID);
-		record.setM_Warehouse_ID(WAHREHOUSE_ID);
-		record.setDateProjected(new Timestamp(now.getTime()));
+		final I_MD_Candidate record = createCandidateRecordWithWarehouseId(WAREHOUSE_ID);
 		record.setMD_Candidate_Type(X_MD_Candidate.MD_CANDIDATE_TYPE_UNRELATED_DECREASE);
 		save(record);
 
@@ -568,24 +521,17 @@ public class CandiateRepositoryTests
 	@Test
 	public void addOrUpdateOverwriteStoredSeqNo_with_DemandDetail()
 	{
-		final MaterialDescriptor materialDescr = MaterialDescriptor.builder()
-				.date(now)
-				.productId(23)
-				.quantity(BigDecimal.TEN)
-				.warehouseId(50)
-				.build();
-
 		final Candidate productionCandidate = Candidate.builder()
 				.type(Type.DEMAND)
 				.subType(SubType.SHIPMENT)
-				.clientId(org.getAD_Client_ID())
-				.orgId(org.getAD_Org_ID())
-				.materialDescr(materialDescr)
+				.clientId(CLIENT_ID)
+				.orgId(ORG_ID)
+				.materialDescr(createMaterialDescriptor())
 				.demandDetail(DemandDetail.forOrderLineIdOrNull(61))
 				.build();
 		final Candidate addOrReplaceResult = candidateRepository.addOrUpdateOverwriteStoredSeqNo(productionCandidate);
 
-		final List<I_MD_Candidate> filtered = DispoTestUtils.filter(Type.DEMAND, now, 23);
+		final List<I_MD_Candidate> filtered = DispoTestUtils.filter(Type.DEMAND, now, PRODUCT_ID);
 		assertThat(filtered).hasSize(1);
 
 		final I_MD_Candidate record = filtered.get(0);
@@ -616,10 +562,7 @@ public class CandiateRepositoryTests
 		final I_MD_Candidate record = pair.getRight();
 
 		// make another record, just like "record", but without a demandDetailRecord
-		final I_MD_Candidate otherRecord = newInstance(I_MD_Candidate.class);
-		otherRecord.setM_Product_ID(PRODUCT_ID);
-		otherRecord.setM_Warehouse_ID(WAHREHOUSE_ID);
-		otherRecord.setDateProjected(new Timestamp(now.getTime()));
+		final I_MD_Candidate otherRecord = createCandidateRecordWithWarehouseId(WAREHOUSE_ID);
 		otherRecord.setMD_Candidate_Type(X_MD_Candidate.MD_CANDIDATE_TYPE_DEMAND);
 		otherRecord.setMD_Candidate_SubType(X_MD_Candidate.MD_CANDIDATE_SUBTYPE_PRODUCTION);
 		save(otherRecord);
@@ -643,10 +586,7 @@ public class CandiateRepositoryTests
 
 	private IPair<Candidate, I_MD_Candidate> perform_retrieve_with_id_and_demandDetail()
 	{
-		final I_MD_Candidate record = newInstance(I_MD_Candidate.class);
-		record.setM_Product_ID(PRODUCT_ID);
-		record.setM_Warehouse_ID(WAHREHOUSE_ID);
-		record.setDateProjected(new Timestamp(now.getTime()));
+		final I_MD_Candidate record = createCandidateRecordWithWarehouseId(WAREHOUSE_ID);
 		record.setMD_Candidate_Type(X_MD_Candidate.MD_CANDIDATE_TYPE_DEMAND);
 		record.setMD_Candidate_SubType(X_MD_Candidate.MD_CANDIDATE_SUBTYPE_PRODUCTION);
 		save(record);
@@ -661,7 +601,7 @@ public class CandiateRepositoryTests
 		assertThat(cand).isNotNull();
 		assertThat(cand.getId()).isEqualTo(record.getMD_Candidate_ID());
 		assertThat(cand.getMaterialDescr().getProductId()).isEqualTo(PRODUCT_ID);
-		assertThat(cand.getMaterialDescr().getWarehouseId()).isEqualTo(WAHREHOUSE_ID);
+		assertThat(cand.getMaterialDescr().getWarehouseId()).isEqualTo(WAREHOUSE_ID);
 		assertThat(cand.getMaterialDescr().getDate()).isEqualTo(now);
 		assertThat(cand.getProductionDetail()).isNull();
 		assertThat(cand.getDemandDetail().getOrderLineId()).isEqualTo(62);
@@ -786,10 +726,11 @@ public class CandiateRepositoryTests
 		return CandidatesQuery.builder()
 				.type(Type.STOCK)
 				.materialDescr(MaterialDescriptor.builderForQuery()
-						.productId(product.getM_Product_ID())
-						.warehouseId(warehouse.getM_Warehouse_ID())
-						.date(date).build())
-				.dateOperator(DateOperator.UNTIL)
+						.productDescriptor(productDescriptorFactory.forProductIdOnly(PRODUCT_ID))
+						.warehouseId(WAREHOUSE_ID)
+						.date(date)
+						.dateOperator(DateOperator.UNTIL)
+						.build())
 				.build();
 	}
 
@@ -798,10 +739,11 @@ public class CandiateRepositoryTests
 		return CandidatesQuery.builder()
 				.type(Type.STOCK)
 				.materialDescr(MaterialDescriptor.builderForQuery()
-						.productId(product.getM_Product_ID())
-						.warehouseId(warehouse.getM_Warehouse_ID())
-						.date(date).build())
-				.dateOperator(DateOperator.FROM)
+						.productDescriptor(productDescriptorFactory.forProductIdOnly(PRODUCT_ID))
+						.warehouseId(WAREHOUSE_ID)
+						.date(date)
+						.dateOperator(DateOperator.FROM)
+						.build())
 				.build();
 	}
 
@@ -845,7 +787,7 @@ public class CandiateRepositoryTests
 
 	private I_MD_Candidate createCandiateRecordWithShipmentScheduleId(final int shipmentScheduleId)
 	{
-		final I_MD_Candidate candidateRecord = createCandidateRecordWithWarehouseId(30);
+		final I_MD_Candidate candidateRecord = createCandidateRecordWithWarehouseId(30); // TODO replace with constant
 		final I_MD_Candidate_Demand_Detail demandDetailRecord = newInstance(I_MD_Candidate_Demand_Detail.class);
 		demandDetailRecord.setMD_Candidate(candidateRecord);
 		demandDetailRecord.setM_ShipmentSchedule_ID(shipmentScheduleId);
@@ -854,16 +796,28 @@ public class CandiateRepositoryTests
 	}
 
 	@Test
+	public void updateCandidateRecordFromCandidate()
+	{
+		final Candidate candidate = Candidate.builder()
+				.type(Type.DEMAND)
+				.materialDescr(createMaterialDescriptor())
+				.build();
+		final I_MD_Candidate candidateRecord = newInstance(I_MD_Candidate.class);
+
+		candidateRepository.updateCandidateRecordFromCandidate(candidateRecord, candidate, false);
+
+		assertThat(candidateRecord.getMD_Candidate_Type()).isEqualTo(X_MD_Candidate.MD_CANDIDATE_TYPE_DEMAND);
+		assertThat(candidateRecord.getM_Product_ID()).isEqualTo(PRODUCT_ID);
+		assertThat(candidateRecord.getStorageAttributesKey()).isEqualTo(STORAGE_ATTRIBUTES_KEY);
+		assertThat(candidateRecord.getM_AttributeSetInstance_ID()).isEqualTo(ATTRIBUTE_SET_INSTANCE_ID);
+	}
+
+	@Test
 	public void addOrRecplaceDemandDetail()
 	{
 		final Candidate candidate = Candidate.builder()
 				.type(Type.DEMAND)
-				.materialDescr(MaterialDescriptor.builderForCandidateOrQuery()
-						.productId(PRODUCT_ID)
-						.warehouseId(WAHREHOUSE_ID)
-						.quantity(BigDecimal.TEN)
-						.date(SystemTime.asTimestamp())
-						.build())
+				.materialDescr(createMaterialDescriptor())
 				.demandDetail(DemandDetail.forShipmentScheduleIdAndOrderLineId(20, -1))
 				.build();
 
@@ -884,12 +838,7 @@ public class CandiateRepositoryTests
 	{
 		final Candidate candidate = Candidate.builder()
 				.type(Type.DEMAND)
-				.materialDescr(MaterialDescriptor.builderForCandidateOrQuery()
-						.productId(PRODUCT_ID)
-						.warehouseId(WAHREHOUSE_ID)
-						.quantity(BigDecimal.TEN)
-						.date(SystemTime.asTimestamp())
-						.build())
+				.materialDescr(createMaterialDescriptor())
 				.transactionDetail(TransactionDetail.forCandidateOrQuery(BigDecimal.ONE, 15))
 				.transactionDetail(TransactionDetail.forCandidateOrQuery(BigDecimal.TEN, 16))
 				.build();
@@ -934,7 +883,7 @@ public class CandiateRepositoryTests
 
 	private I_MD_Candidate createCandiateRecordWithForecastLineId(final int forecastLineId)
 	{
-		final I_MD_Candidate candidateRecord = createCandidateRecordWithWarehouseId(30);
+		final I_MD_Candidate candidateRecord = createCandidateRecordWithWarehouseId(30); // TODO replace with constance
 		final I_MD_Candidate_Demand_Detail demandDetailRecord = newInstance(I_MD_Candidate_Demand_Detail.class);
 		demandDetailRecord.setMD_Candidate(candidateRecord);
 		demandDetailRecord.setM_ForecastLine_ID(forecastLineId);
@@ -944,38 +893,33 @@ public class CandiateRepositoryTests
 
 	private I_MD_Candidate createCandidateRecordWithWarehouseId(final int warehouseId)
 	{
-		final int productId = 10;
 		final I_MD_Candidate candidateRecord = newInstance(I_MD_Candidate.class);
 		candidateRecord.setMD_Candidate_Type(X_MD_Candidate.MD_CANDIDATE_TYPE_DEMAND);
 		candidateRecord.setDateProjected(new Timestamp(now.getTime()));
-		candidateRecord.setM_Product_ID(productId);
+		candidateRecord.setM_Product_ID(PRODUCT_ID);
+		candidateRecord.setM_AttributeSetInstance_ID(ATTRIBUTE_SET_INSTANCE_ID);
+		candidateRecord.setStorageAttributesKey(STORAGE_ATTRIBUTES_KEY);
 		candidateRecord.setM_Warehouse_ID(warehouseId);
 		save(candidateRecord);
+
 		return candidateRecord;
 	}
 
 	@Test
 	public void addOrUpdateOverwriteStoredSeqNo_with_TransactionDetail()
 	{
-		final MaterialDescriptor materialDescr = MaterialDescriptor.builder()
-				.date(now)
-				.productId(23)
-				.quantity(BigDecimal.TEN)
-				.warehouseId(50)
-				.build();
-
 		final Candidate productionCandidate = Candidate.builder()
 				.type(Type.DEMAND)
 				.subType(SubType.SHIPMENT)
-				.clientId(org.getAD_Client_ID())
-				.orgId(org.getAD_Org_ID())
-				.materialDescr(materialDescr)
+				.clientId(CLIENT_ID)
+				.orgId(ORG_ID)
+				.materialDescr(createMaterialDescriptor())
 				.demandDetail(DemandDetail.forOrderLineIdOrNull(61))
 				.transactionDetail(TransactionDetail.forCandidateOrQuery(BigDecimal.ONE, 33))
 				.build();
 		final Candidate addOrReplaceResult = candidateRepository.addOrUpdateOverwriteStoredSeqNo(productionCandidate);
 
-		final List<I_MD_Candidate> filtered = DispoTestUtils.filter(Type.DEMAND, now, 23);
+		final List<I_MD_Candidate> filtered = DispoTestUtils.filter(Type.DEMAND, now, PRODUCT_ID);
 		assertThat(filtered).hasSize(1);
 
 		final I_MD_Candidate record = filtered.get(0);

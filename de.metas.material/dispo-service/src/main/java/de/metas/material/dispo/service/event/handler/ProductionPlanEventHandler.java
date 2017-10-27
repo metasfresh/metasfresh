@@ -7,9 +7,9 @@ import de.metas.material.dispo.CandidateSpecification.Status;
 import de.metas.material.dispo.CandidateSpecification.SubType;
 import de.metas.material.dispo.CandidateSpecification.Type;
 import de.metas.material.dispo.candidate.Candidate;
+import de.metas.material.dispo.candidate.Candidate.CandidateBuilder;
 import de.metas.material.dispo.candidate.DemandDetail;
 import de.metas.material.dispo.candidate.ProductionDetail;
-import de.metas.material.dispo.candidate.Candidate.CandidateBuilder;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.dispo.service.event.EventUtil;
 import de.metas.material.event.MaterialDescriptor;
@@ -102,7 +102,7 @@ public class ProductionPlanEventHandler
 	{
 		final MaterialDescriptor materialDescriptor = MaterialDescriptor.builder()
 				.date(ppOrder.getDatePromised())
-				.productId(ppOrder.getProductId())
+				.productDescriptor(ppOrder.getProductDescriptor())
 				.quantity(ppOrder.getQuantity())
 				.warehouseId(ppOrder.getWarehouseId())
 				.build();
@@ -113,7 +113,7 @@ public class ProductionPlanEventHandler
 	{
 		final MaterialDescriptor materialDescriptor = MaterialDescriptor.builder()
 				.date(ppOrderLine.isReceipt() ? ppOrder.getDatePromised() : ppOrder.getDateStartSchedule())
-				.productId(ppOrderLine.getProductId())
+				.productDescriptor(ppOrderLine.getProductDescriptor())
 				.quantity(ppOrderLine.getQtyRequired())
 				.warehouseId(ppOrder.getWarehouseId())
 				.build();

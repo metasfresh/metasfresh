@@ -1,5 +1,6 @@
 package de.metas.material.dispo.service.event;
 
+import static de.metas.material.event.EventTestHelper.createProductDescriptor;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -32,6 +33,7 @@ import de.metas.material.dispo.service.event.handler.DistributionPlanEventHandle
 import de.metas.material.dispo.service.event.handler.DistributionPlanEventHandlerTests;
 import de.metas.material.event.MaterialDescriptor;
 import de.metas.material.event.MaterialEventService;
+import de.metas.material.event.ProductDescriptorFactory;
 import mockit.Mocked;
 
 /*
@@ -99,7 +101,7 @@ public class SupplyProposalEvaluatorTests
 		org = newInstance(I_AD_Org.class);
 		save(org);
 
-		candidateRepository = new CandidateRepository();
+		candidateRepository = new CandidateRepository(ProductDescriptorFactory.TESTING_INSTANCE);
 		supplyProposalEvaluator = new SupplyProposalEvaluator(candidateRepository);
 
 		final StockCandidateService stockCandidateService = new StockCandidateService(candidateRepository);
@@ -125,7 +127,7 @@ public class SupplyProposalEvaluatorTests
 				.date(t1)
 				.destWarehouseId(1)
 				.sourceWarehouseId(2)
-				.productId(3)
+				.productDescriptor(createProductDescriptor())
 				.build();
 
 		assertThat(supplyProposalEvaluator.evaluateSupply(supplyProposal)).isTrue();
@@ -143,7 +145,7 @@ public class SupplyProposalEvaluatorTests
 				.date(t4)
 				.destWarehouseId(1)
 				.sourceWarehouseId(2)
-				.productId(3)
+				.productDescriptor(createProductDescriptor())
 				.build();
 
 		assertThat(supplyProposalEvaluator.evaluateSupply(supplyProposal)).isTrue();
@@ -162,7 +164,7 @@ public class SupplyProposalEvaluatorTests
 				.date(t1)
 				.sourceWarehouseId(DEMAND_WAREHOUSE_ID)
 				.destWarehouseId(SUPPLY_WAREHOUSE_ID)
-				.productId(3)
+				.productDescriptor(createProductDescriptor())
 				.build();
 
 		assertThat(supplyProposalEvaluator.evaluateSupply(supplyProposal)).isTrue();
@@ -181,7 +183,7 @@ public class SupplyProposalEvaluatorTests
 				.date(t1)
 				.destWarehouseId(DEMAND_WAREHOUSE_ID)
 				.sourceWarehouseId(SUPPLY_WAREHOUSE_ID)
-				.productId(3)
+				.productDescriptor(createProductDescriptor())
 				.build();
 
 		assertThat(supplyProposalEvaluator.evaluateSupply(supplyProposal)).isFalse();
@@ -194,7 +196,7 @@ public class SupplyProposalEvaluatorTests
 	{
 		final MaterialDescriptor supplyMaterialDescr = MaterialDescriptor.builder()
 				.date(t3)
-				.productId(3)
+				.productDescriptor(createProductDescriptor())
 				.quantity(BigDecimal.TEN)
 				.warehouseId(SUPPLY_WAREHOUSE_ID)
 				.build();
@@ -210,7 +212,7 @@ public class SupplyProposalEvaluatorTests
 
 		final MaterialDescriptor demandDescr = MaterialDescriptor.builder()
 				.date(t2)
-				.productId(3)
+				.productDescriptor(createProductDescriptor())
 				.warehouseId(DEMAND_WAREHOUSE_ID)
 				.quantity(BigDecimal.TEN)
 				.build();
@@ -239,7 +241,7 @@ public class SupplyProposalEvaluatorTests
 				.date(t1)
 				.sourceWarehouseId(MaterialDispoEventListenerFacadeTests.fromWarehouseId)
 				.destWarehouseId(MaterialDispoEventListenerFacadeTests.intermediateWarehouseId)
-				.productId(MaterialDispoEventListenerFacadeTests.productId)
+				.productDescriptor(createProductDescriptor())
 				.build();
 		assertThat(supplyProposalEvaluator.evaluateSupply(supplyProposal1)).isTrue();
 
@@ -248,7 +250,7 @@ public class SupplyProposalEvaluatorTests
 				.date(t1)
 				.sourceWarehouseId(MaterialDispoEventListenerFacadeTests.intermediateWarehouseId)
 				.destWarehouseId(MaterialDispoEventListenerFacadeTests.toWarehouseId)
-				.productId(MaterialDispoEventListenerFacadeTests.productId)
+				.productDescriptor(createProductDescriptor())
 				.build();
 		assertThat(supplyProposalEvaluator.evaluateSupply(supplyProposal2)).isTrue();
 
@@ -257,7 +259,7 @@ public class SupplyProposalEvaluatorTests
 				.date(t1)
 				.sourceWarehouseId(MaterialDispoEventListenerFacadeTests.fromWarehouseId)
 				.destWarehouseId(MaterialDispoEventListenerFacadeTests.toWarehouseId)
-				.productId(MaterialDispoEventListenerFacadeTests.productId)
+				.productDescriptor(createProductDescriptor())
 				.build();
 		assertThat(supplyProposalEvaluator.evaluateSupply(supplyProposal3)).isTrue();
 	}
@@ -278,7 +280,7 @@ public class SupplyProposalEvaluatorTests
 				.date(t0) // the proposal needs to be made for the time before the two DistibutionPlanEvents occured
 				.sourceWarehouseId(MaterialDispoEventListenerFacadeTests.toWarehouseId)
 				.destWarehouseId(MaterialDispoEventListenerFacadeTests.fromWarehouseId)
-				.productId(MaterialDispoEventListenerFacadeTests.productId)
+				.productDescriptor(createProductDescriptor())
 				.build();
 		assertThat(supplyProposalEvaluator.evaluateSupply(supplyProposal1)).isFalse();
 	}

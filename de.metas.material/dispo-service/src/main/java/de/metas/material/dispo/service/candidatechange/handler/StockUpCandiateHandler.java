@@ -10,7 +10,6 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.material.dispo.CandidateRepository;
 import de.metas.material.dispo.CandidateSpecification.Type;
-import de.metas.material.dispo.CandidatesQuery.DateOperator;
 import de.metas.material.dispo.candidate.Candidate;
 import de.metas.material.event.MaterialDemandEvent;
 import de.metas.material.event.MaterialEventService;
@@ -81,9 +80,7 @@ public class StockUpCandiateHandler implements CandidateHandler
 		}
 
 		final Candidate projectedStockOrNull = candidateRepository.retrieveLatestMatchOrNull(candidate
-				.mkSegmentBuilder()
-				.dateOperator(DateOperator.UNTIL)
-				.type(Type.STOCK)
+				.createStockqueryBuilder()
 				.build());
 		final BigDecimal projectedQty = projectedStockOrNull != null ? projectedStockOrNull.getQuantity() : BigDecimal.ZERO;
 

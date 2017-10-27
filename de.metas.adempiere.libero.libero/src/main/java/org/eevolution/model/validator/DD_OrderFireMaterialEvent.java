@@ -15,6 +15,7 @@ import org.eevolution.model.I_PP_Order;
 
 import de.metas.material.event.EventDescr;
 import de.metas.material.event.MaterialEventService;
+import de.metas.material.event.ProductDescriptorFactory;
 import de.metas.material.event.ddorder.DDOrder;
 import de.metas.material.event.ddorder.DDOrder.DDOrderBuilder;
 import de.metas.material.event.ddorder.DDOrderLine;
@@ -50,15 +51,16 @@ public class DD_OrderFireMaterialEvent
 				.productPlanningId(ddOrder.getPP_Product_Planning_ID())
 				.shipperId(ddOrder.getM_Shipper_ID());
 
+		final ProductDescriptorFactory productDescriptorFactory = Adempiere.getBean(ProductDescriptorFactory.class);
+		
 		final List<I_DD_OrderLine> ddOrderLines = Services.get(IDDOrderDAO.class).retrieveLines(ddOrder);
 		for (final I_DD_OrderLine line : ddOrderLines)
 		{
 			final int durationDays = DDOrderUtil.calculateDurationDays(ddOrder.getPP_Product_Planning(), line.getDD_NetworkDistributionLine());
 
 			ddOrderPojoBuilder.line(DDOrderLine.builder()
-					.attributeSetInstanceId(line.getM_AttributeSetInstance_ID())
+					.productDescriptor(productDescriptorFactory.createProductDescriptor(line))
 					.ddOrderLineId(line.getDD_OrderLine_ID())
-					.productId(line.getM_Product_ID())
 					.qty(line.getQtyDelivered())
 					.networkDistributionLineId(line.getDD_NetworkDistributionLine_ID())
 					.salesOrderLineId(line.getC_OrderLineSO_ID())

@@ -1,8 +1,9 @@
 package de.metas.material.event;
 
+import static de.metas.material.event.MaterialEventUtils.checkIdGreaterThanZero;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.base.Preconditions;
 
 import lombok.Builder;
 import lombok.NonNull;
@@ -31,7 +32,7 @@ import lombok.Value;
  */
 
 @Value // includes @AllArgsConstructor which is used by jackson when it deserializes a string
-public class MaterialDemandDescr
+public class MaterialDemandDescriptor
 {
 	@NonNull
 	EventDescr eventDescr;
@@ -49,7 +50,7 @@ public class MaterialDemandDescr
 
 	@JsonCreator
 	@Builder
-	private MaterialDemandDescr(
+	private MaterialDemandDescriptor(
 			@JsonProperty("eventDescr") @NonNull final EventDescr eventDescr,
 			@JsonProperty("materialDescriptor") @NonNull MaterialDescriptor materialDescriptor,
 			@JsonProperty("demandCandidateId") int demandCandidateId,
@@ -57,8 +58,7 @@ public class MaterialDemandDescr
 			@JsonProperty("forecastLineId") int forecastLineId,
 			@JsonProperty("orderLineId") int orderLineId)
 	{
-		Preconditions.checkArgument(demandCandidateId > 0, "The given demandCandidateId=%s has to be >0", demandCandidateId);
-		this.demandCandidateId = demandCandidateId;
+		this.demandCandidateId = checkIdGreaterThanZero("demandCandidateId", demandCandidateId);
 
 		this.shipmentScheduleId = shipmentScheduleId > 0 ? shipmentScheduleId : -1;
 		this.forecastLineId = forecastLineId > 0 ? forecastLineId : -1;

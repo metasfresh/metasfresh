@@ -1,5 +1,7 @@
 package de.metas.material.dispo.service.candidatechange.handler;
 
+import static de.metas.material.event.EventTestHelper.WAREHOUSE_ID;
+import static de.metas.material.event.EventTestHelper.createProductDescriptor;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
@@ -39,7 +41,6 @@ import de.metas.material.event.MaterialDescriptor;
 
 public class MaterialDemandEventCreatorTest
 {
-
 	@Test
 	public void createMaterialDemandEvent()
 	{
@@ -51,10 +52,10 @@ public class MaterialDemandEventCreatorTest
 				.groupId(40)
 				.seqNo(50)
 				.materialDescr(MaterialDescriptor.builder()
-						.productId(60)
+						.productDescriptor(createProductDescriptor())
 						.date(SystemTime.asTimestamp())
 						.quantity(BigDecimal.TEN)
-						.warehouseId(70)
+						.warehouseId(WAREHOUSE_ID)
 						.build())
 				.build();
 		final MaterialDemandEvent result = MaterialDemandEventCreator.createMaterialDemandEvent(demandCandidate, BigDecimal.TEN);
@@ -63,5 +64,4 @@ public class MaterialDemandEventCreatorTest
 		assertThat(result.getEventDescr().getOrgId()).isEqualTo(30);
 		assertThat(result.getMaterialDemandDescr().getDemandCandidateId()).isEqualTo(10);
 	}
-
 }

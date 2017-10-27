@@ -12,6 +12,7 @@ import de.metas.material.dispo.CandidateSpecification.Type;
 import de.metas.material.dispo.CandidatesQuery;
 import de.metas.material.event.EventDescr;
 import de.metas.material.event.MaterialDescriptor;
+import de.metas.material.event.MaterialDescriptor.DateOperator;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -103,14 +104,13 @@ public class Candidate
 	@Singular
 	List<TransactionDetail> transactionDetails;
 
-	/**
-	 * Does not create a parent segment, even if this candidate has a parent.
-	 *
-	 * @return
-	 */
-	public CandidatesQuery.CandidatesQueryBuilder mkSegmentBuilder()
+	public CandidatesQuery.CandidatesQueryBuilder createStockqueryBuilder()
 	{
-		return CandidatesQuery.builder().materialDescr(materialDescr.withoutQuantity());
+		return CandidatesQuery.builder()
+				.materialDescr(materialDescr
+						.withoutQuantity()
+						.withDateOperator(DateOperator.UNTIL))
+				.type(Type.STOCK);
 	}
 
 	public BigDecimal getQuantity()
@@ -196,7 +196,7 @@ public class Candidate
 		for (final TransactionDetail transactionDetail : transactionDetails)
 		{
 			Preconditions.checkArgument(transactionDetail == null || transactionDetail.isComplete(),
-					"Every element from the given parameter transactionDetails needs to have iscomplete==true; transactionDetail=%s", 
+					"Every element from the given parameter transactionDetails needs to have iscomplete==true; transactionDetail=%s",
 					transactionDetail);
 		}
 		this.transactionDetails = transactionDetails;

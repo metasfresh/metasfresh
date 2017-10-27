@@ -106,4 +106,8 @@ public interface IAttributeSetInstanceBL extends ISingletonService
 	 * @see IAttributeSetInstanceAwareFactoryService#createOrNull(Object)
 	 */
 	void cloneASI(Object to, Object from);
+	
+	I_M_AttributeSetInstance createAttributeSetInstanceFromAttributeSet(IAttributeSet attributeSet);
+	
+	// TODO consider getting rid of the interface
 }

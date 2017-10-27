@@ -1,5 +1,6 @@
 package de.metas.material.dispo.service.event;
 
+import static de.metas.material.event.EventTestHelper.createProductDescriptor;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -37,6 +38,7 @@ import de.metas.material.dispo.service.event.handler.ShipmentScheduleEventHandle
 import de.metas.material.dispo.service.event.handler.TransactionEventHandler;
 import de.metas.material.event.EventDescr;
 import de.metas.material.event.MaterialEventService;
+import de.metas.material.event.ProductDescriptorFactory;
 import de.metas.material.event.ShipmentScheduleEvent;
 import de.metas.material.event.TransactionEvent;
 import de.metas.material.event.ddorder.DDOrder;
@@ -82,7 +84,7 @@ public class MaterialDispoEventListenerFacadeTests
 	public static final int intermediateWarehouseId = 20;
 	public static final int toWarehouseId = 30;
 
-	public static final int productId = 40;
+	//public static final int productId = 40;
 
 	private MaterialDispoEventListenerFacade mdEventListener;
 
@@ -99,7 +101,7 @@ public class MaterialDispoEventListenerFacadeTests
 		org = newInstance(I_AD_Org.class);
 		save(org);
 
-		final CandidateRepository candidateRepository = new CandidateRepository();
+		final CandidateRepository candidateRepository = new CandidateRepository(ProductDescriptorFactory.TESTING_INSTANCE);
 		final SupplyProposalEvaluator supplyProposalEvaluator = new SupplyProposalEvaluator(candidateRepository);
 
 		final StockCandidateService stockCandidateService = new StockCandidateService(candidateRepository);
@@ -157,7 +159,7 @@ public class MaterialDispoEventListenerFacadeTests
 						.shipperId(820)
 						.datePromised(shipmentScheduleEventTime)
 						.line(DDOrderLine.builder()
-								.productId(productId)
+								.productDescriptor(createProductDescriptor())
 								.qty(BigDecimal.TEN)
 								.durationDays(0)
 								.networkDistributionLineId(900)

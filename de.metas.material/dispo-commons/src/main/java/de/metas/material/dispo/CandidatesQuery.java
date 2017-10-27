@@ -1,11 +1,8 @@
 package de.metas.material.dispo;
 
-import java.util.Date;
 import java.util.Objects;
 
 import org.adempiere.util.Check;
-
-import com.google.common.base.Preconditions;
 
 import de.metas.material.dispo.candidate.Candidate;
 import de.metas.material.dispo.candidate.DemandDetail;
@@ -51,26 +48,6 @@ import lombok.experimental.Wither;
 @Wither
 public final class CandidatesQuery implements CandidateSpecification
 {
-	public enum DateOperator
-	{
-		/**
-		 * With this operator, the segment is supposed to match records with a date <b>before</b> the segment's {@link CandidatesSegment#getDate()}.
-		 */
-		UNTIL,
-
-		/**
-		 * With this operator, the segment is supposed to match records with a date <b>after</b> the segment's {@link CandidatesSegment#getDate()}.
-		 */
-		AFTER,
-
-		/**
-		 * With this operator the segment matches records with a date <b>after</b> and also exactly <b>at</b> the segment's {@link CandidatesSegment#getDate()}.
-		 */
-		FROM,
-
-		AT
-	}
-
 	public static final ProductionDetail NO_PRODUCTION_DETAIL = ProductionDetail.builder().build();
 
 	public static final DistributionDetail NO_DISTRIBUTION_DETAIL = DistributionDetail.builder().build();
@@ -78,7 +55,6 @@ public final class CandidatesQuery implements CandidateSpecification
 	public static CandidatesQuery fromCandidate(@NonNull final Candidate candidate)
 	{
 		return CandidatesQuery.builder()
-				.dateOperator(DateOperator.AT)
 				.demandDetail(candidate.getDemandDetail())
 				.distributionDetail(candidate.getDistributionDetail())
 				.groupId(candidate.getGroupId())
@@ -100,19 +76,9 @@ public final class CandidatesQuery implements CandidateSpecification
 	}
 
 	/**
-	 * This property specifies how to interpret the date.
+	 * If set, then this query is about {@link Candidate}s that have a parent candidate which matches the given material descriptor.
 	 */
-	DateOperator dateOperator;
-
-	/**
-	 * If set, then this segment is about {@link Candidate}s that have a parent candidate which has the given product ID.
-	 */
-	int parentProductId;
-
-	/**
-	 * If set, then this segment is about {@link Candidate}s that have a parent candidate which has the given warehouse ID.
-	 */
-	int parentWarehouseId;
+	MaterialDescriptor parentMaterialDescriptor;
 
 	int orgId;
 
@@ -159,9 +125,7 @@ public final class CandidatesQuery implements CandidateSpecification
 	TransactionDetail transactionDetail;
 
 	public CandidatesQuery(
-			final DateOperator dateOperator,
-			final int parentProductId,
-			final int parentWarehouseId,
+			final MaterialDescriptor parentMaterialDescriptor,
 			final int orgId,
 			final Type type,
 			final SubType subType,
@@ -176,9 +140,7 @@ public final class CandidatesQuery implements CandidateSpecification
 			final DemandDetail demandDetail,
 			final TransactionDetail transactionDetail)
 	{
-		this.dateOperator = dateOperator;
-		this.parentProductId = parentProductId;
-		this.parentWarehouseId = parentWarehouseId;
+		this.parentMaterialDescriptor = parentMaterialDescriptor;
 		this.orgId = orgId;
 		this.type = type;
 		this.subType = subType;
@@ -188,8 +150,6 @@ public final class CandidatesQuery implements CandidateSpecification
 		this.groupId = groupId;
 		this.seqNo = seqNo;
 
-		Preconditions.checkArgument(materialDescr == null || materialDescr.getDate() == null || dateOperator != null,
-				"If a date ist specified in the materialDescriptor, then dateOperator may not be null; materialDescriptor", materialDescr);
 		this.materialDescr = materialDescr;
 		this.productionDetail = productionDetail;
 		this.distributionDetail = distributionDetail;
@@ -206,29 +166,31 @@ public final class CandidatesQuery implements CandidateSpecification
 	 */
 	public boolean matches(final Candidate candidate)
 	{
-		final boolean dateMatches;
-		switch (dateOperator)
+		if (materialDescr != null || materialDescr.getDate() != null)
 		{
-			case AFTER:
-				dateMatches = candidate.getDate().getTime() > getDate().getTime();
-				break;
-			case FROM:
-				dateMatches = candidate.getDate().getTime() >= getDate().getTime();
-				break;
-			case UNTIL:
-				dateMatches = candidate.getDate().getTime() <= getDate().getTime();
-				break;
-			case AT:
-				dateMatches = candidate.getDate().getTime() == getDate().getTime();
-				break;
-			default:
-				Check.errorIf(true, "Unexpected date operator={}; this={}", dateOperator, this);
-				return false; // won't be reached
-		}
-
-		if (!dateMatches)
-		{
-			return false;
+			final boolean dateMatches;
+			switch (materialDescr.getDateOperator())
+			{
+				case AFTER:
+					dateMatches = candidate.getDate().getTime() > materialDescr.getDate().getTime();
+					break;
+				case FROM:
+					dateMatches = candidate.getDate().getTime() >= materialDescr.getDate().getTime();
+					break;
+				case UNTIL:
+					dateMatches = candidate.getDate().getTime() <= materialDescr.getDate().getTime();
+					break;
+				case AT:
+					dateMatches = candidate.getDate().getTime() == materialDescr.getDate().getTime();
+					break;
+				default:
+					Check.errorIf(true, "Unexpected date operator={}; this={}", materialDescr.getDateOperator(), this);
+					return false; // won't be reached
+			}
+			if (!dateMatches)
+			{
+				return false;
+			}
 		}
 
 		if (isProductIdSpecified() && !Objects.equals(materialDescr.getProductId(), candidate.getProductId()))
@@ -241,7 +203,7 @@ public final class CandidatesQuery implements CandidateSpecification
 			return false;
 		}
 
-		if (isWarehouseIdSpecitified() && !Objects.equals(materialDescr.getWarehouseId(), candidate.getWarehouseId()))
+		if (isWarehouseIdSpecified() && !Objects.equals(materialDescr.getWarehouseId(), candidate.getWarehouseId()))
 		{
 			return false;
 		}
@@ -249,28 +211,18 @@ public final class CandidatesQuery implements CandidateSpecification
 		return true;
 	}
 
-	public Date getDate()
-	{
-		return materialDescr == null ? null : materialDescr.getDate();
-	}
-
 	private boolean isProductIdSpecified()
 	{
 		return materialDescr != null && materialDescr.getProductId() > 0;
 	}
 
-	private boolean isWarehouseIdSpecitified()
+	private boolean isWarehouseIdSpecified()
 	{
 		return materialDescr != null && materialDescr.getWarehouseId() > 0;
 	}
 
-	public int getProductId()
+	public boolean hasParentMaterialDescriptor()
 	{
-		return materialDescr == null ? 0 : materialDescr.getProductId();
-	}
-
-	public int getWarehouseId()
-	{
-		return materialDescr == null ? 0 : materialDescr.getWarehouseId();
+		return parentMaterialDescriptor != null;
 	}
 }

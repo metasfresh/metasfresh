@@ -1,26 +1,9 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
 package org.eevolution.model;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import org.compiere.util.Env;
 
 /** Generated Model for PP_Product_Planning
  *  @author Adempiere (generated) 
@@ -32,7 +15,7 @@ public class X_PP_Product_Planning extends org.compiere.model.PO implements I_PP
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 245923013L;
+	private static final long serialVersionUID = -104794660L;
 
     /** Standard Constructor */
     public X_PP_Product_Planning (Properties ctx, int PP_Product_Planning_ID, String trxName)
@@ -40,16 +23,13 @@ public class X_PP_Product_Planning extends org.compiere.model.PO implements I_PP
       super (ctx, PP_Product_Planning_ID, trxName);
       /** if (PP_Product_Planning_ID == 0)
         {
-			setIsCreatePlan (true);
-// Y
-			setIsDocComplete (false);
-// N
+			setIsCreatePlan (true); // Y
+			setIsDocComplete (false); // N
 			setIsPhantom (false);
 			setIsRequiredDRP (false);
 			setIsRequiredMRP (false);
 			setM_Product_ID (0);
-			setPP_POQ_AggregateOnBPartnerLevel (false);
-// N
+			setPP_POQ_AggregateOnBPartnerLevel (false); // N
 			setPP_Product_Planning_ID (0);
         } */
     }
@@ -60,29 +40,13 @@ public class X_PP_Product_Planning extends org.compiere.model.PO implements I_PP
       super (ctx, rs, trxName);
     }
 
-    /** AccessLevel
-      * @return 3 - Client - Org 
-      */
-    @Override
-    protected int get_AccessLevel()
-    {
-      return accessLevel.intValue();
-    }
 
     /** Load Meta Data */
     @Override
     protected org.compiere.model.POInfo initPO (Properties ctx)
     {
-      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_ID, get_TrxName());
+      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
-    }
-
-    @Override
-    public String toString()
-    {
-      StringBuilder sb = new StringBuilder ("X_PP_Product_Planning[")
-        .append(get_ID()).append("]");
-      return sb.toString();
     }
 
 	@Override
@@ -211,7 +175,7 @@ public class X_PP_Product_Planning extends org.compiere.model.PO implements I_PP
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_DeliveryTime_Promised);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -246,7 +210,7 @@ public class X_PP_Product_Planning extends org.compiere.model.PO implements I_PP
 	@Override
 	public void setIsDocComplete (boolean IsDocComplete)
 	{
-		set_ValueNoCheck (COLUMNNAME_IsDocComplete, Boolean.valueOf(IsDocComplete));
+		set_Value (COLUMNNAME_IsDocComplete, Boolean.valueOf(IsDocComplete));
 	}
 
 	/** Get IsDocComplete .
@@ -273,17 +237,17 @@ public class X_PP_Product_Planning extends org.compiere.model.PO implements I_PP
 	public static final String ISMANUFACTURED_Yes = "Y";
 	/** No = N */
 	public static final String ISMANUFACTURED_No = "N";
-	/** Set Manufactured.
-		@param IsManufactured Manufactured	  */
+	/** Set Wird produziert.
+		@param IsManufactured Wird produziert	  */
 	@Override
 	public void setIsManufactured (java.lang.String IsManufactured)
 	{
 
-		set_Value (COLUMNNAME_IsManufactured, IsManufactured);
+		set_ValueNoCheck (COLUMNNAME_IsManufactured, IsManufactured);
 	}
 
-	/** Get Manufactured.
-		@return Manufactured	  */
+	/** Get Wird produziert.
+		@return Wird produziert	  */
 	@Override
 	public java.lang.String getIsManufactured () 
 	{
@@ -415,6 +379,40 @@ public class X_PP_Product_Planning extends org.compiere.model.PO implements I_PP
 	}
 
 	@Override
+	public org.compiere.model.I_M_AttributeInstance getM_AttributeInstance() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_M_AttributeInstance_ID, org.compiere.model.I_M_AttributeInstance.class);
+	}
+
+	@Override
+	public void setM_AttributeInstance(org.compiere.model.I_M_AttributeInstance M_AttributeInstance)
+	{
+		set_ValueFromPO(COLUMNNAME_M_AttributeInstance_ID, org.compiere.model.I_M_AttributeInstance.class, M_AttributeInstance);
+	}
+
+	/** Set M_AttributeInstance.
+		@param M_AttributeInstance_ID M_AttributeInstance	  */
+	@Override
+	public void setM_AttributeInstance_ID (int M_AttributeInstance_ID)
+	{
+		if (M_AttributeInstance_ID < 1) 
+			set_Value (COLUMNNAME_M_AttributeInstance_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_AttributeInstance_ID, Integer.valueOf(M_AttributeInstance_ID));
+	}
+
+	/** Get M_AttributeInstance.
+		@return M_AttributeInstance	  */
+	@Override
+	public int getM_AttributeInstance_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_AttributeInstance_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
 	public org.compiere.model.I_M_Product getM_Product() throws RuntimeException
 	{
 		return get_ValueAsPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class);
@@ -506,7 +504,7 @@ public class X_PP_Product_Planning extends org.compiere.model.PO implements I_PP
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Order_Max);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -528,7 +526,7 @@ public class X_PP_Product_Planning extends org.compiere.model.PO implements I_PP
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Order_Min);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -550,7 +548,7 @@ public class X_PP_Product_Planning extends org.compiere.model.PO implements I_PP
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Order_Pack);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -569,7 +567,7 @@ public class X_PP_Product_Planning extends org.compiere.model.PO implements I_PP
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Order_Period);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -616,7 +614,7 @@ public class X_PP_Product_Planning extends org.compiere.model.PO implements I_PP
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Order_Qty);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -754,7 +752,7 @@ public class X_PP_Product_Planning extends org.compiere.model.PO implements I_PP
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_SafetyStock);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -795,6 +793,22 @@ public class X_PP_Product_Planning extends org.compiere.model.PO implements I_PP
 		return ii.intValue();
 	}
 
+	/** Set StorageAttributesKey (technical).
+		@param StorageAttributesKey StorageAttributesKey (technical)	  */
+	@Override
+	public void setStorageAttributesKey (java.lang.String StorageAttributesKey)
+	{
+		set_Value (COLUMNNAME_StorageAttributesKey, StorageAttributesKey);
+	}
+
+	/** Get StorageAttributesKey (technical).
+		@return StorageAttributesKey (technical)	  */
+	@Override
+	public java.lang.String getStorageAttributesKey () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_StorageAttributesKey);
+	}
+
 	/** Set Time Fence.
 		@param TimeFence Time Fence	  */
 	@Override
@@ -810,7 +824,7 @@ public class X_PP_Product_Planning extends org.compiere.model.PO implements I_PP
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_TimeFence);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -829,7 +843,7 @@ public class X_PP_Product_Planning extends org.compiere.model.PO implements I_PP
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_TransfertTime);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -851,7 +865,7 @@ public class X_PP_Product_Planning extends org.compiere.model.PO implements I_PP
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_WorkingTime);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 

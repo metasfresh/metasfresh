@@ -1,5 +1,7 @@
 package de.metas.material.dispo.service.event.handler;
 
+import static de.metas.material.event.EventTestHelper.PRODUCT_ID;
+import static de.metas.material.event.EventTestHelper.createProductDescriptor;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -32,6 +34,7 @@ import de.metas.material.dispo.service.candidatechange.handler.DemandCandiateHan
 import de.metas.material.dispo.service.candidatechange.handler.SupplyCandiateHandler;
 import de.metas.material.event.EventDescr;
 import de.metas.material.event.MaterialEventService;
+import de.metas.material.event.ProductDescriptorFactory;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrderLine;
 import de.metas.material.event.pporder.ProductionPlanEvent;
@@ -63,7 +66,7 @@ public class ProdcutionPlanEventHandlerTests
 {
 	@Rule
 	public final AdempiereTestWatcher testWatcher = new AdempiereTestWatcher();
-	
+
 	public static final Date t0 = SystemTime.asDate();
 
 	private static final Date t1 = TimeUtil.addMinutes(t0, 10);
@@ -73,8 +76,6 @@ public class ProdcutionPlanEventHandlerTests
 	public static final int rawProduct1Id = 50;
 
 	public static final int rawProduct2Id = 55;
-
-	public static final int productId = 40;
 
 	public static final int intermediateWarehouseId = 20;
 
@@ -95,16 +96,15 @@ public class ProdcutionPlanEventHandlerTests
 		org = newInstance(I_AD_Org.class);
 		save(org);
 
-		final CandidateRepository candidateRepository = new CandidateRepository();
+		final CandidateRepository candidateRepository = new CandidateRepository(ProductDescriptorFactory.TESTING_INSTANCE);
 		final StockCandidateService stockCandidateService = new StockCandidateService(candidateRepository);
-		
+
 		final CandidateChangeService candidateChangeHandler = new CandidateChangeService(ImmutableList.of(
 				new SupplyCandiateHandler(candidateRepository, materialEventService, stockCandidateService),
-				new DemandCandiateHandler(candidateRepository, materialEventService, stockCandidateService)
-				));
-		
+				new DemandCandiateHandler(candidateRepository, materialEventService, stockCandidateService)));
+
 		final CandidateService candidateService = new CandidateService(
-				candidateRepository, 
+				candidateRepository,
 				MaterialEventService.createLocalServiceThatIsReadyToUse());
 
 		productionPlanEventHandler = new ProductionPlanEventHandler(candidateChangeHandler, candidateService);
@@ -135,13 +135,13 @@ public class ProdcutionPlanEventHandlerTests
 
 		final I_MD_Candidate t2Stock = DispoTestUtils.filter(Type.STOCK, t2).get(0);
 		assertThat(t2Stock.getQty()).isEqualByComparingTo(BigDecimal.ONE);
-		assertThat(t2Stock.getM_Product_ID()).isEqualTo(productId);
+		assertThat(t2Stock.getM_Product_ID()).isEqualTo(PRODUCT_ID);
 		assertThat(t2Stock.getMD_Candidate_GroupId()).isGreaterThan(0); // stock candidates have their own groupIds too
 		assertThat(t2Stock.getMD_Candidate_Parent_ID(), lessThanOrEqualTo(0));
 
 		final I_MD_Candidate t2Supply = DispoTestUtils.filter(Type.SUPPLY, t2).get(0);
 		assertThat(t2Supply.getQty()).isEqualByComparingTo(BigDecimal.ONE);
-		assertThat(t2Supply.getM_Product_ID()).isEqualTo(productId);
+		assertThat(t2Supply.getM_Product_ID()).isEqualTo(PRODUCT_ID);
 		assertThat(t2Supply.getMD_Candidate_Parent_ID()).isEqualTo(t2Stock.getMD_Candidate_ID());
 		assertThat(t2Supply.getMD_Candidate_GroupId()).isNotEqualTo(t2Stock.getMD_Candidate_GroupId()); // stock candidates' groupIds are different from supply/demand groups' groupIds
 
@@ -188,7 +188,7 @@ public class ProdcutionPlanEventHandlerTests
 						.orgId(org.getAD_Org_ID())
 						.datePromised(t2)
 						.dateStartSchedule(t1)
-						.productId(productId)
+						.productDescriptor(createProductDescriptor())
 						.quantity(BigDecimal.ONE)
 						.warehouseId(intermediateWarehouseId)
 						.plantId(120)
@@ -196,14 +196,14 @@ public class ProdcutionPlanEventHandlerTests
 						.productPlanningId(140)
 						.line(PPOrderLine.builder()
 								.description("descr1")
-								.productId(rawProduct1Id)
+								.productDescriptor(createProductDescriptor())
 								.qtyRequired(BigDecimal.TEN)
 								.productBomLineId(1020)
 								.receipt(false)
 								.build())
 						.line(PPOrderLine.builder()
 								.description("descr2")
-								.productId(rawProduct2Id)
+								.productDescriptor(createProductDescriptor())
 								.qtyRequired(eleven)
 								.productBomLineId(1030)
 								.receipt(false)

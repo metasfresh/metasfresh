@@ -1,17 +1,21 @@
 package de.metas.material.dispo;
 
+import static de.metas.material.event.EventTestHelper.STORAGE_ATTRIBUTES_KEY;
+import static de.metas.material.event.EventTestHelper.ATTRIBUTE_SET_INSTANCE_ID;
+import static de.metas.material.event.EventTestHelper.PRODUCT_ID;
+import static de.metas.material.event.EventTestHelper.WAREHOUSE_ID;
+import static de.metas.material.event.EventTestHelper.createMaterialDescriptor;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.math.BigDecimal;
 import java.sql.Timestamp;
 
 import org.adempiere.util.time.SystemTime;
 import org.junit.Test;
 
 import de.metas.material.dispo.CandidateSpecification.Type;
-import de.metas.material.dispo.CandidatesQuery.DateOperator;
 import de.metas.material.dispo.candidate.Candidate;
 import de.metas.material.event.MaterialDescriptor;
+import de.metas.material.event.MaterialDescriptor.DateOperator;
 
 /*
  * #%L
@@ -48,19 +52,19 @@ public class CandidatesQueryTest
 	public void fromCandidate()
 	{
 		final Timestamp date = SystemTime.asTimestamp();
+
 		final Candidate cand = Candidate.builder().type(Type.STOCK)
-				.materialDescr(MaterialDescriptor.builderForCandidateOrQuery()
-						.date(date)
-						.productId(20)
-						.quantity(BigDecimal.TEN)
-						.warehouseId(30)
-						.build())
+				.materialDescr(createMaterialDescriptor().withDate(date))
 				.build();
 		final CandidatesQuery query = CandidatesQuery.fromCandidate(cand);
-		assertThat(query.getDateOperator()).isEqualTo(DateOperator.AT);
-		assertThat(query.getDate()).isEqualTo(date);
-		assertThat(query.getProductId()).isEqualTo(20);
-		assertThat(query.getWarehouseId()).isEqualTo(30);
+		
+		assertThat(query.getMaterialDescr().getDate()).isEqualTo(date);
+		assertThat(query.getMaterialDescr().getDateOperator()).isEqualTo(DateOperator.AT);
+		assertThat(query.getMaterialDescr().getProductId()).isEqualTo(PRODUCT_ID);
+		assertThat(query.getMaterialDescr().getStorageAttributesKey()).isEqualTo(STORAGE_ATTRIBUTES_KEY);
+		assertThat(query.getMaterialDescr().getAttributeSetInstanceId()).isEqualTo(ATTRIBUTE_SET_INSTANCE_ID);
+		assertThat(query.getMaterialDescr().getWarehouseId()).isEqualTo(WAREHOUSE_ID);
+
 		assertThat(query.getType()).isEqualTo(Type.STOCK);
 		assertThat(query.getParentId()).isEqualTo(0);
 	}

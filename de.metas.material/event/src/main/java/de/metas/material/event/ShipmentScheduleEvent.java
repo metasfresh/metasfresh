@@ -1,8 +1,9 @@
 package de.metas.material.event;
 
+import static de.metas.material.event.MaterialEventUtils.checkIdGreaterThanZero;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.base.Preconditions;
 
 import lombok.Builder;
 import lombok.Builder.Default;
@@ -54,8 +55,7 @@ public class ShipmentScheduleEvent implements MaterialEvent
 			@JsonProperty("shipmentScheduleId") int shipmentScheduleId,
 			@JsonProperty("orderLineId") int orderLineId)
 	{
-		Preconditions.checkArgument(shipmentScheduleId > 0, "Given parameter shipmentScheduleId=%s needs to be >0", shipmentScheduleId);
-		this.shipmentScheduleId = shipmentScheduleId;
+		this.shipmentScheduleId = checkIdGreaterThanZero("shipmentScheduleId", shipmentScheduleId);
 
 		this.eventDescr = eventDescr;
 		this.materialDescr = materialDescr;

@@ -37,6 +37,9 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public class DispoTestUtils
 {
+
+	// TODO: change the whole package name for this module to de.metas.material.dispo.commons
+
 	public List<I_MD_Candidate> filter(@NonNull final Type type)
 	{
 		final List<I_MD_Candidate> allRecords = retrieveAllRecords();
@@ -53,7 +56,6 @@ public class DispoTestUtils
 				.collect(Collectors.toList());
 	}
 
-	
 	public List<I_MD_Candidate> filter(@NonNull final Type type, @NonNull final Date date)
 	{
 		return filter(type).stream()

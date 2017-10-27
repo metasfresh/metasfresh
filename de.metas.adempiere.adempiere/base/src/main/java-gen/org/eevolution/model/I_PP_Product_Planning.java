@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 package org.eevolution.model;
 
 
@@ -28,13 +12,13 @@ public interface I_PP_Product_Planning
     public static final String Table_Name = "PP_Product_Planning";
 
     /** AD_Table_ID=53020 */
-    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
+//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
 
-    /** AccessLevel = 3 - Client - Org 
+    /** AccessLevel = 3 - Client - Org
      */
-    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(3);
+//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(3);
 
     /** Load Meta Data */
 
@@ -48,7 +32,7 @@ public interface I_PP_Product_Planning
 	 */
 	public int getAD_Client_ID();
 
-	public org.compiere.model.I_AD_Client getAD_Client() throws RuntimeException;
+	public org.compiere.model.I_AD_Client getAD_Client();
 
     /** Column definition for AD_Client_ID */
     public static final org.adempiere.model.ModelColumn<I_PP_Product_Planning, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_PP_Product_Planning, org.compiere.model.I_AD_Client>(I_PP_Product_Planning.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
@@ -75,7 +59,7 @@ public interface I_PP_Product_Planning
 	 */
 	public int getAD_Org_ID();
 
-	public org.compiere.model.I_AD_Org getAD_Org() throws RuntimeException;
+	public org.compiere.model.I_AD_Org getAD_Org();
 
 	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
 
@@ -104,7 +88,7 @@ public interface I_PP_Product_Planning
 	 */
 	public int getAD_Workflow_ID();
 
-	public org.compiere.model.I_AD_Workflow getAD_Workflow() throws RuntimeException;
+	public org.compiere.model.I_AD_Workflow getAD_Workflow();
 
 	public void setAD_Workflow(org.compiere.model.I_AD_Workflow AD_Workflow);
 
@@ -133,7 +117,7 @@ public interface I_PP_Product_Planning
 	 */
 	public int getC_BPartner_ID();
 
-	public org.compiere.model.I_C_BPartner getC_BPartner() throws RuntimeException;
+	public org.compiere.model.I_C_BPartner getC_BPartner();
 
 	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner);
 
@@ -190,7 +174,7 @@ public interface I_PP_Product_Planning
 	 */
 	public int getDD_NetworkDistribution_ID();
 
-	public org.eevolution.model.I_DD_NetworkDistribution getDD_NetworkDistribution() throws RuntimeException;
+	public org.eevolution.model.I_DD_NetworkDistribution getDD_NetworkDistribution();
 
 	public void setDD_NetworkDistribution(org.eevolution.model.I_DD_NetworkDistribution DD_NetworkDistribution);
 
@@ -298,7 +282,7 @@ public interface I_PP_Product_Planning
     public static final String COLUMNNAME_IsDocComplete = "IsDocComplete";
 
 	/**
-	 * Set Manufactured.
+	 * Set Wird produziert.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -307,7 +291,7 @@ public interface I_PP_Product_Planning
 	public void setIsManufactured (java.lang.String IsManufactured);
 
 	/**
-	 * Get Manufactured.
+	 * Get Wird produziert.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -440,6 +424,33 @@ public interface I_PP_Product_Planning
     public static final String COLUMNNAME_IsRequiredMRP = "IsRequiredMRP";
 
 	/**
+	 * Set M_AttributeInstance.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setM_AttributeInstance_ID (int M_AttributeInstance_ID);
+
+	/**
+	 * Get M_AttributeInstance.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getM_AttributeInstance_ID();
+
+	public org.compiere.model.I_M_AttributeInstance getM_AttributeInstance();
+
+	public void setM_AttributeInstance(org.compiere.model.I_M_AttributeInstance M_AttributeInstance);
+
+    /** Column definition for M_AttributeInstance_ID */
+    public static final org.adempiere.model.ModelColumn<I_PP_Product_Planning, org.compiere.model.I_M_AttributeInstance> COLUMN_M_AttributeInstance_ID = new org.adempiere.model.ModelColumn<I_PP_Product_Planning, org.compiere.model.I_M_AttributeInstance>(I_PP_Product_Planning.class, "M_AttributeInstance_ID", org.compiere.model.I_M_AttributeInstance.class);
+    /** Column name M_AttributeInstance_ID */
+    public static final String COLUMNNAME_M_AttributeInstance_ID = "M_AttributeInstance_ID";
+
+	/**
 	 * Set Produkt.
 	 * Produkt, Leistung, Artikel
 	 *
@@ -459,7 +470,7 @@ public interface I_PP_Product_Planning
 	 */
 	public int getM_Product_ID();
 
-	public org.compiere.model.I_M_Product getM_Product() throws RuntimeException;
+	public org.compiere.model.I_M_Product getM_Product();
 
 	public void setM_Product(org.compiere.model.I_M_Product M_Product);
 
@@ -488,7 +499,7 @@ public interface I_PP_Product_Planning
 	 */
 	public int getM_Warehouse_ID();
 
-	public org.compiere.model.I_M_Warehouse getM_Warehouse() throws RuntimeException;
+	public org.compiere.model.I_M_Warehouse getM_Warehouse();
 
 	public void setM_Warehouse(org.compiere.model.I_M_Warehouse M_Warehouse);
 
@@ -659,7 +670,7 @@ public interface I_PP_Product_Planning
 	 */
 	public int getPlanner_ID();
 
-	public org.compiere.model.I_AD_User getPlanner() throws RuntimeException;
+	public org.compiere.model.I_AD_User getPlanner();
 
 	public void setPlanner(org.compiere.model.I_AD_User Planner);
 
@@ -711,7 +722,7 @@ public interface I_PP_Product_Planning
 	 */
 	public int getPP_Product_BOM_ID();
 
-	public org.eevolution.model.I_PP_Product_BOM getPP_Product_BOM() throws RuntimeException;
+	public org.eevolution.model.I_PP_Product_BOM getPP_Product_BOM();
 
 	public void setPP_Product_BOM(org.eevolution.model.I_PP_Product_BOM PP_Product_BOM);
 
@@ -788,7 +799,7 @@ public interface I_PP_Product_Planning
 	 */
 	public int getS_Resource_ID();
 
-	public org.compiere.model.I_S_Resource getS_Resource() throws RuntimeException;
+	public org.compiere.model.I_S_Resource getS_Resource();
 
 	public void setS_Resource(org.compiere.model.I_S_Resource S_Resource);
 
@@ -796,6 +807,29 @@ public interface I_PP_Product_Planning
     public static final org.adempiere.model.ModelColumn<I_PP_Product_Planning, org.compiere.model.I_S_Resource> COLUMN_S_Resource_ID = new org.adempiere.model.ModelColumn<I_PP_Product_Planning, org.compiere.model.I_S_Resource>(I_PP_Product_Planning.class, "S_Resource_ID", org.compiere.model.I_S_Resource.class);
     /** Column name S_Resource_ID */
     public static final String COLUMNNAME_S_Resource_ID = "S_Resource_ID";
+
+	/**
+	 * Set StorageAttributesKey (technical).
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setStorageAttributesKey (java.lang.String StorageAttributesKey);
+
+	/**
+	 * Get StorageAttributesKey (technical).
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getStorageAttributesKey();
+
+    /** Column definition for StorageAttributesKey */
+    public static final org.adempiere.model.ModelColumn<I_PP_Product_Planning, Object> COLUMN_StorageAttributesKey = new org.adempiere.model.ModelColumn<I_PP_Product_Planning, Object>(I_PP_Product_Planning.class, "StorageAttributesKey", null);
+    /** Column name StorageAttributesKey */
+    public static final String COLUMNNAME_StorageAttributesKey = "StorageAttributesKey";
 
 	/**
 	 * Set Time Fence.

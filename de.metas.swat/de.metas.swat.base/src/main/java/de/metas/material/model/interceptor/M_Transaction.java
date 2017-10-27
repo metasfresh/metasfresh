@@ -25,6 +25,8 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.material.event.EventDescr;
 import de.metas.material.event.MaterialDescriptor;
 import de.metas.material.event.MaterialEventService;
+import de.metas.material.event.ProductDescriptor;
+import de.metas.material.event.ProductDescriptorFactory;
 import de.metas.material.event.TransactionEvent;
 import de.metas.materialtransaction.MTransactionUtil;
 import lombok.NonNull;
@@ -184,10 +186,13 @@ public class M_Transaction
 			@NonNull final I_M_Transaction transaction,
 			@NonNull final BigDecimal quantity)
 	{
+		final ProductDescriptorFactory productDescriptorFactory = Adempiere.getBean(ProductDescriptorFactory.class);
+		final ProductDescriptor productDescriptor = productDescriptorFactory.createProductDescriptor(transaction);
+		
 		return MaterialDescriptor.builder()
 				.warehouseId(transaction.getM_Locator().getM_Warehouse_ID())
 				.date(transaction.getMovementDate())
-				.productId(transaction.getM_Product_ID())
+				.productDescriptor(productDescriptor)
 				.quantity(quantity)
 				.build();
 	}

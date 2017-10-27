@@ -5,7 +5,7 @@ import java.util.Optional;
 import org.eevolution.model.I_PP_Order;
 
 import de.metas.material.event.EventDescr;
-import de.metas.material.event.MaterialDemandDescr;
+import de.metas.material.event.MaterialDemandDescriptor;
 import de.metas.material.event.MaterialEvent;
 import lombok.Builder;
 import lombok.NonNull;
@@ -51,5 +51,5 @@ final public class ProductionPlanEvent implements MaterialEvent
 	PPOrder ppOrder;
 	
 	@NonNull
-	Optional<MaterialDemandDescr> materialDemandDescr;
+	Optional<MaterialDemandDescriptor> materialDemandDescr;
 }

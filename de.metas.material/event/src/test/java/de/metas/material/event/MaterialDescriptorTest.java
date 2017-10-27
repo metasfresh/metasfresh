@@ -1,11 +1,13 @@
 package de.metas.material.event;
 
+import static de.metas.material.event.EventTestHelper.NOW;
+import static de.metas.material.event.EventTestHelper.PRODUCT_ID;
+import static de.metas.material.event.EventTestHelper.WAREHOUSE_ID;
+import static de.metas.material.event.EventTestHelper.createProductDescriptor;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
-import java.util.Date;
 
-import org.adempiere.util.time.SystemTime;
 import org.junit.Test;
 
 /*
@@ -49,37 +51,50 @@ public class MaterialDescriptorTest
 	@Test
 	public void builderForCandidate_succeed()
 	{
-		final Date date = SystemTime.asDate();
 		final MaterialDescriptor result = MaterialDescriptor.builderForCandidateOrQuery()
-				.date(date)
-				.productId(10)
+				.date(NOW)
+				.productDescriptor(createProductDescriptor())
 				.quantity(BigDecimal.TEN)
-				.warehouseId(20)
+				.warehouseId(WAREHOUSE_ID)
 				.build();
 		assertThat(result.isComplete()).isTrue();
 		assertThat(result.getQuantity()).isEqualByComparingTo("10");
-		assertThat(result.getProductId()).isEqualTo(10);
-		assertThat(result.getWarehouseId()).isEqualTo(20);
-		assertThat(result.getDate()).isEqualTo(date);
+		assertThat(result.getProductId()).isEqualTo(PRODUCT_ID);
+		assertThat(result.getWarehouseId()).isEqualTo(WAREHOUSE_ID);
+		assertThat(result.getDate()).isEqualTo(NOW);
 	}
 
 	@Test
-	public void withouQuantity()
+	public void withoutQuantity()
 	{
-		final Date date = SystemTime.asDate();
 		final MaterialDescriptor materialDescr = MaterialDescriptor.builderForCandidateOrQuery()
-				.date(date)
-				.productId(10)
+				.date(NOW)
+				.productDescriptor(createProductDescriptor())
 				.quantity(BigDecimal.TEN)
-				.warehouseId(20)
+				.warehouseId(WAREHOUSE_ID)
 				.build();
 		assertThat(materialDescr.isComplete()).isTrue(); // guard
-		
+
 		final MaterialDescriptor result = materialDescr.withoutQuantity();
-		assertThat(result.isComplete()).isFalse();
+
+		assertThat(result.isComplete()).as("the materialDescriptor without quantity is not complete").isFalse();
 		assertThat(result.getQuantity()).isNull();
-		assertThat(result.getProductId()).isEqualTo(10);
-		assertThat(result.getWarehouseId()).isEqualTo(20);
-		assertThat(result.getDate()).isEqualTo(date);
+		assertThat(result.getProductId()).isEqualTo(PRODUCT_ID);
+		assertThat(result.getWarehouseId()).isEqualTo(WAREHOUSE_ID);
+		assertThat(result.getDate()).isEqualTo(NOW);
+	}
+
+	@Test(expected = RuntimeException.class)
+	public void completeMaterialDescriptor_with_incomplete_productdescriptor()
+	{
+		final ProductDescriptor incompleteProductDescriptor = ProductDescriptorFactory.TESTING_INSTANCE.forProductIdOnly(PRODUCT_ID);
+		assertThat(incompleteProductDescriptor.isComplete()).isFalse();
+
+		MaterialDescriptor.builderForCandidateOrQuery()
+				.date(NOW)
+				.productDescriptor(incompleteProductDescriptor)
+				.quantity(BigDecimal.TEN)
+				.warehouseId(WAREHOUSE_ID)
+				.build();
 	}
 }

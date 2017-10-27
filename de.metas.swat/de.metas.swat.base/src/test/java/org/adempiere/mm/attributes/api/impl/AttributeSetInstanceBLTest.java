@@ -1,12 +1,12 @@
-package de.metas.material.event;
+package org.adempiere.mm.attributes.api.impl;
 
-import java.math.BigDecimal;
+import static org.junit.Assert.*;
 
-import org.adempiere.util.time.SystemTime;
+import org.junit.Test;
 
 /*
  * #%L
- * metasfresh-material-event
+ * de.metas.swat.base
  * %%
  * Copyright (C) 2017 metas GmbH
  * %%
@@ -26,18 +26,18 @@ import org.adempiere.util.time.SystemTime;
  * #L%
  */
 
-public class MaterialDemandDescrTest
+public class AttributeSetInstanceBLTest
 {
-	public void test()
+
+	@Test
+	public void createAttributeSetInstanceFromAttributeSet()
 	{
-		MaterialDemandDescr.builder()
-				.eventDescr(new EventDescr(1, 2))
-				.materialDescriptor(MaterialDescriptor.builder()
-						.date(SystemTime.asTimestamp())
-						.productId(10)
-						.quantity(BigDecimal.TEN)
-						.warehouseId(20)
-						.build())
-				.build();
+		fail("Not yet implemented");
+	}
+
+	@Test
+	public void createStorageAttributesKey()
+	{
+		fail("Not yet implemented");
 	}
 }

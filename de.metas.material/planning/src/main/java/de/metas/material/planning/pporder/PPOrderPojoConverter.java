@@ -3,6 +3,8 @@ package de.metas.material.planning.pporder;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.springframework.stereotype.Service;
 
+import de.metas.material.event.ProductDescriptor;
+import de.metas.material.event.ProductDescriptorFactory;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrderLine;
 import de.metas.material.event.pporder.PPOrderRequestedEvent;
@@ -32,13 +34,21 @@ import lombok.NonNull;
 @Service
 public class PPOrderPojoConverter
 {
+	private final ProductDescriptorFactory productDescriptorFactory;
+
+	public PPOrderPojoConverter(@NonNull final ProductDescriptorFactory productDescriptorFactory)
+	{
+		this.productDescriptorFactory = productDescriptorFactory;
+	}
+
 	public PPOrderLine asPPOrderLinePojo(@NonNull final I_PP_Order_BOMLine ppOrderBOMLine)
 	{
+		final ProductDescriptor productDescriptor = productDescriptorFactory.createProductDescriptor(ppOrderBOMLine);
+
 		return PPOrderLine.builder()
 				.productBomLineId(ppOrderBOMLine.getPP_Product_BOMLine_ID())
-				.attributeSetInstanceId(ppOrderBOMLine.getM_AttributeSetInstance_ID())
+				.productDescriptor(productDescriptor)
 				.description(ppOrderBOMLine.getDescription())
-				.productId(ppOrderBOMLine.getM_Product_ID())
 				.qtyRequired(ppOrderBOMLine.getQtyRequiered())
 				.build();
 	}

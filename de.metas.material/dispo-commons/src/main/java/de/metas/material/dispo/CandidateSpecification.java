@@ -28,6 +28,7 @@ import de.metas.material.event.MaterialDescriptor;
  * #L%
  */
 
+// TODO remove
 public interface CandidateSpecification
 {
 	/**

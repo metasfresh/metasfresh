@@ -3,7 +3,7 @@ package de.metas.material.dispo.service.event.handler;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
-
+import static de.metas.material.event.EventTestHelper.*;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
@@ -34,6 +34,7 @@ import de.metas.material.dispo.service.event.MaterialDispoEventListenerFacade;
 import de.metas.material.dispo.service.event.SupplyProposalEvaluator;
 import de.metas.material.event.EventDescr;
 import de.metas.material.event.MaterialEventService;
+import de.metas.material.event.ProductDescriptorFactory;
 import de.metas.material.event.ddorder.DDOrder;
 import de.metas.material.event.ddorder.DDOrderLine;
 import de.metas.material.event.ddorder.DistributionPlanEvent;
@@ -115,7 +116,7 @@ public class DistributionPlanEventHandlerTests
 		org = newInstance(I_AD_Org.class);
 		save(org);
 
-		final CandidateRepository candidateRepository = new CandidateRepository();
+		final CandidateRepository candidateRepository = new CandidateRepository(ProductDescriptorFactory.TESTING_INSTANCE);
 		final SupplyProposalEvaluator supplyProposalEvaluator = new SupplyProposalEvaluator(candidateRepository);
 
 		
@@ -152,7 +153,7 @@ public class DistributionPlanEventHandlerTests
 						.productPlanningId(productPlanningId)
 						.shipperId(shipperId)
 						.line(DDOrderLine.builder()
-								.productId(productId)
+								.productDescriptor(createProductDescriptor())
 								.qty(BigDecimal.TEN)
 								.durationDays(1)
 								.networkDistributionLineId(networkDistributionLineId)
@@ -244,7 +245,7 @@ public class DistributionPlanEventHandlerTests
 						.productPlanningId(productPlanningId)
 						.shipperId(shipperId)
 						.line(DDOrderLine.builder()
-								.productId(productId)
+								.productDescriptor(createProductDescriptor())
 								.qty(BigDecimal.TEN)
 								.networkDistributionLineId(networkDistributionLineId)
 								.durationDays(1) // => t2 minus 1day = t1 (expected date of the demand candidate)
@@ -268,7 +269,7 @@ public class DistributionPlanEventHandlerTests
 						.productPlanningId(productPlanningId)
 						.shipperId(shipperId)
 						.line(DDOrderLine.builder()
-								.productId(productId)
+								.productDescriptor(createProductDescriptor())
 								.qty(BigDecimal.TEN)
 								.durationDays(2) // => t3 minus 2days = t2 (expected date of the demand candidate)
 								.networkDistributionLineId(networkDistributionLineId)

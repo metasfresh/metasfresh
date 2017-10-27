@@ -1,7 +1,9 @@
 package de.metas.material.dispo.service.candidatechange.handler;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static de.metas.material.event.EventTestHelper.CLIENT_ID;
+import static de.metas.material.event.EventTestHelper.ORG_ID;
+import static de.metas.material.event.EventTestHelper.WAREHOUSE_ID;
+import static de.metas.material.event.EventTestHelper.createProductDescriptor;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.comparesEqualTo;
 import static org.hamcrest.Matchers.is;
@@ -14,9 +16,6 @@ import java.util.List;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.util.time.SystemTime;
-import org.compiere.model.I_AD_Org;
-import org.compiere.model.I_M_Product;
-import org.compiere.model.I_M_Warehouse;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -24,14 +23,16 @@ import org.junit.rules.TestWatcher;
 
 import de.metas.material.dispo.CandidateRepository;
 import de.metas.material.dispo.CandidateSpecification.Type;
-import de.metas.material.dispo.candidate.Candidate;
 import de.metas.material.dispo.DispoTestUtils;
+import de.metas.material.dispo.candidate.Candidate;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.X_MD_Candidate;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
 import de.metas.material.event.MaterialDescriptor;
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.MaterialEventService;
+import de.metas.material.event.ProductDescriptorFactory;
+import lombok.NonNull;
 import mockit.Mocked;
 import mockit.Verifications;
 
@@ -65,12 +66,6 @@ public class DemandCandiateCangeHandlerTest
 
 	private final Date t1 = SystemTime.asDate();
 
-	private I_AD_Org org;
-
-	private I_M_Product product;
-
-	private I_M_Warehouse warehouse;
-
 	@Mocked
 	private MaterialEventService materialEventService;
 
@@ -81,16 +76,7 @@ public class DemandCandiateCangeHandlerTest
 	{
 		AdempiereTestHelper.get().init();
 
-		org = newInstance(I_AD_Org.class);
-		save(org);
-
-		product = newInstance(I_M_Product.class);
-		save(product);
-
-		warehouse = newInstance(I_M_Warehouse.class);
-		save(warehouse);
-
-		final CandidateRepository candidateRepository = new CandidateRepository();
+		final CandidateRepository candidateRepository = new CandidateRepository(ProductDescriptorFactory.TESTING_INSTANCE);
 
 		final StockCandidateService stockCandidateService = new StockCandidateService(candidateRepository);
 
@@ -104,16 +90,16 @@ public class DemandCandiateCangeHandlerTest
 		final Date t = t1;
 
 		final MaterialDescriptor materialDescr = MaterialDescriptor.builder()
-				.productId(product.getM_Product_ID())
-				.warehouseId(warehouse.getM_Warehouse_ID())
+				.productDescriptor(createProductDescriptor())
+				.warehouseId(WAREHOUSE_ID)
 				.quantity(qty)
 				.date(t)
 				.build();
 
 		final Candidate candidate = Candidate.builder()
 				.type(Type.DEMAND)
-				.clientId(org.getAD_Client_ID())
-				.orgId(org.getAD_Org_ID())
+				.clientId(CLIENT_ID)
+				.orgId(ORG_ID)
 				.materialDescr(materialDescr)
 				.build();
 		demandCandiateHandler.onCandidateNewOrChange(candidate);
@@ -157,14 +143,14 @@ public class DemandCandiateCangeHandlerTest
 		}}; // @formatter:on
 	}
 	
-	private Candidate createCandidateWithType(final Type type)
+	private static Candidate createCandidateWithType(@NonNull final Type type)
 	{
 		final Candidate candidate = Candidate.builder()
 				.type(type)
 				.materialDescr(MaterialDescriptor.builder()
-						.productId(20)
+						.productDescriptor(createProductDescriptor())
 						.date(SystemTime.asTimestamp())
-						.warehouseId(30)
+						.warehouseId(WAREHOUSE_ID)
 						.quantity(BigDecimal.TEN)
 						.build())
 				.build();

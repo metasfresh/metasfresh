@@ -120,7 +120,7 @@ public class CandidateService
 						.datePromised(groupMember.getDate())
 						.orgId(groupMember.getOrgId())
 						.plantId(prodDetail.getPlantId())
-						.productId(groupMember.getProductId())
+						.productDescriptor(groupMember.getMaterialDescr())
 						.quantity(groupMember.getQuantity())
 						.uomId(prodDetail.getUomId())
 						.warehouseId(groupMember.getWarehouseId());
@@ -141,7 +141,7 @@ public class CandidateService
 						PPOrderLine.builder()
 								.description(prodDetail.getDescription())
 								.productBomLineId(prodDetail.getProductBomLineId())
-								.productId(groupMember.getProductId())
+								.productDescriptor(groupMember.getMaterialDescr())
 								.qtyRequired(groupMember.getQuantity())
 								.productBomLineId(prodDetail.getProductBomLineId())
 								.receipt(receipt)
@@ -189,7 +189,7 @@ public class CandidateService
 			}
 
 			ddOrderLineBuilder
-					.productId(groupMember.getProductId())
+					.productDescriptor(groupMember.getMaterialDescr())
 					.qty(groupMember.getQuantity());
 
 			if (groupMember.getDemandDetail() != null && groupMember.getDemandDetail().getOrderLineId() > 0)

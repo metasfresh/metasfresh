@@ -1,5 +1,8 @@
 package de.metas.material.dispo.service.event.handler;
 
+import static de.metas.material.event.EventTestHelper.PRODUCT_ID;
+import static de.metas.material.event.EventTestHelper.WAREHOUSE_ID;
+import static de.metas.material.event.EventTestHelper.createProductDescriptor;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
@@ -51,13 +54,9 @@ import mockit.Verifications;
 
 public class TransactionEventHandlerTest
 {
-	private static final int WAREHOUSE_ID = 50;
-
 	private static final int TRANSACTION_ID = 60;
 
 	private static final int SHIPMENT_SCHEDULE_ID = 40;
-
-	private static final int PRODUCT_ID = 30;
 
 	@Tested
 	private TransactionEventHandler transactionEventHandler;
@@ -136,7 +135,7 @@ public class TransactionEventHandlerTest
 				.type(Type.UNRELATED_INCREASE)
 				.id(11)
 				.materialDescr(MaterialDescriptor.builderForCandidateOrQuery()
-						.productId(PRODUCT_ID)
+						.productDescriptor(createProductDescriptor())
 						.warehouseId(WAREHOUSE_ID)
 						.quantity(BigDecimal.ONE)
 						.date(SystemTime.asTimestamp())
@@ -203,7 +202,9 @@ public class TransactionEventHandlerTest
 				candidateRepository.retrieveLatestMatchOrNull(query = withCapture());
 				assertThat(query).isNotNull();
 				assertThat(query.getDemandDetail().getShipmentScheduleId()).isEqualTo(SHIPMENT_SCHEDULE_ID);
-				assertThat(query.getProductId()).as("only search via the demand detail, if we have one").isLessThanOrEqualTo(0);
+				assertThat(query.getMaterialDescr().getProductId())
+				.as("only search via the demand detail, if we have one")
+				.isLessThanOrEqualTo(0);
 				assertThat(query.getTransactionDetail()).as("only search via the demand detail, if we have one").isNull();
 		}}; // @formatter:on
 
@@ -223,7 +224,7 @@ public class TransactionEventHandlerTest
 				.id(11)
 				.type(Type.DEMAND)
 				.materialDescr(MaterialDescriptor.builderForCandidateOrQuery()
-						.productId(PRODUCT_ID)
+						.productDescriptor(createProductDescriptor())
 						.warehouseId(WAREHOUSE_ID)
 						.quantity(new BigDecimal("63"))
 						.date(SystemTime.asTimestamp())
@@ -243,7 +244,7 @@ public class TransactionEventHandlerTest
 				.build();
 
 		final Candidate candidate = transactionEventHandler.createCandidateForTransactionEvent(relatedEvent);
-		
+
 		// @formatter:off verify that candidateRepository was called to decide if the event is related to anything we know
 		new Verifications()
 		{{
@@ -251,10 +252,12 @@ public class TransactionEventHandlerTest
 				candidateRepository.retrieveLatestMatchOrNull(query = withCapture());
 				assertThat(query).isNotNull();
 				assertThat(query.getDemandDetail().getShipmentScheduleId()).isEqualTo(SHIPMENT_SCHEDULE_ID);
-				assertThat(query.getProductId()).as("only search via the demand detail, if we have one").isLessThanOrEqualTo(0);
+				assertThat(query.getMaterialDescr().getProductId())
+				.as("only search via the demand detail, if we have one")
+				.isLessThanOrEqualTo(0);
 				assertThat(query.getTransactionDetail()).as("only search via the demand detail, if we have one").isNull();
 		}}; // @formatter:on
-		
+
 		assertThat(candidate.getId()).isEqualTo(11);
 		assertThat(candidate.getType()).isEqualTo(Type.DEMAND);
 		assertThat(candidate.getQuantity())
@@ -278,7 +281,7 @@ public class TransactionEventHandlerTest
 				.transactionId(TRANSACTION_ID)
 				.materialDescr(MaterialDescriptor.builder()
 						.date(TimeUtil.parseTimestamp("2017-10-15"))
-						.productId(PRODUCT_ID)
+						.productDescriptor(createProductDescriptor())
 						.quantity(quantity)
 						.warehouseId(WAREHOUSE_ID)
 						.build());

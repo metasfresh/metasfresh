@@ -12,9 +12,10 @@ import com.google.common.annotations.VisibleForTesting;
 import de.metas.material.dispo.CandidateRepository;
 import de.metas.material.dispo.CandidateSpecification.Type;
 import de.metas.material.dispo.CandidatesQuery;
-import de.metas.material.dispo.CandidatesQuery.DateOperator;
 import de.metas.material.dispo.candidate.Candidate;
 import de.metas.material.event.MaterialDescriptor;
+import de.metas.material.event.MaterialDescriptor.DateOperator;
+import de.metas.material.event.ProductDescriptor;
 import lombok.NonNull;
 
 /*
@@ -64,9 +65,7 @@ public class StockCandidateService
 	public Candidate createStockCandidate(@NonNull final Candidate candidate)
 	{
 		final Candidate stockOrNull = candidateRepository
-				.retrieveLatestMatchOrNull(candidate.mkSegmentBuilder()
-						.type(Type.STOCK)
-						.dateOperator(DateOperator.UNTIL)
+				.retrieveLatestMatchOrNull(candidate.createStockqueryBuilder()
 						.build());
 
 		final BigDecimal formerQuantity = stockOrNull != null
@@ -144,7 +143,7 @@ public class StockCandidateService
 			delta = relatedCandiateWithDelta.getQuantity();
 		}
 		applyDeltaToLaterStockCandidates(
-				relatedCandiateWithDelta.getMaterialDescr().getProductId(),
+				relatedCandiateWithDelta.getMaterialDescr(),
 				relatedCandiateWithDelta.getMaterialDescr().getWarehouseId(),
 				relatedCandiateWithDelta.getMaterialDescr().getDate(),
 				persistedStockCandidate.getGroupId(),
@@ -166,7 +165,7 @@ public class StockCandidateService
 	 */
 	@VisibleForTesting
 	/* package */ void applyDeltaToLaterStockCandidates(
-			@NonNull final Integer productId,
+			@NonNull final ProductDescriptor productDescriptor,
 			@NonNull final Integer warehouseId,
 			@NonNull final Date date,
 			@NonNull final Integer groupId,
@@ -176,9 +175,10 @@ public class StockCandidateService
 				.type(Type.STOCK)
 				.materialDescr(MaterialDescriptor.builderForQuery()
 						.date(date)
-						.productId(productId)
-						.warehouseId(warehouseId).build())
-				.dateOperator(DateOperator.AFTER)
+						.productDescriptor(productDescriptor)
+						.warehouseId(warehouseId)
+						.dateOperator(DateOperator.AFTER)
+						.build())
 				.build();
 
 		final List<Candidate> candidatesToUpdate = candidateRepository.retrieveOrderedByDateAndSeqNo(segment);

@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.adempiere.ad.modelvalidator.DocTimingType;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.Adempiere;
 import org.compiere.model.I_M_Forecast;
 import org.compiere.model.I_M_ForecastLine;
 
@@ -11,6 +12,8 @@ import com.google.common.base.Preconditions;
 
 import de.metas.material.event.EventDescr;
 import de.metas.material.event.MaterialDescriptor;
+import de.metas.material.event.ProductDescriptor;
+import de.metas.material.event.ProductDescriptorFactory;
 import de.metas.material.event.forecast.Forecast;
 import de.metas.material.event.forecast.Forecast.ForecastBuilder;
 import de.metas.material.event.forecast.ForecastEvent;
@@ -44,7 +47,7 @@ import lombok.experimental.UtilityClass;
 public class M_ForecastEventCreator
 {
 	public ForecastEvent createEventWithLinesAndTiming(
-			@NonNull final List<I_M_ForecastLine> forecastLines, 
+			@NonNull final List<I_M_ForecastLine> forecastLines,
 			@NonNull final DocTimingType timing)
 	{
 		Preconditions.checkArgument(!forecastLines.isEmpty(), "Param 'forecastLines' may not be empty; timing=%s", timing);
@@ -71,9 +74,12 @@ public class M_ForecastEventCreator
 
 	private ForecastLine createForecastLine(@NonNull final I_M_ForecastLine forecastLine)
 	{
+		final ProductDescriptorFactory productDescriptorFactory = Adempiere.getBean(ProductDescriptorFactory.class);
+		final ProductDescriptor productDescriptor = productDescriptorFactory.createProductDescriptor(forecastLine);
+
 		final MaterialDescriptor materialDescriptor = MaterialDescriptor.builder()
 				.date(forecastLine.getDatePromised())
-				.productId(forecastLine.getM_Product_ID())
+				.productDescriptor(productDescriptor)
 				.warehouseId(forecastLine.getM_Warehouse_ID())
 				.quantity(forecastLine.getQty())
 				.build();

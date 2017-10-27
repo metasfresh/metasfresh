@@ -17,6 +17,8 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.material.event.EventDescr;
 import de.metas.material.event.MaterialDescriptor;
 import de.metas.material.event.MaterialEventService;
+import de.metas.material.event.ProductDescriptor;
+import de.metas.material.event.ProductDescriptorFactory;
 import de.metas.material.event.ShipmentScheduleEvent;
 import lombok.NonNull;
 
@@ -60,24 +62,27 @@ public class M_ShipmentSchedule
 	}
 
 	private ShipmentScheduleEvent createShipmentscheduleEvent(
-			@NonNull final I_M_ShipmentSchedule schedule,
+			@NonNull final I_M_ShipmentSchedule shipmentSchedule,
 			@NonNull final ModelChangeType timing)
 	{
-		final BigDecimal quantity = computeEffectiveQuantity(schedule, timing);
+		final BigDecimal quantity = computeEffectiveQuantity(shipmentSchedule, timing);
 
 		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
-		final Timestamp preparationDate = shipmentScheduleEffectiveBL.getPreparationDate(schedule);
+		final Timestamp preparationDate = shipmentScheduleEffectiveBL.getPreparationDate(shipmentSchedule);
 
+		final ProductDescriptorFactory productDescriptorFactory = Adempiere.getBean(ProductDescriptorFactory.class);
+		final ProductDescriptor productDescriptor = productDescriptorFactory.createProductDescriptor(shipmentSchedule);
+		
 		final ShipmentScheduleEvent event = ShipmentScheduleEvent.builder()
-				.eventDescr(EventDescr.createNew(schedule))
+				.eventDescr(EventDescr.createNew(shipmentSchedule))
 				.materialDescr(MaterialDescriptor.builder()
 						.date(preparationDate)
-						.productId(schedule.getM_Product_ID())
-						.warehouseId(shipmentScheduleEffectiveBL.getWarehouseId(schedule))
+						.productDescriptor(productDescriptor)
+						.warehouseId(shipmentScheduleEffectiveBL.getWarehouseId(shipmentSchedule))
 						.quantity(quantity)
 						.build())
-				.shipmentScheduleId(schedule.getM_ShipmentSchedule_ID())
-				.orderLineId(schedule.getC_OrderLine_ID())
+				.shipmentScheduleId(shipmentSchedule.getM_ShipmentSchedule_ID())
+				.orderLineId(shipmentSchedule.getC_OrderLine_ID())
 				.build();
 		return event;
 	}

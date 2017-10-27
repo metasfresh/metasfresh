@@ -528,6 +528,29 @@ public interface I_MD_Candidate
     public static final String COLUMNNAME_SeqNo = "SeqNo";
 
 	/**
+	 * Set StorageAttributesKey (technical).
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setStorageAttributesKey (java.lang.String StorageAttributesKey);
+
+	/**
+	 * Get StorageAttributesKey (technical).
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getStorageAttributesKey();
+
+    /** Column definition for StorageAttributesKey */
+    public static final org.adempiere.model.ModelColumn<I_MD_Candidate, Object> COLUMN_StorageAttributesKey = new org.adempiere.model.ModelColumn<I_MD_Candidate, Object>(I_MD_Candidate.class, "StorageAttributesKey", null);
+    /** Column name StorageAttributesKey */
+    public static final String COLUMNNAME_StorageAttributesKey = "StorageAttributesKey";
+
+	/**
 	 * Get Aktualisiert.
 	 * Datum, an dem dieser Eintrag aktualisiert wurde
 	 *

@@ -13,11 +13,11 @@ package org.eevolution.mrp.spi.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -90,7 +90,7 @@ public class OrderMRPSupplyProducer extends AbstractMRPSupplyProducer
 
 	@Autowired
 	private transient ProductPlanningBL productPlanningBL;
-	
+
 	public OrderMRPSupplyProducer()
 	{
 		super();
@@ -144,10 +144,11 @@ public class OrderMRPSupplyProducer extends AbstractMRPSupplyProducer
 				final List<I_PP_Order> orders = Services.get(IPPOrderDAO.class).retrieveMakeToOrderForInOut(inout);
 				for (final I_PP_Order order : orders)
 				{
-					final String description = order.getDescription() != null ? order.getDescription() : ""
-							+ Services.get(IMsgBL.class).translate(ctx, I_M_InOut.COLUMNNAME_M_InOut_ID)
-							+ " : "
-							+ Services.get(IMsgBL.class).translate(ctx, I_M_InOut.COLUMNNAME_DocumentNo);
+					final String description = order.getDescription() != null ? order.getDescription()
+							: ""
+									+ Services.get(IMsgBL.class).translate(ctx, I_M_InOut.COLUMNNAME_M_InOut_ID)
+									+ " : "
+									+ Services.get(IMsgBL.class).translate(ctx, I_M_InOut.COLUMNNAME_DocumentNo);
 
 					order.setDescription(description);
 					Services.get(IDocumentBL.class).processIt(order, IDocument.ACTION_Close);
@@ -314,7 +315,12 @@ public class OrderMRPSupplyProducer extends AbstractMRPSupplyProducer
 		try
 		{
 			final Properties ctx = InterfaceWrapperHelper.getCtx(orderLine);
-			orderLinePlant = Services.get(IProductPlanningDAO.class).findPlant(ctx, orderLine.getAD_Org_ID(), warehouse, product.getM_Product_ID());
+			orderLinePlant = Services.get(IProductPlanningDAO.class).findPlant(
+					ctx,
+					orderLine.getAD_Org_ID(),
+					warehouse,
+					orderLine.getM_Product_ID(),
+					orderLine.getM_AttributeSetInstance_ID());
 		}
 		catch (final NoPlantForWarehouseException e)
 		{
@@ -379,7 +385,10 @@ public class OrderMRPSupplyProducer extends AbstractMRPSupplyProducer
 	 * @param orderLinePlant the order line's detected plant
 	 * @return manufacturing order
 	 */
-	private final I_PP_Order createMakeToOrderMO(final I_C_OrderLine ol, final BigDecimal qty, final I_S_Resource orderLinePlant)
+	private final I_PP_Order createMakeToOrderMO(
+			final I_C_OrderLine ol,
+			final BigDecimal qty,
+			final I_S_Resource orderLinePlant)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(ol);
 		final String trxName = InterfaceWrapperHelper.getTrxName(ol);
@@ -398,8 +407,8 @@ public class OrderMRPSupplyProducer extends AbstractMRPSupplyProducer
 								ol.getAD_Org_ID(),
 								0,   // warehouse
 								0,   // plant
-								ol.getM_Product_ID(),   // product
-								ITrx.TRXNAME_None);
+								ol.getM_Product_ID(),
+								ol.getM_AttributeSetInstance_ID());
 				if (productPlanning != null)
 				{
 					bom = productPlanning.getPP_Product_BOM();

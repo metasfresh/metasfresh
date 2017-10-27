@@ -30,6 +30,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_UOM;
@@ -83,6 +84,8 @@ public final class MRPContext implements IMutableMRPContext
 	private int enforced_PP_MRP_Demand_ID = -1;
 
 	private BigDecimal qtyProjectOnHand = BigDecimal.ZERO;
+
+	private int attributeSetInstanceId = -1;
 
 	@VisibleForTesting
 	public MRPContext()
@@ -307,6 +310,18 @@ public final class MRPContext implements IMutableMRPContext
 	}
 
 	@Override
+	public int getM_AttributeSetInstance_ID()
+	{
+		return attributeSetInstanceId;
+	}
+
+	@Override
+	public void setM_AttributeSetInstance_ID(final int attributeSetInstanceId)
+	{
+		this.attributeSetInstanceId = attributeSetInstanceId;
+	}
+
+	@Override
 	public void setM_Product(final I_M_Product product)
 	{
 		this.product = product;
@@ -501,4 +516,21 @@ public final class MRPContext implements IMutableMRPContext
 		this.allowCleanup = allowCleanup;
 	}
 
+	public void assertContextConsistent()
+	{
+		final int contextProductId = getM_Product_ID();
+		final int productPlanningProductId = getProductPlanning().getM_Product_ID();
+
+		if (contextProductId != productPlanningProductId)
+		{
+			final String message = String.format("The given IMaterialPlanningContext has M_Product_ID=%s, but its included PP_Product_Planning has M_Product_ID=%s",
+					contextProductId, productPlanningProductId);
+			throw new AdempiereException(message)
+					.appendParametersToMessage()
+					.setParameter("IMaterialPlanningContext", this)
+					.setParameter("IMaterialPlanningContext.M_Product_ID", contextProductId)
+					.setParameter("IMaterialPlanningContext.ProductPlanning", getProductPlanning())
+					.setParameter("IMaterialPlanningContext.ProductPlanning.M_Product_ID", productPlanningProductId);
+		}
+	}
 }

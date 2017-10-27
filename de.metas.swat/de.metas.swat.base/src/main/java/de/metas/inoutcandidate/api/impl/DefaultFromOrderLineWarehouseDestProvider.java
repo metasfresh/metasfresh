@@ -27,11 +27,11 @@ import de.metas.material.planning.ddorder.IDistributionNetworkDAO;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -83,6 +83,10 @@ import de.metas.material.planning.ddorder.IDistributionNetworkDAO;
 	 */
 	private I_M_Warehouse getDistributionNetworkWarehouseDestination(final IContext context)
 	{
+		final int attributeSetInstanceId = context.getM_AttributeSetInstance() == null
+				? IProductPlanningDAO.ANY_M_ATRIBUTE_SET_INSTANCE_ID
+				: context.getM_AttributeSetInstance().getM_AttributeSetInstance_ID();
+
 		final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
 		final I_PP_Product_Planning productPlanning = productPlanningDAO.find(
 				context.getCtx() //
@@ -90,8 +94,7 @@ import de.metas.material.planning.ddorder.IDistributionNetworkDAO;
 				, 0  // M_Warehouse_ID
 				, 0  // S_Resource_ID
 				, context.getM_Product_ID() // M_Product_ID
-				, ITrx.TRXNAME_None //
-		);
+				, attributeSetInstanceId);
 
 		if (productPlanning == null)
 		{

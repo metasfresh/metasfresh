@@ -3,7 +3,7 @@ package de.metas.material.dispo.candidate;
 import java.util.Optional;
 
 import de.metas.material.dispo.model.I_MD_Candidate_Demand_Detail;
-import de.metas.material.event.MaterialDemandDescr;
+import de.metas.material.event.MaterialDemandDescriptor;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -31,7 +31,7 @@ import lombok.Value;
 @Value
 public class DemandDetail
 {
-	public static DemandDetail createOrNull(@NonNull final Optional<MaterialDemandDescr> materialDemandDescr)
+	public static DemandDetail createOrNull(@NonNull final Optional<MaterialDemandDescriptor> materialDemandDescr)
 	{
 		if (!materialDemandDescr.isPresent())
 		{

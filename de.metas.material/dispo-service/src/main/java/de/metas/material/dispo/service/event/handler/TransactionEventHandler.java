@@ -10,13 +10,13 @@ import com.google.common.collect.ImmutableList.Builder;
 
 import de.metas.material.dispo.CandidateRepository;
 import de.metas.material.dispo.CandidateSpecification.Type;
+import de.metas.material.dispo.CandidatesQuery;
 import de.metas.material.dispo.candidate.Candidate;
+import de.metas.material.dispo.candidate.Candidate.CandidateBuilder;
 import de.metas.material.dispo.candidate.DemandDetail;
 import de.metas.material.dispo.candidate.TransactionDetail;
-import de.metas.material.dispo.candidate.Candidate.CandidateBuilder;
-import de.metas.material.dispo.CandidatesQuery;
-import de.metas.material.dispo.CandidatesQuery.DateOperator;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
+import de.metas.material.event.MaterialDescriptor.DateOperator;
 import de.metas.material.event.TransactionEvent;
 import lombok.NonNull;
 
@@ -93,8 +93,9 @@ public class TransactionEventHandler
 		else
 		{
 			final CandidatesQuery query = CandidatesQuery.builder()
-					.materialDescr(event.getMaterialDescr().withoutQuantity())
-					.dateOperator(DateOperator.AT)
+					.materialDescr(event.getMaterialDescr()
+							.withoutQuantity()
+							.withDateOperator(DateOperator.AT)							)
 					.transactionDetail(TransactionDetail.forQuery(event.getTransactionId()))
 					.build();
 			final Candidate existingCandidate = candidateRepository.retrieveLatestMatchOrNull(query);

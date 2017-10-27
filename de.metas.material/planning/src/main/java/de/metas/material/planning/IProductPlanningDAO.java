@@ -35,19 +35,14 @@ import de.metas.material.planning.exception.NoPlantForWarehouseException;
 
 public interface IProductPlanningDAO extends ISingletonService
 {
-
+	int ANY_M_ATRIBUTE_SET_INSTANCE_ID = -100;
+	
 	/**
 	 * Find best matching product planning.
 	 *
-	 * @param ctx
-	 * @param adOrgId
-	 * @param warehouseId
-	 * @param plantId S_Resource_ID
-	 * @param productId
-	 * @param trxName
 	 * @return matching product planning or null
 	 */
-	I_PP_Product_Planning find(Properties ctx, int adOrgId, int warehouseId, int plantId, int productId, String trxName);
+	I_PP_Product_Planning find(Properties ctx, int orgId, int warehouseId, int plantId, int productId, int attributeSetInstanceId);
 
 	/**
 	 * Search product plannings to find out which is the plant({@link I_S_Resource}) for given Org/Warehouse/Product.
@@ -59,7 +54,7 @@ public interface IProductPlanningDAO extends ISingletonService
 	 * @return plant
 	 * @throws NoPlantForWarehouseException if there was no plant found or if there was more then one plant found.
 	 */
-	I_S_Resource findPlant(Properties ctx, final int adOrgId, final I_M_Warehouse warehouse, final int productId);
+	I_S_Resource findPlant(Properties ctx, final int adOrgId, final I_M_Warehouse warehouse, final int productId, int attributeSetInstanceId);
 
 	/**
 	 * Retrieve all warehouses which are directly assigned to our Org and Plant.

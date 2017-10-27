@@ -55,12 +55,6 @@ public class DistributionPlanEventHandler
 	private final CandidateChangeService candidateChangeHandler;
 	private final CandidateService candidateService;
 
-	/**
-	 * 
-	 * @param candidateRepository
-	 * @param candidateChangeHandler
-	 * @param supplyProposalEvaluator
-	 */
 	public DistributionPlanEventHandler(
 			@NonNull final CandidateRepository candidateRepository,
 			@NonNull final CandidateChangeService candidateChangeHandler,
@@ -94,7 +88,7 @@ public class DistributionPlanEventHandler
 
 			final SupplyProposal proposal = SupplyProposal.builder()
 					.date(orderLineStartDate)
-					.productId(ddOrderLine.getProductId())
+					.productDescriptor(ddOrderLine.getProductDescriptor())
 					.destWarehouseId(distributionPlanEvent.getToWarehouseId())
 					.sourceWarehouseId(distributionPlanEvent.getFromWarehouseId())
 					.build();
@@ -109,7 +103,7 @@ public class DistributionPlanEventHandler
 
 			final MaterialDescriptor materialDescriptor = MaterialDescriptor.builder()
 					.date(ddOrder.getDatePromised())
-					.productId(ddOrderLine.getProductId())
+					.productDescriptor(ddOrderLine.getProductDescriptor())
 					.quantity(ddOrderLine.getQty())
 					.warehouseId(distributionPlanEvent.getToWarehouseId())
 					.build();

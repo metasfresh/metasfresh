@@ -1,5 +1,8 @@
 package de.metas.material.dispo.service.candidatechange;
 
+import static de.metas.material.event.EventTestHelper.PRODUCT_ID;
+import static de.metas.material.event.EventTestHelper.WAREHOUSE_ID;
+import static de.metas.material.event.EventTestHelper.createProductDescriptor;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -17,15 +20,11 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_AD_Org;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
-import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.TimeUtil;
 import org.junit.Before;
 import org.junit.Rule;
@@ -37,15 +36,16 @@ import com.google.common.collect.ImmutableList;
 import de.metas.material.dispo.CandidateRepository;
 import de.metas.material.dispo.CandidateSpecification.Type;
 import de.metas.material.dispo.CandidatesQuery;
-import de.metas.material.dispo.CandidatesQuery.DateOperator;
-import de.metas.material.dispo.candidate.Candidate;
 import de.metas.material.dispo.DispoTestUtils;
+import de.metas.material.dispo.candidate.Candidate;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.service.candidatechange.handler.CandidateHandler;
 import de.metas.material.dispo.service.candidatechange.handler.DemandCandiateHandler;
 import de.metas.material.dispo.service.candidatechange.handler.SupplyCandiateHandler;
 import de.metas.material.event.MaterialDescriptor;
+import de.metas.material.event.MaterialDescriptor.DateOperator;
 import de.metas.material.event.MaterialEventService;
+import de.metas.material.event.ProductDescriptorFactory;
 import lombok.NonNull;
 import mockit.Mocked;
 
@@ -82,14 +82,9 @@ public class CandidateChangeHandlerTests
 	private final Date t3 = TimeUtil.addMinutes(t1, 20);
 	private final Date t4 = TimeUtil.addMinutes(t1, 30);
 
+	private final int OTHER_WAREHOUSE_ID = WAREHOUSE_ID + 10;
+
 	private I_AD_Org org;
-
-	private I_M_Product product;
-
-	private I_M_Warehouse warehouse;
-	private I_M_Warehouse otherWarehouse;
-
-	private I_C_UOM uom;
 
 	private CandidateRepository candidateRepository;
 
@@ -108,19 +103,7 @@ public class CandidateChangeHandlerTests
 		org = newInstance(I_AD_Org.class);
 		save(org);
 
-		product = InterfaceWrapperHelper.newInstance(I_M_Product.class);
-		InterfaceWrapperHelper.save(product);
-
-		warehouse = InterfaceWrapperHelper.newInstance(I_M_Warehouse.class);
-		InterfaceWrapperHelper.save(warehouse);
-
-		otherWarehouse = InterfaceWrapperHelper.newInstance(I_M_Warehouse.class);
-		InterfaceWrapperHelper.save(otherWarehouse);
-
-		uom = InterfaceWrapperHelper.newInstance(I_C_UOM.class);
-		InterfaceWrapperHelper.save(uom);
-
-		candidateRepository = new CandidateRepository();
+		candidateRepository = new CandidateRepository(ProductDescriptorFactory.TESTING_INSTANCE);
 		stockCandidateService = new StockCandidateService(candidateRepository);
 
 		candidateChangeHandler = new CandidateChangeService(
@@ -185,8 +168,8 @@ public class CandidateChangeHandlerTests
 		// preparations
 		{
 			final MaterialDescriptor materialDescr = MaterialDescriptor.builder()
-					.productId(product.getM_Product_ID())
-					.warehouseId(warehouse.getM_Warehouse_ID())
+					.productDescriptor(createProductDescriptor())
+					.warehouseId(WAREHOUSE_ID)
 					.quantity(new BigDecimal("10"))
 					.date(t2)
 					.build();
@@ -232,7 +215,7 @@ public class CandidateChangeHandlerTests
 			candidateRepository.addOrUpdateOverwriteStoredSeqNo(evenLaterCandidate);
 
 			final MaterialDescriptor evenLatermaterialDescrWithDifferentWarehouse = evenLatermaterialDescr
-					.withWarehouseId(otherWarehouse.getM_Warehouse_ID());
+					.withWarehouseId(OTHER_WAREHOUSE_ID);
 
 			evenLaterCandidateWithDifferentWarehouse = Candidate.builder()
 					.type(Type.STOCK)
@@ -245,8 +228,8 @@ public class CandidateChangeHandlerTests
 
 		// do the test
 		stockCandidateService.applyDeltaToLaterStockCandidates(
-				product.getM_Product_ID(),
-				warehouse.getM_Warehouse_ID(),
+				createProductDescriptor(),
+				WAREHOUSE_ID,
 				t2,
 				earlierCandidate.getGroupId(),
 				new BigDecimal("3"));
@@ -254,7 +237,7 @@ public class CandidateChangeHandlerTests
 		// assert that every stock record got some groupId
 		DispoTestUtils.retrieveAllRecords().forEach(r -> assertThat(r.getMD_Candidate_GroupId(), greaterThan(0)));
 
-		final Candidate earlierCandidateAfterChange = candidateRepository.retrieveLatestMatchOrNull(mkStockUntilSegment(t1, warehouse));
+		final Candidate earlierCandidateAfterChange = candidateRepository.retrieveLatestMatchOrNull(mkStockUntilSegment(t1, WAREHOUSE_ID));
 		assertThat(earlierCandidateAfterChange).isNotNull();
 		assertThat(earlierCandidateAfterChange.getQuantity()).isEqualTo(earlierCandidate.getQuantity()); // quantity shall be unchanged
 		assertThat(earlierCandidateAfterChange.getGroupId()).isEqualTo(earlierCandidate.getGroupId()); // basically the same candidate
@@ -263,31 +246,31 @@ public class CandidateChangeHandlerTests
 		assertThat(candidateRecordAfterChange.getQty()).isEqualByComparingTo("10"); // quantity shall be unchanged, because that method shall only update *later* records
 		assertThat(candidateRecordAfterChange.getMD_Candidate_GroupId(), not(is(earlierCandidate.getGroupId())));
 
-		final Candidate laterCandidateAfterChange = candidateRepository.retrieveLatestMatchOrNull(mkStockUntilSegment(t3, warehouse));
+		final Candidate laterCandidateAfterChange = candidateRepository.retrieveLatestMatchOrNull(mkStockUntilSegment(t3, WAREHOUSE_ID));
 		assertThat(laterCandidateAfterChange).isNotNull();
 		assertThat(laterCandidateAfterChange.getQuantity()).isEqualByComparingTo("13"); // quantity shall be plus 3
 		assertThat(laterCandidateAfterChange.getGroupId()).isEqualTo(earlierCandidate.getGroupId());
 
-		final I_MD_Candidate evenLaterCandidateRecordAfterChange = DispoTestUtils.filter(Type.STOCK, t4, product.getM_Product_ID(), warehouse.getM_Warehouse_ID()).get(0); // candidateRepository.retrieveExact(evenLaterCandidate).get();
+		final I_MD_Candidate evenLaterCandidateRecordAfterChange = DispoTestUtils.filter(Type.STOCK, t4, PRODUCT_ID, WAREHOUSE_ID).get(0); // candidateRepository.retrieveExact(evenLaterCandidate).get();
 		assertThat(evenLaterCandidateRecordAfterChange.getQty()).isEqualByComparingTo("15"); // quantity shall be plus 3 too
 		assertThat(evenLaterCandidateRecordAfterChange.getMD_Candidate_GroupId()).isEqualTo(earlierCandidate.getGroupId());
 
-		final I_MD_Candidate evenLaterCandidateWithDifferentWarehouseAfterChange = DispoTestUtils.filter(Type.STOCK, t4, product.getM_Product_ID(), otherWarehouse.getM_Warehouse_ID()).get(0); // candidateRepository.retrieveExact(evenLaterCandidateWithDifferentWarehouse).get();
+		final I_MD_Candidate evenLaterCandidateWithDifferentWarehouseAfterChange = DispoTestUtils.filter(Type.STOCK, t4, PRODUCT_ID, OTHER_WAREHOUSE_ID).get(0); // candidateRepository.retrieveExact(evenLaterCandidateWithDifferentWarehouse).get();
 		assertThat(evenLaterCandidateWithDifferentWarehouseAfterChange.getQty()).isEqualByComparingTo("12"); // quantity shall be unchanged, because we changed another warehouse and this one should not have been matched
 		assertThat(evenLaterCandidateWithDifferentWarehouseAfterChange.getMD_Candidate_GroupId(), not(is(earlierCandidate.getGroupId())));
 
 	}
 
-	private CandidatesQuery mkStockUntilSegment(@NonNull final Date timestamp, @NonNull final I_M_Warehouse warehouse)
+	private CandidatesQuery mkStockUntilSegment(@NonNull final Date timestamp, final int warehouseId)
 	{
 		return CandidatesQuery.builder()
 				.type(Type.STOCK)
 				.materialDescr(MaterialDescriptor.builderForQuery()
-						.productId(product.getM_Product_ID())
-						.warehouseId(warehouse.getM_Warehouse_ID())
+						.productDescriptor(createProductDescriptor())
+						.warehouseId(warehouseId)
 						.date(timestamp)
+						.dateOperator(DateOperator.UNTIL)
 						.build())
-				.dateOperator(DateOperator.UNTIL)
 				.build();
 	}
 
@@ -379,8 +362,8 @@ public class CandidateChangeHandlerTests
 	private Candidate invokeUpdateStock(final Date t, final BigDecimal qty)
 	{
 		final MaterialDescriptor materialDescr = MaterialDescriptor.builder()
-				.productId(product.getM_Product_ID())
-				.warehouseId(warehouse.getM_Warehouse_ID())
+				.productDescriptor(createProductDescriptor())
+				.warehouseId(WAREHOUSE_ID)
 				.quantity(qty)
 				.date(t)
 				.build();
@@ -478,8 +461,8 @@ public class CandidateChangeHandlerTests
 	public void testOnStockCandidateNewOrChangedNotStockType()
 	{
 		final MaterialDescriptor materialDescr = MaterialDescriptor.builder()
-				.productId(product.getM_Product_ID())
-				.warehouseId(warehouse.getM_Warehouse_ID())
+				.productDescriptor(createProductDescriptor())
+				.warehouseId(WAREHOUSE_ID)
 				.quantity(new BigDecimal("10"))
 				.date(t2)
 				.build();
@@ -495,8 +478,8 @@ public class CandidateChangeHandlerTests
 		assertThat(processedCandidate.getType()).isEqualTo(Type.STOCK);
 		assertThat(processedCandidate.getMaterialDescr().getDate().getTime()).isEqualTo(t2.getTime());
 		assertThat(processedCandidate.getMaterialDescr().getQuantity()).isEqualByComparingTo(BigDecimal.TEN);
-		assertThat(processedCandidate.getMaterialDescr().getProductId()).isEqualTo(product.getM_Product_ID());
-		assertThat(processedCandidate.getMaterialDescr().getWarehouseId()).isEqualTo(warehouse.getM_Warehouse_ID());
+		assertThat(processedCandidate.getMaterialDescr().getProductId()).isEqualTo(WAREHOUSE_ID);
+		assertThat(processedCandidate.getMaterialDescr().getWarehouseId()).isEqualTo(WAREHOUSE_ID);
 	}
 
 	/**
@@ -509,8 +492,8 @@ public class CandidateChangeHandlerTests
 		final Date t = t1;
 
 		final MaterialDescriptor materialDescr = MaterialDescriptor.builder()
-				.productId(product.getM_Product_ID())
-				.warehouseId(warehouse.getM_Warehouse_ID())
+				.productDescriptor(createProductDescriptor())
+				.warehouseId(WAREHOUSE_ID)
 				.quantity(qty)
 				.date(t)
 				.build();
@@ -526,8 +509,8 @@ public class CandidateChangeHandlerTests
 		assertThat(DispoTestUtils.retrieveAllRecords()).hasSize(2); // one demand, one stock
 
 		final MaterialDescriptor supplyMaterialDescr = MaterialDescriptor.builder()
-				.productId(product.getM_Product_ID())
-				.warehouseId(warehouse.getM_Warehouse_ID())
+				.productDescriptor(createProductDescriptor())
+				.warehouseId(WAREHOUSE_ID)
 				.quantity(qty)
 				.date(t)
 				.build();
@@ -567,8 +550,8 @@ public class CandidateChangeHandlerTests
 		final Date t = t1;
 
 		final MaterialDescriptor supplyMaterialDescr = MaterialDescriptor.builder()
-				.productId(product.getM_Product_ID())
-				.warehouseId(warehouse.getM_Warehouse_ID())
+				.productDescriptor(createProductDescriptor())
+				.warehouseId(WAREHOUSE_ID)
 				.quantity(qty)
 				.date(t)
 				.build();
@@ -591,8 +574,8 @@ public class CandidateChangeHandlerTests
 		}
 
 		final MaterialDescriptor demandMaterialDescr = MaterialDescriptor.builder()
-				.productId(product.getM_Product_ID())
-				.warehouseId(warehouse.getM_Warehouse_ID())
+				.productDescriptor(createProductDescriptor())
+				.warehouseId(WAREHOUSE_ID)
 				.quantity(qty)
 				.date(t)
 				.build();
@@ -630,8 +613,8 @@ public class CandidateChangeHandlerTests
 		final Date t = t1;
 
 		final MaterialDescriptor materialDescr = MaterialDescriptor.builder()
-				.productId(product.getM_Product_ID())
-				.warehouseId(warehouse.getM_Warehouse_ID())
+				.productDescriptor(createProductDescriptor())
+				.warehouseId(WAREHOUSE_ID)
 				.quantity(qty)
 				.date(t)
 				.build();
@@ -673,8 +656,8 @@ public class CandidateChangeHandlerTests
 		final Date t = t1;
 
 		final MaterialDescriptor materialDescr = MaterialDescriptor.builder()
-				.productId(product.getM_Product_ID())
-				.warehouseId(warehouse.getM_Warehouse_ID())
+				.productDescriptor(createProductDescriptor())
+				.warehouseId(WAREHOUSE_ID)
 				.quantity(qty)
 				.date(t)
 				.build();

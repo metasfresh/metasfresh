@@ -1,17 +1,15 @@
 package de.metas.material.dispo;
 
+import static de.metas.material.event.EventTestHelper.createMaterialDescriptor;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.math.BigDecimal;
 import java.util.Optional;
 
-import org.adempiere.util.time.SystemTime;
 import org.junit.Test;
 
 import de.metas.material.dispo.candidate.DemandDetail;
 import de.metas.material.event.EventDescr;
-import de.metas.material.event.MaterialDemandDescr;
-import de.metas.material.event.MaterialDescriptor;
+import de.metas.material.event.MaterialDemandDescriptor;
 
 /*
  * #%L
@@ -40,24 +38,20 @@ public class DemandCandidateDetailTests
 	@Test
 	public void createOrNull_when_empty_optional_then_null()
 	{
-		final Optional<MaterialDemandDescr> materialDemandDescr = Optional.empty();
+		final Optional<MaterialDemandDescriptor> materialDemandDescr = Optional.empty();
 		assertThat(DemandDetail.createOrNull(materialDemandDescr)).isNull();
 	}
 
 	@Test
 	public void createOrNull_when_not_empty()
 	{
-		final MaterialDemandDescr descriptor = MaterialDemandDescr.builder()
+		final MaterialDemandDescriptor descriptor = MaterialDemandDescriptor.builder()
 				.eventDescr(new EventDescr(10, 20))
 				.forecastLineId(1)
 				.shipmentScheduleId(2)
 				.orderLineId(3)
 				.demandCandidateId(30)
-				.materialDescriptor(MaterialDescriptor.builder()
-						.date(SystemTime.asTimestamp())
-						.productId(40)
-						.quantity(BigDecimal.TEN)
-						.warehouseId(50).build())
+				.materialDescriptor(createMaterialDescriptor())
 				.build();
 
 		final DemandDetail demandCandidateDetail = DemandDetail.createOrNull(Optional.of(descriptor));

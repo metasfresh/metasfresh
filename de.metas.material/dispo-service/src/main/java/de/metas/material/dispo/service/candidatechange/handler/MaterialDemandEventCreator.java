@@ -7,7 +7,7 @@ import com.google.common.base.Preconditions;
 import de.metas.material.dispo.CandidateSpecification.Type;
 import de.metas.material.dispo.candidate.Candidate;
 import de.metas.material.event.EventDescr;
-import de.metas.material.event.MaterialDemandDescr;
+import de.metas.material.event.MaterialDemandDescriptor;
 import de.metas.material.event.MaterialDemandEvent;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
@@ -60,12 +60,12 @@ public class MaterialDemandEventCreator
 				"Given parameter demandCandidate needs to have DEMAND or STOCK_UP as type; demandCandidate=%s", demandCandidate);
 	}
 
-	private MaterialDemandDescr createMaterialDemandDescr(
+	private MaterialDemandDescriptor createMaterialDemandDescr(
 			@NonNull final Candidate candidate,
 			@NonNull final BigDecimal qty,
 			final int orderLineId)
 	{
-		return MaterialDemandDescr.builder()
+		return MaterialDemandDescriptor.builder()
 				.demandCandidateId(candidate.getId())
 				.eventDescr(new EventDescr(candidate.getClientId(), candidate.getOrgId()))
 				.materialDescriptor(candidate.getMaterialDescr().withQuantity(qty))

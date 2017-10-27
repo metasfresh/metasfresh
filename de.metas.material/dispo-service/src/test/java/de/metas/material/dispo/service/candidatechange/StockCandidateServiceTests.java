@@ -1,5 +1,7 @@
 package de.metas.material.dispo.service.candidatechange;
 
+import static de.metas.material.event.EventTestHelper.WAREHOUSE_ID;
+import static de.metas.material.event.EventTestHelper.createProductDescriptor;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.hamcrest.Matchers.comparesEqualTo;
@@ -11,9 +13,6 @@ import java.util.Date;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_AD_Org;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
-import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.TimeUtil;
 import org.junit.Before;
 import org.junit.Test;
@@ -22,6 +21,7 @@ import de.metas.material.dispo.CandidateRepository;
 import de.metas.material.dispo.CandidateSpecification.Type;
 import de.metas.material.dispo.candidate.Candidate;
 import de.metas.material.event.MaterialDescriptor;
+import de.metas.material.event.ProductDescriptorFactory;
 
 /*
  * #%L
@@ -53,11 +53,7 @@ public class StockCandidateServiceTests
 
 	private I_AD_Org org;
 
-	private I_M_Product product;
-
-	private I_M_Warehouse warehouse;
-
-	private StockCandidateService candidateFactory;
+	private StockCandidateService stockCandidateService;
 
 	@Before
 	public void init()
@@ -65,25 +61,14 @@ public class StockCandidateServiceTests
 		AdempiereTestHelper.get().init();
 
 		org = newInstance(I_AD_Org.class);
-		
 		save(org);
 
-		final I_C_UOM uom = newInstance(I_C_UOM.class);
-		save(uom);
-
-		product = newInstance(I_M_Product.class);
-		product.setC_UOM(uom);
-		save(product);
-
-		warehouse = newInstance(I_M_Warehouse.class);
-		save(warehouse);
-
-		final CandidateRepository candidateRepository = new CandidateRepository();
-		candidateFactory = new StockCandidateService(candidateRepository);
+		final CandidateRepository candidateRepository = new CandidateRepository(ProductDescriptorFactory.TESTING_INSTANCE);
+		stockCandidateService = new StockCandidateService(candidateRepository);
 
 		final MaterialDescriptor materialDescr = MaterialDescriptor.builder()
-				.productId(product.getM_Product_ID())
-				.warehouseId(warehouse.getM_Warehouse_ID())
+				.productDescriptor(createProductDescriptor())
+				.warehouseId(WAREHOUSE_ID)
 				.quantity(new BigDecimal("10"))
 				.date(now)
 				.build();
@@ -104,8 +89,8 @@ public class StockCandidateServiceTests
 	public void createStockCandidate_before_existing()
 	{
 		final MaterialDescriptor materialDescr = MaterialDescriptor.builder()
-				.productId(product.getM_Product_ID())
-				.warehouseId(warehouse.getM_Warehouse_ID())
+				.productDescriptor(createProductDescriptor())
+				.warehouseId(WAREHOUSE_ID)
 				.date(earlier)
 				.quantity(BigDecimal.ONE)
 				.build();
@@ -117,7 +102,7 @@ public class StockCandidateServiceTests
 				.materialDescr(materialDescr)
 				.build();
 
-		final Candidate newCandidateBefore = candidateFactory.createStockCandidate(candidate);
+		final Candidate newCandidateBefore = stockCandidateService.createStockCandidate(candidate);
 		assertThat(newCandidateBefore.getQuantity(), comparesEqualTo(new BigDecimal("1")));
 	}
 
@@ -128,8 +113,8 @@ public class StockCandidateServiceTests
 	public void createStockCandidate_after_existing()
 	{
 		final MaterialDescriptor materialDescr = MaterialDescriptor.builder()
-				.productId(product.getM_Product_ID())
-				.warehouseId(warehouse.getM_Warehouse_ID())
+				.productDescriptor(createProductDescriptor())
+				.warehouseId(WAREHOUSE_ID)
 				.date(later)
 				.quantity(BigDecimal.ONE)
 				.build();
@@ -141,7 +126,7 @@ public class StockCandidateServiceTests
 				.materialDescr(materialDescr)
 				.build();
 
-		final Candidate newCandidateAfter = candidateFactory.createStockCandidate(candidate);
+		final Candidate newCandidateAfter = stockCandidateService.createStockCandidate(candidate);
 		assertThat(newCandidateAfter.getQuantity(), comparesEqualTo(new BigDecimal("11")));
 	}
 }

@@ -57,6 +57,7 @@ import com.google.common.collect.ImmutableMap;
 
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.adempiere.util.cache.annotations.CacheSkipIfNotNull;
+import lombok.NonNull;
 
 public class AttributeDAO implements IAttributeDAO
 {
@@ -221,9 +222,8 @@ public class AttributeDAO implements IAttributeDAO
 	 * @param attribute
 	 * @return value to {@link I_M_AttributeValue} map
 	 */
-	private Map<String, I_M_AttributeValue> retrieveAttributeValuesMap(final I_M_Attribute attribute)
+	private Map<String, I_M_AttributeValue> retrieveAttributeValuesMap(@NonNull final I_M_Attribute attribute)
 	{
-		Check.assumeNotNull(attribute, "attribute not null");
 		final Properties ctx = InterfaceWrapperHelper.getCtx(attribute);
 
 		final int attributeId = attribute.getM_Attribute_ID();
