@@ -91,7 +91,7 @@ public class ColumnBL implements IColumnBL
 		int contextADTableID;
 
 		// Try with Prefix_AD_Table_ID
-		tableColumnName = prefix +  ITableRecordReference.COLUMNNAME_AD_Table_ID;
+		tableColumnName = prefix + ITableRecordReference.COLUMNNAME_AD_Table_ID;
 
 		contextADTableID = Env.getContextAsInt(m_ctx, m_curWindowNo, tableColumnName);
 
@@ -166,11 +166,11 @@ public class ColumnBL implements IColumnBL
 		}
 		return keyColumnNames.get(0);
 	}
-	
+
 	@Override
 	public boolean getDefaultAllowLoggingByColumnName(@NonNull final String columnName)
 	{
-				
+
 		if (columnName.equalsIgnoreCase(I_AD_Column.COLUMNNAME_Created)
 				|| columnName.equalsIgnoreCase(I_AD_Column.COLUMNNAME_CreatedBy)
 				|| columnName.equalsIgnoreCase(I_AD_Column.COLUMNNAME_Updated)
@@ -178,8 +178,18 @@ public class ColumnBL implements IColumnBL
 		{
 			return false;
 		}
-		
+
 		return true;
 	}
-	
+
+	@Override
+	public boolean getDefaultIsCalculatedByColumnName(@NonNull final String columnName)
+	{
+		if (columnName.equalsIgnoreCase("Value")
+				|| columnName.equalsIgnoreCase("DocumentNo"))
+		{
+			return true;
+		}
+		return false;
+	}
 }
