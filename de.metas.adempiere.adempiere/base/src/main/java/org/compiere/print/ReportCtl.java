@@ -24,7 +24,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.model.I_C_PaySelectionCheck;
 import org.compiere.model.MQuery;
 import org.compiere.model.PrintInfo;
 import org.compiere.util.Env;
@@ -83,9 +82,7 @@ public final class ReportCtl
 		// Payment Check Print
 		if (adProcessId == 313)     		// C_Payment
 		{
-			final int C_Payment_ID = processInfo.getRecord_ID();
-			final int C_PaySelectionCheck_ID = prepareCheckPrint(C_Payment_ID);
-			startDocumentPrint(ReportEngine.CHECK, I_C_PaySelectionCheck.Table_ID, C_PaySelectionCheck_ID);
+			throw new UnsupportedOperationException("Not supported");
 		}
 		//
 		// Standard document print

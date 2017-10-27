@@ -65,7 +65,6 @@ import org.apache.ecs.xhtml.tr;
 import org.compiere.model.I_C_DunningRunEntry;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
-import org.compiere.model.I_C_PaySelectionCheck;
 import org.compiere.model.I_C_Project;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.MClient;
@@ -1245,7 +1244,6 @@ queued-job-count = 0  (class javax.print.attribute.standard.QueuedJobCount)
 		"C_DunningRunEntry_ID" , "PP_Order_ID" , "DD_Order_ID" };
 	private static final int[]	DOC_TABLE_ID = new int[] {
 		I_C_Order.Table_ID, I_M_InOut.Table_ID, InterfaceWrapperHelper.getTableId(I_C_Invoice.class), I_C_Project.Table_ID,
-		I_C_PaySelectionCheck.Table_ID,
 		I_C_DunningRunEntry.Table_ID,
 		Services.get(IADTableDAO.class).retrieveTableId(I_PP_Order.Table_Name),
 		Services.get(IADTableDAO.class).retrieveTableId(I_DD_Order.Table_Name) };
