@@ -34,6 +34,7 @@ import org.adempiere.util.time.SystemTime;
 import org.compiere.util.TimeUtil;
 import org.junit.Test;
 
+import de.metas.contracts.ContractChangeParameters;
 import de.metas.contracts.IContractChangeBL;
 import de.metas.contracts.model.I_C_Contract_Change;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
@@ -90,7 +91,13 @@ public class ContractChangeBLTest extends ContractsTestBase
 
 		final Timestamp changeTime = TimeUtil.getDay(2013,7,27);
 
-		contractChangeBL.cancelContract(currentTerm, changeTime, true);
+		final ContractChangeParameters contractChangeParameters = ContractChangeParameters.builder()
+				.changeDate(changeTime)
+				.isCloseInvoiceCandidate(true)
+				.note("note: cancelContract_test")
+				.build();
+		
+		contractChangeBL.cancelContract(currentTerm, contractChangeParameters);
 
 	}
 }

@@ -39,6 +39,7 @@ import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;
 import org.slf4j.Logger;
 
+import de.metas.contracts.ContractChangeParameters;
 import de.metas.contracts.IContractChangeBL;
 import de.metas.contracts.IContractChangeDAO;
 import de.metas.contracts.model.I_C_Contract_Change;
@@ -55,6 +56,7 @@ import de.metas.document.engine.IDocumentBL;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
 import de.metas.logging.LogManager;
 import de.metas.order.IOrderPA;
+import lombok.NonNull;
 
 public class ContractChangeBL implements IContractChangeBL
 {
@@ -62,11 +64,13 @@ public class ContractChangeBL implements IContractChangeBL
 	private static final Logger logger = LogManager.getLogger(ContractChangeBL.class);
 
 	@Override
-	public void cancelContract(
-			final I_C_Flatrate_Term currentTerm,
-			final Timestamp changeDate,
-			final boolean isCloseInvoiceCandidate)
+	public void cancelContract(final I_C_Flatrate_Term currentTerm,
+			final @NonNull ContractChangeParameters contractChangeParameters)
 	{
+		final Timestamp changeDate = contractChangeParameters.getChangeDate();
+		final boolean isCloseInvoiceCandidate = contractChangeParameters.isCloseInvoiceCandidate();
+		final String note = contractChangeParameters.getNote();
+		
 		Check.assumeNotNull(currentTerm, "Param 'currentTerm' not null");
 		Check.assumeNotNull(changeDate, "Param 'changeDate' not null");
 
@@ -133,6 +137,11 @@ public class ContractChangeBL implements IContractChangeBL
 				currentTerm.setEndDate(new Timestamp(changeDate.getTime()));
 			}
 			
+			if (Check.isEmpty(note, true))
+			{
+				currentTerm.setNote(note);
+			}
+			
 			// update contract status
 			currentTerm.setContractStatus(X_C_Flatrate_Term.CONTRACTSTATUS_Quit);
 		}
@@ -142,7 +151,7 @@ public class ContractChangeBL implements IContractChangeBL
 		if (currentTerm.getC_FlatrateTerm_Next_ID() > 0)
 		{
 			// the canceled term has already been extended, so we need to cancel the next term as well
-			cancelContract(currentTerm.getC_FlatrateTerm_Next(), changeDate, isCloseInvoiceCandidate);
+			cancelContract(currentTerm.getC_FlatrateTerm_Next(), contractChangeParameters);
 		}
 		else
 		{
