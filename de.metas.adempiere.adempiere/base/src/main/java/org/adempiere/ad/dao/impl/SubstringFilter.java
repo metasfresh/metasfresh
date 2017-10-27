@@ -13,26 +13,24 @@ package org.adempiere.ad.dao.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.util.List;
 
 import org.adempiere.ad.dao.IQueryFilterModifier;
-import org.adempiere.util.Check;
+
+import lombok.NonNull;
 
 /**
  * Filters for substrings. This filter creates SQL like <code>column LIKE '%value%'</code>.
  * 
- * @author ts
- *
  * @param <T> the type of the class we filter for.
  */
 public class SubstringFilter<T> extends CompareQueryFilter<T>
@@ -51,8 +49,8 @@ public class SubstringFilter<T> extends CompareQueryFilter<T>
 		}
 
 		/**
-		 * Makes sure that the given <code>value</code> starts with <code>" '%</code> and ends with <code>"%'"</code>. Also escapes quotes within the string by replacing <code>'</code> with
-		 * <code>''</code>.
+		 * Makes sure that the given <code>value</code> starts with <code>" '%</code> and ends with <code>"%'"</code>.<br>
+		 * Also escapes quotes within the string by replacing <code>'</code> with <code>''</code>.
 		 */
 		@Override
 		public String getValueSql(final Object value, final List<Object> ignored_params)
@@ -86,7 +84,7 @@ public class SubstringFilter<T> extends CompareQueryFilter<T>
 		}
 
 		/**
-		 * Does basically nothing.
+		 * Uppercases the given {@code value} if {@code ignoreCase} was specified.
 		 */
 		@Override
 		public Object convertValue(final String columnName, final Object value, final Object model)
@@ -116,14 +114,14 @@ public class SubstringFilter<T> extends CompareQueryFilter<T>
 	 * @param substring
 	 * @param ignoreCase
 	 */
-	/* package */SubstringFilter(final String columnName, final String substring, final boolean ignoreCase)
+	/* package */ SubstringFilter(
+			@NonNull final String columnName,
+			@NonNull final String substring,
+			final boolean ignoreCase)
 	{
 		super(columnName,
-				ignoreCase ? Operator.CONTRAINS_SUBSTRING_IGNORECASE : Operator.CONTAINS_SUBSTRING,
+				ignoreCase ? Operator.CONTAINS_SUBSTRING_IGNORECASE : Operator.CONTAINS_SUBSTRING,
 				substring,
 				new SubstringQueryFilterModifier(ignoreCase));
-
-		Check.assumeNotNull(columnName, "Param 'columnName' is not null");
-		Check.assumeNotNull(substring, "Param 'substring' is not null");
 	}
 }

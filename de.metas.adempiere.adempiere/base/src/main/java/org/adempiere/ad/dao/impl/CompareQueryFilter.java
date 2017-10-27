@@ -13,15 +13,14 @@ package org.adempiere.ad.dao.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -43,14 +42,7 @@ public class CompareQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 	 */
 	public static enum Operator
 	{
-		EQUAL("=", MQuery.Operator.EQUAL),
-		NOT_EQUAL("<>", MQuery.Operator.NOT_EQUAL),
-		LESS("<", MQuery.Operator.LESS),
-		LESS_OR_EQUAL("<=", MQuery.Operator.LESS_EQUAL),
-		GREATER(">", MQuery.Operator.GREATER),
-		GREATER_OR_EQUAL(">=", MQuery.Operator.GREATER_EQUAL),
-		CONTAINS_SUBSTRING("LIKE", MQuery.Operator.LIKE),
-		CONTRAINS_SUBSTRING_IGNORECASE("ILIKE", MQuery.Operator.LIKE_I);
+		EQUAL("=", MQuery.Operator.EQUAL), NOT_EQUAL("<>", MQuery.Operator.NOT_EQUAL), LESS("<", MQuery.Operator.LESS), LESS_OR_EQUAL("<=", MQuery.Operator.LESS_EQUAL), GREATER(">", MQuery.Operator.GREATER), GREATER_OR_EQUAL(">=", MQuery.Operator.GREATER_EQUAL), CONTAINS_SUBSTRING("LIKE", MQuery.Operator.LIKE), CONTAINS_SUBSTRING_IGNORECASE("ILIKE", MQuery.Operator.LIKE_I);
 
 		private final String sql;
 		private final MQuery.Operator mqueryOperator;
@@ -66,7 +58,7 @@ public class CompareQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 		{
 			return sql;
 		}
-		
+
 		public final MQuery.Operator asMQueryOperator()
 		{
 			return mqueryOperator;
@@ -79,10 +71,9 @@ public class CompareQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 	private final IQueryFilterModifier operand1Modifier;
 	private final IQueryFilterModifier operand2Modifier;
 
-	/* package */CompareQueryFilter(final String columnName, final Operator operator, final Object value, final IQueryFilterModifier modifier)
+	/* package */ CompareQueryFilter(final String columnName, final Operator operator, final Object value, final IQueryFilterModifier modifier)
 	{
-		super();
-		this.operand1 = ModelColumnNameValue.<T>forColumnName(columnName);
+		this.operand1 = ModelColumnNameValue.<T> forColumnName(columnName);
 		this.operand2 = value;
 
 		Check.assumeNotNull(operator, "operator not null");
@@ -93,7 +84,7 @@ public class CompareQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 
 	}
 
-	/* package */CompareQueryFilter(final String columnName, final Operator operator, final Object value)
+	/* package */ CompareQueryFilter(final String columnName, final Operator operator, final Object value)
 	{
 		this(columnName, operator, value, NullQueryFilterModifier.instance);
 	}
@@ -150,11 +141,17 @@ public class CompareQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 		final Object operand2Value = getModelValue(model, operand2);
 		final Object operand2ValuePrepared = operand2Modifier.convertValue(IQueryFilterModifier.COLUMNNAME_Constant, operand2Value, model);
 
-		if (Operator.CONTAINS_SUBSTRING == operator || Operator.CONTRAINS_SUBSTRING_IGNORECASE == operator)
+		if (Operator.CONTAINS_SUBSTRING == operator || Operator.CONTAINS_SUBSTRING_IGNORECASE == operator)
 		{
 			if (operand1ValuePrepared instanceof String && operand2ValuePrepared instanceof String)
 			{
-				return ((String)operand1ValuePrepared).contains((String)operand2ValuePrepared);
+				final String operand1String = (String)operand1ValuePrepared;
+				final String operand2String = (String)operand2ValuePrepared;
+
+				final String operand2Regexp = operand2String
+						.replace('_', '.')
+						.replace("%", ".*");
+				return operand1String.matches(".*" + operand2Regexp + ".*");
 			}
 			else
 			{
