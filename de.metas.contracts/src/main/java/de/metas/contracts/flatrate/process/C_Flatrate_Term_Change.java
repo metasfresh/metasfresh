@@ -29,14 +29,15 @@ import java.sql.Timestamp;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.impl.TableRecordReference;
 
 import de.metas.contracts.ContractChangeParameters;
 import de.metas.contracts.IContractChangeBL;
 import de.metas.contracts.model.I_C_Contract_Change;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_Flatrate_Transition;
-import de.metas.process.ProcessInfoParameter;
 import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
 
 public class C_Flatrate_Term_Change extends JavaProcess
 {
@@ -79,6 +80,8 @@ public class C_Flatrate_Term_Change extends JavaProcess
 																.build();
 		
 		Services.get(IContractChangeBL.class).cancelContract(currentTerm, contractChangeParameters);
+		
+		getResult().setRecordToRefreshAfterExecution(TableRecordReference.of(currentTerm));
 
 		return "@Success@";
 	}
