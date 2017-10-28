@@ -30,6 +30,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 
+import de.metas.contracts.ContractChangeParameters;
 import de.metas.contracts.IContractChangeBL;
 import de.metas.contracts.model.I_C_Contract_Change;
 import de.metas.contracts.model.I_C_Flatrate_Term;
@@ -47,13 +48,17 @@ public class C_Flatrate_Term_Change extends JavaProcess
 	public static final String PARAM_CHANGE_DATE = "EventDate";
 
 	public static final String PARAM_ACTION = I_C_Contract_Change.COLUMNNAME_Action;
+	
+	public static final String PARAM_TERMINATION_MEMO = I_C_Flatrate_Term.COLUMNNAME_TerminationMemo;
+	public static final String PARAM_TERMINATION_REASON = I_C_Flatrate_Term.COLUMNNAME_TerminationReason;
 
 	@SuppressWarnings("unused")
 	private int newSubscriptionId = 0;
 
 	private String action;
-
 	private Timestamp changeDate;
+	private String terminationMemo;
+	private String terminationReason;
 
 	@Override
 	protected String doIt()
@@ -66,7 +71,14 @@ public class C_Flatrate_Term_Change extends JavaProcess
 		
 		final I_C_Flatrate_Term currentTerm = InterfaceWrapperHelper.create(getCtx(), getRecord_ID(), I_C_Flatrate_Term.class, get_TrxName());
 
-		Services.get(IContractChangeBL.class).cancelContract(currentTerm, changeDate, true);
+		final ContractChangeParameters contractChangeParameters = ContractChangeParameters.builder()
+																.changeDate(changeDate)
+																.isCloseInvoiceCandidate(true)
+																.terminationMemo(terminationMemo)
+																.terminationReason(terminationReason)
+																.build();
+		
+		Services.get(IContractChangeBL.class).cancelContract(currentTerm, contractChangeParameters);
 
 		return "@Success@";
 	}
@@ -95,6 +107,14 @@ public class C_Flatrate_Term_Change extends JavaProcess
 			else if (name.equals(PARAM_CHANGE_DATE))
 			{
 				changeDate = (Timestamp)para[i].getParameter();
+			}
+			else if (name.equals(PARAM_TERMINATION_REASON))
+			{
+				terminationReason = (String)para[i].getParameter();
+			}
+			else if (name.equals(PARAM_TERMINATION_MEMO))
+			{
+				terminationMemo = (String)para[i].getParameter();
 			}
 			else
 			{
