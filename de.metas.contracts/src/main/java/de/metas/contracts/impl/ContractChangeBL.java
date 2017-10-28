@@ -94,7 +94,7 @@ public class ContractChangeBL implements IContractChangeBL
 
 			final int pricingSystemId = getPricingSystemId(currentTerm, changeConditions);
 
-			if (currentTerm.getC_OrderLine_Term_ID() > 0)
+			if (currentTerm.getC_OrderLine_Term_ID() > 0 && changeConditions.getM_Product_ID() > 0)
 			{
 				final I_C_OrderLine currentTermOl = currentTerm.getC_OrderLine_Term();
 				final I_C_Order currentTermOrder = currentTermOl.getC_Order();
@@ -189,10 +189,15 @@ public class ContractChangeBL implements IContractChangeBL
 		BigDecimal surplusQty = BigDecimal.ZERO;
 		for (final I_C_SubscriptionProgress currentSP : sps)
 		{
-			if (!changeDate.after(currentSP.getEventDate()))
+			if (changeDate.after(currentSP.getEventDate()))
 			{
-
+				currentSP.setContractStatus(X_C_SubscriptionProgress.CONTRACTSTATUS_Quit);
+				InterfaceWrapperHelper.save(currentSP);
+			}
+			else
+			{
 				final String evtType = currentSP.getEventType();
+				
 				final String status = currentSP.getStatus();
 
 				if (X_C_SubscriptionProgress.EVENTTYPE_Delivery.equals(evtType)
