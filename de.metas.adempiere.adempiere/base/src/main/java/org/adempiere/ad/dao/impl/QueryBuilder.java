@@ -82,7 +82,6 @@ import com.google.common.collect.ImmutableMap;
 	 */
 	public QueryBuilder(final Class<T> modelClass, final String tableName)
 	{
-		super();
 		this.modelClass = modelClass;
 		this.modelKeyColumnName = null; // lazy
 
@@ -686,4 +685,10 @@ import com.google.common.collect.ImmutableMap;
 		return this;
 	}
 
+	@Override
+	public ICompositeQueryFilter<T> getFiltersForTestAsserts()
+	{
+		return filters;
+	}
+	
 }

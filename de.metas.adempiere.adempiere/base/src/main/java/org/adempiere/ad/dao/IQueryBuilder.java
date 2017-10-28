@@ -30,6 +30,8 @@ import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.model.ModelColumn;
 import org.compiere.model.IQuery;
 
+import com.google.common.annotations.VisibleForTesting;
+
 /**
  *
  * @author tsa
@@ -375,4 +377,7 @@ public interface IQueryBuilder<T>
 	IQueryBuilder<T> addValidFromToMatchesFilter(ModelColumn<T, ?> validFromColumn, ModelColumn<T, ?> validToColumn, Date dateToMatch);
 
 	String getModelTableName();
+
+	@VisibleForTesting
+	ICompositeQueryFilter<T> getFiltersForTestAsserts();
 }
