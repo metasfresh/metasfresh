@@ -37,7 +37,6 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;
-import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import de.metas.contracts.ContractChangeParameters;
