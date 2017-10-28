@@ -70,7 +70,7 @@ public class AttributesKeyGenerator
 	{
 		if (attributeSetInstanceId == AttributeConstants.M_AttributeSetInstance_ID_None)
 		{
-			return ProductDescriptor.STORAGE_ATTRIBUTES_KEY_EMPTY;
+			return ProductDescriptor.STORAGE_ATTRIBUTES_KEY_UNSPECIFIED;
 		}
 
 		final I_M_AttributeSetInstance attributeSetInstance = load(attributeSetInstanceId, I_M_AttributeSetInstance.class);

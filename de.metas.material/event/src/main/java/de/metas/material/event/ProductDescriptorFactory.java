@@ -56,7 +56,7 @@ public class ProductDescriptorFactory
 
 	public final ProductDescriptor forProductIdAndEmptyAttribute(final int productId)
 	{
-		return new ProductDescriptor(true, productId, ProductDescriptor.STORAGE_ATTRIBUTES_KEY_EMPTY, 0); // complete == true
+		return new ProductDescriptor(true, productId, ProductDescriptor.STORAGE_ATTRIBUTES_KEY_UNSPECIFIED, 0); // complete == true
 	}
 
 	public final ProductDescriptor forProductAndAttributes(

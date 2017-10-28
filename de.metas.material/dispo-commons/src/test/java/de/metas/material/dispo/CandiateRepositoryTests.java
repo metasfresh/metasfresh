@@ -95,8 +95,8 @@ public class CandiateRepositoryTests
 		AdempiereTestHelper.get().init();
 
 		productDescriptorFactory = ProductDescriptorFactory.TESTING_INSTANCE;
-		
-		final MaterialDescriptor materialDescr = MaterialDescriptor.builder()
+
+		final MaterialDescriptor materialDescr = MaterialDescriptor.builderForCompleteDescriptor()
 				.productDescriptor(createProductDescriptor())
 				.warehouseId(WAREHOUSE_ID)
 				.quantity(new BigDecimal("11"))
@@ -120,13 +120,13 @@ public class CandiateRepositoryTests
 				.build();
 		stockCandidate = candidateRepository.addOrUpdateOverwriteStoredSeqNo(stockCandidate);
 
-		final MaterialDescriptor laterMaterialDescriptor = MaterialDescriptor.builder()
+		final MaterialDescriptor laterMaterialDescriptor = MaterialDescriptor.builderForCompleteDescriptor()
 				.productDescriptor(createProductDescriptor())
 				.warehouseId(WAREHOUSE_ID)
 				.quantity(new BigDecimal("10"))
 				.date(later)
 				.build();
-
+		assertThat(laterMaterialDescriptor.isComplete()).isTrue();
 		laterStockCandidate = Candidate.builder()
 				.type(Type.STOCK)
 				.clientId(CLIENT_ID)

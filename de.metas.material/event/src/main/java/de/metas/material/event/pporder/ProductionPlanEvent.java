@@ -1,7 +1,5 @@
 package de.metas.material.event.pporder;
 
-import java.util.Optional;
-
 import org.eevolution.model.I_PP_Order;
 
 import de.metas.material.event.EventDescr;
@@ -51,5 +49,5 @@ final public class ProductionPlanEvent implements MaterialEvent
 	PPOrder ppOrder;
 	
 	@NonNull
-	Optional<MaterialDemandDescriptor> materialDemandDescr;
+	MaterialDemandDescriptor materialDemandDescr;
 }

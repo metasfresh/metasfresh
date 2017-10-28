@@ -11,6 +11,7 @@ import com.google.common.base.Preconditions;
 import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.ToString;
 import lombok.experimental.FieldDefaults;
 
 /*
@@ -37,12 +38,13 @@ import lombok.experimental.FieldDefaults;
 
 @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
 @EqualsAndHashCode
+@ToString
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
 @JsonSubTypes({
 		@JsonSubTypes.Type(name = "MaterialDescriptor", value = MaterialDescriptor.class) })
 public class ProductDescriptor
 {
-	public static final String STORAGE_ATTRIBUTES_KEY_EMPTY = new String("");
+	public static final String STORAGE_ATTRIBUTES_KEY_UNSPECIFIED = new String("");
 
 	public static final String STORAGE_ATTRIBUTES_KEY_DELIMITER = "§$§";
 
@@ -84,7 +86,7 @@ public class ProductDescriptor
 		this(
 				copyFrom == null ? false : copyFrom.productDescriptorComplete,
 				copyFrom == null ? 0 : copyFrom.productId,
-				copyFrom == null ? STORAGE_ATTRIBUTES_KEY_EMPTY : copyFrom.storageAttributesKey,
+				copyFrom == null ? STORAGE_ATTRIBUTES_KEY_UNSPECIFIED : copyFrom.storageAttributesKey,
 				copyFrom == null ? 0 : copyFrom.getAttributeSetInstanceId());
 	}
 

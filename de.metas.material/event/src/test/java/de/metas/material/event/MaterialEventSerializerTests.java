@@ -8,7 +8,6 @@ import static de.metas.material.event.EventTestHelper.createProductDescriptorWit
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
-import java.util.Optional;
 
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -147,7 +146,7 @@ public class MaterialEventSerializerTests
 	{
 		final ProductionPlanEvent event = ProductionPlanEvent.builder()
 				.eventDescr(createEventDescriptor())
-				.materialDemandDescr(Optional.of(createMaterialDemandDescriptor()))
+				.materialDemandDescr(createMaterialDemandDescriptor())
 				.ppOrder(PPOrder.builder()
 						.datePromised(NOW)
 						.dateStartSchedule(NOW)
@@ -255,7 +254,7 @@ public class MaterialEventSerializerTests
 		return evt;
 	}
 
-	private MaterialEvent assertEventEqualAfterSerializeDeserialize(final MaterialEvent originalEvent)
+	public static MaterialEvent assertEventEqualAfterSerializeDeserialize(final MaterialEvent originalEvent)
 	{
 		final String serializedEvt = SimpleObjectSerializer.get().serialize(originalEvent);
 		final MaterialEvent deserializedEvt = SimpleObjectSerializer.get().deserialize(serializedEvt, MaterialEvent.class);

@@ -670,7 +670,7 @@ public class CandidateRepository
 				storageAttributesKey,
 				candidateRecord.getM_AttributeSetInstance_ID());
 
-		final MaterialDescriptor materialDescr = MaterialDescriptor.builderForCandidateOrQuery()
+		final MaterialDescriptor materialDescr = MaterialDescriptor.builderForCompleteDescriptor()
 				.productDescriptor(productDescriptor)
 				.quantity(candidateRecord.getQty())
 				.warehouseId(candidateRecord.getM_Warehouse_ID())
@@ -889,7 +889,7 @@ public class CandidateRepository
 			builder.addEqualsFilter(I_MD_Candidate.COLUMN_M_Product_ID, materialDescriptor.getProductId());
 			atLeastOneFilterAdded = true;
 		}
-		if (!Objects.equals(materialDescriptor.getStorageAttributesKey(), ProductDescriptor.STORAGE_ATTRIBUTES_KEY_EMPTY))
+		if (materialDescriptor.getStorageAttributesKey() != ProductDescriptor.STORAGE_ATTRIBUTES_KEY_UNSPECIFIED)
 		{
 			// TODO test how the "like" expression is created
 			builder.addEqualsFilter(I_MD_Candidate.COLUMNNAME_StorageAttributesKey, materialDescriptor.getStorageAttributesKey());

@@ -10,7 +10,6 @@ import static org.junit.Assert.assertThat;
 
 import java.math.BigDecimal;
 import java.util.Date;
-import java.util.Optional;
 
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
@@ -183,7 +182,7 @@ public class ProdcutionPlanEventHandlerTests
 	{
 		final ProductionPlanEvent productionPlanEvent = ProductionPlanEvent.builder()
 				.eventDescr(new EventDescr(org.getAD_Client_ID(), org.getAD_Org_ID()))
-				.materialDemandDescr(Optional.empty())
+				//.materialDemandDescr(null)
 				.ppOrder(PPOrder.builder()
 						.orgId(org.getAD_Org_ID())
 						.datePromised(t2)
@@ -210,6 +209,7 @@ public class ProdcutionPlanEventHandlerTests
 								.build())
 						.build())
 				.build();
+		assertThat(productionPlanEvent.getMaterialDemandDescr()).isNull();
 		return productionPlanEvent;
 	}
 

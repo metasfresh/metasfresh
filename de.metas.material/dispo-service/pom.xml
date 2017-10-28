@@ -87,6 +87,14 @@
 			<groupId>de.metas.material</groupId>
 			<artifactId>metasfresh-material-event</artifactId>
 			<version>10.0.0</version>
+			<classifier>tests</classifier>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.material</groupId>
+			<artifactId>metasfresh-material-event</artifactId>
+			<version>10.0.0</version>
 		</dependency>
 
 		<!--

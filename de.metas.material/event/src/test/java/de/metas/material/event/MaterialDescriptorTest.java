@@ -39,19 +39,24 @@ public class MaterialDescriptorTest
 	public void builderForQuery()
 	{
 		final MaterialDescriptor result = MaterialDescriptor.builderForQuery().build();
+
 		assertThat(result.isComplete()).isFalse();
+		assertThat(result.getProductId()).isLessThanOrEqualTo(0);
+		assertThat(result.getAttributeSetInstanceId()).isLessThanOrEqualTo(-1);
+		assertThat(result.getStorageAttributesKey())
+				.isSameAs(ProductDescriptor.STORAGE_ATTRIBUTES_KEY_UNSPECIFIED);
 	}
 
 	@Test(expected = RuntimeException.class)
 	public void builderForCandidate_fail()
 	{
-		MaterialDescriptor.builderForCandidateOrQuery().build();
+		MaterialDescriptor.builderForCompleteDescriptor().build();
 	}
 
 	@Test
 	public void builderForCandidate_succeed()
 	{
-		final MaterialDescriptor result = MaterialDescriptor.builderForCandidateOrQuery()
+		final MaterialDescriptor result = MaterialDescriptor.builderForCompleteDescriptor()
 				.date(NOW)
 				.productDescriptor(createProductDescriptor())
 				.quantity(BigDecimal.TEN)
@@ -67,7 +72,7 @@ public class MaterialDescriptorTest
 	@Test
 	public void withoutQuantity()
 	{
-		final MaterialDescriptor materialDescr = MaterialDescriptor.builderForCandidateOrQuery()
+		final MaterialDescriptor materialDescr = MaterialDescriptor.builderForCompleteDescriptor()
 				.date(NOW)
 				.productDescriptor(createProductDescriptor())
 				.quantity(BigDecimal.TEN)
@@ -90,7 +95,7 @@ public class MaterialDescriptorTest
 		final ProductDescriptor incompleteProductDescriptor = ProductDescriptorFactory.TESTING_INSTANCE.forProductIdOnly(PRODUCT_ID);
 		assertThat(incompleteProductDescriptor.isComplete()).isFalse();
 
-		MaterialDescriptor.builderForCandidateOrQuery()
+		MaterialDescriptor.builderForCompleteDescriptor()
 				.date(NOW)
 				.productDescriptor(incompleteProductDescriptor)
 				.quantity(BigDecimal.TEN)

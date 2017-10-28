@@ -12,6 +12,7 @@ import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.ToString;
 import lombok.experimental.FieldDefaults;
 
 /*
@@ -37,6 +38,7 @@ import lombok.experimental.FieldDefaults;
  */
 @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
 @EqualsAndHashCode(callSuper = true)
+@ToString(callSuper = true)
 public class MaterialDescriptor extends ProductDescriptor
 {
 	public enum DateOperator
@@ -70,7 +72,7 @@ public class MaterialDescriptor extends ProductDescriptor
 	/**
 	 * @return a builder where you need to set all the properties.
 	 */
-	public static MaterialDescriptorBuilder builderForCandidateOrQuery()
+	public static MaterialDescriptorBuilder builderForCompleteDescriptor()
 	{
 		return MaterialDescriptor.builder().complete(true);
 	}
@@ -102,7 +104,7 @@ public class MaterialDescriptor extends ProductDescriptor
 			final Date date,
 			final DateOperator dateOperator,
 			final ProductDescriptor productDescriptor,
-			final boolean complete)
+			final Boolean complete)
 	{
 		this(
 				warehouseId,
@@ -110,8 +112,8 @@ public class MaterialDescriptor extends ProductDescriptor
 				date,
 				dateOperator,
 				productDescriptor == null ? 0 : productDescriptor.getProductId(),
-				productDescriptor == null ? 0 : productDescriptor.getAttributeSetInstanceId(),
-				productDescriptor == null ? STORAGE_ATTRIBUTES_KEY_EMPTY : productDescriptor.getStorageAttributesKey(),
+				productDescriptor == null ? -1 : productDescriptor.getAttributeSetInstanceId(),
+				productDescriptor == null ? STORAGE_ATTRIBUTES_KEY_UNSPECIFIED : productDescriptor.getStorageAttributesKey(),
 				productDescriptor == null ? false : productDescriptor.isComplete(),
 				complete);
 	}
@@ -126,11 +128,12 @@ public class MaterialDescriptor extends ProductDescriptor
 			@JsonProperty("attributeSetInstanceId") final int attributeSetInstanceId,
 			@JsonProperty("storageAttributesKey") final String storageAttributesKey,
 			@JsonProperty("productDescriptorComplete") final boolean productDescriptorComplete,
-			@JsonProperty("materialDescriptorComplete") final boolean materialDescriptorComplete)
+			@JsonProperty("materialDescriptorComplete") final boolean complete)
 	{
 		super(productDescriptorComplete, productId, storageAttributesKey, attributeSetInstanceId);
 
-		this.materialDescriptorComplete = materialDescriptorComplete;
+		Preconditions.checkNotNull(complete, "The given parameter complete may not be null (either true or false)");
+		this.materialDescriptorComplete = complete;
 
 		this.warehouseId = warehouseId;
 		this.quantity = quantity;

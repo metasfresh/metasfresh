@@ -48,7 +48,7 @@ public class EventTestHelper
 	public static MaterialDescriptor createMaterialDescriptor()
 	{
 		return MaterialDescriptor
-				.builderForCandidateOrQuery()
+				.builderForCompleteDescriptor()
 				.productDescriptor(createProductDescriptor())
 				.warehouseId(WAREHOUSE_ID)
 				.quantity(BigDecimal.TEN)
