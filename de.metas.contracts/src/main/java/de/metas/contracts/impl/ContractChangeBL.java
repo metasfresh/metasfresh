@@ -37,6 +37,7 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;
+import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import de.metas.contracts.ContractChangeParameters;
@@ -191,8 +192,7 @@ public class ContractChangeBL implements IContractChangeBL
 		{
 			if (changeDate.after(currentSP.getEventDate()))
 			{
-				currentSP.setContractStatus(X_C_SubscriptionProgress.CONTRACTSTATUS_Quit);
-				InterfaceWrapperHelper.save(currentSP);
+				setQuitContractStatus(currentSP);
 			}
 			else
 			{
@@ -218,6 +218,16 @@ public class ContractChangeBL implements IContractChangeBL
 			logger.info("Adjusting QtyOrdered of order " + oldOrder.getDocumentNo() + ", line " + oldOl.getLine());
 			oldOl.setQtyOrdered(oldOl.getQtyOrdered().subtract(surplusQty));
 			orderPA.reserveStock(oldOrder, oldOl);
+		}
+	}
+	
+	private void setQuitContractStatus(@NonNull final I_C_SubscriptionProgress progress)
+	{
+		final Timestamp today = SystemTime.asDayTimestamp();
+		if (today.after(progress.getEventDate()))
+		{
+			progress.setContractStatus(X_C_SubscriptionProgress.CONTRACTSTATUS_Quit);
+			InterfaceWrapperHelper.save(progress);
 		}
 	}
 
