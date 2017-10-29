@@ -260,12 +260,7 @@
     color: #fff;
 }
 
-.subheader-item:focus {
-    background-color: $brand-color-primary;
-    color: #fff;
-}
-
-.subheader-item:focus {
+.subheader-item:not(.subheader-item-disabled):focus {
     background-color: $brand-color-primary;
     color: #fff;
 }
