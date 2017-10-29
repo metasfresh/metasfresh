@@ -36,7 +36,7 @@ public class MaterialDemandEvent implements MaterialEvent
 	MaterialDemandDescriptor materialDemandDescr;
 
 	
-	public EventDescr getEventDescr()
+	public EventDescriptor getEventDescriptor()
 	{
 		return materialDemandDescr.getEventDescr();
 	}

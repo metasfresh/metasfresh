@@ -15,7 +15,7 @@ import de.metas.material.dispo.candidate.CandidateType;
 import de.metas.material.dispo.candidate.DistributionDetail;
 import de.metas.material.dispo.candidate.ProductionDetail;
 import de.metas.material.dispo.repository.CandidateRepositoryRetrieval;
-import de.metas.material.event.EventDescr;
+import de.metas.material.event.EventDescriptor;
 import de.metas.material.event.MaterialEventService;
 import de.metas.material.event.ddorder.DDOrder;
 import de.metas.material.event.ddorder.DDOrder.DDOrderBuilder;
@@ -121,7 +121,7 @@ public class CandidateService
 						.datePromised(groupMember.getDate())
 						.orgId(groupMember.getOrgId())
 						.plantId(prodDetail.getPlantId())
-						.productDescriptor(groupMember.getMaterialDescr())
+						.productDescriptor(groupMember.getMaterialDescriptor())
 						.quantity(groupMember.getQuantity())
 						.uomId(prodDetail.getUomId())
 						.warehouseId(groupMember.getWarehouseId());
@@ -142,7 +142,7 @@ public class CandidateService
 						PPOrderLine.builder()
 								.description(prodDetail.getDescription())
 								.productBomLineId(prodDetail.getProductBomLineId())
-								.productDescriptor(groupMember.getMaterialDescr())
+								.productDescriptor(groupMember.getMaterialDescriptor())
 								.qtyRequired(groupMember.getQuantity())
 								.productBomLineId(prodDetail.getProductBomLineId())
 								.receipt(receipt)
@@ -153,7 +153,7 @@ public class CandidateService
 		final Candidate firstGroupMember = group.get(0);
 
 		return PPOrderRequestedEvent.builder()
-				.eventDescr(new EventDescr(firstGroupMember.getClientId(), firstGroupMember.getOrgId()))
+				.eventDescriptor(new EventDescriptor(firstGroupMember.getClientId(), firstGroupMember.getOrgId()))
 				.ppOrder(ppOrderBuilder.build())
 				.groupId(firstGroupMember.getEffectiveGroupId())
 				.build();
@@ -190,7 +190,7 @@ public class CandidateService
 			}
 
 			ddOrderLineBuilder
-					.productDescriptor(groupMember.getMaterialDescr())
+					.productDescriptor(groupMember.getMaterialDescriptor())
 					.qty(groupMember.getQuantity());
 
 			if (groupMember.getDemandDetail() != null && groupMember.getDemandDetail().getOrderLineId() > 0)
@@ -214,7 +214,7 @@ public class CandidateService
 		final Candidate firstGroupMember = group.get(0);
 
 		return DDOrderRequestedEvent.builder()
-				.eventDescr(new EventDescr(firstGroupMember.getClientId(), firstGroupMember.getOrgId()))
+				.eventDescriptor(new EventDescriptor(firstGroupMember.getClientId(), firstGroupMember.getOrgId()))
 				.ddOrder(ddOrderBuilder
 						.line(ddOrderLineBuilder
 								.durationDays(durationDays)

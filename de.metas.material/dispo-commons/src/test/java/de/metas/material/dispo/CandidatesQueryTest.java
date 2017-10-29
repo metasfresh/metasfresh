@@ -54,16 +54,16 @@ public class CandidatesQueryTest
 		final Timestamp date = SystemTime.asTimestamp();
 
 		final Candidate cand = Candidate.builder().type(CandidateType.STOCK)
-				.materialDescr(createMaterialDescriptor().withDate(date))
+				.materialDescriptor(createMaterialDescriptor().withDate(date))
 				.build();
 		final CandidatesQuery query = CandidatesQuery.fromCandidate(cand);
 
-		assertThat(query.getMaterialDescr().getDate()).isEqualTo(date);
-		assertThat(query.getMaterialDescr().getDateOperator()).isEqualTo(DateOperator.AT);
-		assertThat(query.getMaterialDescr().getProductId()).isEqualTo(PRODUCT_ID);
-		assertThat(query.getMaterialDescr().getStorageAttributesKey()).isEqualTo(STORAGE_ATTRIBUTES_KEY);
-		assertThat(query.getMaterialDescr().getAttributeSetInstanceId()).isEqualTo(ATTRIBUTE_SET_INSTANCE_ID);
-		assertThat(query.getMaterialDescr().getWarehouseId()).isEqualTo(WAREHOUSE_ID);
+		assertThat(query.getMaterialDescriptor().getDate()).isEqualTo(date);
+		assertThat(query.getMaterialDescriptor().getDateOperator()).isEqualTo(DateOperator.AT);
+		assertThat(query.getMaterialDescriptor().getProductId()).isEqualTo(PRODUCT_ID);
+		assertThat(query.getMaterialDescriptor().getStorageAttributesKey()).isEqualTo(STORAGE_ATTRIBUTES_KEY);
+		assertThat(query.getMaterialDescriptor().getAttributeSetInstanceId()).isEqualTo(ATTRIBUTE_SET_INSTANCE_ID);
+		assertThat(query.getMaterialDescriptor().getWarehouseId()).isEqualTo(WAREHOUSE_ID);
 
 		assertThat(query.getType()).isEqualTo(CandidateType.STOCK);
 		assertThat(query.getParentId()).isEqualTo(0);
@@ -73,8 +73,8 @@ public class CandidatesQueryTest
 	public void build_when_dateAndNoDateOperator_then_useOperatorAT()
 	{
 		final CandidatesQuery result = CandidatesQuery.builder()
-				.materialDescr(MaterialDescriptor.builderForQuery().date(SystemTime.asTimestamp()).build())
+				.materialDescriptor(MaterialDescriptor.builderForQuery().date(SystemTime.asTimestamp()).build())
 				.build();
-		assertThat(result.getMaterialDescr().getDateOperator()).isSameAs(DateOperator.AT);
+		assertThat(result.getMaterialDescriptor().getDateOperator()).isSameAs(DateOperator.AT);
 	}
 }

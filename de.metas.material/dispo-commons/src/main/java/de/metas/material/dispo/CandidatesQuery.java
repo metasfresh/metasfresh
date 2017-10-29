@@ -62,7 +62,7 @@ public final class CandidatesQuery
 				.distributionDetail(candidate.getDistributionDetail())
 				.groupId(candidate.getGroupId())
 				.id(candidate.getId())
-				.materialDescr(candidate.getMaterialDescr())
+				.materialDescriptor(candidate.getMaterialDescriptor())
 				.orgId(candidate.getOrgId())
 				.parentId(candidate.getParentId())
 				.productionDetail(candidate.getProductionDetail())
@@ -108,7 +108,7 @@ public final class CandidatesQuery
 
 	int seqNo;
 
-	MaterialDescriptor materialDescr;
+	MaterialDescriptor materialDescriptor;
 
 	/**
 	 * Used for additional infos if this candidate has the sub type {@link CandidateSubType#PRODUCTION}.
@@ -137,7 +137,7 @@ public final class CandidatesQuery
 			final int parentId,
 			final int groupId,
 			final int seqNo,
-			final MaterialDescriptor materialDescr,
+			final MaterialDescriptor materialDescriptor,
 			final ProductionDetail productionDetail,
 			final DistributionDetail distributionDetail,
 			final DemandDetail demandDetail,
@@ -153,7 +153,7 @@ public final class CandidatesQuery
 		this.groupId = groupId;
 		this.seqNo = seqNo;
 
-		this.materialDescr = materialDescr;
+		this.materialDescriptor = materialDescriptor;
 		this.productionDetail = productionDetail;
 		this.distributionDetail = distributionDetail;
 		this.demandDetail = demandDetail;
@@ -169,25 +169,25 @@ public final class CandidatesQuery
 	 */
 	public boolean matches(final Candidate candidate)
 	{
-		if (materialDescr != null || materialDescr.getDate() != null)
+		if (materialDescriptor != null || materialDescriptor.getDate() != null)
 		{
 			final boolean dateMatches;
-			switch (materialDescr.getDateOperator())
+			switch (materialDescriptor.getDateOperator())
 			{
 				case AFTER:
-					dateMatches = candidate.getDate().getTime() > materialDescr.getDate().getTime();
+					dateMatches = candidate.getDate().getTime() > materialDescriptor.getDate().getTime();
 					break;
 				case AT_OR_AFTER:
-					dateMatches = candidate.getDate().getTime() >= materialDescr.getDate().getTime();
+					dateMatches = candidate.getDate().getTime() >= materialDescriptor.getDate().getTime();
 					break;
 				case BEFORE_OR_AT:
-					dateMatches = candidate.getDate().getTime() <= materialDescr.getDate().getTime();
+					dateMatches = candidate.getDate().getTime() <= materialDescriptor.getDate().getTime();
 					break;
 				case AT:
-					dateMatches = candidate.getDate().getTime() == materialDescr.getDate().getTime();
+					dateMatches = candidate.getDate().getTime() == materialDescriptor.getDate().getTime();
 					break;
 				default:
-					Check.errorIf(true, "Unexpected date operator={}; this={}", materialDescr.getDateOperator(), this);
+					Check.errorIf(true, "Unexpected date operator={}; this={}", materialDescriptor.getDateOperator(), this);
 					return false; // won't be reached
 			}
 			if (!dateMatches)
@@ -196,7 +196,7 @@ public final class CandidatesQuery
 			}
 		}
 
-		if (isProductIdSpecified() && !Objects.equals(materialDescr.getProductId(), candidate.getProductId()))
+		if (isProductIdSpecified() && !Objects.equals(materialDescriptor.getProductId(), candidate.getProductId()))
 		{
 			return false;
 		}
@@ -206,7 +206,7 @@ public final class CandidatesQuery
 			return false;
 		}
 
-		if (isWarehouseIdSpecified() && !Objects.equals(materialDescr.getWarehouseId(), candidate.getWarehouseId()))
+		if (isWarehouseIdSpecified() && !Objects.equals(materialDescriptor.getWarehouseId(), candidate.getWarehouseId()))
 		{
 			return false;
 		}
@@ -216,12 +216,12 @@ public final class CandidatesQuery
 
 	private boolean isProductIdSpecified()
 	{
-		return materialDescr != null && materialDescr.getProductId() > 0;
+		return materialDescriptor != null && materialDescriptor.getProductId() > 0;
 	}
 
 	private boolean isWarehouseIdSpecified()
 	{
-		return materialDescr != null && materialDescr.getWarehouseId() > 0;
+		return materialDescriptor != null && materialDescriptor.getWarehouseId() > 0;
 	}
 
 	public boolean hasParentMaterialDescriptor()

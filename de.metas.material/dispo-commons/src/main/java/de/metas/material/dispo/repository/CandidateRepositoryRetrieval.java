@@ -174,7 +174,7 @@ public class CandidateRepositoryRetrieval
 				storageAttributesKey,
 				candidateRecord.getM_AttributeSetInstance_ID());
 
-		final MaterialDescriptor materialDescr = MaterialDescriptor.builderForCompleteDescriptor()
+		final MaterialDescriptor materialDescriptor = MaterialDescriptor.builderForCompleteDescriptor()
 				.productDescriptor(productDescriptor)
 				.quantity(candidateRecord.getQty())
 				.warehouseId(candidateRecord.getM_Warehouse_ID())
@@ -191,7 +191,7 @@ public class CandidateRepositoryRetrieval
 
 				// if the record has a group id, then set it.
 				.groupId(candidateRecord.getMD_Candidate_GroupId())
-				.materialDescr(materialDescr);
+				.materialDescriptor(materialDescriptor);
 
 		if (candidateRecord.getMD_Candidate_Parent_ID() > 0)
 		{

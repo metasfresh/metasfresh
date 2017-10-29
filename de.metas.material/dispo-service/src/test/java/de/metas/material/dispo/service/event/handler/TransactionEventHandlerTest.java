@@ -20,7 +20,7 @@ import de.metas.material.dispo.candidate.DemandDetail;
 import de.metas.material.dispo.candidate.TransactionDetail;
 import de.metas.material.dispo.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
-import de.metas.material.event.EventDescr;
+import de.metas.material.event.EventDescriptor;
 import de.metas.material.event.MaterialDescriptor;
 import de.metas.material.event.TransactionEvent;
 import de.metas.material.event.TransactionEvent.TransactionEventBuilder;
@@ -134,7 +134,7 @@ public class TransactionEventHandlerTest
 		final Candidate exisitingCandidate = Candidate.builder()
 				.type(CandidateType.UNRELATED_INCREASE)
 				.id(11)
-				.materialDescr(MaterialDescriptor.builderForCompleteDescriptor()
+				.materialDescriptor(MaterialDescriptor.builderForCompleteDescriptor()
 						.complete(true)
 						.productDescriptor(createProductDescriptor())
 						.warehouseId(WAREHOUSE_ID)
@@ -219,7 +219,7 @@ public class TransactionEventHandlerTest
 		final Candidate exisitingCandidate = Candidate.builder()
 				.id(11)
 				.type(CandidateType.DEMAND)
-				.materialDescr(MaterialDescriptor.builderForCompleteDescriptor()
+				.materialDescriptor(MaterialDescriptor.builderForCompleteDescriptor()
 						.complete(true)
 						.productDescriptor(createProductDescriptor())
 						.warehouseId(WAREHOUSE_ID)
@@ -270,7 +270,7 @@ public class TransactionEventHandlerTest
 	{
 		assertThat(query).isNotNull();
 		assertThat(query.getDemandDetail().getShipmentScheduleId()).isEqualTo(SHIPMENT_SCHEDULE_ID);
-		assertThat(query.getMaterialDescr())
+		assertThat(query.getMaterialDescriptor())
 			.as("If we have a demand detail, then only via that demand detail")
 			.isNull();
 		assertThat(query.getTransactionDetail()).as("only search via the demand detail, if we have one").isNull();
@@ -279,9 +279,9 @@ public class TransactionEventHandlerTest
 	private TransactionEventBuilder createTransactionEventBuilderWithQuantity(@NonNull final BigDecimal quantity)
 	{
 		return TransactionEvent.builder()
-				.eventDescr(new EventDescr(10, 20))
+				.eventDescriptor(new EventDescriptor(10, 20))
 				.transactionId(TRANSACTION_ID)
-				.materialDescr(MaterialDescriptor.builder()
+				.materialDescriptor(MaterialDescriptor.builder()
 						.complete(true)
 						.date(TimeUtil.parseTimestamp("2017-10-15"))
 						.productDescriptor(createProductDescriptor())
@@ -293,7 +293,7 @@ public class TransactionEventHandlerTest
 	private void makeCommonAssertions(final Candidate candidate)
 	{
 		assertThat(candidate).isNotNull();
-		assertThat(candidate.getMaterialDescr()).isNotNull();
+		assertThat(candidate.getMaterialDescriptor()).isNotNull();
 		assertThat(candidate.getProductId()).isEqualTo(PRODUCT_ID);
 		assertThat(candidate.getWarehouseId()).isEqualTo(WAREHOUSE_ID);
 		assertThat(candidate.getTransactionDetails()).isNotEmpty();

@@ -66,7 +66,7 @@ public class TransactionEventHandler
 	{
 		final TransactionDetail transactionDetailOfEvent = TransactionDetail
 				.forCandidateOrQuery(
-						event.getMaterialDescr().getQuantity(), 
+						event.getMaterialDescriptor().getQuantity(), 
 						event.getTransactionId());
 
 		final Candidate candidate;
@@ -96,7 +96,7 @@ public class TransactionEventHandler
 		else
 		{
 			final CandidatesQuery query = CandidatesQuery.builder()
-					.materialDescr(event.getMaterialDescr()
+					.materialDescriptor(event.getMaterialDescriptor()
 							.withoutQuantity()
 							.withDateOperator(DateOperator.AT)							)
 					.transactionDetail(TransactionDetail.forQuery(event.getTransactionId()))
@@ -146,19 +146,19 @@ public class TransactionEventHandler
 	@VisibleForTesting
 	static CandidateBuilder createCommonCandidateBuilder(@NonNull final TransactionEvent event)
 	{
-		final BigDecimal eventQuantity = event.getMaterialDescr().getQuantity();
+		final BigDecimal eventQuantity = event.getMaterialDescriptor().getQuantity();
 
 		final CandidateBuilder builder = Candidate
-				.builderForEventDescr(event.getEventDescr());
+				.builderForEventDescr(event.getEventDescriptor());
 		if (eventQuantity.signum() <= 0)
 		{
 			return builder.type(CandidateType.UNRELATED_DECREASE)
-					.materialDescr(event.getMaterialDescr().withQuantity(eventQuantity.negate()));
+					.materialDescriptor(event.getMaterialDescriptor().withQuantity(eventQuantity.negate()));
 		}
 		else
 		{
 			return builder.type(CandidateType.UNRELATED_INCREASE)
-					.materialDescr(event.getMaterialDescr());
+					.materialDescriptor(event.getMaterialDescriptor());
 		}
 	}
 

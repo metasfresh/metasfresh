@@ -77,7 +77,7 @@ public class RepositoryCommons
 			builder.addEqualsFilter(I_MD_Candidate.COLUMN_MD_Candidate_ID, query.getId());
 		}
 
-		addMaterialDescriptorToQueryBuilderIfNotNull(query.getMaterialDescr(), builder);
+		addMaterialDescriptorToQueryBuilderIfNotNull(query.getMaterialDescriptor(), builder);
 
 		if (query.hasParentMaterialDescriptor())
 		{

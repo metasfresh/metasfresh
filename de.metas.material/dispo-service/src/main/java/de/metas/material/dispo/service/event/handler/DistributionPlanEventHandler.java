@@ -113,11 +113,11 @@ public class DistributionPlanEventHandler
 					.warehouseId(distributionPlanEvent.getToWarehouseId())
 					.build();
 
-			final Candidate supplyCandidate = Candidate.builderForEventDescr(distributionPlanEvent.getEventDescr())
+			final Candidate supplyCandidate = Candidate.builderForEventDescr(distributionPlanEvent.getEventDescriptor())
 					.type(CandidateType.SUPPLY)
 					.status(candidateStatus)
 					.subType(CandidateSubType.DISTRIBUTION)
-					.materialDescr(materialDescriptor)
+					.materialDescriptor(materialDescriptor)
 					.demandDetail(DemandDetail.forOrderLineIdOrNull(ddOrderLine.getSalesOrderLineId()))
 					.distributionDetail(createCandidateDetailFromDDOrderAndLine(ddOrder, ddOrderLine))
 					.build();

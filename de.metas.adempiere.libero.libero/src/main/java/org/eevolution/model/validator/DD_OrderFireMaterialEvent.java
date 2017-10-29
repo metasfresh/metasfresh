@@ -13,7 +13,7 @@ import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_DD_OrderLine;
 import org.eevolution.model.I_PP_Order;
 
-import de.metas.material.event.EventDescr;
+import de.metas.material.event.EventDescriptor;
 import de.metas.material.event.MaterialEventService;
 import de.metas.material.event.ProductDescriptorFactory;
 import de.metas.material.event.ddorder.DDOrder;
@@ -68,7 +68,7 @@ public class DD_OrderFireMaterialEvent
 					.build());
 
 			final DistributionPlanEvent event = DistributionPlanEvent.builder()
-					.eventDescr(EventDescr.createNew(ddOrder))
+					.eventDescriptor(EventDescriptor.createNew(ddOrder))
 					.ddOrder(ddOrderPojoBuilder.build())
 					.fromWarehouseId(line.getM_Locator().getM_Warehouse_ID())
 					.toWarehouseId(line.getM_LocatorTo().getM_Warehouse_ID())

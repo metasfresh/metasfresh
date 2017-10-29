@@ -71,7 +71,7 @@ public class CandidateServiceTests
 				.orgId(30)
 				.type(CandidateType.SUPPLY)
 				.subType(CandidateSubType.PRODUCTION)
-				.materialDescr(createMaterialDescriptor())
+				.materialDescriptor(createMaterialDescriptor())
 				.productionDetail(ProductionDetail.builder()
 						.plantId(210)
 						.productPlanningId(220)
@@ -81,7 +81,7 @@ public class CandidateServiceTests
 
 		final Candidate candidate2 = candidate
 				.withType(CandidateType.DEMAND)
-				.withMaterialDescr(candidate.getMaterialDescr()
+				.withMaterialDescriptor(candidate.getMaterialDescriptor()
 						.withProductDescriptor(productDescriptorFactory.forProductIdAndEmptyAttribute(310))
 						.withQuantity(BigDecimal.valueOf(20)))
 				.withProductionDetail(ProductionDetail.builder()
@@ -92,7 +92,7 @@ public class CandidateServiceTests
 
 		final Candidate candidate3 = candidate
 				.withType(CandidateType.DEMAND)
-				.withMaterialDescr(candidate.getMaterialDescr()
+				.withMaterialDescriptor(candidate.getMaterialDescriptor()
 						.withProductDescriptor(productDescriptorFactory.forProductIdAndEmptyAttribute(320))
 						.withQuantity(BigDecimal.valueOf(10)))
 				.withProductionDetail(ProductionDetail.builder()
@@ -103,10 +103,10 @@ public class CandidateServiceTests
 
 		final PPOrderRequestedEvent productionOrderEvent = candidateService.createPPOrderRequestEvent(ImmutableList.of(candidate, candidate2, candidate3));
 		assertThat(productionOrderEvent, notNullValue());
-		assertThat(productionOrderEvent.getEventDescr(), notNullValue());
+		assertThat(productionOrderEvent.getEventDescriptor(), notNullValue());
 
-		assertThat(productionOrderEvent.getEventDescr().getClientId(), is(20));
-		assertThat(productionOrderEvent.getEventDescr().getOrgId(), is(30));
+		assertThat(productionOrderEvent.getEventDescriptor().getClientId(), is(20));
+		assertThat(productionOrderEvent.getEventDescriptor().getOrgId(), is(30));
 
 		final PPOrder ppOrder = productionOrderEvent.getPpOrder();
 		assertThat(ppOrder, notNullValue());
@@ -124,7 +124,7 @@ public class CandidateServiceTests
 				.orgId(30)
 				.type(CandidateType.SUPPLY)
 				.subType(CandidateSubType.DISTRIBUTION)
-				.materialDescr(createMaterialDescriptor())
+				.materialDescriptor(createMaterialDescriptor())
 				.distributionDetail(DistributionDetail.builder()
 						.productPlanningId(220)
 						.plantId(230)
@@ -134,7 +134,7 @@ public class CandidateServiceTests
 
 		final Candidate candidate2 = candidate
 				.withType(CandidateType.DEMAND)
-				.withMaterialDescr(candidate.getMaterialDescr()
+				.withMaterialDescriptor(candidate.getMaterialDescriptor()
 						.withProductDescriptor(productDescriptorFactory.forProductIdAndEmptyAttribute(310))
 						.withQuantity(BigDecimal.valueOf(20)))
 				.withDistributionDetail(DistributionDetail.builder()
@@ -146,7 +146,7 @@ public class CandidateServiceTests
 
 		final Candidate candidate3 = candidate
 				.withType(CandidateType.DEMAND)
-				.withMaterialDescr(candidate.getMaterialDescr()
+				.withMaterialDescriptor(candidate.getMaterialDescriptor()
 						.withProductDescriptor(productDescriptorFactory.forProductIdAndEmptyAttribute(320))
 						.withQuantity(BigDecimal.valueOf(10)))
 				.withDistributionDetail(DistributionDetail.builder()
@@ -159,9 +159,9 @@ public class CandidateServiceTests
 		final DDOrderRequestedEvent distributionOrderEvent = candidateService.createDDOrderRequestEvent(ImmutableList.of(candidate, candidate2, candidate3));
 		assertThat(distributionOrderEvent, notNullValue());
 
-		assertThat(distributionOrderEvent.getEventDescr(), notNullValue());
-		assertThat(distributionOrderEvent.getEventDescr().getClientId(), is(20));
-		assertThat(distributionOrderEvent.getEventDescr().getOrgId(), is(30));
+		assertThat(distributionOrderEvent.getEventDescriptor(), notNullValue());
+		assertThat(distributionOrderEvent.getEventDescriptor().getClientId(), is(20));
+		assertThat(distributionOrderEvent.getEventDescriptor().getOrgId(), is(30));
 
 		final DDOrder ddOrder = distributionOrderEvent.getDdOrder();
 		assertThat(ddOrder, notNullValue());

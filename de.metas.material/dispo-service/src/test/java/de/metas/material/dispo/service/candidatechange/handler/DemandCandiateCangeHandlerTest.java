@@ -91,7 +91,7 @@ public class DemandCandiateCangeHandlerTest
 		final BigDecimal qty = new BigDecimal("23");
 		final Date t = t1;
 
-		final MaterialDescriptor materialDescr = MaterialDescriptor.builder()
+		final MaterialDescriptor materialDescriptor = MaterialDescriptor.builder()
 				.complete(true)
 				.productDescriptor(createProductDescriptor())
 				.warehouseId(WAREHOUSE_ID)
@@ -103,7 +103,7 @@ public class DemandCandiateCangeHandlerTest
 				.type(CandidateType.DEMAND)
 				.clientId(CLIENT_ID)
 				.orgId(ORG_ID)
-				.materialDescr(materialDescr)
+				.materialDescriptor(materialDescriptor)
 				.build();
 		demandCandiateHandler.onCandidateNewOrChange(candidate);
 
@@ -154,7 +154,7 @@ public class DemandCandiateCangeHandlerTest
 	{
 		final Candidate candidate = Candidate.builder()
 				.type(type)
-				.materialDescr(MaterialDescriptor.builder()
+				.materialDescriptor(MaterialDescriptor.builder()
 						.complete(true)
 						.productDescriptor(createProductDescriptor())
 						.date(SystemTime.asTimestamp())

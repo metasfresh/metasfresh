@@ -81,15 +81,15 @@ public class StockCandidateService
 				? stockOrNull.getGroupId()
 				: 0;
 
-		final MaterialDescriptor materialDescr = candidate
-				.getMaterialDescr()
+		final MaterialDescriptor materialDescriptor = candidate
+				.getMaterialDescriptor()
 				.withQuantity(formerQuantity.add(candidate.getQuantity()));
 
 		return Candidate.builder()
 				.type(CandidateType.STOCK)
 				.orgId(candidate.getOrgId())
 				.clientId(candidate.getClientId())
-				.materialDescr(materialDescr)
+				.materialDescriptor(materialDescriptor)
 				.parentId(candidate.getParentId())
 				.seqNo(candidate.getSeqNo())
 				.groupId(groupId)
@@ -149,9 +149,9 @@ public class StockCandidateService
 			delta = relatedCandiateWithDelta.getQuantity();
 		}
 		applyDeltaToLaterStockCandidates(
-				relatedCandiateWithDelta.getMaterialDescr(),
-				relatedCandiateWithDelta.getMaterialDescr().getWarehouseId(),
-				relatedCandiateWithDelta.getMaterialDescr().getDate(),
+				relatedCandiateWithDelta.getMaterialDescriptor(),
+				relatedCandiateWithDelta.getMaterialDescriptor().getWarehouseId(),
+				relatedCandiateWithDelta.getMaterialDescriptor().getDate(),
 				persistedStockCandidate.getGroupId(),
 				delta);
 		return persistedStockCandidate;
@@ -179,7 +179,7 @@ public class StockCandidateService
 	{
 		final CandidatesQuery segment = CandidatesQuery.builder()
 				.type(CandidateType.STOCK)
-				.materialDescr(MaterialDescriptor.builderForQuery()
+				.materialDescriptor(MaterialDescriptor.builderForQuery()
 						.date(date)
 						.productDescriptor(productDescriptor)
 						.warehouseId(warehouseId)

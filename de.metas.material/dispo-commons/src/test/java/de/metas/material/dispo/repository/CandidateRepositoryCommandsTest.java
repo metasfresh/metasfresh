@@ -91,7 +91,7 @@ public class CandidateRepositoryCommandsTest
 	{
 		final Candidate candidate = Candidate.builder()
 				.type(CandidateType.DEMAND)
-				.materialDescr(createMaterialDescriptor())
+				.materialDescriptor(createMaterialDescriptor())
 				.build();
 		final I_MD_Candidate candidateRecord = newInstance(I_MD_Candidate.class);
 
@@ -108,7 +108,7 @@ public class CandidateRepositoryCommandsTest
 	{
 		final Candidate candidate = Candidate.builder()
 				.type(CandidateType.DEMAND)
-				.materialDescr(createMaterialDescriptor())
+				.materialDescriptor(createMaterialDescriptor())
 				.demandDetail(DemandDetail.forShipmentScheduleIdAndOrderLineId(20, -1))
 				.build();
 
@@ -129,7 +129,7 @@ public class CandidateRepositoryCommandsTest
 	{
 		final Candidate candidate = Candidate.builder()
 				.type(CandidateType.DEMAND)
-				.materialDescr(createMaterialDescriptor())
+				.materialDescriptor(createMaterialDescriptor())
 				.transactionDetail(TransactionDetail.forCandidateOrQuery(BigDecimal.ONE, 15))
 				.transactionDetail(TransactionDetail.forCandidateOrQuery(BigDecimal.TEN, 16))
 				.build();
@@ -160,7 +160,8 @@ public class CandidateRepositoryCommandsTest
 		final Candidate candidateReturnedfromRepo = candidateRepositoryCommands
 				.addOrUpdateOverwriteStoredSeqNo(originalCandidate);
 
-		final Candidate originalCandidateWithZeroDelta = originalCandidate.withMaterialDescr(originalCandidate.getMaterialDescr().withQuantity(BigDecimal.ZERO));
+		final Candidate originalCandidateWithZeroDelta = originalCandidate
+				.withMaterialDescriptor(originalCandidate.getMaterialDescriptor().withQuantity(BigDecimal.ZERO));
 		assertThat(candidateReturnedfromRepo)
 				.isEqualTo(originalCandidateWithZeroDelta);
 	}
@@ -203,7 +204,7 @@ public class CandidateRepositoryCommandsTest
 		final Candidate productionCandidate = Candidate.builder()
 				.type(CandidateType.DEMAND)
 				.subType(CandidateSubType.PRODUCTION)
-				.materialDescr(createMaterialDescriptor())
+				.materialDescriptor(createMaterialDescriptor())
 				.clientId(CLIENT_ID)
 				.orgId(ORG_ID)
 				.productionDetail(ProductionDetail.builder()
@@ -225,7 +226,7 @@ public class CandidateRepositoryCommandsTest
 		final I_MD_Candidate record = filtered.get(0);
 		assertThat(record.getMD_Candidate_ID()).isEqualTo(addOrReplaceResult.getId());
 		assertThat(record.getMD_Candidate_SubType()).isEqualTo(productionCandidate.getSubType().toString());
-		assertThat(record.getM_Product_ID()).isEqualTo(productionCandidate.getMaterialDescr().getProductId());
+		assertThat(record.getM_Product_ID()).isEqualTo(productionCandidate.getMaterialDescriptor().getProductId());
 
 		final I_MD_Candidate_Prod_Detail productionDetailRecord = Services.get(IQueryBL.class).createQueryBuilder(I_MD_Candidate_Prod_Detail.class).create().firstOnly(I_MD_Candidate_Prod_Detail.class);
 		assertThat(productionDetailRecord).isNotNull();
@@ -305,7 +306,7 @@ public class CandidateRepositoryCommandsTest
 				.subType(CandidateSubType.DISTRIBUTION)
 				.clientId(CLIENT_ID)
 				.orgId(ORG_ID)
-				.materialDescr(createMaterialDescriptor())
+				.materialDescriptor(createMaterialDescriptor())
 				.distributionDetail(DistributionDetail.builder()
 						.productPlanningId(80)
 						.plantId(85)
@@ -324,7 +325,7 @@ public class CandidateRepositoryCommandsTest
 		final I_MD_Candidate record = filtered.get(0);
 		assertThat(record.getMD_Candidate_ID()).isEqualTo(addOrReplaceResult.getId());
 		assertThat(record.getMD_Candidate_SubType()).isEqualTo(distributionCandidate.getSubType().toString());
-		assertThat(record.getM_Product_ID()).isEqualTo(distributionCandidate.getMaterialDescr().getProductId());
+		assertThat(record.getM_Product_ID()).isEqualTo(distributionCandidate.getMaterialDescriptor().getProductId());
 
 		final I_MD_Candidate_Dist_Detail distributionDetailRecord = Services.get(IQueryBL.class).createQueryBuilder(I_MD_Candidate_Dist_Detail.class).create().firstOnly(I_MD_Candidate_Dist_Detail.class);
 		assertThat(distributionDetailRecord).isNotNull();
@@ -345,7 +346,7 @@ public class CandidateRepositoryCommandsTest
 				.subType(CandidateSubType.SHIPMENT)
 				.clientId(CLIENT_ID)
 				.orgId(ORG_ID)
-				.materialDescr(createMaterialDescriptor())
+				.materialDescriptor(createMaterialDescriptor())
 				.demandDetail(DemandDetail.forOrderLineIdOrNull(61))
 				.build();
 		final Candidate addOrReplaceResult = candidateRepositoryCommands.addOrUpdateOverwriteStoredSeqNo(productionCandidate);
@@ -356,7 +357,7 @@ public class CandidateRepositoryCommandsTest
 		final I_MD_Candidate record = filtered.get(0);
 		assertThat(record.getMD_Candidate_ID()).isEqualTo(addOrReplaceResult.getId());
 		assertThat(record.getMD_Candidate_SubType()).isEqualTo(productionCandidate.getSubType().toString());
-		assertThat(record.getM_Product_ID()).isEqualTo(productionCandidate.getMaterialDescr().getProductId());
+		assertThat(record.getM_Product_ID()).isEqualTo(productionCandidate.getMaterialDescriptor().getProductId());
 
 		final I_MD_Candidate_Demand_Detail demandDetailRecord = Services.get(IQueryBL.class).createQueryBuilder(I_MD_Candidate_Demand_Detail.class).create().firstOnly(I_MD_Candidate_Demand_Detail.class);
 		assertThat(demandDetailRecord).isNotNull();

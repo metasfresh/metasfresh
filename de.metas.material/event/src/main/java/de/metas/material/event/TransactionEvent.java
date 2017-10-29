@@ -38,10 +38,10 @@ public class TransactionEvent implements MaterialEvent
 	public static final String TYPE = "TransactionEvent";
 
 	@NonNull
-	EventDescr eventDescr;
+	EventDescriptor eventDescriptor;
 
 	@NonNull
-	MaterialDescriptor materialDescr;
+	MaterialDescriptor materialDescriptor;
 
 	// ids used to match the transaction to the respective shipment, ddOrder or ppOrder event (demand if qty is negative), supply if qty is positive
 	// if *none of those are set* then the transaction will be recorded as "unplanned"
@@ -52,17 +52,17 @@ public class TransactionEvent implements MaterialEvent
 	@JsonCreator
 	@Builder
 	public TransactionEvent(
-			@JsonProperty("eventDescr") @NonNull final EventDescr eventDescr,
-			@JsonProperty("materialDescr") @NonNull final MaterialDescriptor materialDescr,
+			@JsonProperty("eventDescr") @NonNull final EventDescriptor eventDescriptor,
+			@JsonProperty("materialDescr") @NonNull final MaterialDescriptor materialDescriptor,
 			@JsonProperty("shipmentScheduleId") final int shipmentScheduleId,
 			@JsonProperty("transactionId") final int transactionId)
 	{
 		this.transactionId = checkIdGreaterThanZero("transactionId",transactionId);
 
-		this.eventDescr = eventDescr;
+		this.eventDescriptor = eventDescriptor;
 
-		materialDescr.asssertMaterialDescriptorComplete();
-		this.materialDescr = materialDescr;
+		materialDescriptor.asssertMaterialDescriptorComplete();
+		this.materialDescriptor = materialDescriptor;
 
 		this.shipmentScheduleId = shipmentScheduleId;
 	}

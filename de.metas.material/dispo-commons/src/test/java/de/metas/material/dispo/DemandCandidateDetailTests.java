@@ -8,7 +8,7 @@ import java.util.Optional;
 import org.junit.Test;
 
 import de.metas.material.dispo.candidate.DemandDetail;
-import de.metas.material.event.EventDescr;
+import de.metas.material.event.EventDescriptor;
 import de.metas.material.event.MaterialDemandDescriptor;
 
 /*
@@ -46,7 +46,7 @@ public class DemandCandidateDetailTests
 	public void createOrNull_when_not_empty()
 	{
 		final MaterialDemandDescriptor descriptor = MaterialDemandDescriptor.builder()
-				.eventDescr(new EventDescr(10, 20))
+				.eventDescr(new EventDescriptor(10, 20))
 				.forecastLineId(1)
 				.shipmentScheduleId(2)
 				.orderLineId(3)

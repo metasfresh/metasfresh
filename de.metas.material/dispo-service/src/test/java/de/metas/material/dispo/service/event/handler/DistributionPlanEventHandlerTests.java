@@ -34,7 +34,7 @@ import de.metas.material.dispo.service.candidatechange.handler.DemandCandiateHan
 import de.metas.material.dispo.service.candidatechange.handler.SupplyCandiateHandler;
 import de.metas.material.dispo.service.event.MaterialDispoEventListenerFacade;
 import de.metas.material.dispo.service.event.SupplyProposalEvaluator;
-import de.metas.material.event.EventDescr;
+import de.metas.material.event.EventDescriptor;
 import de.metas.material.event.MaterialEventService;
 import de.metas.material.event.ProductDescriptorFactory;
 import de.metas.material.event.ddorder.DDOrder;
@@ -149,7 +149,7 @@ public class DistributionPlanEventHandlerTests
 	public void testSingleDistibutionPlanEvent()
 	{
 		final DistributionPlanEvent event = DistributionPlanEvent.builder()
-				.eventDescr(new EventDescr(org.getAD_Client_ID(), org.getAD_Org_ID()))
+				.eventDescriptor(new EventDescriptor(org.getAD_Client_ID(), org.getAD_Org_ID()))
 				.fromWarehouseId(fromWarehouseId)
 				.toWarehouseId(toWarehouseId)
 				.ddOrder(DDOrder.builder()
@@ -241,7 +241,7 @@ public class DistributionPlanEventHandlerTests
 			@NonNull final I_AD_Org org)
 	{
 		final DistributionPlanEvent event1 = DistributionPlanEvent.builder()
-				.eventDescr(new EventDescr(org.getAD_Client_ID(), org.getAD_Org_ID()))
+				.eventDescriptor(new EventDescriptor(org.getAD_Client_ID(), org.getAD_Org_ID()))
 				.fromWarehouseId(fromWarehouseId)
 				.toWarehouseId(intermediateWarehouseId)
 				.ddOrder(DDOrder.builder()
@@ -265,7 +265,7 @@ public class DistributionPlanEventHandlerTests
 		assertThat(DispoTestUtils.filter(CandidateType.STOCK)).hasSize(2); // one stock record per supply/demand record
 
 		final DistributionPlanEvent event2 = DistributionPlanEvent.builder()
-				.eventDescr(new EventDescr(org.getAD_Client_ID(), org.getAD_Org_ID()))
+				.eventDescriptor(new EventDescriptor(org.getAD_Client_ID(), org.getAD_Org_ID()))
 				.fromWarehouseId(intermediateWarehouseId)
 				.toWarehouseId(toWarehouseId)
 				.ddOrder(DDOrder.builder()

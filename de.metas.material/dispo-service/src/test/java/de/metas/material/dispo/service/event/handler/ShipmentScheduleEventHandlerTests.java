@@ -29,7 +29,7 @@ import de.metas.material.dispo.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
 import de.metas.material.dispo.service.candidatechange.handler.DemandCandiateHandler;
-import de.metas.material.event.EventDescr;
+import de.metas.material.event.EventDescriptor;
 import de.metas.material.event.MaterialDescriptor;
 import de.metas.material.event.MaterialEventService;
 import de.metas.material.event.ProductDescriptorFactory;
@@ -125,8 +125,8 @@ public class ShipmentScheduleEventHandlerTests
 	public static ShipmentScheduleEvent createShipmentScheduleTestEvent(@NonNull final I_AD_Org org)
 	{
 		final ShipmentScheduleEvent event = ShipmentScheduleEvent.builder()
-				.eventDescr(new EventDescr(org.getAD_Client_ID(), org.getAD_Org_ID()))
-				.materialDescr(MaterialDescriptor.builder()
+				.eventDescriptor(new EventDescriptor(org.getAD_Client_ID(), org.getAD_Org_ID()))
+				.materialDescriptor(MaterialDescriptor.builder()
 						.complete(true)
 						.date(t1)
 						.productDescriptor(createProductDescriptor())

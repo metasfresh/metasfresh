@@ -13,7 +13,7 @@ import de.metas.material.dispo.candidate.Candidate;
 import de.metas.material.dispo.candidate.CandidateStatus;
 import de.metas.material.dispo.candidate.CandidateSubType;
 import de.metas.material.dispo.candidate.CandidateType;
-import de.metas.material.event.EventDescr;
+import de.metas.material.event.EventDescriptor;
 import de.metas.material.event.MaterialDemandEvent;
 import de.metas.material.event.MaterialDescriptor;
 
@@ -44,14 +44,14 @@ public class MaterialDemandEventCreatorTest
 	@Test
 	public void createMaterialDemandEvent()
 	{
-		final Candidate demandCandidate = Candidate.builderForEventDescr(new EventDescr(20, 30))
+		final Candidate demandCandidate = Candidate.builderForEventDescr(new EventDescriptor(20, 30))
 				.id(10)
 				.type(CandidateType.DEMAND)
 				.subType(CandidateSubType.PRODUCTION)
 				.status(CandidateStatus.doc_closed)
 				.groupId(40)
 				.seqNo(50)
-				.materialDescr(MaterialDescriptor.builder()
+				.materialDescriptor(MaterialDescriptor.builder()
 						.complete(true)
 						.productDescriptor(createProductDescriptor())
 						.date(SystemTime.asTimestamp())
@@ -61,8 +61,8 @@ public class MaterialDemandEventCreatorTest
 				.build();
 		final MaterialDemandEvent result = MaterialDemandEventCreator.createMaterialDemandEvent(demandCandidate, BigDecimal.TEN);
 		assertThat(result).isNotNull();
-		assertThat(result.getEventDescr().getClientId()).isEqualTo(20);
-		assertThat(result.getEventDescr().getOrgId()).isEqualTo(30);
+		assertThat(result.getEventDescriptor().getClientId()).isEqualTo(20);
+		assertThat(result.getEventDescriptor().getOrgId()).isEqualTo(30);
 		assertThat(result.getMaterialDemandDescr().getDemandCandidateId()).isEqualTo(10);
 	}
 }

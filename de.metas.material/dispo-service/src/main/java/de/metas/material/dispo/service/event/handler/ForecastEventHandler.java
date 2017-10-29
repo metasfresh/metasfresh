@@ -55,7 +55,7 @@ public class ForecastEventHandler
 	{
 		final Forecast forecast = event.getForecast();
 
-		final CandidateBuilder candidateBuilder = Candidate.builderForEventDescr(event.getEventDescr())
+		final CandidateBuilder candidateBuilder = Candidate.builderForEventDescr(event.getEventDescriptor())
 				.status(EventUtil.getCandidateStatus(forecast.getDocStatus()))
 				.type(CandidateType.STOCK_UP)
 				.subType(CandidateSubType.FORECAST);
@@ -73,7 +73,7 @@ public class ForecastEventHandler
 			@NonNull final CandidateBuilder candidateBuilder,
 			@NonNull final ForecastLine forecastLine)
 	{
-		candidateBuilder.materialDescr(forecastLine.getMaterialDescriptor())
+		candidateBuilder.materialDescriptor(forecastLine.getMaterialDescriptor())
 				.demandDetail(DemandDetail.forForecastLineId(forecastLine.getForecastLineId()));
 	}
 }

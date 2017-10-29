@@ -32,7 +32,7 @@ import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
 import de.metas.material.dispo.service.candidatechange.handler.DemandCandiateHandler;
 import de.metas.material.dispo.service.candidatechange.handler.SupplyCandiateHandler;
-import de.metas.material.event.EventDescr;
+import de.metas.material.event.EventDescriptor;
 import de.metas.material.event.MaterialEventService;
 import de.metas.material.event.ProductDescriptor;
 import de.metas.material.event.ProductDescriptorFactory;
@@ -190,7 +190,7 @@ public class ProdcutionPlanEventHandlerTests
 		final ProductDescriptor rawProductDescriptor2 = productDescritporFactory.forProductIdAndEmptyAttribute(rawProduct2Id);
 
 		final ProductionPlanEvent productionPlanEvent = ProductionPlanEvent.builder()
-				.eventDescr(new EventDescr(org.getAD_Client_ID(), org.getAD_Org_ID()))
+				.eventDescriptor(new EventDescriptor(org.getAD_Client_ID(), org.getAD_Org_ID()))
 				.materialDemandDescr(null)
 				.ppOrder(PPOrder.builder()
 						.orgId(org.getAD_Org_ID())

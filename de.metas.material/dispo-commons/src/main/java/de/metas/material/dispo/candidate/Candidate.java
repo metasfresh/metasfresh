@@ -7,7 +7,7 @@ import java.util.List;
 import com.google.common.base.Preconditions;
 
 import de.metas.material.dispo.CandidatesQuery;
-import de.metas.material.event.EventDescr;
+import de.metas.material.event.EventDescriptor;
 import de.metas.material.event.MaterialDescriptor;
 import de.metas.material.event.MaterialDescriptor.DateOperator;
 import lombok.Builder;
@@ -43,7 +43,7 @@ import lombok.experimental.Wither;
 @Wither
 public class Candidate
 {
-	public static CandidateBuilder builderForEventDescr(@NonNull final EventDescr eventDescr)
+	public static CandidateBuilder builderForEventDescr(@NonNull final EventDescriptor eventDescr)
 	{
 		return Candidate.builder()
 				.clientId(eventDescr.getClientId())
@@ -81,7 +81,7 @@ public class Candidate
 	int seqNo;
 
 	@NonNull
-	MaterialDescriptor materialDescr;
+	MaterialDescriptor materialDescriptor;
 
 	/**
 	 * Used for additional infos if this candidate has the sub type {@link CandidateSubType#PRODUCTION}.
@@ -104,7 +104,7 @@ public class Candidate
 	public CandidatesQuery.CandidatesQueryBuilder createStockqueryBuilder()
 	{
 		return CandidatesQuery.builder()
-				.materialDescr(materialDescr
+				.materialDescriptor(materialDescriptor
 						.withoutQuantity()
 						.withDateOperator(DateOperator.BEFORE_OR_AT))
 				.type(CandidateType.STOCK);
@@ -112,22 +112,22 @@ public class Candidate
 
 	public BigDecimal getQuantity()
 	{
-		return materialDescr.getQuantity();
+		return materialDescriptor.getQuantity();
 	}
 
 	public Candidate withQuantity(@NonNull final BigDecimal quantity)
 	{
-		return withMaterialDescr(materialDescr.withQuantity(quantity));
+		return withMaterialDescriptor(materialDescriptor.withQuantity(quantity));
 	}
 
 	public Candidate withDate(@NonNull final Date date)
 	{
-		return withMaterialDescr(materialDescr.withDate(date));
+		return withMaterialDescriptor(materialDescriptor.withDate(date));
 	}
 
 	public Candidate withWarehouseId(final int warehouseId)
 	{
-		return withMaterialDescr(materialDescr.withWarehouseId(warehouseId));
+		return withMaterialDescriptor(materialDescriptor.withWarehouseId(warehouseId));
 	}
 
 	public int getEffectiveGroupId()
@@ -145,17 +145,17 @@ public class Candidate
 
 	public Date getDate()
 	{
-		return materialDescr.getDate();
+		return materialDescriptor.getDate();
 	}
 
 	public int getProductId()
 	{
-		return materialDescr.getProductId();
+		return materialDescriptor.getProductId();
 	}
 
 	public int getWarehouseId()
 	{
-		return materialDescr.getWarehouseId();
+		return materialDescriptor.getWarehouseId();
 	}
 
 	private Candidate(final int clientId, final int orgId,
@@ -184,7 +184,7 @@ public class Candidate
 
 		Preconditions.checkArgument(materialDescriptor.isComplete(),
 				"Given parameter materialDescriptor needs to have iscomplete==true; materialDescriptor=%s", materialDescriptor);
-		this.materialDescr = materialDescriptor;
+		this.materialDescriptor = materialDescriptor;
 
 		this.productionDetail = productionDetail;
 		this.distributionDetail = distributionDetail;

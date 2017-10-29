@@ -33,10 +33,10 @@ import lombok.NonNull;
  */
 @Data
 @AllArgsConstructor
-public class EventDescr
+public class EventDescriptor
 {
 
-	public EventDescr(final int clientId, final int orgId)
+	public EventDescriptor(final int clientId, final int orgId)
 	{
 		this(Instant.now(), UUID.randomUUID(), clientId, orgId);
 	}
@@ -53,9 +53,9 @@ public class EventDescr
 	@NonNull
 	private final Integer orgId;
 
-	public EventDescr createNew()
+	public EventDescriptor createNew()
 	{
-		return new EventDescr(clientId, orgId);
+		return new EventDescriptor(clientId, orgId);
 	}
 
 	/**
@@ -63,11 +63,11 @@ public class EventDescr
 	 * @param clientOrgAware model which can be made into a {@link IClientOrgAware} via {@link InterfaceWrapperHelper#asColumnReferenceAwareOrNull(Object, Class)}.
 	 * @return
 	 */
-	public static EventDescr createNew(final Object clientOrgAware)
+	public static EventDescriptor createNew(final Object clientOrgAware)
 	{
 		final IClientOrgAware clientOrgAwareToUse = InterfaceWrapperHelper.asColumnReferenceAwareOrNull(clientOrgAware, IClientOrgAware.class);
 
-		return new EventDescr(
+		return new EventDescriptor(
 				clientOrgAwareToUse.getAD_Client_ID(),
 				clientOrgAwareToUse.getAD_Org_ID());
 	}

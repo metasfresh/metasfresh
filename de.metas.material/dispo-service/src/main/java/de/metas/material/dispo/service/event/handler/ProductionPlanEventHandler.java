@@ -64,13 +64,13 @@ public class ProductionPlanEventHandler
 
 		final CandidateStatus candidateStatus = getCandidateStatus(ppOrder);
 
-		final Candidate supplyCandidate = Candidate.builderForEventDescr(event.getEventDescr())
+		final Candidate supplyCandidate = Candidate.builderForEventDescr(event.getEventDescriptor())
 				.type(CandidateType.SUPPLY)
 				.subType(CandidateSubType.PRODUCTION)
 				.status(candidateStatus)
 				.productionDetail(createProductionDetailForPPOrder(ppOrder))
 				.demandDetail(DemandDetail.forOrderLineIdOrNull(ppOrder.getOrderLineId()))
-				.materialDescr(createMAterialDescriptorFromPpOrder(ppOrder))
+				.materialDescriptor(createMAterialDescriptorFromPpOrder(ppOrder))
 				.build();
 
 		// this might cause 'candidateChangeHandler' to trigger another event
@@ -78,13 +78,13 @@ public class ProductionPlanEventHandler
 
 		for (final PPOrderLine ppOrderLine : ppOrder.getLines())
 		{
-			final CandidateBuilder builder = Candidate.builderForEventDescr(event.getEventDescr())
+			final CandidateBuilder builder = Candidate.builderForEventDescr(event.getEventDescriptor())
 					.type(ppOrderLine.isReceipt() ? CandidateType.SUPPLY : CandidateType.DEMAND)
 					.subType(CandidateSubType.PRODUCTION)
 					.status(candidateStatus)
 					.groupId(candidateWithGroupId.getGroupId())
 					.seqNo(candidateWithGroupId.getSeqNo() + 1)
-					.materialDescr(createMaterialDescriptorForPpOrderAndLine(ppOrder, ppOrderLine))
+					.materialDescriptor(createMaterialDescriptorForPpOrderAndLine(ppOrder, ppOrderLine))
 					.demandDetail(DemandDetail.forOrderLineIdOrNull(ppOrder.getOrderLineId()))
 					.productionDetail(createProductionDetailForPPOrderAndLine(ppOrder, ppOrderLine));
 			

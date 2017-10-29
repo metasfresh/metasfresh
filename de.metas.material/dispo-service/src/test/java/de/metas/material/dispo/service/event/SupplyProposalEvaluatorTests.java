@@ -197,7 +197,7 @@ public class SupplyProposalEvaluatorTests
 	 */
 	private void addSimpleSupplyDemand()
 	{
-		final MaterialDescriptor supplyMaterialDescr = MaterialDescriptor.builder()
+		final MaterialDescriptor supplyMaterialDescriptor= MaterialDescriptor.builder()
 				.complete(true)
 				.date(t3)
 				.productDescriptor(createProductDescriptor())
@@ -209,7 +209,7 @@ public class SupplyProposalEvaluatorTests
 				.clientId(org.getAD_Client_ID())
 				.orgId(org.getAD_Org_ID())
 				.type(CandidateType.SUPPLY)
-				.materialDescr(supplyMaterialDescr)
+				.materialDescriptor(supplyMaterialDescriptor)
 				.build();
 
 		final Candidate supplyCandidateWithId = candidateRepositoryCommands.addOrUpdateOverwriteStoredSeqNo(supplyCandidate);
@@ -227,7 +227,7 @@ public class SupplyProposalEvaluatorTests
 				.orgId(org.getAD_Org_ID())
 				.parentId(supplyCandidateWithId.getId())
 				.type(CandidateType.DEMAND)
-				.materialDescr(demandDescr)
+				.materialDescriptor(demandDescr)
 				.build();
 
 		candidateRepositoryCommands.addOrUpdateOverwriteStoredSeqNo(demandCandidate);

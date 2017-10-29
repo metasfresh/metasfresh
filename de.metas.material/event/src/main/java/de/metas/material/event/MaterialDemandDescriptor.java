@@ -35,7 +35,7 @@ import lombok.Value;
 public class MaterialDemandDescriptor
 {
 	@NonNull
-	EventDescr eventDescr;
+	EventDescriptor eventDescr;
 
 	@NonNull
 	MaterialDescriptor materialDescriptor;
@@ -51,7 +51,7 @@ public class MaterialDemandDescriptor
 	@JsonCreator
 	@Builder
 	private MaterialDemandDescriptor(
-			@JsonProperty("eventDescr") @NonNull final EventDescr eventDescr,
+			@JsonProperty("eventDescr") @NonNull final EventDescriptor eventDescr,
 			@JsonProperty("materialDescriptor") @NonNull MaterialDescriptor materialDescriptor,
 			@JsonProperty("demandCandidateId") int demandCandidateId,
 			@JsonProperty("shipmentScheduleId") int shipmentScheduleId,

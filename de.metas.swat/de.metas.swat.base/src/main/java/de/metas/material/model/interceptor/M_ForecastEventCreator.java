@@ -10,7 +10,7 @@ import org.compiere.model.I_M_ForecastLine;
 
 import com.google.common.base.Preconditions;
 
-import de.metas.material.event.EventDescr;
+import de.metas.material.event.EventDescriptor;
 import de.metas.material.event.MaterialDescriptor;
 import de.metas.material.event.ProductDescriptor;
 import de.metas.material.event.ProductDescriptorFactory;
@@ -66,7 +66,7 @@ public class M_ForecastEventCreator
 		final ForecastEvent forecastEvent = ForecastEvent
 				.builder()
 				.forecast(forecastBuilder.build())
-				.eventDescr(EventDescr.createNew(forecastModel))
+				.eventDescriptor(EventDescriptor.createNew(forecastModel))
 				.build();
 
 		return forecastEvent;

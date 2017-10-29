@@ -32,7 +32,7 @@ import de.metas.material.dispo.repository.CandidateRepositoryCommands;
 import de.metas.material.dispo.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.dispo.service.candidatechange.handler.StockUpCandiateHandler;
-import de.metas.material.event.EventDescr;
+import de.metas.material.event.EventDescriptor;
 import de.metas.material.event.MaterialDemandEvent;
 import de.metas.material.event.MaterialDescriptor;
 import de.metas.material.event.MaterialEventService;
@@ -181,7 +181,7 @@ public class ForecastEventHandlerTest
 				.build();
 
 		return ForecastEvent.builder()
-				.eventDescr(new EventDescr(1, 2))
+				.eventDescriptor(new EventDescriptor(1, 2))
 				.forecast(forecast)
 				.build();
 	}

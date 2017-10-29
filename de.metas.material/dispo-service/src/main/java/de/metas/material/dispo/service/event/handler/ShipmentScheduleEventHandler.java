@@ -43,8 +43,8 @@ public class ShipmentScheduleEventHandler
 
 	public void handleShipmentScheduleEvent(@NonNull final ShipmentScheduleEvent event)
 	{
-		final Candidate candidate = Candidate.builderForEventDescr(event.getEventDescr())
-				.materialDescr(event.getMaterialDescr())
+		final Candidate candidate = Candidate.builderForEventDescr(event.getEventDescriptor())
+				.materialDescriptor(event.getMaterialDescriptor())
 				.type(CandidateType.DEMAND)
 				.subType(CandidateSubType.SHIPMENT)
 				.demandDetail(DemandDetail.forShipmentScheduleIdAndOrderLineId(event.getShipmentScheduleId(), event.getOrderLineId()))

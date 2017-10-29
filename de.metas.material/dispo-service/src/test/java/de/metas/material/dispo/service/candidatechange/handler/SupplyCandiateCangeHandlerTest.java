@@ -102,7 +102,7 @@ public class SupplyCandiateCangeHandlerTest
 		final BigDecimal qty = new BigDecimal("23");
 		final Date t = t1;
 
-		final MaterialDescriptor materialDescr = MaterialDescriptor.builder()
+		final MaterialDescriptor materialDescriptor = MaterialDescriptor.builder()
 				.complete(true)
 				.productDescriptor(createProductDescriptor())
 				.warehouseId(WAREHOUSE_ID)
@@ -114,7 +114,7 @@ public class SupplyCandiateCangeHandlerTest
 				.type(CandidateType.SUPPLY)
 				.clientId(org.getAD_Client_ID())
 				.orgId(org.getAD_Org_ID())
-				.materialDescr(materialDescr)
+				.materialDescriptor(materialDescriptor)
 				.build();
 		supplyCandiateCangeHandler.onCandidateNewOrChange(candidate);
 
@@ -135,7 +135,7 @@ public class SupplyCandiateCangeHandlerTest
 		final BigDecimal qty = new BigDecimal("23");
 		final Date t = t1;
 
-		final MaterialDescriptor materialDescr = MaterialDescriptor.builder()
+		final MaterialDescriptor materialDescriptor = MaterialDescriptor.builder()
 				.complete(true)
 				.productDescriptor(createProductDescriptor())
 				.warehouseId(WAREHOUSE_ID)
@@ -147,7 +147,7 @@ public class SupplyCandiateCangeHandlerTest
 				.type(CandidateType.SUPPLY)
 				.clientId(org.getAD_Client_ID())
 				.orgId(org.getAD_Org_ID())
-				.materialDescr(materialDescr)
+				.materialDescriptor(materialDescriptor)
 				.build();
 
 		final Consumer<Candidate> doTest = candidate -> {
@@ -176,7 +176,7 @@ public class SupplyCandiateCangeHandlerTest
 		final BigDecimal qty = new BigDecimal("23");
 		final Date t = t1;
 
-		final MaterialDescriptor materialDescr = MaterialDescriptor.builder()
+		final MaterialDescriptor materialDescriptor = MaterialDescriptor.builder()
 				.complete(true)
 				.productDescriptor(createProductDescriptor())
 				.warehouseId(WAREHOUSE_ID)
@@ -188,7 +188,7 @@ public class SupplyCandiateCangeHandlerTest
 				.type(CandidateType.SUPPLY)
 				.clientId(org.getAD_Client_ID())
 				.orgId(org.getAD_Org_ID())
-				.materialDescr(materialDescr)
+				.materialDescriptor(materialDescriptor)
 				.build();
 
 		final BiConsumer<Candidate, BigDecimal> doTest = (candidate, exptectedQty) -> {
@@ -219,7 +219,7 @@ public class SupplyCandiateCangeHandlerTest
 	{
 		final BigDecimal olderStockQty = new BigDecimal("11");
 
-		final MaterialDescriptor olderMaterialDescr = MaterialDescriptor.builder()
+		final MaterialDescriptor olderMaterialDescriptor = MaterialDescriptor.builder()
 				.complete(true)
 				.productDescriptor(createProductDescriptor())
 				.warehouseId(WAREHOUSE_ID)
@@ -231,13 +231,13 @@ public class SupplyCandiateCangeHandlerTest
 				.type(CandidateType.STOCK)
 				.clientId(org.getAD_Client_ID())
 				.orgId(org.getAD_Org_ID())
-				.materialDescr(olderMaterialDescr)
+				.materialDescriptor(olderMaterialDescriptor)
 				.build();
 		stockCandidateService.addOrUpdateStock(olderStockCandidate);
 
 		final BigDecimal supplyQty = new BigDecimal("23");
 
-		final MaterialDescriptor materialDescr = MaterialDescriptor.builder()
+		final MaterialDescriptor materialDescriptoriptor = MaterialDescriptor.builder()
 				.complete(true)
 				.productDescriptor(createProductDescriptor())
 				.warehouseId(WAREHOUSE_ID)
@@ -249,7 +249,7 @@ public class SupplyCandiateCangeHandlerTest
 				.type(CandidateType.SUPPLY)
 				.clientId(org.getAD_Client_ID())
 				.orgId(org.getAD_Org_ID())
-				.materialDescr(materialDescr)
+				.materialDescriptor(materialDescriptoriptor)
 				.subType(CandidateSubType.PRODUCTION)
 				.build();
 		supplyCandiateCangeHandler.onCandidateNewOrChange(candidate);
@@ -291,7 +291,7 @@ public class SupplyCandiateCangeHandlerTest
 	{
 		final Candidate candidate = Candidate.builder()
 				.type(type)
-				.materialDescr(MaterialDescriptor.builder()
+				.materialDescriptor(MaterialDescriptor.builder()
 						.complete(true)
 						.productDescriptor(createProductDescriptor())
 						.date(SystemTime.asTimestamp())

@@ -22,7 +22,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked;
-import de.metas.material.event.EventDescr;
+import de.metas.material.event.EventDescriptor;
 import de.metas.material.event.MaterialDescriptor;
 import de.metas.material.event.MaterialEventService;
 import de.metas.material.event.ProductDescriptor;
@@ -106,9 +106,9 @@ public class M_Transaction
 			final BigDecimal quantity = type.isDelete() ? BigDecimal.ZERO : entries.getValue();
 
 			final TransactionEvent event = TransactionEvent.builder()
-					.eventDescr(EventDescr.createNew(transaction))
+					.eventDescriptor(EventDescriptor.createNew(transaction))
 					.transactionId(transaction.getM_Transaction_ID())
-					.materialDescr(createMaterialDescriptor(transaction, quantity))
+					.materialDescriptor(createMaterialDescriptor(transaction, quantity))
 					.shipmentScheduleId(entries.getKey())
 					.build();
 			result.add(event);

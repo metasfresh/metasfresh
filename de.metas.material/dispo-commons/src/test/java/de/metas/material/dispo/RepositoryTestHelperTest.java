@@ -57,7 +57,7 @@ public class RepositoryTestHelperTest
 		final CandidatesQuery stockCandidatequery = repositoryTestHelper
 				.mkQueryForStockUntilDate(EventTestHelper.NOW);
 
-		assertThat(stockCandidatequery.getMaterialDescr().getStorageAttributesKey())
+		assertThat(stockCandidatequery.getMaterialDescriptor().getStorageAttributesKey())
 				.isSameAs(ProductDescriptor.STORAGE_ATTRIBUTES_KEY_UNSPECIFIED);
 	}
 

@@ -79,7 +79,7 @@ public class SupplyProposalEvaluator
 	{
 		final CandidatesQuery demandQuery = CandidatesQuery.builder()
 				.type(CandidateType.DEMAND)
-				.materialDescr(MaterialDescriptor.builderForQuery()
+				.materialDescriptor(MaterialDescriptor.builderForQuery()
 						.date(proposal.getDate())
 						.dateOperator(DateOperator.AT_OR_AFTER)
 						.productDescriptor(proposal.getProductDescriptor())
@@ -102,7 +102,7 @@ public class SupplyProposalEvaluator
 
 		final CandidatesQuery supplyQuery = demandQuery
 				.withType(CandidateType.SUPPLY)
-				.withMaterialDescr(demandQuery.getMaterialDescr()
+				.withMaterialDescriptor(demandQuery.getMaterialDescriptor()
 						.withDate(proposal.getDate())
 						.withDateOperator(DateOperator.AT_OR_AFTER)
 						.withWarehouseId(proposal.getSourceWarehouseId()));

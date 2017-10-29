@@ -64,7 +64,7 @@ public class RepositoryCommonsTest
 	public void mkQueryBuilder_with_date_and_product_id()
 	{
 		final CandidatesQuery query = CandidatesQuery.builder()
-				.materialDescr(MaterialDescriptor
+				.materialDescriptor(MaterialDescriptor
 						.builderForQuery()
 						.productDescriptor(createProductDescriptor())
 						.dateOperator(DateOperator.AT)
@@ -111,7 +111,7 @@ public class RepositoryCommonsTest
 		assertThat(likeFilter.getOperator()).isEqualTo(Operator.STRING_LIKE);
 		assertThat(likeFilter.getValue()).isEqualTo("Key1%Key2%Key3");
 	}
-
+	
 	private static void assertFiltersContainProductFilter(final List<IQueryFilter<I_MD_Candidate>> filters, final int productId)
 	{
 		assertThat(filters).anySatisfy(productFilter -> {
@@ -128,7 +128,7 @@ public class RepositoryCommonsTest
 			@NonNull final Operator queryOperator)
 	{
 		final CandidatesQuery query = CandidatesQuery.builder()
-				.materialDescr(MaterialDescriptor
+				.materialDescriptor(MaterialDescriptor
 						.builderForQuery()
 						.dateOperator(dateOperator)
 						.date(NOW)

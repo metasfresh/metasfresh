@@ -25,7 +25,7 @@ import org.springframework.stereotype.Service;
 import com.google.common.annotations.VisibleForTesting;
 
 import de.metas.material.event.DemandHandlerAuditEvent;
-import de.metas.material.event.EventDescr;
+import de.metas.material.event.EventDescriptor;
 import de.metas.material.event.MaterialDemandDescriptor;
 import de.metas.material.event.MaterialDescriptor;
 import de.metas.material.event.MaterialEventService;
@@ -106,7 +106,7 @@ public class CommonDemandHandler
 			final List<String> singleMessages = plainStringLoggable.getSingleMessages();
 
 			final DemandHandlerAuditEvent demandHandlerAuditEvent = DemandHandlerAuditEvent.builder()
-					.eventDescr(materialDemandDescr.getEventDescr().createNew())
+					.eventDescriptor(materialDemandDescr.getEventDescr().createNew())
 					.descr(materialDemandDescr.getMaterialDescriptor())
 					.orderLineId(materialDemandDescr.getOrderLineId())
 					.messages(singleMessages)
@@ -134,7 +134,7 @@ public class CommonDemandHandler
 					final I_DD_NetworkDistributionLine networkLine = InterfaceWrapperHelper.create(mrpContext.getCtx(), ddOrderLine.getNetworkDistributionLineId(), I_DD_NetworkDistributionLine.class, mrpContext.getTrxName());
 
 					final DistributionPlanEvent distributionPlanEvent = DistributionPlanEvent.builder()
-							.eventDescr(materialDemandDescr.getEventDescr().createNew())
+							.eventDescriptor(materialDemandDescr.getEventDescr().createNew())
 							.fromWarehouseId(networkLine.getM_WarehouseSource_ID())
 							.toWarehouseId(networkLine.getM_Warehouse_ID())
 							.ddOrder(ddOrder)
@@ -153,7 +153,7 @@ public class CommonDemandHandler
 							mkMRPNotesCollector());
 
 			final ProductionPlanEvent event = ProductionPlanEvent.builder()
-					.eventDescr(materialDemandDescr.getEventDescr().createNew())
+					.eventDescriptor(materialDemandDescr.getEventDescr().createNew())
 					.ppOrder(ppOrder)
 					.build();
 
@@ -163,7 +163,7 @@ public class CommonDemandHandler
 
 	private IMutableMRPContext mkMRPContext(@NonNull final MaterialDemandDescriptor materialDemandEvent)
 	{
-		final EventDescr eventDescr = materialDemandEvent.getEventDescr();
+		final EventDescriptor eventDescr = materialDemandEvent.getEventDescr();
 
 		final MaterialDescriptor materialDescr = materialDemandEvent.getMaterialDescriptor();
 

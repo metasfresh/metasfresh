@@ -64,7 +64,7 @@ public class RepositoryTestHelper
 								.type(CandidateType.STOCK)
 								.clientId(CLIENT_ID)
 								.orgId(ORG_ID)
-								.materialDescr(materialDescriptorOfStockCandidate)
+								.materialDescriptor(materialDescriptorOfStockCandidate)
 								.build());
 
 		final MaterialDescriptor laterMaterialDescriptor = MaterialDescriptor.builderForCompleteDescriptor()
@@ -81,7 +81,7 @@ public class RepositoryTestHelper
 								.type(CandidateType.STOCK)
 								.clientId(CLIENT_ID)
 								.orgId(ORG_ID)
-								.materialDescr(laterMaterialDescriptor)
+								.materialDescriptor(laterMaterialDescriptor)
 								.build());
 	}
 
@@ -89,7 +89,7 @@ public class RepositoryTestHelper
 	{
 		return CandidatesQuery.builder()
 				.type(CandidateType.STOCK)
-				.materialDescr(MaterialDescriptor.builderForQuery()
+				.materialDescriptor(MaterialDescriptor.builderForQuery()
 						.productDescriptor(productDescriptorFactory.forProductIdOnly(PRODUCT_ID))
 						.warehouseId(WAREHOUSE_ID)
 						.date(date)
@@ -102,7 +102,7 @@ public class RepositoryTestHelper
 	{
 		return CandidatesQuery.builder()
 				.type(CandidateType.STOCK)
-				.materialDescr(MaterialDescriptor.builderForQuery()
+				.materialDescriptor(MaterialDescriptor.builderForQuery()
 						.productDescriptor(productDescriptorFactory.forProductIdOnly(PRODUCT_ID))
 						.warehouseId(WAREHOUSE_ID)
 						.date(date)

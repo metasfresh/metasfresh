@@ -128,7 +128,7 @@ public class CandiateRepositoryRetrievalTests
 		assertThat(candidate.getParentId()).isEqualTo(0);
 		assertThat(candidate.getDate()).isEqualTo(dateProjected);
 
-		final MaterialDescriptor materialDescriptor = candidate.getMaterialDescr();
+		final MaterialDescriptor materialDescriptor = candidate.getMaterialDescriptor();
 
 		assertThat(materialDescriptor.getProductId()).isEqualTo(PRODUCT_ID);
 		assertThat(materialDescriptor.getStorageAttributesKey()).isEqualTo(STORAGE_ATTRIBUTES_KEY);
@@ -203,9 +203,9 @@ public class CandiateRepositoryRetrievalTests
 
 		final Candidate cand = candidateRepository.retrieveLatestMatchOrNull(CandidatesQuery.fromId(record.getMD_Candidate_ID()));
 		assertThat(cand).isNotNull();
-		assertThat(cand.getMaterialDescr().getProductId()).isEqualTo(PRODUCT_ID);
-		assertThat(cand.getMaterialDescr().getWarehouseId()).isEqualTo(WAREHOUSE_ID);
-		assertThat(cand.getMaterialDescr().getDate()).isEqualTo(NOW);
+		assertThat(cand.getMaterialDescriptor().getProductId()).isEqualTo(PRODUCT_ID);
+		assertThat(cand.getMaterialDescriptor().getWarehouseId()).isEqualTo(WAREHOUSE_ID);
+		assertThat(cand.getMaterialDescriptor().getDate()).isEqualTo(NOW);
 		assertThat(cand.getProductionDetail()).isNotNull();
 		assertThat(cand.getProductionDetail().getDescription()).isEqualTo("description1");
 		assertThat(cand.getProductionDetail().getProductBomLineId()).isEqualTo(71);
@@ -275,9 +275,9 @@ public class CandiateRepositoryRetrievalTests
 
 		final Candidate cand = candidateRepository.retrieveLatestMatchOrNull(CandidatesQuery.fromId(record.getMD_Candidate_ID()));
 		assertThat(cand).isNotNull();
-		assertThat(cand.getMaterialDescr().getProductId()).isEqualTo(PRODUCT_ID);
-		assertThat(cand.getMaterialDescr().getWarehouseId()).isEqualTo(WAREHOUSE_ID);
-		assertThat(cand.getMaterialDescr().getDate()).isEqualTo(NOW);
+		assertThat(cand.getMaterialDescriptor().getProductId()).isEqualTo(PRODUCT_ID);
+		assertThat(cand.getMaterialDescriptor().getWarehouseId()).isEqualTo(WAREHOUSE_ID);
+		assertThat(cand.getMaterialDescriptor().getDate()).isEqualTo(NOW);
 		assertThat(cand.getProductionDetail()).isNull();
 		assertThat(cand.getDistributionDetail()).isNotNull();
 		assertThat(cand.getDistributionDetail().getNetworkDistributionLineId()).isEqualTo(71);
@@ -409,9 +409,9 @@ public class CandiateRepositoryRetrievalTests
 		final Candidate cand = candidateRepository.retrieveLatestMatchOrNull(CandidatesQuery.fromId(record.getMD_Candidate_ID()));
 		assertThat(cand).isNotNull();
 		assertThat(cand.getId()).isEqualTo(record.getMD_Candidate_ID());
-		assertThat(cand.getMaterialDescr().getProductId()).isEqualTo(PRODUCT_ID);
-		assertThat(cand.getMaterialDescr().getWarehouseId()).isEqualTo(WAREHOUSE_ID);
-		assertThat(cand.getMaterialDescr().getDate()).isEqualTo(NOW);
+		assertThat(cand.getMaterialDescriptor().getProductId()).isEqualTo(PRODUCT_ID);
+		assertThat(cand.getMaterialDescriptor().getWarehouseId()).isEqualTo(WAREHOUSE_ID);
+		assertThat(cand.getMaterialDescriptor().getDate()).isEqualTo(NOW);
 		assertThat(cand.getProductionDetail()).isNull();
 		assertThat(cand.getDemandDetail().getOrderLineId()).isEqualTo(62);
 		assertThat(cand.getDemandDetail().getForecastLineId()).isEqualTo(72);
@@ -483,7 +483,7 @@ public class CandiateRepositoryRetrievalTests
 		createCandidateRecordWithWarehouseId(30);
 
 		final CandidatesQuery query = CandidatesQuery.builder()
-				.materialDescr(MaterialDescriptor.builderForQuery()
+				.materialDescriptor(MaterialDescriptor.builderForQuery()
 						.warehouseId(warehouseId)
 						.build())
 				.build();
@@ -575,7 +575,7 @@ public class CandiateRepositoryRetrievalTests
 				.subType(CandidateSubType.SHIPMENT)
 				.clientId(CLIENT_ID)
 				.orgId(ORG_ID)
-				.materialDescr(createMaterialDescriptor()
+				.materialDescriptor(createMaterialDescriptor()
 						.withProductDescriptor(createProductDescriptorWithOffSet(productIdOffSet)))
 				.demandDetail(DemandDetail.forOrderLineIdOrNull(61))
 				.transactionDetail(TransactionDetail.forCandidateOrQuery(BigDecimal.ONE, 33))
@@ -588,7 +588,7 @@ public class CandiateRepositoryRetrievalTests
 		final I_MD_Candidate record = filtered.get(0);
 		assertThat(record.getMD_Candidate_ID()).isEqualTo(addOrReplaceResult.getId());
 		assertThat(record.getMD_Candidate_SubType()).isEqualTo(productionCandidate.getSubType().toString());
-		assertThat(record.getM_Product_ID()).isEqualTo(productionCandidate.getMaterialDescr().getProductId());
+		assertThat(record.getM_Product_ID()).isEqualTo(productionCandidate.getMaterialDescriptor().getProductId());
 
 		final I_MD_Candidate_Transaction_Detail transactionDetailRecord = Services.get(IQueryBL.class).createQueryBuilder(I_MD_Candidate_Transaction_Detail.class).create().firstOnly(I_MD_Candidate_Transaction_Detail.class);
 		assertThat(transactionDetailRecord).isNotNull();

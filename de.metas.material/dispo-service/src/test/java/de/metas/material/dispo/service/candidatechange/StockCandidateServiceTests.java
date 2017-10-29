@@ -80,7 +80,7 @@ public class StockCandidateServiceTests
 				.type(CandidateType.STOCK)
 				.clientId(org.getAD_Client_ID())
 				.orgId(org.getAD_Org_ID())
-				.materialDescr(materialDescr)
+				.materialDescriptor(materialDescr)
 				.build();
 		candidateRepositoryCommands.addOrUpdateOverwriteStoredSeqNo(stockCandidate);
 	}
@@ -103,7 +103,7 @@ public class StockCandidateServiceTests
 				.type(CandidateType.STOCK)
 				.clientId(org.getAD_Client_ID())
 				.orgId(org.getAD_Org_ID())
-				.materialDescr(materialDescr)
+				.materialDescriptor(materialDescr)
 				.build();
 
 		final Candidate newCandidateBefore = stockCandidateService.createStockCandidate(candidate);
@@ -128,7 +128,7 @@ public class StockCandidateServiceTests
 				.type(CandidateType.STOCK)
 				.clientId(org.getAD_Client_ID())
 				.orgId(org.getAD_Org_ID())
-				.materialDescr(materialDescr)
+				.materialDescriptor(materialDescr)
 				.build();
 
 		final Candidate newCandidateAfter = stockCandidateService.createStockCandidate(candidate);

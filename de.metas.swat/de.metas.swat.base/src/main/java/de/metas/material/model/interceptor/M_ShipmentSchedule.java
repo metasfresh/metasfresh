@@ -14,7 +14,7 @@ import org.compiere.model.ModelValidator;
 
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.material.event.EventDescr;
+import de.metas.material.event.EventDescriptor;
 import de.metas.material.event.MaterialDescriptor;
 import de.metas.material.event.MaterialEventService;
 import de.metas.material.event.ProductDescriptor;
@@ -74,8 +74,8 @@ public class M_ShipmentSchedule
 		final ProductDescriptor productDescriptor = productDescriptorFactory.createProductDescriptor(shipmentSchedule);
 		
 		final ShipmentScheduleEvent event = ShipmentScheduleEvent.builder()
-				.eventDescr(EventDescr.createNew(shipmentSchedule))
-				.materialDescr(MaterialDescriptor.builder()
+				.eventDescriptor(EventDescriptor.createNew(shipmentSchedule))
+				.materialDescriptor(MaterialDescriptor.builder()
 						.date(preparationDate)
 						.productDescriptor(productDescriptor)
 						.warehouseId(shipmentScheduleEffectiveBL.getWarehouseId(shipmentSchedule))

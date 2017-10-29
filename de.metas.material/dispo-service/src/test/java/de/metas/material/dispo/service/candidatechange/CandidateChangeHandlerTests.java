@@ -172,7 +172,7 @@ public class CandidateChangeHandlerTests
 
 		// preparations
 		{
-			final MaterialDescriptor materialDescr = MaterialDescriptor.builder()
+			final MaterialDescriptor materialDescriptor = MaterialDescriptor.builder()
 					.complete(true)
 					.productDescriptor(createProductDescriptor())
 					.warehouseId(WAREHOUSE_ID)
@@ -184,31 +184,31 @@ public class CandidateChangeHandlerTests
 					.type(CandidateType.STOCK)
 					.clientId(org.getAD_Client_ID())
 					.orgId(org.getAD_Org_ID())
-					.materialDescr(materialDescr)
+					.materialDescriptor(materialDescriptor)
 					.build();
 			candidateRepositoryCommands.addOrUpdateOverwriteStoredSeqNo(candidate);
 
-			final MaterialDescriptor earlierMaterialDescr = materialDescr.withDate(t1);
+			final MaterialDescriptor earlierMaterialDescriptor = materialDescriptor.withDate(t1);
 
 			earlierCandidate = candidateRepositoryCommands
 					.addOrUpdateOverwriteStoredSeqNo(Candidate.builder()
 							.type(CandidateType.STOCK)
 							.clientId(org.getAD_Client_ID())
 							.orgId(org.getAD_Org_ID())
-							.materialDescr(earlierMaterialDescr)
+							.materialDescriptor(earlierMaterialDescriptor)
 							.build());
 
-			final MaterialDescriptor laterMaterialDescr = materialDescr.withDate(t3);
+			final MaterialDescriptor laterMaterialDescriptor = materialDescriptor.withDate(t3);
 
 			final Candidate laterCandidate = Candidate.builder()
 					.type(CandidateType.STOCK)
 					.clientId(org.getAD_Client_ID())
 					.orgId(org.getAD_Org_ID())
-					.materialDescr(laterMaterialDescr)
+					.materialDescriptor(laterMaterialDescriptor)
 					.build();
 			candidateRepositoryCommands.addOrUpdateOverwriteStoredSeqNo(laterCandidate);
 
-			final MaterialDescriptor evenLatermaterialDescr = materialDescr
+			final MaterialDescriptor evenLatermaterialDescriptor = materialDescriptor
 					.withQuantity(new BigDecimal("12"))
 					.withDate(t4);
 
@@ -216,18 +216,18 @@ public class CandidateChangeHandlerTests
 					.type(CandidateType.STOCK)
 					.clientId(org.getAD_Client_ID())
 					.orgId(org.getAD_Org_ID())
-					.materialDescr(evenLatermaterialDescr)
+					.materialDescriptor(evenLatermaterialDescriptor)
 					.build();
 			candidateRepositoryCommands.addOrUpdateOverwriteStoredSeqNo(evenLaterCandidate);
 
-			final MaterialDescriptor evenLatermaterialDescrWithDifferentWarehouse = evenLatermaterialDescr
+			final MaterialDescriptor evenLatermaterialDescrWithDifferentWarehouse = evenLatermaterialDescriptor
 					.withWarehouseId(OTHER_WAREHOUSE_ID);
 
 			evenLaterCandidateWithDifferentWarehouse = Candidate.builder()
 					.type(CandidateType.STOCK)
 					.clientId(org.getAD_Client_ID())
 					.orgId(org.getAD_Org_ID())
-					.materialDescr(evenLatermaterialDescrWithDifferentWarehouse)
+					.materialDescriptor(evenLatermaterialDescrWithDifferentWarehouse)
 					.build();
 			candidateRepositoryCommands.addOrUpdateOverwriteStoredSeqNo(evenLaterCandidateWithDifferentWarehouse);
 		}
@@ -271,7 +271,7 @@ public class CandidateChangeHandlerTests
 	{
 		return CandidatesQuery.builder()
 				.type(CandidateType.STOCK)
-				.materialDescr(MaterialDescriptor.builderForQuery()
+				.materialDescriptor(MaterialDescriptor.builderForQuery()
 						.productDescriptor(createProductDescriptor())
 						.warehouseId(warehouseId)
 						.date(timestamp)
@@ -379,7 +379,7 @@ public class CandidateChangeHandlerTests
 				.type(CandidateType.STOCK)
 				.clientId(org.getAD_Client_ID())
 				.orgId(org.getAD_Org_ID())
-				.materialDescr(materialDescr)
+				.materialDescriptor(materialDescr)
 				.build();
 		final Candidate processedCandidate = stockCandidateService.addOrUpdateStock(candidate);
 		return processedCandidate;
@@ -479,15 +479,15 @@ public class CandidateChangeHandlerTests
 				.type(CandidateType.SUPPLY)
 				.clientId(org.getAD_Client_ID())
 				.orgId(org.getAD_Org_ID())
-				.materialDescr(materialDescr)
+				.materialDescriptor(materialDescr)
 				.build();
 
 		final Candidate processedCandidate = stockCandidateService.addOrUpdateStock(candidate);
 		assertThat(processedCandidate.getType()).isEqualTo(CandidateType.STOCK);
-		assertThat(processedCandidate.getMaterialDescr().getDate().getTime()).isEqualTo(t2.getTime());
-		assertThat(processedCandidate.getMaterialDescr().getQuantity()).isEqualByComparingTo(BigDecimal.TEN);
-		assertThat(processedCandidate.getMaterialDescr().getProductId()).isEqualTo(PRODUCT_ID);
-		assertThat(processedCandidate.getMaterialDescr().getWarehouseId()).isEqualTo(WAREHOUSE_ID);
+		assertThat(processedCandidate.getMaterialDescriptor().getDate().getTime()).isEqualTo(t2.getTime());
+		assertThat(processedCandidate.getMaterialDescriptor().getQuantity()).isEqualByComparingTo(BigDecimal.TEN);
+		assertThat(processedCandidate.getMaterialDescriptor().getProductId()).isEqualTo(PRODUCT_ID);
+		assertThat(processedCandidate.getMaterialDescriptor().getWarehouseId()).isEqualTo(WAREHOUSE_ID);
 	}
 
 	/**
@@ -511,13 +511,13 @@ public class CandidateChangeHandlerTests
 				.type(CandidateType.DEMAND)
 				.clientId(org.getAD_Client_ID())
 				.orgId(org.getAD_Org_ID())
-				.materialDescr(materialDescr)
+				.materialDescriptor(materialDescr)
 				.build();
 		candidateChangeHandler.onCandidateNewOrChange(candidate);
 		// we don't really check here..this first part is already verified in testOnDemandCandidateCandidateNewOrChange_noOlderRecords()
 		assertThat(DispoTestUtils.retrieveAllRecords()).hasSize(2); // one demand, one stock
 
-		final MaterialDescriptor supplyMaterialDescr = MaterialDescriptor.builder()
+		final MaterialDescriptor supplyMaterialDescriptor= MaterialDescriptor.builder()
 				.complete(true)
 				.productDescriptor(createProductDescriptor())
 				.warehouseId(WAREHOUSE_ID)
@@ -529,7 +529,7 @@ public class CandidateChangeHandlerTests
 				.type(CandidateType.SUPPLY)
 				.clientId(org.getAD_Client_ID())
 				.orgId(org.getAD_Org_ID())
-				.materialDescr(supplyMaterialDescr)
+				.materialDescriptor(supplyMaterialDescriptor)
 				.build();
 
 		candidateChangeHandler.onCandidateNewOrChange(supplyCandidate);
@@ -559,7 +559,7 @@ public class CandidateChangeHandlerTests
 		final BigDecimal qty = new BigDecimal("23");
 		final Date t = t1;
 
-		final MaterialDescriptor supplyMaterialDescr = MaterialDescriptor.builder()
+		final MaterialDescriptor supplyMaterialDescriptor= MaterialDescriptor.builder()
 				.complete(true)
 				.productDescriptor(createProductDescriptor())
 				.warehouseId(WAREHOUSE_ID)
@@ -571,7 +571,7 @@ public class CandidateChangeHandlerTests
 				.type(CandidateType.SUPPLY)
 				.clientId(org.getAD_Client_ID())
 				.orgId(org.getAD_Org_ID())
-				.materialDescr(supplyMaterialDescr)
+				.materialDescriptor(supplyMaterialDescriptor)
 				.build();
 		candidateChangeHandler.onCandidateNewOrChange(supplyCandidate);
 
@@ -584,7 +584,7 @@ public class CandidateChangeHandlerTests
 			assertThat(supplyRecord.getSeqNo()).isEqualTo(stockRecord.getSeqNo() + 1);
 		}
 
-		final MaterialDescriptor demandMaterialDescr = MaterialDescriptor.builder()
+		final MaterialDescriptor demandMaterialDescriptor= MaterialDescriptor.builder()
 				.complete(true)
 				.productDescriptor(createProductDescriptor())
 				.warehouseId(WAREHOUSE_ID)
@@ -596,7 +596,7 @@ public class CandidateChangeHandlerTests
 				.type(CandidateType.DEMAND)
 				.clientId(org.getAD_Client_ID())
 				.orgId(org.getAD_Org_ID())
-				.materialDescr(demandMaterialDescr)
+				.materialDescriptor(demandMaterialDescriptor)
 				.build();
 		candidateChangeHandler.onCandidateNewOrChange(demandCandidate);
 
@@ -636,7 +636,7 @@ public class CandidateChangeHandlerTests
 				.type(CandidateType.DEMAND)
 				.clientId(org.getAD_Client_ID())
 				.orgId(org.getAD_Org_ID())
-				.materialDescr(materialDescr)
+				.materialDescriptor(materialDescr)
 				.build();
 
 		final Consumer<Candidate> doTest = candidate -> {
@@ -668,7 +668,7 @@ public class CandidateChangeHandlerTests
 		final BigDecimal qty = new BigDecimal("23");
 		final Date t = t1;
 
-		final MaterialDescriptor materialDescr = MaterialDescriptor.builder()
+		final MaterialDescriptor materialDescriptor= MaterialDescriptor.builder()
 				.complete(true)
 				.productDescriptor(createProductDescriptor())
 				.warehouseId(WAREHOUSE_ID)
@@ -680,7 +680,7 @@ public class CandidateChangeHandlerTests
 				.type(CandidateType.DEMAND)
 				.clientId(org.getAD_Client_ID())
 				.orgId(org.getAD_Org_ID())
-				.materialDescr(materialDescr)
+				.materialDescriptor(materialDescriptor)
 				.build();
 
 		final BiConsumer<Candidate, BigDecimal> doTest = (candidate, expectedQty) -> {

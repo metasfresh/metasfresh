@@ -13,7 +13,7 @@ import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
 
 import de.metas.document.engine.IDocumentBL;
-import de.metas.material.event.EventDescr;
+import de.metas.material.event.EventDescriptor;
 import de.metas.material.event.MaterialEventService;
 import de.metas.material.event.ProductDescriptorFactory;
 import de.metas.material.event.pporder.PPOrder;
@@ -83,7 +83,7 @@ public class PP_OrderFireMaterialEvent
 		}
 
 		final ProductionPlanEvent event = ProductionPlanEvent.builder()
-				.eventDescr(EventDescr.createNew(ppOrder))
+				.eventDescriptor(EventDescriptor.createNew(ppOrder))
 				.ppOrder(ppOrderPojoBuilder.build())
 				// .reference(reference) // we don't know the reference here, but we expect that the event-receiver (i.e. material-dispo) will be able to sort out which record(s) to update via date, orderLineId etc
 				.build();

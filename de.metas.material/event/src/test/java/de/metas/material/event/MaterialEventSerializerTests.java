@@ -62,7 +62,7 @@ public class MaterialEventSerializerTests
 	public void ddOrderRequestedEvent()
 	{
 		final DDOrderRequestedEvent event = DDOrderRequestedEvent.builder()
-				.eventDescr(createEventDescriptor())
+				.eventDescriptor(createEventDescriptor())
 				.groupId(20)
 				.ddOrder(createDdOrder())
 				.build();
@@ -76,7 +76,7 @@ public class MaterialEventSerializerTests
 		final DistributionPlanEvent event = DistributionPlanEvent.builder()
 				.ddOrder(createDdOrder())
 				.fromWarehouseId(30)
-				.eventDescr(createEventDescriptor())
+				.eventDescriptor(createEventDescriptor())
 				.toWarehouseId(40)
 				.build();
 
@@ -109,7 +109,7 @@ public class MaterialEventSerializerTests
 	public void ppOrderRequestedEvent()
 	{
 		final PPOrderRequestedEvent event = PPOrderRequestedEvent.builder()
-				.eventDescr(createEventDescriptor())
+				.eventDescriptor(createEventDescriptor())
 				.groupId(30)
 				.ppOrder(PPOrder.builder()
 						.datePromised(NOW)
@@ -145,7 +145,7 @@ public class MaterialEventSerializerTests
 	public void productionPlanEvent()
 	{
 		final ProductionPlanEvent event = ProductionPlanEvent.builder()
-				.eventDescr(createEventDescriptor())
+				.eventDescriptor(createEventDescriptor())
 				.materialDemandDescr(createMaterialDemandDescriptor())
 				.ppOrder(PPOrder.builder()
 						.datePromised(NOW)
@@ -195,7 +195,7 @@ public class MaterialEventSerializerTests
 		final ForecastEvent forecastEvent = ForecastEvent
 				.builder()
 				.forecast(forecast)
-				.eventDescr(createEventDescriptor())
+				.eventDescriptor(createEventDescriptor())
 				.build();
 
 		assertEventEqualAfterSerializeDeserialize(forecastEvent);
@@ -226,8 +226,8 @@ public class MaterialEventSerializerTests
 	public void shipmentScheduleEvent()
 	{
 		final ShipmentScheduleEvent shipmentScheduleEvent = ShipmentScheduleEvent.builder()
-				.eventDescr(createEventDescriptor())
-				.materialDescr(createMaterialDescriptor())
+				.eventDescriptor(createEventDescriptor())
+				.materialDescriptor(createMaterialDescriptor())
 				.shipmentScheduleId(3)
 				.orderLineId(4)
 				.build();
@@ -248,8 +248,8 @@ public class MaterialEventSerializerTests
 		final TransactionEvent evt = TransactionEvent
 				.builder()
 				.transactionId(10)
-				.eventDescr(createEventDescriptor())
-				.materialDescr(createMaterialDescriptor())
+				.eventDescriptor(createEventDescriptor())
+				.materialDescriptor(createMaterialDescriptor())
 				.build();
 		return evt;
 	}
@@ -263,8 +263,8 @@ public class MaterialEventSerializerTests
 		return deserializedEvt;
 	}
 
-	private static EventDescr createEventDescriptor()
+	private static EventDescriptor createEventDescriptor()
 	{
-		return new EventDescr(1, 2);
+		return new EventDescriptor(1, 2);
 	}
 }

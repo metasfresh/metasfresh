@@ -198,7 +198,7 @@ public class CandidateRepositoryCommands
 			@NonNull final Candidate candidate,
 			final boolean preserveExistingSeqNo)
 	{
-		final MaterialDescriptor materialDescriptor = candidate.getMaterialDescr();
+		final MaterialDescriptor materialDescriptor = candidate.getMaterialDescriptor();
 
 		candidateRecord.setAD_Org_ID(candidate.getOrgId());
 		candidateRecord.setMD_Candidate_Type(candidate.getType().toString());

@@ -6,7 +6,7 @@ import com.google.common.base.Preconditions;
 
 import de.metas.material.dispo.candidate.Candidate;
 import de.metas.material.dispo.candidate.CandidateType;
-import de.metas.material.event.EventDescr;
+import de.metas.material.event.EventDescriptor;
 import de.metas.material.event.MaterialDemandDescriptor;
 import de.metas.material.event.MaterialDemandEvent;
 import lombok.NonNull;
@@ -67,8 +67,8 @@ public class MaterialDemandEventCreator
 	{
 		return MaterialDemandDescriptor.builder()
 				.demandCandidateId(candidate.getId())
-				.eventDescr(new EventDescr(candidate.getClientId(), candidate.getOrgId()))
-				.materialDescriptor(candidate.getMaterialDescr().withQuantity(qty))
+				.eventDescr(new EventDescriptor(candidate.getClientId(), candidate.getOrgId()))
+				.materialDescriptor(candidate.getMaterialDescriptor().withQuantity(qty))
 				.orderLineId(orderLineId)
 				.build();
 	}

@@ -59,8 +59,8 @@ public class MetasfreshEventSerializerTests
 		final MaterialEvent deserializedTransactionEvent = SimpleObjectSerializer.get().deserialize(deserializedTransactionEventStr, MaterialEvent.class);
 
 		assertThat(deserializedTransactionEvent).isInstanceOf(TransactionEvent.class);
-		assertThat(((TransactionEvent)deserializedTransactionEvent).getMaterialDescr().getProductId())
-				.isEqualTo(transactionEvent.getMaterialDescr().getProductId()); // "spot check": picking the productId
+		assertThat(((TransactionEvent)deserializedTransactionEvent).getMaterialDescriptor().getProductId())
+				.isEqualTo(transactionEvent.getMaterialDescriptor().getProductId()); // "spot check": picking the productId
 		assertThat(deserializedTransactionEvent).isEqualTo(transactionEvent);
 	}
 }
