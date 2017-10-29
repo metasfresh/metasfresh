@@ -54,6 +54,10 @@ class DocumentList extends Component {
         dispatch: PropTypes.func.isRequired,
     }
 
+    static contextTypes = {
+        store: PropTypes.object.isRequired,
+    }
+
     constructor(props) {
         super(props);
 
@@ -103,6 +107,7 @@ class DocumentList extends Component {
             defaultSort: nextDefaultSort,
             defaultViewId: nextDefaultViewId,
             includedView: nextIncludedView,
+            isIncluded: nextIsIncluded,
             refId: nextRefId,
             windowType: nextWindowType,
         } = nextProps;
@@ -112,6 +117,7 @@ class DocumentList extends Component {
             defaultSort,
             defaultViewId,
             includedView,
+            isIncluded,
             refId,
             windowType,
             dispatch,
@@ -140,6 +146,10 @@ class DocumentList extends Component {
         if ((nextWindowType !== windowType) || (
                 (nextDefaultViewId === undefined) &&
                 (nextDefaultViewId !== defaultViewId)
+            ) || (
+                (nextWindowType === windowType) &&
+                (nextDefaultViewId !== defaultViewId) &&
+                isIncluded && nextIsIncluded
             ) || (nextRefId !== refId)
         ) {
             this.setState({
@@ -218,12 +228,11 @@ class DocumentList extends Component {
         }
     }
 
-    doesSelectionExist(selected, hasIncluded) {
-        const {data} = this.state;
+    doesSelectionExist({ data, selected, hasIncluded = false } = {}) {
         // When the rows are changing we should ensure
         // that selection still exist
 
-        if(hasIncluded){
+        if (hasIncluded) {
             return true;
         }
 
@@ -360,6 +369,7 @@ class DocumentList extends Component {
     }
 
     getData = (id, page, sortingQuery) => {
+        const { store } = this.context;
         const {
             dispatch, windowType, updateUri, setNotFound, type, isIncluded,
         } = this.props;
@@ -379,29 +389,32 @@ class DocumentList extends Component {
         return browseViewRequest(
             id, page, this.pageLength, sortingQuery, windowType
         ).then( (response) => {
-            let forceSelection = false;
-
-            if (
+            const selection = getSelection({
+                state: store.getState(),
+                windowType,
+                viewId,
+            });
+            const forceSelection = (
                 ((type === 'includedView') || isIncluded) &&
                 response.data && response.data.result &&
-                (response.data.result.length > 0)
-            ) {
-                forceSelection = true;
-            }
+                (response.data.result.length > 0) && (
+                    (selection.length === 0 ) ||
+                    !this.doesSelectionExist({
+                        data: response.data,
+                        selected: selection,
+                    })
+                )
+            );
 
-            this.mounted && this.setState(
-                Object.assign({}, {
+            if (this.mounted) {
+                this.setState({
                     data: response.data,
                     filters: response.data.filters
-                }),
-                () => {
-                    if (
-                        forceSelection &&
-                        response.data && response.data.result
+                }, () => {
+                    if (forceSelection && response.data &&
+                        response.data.result
                     ) {
-                        const selection = [
-                            response.data.result[0].id
-                        ];
+                        const selection = [response.data.result[0].id];
 
                         dispatch(selectTableItems({
                             windowType,
@@ -411,8 +424,8 @@ class DocumentList extends Component {
                     }
 
                     this.connectWS(response.data.viewId);
-                }
-            );
+                });
+            }
 
             dispatch(indicatorState('saved'));
         });
@@ -526,7 +539,9 @@ class DocumentList extends Component {
 
         const hasIncluded = layout && layout.includedView && includedView &&
             includedView.windowType && includedView.viewId;
-        const selectionValid = this.doesSelectionExist(selected, hasIncluded);
+        const selectionValid = this.doesSelectionExist({
+            data, selected, hasIncluded,
+        });
         const blurWhenOpen = layout && layout.includedView &&
             layout.includedView.blurWhenOpen;
 
@@ -642,7 +657,6 @@ class DocumentList extends Component {
                                 defaultSelected={selected}
                                 refreshSelection={refreshSelection}
                                 queryLimitHit={data.queryLimitHit}
-                                doesSelectionExist={this.doesSelectionExist}
                                 showIncludedViewOnSelect={
                                     this.showIncludedViewOnSelect
                                 }
