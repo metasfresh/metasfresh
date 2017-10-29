@@ -115,9 +115,15 @@ class DocList extends Component {
                 setModalDescription={this.setModalDescription}
                 modalDescription={modalDescription}
                 showIndicator={!modal.visible && !rawModal.visible}
+                masterDocumentList={this.masterDocumentList}
             >
                 <div className="document-lists-wrapper">
                     <DocumentList
+                        ref={(element) => {
+                            this.masterDocumentList = element ? (
+                                element.getWrappedInstance()
+                            ) : null;
+                        }}
                         type="grid"
                         updateUri={this.updateUriCallback}
                         windowType={windowType}

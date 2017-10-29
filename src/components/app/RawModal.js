@@ -24,13 +24,9 @@ import Tooltips from '../tooltips/Tooltips.js';
 const shortcutManager = new ShortcutManager(keymap);
 
 class RawModal extends Component {
-    constructor(props) {
-        super(props);
-
-        this.state = {
-            scrolled: false,
-            isTooltipShow: false
-        }
+    state = {
+        scrolled: false,
+        isTooltipShow: false,
     }
 
     componentDidMount() {
@@ -45,6 +41,12 @@ class RawModal extends Component {
     }
 
     componentWillUnmount() {
+        const { masterDocumentList } = this.props;
+
+        if (masterDocumentList) {
+            masterDocumentList.updateQuickActions();
+        }
+
         this.removeEventListeners();
     }
 

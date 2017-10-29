@@ -25,7 +25,7 @@ class Container extends Component {
             handleDeletedStatus, dropzoneFocused, notfound, rawModal, modal,
             indicator, modalTitle, setModalTitle, includedView,
             closeModalCallback, setModalDescription, modalDescription, editmode,
-            handleEditModeToggle, activeTab,
+            handleEditModeToggle, activeTab, masterDocumentList,
         } = this.props;
 
         return (
@@ -111,6 +111,7 @@ class Container extends Component {
                             modalDescription={modalDescription}
                             windowType={rawModal.type}
                             viewId={rawModal.viewId}
+                            masterDocumentList={masterDocumentList}
                         >
                             <div className="document-lists-wrapper">
                                 <DocumentList
