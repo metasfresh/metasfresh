@@ -8,13 +8,13 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 
-import de.metas.material.dispo.CandidateRepository;
 import de.metas.material.dispo.CandidatesQuery;
 import de.metas.material.dispo.candidate.Candidate;
 import de.metas.material.dispo.candidate.Candidate.CandidateBuilder;
+import de.metas.material.dispo.candidate.CandidateType;
 import de.metas.material.dispo.candidate.DemandDetail;
 import de.metas.material.dispo.candidate.TransactionDetail;
-import de.metas.material.dispo.candidate.CandidateType;
+import de.metas.material.dispo.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.event.MaterialDescriptor.DateOperator;
 import de.metas.material.event.TransactionEvent;
@@ -45,11 +45,11 @@ import lombok.NonNull;
 public class TransactionEventHandler
 {
 	private final CandidateChangeService candidateChangeHandler;
-	private final CandidateRepository candidateRepository;
+	private final CandidateRepositoryRetrieval candidateRepository;
 
 	public TransactionEventHandler(
 			@NonNull final CandidateChangeService candidateChangeHandler,
-			@NonNull final CandidateRepository candidateRepository)
+			@NonNull final CandidateRepositoryRetrieval candidateRepository)
 	{
 		this.candidateChangeHandler = candidateChangeHandler;
 		this.candidateRepository = candidateRepository;
@@ -64,7 +64,10 @@ public class TransactionEventHandler
 	@VisibleForTesting
 	Candidate createCandidateForTransactionEvent(@NonNull final TransactionEvent event)
 	{
-		final TransactionDetail transactionDetailOfEvent = TransactionDetail.forCandidateOrQuery(event.getMaterialDescr().getQuantity(), event.getTransactionId());
+		final TransactionDetail transactionDetailOfEvent = TransactionDetail
+				.forCandidateOrQuery(
+						event.getMaterialDescr().getQuantity(), 
+						event.getTransactionId());
 
 		final Candidate candidate;
 		if (event.getShipmentScheduleId() > 0)

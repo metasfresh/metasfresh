@@ -177,10 +177,10 @@ public final class CandidatesQuery
 				case AFTER:
 					dateMatches = candidate.getDate().getTime() > materialDescr.getDate().getTime();
 					break;
-				case FROM:
+				case AT_OR_AFTER:
 					dateMatches = candidate.getDate().getTime() >= materialDescr.getDate().getTime();
 					break;
-				case UNTIL:
+				case BEFORE_OR_AT:
 					dateMatches = candidate.getDate().getTime() <= materialDescr.getDate().getTime();
 					break;
 				case AT:

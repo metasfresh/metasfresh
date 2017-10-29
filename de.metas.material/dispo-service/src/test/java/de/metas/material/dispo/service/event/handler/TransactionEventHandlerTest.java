@@ -13,12 +13,12 @@ import org.compiere.util.TimeUtil;
 import org.junit.Before;
 import org.junit.Test;
 
-import de.metas.material.dispo.CandidateRepository;
 import de.metas.material.dispo.CandidatesQuery;
 import de.metas.material.dispo.candidate.Candidate;
+import de.metas.material.dispo.candidate.CandidateType;
 import de.metas.material.dispo.candidate.DemandDetail;
 import de.metas.material.dispo.candidate.TransactionDetail;
-import de.metas.material.dispo.candidate.CandidateType;
+import de.metas.material.dispo.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.event.EventDescr;
 import de.metas.material.event.MaterialDescriptor;
@@ -65,7 +65,7 @@ public class TransactionEventHandlerTest
 	private CandidateChangeService candidateChangeService;
 
 	@Injectable
-	private CandidateRepository candidateRepository;
+	private CandidateRepositoryRetrieval candidateRepository;
 
 	@Before
 	public void init()
@@ -135,6 +135,7 @@ public class TransactionEventHandlerTest
 				.type(CandidateType.UNRELATED_INCREASE)
 				.id(11)
 				.materialDescr(MaterialDescriptor.builderForCompleteDescriptor()
+						.complete(true)
 						.productDescriptor(createProductDescriptor())
 						.warehouseId(WAREHOUSE_ID)
 						.quantity(BigDecimal.ONE)
@@ -200,12 +201,7 @@ public class TransactionEventHandlerTest
 		{{
 				CandidatesQuery query;
 				candidateRepository.retrieveLatestMatchOrNull(query = withCapture());
-				assertThat(query).isNotNull();
-				assertThat(query.getDemandDetail().getShipmentScheduleId()).isEqualTo(SHIPMENT_SCHEDULE_ID);
-				assertThat(query.getMaterialDescr().getProductId())
-				.as("only search via the demand detail, if we have one")
-				.isLessThanOrEqualTo(0);
-				assertThat(query.getTransactionDetail()).as("only search via the demand detail, if we have one").isNull();
+				assertDemandDetailQuery(query);
 		}}; // @formatter:on
 
 		assertThat(candidate.getType()).isEqualTo(CandidateType.UNRELATED_DECREASE);
@@ -224,6 +220,7 @@ public class TransactionEventHandlerTest
 				.id(11)
 				.type(CandidateType.DEMAND)
 				.materialDescr(MaterialDescriptor.builderForCompleteDescriptor()
+						.complete(true)
 						.productDescriptor(createProductDescriptor())
 						.warehouseId(WAREHOUSE_ID)
 						.quantity(new BigDecimal("63"))
@@ -250,12 +247,7 @@ public class TransactionEventHandlerTest
 		{{
 				CandidatesQuery query;
 				candidateRepository.retrieveLatestMatchOrNull(query = withCapture());
-				assertThat(query).isNotNull();
-				assertThat(query.getDemandDetail().getShipmentScheduleId()).isEqualTo(SHIPMENT_SCHEDULE_ID);
-				assertThat(query.getMaterialDescr().getProductId())
-				.as("only search via the demand detail, if we have one")
-				.isLessThanOrEqualTo(0);
-				assertThat(query.getTransactionDetail()).as("only search via the demand detail, if we have one").isNull();
+				assertDemandDetailQuery(query);
 		}}; // @formatter:on
 
 		assertThat(candidate.getId()).isEqualTo(11);
@@ -274,12 +266,23 @@ public class TransactionEventHandlerTest
 		assertThat(candidate.getTransactionDetails().get(0).getQuantity()).isEqualByComparingTo("-10");
 	}
 
+	private static void assertDemandDetailQuery(final CandidatesQuery query)
+	{
+		assertThat(query).isNotNull();
+		assertThat(query.getDemandDetail().getShipmentScheduleId()).isEqualTo(SHIPMENT_SCHEDULE_ID);
+		assertThat(query.getMaterialDescr())
+			.as("If we have a demand detail, then only via that demand detail")
+			.isNull();
+		assertThat(query.getTransactionDetail()).as("only search via the demand detail, if we have one").isNull();
+	}
+	
 	private TransactionEventBuilder createTransactionEventBuilderWithQuantity(@NonNull final BigDecimal quantity)
 	{
 		return TransactionEvent.builder()
 				.eventDescr(new EventDescr(10, 20))
 				.transactionId(TRANSACTION_ID)
 				.materialDescr(MaterialDescriptor.builder()
+						.complete(true)
 						.date(TimeUtil.parseTimestamp("2017-10-15"))
 						.productDescriptor(createProductDescriptor())
 						.quantity(quantity)

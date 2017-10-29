@@ -21,12 +21,13 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestWatcher;
 
-import de.metas.material.dispo.CandidateRepository;
 import de.metas.material.dispo.DispoTestUtils;
 import de.metas.material.dispo.candidate.Candidate;
 import de.metas.material.dispo.candidate.CandidateType;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.X_MD_Candidate;
+import de.metas.material.dispo.repository.CandidateRepositoryCommands;
+import de.metas.material.dispo.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
 import de.metas.material.event.MaterialDescriptor;
 import de.metas.material.event.MaterialEvent;
@@ -76,11 +77,12 @@ public class DemandCandiateCangeHandlerTest
 	{
 		AdempiereTestHelper.get().init();
 
-		final CandidateRepository candidateRepository = new CandidateRepository(ProductDescriptorFactory.TESTING_INSTANCE);
+		final CandidateRepositoryRetrieval candidateRepository = new CandidateRepositoryRetrieval(ProductDescriptorFactory.TESTING_INSTANCE);
+		final CandidateRepositoryCommands candidateRepositoryCommands = new CandidateRepositoryCommands();
 
-		final StockCandidateService stockCandidateService = new StockCandidateService(candidateRepository);
+		final StockCandidateService stockCandidateService = new StockCandidateService(candidateRepository, candidateRepositoryCommands);
 
-		demandCandiateHandler = new DemandCandiateHandler(candidateRepository, materialEventService, stockCandidateService);
+		demandCandiateHandler = new DemandCandiateHandler(candidateRepository, candidateRepositoryCommands, materialEventService, stockCandidateService);
 	}
 
 	@Test
@@ -90,6 +92,7 @@ public class DemandCandiateCangeHandlerTest
 		final Date t = t1;
 
 		final MaterialDescriptor materialDescr = MaterialDescriptor.builder()
+				.complete(true)
 				.productDescriptor(createProductDescriptor())
 				.warehouseId(WAREHOUSE_ID)
 				.quantity(qty)
@@ -115,12 +118,12 @@ public class DemandCandiateCangeHandlerTest
 
 		assertThat(stockRecord.getSeqNo(), is(demandRecord.getSeqNo() + 1)); // when we sort by SeqNo, the demand needs to be first and thus have the smaller value
 	}
-	
+
 	@Test
 	public void decrease_stock()
 	{
 		final Candidate candidate = createCandidateWithType(CandidateType.UNRELATED_DECREASE);
-		
+
 		demandCandiateHandler.onCandidateNewOrChange(candidate);
 
 		final List<I_MD_Candidate> allRecords = DispoTestUtils.retrieveAllRecords();
@@ -137,17 +140,22 @@ public class DemandCandiateCangeHandlerTest
 
 		// verify that no event was fired
 		new Verifications()
-		{{
-			materialEventService.fireEvent((MaterialEvent)any); times = 0;
-			materialEventService.fireEventAfterNextCommit((MaterialEvent)any, anyString); times = 0;
-		}}; // @formatter:on
+		{
+			{
+				materialEventService.fireEvent((MaterialEvent)any);
+				times = 0;
+				materialEventService.fireEventAfterNextCommit((MaterialEvent)any, anyString);
+				times = 0;
+			}
+		}; // @formatter:on
 	}
-	
+
 	private static Candidate createCandidateWithType(@NonNull final CandidateType type)
 	{
 		final Candidate candidate = Candidate.builder()
 				.type(type)
 				.materialDescr(MaterialDescriptor.builder()
+						.complete(true)
 						.productDescriptor(createProductDescriptor())
 						.date(SystemTime.asTimestamp())
 						.warehouseId(WAREHOUSE_ID)

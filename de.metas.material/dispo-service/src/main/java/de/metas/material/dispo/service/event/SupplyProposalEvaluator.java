@@ -7,10 +7,10 @@ import java.util.Set;
 
 import org.springframework.stereotype.Service;
 
-import de.metas.material.dispo.CandidateRepository;
 import de.metas.material.dispo.CandidatesQuery;
 import de.metas.material.dispo.candidate.Candidate;
 import de.metas.material.dispo.candidate.CandidateType;
+import de.metas.material.dispo.repository.CandidateRepositoryRetrieval;
 import de.metas.material.event.MaterialDescriptor;
 import de.metas.material.event.MaterialDescriptor.DateOperator;
 import de.metas.material.event.ProductDescriptor;
@@ -52,9 +52,9 @@ public class SupplyProposalEvaluator
 	/**
 	 * Needed so the evaluator can check what's already there.
 	 */
-	private final CandidateRepository candidateRepository;
+	private final CandidateRepositoryRetrieval candidateRepository;
 
-	public SupplyProposalEvaluator(@NonNull final CandidateRepository candidateRepository)
+	public SupplyProposalEvaluator(@NonNull final CandidateRepositoryRetrieval candidateRepository)
 	{
 		this.candidateRepository = candidateRepository;
 	}
@@ -81,7 +81,7 @@ public class SupplyProposalEvaluator
 				.type(CandidateType.DEMAND)
 				.materialDescr(MaterialDescriptor.builderForQuery()
 						.date(proposal.getDate())
-						.dateOperator(DateOperator.FROM)
+						.dateOperator(DateOperator.AT_OR_AFTER)
 						.productDescriptor(proposal.getProductDescriptor())
 						.warehouseId(proposal.getDestWarehouseId()).build())
 				.build();
@@ -104,7 +104,7 @@ public class SupplyProposalEvaluator
 				.withType(CandidateType.SUPPLY)
 				.withMaterialDescr(demandQuery.getMaterialDescr()
 						.withDate(proposal.getDate())
-						.withDateOperator(DateOperator.FROM)
+						.withDateOperator(DateOperator.AT_OR_AFTER)
 						.withWarehouseId(proposal.getSourceWarehouseId()));
 
 		final List<Candidate> demands = candidateRepository.retrieveOrderedByDateAndSeqNo(demandQuery);

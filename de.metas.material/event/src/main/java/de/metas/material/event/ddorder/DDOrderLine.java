@@ -6,6 +6,7 @@ import java.math.BigDecimal;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.Preconditions;
 
 import de.metas.material.event.ProductDescriptor;
 import lombok.Builder;
@@ -70,7 +71,8 @@ public class DDOrderLine
 
 		this.qty = qty;
 
-		this.durationDays = checkIdGreaterThanZero("durationDays", durationDays);
+		Preconditions.checkArgument(durationDays >= 0, "The Given parameter durationDays=%s needs to be > 0", "durationDays");
+		this.durationDays = durationDays;
 		this.networkDistributionLineId = checkIdGreaterThanZero("networkDistributionLineId", networkDistributionLineId);
 
 		this.ddOrderLineId = ddOrderLineId;

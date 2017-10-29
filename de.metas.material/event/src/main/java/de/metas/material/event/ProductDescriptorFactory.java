@@ -34,11 +34,11 @@ import lombok.NonNull;
 public class ProductDescriptorFactory
 {
 	public static ProductDescriptorFactory TESTING_INSTANCE = new ProductDescriptorFactory();
-	
+
 	protected ProductDescriptorFactory()
-	{		
+	{
 	}
-	
+
 	public ProductDescriptor createProductDescriptor(Object asiAwareModel)
 	{
 		throw new UnsupportedOperationException();
@@ -48,15 +48,18 @@ public class ProductDescriptorFactory
 	{
 		throw new UnsupportedOperationException();
 	}
-	
+
 	public final ProductDescriptor forProductIdOnly(final int productId)
 	{
-		return new ProductDescriptor(false, productId, null, -1); // complete == false
+		return new ProductDescriptor(false, // complete == false
+				productId,
+				ProductDescriptor.STORAGE_ATTRIBUTES_KEY_UNSPECIFIED,
+				-1);
 	}
 
 	public final ProductDescriptor forProductIdAndEmptyAttribute(final int productId)
 	{
-		return new ProductDescriptor(true, productId, ProductDescriptor.STORAGE_ATTRIBUTES_KEY_UNSPECIFIED, 0); // complete == true
+		return new ProductDescriptor(true, productId, "", 0); // complete == true
 	}
 
 	public final ProductDescriptor forProductAndAttributes(

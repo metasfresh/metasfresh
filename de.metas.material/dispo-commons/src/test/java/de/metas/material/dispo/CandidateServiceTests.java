@@ -14,10 +14,11 @@ import org.junit.Test;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.material.dispo.candidate.Candidate;
-import de.metas.material.dispo.candidate.DistributionDetail;
-import de.metas.material.dispo.candidate.ProductionDetail;
 import de.metas.material.dispo.candidate.CandidateSubType;
 import de.metas.material.dispo.candidate.CandidateType;
+import de.metas.material.dispo.candidate.DistributionDetail;
+import de.metas.material.dispo.candidate.ProductionDetail;
+import de.metas.material.dispo.repository.CandidateRepositoryRetrieval;
 import de.metas.material.event.MaterialEventService;
 import de.metas.material.event.ProductDescriptorFactory;
 import de.metas.material.event.ddorder.DDOrder;
@@ -58,7 +59,7 @@ public class CandidateServiceTests
 		productDescriptorFactory = ProductDescriptorFactory.TESTING_INSTANCE;
 
 		candidateService = new CandidateService(
-				new CandidateRepository(productDescriptorFactory),
+				new CandidateRepositoryRetrieval(productDescriptorFactory),
 				MaterialEventService.createLocalServiceThatIsReadyToUse());
 	}
 

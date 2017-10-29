@@ -8,9 +8,10 @@ import org.springframework.stereotype.Service;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
-import de.metas.material.dispo.CandidateRepository;
 import de.metas.material.dispo.candidate.Candidate;
 import de.metas.material.dispo.candidate.CandidateType;
+import de.metas.material.dispo.repository.CandidateRepositoryCommands;
+import de.metas.material.dispo.repository.CandidateRepositoryRetrieval;
 import de.metas.material.event.MaterialDemandEvent;
 import de.metas.material.event.MaterialEventService;
 import lombok.NonNull;
@@ -47,15 +48,18 @@ import lombok.NonNull;
 public class StockUpCandiateHandler implements CandidateHandler
 {
 	@NonNull
-	private final CandidateRepository candidateRepository;
+	private final CandidateRepositoryRetrieval candidateRepository;
 
-	@NonNull
 	private final MaterialEventService materialEventService;
 
+	private final CandidateRepositoryCommands candidateRepositoryCommands;
+
 	public StockUpCandiateHandler(
-			@NonNull final CandidateRepository candidateRepository,
+			@NonNull final CandidateRepositoryRetrieval candidateRepository,
+			@NonNull final CandidateRepositoryCommands candidateRepositoryCommands,
 			@NonNull final MaterialEventService materialEventService)
 	{
+		this.candidateRepositoryCommands = candidateRepositoryCommands;
 		this.candidateRepository = candidateRepository;
 		this.materialEventService = materialEventService;
 	}
@@ -72,7 +76,8 @@ public class StockUpCandiateHandler implements CandidateHandler
 				"Given parameter 'candidate' has type=%s; demandCandidate=%s",
 				candidate.getType(), candidate);
 
-		final Candidate candidateWithQtyDeltaAndId = candidateRepository.addOrUpdateOverwriteStoredSeqNo(candidate);
+		final Candidate candidateWithQtyDeltaAndId = candidateRepositoryCommands.addOrUpdateOverwriteStoredSeqNo(
+				candidate);
 
 		if (candidateWithQtyDeltaAndId.getQuantity().signum() == 0)
 		{

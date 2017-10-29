@@ -1,6 +1,6 @@
 package de.metas.material.dispo.service.event.handler;
 
-import static de.metas.material.event.EventTestHelper.PRODUCT_ID;
+import static de.metas.material.event.EventTestHelper.*;
 import static de.metas.material.event.EventTestHelper.createProductDescriptor;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
@@ -22,17 +22,19 @@ import org.junit.Test;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.material.dispo.CandidateRepository;
 import de.metas.material.dispo.CandidateService;
 import de.metas.material.dispo.DispoTestUtils;
 import de.metas.material.dispo.candidate.CandidateType;
 import de.metas.material.dispo.model.I_MD_Candidate;
+import de.metas.material.dispo.repository.CandidateRepositoryCommands;
+import de.metas.material.dispo.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
 import de.metas.material.dispo.service.candidatechange.handler.DemandCandiateHandler;
 import de.metas.material.dispo.service.candidatechange.handler.SupplyCandiateHandler;
 import de.metas.material.event.EventDescr;
 import de.metas.material.event.MaterialEventService;
+import de.metas.material.event.ProductDescriptor;
 import de.metas.material.event.ProductDescriptorFactory;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrderLine;
@@ -95,12 +97,15 @@ public class ProdcutionPlanEventHandlerTests
 		org = newInstance(I_AD_Org.class);
 		save(org);
 
-		final CandidateRepository candidateRepository = new CandidateRepository(ProductDescriptorFactory.TESTING_INSTANCE);
-		final StockCandidateService stockCandidateService = new StockCandidateService(candidateRepository);
+		final CandidateRepositoryRetrieval candidateRepository = new CandidateRepositoryRetrieval(ProductDescriptorFactory.TESTING_INSTANCE);
+		final CandidateRepositoryCommands candidateRepositoryCommands = new CandidateRepositoryCommands();
+		final StockCandidateService stockCandidateService = new StockCandidateService(
+				candidateRepository,
+				candidateRepositoryCommands);
 
 		final CandidateChangeService candidateChangeHandler = new CandidateChangeService(ImmutableList.of(
-				new SupplyCandiateHandler(candidateRepository, materialEventService, stockCandidateService),
-				new DemandCandiateHandler(candidateRepository, materialEventService, stockCandidateService)));
+				new SupplyCandiateHandler(candidateRepository, candidateRepositoryCommands, stockCandidateService),
+				new DemandCandiateHandler(candidateRepository, candidateRepositoryCommands, materialEventService, stockCandidateService)));
 
 		final CandidateService candidateService = new CandidateService(
 				candidateRepository,
@@ -180,9 +185,13 @@ public class ProdcutionPlanEventHandlerTests
 
 	private ProductionPlanEvent createProductionPlanEvent()
 	{
+		final ProductDescriptorFactory productDescritporFactory = ProductDescriptorFactory.TESTING_INSTANCE;
+		final ProductDescriptor rawProductDescriptor1 = productDescritporFactory.forProductIdAndEmptyAttribute(rawProduct1Id);
+		final ProductDescriptor rawProductDescriptor2 = productDescritporFactory.forProductIdAndEmptyAttribute(rawProduct2Id);
+
 		final ProductionPlanEvent productionPlanEvent = ProductionPlanEvent.builder()
 				.eventDescr(new EventDescr(org.getAD_Client_ID(), org.getAD_Org_ID()))
-				//.materialDemandDescr(null)
+				.materialDemandDescr(null)
 				.ppOrder(PPOrder.builder()
 						.orgId(org.getAD_Org_ID())
 						.datePromised(t2)
@@ -195,14 +204,14 @@ public class ProdcutionPlanEventHandlerTests
 						.productPlanningId(140)
 						.line(PPOrderLine.builder()
 								.description("descr1")
-								.productDescriptor(createProductDescriptor())
+								.productDescriptor(rawProductDescriptor1)
 								.qtyRequired(BigDecimal.TEN)
 								.productBomLineId(1020)
 								.receipt(false)
 								.build())
 						.line(PPOrderLine.builder()
 								.description("descr2")
-								.productDescriptor(createProductDescriptor())
+								.productDescriptor(rawProductDescriptor2)
 								.qtyRequired(eleven)
 								.productBomLineId(1030)
 								.receipt(false)

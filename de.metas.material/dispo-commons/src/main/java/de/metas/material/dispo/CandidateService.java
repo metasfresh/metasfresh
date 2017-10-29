@@ -10,10 +10,11 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 
 import de.metas.material.dispo.candidate.Candidate;
-import de.metas.material.dispo.candidate.DistributionDetail;
-import de.metas.material.dispo.candidate.ProductionDetail;
 import de.metas.material.dispo.candidate.CandidateSubType;
 import de.metas.material.dispo.candidate.CandidateType;
+import de.metas.material.dispo.candidate.DistributionDetail;
+import de.metas.material.dispo.candidate.ProductionDetail;
+import de.metas.material.dispo.repository.CandidateRepositoryRetrieval;
 import de.metas.material.event.EventDescr;
 import de.metas.material.event.MaterialEventService;
 import de.metas.material.event.ddorder.DDOrder;
@@ -51,11 +52,11 @@ import lombok.NonNull;
 @Service
 public class CandidateService
 {
-	private final CandidateRepository candidateRepository;
+	private final CandidateRepositoryRetrieval candidateRepository;
 	private final MaterialEventService materialEventService;
 
 	public CandidateService(
-			@NonNull final CandidateRepository candidateRepository,
+			@NonNull final CandidateRepositoryRetrieval candidateRepository,
 			@NonNull final MaterialEventService materialEventService)
 	{
 		this.materialEventService = materialEventService;

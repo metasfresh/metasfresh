@@ -306,5 +306,4 @@ public class CompareQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 
 		sqlBuilt = true;
 	}
-
 }

@@ -1,5 +1,9 @@
 package de.metas.material.dispo.service.event.handler;
 
+import static de.metas.material.event.EventTestHelper.NOW;
+import static de.metas.material.event.EventTestHelper.PRODUCT_ID;
+import static de.metas.material.event.EventTestHelper.STORAGE_ATTRIBUTES_KEY;
+import static de.metas.material.event.EventTestHelper.WAREHOUSE_ID;
 import static de.metas.material.event.EventTestHelper.createProductDescriptor;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
@@ -8,25 +12,24 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.adempiere.util.time.SystemTime;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.material.dispo.CandidateRepository;
 import de.metas.material.dispo.DispoTestUtils;
 import de.metas.material.dispo.candidate.CandidateType;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.X_MD_Candidate;
+import de.metas.material.dispo.repository.CandidateRepositoryCommands;
+import de.metas.material.dispo.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.dispo.service.candidatechange.handler.StockUpCandiateHandler;
 import de.metas.material.event.EventDescr;
@@ -69,9 +72,9 @@ public class ForecastEventHandlerTest
 	@Rule
 	public final AdempiereTestWatcher testWatcher = new AdempiereTestWatcher();
 
-	private static final Date DATE = SystemTime.asDate();
-	private static final Integer PRODUCT_ID = 31;
-	private static final Integer WAREHOUSE_ID = 41;
+	//private static final Date DATE = SystemTime.asDate();
+	//private static final Integer PRODUCT_ID = 31;
+	//private static final Integer WAREHOUSE_ID = 41;
 	private ForecastEventHandler forecastEventHandler;
 
 	@Mocked
@@ -82,11 +85,14 @@ public class ForecastEventHandlerTest
 	{
 		AdempiereTestHelper.get().init();
 
-		final CandidateRepository candidateRepository = new CandidateRepository(ProductDescriptorFactory.TESTING_INSTANCE);
-
+		final CandidateRepositoryRetrieval candidateRepository = new CandidateRepositoryRetrieval(ProductDescriptorFactory.TESTING_INSTANCE);
+		final CandidateRepositoryCommands candidateRepositoryCommands = new CandidateRepositoryCommands();
 		forecastEventHandler = new ForecastEventHandler(
 				new CandidateChangeService(ImmutableList.of(
-						new StockUpCandiateHandler(candidateRepository, materialEventService))));
+						new StockUpCandiateHandler(
+								candidateRepository,
+								candidateRepositoryCommands,
+								materialEventService))));
 	}
 
 	/**
@@ -127,8 +133,9 @@ public class ForecastEventHandlerTest
 		final I_MD_Candidate stockCandidate = newInstance(I_MD_Candidate.class);
 		stockCandidate.setMD_Candidate_Type(X_MD_Candidate.MD_CANDIDATE_TYPE_STOCK);
 		stockCandidate.setM_Product_ID(PRODUCT_ID);
+		stockCandidate.setStorageAttributesKey(STORAGE_ATTRIBUTES_KEY);
 		stockCandidate.setM_Warehouse_ID(WAREHOUSE_ID);
-		stockCandidate.setDateProjected(new Timestamp(DATE.getTime()));
+		stockCandidate.setDateProjected(new Timestamp(NOW.getTime()));
 		stockCandidate.setQty(new BigDecimal("3"));
 		save(stockCandidate);
 
@@ -159,10 +166,11 @@ public class ForecastEventHandlerTest
 		final ForecastLine forecastLine = ForecastLine.builder()
 				.forecastLineId(300)
 				.materialDescriptor(MaterialDescriptor.builder()
+						.complete(true)
 						.productDescriptor(createProductDescriptor())
 						.warehouseId(WAREHOUSE_ID)
 						.quantity(new BigDecimal("8"))
-						.date(DATE)
+						.date(NOW)
 						.build())
 				.reference(TableRecordReference.of("someTable", 300))
 				.build();

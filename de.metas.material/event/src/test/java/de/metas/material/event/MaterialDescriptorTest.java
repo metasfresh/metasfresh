@@ -10,6 +10,8 @@ import java.math.BigDecimal;
 
 import org.junit.Test;
 
+import de.metas.material.event.MaterialDescriptor.DateOperator;
+
 /*
  * #%L
  * metasfresh-material-event
@@ -100,6 +102,15 @@ public class MaterialDescriptorTest
 				.productDescriptor(incompleteProductDescriptor)
 				.quantity(BigDecimal.TEN)
 				.warehouseId(WAREHOUSE_ID)
+				.build();
+	}
+
+	@Test(expected = RuntimeException.class)
+	public void build_when_dateOperatorAndNoDate_then_exception()
+	{
+		MaterialDescriptor
+				.builderForQuery()
+				.dateOperator(DateOperator.AT)
 				.build();
 	}
 }

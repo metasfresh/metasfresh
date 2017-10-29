@@ -9,9 +9,10 @@ import org.springframework.stereotype.Service;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
-import de.metas.material.dispo.CandidateRepository;
 import de.metas.material.dispo.candidate.Candidate;
 import de.metas.material.dispo.candidate.CandidateType;
+import de.metas.material.dispo.repository.CandidateRepositoryCommands;
+import de.metas.material.dispo.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
 import de.metas.material.event.MaterialDemandEvent;
 import de.metas.material.event.MaterialEventService;
@@ -42,21 +43,22 @@ import lombok.NonNull;
 @Service
 public class DemandCandiateHandler implements CandidateHandler
 {
-	@NonNull
-	private final CandidateRepository candidateRepository;
+	private final CandidateRepositoryRetrieval candidateRepository;
 
-	@NonNull
 	private final MaterialEventService materialEventService;
 
-	@NonNull
 	private final StockCandidateService stockCandidateService;
 
+	private final CandidateRepositoryCommands candidateRepositoryCommands;
+
 	public DemandCandiateHandler(
-			@NonNull final CandidateRepository candidateRepository,
+			@NonNull final CandidateRepositoryRetrieval candidateRepository,
+			@NonNull final CandidateRepositoryCommands candidateRepositoryCommands,
 			@NonNull final MaterialEventService materialEventService,
 			@NonNull final StockCandidateService stockCandidateService)
 	{
 		this.candidateRepository = candidateRepository;
+		this.candidateRepositoryCommands = candidateRepositoryCommands;
 		this.materialEventService = materialEventService;
 		this.stockCandidateService = stockCandidateService;
 	}
@@ -77,7 +79,8 @@ public class DemandCandiateHandler implements CandidateHandler
 	{
 		assertTCorrectCandidateType(demandCandidate);
 
-		final Candidate demandCandidateWithId = candidateRepository.addOrUpdateOverwriteStoredSeqNo(demandCandidate);
+		final Candidate demandCandidateWithId = candidateRepositoryCommands
+				.addOrUpdateOverwriteStoredSeqNo(demandCandidate);
 
 		if (demandCandidateWithId.getQuantity().signum() == 0)
 		{
@@ -94,17 +97,19 @@ public class DemandCandiateHandler implements CandidateHandler
 		if (possibleChildStockCandidate.isPresent())
 		{
 			// this supply candidate is not new and already has a stock candidate as its parent. be sure to update exactly *that* scandidate
-			childStockWithDemand = stockCandidateService.updateStock(
-					demandCandidateWithId, () -> {
-						// don't check if we might create a new stock candidate, because we know we don't.
-						// Instead we might run into trouble with CandidateRepository.retrieveExact() and multiple matching records.
-						// So get the one that we know already exists and just update its quantity
-						final Candidate childStockCandidate = possibleChildStockCandidate.get();
-						return candidateRepository.updateQty(
-								childStockCandidate
-										.withQuantity(
-												childStockCandidate.getQuantity().subtract(demandCandidateWithId.getQuantity())));
-					});
+			childStockWithDemand = stockCandidateService
+					.updateStock(
+							demandCandidateWithId, () -> {
+								// don't check if we might create a new stock candidate, because we know we don't.
+								// Instead we might run into trouble with CandidateRepository.retrieveExact() and multiple matching records.
+								// So get the one that we know already exists and just update its quantity
+								final Candidate childStockCandidate = possibleChildStockCandidate.get();
+								return candidateRepositoryCommands
+										.updateQty(
+												childStockCandidate
+														.withQuantity(
+																childStockCandidate.getQuantity().subtract(demandCandidateWithId.getQuantity())));
+							});
 		}
 
 		else
@@ -124,7 +129,7 @@ public class DemandCandiateHandler implements CandidateHandler
 			// keep it and in turn update the demandCandidate's seqNo accordingly
 			demandCandidateToReturn = demandCandidate
 					.withSeqNo(childStockWithDemand.getSeqNo() - 1);
-			candidateRepository.addOrUpdateOverwriteStoredSeqNo(demandCandidateToReturn);
+			candidateRepositoryCommands.addOrUpdateOverwriteStoredSeqNo(demandCandidateToReturn);
 		}
 		else
 		{

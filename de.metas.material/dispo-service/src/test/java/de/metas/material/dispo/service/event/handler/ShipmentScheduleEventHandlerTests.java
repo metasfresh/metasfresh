@@ -21,10 +21,11 @@ import org.junit.rules.TestWatcher;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.material.dispo.CandidateRepository;
 import de.metas.material.dispo.DispoTestUtils;
 import de.metas.material.dispo.candidate.CandidateType;
 import de.metas.material.dispo.model.I_MD_Candidate;
+import de.metas.material.dispo.repository.CandidateRepositoryCommands;
+import de.metas.material.dispo.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
 import de.metas.material.dispo.service.candidatechange.handler.DemandCandiateHandler;
@@ -61,7 +62,7 @@ import mockit.Mocked;
 public class ShipmentScheduleEventHandlerTests
 {
 	private static final int shipmentScheduleId = 76;
-	
+
 	private static final int orderLineId = 86;
 
 	/** Watches the current tests and dumps the database to console in case of failure */
@@ -89,11 +90,12 @@ public class ShipmentScheduleEventHandlerTests
 		org = newInstance(I_AD_Org.class);
 		save(org);
 
-		final CandidateRepository candidateRepository = new CandidateRepository(ProductDescriptorFactory.TESTING_INSTANCE);
+		final CandidateRepositoryRetrieval candidateRepository = new CandidateRepositoryRetrieval(ProductDescriptorFactory.TESTING_INSTANCE);
+		final CandidateRepositoryCommands candidateRepositoryCommands = new CandidateRepositoryCommands();
 
 		final CandidateChangeService candidateChangeHandler = new CandidateChangeService(ImmutableList.of(
-				new DemandCandiateHandler(candidateRepository, materialEventService, new StockCandidateService(candidateRepository))
-				));
+				new DemandCandiateHandler(candidateRepository, candidateRepositoryCommands, materialEventService, 
+						new StockCandidateService(candidateRepository, candidateRepositoryCommands))));
 
 		shipmentScheduleEventHandler = new ShipmentScheduleEventHandler(candidateChangeHandler);
 	}
@@ -125,6 +127,7 @@ public class ShipmentScheduleEventHandlerTests
 		final ShipmentScheduleEvent event = ShipmentScheduleEvent.builder()
 				.eventDescr(new EventDescr(org.getAD_Client_ID(), org.getAD_Org_ID()))
 				.materialDescr(MaterialDescriptor.builder()
+						.complete(true)
 						.date(t1)
 						.productDescriptor(createProductDescriptor())
 						.quantity(BigDecimal.TEN)

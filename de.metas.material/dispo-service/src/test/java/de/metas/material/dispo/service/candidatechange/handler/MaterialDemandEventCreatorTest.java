@@ -52,6 +52,7 @@ public class MaterialDemandEventCreatorTest
 				.groupId(40)
 				.seqNo(50)
 				.materialDescr(MaterialDescriptor.builder()
+						.complete(true)
 						.productDescriptor(createProductDescriptor())
 						.date(SystemTime.asTimestamp())
 						.quantity(BigDecimal.TEN)

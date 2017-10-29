@@ -106,7 +106,7 @@ public class Candidate
 		return CandidatesQuery.builder()
 				.materialDescr(materialDescr
 						.withoutQuantity()
-						.withDateOperator(DateOperator.UNTIL))
+						.withDateOperator(DateOperator.BEFORE_OR_AT))
 				.type(CandidateType.STOCK);
 	}
 

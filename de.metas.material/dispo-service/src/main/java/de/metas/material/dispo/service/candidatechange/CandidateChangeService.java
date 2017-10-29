@@ -56,7 +56,6 @@ public class CandidateChangeService
 	 */
 	public Candidate onCandidateNewOrChange(@NonNull final Candidate candidate)
 	{
-
 		final CandidateHandler candidateChangeHandler = type2handler.get(candidate.getType());
 		if (candidateChangeHandler == null)
 		{

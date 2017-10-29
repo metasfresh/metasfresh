@@ -20,10 +20,11 @@ import org.junit.rules.TestWatcher;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.material.dispo.CandidateRepository;
 import de.metas.material.dispo.CandidateService;
 import de.metas.material.dispo.candidate.Candidate;
 import de.metas.material.dispo.candidate.CandidateType;
+import de.metas.material.dispo.repository.CandidateRepositoryCommands;
+import de.metas.material.dispo.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
 import de.metas.material.dispo.service.candidatechange.handler.DemandCandiateHandler;
@@ -76,8 +77,6 @@ public class SupplyProposalEvaluatorTests
 
 	private static final int DEMAND_WAREHOUSE_ID = 6;
 
-	// private MDEventListener mdEventListener;
-
 	private DistributionPlanEventHandler distributionPlanEventHandler;
 
 	/**
@@ -86,7 +85,7 @@ public class SupplyProposalEvaluatorTests
 
 	private SupplyProposalEvaluator supplyProposalEvaluator;
 
-	private CandidateRepository candidateRepository;
+	private CandidateRepositoryCommands candidateRepositoryCommands;
 
 	@Mocked
 	private MaterialEventService materialEventService;
@@ -101,20 +100,24 @@ public class SupplyProposalEvaluatorTests
 		org = newInstance(I_AD_Org.class);
 		save(org);
 
-		candidateRepository = new CandidateRepository(ProductDescriptorFactory.TESTING_INSTANCE);
-		supplyProposalEvaluator = new SupplyProposalEvaluator(candidateRepository);
+		candidateRepositoryCommands = new CandidateRepositoryCommands();
 
-		final StockCandidateService stockCandidateService = new StockCandidateService(candidateRepository);
+		final CandidateRepositoryRetrieval candidateRepositoryRetrieval = new CandidateRepositoryRetrieval(ProductDescriptorFactory.TESTING_INSTANCE);
+		supplyProposalEvaluator = new SupplyProposalEvaluator(candidateRepositoryRetrieval);
+
+		final StockCandidateService stockCandidateService = new StockCandidateService(
+				candidateRepositoryRetrieval, candidateRepositoryCommands);
 
 		final CandidateChangeService candidateChangeHandler = new CandidateChangeService(ImmutableList.of(
-				new SupplyCandiateHandler(candidateRepository, materialEventService, stockCandidateService),
-				new DemandCandiateHandler(candidateRepository, materialEventService, stockCandidateService)));
+				new SupplyCandiateHandler(candidateRepositoryRetrieval, candidateRepositoryCommands, stockCandidateService),
+				new DemandCandiateHandler(candidateRepositoryRetrieval, candidateRepositoryCommands, materialEventService, stockCandidateService)));
 
 		distributionPlanEventHandler = new DistributionPlanEventHandler(
-				candidateRepository,
+				candidateRepositoryRetrieval,
+				candidateRepositoryCommands,
 				candidateChangeHandler,
 				supplyProposalEvaluator,
-				new CandidateService(candidateRepository, materialEventService));
+				new CandidateService(candidateRepositoryRetrieval, materialEventService));
 	}
 
 	/**
@@ -195,6 +198,7 @@ public class SupplyProposalEvaluatorTests
 	private void addSimpleSupplyDemand()
 	{
 		final MaterialDescriptor supplyMaterialDescr = MaterialDescriptor.builder()
+				.complete(true)
 				.date(t3)
 				.productDescriptor(createProductDescriptor())
 				.quantity(BigDecimal.TEN)
@@ -208,9 +212,10 @@ public class SupplyProposalEvaluatorTests
 				.materialDescr(supplyMaterialDescr)
 				.build();
 
-		final Candidate supplyCandidateWithId = candidateRepository.addOrUpdateOverwriteStoredSeqNo(supplyCandidate);
+		final Candidate supplyCandidateWithId = candidateRepositoryCommands.addOrUpdateOverwriteStoredSeqNo(supplyCandidate);
 
 		final MaterialDescriptor demandDescr = MaterialDescriptor.builder()
+				.complete(true)
 				.date(t2)
 				.productDescriptor(createProductDescriptor())
 				.warehouseId(DEMAND_WAREHOUSE_ID)
@@ -225,7 +230,7 @@ public class SupplyProposalEvaluatorTests
 				.materialDescr(demandDescr)
 				.build();
 
-		candidateRepository.addOrUpdateOverwriteStoredSeqNo(demandCandidate);
+		candidateRepositoryCommands.addOrUpdateOverwriteStoredSeqNo(demandCandidate);
 	}
 
 	/**
@@ -274,7 +279,7 @@ public class SupplyProposalEvaluatorTests
 		// we now have an unbalanced demand with a stock of -10 in "fromWarehouseId" (because that's where the "last" demand of the "last" DistibutionPlan is)
 		// and we have a stock of +10 in "toWarehouseId"
 
-		// now assume that the planner would create  another DistibutionPlanEvent that suggests to balance the -10 in "fromWarehouseId" with the +10 in "toWarehouseId"
+		// now assume that the planner would create another DistibutionPlanEvent that suggests to balance the -10 in "fromWarehouseId" with the +10 in "toWarehouseId"
 		// note that we don't need to look at the qty at all
 		final SupplyProposal supplyProposal1 = SupplyProposal.builder()
 				.date(t0) // the proposal needs to be made for the time before the two DistibutionPlanEvents occured

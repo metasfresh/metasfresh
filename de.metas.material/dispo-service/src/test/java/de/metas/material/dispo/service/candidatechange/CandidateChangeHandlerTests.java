@@ -33,12 +33,13 @@ import org.junit.rules.TestWatcher;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.material.dispo.CandidateRepository;
 import de.metas.material.dispo.CandidatesQuery;
 import de.metas.material.dispo.DispoTestUtils;
 import de.metas.material.dispo.candidate.Candidate;
 import de.metas.material.dispo.candidate.CandidateType;
 import de.metas.material.dispo.model.I_MD_Candidate;
+import de.metas.material.dispo.repository.CandidateRepositoryCommands;
+import de.metas.material.dispo.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.service.candidatechange.handler.CandidateHandler;
 import de.metas.material.dispo.service.candidatechange.handler.DemandCandiateHandler;
 import de.metas.material.dispo.service.candidatechange.handler.SupplyCandiateHandler;
@@ -86,7 +87,7 @@ public class CandidateChangeHandlerTests
 
 	private I_AD_Org org;
 
-	private CandidateRepository candidateRepository;
+	private CandidateRepositoryRetrieval candidateRepository;
 
 	private CandidateChangeService candidateChangeHandler;
 
@@ -94,6 +95,8 @@ public class CandidateChangeHandlerTests
 	private MaterialEventService materialEventService;
 
 	private StockCandidateService stockCandidateService;
+
+	private CandidateRepositoryCommands candidateRepositoryCommands;
 
 	@Before
 	public void init()
@@ -103,13 +106,15 @@ public class CandidateChangeHandlerTests
 		org = newInstance(I_AD_Org.class);
 		save(org);
 
-		candidateRepository = new CandidateRepository(ProductDescriptorFactory.TESTING_INSTANCE);
-		stockCandidateService = new StockCandidateService(candidateRepository);
+		candidateRepository = new CandidateRepositoryRetrieval(ProductDescriptorFactory.TESTING_INSTANCE);
+		candidateRepositoryCommands = new CandidateRepositoryCommands();
+
+		stockCandidateService = new StockCandidateService(candidateRepository, candidateRepositoryCommands);
 
 		candidateChangeHandler = new CandidateChangeService(
 				ImmutableList.of(
-						new DemandCandiateHandler(candidateRepository, materialEventService, stockCandidateService),
-						new SupplyCandiateHandler(candidateRepository, materialEventService, stockCandidateService)));
+						new DemandCandiateHandler(candidateRepository, candidateRepositoryCommands, materialEventService, stockCandidateService),
+						new SupplyCandiateHandler(candidateRepository, candidateRepositoryCommands, stockCandidateService)));
 	}
 
 	@Test
@@ -168,6 +173,7 @@ public class CandidateChangeHandlerTests
 		// preparations
 		{
 			final MaterialDescriptor materialDescr = MaterialDescriptor.builder()
+					.complete(true)
 					.productDescriptor(createProductDescriptor())
 					.warehouseId(WAREHOUSE_ID)
 					.quantity(new BigDecimal("10"))
@@ -180,11 +186,11 @@ public class CandidateChangeHandlerTests
 					.orgId(org.getAD_Org_ID())
 					.materialDescr(materialDescr)
 					.build();
-			candidateRepository.addOrUpdateOverwriteStoredSeqNo(candidate);
+			candidateRepositoryCommands.addOrUpdateOverwriteStoredSeqNo(candidate);
 
 			final MaterialDescriptor earlierMaterialDescr = materialDescr.withDate(t1);
 
-			earlierCandidate = candidateRepository
+			earlierCandidate = candidateRepositoryCommands
 					.addOrUpdateOverwriteStoredSeqNo(Candidate.builder()
 							.type(CandidateType.STOCK)
 							.clientId(org.getAD_Client_ID())
@@ -200,7 +206,7 @@ public class CandidateChangeHandlerTests
 					.orgId(org.getAD_Org_ID())
 					.materialDescr(laterMaterialDescr)
 					.build();
-			candidateRepository.addOrUpdateOverwriteStoredSeqNo(laterCandidate);
+			candidateRepositoryCommands.addOrUpdateOverwriteStoredSeqNo(laterCandidate);
 
 			final MaterialDescriptor evenLatermaterialDescr = materialDescr
 					.withQuantity(new BigDecimal("12"))
@@ -212,7 +218,7 @@ public class CandidateChangeHandlerTests
 					.orgId(org.getAD_Org_ID())
 					.materialDescr(evenLatermaterialDescr)
 					.build();
-			candidateRepository.addOrUpdateOverwriteStoredSeqNo(evenLaterCandidate);
+			candidateRepositoryCommands.addOrUpdateOverwriteStoredSeqNo(evenLaterCandidate);
 
 			final MaterialDescriptor evenLatermaterialDescrWithDifferentWarehouse = evenLatermaterialDescr
 					.withWarehouseId(OTHER_WAREHOUSE_ID);
@@ -223,7 +229,7 @@ public class CandidateChangeHandlerTests
 					.orgId(org.getAD_Org_ID())
 					.materialDescr(evenLatermaterialDescrWithDifferentWarehouse)
 					.build();
-			candidateRepository.addOrUpdateOverwriteStoredSeqNo(evenLaterCandidateWithDifferentWarehouse);
+			candidateRepositoryCommands.addOrUpdateOverwriteStoredSeqNo(evenLaterCandidateWithDifferentWarehouse);
 		}
 
 		// do the test
@@ -269,7 +275,7 @@ public class CandidateChangeHandlerTests
 						.productDescriptor(createProductDescriptor())
 						.warehouseId(warehouseId)
 						.date(timestamp)
-						.dateOperator(DateOperator.UNTIL)
+						.dateOperator(DateOperator.BEFORE_OR_AT)
 						.build())
 				.build();
 	}
@@ -362,6 +368,7 @@ public class CandidateChangeHandlerTests
 	private Candidate invokeUpdateStock(final Date t, final BigDecimal qty)
 	{
 		final MaterialDescriptor materialDescr = MaterialDescriptor.builder()
+				.complete(true)
 				.productDescriptor(createProductDescriptor())
 				.warehouseId(WAREHOUSE_ID)
 				.quantity(qty)
@@ -461,6 +468,7 @@ public class CandidateChangeHandlerTests
 	public void testOnStockCandidateNewOrChangedNotStockType()
 	{
 		final MaterialDescriptor materialDescr = MaterialDescriptor.builder()
+				.complete(true)
 				.productDescriptor(createProductDescriptor())
 				.warehouseId(WAREHOUSE_ID)
 				.quantity(new BigDecimal("10"))
@@ -478,7 +486,7 @@ public class CandidateChangeHandlerTests
 		assertThat(processedCandidate.getType()).isEqualTo(CandidateType.STOCK);
 		assertThat(processedCandidate.getMaterialDescr().getDate().getTime()).isEqualTo(t2.getTime());
 		assertThat(processedCandidate.getMaterialDescr().getQuantity()).isEqualByComparingTo(BigDecimal.TEN);
-		assertThat(processedCandidate.getMaterialDescr().getProductId()).isEqualTo(WAREHOUSE_ID);
+		assertThat(processedCandidate.getMaterialDescr().getProductId()).isEqualTo(PRODUCT_ID);
 		assertThat(processedCandidate.getMaterialDescr().getWarehouseId()).isEqualTo(WAREHOUSE_ID);
 	}
 
@@ -492,6 +500,7 @@ public class CandidateChangeHandlerTests
 		final Date t = t1;
 
 		final MaterialDescriptor materialDescr = MaterialDescriptor.builder()
+				.complete(true)
 				.productDescriptor(createProductDescriptor())
 				.warehouseId(WAREHOUSE_ID)
 				.quantity(qty)
@@ -509,6 +518,7 @@ public class CandidateChangeHandlerTests
 		assertThat(DispoTestUtils.retrieveAllRecords()).hasSize(2); // one demand, one stock
 
 		final MaterialDescriptor supplyMaterialDescr = MaterialDescriptor.builder()
+				.complete(true)
 				.productDescriptor(createProductDescriptor())
 				.warehouseId(WAREHOUSE_ID)
 				.quantity(qty)
@@ -550,6 +560,7 @@ public class CandidateChangeHandlerTests
 		final Date t = t1;
 
 		final MaterialDescriptor supplyMaterialDescr = MaterialDescriptor.builder()
+				.complete(true)
 				.productDescriptor(createProductDescriptor())
 				.warehouseId(WAREHOUSE_ID)
 				.quantity(qty)
@@ -574,6 +585,7 @@ public class CandidateChangeHandlerTests
 		}
 
 		final MaterialDescriptor demandMaterialDescr = MaterialDescriptor.builder()
+				.complete(true)
 				.productDescriptor(createProductDescriptor())
 				.warehouseId(WAREHOUSE_ID)
 				.quantity(qty)
@@ -613,6 +625,7 @@ public class CandidateChangeHandlerTests
 		final Date t = t1;
 
 		final MaterialDescriptor materialDescr = MaterialDescriptor.builder()
+				.complete(true)
 				.productDescriptor(createProductDescriptor())
 				.warehouseId(WAREHOUSE_ID)
 				.quantity(qty)
@@ -656,6 +669,7 @@ public class CandidateChangeHandlerTests
 		final Date t = t1;
 
 		final MaterialDescriptor materialDescr = MaterialDescriptor.builder()
+				.complete(true)
 				.productDescriptor(createProductDescriptor())
 				.warehouseId(WAREHOUSE_ID)
 				.quantity(qty)

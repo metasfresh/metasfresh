@@ -47,7 +47,6 @@ final public class ProductionPlanEvent implements MaterialEvent
 
 	@NonNull
 	PPOrder ppOrder;
-	
-	@NonNull
+
 	MaterialDemandDescriptor materialDemandDescr;
 }

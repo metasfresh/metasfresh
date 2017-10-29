@@ -21,11 +21,12 @@ import org.junit.rules.TestWatcher;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.material.dispo.CandidateRepository;
 import de.metas.material.dispo.CandidateService;
 import de.metas.material.dispo.DispoTestUtils;
 import de.metas.material.dispo.candidate.CandidateType;
 import de.metas.material.dispo.model.I_MD_Candidate;
+import de.metas.material.dispo.repository.CandidateRepositoryCommands;
+import de.metas.material.dispo.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
 import de.metas.material.dispo.service.candidatechange.handler.DemandCandiateHandler;
@@ -101,14 +102,18 @@ public class MaterialDispoEventListenerFacadeTests
 		org = newInstance(I_AD_Org.class);
 		save(org);
 
-		final CandidateRepository candidateRepository = new CandidateRepository(ProductDescriptorFactory.TESTING_INSTANCE);
+		final CandidateRepositoryRetrieval candidateRepository = new CandidateRepositoryRetrieval(ProductDescriptorFactory.TESTING_INSTANCE);
 		final SupplyProposalEvaluator supplyProposalEvaluator = new SupplyProposalEvaluator(candidateRepository);
 
-		final StockCandidateService stockCandidateService = new StockCandidateService(candidateRepository);
+		final CandidateRepositoryCommands candidateRepositoryCommands = new CandidateRepositoryCommands();
+		
+		final StockCandidateService stockCandidateService = new StockCandidateService(
+				candidateRepository,
+				candidateRepositoryCommands);
 
 		final CandidateChangeService candidateChangeHandler = new CandidateChangeService(ImmutableList.of(
-				new DemandCandiateHandler(candidateRepository, materialEventService, stockCandidateService),
-				new SupplyCandiateHandler(candidateRepository, materialEventService, stockCandidateService)));
+				new DemandCandiateHandler(candidateRepository, candidateRepositoryCommands, materialEventService, stockCandidateService),
+				new SupplyCandiateHandler(candidateRepository, candidateRepositoryCommands, stockCandidateService)));
 
 		final CandidateService candidateService = new CandidateService(
 				candidateRepository,
@@ -116,6 +121,7 @@ public class MaterialDispoEventListenerFacadeTests
 
 		final DistributionPlanEventHandler distributionPlanEventHandler = new DistributionPlanEventHandler(
 				candidateRepository,
+				candidateRepositoryCommands,
 				candidateChangeHandler,
 				supplyProposalEvaluator,
 				new CandidateService(candidateRepository, materialEventService));

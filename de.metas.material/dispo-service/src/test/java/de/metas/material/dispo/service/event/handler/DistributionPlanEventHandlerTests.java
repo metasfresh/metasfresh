@@ -1,9 +1,10 @@
 package de.metas.material.dispo.service.event.handler;
 
+import static de.metas.material.event.EventTestHelper.*;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
-import static de.metas.material.event.EventTestHelper.*;
+
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
@@ -21,11 +22,12 @@ import org.junit.rules.TestWatcher;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.material.dispo.CandidateRepository;
 import de.metas.material.dispo.CandidateService;
 import de.metas.material.dispo.DispoTestUtils;
 import de.metas.material.dispo.candidate.CandidateType;
 import de.metas.material.dispo.model.I_MD_Candidate;
+import de.metas.material.dispo.repository.CandidateRepositoryCommands;
+import de.metas.material.dispo.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
 import de.metas.material.dispo.service.candidatechange.handler.DemandCandiateHandler;
@@ -87,7 +89,7 @@ public class DistributionPlanEventHandlerTests
 	public static final int intermediateWarehouseId = 20;
 	public static final int toWarehouseId = 30;
 
-	public static final int productId = 40;
+
 
 	public static final int rawProduct1Id = 50;
 
@@ -116,18 +118,22 @@ public class DistributionPlanEventHandlerTests
 		org = newInstance(I_AD_Org.class);
 		save(org);
 
-		final CandidateRepository candidateRepository = new CandidateRepository(ProductDescriptorFactory.TESTING_INSTANCE);
+		final CandidateRepositoryRetrieval candidateRepository = new CandidateRepositoryRetrieval(ProductDescriptorFactory.TESTING_INSTANCE);
+		final CandidateRepositoryCommands candidateRepositoryCommands = new CandidateRepositoryCommands();
 		final SupplyProposalEvaluator supplyProposalEvaluator = new SupplyProposalEvaluator(candidateRepository);
 
+		final StockCandidateService stockCandidateService = new StockCandidateService(candidateRepository, candidateRepositoryCommands);
 		
+		final DemandCandiateHandler demandCandiateHandler = new DemandCandiateHandler(candidateRepository, candidateRepositoryCommands, materialEventService, stockCandidateService);
+		final SupplyCandiateHandler supplyCandiateHandler = new SupplyCandiateHandler(candidateRepository, candidateRepositoryCommands, stockCandidateService);
+		final CandidateChangeService candidateChangeService = new CandidateChangeService(ImmutableList.of(
+				demandCandiateHandler,
+				supplyCandiateHandler));
 		
-		final StockCandidateService stockCandidateService = new StockCandidateService(candidateRepository);
 		distributionPlanEventHandler = new DistributionPlanEventHandler(
 				candidateRepository,
-				new CandidateChangeService(ImmutableList.of(
-						new DemandCandiateHandler(candidateRepository, materialEventService, stockCandidateService),
-						new SupplyCandiateHandler(candidateRepository, materialEventService, stockCandidateService)
-						)),
+				candidateRepositoryCommands,
+				candidateChangeService,
 				supplyProposalEvaluator,
 				new CandidateService(candidateRepository, materialEventService));
 	}
@@ -173,7 +179,7 @@ public class DistributionPlanEventHandlerTests
 		assertThat(allRecords).hasSize(4);
 		assertThat(allRecords).allSatisfy(r -> {
 			assertThat(r.getAD_Org_ID()).as("all four records shall have the same org").isEqualTo(org.getAD_Org_ID());
-			assertThat(r.getM_Product_ID()).as("all four records shall have the same product").isEqualTo(productId);
+			assertThat(r.getM_Product_ID()).as("all four records shall have the same product").isEqualTo(PRODUCT_ID);
 		});
 
 		assertThat(DispoTestUtils.filter(CandidateType.SUPPLY)).hasSize(1);

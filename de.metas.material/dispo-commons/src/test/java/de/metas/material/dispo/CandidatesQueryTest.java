@@ -57,7 +57,7 @@ public class CandidatesQueryTest
 				.materialDescr(createMaterialDescriptor().withDate(date))
 				.build();
 		final CandidatesQuery query = CandidatesQuery.fromCandidate(cand);
-		
+
 		assertThat(query.getMaterialDescr().getDate()).isEqualTo(date);
 		assertThat(query.getMaterialDescr().getDateOperator()).isEqualTo(DateOperator.AT);
 		assertThat(query.getMaterialDescr().getProductId()).isEqualTo(PRODUCT_ID);
@@ -69,11 +69,12 @@ public class CandidatesQueryTest
 		assertThat(query.getParentId()).isEqualTo(0);
 	}
 
-	@Test(expected = RuntimeException.class)
-	public void build_when_dateAndNoDateOverator_then_throwsException()
+	@Test
+	public void build_when_dateAndNoDateOperator_then_useOperatorAT()
 	{
-		CandidatesQuery.builder()
+		final CandidatesQuery result = CandidatesQuery.builder()
 				.materialDescr(MaterialDescriptor.builderForQuery().date(SystemTime.asTimestamp()).build())
 				.build();
+		assertThat(result.getMaterialDescr().getDateOperator()).isSameAs(DateOperator.AT);
 	}
 }

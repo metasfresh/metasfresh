@@ -7,15 +7,16 @@ import java.util.Set;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
-import de.metas.material.dispo.CandidateRepository;
 import de.metas.material.dispo.CandidateService;
+import de.metas.material.dispo.CandidatesQuery;
 import de.metas.material.dispo.candidate.Candidate;
-import de.metas.material.dispo.candidate.DemandDetail;
-import de.metas.material.dispo.candidate.DistributionDetail;
 import de.metas.material.dispo.candidate.CandidateStatus;
 import de.metas.material.dispo.candidate.CandidateSubType;
 import de.metas.material.dispo.candidate.CandidateType;
-import de.metas.material.dispo.CandidatesQuery;
+import de.metas.material.dispo.candidate.DemandDetail;
+import de.metas.material.dispo.candidate.DistributionDetail;
+import de.metas.material.dispo.repository.CandidateRepositoryCommands;
+import de.metas.material.dispo.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.dispo.service.event.EventUtil;
 import de.metas.material.dispo.service.event.SupplyProposalEvaluator;
@@ -50,13 +51,15 @@ import lombok.NonNull;
 @Service
 public class DistributionPlanEventHandler
 {
-	private final CandidateRepository candidateRepository;
+	private final CandidateRepositoryRetrieval candidateRepository;
+	private final CandidateRepositoryCommands candidateRepositoryCommands;
 	private final SupplyProposalEvaluator supplyProposalEvaluator;
 	private final CandidateChangeService candidateChangeHandler;
 	private final CandidateService candidateService;
 
 	public DistributionPlanEventHandler(
-			@NonNull final CandidateRepository candidateRepository,
+			@NonNull final CandidateRepositoryRetrieval candidateRepository,
+			@NonNull final CandidateRepositoryCommands candidateRepositoryCommands,
 			@NonNull final CandidateChangeService candidateChangeHandler,
 			@NonNull final SupplyProposalEvaluator supplyProposalEvaluator,
 			@NonNull final CandidateService candidateService)
@@ -64,6 +67,7 @@ public class DistributionPlanEventHandler
 		this.candidateService = candidateService;
 		this.candidateChangeHandler = candidateChangeHandler;
 		this.candidateRepository = candidateRepository;
+		this.candidateRepositoryCommands = candidateRepositoryCommands;
 		this.supplyProposalEvaluator = supplyProposalEvaluator;
 	}
 
@@ -102,6 +106,7 @@ public class DistributionPlanEventHandler
 			}
 
 			final MaterialDescriptor materialDescriptor = MaterialDescriptor.builder()
+					.complete(true)
 					.date(ddOrder.getDatePromised())
 					.productDescriptor(ddOrderLine.getProductDescriptor())
 					.quantity(ddOrderLine.getQty())
@@ -145,13 +150,14 @@ public class DistributionPlanEventHandler
 			if (expectedSeqNoForDemandCandidate != demandCandidateWithId.getSeqNo())
 			{
 				// update/override the SeqNo of both supplyCandidate and supplyCandidate's stock candidate.
-				candidateRepository.addOrUpdateOverwriteStoredSeqNo(supplyCandidateWithId
-						.withSeqNo(demandCandidateWithId.getSeqNo() - 1));
+				candidateRepositoryCommands
+						.addOrUpdateOverwriteStoredSeqNo(supplyCandidateWithId
+								.withSeqNo(demandCandidateWithId.getSeqNo() - 1));
 
 				final Candidate parentOfSupplyCandidate = candidateRepository
 						.retrieveLatestMatchOrNull(CandidatesQuery.fromId(supplyCandidateWithId.getParentId()));
 
-				candidateRepository
+				candidateRepositoryCommands
 						.addOrUpdateOverwriteStoredSeqNo(
 								parentOfSupplyCandidate
 										.withSeqNo(demandCandidateWithId.getSeqNo() - 2));

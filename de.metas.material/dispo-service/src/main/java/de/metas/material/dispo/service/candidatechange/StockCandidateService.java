@@ -9,10 +9,11 @@ import org.springframework.stereotype.Service;
 
 import com.google.common.annotations.VisibleForTesting;
 
-import de.metas.material.dispo.CandidateRepository;
 import de.metas.material.dispo.CandidatesQuery;
 import de.metas.material.dispo.candidate.Candidate;
 import de.metas.material.dispo.candidate.CandidateType;
+import de.metas.material.dispo.repository.CandidateRepositoryCommands;
+import de.metas.material.dispo.repository.CandidateRepositoryRetrieval;
 import de.metas.material.event.MaterialDescriptor;
 import de.metas.material.event.MaterialDescriptor.DateOperator;
 import de.metas.material.event.ProductDescriptor;
@@ -43,11 +44,15 @@ import lombok.NonNull;
 @Service
 public class StockCandidateService
 {
-	private final CandidateRepository candidateRepository;
+	private final CandidateRepositoryRetrieval candidateRepository;
+	private final CandidateRepositoryCommands candidateRepositoryCommands;
 
-	public StockCandidateService(@NonNull final CandidateRepository candidateRepository)
+	public StockCandidateService(
+			@NonNull final CandidateRepositoryRetrieval candidateRepository,
+			@NonNull final CandidateRepositoryCommands candidateRepositoryCommands)
 	{
 		this.candidateRepository = candidateRepository;
+		this.candidateRepositoryCommands = candidateRepositoryCommands;
 	}
 
 	/**
@@ -106,7 +111,8 @@ public class StockCandidateService
 	{
 		final Supplier<Candidate> stockCandidateToUpdate = () -> {
 			final Candidate stockCandidateToPersist = createStockCandidate(relatedCandidate);
-			final Candidate persistedStockCandidate = candidateRepository.addOrUpdatePreserveExistingSeqNo(stockCandidateToPersist);
+			final Candidate persistedStockCandidate = candidateRepositoryCommands
+					.addOrUpdatePreserveExistingSeqNo(stockCandidateToPersist);
 			return persistedStockCandidate;
 		};
 
@@ -185,7 +191,7 @@ public class StockCandidateService
 		for (final Candidate candidate : candidatesToUpdate)
 		{
 			final BigDecimal newQty = candidate.getQuantity().add(delta);
-			candidateRepository.addOrUpdateOverwriteStoredSeqNo(candidate
+			candidateRepositoryCommands.addOrUpdateOverwriteStoredSeqNo(candidate
 					.withQuantity(newQty)
 					.withGroupId(groupId));
 		}

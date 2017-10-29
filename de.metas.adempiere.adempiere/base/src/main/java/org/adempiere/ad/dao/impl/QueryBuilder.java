@@ -684,11 +684,4 @@ import com.google.common.collect.ImmutableMap;
 		filters.addValidFromToMatchesFilter(validFromColumn, validToColumn, dateToMatch);
 		return this;
 	}
-
-	@Override
-	public ICompositeQueryFilter<T> getFiltersForTestAsserts()
-	{
-		return filters;
-	}
-	
 }

@@ -11,6 +11,7 @@ import com.google.common.base.Preconditions;
 import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.ToString;
 import lombok.experimental.FieldDefaults;
 
@@ -67,7 +68,7 @@ public class ProductDescriptor
 	public ProductDescriptor(
 			@JsonProperty("productDescriptorComplete") final boolean complete,
 			@JsonProperty("productId") final int productId,
-			@JsonProperty("storageAttributesKey") final String storageAttributesKey,
+			@JsonProperty("storageAttributesKey") @NonNull final String storageAttributesKey,
 			@JsonProperty("attributeSetInstanceId") final int attributeSetInstanceId)
 	{
 		this.productDescriptorComplete = complete;

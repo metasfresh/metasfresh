@@ -43,20 +43,11 @@ public class MaterialDescriptor extends ProductDescriptor
 {
 	public enum DateOperator
 	{
-		/**
-		 * With this operator, the segment is supposed to match records with a date <b>before</b> the segment's {@link CandidatesSegment#getDate()}.
-		 */
-		UNTIL,
+		BEFORE_OR_AT,
 
-		/**
-		 * With this operator, the segment is supposed to match records with a date <b>after</b> the segment's {@link CandidatesSegment#getDate()}.
-		 */
 		AFTER,
 
-		/**
-		 * With this operator the segment matches records with a date <b>after</b> and also exactly <b>at</b> the segment's {@link CandidatesSegment#getDate()}.
-		 */
-		FROM,
+		AT_OR_AFTER,
 
 		AT
 	}
@@ -128,7 +119,7 @@ public class MaterialDescriptor extends ProductDescriptor
 			@JsonProperty("attributeSetInstanceId") final int attributeSetInstanceId,
 			@JsonProperty("storageAttributesKey") final String storageAttributesKey,
 			@JsonProperty("productDescriptorComplete") final boolean productDescriptorComplete,
-			@JsonProperty("materialDescriptorComplete") final boolean complete)
+			@JsonProperty("materialDescriptorComplete") final Boolean complete)
 	{
 		super(productDescriptorComplete, productId, storageAttributesKey, attributeSetInstanceId);
 
@@ -138,6 +129,9 @@ public class MaterialDescriptor extends ProductDescriptor
 		this.warehouseId = warehouseId;
 		this.quantity = quantity;
 
+		Preconditions.checkArgument(dateOperator == null || date != null,
+				"Given date parameter may not be null because a not-null dateOperator=%s is given",
+				dateOperator);
 		this.date = date;
 		this.dateOperator = dateOperator == null ? DateOperator.AT : dateOperator;
 

@@ -17,9 +17,10 @@ import org.compiere.util.TimeUtil;
 import org.junit.Before;
 import org.junit.Test;
 
-import de.metas.material.dispo.CandidateRepository;
 import de.metas.material.dispo.candidate.Candidate;
 import de.metas.material.dispo.candidate.CandidateType;
+import de.metas.material.dispo.repository.CandidateRepositoryCommands;
+import de.metas.material.dispo.repository.CandidateRepositoryRetrieval;
 import de.metas.material.event.MaterialDescriptor;
 import de.metas.material.event.ProductDescriptorFactory;
 
@@ -63,10 +64,12 @@ public class StockCandidateServiceTests
 		org = newInstance(I_AD_Org.class);
 		save(org);
 
-		final CandidateRepository candidateRepository = new CandidateRepository(ProductDescriptorFactory.TESTING_INSTANCE);
-		stockCandidateService = new StockCandidateService(candidateRepository);
+		final CandidateRepositoryRetrieval candidateRepository = new CandidateRepositoryRetrieval(ProductDescriptorFactory.TESTING_INSTANCE);
+		final CandidateRepositoryCommands candidateRepositoryCommands = new CandidateRepositoryCommands();
+		stockCandidateService = new StockCandidateService(candidateRepository, candidateRepositoryCommands);
 
 		final MaterialDescriptor materialDescr = MaterialDescriptor.builder()
+				.complete(true)
 				.productDescriptor(createProductDescriptor())
 				.warehouseId(WAREHOUSE_ID)
 				.quantity(new BigDecimal("10"))
@@ -79,7 +82,7 @@ public class StockCandidateServiceTests
 				.orgId(org.getAD_Org_ID())
 				.materialDescr(materialDescr)
 				.build();
-		candidateRepository.addOrUpdateOverwriteStoredSeqNo(stockCandidate);
+		candidateRepositoryCommands.addOrUpdateOverwriteStoredSeqNo(stockCandidate);
 	}
 
 	/**
@@ -89,6 +92,7 @@ public class StockCandidateServiceTests
 	public void createStockCandidate_before_existing()
 	{
 		final MaterialDescriptor materialDescr = MaterialDescriptor.builder()
+				.complete(true)
 				.productDescriptor(createProductDescriptor())
 				.warehouseId(WAREHOUSE_ID)
 				.date(earlier)
@@ -113,6 +117,7 @@ public class StockCandidateServiceTests
 	public void createStockCandidate_after_existing()
 	{
 		final MaterialDescriptor materialDescr = MaterialDescriptor.builder()
+				.complete(true)
 				.productDescriptor(createProductDescriptor())
 				.warehouseId(WAREHOUSE_ID)
 				.date(later)

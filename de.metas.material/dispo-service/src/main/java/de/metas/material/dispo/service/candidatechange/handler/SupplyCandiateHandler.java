@@ -7,12 +7,12 @@ import org.springframework.stereotype.Service;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
-import de.metas.material.dispo.CandidateRepository;
 import de.metas.material.dispo.CandidatesQuery;
 import de.metas.material.dispo.candidate.Candidate;
 import de.metas.material.dispo.candidate.CandidateType;
+import de.metas.material.dispo.repository.CandidateRepositoryCommands;
+import de.metas.material.dispo.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
-import de.metas.material.event.MaterialEventService;
 import lombok.NonNull;
 
 /*
@@ -39,22 +39,19 @@ import lombok.NonNull;
 @Service
 public class SupplyCandiateHandler implements CandidateHandler
 {
-	@NonNull
-	private final CandidateRepository candidateRepository;
+	private final CandidateRepositoryCommands candidateRepositoryCommands;
 
-	@NonNull
-	private final MaterialEventService materialEventService;
-
-	@NonNull
 	private final StockCandidateService stockCandidateService;
 
+	private final CandidateRepositoryRetrieval candidateRepository;
+
 	public SupplyCandiateHandler(
-			@NonNull final CandidateRepository candidateRepository,
-			@NonNull final MaterialEventService materialEventService,
+			@NonNull final CandidateRepositoryRetrieval candidateRepositoryRetrieval,
+			@NonNull final CandidateRepositoryCommands candidateRepository,
 			@NonNull final StockCandidateService stockCandidateService)
 	{
-		this.candidateRepository = candidateRepository;
-		this.materialEventService = materialEventService;
+		this.candidateRepository = candidateRepositoryRetrieval;
+		this.candidateRepositoryCommands = candidateRepository;
 		this.stockCandidateService = stockCandidateService;
 	}
 
@@ -79,7 +76,7 @@ public class SupplyCandiateHandler implements CandidateHandler
 		assertCorrectCandidateType(supplyCandidate);
 
 		// store the supply candidate and get both it's ID and qty-delta
-		final Candidate supplyCandidateDeltaWithId = candidateRepository.addOrUpdateOverwriteStoredSeqNo(supplyCandidate);
+		final Candidate supplyCandidateDeltaWithId = candidateRepositoryCommands.addOrUpdateOverwriteStoredSeqNo(supplyCandidate);
 
 		if (supplyCandidateDeltaWithId.getQuantity().signum() == 0)
 		{
@@ -95,7 +92,7 @@ public class SupplyCandiateHandler implements CandidateHandler
 					() -> {
 						// don't check if we might create a new stock candidate, because we know we don't. Get the one that already exists and just update its quantity
 						final Candidate stockCandidate = candidateRepository.retrieveLatestMatchOrNull(CandidatesQuery.fromId(supplyCandidateDeltaWithId.getParentId()));
-						return candidateRepository.updateQty(
+						return candidateRepositoryCommands.updateQty(
 								stockCandidate.withQuantity(
 										stockCandidate.getQuantity().add(supplyCandidateDeltaWithId.getQuantity())));
 					});
@@ -111,7 +108,7 @@ public class SupplyCandiateHandler implements CandidateHandler
 
 		// set the stock candidate as parent for the supply candidate
 		// the return value would have qty=0, but in the repository we updated the parent-ID
-		candidateRepository.addOrUpdateOverwriteStoredSeqNo(
+		candidateRepositoryCommands.addOrUpdateOverwriteStoredSeqNo(
 				supplyCandidate
 						.withParentId(parentStockCandidateWithId.getId())
 						.withSeqNo(parentStockCandidateWithId.getSeqNo() + 1));

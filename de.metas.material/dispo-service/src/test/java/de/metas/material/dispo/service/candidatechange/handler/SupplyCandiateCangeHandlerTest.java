@@ -25,13 +25,14 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestWatcher;
 
-import de.metas.material.dispo.CandidateRepository;
 import de.metas.material.dispo.DispoTestUtils;
 import de.metas.material.dispo.candidate.Candidate;
 import de.metas.material.dispo.candidate.CandidateSubType;
 import de.metas.material.dispo.candidate.CandidateType;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.X_MD_Candidate;
+import de.metas.material.dispo.repository.CandidateRepositoryCommands;
+import de.metas.material.dispo.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
 import de.metas.material.event.MaterialDescriptor;
 import de.metas.material.event.MaterialEventService;
@@ -87,11 +88,12 @@ public class SupplyCandiateCangeHandlerTest
 		org = newInstance(I_AD_Org.class);
 		save(org);
 
-		final CandidateRepository candidateRepository = new CandidateRepository(ProductDescriptorFactory.TESTING_INSTANCE);
+		final CandidateRepositoryRetrieval candidateRepository = new CandidateRepositoryRetrieval(ProductDescriptorFactory.TESTING_INSTANCE);
+		final CandidateRepositoryCommands candidateRepositoryCommands = new CandidateRepositoryCommands();
 
-		stockCandidateService = new StockCandidateService(candidateRepository);
+		stockCandidateService = new StockCandidateService(candidateRepository, candidateRepositoryCommands);
 
-		supplyCandiateCangeHandler = new SupplyCandiateHandler(candidateRepository, materialEventService, stockCandidateService);
+		supplyCandiateCangeHandler = new SupplyCandiateHandler(candidateRepository, candidateRepositoryCommands, stockCandidateService);
 	}
 
 	@Test
@@ -101,6 +103,7 @@ public class SupplyCandiateCangeHandlerTest
 		final Date t = t1;
 
 		final MaterialDescriptor materialDescr = MaterialDescriptor.builder()
+				.complete(true)
 				.productDescriptor(createProductDescriptor())
 				.warehouseId(WAREHOUSE_ID)
 				.quantity(qty)
@@ -133,6 +136,7 @@ public class SupplyCandiateCangeHandlerTest
 		final Date t = t1;
 
 		final MaterialDescriptor materialDescr = MaterialDescriptor.builder()
+				.complete(true)
 				.productDescriptor(createProductDescriptor())
 				.warehouseId(WAREHOUSE_ID)
 				.quantity(qty)
@@ -173,6 +177,7 @@ public class SupplyCandiateCangeHandlerTest
 		final Date t = t1;
 
 		final MaterialDescriptor materialDescr = MaterialDescriptor.builder()
+				.complete(true)
 				.productDescriptor(createProductDescriptor())
 				.warehouseId(WAREHOUSE_ID)
 				.quantity(qty)
@@ -215,6 +220,7 @@ public class SupplyCandiateCangeHandlerTest
 		final BigDecimal olderStockQty = new BigDecimal("11");
 
 		final MaterialDescriptor olderMaterialDescr = MaterialDescriptor.builder()
+				.complete(true)
 				.productDescriptor(createProductDescriptor())
 				.warehouseId(WAREHOUSE_ID)
 				.quantity(olderStockQty)
@@ -232,6 +238,7 @@ public class SupplyCandiateCangeHandlerTest
 		final BigDecimal supplyQty = new BigDecimal("23");
 
 		final MaterialDescriptor materialDescr = MaterialDescriptor.builder()
+				.complete(true)
 				.productDescriptor(createProductDescriptor())
 				.warehouseId(WAREHOUSE_ID)
 				.quantity(supplyQty)
@@ -285,6 +292,7 @@ public class SupplyCandiateCangeHandlerTest
 		final Candidate candidate = Candidate.builder()
 				.type(type)
 				.materialDescr(MaterialDescriptor.builder()
+						.complete(true)
 						.productDescriptor(createProductDescriptor())
 						.date(SystemTime.asTimestamp())
 						.warehouseId(WAREHOUSE_ID)
