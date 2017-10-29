@@ -85,7 +85,7 @@ public interface IQueryBuilder<T>
 
 	IQueryBuilder<T> filterByClientId();
 
-	ICompositeQueryFilter<T> getFilters();
+	ICompositeQueryFilter<T> getCompositeFilter();
 
 	IQueryBuilder<T> setLimit(int limit);
 

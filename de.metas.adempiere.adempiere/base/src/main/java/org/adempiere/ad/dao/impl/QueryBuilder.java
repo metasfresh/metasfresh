@@ -172,7 +172,7 @@ import com.google.common.collect.ImmutableMap;
 	}
 
 	@Override
-	public ICompositeQueryFilter<T> getFilters()
+	public ICompositeQueryFilter<T> getCompositeFilter()
 	{
 		return filters;
 	}

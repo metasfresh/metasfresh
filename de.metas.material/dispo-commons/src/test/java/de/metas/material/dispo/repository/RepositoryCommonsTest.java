@@ -67,7 +67,7 @@ public class RepositoryCommonsTest
 
 		final IQueryBuilder<I_MD_Candidate> queryBuilder = RepositoryCommons.mkQueryBuilder(query);
 
-		final List<IQueryFilter<I_MD_Candidate>> filters = queryBuilder.getFilters().getFilters();
+		final List<IQueryFilter<I_MD_Candidate>> filters = queryBuilder.getCompositeFilter().getFilters();
 		assertFiltersContainActiveFilter(filters);
 		assertFiltersContainProductFilter(filters, EventTestHelper.PRODUCT_ID);
 		assertFiltersContainDateFilter(filters, Operator.EQUAL);
@@ -94,7 +94,7 @@ public class RepositoryCommonsTest
 						.build())
 				.build();
 		final IQueryBuilder<I_MD_Candidate> queryBuilder = RepositoryCommons.mkQueryBuilder(query);
-		final List<IQueryFilter<I_MD_Candidate>> filters = queryBuilder.getFilters().getFilters();
+		final List<IQueryFilter<I_MD_Candidate>> filters = queryBuilder.getCompositeFilter().getFilters();
 		assertThat(filters).hasSize(2);
 
 		assertFiltersContainActiveFilter(filters);

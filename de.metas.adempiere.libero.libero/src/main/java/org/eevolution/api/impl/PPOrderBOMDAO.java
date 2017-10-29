@@ -208,7 +208,7 @@ public class PPOrderBOMDAO implements IPPOrderBOMDAO
 		final IQueryBuilder<I_PP_Order_BOMLine> queryBuilder = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_PP_Order_BOMLine.class, order);
 
-		final ICompositeQueryFilter<I_PP_Order_BOMLine> filters = queryBuilder.getFilters();
+		final ICompositeQueryFilter<I_PP_Order_BOMLine> filters = queryBuilder.getCompositeFilter();
 		filters.addEqualsFilter(I_PP_Order_BOMLine.COLUMNNAME_PP_Order_ID, order.getPP_Order_ID());
 
 		Integer maxLine = queryBuilder

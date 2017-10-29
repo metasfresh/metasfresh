@@ -137,7 +137,7 @@ public class ProductPlanningDAO implements IProductPlanningDAO
 		final IQueryBuilder<I_PP_Product_Planning> queryBuilder = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_PP_Product_Planning.class);
 
-		final ICompositeQueryFilter<I_PP_Product_Planning> filters = queryBuilder.getFilters();
+		final ICompositeQueryFilter<I_PP_Product_Planning> filters = queryBuilder.getCompositeFilter();
 		final IQueryOrderByBuilder<I_PP_Product_Planning> orderBy = queryBuilder.orderBy();
 
 		//

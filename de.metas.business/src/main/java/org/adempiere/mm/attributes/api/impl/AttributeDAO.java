@@ -75,7 +75,7 @@ public class AttributeDAO implements IAttributeDAO
 		final IQueryBuilder<T> queryBuilder = Services.get(IQueryBL.class)
 				.createQueryBuilder(clazz, ctx, ITrx.TRXNAME_None);
 
-		final ICompositeQueryFilter<T> filters = queryBuilder.getFilters();
+		final ICompositeQueryFilter<T> filters = queryBuilder.getCompositeFilter();
 		filters.addOnlyActiveRecordsFilter();
 		filters.addEqualsFilter(I_M_Attribute.COLUMNNAME_Value, value);
 
@@ -259,7 +259,7 @@ public class AttributeDAO implements IAttributeDAO
 		final IQueryBuilder<I_M_AttributeValue> queryBuilder = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_M_AttributeValue.class, ctx, ITrx.TRXNAME_None);
 
-		final ICompositeQueryFilter<I_M_AttributeValue> filters = queryBuilder.getFilters();
+		final ICompositeQueryFilter<I_M_AttributeValue> filters = queryBuilder.getCompositeFilter();
 		filters.addOnlyActiveRecordsFilter();
 		filters.addEqualsFilter(I_M_AttributeValue.COLUMNNAME_M_Attribute_ID, attributeId);
 

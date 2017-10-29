@@ -136,7 +136,7 @@ public class DDOrderFiltering extends AbstractFiltering
 		{
 			final IQueryBuilder<I_DD_Order> ddOrderQueryBuilder = queryBL.createQueryBuilder(I_DD_Order.class, ctx, ITrx.TRXNAME_None);
 
-			final ICompositeQueryFilter<I_DD_Order> ddOrderFilters = ddOrderQueryBuilder.getFilters();
+			final ICompositeQueryFilter<I_DD_Order> ddOrderFilters = ddOrderQueryBuilder.getCompositeFilter();
 			ddOrderFilters.addOnlyActiveRecordsFilter();
 			ddOrderFilters.addOnlyContextClient(ctx);
 			ddOrderFilters.addInArrayOrAllFilter(I_DD_Order.COLUMN_DocStatus, X_DD_Order.DOCSTATUS_Completed);

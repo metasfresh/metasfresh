@@ -49,7 +49,7 @@ public class ADMessageDAO implements IADMessageDAO
 		final IQueryBuilder<I_AD_Message> queryBuilder = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_AD_Message.class, ctx, ITrx.TRXNAME_None);
 
-		final ICompositeQueryFilter<I_AD_Message> filters = queryBuilder.getFilters();
+		final ICompositeQueryFilter<I_AD_Message> filters = queryBuilder.getCompositeFilter();
 		filters.addEqualsFilter(I_AD_Message.COLUMNNAME_Value, value);
 		filters.addOnlyActiveRecordsFilter();
 

@@ -1376,7 +1376,7 @@ public class VMRPDetailed
 
 		//
 		// Append "mrpQueryBuilder" result to our main SQL where clause
-		final ICompositeQueryFilter<I_PP_MRP> mrpQueryFilters = mrpQueryBuilder.createQueryBuilder().getFilters();
+		final ICompositeQueryFilter<I_PP_MRP> mrpQueryFilters = mrpQueryBuilder.createQueryBuilder().getCompositeFilter();
 		final String mrpQueryFiltersSql = queryBuilderDAO.getSql(ctx, mrpQueryFilters, sqlParams);
 		if (!Check.isEmpty(mrpQueryFiltersSql, true))
 		{
