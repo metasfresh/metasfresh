@@ -60,7 +60,8 @@ public class SupplyProposalEvaluator
 	}
 
 	/**
-	 * For the given {@code proposal}, look for existing demand records which match the proposal's <b>destination</b> and are linked (directly or indirectly, via parent-references) to any supply record matching the proposal's <b>source</b>.
+	 * For the given {@code proposal}, look for existing demand records which match the proposal's <b>destination</b>
+	 * and are linked (directly or indirectly, via parent-references) to any supply record matching the proposal's <b>source</b>.
 	 * <p>
 	 * Background:
 	 * <ul>
@@ -87,10 +88,10 @@ public class SupplyProposalEvaluator
 				.build();
 
 		final MaterialDescriptor sourceMaterialDescriptor = MaterialDescriptor.builderForQuery()
-		.productDescriptor(proposal.getProductDescriptor())
-		.warehouseId(proposal.getSourceWarehouseId())
-		.build();
-		
+				.productDescriptor(proposal.getProductDescriptor())
+				.warehouseId(proposal.getSourceWarehouseId())
+				.build();
+
 		final CandidatesQuery directReverseForDemandQuery = demandQuery
 				.withParentMaterialDescriptor(sourceMaterialDescriptor);
 
@@ -120,7 +121,6 @@ public class SupplyProposalEvaluator
 				return false;
 			}
 		}
-
 		return true;
 	}
 

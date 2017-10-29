@@ -50,8 +50,8 @@ public class ShipmentScheduleEvent implements MaterialEvent
 
 	@JsonCreator
 	public ShipmentScheduleEvent(
-			@JsonProperty("eventDescr") @NonNull final EventDescriptor eventDescriptor,
-			@JsonProperty("materialDescr") @NonNull final MaterialDescriptor materialDescriptor,
+			@JsonProperty("eventDescriptor") @NonNull final EventDescriptor eventDescriptor,
+			@JsonProperty("materialDescriptor") @NonNull final MaterialDescriptor materialDescriptor,
 			@JsonProperty("shipmentScheduleId") int shipmentScheduleId,
 			@JsonProperty("orderLineId") int orderLineId)
 	{
@@ -61,5 +61,4 @@ public class ShipmentScheduleEvent implements MaterialEvent
 		this.materialDescriptor = materialDescriptor;
 		this.orderLineId = orderLineId;
 	}
-
 }

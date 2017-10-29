@@ -61,7 +61,7 @@ public class ProductDescriptor
 
 	@Getter
 	String storageAttributesKey;
-
+	
 	/**
 	 * This ID is only here so that the candidate row's attributes can be displayed properly in the UI.
 	 */

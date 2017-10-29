@@ -77,14 +77,20 @@ public class RepositoryCommons
 			builder.addEqualsFilter(I_MD_Candidate.COLUMN_MD_Candidate_ID, query.getId());
 		}
 
-		addMaterialDescriptorToQueryBuilderIfNotNull(query.getMaterialDescriptor(), builder);
+		addMaterialDescriptorToQueryBuilderIfNotNull(
+				query.getMaterialDescriptor(),
+				query.isMatchExactStorageAttributesKey(),
+				builder);
 
 		if (query.hasParentMaterialDescriptor())
 		{
 			final IQueryBuilder<I_MD_Candidate> parentBuilder = queryBL.createQueryBuilder(I_MD_Candidate.class)
 					.addOnlyActiveRecordsFilter();
 
-			final boolean atLeastOneFilterAdded = addMaterialDescriptorToQueryBuilderIfNotNull(query.getParentMaterialDescriptor(), parentBuilder);
+			final boolean atLeastOneFilterAdded = addMaterialDescriptorToQueryBuilderIfNotNull(
+					query.getParentMaterialDescriptor(),
+					query.isMatchExactStorageAttributesKey(),
+					parentBuilder);
 
 			if (atLeastOneFilterAdded)
 			{
@@ -107,6 +113,7 @@ public class RepositoryCommons
 	@VisibleForTesting
 	boolean addMaterialDescriptorToQueryBuilderIfNotNull(
 			@Nullable final MaterialDescriptor materialDescriptor,
+			final boolean matchExactStorageAttributesKey,
 			@NonNull final IQueryBuilder<I_MD_Candidate> builder)
 	{
 		boolean atLeastOneFilterAdded = false;
@@ -129,10 +136,17 @@ public class RepositoryCommons
 		if (materialDescriptor.getStorageAttributesKey() != ProductDescriptor.STORAGE_ATTRIBUTES_KEY_UNSPECIFIED)
 		{
 			final String storageAttributesKey = materialDescriptor.getStorageAttributesKey();
-			builder.addStringLikeFilter(
-					I_MD_Candidate.COLUMN_StorageAttributesKey,
-					storageAttributesKey.replaceAll(ProductDescriptor.STORAGE_ATTRIBUTES_KEY_DELIMITER, "%"),
-					false);
+			if (matchExactStorageAttributesKey)
+			{
+				builder.addEqualsFilter(I_MD_Candidate.COLUMN_StorageAttributesKey, storageAttributesKey);
+			}
+			else
+			{
+				builder.addStringLikeFilter(
+						I_MD_Candidate.COLUMN_StorageAttributesKey,
+						storageAttributesKey.replaceAll(ProductDescriptor.STORAGE_ATTRIBUTES_KEY_DELIMITER, "%"),
+						false); // iggnoreCase=false
+			}
 			atLeastOneFilterAdded = true;
 		}
 

@@ -64,8 +64,6 @@ public class Candidate
 
 	CandidateStatus status;
 
-	// private final TableRecordReference reference;
-
 	int id;
 
 	/**
@@ -101,7 +99,7 @@ public class Candidate
 	@Singular
 	List<TransactionDetail> transactionDetails;
 
-	public CandidatesQuery.CandidatesQueryBuilder createStockqueryBuilder()
+	public CandidatesQuery.CandidatesQueryBuilder createStockQueryBuilder()
 	{
 		return CandidatesQuery.builder()
 				.materialDescriptor(materialDescriptor

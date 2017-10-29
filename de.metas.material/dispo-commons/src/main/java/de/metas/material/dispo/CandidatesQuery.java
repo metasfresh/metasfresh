@@ -58,11 +58,12 @@ public final class CandidatesQuery
 	public static CandidatesQuery fromCandidate(@NonNull final Candidate candidate)
 	{
 		return CandidatesQuery.builder()
+				.materialDescriptor(candidate.getMaterialDescriptor())
+				.matchExactStorageAttributesKey(true)
 				.demandDetail(candidate.getDemandDetail())
 				.distributionDetail(candidate.getDistributionDetail())
 				.groupId(candidate.getGroupId())
 				.id(candidate.getId())
-				.materialDescriptor(candidate.getMaterialDescriptor())
 				.orgId(candidate.getOrgId())
 				.parentId(candidate.getParentId())
 				.productionDetail(candidate.getProductionDetail())
@@ -110,6 +111,8 @@ public final class CandidatesQuery
 
 	MaterialDescriptor materialDescriptor;
 
+	boolean matchExactStorageAttributesKey;
+	
 	/**
 	 * Used for additional infos if this candidate has the sub type {@link CandidateSubType#PRODUCTION}.
 	 */
@@ -138,12 +141,14 @@ public final class CandidatesQuery
 			final int groupId,
 			final int seqNo,
 			final MaterialDescriptor materialDescriptor,
+			final boolean matchExactStorageAttributesKey,
 			final ProductionDetail productionDetail,
 			final DistributionDetail distributionDetail,
 			final DemandDetail demandDetail,
 			final TransactionDetail transactionDetail)
 	{
 		this.parentMaterialDescriptor = parentMaterialDescriptor;
+		this.matchExactStorageAttributesKey = matchExactStorageAttributesKey;
 		this.orgId = orgId;
 		this.type = type;
 		this.subType = subType;

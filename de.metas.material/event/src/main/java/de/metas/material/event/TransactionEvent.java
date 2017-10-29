@@ -52,8 +52,8 @@ public class TransactionEvent implements MaterialEvent
 	@JsonCreator
 	@Builder
 	public TransactionEvent(
-			@JsonProperty("eventDescr") @NonNull final EventDescriptor eventDescriptor,
-			@JsonProperty("materialDescr") @NonNull final MaterialDescriptor materialDescriptor,
+			@JsonProperty("eventDescriptor") @NonNull final EventDescriptor eventDescriptor,
+			@JsonProperty("materialDescriptor") @NonNull final MaterialDescriptor materialDescriptor,
 			@JsonProperty("shipmentScheduleId") final int shipmentScheduleId,
 			@JsonProperty("transactionId") final int transactionId)
 	{
@@ -66,5 +66,4 @@ public class TransactionEvent implements MaterialEvent
 
 		this.shipmentScheduleId = shipmentScheduleId;
 	}
-
 }

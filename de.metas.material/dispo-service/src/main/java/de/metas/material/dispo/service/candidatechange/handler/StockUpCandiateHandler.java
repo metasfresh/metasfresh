@@ -85,7 +85,7 @@ public class StockUpCandiateHandler implements CandidateHandler
 		}
 
 		final Candidate projectedStockOrNull = candidateRepository.retrieveLatestMatchOrNull(candidate
-				.createStockqueryBuilder()
+				.createStockQueryBuilder()
 				.build());
 		final BigDecimal projectedQty = projectedStockOrNull != null ? projectedStockOrNull.getQuantity() : BigDecimal.ZERO;
 

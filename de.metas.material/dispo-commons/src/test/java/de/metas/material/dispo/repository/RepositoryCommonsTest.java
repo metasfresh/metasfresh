@@ -81,7 +81,46 @@ public class RepositoryCommonsTest
 	}
 
 	@Test
-	public void addProductionDetailToFilter_with_StorageAttributesKey()
+	public void addProductionDetailToFilter_with_StorageAttributesKey_no_exact_matching()
+	{
+		final MaterialDescriptor materialDescriptor = commonSetupFor_addProductionDetailToFilter_with_StorageAttributesKey();
+
+		final IQueryBuilder<I_MD_Candidate> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_MD_Candidate.class);
+		RepositoryCommons.addMaterialDescriptorToQueryBuilderIfNotNull(materialDescriptor, false, queryBuilder);
+
+		final List<IQueryFilter<I_MD_Candidate>> filters = queryBuilder.getCompositeFilter().getFilters();
+
+		assertThat(filters).hasSize(1);
+		final IQueryFilter<I_MD_Candidate> asiKeyFilter = filters.get(0);
+		assertThat(asiKeyFilter).isInstanceOf(StringLikeFilter.class);
+
+		final StringLikeFilter<I_MD_Candidate> likeFilter = (StringLikeFilter<I_MD_Candidate>)asiKeyFilter;
+		assertThat(likeFilter.getColumnName()).isEqualTo(I_MD_Candidate.COLUMNNAME_StorageAttributesKey);
+		assertThat(likeFilter.getOperator()).isEqualTo(Operator.STRING_LIKE);
+		assertThat(likeFilter.getValue()).isEqualTo("Key1%Key2%Key3");
+	}
+
+	@Test
+	public void addProductionDetailToFilter_with_StorageAttributesKey_exact_matching()
+	{
+		final MaterialDescriptor materialDescriptor = commonSetupFor_addProductionDetailToFilter_with_StorageAttributesKey();
+
+		final IQueryBuilder<I_MD_Candidate> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_MD_Candidate.class);
+		RepositoryCommons.addMaterialDescriptorToQueryBuilderIfNotNull(materialDescriptor, true, queryBuilder);
+
+		final List<IQueryFilter<I_MD_Candidate>> filters = queryBuilder.getCompositeFilter().getFilters();
+
+		assertThat(filters).hasSize(1);
+		final IQueryFilter<I_MD_Candidate> asiKeyFilter = filters.get(0);
+		assertThat(asiKeyFilter).isInstanceOf(EqualsQueryFilter.class);
+
+		final EqualsQueryFilter<I_MD_Candidate> likeFilter = (EqualsQueryFilter<I_MD_Candidate>)asiKeyFilter;
+		assertThat(likeFilter.getColumnName()).isEqualTo(I_MD_Candidate.COLUMNNAME_StorageAttributesKey);
+		assertThat(likeFilter.getOperator()).isEqualTo(Operator.EQUAL);
+		assertThat(likeFilter.getValue()).isEqualTo("Key1§&§Key2§&§Key3");
+	}
+	
+	private MaterialDescriptor commonSetupFor_addProductionDetailToFilter_with_StorageAttributesKey()
 	{
 		final String storageAttributesKey = new StringJoiner(ProductDescriptor.STORAGE_ATTRIBUTES_KEY_DELIMITER)
 				.add("Key1")
@@ -96,20 +135,7 @@ public class RepositoryCommonsTest
 				.builderForQuery()
 				.productDescriptor(productDescriptor)
 				.build();
-
-		final IQueryBuilder<I_MD_Candidate> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_MD_Candidate.class);
-		RepositoryCommons.addMaterialDescriptorToQueryBuilderIfNotNull(materialDescriptor, queryBuilder);
-
-		final List<IQueryFilter<I_MD_Candidate>> filters = queryBuilder.getCompositeFilter().getFilters();
-
-		assertThat(filters).hasSize(1);
-		final IQueryFilter<I_MD_Candidate> asiKeyFilter = filters.get(0);
-		assertThat(asiKeyFilter).isInstanceOf(StringLikeFilter.class);
-
-		final StringLikeFilter<I_MD_Candidate> likeFilter = (StringLikeFilter<I_MD_Candidate>)asiKeyFilter;
-		assertThat(likeFilter.getColumnName()).isEqualTo(I_MD_Candidate.COLUMNNAME_StorageAttributesKey);
-		assertThat(likeFilter.getOperator()).isEqualTo(Operator.STRING_LIKE);
-		assertThat(likeFilter.getValue()).isEqualTo("Key1%Key2%Key3");
+		return materialDescriptor;
 	}
 	
 	private static void assertFiltersContainProductFilter(final List<IQueryFilter<I_MD_Candidate>> filters, final int productId)

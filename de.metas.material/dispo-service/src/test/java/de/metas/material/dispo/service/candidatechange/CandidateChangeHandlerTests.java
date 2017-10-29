@@ -233,7 +233,7 @@ public class CandidateChangeHandlerTests
 		}
 
 		// do the test
-		stockCandidateService.applyDeltaToLaterStockCandidates(
+		stockCandidateService.applyDeltaToMatchingLaterStockCandidates(
 				createProductDescriptor(),
 				WAREHOUSE_ID,
 				t2,

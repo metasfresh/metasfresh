@@ -70,7 +70,7 @@ public class StockCandidateService
 	public Candidate createStockCandidate(@NonNull final Candidate candidate)
 	{
 		final Candidate stockOrNull = candidateRepository
-				.retrieveLatestMatchOrNull(candidate.createStockqueryBuilder()
+				.retrieveLatestMatchOrNull(candidate.createStockQueryBuilder()
 						.build());
 
 		final BigDecimal formerQuantity = stockOrNull != null
@@ -148,7 +148,7 @@ public class StockCandidateService
 			// there was no persisted candidate, so we basically propagate the full qty (positive or negative) of the given candidate upwards
 			delta = relatedCandiateWithDelta.getQuantity();
 		}
-		applyDeltaToLaterStockCandidates(
+		applyDeltaToMatchingLaterStockCandidates(
 				relatedCandiateWithDelta.getMaterialDescriptor(),
 				relatedCandiateWithDelta.getMaterialDescriptor().getWarehouseId(),
 				relatedCandiateWithDelta.getMaterialDescriptor().getDate(),
@@ -163,21 +163,21 @@ public class StockCandidateService
 	 * <p>
 	 * That's it for now :-). Don't alter those stock candidates' children or parents.
 	 *
-	 * @param productId the product ID to match against
+	 * @param productDescriptor the product to match against
 	 * @param warehouseId the warehouse ID to match against
 	 * @param date the date to match against (i.e. everything after this date shall be a match)
 	 * @param groupId the groupId to set to every stock record that we matched
 	 * @param delta the quantity (positive or negative) to add to every stock record that we matched
 	 */
 	@VisibleForTesting
-	/* package */ void applyDeltaToLaterStockCandidates(
+	/* package */ void applyDeltaToMatchingLaterStockCandidates(
 			@NonNull final ProductDescriptor productDescriptor,
 			@NonNull final Integer warehouseId,
 			@NonNull final Date date,
 			@NonNull final Integer groupId,
 			@NonNull final BigDecimal delta)
 	{
-		final CandidatesQuery segment = CandidatesQuery.builder()
+		final CandidatesQuery query = CandidatesQuery.builder()
 				.type(CandidateType.STOCK)
 				.materialDescriptor(MaterialDescriptor.builderForQuery()
 						.date(date)
@@ -185,9 +185,10 @@ public class StockCandidateService
 						.warehouseId(warehouseId)
 						.dateOperator(DateOperator.AFTER)
 						.build())
+				.matchExactStorageAttributesKey(true)
 				.build();
 
-		final List<Candidate> candidatesToUpdate = candidateRepository.retrieveOrderedByDateAndSeqNo(segment);
+		final List<Candidate> candidatesToUpdate = candidateRepository.retrieveOrderedByDateAndSeqNo(query);
 		for (final Candidate candidate : candidatesToUpdate)
 		{
 			final BigDecimal newQty = candidate.getQuantity().add(delta);
