@@ -458,7 +458,7 @@ public class SubscriptionBL implements ISubscriptionBL
 	private Timestamp getEventDate(@NonNull final I_C_Flatrate_Term term)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(term);
-		final int daysInPast = Services.get(ISysConfigBL.class).getIntValue(SYSCONFIG_CREATE_SUBSCRIPTIONPROGRESS_IN_PAST_DAYS, 3, Env.getAD_Client_ID(ctx), Env.getAD_Org_ID(ctx));
+		final int daysInPast = Services.get(ISysConfigBL.class).getIntValue(SYSCONFIG_CREATE_SUBSCRIPTIONPROGRESS_IN_PAST_DAYS, 0, Env.getAD_Client_ID(ctx), Env.getAD_Org_ID(ctx));
 		
 		final Timestamp minimumEventDate = TimeUtil.addDays(SystemTime.asDayTimestamp(), -daysInPast);
 		final Timestamp eventDate = term.getStartDate();
