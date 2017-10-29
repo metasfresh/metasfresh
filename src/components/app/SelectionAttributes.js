@@ -10,24 +10,16 @@ import {
 import RawWidget from '../widget/RawWidget';
 
 class SelectionAttributes extends Component {
-    constructor(props){
-        super(props);
-    }
-
     componentDidUpdate = (prevProps) => {
         const {
-            selected, DLWrapperSetData, DLWrapperSetLayout, refresh,
-            shouldNotUpdate
+            selected, DLWrapperSetData, DLWrapperSetLayout, shouldNotUpdate,
         } = this.props;
 
-        if(shouldNotUpdate){
+        if (shouldNotUpdate) {
             return;
         }
 
-        if(
-            (JSON.stringify(prevProps.selected) !== JSON.stringify(selected)) ||
-            (JSON.stringify(prevProps.refresh) !== JSON.stringify(refresh))
-        ){
+        if (JSON.stringify(prevProps.selected) !== JSON.stringify(selected)) {
             DLWrapperSetData([], null, () => {
                 DLWrapperSetLayout([], () => {
                     if(selected && selected.length === 1){

@@ -71,7 +71,6 @@ class DocumentList extends Component {
             filters: null,
 
             clickOutsideLock: false,
-            refresh: null,
 
             isShowIncluded: false,
             hasShowIncluded: false
@@ -207,7 +206,7 @@ class DocumentList extends Component {
             }
 
             if(fullyChanged == true){
-                this.browseView(true);
+                this.browseView();
 
                 if (this.quickActionsComponent) {
                     this.quickActionsComponent.updateActions();
@@ -308,13 +307,11 @@ class DocumentList extends Component {
     /*
      *  If viewId exist, than browse that view.
      */
-    browseView = (refresh) => {
-        const {viewId, page, sort} = this.state;
+    browseView = () => {
+        const { viewId, page, sort } = this.state;
 
-        this.getData(
-            viewId, page, sort, refresh
-        ).catch((err) => {
-            if(err.response && err.response.status === 404) {
+        this.getData(viewId, page, sort).catch((err) => {
+            if (err.response && err.response.status === 404) {
                 this.createView();
             }
         });
@@ -520,7 +517,7 @@ class DocumentList extends Component {
             notfound, disconnectFromState, autofocus, inModal,
         } = this.props;
         const {
-            layout, data, viewId, clickOutsideLock, refresh, page, filters,
+            layout, data, viewId, clickOutsideLock, page, filters,
             isShowIncluded, hasShowIncluded, refreshSelection,
         } = this.state;
 
@@ -590,7 +587,6 @@ class DocumentList extends Component {
 
                             {showQuickActions && (
                                 <QuickActions
-                                    refresh={refresh}
                                     processStatus={processStatus}
                                     ref={ (c) => {
                                         this.quickActionsComponent = (
@@ -666,7 +662,6 @@ class DocumentList extends Component {
                                         {...{windowType, viewId}}
                                     >
                                         <SelectionAttributes
-                                            {...{refresh}}
                                             setClickOutsideLock={
                                                 this.setClickOutsideLock
                                             }
