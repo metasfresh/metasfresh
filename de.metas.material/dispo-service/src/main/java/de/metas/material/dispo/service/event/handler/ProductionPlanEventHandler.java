@@ -3,13 +3,13 @@ package de.metas.material.dispo.service.event.handler;
 import org.springframework.stereotype.Service;
 
 import de.metas.material.dispo.CandidateService;
-import de.metas.material.dispo.CandidateSpecification.Status;
-import de.metas.material.dispo.CandidateSpecification.SubType;
-import de.metas.material.dispo.CandidateSpecification.Type;
 import de.metas.material.dispo.candidate.Candidate;
 import de.metas.material.dispo.candidate.Candidate.CandidateBuilder;
 import de.metas.material.dispo.candidate.DemandDetail;
 import de.metas.material.dispo.candidate.ProductionDetail;
+import de.metas.material.dispo.candidate.CandidateStatus;
+import de.metas.material.dispo.candidate.CandidateSubType;
+import de.metas.material.dispo.candidate.CandidateType;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.dispo.service.event.EventUtil;
 import de.metas.material.event.MaterialDescriptor;
@@ -62,11 +62,11 @@ public class ProductionPlanEventHandler
 	{
 		final PPOrder ppOrder = event.getPpOrder();
 
-		final Status candidateStatus = getCandidateStatus(ppOrder);
+		final CandidateStatus candidateStatus = getCandidateStatus(ppOrder);
 
 		final Candidate supplyCandidate = Candidate.builderForEventDescr(event.getEventDescr())
-				.type(Type.SUPPLY)
-				.subType(SubType.PRODUCTION)
+				.type(CandidateType.SUPPLY)
+				.subType(CandidateSubType.PRODUCTION)
 				.status(candidateStatus)
 				.productionDetail(createProductionDetailForPPOrder(ppOrder))
 				.demandDetail(DemandDetail.forOrderLineIdOrNull(ppOrder.getOrderLineId()))
@@ -79,8 +79,8 @@ public class ProductionPlanEventHandler
 		for (final PPOrderLine ppOrderLine : ppOrder.getLines())
 		{
 			final CandidateBuilder builder = Candidate.builderForEventDescr(event.getEventDescr())
-					.type(ppOrderLine.isReceipt() ? Type.SUPPLY : Type.DEMAND)
-					.subType(SubType.PRODUCTION)
+					.type(ppOrderLine.isReceipt() ? CandidateType.SUPPLY : CandidateType.DEMAND)
+					.subType(CandidateSubType.PRODUCTION)
 					.status(candidateStatus)
 					.groupId(candidateWithGroupId.getGroupId())
 					.seqNo(candidateWithGroupId.getSeqNo() + 1)
@@ -120,14 +120,14 @@ public class ProductionPlanEventHandler
 		return materialDescriptor;
 	}
 
-	private static Status getCandidateStatus(@NonNull final PPOrder ppOrder)
+	private static CandidateStatus getCandidateStatus(@NonNull final PPOrder ppOrder)
 	{
-		final Status candidateStatus;
+		final CandidateStatus candidateStatus;
 		final String docStatus = ppOrder.getDocStatus();
 
 		if (ppOrder.getPpOrderId() <= 0)
 		{
-			candidateStatus = Status.doc_planned;
+			candidateStatus = CandidateStatus.doc_planned;
 		}
 		else
 		{

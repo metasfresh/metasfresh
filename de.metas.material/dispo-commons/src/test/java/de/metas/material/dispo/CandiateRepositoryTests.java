@@ -33,13 +33,13 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestWatcher;
 
-import de.metas.material.dispo.CandidateSpecification.SubType;
-import de.metas.material.dispo.CandidateSpecification.Type;
 import de.metas.material.dispo.candidate.Candidate;
 import de.metas.material.dispo.candidate.DemandDetail;
 import de.metas.material.dispo.candidate.DistributionDetail;
 import de.metas.material.dispo.candidate.ProductionDetail;
+import de.metas.material.dispo.candidate.CandidateSubType;
 import de.metas.material.dispo.candidate.TransactionDetail;
+import de.metas.material.dispo.candidate.CandidateType;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.I_MD_Candidate_Demand_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_Dist_Detail;
@@ -105,7 +105,7 @@ public class CandiateRepositoryTests
 
 		// this not-stock candidate needs to be ignored
 		final Candidate someOtherCandidate = Candidate.builder()
-				.type(Type.DEMAND)
+				.type(CandidateType.DEMAND)
 				.clientId(CLIENT_ID)
 				.orgId(ORG_ID)
 				.materialDescr(materialDescr)
@@ -113,7 +113,7 @@ public class CandiateRepositoryTests
 		candidateRepository.addOrUpdateOverwriteStoredSeqNo(someOtherCandidate);
 
 		stockCandidate = Candidate.builder()
-				.type(Type.STOCK)
+				.type(CandidateType.STOCK)
 				.clientId(CLIENT_ID)
 				.orgId(ORG_ID)
 				.materialDescr(materialDescr)
@@ -128,7 +128,7 @@ public class CandiateRepositoryTests
 				.build();
 		assertThat(laterMaterialDescriptor.isComplete()).isTrue();
 		laterStockCandidate = Candidate.builder()
-				.type(Type.STOCK)
+				.type(CandidateType.STOCK)
 				.clientId(CLIENT_ID)
 				.orgId(ORG_ID)
 				.materialDescr(laterMaterialDescriptor)
@@ -140,7 +140,7 @@ public class CandiateRepositoryTests
 	public void addOrUpdateOverwriteStoredSeqNo_returns_equal_candidate()
 	{
 		final Candidate originalCandidate = Candidate.builder()
-				.type(Type.STOCK)
+				.type(CandidateType.STOCK)
 				.clientId(CLIENT_ID)
 				.orgId(ORG_ID)
 				.materialDescr(createMaterialDescriptor())
@@ -260,8 +260,8 @@ public class CandiateRepositoryTests
 	public void addOrReplace_with_ProductionDetail()
 	{
 		final Candidate productionCandidate = Candidate.builder()
-				.type(Type.DEMAND)
-				.subType(SubType.PRODUCTION)
+				.type(CandidateType.DEMAND)
+				.subType(CandidateSubType.PRODUCTION)
 				.materialDescr(createMaterialDescriptor())
 				.clientId(CLIENT_ID)
 				.orgId(ORG_ID)
@@ -278,7 +278,7 @@ public class CandiateRepositoryTests
 				.build();
 		final Candidate addOrReplaceResult = candidateRepository.addOrUpdateOverwriteStoredSeqNo(productionCandidate);
 
-		final List<I_MD_Candidate> filtered = DispoTestUtils.filter(Type.DEMAND, now, PRODUCT_ID);
+		final List<I_MD_Candidate> filtered = DispoTestUtils.filter(CandidateType.DEMAND, now, PRODUCT_ID);
 		assertThat(filtered).hasSize(1);
 
 		final I_MD_Candidate record = filtered.get(0);
@@ -379,8 +379,8 @@ public class CandiateRepositoryTests
 	public void addOrUpdateOverwriteStoredSeqNo_with_DistributionDetail()
 	{
 		final Candidate distributionCandidate = Candidate.builder()
-				.type(Type.DEMAND)
-				.subType(SubType.DISTRIBUTION)
+				.type(CandidateType.DEMAND)
+				.subType(CandidateSubType.DISTRIBUTION)
 				.clientId(CLIENT_ID)
 				.orgId(ORG_ID)
 				.materialDescr(createMaterialDescriptor())
@@ -396,7 +396,7 @@ public class CandiateRepositoryTests
 				.build();
 		final Candidate addOrReplaceResult = candidateRepository.addOrUpdateOverwriteStoredSeqNo(distributionCandidate);
 
-		final List<I_MD_Candidate> filtered = DispoTestUtils.filter(Type.DEMAND, now, PRODUCT_ID);
+		final List<I_MD_Candidate> filtered = DispoTestUtils.filter(CandidateType.DEMAND, now, PRODUCT_ID);
 		assertThat(filtered).hasSize(1);
 
 		final I_MD_Candidate record = filtered.get(0);
@@ -522,8 +522,8 @@ public class CandiateRepositoryTests
 	public void addOrUpdateOverwriteStoredSeqNo_with_DemandDetail()
 	{
 		final Candidate productionCandidate = Candidate.builder()
-				.type(Type.DEMAND)
-				.subType(SubType.SHIPMENT)
+				.type(CandidateType.DEMAND)
+				.subType(CandidateSubType.SHIPMENT)
 				.clientId(CLIENT_ID)
 				.orgId(ORG_ID)
 				.materialDescr(createMaterialDescriptor())
@@ -531,7 +531,7 @@ public class CandiateRepositoryTests
 				.build();
 		final Candidate addOrReplaceResult = candidateRepository.addOrUpdateOverwriteStoredSeqNo(productionCandidate);
 
-		final List<I_MD_Candidate> filtered = DispoTestUtils.filter(Type.DEMAND, now, PRODUCT_ID);
+		final List<I_MD_Candidate> filtered = DispoTestUtils.filter(CandidateType.DEMAND, now, PRODUCT_ID);
 		assertThat(filtered).hasSize(1);
 
 		final I_MD_Candidate record = filtered.get(0);
@@ -618,7 +618,7 @@ public class CandiateRepositoryTests
 	public void addOrUpdateOverwriteStoredSeqNo_nonStockCandidate_receives_groupId()
 	{
 		final Candidate candidateWithOutGroupId = stockCandidate
-				.withType(Type.DEMAND)
+				.withType(CandidateType.DEMAND)
 				.withDate(TimeUtil.addMinutes(later, 1)) // pick a different time from the other candidates
 				.withGroupId(-1);
 
@@ -647,7 +647,7 @@ public class CandiateRepositoryTests
 	}
 
 	/**
-	 * Verifies that candidates with type {@link Type#STOCK} do receive a groupId
+	 * Verifies that candidates with type {@link CandidateType#STOCK} do receive a groupId
 	 */
 	@Test
 	public void addOrUpdateOverwriteStoredSeqNo_stockCandidate_receives_groupId()
@@ -724,7 +724,7 @@ public class CandiateRepositoryTests
 	private CandidatesQuery mkQueryForStockUntilDate(final Date date)
 	{
 		return CandidatesQuery.builder()
-				.type(Type.STOCK)
+				.type(CandidateType.STOCK)
 				.materialDescr(MaterialDescriptor.builderForQuery()
 						.productDescriptor(productDescriptorFactory.forProductIdOnly(PRODUCT_ID))
 						.warehouseId(WAREHOUSE_ID)
@@ -737,7 +737,7 @@ public class CandiateRepositoryTests
 	private CandidatesQuery mkQueryForStockFromDate(final Date date)
 	{
 		return CandidatesQuery.builder()
-				.type(Type.STOCK)
+				.type(CandidateType.STOCK)
 				.materialDescr(MaterialDescriptor.builderForQuery()
 						.productDescriptor(productDescriptorFactory.forProductIdOnly(PRODUCT_ID))
 						.warehouseId(WAREHOUSE_ID)
@@ -799,7 +799,7 @@ public class CandiateRepositoryTests
 	public void updateCandidateRecordFromCandidate()
 	{
 		final Candidate candidate = Candidate.builder()
-				.type(Type.DEMAND)
+				.type(CandidateType.DEMAND)
 				.materialDescr(createMaterialDescriptor())
 				.build();
 		final I_MD_Candidate candidateRecord = newInstance(I_MD_Candidate.class);
@@ -816,7 +816,7 @@ public class CandiateRepositoryTests
 	public void addOrRecplaceDemandDetail()
 	{
 		final Candidate candidate = Candidate.builder()
-				.type(Type.DEMAND)
+				.type(CandidateType.DEMAND)
 				.materialDescr(createMaterialDescriptor())
 				.demandDetail(DemandDetail.forShipmentScheduleIdAndOrderLineId(20, -1))
 				.build();
@@ -837,7 +837,7 @@ public class CandiateRepositoryTests
 	public void addOrRecplaceTransactionDetails()
 	{
 		final Candidate candidate = Candidate.builder()
-				.type(Type.DEMAND)
+				.type(CandidateType.DEMAND)
 				.materialDescr(createMaterialDescriptor())
 				.transactionDetail(TransactionDetail.forCandidateOrQuery(BigDecimal.ONE, 15))
 				.transactionDetail(TransactionDetail.forCandidateOrQuery(BigDecimal.TEN, 16))
@@ -909,8 +909,8 @@ public class CandiateRepositoryTests
 	public void addOrUpdateOverwriteStoredSeqNo_with_TransactionDetail()
 	{
 		final Candidate productionCandidate = Candidate.builder()
-				.type(Type.DEMAND)
-				.subType(SubType.SHIPMENT)
+				.type(CandidateType.DEMAND)
+				.subType(CandidateSubType.SHIPMENT)
 				.clientId(CLIENT_ID)
 				.orgId(ORG_ID)
 				.materialDescr(createMaterialDescriptor())
@@ -919,7 +919,7 @@ public class CandiateRepositoryTests
 				.build();
 		final Candidate addOrReplaceResult = candidateRepository.addOrUpdateOverwriteStoredSeqNo(productionCandidate);
 
-		final List<I_MD_Candidate> filtered = DispoTestUtils.filter(Type.DEMAND, now, PRODUCT_ID);
+		final List<I_MD_Candidate> filtered = DispoTestUtils.filter(CandidateType.DEMAND, now, PRODUCT_ID);
 		assertThat(filtered).hasSize(1);
 
 		final I_MD_Candidate record = filtered.get(0);

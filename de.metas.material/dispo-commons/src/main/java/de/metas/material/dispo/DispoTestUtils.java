@@ -7,7 +7,7 @@ import java.util.stream.Collectors;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.util.Services;
 
-import de.metas.material.dispo.CandidateSpecification.Type;
+import de.metas.material.dispo.candidate.CandidateType;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.X_MD_Candidate;
 import lombok.NonNull;
@@ -40,7 +40,7 @@ public class DispoTestUtils
 
 	// TODO: change the whole package name for this module to de.metas.material.dispo.commons
 
-	public List<I_MD_Candidate> filter(@NonNull final Type type)
+	public List<I_MD_Candidate> filter(@NonNull final CandidateType type)
 	{
 		final List<I_MD_Candidate> allRecords = retrieveAllRecords();
 		return allRecords.stream()
@@ -56,28 +56,28 @@ public class DispoTestUtils
 				.collect(Collectors.toList());
 	}
 
-	public List<I_MD_Candidate> filter(@NonNull final Type type, @NonNull final Date date)
+	public List<I_MD_Candidate> filter(@NonNull final CandidateType type, @NonNull final Date date)
 	{
 		return filter(type).stream()
 				.filter(r -> date.getTime() == r.getDateProjected().getTime())
 				.collect(Collectors.toList());
 	}
 
-	public List<I_MD_Candidate> filter(@NonNull final Type type, @NonNull final Date date, final int productId)
+	public List<I_MD_Candidate> filter(@NonNull final CandidateType type, @NonNull final Date date, final int productId)
 	{
 		return filter(type, date).stream()
 				.filter(r -> r.getM_Product_ID() == productId)
 				.collect(Collectors.toList());
 	}
 
-	public List<I_MD_Candidate> filter(@NonNull final Type type, @NonNull final Date date, final int productId, final int warehouseId)
+	public List<I_MD_Candidate> filter(@NonNull final CandidateType type, @NonNull final Date date, final int productId, final int warehouseId)
 	{
 		return filter(type, date, productId).stream()
 				.filter(r -> r.getM_Warehouse_ID() == warehouseId)
 				.collect(Collectors.toList());
 	}
 
-	public List<I_MD_Candidate> filter(@NonNull final Type type, final int warehouseId)
+	public List<I_MD_Candidate> filter(@NonNull final CandidateType type, final int warehouseId)
 	{
 		return filter(type).stream()
 				.filter(r -> r.getM_Warehouse_ID() == warehouseId)

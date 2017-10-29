@@ -9,12 +9,12 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 
 import de.metas.material.dispo.CandidateRepository;
-import de.metas.material.dispo.CandidateSpecification.Type;
 import de.metas.material.dispo.CandidatesQuery;
 import de.metas.material.dispo.candidate.Candidate;
 import de.metas.material.dispo.candidate.Candidate.CandidateBuilder;
 import de.metas.material.dispo.candidate.DemandDetail;
 import de.metas.material.dispo.candidate.TransactionDetail;
+import de.metas.material.dispo.candidate.CandidateType;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.event.MaterialDescriptor.DateOperator;
 import de.metas.material.event.TransactionEvent;
@@ -71,7 +71,7 @@ public class TransactionEventHandler
 		{
 			final DemandDetail demandDetail = DemandDetail.forShipmentScheduleIdAndOrderLineId(event.getShipmentScheduleId(), -1);
 
-			final CandidatesQuery query = CandidatesQuery.builder().type(Type.DEMAND)
+			final CandidatesQuery query = CandidatesQuery.builder().type(CandidateType.DEMAND)
 					.demandDetail(demandDetail) // only search via demand detail, ..the product and warehouse will also match, but e.g. the date probably won't!
 					.build();
 
@@ -149,12 +149,12 @@ public class TransactionEventHandler
 				.builderForEventDescr(event.getEventDescr());
 		if (eventQuantity.signum() <= 0)
 		{
-			return builder.type(Type.UNRELATED_DECREASE)
+			return builder.type(CandidateType.UNRELATED_DECREASE)
 					.materialDescr(event.getMaterialDescr().withQuantity(eventQuantity.negate()));
 		}
 		else
 		{
-			return builder.type(Type.UNRELATED_INCREASE)
+			return builder.type(CandidateType.UNRELATED_INCREASE)
 					.materialDescr(event.getMaterialDescr());
 		}
 	}

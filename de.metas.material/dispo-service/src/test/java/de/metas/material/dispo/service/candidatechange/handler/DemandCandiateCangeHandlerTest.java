@@ -22,9 +22,9 @@ import org.junit.Test;
 import org.junit.rules.TestWatcher;
 
 import de.metas.material.dispo.CandidateRepository;
-import de.metas.material.dispo.CandidateSpecification.Type;
 import de.metas.material.dispo.DispoTestUtils;
 import de.metas.material.dispo.candidate.Candidate;
+import de.metas.material.dispo.candidate.CandidateType;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.X_MD_Candidate;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
@@ -97,7 +97,7 @@ public class DemandCandiateCangeHandlerTest
 				.build();
 
 		final Candidate candidate = Candidate.builder()
-				.type(Type.DEMAND)
+				.type(CandidateType.DEMAND)
 				.clientId(CLIENT_ID)
 				.orgId(ORG_ID)
 				.materialDescr(materialDescr)
@@ -106,8 +106,8 @@ public class DemandCandiateCangeHandlerTest
 
 		final List<I_MD_Candidate> records = DispoTestUtils.retrieveAllRecords();
 		assertThat(records.size(), is(2));
-		final I_MD_Candidate stockRecord = DispoTestUtils.filter(Type.STOCK).get(0);
-		final I_MD_Candidate demandRecord = DispoTestUtils.filter(Type.DEMAND).get(0);
+		final I_MD_Candidate stockRecord = DispoTestUtils.filter(CandidateType.STOCK).get(0);
+		final I_MD_Candidate demandRecord = DispoTestUtils.filter(CandidateType.DEMAND).get(0);
 
 		assertThat(demandRecord.getQty(), comparesEqualTo(qty));
 		assertThat(stockRecord.getQty(), comparesEqualTo(qty.negate())); // ..because there was no older record, the "delta" we provided is the current quantity
@@ -119,7 +119,7 @@ public class DemandCandiateCangeHandlerTest
 	@Test
 	public void decrease_stock()
 	{
-		final Candidate candidate = createCandidateWithType(Type.UNRELATED_DECREASE);
+		final Candidate candidate = createCandidateWithType(CandidateType.UNRELATED_DECREASE);
 		
 		demandCandiateHandler.onCandidateNewOrChange(candidate);
 
@@ -143,7 +143,7 @@ public class DemandCandiateCangeHandlerTest
 		}}; // @formatter:on
 	}
 	
-	private static Candidate createCandidateWithType(@NonNull final Type type)
+	private static Candidate createCandidateWithType(@NonNull final CandidateType type)
 	{
 		final Candidate candidate = Candidate.builder()
 				.type(type)

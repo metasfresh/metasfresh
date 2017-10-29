@@ -8,9 +8,9 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.material.dispo.CandidateRepository;
-import de.metas.material.dispo.CandidateSpecification.Type;
 import de.metas.material.dispo.CandidatesQuery;
 import de.metas.material.dispo.candidate.Candidate;
+import de.metas.material.dispo.candidate.CandidateType;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
 import de.metas.material.event.MaterialEventService;
 import lombok.NonNull;
@@ -59,9 +59,9 @@ public class SupplyCandiateHandler implements CandidateHandler
 	}
 
 	@Override
-	public Collection<Type> getHandeledTypes()
+	public Collection<CandidateType> getHandeledTypes()
 	{
-		return ImmutableList.of(Type.SUPPLY, Type.UNRELATED_INCREASE);
+		return ImmutableList.of(CandidateType.SUPPLY, CandidateType.UNRELATED_INCREASE);
 	}
 
 	/**
@@ -129,7 +129,7 @@ public class SupplyCandiateHandler implements CandidateHandler
 	private void assertCorrectCandidateType(@NonNull final Candidate supplyCandidate)
 	{
 		Preconditions.checkArgument(
-				supplyCandidate.getType() == Type.SUPPLY || supplyCandidate.getType() == Type.UNRELATED_INCREASE,
+				supplyCandidate.getType() == CandidateType.SUPPLY || supplyCandidate.getType() == CandidateType.UNRELATED_INCREASE,
 				"Given parameter 'supplyCandidate' has type=%s; supplyCandidate=%s",
 				supplyCandidate.getType(), supplyCandidate);
 	}

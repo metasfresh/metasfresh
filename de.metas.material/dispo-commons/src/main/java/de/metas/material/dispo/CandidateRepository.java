@@ -30,14 +30,14 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
-import de.metas.material.dispo.CandidateSpecification.SubType;
-import de.metas.material.dispo.CandidateSpecification.Type;
 import de.metas.material.dispo.candidate.Candidate;
 import de.metas.material.dispo.candidate.Candidate.CandidateBuilder;
 import de.metas.material.dispo.candidate.DemandDetail;
 import de.metas.material.dispo.candidate.DistributionDetail;
 import de.metas.material.dispo.candidate.ProductionDetail;
+import de.metas.material.dispo.candidate.CandidateSubType;
 import de.metas.material.dispo.candidate.TransactionDetail;
+import de.metas.material.dispo.candidate.CandidateType;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.I_MD_Candidate_Demand_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_Dist_Detail;
@@ -123,12 +123,12 @@ public class CandidateRepository
 
 		setFallBackSeqNoAndGroupIdIfNeeded(synchedRecord);
 
-		if (candidate.getSubType() == SubType.PRODUCTION && candidate.getProductionDetail() != null)
+		if (candidate.getSubType() == CandidateSubType.PRODUCTION && candidate.getProductionDetail() != null)
 		{
 			addOrRecplaceProductionDetail(candidate, synchedRecord);
 		}
 
-		if (candidate.getSubType() == SubType.DISTRIBUTION && candidate.getDistributionDetail() != null)
+		if (candidate.getSubType() == CandidateSubType.DISTRIBUTION && candidate.getDistributionDetail() != null)
 		{
 			addOrRecplaceDistributionDetail(candidate, synchedRecord);
 		}
@@ -461,7 +461,7 @@ public class CandidateRepository
 	 * @param builder
 	 */
 	private void addDemandDetailToBuilder(
-			final CandidateSpecification candidate,
+			final CandidatesQuery candidate,
 			final IQueryBuilder<I_MD_Candidate> builder)
 	{
 
@@ -505,7 +505,7 @@ public class CandidateRepository
 	}
 
 	private void addProductionDetailToFilter(
-			final CandidateSpecification candidate,
+			final CandidatesQuery candidate,
 			final IQueryBuilder<I_MD_Candidate> builder)
 	{
 		final ProductionDetail productionDetail = candidate.getProductionDetail();
@@ -545,7 +545,7 @@ public class CandidateRepository
 	}
 
 	private void addDistributionDetailToFilter(
-			@NonNull final CandidateSpecification query,
+			@NonNull final CandidatesQuery query,
 			@NonNull final IQueryBuilder<I_MD_Candidate> builder)
 	{
 		final DistributionDetail distributionDetail = query.getDistributionDetail();
@@ -624,14 +624,14 @@ public class CandidateRepository
 
 		final CandidateBuilder builder = createAndInitializeBuilder(candidateRecordOrNull);
 
-		final SubType subType = getSubTypeOrNull(candidateRecordOrNull);
+		final CandidateSubType subType = getSubTypeOrNull(candidateRecordOrNull);
 		builder.subType(subType);
 
-		if (subType == SubType.PRODUCTION)
+		if (subType == CandidateSubType.PRODUCTION)
 		{
 			builder.productionDetail(createProductionDetailOrNull(candidateRecordOrNull));
 		}
-		else if (subType == SubType.DISTRIBUTION)
+		else if (subType == CandidateSubType.DISTRIBUTION)
 		{
 			builder.distributionDetail(createDistributionDetailOrNull(candidateRecordOrNull));
 		}
@@ -643,12 +643,12 @@ public class CandidateRepository
 		return Optional.of(builder.build());
 	}
 
-	private SubType getSubTypeOrNull(@NonNull final I_MD_Candidate candidateRecord)
+	private CandidateSubType getSubTypeOrNull(@NonNull final I_MD_Candidate candidateRecord)
 	{
-		SubType subType = null;
+		CandidateSubType subType = null;
 		if (!Check.isEmpty(candidateRecord.getMD_Candidate_SubType()))
 		{
-			subType = SubType.valueOf(candidateRecord.getMD_Candidate_SubType());
+			subType = CandidateSubType.valueOf(candidateRecord.getMD_Candidate_SubType());
 		}
 		return subType;
 	}
@@ -683,7 +683,7 @@ public class CandidateRepository
 				.clientId(candidateRecord.getAD_Client_ID())
 				.orgId(candidateRecord.getAD_Org_ID())
 				.seqNo(candidateRecord.getSeqNo())
-				.type(Type.valueOf(md_candidate_type))
+				.type(CandidateType.valueOf(md_candidate_type))
 
 				// if the record has a group id, then set it.
 				.groupId(candidateRecord.getMD_Candidate_GroupId())

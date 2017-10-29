@@ -1,14 +1,10 @@
-package de.metas.material.dispo.service.candidatechange.handler;
+package de.metas.material.dispo.candidate;
 
-import java.util.Collection;
-
-import de.metas.material.dispo.candidate.Candidate;
-import de.metas.material.dispo.candidate.CandidateType;
-import lombok.NonNull;
+import de.metas.material.dispo.model.X_MD_Candidate;
 
 /*
  * #%L
- * metasfresh-material-dispo-service
+ * metasfresh-material-dispo-commons
  * %%
  * Copyright (C) 2017 metas GmbH
  * %%
@@ -28,9 +24,11 @@ import lombok.NonNull;
  * #L%
  */
 
-public interface CandidateHandler
+
+/**
+ * Please keep in sync with the values of {@link X_MD_Candidate#MD_CANDIDATE_SUBTYPE_AD_Reference_ID}
+ */
+public enum CandidateSubType
 {
-	Collection<CandidateType> getHandeledTypes();
-	
-	Candidate onCandidateNewOrChange(@NonNull final Candidate candidate);
+	DISTRIBUTION, PRODUCTION, RECEIPT, SHIPMENT, FORECAST
 }

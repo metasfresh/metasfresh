@@ -10,9 +10,9 @@ import org.springframework.stereotype.Service;
 import com.google.common.annotations.VisibleForTesting;
 
 import de.metas.material.dispo.CandidateRepository;
-import de.metas.material.dispo.CandidateSpecification.Type;
 import de.metas.material.dispo.CandidatesQuery;
 import de.metas.material.dispo.candidate.Candidate;
+import de.metas.material.dispo.candidate.CandidateType;
 import de.metas.material.event.MaterialDescriptor;
 import de.metas.material.event.MaterialDescriptor.DateOperator;
 import de.metas.material.event.ProductDescriptor;
@@ -57,7 +57,7 @@ public class StockCandidateService
 	 * @param candidate
 	 * @return a candidate with
 	 *         <ul>
-	 *         <li>type = {@link Type#STOCK}</li>
+	 *         <li>type = {@link CandidateType#STOCK}</li>
 	 *         <li>qty = qty of the given {@code candidate} plus the next younger candidate's quantity
 	 *         <li>groupId of the next younger-candidate (or null if there is none)
 	 *         </ul>
@@ -81,7 +81,7 @@ public class StockCandidateService
 				.withQuantity(formerQuantity.add(candidate.getQuantity()));
 
 		return Candidate.builder()
-				.type(Type.STOCK)
+				.type(CandidateType.STOCK)
 				.orgId(candidate.getOrgId())
 				.clientId(candidate.getClientId())
 				.materialDescr(materialDescr)
@@ -98,7 +98,7 @@ public class StockCandidateService
 	 *
 	 * @param relatedCandidate a candidate that can have any type and a quantity which is a <b>delta</b>, i.e. a quantity that is added or removed at the candidate's date.
 	 *
-	 * @return a candidate with type {@link Type#STOCK} that reflects what was persisted in the DB.<br>
+	 * @return a candidate with type {@link CandidateType#STOCK} that reflects what was persisted in the DB.<br>
 	 *         The candidate will have an ID and its quantity will not be a delta, but the "absolute" projected quantity at the given time.<br>
 	 *         Note: this method does not establish a parent-child relationship between any two records
 	 */
@@ -172,7 +172,7 @@ public class StockCandidateService
 			@NonNull final BigDecimal delta)
 	{
 		final CandidatesQuery segment = CandidatesQuery.builder()
-				.type(Type.STOCK)
+				.type(CandidateType.STOCK)
 				.materialDescr(MaterialDescriptor.builderForQuery()
 						.date(date)
 						.productDescriptor(productDescriptor)

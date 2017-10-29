@@ -10,8 +10,8 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.material.dispo.CandidateRepository;
-import de.metas.material.dispo.CandidateSpecification.Type;
 import de.metas.material.dispo.candidate.Candidate;
+import de.metas.material.dispo.candidate.CandidateType;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
 import de.metas.material.event.MaterialDemandEvent;
 import de.metas.material.event.MaterialEventService;
@@ -62,9 +62,9 @@ public class DemandCandiateHandler implements CandidateHandler
 	}
 
 	@Override
-	public Collection<Type> getHandeledTypes()
+	public Collection<CandidateType> getHandeledTypes()
 	{
-		return ImmutableList.of(Type.DEMAND, Type.UNRELATED_DECREASE);
+		return ImmutableList.of(CandidateType.DEMAND, CandidateType.UNRELATED_DECREASE);
 	}
 
 	/**
@@ -132,7 +132,7 @@ public class DemandCandiateHandler implements CandidateHandler
 		}
 
 		final boolean demandExceedsAvailableQty = childStockWithDemand.getQuantity().signum() < 0;
-		if (demandExceedsAvailableQty && demandCandidate.getType() == Type.DEMAND)
+		if (demandExceedsAvailableQty && demandCandidate.getType() == CandidateType.DEMAND)
 		{
 			// there would be no more stock left, so
 			// notify whoever is in charge that we have a demand to balance
@@ -146,10 +146,10 @@ public class DemandCandiateHandler implements CandidateHandler
 
 	private void assertTCorrectCandidateType(@NonNull final Candidate demandCandidate)
 	{
-		final Type type = demandCandidate.getType();
+		final CandidateType type = demandCandidate.getType();
 
 		Preconditions.checkArgument(
-				type == Type.DEMAND || type == Type.UNRELATED_DECREASE,
+				type == CandidateType.DEMAND || type == CandidateType.UNRELATED_DECREASE,
 				"Given parameter 'demandCandidate' has type=%s; demandCandidate=%s",
 				type, demandCandidate);
 	}

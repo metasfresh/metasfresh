@@ -9,12 +9,12 @@ import org.springframework.stereotype.Service;
 
 import de.metas.material.dispo.CandidateRepository;
 import de.metas.material.dispo.CandidateService;
-import de.metas.material.dispo.CandidateSpecification.Status;
-import de.metas.material.dispo.CandidateSpecification.SubType;
-import de.metas.material.dispo.CandidateSpecification.Type;
 import de.metas.material.dispo.candidate.Candidate;
 import de.metas.material.dispo.candidate.DemandDetail;
 import de.metas.material.dispo.candidate.DistributionDetail;
+import de.metas.material.dispo.candidate.CandidateStatus;
+import de.metas.material.dispo.candidate.CandidateSubType;
+import de.metas.material.dispo.candidate.CandidateType;
 import de.metas.material.dispo.CandidatesQuery;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.dispo.service.event.EventUtil;
@@ -70,10 +70,10 @@ public class DistributionPlanEventHandler
 	public void handleDistributionPlanEvent(final DistributionPlanEvent distributionPlanEvent)
 	{
 		final DDOrder ddOrder = distributionPlanEvent.getDdOrder();
-		final Status candidateStatus;
+		final CandidateStatus candidateStatus;
 		if (ddOrder.getDdOrderId() <= 0)
 		{
-			candidateStatus = Status.doc_planned;
+			candidateStatus = CandidateStatus.doc_planned;
 		}
 		else
 		{
@@ -109,9 +109,9 @@ public class DistributionPlanEventHandler
 					.build();
 
 			final Candidate supplyCandidate = Candidate.builderForEventDescr(distributionPlanEvent.getEventDescr())
-					.type(Type.SUPPLY)
+					.type(CandidateType.SUPPLY)
 					.status(candidateStatus)
-					.subType(SubType.DISTRIBUTION)
+					.subType(CandidateSubType.DISTRIBUTION)
 					.materialDescr(materialDescriptor)
 					.demandDetail(DemandDetail.forOrderLineIdOrNull(ddOrderLine.getSalesOrderLineId()))
 					.distributionDetail(createCandidateDetailFromDDOrderAndLine(ddOrder, ddOrderLine))
@@ -131,7 +131,7 @@ public class DistributionPlanEventHandler
 			final Integer groupId = supplyCandidateWithId.getGroupId();
 
 			final Candidate demandCandidate = supplyCandidate
-					.withType(Type.DEMAND)
+					.withType(CandidateType.DEMAND)
 					.withGroupId(groupId)
 					.withParentId(supplyCandidateWithId.getId())
 					.withQuantity(supplyCandidateWithId.getQuantity()) // what was added as supply in the destination warehouse needs to be registered as demand in the source warehouse

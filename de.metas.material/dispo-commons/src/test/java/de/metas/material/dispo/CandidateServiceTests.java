@@ -13,11 +13,11 @@ import org.junit.Test;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.material.dispo.CandidateSpecification.SubType;
-import de.metas.material.dispo.CandidateSpecification.Type;
 import de.metas.material.dispo.candidate.Candidate;
 import de.metas.material.dispo.candidate.DistributionDetail;
 import de.metas.material.dispo.candidate.ProductionDetail;
+import de.metas.material.dispo.candidate.CandidateSubType;
+import de.metas.material.dispo.candidate.CandidateType;
 import de.metas.material.event.MaterialEventService;
 import de.metas.material.event.ProductDescriptorFactory;
 import de.metas.material.event.ddorder.DDOrder;
@@ -68,8 +68,8 @@ public class CandidateServiceTests
 		final Candidate candidate = Candidate.builder()
 				.clientId(20)
 				.orgId(30)
-				.type(Type.SUPPLY)
-				.subType(SubType.PRODUCTION)
+				.type(CandidateType.SUPPLY)
+				.subType(CandidateSubType.PRODUCTION)
 				.materialDescr(createMaterialDescriptor())
 				.productionDetail(ProductionDetail.builder()
 						.plantId(210)
@@ -79,7 +79,7 @@ public class CandidateServiceTests
 				.build();
 
 		final Candidate candidate2 = candidate
-				.withType(Type.DEMAND)
+				.withType(CandidateType.DEMAND)
 				.withMaterialDescr(candidate.getMaterialDescr()
 						.withProductDescriptor(productDescriptorFactory.forProductIdAndEmptyAttribute(310))
 						.withQuantity(BigDecimal.valueOf(20)))
@@ -90,7 +90,7 @@ public class CandidateServiceTests
 						.build());
 
 		final Candidate candidate3 = candidate
-				.withType(Type.DEMAND)
+				.withType(CandidateType.DEMAND)
 				.withMaterialDescr(candidate.getMaterialDescr()
 						.withProductDescriptor(productDescriptorFactory.forProductIdAndEmptyAttribute(320))
 						.withQuantity(BigDecimal.valueOf(10)))
@@ -121,8 +121,8 @@ public class CandidateServiceTests
 		final Candidate candidate = Candidate.builder()
 				.clientId(20)
 				.orgId(30)
-				.type(Type.SUPPLY)
-				.subType(SubType.DISTRIBUTION)
+				.type(CandidateType.SUPPLY)
+				.subType(CandidateSubType.DISTRIBUTION)
 				.materialDescr(createMaterialDescriptor())
 				.distributionDetail(DistributionDetail.builder()
 						.productPlanningId(220)
@@ -132,7 +132,7 @@ public class CandidateServiceTests
 				.build();
 
 		final Candidate candidate2 = candidate
-				.withType(Type.DEMAND)
+				.withType(CandidateType.DEMAND)
 				.withMaterialDescr(candidate.getMaterialDescr()
 						.withProductDescriptor(productDescriptorFactory.forProductIdAndEmptyAttribute(310))
 						.withQuantity(BigDecimal.valueOf(20)))
@@ -144,7 +144,7 @@ public class CandidateServiceTests
 						.build());
 
 		final Candidate candidate3 = candidate
-				.withType(Type.DEMAND)
+				.withType(CandidateType.DEMAND)
 				.withMaterialDescr(candidate.getMaterialDescr()
 						.withProductDescriptor(productDescriptorFactory.forProductIdAndEmptyAttribute(320))
 						.withQuantity(BigDecimal.valueOf(10)))

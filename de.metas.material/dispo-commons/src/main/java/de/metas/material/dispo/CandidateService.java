@@ -9,11 +9,11 @@ import org.springframework.stereotype.Service;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 
-import de.metas.material.dispo.CandidateSpecification.SubType;
-import de.metas.material.dispo.CandidateSpecification.Type;
 import de.metas.material.dispo.candidate.Candidate;
 import de.metas.material.dispo.candidate.DistributionDetail;
 import de.metas.material.dispo.candidate.ProductionDetail;
+import de.metas.material.dispo.candidate.CandidateSubType;
+import de.metas.material.dispo.candidate.CandidateType;
 import de.metas.material.event.EventDescr;
 import de.metas.material.event.MaterialEventService;
 import de.metas.material.event.ddorder.DDOrder;
@@ -85,7 +85,7 @@ public class CandidateService
 
 	/**
 	 *
-	 * @param group a non-empty list of candidates that all have {@link SubType#PRODUCTION},
+	 * @param group a non-empty list of candidates that all have {@link CandidateSubType#PRODUCTION},
 	 *            all have the same {@link Candidate#getGroupId()}
 	 *            and all have appropriate not-null {@link Candidate#getProductionDetail()}s.
 	 * @return
@@ -127,7 +127,7 @@ public class CandidateService
 			}
 			else
 			{
-				final boolean receipt = groupMember.getType() == Type.SUPPLY;
+				final boolean receipt = groupMember.getType() == CandidateType.SUPPLY;
 				if (receipt)
 				{
 					ppOrderBuilder.datePromised(groupMember.getDate());
@@ -178,7 +178,7 @@ public class CandidateService
 		for (final Candidate groupMember : group)
 		{
 			ddOrderBuilder.orgId(groupMember.getOrgId());
-			if (groupMember.getType() == Type.SUPPLY)
+			if (groupMember.getType() == CandidateType.SUPPLY)
 			{
 				endDate = groupMember.getDate();
 				ddOrderBuilder.datePromised(groupMember.getDate());

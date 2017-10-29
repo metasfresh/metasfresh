@@ -12,8 +12,8 @@ import java.sql.Timestamp;
 import org.adempiere.util.time.SystemTime;
 import org.junit.Test;
 
-import de.metas.material.dispo.CandidateSpecification.Type;
 import de.metas.material.dispo.candidate.Candidate;
+import de.metas.material.dispo.candidate.CandidateType;
 import de.metas.material.event.MaterialDescriptor;
 import de.metas.material.event.MaterialDescriptor.DateOperator;
 
@@ -53,7 +53,7 @@ public class CandidatesQueryTest
 	{
 		final Timestamp date = SystemTime.asTimestamp();
 
-		final Candidate cand = Candidate.builder().type(Type.STOCK)
+		final Candidate cand = Candidate.builder().type(CandidateType.STOCK)
 				.materialDescr(createMaterialDescriptor().withDate(date))
 				.build();
 		final CandidatesQuery query = CandidatesQuery.fromCandidate(cand);
@@ -65,7 +65,7 @@ public class CandidatesQueryTest
 		assertThat(query.getMaterialDescr().getAttributeSetInstanceId()).isEqualTo(ATTRIBUTE_SET_INSTANCE_ID);
 		assertThat(query.getMaterialDescr().getWarehouseId()).isEqualTo(WAREHOUSE_ID);
 
-		assertThat(query.getType()).isEqualTo(Type.STOCK);
+		assertThat(query.getType()).isEqualTo(CandidateType.STOCK);
 		assertThat(query.getParentId()).isEqualTo(0);
 	}
 

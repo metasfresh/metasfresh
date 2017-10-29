@@ -9,8 +9,8 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.material.dispo.CandidateRepository;
-import de.metas.material.dispo.CandidateSpecification.Type;
 import de.metas.material.dispo.candidate.Candidate;
+import de.metas.material.dispo.candidate.CandidateType;
 import de.metas.material.event.MaterialDemandEvent;
 import de.metas.material.event.MaterialEventService;
 import lombok.NonNull;
@@ -61,14 +61,14 @@ public class StockUpCandiateHandler implements CandidateHandler
 	}
 
 	@Override
-	public Collection<Type> getHandeledTypes()
+	public Collection<CandidateType> getHandeledTypes()
 	{
-		return ImmutableList.of(Type.STOCK_UP);
+		return ImmutableList.of(CandidateType.STOCK_UP);
 	}
 
 	public Candidate onCandidateNewOrChange(@NonNull final Candidate candidate)
 	{
-		Preconditions.checkArgument(candidate.getType() == Type.STOCK_UP,
+		Preconditions.checkArgument(candidate.getType() == CandidateType.STOCK_UP,
 				"Given parameter 'candidate' has type=%s; demandCandidate=%s",
 				candidate.getType(), candidate);
 

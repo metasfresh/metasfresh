@@ -8,7 +8,10 @@ import de.metas.material.dispo.candidate.Candidate;
 import de.metas.material.dispo.candidate.DemandDetail;
 import de.metas.material.dispo.candidate.DistributionDetail;
 import de.metas.material.dispo.candidate.ProductionDetail;
+import de.metas.material.dispo.candidate.CandidateStatus;
+import de.metas.material.dispo.candidate.CandidateSubType;
 import de.metas.material.dispo.candidate.TransactionDetail;
+import de.metas.material.dispo.candidate.CandidateType;
 import de.metas.material.event.MaterialDescriptor;
 import lombok.Builder;
 import lombok.NonNull;
@@ -46,7 +49,7 @@ import lombok.experimental.Wither;
 @Builder
 @Value
 @Wither
-public final class CandidatesQuery implements CandidateSpecification
+public final class CandidatesQuery
 {
 	public static final ProductionDetail NO_PRODUCTION_DETAIL = ProductionDetail.builder().build();
 
@@ -82,14 +85,14 @@ public final class CandidatesQuery implements CandidateSpecification
 
 	int orgId;
 
-	Type type;
+	CandidateType type;
 
 	/**
 	 * Should be {@code null} for stock candidates.
 	 */
-	SubType subType;
+	CandidateSubType subType;
 
-	Status status;
+	CandidateStatus status;
 
 	int id;
 
@@ -108,12 +111,12 @@ public final class CandidatesQuery implements CandidateSpecification
 	MaterialDescriptor materialDescr;
 
 	/**
-	 * Used for additional infos if this candidate has the sub type {@link SubType#PRODUCTION}.
+	 * Used for additional infos if this candidate has the sub type {@link CandidateSubType#PRODUCTION}.
 	 */
 	ProductionDetail productionDetail;
 
 	/**
-	 * Used for additional infos if this candidate has the sub type {@link SubType#DISTRIBUTION}.
+	 * Used for additional infos if this candidate has the sub type {@link CandidateSubType#DISTRIBUTION}.
 	 */
 	DistributionDetail distributionDetail;
 
@@ -127,9 +130,9 @@ public final class CandidatesQuery implements CandidateSpecification
 	public CandidatesQuery(
 			final MaterialDescriptor parentMaterialDescriptor,
 			final int orgId,
-			final Type type,
-			final SubType subType,
-			final Status status,
+			final CandidateType type,
+			final CandidateSubType subType,
+			final CandidateStatus status,
 			final int id,
 			final int parentId,
 			final int groupId,

@@ -23,8 +23,8 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.material.dispo.CandidateRepository;
 import de.metas.material.dispo.CandidateService;
-import de.metas.material.dispo.CandidateSpecification.Type;
 import de.metas.material.dispo.DispoTestUtils;
+import de.metas.material.dispo.candidate.CandidateType;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
@@ -169,9 +169,9 @@ public class MaterialDispoEventListenerFacadeTests
 		mdEventListener.onEvent(event);
 
 		assertThat(DispoTestUtils.retrieveAllRecords()).hasSize(5); // one for the shipment-schedule demand, two for the distribution demand + supply and 2 stocks (one of them shared between shipment-demand and distr-supply)
-		final I_MD_Candidate toWarehouseDemand = DispoTestUtils.filter(Type.DEMAND, toWarehouseId).get(0);
-		final I_MD_Candidate toWarehouseSharedStock = DispoTestUtils.filter(Type.STOCK, toWarehouseId).get(0);
-		final I_MD_Candidate toWarehouseSupply = DispoTestUtils.filter(Type.SUPPLY, toWarehouseId).get(0);
+		final I_MD_Candidate toWarehouseDemand = DispoTestUtils.filter(CandidateType.DEMAND, toWarehouseId).get(0);
+		final I_MD_Candidate toWarehouseSharedStock = DispoTestUtils.filter(CandidateType.STOCK, toWarehouseId).get(0);
+		final I_MD_Candidate toWarehouseSupply = DispoTestUtils.filter(CandidateType.SUPPLY, toWarehouseId).get(0);
 
 		assertThat(toWarehouseDemand.getSeqNo()).isEqualTo(toWarehouseSharedStock.getSeqNo() - 1);
 		assertThat(toWarehouseSharedStock.getSeqNo()).isEqualTo(toWarehouseSupply.getSeqNo() - 1);
@@ -199,7 +199,7 @@ public class MaterialDispoEventListenerFacadeTests
 
 		mdEventListener.onEvent(transactionEvent);
 
-		assertThat(DispoTestUtils.filter(Type.DEMAND)).hasSize(1);
-		assertThat(DispoTestUtils.filter(Type.STOCK)).hasSize(2);
+		assertThat(DispoTestUtils.filter(CandidateType.DEMAND)).hasSize(1);
+		assertThat(DispoTestUtils.filter(CandidateType.STOCK)).hasSize(2);
 	}
 }

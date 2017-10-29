@@ -24,8 +24,8 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.material.dispo.CandidateRepository;
 import de.metas.material.dispo.CandidateService;
-import de.metas.material.dispo.CandidateSpecification.Type;
 import de.metas.material.dispo.DispoTestUtils;
+import de.metas.material.dispo.candidate.CandidateType;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
@@ -128,17 +128,17 @@ public class ProdcutionPlanEventHandlerTests
 	{
 		productionPlanEventHandler.handleProductionPlanEvent(productionPlanEvent);
 
-		assertThat(DispoTestUtils.filter(Type.SUPPLY).size()).isEqualTo(1); //
-		assertThat(DispoTestUtils.filter(Type.DEMAND)).hasSize(2); // we have two different inputs
-		assertThat(DispoTestUtils.filter(Type.STOCK)).hasSize(3); // one stock record per supply, one per demand
+		assertThat(DispoTestUtils.filter(CandidateType.SUPPLY).size()).isEqualTo(1); //
+		assertThat(DispoTestUtils.filter(CandidateType.DEMAND)).hasSize(2); // we have two different inputs
+		assertThat(DispoTestUtils.filter(CandidateType.STOCK)).hasSize(3); // one stock record per supply, one per demand
 
-		final I_MD_Candidate t2Stock = DispoTestUtils.filter(Type.STOCK, t2).get(0);
+		final I_MD_Candidate t2Stock = DispoTestUtils.filter(CandidateType.STOCK, t2).get(0);
 		assertThat(t2Stock.getQty()).isEqualByComparingTo(BigDecimal.ONE);
 		assertThat(t2Stock.getM_Product_ID()).isEqualTo(PRODUCT_ID);
 		assertThat(t2Stock.getMD_Candidate_GroupId()).isGreaterThan(0); // stock candidates have their own groupIds too
 		assertThat(t2Stock.getMD_Candidate_Parent_ID(), lessThanOrEqualTo(0));
 
-		final I_MD_Candidate t2Supply = DispoTestUtils.filter(Type.SUPPLY, t2).get(0);
+		final I_MD_Candidate t2Supply = DispoTestUtils.filter(CandidateType.SUPPLY, t2).get(0);
 		assertThat(t2Supply.getQty()).isEqualByComparingTo(BigDecimal.ONE);
 		assertThat(t2Supply.getM_Product_ID()).isEqualTo(PRODUCT_ID);
 		assertThat(t2Supply.getMD_Candidate_Parent_ID()).isEqualTo(t2Stock.getMD_Candidate_ID());
@@ -147,14 +147,14 @@ public class ProdcutionPlanEventHandlerTests
 		final int supplyDemandGroupId = t2Supply.getMD_Candidate_GroupId();
 		assertThat(supplyDemandGroupId).isGreaterThan(0);
 
-		final I_MD_Candidate t1Product1Demand = DispoTestUtils.filter(Type.DEMAND, t1, rawProduct1Id).get(0);
+		final I_MD_Candidate t1Product1Demand = DispoTestUtils.filter(CandidateType.DEMAND, t1, rawProduct1Id).get(0);
 		assertThat(t1Product1Demand.getQty()).isEqualByComparingTo(BigDecimal.TEN);
 		assertThat(t1Product1Demand.getM_Product_ID()).isEqualTo(rawProduct1Id);
 		assertThat(t1Product1Demand.getMD_Candidate_GroupId()).isEqualTo(supplyDemandGroupId);
 		// no parent relationship between production supply and demand because it can be m:n
 		// assertThat(t1Product1Demand.getMD_Candidate_Parent_ID()).isEqualTo(t2Supply.getMD_Candidate_ID());
 
-		final I_MD_Candidate t1Product1Stock = DispoTestUtils.filter(Type.STOCK, t1, rawProduct1Id).get(0);
+		final I_MD_Candidate t1Product1Stock = DispoTestUtils.filter(CandidateType.STOCK, t1, rawProduct1Id).get(0);
 		assertThat(t1Product1Stock.getQty()).isEqualByComparingTo(BigDecimal.TEN.negate());
 		assertThat(t1Product1Stock.getM_Product_ID()).isEqualTo(rawProduct1Id);
 		assertThat(t1Product1Stock.getMD_Candidate_GroupId()).isGreaterThan(0);  // stock candidates have their own groupIds too
@@ -163,14 +163,14 @@ public class ProdcutionPlanEventHandlerTests
 
 		assertThat(t1Product1Stock.getMD_Candidate_Parent_ID()).isEqualTo(t1Product1Demand.getMD_Candidate_ID());
 
-		final I_MD_Candidate t1Product2Demand = DispoTestUtils.filter(Type.DEMAND, t1, rawProduct2Id).get(0);
+		final I_MD_Candidate t1Product2Demand = DispoTestUtils.filter(CandidateType.DEMAND, t1, rawProduct2Id).get(0);
 		assertThat(t1Product2Demand.getQty()).isEqualByComparingTo(eleven);
 		assertThat(t1Product2Demand.getM_Product_ID()).isEqualTo(rawProduct2Id);
 		assertThat(t1Product2Demand.getMD_Candidate_GroupId()).isEqualTo(supplyDemandGroupId);
 		// no parent relationship between production supply and demand because it can be m:n
 		// assertThat(t1Product2Demand.getMD_Candidate_Parent_ID()).isEqualTo(t2Supply.getMD_Candidate_ID());
 
-		final I_MD_Candidate t1Product2Stock = DispoTestUtils.filter(Type.STOCK, t1, rawProduct2Id).get(0);
+		final I_MD_Candidate t1Product2Stock = DispoTestUtils.filter(CandidateType.STOCK, t1, rawProduct2Id).get(0);
 		assertThat(t1Product2Stock.getQty()).isEqualByComparingTo(eleven.negate());
 		assertThat(t1Product2Stock.getM_Product_ID()).isEqualTo(rawProduct2Id);
 		assertThat(t1Product2Stock.getMD_Candidate_GroupId()).isGreaterThan(0); // stock candidates have their own groupIds too

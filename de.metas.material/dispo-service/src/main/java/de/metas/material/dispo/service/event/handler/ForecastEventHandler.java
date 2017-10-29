@@ -2,10 +2,10 @@ package de.metas.material.dispo.service.event.handler;
 
 import org.springframework.stereotype.Service;
 
-import de.metas.material.dispo.CandidateSpecification.SubType;
-import de.metas.material.dispo.CandidateSpecification.Type;
 import de.metas.material.dispo.candidate.Candidate;
 import de.metas.material.dispo.candidate.DemandDetail;
+import de.metas.material.dispo.candidate.CandidateSubType;
+import de.metas.material.dispo.candidate.CandidateType;
 import de.metas.material.dispo.candidate.Candidate.CandidateBuilder;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.dispo.service.event.EventUtil;
@@ -57,8 +57,8 @@ public class ForecastEventHandler
 
 		final CandidateBuilder candidateBuilder = Candidate.builderForEventDescr(event.getEventDescr())
 				.status(EventUtil.getCandidateStatus(forecast.getDocStatus()))
-				.type(Type.STOCK_UP)
-				.subType(SubType.FORECAST);
+				.type(CandidateType.STOCK_UP)
+				.subType(CandidateSubType.FORECAST);
 
 		for (final ForecastLine forecastLine : forecast.getForecastLines())
 		{

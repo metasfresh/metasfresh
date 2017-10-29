@@ -26,10 +26,10 @@ import org.junit.Test;
 import org.junit.rules.TestWatcher;
 
 import de.metas.material.dispo.CandidateRepository;
-import de.metas.material.dispo.CandidateSpecification.SubType;
-import de.metas.material.dispo.CandidateSpecification.Type;
 import de.metas.material.dispo.DispoTestUtils;
 import de.metas.material.dispo.candidate.Candidate;
+import de.metas.material.dispo.candidate.CandidateSubType;
+import de.metas.material.dispo.candidate.CandidateType;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.X_MD_Candidate;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
@@ -108,7 +108,7 @@ public class SupplyCandiateCangeHandlerTest
 				.build();
 
 		final Candidate candidate = Candidate.builder()
-				.type(Type.SUPPLY)
+				.type(CandidateType.SUPPLY)
 				.clientId(org.getAD_Client_ID())
 				.orgId(org.getAD_Org_ID())
 				.materialDescr(materialDescr)
@@ -117,8 +117,8 @@ public class SupplyCandiateCangeHandlerTest
 
 		final List<I_MD_Candidate> records = DispoTestUtils.retrieveAllRecords();
 		assertThat(records.size(), is(2));
-		final I_MD_Candidate stockRecord = DispoTestUtils.filter(Type.STOCK).get(0);
-		final I_MD_Candidate supplyRecord = DispoTestUtils.filter(Type.SUPPLY).get(0);
+		final I_MD_Candidate stockRecord = DispoTestUtils.filter(CandidateType.STOCK).get(0);
+		final I_MD_Candidate supplyRecord = DispoTestUtils.filter(CandidateType.SUPPLY).get(0);
 
 		assertThat(supplyRecord.getQty(), comparesEqualTo(qty));
 		assertThat(stockRecord.getQty(), comparesEqualTo(qty)); // ..because there was no older record, the "delta" we provided is the current quantity
@@ -140,7 +140,7 @@ public class SupplyCandiateCangeHandlerTest
 				.build();
 
 		final Candidate candidatee = Candidate.builder()
-				.type(Type.SUPPLY)
+				.type(CandidateType.SUPPLY)
 				.clientId(org.getAD_Client_ID())
 				.orgId(org.getAD_Org_ID())
 				.materialDescr(materialDescr)
@@ -152,8 +152,8 @@ public class SupplyCandiateCangeHandlerTest
 
 			final List<I_MD_Candidate> records = DispoTestUtils.retrieveAllRecords();
 			assertThat(records.size(), is(2));
-			final I_MD_Candidate stockRecord = DispoTestUtils.filter(Type.STOCK).get(0);
-			final I_MD_Candidate supplyRecord = DispoTestUtils.filter(Type.SUPPLY).get(0);
+			final I_MD_Candidate stockRecord = DispoTestUtils.filter(CandidateType.STOCK).get(0);
+			final I_MD_Candidate supplyRecord = DispoTestUtils.filter(CandidateType.SUPPLY).get(0);
 
 			assertThat(supplyRecord.getQty(), comparesEqualTo(qty));
 			assertThat(stockRecord.getQty(), comparesEqualTo(qty)); // ..because there was no older record, the "delta" we provided is the current quantity
@@ -180,7 +180,7 @@ public class SupplyCandiateCangeHandlerTest
 				.build();
 
 		final Candidate candidatee = Candidate.builder()
-				.type(Type.SUPPLY)
+				.type(CandidateType.SUPPLY)
 				.clientId(org.getAD_Client_ID())
 				.orgId(org.getAD_Org_ID())
 				.materialDescr(materialDescr)
@@ -192,8 +192,8 @@ public class SupplyCandiateCangeHandlerTest
 
 			final List<I_MD_Candidate> records = DispoTestUtils.retrieveAllRecords();
 			assertThat(records.size(), is(2));
-			final I_MD_Candidate stockRecord = DispoTestUtils.filter(Type.STOCK).get(0);
-			final I_MD_Candidate supplyRecord = DispoTestUtils.filter(Type.SUPPLY).get(0);
+			final I_MD_Candidate stockRecord = DispoTestUtils.filter(CandidateType.STOCK).get(0);
+			final I_MD_Candidate supplyRecord = DispoTestUtils.filter(CandidateType.SUPPLY).get(0);
 
 			assertThat(supplyRecord.getQty(), comparesEqualTo(exptectedQty));
 			assertThat(stockRecord.getQty(), comparesEqualTo(exptectedQty)); // ..because there was no older record, the "delta" we provided is the current quantity
@@ -222,7 +222,7 @@ public class SupplyCandiateCangeHandlerTest
 				.build();
 
 		final Candidate olderStockCandidate = Candidate.builder()
-				.type(Type.STOCK)
+				.type(CandidateType.STOCK)
 				.clientId(org.getAD_Client_ID())
 				.orgId(org.getAD_Org_ID())
 				.materialDescr(olderMaterialDescr)
@@ -239,21 +239,21 @@ public class SupplyCandiateCangeHandlerTest
 				.build();
 
 		final Candidate candidate = Candidate.builder()
-				.type(Type.SUPPLY)
+				.type(CandidateType.SUPPLY)
 				.clientId(org.getAD_Client_ID())
 				.orgId(org.getAD_Org_ID())
 				.materialDescr(materialDescr)
-				.subType(SubType.PRODUCTION)
+				.subType(CandidateSubType.PRODUCTION)
 				.build();
 		supplyCandiateCangeHandler.onCandidateNewOrChange(candidate);
 
 		final List<I_MD_Candidate> records = DispoTestUtils.retrieveAllRecords();
 		assertThat(records.size(), is(3));
-		final I_MD_Candidate stockRecord = DispoTestUtils.filter(Type.STOCK, t2).get(0);
-		final I_MD_Candidate supplyRecord = DispoTestUtils.filter(Type.SUPPLY).get(0);
+		final I_MD_Candidate stockRecord = DispoTestUtils.filter(CandidateType.STOCK, t2).get(0);
+		final I_MD_Candidate supplyRecord = DispoTestUtils.filter(CandidateType.SUPPLY).get(0);
 
 		assertThat(supplyRecord.getQty(), comparesEqualTo(supplyQty));
-		assertThat(supplyRecord.getMD_Candidate_SubType(), is(SubType.PRODUCTION.toString()));
+		assertThat(supplyRecord.getMD_Candidate_SubType(), is(CandidateSubType.PRODUCTION.toString()));
 		assertThat(stockRecord.getQty(), comparesEqualTo(new BigDecimal("34")));
 		assertThat(supplyRecord.getMD_Candidate_Parent_ID(), is(stockRecord.getMD_Candidate_ID()));
 
@@ -263,7 +263,7 @@ public class SupplyCandiateCangeHandlerTest
 	@Test
 	public void increase_stock()
 	{
-		final Candidate candidate = createCandidateWithType(Type.UNRELATED_INCREASE);
+		final Candidate candidate = createCandidateWithType(CandidateType.UNRELATED_INCREASE);
 
 		supplyCandiateCangeHandler.onCandidateNewOrChange(candidate);
 
@@ -280,7 +280,7 @@ public class SupplyCandiateCangeHandlerTest
 		assertThat(unrelatedTransactionCandidate.getMD_Candidate_Parent_ID()).isEqualTo(stockCandidate.getMD_Candidate_ID());
 	}
 
-	private Candidate createCandidateWithType(final Type type)
+	private Candidate createCandidateWithType(final CandidateType type)
 	{
 		final Candidate candidate = Candidate.builder()
 				.type(type)

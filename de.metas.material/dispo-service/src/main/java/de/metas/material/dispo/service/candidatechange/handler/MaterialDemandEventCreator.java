@@ -4,8 +4,8 @@ import java.math.BigDecimal;
 
 import com.google.common.base.Preconditions;
 
-import de.metas.material.dispo.CandidateSpecification.Type;
 import de.metas.material.dispo.candidate.Candidate;
+import de.metas.material.dispo.candidate.CandidateType;
 import de.metas.material.event.EventDescr;
 import de.metas.material.event.MaterialDemandDescriptor;
 import de.metas.material.event.MaterialDemandEvent;
@@ -55,8 +55,8 @@ public class MaterialDemandEventCreator
 
 	private void verifyCandidateType(final Candidate demandCandidate)
 	{
-		final Type candidateType = demandCandidate.getType();
-		Preconditions.checkArgument(candidateType == Type.DEMAND || candidateType == Type.STOCK_UP,
+		final CandidateType candidateType = demandCandidate.getType();
+		Preconditions.checkArgument(candidateType == CandidateType.DEMAND || candidateType == CandidateType.STOCK_UP,
 				"Given parameter demandCandidate needs to have DEMAND or STOCK_UP as type; demandCandidate=%s", demandCandidate);
 	}
 

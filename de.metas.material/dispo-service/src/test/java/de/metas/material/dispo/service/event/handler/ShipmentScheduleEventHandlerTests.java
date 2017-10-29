@@ -22,8 +22,8 @@ import org.junit.rules.TestWatcher;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.material.dispo.CandidateRepository;
-import de.metas.material.dispo.CandidateSpecification.Type;
 import de.metas.material.dispo.DispoTestUtils;
+import de.metas.material.dispo.candidate.CandidateType;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
@@ -107,11 +107,11 @@ public class ShipmentScheduleEventHandlerTests
 		final List<I_MD_Candidate> allRecords = DispoTestUtils.retrieveAllRecords();
 		assertThat(allRecords).hasSize(2);
 
-		assertThat(DispoTestUtils.filter(Type.DEMAND)).hasSize(1);
-		assertThat(DispoTestUtils.filter(Type.STOCK)).hasSize(1);
+		assertThat(DispoTestUtils.filter(CandidateType.DEMAND)).hasSize(1);
+		assertThat(DispoTestUtils.filter(CandidateType.STOCK)).hasSize(1);
 
-		final I_MD_Candidate demandRecord = DispoTestUtils.filter(Type.DEMAND).get(0);
-		final I_MD_Candidate stockRecord = DispoTestUtils.filter(Type.STOCK).get(0);
+		final I_MD_Candidate demandRecord = DispoTestUtils.filter(CandidateType.DEMAND).get(0);
+		final I_MD_Candidate stockRecord = DispoTestUtils.filter(CandidateType.STOCK).get(0);
 
 		assertThat(demandRecord.getSeqNo()).isEqualTo(stockRecord.getSeqNo() - 1); // the demand record shall be displayed first
 		assertThat(stockRecord.getMD_Candidate_Parent_ID()).isEqualTo(demandRecord.getMD_Candidate_ID());

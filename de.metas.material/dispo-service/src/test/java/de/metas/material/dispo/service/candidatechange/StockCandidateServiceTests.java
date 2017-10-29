@@ -18,8 +18,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 import de.metas.material.dispo.CandidateRepository;
-import de.metas.material.dispo.CandidateSpecification.Type;
 import de.metas.material.dispo.candidate.Candidate;
+import de.metas.material.dispo.candidate.CandidateType;
 import de.metas.material.event.MaterialDescriptor;
 import de.metas.material.event.ProductDescriptorFactory;
 
@@ -74,7 +74,7 @@ public class StockCandidateServiceTests
 				.build();
 
 		final Candidate stockCandidate = Candidate.builder()
-				.type(Type.STOCK)
+				.type(CandidateType.STOCK)
 				.clientId(org.getAD_Client_ID())
 				.orgId(org.getAD_Org_ID())
 				.materialDescr(materialDescr)
@@ -96,7 +96,7 @@ public class StockCandidateServiceTests
 				.build();
 
 		final Candidate candidate = Candidate.builder()
-				.type(Type.STOCK)
+				.type(CandidateType.STOCK)
 				.clientId(org.getAD_Client_ID())
 				.orgId(org.getAD_Org_ID())
 				.materialDescr(materialDescr)
@@ -120,7 +120,7 @@ public class StockCandidateServiceTests
 				.build();
 
 		final Candidate candidate = Candidate.builder()
-				.type(Type.STOCK)
+				.type(CandidateType.STOCK)
 				.clientId(org.getAD_Client_ID())
 				.orgId(org.getAD_Org_ID())
 				.materialDescr(materialDescr)

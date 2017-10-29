@@ -9,10 +9,10 @@ import java.math.BigDecimal;
 import org.adempiere.util.time.SystemTime;
 import org.junit.Test;
 
-import de.metas.material.dispo.CandidateSpecification.Status;
-import de.metas.material.dispo.CandidateSpecification.SubType;
-import de.metas.material.dispo.CandidateSpecification.Type;
 import de.metas.material.dispo.candidate.Candidate;
+import de.metas.material.dispo.candidate.CandidateStatus;
+import de.metas.material.dispo.candidate.CandidateSubType;
+import de.metas.material.dispo.candidate.CandidateType;
 import de.metas.material.event.EventDescr;
 import de.metas.material.event.MaterialDemandEvent;
 import de.metas.material.event.MaterialDescriptor;
@@ -46,9 +46,9 @@ public class MaterialDemandEventCreatorTest
 	{
 		final Candidate demandCandidate = Candidate.builderForEventDescr(new EventDescr(20, 30))
 				.id(10)
-				.type(Type.DEMAND)
-				.subType(SubType.PRODUCTION)
-				.status(Status.doc_closed)
+				.type(CandidateType.DEMAND)
+				.subType(CandidateSubType.PRODUCTION)
+				.status(CandidateStatus.doc_closed)
 				.groupId(40)
 				.seqNo(50)
 				.materialDescr(MaterialDescriptor.builder()

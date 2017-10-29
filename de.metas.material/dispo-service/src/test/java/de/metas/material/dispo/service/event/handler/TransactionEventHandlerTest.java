@@ -14,11 +14,11 @@ import org.junit.Before;
 import org.junit.Test;
 
 import de.metas.material.dispo.CandidateRepository;
-import de.metas.material.dispo.CandidateSpecification.Type;
 import de.metas.material.dispo.CandidatesQuery;
 import de.metas.material.dispo.candidate.Candidate;
 import de.metas.material.dispo.candidate.DemandDetail;
 import de.metas.material.dispo.candidate.TransactionDetail;
+import de.metas.material.dispo.candidate.CandidateType;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.event.EventDescr;
 import de.metas.material.event.MaterialDescriptor;
@@ -80,7 +80,7 @@ public class TransactionEventHandlerTest
 
 		final Candidate candidate = TransactionEventHandler.createCommonCandidateBuilder(event).build();
 
-		assertThat(candidate.getType()).isSameAs(Type.UNRELATED_DECREASE);
+		assertThat(candidate.getType()).isSameAs(CandidateType.UNRELATED_DECREASE);
 		assertThat(candidate.getQuantity()).isEqualByComparingTo("10");
 	}
 
@@ -91,7 +91,7 @@ public class TransactionEventHandlerTest
 
 		final Candidate candidate = TransactionEventHandler.createCommonCandidateBuilder(event).build();
 
-		assertThat(candidate.getType()).isSameAs(Type.UNRELATED_INCREASE);
+		assertThat(candidate.getType()).isSameAs(CandidateType.UNRELATED_INCREASE);
 		assertThat(candidate.getQuantity()).isEqualByComparingTo("10");
 	}
 
@@ -118,7 +118,7 @@ public class TransactionEventHandlerTest
 						assertThat(query.getTransactionDetail().getTransactionId()).isEqualTo(TRANSACTION_ID);
 				}}; // @formatter:on
 
-		assertThat(candidate.getType()).isEqualTo(Type.UNRELATED_INCREASE);
+		assertThat(candidate.getType()).isEqualTo(CandidateType.UNRELATED_INCREASE);
 		assertThat(candidate.getDemandDetail()).isNull();
 		assertThat(candidate.getDistributionDetail()).isNull();
 		assertThat(candidate.getProductionDetail()).isNull();
@@ -132,7 +132,7 @@ public class TransactionEventHandlerTest
 		final TransactionEvent unrelatedEvent = createTransactionEventBuilderWithQuantity(BigDecimal.TEN).build();
 
 		final Candidate exisitingCandidate = Candidate.builder()
-				.type(Type.UNRELATED_INCREASE)
+				.type(CandidateType.UNRELATED_INCREASE)
 				.id(11)
 				.materialDescr(MaterialDescriptor.builderForCompleteDescriptor()
 						.productDescriptor(createProductDescriptor())
@@ -161,7 +161,7 @@ public class TransactionEventHandlerTest
 						assertThat(query.getTransactionDetail().getTransactionId()).isEqualTo(TRANSACTION_ID);
 				}}; // @formatter:on
 
-		assertThat(candidate.getType()).isEqualTo(Type.UNRELATED_INCREASE);
+		assertThat(candidate.getType()).isEqualTo(CandidateType.UNRELATED_INCREASE);
 		assertThat(candidate.getId()).isEqualTo(11);
 		assertThat(candidate.getQuantity()).isEqualByComparingTo("11");
 		assertThat(candidate.getDemandDetail()).isNull();
@@ -208,7 +208,7 @@ public class TransactionEventHandlerTest
 				assertThat(query.getTransactionDetail()).as("only search via the demand detail, if we have one").isNull();
 		}}; // @formatter:on
 
-		assertThat(candidate.getType()).isEqualTo(Type.UNRELATED_DECREASE);
+		assertThat(candidate.getType()).isEqualTo(CandidateType.UNRELATED_DECREASE);
 		assertThat(candidate.getDistributionDetail()).isNull();
 		assertThat(candidate.getProductionDetail()).isNull();
 		assertThat(candidate.getDemandDetail()).as("created candidate shall have a demand detail").isNotNull();
@@ -222,7 +222,7 @@ public class TransactionEventHandlerTest
 	{
 		final Candidate exisitingCandidate = Candidate.builder()
 				.id(11)
-				.type(Type.DEMAND)
+				.type(CandidateType.DEMAND)
 				.materialDescr(MaterialDescriptor.builderForCompleteDescriptor()
 						.productDescriptor(createProductDescriptor())
 						.warehouseId(WAREHOUSE_ID)
@@ -259,7 +259,7 @@ public class TransactionEventHandlerTest
 		}}; // @formatter:on
 
 		assertThat(candidate.getId()).isEqualTo(11);
-		assertThat(candidate.getType()).isEqualTo(Type.DEMAND);
+		assertThat(candidate.getType()).isEqualTo(CandidateType.DEMAND);
 		assertThat(candidate.getQuantity())
 				.as("The demand candidate's (planned) quantity may not be changed from the transaction event")
 				.isEqualByComparingTo("63");

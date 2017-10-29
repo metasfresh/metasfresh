@@ -22,8 +22,8 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.material.dispo.CandidateRepository;
 import de.metas.material.dispo.CandidateService;
-import de.metas.material.dispo.CandidateSpecification.Type;
 import de.metas.material.dispo.candidate.Candidate;
+import de.metas.material.dispo.candidate.CandidateType;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
 import de.metas.material.dispo.service.candidatechange.handler.DemandCandiateHandler;
@@ -204,7 +204,7 @@ public class SupplyProposalEvaluatorTests
 		final Candidate supplyCandidate = Candidate.builder()
 				.clientId(org.getAD_Client_ID())
 				.orgId(org.getAD_Org_ID())
-				.type(Type.SUPPLY)
+				.type(CandidateType.SUPPLY)
 				.materialDescr(supplyMaterialDescr)
 				.build();
 
@@ -221,7 +221,7 @@ public class SupplyProposalEvaluatorTests
 				.clientId(org.getAD_Client_ID())
 				.orgId(org.getAD_Org_ID())
 				.parentId(supplyCandidateWithId.getId())
-				.type(Type.DEMAND)
+				.type(CandidateType.DEMAND)
 				.materialDescr(demandDescr)
 				.build();
 

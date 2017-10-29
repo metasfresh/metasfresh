@@ -6,9 +6,6 @@ import java.util.List;
 
 import com.google.common.base.Preconditions;
 
-import de.metas.material.dispo.CandidateSpecification.Status;
-import de.metas.material.dispo.CandidateSpecification.SubType;
-import de.metas.material.dispo.CandidateSpecification.Type;
 import de.metas.material.dispo.CandidatesQuery;
 import de.metas.material.event.EventDescr;
 import de.metas.material.event.MaterialDescriptor;
@@ -58,14 +55,14 @@ public class Candidate
 	int orgId;
 
 	@NonNull
-	Type type;
+	CandidateType type;
 
 	/**
 	 * Should be {@code null} for stock candidates.
 	 */
-	SubType subType;
+	CandidateSubType subType;
 
-	Status status;
+	CandidateStatus status;
 
 	// private final TableRecordReference reference;
 
@@ -87,12 +84,12 @@ public class Candidate
 	MaterialDescriptor materialDescr;
 
 	/**
-	 * Used for additional infos if this candidate has the sub type {@link SubType#PRODUCTION}.
+	 * Used for additional infos if this candidate has the sub type {@link CandidateSubType#PRODUCTION}.
 	 */
 	ProductionDetail productionDetail;
 
 	/**
-	 * Used for additional infos if this candidate has the sub type {@link SubType#DISTRIBUTION}.
+	 * Used for additional infos if this candidate has the sub type {@link CandidateSubType#DISTRIBUTION}.
 	 */
 	DistributionDetail distributionDetail;
 
@@ -110,7 +107,7 @@ public class Candidate
 				.materialDescr(materialDescr
 						.withoutQuantity()
 						.withDateOperator(DateOperator.UNTIL))
-				.type(Type.STOCK);
+				.type(CandidateType.STOCK);
 	}
 
 	public BigDecimal getQuantity()
@@ -135,7 +132,7 @@ public class Candidate
 
 	public int getEffectiveGroupId()
 	{
-		if (type == Type.STOCK)
+		if (type == CandidateType.STOCK)
 		{
 			return 0;
 		}
@@ -162,9 +159,9 @@ public class Candidate
 	}
 
 	private Candidate(final int clientId, final int orgId,
-			@NonNull final Type type,
-			final SubType subType,
-			final Status status,
+			@NonNull final CandidateType type,
+			final CandidateSubType subType,
+			final CandidateStatus status,
 			final int id,
 			final int parentId,
 			final int groupId,

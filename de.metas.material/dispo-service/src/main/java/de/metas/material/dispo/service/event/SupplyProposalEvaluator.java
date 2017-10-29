@@ -8,9 +8,9 @@ import java.util.Set;
 import org.springframework.stereotype.Service;
 
 import de.metas.material.dispo.CandidateRepository;
-import de.metas.material.dispo.CandidateSpecification.Type;
 import de.metas.material.dispo.CandidatesQuery;
 import de.metas.material.dispo.candidate.Candidate;
+import de.metas.material.dispo.candidate.CandidateType;
 import de.metas.material.event.MaterialDescriptor;
 import de.metas.material.event.MaterialDescriptor.DateOperator;
 import de.metas.material.event.ProductDescriptor;
@@ -78,7 +78,7 @@ public class SupplyProposalEvaluator
 	public boolean evaluateSupply(@NonNull final SupplyProposal proposal)
 	{
 		final CandidatesQuery demandQuery = CandidatesQuery.builder()
-				.type(Type.DEMAND)
+				.type(CandidateType.DEMAND)
 				.materialDescr(MaterialDescriptor.builderForQuery()
 						.date(proposal.getDate())
 						.dateOperator(DateOperator.FROM)
@@ -101,7 +101,7 @@ public class SupplyProposalEvaluator
 		}
 
 		final CandidatesQuery supplyQuery = demandQuery
-				.withType(Type.SUPPLY)
+				.withType(CandidateType.SUPPLY)
 				.withMaterialDescr(demandQuery.getMaterialDescr()
 						.withDate(proposal.getDate())
 						.withDateOperator(DateOperator.FROM)

@@ -2,8 +2,8 @@ package de.metas.material.dispo;
 
 import org.junit.Test;
 
-import de.metas.material.dispo.CandidateSpecification.Type;
 import de.metas.material.dispo.candidate.Candidate;
+import de.metas.material.dispo.candidate.CandidateType;
 import de.metas.material.event.MaterialDescriptor;
 
 /*
@@ -35,7 +35,7 @@ public class CandidateTest
 	public void build_withIncompleteMaterialDescriptor_fails()
 	{
 		Candidate.builder()
-				.type(Type.STOCK)
+				.type(CandidateType.STOCK)
 				.materialDescr(MaterialDescriptor.builderForQuery().build())
 				.build();
 	}

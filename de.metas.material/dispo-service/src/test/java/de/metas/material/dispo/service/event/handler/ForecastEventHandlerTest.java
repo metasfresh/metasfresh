@@ -23,8 +23,8 @@ import org.junit.Test;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.material.dispo.CandidateRepository;
-import de.metas.material.dispo.CandidateSpecification.Type;
 import de.metas.material.dispo.DispoTestUtils;
+import de.metas.material.dispo.candidate.CandidateType;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.X_MD_Candidate;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
@@ -111,7 +111,7 @@ public class ForecastEventHandlerTest
 		assertThat(result).hasSize(1);
 
 		final I_MD_Candidate demandCandidate = result.get(0);
-		assertThat(demandCandidate.getMD_Candidate_Type()).isEqualTo(Type.STOCK_UP.toString());
+		assertThat(demandCandidate.getMD_Candidate_Type()).isEqualTo(CandidateType.STOCK_UP.toString());
 		assertThat(demandCandidate.getQty()).isEqualByComparingTo("8");
 	}
 
@@ -146,10 +146,10 @@ public class ForecastEventHandlerTest
 
 		assertThat(result)
 				.as("one of the two candidates has to be the stock candidate we created in the setup phase")
-				.anySatisfy(r -> assertThat(r.getMD_Candidate_Type()).isEqualTo(Type.STOCK.toString()));
+				.anySatisfy(r -> assertThat(r.getMD_Candidate_Type()).isEqualTo(CandidateType.STOCK.toString()));
 
 		assertThat(result).anySatisfy(demandCandidate -> {
-			assertThat(demandCandidate.getMD_Candidate_Type()).isEqualTo(Type.STOCK_UP.toString());
+			assertThat(demandCandidate.getMD_Candidate_Type()).isEqualTo(CandidateType.STOCK_UP.toString());
 			assertThat(demandCandidate.getQty()).isEqualByComparingTo("8");
 		});
 	}
