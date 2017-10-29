@@ -103,6 +103,7 @@ class DocumentList extends Component {
             defaultSort: nextDefaultSort,
             defaultViewId: nextDefaultViewId,
             includedView: nextIncludedView,
+            isIncluded: nextIsIncluded,
             refId: nextRefId,
             windowType: nextWindowType,
         } = nextProps;
@@ -112,6 +113,7 @@ class DocumentList extends Component {
             defaultSort,
             defaultViewId,
             includedView,
+            isIncluded,
             refId,
             windowType,
             dispatch,
@@ -140,6 +142,10 @@ class DocumentList extends Component {
         if ((nextWindowType !== windowType) || (
                 (nextDefaultViewId === undefined) &&
                 (nextDefaultViewId !== defaultViewId)
+            ) || (
+                (nextWindowType === windowType) &&
+                (nextDefaultViewId !== defaultViewId) &&
+                isIncluded && nextIsIncluded
             ) || (nextRefId !== refId)
         ) {
             this.setState({
