@@ -54,6 +54,10 @@ class DocumentList extends Component {
         dispatch: PropTypes.func.isRequired,
     }
 
+    static contextTypes = {
+        store: PropTypes.object.isRequired,
+    }
+
     constructor(props) {
         super(props);
 
@@ -365,6 +369,7 @@ class DocumentList extends Component {
     }
 
     getData = (id, page, sortingQuery) => {
+        const { store } = this.context;
         const {
             dispatch, windowType, updateUri, setNotFound, type, isIncluded,
         } = this.props;
@@ -384,29 +389,32 @@ class DocumentList extends Component {
         return browseViewRequest(
             id, page, this.pageLength, sortingQuery, windowType
         ).then( (response) => {
-            let forceSelection = false;
-
-            if (
+            const selection = getSelection({
+                state: store.getState(),
+                windowType,
+                viewId,
+            });
+            const forceSelection = (
                 ((type === 'includedView') || isIncluded) &&
                 response.data && response.data.result &&
-                (response.data.result.length > 0)
-            ) {
-                forceSelection = true;
-            }
+                (response.data.result.length > 0) && (
+                    (selection.length === 0 ) ||
+                    !this.doesSelectionExist({
+                        data: response.data,
+                        selected: selection,
+                    })
+                )
+            );
 
-            this.mounted && this.setState(
-                Object.assign({}, {
+            if (this.mounted) {
+                this.setState({
                     data: response.data,
                     filters: response.data.filters
-                }),
-                () => {
-                    if (
-                        forceSelection &&
-                        response.data && response.data.result
+                }, () => {
+                    if (forceSelection && response.data &&
+                        response.data.result
                     ) {
-                        const selection = [
-                            response.data.result[0].id
-                        ];
+                        const selection = [response.data.result[0].id];
 
                         dispatch(selectTableItems({
                             windowType,
@@ -416,8 +424,8 @@ class DocumentList extends Component {
                     }
 
                     this.connectWS(response.data.viewId);
-                }
-            );
+                });
+            }
 
             dispatch(indicatorState('saved'));
         });
