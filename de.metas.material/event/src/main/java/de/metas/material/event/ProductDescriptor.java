@@ -47,7 +47,11 @@ public class ProductDescriptor
 {
 	public static final String STORAGE_ATTRIBUTES_KEY_UNSPECIFIED = new String("");
 
-	public static final String STORAGE_ATTRIBUTES_KEY_DELIMITER = "§$§";
+	/**
+	 * The delimiter should not contain any character that has a "regexp" meaning
+	 * and would interfere with {@link String#replaceAll(String, String)}.
+	 */
+	public static final String STORAGE_ATTRIBUTES_KEY_DELIMITER = "§&§";
 
 	@JsonProperty
 	boolean productDescriptorComplete;

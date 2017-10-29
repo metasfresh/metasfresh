@@ -1,22 +1,29 @@
 package de.metas.material.dispo.repository;
 
+import static de.metas.material.event.EventTestHelper.NOW;
+import static de.metas.material.event.EventTestHelper.PRODUCT_ID;
+import static de.metas.material.event.EventTestHelper.createProductDescriptor;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
+import java.util.StringJoiner;
 
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.impl.ActiveRecordQueryFilter;
 import org.adempiere.ad.dao.impl.CompareQueryFilter;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.dao.impl.EqualsQueryFilter;
+import org.adempiere.ad.dao.impl.StringLikeFilter;
+import org.adempiere.util.Services;
 import org.junit.Test;
 
 import de.metas.material.dispo.CandidatesQuery;
 import de.metas.material.dispo.model.I_MD_Candidate;
-import de.metas.material.event.EventTestHelper;
 import de.metas.material.event.MaterialDescriptor;
 import de.metas.material.event.MaterialDescriptor.DateOperator;
+import de.metas.material.event.ProductDescriptor;
 import lombok.NonNull;
 
 /*
@@ -47,10 +54,10 @@ public class RepositoryCommonsTest
 	@Test
 	public void mkQueryBuilder_with_date()
 	{
-		performTest(DateOperator.AT, Operator.EQUAL);
-		performTest(DateOperator.AFTER, Operator.GREATER);
-		performTest(DateOperator.AT_OR_AFTER, Operator.GREATER_OR_EQUAL);
-		performTest(DateOperator.BEFORE_OR_AT, Operator.LESS_OR_EQUAL);
+		performDateFilterTest(DateOperator.AT, Operator.EQUAL);
+		performDateFilterTest(DateOperator.AFTER, Operator.GREATER);
+		performDateFilterTest(DateOperator.AT_OR_AFTER, Operator.GREATER_OR_EQUAL);
+		performDateFilterTest(DateOperator.BEFORE_OR_AT, Operator.LESS_OR_EQUAL);
 	}
 
 	@Test
@@ -59,9 +66,9 @@ public class RepositoryCommonsTest
 		final CandidatesQuery query = CandidatesQuery.builder()
 				.materialDescr(MaterialDescriptor
 						.builderForQuery()
-						.productDescriptor(EventTestHelper.createProductDescriptor())
+						.productDescriptor(createProductDescriptor())
 						.dateOperator(DateOperator.AT)
-						.date(EventTestHelper.NOW)
+						.date(NOW)
 						.build())
 				.build();
 
@@ -69,11 +76,43 @@ public class RepositoryCommonsTest
 
 		final List<IQueryFilter<I_MD_Candidate>> filters = queryBuilder.getCompositeFilter().getFilters();
 		assertFiltersContainActiveFilter(filters);
-		assertFiltersContainProductFilter(filters, EventTestHelper.PRODUCT_ID);
+		assertFiltersContainProductFilter(filters, PRODUCT_ID);
 		assertFiltersContainDateFilter(filters, Operator.EQUAL);
 	}
 
-	private void assertFiltersContainProductFilter(final List<IQueryFilter<I_MD_Candidate>> filters, final int productId)
+	@Test
+	public void addProductionDetailToFilter_with_StorageAttributesKey()
+	{
+		final String storageAttributesKey = new StringJoiner(ProductDescriptor.STORAGE_ATTRIBUTES_KEY_DELIMITER)
+				.add("Key1")
+				.add("Key2")
+				.add("Key3")
+				.toString();
+
+		// this descriptor won't occur in real life, but we want only the storage-key-filter
+		final ProductDescriptor productDescriptor = new ProductDescriptor(false, -1, storageAttributesKey, -1);
+
+		final MaterialDescriptor materialDescriptor = MaterialDescriptor
+				.builderForQuery()
+				.productDescriptor(productDescriptor)
+				.build();
+
+		final IQueryBuilder<I_MD_Candidate> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_MD_Candidate.class);
+		RepositoryCommons.addMaterialDescriptorToQueryBuilderIfNotNull(materialDescriptor, queryBuilder);
+
+		final List<IQueryFilter<I_MD_Candidate>> filters = queryBuilder.getCompositeFilter().getFilters();
+
+		assertThat(filters).hasSize(1);
+		final IQueryFilter<I_MD_Candidate> asiKeyFilter = filters.get(0);
+		assertThat(asiKeyFilter).isInstanceOf(StringLikeFilter.class);
+
+		final StringLikeFilter<I_MD_Candidate> likeFilter = (StringLikeFilter<I_MD_Candidate>)asiKeyFilter;
+		assertThat(likeFilter.getColumnName()).isEqualTo(I_MD_Candidate.COLUMNNAME_StorageAttributesKey);
+		assertThat(likeFilter.getOperator()).isEqualTo(Operator.STRING_LIKE);
+		assertThat(likeFilter.getValue()).isEqualTo("Key1%Key2%Key3");
+	}
+
+	private static void assertFiltersContainProductFilter(final List<IQueryFilter<I_MD_Candidate>> filters, final int productId)
 	{
 		assertThat(filters).anySatisfy(productFilter -> {
 			assertThat(productFilter).isInstanceOf(EqualsQueryFilter.class);
@@ -84,13 +123,15 @@ public class RepositoryCommonsTest
 		});
 	}
 
-	private void performTest(final DateOperator dateOperator, final Operator queryOperator)
+	private static void performDateFilterTest(
+			@NonNull final DateOperator dateOperator,
+			@NonNull final Operator queryOperator)
 	{
 		final CandidatesQuery query = CandidatesQuery.builder()
 				.materialDescr(MaterialDescriptor
 						.builderForQuery()
 						.dateOperator(dateOperator)
-						.date(EventTestHelper.NOW)
+						.date(NOW)
 						.build())
 				.build();
 		final IQueryBuilder<I_MD_Candidate> queryBuilder = RepositoryCommons.mkQueryBuilder(query);
@@ -101,14 +142,14 @@ public class RepositoryCommonsTest
 		assertFiltersContainDateFilter(filters, queryOperator);
 	}
 
-	private void assertFiltersContainActiveFilter(final List<IQueryFilter<I_MD_Candidate>> filters)
+	private static void assertFiltersContainActiveFilter(@NonNull final List<IQueryFilter<I_MD_Candidate>> filters)
 	{
 		assertThat(filters).anySatisfy(onlyActiveFilter -> {
 			assertThat(onlyActiveFilter).isInstanceOf(ActiveRecordQueryFilter.class);
 		});
 	}
 
-	private void assertFiltersContainDateFilter(
+	private static void assertFiltersContainDateFilter(
 			@NonNull final List<IQueryFilter<I_MD_Candidate>> filters,
 			@NonNull final Operator dateQueryOperator)
 	{
@@ -117,7 +158,7 @@ public class RepositoryCommonsTest
 			final CompareQueryFilter<I_MD_Candidate> compareFilter = (CompareQueryFilter<I_MD_Candidate>)dateFilter;
 			assertThat(compareFilter.getColumnName()).isEqualTo(I_MD_Candidate.COLUMNNAME_DateProjected);
 			assertThat(compareFilter.getOperator()).isEqualTo(dateQueryOperator);
-			assertThat(compareFilter.getValue()).isEqualTo(EventTestHelper.NOW);
+			assertThat(compareFilter.getValue()).isEqualTo(NOW);
 		});
 	}
 

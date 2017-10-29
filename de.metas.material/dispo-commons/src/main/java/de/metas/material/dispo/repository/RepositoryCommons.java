@@ -9,6 +9,7 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 
 import de.metas.material.dispo.CandidatesQuery;
@@ -22,8 +23,8 @@ import de.metas.material.dispo.model.I_MD_Candidate_Dist_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_Prod_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_Transaction_Detail;
 import de.metas.material.event.MaterialDescriptor;
-import de.metas.material.event.ProductDescriptor;
 import de.metas.material.event.MaterialDescriptor.DateOperator;
+import de.metas.material.event.ProductDescriptor;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
@@ -103,7 +104,8 @@ public class RepositoryCommons
 		return builder;
 	}
 
-	private boolean addMaterialDescriptorToQueryBuilderIfNotNull(
+	@VisibleForTesting
+	boolean addMaterialDescriptorToQueryBuilderIfNotNull(
 			@Nullable final MaterialDescriptor materialDescriptor,
 			@NonNull final IQueryBuilder<I_MD_Candidate> builder)
 	{
@@ -126,8 +128,11 @@ public class RepositoryCommons
 		}
 		if (materialDescriptor.getStorageAttributesKey() != ProductDescriptor.STORAGE_ATTRIBUTES_KEY_UNSPECIFIED)
 		{
-			// TODO test how the "like" expression is created
-			builder.addEqualsFilter(I_MD_Candidate.COLUMNNAME_StorageAttributesKey, materialDescriptor.getStorageAttributesKey());
+			final String storageAttributesKey = materialDescriptor.getStorageAttributesKey();
+			builder.addStringLikeFilter(
+					I_MD_Candidate.COLUMN_StorageAttributesKey,
+					storageAttributesKey.replaceAll(ProductDescriptor.STORAGE_ATTRIBUTES_KEY_DELIMITER, "%"),
+					false);
 			atLeastOneFilterAdded = true;
 		}
 
