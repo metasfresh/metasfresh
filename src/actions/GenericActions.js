@@ -224,9 +224,9 @@ export function actionsRequest(entity, type, id, selected){
         entity + '/' +
         type + '/' +
         id +
-        '/actions'+
+        '/actions?disabled=true' +
         (selected.length > 0 && entity=='documentView' ?
-            '?selectedIds='+ query :'')
+            '&selectedIds='+ query :'')
     );
 }
 

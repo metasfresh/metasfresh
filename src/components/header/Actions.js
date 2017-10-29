@@ -11,17 +11,14 @@ import {
 } from '../../actions/GenericActions';
 
 class Actions extends Component {
-    constructor(props) {
-        super(props);
-
-        this.state = {
-            data: null
-        }
+    state = {
+        data: null,
     }
 
     componentDidMount = () => {
         const {
-            windowType, entity, docId, rowId, notfound, activeTab, activeTabSelected
+            windowType, entity, docId, rowId, notfound, activeTab,
+            activeTabSelected,
         } = this.props;
 
         if(!windowType || docId === 'notfound' || notfound){
@@ -31,7 +28,9 @@ class Actions extends Component {
             return;
         }
 
-        const requestRowActions = activeTab && activeTabSelected && (activeTabSelected.length > 0);
+        const requestRowActions = activeTab && activeTabSelected && (
+            activeTabSelected.length > 0
+        );
 
         if (entity === 'board') {
             this.setState({
@@ -50,8 +49,10 @@ class Actions extends Component {
                 rowActionsRequest(
                     windowType, docId, activeTab, activeTabSelected
                 ).then((response) => {
-                    if (response.data && response.data.actions && (response.data.actions.length > 0)) {
-                        let mergeActions = response.data.actions.map( (item) => {
+                    if (response.data && response.data.actions && (
+                        response.data.actions.length > 0)
+                    ) {
+                        let mergeActions = response.data.actions.map((item) => {
                             return Object.assign(item, {
                                 rowId: activeTabSelected,
                                 tabId: activeTab
@@ -85,17 +86,20 @@ class Actions extends Component {
         const { closeSubheader, openModal, openModalRow } = this.props;
         const { data } = this.state;
 
-        return (data && data.length) ? data.map( (item, key) => {
+        return (data && data.length) ? data.map((item, key) => {
             if (item) {
                 return (
                     <div
                         key={key}
                         tabIndex={0}
-                        className="subheader-item js-subheader-item"
-                        onClick={ () => {
+                        className={'subheader-item js-subheader-item' + (
+                          item.disabled ? ' subheader-item-disabled' : ''
+                        )}
+                        onClick={item.disabled ? null : () => {
                             if (item.tabId && item.rowId) {
                                 openModalRow(
-                                    item.processId + '', 'process', item.caption, item.tabId, item.rowId[0]
+                                    item.processId + '', 'process',
+                                    item.caption, item.tabId, item.rowId[0]
                                 );
                             }
                             else {
@@ -108,6 +112,12 @@ class Actions extends Component {
                         }}
                     >
                         {item.caption}
+
+                        {item.disabled && item.disabledReason && (
+                          <p className="one-line">
+                            <small>({item.disabledReason})</small>
+                          </p>
+                        )}
                     </div>
                 );
             }
