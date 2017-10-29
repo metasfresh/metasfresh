@@ -224,12 +224,11 @@ class DocumentList extends Component {
         }
     }
 
-    doesSelectionExist(selected, hasIncluded) {
-        const {data} = this.state;
+    doesSelectionExist({ data, selected, hasIncluded = false } = {}) {
         // When the rows are changing we should ensure
         // that selection still exist
 
-        if(hasIncluded){
+        if (hasIncluded) {
             return true;
         }
 
@@ -532,7 +531,9 @@ class DocumentList extends Component {
 
         const hasIncluded = layout && layout.includedView && includedView &&
             includedView.windowType && includedView.viewId;
-        const selectionValid = this.doesSelectionExist(selected, hasIncluded);
+        const selectionValid = this.doesSelectionExist({
+            data, selected, hasIncluded,
+        });
         const blurWhenOpen = layout && layout.includedView &&
             layout.includedView.blurWhenOpen;
 
@@ -648,7 +649,6 @@ class DocumentList extends Component {
                                 defaultSelected={selected}
                                 refreshSelection={refreshSelection}
                                 queryLimitHit={data.queryLimitHit}
-                                doesSelectionExist={this.doesSelectionExist}
                                 showIncludedViewOnSelect={
                                     this.showIncludedViewOnSelect
                                 }
