@@ -207,12 +207,15 @@ class DocumentList extends Component {
 
             if(fullyChanged == true){
                 this.browseView();
-
-                if (this.quickActionsComponent) {
-                    this.quickActionsComponent.updateActions();
-                }
+                this.updateQuickActions();
             }
         });
+    }
+
+    updateQuickActions = () => {
+        if (this.quickActionsComponent) {
+            this.quickActionsComponent.updateActions();
+        }
     }
 
     doesSelectionExist(selected, hasIncluded) {
@@ -685,4 +688,6 @@ class DocumentList extends Component {
     }
 }
 
-export default connect(mapStateToProps)(DocumentList);
+export default connect(
+  mapStateToProps, null, null, { withRef: true },
+)(DocumentList);
