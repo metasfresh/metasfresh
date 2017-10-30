@@ -29,10 +29,15 @@ import java.util.Properties;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_PInstance;
+import org.compiere.util.Env;
 
 import de.metas.adempiere.form.IClientUI;
 import de.metas.adempiere.form.IClientUIInstance;
+import de.metas.event.Event;
+import de.metas.event.IEventBusFactory;
+import de.metas.printing.Printing_Constants;
 import de.metas.printing.api.IPrintJobBL;
 import de.metas.printing.api.IPrintingQueueBL;
 import de.metas.printing.api.IPrintingQueueQuery;
@@ -81,28 +86,33 @@ public abstract class AbstractPrintJobCreate extends JavaProcess
 				@Override
 				public void run()
 				{
-					int jobsNo = 0;
+					
 					try
 					{
-						jobsNo = Services.get(IPrintJobBL.class).createPrintJobs(source, monitor);
+						Services.get(IPrintJobBL.class).createPrintJobs(source, monitor);
 					}
 					catch (Exception e)
 					{
-						clientUI.error(0, "Error", e.getLocalizedMessage());
+						log.error(e.getLocalizedMessage());
+						final Event event = Event.builder()
+								.setDetailADMessage(e.getLocalizedMessage())
+								.addRecipient_User_ID(Env.getAD_User_ID(getCtx()))
+								.build();
+
+						Printing_Constants.getPrintingEventBus()
+						.postEvent(event);
 					}
 
-					final String message = msgBL.parseTranslation(ctxToUse, "@Created@ " + jobsNo + " @C_Print_Job_ID@");
-					clientUI.info(0, "Info", message);
 				}
 			};
 			final Thread thread = clientUI.createUserThread(runnable, Thread.currentThread().getName() + "_PrintJobsProducer");
 			thread.setDaemon(true);
 			thread.start();
-			// thread.join(); // don't do this because you will block ZK's ServerPush thread
 		}
 		
-		// return "@Created@ " + jobsNo + " @C_Print_Job_ID@";
-		return "Started";
+//		getResult().setRecordToRefreshAfterExecution(TableRecordReference.of(currentTerm));
+		
+		return "@Started@";
 	}
 
 	/**
