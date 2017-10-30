@@ -64,8 +64,7 @@ public class DocumentReferencesService
 			final ITranslatableString filterCaption = extractFilterCaption(document);
 
 			return ZoomInfoFactory.get()
-					.retrieveZoomInfos(zoomSource)
-					.stream()
+					.streamZoomInfos(zoomSource)
 					.map(zoomInfo -> createDocumentReference(zoomInfo, filterCaption))
 					.collect(ImmutableList.toImmutableList());
 		});
