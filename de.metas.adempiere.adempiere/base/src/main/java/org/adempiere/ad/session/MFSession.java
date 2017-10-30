@@ -218,7 +218,7 @@ public class MFSession
 	 * 
 	 * @return the hostkey which is currently mostly used for printing.
 	 */
-	public String getHostKey(final Properties ctxToUpdate)
+	public String getOrCreateHostKey(final Properties ctxToUpdate)
 	{
 		final String hostKey = sessionPO.getHostKey();
 
