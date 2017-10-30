@@ -353,12 +353,9 @@ class Subheader extends Component {
                 docId={dataId ? dataId : query && query.viewId}
                 rowId={selected}
                 activeTab={activeTab}
-                activeTabSelected={(
-                    activeTab && selected && (selected.length === 1)
-                ) ? selected : []}
+                activeTabSelected={(activeTab && selected) ? selected : []}
             />
         );
-
     }
 
     render() {
