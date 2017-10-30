@@ -154,7 +154,7 @@ public class Main extends AbstractModuleInterceptor
 		
 		//
 		// Setup event bus topics on which swing client notification listener shall subscribe
-		Services.get(IEventBusFactory.class).addAvailableUserNotificationsTopic(PDFPrintingAsyncBatchListener.TOPIC_PDFPrinting);
+		Services.get(IEventBusFactory.class).addAvailableUserNotificationsTopic(Printing_Constants.TOPIC_Printing);
 	}
 
 	@Override

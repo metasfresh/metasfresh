@@ -29,14 +29,12 @@ import java.util.Properties;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
-import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_PInstance;
 import org.compiere.util.Env;
 
 import de.metas.adempiere.form.IClientUI;
 import de.metas.adempiere.form.IClientUIInstance;
 import de.metas.event.Event;
-import de.metas.event.IEventBusFactory;
 import de.metas.printing.Printing_Constants;
 import de.metas.printing.api.IPrintJobBL;
 import de.metas.printing.api.IPrintingQueueBL;
@@ -109,8 +107,6 @@ public abstract class AbstractPrintJobCreate extends JavaProcess
 			thread.setDaemon(true);
 			thread.start();
 		}
-		
-//		getResult().setRecordToRefreshAfterExecution(TableRecordReference.of(currentTerm));
 		
 		return "@Started@";
 	}

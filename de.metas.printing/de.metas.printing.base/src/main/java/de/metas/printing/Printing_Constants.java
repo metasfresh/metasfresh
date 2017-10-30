@@ -67,7 +67,7 @@ public final class Printing_Constants
 	 */
 	public static final String C_Async_Batch_InternalName_PDFPrinting = "PDFPrinting";
 	
-	private static final Topic TOPIC_Printing = Topic.builder()
+	public static final Topic TOPIC_Printing = Topic.builder()
 			.setName("de.metas.printing.async.ProcessedEvents")
 			.setType(Type.REMOTE)
 			.build();
