@@ -762,4 +762,27 @@ public class WindowRestController
 			return newRecordId;
 		}));
 	}
+	
+	@PostMapping("/{windowId}/{documentId}/discardChanges")
+	public void discardChanges(
+			@PathVariable("windowId") final String windowIdStr,
+			@PathVariable("documentId") final String documentIdStr)
+	{
+		userSession.assertLoggedIn();
+		
+		final DocumentPath documentPath = DocumentPath.rootDocumentPath(WindowId.fromJson(windowIdStr), DocumentId.of(documentIdStr));
+		documentCollection.invalidateRootDocument(documentPath);
+	}
+	
+	@PostMapping("/{windowId}/{documentId}/{tabId}/{rowId}/discardChanges")
+	public void discardChanges(
+			@PathVariable("windowId") final String windowIdStr,
+			@PathVariable("documentId") final String documentIdStr,
+			@PathVariable("tabId") final String tabIdStr_NOTUSED,
+			@PathVariable("rowId") final String rowIdStr_NOTUSED)
+	{
+		// For now it's OK if we invalidate the whole root document
+		discardChanges(windowIdStr, documentIdStr);
+	}
+
 }
