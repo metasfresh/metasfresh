@@ -21,6 +21,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.compiere.model.MQuery;
@@ -348,6 +349,8 @@ public class ZoomInfoFactory
 	private Stream<ZoomInfo> streamZoomInfos(final IZoomSource source, final int targetAD_Window_ID, final boolean checkRecordsCount)
 	{
 		logger.debug("source={}", source);
+		
+		final IUserRolePermissions rolePermissions = Env.getUserRolePermissions();
 		final Set<Integer> alreadySeenWindowIds = new HashSet<>();
 
 		final List<IZoomProvider> zoomProviders = retrieveZoomProviders(source.getTableName());
@@ -364,6 +367,9 @@ public class ZoomInfoFactory
 						return Stream.empty();
 					}
 				})
+				//
+				// Filter out those windows on which current logged in user does not have permissions
+				.filter(zoomInfo -> rolePermissions.checkWindowAccess(zoomInfo.getAD_Window_ID()) != null)
 				//
 				// Filter by targetAD_Window_ID if any.
 				// If not our target window ID, skip it.
