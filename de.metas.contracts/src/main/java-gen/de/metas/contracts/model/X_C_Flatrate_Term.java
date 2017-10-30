@@ -15,7 +15,7 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1011301877L;
+	private static final long serialVersionUID = -1740272971L;
 
     /** Standard Constructor */
     public X_C_Flatrate_Term (Properties ctx, int C_Flatrate_Term_ID, String trxName)
@@ -1507,6 +1507,84 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	public java.sql.Timestamp getStartDate () 
 	{
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_StartDate);
+	}
+
+	/** Set Termination Memo.
+		@param TerminationMemo Termination Memo	  */
+	@Override
+	public void setTerminationMemo (java.lang.String TerminationMemo)
+	{
+		set_Value (COLUMNNAME_TerminationMemo, TerminationMemo);
+	}
+
+	/** Get Termination Memo.
+		@return Termination Memo	  */
+	@Override
+	public java.lang.String getTerminationMemo () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_TerminationMemo);
+	}
+
+	/** 
+	 * TerminationReason AD_Reference_ID=540761
+	 * Reference name: Contracts_TerminationaReason
+	 */
+	public static final int TERMINATIONREASON_AD_Reference_ID=540761;
+	/** HighAge = Hi */
+	public static final String TERMINATIONREASON_HighAge = "Hi";
+	/** DidNotOrder = Dno */
+	public static final String TERMINATIONREASON_DidNotOrder = "Dno";
+	/** General = Ge */
+	public static final String TERMINATIONREASON_General = "Ge";
+	/** Religion = Rel */
+	public static final String TERMINATIONREASON_Religion = "Rel";
+	/** NoTime = Nt */
+	public static final String TERMINATIONREASON_NoTime = "Nt";
+	/** TooMuchPapers = Tmp */
+	public static final String TERMINATIONREASON_TooMuchPapers = "Tmp";
+	/** FinancialReasons = Fr */
+	public static final String TERMINATIONREASON_FinancialReasons = "Fr";
+	/** TooModern = Tm */
+	public static final String TERMINATIONREASON_TooModern = "Tm";
+	/** NoInterest = Ni */
+	public static final String TERMINATIONREASON_NoInterest = "Ni";
+	/** NewSubscriptionType = Nst */
+	public static final String TERMINATIONREASON_NewSubscriptionType = "Nst";
+	/** GiftNotRenewed = Gnr */
+	public static final String TERMINATIONREASON_GiftNotRenewed = "Gnr";
+	/** StayingForeign = Sf */
+	public static final String TERMINATIONREASON_StayingForeign = "Sf";
+	/** Died = Di */
+	public static final String TERMINATIONREASON_Died = "Di";
+	/** Sick = Si */
+	public static final String TERMINATIONREASON_Sick = "Si";
+	/** DoubleReader = Dr */
+	public static final String TERMINATIONREASON_DoubleReader = "Dr";
+	/** SubscriptionSwitch = Ss */
+	public static final String TERMINATIONREASON_SubscriptionSwitch = "Ss";
+	/** LimitedDelivery = Ld */
+	public static final String TERMINATIONREASON_LimitedDelivery = "Ld";
+	/** PrivateReasons = Pr */
+	public static final String TERMINATIONREASON_PrivateReasons = "Pr";
+	/** CanNotRead = Cnr */
+	public static final String TERMINATIONREASON_CanNotRead = "Cnr";
+	/** NotReachable = Nr */
+	public static final String TERMINATIONREASON_NotReachable = "Nr";
+	/** Set Termination Reason.
+		@param TerminationReason Termination Reason	  */
+	@Override
+	public void setTerminationReason (java.lang.String TerminationReason)
+	{
+
+		set_Value (COLUMNNAME_TerminationReason, TerminationReason);
+	}
+
+	/** Get Termination Reason.
+		@return Termination Reason	  */
+	@Override
+	public java.lang.String getTerminationReason () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_TerminationReason);
 	}
 
 	/** 
