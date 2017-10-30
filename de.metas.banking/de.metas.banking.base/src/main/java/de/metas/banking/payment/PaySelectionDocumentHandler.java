@@ -2,22 +2,13 @@ package de.metas.banking.payment;
 
 import java.io.File;
 import java.math.BigDecimal;
-import java.util.ArrayList;
 
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_PaySelection;
-import org.compiere.model.MPaySelection;
-import org.compiere.model.MPaySelectionCheck;
-import org.compiere.model.MPaySelectionLine;
-import org.compiere.util.Env;
 
 import de.metas.document.engine.DocumentHandler;
 import de.metas.document.engine.DocumentTableFields;
 import de.metas.document.engine.IDocument;
-import de.metas.i18n.IMsgBL;
 
 /*
  * #%L
@@ -95,14 +86,6 @@ public class PaySelectionDocumentHandler implements DocumentHandler
 	public String completeIt(DocumentTableFields docFields)
 	{
 		final I_C_PaySelection paySelection = extractPaySelection(docFields);
-
-		final MPaySelection mPaySelection = new MPaySelection(Env.getCtx(), paySelection.getC_PaySelection_ID(), ITrx.TRXNAME_None);
-
-		final MPaySelectionLine[] lines = mPaySelection.getLines(true);
-
-		PaySelectionCheckProducer.newInstance()
-				.createChecksAndUpdateLines(lines);
-
 		paySelection.setProcessed(true);
 		paySelection.setDocAction(IDocument.ACTION_ReActivate);
 		return IDocument.STATUS_Completed;
@@ -166,73 +149,6 @@ public class PaySelectionDocumentHandler implements DocumentHandler
 		final I_C_PaySelection paySelection = extractPaySelection(docFields);
 		paySelection.setProcessed(false);
 		paySelection.setDocAction(IDocument.ACTION_Complete);
-
-	}
-
-	private static final class PaySelectionCheckProducer
-	{
-		public static PaySelectionCheckProducer newInstance()
-		{
-			return new PaySelectionCheckProducer();
-		}
-
-		private ArrayList<MPaySelectionCheck> paySelectionChecks = new ArrayList<MPaySelectionCheck>();
-
-		private PaySelectionCheckProducer()
-		{
-		}
-
-		public void createChecksAndUpdateLines(final MPaySelectionLine[] lines)
-		{
-			for (final MPaySelectionLine line : lines)
-			{
-				if (!line.isActive() || line.isProcessed())
-				{
-					continue;
-				}
-				createCheckAndUpdateLine(line);
-			}
-		}
-
-		private void createCheckAndUpdateLine(final MPaySelectionLine line)
-		{
-			//
-			// Try to find one
-			for (final MPaySelectionCheck check : paySelectionChecks)
-			{
-				// Add to existing
-				if (check.getC_BPartner_ID() == line.getInvoice().getC_BPartner_ID())
-				{
-					check.addLine(line);
-					InterfaceWrapperHelper.save(check);
-
-					linkCheckAndMarkProcessed(line, check);
-					return;
-				}
-			}
-
-			//
-			// Create new
-			final String paymentRule = line.getPaymentRule();
-			final MPaySelectionCheck check = new MPaySelectionCheck(line, paymentRule);
-			if (!check.isValid())
-			{
-				String msg = Services.get(IMsgBL.class).getMsg(Env.getCtx(), MPaySelection.ERR_PaySelection_NoBPBankAccount);
-				throw new AdempiereException(msg);
-			}
-			InterfaceWrapperHelper.save(check);
-
-			linkCheckAndMarkProcessed(line, check);
-
-			paySelectionChecks.add(check);
-		}
-
-		private void linkCheckAndMarkProcessed(final MPaySelectionLine line, final MPaySelectionCheck check)
-		{
-			line.setC_PaySelectionCheck_ID(check.getC_PaySelectionCheck_ID());
-			line.setProcessed(true);
-			InterfaceWrapperHelper.save(line);
-		}
 
 	}
 
