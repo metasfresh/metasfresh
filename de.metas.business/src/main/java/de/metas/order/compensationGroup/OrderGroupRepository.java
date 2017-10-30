@@ -177,7 +177,7 @@ public class OrderGroupRepository implements GroupRepository
 	}
 
 	/**
-	 * note to dev: keep in sync with {@link #saveCompensationLine(I_C_OrderLine, GroupCompensationLine, GroupId)}
+	 * note to dev: keep in sync with {@link #updateOrderLineFromCompensationLine(I_C_OrderLine, GroupCompensationLine, GroupId)}
 	 */
 	private GroupCompensationLine createCompensationLine(final I_C_OrderLine groupOrderLine)
 	{
@@ -322,7 +322,7 @@ public class OrderGroupRepository implements GroupRepository
 	public static final class OrderLinesStorage
 	{
 		@Getter
-		private GroupId groupId;
+		private final GroupId groupId;
 		private final boolean performDatabaseChanges;
 		private final ImmutableMap<Integer, I_C_OrderLine> orderLinesById;
 

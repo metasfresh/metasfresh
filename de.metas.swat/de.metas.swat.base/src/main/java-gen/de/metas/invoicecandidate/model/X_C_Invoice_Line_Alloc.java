@@ -4,7 +4,6 @@ package de.metas.invoicecandidate.model;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import org.compiere.util.Env;
 
 /** Generated Model for C_Invoice_Line_Alloc
  *  @author Adempiere (generated) 
@@ -16,7 +15,7 @@ public class X_C_Invoice_Line_Alloc extends org.compiere.model.PO implements I_C
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -279808115L;
+	private static final long serialVersionUID = 912484734L;
 
     /** Standard Constructor */
     public X_C_Invoice_Line_Alloc (Properties ctx, int C_Invoice_Line_Alloc_ID, String trxName)
@@ -27,8 +26,7 @@ public class X_C_Invoice_Line_Alloc extends org.compiere.model.PO implements I_C
 			setC_Invoice_Candidate_ID (0);
 			setC_Invoice_Line_Alloc_ID (0);
 			setC_InvoiceLine_ID (0);
-			setQtyInvoiced (Env.ZERO);
-// 0
+			setQtyInvoiced (BigDecimal.ZERO); // 0
         } */
     }
 
@@ -262,7 +260,7 @@ public class X_C_Invoice_Line_Alloc extends org.compiere.model.PO implements I_C
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PriceEntered_Override);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -284,7 +282,7 @@ public class X_C_Invoice_Line_Alloc extends org.compiere.model.PO implements I_C
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyInvoiced);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -306,7 +304,7 @@ public class X_C_Invoice_Line_Alloc extends org.compiere.model.PO implements I_C
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyToInvoice_Override);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 }

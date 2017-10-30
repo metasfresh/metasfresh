@@ -1,5 +1,7 @@
 package de.metas.invoicecandidate.spi;
 
+import java.math.BigDecimal;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -92,7 +94,7 @@ public interface IInvoiceCandidateHandler
 	}
 
 	/**
-	 *  Returns {@code AFTER_COMPLETE} by default.
+	 * Returns {@code AFTER_COMPLETE} by default.
 	 * 
 	 * @return {@link DocTimingType} when to create the missing invoice candidates automatically; shall never return null.
 	 */
@@ -210,19 +212,10 @@ public interface IInvoiceCandidateHandler
 	 */
 	void setDeliveredData(I_C_Invoice_Candidate ic);
 
-	/**
-	 * Method responsible for setting
-	 * <ul>
-	 * <li>PriceActual
-	 * <li>Price_UOM_ID
-	 * <li>IsTaxIncluded
-	 * </ul>
-	 * of the given invoice candidate.
-	 *
-	 * @param ic
-	 *
-	 */
-	void setPriceActual(I_C_Invoice_Candidate ic);
+	default PriceAndTax calculatePriceAndTax(I_C_Invoice_Candidate ic)
+	{
+		return PriceAndTax.NONE;
+	}
 
 	/**
 	 * * Method responsible for setting
@@ -244,5 +237,30 @@ public interface IInvoiceCandidateHandler
 	 */
 	void setC_UOM_ID(I_C_Invoice_Candidate ic);
 
-	void setPriceEntered(I_C_Invoice_Candidate ic);
+	/**
+	 * Price and tax info calculation result.
+	 * 
+	 * All fields are optional and only those filled will be set back to invoice candidate.
+	 */
+	@lombok.Value
+	@lombok.Builder
+	class PriceAndTax
+	{
+		public static final PriceAndTax NONE = builder().build();
+
+		int pricingSystemId;
+		int priceListVersionId;
+		int currencyId;
+
+		BigDecimal priceEntered;
+		BigDecimal priceActual;
+		int priceUOMId;
+
+		BigDecimal discount;
+
+		int taxCategoryId;
+		Boolean taxIncluded;
+		
+		BigDecimal compensationGroupBaseAmt;
+	}
 }

@@ -28,6 +28,7 @@ import java.sql.Timestamp;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
@@ -37,6 +38,8 @@ import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
+
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.currency.ICurrencyBL;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
@@ -143,4 +146,12 @@ public class PlainInvoiceCandDAO extends InvoiceCandDAO
 			}
 		});
 	}
+	
+	@Override
+	public Set<String> retrieveOrderDocumentNosForIncompleteGroupsFromSelection(final int adPInstanceId)
+	{
+		// not implemented
+		return ImmutableSet.of();
+	}
+
 }

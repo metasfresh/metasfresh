@@ -28,6 +28,7 @@ import java.sql.Timestamp;
 import org.adempiere.util.ISingletonService;
 
 import de.metas.contracts.model.I_C_Flatrate_Term;
+import lombok.NonNull;
 
 public interface IContractChangeBL extends ISingletonService
 {
@@ -48,13 +49,10 @@ public interface IContractChangeBL extends ISingletonService
 	 *            are invalidated.</li> <li>the term's {@link I_C_Flatrate_Term#COLUMNNAME_EndDate} is updated according to the <code>changeDate</code> parameter. If the term's StartDate is after
 	 *            <code>changeDate</code>, then the EndDate will be set to the StartDate. If the terms EndDate is before <code>changeDate</code>, then the EndDate won't be updated</li>
 	 *            </ul>
-	 * @param changeDate the cancellation date. If this this date is before the term's "regular" EndDate, it is also used to find the correct {@link de.metas.contracts.model.I_C_Contract_Change} record
-	 *            for the cancel conditions.
-	 * @param isCloseInvoiceCandidate this value is forwarded to the given term's <code>IsCloseInvoiceCandidate</code> column and will determine what to do with invoice candidates for the term which were not
-	 *            yet (fully) invoiced. See {@link de.metas.contracts.invoicecandidate.FlatrateTermInvoiceCandidateHandler}
+	 * 
 	 * @throws SubscriptionChangeException if <code>changeDate</code> is before the term's EndDate and if there is no {@link de.metas.contracts.model.I_C_Contract_Change} record for that date
 	 */
-	void cancelContract(I_C_Flatrate_Term term, Timestamp changeDate,  boolean isCloseInvoiceCandidate);
+	void cancelContract(@NonNull I_C_Flatrate_Term term, @NonNull ContractChangeParameters contractChangeParameters);
 	
 	/**
 	 * ending naturally a contract

@@ -25,7 +25,6 @@ package de.metas.invoicecandidate.spi.impl;
 
 import java.util.Collections;
 import java.util.Iterator;
-import java.util.Properties;
 
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.AbstractInvoiceCandidateHandler;
@@ -102,12 +101,6 @@ public class PlainInvoiceCandidateHandler extends AbstractInvoiceCandidateHandle
 	}
 
 	@Override
-	public void setPriceActual(final I_C_Invoice_Candidate ic)
-	{
-		// nothing to do
-	}
-
-	@Override
 	public void setBPartnerData(final I_C_Invoice_Candidate ic)
 	{
 		// nothing to do
@@ -115,12 +108,6 @@ public class PlainInvoiceCandidateHandler extends AbstractInvoiceCandidateHandle
 
 	@Override
 	public void setC_UOM_ID(final I_C_Invoice_Candidate ic)
-	{
-		// nothing to do
-	}
-
-	@Override
-	public void setPriceEntered(final I_C_Invoice_Candidate ic)
 	{
 		// nothing to do
 	}
