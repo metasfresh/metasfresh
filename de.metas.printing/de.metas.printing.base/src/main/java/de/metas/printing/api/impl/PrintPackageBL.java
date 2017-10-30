@@ -180,7 +180,7 @@ public class PrintPackageBL implements IPrintPackageBL
 		}
 		logger.debug("Session: {}", session);
 
-		final String hostKey = session.getHostKey(ctx);
+		final String hostKey = session.getOrCreateHostKey(ctx);
 		Check.assumeNotEmpty(hostKey, "{} has a hostKey", session);
 
 		printCtx.setHostKey(hostKey);
@@ -196,7 +196,7 @@ public class PrintPackageBL implements IPrintPackageBL
 		final MFSession session = Services.get(ISessionBL.class).getCurrentSession(ctx);
 		if (session != null)
 		{
-			return session.getHostKey(ctx);
+			return session.getOrCreateHostKey(ctx);
 		}
 		return null;
 	}

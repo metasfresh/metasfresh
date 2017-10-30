@@ -1,5 +1,7 @@
 package de.metas.printing.model.validator;
 
+import java.util.Properties;
+
 /*
  * #%L
  * de.metas.printing.base
@@ -27,12 +29,15 @@ import org.adempiere.ad.dao.cache.IModelCacheService;
 import org.adempiere.ad.migration.logger.IMigrationLogger;
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
+import org.adempiere.ad.session.ISessionBL;
+import org.adempiere.ad.session.MFSession;
 import org.adempiere.server.rpl.trx.api.IReplicationTrxBL;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Client;
 import org.compiere.report.IJasperServiceRegistry;
 import org.compiere.report.IJasperServiceRegistry.ServiceType;
 import org.compiere.util.CacheMgt;
+import org.compiere.util.Env;
 
 import de.metas.async.api.IAsyncBatchListeners;
 import de.metas.event.IEventBusFactory;
@@ -160,6 +165,18 @@ public class Main extends AbstractModuleInterceptor
 		cacheMgt.enableRemoteCacheInvalidationForTableName(I_AD_PrinterRouting.Table_Name);
 		cacheMgt.enableRemoteCacheInvalidationForTableName(I_AD_Printer_Config.Table_Name);
 		cacheMgt.enableRemoteCacheInvalidationForTableName(I_AD_Printer_Matching.Table_Name);
+	}
+	
+	@Override
+	public void onUserLogin(int AD_Org_ID, int AD_Role_ID, int AD_User_ID)
+	{
+		// make sure that the host key is set in the context
+		if (Printing_Constants.isEnabled())
+		{
+			final Properties ctx = Env.getCtx();
+			final MFSession session = Services.get(ISessionBL.class).getCurrentSession(ctx);
+			session.getOrCreateHostKey(ctx);
+		}
 	}
 
 }
