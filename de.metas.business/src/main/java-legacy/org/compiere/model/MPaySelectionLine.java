@@ -21,7 +21,6 @@ import java.sql.ResultSet;
 import java.util.Properties;
 
 import org.compiere.util.DB;
-import org.compiere.util.Env;
 
 /**
  *	Payment Selection Line Model
@@ -52,10 +51,10 @@ public class MPaySelectionLine extends X_C_PaySelectionLine
 		//	setLine (0);	// @SQL=SELECT COALESCE(MAX(Line),0)+10 AS DefaultValue FROM C_PaySelectionLine WHERE C_PaySelection_ID=@C_PaySelection_ID@
 		//	setC_Invoice_ID (0);
 			setIsSOTrx (false);
-			setOpenAmt(Env.ZERO);
-			setPayAmt (Env.ZERO);
-			setDiscountAmt(Env.ZERO);
-			setDifferenceAmt (Env.ZERO);
+			setOpenAmt(BigDecimal.ZERO);
+			setPayAmt (BigDecimal.ZERO);
+			setDiscountAmt(BigDecimal.ZERO);
+			setDifferenceAmt (BigDecimal.ZERO);
 			setIsManual (false);
 		}
 	}	//	MPaySelectionLine

@@ -2865,7 +2865,7 @@ public abstract class PO
 			final boolean b = saveNew();
 			if (!b)
 			{
-				throw new AdempiereException("saveNew failed");
+				throw new AdempiereException("saveNew failed").setParameter("po", this).appendParametersToMessage();
 			}
 		}
 		else
@@ -2873,7 +2873,7 @@ public abstract class PO
 			final boolean b = saveUpdate();
 			if (!b)
 			{
-				throw new AdempiereException("saveUpdate failed");
+				throw new AdempiereException("saveUpdate failed").setParameter("po", this).appendParametersToMessage();
 			}
 		}
 	}
