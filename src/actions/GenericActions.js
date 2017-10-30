@@ -212,13 +212,28 @@ export function duplicateRequest(
     );
 }
 
-export function actionsRequest({ entity, type, id, selected }) {
+export function actionsRequest({
+    entity,
+    type,
+    id,
+    selectedIds,
+    selectedTabId,
+    selectedRowIds
+}) {
     const query = {
         disabled: true
     };
 
-    if (selected.length > 0 && entity == 'documentView') {
-        query.selectedIds = selected.join(',');
+    if (selectedIds && selectedIds.length) {
+        query.selectedIds = selectedIds.join(',');
+    }
+
+    if (selectedTabId) {
+        query.selectedTabId = selectedTabId;
+    }
+
+    if (selectedRowIds && selectedRowIds.length > 0) {
+        query.selectedRowIds = selectedRowIds.join(',');
     }
 
     let queryString = '';

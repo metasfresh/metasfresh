@@ -20,10 +20,12 @@ class Actions extends Component {
             entity,
             docId,
             rowId,
-            notfound
+            notfound,
+            activeTab,
+            activeTabSelected
         } = this.props;
 
-        if(!windowType || docId === 'notfound' || notfound){
+        if (!windowType || docId === 'notfound' || notfound) {
             this.setState({
                 data: []
             });
@@ -40,17 +42,33 @@ class Actions extends Component {
         }
 
         try {
-            const { actions } = (await actionsRequest({
+            const request = {
                 entity,
                 type: windowType,
-                id: docId,
-                selected: rowId
-            })).data;
+                id: docId
+            };
+
+            if (entity === 'documentView') {
+                request.selectedIds = rowId;
+            }
+
+            if (
+                activeTab &&
+                activeTabSelected &&
+                activeTabSelected.length > 0
+            ) {
+                request.selectedTabId = activeTab;
+                request.selectedRowIds = activeTabSelected;
+            }
+
+            const { actions } = (await actionsRequest(request)).data;
 
             this.setState({
                 data: actions
             });
         } catch (error) {
+            console.error(error);
+
             this.setState({
                 data: []
             });
@@ -61,35 +79,40 @@ class Actions extends Component {
         const { closeSubheader, openModal } = this.props;
         const { data } = this.state;
 
-        return (data && data.length) ? data.map((item, key) => (
-            <div
-                key={key}
-                tabIndex={0}
-                className={'subheader-item js-subheader-item' + (
-                    item.disabled ? ' subheader-item-disabled' : ''
-                )}
-                onClick={item.disabled ? null : () => {
-                    openModal(item.processId + '', 'process', item.caption);
+        if (data && data.length) {
+            return data.map((item, key) => (
+                <div
+                    key={key}
+                    tabIndex={0}
+                    className={'subheader-item js-subheader-item' + (
+                        item.disabled ? ' subheader-item-disabled' : ''
+                    )}
+                    onClick={item.disabled ? null : () => {
+                        openModal(item.processId + '', 'process', item.caption);
 
-                    closeSubheader();
-                }}
-            >
-                {item.caption}
-                {item.disabled && item.disabledReason && (
-                    <p className="one-line">
-                        <small>({item.disabledReason})</small>
-                    </p>
-                )}
-            </div>
-        )) : (
-            <div className="subheader-item subheader-item-disabled">
-                {counterpart.translate('window.actions.emptyText')}
-            </div>
-        );
+                        closeSubheader();
+                    }}
+                >
+                    {item.caption}
+                    {item.disabled && item.disabledReason && (
+                        <p className="one-line">
+                            <small>({item.disabledReason})</small>
+                        </p>
+                    )}
+                </div>
+            ));
+        } else {
+            return (
+                <div className="subheader-item subheader-item-disabled">
+                    {counterpart.translate('window.actions.emptyText')}
+                </div>
+            );
+        }
     }
 
     render() {
-        const {data} = this.state;
+        const { data } = this.state;
+
         return (
             <div
                 className="subheader-column js-subheader-column"
