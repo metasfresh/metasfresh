@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
-<!-- 2017-10-27T18:39:33 -->
+<!-- 2017-10-30T17:12:28 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_orgblock" pageWidth="130" pageHeight="800" columnWidth="130" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/generics/report" uuid="7a1b6560-d1ef-4d70-acd9-642f0804e306">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -29,27 +29,9 @@
 	</parameter>
 	<parameter name="email" class="java.lang.String" isForPrompting="false"/>
 	<queryString>
-		<![CDATA[SELECT
-	*
-FROM
-	de_metas_endcustomer_fresh_reports.Docs_Generics_Org_Report( $P{email}, $P{IsSOTrx}, $P{org_id} )
-;]]>
+		<![CDATA[SELECT 0; ]]>
 	</queryString>
-	<field name="name" class="java.lang.String"/>
-	<field name="address" class="java.lang.String"/>
-	<field name="vataxid" class="java.lang.String"/>
-	<field name="phone" class="java.lang.String"/>
-	<field name="fax" class="java.lang.String"/>
-	<field name="postal" class="java.lang.String"/>
-	<field name="city" class="java.lang.String"/>
-	<field name="email" class="java.lang.String"/>
-	<field name="url" class="java.lang.String"/>
-	<field name="man_name" class="java.lang.String"/>
-	<field name="acct_owner" class="java.lang.String"/>
-	<field name="accountno" class="java.lang.String"/>
-	<field name="routingno" class="java.lang.String"/>
-	<field name="iban" class="java.lang.String"/>
-	<field name="swiftcode" class="java.lang.String"/>
+	<field name="?column?" class="java.lang.Integer"/>
 	<background>
 		<band splitType="Stretch"/>
 	</background>
