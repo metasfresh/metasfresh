@@ -106,7 +106,7 @@ UPDATE AD_Table SET AD_Window_ID=NULL,Updated=TO_TIMESTAMP('2017-10-27 16:42:12'
 -- URL zum Konzept
 DELETE FROM AD_PrintFormat WHERE AD_PrintFormat_ID=106
 
-
+;
 
 
 
