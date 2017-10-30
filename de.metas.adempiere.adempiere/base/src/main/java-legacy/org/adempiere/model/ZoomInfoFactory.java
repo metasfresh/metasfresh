@@ -330,10 +330,7 @@ public class ZoomInfoFactory
 	 */
 	public List<ZoomInfo> retrieveZoomInfos(final IZoomSource source)
 	{
-		final int targetAD_Window_ID = -1;
-		final boolean checkRecordsCount = true;
-		return streamZoomInfos(source, targetAD_Window_ID, checkRecordsCount)
-				.collect(ImmutableList.toImmutableList());
+		return streamZoomInfos(source).collect(ImmutableList.toImmutableList());
 	}
 
 	/**
