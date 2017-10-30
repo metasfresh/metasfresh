@@ -28,6 +28,11 @@ import java.math.BigDecimal;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Services;
 
+import de.metas.event.IEventBus;
+import de.metas.event.IEventBusFactory;
+import de.metas.event.Topic;
+import de.metas.event.Type;
+
 public final class Printing_Constants
 {
 	private Printing_Constants()
@@ -61,6 +66,16 @@ public final class Printing_Constants
 	 * Internal name for pdf printing async batch
 	 */
 	public static final String C_Async_Batch_InternalName_PDFPrinting = "PDFPrinting";
+	
+	public static final Topic TOPIC_Printing = Topic.builder()
+			.setName("de.metas.printing.async.ProcessedEvents")
+			.setType(Type.REMOTE)
+			.build();
+	
+	public static final IEventBus getPrintingEventBus()
+	{
+		return Services.get(IEventBusFactory.class).getEventBus(TOPIC_Printing);
+	}
 	
 	/**
 	 * @return true if printing module is enabled; false if printing module is fully disabled
