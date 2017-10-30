@@ -2067,10 +2067,7 @@ public final class MPayment extends X_C_Payment
 		{
 			return allocateInvoice();
 		}
-		// Invoices of a AP Payment Selection
-		if (allocatePaySelection())
-			return true;
-
+		
 		if (getC_Order_ID() != 0)
 			return false;
 
@@ -2225,35 +2222,6 @@ public final class MPayment extends X_C_Payment
 					+ " <> Payment C_Project_ID=" + getC_Project_ID());
 		return true;
 	}	// allocateInvoice
-
-	/**
-	 * Allocate Payment Selection
-	 *
-	 * @return true if allocated
-	 */
-	private boolean allocatePaySelection()
-	{
-		MAllocationHdr alloc = new MAllocationHdr(getCtx(), false,
-				getDateTrx(), getC_Currency_ID(),
-				Services.get(IMsgBL.class).translate(getCtx(), "C_Payment_ID") + ": " + getDocumentNo() + " [n]", get_TrxName());
-		alloc.setAD_Org_ID(getAD_Org_ID());
-
-		// Should start WF
-		boolean ok = true;
-		if (alloc.get_ID() == 0)
-		{
-			log.debug("No Allocation created - C_Payment_ID="
-					+ getC_Payment_ID());
-			ok = false;
-		}
-		else
-		{
-			alloc.processIt(IDocument.ACTION_Complete);
-			ok = alloc.save(get_TrxName());
-			m_processMsg = "@C_AllocationHdr_ID@: " + alloc.getDocumentNo();
-		}
-		return ok;
-	}	// allocatePaySelection
 
 	/**
 	 * De-allocate Payment. Unkink Invoices and Orders and delete Allocations
