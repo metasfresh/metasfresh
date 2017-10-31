@@ -98,6 +98,7 @@ import lombok.NonNull;
 
 		return sql.toString();
 	}
+	
 
 	/** Build document filter parameter where clause */
 	private String buildSqlWhereClause(final SqlParamsCollector sqlParams, final DocumentFilterParam filterParam, final SqlOptions sqlOpts)
@@ -121,16 +122,7 @@ import lombok.NonNull;
 		// Regular filter
 		final String fieldName = filterParam.getFieldName();
 		final SqlEntityFieldBinding fieldBinding = entityBinding.getFieldByFieldName(fieldName);
-
-		final String columnSql;
-		if(sqlOpts.isUseTableAlias())
-		{
-			columnSql = replaceTableNameWithTableAlias(fieldBinding.getColumnSql());
-		}
-		else
-		{
-			columnSql = fieldBinding.getColumnSql();
-		}
+		final String columnSql = extractColumnSql(fieldBinding, sqlOpts);
 		
 
 		final Operator operator = filterParam.getOperator();
@@ -212,6 +204,16 @@ import lombok.NonNull;
 				throw new IllegalArgumentException("Operator not supported: " + operator);
 			}
 		}
+	}
+	
+	private String extractColumnSql(@NonNull final SqlEntityFieldBinding fieldBinding, final SqlOptions sqlOpts)
+	{
+		if(sqlOpts.isUseTableAlias())
+		{
+			return replaceTableNameWithTableAlias(fieldBinding.getColumnSql());
+		}
+
+		return fieldBinding.getColumnSql();
 	}
 
 	private Object convertToSqlValue(final Object value, final SqlEntityFieldBinding fieldBinding)
