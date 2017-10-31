@@ -2,6 +2,8 @@ package de.metas.ui.web.window.model.lookup;
 
 import java.util.function.Predicate;
 
+import org.adempiere.util.Check;
+
 import com.google.common.base.MoreObjects;
 
 import de.metas.ui.web.window.datatypes.LookupValue;
@@ -32,6 +34,12 @@ public final class LookupValueFilterPredicates
 {
 	public static final LookupValueFilterPredicate of(final String filter)
 	{
+		final String adLanguage = null; // N/A
+		return ofFilterAndLanguage(filter, adLanguage);
+	}
+	
+	public static final LookupValueFilterPredicate ofFilterAndLanguage(final String filter, final String adLanguage)
+	{
 		if (filter == null)
 		{
 			return MATCH_ALL;
@@ -43,7 +51,7 @@ public final class LookupValueFilterPredicates
 			return MATCH_ALL;
 		}
 
-		return new ContainsLookupValueFilterPredicate(filterNorm);
+		return new ContainsLookupValueFilterPredicate(filterNorm, adLanguage);
 	}
 
 	public static interface LookupValueFilterPredicate extends Predicate<LookupValue>
@@ -78,18 +86,22 @@ public final class LookupValueFilterPredicates
 	private static final class ContainsLookupValueFilterPredicate implements LookupValueFilterPredicate
 	{
 		private final String filterNormalized;
+		private final String adLanguage;
 
-		private ContainsLookupValueFilterPredicate(final String filter)
+		private ContainsLookupValueFilterPredicate(final String filter, final String adLanguage)
 		{
 			super();
 			filterNormalized = normalizeString(filter);
+			this.adLanguage = Check.isEmpty(adLanguage, true) ? null : adLanguage;
 		}
 
 		@Override
 		public String toString()
 		{
 			return MoreObjects.toStringHelper("ContainsIgnoreCase")
+					.omitNullValues()
 					.addValue(filterNormalized)
+					.add("adLanguage", adLanguage)
 					.toString();
 		}
 
@@ -106,7 +118,7 @@ public final class LookupValueFilterPredicates
 				return false;
 			}
 
-			final String displayName = lookupValue.getDisplayName();
+			final String displayName = adLanguage != null ? lookupValue.getDisplayName(adLanguage) : lookupValue.getDisplayName();
 			if (displayName == null)
 			{
 				return false;
