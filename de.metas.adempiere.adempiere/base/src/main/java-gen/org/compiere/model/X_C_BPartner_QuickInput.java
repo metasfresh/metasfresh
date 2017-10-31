@@ -14,7 +14,7 @@ public class X_C_BPartner_QuickInput extends org.compiere.model.PO implements I_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 180447097L;
+	private static final long serialVersionUID = -117417443L;
 
     /** Standard Constructor */
     public X_C_BPartner_QuickInput (Properties ctx, int C_BPartner_QuickInput_ID, String trxName)
@@ -25,15 +25,10 @@ public class X_C_BPartner_QuickInput extends org.compiere.model.PO implements I_
 			setC_BP_Group_ID (0);
 			setC_BPartner_QuickInput_ID (0);
 			setC_Location_ID (0);
-			setIsCompany (true);
-// Y
-			setIsCustomer (false);
-// N
-			setIsVendor (false);
-// N
-			setName (null);
-			setProcessed (false);
-// N
+			setIsCompany (true); // Y
+			setIsCustomer (false); // N
+			setIsVendor (false); // N
+			setProcessed (false); // N
         } */
     }
 
@@ -248,6 +243,43 @@ public class X_C_BPartner_QuickInput extends org.compiere.model.PO implements I_
 	}
 
 	@Override
+	public org.compiere.model.I_C_Greeting getC_Greeting() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Greeting_ID, org.compiere.model.I_C_Greeting.class);
+	}
+
+	@Override
+	public void setC_Greeting(org.compiere.model.I_C_Greeting C_Greeting)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Greeting_ID, org.compiere.model.I_C_Greeting.class, C_Greeting);
+	}
+
+	/** Set Anrede.
+		@param C_Greeting_ID 
+		Anrede zum Druck auf Korrespondenz
+	  */
+	@Override
+	public void setC_Greeting_ID (int C_Greeting_ID)
+	{
+		if (C_Greeting_ID < 1) 
+			set_Value (COLUMNNAME_C_Greeting_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Greeting_ID, Integer.valueOf(C_Greeting_ID));
+	}
+
+	/** Get Anrede.
+		@return Anrede zum Druck auf Korrespondenz
+	  */
+	@Override
+	public int getC_Greeting_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_Greeting_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
 	public org.compiere.model.I_C_Location getC_Location() throws RuntimeException
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Location_ID, org.compiere.model.I_C_Location.class);
@@ -296,7 +328,7 @@ public class X_C_BPartner_QuickInput extends org.compiere.model.PO implements I_
 		set_ValueFromPO(COLUMNNAME_C_PaymentTerm_ID, org.compiere.model.I_C_PaymentTerm.class, C_PaymentTerm);
 	}
 
-	/** Set Zahlungskondition.
+	/** Set Zahlungsbedingung.
 		@param C_PaymentTerm_ID 
 		Die Bedingungen für die Bezahlung dieses Vorgangs
 	  */
@@ -309,7 +341,7 @@ public class X_C_BPartner_QuickInput extends org.compiere.model.PO implements I_
 			set_Value (COLUMNNAME_C_PaymentTerm_ID, Integer.valueOf(C_PaymentTerm_ID));
 	}
 
-	/** Get Zahlungskondition.
+	/** Get Zahlungsbedingung.
 		@return Die Bedingungen für die Bezahlung dieses Vorgangs
 	  */
 	@Override
@@ -337,7 +369,7 @@ public class X_C_BPartner_QuickInput extends org.compiere.model.PO implements I_
 		return (java.lang.String)get_Value(COLUMNNAME_Companyname);
 	}
 
-	/** Set EMail.
+	/** Set eMail.
 		@param EMail 
 		EMail-Adresse
 	  */
@@ -347,7 +379,7 @@ public class X_C_BPartner_QuickInput extends org.compiere.model.PO implements I_
 		set_Value (COLUMNNAME_EMail, EMail);
 	}
 
-	/** Get EMail.
+	/** Get eMail.
 		@return EMail-Adresse
 	  */
 	@Override
@@ -522,7 +554,7 @@ public class X_C_BPartner_QuickInput extends org.compiere.model.PO implements I_
 		return (java.lang.String)get_Value(COLUMNNAME_Name);
 	}
 
-	/** Set Name 2.
+	/** Set Name Zusatz.
 		@param Name2 
 		Zusätzliche Bezeichnung
 	  */
@@ -532,7 +564,7 @@ public class X_C_BPartner_QuickInput extends org.compiere.model.PO implements I_
 		set_Value (COLUMNNAME_Name2, Name2);
 	}
 
-	/** Get Name 2.
+	/** Get Name Zusatz.
 		@return Zusätzliche Bezeichnung
 	  */
 	@Override
@@ -541,9 +573,9 @@ public class X_C_BPartner_QuickInput extends org.compiere.model.PO implements I_
 		return (java.lang.String)get_Value(COLUMNNAME_Name2);
 	}
 
-	/** Set Phone.
+	/** Set Telefon.
 		@param Phone 
-		Identifies a telephone number
+		Beschreibt eine Telefon Nummer
 	  */
 	@Override
 	public void setPhone (java.lang.String Phone)
@@ -551,8 +583,8 @@ public class X_C_BPartner_QuickInput extends org.compiere.model.PO implements I_
 		set_Value (COLUMNNAME_Phone, Phone);
 	}
 
-	/** Get Phone.
-		@return Identifies a telephone number
+	/** Get Telefon.
+		@return Beschreibt eine Telefon Nummer
 	  */
 	@Override
 	public java.lang.String getPhone () 
