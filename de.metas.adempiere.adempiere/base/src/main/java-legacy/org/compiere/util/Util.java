@@ -246,6 +246,33 @@ public class Util
 		final String s = "0000000000000000000" + valueFixed;
 		return s.substring(s.length() - size);
 	}
+	
+	
+	/**Add 0 digits at the end of a String until it gets to the size given as paraameter. 
+	 * 
+	 * @param value
+	 * @param size
+	 * @param description
+	 * @return
+	 */
+	public static String rpadZero(final String value, final int size, final String description)
+	{
+		final String valueFixed;
+		if (value == null)
+		{
+			valueFixed = "";
+		}
+		else
+		{
+			valueFixed = value.trim();
+		}
+		if (valueFixed.length() > size)
+		{
+			throw new AdempiereException("value='" + valueFixed + "' of '" + description + "' is bigger than " + size + " characters");
+		}
+		final String s = valueFixed + "0000000000000000000";
+		return s.substring(0, size);
+	}
 
 	/**
 	 * Mask HTML content. i.e. replace characters with &values; CR is not masked
