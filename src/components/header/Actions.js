@@ -6,31 +6,32 @@ import counterpart from 'counterpart';
 import Loader from '../app/Loader';
 
 import {
-    actionsRequest,
-    rowActionsRequest
+    actionsRequest
 } from '../../actions/GenericActions';
 
 class Actions extends Component {
     state = {
-        data: null,
-    }
+        data: null
+    };
 
-    componentDidMount = () => {
+    async componentDidMount() {
         const {
-            windowType, entity, docId, rowId, notfound, activeTab,
-            activeTabSelected,
+            windowType,
+            entity,
+            docId,
+            rowId,
+            notfound,
+            activeTab,
+            activeTabSelected
         } = this.props;
 
-        if(!windowType || docId === 'notfound' || notfound){
+        if (!windowType || docId === 'notfound' || notfound) {
             this.setState({
                 data: []
             });
+
             return;
         }
-
-        const requestRowActions = activeTab && activeTabSelected && (
-            activeTabSelected.length > 0
-        );
 
         if (entity === 'board') {
             this.setState({
@@ -40,103 +41,78 @@ class Actions extends Component {
             return;
         }
 
-        actionsRequest(
-            entity, windowType, docId, rowId
-        ).then((response) => {
-            let actions = response.data.actions;
+        try {
+            const request = {
+                entity,
+                type: windowType,
+                id: docId
+            };
 
-            if (requestRowActions) {
-                rowActionsRequest(
-                    windowType, docId, activeTab, activeTabSelected
-                ).then((response) => {
-                    if (response.data && response.data.actions && (
-                        response.data.actions.length > 0)
-                    ) {
-                        let mergeActions = response.data.actions.map((item) => {
-                            return Object.assign(item, {
-                                rowId: activeTabSelected,
-                                tabId: activeTab
-                            });
-                        });
-                        actions = actions.concat([null], mergeActions);
-                    }
+            if (entity === 'documentView') {
+                request.selectedIds = rowId;
+            }
 
-                    this.setState({
-                        data: actions
-                    });
-                }).catch(() => {
-                    this.setState({
-                        data: actions
-                    });
-                });
+            if (
+                activeTab &&
+                activeTabSelected &&
+                activeTabSelected.length > 0
+            ) {
+                request.selectedTabId = activeTab;
+                request.selectedRowIds = activeTabSelected;
             }
-            else {
-                this.setState({
-                    data: actions
-                });
-            }
-        }).catch(() => {
+
+            const { actions } = (await actionsRequest(request)).data;
+
+            this.setState({
+                data: actions
+            });
+        } catch (error) {
+            console.error(error);
+
             this.setState({
                 data: []
-            })
-        })
+            });
+        }
     }
 
     renderData = () => {
-        const { closeSubheader, openModal, openModalRow } = this.props;
+        const { closeSubheader, openModal } = this.props;
         const { data } = this.state;
 
-        return (data && data.length) ? data.map((item, key) => {
-            if (item) {
-                return (
-                    <div
-                        key={key}
-                        tabIndex={0}
-                        className={'subheader-item js-subheader-item' + (
-                          item.disabled ? ' subheader-item-disabled' : ''
-                        )}
-                        onClick={item.disabled ? null : () => {
-                            if (item.tabId && item.rowId) {
-                                openModalRow(
-                                    item.processId + '', 'process',
-                                    item.caption, item.tabId, item.rowId[0]
-                                );
-                            }
-                            else {
-                                openModal(
-                                    item.processId + '', 'process', item.caption
-                                );
-                            }
-
-                            closeSubheader()
-                        }}
-                    >
-                        {item.caption}
-
-                        {item.disabled && item.disabledReason && (
-                          <p className="one-line">
-                            <small>({item.disabledReason})</small>
-                          </p>
-                        )}
-                    </div>
-                );
-            }
-
-            return (
-                <hr
+        if (data && data.length) {
+            return data.map((item, key) => (
+                <div
                     key={key}
                     tabIndex={0}
-                />
+                    className={'subheader-item js-subheader-item' + (
+                        item.disabled ? ' subheader-item-disabled' : ''
+                    )}
+                    onClick={item.disabled ? null : () => {
+                        openModal(item.processId + '', 'process', item.caption);
+
+                        closeSubheader();
+                    }}
+                >
+                    {item.caption}
+                    {item.disabled && item.disabledReason && (
+                        <p className="one-line">
+                            <small>({item.disabledReason})</small>
+                        </p>
+                    )}
+                </div>
+            ));
+        } else {
+            return (
+                <div className="subheader-item subheader-item-disabled">
+                    {counterpart.translate('window.actions.emptyText')}
+                </div>
             );
-        }) : (
-            <div className="subheader-item subheader-item-disabled">
-                {counterpart.translate('window.actions.emptyText')}
-            </div>
-        )
+        }
     }
 
     render() {
-        const {data} = this.state;
+        const { data } = this.state;
+
         return (
             <div
                 className="subheader-column js-subheader-column"

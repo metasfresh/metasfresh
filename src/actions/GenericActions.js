@@ -212,34 +212,47 @@ export function duplicateRequest(
     );
 }
 
-export function actionsRequest(entity, type, id, selected){
-    let query = '';
-    for (let item of selected) {
-       query+=','+item;
+export function actionsRequest({
+    entity,
+    type,
+    id,
+    selectedIds,
+    selectedTabId,
+    selectedRowIds
+}) {
+    const query = {
+        disabled: true
+    };
+
+    if (selectedIds && selectedIds.length) {
+        query.selectedIds = selectedIds.join(',');
     }
-    query = query.substring(1);
+
+    if (selectedTabId) {
+        query.selectedTabId = selectedTabId;
+    }
+
+    if (selectedRowIds && selectedRowIds.length > 0) {
+        query.selectedRowIds = selectedRowIds.join(',');
+    }
+
+    let queryString = '';
+    const queryEntries = Object.entries(query);
+
+    if (queryEntries.length > 0) {
+        queryString = '?' + (queryEntries
+            .map(([key, value]) => `${key}=${value}`)
+            .join('&')
+        );
+    }
 
     return axios.get(
         config.API_URL + '/' +
         entity + '/' +
         type + '/' +
         id +
-        '/actions?disabled=true' +
-        (selected.length > 0 && entity=='documentView' ?
-            '&selectedIds='+ query :'')
-    );
-}
-
-export function rowActionsRequest(windowId, documentId, tabId, selected) {
-    let query = selected.join(',');
-
-    return axios.get(
-        config.API_URL + '/window/' +
-        windowId + '/' +
-        documentId + '/' +
-        tabId + '/' +
-        query +
-        '/actions'
+        '/actions' +
+        queryString
     );
 }
 

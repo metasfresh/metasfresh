@@ -32,6 +32,7 @@ const mapStateToProps = (state, props) => ({
         windowType: props.parentType,
         viewId: props.viewId,
     }),
+    activeTabId: state.windowHandler.master.layout.activeTab
 });
 
 class Modal extends Component {
@@ -135,7 +136,7 @@ class Modal extends Component {
         const {
             dispatch, windowType, dataId, tabId, rowId, modalType,
             parentSelection, parentType, isAdvanced, modalViewId,
-            modalViewDocumentIds,
+            modalViewDocumentIds, activeTabId
         } = this.props;
 
         switch (modalType) {
@@ -159,7 +160,7 @@ class Modal extends Component {
                 // - with parentSelection: on parent gridviews
 
                 try {
-                    await dispatch(createProcess({
+                    const options = {
                         processType: windowType,
                         viewId: modalViewId,
                         type: parentType,
@@ -169,7 +170,16 @@ class Modal extends Component {
                         ),
                         tabId,
                         rowId
-                    }));
+                    };
+
+                    if (activeTabId && parentSelection) {
+                        options.selectedTab = {
+                            tabId: activeTabId,
+                            rowIds: parentSelection
+                        };
+                    }
+
+                    await dispatch(createProcess(options));
                 } catch (error) {
                     this.handleClose();
 

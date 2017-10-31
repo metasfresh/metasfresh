@@ -826,21 +826,40 @@ export function handleProcessResponse(response, type, id) {
     }
 }
 
-function getProcessData({ processId, viewId, type, ids, tabId, rowId }) {
+function getProcessData({
+    processId,
+    viewId,
+    type,
+    ids,
+    tabId,
+    rowId,
+    selectedTab
+}) {
+    const payload = {
+        processId: processId
+    };
+
+    if (viewId) {
+        payload.viewId = viewId;
+        payload.viewDocumentIds = ids;
+    } else {
+        payload.documentId = Array.isArray(ids) ? ids[0] : ids;
+        payload.documentType = type;
+        payload.tabId = tabId;
+        payload.rowId = rowId;
+    }
+
+    if (selectedTab) {
+        payload.selectedTab = {
+            tabId: selectedTab.tabId,
+            rowIds: selectedTab.rowIds
+        };
+    }
+
     return axios.post(
         config.API_URL +
         '/process/' + processId,
-        viewId ? {
-            processId: processId,
-            viewId: viewId,
-            viewDocumentIds: ids
-        } : {
-            processId: processId,
-            documentId: Array.isArray(ids) ? ids[0] : ids,
-            documentType: type,
-            tabId: tabId,
-            rowId: rowId
-        }
+        payload
     );
 }
 
