@@ -64,15 +64,15 @@ public class C_OrderLine
 	private C_OrderLine()
 	{
 		Adempiere.autowire(this);
-		
+
 		// NOTE: in unit test mode and while running tools like model generators,
 		// the groupsRepo is not Autowired because there is no spring context,
 		// so we have to instantiate it directly
-		if(groupsRepo == null)
+		if (groupsRepo == null)
 		{
 			groupsRepo = new OrderGroupRepository();
 		}
-		
+
 		groupChangesHandler = OrderGroupCompensationChangesHandler.builder()
 				.groupsRepo(groupsRepo)
 				.build();
@@ -242,4 +242,11 @@ public class C_OrderLine
 	{
 		groupChangesHandler.onOrderLineChanged(orderLine);
 	}
+
+	@ModelChange(timings = ModelValidator.TYPE_AFTER_DELETE)
+	public void handleCompensantionGroupDelete(final I_C_OrderLine orderLine)
+	{
+		groupChangesHandler.onOrderLineDeleted(orderLine);
+	}
+
 }

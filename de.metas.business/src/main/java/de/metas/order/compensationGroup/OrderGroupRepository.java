@@ -7,6 +7,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -63,7 +64,19 @@ public class OrderGroupRepository implements GroupRepository
 	public GroupId extractGroupId(final I_C_OrderLine orderLine)
 	{
 		OrderGroupCompensationUtils.assertInGroup(orderLine);
-		return GroupId.of(I_C_Order.Table_Name, orderLine.getC_Order_ID(), orderLine.getGroupNo());
+		return extractGroupIdOrNull(orderLine);
+	}
+
+	private GroupId extractGroupIdOrNull(final I_C_OrderLine orderLine)
+	{
+		if (OrderGroupCompensationUtils.isInGroup(orderLine))
+		{
+			return GroupId.of(I_C_Order.Table_Name, orderLine.getC_Order_ID(), orderLine.getGroupNo());
+		}
+		else
+		{
+			return null;
+		}
 	}
 
 	private GroupId extractSingleGroupId(final List<I_C_OrderLine> orderLines)
@@ -87,14 +100,19 @@ public class OrderGroupRepository implements GroupRepository
 		}
 
 		final Group group = createGroupFromOrderLines(groupOrderLines);
-		if (!group.getGroupId().equals(groupId))
+		assertGroupId(group, groupId);
+		return group;
+	}
+
+	private static void assertGroupId(final Group group, final GroupId expectedGroupId)
+	{
+		if (!group.getGroupId().equals(expectedGroupId))
 		{
 			// shall not happen
 			throw new AdempiereException("Invalid groupId for group " + group)
-					.setParameter("expectedGroupId", groupId)
+					.setParameter("expectedGroupId", expectedGroupId)
 					.appendParametersToMessage();
 		}
-		return group;
 	}
 
 	private Group createGroupFromOrderLines(final List<I_C_OrderLine> groupOrderLines)
@@ -172,6 +190,7 @@ public class OrderGroupRepository implements GroupRepository
 	private GroupRegularLine createReqularLine(final I_C_OrderLine groupOrderLine)
 	{
 		return GroupRegularLine.builder()
+				.repoId(groupOrderLine.getC_OrderLine_ID())
 				.lineNetAmt(groupOrderLine.getLineNetAmt())
 				.build();
 	}
@@ -262,33 +281,90 @@ public class OrderGroupRepository implements GroupRepository
 	}
 
 	@Override
+	public Group retrieveOrCreateGroupFromLineIds(final Collection<Integer> orderLineIds)
+	{
+		final List<I_C_OrderLine> orderLines = retrieveC_OrderLines(orderLineIds);
+		Check.assumeNotEmpty(orderLines, "orderLines is not empty");
+
+		final List<GroupId> groupIds = orderLines.stream()
+				.map(this::extractGroupIdOrNull)
+				.distinct()
+				.collect(Collectors.toList());
+
+		if (groupIds.size() > 1)
+		{
+			throw new AdempiereException("Mixed groups not allowed")
+					.setParameter("groupIds", groupIds);
+		}
+		else if (groupIds.isEmpty() || groupIds.get(0) == null)
+		{
+			return createNewGroupFromOrderLines(orderLines);
+		}
+		else
+		{
+			final GroupId groupId = groupIds.get(0);
+			// NOTE: it's not enough to create the Group using currently loaded orderLines because those might not be the all of them
+			return retrieveGroup(groupId);
+		}
+	}
+
+	@Override
 	public Group createNewGroup(final Collection<Integer> regularOrderLineIds)
 	{
-		Check.assumeNotEmpty(regularOrderLineIds, "regularOrderLineIds is not empty");
-		final List<I_C_OrderLine> regularOrderLines = queryBL.createQueryBuilder(I_C_OrderLine.class)
-				.addInArrayFilter(I_C_OrderLine.COLUMN_C_OrderLine_ID, regularOrderLineIds)
-				.create()
-				.list(I_C_OrderLine.class);
+		final List<I_C_OrderLine> orderLines = retrieveC_OrderLines(regularOrderLineIds);
+		return createNewGroupFromOrderLines(orderLines);
+	}
 
-		Check.assumeNotEmpty(regularOrderLines, "regularOrderLines is not empty");
-		regularOrderLines.forEach(OrderGroupCompensationUtils::assertNotInGroup);
+	private Group createNewGroupFromOrderLines(final List<I_C_OrderLine> orderLines)
+	{
+		Check.assumeNotEmpty(orderLines, "orderLines is not empty");
+		orderLines.forEach(OrderGroupCompensationUtils::assertNotInGroup);
 
-		final int orderId = regularOrderLines.stream()
-				.map(I_C_OrderLine::getC_Order_ID)
-				.distinct()
-				.collect(GuavaCollectors.singleElementOrThrow(() -> new AdempiereException("All order lines shall be from same order")));
+		final int orderId = extractOrderId(orderLines);
 		final I_C_Order order = load(orderId, I_C_Order.class);
 		assertOrderNotProcessed(order);
 
-		final int lastGroup = retrieveLastGroup(orderId);
-		final int group = lastGroup + 1;
+		final int lastGroupNo = retrieveLastGroup(orderId);
+		final int groupNo = lastGroupNo + 1;
+		setGroupNoToLines(orderLines, groupNo);
 
+		return createGroupFromOrderLines(orderLines);
+	}
+
+	private static int extractOrderId(final List<I_C_OrderLine> orderLines)
+	{
+		return orderLines.stream()
+				.map(I_C_OrderLine::getC_Order_ID)
+				.distinct()
+				.collect(GuavaCollectors.singleElementOrThrow(() -> new AdempiereException("All order lines shall be from same order")));
+	}
+
+	private List<I_C_OrderLine> retrieveC_OrderLines(final Collection<Integer> orderLineIds)
+	{
+		if (orderLineIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+		final List<I_C_OrderLine> regularOrderLines = queryBL.createQueryBuilder(I_C_OrderLine.class)
+				.addInArrayFilter(I_C_OrderLine.COLUMN_C_OrderLine_ID, orderLineIds)
+				.create()
+				.list(I_C_OrderLine.class);
+		return regularOrderLines;
+	}
+
+	private static final void setGroupNoToLines(final List<I_C_OrderLine> regularOrderLines, final int groupNo)
+	{
 		regularOrderLines.forEach(regularLinePO -> {
-			regularLinePO.setGroupNo(group);
+			if (groupNo > 0)
+			{
+				regularLinePO.setGroupNo(groupNo);
+			}
+			else
+			{
+				InterfaceWrapperHelper.setValue(regularLinePO, I_C_OrderLine.COLUMNNAME_GroupNo, null);
+			}
 			save(regularLinePO);
 		});
-
-		return createGroupFromOrderLines(regularOrderLines);
 	}
 
 	private int retrieveLastGroup(final int orderId)
@@ -297,6 +373,25 @@ public class OrderGroupRepository implements GroupRepository
 				.addEqualsFilter(I_C_OrderLine.COLUMNNAME_C_Order_ID, orderId)
 				.create()
 				.maxInt(I_C_OrderLine.COLUMNNAME_GroupNo);
+	}
+
+	public void destroyGroup(final Group group)
+	{
+		group.getGroupId().assertDocumentTableName(I_C_Order.Table_Name);
+
+		if (group.hasCompensationLines())
+		{
+			throw new AdempiereException("Cannot destroy compensation group if there are compensation lines: " + group);
+		}
+
+		final List<Integer> orderLineIds = group.getRegularLines().stream()
+				.map(GroupRegularLine::getRepoId)
+				.filter(orderLineId -> orderLineId > 0)
+				.collect(ImmutableList.toImmutableList());
+
+		final List<I_C_OrderLine> orderLines = retrieveC_OrderLines(orderLineIds);
+
+		setGroupNoToLines(orderLines, -1);
 	}
 
 	public Group createPartialGroupFromCompensationLine(final I_C_OrderLine compensationLinePO)
@@ -351,7 +446,7 @@ public class OrderGroupRepository implements GroupRepository
 			}
 		}
 
-		private void setGroupNoToOrderLine(I_C_OrderLine compensationLinePO)
+		private void setGroupNoToOrderLine(final I_C_OrderLine compensationLinePO)
 		{
 			if (compensationLinePO.getGroupNo() <= 0)
 			{

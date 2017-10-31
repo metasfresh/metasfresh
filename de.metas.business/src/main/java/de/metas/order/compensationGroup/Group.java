@@ -77,6 +77,16 @@ public class Group
 		return _baseAmt;
 	}
 
+	public List<GroupRegularLine> getRegularLines()
+	{
+		return regularLines;
+	}
+
+	public boolean hasCompensationLines()
+	{
+		return !compensationLines.isEmpty();
+	}
+
 	public List<GroupCompensationLine> getCompensationLines()
 	{
 		return ImmutableList.copyOf(compensationLines);
