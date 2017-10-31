@@ -202,6 +202,7 @@ public class OrderGroupRepository implements GroupRepository
 	{
 		return GroupCompensationLine.builder()
 				.repoId(groupOrderLine.getC_OrderLine_ID())
+				.seqNo(groupOrderLine.getLine())
 				.productId(groupOrderLine.getM_Product_ID())
 				.uomId(groupOrderLine.getC_UOM_ID())
 				.type(GroupCompensationType.ofAD_Ref_List_Value(groupOrderLine.getGroupCompensationType()))
@@ -210,6 +211,7 @@ public class OrderGroupRepository implements GroupRepository
 				.baseAmt(groupOrderLine.getGroupCompensationBaseAmt())
 				.price(groupOrderLine.getPriceEntered())
 				.qty(groupOrderLine.getQtyEntered())
+				.lineNetAmt(groupOrderLine.getLineNetAmt())
 				.build();
 	}
 

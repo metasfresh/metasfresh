@@ -118,9 +118,11 @@ public class InvoiceCandidateGroupRepository implements GroupRepository
 	{
 		final BigDecimal price = invoiceCandidate.getPriceEntered();
 		final BigDecimal qty = invoiceCandidate.getQtyToInvoice();
+		final BigDecimal lineNetAmt = price.multiply(qty);
 
 		return GroupCompensationLine.builder()
 				.repoId(extractLineId(invoiceCandidate))
+				.seqNo(invoiceCandidate.getLine())
 				.productId(invoiceCandidate.getM_Product_ID())
 				.uomId(invoiceCandidate.getC_UOM_ID())
 				.type(GroupCompensationType.ofAD_Ref_List_Value(invoiceCandidate.getGroupCompensationType()))
@@ -129,6 +131,7 @@ public class InvoiceCandidateGroupRepository implements GroupRepository
 				.baseAmt(invoiceCandidate.getGroupCompensationBaseAmt())
 				.price(price)
 				.qty(qty)
+				.lineNetAmt(lineNetAmt)
 				.build();
 	}
 
