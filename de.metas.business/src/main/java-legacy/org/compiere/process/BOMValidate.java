@@ -19,17 +19,20 @@ package org.compiere.process;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
-import de.metas.process.ProcessInfoParameter;
-import de.metas.process.JavaProcess;
 
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.StringUtils;
 import org.compiere.model.MBOM;
 import org.compiere.model.MBOMProduct;
 import org.compiere.model.MProduct;
 import org.compiere.model.MProductBOM;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.eevolution.model.I_PP_Product_BOM;
+
+import de.metas.adempiere.model.I_M_Product;
+import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
 
 /**
  * 	Validate BOM
@@ -69,9 +72,30 @@ public class BOMValidate extends JavaProcess
 			else
 				log.error("Unknown Parameter: " + name);
 		}
-		p_M_Product_ID = getRecord_ID();
+		
+		
+		p_M_Product_ID = getM_Product_ID();
 	}	//	prepare
 
+	private int getM_Product_ID()
+	{
+		final String tableName = getTableName();
+		if (I_M_Product.Table_Name.equals(tableName))
+		{
+			return getRecord_ID();
+		}
+		else if (I_PP_Product_BOM.Table_Name.equals(tableName))
+		{
+			final I_PP_Product_BOM bom = getRecord(I_PP_Product_BOM.class);
+			return bom.getM_Product_ID();
+		}
+		else
+		{
+			throw new AdempiereException(StringUtils.formatMessage("Table {} has not yet been implemented to support BOM validation.", tableName));
+		}
+			
+	}
+	
 	/**
 	 * 	Process
 	 *	@return Info

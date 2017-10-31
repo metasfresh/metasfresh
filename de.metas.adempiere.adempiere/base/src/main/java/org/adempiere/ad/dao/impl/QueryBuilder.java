@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.adempiere.ad.dao.ICompositeQueryFilter;
+import org.adempiere.ad.dao.IInSubQueryFilterClause;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryBuilderDAO;
@@ -349,6 +350,12 @@ import com.google.common.collect.ImmutableMap;
 	{
 		filters.addNotInSubQueryFilter(column, subQueryColumn, subQuery);
 		return this;
+	}
+
+	@Override
+	public IInSubQueryFilterClause<T, IQueryBuilder<T>> addInSubQueryFilter()
+	{
+		return new InSubQueryFilterClause<>(getModelTableName(), this, this::filter);
 	}
 
 	@Override

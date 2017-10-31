@@ -24,9 +24,9 @@ package org.adempiere.ad.wrapper;
 
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
+
+import com.google.common.collect.ImmutableSet;
 
 /**
  * In-memory database restore point.
@@ -40,7 +40,7 @@ public class POJOLookupMapRestorePoint
 {
 	private final POJOLookupMap db;
 	private final Map<String, Map<Integer, Object>> cachedObjects;
-	private final Map<Integer, Set<Integer>> selectionId2selection;
+	private final Map<Integer, ImmutableSet<Integer>> selectionId2selection;
 
 	POJOLookupMapRestorePoint(final POJOLookupMap db)
 	{
@@ -61,15 +61,9 @@ public class POJOLookupMapRestorePoint
 		return cachedObjectsCopy;
 	}
 
-	private static final Map<Integer, Set<Integer>> copySelection(Map<Integer, Set<Integer>> selectionId2selection)
+	private static final Map<Integer, ImmutableSet<Integer>> copySelection(final Map<Integer, ImmutableSet<Integer>> selectionId2selection)
 	{
-		final Map<Integer, Set<Integer>> selectionId2selectionCopy = new HashMap<>(selectionId2selection);
-		for (Map.Entry<Integer, Set<Integer>> e : selectionId2selectionCopy.entrySet())
-		{
-			final Set<Integer> value = e.getValue();
-			e.setValue(value == null ? null : new HashSet<>(value));
-		}
-		return selectionId2selectionCopy;
+		return new HashMap<>(selectionId2selection);
 	}
 
 	/**

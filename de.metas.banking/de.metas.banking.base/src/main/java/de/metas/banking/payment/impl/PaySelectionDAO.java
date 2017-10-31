@@ -1,31 +1,5 @@
 package de.metas.banking.payment.impl;
 
-/*
- * #%L
- * de.metas.banking.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import static org.compiere.model.I_C_PaySelectionCheck.COLUMNNAME_C_PaySelection_ID;
-import static org.compiere.model.I_C_PaySelectionCheck.COLUMNNAME_PaymentRule;
-import static org.compiere.model.I_C_PaySelectionCheck.Table_Name;
-
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Properties;
@@ -38,10 +12,6 @@ import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_BankStatementLine;
 import org.compiere.model.I_C_PaySelection;
-import org.compiere.model.MPaySelection;
-import org.compiere.model.MPaySelectionCheck;
-import org.compiere.model.MPaySelectionLine;
-import org.compiere.model.Query;
 
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_PaySelectionLine;
@@ -139,54 +109,6 @@ public class PaySelectionDAO implements IPaySelectionDAO
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient(InterfaceWrapperHelper.getCtx(paySelection));
 		return queryBuilder;
-	}
-
-	@Override
-	public List<MPaySelectionCheck> retrievePaySelectionChecks(final MPaySelection ps, final String paymentRule)
-	{
-		final String whereClause = COLUMNNAME_C_PaySelection_ID + "=? AND " + COLUMNNAME_PaymentRule + "=?";
-
-		final Object[] parameters = { ps.get_ID(), paymentRule };
-
-		return retrieve(ps, whereClause, parameters);
-	}
-
-	@Override
-	public List<MPaySelectionCheck> retrievePaySelectionChecks(final MPaySelection ps)
-	{
-		final String whereClause = COLUMNNAME_C_PaySelection_ID + "=?";
-
-		final Object[] parameters = { ps.get_ID() };
-
-		return retrieve(ps, whereClause, parameters);
-	}
-
-	private List<MPaySelectionCheck> retrieve(final MPaySelection ps,
-			final String whereClause,
-			final Object[] parameters)
-	{
-		final List<MPaySelectionCheck> pscs =
-				new Query(ps.getCtx(), Table_Name, whereClause, ps.get_TrxName())
-						.setParameters(parameters)
-						.list();
-
-		return pscs;
-	}
-
-	@Override
-	public List<MPaySelectionLine> retrievePaySelectionLines(final MPaySelectionCheck psc)
-	{
-		final String whereClause = I_C_PaySelectionLine.COLUMNNAME_C_PaySelectionCheck_ID + "=?";
-
-		final Object[] parameters = { psc.get_ID() };
-
-		final List<MPaySelectionLine> paySelectionLines =
-				new Query(psc.getCtx(), I_C_PaySelectionLine.Table_Name, whereClause, psc.get_TrxName())
-						.setParameters(parameters)
-						.setOnlyActiveRecords(true)
-						.list();
-
-		return paySelectionLines;
 	}
 
 	@Override

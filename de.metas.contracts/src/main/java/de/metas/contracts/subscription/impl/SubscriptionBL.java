@@ -130,6 +130,7 @@ public class SubscriptionBL implements ISubscriptionBL
 		newTerm.setC_UOM_ID(ol.getPrice_UOM_ID());
 
 		newTerm.setStartDate(order.getDateOrdered());
+		newTerm.setMasterStartDate(order.getDateOrdered());
 
 		newTerm.setDeliveryRule(order.getDeliveryRule());
 		newTerm.setDeliveryViaRule(order.getDeliveryViaRule());

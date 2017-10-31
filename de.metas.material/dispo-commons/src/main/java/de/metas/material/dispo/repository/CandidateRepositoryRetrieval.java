@@ -267,6 +267,8 @@ public class CandidateRepositoryRetrieval
 
 	public Candidate retrieveLatestMatchOrNull(@NonNull final CandidatesQuery query)
 	{
+		// TODO: only "exact" queries (product, warehouse and exactly matched storageattributeskey)
+		// make sense here, so assert this
 		final IQueryBuilder<I_MD_Candidate> queryBuilderWithoutOrdering = RepositoryCommons.mkQueryBuilder(query);
 
 		final I_MD_Candidate candidateRecordOrNull = addOrderingLastestFirst(queryBuilderWithoutOrdering)

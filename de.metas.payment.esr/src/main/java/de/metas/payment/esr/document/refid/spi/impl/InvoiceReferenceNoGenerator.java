@@ -98,7 +98,7 @@ public class InvoiceReferenceNoGenerator implements IReferenceNoGenerator
 		final I_C_BP_BankAccount bankAccount = bankAccounts.get(0);
 
 		final IBPBankAccountBL bpBankAccountBL = Services.get(IBPBankAccountBL.class);
-		sb.append(Util.lpadZero(bpBankAccountBL.retrieveBankAccountNo(bankAccount), 7, "BankAccountNo"));
+		sb.append(Util.rpadZero(bpBankAccountBL.retrieveBankAccountNo(bankAccount), 7, "BankAccountNo"));
 
 		sb.append(Util.lpadZero(org.getValue(), 3, "organization"));
 		
