@@ -169,7 +169,7 @@ public class AddressDescriptorFactory
 	private DocumentFieldDescriptor.Builder buildFieldDescriptor(final String columnName)
 	{
 		return DocumentFieldDescriptor.builder(columnName)
-				.setCaption(Services.get(IMsgBL.class).getTranslatableMsgText(columnName))
+				.setCaption(Services.get(IMsgBL.class).translatable(columnName))
 				//
 				// .setValueClass()
 				// .setWidgetType()
