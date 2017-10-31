@@ -298,6 +298,14 @@ public class HighVolumeReadWriteIncludedDocumentsCollection implements IIncluded
 
 			deletedDocuments.add(document);
 		}
+
+		// FIXME: workaround until https://github.com/metasfresh/metasfresh-webui-api/issues/19 is implemented
+		// Case: an C_OrderLine is deleted and some other order lines are updated because of that.
+		// We need to invalidate them...
+		if(!deletedDocuments.isEmpty())
+		{
+			markStaleAll();
+		}
 	}
 
 	@Override
