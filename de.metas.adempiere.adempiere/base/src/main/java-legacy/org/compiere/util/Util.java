@@ -1,18 +1,18 @@
 /******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
+ * Product: Adempiere ERP & CRM Smart Business Solution *
+ * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved. *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms version 2 of the GNU General Public License as published *
+ * by the Free Software Foundation. This program is distributed in the hope *
  * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
+ * See the GNU General Public License for more details. *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
+ * For the text or an alternative of this public license, you may reach us *
+ * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
+ * or via info@compiere.org or http://www.compiere.org/license.html *
  *****************************************************************************/
 package org.compiere.util;
 
@@ -230,25 +230,14 @@ public class Util
 	 */
 	public static String lpadZero(final String value, final int size, final String description)
 	{
-		final String valueFixed;
-		if (value == null)
-		{
-			valueFixed = "";
-		}
-		else
-		{
-			valueFixed = value.trim();
-		}
-		if (valueFixed.length() > size)
-		{
-			throw new AdempiereException("value='" + valueFixed + "' of '" + description + "' is bigger than " + size + " characters");
-		}
+		final String valueFixed = prepareValueForPadding(value, size, description);
+
 		final String s = "0000000000000000000" + valueFixed;
 		return s.substring(s.length() - size);
 	}
-	
-	
-	/**Add 0 digits at the end of a String until it gets to the size given as paraameter. 
+
+	/**
+	 * Add 0 digits at the end of a String until it gets to the size given as paraameter.
 	 * 
 	 * @param value
 	 * @param size
@@ -257,7 +246,16 @@ public class Util
 	 */
 	public static String rpadZero(final String value, final int size, final String description)
 	{
+		final String valueFixed = prepareValueForPadding(value, size, description);
+
+		final String s = valueFixed + "0000000000000000000";
+		return s.substring(0, size);
+	}
+
+	private static String prepareValueForPadding(String value, int size, String description)
+	{
 		final String valueFixed;
+
 		if (value == null)
 		{
 			valueFixed = "";
@@ -270,8 +268,8 @@ public class Util
 		{
 			throw new AdempiereException("value='" + valueFixed + "' of '" + description + "' is bigger than " + size + " characters");
 		}
-		final String s = valueFixed + "0000000000000000000";
-		return s.substring(0, size);
+
+		return valueFixed;
 	}
 
 	/**
@@ -853,7 +851,7 @@ public class Util
 		try
 		{
 			final Class<?> instanceClazz = classInstanceProvider.provideClass(classname);
-			
+
 			Check.errorUnless(interfaceClazz.isAssignableFrom(instanceClazz), "Class {} doesn't implement {}", instanceClazz, interfaceClazz);
 
 			@SuppressWarnings("unchecked")
@@ -955,8 +953,10 @@ public class Util
 	}
 
 	/**
-	 * Little method that throws an {@link AdempiereException} if the given boolean condition is false. It might be a good idea to use "assume" instead of the assert keyword, because <li>assert is
-	 * globally switched on and off and you never know what else libs are using assert</li> <li>there are critical assumptions that should always be validated. Not only during development time or when
+	 * Little method that throws an {@link AdempiereException} if the given boolean condition is false. It might be a good idea to use "assume" instead of the assert keyword, because
+	 * <li>assert is
+	 * globally switched on and off and you never know what else libs are using assert</li>
+	 * <li>there are critical assumptions that should always be validated. Not only during development time or when
 	 * someone minds to use the -ea cmdline parameter</li>
 	 *
 	 * @param cond
@@ -1058,16 +1058,16 @@ public class Util
 	@Immutable
 	public static class ArrayKey implements Comparable<ArrayKey>
 	{
-		public static final ArrayKey of(final Object...input)
+		public static final ArrayKey of(final Object... input)
 		{
 			return new ArrayKey(input);
 		}
-		
+
 		public static final ArrayKeyBuilder builder()
 		{
 			return new ArrayKeyBuilder();
 		}
-		
+
 		private final Object[] array;
 		private String _stringBuilt = null;
 
@@ -1359,7 +1359,7 @@ public class Util
 		{
 			throw new AdempiereException("Cannot write file " + file + "."
 					+ "\n " + e.getLocalizedMessage() // also append the original error message because it could be helpful for user.
-			, e);
+					, e);
 		}
 		finally
 		{
@@ -1429,7 +1429,7 @@ public class Util
 	{
 		return value1 == null ? value2 : value1;
 	}
-	
+
 	/**
 	 * @return first not null value from list
 	 * @see #coalesce(Object...)
@@ -1439,7 +1439,6 @@ public class Util
 	{
 		return value1 != null ? value1 : (value2 != null ? value2 : value3);
 	}
-
 
 	/**
 	 *
@@ -1492,20 +1491,19 @@ public class Util
 	{
 		return value > 0 ? value : 0;
 	}
-	
+
 	public static final int firstGreaterThanZero(final int value1, final int value2)
 	{
-		if(value1 > 0)
+		if (value1 > 0)
 		{
 			return value1;
 		}
-		if(value2 > 0)
+		if (value2 > 0)
 		{
 			return value2;
 		}
 		return 0;
 	}
-
 
 	public static String replaceNonDigitCharsWithZero(String stringToModify)
 	{
