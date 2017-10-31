@@ -72,7 +72,7 @@ public final class GroupCreator
 	{
 		Check.assume(compensationProductId > 0, "compensationProductId > 0");
 
-		final Group group = groupsRepo.createNewGroup(lineIdsToGroup);
+		final Group group = groupsRepo.retrieveOrCreateGroupFromLineIds(lineIdsToGroup);
 		group.addNewCompensationLine(createGroupCompensationLineCreateRequest());
 		groupsRepo.saveGroup(group);
 	}
