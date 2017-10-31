@@ -660,7 +660,8 @@ export function createProcess({
     rowId,
     tabId,
     type,
-    viewId
+    viewId,
+    selectedTab
 }) {
     let pid = null;
 
@@ -676,7 +677,8 @@ export function createProcess({
                 rowId,
                 tabId,
                 type,
-                viewId
+                viewId,
+                selectedTab
             });
         } catch (error) {
             // Close process modal in case when process start failed
@@ -850,10 +852,14 @@ function getProcessData({
     }
 
     if (selectedTab) {
-        payload.selectedTab = {
-            tabId: selectedTab.tabId,
-            rowIds: selectedTab.rowIds
-        };
+        const { tabId, rowIds } = selectedTab;
+
+        if (tabId && rowIds) {
+            payload.selectedTab = {
+                tabId,
+                rowIds
+            };
+        }
     }
 
     return axios.post(
