@@ -77,7 +77,7 @@ public class DemandCandiateHandler implements CandidateHandler
 	 */
 	public Candidate onCandidateNewOrChange(@NonNull final Candidate demandCandidate)
 	{
-		assertTCorrectCandidateType(demandCandidate);
+		assertCorrectCandidateType(demandCandidate);
 
 		final Candidate demandCandidateWithId = candidateRepositoryCommands
 				.addOrUpdateOverwriteStoredSeqNo(demandCandidate);
@@ -149,7 +149,7 @@ public class DemandCandiateHandler implements CandidateHandler
 		return demandCandidateToReturn;
 	}
 
-	private void assertTCorrectCandidateType(@NonNull final Candidate demandCandidate)
+	private void assertCorrectCandidateType(@NonNull final Candidate demandCandidate)
 	{
 		final CandidateType type = demandCandidate.getType();
 

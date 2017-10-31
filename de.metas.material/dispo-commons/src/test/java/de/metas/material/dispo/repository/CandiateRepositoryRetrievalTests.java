@@ -3,15 +3,12 @@ package de.metas.material.dispo.repository;
 import static de.metas.material.event.EventTestHelper.AFTER_NOW;
 import static de.metas.material.event.EventTestHelper.ATTRIBUTE_SET_INSTANCE_ID;
 import static de.metas.material.event.EventTestHelper.BEFORE_NOW;
-import static de.metas.material.event.EventTestHelper.CLIENT_ID;
 import static de.metas.material.event.EventTestHelper.NOW;
-import static de.metas.material.event.EventTestHelper.ORG_ID;
 import static de.metas.material.event.EventTestHelper.PRODUCT_ID;
 import static de.metas.material.event.EventTestHelper.STORAGE_ATTRIBUTES_KEY;
 import static de.metas.material.event.EventTestHelper.TRANSACTION_ID;
 import static de.metas.material.event.EventTestHelper.WAREHOUSE_ID;
 import static de.metas.material.event.EventTestHelper.createMaterialDescriptor;
-import static de.metas.material.event.EventTestHelper.createProductDescriptorWithOffSet;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -21,24 +18,21 @@ import java.sql.Timestamp;
 import java.util.List;
 import java.util.Optional;
 
-import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ImmutablePair;
 import org.adempiere.util.time.SystemTime;
+import org.compiere.util.DB;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestWatcher;
 
 import de.metas.material.dispo.CandidatesQuery;
-import de.metas.material.dispo.DispoTestUtils;
 import de.metas.material.dispo.RepositoryTestHelper;
 import de.metas.material.dispo.candidate.Candidate;
-import de.metas.material.dispo.candidate.CandidateSubType;
-import de.metas.material.dispo.candidate.CandidateType;
 import de.metas.material.dispo.candidate.DemandDetail;
 import de.metas.material.dispo.candidate.TransactionDetail;
 import de.metas.material.dispo.model.I_MD_Candidate;
@@ -48,7 +42,10 @@ import de.metas.material.dispo.model.I_MD_Candidate_Prod_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_Transaction_Detail;
 import de.metas.material.dispo.model.X_MD_Candidate;
 import de.metas.material.event.MaterialDescriptor;
+import de.metas.material.event.ProductDescriptor;
 import de.metas.material.event.ProductDescriptorFactory;
+import mockit.Expectations;
+import mockit.Mocked;
 
 /*
  * #%L
@@ -542,7 +539,46 @@ public class CandiateRepositoryRetrievalTests
 
 	}
 
-	private I_MD_Candidate createCandiateRecordWithForecastLineId(final int forecastLineId)
+	@Test(expected = RuntimeException.class)
+	public void retrieveAvailableStockForCompleteDescriptor_throw_ex_if_not_complete()
+	{
+		final MaterialDescriptor materialDescriptor = MaterialDescriptor.builderForQuery().build();
+		candidateRepository.retrieveAvailableStockForCompleteDescriptor(materialDescriptor);
+	}
+
+	@Mocked
+	DB db;
+
+	@Test
+	public void retrieveAvailableStockForCompleteDescriptor_invokes_DB_function()
+	{
+		final ProductDescriptor productDescriptor = ProductDescriptorFactory.TESTING_INSTANCE.forProductAndAttributes(
+				PRODUCT_ID,
+				"Key1" + ProductDescriptor.STORAGE_ATTRIBUTES_KEY_DELIMITER + "Key2",
+				ATTRIBUTE_SET_INSTANCE_ID);
+		final MaterialDescriptor materialDescriptor = createMaterialDescriptor()
+				.withProductDescriptor(productDescriptor);
+
+		// @formatter:off
+		new Expectations() {{
+			DB.getSQLValueBDEx(
+					ITrx.TRXNAME_ThreadInherited, 
+					"SELECT COALESCE(Qty, 0) FROM de_metas_material_dispo.MD_Candidate_Latest_Records(?, ?, ?, ?)", 
+					new Object[] {
+							materialDescriptor.getWarehouseId(), 
+							materialDescriptor.getProductId(), 
+							"%Key1%Key2%", 
+							materialDescriptor.getDate()});
+			times = 1;
+			result = BigDecimal.TEN;
+		}};
+		// @formatter:on
+
+		final BigDecimal result = candidateRepository.retrieveAvailableStockForCompleteDescriptor(materialDescriptor);
+		assertThat(result).isEqualByComparingTo("10");
+	}
+
+	private static I_MD_Candidate createCandiateRecordWithForecastLineId(final int forecastLineId)
 	{
 		final I_MD_Candidate candidateRecord = createCandidateRecordWithWarehouseId(30); // TODO replace with constance
 		final I_MD_Candidate_Demand_Detail demandDetailRecord = newInstance(I_MD_Candidate_Demand_Detail.class);
@@ -552,7 +588,7 @@ public class CandiateRepositoryRetrievalTests
 		return candidateRecord;
 	}
 
-	private I_MD_Candidate createCandidateRecordWithWarehouseId(final int warehouseId)
+	private static I_MD_Candidate createCandidateRecordWithWarehouseId(final int warehouseId)
 	{
 		final I_MD_Candidate candidateRecord = newInstance(I_MD_Candidate.class);
 		candidateRecord.setMD_Candidate_Type(X_MD_Candidate.MD_CANDIDATE_TYPE_DEMAND);
@@ -564,35 +600,5 @@ public class CandiateRepositoryRetrievalTests
 		save(candidateRecord);
 
 		return candidateRecord;
-	}
-
-	@Test
-	public void addOrUpdateOverwriteStoredSeqNo_with_TransactionDetail()
-	{
-		final int productIdOffSet = 10;
-		final Candidate productionCandidate = Candidate.builder()
-				.type(CandidateType.DEMAND)
-				.subType(CandidateSubType.SHIPMENT)
-				.clientId(CLIENT_ID)
-				.orgId(ORG_ID)
-				.materialDescriptor(createMaterialDescriptor()
-						.withProductDescriptor(createProductDescriptorWithOffSet(productIdOffSet)))
-				.demandDetail(DemandDetail.forOrderLineIdOrNull(61))
-				.transactionDetail(TransactionDetail.forCandidateOrQuery(BigDecimal.ONE, 33))
-				.build();
-		final Candidate addOrReplaceResult = candidateRepositoryCommands.addOrUpdateOverwriteStoredSeqNo(productionCandidate);
-
-		final List<I_MD_Candidate> filtered = DispoTestUtils.filter(CandidateType.DEMAND, NOW, PRODUCT_ID + productIdOffSet);
-		assertThat(filtered).hasSize(1);
-
-		final I_MD_Candidate record = filtered.get(0);
-		assertThat(record.getMD_Candidate_ID()).isEqualTo(addOrReplaceResult.getId());
-		assertThat(record.getMD_Candidate_SubType()).isEqualTo(productionCandidate.getSubType().toString());
-		assertThat(record.getM_Product_ID()).isEqualTo(productionCandidate.getMaterialDescriptor().getProductId());
-
-		final I_MD_Candidate_Transaction_Detail transactionDetailRecord = Services.get(IQueryBL.class).createQueryBuilder(I_MD_Candidate_Transaction_Detail.class).create().firstOnly(I_MD_Candidate_Transaction_Detail.class);
-		assertThat(transactionDetailRecord).isNotNull();
-		assertThat(transactionDetailRecord.getMovementQty()).isEqualByComparingTo("1");
-		assertThat(transactionDetailRecord.getM_Transaction_ID()).isEqualTo(33);
 	}
 }

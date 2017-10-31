@@ -8,6 +8,7 @@ import static de.metas.material.event.EventTestHelper.ORG_ID;
 import static de.metas.material.event.EventTestHelper.PRODUCT_ID;
 import static de.metas.material.event.EventTestHelper.STORAGE_ATTRIBUTES_KEY;
 import static de.metas.material.event.EventTestHelper.createMaterialDescriptor;
+import static de.metas.material.event.EventTestHelper.createProductDescriptorWithOffSet;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
@@ -362,5 +363,35 @@ public class CandidateRepositoryCommandsTest
 		final I_MD_Candidate_Demand_Detail demandDetailRecord = Services.get(IQueryBL.class).createQueryBuilder(I_MD_Candidate_Demand_Detail.class).create().firstOnly(I_MD_Candidate_Demand_Detail.class);
 		assertThat(demandDetailRecord).isNotNull();
 		assertThat(demandDetailRecord.getC_OrderLine_ID()).isEqualTo(61);
+	}
+
+	@Test
+	public void addOrUpdateOverwriteStoredSeqNo_with_TransactionDetail()
+	{
+		final int productIdOffSet = 10;
+		final Candidate productionCandidate = Candidate.builder()
+				.type(CandidateType.DEMAND)
+				.subType(CandidateSubType.SHIPMENT)
+				.clientId(CLIENT_ID)
+				.orgId(ORG_ID)
+				.materialDescriptor(createMaterialDescriptor()
+						.withProductDescriptor(createProductDescriptorWithOffSet(productIdOffSet)))
+				.demandDetail(DemandDetail.forOrderLineIdOrNull(61))
+				.transactionDetail(TransactionDetail.forCandidateOrQuery(BigDecimal.ONE, 33))
+				.build();
+		final Candidate addOrReplaceResult = candidateRepositoryCommands.addOrUpdateOverwriteStoredSeqNo(productionCandidate);
+
+		final List<I_MD_Candidate> filtered = DispoTestUtils.filter(CandidateType.DEMAND, NOW, PRODUCT_ID + productIdOffSet);
+		assertThat(filtered).hasSize(1);
+
+		final I_MD_Candidate record = filtered.get(0);
+		assertThat(record.getMD_Candidate_ID()).isEqualTo(addOrReplaceResult.getId());
+		assertThat(record.getMD_Candidate_SubType()).isEqualTo(productionCandidate.getSubType().toString());
+		assertThat(record.getM_Product_ID()).isEqualTo(productionCandidate.getMaterialDescriptor().getProductId());
+
+		final I_MD_Candidate_Transaction_Detail transactionDetailRecord = Services.get(IQueryBL.class).createQueryBuilder(I_MD_Candidate_Transaction_Detail.class).create().firstOnly(I_MD_Candidate_Transaction_Detail.class);
+		assertThat(transactionDetailRecord).isNotNull();
+		assertThat(transactionDetailRecord.getMovementQty()).isEqualByComparingTo("1");
+		assertThat(transactionDetailRecord.getM_Transaction_ID()).isEqualTo(33);
 	}
 }

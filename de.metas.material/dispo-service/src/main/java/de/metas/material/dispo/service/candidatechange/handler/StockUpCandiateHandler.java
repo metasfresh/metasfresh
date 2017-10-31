@@ -84,15 +84,14 @@ public class StockUpCandiateHandler implements CandidateHandler
 			return candidateWithQtyDeltaAndId; // this candidate didn't change anything
 		}
 
-		final Candidate projectedStockOrNull = candidateRepository.retrieveLatestMatchOrNull(candidate
-				.createStockQueryBuilder()
-				.build());
-		final BigDecimal projectedQty = projectedStockOrNull != null ? projectedStockOrNull.getQuantity() : BigDecimal.ZERO;
+		final BigDecimal projectedQty = candidateRepository //
+				.retrieveAvailableStockForCompleteDescriptor(candidate.getMaterialDescriptor());
 
 		final BigDecimal requiredAdditionalQty = candidateWithQtyDeltaAndId.getQuantity().subtract(projectedQty);
 		if (requiredAdditionalQty.signum() > 0)
 		{
-			final MaterialDemandEvent materialDemandEvent = MaterialDemandEventCreator.createMaterialDemandEvent(candidateWithQtyDeltaAndId, requiredAdditionalQty);
+			final MaterialDemandEvent materialDemandEvent = MaterialDemandEventCreator //
+					.createMaterialDemandEvent(candidateWithQtyDeltaAndId, requiredAdditionalQty);
 			materialEventService.fireEvent(materialDemandEvent);
 		}
 

@@ -144,7 +144,7 @@ public class RepositoryCommons
 			{
 				builder.addStringLikeFilter(
 						I_MD_Candidate.COLUMN_StorageAttributesKey,
-						storageAttributesKey.replaceAll(ProductDescriptor.STORAGE_ATTRIBUTES_KEY_DELIMITER, "%"),
+						prepareStorageAttributesKeyForLikeExpression(storageAttributesKey),
 						false); // iggnoreCase=false
 			}
 			atLeastOneFilterAdded = true;
@@ -153,6 +153,11 @@ public class RepositoryCommons
 		atLeastOneFilterAdded = configureBuilderDateFilters(materialDescriptor, builder) || atLeastOneFilterAdded;
 
 		return atLeastOneFilterAdded;
+	}
+
+	public static String prepareStorageAttributesKeyForLikeExpression(@NonNull final String storageAttributesKey)
+	{
+		return storageAttributesKey.replaceAll(ProductDescriptor.STORAGE_ATTRIBUTES_KEY_DELIMITER, "%");
 	}
 
 	private boolean configureBuilderDateFilters(

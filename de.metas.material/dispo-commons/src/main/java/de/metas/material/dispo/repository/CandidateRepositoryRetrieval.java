@@ -2,6 +2,7 @@ package de.metas.material.dispo.repository;
 
 import static org.adempiere.model.InterfaceWrapperHelper.isNew;
 
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
@@ -11,9 +12,11 @@ import java.util.stream.Stream;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.apache.ecs.xhtml.code;
+import org.compiere.util.DB;
 import org.springframework.stereotype.Service;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -22,13 +25,13 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.material.dispo.CandidatesQuery;
 import de.metas.material.dispo.candidate.Candidate;
+import de.metas.material.dispo.candidate.Candidate.CandidateBuilder;
 import de.metas.material.dispo.candidate.CandidateSubType;
 import de.metas.material.dispo.candidate.CandidateType;
 import de.metas.material.dispo.candidate.DemandDetail;
 import de.metas.material.dispo.candidate.DistributionDetail;
 import de.metas.material.dispo.candidate.ProductionDetail;
 import de.metas.material.dispo.candidate.TransactionDetail;
-import de.metas.material.dispo.candidate.Candidate.CandidateBuilder;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.I_MD_Candidate_Demand_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_Dist_Detail;
@@ -267,8 +270,6 @@ public class CandidateRepositoryRetrieval
 
 	public Candidate retrieveLatestMatchOrNull(@NonNull final CandidatesQuery query)
 	{
-		// TODO: only "exact" queries (product, warehouse and exactly matched storageattributeskey)
-		// make sense here, so assert this
 		final IQueryBuilder<I_MD_Candidate> queryBuilderWithoutOrdering = RepositoryCommons.mkQueryBuilder(query);
 
 		final I_MD_Candidate candidateRecordOrNull = addOrderingLastestFirst(queryBuilderWithoutOrdering)
@@ -328,5 +329,25 @@ public class CandidateRepositoryRetrieval
 				.addColumnAscending(I_MD_Candidate.COLUMNNAME_SeqNo)
 				.addColumnAscending(I_MD_Candidate.COLUMNNAME_MD_Candidate_ID)
 				.endOrderBy();
+	}
+
+	public BigDecimal retrieveAvailableStockForCompleteDescriptor(@NonNull final MaterialDescriptor materialDescriptor)
+	{
+		Preconditions.checkArgument(materialDescriptor.isComplete(),
+				"The given materialDescriptor parameter needs to be complete for this method to make sense; materialDescriptor=%s",
+				materialDescriptor);
+
+		final String storageAttributesKeyLikeExpression = RepositoryCommons.prepareStorageAttributesKeyForLikeExpression(materialDescriptor.getStorageAttributesKey());
+
+		final BigDecimal result = DB.getSQLValueBDEx(
+				ITrx.TRXNAME_ThreadInherited,
+				"SELECT COALESCE(Qty, 0) FROM de_metas_material_dispo.MD_Candidate_Latest_Records(?, ?, ?, ?)",
+				new Object[] {
+						materialDescriptor.getWarehouseId(),
+						materialDescriptor.getProductId(),
+						"%" + storageAttributesKeyLikeExpression + "%",
+						materialDescriptor.getDate() });
+
+		return result;
 	}
 }
