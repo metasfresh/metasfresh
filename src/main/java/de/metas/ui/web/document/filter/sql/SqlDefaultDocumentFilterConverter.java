@@ -122,7 +122,16 @@ import lombok.NonNull;
 		final String fieldName = filterParam.getFieldName();
 		final SqlEntityFieldBinding fieldBinding = entityBinding.getFieldByFieldName(fieldName);
 
-		final String columnSql = replaceTableNameWithTableAlias(fieldBinding.getColumnSql());
+		final String columnSql;
+		if(sqlOpts.isUseTableAlias())
+		{
+			columnSql = replaceTableNameWithTableAlias(fieldBinding.getColumnSql());
+		}
+		else
+		{
+			columnSql = fieldBinding.getColumnSql();
+		}
+		
 
 		final Operator operator = filterParam.getOperator();
 		switch (operator)
