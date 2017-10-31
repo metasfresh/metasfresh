@@ -168,7 +168,7 @@ public final class LookupDataSourceContext implements Evaluatee2, IValidationCon
 		{
 			return LookupValueFilterPredicates.MATCH_ALL;
 		}
-		return LookupValueFilterPredicates.of(filterStr);
+		return LookupValueFilterPredicates.ofFilterAndLanguage(filterStr, getAD_Language());
 	}
 
 	public int getLimit(final int defaultValue)
