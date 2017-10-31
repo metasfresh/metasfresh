@@ -196,7 +196,7 @@ public class JSONCreateProcessInstanceRequest
 
 	private static final List<DocumentPath> createSelectedIncludedDocumentPaths(final WindowId windowId, final String documentIdStr, final JSONSelectedIncludedTab selectedTab)
 	{
-		if (selectedTab == null)
+		if (windowId == null || Check.isEmpty(documentIdStr, true) || selectedTab == null)
 		{
 			return ImmutableList.of();
 		}
