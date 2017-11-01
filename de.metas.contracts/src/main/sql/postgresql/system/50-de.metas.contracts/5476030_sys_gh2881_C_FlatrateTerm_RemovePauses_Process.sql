@@ -22,3 +22,16 @@ INSERT INTO AD_Process_Para_Trl (AD_Language,AD_Process_Para_ID, Description,Hel
 -- URL zum Konzept
 INSERT INTO AD_Table_Process (AD_Client_ID,AD_Org_ID,AD_Process_ID,AD_Table_ID,Created,CreatedBy,EntityType,IsActive,Updated,UpdatedBy,WEBUI_QuickAction,WEBUI_QuickAction_Default) VALUES (0,0,540879,540320,TO_TIMESTAMP('2017-11-01 11:14:06','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.contracts','Y',TO_TIMESTAMP('2017-11-01 11:14:06','YYYY-MM-DD HH24:MI:SS'),100,'Y','N')
 ;
+
+
+
+ -- 2017-11-01T18:21:35.193
+-- URL zum Konzept
+DELETE FROM  AD_Process_Para_Trl WHERE AD_Process_Para_ID=541233
+;
+
+-- 2017-11-01T18:21:35.202
+-- URL zum Konzept
+DELETE FROM AD_Process_Para WHERE AD_Process_Para_ID=541233
+;
+

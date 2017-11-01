@@ -3,10 +3,16 @@ package de.metas.contracts.subscription.process;
 
 import java.sql.Timestamp;
 
+import org.adempiere.util.Services;
+import org.compiere.util.TimeUtil;
+
 import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.contracts.model.I_C_SubscriptionProgress;
+import de.metas.contracts.model.X_C_SubscriptionProgress;
+import de.metas.contracts.subscription.ISubscriptionDAO;
+import de.metas.contracts.subscription.ISubscriptionDAO.SubscriptionProgressQuery;
 import de.metas.contracts.subscription.impl.SubscriptionCommand;
 import de.metas.process.IProcessPrecondition;
-import de.metas.process.Param;
 
 /*
  * #%L
@@ -34,17 +40,20 @@ public class C_FlatrateTerm_RemovePauses
 		extends C_SubscriptionProgressBase
 		implements IProcessPrecondition
 {
-	@Param(parameterName = "DateGeneral", mandatory = true)
-	private Timestamp dateFrom;
-
-	@Param(parameterName = "DateGeneral", mandatory = true, parameterTo = true)
-	private Timestamp dateTo;
 
 	@Override
 	protected String doIt() throws Exception
 	{
 		final I_C_Flatrate_Term term = getTermFromProcessInfo();
-		SubscriptionCommand.get().removePauses(term, dateFrom, dateTo);
+		
+		final SubscriptionProgressQuery query = SubscriptionProgressQuery.builder()
+				.term(term)
+				.includedContractStatus(X_C_SubscriptionProgress.CONTRACTSTATUS_DeliveryPause)
+				.build();
+		
+		final I_C_SubscriptionProgress firstSubscriptionProgress = Services.get(ISubscriptionDAO.class).retrieveFirstSubscriptionProgress(query);
+
+		SubscriptionCommand.get().removePauses(term, firstSubscriptionProgress.getEventDate() , firstSubscriptionProgress.getEventDate());
 
 		return MSG_OK;
 	}
