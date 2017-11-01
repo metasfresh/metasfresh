@@ -70,6 +70,7 @@ import de.metas.contracts.model.X_C_Flatrate_DataEntry;
 import de.metas.document.engine.IDocument;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.logging.LogManager;
+import lombok.NonNull;
 
 public class FlatrateDAO implements IFlatrateDAO
 {
@@ -833,7 +834,7 @@ public class FlatrateDAO implements IFlatrateDAO
 	}
 
 	@Override
-	public I_C_Flatrate_Term retrieveAncestorFlatrateTerm(final I_C_Flatrate_Term contract)
+	public I_C_Flatrate_Term retrieveAncestorFlatrateTerm(@NonNull final I_C_Flatrate_Term contract)
 	{
 
 		return Services.get(IQueryBL.class).createQueryBuilder(I_C_Flatrate_Term.class, contract)
