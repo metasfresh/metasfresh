@@ -160,7 +160,7 @@ public class ContractChangeBL implements IContractChangeBL
 		if (currentTerm.getC_FlatrateTerm_Next_ID() > 0)
 		{
 			// the canceled term has already been extended, so we need to cancel the next term as well
-			cancelContract(currentTerm.getC_FlatrateTerm_Next(), contractChangeParameters);
+			cancelContract0(currentTerm.getC_FlatrateTerm_Next(), contractChangeParameters);
 		}
 
 		
