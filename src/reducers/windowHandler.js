@@ -28,7 +28,9 @@ const initialState = {
         viewId: null
     },
     master: {
-        layout: {},
+        layout: {
+            activeTab: null
+        },
         data: [],
         rowData: {},
         saveStatus: {},
@@ -154,6 +156,15 @@ export default function windowHandler(state = initialState, action) {
                 [action.scope]: {
                     layout: {
                         activeTab: {$set: action.tabId}
+                    }
+                }
+            })
+
+        case types.UNSELECT_TAB:
+            return update(state, {
+                [action.scope]: {
+                    layout: {
+                        activeTab: { $set: null }
                     }
                 }
             })

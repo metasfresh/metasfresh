@@ -55,6 +55,13 @@ export function activateTab(scope, tabId) {
     }
 }
 
+export function unselectTab(scope) {
+    return {
+        type: types.UNSELECT_TAB,
+        scope
+    }
+}
+
 export function initLayoutSuccess(layout, scope) {
     return {
         type: types.INIT_LAYOUT_SUCCESS,
