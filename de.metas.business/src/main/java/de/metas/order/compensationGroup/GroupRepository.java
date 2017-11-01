@@ -36,4 +36,6 @@ public interface GroupRepository
 	}
 
 	Group createNewGroup(Collection<Integer> regularLineIds);
+
+	Group retrieveOrCreateGroupFromLineIds(Collection<Integer> orderLineIds);
 }
