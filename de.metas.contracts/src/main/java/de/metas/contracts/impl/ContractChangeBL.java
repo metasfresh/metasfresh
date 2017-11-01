@@ -64,9 +64,27 @@ public class ContractChangeBL implements IContractChangeBL
 
 	private static final Logger logger = LogManager.getLogger(ContractChangeBL.class);
 
+	
+	
 	@Override
 	public void cancelContract(final I_C_Flatrate_Term currentTerm,
 			final @NonNull ContractChangeParameters contractChangeParameters)
+	{
+		final I_C_Flatrate_Term initialContract = Services.get(IFlatrateBL.class).getInitialFlatrateTerm(currentTerm);
+		if (initialContract == null)
+		{
+			cancelContract0(currentTerm, contractChangeParameters);
+		}
+		else
+		{
+			// start canceling with first ancestor
+			cancelContract0(initialContract, contractChangeParameters);
+		}
+	}
+	
+	
+	private void cancelContract0(@NonNull final I_C_Flatrate_Term currentTerm,
+			@NonNull final ContractChangeParameters contractChangeParameters)
 	{
 		final Timestamp changeDate = contractChangeParameters.getChangeDate();
 		final boolean isCloseInvoiceCandidate = contractChangeParameters.isCloseInvoiceCandidate();
@@ -129,23 +147,20 @@ public class ContractChangeBL implements IContractChangeBL
 
 			currentTerm.setEndDate(computeEndDate(currentTerm, changeDate));
 			
-			currentTerm.setContractStatus(X_C_Flatrate_Term.CONTRACTSTATUS_Quit);
 		}
 
 		setTerminatioReasonAndMemo(currentTerm, contractChangeParameters);
 		currentTerm.setMasterEndDate(computeMasterEndDate(currentTerm, changeDate));		
 		currentTerm.setIsCloseInvoiceCandidate(isCloseInvoiceCandidate); 
 		
+		// make sure that the canceled term won't be extended by the system
+		currentTerm.setIsAutoRenew(false);
+		currentTerm.setContractStatus(X_C_Flatrate_Term.CONTRACTSTATUS_Quit);
+		
 		if (currentTerm.getC_FlatrateTerm_Next_ID() > 0)
 		{
 			// the canceled term has already been extended, so we need to cancel the next term as well
 			cancelContract(currentTerm.getC_FlatrateTerm_Next(), contractChangeParameters);
-		}
-		else
-		{
-			// make sure that the canceled term won't be extended by the system
-			currentTerm.setIsAutoRenew(false);
-			currentTerm.setContractStatus(X_C_Flatrate_Term.CONTRACTSTATUS_Quit);
 		}
 
 		
