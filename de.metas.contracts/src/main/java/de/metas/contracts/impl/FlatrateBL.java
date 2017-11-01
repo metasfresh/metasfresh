@@ -1759,4 +1759,21 @@ public class FlatrateBL implements IFlatrateBL
 
 		return overlaps;
 	}
+	
+	@Override
+	public I_C_Flatrate_Term getInitialFlatrateTerm(@NonNull final I_C_Flatrate_Term term)
+	{
+		I_C_Flatrate_Term ancestor = flatrateDAO.retrieveAncestorFlatrateTerm(term);
+		
+		if (ancestor != null)
+		{
+			I_C_Flatrate_Term nextAncestor = getInitialFlatrateTerm(ancestor);
+			if (nextAncestor != null)
+			{
+				ancestor = nextAncestor;
+			}
+		}
+		
+		return ancestor;
+	}
 }
