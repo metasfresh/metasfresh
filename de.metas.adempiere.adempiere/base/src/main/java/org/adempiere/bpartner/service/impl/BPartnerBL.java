@@ -313,6 +313,7 @@ public class BPartnerBL implements IBPartnerBL
 		// BPartner contact
 		final I_AD_User bpContact = InterfaceWrapperHelper.newInstance(I_AD_User.class, bpartner);
 		bpContact.setC_BPartner(bpartner);
+		bpContact.setC_Greeting(template.getC_Greeting());
 		bpContact.setFirstname(template.getFirstname());
 		bpContact.setLastname(template.getLastname());
 		bpContact.setPhone(template.getPhone());
