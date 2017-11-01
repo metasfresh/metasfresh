@@ -1,8 +1,10 @@
 package org.adempiere.ad.validationRule;
 
+import java.util.List;
 import java.util.Set;
 
 import org.adempiere.ad.expression.api.IStringExpression;
+import org.compiere.util.ValueNamePair;
 
 /**
  * Lookup Validation Rule Model
@@ -53,4 +55,19 @@ public interface IValidationRule
 	 * @return filter to be applied after query; or {@link INamePairPredicate#NULL}
 	 */
 	INamePairPredicate getPostQueryFilter();
+
+	/**
+	 * Specify for which table and column pair this validation rule shall not apply
+	 * 
+	 * @param tableName
+	 * @param columnName
+	 */
+	void registerException(String tableName, String columnName);
+
+	/**
+	 * 
+	 * @return a list containing all the table+column pairs for which this validation rule shall not be applied
+	 */
+	List<ValueNamePair> getExceptionTableAndColumns();
+
 }

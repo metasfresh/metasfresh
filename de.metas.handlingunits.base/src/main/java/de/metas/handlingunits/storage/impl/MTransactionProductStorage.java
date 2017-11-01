@@ -26,7 +26,6 @@ package de.metas.handlingunits.storage.impl;
 import java.math.BigDecimal;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.inout.service.IMTransactionBL;
 import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -35,17 +34,18 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Transaction;
 
 import de.metas.handlingunits.HUConstants;
-import de.metas.handlingunits.IHUCapacityDefinition;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.hutransaction.IHUTrxDAO;
 import de.metas.handlingunits.model.I_M_HU_Trx_Line;
+import de.metas.materialtransaction.MTransactionUtil;
+import de.metas.quantity.Capacity;
 
 public class MTransactionProductStorage extends AbstractProductStorage
 {
 	private final I_M_Transaction mtrx;
 	private final boolean inbound;
 	private final boolean reversal;
-	private final IHUCapacityDefinition capacityTotal;
+	private final Capacity capacityTotal;
 
 	public MTransactionProductStorage(final I_M_Transaction mtrx)
 	{
@@ -54,11 +54,10 @@ public class MTransactionProductStorage extends AbstractProductStorage
 
 	public MTransactionProductStorage(final I_M_Transaction mtrx, final I_C_UOM uom)
 	{
-		super();
 		setConsiderForceQtyAllocationFromRequest(false); // TODO: consider changing it to "true" (default)
 
 		this.mtrx = mtrx;
-		inbound = Services.get(IMTransactionBL.class).isInboundTransaction(mtrx);
+		inbound = MTransactionUtil.isInboundTransaction(mtrx);
 
 		final I_M_Product product = mtrx.getM_Product();
 
@@ -86,7 +85,7 @@ public class MTransactionProductStorage extends AbstractProductStorage
 			qtyCapacity = qtyCapacity.negate();
 		}
 
-		capacityTotal = capacityBL.createCapacity(qtyCapacity,
+		capacityTotal = Capacity.createCapacity(qtyCapacity,
 				product, uomMTransaction,
 				false// allowNegativeCapacity
 				);
@@ -103,7 +102,7 @@ public class MTransactionProductStorage extends AbstractProductStorage
 		// then this storage is already full with that qty
 		if (inbound && !reversal)
 		{
-			qty = qty.add(capacityTotal.getCapacity());
+			qty = qty.add(capacityTotal.getCapacityQty());
 		}
 
 		//
@@ -157,7 +156,7 @@ public class MTransactionProductStorage extends AbstractProductStorage
 	}
 
 	@Override
-	protected IHUCapacityDefinition retrieveTotalCapacity()
+	protected Capacity retrieveTotalCapacity()
 	{
 		return capacityTotal;
 	}

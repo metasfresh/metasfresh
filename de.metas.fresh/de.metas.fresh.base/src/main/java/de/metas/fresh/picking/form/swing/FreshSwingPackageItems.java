@@ -41,10 +41,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 
-import de.metas.adempiere.form.IPackingItem;
-import de.metas.adempiere.form.ITableRowSearchSelectionMatcher;
-import de.metas.adempiere.form.PackingItemsMap;
-import de.metas.adempiere.form.PackingMd;
 import de.metas.adempiere.form.terminal.IContainer;
 import de.metas.adempiere.form.terminal.ITerminalButton;
 import de.metas.adempiere.form.terminal.ITerminalDialog;
@@ -52,20 +48,12 @@ import de.metas.adempiere.form.terminal.ITerminalFactory;
 import de.metas.adempiere.form.terminal.TerminalException;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.adempiere.form.terminal.context.ITerminalContextReferences;
+import de.metas.fresh.picking.FreshProductKey;
 import de.metas.fresh.picking.FreshProductLayout;
 import de.metas.fresh.picking.PickingSlotKey;
 import de.metas.fresh.picking.PickingSlotKeyGroup;
 import de.metas.fresh.picking.PickingSlotLayout;
-import de.metas.fresh.picking.form.FreshPackingItemHelper;
 import de.metas.fresh.picking.form.FreshSwingPackageTerminalPanel;
-import de.metas.fresh.picking.form.IFreshPackingItem;
-import de.metas.fresh.picking.model.DistributeQtyToNewHUsRequest;
-import de.metas.fresh.picking.model.DistributeQtyToNewHUsResult;
-import de.metas.fresh.picking.model.DistributeQtyToNewHUsResultExecutorTemplate;
-import de.metas.fresh.picking.service.IPackingContext;
-import de.metas.fresh.picking.service.IPackingService;
-import de.metas.fresh.picking.service.impl.HU2PackingItemsAllocator;
-import de.metas.fresh.picking.terminal.FreshProductKey;
 import de.metas.handlingunits.IHUAware;
 import de.metas.handlingunits.client.terminal.editor.model.IHUKeyFactory;
 import de.metas.handlingunits.client.terminal.editor.view.HUEditorPanel;
@@ -74,6 +62,15 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_PickingSlot;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.picking.legacy.form.IPackingItem;
+import de.metas.picking.legacy.form.ITableRowSearchSelectionMatcher;
+import de.metas.picking.legacy.form.PackingMd;
+import de.metas.picking.service.FreshPackingItemHelper;
+import de.metas.picking.service.IFreshPackingItem;
+import de.metas.picking.service.IPackingContext;
+import de.metas.picking.service.IPackingService;
+import de.metas.picking.service.PackingItemsMap;
+import de.metas.picking.service.impl.HU2PackingItemsAllocator;
 import de.metas.picking.terminal.DefaultPackingStateAggregator;
 import de.metas.picking.terminal.IPackingStateAggregator;
 import de.metas.picking.terminal.ProductLayout;
@@ -430,9 +427,9 @@ public class FreshSwingPackageItems extends SwingPackageBoxesItems
 			return PackingStates.unpacked;
 		}
 
-		final List<IPackingItem> allQtyremainingitems = new ArrayList<IPackingItem>();
+		final List<IPackingItem> allQtyremainingitems = new ArrayList<>();
 
-		final List<IPackingItem> partialQtyremainingitems = new ArrayList<IPackingItem>();
+		final List<IPackingItem> partialQtyremainingitems = new ArrayList<>();
 
 		for (final IPackingItem upItem : unpackedItems)
 		{
@@ -549,7 +546,7 @@ public class FreshSwingPackageItems extends SwingPackageBoxesItems
 		IPackingItem itemUnpacked = null;
 		if (itemsUnpacked == null)
 		{
-			itemsUnpacked = new ArrayList<IPackingItem>();
+			itemsUnpacked = new ArrayList<>();
 			packItems.put(PackingItemsMap.KEY_UnpackedItems, itemsUnpacked);
 		}
 		else
@@ -570,7 +567,7 @@ public class FreshSwingPackageItems extends SwingPackageBoxesItems
 		final List<IPackingItem> itemsPacked = packItems.remove(key);
 		Check.assumeNotNull(itemsPacked, "Packed items shall exist for key={}", key);
 
-		final List<IPackingItem> itemsPackedRemaining = new ArrayList<IPackingItem>();
+		final List<IPackingItem> itemsPackedRemaining = new ArrayList<>();
 
 		for (final IPackingItem itemPacked : itemsPacked)
 		{

@@ -38,7 +38,6 @@ import org.compiere.model.MInOut;
 import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;
 import org.compiere.model.MPayment;
-import org.compiere.model.MProduct;
 import org.compiere.model.MProject;
 import org.compiere.model.MQuery;
 import org.compiere.model.MRMA;
@@ -48,6 +47,7 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
+import de.metas.adempiere.model.I_M_Product;
 import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
 
@@ -128,7 +128,7 @@ public class ARequest implements ActionListener
 			m_where.append(" OR C_Invoice_ID=").append(m_Record_ID);
 		else if (m_AD_Table_ID == MPayment.Table_ID)
 			m_where.append(" OR C_Payment_ID=").append(m_Record_ID);
-		else if (m_AD_Table_ID == MProduct.Table_ID)
+		else if (m_AD_Table_ID == InterfaceWrapperHelper.getTableId(I_M_Product.class))
 			m_where.append(" OR M_Product_ID=").append(m_Record_ID);
 		else if (m_AD_Table_ID == MProject.Table_ID)
 			m_where.append(" OR C_Project_ID=").append(m_Record_ID);
@@ -234,7 +234,7 @@ public class ARequest implements ActionListener
 			else if (m_AD_Table_ID ==InterfaceWrapperHelper.getTableId(I_C_Invoice.class))
 				tab.setValue("C_Invoice_ID", new Integer(m_Record_ID));
 			//
-			else if (m_AD_Table_ID == MProduct.Table_ID)
+			else if (m_AD_Table_ID == InterfaceWrapperHelper.getTableId(I_M_Product.class))
 				tab.setValue("M_Product_ID", new Integer(m_Record_ID));
 			else if (m_AD_Table_ID == MPayment.Table_ID)
 				tab.setValue("C_Payment_ID", new Integer(m_Record_ID));

@@ -1,11 +1,12 @@
 package de.metas.material.event;
 
-import org.adempiere.util.lang.impl.TableRecordReference;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.Preconditions;
 
-import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
 import lombok.NonNull;
+import lombok.Value;
 
 /*
  * #%L
@@ -28,22 +29,39 @@ import lombok.NonNull;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-@Data
-@AllArgsConstructor // used by jackson when it deserializes a string
-@Builder // used by devs to make sure they know with parameter-value goes into which property
+
+@Value
+@Builder
 public class TransactionEvent implements MaterialEvent
 {
 	public static final String TYPE = "TransactionEvent";
 
 	@NonNull
-	private final EventDescr eventDescr;
+	EventDescr eventDescr;
 
 	@NonNull
-	private final TableRecordReference reference;
+	MaterialDescriptor materialDescr;
 
-	@NonNull
-	private final MaterialDescriptor materialDescr;
+	// ids used to match the transaction to the respective shipment, ddOrder or ppOrder event (demand if qty is negative), supply if qty is positive
+	// if *none of those are set* then the transaction will be recorded as "unplanned"
+	int shipmentScheduleId;
 
-	private final boolean transactionDeleted;
+	int transactionId;
+
+	@JsonCreator
+	@Builder
+	public TransactionEvent(
+			@JsonProperty("eventDescr") @NonNull final EventDescr eventDescr,
+			@JsonProperty("materialDescr") @NonNull final MaterialDescriptor materialDescr,
+			@JsonProperty("shipmentScheduleId") final int shipmentScheduleId,
+			@JsonProperty("transactionId") final int transactionId)
+	{
+		Preconditions.checkArgument(transactionId > 0, "The given parameter transactionId=%s needs to be > 0", transactionId);
+		this.transactionId = transactionId;
+
+		this.eventDescr = eventDescr;
+		this.materialDescr = materialDescr;
+		this.shipmentScheduleId = shipmentScheduleId;
+	}
 
 }

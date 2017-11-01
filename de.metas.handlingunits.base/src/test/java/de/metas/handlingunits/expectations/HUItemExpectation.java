@@ -21,8 +21,9 @@ package de.metas.handlingunits.expectations;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.comparesEqualTo;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThat;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -40,8 +41,6 @@ import de.metas.handlingunits.model.I_M_HU_Item_Storage;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
-
-import static org.junit.Assert.*;
 
 public class HUItemExpectation<ParentExpectationType> extends AbstractHUExpectation<ParentExpectationType>
 {

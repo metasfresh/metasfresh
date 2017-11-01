@@ -150,12 +150,6 @@ public class FlatrateDataEntryHandler extends AbstractInvoiceCandidateHandler
 	}
 
 	@Override
-	public void setPriceActual(final I_C_Invoice_Candidate ic)
-	{
-		// nothing to do
-	}
-
-	@Override
 	public void setBPartnerData(final I_C_Invoice_Candidate ic)
 	{
 		// nothing to do
@@ -163,12 +157,6 @@ public class FlatrateDataEntryHandler extends AbstractInvoiceCandidateHandler
 
 	@Override
 	public void setC_UOM_ID(final I_C_Invoice_Candidate ic)
-	{
-		// nothing to do
-	}
-
-	@Override
-	public void setPriceEntered(final I_C_Invoice_Candidate ic)
 	{
 		// nothing to do
 	}

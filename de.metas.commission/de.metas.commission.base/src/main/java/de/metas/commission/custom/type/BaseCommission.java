@@ -38,8 +38,7 @@ import org.compiere.model.MOrderLine;
 import org.compiere.model.PO;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
-
-import de.metas.adempiere.service.IOrderLineBL;
+import de.metas.order.IOrderLineBL;
 import de.metas.commission.interfaces.IAdvComInstance;
 import de.metas.commission.model.I_C_AdvComSalesRepFact;
 import de.metas.commission.model.I_C_AdvComSystem_Type;

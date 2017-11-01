@@ -43,11 +43,6 @@ import org.compiere.util.Env;
 
 import com.google.common.base.Supplier;
 
-import de.metas.adempiere.form.PackingDetailsMd;
-import de.metas.adempiere.form.IPackingItem;
-import de.metas.adempiere.form.LegacyPackingItem;
-import de.metas.adempiere.form.PackingItemsMap;
-import de.metas.adempiere.form.PackingTreeModel;
 import de.metas.adempiere.form.terminal.IContainer;
 import de.metas.adempiere.form.terminal.IKeyLayout;
 import de.metas.adempiere.form.terminal.ITerminalButton;
@@ -60,6 +55,11 @@ import de.metas.adempiere.form.terminal.TerminalException;
 import de.metas.adempiere.form.terminal.TerminalKeyListenerAdapter;
 import de.metas.adempiere.form.terminal.TerminalKeyPanel;
 import de.metas.adempiere.form.terminal.swing.TerminalSubPanel;
+import de.metas.picking.legacy.form.IPackingItem;
+import de.metas.picking.legacy.form.LegacyPackingItem;
+import de.metas.picking.legacy.form.PackingDetailsMd;
+import de.metas.picking.legacy.form.PackingTreeModel;
+import de.metas.picking.service.PackingItemsMap;
 import de.metas.picking.terminal.BoxKey;
 import de.metas.picking.terminal.BoxLayout;
 import de.metas.picking.terminal.ProductKey;
@@ -492,7 +492,7 @@ public class SwingPackageBoxesItems extends TerminalSubPanel implements Property
 		else if (SwingPackageBoxesItems.ACTION_AddAll.equals(evt.getNewValue()))
 		{
 			final Enumeration<DefaultMutableTreeNode> en = packingTreeModel.getUnPackedItems().children();
-			final List<DefaultMutableTreeNode> listNodes = new ArrayList<DefaultMutableTreeNode>();
+			final List<DefaultMutableTreeNode> listNodes = new ArrayList<>();
 			while (en.hasMoreElements())
 			{
 				final DefaultMutableTreeNode currentChild = en.nextElement();
@@ -512,7 +512,7 @@ public class SwingPackageBoxesItems extends TerminalSubPanel implements Property
 		else if (SwingPackageBoxesItems.ACTION_RemoveAll.equals(evt.getNewValue()))
 		{
 			final Enumeration<DefaultMutableTreeNode> en = oldUsedBin.breadthFirstEnumeration();
-			final List<DefaultMutableTreeNode> listNodes = new ArrayList<DefaultMutableTreeNode>();
+			final List<DefaultMutableTreeNode> listNodes = new ArrayList<>();
 			while (en.hasMoreElements())
 			{
 				final DefaultMutableTreeNode currentChild = en.nextElement();

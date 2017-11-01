@@ -2,6 +2,7 @@ package org.compiere.util;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -74,6 +75,62 @@ public class UtilTest
 	{
 		final String actual = Util.cleanAmp(input);
 		Assert.assertEquals("Invalid result for input: " + input, expected, actual);
+	}
+	
+	@Test
+	public void lpadZero_EmptyStringTest()
+	{
+		final String emptyString = "";
+		final String zeroString = "0000000000";
+
+		assertThat(Util.lpadZero(emptyString, 10, "This Is An Empty String")).isEqualTo(zeroString);
+	}
+	
+	@Test(expected = AdempiereException.class)
+	public void lpadZero_StringExceedingSizeTest()
+	{
+		final String value = "123456789";
+
+		Util.lpadZero(value, 2, "This Is An Empty String");
+
+	}
+	
+	@Test
+	public void lpadZero_DefaultStringTest()
+	{
+		final String value = "123";
+		final String zeroString = "000123";
+
+		assertThat(Util.lpadZero(value, 6, "This Is An Empty String")).isEqualTo(zeroString);
+	}
+
+	
+	
+	@Test
+	public void rpadZero_EmptyStringTest()
+	{
+		final String emptyString = "";
+		final String zeroString = "0000000000";
+
+		assertThat(Util.rpadZero(emptyString, 10, "This Is An Empty String")).isEqualTo(zeroString);
+	}
+	
+	@Test(expected = AdempiereException.class)
+	public void rpadZero_StringExceedingSizeTest()
+	{
+		final String value = "123456789";
+
+		Util.rpadZero(value, 2, "This Is An Empty String");
+
+	}
+	
+	@Test
+	public void rpadZero_DefaultStringTest()
+	{
+		final String value = "123";
+		final String zeroString = "123000";
+
+		assertThat(Util.rpadZero(value, 6, "This Is An Empty String")).isEqualTo(zeroString);
 	}
 
 }

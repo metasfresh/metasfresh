@@ -1,29 +1,7 @@
 package org.eevolution.api.impl;
 
-/*
- * #%L
- * de.metas.adempiere.libero.libero
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
+import java.util.concurrent.atomic.AtomicInteger;
 
-
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
@@ -34,7 +12,6 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_S_Resource;
 import org.compiere.model.X_S_Resource;
-import org.compiere.util.Env;
 import org.eevolution.model.I_PP_Product_Planning;
 import org.junit.Assert;
 import org.junit.Before;
@@ -55,7 +32,7 @@ public class ProductPlanningDAOTest
 	{
 		AdempiereTestHelper.get().init();
 
-		this.context = new PlainContextAware(Env.getCtx(), ITrx.TRXNAME_None);
+		this.context = PlainContextAware.newOutOfTrx();
 		this.productPlanningDAO = (ProductPlanningDAO)Services.get(IProductPlanningDAO.class);
 	}
 
@@ -139,6 +116,40 @@ public class ProductPlanningDAOTest
 		Assert.assertEquals("invalid plant", plantExpected.getS_Resource_ID(), plantActual.getS_Resource_ID());
 	}
 
+	@Test(expected = NoPlantForWarehouseException.class)
+	public void test_findPlant_WarehouseWithoutPlant_DifferentPlantsFound()
+	{
+		final I_M_Warehouse warehouse = createWarehouse("Warehouse", null);
+		I_AD_Org org = createOrg("org");
+		final I_M_Product product = createProduct("product");
+
+		createProductPlanningWithPlant(org, warehouse, product);
+		createProductPlanningWithPlant(org, warehouse, product);
+
+		productPlanningDAO.findPlant(context.getCtx(), org.getAD_Org_ID(), warehouse, product.getM_Product_ID());
+	}
+
+	@Test
+	public void test_findPlant_WarehouseWithoutPlant_MultipleProductPlanningButSamePlant()
+	{
+		final I_M_Warehouse warehouse = createWarehouse("Warehouse", null);
+		I_AD_Org org = createOrg("org");
+		final I_M_Product product = createProduct("product");
+		final I_PP_Product_Planning productPlanning = createProductPlanningWithPlant(org, warehouse, product);
+		final I_S_Resource plant = productPlanning.getS_Resource();
+
+		// create some more product planning records, but with same plant and without any plant
+		createProductPlanning(org, warehouse, product, plant);
+		createProductPlanning(org, warehouse, product, plant);
+		createProductPlanning(org, warehouse, product, null);
+		createProductPlanning(org, warehouse, product, null);
+
+		final I_S_Resource plantActual = productPlanningDAO.findPlant(context.getCtx(), org.getAD_Org_ID(), warehouse, product.getM_Product_ID());
+
+		Assert.assertNotNull("plant shall be found", plantActual);
+		Assert.assertEquals("invalid plant", plant.getS_Resource_ID(), plantActual.getS_Resource_ID());
+	}
+
 	private final I_S_Resource createPlant(final String name)
 	{
 		final I_S_Resource plant = InterfaceWrapperHelper.newInstance(I_S_Resource.class, context);
@@ -177,9 +188,17 @@ public class ProductPlanningDAOTest
 		return product;
 	}
 
+	private AtomicInteger createProductPlanningWithPlant_NextPlantNo = new AtomicInteger(1);
+
 	private I_PP_Product_Planning createProductPlanningWithPlant(I_AD_Org org, I_M_Warehouse warehouse, I_M_Product product)
 	{
-		final I_S_Resource plant = createPlant("Plant_From_ProductPlanning");
+		final int plantNo = createProductPlanningWithPlant_NextPlantNo.getAndIncrement();
+		final I_S_Resource plant = createPlant("Plant_From_ProductPlanning_" + plantNo);
+		return createProductPlanning(org, warehouse, product, plant);
+	}
+
+	private I_PP_Product_Planning createProductPlanning(I_AD_Org org, I_M_Warehouse warehouse, I_M_Product product, I_S_Resource plant)
+	{
 		final I_PP_Product_Planning pp = InterfaceWrapperHelper.newInstance(I_PP_Product_Planning.class, context);
 		pp.setAD_Org(org);
 		pp.setM_Warehouse(warehouse);
@@ -188,4 +207,5 @@ public class ProductPlanningDAOTest
 		InterfaceWrapperHelper.save(pp);
 		return pp;
 	}
+
 }

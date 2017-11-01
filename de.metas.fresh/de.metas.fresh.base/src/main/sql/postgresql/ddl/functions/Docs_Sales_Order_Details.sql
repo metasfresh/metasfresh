@@ -20,6 +20,7 @@ RETURNS TABLE
 	isPrintTax character(1),
 	description character varying,
 	documentnote character varying,
+	productdescription character varying, 
 	bp_product_no character varying(30),
 	bp_product_name character varying(100)
 )
@@ -54,6 +55,7 @@ SELECT
 	isPrintTax,
 	ol.description,
 	p.documentnote,
+	ol.productdescription,
 	-- in case there is no C_BPartner_Product, fallback to the default ones
 	COALESCE(NULLIF(bpp.ProductNo, ''), p.value) as bp_product_no,
 	COALESCE(NULLIF(bpp.ProductName, ''), pt.Name, p.name) as bp_product_name

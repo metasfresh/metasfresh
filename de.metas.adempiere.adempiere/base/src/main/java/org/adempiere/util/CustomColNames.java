@@ -26,9 +26,7 @@ public final class CustomColNames {
 	public static final String C_Invoice_BPARTNERADDRESS = "BPartnerAddress";
 
 	public static final String C_Order_C_BP_BANKACCOUNT_ID = "C_BP_BankAccount_ID";
-	public static final String C_Order_COMPLETE_ORDER_DISCOUNT = "CompleteOrderDiscount";
 	public static final String C_Order_CREATE_NEW_FROM_PROPOSAL = "CreateNewFromProposal";
-	public static final String C_Order_DESCRIPTION_BOTTOM = "DescriptionBottom";
 	public static final String C_Order_REF_PROPOSAL_ID = "Ref_Proposal_ID";
 
 	public static final String C_Tax_Acct_T_PAYDISCOUNT_EXTP_ACCT = "T_PayDiscount_Exp_Acct";

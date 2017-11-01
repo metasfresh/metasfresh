@@ -2,17 +2,19 @@ package de.metas.handlingunits.picking;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.OptionalInt;
 
 import org.springframework.stereotype.Service;
 
-import de.metas.handlingunits.IHUCapacityDefinition;
 import de.metas.handlingunits.model.I_M_Picking_Candidate;
+import de.metas.handlingunits.model.X_M_Picking_Candidate;
 import de.metas.handlingunits.picking.pickingCandidateCommands.AddHUToPickingSlot;
 import de.metas.handlingunits.picking.pickingCandidateCommands.AddQtyToHU;
+import de.metas.handlingunits.picking.pickingCandidateCommands.ClosePickingCandidateCommand;
+import de.metas.handlingunits.picking.pickingCandidateCommands.ClosePickingCandidateCommand.ClosePickingCandidateCommandBuilder;
+import de.metas.handlingunits.picking.pickingCandidateCommands.ProcessPickingCandidateCommand;
 import de.metas.handlingunits.picking.pickingCandidateCommands.RemoveQtyFromHU;
-import de.metas.handlingunits.picking.pickingCandidateCommands.SetCandidatesClosed;
-import de.metas.handlingunits.picking.pickingCandidateCommands.SetCandidatesInProgress;
-import de.metas.handlingunits.picking.pickingCandidateCommands.SetCandidatesProcessed;
+import de.metas.handlingunits.picking.pickingCandidateCommands.UnProcessPickingCandidateCommand;
 import de.metas.handlingunits.sourcehu.HuId2SourceHUsService;
 import de.metas.quantity.Quantity;
 import lombok.Builder.Default;
@@ -44,8 +46,7 @@ import lombok.NonNull;
 public class PickingCandidateService
 {
 	private final HuId2SourceHUsService sourceHUsRepository;
-
-	private PickingCandidateRepository pickingCandidateRepository;
+	private final PickingCandidateRepository pickingCandidateRepository;
 
 	public PickingCandidateService(
 			@NonNull final PickingCandidateRepository pickingCandidateRepository,
@@ -103,7 +104,7 @@ public class PickingCandidateService
 	{
 		@NonNull
 		@Default
-		BigDecimal qtyCU = IHUCapacityDefinition.INFINITY;
+		BigDecimal qtyCU = Quantity.QTY_INFINITE;
 
 		@NonNull
 		Integer huId;
@@ -128,35 +129,43 @@ public class PickingCandidateService
 	 * and have {@code status == 'IP'} (in progress) and updates them to {@code status='PR'} (processed).
 	 * No model interceptors etc will be fired.</li>
 	 * </ul>
-	 * 
-	 * @param huIds
-	 * 
-	 * @return the number of updated {@link I_M_Picking_Candidate}s
 	 */
-	public int setCandidatesProcessed(@NonNull final List<Integer> huIds)
+	public void processForHUIds(@NonNull final List<Integer> huIds, final int pickingSlotId, final OptionalInt shipmentScheduleId)
 	{
-		return new SetCandidatesProcessed(sourceHUsRepository).perform(huIds);
+		//
+		// Process those picking candidates
+		final ProcessPickingCandidateCommand processCmd = ProcessPickingCandidateCommand.builder()
+				.sourceHUsRepository(sourceHUsRepository)
+				.pickingCandidateRepository(pickingCandidateRepository)
+				.huIds(huIds)
+				.pickingSlotId(pickingSlotId)
+				.shipmentScheduleId(shipmentScheduleId.orElse(-1))
+				.build();
+		processCmd.perform();
+
+		//
+		// Automatically close those processed picking candidates which are NOT on a rack system picking slot. (gh2740)
+		ClosePickingCandidateCommand.builder()
+				.pickingCandidates(processCmd.getProcessedPickingCandidates())
+				.pickingSlotIsRackSystem(false)
+				.build()
+				.perform();
 	}
 
-	public int setCandidatesInProgress(@NonNull final List<Integer> huIds)
+	public void unprocessForHUId(final int huId)
 	{
-		return new SetCandidatesInProgress(sourceHUsRepository).perform(huIds);
+		UnProcessPickingCandidateCommand.builder()
+				.sourceHUsRepository(sourceHUsRepository)
+				.pickingCandidateRepository(pickingCandidateRepository)
+				.huId(huId)
+				.build()
+				.perform();
 	}
 
-	/**
-	 * For the given {@code shipmentScheduleIds}, this method selects the {@link I_M_Picking_Candidate}s that reference those HUs
-	 * and have {@code status == 'PR'} (processed) and updates them to {@code status='CL'} (closed)<br>
-	 * <b>and</b> adds the respective candidates to the picking slot queue.<br>
-	 * Closed candidates are not shown in the webui's picking view.
-	 * <p>
-	 * Note: no model interceptors etc are fired when this method is called.
-	 * 
-	 * @param huIds
-	 * 
-	 * @return the number of updated {@link I_M_Picking_Candidate}s
-	 */
-	public void setCandidatesClosed(@NonNull final List<Integer> shipmentScheduleIds)
+	public ClosePickingCandidateCommandBuilder prepareCloseForShipmentSchedules(@NonNull final List<Integer> shipmentScheduleIds)
 	{
-		new SetCandidatesClosed().perform(shipmentScheduleIds);
+		final List<I_M_Picking_Candidate> pickingCandidates = pickingCandidateRepository.retrievePickingCandidatesByShipmentScheduleIdsAndStatus(shipmentScheduleIds, X_M_Picking_Candidate.STATUS_PR);
+		return ClosePickingCandidateCommand.builder()
+				.pickingCandidates(pickingCandidates);
 	}
 }

@@ -28,6 +28,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -70,6 +71,8 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
+
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.adempiere.util.CacheModel;
@@ -1369,6 +1372,37 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 		String trxName = InterfaceWrapperHelper.getTrxName(inventoryLine);
 
 		return retrieveInvoiceCandidatesForRecordQuery(ctx, adTableId, recordId, trxName);
+	}
+
+	@Override
+	public Set<String> retrieveOrderDocumentNosForIncompleteGroupsFromSelection(final int adPInstanceId)
+	{
+		final String sql = "SELECT * FROM C_Invoice_Candidate_SelectionIncompleteGroups WHERE AD_PInstance_ID=?";
+		final List<Object> sqlParams = Arrays.asList(adPInstanceId);
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		try
+		{
+			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_ThreadInherited);
+			DB.setParameters(pstmt, sqlParams);
+			rs = pstmt.executeQuery();
+
+			final ImmutableSet.Builder<String> orderDocumentNos = ImmutableSet.builder();
+			while (rs.next())
+			{
+				final String orderDocumentNo = rs.getString("OrderDocumentNo");
+				orderDocumentNos.add(orderDocumentNo);
+			}
+			return orderDocumentNos.build();
+		}
+		catch (SQLException ex)
+		{
+			throw new DBException(ex, sql, sqlParams);
+		}
+		finally
+		{
+			DB.close(rs, pstmt);
+		}
 	}
 
 }

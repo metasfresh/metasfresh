@@ -34,8 +34,8 @@ import org.compiere.model.CalloutOrder;
 import org.compiere.model.I_C_Order;
 import org.compiere.util.DB;
 
-import de.metas.adempiere.service.IOrderLineBL;
 import de.metas.contracts.subscription.model.I_C_OrderLine;
+import de.metas.order.IOrderLineBL;
 
 public class OrderLine extends CalloutEngine
 {

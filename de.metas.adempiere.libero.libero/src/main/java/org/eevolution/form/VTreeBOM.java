@@ -205,7 +205,7 @@ public class VTreeBOM extends CPanel implements FormPanel, ActionListener,
 		Properties ctx = getCtx();
 		MLookup m_fieldProduct = MLookupFactory.get(ctx, m_WindowNo,
 				MColumn.getColumn_ID(MProduct.Table_Name, "M_Product_ID"),
-				DisplayType.Search, MProduct.COLUMNNAME_M_Product_ID, 0, false,
+				DisplayType.Search, MProduct.Table_Name, MProduct.COLUMNNAME_M_Product_ID, 0, false,
 				" M_Product.IsSummary = 'N'");
 		fieldProduct = new VLookup ("M_Product_ID", false, false, true,  m_fieldProduct) {
 			private static final long serialVersionUID = 1L;

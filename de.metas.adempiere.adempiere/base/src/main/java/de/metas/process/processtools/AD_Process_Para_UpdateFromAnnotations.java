@@ -32,11 +32,11 @@ import de.metas.process.ProcessClassParamInfo;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -97,7 +97,9 @@ public class AD_Process_Para_UpdateFromAnnotations extends JavaProcess
 			processParamModel.setDescription(adElement.getDescription());
 			processParamModel.setHelp(adElement.getHelp());
 
-			processParamModel.setAD_Reference_ID(getDisplayType(paramInfo));
+			final int displayType = getDisplayType(paramInfo);
+			processParamModel.setAD_Reference_ID(displayType);
+			processParamModel.setFieldLength(getFieldLengthByDisplayType(displayType));
 		}
 		else
 		{
@@ -110,7 +112,7 @@ public class AD_Process_Para_UpdateFromAnnotations extends JavaProcess
 		addLog((isNew ? "Created" : "Updated") + ": " + processParamModel.getColumnName());
 	}
 
-	private int getDisplayType(final ProcessClassParamInfo paramInfo)
+	private static int getDisplayType(final ProcessClassParamInfo paramInfo)
 	{
 		final String parameterName = paramInfo.getParameterName();
 		final Class<?> type = paramInfo.getFieldType();
@@ -154,6 +156,34 @@ public class AD_Process_Para_UpdateFromAnnotations extends JavaProcess
 		else
 		{
 			throw new AdempiereException("Cannot determine DisplayType for " + paramInfo);
+		}
+	}
+
+	private static int getFieldLengthByDisplayType(final int displayType)
+	{
+		if (DisplayType.isAnyLookup(displayType))
+		{
+			return 10;
+		}
+		else if (displayType == DisplayType.YesNo)
+		{
+			return 1;
+		}
+		else if (DisplayType.isText(displayType))
+		{
+			return 255;
+		}
+		else if (DisplayType.isDate(displayType))
+		{
+			return 7;
+		}
+		else if (DisplayType.isNumeric(displayType))
+		{
+			return 10;
+		}
+		else
+		{
+			throw new AdempiereException("Unknown displayType: " + displayType);
 		}
 	}
 

@@ -227,7 +227,7 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 		// Retrieve QtyPicked records.
 		// If there are not QtyPicked records for our TU then do nothing.
 		final IHUShipmentScheduleDAO huShipmentScheduleDAO = Services.get(IHUShipmentScheduleDAO.class);
-		final List<I_M_ShipmentSchedule_QtyPicked> qtyPickedList = huShipmentScheduleDAO.retrieveSchedsQtyPickedForTU(sched, tuHU, trxName);
+		final List<I_M_ShipmentSchedule_QtyPicked> qtyPickedList = huShipmentScheduleDAO.retrieveSchedsQtyPickedForTU(sched.getM_ShipmentSchedule_ID(), tuHU.getM_HU_ID(), trxName);
 		if (qtyPickedList.isEmpty())
 		{
 			return;

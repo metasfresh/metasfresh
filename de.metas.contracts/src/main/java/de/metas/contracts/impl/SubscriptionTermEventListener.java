@@ -64,7 +64,7 @@ public class SubscriptionTermEventListener extends FallbackFlatrateTermEventList
 
 	@Override
 	public void beforeSaveOfNextTermForPredecessor(
-			@NonNull final I_C_Flatrate_Term next, 
+			@NonNull final I_C_Flatrate_Term next,
 			@NonNull final I_C_Flatrate_Term predecessor)
 	{
 		final IPricingResult pricingInfo = FlatrateTermPricing.builder()
@@ -78,6 +78,8 @@ public class SubscriptionTermEventListener extends FallbackFlatrateTermEventList
 		next.setPriceActual(pricingInfo.getPriceStd());
 		next.setC_Currency_ID(pricingInfo.getC_Currency_ID());
 		next.setC_UOM_ID(pricingInfo.getPrice_UOM_ID());
+		next.setC_TaxCategory_ID(pricingInfo.getC_TaxCategory_ID());
+		next.setIsTaxIncluded(pricingInfo.isTaxIncluded());
+		
 	}
-
 }

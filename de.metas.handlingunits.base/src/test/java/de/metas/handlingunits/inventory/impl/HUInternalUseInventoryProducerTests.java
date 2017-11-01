@@ -132,7 +132,7 @@ public class HUInternalUseInventoryProducerTests
 			final int qtyCUsPerTU)
 	{
 		final I_M_Product cuProduct = data.helper.pTomato;
-		final I_C_UOM cuUOM = data.helper.uomKg;
+		final I_C_UOM cuUOM =data.helper.uomKg;
 		final BigDecimal totalQtyCU = new BigDecimal(totalQtyCUStr);
 
 		final LUTUProducerDestination lutuProducer = new LUTUProducerDestination();

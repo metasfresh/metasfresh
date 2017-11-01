@@ -46,8 +46,8 @@ import org.junit.Test;
 
 import de.metas.adempiere.model.I_C_Currency;
 import de.metas.adempiere.model.I_M_Product;
-import de.metas.adempiere.service.IOrderLineBL;
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.order.IOrderLineBL;
 
 public class OrderLineBLTest
 {

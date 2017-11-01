@@ -33,6 +33,8 @@ import org.compiere.util.Evaluatee;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.collect.ImmutableList;
 
+import lombok.NonNull;
+
 /**
  * Logic expression
  *
@@ -44,8 +46,8 @@ import com.google.common.collect.ImmutableList;
 @JsonDeserialize(using = JsonLogicExpressionDeserializer.class)
 public interface ILogicExpression extends IExpression<Boolean>
 {
-	ILogicExpression TRUE = ConstantLogicExpression.TRUE;
-	ILogicExpression FALSE = ConstantLogicExpression.FALSE;
+//	ILogicExpression TRUE = ConstantLogicExpression.TRUE;
+//	ILogicExpression FALSE = ConstantLogicExpression.FALSE;
 
 	String LOGIC_OPERATOR_AND = "&";
 	String LOGIC_OPERATOR_OR = "|";
@@ -156,10 +158,11 @@ public interface ILogicExpression extends IExpression<Boolean>
 	default ILogicExpression negate()
 	{
 		// NOTE: because we don't have unary operator support atm, we will use XOR as : !a = a XOR true
-		return xor(TRUE);
+		//return xor(TRUE); fails, TRUE==null !!
+		return xor(ConstantLogicExpression.TRUE); // works, not null!
 	}
 
-	default ILogicExpression xor(final ILogicExpression expression)
+	default ILogicExpression xor(@NonNull final ILogicExpression expression)
 	{
 		return LogicExpressionBuilder.build(this, LOGIC_OPERATOR_XOR, expression);
 	}

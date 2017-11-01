@@ -36,6 +36,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.ValidationRuleQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
@@ -388,7 +389,7 @@ public class AttributeDAO implements IAttributeDAO
 	{
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_M_AttributeSet.class, ctx, ITrx.TRXNAME_None)
-				.addEqualsFilter(I_M_AttributeSet.COLUMNNAME_M_AttributeSet_ID, M_AttributeSet_ID_None)
+				.addEqualsFilter(I_M_AttributeSet.COLUMNNAME_M_AttributeSet_ID, AttributeConstants.M_AttributeSet_ID_None)
 				.create()
 				.firstOnlyNotNull(I_M_AttributeSet.class);
 	}

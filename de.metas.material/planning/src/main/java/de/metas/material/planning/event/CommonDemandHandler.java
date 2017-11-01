@@ -22,6 +22,8 @@ import org.eevolution.model.I_PP_Product_Planning;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import de.metas.material.event.DemandHandlerAuditEvent;
 import de.metas.material.event.EventDescr;
 import de.metas.material.event.MaterialDemandDescr;
@@ -107,7 +109,6 @@ public class CommonDemandHandler
 					.eventDescr(materialDemandDescr.getEventDescr().createNew())
 					.descr(materialDemandDescr.getMaterialDescriptor())
 					.orderLineId(materialDemandDescr.getOrderLineId())
-					.reference(materialDemandDescr.getReference())
 					.messages(singleMessages)
 					.build();
 
@@ -116,7 +117,7 @@ public class CommonDemandHandler
 	}
 	
 	
-	public void handleMaterialDemandEvent0(@NonNull final MaterialDemandDescr materialDemandDescr)
+	private void handleMaterialDemandEvent0(@NonNull final MaterialDemandDescr materialDemandDescr)
 	{
 		final IMutableMRPContext mrpContext = mkMRPContext(materialDemandDescr);
 
@@ -137,7 +138,6 @@ public class CommonDemandHandler
 							.eventDescr(materialDemandDescr.getEventDescr().createNew())
 							.fromWarehouseId(networkLine.getM_WarehouseSource_ID())
 							.toWarehouseId(networkLine.getM_Warehouse_ID())
-							.reference(materialDemandDescr.getReference())
 							.ddOrder(ddOrder)
 							.build();
 
@@ -155,7 +155,6 @@ public class CommonDemandHandler
 
 			final ProductionPlanEvent event = ProductionPlanEvent.builder()
 					.eventDescr(materialDemandDescr.getEventDescr().createNew())
-					.reference(materialDemandDescr.getReference())
 					.ppOrder(ppOrder)
 					.build();
 
@@ -221,7 +220,8 @@ public class CommonDemandHandler
 				.build();
 	}
 
-	private IMRPNotesCollector mkMRPNotesCollector()
+	@VisibleForTesting
+	IMRPNotesCollector mkMRPNotesCollector()
 	{
 		return new IMRPNotesCollector()
 		{
@@ -235,7 +235,9 @@ public class CommonDemandHandler
 			@Override
 			public void collectNote(final IMRPNoteBuilder noteBuilder)
 			{
-				noteBuilder.collect();
+				// as long as newMRPNoteBuilder() creates a SimpleMRPNoteBuilder with *this* as its node collector,
+				// the following invocation would cause a StackOverFlowError. Plus, idk if and what to actually collect in this use case.
+				// noteBuilder.collect();
 			}
 		};
 	}

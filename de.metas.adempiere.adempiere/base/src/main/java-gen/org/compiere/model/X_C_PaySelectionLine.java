@@ -1,26 +1,9 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
 package org.compiere.model;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import org.compiere.util.Env;
 
 /** Generated Model for C_PaySelectionLine
  *  @author Adempiere (generated) 
@@ -32,7 +15,7 @@ public class X_C_PaySelectionLine extends org.compiere.model.PO implements I_C_P
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -153179252L;
+	private static final long serialVersionUID = 576627910L;
 
     /** Standard Constructor */
     public X_C_PaySelectionLine (Properties ctx, int C_PaySelectionLine_ID, String trxName)
@@ -43,18 +26,15 @@ public class X_C_PaySelectionLine extends org.compiere.model.PO implements I_C_P
 			setC_Invoice_ID (0);
 			setC_PaySelection_ID (0);
 			setC_PaySelectionLine_ID (0);
-			setDifferenceAmt (Env.ZERO);
-			setDiscountAmt (Env.ZERO);
+			setDifferenceAmt (BigDecimal.ZERO);
+			setDiscountAmt (BigDecimal.ZERO);
 			setIsManual (false);
 			setIsSOTrx (false);
-			setLine (0);
-// @SQL=SELECT COALESCE(MAX(Line),0)+10 AS DefaultValue FROM C_PaySelectionLine WHERE C_PaySelection_ID=@C_PaySelection_ID@
-			setOpenAmt (Env.ZERO);
-			setPayAmt (Env.ZERO);
-			setPaymentRule (null);
-// P
-			setProcessed (false);
-// N
+			setLine (0); // @SQL=SELECT COALESCE(MAX(Line),0)+10 AS DefaultValue FROM C_PaySelectionLine WHERE C_PaySelection_ID=@C_PaySelection_ID@
+			setOpenAmt (BigDecimal.ZERO);
+			setPayAmt (BigDecimal.ZERO);
+			setPaymentRule (null); // P
+			setProcessed (false); // N
         } */
     }
 
@@ -72,6 +52,39 @@ public class X_C_PaySelectionLine extends org.compiere.model.PO implements I_C_P
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
+
+	@Override
+	public org.compiere.model.I_C_Currency getC_Currency() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Currency_ID, org.compiere.model.I_C_Currency.class);
+	}
+
+	@Override
+	public void setC_Currency(org.compiere.model.I_C_Currency C_Currency)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Currency_ID, org.compiere.model.I_C_Currency.class, C_Currency);
+	}
+
+	/** Set Währung.
+		@param C_Currency_ID 
+		Die Währung für diesen Eintrag
+	  */
+	@Override
+	public void setC_Currency_ID (int C_Currency_ID)
+	{
+		throw new IllegalArgumentException ("C_Currency_ID is virtual column");	}
+
+	/** Get Währung.
+		@return Die Währung für diesen Eintrag
+	  */
+	@Override
+	public int getC_Currency_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_Currency_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
 
 	@Override
 	public org.compiere.model.I_C_Invoice getC_Invoice() throws RuntimeException
@@ -142,43 +155,6 @@ public class X_C_PaySelectionLine extends org.compiere.model.PO implements I_C_P
 	public int getC_Payment_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Payment_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_C_PaySelectionCheck getC_PaySelectionCheck() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_PaySelectionCheck_ID, org.compiere.model.I_C_PaySelectionCheck.class);
-	}
-
-	@Override
-	public void setC_PaySelectionCheck(org.compiere.model.I_C_PaySelectionCheck C_PaySelectionCheck)
-	{
-		set_ValueFromPO(COLUMNNAME_C_PaySelectionCheck_ID, org.compiere.model.I_C_PaySelectionCheck.class, C_PaySelectionCheck);
-	}
-
-	/** Set Zahlungsanweisung.
-		@param C_PaySelectionCheck_ID 
-		Check oder sonstige vorbereitete Zahlungsanweisung
-	  */
-	@Override
-	public void setC_PaySelectionCheck_ID (int C_PaySelectionCheck_ID)
-	{
-		if (C_PaySelectionCheck_ID < 1) 
-			set_Value (COLUMNNAME_C_PaySelectionCheck_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_PaySelectionCheck_ID, Integer.valueOf(C_PaySelectionCheck_ID));
-	}
-
-	/** Get Zahlungsanweisung.
-		@return Check oder sonstige vorbereitete Zahlungsanweisung
-	  */
-	@Override
-	public int getC_PaySelectionCheck_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_PaySelectionCheck_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -280,11 +256,11 @@ public class X_C_PaySelectionLine extends org.compiere.model.PO implements I_C_P
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_DifferenceAmt);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
-	/** Set Discount Amount.
+	/** Set Skonto.
 		@param DiscountAmt 
 		Calculated amount of discount
 	  */
@@ -294,7 +270,7 @@ public class X_C_PaySelectionLine extends org.compiere.model.PO implements I_C_P
 		set_Value (COLUMNNAME_DiscountAmt, DiscountAmt);
 	}
 
-	/** Get Discount Amount.
+	/** Get Skonto.
 		@return Calculated amount of discount
 	  */
 	@Override
@@ -302,7 +278,7 @@ public class X_C_PaySelectionLine extends org.compiere.model.PO implements I_C_P
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_DiscountAmt);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -395,7 +371,7 @@ public class X_C_PaySelectionLine extends org.compiere.model.PO implements I_C_P
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_OpenAmt);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -417,7 +393,7 @@ public class X_C_PaySelectionLine extends org.compiere.model.PO implements I_C_P
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PayAmt);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 

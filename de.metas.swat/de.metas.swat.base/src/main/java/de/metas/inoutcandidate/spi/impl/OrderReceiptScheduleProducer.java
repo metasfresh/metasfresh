@@ -31,11 +31,11 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_Order;
 
-import de.metas.adempiere.service.IOrderDAO;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.spi.AbstractReceiptScheduleProducer;
 import de.metas.inoutcandidate.spi.IReceiptScheduleProducer;
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.order.IOrderDAO;
 
 /**
  * Creates receipt schedules for given order by delegating all work to {@link OrderLineReceiptScheduleProducer}.

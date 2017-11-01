@@ -28,7 +28,6 @@ import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
@@ -40,7 +39,6 @@ import org.compiere.model.I_C_PaySelection;
 import org.compiere.model.ModelValidator;
 
 import de.metas.adempiere.model.I_C_PaySelectionLine;
-import de.metas.banking.payment.IPaySelectionBL;
 import de.metas.banking.payment.IPaySelectionDAO;
 import de.metas.banking.service.IBankingBL;
 import de.metas.interfaces.I_C_BP_BankAccount;
@@ -134,9 +132,10 @@ public class C_PaySelection
 		}
 	}
 
-	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
-	public void createPayments(final I_C_PaySelection paySelection)
-	{
-		Services.get(IPaySelectionBL.class).createPayments(paySelection);
-	}
+	// TODO: Fix this in the followup https://github.com/metasfresh/metasfresh/issues/2841
+	// @DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
+	// public void createPayments(final I_C_PaySelection paySelection)
+	// {
+	// Services.get(IPaySelectionBL.class).createPayments(paySelection);
+	// }
 }

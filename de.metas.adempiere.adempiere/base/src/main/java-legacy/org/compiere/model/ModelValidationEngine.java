@@ -218,7 +218,7 @@ public class ModelValidationEngine implements IModelValidationEngine
 			// Load from Spring context
 			final ApplicationContext context = Adempiere.getSpringApplicationContext();
 			// NOTE: atm it returns null only when started from our tools (like the "model generator")
-			// but it's not preventing the tool execution becuse this is the last thing we do here and also because usually it's configured to not fail on init error.
+			// but it's not preventing the tool execution because this is the last thing we do here and also because usually it's configured to not fail on init error.
 			// so we can leave with the NPE here
 			for (final Object modelInterceptor : context.getBeansWithAnnotation(org.adempiere.ad.modelvalidator.annotations.Interceptor.class).values())
 			{
@@ -396,9 +396,9 @@ public class ModelValidationEngine implements IModelValidationEngine
 				}
 			}
 		}
-		catch (Exception e)
+		catch (final Throwable ex)
 		{
-			addModelInterceptorInitError(className, client, e);
+			addModelInterceptorInitError(className, client, ex);
 		}
 
 	}

@@ -188,8 +188,9 @@ public class FlatrateTermInvoiceCandidateHandler extends AbstractInvoiceCandidat
 		final I_C_Activity activity = Services.get(IProductAcctDAO.class).retrieveActivityForAcct(contextProvider, term.getAD_Org(), term.getM_Product());
 
 		ic.setC_Activity(activity);
+		ic.setIsTaxIncluded(term.isTaxIncluded()); 
 
-		final int taxCategoryId = -1; // FIXME for accuracy, we will need the tax category
+		final int taxCategoryId = term.getC_TaxCategory_ID();
 		final I_M_Warehouse warehouse = null;
 		final boolean isSOTrx = true;
 
@@ -333,14 +334,24 @@ public class FlatrateTermInvoiceCandidateHandler extends AbstractInvoiceCandidat
 		ic.setDeliveryDate(ic.getDateOrdered());
 		ic.setQtyDelivered(ic.getQtyOrdered());
 	}
-
+	
 	@Override
-	public void setPriceActual(final I_C_Invoice_Candidate ic)
+	public PriceAndTax calculatePriceAndTax(final I_C_Invoice_Candidate ic)
 	{
 		final I_C_Flatrate_Term term = retrieveTerm(ic);
-		ic.setPriceActual(term.getPriceActual());
-		ic.setPrice_UOM_ID(term.getC_UOM_ID()); // 07090: when setting a priceActual, we also need to specify a PriceUOM
+		return PriceAndTax.builder()
+				.priceActual(term.getPriceActual())
+				.priceUOMId(term.getC_UOM_ID()) // 07090: when setting a priceActual, we also need to specify a PriceUOM
+				.build();
 	}
+	
+	@Override
+	public void setC_UOM_ID(final I_C_Invoice_Candidate ic)
+	{
+		final I_C_Flatrate_Term term = retrieveTerm(ic);
+		ic.setC_UOM_ID(term.getC_UOM_ID());
+	}
+
 
 	@Override
 	public void setBPartnerData(final I_C_Invoice_Candidate ic)
@@ -350,18 +361,5 @@ public class FlatrateTermInvoiceCandidateHandler extends AbstractInvoiceCandidat
 		ic.setBill_BPartner_ID(term.getBill_BPartner_ID());
 		ic.setBill_Location_ID(term.getBill_Location_ID());
 		ic.setBill_User_ID(term.getBill_User_ID());
-	}
-
-	@Override
-	public void setC_UOM_ID(final I_C_Invoice_Candidate ic)
-	{
-		final I_C_Flatrate_Term term = retrieveTerm(ic);
-		ic.setC_UOM_ID(term.getC_UOM_ID());
-	}
-
-	@Override
-	public void setPriceEntered(final I_C_Invoice_Candidate ic)
-	{
-		// nothing to do
 	}
 }

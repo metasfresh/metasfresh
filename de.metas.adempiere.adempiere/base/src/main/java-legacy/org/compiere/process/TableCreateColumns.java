@@ -20,6 +20,8 @@ import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.Types;
+
+import org.adempiere.util.Services;
 import org.compiere.db.AdempiereDatabase;
 import org.compiere.model.MColumn;
 import org.compiere.model.MTable;
@@ -28,8 +30,9 @@ import org.compiere.util.AdempiereSystemError;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 
-import de.metas.process.ProcessInfoParameter;
+import de.metas.adempiere.service.IColumnBL;
 import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
 
 
 /**
@@ -54,6 +57,8 @@ public class TableCreateColumns extends JavaProcess
 	
 	/** Column Count	*/
 	private int 	m_count = 0;
+	
+	private final IColumnBL columnBL = Services.get(IColumnBL.class);
 
 	
 	/**
@@ -357,6 +362,8 @@ public class TableCreateColumns extends JavaProcess
 					|| columnName.toUpperCase().equals("UPDATED") ))
 				column.setIsUpdateable(false);
 
+			column.setIsAllowLogging(columnBL.getDefaultAllowLoggingByColumnName(columnName));
+			
 			//	Done
 			if (column.save ())
 			{

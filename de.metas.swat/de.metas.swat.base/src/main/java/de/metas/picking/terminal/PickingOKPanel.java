@@ -33,9 +33,9 @@ import java.util.Set;
 import org.compiere.minigrid.IMiniTable;
 import org.compiere.util.KeyNamePair;
 
-import de.metas.adempiere.form.PackingMd;
 import de.metas.adempiere.form.terminal.IComponent;
 import de.metas.adempiere.form.terminal.IDisposable;
+import de.metas.picking.legacy.form.PackingMd;
 
 /**
  * @author cg

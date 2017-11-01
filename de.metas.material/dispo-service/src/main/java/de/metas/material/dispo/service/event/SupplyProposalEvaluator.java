@@ -7,11 +7,12 @@ import java.util.Set;
 
 import org.springframework.stereotype.Service;
 
-import de.metas.material.dispo.Candidate;
-import de.metas.material.dispo.Candidate.Type;
 import de.metas.material.dispo.CandidateRepository;
-import de.metas.material.dispo.CandidatesSegment;
-import de.metas.material.dispo.CandidatesSegment.DateOperator;
+import de.metas.material.dispo.CandidateSpecification.Type;
+import de.metas.material.dispo.CandidatesQuery;
+import de.metas.material.dispo.CandidatesQuery.DateOperator;
+import de.metas.material.dispo.candidate.Candidate;
+import de.metas.material.event.MaterialDescriptor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
@@ -75,36 +76,38 @@ public class SupplyProposalEvaluator
 	 */
 	public boolean evaluateSupply(@NonNull final SupplyProposal proposal)
 	{
-		final CandidatesSegment demandSegment = CandidatesSegment.builder()
+		final CandidatesQuery demandQuery = CandidatesQuery.builder()
 				.type(Type.DEMAND)
-				.date(proposal.getDate())
-				.dateOperator(DateOperator.from)
-				.productId(proposal.getProductId())
-				.warehouseId(proposal.getDestWarehouseId())
+				.materialDescr(MaterialDescriptor.builderForQuery()
+						.date(proposal.getDate())
+						.productId(proposal.getProductId())
+						.warehouseId(proposal.getDestWarehouseId()).build())
+				.dateOperator(DateOperator.FROM)
 				.build();
 
-		final CandidatesSegment directReverseSegment = demandSegment
+		final CandidatesQuery directReverseForDemandQuery = demandQuery
 				.withParentProductId(proposal.getProductId())
 				.withParentWarehouseId(proposal.getSourceWarehouseId());
 
-		final List<Candidate> directReversals = candidateRepository.retrieveMatchesOrderByDateAndSeqNo(directReverseSegment);
+		final List<Candidate> directReversals = candidateRepository.retrieveOrderedByDateAndSeqNo(directReverseForDemandQuery);
 		if (!directReversals.isEmpty())
 		{
 			return false;
 		}
 
-		final CandidatesSegment supplySegment = demandSegment
+		final CandidatesQuery supplyQuery = demandQuery
 				.withType(Type.SUPPLY)
-				.withDate(proposal.getDate())
-				.withDateOperator(DateOperator.from)
-				.withWarehouseId(proposal.getSourceWarehouseId());
+				.withMaterialDescr(demandQuery.getMaterialDescr()
+						.withDate(proposal.getDate())
+						.withWarehouseId(proposal.getSourceWarehouseId()))
+				.withDateOperator(DateOperator.FROM);
 
-		final List<Candidate> demands = candidateRepository.retrieveMatchesOrderByDateAndSeqNo(demandSegment);
+		final List<Candidate> demands = candidateRepository.retrieveOrderedByDateAndSeqNo(demandQuery);
 		for (final Candidate demand : demands)
 		{
 			final Candidate indirectSupplyCandidate = searchRecursive(
 					demand,
-					supplySegment,
+					supplyQuery,
 					new HashSet<>());
 
 			if (indirectSupplyCandidate != null)
@@ -118,7 +121,7 @@ public class SupplyProposalEvaluator
 
 	private Candidate searchRecursive(
 			@NonNull final Candidate currentCandidate,
-			@NonNull final CandidatesSegment searchTarget,
+			@NonNull final CandidatesQuery searchTarget,
 			@NonNull final Set<Candidate> alreadySeen)
 	{
 		if (!alreadySeen.add(currentCandidate))
@@ -131,10 +134,10 @@ public class SupplyProposalEvaluator
 			return currentCandidate;
 		}
 
-		if (currentCandidate.getParentIdNotNull() > 0)
+		if (currentCandidate.getParentId() > 0)
 		{
 			final Candidate foundSearchTarget = searchRecursive(
-					candidateRepository.retrieve(currentCandidate.getParentId()),
+					candidateRepository.retrieveLatestMatchOrNull(CandidatesQuery.fromId(currentCandidate.getParentId())),
 					searchTarget,
 					alreadySeen);
 			if (foundSearchTarget != null)

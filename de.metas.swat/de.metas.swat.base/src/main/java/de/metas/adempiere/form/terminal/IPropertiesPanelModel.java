@@ -29,9 +29,9 @@ import java.util.List;
 import org.compiere.util.DisplayType;
 import org.compiere.util.NamePair;
 
-import de.metas.adempiere.form.IInputMethod;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.adempiere.form.terminal.field.constraint.ITerminalFieldConstraint;
+import de.metas.picking.legacy.form.IInputMethod;
 
 public interface IPropertiesPanelModel
 {

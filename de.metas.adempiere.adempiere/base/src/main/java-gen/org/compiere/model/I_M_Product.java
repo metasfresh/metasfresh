@@ -12,7 +12,7 @@ public interface I_M_Product
     public static final String Table_Name = "M_Product";
 
     /** AD_Table_ID=208 */
-    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
 //    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
 
@@ -351,6 +351,52 @@ public interface I_M_Product
     public static final String COLUMNNAME_Group2 = "Group2";
 
 	/**
+	 * Set Compensation Amount Type.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setGroupCompensationAmtType (java.lang.String GroupCompensationAmtType);
+
+	/**
+	 * Get Compensation Amount Type.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getGroupCompensationAmtType();
+
+    /** Column definition for GroupCompensationAmtType */
+    public static final org.adempiere.model.ModelColumn<I_M_Product, Object> COLUMN_GroupCompensationAmtType = new org.adempiere.model.ModelColumn<I_M_Product, Object>(I_M_Product.class, "GroupCompensationAmtType", null);
+    /** Column name GroupCompensationAmtType */
+    public static final String COLUMNNAME_GroupCompensationAmtType = "GroupCompensationAmtType";
+
+	/**
+	 * Set Compensation Type.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setGroupCompensationType (java.lang.String GroupCompensationType);
+
+	/**
+	 * Get Compensation Type.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getGroupCompensationType();
+
+    /** Column definition for GroupCompensationType */
+    public static final org.adempiere.model.ModelColumn<I_M_Product, Object> COLUMN_GroupCompensationType = new org.adempiere.model.ModelColumn<I_M_Product, Object>(I_M_Product.class, "GroupCompensationType", null);
+    /** Column name GroupCompensationType */
+    public static final String COLUMNNAME_GroupCompensationType = "GroupCompensationType";
+
+	/**
 	 * Set Kommentar/Hilfe.
 	 * Comment or Hint
 	 *
@@ -526,16 +572,18 @@ public interface I_M_Product
     public static final String COLUMNNAME_IsInvoicePrintDetails = "IsInvoicePrintDetails";
 
 	/**
-	 * Set Manufactured.
+	 * Set Wird produziert.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
 	 */
+	@Deprecated
 	public void setIsManufactured (boolean IsManufactured);
 
 	/**
-	 * Get Manufactured.
+	 * Get Wird produziert.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
@@ -801,8 +849,8 @@ public interface I_M_Product
     public static final String COLUMNNAME_M_AttributeSet_ID = "M_AttributeSet_ID";
 
 	/**
-	 * Set Ausprägung Merkmals-Satz.
-	 * Product Attribute Set Instance
+	 * Set Merkmale.
+	 * Merkmals Ausprägungen zum Produkt
 	 *
 	 * <br>Type: PAttribute
 	 * <br>Mandatory: true
@@ -811,8 +859,8 @@ public interface I_M_Product
 	public void setM_AttributeSetInstance_ID (int M_AttributeSetInstance_ID);
 
 	/**
-	 * Get Ausprägung Merkmals-Satz.
-	 * Product Attribute Set Instance
+	 * Get Merkmale.
+	 * Merkmals Ausprägungen zum Produkt
 	 *
 	 * <br>Type: PAttribute
 	 * <br>Mandatory: true
@@ -942,8 +990,7 @@ public interface I_M_Product
     public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
 
 	/**
-	 * Set Exclude from MRP.
-	 * Exclude from MRP calculation
+	 * Set MRP ausschliessen.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -952,8 +999,7 @@ public interface I_M_Product
 	public void setMRP_Exclude (java.lang.String MRP_Exclude);
 
 	/**
-	 * Get Exclude from MRP.
-	 * Exclude from MRP calculation
+	 * Get MRP ausschliessen.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -1127,8 +1173,7 @@ public interface I_M_Product
     public static final String COLUMNNAME_S_Resource_ID = "S_Resource_ID";
 
 	/**
-	 * Set Vertriebsbeauftragter.
-	 * Sales Representative or Company Agent
+	 * Set Aussendienst.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -1137,8 +1182,7 @@ public interface I_M_Product
 	public void setSalesRep_ID (int SalesRep_ID);
 
 	/**
-	 * Get Vertriebsbeauftragter.
-	 * Sales Representative or Company Agent
+	 * Get Aussendienst.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false

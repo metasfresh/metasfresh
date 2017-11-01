@@ -50,8 +50,6 @@ import de.metas.adempiere.form.terminal.TerminalException;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.adempiere.form.terminal.context.ITerminalContextReferences;
 import de.metas.adempiere.form.terminal.field.constraint.PositiveNumericFieldConstraint;
-import de.metas.fresh.picking.model.DistributeQtyToNewHUsRequest;
-import de.metas.fresh.picking.model.DistributeQtyToNewHUsResult;
 import de.metas.handlingunits.IHUPIItemProductBL;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 

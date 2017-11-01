@@ -29,6 +29,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.ModelColumnNameValue;
@@ -424,4 +425,6 @@ public interface IInvoiceCandDAO extends ISingletonService
 	 * @return
 	 */
 	IQueryBuilder<I_C_Invoice_Candidate> retrieveInvoiceCandidatesForInventoryLineQuery(I_M_InventoryLine inventoryLine);
+
+	Set<String> retrieveOrderDocumentNosForIncompleteGroupsFromSelection(int adPInstanceId);
 }

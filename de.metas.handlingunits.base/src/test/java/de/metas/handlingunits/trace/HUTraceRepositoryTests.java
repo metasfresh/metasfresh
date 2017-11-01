@@ -1,5 +1,6 @@
 package de.metas.handlingunits.trace;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
@@ -16,10 +17,9 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestWatcher;
 
-import de.metas.event.SimpleObjectSerializer;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.trace.HUTraceEvent.HUTraceEventBuilder;
-import de.metas.handlingunits.trace.HUTraceSpecification.RecursionMode;
+import de.metas.handlingunits.trace.HUTraceEventQuery.RecursionMode;
 
 /*
  * #%L
@@ -49,11 +49,6 @@ public class HUTraceRepositoryTests
 	@Rule
 	public final TestWatcher testWatcher = new AdempiereTestWatcher();
 
-	private final HUTraceEventBuilder commonEventBuilder = HUTraceEvent.builder()
-			.vhuStatus(X_M_HU.HUSTATUS_Active)
-			.qty(BigDecimal.valueOf(100))
-			.productId(23)
-			.type(HUTraceType.TRANSFORM_LOAD);
 
 	private HUTraceRepository huTraceRepository;
 
@@ -61,9 +56,17 @@ public class HUTraceRepositoryTests
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
-
 		huTraceRepository = new HUTraceRepository();
-
+	}
+	
+	public static HUTraceEventBuilder createCommonEventBuilder()
+	{
+		return HUTraceEvent.builder()
+				.orgId(10)
+				.vhuStatus(X_M_HU.HUSTATUS_Active)
+				.qty(BigDecimal.valueOf(100))
+				.productId(23)
+				.type(HUTraceType.TRANSFORM_LOAD);
 	}
 
 	@Test
@@ -71,7 +74,7 @@ public class HUTraceRepositoryTests
 	{
 		createAndAddEvents(); // just use this method to store some events. we don't want to see and of them in the result..
 
-		final HUTraceSpecification query = HUTraceSpecification.builder()
+		final HUTraceEventQuery query = HUTraceEventQuery.builder()
 				.recursionMode(RecursionMode.NONE)
 				.build();
 
@@ -89,6 +92,7 @@ public class HUTraceRepositoryTests
 		final Instant eventTime = Instant.now();
 
 		huTraceRepository.addEvent(HUTraceEvent.builder()
+				.orgId(13)
 				.eventTime(eventTime)
 				.topLevelHuId(2)
 				.productId(23)
@@ -98,17 +102,20 @@ public class HUTraceRepositoryTests
 				.type(HUTraceType.TRANSFORM_LOAD)
 				.build());
 
-		final HUTraceSpecification query = HUTraceSpecification.builder()
+		final HUTraceEventQuery query = HUTraceEventQuery.builder()
 				.vhuId(12)
 				.recursionMode(RecursionMode.NONE)
 				.build();
 
 		final List<HUTraceEvent> result = huTraceRepository.query(query);
 		assertThat(result.size(), is(1));
+		assertThat(result.get(0).getHuTraceEventId().isPresent(), is(true));
 		assertThat(result.get(0).getVhuId(), is(12));
+		assertThat(result.get(0).getOrgId(), is(13));
 
 		// add an equal event, again
 		huTraceRepository.addEvent(HUTraceEvent.builder()
+				.orgId(13)
 				.eventTime(eventTime)
 				.topLevelHuId(2)
 				.productId(23)
@@ -119,7 +126,8 @@ public class HUTraceRepositoryTests
 				.build());
 
 		final List<HUTraceEvent> result2 = huTraceRepository.query(query);
-		assertThat(result2.size(), is(1)); // still just one..
+		assertThat(result2).hasSize(1); // still just one!
+		assertThat(result.get(0)).isEqualTo(result2.get(0));
 	}
 
 	/**
@@ -130,14 +138,14 @@ public class HUTraceRepositoryTests
 	{
 		final Instant eventTime = Instant.now();
 
-		huTraceRepository.addEvent(commonEventBuilder
+		huTraceRepository.addEvent(createCommonEventBuilder()
 				.eventTime(eventTime)
 				.topLevelHuId(2)
 				.vhuId(12)
 				.vhuSourceId(13)
 				.build());
 
-		final HUTraceSpecification query = HUTraceSpecification.builder()
+		final HUTraceEventQuery query = HUTraceEventQuery.builder()
 				.vhuId(12)
 				.recursionMode(RecursionMode.NONE)
 				.build();
@@ -158,14 +166,14 @@ public class HUTraceRepositoryTests
 	{
 		final Instant eventTime = Instant.now();
 
-		final HUTraceEvent event1 = commonEventBuilder
+		final HUTraceEvent event1 = createCommonEventBuilder()
 				.eventTime(eventTime)
 				.topLevelHuId(2)
 				.vhuId(12)
 				.build();
 		huTraceRepository.addEvent(event1);
 
-		final HUTraceEvent event2 = commonEventBuilder
+		final HUTraceEvent event2 = createCommonEventBuilder()
 				.eventTime(eventTime)
 				.topLevelHuId(3)
 				.vhuId(13)
@@ -173,7 +181,7 @@ public class HUTraceRepositoryTests
 				.build();
 		huTraceRepository.addEvent(event2);
 
-		final HUTraceSpecification query = HUTraceSpecification.builder()
+		final HUTraceEventQuery query = HUTraceEventQuery.builder()
 				.vhuSourceId(14)
 				.recursionMode(RecursionMode.NONE)
 				.build();
@@ -193,7 +201,7 @@ public class HUTraceRepositoryTests
 
 		// query with the huId of the first event from the "middle" group.
 		// the first group has no event with getHuSourceId > 0, that's why we go with the middle one
-		final List<HUTraceEvent> result = huTraceRepository.query(HUTraceSpecification.builder()
+		final List<HUTraceEvent> result = huTraceRepository.query(HUTraceEventQuery.builder()
 				.vhuId(events.get(5).getVhuId())
 				.recursionMode(RecursionMode.NONE)
 				.build());
@@ -206,7 +214,7 @@ public class HUTraceRepositoryTests
 			assertThat("i=" + i, result.get(i).getVhuSourceId(), is(events.get(i + 5).getVhuSourceId()));
 			assertThat("i=" + i, result.get(i).getInOutId(), is(events.get(i + 5).getInOutId()));
 			assertThat("i=" + i, result.get(i).getMovementId(), is(events.get(i + 5).getMovementId()));
-			assertThat("i=" + i, result.get(i).getCostCollectorId(), is(events.get(i + 5).getCostCollectorId()));
+			assertThat("i=" + i, result.get(i).getPpCostCollectorId(), is(events.get(i + 5).getPpCostCollectorId()));
 			assertThat("i=" + i, result.get(i).getShipmentScheduleId(), is(events.get(i + 5).getShipmentScheduleId()));
 		}
 	}
@@ -219,7 +227,7 @@ public class HUTraceRepositoryTests
 
 		// query with the huId of the first event from the "middle" group.
 		// that means that we expect a record for each event of that group plus a record for each event of the "preceding" group
-		final List<HUTraceEvent> result = huTraceRepository.query(HUTraceSpecification.builder()
+		final List<HUTraceEvent> result = huTraceRepository.query(HUTraceEventQuery.builder()
 				.vhuId(events.get(5).getVhuId())
 				.recursionMode(RecursionMode.BACKWARD)
 				.build());
@@ -239,7 +247,7 @@ public class HUTraceRepositoryTests
 			assertThat("i=" + i, result.get(i).getVhuSourceId(), is(events.get(i).getVhuSourceId()));
 			assertThat("i=" + i, result.get(i).getInOutId(), is(events.get(i).getInOutId()));
 			assertThat("i=" + i, result.get(i).getMovementId(), is(events.get(i).getMovementId()));
-			assertThat("i=" + i, result.get(i).getCostCollectorId(), is(events.get(i).getCostCollectorId()));
+			assertThat("i=" + i, result.get(i).getPpCostCollectorId(), is(events.get(i).getPpCostCollectorId()));
 			assertThat("i=" + i, result.get(i).getShipmentScheduleId(), is(events.get(i).getShipmentScheduleId()));
 		}
 	}
@@ -252,7 +260,7 @@ public class HUTraceRepositoryTests
 
 		// query with the huId of the first event from the "last" group.
 		// that means that we expect a record for each event event we added (because there is one directly preceding group and one indirectly preceding group).
-		final List<HUTraceEvent> result = huTraceRepository.query(HUTraceSpecification.builder()
+		final List<HUTraceEvent> result = huTraceRepository.query(HUTraceEventQuery.builder()
 				.vhuId(events.get(11).getVhuId())
 				.recursionMode(RecursionMode.BACKWARD)
 				.build());
@@ -270,7 +278,7 @@ public class HUTraceRepositoryTests
 			assertThat("i=" + i + ";\nevent=" + events.get(i) + ";\nresult=" + result.get(i), result.get(i).getVhuSourceId(), is(events.get(i).getVhuSourceId()));
 			assertThat("i=" + i + ";\nevent=" + events.get(i) + ";\nresult=" + result.get(i), result.get(i).getInOutId(), is(events.get(i).getInOutId()));
 			assertThat("i=" + i + ";\nevent=" + events.get(i) + ";\nresult=" + result.get(i), result.get(i).getMovementId(), is(events.get(i).getMovementId()));
-			assertThat("i=" + i + ";\nevent=" + events.get(i) + ";\nresult=" + result.get(i), result.get(i).getCostCollectorId(), is(events.get(i).getCostCollectorId()));
+			assertThat("i=" + i + ";\nevent=" + events.get(i) + ";\nresult=" + result.get(i), result.get(i).getPpCostCollectorId(), is(events.get(i).getPpCostCollectorId()));
 			assertThat("i=" + i + ";\nevent=" + events.get(i) + ";\nresult=" + result.get(i), result.get(i).getShipmentScheduleId(), is(events.get(i).getShipmentScheduleId()));
 		}
 	}
@@ -283,7 +291,7 @@ public class HUTraceRepositoryTests
 
 		// query with the huId of the first event from the "middle" group.
 		// that means that we expect a record for each event of that group plus a record for each event of the "following" group
-		final List<HUTraceEvent> result = huTraceRepository.query(HUTraceSpecification.builder()
+		final List<HUTraceEvent> result = huTraceRepository.query(HUTraceEventQuery.builder()
 				.vhuId(events.get(5).getVhuId())
 				.recursionMode(RecursionMode.FORWARD)
 				.build());
@@ -296,7 +304,7 @@ public class HUTraceRepositoryTests
 			assertThat("i=" + i + ";\nevent=" + events.get(i + 5) + ";\nresult=" + result.get(i), result.get(i).getVhuSourceId(), is(events.get(i + 5).getVhuSourceId()));
 			assertThat("i=" + i + ";\nevent=" + events.get(i + 5) + ";\nresult=" + result.get(i), result.get(i).getInOutId(), is(events.get(i + 5).getInOutId()));
 			assertThat("i=" + i + ";\nevent=" + events.get(i + 5) + ";\nresult=" + result.get(i), result.get(i).getMovementId(), is(events.get(i + 5).getMovementId()));
-			assertThat("i=" + i + ";\nevent=" + events.get(i + 5) + ";\nresult=" + result.get(i), result.get(i).getCostCollectorId(), is(events.get(i + 5).getCostCollectorId()));
+			assertThat("i=" + i + ";\nevent=" + events.get(i + 5) + ";\nresult=" + result.get(i), result.get(i).getPpCostCollectorId(), is(events.get(i + 5).getPpCostCollectorId()));
 			assertThat("i=" + i + ";\nevent=" + events.get(i + 5) + ";\nresult=" + result.get(i), result.get(i).getShipmentScheduleId(), is(events.get(i + 5).getShipmentScheduleId()));
 		}
 	}
@@ -309,7 +317,7 @@ public class HUTraceRepositoryTests
 
 		// query with the huId of the first event from the "first" group.
 		// that means that we expect a record for each event event we added (because there is one directly preceding group and one indirectly preceding group).
-		final List<HUTraceEvent> result = huTraceRepository.query(HUTraceSpecification.builder()
+		final List<HUTraceEvent> result = huTraceRepository.query(HUTraceEventQuery.builder()
 				.vhuId(events.get(0).getVhuId())
 				.recursionMode(RecursionMode.FORWARD)
 				.build());
@@ -327,24 +335,9 @@ public class HUTraceRepositoryTests
 			assertThat("i=" + i + ";\nevent=" + events.get(i) + ";\nresult=" + result.get(i), result.get(i).getVhuSourceId(), is(events.get(i).getVhuSourceId()));
 			assertThat("i=" + i + ";\nevent=" + events.get(i) + ";\nresult=" + result.get(i), result.get(i).getInOutId(), is(events.get(i).getInOutId()));
 			assertThat("i=" + i + ";\nevent=" + events.get(i) + ";\nresult=" + result.get(i), result.get(i).getMovementId(), is(events.get(i).getMovementId()));
-			assertThat("i=" + i + ";\nevent=" + events.get(i) + ";\nresult=" + result.get(i), result.get(i).getCostCollectorId(), is(events.get(i).getCostCollectorId()));
+			assertThat("i=" + i + ";\nevent=" + events.get(i) + ";\nresult=" + result.get(i), result.get(i).getPpCostCollectorId(), is(events.get(i).getPpCostCollectorId()));
 			assertThat("i=" + i + ";\nevent=" + events.get(i) + ";\nresult=" + result.get(i), result.get(i).getShipmentScheduleId(), is(events.get(i).getShipmentScheduleId()));
 		}
-	}
-
-	@Test
-	public void printJson()
-	{
-		final List<HUTraceEvent> events = createAndAddEvents();
-
-		// this invocation is borrowed from testRetrieveForwardRecursiveTwoHops.
-		// it should return records for all events we added
-		final List<HUTraceEvent> result = huTraceRepository.query(HUTraceSpecification.builder()
-				.vhuId(events.get(0).getVhuId())
-				.recursionMode(RecursionMode.FORWARD)
-				.build());
-		final String resultJsonString = SimpleObjectSerializer.get().serialize(result);
-		System.out.println(resultJsonString);
 	}
 
 	private List<HUTraceEvent> createAndAddEvents()
@@ -353,7 +346,7 @@ public class HUTraceRepositoryTests
 
 		final Instant eventTime = Instant.now();
 
-		final HUTraceEventBuilder eventBefore = commonEventBuilder
+		final HUTraceEventBuilder eventBefore = createCommonEventBuilder()
 				.eventTime(eventTime)
 				.topLevelHuId(4)
 				.vhuId(14);
@@ -361,11 +354,11 @@ public class HUTraceRepositoryTests
 		result.add(eventBefore.build());
 		result.add(eventBefore.eventTime(eventTime.plusSeconds(1)).inOutId(24).build());
 		result.add(eventBefore.eventTime(eventTime.plusSeconds(2)).movementId(34).build());
-		result.add(eventBefore.eventTime(eventTime.plusSeconds(3)).costCollectorId(44).build());
+		result.add(eventBefore.eventTime(eventTime.plusSeconds(3)).ppCostCollectorId(44).build());
 		result.add(eventBefore.eventTime(eventTime.plusSeconds(4)).shipmentScheduleId(54).build());
 		// eventBefore is the first of three and therefore has no sourceHuId
 
-		final HUTraceEventBuilder eventMiddle = commonEventBuilder
+		final HUTraceEventBuilder eventMiddle = createCommonEventBuilder()
 				.eventTime(eventTime.plusSeconds(5))
 				.topLevelHuId(5)
 				.vhuId(15);
@@ -373,11 +366,11 @@ public class HUTraceRepositoryTests
 		result.add(eventMiddle.build());
 		result.add(eventMiddle.eventTime(eventTime.plusSeconds(6)).inOutId(25).build());
 		result.add(eventMiddle.eventTime(eventTime.plusSeconds(7)).movementId(35).build());
-		result.add(eventMiddle.eventTime(eventTime.plusSeconds(8)).costCollectorId(45).build());
+		result.add(eventMiddle.eventTime(eventTime.plusSeconds(8)).ppCostCollectorId(45).build());
 		result.add(eventMiddle.eventTime(eventTime.plusSeconds(9)).shipmentScheduleId(55).build());
 		result.add(eventMiddle.eventTime(eventTime.plusSeconds(10)).vhuSourceId(14).build()); // this event is the middle one of three and has the M_HU_ID of 'eventBefore' as its source
 
-		final HUTraceEventBuilder eventAfter = commonEventBuilder
+		final HUTraceEventBuilder eventAfter = createCommonEventBuilder()
 				.eventTime(eventTime.plusSeconds(11))
 				.topLevelHuId(6)
 				.vhuId(16);
@@ -385,7 +378,7 @@ public class HUTraceRepositoryTests
 		result.add(eventAfter.build());
 		result.add(eventAfter.eventTime(eventTime.plusSeconds(12)).inOutId(26).build());
 		result.add(eventAfter.eventTime(eventTime.plusSeconds(13)).movementId(36).build());
-		result.add(eventAfter.eventTime(eventTime.plusSeconds(14)).costCollectorId(46).build());
+		result.add(eventAfter.eventTime(eventTime.plusSeconds(14)).ppCostCollectorId(46).build());
 		result.add(eventAfter.eventTime(eventTime.plusSeconds(15)).shipmentScheduleId(56).build());
 		result.add(eventAfter.eventTime(eventTime.plusSeconds(16)).vhuSourceId(15).build()); // this event is the last of three and has the M_HU_ID of 'eventMiddle' as its source
 

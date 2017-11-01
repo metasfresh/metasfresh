@@ -1,5 +1,7 @@
 package de.metas.handlingunits.attributes.impl;
 
+import static de.metas.business.BusinessTestHelper.createM_Attribute;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -52,10 +54,10 @@ public class HUAttributeSetTest extends AbstractHUTest
 	@Override
 	protected void initialize()
 	{
-		attrString1 = helper.createM_Attribute("String1", X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40, true);
-		attrNumber1 = helper.createM_Attribute("Number1", X_M_Attribute.ATTRIBUTEVALUETYPE_Number, true);
+		attrString1 = createM_Attribute("String1", X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40, true);
+		attrNumber1 = createM_Attribute("Number1", X_M_Attribute.ATTRIBUTEVALUETYPE_Number, true);
 
-		attrList1 = helper.createM_Attribute("List1", X_M_Attribute.ATTRIBUTEVALUETYPE_List, true);
+		attrList1 = createM_Attribute("List1", X_M_Attribute.ATTRIBUTEVALUETYPE_List, true);
 		helper.createAttributeListValues(attrList1, HUAttributeSetTest.ATTRLIST1_Value1, HUAttributeSetTest.ATTRLIST1_Value2, HUAttributeSetTest.ATTRLIST1_Value3);
 	}
 

@@ -11,7 +11,6 @@ import org.compiere.model.I_C_Order;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.adempiere.service.IOrderDAO;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
@@ -19,6 +18,7 @@ import de.metas.invoicecandidate.spi.AbstractInvoiceCandidateHandler;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateRequest;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateResult;
+import de.metas.order.IOrderDAO;
 
 /*
  * #%L
@@ -160,11 +160,11 @@ public class C_Order_Handler extends AbstractInvoiceCandidateHandler
 	{
 		throw new IllegalStateException("Not supported");
 	}
-
+	
 	@Override
-	public void setPriceActual(final I_C_Invoice_Candidate ic)
+	public PriceAndTax calculatePriceAndTax(final I_C_Invoice_Candidate ic)
 	{
-		throw new IllegalStateException("Not supported");
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
@@ -175,12 +175,6 @@ public class C_Order_Handler extends AbstractInvoiceCandidateHandler
 
 	@Override
 	public void setC_UOM_ID(final I_C_Invoice_Candidate ic)
-	{
-		throw new IllegalStateException("Not supported");
-	}
-
-	@Override
-	public void setPriceEntered(final I_C_Invoice_Candidate ic)
 	{
 		throw new IllegalStateException("Not supported");
 	}

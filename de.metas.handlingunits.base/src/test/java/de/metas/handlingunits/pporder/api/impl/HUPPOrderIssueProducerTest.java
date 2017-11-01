@@ -1,5 +1,8 @@
 package de.metas.handlingunits.pporder.api.impl;
 
+import static de.metas.business.BusinessTestHelper.createProduct;
+import static de.metas.business.BusinessTestHelper.createUOM;
+import static de.metas.business.BusinessTestHelper.createUOMConversion;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.refresh;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
@@ -122,17 +125,17 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 		ppOrderBOMDAO = Services.get(IPPOrderBOMDAO.class);
 		ppOrderBOMBL = Services.get(IPPOrderBOMBL.class);
 
-		uomStuck = helper.createUOM("Stück", 0, 0);
-		uomMillimeter = helper.createUOM("Millimeter", 2, 4);
-		uomRolle = helper.createUOM("Rolle", 2, 4);
+		uomStuck = createUOM("Stück", 0, 0);
+		uomMillimeter = createUOM("Millimeter", 2, 4);
+		uomRolle = createUOM("Rolle", 2, 4);
 
-		pSalad = helper.createProduct("Salad", uomStuck); // AB Alicesalat 250g - the big product bom
-		pFolie = helper.createProduct("Folie", uomRolle);
+		pSalad = createProduct("Salad", uomStuck); // AB Alicesalat 250g - the big product bom
+		pFolie = createProduct("Folie", uomRolle);
 
 		//
 		// Conversion for product Folie: Rolle -> Millimeter
 		// 1 Rolle = 1_500_000 millimeters
-		helper.createUOMConversion(
+		createUOMConversion(
 				pFolie,
 				uomRolle,
 				uomMillimeter,

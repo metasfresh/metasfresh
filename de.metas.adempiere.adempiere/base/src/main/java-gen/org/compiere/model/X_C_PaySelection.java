@@ -1,26 +1,9 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
 package org.compiere.model;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import org.compiere.util.Env;
 
 /** Generated Model for C_PaySelection
  *  @author Adempiere (generated) 
@@ -32,7 +15,7 @@ public class X_C_PaySelection extends org.compiere.model.PO implements I_C_PaySe
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -469857148L;
+	private static final long serialVersionUID = -1574508528L;
 
     /** Standard Constructor */
     public X_C_PaySelection (Properties ctx, int C_PaySelection_ID, String trxName)
@@ -42,14 +25,14 @@ public class X_C_PaySelection extends org.compiere.model.PO implements I_C_PaySe
         {
 			setC_BP_BankAccount_ID (0);
 			setC_PaySelection_ID (0);
+			setDocAction (null); // CO
+			setDocStatus (null); // DR
 			setIsApproved (false);
-			setName (null);
-// @#Date@
-			setPayDate (new Timestamp( System.currentTimeMillis() ));
-// @#Date@
+			setName (null); // @#Date@
+			setPayDate (new Timestamp( System.currentTimeMillis() )); // @#Date@
 			setProcessed (false);
 			setProcessing (false);
-			setTotalAmt (Env.ZERO);
+			setTotalAmt (BigDecimal.ZERO);
         } */
     }
 
@@ -59,29 +42,13 @@ public class X_C_PaySelection extends org.compiere.model.PO implements I_C_PaySe
       super (ctx, rs, trxName);
     }
 
-    /** AccessLevel
-      * @return 1 - Org 
-      */
-    @Override
-    protected int get_AccessLevel()
-    {
-      return accessLevel.intValue();
-    }
 
     /** Load Meta Data */
     @Override
     protected org.compiere.model.POInfo initPO (Properties ctx)
     {
-      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_ID, get_TrxName());
+      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
-    }
-
-    @Override
-    public String toString()
-    {
-      StringBuilder sb = new StringBuilder ("X_C_PaySelection[")
-        .append(get_ID()).append("]");
-      return sb.toString();
     }
 
 	@Override
@@ -121,9 +88,9 @@ public class X_C_PaySelection extends org.compiere.model.PO implements I_C_PaySe
 		return ii.intValue();
 	}
 
-	/** Set Zahlung auswählen.
+	/** Set Zahlung Anweisen.
 		@param C_PaySelection_ID 
-		Payment Selection
+		Zahlung Anweisen
 	  */
 	@Override
 	public void setC_PaySelection_ID (int C_PaySelection_ID)
@@ -134,8 +101,8 @@ public class X_C_PaySelection extends org.compiere.model.PO implements I_C_PaySe
 			set_ValueNoCheck (COLUMNNAME_C_PaySelection_ID, Integer.valueOf(C_PaySelection_ID));
 	}
 
-	/** Get Zahlung auswählen.
-		@return Payment Selection
+	/** Get Zahlung Anweisen.
+		@return Zahlung Anweisen
 	  */
 	@Override
 	public int getC_PaySelection_ID () 
@@ -179,6 +146,110 @@ public class X_C_PaySelection extends org.compiere.model.PO implements I_C_PaySe
 	public java.lang.String getDescription () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Description);
+	}
+
+	/** 
+	 * DocAction AD_Reference_ID=135
+	 * Reference name: _Document Action
+	 */
+	public static final int DOCACTION_AD_Reference_ID=135;
+	/** Complete = CO */
+	public static final String DOCACTION_Complete = "CO";
+	/** Approve = AP */
+	public static final String DOCACTION_Approve = "AP";
+	/** Reject = RJ */
+	public static final String DOCACTION_Reject = "RJ";
+	/** Post = PO */
+	public static final String DOCACTION_Post = "PO";
+	/** Void = VO */
+	public static final String DOCACTION_Void = "VO";
+	/** Close = CL */
+	public static final String DOCACTION_Close = "CL";
+	/** Reverse_Correct = RC */
+	public static final String DOCACTION_Reverse_Correct = "RC";
+	/** Reverse_Accrual = RA */
+	public static final String DOCACTION_Reverse_Accrual = "RA";
+	/** Invalidate = IN */
+	public static final String DOCACTION_Invalidate = "IN";
+	/** Re_Activate = RE */
+	public static final String DOCACTION_Re_Activate = "RE";
+	/** None = -- */
+	public static final String DOCACTION_None = "--";
+	/** Prepare = PR */
+	public static final String DOCACTION_Prepare = "PR";
+	/** Unlock = XL */
+	public static final String DOCACTION_Unlock = "XL";
+	/** WaitComplete = WC */
+	public static final String DOCACTION_WaitComplete = "WC";
+	/** UnClose = UC */
+	public static final String DOCACTION_UnClose = "UC";
+	/** Set Belegverarbeitung.
+		@param DocAction 
+		Der zukünftige Status des Belegs
+	  */
+	@Override
+	public void setDocAction (java.lang.String DocAction)
+	{
+
+		set_Value (COLUMNNAME_DocAction, DocAction);
+	}
+
+	/** Get Belegverarbeitung.
+		@return Der zukünftige Status des Belegs
+	  */
+	@Override
+	public java.lang.String getDocAction () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_DocAction);
+	}
+
+	/** 
+	 * DocStatus AD_Reference_ID=131
+	 * Reference name: _Document Status
+	 */
+	public static final int DOCSTATUS_AD_Reference_ID=131;
+	/** Drafted = DR */
+	public static final String DOCSTATUS_Drafted = "DR";
+	/** Completed = CO */
+	public static final String DOCSTATUS_Completed = "CO";
+	/** Approved = AP */
+	public static final String DOCSTATUS_Approved = "AP";
+	/** NotApproved = NA */
+	public static final String DOCSTATUS_NotApproved = "NA";
+	/** Voided = VO */
+	public static final String DOCSTATUS_Voided = "VO";
+	/** Invalid = IN */
+	public static final String DOCSTATUS_Invalid = "IN";
+	/** Reversed = RE */
+	public static final String DOCSTATUS_Reversed = "RE";
+	/** Closed = CL */
+	public static final String DOCSTATUS_Closed = "CL";
+	/** Unknown = ?? */
+	public static final String DOCSTATUS_Unknown = "??";
+	/** InProgress = IP */
+	public static final String DOCSTATUS_InProgress = "IP";
+	/** WaitingPayment = WP */
+	public static final String DOCSTATUS_WaitingPayment = "WP";
+	/** WaitingConfirmation = WC */
+	public static final String DOCSTATUS_WaitingConfirmation = "WC";
+	/** Set Belegstatus.
+		@param DocStatus 
+		The current status of the document
+	  */
+	@Override
+	public void setDocStatus (java.lang.String DocStatus)
+	{
+
+		set_Value (COLUMNNAME_DocStatus, DocStatus);
+	}
+
+	/** Get Belegstatus.
+		@return The current status of the document
+	  */
+	@Override
+	public java.lang.String getDocStatus () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_DocStatus);
 	}
 
 	/** Set Freigegeben.
@@ -226,15 +297,7 @@ public class X_C_PaySelection extends org.compiere.model.PO implements I_C_PaySe
 		return (java.lang.String)get_Value(COLUMNNAME_Name);
 	}
 
-    /** Get Record ID/ColumnName
-        @return ID/ColumnName pair
-      */
-    public org.compiere.util.KeyNamePair getKeyNamePair() 
-    {
-        return new org.compiere.util.KeyNamePair(get_ID(), getName());
-    }
-
-	/** Set Payment date.
+	/** Set Zahldatum.
 		@param PayDate 
 		Date Payment made
 	  */
@@ -244,7 +307,7 @@ public class X_C_PaySelection extends org.compiere.model.PO implements I_C_PaySe
 		set_Value (COLUMNNAME_PayDate, PayDate);
 	}
 
-	/** Get Payment date.
+	/** Get Zahldatum.
 		@return Date Payment made
 	  */
 	@Override
@@ -333,7 +396,7 @@ public class X_C_PaySelection extends org.compiere.model.PO implements I_C_PaySe
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_TotalAmt);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 }

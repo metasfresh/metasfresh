@@ -13,15 +13,14 @@ package de.metas.contracts.interceptor;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
@@ -35,13 +34,18 @@ import de.metas.inout.model.I_M_InOutLine;
 public class M_InOutLine
 {
 	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
-	
+
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE })
 	public void updateFLatrateDataEntryQtyAdd(final I_M_InOutLine doc)
 	{
+		if (doc.getM_Product_ID() <= 0)
+		{
+			return; // nothing to do yet
+		}
+
 		flatrateBL.updateFlatrateDataEntryQty(
-				doc.getM_Product(), 
-				doc.getMovementQty(), 
+				doc.getM_Product(),
+				doc.getMovementQty(),
 				doc, // inOutLine
 				false); // subtract = false
 	}
@@ -50,9 +54,9 @@ public class M_InOutLine
 	public void updateFLatrateDataEntryQtySubstract(final I_M_InOutLine doc)
 	{
 		flatrateBL.updateFlatrateDataEntryQty(
-					doc.getM_Product(), 
-					doc.getMovementQty(), 
-					doc, // inOutLine
-					true); // subtract = true
+				doc.getM_Product(),
+				doc.getMovementQty(),
+				doc, // inOutLine
+				true); // subtract = true
 	}
 }

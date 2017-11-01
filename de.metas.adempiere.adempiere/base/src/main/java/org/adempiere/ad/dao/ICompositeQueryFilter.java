@@ -83,6 +83,8 @@ public interface ICompositeQueryFilter<T> extends IQueryFilter<T>
 	 */
 	boolean isJoinOr();
 
+	IInSubQueryFilterClause<T, ICompositeQueryFilter<T>> addInSubQueryFilter();
+
 	/**
 	 * Add a {@link InSubQueryFilter}
 	 * 
@@ -143,7 +145,7 @@ public interface ICompositeQueryFilter<T> extends IQueryFilter<T>
 	<V> ICompositeQueryFilter<T> addInArrayFilter(ModelColumn<T, ?> column, Collection<V> values);
 
 	/**
-	 * NOTE: in case <code>values</code> collection is empty this filter will return <code>true</code> (as intuitivelly expected).
+	 * NOTE: in case <code>values</code> collection is empty this filter will return <code>true</code> (as intuitively expected).
 	 * 
 	 * @param column
 	 * @param values
@@ -152,7 +154,7 @@ public interface ICompositeQueryFilter<T> extends IQueryFilter<T>
 	<V> ICompositeQueryFilter<T> addNotInArrayFilter(ModelColumn<T, ?> column, Collection<V> values);
 
 	/**
-	 * NOTE: in case <code>values</code> collection is empty this filter will return <code>true</code> (as intuitivelly expected).
+	 * NOTE: in case <code>values</code> collection is empty this filter will return <code>true</code> (as intuitively expected).
 	 * 
 	 * @param columnName
 	 * @param values

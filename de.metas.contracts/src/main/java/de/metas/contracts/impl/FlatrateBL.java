@@ -403,9 +403,6 @@ public class FlatrateBL implements IFlatrateBL
 		newCand.setAD_Table_ID(adTableDAO.retrieveTableId(I_C_Flatrate_DataEntry.Table_Name));
 		newCand.setRecord_ID(dataEntry.getC_Flatrate_DataEntry_ID());
 
-		// using the current login date as dateInvoiced
-		// newCand.setDateInvoiced(Env.getContextAsDate(ctx, "#Date"));
-
 		// 07442 activity and tax
 		final IContextAware contextProvider = InterfaceWrapperHelper.getContextAware(term);
 
@@ -413,8 +410,9 @@ public class FlatrateBL implements IFlatrateBL
 		final I_C_Activity activity = Services.get(IProductAcctDAO.class).retrieveActivityForAcct(contextProvider, term.getAD_Org(), product);
 
 		newCand.setC_Activity(activity);
-
-		final int taxCategoryId = -1; // FIXME for accuracy, we will need the tax category
+		newCand.setIsTaxIncluded(term.isTaxIncluded());
+		
+		final int taxCategoryId = term.getC_TaxCategory_ID();
 		final I_M_Warehouse warehouse = null;
 		final boolean isSOTrx = true;
 
@@ -524,9 +522,6 @@ public class FlatrateBL implements IFlatrateBL
 		newCand.setBill_Location_ID(term.getBill_Location_ID());
 		newCand.setBill_User_ID(term.getBill_User_ID());
 
-		// using the current login date as dateInvoiced
-		// newCand.setDateInvoiced(Env.getContextAsDate(ctx, "#Date"));
-
 		newCand.setAD_Table_ID(adTableDAO.retrieveTableId(I_C_Flatrate_DataEntry.Table_Name));
 		newCand.setRecord_ID(dataEntry.getC_Flatrate_DataEntry_ID());
 
@@ -537,8 +532,9 @@ public class FlatrateBL implements IFlatrateBL
 		final I_C_Activity activity = Services.get(IProductAcctDAO.class).retrieveActivityForAcct(contextProvider, term.getAD_Org(), product);
 
 		newCand.setC_Activity(activity);
-
-		final int taxCategoryId = -1; // FIXME for accuracy, we will need the tax category
+		newCand.setIsTaxIncluded(term.isTaxIncluded());
+		
+		final int taxCategoryId = term.getC_TaxCategory_ID();
 		final I_M_Warehouse warehouse = null;
 		final boolean isSOTrx = true;
 

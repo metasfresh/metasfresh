@@ -21,6 +21,8 @@ package de.metas.handlingunits.impl;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+import static de.metas.business.BusinessTestHelper.createLocator;
+import static de.metas.business.BusinessTestHelper.createWarehouse;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -35,6 +37,8 @@ import org.adempiere.util.Services;
 import org.adempiere.util.lang.IMutable;
 import org.adempiere.util.lang.Mutable;
 import org.adempiere.util.time.SystemTime;
+import org.compiere.model.I_M_Locator;
+import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.Env;
 import org.compiere.util.TrxRunnableAdapter;
 import org.hamcrest.Matchers;
@@ -54,13 +58,11 @@ import de.metas.handlingunits.model.I_M_HU_Item_Storage;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_Trx_Line;
-import de.metas.handlingunits.model.I_M_Locator;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.snapshot.IHUSnapshotDAO;
 import de.metas.handlingunits.snapshot.impl.HUSnapshotDAO;
 import de.metas.handlingunits.util.TraceUtils;
-import de.metas.interfaces.I_M_Warehouse;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = { StartupListener.class, HandlingUnitsConfiguration.class })
@@ -104,8 +106,8 @@ public class HUSnapshotDAOTest extends AbstractHUTest
 
 		setupMasterData_HU_PI();
 
-		final I_M_Warehouse warehouse1 = helper.createWarehouse("Warehouse1");
-		warehouse1_locator1 = helper.createLocator("Warehouse1_Locator1", warehouse1);
+		final I_M_Warehouse warehouse1 = createWarehouse("Warehouse1");
+		warehouse1_locator1 = createLocator("Warehouse1_Locator1", warehouse1);
 	}
 
 	protected void setupMasterData_HU_PI()

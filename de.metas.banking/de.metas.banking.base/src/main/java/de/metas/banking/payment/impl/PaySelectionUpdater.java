@@ -364,13 +364,6 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 			sqlParams.add(paySelection.getAD_Org_ID());
 		}
 
-		// // Existing Payments - Will reselect Invoice if prepared but not paid
-		// + " AND NOT EXISTS (SELECT * FROM C_PaySelectionLine psl"
-		// + " INNER JOIN C_PaySelectionCheck psc ON (psl.C_PaySelectionCheck_ID=psc.C_PaySelectionCheck_ID)"
-		// + " LEFT OUTER JOIN C_Payment pmt ON (pmt.C_Payment_ID=psc.C_Payment_ID)"
-		// + " WHERE i.C_Invoice_ID=psl.C_Invoice_ID AND psl.IsActive='Y'"
-		// + " AND (pmt.DocStatus IS NULL OR pmt.DocStatus NOT IN ('VO','RE')) )"
-
 		//
 		// Exclude invoices from existing pay selections if we were not explicitelly asked to just update a couple of pay selection lines
 		// or, Include only the pay selection lines that we were adviced to include.

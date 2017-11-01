@@ -56,7 +56,6 @@ import de.metas.adempiere.service.AppDictionaryBL;
 import de.metas.adempiere.service.IAppDictionaryBL;
 import de.metas.adempiere.service.ICalendarDAO;
 import de.metas.adempiere.service.IGlobalLockSystem;
-import de.metas.adempiere.service.IOrderBL;
 import de.metas.adempiere.service.IPackageInfoService;
 import de.metas.adempiere.service.IParameterBL;
 import de.metas.adempiere.service.IPrinterRoutingBL;
@@ -64,12 +63,13 @@ import de.metas.adempiere.service.ISweepTableBL;
 import de.metas.adempiere.service.ITableColumnPathBL;
 import de.metas.adempiere.service.impl.CalendarDAO;
 import de.metas.adempiere.service.impl.GlobalLockSystem;
-import de.metas.adempiere.service.impl.OrderBL;
 import de.metas.adempiere.service.impl.ParameterBL;
 import de.metas.adempiere.service.impl.PrinterRoutingBL;
 import de.metas.adempiere.service.impl.SweepTableBL;
 import de.metas.adempiere.service.impl.TableColumnPathBL;
 import de.metas.dpd.service.RoutingService;
+import de.metas.order.IOrderBL;
+import de.metas.order.impl.OrderBL;
 
 /**
  * <b>IMPORTANT</p>: this class is old. Most of the stuff done in here is obsolete and could be removed.

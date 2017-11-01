@@ -41,5 +41,5 @@ public interface IReferenceNoGenerator
 	 * @param source
 	 * @return generated reference number or {@link IReferenceNoGenerator#REFERENCENO_None} if no reference number was generated
 	 */
-	public String generateReferenceNo(PO source);
+	public String generateReferenceNo(Object sourceModel);
 }

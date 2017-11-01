@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
+import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.Services;
 import org.junit.Assert;
 import org.junit.Before;
@@ -87,8 +88,8 @@ public class HUTransformServiceTests
 	@Before
 	public void init()
 	{
+		AdempiereTestHelper.get().init();
 		handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-
 		testsBase = new HUTransformTestsBase(noopPackingMaterialsCollector);
 	}
 

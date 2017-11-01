@@ -211,7 +211,7 @@ public class Helper
 
 	public String getSessionHostKey()
 	{
-		return Services.get(ISessionBL.class).getCurrentSession(ctx).getHostKey(ctx);
+		return Services.get(ISessionBL.class).getCurrentSession(ctx).getOrCreateHostKey(ctx);
 	}
 
 	public POJOLookupMap getDB()

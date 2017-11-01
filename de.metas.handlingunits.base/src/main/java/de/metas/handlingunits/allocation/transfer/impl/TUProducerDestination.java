@@ -38,7 +38,6 @@ import org.adempiere.util.lang.ObjectUtils;
 import com.jgoodies.common.base.Objects;
 
 import de.metas.handlingunits.IHUCapacityBL;
-import de.metas.handlingunits.IHUCapacityDefinition;
 import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.allocation.IAllocationRequest;
@@ -54,6 +53,8 @@ import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
+import de.metas.quantity.Capacity;
+import de.metas.quantity.CapacityInterface;
 
 /**
  * Creates TUs.
@@ -70,7 +71,7 @@ import de.metas.handlingunits.model.X_M_HU_PI_Item;
 
 	//
 	// Constrained capacity to use
-	private final Map<Integer, IHUCapacityDefinition> productId2capacity = new HashMap<>();
+	private final Map<Integer, Capacity> productId2capacity = new HashMap<>();
 
 	/** How many TUs to produce (maximum) */
 	private int maxTUs = Integer.MAX_VALUE;
@@ -94,7 +95,7 @@ import de.metas.handlingunits.model.X_M_HU_PI_Item;
 		return ObjectUtils.toString(this);
 	}
 
-	public void addCapacityConstraint(final IHUCapacityDefinition capacity)
+	public void addCapacityConstraint(final Capacity capacity)
 	{
 		if (capacity == null)
 		{
@@ -110,7 +111,7 @@ import de.metas.handlingunits.model.X_M_HU_PI_Item;
 	 * 
 	 * @param capacities may be {@code null}. In that case, nothing is done.
 	 */
-	public void addCapacityConstraints(final Collection<? extends IHUCapacityDefinition> capacities)
+	public void addCapacityConstraints(final Collection<? extends Capacity> capacities)
 	{
 		if (capacities == null)
 		{
@@ -196,16 +197,15 @@ import de.metas.handlingunits.model.X_M_HU_PI_Item;
 	{
 		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
-		final IHUCapacityDefinition capacityPerTU = getCapacity(request, tuHU);
+		final Capacity capacityPerTU = getCapacity(request, tuHU);
 
 		if (handlingUnitsBL.isAggregateHU(tuHU))
 		{
-			final IHUCapacityBL capacityBL = Services.get(IHUCapacityBL.class); // check if the TU's capacity exceeds the current request
-
-			final IHUCapacityDefinition exceedingCapacityOfTU = capacityBL.getAvailableCapacity(request.getQty(), request.getC_UOM(), capacityPerTU);
+			// check if the TU's capacity exceeds the current request
+			final CapacityInterface exceedingCapacityOfTU = capacityPerTU.subtractQuantity(request.getQuantity());
 
 			if (HandlingUnitsDAO.VIRTUAL_HU_PI_ID == parentPIItem.getIncluded_HU_PI_ID()
-					|| exceedingCapacityOfTU.getCapacity().signum() > 0)
+					|| exceedingCapacityOfTU.getCapacityQty().signum() > 0)
 			{
 				// Either this loading is about putting CUs directly on an LU which can be done, but then an aggregate HU is not supported and doesn't make sense (issue gh #1194). 
 				// or the request's capacity is less than a full TU. 
@@ -242,7 +242,7 @@ import de.metas.handlingunits.model.X_M_HU_PI_Item;
 		return result;
 	}
 
-	private final IAllocationStrategy getAllocationStrategy(final IAllocationRequest request, final IHUCapacityDefinition capacityToUse)
+	private final IAllocationStrategy getAllocationStrategy(final IAllocationRequest request, final Capacity capacityToUse)
 	{
 		final IAllocationStrategy allocationStrategy = new UpperBoundAllocationStrategy(capacityToUse);
 		return allocationStrategy;
@@ -255,13 +255,13 @@ import de.metas.handlingunits.model.X_M_HU_PI_Item;
 	 * @param hu the HU of we want to find the capacity.
 	 * @return
 	 */
-	private IHUCapacityDefinition getCapacity(final IAllocationRequest request, final I_M_HU hu)
+	private Capacity getCapacity(final IAllocationRequest request, final I_M_HU hu)
 	{
 		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
 		final int productId = request.getProduct().getM_Product_ID();
-		final IHUCapacityDefinition capacityToUse;
-		final IHUCapacityDefinition capacityOverride = productId2capacity.get(productId);
+		final Capacity capacityToUse;
+		final Capacity capacityOverride = productId2capacity.get(productId);
 
 		if (capacityOverride == null && handlingUnitsBL.isAggregateHU(hu))
 		{
@@ -282,7 +282,7 @@ import de.metas.handlingunits.model.X_M_HU_PI_Item;
 			final I_M_HU_PI_Item_Product itemProduct = hupiItemProductDAO.retrievePIMaterialItemProduct(materialPIItems.get(0), getC_BPartner(), request.getProduct(), request.getDate());
 
 			final IHUCapacityBL capacityBL = Services.get(IHUCapacityBL.class);
-			final IHUCapacityDefinition capacity = capacityBL.getCapacity(itemProduct, request.getProduct(), request.getC_UOM());
+			final Capacity capacity = capacityBL.getCapacity(itemProduct, request.getProduct(), request.getC_UOM());
 
 			capacityToUse = capacity;
 		}

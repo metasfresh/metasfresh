@@ -36,7 +36,6 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.ModelValidator;
 
-import de.metas.adempiere.service.IOrderDAO;
 import de.metas.document.exception.DocumentActionException;
 import de.metas.inoutcandidate.api.IReceiptScheduleBL;
 import de.metas.inoutcandidate.api.IReceiptScheduleDAO;
@@ -44,6 +43,7 @@ import de.metas.inoutcandidate.api.IReceiptScheduleProducerFactory;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.spi.IReceiptScheduleProducer;
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.order.IOrderDAO;
 
 @Validator(I_C_Order.class)
 public class C_Order_ReceiptSchedule

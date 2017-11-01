@@ -417,7 +417,7 @@ public final class HUJoinModel extends AbstractLTCUModel
 		if (forced && huKey != null)
 		{
 			// If we have a forced refresh, we remove the key from the cache and re-create.
-			cache.remove(huKey);
+			cache.remove(huId);
 			huKey = null;
 		}
 

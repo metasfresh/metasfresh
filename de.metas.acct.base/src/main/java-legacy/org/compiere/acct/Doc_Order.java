@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.List;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
+import de.metas.order.IOrderLineBL;
 
 import org.adempiere.service.IClientDAO;
 import org.adempiere.util.Services;
@@ -40,7 +41,6 @@ import org.compiere.model.ProductCost;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
-import de.metas.adempiere.service.IOrderLineBL;
 import de.metas.currency.ICurrencyDAO;
 
 /**

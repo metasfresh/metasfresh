@@ -20,9 +20,9 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.util.Env;
 
-import de.metas.adempiere.service.IOrderBL;
 import de.metas.document.engine.IDocument;
 import de.metas.i18n.IMsgBL;
+import de.metas.order.IOrderBL;
 
 
 /*

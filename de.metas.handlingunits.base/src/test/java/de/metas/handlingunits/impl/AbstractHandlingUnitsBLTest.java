@@ -27,7 +27,6 @@ import java.math.BigDecimal;
 
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.ad.wrapper.POJOWrapper;
-import org.adempiere.inout.service.IMTransactionDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -44,6 +43,7 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.handlingunits.model.validator.M_InOut;
 import de.metas.inout.IInOutDAO;
+import de.metas.materialtransaction.IMTransactionDAO;
 
 public abstract class AbstractHandlingUnitsBLTest extends AbstractHUTest
 {

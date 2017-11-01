@@ -32,8 +32,8 @@ import java.math.BigDecimal;
 import org.adempiere.util.Check;
 import org.adempiere.util.collections.IdentityHashSet;
 
+import de.metas.fresh.picking.FreshProductKey;
 import de.metas.fresh.picking.PickingSlotKey;
-import de.metas.fresh.picking.terminal.FreshProductKey;
 import de.metas.picking.terminal.form.swing.QtyListener;
 
 /**

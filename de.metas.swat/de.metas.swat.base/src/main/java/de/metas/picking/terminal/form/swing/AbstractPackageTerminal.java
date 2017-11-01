@@ -40,12 +40,12 @@ import org.compiere.apps.form.FormFrame;
 import org.compiere.apps.form.FormPanel;
 import org.compiere.util.Env;
 
-import de.metas.adempiere.form.IPackingDetailsModel;
-import de.metas.adempiere.form.IPackingItem;
-import de.metas.adempiere.form.LegacyPackingItem;
-import de.metas.adempiere.form.PackingItemsMap;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
+import de.metas.picking.legacy.form.IPackingDetailsModel;
+import de.metas.picking.legacy.form.IPackingItem;
+import de.metas.picking.legacy.form.LegacyPackingItem;
+import de.metas.picking.service.PackingItemsMap;
 import de.metas.picking.terminal.PickingOKPanel;
 
 /**

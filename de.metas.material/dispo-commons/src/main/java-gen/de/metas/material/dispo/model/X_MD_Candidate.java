@@ -15,7 +15,7 @@ public class X_MD_Candidate extends org.compiere.model.PO implements I_MD_Candid
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1529474840L;
+	private static final long serialVersionUID = 846841184L;
 
     /** Standard Constructor */
     public X_MD_Candidate (Properties ctx, int MD_Candidate_ID, String trxName)
@@ -289,6 +289,10 @@ public class X_MD_Candidate extends org.compiere.model.PO implements I_MD_Candid
 	public static final String MD_CANDIDATE_TYPE_SUPPLY = "SUPPLY";
 	/** STOCK_UP = STOCK_UP */
 	public static final String MD_CANDIDATE_TYPE_STOCK_UP = "STOCK_UP";
+	/** UNRELATED_INCREASE = UNRELATED_INCREASE */
+	public static final String MD_CANDIDATE_TYPE_UNRELATED_INCREASE = "UNRELATED_INCREASE";
+	/** UNRELATED_DECREASE = UNRELATED_DECREASE */
+	public static final String MD_CANDIDATE_TYPE_UNRELATED_DECREASE = "UNRELATED_DECREASE";
 	/** Set Typ.
 		@param MD_Candidate_Type Typ	  */
 	@Override

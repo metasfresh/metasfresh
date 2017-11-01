@@ -121,7 +121,7 @@ node('agent && linux')
 				docker.withRegistry('https://index.docker.io/v1/', 'dockerhub_metasfresh')
 				{
 					// note: we ommit the "-service" in the docker image name, because we also don't have "-service" in the webui-api and backend and it's pretty clear that it is a service
-					final def app = docker.build 'metasfresh/metasfresh-material-dispo', "${dockerWorkDir}";
+					final def app = docker.build 'metasfresh/metasfresh-material-dispo-dev', "${dockerWorkDir}";
 
           final def misc = new de.metas.jenkins.Misc();
 					app.push misc.mkDockerTag("${MF_UPSTREAM_BRANCH}-latest");
