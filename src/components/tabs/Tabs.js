@@ -3,7 +3,7 @@ import {connect} from 'react-redux';
 import PropTypes from 'prop-types';
 
 import Tab from './Tab';
-import {activateTab} from '../../actions/WindowActions';
+import { activateTab, unselectTab } from '../../actions/WindowActions';
 
 class Tabs extends Component {
     constructor(props) {
@@ -22,6 +22,10 @@ class Tabs extends Component {
         if(prevState.selected !== this.state.selected){
             dispatch(activateTab('master', this.state.selected));
         }
+    }
+
+    componentWillUnmount() {
+        this.props.dispatch(unselectTab('master'));
     }
 
     handleClick = (e, id) => {

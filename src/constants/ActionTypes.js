@@ -15,6 +15,7 @@ export const INIT_LAYOUT_SUCCESS = 'INIT_LAYOUT_SUCCESS';
 export const ADD_ROW_DATA = 'ADD_ROW_DATA';
 export const SORT_TAB = 'SORT_TAB';
 export const ACTIVATE_TAB = 'ACTIVATE_TAB';
+export const UNSELECT_TAB = 'UNSELECT_TAB';
 export const ADD_NEW_ROW = 'ADD_NEW_ROW';
 export const DELETE_ROW = 'DELETE_ROW';
 export const UPDATE_ROW_PROPERTY = 'UPDATE_ROW_PROPERTY';
