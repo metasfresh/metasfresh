@@ -87,7 +87,7 @@ class Referenced extends Component {
 
         return (data && data.length) ?
             data.map((item) => {
-                return [<div className="subheader-caption">
+                return [<div key="caption" className="subheader-caption">
                     {item.caption}
                 </div>].concat(item.references.map((ref, refKey) => <div
                         className="subheader-item js-subheader-item"
