@@ -1083,29 +1083,9 @@ public class FlatrateBL implements IFlatrateBL
 			nextTerm.setAD_User_InCharge_ID(currentTerm.getAD_User_InCharge_ID());
 			final I_C_Flatrate_Transition nextTransition = nextConditions.getC_Flatrate_Transition();
 
-			// gh #549: if an explicit start date was given, then use it (if it is OK).
-			final Timestamp dayAfterEndDate = TimeUtil.addDays(currentTerm.getEndDate(), 1);
-			final Timestamp firstDayOfNewTerm;
-			if (nextTermStartDate != null)
-			{
-				if (nextTermStartDate.before(currentTerm.getStartDate()) || nextTermStartDate.after(dayAfterEndDate))
-				{
-					Loggables.get().addLog(
-							"Ignore nextTermStartDate={} because if is not between currentTerm's StartDate={} and DayAfterEndDate={}. Instead, use dayAfterEndDate",
-							nextTermStartDate, currentTerm.getStartDate(), dayAfterEndDate);
-					firstDayOfNewTerm = dayAfterEndDate;
-				}
-				else
-				{
-					firstDayOfNewTerm = nextTermStartDate;
-				}
-			}
-			else
-			{
-				firstDayOfNewTerm = dayAfterEndDate;
-			}
-
+			final Timestamp firstDayOfNewTerm = computeStartDate(currentTerm, nextTermStartDate);
 			nextTerm.setStartDate(firstDayOfNewTerm);
+			nextTerm.setMasterStartDate(currentTerm.getMasterStartDate());
 
 			if (ol != null)
 			{
@@ -1208,6 +1188,28 @@ public class FlatrateBL implements IFlatrateBL
 		}
 	}
 
+	private Timestamp computeStartDate(@NonNull final I_C_Flatrate_Term contract, final Timestamp nextTermStartDate)
+	{
+
+		// gh #549: if an explicit start date was given, then use it (if it is OK).
+		final Timestamp dayAfterEndDate = TimeUtil.addDays(contract.getEndDate(), 1);
+		if (nextTermStartDate != null)
+		{
+			if (nextTermStartDate.before(contract.getStartDate()) || nextTermStartDate.after(dayAfterEndDate))
+			{
+				Loggables.get().addLog(
+						"Ignore nextTermStartDate={} because if is not between currentTerm's StartDate={} and DayAfterEndDate={}. Instead, use dayAfterEndDate",
+						nextTermStartDate, contract.getStartDate(), dayAfterEndDate);
+				return dayAfterEndDate;
+			}
+
+			return nextTermStartDate;
+		}
+
+		return dayAfterEndDate;
+	}
+	
+	
 	@Override
 	public void updateNoticeDateAndEndDate(final I_C_Flatrate_Term term)
 	{
