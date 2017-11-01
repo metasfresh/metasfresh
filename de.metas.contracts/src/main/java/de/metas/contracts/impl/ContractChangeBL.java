@@ -182,12 +182,12 @@ public class ContractChangeBL implements IContractChangeBL
 	private Timestamp computeMasterEndDate(@NonNull final I_C_Flatrate_Term contract, final Timestamp changeDate)
 	{
 		final I_C_Flatrate_Term initialContract = Services.get(IFlatrateBL.class).getInitialFlatrateTerm(contract);
-		if (initialContract == null)
+		if (initialContract == null && !changeDate.after(contract.getEndDate()))  
 		{
-			return contract.getEndDate();
+				return contract.getEndDate(); 
 		}
 		
-		if (changeDate.before(initialContract.getStartDate()))
+		if (initialContract != null && changeDate.before(initialContract.getStartDate()))
 		{
 			return initialContract.getStartDate();
 		}
