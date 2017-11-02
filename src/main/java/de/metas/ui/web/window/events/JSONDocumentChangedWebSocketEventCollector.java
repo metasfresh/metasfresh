@@ -40,7 +40,7 @@ import lombok.Value;
  */
 
 @ToString
-public class JSONDocumentChangedWebSocketEventCollector
+class JSONDocumentChangedWebSocketEventCollector
 {
 	public static JSONDocumentChangedWebSocketEventCollector newInstance()
 	{
