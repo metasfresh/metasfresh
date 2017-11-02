@@ -32,6 +32,7 @@ import de.metas.ui.web.window.model.DocumentStandardAction;
 import de.metas.ui.web.window.model.DocumentValidStatus;
 import de.metas.ui.web.window.model.IDocumentChangesCollector;
 import de.metas.ui.web.window.model.IIncludedDocumentsCollection;
+import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.ToString;
 
@@ -337,6 +338,7 @@ public final class JSONDocument extends JSONDocumentBase
 	//
 	@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 	@ToString
+	@EqualsAndHashCode
 	public static final class JSONIncludedTabInfo
 	{
 		public static JSONIncludedTabInfo staleTab(final DetailId tabId)

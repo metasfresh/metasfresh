@@ -22,7 +22,9 @@ import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONDocument.JSONIncludedTabInfo;
 import de.metas.ui.web.window.descriptor.DetailId;
+import lombok.EqualsAndHashCode;
 import lombok.NonNull;
+import lombok.ToString;
 
 /*
  * #%L
@@ -55,6 +57,8 @@ import lombok.NonNull;
  *
  */
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
+@ToString
+@EqualsAndHashCode
 public final class JSONDocumentChangedWebSocketEvent
 {
 	public static final void extractAndSendWebsocketEvents(final Collection<JSONDocument> jsonDocumentEvents, final WebsocketSender websocketSender)
