@@ -56,19 +56,19 @@ public class DocumentCacheInvalidationDispatcher implements ICacheResetListener
 	@Override
 	public int reset(final CacheInvalidateRequest request)
 	{
-		logger.info("Got {}", request);
+		logger.debug("Got {}", request);
 
 		final String rootTableName = request.getRootTableName();
 		if (rootTableName == null)
 		{
-			logger.info("Nothing to do, no rootTableName: {}", request);
+			logger.debug("Nothing to do, no rootTableName: {}", request);
 			return 0;
 		}
 
 		final int rootRecordId = request.getRootRecordId();
 		if (rootRecordId < 0)
 		{
-			logger.info("Nothing to do, rootRecordId < 0: {}", request);
+			logger.debug("Nothing to do, rootRecordId < 0: {}", request);
 			return 0;
 		}
 
@@ -77,13 +77,13 @@ public class DocumentCacheInvalidationDispatcher implements ICacheResetListener
 
 		if (childTableName == null)
 		{
-			logger.info("Invalidating the root document: {}", request);
+			logger.debug("Invalidating the root document: {}", request);
 			documents.invalidateDocumentByRecordId(rootTableName, rootRecordId);
 			return 1;
 		}
 		else
 		{
-			logger.info("Invalidating the included document: {}", request);
+			logger.debug("Invalidating the included document: {}", request);
 			documents.invalidateIncludedDocumentsByRecordId(rootTableName, rootRecordId, childTableName, childRecordId);
 			return 1;
 		}
