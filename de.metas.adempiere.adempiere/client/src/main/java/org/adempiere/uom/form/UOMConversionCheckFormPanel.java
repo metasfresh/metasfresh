@@ -321,9 +321,9 @@ public class UOMConversionCheckFormPanel implements FormPanel, VetoableChangeLis
 		}
 
 		@Override
-		public int resetForRecordId(String tableName, Object key)
+		public int resetForRecordId(String tableName, int recordId)
 		{
-			doConvert("cache reset on " + tableName + ", key=" + key);
+			doConvert("cache reset on " + tableName + ", recordId=" + recordId);
 			return 1;
 		}
 
