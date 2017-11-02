@@ -1,5 +1,8 @@
 package de.metas.ui.web.window.model;
 
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+
 import javax.annotation.PostConstruct;
 
 import org.adempiere.ad.dao.cache.CacheInvalidateRequest;
@@ -7,9 +10,11 @@ import org.compiere.util.CacheMgt;
 import org.compiere.util.ICacheResetListener;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.concurrent.CustomizableThreadFactory;
 import org.springframework.stereotype.Component;
 
 import de.metas.logging.LogManager;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -35,7 +40,7 @@ import de.metas.logging.LogManager;
 
 /**
  * This component listens to all cache invalidation events (see {@link CacheMgt}) and invalidates the right documents or included documents from {@link DocumentCollection}.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
@@ -47,6 +52,16 @@ public class DocumentCacheInvalidationDispatcher implements ICacheResetListener
 	@Autowired
 	private DocumentCollection documents;
 
+	private final Executor async;
+	
+	public DocumentCacheInvalidationDispatcher()
+	{
+		final CustomizableThreadFactory asyncThreadFactory = new CustomizableThreadFactory(DocumentCacheInvalidationDispatcher.class.getSimpleName());
+		asyncThreadFactory.setDaemon(true);
+		
+		async = Executors.newSingleThreadExecutor(asyncThreadFactory); 
+	}
+
 	@PostConstruct
 	private void postConstruct()
 	{
@@ -54,7 +69,16 @@ public class DocumentCacheInvalidationDispatcher implements ICacheResetListener
 	}
 
 	@Override
-	public int reset(final CacheInvalidateRequest request)
+	public int reset(@NonNull final CacheInvalidateRequest request)
+	{
+		// FIXME: atm if we are reseting async, the events are no longer aggregated because there is no trx.
+//		async.execute(() -> resetNow(request));
+		resetNow(request);
+		
+		return 1; // not relevant
+	}
+
+	public void resetNow(final CacheInvalidateRequest request)
 	{
 		logger.debug("Got {}", request);
 
@@ -62,14 +86,14 @@ public class DocumentCacheInvalidationDispatcher implements ICacheResetListener
 		if (rootTableName == null)
 		{
 			logger.debug("Nothing to do, no rootTableName: {}", request);
-			return 0;
+			return;
 		}
 
 		final int rootRecordId = request.getRootRecordId();
 		if (rootRecordId < 0)
 		{
 			logger.debug("Nothing to do, rootRecordId < 0: {}", request);
-			return 0;
+			return;
 		}
 
 		final String childTableName = request.getChildTableName();
@@ -79,13 +103,11 @@ public class DocumentCacheInvalidationDispatcher implements ICacheResetListener
 		{
 			logger.debug("Invalidating the root document: {}", request);
 			documents.invalidateDocumentByRecordId(rootTableName, rootRecordId);
-			return 1;
 		}
 		else
 		{
 			logger.debug("Invalidating the included document: {}", request);
 			documents.invalidateIncludedDocumentsByRecordId(rootTableName, rootRecordId, childTableName, childRecordId);
-			return 1;
 		}
 	}
 
