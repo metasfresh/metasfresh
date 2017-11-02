@@ -1,6 +1,7 @@
 package de.metas.ui.web.websocket;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import org.adempiere.ad.trx.api.ITrx;
@@ -70,6 +71,16 @@ public class WebsocketSender implements InitializingBean
 	public void afterPropertiesSet() throws Exception
 	{
 		eventsLog.setLogEventsEnabled(logEventsEnabledDefault);
+	}
+
+	public void convertAndSend(final Collection<? extends WebsocketEndpointAware> events)
+	{
+		events.forEach(this::convertAndSend);
+	}
+
+	public void convertAndSend(final WebsocketEndpointAware event)
+	{
+		convertAndSend(event.getWebsocketEndpoint(), event);
 	}
 
 	public void convertAndSend(final String destination, final Object event)
