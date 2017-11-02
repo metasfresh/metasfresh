@@ -12,6 +12,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
@@ -331,6 +332,13 @@ public class DocumentEntityDescriptor
 			throw new NoSuchElementException("No included entity found for detailId=" + detailId + " in " + this);
 		}
 		return includedEntityDescriptor;
+	}
+	
+	public Stream<DocumentEntityDescriptor> streamIncludedEntitiesByTableName(@NonNull final String tableName)
+	{
+		return includedEntitiesByDetailId.values()
+				.stream()
+				.filter(includedEntity -> tableName.equals(includedEntity.getTableNameOrNull()));
 	}
 
 	public DocumentEntityDataBindingDescriptor getDataBinding()

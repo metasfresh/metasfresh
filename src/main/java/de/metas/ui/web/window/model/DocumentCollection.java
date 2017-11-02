@@ -113,9 +113,7 @@ public class DocumentCollection
 
 	/* package */ DocumentCollection()
 	{
-		super();
 	}
-
 
 	public DocumentDescriptorFactory getDocumentDescriptorFactory()
 	{
@@ -362,7 +360,7 @@ public class DocumentCollection
 
 	public void cacheReset()
 	{
-		// TODO: invalidate only those which are: 1. NOW new; 2. NOT currently editing
+		// TODO: invalidate only those which are: 1. NOT new; 2. NOT currently editing
 		rootDocuments.invalidateAll();
 		rootDocuments.cleanUp();
 	}
@@ -478,9 +476,8 @@ public class DocumentCollection
 			return zoomIntoInfo.getWindowId();
 		}
 
-		
 		final RecordZoomWindowFinder zoomWindowFinder;
-		if(zoomIntoInfo.isRecordIdPresent())
+		if (zoomIntoInfo.isRecordIdPresent())
 		{
 			zoomWindowFinder = RecordZoomWindowFinder.newInstance(zoomIntoInfo.getTableName(), zoomIntoInfo.getRecordId());
 		}
@@ -599,7 +596,7 @@ public class DocumentCollection
 	 * Invalidates all root documents identified by tableName/recordId and notifies frontend (via websocket).
 	 * 
 	 * @param tableName
-	 * @param recordId
+	 * @param recordId 
 	 */
 	public void invalidateDocumentByRecordId(final String tableName, final int recordId)
 	{
@@ -612,6 +609,12 @@ public class DocumentCollection
 				// .filter(documentKey -> rootDocuments.getIfPresent(documentKey) != null) // not needed
 				.collect(ImmutableSet.toImmutableSet());
 
+		// stop here if no document keys found
+		if(documentKeys.isEmpty())
+		{
+			return;
+		}
+
 		//
 		// Invalidate the root documents
 		rootDocuments.invalidateAll(documentKeys);
@@ -622,6 +625,50 @@ public class DocumentCollection
 			final JSONDocumentChangedWebSocketEvent event = JSONDocumentChangedWebSocketEvent.staleRootDocument(documentKey.getWindowId(), documentKey.getDocumentId());
 			websocketSender.convertAndSend(event.getWebsocketEndpoint(), event);
 		});
+	}
+
+	public void invalidateIncludedDocumentsByRecordId(final String tableName, final int recordId, final String childTableName, final int childRecordId)
+	{
+		final DocumentId documentId = DocumentId.of(recordId);
+		final DocumentId rowId = childRecordId > 0 ? DocumentId.of(childRecordId) : null;
+		
+		final Function<DocumentEntityDescriptor, DocumentPath> toDocumentPath;
+		if(rowId != null)
+		{
+			toDocumentPath = includedEntity -> DocumentPath.includedDocumentPath(includedEntity.getWindowId(), documentId, includedEntity.getDetailId(), rowId);
+		}
+		else
+		{
+			toDocumentPath = includedEntity -> DocumentPath.includedDocumentPath(includedEntity.getWindowId(), documentId, includedEntity.getDetailId());
+		}
+		
+		//
+		// Create possible documentKeys for given tableName/recordId
+		final ImmutableSet<DocumentPath> documentPaths = getCachedWindowIdsForTableName(tableName)
+				.stream()
+				.map(this::getDocumentEntityDescriptor)
+				.flatMap(rootEntity -> rootEntity.streamIncludedEntitiesByTableName(childTableName))
+				.map(toDocumentPath)
+				.collect(ImmutableSet.toImmutableSet());
+		
+		final IDocumentChangesCollector changesCollector = NullDocumentChangesCollector.instance; // TODO: shall we have it as param
+		documentPaths.forEach(documentPath -> invalidateIncludedDocuments(documentPath, changesCollector));
+	}
+	
+	private void invalidateIncludedDocuments(final DocumentPath documentPath, final IDocumentChangesCollector changesCollector)
+	{
+		Check.assume(!documentPath.isRootDocument(), "included document path: {}", documentPath);
+		
+		final DocumentPath rootDocumentPath = documentPath.getRootDocumentPath();
+		forRootDocumentWritable(rootDocumentPath, changesCollector, document -> {
+			document.getIncludedDocumentsCollection(documentPath.getDetailId()).markStaleAll();
+			return null; // void
+		});
+		
+		//
+		// Notify frontend
+		final JSONDocumentChangedWebSocketEvent event = JSONDocumentChangedWebSocketEvent.stableByDocumentPath(documentPath);
+		websocketSender.convertAndSend(event.getWebsocketEndpoint(), event);
 	}
 
 	/**
