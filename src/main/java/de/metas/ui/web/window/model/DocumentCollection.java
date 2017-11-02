@@ -654,8 +654,7 @@ public class DocumentCollection
 
 		final DocumentPath rootDocumentPath = documentPath.getRootDocumentPath();
 		forRootDocumentWritable(rootDocumentPath, NullDocumentChangesCollector.instance, document -> {
-			// TODO: implement staling only given rowId
-			document.getIncludedDocumentsCollection(documentPath.getDetailId()).markStaleAll();
+			document.getIncludedDocumentsCollection(documentPath.getDetailId()).markStale(documentPath.getSingleRowId());
 			return null; // void
 		});
 

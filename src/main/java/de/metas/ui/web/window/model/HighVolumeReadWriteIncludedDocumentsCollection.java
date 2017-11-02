@@ -375,6 +375,13 @@ public class HighVolumeReadWriteIncludedDocumentsCollection implements IIncluded
 		staled = true;
 		parentDocument.getChangesCollector().collectStaleDetailId(parentDocumentPath, detailId);
 	}
+	
+	@Override
+	public void markStale(@NonNull final DocumentId rowId)
+	{
+		// TODO: implement staling only given rowId
+		markStaleAll();
+	}
 
 	@Override
 	public boolean isStale()
