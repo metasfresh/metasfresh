@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.GuavaCollectors;
 import org.compiere.util.Env;
 
 import com.google.common.collect.ImmutableList;
@@ -76,9 +77,30 @@ public class Group
 		return _baseAmt;
 	}
 
+	public List<GroupRegularLine> getRegularLines()
+	{
+		return regularLines;
+	}
+
+	public boolean hasCompensationLines()
+	{
+		return !compensationLines.isEmpty();
+	}
+
 	public List<GroupCompensationLine> getCompensationLines()
 	{
 		return ImmutableList.copyOf(compensationLines);
+	}
+
+	public GroupCompensationLine getCompensationLineById(final int id)
+	{
+		if (id <= 0)
+		{
+			throw new AdempiereException("No compensation line found for id=" + id + " in group " + this);
+		}
+		return compensationLines.stream()
+				.filter(line -> line.getRepoId() == id)
+				.collect(GuavaCollectors.singleElementOrThrow(() -> new AdempiereException("None or more then one compensation lines found for id=" + id + " in group " + this)));
 	}
 
 	public void updateAllPercentageLines()

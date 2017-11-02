@@ -35,21 +35,20 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.MOrg;
-import org.compiere.model.PO;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
+import org.slf4j.Logger;
 
 import de.metas.document.refid.api.IReferenceNoBL;
 import de.metas.document.refid.api.IReferenceNoDAO;
 import de.metas.document.refid.api.IReferenceNoGeneratorInstance;
 import de.metas.document.refid.model.I_C_ReferenceNo_Type;
 import de.metas.document.refid.spi.IReferenceNoGenerator;
+import de.metas.logging.LogManager;
 import de.metas.payment.esr.ESRConstants;
 import de.metas.payment.esr.api.IBPBankAccountBL;
-import de.metas.payment.esr.api.IESRBPBankAccountDAO;
 import de.metas.payment.esr.api.IESRBL;
+import de.metas.payment.esr.api.IESRBPBankAccountDAO;
 import de.metas.payment.esr.api.IESRImportBL;
 import de.metas.payment.esr.model.I_C_BP_BankAccount;
 
@@ -72,30 +71,30 @@ public class RenderedCodeLineGenerator implements IReferenceNoGenerator
 	private final transient Logger logger = LogManager.getLogger(getClass());
 
 	@Override
-	public String generateReferenceNo(PO source)
+	public String generateReferenceNo(Object sourceModel)
 	{
 		// Do nothing if ESR is not enabled
-		final Properties ctx = source.getCtx();
+		final Properties ctx = InterfaceWrapperHelper.getCtx(sourceModel);
 		if (!ESRConstants.isEnabled(ctx))
 		{
 			logger.debug("Skip generating because ESR not enabled");
 			return REFERENCENO_None;
 		}
 
-		if(!Services.get(IESRBL.class).appliesForESRDocumentRefId(source))
+		if(!Services.get(IESRBL.class).appliesForESRDocumentRefId(sourceModel))
 		{
-			logger.debug("Skip generating because source does not apply: " + source);
+			logger.debug("Skip generating because source does not apply: " + sourceModel);
 			return REFERENCENO_None;
 		}
 		
-		final I_C_Invoice invoice = InterfaceWrapperHelper.create(source, I_C_Invoice.class);
+		final I_C_Invoice invoice = InterfaceWrapperHelper.create(sourceModel, I_C_Invoice.class);
 
 		// Generate invoice reference number
 		final IReferenceNoDAO refNoDAO = Services.get(IReferenceNoDAO.class);
 		final I_C_ReferenceNo_Type refNoType = refNoDAO.retrieveRefNoTypeByName(ctx, ESRConstants.DOCUMENT_REFID_ReferenceNo_Type_InvoiceReferenceNumber);
 		final IReferenceNoGeneratorInstance instance = Services.get(IReferenceNoBL.class).getReferenceNoGeneratorInstance(ctx, refNoType);
-		final String invoiceReferenceNoStr = instance.generateReferenceNo(source);
-		Check.assume(IReferenceNoGenerator.REFERENCENO_None != invoiceReferenceNoStr, "Instance {} shall generate a reference number for source {}", instance, source);
+		final String invoiceReferenceNoStr = instance.generateReferenceNo(sourceModel);
+		Check.assume(IReferenceNoGenerator.REFERENCENO_None != invoiceReferenceNoStr, "Instance {} shall generate a reference number for source {}", instance, sourceModel);
 
 		//
 		final StringBuilder renderedCodeLine = new StringBuilder();

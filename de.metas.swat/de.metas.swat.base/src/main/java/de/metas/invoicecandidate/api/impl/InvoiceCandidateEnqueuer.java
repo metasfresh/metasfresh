@@ -26,6 +26,7 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Iterator;
 import java.util.Properties;
+import java.util.Set;
 
 import org.adempiere.ad.dao.impl.ModelColumnNameValue;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -39,6 +40,8 @@ import org.adempiere.util.Services;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.Mutable;
 import org.compiere.util.TrxRunnableAdapter;
+
+import com.google.common.base.Joiner;
 
 import de.metas.async.model.I_C_Async_Batch;
 import de.metas.async.spi.IWorkpackagePrioStrategy;
@@ -70,6 +73,7 @@ import de.metas.lock.api.LockOwner;
 	private static final String MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_QTY_TO_INVOICE = "InvoiceCandBL_Invoicing_Skipped_QtyToInvoice";
 	@SuppressWarnings("unused")
 	private static final String MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_APPROVAL = "InvoiceCandBL_Invoicing_Skipped_ApprovalForInvoicing";
+	private static final String MSG_IncompleteGroupsFound_1P = "InvoiceCandEnqueuer_IncompleteGroupsFound";
 
 	// services
 	private final transient IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
@@ -306,6 +310,15 @@ import de.metas.lock.api.LockOwner;
 	{
 		final Timestamp today = invoiceCandBL.getToday();
 		final String trxName = getTrxNameNotNull();
+
+		//
+		// Check incomplete compensation groups
+		final Set<String> incompleteOrderDocumentNo = invoiceCandDAO.retrieveOrderDocumentNosForIncompleteGroupsFromSelection(adPInstanceId);
+		if (!incompleteOrderDocumentNo.isEmpty())
+		{
+			final String incompleteOrderDocumentNoStr = Joiner.on(", ").join(incompleteOrderDocumentNo);
+			throw new AdempiereException(MSG_IncompleteGroupsFound_1P, new Object[] { incompleteOrderDocumentNoStr });
+		}
 
 		//
 		// Updating candidates previous to enqueueing, if the parameter has been set (task 03905)

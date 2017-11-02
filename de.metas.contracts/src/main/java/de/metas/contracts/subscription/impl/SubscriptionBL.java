@@ -41,6 +41,7 @@ import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.pricing.api.IPricingResult;
 import org.adempiere.pricing.exceptions.ProductNotOnPriceListException;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
@@ -53,6 +54,7 @@ import org.compiere.model.MProductPricing;
 import org.compiere.model.Query;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 import org.compiere.util.Trx;
 import org.compiere.util.TrxRunnable2;
 import org.slf4j.Logger;
@@ -98,6 +100,7 @@ import lombok.NonNull;
 public class SubscriptionBL implements ISubscriptionBL
 {
 	private static final String ERR_NEW_CONDITIONS_PRICE_MISSING_1P = "de.metas.flatrate.NewConditions.Price_Missing";
+	private static final String SYSCONFIG_CREATE_SUBSCRIPTIONPROGRESS_IN_PAST_DAYS = "C_Flatrate_Term.Create_SubscriptionProgressInPastDays";
 
 	public static final Logger logger = LogManager.getLogger(SubscriptionBL.class);
 
@@ -127,6 +130,7 @@ public class SubscriptionBL implements ISubscriptionBL
 		newTerm.setC_UOM_ID(ol.getPrice_UOM_ID());
 
 		newTerm.setStartDate(order.getDateOrdered());
+		newTerm.setMasterStartDate(order.getDateOrdered());
 
 		newTerm.setDeliveryRule(order.getDeliveryRule());
 		newTerm.setDeliveryViaRule(order.getDeliveryViaRule());
@@ -432,7 +436,8 @@ public class SubscriptionBL implements ISubscriptionBL
 		final int numberOfRuns = computeNumberOfRuns(trans, term.getStartDate());
 		Check.assume(numberOfRuns > 0, trans + " has NumberOfEvents > 0");
 
-		Timestamp eventDate = term.getStartDate();
+		Timestamp eventDate = getEventDate(term);
+		
 		int seqNo = 10;
 
 		final List<I_C_SubscriptionProgress> deliveries = new ArrayList<I_C_SubscriptionProgress>();
@@ -451,6 +456,22 @@ public class SubscriptionBL implements ISubscriptionBL
 		return deliveries.get(0);
 	}
 
+	private Timestamp getEventDate(@NonNull final I_C_Flatrate_Term term)
+	{
+		final Properties ctx = InterfaceWrapperHelper.getCtx(term);
+		final int daysInPast = Services.get(ISysConfigBL.class).getIntValue(SYSCONFIG_CREATE_SUBSCRIPTIONPROGRESS_IN_PAST_DAYS, 0, Env.getAD_Client_ID(ctx), Env.getAD_Org_ID(ctx));
+		
+		final Timestamp minimumEventDate = TimeUtil.addDays(SystemTime.asDayTimestamp(), -daysInPast);
+		final Timestamp eventDate = term.getStartDate();
+		
+		if (minimumEventDate.after(eventDate))
+		{
+			return minimumEventDate;
+		}
+
+		return eventDate;
+	}
+	
 	@Override
 	public void evalCurrentSPs(
 			@NonNull final I_C_Flatrate_Term term,

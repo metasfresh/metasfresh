@@ -10,6 +10,7 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.MDocType;
 import org.compiere.model.MOrder;
 import org.compiere.model.PO;
+import org.compiere.model.X_C_Order;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
@@ -67,7 +68,8 @@ public final class OrderCreateNewFromProposal extends JavaProcess
 		childCRS.copyRecord(sourceOrder, get_TrxName());
 
 		
-		
+		newOrder.setDocStatus(X_C_Order.DOCSTATUS_Drafted);
+		newOrder.setDocAction(X_C_Order.DOCACTION_Complete);
 		InterfaceWrapperHelper.save(newOrder);
 
 		String docAction;

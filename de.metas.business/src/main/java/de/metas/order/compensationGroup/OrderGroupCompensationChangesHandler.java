@@ -46,6 +46,12 @@ public class OrderGroupCompensationChangesHandler
 			return;
 		}
 
+		// Don't touch processed lines (e.g. completed orders)
+		if (orderLine.isProcessed())
+		{
+			return;
+		}
+
 		final boolean groupCompensationLine = orderLine.isGroupCompensationLine();
 		final String amtType = orderLine.getGroupCompensationAmtType();
 		if (!groupCompensationLine)
@@ -68,5 +74,37 @@ public class OrderGroupCompensationChangesHandler
 		final Group group = groupsRepo.retrieveGroup(groupId);
 		group.updateAllPercentageLines();
 		groupsRepo.saveGroup(group);
+	}
+
+	public void onOrderLineDeleted(final I_C_OrderLine orderLine)
+	{
+		// Skip if not a group line
+		if (!OrderGroupCompensationUtils.isInGroup(orderLine))
+		{
+			return;
+		}
+
+		// Don't touch processed lines (e.g. completed orders)
+		if (orderLine.isProcessed())
+		{
+			return;
+		}
+
+		final boolean groupCompensationLine = orderLine.isGroupCompensationLine();
+		if (groupCompensationLine)
+		{
+			onCompensationLineDeleted(orderLine);
+		}
+	}
+
+	private void onCompensationLineDeleted(final I_C_OrderLine compensationLine)
+	{
+		final GroupId groupId = groupsRepo.extractGroupId(compensationLine);
+		final Group group = groupsRepo.retrieveGroup(groupId);
+		
+		if(!group.hasCompensationLines())
+		{
+			groupsRepo.destroyGroup(group);
+		}
 	}
 }

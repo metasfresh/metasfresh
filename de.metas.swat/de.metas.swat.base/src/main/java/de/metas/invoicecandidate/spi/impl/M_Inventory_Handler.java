@@ -148,17 +148,16 @@ public class M_Inventory_Handler extends AbstractInvoiceCandidateHandler
 	}
 
 	@Override
-	public void setPriceActual(final I_C_Invoice_Candidate ic)
+	public void setBPartnerData(final I_C_Invoice_Candidate ic)
 	{
 		throw new IllegalStateException("Not supported");
 
 	}
 
 	@Override
-	public void setBPartnerData(final I_C_Invoice_Candidate ic)
+	public PriceAndTax calculatePriceAndTax(final I_C_Invoice_Candidate ic)
 	{
-		throw new IllegalStateException("Not supported");
-
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
@@ -167,12 +166,4 @@ public class M_Inventory_Handler extends AbstractInvoiceCandidateHandler
 		throw new IllegalStateException("Not supported");
 
 	}
-
-	@Override
-	public void setPriceEntered(final I_C_Invoice_Candidate ic)
-	{
-		throw new IllegalStateException("Not supported");
-
-	}
-
 }
