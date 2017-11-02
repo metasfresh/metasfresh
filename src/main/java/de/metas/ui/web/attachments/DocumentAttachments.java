@@ -32,7 +32,7 @@ import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
-import de.metas.ui.web.window.events.DocumentChangedWebSocketEventsPublisher;
+import de.metas.ui.web.window.events.DocumentWebsocketPublisher;
 import lombok.Builder;
 import lombok.NonNull;
 
@@ -79,14 +79,14 @@ final class DocumentAttachments
 	private final DocumentPath documentPath;
 	private final ITableRecordReference recordRef;
 	private final DocumentEntityDescriptor entityDescriptor;
-	private final DocumentChangedWebSocketEventsPublisher websocketPublisher;
+	private final DocumentWebsocketPublisher websocketPublisher;
 
 	@Builder
 	private DocumentAttachments(
 			@NonNull final DocumentPath documentPath,
 			@NonNull final ITableRecordReference recordRef,
 			@NonNull final DocumentEntityDescriptor entityDescriptor,
-			@NonNull final DocumentChangedWebSocketEventsPublisher websocketPublisher)
+			@NonNull final DocumentWebsocketPublisher websocketPublisher)
 	{
 		this.documentPath = documentPath;
 		this.recordRef = recordRef;

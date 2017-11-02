@@ -3,11 +3,11 @@ package de.metas.ui.web.window.events;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
-import java.util.stream.Stream;
+import java.util.Objects;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.time.SystemTime;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
@@ -15,15 +15,13 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.collect.ImmutableSet;
 
 import de.metas.ui.web.websocket.WebSocketConfig;
 import de.metas.ui.web.websocket.WebsocketEndpointAware;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONDate;
-import de.metas.ui.web.window.datatypes.json.JSONDocument;
-import de.metas.ui.web.window.datatypes.json.JSONDocument.JSONIncludedTabInfo;
+import de.metas.ui.web.window.datatypes.json.JSONIncludedTabInfo;
 import de.metas.ui.web.window.descriptor.DetailId;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
@@ -39,12 +37,12 @@ import lombok.ToString;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -53,16 +51,16 @@ import lombok.ToString;
 
 /**
  * Document changed websocket event.
- * 
+ *
  * Event sent by backend when a document was changed.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @ToString
 @EqualsAndHashCode
-public final class JSONDocumentChangedWebSocketEvent implements WebsocketEndpointAware
+final class JSONDocumentChangedWebSocketEvent implements WebsocketEndpointAware
 {
 	public static JSONDocumentChangedWebSocketEvent rootDocument(final WindowId windowId, final DocumentId documentId)
 	{
@@ -72,45 +70,11 @@ public final class JSONDocumentChangedWebSocketEvent implements WebsocketEndpoin
 		return event;
 	}
 
-	public static final Stream<JSONDocumentChangedWebSocketEvent> extractWebsocketEvents(final Collection<JSONDocument> jsonDocumentEvents)
-	{
-		if (jsonDocumentEvents == null || jsonDocumentEvents.isEmpty())
-		{
-			return Stream.empty();
-		}
-
-		return jsonDocumentEvents.stream()
-				.map(JSONDocumentChangedWebSocketEvent::extractWebsocketEventOrNull)
-				.filter(wsEvent -> wsEvent != null);
-	}
-
-	private static final JSONDocumentChangedWebSocketEvent extractWebsocketEventOrNull(final JSONDocument event)
-	{
-		final WindowId windowId = event.getWindowId();
-		if (windowId == null)
-		{
-			return null;
-		}
-
-		final Set<JSONIncludedTabInfo> tabInfos = event.getIncludedTabsInfos()
-				.stream()
-				.filter(JSONIncludedTabInfo::isStale)
-				.collect(ImmutableSet.toImmutableSet());
-		if (tabInfos.isEmpty())
-		{
-			return null;
-		}
-
-		final JSONDocumentChangedWebSocketEvent wsEvent = new JSONDocumentChangedWebSocketEvent(windowId, event.getId(), event.getTabId(), event.getRowId());
-		tabInfos.forEach(wsEvent::addIncludedTabInfo);
-		return wsEvent;
-	}
-
 	@JsonProperty("windowId")
 	private final WindowId windowId;
 
 	@JsonProperty("id")
-	private final DocumentId id;
+	private final DocumentId documentId;
 
 	@JsonProperty("tabId")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
@@ -138,7 +102,7 @@ public final class JSONDocumentChangedWebSocketEvent implements WebsocketEndpoin
 	@JsonProperty("includedTabsInfo")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	// @JsonSerialize(using = JsonMapAsValuesListSerializer.class) // serialize as Map (see #288)
-	private Map<String, JSONIncludedTabInfo> includedTabsInfo;
+	private Map<String, JSONIncludedTabInfo> includedTabsInfoByTabId;
 
 	private JSONDocumentChangedWebSocketEvent(
 			@NonNull final WindowId windowId,
@@ -147,26 +111,49 @@ public final class JSONDocumentChangedWebSocketEvent implements WebsocketEndpoin
 			@Nullable final DocumentId rowId)
 	{
 		this.windowId = windowId;
-		this.id = id;
+		this.documentId = id;
 		this.tabId = tabId;
-		this.tabid = tabId;
+		tabid = tabId;
 		this.rowId = rowId;
 
-		this.timestamp = JSONDate.toJson(SystemTime.millis());
+		timestamp = JSONDate.toJson(SystemTime.millis());
+	}
+
+	private JSONDocumentChangedWebSocketEvent(JSONDocumentChangedWebSocketEvent from)
+	{
+		windowId = from.windowId;
+		documentId = from.documentId;
+		tabId = from.tabId;
+		tabid = from.tabid;
+		rowId = from.rowId;
+		timestamp = from.timestamp;
+
+		stale = from.stale;
+
+		if (from.includedTabsInfoByTabId != null)
+		{
+			includedTabsInfoByTabId = new HashMap<>();
+			from.includedTabsInfoByTabId.forEach((key, tabInfo) -> includedTabsInfoByTabId.put(key, tabInfo.copy()));
+		}
+	}
+	
+	public JSONDocumentChangedWebSocketEvent copy()
+	{
+		return new JSONDocumentChangedWebSocketEvent(this);
 	}
 
 	void setStale()
 	{
-		this.stale = Boolean.TRUE;
+		stale = Boolean.TRUE;
 	}
 
 	private Map<String, JSONIncludedTabInfo> getIncludedTabsInfo()
 	{
-		if (includedTabsInfo == null)
+		if (includedTabsInfoByTabId == null)
 		{
-			includedTabsInfo = new HashMap<>();
+			includedTabsInfoByTabId = new HashMap<>();
 		}
-		return includedTabsInfo;
+		return includedTabsInfoByTabId;
 	}
 
 	private JSONIncludedTabInfo getIncludedTabInfo(final DetailId tabId)
@@ -174,16 +161,26 @@ public final class JSONDocumentChangedWebSocketEvent implements WebsocketEndpoin
 		return getIncludedTabsInfo().computeIfAbsent(tabId.toJson(), k -> JSONIncludedTabInfo.newInstance(tabId));
 	}
 
-	private void addIncludedTabInfo(final JSONIncludedTabInfo tabInfo)
+	void addIncludedTabInfo(@NonNull final JSONIncludedTabInfo tabInfo)
 	{
-		getIncludedTabsInfo().put(tabInfo.getTabId(), tabInfo);
+		getIncludedTabsInfo().compute(tabInfo.getTabId().toJson(), (tabId, existingTabInfo) -> {
+			if (existingTabInfo == null)
+			{
+				return tabInfo.copy();
+			}
+			else
+			{
+				existingTabInfo.mergeFrom(tabInfo);
+				return existingTabInfo;
+			}
+		});
 	}
 
 	@Override
 	@JsonIgnore
 	public String getWebsocketEndpoint()
 	{
-		return WebSocketConfig.buildDocumentTopicName(windowId, id);
+		return WebSocketConfig.buildDocumentTopicName(windowId, documentId);
 	}
 
 	public void staleTab(@NonNull final DetailId tabId)
@@ -199,6 +196,27 @@ public final class JSONDocumentChangedWebSocketEvent implements WebsocketEndpoin
 	public void staleIncludedRow(@NonNull final DetailId tabId, @NonNull final DocumentId rowId)
 	{
 		getIncludedTabInfo(tabId).staleRow(rowId);
+	}
+
+	void mergeFrom(@NonNull final JSONDocumentChangedWebSocketEvent from)
+	{
+		if (!Objects.equals(windowId, from.windowId)
+				|| !Objects.equals(documentId, from.documentId)
+				|| !Objects.equals(tabId, from.tabId)
+				|| !Objects.equals(rowId, from.rowId))
+		{
+			throw new AdempiereException("Cannot merge events because they are not matching")
+					.setParameter("from", from)
+					.setParameter("to", this)
+					.appendParametersToMessage();
+		}
+
+		if (from.stale)
+		{
+			stale = from.stale;
+		}
+
+		from.getIncludedTabsInfo().values().forEach(this::addIncludedTabInfo);
 	}
 
 }

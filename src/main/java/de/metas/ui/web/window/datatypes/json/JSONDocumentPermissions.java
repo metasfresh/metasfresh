@@ -7,7 +7,6 @@ import org.adempiere.ad.security.IUserRolePermissions;
 
 import de.metas.ui.web.window.controller.DocumentPermissionsHelper;
 import de.metas.ui.web.window.datatypes.DocumentPath;
-import de.metas.ui.web.window.datatypes.json.JSONDocument.JSONIncludedTabInfo;
 import de.metas.ui.web.window.model.Document;
 import lombok.NonNull;
 

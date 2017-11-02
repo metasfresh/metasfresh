@@ -38,7 +38,6 @@ import de.metas.ui.web.process.ProcessRestController;
 import de.metas.ui.web.process.descriptor.WebuiRelatedProcessDescriptor;
 import de.metas.ui.web.process.json.JSONDocumentActionsList;
 import de.metas.ui.web.session.UserSession;
-import de.metas.ui.web.websocket.WebsocketSender;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.DocumentPath;
@@ -58,7 +57,7 @@ import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.descriptor.DocumentDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.factory.NewRecordDescriptorsProvider;
-import de.metas.ui.web.window.events.JSONDocumentChangedWebSocketEvent;
+import de.metas.ui.web.window.events.DocumentWebsocketPublisher;
 import de.metas.ui.web.window.exceptions.InvalidDocumentPathException;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.DocumentCollection;
@@ -127,7 +126,7 @@ public class WindowRestController
 	private MenuTreeRepository menuTreeRepository;
 
 	@Autowired
-	private WebsocketSender websocketSender;
+	private DocumentWebsocketPublisher websocketPublisher;
 
 	private JSONOptions.Builder newJSONOptions()
 	{
@@ -325,10 +324,9 @@ public class WindowRestController
 					return null; // void
 				});
 
-		final List<JSONDocument> jsonDocumentEvents = JSONDocument.ofEvents(changesCollector, jsonOpts);
-
 		// Extract and send websocket events
-		JSONDocumentChangedWebSocketEvent.extractWebsocketEvents(jsonDocumentEvents).forEach(websocketSender::convertAndSend);
+		final List<JSONDocument> jsonDocumentEvents = JSONDocument.ofEvents(changesCollector, jsonOpts);
+		websocketPublisher.convertAndPublish(jsonDocumentEvents);
 
 		return jsonDocumentEvents;
 	}

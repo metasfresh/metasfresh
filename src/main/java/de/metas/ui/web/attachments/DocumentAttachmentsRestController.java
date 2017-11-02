@@ -30,7 +30,7 @@ import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.factory.DocumentDescriptorFactory;
-import de.metas.ui.web.window.events.DocumentChangedWebSocketEventsPublisher;
+import de.metas.ui.web.window.events.DocumentWebsocketPublisher;
 import lombok.NonNull;
 
 /*
@@ -66,7 +66,7 @@ public class DocumentAttachmentsRestController
 	@Autowired
 	private DocumentDescriptorFactory documentDescriptorFactory;
 	@Autowired
-	private DocumentChangedWebSocketEventsPublisher websocketPublisher;
+	private DocumentWebsocketPublisher websocketPublisher;
 
 	private DocumentAttachments getDocumentAttachments(final String windowIdStr, final String documentId)
 	{

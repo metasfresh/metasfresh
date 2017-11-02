@@ -12,6 +12,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.WindowId;
+import de.metas.ui.web.window.datatypes.json.JSONIncludedTabInfo;
 import de.metas.ui.web.window.descriptor.DetailId;
 import lombok.NonNull;
 import lombok.ToString;
@@ -69,6 +70,11 @@ class JSONDocumentChangedWebSocketEventCollector
 		events.clear();
 		return eventsList;
 	}
+	
+	public boolean isEmpty()
+	{
+		return events.isEmpty();
+	}
 
 	private JSONDocumentChangedWebSocketEvent getCreateEvent(@NonNull final WindowId windowId, @NonNull final DocumentId documentId)
 	{
@@ -122,5 +128,31 @@ class JSONDocumentChangedWebSocketEventCollector
 	{
 		final JSONDocumentChangedWebSocketEvent event = getCreateEvent(windowId, documentId);
 		event.staleIncludedRow(tabId, rowId);
+	}
+
+	public void mergeFrom(final WindowId windowId, final DocumentId documentId, final JSONIncludedTabInfo tabInfo)
+	{
+		final JSONDocumentChangedWebSocketEvent event = getCreateEvent(windowId, documentId);
+		event.addIncludedTabInfo(tabInfo);
+	}
+
+	public void mergeFrom(final JSONDocumentChangedWebSocketEventCollector from)
+	{
+		from.events.forEach(this::mergeFrom);
+	}
+
+	private void mergeFrom(final EventKey key, final JSONDocumentChangedWebSocketEvent from)
+	{
+		events.compute(key, (k, existingEvent) -> {
+			if (existingEvent == null)
+			{
+				return from.copy();
+			}
+			else
+			{
+				existingEvent.mergeFrom(from);
+				return existingEvent;
+			}
+		});
 	}
 }

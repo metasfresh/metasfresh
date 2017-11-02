@@ -60,7 +60,7 @@ import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DocumentDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.factory.DocumentDescriptorFactory;
-import de.metas.ui.web.window.events.DocumentChangedWebSocketEventsPublisher;
+import de.metas.ui.web.window.events.DocumentWebsocketPublisher;
 import de.metas.ui.web.window.exceptions.DocumentNotFoundException;
 import de.metas.ui.web.window.exceptions.InvalidDocumentPathException;
 import de.metas.ui.web.window.model.Document.CopyMode;
@@ -104,7 +104,7 @@ public class DocumentCollection
 	private UserSession userSession;
 
 	@Autowired
-	private DocumentChangedWebSocketEventsPublisher websocketPublisher;
+	private DocumentWebsocketPublisher websocketPublisher;
 
 	private final Cache<DocumentKey, Document> rootDocuments = CacheBuilder.newBuilder().build();
 

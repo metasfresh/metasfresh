@@ -14,6 +14,7 @@ import de.metas.ui.web.websocket.WebsocketSender;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.WindowId;
+import de.metas.ui.web.window.datatypes.json.JSONDocument;
 import de.metas.ui.web.window.descriptor.DetailId;
 import lombok.NonNull;
 
@@ -39,18 +40,26 @@ import lombok.NonNull;
  * #L%
  */
 
+/**
+ * Publishes document related events to websocket endpoints.
+ *
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
 @Component
-public class DocumentChangedWebSocketEventsPublisher
+public class DocumentWebsocketPublisher
 {
 	private final WebsocketSender websocketSender;
 
-	public DocumentChangedWebSocketEventsPublisher(@NonNull final WebsocketSender websocketSender)
+	public DocumentWebsocketPublisher(@NonNull final WebsocketSender websocketSender)
 	{
 		this.websocketSender = websocketSender;
 	}
 
 	private void forCollector(final Consumer<JSONDocumentChangedWebSocketEventCollector> consumer)
 	{
+		//
+		// Get the collector to use
 		final JSONDocumentChangedWebSocketEventCollector collector;
 		final boolean autoflush;
 
@@ -67,8 +76,12 @@ public class DocumentChangedWebSocketEventsPublisher
 			autoflush = true;
 		}
 
+		//
+		// Call the consumer
 		consumer.accept(collector);
 
+		//
+		// Autoflush if needed
 		if (autoflush)
 		{
 			sendAllAndClear(collector, websocketSender);
@@ -115,4 +128,40 @@ public class DocumentChangedWebSocketEventsPublisher
 		forCollector(collector -> collector.staleIncludedDocument(windowId, documentId, tabId, rowId));
 	}
 
+	public void convertAndPublish(final List<JSONDocument> jsonDocumentEvents)
+	{
+		if (jsonDocumentEvents == null || jsonDocumentEvents.isEmpty())
+		{
+			return;
+		}
+
+		final JSONDocumentChangedWebSocketEventCollector collectorToMerge = JSONDocumentChangedWebSocketEventCollector.newInstance();
+		jsonDocumentEvents.forEach(event -> collectFrom(collectorToMerge, event));
+		
+		if(collectorToMerge.isEmpty())
+		{
+			return;
+		}
+
+		forCollector(collector -> collector.mergeFrom(collectorToMerge));
+	}
+
+	private static final void collectFrom(final JSONDocumentChangedWebSocketEventCollector collector, final JSONDocument event)
+	{
+		final WindowId windowId = event.getWindowId();
+		if (windowId == null)
+		{
+			return;
+		}
+
+		// Included document => nothing to publish about it
+		if (event.getTabId() != null)
+		{
+			return;
+		}
+
+		final DocumentId documentId = event.getId();
+
+		event.getIncludedTabsInfos().forEach(tabInfo -> collector.mergeFrom(windowId, documentId, tabInfo));
+	}
 }

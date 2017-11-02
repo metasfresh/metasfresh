@@ -21,7 +21,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.session.UserSession;
-import de.metas.ui.web.websocket.WebsocketSender;
 import de.metas.ui.web.window.controller.DocumentPermissionsHelper;
 import de.metas.ui.web.window.controller.Execution;
 import de.metas.ui.web.window.controller.WindowRestController;
@@ -36,7 +35,7 @@ import de.metas.ui.web.window.datatypes.json.JSONQuickInputLayoutDescriptor;
 import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.factory.NewRecordDescriptorsProvider;
-import de.metas.ui.web.window.events.JSONDocumentChangedWebSocketEvent;
+import de.metas.ui.web.window.events.DocumentWebsocketPublisher;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.Document.CopyMode;
 import de.metas.ui.web.window.model.DocumentCollection;
@@ -85,7 +84,7 @@ public class WindowQuickInputRestController
 	private NewRecordDescriptorsProvider newRecordDescriptorsProvider;
 
 	@Autowired
-	private WebsocketSender websocketSender;
+	private DocumentWebsocketPublisher websocketPublisher;
 
 	private final CCache<DocumentId, QuickInput> _quickInputDocuments = CCache.newLRUCache("QuickInputDocuments", 200, 0);
 
@@ -285,10 +284,9 @@ public class WindowQuickInputRestController
 				return null; // void
 			});
 
-			final List<JSONDocument> jsonDocumentEvents = JSONDocument.ofEvents(changesCollector, newJSONOptions());
-
 			// Extract and send websocket events
-			JSONDocumentChangedWebSocketEvent.extractWebsocketEvents(jsonDocumentEvents).forEach(websocketSender::convertAndSend);
+			final List<JSONDocument> jsonDocumentEvents = JSONDocument.ofEvents(changesCollector, newJSONOptions());
+			websocketPublisher.convertAndPublish(jsonDocumentEvents);
 
 			return jsonDocumentEvents;
 		});
