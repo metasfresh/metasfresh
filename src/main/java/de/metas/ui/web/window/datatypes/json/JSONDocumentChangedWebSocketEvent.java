@@ -7,6 +7,7 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.time.SystemTime;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
@@ -19,6 +20,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.ui.web.websocket.WebSocketConfig;
 import de.metas.ui.web.websocket.WebsocketSender;
 import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONDocument.JSONIncludedTabInfo;
 import de.metas.ui.web.window.descriptor.DetailId;
@@ -115,6 +117,38 @@ public final class JSONDocumentChangedWebSocketEvent
 				.forEach(event::addIncludedTabInfo);
 
 		return event;
+	}
+
+	public static JSONDocumentChangedWebSocketEvent staleTab(final WindowId windowId, final DocumentId documentId, final DetailId tabId)
+	{
+		return staleTabs(windowId, documentId, ImmutableSet.of(tabId));
+	}
+
+	public static JSONDocumentChangedWebSocketEvent staleIncludedDocument(final WindowId windowId, final DocumentId documentId, final DetailId tabId, final DocumentId rowId)
+	{
+		final JSONDocumentChangedWebSocketEvent event = new JSONDocumentChangedWebSocketEvent(windowId, documentId, tabId.toJson(), rowId);
+		event.setStale();
+		return event;
+	}
+
+	public static JSONDocumentChangedWebSocketEvent stableByDocumentPath(final DocumentPath documentPath)
+	{
+		if (documentPath.isRootDocument())
+		{
+			return staleRootDocument(documentPath.getWindowId(), documentPath.getDocumentId());
+		}
+		else if (documentPath.isAnyIncludedDocument())
+		{
+			return staleTab(documentPath.getWindowId(), documentPath.getDocumentId(), documentPath.getDetailId());
+		}
+		else if (documentPath.isSingleIncludedDocument())
+		{
+			return staleIncludedDocument(documentPath.getWindowId(), documentPath.getDocumentId(), documentPath.getDetailId(), documentPath.getSingleRowId());
+		}
+		else
+		{
+			throw new AdempiereException("Cannot convert " + documentPath + " to websocket staled event");
+		}
 	}
 
 	@JsonProperty("windowId")
