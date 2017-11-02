@@ -23,11 +23,6 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 UPDATE AD_Column SET DefaultValue='EMPTY', IsMandatory='Y',Updated=TO_TIMESTAMP('2017-10-24 14:53:25','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=557786
 ;
 
--- 2017-10-24T14:54:06.667
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-DELETE FROM AD_PInstance_SelectedIncludedRecords WHERE AD_PInstance_ID=?
-;
-
 -- 2017-10-24T14:54:06.692
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 /* DDL */ SELECT public.db_alter_table('MD_Candidate','ALTER TABLE public.MD_Candidate ADD COLUMN StorageAttributesKey VARCHAR(1024) DEFAULT ''EMPTY'' NOT NULL')
