@@ -80,10 +80,15 @@ Here come the actual release notes:
 ## Fixes
 * metasfresh-app
   * [#2634](https://github.com/metasfresh/metasfresh/issues/2634) Make the CalloutBankStatement webui compliant
+    * Fixes the Callout BankStatement for the usage in Bankstatement Window in WebUI.
   * [#2719](https://github.com/metasfresh/metasfresh/issues/2357) exception when using process quotation to sales order with parameter complete order
+    * Fixes an exception that occured when using the action Quotation to Sales Order in WebUI.
   * [#2818](https://github.com/metasfresh/metasfresh/issues/2818) Flatrate: Have relation from Sales Order to invoice candidate
+    * New Relation from Sales Order to Invoice Candidates for Flatrate Terms.
   * [#2823](https://github.com/metasfresh/metasfresh/issues/2823) Add C_Invoice_Candidate.Priority missing column
+    * Adding the column Priority to Invoice Candidates.
   * [#2836](https://github.com/metasfresh/metasfresh/issues/2836) Setup wizard shall not inactivate ESR
+    * Improving the Setup Wizard, now avoiding the deactivation of ESR in Setup Workflow.
 
 * metasfresh-webui-api
   * [#643](https://github.com/metasfresh/metasfresh-webui-api/issues/643) Picking Tray Clearing requery to see the right view
