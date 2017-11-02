@@ -2,7 +2,7 @@ package de.metas.contracts.subscription.process;
 
 import de.metas.contracts.model.I_C_SubscriptionProgress;
 import de.metas.contracts.model.X_C_SubscriptionProgress;
-import de.metas.contracts.subscription.impl.SubscriptionCommand;
+import de.metas.contracts.subscription.impl.SubscriptionService;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
@@ -32,7 +32,7 @@ public class C_SubscriptionProgress_RemovePauses
 	protected String doIt()
 	{
 		final I_C_SubscriptionProgress subscriptionProgress = getRecord(I_C_SubscriptionProgress.class);
-		SubscriptionCommand.get().removePauses(subscriptionProgress.getC_Flatrate_Term(), subscriptionProgress.getEventDate(), subscriptionProgress.getEventDate());
+		SubscriptionService.get().removePausesAroundDate(subscriptionProgress.getC_Flatrate_Term(), subscriptionProgress.getEventDate());
 
 		return MSG_OK;
 	}

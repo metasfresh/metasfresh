@@ -1,14 +1,8 @@
 
 package de.metas.contracts.subscription.process;
 
-import org.adempiere.util.Services;
-
 import de.metas.contracts.model.I_C_Flatrate_Term;
-import de.metas.contracts.model.I_C_SubscriptionProgress;
-import de.metas.contracts.model.X_C_SubscriptionProgress;
-import de.metas.contracts.subscription.ISubscriptionDAO;
-import de.metas.contracts.subscription.ISubscriptionDAO.SubscriptionProgressQuery;
-import de.metas.contracts.subscription.impl.SubscriptionCommand;
+import de.metas.contracts.subscription.impl.SubscriptionService;
 import de.metas.process.IProcessPrecondition;
 
 /*
@@ -42,15 +36,9 @@ public class C_FlatrateTerm_RemovePauses
 	protected String doIt() throws Exception
 	{
 		final I_C_Flatrate_Term term = getTermFromProcessInfo();
-		
-		final SubscriptionProgressQuery query = SubscriptionProgressQuery.builder()
-				.term(term)
-				.includedContractStatus(X_C_SubscriptionProgress.CONTRACTSTATUS_DeliveryPause)
-				.build();
-		
-		final I_C_SubscriptionProgress firstSubscriptionProgress = Services.get(ISubscriptionDAO.class).retrieveFirstSubscriptionProgress(query);
 
-		SubscriptionCommand.get().removePauses(term, firstSubscriptionProgress.getEventDate() , firstSubscriptionProgress.getEventDate());
+
+		SubscriptionService.get().removeAllPauses(term);
 
 		return MSG_OK;
 	}

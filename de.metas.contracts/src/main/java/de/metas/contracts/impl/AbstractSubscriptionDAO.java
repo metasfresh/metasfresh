@@ -11,6 +11,8 @@ import java.util.Properties;
 import org.adempiere.ad.dao.ICompositeQueryUpdater;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryOrderBy.Direction;
+import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
@@ -170,7 +172,7 @@ public abstract class AbstractSubscriptionDAO implements ISubscriptionDAO
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_SubscriptionProgress.COLUMN_C_Flatrate_Term_ID, termId)
 				.addCompareFilter(I_C_SubscriptionProgress.COLUMN_SeqNo, Operator.GREATER_OR_EQUAL, seqNo)
-				.orderBy().addColumn(I_C_SubscriptionProgress.COLUMNNAME_SeqNo, false).endOrderBy()
+				.orderBy().addColumn(I_C_SubscriptionProgress.COLUMNNAME_SeqNo, Direction.Ascending, Nulls.Last).endOrderBy()
 				.create()
 				.first();
 	}
