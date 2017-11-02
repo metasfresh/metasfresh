@@ -58,7 +58,7 @@ public class ModelCacheInvalidationService implements IModelCacheInvalidationSer
 	{
 		requestFactoriesByTableName.put(tableName, requestFactory);
 		logger.info("Registered for {}: {}", tableName, requestFactory);
-		
+
 		CacheMgt.get().enableRemoteCacheInvalidationForTableName(tableName);
 	}
 
@@ -100,7 +100,6 @@ public class ModelCacheInvalidationService implements IModelCacheInvalidationSer
 		@Override
 		public CacheInvalidateRequest createRequestFromModel(final Object model, final ModelCacheInvalidationTiming timing)
 		{
-			// TODO: in case of DELETE, make sure the m_oldId is picked
 			final String tableName = InterfaceWrapperHelper.getModelTableName(model);
 			final int recordId = InterfaceWrapperHelper.getId(model);
 			return CacheInvalidateRequest.rootRecord(tableName, recordId);
@@ -112,12 +111,12 @@ public class ModelCacheInvalidationService implements IModelCacheInvalidationSer
 		@Override
 		public CacheInvalidateRequest createRequestFromModel(final Object model, final ModelCacheInvalidationTiming timing)
 		{
-			// TODO: in case of DELETE, make sure the m_oldId is picked
 			final I_C_OrderLine orderLine = InterfaceWrapperHelper.create(model, I_C_OrderLine.class);
-			return CacheInvalidateRequest.builder()
+			final CacheInvalidateRequest request = CacheInvalidateRequest.builder()
 					.rootRecord(I_C_Order.Table_Name, orderLine.getC_Order_ID())
 					.childRecord(I_C_OrderLine.Table_Name, orderLine.getC_OrderLine_ID())
 					.build();
+			return request;
 		}
 	}
 }
