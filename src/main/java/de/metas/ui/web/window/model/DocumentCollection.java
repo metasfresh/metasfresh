@@ -51,17 +51,16 @@ import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessInfo;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.session.UserSession;
-import de.metas.ui.web.websocket.WebsocketSender;
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.controller.DocumentPermissionsHelper;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.DocumentType;
 import de.metas.ui.web.window.datatypes.WindowId;
-import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedWebSocketEvent;
 import de.metas.ui.web.window.descriptor.DocumentDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.factory.DocumentDescriptorFactory;
+import de.metas.ui.web.window.events.DocumentChangedWebSocketEventsPublisher;
 import de.metas.ui.web.window.exceptions.DocumentNotFoundException;
 import de.metas.ui.web.window.exceptions.InvalidDocumentPathException;
 import de.metas.ui.web.window.model.Document.CopyMode;
@@ -105,7 +104,7 @@ public class DocumentCollection
 	private UserSession userSession;
 
 	@Autowired
-	private WebsocketSender websocketSender;
+	private DocumentChangedWebSocketEventsPublisher websocketPublisher;
 
 	private final Cache<DocumentKey, Document> rootDocuments = CacheBuilder.newBuilder().build();
 
@@ -619,10 +618,7 @@ public class DocumentCollection
 
 		//
 		// Notify frontend
-		documentKeys.forEach(documentKey -> {
-			final JSONDocumentChangedWebSocketEvent event = JSONDocumentChangedWebSocketEvent.staleRootDocument(documentKey.getWindowId(), documentKey.getDocumentId());
-			websocketSender.convertAndSend(event.getWebsocketEndpoint(), event);
-		});
+		documentKeys.forEach(documentKey -> websocketPublisher.staleRootDocument(documentKey.getWindowId(), documentKey.getDocumentId()));
 	}
 
 	public void invalidateIncludedDocumentsByRecordId(final String tableName, final int recordId, final String childTableName, final int childRecordId)
@@ -658,14 +654,14 @@ public class DocumentCollection
 
 		final DocumentPath rootDocumentPath = documentPath.getRootDocumentPath();
 		forRootDocumentWritable(rootDocumentPath, NullDocumentChangesCollector.instance, document -> {
+			// TODO: implement staling only given rowId
 			document.getIncludedDocumentsCollection(documentPath.getDetailId()).markStaleAll();
 			return null; // void
 		});
 
 		//
 		// Notify frontend
-		final JSONDocumentChangedWebSocketEvent event = JSONDocumentChangedWebSocketEvent.stableByDocumentPath(documentPath);
-		websocketSender.convertAndSend(event.getWebsocketEndpoint(), event);
+		websocketPublisher.staleByDocumentPath(documentPath);
 	}
 
 	/**
@@ -684,8 +680,7 @@ public class DocumentCollection
 
 		//
 		// Notify frontend
-		final JSONDocumentChangedWebSocketEvent event = JSONDocumentChangedWebSocketEvent.staleRootDocument(documentKey.getWindowId(), documentKey.getDocumentId());
-		websocketSender.convertAndSend(event.getWebsocketEndpoint(), event);
+		websocketPublisher.staleByDocumentPath(documentPath);
 	}
 
 	public Document duplicateDocument(final DocumentPath fromDocumentPath)

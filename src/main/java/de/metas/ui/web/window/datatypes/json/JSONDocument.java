@@ -3,6 +3,7 @@ package de.metas.ui.web.window.datatypes.json;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -347,12 +348,22 @@ public final class JSONDocument extends JSONDocumentBase
 			return new JSONIncludedTabInfo(tabId, stale);
 		}
 		
+		public static JSONIncludedTabInfo newInstance(final DetailId tabId)
+		{
+			final boolean stale = false;
+			return new JSONIncludedTabInfo(tabId, stale);
+		}
+		
 		@JsonProperty("tabid")
 		private final String tabid;
 
 		@JsonProperty("stale")
 		@JsonInclude(JsonInclude.Include.NON_NULL)
-		private final Boolean stale;
+		private Boolean stale;
+		
+		@JsonProperty("staleRowIds")
+		@JsonInclude(JsonInclude.Include.NON_EMPTY)
+		private final Set<DocumentId> staleRowIds = new HashSet<>();
 
 		@JsonProperty("allowCreateNew")
 		@JsonInclude(JsonInclude.Include.NON_NULL)
@@ -451,10 +462,23 @@ public final class JSONDocument extends JSONDocumentBase
 			this.allowDelete = allowDelete;
 			allowDeleteReason = reason;
 		}
+		
+		public void setStale()
+		{
+			this.stale = Boolean.TRUE;
+		}
 
 		public boolean isStale()
 		{
 			return stale != null && stale.booleanValue();
+		}
+
+		public void staleRow(@NonNull final DocumentId rowId)
+		{
+			staleRowIds.add(rowId);
+			
+			// FIXME: atm staling included rows is not supported on frontend, so we are invalidating the whole tab.
+			setStale();
 		}
 	}
 }

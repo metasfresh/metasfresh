@@ -1,13 +1,13 @@
-package de.metas.ui.web.window.datatypes.json;
+package de.metas.ui.web.window.events;
 
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.time.SystemTime;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
@@ -18,10 +18,11 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.ui.web.websocket.WebSocketConfig;
-import de.metas.ui.web.websocket.WebsocketSender;
+import de.metas.ui.web.websocket.WebsocketEndpointAware;
 import de.metas.ui.web.window.datatypes.DocumentId;
-import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.WindowId;
+import de.metas.ui.web.window.datatypes.json.JSONDate;
+import de.metas.ui.web.window.datatypes.json.JSONDocument;
 import de.metas.ui.web.window.datatypes.json.JSONDocument.JSONIncludedTabInfo;
 import de.metas.ui.web.window.descriptor.DetailId;
 import lombok.EqualsAndHashCode;
@@ -61,23 +62,29 @@ import lombok.ToString;
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @ToString
 @EqualsAndHashCode
-public final class JSONDocumentChangedWebSocketEvent
+public final class JSONDocumentChangedWebSocketEvent implements WebsocketEndpointAware
 {
-	public static final void extractAndSendWebsocketEvents(final Collection<JSONDocument> jsonDocumentEvents, final WebsocketSender websocketSender)
+	public static JSONDocumentChangedWebSocketEvent rootDocument(final WindowId windowId, final DocumentId documentId)
+	{
+		final String tabId = null;
+		final DocumentId rowId = null;
+		final JSONDocumentChangedWebSocketEvent event = new JSONDocumentChangedWebSocketEvent(windowId, documentId, tabId, rowId);
+		return event;
+	}
+
+	public static final Stream<JSONDocumentChangedWebSocketEvent> extractWebsocketEvents(final Collection<JSONDocument> jsonDocumentEvents)
 	{
 		if (jsonDocumentEvents == null || jsonDocumentEvents.isEmpty())
 		{
-			return;
+			return Stream.empty();
 		}
 
-		jsonDocumentEvents.stream()
-				.map(JSONDocumentChangedWebSocketEvent::extractWebsocketEvent)
-				.filter(wsEvent -> wsEvent != null)
-				.forEach(wsEvent -> websocketSender.convertAndSend(wsEvent.getWebsocketEndpoint(), wsEvent));
+		return jsonDocumentEvents.stream()
+				.map(JSONDocumentChangedWebSocketEvent::extractWebsocketEventOrNull)
+				.filter(wsEvent -> wsEvent != null);
 	}
 
-	/** @return websocket event or null */
-	private static final JSONDocumentChangedWebSocketEvent extractWebsocketEvent(final JSONDocument event)
+	private static final JSONDocumentChangedWebSocketEvent extractWebsocketEventOrNull(final JSONDocument event)
 	{
 		final WindowId windowId = event.getWindowId();
 		if (windowId == null)
@@ -97,58 +104,6 @@ public final class JSONDocumentChangedWebSocketEvent
 		final JSONDocumentChangedWebSocketEvent wsEvent = new JSONDocumentChangedWebSocketEvent(windowId, event.getId(), event.getTabId(), event.getRowId());
 		tabInfos.forEach(wsEvent::addIncludedTabInfo);
 		return wsEvent;
-	}
-
-	public static JSONDocumentChangedWebSocketEvent staleRootDocument(final WindowId windowId, final DocumentId documentId)
-	{
-		final String tabId = null;
-		final DocumentId rowId = null;
-		final JSONDocumentChangedWebSocketEvent event = new JSONDocumentChangedWebSocketEvent(windowId, documentId, tabId, rowId);
-		event.setStale();
-		return event;
-	}
-
-	public static JSONDocumentChangedWebSocketEvent staleTabs(final WindowId windowId, final DocumentId documentId, final Set<DetailId> tabIds)
-	{
-		final JSONDocumentChangedWebSocketEvent event = new JSONDocumentChangedWebSocketEvent(windowId, documentId, (String)null /* tabId */, (DocumentId)null/* rowId */);
-
-		tabIds.stream()
-				.map(tabId -> JSONIncludedTabInfo.staleTab(tabId))
-				.forEach(event::addIncludedTabInfo);
-
-		return event;
-	}
-
-	public static JSONDocumentChangedWebSocketEvent staleTab(final WindowId windowId, final DocumentId documentId, final DetailId tabId)
-	{
-		return staleTabs(windowId, documentId, ImmutableSet.of(tabId));
-	}
-
-	public static JSONDocumentChangedWebSocketEvent staleIncludedDocument(final WindowId windowId, final DocumentId documentId, final DetailId tabId, final DocumentId rowId)
-	{
-		final JSONDocumentChangedWebSocketEvent event = new JSONDocumentChangedWebSocketEvent(windowId, documentId, tabId.toJson(), rowId);
-		event.setStale();
-		return event;
-	}
-
-	public static JSONDocumentChangedWebSocketEvent stableByDocumentPath(final DocumentPath documentPath)
-	{
-		if (documentPath.isRootDocument())
-		{
-			return staleRootDocument(documentPath.getWindowId(), documentPath.getDocumentId());
-		}
-		else if (documentPath.isAnyIncludedDocument())
-		{
-			return staleTab(documentPath.getWindowId(), documentPath.getDocumentId(), documentPath.getDetailId());
-		}
-		else if (documentPath.isSingleIncludedDocument())
-		{
-			return staleIncludedDocument(documentPath.getWindowId(), documentPath.getDocumentId(), documentPath.getDetailId(), documentPath.getSingleRowId());
-		}
-		else
-		{
-			throw new AdempiereException("Cannot convert " + documentPath + " to websocket staled event");
-		}
 	}
 
 	@JsonProperty("windowId")
@@ -200,23 +155,50 @@ public final class JSONDocumentChangedWebSocketEvent
 		this.timestamp = JSONDate.toJson(SystemTime.millis());
 	}
 
-	private void setStale()
+	void setStale()
 	{
 		this.stale = Boolean.TRUE;
 	}
 
-	public void addIncludedTabInfo(final JSONIncludedTabInfo tabInfo)
+	private Map<String, JSONIncludedTabInfo> getIncludedTabsInfo()
 	{
 		if (includedTabsInfo == null)
 		{
 			includedTabsInfo = new HashMap<>();
 		}
-		includedTabsInfo.put(tabInfo.getTabId(), tabInfo);
+		return includedTabsInfo;
 	}
 
+	private JSONIncludedTabInfo getIncludedTabInfo(final DetailId tabId)
+	{
+		return getIncludedTabsInfo().computeIfAbsent(tabId.toJson(), k -> JSONIncludedTabInfo.newInstance(tabId));
+	}
+
+	private void addIncludedTabInfo(final JSONIncludedTabInfo tabInfo)
+	{
+		getIncludedTabsInfo().put(tabInfo.getTabId(), tabInfo);
+	}
+
+	@Override
 	@JsonIgnore
 	public String getWebsocketEndpoint()
 	{
 		return WebSocketConfig.buildDocumentTopicName(windowId, id);
 	}
+
+	public void staleTab(@NonNull final DetailId tabId)
+	{
+		getIncludedTabInfo(tabId).setStale();
+	}
+
+	public void staleTabs(@NonNull final Collection<DetailId> tabIds)
+	{
+		tabIds.stream().map(this::getIncludedTabInfo).forEach(JSONIncludedTabInfo::setStale);
+	}
+
+	public void staleIncludedRow(@NonNull final DetailId tabId, @NonNull final DocumentId rowId)
+	{
+		getIncludedTabInfo(tabId).staleRow(rowId);
+	}
+
 }

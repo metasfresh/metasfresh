@@ -28,12 +28,11 @@ import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.IAttachmentBL;
 import de.metas.ui.web.attachments.json.JSONAttachment;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
-import de.metas.ui.web.websocket.WebsocketSender;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
-import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedWebSocketEvent;
 import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
+import de.metas.ui.web.window.events.DocumentChangedWebSocketEventsPublisher;
 import lombok.Builder;
 import lombok.NonNull;
 
@@ -80,19 +79,19 @@ final class DocumentAttachments
 	private final DocumentPath documentPath;
 	private final ITableRecordReference recordRef;
 	private final DocumentEntityDescriptor entityDescriptor;
-	private final WebsocketSender websocketSender;
+	private final DocumentChangedWebSocketEventsPublisher websocketPublisher;
 
 	@Builder
 	private DocumentAttachments(
 			@NonNull final DocumentPath documentPath,
 			@NonNull final ITableRecordReference recordRef,
 			@NonNull final DocumentEntityDescriptor entityDescriptor,
-			@NonNull final WebsocketSender websocketSender)
+			@NonNull final DocumentChangedWebSocketEventsPublisher websocketPublisher)
 	{
 		this.documentPath = documentPath;
 		this.recordRef = recordRef;
 		this.entityDescriptor = entityDescriptor;
-		this.websocketSender = websocketSender;
+		this.websocketPublisher = websocketPublisher;
 	}
 
 	@Override
@@ -128,14 +127,13 @@ final class DocumentAttachments
 
 		notifyRelatedDocumentTabsChanged();
 	}
-	
+
 	public void addURLEntry(final String name, final URI url)
 	{
 		attachmentsBL.addURLEntry(recordRef, name, url);
 
 		notifyRelatedDocumentTabsChanged();
 	}
-
 
 	public IDocumentAttachmentEntry getEntry(final DocumentId id)
 	{
@@ -228,8 +226,7 @@ final class DocumentAttachments
 			return;
 		}
 
-		final JSONDocumentChangedWebSocketEvent event = JSONDocumentChangedWebSocketEvent.staleTabs(documentPath.getWindowId(), documentPath.getDocumentId(), attachmentRelatedTabIds);
-		websocketSender.convertAndSend(event.getWebsocketEndpoint(), event);
+		websocketPublisher.staleTabs(documentPath.getWindowId(), documentPath.getDocumentId(), attachmentRelatedTabIds);
 	}
 
 }

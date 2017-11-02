@@ -45,7 +45,6 @@ import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONDocument;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
-import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedWebSocketEvent;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayout;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentPath;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentReference;
@@ -59,6 +58,7 @@ import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.descriptor.DocumentDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.factory.NewRecordDescriptorsProvider;
+import de.metas.ui.web.window.events.JSONDocumentChangedWebSocketEvent;
 import de.metas.ui.web.window.exceptions.InvalidDocumentPathException;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.DocumentCollection;
@@ -328,7 +328,7 @@ public class WindowRestController
 		final List<JSONDocument> jsonDocumentEvents = JSONDocument.ofEvents(changesCollector, jsonOpts);
 
 		// Extract and send websocket events
-		JSONDocumentChangedWebSocketEvent.extractAndSendWebsocketEvents(jsonDocumentEvents, websocketSender);
+		JSONDocumentChangedWebSocketEvent.extractWebsocketEvents(jsonDocumentEvents).forEach(websocketSender::convertAndSend);
 
 		return jsonDocumentEvents;
 	}
@@ -759,18 +759,18 @@ public class WindowRestController
 			return newRecordId;
 		}));
 	}
-	
+
 	@PostMapping("/{windowId}/{documentId}/discardChanges")
 	public void discardChanges(
 			@PathVariable("windowId") final String windowIdStr,
 			@PathVariable("documentId") final String documentIdStr)
 	{
 		userSession.assertLoggedIn();
-		
+
 		final DocumentPath documentPath = DocumentPath.rootDocumentPath(WindowId.fromJson(windowIdStr), DocumentId.of(documentIdStr));
 		documentCollection.invalidateRootDocument(documentPath);
 	}
-	
+
 	@PostMapping("/{windowId}/{documentId}/{tabId}/{rowId}/discardChanges")
 	public void discardChanges(
 			@PathVariable("windowId") final String windowIdStr,

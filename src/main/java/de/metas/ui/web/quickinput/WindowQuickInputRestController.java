@@ -30,13 +30,13 @@ import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONDocument;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
-import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedWebSocketEvent;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.datatypes.json.JSONQuickInputLayoutDescriptor;
 import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.factory.NewRecordDescriptorsProvider;
+import de.metas.ui.web.window.events.JSONDocumentChangedWebSocketEvent;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.Document.CopyMode;
 import de.metas.ui.web.window.model.DocumentCollection;
@@ -288,7 +288,7 @@ public class WindowQuickInputRestController
 			final List<JSONDocument> jsonDocumentEvents = JSONDocument.ofEvents(changesCollector, newJSONOptions());
 
 			// Extract and send websocket events
-			JSONDocumentChangedWebSocketEvent.extractAndSendWebsocketEvents(jsonDocumentEvents, websocketSender);
+			JSONDocumentChangedWebSocketEvent.extractWebsocketEvents(jsonDocumentEvents).forEach(websocketSender::convertAndSend);
 
 			return jsonDocumentEvents;
 		});
