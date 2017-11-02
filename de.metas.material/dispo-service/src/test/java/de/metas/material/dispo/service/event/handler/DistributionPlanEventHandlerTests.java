@@ -1,6 +1,7 @@
 package de.metas.material.dispo.service.event.handler;
 
-import static de.metas.material.event.EventTestHelper.*;
+import static de.metas.material.event.EventTestHelper.PRODUCT_ID;
+import static de.metas.material.event.EventTestHelper.createProductDescriptor;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -123,13 +124,13 @@ public class DistributionPlanEventHandlerTests
 		final SupplyProposalEvaluator supplyProposalEvaluator = new SupplyProposalEvaluator(candidateRepository);
 
 		final StockCandidateService stockCandidateService = new StockCandidateService(candidateRepository, candidateRepositoryCommands);
-		
+
 		final DemandCandiateHandler demandCandiateHandler = new DemandCandiateHandler(candidateRepository, candidateRepositoryCommands, materialEventService, stockCandidateService);
 		final SupplyCandiateHandler supplyCandiateHandler = new SupplyCandiateHandler(candidateRepository, candidateRepositoryCommands, stockCandidateService);
 		final CandidateChangeService candidateChangeService = new CandidateChangeService(ImmutableList.of(
 				demandCandiateHandler,
 				supplyCandiateHandler));
-		
+
 		distributionPlanEventHandler = new DistributionPlanEventHandler(
 				candidateRepository,
 				candidateRepositoryCommands,
@@ -218,6 +219,8 @@ public class DistributionPlanEventHandlerTests
 		assertThat(supplyStockRecord.getSeqNo()).isEqualTo(supplyRecord.getSeqNo() - 1);
 		assertThat(supplyRecord.getSeqNo()).isEqualTo(demandRecord.getSeqNo() - 1);
 		assertThat(demandRecord.getSeqNo()).isEqualTo(demandStockRecord.getSeqNo() - 1);
+
+		// TODO: make sure (not necessarily right here!) that the stock is queried correctly and a demand event is fired if needed
 	}
 
 	/**

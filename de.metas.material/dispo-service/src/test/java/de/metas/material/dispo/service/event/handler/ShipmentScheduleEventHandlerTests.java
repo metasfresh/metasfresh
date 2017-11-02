@@ -47,12 +47,12 @@ import mockit.Mocked;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -94,7 +94,7 @@ public class ShipmentScheduleEventHandlerTests
 		final CandidateRepositoryCommands candidateRepositoryCommands = new CandidateRepositoryCommands();
 
 		final CandidateChangeService candidateChangeHandler = new CandidateChangeService(ImmutableList.of(
-				new DemandCandiateHandler(candidateRepository, candidateRepositoryCommands, materialEventService, 
+				new DemandCandiateHandler(candidateRepository, candidateRepositoryCommands, materialEventService,
 						new StockCandidateService(candidateRepository, candidateRepositoryCommands))));
 
 		shipmentScheduleEventHandler = new ShipmentScheduleEventHandler(candidateChangeHandler);
@@ -120,6 +120,8 @@ public class ShipmentScheduleEventHandlerTests
 
 		assertThat(demandRecord.getQty()).isEqualByComparingTo("10");
 		assertThat(stockRecord.getQty()).isEqualByComparingTo("-10"); // the stock is unbalanced, because there is no existing stock and no supply
+
+		// TODO: make sure (not necessarily right here!) that the stock is queried correctly and a demand event is fired if needed
 	}
 
 	public static ShipmentScheduleEvent createShipmentScheduleTestEvent(@NonNull final I_AD_Org org)

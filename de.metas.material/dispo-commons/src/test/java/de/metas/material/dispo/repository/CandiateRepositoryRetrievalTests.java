@@ -45,7 +45,6 @@ import de.metas.material.event.MaterialDescriptor;
 import de.metas.material.event.ProductDescriptor;
 import de.metas.material.event.ProductDescriptorFactory;
 import mockit.Expectations;
-import mockit.Mocked;
 
 /*
  * #%L
@@ -546,9 +545,6 @@ public class CandiateRepositoryRetrievalTests
 		candidateRepository.retrieveAvailableStockForCompleteDescriptor(materialDescriptor);
 	}
 
-	@Mocked
-	DB db;
-
 	@Test
 	public void retrieveAvailableStockForCompleteDescriptor_invokes_DB_function()
 	{
@@ -562,12 +558,12 @@ public class CandiateRepositoryRetrievalTests
 		// @formatter:off
 		new Expectations() {{
 			DB.getSQLValueBDEx(
-					ITrx.TRXNAME_ThreadInherited, 
-					"SELECT COALESCE(Qty, 0) FROM de_metas_material_dispo.MD_Candidate_Latest_Records(?, ?, ?, ?)", 
+					ITrx.TRXNAME_ThreadInherited,
+					"SELECT COALESCE(Qty, 0) FROM de_metas_material_dispo.MD_Candidate_Latest_Records(?, ?, ?, ?)",
 					new Object[] {
-							materialDescriptor.getWarehouseId(), 
-							materialDescriptor.getProductId(), 
-							"%Key1%Key2%", 
+							materialDescriptor.getWarehouseId(),
+							materialDescriptor.getProductId(),
+							"%Key1%Key2%",
 							materialDescriptor.getDate()});
 			times = 1;
 			result = BigDecimal.TEN;

@@ -1,6 +1,6 @@
 package de.metas.material.dispo.service.event.handler;
 
-import static de.metas.material.event.EventTestHelper.*;
+import static de.metas.material.event.EventTestHelper.PRODUCT_ID;
 import static de.metas.material.event.EventTestHelper.createProductDescriptor;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
@@ -119,6 +119,8 @@ public class ProdcutionPlanEventHandlerTests
 	{
 		final ProductionPlanEvent productionPlanEvent = createProductionPlanEvent();
 		perform_testProductionPlanEvent(productionPlanEvent);
+
+		// TODO: make sure (not necessarily right here!) that the stock is queried correctly and a demand event is fired if needed
 	}
 
 	@Test
