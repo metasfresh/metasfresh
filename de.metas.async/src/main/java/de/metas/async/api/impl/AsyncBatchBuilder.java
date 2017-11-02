@@ -47,6 +47,7 @@ class AsyncBatchBuilder implements IAsyncBatchBuilder
 	// Parameters
 	private Properties _ctx;
 	private int _adPInstanceId;
+	private int parentAsycnBatchId;
 	private int _countExpected;
 	private String _name;
 	private String _description;
@@ -69,6 +70,7 @@ class AsyncBatchBuilder implements IAsyncBatchBuilder
 	{
 		final I_C_Async_Batch asyncBatch = InterfaceWrapperHelper.create(getCtx(), I_C_Async_Batch.class, ITrx.TRXNAME_None);
 		asyncBatch.setAD_PInstance_ID(getAD_PInstance_Creator_ID());
+		asyncBatch.setParent_Async_Batch_ID(getParentAsycnBatchId());
 		asyncBatch.setName(getName());
 		asyncBatch.setDescription(getDescription());
 		if (getCountExpected()>0)
@@ -123,6 +125,18 @@ class AsyncBatchBuilder implements IAsyncBatchBuilder
 		return _adPInstanceId;
 	}
 
+	private int getParentAsycnBatchId()
+	{
+		return parentAsycnBatchId;
+	}
+	
+	@Override
+	public IAsyncBatchBuilder setParentAsycnBatchId(int parentAsycnBatchId)
+	{
+		this.parentAsycnBatchId = parentAsycnBatchId;
+		return this;
+	}
+	
 	@Override
 	public IAsyncBatchBuilder setName(final String name)
 	{

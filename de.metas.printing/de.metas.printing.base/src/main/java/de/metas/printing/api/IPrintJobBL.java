@@ -36,7 +36,6 @@ import de.metas.printing.model.I_C_Print_Job_Detail;
 import de.metas.printing.model.I_C_Print_Job_Instructions;
 import de.metas.printing.model.I_C_Print_Job_Line;
 import de.metas.printing.model.I_C_Printing_Queue;
-import de.metas.printing.spi.IPrintJobMonitor;
 
 /**
  * @author cg
@@ -53,10 +52,11 @@ public interface IPrintJobBL extends ISingletonService
 	 * This method is skipping items which were already printed (see {@link I_C_Printing_Queue#isProcessed()})
 	 * 
 	 * @param source
-	 * @param monitor
+	 * @param adPInstanceId
+	 * @param parentAsyncBatchId
 	 * @return number of created print jobs
 	 */
-	int createPrintJobs(IPrintingQueueSource source, IPrintJobMonitor monitor);
+	int createPrintJobs(IPrintingQueueSource source, int adPInstanceId, int parentAsyncBatchId);
 
 	/**
 	 * Creates an instructions record for the given print job.

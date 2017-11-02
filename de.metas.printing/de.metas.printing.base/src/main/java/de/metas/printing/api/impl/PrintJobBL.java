@@ -16,15 +16,14 @@ package de.metas.printing.api.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -44,19 +43,13 @@ import org.adempiere.util.collections.IteratorUtils;
 import org.adempiere.util.collections.PeekIterator;
 import org.adempiere.util.collections.SingletonIterator;
 import org.adempiere.util.lang.Mutable;
-import org.compiere.model.I_AD_PInstance;
 import org.compiere.util.TrxRunnable;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.service.IPrinterRoutingDAO;
 import de.metas.async.api.IAsyncBatchBL;
-import de.metas.async.api.IAsyncBatchDAO;
-import de.metas.async.api.IQueueDAO;
 import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.model.I_C_Async_Batch;
-import de.metas.async.model.I_C_Async_Batch_Type;
-import de.metas.async.model.I_C_Queue_Block;
-import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
@@ -77,8 +70,9 @@ import de.metas.printing.model.I_C_Print_Job_Line;
 import de.metas.printing.model.I_C_Printing_Queue;
 import de.metas.printing.model.X_AD_PrinterHW;
 import de.metas.printing.model.X_C_Print_Job_Instructions;
-import de.metas.printing.spi.IPrintJobBatchMonitor;
-import de.metas.printing.spi.IPrintJobMonitor;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
 
 /**
  * @author cg
@@ -91,11 +85,9 @@ public class PrintJobBL implements IPrintJobBL
 	public final static String SYSCONFIG_MAX_LINES_PER_JOB = Printing_Constants.SYSCONFIG_Printing_PREFIX + "MaxLinesPerJob";
 
 	private final static transient Logger logger = LogManager.getLogger(PrintJobBL.class);
-	
+
 	private final IPrintingDAO dao = Services.get(IPrintingDAO.class);
-	private final IAsyncBatchDAO asyncBatchDAO = Services.get(IAsyncBatchDAO.class);
 	private final IAsyncBatchBL asyncBatchBL = Services.get(IAsyncBatchBL.class);
-	private final IQueueDAO queueDAO = Services.get(IQueueDAO.class);
 
 	private int maxLinesPerJob = -1;
 
@@ -115,16 +107,14 @@ public class PrintJobBL implements IPrintJobBL
 	}
 
 	@Override
-	public int createPrintJobs(final IPrintingQueueSource source,
-			final IPrintJobMonitor monitor)
+	public int createPrintJobs(@NonNull final IPrintingQueueSource source, final int adPInstanceId, final int parentAsyncBatchId)
 	{
 		final String trxName = source.getTrxName();
 		final PrintingQueueProcessingInfo printingQueueProcessingInfo = source.getProcessingInfo();
 
 		int printJobCount = 0;
 		final List<I_C_Print_Job_Instructions> pdfPrintingJobInstructions = new ArrayList<I_C_Print_Job_Instructions>();
-		
-		final IPrintJobBatchMonitor batchMonitor = monitor.createBatchMonitor();
+
 		try
 		{
 			// important: we shall poll the queue respecting the FIFO order
@@ -146,8 +136,7 @@ public class PrintJobBL implements IPrintJobBL
 				final PeekIterator<I_C_Printing_Queue> currentItems = IteratorUtils.asPeekIterator(
 						new IteratorChain<I_C_Printing_Queue>()
 								.addIterator(new SingletonIterator<I_C_Printing_Queue>(item))
-								.addIterator(relatedItems)
-						);
+								.addIterator(relatedItems));
 
 				try
 				{
@@ -155,11 +144,6 @@ public class PrintJobBL implements IPrintJobBL
 
 					while (currentItems.hasNext())
 					{
-						if (!batchMonitor.printJobBeforeCreate())
-						{
-							return printJobCount;
-						}
-
 						final List<I_C_Print_Job_Instructions> printJobInstructions = createPrintJob(source,
 								currentItems,
 								printingQueueProcessingInfo,
@@ -175,11 +159,6 @@ public class PrintJobBL implements IPrintJobBL
 
 						printJobCount++;
 
-						if (!batchMonitor.printJobCreated(printJobInstructions.get(0))) // doesn't matter which one we call the monitor with
-						{
-							return printJobCount;
-						}
-
 						skipPrinted(source, currentItems);
 					}
 				}
@@ -191,103 +170,16 @@ public class PrintJobBL implements IPrintJobBL
 		}
 		finally
 		{
-			batchMonitor.finish();
-			enqueueForPDFPrinting(source, monitor, pdfPrintingJobInstructions, printJobCount);
-			
+			final PrintingAsyncBatch printingAsyncBatch = PrintingAsyncBatch.builder()
+					.name(source.getName())
+					.adPInstanceId(adPInstanceId)
+					.printJobCount(printJobCount)
+					.parentAsyncBatchId(parentAsyncBatchId)
+					.build();
+			enqueueForPDFPrinting(pdfPrintingJobInstructions, printingAsyncBatch);
 		}
 
 		return printJobCount;
-	}
-	
-	/**
-	 * Builds a list from all C_Print_Job_Instructions that have a PDF printer set
-	 * @param printJobInstructions
-	 * @return
-	 */
-	private List<I_C_Print_Job_Instructions> collectPDFPrintJobInstructions(final List<I_C_Print_Job_Instructions> printJobInstructions)
-	{
-		final List<I_C_Print_Job_Instructions> pdfInstructions = new ArrayList<I_C_Print_Job_Instructions>();
-
-		for (final I_C_Print_Job_Instructions pji : printJobInstructions)
-		{
-			// Send to the virtual printer
-			if (X_C_Print_Job_Instructions.STATUS_Pending.equals(pji.getStatus()) && pji.getAD_PrinterHW_ID() > 0
-				&& Services.get(IPrinterBL.class).isPDFPrinter(pji.getAD_PrinterHW_ID()))
-			{
-				pdfInstructions.add(pji);
-			}
-		}
-		
-		return pdfInstructions;
-	}
-	
-	/**
-	 * enqueues the given C_Print_Job_Instructions for pdf printing
-	 * @param source
-	 * @param monitor
-	 * @param pjis
-	 * @param printJobCount
-	 */
-	private void enqueueForPDFPrinting(final IPrintingQueueSource source, final IPrintJobMonitor monitor, final List<I_C_Print_Job_Instructions> pjis, final int printJobCount)
-	{
-		if (pjis.isEmpty())
-		{
-			return;
-		}
-
-		// get context from first print job instructions - all have same context
-		final Properties ctx = InterfaceWrapperHelper.getCtx(pjis.get(0));
-		final I_C_Async_Batch asyncBatch = createAsyncBatch(ctx);
-		asyncBatch.setCountExpected(printJobCount);
-		final Integer AD_PInstance_ID = (Integer)monitor.getDynAttribute(I_AD_PInstance.COLUMNNAME_AD_PInstance_ID);
-		if (AD_PInstance_ID != null)
-		{
-			asyncBatch.setAD_PInstance_ID(AD_PInstance_ID);
-		}
-
-		if (!Check.isEmpty(source.getName(), true))
-		{
-			asyncBatch.setName(source.getName());
-		}
-		//
-		// if existent a parent async batch, set it in the new async batch
-		final Integer parentAsyncBatchID = (Integer)monitor.getDynAttribute(I_C_Async_Batch.COLUMNNAME_C_Async_Batch_ID);
-		if (parentAsyncBatchID != null && parentAsyncBatchID.intValue() > 0)
-		{
-			asyncBatch.setParent_Async_Batch_ID(parentAsyncBatchID);
-			final I_C_Async_Batch parentAsyncBatch = InterfaceWrapperHelper.create(ctx, parentAsyncBatchID, I_C_Async_Batch.class, ITrx.TRXNAME_None);
-			asyncBatch.setAD_PInstance_ID(parentAsyncBatch.getAD_PInstance_ID());
-		}
-		queueDAO.saveInLocalTrx(asyncBatch);
-
-		for (final I_C_Print_Job_Instructions pji : pjis)
-		{
-			if (X_AD_PrinterHW.OUTPUTTYPE_PDF.equals(pji.getAD_PrinterHW().getOutputType()))
-			{
-				enquePrintJobInstructions(pji, asyncBatch);
-			}
-		}
-
-	}
-
-	/**
-	 * creates the async batch for pdf printing
-	 * 
-	 * @return
-	 */
-	private I_C_Async_Batch createAsyncBatch(final Properties ctx)
-	{
-
-		final I_C_Async_Batch_Type asyncBatchType = asyncBatchDAO
-				.retrieveAsyncBatchType(ctx, Printing_Constants.C_Async_Batch_InternalName_PDFPrinting);
-
-		final I_C_Async_Batch asyncBatch = InterfaceWrapperHelper.create(ctx, I_C_Async_Batch.class, ITrx.TRXNAME_None);
-		asyncBatch.setName("Print to pdf");
-		asyncBatch.setC_Async_Batch_Type(asyncBatchType);
-		queueDAO.saveInLocalTrx(asyncBatch);
-		asyncBatchBL.enqueueAsyncBatch(asyncBatch);
-
-		return asyncBatch;
 	}
 
 	/**
@@ -319,7 +211,7 @@ public class PrintJobBL implements IPrintJobBL
 		}
 		return count;
 	}
-
+	
 	private List<I_C_Print_Job_Instructions> createPrintJob(final IPrintingQueueSource source,
 			final Iterator<I_C_Printing_Queue> items,
 			final PrintingQueueProcessingInfo printingQueueProcessingInfo,
@@ -347,6 +239,104 @@ public class PrintJobBL implements IPrintJobBL
 		// Reload instructions (in base transaction), to be used by monitor or other processors
 		InterfaceWrapperHelper.refreshAll(instrutionsMutable.getValue(), trxName);
 		return instrutionsMutable.getValue();
+	}
+
+	/**
+	 * Builds a list from all C_Print_Job_Instructions that have a PDF printer set
+	 * 
+	 * @param printJobInstructions
+	 * @return
+	 */
+	private List<I_C_Print_Job_Instructions> collectPDFPrintJobInstructions(final List<I_C_Print_Job_Instructions> printJobInstructions)
+	{
+		final List<I_C_Print_Job_Instructions> pdfInstructions = new ArrayList<I_C_Print_Job_Instructions>();
+
+		for (final I_C_Print_Job_Instructions pji : printJobInstructions)
+		{
+			// Send to the virtual printer
+			if (X_C_Print_Job_Instructions.STATUS_Pending.equals(pji.getStatus()) && pji.getAD_PrinterHW_ID() > 0
+					&& Services.get(IPrinterBL.class).isPDFPrinter(pji.getAD_PrinterHW_ID()))
+			{
+				pdfInstructions.add(pji);
+			}
+		}
+
+		return pdfInstructions;
+	}
+
+	@Value
+	@Builder
+	private static class PrintingAsyncBatch
+	{
+		final String name;
+		final int printJobCount;
+		final int adPInstanceId;
+		final int parentAsyncBatchId;
+	}
+
+	/**
+	 * enqueues the given C_Print_Job_Instructions for pdf printing
+	 * 
+	 * @param source
+	 * @param monitor
+	 * @param pjis
+	 * @param printJobCount
+	 */
+	private void enqueueForPDFPrinting(@NonNull final List<I_C_Print_Job_Instructions> pjis, @NonNull PrintingAsyncBatch printingAsyncBatch)
+	{
+		if (pjis.isEmpty())
+		{
+			return;
+		}
+
+		final Properties ctx = InterfaceWrapperHelper.getCtx(pjis.get(0));
+		final I_C_Async_Batch asyncBatch = createAsyncBatchForPDFPrinting(ctx, printingAsyncBatch);
+
+		for (final I_C_Print_Job_Instructions pji : pjis)
+		{
+			if (X_AD_PrinterHW.OUTPUTTYPE_PDF.equals(pji.getAD_PrinterHW().getOutputType()))
+			{
+				enquePrintJobInstructions(pji, asyncBatch);
+			}
+		}
+
+	}
+
+	private I_C_Async_Batch createAsyncBatchForPDFPrinting(final Properties ctx, @NonNull PrintingAsyncBatch printingAsyncBatch)
+	{
+		final int parentAsyncBatchId = printingAsyncBatch.getParentAsyncBatchId();
+		int adPInstanceId = printingAsyncBatch.getAdPInstanceId();
+		if (parentAsyncBatchId > 0)
+		{
+			final I_C_Async_Batch parentAsyncBatch = InterfaceWrapperHelper.create(ctx, parentAsyncBatchId, I_C_Async_Batch.class, ITrx.TRXNAME_None);
+			adPInstanceId = parentAsyncBatch.getAD_PInstance_ID();
+		}
+
+		final String name = Check.isEmpty(printingAsyncBatch.getName(), true) ? "Print to pdf" : printingAsyncBatch.getName();
+		final int printJobCount = printingAsyncBatch.getPrintJobCount();
+
+		return asyncBatchBL.newAsyncBatch()
+				.setContext(ctx)
+				.setC_Async_Batch_Type(Printing_Constants.C_Async_Batch_InternalName_PDFPrinting)
+				.setAD_PInstance_Creator_ID(adPInstanceId)
+				.setParentAsycnBatchId(parentAsyncBatchId)
+				.setCountExpected(printJobCount)
+				.setName(name)
+				.build();
+	}
+	
+	@Override
+	public void enquePrintJobInstructions(final I_C_Print_Job_Instructions jobInstructions, final I_C_Async_Batch asyncBatch)
+	{
+		final Properties ctx = InterfaceWrapperHelper.getCtx(jobInstructions);
+
+		final IWorkPackageQueue queue = Services.get(IWorkPackageQueueFactory.class).getQueueForEnqueuing(ctx, PDFDocPrintingWorkpackageProcessor.class);
+		queue.newBlock()
+				.setContext(ctx)
+				.newWorkpackage()
+				.setC_Async_Batch(asyncBatch) // set the async batch in workpackage in order to track it
+				.addElement(jobInstructions)
+				.build();
 	}
 
 	/**
@@ -526,7 +516,7 @@ public class PrintJobBL implements IPrintJobBL
 			{
 				final String hostKeyToUse;
 				final int userToPrintIdToUse;
-				final I_AD_Printer_Config printerConfig = printingDAO.retrievePrinterConfig(new PlainContextAware(ctx), hostKey, userToPrintId);
+				final I_AD_Printer_Config printerConfig = printingDAO.retrievePrinterConfig(PlainContextAware.newOutOfTrx(ctx), hostKey, userToPrintId);
 				Check.errorIf(printerConfig == null,
 						"Missing AD_Printer_Config record for hostKey={}, userToPrintId={}, ctx={}",
 						hostKey, userToPrintId, ctx);
@@ -556,7 +546,7 @@ public class PrintJobBL implements IPrintJobBL
 		final String trxName = InterfaceWrapperHelper.getTrxName(instructions);
 		// set printer for pdf printing
 		instructions.setAD_PrinterHW(dao.retrieveVirtualPrinter(ctx, hostKey, trxName));
-		
+
 		InterfaceWrapperHelper.save(instructions);
 		return instructions;
 	}
@@ -650,27 +640,5 @@ public class PrintJobBL implements IPrintJobBL
 		return Services.get(IMsgBL.class).translate(ctx, I_C_Print_Job.COLUMNNAME_C_Print_Job_ID)
 				+ " "
 				+ printJob.getC_Print_Job_ID();
-	}
-	
-	@Override
-	public void enquePrintJobInstructions(final I_C_Print_Job_Instructions jobInstructions, final I_C_Async_Batch asyncBatch)
-	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(jobInstructions);
-		final IWorkPackageQueue queue = Services.get(IWorkPackageQueueFactory.class).getQueueForEnqueuing(ctx, PDFDocPrintingWorkpackageProcessor.class);
-		I_C_Queue_Block queueBlock = null;
-
-		if (queueBlock == null)
-		{
-			queueBlock = queue.enqueueBlock(ctx);
-		}
-
-		final I_C_Queue_WorkPackage queueWorkpackage = queue.enqueueWorkPackage(queueBlock, IWorkPackageQueue.PRIORITY_AUTO); // priority=null=Auto/Default
-
-		// set the async batch in workpackage in order to track it
-		queueWorkpackage.setC_Async_Batch(asyncBatch);
-		Services.get(IQueueDAO.class).saveInLocalTrx(queueWorkpackage);
-
-		queue.enqueueElement(queueWorkpackage, jobInstructions);
-		queue.markReadyForProcessing(queueWorkpackage);
 	}
 }

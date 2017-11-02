@@ -53,4 +53,6 @@ public interface IAsyncBatchBuilder
 	IAsyncBatchBuilder setDescription(final String description);
 
 	IAsyncBatchBuilder setAD_PInstance_Creator_ID(int adPInstanceId);
+	
+	IAsyncBatchBuilder setParentAsycnBatchId(int parentAsycnBatchId);
 }

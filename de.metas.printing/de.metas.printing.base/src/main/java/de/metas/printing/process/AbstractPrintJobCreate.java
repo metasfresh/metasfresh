@@ -29,7 +29,6 @@ import java.util.Properties;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
-import org.compiere.model.I_AD_PInstance;
 import org.compiere.util.Env;
 
 import de.metas.adempiere.form.IClientUI;
@@ -42,8 +41,6 @@ import de.metas.printing.api.IPrintingQueueQuery;
 import de.metas.printing.api.IPrintingQueueSource;
 import de.metas.printing.model.I_C_Print_Job;
 import de.metas.printing.model.I_C_Printing_Queue;
-import de.metas.printing.spi.IPrintJobMonitor;
-import de.metas.printing.spi.impl.UserConfirmationPrintJobMonitor;
 import de.metas.process.JavaProcess;
 
 /**
@@ -74,8 +71,6 @@ public abstract class AbstractPrintJobCreate extends JavaProcess
 		final List<IPrintingQueueSource> sources = createPrintingQueueSources(ctxToUse);
 
 		final IClientUIInstance clientUI = Services.get(IClientUI.class).createInstance();
-		final IPrintJobMonitor monitor = createPrintJobMonitor(clientUI);
-		monitor.setDynAttribute(I_AD_PInstance.COLUMNNAME_AD_PInstance_ID, getAD_PInstance_ID());
 
 		for (final IPrintingQueueSource source : sources)
 		{
@@ -87,7 +82,7 @@ public abstract class AbstractPrintJobCreate extends JavaProcess
 					
 					try
 					{
-						Services.get(IPrintJobBL.class).createPrintJobs(source, monitor);
+						Services.get(IPrintJobBL.class).createPrintJobs(source, getAD_PInstance_ID(), -1);
 					}
 					catch (Exception e)
 					{
@@ -111,17 +106,6 @@ public abstract class AbstractPrintJobCreate extends JavaProcess
 		return "@Started@";
 	}
 
-	/**
-	 * Creates and configures the monitor
-	 * 
-	 * @return created monitor
-	 */
-	protected UserConfirmationPrintJobMonitor createPrintJobMonitor(final IClientUIInstance clientUI)
-	{
-		// We use UserConfirmation monitor (user will confirm after each job created) - 03922
-		final UserConfirmationPrintJobMonitor monitor = new UserConfirmationPrintJobMonitor(clientUI);
-		return monitor;
-	}
 
 	// each one with their own users to print user to print
 	protected List<IPrintingQueueSource> createPrintingQueueSources(final Properties ctxToUse)
