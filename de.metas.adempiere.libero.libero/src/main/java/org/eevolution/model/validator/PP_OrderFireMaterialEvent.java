@@ -1,6 +1,7 @@
 package org.eevolution.model.validator;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
@@ -80,6 +81,7 @@ public class PP_OrderFireMaterialEvent
 
 		final ProductionPlanEvent event = ProductionPlanEvent.builder()
 				.eventDescr(EventDescr.createNew(ppOrder))
+				.materialDemandDescr(Optional.empty()) // this is an intermediate NPE fix. it's already obsolete in the master branch
 				.ppOrder(ppOrderPojoBuilder.build())
 				// .reference(reference) // we don't know the reference here, but we expect that the event-receiver (i.e. material-dispo) will be able to sort out which record(s) to update via date, orderLineId etc
 				.build();
