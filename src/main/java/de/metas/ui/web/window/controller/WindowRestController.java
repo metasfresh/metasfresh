@@ -203,7 +203,9 @@ public class WindowRestController
 			@RequestParam(name = "orderBy", required = false) final String orderBysListStr)
 	{
 		final WindowId windowId = WindowId.fromJson(windowIdStr);
-		final DocumentPath documentPath = DocumentPath.includedDocumentPath(windowId, documentIdStr, tabIdStr);
+		final DocumentId documentId = DocumentId.of(documentIdStr);
+		final DetailId tabId = DetailId.fromJson(tabIdStr);
+		final DocumentPath documentPath = DocumentPath.includedDocumentPath(windowId, documentId, tabId);
 		final List<DocumentQueryOrderBy> orderBys = DocumentQueryOrderBy.parseOrderBysList(orderBysListStr);
 		return getData(documentPath, fieldsListStr, advanced, orderBys);
 	}
