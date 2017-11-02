@@ -159,7 +159,7 @@ public class DocumentCollection
 		final Set<WindowId> windowIds = tableName2windowIds.get(tableName);
 		return windowIds != null && !windowIds.isEmpty() ? ImmutableSet.copyOf(windowIds) : ImmutableSet.of();
 	}
-	
+
 	public Document getDocumentReadonly(@NonNull final DocumentPath documentPath)
 	{
 		return forDocumentReadonly(documentPath, Function.identity());
@@ -649,16 +649,15 @@ public class DocumentCollection
 				.map(toDocumentPath)
 				.collect(ImmutableSet.toImmutableSet());
 
-		final IDocumentChangesCollector changesCollector = NullDocumentChangesCollector.instance; // TODO: shall we have it as param
-		documentPaths.forEach(documentPath -> invalidateIncludedDocuments(documentPath, changesCollector));
+		documentPaths.forEach(this::invalidateIncludedDocuments);
 	}
 
-	private void invalidateIncludedDocuments(final DocumentPath documentPath, final IDocumentChangesCollector changesCollector)
+	private void invalidateIncludedDocuments(final DocumentPath documentPath)
 	{
 		Check.assume(!documentPath.isRootDocument(), "included document path: {}", documentPath);
 
 		final DocumentPath rootDocumentPath = documentPath.getRootDocumentPath();
-		forRootDocumentWritable(rootDocumentPath, changesCollector, document -> {
+		forRootDocumentWritable(rootDocumentPath, NullDocumentChangesCollector.instance, document -> {
 			document.getIncludedDocumentsCollection(documentPath.getDetailId()).markStaleAll();
 			return null; // void
 		});
