@@ -92,11 +92,15 @@ Here come the actual release notes:
 
 * metasfresh-webui-api
   * [#643](https://github.com/metasfresh/metasfresh-webui-api/issues/643) Picking Tray Clearing requery to see the right view
+    * Fixes the new Picking Tray Clearing, requerying the Window to let the user see the correct data.
   * [#647](https://github.com/metasfresh/metasfresh-webui-api/issues/647) shipped HU is still visible in picking terminal
+    * Fixes the picking Terminal, now not showing shipped HU anymore.
 
 * metasfresh-dist-orgs
   * [#67](https://github.com/metasfresh/metasfresh-dist-orgs/issues/67) Fix Jasper Version of Invoice Medium
+    * Fix for the new Jasper Invoice Report.
   * [#80](https://github.com/metasfresh/metasfresh-dist-orgs/issues/80) Invoice Medium Preview working in Jasper but not on server
+    * Fix for the new Jasper Invoice Report in dis orgs.
 
 # metasfresh 5.32 (2017-43)
 
