@@ -51,6 +51,7 @@ Here come the actual release notes:
   * [#2821](https://github.com/metasfresh/metasfresh/issues/2821) Window Material Dispo in WebUI
     * Improvement of Materialdispo window in WebUI, adding new Fields and Translations.
   * [#2800](https://github.com/metasfresh/metasfresh/issues/2800) Make de.metas.document.archive.process.ExportArchivePDF work in webui
+    * Improvement of the Archove PDF Exporter, can now also be used in WebUI.
   * [#2843](https://github.com/metasfresh/metasfresh/issues/2843) WebUI: Add new Fields for SQL Columns to Material Dispo Transaction Subtab
     * Improving Transaction included Subtab in Materialdispo Window. Now showing the Shipment/ Receipt Information in there.
   * [#2847](https://github.com/metasfresh/metasfresh/issues/2847) Elasticsearch shall use slf4j instead of log4j
@@ -58,16 +59,23 @@ Here come the actual release notes:
 
 * metasfresh-webui-api
   * [#644](https://github.com/metasfresh/metasfresh-webui-api/issues/644) Hide window actions which are not available
+    * Improvement of Action Menu in WebUI, now only showing Actions that are available for the given context.
   * [#645](https://github.com/metasfresh/metasfresh-webui-api/issues/645) window/actions: introduce support for selectedTabId and selectedRowIds
+    * Adding support for selected Tabs and Rows in WebUI Windows.
 
 * metasfresh-webui-frontend
   * [#981](https://github.com/metasfresh/metasfresh-webui-frontend/issues/981) New Widget for Date Range
+    * New Action Parameter Parm Widget. Now also allowing to use the DateRange Picker in Action Parms.
   * [#1296](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1296) Add storybook for isolated visual component testing
+    * Initial Kickoff for automatic testing in WebUI.
 
 * metasfresh-dist-orgs
   * [#41](https://github.com/metasfresh/metasfresh-dist-orgs/issues/41) Add medium invoice report
+    * New Invoice Report.
   * [#55](https://github.com/metasfresh/metasfresh-dist-orgs/issues/55) Refactor Migration Scripts for dist orgs
+    * Internal Housekeeping Issue, rearranging the migration scripts for dist orgs.
   * [#72](https://github.com/metasfresh/metasfresh-dist-orgs/issues/72) Invoice Medium ESR and other Adjustments
+    * Adjustments to ESR Invoice Printformat and further adjustments.
 
 ## Fixes
 * metasfresh-app
