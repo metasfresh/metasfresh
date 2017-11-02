@@ -1,5 +1,11 @@
 package de.metas.payment.esr.api.impl;
 
+import org.adempiere.invoice.service.IInvoiceBL;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.Check;
+import org.adempiere.util.Services;
+import org.compiere.model.I_C_Invoice;
+
 /*
  * #%L
  * de.metas.payment.esr
@@ -24,14 +30,8 @@ package de.metas.payment.esr.api.impl;
 
 
 import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
-import org.adempiere.invoice.service.IInvoiceBL;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
-import org.compiere.model.I_C_Invoice;
-import org.compiere.model.PO;
+import de.metas.logging.LogManager;
 import de.metas.payment.esr.api.IESRBL;
 
 public class ESRBL implements IESRBL
@@ -39,11 +39,15 @@ public class ESRBL implements IESRBL
 	private final transient Logger logger = LogManager.getLogger(getClass());
 	
 	@Override
-	public boolean appliesForESRDocumentRefId(final PO source)
+	public boolean appliesForESRDocumentRefId(final Object sourceModel)
 	{
-		Check.assume(I_C_Invoice.Table_Name.equals(source.get_TableName()), "Document " + source + " not supported");
+		
+		
+		final String sourceTableName = InterfaceWrapperHelper.getModelTableName(sourceModel);
+		Check.assume(I_C_Invoice.Table_Name.equals(sourceTableName), "Document " + sourceModel + " not supported");
 
-		final I_C_Invoice invoice = InterfaceWrapperHelper.create(source, I_C_Invoice.class);
+	
+		final I_C_Invoice invoice = InterfaceWrapperHelper.create(sourceModel, I_C_Invoice.class);
 		
 		if (!invoice.isSOTrx())
 		{

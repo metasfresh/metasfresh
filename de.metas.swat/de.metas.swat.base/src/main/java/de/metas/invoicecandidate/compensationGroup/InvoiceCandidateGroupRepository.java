@@ -198,6 +198,12 @@ public class InvoiceCandidateGroupRepository implements GroupRepository
 		throw new UnsupportedOperationException();
 	}
 
+	@Override
+	public Group retrieveOrCreateGroupFromLineIds(final Collection<Integer> orderLineIds)
+	{
+		throw new UnsupportedOperationException();
+	}
+
 	private List<I_C_Invoice_Candidate> retrieveInvoiceCandidatesForGroup(final GroupId groupId)
 	{
 		return retrieveInvoiceCandidatesForGroupQuery(groupId).create().list(I_C_Invoice_Candidate.class);
