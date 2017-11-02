@@ -24,14 +24,14 @@ package de.metas.printing.api.impl;
 
 
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 
 import java.util.List;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.apache.commons.collections4.IteratorUtils;
-import org.junit.Assert;
 import org.junit.Test;
 
 import de.metas.printing.api.IPrintingDAO;
@@ -40,262 +40,9 @@ import de.metas.printing.model.I_C_Print_Job;
 import de.metas.printing.model.I_C_Print_Job_Detail;
 import de.metas.printing.model.I_C_Print_Job_Instructions;
 import de.metas.printing.model.I_C_Print_Job_Line;
-import de.metas.printing.spi.impl.UserConfirmationPrintJobBatchMonitor;
-import de.metas.printing.spi.impl.UserConfirmationPrintJobMonitor;
 
 public class PrintJobBLTest extends AbstractPrintingTest
 {
-	@Test
-	public void test_createJobsWithUserConfirmation_OneJob()
-	{
-		//
-		// Setup routings
-		final I_AD_PrinterRouting routing1 = helper.createPrinterRouting("printer01", "tray01", -1, -1, -1);
-		routing1.setAD_Org_ID(1);
-		InterfaceWrapperHelper.save(routing1);
-
-		//
-		// Create printing queue
-		helper.addToPrintQueue("01", 1, -1); // AD_Org_ID=1, C_DocType_ID=N/A
-
-		final FixedAskCallback answersPool = new FixedAskCallback()
-				.setDefaultExpectedAD_Message(UserConfirmationPrintJobBatchMonitor.MSG_CREATE_NEXT_JOB_0P)
-				.addResponse(true) // this question shall never be asked because we have only one print job
-		;
-		helper.getClientUI().setAskCallback(answersPool);
-
-		//
-		// Expect 1 print jobs to be created
-		final int printJobsCountActual = helper.createAllPrintJobs(new UserConfirmationPrintJobMonitor());
-		Assert.assertEquals("Invalid Print Jobs count", 1, printJobsCountActual);
-
-		// Assume no questions were asked because only one print job was created, and that one was automatically confirmed
-		answersPool.assertNoQuestionsAsked();
-
-		final List<I_C_Print_Job> printJobs = helper.getDB().getRecords(I_C_Print_Job.class);
-		Assert.assertEquals("Invalid Print Jobs count in database", 1, printJobs.size());
-
-		//
-		// Validate Job1
-		final I_C_Print_Job printJob1 = printJobs.get(0);
-		final I_C_Print_Job_Instructions instructions1 = helper.getDAO().retrievePrintJobInstructionsForPrintJob(printJob1);
-		// task 09028: don't check for the host key..the user shall be able to print this wherever they are logged in
-		// Assert.assertEquals("Job1 instructions - Invalid HostKey", helper.getSessionHostKey(), instructions1.getHostKey());
-		Assert.assertEquals("Job1 instructions - Invalid UserOK", true, instructions1.isUserOK());
-	}
-
-	@Test
-	public void test_createJobsWithUserConfirmation()
-	{
-		//
-		// Setup routings
-		final I_AD_PrinterRouting routing1 = helper.createPrinterRouting("printer01", "tray01", -1, -1, -1);
-		routing1.setAD_Org_ID(1);
-		InterfaceWrapperHelper.save(routing1);
-
-		final I_AD_PrinterRouting routing2 = helper.createPrinterRouting("printer01", "tray01", -1, -1, -1);
-		routing1.setAD_Org_ID(2);
-		InterfaceWrapperHelper.save(routing2);
-
-		//
-		// Create printing queue
-		helper.addToPrintQueue("01", 1, -1); // AD_Org_ID=1, C_DocType_ID=N/A
-		helper.addToPrintQueue("02", 2, -1); // AD_Org_ID=2, C_DocType_ID=N/A
-
-		helper.getClientUI().setAskCallback(new FixedAskCallback()
-				.setDefaultExpectedAD_Message(UserConfirmationPrintJobBatchMonitor.MSG_CREATE_NEXT_JOB_0P)
-				.addResponse(false) // Job1 - fail
-				.addResponse(true) // Job2 - success ... this question will never be asked because first job fails
-				);
-
-		//
-		// Expect 1 print jobs to be created
-		final int printJobsCountActual = helper.createAllPrintJobs(new UserConfirmationPrintJobMonitor());
-		Assert.assertEquals("Invalid Print Jobs count", 1, printJobsCountActual);
-
-		final List<I_C_Print_Job> printJobs = helper.getDB().getRecords(I_C_Print_Job.class);
-		Assert.assertEquals("Invalid Print Jobs count in database", 1, printJobs.size());
-
-		//
-		// Validate Job1
-		final I_C_Print_Job printJob1 = printJobs.get(0);
-		final I_C_Print_Job_Instructions instructions1 = helper.getDAO().retrievePrintJobInstructionsForPrintJob(printJob1);
-		// task 09028: don't check for the host key..the user shall be able to print this wherever they are logged in
-		// Assert.assertEquals("Job1 instructions - Invalid HostKey", helper.getSessionHostKey(), instructions1.getHostKey());
-		Assert.assertEquals("Job1 instructions - Invalid UserOK", false, instructions1.isUserOK());
-	}
-
-	@Test
-	public void test_createJobsWithUserConfirmationAndDecline()
-	{
-		//
-		// Setup routings
-		final I_AD_PrinterRouting routing1 = helper.createPrinterRouting("printer01", "tray01", -1, -1, -1);
-		routing1.setAD_Org_ID(1);
-		InterfaceWrapperHelper.save(routing1);
-
-		final I_AD_PrinterRouting routing2 = helper.createPrinterRouting("printer01", "tray01", -1, -1, -1);
-		routing1.setAD_Org_ID(2);
-		InterfaceWrapperHelper.save(routing2);
-
-		//
-		// Create printing queue
-		helper.addToPrintQueue("01", 1, -1); // AD_Org_ID=2, C_DocType_ID=N/A
-		helper.addToPrintQueue("02", 2, -1); // AD_Org_ID=1, C_DocType_ID=N/A
-
-		final FixedAskCallback answersPool = new FixedAskCallback()
-				.setDefaultExpectedAD_Message(UserConfirmationPrintJobBatchMonitor.MSG_CREATE_NEXT_JOB_0P)
-				.addResponse(true) // job1 - success
-				.addResponse(false) // job2 - fail
-		;
-		helper.getClientUI().setAskCallback(answersPool);
-
-		//
-		// Expect 2 print jobs to be created
-		final int printJobsCountActual = helper.createAllPrintJobs(new UserConfirmationPrintJobMonitor());
-		Assert.assertEquals("Invalid Print Jobs count", 2, printJobsCountActual);
-
-		final List<I_C_Print_Job> printJobs = helper.getDB().getRecords(I_C_Print_Job.class);
-		Assert.assertEquals("Invalid Print Jobs count in database", 2, printJobs.size());
-
-		//
-		// Validate Job1
-		final I_C_Print_Job printJob1 = printJobs.get(0);
-		final I_C_Print_Job_Instructions instructions1 = helper.getDAO().retrievePrintJobInstructionsForPrintJob(printJob1);
-		// task 09028: don't check for the host key..the user shall be able to print this wherever they are logged in
-		// Assert.assertEquals("Job1 instructions - Invalid HostKey", helper.getSessionHostKey(), instructions1.getHostKey());
-		Assert.assertEquals("Job1 instructions - Invalid UserOK", true, instructions1.isUserOK());
-
-		//
-		// Validate Job2
-		final I_C_Print_Job printJob2 = printJobs.get(1);
-		final I_C_Print_Job_Instructions instructions2 = helper.getDAO().retrievePrintJobInstructionsForPrintJob(printJob2);
-		// task 09028: don't check for the host key..the user shall be able to print this wherever they are logged in
-		// Assert.assertEquals("Job2 instructions - Invalid HostKey", helper.getSessionHostKey(), instructions2.getHostKey());
-		Assert.assertEquals("Job2 instructions - Invalid UserOK", false, instructions2.isUserOK());
-	}
-
-	@Test
-	public void test_createJobsWithUserConfirmationTwice()
-	{
-		//
-		// Setup routings
-		final I_AD_PrinterRouting routing1 = helper.createPrinterRouting("printer01", "tray01", -1, -1, -1);
-		routing1.setAD_Org_ID(1);
-		InterfaceWrapperHelper.save(routing1);
-
-		final I_AD_PrinterRouting routing2 = helper.createPrinterRouting("printer01", "tray01", -1, -1, -1);
-		routing2.setAD_Org_ID(2);
-		InterfaceWrapperHelper.save(routing2);
-
-		//
-		// Create printing queue
-		helper.addToPrintQueue("01", 1, -1); // AD_Org_ID=1, C_DocType_ID=N/A
-		helper.addToPrintQueue("02", 2, -1); // AD_Org_ID=2, C_DocType_ID=N/A
-
-		final FixedAskCallback answersPool = new FixedAskCallback()
-				.setDefaultExpectedAD_Message(UserConfirmationPrintJobBatchMonitor.MSG_CREATE_NEXT_JOB_0P)
-				.addResponse(true) // job1 - success
-				.addResponse(true) // job2 - success
-		;
-		helper.getClientUI().setAskCallback(answersPool);
-
-		//
-		// Expect 2 print jobs to be created
-		final int printJobsCountActual = helper.createAllPrintJobs(new UserConfirmationPrintJobMonitor());
-		Assert.assertEquals("Invalid Print Jobs count", 2, printJobsCountActual);
-
-		final List<I_C_Print_Job> printJobs = helper.getDB().getRecords(I_C_Print_Job.class);
-		Assert.assertEquals("Invalid Print Jobs count in database", 2, printJobs.size());
-
-		//
-		// Validate Job1
-		final I_C_Print_Job printJob1 = printJobs.get(0);
-		final I_C_Print_Job_Instructions instructions1 = helper.getDAO().retrievePrintJobInstructionsForPrintJob(printJob1);
-		// task 09028: don't check for the host key..the user shall be able to print this wherever they are logged in
-		// Assert.assertEquals("Job1 instructions - Invalid HostKey", helper.getSessionHostKey(), instructions1.getHostKey());
-		Assert.assertEquals("Job1 instructions - Invalid UserOK", true, instructions1.isUserOK());
-
-		//
-		// Validate Job2
-		final I_C_Print_Job printJob2 = printJobs.get(1);
-		final I_C_Print_Job_Instructions instructions2 = helper.getDAO().retrievePrintJobInstructionsForPrintJob(printJob2);
-		// task 09028: don't check for the host key..the user shall be able to print this wherever they are logged in
-		// Assert.assertEquals("Job2 instructions - Invalid HostKey", helper.getSessionHostKey(), instructions2.getHostKey());
-		Assert.assertEquals("Job2 instructions - Invalid UserOK", true, instructions2.isUserOK());
-	}
-
-	@Test
-	public void test_createJobsWithUserConfirmation_TruncatedJobs()
-	{
-		//
-		// Setup routings
-		final I_AD_PrinterRouting routing1 = helper.createPrinterRouting("printer01", "tray01", -1, -1, -1);
-		routing1.setAD_Org_ID(1);
-		InterfaceWrapperHelper.save(routing1);
-
-		final I_AD_PrinterRouting routing2 = helper.createPrinterRouting("printer01", "tray01", -1, -1, -1);
-		routing1.setAD_Org_ID(2);
-		InterfaceWrapperHelper.save(routing2);
-
-		final FixedAskCallback answersPool = new FixedAskCallback()
-				.setDefaultExpectedAD_Message(UserConfirmationPrintJobBatchMonitor.MSG_CREATE_NEXT_JOB_0P)
-				.addResponse(true)
-				.addResponse(true)
-				.addResponse(false);
-		helper.getClientUI().setAskCallback(answersPool);
-
-		//
-		// Setup Printing Queue
-		final int maxLinesPerJob = 500;
-		printJobBL.setMaxLinesPerJob(maxLinesPerJob);
-		// Org1 (500 + 1 lines)
-		for (int i = 1; i <= maxLinesPerJob + 1; i++)
-		{
-			helper.addToPrintQueue("01", 1, -1); // AD_Org_ID=1, C_DocType_ID=N/A
-		}
-		// Org2 (500 + 1 lines)
-		for (int i = 1; i <= maxLinesPerJob + 1; i++)
-		{
-			helper.addToPrintQueue("02", 2, -1); // AD_Org_ID=2, C_DocType_ID=N/A
-		}
-
-		//
-		// Expect 3(2 for Org1 and 1 for Org2) print jobs to be created
-		final int printJobsCountActual = helper.createAllPrintJobs(new UserConfirmationPrintJobMonitor());
-		Assert.assertEquals("Invalid Print Jobs count", 3, printJobsCountActual);
-
-		final List<I_C_Print_Job> printJobs = helper.getDB().getRecords(I_C_Print_Job.class);
-		Assert.assertEquals("Invalid Print Jobs count in database", 3, printJobs.size());
-
-		//
-		// Validate Job1
-		final I_C_Print_Job printJob1 = printJobs.get(0);
-		final I_C_Print_Job_Instructions instructions1 = helper.getDAO().retrievePrintJobInstructionsForPrintJob(printJob1);
-		// task 09028: don't check for the host key..the user shall be able to print this wherever they are logged in
-		// Assert.assertEquals("Job1 instructions - Invalid HostKey", helper.getSessionHostKey(), instructions1.getHostKey());
-		Assert.assertEquals("Job1 instructions - Invalid UserOK", true, instructions1.isUserOK());
-		Assert.assertEquals("Job1 instructions - Invalid line count", maxLinesPerJob, getPrintJobLinesCount(printJob1));
-
-		//
-		// Validate Job2
-		final I_C_Print_Job printJob2 = printJobs.get(1);
-		final I_C_Print_Job_Instructions instructions2 = helper.getDAO().retrievePrintJobInstructionsForPrintJob(printJob2);
-		// task 09028: don't check for the host key..the user shall be able to print this wherever they are logged in
-		// Assert.assertEquals("Job2 instructions - Invalid HostKey", helper.getSessionHostKey(), instructions2.getHostKey());
-		Assert.assertEquals("Job2 instructions - Invalid UserOK", true, instructions2.isUserOK());
-		Assert.assertEquals("Job2 instructions - Invalid line count", 1, getPrintJobLinesCount(printJob2));
-
-		//
-		// Validate Job3
-		final I_C_Print_Job printJob3 = printJobs.get(2);
-		final I_C_Print_Job_Instructions instructions3 = helper.getDAO().retrievePrintJobInstructionsForPrintJob(printJob3);
-		// task 09028: don't check for the host key..the user shall be able to print this wherever they are logged in
-		// Assert.assertEquals("Job3 instructions - Invalid HostKey", helper.getSessionHostKey(), instructions3.getHostKey());
-		Assert.assertEquals("Job3 instructions - Invalid UserOK", false, instructions3.isUserOK());
-		Assert.assertEquals("Job3 instructions - Invalid line count", maxLinesPerJob, getPrintJobLinesCount(printJob3));
-	}
-
 	private int getPrintJobLinesCount(final I_C_Print_Job job)
 	{
 		final List<I_C_Print_Job_Line> list = IteratorUtils.toList(helper.getDAO().retrievePrintJobLines(job));
@@ -332,7 +79,7 @@ public class PrintJobBLTest extends AbstractPrintingTest
 
 		helper.addToPrintQueue("01", 1, c_DocType_ID); // AD_Org_ID=1, C_DocType_ID=12
 
-		final int printJobsCountActual = helper.createAllPrintJobs(new UserConfirmationPrintJobMonitor());
+		final int printJobsCountActual = helper.createAllPrintJobs();
 		assertThat(printJobsCountActual, is(1));
 
 		final I_C_Print_Job printJob = helper.getDB().getRecords(I_C_Print_Job.class).get(0);
