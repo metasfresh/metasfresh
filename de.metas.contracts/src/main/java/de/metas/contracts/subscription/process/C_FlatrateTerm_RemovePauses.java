@@ -1,10 +1,7 @@
 
 package de.metas.contracts.subscription.process;
 
-import java.sql.Timestamp;
-
 import org.adempiere.util.Services;
-import org.compiere.util.TimeUtil;
 
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_SubscriptionProgress;
