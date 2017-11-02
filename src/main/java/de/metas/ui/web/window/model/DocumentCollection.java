@@ -563,8 +563,7 @@ public class DocumentCollection
 
 	public DocumentPrint createDocumentPrint(final DocumentPath documentPath)
 	{
-		final IDocumentChangesCollector changesCollector = NullDocumentChangesCollector.instance;
-		final Document document = forDocumentReadonly(documentPath, changesCollector, Function.identity());
+		final Document document = forDocumentReadonly(documentPath, NullDocumentChangesCollector.instance, Function.identity());
 		final int windowNo = document.getWindowNo();
 		final DocumentEntityDescriptor entityDescriptor = document.getEntityDescriptor();
 
