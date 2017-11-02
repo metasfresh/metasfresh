@@ -236,7 +236,7 @@ public class DocumentCollection
 			else
 			{
 				document = rootDocument.getIncludedDocument(documentPath.getDetailId(), documentPath.getSingleRowId());
-				DocumentPermissionsHelper.assertCanEdit(rootDocument, UserSession.getCurrentPermissions());
+				DocumentPermissionsHelper.assertCanEdit(rootDocument);
 			}
 
 			return documentProcessor.apply(document);
@@ -277,7 +277,7 @@ public class DocumentCollection
 						.copy(CopyMode.CheckOutWritable, changesCollector)
 						.refreshFromRepositoryIfStaled();
 
-				DocumentPermissionsHelper.assertCanEdit(rootDocument, UserSession.getCurrentPermissions());
+				DocumentPermissionsHelper.assertCanEdit(rootDocument);
 			}
 
 			//
