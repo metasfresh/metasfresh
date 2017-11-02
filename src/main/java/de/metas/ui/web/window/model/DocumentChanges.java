@@ -85,7 +85,7 @@ public final class DocumentChanges
 	 * 
 	 * Primary changes are those changes which are on a document which was directly references by REST endpoint.
 	 */
-	public void setPrimaryChange()
+	/* package */void setPrimaryChange()
 	{
 		this.primaryChange = true;
 	}
