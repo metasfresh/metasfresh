@@ -11,7 +11,6 @@ import java.util.Set;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
-import java.util.function.Function;
 import java.util.function.Supplier;
 
 import org.adempiere.ad.dao.IQueryBL;
@@ -66,7 +65,6 @@ import de.metas.ui.web.window.model.DocumentSaveStatus;
 import de.metas.ui.web.window.model.IDocumentChangesCollector;
 import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
 import de.metas.ui.web.window.model.IDocumentFieldView;
-import de.metas.ui.web.window.model.NullDocumentChangesCollector;
 import lombok.NonNull;
 
 /*
@@ -216,7 +214,7 @@ import lombok.NonNull;
 			return this;
 		}
 
-		final Document contextSingleDocument = documentsCollection.forDocumentReadonly(contextSingleDocumentPath, NullDocumentChangesCollector.instance, Function.identity());
+		final Document contextSingleDocument = documentsCollection.getDocumentReadonly(contextSingleDocumentPath);
 		getParametersDocument().setShadowParentDocumentEvaluatee(contextSingleDocument.asEvaluatee());
 
 		return this;

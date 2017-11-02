@@ -159,15 +159,17 @@ public class DocumentCollection
 		final Set<WindowId> windowIds = tableName2windowIds.get(tableName);
 		return windowIds != null && !windowIds.isEmpty() ? ImmutableSet.copyOf(windowIds) : ImmutableSet.of();
 	}
+	
+	public Document getDocumentReadonly(@NonNull final DocumentPath documentPath)
+	{
+		return forDocumentReadonly(documentPath, Function.identity());
+	}
 
-	public <R> R forDocumentReadonly(
-			@NonNull final DocumentPath documentPath,
-			final IDocumentChangesCollector changesCollector,
-			final Function<Document, R> documentProcessor)
+	public <R> R forDocumentReadonly(@NonNull final DocumentPath documentPath, @NonNull final Function<Document, R> documentProcessor)
 	{
 		final DocumentPath rootDocumentPath = documentPath.getRootDocumentPath();
 
-		return forRootDocumentReadonly(rootDocumentPath, changesCollector, rootDocument -> {
+		return forRootDocumentReadonly(rootDocumentPath, rootDocument -> {
 			if (documentPath.isRootDocument())
 			{
 				return documentProcessor.apply(rootDocument);
@@ -202,16 +204,13 @@ public class DocumentCollection
 		}
 	}
 
-	public <R> R forRootDocumentReadonly(
-			@NonNull final DocumentPath documentPath,
-			final IDocumentChangesCollector changesCollector,
-			final Function<Document, R> rootDocumentProcessor)
+	public <R> R forRootDocumentReadonly(@NonNull final DocumentPath documentPath, final Function<Document, R> rootDocumentProcessor)
 	{
 		final DocumentKey rootDocumentKey = DocumentKey.ofRootDocumentPath(documentPath.getRootDocumentPath());
 
 		try (final IAutoCloseable readLock = getOrLoadDocument(rootDocumentKey).lockForReading())
 		{
-			final Document rootDocument = getOrLoadDocument(rootDocumentKey).copy(CopyMode.CheckInReadonly, changesCollector);
+			final Document rootDocument = getOrLoadDocument(rootDocumentKey).copy(CopyMode.CheckInReadonly, NullDocumentChangesCollector.instance);
 			DocumentPermissionsHelper.assertCanView(rootDocument, UserSession.getCurrentPermissions());
 
 			return rootDocumentProcessor.apply(rootDocument);
@@ -563,7 +562,7 @@ public class DocumentCollection
 
 	public DocumentPrint createDocumentPrint(final DocumentPath documentPath)
 	{
-		final Document document = forDocumentReadonly(documentPath, NullDocumentChangesCollector.instance, Function.identity());
+		final Document document = getDocumentReadonly(documentPath);
 		final int windowNo = document.getWindowNo();
 		final DocumentEntityDescriptor entityDescriptor = document.getEntityDescriptor();
 
@@ -595,7 +594,7 @@ public class DocumentCollection
 	 * Invalidates all root documents identified by tableName/recordId and notifies frontend (via websocket).
 	 * 
 	 * @param tableName
-	 * @param recordId 
+	 * @param recordId
 	 */
 	public void invalidateDocumentByRecordId(final String tableName, final int recordId)
 	{
@@ -609,7 +608,7 @@ public class DocumentCollection
 				.collect(ImmutableSet.toImmutableSet());
 
 		// stop here if no document keys found
-		if(documentKeys.isEmpty())
+		if (documentKeys.isEmpty())
 		{
 			return;
 		}
@@ -630,9 +629,9 @@ public class DocumentCollection
 	{
 		final DocumentId documentId = DocumentId.of(recordId);
 		final DocumentId rowId = childRecordId > 0 ? DocumentId.of(childRecordId) : null;
-		
+
 		final Function<DocumentEntityDescriptor, DocumentPath> toDocumentPath;
-		if(rowId != null)
+		if (rowId != null)
 		{
 			toDocumentPath = includedEntity -> DocumentPath.includedDocumentPath(includedEntity.getWindowId(), documentId, includedEntity.getDetailId(), rowId);
 		}
@@ -640,7 +639,7 @@ public class DocumentCollection
 		{
 			toDocumentPath = includedEntity -> DocumentPath.includedDocumentPath(includedEntity.getWindowId(), documentId, includedEntity.getDetailId());
 		}
-		
+
 		//
 		// Create possible documentKeys for given tableName/recordId
 		final ImmutableSet<DocumentPath> documentPaths = getCachedWindowIdsForTableName(tableName)
@@ -649,21 +648,21 @@ public class DocumentCollection
 				.flatMap(rootEntity -> rootEntity.streamIncludedEntitiesByTableName(childTableName))
 				.map(toDocumentPath)
 				.collect(ImmutableSet.toImmutableSet());
-		
+
 		final IDocumentChangesCollector changesCollector = NullDocumentChangesCollector.instance; // TODO: shall we have it as param
 		documentPaths.forEach(documentPath -> invalidateIncludedDocuments(documentPath, changesCollector));
 	}
-	
+
 	private void invalidateIncludedDocuments(final DocumentPath documentPath, final IDocumentChangesCollector changesCollector)
 	{
 		Check.assume(!documentPath.isRootDocument(), "included document path: {}", documentPath);
-		
+
 		final DocumentPath rootDocumentPath = documentPath.getRootDocumentPath();
 		forRootDocumentWritable(rootDocumentPath, changesCollector, document -> {
 			document.getIncludedDocumentsCollection(documentPath.getDetailId()).markStaleAll();
 			return null; // void
 		});
-		
+
 		//
 		// Notify frontend
 		final JSONDocumentChangedWebSocketEvent event = JSONDocumentChangedWebSocketEvent.stableByDocumentPath(documentPath);
@@ -701,7 +700,7 @@ public class DocumentCollection
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
 		final DocumentPath toDocumentPath = trxManager.call(ITrx.TRXNAME_ThreadInherited, () -> duplicateDocumentInTrx(fromDocumentPath));
 
-		return forDocumentReadonly(toDocumentPath, NullDocumentChangesCollector.instance, Function.identity());
+		return getDocumentReadonly(toDocumentPath);
 	}
 
 	private DocumentPath duplicateDocumentInTrx(final DocumentPath fromDocumentPath)
@@ -736,10 +735,9 @@ public class DocumentCollection
 			return BoilerPlateContext.EMPTY;
 		}
 
-		return forDocumentReadonly(documentPath, NullDocumentChangesCollector.instance, document -> {
-			final SourceDocument sourceDocument = new DocumentAsTemplateSourceDocument(document);
-			return MADBoilerPlate.createEditorContext(sourceDocument);
-		});
+		final Document document = getDocumentReadonly(documentPath);
+		final SourceDocument sourceDocument = new DocumentAsTemplateSourceDocument(document);
+		return MADBoilerPlate.createEditorContext(sourceDocument);
 	}
 
 	@AllArgsConstructor

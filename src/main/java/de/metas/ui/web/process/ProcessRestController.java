@@ -186,8 +186,7 @@ public class ProcessRestController
 		final IProcessInstancesRepository instancesRepository = getRepository(request.getProcessId());
 
 		return Execution.callInNewExecution("pinstance.create", () -> {
-			final IDocumentChangesCollector changesCollector = NullDocumentChangesCollector.instance;
-			final IProcessInstanceController processInstance = instancesRepository.createNewProcessInstance(request, changesCollector);
+			final IProcessInstanceController processInstance = instancesRepository.createNewProcessInstance(request);
 			return JSONProcessInstance.of(processInstance, newJSONOptions());
 		});
 	}

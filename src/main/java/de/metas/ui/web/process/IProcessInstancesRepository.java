@@ -61,7 +61,7 @@ public interface IProcessInstancesRepository
 	 * @param changesCollector 
 	 * @return newly created process instance; never returns null
 	 */
-	IProcessInstanceController createNewProcessInstance(CreateProcessInstanceRequest request, IDocumentChangesCollector changesCollector);
+	IProcessInstanceController createNewProcessInstance(CreateProcessInstanceRequest request);
 
 	/**
 	 * Fetching the process instance for given <code>pinstanceId</code> (readonly) and processes it using given processor.

@@ -235,8 +235,7 @@ public class WindowRestController
 				.setDataFieldsList(fieldsListStr)
 				.build();
 
-		final IDocumentChangesCollector changesCollector = NullDocumentChangesCollector.instance;
-		return documentCollection.forRootDocumentReadonly(documentPath, changesCollector, rootDocument -> {
+		return documentCollection.forRootDocumentReadonly(documentPath, rootDocument -> {
 			List<Document> documents;
 			if (documentPath.isRootDocument())
 			{
@@ -463,8 +462,7 @@ public class WindowRestController
 	{
 		userSession.assertLoggedIn();
 
-		final IDocumentChangesCollector changesCollector = NullDocumentChangesCollector.instance;
-		return documentCollection.forDocumentReadonly(documentPath, changesCollector, document -> document.getFieldLookupValuesForQuery(fieldName, query))
+		return documentCollection.forDocumentReadonly(documentPath, document -> document.getFieldLookupValuesForQuery(fieldName, query))
 				.transform(JSONLookupValuesList::ofLookupValuesList);
 	}
 
@@ -498,8 +496,7 @@ public class WindowRestController
 	{
 		userSession.assertLoggedIn();
 
-		final IDocumentChangesCollector changesCollector = NullDocumentChangesCollector.instance;
-		return documentCollection.forDocumentReadonly(documentPath, changesCollector, document -> document.getFieldLookupValues(fieldName))
+		return documentCollection.forDocumentReadonly(documentPath, document -> document.getFieldLookupValues(fieldName))
 				.transform(JSONLookupValuesList::ofLookupValuesList);
 	}
 
@@ -535,8 +532,7 @@ public class WindowRestController
 	{
 		userSession.assertLoggedIn();
 
-		final IDocumentChangesCollector changesCollector = NullDocumentChangesCollector.instance;
-		final DocumentZoomIntoInfo zoomIntoInfo = documentCollection.forDocumentReadonly(documentPath, changesCollector, document -> {
+		final DocumentZoomIntoInfo zoomIntoInfo = documentCollection.forDocumentReadonly(documentPath, document -> {
 			final IDocumentFieldView field = document.getFieldView(fieldName);
 
 			// Generic ZoomInto button
@@ -658,8 +654,7 @@ public class WindowRestController
 			filter = WebuiRelatedProcessDescriptor::isEnabled;
 		}
 
-		final IDocumentChangesCollector changesCollector = NullDocumentChangesCollector.instance;
-		return documentCollection.forDocumentReadonly(documentPath, changesCollector, document -> {
+		return documentCollection.forDocumentReadonly(documentPath, document -> {
 			final DocumentPreconditionsAsContext preconditionsContext = DocumentPreconditionsAsContext.of(document, selectedIncludedRecords);
 
 			return processRestController.streamDocumentRelatedProcesses(preconditionsContext)

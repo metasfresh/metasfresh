@@ -26,7 +26,6 @@ import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.Document.CopyMode;
 import de.metas.ui.web.window.model.IDocumentChangesCollector;
-import de.metas.ui.web.window.model.NullDocumentChangesCollector;
 
 /*
  * #%L
@@ -326,7 +325,6 @@ public final class QuickInput
 		private Document buildQuickInputDocument()
 		{
 			return Document.builder(getQuickInputDescriptor().getEntityDescriptor())
-					.setChangesCollector(NullDocumentChangesCollector.instance)
 					.initializeAsNewDocument(nextQuickInputDocumentId::getAndIncrement, VERSION_DEFAULT)
 					.build();
 

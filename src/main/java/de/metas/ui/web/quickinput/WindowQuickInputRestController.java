@@ -156,9 +156,8 @@ public class WindowQuickInputRestController
 		final DocumentPath rootDocumentPath = DocumentPath.rootDocumentPath(windowId, documentIdStr);
 		final DetailId detailId = DetailId.fromJson(tabIdStr);
 
-		final IDocumentChangesCollector changesCollector = NullDocumentChangesCollector.instance;
 		return Execution.callInNewExecution("quickInput.create", () -> {
-			final QuickInput quickInput = documentsCollection.forRootDocumentReadonly(rootDocumentPath, changesCollector, rootDocument -> {
+			final QuickInput quickInput = documentsCollection.forRootDocumentReadonly(rootDocumentPath, rootDocument -> {
 				// Make sure we can edit our root document. Fail fast.
 				DocumentPermissionsHelper.assertCanEdit(rootDocument, userSession.getUserRolePermissions());
 
@@ -191,11 +190,10 @@ public class WindowQuickInputRestController
 
 	private final <R> R forQuickInputReadonly(final QuickInputPath quickInputPath, final Function<QuickInput, R> quickInputProcessor)
 	{
-		final IDocumentChangesCollector changesCollector = NullDocumentChangesCollector.instance;
-		return documentsCollection.forDocumentReadonly(quickInputPath.getRootDocumentPath(), changesCollector, rootDocument -> {
+		return documentsCollection.forDocumentReadonly(quickInputPath.getRootDocumentPath(), rootDocument -> {
 			try (final IAutoCloseable c = getQuickInputNoLock(quickInputPath).lockForReading())
 			{
-				final QuickInput quickInput = getQuickInputNoLock(quickInputPath).copy(CopyMode.CheckInReadonly, changesCollector)
+				final QuickInput quickInput = getQuickInputNoLock(quickInputPath).copy(CopyMode.CheckInReadonly, NullDocumentChangesCollector.instance)
 						.bindRootDocument(rootDocument)
 						.assertTargetWritable();
 				return quickInputProcessor.apply(quickInput);
