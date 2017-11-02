@@ -1,5 +1,5 @@
 # metasfresh-eclipse-config
-Repository containing all our eclipse config files (formatter, code cleanup, templates etc)
+This folder contains all our eclipse config files (formatter, code cleanup, templates etc).
 
 ## Eclipse setup
 
@@ -21,3 +21,9 @@ Repository containing all our eclipse config files (formatter, code cleanup, tem
 ![eclipse_xml_editor](https://github.com/metasfresh/metasfresh-dev/raw/master/eclipse-config/doc/eclipse_xml_editor.png)
 
 Most importantly, please make sure that eclipse doesn't format XML comments
+
+### Save actions
+
+We suggest to have the following save actions:
+
+![eclipse_save_actions](https://github.com/metasfresh/metasfresh-dev/raw/master/eclipse-config/doc/eclipse_save_actions.png)
