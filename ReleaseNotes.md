@@ -25,12 +25,15 @@ Here come the actual release notes:
 ## Features
 * metasfresh-app
   * [#2546](https://github.com/metasfresh/metasfresh/issues/2546) Mark all Value and DocumentNo columns as IsCalculated=Y
+    * Improving the Handling of Document Numbers in WebUI, now defining all Value and DocumentNo columns as auto calculated behavior.
   * [#2684](https://github.com/metasfresh/metasfresh/issues/2684) Material Dispo - map planning records with actual M_Transactions
+    * New Data Structure in Material Disposition, now mapping the Planning records with real Material Transactions.
   * [#2719](https://github.com/metasfresh/metasfresh/issues/2719) Window Design Webui: Improve window Schedules
     * Improving Schedules Window in WebUI, adding adjusted Mandatory Lofic for Cron-Pattern Field and Translation for en_US.
   * [#2723](https://github.com/metasfresh/metasfresh/issues/2723) Webui Design Window: Improve window Internal Use
     * Improvement for the Internal Usage Window, adding Field Translations for Language/ Locale en_US.
   * [#2751](https://github.com/metasfresh/metasfresh/issues/2751) Add flatrate term relations from order and partner to new window contract
+    * Additional references between Flatrate Terms to Order and Business Partner in the new Contract Windoiw in WebUI.
   * [#2758](https://github.com/metasfresh/metasfresh/issues/2758) remaining static element Translations
     * Improving the Translations of de_DE Language/ Locale for static elements in WebUI.
   * [#2781](https://github.com/metasfresh/metasfresh/issues/2781) Change Default Address Layout for B2C Partners for country CH
@@ -51,6 +54,7 @@ Here come the actual release notes:
   * [#2843](https://github.com/metasfresh/metasfresh/issues/2843) WebUI: Add new Fields for SQL Columns to Material Dispo Transaction Subtab
     * Improving Transaction included Subtab in Materialdispo Window. Now showing the Shipment/ Receipt Information in there.
   * [#2847](https://github.com/metasfresh/metasfresh/issues/2847) Elasticsearch shall use slf4j instead of log4j
+    * Internal Housekeeping Issue, changing the logger for elasticsearch uses. Now using slf4j.
 
 * metasfresh-webui-api
   * [#644](https://github.com/metasfresh/metasfresh-webui-api/issues/644) Hide window actions which are not available
