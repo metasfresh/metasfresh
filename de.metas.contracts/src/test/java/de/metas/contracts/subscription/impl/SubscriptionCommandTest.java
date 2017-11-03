@@ -86,7 +86,7 @@ public class SubscriptionCommandTest
 	public void removePauses()
 	{
 		performInsertPause(true);
-		SubscriptionCommand.get().removePauses(term, TimeUtil.addDays(pauseFrom, 2), TimeUtil.addDays(pauseUntil, 3));
+		SubscriptionService.get().removePausesAroundTimeframe(term, TimeUtil.addDays(pauseFrom, 2), TimeUtil.addDays(pauseUntil, 3));
 
 		assertAllGoodAfterRemovePauses();
 	}
@@ -95,7 +95,7 @@ public class SubscriptionCommandTest
 	public void removePausesEndDateAfterLastDelivery()
 	{
 		performInsertPause(true);
-		SubscriptionCommand.get().removePauses(term, TimeUtil.addDays(middle.getEventDate(), 2), TimeUtil.addDays(last.getEventDate(), 2));
+		SubscriptionService.get().removePausesAroundTimeframe(term, TimeUtil.addDays(middle.getEventDate(), 2), TimeUtil.addDays(last.getEventDate(), 2));
 
 		assertAllGoodAfterRemovePauses();
 	}
@@ -104,7 +104,7 @@ public class SubscriptionCommandTest
 	public void removePausesStartAndEndOnTheSameDay()
 	{
 		performInsertPause(true);
-		SubscriptionCommand.get().removePauses(term, pauseFrom, pauseFrom);
+		SubscriptionService.get().removePausesAroundTimeframe(term, pauseFrom, pauseFrom);
 
 		assertAllGoodAfterRemovePauses();
 	}
@@ -113,7 +113,7 @@ public class SubscriptionCommandTest
 	public void removePausesStartAndEndOnTheSameDay2()
 	{
 		performInsertPause(true);
-		SubscriptionCommand.get().removePauses(term, middle.getEventDate(), middle.getEventDate());
+		SubscriptionService.get().removePausesAroundTimeframe(term, middle.getEventDate(), middle.getEventDate());
 
 		assertAllGoodAfterRemovePauses();
 	}
@@ -122,7 +122,7 @@ public class SubscriptionCommandTest
 	public void removePausesStartAndEndOnTheSameDay3()
 	{
 		performInsertPause(true);
-		SubscriptionCommand.get().removePauses(term, pauseUntil, pauseUntil);
+		SubscriptionService.get().removePausesAroundTimeframe(term, pauseUntil, pauseUntil);
 
 		assertAllGoodAfterRemovePauses();
 	}
@@ -179,7 +179,7 @@ public class SubscriptionCommandTest
 		final Timestamp middleEventDateBefore = middle.getEventDate();
 		final Timestamp lastEventDateBefore = last.getEventDate();
 
-		SubscriptionCommand.get().insertPause(term, pauseFrom, pauseUntil);
+		SubscriptionService.get().insertPause(term, pauseFrom, pauseUntil);
 
 		final List<I_C_SubscriptionProgress> all = retrieveAllforTerm();
 		final int numberOfPauseRecords = 2;
@@ -224,7 +224,7 @@ public class SubscriptionCommandTest
 	{
 		performInsertPause(true);
 
-		SubscriptionCommand.get().insertPause(term, TimeUtil.addDays(middle.getEventDate(), 2), TimeUtil.addDays(last.getEventDate(), 2));
+		SubscriptionService.get().insertPause(term, TimeUtil.addDays(middle.getEventDate(), 2), TimeUtil.addDays(last.getEventDate(), 2));
 
 		final List<I_C_SubscriptionProgress> all = retrieveAllforTerm();
 		assertThat(all).hasSize(5);
