@@ -89,7 +89,14 @@ public final class CtxName
 	{
 		if (defaultValueDate == null)
 		{
-			defaultValueDate = Optional.ofNullable(Evaluatee.convertToDate(name, defaultValue, null));
+			if(defaultValue != null && "NULL".equalsIgnoreCase(defaultValue.trim()))
+			{
+				defaultValueDate = Optional.empty();
+			}
+			else
+			{
+				defaultValueDate = Optional.ofNullable(Evaluatee.convertToDate(name, defaultValue, null));
+			}
 		}
 		return defaultValueDate.orElse(null);
 	}

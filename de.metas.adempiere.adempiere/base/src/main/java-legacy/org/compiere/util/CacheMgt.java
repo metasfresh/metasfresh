@@ -19,11 +19,13 @@ package org.compiere.util;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReentrantLock;
 
+import org.adempiere.ad.dao.cache.CacheInvalidateRequest;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
@@ -34,25 +36,15 @@ import org.adempiere.util.Services;
 import org.adempiere.util.WeakList;
 import org.adempiere.util.jmx.JMXRegistry;
 import org.adempiere.util.jmx.JMXRegistry.OnJMXAlreadyExistsPolicy;
-import org.adempiere.util.lang.EqualsBuilder;
-import org.adempiere.util.lang.HashcodeBuilder;
-import org.adempiere.util.lang.ITableRecordReference;
-import org.adempiere.util.lang.impl.TableRecordReference;
 import org.slf4j.Logger;
 
-import com.google.common.base.MoreObjects;
 import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 
-import de.metas.event.Event;
-import de.metas.event.IEventBus;
-import de.metas.event.IEventBusFactory;
-import de.metas.event.IEventListener;
-import de.metas.event.Topic;
-import de.metas.event.Type;
 import de.metas.logging.LogManager;
 import lombok.NonNull;
+import lombok.Value;
 
 /**
  * Adempiere Cache Management
@@ -90,8 +82,10 @@ public final class CacheMgt
 	public static final int RECORD_ID_ALL = -1;
 
 	/** List of Instances */
-	private final WeakList<CacheInterface> cacheInstances = new WeakList<CacheInterface>();
+	private final WeakList<CacheInterface> cacheInstances = new WeakList<>();
 	private final ReentrantLock cacheInstancesLock = cacheInstances.getReentrantLock();
+
+	private CopyOnWriteArrayList<ICacheResetListener> globalCacheResetListeners = new CopyOnWriteArrayList<>();
 
 	/**
 	 * List of Table Names.
@@ -100,9 +94,9 @@ public final class CacheMgt
 	 */
 	private final Map<String, AtomicInteger> tableNames = new HashMap<>();
 
-	/** Logger */
-	static final transient Logger log = LogManager.getLogger(CacheMgt.class);
+	/* package */ static final transient Logger log = LogManager.getLogger(CacheMgt.class);
 
+	private final AtomicBoolean cacheResetRunning = new AtomicBoolean();
 	private final AtomicLong lastCacheReset = new AtomicLong();
 
 	/**
@@ -113,7 +107,7 @@ public final class CacheMgt
 	 */
 	public final void enableRemoteCacheInvalidationForTableName(final String tableName)
 	{
-		RemoteCacheInvalidationHandler.instance.enableForTableName(tableName);
+		CacheInvalidationRemoteHandler.instance.enableForTableName(tableName);
 	}
 
 	/**************************************************************************
@@ -274,7 +268,7 @@ public final class CacheMgt
 
 	public Set<String> getTableNamesToBroadcast()
 	{
-		return RemoteCacheInvalidationHandler.instance.getTableNamesToBroadcast();
+		return CacheInvalidationRemoteHandler.instance.getTableNamesToBroadcast();
 	}
 
 	/** @return last time cache reset timestamp */
@@ -301,7 +295,6 @@ public final class CacheMgt
 		int total = 0;
 		try
 		{
-
 			for (final CacheInterface cacheInstance : cacheInstances)
 			{
 				if (cacheInstance != null && cacheInstance.size() > 0)
@@ -310,6 +303,8 @@ public final class CacheMgt
 					counter++;
 				}
 			}
+
+			fireGlobalCacheResetListeners(CacheInvalidateRequest.all());
 
 			lastCacheReset.incrementAndGet();
 		}
@@ -322,9 +317,22 @@ public final class CacheMgt
 		log.info("Reset all: {} cache instances invalidated ({} cached items invalidated)", counter, total);
 
 		return total;
-	}	// reset
-
-	private final transient AtomicBoolean cacheResetRunning = new AtomicBoolean();
+	}
+	
+	private void fireGlobalCacheResetListeners(final CacheInvalidateRequest request)
+	{
+		for (ICacheResetListener globalCacheResetListener : globalCacheResetListeners)
+		{
+			try
+			{
+				globalCacheResetListener.reset(request);
+			}
+			catch (final Exception ex)
+			{
+				log.warn("Failed reseting {}. Ignored.", globalCacheResetListener, ex);
+			}
+		}
+	}
 
 	/**
 	 * Invalidate all cached entries for given TableName.
@@ -334,10 +342,11 @@ public final class CacheMgt
 	 */
 	public int reset(final String tableName)
 	{
-		final int recordId = RECORD_ID_ALL;
-		return reset(tableName, recordId);
+		final CacheInvalidateRequest request = CacheInvalidateRequest.fromTableNameAndRecordId(tableName, RECORD_ID_ALL);
+		final boolean broadcast = true;
+		return reset(request, broadcast);
 	}	// reset
-	
+
 	/**
 	 * Invalidate all cached entries for given TableName.
 	 * 
@@ -348,11 +357,10 @@ public final class CacheMgt
 	 */
 	public int resetLocal(final String tableName)
 	{
-		final int recordId = RECORD_ID_ALL;
+		final CacheInvalidateRequest request = CacheInvalidateRequest.fromTableNameAndRecordId(tableName, RECORD_ID_ALL);
 		final boolean broadcast = false;
-		return reset(tableName, recordId, broadcast);
+		return reset(request, broadcast);
 	}	// reset
-
 
 	/**
 	 * Invalidate all cached entries for given TableName/Record_ID.
@@ -363,8 +371,15 @@ public final class CacheMgt
 	 */
 	public int reset(final String tableName, final int recordId)
 	{
+		final CacheInvalidateRequest request = CacheInvalidateRequest.fromTableNameAndRecordId(tableName, recordId);
 		final boolean broadcast = true;
-		return reset(tableName, recordId, broadcast);
+		return reset(request, broadcast);
+	}
+
+	public int reset(final CacheInvalidateRequest request)
+	{
+		final boolean broadcast = true;
+		return reset(request, broadcast);
 	}
 
 	/**
@@ -376,17 +391,17 @@ public final class CacheMgt
 	 * @param tableName
 	 * @param recordId
 	 */
-	public void resetOnTrxCommit(final String trxName, final String tableName, final int recordId)
+	public void resetOnTrxCommit(final String trxName, final CacheInvalidateRequest request)
 	{
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
 		final ITrx trx = trxManager.get(trxName, OnTrxMissingPolicy.ReturnTrxNone);
 		if (trxManager.isNull(trx))
 		{
-			reset(tableName, recordId);
+			reset(request);
 			return;
 		}
 
-		RecordsToResetOnTrxCommitCollector.getCreate(trx).addRecord(tableName, recordId);
+		RecordsToResetOnTrxCommitCollector.getCreate(trx).addRecord(request);
 	}
 
 	/**
@@ -397,9 +412,9 @@ public final class CacheMgt
 	 * @param broadcast true if we shall also broadcast this remotely.
 	 * @return how many cache entries were invalidated
 	 */
-	private final int reset(final String tableName, final int recordId, final boolean broadcast)
+	final int reset(@NonNull final CacheInvalidateRequest request, final boolean broadcast)
 	{
-		if (tableName == null)
+		if (request.isAll())
 		{
 			return reset();
 		}
@@ -407,6 +422,9 @@ public final class CacheMgt
 		cacheInstancesLock.lock();
 		try
 		{
+			final String tableName = request.getTableNameEffective();
+			final int recordId = request.getRecordIdEffective();
+
 			int counter = 0;
 			int total = 0;
 
@@ -459,13 +477,16 @@ public final class CacheMgt
 			}
 			//
 			log.debug("Reset {}: {} cache interfaces checked ({} records invalidated)", tableName, counter, total);
+			
+			//
+			fireGlobalCacheResetListeners(request);
 
 			//
 			// Broadcast cache invalidation.
 			// We do this, even if we don't have any cache interface registered locally, because there might be remotely.
 			if (broadcast)
 			{
-				RemoteCacheInvalidationHandler.instance.postEvent(tableName, recordId);
+				CacheInvalidationRemoteHandler.instance.postEvent(request);
 			}
 
 			return total;
@@ -575,7 +596,7 @@ public final class CacheMgt
 		catch (Exception e)
 		{
 			// log but don't fail
-			log.warn("Error while reseting {}", cacheInstance, e);
+			log.warn("Error while reseting {}. Ignored.", cacheInstance, e);
 			return 0;
 		}
 	}
@@ -586,12 +607,18 @@ public final class CacheMgt
 	 * @param tableName
 	 * @param cacheResetListener
 	 */
-	public void addCacheResetListener(final String tableName, final ICacheResetListener cacheResetListener)
+	public void addCacheResetListener(@NonNull final String tableName, @NonNull final ICacheResetListener cacheResetListener)
 	{
 		final Boolean registerWeak = Boolean.FALSE;
 		register(CacheResetListener2CacheInterface.of(tableName, cacheResetListener), registerWeak);
 	}
 
+	public void addCacheResetListener(@NonNull final ICacheResetListener cacheResetListener)
+	{
+		globalCacheResetListeners.addIfAbsent(cacheResetListener);
+	}
+
+	@Value
 	private static final class CacheResetListener2CacheInterface implements ITableAwareCacheInterface
 	{
 		public static final CacheResetListener2CacheInterface of(@NonNull final String tableName, @NonNull final ICacheResetListener listener)
@@ -602,54 +629,11 @@ public final class CacheMgt
 		private final String tableName;
 		private final ICacheResetListener listener;
 
-		private CacheResetListener2CacheInterface(final String tableName, final ICacheResetListener listener)
+		private CacheResetListener2CacheInterface(@NonNull final String tableName, @NonNull final ICacheResetListener listener)
 		{
-			super();
 			Check.assumeNotEmpty(tableName, "tableName not empty");
 			this.tableName = tableName;
-			Check.assumeNotNull(listener, "listener not null");
 			this.listener = listener;
-		}
-
-		@Override
-		public String toString()
-		{
-			return MoreObjects.toStringHelper(this)
-					.add("tableName", tableName)
-					.add("listener", listener)
-					.toString();
-		}
-
-		@Override
-		public int hashCode()
-		{
-			return new HashcodeBuilder()
-					.append(tableName)
-					.append(listener)
-					.toHashcode();
-		}
-
-		@Override
-		public boolean equals(Object obj)
-		{
-			if (this == obj)
-			{
-				return true;
-			}
-			if (obj == null)
-			{
-				return false;
-			}
-
-			final CacheResetListener2CacheInterface other = EqualsBuilder.getOther(this, obj);
-			if (other == null)
-			{
-				return false;
-			}
-			return new EqualsBuilder()
-					.append(this.tableName, other.tableName)
-					.append(this.listener, other.listener)
-					.isEqual();
 		}
 
 		@Override
@@ -673,144 +657,13 @@ public final class CacheMgt
 		@Override
 		public int reset()
 		{
-			final Object key = null;
-			return listener.reset(tableName, key);
+			return listener.reset(CacheInvalidateRequest.allRecordsForTable(tableName));
 		}
 
 		@Override
-		public int resetForRecordId(String tableName, Object key)
+		public int resetForRecordId(final String tableName, final int recordId)
 		{
-			return listener.reset(tableName, key);
-		}
-	}
-
-	/** Bidirectional binding between local cache system and remote cache systems */
-	private static final class RemoteCacheInvalidationHandler implements IEventListener
-	{
-		public static final transient CacheMgt.RemoteCacheInvalidationHandler instance = new CacheMgt.RemoteCacheInvalidationHandler();
-
-		private static final Topic TOPIC_CacheInvalidation = Topic.builder()
-				.setName("org.compiere.util.CacheMgt.CacheInvalidation")
-				.setType(Type.REMOTE)
-				.build();
-		private static final String EVENT_PROPERTY_TableName = "TableName";
-		private static final String EVENT_PROPERTY_Record_ID = "Record_ID";
-
-		private boolean _initalized = false;
-		private final Set<String> tableNamesToBroadcast = Sets.newConcurrentHashSet();
-
-		private RemoteCacheInvalidationHandler()
-		{
-			super();
-		}
-
-		public final synchronized void enable()
-		{
-			// Do nothing if already registered.
-			if (_initalized)
-			{
-				return;
-			}
-
-			//
-			// Globally register this listener.
-			// We register it globally because we want to survive.
-			final IEventBusFactory eventBusFactory = Services.get(IEventBusFactory.class);
-			eventBusFactory.registerGlobalEventListener(TOPIC_CacheInvalidation, instance);
-
-			_initalized = true;
-		}
-
-		private final boolean isEnabled()
-		{
-			return _initalized;
-		}
-
-		/**
-		 * Enable cache invalidation broadcasting for given table name.
-		 * 
-		 * @param tableName
-		 */
-		public synchronized void enableForTableName(final String tableName)
-		{
-			Check.assumeNotEmpty(tableName, "tableName not empty");
-
-			enable();
-			tableNamesToBroadcast.add(tableName);
-		}
-
-		public synchronized Set<String> getTableNamesToBroadcast()
-		{
-			return ImmutableSet.copyOf(tableNamesToBroadcast);
-		}
-
-		/**
-		 * Broadcast a cache invalidation request.
-		 * 
-		 * @param tableName
-		 * @param recordId
-		 */
-		public void postEvent(final String tableName, final int recordId)
-		{
-			// Do nothing if cache invalidation broadcasting is not enabled
-			if (!isEnabled())
-			{
-				return;
-			}
-
-			// Do nothing if given table name is not in our table names to broadcast list
-			if (!tableNamesToBroadcast.contains(tableName))
-			{
-				return;
-			}
-
-			// Broadcast the event.
-			final Event event = Event.builder()
-					.putProperty(EVENT_PROPERTY_TableName, tableName)
-					.putProperty(EVENT_PROPERTY_Record_ID, recordId < 0 ? RECORD_ID_ALL : recordId)
-					.build();
-			Services.get(IEventBusFactory.class)
-					.getEventBus(TOPIC_CacheInvalidation)
-					.postEvent(event);
-			log.debug("Broadcasting cache invalidation of {}/{}, event={}", tableName, recordId, event);
-		}
-
-		/**
-		 * Called when we got a remote cache invalidation request. It tries to invalidate local caches.
-		 */
-		@Override
-		public void onEvent(final IEventBus eventBus, final Event event)
-		{
-			// Ignore local events because they were fired from CacheMgt.reset methods.
-			// If we would not do so, we would have an infinite loop here.
-			if (event.isLocalEvent())
-			{
-				return;
-			}
-
-			//
-			// TableName
-			final String tableName = event.getProperty(EVENT_PROPERTY_TableName);
-			if (Check.isEmpty(tableName, true))
-			{
-				log.debug("Ignored event without tableName set: {}", event);
-				return;
-			}
-			// NOTE: we try to invalidate the local cache even if the tableName is not in our tableNames to broadcast list.
-
-			//
-			// Record_ID
-			Integer recordId = event.getProperty(EVENT_PROPERTY_Record_ID);
-			if (recordId == null || recordId < 0)
-			{
-				recordId = RECORD_ID_ALL;
-			}
-
-			//
-			// Reset cache for TableName/Record_ID
-			log.debug("Reseting cache for {}/{} because we got remote event: {}", tableName, recordId, event);
-			final boolean broadcast = false; // don't broadcast it anymore because else we would introduce recursion
-			CacheMgt.get().reset(tableName, recordId, broadcast);
+			return listener.reset(CacheInvalidateRequest.fromTableNameAndRecordId(tableName, recordId));
 		}
 	}
 
@@ -852,40 +705,30 @@ public final class CacheMgt
 			}
 		};
 
-		private final Set<ITableRecordReference> records = Sets.newConcurrentHashSet();
+		private final Set<CacheInvalidateRequest> requests = Sets.newConcurrentHashSet();
 
 		/** Enqueues a record */
-		public final void addRecord(final String tableName, final int recordId)
+		public final void addRecord(@NonNull final CacheInvalidateRequest request)
 		{
-			if (Check.isEmpty(tableName, true))
-			{
-				return;
-			}
-			if (recordId <= 0)
-			{
-				return;
-			}
-			final TableRecordReference record = new TableRecordReference(tableName, recordId);
-			records.add(record);
-
-			log.debug("Scheduled cache invalidation on transaction commit: {}", record);
+			requests.add(request);
+			log.debug("Scheduled cache invalidation on transaction commit: {}", request);
 		}
 
 		/** Reset the cache for all enqueued records */
 		private void run()
 		{
-			if (records.isEmpty())
+			if (requests.isEmpty())
 			{
 				return;
 			}
 
 			final CacheMgt cacheMgt = CacheMgt.get();
-			for (final ITableRecordReference record : records)
+			for (final CacheInvalidateRequest request : requests)
 			{
-				cacheMgt.reset(record.getTableName(), record.getRecord_ID());
+				cacheMgt.reset(request);
 			}
 
-			records.clear();
+			requests.clear();
 		}
 	}
 }

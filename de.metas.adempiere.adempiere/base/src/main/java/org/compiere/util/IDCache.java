@@ -70,7 +70,7 @@ public class IDCache<V> extends CCache<Object, V>
 	}
 
 	@Override
-	public int resetForRecordId(final String tableName, final Object recordId)
+	public int resetForRecordId(final String tableName, final int recordId)
 	{
 		final String cacheTableName = getTableName();
 		if (!cacheTableName.equals(tableName))

@@ -1,12 +1,10 @@
-package org.compiere.util;
-
-import org.adempiere.ad.dao.cache.CacheInvalidateRequest;
+package org.adempiere.ad.dao.cache;
 
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2016 metas GmbH
+ * Copyright (C) 2017 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -24,15 +22,8 @@ import org.adempiere.ad.dao.cache.CacheInvalidateRequest;
  * #L%
  */
 
-/**
- * Cache reset listener.
- * 
- * @author metas-dev <dev@metasfresh.com>
- *
- * @see CacheMgt#addCacheResetListener(String, ICacheResetListener)
- */
-@FunctionalInterface
-public interface ICacheResetListener
+
+public enum ModelCacheInvalidationTiming
 {
-	int reset(CacheInvalidateRequest request);
+	NEW, CHANGE, DELETE
 }

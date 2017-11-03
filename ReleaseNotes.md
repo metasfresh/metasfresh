@@ -25,12 +25,15 @@ Here come the actual release notes:
 ## Features
 * metasfresh-app
   * [#2546](https://github.com/metasfresh/metasfresh/issues/2546) Mark all Value and DocumentNo columns as IsCalculated=Y
+    * Improving the Handling of Document Numbers in WebUI, now defining all Value and DocumentNo columns as auto calculated behavior.
   * [#2684](https://github.com/metasfresh/metasfresh/issues/2684) Material Dispo - map planning records with actual M_Transactions
+    * New Data Structure in Material Disposition, now mapping the Planning records with real Material Transactions.
   * [#2719](https://github.com/metasfresh/metasfresh/issues/2719) Window Design Webui: Improve window Schedules
     * Improving Schedules Window in WebUI, adding adjusted Mandatory Lofic for Cron-Pattern Field and Translation for en_US.
   * [#2723](https://github.com/metasfresh/metasfresh/issues/2723) Webui Design Window: Improve window Internal Use
     * Improvement for the Internal Usage Window, adding Field Translations for Language/ Locale en_US.
   * [#2751](https://github.com/metasfresh/metasfresh/issues/2751) Add flatrate term relations from order and partner to new window contract
+    * Additional references between Flatrate Terms to Order and Business Partner in the new Contract Windoiw in WebUI.
   * [#2758](https://github.com/metasfresh/metasfresh/issues/2758) remaining static element Translations
     * Improving the Translations of de_DE Language/ Locale for static elements in WebUI.
   * [#2781](https://github.com/metasfresh/metasfresh/issues/2781) Change Default Address Layout for B2C Partners for country CH
@@ -48,38 +51,56 @@ Here come the actual release notes:
   * [#2821](https://github.com/metasfresh/metasfresh/issues/2821) Window Material Dispo in WebUI
     * Improvement of Materialdispo window in WebUI, adding new Fields and Translations.
   * [#2800](https://github.com/metasfresh/metasfresh/issues/2800) Make de.metas.document.archive.process.ExportArchivePDF work in webui
+    * Improvement of the Archove PDF Exporter, can now also be used in WebUI.
   * [#2843](https://github.com/metasfresh/metasfresh/issues/2843) WebUI: Add new Fields for SQL Columns to Material Dispo Transaction Subtab
     * Improving Transaction included Subtab in Materialdispo Window. Now showing the Shipment/ Receipt Information in there.
   * [#2847](https://github.com/metasfresh/metasfresh/issues/2847) Elasticsearch shall use slf4j instead of log4j
+    * Internal Housekeeping Issue, changing the logger for elasticsearch uses. Now using slf4j.
 
 * metasfresh-webui-api
   * [#644](https://github.com/metasfresh/metasfresh-webui-api/issues/644) Hide window actions which are not available
+    * Improvement of Action Menu in WebUI, now only showing Actions that are available for the given context.
   * [#645](https://github.com/metasfresh/metasfresh-webui-api/issues/645) window/actions: introduce support for selectedTabId and selectedRowIds
+    * Adding support for selected Tabs and Rows in WebUI Windows.
 
 * metasfresh-webui-frontend
   * [#981](https://github.com/metasfresh/metasfresh-webui-frontend/issues/981) New Widget for Date Range
+    * New Action Parameter Parm Widget. Now also allowing to use the DateRange Picker in Action Parms.
   * [#1296](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1296) Add storybook for isolated visual component testing
+    * Initial Kickoff for automatic testing in WebUI.
 
 * metasfresh-dist-orgs
   * [#41](https://github.com/metasfresh/metasfresh-dist-orgs/issues/41) Add medium invoice report
+    * New Invoice Report.
   * [#55](https://github.com/metasfresh/metasfresh-dist-orgs/issues/55) Refactor Migration Scripts for dist orgs
+    * Internal Housekeeping Issue, rearranging the migration scripts for dist orgs.
   * [#72](https://github.com/metasfresh/metasfresh-dist-orgs/issues/72) Invoice Medium ESR and other Adjustments
+    * Adjustments to ESR Invoice Printformat and further adjustments.
 
 ## Fixes
 * metasfresh-app
   * [#2634](https://github.com/metasfresh/metasfresh/issues/2634) Make the CalloutBankStatement webui compliant
+    * Fixes the Callout BankStatement for the usage in Bankstatement Window in WebUI.
   * [#2719](https://github.com/metasfresh/metasfresh/issues/2357) exception when using process quotation to sales order with parameter complete order
+    * Fixes an exception that occured when using the action Quotation to Sales Order in WebUI.
   * [#2818](https://github.com/metasfresh/metasfresh/issues/2818) Flatrate: Have relation from Sales Order to invoice candidate
+    * New Relation from Sales Order to Invoice Candidates for Flatrate Terms.
   * [#2823](https://github.com/metasfresh/metasfresh/issues/2823) Add C_Invoice_Candidate.Priority missing column
+    * Adding the column Priority to Invoice Candidates.
   * [#2836](https://github.com/metasfresh/metasfresh/issues/2836) Setup wizard shall not inactivate ESR
+    * Improving the Setup Wizard, now avoiding the deactivation of ESR in Setup Workflow.
 
 * metasfresh-webui-api
   * [#643](https://github.com/metasfresh/metasfresh-webui-api/issues/643) Picking Tray Clearing requery to see the right view
+    * Fixes the new Picking Tray Clearing, requerying the Window to let the user see the correct data.
   * [#647](https://github.com/metasfresh/metasfresh-webui-api/issues/647) shipped HU is still visible in picking terminal
+    * Fixes the picking Terminal, now not showing shipped HU anymore.
 
 * metasfresh-dist-orgs
   * [#67](https://github.com/metasfresh/metasfresh-dist-orgs/issues/67) Fix Jasper Version of Invoice Medium
+    * Fix for the new Jasper Invoice Report.
   * [#80](https://github.com/metasfresh/metasfresh-dist-orgs/issues/80) Invoice Medium Preview working in Jasper but not on server
+    * Fix for the new Jasper Invoice Report in dis orgs.
 
 # metasfresh 5.32 (2017-43)
 
