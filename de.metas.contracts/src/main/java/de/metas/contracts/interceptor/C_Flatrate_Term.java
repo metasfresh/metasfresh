@@ -173,6 +173,7 @@ public class C_Flatrate_Term
 			flatrateBL.validatePricing(term);
 		}
 	}
+	
 
 	@ModelChange(timings = {
 			ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE
@@ -184,6 +185,7 @@ public class C_Flatrate_Term
 		if (term.getStartDate() != null && !term.isProcessed())
 		{
 			Services.get(IFlatrateBL.class).updateNoticeDateAndEndDate(term);
+			setMasterEndDate(term);
 		}
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(term);
@@ -226,6 +228,14 @@ public class C_Flatrate_Term
 		if (!errors.isEmpty())
 		{
 			throw new AdempiereException(concatStrings(errors));
+		}
+	}
+	
+	private void setMasterEndDate(final I_C_Flatrate_Term term)
+	{
+		if (InterfaceWrapperHelper.isNew(term) && !term.isAutoRenew())
+		{
+			term.setMasterEndDate(term.getEndDate());
 		}
 	}
 
@@ -482,4 +492,15 @@ public class C_Flatrate_Term
 			throw new AdempiereException(FlatrateBL.MSG_HasOverlapping_Term, new Object[] { term.getC_Flatrate_Term_ID(), term.getBill_BPartner().getValue() });
 		}
 	}
+	
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE , ifColumnsChanged = I_C_Flatrate_Term.COLUMNNAME_C_FlatrateTerm_Next_ID )
+	public void updateMasterEndDate(final I_C_Flatrate_Term term)
+	{
+		if (term.getC_FlatrateTerm_Next_ID() > 0)
+		{
+			term.setMasterEndDate(null);
+		}
+	}
+	
+
 }
