@@ -7,7 +7,9 @@ import java.util.function.Consumer;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.IAutoCloseable;
 import org.springframework.stereotype.Component;
 
 import de.metas.ui.web.websocket.WebsocketSender;
@@ -49,6 +51,8 @@ import lombok.NonNull;
 @Component
 public class DocumentWebsocketPublisher
 {
+	private final ThreadLocal<JSONDocumentChangedWebSocketEventCollector> THREAD_LOCAL_COLLECTOR = new ThreadLocal<>();
+
 	private final WebsocketSender websocketSender;
 
 	public DocumentWebsocketPublisher(@NonNull final WebsocketSender websocketSender)
@@ -65,7 +69,13 @@ public class DocumentWebsocketPublisher
 
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
 		final ITrx trx = trxManager.getThreadInheritedTrx(OnTrxMissingPolicy.ReturnTrxNone);
-		if (!trxManager.isNull(trx))
+		final JSONDocumentChangedWebSocketEventCollector threadLocalCollector = THREAD_LOCAL_COLLECTOR.get();
+		if (threadLocalCollector != null)
+		{
+			collector = threadLocalCollector;
+			autoflush = false;
+		}
+		else if (!trxManager.isNull(trx))
 		{
 			collector = trx.getProperty(JSONDocumentChangedWebSocketEventCollector.class.getName(), () -> createCollectorAndBind(trx, websocketSender));
 			autoflush = false;
@@ -137,8 +147,8 @@ public class DocumentWebsocketPublisher
 
 		final JSONDocumentChangedWebSocketEventCollector collectorToMerge = JSONDocumentChangedWebSocketEventCollector.newInstance();
 		jsonDocumentEvents.forEach(event -> collectFrom(collectorToMerge, event));
-		
-		if(collectorToMerge.isEmpty())
+
+		if (collectorToMerge.isEmpty())
 		{
 			return;
 		}
@@ -163,5 +173,31 @@ public class DocumentWebsocketPublisher
 		final DocumentId documentId = event.getId();
 
 		event.getIncludedTabsInfos().forEach(tabInfo -> collector.mergeFrom(windowId, documentId, tabInfo));
+	}
+
+	public IAutoCloseable temporaryCollectOnThisThread()
+	{
+		if (THREAD_LOCAL_COLLECTOR.get() != null)
+		{
+			throw new AdempiereException("A thread level collector was already set");
+		}
+
+		final JSONDocumentChangedWebSocketEventCollector collector = JSONDocumentChangedWebSocketEventCollector.newInstance();
+		THREAD_LOCAL_COLLECTOR.set(collector);
+		return new IAutoCloseable()
+		{
+			@Override
+			public String toString()
+			{
+				return "AutoCloseable[" + collector + "]";
+			}
+
+			@Override
+			public void close()
+			{
+				THREAD_LOCAL_COLLECTOR.set(null);
+				sendAllAndClear(collector, websocketSender);
+			}
+		};
 	}
 }

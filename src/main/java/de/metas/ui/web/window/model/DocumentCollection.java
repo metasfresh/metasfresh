@@ -588,6 +588,11 @@ public class DocumentCollection
 				.reportData(processExecutionResult.getReportData())
 				.build();
 	}
+	
+	public DocumentWebsocketPublisher getWebsocketPublisher()
+	{
+		return websocketPublisher;
+	}
 
 	/**
 	 * Invalidates all root documents identified by tableName/recordId and notifies frontend (via websocket).

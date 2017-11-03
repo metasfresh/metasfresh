@@ -5,7 +5,9 @@ import java.util.concurrent.Executors;
 
 import javax.annotation.PostConstruct;
 
+import org.adempiere.ad.dao.cache.CacheInvalidateMultiRequest;
 import org.adempiere.ad.dao.cache.CacheInvalidateRequest;
+import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.util.CacheMgt;
 import org.compiere.util.ICacheResetListener;
 import org.slf4j.Logger;
@@ -14,6 +16,7 @@ import org.springframework.scheduling.concurrent.CustomizableThreadFactory;
 import org.springframework.stereotype.Component;
 
 import de.metas.logging.LogManager;
+import de.metas.ui.web.window.events.DocumentWebsocketPublisher;
 import lombok.NonNull;
 
 /*
@@ -53,13 +56,13 @@ public class DocumentCacheInvalidationDispatcher implements ICacheResetListener
 	private DocumentCollection documents;
 
 	private final Executor async;
-	
+
 	public DocumentCacheInvalidationDispatcher()
 	{
 		final CustomizableThreadFactory asyncThreadFactory = new CustomizableThreadFactory(DocumentCacheInvalidationDispatcher.class.getSimpleName());
 		asyncThreadFactory.setDaemon(true);
-		
-		async = Executors.newSingleThreadExecutor(asyncThreadFactory); 
+
+		async = Executors.newSingleThreadExecutor(asyncThreadFactory);
 	}
 
 	@PostConstruct
@@ -69,16 +72,22 @@ public class DocumentCacheInvalidationDispatcher implements ICacheResetListener
 	}
 
 	@Override
-	public int reset(@NonNull final CacheInvalidateRequest request)
+	public int reset(@NonNull final CacheInvalidateMultiRequest request)
 	{
-		// FIXME: atm if we are reseting async, the events are no longer aggregated because there is no trx.
-//		async.execute(() -> resetNow(request));
-		resetNow(request);
-		
+		async.execute(() -> resetNow(request));
 		return 1; // not relevant
 	}
 
-	public void resetNow(final CacheInvalidateRequest request)
+	private void resetNow(final CacheInvalidateMultiRequest request)
+	{
+		final DocumentWebsocketPublisher websocketPublisher = documents.getWebsocketPublisher();
+		try (IAutoCloseable c = websocketPublisher.temporaryCollectOnThisThread())
+		{
+			request.getRequests().forEach(this::resetNow);
+		}
+	}
+
+	private void resetNow(final CacheInvalidateRequest request)
 	{
 		logger.debug("Got {}", request);
 
