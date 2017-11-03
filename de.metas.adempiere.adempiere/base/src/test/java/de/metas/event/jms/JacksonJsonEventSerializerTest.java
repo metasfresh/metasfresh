@@ -1,10 +1,26 @@
 package de.metas.event.jms;
 
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.Date;
+
+import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_C_Invoice;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TestName;
+
+import de.metas.event.Event;
+import de.metas.event.EventBusConstants;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2017 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,26 +38,9 @@ package de.metas.event.jms;
  * #L%
  */
 
-
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.util.Date;
-
-import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_C_Invoice;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TestName;
-
-import de.metas.event.Event;
-import de.metas.event.EventBusConstants;
-
-public class JsonEventSerializerTest
+public class JacksonJsonEventSerializerTest
 {
-	private JsonEventSerializer jsonSerializer = JsonEventSerializer.instance;
+	private JacksonJsonEventSerializer jsonSerializer = JacksonJsonEventSerializer.instance;
 
 	@Rule
 	public TestName testName = new TestName();
@@ -72,52 +71,26 @@ public class JsonEventSerializerTest
 				.putProperty("Prop_TS", new Timestamp(System.currentTimeMillis()))
 				.putProperty("Prop_Int", 13)
 				.putProperty("Prop_Str", "string1")
-				.putProperty("Prop_Ref", new TableRecordReference(I_C_Invoice.Table_Name, 123456))
+				.putProperty("Prop_Ref", TableRecordReference.of(I_C_Invoice.Table_Name, 123456))
 				.build());
-	}
-
-	@Test
-	public void test_EventNotEquals()
-	{
-		final Event event1 = Event.builder()
-				.setSummary("Summary1")
-				.setDetailPlain("Detail1")
-				.setId("MyID1")
-				.addRecipient_User_ID(10)
-				.addRecipient_User_ID(20)
-				.addRecipient_User_ID(40)
-				.addRecipient_User_ID(30)
-				.addRecipient_User_ID(15)
-				.build();
-		final Event event2 = Event.builder()
-				.setSummary("Summary1")
-				.setDetailPlain("Detail1")
-				.setId("MyID1")
-				.addRecipient_User_ID(10)
-				.addRecipient_User_ID(20)
-				.addRecipient_User_ID(40)
-				.addRecipient_User_ID(30)
-				.addRecipient_User_ID(16)
-				.build();
-
-		Assert.assertNotEquals(event1, event2);
 	}
 
 	private final void testSerializeUnserialize(final Event event)
 	{
 		System.out.println("================ TEST: " + testName.getMethodName() + " ===============================================");
+		System.out.println("event=" + event);
 
 		final String jsonEvent = jsonSerializer.toString(event);
+		System.out.println("json=" + jsonEvent);
+		
 		final Event eventRestored = jsonSerializer.fromString(jsonEvent);
-		final String jsonEventRestored = jsonSerializer.toString(eventRestored);
-
-		System.out.println("event=" + event);
 		System.out.println("eventRestored=" + eventRestored);
-		System.out.println("               json=" + jsonEvent);
+		
+		final String jsonEventRestored = jsonSerializer.toString(eventRestored);
 		System.out.println("json event restored=" + jsonEventRestored);
 
 		Assert.assertEquals(event, eventRestored);
-
 		Assert.assertEquals("Invalid SenderId", EventBusConstants.getSenderId(), eventRestored.getSenderId());
 	}
+
 }

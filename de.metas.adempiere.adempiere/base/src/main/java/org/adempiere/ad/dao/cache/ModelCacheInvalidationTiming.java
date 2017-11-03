@@ -1,12 +1,10 @@
-package de.metas.event.jms;
-
-import com.google.common.annotations.VisibleForTesting;
+package org.adempiere.ad.dao.cache;
 
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2017 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -25,18 +23,7 @@ import com.google.common.annotations.VisibleForTesting;
  */
 
 
-import de.metas.event.Event;
-
-/**
- * Serialize/Deserialize {@link Event} objects.
- * 
- * @author tsa
- *
- */
-@VisibleForTesting
-public interface IEventSerializer
+public enum ModelCacheInvalidationTiming
 {
-	String toString(Event event);
-
-	Event fromString(String eventStr);
+	NEW, CHANGE, DELETE
 }

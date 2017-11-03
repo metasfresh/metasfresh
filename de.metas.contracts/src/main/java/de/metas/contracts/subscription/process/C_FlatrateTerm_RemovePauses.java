@@ -1,10 +1,15 @@
+
 package de.metas.contracts.subscription.process;
+
+import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.contracts.subscription.impl.SubscriptionService;
+import de.metas.process.IProcessPrecondition;
 
 /*
  * #%L
  * de.metas.contracts
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2017 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,29 +27,22 @@ package de.metas.contracts.subscription.process;
  * #L%
  */
 
-import java.sql.Timestamp;
-
-import de.metas.contracts.model.I_C_Flatrate_Term;
-import de.metas.contracts.subscription.impl.SubscriptionService;
-import de.metas.process.IProcessPrecondition;
-import de.metas.process.Param;
-
-public class C_SubscriptionProgress_InsertPause
+public class C_FlatrateTerm_RemovePauses
 		extends C_SubscriptionProgressBase
 		implements IProcessPrecondition
 {
-	@Param(parameterName = "DateGeneral", mandatory = true)
-	private Timestamp dateFrom;
-
-	@Param(parameterName = "DateGeneral", mandatory = true, parameterTo = true)
-	private Timestamp dateTo;
 
 	@Override
-	protected String doIt()
+	protected String doIt() throws Exception
 	{
 		final I_C_Flatrate_Term term = getTermFromProcessInfo();
-		SubscriptionService.get().insertPause(term, dateFrom, dateTo);
+
+
+		SubscriptionService.get().removeAllPauses(term);
 
 		return MSG_OK;
 	}
+	
+
+
 }
