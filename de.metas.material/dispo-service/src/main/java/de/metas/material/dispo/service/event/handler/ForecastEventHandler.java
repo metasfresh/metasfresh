@@ -2,11 +2,11 @@ package de.metas.material.dispo.service.event.handler;
 
 import org.springframework.stereotype.Service;
 
-import de.metas.material.dispo.candidate.Candidate;
-import de.metas.material.dispo.candidate.DemandDetail;
-import de.metas.material.dispo.candidate.CandidateSubType;
-import de.metas.material.dispo.candidate.CandidateType;
-import de.metas.material.dispo.candidate.Candidate.CandidateBuilder;
+import de.metas.material.dispo.commons.candidate.Candidate;
+import de.metas.material.dispo.commons.candidate.CandidateSubType;
+import de.metas.material.dispo.commons.candidate.CandidateType;
+import de.metas.material.dispo.commons.candidate.DemandDetail;
+import de.metas.material.dispo.commons.candidate.Candidate.CandidateBuilder;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.dispo.service.event.EventUtil;
 import de.metas.material.event.forecast.Forecast;

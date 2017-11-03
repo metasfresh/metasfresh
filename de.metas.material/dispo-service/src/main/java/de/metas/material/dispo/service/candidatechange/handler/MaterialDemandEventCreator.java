@@ -4,8 +4,8 @@ import java.math.BigDecimal;
 
 import com.google.common.base.Preconditions;
 
-import de.metas.material.dispo.candidate.Candidate;
-import de.metas.material.dispo.candidate.CandidateType;
+import de.metas.material.dispo.commons.candidate.Candidate;
+import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.event.EventDescriptor;
 import de.metas.material.event.MaterialDemandDescriptor;
 import de.metas.material.event.MaterialDemandEvent;

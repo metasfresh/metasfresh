@@ -7,10 +7,10 @@ import java.util.Set;
 
 import org.springframework.stereotype.Service;
 
-import de.metas.material.dispo.CandidatesQuery;
-import de.metas.material.dispo.candidate.Candidate;
-import de.metas.material.dispo.candidate.CandidateType;
-import de.metas.material.dispo.repository.CandidateRepositoryRetrieval;
+import de.metas.material.dispo.commons.CandidatesQuery;
+import de.metas.material.dispo.commons.candidate.Candidate;
+import de.metas.material.dispo.commons.candidate.CandidateType;
+import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.event.MaterialDescriptor;
 import de.metas.material.event.MaterialDescriptor.DateOperator;
 import de.metas.material.event.ProductDescriptor;

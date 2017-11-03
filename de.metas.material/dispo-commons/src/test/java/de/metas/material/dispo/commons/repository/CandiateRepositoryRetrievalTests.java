@@ -1,4 +1,4 @@
-package de.metas.material.dispo.repository;
+package de.metas.material.dispo.commons.repository;
 
 import static de.metas.material.event.EventTestHelper.AFTER_NOW;
 import static de.metas.material.event.EventTestHelper.ATTRIBUTE_SET_INSTANCE_ID;
@@ -30,11 +30,13 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestWatcher;
 
-import de.metas.material.dispo.CandidatesQuery;
-import de.metas.material.dispo.RepositoryTestHelper;
-import de.metas.material.dispo.candidate.Candidate;
-import de.metas.material.dispo.candidate.DemandDetail;
-import de.metas.material.dispo.candidate.TransactionDetail;
+import de.metas.material.dispo.commons.CandidatesQuery;
+import de.metas.material.dispo.commons.RepositoryTestHelper;
+import de.metas.material.dispo.commons.candidate.Candidate;
+import de.metas.material.dispo.commons.candidate.DemandDetail;
+import de.metas.material.dispo.commons.candidate.TransactionDetail;
+import de.metas.material.dispo.commons.repository.CandidateRepositoryCommands;
+import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.I_MD_Candidate_Demand_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_Dist_Detail;
@@ -511,7 +513,7 @@ public class CandiateRepositoryRetrievalTests
 
 	private I_MD_Candidate createCandiateRecordWithShipmentScheduleId(final int shipmentScheduleId)
 	{
-		final I_MD_Candidate candidateRecord = createCandidateRecordWithWarehouseId(30); // TODO replace with constant
+		final I_MD_Candidate candidateRecord = createCandidateRecordWithWarehouseId(WAREHOUSE_ID);
 		final I_MD_Candidate_Demand_Detail demandDetailRecord = newInstance(I_MD_Candidate_Demand_Detail.class);
 		demandDetailRecord.setMD_Candidate(candidateRecord);
 		demandDetailRecord.setM_ShipmentSchedule_ID(shipmentScheduleId);
@@ -576,7 +578,7 @@ public class CandiateRepositoryRetrievalTests
 
 	private static I_MD_Candidate createCandiateRecordWithForecastLineId(final int forecastLineId)
 	{
-		final I_MD_Candidate candidateRecord = createCandidateRecordWithWarehouseId(30); // TODO replace with constance
+		final I_MD_Candidate candidateRecord = createCandidateRecordWithWarehouseId(WAREHOUSE_ID);
 		final I_MD_Candidate_Demand_Detail demandDetailRecord = newInstance(I_MD_Candidate_Demand_Detail.class);
 		demandDetailRecord.setMD_Candidate(candidateRecord);
 		demandDetailRecord.setM_ForecastLine_ID(forecastLineId);

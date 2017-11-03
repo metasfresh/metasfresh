@@ -1,4 +1,4 @@
-package de.metas.material.dispo;
+package de.metas.material.dispo.commons;
 
 import java.util.Date;
 import java.util.List;
@@ -7,7 +7,7 @@ import java.util.stream.Collectors;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.util.Services;
 
-import de.metas.material.dispo.candidate.CandidateType;
+import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.X_MD_Candidate;
 import lombok.NonNull;
@@ -37,9 +37,6 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public class DispoTestUtils
 {
-
-	// TODO: change the whole package name for this module to de.metas.material.dispo.commons
-
 	public List<I_MD_Candidate> filter(@NonNull final CandidateType type)
 	{
 		final List<I_MD_Candidate> allRecords = retrieveAllRecords();

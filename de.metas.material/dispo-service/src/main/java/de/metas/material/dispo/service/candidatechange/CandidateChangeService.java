@@ -10,8 +10,8 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
 
-import de.metas.material.dispo.candidate.Candidate;
-import de.metas.material.dispo.candidate.CandidateType;
+import de.metas.material.dispo.commons.candidate.Candidate;
+import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.service.candidatechange.handler.CandidateHandler;
 import lombok.NonNull;
 

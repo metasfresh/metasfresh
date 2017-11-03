@@ -1,4 +1,4 @@
-package de.metas.material.dispo.candidate;
+package de.metas.material.dispo.commons.candidate;
 
 import de.metas.material.dispo.model.X_MD_Candidate;
 

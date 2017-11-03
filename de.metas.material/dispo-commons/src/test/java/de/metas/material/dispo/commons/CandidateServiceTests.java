@@ -1,4 +1,4 @@
-package de.metas.material.dispo;
+package de.metas.material.dispo.commons;
 
 import static de.metas.material.event.EventTestHelper.PRODUCT_ID;
 import static de.metas.material.event.EventTestHelper.createMaterialDescriptor;
@@ -13,12 +13,13 @@ import org.junit.Test;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.material.dispo.candidate.Candidate;
-import de.metas.material.dispo.candidate.CandidateSubType;
-import de.metas.material.dispo.candidate.CandidateType;
-import de.metas.material.dispo.candidate.DistributionDetail;
-import de.metas.material.dispo.candidate.ProductionDetail;
-import de.metas.material.dispo.repository.CandidateRepositoryRetrieval;
+import de.metas.material.dispo.commons.CandidateService;
+import de.metas.material.dispo.commons.candidate.Candidate;
+import de.metas.material.dispo.commons.candidate.CandidateSubType;
+import de.metas.material.dispo.commons.candidate.CandidateType;
+import de.metas.material.dispo.commons.candidate.DistributionDetail;
+import de.metas.material.dispo.commons.candidate.ProductionDetail;
+import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.event.MaterialEventService;
 import de.metas.material.event.ProductDescriptorFactory;
 import de.metas.material.event.ddorder.DDOrder;

@@ -1,4 +1,4 @@
-package de.metas.material.dispo;
+package de.metas.material.dispo.commons;
 
 import static de.metas.material.event.EventTestHelper.STORAGE_ATTRIBUTES_KEY;
 import static de.metas.material.event.EventTestHelper.ATTRIBUTE_SET_INSTANCE_ID;
@@ -12,8 +12,9 @@ import java.sql.Timestamp;
 import org.adempiere.util.time.SystemTime;
 import org.junit.Test;
 
-import de.metas.material.dispo.candidate.Candidate;
-import de.metas.material.dispo.candidate.CandidateType;
+import de.metas.material.dispo.commons.CandidatesQuery;
+import de.metas.material.dispo.commons.candidate.Candidate;
+import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.event.MaterialDescriptor;
 import de.metas.material.event.MaterialDescriptor.DateOperator;
 

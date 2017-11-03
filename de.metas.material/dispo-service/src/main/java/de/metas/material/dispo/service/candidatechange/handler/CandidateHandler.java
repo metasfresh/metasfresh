@@ -2,8 +2,8 @@ package de.metas.material.dispo.service.candidatechange.handler;
 
 import java.util.Collection;
 
-import de.metas.material.dispo.candidate.Candidate;
-import de.metas.material.dispo.candidate.CandidateType;
+import de.metas.material.dispo.commons.candidate.Candidate;
+import de.metas.material.dispo.commons.candidate.CandidateType;
 import lombok.NonNull;
 
 /*

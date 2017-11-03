@@ -33,13 +33,13 @@ import org.junit.rules.TestWatcher;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.material.dispo.CandidatesQuery;
-import de.metas.material.dispo.DispoTestUtils;
-import de.metas.material.dispo.candidate.Candidate;
-import de.metas.material.dispo.candidate.CandidateType;
+import de.metas.material.dispo.commons.CandidatesQuery;
+import de.metas.material.dispo.commons.DispoTestUtils;
+import de.metas.material.dispo.commons.candidate.Candidate;
+import de.metas.material.dispo.commons.candidate.CandidateType;
+import de.metas.material.dispo.commons.repository.CandidateRepositoryCommands;
+import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.model.I_MD_Candidate;
-import de.metas.material.dispo.repository.CandidateRepositoryCommands;
-import de.metas.material.dispo.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.service.candidatechange.handler.CandidateHandler;
 import de.metas.material.dispo.service.candidatechange.handler.DemandCandiateHandler;
 import de.metas.material.dispo.service.candidatechange.handler.SupplyCandiateHandler;

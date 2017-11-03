@@ -13,12 +13,12 @@ import org.compiere.util.TimeUtil;
 import org.junit.Before;
 import org.junit.Test;
 
-import de.metas.material.dispo.CandidatesQuery;
-import de.metas.material.dispo.candidate.Candidate;
-import de.metas.material.dispo.candidate.CandidateType;
-import de.metas.material.dispo.candidate.DemandDetail;
-import de.metas.material.dispo.candidate.TransactionDetail;
-import de.metas.material.dispo.repository.CandidateRepositoryRetrieval;
+import de.metas.material.dispo.commons.CandidatesQuery;
+import de.metas.material.dispo.commons.candidate.Candidate;
+import de.metas.material.dispo.commons.candidate.CandidateType;
+import de.metas.material.dispo.commons.candidate.DemandDetail;
+import de.metas.material.dispo.commons.candidate.TransactionDetail;
+import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.event.EventDescriptor;
 import de.metas.material.event.MaterialDescriptor;

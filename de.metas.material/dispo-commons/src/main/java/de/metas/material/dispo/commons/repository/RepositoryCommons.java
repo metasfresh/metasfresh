@@ -1,4 +1,4 @@
-package de.metas.material.dispo.repository;
+package de.metas.material.dispo.commons.repository;
 
 import javax.annotation.Nullable;
 
@@ -12,11 +12,11 @@ import org.compiere.model.IQuery;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 
-import de.metas.material.dispo.CandidatesQuery;
-import de.metas.material.dispo.candidate.DemandDetail;
-import de.metas.material.dispo.candidate.DistributionDetail;
-import de.metas.material.dispo.candidate.ProductionDetail;
-import de.metas.material.dispo.candidate.TransactionDetail;
+import de.metas.material.dispo.commons.CandidatesQuery;
+import de.metas.material.dispo.commons.candidate.DemandDetail;
+import de.metas.material.dispo.commons.candidate.DistributionDetail;
+import de.metas.material.dispo.commons.candidate.ProductionDetail;
+import de.metas.material.dispo.commons.candidate.TransactionDetail;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.I_MD_Candidate_Demand_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_Dist_Detail;

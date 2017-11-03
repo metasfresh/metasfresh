@@ -1,4 +1,4 @@
-package de.metas.material.dispo.candidate;
+package de.metas.material.dispo.commons.candidate;
 
 import de.metas.material.dispo.model.X_MD_Candidate;
 
@@ -26,9 +26,9 @@ import de.metas.material.dispo.model.X_MD_Candidate;
 
 
 /**
- * Please keep in sync with the values of {@link X_MD_Candidate#MD_CANDIDATE_STATUS_AD_Reference_ID}
+ * Please keep in sync with the values of {@link X_MD_Candidate#MD_CANDIDATE_TYPE_AD_Reference_ID}
  */
-public enum CandidateStatus
+public enum CandidateType
 {
-	doc_planned, doc_created, doc_completed, doc_closed, unexpected
+	DEMAND, SUPPLY, STOCK, STOCK_UP, UNRELATED_INCREASE, UNRELATED_DECREASE
 }

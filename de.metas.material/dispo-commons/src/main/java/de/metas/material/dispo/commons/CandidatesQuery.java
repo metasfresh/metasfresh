@@ -1,17 +1,17 @@
-package de.metas.material.dispo;
+package de.metas.material.dispo.commons;
 
 import java.util.Objects;
 
 import org.adempiere.util.Check;
 
-import de.metas.material.dispo.candidate.Candidate;
-import de.metas.material.dispo.candidate.DemandDetail;
-import de.metas.material.dispo.candidate.DistributionDetail;
-import de.metas.material.dispo.candidate.ProductionDetail;
-import de.metas.material.dispo.candidate.CandidateStatus;
-import de.metas.material.dispo.candidate.CandidateSubType;
-import de.metas.material.dispo.candidate.TransactionDetail;
-import de.metas.material.dispo.candidate.CandidateType;
+import de.metas.material.dispo.commons.candidate.Candidate;
+import de.metas.material.dispo.commons.candidate.CandidateStatus;
+import de.metas.material.dispo.commons.candidate.CandidateSubType;
+import de.metas.material.dispo.commons.candidate.CandidateType;
+import de.metas.material.dispo.commons.candidate.DemandDetail;
+import de.metas.material.dispo.commons.candidate.DistributionDetail;
+import de.metas.material.dispo.commons.candidate.ProductionDetail;
+import de.metas.material.dispo.commons.candidate.TransactionDetail;
 import de.metas.material.event.MaterialDescriptor;
 import lombok.Builder;
 import lombok.NonNull;

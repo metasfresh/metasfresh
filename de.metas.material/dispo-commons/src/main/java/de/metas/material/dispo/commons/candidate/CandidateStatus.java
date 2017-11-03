@@ -1,11 +1,10 @@
-package de.metas.material.dispo.candidate;
+package de.metas.material.dispo.commons.candidate;
 
-import lombok.Builder;
-import lombok.Value;
+import de.metas.material.dispo.model.X_MD_Candidate;
 
 /*
  * #%L
- * metasfresh-material-dispo
+ * metasfresh-material-dispo-commons
  * %%
  * Copyright (C) 2017 metas GmbH
  * %%
@@ -13,37 +12,23 @@ import lombok.Value;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
+ * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-@Value
-@Builder
-public class ProductionDetail
+
+
+/**
+ * Please keep in sync with the values of {@link X_MD_Candidate#MD_CANDIDATE_STATUS_AD_Reference_ID}
+ */
+public enum CandidateStatus
 {
-	/**
-	 * Only set if this instance related to a ppOrder header.
-	 */
-	int plantId;
-
-	int uomId;
-
-	int productPlanningId;
-
-	int productBomLineId;
-
-	String description;
-
-	int ppOrderId;
-
-	String ppOrderDocStatus;
-
-	int ppOrderLineId;
+	doc_planned, doc_created, doc_completed, doc_closed, unexpected
 }

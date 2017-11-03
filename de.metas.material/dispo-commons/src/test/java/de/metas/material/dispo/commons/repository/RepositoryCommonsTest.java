@@ -1,4 +1,4 @@
-package de.metas.material.dispo.repository;
+package de.metas.material.dispo.commons.repository;
 
 import static de.metas.material.event.EventTestHelper.NOW;
 import static de.metas.material.event.EventTestHelper.PRODUCT_ID;
@@ -19,7 +19,8 @@ import org.adempiere.ad.dao.impl.StringLikeFilter;
 import org.adempiere.util.Services;
 import org.junit.Test;
 
-import de.metas.material.dispo.CandidatesQuery;
+import de.metas.material.dispo.commons.CandidatesQuery;
+import de.metas.material.dispo.commons.repository.RepositoryCommons;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.event.MaterialDescriptor;
 import de.metas.material.event.MaterialDescriptor.DateOperator;

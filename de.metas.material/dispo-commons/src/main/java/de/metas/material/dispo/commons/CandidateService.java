@@ -1,4 +1,4 @@
-package de.metas.material.dispo;
+package de.metas.material.dispo.commons;
 
 import java.util.Date;
 import java.util.List;
@@ -9,12 +9,12 @@ import org.springframework.stereotype.Service;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 
-import de.metas.material.dispo.candidate.Candidate;
-import de.metas.material.dispo.candidate.CandidateSubType;
-import de.metas.material.dispo.candidate.CandidateType;
-import de.metas.material.dispo.candidate.DistributionDetail;
-import de.metas.material.dispo.candidate.ProductionDetail;
-import de.metas.material.dispo.repository.CandidateRepositoryRetrieval;
+import de.metas.material.dispo.commons.candidate.Candidate;
+import de.metas.material.dispo.commons.candidate.CandidateSubType;
+import de.metas.material.dispo.commons.candidate.CandidateType;
+import de.metas.material.dispo.commons.candidate.DistributionDetail;
+import de.metas.material.dispo.commons.candidate.ProductionDetail;
+import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.event.EventDescriptor;
 import de.metas.material.event.MaterialEventService;
 import de.metas.material.event.ddorder.DDOrder;

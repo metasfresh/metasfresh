@@ -1,4 +1,4 @@
-package de.metas.material.dispo.repository;
+package de.metas.material.dispo.commons.repository;
 
 import static de.metas.material.event.EventTestHelper.AFTER_NOW;
 import static de.metas.material.event.EventTestHelper.ATTRIBUTE_SET_INSTANCE_ID;
@@ -26,16 +26,18 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
-import de.metas.material.dispo.CandidatesQuery;
-import de.metas.material.dispo.DispoTestUtils;
-import de.metas.material.dispo.RepositoryTestHelper;
-import de.metas.material.dispo.candidate.Candidate;
-import de.metas.material.dispo.candidate.CandidateSubType;
-import de.metas.material.dispo.candidate.CandidateType;
-import de.metas.material.dispo.candidate.DemandDetail;
-import de.metas.material.dispo.candidate.DistributionDetail;
-import de.metas.material.dispo.candidate.ProductionDetail;
-import de.metas.material.dispo.candidate.TransactionDetail;
+import de.metas.material.dispo.commons.CandidatesQuery;
+import de.metas.material.dispo.commons.DispoTestUtils;
+import de.metas.material.dispo.commons.RepositoryTestHelper;
+import de.metas.material.dispo.commons.candidate.Candidate;
+import de.metas.material.dispo.commons.candidate.CandidateSubType;
+import de.metas.material.dispo.commons.candidate.CandidateType;
+import de.metas.material.dispo.commons.candidate.DemandDetail;
+import de.metas.material.dispo.commons.candidate.DistributionDetail;
+import de.metas.material.dispo.commons.candidate.ProductionDetail;
+import de.metas.material.dispo.commons.candidate.TransactionDetail;
+import de.metas.material.dispo.commons.repository.CandidateRepositoryCommands;
+import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.I_MD_Candidate_Demand_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_Dist_Detail;

@@ -2,7 +2,7 @@ package de.metas.material.dispo.service.event;
 
 import javax.annotation.Nullable;
 
-import de.metas.material.dispo.candidate.CandidateStatus;
+import de.metas.material.dispo.commons.candidate.CandidateStatus;
 import lombok.experimental.UtilityClass;
 
 @UtilityClass

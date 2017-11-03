@@ -1,4 +1,4 @@
-package de.metas.material.dispo.candidate;
+package de.metas.material.dispo.commons.candidate;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -6,7 +6,7 @@ import java.util.List;
 
 import com.google.common.base.Preconditions;
 
-import de.metas.material.dispo.CandidatesQuery;
+import de.metas.material.dispo.commons.CandidatesQuery;
 import de.metas.material.event.EventDescriptor;
 import de.metas.material.event.MaterialDescriptor;
 import de.metas.material.event.MaterialDescriptor.DateOperator;

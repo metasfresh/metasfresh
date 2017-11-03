@@ -1,9 +1,9 @@
-package de.metas.material.dispo;
+package de.metas.material.dispo.commons;
 
 import org.junit.Test;
 
-import de.metas.material.dispo.candidate.Candidate;
-import de.metas.material.dispo.candidate.CandidateType;
+import de.metas.material.dispo.commons.candidate.Candidate;
+import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.event.MaterialDescriptor;
 
 /*

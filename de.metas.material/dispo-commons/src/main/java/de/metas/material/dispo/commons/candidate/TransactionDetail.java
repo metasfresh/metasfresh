@@ -1,4 +1,4 @@
-package de.metas.material.dispo.candidate;
+package de.metas.material.dispo.commons.candidate;
 
 import java.math.BigDecimal;
 

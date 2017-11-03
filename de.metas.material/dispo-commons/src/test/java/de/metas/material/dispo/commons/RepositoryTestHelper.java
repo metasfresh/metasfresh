@@ -1,4 +1,4 @@
-package de.metas.material.dispo;
+package de.metas.material.dispo.commons;
 
 import static de.metas.material.event.EventTestHelper.*;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -6,9 +6,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.math.BigDecimal;
 import java.util.Date;
 
-import de.metas.material.dispo.candidate.Candidate;
-import de.metas.material.dispo.candidate.CandidateType;
-import de.metas.material.dispo.repository.CandidateRepositoryCommands;
+import de.metas.material.dispo.commons.CandidatesQuery;
+import de.metas.material.dispo.commons.candidate.Candidate;
+import de.metas.material.dispo.commons.candidate.CandidateType;
+import de.metas.material.dispo.commons.repository.CandidateRepositoryCommands;
 import de.metas.material.event.MaterialDescriptor;
 import de.metas.material.event.MaterialDescriptor.DateOperator;
 import de.metas.material.event.ProductDescriptorFactory;

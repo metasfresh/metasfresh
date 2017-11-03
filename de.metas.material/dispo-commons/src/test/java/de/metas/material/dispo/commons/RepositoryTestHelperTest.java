@@ -1,4 +1,4 @@
-package de.metas.material.dispo;
+package de.metas.material.dispo.commons;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -8,10 +8,11 @@ import org.adempiere.util.Services;
 import org.junit.Before;
 import org.junit.Test;
 
-import de.metas.material.dispo.candidate.Candidate;
+import de.metas.material.dispo.commons.CandidatesQuery;
+import de.metas.material.dispo.commons.candidate.Candidate;
+import de.metas.material.dispo.commons.repository.CandidateRepositoryCommands;
+import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.model.I_MD_Candidate;
-import de.metas.material.dispo.repository.CandidateRepositoryCommands;
-import de.metas.material.dispo.repository.CandidateRepositoryRetrieval;
 import de.metas.material.event.EventTestHelper;
 import de.metas.material.event.ProductDescriptor;
 import de.metas.material.event.ProductDescriptorFactory;

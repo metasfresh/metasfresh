@@ -9,10 +9,10 @@ import java.math.BigDecimal;
 import org.adempiere.util.time.SystemTime;
 import org.junit.Test;
 
-import de.metas.material.dispo.candidate.Candidate;
-import de.metas.material.dispo.candidate.CandidateStatus;
-import de.metas.material.dispo.candidate.CandidateSubType;
-import de.metas.material.dispo.candidate.CandidateType;
+import de.metas.material.dispo.commons.candidate.Candidate;
+import de.metas.material.dispo.commons.candidate.CandidateStatus;
+import de.metas.material.dispo.commons.candidate.CandidateSubType;
+import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.event.EventDescriptor;
 import de.metas.material.event.MaterialDemandEvent;
 import de.metas.material.event.MaterialDescriptor;

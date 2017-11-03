@@ -1,4 +1,4 @@
-package de.metas.material.dispo;
+package de.metas.material.dispo.commons;
 
 import static de.metas.material.event.EventTestHelper.createMaterialDescriptor;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -7,7 +7,7 @@ import java.util.Optional;
 
 import org.junit.Test;
 
-import de.metas.material.dispo.candidate.DemandDetail;
+import de.metas.material.dispo.commons.candidate.DemandDetail;
 import de.metas.material.event.EventDescriptor;
 import de.metas.material.event.MaterialDemandDescriptor;
 

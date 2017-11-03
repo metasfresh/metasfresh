@@ -1,4 +1,4 @@
-package de.metas.material.dispo.process;
+package de.metas.material.dispo.commons.process;
 
 import java.util.function.Predicate;
 
@@ -7,7 +7,7 @@ import org.adempiere.util.Services;
 import org.compiere.Adempiere;
 
 import de.metas.i18n.ITranslatableString;
-import de.metas.material.dispo.CandidateService;
+import de.metas.material.dispo.commons.CandidateService;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.X_MD_Candidate;
 import de.metas.process.IProcessPrecondition;
