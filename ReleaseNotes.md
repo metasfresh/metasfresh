@@ -81,7 +81,7 @@ Here come the actual release notes:
 * metasfresh-app
   * [#2634](https://github.com/metasfresh/metasfresh/issues/2634) Make the CalloutBankStatement webui compliant
     * Fixes the Callout BankStatement for the usage in Bankstatement Window in WebUI.
-  * [#2719](https://github.com/metasfresh/metasfresh/issues/2357) exception when using process quotation to sales order with parameter complete order
+  * [#2719](https://github.com/metasfresh/metasfresh/issues/2357) Exception when using process quotation to sales order with parameter complete order
     * Fixes an exception that occured when using the action Quotation to Sales Order in WebUI.
   * [#2818](https://github.com/metasfresh/metasfresh/issues/2818) Flatrate: Have relation from Sales Order to invoice candidate
     * New Relation from Sales Order to Invoice Candidates for Flatrate Terms.
@@ -93,7 +93,7 @@ Here come the actual release notes:
 * metasfresh-webui-api
   * [#643](https://github.com/metasfresh/metasfresh-webui-api/issues/643) Picking Tray Clearing requery to see the right view
     * Fixes the new Picking Tray Clearing, requerying the Window to let the user see the correct data.
-  * [#647](https://github.com/metasfresh/metasfresh-webui-api/issues/647) shipped HU is still visible in picking terminal
+  * [#647](https://github.com/metasfresh/metasfresh-webui-api/issues/647) Shipped HU is still visible in picking terminal
     * Fixes the picking Terminal, now not showing shipped HU anymore.
 
 * metasfresh-dist-orgs
