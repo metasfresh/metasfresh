@@ -6,6 +6,7 @@ import java.util.List;
 import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 
 import com.google.common.base.Preconditions;
 
@@ -42,16 +43,16 @@ import lombok.NonNull;
  * #L%
  */
 
-public class SubscriptionCommand
+public class SubscriptionService
 {
 	public static final String MSG_NO_SPS_AFTER_DATE_1P = "Subscription.NoSpsAfterDate_1P";
 
-	public static SubscriptionCommand get()
+	public static SubscriptionService get()
 	{
-		return new SubscriptionCommand();
+		return new SubscriptionService();
 	}
 
-	private SubscriptionCommand()
+	private SubscriptionService()
 	{
 	}
 
@@ -93,26 +94,43 @@ public class SubscriptionCommand
 				final int DropShip_User_ID)
 		{
 			this.term = term;
-			
+
 			Preconditions.checkArgument(!dateTo.before(dateFrom), "The given dateTo may not be before the given dateFrom; dateFrom=%s; dateTo=%s", dateFrom, dateTo);
 			this.dateFrom = dateFrom;
 			this.dateTo = dateTo;
-			
+
 			Preconditions.checkArgument(DropShip_BPartner_ID > 0, "The given DropShip_BPartner_ID may not be <= 0");
 			this.DropShip_BPartner_ID = DropShip_BPartner_ID;
-			
+
 			Preconditions.checkArgument(DropShip_Location_ID > 0, "The given DropShip_Location_ID may not be <= 0");
 			this.DropShip_Location_ID = DropShip_Location_ID;
 			this.DropShip_User_ID = DropShip_User_ID;
 		}
 	}
 
-	public void removePauses(
+	public void removePausesAroundTimeframe(
 			@NonNull final I_C_Flatrate_Term term,
 			@NonNull final Timestamp pauseFrom,
 			@NonNull final Timestamp pauseUntil)
 	{
-		new RemovePauses(this).removePauses(term, pauseFrom, pauseUntil);
+		new RemovePauses(this).removePausesAroundTimeframe(term, pauseFrom, pauseUntil);
+	}
+	
+	public void removePausesAroundDate(
+			@NonNull final I_C_Flatrate_Term term, 
+			@NonNull final Timestamp date)
+	{
+		new RemovePauses(this).removePausesAroundTimeframe(term, date, date);
+	}
+	
+
+	public void removeAllPauses(final I_C_Flatrate_Term term)
+	{
+		final Timestamp distantPast = TimeUtil.getDay(1970, 1, 1);
+		final Timestamp distantFuture = TimeUtil.getDay(9999, 12, 31);
+
+		new RemovePauses(this).removePausesAroundTimeframe(term, distantPast, distantFuture);
+
 	}
 
 	public final List<I_C_SubscriptionProgress> retrieveNextSPsAndLogIfEmpty(
@@ -133,4 +151,5 @@ public class SubscriptionCommand
 		}
 		return sps;
 	}
+
 }

@@ -77,7 +77,7 @@ public class CacheMgtTest
 		}
 
 		@Override
-		public int resetForRecordId(final String tableName, final Object key)
+		public int resetForRecordId(final String tableName, final int recordId)
 		{
 			Assert.assertEquals("resetForRecordId shall not be invoked for table name", this.tableName, tableName);
 
@@ -131,9 +131,9 @@ public class CacheMgtTest
 		}
 
 		@Override
-		public int resetForRecordId(final String tableName, final Object key)
+		public int resetForRecordId(final String tableName, final int recordId)
 		{
-			final int count = super.resetForRecordId(tableName, key);
+			final int count = super.resetForRecordId(tableName, recordId);
 
 			resetForRecordIdWasCalled = true;
 

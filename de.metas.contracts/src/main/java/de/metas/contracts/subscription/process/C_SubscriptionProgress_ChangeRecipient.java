@@ -24,8 +24,8 @@ package de.metas.contracts.subscription.process;
 
 import java.sql.Timestamp;
 
-import de.metas.contracts.subscription.impl.SubscriptionCommand;
-import de.metas.contracts.subscription.impl.SubscriptionCommand.ChangeRecipientsRequest;
+import de.metas.contracts.subscription.impl.SubscriptionService;
+import de.metas.contracts.subscription.impl.SubscriptionService.ChangeRecipientsRequest;
 import de.metas.process.Param;
 
 /**
@@ -62,7 +62,7 @@ public class C_SubscriptionProgress_ChangeRecipient
 				.DropShip_User_ID(DropShip_User_ID)
 				.build();
 
-		SubscriptionCommand.changeRecipient(request);
+		SubscriptionService.changeRecipient(request);
 
 		return MSG_OK;
 	}
