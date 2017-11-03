@@ -55,11 +55,14 @@ public class AccessSqlParser
 		setSql(sql);
 	}	// AccessSqlParser
 
-	/** FROM String */
 	private static final String FROM = " FROM ";
-	private static final int FROM_LENGTH = FROM.length();
+	private static final String from = " from ";
 	private static final String WHERE = " WHERE ";
+	private static final String where = " where ";
 	private static final String ON = " ON ";
+	private static final String on = " on ";
+
+	private static final int FROM_LENGTH = FROM.length();
 
 	/** Logger */
 	private Logger log = LogManager.getLogger(getClass());
@@ -404,6 +407,21 @@ public class AccessSqlParser
 		}
 		return "";
 	}	// getMainSql
+
+	/**
+	 * Transform the key words WHERE, FROM and ON in lowercase.
+	 * TODO: Delete this logic when we get rid of the workaround in org.compiere.model.AccessSqlParser.getTableInfo(String)
+	 * 
+	 * @param whereClause
+	 * @return
+	 */
+	{
+
+		StringBuilder whereClauseBuilder = new StringBuilder()
+				.append(whereClause.replaceAll("\\s", " ").replaceAll(WHERE, where).replaceAll(FROM, from).replaceAll(ON, on));
+
+		return whereClauseBuilder.toString();
+	}
 
 	/**
 	 * Table Info VO
