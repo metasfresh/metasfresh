@@ -1,6 +1,6 @@
 package org.compiere.util;
 
-import org.adempiere.ad.dao.cache.CacheInvalidateRequest;
+import org.adempiere.ad.dao.cache.CacheInvalidateMultiRequest;
 
 /*
  * #%L
@@ -34,5 +34,5 @@ import org.adempiere.ad.dao.cache.CacheInvalidateRequest;
 @FunctionalInterface
 public interface ICacheResetListener
 {
-	int reset(CacheInvalidateRequest request);
+	int reset(CacheInvalidateMultiRequest multiRequest);
 }

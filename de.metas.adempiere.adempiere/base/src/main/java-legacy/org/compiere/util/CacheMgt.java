@@ -25,6 +25,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReentrantLock;
 
+import org.adempiere.ad.dao.cache.CacheInvalidateMultiRequest;
 import org.adempiere.ad.dao.cache.CacheInvalidateRequest;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -304,7 +305,7 @@ public final class CacheMgt
 				}
 			}
 
-			fireGlobalCacheResetListeners(CacheInvalidateRequest.all());
+			fireGlobalCacheResetListeners(CacheInvalidateMultiRequest.all());
 
 			lastCacheReset.incrementAndGet();
 		}
@@ -318,14 +319,14 @@ public final class CacheMgt
 
 		return total;
 	}
-	
-	private void fireGlobalCacheResetListeners(final CacheInvalidateRequest request)
+
+	private void fireGlobalCacheResetListeners(final CacheInvalidateMultiRequest multiRequest)
 	{
 		for (ICacheResetListener globalCacheResetListener : globalCacheResetListeners)
 		{
 			try
 			{
-				globalCacheResetListener.reset(request);
+				globalCacheResetListener.reset(multiRequest);
 			}
 			catch (final Exception ex)
 			{
@@ -342,7 +343,7 @@ public final class CacheMgt
 	 */
 	public int reset(final String tableName)
 	{
-		final CacheInvalidateRequest request = CacheInvalidateRequest.fromTableNameAndRecordId(tableName, RECORD_ID_ALL);
+		final CacheInvalidateMultiRequest request = CacheInvalidateMultiRequest.fromTableNameAndRecordId(tableName, RECORD_ID_ALL);
 		final boolean broadcast = true;
 		return reset(request, broadcast);
 	}	// reset
@@ -357,7 +358,7 @@ public final class CacheMgt
 	 */
 	public int resetLocal(final String tableName)
 	{
-		final CacheInvalidateRequest request = CacheInvalidateRequest.fromTableNameAndRecordId(tableName, RECORD_ID_ALL);
+		final CacheInvalidateMultiRequest request = CacheInvalidateMultiRequest.fromTableNameAndRecordId(tableName, RECORD_ID_ALL);
 		final boolean broadcast = false;
 		return reset(request, broadcast);
 	}	// reset
@@ -371,7 +372,7 @@ public final class CacheMgt
 	 */
 	public int reset(final String tableName, final int recordId)
 	{
-		final CacheInvalidateRequest request = CacheInvalidateRequest.fromTableNameAndRecordId(tableName, recordId);
+		final CacheInvalidateMultiRequest request = CacheInvalidateMultiRequest.fromTableNameAndRecordId(tableName, recordId);
 		final boolean broadcast = true;
 		return reset(request, broadcast);
 	}
@@ -379,7 +380,7 @@ public final class CacheMgt
 	public int reset(final CacheInvalidateRequest request)
 	{
 		final boolean broadcast = true;
-		return reset(request, broadcast);
+		return reset(CacheInvalidateMultiRequest.of(request), broadcast);
 	}
 
 	/**
@@ -412,9 +413,27 @@ public final class CacheMgt
 	 * @param broadcast true if we shall also broadcast this remotely.
 	 * @return how many cache entries were invalidated
 	 */
-	final int reset(@NonNull final CacheInvalidateRequest request, final boolean broadcast)
+	final int reset(@NonNull final CacheInvalidateMultiRequest multiRequest, final boolean broadcast)
 	{
-		if (request.isAll())
+		final int resetCount = resetCacheInstances(multiRequest);
+
+		//
+		fireGlobalCacheResetListeners(multiRequest);
+
+		//
+		// Broadcast cache invalidation.
+		// We do this, even if we don't have any cache interface registered locally, because there might be remotely.
+		if (broadcast)
+		{
+			CacheInvalidationRemoteHandler.instance.postEvent(multiRequest);
+		}
+
+		return resetCount;
+	}	// reset
+
+	private final int resetCacheInstances(final CacheInvalidateMultiRequest multiRequest)
+	{
+		if (multiRequest.isResetAll())
 		{
 			return reset();
 		}
@@ -422,71 +441,12 @@ public final class CacheMgt
 		cacheInstancesLock.lock();
 		try
 		{
-			final String tableName = request.getTableNameEffective();
-			final int recordId = request.getRecordIdEffective();
-
-			int counter = 0;
 			int total = 0;
 
-			//
-			// Invalidate local caches if we have at least one cache interface about our table
-			if (tableNames.containsKey(tableName))
+			for (final CacheInvalidateRequest request : multiRequest.getRequests())
 			{
-				for (final CacheInterface cacheInstance : cacheInstances)
-				{
-					if (cacheInstance == null)
-					{
-						// nothing to reset
-					}
-					else if (cacheInstance instanceof CCache)
-					{
-						// NOTE: CCache requires all reset events, even if they were not it's table.
-						// inside checks if table matches OR if it's cache name starts with given table name.
-						// A total fucked up, not performant.
-						// FIXME at least we shall use ConcurrentSkipListMap and prepare the steps to switch to some well known cache frameworks.
-						final ITableAwareCacheInterface recordsCache = (ITableAwareCacheInterface)cacheInstance;
-						final int itemsRemoved = recordsCache.resetForRecordId(tableName, recordId);
-						if (itemsRemoved > 0)
-						{
-							log.debug("Rest cache instance for {}/{}: {}", tableName, recordId, cacheInstance);
-							total += itemsRemoved;
-							counter++;
-						}
-					}
-					else if (cacheInstance instanceof ITableAwareCacheInterface)
-					{
-						if (tableName.equals(((ITableAwareCacheInterface)cacheInstance).getTableName()))
-						{
-							final ITableAwareCacheInterface recordsCache = (ITableAwareCacheInterface)cacheInstance;
-							final int itemsRemoved = recordsCache.resetForRecordId(tableName, recordId);
-							if (itemsRemoved > 0)
-							{
-								log.debug("Rest cache instance for {}/{}: {}", tableName, recordId, cacheInstance);
-								total += itemsRemoved;
-								counter++;
-							}
-						}
-					}
-					else
-					{
-						// NOTE: for other cache implementations we shall skip reseting by tableName/key because they don't support it.
-						// e.g. de.metas.adempiere.report.jasper.client.JRClient.cacheListener, org.adempiere.ad.dao.cache.impl.ModelCacheService.ModelCacheService()
-						log.debug("Unknown cache instance to reset: {}", cacheInstance);
-					}
-				}
-			}
-			//
-			log.debug("Reset {}: {} cache interfaces checked ({} records invalidated)", tableName, counter, total);
-			
-			//
-			fireGlobalCacheResetListeners(request);
-
-			//
-			// Broadcast cache invalidation.
-			// We do this, even if we don't have any cache interface registered locally, because there might be remotely.
-			if (broadcast)
-			{
-				CacheInvalidationRemoteHandler.instance.postEvent(request);
+				final int totalPerRequest = resetCacheInterfacesNoLock(request);
+				total += totalPerRequest;
 			}
 
 			return total;
@@ -495,7 +455,71 @@ public final class CacheMgt
 		{
 			cacheInstancesLock.unlock();
 		}
-	}	// reset
+	}
+
+	private int resetCacheInterfacesNoLock(final CacheInvalidateRequest request)
+	{
+		final String tableName = request.getTableNameEffective();
+		final int recordId = request.getRecordIdEffective();
+
+		// optimization: skip if there is no cache interface registered for request's tableName
+		if (!tableNames.containsKey(tableName))
+		{
+			return 0;
+		}
+
+		int total = 0;
+		int counter = 0;
+
+		//
+		// Invalidate local caches if we have at least one cache interface about our table
+		for (final CacheInterface cacheInstance : cacheInstances)
+		{
+			if (cacheInstance == null)
+			{
+				// nothing to reset
+			}
+			else if (cacheInstance instanceof CCache)
+			{
+				// NOTE: CCache requires all reset events, even if they were not it's table.
+				// inside checks if table matches OR if it's cache name starts with given table name.
+				// A total fucked up, not performant.
+				// FIXME at least we shall use ConcurrentSkipListMap and prepare the steps to switch to some well known cache frameworks.
+				final ITableAwareCacheInterface recordsCache = (ITableAwareCacheInterface)cacheInstance;
+				final int itemsRemoved = recordsCache.resetForRecordId(tableName, recordId);
+				if (itemsRemoved > 0)
+				{
+					log.debug("Rest cache instance for {}/{}: {}", tableName, recordId, cacheInstance);
+					total += itemsRemoved;
+					counter++;
+				}
+			}
+			else if (cacheInstance instanceof ITableAwareCacheInterface)
+			{
+				if (tableName.equals(((ITableAwareCacheInterface)cacheInstance).getTableName()))
+				{
+					final ITableAwareCacheInterface recordsCache = (ITableAwareCacheInterface)cacheInstance;
+					final int itemsRemoved = recordsCache.resetForRecordId(tableName, recordId);
+					if (itemsRemoved > 0)
+					{
+						log.debug("Rest cache instance for {}/{}: {}", tableName, recordId, cacheInstance);
+						total += itemsRemoved;
+						counter++;
+					}
+				}
+			}
+			else
+			{
+				// NOTE: for other cache implementations we shall skip reseting by tableName/key because they don't support it.
+				// e.g. de.metas.adempiere.report.jasper.client.JRClient.cacheListener, org.adempiere.ad.dao.cache.impl.ModelCacheService.ModelCacheService()
+				log.debug("Unknown cache instance to reset: {}", cacheInstance);
+			}
+		}
+
+		log.debug("Reset {}: {} cache interfaces affected ({} records invalidated)", tableName, counter, total);
+
+		return total;
+	}
 
 	/**
 	 * Total Cached Elements
@@ -657,13 +681,13 @@ public final class CacheMgt
 		@Override
 		public int reset()
 		{
-			return listener.reset(CacheInvalidateRequest.allRecordsForTable(tableName));
+			return listener.reset(CacheInvalidateMultiRequest.allRecordsForTable(tableName));
 		}
 
 		@Override
 		public int resetForRecordId(final String tableName, final int recordId)
 		{
-			return listener.reset(CacheInvalidateRequest.fromTableNameAndRecordId(tableName, recordId));
+			return listener.reset(CacheInvalidateMultiRequest.fromTableNameAndRecordId(tableName, recordId));
 		}
 	}
 
@@ -701,7 +725,7 @@ public final class CacheMgt
 					return;
 				}
 
-				collector.run();
+				collector.sendRequestsAndClear();
 			}
 		};
 
@@ -715,7 +739,7 @@ public final class CacheMgt
 		}
 
 		/** Reset the cache for all enqueued records */
-		private void run()
+		private void sendRequestsAndClear()
 		{
 			if (requests.isEmpty())
 			{
@@ -723,10 +747,10 @@ public final class CacheMgt
 			}
 
 			final CacheMgt cacheMgt = CacheMgt.get();
-			for (final CacheInvalidateRequest request : requests)
-			{
-				cacheMgt.reset(request);
-			}
+
+			final CacheInvalidateMultiRequest multiRequest = CacheInvalidateMultiRequest.of(requests);
+			final boolean broadcast = true;
+			cacheMgt.reset(multiRequest, broadcast);
 
 			requests.clear();
 		}

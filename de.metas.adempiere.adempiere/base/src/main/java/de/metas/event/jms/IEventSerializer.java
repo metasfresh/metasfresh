@@ -1,5 +1,7 @@
 package de.metas.event.jms;
 
+import com.google.common.annotations.VisibleForTesting;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -31,11 +33,10 @@ import de.metas.event.Event;
  * @author tsa
  *
  */
-interface IEventSerializer
+@VisibleForTesting
+public interface IEventSerializer
 {
-
 	String toString(Event event);
 
 	Event fromString(String eventStr);
-
 }
