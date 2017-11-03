@@ -8,3 +8,8 @@ INSERT INTO AD_SysConfig (AD_Client_ID,AD_Org_ID,AD_SysConfig_ID,ConfigurationLe
 UPDATE AD_SysConfig SET Description='The time of waiting until the IQueueProcessorExecutorService initializes. It is defined in milliseconds.',Updated=TO_TIMESTAMP('2017-11-02 15:34:12','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_SysConfig_ID=541168
 ;
 
+-- 2017-11-03T13:40:27.914
+-- URL zum Konzept
+UPDATE AD_SysConfig SET Name='de.metas.async.Async_InitDelayMillis',Updated=TO_TIMESTAMP('2017-11-03 13:40:27','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_SysConfig_ID=541168
+;
+

@@ -57,7 +57,11 @@ import de.metas.event.IEventBusFactory;
  */
 public class Main extends AbstractModuleInterceptor
 {
-	public static transient String SYSCONFIG_Async_InitDelayMillis = "Async_InitDelayMillis";
+	/**
+	 * The time of waiting until the IQueueProcessorExecutorService initializes. It is defined in milliseconds.
+	 * When the async component is loaded, this delay makes sure that it was fully started by the time the async component starts to process packages.
+	 */
+	public static transient String SYSCONFIG_Async_InitDelayMillis = "de.metas.async.Async_InitDelayMillis";
 
 	public static transient int THREE_MINUTES = 3 * 60 * 1000;
 
