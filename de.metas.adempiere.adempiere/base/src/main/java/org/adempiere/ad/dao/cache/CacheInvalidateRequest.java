@@ -5,6 +5,11 @@ import org.adempiere.util.Check;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.util.CacheMgt;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import lombok.NonNull;
 import lombok.Value;
 
@@ -31,13 +36,14 @@ import lombok.Value;
  */
 
 @Value
+@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public final class CacheInvalidateRequest
 {
 	public static Builder builder()
 	{
 		return new Builder();
 	}
-	
+
 	public static CacheInvalidateRequest all()
 	{
 		return ALL;
@@ -54,7 +60,7 @@ public final class CacheInvalidateRequest
 	public static CacheInvalidateRequest rootRecord(@NonNull final String rootTableName, final int rootRecordId)
 	{
 		Check.assume(rootRecordId >= 0, "rootRecordId >= 0");
-		
+
 		final String childTableName = null;
 		final int childRecordId = CacheMgt.RECORD_ID_ALL;
 		return new CacheInvalidateRequest(rootTableName, rootRecordId, childTableName, childRecordId);
@@ -63,18 +69,18 @@ public final class CacheInvalidateRequest
 	public static CacheInvalidateRequest allChildRecords(@NonNull final String rootTableName, final int rootRecordId, @NonNull final String childTableName)
 	{
 		Check.assume(rootRecordId >= 0, "rootRecordId >= 0");
-		
+
 		final int childRecordId = CacheMgt.RECORD_ID_ALL;
 		return new CacheInvalidateRequest(rootTableName, rootRecordId, childTableName, childRecordId);
 	}
-	
+
 	public static CacheInvalidateRequest fromTableNameAndRecordId(final String tableName, final int recordId)
 	{
-		if(tableName == null)
+		if (tableName == null)
 		{
 			return all();
 		}
-		else if(recordId < 0)
+		else if (recordId < 0)
 		{
 			return allRecordsForTable(tableName);
 		}
@@ -86,17 +92,22 @@ public final class CacheInvalidateRequest
 
 	private static final CacheInvalidateRequest ALL = new CacheInvalidateRequest(null, CacheMgt.RECORD_ID_ALL, null, CacheMgt.RECORD_ID_ALL);
 
+	@JsonProperty("rootTableName")
 	private final String rootTableName;
+	@JsonProperty("rootRecordId")
 	private final int rootRecordId;
 
+	@JsonProperty("childTableName")
 	private final String childTableName;
+	@JsonProperty("childRecordId")
 	private final int childRecordId;
 
+	@JsonCreator
 	private CacheInvalidateRequest(
-			final String rootTableName,
-			final int rootRecordId,
-			final String childTableName,
-			final int childRecordId)
+			@JsonProperty("rootTableName") final String rootTableName,
+			@JsonProperty("rootRecordId") final int rootRecordId,
+			@JsonProperty("childTableName") final String childTableName,
+			@JsonProperty("childRecordId") final int childRecordId)
 	{
 		this.rootTableName = rootTableName;
 		this.rootRecordId = rootRecordId >= 0 ? rootRecordId : CacheMgt.RECORD_ID_ALL;
@@ -108,7 +119,7 @@ public final class CacheInvalidateRequest
 	{
 		return this == ALL;
 	}
-	
+
 	public TableRecordReference getRootRecordOrNull()
 	{
 		if (rootTableName != null && rootRecordId >= 0)
@@ -136,17 +147,16 @@ public final class CacheInvalidateRequest
 			throw new AdempiereException("Cannot extract effective record from " + this);
 		}
 	}
-	
+
 	public String getTableNameEffective()
 	{
 		return childTableName != null ? childTableName : rootTableName;
 	}
-	
+
 	public int getRecordIdEffective()
 	{
 		return childTableName != null ? childRecordId : rootRecordId;
 	}
-
 
 	public static final class Builder
 	{
