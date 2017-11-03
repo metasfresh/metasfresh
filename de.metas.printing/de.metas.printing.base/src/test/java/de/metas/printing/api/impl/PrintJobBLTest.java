@@ -32,6 +32,8 @@ import java.util.List;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.apache.commons.collections4.IteratorUtils;
+import org.compiere.model.I_AD_SysConfig;
+import org.junit.Before;
 import org.junit.Test;
 
 import de.metas.printing.api.IPrintingDAO;
@@ -43,12 +45,19 @@ import de.metas.printing.model.I_C_Print_Job_Line;
 
 public class PrintJobBLTest extends AbstractPrintingTest
 {
-	private int getPrintJobLinesCount(final I_C_Print_Job job)
+	
+	@Before
+	public final void beforeRunningTest()
 	{
-		final List<I_C_Print_Job_Line> list = IteratorUtils.toList(helper.getDAO().retrievePrintJobLines(job));
-		return list.size();
-	}
 
+		I_AD_SysConfig sysConfig = InterfaceWrapperHelper.newInstance(I_AD_SysConfig.class);
+		sysConfig.setAD_Org_ID(0);
+		InterfaceWrapperHelper.setValue(sysConfig, I_AD_SysConfig.COLUMNNAME_AD_Client_ID, 0);
+		sysConfig.setName(PrintJobBL.SYSCONFIG_MAX_LINES_PER_JOB);
+		sysConfig.setValue("2");
+		InterfaceWrapperHelper.save(sysConfig);
+	}
+	
 	/**
 	 * Tests that if there are many matching routings, then we needs as many printJobDetails..i.e. don'T ignore all but the first one.
 	 */
@@ -104,4 +113,35 @@ public class PrintJobBLTest extends AbstractPrintingTest
 		// assertEquals("Job1 instructions - Invalid HostKey", helper.getSessionHostKey(), instructions1.getHostKey());
 		assertEquals("Job1 instructions - Invalid UserOK", true, instructions1.isUserOK());
 	}
+	
+	private int getPrintJobLinesCount(final I_C_Print_Job job)
+	{
+		final List<I_C_Print_Job_Line> list = IteratorUtils.toList(helper.getDAO().retrievePrintJobLines(job));
+		return list.size();
+	}
+	
+
+	@Test
+	public void test_Splitting()
+	{
+		final int c_DocType_ID = 12;
+
+		//
+		// Setup routings
+		final I_AD_PrinterRouting routing11 = helper.createPrinterRouting("printer01", "tray01",
+				c_DocType_ID, // routing has the same C_DocType_ID as the queue-item => should match
+				-1, -1);
+		routing11.setAD_Org_ID(1);
+		InterfaceWrapperHelper.save(routing11);
+
+		helper.addToPrintQueue("01", 1, c_DocType_ID); // AD_Org_ID=1, C_DocType_ID=12
+		helper.addToPrintQueue("02", 1, c_DocType_ID); // AD_Org_ID=1, C_DocType_ID=12
+		helper.addToPrintQueue("03", 1, c_DocType_ID); // AD_Org_ID=1, C_DocType_ID=12
+		helper.addToPrintQueue("04", 1, c_DocType_ID); // AD_Org_ID=1, C_DocType_ID=12
+		helper.addToPrintQueue("05", 1, c_DocType_ID); // AD_Org_ID=1, C_DocType_ID=12
+
+		final int printJobsCountActual = helper.createAllPrintJobs();
+		assertThat(printJobsCountActual, is(3));
+	}
+	
 }
