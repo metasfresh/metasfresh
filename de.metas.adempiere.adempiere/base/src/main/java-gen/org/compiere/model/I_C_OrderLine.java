@@ -272,6 +272,33 @@ public interface I_C_OrderLine
     public static final String COLUMNNAME_C_Currency_ID = "C_Currency_ID";
 
 	/**
+	 * Set Order Compensation Group.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_Order_CompensationGroup_ID (int C_Order_CompensationGroup_ID);
+
+	/**
+	 * Get Order Compensation Group.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_Order_CompensationGroup_ID();
+
+	public org.compiere.model.I_C_Order_CompensationGroup getC_Order_CompensationGroup();
+
+	public void setC_Order_CompensationGroup(org.compiere.model.I_C_Order_CompensationGroup C_Order_CompensationGroup);
+
+    /** Column definition for C_Order_CompensationGroup_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_OrderLine, org.compiere.model.I_C_Order_CompensationGroup> COLUMN_C_Order_CompensationGroup_ID = new org.adempiere.model.ModelColumn<>(I_C_OrderLine.class, "C_Order_CompensationGroup_ID", org.compiere.model.I_C_Order_CompensationGroup.class);
+    /** Column name C_Order_CompensationGroup_ID */
+    public static final String COLUMNNAME_C_Order_CompensationGroup_ID = "C_Order_CompensationGroup_ID";
+
+	/**
 	 * Set Auftrag.
 	 * Order
 	 *
@@ -820,29 +847,6 @@ public interface I_C_OrderLine
     public static final org.adempiere.model.ModelColumn<I_C_OrderLine, Object> COLUMN_GroupCompensationType = new org.adempiere.model.ModelColumn<>(I_C_OrderLine.class, "GroupCompensationType", null);
     /** Column name GroupCompensationType */
     public static final String COLUMNNAME_GroupCompensationType = "GroupCompensationType";
-
-	/**
-	 * Set Group.
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setGroupNo (int GroupNo);
-
-	/**
-	 * Get Group.
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getGroupNo();
-
-    /** Column definition for GroupNo */
-    public static final org.adempiere.model.ModelColumn<I_C_OrderLine, Object> COLUMN_GroupNo = new org.adempiere.model.ModelColumn<>(I_C_OrderLine.class, "GroupNo", null);
-    /** Column name GroupNo */
-    public static final String COLUMNNAME_GroupNo = "GroupNo";
 
 	/**
 	 * Set Aktiv.
