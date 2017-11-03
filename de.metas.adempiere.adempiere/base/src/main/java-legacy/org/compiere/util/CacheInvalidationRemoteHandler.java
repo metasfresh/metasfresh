@@ -4,7 +4,9 @@ import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.adempiere.ad.dao.cache.CacheInvalidateMultiRequest;
 import org.adempiere.ad.dao.cache.CacheInvalidateRequest;
+import org.adempiere.ad.dao.cache.CacheInvalidateMultiRequestSerializer;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.slf4j.Logger;
@@ -18,6 +20,7 @@ import de.metas.event.IEventListener;
 import de.metas.event.Topic;
 import de.metas.event.Type;
 import de.metas.logging.LogManager;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -52,13 +55,13 @@ final class CacheInvalidationRemoteHandler implements IEventListener
 			.setName("de.metas.cache.CacheInvalidationRemoteHandler")
 			.setType(Type.REMOTE)
 			.build();
-	private static final String EVENT_PROPERTY_RootTableName = "RootTableName";
-	private static final String EVENT_PROPERTY_RootRecord_ID = "RootRecord_ID";
-	private static final String EVENT_PROPERTY_ChildTableName = "ChildTableName";
-	private static final String EVENT_PROPERTY_ChildRecord_ID = "ChildRecord_ID";
+
+	private static final String EVENT_PROPERTY = CacheInvalidateRequest.class.getSimpleName();
 
 	private final AtomicBoolean _initalized = new AtomicBoolean(false);
 	private final CopyOnWriteArraySet<String> tableNamesToBroadcast = new CopyOnWriteArraySet<>();
+
+	private final CacheInvalidateMultiRequestSerializer jsonSerializer = new CacheInvalidateMultiRequestSerializer();
 
 	private CacheInvalidationRemoteHandler()
 	{
@@ -108,18 +111,19 @@ final class CacheInvalidationRemoteHandler implements IEventListener
 	 * @param tableName
 	 * @param recordId
 	 */
-	public void postEvent(final CacheInvalidateRequest request)
+	public void postEvent(final CacheInvalidateMultiRequest request)
 	{
 		// Do nothing if cache invalidation broadcasting is not enabled
 		if (!isEnabled())
 		{
+			logger.trace("Skip broadcasting {} because feature is not enabled", request);
 			return;
 		}
 
 		// Do nothing if given table name is not in our table names to broadcast list
-		if (!tableNamesToBroadcast.contains(request.getRootTableName())
-				&& !tableNamesToBroadcast.contains(request.getChildTableName()))
+		if (!isAllowBroadcast(request))
 		{
+			logger.trace("Skip broadcasting {} because it's not allowed", request);
 			return;
 		}
 
@@ -130,6 +134,17 @@ final class CacheInvalidationRemoteHandler implements IEventListener
 				.postEvent(event);
 
 		logger.debug("Broadcasting cache invalidation of {}, event={}", request, event);
+	}
+
+	private boolean isAllowBroadcast(final CacheInvalidateMultiRequest multiRequest)
+	{
+		return multiRequest.getRequests().stream().anyMatch(this::isAllowBroadcast);
+	}
+
+	private boolean isAllowBroadcast(final CacheInvalidateRequest request)
+	{
+		return tableNamesToBroadcast.contains(request.getRootTableName())
+				|| tableNamesToBroadcast.contains(request.getChildTableName());
 	}
 
 	/**
@@ -145,7 +160,7 @@ final class CacheInvalidationRemoteHandler implements IEventListener
 			return;
 		}
 
-		final CacheInvalidateRequest request = createRequestFromEvent(event);
+		final CacheInvalidateMultiRequest request = createRequestFromEvent(event);
 		if (request == null)
 		{
 			logger.debug("Ignored event: {}", event);
@@ -159,56 +174,24 @@ final class CacheInvalidationRemoteHandler implements IEventListener
 		CacheMgt.get().reset(request, broadcast);
 	}
 
-	private static final Event createEventFromRequest(final CacheInvalidateRequest request)
+	private final Event createEventFromRequest(@NonNull final CacheInvalidateMultiRequest request)
 	{
 		final Event event = Event.builder()
-				.putProperty(EVENT_PROPERTY_RootTableName, request.getRootTableName())
-				.putProperty(EVENT_PROPERTY_RootRecord_ID, request.getRootRecordId())
-				.putProperty(EVENT_PROPERTY_ChildTableName, request.getChildTableName())
-				.putProperty(EVENT_PROPERTY_ChildRecord_ID, request.getChildRecordId())
+				.putProperty(EVENT_PROPERTY, jsonSerializer.toJson(request))
 				.build();
 
 		return event;
 	}
 
-	private static final CacheInvalidateRequest createRequestFromEvent(final Event event)
+	private final CacheInvalidateMultiRequest createRequestFromEvent(final Event event)
 	{
-		//
-		// RootTableName
-		final String rootTableName = event.getProperty(EVENT_PROPERTY_RootTableName);
-		if (Check.isEmpty(rootTableName, true))
+		final String jsonRequest = event.getProperty(EVENT_PROPERTY);
+		if (Check.isEmpty(jsonRequest, true))
 		{
-			logger.debug("Ignored event without rootTableName set: {}", event);
+			logger.debug("Ignored event without request: {}", event);
 			return null;
 		}
 
-		//
-		// RootRecord_ID
-		final Integer rootRecordId = event.getProperty(EVENT_PROPERTY_RootRecord_ID);
-		if (rootRecordId == null || rootRecordId < 0)
-		{
-			return CacheInvalidateRequest.allRecordsForTable(rootTableName);
-		}
-
-		//
-		// ChildTableName
-		final String childTableName = event.getProperty(EVENT_PROPERTY_ChildTableName);
-		if (Check.isEmpty(childTableName, true))
-		{
-			return CacheInvalidateRequest.rootRecord(rootTableName, rootRecordId);
-		}
-
-		//
-		// ChildRecordId
-		final Integer childRecordId = event.getProperty(EVENT_PROPERTY_ChildRecord_ID);
-		if (childRecordId == null || childRecordId < 0)
-		{
-			return CacheInvalidateRequest.allChildRecords(rootTableName, rootRecordId, childTableName);
-		}
-
-		return CacheInvalidateRequest.builder()
-				.rootRecord(rootTableName, rootRecordId)
-				.childRecord(childTableName, childRecordId)
-				.build();
+		return jsonSerializer.fromJson(jsonRequest);
 	}
 }

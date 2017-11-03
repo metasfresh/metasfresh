@@ -38,20 +38,20 @@ Here come the actual release notes:
     * Improving the Translations of de_DE Language/ Locale for static elements in WebUI.
   * [#2781](https://github.com/metasfresh/metasfresh/issues/2781) Change Default Address Layout for B2C Partners for country CH
     * Adjusting the Adress Layout/ Capture Sequence for Locations in Switzerland.
-  * [#2790](https://github.com/metasfresh/metasfresh/issues/2790) Show LoginasUserHostkey in webui window user
-    * New Field "Login as User Hostkey" in User Window.
   * [#2783](https://github.com/metasfresh/metasfresh/issues/2783) WebUI design: Invoice Candidates adjustments
     * Improving the Invoice Candidates Window. Adding missing Translation for Field in en_US.
+  * [#2790](https://github.com/metasfresh/metasfresh/issues/2790) Show LoginasUserHostkey in webui window user
+    * New Field "Login as User Hostkey" in User Window.
+  * [#2800](https://github.com/metasfresh/metasfresh/issues/2800) Make de.metas.document.archive.process.ExportArchivePDF work in webui
+    * Improvement of the Archove PDF Exporter, can now also be used in WebUI.
   * [#2815](https://github.com/metasfresh/metasfresh/issues/2815) New flag in Picking Tray window
     * New Field to define the Rack System in Picking Tray Window in WebUI.
+  * [#2821](https://github.com/metasfresh/metasfresh/issues/2821) Window Material Dispo in WebUI
+    * Improvement of Materialdispo window in WebUI, adding new Fields and Translations.
   * [#2826](https://github.com/metasfresh/metasfresh/issues/2826) WebUI: Orderlines adjustment for new Discount Groups
     * New Fields in Orderlines allowing to use and define Groups Discounts in Sales Orderlines.
   * [#2838](https://github.com/metasfresh/metasfresh/issues/2838) Linenet amount not updated in sales order after changing flatrate condition
     * New Read-Only Logic for Flatrate Terms Fields in Orderlines.
-  * [#2821](https://github.com/metasfresh/metasfresh/issues/2821) Window Material Dispo in WebUI
-    * Improvement of Materialdispo window in WebUI, adding new Fields and Translations.
-  * [#2800](https://github.com/metasfresh/metasfresh/issues/2800) Make de.metas.document.archive.process.ExportArchivePDF work in webui
-    * Improvement of the Archove PDF Exporter, can now also be used in WebUI.
   * [#2843](https://github.com/metasfresh/metasfresh/issues/2843) WebUI: Add new Fields for SQL Columns to Material Dispo Transaction Subtab
     * Improving Transaction included Subtab in Materialdispo Window. Now showing the Shipment/ Receipt Information in there.
   * [#2847](https://github.com/metasfresh/metasfresh/issues/2847) Elasticsearch shall use slf4j instead of log4j
@@ -81,7 +81,7 @@ Here come the actual release notes:
 * metasfresh-app
   * [#2634](https://github.com/metasfresh/metasfresh/issues/2634) Make the CalloutBankStatement webui compliant
     * Fixes the Callout BankStatement for the usage in Bankstatement Window in WebUI.
-  * [#2719](https://github.com/metasfresh/metasfresh/issues/2357) exception when using process quotation to sales order with parameter complete order
+  * [#2719](https://github.com/metasfresh/metasfresh/issues/2357) Exception when using process quotation to sales order with parameter complete order
     * Fixes an exception that occured when using the action Quotation to Sales Order in WebUI.
   * [#2818](https://github.com/metasfresh/metasfresh/issues/2818) Flatrate: Have relation from Sales Order to invoice candidate
     * New Relation from Sales Order to Invoice Candidates for Flatrate Terms.
@@ -93,7 +93,7 @@ Here come the actual release notes:
 * metasfresh-webui-api
   * [#643](https://github.com/metasfresh/metasfresh-webui-api/issues/643) Picking Tray Clearing requery to see the right view
     * Fixes the new Picking Tray Clearing, requerying the Window to let the user see the correct data.
-  * [#647](https://github.com/metasfresh/metasfresh-webui-api/issues/647) shipped HU is still visible in picking terminal
+  * [#647](https://github.com/metasfresh/metasfresh-webui-api/issues/647) Shipped HU is still visible in picking terminal
     * Fixes the picking Terminal, now not showing shipped HU anymore.
 
 * metasfresh-dist-orgs

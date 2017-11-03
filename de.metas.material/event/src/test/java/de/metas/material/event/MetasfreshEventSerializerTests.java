@@ -6,7 +6,8 @@ import org.junit.Test;
 
 import de.metas.event.Event;
 import de.metas.event.SimpleObjectSerializer;
-import de.metas.event.jms.JsonEventSerializer;
+import de.metas.event.jms.ActiveMQJMSEndpoint;
+import de.metas.event.jms.IEventSerializer;
 
 /*
  * #%L
@@ -37,13 +38,15 @@ import de.metas.event.jms.JsonEventSerializer;
 public class MetasfreshEventSerializerTests
 {
 	/**
-	 * Verifies that {@link JsonEventSerializer} works, because we put a JSON string into an {@link Event} which is also serialized into JSON,
-	 * so there might be problems down that road if {@link JsonEventSerializer} get confused about which parts of the string are just payload and which aren't.
+	 * Verifies that {@link ActiveMQJMSEndpoint#DEFAULT_EVENT_SERIALIZER} works, because we put a JSON string into an {@link Event} which is also serialized into JSON,
+	 * so there might be problems down that road if {@link ActiveMQJMSEndpoint#DEFAULT_EVENT_SERIALIZER} get confused about which parts of the string are just payload and which aren't.
 	 *
 	 */
 	@Test
 	public void serialize_and_deserialize_event_with_json_payload()
 	{
+		final IEventSerializer eventSerializer = ActiveMQJMSEndpoint.DEFAULT_EVENT_SERIALIZER;
+		
 		final TransactionEvent transactionEvent = MaterialEventSerializerTests.createSampleTransactionEvent();
 		final String transactionEventStr = SimpleObjectSerializer.get().serialize(transactionEvent);
 
@@ -51,9 +54,9 @@ public class MetasfreshEventSerializerTests
 				.putProperty(MaterialEventService.MATERIAL_DISPOSITION_EVENT, transactionEventStr)
 				.build();
 
-		final String eventStr = JsonEventSerializer.instance.toString(event);
+		final String eventStr = eventSerializer.toString(event);
 
-		final Event deserialisedEvent = JsonEventSerializer.instance.fromString(eventStr);
+		final Event deserialisedEvent = eventSerializer.fromString(eventStr);
 		final String deserializedTransactionEventStr = deserialisedEvent.getProperty(MaterialEventService.MATERIAL_DISPOSITION_EVENT);
 
 		final MaterialEvent deserializedTransactionEvent = SimpleObjectSerializer.get().deserialize(deserializedTransactionEventStr, MaterialEvent.class);

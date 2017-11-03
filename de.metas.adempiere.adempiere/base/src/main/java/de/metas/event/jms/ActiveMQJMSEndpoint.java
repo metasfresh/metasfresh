@@ -51,6 +51,7 @@ import org.apache.activemq.ActiveMQConnection;
 import org.apache.activemq.transport.TransportListener;
 import org.slf4j.Logger;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Predicate;
 import com.google.common.cache.CacheBuilder;
@@ -72,7 +73,9 @@ public class ActiveMQJMSEndpoint implements IJMSEndpoint
 	private static final String MSG_Event_RemoteEndpointDisconnected = "Event.RemoteEndpointDisconnected";
 	private static final String MSG_Event_RemoteEndpointConnected = "Event.RemoteEndpointConnected";
 
-	private final IEventSerializer eventSerializer = JsonEventSerializer.instance;
+	@VisibleForTesting
+	public static final IEventSerializer DEFAULT_EVENT_SERIALIZER = JacksonJsonEventSerializer.instance;
+	private final IEventSerializer eventSerializer = DEFAULT_EVENT_SERIALIZER;
 
 	private final ExceptionListener exceptionListener = new ExceptionListener()
 	{
@@ -348,15 +351,7 @@ public class ActiveMQJMSEndpoint implements IJMSEndpoint
 	@Override
 	public final void sendEvent(final String topicName, final Event event)
 	{
-		asyncExecutor.submit(new Runnable()
-		{
-
-			@Override
-			public void run()
-			{
-				sendEventNow(topicName, event);
-			}
-		});
+		asyncExecutor.submit(() -> sendEventNow(topicName, event));
 	}
 
 	private final void sendEventNow(final String topicName, final Event event)
