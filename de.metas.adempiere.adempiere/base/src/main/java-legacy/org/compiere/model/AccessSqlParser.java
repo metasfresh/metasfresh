@@ -415,6 +415,7 @@ public class AccessSqlParser
 	 * @param whereClause
 	 * @return
 	 */
+	public String rewriteWhereClauseWithLowercaseKeyWords(final String whereClause)
 	{
 
 		StringBuilder whereClauseBuilder = new StringBuilder()
