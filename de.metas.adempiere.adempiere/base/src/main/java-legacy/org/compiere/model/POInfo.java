@@ -522,6 +522,11 @@ public final class POInfo implements Serializable
 	{
 		return m_keyColumnName;
 	}
+	
+	public boolean isSingleKeyColumnName()
+	{
+		return m_keyColumnName != null;
+	}
 
 	/**
 	 * 

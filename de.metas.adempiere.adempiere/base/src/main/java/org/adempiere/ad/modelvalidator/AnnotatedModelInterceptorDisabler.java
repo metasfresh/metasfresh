@@ -60,7 +60,7 @@ import lombok.NonNull;
 	AnnotatedModelInterceptorDisabler()
 	{
 		// Make sure our cache it's invalidated when AD_SysConfig records are changed
-		CacheMgt.get().addCacheResetListener(I_AD_SysConfig.Table_Name, (tableName, key) -> invalidateCache());
+		CacheMgt.get().addCacheResetListener(I_AD_SysConfig.Table_Name, request -> invalidateCache());
 	}
 
 	/**

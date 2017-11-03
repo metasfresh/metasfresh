@@ -31,6 +31,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+import org.adempiere.ad.dao.cache.CacheInvalidateRequest;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.slf4j.Logger;
@@ -333,7 +334,7 @@ public class CCache<K, V> implements ITableAwareCacheInterface
 	}	// reset
 
 	@Override
-	public int resetForRecordId(final String tableName, final Object key)
+	public int resetForRecordId(final String tableName, final int recordId)
 	{
 		if (tableName == null)
 		{
@@ -663,8 +664,9 @@ public class CCache<K, V> implements ITableAwareCacheInterface
 		CacheMgt.get().addCacheResetListener(tableName, new ICacheResetListener()
 		{
 			@Override
-			public int reset(final String tableNameToReset, final Object key)
+			public int reset(final CacheInvalidateRequest request)
 			{
+				final String tableNameToReset = request.getTableNameEffective();
 				if (tableName != null && !Objects.equals(tableName, tableNameToReset))
 				{
 					return 0;
