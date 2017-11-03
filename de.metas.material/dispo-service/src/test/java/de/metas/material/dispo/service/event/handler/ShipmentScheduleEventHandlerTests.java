@@ -120,8 +120,6 @@ public class ShipmentScheduleEventHandlerTests
 
 		assertThat(demandRecord.getQty()).isEqualByComparingTo("10");
 		assertThat(stockRecord.getQty()).isEqualByComparingTo("-10"); // the stock is unbalanced, because there is no existing stock and no supply
-
-		// TODO: make sure (not necessarily right here!) that the stock is queried correctly and a demand event is fired if needed
 	}
 
 	public static ShipmentScheduleEvent createShipmentScheduleTestEvent(@NonNull final I_AD_Org org)

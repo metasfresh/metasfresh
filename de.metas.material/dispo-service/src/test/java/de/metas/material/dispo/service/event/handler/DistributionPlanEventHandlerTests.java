@@ -167,6 +167,7 @@ public class DistributionPlanEventHandlerTests
 								.build())
 						.build())
 				.build();
+
 		distributionPlanEventHandler.handleDistributionPlanEvent(event);
 
 		final List<I_MD_Candidate> allNonStockRecords = DispoTestUtils.filterExclStock();
@@ -219,8 +220,6 @@ public class DistributionPlanEventHandlerTests
 		assertThat(supplyStockRecord.getSeqNo()).isEqualTo(supplyRecord.getSeqNo() - 1);
 		assertThat(supplyRecord.getSeqNo()).isEqualTo(demandRecord.getSeqNo() - 1);
 		assertThat(demandRecord.getSeqNo()).isEqualTo(demandStockRecord.getSeqNo() - 1);
-
-		// TODO: make sure (not necessarily right here!) that the stock is queried correctly and a demand event is fired if needed
 	}
 
 	/**
@@ -231,8 +230,6 @@ public class DistributionPlanEventHandlerTests
 	{
 		performTestTwoDistibutionPlanEvents(distributionPlanEventHandler, org);
 	}
-
-	// TODO: test in reversed order
 
 	/**
 	 * Contains the actual test for {@link #testTwoDistibutionPlanEvents()}. I moved this into a static method because i want to use the code to set the stage for other tests.

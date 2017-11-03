@@ -56,7 +56,10 @@ public class StockCandidateService
 	}
 
 	/**
-	 * Creates and returns <b>but does not store</b> a new stock candidate which takes its quantity from the next-younger (or same-age!) stock candidate that has the same product and warehouse.
+	 * Creates and returns <b>but does not store</b> a new stock candidate
+	 * whose quantity is the quantity of the given {@code candidate} plus the quantity from
+	 * the next-younger (or same-age!) stock candidate that has the same product, storage attributes key and warehouse.
+	 *
 	 * If there is no such next-younger stock candidate (i.e. if this is the very first stock candidate to be created for the given product and locator), then a quantity of zero is taken.
 	 *
 	 * @param candidate
@@ -111,8 +114,10 @@ public class StockCandidateService
 	{
 		final Supplier<Candidate> stockCandidateToUpdate = () -> {
 			final Candidate stockCandidateToPersist = createStockCandidate(relatedCandidate);
+
 			final Candidate persistedStockCandidate = candidateRepositoryCommands
 					.addOrUpdatePreserveExistingSeqNo(stockCandidateToPersist);
+
 			return persistedStockCandidate;
 		};
 
@@ -123,7 +128,7 @@ public class StockCandidateService
 
 	/**
 	 * Updates the qty for the stock candidate returned by the given {@code stockCandidateToUpdate} and it's later stock candidates
-	 * 
+	 *
 	 * @param relatedCandiateWithDelta
 	 * @param stockCandidateToUpdate
 	 * @return

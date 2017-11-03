@@ -69,35 +69,6 @@ public interface I_MD_Candidate
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set DB-Tabelle.
-	 * Database Table information
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setAD_Table_ID (int AD_Table_ID);
-
-	/**
-	 * Get DB-Tabelle.
-	 * Database Table information
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getAD_Table_ID();
-
-	public org.compiere.model.I_AD_Table getAD_Table();
-
-	public void setAD_Table(org.compiere.model.I_AD_Table AD_Table);
-
-    /** Column definition for AD_Table_ID */
-    public static final org.adempiere.model.ModelColumn<I_MD_Candidate, org.compiere.model.I_AD_Table> COLUMN_AD_Table_ID = new org.adempiere.model.ModelColumn<I_MD_Candidate, org.compiere.model.I_AD_Table>(I_MD_Candidate.class, "AD_Table_ID", org.compiere.model.I_AD_Table.class);
-    /** Column name AD_Table_ID */
-    public static final String COLUMNNAME_AD_Table_ID = "AD_Table_ID";
-
-	/**
 	 * Get Erstellt.
 	 * Datum, an dem dieser Eintrag erstellt wurde
 	 *
@@ -428,77 +399,6 @@ public interface I_MD_Candidate
     public static final org.adempiere.model.ModelColumn<I_MD_Candidate, Object> COLUMN_Qty = new org.adempiere.model.ModelColumn<I_MD_Candidate, Object>(I_MD_Candidate.class, "Qty", null);
     /** Column name Qty */
     public static final String COLUMNNAME_Qty = "Qty";
-
-	/**
-	 * Set Menge Abw..
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setQty_Override (java.math.BigDecimal Qty_Override);
-
-	/**
-	 * Get Menge Abw..
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.math.BigDecimal getQty_Override();
-
-    /** Column definition for Qty_Override */
-    public static final org.adempiere.model.ModelColumn<I_MD_Candidate, Object> COLUMN_Qty_Override = new org.adempiere.model.ModelColumn<I_MD_Candidate, Object>(I_MD_Candidate.class, "Qty_Override", null);
-    /** Column name Qty_Override */
-    public static final String COLUMNNAME_Qty_Override = "Qty_Override";
-
-	/**
-	 * Set Planmenge.
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setQty_Planner (java.math.BigDecimal Qty_Planner);
-
-	/**
-	 * Get Planmenge.
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public java.math.BigDecimal getQty_Planner();
-
-    /** Column definition for Qty_Planner */
-    public static final org.adempiere.model.ModelColumn<I_MD_Candidate, Object> COLUMN_Qty_Planner = new org.adempiere.model.ModelColumn<I_MD_Candidate, Object>(I_MD_Candidate.class, "Qty_Planner", null);
-    /** Column name Qty_Planner */
-    public static final String COLUMNNAME_Qty_Planner = "Qty_Planner";
-
-	/**
-	 * Set Datensatz-ID.
-	 * Direct internal record ID
-	 *
-	 * <br>Type: Button
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setRecord_ID (int Record_ID);
-
-	/**
-	 * Get Datensatz-ID.
-	 * Direct internal record ID
-	 *
-	 * <br>Type: Button
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getRecord_ID();
-
-    /** Column definition for Record_ID */
-    public static final org.adempiere.model.ModelColumn<I_MD_Candidate, Object> COLUMN_Record_ID = new org.adempiere.model.ModelColumn<I_MD_Candidate, Object>(I_MD_Candidate.class, "Record_ID", null);
-    /** Column name Record_ID */
-    public static final String COLUMNNAME_Record_ID = "Record_ID";
 
 	/**
 	 * Set Reihenfolge.

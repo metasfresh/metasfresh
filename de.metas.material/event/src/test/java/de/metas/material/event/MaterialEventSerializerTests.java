@@ -205,7 +205,7 @@ public class MaterialEventSerializerTests
 	public void materialDemandEvent()
 	{
 		final MaterialDemandEvent materialDemandEvent = MaterialDemandEvent.builder()
-				.materialDemandDescr(createMaterialDemandDescriptor())
+				.materialDemandDescriptor(createMaterialDemandDescriptor())
 				.build();
 		assertEventEqualAfterSerializeDeserialize(materialDemandEvent);
 	}

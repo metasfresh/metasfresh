@@ -41,12 +41,12 @@ import lombok.NonNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -59,17 +59,19 @@ public class CandidateRepositoryCommands
 	/**
 	 * Updates the qty of the given candidate.
 	 * Differs from {@link #addOrUpdateOverwriteStoredSeqNo(Candidate)} in that
-	 * no matching id done, and if there is no existing persisted record, then an exception is thrown. Instead, it just updates the underlying persisted record of the given {@code candidateToUpdate}.
+	 * only the ID of the given {@code candidateToUpdate} is used, and if there is no existing persisted record, then an exception is thrown.
+	 * Also it just updates the underlying persisted record of the given {@code candidateToUpdate} and nothing else.
 	 *
 	 *
-	 * @param candidateToUpdate the candidate to update. Needs to have {@link Candidate#getId() > 0}.
+	 * @param candidateToUpdate the candidate to update. Needs to have {@link Candidate#getId()} > 0.
 	 *
 	 * @return a copy of the given {@code candidateToUpdate} with the quantity being a delta, similar to the return value of {@link #addOrUpdate(Candidate, boolean)}.
 	 */
 	public Candidate updateQty(@NonNull final Candidate candidateToUpdate)
 	{
-		// TODO test it
-		Preconditions.checkState(candidateToUpdate.getId() > 0, "Parameter 'candidateToUpdate' has Id=%s; candidateToUpdate=%s", candidateToUpdate.getId(), candidateToUpdate);
+		Preconditions.checkState(candidateToUpdate.getId() > 0,
+				"Parameter 'candidateToUpdate' needs to have Id > 0; candidateToUpdate=%s",
+				candidateToUpdate);
 
 		final I_MD_Candidate candidateRecord = load(candidateToUpdate.getId(), I_MD_Candidate.class);
 		final BigDecimal oldQty = candidateRecord.getQty();
@@ -103,7 +105,7 @@ public class CandidateRepositoryCommands
 
 	/**
 	 * Similar to {@link #addOrUpdateOverwriteStoredSeqNo(Candidate)}, but the given {@code candidate}'s {@code seqNo} (if specified at all!) will only be persisted if none is stored yet.
-	 * 
+	 *
 	 * @param candidate
 	 * @return
 	 */

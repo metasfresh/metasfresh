@@ -15,7 +15,7 @@ public class X_MD_Candidate extends org.compiere.model.PO implements I_MD_Candid
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -13470090L;
+	private static final long serialVersionUID = -1397586411L;
 
     /** Standard Constructor */
     public X_MD_Candidate (Properties ctx, int MD_Candidate_ID, String trxName)
@@ -29,7 +29,6 @@ public class X_MD_Candidate extends org.compiere.model.PO implements I_MD_Candid
 			setM_Product_ID (0);
 			setM_Warehouse_ID (0);
 			setQty (BigDecimal.ZERO);
-			setQty_Planner (BigDecimal.ZERO);
 			setSeqNo (0);
 			setStorageAttributesKey (null); // EMPTY
         } */
@@ -49,43 +48,6 @@ public class X_MD_Candidate extends org.compiere.model.PO implements I_MD_Candid
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
-
-	@Override
-	public org.compiere.model.I_AD_Table getAD_Table() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_AD_Table_ID, org.compiere.model.I_AD_Table.class);
-	}
-
-	@Override
-	public void setAD_Table(org.compiere.model.I_AD_Table AD_Table)
-	{
-		set_ValueFromPO(COLUMNNAME_AD_Table_ID, org.compiere.model.I_AD_Table.class, AD_Table);
-	}
-
-	/** Set DB-Tabelle.
-		@param AD_Table_ID 
-		Database Table information
-	  */
-	@Override
-	public void setAD_Table_ID (int AD_Table_ID)
-	{
-		if (AD_Table_ID < 1) 
-			set_Value (COLUMNNAME_AD_Table_ID, null);
-		else 
-			set_Value (COLUMNNAME_AD_Table_ID, Integer.valueOf(AD_Table_ID));
-	}
-
-	/** Get DB-Tabelle.
-		@return Database Table information
-	  */
-	@Override
-	public int getAD_Table_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Table_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
 
 	/** Set Plandatum.
 		@param DateProjected Plandatum	  */
@@ -405,69 +367,6 @@ public class X_MD_Candidate extends org.compiere.model.PO implements I_MD_Candid
 		if (bd == null)
 			 return BigDecimal.ZERO;
 		return bd;
-	}
-
-	/** Set Menge Abw..
-		@param Qty_Override Menge Abw.	  */
-	@Override
-	public void setQty_Override (java.math.BigDecimal Qty_Override)
-	{
-		set_Value (COLUMNNAME_Qty_Override, Qty_Override);
-	}
-
-	/** Get Menge Abw..
-		@return Menge Abw.	  */
-	@Override
-	public java.math.BigDecimal getQty_Override () 
-	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Qty_Override);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
-	}
-
-	/** Set Planmenge.
-		@param Qty_Planner Planmenge	  */
-	@Override
-	public void setQty_Planner (java.math.BigDecimal Qty_Planner)
-	{
-		set_Value (COLUMNNAME_Qty_Planner, Qty_Planner);
-	}
-
-	/** Get Planmenge.
-		@return Planmenge	  */
-	@Override
-	public java.math.BigDecimal getQty_Planner () 
-	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Qty_Planner);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
-	}
-
-	/** Set Datensatz-ID.
-		@param Record_ID 
-		Direct internal record ID
-	  */
-	@Override
-	public void setRecord_ID (int Record_ID)
-	{
-		if (Record_ID < 0) 
-			set_Value (COLUMNNAME_Record_ID, null);
-		else 
-			set_Value (COLUMNNAME_Record_ID, Integer.valueOf(Record_ID));
-	}
-
-	/** Get Datensatz-ID.
-		@return Direct internal record ID
-	  */
-	@Override
-	public int getRecord_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_Record_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
 	}
 
 	/** Set Reihenfolge.

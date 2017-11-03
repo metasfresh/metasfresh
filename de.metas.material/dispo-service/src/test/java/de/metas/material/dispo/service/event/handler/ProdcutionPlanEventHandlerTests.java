@@ -119,8 +119,6 @@ public class ProdcutionPlanEventHandlerTests
 	{
 		final ProductionPlanEvent productionPlanEvent = createProductionPlanEvent();
 		perform_testProductionPlanEvent(productionPlanEvent);
-
-		// TODO: make sure (not necessarily right here!) that the stock is queried correctly and a demand event is fired if needed
 	}
 
 	@Test

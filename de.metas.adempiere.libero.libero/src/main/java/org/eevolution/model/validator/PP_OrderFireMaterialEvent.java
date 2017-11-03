@@ -1,7 +1,6 @@
 package org.eevolution.model.validator;
 
 import java.util.List;
-import java.util.Optional;
 
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
@@ -51,10 +50,10 @@ public class PP_OrderFireMaterialEvent
 			// this doesn't help when a PP_Order is reactivated
 			return;
 		}
-		
+
 		// TODO test at least if ProductDescriptorFactory works for ppOrder and line
 		final ProductDescriptorFactory productDescriptorFactory = Adempiere.getBean(ProductDescriptorFactory.class);
-		
+
 		final PPOrderBuilder ppOrderPojoBuilder = PPOrder.builder()
 				.datePromised(ppOrder.getDatePromised())
 				.dateStartSchedule(ppOrder.getDateStartSchedule())
@@ -85,7 +84,6 @@ public class PP_OrderFireMaterialEvent
 
 		final ProductionPlanEvent event = ProductionPlanEvent.builder()
 				.eventDescriptor(EventDescriptor.createNew(ppOrder))
-				.materialDemandDescr(Optional.empty()) // this is an intermediate NPE fix. it's already obsolete in the master branch
 				.ppOrder(ppOrderPojoBuilder.build())
 				// .reference(reference) // we don't know the reference here, but we expect that the event-receiver (i.e. material-dispo) will be able to sort out which record(s) to update via date, orderLineId etc
 				.build();

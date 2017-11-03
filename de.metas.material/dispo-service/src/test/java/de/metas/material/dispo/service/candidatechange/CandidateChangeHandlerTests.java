@@ -1,10 +1,10 @@
 package de.metas.material.dispo.service.candidatechange;
 
+import static de.metas.material.event.EventTestHelper.CLIENT_ID;
+import static de.metas.material.event.EventTestHelper.ORG_ID;
 import static de.metas.material.event.EventTestHelper.PRODUCT_ID;
 import static de.metas.material.event.EventTestHelper.WAREHOUSE_ID;
 import static de.metas.material.event.EventTestHelper.createProductDescriptor;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.is;
@@ -24,7 +24,6 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
-import org.compiere.model.I_AD_Org;
 import org.compiere.util.TimeUtil;
 import org.junit.Before;
 import org.junit.Rule;
@@ -85,8 +84,6 @@ public class CandidateChangeHandlerTests
 
 	private final int OTHER_WAREHOUSE_ID = WAREHOUSE_ID + 10;
 
-	private I_AD_Org org;
-
 	private CandidateRepositoryRetrieval candidateRepository;
 
 	private CandidateChangeService candidateChangeHandler;
@@ -102,9 +99,6 @@ public class CandidateChangeHandlerTests
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
-
-		org = newInstance(I_AD_Org.class);
-		save(org);
 
 		candidateRepository = new CandidateRepositoryRetrieval(ProductDescriptorFactory.TESTING_INSTANCE);
 		candidateRepositoryCommands = new CandidateRepositoryCommands();
@@ -182,8 +176,8 @@ public class CandidateChangeHandlerTests
 
 			candidate = Candidate.builder()
 					.type(CandidateType.STOCK)
-					.clientId(org.getAD_Client_ID())
-					.orgId(org.getAD_Org_ID())
+					.clientId(CLIENT_ID)
+					.orgId(ORG_ID)
 					.materialDescriptor(materialDescriptor)
 					.build();
 			candidateRepositoryCommands.addOrUpdateOverwriteStoredSeqNo(candidate);
@@ -193,8 +187,8 @@ public class CandidateChangeHandlerTests
 			earlierCandidate = candidateRepositoryCommands
 					.addOrUpdateOverwriteStoredSeqNo(Candidate.builder()
 							.type(CandidateType.STOCK)
-							.clientId(org.getAD_Client_ID())
-							.orgId(org.getAD_Org_ID())
+							.clientId(CLIENT_ID)
+							.orgId(ORG_ID)
 							.materialDescriptor(earlierMaterialDescriptor)
 							.build());
 
@@ -202,8 +196,8 @@ public class CandidateChangeHandlerTests
 
 			final Candidate laterCandidate = Candidate.builder()
 					.type(CandidateType.STOCK)
-					.clientId(org.getAD_Client_ID())
-					.orgId(org.getAD_Org_ID())
+					.clientId(CLIENT_ID)
+					.orgId(ORG_ID)
 					.materialDescriptor(laterMaterialDescriptor)
 					.build();
 			candidateRepositoryCommands.addOrUpdateOverwriteStoredSeqNo(laterCandidate);
@@ -214,8 +208,8 @@ public class CandidateChangeHandlerTests
 
 			evenLaterCandidate = Candidate.builder()
 					.type(CandidateType.STOCK)
-					.clientId(org.getAD_Client_ID())
-					.orgId(org.getAD_Org_ID())
+					.clientId(CLIENT_ID)
+					.orgId(ORG_ID)
 					.materialDescriptor(evenLatermaterialDescriptor)
 					.build();
 			candidateRepositoryCommands.addOrUpdateOverwriteStoredSeqNo(evenLaterCandidate);
@@ -225,8 +219,8 @@ public class CandidateChangeHandlerTests
 
 			evenLaterCandidateWithDifferentWarehouse = Candidate.builder()
 					.type(CandidateType.STOCK)
-					.clientId(org.getAD_Client_ID())
-					.orgId(org.getAD_Org_ID())
+					.clientId(CLIENT_ID)
+					.orgId(ORG_ID)
 					.materialDescriptor(evenLatermaterialDescrWithDifferentWarehouse)
 					.build();
 			candidateRepositoryCommands.addOrUpdateOverwriteStoredSeqNo(evenLaterCandidateWithDifferentWarehouse);
@@ -377,8 +371,8 @@ public class CandidateChangeHandlerTests
 
 		final Candidate candidate = Candidate.builder()
 				.type(CandidateType.STOCK)
-				.clientId(org.getAD_Client_ID())
-				.orgId(org.getAD_Org_ID())
+				.clientId(CLIENT_ID)
+				.orgId(ORG_ID)
 				.materialDescriptor(materialDescr)
 				.build();
 		final Candidate processedCandidate = stockCandidateService.addOrUpdateStock(candidate);
@@ -477,8 +471,8 @@ public class CandidateChangeHandlerTests
 
 		final Candidate candidate = Candidate.builder()
 				.type(CandidateType.SUPPLY)
-				.clientId(org.getAD_Client_ID())
-				.orgId(org.getAD_Org_ID())
+				.clientId(CLIENT_ID)
+				.orgId(ORG_ID)
 				.materialDescriptor(materialDescr)
 				.build();
 
@@ -509,8 +503,8 @@ public class CandidateChangeHandlerTests
 
 		final Candidate candidate = Candidate.builder()
 				.type(CandidateType.DEMAND)
-				.clientId(org.getAD_Client_ID())
-				.orgId(org.getAD_Org_ID())
+				.clientId(CLIENT_ID)
+				.orgId(ORG_ID)
 				.materialDescriptor(materialDescr)
 				.build();
 		candidateChangeHandler.onCandidateNewOrChange(candidate);
@@ -527,8 +521,8 @@ public class CandidateChangeHandlerTests
 
 		final Candidate supplyCandidate = Candidate.builder()
 				.type(CandidateType.SUPPLY)
-				.clientId(org.getAD_Client_ID())
-				.orgId(org.getAD_Org_ID())
+				.clientId(CLIENT_ID)
+				.orgId(ORG_ID)
 				.materialDescriptor(supplyMaterialDescriptor)
 				.build();
 
@@ -569,8 +563,8 @@ public class CandidateChangeHandlerTests
 
 		final Candidate supplyCandidate = Candidate.builder()
 				.type(CandidateType.SUPPLY)
-				.clientId(org.getAD_Client_ID())
-				.orgId(org.getAD_Org_ID())
+				.clientId(CLIENT_ID)
+				.orgId(ORG_ID)
 				.materialDescriptor(supplyMaterialDescriptor)
 				.build();
 		candidateChangeHandler.onCandidateNewOrChange(supplyCandidate);
@@ -594,8 +588,8 @@ public class CandidateChangeHandlerTests
 
 		final Candidate demandCandidate = Candidate.builder()
 				.type(CandidateType.DEMAND)
-				.clientId(org.getAD_Client_ID())
-				.orgId(org.getAD_Org_ID())
+				.clientId(CLIENT_ID)
+				.orgId(ORG_ID)
 				.materialDescriptor(demandMaterialDescriptor)
 				.build();
 		candidateChangeHandler.onCandidateNewOrChange(demandCandidate);
@@ -632,15 +626,16 @@ public class CandidateChangeHandlerTests
 				.date(t)
 				.build();
 
-		final Candidate candidatee = Candidate.builder()
+		final Candidate candidate = Candidate.builder()
 				.type(CandidateType.DEMAND)
-				.clientId(org.getAD_Client_ID())
-				.orgId(org.getAD_Org_ID())
+				.clientId(CLIENT_ID)
+				.orgId(ORG_ID)
 				.materialDescriptor(materialDescr)
 				.build();
 
-		final Consumer<Candidate> doTest = candidate -> {
-			candidateChangeHandler.onCandidateNewOrChange(candidate);
+		final Consumer<Candidate> doTest = candidateUnderTest -> {
+
+			candidateChangeHandler.onCandidateNewOrChange(candidateUnderTest);
 
 			final List<I_MD_Candidate> records = DispoTestUtils.retrieveAllRecords();
 			assertThat(records).hasSize(2);
@@ -654,8 +649,8 @@ public class CandidateChangeHandlerTests
 			assertThat(stockRecord.getSeqNo()).isEqualTo(demandRecord.getSeqNo() + 1); // when we sort by SeqNo, the demand needs to be first and thus have a smaller value
 		};
 
-		doTest.accept(candidatee); // first invocation
-		doTest.accept(candidatee); // second invocation
+		doTest.accept(candidate); // first invocation
+		doTest.accept(candidate); // second invocation
 	}
 
 	/**
@@ -676,15 +671,15 @@ public class CandidateChangeHandlerTests
 				.date(t)
 				.build();
 
-		final Candidate candidatee = Candidate.builder()
+		final Candidate candidate = Candidate.builder()
 				.type(CandidateType.DEMAND)
-				.clientId(org.getAD_Client_ID())
-				.orgId(org.getAD_Org_ID())
+				.clientId(CLIENT_ID)
+				.orgId(ORG_ID)
 				.materialDescriptor(materialDescriptor)
 				.build();
 
-		final BiConsumer<Candidate, BigDecimal> doTest = (candidate, expectedQty) -> {
-			candidateChangeHandler.onCandidateNewOrChange(candidate);
+		final BiConsumer<Candidate, BigDecimal> doTest = (candidateUnderTest, expectedQty) -> {
+			candidateChangeHandler.onCandidateNewOrChange(candidateUnderTest);
 
 			final List<I_MD_Candidate> records = DispoTestUtils.retrieveAllRecords();
 			assertThat(records).hasSize(2);
@@ -698,8 +693,8 @@ public class CandidateChangeHandlerTests
 			assertThat(stockRecord.getSeqNo()).isEqualTo(demandRecord.getSeqNo() + 1); // when we sort by SeqNo, the demand needs to be first and thus have the smaller number
 		};
 
-		doTest.accept(candidatee, qty); // first invocation
-		doTest.accept(candidatee.withQuantity(qty.add(BigDecimal.ONE)), qty.add(BigDecimal.ONE)); // second invocation
+		doTest.accept(candidate, qty); // first invocation
+		doTest.accept(candidate.withQuantity(qty.add(BigDecimal.ONE)), qty.add(BigDecimal.ONE)); // second invocation
 	}
 
 }

@@ -25,13 +25,13 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.material.dispo.commons.CandidatesQuery;
 import de.metas.material.dispo.commons.candidate.Candidate;
+import de.metas.material.dispo.commons.candidate.Candidate.CandidateBuilder;
 import de.metas.material.dispo.commons.candidate.CandidateSubType;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.candidate.DemandDetail;
 import de.metas.material.dispo.commons.candidate.DistributionDetail;
 import de.metas.material.dispo.commons.candidate.ProductionDetail;
 import de.metas.material.dispo.commons.candidate.TransactionDetail;
-import de.metas.material.dispo.commons.candidate.Candidate.CandidateBuilder;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.I_MD_Candidate_Demand_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_Dist_Detail;
@@ -52,12 +52,12 @@ import lombok.NonNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -67,6 +67,15 @@ import lombok.NonNull;
 @Service
 public class CandidateRepositoryRetrieval
 {
+	@VisibleForTesting
+	static final String SQL_SELECT_AVAILABLE_STOCK = "SELECT COALESCE(SUM(Qty),0) "
+			+ "FROM de_metas_material_dispo.MD_Candidate_Latest_v "
+			+ "WHERE "
+			+ "M_Warehouse_ID=? AND "
+			+ "M_Product_ID=? AND "
+			+ "StorageAttributesKey LIKE ? AND "
+			+ "DateProjected <= ?";
+
 	private final ProductDescriptorFactory productDescriptorFactory;
 
 	public CandidateRepositoryRetrieval(@NonNull final ProductDescriptorFactory productDescriptorFactory)
@@ -76,7 +85,7 @@ public class CandidateRepositoryRetrieval
 
 	/**
 	 * Load and return <b>the</b> single record this has the given {@code id} as parentId.
-	 * 
+	 *
 	 * @param parentId
 	 * @return
 	 */
@@ -331,17 +340,24 @@ public class CandidateRepositoryRetrieval
 				.endOrderBy();
 	}
 
-	public BigDecimal retrieveAvailableStockForCompleteDescriptor(@NonNull final MaterialDescriptor materialDescriptor)
+	/**
+	 *
+	 * @param materialDescriptor
+	 * @return never returns {@code null}
+	 */
+	public BigDecimal retrieveAvailableStockForDescriptor(@NonNull final MaterialDescriptor materialDescriptor)
 	{
 		Preconditions.checkArgument(materialDescriptor.isComplete(),
 				"The given materialDescriptor parameter needs to be complete for this method to make sense; materialDescriptor=%s",
 				materialDescriptor);
 
-		final String storageAttributesKeyLikeExpression = RepositoryCommons.prepareStorageAttributesKeyForLikeExpression(materialDescriptor.getStorageAttributesKey());
+		final String storageAttributesKeyLikeExpression = RepositoryCommons
+				.prepareStorageAttributesKeyForLikeExpression(
+						materialDescriptor.getStorageAttributesKey());
 
 		final BigDecimal result = DB.getSQLValueBDEx(
 				ITrx.TRXNAME_ThreadInherited,
-				"SELECT COALESCE(Qty, 0) FROM de_metas_material_dispo.MD_Candidate_Latest_Records(?, ?, ?, ?)",
+				SQL_SELECT_AVAILABLE_STOCK,
 				new Object[] {
 						materialDescriptor.getWarehouseId(),
 						materialDescriptor.getProductId(),

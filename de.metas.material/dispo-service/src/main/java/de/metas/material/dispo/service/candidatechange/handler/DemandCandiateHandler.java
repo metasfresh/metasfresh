@@ -28,12 +28,12 @@ import lombok.NonNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -71,10 +71,11 @@ public class DemandCandiateHandler implements CandidateHandler
 
 	/**
 	 * Persists (updates or creates) the given demand candidate and also it's <b>child</b> stock candidate.
-	 * 
+	 *
 	 * @param demandCandidate
 	 * @return
 	 */
+	@Override
 	public Candidate onCandidateNewOrChange(@NonNull final Candidate demandCandidate)
 	{
 		assertCorrectCandidateType(demandCandidate);
@@ -96,7 +97,7 @@ public class DemandCandiateHandler implements CandidateHandler
 		final Optional<Candidate> possibleChildStockCandidate = candidateRepository.retrieveSingleChild(demandCandidateWithId.getId());
 		if (possibleChildStockCandidate.isPresent())
 		{
-			// this supply candidate is not new and already has a stock candidate as its parent. be sure to update exactly *that* scandidate
+			// this supply candidate is not new and already has a stock candidate as its parent. be sure to update exactly *that* candidate
 			childStockWithDemand = stockCandidateService
 					.updateStock(
 							demandCandidateWithId, () -> {
@@ -136,15 +137,20 @@ public class DemandCandiateHandler implements CandidateHandler
 			demandCandidateToReturn = demandCandidateWithId;
 		}
 
-		final boolean demandExceedsAvailableQty = childStockWithDemand.getQuantity().signum() < 0;
-		if (demandExceedsAvailableQty && demandCandidate.getType() == CandidateType.DEMAND)
+		if (demandCandidate.getType() == CandidateType.DEMAND)
 		{
-			// there would be no more stock left, so
-			// notify whoever is in charge that we have a demand to balance
-			final BigDecimal requiredAdditionalQty = childStockWithDemand.getQuantity().negate();
+			final BigDecimal availableQuantity = candidateRepository.retrieveAvailableStockForDescriptor(demandCandidate.getMaterialDescriptor());
+			final boolean demandExceedsAvailableQty = demandCandidate.getQuantity().compareTo(availableQuantity) > 0;
 
-			final MaterialDemandEvent materialDemandEvent = MaterialDemandEventCreator.createMaterialDemandEvent(demandCandidateWithId, requiredAdditionalQty);
-			materialEventService.fireEvent(materialDemandEvent);
+			if (demandExceedsAvailableQty)
+			{
+				// there would be no more stock left, so
+				// notify whoever is in charge that we have a demand to balance
+				final BigDecimal requiredAdditionalQty = demandCandidate.getQuantity().subtract(availableQuantity);
+
+				final MaterialDemandEvent materialDemandEvent = MaterialDemandEventCreator.createMaterialDemandEvent(demandCandidateWithId, requiredAdditionalQty);
+				materialEventService.fireEvent(materialDemandEvent);
+			}
 		}
 		return demandCandidateToReturn;
 	}

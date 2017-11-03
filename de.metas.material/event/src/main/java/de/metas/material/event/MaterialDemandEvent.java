@@ -33,11 +33,12 @@ public class MaterialDemandEvent implements MaterialEvent
 	public static final String TYPE = "MaterialDemandEvent";
 
 	@NonNull
-	MaterialDemandDescriptor materialDemandDescr;
+	MaterialDemandDescriptor materialDemandDescriptor;
 
-	
+
+	@Override
 	public EventDescriptor getEventDescriptor()
 	{
-		return materialDemandDescr.getEventDescr();
+		return materialDemandDescriptor.getEventDescr();
 	}
 }

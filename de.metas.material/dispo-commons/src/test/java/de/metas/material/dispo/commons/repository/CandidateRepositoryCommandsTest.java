@@ -36,8 +36,6 @@ import de.metas.material.dispo.commons.candidate.DemandDetail;
 import de.metas.material.dispo.commons.candidate.DistributionDetail;
 import de.metas.material.dispo.commons.candidate.ProductionDetail;
 import de.metas.material.dispo.commons.candidate.TransactionDetail;
-import de.metas.material.dispo.commons.repository.CandidateRepositoryCommands;
-import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.I_MD_Candidate_Demand_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_Dist_Detail;
@@ -56,12 +54,12 @@ import de.metas.material.event.ProductDescriptorFactory;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -87,6 +85,35 @@ public class CandidateRepositoryCommandsTest
 		repositoryTestHelper = new RepositoryTestHelper(
 				ProductDescriptorFactory.TESTING_INSTANCE,
 				candidateRepositoryCommands);
+	}
+
+	@Test(expected = RuntimeException.class)
+	public void updateQuantity_error_if_missing_candidate_record()
+	{
+		final Candidate candidate = Candidate.builder()
+				.type(CandidateType.DEMAND)
+				.materialDescriptor(createMaterialDescriptor())
+				.id(23)
+				.build();
+
+		candidateRepositoryCommands.updateQty(candidate);
+	}
+
+	@Test
+	public void updateQuantity()
+	{
+		final I_MD_Candidate candidateRecord = newInstance(I_MD_Candidate.class);
+		candidateRecord.setQty(BigDecimal.TEN);
+		save(candidateRecord);
+		final Candidate candidate = Candidate.builder()
+				.type(CandidateType.DEMAND)
+				.materialDescriptor(createMaterialDescriptor().withQuantity(BigDecimal.ONE))
+				.id(candidateRecord.getMD_Candidate_ID())
+				.build();
+
+		final Candidate result = candidateRepositoryCommands.updateQty(candidate);
+
+		assertThat(result.getQuantity()).isEqualByComparingTo("-9"); // new qty of 1 minus old qty of 10
 	}
 
 	@Test

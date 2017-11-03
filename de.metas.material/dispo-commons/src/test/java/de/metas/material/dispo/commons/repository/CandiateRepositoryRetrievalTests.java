@@ -35,8 +35,6 @@ import de.metas.material.dispo.commons.RepositoryTestHelper;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.DemandDetail;
 import de.metas.material.dispo.commons.candidate.TransactionDetail;
-import de.metas.material.dispo.commons.repository.CandidateRepositoryCommands;
-import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.I_MD_Candidate_Demand_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_Dist_Detail;
@@ -47,6 +45,7 @@ import de.metas.material.event.MaterialDescriptor;
 import de.metas.material.event.ProductDescriptor;
 import de.metas.material.event.ProductDescriptorFactory;
 import mockit.Expectations;
+import mockit.Mocked;
 
 /*
  * #%L
@@ -83,6 +82,9 @@ public class CandiateRepositoryRetrievalTests
 	private ProductDescriptorFactory productDescriptorFactory;
 
 	private RepositoryTestHelper repositoryTestHelper;
+
+	@Mocked
+	private DB db;
 
 	@Before
 	public void init()
@@ -544,7 +546,7 @@ public class CandiateRepositoryRetrievalTests
 	public void retrieveAvailableStockForCompleteDescriptor_throw_ex_if_not_complete()
 	{
 		final MaterialDescriptor materialDescriptor = MaterialDescriptor.builderForQuery().build();
-		candidateRepository.retrieveAvailableStockForCompleteDescriptor(materialDescriptor);
+		candidateRepository.retrieveAvailableStockForDescriptor(materialDescriptor);
 	}
 
 	@Test
@@ -561,7 +563,7 @@ public class CandiateRepositoryRetrievalTests
 		new Expectations() {{
 			DB.getSQLValueBDEx(
 					ITrx.TRXNAME_ThreadInherited,
-					"SELECT COALESCE(Qty, 0) FROM de_metas_material_dispo.MD_Candidate_Latest_Records(?, ?, ?, ?)",
+					CandidateRepositoryRetrieval.SQL_SELECT_AVAILABLE_STOCK,
 					new Object[] {
 							materialDescriptor.getWarehouseId(),
 							materialDescriptor.getProductId(),
@@ -572,7 +574,7 @@ public class CandiateRepositoryRetrievalTests
 		}};
 		// @formatter:on
 
-		final BigDecimal result = candidateRepository.retrieveAvailableStockForCompleteDescriptor(materialDescriptor);
+		final BigDecimal result = candidateRepository.retrieveAvailableStockForDescriptor(materialDescriptor);
 		assertThat(result).isEqualByComparingTo("10");
 	}
 

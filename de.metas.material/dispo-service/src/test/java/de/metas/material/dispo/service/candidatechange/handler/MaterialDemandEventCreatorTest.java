@@ -27,12 +27,12 @@ import de.metas.material.event.MaterialDescriptor;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -63,6 +63,6 @@ public class MaterialDemandEventCreatorTest
 		assertThat(result).isNotNull();
 		assertThat(result.getEventDescriptor().getClientId()).isEqualTo(20);
 		assertThat(result.getEventDescriptor().getOrgId()).isEqualTo(30);
-		assertThat(result.getMaterialDemandDescr().getDemandCandidateId()).isEqualTo(10);
+		assertThat(result.getMaterialDemandDescriptor().getDemandCandidateId()).isEqualTo(10);
 	}
 }

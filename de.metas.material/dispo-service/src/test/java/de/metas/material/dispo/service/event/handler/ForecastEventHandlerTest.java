@@ -104,7 +104,7 @@ public class ForecastEventHandlerTest
 		// @formatter:off
 		new Expectations()
 		{{
-			candidateRepository.retrieveAvailableStockForCompleteDescriptor(materialDescriptorOfFirstAndOnlyForecastLine);
+			candidateRepository.retrieveAvailableStockForDescriptor(materialDescriptorOfFirstAndOnlyForecastLine);
 			times = 1; result = BigDecimal.ZERO;
 
 			materialEventService.fireEvent(with(eventQuantity("8")));
@@ -138,7 +138,7 @@ public class ForecastEventHandlerTest
 		// @formatter:off
 		new Expectations()
 		{{
-			candidateRepository.retrieveAvailableStockForCompleteDescriptor(materialDescriptorOfFirstAndOnlyForecastLine);
+			candidateRepository.retrieveAvailableStockForDescriptor(materialDescriptorOfFirstAndOnlyForecastLine);
 			times = 1; result = new BigDecimal("3");
 
 			materialEventService.fireEvent(with(eventQuantity("5")));
@@ -186,7 +186,7 @@ public class ForecastEventHandlerTest
 			@SuppressWarnings("unused")
 			public boolean verifyQty(@NonNull final MaterialDemandEvent event)
 			{
-				return event.getMaterialDemandDescr().getMaterialDescriptor().getQuantity().compareTo(new BigDecimal(expectedEventQty)) == 0;
+				return event.getMaterialDemandDescriptor().getMaterialDescriptor().getQuantity().compareTo(new BigDecimal(expectedEventQty)) == 0;
 			}
 		};
 	}
