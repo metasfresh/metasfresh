@@ -29,11 +29,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * #L%
  */
 
-public class CacheInvalidateRequestSerializer
+public class CacheInvalidateMultiRequestSerializer
 {
 	private final ObjectMapper jsonObjectMapper = new ObjectMapper();
 
-	public String toJson(final CacheInvalidateRequest request)
+	public String toJson(final CacheInvalidateMultiRequest request)
 	{
 		try
 		{
@@ -45,11 +45,11 @@ public class CacheInvalidateRequestSerializer
 		}
 	}
 
-	public CacheInvalidateRequest fromJson(final String jsonRequest)
+	public CacheInvalidateMultiRequest fromJson(final String jsonRequest)
 	{
 		try
 		{
-			return jsonObjectMapper.readValue(jsonRequest, CacheInvalidateRequest.class);
+			return jsonObjectMapper.readValue(jsonRequest, CacheInvalidateMultiRequest.class);
 		}
 		catch (final IOException ex)
 		{

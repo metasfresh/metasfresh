@@ -26,15 +26,16 @@ import org.junit.Test;
  * #L%
  */
 
-public class CacheInvalidateRequestSerializerTest
+public class CacheInvalidateMultiRequestSerializerTest
 {
-	private CacheInvalidateRequestSerializer jsonSerializer = new CacheInvalidateRequestSerializer();
+	private CacheInvalidateMultiRequestSerializer jsonSerializer = new CacheInvalidateMultiRequestSerializer();
 
 	private void testSerializeDeserialize(final CacheInvalidateRequest request)
 	{
-		final String json = jsonSerializer.toJson(request);
-		final CacheInvalidateRequest request2 = jsonSerializer.fromJson(json);
-		assertThat(request2).isEqualTo(request);
+		final CacheInvalidateMultiRequest multiRequest = CacheInvalidateMultiRequest.of(request);
+		final String json = jsonSerializer.toJson(multiRequest);
+		final CacheInvalidateMultiRequest multiRequest2 = jsonSerializer.fromJson(json);
+		assertThat(multiRequest2).isEqualTo(multiRequest);
 	}
 
 	@Test
