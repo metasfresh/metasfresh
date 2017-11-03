@@ -77,7 +77,7 @@ import de.metas.logging.LogManager;
 	private final ExtendedMemorizingSupplier<ImmutableListMultimap<String, DeviceConfig>> //
 	deviceConfigsIndexedByAttributeCodeSupplier = ExtendedMemorizingSupplier.of(() -> loadDeviceConfigsIndexedByAttributeCode());
 
-	private final ICacheResetListener cacheResetListener = (tableName, key) -> resetDeviceConfigs();
+	private final ICacheResetListener cacheResetListener = request -> resetDeviceConfigs();
 
 	private final WeakList<IDeviceConfigPoolListener> listeners = new WeakList<>(true); // weakDefault=true
 

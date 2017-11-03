@@ -19,7 +19,7 @@ import de.metas.contracts.model.I_C_SubscriptionProgress;
 import de.metas.contracts.model.X_C_SubscriptionProgress;
 import de.metas.contracts.subscription.ISubscriptionDAO;
 import de.metas.contracts.subscription.ISubscriptionDAO.SubscriptionProgressQuery;
-import de.metas.contracts.subscription.impl.SubscriptionCommand;
+import de.metas.contracts.subscription.impl.SubscriptionService;
 import lombok.NonNull;
 
 /*
@@ -46,14 +46,14 @@ import lombok.NonNull;
 
 public class RemovePauses
 {
-	private final SubscriptionCommand subscriptionCommand;
+	private final SubscriptionService subscriptionCommand;
 
-	public RemovePauses(@NonNull final SubscriptionCommand subscriptionCommand)
+	public RemovePauses(@NonNull final SubscriptionService subscriptionCommand)
 	{
 		this.subscriptionCommand = subscriptionCommand;
 	}
 
-	public void removePauses(
+	public void removePausesAroundTimeframe(
 			@NonNull final I_C_Flatrate_Term term,
 			@NonNull final Timestamp pausesFrom,
 			@NonNull final Timestamp pausesUntil)
