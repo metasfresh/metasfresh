@@ -11,8 +11,6 @@ import java.util.stream.Collectors;
 import org.adempiere.ad.expression.api.LogicExpressionResult;
 import org.adempiere.exceptions.AdempiereException;
 
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -24,7 +22,6 @@ import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.WindowId;
-import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.DocumentChanges;
 import de.metas.ui.web.window.model.DocumentSaveStatus;
@@ -32,8 +29,6 @@ import de.metas.ui.web.window.model.DocumentStandardAction;
 import de.metas.ui.web.window.model.DocumentValidStatus;
 import de.metas.ui.web.window.model.IDocumentChangesCollector;
 import de.metas.ui.web.window.model.IIncludedDocumentsCollection;
-import lombok.EqualsAndHashCode;
-import lombok.NonNull;
 import lombok.ToString;
 
 /*
@@ -114,7 +109,7 @@ public final class JSONDocument extends JSONDocumentBase
 		// Included tabs info
 		document.getIncludedDocumentsCollections()
 				.stream()
-				.map(JSONIncludedTabInfo::new)
+				.map(JSONDocument::createIncludedTabInfo)
 				.peek(jsonIncludedTabInfo -> jsonOpts.getDocumentPermissions().apply(document, jsonIncludedTabInfo))
 				.forEach(jsonDocument::addIncludedTabInfo);
 		
@@ -133,6 +128,29 @@ public final class JSONDocument extends JSONDocumentBase
 		}
 
 		return jsonDocument;
+	}
+	
+	private static JSONIncludedTabInfo createIncludedTabInfo(final IIncludedDocumentsCollection includedDocumentsCollection)
+	{
+		final JSONIncludedTabInfo tabInfo = JSONIncludedTabInfo.newInstance(includedDocumentsCollection.getDetailId());
+		if(includedDocumentsCollection.isStale())
+		{
+			tabInfo.setStale();
+		}
+
+		final LogicExpressionResult allowCreateNew = includedDocumentsCollection.getAllowCreateNewDocument();
+		if (allowCreateNew != null)
+		{
+			tabInfo.setAllowCreateNew(allowCreateNew.booleanValue(), allowCreateNew.getName());
+		}
+
+		final LogicExpressionResult allowDelete = includedDocumentsCollection.getAllowDeleteDocument();
+		if (allowDelete != null)
+		{
+			tabInfo.setAllowDelete(allowDelete.booleanValue(), allowDelete.getName());
+		}
+		
+		return tabInfo;
 	}
 
 	/**
@@ -229,11 +247,34 @@ public final class JSONDocument extends JSONDocumentBase
 		// Included tabs info
 		documentChangedEvents.getIncludedDetailInfos()
 				.stream()
-				.map(JSONIncludedTabInfo::new)
+				.map(JSONDocument::createIncludedTabInfo)
 				.peek(jsonIncludedTabInfo -> jsonOpts.getDocumentPermissions().apply(documentPath, jsonIncludedTabInfo))
 				.forEach(jsonDocument::addIncludedTabInfo);
 
 		return jsonDocument;
+	}
+
+	private static JSONIncludedTabInfo createIncludedTabInfo(final DocumentChanges.IncludedDetailInfo includedDetailInfo)
+	{
+		final JSONIncludedTabInfo tabInfo = JSONIncludedTabInfo.newInstance(includedDetailInfo.getDetailId());
+		if(includedDetailInfo.isStale())
+		{
+			tabInfo.setStale();
+		}
+
+		final LogicExpressionResult allowCreateNew = includedDetailInfo.getAllowNew();
+		if (allowCreateNew != null)
+		{
+			tabInfo.setAllowCreateNew(allowCreateNew.booleanValue(), allowCreateNew.getName());
+		}
+
+		final LogicExpressionResult allowDelete = includedDetailInfo.getAllowDelete();
+		if (allowDelete != null)
+		{
+			tabInfo.setAllowDelete(allowDelete.booleanValue(), allowDelete.getName());
+		}
+		
+		return tabInfo;
 	}
 
 	@JsonProperty("validStatus")
@@ -313,7 +354,7 @@ public final class JSONDocument extends JSONDocumentBase
 		{
 			includedTabsInfo = new HashMap<>();
 		}
-		includedTabsInfo.put(tabInfo.tabid, tabInfo);
+		includedTabsInfo.put(tabInfo.getTabId().toJson(), tabInfo);
 	}
 
 	@JsonIgnore
@@ -329,132 +370,5 @@ public final class JSONDocument extends JSONDocumentBase
 	private void setStandardActions(final Set<DocumentStandardAction> standardActions)
 	{
 		this.standardActions = standardActions;
-	}
-
-	//
-	//
-	//
-	//
-	//
-	@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
-	@ToString
-	@EqualsAndHashCode
-	public static final class JSONIncludedTabInfo
-	{
-		public static JSONIncludedTabInfo staleTab(final DetailId tabId)
-		{
-			final boolean stale = true;
-			return new JSONIncludedTabInfo(tabId, stale);
-		}
-		
-		@JsonProperty("tabid")
-		private final String tabid;
-
-		@JsonProperty("stale")
-		@JsonInclude(JsonInclude.Include.NON_NULL)
-		private final Boolean stale;
-
-		@JsonProperty("allowCreateNew")
-		@JsonInclude(JsonInclude.Include.NON_NULL)
-		private Boolean allowCreateNew;
-		@JsonProperty("allowCreateNewReason")
-		@JsonInclude(JsonInclude.Include.NON_EMPTY)
-		private String allowCreateNewReason;
-
-		@JsonProperty("allowDelete")
-		@JsonInclude(JsonInclude.Include.NON_NULL)
-		private Boolean allowDelete;
-		@JsonProperty("allowDeleteReason")
-		@JsonInclude(JsonInclude.Include.NON_EMPTY)
-		private String allowDeleteReason;
-
-		private JSONIncludedTabInfo(@NonNull final DetailId tabId, final boolean stale)
-		{
-			this.tabid = DetailId.toJson(tabId);
-			this.stale = stale ? Boolean.TRUE : null;
-		}
-
-		private JSONIncludedTabInfo(final IIncludedDocumentsCollection includedDocumentsCollection)
-		{
-			this(includedDocumentsCollection.getDetailId(), includedDocumentsCollection.isStale());
-
-			final LogicExpressionResult allowCreateNew = includedDocumentsCollection.getAllowCreateNewDocument();
-			if (allowCreateNew != null)
-			{
-				this.allowCreateNew = allowCreateNew.booleanValue();
-				allowCreateNewReason = allowCreateNew.getName();
-			}
-			else
-			{
-				this.allowCreateNew = null;
-				allowCreateNewReason = null;
-			}
-
-			final LogicExpressionResult allowDelete = includedDocumentsCollection.getAllowDeleteDocument();
-			if (allowDelete != null)
-			{
-				this.allowDelete = allowDelete.booleanValue();
-				allowDeleteReason = allowDelete.getName();
-			}
-			else
-			{
-				this.allowDelete = null;
-				allowDeleteReason = null;
-			}
-		}
-
-		private JSONIncludedTabInfo(final DocumentChanges.IncludedDetailInfo includedDetailInfo)
-		{
-			tabid = DetailId.toJson(includedDetailInfo.getDetailId());
-
-			final boolean stale = includedDetailInfo.isStale();
-			this.stale = stale ? Boolean.TRUE : null;
-
-			final LogicExpressionResult allowCreateNew = includedDetailInfo.getAllowNew();
-			if (allowCreateNew != null)
-			{
-				this.allowCreateNew = allowCreateNew.booleanValue();
-				allowCreateNewReason = allowCreateNew.getName();
-			}
-			else
-			{
-				this.allowCreateNew = null;
-				allowCreateNewReason = null;
-			}
-
-			final LogicExpressionResult allowDelete = includedDetailInfo.getAllowDelete();
-			if (allowDelete != null)
-			{
-				this.allowDelete = allowDelete.booleanValue();
-				allowDeleteReason = allowDelete.getName();
-			}
-			else
-			{
-				this.allowDelete = null;
-				allowDeleteReason = null;
-			}
-		}
-
-		public String getTabId()
-		{
-			return tabid;
-		}
-
-		public void setAllowCreateNew(final boolean allowCreateNew, final String reason)
-		{
-			this.allowCreateNew = allowCreateNew;
-			allowCreateNewReason = reason;
-		}
-
-		public void setAllowDelete(final boolean allowDelete, final String reason)
-		{
-			this.allowDelete = allowDelete;
-			allowDeleteReason = reason;
-		}
-
-		public boolean isStale()
-		{
-			return stale != null && stale.booleanValue();
-		}
 	}
 }

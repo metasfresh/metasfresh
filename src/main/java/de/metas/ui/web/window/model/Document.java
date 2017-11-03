@@ -2103,26 +2103,6 @@ public final class Document
 		private IDocumentChangesCollector getChangesCollector()
 		{
 			return changesCollector;
-			// final FieldInitializationMode mode = getFieldInitializerMode();
-			// // Determine changes collector to be used.
-			// // i.e. if we want to collect the changes to current collector or if we don't want to collect them at all.
-			// if (FieldInitializationMode.NewDocument == mode)
-			// {
-			// // TODO: not sure why is not null... but preserving old logic for now
-			// return changesCollector;
-			// }
-			// else if (FieldInitializationMode.Load == mode)
-			// {
-			// return NullDocumentChangesCollector.instance;
-			// }
-			// else if (FieldInitializationMode.Refresh == mode)
-			// {
-			// return changesCollector;
-			// }
-			// else
-			// {
-			// throw new IllegalArgumentException("Unknown mode: " + mode);
-			// }
 		}
 
 		public Builder setChangesCollector(@NonNull final IDocumentChangesCollector changesCollector)

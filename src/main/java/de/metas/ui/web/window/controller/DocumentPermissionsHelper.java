@@ -12,6 +12,7 @@ import org.adempiere.util.Services;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
+import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.DocumentType;
 import de.metas.ui.web.window.datatypes.WindowId;
@@ -151,12 +152,17 @@ public class DocumentPermissionsHelper
 		}
 	}
 
-	/**
-	 * Assets given document can be edited by given permissions
-	 * 
-	 * @param document
-	 * @param userSession
-	 */
+	public static void assertCanEdit(final Document document)
+	{
+		// If running from a background thread, consider it editable
+		if(!UserSession.isWebuiThread())
+		{
+			return;
+		}
+		
+		assertCanEdit(document, UserSession.getCurrentPermissions());
+	}
+
 	public static void assertCanEdit(final Document document, final IUserRolePermissions permissions)
 	{
 		final String errmsg = checkCanEdit(document, permissions);

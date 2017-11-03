@@ -54,8 +54,8 @@ import de.metas.ui.web.view.ViewResult;
 import de.metas.ui.web.view.ViewRowOverridesHelper;
 import de.metas.ui.web.view.descriptor.annotation.ViewColumnHelper;
 import de.metas.ui.web.view.json.JSONViewResult;
+import de.metas.ui.web.websocket.WebsocketEventLogRecord;
 import de.metas.ui.web.websocket.WebsocketSender;
-import de.metas.ui.web.websocket.WebsocketSender.WebsocketEvent;
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.model.DocumentCollection;
@@ -244,7 +244,7 @@ public class DebugRestController
 				.put("contentType", new MimeType("application", "json", charset))
 				.build();
 		final Message<?> message = new GenericMessage<>(messageStr.getBytes(charset), headers);
-		websocketSender.send(endpoint, message);
+		websocketSender.sendMessage(endpoint, message);
 	}
 
 	@RequestMapping(value = "/sql/loadLimit/warn", method = RequestMethod.PUT)
@@ -399,7 +399,7 @@ public class DebugRestController
 	}
 
 	@GetMapping("websocketEvents")
-	public List<WebsocketEvent> getWebsocketLoggedEvents(@RequestParam(value = "destinationFilter", required = false) final String destinationFilter)
+	public List<WebsocketEventLogRecord> getWebsocketLoggedEvents(@RequestParam(value = "destinationFilter", required = false) final String destinationFilter)
 	{
 		return websocketSender.getLoggedEvents(destinationFilter);
 	}

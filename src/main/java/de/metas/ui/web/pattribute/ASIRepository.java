@@ -85,7 +85,6 @@ public class ASIRepository
 		// Create the new ASI document
 		final Document asiDocData = Document.builder(asiDescriptor.getEntityDescriptor())
 				.initializeAsNewDocument(nextASIDocId, VERSION_DEFAULT)
-				.setChangesCollector(NullDocumentChangesCollector.instance)
 				.build();
 
 		//
@@ -135,7 +134,6 @@ public class ASIRepository
 		// Create the new ASI document
 		final Document asiDocData = Document.builder(asiDescriptor.getEntityDescriptor())
 				.initializeAsNewDocument(() -> DocumentId.of(attributeSetInstanceId), VERSION_DEFAULT)
-				.setChangesCollector(NullDocumentChangesCollector.instance)
 				.build();
 
 		//
@@ -161,7 +159,7 @@ public class ASIRepository
 
 		if (documentPath.getDocumentType() == DocumentType.Window)
 		{
-			return documentsCollection.forDocumentReadonly(documentPath, NullDocumentChangesCollector.instance, document -> {
+			return documentsCollection.forDocumentReadonly(documentPath, document -> {
 				final int productId = document.asEvaluatee().get_ValueAsInt("M_Product_ID", -1);
 				final boolean isSOTrx = document.asEvaluatee().get_ValueAsBoolean("IsSOTrx", true);
 

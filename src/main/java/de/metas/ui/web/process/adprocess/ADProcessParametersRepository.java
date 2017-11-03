@@ -132,7 +132,7 @@ import de.metas.ui.web.window.model.lookup.LookupValueByIdSupplier;
 		throw new UnsupportedOperationException();
 	}
 
-	Document createNewParametersDocument(final DocumentEntityDescriptor parametersDescriptor, final DocumentId adPInstanceId, final IDocumentEvaluatee evalCtx, final IDocumentChangesCollector changesCollector)
+	Document createNewParametersDocument(final DocumentEntityDescriptor parametersDescriptor, final DocumentId adPInstanceId, final IDocumentEvaluatee evalCtx)
 	{
 		final IDocumentEvaluatee evalCtxEffective;
 		if (evalCtx != null)
@@ -146,7 +146,6 @@ import de.metas.ui.web.window.model.lookup.LookupValueByIdSupplier;
 
 		return Document.builder(parametersDescriptor)
 				.setShadowParentDocumentEvaluatee(evalCtxEffective)
-				.setChangesCollector(changesCollector)
 				.initializeAsNewDocument(adPInstanceId, VERSION_DEFAULT);
 	}
 

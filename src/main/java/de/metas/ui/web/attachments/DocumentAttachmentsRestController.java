@@ -25,12 +25,12 @@ import de.metas.ui.web.attachments.json.JSONAttachURLRequest;
 import de.metas.ui.web.attachments.json.JSONAttachment;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.session.UserSession;
-import de.metas.ui.web.websocket.WebsocketSender;
 import de.metas.ui.web.window.controller.WindowRestController;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.factory.DocumentDescriptorFactory;
+import de.metas.ui.web.window.events.DocumentWebsocketPublisher;
 import lombok.NonNull;
 
 /*
@@ -66,7 +66,7 @@ public class DocumentAttachmentsRestController
 	@Autowired
 	private DocumentDescriptorFactory documentDescriptorFactory;
 	@Autowired
-	private WebsocketSender websocketSender;
+	private DocumentWebsocketPublisher websocketPublisher;
 
 	private DocumentAttachments getDocumentAttachments(final String windowIdStr, final String documentId)
 	{
@@ -77,7 +77,7 @@ public class DocumentAttachmentsRestController
 				.documentPath(documentPath)
 				.recordRef(recordRef)
 				.entityDescriptor(documentDescriptorFactory.getDocumentEntityDescriptor(documentPath))
-				.websocketSender(websocketSender)
+				.websocketPublisher(websocketPublisher)
 				.build();
 	}
 

@@ -24,7 +24,6 @@ import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
 import de.metas.ui.web.window.model.DocumentCollection;
 import de.metas.ui.web.window.model.DocumentSaveStatus;
 import de.metas.ui.web.window.model.DocumentValidStatus;
-import de.metas.ui.web.window.model.IDocumentChangesCollector;
 import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
 import de.metas.ui.web.window.model.NullDocumentChangesCollector;
 
@@ -139,8 +138,7 @@ public class ViewRowEditRestController
 		final IView view = viewsRepo.getView(viewId);
 		final DocumentPath documentPath = view.getById(rowId).getDocumentPath();
 
-		final IDocumentChangesCollector changesCollector = NullDocumentChangesCollector.instance;
-		return documentsCollection.forDocumentReadonly(documentPath, changesCollector, document -> document.getFieldLookupValuesForQuery(fieldName, query))
+		return documentsCollection.forDocumentReadonly(documentPath, document -> document.getFieldLookupValuesForQuery(fieldName, query))
 				.transform(JSONLookupValuesList::ofLookupValuesList);
 	}
 
@@ -158,8 +156,7 @@ public class ViewRowEditRestController
 		final IView view = viewsRepo.getView(viewId);
 		final DocumentPath documentPath = view.getById(rowId).getDocumentPath();
 
-		final IDocumentChangesCollector changesCollector = NullDocumentChangesCollector.instance;
-		return documentsCollection.forDocumentReadonly(documentPath, changesCollector, document -> document.getFieldLookupValues(fieldName))
+		return documentsCollection.forDocumentReadonly(documentPath, document -> document.getFieldLookupValues(fieldName))
 				.transform(JSONLookupValuesList::ofLookupValuesList);
 	}
 

@@ -38,14 +38,12 @@ import de.metas.ui.web.process.ProcessRestController;
 import de.metas.ui.web.process.descriptor.WebuiRelatedProcessDescriptor;
 import de.metas.ui.web.process.json.JSONDocumentActionsList;
 import de.metas.ui.web.session.UserSession;
-import de.metas.ui.web.websocket.WebsocketSender;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONDocument;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
-import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedWebSocketEvent;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayout;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentPath;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentReference;
@@ -59,6 +57,7 @@ import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.descriptor.DocumentDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.factory.NewRecordDescriptorsProvider;
+import de.metas.ui.web.window.events.DocumentWebsocketPublisher;
 import de.metas.ui.web.window.exceptions.InvalidDocumentPathException;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.DocumentCollection;
@@ -127,7 +126,7 @@ public class WindowRestController
 	private MenuTreeRepository menuTreeRepository;
 
 	@Autowired
-	private WebsocketSender websocketSender;
+	private DocumentWebsocketPublisher websocketPublisher;
 
 	private JSONOptions.Builder newJSONOptions()
 	{
@@ -235,8 +234,7 @@ public class WindowRestController
 				.setDataFieldsList(fieldsListStr)
 				.build();
 
-		final IDocumentChangesCollector changesCollector = NullDocumentChangesCollector.instance;
-		return documentCollection.forRootDocumentReadonly(documentPath, changesCollector, rootDocument -> {
+		return documentCollection.forRootDocumentReadonly(documentPath, rootDocument -> {
 			List<Document> documents;
 			if (documentPath.isRootDocument())
 			{
@@ -326,10 +324,9 @@ public class WindowRestController
 					return null; // void
 				});
 
-		final List<JSONDocument> jsonDocumentEvents = JSONDocument.ofEvents(changesCollector, jsonOpts);
-
 		// Extract and send websocket events
-		JSONDocumentChangedWebSocketEvent.extractAndSendWebsocketEvents(jsonDocumentEvents, websocketSender);
+		final List<JSONDocument> jsonDocumentEvents = JSONDocument.ofEvents(changesCollector, jsonOpts);
+		websocketPublisher.convertAndPublish(jsonDocumentEvents);
 
 		return jsonDocumentEvents;
 	}
@@ -463,8 +460,7 @@ public class WindowRestController
 	{
 		userSession.assertLoggedIn();
 
-		final IDocumentChangesCollector changesCollector = NullDocumentChangesCollector.instance;
-		return documentCollection.forDocumentReadonly(documentPath, changesCollector, document -> document.getFieldLookupValuesForQuery(fieldName, query))
+		return documentCollection.forDocumentReadonly(documentPath, document -> document.getFieldLookupValuesForQuery(fieldName, query))
 				.transform(JSONLookupValuesList::ofLookupValuesList);
 	}
 
@@ -498,8 +494,7 @@ public class WindowRestController
 	{
 		userSession.assertLoggedIn();
 
-		final IDocumentChangesCollector changesCollector = NullDocumentChangesCollector.instance;
-		return documentCollection.forDocumentReadonly(documentPath, changesCollector, document -> document.getFieldLookupValues(fieldName))
+		return documentCollection.forDocumentReadonly(documentPath, document -> document.getFieldLookupValues(fieldName))
 				.transform(JSONLookupValuesList::ofLookupValuesList);
 	}
 
@@ -535,8 +530,7 @@ public class WindowRestController
 	{
 		userSession.assertLoggedIn();
 
-		final IDocumentChangesCollector changesCollector = NullDocumentChangesCollector.instance;
-		final DocumentZoomIntoInfo zoomIntoInfo = documentCollection.forDocumentReadonly(documentPath, changesCollector, document -> {
+		final DocumentZoomIntoInfo zoomIntoInfo = documentCollection.forDocumentReadonly(documentPath, document -> {
 			final IDocumentFieldView field = document.getFieldView(fieldName);
 
 			// Generic ZoomInto button
@@ -658,8 +652,7 @@ public class WindowRestController
 			filter = WebuiRelatedProcessDescriptor::isEnabled;
 		}
 
-		final IDocumentChangesCollector changesCollector = NullDocumentChangesCollector.instance;
-		return documentCollection.forDocumentReadonly(documentPath, changesCollector, document -> {
+		return documentCollection.forDocumentReadonly(documentPath, document -> {
 			final DocumentPreconditionsAsContext preconditionsContext = DocumentPreconditionsAsContext.of(document, selectedIncludedRecords);
 
 			return processRestController.streamDocumentRelatedProcesses(preconditionsContext)
@@ -764,18 +757,18 @@ public class WindowRestController
 			return newRecordId;
 		}));
 	}
-	
+
 	@PostMapping("/{windowId}/{documentId}/discardChanges")
 	public void discardChanges(
 			@PathVariable("windowId") final String windowIdStr,
 			@PathVariable("documentId") final String documentIdStr)
 	{
 		userSession.assertLoggedIn();
-		
+
 		final DocumentPath documentPath = DocumentPath.rootDocumentPath(WindowId.fromJson(windowIdStr), DocumentId.of(documentIdStr));
 		documentCollection.invalidateRootDocument(documentPath);
 	}
-	
+
 	@PostMapping("/{windowId}/{documentId}/{tabId}/{rowId}/discardChanges")
 	public void discardChanges(
 			@PathVariable("windowId") final String windowIdStr,

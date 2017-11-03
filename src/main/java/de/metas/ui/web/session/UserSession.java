@@ -70,7 +70,7 @@ public class UserSession
 		//
 		// Quickly check if the session scoped UserSession bean will be really available
 		// NOTE: it's not about that the object will be null but if it's method calls will be really working
-		if (RequestContextHolder.getRequestAttributes() == null)
+		if (!isWebuiThread())
 		{
 			return null;
 		}
@@ -132,6 +132,12 @@ public class UserSession
 	public static IUserRolePermissions getCurrentPermissions()
 	{
 		return getCurrent().getUserRolePermissions();
+	}
+
+	/** @return true if we are running in a webui thread (i.e. NOT a background daemon thread) */
+	public static boolean isWebuiThread()
+	{
+		return RequestContextHolder.getRequestAttributes() != null;
 	}
 
 	// services

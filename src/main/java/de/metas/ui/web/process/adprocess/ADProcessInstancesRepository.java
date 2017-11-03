@@ -130,18 +130,18 @@ public class ADProcessInstancesRepository implements IProcessInstancesRepository
 	}
 
 	@Override
-	public IProcessInstanceController createNewProcessInstance(final CreateProcessInstanceRequest request, final IDocumentChangesCollector changesCollector)
+	public IProcessInstanceController createNewProcessInstance(final CreateProcessInstanceRequest request)
 	{
 		if (documentsCollection.isValidDocumentPath(request.getSingleDocumentPath()))
 		{
 			// In case we have a single document path, we shall fetch it as use it as evaluation context.
 			// This will make sure that the parameter's default values will be correctly computed
-			return documentsCollection.forDocumentReadonly(request.getSingleDocumentPath(), changesCollector, document -> createNewProcessInstance0(request, document.asEvaluatee(), changesCollector));
+			return documentsCollection.forDocumentReadonly(request.getSingleDocumentPath(), document -> createNewProcessInstance0(request, document.asEvaluatee()));
 		}
 		else
 		{
 			final IDocumentEvaluatee shadowParentDocumentEvaluatee = null; // N/A
-			return createNewProcessInstance0(request, shadowParentDocumentEvaluatee, changesCollector);
+			return createNewProcessInstance0(request, shadowParentDocumentEvaluatee);
 		}
 	}
 
@@ -153,8 +153,7 @@ public class ADProcessInstancesRepository implements IProcessInstancesRepository
 	 */
 	private IProcessInstanceController createNewProcessInstance0(
 			@NonNull final CreateProcessInstanceRequest request,
-			@Nullable final IDocumentEvaluatee evalCtx,
-			final IDocumentChangesCollector changesCollector)
+			@Nullable final IDocumentEvaluatee evalCtx)
 	{
 		//
 		// Save process info together with it's parameters and get the the newly created AD_PInstance_ID
@@ -169,7 +168,7 @@ public class ADProcessInstancesRepository implements IProcessInstancesRepository
 			// Build the parameters document
 			final ProcessDescriptor processDescriptor = getProcessDescriptor(request.getProcessId());
 			final DocumentEntityDescriptor parametersDescriptor = processDescriptor.getParametersDescriptor();
-			final Document parametersDoc = ADProcessParametersRepository.instance.createNewParametersDocument(parametersDescriptor, adPInstanceId, evalCtx, changesCollector);
+			final Document parametersDoc = ADProcessParametersRepository.instance.createNewParametersDocument(parametersDescriptor, adPInstanceId, evalCtx);
 			final int windowNo = parametersDoc.getWindowNo();
 
 			// Set parameters's default values

@@ -496,7 +496,7 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 	{
 		Services.get(ITrxManager.class).assertThreadInheritedTrxExists();
 		assertThisRepository(document.getEntityDescriptor());
-		DocumentPermissionsHelper.assertCanEdit(document, UserSession.getCurrentPermissions());
+		DocumentPermissionsHelper.assertCanEdit(document);
 
 		// Runnables to be executed after the PO is saved
 		final List<Runnable> afterSaveRunnables = new ArrayList<>();
