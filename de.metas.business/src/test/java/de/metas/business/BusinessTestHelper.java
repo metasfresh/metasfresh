@@ -5,14 +5,11 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 import java.math.BigDecimal;
 
-import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_C_UOM_Conversion;
-import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
@@ -20,7 +17,6 @@ import org.compiere.model.X_C_UOM;
 import org.compiere.util.Env;
 
 import de.metas.adempiere.model.I_C_BPartner_Location;
-import de.metas.javaclasses.model.I_AD_JavaClass;
 
 /*
  * #%L
@@ -164,99 +160,6 @@ public final class BusinessTestHelper
 	{
 		final BigDecimal weightKg = null; // N/A
 		return createProduct(name, uom, weightKg);
-	}
-
-	public static I_M_Attribute createM_Attribute(final String name,
-			final String valueType,
-			final boolean isInstanceAttribute)
-	{
-		final Class<?> javaClass = null;
-		final I_M_Attribute attr = createM_Attribute(name, valueType, javaClass, isInstanceAttribute);
-		save(attr);
-
-		return attr;
-	}
-
-	public static I_M_Attribute createM_Attribute(final String name,
-			final String valueType,
-			final Class<?> javaClass,
-			final boolean isInstanceAttribute)
-	{
-		final I_C_UOM uom = null;
-		return createM_Attribute(name, valueType, javaClass, uom, isInstanceAttribute);
-	}
-
-	public static I_M_Attribute createM_Attribute(final String name,
-			final String valueType,
-			final Class<?> javaClass,
-			final I_C_UOM uom,
-			final boolean isInstanceAttribute)
-	{
-
-		final I_AD_JavaClass javaClassDef;
-		if (javaClass != null)
-		{
-			javaClassDef = newInstanceOutOfTrx(I_AD_JavaClass.class);
-			javaClassDef.setName(javaClass.getName());
-			javaClassDef.setClassname(javaClass.getName());
-			save(javaClassDef);
-		}
-		else
-		{
-			javaClassDef = null;
-		}
-
-		final I_M_Attribute attr;
-
-		// make sure the attribute was not already defined
-		final I_M_Attribute existingAttribute = retrieveAttributeBuValue(name);
-		if (existingAttribute != null)
-		{
-			attr = existingAttribute;
-		}
-
-		else
-		{
-			attr = newInstanceOutOfTrx(I_M_Attribute.class);
-		}
-		attr.setValue(name);
-		attr.setName(name);
-		attr.setAttributeValueType(valueType);
-
-		//
-		// Assume all attributes active and non-mandatory
-		attr.setIsActive(true);
-		attr.setIsMandatory(false);
-
-		//
-		// Configure ASI usage
-		attr.setIsInstanceAttribute(isInstanceAttribute);
-
-		//
-		// Configure JC
-		attr.setAD_JavaClass(javaClassDef);
-
-		//
-		// Configure UOM
-		attr.setC_UOM(uom);
-
-		save(attr);
-		return attr;
-	}
-
-	/**
-	 * Method needed to make sure the attribute was not already created
-	 * Normally, this will never happen anywhere else except testing
-	 *
-	 * @param name
-	 * @return
-	 */
-	private static I_M_Attribute retrieveAttributeBuValue(String name)
-	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_M_Attribute.class).addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_Attribute.COLUMNNAME_Value, name)
-				.create()
-				.firstOnly(I_M_Attribute.class);
 	}
 
 	/**

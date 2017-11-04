@@ -104,7 +104,7 @@ public class ForecastEventHandlerTest
 		// @formatter:off
 		new Expectations()
 		{{
-			candidateRepository.retrieveAvailableStockForDescriptor(materialDescriptorOfFirstAndOnlyForecastLine);
+			candidateRepository.retrieveAvailableStock(materialDescriptorOfFirstAndOnlyForecastLine);
 			times = 1; result = BigDecimal.ZERO;
 
 			materialEventService.fireEvent(with(eventQuantity("8")));
@@ -138,7 +138,7 @@ public class ForecastEventHandlerTest
 		// @formatter:off
 		new Expectations()
 		{{
-			candidateRepository.retrieveAvailableStockForDescriptor(materialDescriptorOfFirstAndOnlyForecastLine);
+			candidateRepository.retrieveAvailableStock(materialDescriptorOfFirstAndOnlyForecastLine);
 			times = 1; result = new BigDecimal("3");
 
 			materialEventService.fireEvent(with(eventQuantity("5")));

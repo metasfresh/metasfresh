@@ -345,7 +345,7 @@ public class CandidateRepositoryRetrieval
 	 * @param materialDescriptor
 	 * @return never returns {@code null}
 	 */
-	public BigDecimal retrieveAvailableStockForDescriptor(@NonNull final MaterialDescriptor materialDescriptor)
+	public BigDecimal retrieveAvailableStock(@NonNull final MaterialDescriptor materialDescriptor)
 	{
 		Preconditions.checkArgument(materialDescriptor.isComplete(),
 				"The given materialDescriptor parameter needs to be complete for this method to make sense; materialDescriptor=%s",
