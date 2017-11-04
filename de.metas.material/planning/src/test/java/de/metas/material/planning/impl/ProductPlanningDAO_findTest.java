@@ -90,7 +90,7 @@ public class ProductPlanningDAO_findTest
 		final I_M_AttributeSetInstance organicAttributeSetInstance = createOrganicAttributeSetInstance();
 
 		final I_PP_Product_Planning productPlanningWithAsi = createProductPlanning();
-		productPlanningWithAsi.setM_AttributeInstance_ID(organicAttributeSetInstance.getM_AttributeSetInstance_ID());
+		productPlanningWithAsi.setM_AttributeSetInstance_ID(organicAttributeSetInstance.getM_AttributeSetInstance_ID());
 		productPlanningWithAsi.setStorageAttributesKey(ORGANIC_ATTRIBUTE_VALUE);
 		save(productPlanningWithAsi);
 
@@ -129,7 +129,7 @@ public class ProductPlanningDAO_findTest
 		save(madeInCologneattributeInstance);
 
 		final I_PP_Product_Planning productPlanningWithAsi = createProductPlanning();
-		productPlanningWithAsi.setM_AttributeInstance_ID(organicAttributeSetInstance.getM_AttributeSetInstance_ID());
+		productPlanningWithAsi.setM_AttributeSetInstance_ID(organicAttributeSetInstance.getM_AttributeSetInstance_ID());
 		productPlanningWithAsi.setStorageAttributesKey(ORGANIC_ATTRIBUTE_VALUE);
 		save(productPlanningWithAsi);
 
