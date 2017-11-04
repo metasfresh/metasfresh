@@ -16,7 +16,17 @@ Here come the actual release notes:
 
 ## Features
 
+* metasfresh
+  * [#2887](https://github.com/metasfresh/metasfresh/issues/2887) Make ShipmentSchedule column reference search in C_SubscriptionProgress
+  * [#2907](https://github.com/metasfresh/metasfresh/issues/2907) set masterenddate correctly when extending contracts
+
+* metasfresh-webui-api
+  * [#19](https://github.com/metasfresh/metasfresh-webui-api/issues/19) Cache invalidation
+
 ## Fixes
+
+* metasfresh
+  * [#2885](https://github.com/metasfresh/metasfresh/issues/2885) Test canceling extended contracts and fix if needed
 
 # metasfresh 5.33 (2017-44)
 
