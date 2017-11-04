@@ -80,6 +80,7 @@ public class HUStatusBL implements IHUStatusBL
 
 	private final static List<String> ALLOWED_STATUSES_FOR_LOCATOR_CHANGE = ImmutableList.of(
 			X_M_HU.HUSTATUS_Planning,
+			X_M_HU.HUSTATUS_Picked, // a HU can be commissioned/picked anywhere, and it still needs to be moved and afterwards
 			X_M_HU.HUSTATUS_Active);
 
 	@Override
