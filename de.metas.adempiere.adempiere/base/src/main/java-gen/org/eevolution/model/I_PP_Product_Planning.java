@@ -424,31 +424,33 @@ public interface I_PP_Product_Planning
     public static final String COLUMNNAME_IsRequiredMRP = "IsRequiredMRP";
 
 	/**
-	 * Set M_AttributeInstance.
+	 * Set Merkmale.
+	 * Merkmals Ausprägungen zum Produkt
 	 *
-	 * <br>Type: Search
+	 * <br>Type: PAttribute
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setM_AttributeInstance_ID (int M_AttributeInstance_ID);
+	public void setM_AttributeSetInstance_ID (int M_AttributeSetInstance_ID);
 
 	/**
-	 * Get M_AttributeInstance.
+	 * Get Merkmale.
+	 * Merkmals Ausprägungen zum Produkt
 	 *
-	 * <br>Type: Search
+	 * <br>Type: PAttribute
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getM_AttributeInstance_ID();
+	public int getM_AttributeSetInstance_ID();
 
-	public org.compiere.model.I_M_AttributeInstance getM_AttributeInstance();
+	public org.compiere.model.I_M_AttributeSetInstance getM_AttributeSetInstance();
 
-	public void setM_AttributeInstance(org.compiere.model.I_M_AttributeInstance M_AttributeInstance);
+	public void setM_AttributeSetInstance(org.compiere.model.I_M_AttributeSetInstance M_AttributeSetInstance);
 
-    /** Column definition for M_AttributeInstance_ID */
-    public static final org.adempiere.model.ModelColumn<I_PP_Product_Planning, org.compiere.model.I_M_AttributeInstance> COLUMN_M_AttributeInstance_ID = new org.adempiere.model.ModelColumn<I_PP_Product_Planning, org.compiere.model.I_M_AttributeInstance>(I_PP_Product_Planning.class, "M_AttributeInstance_ID", org.compiere.model.I_M_AttributeInstance.class);
-    /** Column name M_AttributeInstance_ID */
-    public static final String COLUMNNAME_M_AttributeInstance_ID = "M_AttributeInstance_ID";
+    /** Column definition for M_AttributeSetInstance_ID */
+    public static final org.adempiere.model.ModelColumn<I_PP_Product_Planning, org.compiere.model.I_M_AttributeSetInstance> COLUMN_M_AttributeSetInstance_ID = new org.adempiere.model.ModelColumn<I_PP_Product_Planning, org.compiere.model.I_M_AttributeSetInstance>(I_PP_Product_Planning.class, "M_AttributeSetInstance_ID", org.compiere.model.I_M_AttributeSetInstance.class);
+    /** Column name M_AttributeSetInstance_ID */
+    public static final String COLUMNNAME_M_AttributeSetInstance_ID = "M_AttributeSetInstance_ID";
 
 	/**
 	 * Set Produkt.
