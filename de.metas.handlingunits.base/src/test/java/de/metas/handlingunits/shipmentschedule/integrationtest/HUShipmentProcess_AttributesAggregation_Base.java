@@ -1,10 +1,9 @@
 package de.metas.handlingunits.shipmentschedule.integrationtest;
 
-import static de.metas.business.BusinessTestHelper.createM_Attribute;
-
 import java.util.Arrays;
 
 import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.mm.attributes.api.impl.AttributesTestHelper;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IMutable;
 import org.adempiere.util.lang.Mutable;
@@ -74,7 +73,7 @@ public abstract class HUShipmentProcess_AttributesAggregation_Base extends Abstr
 		// LogManager.setLoggerLevel(LogManager.getLogger("de.metas.handlingunits.shipmentschedule"), Level.TRACE);
 		// LogManager.setLoggerLevel(LogManager.getLogger(de.metas.handlingunits.attribute.impl.HUTransactionAttributeBuilder.class), Level.TRACE);
 
-		attribute = createM_Attribute("Discriminator", X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40, true);
+		attribute = new AttributesTestHelper().createM_Attribute("Discriminator", X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40, true);
 	}
 
 	@Override

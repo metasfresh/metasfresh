@@ -34,6 +34,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.material.dispo.commons.CandidatesQuery;
 import de.metas.material.dispo.commons.DispoTestUtils;
+import de.metas.material.dispo.commons.RepositoryTestHelper;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryCommands;
@@ -84,7 +85,7 @@ public class CandidateChangeHandlerTests
 
 	private final int OTHER_WAREHOUSE_ID = WAREHOUSE_ID + 10;
 
-	private CandidateRepositoryRetrieval candidateRepository;
+	private CandidateRepositoryRetrieval candidateRepositoryRetrieval;
 
 	private CandidateChangeService candidateChangeHandler;
 
@@ -100,15 +101,15 @@ public class CandidateChangeHandlerTests
 	{
 		AdempiereTestHelper.get().init();
 
-		candidateRepository = new CandidateRepositoryRetrieval(ProductDescriptorFactory.TESTING_INSTANCE);
+		candidateRepositoryRetrieval = new CandidateRepositoryRetrieval(ProductDescriptorFactory.TESTING_INSTANCE);
 		candidateRepositoryCommands = new CandidateRepositoryCommands();
 
-		stockCandidateService = new StockCandidateService(candidateRepository, candidateRepositoryCommands);
+		stockCandidateService = new StockCandidateService(candidateRepositoryRetrieval, candidateRepositoryCommands);
 
 		candidateChangeHandler = new CandidateChangeService(
 				ImmutableList.of(
-						new DemandCandiateHandler(candidateRepository, candidateRepositoryCommands, materialEventService, stockCandidateService),
-						new SupplyCandiateHandler(candidateRepository, candidateRepositoryCommands, stockCandidateService)));
+						new DemandCandiateHandler(candidateRepositoryRetrieval, candidateRepositoryCommands, materialEventService, stockCandidateService),
+						new SupplyCandiateHandler(candidateRepositoryRetrieval, candidateRepositoryCommands, stockCandidateService)));
 	}
 
 	@Test
@@ -237,7 +238,7 @@ public class CandidateChangeHandlerTests
 		// assert that every stock record got some groupId
 		DispoTestUtils.retrieveAllRecords().forEach(r -> assertThat(r.getMD_Candidate_GroupId(), greaterThan(0)));
 
-		final Candidate earlierCandidateAfterChange = candidateRepository.retrieveLatestMatchOrNull(mkStockUntilSegment(t1, WAREHOUSE_ID));
+		final Candidate earlierCandidateAfterChange = candidateRepositoryRetrieval.retrieveLatestMatchOrNull(mkStockUntilSegment(t1, WAREHOUSE_ID));
 		assertThat(earlierCandidateAfterChange).isNotNull();
 		assertThat(earlierCandidateAfterChange.getQuantity()).isEqualTo(earlierCandidate.getQuantity()); // quantity shall be unchanged
 		assertThat(earlierCandidateAfterChange.getGroupId()).isEqualTo(earlierCandidate.getGroupId()); // basically the same candidate
@@ -246,7 +247,7 @@ public class CandidateChangeHandlerTests
 		assertThat(candidateRecordAfterChange.getQty()).isEqualByComparingTo("10"); // quantity shall be unchanged, because that method shall only update *later* records
 		assertThat(candidateRecordAfterChange.getMD_Candidate_GroupId(), not(is(earlierCandidate.getGroupId())));
 
-		final Candidate laterCandidateAfterChange = candidateRepository.retrieveLatestMatchOrNull(mkStockUntilSegment(t3, WAREHOUSE_ID));
+		final Candidate laterCandidateAfterChange = candidateRepositoryRetrieval.retrieveLatestMatchOrNull(mkStockUntilSegment(t3, WAREHOUSE_ID));
 		assertThat(laterCandidateAfterChange).isNotNull();
 		assertThat(laterCandidateAfterChange.getQuantity()).isEqualByComparingTo("13"); // quantity shall be plus 3
 		assertThat(laterCandidateAfterChange.getGroupId()).isEqualTo(earlierCandidate.getGroupId());
@@ -501,6 +502,11 @@ public class CandidateChangeHandlerTests
 				.date(t)
 				.build();
 
+		RepositoryTestHelper.setupMockedRetrieveAvailableStock(
+				candidateRepositoryRetrieval,
+				materialDescr,
+				"0");
+
 		final Candidate candidate = Candidate.builder()
 				.type(CandidateType.DEMAND)
 				.clientId(CLIENT_ID)
@@ -511,7 +517,7 @@ public class CandidateChangeHandlerTests
 		// we don't really check here..this first part is already verified in testOnDemandCandidateCandidateNewOrChange_noOlderRecords()
 		assertThat(DispoTestUtils.retrieveAllRecords()).hasSize(2); // one demand, one stock
 
-		final MaterialDescriptor supplyMaterialDescriptor= MaterialDescriptor.builder()
+		final MaterialDescriptor supplyMaterialDescriptor = MaterialDescriptor.builder()
 				.complete(true)
 				.productDescriptor(createProductDescriptor())
 				.warehouseId(WAREHOUSE_ID)
@@ -553,7 +559,7 @@ public class CandidateChangeHandlerTests
 		final BigDecimal qty = new BigDecimal("23");
 		final Date t = t1;
 
-		final MaterialDescriptor supplyMaterialDescriptor= MaterialDescriptor.builder()
+		final MaterialDescriptor supplyMaterialDescriptor = MaterialDescriptor.builder()
 				.complete(true)
 				.productDescriptor(createProductDescriptor())
 				.warehouseId(WAREHOUSE_ID)
@@ -578,14 +584,17 @@ public class CandidateChangeHandlerTests
 			assertThat(supplyRecord.getSeqNo()).isEqualTo(stockRecord.getSeqNo() + 1);
 		}
 
-		final MaterialDescriptor demandMaterialDescriptor= MaterialDescriptor.builder()
+		final MaterialDescriptor demandMaterialDescriptor = MaterialDescriptor.builder()
 				.complete(true)
 				.productDescriptor(createProductDescriptor())
 				.warehouseId(WAREHOUSE_ID)
 				.quantity(qty)
 				.date(t)
 				.build();
-
+		RepositoryTestHelper.setupMockedRetrieveAvailableStock(
+				candidateRepositoryRetrieval,
+				demandMaterialDescriptor,
+				"0");
 		final Candidate demandCandidate = Candidate.builder()
 				.type(CandidateType.DEMAND)
 				.clientId(CLIENT_ID)
@@ -618,7 +627,7 @@ public class CandidateChangeHandlerTests
 		final BigDecimal qty = new BigDecimal("23");
 		final Date t = t1;
 
-		final MaterialDescriptor materialDescr = MaterialDescriptor.builder()
+		final MaterialDescriptor materialDescriptor = MaterialDescriptor.builder()
 				.complete(true)
 				.productDescriptor(createProductDescriptor())
 				.warehouseId(WAREHOUSE_ID)
@@ -626,11 +635,16 @@ public class CandidateChangeHandlerTests
 				.date(t)
 				.build();
 
+		RepositoryTestHelper.setupMockedRetrieveAvailableStock(
+				candidateRepositoryRetrieval,
+				materialDescriptor,
+				"0");
+
 		final Candidate candidate = Candidate.builder()
 				.type(CandidateType.DEMAND)
 				.clientId(CLIENT_ID)
 				.orgId(ORG_ID)
-				.materialDescriptor(materialDescr)
+				.materialDescriptor(materialDescriptor)
 				.build();
 
 		final Consumer<Candidate> doTest = candidateUnderTest -> {
@@ -663,13 +677,18 @@ public class CandidateChangeHandlerTests
 		final BigDecimal qty = new BigDecimal("23");
 		final Date t = t1;
 
-		final MaterialDescriptor materialDescriptor= MaterialDescriptor.builder()
+		final MaterialDescriptor materialDescriptor = MaterialDescriptor.builder()
 				.complete(true)
 				.productDescriptor(createProductDescriptor())
 				.warehouseId(WAREHOUSE_ID)
 				.quantity(qty)
 				.date(t)
 				.build();
+
+		RepositoryTestHelper.setupMockedRetrieveAvailableStock(
+				candidateRepositoryRetrieval,
+				null, // null=any
+				"0");
 
 		final Candidate candidate = Candidate.builder()
 				.type(CandidateType.DEMAND)

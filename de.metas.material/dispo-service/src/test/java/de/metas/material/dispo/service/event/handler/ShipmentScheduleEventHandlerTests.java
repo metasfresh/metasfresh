@@ -1,19 +1,16 @@
 package de.metas.material.dispo.service.event.handler;
 
+import static de.metas.material.event.EventTestHelper.CLIENT_ID;
+import static de.metas.material.event.EventTestHelper.NOW;
+import static de.metas.material.event.EventTestHelper.ORG_ID;
 import static de.metas.material.event.EventTestHelper.createProductDescriptor;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
-import java.util.Date;
 import java.util.List;
 
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
-import org.adempiere.util.time.SystemTime;
-import org.compiere.model.I_AD_Org;
-import org.compiere.util.TimeUtil;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -22,6 +19,7 @@ import org.junit.rules.TestWatcher;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.material.dispo.commons.DispoTestUtils;
+import de.metas.material.dispo.commons.RepositoryTestHelper;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryCommands;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
@@ -34,7 +32,6 @@ import de.metas.material.event.MaterialDescriptor;
 import de.metas.material.event.MaterialEventService;
 import de.metas.material.event.ProductDescriptorFactory;
 import de.metas.material.event.ShipmentScheduleEvent;
-import lombok.NonNull;
 import mockit.Mocked;
 
 /*
@@ -69,16 +66,12 @@ public class ShipmentScheduleEventHandlerTests
 	@Rule
 	public final TestWatcher testWatcher = new AdempiereTestWatcher();
 
-	public static final Date t0 = SystemTime.asDate();
-
-	private static final Date t1 = TimeUtil.addMinutes(t0, 10);
-
 	private static final int toWarehouseId = 30;
-
-	private I_AD_Org org;
 
 	@Mocked
 	private MaterialEventService materialEventService;
+
+	private CandidateRepositoryRetrieval candidateRepositoryRetrieval;
 
 	private ShipmentScheduleEventHandler shipmentScheduleEventHandler;
 
@@ -87,15 +80,13 @@ public class ShipmentScheduleEventHandlerTests
 	{
 		AdempiereTestHelper.get().init();
 
-		org = newInstance(I_AD_Org.class);
-		save(org);
+		candidateRepositoryRetrieval = new CandidateRepositoryRetrieval(ProductDescriptorFactory.TESTING_INSTANCE);
 
-		final CandidateRepositoryRetrieval candidateRepository = new CandidateRepositoryRetrieval(ProductDescriptorFactory.TESTING_INSTANCE);
 		final CandidateRepositoryCommands candidateRepositoryCommands = new CandidateRepositoryCommands();
 
 		final CandidateChangeService candidateChangeHandler = new CandidateChangeService(ImmutableList.of(
-				new DemandCandiateHandler(candidateRepository, candidateRepositoryCommands, materialEventService,
-						new StockCandidateService(candidateRepository, candidateRepositoryCommands))));
+				new DemandCandiateHandler(candidateRepositoryRetrieval, candidateRepositoryCommands, materialEventService,
+						new StockCandidateService(candidateRepositoryRetrieval, candidateRepositoryCommands))));
 
 		shipmentScheduleEventHandler = new ShipmentScheduleEventHandler(candidateChangeHandler);
 	}
@@ -103,7 +94,13 @@ public class ShipmentScheduleEventHandlerTests
 	@Test
 	public void testShipmentScheduleEvent()
 	{
-		final ShipmentScheduleEvent event = createShipmentScheduleTestEvent(org);
+		final ShipmentScheduleEvent event = createShipmentScheduleTestEvent();
+
+		RepositoryTestHelper.setupMockedRetrieveAvailableStock(
+				candidateRepositoryRetrieval,
+				event.getMaterialDescriptor(),
+				"0");
+
 		shipmentScheduleEventHandler.handleShipmentScheduleEvent(event);
 
 		final List<I_MD_Candidate> allRecords = DispoTestUtils.retrieveAllRecords();
@@ -122,13 +119,13 @@ public class ShipmentScheduleEventHandlerTests
 		assertThat(stockRecord.getQty()).isEqualByComparingTo("-10"); // the stock is unbalanced, because there is no existing stock and no supply
 	}
 
-	public static ShipmentScheduleEvent createShipmentScheduleTestEvent(@NonNull final I_AD_Org org)
+	public static ShipmentScheduleEvent createShipmentScheduleTestEvent()
 	{
 		final ShipmentScheduleEvent event = ShipmentScheduleEvent.builder()
-				.eventDescriptor(new EventDescriptor(org.getAD_Client_ID(), org.getAD_Org_ID()))
+				.eventDescriptor(new EventDescriptor(CLIENT_ID, ORG_ID))
 				.materialDescriptor(MaterialDescriptor.builder()
 						.complete(true)
-						.date(t1)
+						.date(NOW)
 						.productDescriptor(createProductDescriptor())
 						.quantity(BigDecimal.TEN)
 						.warehouseId(toWarehouseId)

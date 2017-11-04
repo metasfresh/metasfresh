@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.adempiere.mm.attributes.api.ASICopy;
 import org.adempiere.mm.attributes.api.AttributeConstants;
+import org.adempiere.mm.attributes.api.impl.AttributesTestHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
@@ -31,12 +32,12 @@ import de.metas.business.BusinessTestHelper;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -51,6 +52,7 @@ public class ProductPlanningDAO_findTest
 	private I_M_Warehouse warehouse;
 	private I_M_Product product;
 	private I_S_Resource plant;
+	private AttributesTestHelper attributesTestHelper;
 
 	@Before
 	public void init()
@@ -63,6 +65,8 @@ public class ProductPlanningDAO_findTest
 
 		plant = newInstance(I_S_Resource.class);
 		save(plant);
+
+		attributesTestHelper = new AttributesTestHelper();
 	}
 
 	@Test
@@ -115,7 +119,7 @@ public class ProductPlanningDAO_findTest
 	{
 		final I_M_AttributeSetInstance organicAttributeSetInstance = createOrganicAttributeSetInstance();
 
-		final I_M_Attribute madeInCologneAttribute = BusinessTestHelper.createM_Attribute("MadeInCologneAttribute", X_M_Attribute.ATTRIBUTEVALUETYPE_List, true);
+		final I_M_Attribute madeInCologneAttribute = attributesTestHelper.createM_Attribute("MadeInCologneAttribute", X_M_Attribute.ATTRIBUTEVALUETYPE_List, true);
 
 		final I_M_AttributeSetInstance organicAndMadeInCologneASI = ASICopy.newInstance(organicAttributeSetInstance).copy();
 		final I_M_AttributeInstance madeInCologneattributeInstance = newInstance(I_M_AttributeInstance.class);
@@ -123,8 +127,7 @@ public class ProductPlanningDAO_findTest
 		madeInCologneattributeInstance.setM_Attribute(madeInCologneAttribute);
 		madeInCologneattributeInstance.setValue(MADE_IN_COLOGNE_ATTRIBUTE_VALUE);
 		save(madeInCologneattributeInstance);
-		
-		
+
 		final I_PP_Product_Planning productPlanningWithAsi = createProductPlanning();
 		productPlanningWithAsi.setM_AttributeInstance_ID(organicAttributeSetInstance.getM_AttributeSetInstance_ID());
 		productPlanningWithAsi.setStorageAttributesKey(ORGANIC_ATTRIBUTE_VALUE);
@@ -134,7 +137,7 @@ public class ProductPlanningDAO_findTest
 
 	private I_M_AttributeSetInstance createOrganicAttributeSetInstance()
 	{
-		final I_M_Attribute organicAttribute = BusinessTestHelper.createM_Attribute("OrganicAttribute", X_M_Attribute.ATTRIBUTEVALUETYPE_List, true);
+		final I_M_Attribute organicAttribute = attributesTestHelper.createM_Attribute("OrganicAttribute", X_M_Attribute.ATTRIBUTEVALUETYPE_List, true);
 
 		final I_M_AttributeSetInstance organicAttributeSetInstance = newInstance(I_M_AttributeSetInstance.class);
 		save(organicAttributeSetInstance);
@@ -143,6 +146,7 @@ public class ProductPlanningDAO_findTest
 		organicAttributeInstance.setM_Attribute(organicAttribute);
 		organicAttributeInstance.setValue(ORGANIC_ATTRIBUTE_VALUE);
 		save(organicAttributeInstance);
+
 		return organicAttributeSetInstance;
 	}
 
@@ -153,6 +157,7 @@ public class ProductPlanningDAO_findTest
 		productPlanning.setM_Warehouse(warehouse);
 		productPlanning.setS_Resource(plant);
 		save(productPlanning);
+
 		return productPlanning;
 	}
 

@@ -44,14 +44,14 @@ import lombok.NonNull;
 @Service
 public class StockCandidateService
 {
-	private final CandidateRepositoryRetrieval candidateRepository;
+	private final CandidateRepositoryRetrieval candidateRepositoryRetrieval;
 	private final CandidateRepositoryCommands candidateRepositoryCommands;
 
 	public StockCandidateService(
 			@NonNull final CandidateRepositoryRetrieval candidateRepository,
 			@NonNull final CandidateRepositoryCommands candidateRepositoryCommands)
 	{
-		this.candidateRepository = candidateRepository;
+		this.candidateRepositoryRetrieval = candidateRepository;
 		this.candidateRepositoryCommands = candidateRepositoryCommands;
 	}
 
@@ -72,7 +72,7 @@ public class StockCandidateService
 	 */
 	public Candidate createStockCandidate(@NonNull final Candidate candidate)
 	{
-		final Candidate stockOrNull = candidateRepository
+		final Candidate stockOrNull = candidateRepositoryRetrieval
 				.retrieveLatestMatchOrNull(candidate.createStockQueryBuilder()
 						.build());
 
@@ -138,7 +138,7 @@ public class StockCandidateService
 			@NonNull final Supplier<Candidate> stockCandidateToUpdate)
 	{
 		final CandidatesQuery query = CandidatesQuery.fromCandidate(relatedCandiateWithDelta);
-		final Candidate previousCandidateOrNull = candidateRepository.retrieveLatestMatchOrNull(query);
+		final Candidate previousCandidateOrNull = candidateRepositoryRetrieval.retrieveLatestMatchOrNull(query);
 
 		final Candidate persistedStockCandidate = stockCandidateToUpdate.get();
 
@@ -193,7 +193,7 @@ public class StockCandidateService
 				.matchExactStorageAttributesKey(true)
 				.build();
 
-		final List<Candidate> candidatesToUpdate = candidateRepository.retrieveOrderedByDateAndSeqNo(query);
+		final List<Candidate> candidatesToUpdate = candidateRepositoryRetrieval.retrieveOrderedByDateAndSeqNo(query);
 		for (final Candidate candidate : candidatesToUpdate)
 		{
 			final BigDecimal newQty = candidate.getQuantity().add(delta);

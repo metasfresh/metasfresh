@@ -1,19 +1,30 @@
 package de.metas.material.dispo.commons;
 
-import static de.metas.material.event.EventTestHelper.*;
+import static de.metas.material.event.EventTestHelper.AFTER_NOW;
+import static de.metas.material.event.EventTestHelper.CLIENT_ID;
+import static de.metas.material.event.EventTestHelper.NOW;
+import static de.metas.material.event.EventTestHelper.ORG_ID;
+import static de.metas.material.event.EventTestHelper.PRODUCT_ID;
+import static de.metas.material.event.EventTestHelper.WAREHOUSE_ID;
+import static de.metas.material.event.EventTestHelper.createProductDescriptor;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
 import java.util.Date;
 
-import de.metas.material.dispo.commons.CandidatesQuery;
+import javax.annotation.Nullable;
+
+import org.apache.commons.lang3.ObjectUtils;
+
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryCommands;
+import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.event.MaterialDescriptor;
 import de.metas.material.event.MaterialDescriptor.DateOperator;
 import de.metas.material.event.ProductDescriptorFactory;
 import lombok.NonNull;
+import mockit.Expectations;
 
 /*
  * #%L
@@ -25,12 +36,12 @@ import lombok.NonNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -45,7 +56,7 @@ public class RepositoryTestHelper
 	public final Candidate laterStockCandidate;
 
 	private final ProductDescriptorFactory productDescriptorFactory;
-	
+
 	public RepositoryTestHelper(
 			@NonNull final ProductDescriptorFactory productDescriptorFactory,
 			@NonNull final CandidateRepositoryCommands candidateRepositoryCommands)
@@ -111,4 +122,21 @@ public class RepositoryTestHelper
 						.build())
 				.build();
 	}
+
+	public static void setupMockedRetrieveAvailableStock(
+			@NonNull final CandidateRepositoryRetrieval candidateRepository,
+			@Nullable final MaterialDescriptor materialDescriptor,
+			@NonNull final String quantity)
+	{
+
+		// @formatter:off
+		new Expectations(CandidateRepositoryRetrieval.class)
+		{{
+			final MaterialDescriptor materialDescriptorToUse = ObjectUtils.firstNonNull(materialDescriptor, (MaterialDescriptor)any);
+			candidateRepository.retrieveAvailableStock(materialDescriptorToUse);
+			minTimes = 0;
+			result = new BigDecimal(quantity);
+		}}; // @formatter:on
+	}
+
 }

@@ -172,7 +172,7 @@ public class DemandCandiateCangeHandlerTest
 		// @formatter:off
 		new Expectations()
 		{{
-			candidateRepositoryRetrieval.retrieveAvailableStockForDescriptor(materialDescriptor);
+			candidateRepositoryRetrieval.retrieveAvailableStock(materialDescriptor);
 			times = 1;
 			result = new BigDecimal(quantity);
 		}}; // @formatter:on

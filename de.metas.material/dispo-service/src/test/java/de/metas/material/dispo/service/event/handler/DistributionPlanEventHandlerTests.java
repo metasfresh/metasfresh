@@ -1,9 +1,9 @@
 package de.metas.material.dispo.service.event.handler;
 
+import static de.metas.material.event.EventTestHelper.CLIENT_ID;
+import static de.metas.material.event.EventTestHelper.ORG_ID;
 import static de.metas.material.event.EventTestHelper.PRODUCT_ID;
 import static de.metas.material.event.EventTestHelper.createProductDescriptor;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
@@ -14,7 +14,6 @@ import java.util.stream.Collectors;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.util.time.SystemTime;
-import org.compiere.model.I_AD_Org;
 import org.compiere.util.TimeUtil;
 import org.junit.Before;
 import org.junit.Rule;
@@ -25,6 +24,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.material.dispo.commons.CandidateService;
 import de.metas.material.dispo.commons.DispoTestUtils;
+import de.metas.material.dispo.commons.RepositoryTestHelper;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryCommands;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
@@ -90,8 +90,6 @@ public class DistributionPlanEventHandlerTests
 	public static final int intermediateWarehouseId = 20;
 	public static final int toWarehouseId = 30;
 
-
-
 	public static final int rawProduct1Id = 50;
 
 	public static final int rawProduct2Id = 55;
@@ -104,22 +102,19 @@ public class DistributionPlanEventHandlerTests
 
 	public static final int shipperId = 95;
 
-	private I_AD_Org org;
-
 	private DistributionPlanEventHandler distributionPlanEventHandler;
 
 	@Mocked
 	private MaterialEventService materialEventService;
+
+	private CandidateRepositoryRetrieval candidateRepository;
 
 	@Before
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
 
-		org = newInstance(I_AD_Org.class);
-		save(org);
-
-		final CandidateRepositoryRetrieval candidateRepository = new CandidateRepositoryRetrieval(ProductDescriptorFactory.TESTING_INSTANCE);
+		candidateRepository = new CandidateRepositoryRetrieval(ProductDescriptorFactory.TESTING_INSTANCE);
 		final CandidateRepositoryCommands candidateRepositoryCommands = new CandidateRepositoryCommands();
 		final SupplyProposalEvaluator supplyProposalEvaluator = new SupplyProposalEvaluator(candidateRepository);
 
@@ -150,11 +145,11 @@ public class DistributionPlanEventHandlerTests
 	public void testSingleDistibutionPlanEvent()
 	{
 		final DistributionPlanEvent event = DistributionPlanEvent.builder()
-				.eventDescriptor(new EventDescriptor(org.getAD_Client_ID(), org.getAD_Org_ID()))
+				.eventDescriptor(new EventDescriptor(CLIENT_ID, ORG_ID))
 				.fromWarehouseId(fromWarehouseId)
 				.toWarehouseId(toWarehouseId)
 				.ddOrder(DDOrder.builder()
-						.orgId(org.getAD_Org_ID())
+						.orgId(ORG_ID)
 						.datePromised(t2)
 						.plantId(plantId)
 						.productPlanningId(productPlanningId)
@@ -180,7 +175,7 @@ public class DistributionPlanEventHandlerTests
 		final List<I_MD_Candidate> allRecords = DispoTestUtils.retrieveAllRecords();
 		assertThat(allRecords).hasSize(4);
 		assertThat(allRecords).allSatisfy(r -> {
-			assertThat(r.getAD_Org_ID()).as("all four records shall have the same org").isEqualTo(org.getAD_Org_ID());
+			assertThat(r.getAD_Org_ID()).as("all four records shall have the same org").isEqualTo(ORG_ID);
 			assertThat(r.getM_Product_ID()).as("all four records shall have the same product").isEqualTo(PRODUCT_ID);
 		});
 
@@ -228,7 +223,8 @@ public class DistributionPlanEventHandlerTests
 	@Test
 	public void testTwoDistibutionPlanEvents()
 	{
-		performTestTwoDistibutionPlanEvents(distributionPlanEventHandler, org);
+		RepositoryTestHelper.setupMockedRetrieveAvailableStock(candidateRepository, null, "0");
+		performTestTwoDistibutionPlanEvents(distributionPlanEventHandler);
 	}
 
 	/**
@@ -237,15 +233,14 @@ public class DistributionPlanEventHandlerTests
 	 * @param mdEventListener
 	 */
 	public static void performTestTwoDistibutionPlanEvents(
-			@NonNull final DistributionPlanEventHandler distributionPlanEventHandler,
-			@NonNull final I_AD_Org org)
+			@NonNull final DistributionPlanEventHandler distributionPlanEventHandler)
 	{
 		final DistributionPlanEvent event1 = DistributionPlanEvent.builder()
-				.eventDescriptor(new EventDescriptor(org.getAD_Client_ID(), org.getAD_Org_ID()))
+				.eventDescriptor(new EventDescriptor(CLIENT_ID, ORG_ID))
 				.fromWarehouseId(fromWarehouseId)
 				.toWarehouseId(intermediateWarehouseId)
 				.ddOrder(DDOrder.builder()
-						.orgId(org.getAD_Org_ID())
+						.orgId(ORG_ID)
 						.datePromised(t2) // => expected date of the supply candidate
 						.plantId(plantId)
 						.productPlanningId(productPlanningId)
@@ -265,11 +260,11 @@ public class DistributionPlanEventHandlerTests
 		assertThat(DispoTestUtils.filter(CandidateType.STOCK)).hasSize(2); // one stock record per supply/demand record
 
 		final DistributionPlanEvent event2 = DistributionPlanEvent.builder()
-				.eventDescriptor(new EventDescriptor(org.getAD_Client_ID(), org.getAD_Org_ID()))
+				.eventDescriptor(new EventDescriptor(CLIENT_ID, ORG_ID))
 				.fromWarehouseId(intermediateWarehouseId)
 				.toWarehouseId(toWarehouseId)
 				.ddOrder(DDOrder.builder()
-						.orgId(org.getAD_Org_ID())
+						.orgId(ORG_ID)
 						.datePromised(t3) // => expected date of the supply candidate
 						.plantId(plantId)
 						.productPlanningId(productPlanningId)

@@ -546,7 +546,7 @@ public class CandiateRepositoryRetrievalTests
 	public void retrieveAvailableStockForCompleteDescriptor_throw_ex_if_not_complete()
 	{
 		final MaterialDescriptor materialDescriptor = MaterialDescriptor.builderForQuery().build();
-		candidateRepository.retrieveAvailableStockForDescriptor(materialDescriptor);
+		candidateRepository.retrieveAvailableStock(materialDescriptor);
 	}
 
 	@Test
@@ -574,7 +574,7 @@ public class CandiateRepositoryRetrievalTests
 		}};
 		// @formatter:on
 
-		final BigDecimal result = candidateRepository.retrieveAvailableStockForDescriptor(materialDescriptor);
+		final BigDecimal result = candidateRepository.retrieveAvailableStock(materialDescriptor);
 		assertThat(result).isEqualByComparingTo("10");
 	}
 

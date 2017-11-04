@@ -1,8 +1,8 @@
 package de.metas.material.dispo.service.event;
 
+import static de.metas.material.event.EventTestHelper.CLIENT_ID;
+import static de.metas.material.event.EventTestHelper.ORG_ID;
 import static de.metas.material.event.EventTestHelper.createProductDescriptor;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
@@ -11,7 +11,6 @@ import java.util.Date;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.util.time.SystemTime;
-import org.compiere.model.I_AD_Org;
 import org.compiere.util.TimeUtil;
 import org.junit.Before;
 import org.junit.Rule;
@@ -21,6 +20,7 @@ import org.junit.rules.TestWatcher;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.material.dispo.commons.CandidateService;
+import de.metas.material.dispo.commons.RepositoryTestHelper;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryCommands;
@@ -90,19 +90,16 @@ public class SupplyProposalEvaluatorTests
 	@Mocked
 	private MaterialEventService materialEventService;
 
-	private I_AD_Org org;
+	private CandidateRepositoryRetrieval candidateRepositoryRetrieval;
 
 	@Before
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
 
-		org = newInstance(I_AD_Org.class);
-		save(org);
-
 		candidateRepositoryCommands = new CandidateRepositoryCommands();
 
-		final CandidateRepositoryRetrieval candidateRepositoryRetrieval = new CandidateRepositoryRetrieval(ProductDescriptorFactory.TESTING_INSTANCE);
+		candidateRepositoryRetrieval = new CandidateRepositoryRetrieval(ProductDescriptorFactory.TESTING_INSTANCE);
 		supplyProposalEvaluator = new SupplyProposalEvaluator(candidateRepositoryRetrieval);
 
 		final StockCandidateService stockCandidateService = new StockCandidateService(
@@ -142,6 +139,8 @@ public class SupplyProposalEvaluatorTests
 	@Test
 	public void testNothingAfter()
 	{
+		RepositoryTestHelper.setupMockedRetrieveAvailableStock(candidateRepositoryRetrieval, null, "0");
+
 		addSimpleSupplyDemand();
 
 		final SupplyProposal supplyProposal = SupplyProposal.builder()
@@ -157,6 +156,8 @@ public class SupplyProposalEvaluatorTests
 	@Test
 	public void testWithSameDirectionData()
 	{
+		RepositoryTestHelper.setupMockedRetrieveAvailableStock(candidateRepositoryRetrieval, null, "0");
+
 		addSimpleSupplyDemand();
 
 		// OK now we have in our plan something like DEMAND_WAREHOUSE_ID => SUPPLY_WAREHOUSE_ID in the repo
@@ -176,6 +177,8 @@ public class SupplyProposalEvaluatorTests
 	@Test
 	public void testWithOppositeDirectionData()
 	{
+		RepositoryTestHelper.setupMockedRetrieveAvailableStock(candidateRepositoryRetrieval, null, "0");
+
 		addSimpleSupplyDemand();
 
 		// OK now we have in our plan something like DEMAND_WAREHOUSE_ID => SUPPLY_WAREHOUSE_ID in the repo
@@ -197,7 +200,7 @@ public class SupplyProposalEvaluatorTests
 	 */
 	private void addSimpleSupplyDemand()
 	{
-		final MaterialDescriptor supplyMaterialDescriptor= MaterialDescriptor.builder()
+		final MaterialDescriptor supplyMaterialDescriptor = MaterialDescriptor.builder()
 				.complete(true)
 				.date(t3)
 				.productDescriptor(createProductDescriptor())
@@ -206,8 +209,8 @@ public class SupplyProposalEvaluatorTests
 				.build();
 
 		final Candidate supplyCandidate = Candidate.builder()
-				.clientId(org.getAD_Client_ID())
-				.orgId(org.getAD_Org_ID())
+				.clientId(CLIENT_ID)
+				.orgId(ORG_ID)
 				.type(CandidateType.SUPPLY)
 				.materialDescriptor(supplyMaterialDescriptor)
 				.build();
@@ -223,8 +226,8 @@ public class SupplyProposalEvaluatorTests
 				.build();
 
 		final Candidate demandCandidate = Candidate.builder()
-				.clientId(org.getAD_Client_ID())
-				.orgId(org.getAD_Org_ID())
+				.clientId(CLIENT_ID)
+				.orgId(ORG_ID)
 				.parentId(supplyCandidateWithId.getId())
 				.type(CandidateType.DEMAND)
 				.materialDescriptor(demandDescr)
@@ -239,7 +242,9 @@ public class SupplyProposalEvaluatorTests
 	@Test
 	public void testWithChain()
 	{
-		DistributionPlanEventHandlerTests.performTestTwoDistibutionPlanEvents(distributionPlanEventHandler, org);
+		RepositoryTestHelper.setupMockedRetrieveAvailableStock(candidateRepositoryRetrieval, null, "0");
+
+		DistributionPlanEventHandlerTests.performTestTwoDistibutionPlanEvents(distributionPlanEventHandler);
 
 		// propose what would create an additional demand on A and an additional supply on B. nothing wrong with that
 		final SupplyProposal supplyProposal1 = SupplyProposal.builder()
@@ -275,7 +280,9 @@ public class SupplyProposalEvaluatorTests
 	@Test
 	public void testWithChainOpposite()
 	{
-		DistributionPlanEventHandlerTests.performTestTwoDistibutionPlanEvents(distributionPlanEventHandler, org);
+		RepositoryTestHelper.setupMockedRetrieveAvailableStock(candidateRepositoryRetrieval, null, "0");
+
+		DistributionPlanEventHandlerTests.performTestTwoDistibutionPlanEvents(distributionPlanEventHandler);
 		// we now have an unbalanced demand with a stock of -10 in "fromWarehouseId" (because that's where the "last" demand of the "last" DistibutionPlan is)
 		// and we have a stock of +10 in "toWarehouseId"
 
