@@ -12,6 +12,7 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.X_C_OrderLine;
 import org.compiere.util.Util;
 
+import de.metas.order.compensationGroup.GroupRepository.RetrieveOrCreateGroupRequest;
 import de.metas.product.IProductBL;
 import lombok.NonNull;
 
@@ -43,6 +44,7 @@ public final class GroupCreator
 	private final GroupRepository groupsRepo;
 
 	private Collection<Integer> lineIdsToGroup;
+	private GroupIdTemplate newGroupIdTemplate;
 	private int compensationProductId = -1;
 
 	/* package */ GroupCreator(@NonNull final GroupRepository groupsRepo)
@@ -63,23 +65,32 @@ public final class GroupCreator
 		return this;
 	}
 
-	private int getCompensationProductId()
+	public GroupCreator newGroupIdTemplate(final GroupIdTemplate newGroupIdTemplate)
 	{
-		return compensationProductId;
+		this.newGroupIdTemplate = newGroupIdTemplate;
+		return this;
 	}
 
 	public void createGroup()
 	{
-		Check.assume(compensationProductId > 0, "compensationProductId > 0");
-
-		final Group group = groupsRepo.retrieveOrCreateGroupFromLineIds(lineIdsToGroup);
+		final Group group = groupsRepo.retrieveOrCreateGroup(createRetrieveOrCreateGroupRequest());
 		group.addNewCompensationLine(createGroupCompensationLineCreateRequest());
 		groupsRepo.saveGroup(group);
 	}
 
+	private RetrieveOrCreateGroupRequest createRetrieveOrCreateGroupRequest()
+	{
+		return RetrieveOrCreateGroupRequest.builder()
+				.orderLineIds(lineIdsToGroup)
+				.newGroupIdTemplate(newGroupIdTemplate)
+				.build();
+	}
+
 	private GroupCompensationLineCreateRequest createGroupCompensationLineCreateRequest()
 	{
-		final I_M_Product product = load(getCompensationProductId(), I_M_Product.class);
+		Check.assume(compensationProductId > 0, "compensationProductId > 0");
+		
+		final I_M_Product product = load(compensationProductId, I_M_Product.class);
 		final I_C_UOM uom = productBL.getStockingUOM(product);
 
 		return GroupCompensationLineCreateRequest.builder()

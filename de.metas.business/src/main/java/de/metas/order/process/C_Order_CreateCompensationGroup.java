@@ -2,12 +2,15 @@ package de.metas.order.process;
 
 import java.util.Set;
 
+import org.adempiere.util.Check;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_Product_Category;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import de.metas.order.compensationGroup.GroupIdTemplate;
 import de.metas.order.compensationGroup.OrderGroupRepository;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
@@ -45,6 +48,12 @@ public class C_Order_CreateCompensationGroup extends JavaProcess implements IPro
 	@Param(parameterName = I_M_Product.COLUMNNAME_M_Product_ID, mandatory = true)
 	private int compensationProductId;
 
+	@Param(parameterName = I_M_Product_Category.COLUMNNAME_M_Product_Category_ID, mandatory = false)
+	private I_M_Product_Category productCategory;
+
+	@Param(parameterName = "Name", mandatory = false)
+	private String groupName;
+
 	public C_Order_CreateCompensationGroup()
 	{
 		Adempiere.autowire(this);
@@ -67,9 +76,24 @@ public class C_Order_CreateCompensationGroup extends JavaProcess implements IPro
 	{
 		groupsRepo.prepareNewGroup()
 				.linesToGroup(getSelectedIncludedRecordIds(I_C_OrderLine.class))
+				.newGroupIdTemplate(createNewGroupIdTemplate())
 				.compensationProductId(compensationProductId)
 				.createGroup();
 
 		return MSG_OK;
+	}
+
+	private GroupIdTemplate createNewGroupIdTemplate()
+	{
+		String groupNameEffective = this.groupName;
+		if (Check.isEmpty(groupNameEffective, true) && productCategory != null)
+		{
+			groupNameEffective = productCategory.getName();
+		}
+
+		return GroupIdTemplate.builder()
+				.name(groupNameEffective)
+				.productCategoryId(productCategory != null ? productCategory.getM_Product_Category_ID() : 0)
+				.build();
 	}
 }
