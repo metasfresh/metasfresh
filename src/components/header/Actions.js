@@ -6,12 +6,14 @@ import counterpart from 'counterpart';
 import Loader from '../app/Loader';
 
 import {
-    actionsRequest
+    actionsRequest,
+    rowActionsRequest
 } from '../../actions/GenericActions';
 
 class Actions extends Component {
     state = {
-        actions: null
+        actions: null,
+        rowActions: null
     };
 
     async componentDidMount() {
@@ -19,7 +21,6 @@ class Actions extends Component {
             windowType,
             entity,
             docId,
-            rowId,
             notfound,
             activeTab,
             activeTabSelected
@@ -40,6 +41,34 @@ class Actions extends Component {
 
             return;
         }
+
+        const requests = [this.requestActions()];
+
+        if (
+            activeTab &&
+            activeTabSelected &&
+            activeTabSelected.length > 0
+        ) {
+            requests.push(this.requestRowActions());
+        }
+
+        const [actions, rowActions] = await Promise.all(requests);
+
+        this.setState({
+            actions,
+            ...(rowActions && { rowActions })
+        });
+    }
+
+    requestActions = async () => {
+        const {
+            windowType,
+            entity,
+            docId,
+            rowId,
+            activeTab,
+            activeTabSelected
+        } = this.props;
 
         try {
             const request = {
@@ -63,17 +92,51 @@ class Actions extends Component {
 
             const { actions } = (await actionsRequest(request)).data;
 
-            this.setState({
-                actions
-            });
+            return actions;
         } catch (error) {
             console.error(error);
 
-            this.setState({
-                actions: []
-            });
+            return [];
         }
-    }
+    };
+
+    requestRowActions = async () => {
+        const {
+            windowType,
+            docId,
+            activeTab,
+            activeTabSelected
+        } = this.props;
+
+        try {
+            const requests = activeTabSelected.map(async rowId => {
+                const response = (await rowActionsRequest({
+                    windowId: windowType,
+                    documentId: docId,
+                    tabId: activeTab,
+                    rowId
+                }));
+
+                const actions = response.data.actions.map(action => ({
+                    ...action,
+                    tabId: activeTab,
+                    rowId
+                }));
+
+                return actions;
+            });
+
+            const actionsPerTab = await Promise.all(requests);
+
+            const actions = Array.prototype.concat.call(...actionsPerTab);
+
+            return actions;
+        } catch (error) {
+            console.error(error);
+
+            return [];
+        }
+    };
 
     renderData = () => {
         const { closeSubheader, openModal } = this.props;
