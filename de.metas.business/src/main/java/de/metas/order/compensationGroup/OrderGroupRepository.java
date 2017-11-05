@@ -94,12 +94,22 @@ public class OrderGroupRepository implements GroupRepository
 	@Override
 	public Group retrieveGroup(@NonNull final GroupId groupId)
 	{
+		final Group group = retrieveGroupIfExists(groupId);
+		if (group == null)
+		{
+			throw new AdempiereException("Group not found for " + groupId);
+		}
+		return group;
+	}
+
+	public Group retrieveGroupIfExists(@NonNull final GroupId groupId)
+	{
 		groupId.assertDocumentTableName(I_C_Order.Table_Name);
 
 		final List<I_C_OrderLine> groupOrderLines = retrieveGroupOrderLines(groupId);
 		if (groupOrderLines.isEmpty())
 		{
-			throw new AdempiereException("No order lines found for " + groupId);
+			return null;
 		}
 
 		final Group group = createGroupFromOrderLines(groupOrderLines);
@@ -395,7 +405,7 @@ public class OrderGroupRepository implements GroupRepository
 		final List<I_C_OrderLine> orderLines = retrieveC_OrderLines(orderLineIds);
 
 		setGroupIdToLines(orderLines, null);
-		
+
 		final I_C_Order_CompensationGroup orderCompensationGroup = load(group.getGroupId().getOrderCompensationGroupId(), I_C_Order_CompensationGroup.class);
 		delete(orderCompensationGroup);
 	}

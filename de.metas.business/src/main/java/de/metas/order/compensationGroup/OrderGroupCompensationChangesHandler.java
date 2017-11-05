@@ -84,7 +84,14 @@ public class OrderGroupCompensationChangesHandler
 	private void onCompensationLineDeleted(final I_C_OrderLine compensationLine)
 	{
 		final GroupId groupId = groupsRepo.extractGroupId(compensationLine);
-		final Group group = groupsRepo.retrieveGroup(groupId);
+		final Group group = groupsRepo.retrieveGroupIfExists(groupId);
+
+		// If no group found => nothing to do
+		// Usually this case happens when we delete the order, so all the lines together.
+		if (group == null)
+		{
+			return;
+		}
 
 		if (!group.hasCompensationLines())
 		{
