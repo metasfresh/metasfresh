@@ -1,5 +1,9 @@
 package org.adempiere.ad.security.permissions;
 
+import java.util.function.Predicate;
+
+import javax.annotation.concurrent.Immutable;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -24,11 +28,8 @@ package org.adempiere.ad.security.permissions;
 
 
 import org.slf4j.Logger;
+
 import de.metas.logging.LogManager;
-
-import java.util.function.Predicate;
-
-import javax.annotation.concurrent.Immutable;
 
 @Immutable
 public final class LoginOrgConstraint extends Constraint
@@ -117,14 +118,6 @@ public final class LoginOrgConstraint extends Constraint
 
 	public Predicate<OrgResource> asOrgResourceMatcher()
 	{
-		return new Predicate<OrgResource>()
-		{
-
-			@Override
-			public boolean test(final OrgResource orgResource)
-			{
-				return isValidOrg(orgResource);
-			}
-		};
+		return this::isValidOrg;
 	}
 }

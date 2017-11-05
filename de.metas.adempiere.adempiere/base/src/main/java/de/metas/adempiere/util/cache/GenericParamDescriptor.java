@@ -119,14 +119,7 @@ final class GenericParamDescriptor implements ICachedMethodPartDescriptor
 	};
 
 	/** Skip caching predicate: skip if argument is NOT null */
-	private static final Predicate<Object> SkipCaching_IfNotNull = new Predicate<Object>()
-	{
-		@Override
-		public boolean test(final Object value)
-		{
-			return value != null;
-		}
-	};
+	private static final Predicate<Object> SkipCaching_IfNotNull = value -> value != null;
 
 	private static final GenericParamDescriptor[] cache = new GenericParamDescriptor[] {
 			new GenericParamDescriptor(0)
