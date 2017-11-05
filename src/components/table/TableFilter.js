@@ -80,14 +80,15 @@ class TableFilter extends Component {
                             }
                         </button>}
                     </div>
-                    {((isBatchEntry || fullScreen) && allowCreateNew) &&
+                    {supportQuickInput && (isBatchEntry || fullScreen) &&
+                        allowCreateNew && (
                         <TableQuickInput
                             closeBatchEntry={handleBatchEntryToggle}
                             docType={docType}
                             docId={docId}
                             tabId={tabId}
                         />
-                    }
+                    )}
                 </div>
 
                 {<button
