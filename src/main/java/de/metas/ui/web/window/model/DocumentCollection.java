@@ -264,7 +264,7 @@ public class DocumentCollection
 			isNewRootDocument = false;
 		}
 
-		try (final IAutoCloseable readLock = lockHolder.lockForWriting())
+		try (final IAutoCloseable writeLock = lockHolder.lockForWriting())
 		{
 			final Document rootDocument;
 			if (isNewRootDocument)
@@ -588,7 +588,7 @@ public class DocumentCollection
 				.reportData(processExecutionResult.getReportData())
 				.build();
 	}
-	
+
 	public DocumentWebsocketPublisher getWebsocketPublisher()
 	{
 		return websocketPublisher;
@@ -638,6 +638,7 @@ public class DocumentCollection
 		}
 		else
 		{
+			// all rows for given tab/detail
 			toDocumentPath = includedEntity -> DocumentPath.includedDocumentPath(includedEntity.getWindowId(), documentId, includedEntity.getDetailId());
 		}
 
@@ -657,14 +658,24 @@ public class DocumentCollection
 	{
 		Check.assume(!documentPath.isRootDocument(), "included document path: {}", documentPath);
 
+		//
+		// Get the root document if exists
 		final DocumentPath rootDocumentPath = documentPath.getRootDocumentPath();
-		forRootDocumentWritable(rootDocumentPath, NullDocumentChangesCollector.instance, document -> {
-			document.getIncludedDocumentsCollection(documentPath.getDetailId()).markStale(documentPath.getSingleRowId());
-			return null; // void
-		});
+		final DocumentKey documentKey = DocumentKey.ofRootDocumentPath(rootDocumentPath);
+		final Document document = rootDocuments.getIfPresent(documentKey);
+		
+		// Invalidate
+		if (document != null)
+		{
+			try (final IAutoCloseable lock = document.lockForWriting())
+			{
+				document.getIncludedDocumentsCollection(documentPath.getDetailId()).markStale(documentPath.getSingleRowId());
+			}
+		}
+
 
 		//
-		// Notify frontend
+		// Notify frontend, even if the root document does not exist (or it was not cached). 
 		websocketPublisher.staleByDocumentPath(documentPath);
 	}
 
