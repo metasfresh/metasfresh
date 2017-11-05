@@ -138,32 +138,53 @@ class Actions extends Component {
         }
     };
 
-    renderData = () => {
+    renderAction = identifier => (item, key) => {
         const { closeSubheader, openModal } = this.props;
-        const { actions } = this.state;
 
-        if (actions && actions.length) {
-            return actions.map((item, key) => (
-                <div
-                    key={key}
+        return (
+            <div
+                key={identifier + key}
+                tabIndex={0}
+                className={'subheader-item js-subheader-item' + (
+                    item.disabled ? ' subheader-item-disabled' : ''
+                )}
+                onClick={item.disabled ? null : () => {
+                    openModal(item.processId + '', 'process', item.caption);
+
+                    closeSubheader();
+                }}
+            >
+                {item.caption}
+                {item.disabled && item.disabledReason && (
+                    <p className="one-line">
+                        <small>({item.disabledReason})</small>
+                    </p>
+                )}
+            </div>
+        );
+    };
+
+    renderData = () => {
+        const { renderAction } = this;
+        const { actions, rowActions } = this.state;
+
+        if (actions && rowActions) {
+            const separator = (
+                <hr
+                    key="separator"
                     tabIndex={0}
-                    className={'subheader-item js-subheader-item' + (
-                        item.disabled ? ' subheader-item-disabled' : ''
-                    )}
-                    onClick={item.disabled ? null : () => {
-                        openModal(item.processId + '', 'process', item.caption);
+                />
+            );
 
-                        closeSubheader();
-                    }}
-                >
-                    {item.caption}
-                    {item.disabled && item.disabledReason && (
-                        <p className="one-line">
-                            <small>({item.disabledReason})</small>
-                        </p>
-                    )}
-                </div>
-            ));
+            return [
+                ...actions.map(renderAction('actions')),
+                separator,
+                ...rowActions.map(renderAction('rowActions'))
+            ];
+        } else if (actions) {
+            return actions.map(renderAction('actions'));
+        } else if (rowActions) {
+            return rowActions.map(renderAction('rowActions'));
         } else {
             return (
                 <div className="subheader-item subheader-item-disabled">
@@ -171,7 +192,7 @@ class Actions extends Component {
                 </div>
             );
         }
-    }
+    };
 
     render() {
         const { actions } = this.state;
@@ -185,10 +206,7 @@ class Actions extends Component {
                     {counterpart.translate('window.actions.caption')}
                 </div>
                 <div className="subheader-break" />
-                {!actions ?
-                    <Loader /> :
-                    this.renderData()
-                }
+                {!actions ? <Loader /> : this.renderData()}
             </div>
         );
     }
