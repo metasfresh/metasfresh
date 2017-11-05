@@ -33,6 +33,15 @@ export function setLatestNewDocument(id) {
     }
 }
 
+export function discardNewDocument({ windowType, documentId } = {}) {
+    return axios.post(
+        config.API_URL + '/window/' +
+        windowType + '/' +
+        documentId +
+        '/discardChanges'
+    );
+}
+
 export function openRawModal(windowType, viewId) {
     return {
         type: types.OPEN_RAW_MODAL,
