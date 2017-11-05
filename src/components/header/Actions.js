@@ -206,7 +206,7 @@ class Actions extends Component {
                     {counterpart.translate('window.actions.caption')}
                 </div>
                 <div className="subheader-break" />
-                {!actions ? <Loader /> : this.renderData()}
+                {actions ? this.renderData() : <Loader />}
             </div>
         );
     }
