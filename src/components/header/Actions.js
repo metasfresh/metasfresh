@@ -11,7 +11,7 @@ import {
 
 class Actions extends Component {
     state = {
-        data: null
+        actions: null
     };
 
     async componentDidMount() {
@@ -27,7 +27,7 @@ class Actions extends Component {
 
         if (!windowType || docId === 'notfound' || notfound) {
             this.setState({
-                data: []
+                actions: []
             });
 
             return;
@@ -35,7 +35,7 @@ class Actions extends Component {
 
         if (entity === 'board') {
             this.setState({
-                data: []
+                actions: []
             });
 
             return;
@@ -64,23 +64,23 @@ class Actions extends Component {
             const { actions } = (await actionsRequest(request)).data;
 
             this.setState({
-                data: actions
+                actions
             });
         } catch (error) {
             console.error(error);
 
             this.setState({
-                data: []
+                actions: []
             });
         }
     }
 
     renderData = () => {
         const { closeSubheader, openModal } = this.props;
-        const { data } = this.state;
+        const { actions } = this.state;
 
-        if (data && data.length) {
-            return data.map((item, key) => (
+        if (actions && actions.length) {
+            return actions.map((item, key) => (
                 <div
                     key={key}
                     tabIndex={0}
@@ -111,7 +111,7 @@ class Actions extends Component {
     }
 
     render() {
-        const { data } = this.state;
+        const { actions } = this.state;
 
         return (
             <div
@@ -122,7 +122,7 @@ class Actions extends Component {
                     {counterpart.translate('window.actions.caption')}
                 </div>
                 <div className="subheader-break" />
-                {!data ?
+                {!actions ?
                     <Loader /> :
                     this.renderData()
                 }
