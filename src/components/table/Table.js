@@ -569,6 +569,7 @@ class Table extends Component {
             if(selectMore){
                 if(isSelected){
                     this.deselectProduct(id);
+                    return false;
                 }else{
                     this.selectProduct(id);
                 }
@@ -583,6 +584,7 @@ class Table extends Component {
                 this.selectOneProduct(id);
             }
         }
+        return true;
     }
 
     handleRightClick = (e, id, fieldName,
@@ -928,10 +930,13 @@ class Table extends Component {
                             onDoubleClick(item[keyProperty])
                         }
                         onClick={(e) => {
-                            this.handleClick(e, item[keyProperty]);
+                            const selected = this.handleClick(
+                                e, item[keyProperty]
+                            );
                             if (openIncludedViewOnSelect) {
                                 showIncludedViewOnSelect({
-                                    showIncludedView: item.supportIncludedViews,
+                                    showIncludedView: selected &&
+                                        item.supportIncludedViews,
 
                                     windowType: item.supportIncludedViews ? (
                                         item.includedView.windowType ||
