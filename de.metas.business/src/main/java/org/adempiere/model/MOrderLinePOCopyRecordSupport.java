@@ -29,11 +29,11 @@ import java.util.Map;
  */
 
 import java.util.Properties;
+import java.util.function.Predicate;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.Services;
 import org.adempiere.util.collections.CompositePredicate;
-import org.adempiere.util.collections.Predicate;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_Order_CompensationGroup;
 import org.compiere.model.PO;
@@ -49,7 +49,7 @@ import de.metas.freighcost.api.IFreightCostBL;
 public class MOrderLinePOCopyRecordSupport extends GeneralCopyRecordSupport
 {
 	/**
-	 * Skip predicates: if it's evaluated <code>true</code> (i.e. {@link Predicate#evaluate(Object)} returns true) then the order line will NOT copied.
+	 * Skip predicates: if it's evaluated <code>true</code> (i.e. {@link Predicate#test(Object)} returns true) then the order line will NOT copied.
 	 */
 	private static final CompositePredicate<I_C_OrderLine> skipPredicates = new CompositePredicate<>();
 	private static final String DYNATTR_OrderCompensationGroupIdsMap = "OrderCompensationGroupIdsMap";
@@ -119,7 +119,7 @@ public class MOrderLinePOCopyRecordSupport extends GeneralCopyRecordSupport
 	/**
 	 * Add a skip filter.
 	 *
-	 * In case given skip filter evaluates the order line as true (i.e. {@link Predicate#evaluate(Object)} returns true) then the order line will NOT copied.
+	 * In case given skip filter evaluates the order line as true (i.e. {@link Predicate#test(Object)} returns true) then the order line will NOT copied.
 	 *
 	 * @param skipPredicate
 	 */
@@ -144,7 +144,7 @@ public class MOrderLinePOCopyRecordSupport extends GeneralCopyRecordSupport
 
 		// If skip predicates are advicing us to skip this record
 		// => skip it
-		if (skipPredicates.evaluate(orderLine))
+		if (skipPredicates.test(orderLine))
 		{
 			return false;
 		}

@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 import org.adempiere.ad.security.impl.RolePermissionsNotFoundException;
 import org.adempiere.ad.security.permissions.ElementPermissions;
@@ -35,7 +36,6 @@ import org.adempiere.ad.security.permissions.TableColumnPermissions;
 import org.adempiere.ad.security.permissions.TablePermissions;
 import org.adempiere.ad.security.permissions.TableRecordPermissions;
 import org.adempiere.util.ISingletonService;
-import org.adempiere.util.collections.Predicate;
 import org.compiere.model.I_AD_Record_Access;
 import org.compiere.model.I_AD_Role;
 import org.compiere.model.I_AD_Role_OrgAccess;

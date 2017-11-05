@@ -27,13 +27,13 @@ import java.math.BigDecimal;
 import java.text.MessageFormat;
 import java.util.Map;
 import java.util.Properties;
+import java.util.function.Predicate;
 
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Services;
-import org.adempiere.util.collections.Predicate;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.util.TrxRunnable;
 
@@ -157,7 +157,7 @@ public class PackingService implements IPackingService
 			{
 
 				@Override
-				public boolean evaluate(final I_M_ShipmentSchedule shipmentSchedule)
+				public boolean test(final I_M_ShipmentSchedule shipmentSchedule)
 				{
 					return packingHandler.isPackingAllowedForShipmentSchedule(shipmentSchedule);
 				}

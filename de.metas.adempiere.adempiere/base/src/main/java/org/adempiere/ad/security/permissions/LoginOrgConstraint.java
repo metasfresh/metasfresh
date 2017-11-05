@@ -26,9 +26,9 @@ package org.adempiere.ad.security.permissions;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
 
-import javax.annotation.concurrent.Immutable;
+import java.util.function.Predicate;
 
-import org.adempiere.util.collections.Predicate;
+import javax.annotation.concurrent.Immutable;
 
 @Immutable
 public final class LoginOrgConstraint extends Constraint
@@ -121,7 +121,7 @@ public final class LoginOrgConstraint extends Constraint
 		{
 
 			@Override
-			public boolean evaluate(final OrgResource orgResource)
+			public boolean test(final OrgResource orgResource)
 			{
 				return isValidOrg(orgResource);
 			}

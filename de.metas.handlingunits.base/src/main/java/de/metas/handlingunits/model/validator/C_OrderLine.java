@@ -26,6 +26,7 @@ package de.metas.handlingunits.model.validator;
  */
 
 import java.util.Properties;
+import java.util.function.Predicate;
 
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.annotations.Init;
@@ -34,7 +35,6 @@ import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.MOrderLinePOCopyRecordSupport;
 import org.adempiere.util.Services;
-import org.adempiere.util.collections.Predicate;
 import org.compiere.model.ModelValidator;
 
 import de.metas.adempiere.gui.search.IHUPackingAware;
@@ -58,7 +58,7 @@ public class C_OrderLine
 	{
 
 		@Override
-		public boolean evaluate(final org.compiere.model.I_C_OrderLine orderLine)
+		public boolean test(final org.compiere.model.I_C_OrderLine orderLine)
 		{
 			final I_C_OrderLine huOrderLine = InterfaceWrapperHelper.create(orderLine, I_C_OrderLine.class);
 

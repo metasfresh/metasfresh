@@ -11,6 +11,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
@@ -47,7 +48,6 @@ import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.IOrgDAO;
 import org.adempiere.util.Services;
-import org.adempiere.util.collections.Predicate;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_Column_Access;
@@ -248,7 +248,7 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 			final int adRoleId = role.getAD_Role_ID();
 			final IUserRolePermissions permissions = retrieveUserRolePermissions(adRoleId, adUserId, adClientId, date);
 
-			if (matcher.evaluate(permissions))
+			if (matcher.test(permissions))
 			{
 				return true;
 			}

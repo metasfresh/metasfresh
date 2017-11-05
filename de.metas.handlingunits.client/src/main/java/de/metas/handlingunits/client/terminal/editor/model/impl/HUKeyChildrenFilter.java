@@ -1,5 +1,7 @@
 package de.metas.handlingunits.client.terminal.editor.model.impl;
 
+import java.util.function.Predicate;
+
 /*
  * #%L
  * de.metas.handlingunits.client
@@ -24,7 +26,6 @@ package de.metas.handlingunits.client.terminal.editor.model.impl;
 
 
 import org.adempiere.util.Check;
-import org.adempiere.util.collections.Predicate;
 import org.compiere.model.IQuery;
 
 import de.metas.handlingunits.client.terminal.editor.model.IHUKey;
@@ -50,7 +51,7 @@ import de.metas.handlingunits.model.I_M_HU;
 	@Override
 	public boolean accept(IHUKey child)
 	{
-		return predicate.evaluate(child);
+		return predicate.test(child);
 
 	}
 
