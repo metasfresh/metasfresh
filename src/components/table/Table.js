@@ -927,7 +927,7 @@ class Table extends Component {
                         onDoubleClick={() => onDoubleClick &&
                             onDoubleClick(item[keyProperty])
                         }
-                        onMouseDown={(e) => {
+                        onClick={(e) => {
                             this.handleClick(e, item[keyProperty]);
                             if (openIncludedViewOnSelect) {
                                 showIncludedViewOnSelect({

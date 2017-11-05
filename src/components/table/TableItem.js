@@ -337,14 +337,14 @@ class TableItem extends Component {
 
     render() {
         const {
-            isSelected, fieldsByName, cols, onMouseDown, onDoubleClick, odd,
+            isSelected, fieldsByName, cols, onClick, onDoubleClick, odd,
             indentSupported, indent, contextType, lastChild, processed,
             includedDocuments, notSaved, caption
         } = this.props;
 
         return (
             <tr
-                onClick={onMouseDown}
+                onClick={onClick}
                 onDoubleClick={onDoubleClick}
                 className={
                     (isSelected ? 'row-selected ' : '') +
