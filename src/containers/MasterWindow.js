@@ -9,6 +9,7 @@ import {
     attachFileAction,
     clearMasterData,
     getTab,
+    discardNewRow,
     addRowData,
     sortTab,
     connectWS,
@@ -224,18 +225,11 @@ class MasterWindow extends Component {
         window.removeEventListener('beforeunload', this.confirm);
     }
 
-    closeModalCallback = (isNew) => {
+    closeModalCallback = ({
+        isNew, windowType, documentId, tabId, rowId
+    } = {}) => {
         if (isNew) {
-            this.setState({
-                    newRow: true,
-                }, () => {
-                    setTimeout(() => {
-                        this.setState({
-                            newRow: false,
-                        });
-                    }, 1000);
-                },
-            );
+            discardNewRow({ windowType, documentId, tabId, rowId });
         }
     }
 

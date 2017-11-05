@@ -178,6 +178,17 @@ export function addNewRow(item, tabid, rowid, scope) {
     }
 }
 
+export function discardNewRow({ windowType, documentId, tabId, rowId } = {}) {
+    return axios.post(
+        config.API_URL + '/window/' +
+        windowType + '/' +
+        documentId + '/' +
+        tabId + '/' +
+        rowId +
+        '/discardChanges'
+    );
+}
+
 export function deleteRow(tabid, rowid, scope) {
     return {
         type: types.DELETE_ROW,
