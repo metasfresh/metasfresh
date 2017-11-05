@@ -139,7 +139,35 @@ class Actions extends Component {
     };
 
     renderAction = identifier => (item, key) => {
-        const { closeSubheader, openModal } = this.props;
+        const { closeSubheader, openModalRow, openModal } = this.props;
+
+        let handleClick = null;
+
+        if (!item.disabled) {
+            let handleModal;
+
+            if (item.tabId && item.rowId) {
+                handleModal = () => openModalRow(
+                    item.processId + '',
+                    'process',
+                    item.caption,
+                    item.tabId,
+                    item.rowId
+                );
+            } else {
+                handleModal = () => openModal(
+                    item.processId + '',
+                    'process',
+                    item.caption
+                );
+            }
+
+            handleClick = () => {
+                handleModal();
+
+                closeSubheader();
+            };
+        }
 
         return (
             <div
@@ -148,11 +176,7 @@ class Actions extends Component {
                 className={'subheader-item js-subheader-item' + (
                     item.disabled ? ' subheader-item-disabled' : ''
                 )}
-                onClick={item.disabled ? null : () => {
-                    openModal(item.processId + '', 'process', item.caption);
-
-                    closeSubheader();
-                }}
+                onClick={handleClick}
             >
                 {item.caption}
                 {item.disabled && item.disabledReason && (
