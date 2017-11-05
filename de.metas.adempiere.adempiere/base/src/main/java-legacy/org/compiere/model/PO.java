@@ -956,18 +956,6 @@ public abstract class PO
 	}   // setValue
 
 	/**
-	 * Set Encrypted Value
-	 *
-	 * @param ColumnName column name
-	 * @param value value
-	 * @return true if value set
-	 */
-	protected final boolean set_ValueE(final String ColumnName, final Object value)
-	{
-		return set_Value(ColumnName, value);
-	}   // setValueE
-
-	/**
 	 * Set Value if updatable and correct class.
 	 * (and to NULL if not mandatory)
 	 *
@@ -975,7 +963,7 @@ public abstract class PO
 	 * @param value value
 	 * @return true if value set
 	 */
-	protected final boolean set_Value(final int index, final Object value)
+	private final boolean set_Value(final int index, final Object value)
 	{
 		if (index < 0 || index >= get_ColumnCount())
 		{
@@ -1166,8 +1154,7 @@ public abstract class PO
 		return set_ValueNoCheck(index, value);
 	}
 
-	// metas: changed from private to public
-	public final boolean set_ValueNoCheck(final int index, final Object value)
+	private final boolean set_ValueNoCheck(final int index, final Object value)
 	{
 		//
 		// Load record if stale (01537)
@@ -1246,38 +1233,13 @@ public abstract class PO
 	}   // set_ValueNoCheck
 
 	/**
-	 * Set Encrypted Value w/o check (update, r/o, ..).
-	 * Used when Column is R/O
-	 * Required for key and parent values
-	 *
-	 * @param ColumnName column name
-	 * @param value value
-	 * @return true if value set
-	 */
-	protected final boolean set_ValueNoCheckE(final String ColumnName, final Object value)
-	{
-		return set_ValueNoCheck(ColumnName, value);
-	}	// set_ValueNoCheckE
-
-	/**
-	 * Set value of Column
-	 *
-	 * @param columnName
-	 * @param value
-	 */
-	public final void set_ValueOfColumn(final String columnName, final Object value)
-	{
-		set_ValueOfColumnReturningBoolean(columnName, value);
-	}
-
-	/**
 	 * Set value of Column returning boolean
 	 *
 	 * @param columnName
 	 * @param value
 	 * @returns boolean indicating success or failure
 	 */
-	public final boolean set_ValueOfColumnReturningBoolean(final String columnName, final Object value)
+	public final boolean set_ValueOfColumn(final String columnName, final Object value)
 	{
 		final int columnIndex = p_info.getColumnIndex(columnName);
 		if (columnIndex < 0)
@@ -1289,26 +1251,7 @@ public abstract class PO
 		return set_ValueReturningBoolean(columnIndex, value);
 	}
 
-	/**
-	 * Set Value of AD_Column_ID
-	 *
-	 * @param AD_Column_ID column
-	 * @param value value
-	 * @returns boolean indicating success or failure
-	 */
-	public final boolean set_ValueOfAD_Column_ID(final int AD_Column_ID, final Object value)
-	{
-		final int columnIndex = p_info.getColumnIndex(AD_Column_ID);
-		if (columnIndex < 0)
-		{
-			log.warn("Column with AD_Column_ID={} not found in method PO.set_ValueOfAD_Column_ID", AD_Column_ID);
-			return false;
-		}
-
-		return set_ValueReturningBoolean(columnIndex, value);
-	}
-
-	public final boolean set_ValueReturningBoolean(final int columnIndex, final Object value)
+	private final boolean set_ValueReturningBoolean(final int columnIndex, final Object value)
 	{
 		final String columnName = p_info.getColumnName(columnIndex);
 		if (COLUMNNAME_IsApproved.equals(columnName))
@@ -2919,7 +2862,7 @@ public abstract class PO
 				{
 					copyRecordSupport.setParentPO(this);
 					copyRecordSupport.copyRecord(this, get_TrxName());
-					
+
 					copyRecordSupport = null;
 					setDynAttribute(DYNATTR_CopyRecordSupport, null);
 				}
@@ -2998,7 +2941,6 @@ public abstract class PO
 			fireModelChange(ModelValidator.TYPE_SUBSEQUENT);
 		}
 
-		//
 		// Return "success"
 		return success;
 	}	// saveFinish
@@ -4003,15 +3945,15 @@ public abstract class PO
 
 		// Save ID
 		m_idOld = get_ID();
-		
+
 		//
 		// Create cache invalidation request
-		// (we have to do it here, before we reset all fields) 
+		// (we have to do it here, before we reset all fields)
 		final IModelCacheInvalidationService cacheInvalidationService = Services.get(IModelCacheInvalidationService.class);
 		final CacheInvalidateRequest cacheInvalidateRequest = p_info.isSingleKeyColumnName() ?
 				cacheInvalidationService.createRequest(this, ModelCacheInvalidationTiming.DELETE)
 				: null;
-		
+
 		//
 		createChangeLog(X_AD_ChangeLog.EVENTCHANGELOG_Delete);
 		logMigration(X_AD_MigrationStep.ACTION_Delete);
@@ -4097,14 +4039,14 @@ public abstract class PO
 	{
 		return success;
 	} 	// afterDelete
-	
+
 	private boolean is_Translatable()
 	{
 		if(!p_info.getTrlInfo().isTranslated())
 		{
 			return false;
 		}
-		
+
 		// Make sure it's single ID key which is integer and which is set
 		if (m_IDs.length > 1 || m_IDs.length == 0
 				|| I_ZERO.equals(m_IDs[0])
@@ -4112,7 +4054,7 @@ public abstract class PO
 		{
 			return false;
 		}
-		
+
 		return true;
 	}
 
@@ -4128,7 +4070,7 @@ public abstract class PO
 		{
 			return true;
 		}
-		
+
 		final boolean ok = POTrlRepository.instance.insertTranslations(p_info.getTrlInfo(), get_ID());
 		if(ok)
 		{
@@ -4153,7 +4095,7 @@ public abstract class PO
 		{
 			return true; // OK
 		}
-		
+
 		final boolean ok = POTrlRepository.instance.updateTranslations(this);
 		if(ok)
 		{
@@ -4176,13 +4118,13 @@ public abstract class PO
 		{
 			return true;
 		}
-		
+
 		final boolean ok = POTrlRepository.instance.deleteTranslations(p_info.getTrlInfo(), get_ID());
 		if(ok)
 		{
 			m_translations = NullModelTranslationMap.instance; // reset cached translations
 		}
-		
+
 		//
 		return ok;
 	}	// deleteTranslations
