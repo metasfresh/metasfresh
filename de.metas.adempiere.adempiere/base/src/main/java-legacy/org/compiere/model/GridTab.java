@@ -669,10 +669,10 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 	 * @param columnName column name
 	 * @return ArrayList with GridFields dependent on columnName
 	 */
-	public List<GridField> getDependantFields(final String columnName)
+	public List<GridField> getDependantFieldsWithNullElements(final String columnName)
 	{
-		return ImmutableList.copyOf(m_depOnField.get(columnName));
-	}   // getDependentFields
+		return new ArrayList<>(m_depOnField.get(columnName));
+	}
 
 	/**************************************************************************
 	 * Set Query
@@ -3272,7 +3272,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 		}
 
 		// Get dependent MFields (may be because of display or dynamic lookup)
-		final List<GridField> dependentFields = getDependantFields(columnName);
+		final List<GridField> dependentFields = getDependantFieldsWithNullElements(columnName);
 		for (final GridField dependentField : dependentFields)
 		{
 			if (dependentField == null)
