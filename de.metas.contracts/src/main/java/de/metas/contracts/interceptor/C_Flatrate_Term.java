@@ -350,7 +350,7 @@ public class C_Flatrate_Term
 		return sb.toString();
 	}
 
-	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_REACTIVATE, ModelValidator.TIMING_BEFORE_CLOSE })
+	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_VOID, ModelValidator.TIMING_BEFORE_CLOSE })
 	public void prohibitVoidingAndClosing(final I_C_Flatrate_Term term)
 	{
 		throw new AdempiereException("@" + MainValidator.MSG_FLATRATE_DOC_ACTION_NOT_SUPPORTED_0P + "@");
