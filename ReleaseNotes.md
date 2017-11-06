@@ -26,11 +26,17 @@ Here come the actual release notes:
 
 * metasfresh
   * [#2113](https://github.com/metasfresh/metasfresh/issues/2113) Move verify BOM process to BOM window
+    * Improvement of the BOM Verification Process. Now the BOM Verification is done via action in BOM window instead of Product window.
   * [#2273](https://github.com/metasfresh/metasfresh/issues/2273) Payment Selection as real Document
+    * Transforming the Payment Selection into a real document.
   * [#2676](https://github.com/metasfresh/metasfresh/issues/2676) flatrate: make subscription progress reflecting progress
+    * Further Improvements to Subscription Progress Subtab in Business Partner window subtab, now showing the real progress of subscriptions.
   * [#2803](https://github.com/metasfresh/metasfresh/issues/2803) Set hostkey for printing module when login in webui
+    * Now setting the Hostkey for a User when logging in via WebUI.
   * [#2854](https://github.com/metasfresh/metasfresh/issues/2854) Save Termination Reason when terminating subscription
+    * Recording the Reason when canceling a subscription.
   * [#2859](https://github.com/metasfresh/metasfresh/issues/2859) Pre-enddate termination of flatrate created compensation sales order
+    * New sysconfig to control if compensation Sales Orders are created.
   * [#2862](https://github.com/metasfresh/metasfresh/issues/2862) Set MasterStartDate for a contract when creating from order
   * [#2866](https://github.com/metasfresh/metasfresh/issues/2866) Make sure that 'Print All' is working in webui
   * [#2874](https://github.com/metasfresh/metasfresh/issues/2874) Create special filters in printing queue
