@@ -404,7 +404,7 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 			return;
 		}
 
-		ic.setGroupNo(fromOrderLine.getGroupNo());
+		ic.setC_Order_CompensationGroup_ID(fromOrderLine.getC_Order_CompensationGroup_ID());
 		ic.setIsGroupCompensationLine(fromOrderLine.isGroupCompensationLine());
 		ic.setGroupCompensationType(fromOrderLine.getGroupCompensationType());
 		ic.setGroupCompensationAmtType(fromOrderLine.getGroupCompensationAmtType());

@@ -21,11 +21,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Properties;
-import org.slf4j.Logger;
 
-import de.metas.i18n.Language;
-import de.metas.logging.LogManager;
-
+import org.adempiere.ad.dao.cache.CacheInvalidateRequest;
 import org.compiere.model.I_AD_PrintFormat;
 import org.compiere.model.X_AD_PrintFormatItem;
 import org.compiere.util.CCache;
@@ -33,6 +30,10 @@ import org.compiere.util.CacheMgt;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
+
+import de.metas.i18n.Language;
+import de.metas.logging.LogManager;
 
 /**
  *	Print Format Item Model.
@@ -163,8 +164,8 @@ public class MPrintFormatItem extends X_AD_PrintFormatItem
 	{
 		if (m_translationLabel == null)
 		{
-			m_translationLabel = new HashMap<String,String>();
-			m_translationSuffix = new HashMap<String,String>();
+			m_translationLabel = new HashMap<>();
+			m_translationSuffix = new HashMap<>();
 			String sql = "SELECT AD_Language, PrintName, PrintNameSuffix FROM AD_PrintFormatItem_Trl WHERE AD_PrintFormatItem_ID=?";
 			PreparedStatement pstmt = null;
 			ResultSet rs = null;
@@ -386,7 +387,7 @@ public class MPrintFormatItem extends X_AD_PrintFormatItem
 
 
 	/**	Lookup Map of AD_Column_ID for ColumnName	*/
-	private static CCache<Integer,String>	s_columns = new CCache<Integer,String>("AD_PrintFormatItem", 200);
+	private static CCache<Integer,String>	s_columns = new CCache<>("AD_PrintFormatItem", 200);
 
 	/**
 	 * 	Get ColumnName from AD_Column_ID
@@ -604,7 +605,7 @@ public class MPrintFormatItem extends X_AD_PrintFormatItem
 		}
 		
 		// metas-tsa: we need to reset the cache if an item value is changed
-		CacheMgt.get().resetOnTrxCommit(get_TrxName(), I_AD_PrintFormat.Table_Name, getAD_PrintFormat_ID());
+		CacheMgt.get().resetOnTrxCommit(get_TrxName(), CacheInvalidateRequest.rootRecord(I_AD_PrintFormat.Table_Name, getAD_PrintFormat_ID()));
 
 		return success;
 	}	//	afterSave

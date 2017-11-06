@@ -13,17 +13,19 @@ package org.adempiere.ad.dao.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryFilter;
@@ -39,6 +41,7 @@ import org.compiere.model.IQuery;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableList;
 
 import de.metas.logging.LogManager;
 
@@ -51,44 +54,42 @@ import de.metas.logging.LogManager;
  */
 public class InSubQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 {
+	public static <T> InSubQueryFilter<T> of(final ModelColumn<T, ?> column, final String subQueryColumnName, final IQuery<?> subQuery)
+	{
+		final Builder<T> builder = builder();
+		return builder
+				.tableName(column.getTableName())
+				.subQuery(subQuery)
+				.matchingColumnNames(column.getColumnName(), subQueryColumnName)
+				.build();
+	}
+
+	public static <T> Builder<T> builder()
+	{
+		return new Builder<>();
+	}
+
 	private final String tableName;
-	private final String columnName;
-	private final String subQueryColumnName;
-	private final IQueryFilterModifier modifier;
 	private final IQuery<?> subQuery;
+	private final List<ColumnNamePair> matchers;
 
 	//
 	private boolean sqlBuilt = false;
 	private String sqlWhereClause = null;
 	private List<Object> sqlParams = null;
-	private List<Object> _subQueryValues = null;
+	private List<Map<ColumnNamePair, Object>> _subQueryValues = null;
 
 	private static final transient Logger logger = LogManager.getLogger(InSubQueryFilter.class);
 
-	/**
-	 *
-	 * @param columnName this query match column
-	 * @param subQueryColumnName sub query match column
-	 * @param subQuery sub query
-	 */
-	public InSubQueryFilter(final String tableName, final String columnName, final String subQueryColumnName, final IQuery<?> subQuery)
+	private InSubQueryFilter(final Builder<T> builder)
 	{
-		this(tableName, columnName, NullQueryFilterModifier.instance, subQueryColumnName, subQuery);
-	}
+		Check.assumeNotEmpty(builder.tableName, "builder.tableName is not empty");
+		Check.assumeNotNull(builder.subQuery, "Parameter builder.subQuery is not null");
+		Check.assumeNotEmpty(builder.matchers, "builder.matchers is not empty");
 
-	public InSubQueryFilter(final ModelColumn<T, ?> column, final String subQueryColumnName, final IQuery<?> subQuery)
-	{
-		this(column.getTableName(), column.getColumnName(), NullQueryFilterModifier.instance, subQueryColumnName, subQuery);
-	}
-
-	public InSubQueryFilter(final String tableName, final String columnName, final IQueryFilterModifier modifier, final String subQueryColumnName, final IQuery<?> subQuery)
-	{
-		super();
-		this.tableName = tableName;
-		this.columnName = columnName;
-		this.subQueryColumnName = subQueryColumnName;
-		this.modifier = modifier;
-		this.subQuery = subQuery;
+		this.tableName = builder.tableName;
+		this.subQuery = builder.subQuery;
+		this.matchers = ImmutableList.copyOf(builder.matchers);
 	}
 
 	@Override
@@ -97,16 +98,16 @@ public class InSubQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 		return MoreObjects.toStringHelper(this)
 				.omitNullValues()
 				.add("tableName", tableName)
-				.add("columnName", columnName)
-				.add("subQueryColumnName", subQueryColumnName)
-				.add("modifier", modifier)
 				.add("subQuery", subQuery)
+				.add("matchers", matchers)
+				//
 				.add("sqlBuilt", sqlBuilt)
 				.add("sqlWhereClause", sqlWhereClause)
 				.add("sqlParams", sqlParams)
 				.add("_subQueryValues", _subQueryValues)
 				.toString();
 	}
+
 	@Override
 	public String getSql()
 	{
@@ -115,7 +116,7 @@ public class InSubQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 	}
 
 	@Override
-	public List<Object> getSqlParams(Properties ctx)
+	public List<Object> getSqlParams(final Properties ctx)
 	{
 		buildSql();
 		return sqlParams;
@@ -142,7 +143,7 @@ public class InSubQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 			// In case the sub query is done on the same table as the parent table, we can't write it with "EXISTS"
 			// Because we don't have aliases.
 			// Therefore, in such cases, we have to keep the writing with "IN"
-			//logDevelopmentWarn("The query has to be written with IN instead of EXISTS because the tablename is the same for both query and sub query.");
+			// logDevelopmentWarn("The query has to be written with IN instead of EXISTS because the tablename is the same for both query and sub query.");
 			useIN = true;
 		}
 		else if (subQueryImpl.hasLimitOrOffset())
@@ -186,8 +187,6 @@ public class InSubQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 	 */
 	private String buildSql_UsingEXISTS(final TypedSqlQuery<?> subQueryImpl)
 	{
-		final String subQueryColumnNameWithModifier = modifier.getColumnSql(this.subQueryColumnName);
-
 		//
 		// Build the new sub-query's SELECT FROM
 		final StringBuilder subQuerySelectClause = new StringBuilder()
@@ -197,19 +196,36 @@ public class InSubQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 		//
 		// Build the new sub-query's where clause
 		final StringBuilder subQueryWhereClauseNew = new StringBuilder();
+
 		// Linking where clause
+		for (final ColumnNamePair matcher : matchers)
 		{
+			if (subQueryWhereClauseNew.length() > 0)
+			{
+				subQueryWhereClauseNew.append(" and ");
+			}
 			subQueryWhereClauseNew
-					.append(subQuery.getTableName() + "." + subQueryColumnName)
+					.append(subQuery.getTableName() + "." + matcher.getSubQueryColumnName())
 					.append(" = ")
-					.append(this.tableName + "." + this.columnName);
+					.append(this.tableName + "." + matcher.getColumnName());
 		}
+
 		//
 		// Make sure the ID column for which we are search for is NOT NULL.
 		// Otherwise, if there is any row where this column is null, PostgreSQL will return false no matter what (fuck you PG for that, btw).
+		for (final ColumnNamePair matcher : matchers)
 		{
-			subQueryWhereClauseNew.append(" and " + subQueryColumnNameWithModifier + " is not null");
+			final IQueryFilterModifier modifier = matcher.getModifier();
+			final String subQueryColumnName = matcher.getSubQueryColumnName();
+			final String subQueryColumnNameWithModifier = modifier.getColumnSql(subQueryColumnName);
+
+			if (subQueryWhereClauseNew.length() > 0)
+			{
+				subQueryWhereClauseNew.append(" and ");
+			}
+			subQueryWhereClauseNew.append(subQueryColumnNameWithModifier).append(" is not null");
 		}
+
 		// Sub-query's initial where clause
 		{
 			final String subQueryWhereClauseInitial = subQueryImpl.getWhereClause();
@@ -240,7 +256,19 @@ public class InSubQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 	 */
 	private String buildSql_UsingIN(final TypedSqlQuery<?> subQueryImpl)
 	{
-		final String subQueryColumnNameWithModifier = modifier.getColumnSql(this.subQueryColumnName);
+		if (matchers.size() > 1)
+		{
+			throw new AdempiereException("More than one matchers are not supported when generating subqueries using IN keyword.")
+					.appendParametersToMessage()
+					.setParameter("filter", this);
+		}
+
+		final ColumnNamePair matcher = matchers.get(0);
+		final String columnName = matcher.getColumnName();
+		final String subQueryColumnName = matcher.getSubQueryColumnName();
+		final IQueryFilterModifier modifier = matcher.getModifier();
+
+		final String subQueryColumnNameWithModifier = modifier.getColumnSql(subQueryColumnName);
 
 		//
 		// Build the new sub-query's SELECT FROM
@@ -272,7 +300,7 @@ public class InSubQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 
 		//
 		// Wrap the sub-query SQL in an IN (SELECT ...) and return it
-		final String columnNameWithModifier = modifier.getColumnSql(this.columnName);
+		final String columnNameWithModifier = modifier.getColumnSql(columnName);
 		return new StringBuilder()
 				.append(columnNameWithModifier).append(" IN (")
 				.append(subQuerySql)
@@ -280,40 +308,49 @@ public class InSubQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 				.toString();
 	}
 
+	@SuppressWarnings("unused")
 	private final void logDevelopmentWarn(final String message)
 	{
 		if (Services.get(IDeveloperModeBL.class).isEnabled())
 		{
-			final AdempiereException e = new AdempiereException(message +"\n Filter: "+this);
+			final AdempiereException e = new AdempiereException(message + "\n Filter: " + this);
 			logger.warn(e.getLocalizedMessage(), e);
 		}
-		logger.debug(message +"\n Filter: {}", this);
+		logger.debug(message + "\n Filter: {}", this);
 	}
 
 	@Override
 	public boolean accept(final T model)
 	{
-		final List<Object> subQueryValues = getSubQueryValues(model);
-		if (subQueryValues.isEmpty())
+		final List<Map<ColumnNamePair, Object>> subQueryValuesList = getSubQueryValues(model);
+		if (subQueryValuesList.isEmpty())
 		{
 			return false;
 		}
 
-		final Object modelValue0 = InterfaceWrapperHelper.getValue(model, columnName).orNull();
-		final Object modelValue = modifier.convertValue(columnName, modelValue0, model);
+		final Map<ColumnNamePair, Object> modelValues = extractModelValues(model);
 
-		for (final Object subQueryValue : subQueryValues)
-		{
-			if (Check.equals(subQueryValue, modelValue))
-			{
-				return true;
-			}
-		}
-
-		return false;
+		return subQueryValuesList.contains(modelValues);
 	}
 
-	private List<Object> getSubQueryValues(final T model)
+	private Map<ColumnNamePair, Object> extractModelValues(final Object model)
+	{
+		final Map<ColumnNamePair, Object> modelValues = new HashMap<>();
+		for (final ColumnNamePair matcher : matchers)
+		{
+			final String columnName = matcher.getColumnName();
+			final IQueryFilterModifier modifier = matcher.getModifier();
+
+			final Object modelValue0 = InterfaceWrapperHelper.getValue(model, columnName).orNull();
+			final Object modelValue = modifier.convertValue(columnName, modelValue0, model);
+
+			modelValues.put(matcher, modelValue);
+		}
+
+		return modelValues;
+	}
+
+	private List<Map<ColumnNamePair, Object>> getSubQueryValues(final T contextModel)
 	{
 		if (_subQueryValues != null)
 		{
@@ -322,15 +359,80 @@ public class InSubQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 
 		final List<?> subQueryResult = subQuery.list();
 
-		final List<Object> subQueryValues = new ArrayList<>(subQueryResult.size());
-		for (Object subModel : subQueryResult)
+		final List<Map<ColumnNamePair, Object>> subQueryValues = new ArrayList<>(subQueryResult.size());
+		for (final Object subModel : subQueryResult)
 		{
-			final Object value0 = InterfaceWrapperHelper.getValue(subModel, this.subQueryColumnName).orNull();
-			final Object value = modifier.convertValue(IQueryFilterModifier.COLUMNNAME_Constant, value0, model);
-			subQueryValues.add(value);
+			final Map<ColumnNamePair, Object> subModelValues = new HashMap<>();
+			for (final ColumnNamePair matcher : matchers)
+			{
+				final String subQueryColumnName = matcher.getSubQueryColumnName();
+				final IQueryFilterModifier modifier = matcher.getModifier();
+
+				final Object value0 = InterfaceWrapperHelper.getValue(subModel, subQueryColumnName).orNull();
+				final Object value = modifier.convertValue(IQueryFilterModifier.COLUMNNAME_Constant, value0, contextModel);
+
+				subModelValues.put(matcher, value);
+			}
+
+			subQueryValues.add(subModelValues);
 		}
 
 		this._subQueryValues = subQueryValues;
 		return subQueryValues;
+	}
+
+	@lombok.Value
+	@lombok.Builder
+	private static final class ColumnNamePair
+	{
+		@lombok.NonNull
+		String columnName;
+		@lombok.NonNull
+		String subQueryColumnName;
+		@lombok.NonNull
+		IQueryFilterModifier modifier;
+	}
+
+	public static final class Builder<T>
+	{
+		private String tableName;
+		private final List<ColumnNamePair> matchers = new ArrayList<>();
+		private IQuery<?> subQuery;
+
+		private Builder()
+		{
+		}
+
+		public InSubQueryFilter<T> build()
+		{
+			return new InSubQueryFilter<>(this);
+		}
+
+		public Builder<T> tableName(final String tableName)
+		{
+			this.tableName = tableName;
+			return this;
+		}
+
+		public Builder<T> subQuery(final IQuery<?> subQuery)
+		{
+			this.subQuery = subQuery;
+			return this;
+		}
+
+		public Builder<T> matchingColumnNames(final String columnName, final String subQueryColumnName, final IQueryFilterModifier modifier)
+		{
+			matchers.add(ColumnNamePair.builder()
+					.columnName(columnName)
+					.subQueryColumnName(subQueryColumnName)
+					.modifier(modifier)
+					.build());
+			return this;
+		}
+
+		public Builder<T> matchingColumnNames(final String columnName, final String subQueryColumnName)
+		{
+			return matchingColumnNames(columnName, subQueryColumnName, NullQueryFilterModifier.instance);
+		}
 	}
 }

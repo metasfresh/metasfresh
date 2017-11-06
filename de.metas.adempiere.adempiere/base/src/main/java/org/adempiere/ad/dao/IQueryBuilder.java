@@ -241,6 +241,8 @@ public interface IQueryBuilder<T>
 	 */
 	<V> IQueryBuilder<T> addNotInArrayFilter(String columnName, Collection<V> values);
 
+	IInSubQueryFilterClause<T, IQueryBuilder<T>> addInSubQueryFilter();
+
 	<ST> IQueryBuilder<T> addInSubQueryFilter(String columnName, IQueryFilterModifier modifier, String subQueryColumnName, IQuery<ST> subQuery);
 
 	/**

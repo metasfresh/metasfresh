@@ -2,6 +2,10 @@ package de.metas.order.compensationGroup;
 
 import java.util.Collection;
 
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
+
 /*
  * #%L
  * de.metas.business
@@ -35,5 +39,13 @@ public interface GroupRepository
 		return new GroupCreator(this);
 	}
 
-	Group createNewGroup(Collection<Integer> regularLineIds);
+	Group retrieveOrCreateGroup(RetrieveOrCreateGroupRequest request);
+	
+	@Value
+	@Builder
+	class RetrieveOrCreateGroupRequest
+	{
+		@NonNull Collection<Integer> orderLineIds;
+		@NonNull GroupIdTemplate newGroupIdTemplate;
+	}
 }

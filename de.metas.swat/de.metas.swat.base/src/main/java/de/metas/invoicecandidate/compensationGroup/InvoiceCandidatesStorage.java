@@ -72,14 +72,14 @@ public class InvoiceCandidatesStorage
 
 	private void setGroupNo(final I_C_Invoice_Candidate compensationLinePO)
 	{
-		if (compensationLinePO.getGroupNo() <= 0)
+		if (compensationLinePO.getC_Order_CompensationGroup_ID() <= 0)
 		{
-			compensationLinePO.setGroupNo(groupId.getGroupNo());
+			compensationLinePO.setC_Order_CompensationGroup_ID(groupId.getOrderCompensationGroupId());
 		}
-		else if (compensationLinePO.getGroupNo() != groupId.getGroupNo())
+		else if (compensationLinePO.getC_Order_CompensationGroup_ID() != groupId.getOrderCompensationGroupId())
 		{
-			throw new AdempiereException("Invoice candidate has already another groupNo set: " + compensationLinePO)
-					.setParameter("expectedGroupNo", groupId.getGroupNo())
+			throw new AdempiereException("Invoice candidate has already another groupId set: " + compensationLinePO)
+					.setParameter("expectedGroupId", groupId.getOrderCompensationGroupId())
 					.appendParametersToMessage();
 		}
 	}

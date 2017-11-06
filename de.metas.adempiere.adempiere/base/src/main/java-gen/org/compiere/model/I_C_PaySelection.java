@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 package org.compiere.model;
 
 
@@ -28,39 +12,54 @@ public interface I_C_PaySelection
     public static final String Table_Name = "C_PaySelection";
 
     /** AD_Table_ID=426 */
-    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
+//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
 
-    /** AccessLevel = 1 - Org 
+    /** AccessLevel = 1 - Org
      */
-    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(1);
+//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(1);
 
     /** Load Meta Data */
 
-	/** Get Mandant.
-	  * Client/Tenant for this installation.
-	  */
+	/**
+	 * Get Mandant.
+	 * Client/Tenant for this installation.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public int getAD_Client_ID();
 
-	public org.compiere.model.I_AD_Client getAD_Client() throws RuntimeException;
+	public org.compiere.model.I_AD_Client getAD_Client();
 
     /** Column definition for AD_Client_ID */
     public static final org.adempiere.model.ModelColumn<I_C_PaySelection, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_C_PaySelection, org.compiere.model.I_AD_Client>(I_C_PaySelection.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
     /** Column name AD_Client_ID */
     public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
-	/** Set Sektion.
-	  * Organisatorische Einheit des Mandanten
-	  */
+	/**
+	 * Set Sektion.
+	 * Organisatorische Einheit des Mandanten
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public void setAD_Org_ID (int AD_Org_ID);
 
-	/** Get Sektion.
-	  * Organisatorische Einheit des Mandanten
-	  */
+	/**
+	 * Get Sektion.
+	 * Organisatorische Einheit des Mandanten
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public int getAD_Org_ID();
 
-	public org.compiere.model.I_AD_Org getAD_Org() throws RuntimeException;
+	public org.compiere.model.I_AD_Org getAD_Org();
 
 	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
 
@@ -69,17 +68,27 @@ public interface I_C_PaySelection
     /** Column name AD_Org_ID */
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
-	/** Set Bankverbindung.
-	  * Bankverbindung des Geschäftspartners
-	  */
+	/**
+	 * Set Bankverbindung.
+	 * Bankverbindung des Geschäftspartners
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public void setC_BP_BankAccount_ID (int C_BP_BankAccount_ID);
 
-	/** Get Bankverbindung.
-	  * Bankverbindung des Geschäftspartners
-	  */
+	/**
+	 * Get Bankverbindung.
+	 * Bankverbindung des Geschäftspartners
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public int getC_BP_BankAccount_ID();
 
-	public org.compiere.model.I_C_BP_BankAccount getC_BP_BankAccount() throws RuntimeException;
+	public org.compiere.model.I_C_BP_BankAccount getC_BP_BankAccount();
 
 	public void setC_BP_BankAccount(org.compiere.model.I_C_BP_BankAccount C_BP_BankAccount);
 
@@ -88,14 +97,24 @@ public interface I_C_PaySelection
     /** Column name C_BP_BankAccount_ID */
     public static final String COLUMNNAME_C_BP_BankAccount_ID = "C_BP_BankAccount_ID";
 
-	/** Set Zahlung auswählen.
-	  * Payment Selection
-	  */
+	/**
+	 * Set Zahlung Anweisen.
+	 * Zahlung Anweisen
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public void setC_PaySelection_ID (int C_PaySelection_ID);
 
-	/** Get Zahlung auswählen.
-	  * Payment Selection
-	  */
+	/**
+	 * Get Zahlung Anweisen.
+	 * Zahlung Anweisen
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public int getC_PaySelection_ID();
 
     /** Column definition for C_PaySelection_ID */
@@ -103,9 +122,14 @@ public interface I_C_PaySelection
     /** Column name C_PaySelection_ID */
     public static final String COLUMNNAME_C_PaySelection_ID = "C_PaySelection_ID";
 
-	/** Get Erstellt.
-	  * Date this record was created
-	  */
+	/**
+	 * Get Erstellt.
+	 * Date this record was created
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public java.sql.Timestamp getCreated();
 
     /** Column definition for Created */
@@ -113,9 +137,14 @@ public interface I_C_PaySelection
     /** Column name Created */
     public static final String COLUMNNAME_Created = "Created";
 
-	/** Get Erstellt durch.
-	  * User who created this records
-	  */
+	/**
+	 * Get Erstellt durch.
+	 * User who created this records
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public int getCreatedBy();
 
     /** Column definition for CreatedBy */
@@ -123,14 +152,24 @@ public interface I_C_PaySelection
     /** Column name CreatedBy */
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
-	/** Set Position(en) kopieren von.
-	  * Process which will generate a new document lines based on an existing document
-	  */
+	/**
+	 * Set Position(en) kopieren von.
+	 * Process which will generate a new document lines based on an existing document
+	 *
+	 * <br>Type: Button
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
 	public void setCreateFrom (java.lang.String CreateFrom);
 
-	/** Get Position(en) kopieren von.
-	  * Process which will generate a new document lines based on an existing document
-	  */
+	/**
+	 * Get Position(en) kopieren von.
+	 * Process which will generate a new document lines based on an existing document
+	 *
+	 * <br>Type: Button
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
 	public java.lang.String getCreateFrom();
 
     /** Column definition for CreateFrom */
@@ -138,10 +177,22 @@ public interface I_C_PaySelection
     /** Column name CreateFrom */
     public static final String COLUMNNAME_CreateFrom = "CreateFrom";
 
-	/** Set Beschreibung	  */
+	/**
+	 * Set Beschreibung.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
 	public void setDescription (java.lang.String Description);
 
-	/** Get Beschreibung	  */
+	/**
+	 * Get Beschreibung.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
 	public java.lang.String getDescription();
 
     /** Column definition for Description */
@@ -149,14 +200,74 @@ public interface I_C_PaySelection
     /** Column name Description */
     public static final String COLUMNNAME_Description = "Description";
 
-	/** Set Aktiv.
-	  * The record is active in the system
-	  */
+	/**
+	 * Set Belegverarbeitung.
+	 * Der zukünftige Status des Belegs
+	 *
+	 * <br>Type: Button
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setDocAction (java.lang.String DocAction);
+
+	/**
+	 * Get Belegverarbeitung.
+	 * Der zukünftige Status des Belegs
+	 *
+	 * <br>Type: Button
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getDocAction();
+
+    /** Column definition for DocAction */
+    public static final org.adempiere.model.ModelColumn<I_C_PaySelection, Object> COLUMN_DocAction = new org.adempiere.model.ModelColumn<I_C_PaySelection, Object>(I_C_PaySelection.class, "DocAction", null);
+    /** Column name DocAction */
+    public static final String COLUMNNAME_DocAction = "DocAction";
+
+	/**
+	 * Set Belegstatus.
+	 * The current status of the document
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setDocStatus (java.lang.String DocStatus);
+
+	/**
+	 * Get Belegstatus.
+	 * The current status of the document
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getDocStatus();
+
+    /** Column definition for DocStatus */
+    public static final org.adempiere.model.ModelColumn<I_C_PaySelection, Object> COLUMN_DocStatus = new org.adempiere.model.ModelColumn<I_C_PaySelection, Object>(I_C_PaySelection.class, "DocStatus", null);
+    /** Column name DocStatus */
+    public static final String COLUMNNAME_DocStatus = "DocStatus";
+
+	/**
+	 * Set Aktiv.
+	 * The record is active in the system
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public void setIsActive (boolean IsActive);
 
-	/** Get Aktiv.
-	  * The record is active in the system
-	  */
+	/**
+	 * Get Aktiv.
+	 * The record is active in the system
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public boolean isActive();
 
     /** Column definition for IsActive */
@@ -164,14 +275,24 @@ public interface I_C_PaySelection
     /** Column name IsActive */
     public static final String COLUMNNAME_IsActive = "IsActive";
 
-	/** Set Freigegeben.
-	  * Indicates if this document requires approval
-	  */
+	/**
+	 * Set Freigegeben.
+	 * Indicates if this document requires approval
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public void setIsApproved (boolean IsApproved);
 
-	/** Get Freigegeben.
-	  * Indicates if this document requires approval
-	  */
+	/**
+	 * Get Freigegeben.
+	 * Indicates if this document requires approval
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public boolean isApproved();
 
     /** Column definition for IsApproved */
@@ -179,14 +300,24 @@ public interface I_C_PaySelection
     /** Column name IsApproved */
     public static final String COLUMNNAME_IsApproved = "IsApproved";
 
-	/** Set Name.
-	  * Alphanumeric identifier of the entity
-	  */
+	/**
+	 * Set Name.
+	 * Alphanumeric identifier of the entity
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public void setName (java.lang.String Name);
 
-	/** Get Name.
-	  * Alphanumeric identifier of the entity
-	  */
+	/**
+	 * Get Name.
+	 * Alphanumeric identifier of the entity
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public java.lang.String getName();
 
     /** Column definition for Name */
@@ -194,14 +325,24 @@ public interface I_C_PaySelection
     /** Column name Name */
     public static final String COLUMNNAME_Name = "Name";
 
-	/** Set Payment date.
-	  * Date Payment made
-	  */
+	/**
+	 * Set Zahldatum.
+	 * Date Payment made
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public void setPayDate (java.sql.Timestamp PayDate);
 
-	/** Get Payment date.
-	  * Date Payment made
-	  */
+	/**
+	 * Get Zahldatum.
+	 * Date Payment made
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public java.sql.Timestamp getPayDate();
 
     /** Column definition for PayDate */
@@ -209,10 +350,22 @@ public interface I_C_PaySelection
     /** Column name PayDate */
     public static final String COLUMNNAME_PayDate = "PayDate";
 
-	/** Set PaySelection_includedTab	  */
+	/**
+	 * Set PaySelection_includedTab.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
 	public void setPaySelection_includedTab (java.lang.String PaySelection_includedTab);
 
-	/** Get PaySelection_includedTab	  */
+	/**
+	 * Get PaySelection_includedTab.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
 	public java.lang.String getPaySelection_includedTab();
 
     /** Column definition for PaySelection_includedTab */
@@ -220,14 +373,24 @@ public interface I_C_PaySelection
     /** Column name PaySelection_includedTab */
     public static final String COLUMNNAME_PaySelection_includedTab = "PaySelection_includedTab";
 
-	/** Set Verarbeitet.
-	  * Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
-	  */
+	/**
+	 * Set Verarbeitet.
+	 * Checkbox sagt aus, ob der Beleg verarbeitet wurde.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public void setProcessed (boolean Processed);
 
-	/** Get Verarbeitet.
-	  * Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
-	  */
+	/**
+	 * Get Verarbeitet.
+	 * Checkbox sagt aus, ob der Beleg verarbeitet wurde.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public boolean isProcessed();
 
     /** Column definition for Processed */
@@ -235,10 +398,22 @@ public interface I_C_PaySelection
     /** Column name Processed */
     public static final String COLUMNNAME_Processed = "Processed";
 
-	/** Set Verarbeiten	  */
+	/**
+	 * Set Verarbeiten.
+	 *
+	 * <br>Type: Button
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public void setProcessing (boolean Processing);
 
-	/** Get Verarbeiten	  */
+	/**
+	 * Get Verarbeiten.
+	 *
+	 * <br>Type: Button
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public boolean isProcessing();
 
     /** Column definition for Processing */
@@ -246,10 +421,22 @@ public interface I_C_PaySelection
     /** Column name Processing */
     public static final String COLUMNNAME_Processing = "Processing";
 
-	/** Set Gesamtbetrag	  */
+	/**
+	 * Set Gesamtbetrag.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public void setTotalAmt (java.math.BigDecimal TotalAmt);
 
-	/** Get Gesamtbetrag	  */
+	/**
+	 * Get Gesamtbetrag.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public java.math.BigDecimal getTotalAmt();
 
     /** Column definition for TotalAmt */
@@ -257,9 +444,14 @@ public interface I_C_PaySelection
     /** Column name TotalAmt */
     public static final String COLUMNNAME_TotalAmt = "TotalAmt";
 
-	/** Get Aktualisiert.
-	  * Date this record was updated
-	  */
+	/**
+	 * Get Aktualisiert.
+	 * Date this record was updated
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public java.sql.Timestamp getUpdated();
 
     /** Column definition for Updated */
@@ -267,9 +459,14 @@ public interface I_C_PaySelection
     /** Column name Updated */
     public static final String COLUMNNAME_Updated = "Updated";
 
-	/** Get Aktualisiert durch.
-	  * User who updated this records
-	  */
+	/**
+	 * Get Aktualisiert durch.
+	 * User who updated this records
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public int getUpdatedBy();
 
     /** Column definition for UpdatedBy */

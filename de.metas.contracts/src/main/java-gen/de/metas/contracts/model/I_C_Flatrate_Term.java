@@ -1420,6 +1420,52 @@ public interface I_C_Flatrate_Term
     public static final String COLUMNNAME_StartDate = "StartDate";
 
 	/**
+	 * Set Termination Memo.
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setTerminationMemo (java.lang.String TerminationMemo);
+
+	/**
+	 * Get Termination Memo.
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getTerminationMemo();
+
+    /** Column definition for TerminationMemo */
+    public static final org.adempiere.model.ModelColumn<I_C_Flatrate_Term, Object> COLUMN_TerminationMemo = new org.adempiere.model.ModelColumn<I_C_Flatrate_Term, Object>(I_C_Flatrate_Term.class, "TerminationMemo", null);
+    /** Column name TerminationMemo */
+    public static final String COLUMNNAME_TerminationMemo = "TerminationMemo";
+
+	/**
+	 * Set Termination Reason.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setTerminationReason (java.lang.String TerminationReason);
+
+	/**
+	 * Get Termination Reason.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getTerminationReason();
+
+    /** Column definition for TerminationReason */
+    public static final org.adempiere.model.ModelColumn<I_C_Flatrate_Term, Object> COLUMN_TerminationReason = new org.adempiere.model.ModelColumn<I_C_Flatrate_Term, Object>(I_C_Flatrate_Term.class, "TerminationReason", null);
+    /** Column name TerminationReason */
+    public static final String COLUMNNAME_TerminationReason = "TerminationReason";
+
+	/**
 	 * Set Vertragsart.
 	 *
 	 * <br>Type: List

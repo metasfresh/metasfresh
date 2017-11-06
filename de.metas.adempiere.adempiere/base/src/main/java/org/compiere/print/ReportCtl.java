@@ -24,7 +24,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.model.I_C_PaySelectionCheck;
 import org.compiere.model.MQuery;
 import org.compiere.model.PrintInfo;
 import org.compiere.util.Env;
@@ -83,9 +82,7 @@ public final class ReportCtl
 		// Payment Check Print
 		if (adProcessId == 313)     		// C_Payment
 		{
-			final int C_Payment_ID = processInfo.getRecord_ID();
-			final int C_PaySelectionCheck_ID = prepareCheckPrint(C_Payment_ID);
-			startDocumentPrint(ReportEngine.CHECK, I_C_PaySelectionCheck.Table_ID, C_PaySelectionCheck_ID);
+			throw new UnsupportedOperationException("Not supported");
 		}
 		//
 		// Standard document print
@@ -311,28 +308,6 @@ public final class ReportCtl
 				ReportEngine.printConfirm(reportEngineDocumentType, recordId);
 			}
 		}
-	}
-
-	/**
-	 * @return C_PaySelectionCheck_ID
-	 */
-	private static final int prepareCheckPrint(final int C_Payment_ID)
-	{
-		// FIXME: HARDCODED: this code shall go in process implementation or deleted because it's not used!
-		throw new UnsupportedOperationException();
-//
-//		// afalcone - [ 1871567 ] Wrong value in Payment document
-//		final Properties ctx = Env.getCtx();
-//		MPaySelectionCheck.deleteGeneratedDraft(ctx, C_Payment_ID, ITrx.TRXNAME_None);
-//		//
-//
-//		MPaySelectionCheck psc = MPaySelectionCheck.getOfPayment(ctx, C_Payment_ID, ITrx.TRXNAME_None);
-//		if (psc == null)
-//		{
-//			psc = MPaySelectionCheck.createForPayment(ctx, C_Payment_ID, ITrx.TRXNAME_None);
-//		}
-//
-//		return psc == null ? -1 : psc.getC_PaySelectionCheck_ID();
 	}
 
 	private static void createOutput(final ReportEngine re, final boolean printPreview, final String printerName)

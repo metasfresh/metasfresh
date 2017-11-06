@@ -83,6 +83,8 @@ public interface ICompositeQueryFilter<T> extends IQueryFilter<T>
 	 */
 	boolean isJoinOr();
 
+	IInSubQueryFilterClause<T, ICompositeQueryFilter<T>> addInSubQueryFilter();
+
 	/**
 	 * Add a {@link InSubQueryFilter}
 	 * 

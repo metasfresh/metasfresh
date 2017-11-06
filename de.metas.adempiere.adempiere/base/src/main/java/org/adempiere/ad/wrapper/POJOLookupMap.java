@@ -76,6 +76,8 @@ import org.compiere.util.TrxRunnable;
 import org.compiere.util.TrxRunnable2;
 import org.slf4j.Logger;
 
+import com.google.common.collect.ImmutableSet;
+
 import de.metas.logging.LogManager;
 import de.metas.monitoring.exception.MonitoringException;
 import de.metas.process.IADPInstanceDAO;
@@ -198,7 +200,7 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 	 * Map of cached objects (TableName -> Record_ID -> Object)
 	 */
 	Map<String, Map<Integer, Object>> cachedObjects = new HashMap<>();
-	Map<Integer, Set<Integer>> selectionId2selection = new HashMap<>();
+	Map<Integer, ImmutableSet<Integer>> selectionId2selection = new HashMap<>();
 
 	private boolean copyOnSave = true;
 
@@ -1071,12 +1073,7 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 	{
 		Check.assume(selectionId > 0, "selectionId > 0");
 
-		final Set<Integer> selectionSet = new HashSet<>();
-		if (selection != null)
-		{
-			selectionSet.addAll(selection);
-		}
-
+		final ImmutableSet<Integer> selectionSet = selection != null ? ImmutableSet.copyOf(selection) : ImmutableSet.of();
 		this.selectionId2selection.put(selectionId, selectionSet);
 	}
 
@@ -1135,12 +1132,13 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 
 	public boolean isInSelection(final int selectionId, final int id)
 	{
+		return getSelectionIds(selectionId).contains(id);
+	}
+	
+	public Set<Integer> getSelectionIds(final int selectionId)
+	{
 		final Set<Integer> selection = selectionId2selection.get(selectionId);
-		if (selection == null)
-		{
-			return false;
-		}
-		return selection.contains(id);
+		return selection != null ? selection : ImmutableSet.of();
 	}
 
 	/**
