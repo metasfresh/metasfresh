@@ -36,6 +36,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.mm.attributes.api.impl.ProductDescriptorFromAttributeSetInstanceFactory;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
@@ -79,7 +80,8 @@ import de.metas.handlingunits.pporder.api.HUPPOrderIssueReceiptCandidatesProcess
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = HandlingUnitsConfiguration.class)
+@SpringBootTest(classes = { HandlingUnitsConfiguration.class,
+		ProductDescriptorFromAttributeSetInstanceFactory.class })
 @ActiveProfiles("test")
 public class HUPPOrderIssueProducerTest extends AbstractHUTest
 {
@@ -543,7 +545,7 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 		hus.forEach(hu -> refresh(hu));
 		assertThat(hus).allSatisfy(hu -> assertThat(hu.getHUStatus()).isEqualTo(X_M_HU.HUSTATUS_Issued));
 	}
-	
+
 	private I_PP_Order createPPOrderForSaladFromFolie()
 	{
 		//@formatter:off

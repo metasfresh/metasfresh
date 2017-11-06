@@ -20,7 +20,6 @@ import org.junit.Test;
 
 import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.material.planning.exception.NoPlantForWarehouseException;
-import de.metas.material.planning.impl.ProductPlanningDAO;
 
 public class ProductPlanningDAO_findPlantTest
 {
@@ -39,9 +38,9 @@ public class ProductPlanningDAO_findPlantTest
 
 	/**
 	 * Case: warehouse has a Plant configured, no product planning defined.
-	 * 
+	 *
 	 * Expectation: plant from warehouse shall be taken.
-	 * 
+	 *
 	 * @task http://dewiki908/mediawiki/index.php/07900_Ressource_not_set_in_MRP_Info_%28102098673699%29
 	 */
 	@Test
@@ -66,9 +65,9 @@ public class ProductPlanningDAO_findPlantTest
 
 	/**
 	 * Case: warehouse has a Plant configured, we also have a valid product planning configured.
-	 * 
+	 *
 	 * Expectation: plant from warehouse shall be taken.
-	 * 
+	 *
 	 * @task http://dewiki908/mediawiki/index.php/07900_Ressource_not_set_in_MRP_Info_%28102098673699%29
 	 */
 	@Test
@@ -93,9 +92,9 @@ public class ProductPlanningDAO_findPlantTest
 
 	/**
 	 * Case: warehouse has NO Plant configured, there is no product planning
-	 * 
+	 *
 	 * Expectation: exception shall be thrown.
-	 * 
+	 *
 	 * @task http://dewiki908/mediawiki/index.php/07900_Ressource_not_set_in_MRP_Info_%28102098673699%29
 	 */
 	@Test(expected = NoPlantForWarehouseException.class)
@@ -111,9 +110,9 @@ public class ProductPlanningDAO_findPlantTest
 
 	/**
 	 * Case: warehouse has NO Plant configured, we also have a valid product planning configured.
-	 * 
+	 *
 	 * Expectation: plant from product planning shall be taken.
-	 * 
+	 *
 	 * @task http://dewiki908/mediawiki/index.php/07900_Ressource_not_set_in_MRP_Info_%28102098673699%29
 	 */
 	@Test
@@ -147,9 +146,9 @@ public class ProductPlanningDAO_findPlantTest
 		createProductPlanningWithPlant(org, warehouse, product);
 
 		productPlanningDAO.findPlant(
-				context.getCtx(), 
-				org.getAD_Org_ID(), 
-				warehouse, 
+				context.getCtx(),
+				org.getAD_Org_ID(),
+				warehouse,
 				product.getM_Product_ID(),
 				AttributeConstants.M_AttributeSetInstance_ID_None);
 	}
@@ -170,9 +169,9 @@ public class ProductPlanningDAO_findPlantTest
 		createProductPlanning(org, warehouse, product, null);
 
 		final I_S_Resource plantActual = productPlanningDAO.findPlant(
-				context.getCtx(), 
-				org.getAD_Org_ID(), 
-				warehouse, 
+				context.getCtx(),
+				org.getAD_Org_ID(),
+				warehouse,
 				product.getM_Product_ID(),
 				AttributeConstants.M_AttributeSetInstance_ID_None);
 
@@ -230,6 +229,7 @@ public class ProductPlanningDAO_findPlantTest
 	private I_PP_Product_Planning createProductPlanning(I_AD_Org org, I_M_Warehouse warehouse, I_M_Product product, I_S_Resource plant)
 	{
 		final I_PP_Product_Planning pp = InterfaceWrapperHelper.newInstance(I_PP_Product_Planning.class, context);
+		pp.setIsAttributeDependant(false);
 		pp.setAD_Org(org);
 		pp.setM_Warehouse(warehouse);
 		pp.setM_Product(product);

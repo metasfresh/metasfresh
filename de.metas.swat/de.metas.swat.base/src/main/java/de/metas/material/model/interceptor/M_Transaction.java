@@ -138,10 +138,10 @@ public class M_Transaction
 		for (final I_M_ShipmentSchedule_QtyPicked shipmentScheduleQtyPicked : shipmentScheduleQtysPicked)
 		{
 			assertSignumsOfQuantitiesMatch(shipmentScheduleQtyPicked, transaction);
-			
+
 			final BigDecimal qtyPicked = shipmentScheduleQtyPicked.getQtyPicked();
 			final BigDecimal quantityForMaterialDescriptor = MTransactionUtil.isInboundTransaction(transaction) ? qtyPicked : qtyPicked.negate();
-			
+
 			shipmentScheduleId2quantity.merge(
 					shipmentScheduleQtyPicked.getM_ShipmentSchedule_ID(),
 					quantityForMaterialDescriptor,
@@ -188,8 +188,8 @@ public class M_Transaction
 	{
 		final ProductDescriptorFactory productDescriptorFactory = Adempiere.getBean(ProductDescriptorFactory.class);
 		final ProductDescriptor productDescriptor = productDescriptorFactory.createProductDescriptor(transaction);
-		
-		return MaterialDescriptor.builder()
+
+		return MaterialDescriptor.builderForCompleteDescriptor()
 				.warehouseId(transaction.getM_Locator().getM_Warehouse_ID())
 				.date(transaction.getMovementDate())
 				.productDescriptor(productDescriptor)
