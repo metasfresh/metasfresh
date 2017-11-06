@@ -97,7 +97,7 @@ public class WebsocketSender implements InitializingBean
 	{
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
 		final ITrx trx = trxManager.getThreadInheritedTrx(OnTrxMissingPolicy.ReturnTrxNone);
-		if (trxManager.isNull(trx))
+		if (!trxManager.isActive(trx))
 		{
 			return autoflushQueue;
 		}
