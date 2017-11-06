@@ -51,7 +51,6 @@ public class PP_OrderFireMaterialEvent
 			return;
 		}
 
-		// TODO test at least if ProductDescriptorFactory works for ppOrder and line
 		final ProductDescriptorFactory productDescriptorFactory = Adempiere.getBean(ProductDescriptorFactory.class);
 
 		final PPOrderBuilder ppOrderPojoBuilder = PPOrder.builder()

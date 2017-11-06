@@ -52,20 +52,21 @@ public class DD_OrderFireMaterialEvent
 				.shipperId(ddOrder.getM_Shipper_ID());
 
 		final ProductDescriptorFactory productDescriptorFactory = Adempiere.getBean(ProductDescriptorFactory.class);
-		
+
 		final List<I_DD_OrderLine> ddOrderLines = Services.get(IDDOrderDAO.class).retrieveLines(ddOrder);
 		for (final I_DD_OrderLine line : ddOrderLines)
 		{
 			final int durationDays = DDOrderUtil.calculateDurationDays(ddOrder.getPP_Product_Planning(), line.getDD_NetworkDistributionLine());
 
-			ddOrderPojoBuilder.line(DDOrderLine.builder()
-					.productDescriptor(productDescriptorFactory.createProductDescriptor(line))
-					.ddOrderLineId(line.getDD_OrderLine_ID())
-					.qty(line.getQtyDelivered())
-					.networkDistributionLineId(line.getDD_NetworkDistributionLine_ID())
-					.salesOrderLineId(line.getC_OrderLineSO_ID())
-					.durationDays(durationDays)
-					.build());
+			ddOrderPojoBuilder
+					.line(DDOrderLine.builder()
+							.productDescriptor(productDescriptorFactory.createProductDescriptor(line))
+							.ddOrderLineId(line.getDD_OrderLine_ID())
+							.qty(line.getQtyDelivered())
+							.networkDistributionLineId(line.getDD_NetworkDistributionLine_ID())
+							.salesOrderLineId(line.getC_OrderLineSO_ID())
+							.durationDays(durationDays)
+							.build());
 
 			final DistributionPlanEvent event = DistributionPlanEvent.builder()
 					.eventDescriptor(EventDescriptor.createNew(ddOrder))
