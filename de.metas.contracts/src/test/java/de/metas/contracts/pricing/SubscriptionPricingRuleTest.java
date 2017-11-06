@@ -1,5 +1,7 @@
 package de.metas.contracts.pricing;
 
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+
 import java.math.BigDecimal;
 
 import org.adempiere.pricing.api.IEditablePricingContext;
@@ -27,16 +29,15 @@ public class SubscriptionPricingRuleTest
 	}
 
 	@Test
-	public void calculateSubscriptionPricet_test()
+	public void calculateSubscriptionPrice_test()
 	{
-
-		final I_C_Country contryCH = helper.createCountry("DE", PricingTestHelper.C_Currency_ID_EUR);
-		final I_M_PriceList priceListCH = helper.createPriceList(helper.getDefaultPricingSystem(), contryCH);
-		final I_M_PriceList_Version plvCH = helper.createPriceListVersion(priceListCH);
-
-		final I_C_Country contryDE = helper.createCountry("CH", PricingTestHelper.C_Currency_ID_CHF);
+		final I_C_Country contryDE = helper.createCountry("DE", PricingTestHelper.C_Currency_ID_EUR);
 		final I_M_PriceList priceListDE = helper.createPriceList(helper.getDefaultPricingSystem(), contryDE);
 		final I_M_PriceList_Version plvDE = helper.createPriceListVersion(priceListDE);
+
+		final I_C_Country contryCH = helper.createCountry("CH", PricingTestHelper.C_Currency_ID_CHF);
+		final I_M_PriceList priceListCH = helper.createPriceList(helper.getDefaultPricingSystem(), contryCH);
+		final I_M_PriceList_Version plvCH = helper.createPriceListVersion(priceListCH);
 
 
 		helper.newProductPriceBuilder(plvCH)
@@ -44,16 +45,49 @@ public class SubscriptionPricingRuleTest
 				.build();
 
 		helper.newProductPriceBuilder(plvDE)
-				.setPrice(3)
+				.setPrice(5)
 				.build();
 
 		final IEditablePricingContext pricingCtx = helper.subscriptionPricingContextNew()
 				.priceList(priceListDE)
 				.priceListVersion(plvDE)
+				.country(contryDE)
 				.build();
 
 		final IPricingResult result = helper.calculatePrice(pricingCtx);
-		Assert.assertThat("PriceStd\n" + result, result.getPriceStd(), Matchers.comparesEqualTo(BigDecimal.valueOf(3)));
+		Assert.assertThat("PriceStd\n" + result, result.getPriceStd(), Matchers.comparesEqualTo(BigDecimal.valueOf(5)));
+	}
+	
+	@Test
+	public void calculateSubscriptionPriceEmptyCountryInPriceList_test()
+	{
 
+		final I_C_Country contryDE = helper.createCountry("DE", PricingTestHelper.C_Currency_ID_EUR);
+		final I_M_PriceList priceListDE = helper.createPriceList(helper.getDefaultPricingSystem(), contryDE);
+		priceListDE.setC_Country(null);
+		save(priceListDE);
+		final I_M_PriceList_Version plvDE = helper.createPriceListVersion(priceListDE);
+
+		final I_C_Country contryCH = helper.createCountry("CH", PricingTestHelper.C_Currency_ID_CHF);
+		final I_M_PriceList priceListCH = helper.createPriceList(helper.getDefaultPricingSystem(), contryCH);
+		final I_M_PriceList_Version plvCH = helper.createPriceListVersion(priceListCH);
+
+
+		helper.newProductPriceBuilder(plvCH)
+				.setPrice(3)
+				.build();
+
+		helper.newProductPriceBuilder(plvDE)
+				.setPrice(5)
+				.build();
+
+		final IEditablePricingContext pricingCtx = helper.subscriptionPricingContextNew()
+				.priceList(priceListDE)
+				.priceListVersion(plvDE)
+				.country(contryDE)
+				.build();
+
+		final IPricingResult result = helper.calculatePrice(pricingCtx);
+		Assert.assertThat("PriceStd\n" + result, result.getPriceStd(), Matchers.comparesEqualTo(BigDecimal.valueOf(5)));
 	}
 }

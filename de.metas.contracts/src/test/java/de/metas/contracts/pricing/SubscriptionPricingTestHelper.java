@@ -8,6 +8,7 @@ import java.util.List;
 import org.adempiere.pricing.api.IEditablePricingContext;
 import org.adempiere.pricing.api.impl.PricingTestHelper;
 import org.adempiere.pricing.api.impl.ProductPriceBuilder;
+import org.compiere.model.I_C_Country;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 
@@ -42,12 +43,12 @@ import lombok.NonNull;
 public class SubscriptionPricingTestHelper extends PricingTestHelper
 {
 	private I_C_Flatrate_Conditions defautlFlatrateTermConditions;
-	
+
 	public SubscriptionPricingTestHelper()
 	{
 		defautlFlatrateTermConditions = createFlatrateTermConditions();
 	}
-	
+
 	@Override
 	protected List<String> getPricingRuleClassnamesToRegister()
 	{
@@ -57,13 +58,12 @@ public class SubscriptionPricingTestHelper extends PricingTestHelper
 				, "org.adempiere.pricing.spi.impl.rules.Discount" //
 		});
 	}
-	
+
 	public ProductPriceBuilder newProductPriceBuilder(I_M_PriceList_Version priceListVersion)
 	{
 		return new ProductPriceBuilder(priceListVersion, getDefaultProduct());
 	}
-	
-	
+
 	public final I_C_Flatrate_Conditions createFlatrateTermConditions()
 	{
 		final I_C_Flatrate_Conditions flatrateConditions = newInstance(I_C_Flatrate_Conditions.class);
@@ -73,7 +73,9 @@ public class SubscriptionPricingTestHelper extends PricingTestHelper
 	}
 
 	@Builder(builderMethodName = "subscriptionPricingContextNew")
-	public final IEditablePricingContext createSubscriptionPricingContext(@NonNull final I_M_PriceList priceList, @NonNull final I_M_PriceList_Version priceListVersion)
+	public final IEditablePricingContext createSubscriptionPricingContext(@NonNull final I_M_PriceList priceList,
+			@NonNull final I_M_PriceList_Version priceListVersion,
+			@NonNull final I_C_Country country)
 	{
 		final IEditablePricingContext pricingCtx = pricingBL.createPricingContext();
 		pricingCtx.setM_PricingSystem_ID(getDefaultPricingSystem().getM_PricingSystem_ID());
@@ -81,8 +83,8 @@ public class SubscriptionPricingTestHelper extends PricingTestHelper
 		pricingCtx.setM_PriceList_Version_ID(priceListVersion.getM_PriceList_Version_ID());
 		pricingCtx.setM_Product_ID(getDefaultProduct().getM_Product_ID());
 		pricingCtx.setReferencedObject(defautlFlatrateTermConditions);
-		pricingCtx.setC_Country_ID(priceList.getC_Country_ID());
-		pricingCtx.setC_Currency_ID(priceList.getC_Currency_ID());
+		pricingCtx.setC_Country_ID(country.getC_Country_ID());
+		pricingCtx.setC_Currency_ID(country.getC_Currency_ID());
 
 		return pricingCtx;
 	}
