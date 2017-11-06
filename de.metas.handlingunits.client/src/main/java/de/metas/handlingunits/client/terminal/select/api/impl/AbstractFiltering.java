@@ -29,12 +29,12 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Predicate;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.util.Services;
-import org.adempiere.util.collections.Predicate;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Order;
 
@@ -128,7 +128,7 @@ public abstract class AbstractFiltering implements IPOSFiltering
 		final List<IPOSTableRow> result = new ArrayList<IPOSTableRow>();
 		for (final IPOSTableRow row : rows)
 		{
-			if (!filter.evaluate(row))
+			if (!filter.test(row))
 			{
 				continue;
 			}

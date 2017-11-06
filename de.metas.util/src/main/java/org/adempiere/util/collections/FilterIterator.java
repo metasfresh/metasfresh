@@ -25,6 +25,7 @@ package org.adempiere.util.collections;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
+import java.util.function.Predicate;
 
 /**
  * An {@link Iterator} which uses a {@link Predicate} to filter the items from underlying {@link Iterator}.
@@ -94,7 +95,7 @@ public class FilterIterator<E> implements Iterator<E>, IteratorWrapper<E>
 		while (iterator.hasNext())
 		{
 			final E element = iterator.next();
-			if (predicate.evaluate(element))
+			if (predicate.test(element))
 			{
 				next = element;
 				nextSet = true;

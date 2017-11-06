@@ -35,6 +35,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.function.Predicate;
 import java.util.Properties;
 
 import javax.annotation.Nullable;
@@ -44,7 +45,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.collections.Predicate;
 import org.compiere.model.I_C_UOM;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
@@ -391,7 +391,7 @@ public abstract class AbstractPackingItem implements IPackingItem
 
 			//
 			// Make sure current shipment schedule is accepted by our predicate (if any)
-			if (acceptShipmentSchedulePredicate != null && !acceptShipmentSchedulePredicate.evaluate(sched))
+			if (acceptShipmentSchedulePredicate != null && !acceptShipmentSchedulePredicate.test(sched))
 			{
 				// NOTE: we are not removing from map because remaining items will be copied back at the end
 				// it.remove();

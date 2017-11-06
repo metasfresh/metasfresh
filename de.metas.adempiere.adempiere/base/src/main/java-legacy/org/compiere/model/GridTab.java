@@ -33,6 +33,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.function.Predicate;
 
 import javax.swing.event.EventListenerList;
 
@@ -68,7 +69,6 @@ import org.adempiere.ui.sideactions.model.SideActionsGroupsListModel;
 import org.adempiere.ui.spi.IGridTabSummaryInfoProvider;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.collections.Predicate;
 import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.model.MQuery.Operator;
@@ -4110,7 +4110,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 		Env.removeContextMatching(ctx, new Predicate<Object>()
 		{
 			@Override
-			public boolean evaluate(final Object key)
+			public boolean test(final Object key)
 			{
 				if (key == null)
 				{
