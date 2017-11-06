@@ -256,6 +256,22 @@ export function actionsRequest({
     );
 }
 
+export function rowActionsRequest({
+    windowId,
+    documentId,
+    tabId,
+    rowId
+}) {
+    return axios.get(
+        config.API_URL + '/window/' +
+        windowId + '/' +
+        documentId + '/' +
+        tabId + '/' +
+        rowId +
+        '/actions'
+    );
+}
+
 export function referencesRequest(entity, type, docId, tabId, rowId){
     return axios.get(
         config.API_URL + '/' +
