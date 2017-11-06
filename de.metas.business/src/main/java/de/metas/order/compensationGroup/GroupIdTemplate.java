@@ -1,7 +1,5 @@
 package de.metas.order.compensationGroup;
 
-import java.util.Collection;
-
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -16,36 +14,28 @@ import lombok.Value;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-public interface GroupRepository
+/**
+ * Template to be used when creating a new {@link GroupId}
+ * 
+ * @author metas-dev <dev@metasfresh.com>
+ */
+@Value
+@Builder
+public class GroupIdTemplate
 {
-	Group retrieveGroup(GroupId groupId);
-
-	void saveGroup(Group group);
-
-	default GroupCreator prepareNewGroup()
-	{
-		return new GroupCreator(this);
-	}
-
-	Group retrieveOrCreateGroup(RetrieveOrCreateGroupRequest request);
-	
-	@Value
-	@Builder
-	class RetrieveOrCreateGroupRequest
-	{
-		@NonNull Collection<Integer> orderLineIds;
-		@NonNull GroupIdTemplate newGroupIdTemplate;
-	}
+	@NonNull
+	String name;
+	int productCategoryId;
 }

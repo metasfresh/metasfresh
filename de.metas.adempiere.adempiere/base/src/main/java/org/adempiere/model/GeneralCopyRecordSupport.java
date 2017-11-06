@@ -110,27 +110,26 @@ public class GeneralCopyRecordSupport implements CopyRecordSupport
 
 			// Parent link:
 			toPO.set_CustomColumn(getParentKeyColumn(), getParentID());
-			
+
 			// needs refresh
 			// not sure if this is still needed
 			for (final String columnName : toPO.get_KeyColumns())
 			{
 				toPO.set_CustomColumn(columnName, toPO.get_Value(columnName));
 			}
-			
+
 			// needs to set IsActive because is not copied
 			if (toPO.get_ColumnIndex(COLUMNNAME_IsActive) >= 0)
 			{
 				toPO.set_CustomColumn(COLUMNNAME_IsActive, fromPO.get_Value(COLUMNNAME_IsActive));
 			}
-			
+
 			// Make sure the columns which are required to be unique they have unique values.
 			updateSpecialColumnsName(toPO);
-			
-			
+
 			// Notify listeners
-			onRecordCopied(toPO, fromPO);
-			
+			fireOnRecordCopied(toPO, fromPO);
+
 			//
 			toPO.setDynAttribute(PO.DYNATTR_CopyRecordSupport_OldValue, fromPO.get_ID()); // need this for changelog
 			toPO.saveEx(trxName);
@@ -166,12 +165,19 @@ public class GeneralCopyRecordSupport implements CopyRecordSupport
 	 * @param to the copy
 	 * @param from the source
 	 */
-	protected final void onRecordCopied(final PO to, final PO from)
+	private final void fireOnRecordCopied(final PO to, final PO from)
 	{
+		onRecordCopied(to, from);
+		
 		for (final IOnRecordCopiedListener listener : onRecordCopiedListeners)
 		{
 			listener.onRecordCopied(to, from);
 		}
+	}
+
+	protected void onRecordCopied(final PO to, final PO from)
+	{
+		// nothing on this level
 	}
 
 	@Override
@@ -666,6 +672,12 @@ public class GeneralCopyRecordSupport implements CopyRecordSupport
 	private final PO getParentPO()
 	{
 		return _parentPO;
+	}
+	
+	protected final <T> T getParentModel(final Class<T> modelType)
+	{
+		final PO parentPO = getParentPO();
+		return parentPO != null ? InterfaceWrapperHelper.create(parentPO, modelType) : null;
 	}
 
 	private final int getParentID()

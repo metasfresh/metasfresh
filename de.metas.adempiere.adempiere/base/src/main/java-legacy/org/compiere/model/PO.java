@@ -226,7 +226,7 @@ public abstract class PO
 	 */
 	public PO(final Properties ctx, final int ID, final String trxName, final ResultSet rs)
 	{
-		super();
+
 		if (ctx == null)
 			throw new IllegalArgumentException("No Context");
 		p_ctx = ctx;
@@ -1739,7 +1739,7 @@ public abstract class PO
 			success = false;
 			m_IDs = new Object[] { I_ZERO };
 			log.error(msg, e);
-			// throw new DBException(e);
+			throw DBException.wrapIfNeeded(e);
 		}
 		// Finish
 		finally
