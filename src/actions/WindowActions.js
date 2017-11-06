@@ -33,6 +33,15 @@ export function setLatestNewDocument(id) {
     }
 }
 
+export function discardNewDocument({ windowType, documentId } = {}) {
+    return axios.post(
+        config.API_URL + '/window/' +
+        windowType + '/' +
+        documentId +
+        '/discardChanges'
+    );
+}
+
 export function openRawModal(windowType, viewId) {
     return {
         type: types.OPEN_RAW_MODAL,
@@ -176,6 +185,17 @@ export function addNewRow(item, tabid, rowid, scope) {
         rowid: rowid,
         scope: scope
     }
+}
+
+export function discardNewRow({ windowType, documentId, tabId, rowId } = {}) {
+    return axios.post(
+        config.API_URL + '/window/' +
+        windowType + '/' +
+        documentId + '/' +
+        tabId + '/' +
+        rowId +
+        '/discardChanges'
+    );
 }
 
 export function deleteRow(tabid, rowid, scope) {

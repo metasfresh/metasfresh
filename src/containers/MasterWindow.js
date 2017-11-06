@@ -9,6 +9,8 @@ import {
     attachFileAction,
     clearMasterData,
     getTab,
+    discardNewDocument,
+    discardNewRow,
     addRowData,
     sortTab,
     connectWS,
@@ -193,7 +195,10 @@ class MasterWindow extends Component {
     }
 
     componentWillUnmount() {
-        const { master, dispatch, location: { pathname } } = this.props;
+        const {
+          master, dispatch, location: { pathname },
+          params: { windowType, docId: documentId }
+        } = this.props;
         const { isDeleted } = this.state;
         const isDocumentNotSaved =
             !master.saveStatus.saved && master.saveStatus.saved !== undefined;
@@ -203,7 +208,9 @@ class MasterWindow extends Component {
         if (isDocumentNotSaved && !isDeleted) {
             const result = window.confirm('Do you really want to leave?');
 
-            if (!result) {
+            if (result) {
+                discardNewDocument({ windowType, documentId });
+            } else {
                 dispatch(push(pathname));
             }
         }
@@ -224,18 +231,11 @@ class MasterWindow extends Component {
         window.removeEventListener('beforeunload', this.confirm);
     }
 
-    closeModalCallback = (isNew) => {
+    closeModalCallback = ({
+        isNew, windowType, documentId, tabId, rowId
+    } = {}) => {
         if (isNew) {
-            this.setState({
-                    newRow: true,
-                }, () => {
-                    setTimeout(() => {
-                        this.setState({
-                            newRow: false,
-                        });
-                    }, 1000);
-                },
-            );
+            discardNewRow({ windowType, documentId, tabId, rowId });
         }
     }
 

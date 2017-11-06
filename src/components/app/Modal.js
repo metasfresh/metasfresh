@@ -196,7 +196,7 @@ class Modal extends Component {
         // TODO: parentDataId (formerly relativeDataId) is not passed in as prop
         const {
             dispatch, closeCallback, dataId, windowType, parentType,
-            parentDataId, triggerField,
+            parentDataId, triggerField, rowId, tabId
         } = this.props;
         const { isNew, isNewDoc } = this.state;
 
@@ -211,7 +211,9 @@ class Modal extends Component {
             });
         } else {
             if (closeCallback) {
-                closeCallback(isNew);
+                closeCallback({
+                  isNew, windowType, documentId: dataId, tabId, rowId
+                });
             }
 
             this.removeModal();
