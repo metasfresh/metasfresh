@@ -25,6 +25,7 @@ package org.adempiere.util.collections;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Predicate;
 
 import org.adempiere.util.Check;
 
@@ -65,13 +66,13 @@ public class CompositePredicate<T> implements Predicate<T>
 	}
 
 	@Override
-	public boolean evaluate(T value)
+	public boolean test(T value)
 	{
 		Check.assume(!predicates.isEmpty(), "There is at least one child predicate in this composite predicate");
 
 		for (final Predicate<T> predicate : predicates)
 		{
-			final boolean accepted = predicate.evaluate(value);
+			final boolean accepted = predicate.test(value);
 			if (and && !accepted)
 			{
 				return false;

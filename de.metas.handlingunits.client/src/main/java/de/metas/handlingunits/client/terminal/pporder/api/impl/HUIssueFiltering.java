@@ -52,10 +52,12 @@ import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.client.terminal.pporder.api.IHUIssueFiltering;
 import de.metas.handlingunits.materialtracking.IHUMaterialTrackingBL;
+import de.metas.handlingunits.model.X_M_HU;
 import de.metas.material.planning.pporder.PPOrderUtil;
 import de.metas.materialtracking.IMaterialTrackingAttributeBL;
 import de.metas.materialtracking.IMaterialTrackingPPOrderBL;
 import de.metas.materialtracking.model.IMaterialTrackingAware;
+import lombok.NonNull;
 
 /**
  * @author cg
@@ -113,7 +115,10 @@ public class HUIssueFiltering implements IHUIssueFiltering
 	}
 
 	@Override
-	public IHUQueryBuilder getHUsForIssueQuery(final I_PP_Order ppOrder, final List<I_PP_Order_BOMLine> orderBOMLines, final int warehouseId)
+	public IHUQueryBuilder getHUsForIssueQuery(
+			@NonNull final I_PP_Order ppOrder,
+			@NonNull final List<I_PP_Order_BOMLine> orderBOMLines,
+			final int warehouseId)
 	{
 		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 
@@ -132,6 +137,8 @@ public class HUIssueFiltering implements IHUIssueFiltering
 
 		final IHUQueryBuilder huQueryBuilder = handlingUnitsDAO
 				.createHUQueryBuilder()
+				// make sure not to issue HUs in the swing client that were already issued in the webUI and therefore have HUStatus=Issued
+				.setHUStatus(X_M_HU.HUSTATUS_Active)
 				.setContext(ppOrder)
 				.setOnlyTopLevelHUs()
 				.addOnlyWithProductIds(productIds)
