@@ -235,14 +235,6 @@ public class C_Flatrate_Term
 		}
 	}
 	
-	private void setMasterEndDate(final I_C_Flatrate_Term term)
-	{
-		if (InterfaceWrapperHelper.isNew(term) && !term.isAutoRenew())
-		{
-			term.setMasterEndDate(term.getEndDate());
-		}
-	}
-
 	/**
 	 * If the term that is deleted was the last term, remove the "processed"-flag from the term's data record.
 	 *
@@ -508,11 +500,26 @@ public class C_Flatrate_Term
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE , ifColumnsChanged = I_C_Flatrate_Term.COLUMNNAME_C_FlatrateTerm_Next_ID )
 	public void updateMasterEndDate(final I_C_Flatrate_Term term)
 	{
-		if (term.getC_FlatrateTerm_Next_ID() > 0)
-		{
-			term.setMasterEndDate(null);
-		}
+		setMasterEndDate(term);
 	}
 	
 
+	private void setMasterEndDate(final I_C_Flatrate_Term term)
+	{
+		Timestamp masterEndDate = null;
+		if (InterfaceWrapperHelper.isNew(term) && !term.isAutoRenew())
+		{
+			masterEndDate = term.getEndDate();
+		}
+		
+		if (term.getC_FlatrateTerm_Next_ID() > 0)
+		{
+			if (!term.isAutoRenew())
+			{
+				masterEndDate = term.getC_FlatrateTerm_Next().getMasterEndDate();
+			}
+		}
+		
+		term.setMasterEndDate(masterEndDate);
+	}
 }

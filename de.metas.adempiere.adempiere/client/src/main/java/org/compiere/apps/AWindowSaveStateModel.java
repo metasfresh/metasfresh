@@ -24,6 +24,8 @@ package org.compiere.apps;
 
 
 import java.util.Properties;
+import java.util.function.Predicate;
+
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
 
@@ -33,7 +35,6 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.collections.Predicate;
 import org.compiere.model.GridField;
 import org.compiere.model.GridFieldVO;
 import org.compiere.model.GridTab;
@@ -109,7 +110,7 @@ public class AWindowSaveStateModel
 				.matchUserRolesPermissionsForUser(ctx, loggedUserId, new Predicate<IUserRolePermissions>()
 				{
 					@Override
-					public boolean evaluate(final IUserRolePermissions rolePermissions)
+					public boolean test(final IUserRolePermissions rolePermissions)
 					{
 						final Boolean accessRW = rolePermissions.checkWindowAccess(windowId);
 						return accessRW != null && accessRW.booleanValue();

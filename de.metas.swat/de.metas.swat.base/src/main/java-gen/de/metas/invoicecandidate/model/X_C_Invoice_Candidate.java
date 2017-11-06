@@ -15,7 +15,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 591254556L;
+	private static final long serialVersionUID = -1381745807L;
 
     /** Standard Constructor */
     public X_C_Invoice_Candidate (Properties ctx, int C_Invoice_Candidate_ID, String trxName)
@@ -776,6 +776,40 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
+	public org.compiere.model.I_C_Order_CompensationGroup getC_Order_CompensationGroup() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Order_CompensationGroup_ID, org.compiere.model.I_C_Order_CompensationGroup.class);
+	}
+
+	@Override
+	public void setC_Order_CompensationGroup(org.compiere.model.I_C_Order_CompensationGroup C_Order_CompensationGroup)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Order_CompensationGroup_ID, org.compiere.model.I_C_Order_CompensationGroup.class, C_Order_CompensationGroup);
+	}
+
+	/** Set Order Compensation Group.
+		@param C_Order_CompensationGroup_ID Order Compensation Group	  */
+	@Override
+	public void setC_Order_CompensationGroup_ID (int C_Order_CompensationGroup_ID)
+	{
+		if (C_Order_CompensationGroup_ID < 1) 
+			set_Value (COLUMNNAME_C_Order_CompensationGroup_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Order_CompensationGroup_ID, Integer.valueOf(C_Order_CompensationGroup_ID));
+	}
+
+	/** Get Order Compensation Group.
+		@return Order Compensation Group	  */
+	@Override
+	public int getC_Order_CompensationGroup_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_Order_CompensationGroup_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
 	public org.compiere.model.I_C_Order getC_Order() throws RuntimeException
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Order_ID, org.compiere.model.I_C_Order.class);
@@ -1373,25 +1407,6 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	public java.lang.String getGroupCompensationType () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_GroupCompensationType);
-	}
-
-	/** Set Group.
-		@param GroupNo Group	  */
-	@Override
-	public void setGroupNo (int GroupNo)
-	{
-		set_Value (COLUMNNAME_GroupNo, Integer.valueOf(GroupNo));
-	}
-
-	/** Get Group.
-		@return Group	  */
-	@Override
-	public int getGroupNo () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_GroupNo);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
 	}
 
 	/** Set Kopf-Aggregationsmerkmal.

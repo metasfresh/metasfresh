@@ -26,9 +26,9 @@ package org.adempiere.util.time.generator;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
+import java.util.function.Predicate;
 
 import org.adempiere.util.Check;
-import org.adempiere.util.collections.Predicate;
 
 /**
  * Wraps a given {@link ICalendarIncrementor} and calls it until the calendar's day of the week is one that we accept.
@@ -55,7 +55,7 @@ public class OnlyDaysOfWeekFilter implements Predicate<Calendar>
 	}
 
 	@Override
-	public boolean evaluate(final Calendar calendar)
+	public boolean test(final Calendar calendar)
 	{
 		final int dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK);
 		return allowedDaysOfWeek.contains(dayOfWeek);

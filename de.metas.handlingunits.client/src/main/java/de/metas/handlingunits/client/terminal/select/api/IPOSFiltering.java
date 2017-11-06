@@ -29,8 +29,8 @@ package de.metas.handlingunits.client.terminal.select.api;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
+import java.util.function.Predicate;
 
-import org.adempiere.util.collections.Predicate;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_Warehouse;

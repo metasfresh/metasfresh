@@ -29,6 +29,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
+import java.util.function.Predicate;
 
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
@@ -36,7 +37,6 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.EqualsQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.Services;
-import org.adempiere.util.collections.Predicate;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_M_Locator;
