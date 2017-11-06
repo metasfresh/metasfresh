@@ -31,24 +31,24 @@ import lombok.Value;
 @Value
 public class GroupId
 {
-	public static GroupId of(final String documentTableName, final int documentId, final int groupNo)
+	public static GroupId of(final String documentTableName, final int documentId, final int orderCompensationGroupId)
 	{
-		return new GroupId(documentTableName, documentId, groupNo);
+		return new GroupId(documentTableName, documentId, orderCompensationGroupId);
 	}
 
 	private final String documentTableName;
 	private final int documentId;
-	private final int groupNo;
+	private final int orderCompensationGroupId;
 
-	private GroupId(@NonNull final String documentTableName, final int documentId, final int groupNo)
+	private GroupId(@NonNull final String documentTableName, final int documentId, final int orderCompensationGroupId)
 	{
 		this.documentTableName = documentTableName;
 
 		Check.assume(documentId > 0, "documentId > 0");
 		this.documentId = documentId;
 
-		Check.assume(groupNo > 0, "groupNo > 0");
-		this.groupNo = groupNo;
+		Check.assume(orderCompensationGroupId > 0, "orderCompensationGroupId > 0");
+		this.orderCompensationGroupId = orderCompensationGroupId;
 	}
 
 	public void assertDocumentTableName(final String expectedDocumentTableName)
