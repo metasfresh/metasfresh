@@ -10,6 +10,14 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.35 (2017-46)
+
+**release for week 2017-46**
+
+* metasfresh
+  * [#2722](https://github.com/metasfresh/metasfresh/issues/2722) Webui Design Window: Improve window Material Schedule
+    * Minor additional Field Translation for en_US added to Material Schedule Window Subtab.
+
 # metasfresh 5.34 (2017-45)
 
 **release for week 2017-45**
