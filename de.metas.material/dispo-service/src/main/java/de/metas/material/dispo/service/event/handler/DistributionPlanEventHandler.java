@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 
 import de.metas.material.dispo.commons.CandidateService;
 import de.metas.material.dispo.commons.CandidatesQuery;
-import de.metas.material.dispo.commons.RepositoryTestHelper;
+
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateStatus;
 import de.metas.material.dispo.commons.candidate.CandidateSubType;
@@ -144,8 +144,6 @@ public class DistributionPlanEventHandler
 					.withDate(orderLineStartDate)
 					.withWarehouseId(distributionPlanEvent.getFromWarehouseId())
 					.withSeqNo(expectedSeqNoForDemandCandidate);
-
-			RepositoryTestHelper.setupMockedRetrieveAvailableStock(candidateRepository, materialDescriptor, "0");
 
 			// this might cause 'candidateChangeHandler' to trigger another event
 			final Candidate demandCandidateWithId = candidateChangeHandler.onCandidateNewOrChange(demandCandidate);

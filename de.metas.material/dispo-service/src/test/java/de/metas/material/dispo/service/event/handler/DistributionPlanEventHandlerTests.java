@@ -163,6 +163,8 @@ public class DistributionPlanEventHandlerTests
 						.build())
 				.build();
 
+		RepositoryTestHelper.setupMockedRetrieveAvailableStock(candidateRepository, null /*any materialDescriptor*/, "0");
+
 		distributionPlanEventHandler.handleDistributionPlanEvent(event);
 
 		final List<I_MD_Candidate> allNonStockRecords = DispoTestUtils.filterExclStock();
