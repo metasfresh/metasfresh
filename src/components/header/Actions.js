@@ -192,7 +192,10 @@ class Actions extends Component {
         const { renderAction } = this;
         const { actions, rowActions } = this.state;
 
-        if (actions && rowActions) {
+        const numActions = actions ? actions.length : 0;
+        const numRowActions = rowActions ? rowActions.length : 0;
+
+        if (numActions > 0 && numRowActions > 0) {
             const separator = (
                 <hr
                     key="separator"
@@ -205,9 +208,9 @@ class Actions extends Component {
                 separator,
                 ...rowActions.map(renderAction('rowActions'))
             ];
-        } else if (actions) {
+        } else if (numActions > 0) {
             return actions.map(renderAction('actions'));
-        } else if (rowActions) {
+        } else if (numRowActions > 0) {
             return rowActions.map(renderAction('rowActions'));
         } else {
             return (
