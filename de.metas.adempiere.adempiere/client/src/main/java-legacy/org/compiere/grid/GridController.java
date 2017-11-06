@@ -1421,7 +1421,7 @@ public final class GridController extends CPanel
 		{
 			final GridField changedField = m_mTab.getField(columnIndex);
 			final String columnName = changedField.getColumnName();
-			final List<GridField> dependants = m_mTab.getDependantFields(columnName);
+			final List<GridField> dependants = m_mTab.getDependantFieldsWithNullElements(columnName);
 			//	No Dependents and no Callout - Set just Background
 			if (dependants.size() == 0 && !m_mTab.getCalloutExecutor().hasCallouts(changedField))
 			{
