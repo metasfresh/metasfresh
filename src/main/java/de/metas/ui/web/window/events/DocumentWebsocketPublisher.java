@@ -75,7 +75,7 @@ public class DocumentWebsocketPublisher
 			collector = threadLocalCollector;
 			autoflush = false;
 		}
-		else if (!trxManager.isNull(trx))
+		else if(trxManager.isActive(trx))
 		{
 			collector = trx.getProperty(JSONDocumentChangedWebSocketEventCollector.class.getName(), () -> createCollectorAndBind(trx, websocketSender));
 			autoflush = false;
