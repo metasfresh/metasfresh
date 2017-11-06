@@ -58,6 +58,8 @@ public class MainValidator extends AbstractModuleInterceptor
 
 	public static final String MSG_FLATRATE_DOC_ACTION_NOT_SUPPORTED_0P = "Flatrate_DocAction_Not_Supported";
 
+	public static final String MSG_FLATRATE_REACTIVATE_DOC_ACTION_NOT_SUPPORTED_0P = "Flatrate_DocAction_Reactivate_Not_Supported";
+
 	@Override
 	protected void onInit(final IModelValidationEngine engine, final I_AD_Client client)
 	{
@@ -112,7 +114,7 @@ public class MainValidator extends AbstractModuleInterceptor
 
 		ExcludeSubscriptionOrderLines.registerFilterForInvoiceCandidateCreation();
 		ExcludeSubscriptionInOutLines.registerFilterForInvoiceCandidateCreation();
-	}	
+	}
 
 	@Override
 	protected void registerInterceptors(IModelValidationEngine engine, I_AD_Client client)
@@ -121,7 +123,7 @@ public class MainValidator extends AbstractModuleInterceptor
 		engine.addModelValidator(C_SubscriptionProgress.instance, client);
 		engine.addModelValidator(C_Flatrate_DataEntry.instance, client);
 		engine.addModelValidator(C_Flatrate_Matching.instance, client);
-		engine.addModelValidator(new C_Flatrate_Term(), client);
+		engine.addModelValidator(C_Flatrate_Term.INSTANCE, client);
 
 		engine.addModelValidator(new C_Invoice_Candidate(), client);
 		engine.addModelValidator(new C_Invoice_Clearing_Alloc(), client);
