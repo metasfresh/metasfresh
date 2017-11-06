@@ -18,5 +18,5 @@ UPDATE AD_Field SET Name='Merkmale', Description='Merkmals Ausprägungen zum Pro
 ALTER TABLE PP_Product_Planning ADD CONSTRAINT MAttributeSetInstance_PPProduc FOREIGN KEY (M_AttributeSetInstance_ID) REFERENCES public.M_AttributeSetInstance DEFERRABLE INITIALLY DEFERRED
 ;
 
-/* DDL */ SELECT public.db_alter_table('PP_Product_Planning','ALTER TABLE public.PP_Product_Planning DROP COLUMN IF EXISTS M_AttributeSetInstance_ID')
+/* DDL */ SELECT public.db_alter_table('PP_Product_Planning','ALTER TABLE public.PP_Product_Planning DROP COLUMN IF EXISTS M_AttributeInstance_ID')
 ;

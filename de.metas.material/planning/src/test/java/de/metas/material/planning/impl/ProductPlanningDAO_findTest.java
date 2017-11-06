@@ -8,6 +8,7 @@ import org.adempiere.mm.attributes.api.ASICopy;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.impl.AttributesTestHelper;
 import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.test.AdempiereTestWatcher;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
@@ -18,6 +19,7 @@ import org.compiere.model.X_M_Attribute;
 import org.compiere.util.Env;
 import org.eevolution.model.I_PP_Product_Planning;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 
 import de.metas.business.BusinessTestHelper;
@@ -47,6 +49,9 @@ import de.metas.business.BusinessTestHelper;
 public class ProductPlanningDAO_findTest
 {
 
+	@Rule
+	public AdempiereTestWatcher adempiereTestWatcher = new AdempiereTestWatcher();
+
 	private static final String MADE_IN_COLOGNE_ATTRIBUTE_VALUE = "MadeInCologneAttributeValue";
 	private static final String ORGANIC_ATTRIBUTE_VALUE = "OrganicAttributeValue";
 	private I_M_Warehouse warehouse;
@@ -70,54 +75,77 @@ public class ProductPlanningDAO_findTest
 	}
 
 	@Test
-	public void without_attributeSetInstanceId()
+	public void productPlanningWithoutASI_searchWithNoAsi()
 	{
-		final I_PP_Product_Planning productPlanning = newInstance(I_PP_Product_Planning.class);
-		productPlanning.setM_Product(product);
-		productPlanning.setM_Warehouse(warehouse);
-		productPlanning.setS_Resource(plant);
-		save(productPlanning);
+		final I_PP_Product_Planning productPlanning = createAttributeIndependantProductPlanning();
 
-		final I_PP_Product_Planning result = invokeFindMethod(AttributeConstants.M_AttributeSetInstance_ID_None);
+		final I_PP_Product_Planning result = invokeFindMethodWithASI(AttributeConstants.M_AttributeSetInstance_ID_None);
 		assertThat(result).isNotNull();
 		assertThat(result.getPP_Product_Planning_ID()).isEqualTo(productPlanning.getPP_Product_Planning_ID());
 	}
 
 	@Test
-	public void with_attributeSetInstanceId()
+	public void productPlanningWithASI_searchWithNoAsi()
 	{
-		final I_PP_Product_Planning productPlanningWithoutASI = createProductPlanning();
-		final I_M_AttributeSetInstance organicAttributeSetInstance = createOrganicAttributeSetInstance();
+		final I_PP_Product_Planning productPlanningWithoutASI = createAttributeIndependantProductPlanning();
+		final I_M_AttributeSetInstance organicAttributeSetInstance = createOrganicASI();
 
-		final I_PP_Product_Planning productPlanningWithAsi = createProductPlanning();
+		final I_PP_Product_Planning productPlanningWithAsi = createAttributeIndependantProductPlanning();
 		productPlanningWithAsi.setM_AttributeSetInstance_ID(organicAttributeSetInstance.getM_AttributeSetInstance_ID());
 		productPlanningWithAsi.setStorageAttributesKey(ORGANIC_ATTRIBUTE_VALUE);
 		save(productPlanningWithAsi);
 
-		final I_PP_Product_Planning resultWithoutASI = invokeFindMethod(AttributeConstants.M_AttributeSetInstance_ID_None);
+		final I_PP_Product_Planning resultWithoutASI = invokeFindMethodWithASI(AttributeConstants.M_AttributeSetInstance_ID_None);
 		assertThat(resultWithoutASI).isNotNull();
 		assertThat(resultWithoutASI.getPP_Product_Planning_ID()).isEqualTo(productPlanningWithoutASI.getPP_Product_Planning_ID());
+	}
 
-		final I_PP_Product_Planning resultWithAsI = invokeFindMethod(organicAttributeSetInstance.getM_AttributeSetInstance_ID());
+	@Test
+	public void productPlanningWithASI_searchWithSameAsi()
+	{
+		createAttributeIndependantProductPlanning();
+		final I_M_AttributeSetInstance organicAttributeSetInstance = createOrganicASI();
+
+		final I_PP_Product_Planning productPlanningWithAsi = createAttributeIndependantProductPlanning();
+		productPlanningWithAsi.setM_AttributeSetInstance_ID(organicAttributeSetInstance.getM_AttributeSetInstance_ID());
+		productPlanningWithAsi.setStorageAttributesKey(ORGANIC_ATTRIBUTE_VALUE);
+		productPlanningWithAsi.setIsAttributeDependant(true);
+		save(productPlanningWithAsi);
+
+		final I_PP_Product_Planning resultWithAsI = invokeFindMethodWithASI(organicAttributeSetInstance.getM_AttributeSetInstance_ID());
 		assertThat(resultWithAsI).isNotNull();
 		assertThat(resultWithAsI.getPP_Product_Planning_ID()).isEqualTo(productPlanningWithAsi.getPP_Product_Planning_ID());
 	}
 
-	private I_PP_Product_Planning invokeFindMethod(final int attributeSetInstanceId)
+	@Test
+	public void attributeDependantProductPlanningWithoutASI_searchWithASI_noResult()
 	{
-		final I_PP_Product_Planning result = new ProductPlanningDAO().find(Env.getCtx(),
-				warehouse.getAD_Org_ID(),
-				warehouse.getM_Warehouse_ID(),
-				plant.getS_Resource_ID(),
-				product.getM_Product_ID(),
-				attributeSetInstanceId);
+		final I_PP_Product_Planning productPlanningWithoutAsi = createAttributeIndependantProductPlanning();
+		productPlanningWithoutAsi.setIsAttributeDependant(true);
+		save(productPlanningWithoutAsi);
 
-		return result;
+		final I_M_AttributeSetInstance organicAndMadeInCologneASI = createOrganicAndMadeInCologneASI();
+		final I_PP_Product_Planning result = invokeFindMethodWithASI(organicAndMadeInCologneASI.getM_AttributeSetInstance_ID());
+
+		assertThat(result).isNull();
 	}
 
-	public void with_attributeSetInstanceId_need_toMatch()
+	@Test
+	public void attributeInDependantProductPlanningWithoutASI_searchWithASI_result()
 	{
-		final I_M_AttributeSetInstance organicAttributeSetInstance = createOrganicAttributeSetInstance();
+		final I_PP_Product_Planning productPlanningWithoutAsi = createAttributeIndependantProductPlanning();
+		productPlanningWithoutAsi.setIsAttributeDependant(false);
+		save(productPlanningWithoutAsi);
+
+		final I_M_AttributeSetInstance organicAndMadeInCologneASI = createOrganicASI();
+		final I_PP_Product_Planning result = invokeFindMethodWithASI(organicAndMadeInCologneASI.getM_AttributeSetInstance_ID());
+
+		assertThat(result.getPP_Product_Planning_ID()).isEqualTo(productPlanningWithoutAsi.getPP_Product_Planning_ID());
+	}
+
+	private I_M_AttributeSetInstance createOrganicAndMadeInCologneASI()
+	{
+		final I_M_AttributeSetInstance organicAttributeSetInstance = createOrganicASI();
 
 		final I_M_Attribute madeInCologneAttribute = attributesTestHelper.createM_Attribute("MadeInCologneAttribute", X_M_Attribute.ATTRIBUTEVALUETYPE_List, true);
 
@@ -128,14 +156,10 @@ public class ProductPlanningDAO_findTest
 		madeInCologneattributeInstance.setValue(MADE_IN_COLOGNE_ATTRIBUTE_VALUE);
 		save(madeInCologneattributeInstance);
 
-		final I_PP_Product_Planning productPlanningWithAsi = createProductPlanning();
-		productPlanningWithAsi.setM_AttributeSetInstance_ID(organicAttributeSetInstance.getM_AttributeSetInstance_ID());
-		productPlanningWithAsi.setStorageAttributesKey(ORGANIC_ATTRIBUTE_VALUE);
-		save(productPlanningWithAsi);
-
+		return organicAndMadeInCologneASI;
 	}
 
-	private I_M_AttributeSetInstance createOrganicAttributeSetInstance()
+	private I_M_AttributeSetInstance createOrganicASI()
 	{
 		final I_M_Attribute organicAttribute = attributesTestHelper.createM_Attribute("OrganicAttribute", X_M_Attribute.ATTRIBUTEVALUETYPE_List, true);
 
@@ -150,15 +174,27 @@ public class ProductPlanningDAO_findTest
 		return organicAttributeSetInstance;
 	}
 
-	private I_PP_Product_Planning createProductPlanning()
+	private I_PP_Product_Planning createAttributeIndependantProductPlanning()
 	{
 		final I_PP_Product_Planning productPlanning = newInstance(I_PP_Product_Planning.class);
 		productPlanning.setM_Product(product);
 		productPlanning.setM_Warehouse(warehouse);
 		productPlanning.setS_Resource(plant);
+		productPlanning.setIsAttributeDependant(false);
 		save(productPlanning);
 
 		return productPlanning;
 	}
 
+	private I_PP_Product_Planning invokeFindMethodWithASI(final int attributeSetInstanceId)
+	{
+		final I_PP_Product_Planning result = new ProductPlanningDAO().find(Env.getCtx(),
+				warehouse.getAD_Org_ID(),
+				warehouse.getM_Warehouse_ID(),
+				plant.getS_Resource_ID(),
+				product.getM_Product_ID(),
+				attributeSetInstanceId);
+
+		return result;
+	}
 }

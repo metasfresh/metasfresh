@@ -32,7 +32,6 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
-import org.adempiere.ad.dao.IQueryOrderByBuilder;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.api.AttributesKeyGenerator;
 import org.adempiere.util.Services;
@@ -62,7 +61,6 @@ public class ProductPlanningDAO implements IProductPlanningDAO
 			final int productId,
 			final int attributeSetInstanceId)
 	{
-		// TODO test this with ASI
 		final IQueryBuilder<I_PP_Product_Planning> queryBuilder = createQueryBuilder(
 				ctx,
 				orgId,
@@ -134,48 +132,65 @@ public class ProductPlanningDAO implements IProductPlanningDAO
 			final int productId,
 			final int attributeSetInstanceId)
 	{
-		final IQueryBuilder<I_PP_Product_Planning> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_PP_Product_Planning.class);
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-		final ICompositeQueryFilter<I_PP_Product_Planning> filters = queryBuilder.getCompositeFilter();
-		final IQueryOrderByBuilder<I_PP_Product_Planning> orderBy = queryBuilder.orderBy();
+		final IQueryBuilder<I_PP_Product_Planning> queryBuilder = queryBL
+				.createQueryBuilder(I_PP_Product_Planning.class)
+				.addOnlyActiveRecordsFilter();
 
-		//
 		// Filter by context #AD_Client_ID
-		filters.addOnlyContextClient(ctx);
+		queryBuilder.addOnlyContextClient(ctx);
 
-		//
 		// Filter by AD_Org_ID: given AD_Org_ID or 0/null
-		filters.addInArrayOrAllFilter(I_PP_Product_Planning.COLUMNNAME_AD_Org_ID, orgId, 0, null);
-		orderBy.addColumn(I_PP_Product_Planning.COLUMNNAME_AD_Org_ID, Direction.Descending, Nulls.Last);
+		queryBuilder.addInArrayOrAllFilter(I_PP_Product_Planning.COLUMNNAME_AD_Org_ID, orgId, 0, null);
 
-		//
 		// Filter by Warehouse: given M_Warehouse_ID or 0/null
-		filters.addInArrayOrAllFilter(I_PP_Product_Planning.COLUMNNAME_M_Warehouse_ID, warehouseId, 0, null);
-		orderBy.addColumn(I_PP_Product_Planning.COLUMNNAME_M_Warehouse_ID, Direction.Descending, Nulls.Last);
+		queryBuilder.addInArrayOrAllFilter(I_PP_Product_Planning.COLUMNNAME_M_Warehouse_ID, warehouseId, 0, null);
 
-		//
 		// Filter by Plant: given S_Resource_ID or 0/null
 		if (resourceId != ANY_S_Resource_ID)
 		{
-			filters.addInArrayOrAllFilter(I_PP_Product_Planning.COLUMNNAME_S_Resource_ID, resourceId, 0, null);
+			queryBuilder.addInArrayOrAllFilter(I_PP_Product_Planning.COLUMNNAME_S_Resource_ID, resourceId, 0, null);
 		}
-		orderBy.addColumn(I_PP_Product_Planning.COLUMNNAME_S_Resource_ID, Direction.Descending, Nulls.Last);
 
-		//
 		// Filter by Product
-		filters.addEqualsFilter(I_PP_Product_Planning.COLUMNNAME_M_Product_ID, productId);
+		queryBuilder.addEqualsFilter(I_PP_Product_Planning.COLUMNNAME_M_Product_ID, productId);
 
-		final String attributesKey = createAttributeLikeExpression(attributeSetInstanceId);
-		queryBuilder.addStringLikeFilter(I_PP_Product_Planning.COLUMN_StorageAttributesKey, attributesKey, false);
+		final ICompositeQueryFilter<I_PP_Product_Planning> attributesFilter = createAttributesFilter(attributeSetInstanceId);
 
-		//
-		// Only active records
-		filters.addOnlyActiveRecordsFilter();
-		return queryBuilder;
+		queryBuilder.filter(attributesFilter);
+
+		return queryBuilder.orderBy()
+				.addColumn(I_PP_Product_Planning.COLUMN_SeqNo, Direction.Ascending, Nulls.First)
+				.addColumnDescending(I_PP_Product_Planning.COLUMNNAME_IsAttributeDependant) // prefer results with IsAttributeDependant='Y'
+				.addColumn(I_PP_Product_Planning.COLUMN_AD_Org_ID, Direction.Descending, Nulls.Last)
+				.addColumn(I_PP_Product_Planning.COLUMN_M_Warehouse_ID, Direction.Descending, Nulls.Last)
+				.addColumn(I_PP_Product_Planning.COLUMN_S_Resource_ID, Direction.Descending, Nulls.Last)
+				.endOrderBy();
 	}
 
-	private String createAttributeLikeExpression(final int attributeSetInstanceId)
+	private static ICompositeQueryFilter<I_PP_Product_Planning> createAttributesFilter(final int attributeSetInstanceId)
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+		final String attributesKey = createAttributeLikeExpression(attributeSetInstanceId);
+
+		final ICompositeQueryFilter<I_PP_Product_Planning> matchingAsiFilter = queryBL
+				.createCompositeQueryFilter(I_PP_Product_Planning.class)
+				.setJoinAnd()
+				.addEqualsFilter(I_PP_Product_Planning.COLUMN_IsAttributeDependant, true)
+				.addStringLikeFilter(I_PP_Product_Planning.COLUMN_StorageAttributesKey, attributesKey, false);
+
+		final ICompositeQueryFilter<I_PP_Product_Planning> attributesFilter = queryBL
+				.createCompositeQueryFilter(I_PP_Product_Planning.class)
+				.setJoinOr()
+				.addEqualsFilter(I_PP_Product_Planning.COLUMN_IsAttributeDependant, false)
+				.addFilter(matchingAsiFilter);
+
+		return attributesFilter;
+	}
+
+	private static String createAttributeLikeExpression(final int attributeSetInstanceId)
 	{
 		return AttributesKeyGenerator.builder()
 				.attributeSetInstanceId(attributeSetInstanceId)
