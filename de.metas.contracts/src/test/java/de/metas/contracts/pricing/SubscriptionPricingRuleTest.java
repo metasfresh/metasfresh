@@ -64,7 +64,7 @@ public class SubscriptionPricingRuleTest
 
 		final I_C_Country contryDE = helper.createCountry("DE", PricingTestHelper.C_Currency_ID_EUR);
 		final I_M_PriceList priceListDE = helper.createPriceList(helper.getDefaultPricingSystem(), contryDE);
-		priceListDE.setC_Country(null);
+		priceListDE.setC_Country_ID(-1);
 		save(priceListDE);
 		final I_M_PriceList_Version plvDE = helper.createPriceListVersion(priceListDE);
 
