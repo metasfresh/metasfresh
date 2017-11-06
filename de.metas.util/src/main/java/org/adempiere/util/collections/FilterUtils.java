@@ -29,6 +29,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Predicate;
 
 /**
  *
@@ -58,7 +59,7 @@ public final class FilterUtils
 		final List<T> result = new ArrayList<T>();
 		for (final T candidate : list)
 		{
-			if (!condition.evaluate(candidate))
+			if (!condition.test(candidate))
 			{
 				continue;
 			}
@@ -83,7 +84,7 @@ public final class FilterUtils
 		final Set<T> result = new HashSet<T>();
 		for (final T candidate : set)
 		{
-			if (!condition.evaluate(candidate))
+			if (!condition.test(candidate))
 			{
 				continue;
 			}
@@ -108,7 +109,7 @@ public final class FilterUtils
 		final Map<K, V> result = new HashMap<K, V>();
 		for (final Map.Entry<K, V> e : map.entrySet())
 		{
-			if (!condition.evaluate(e.getValue()))
+			if (!condition.test(e.getValue()))
 			{
 				continue;
 			}
@@ -134,7 +135,7 @@ public final class FilterUtils
 		for (int i = 0; i < len; i++)
 		{
 			final T item = list.get(i);
-			if (condition.evaluate(item))
+			if (condition.test(item))
 			{
 				return i;
 			}

@@ -28,6 +28,7 @@ import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
+import java.util.function.Predicate;
 
 import javax.annotation.Nullable;
 import javax.swing.JComponent;
@@ -50,7 +51,6 @@ import org.adempiere.service.ISysConfigBL;
 import org.adempiere.service.IValuePreferenceBL.IUserValuePreference;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.collections.Predicate;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.Adempiere;
@@ -335,7 +335,7 @@ public final class Env
 	private static final Predicate<Object> CTXNAME_MATCHER_AnyWindow = new Predicate<Object>()
 	{
 		@Override
-		public boolean evaluate(final Object key)
+		public boolean test(final Object key)
 		{
 			final String tag = key.toString();
 
@@ -497,7 +497,7 @@ public final class Env
 		removeContextMatching(ctx, new Predicate<Object>()
 		{
 			@Override
-			public boolean evaluate(Object key)
+			public boolean test(Object key)
 			{
 				final String tag = key.toString();
 				final boolean matched = tag.startsWith(keyPrefix);
@@ -518,7 +518,7 @@ public final class Env
 		for (final String key : keys)
 		{
 			// Skip keys which are not matching
-			if (!keyMatcher.evaluate(key))
+			if (!keyMatcher.test(key))
 			{
 				continue;
 			}
@@ -2588,7 +2588,7 @@ public final class Env
 			V value = (V)ctx.get(propertyName);
 
 			// Check if cached value it's still valid
-			if (validator != null && value != null && !validator.evaluate(value))
+			if (validator != null && value != null && !validator.test(value))
 			{
 				ctx.remove(propertyName);
 				value = null;

@@ -26,10 +26,10 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Predicate;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.collections.ListUtils;
-import org.adempiere.util.collections.Predicate;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.TimeUtil;
 import org.eevolution.model.I_DD_OrderLine;
@@ -103,7 +103,7 @@ public class DD_Order_StandardCase_IntegrationTest extends AbstractHUDDOrderProc
 		final IPOSTableRow row_Tomatoes = ListUtils.singleElement(rows, new Predicate<IPOSTableRow>()
 		{
 			@Override
-			public boolean evaluate(final IPOSTableRow row)
+			public boolean test(final IPOSTableRow row)
 			{
 				final DDOrderTableRow ddOrderLineRow = (DDOrderTableRow)row;
 				final Set<Integer> productIds = ddOrderLineRow.getM_Product_IDs();
