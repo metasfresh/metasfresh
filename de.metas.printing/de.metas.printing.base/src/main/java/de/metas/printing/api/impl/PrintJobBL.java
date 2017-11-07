@@ -150,7 +150,7 @@ public class PrintJobBL implements IPrintJobBL
 
 					while (currentItems.hasNext())
 					{
-						final List<I_C_Print_Job_Instructions> printJobInstructions = createPrintJob(source,
+						final List<I_C_Print_Job_Instructions> printJobInstructions = createPrintJobInstructionsAndPrintJobs(source,
 								currentItems,
 								printingQueueProcessingInfo,
 								trxName);
@@ -231,7 +231,7 @@ public class PrintJobBL implements IPrintJobBL
 		return count;
 	}
 
-	private List<I_C_Print_Job_Instructions> createPrintJob(final IPrintingQueueSource source,
+	private List<I_C_Print_Job_Instructions> createPrintJobInstructionsAndPrintJobs(final IPrintingQueueSource source,
 			final Iterator<I_C_Printing_Queue> items,
 			final PrintingQueueProcessingInfo printingQueueProcessingInfo,
 			final String trxName)
@@ -245,7 +245,7 @@ public class PrintJobBL implements IPrintJobBL
 			@Override
 			public void run(final String localTrxName)
 			{
-				instrutionsMutable.setValue(createPrintJob0(source, items, printingQueueProcessingInfo, localTrxName));
+				instrutionsMutable.setValue(createPrintJobInstructionsAndPrintJobs0(source, items, printingQueueProcessingInfo, localTrxName));
 			}
 		});
 
@@ -350,7 +350,7 @@ public class PrintJobBL implements IPrintJobBL
 	 * @param trxName
 	 * @return one print job instruction per user-to-print
 	 */
-	private List<I_C_Print_Job_Instructions> createPrintJob0(final IPrintingQueueSource source,
+	private List<I_C_Print_Job_Instructions> createPrintJobInstructionsAndPrintJobs0(final IPrintingQueueSource source,
 			final Iterator<I_C_Printing_Queue> items,
 			final PrintingQueueProcessingInfo printingQueueProcessingInfo,
 			final String trxName)
@@ -379,14 +379,9 @@ public class PrintJobBL implements IPrintJobBL
 
 			if (printJob == null)
 			{
-				final Properties ctx = InterfaceWrapperHelper.getCtx(item);
-				printJob = InterfaceWrapperHelper.create(ctx, I_C_Print_Job.class, trxName);
-				printJob.setAD_Org_ID(item.getAD_Org_ID());
-				printJob.setAD_User_ID(printingQueueProcessingInfo.getAD_User_PrintJob_ID()); // 03870
-				printJob.setIsActive(true);
-				printJob.setProcessed(false);
-				InterfaceWrapperHelper.save(printJob);
+				printJob = createPrintJob(item, trxName, printingQueueProcessingInfo.getAD_User_PrintJob_ID());
 			}
+			
 			final int maxLinesPerJobToUse = getMaxLinesPerJob(printJob);
 			if (maxLinesPerJobToUse > 0 && lineCount >= maxLinesPerJobToUse)
 			{
@@ -426,6 +421,19 @@ public class PrintJobBL implements IPrintJobBL
 			result.add(instructions);
 		}
 		return result;
+	}
+
+	private I_C_Print_Job createPrintJob(@NonNull final I_C_Printing_Queue item, @NonNull final String trxName, final int adUserId)
+	{
+		final Properties ctx = InterfaceWrapperHelper.getCtx(item);
+		final I_C_Print_Job printJob = InterfaceWrapperHelper.create(ctx, I_C_Print_Job.class, trxName);
+		printJob.setAD_Org_ID(item.getAD_Org_ID());
+		printJob.setAD_User_ID(adUserId);
+		printJob.setIsActive(true);
+		printJob.setProcessed(false);
+		InterfaceWrapperHelper.save(printJob);
+		
+		return printJob;
 	}
 
 	/**
