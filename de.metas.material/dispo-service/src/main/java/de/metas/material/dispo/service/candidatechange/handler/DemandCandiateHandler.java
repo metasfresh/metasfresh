@@ -9,9 +9,10 @@ import org.springframework.stereotype.Service;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
-import de.metas.material.dispo.CandidateRepository;
-import de.metas.material.dispo.CandidateSpecification.Type;
-import de.metas.material.dispo.candidate.Candidate;
+import de.metas.material.dispo.commons.candidate.Candidate;
+import de.metas.material.dispo.commons.candidate.CandidateType;
+import de.metas.material.dispo.commons.repository.CandidateRepositoryCommands;
+import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
 import de.metas.material.event.MaterialDemandEvent;
 import de.metas.material.event.MaterialEventService;
@@ -27,12 +28,12 @@ import lombok.NonNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -42,42 +43,45 @@ import lombok.NonNull;
 @Service
 public class DemandCandiateHandler implements CandidateHandler
 {
-	@NonNull
-	private final CandidateRepository candidateRepository;
+	private final CandidateRepositoryRetrieval candidateRepository;
 
-	@NonNull
 	private final MaterialEventService materialEventService;
 
-	@NonNull
 	private final StockCandidateService stockCandidateService;
 
+	private final CandidateRepositoryCommands candidateRepositoryCommands;
+
 	public DemandCandiateHandler(
-			@NonNull final CandidateRepository candidateRepository,
+			@NonNull final CandidateRepositoryRetrieval candidateRepository,
+			@NonNull final CandidateRepositoryCommands candidateRepositoryCommands,
 			@NonNull final MaterialEventService materialEventService,
 			@NonNull final StockCandidateService stockCandidateService)
 	{
 		this.candidateRepository = candidateRepository;
+		this.candidateRepositoryCommands = candidateRepositoryCommands;
 		this.materialEventService = materialEventService;
 		this.stockCandidateService = stockCandidateService;
 	}
 
 	@Override
-	public Collection<Type> getHandeledTypes()
+	public Collection<CandidateType> getHandeledTypes()
 	{
-		return ImmutableList.of(Type.DEMAND, Type.UNRELATED_DECREASE);
+		return ImmutableList.of(CandidateType.DEMAND, CandidateType.UNRELATED_DECREASE);
 	}
 
 	/**
 	 * Persists (updates or creates) the given demand candidate and also it's <b>child</b> stock candidate.
-	 * 
+	 *
 	 * @param demandCandidate
 	 * @return
 	 */
+	@Override
 	public Candidate onCandidateNewOrChange(@NonNull final Candidate demandCandidate)
 	{
-		assertTCorrectCandidateType(demandCandidate);
+		assertCorrectCandidateType(demandCandidate);
 
-		final Candidate demandCandidateWithId = candidateRepository.addOrUpdateOverwriteStoredSeqNo(demandCandidate);
+		final Candidate demandCandidateWithId = candidateRepositoryCommands
+				.addOrUpdateOverwriteStoredSeqNo(demandCandidate);
 
 		if (demandCandidateWithId.getQuantity().signum() == 0)
 		{
@@ -93,18 +97,20 @@ public class DemandCandiateHandler implements CandidateHandler
 		final Optional<Candidate> possibleChildStockCandidate = candidateRepository.retrieveSingleChild(demandCandidateWithId.getId());
 		if (possibleChildStockCandidate.isPresent())
 		{
-			// this supply candidate is not new and already has a stock candidate as its parent. be sure to update exactly *that* scandidate
-			childStockWithDemand = stockCandidateService.updateStock(
-					demandCandidateWithId, () -> {
-						// don't check if we might create a new stock candidate, because we know we don't.
-						// Instead we might run into trouble with CandidateRepository.retrieveExact() and multiple matching records.
-						// So get the one that we know already exists and just update its quantity
-						final Candidate childStockCandidate = possibleChildStockCandidate.get();
-						return candidateRepository.updateQty(
-								childStockCandidate
-										.withQuantity(
-												childStockCandidate.getQuantity().subtract(demandCandidateWithId.getQuantity())));
-					});
+			// this supply candidate is not new and already has a stock candidate as its parent. be sure to update exactly *that* candidate
+			childStockWithDemand = stockCandidateService
+					.updateStock(
+							demandCandidateWithId, () -> {
+								// don't check if we might create a new stock candidate, because we know we don't.
+								// Instead we might run into trouble with CandidateRepository.retrieveExact() and multiple matching records.
+								// So get the one that we know already exists and just update its quantity
+								final Candidate childStockCandidate = possibleChildStockCandidate.get();
+								return candidateRepositoryCommands
+										.updateQty(
+												childStockCandidate
+														.withQuantity(
+																childStockCandidate.getQuantity().subtract(demandCandidateWithId.getQuantity())));
+							});
 		}
 
 		else
@@ -124,32 +130,37 @@ public class DemandCandiateHandler implements CandidateHandler
 			// keep it and in turn update the demandCandidate's seqNo accordingly
 			demandCandidateToReturn = demandCandidate
 					.withSeqNo(childStockWithDemand.getSeqNo() - 1);
-			candidateRepository.addOrUpdateOverwriteStoredSeqNo(demandCandidateToReturn);
+			candidateRepositoryCommands.addOrUpdateOverwriteStoredSeqNo(demandCandidateToReturn);
 		}
 		else
 		{
 			demandCandidateToReturn = demandCandidateWithId;
 		}
 
-		final boolean demandExceedsAvailableQty = childStockWithDemand.getQuantity().signum() < 0;
-		if (demandExceedsAvailableQty && demandCandidate.getType() == Type.DEMAND)
+		if (demandCandidate.getType() == CandidateType.DEMAND)
 		{
-			// there would be no more stock left, so
-			// notify whoever is in charge that we have a demand to balance
-			final BigDecimal requiredAdditionalQty = childStockWithDemand.getQuantity().negate();
+			final BigDecimal availableQuantity = candidateRepository.retrieveAvailableStock(demandCandidate.getMaterialDescriptor());
+			final boolean demandExceedsAvailableQty = demandCandidate.getQuantity().compareTo(availableQuantity) > 0;
 
-			final MaterialDemandEvent materialDemandEvent = MaterialDemandEventCreator.createMaterialDemandEvent(demandCandidateWithId, requiredAdditionalQty);
-			materialEventService.fireEvent(materialDemandEvent);
+			if (demandExceedsAvailableQty)
+			{
+				// there would be no more stock left, so
+				// notify whoever is in charge that we have a demand to balance
+				final BigDecimal requiredAdditionalQty = demandCandidate.getQuantity().subtract(availableQuantity);
+
+				final MaterialDemandEvent materialDemandEvent = MaterialDemandEventCreator.createMaterialDemandEvent(demandCandidateWithId, requiredAdditionalQty);
+				materialEventService.fireEvent(materialDemandEvent);
+			}
 		}
 		return demandCandidateToReturn;
 	}
 
-	private void assertTCorrectCandidateType(@NonNull final Candidate demandCandidate)
+	private void assertCorrectCandidateType(@NonNull final Candidate demandCandidate)
 	{
-		final Type type = demandCandidate.getType();
+		final CandidateType type = demandCandidate.getType();
 
 		Preconditions.checkArgument(
-				type == Type.DEMAND || type == Type.UNRELATED_DECREASE,
+				type == CandidateType.DEMAND || type == CandidateType.UNRELATED_DECREASE,
 				"Given parameter 'demandCandidate' has type=%s; demandCandidate=%s",
 				type, demandCandidate);
 	}

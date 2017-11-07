@@ -11,7 +11,7 @@ $BODY$
 				INNER JOIN M_Attribute a ON a.M_Attribute_ID=ai.M_Attribute_ID
 			WHERE asi.M_AttributeSetInstance_ID = $1
 				AND av.IsActive='Y'
-				AND a.IsMatchHUStorage='Y' -- Match significant attributes for HUStorage
+				AND a.IsStorageRelevant='Y' -- Match significant attributes for HUStorage
 				AND a.IsActive='Y'
 			GROUP BY a.M_Attribute_ID, av.Name
 			ORDER BY a.M_Attribute_ID, av.Name
@@ -19,7 +19,7 @@ $BODY$
 $BODY$
   LANGUAGE sql STABLE;
 
-COMMENT ON FUNCTION GenerateHUStorageASIKey(numeric, text) IS 'Creates a string that contains the M_AttributeValue.Names of those M_Attributes that have IsMatchHUStorage=Y.
+COMMENT ON FUNCTION GenerateHUStorageASIKey(numeric, text) IS 'Creates a string that contains the M_AttributeValue.Names of those M_Attributes that have IsStorageRelevant=Y.
 Ff there are none, the fuction returns the given nullString.';
 
 CREATE OR REPLACE FUNCTION GenerateHUStorageASIKey(asiId numeric)

@@ -46,7 +46,7 @@ public class ADReferenceDAO implements IADReferenceDAO
 		final IQueryBuilder<I_AD_Ref_List> queryBuilder = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_AD_Ref_List.class, Env.getCtx(), ITrx.TRXNAME_None);
 
-		queryBuilder.getFilters()
+		queryBuilder.getCompositeFilter()
 				.addEqualsFilter(I_AD_Ref_List.COLUMNNAME_AD_Reference_ID, adReferenceId)
 				.addOnlyActiveRecordsFilter();
 

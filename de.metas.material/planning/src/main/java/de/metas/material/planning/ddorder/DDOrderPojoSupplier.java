@@ -4,10 +4,11 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 import java.util.stream.Collectors;
+
+import javax.annotation.Nullable;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -16,7 +17,6 @@ import org.adempiere.util.Services;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_M_Locator;
-import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_S_Resource;
 import org.compiere.util.Env;
@@ -28,6 +28,8 @@ import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.material.event.ProductDescriptor;
+import de.metas.material.event.ProductDescriptorFactory;
 import de.metas.material.event.ddorder.DDOrder;
 import de.metas.material.event.ddorder.DDOrderLine;
 import de.metas.material.planning.ErrorCodes;
@@ -35,6 +37,7 @@ import de.metas.material.planning.IMRPNotesCollector;
 import de.metas.material.planning.IMaterialPlanningContext;
 import de.metas.material.planning.IMaterialRequest;
 import de.metas.material.planning.exception.MrpException;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -60,6 +63,12 @@ import de.metas.material.planning.exception.MrpException;
 @Service
 public class DDOrderPojoSupplier
 {
+	private final ProductDescriptorFactory productDescriptorFactory;
+
+	public DDOrderPojoSupplier(@NonNull final ProductDescriptorFactory productDescriptorFactory)
+	{
+		this.productDescriptorFactory = productDescriptorFactory;
+	}
 
 	/**
 	 *
@@ -189,37 +198,27 @@ public class DDOrderPojoSupplier
 					//
 					continue;
 				}
-				
+
 				//
-				// Try found some DD_Order with Shipper , Business Partner and Doc Status = Draft
+				// Try to find some DD_Order with Shipper , Business Partner and Doc Status = Draft
 				// Consolidate the demand in a single order for each Shipper , Business Partner , DemandDateStartSchedule
-				orderBuilder = getDDOrderFromCache(org,
-						plant,
-						warehouseInTrasitId,
-						networkLine.getM_Shipper_ID(),
-						orgBPartnerId,
-						request.getDemandDate());
+				orderBuilder = DDOrder.builder()
+						.orgId(warehouseTo.getAD_Org_ID())
+						.plantId(plant.getS_Resource_ID())
+						.productPlanningId(productPlanningData.getPP_Product_Planning_ID())
+						.datePromised(supplyDateFinishSchedule)
+						.shipperId(networkLine.getM_Shipper_ID())
+						.createDDrder(productPlanningData.isCreatePlan());
 
-				if (orderBuilder == null)
-				{
-					orderBuilder = DDOrder.builder()
-							.orgId(warehouseTo.getAD_Org_ID())
-							.plantId(plant.getS_Resource_ID())
-							.productPlanningId(productPlanningData.getPP_Product_Planning_ID())
-							.datePromised(supplyDateFinishSchedule)
-							.shipperId(networkLine.getM_Shipper_ID())
-							.createDDrder(productPlanningData.isCreatePlan());
+				builders.add(orderBuilder);
 
-					builders.add(orderBuilder);
-					addToCache(orderBuilder);
-				}
 				M_Shipper_ID = networkLine.getM_Shipper_ID();
 			}
 
 			//
 			// Crate DD order line
 			final BigDecimal qtyToMove = calculateQtyToMove(qtyToSupplyRemaining, networkLine.getPercent());
-			final DDOrderLine ddOrderLine = createDD_OrderLine(mrpContext, networkLine, qtyToMove, supplyDateFinishSchedule, request);
+			final DDOrderLine ddOrderLine = createDD_OrderLine(networkLine, qtyToMove, supplyDateFinishSchedule, request);
 			orderBuilder.line(ddOrderLine);
 
 			qtyToSupplyRemaining = qtyToSupplyRemaining.subtract(qtyToMove);
@@ -241,25 +240,6 @@ public class DDOrderPojoSupplier
 		return builders.stream()
 				.map(b -> b.build())
 				.collect(Collectors.toList());
-	}
-
-	private DDOrder.DDOrderBuilder getDDOrderFromCache(final I_AD_Org org,
-			final I_S_Resource plant,
-			final int warehouseInTrasitId,
-			final int shipperId,
-			final int bpartnerId,
-			final Date demandDate)
-	{
-		// TODO implement
-		return null;
-	}
-
-	private void addToCache(final DDOrder.DDOrderBuilder order)
-	{
-		// TODO: implement
-		// DD_Order_ID = order.getDD_Order_ID();
-		// String key = network_line.getM_Shipper_ID() + "#" + C_BPartner_ID + "#" + DemandDateStartSchedule + "DR";
-		// dd_order_id_cache.put(key, DD_Order_ID);
 	}
 
 	/* package */final BigDecimal calculateQtyToMove(final BigDecimal qtyToMoveRequested, final BigDecimal networkLineTransferPercent)
@@ -288,19 +268,22 @@ public class DDOrderPojoSupplier
 	}
 
 	private DDOrderLine createDD_OrderLine(
-			final IMaterialPlanningContext mrpContext,
-			final I_DD_NetworkDistributionLine networkLine,
-			final BigDecimal qtyToMove,
-			final Timestamp supplyDateFinishSchedule,
-			final IMaterialRequest request)
+			@Nullable final I_DD_NetworkDistributionLine networkLine,
+			@NonNull final BigDecimal qtyToMove,
+			@NonNull final Timestamp supplyDateFinishSchedule,
+			@NonNull final IMaterialRequest request)
 	{
-		final I_M_Product product = mrpContext.getM_Product();
+		final IMaterialPlanningContext mrpContext = request.getMrpContext();
 
 		final int durationDays = DDOrderUtil.calculateDurationDays(mrpContext.getProductPlanning(), networkLine);
 
+		final ProductDescriptor productDescriptor = productDescriptorFactory.forProductIdAndAttributeSetInstanceId(
+				mrpContext.getM_Product_ID(),
+				mrpContext.getM_AttributeSetInstance_ID());
+
 		final DDOrderLine ddOrderline = DDOrderLine.builder()
 				.salesOrderLineId(request.getMrpDemandOrderLineSOId())
-				.productId(product.getM_Product_ID())
+				.productDescriptor(productDescriptor)
 				.qty(qtyToMove)
 				.networkDistributionLineId(networkLine.getDD_NetworkDistributionLine_ID())
 				.durationDays(durationDays)

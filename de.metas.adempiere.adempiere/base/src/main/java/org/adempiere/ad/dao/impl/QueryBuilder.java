@@ -83,7 +83,6 @@ import com.google.common.collect.ImmutableMap;
 	 */
 	public QueryBuilder(final Class<T> modelClass, final String tableName)
 	{
-		super();
 		this.modelClass = modelClass;
 		this.modelKeyColumnName = null; // lazy
 
@@ -174,7 +173,7 @@ import com.google.common.collect.ImmutableMap;
 	}
 
 	@Override
-	public ICompositeQueryFilter<T> getFilters()
+	public ICompositeQueryFilter<T> getCompositeFilter()
 	{
 		return filters;
 	}
@@ -527,17 +526,17 @@ import com.google.common.collect.ImmutableMap;
 	}
 
 	@Override
-	public IQueryBuilder<T> addSubstringFilter(final String columnname, final String substring, final boolean ignoreCase)
+	public IQueryBuilder<T> addStringLikeFilter(final String columnname, final String substring, final boolean ignoreCase)
 	{
-		filters.addSubstringFilter(columnname, substring, ignoreCase);
+		filters.addStringLikeFilter(columnname, substring, ignoreCase);
 		return this;
 	}
 
 	@Override
-	public IQueryBuilder<T> addSubstringFilter(final ModelColumn<T, ?> column, final String substring, final boolean ignoreCase)
+	public IQueryBuilder<T> addStringLikeFilter(final ModelColumn<T, ?> column, final String substring, final boolean ignoreCase)
 	{
 		final String columnName = column.getColumnName();
-		return addSubstringFilter(columnName, substring, ignoreCase);
+		return addStringLikeFilter(columnName, substring, ignoreCase);
 	}
 
 	@Override
@@ -692,5 +691,4 @@ import com.google.common.collect.ImmutableMap;
 		filters.addValidFromToMatchesFilter(validFromColumn, validToColumn, dateToMatch);
 		return this;
 	}
-
 }

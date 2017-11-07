@@ -487,16 +487,16 @@ import org.compiere.model.IQuery;
 	}
 
 	@Override
-	public ICompositeQueryFilter<T> addSubstringFilter(final ModelColumn<T, ?> column, final String substring, final boolean ignoreCase)
+	public ICompositeQueryFilter<T> addStringLikeFilter(final ModelColumn<T, ?> column, final String substring, final boolean ignoreCase)
 	{
 		final String columnName = column.getColumnName();
-		return addSubstringFilter(columnName, substring, ignoreCase);
+		return addStringLikeFilter(columnName, substring, ignoreCase);
 	}
 
 	@Override
-	public ICompositeQueryFilter<T> addSubstringFilter(final String columnName, final String substring, final boolean ignoreCase)
+	public ICompositeQueryFilter<T> addStringLikeFilter(final String columnName, final String substring, final boolean ignoreCase)
 	{
-		final SubstringFilter<T> filter = new SubstringFilter<>(columnName, substring, ignoreCase);
+		final StringLikeFilter<T> filter = new StringLikeFilter<>(columnName, substring, ignoreCase);
 		return addFilter(filter);
 	}
 

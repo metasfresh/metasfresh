@@ -72,14 +72,20 @@ public interface IMaterialPlanningContext extends IContextAware
 	// Planning Segment
 	//@formatter:off
 	int getAD_Client_ID();
+
 	int getPlant_ID();
 	I_S_Resource getPlant();
+
 	int getAD_Org_ID();
 	I_AD_Org getAD_Org();
+
 	int getM_Warehouse_ID();
 	I_M_Warehouse getM_Warehouse();
+
 	int getM_Product_ID();
 	I_M_Product getM_Product();
+	
+	int getM_AttributeSetInstance_ID();
 	//@formatter:on
 
 	/**
@@ -149,4 +155,6 @@ public interface IMaterialPlanningContext extends IContextAware
 	 * @return true if MRP is allowed to run MRP cleanup on this context/segment.
 	 */
 	boolean isAllowCleanup();
+
+	void assertContextConsistent();
 }

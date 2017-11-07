@@ -82,7 +82,7 @@ import de.metas.logging.LogManager;
  *
  * 	@author 	Jorg Janke
  * 	@version 	$Id: VSortTab.java,v 1.2 2006/07/30 00:51:28 jjanke Exp $
- * 
+ *
  * @author Teo Sarca, SC ARHIPAC SERVICE SRL
  * 				FR [ 1779410 ] VSortTab: display ID for not visible columns
  * @author victor.perez@e-evolution.com, e-Evolution
@@ -92,7 +92,7 @@ import de.metas.logging.LogManager;
 public class VSortTab extends CPanel implements APanelTab
 {
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = -2133358506913610514L;
 
@@ -105,11 +105,11 @@ public class VSortTab extends CPanel implements APanelTab
 	public VSortTab(final int WindowNo, final GridTabVO gridTabVO, final int parentTabNo)
 	{
 		super();
-		
+
 		m_WindowNo = WindowNo;
 		this.gridTabVO = gridTabVO;
 		this.parentTabNo = parentTabNo;
-		
+
 		setTabLevel(gridTabVO.getTabLevel());
 
 		try
@@ -151,7 +151,7 @@ public class VSortTab extends CPanel implements APanelTab
 	private final DefaultListModel<ListItem> noModel = new DefaultListModel<ListItem>()
 	{
 		/**
-		 * 
+		 *
 		 */
 		private static final long serialVersionUID = 2171680655634744697L;
 		@Override
@@ -174,7 +174,7 @@ public class VSortTab extends CPanel implements APanelTab
 	private final DefaultListModel<ListItem> yesModel = new DefaultListModel<>();
 	DefaultListCellRenderer listRenderer = new DefaultListCellRenderer() {
 		/**
-		 * 
+		 *
 		 */
 		private static final long serialVersionUID = -101524191283634472L;
 
@@ -188,7 +188,7 @@ public class VSortTab extends CPanel implements APanelTab
 			}
 			return c;
 		}
-		
+
 	};
 	private final JList<ListItem> noList = new JList<>(noModel);
 	private final JList<ListItem> yesList = new JList<>(yesModel);
@@ -206,14 +206,14 @@ public class VSortTab extends CPanel implements APanelTab
 		final int AD_ColumnSortOrder_ID = gridTabVO.getAD_ColumnSortOrder_ID();
 		final int AD_ColumnSortYesNo_ID = gridTabVO.getAD_ColumnSortYesNo_ID();
 		final int link_Column_ID = gridTabVO.getAD_Column_ID();
-		
+
 		String defaultLinkColumnName = null;
 
 		int identifiersCount = 0;
 		final StringBuilder identifierSql = new StringBuilder();
 		final List<Object> sqlParams = new ArrayList<>();
 		String sql;
-		
+
 		final boolean trl = !Env.isBaseLanguage(Env.getCtx(), "AD_Element");
 		if (!trl)
 		{
@@ -250,14 +250,14 @@ public class VSortTab extends CPanel implements APanelTab
 			sqlParams.add(Env.getAD_Language(Env.getCtx()));
 		}
 		sql += " ORDER BY c.SeqNo";
-		
+
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
 		{
 			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None);
 			DB.setParameters(pstmt, sqlParams);
-			
+
 			rs = pstmt.executeQuery();
 			while (rs.next())
 			{
@@ -265,7 +265,7 @@ public class VSortTab extends CPanel implements APanelTab
 				final int adColumnId = rs.getInt(2);
 				final String columnName = rs.getString(3);
 				final String name = rs.getString(4);
-				
+
 				//	Sort Column
 				if (AD_ColumnSortOrder_ID == adColumnId)
 				{
@@ -325,7 +325,7 @@ public class VSortTab extends CPanel implements APanelTab
 			DB.close(rs, pstmt);
 			rs = null; pstmt = null;
 		}
-		
+
 		//
 		// Link column name
 		if(m_LinkColumnName == null)
@@ -336,7 +336,7 @@ public class VSortTab extends CPanel implements APanelTab
 		{
 			log.warn("No LinkColumnName found for {}", gridTabVO);
 		}
-		
+
 		//
 		// Parent link column name
 		if(gridTabVO.getParent_Column_ID() > 0)
@@ -351,14 +351,14 @@ public class VSortTab extends CPanel implements APanelTab
 		{
 			log.warn("No ParentLinkColumnName found for {}", gridTabVO);
 		}
-		
+
 		//
 		// Identifier
 		if (identifiersCount == 0)
 			m_IdentifierSql = "NULL";
 		else if (identifiersCount == 1)
 			m_IdentifierSql = identifierSql.toString();
-		else 
+		else
 			m_IdentifierSql = identifierSql.insert(0, "COALESCE(").append(")").toString();
 
 		//
@@ -543,22 +543,22 @@ public class VSortTab extends CPanel implements APanelTab
 		{
 			sql.append("\n WHERE 1=?");
 		}
-			
+
 		if (m_IdentifierTranslated)
 		{
 			sql.append("\n AND t.").append(m_KeyColumnName).append("=tt.").append(m_KeyColumnName).append(" AND tt.AD_Language=?");
 		}
-		
+
 		//	Order
 		sql.append("\n ORDER BY ");
 		if (m_ColumnYesNoName != null)
 			sql.append("6 DESC,");		//	t.IsDisplayed DESC
 		sql.append("3,2");				//	t.SeqNo, tt.Name
-		
+
 		//FR [ 2826406 ]
-		final int parentId;		
+		final int parentId;
 		if(m_ParentLinkColumnName != null)
-		{	
+		{
 			parentId = Env.getContextAsInt(Env.getCtx(), m_WindowNo, parentTabNo, m_ParentLinkColumnName);
 			log.debug("{}={} (WindowNo={}, TabNo={})", m_ParentLinkColumnName, parentId, m_WindowNo, parentTabNo);
 		}
@@ -567,7 +567,7 @@ public class VSortTab extends CPanel implements APanelTab
 			parentId = -1;
 			log.debug("Considering parentId={} because there is no parent link column", parentId);
 		}
-		
+
 		final String adLanguage = Env.getAD_Language(Env.getCtx());
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
@@ -575,12 +575,12 @@ public class VSortTab extends CPanel implements APanelTab
 		{
 			pstmt = DB.prepareStatement(sql.toString(), ITrx.TRXNAME_None);
 			pstmt.setInt(1, parentId);
-			
+
 			if (m_IdentifierTranslated)
 			{
 				pstmt.setString(2, adLanguage);
 			}
-			
+
 			rs = pstmt.executeQuery();
 			while (rs.next())
 			{
@@ -594,7 +594,7 @@ public class VSortTab extends CPanel implements APanelTab
 				{
 					isYes = DisplayType.toBoolean(rs.getString(6));
 				}
-				
+
 				// metas: begin
 				if (hasColumnName)
 				{
@@ -764,7 +764,7 @@ public class VSortTab extends CPanel implements APanelTab
 		if (!m_aPanel.aSave.isEnabled())
 			return;
 		log.debug("");
-		
+
 		final AtomicBoolean ok = new AtomicBoolean(true);
 		final StringBuffer info = new StringBuffer();
 		Services.get(ITrxManager.class)
@@ -781,7 +781,7 @@ public class VSortTab extends CPanel implements APanelTab
 				continue;
 			if(pp.getSortNo() == 0 && (m_ColumnYesNoName == null || !pp.isYes()))
 				continue; // no changes
-			
+
 			if (!updateAndSaveListItem(pp, false, 0))
 			{
 								ok.set(false);
@@ -813,7 +813,7 @@ public class VSortTab extends CPanel implements APanelTab
 		}
 					}
 				});
-		
+
 		//
 		if (ok.get())
 		{
@@ -824,14 +824,14 @@ public class VSortTab extends CPanel implements APanelTab
 			ADialog.error(m_WindowNo, null, "SaveError", info.toString());
 		}
 	}	//	saveData
-	
+
 	private boolean updateAndSaveListItem(ListItem item, boolean isYes, int sortNo)
 	{
 		if (!item.isUpdateable())
 		{
 			return false;
 		}
-		
+
 		final Properties ctx = Env.getCtx();
 		final String trxName = ITrx.TRXNAME_ThreadInherited;
 		final PO po = new Query(ctx, m_TableName, m_KeyColumnName + "=?", trxName)
@@ -841,20 +841,20 @@ public class VSortTab extends CPanel implements APanelTab
 		{
 			return false;
 		}
-		
-		po.set_ValueOfColumnReturningBoolean(m_ColumnSortName, sortNo);
+
+		po.set_ValueOfColumn(m_ColumnSortName, sortNo);
 		if(m_ColumnYesNoName != null)
 		{
-			po.set_ValueOfColumnReturningBoolean(m_ColumnYesNoName, isYes);
+			po.set_ValueOfColumn(m_ColumnYesNoName, isYes);
 		}
-		
+
 		po.saveEx();
-		
+
 		//
 		// Update Item
 		item.setIsYes(isYes);
 		item.setSortNo(sortNo);
-		
+
 		return true;
 	}
 
@@ -867,14 +867,14 @@ public class VSortTab extends CPanel implements APanelTab
 		saveData();
 		m_aPanel = null;
 	}	//	dispoase
-	
+
 	/**
 	 * List Item
 	 * @author Teo Sarca
 	 */
 	private class ListItem extends NamePair {
 		/**
-		 * 
+		 *
 		 */
 		private static final long serialVersionUID = 5399675004361331697L;
 		private int		m_key;
@@ -885,7 +885,7 @@ public class VSortTab extends CPanel implements APanelTab
 		/** Initial selection flag */
 		private boolean m_isYes;
 		private boolean	m_updateable;
-		
+
 		public ListItem(int key, String name, int sortNo, boolean isYes, int AD_Client_ID, int AD_Org_ID) {
 			super(name);
 			this.m_key = key;
@@ -893,7 +893,7 @@ public class VSortTab extends CPanel implements APanelTab
 			this.m_AD_Org_ID = AD_Org_ID;
 			this.m_sortNo = sortNo;
 			this.m_isYes = isYes;
-			this.m_updateable = Env.getUserRolePermissions().canUpdate(m_AD_Client_ID, m_AD_Org_ID, gridTabVO.getAD_Table_ID(), m_key, false); 
+			this.m_updateable = Env.getUserRolePermissions().canUpdate(m_AD_Client_ID, m_AD_Org_ID, gridTabVO.getAD_Table_ID(), m_key, false);
 		}
 		public int getKey() {
 			return m_key;
@@ -964,7 +964,7 @@ public class VSortTab extends CPanel implements APanelTab
 		public DragListener()
 		{
 			final Image image = Images.getImage2("DragCursor32");
-			
+
 			final Toolkit toolkit = Toolkit.getDefaultToolkit();
 			customCursor = toolkit.createCustomCursor(image, new Point(0, 0), "Drag");
 		}
