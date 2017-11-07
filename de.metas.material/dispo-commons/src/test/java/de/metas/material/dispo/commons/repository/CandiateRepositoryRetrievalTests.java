@@ -541,8 +541,7 @@ public class CandiateRepositoryRetrievalTests
 	@Test(expected = RuntimeException.class)
 	public void retrieveAvailableStockForCompleteDescriptor_throw_ex_if_not_complete()
 	{
-		final MaterialDescriptor materialDescriptor = MaterialDescriptor.builderForQuery().build();
-		candidateRepository.retrieveAvailableStock(materialDescriptor);
+		MaterialDescriptorQuery.builder().build();
 	}
 
 	@Test
@@ -561,7 +560,7 @@ public class CandiateRepositoryRetrievalTests
 					ITrx.TRXNAME_ThreadInherited,
 					CandidateRepositoryRetrieval.SQL_SELECT_AVAILABLE_STOCK,
 					new Object[] {
-							materialDescriptor.getWarehouseId(),
+							materialDescriptor.getWarehouseId(), materialDescriptor.getWarehouseId(),
 							materialDescriptor.getProductId(),
 							"%Key1%Key2%",
 							materialDescriptor.getDate()});
