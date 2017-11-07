@@ -1,6 +1,7 @@
 package de.metas.material.dispo.commons.repository;
 
 import static org.adempiere.model.InterfaceWrapperHelper.isNew;
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -15,6 +16,7 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.compiere.model.I_C_UOM;
 import org.compiere.util.DB;
 import org.springframework.stereotype.Service;
 
@@ -39,6 +41,8 @@ import de.metas.material.dispo.model.I_MD_Candidate_Transaction_Detail;
 import de.metas.material.event.MaterialDescriptor;
 import de.metas.material.event.ProductDescriptor;
 import de.metas.material.event.ProductDescriptorFactory;
+import de.metas.product.IProductBL;
+import de.metas.product.model.I_M_Product;
 import lombok.NonNull;
 
 /*
@@ -346,5 +350,11 @@ public class CandidateRepositoryRetrieval
 						materialDescriptor.getDate() });
 
 		return result;
+	}
+	
+	public I_C_UOM getStockingUOM(final int productId)
+	{
+		final I_C_UOM uom = Services.get(IProductBL.class).getStockingUOM(load(productId, I_M_Product.class));
+		return uom;
 	}
 }
