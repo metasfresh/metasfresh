@@ -22,6 +22,7 @@ import org.adempiere.util.api.IParams;
 import org.compiere.model.I_AD_InfoColumn;
 import org.compiere.model.I_AD_InfoWindow;
 import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_Product;
@@ -32,7 +33,6 @@ import de.metas.fresh.model.I_X_MRP_ProductInfo_V;
 import de.metas.fresh.mrp_productinfo.IMRPProductInfoBL;
 import de.metas.fresh.mrp_productinfo.IMRPProductInfoSelector;
 import de.metas.fresh.mrp_productinfo.IMRPProductInfoSelectorFactory;
-import de.metas.handlingunits.model.I_M_Attribute;
 import de.metas.inout.IInOutBL;
 import de.metas.storage.IStorageEngine;
 import de.metas.storage.IStorageEngineService;
@@ -268,7 +268,7 @@ public class MRPProductInfoBL implements IMRPProductInfoBL
 					.getAttributes()
 					.stream()
 					.map(a -> InterfaceWrapperHelper.create(a, I_M_Attribute.class))
-					.filter(a -> a.isActive() && a.isMatchHUStorage()) // important: this is also a filter in the GenerateHUStorageASIKey DB function
+					.filter(a -> a.isActive() && a.isStorageRelevant()) // important: this is also a filter in the GenerateHUStorageASIKey DB function
 					.forEach(a -> storageQuery.addAttribute(a, attributeSet.getAttributeValueType(a), attributeSet.getValue(a)));
 		}
 

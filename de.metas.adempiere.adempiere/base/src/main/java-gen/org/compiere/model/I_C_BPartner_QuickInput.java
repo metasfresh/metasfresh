@@ -233,6 +233,35 @@ public interface I_C_BPartner_QuickInput
     public static final String COLUMNNAME_C_BPartner_QuickInput_ID = "C_BPartner_QuickInput_ID";
 
 	/**
+	 * Set Anrede.
+	 * Anrede zum Druck auf Korrespondenz
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_Greeting_ID (int C_Greeting_ID);
+
+	/**
+	 * Get Anrede.
+	 * Anrede zum Druck auf Korrespondenz
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_Greeting_ID();
+
+	public org.compiere.model.I_C_Greeting getC_Greeting();
+
+	public void setC_Greeting(org.compiere.model.I_C_Greeting C_Greeting);
+
+    /** Column definition for C_Greeting_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_BPartner_QuickInput, org.compiere.model.I_C_Greeting> COLUMN_C_Greeting_ID = new org.adempiere.model.ModelColumn<I_C_BPartner_QuickInput, org.compiere.model.I_C_Greeting>(I_C_BPartner_QuickInput.class, "C_Greeting_ID", org.compiere.model.I_C_Greeting.class);
+    /** Column name C_Greeting_ID */
+    public static final String COLUMNNAME_C_Greeting_ID = "C_Greeting_ID";
+
+	/**
 	 * Set Anschrift.
 	 * Adresse oder Anschrift
 	 *
@@ -262,7 +291,7 @@ public interface I_C_BPartner_QuickInput
     public static final String COLUMNNAME_C_Location_ID = "C_Location_ID";
 
 	/**
-	 * Set Zahlungskondition.
+	 * Set Zahlungsbedingung.
 	 * Die Bedingungen für die Bezahlung dieses Vorgangs
 	 *
 	 * <br>Type: TableDir
@@ -272,7 +301,7 @@ public interface I_C_BPartner_QuickInput
 	public void setC_PaymentTerm_ID (int C_PaymentTerm_ID);
 
 	/**
-	 * Get Zahlungskondition.
+	 * Get Zahlungsbedingung.
 	 * Die Bedingungen für die Bezahlung dieses Vorgangs
 	 *
 	 * <br>Type: TableDir
@@ -344,7 +373,7 @@ public interface I_C_BPartner_QuickInput
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set EMail.
+	 * Set eMail.
 	 * EMail-Adresse
 	 *
 	 * <br>Type: String
@@ -354,7 +383,7 @@ public interface I_C_BPartner_QuickInput
 	public void setEMail (java.lang.String EMail);
 
 	/**
-	 * Get EMail.
+	 * Get eMail.
 	 * EMail-Adresse
 	 *
 	 * <br>Type: String
@@ -548,7 +577,7 @@ public interface I_C_BPartner_QuickInput
 	 * Alphanumeric identifier of the entity
 	 *
 	 * <br>Type: String
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public void setName (java.lang.String Name);
@@ -558,7 +587,7 @@ public interface I_C_BPartner_QuickInput
 	 * Alphanumeric identifier of the entity
 	 *
 	 * <br>Type: String
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public java.lang.String getName();
@@ -569,7 +598,7 @@ public interface I_C_BPartner_QuickInput
     public static final String COLUMNNAME_Name = "Name";
 
 	/**
-	 * Set Name 2.
+	 * Set Name Zusatz.
 	 * Zusätzliche Bezeichnung
 	 *
 	 * <br>Type: String
@@ -579,7 +608,7 @@ public interface I_C_BPartner_QuickInput
 	public void setName2 (java.lang.String Name2);
 
 	/**
-	 * Get Name 2.
+	 * Get Name Zusatz.
 	 * Zusätzliche Bezeichnung
 	 *
 	 * <br>Type: String
@@ -594,8 +623,8 @@ public interface I_C_BPartner_QuickInput
     public static final String COLUMNNAME_Name2 = "Name2";
 
 	/**
-	 * Set Phone.
-	 * Identifies a telephone number
+	 * Set Telefon.
+	 * Beschreibt eine Telefon Nummer
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -604,8 +633,8 @@ public interface I_C_BPartner_QuickInput
 	public void setPhone (java.lang.String Phone);
 
 	/**
-	 * Get Phone.
-	 * Identifies a telephone number
+	 * Get Telefon.
+	 * Beschreibt eine Telefon Nummer
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false

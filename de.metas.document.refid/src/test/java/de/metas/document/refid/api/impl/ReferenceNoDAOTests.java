@@ -13,15 +13,14 @@ package de.metas.document.refid.api.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
@@ -30,9 +29,8 @@ import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBMoreThenOneRecordsFoundException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Order;
-import org.compiere.model.MTable;
-import org.compiere.model.PO;
 import org.compiere.util.Env;
 import org.junit.Test;
 
@@ -45,7 +43,6 @@ import de.metas.document.refid.spi.IReferenceNoGenerator;
 
 public class ReferenceNoDAOTests extends RefIdTestBase
 {
-
 
 	/**
 	 * Expecting the code to to property return the type by classname.
@@ -140,7 +137,7 @@ public class ReferenceNoDAOTests extends RefIdTestBase
 	private static class Gen1 implements IReferenceNoGenerator
 	{
 		@Override
-		public String generateReferenceNo(PO source)
+		public String generateReferenceNo(Object sourceModel)
 		{
 			throw new UnsupportedOperationException();
 		};
@@ -149,7 +146,7 @@ public class ReferenceNoDAOTests extends RefIdTestBase
 	private static class Gen2 implements IReferenceNoGenerator
 	{
 		@Override
-		public String generateReferenceNo(PO source)
+		public String generateReferenceNo(Object sourceModel)
 		{
 			throw new UnsupportedOperationException();
 		};
@@ -172,49 +169,49 @@ public class ReferenceNoDAOTests extends RefIdTestBase
 	{
 		return clazz.getSimpleName() + "_name";
 	}
-	
+
 	@Test
 	public void testRetrieveAssociatedRecords()
 	{
 		final POJOLookupMap lookupMap = POJOLookupMap.get();
-		
+
 		final I_C_Order order = lookupMap.newInstance(I_C_Order.class);
 		lookupMap.save(order);
-		
+
 		final I_C_Invoice invoice = lookupMap.newInstance(I_C_Invoice.class);
 		lookupMap.save(invoice);
-		
+
 		//
 		// create a reference number, and associate both 'order' and 'invoice' with it
 		// that way the method under test can retrieve 'order' from 'invoice'
 		final I_C_ReferenceNo_Type refNoType = setupType(Gen1.class);
-				
+
 		final I_C_ReferenceNo refNo = lookupMap.newInstance(I_C_ReferenceNo.class);
 		refNo.setC_ReferenceNo_Type(refNoType);
 		lookupMap.save(refNo);
-		
+
 		final I_C_ReferenceNo_Doc ocRefNoDoc = lookupMap.newInstance(I_C_ReferenceNo_Doc.class);
 		ocRefNoDoc.setC_ReferenceNo(refNo);
-		ocRefNoDoc.setAD_Table_ID(MTable.getTable_ID(I_C_Order.Table_Name));
+		ocRefNoDoc.setAD_Table_ID(InterfaceWrapperHelper.getTableId(I_C_Order.class));
 		ocRefNoDoc.setRecord_ID(order.getC_Order_ID());
 		lookupMap.save(ocRefNoDoc);
-		
+
 		final I_C_ReferenceNo_Doc invoiceRefNoDoc = lookupMap.newInstance(I_C_ReferenceNo_Doc.class);
 		invoiceRefNoDoc.setC_ReferenceNo(refNo);
-		invoiceRefNoDoc.setAD_Table_ID(MTable.getTable_ID(I_C_Invoice.Table_Name));
+		invoiceRefNoDoc.setAD_Table_ID(InterfaceWrapperHelper.getTableId(I_C_Invoice.class));
 		invoiceRefNoDoc.setRecord_ID(invoice.getC_Invoice_ID());
 		lookupMap.save(invoiceRefNoDoc);
-		
+
 		final PlainReferenceNoDAO dao = new PlainReferenceNoDAO();
 		assertThat(dao.retrieveAssociatedRecords(order, Gen1.class, I_C_Invoice.class).size(), is(1));
 		assertThat(dao.retrieveAssociatedRecords(order, Gen1.class, I_C_Invoice.class).get(0), is(invoice));
-				
+
 		assertThat(dao.retrieveAssociatedRecords(order, Gen1.class, I_C_Order.class).size(), is(1));
 		assertThat(dao.retrieveAssociatedRecords(order, Gen1.class, I_C_Order.class).get(0), is(order));
-		
+
 		// create another unused type
 		setupType(Gen2.class);
-		
+
 		// check that the method returns the empty list, when using Gen2.class for referenceNo type
 		assertThat(dao.retrieveAssociatedRecords(order, Gen2.class, I_C_Invoice.class).isEmpty(), is(true));
 		assertThat(dao.retrieveAssociatedRecords(invoice, Gen2.class, I_C_Order.class).isEmpty(), is(true));

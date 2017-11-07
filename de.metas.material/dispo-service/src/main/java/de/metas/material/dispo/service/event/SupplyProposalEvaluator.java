@@ -7,15 +7,16 @@ import java.util.Set;
 
 import org.springframework.stereotype.Service;
 
-import de.metas.material.dispo.CandidateRepository;
-import de.metas.material.dispo.CandidateSpecification.Type;
-import de.metas.material.dispo.CandidatesQuery;
-import de.metas.material.dispo.CandidatesQuery.DateOperator;
-import de.metas.material.dispo.candidate.Candidate;
+import de.metas.material.dispo.commons.CandidatesQuery;
+import de.metas.material.dispo.commons.candidate.Candidate;
+import de.metas.material.dispo.commons.candidate.CandidateType;
+import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.event.MaterialDescriptor;
+import de.metas.material.event.MaterialDescriptor.DateOperator;
+import de.metas.material.event.ProductDescriptor;
 import lombok.Builder;
-import lombok.Data;
 import lombok.NonNull;
+import lombok.Value;
 
 /*
  * #%L
@@ -51,15 +52,16 @@ public class SupplyProposalEvaluator
 	/**
 	 * Needed so the evaluator can check what's already there.
 	 */
-	private final CandidateRepository candidateRepository;
+	private final CandidateRepositoryRetrieval candidateRepository;
 
-	public SupplyProposalEvaluator(@NonNull final CandidateRepository candidateRepository)
+	public SupplyProposalEvaluator(@NonNull final CandidateRepositoryRetrieval candidateRepository)
 	{
 		this.candidateRepository = candidateRepository;
 	}
 
 	/**
-	 * For the given {@code proposal}, look for existing demand records which match the proposal's <b>destination</b> and are linked (directly or indirectly, via parent-references) to any supply record matching the proposal's <b>source</b>.
+	 * For the given {@code proposal}, look for existing demand records which match the proposal's <b>destination</b>
+	 * and are linked (directly or indirectly, via parent-references) to any supply record matching the proposal's <b>source</b>.
 	 * <p>
 	 * Background:
 	 * <ul>
@@ -77,17 +79,21 @@ public class SupplyProposalEvaluator
 	public boolean evaluateSupply(@NonNull final SupplyProposal proposal)
 	{
 		final CandidatesQuery demandQuery = CandidatesQuery.builder()
-				.type(Type.DEMAND)
-				.materialDescr(MaterialDescriptor.builderForQuery()
+				.type(CandidateType.DEMAND)
+				.materialDescriptor(MaterialDescriptor.builderForQuery()
 						.date(proposal.getDate())
-						.productId(proposal.getProductId())
+						.dateOperator(DateOperator.AT_OR_AFTER)
+						.productDescriptor(proposal.getProductDescriptor())
 						.warehouseId(proposal.getDestWarehouseId()).build())
-				.dateOperator(DateOperator.FROM)
+				.build();
+
+		final MaterialDescriptor sourceMaterialDescriptor = MaterialDescriptor.builderForQuery()
+				.productDescriptor(proposal.getProductDescriptor())
+				.warehouseId(proposal.getSourceWarehouseId())
 				.build();
 
 		final CandidatesQuery directReverseForDemandQuery = demandQuery
-				.withParentProductId(proposal.getProductId())
-				.withParentWarehouseId(proposal.getSourceWarehouseId());
+				.withParentMaterialDescriptor(sourceMaterialDescriptor);
 
 		final List<Candidate> directReversals = candidateRepository.retrieveOrderedByDateAndSeqNo(directReverseForDemandQuery);
 		if (!directReversals.isEmpty())
@@ -96,11 +102,11 @@ public class SupplyProposalEvaluator
 		}
 
 		final CandidatesQuery supplyQuery = demandQuery
-				.withType(Type.SUPPLY)
-				.withMaterialDescr(demandQuery.getMaterialDescr()
+				.withType(CandidateType.SUPPLY)
+				.withMaterialDescriptor(demandQuery.getMaterialDescriptor()
 						.withDate(proposal.getDate())
-						.withWarehouseId(proposal.getSourceWarehouseId()))
-				.withDateOperator(DateOperator.FROM);
+						.withDateOperator(DateOperator.AT_OR_AFTER)
+						.withWarehouseId(proposal.getSourceWarehouseId()));
 
 		final List<Candidate> demands = candidateRepository.retrieveOrderedByDateAndSeqNo(demandQuery);
 		for (final Candidate demand : demands)
@@ -115,7 +121,6 @@ public class SupplyProposalEvaluator
 				return false;
 			}
 		}
-
 		return true;
 	}
 
@@ -178,20 +183,20 @@ public class SupplyProposalEvaluator
 	 * @author metas-dev <dev@metasfresh.com>
 	 *
 	 */
-	@Data
+	@Value
 	@Builder
 	public static class SupplyProposal
 	{
 		@NonNull
-		private final Integer productId;
+		ProductDescriptor productDescriptor;
 
 		@NonNull
-		private final Integer sourceWarehouseId;
+		Integer sourceWarehouseId;
 
 		@NonNull
-		private final Integer destWarehouseId;
+		Integer destWarehouseId;
 
 		@NonNull
-		private final Date date;
+		Date date;
 	}
 }

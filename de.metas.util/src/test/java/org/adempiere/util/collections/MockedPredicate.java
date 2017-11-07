@@ -1,5 +1,7 @@
 package org.adempiere.util.collections;
 
+import java.util.function.Predicate;
+
 /*
  * #%L
  * de.metas.util
@@ -44,7 +46,7 @@ public class MockedPredicate<T> implements Predicate<T>
 	}
 
 	@Override
-	public boolean evaluate(T value)
+	public boolean test(T value)
 	{
 		return retValue;
 	}

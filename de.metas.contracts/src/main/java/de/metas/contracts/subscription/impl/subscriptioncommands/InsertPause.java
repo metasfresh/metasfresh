@@ -17,7 +17,7 @@ import com.jgoodies.common.base.Objects;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_SubscriptionProgress;
 import de.metas.contracts.model.X_C_SubscriptionProgress;
-import de.metas.contracts.subscription.impl.SubscriptionCommand;
+import de.metas.contracts.subscription.impl.SubscriptionService;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import lombok.NonNull;
 
@@ -45,9 +45,9 @@ import lombok.NonNull;
 
 public class InsertPause
 {
-	private final SubscriptionCommand subscriptionCommand;
+	private final SubscriptionService subscriptionCommand;
 
-	public InsertPause(@NonNull final SubscriptionCommand subscriptionCommand)
+	public InsertPause(@NonNull final SubscriptionService subscriptionCommand)
 	{
 		this.subscriptionCommand = subscriptionCommand;
 	}
@@ -59,7 +59,7 @@ public class InsertPause
 	{
 		Preconditions.checkArgument(!dateTo.before(dateFrom), "The given dateTo may not be before the given dateFrom; dateFrom=%s; dateTo=%s", dateFrom, dateTo);
 
-		subscriptionCommand.removePauses(term, dateFrom, dateTo);
+		subscriptionCommand.removePausesAroundTimeframe(term, dateFrom, dateTo);
 
 		final List<I_C_SubscriptionProgress> allSpsAfterBeginOfPause = subscriptionCommand.retrieveNextSPsAndLogIfEmpty(term, dateFrom);
 		if (allSpsAfterBeginOfPause.isEmpty())

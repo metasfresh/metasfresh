@@ -34,7 +34,7 @@ public class CompositePredicateTest
 		final CompositePredicate<Object> predicate = new CompositePredicate<Object>();
 
 		// shall throw exception because no predicate was added
-		predicate.evaluate(new Object());
+		predicate.test(new Object());
 	}
 
 	@Test
@@ -47,7 +47,7 @@ public class CompositePredicateTest
 		predicate.addPredicate(new MockedPredicate<Object>(true));
 		predicate.addPredicate(new MockedPredicate<Object>(true));
 
-		Assert.assertEquals("Invalid result", true, predicate.evaluate(new Object()));
+		Assert.assertEquals("Invalid result", true, predicate.test(new Object()));
 	}
 
 	@Test
@@ -60,7 +60,7 @@ public class CompositePredicateTest
 		predicate.addPredicate(new MockedPredicate<Object>(false));
 		predicate.addPredicate(new MockedPredicate<Object>(true));
 
-		Assert.assertEquals("Invalid result", false, predicate.evaluate(new Object()));
+		Assert.assertEquals("Invalid result", false, predicate.test(new Object()));
 	}
 
 	@Test
@@ -73,7 +73,7 @@ public class CompositePredicateTest
 		predicate.addPredicate(new MockedPredicate<Object>(true));
 		predicate.addPredicate(new MockedPredicate<Object>(true));
 
-		Assert.assertEquals("Invalid result", true, predicate.evaluate(new Object()));
+		Assert.assertEquals("Invalid result", true, predicate.test(new Object()));
 	}
 
 	@Test
@@ -86,7 +86,7 @@ public class CompositePredicateTest
 		predicate.addPredicate(new MockedPredicate<Object>(false));
 		predicate.addPredicate(new MockedPredicate<Object>(true));
 
-		Assert.assertEquals("Invalid result", true, predicate.evaluate(new Object()));
+		Assert.assertEquals("Invalid result", true, predicate.test(new Object()));
 	}
 
 }

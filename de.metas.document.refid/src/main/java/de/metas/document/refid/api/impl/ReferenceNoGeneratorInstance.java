@@ -28,7 +28,6 @@ import java.util.Collections;
 import java.util.List;
 
 import org.adempiere.util.Check;
-import org.compiere.model.PO;
 
 import de.metas.document.refid.api.IReferenceNoGeneratorInstance;
 import de.metas.document.refid.model.I_C_ReferenceNo_Type;
@@ -40,7 +39,7 @@ class ReferenceNoGeneratorInstance implements IReferenceNoGeneratorInstance
 	private final List<Integer> assignedTableIds;
 	private final IReferenceNoGenerator generator;
 
-	public ReferenceNoGeneratorInstance(I_C_ReferenceNo_Type type, List<Integer> assignedTableIds, IReferenceNoGenerator generator)
+	public ReferenceNoGeneratorInstance(final I_C_ReferenceNo_Type type, final List<Integer> assignedTableIds, final IReferenceNoGenerator generator)
 	{
 		Check.assume(type != null, "type not null");
 		Check.assume(assignedTableIds != null && !assignedTableIds.isEmpty(), "assignedTableIds not null and not empty");
@@ -52,9 +51,9 @@ class ReferenceNoGeneratorInstance implements IReferenceNoGeneratorInstance
 	}
 
 	@Override
-	public String generateReferenceNo(PO source)
+	public String generateReferenceNo(final Object sourceModel)
 	{
-		return generator.generateReferenceNo(source);
+		return generator.generateReferenceNo(sourceModel);
 	}
 
 	@Override

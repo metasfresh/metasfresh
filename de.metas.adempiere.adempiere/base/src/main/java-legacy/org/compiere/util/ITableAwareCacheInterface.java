@@ -25,11 +25,9 @@ public interface ITableAwareCacheInterface extends CacheInterface
 	String getTableName();
 
 	/**
-	 * Invalidate the cache for given tableName and cache key (which in most of the cases is the record ID).
+	 * Invalidate the cache for given tableName and recordId
 	 * 
-	 * @param tableName
-	 * @param key cache key
 	 * @return how many cache entries were invalidated
 	 */
-	int resetForRecordId(String tableName, Object key);
+	int resetForRecordId(String tableName, int recordId);
 }

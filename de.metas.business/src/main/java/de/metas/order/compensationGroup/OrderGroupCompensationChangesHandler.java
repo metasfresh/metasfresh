@@ -1,7 +1,6 @@
 package de.metas.order.compensationGroup;
 
 import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.X_C_OrderLine;
 
 import lombok.Builder;
 import lombok.NonNull;
@@ -40,39 +39,68 @@ public class OrderGroupCompensationChangesHandler
 
 	public void onOrderLineChanged(final I_C_OrderLine orderLine)
 	{
-		// Skip if not a group line
-		if (!OrderGroupCompensationUtils.isInGroup(orderLine))
+		if (!isEligible(orderLine))
 		{
 			return;
 		}
-		
-		// Don't touch processed lines (e.g. completed orders)
-		if(orderLine.isProcessed())
-		{
-			return;
-		}
-		
-		final boolean groupCompensationLine = orderLine.isGroupCompensationLine();
-		final String amtType = orderLine.getGroupCompensationAmtType();
-		if (!groupCompensationLine)
-		{
-			onRegularGroupLineChanged(orderLine);
-		}
-		else if (X_C_OrderLine.GROUPCOMPENSATIONAMTTYPE_Percent.equals(amtType))
-		{
-			onPercentageCompensationLineChanged(orderLine);
-		}
-	}
 
-	private void onPercentageCompensationLineChanged(final I_C_OrderLine compensationLine)
-	{
-	}
-
-	private void onRegularGroupLineChanged(final I_C_OrderLine regularLine)
-	{
-		final GroupId groupId = groupsRepo.extractGroupId(regularLine);
+		final GroupId groupId = groupsRepo.extractGroupId(orderLine);
 		final Group group = groupsRepo.retrieveGroup(groupId);
 		group.updateAllPercentageLines();
 		groupsRepo.saveGroup(group);
+	}
+
+	private boolean isEligible(final I_C_OrderLine orderLine)
+	{
+		// Skip if not a group line
+		if (!OrderGroupCompensationUtils.isInGroup(orderLine))
+		{
+			return false;
+		}
+
+		// Don't touch processed lines (e.g. completed orders)
+		if (orderLine.isProcessed())
+		{
+			return false;
+		}
+
+		return true;
+	}
+
+	public void onOrderLineDeleted(final I_C_OrderLine orderLine)
+	{
+		if (!isEligible(orderLine))
+		{
+			return;
+		}
+
+		final boolean groupCompensationLine = orderLine.isGroupCompensationLine();
+		if (groupCompensationLine)
+		{
+			onCompensationLineDeleted(orderLine);
+		}
+	}
+
+	private void onCompensationLineDeleted(final I_C_OrderLine compensationLine)
+	{
+		final GroupId groupId = groupsRepo.extractGroupId(compensationLine);
+		final Group group = groupsRepo.retrieveGroupIfExists(groupId);
+
+		// If no group found => nothing to do
+		// Usually this case happens when we delete the order, so all the lines together.
+		if (group == null)
+		{
+			return;
+		}
+
+		if (!group.hasCompensationLines())
+		{
+			groupsRepo.destroyGroup(group);
+		}
+		else
+		{
+			group.updateAllPercentageLines();
+			groupsRepo.saveGroup(group);
+		}
 	}
 }

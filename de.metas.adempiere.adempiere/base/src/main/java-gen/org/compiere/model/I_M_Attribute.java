@@ -378,6 +378,31 @@ public interface I_M_Attribute
     public static final String COLUMNNAME_IsReadOnlyValues = "IsReadOnlyValues";
 
 	/**
+	 * Set Ist Bestandsrelevant.
+	 * Is used to do attibute matching between storage attributes and order line attributes (ASIs).
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsStorageRelevant (boolean IsStorageRelevant);
+
+	/**
+	 * Get Ist Bestandsrelevant.
+	 * Is used to do attibute matching between storage attributes and order line attributes (ASIs).
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isStorageRelevant();
+
+    /** Column definition for IsStorageRelevant */
+    public static final org.adempiere.model.ModelColumn<I_M_Attribute, Object> COLUMN_IsStorageRelevant = new org.adempiere.model.ModelColumn<I_M_Attribute, Object>(I_M_Attribute.class, "IsStorageRelevant", null);
+    /** Column name IsStorageRelevant */
+    public static final String COLUMNNAME_IsStorageRelevant = "IsStorageRelevant";
+
+	/**
 	 * Set Merkmal.
 	 * Product Attribute
 	 *

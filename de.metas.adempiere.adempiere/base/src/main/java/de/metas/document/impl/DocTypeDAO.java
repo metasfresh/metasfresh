@@ -171,7 +171,7 @@ public class DocTypeDAO implements IDocTypeDAO
 		final IQueryBuilder<I_C_DocType> queryBuilder = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_DocType.class, ctx, trxName);
 
-		final ICompositeQueryFilter<I_C_DocType> filters = queryBuilder.getFilters();
+		final ICompositeQueryFilter<I_C_DocType> filters = queryBuilder.getCompositeFilter();
 		filters.addOnlyActiveRecordsFilter();
 		filters.addEqualsFilter(I_C_DocType.COLUMNNAME_AD_Client_ID, adClientId);
 		filters.addInArrayOrAllFilter(I_C_DocType.COLUMNNAME_AD_Org_ID, 0, adOrgId);

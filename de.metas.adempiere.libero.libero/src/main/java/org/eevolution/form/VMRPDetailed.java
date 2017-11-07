@@ -1371,12 +1371,12 @@ public class VMRPDetailed
 		final Properties ctx = getCtx();
 		final IMRPQueryBuilder mrpQueryBuilder = mrpDAO.createMRPQueryBuilder()
 				.clear()
-				.setContextProvider(new PlainContextAware(ctx));
+				.setContextProvider(PlainContextAware.newOutOfTrx(ctx));
 		mrpQueryBuilder.setSkipIfMRPExcluded(true);
 
 		//
 		// Append "mrpQueryBuilder" result to our main SQL where clause
-		final ICompositeQueryFilter<I_PP_MRP> mrpQueryFilters = mrpQueryBuilder.createQueryBuilder().getFilters();
+		final ICompositeQueryFilter<I_PP_MRP> mrpQueryFilters = mrpQueryBuilder.createQueryBuilder().getCompositeFilter();
 		final String mrpQueryFiltersSql = queryBuilderDAO.getSql(ctx, mrpQueryFilters, sqlParams);
 		if (!Check.isEmpty(mrpQueryFiltersSql, true))
 		{
@@ -1397,7 +1397,7 @@ public class VMRPDetailed
 				getM_Warehouse_ID(),
 				getS_Resource_ID(),
 				getM_Product_ID(),
-				ITrx.TRXNAME_None);
+				getM_AttributeSetInstance_ID());
 		if (pp == null)
 		{
 			pp = new MPPProductPlanning(getCtx(), 0, ITrx.TRXNAME_None);
@@ -1505,7 +1505,7 @@ public class VMRPDetailed
 		// Set Replenish Min Level:
 		if (fReplenishMin != null)
 		{
-			BigDecimal replenishLevelMin = Env.ZERO;
+			BigDecimal replenishLevelMin = BigDecimal.ZERO;
 			if (warehouseId > 0)
 			{
 				final String sqlLevelMin = "SELECT Level_Min FROM M_Replenish"
@@ -1934,7 +1934,7 @@ public class VMRPDetailed
 	protected BigDecimal getQtyOnHand()
 	{
 		final BigDecimal bd = (BigDecimal)fQtyOnhand.getValue();
-		return bd != null ? bd : Env.ZERO;
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	/**
@@ -2010,7 +2010,7 @@ public class VMRPDetailed
 					BigDecimal qtyGrossReqs = (BigDecimal)p_table.getValueAt(row, COLUMNNAME_QtyGrossReq);
 					if (qtyGrossReqs == null)
 					{
-						qtyGrossReqs = Env.ZERO;
+						qtyGrossReqs = BigDecimal.ZERO;
 					}
 					qtyOnHandProjected = qtyOnHandProjected.subtract(qtyGrossReqs);
 					p_table.setValueAt(qtyOnHandProjected, row, COLUMNNAME_QtyOnHandProjected);
@@ -2021,13 +2021,13 @@ public class VMRPDetailed
 				BigDecimal QtyScheduledReceipts = (BigDecimal)p_table.getValueAt(row, COLUMNNAME_QtyScheduledReceipts);
 				if (QtyScheduledReceipts == null)
 				{
-					QtyScheduledReceipts = Env.ZERO;
+					QtyScheduledReceipts = BigDecimal.ZERO;
 				}
 
 				BigDecimal QtyPlan = (BigDecimal)p_table.getValueAt(row, COLUMNNAME_PlannedQty);
 				if (QtyPlan == null)
 				{
-					QtyPlan = Env.ZERO;
+					QtyPlan = BigDecimal.ZERO;
 				}
 
 				qtyOnHandProjected = qtyOnHandProjected.add(QtyScheduledReceipts.add(QtyPlan));

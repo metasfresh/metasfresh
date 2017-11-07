@@ -25,6 +25,7 @@ package de.metas.handlingunits.client.terminal.inventory.model;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.function.Predicate;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
@@ -35,7 +36,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.collections.Predicate;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 

@@ -1,12 +1,16 @@
 package de.metas.material.event;
 
+import static de.metas.material.event.EventTestHelper.NOW;
+import static de.metas.material.event.EventTestHelper.PRODUCT_ID;
+import static de.metas.material.event.EventTestHelper.WAREHOUSE_ID;
+import static de.metas.material.event.EventTestHelper.createProductDescriptor;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
-import java.util.Date;
 
-import org.adempiere.util.time.SystemTime;
 import org.junit.Test;
+
+import de.metas.material.event.MaterialDescriptor.DateOperator;
 
 /*
  * #%L
@@ -37,49 +41,76 @@ public class MaterialDescriptorTest
 	public void builderForQuery()
 	{
 		final MaterialDescriptor result = MaterialDescriptor.builderForQuery().build();
+
 		assertThat(result.isComplete()).isFalse();
+		assertThat(result.getProductId()).isLessThanOrEqualTo(0);
+		assertThat(result.getAttributeSetInstanceId()).isLessThanOrEqualTo(-1);
+		assertThat(result.getStorageAttributesKey())
+				.isSameAs(ProductDescriptor.STORAGE_ATTRIBUTES_KEY_UNSPECIFIED);
 	}
 
 	@Test(expected = RuntimeException.class)
 	public void builderForCandidate_fail()
 	{
-		MaterialDescriptor.builderForCandidateOrQuery().build();
+		MaterialDescriptor.builderForCompleteDescriptor().build();
 	}
 
 	@Test
 	public void builderForCandidate_succeed()
 	{
-		final Date date = SystemTime.asDate();
-		final MaterialDescriptor result = MaterialDescriptor.builderForCandidateOrQuery()
-				.date(date)
-				.productId(10)
+		final MaterialDescriptor result = MaterialDescriptor.builderForCompleteDescriptor()
+				.date(NOW)
+				.productDescriptor(createProductDescriptor())
 				.quantity(BigDecimal.TEN)
-				.warehouseId(20)
+				.warehouseId(WAREHOUSE_ID)
 				.build();
 		assertThat(result.isComplete()).isTrue();
 		assertThat(result.getQuantity()).isEqualByComparingTo("10");
-		assertThat(result.getProductId()).isEqualTo(10);
-		assertThat(result.getWarehouseId()).isEqualTo(20);
-		assertThat(result.getDate()).isEqualTo(date);
+		assertThat(result.getProductId()).isEqualTo(PRODUCT_ID);
+		assertThat(result.getWarehouseId()).isEqualTo(WAREHOUSE_ID);
+		assertThat(result.getDate()).isEqualTo(NOW);
 	}
 
 	@Test
-	public void withouQuantity()
+	public void withoutQuantity()
 	{
-		final Date date = SystemTime.asDate();
-		final MaterialDescriptor materialDescr = MaterialDescriptor.builderForCandidateOrQuery()
-				.date(date)
-				.productId(10)
+		final MaterialDescriptor materialDescr = MaterialDescriptor.builderForCompleteDescriptor()
+				.date(NOW)
+				.productDescriptor(createProductDescriptor())
 				.quantity(BigDecimal.TEN)
-				.warehouseId(20)
+				.warehouseId(WAREHOUSE_ID)
 				.build();
 		assertThat(materialDescr.isComplete()).isTrue(); // guard
-		
+
 		final MaterialDescriptor result = materialDescr.withoutQuantity();
-		assertThat(result.isComplete()).isFalse();
+
+		assertThat(result.isComplete()).as("the materialDescriptor without quantity is not complete").isFalse();
 		assertThat(result.getQuantity()).isNull();
-		assertThat(result.getProductId()).isEqualTo(10);
-		assertThat(result.getWarehouseId()).isEqualTo(20);
-		assertThat(result.getDate()).isEqualTo(date);
+		assertThat(result.getProductId()).isEqualTo(PRODUCT_ID);
+		assertThat(result.getWarehouseId()).isEqualTo(WAREHOUSE_ID);
+		assertThat(result.getDate()).isEqualTo(NOW);
+	}
+
+	@Test(expected = RuntimeException.class)
+	public void completeMaterialDescriptor_with_incomplete_productdescriptor()
+	{
+		final ProductDescriptor incompleteProductDescriptor = ProductDescriptor.forProductIdOnly(PRODUCT_ID);
+		assertThat(incompleteProductDescriptor.isComplete()).isFalse();
+
+		MaterialDescriptor.builderForCompleteDescriptor()
+				.date(NOW)
+				.productDescriptor(incompleteProductDescriptor)
+				.quantity(BigDecimal.TEN)
+				.warehouseId(WAREHOUSE_ID)
+				.build();
+	}
+
+	@Test(expected = RuntimeException.class)
+	public void build_when_dateOperatorAndNoDate_then_exception()
+	{
+		MaterialDescriptor
+				.builderForQuery()
+				.dateOperator(DateOperator.AT)
+				.build();
 	}
 }

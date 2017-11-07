@@ -50,7 +50,7 @@ public class MRPNoteDAO implements IMRPNoteDAO
 		final IQueryBuilder<I_AD_Note> queryBuilder = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_AD_Note.class, mrpContext);
 
-		final ICompositeQueryFilter<I_AD_Note> filters = queryBuilder.getFilters();
+		final ICompositeQueryFilter<I_AD_Note> filters = queryBuilder.getCompositeFilter();
 
 		//
 		// Only MRP related notes

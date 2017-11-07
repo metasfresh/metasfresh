@@ -25,10 +25,10 @@ package de.metas.adempiere.util.cache;
 
 import java.lang.annotation.Annotation;
 import java.util.List;
+import java.util.function.Predicate;
 
 import org.adempiere.util.Check;
 import org.adempiere.util.collections.Converter;
-import org.adempiere.util.collections.Predicate;
 import org.adempiere.util.lang.ObjectUtils;
 
 import de.metas.adempiere.util.cache.annotations.CacheAllowMutable;
@@ -119,14 +119,7 @@ final class GenericParamDescriptor implements ICachedMethodPartDescriptor
 	};
 
 	/** Skip caching predicate: skip if argument is NOT null */
-	private static final Predicate<Object> SkipCaching_IfNotNull = new Predicate<Object>()
-	{
-		@Override
-		public boolean evaluate(final Object value)
-		{
-			return value != null;
-		}
-	};
+	private static final Predicate<Object> SkipCaching_IfNotNull = value -> value != null;
 
 	private static final GenericParamDescriptor[] cache = new GenericParamDescriptor[] {
 			new GenericParamDescriptor(0)
@@ -173,7 +166,7 @@ final class GenericParamDescriptor implements ICachedMethodPartDescriptor
 
 		//
 		// Check if we shall skip caching
-		if (skipCachingPredicate != null && skipCachingPredicate.evaluate(param))
+		if (skipCachingPredicate != null && skipCachingPredicate.test(param))
 		{
 			keyBuilder.setSkipCaching();
 			return;

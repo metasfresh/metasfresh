@@ -45,7 +45,7 @@ public class SequenceDAO implements ISequenceDAO
 		final IQueryBuilder<I_AD_Sequence> queryBuilder = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_AD_Sequence.class, ctx, trxName);
 
-		final ICompositeQueryFilter<I_AD_Sequence> filters = queryBuilder.getFilters();
+		final ICompositeQueryFilter<I_AD_Sequence> filters = queryBuilder.getCompositeFilter();
 		filters.addEqualsFilter(I_AD_Sequence.COLUMNNAME_Name, tableName, UpperCaseQueryFilterModifier.instance);
 		filters.addEqualsFilter(I_AD_Sequence.COLUMNNAME_IsTableID, true);
 		filters.addEqualsFilter(I_AD_Sequence.COLUMNNAME_AD_Client_ID, IClientDAO.SYSTEM_CLIENT_ID);

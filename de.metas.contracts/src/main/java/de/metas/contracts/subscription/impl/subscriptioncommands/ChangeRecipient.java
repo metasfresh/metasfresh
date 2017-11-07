@@ -11,7 +11,7 @@ import org.compiere.model.IQuery;
 
 import de.metas.contracts.model.I_C_SubscriptionProgress;
 import de.metas.contracts.model.X_C_SubscriptionProgress;
-import de.metas.contracts.subscription.impl.SubscriptionCommand.ChangeRecipientsRequest;
+import de.metas.contracts.subscription.impl.SubscriptionService.ChangeRecipientsRequest;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import lombok.NonNull;
 
