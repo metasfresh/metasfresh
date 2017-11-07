@@ -39,6 +39,7 @@ import de.metas.printing.api.IPrintJobBL;
 import de.metas.printing.api.IPrintingQueueBL;
 import de.metas.printing.api.IPrintingQueueQuery;
 import de.metas.printing.api.IPrintingQueueSource;
+import de.metas.printing.api.impl.PrintJobContext;
 import de.metas.printing.model.I_C_Print_Job;
 import de.metas.printing.model.I_C_Printing_Queue;
 import de.metas.process.JavaProcess;
@@ -82,7 +83,12 @@ public abstract class AbstractPrintJobCreate extends JavaProcess
 					
 					try
 					{
-						Services.get(IPrintJobBL.class).createPrintJobs(source, getAD_PInstance_ID(), -1);
+						PrintJobContext printJobContext = PrintJobContext.builder()
+								.adPInstanceId(getAD_PInstance_ID())
+								.parentAsyncBatchId(-1)
+								.build();
+						
+						Services.get(IPrintJobBL.class).createPrintJobs(source, printJobContext);
 					}
 					catch (Exception e)
 					{

@@ -853,7 +853,7 @@ public class Helper
 		int printJobsCount = 0;
 		for (final IPrintingQueueSource source : sources)
 		{
-			printJobsCount += Services.get(IPrintJobBL.class).createPrintJobs(source, -1, -1);
+			printJobsCount += Services.get(IPrintJobBL.class).createPrintJobs(source);
 		}
 		return printJobsCount;
 	}

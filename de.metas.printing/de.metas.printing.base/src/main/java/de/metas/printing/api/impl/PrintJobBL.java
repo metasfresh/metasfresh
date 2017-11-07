@@ -107,7 +107,13 @@ public class PrintJobBL implements IPrintJobBL
 	}
 
 	@Override
-	public int createPrintJobs(@NonNull final IPrintingQueueSource source, final int adPInstanceId, final int parentAsyncBatchId)
+	public int createPrintJobs(@NonNull final IPrintingQueueSource source)
+	{
+		return createPrintJobs(source, null);
+	}
+
+	@Override
+	public int createPrintJobs(@NonNull final IPrintingQueueSource source, final PrintJobContext printJobContext)
 	{
 		final String trxName = source.getTrxName();
 		final PrintingQueueProcessingInfo printingQueueProcessingInfo = source.getProcessingInfo();
@@ -170,6 +176,19 @@ public class PrintJobBL implements IPrintJobBL
 		}
 		finally
 		{
+			final int adPInstanceId;
+			final int parentAsyncBatchId;
+			if (printJobContext == null)
+			{
+				adPInstanceId = -1;
+				parentAsyncBatchId = -1;
+			}
+			else
+			{
+				adPInstanceId = printJobContext.getAdPInstanceId();
+				parentAsyncBatchId = printJobContext.getParentAsyncBatchId();
+			}
+
 			final PrintingAsyncBatch printingAsyncBatch = PrintingAsyncBatch.builder()
 					.name(source.getName())
 					.adPInstanceId(adPInstanceId)
@@ -211,7 +230,7 @@ public class PrintJobBL implements IPrintJobBL
 		}
 		return count;
 	}
-	
+
 	private List<I_C_Print_Job_Instructions> createPrintJob(final IPrintingQueueSource source,
 			final Iterator<I_C_Printing_Queue> items,
 			final PrintingQueueProcessingInfo printingQueueProcessingInfo,
@@ -324,7 +343,7 @@ public class PrintJobBL implements IPrintJobBL
 				.setName(name)
 				.build();
 	}
-	
+
 	@Override
 	public void enquePrintJobInstructions(final I_C_Print_Job_Instructions jobInstructions, final I_C_Async_Batch asyncBatch)
 	{

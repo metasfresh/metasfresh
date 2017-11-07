@@ -31,6 +31,7 @@ import java.util.List;
 import org.adempiere.util.ISingletonService;
 
 import de.metas.async.model.I_C_Async_Batch;
+import de.metas.printing.api.impl.PrintJobContext;
 import de.metas.printing.model.I_C_Print_Job;
 import de.metas.printing.model.I_C_Print_Job_Detail;
 import de.metas.printing.model.I_C_Print_Job_Instructions;
@@ -52,11 +53,12 @@ public interface IPrintJobBL extends ISingletonService
 	 * This method is skipping items which were already printed (see {@link I_C_Printing_Queue#isProcessed()})
 	 * 
 	 * @param source
-	 * @param adPInstanceId
-	 * @param parentAsyncBatchId
+	 * @param printJobContext
 	 * @return number of created print jobs
 	 */
-	int createPrintJobs(IPrintingQueueSource source, int adPInstanceId, int parentAsyncBatchId);
+	int createPrintJobs(IPrintingQueueSource source, PrintJobContext printJobContext);
+	
+	int createPrintJobs(IPrintingQueueSource source);
 
 	/**
 	 * Creates an instructions record for the given print job.

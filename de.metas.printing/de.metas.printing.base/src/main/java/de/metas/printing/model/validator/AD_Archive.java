@@ -108,7 +108,7 @@ public class AD_Archive
 	{
 		final IPrintingQueueSource source = new SingletonPrintingQueueSource(printingQueue, printingQueue.getCreatedBy());
 
-		Services.get(IPrintJobBL.class).createPrintJobs(source, -1, -1);
+		Services.get(IPrintJobBL.class).createPrintJobs(source);
 	}
 
 	private final boolean isEnqueToPrintingQueue(final I_AD_Archive archive)
