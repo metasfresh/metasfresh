@@ -22,7 +22,7 @@ import de.metas.material.dispo.commons.repository.CandidateRepositoryCommands;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.event.MaterialDescriptor;
 import de.metas.material.event.MaterialDescriptor.DateOperator;
-import de.metas.material.event.ProductDescriptorFactory;
+import de.metas.material.event.ProductDescriptor;
 import lombok.NonNull;
 import mockit.Expectations;
 
@@ -55,14 +55,8 @@ public class RepositoryTestHelper
 
 	public final Candidate laterStockCandidate;
 
-	private final ProductDescriptorFactory productDescriptorFactory;
-
-	public RepositoryTestHelper(
-			@NonNull final ProductDescriptorFactory productDescriptorFactory,
-			@NonNull final CandidateRepositoryCommands candidateRepositoryCommands)
+	public RepositoryTestHelper(@NonNull final CandidateRepositoryCommands candidateRepositoryCommands)
 	{
-		this.productDescriptorFactory = productDescriptorFactory;
-
 		materialDescriptorOfStockCandidate = MaterialDescriptor.builderForCompleteDescriptor()
 				.productDescriptor(createProductDescriptor())
 				.warehouseId(WAREHOUSE_ID)
@@ -102,7 +96,7 @@ public class RepositoryTestHelper
 		return CandidatesQuery.builder()
 				.type(CandidateType.STOCK)
 				.materialDescriptor(MaterialDescriptor.builderForQuery()
-						.productDescriptor(productDescriptorFactory.forProductIdOnly(PRODUCT_ID))
+						.productDescriptor(ProductDescriptor.forProductIdOnly(PRODUCT_ID))
 						.warehouseId(WAREHOUSE_ID)
 						.date(date)
 						.dateOperator(DateOperator.BEFORE_OR_AT)
@@ -115,7 +109,7 @@ public class RepositoryTestHelper
 		return CandidatesQuery.builder()
 				.type(CandidateType.STOCK)
 				.materialDescriptor(MaterialDescriptor.builderForQuery()
-						.productDescriptor(productDescriptorFactory.forProductIdOnly(PRODUCT_ID))
+						.productDescriptor(ProductDescriptor.forProductIdOnly(PRODUCT_ID))
 						.warehouseId(WAREHOUSE_ID)
 						.date(date)
 						.dateOperator(DateOperator.AT_OR_AFTER)

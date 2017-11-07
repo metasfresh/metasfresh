@@ -39,7 +39,6 @@ import de.metas.material.dispo.service.event.handler.ShipmentScheduleEventHandle
 import de.metas.material.dispo.service.event.handler.TransactionEventHandler;
 import de.metas.material.event.EventDescriptor;
 import de.metas.material.event.MaterialEventService;
-import de.metas.material.event.ProductDescriptorFactory;
 import de.metas.material.event.ShipmentScheduleEvent;
 import de.metas.material.event.TransactionEvent;
 import de.metas.material.event.ddorder.DDOrder;
@@ -97,7 +96,7 @@ public class MaterialDispoEventListenerFacadeTests
 	{
 		AdempiereTestHelper.get().init();
 
-		candidateRepositoryRetrieval = new CandidateRepositoryRetrieval(ProductDescriptorFactory.TESTING_INSTANCE);
+		candidateRepositoryRetrieval = new CandidateRepositoryRetrieval();
 		final SupplyProposalEvaluator supplyProposalEvaluator = new SupplyProposalEvaluator(candidateRepositoryRetrieval);
 
 		final CandidateRepositoryCommands candidateRepositoryCommands = new CandidateRepositoryCommands();

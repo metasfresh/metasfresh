@@ -2932,7 +2932,10 @@ public abstract class PO
 
 		//
 		// Reset model cache
-		Services.get(IModelCacheInvalidationService.class).invalidateForModel(this, newRecord ? ModelCacheInvalidationTiming.NEW : ModelCacheInvalidationTiming.CHANGE);
+		if(p_info.isSingleKeyColumnName())
+		{
+			Services.get(IModelCacheInvalidationService.class).invalidateForModel(this, newRecord ? ModelCacheInvalidationTiming.NEW : ModelCacheInvalidationTiming.CHANGE);
+		}
 
 		//
 		// Deferred processing of this po (metas-ts 1076)

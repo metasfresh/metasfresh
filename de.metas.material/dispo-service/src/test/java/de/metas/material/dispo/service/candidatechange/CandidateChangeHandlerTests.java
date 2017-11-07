@@ -46,7 +46,6 @@ import de.metas.material.dispo.service.candidatechange.handler.SupplyCandiateHan
 import de.metas.material.event.MaterialDescriptor;
 import de.metas.material.event.MaterialDescriptor.DateOperator;
 import de.metas.material.event.MaterialEventService;
-import de.metas.material.event.ProductDescriptorFactory;
 import lombok.NonNull;
 import mockit.Mocked;
 
@@ -101,7 +100,7 @@ public class CandidateChangeHandlerTests
 	{
 		AdempiereTestHelper.get().init();
 
-		candidateRepositoryRetrieval = new CandidateRepositoryRetrieval(ProductDescriptorFactory.TESTING_INSTANCE);
+		candidateRepositoryRetrieval = new CandidateRepositoryRetrieval();
 		candidateRepositoryCommands = new CandidateRepositoryCommands();
 
 		stockCandidateService = new StockCandidateService(candidateRepositoryRetrieval, candidateRepositoryCommands);

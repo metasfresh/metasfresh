@@ -31,7 +31,6 @@ import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.X_MD_Candidate;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
 import de.metas.material.event.MaterialDescriptor;
-import de.metas.material.event.ProductDescriptorFactory;
 
 /*
  * #%L
@@ -71,7 +70,7 @@ public class SupplyCandiateCangeHandlerTest
 	{
 		AdempiereTestHelper.get().init();
 
-		final CandidateRepositoryRetrieval candidateRepository = new CandidateRepositoryRetrieval(ProductDescriptorFactory.TESTING_INSTANCE);
+		final CandidateRepositoryRetrieval candidateRepository = new CandidateRepositoryRetrieval();
 		final CandidateRepositoryCommands candidateRepositoryCommands = new CandidateRepositoryCommands();
 
 		stockCandidateService = new StockCandidateService(candidateRepository, candidateRepositoryCommands);

@@ -8,14 +8,12 @@ import org.adempiere.util.Services;
 import org.junit.Before;
 import org.junit.Test;
 
-import de.metas.material.dispo.commons.CandidatesQuery;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryCommands;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.event.EventTestHelper;
 import de.metas.material.event.ProductDescriptor;
-import de.metas.material.event.ProductDescriptorFactory;
 
 /*
  * #%L
@@ -51,9 +49,7 @@ public class RepositoryTestHelperTest
 	@Test
 	public void mkQueryForStockUntilDate_has_unspecified_StorageAttributesKey()
 	{
-		final RepositoryTestHelper repositoryTestHelper = new RepositoryTestHelper(
-				ProductDescriptorFactory.TESTING_INSTANCE,
-				new CandidateRepositoryCommands());
+		final RepositoryTestHelper repositoryTestHelper = new RepositoryTestHelper(new CandidateRepositoryCommands());
 
 		final CandidatesQuery stockCandidatequery = repositoryTestHelper
 				.mkQueryForStockUntilDate(EventTestHelper.NOW);
@@ -65,9 +61,7 @@ public class RepositoryTestHelperTest
 	@Test
 	public void constructor_sets_up_candidates_correctly()
 	{
-		final RepositoryTestHelper repositoryTestHelper = new RepositoryTestHelper(
-				ProductDescriptorFactory.TESTING_INSTANCE,
-				new CandidateRepositoryCommands());
+		final RepositoryTestHelper repositoryTestHelper = new RepositoryTestHelper(new CandidateRepositoryCommands());
 
 		final Candidate laterStockCandidate = repositoryTestHelper.laterStockCandidate;
 		final Candidate stockCandidate = repositoryTestHelper.stockCandidate;
@@ -98,12 +92,10 @@ public class RepositoryTestHelperTest
 	@Test
 	public void constructor_sets_up_candidates_correctly_and_queryies_work()
 	{
-		final RepositoryTestHelper repositoryTestHelper = new RepositoryTestHelper(
-				ProductDescriptorFactory.TESTING_INSTANCE,
-				new CandidateRepositoryCommands());
+		final RepositoryTestHelper repositoryTestHelper = new RepositoryTestHelper(new CandidateRepositoryCommands());
 
 		final CandidatesQuery stockCandidatequery = repositoryTestHelper.mkQueryForStockUntilDate(EventTestHelper.NOW);
-		final CandidateRepositoryRetrieval candidateRepositoryRetrieval = new CandidateRepositoryRetrieval(ProductDescriptorFactory.TESTING_INSTANCE);
+		final CandidateRepositoryRetrieval candidateRepositoryRetrieval = new CandidateRepositoryRetrieval();
 		final Candidate retrievedStockCandidate = candidateRepositoryRetrieval.retrieveLatestMatchOrNull(stockCandidatequery);
 		assertThat(retrievedStockCandidate).isNotNull();
 		assertThat(retrievedStockCandidate).isEqualTo(repositoryTestHelper.stockCandidate);
