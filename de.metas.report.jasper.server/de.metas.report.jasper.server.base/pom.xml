@@ -67,17 +67,6 @@
 			<artifactId>commons-vfs2</artifactId>
 			<version>2.0</version>
 		</dependency>
-		<!--
-		This dependency is required when we choose to ge the jasper-files via http, 
-		but note that this causes performance problems and even hangings of the report servlet.
-		So it's generally not a good idea. 
-		Instead, just configure the system to get the jasper files from the local file system		
-		<dependency>
-			<groupId>commons-httpclient</groupId>
-			<artifactId>commons-httpclient</artifactId>
-			<version>3.1</version>
-		</dependency>
-		-->
 
 		<dependency>
 			<groupId>de.metas.adempiere.adempiere</groupId>
@@ -141,20 +130,6 @@
 			<artifactId>jxls-poi</artifactId>
 			<version>1.0.9</version>
 		</dependency>
-			<!-- 
-			<exclusions>
-				- exclude those because jasperreports already brings them -
-				<exclusion>
-					<groupId>org.apache.poi</groupId>
-					<artifactId>poi</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>org.apache.poi</groupId>
-					<artifactId>poi-ooxml</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-		 -->
 	</dependencies>
 
 	<build>
@@ -164,6 +139,38 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-eclipse-plugin</artifactId>
 				<version>2.8</version>
+			</plugin>
+
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+				<version>${spring-boot.version}</version>
+				<executions>
+					<execution>
+						<id>spring-boot-serverRoot-create-executable-jar</id>
+						<goals>
+							<goal>repackage</goal>
+						</goals>
+						<configuration>
+							<executable>true</executable>
+							<mainClass>${start-class}</mainClass>
+						</configuration>
+					</execution>
+					<execution>
+						<id>spring-boot-serverRoot-build-info</id>
+						<goals>
+							<goal>build-info</goal> <!-- create build-info.properties; thanks to https://docs.spring.io/spring-boot/docs/current/reference/html/howto-build.html#howto-build-info -->
+						</goals>
+						<configuration>
+							<additionalProperties>
+								<jenkinsBuildNo>${env.BUILD_NUMBER}</jenkinsBuildNo>
+								<jenkinsBuildTag>${env.BUILD_TAG}</jenkinsBuildTag>
+								<jenkinsBuildUrl>${env.BUILD_URL}</jenkinsBuildUrl>
+								<jenkinsJobName>${env.JOB_NAME}</jenkinsJobName>
+							</additionalProperties>
+						</configuration>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
 	</build>
