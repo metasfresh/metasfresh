@@ -83,7 +83,7 @@ public abstract class AbstractPrintJobCreate extends JavaProcess
 					
 					try
 					{
-						PrintJobContext printJobContext = PrintJobContext.builder()
+						final PrintJobContext printJobContext = PrintJobContext.builder()
 								.adPInstanceId(getAD_PInstance_ID())
 								.parentAsyncBatchId(-1)
 								.build();
