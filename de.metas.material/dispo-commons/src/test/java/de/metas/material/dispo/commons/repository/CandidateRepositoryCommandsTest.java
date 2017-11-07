@@ -42,7 +42,6 @@ import de.metas.material.dispo.model.I_MD_Candidate_Dist_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_Prod_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_Transaction_Detail;
 import de.metas.material.dispo.model.X_MD_Candidate;
-import de.metas.material.event.ProductDescriptorFactory;
 
 /*
  * #%L
@@ -82,9 +81,7 @@ public class CandidateRepositoryCommandsTest
 
 		candidateRepositoryCommands = new CandidateRepositoryCommands();
 
-		repositoryTestHelper = new RepositoryTestHelper(
-				ProductDescriptorFactory.TESTING_INSTANCE,
-				candidateRepositoryCommands);
+		repositoryTestHelper = new RepositoryTestHelper(candidateRepositoryCommands);
 	}
 
 	@Test(expected = RuntimeException.class)
@@ -202,7 +199,7 @@ public class CandidateRepositoryCommandsTest
 	@Test
 	public void addOrReplace_update()
 	{
-		final CandidateRepositoryRetrieval candidateRepositoryRetrieval = new CandidateRepositoryRetrieval(ProductDescriptorFactory.TESTING_INSTANCE);
+		final CandidateRepositoryRetrieval candidateRepositoryRetrieval = new CandidateRepositoryRetrieval();
 
 		// guard
 		final CandidatesQuery queryForStockUntilDate = repositoryTestHelper.mkQueryForStockUntilDate(NOW);

@@ -13,7 +13,7 @@ import com.google.common.base.Preconditions;
 import de.metas.material.event.EventDescriptor;
 import de.metas.material.event.MaterialDescriptor;
 import de.metas.material.event.ProductDescriptor;
-import de.metas.material.event.ProductDescriptorFactory;
+import de.metas.material.event.ModelProductDescriptorExtactor;
 import de.metas.material.event.forecast.Forecast;
 import de.metas.material.event.forecast.Forecast.ForecastBuilder;
 import de.metas.material.event.forecast.ForecastEvent;
@@ -74,7 +74,7 @@ public class M_ForecastEventCreator
 
 	private ForecastLine createForecastLine(@NonNull final I_M_ForecastLine forecastLine)
 	{
-		final ProductDescriptorFactory productDescriptorFactory = Adempiere.getBean(ProductDescriptorFactory.class);
+		final ModelProductDescriptorExtactor productDescriptorFactory = Adempiere.getBean(ModelProductDescriptorExtactor.class);
 		final ProductDescriptor productDescriptor = productDescriptorFactory.createProductDescriptor(forecastLine);
 
 		final MaterialDescriptor materialDescriptor = MaterialDescriptor.builderForCompleteDescriptor()

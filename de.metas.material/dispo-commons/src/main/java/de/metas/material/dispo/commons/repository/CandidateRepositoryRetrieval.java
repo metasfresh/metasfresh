@@ -40,7 +40,6 @@ import de.metas.material.dispo.model.I_MD_Candidate_Prod_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_Transaction_Detail;
 import de.metas.material.event.MaterialDescriptor;
 import de.metas.material.event.ProductDescriptor;
-import de.metas.material.event.ProductDescriptorFactory;
 import de.metas.product.IProductBL;
 import de.metas.product.model.I_M_Product;
 import lombok.NonNull;
@@ -78,13 +77,6 @@ public class CandidateRepositoryRetrieval
 			+ "M_Product_ID=? AND "
 			+ "StorageAttributesKey LIKE ? AND "
 			+ "DateProjected <= ?";
-
-	private final ProductDescriptorFactory productDescriptorFactory;
-
-	public CandidateRepositoryRetrieval(@NonNull final ProductDescriptorFactory productDescriptorFactory)
-	{
-		this.productDescriptorFactory = productDescriptorFactory;
-	}
 
 	/**
 	 * Load and return <b>the</b> single record this has the given {@code id} as parentId.
@@ -184,7 +176,7 @@ public class CandidateRepositoryRetrieval
 				"Given parameter storageAttributesKey needs to have a not-null StorageAttributesKey; candidateRecord=%s",
 				candidateRecord);
 
-		final ProductDescriptor productDescriptor = productDescriptorFactory.forProductAndAttributes(
+		final ProductDescriptor productDescriptor = ProductDescriptor.forProductAndAttributes(
 				candidateRecord.getM_Product_ID(),
 				storageAttributesKey,
 				candidateRecord.getM_AttributeSetInstance_ID());

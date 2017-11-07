@@ -8,8 +8,8 @@ import org.springframework.stereotype.Service;
 
 import com.google.common.base.Preconditions;
 
+import de.metas.material.event.ModelProductDescriptorExtactor;
 import de.metas.material.event.ProductDescriptor;
-import de.metas.material.event.ProductDescriptorFactory;
 import lombok.NonNull;
 
 /*
@@ -35,7 +35,7 @@ import lombok.NonNull;
  */
 
 @Service
-public class ProductDescriptorFromAttributeSetInstanceFactory extends ProductDescriptorFactory
+public class ModelProductDescriptorExtactorUsingAttributeSetInstanceFactory implements ModelProductDescriptorExtactor
 {
 	@Override
 	public final ProductDescriptor createProductDescriptor(@NonNull final Object model)
@@ -52,7 +52,7 @@ public class ProductDescriptorFromAttributeSetInstanceFactory extends ProductDes
 				.build()
 				.createAttributesKey();
 
-		final ProductDescriptor productDescriptor = forProductAndAttributes(
+		final ProductDescriptor productDescriptor = ProductDescriptor.forProductAndAttributes(
 				asiAware.getM_Product_ID(),
 				storageAttributesKey,
 				asiAware.getM_AttributeSetInstance_ID());

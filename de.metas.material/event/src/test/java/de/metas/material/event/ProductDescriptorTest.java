@@ -26,14 +26,13 @@ import org.junit.Test;
  * #L%
  */
 
-public class ProductDescriptorFactoryTest
+public class ProductDescriptorTest
 {
 
 	@Test
 	public void forProductIdOnly()
 	{
-		final ProductDescriptor forProductIdOnly = new ProductDescriptorFactory()
-				.forProductIdOnly(30);
+		final ProductDescriptor forProductIdOnly = ProductDescriptor.forProductIdOnly(30);
 
 		assertThat(forProductIdOnly.getProductId()).isEqualTo(30);
 		assertThat(forProductIdOnly.getAttributeSetInstanceId()).isLessThanOrEqualTo(-1);

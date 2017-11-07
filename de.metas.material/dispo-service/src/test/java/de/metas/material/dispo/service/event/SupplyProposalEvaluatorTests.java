@@ -34,7 +34,6 @@ import de.metas.material.dispo.service.event.handler.DistributionPlanEventHandle
 import de.metas.material.dispo.service.event.handler.DistributionPlanEventHandlerTests;
 import de.metas.material.event.MaterialDescriptor;
 import de.metas.material.event.MaterialEventService;
-import de.metas.material.event.ProductDescriptorFactory;
 import mockit.Mocked;
 
 /*
@@ -99,7 +98,7 @@ public class SupplyProposalEvaluatorTests
 
 		candidateRepositoryCommands = new CandidateRepositoryCommands();
 
-		candidateRepositoryRetrieval = new CandidateRepositoryRetrieval(ProductDescriptorFactory.TESTING_INSTANCE);
+		candidateRepositoryRetrieval = new CandidateRepositoryRetrieval();
 		supplyProposalEvaluator = new SupplyProposalEvaluator(candidateRepositoryRetrieval);
 
 		final StockCandidateService stockCandidateService = new StockCandidateService(
