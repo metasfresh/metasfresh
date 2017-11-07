@@ -1,15 +1,11 @@
 package de.metas.contracts.impl;
 
-import static de.metas.contracts.impl.FlatrateTermDataFactory.flatrateConditionsNew;
-import static de.metas.contracts.impl.FlatrateTermDataFactory.productAcctNew;
-import static de.metas.contracts.impl.FlatrateTermDataFactory.productAndPricingNew;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_M_Product;
@@ -35,7 +31,7 @@ import lombok.NonNull;
 public class ExtendContractTest extends AbstractFlatrateTermTest
 {
 
-	final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
+	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 	final private static Timestamp startDate = TimeUtil.parseTimestamp("2017-09-10");
 
 	@Test
@@ -55,7 +51,7 @@ public class ExtendContractTest extends AbstractFlatrateTermTest
 		final I_C_Flatrate_Term contract = prepareContractForTest(false);
 		
 		flatrateBL.extendContract(contract, true, true, null, null);
-		InterfaceWrapperHelper.save(contract);
+		save(contract);
 
 		assertFlatrateTerm(contract);
 		assertPartnerData(contract);
@@ -73,7 +69,7 @@ public class ExtendContractTest extends AbstractFlatrateTermTest
 
 	private ProductAndPricingSystem createProductAndPricingSystem()
 	{
-		return productAndPricingNew()
+		return FlatrateTermDataFactory.productAndPricingNew()
 				.productValue("01")
 				.productName("testProduct")
 				.country(getCountry())
@@ -86,7 +82,7 @@ public class ExtendContractTest extends AbstractFlatrateTermTest
 	{
 		final I_M_Product product = productAndPricingSystem.getProduct();
 
-		productAcctNew()
+		FlatrateTermDataFactory.productAcctNew()
 				.product(product)
 				.acctSchema(getAcctSchema())
 				.build();
@@ -94,7 +90,7 @@ public class ExtendContractTest extends AbstractFlatrateTermTest
 
 	private I_C_Flatrate_Conditions createFlatrateConditions(@NonNull final ProductAndPricingSystem productAndPricingSystem, final boolean isAutoRenew)
 	{
-		return flatrateConditionsNew()
+		return FlatrateTermDataFactory.flatrateConditionsNew()
 				.name("Abo")
 				.calendar(getCalendar())
 				.pricingSystem(productAndPricingSystem.getPricingSystem())
