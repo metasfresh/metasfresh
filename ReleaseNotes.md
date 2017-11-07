@@ -14,16 +14,24 @@ Here come the actual release notes:
 
 **release for week 2017-46**
 
+
+
 * metasfresh
   * [#2722](https://github.com/metasfresh/metasfresh/issues/2722) Webui Design Window: Improve window Material Schedule
     * Minor additional Field Translation for en_US added to Material Schedule Window Subtab.
+
+## Fixes
+* metasfresh-webui-frontend
+  * [#1283](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1283) Revise shortcut handling
+    * Quick Fix for the broken shortcut Handling in Documents.
+  * [#1324](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1324) Process is started twice when using ctrl-u shortcut
+    * Quick Fix for the Action Handling in Material Receipt when using Keyboard Shortcuts.
 
 # metasfresh 5.34 (2017-45)
 
 **release for week 2017-45**
 
 ## Features
-
 * metasfresh
   * [#2113](https://github.com/metasfresh/metasfresh/issues/2113) Move verify BOM process to BOM window
     * Improvement of the BOM Verification Process. Now the BOM Verification is done via action in BOM window instead of Product window.
