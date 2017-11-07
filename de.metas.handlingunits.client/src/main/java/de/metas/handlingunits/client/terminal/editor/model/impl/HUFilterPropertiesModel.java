@@ -30,12 +30,12 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.function.Predicate;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.collections.Predicate;
 import org.compiere.model.IQuery;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.NamePair;
@@ -79,7 +79,7 @@ public class HUFilterPropertiesModel extends AbstractPropertiesPanelModel
 	private final Predicate<IHUKey> filtersAsPredicate = new Predicate<IHUKey>()
 	{
 		@Override
-		public boolean evaluate(final IHUKey key)
+		public boolean test(final IHUKey key)
 		{
 			return checkAcceptKey(key);
 		}

@@ -71,14 +71,14 @@ public class HUPricingTestHelper extends PricingTestHelper
 	@Override
 	public HUProductPriceBuilder newProductPriceBuilder()
 	{
-		return new HUProductPriceBuilder(defaultPriceListVerion, defaultProduct);
+		return new HUProductPriceBuilder(getDefaultPriceListVerion(), getDefaultProduct());
 	}
 
 	private I_M_HU_PI_Item_Product createM_HU_PI_Item_Product(final String name)
 	{
 		final I_M_HU_PI_Item_Product piip = InterfaceWrapperHelper.create(Env.getCtx(), I_M_HU_PI_Item_Product.class, ITrx.TRXNAME_None);
 		piip.setName(name);
-		piip.setM_Product(defaultProduct);
+		piip.setM_Product(getDefaultProduct());
 		InterfaceWrapperHelper.save(piip);
 		return piip;
 	}

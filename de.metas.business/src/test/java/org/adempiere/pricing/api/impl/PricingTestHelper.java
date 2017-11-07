@@ -51,16 +51,17 @@ import de.metas.adempiere.model.I_M_Product;
 
 public class PricingTestHelper
 {
-	private final IPricingBL pricingBL;
+	protected final IPricingBL pricingBL;
 
 	public static final int C_Currency_ID_EUR = 102;
+	public static final int C_Currency_ID_CHF = 318;
 	public I_C_Country defaultCountry;
 
-	public I_M_PricingSystem defaultPricingSystem;
-	public I_M_PriceList defaultPriceList;
-	public I_M_PriceList_Version defaultPriceListVerion;
+	private I_M_PricingSystem defaultPricingSystem;
+	private I_M_PriceList defaultPriceList;
+	private I_M_PriceList_Version defaultPriceListVerion;
 
-	public I_M_Product defaultProduct;
+	private I_M_Product defaultProduct;
 
 	public I_M_Attribute attr_Country;
 	public I_M_AttributeValue attr_Country_DE;
@@ -159,6 +160,7 @@ public class PricingTestHelper
 		priceList.setM_PricingSystem(pricingSystem);
 		priceList.setC_Country(country);
 		priceList.setC_Currency_ID(country.getC_Currency_ID());
+		priceList.setIsSOPriceList(true);
 		priceList.setPricePrecision(2);
 		InterfaceWrapperHelper.save(priceList);
 		return priceList;
@@ -223,10 +225,29 @@ public class PricingTestHelper
 	{
 		return new ProductPriceBuilder(defaultPriceListVerion, defaultProduct);
 	}
-
+	
 	public IPricingResult calculatePrice(final IPricingContext pricingCtx)
 	{
 		return pricingBL.calculatePrice(pricingCtx);
 	}
 
+	public I_M_PricingSystem getDefaultPricingSystem()
+	{
+		return defaultPricingSystem;
+	}
+
+	public I_M_PriceList getDefaultPriceList()
+	{
+		return defaultPriceList;
+	}
+
+	public I_M_PriceList_Version getDefaultPriceListVerion()
+	{
+		return defaultPriceListVerion;
+	}
+
+	public I_M_Product getDefaultProduct()
+	{
+		return defaultProduct;
+	}
 }

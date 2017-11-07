@@ -32,6 +32,7 @@ import org.slf4j.Logger;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
@@ -223,9 +224,13 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 		//
 		// Validate the HU
 		final I_M_HU hu = candidate.getM_HU();
-		if (!X_M_HU.HUSTATUS_Issued.equals(hu.getHUStatus()))
+		if (!ImmutableSet.of(
+				X_M_HU.HUSTATUS_Active,
+				X_M_HU.HUSTATUS_Issued)
+				.contains(hu.getHUStatus()))
 		{
-			throw new HUException("Only HUs with status 'issued' can be finalized with their PP_Cost_Collector and destroyed")
+			// if operated by the swing-ui, this code has to deal with active HUs because the swingUI skips that part of the workflow
+			throw new HUException("Only HUs with status 'issued' and 'active' can be finalized with their PP_Cost_Collector and destroyed")
 					.setParameter("HU", hu)
 					.setParameter("HUStatus", hu.getHUStatus())
 					.setParameter("candidate", candidate);
@@ -248,7 +253,6 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 			logger.debug("Skipping candidate ZERO quantity candidate: {}, bomLine={}", candidate, ppOrderBOMLine);
 			return null;
 		}
-
 
 		//
 		// Fully unload the HU
@@ -360,7 +364,7 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 
 		return this;
 	}
-	
+
 	public HUPPOrderIssueReceiptCandidatesProcessor setCandidatesToProcessByPPOrderId(final int ppOrderId)
 	{
 		setCandidatesToProcess(() -> huPPOrderQtyDAO.retrieveOrderQtys(ppOrderId)
@@ -369,7 +373,6 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 				.collect(GuavaCollectors.toImmutableList()));
 		return this;
 	}
-
 
 	private List<I_PP_Order_Qty> getCandidatesToProcess()
 	{
@@ -488,7 +491,7 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 
 		/**
 		 * Creates single cost collector
-		 * 
+		 *
 		 * @return cost collector; never returns null
 		 */
 		public I_PP_Cost_Collector createSingleCostCollector(final String snapshotId)

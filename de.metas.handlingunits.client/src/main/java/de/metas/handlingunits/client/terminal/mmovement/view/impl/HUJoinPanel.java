@@ -26,9 +26,9 @@ package de.metas.handlingunits.client.terminal.mmovement.view.impl;
 import java.beans.PropertyChangeEvent;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Predicate;
 
 import org.adempiere.util.Check;
-import org.adempiere.util.collections.Predicate;
 
 import de.metas.adempiere.form.terminal.ITerminalButton;
 import de.metas.adempiere.form.terminal.ITerminalDialog;
@@ -170,7 +170,7 @@ public final class HUJoinPanel extends AbstractLTCUPanel<HUJoinModel>
 		model.doHUMerge(new Predicate<HUMergeModel>()
 		{
 			@Override
-			public boolean evaluate(final HUMergeModel mergeModel)
+			public boolean test(final HUMergeModel mergeModel)
 			{
 				final HUMergePanel mergePanel = new HUMergePanel(mergeModel);
 				final ITerminalFactory factory = getTerminalFactory();
