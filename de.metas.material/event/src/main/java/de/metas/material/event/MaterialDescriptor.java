@@ -61,7 +61,7 @@ public class MaterialDescriptor extends ProductDescriptor
 	}
 
 	/**
-	 * @return a builder where you need to set all the properties.
+	 * @return a builder where you need to set all the properties (i.e. with complete=true).
 	 */
 	public static MaterialDescriptorBuilder builderForCompleteDescriptor()
 	{

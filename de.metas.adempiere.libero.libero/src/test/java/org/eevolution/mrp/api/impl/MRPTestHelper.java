@@ -122,7 +122,7 @@ public class MRPTestHelper
 	public PlainDocumentBL docActionBL;
 	//
 	public MRPExecutorService mrpExecutorService = new MRPExecutorService();
-	
+
 	public MockedMRPExecutor mrpExecutor = new MockedMRPExecutor();
 
 	//

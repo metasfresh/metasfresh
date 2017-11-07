@@ -36,7 +36,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.mm.attributes.api.impl.ProductDescriptorFromAttributeSetInstanceFactory;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
@@ -69,7 +68,6 @@ import de.metas.document.engine.IDocument;
 import de.metas.handlingunits.AbstractHUTest;
 import de.metas.handlingunits.HUAssert;
 import de.metas.handlingunits.HUTestHelper;
-import de.metas.handlingunits.HandlingUnitsConfiguration;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Storage;
@@ -78,10 +76,13 @@ import de.metas.handlingunits.model.I_PP_Order_Qty;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.pporder.api.HUPPOrderIssueReceiptCandidatesProcessor;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
+import de.metas.order.compensationGroup.OrderGroupRepository;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = { HandlingUnitsConfiguration.class,
-		ProductDescriptorFromAttributeSetInstanceFactory.class })
+@SpringBootTest(classes = {
+		/* needed because in MRPTestHelper, we register AdempiereBaseValidator which in turn registers a C_OrderLine interceptor the needs this class. */
+		OrderGroupRepository.class
+		})
 @ActiveProfiles("test")
 public class HUPPOrderIssueProducerTest extends AbstractHUTest
 {
