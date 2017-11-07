@@ -1,35 +1,35 @@
 /******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
+ * Product: Adempiere ERP & CRM Smart Business Solution *
+ * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved. *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms version 2 of the GNU General Public License as published *
+ * by the Free Software Foundation. This program is distributed in the hope *
  * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
+ * See the GNU General Public License for more details. *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
+ * For the text or an alternative of this public license, you may reach us *
+ * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
+ * or via info@compiere.org or http://www.compiere.org/license.html *
  *****************************************************************************/
 package org.compiere.model;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
 /**
- *	AccessSqlParserTest tests the class
- *	AccessSqlParser
- *	
- *  @author Jorg Janke
- *  @version $Id: AccessSqlParserTest.java,v 1.2 2006/07/30 00:58:04 jjanke Exp $
+ * AccessSqlParserTest tests the class
+ * AccessSqlParser
+ * 
+ * @author Jorg Janke
+ * @version $Id: AccessSqlParserTest.java,v 1.2 2006/07/30 00:58:04 jjanke Exp $
  */
 public class AccessSqlParserTest
 {
-
 
 	/**
 	 * Run the oneTable test
@@ -93,7 +93,7 @@ public class AccessSqlParserTest
 	public void testJoinInner()
 	{
 		String sql = "SELECT t.AD_Table_ID, t.TableName, c.AD_Column_ID, c.ColumnName "
-			+ "FROM AD_Table t INNER JOIN AD_Column c ON (t.AD_Table_ID=c.AD_Table_ID) WHERE t.IsActive='Y'";
+				+ "FROM AD_Table t INNER JOIN AD_Column c ON (t.AD_Table_ID=c.AD_Table_ID) WHERE t.IsActive='Y'";
 		AccessSqlParser fixture = new AccessSqlParser(sql);
 		assertEquals("AccessSqlParser[AD_Table=t,AD_Column=c|0]", fixture.toString());
 	}
@@ -105,7 +105,7 @@ public class AccessSqlParserTest
 	public void testJoinOuter()
 	{
 		String sql = "SELECT t.AD_Table_ID, t.TableName, c.AD_Column_ID, c.ColumnName "
-			+ "FROM AD_Table t LEFT OUTER JOIN AD_Column c ON (t.AD_Table_ID=c.AD_Table_ID) WHERE t.IsActive='Y'";
+				+ "FROM AD_Table t LEFT OUTER JOIN AD_Column c ON (t.AD_Table_ID=c.AD_Table_ID) WHERE t.IsActive='Y'";
 		AccessSqlParser fixture = new AccessSqlParser(sql);
 		assertEquals("AccessSqlParser[AD_Table=t,AD_Column=c|0]", fixture.toString());
 	}
@@ -117,8 +117,8 @@ public class AccessSqlParserTest
 	public void testExists()
 	{
 		String sql = "SELECT AD_Table.AD_Table_ID, AD_Table.TableName "
-			+ "FROM AD_Table "
-			+ "WHERE EXISTS (SELECT * FROM AD_Column c WHERE AD_Table.AD_Table_ID=c.AD_Table_ID)";
+				+ "FROM AD_Table "
+				+ "WHERE EXISTS (SELECT * FROM AD_Column c WHERE AD_Table.AD_Table_ID=c.AD_Table_ID)";
 		AccessSqlParser fixture = new AccessSqlParser(sql);
 		assertEquals("AccessSqlParser[AD_Column=c|AD_Table|1]", fixture.toString());
 	}
@@ -130,8 +130,8 @@ public class AccessSqlParserTest
 	public void testExistsSyn()
 	{
 		String sql = "SELECT t.AD_Table_ID, t.TableName "
-			+ "FROM AD_Table t "
-			+ "WHERE EXISTS (SELECT * FROM AD_Column c WHERE t.AD_Table_ID=c.AD_Table_ID)";
+				+ "FROM AD_Table t "
+				+ "WHERE EXISTS (SELECT * FROM AD_Column c WHERE t.AD_Table_ID=c.AD_Table_ID)";
 		AccessSqlParser fixture = new AccessSqlParser(sql);
 		assertEquals("AccessSqlParser[AD_Column=c|AD_Table=t|1]", fixture.toString());
 	}
@@ -143,8 +143,8 @@ public class AccessSqlParserTest
 	public void testEmbeddedSelect()
 	{
 		String sql = "SELECT t.AD_Table_ID, t.TableName,"
-			+ "(SELECT COUNT(c.ColumnName) FROM AD_Column c WHERE t.AD_Table_ID=c.AD_Table_ID) "
-			+ "FROM AD_Table t WHERE t.IsActive='Y'";
+				+ "(SELECT COUNT(c.ColumnName) FROM AD_Column c WHERE t.AD_Table_ID=c.AD_Table_ID) "
+				+ "FROM AD_Table t WHERE t.IsActive='Y'";
 		AccessSqlParser fixture = new AccessSqlParser(sql);
 		assertEquals("AccessSqlParser[AD_Column=c|AD_Table=t|1]", fixture.toString());
 	}
@@ -156,9 +156,9 @@ public class AccessSqlParserTest
 	public void testEmbeddedFrom()
 	{
 		String sql = "SELECT t.AD_Table_ID, t.TableName, cc.CCount "
-			+ "FROM AD_Table t,"
-			+ "(SELECT COUNT(ColumnName) AS CCount FROM AD_Column) cc "
-			+ "WHERE t.IsActive='Y'";
+				+ "FROM AD_Table t,"
+				+ "(SELECT COUNT(ColumnName) AS CCount FROM AD_Column) cc "
+				+ "WHERE t.IsActive='Y'";
 
 		AccessSqlParser fixture = new AccessSqlParser(sql);
 		assertEquals("AccessSqlParser[AD_Column|AD_Table=t,(##)=cc|1]", fixture.toString());
@@ -174,7 +174,7 @@ public class AccessSqlParserTest
 		AccessSqlParser fixture = new AccessSqlParser(sql);
 		assertEquals("AccessSqlParser[M_AttributeInstance|M_Storage=s,M_AttributeSetInstance=asi|M_AttributeInstance|M_Product=p,M_ProductPrice=pr,M_AttributeSet=pa|3]", fixture.toString());
 	}
-	
+
 	/**
 	 * Run the Product Attribute Query
 	 */
@@ -186,7 +186,6 @@ public class AccessSqlParserTest
 		assertEquals("AccessSqlParser[M_AttributeInstance|M_Product=p,M_ProductPrice=pr,M_AttributeSet=pa|1]", fixture.toString());
 	}
 
-	
 	/**
 	 * <li>teo_sarca - [ 1652623 ] AccessSqlParser.getTableInfo(String) - tablename parsing bug
 	 * <li>teo_sarca - [ 1964496 ] AccessSqlParser is not parsing well JOIN CLAUSE
@@ -196,26 +195,24 @@ public class AccessSqlParserTest
 	{
 		//
 		// BF [ 1652623 ] AccessSqlParser.getTableInfo(String) - tablename parsing bug
-		String sql = 
-			"SELECT SUM(il.QtyInvoiced)\n"
-			+ "FROM RV_C_Invoice\n"
-			+ "C_Invoice\n"
-			+ "INNER JOIN RV_C_InvoiceLine il ON (C_Invoice.C_Invoice_ID=il.C_Invoice_ID) WHERE\n"
-			+ "C_Invoice.IsSOTrx='Y' AND C_Invoice.Processed='Y' AND C_Invoice.IsPaid='Y'";
+		String sql = "SELECT SUM(il.QtyInvoiced)\n"
+				+ "FROM RV_C_Invoice\n"
+				+ "C_Invoice\n"
+				+ "INNER JOIN RV_C_InvoiceLine il ON (C_Invoice.C_Invoice_ID=il.C_Invoice_ID) WHERE\n"
+				+ "C_Invoice.IsSOTrx='Y' AND C_Invoice.Processed='Y' AND C_Invoice.IsPaid='Y'";
 		AccessSqlParser fixture = new AccessSqlParser(sql);
 		assertEquals("AccessSqlParser[RV_C_Invoice=C_Invoice,RV_C_InvoiceLine=il|0]", fixture.toString());
 		//
 		// BF [ 1964496 ] AccessSqlParser is not parsing well JOIN CLAUSE
-		sql = 
-			"SELECT C_Invoice.*  FROM C_Invoice\n"
-			+"INNER JOIN C_BPartner bp ON (bp.C_BPartner_ID=C_Invoice.C_BPartner_ID) WHERE 1=0";
-		;
+		sql = "SELECT C_Invoice.*  FROM C_Invoice\n"
+				+ "INNER JOIN C_BPartner bp ON (bp.C_BPartner_ID=C_Invoice.C_BPartner_ID) WHERE 1=0";;
 		fixture = new AccessSqlParser(sql);
 		assertEquals("AccessSqlParser[C_Invoice,C_BPartner=bp|0]", fixture.toString());
 	}
-	
+
 	/**
 	 * BF [ 2840157 ] AccessSqlParser is not parsing well ON keyword
+	 * 
 	 * <pre>
 	 * Following query is generating OutOfMemoryException:
 	 * SELECT 1
@@ -232,16 +229,41 @@ public class AccessSqlParserTest
 	@Test
 	public void test_BF2840157()
 	{
-		final String sql = 
-			"SELECT 1 FROM M_Product p"
-			+"\n"+"INNER JOIN M_Product_Category pc on (pc.M_Product_Category_ID=p.M_Product_Category_ID)"
-			+"\n"+"LEFT OUTER JOIN M_Product_PO mpo ON (mpo.M_Product_ID=p.M_Product_ID)"
-			+"\n"+" WHERE p.IsActive='Y' AND p.IsPurchased='Y'"
-			+"\n"+"AND COALESCE(mpo.DeliveryTime_Promised,0) <= 0"
-		;
+		final String sql = "SELECT 1 FROM M_Product p"
+				+ "\n" + "INNER JOIN M_Product_Category pc on (pc.M_Product_Category_ID=p.M_Product_Category_ID)"
+				+ "\n" + "LEFT OUTER JOIN M_Product_PO mpo ON (mpo.M_Product_ID=p.M_Product_ID)"
+				+ "\n" + " WHERE p.IsActive='Y' AND p.IsPurchased='Y'"
+				+ "\n" + "AND COALESCE(mpo.DeliveryTime_Promised,0) <= 0";
 		final String expected = "AccessSqlParser[M_Product=p,M_Product_Category=pc,M_Product_PO=mpo|0]";
 		AccessSqlParser fixture = new AccessSqlParser(sql);
 		assertEquals(expected, fixture.toString());
+	}
+
+	@Test
+	public void adaptInnerWhereClause_Test()
+	{
+		final String initialWhereClause = "noise WHERE noise NOISE Where noise"
+				+ "\n"
+				+ "WHERE noise FROM"
+				+ "\n"
+				+ " FROM noise frOm noise noiseFROM\t"
+				+ "ON  noise on ON"
+				+ " noise"
+				+ "\nFROM\n"
+				+ "\nWHERE\n"
+				+ "\nON\n"
+				+ " noise"
+				+ "\tFROM\t"
+				+ "\tWHERE\t"
+				+ "\tON\t";
+
+		AccessSqlParser accessSqlParserInstance = new AccessSqlParser();
+
+		final String adaptInnerWhereClause = accessSqlParserInstance.rewriteWhereClauseWithLowercaseKeyWords(initialWhereClause);
+		
+		final String expectedWhereClause = "noise where noise NOISE Where noise where noise from  from noise frOm noise noiseFROM on  noise on on noise from  where  on  noise from  where  on ";
+
+		assertThat(expectedWhereClause).isEqualTo(adaptInnerWhereClause);
 	}
 
 }

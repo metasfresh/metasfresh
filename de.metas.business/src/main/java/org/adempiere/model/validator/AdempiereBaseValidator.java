@@ -70,6 +70,7 @@ import de.metas.adempiere.model.I_M_Product;
 import de.metas.async.api.IAsyncBatchListeners;
 import de.metas.async.spi.impl.NotifyAsyncBatch;
 import de.metas.event.EventBusAdempiereInterceptor;
+import de.metas.reference.model.interceptor.AD_Ref_Table;
 
 /**
  * ADempiere Base Module Activator
@@ -170,6 +171,9 @@ public final class AdempiereBaseValidator extends AbstractModuleInterceptor
 		engine.addModelValidator(new org.adempiere.bpartner.model.interceptor.C_BPartner(), client);
 		// Prevent users from creating duplicate main prices https://github.com/metasfresh/metasfresh/issues/2510
 		engine.addModelValidator(de.metas.pricing.interceptor.M_ProductPrice.INSTANCE, client);
+		
+		//#2895
+		engine.addModelValidator(AD_Ref_Table.instance, client);
 	}
 
 	@Override

@@ -33,12 +33,12 @@ public class IncludeExcludeListPredicateTest
 
 	private final void assertAccepted(final String testItem)
 	{
-		Assert.assertTrue("Item shall be accepted: " + testItem, includeExcludeList.evaluate(testItem));
+		Assert.assertTrue("Item shall be accepted: " + testItem, includeExcludeList.test(testItem));
 	}
 
 	private final void assertNotAccepted(final String testItem)
 	{
-		Assert.assertFalse("Item shall NOT be accepted: " + testItem, includeExcludeList.evaluate(testItem));
+		Assert.assertFalse("Item shall NOT be accepted: " + testItem, includeExcludeList.test(testItem));
 	}
 
 	/**

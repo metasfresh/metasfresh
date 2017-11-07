@@ -86,7 +86,7 @@ public class SubscriptionPricingRule implements IPricingRule
 			@NonNull final I_C_Flatrate_Conditions conditions)
 	{
 		final I_M_PriceList subscriptionPriceList = Services.get(IQueryBL.class).createQueryBuilder(I_M_PriceList.class).addOnlyActiveRecordsFilter()
-				.addInArrayFilter(I_M_PriceList.COLUMN_C_Country_ID, countryId, 0)
+				.addInArrayFilter(I_M_PriceList.COLUMN_C_Country_ID, countryId, null)
 				.addEqualsFilter(I_M_PriceList.COLUMN_M_PricingSystem_ID, conditions.getM_PricingSystem_ID())
 				.addEqualsFilter(I_M_PriceList.COLUMN_IsSOPriceList, true)
 				.orderBy().addColumnDescending(I_M_PriceList.COLUMNNAME_C_Country_ID).endOrderBy()
