@@ -56,11 +56,11 @@ public class AccessSqlParser
 	}	// AccessSqlParser
 
 	private static final String FROM = " FROM ";
-	private static final String from = " from ";
+	private static final String FROM_LOWERCASE = " from ";
 	private static final String WHERE = " WHERE ";
-	private static final String where = " where ";
+	private static final String WHERE_LOWERCASE = " where ";
 	private static final String ON = " ON ";
-	private static final String on = " on ";
+	private static final String ON_LOWERCASE = " on ";
 
 	private static final int FROM_LENGTH = FROM.length();
 
@@ -417,11 +417,8 @@ public class AccessSqlParser
 	 */
 	public String rewriteWhereClauseWithLowercaseKeyWords(final String whereClause)
 	{
-
-		StringBuilder whereClauseBuilder = new StringBuilder()
-				.append(whereClause.replaceAll("\\s", " ").replaceAll(WHERE, where).replaceAll(FROM, from).replaceAll(ON, on));
-
-		return whereClauseBuilder.toString();
+		final String adaptedWhereClause = whereClause.replaceAll("\\s", " ").replaceAll(WHERE, WHERE_LOWERCASE).replaceAll(FROM, FROM_LOWERCASE).replaceAll(ON, ON_LOWERCASE);
+		return adaptedWhereClause;
 	}
 
 	/**
