@@ -501,7 +501,6 @@ public class PrintJobBL implements IPrintJobBL
 		instructions.setC_PrintJob_Line_From(firstLine);
 		instructions.setC_PrintJob_Line_To(lastLine);
 		instructions.setCopies(copies);
-		instructions.setUserOK(true);
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(instructions);
 		final String hostKey = Services.get(IPrintPackageBL.class).getHostKeyOrNull(ctx);

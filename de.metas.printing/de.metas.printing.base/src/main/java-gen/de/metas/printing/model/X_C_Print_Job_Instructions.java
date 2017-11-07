@@ -14,7 +14,7 @@ public class X_C_Print_Job_Instructions extends org.compiere.model.PO implements
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1631078398L;
+	private static final long serialVersionUID = -425877608L;
 
     /** Standard Constructor */
     public X_C_Print_Job_Instructions (Properties ctx, int C_Print_Job_Instructions_ID, String trxName)
@@ -29,7 +29,6 @@ public class X_C_Print_Job_Instructions extends org.compiere.model.PO implements
 			setC_PrintJob_Line_To_ID (0);
 			setCopies (0); // 1
 			setStatus (null); // P
-			setUserOK (false); // N
         } */
     }
 
@@ -328,28 +327,5 @@ public class X_C_Print_Job_Instructions extends org.compiere.model.PO implements
 	public java.lang.String getStatus () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Status);
-	}
-
-	/** Set UserOK.
-		@param UserOK UserOK	  */
-	@Override
-	public void setUserOK (boolean UserOK)
-	{
-		set_Value (COLUMNNAME_UserOK, Boolean.valueOf(UserOK));
-	}
-
-	/** Get UserOK.
-		@return UserOK	  */
-	@Override
-	public boolean isUserOK () 
-	{
-		Object oo = get_Value(COLUMNNAME_UserOK);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
 	}
 }
