@@ -16,6 +16,7 @@ import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_AcctSchema;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Calendar;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_Period;
@@ -203,6 +204,31 @@ public abstract class AbstractFlatrateTermTest
 		final I_C_CountryArea countryArea = newInstance(I_C_CountryArea.class, country);
 		countryArea.setValue(ICountryAreaBL.COUNTRYAREAKEY_EU);
 		save(countryArea);
+	}
+	
+	protected int prepareBPartner()
+	{
+		final I_C_BPartner bpartner = FlatrateTermDataFactory.bpartnerNew()
+				.bpValue("G0022")
+				.isCustomer(true)
+				.build();
+
+		FlatrateTermDataFactory.bpLocationNew()
+				.bpartner(bpartner)
+				.isBillTo_Default(true)
+				.isShipTo_Default(true)
+				.country(getCountry())
+				.build();
+
+		FlatrateTermDataFactory.userNew()
+				.bpartner(bpartner)
+				.isBillToContact_Default(true)
+				.isShipToContact_Default(true)
+				.firstName("FN")
+				.lastName("LN")
+				.build();
+
+		return bpartner.getC_BPartner_ID();
 	}
 
 }

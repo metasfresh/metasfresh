@@ -13,7 +13,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.Mutable;
-import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.TimeUtil;
 import org.junit.Test;
@@ -258,31 +257,6 @@ public class FlatrateTermImportProcess_SimpleCase_Test extends AbstractFlatrateT
 		assertThat(candidates).hasSize(0);
 		
 		assertShipmentSchedules(flatrateTerm, false);
-	}
-
-	private int prepareBPartner()
-	{
-		final I_C_BPartner bpartner = FlatrateTermDataFactory.bpartnerNew()
-				.bpValue("G0022")
-				.isCustomer(true)
-				.build();
-
-		FlatrateTermDataFactory.bpLocationNew()
-				.bpartner(bpartner)
-				.isBillTo_Default(true)
-				.isShipTo_Default(true)
-				.country(getCountry())
-				.build();
-
-		FlatrateTermDataFactory.userNew()
-				.bpartner(bpartner)
-				.isBillToContact_Default(true)
-				.isShipToContact_Default(true)
-				.firstName("FN")
-				.lastName("LN")
-				.build();
-
-		return bpartner.getC_BPartner_ID();
 	}
 
 	private void assertPartnerData(final I_I_Flatrate_Term iflatrateTerm)
