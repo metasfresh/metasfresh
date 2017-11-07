@@ -91,7 +91,7 @@ public interface ITrx
 	/**
 	 * Transaction is Active
 	 *
-	 * @return true if transaction active
+	 * @return true if transaction active (e.g. not already committed/closed)
 	 */
 	boolean isActive();
 

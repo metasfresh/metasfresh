@@ -25,7 +25,7 @@ package de.metas.contracts.subscription.process;
 import java.sql.Timestamp;
 
 import de.metas.contracts.model.I_C_Flatrate_Term;
-import de.metas.contracts.subscription.impl.SubscriptionCommand;
+import de.metas.contracts.subscription.impl.SubscriptionService;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.Param;
 
@@ -43,7 +43,7 @@ public class C_SubscriptionProgress_InsertPause
 	protected String doIt()
 	{
 		final I_C_Flatrate_Term term = getTermFromProcessInfo();
-		SubscriptionCommand.get().insertPause(term, dateFrom, dateTo);
+		SubscriptionService.get().insertPause(term, dateFrom, dateTo);
 
 		return MSG_OK;
 	}

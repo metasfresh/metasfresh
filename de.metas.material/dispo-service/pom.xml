@@ -67,6 +67,13 @@
 			<artifactId>metasfresh-material-dispo-commons</artifactId>
 			<version>10.0.0</version>
 		</dependency>
+		<dependency>
+			<groupId>de.metas.material</groupId>
+			<artifactId>metasfresh-material-dispo-commons</artifactId>
+			<version>10.0.0</version>
+			<classifier>tests</classifier>
+			<scope>test</scope>
+		</dependency>
 
 		<dependency>
 			<groupId>de.metas.util</groupId>
@@ -74,10 +81,17 @@
 			<version>10.0.0</version>
 		</dependency>
 
-
 		<dependency>
 			<groupId>de.metas.adempiere.adempiere</groupId>
 			<artifactId>de.metas.adempiere.adempiere.base</artifactId>
+			<version>10.0.0</version>
+			<classifier>tests</classifier>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.material</groupId>
+			<artifactId>metasfresh-material-event</artifactId>
 			<version>10.0.0</version>
 			<classifier>tests</classifier>
 			<scope>test</scope>

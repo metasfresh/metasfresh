@@ -93,9 +93,15 @@ public class DDOrderPojoSupplierTest
 		);
 	}
 
-	private void test_calculateQtyToMove(final BigDecimal qtyToMoveExpected, final BigDecimal qtyToMoveRequested, final BigDecimal transferPercent)
+	private void test_calculateQtyToMove(
+			final BigDecimal qtyToMoveExpected,
+			final BigDecimal qtyToMoveRequested,
+			final BigDecimal transferPercent)
 	{
-		final BigDecimal qtyToMoveActual = new DDOrderPojoSupplier().calculateQtyToMove(qtyToMoveRequested, transferPercent);
+		final DDOrderPojoSupplier ddOrderPojoSupplier = new DDOrderPojoSupplier();
+
+		final BigDecimal qtyToMoveActual = ddOrderPojoSupplier
+				.calculateQtyToMove(qtyToMoveRequested, transferPercent);
 
 		final String msg = "Invalid QtyToMove for "
 				+ " QtyToMoveRequested=" + qtyToMoveRequested

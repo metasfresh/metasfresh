@@ -42,7 +42,7 @@ public interface ITrxListener
 	 *
 	 * @param trx
 	 */
-	void beforeCommit(ITrx trx) throws Exception;
+	void beforeCommit(ITrx trx);
 
 	/**
 	 * Method called after a transaction was successfully committed.

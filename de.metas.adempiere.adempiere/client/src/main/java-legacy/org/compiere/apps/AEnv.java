@@ -76,7 +76,6 @@ import org.slf4j.Logger;
 import de.metas.adempiere.form.IClientUIInvoker.OnFail;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
-import de.metas.session.jaxrs.IServerService;
 
 /**
  * Windows Application Environment and utilities
@@ -905,7 +904,7 @@ public final class AEnv
 	}   // getServerVersion
 
 	/** Window Cache */
-	private static CCache<Integer, GridWindowVO> s_windows = new CCache<Integer, GridWindowVO>("AD_Window", 10);
+	private static CCache<Integer, GridWindowVO> s_windows = new CCache<>("AD_Window", 10);
 
 	/**
 	 * Get Window Model
@@ -1007,32 +1006,6 @@ public final class AEnv
 				.setLongOperation(true)
 				.invoke();
 	}   // postImmediate
-
-	/**
-	 * Cache Reset
-	 *
-	 * @param tableName table name
-	 * @param Record_ID record id
-	 */
-	public static void cacheReset(final String tableName, final int Record_ID)
-	{
-		log.info("TableName=" + tableName + ", Record_ID=" + Record_ID);
-
-		// try to get from Server when enabled
-		if (isServerActive())
-		{
-			log.info("trying server");
-			try
-			{
-				final IServerService server = Services.get(IServerService.class);
-				server.cacheReset(tableName, Record_ID);
-			}
-			catch (final Exception e)
-			{
-				log.error("ex", e);
-			}
-		}
-	}   // cacheReset
 
 	/**
 	 * Update all windows after look and feel changes.

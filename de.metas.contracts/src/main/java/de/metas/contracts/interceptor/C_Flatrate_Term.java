@@ -32,13 +32,14 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Init;
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Org;
@@ -50,7 +51,6 @@ import org.compiere.model.Query;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
 import org.compiere.util.TimeUtil;
-import org.slf4j.Logger;
 
 import de.metas.adempiere.service.ICalendarDAO;
 import de.metas.contracts.Contracts_Constants;
@@ -70,12 +70,14 @@ import de.metas.contracts.subscription.ISubscriptionBL;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.IDocTypeDAO.DocTypeCreateRequest;
 import de.metas.i18n.IMsgBL;
-import de.metas.logging.LogManager;
 import de.metas.ordercandidate.modelvalidator.C_OLCand;
 
-@Validator(I_C_Flatrate_Term.class)
+@Interceptor(I_C_Flatrate_Term.class)
 public class C_Flatrate_Term
 {
+	public static C_Flatrate_Term INSTANCE = new C_Flatrate_Term();
+
+	private static final String CONFIG_FLATRATE_TERM_ALLOW_REACTIVATE = "de.metas.contracts.C_Flatrate_Term.allow_reactivate_%s";
 
 	private static final String MSG_TERM_ERROR_PLANNED_QTY_PER_UNIT = "Term_Error_PlannedQtyPerUnit";
 
@@ -83,7 +85,9 @@ public class C_Flatrate_Term
 	private static final String MSG_TERM_ERROR_PERIOD_END_DATE_BEFORE_TERM_END_DATE_2P = "Term_Error_PeriodEndDate_Before_TermEndDate";
 	private static final String MSG_TERM_ERROR_PERIOD_START_DATE_AFTER_TERM_START_DATE_2P = "Term_Error_PeriodStartDate_After_TermStartDate";
 
-	protected final transient Logger log = LogManager.getLogger(getClass());
+	private C_Flatrate_Term()
+	{
+	}
 
 	@Init
 	public void initialize(final IModelValidationEngine engine)
@@ -173,6 +177,7 @@ public class C_Flatrate_Term
 			flatrateBL.validatePricing(term);
 		}
 	}
+	
 
 	@ModelChange(timings = {
 			ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE
@@ -184,6 +189,7 @@ public class C_Flatrate_Term
 		if (term.getStartDate() != null && !term.isProcessed())
 		{
 			Services.get(IFlatrateBL.class).updateNoticeDateAndEndDate(term);
+			setMasterEndDate(term);
 		}
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(term);
@@ -228,7 +234,7 @@ public class C_Flatrate_Term
 			throw new AdempiereException(concatStrings(errors));
 		}
 	}
-
+	
 	/**
 	 * If the term that is deleted was the last term, remove the "processed"-flag from the term's data record.
 	 *
@@ -346,17 +352,27 @@ public class C_Flatrate_Term
 		return sb.toString();
 	}
 
-	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_REACTIVATE, ModelValidator.TIMING_BEFORE_REACTIVATE, ModelValidator.TIMING_BEFORE_CLOSE })
-	public void prohibitReactivationAndVoidingAndClosing(final I_C_Flatrate_Term term)
+	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_VOID, ModelValidator.TIMING_BEFORE_CLOSE })
+	public void prohibitVoidingAndClosing(final I_C_Flatrate_Term term)
 	{
 		throw new AdempiereException("@" + MainValidator.MSG_FLATRATE_DOC_ACTION_NOT_SUPPORTED_0P + "@");
+	}
+
+	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_REACTIVATE })
+	public void prohibitReactivatingUnlessAllowed(final I_C_Flatrate_Term term)
+	{
+		final String sysConfigName = String.format(CONFIG_FLATRATE_TERM_ALLOW_REACTIVATE, term.getType_Conditions());
+		final boolean reactivateIsAllowed = Services.get(ISysConfigBL.class).getBooleanValue(sysConfigName, false, term.getAD_Client_ID(), term.getAD_Org_ID());
+		if (reactivateIsAllowed)
+		{
+			return;
+		}
+		throw new AdempiereException("@" + MainValidator.MSG_FLATRATE_REACTIVATE_DOC_ACTION_NOT_SUPPORTED_0P + "@");
 	}
 
 	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_COMPLETE })
 	public void beforeComplete(final I_C_Flatrate_Term term)
 	{
-		// TODO: refactor it to specific IFlatrateHandlers
-
 		if (X_C_Flatrate_Term.TYPE_CONDITIONS_FlatFee.equals(term.getType_Conditions()))
 		{
 			if (term.getPlannedQtyPerUnit().signum() <= 0)
@@ -400,8 +416,6 @@ public class C_Flatrate_Term
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE })
 	public void afterComplete(final I_C_Flatrate_Term term)
 	{
-		// TODO: refactor it to specific IFlatrateHandlers
-
 		if (X_C_Flatrate_Term.TYPE_CONDITIONS_Subscription.equals(term.getType_Conditions())
 				|| X_C_Flatrate_Term.TYPE_CONDITIONS_FlatFee.equals(term.getType_Conditions()))
 		{
@@ -467,7 +481,7 @@ public class C_Flatrate_Term
 	/**
 	 * task #1169
 	 * In case the term to be completed overlaps with other term regarding time period and product the user must be announced about this and the new term shall not be completed
-	 * 
+	 *
 	 * @param term
 	 */
 	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_COMPLETE })
@@ -481,5 +495,31 @@ public class C_Flatrate_Term
 		{
 			throw new AdempiereException(FlatrateBL.MSG_HasOverlapping_Term, new Object[] { term.getC_Flatrate_Term_ID(), term.getBill_BPartner().getValue() });
 		}
+	}
+	
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE , ifColumnsChanged = I_C_Flatrate_Term.COLUMNNAME_C_FlatrateTerm_Next_ID )
+	public void updateMasterEndDate(final I_C_Flatrate_Term term)
+	{
+		setMasterEndDate(term);
+	}
+	
+
+	private void setMasterEndDate(final I_C_Flatrate_Term term)
+	{
+		Timestamp masterEndDate = null;
+		if (InterfaceWrapperHelper.isNew(term) && !term.isAutoRenew())
+		{
+			masterEndDate = term.getEndDate();
+		}
+		
+		if (term.getC_FlatrateTerm_Next_ID() > 0)
+		{
+			if (!term.isAutoRenew())
+			{
+				masterEndDate = term.getC_FlatrateTerm_Next().getMasterEndDate();
+			}
+		}
+		
+		term.setMasterEndDate(masterEndDate);
 	}
 }

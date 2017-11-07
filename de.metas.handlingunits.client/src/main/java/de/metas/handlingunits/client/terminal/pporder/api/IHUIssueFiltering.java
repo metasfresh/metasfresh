@@ -36,10 +36,6 @@ import org.eevolution.model.I_PP_Order_BOMLine;
 
 import de.metas.handlingunits.IHUQueryBuilder;
 
-/**
- * @author cg
- *
- */
 public interface IHUIssueFiltering extends ISingletonService
 {
 	List<I_M_Warehouse> retrieveWarehouse(Properties ctx);

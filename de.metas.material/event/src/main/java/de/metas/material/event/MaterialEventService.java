@@ -73,8 +73,8 @@ public class MaterialEventService
 			// make sure that every record we create has the correct AD_Client_ID and AD_Org_ID
 			final Properties temporaryCtx = Env.copyCtx(Env.getCtx());
 
-			Env.setContext(temporaryCtx, Env.CTXNAME_AD_Client_ID, lightWeightEvent.getEventDescr().getClientId());
-			Env.setContext(temporaryCtx, Env.CTXNAME_AD_Org_ID, lightWeightEvent.getEventDescr().getOrgId());
+			Env.setContext(temporaryCtx, Env.CTXNAME_AD_Client_ID, lightWeightEvent.getEventDescriptor().getClientId());
+			Env.setContext(temporaryCtx, Env.CTXNAME_AD_Org_ID, lightWeightEvent.getEventDescriptor().getOrgId());
 
 			try (final IAutoCloseable c = Env.switchContext(temporaryCtx))
 			{

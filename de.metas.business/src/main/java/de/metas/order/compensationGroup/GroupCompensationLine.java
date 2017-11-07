@@ -1,6 +1,7 @@
 package de.metas.order.compensationGroup;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
@@ -36,9 +37,13 @@ import lombok.ToString;
 @ToString
 public final class GroupCompensationLine
 {
+	/** Repository ID */
 	@Getter
 	@Setter
 	private int repoId;
+
+	@Getter
+	private final int seqNo;
 
 	@Getter
 	private final int productId;
@@ -59,10 +64,13 @@ public final class GroupCompensationLine
 	private BigDecimal qty;
 	@Getter
 	private BigDecimal price;
+	@Getter
+	private BigDecimal lineNetAmt;
 
 	@Builder
 	public GroupCompensationLine(
 			final int repoId,
+			final int seqNo,
 			final int productId,
 			final int uomId,
 			@NonNull final GroupCompensationType type,
@@ -70,12 +78,15 @@ public final class GroupCompensationLine
 			final BigDecimal percentage,
 			final BigDecimal baseAmt,
 			final BigDecimal qty,
-			final BigDecimal price)
+			final BigDecimal price,
+			final BigDecimal lineNetAmt)
 	{
 		Check.assume(productId > 0, "productId > 0");
 		Check.assume(uomId > 0, "uomId > 0");
 
 		this.repoId = repoId > 0 ? repoId : -1;
+
+		this.seqNo = seqNo;
 
 		this.productId = productId;
 		this.uomId = uomId;
@@ -90,6 +101,7 @@ public final class GroupCompensationLine
 			this.percentage = percentage;
 			this.qty = qty;
 			this.price = price;
+			this.lineNetAmt = lineNetAmt;
 		}
 		else if (amtType == GroupCompensationAmtType.PriceAndQty)
 		{
@@ -98,6 +110,7 @@ public final class GroupCompensationLine
 			this.percentage = null;
 			this.qty = qty;
 			this.price = price;
+			this.lineNetAmt = lineNetAmt;
 		}
 		else
 		{
@@ -121,9 +134,15 @@ public final class GroupCompensationLine
 		this.baseAmt = baseAmt;
 	}
 
-	void setPriceAntQty(@NonNull final BigDecimal price, @NonNull final BigDecimal qty)
+	void setPriceAndQty(@NonNull final BigDecimal price, @NonNull final BigDecimal qty, final int precision)
 	{
 		this.price = price;
 		this.qty = qty;
+
+		this.lineNetAmt = price.multiply(qty);
+		if (lineNetAmt.scale() > precision)
+		{
+			lineNetAmt = lineNetAmt.setScale(precision, RoundingMode.HALF_UP);
+		}
 	}
 }

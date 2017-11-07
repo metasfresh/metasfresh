@@ -2,10 +2,10 @@ package de.metas.material.dispo.service.event.handler;
 
 import org.springframework.stereotype.Service;
 
-import de.metas.material.dispo.CandidateSpecification.SubType;
-import de.metas.material.dispo.CandidateSpecification.Type;
-import de.metas.material.dispo.candidate.Candidate;
-import de.metas.material.dispo.candidate.DemandDetail;
+import de.metas.material.dispo.commons.candidate.Candidate;
+import de.metas.material.dispo.commons.candidate.CandidateSubType;
+import de.metas.material.dispo.commons.candidate.CandidateType;
+import de.metas.material.dispo.commons.candidate.DemandDetail;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.event.ShipmentScheduleEvent;
 import lombok.NonNull;
@@ -43,10 +43,10 @@ public class ShipmentScheduleEventHandler
 
 	public void handleShipmentScheduleEvent(@NonNull final ShipmentScheduleEvent event)
 	{
-		final Candidate candidate = Candidate.builderForEventDescr(event.getEventDescr())
-				.materialDescr(event.getMaterialDescr())
-				.type(Type.DEMAND)
-				.subType(SubType.SHIPMENT)
+		final Candidate candidate = Candidate.builderForEventDescr(event.getEventDescriptor())
+				.materialDescriptor(event.getMaterialDescriptor())
+				.type(CandidateType.DEMAND)
+				.subType(CandidateSubType.SHIPMENT)
 				.demandDetail(DemandDetail.forShipmentScheduleIdAndOrderLineId(event.getShipmentScheduleId(), event.getOrderLineId()))
 				.build();
 		candidateChangeHandler.onCandidateNewOrChange(candidate);

@@ -62,7 +62,7 @@ public class BPartnerOrgBL implements IBPartnerOrgBL
 		final IQueryBuilder<I_C_BPartner> queryBuilder = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_BPartner.class, ctx, trxName);
 
-		final ICompositeQueryFilter<I_C_BPartner> filters = queryBuilder.getFilters();
+		final ICompositeQueryFilter<I_C_BPartner> filters = queryBuilder.getCompositeFilter();
 		filters.addOnlyActiveRecordsFilter();
 		filters.addEqualsFilter(I_C_BPartner.COLUMNNAME_AD_OrgBP_ID, adOrgId);
 

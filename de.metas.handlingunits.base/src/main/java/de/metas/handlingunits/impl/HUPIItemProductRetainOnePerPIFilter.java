@@ -25,9 +25,9 @@ package de.metas.handlingunits.impl;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.function.Predicate;
 
 import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.util.collections.Predicate;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
 
@@ -111,7 +111,7 @@ public final class HUPIItemProductRetainOnePerPIFilter implements Predicate<I_M_
 	}
 
 	@Override
-	public boolean evaluate(final I_M_HU_PI_Item_Product itemProduct)
+	public boolean test(final I_M_HU_PI_Item_Product itemProduct)
 	{
 		return accept(itemProduct);
 	}

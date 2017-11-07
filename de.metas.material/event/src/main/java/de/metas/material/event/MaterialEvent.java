@@ -57,5 +57,5 @@ import de.metas.material.event.pporder.ProductionPlanEvent;
 })
 public interface MaterialEvent
 {
-	EventDescr getEventDescr();
+	EventDescriptor getEventDescriptor();
 }

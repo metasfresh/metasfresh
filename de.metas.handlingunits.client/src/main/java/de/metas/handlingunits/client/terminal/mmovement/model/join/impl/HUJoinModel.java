@@ -32,11 +32,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Predicate;
 
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.collections.IdentityHashSet;
-import org.adempiere.util.collections.Predicate;
 
 import de.metas.adempiere.form.terminal.ITerminalKey;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
@@ -518,7 +518,7 @@ public final class HUJoinModel extends AbstractLTCUModel
 			Check.assumeNotNull(editorCallback, "editorCallback not null");
 			final HUMergeModel mergeModel = createHUMergeModel(mergeType);
 
-			edited = editorCallback.evaluate(mergeModel);
+			edited = editorCallback.test(mergeModel);
 		}
 		afterMerge(edited, mergeType);
 	}
