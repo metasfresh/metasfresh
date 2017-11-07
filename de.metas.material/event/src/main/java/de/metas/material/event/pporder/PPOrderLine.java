@@ -1,8 +1,13 @@
 package de.metas.material.event.pporder;
 
+import static de.metas.material.event.MaterialEventUtils.checkIdGreaterThanZero;
+
 import java.math.BigDecimal;
 
-import lombok.AllArgsConstructor;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+import de.metas.material.event.ProductDescriptor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
@@ -44,33 +49,48 @@ import lombok.experimental.Wither;
 @Data
 @Builder
 @Wither
-@AllArgsConstructor // used by jackson when it deserializes a string
 public class PPOrderLine
 {
-	private final String description;
+	String description;
 
-	@NonNull
-	private final Integer productBomLineId;
+	int productBomLineId;
 
 	/**
 	 * Can contain the {@code PP_Order_BOMLine_ID} of the production order document line this is all about, but also note that there might not yet exist one.
 	 */
-	private final int ppOrderLineId;
-
+	int ppOrderLineId;
 
 	/**
 	 * Specifies whether this line is about a receipt (co-product or by-product) or about an issue.<br>
 	 * Note that this is somewhat redundant with the {@link #getComponentType()} properties, but in material-dispo
 	 * we don't want to depend on the BL to evaluate the component type.
 	 */
-	private final boolean receipt;
+	boolean receipt;
 
 	@NonNull
-	private final Integer productId;
-
-	private final Integer attributeSetInstanceId;
+	ProductDescriptor productDescriptor;
 
 	@NonNull
-	private final BigDecimal qtyRequired;
+	BigDecimal qtyRequired;
 
+	@JsonCreator
+	public PPOrderLine(
+			@JsonProperty("description") final String description,
+			@JsonProperty("productBomLineId") final int productBomLineId,
+			@JsonProperty("ppOrderLineId") final int ppOrderLineId,
+			@JsonProperty("receipt") final boolean receipt,
+			@JsonProperty("productDescriptor") @NonNull final ProductDescriptor productDescriptor,
+			@JsonProperty("qtyRequired") @NonNull final BigDecimal qtyRequired)
+	{
+		this.description = description;
+
+		this.productBomLineId = checkIdGreaterThanZero("productBomLineId", productBomLineId);
+		this.ppOrderLineId = ppOrderLineId;
+		this.receipt = receipt;
+
+		productDescriptor.asssertCompleteness();
+		this.productDescriptor = productDescriptor;
+
+		this.qtyRequired = qtyRequired;
+	}
 }

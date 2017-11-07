@@ -37,6 +37,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 import de.metas.adempiere.model.I_M_Product;
+import de.metas.material.event.ProductDescriptor;
+import de.metas.material.event.ProductDescriptorFactory;
 import de.metas.material.event.pporder.PPOrder;
 
 /*
@@ -150,13 +152,17 @@ public class MaterialDocumentListenerTests
 			save(bomComponentLine);
 		}
 
+		final ProductDescriptor productDescriptor = ProductDescriptorFactory.TESTING_INSTANCE.forProductAndAttributes(bomMainProduct.getM_Product_ID(), 
+				"storageAttributesKey", 
+				bomMainProduct.getM_AttributeSetInstance_ID());
+		
 		ppOrderPojo = PPOrder.builder()
 				.datePromised(SystemTime.asDate())
 				.dateStartSchedule(SystemTime.asDate())
 				.orgId(org.getAD_Org_ID())
 				.plantId(110)
 				.orderLineId(orderLine.getC_OrderLine_ID())
-				.productId(bomMainProduct.getM_Product_ID())
+				.productDescriptor(productDescriptor)
 				.productPlanningId(productPlanning.getPP_Product_Planning_ID())
 				.quantity(BigDecimal.TEN)
 				.uomId(uom.getC_UOM_ID())

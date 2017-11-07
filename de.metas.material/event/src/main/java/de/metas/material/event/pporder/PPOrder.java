@@ -1,16 +1,23 @@
 package de.metas.material.event.pporder;
 
+import static de.metas.material.event.MaterialEventUtils.checkIdGreaterThanZero;
+
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 import org.compiere.model.I_S_Resource;
 
-import lombok.AllArgsConstructor;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+import de.metas.material.event.ProductDescriptor;
 import lombok.Builder;
-import lombok.Data;
 import lombok.NonNull;
 import lombok.Singular;
+import lombok.Value;
 import lombok.experimental.Wither;
 
 /*
@@ -34,68 +41,98 @@ import lombok.experimental.Wither;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-@Data
-@Builder
+@Value
 @Wither
-@AllArgsConstructor // used by jackson when it deserializes a string
 public class PPOrder
 {
-	@NonNull
-	private final Integer orgId;
+	int orgId;
 
 	/**
 	 * The {@link I_S_Resource#getS_Resource_ID()} of the plant, as specified by the respective product planning record.
 	 */
-	@NonNull
-	private final Integer plantId;
+	int plantId;
+
+	int warehouseId;
+
+	int productPlanningId;
 
 	@NonNull
-	private final Integer warehouseId;
+	ProductDescriptor productDescriptor;
 
-	@NonNull
-	private final Integer productPlanningId;
-
-	@NonNull
-	private final Integer productId;
-
-	@NonNull
-	private final Integer uomId;
+	int uomId;
 
 	/**
 	 * In a build-to-order scenario, this is the ID of the order line which this all is about.
 	 */
-	private final int orderLineId;
+	int orderLineId;
 
 	/**
 	 * Can contain the {@code PP_Order_ID} of the production order document this is all about, but also note that there might not yet exist one.
 	 */
-	private final int ppOrderId;
+	int ppOrderId;
 
-	private final String docStatus;
+	String docStatus;
 
 	/**
 	 * This is usually the respective supply candidates' date value.
 	 */
 	@NonNull
-	private final Date datePromised;
+	Date datePromised;
 
 	/**
 	 * This is usually the respective demand candiates' date value.
 	 */
 	@NonNull
-	private final Date dateStartSchedule;
+	Date dateStartSchedule;
 
 	@NonNull
-	private final BigDecimal quantity;
+	BigDecimal quantity;
 
 	/**
 	 * If {@code true}, then this event advises the recipient to directly request an actual PP_Order to be created.
 	 */
-	private final boolean createPPOrder;
+	boolean createPPOrder;
 
 	/**
 	 * Attention, might be {@code null}.
 	 */
 	@Singular
-	private final List<PPOrderLine> lines;
+	List<PPOrderLine> lines;
+
+	@JsonCreator
+	@Builder
+	public PPOrder(
+			@JsonProperty("orgId") final int orgId,
+			@JsonProperty("plantId") final int plantId,
+			@JsonProperty("warehouseId") final int warehouseId,
+			@JsonProperty("productPlanningId") final int productPlanningId,
+			@JsonProperty("productDescriptor") @NonNull final ProductDescriptor productDescriptor,
+			@JsonProperty("uomId") final int uomId,
+			@JsonProperty("orderLineId") final int orderLineId,
+			@JsonProperty("ppOrderId") final int ppOrderId,
+			@JsonProperty("docStatus") @Nullable final String docStatus,
+			@JsonProperty("datePromised") @NonNull final Date datePromised,
+			@JsonProperty("dateStartSchedule") @NonNull final Date dateStartSchedule,
+			@JsonProperty("quantity") @NonNull final BigDecimal quantity,
+			@JsonProperty("createPPOrder") final boolean createPPOrder,
+			@JsonProperty("lines") @Singular final List<PPOrderLine> lines)
+	{
+		this.orgId = checkIdGreaterThanZero("orgId", orgId);
+		this.plantId = checkIdGreaterThanZero("plantId", plantId);
+		this.warehouseId = checkIdGreaterThanZero("warehouseId", warehouseId);
+		this.productPlanningId = checkIdGreaterThanZero("productPlanningId", productPlanningId);
+
+		productDescriptor.asssertCompleteness();
+		this.productDescriptor = productDescriptor;
+
+		this.uomId = checkIdGreaterThanZero("uomId", uomId);
+		this.orderLineId = orderLineId;
+		this.ppOrderId = ppOrderId;
+		this.docStatus = docStatus;
+		this.datePromised = datePromised;
+		this.dateStartSchedule = dateStartSchedule;
+		this.quantity = quantity;
+		this.createPPOrder = createPPOrder;
+		this.lines = lines;
+	}
 }

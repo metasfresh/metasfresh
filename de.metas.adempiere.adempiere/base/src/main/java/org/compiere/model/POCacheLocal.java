@@ -10,12 +10,12 @@ package org.compiere.model;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -52,7 +52,7 @@ public final class POCacheLocal extends AbstractPOCacheLocal
 
 		this.parentPORef = new WeakReference<PO>(parent);
 	}
-	
+
 	private final PO getParentPO()
 	{
 		final PO parentPO = parentPORef.get();
@@ -60,14 +60,14 @@ public final class POCacheLocal extends AbstractPOCacheLocal
 		{
 			// cleanup
 			this.poRef = null;
-			
+
 			// throw exception
 			throw new AdempiereException("Parent PO reference expired");
 		}
-		
+
 		return parentPO;
 	}
-	
+
 	@Override
 	protected Properties getParentCtx()
 	{
@@ -95,7 +95,7 @@ public final class POCacheLocal extends AbstractPOCacheLocal
 		final PO parentPO = getParentPO();
 		final Integer value = id < 0 ? null : id;
 		final String parentColumnName = getParentColumnName();
-		final boolean ok = parentPO.set_ValueOfColumnReturningBoolean(parentColumnName, value);
+		final boolean ok = parentPO.set_ValueOfColumn(parentColumnName, value);
 		if (!ok)
 		{
 			logger.warn("Cannot set " + parentColumnName + "=" + id + " to " + parentPO);

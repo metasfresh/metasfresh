@@ -2,8 +2,8 @@ package de.metas.material.dispo.service.candidatechange.handler;
 
 import java.util.Collection;
 
-import de.metas.material.dispo.CandidateSpecification.Type;
-import de.metas.material.dispo.candidate.Candidate;
+import de.metas.material.dispo.commons.candidate.Candidate;
+import de.metas.material.dispo.commons.candidate.CandidateType;
 import lombok.NonNull;
 
 /*
@@ -30,7 +30,7 @@ import lombok.NonNull;
 
 public interface CandidateHandler
 {
-	Collection<Type> getHandeledTypes();
+	Collection<CandidateType> getHandeledTypes();
 	
 	Candidate onCandidateNewOrChange(@NonNull final Candidate candidate);
 }

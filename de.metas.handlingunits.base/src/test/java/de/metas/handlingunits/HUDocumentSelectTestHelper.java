@@ -1,6 +1,5 @@
 package de.metas.handlingunits;
 
-import static de.metas.business.BusinessTestHelper.createM_Attribute;
 import static de.metas.business.BusinessTestHelper.createWarehouse;
 
 /*
@@ -29,6 +28,7 @@ import java.math.BigDecimal;
 
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.mm.attributes.api.impl.AttributesTestHelper;
 import org.adempiere.model.I_C_POS_Profile;
 import org.adempiere.model.I_C_POS_Profile_Warehouse;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -144,7 +144,7 @@ public class HUDocumentSelectTestHelper extends HUTestHelper
 	 * A palet definition that can contains {@link #huDefIFCO2}.
 	 */
 	public I_M_HU_PI huDefPalet2;
-	
+
 	public HUDocumentSelectTestHelper()
 	{
 		super(false);
@@ -285,7 +285,7 @@ public class HUDocumentSelectTestHelper extends HUTestHelper
 			// Add some more Text attributes to this PI (just to see how it works in UI)
 			for (int i = 1; i <= 10; i++)
 			{
-				final I_M_Attribute attr_Text = createM_Attribute("Text" + i, X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40, true);
+				final I_M_Attribute attr_Text = new AttributesTestHelper().createM_Attribute("Text" + i, X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40, true);
 				createM_HU_PI_Attribute(new HUPIAttributeBuilder(attr_Text)
 						.setM_HU_PI(huDefNone));
 			}

@@ -133,9 +133,9 @@ public class VAccountAutoCompleter extends FieldAutoCompleter
 		final ICompositeQueryFilter<I_C_ValidCombination> filter =
 				Services.get(IQueryBL.class).createCompositeQueryFilter(I_C_ValidCombination.class)
 						.setJoinOr()
-						.addSubstringFilter(I_C_ValidCombination.COLUMNNAME_Alias, searchStringForFilter, ignoreCase)
-						.addSubstringFilter(I_C_ValidCombination.COLUMNNAME_Description, searchStringForFilter, ignoreCase)
-						.addSubstringFilter(I_C_ValidCombination.COLUMNNAME_Combination, searchStringForFilter, ignoreCase);
+						.addStringLikeFilter(I_C_ValidCombination.COLUMNNAME_Alias, searchStringForFilter, ignoreCase)
+						.addStringLikeFilter(I_C_ValidCombination.COLUMNNAME_Description, searchStringForFilter, ignoreCase)
+						.addStringLikeFilter(I_C_ValidCombination.COLUMNNAME_Combination, searchStringForFilter, ignoreCase);
 
 		final IQuery<I_C_ValidCombination> query = Services.get(IQueryBL.class).createQueryBuilder(I_C_ValidCombination.class, Env.getCtx(), ITrx.TRXNAME_None)
 				.addOnlyActiveRecordsFilter()

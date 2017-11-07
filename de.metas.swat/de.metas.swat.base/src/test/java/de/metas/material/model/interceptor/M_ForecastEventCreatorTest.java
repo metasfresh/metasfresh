@@ -8,6 +8,7 @@ import java.math.BigDecimal;
 import java.util.List;
 
 import org.adempiere.ad.modelvalidator.DocTimingType;
+import org.adempiere.mm.attributes.api.impl.ProductDescriptorFromAttributeSetInstanceFactory;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -18,9 +19,13 @@ import org.compiere.util.TimeUtil;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit4.SpringRunner;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.StartupListener;
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.document.engine.IDocument;
 import de.metas.material.event.MaterialDescriptor;
@@ -38,18 +43,19 @@ import de.metas.material.event.forecast.ForecastLine;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
+@RunWith(SpringRunner.class)
+@SpringBootTest(classes = { StartupListener.class, ProductDescriptorFromAttributeSetInstanceFactory.class })
 public class M_ForecastEventCreatorTest
 {
 	@Rule

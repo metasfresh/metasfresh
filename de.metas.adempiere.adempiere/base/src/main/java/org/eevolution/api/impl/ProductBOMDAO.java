@@ -66,7 +66,7 @@ public class ProductBOMDAO implements IProductBOMDAO
 		final IQueryBuilder<I_PP_Product_BOMLine> queryBuilder = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_PP_Product_BOMLine.class, ctx, trxName);
 
-		final ICompositeQueryFilter<I_PP_Product_BOMLine> filters = queryBuilder.getFilters();
+		final ICompositeQueryFilter<I_PP_Product_BOMLine> filters = queryBuilder.getCompositeFilter();
 		filters.addOnlyActiveRecordsFilter();
 		filters.addEqualsFilter(I_PP_Product_BOMLine.COLUMNNAME_PP_Product_BOM_ID, productBOM_ID);
 
@@ -143,7 +143,7 @@ public class ProductBOMDAO implements IProductBOMDAO
 		final IQueryBuilder<I_PP_Product_BOM> queryBuilder = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_PP_Product_BOM.class, ctx, trxName);
 
-		final ICompositeQueryFilter<I_PP_Product_BOM> filters = queryBuilder.getFilters();
+		final ICompositeQueryFilter<I_PP_Product_BOM> filters = queryBuilder.getCompositeFilter();
 		filters.addEqualsFilter(I_PP_Product_BOM.COLUMNNAME_M_Product_ID, productId);
 		filters.addEqualsFilter(I_PP_Product_BOM.COLUMNNAME_Value, productValue);
 		filters.addOnlyActiveRecordsFilter();
@@ -171,7 +171,7 @@ public class ProductBOMDAO implements IProductBOMDAO
 		final IQueryBuilder<I_PP_Product_BOM> queryBuilder = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_PP_Product_BOM.class, product);
 
-		final ICompositeQueryFilter<I_PP_Product_BOM> filters = queryBuilder.getFilters();
+		final ICompositeQueryFilter<I_PP_Product_BOM> filters = queryBuilder.getCompositeFilter();
 		filters.addEqualsFilter(I_PP_Product_BOM.COLUMNNAME_M_Product_ID, product.getM_Product_ID());
 		filters.addOnlyActiveRecordsFilter();
 

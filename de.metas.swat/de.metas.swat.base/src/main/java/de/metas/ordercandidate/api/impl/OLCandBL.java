@@ -1168,7 +1168,7 @@ public class OLCandBL implements IOLCandBL
 		Check.assumeNotNull(olCandCreator, "olCandCreator is not null");
 
 		final I_C_OLCand olCand = olCandCreator.createFrom(po);
-		if (po.set_ValueOfColumnReturningBoolean("Processed", true))
+		if (po.set_ValueOfColumn("Processed", true))
 		{
 			po.saveEx();
 		}
@@ -1241,9 +1241,9 @@ public class OLCandBL implements IOLCandBL
 
 	@Override
 	public IPricingResult computePriceActual(
-			final I_C_OLCand olCand, 
-			final BigDecimal qtyOverride, 
-			final int pricingSystemIdOverride, 
+			final I_C_OLCand olCand,
+			final BigDecimal qtyOverride,
+			final int pricingSystemIdOverride,
 			final Timestamp date)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(olCand);
@@ -1266,9 +1266,9 @@ public class OLCandBL implements IOLCandBL
 			final int bill_BPartner_ID = effectiveValuesBL.getBill_BPartner_Effective_ID(olCand);
 
 			final I_C_BPartner_Location dropShipLocation = effectiveValuesBL.getDropShip_Location_Effective(olCand);
-			
+
 			pricingCtx.setC_Country_ID(dropShipLocation.getC_Location().getC_Country_ID());
-			
+
 			final String trxName = InterfaceWrapperHelper.getTrxName(olCand);
 
 			final BigDecimal qty = qtyOverride != null ? qtyOverride : olCand.getQty();

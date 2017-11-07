@@ -175,9 +175,13 @@ public final class AdempiereBaseValidator extends AbstractModuleInterceptor
 		// #2895
 		engine.addModelValidator(AD_Ref_Table.instance, client);
 
+
 		// #2913
 		engine.addModelValidator(org.adempiere.ad.column.model.interceptor.AD_Column.instance, client);
-	}
+	
+
+		engine.addModelValidator(org.adempiere.mm.attributes.interceptor.M_AttributeValue.INSTANCE, client);	}
+
 
 	@Override
 	protected void registerCallouts(final IProgramaticCalloutProvider calloutsRegistry)
