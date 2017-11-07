@@ -52,13 +52,4 @@ public abstract class WEBUI_PP_Order_HUEditor_ProcessBase extends HUEditorProces
 		final PPOrderLinesView ppOrderView = viewsRepo.getView(parentViewId, PPOrderLinesView.class);
 		return Optional.of(ppOrderView);
 	}
-
-	protected final void invalidateViewsAndPrepareReturn()
-	{
-		invalidateView(); // picking slots view
-		invalidateParentView();  // picking view
-
-		// After this process finished successfully go back to picking slots view
-		getResult().setWebuiIncludedViewIdToOpen(getPPOrderView().get().getViewId().getViewId());
-	}
 }

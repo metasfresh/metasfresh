@@ -63,13 +63,12 @@ public class WEBUI_PP_Order_HUEditor_Create_M_Source_HUs
 	protected String doIt() throws Exception
 	{
 		final SourceHUsService sourceHuService = SourceHUsService.get();
-		
-		retrieveSelectedAndEligibleHUEditorRows().forEach(
-				huEditorRow -> {
-					sourceHuService.addSourceHuMarker(huEditorRow.getM_HU_ID());
-				});
 
-		invalidateViewsAndPrepareReturn();
+		retrieveSelectedAndEligibleHUEditorRows().forEach(huEditorRow -> sourceHuService.addSourceHuMarker(huEditorRow.getM_HU_ID()));
+
+		invalidateParentView();
+		invalidateView();
+		
 		return MSG_OK;
 	}
 }
