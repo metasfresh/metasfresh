@@ -38,7 +38,7 @@ public class DemandHandlerAuditEvent implements MaterialEvent
 	public static final String TYPE = "NoPlanFoundEvent";
 
 	@NonNull
-	private final EventDescr eventDescr;
+	private final EventDescriptor eventDescriptor;
 	
 	@NonNull
 	private final MaterialDescriptor descr;

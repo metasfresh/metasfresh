@@ -242,7 +242,7 @@ public final class ListUtils
 	 * @param filter filter used to match the element
 	 * @return matching element; returns null ONLY if the element is null
 	 */
-	public static <T> T singleElement(final Collection<T> collection, final org.adempiere.util.collections.Predicate<T> filter)
+	public static <T> T singleElement(final Collection<T> collection, final java.util.function.Predicate<T> filter)
 	{
 		Check.assumeNotEmpty(collection, "collection not empty");
 		Check.assumeNotNull(filter, "filter not null");
@@ -253,7 +253,7 @@ public final class ListUtils
 		while (it.hasNext())
 		{
 			final T e = it.next();
-			if (filter.evaluate(e))
+			if (filter.test(e))
 			{
 				result.add(e);
 			}

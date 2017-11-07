@@ -24,9 +24,9 @@ package de.metas.dunning.spi.impl;
 
 
 import java.util.Iterator;
+import java.util.function.Predicate;
 
 import org.adempiere.util.collections.FilterIterator;
-import org.adempiere.util.collections.Predicate;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
 
@@ -49,7 +49,7 @@ public abstract class AbstractDunnableSource implements IDunnableSource
 		{
 
 			@Override
-			public boolean evaluate(IDunnableDoc value)
+			public boolean test(IDunnableDoc value)
 			{
 				return isEligible(context, value);
 			}

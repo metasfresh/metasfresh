@@ -29,6 +29,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.function.Predicate;
 
 import org.adempiere.ad.dao.ConstantQueryFilter;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
@@ -43,7 +44,6 @@ import org.adempiere.facet.IFacetFilterable;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.collections.Predicate;
 import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.model.GridTab;
 import org.compiere.model.MQuery;
@@ -223,7 +223,7 @@ public class GridTabFacetFilterable<ModelType> implements IFacetFilterable<Model
 		for (final Map.Entry<IFacetCategory, IQueryFilter<ModelType>> facetCategory2filter : facetCategoryFilters.entrySet())
 		{
 			final IFacetCategory facetCategory = facetCategory2filter.getKey();
-			if (onlyFacetCategoriesPredicate != null && !onlyFacetCategoriesPredicate.evaluate(facetCategory))
+			if (onlyFacetCategoriesPredicate != null && !onlyFacetCategoriesPredicate.test(facetCategory))
 			{
 				continue;
 			}

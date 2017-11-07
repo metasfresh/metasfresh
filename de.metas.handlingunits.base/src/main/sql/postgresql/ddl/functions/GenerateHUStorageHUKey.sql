@@ -18,7 +18,7 @@ BEGIN
 			WHERE hu.M_HU_ID = huId
 			AND hua.IsActive='Y'
 			AND av.IsActive='Y'
-			AND a.IsMatchHUStorage='Y' -- Match significant attributes for HUStorage
+			AND a.IsStorageRelevant='Y' -- Match significant attributes for HUStorage
 			AND a.IsActive='Y'
 			GROUP BY a.M_Attribute_ID, av.Name
 			ORDER BY a.M_Attribute_ID, av.Name

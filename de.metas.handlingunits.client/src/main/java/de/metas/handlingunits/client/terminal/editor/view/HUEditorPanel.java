@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
+import java.util.function.Predicate;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
@@ -37,7 +38,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.collections.Predicate;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.DisplayType;
 
@@ -521,7 +521,7 @@ public class HUEditorPanel
 		model.doMoveToQualityWarehouse(new Predicate<QualityReturnsWarehouseModel>()
 		{
 			@Override
-			public boolean evaluate(final QualityReturnsWarehouseModel returnWarehouseModel)
+			public boolean test(final QualityReturnsWarehouseModel returnWarehouseModel)
 			{
 				final ReturnsWarehousePanel returnsWarehousePanel = new ReturnsWarehousePanel(getTerminalContext(), returnWarehouseModel);
 
@@ -556,7 +556,7 @@ public class HUEditorPanel
 		model.doMoveToAnotherWarehouse(new Predicate<MovementsAnyWarehouseModel>()
 		{
 			@Override
-			public boolean evaluate(final MovementsAnyWarehouseModel returnWarehouseModel)
+			public boolean test(final MovementsAnyWarehouseModel returnWarehouseModel)
 			{
 				final ReturnsWarehousePanel returnsWarehousePanel = new ReturnsWarehousePanel(getTerminalContext(), returnWarehouseModel);
 
@@ -776,7 +776,7 @@ public class HUEditorPanel
 		model.doAssignTULU(new Predicate<HUAssignTULUModel>()
 		{
 			@Override
-			public boolean evaluate(final HUAssignTULUModel assignTULUModel)
+			public boolean test(final HUAssignTULUModel assignTULUModel)
 			{
 				final HUAssignTULUPanel assignTULUPanel = new HUAssignTULUPanel(assignTULUModel);
 
@@ -806,7 +806,7 @@ public class HUEditorPanel
 		model.doDistributeCUTU(new Predicate<HUDistributeCUTUModel>()
 		{
 			@Override
-			public boolean evaluate(final HUDistributeCUTUModel distributeCUTUModel)
+			public boolean test(final HUDistributeCUTUModel distributeCUTUModel)
 			{
 				final HUDistributeCUTUPanel distributeCUTUPanel = new HUDistributeCUTUPanel(distributeCUTUModel);
 
@@ -836,7 +836,7 @@ public class HUEditorPanel
 		final Predicate<HUSplitModel> huSplitModel = new Predicate<HUSplitModel>()
 		{
 			@Override
-			public boolean evaluate(final HUSplitModel splitModel)
+			public boolean test(final HUSplitModel splitModel)
 			{
 				final HUSplitPanel splitPanel = new HUSplitPanel(splitModel);
 
@@ -867,7 +867,7 @@ public class HUEditorPanel
 		model.doJoin(new Predicate<HUJoinModel>()
 		{
 			@Override
-			public boolean evaluate(final HUJoinModel joinModel)
+			public boolean test(final HUJoinModel joinModel)
 			{
 				final HUJoinPanel joinPanel = new HUJoinPanel(joinModel);
 

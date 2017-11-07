@@ -25,6 +25,7 @@ package org.adempiere.util.collections;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
+import java.util.function.Predicate;
 
 import org.adempiere.util.Check;
 
@@ -81,7 +82,7 @@ public class ReturnWhileValidIterator<T> implements Iterator<T>, IteratorWrapper
 			return;
 		}
 
-		final boolean valid = isValidPredicate.evaluate(current);
+		final boolean valid = isValidPredicate.test(current);
 		if (!valid)
 		{
 			current = null;

@@ -1,11 +1,17 @@
 package de.metas.material.event.ddorder;
 
+import static de.metas.material.event.MaterialEventUtils.checkIdGreaterThanZero;
+
 import java.math.BigDecimal;
 
-import lombok.AllArgsConstructor;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.Preconditions;
+
+import de.metas.material.event.ProductDescriptor;
 import lombok.Builder;
-import lombok.Data;
 import lombok.NonNull;
+import lombok.Value;
 
 /*
  * #%L
@@ -28,30 +34,48 @@ import lombok.NonNull;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-@Data
+@Value
 @Builder
-@AllArgsConstructor // used by jackson when it deserializes a string
 public class DDOrderLine
 {
-	private final int salesOrderLineId;
+	int salesOrderLineId;
 
 	@NonNull
-	private final Integer productId;
+	ProductDescriptor productDescriptor;
 
-	
-	private final int attributeSetInstanceId;;
-	
 	@NonNull
-	private final BigDecimal qty;
+	BigDecimal qty;
 
 	/**
 	 * {@link DDOrder#getDatePromised()} minus this number of days tells us when the distribution for this particular line needs to start
 	 */
-	@NonNull
-	private final Integer durationDays;
-	
-	@NonNull
-	private final Integer networkDistributionLineId;
-	
+	private final int durationDays;
+
+	private final int networkDistributionLineId;
+
 	private final int ddOrderLineId;
+
+	@JsonCreator
+	public DDOrderLine(
+			@JsonProperty("salesOrderLineId") int salesOrderLineId,
+			@JsonProperty("productDescriptor") @NonNull final ProductDescriptor productDescriptor,
+			@JsonProperty("qty") @NonNull final BigDecimal qty,
+			@JsonProperty("durationDays") final int durationDays,
+			@JsonProperty("networkDistributionLineId") final int networkDistributionLineId,
+			@JsonProperty("ddOrderLineId") final int ddOrderLineId)
+	{
+		this.salesOrderLineId = salesOrderLineId;
+
+		productDescriptor.asssertCompleteness();
+		this.productDescriptor = productDescriptor;
+
+		this.qty = qty;
+
+		Preconditions.checkArgument(durationDays >= 0, "The Given parameter durationDays=%s needs to be > 0", "durationDays");
+		this.durationDays = durationDays;
+		this.networkDistributionLineId = checkIdGreaterThanZero("networkDistributionLineId", networkDistributionLineId);
+
+		this.ddOrderLineId = ddOrderLineId;
+	}
+
 }

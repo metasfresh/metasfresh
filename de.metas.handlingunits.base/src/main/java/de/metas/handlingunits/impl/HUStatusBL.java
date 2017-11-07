@@ -41,7 +41,7 @@ import lombok.NonNull;
 
 public class HUStatusBL implements IHUStatusBL
 {
-	private final static List<String> HUSTATUSES_QtyOnHand = ImmutableList.of(
+	private final static List<String> HU_STATUSES_THAT_COUNT_FOR_QTY_ON_HAND = ImmutableList.of(
 			X_M_HU.HUSTATUS_Active,
 			X_M_HU.HUSTATUS_Picked,
 			X_M_HU.HUSTATUS_Issued);
@@ -80,18 +80,19 @@ public class HUStatusBL implements IHUStatusBL
 
 	private final static List<String> ALLOWED_STATUSES_FOR_LOCATOR_CHANGE = ImmutableList.of(
 			X_M_HU.HUSTATUS_Planning,
+			X_M_HU.HUSTATUS_Picked, // a HU can be commissioned/picked anywhere, and it still needs to be moved and afterwards
 			X_M_HU.HUSTATUS_Active);
 
 	@Override
 	public boolean isQtyOnHand(final String huStatus)
 	{
-		return HUSTATUSES_QtyOnHand.contains(huStatus);
+		return HU_STATUSES_THAT_COUNT_FOR_QTY_ON_HAND.contains(huStatus);
 	}
 
 	@Override
 	public List<String> getQtyOnHandStatuses()
 	{
-		return HUSTATUSES_QtyOnHand;
+		return HU_STATUSES_THAT_COUNT_FOR_QTY_ON_HAND;
 	}
 
 	@Override

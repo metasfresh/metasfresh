@@ -1,5 +1,7 @@
 package org.adempiere.util.collections;
 
+import java.util.function.Predicate;
+
 /*
  * #%L
  * de.metas.util
@@ -49,7 +51,7 @@ public final class NullPredicate implements Predicate<Object>
 	 * @return true
 	 */
 	@Override
-	public final boolean evaluate(final Object value)
+	public final boolean test(final Object value)
 	{
 		return true;
 	}

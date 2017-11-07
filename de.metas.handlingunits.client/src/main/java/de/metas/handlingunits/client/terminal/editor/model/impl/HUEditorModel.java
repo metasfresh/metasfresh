@@ -35,6 +35,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
@@ -47,7 +48,6 @@ import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.adempiere.util.beans.WeakPropertyChangeSupport;
-import org.adempiere.util.collections.Predicate;
 import org.compiere.model.I_M_Movement;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
@@ -143,7 +143,7 @@ public class HUEditorModel implements IDisposable
 	public static final Predicate<IHUKey> HUKeyFilter_WeightableButNotWeighted = new Predicate<IHUKey>()
 	{
 		@Override
-		public boolean evaluate(final IHUKey huKey)
+		public boolean test(final IHUKey huKey)
 		{
 			// guard against null
 			if (huKey == null)
@@ -557,7 +557,7 @@ public class HUEditorModel implements IDisposable
 
 		//
 		// Do nothing & keep selection if the user cancelled
-		final boolean edited = editorCallback.evaluate(assignLUTUModel);
+		final boolean edited = editorCallback.test(assignLUTUModel);
 		if (!edited)
 		{
 			return;
@@ -604,7 +604,7 @@ public class HUEditorModel implements IDisposable
 
 		//
 		// Do nothing & keep selection if the user cancelled
-		final boolean edited = editorCallback.evaluate(distributeCUTUModel);
+		final boolean edited = editorCallback.test(distributeCUTUModel);
 		if (!edited)
 		{
 			return;
@@ -632,7 +632,7 @@ public class HUEditorModel implements IDisposable
 		Check.assumeNotNull(editorCallback, "editorCallback not null");
 		final HUSplitModel splitModel = createSplitModel();
 
-		final boolean edited = editorCallback.evaluate(splitModel);
+		final boolean edited = editorCallback.test(splitModel);
 		if (!edited)
 		{
 			//
@@ -660,7 +660,7 @@ public class HUEditorModel implements IDisposable
 		Check.assumeNotNull(editorCallback, "editorCallback not null");
 		final HUJoinModel joinModel = createJoinModel();
 
-		editorCallback.evaluate(joinModel);
+		editorCallback.test(joinModel);
 
 		//
 		// Refresh root key regardless of outcome (user might have just merged!)
@@ -1040,7 +1040,7 @@ public class HUEditorModel implements IDisposable
 			}
 
 			// If there is a filter, ask it we accepts current Key
-			if (filter != null && !filter.evaluate(key))
+			if (filter != null && !filter.test(key))
 			{
 				logger.debug("getSelectedHUKeys: this-ID={} skipping key={} because the given filter={} evaluated to false; this={}", System.identityHashCode(this), key, filter, this);
 				continue;
@@ -1396,7 +1396,7 @@ public class HUEditorModel implements IDisposable
 
 		//
 		// Do nothing & keep selection if the user cancelled
-		final boolean edited = editorCallback.evaluate(returnsWarehouseModel);
+		final boolean edited = editorCallback.test(returnsWarehouseModel);
 		if (!edited)
 		{
 			return Collections.emptyList();
@@ -1431,7 +1431,7 @@ public class HUEditorModel implements IDisposable
 
 		//
 		// Do nothing & keep selection if the user cancelled
-		final boolean edited = editorCallback.evaluate(returnsWarehouseModel);
+		final boolean edited = editorCallback.test(returnsWarehouseModel);
 		if (!edited)
 		{
 			return Collections.emptyList();

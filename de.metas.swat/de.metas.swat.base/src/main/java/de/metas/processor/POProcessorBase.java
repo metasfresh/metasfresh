@@ -10,18 +10,17 @@ package de.metas.processor;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import org.adempiere.util.Services;
 import org.compiere.model.MClient;
@@ -30,9 +29,9 @@ import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.PO;
 import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import de.metas.adempiere.service.IPOProcessorBL;
+import de.metas.logging.LogManager;
 import de.metas.processor.spi.IPOProcessor;
 
 public class POProcessorBase implements ModelValidator
@@ -83,32 +82,17 @@ public class POProcessorBase implements ModelValidator
 		final IPOProcessor processor = Services.get(IPOProcessorBL.class).retrieveProcessorForPO(po);
 		if (processor == null)
 		{
-			final String msg =
-					"Unable to process '" + po + "'; Missing IOLCandCreator implmentation for table '" + MTable.getTableName(po.getCtx(), po.get_Table_ID()) + "'";
+			final String msg = "Unable to process '" + po + "'; Missing IOLCandCreator implmentation for table '" + MTable.getTableName(po.getCtx(), po.get_Table_ID()) + "'";
 			logger.warn(msg);
 			return msg;
 		}
 
 		boolean processed = processor.process(po);
-		// if (result == null || result.isEmpty())
-		// {
-		// logger.info(processor + " returned null for " + po + "; Nothing to do.");
-		// return null;
-		// }
 
-		if (processed)
+		if (processed && po.set_ValueOfColumn("Processed", true))
 		{
-			if (po.set_ValueOfColumnReturningBoolean("Processed", true))
-			{
-				po.saveEx();
-			}
+			po.saveEx();
 		}
-
-		// if (!Util.isEmpty(olCandCreator.getRelationTypeInternalName()))
-		// {
-		// MRelation.add(po.getCtx(), olCandCreator.getRelationTypeInternalName(), po.get_ID(), olCand.get_ID(),
-		// po.get_TrxName());
-		// }
 
 		return null;
 	}

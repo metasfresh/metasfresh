@@ -5,9 +5,9 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import de.metas.logging.LogManager;
+import de.metas.material.event.MaterialDemandEvent;
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.MaterialEventListener;
-import de.metas.material.event.MaterialDemandEvent;
 import lombok.NonNull;
 
 /*
@@ -62,6 +62,6 @@ public class MaterialDemandEventListener implements MaterialEventListener
 
 		final MaterialDemandEvent materialDemandEvent = (MaterialDemandEvent)event;
 
-		commonDemandHandler.handleMaterialDemandEvent(materialDemandEvent.getMaterialDemandDescr());
+		commonDemandHandler.handleMaterialDemandEvent(materialDemandEvent.getMaterialDemandDescriptor());
 	}
 }

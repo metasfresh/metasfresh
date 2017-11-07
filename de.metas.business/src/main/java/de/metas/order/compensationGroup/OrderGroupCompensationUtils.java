@@ -67,7 +67,7 @@ public class OrderGroupCompensationUtils
 
 	public static boolean isInGroup(final I_C_OrderLine orderLine)
 	{
-		return orderLine.getGroupNo() > 0;
+		return orderLine.getC_Order_CompensationGroup_ID() > 0;
 	}
 
 	public static BigDecimal adjustAmtByCompensationType(@NonNull final BigDecimal compensationAmt, @NonNull final GroupCompensationType compensationType)

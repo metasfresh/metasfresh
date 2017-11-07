@@ -13,8 +13,9 @@ import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
 
 import de.metas.document.engine.IDocumentBL;
-import de.metas.material.event.EventDescr;
+import de.metas.material.event.EventDescriptor;
 import de.metas.material.event.MaterialEventService;
+import de.metas.material.event.ProductDescriptorFactory;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrder.PPOrderBuilder;
 import de.metas.material.event.pporder.PPOrderLine;
@@ -49,6 +50,9 @@ public class PP_OrderFireMaterialEvent
 			// this doesn't help when a PP_Order is reactivated
 			return;
 		}
+
+		final ProductDescriptorFactory productDescriptorFactory = Adempiere.getBean(ProductDescriptorFactory.class);
+
 		final PPOrderBuilder ppOrderPojoBuilder = PPOrder.builder()
 				.datePromised(ppOrder.getDatePromised())
 				.dateStartSchedule(ppOrder.getDateStartSchedule())
@@ -57,7 +61,7 @@ public class PP_OrderFireMaterialEvent
 				.orgId(ppOrder.getAD_Org_ID())
 				.plantId(ppOrder.getS_Resource_ID())
 				.ppOrderId(ppOrder.getPP_Order_ID())
-				.productId(ppOrder.getM_Product_ID())
+				.productDescriptor(productDescriptorFactory.createProductDescriptor(ppOrder))
 				.productPlanningId(ppOrder.getPP_Product_Planning_ID())
 				.quantity(ppOrder.getQtyOrdered())
 				.uomId(ppOrder.getC_UOM_ID())
@@ -68,18 +72,17 @@ public class PP_OrderFireMaterialEvent
 		for (final I_PP_Order_BOMLine line : orderBOMLines)
 		{
 			ppOrderPojoBuilder.line(PPOrderLine.builder()
-					.attributeSetInstanceId(line.getM_AttributeSetInstance_ID())
+					.productDescriptor(productDescriptorFactory.createProductDescriptor(line))
 					.description(line.getDescription())
 					.ppOrderLineId(line.getPP_Order_BOMLine_ID())
 					.productBomLineId(line.getPP_Product_BOMLine_ID())
-					.productId(line.getM_Product_ID())
 					.qtyRequired(line.getQtyRequiered())
 					.receipt(PPOrderUtil.isReceipt(line.getComponentType()))
 					.build());
 		}
 
 		final ProductionPlanEvent event = ProductionPlanEvent.builder()
-				.eventDescr(EventDescr.createNew(ppOrder))
+				.eventDescriptor(EventDescriptor.createNew(ppOrder))
 				.ppOrder(ppOrderPojoBuilder.build())
 				// .reference(reference) // we don't know the reference here, but we expect that the event-receiver (i.e. material-dispo) will be able to sort out which record(s) to update via date, orderLineId etc
 				.build();

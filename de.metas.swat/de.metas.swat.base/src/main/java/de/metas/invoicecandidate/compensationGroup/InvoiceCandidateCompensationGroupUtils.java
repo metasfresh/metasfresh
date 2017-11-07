@@ -46,7 +46,7 @@ public class InvoiceCandidateCompensationGroupUtils
 
 	public static boolean isInGroup(final I_C_Invoice_Candidate invoiceCandidate)
 	{
-		return invoiceCandidate.getGroupNo() > 0;
+		return invoiceCandidate.getC_Order_CompensationGroup_ID() > 0;
 	}
 
 	public static void assertCompensationLine(final I_C_Invoice_Candidate invoiceCandidate)

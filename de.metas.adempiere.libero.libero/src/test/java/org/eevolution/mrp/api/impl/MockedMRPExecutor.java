@@ -126,7 +126,7 @@ public class MockedMRPExecutor extends MRPExecutor
 		}
 		else
 		{
-			allowMRPNote = allowMRPNoteMatchers.evaluate(note);
+			allowMRPNote = allowMRPNoteMatchers.test(note);
 		}
 		return allowMRPNote;
 	}

@@ -25,8 +25,8 @@ package de.metas.picking.legacy.form;
 import java.util.Date;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.function.Predicate;
 
-import org.adempiere.util.collections.Predicate;
 import org.compiere.util.TimeUtil;
 
 /**
@@ -46,7 +46,7 @@ import org.compiere.util.TimeUtil;
 	 * @return always <code>false</code>.
 	 */
 	@Override
-	public boolean evaluate(final TableRow tableRow)
+	public boolean test(final TableRow tableRow)
 	{
 		Date deliveryDate = tableRow.getDeliveryDate();
 		if (deliveryDate == null)

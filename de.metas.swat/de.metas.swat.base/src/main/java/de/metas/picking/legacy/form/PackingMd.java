@@ -35,12 +35,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Predicate;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.collections.Predicate;
 import org.compiere.apps.ADialog;
 import org.compiere.minigrid.IDColumn;
 import org.compiere.minigrid.IMiniTable;
@@ -326,7 +326,7 @@ public class PackingMd extends MvcMdGenForm
 
 			for (final TableRow currentRow : selectedRows)
 			{
-				if (filter != null && !filter.evaluate(currentRow))
+				if (filter != null && !filter.test(currentRow))
 				{
 					continue;
 				}
@@ -348,7 +348,7 @@ public class PackingMd extends MvcMdGenForm
 		return rowsByKey.values()
 				.stream()
 				.sequential()
-				.filter(row -> filter == null || filter.evaluate(row))
+				.filter(row -> filter == null || filter.test(row))
 				.collect(ImmutableList.toImmutableList());
 	}
 
