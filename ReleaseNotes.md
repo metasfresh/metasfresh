@@ -54,14 +54,19 @@ Here come the actual release notes:
 
 * metasfresh-webui-api
   * [#19](https://github.com/metasfresh/metasfresh-webui-api/issues/19) Cache invalidation
+    * Improvement of Cache Invalidation in WebUI.
   * [#652](https://github.com/metasfresh/metasfresh-webui-api/issues/652) Implement document discardChanges endpoint
+    * Endpoint Implementation for the possibility of discarding document changes. This endpoint will be used by a new cancel button in WebUI.
 
 * metasfresh-webui-frontend
   * [#1295](https://github.com/metasfresh/metasfresh-webui-api/issues/653) metasfresh.webui.debug.showColumnNamesForCaption shall be false by default
+    * Fix in WebUI Frontend, switching the Developer Mode off by default.
   * [#1303](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1303) Change the hostname from config.js.dist to localhost
+    * Internal Housekeeping Issue, switching Hostnames on config.js for easier maintenance.
   
 * other
   * [metasfresh-dist-orgs#82](https://github.com/metasfresh/metasfresh-dist-orgs/issues/82) Invoice Medium Address Layout Changes
+    * Further Layout adjustments in Invoice Document. 
 
 ## Fixes
 
