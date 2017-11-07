@@ -7,15 +7,17 @@ import java.util.Set;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
-import de.metas.material.dispo.CandidateRepository;
-import de.metas.material.dispo.CandidateService;
-import de.metas.material.dispo.CandidateSpecification.Status;
-import de.metas.material.dispo.CandidateSpecification.SubType;
-import de.metas.material.dispo.CandidateSpecification.Type;
-import de.metas.material.dispo.candidate.Candidate;
-import de.metas.material.dispo.candidate.DemandDetail;
-import de.metas.material.dispo.candidate.DistributionDetail;
-import de.metas.material.dispo.CandidatesQuery;
+import de.metas.material.dispo.commons.CandidateService;
+import de.metas.material.dispo.commons.CandidatesQuery;
+
+import de.metas.material.dispo.commons.candidate.Candidate;
+import de.metas.material.dispo.commons.candidate.CandidateStatus;
+import de.metas.material.dispo.commons.candidate.CandidateSubType;
+import de.metas.material.dispo.commons.candidate.CandidateType;
+import de.metas.material.dispo.commons.candidate.DemandDetail;
+import de.metas.material.dispo.commons.candidate.DistributionDetail;
+import de.metas.material.dispo.commons.repository.CandidateRepositoryCommands;
+import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.dispo.service.event.EventUtil;
 import de.metas.material.dispo.service.event.SupplyProposalEvaluator;
@@ -50,19 +52,15 @@ import lombok.NonNull;
 @Service
 public class DistributionPlanEventHandler
 {
-	private final CandidateRepository candidateRepository;
+	private final CandidateRepositoryRetrieval candidateRepository;
+	private final CandidateRepositoryCommands candidateRepositoryCommands;
 	private final SupplyProposalEvaluator supplyProposalEvaluator;
 	private final CandidateChangeService candidateChangeHandler;
 	private final CandidateService candidateService;
 
-	/**
-	 * 
-	 * @param candidateRepository
-	 * @param candidateChangeHandler
-	 * @param supplyProposalEvaluator
-	 */
 	public DistributionPlanEventHandler(
-			@NonNull final CandidateRepository candidateRepository,
+			@NonNull final CandidateRepositoryRetrieval candidateRepository,
+			@NonNull final CandidateRepositoryCommands candidateRepositoryCommands,
 			@NonNull final CandidateChangeService candidateChangeHandler,
 			@NonNull final SupplyProposalEvaluator supplyProposalEvaluator,
 			@NonNull final CandidateService candidateService)
@@ -70,16 +68,17 @@ public class DistributionPlanEventHandler
 		this.candidateService = candidateService;
 		this.candidateChangeHandler = candidateChangeHandler;
 		this.candidateRepository = candidateRepository;
+		this.candidateRepositoryCommands = candidateRepositoryCommands;
 		this.supplyProposalEvaluator = supplyProposalEvaluator;
 	}
 
 	public void handleDistributionPlanEvent(final DistributionPlanEvent distributionPlanEvent)
 	{
 		final DDOrder ddOrder = distributionPlanEvent.getDdOrder();
-		final Status candidateStatus;
+		final CandidateStatus candidateStatus;
 		if (ddOrder.getDdOrderId() <= 0)
 		{
-			candidateStatus = Status.doc_planned;
+			candidateStatus = CandidateStatus.doc_planned;
 		}
 		else
 		{
@@ -94,7 +93,7 @@ public class DistributionPlanEventHandler
 
 			final SupplyProposal proposal = SupplyProposal.builder()
 					.date(orderLineStartDate)
-					.productId(ddOrderLine.getProductId())
+					.productDescriptor(ddOrderLine.getProductDescriptor())
 					.destWarehouseId(distributionPlanEvent.getToWarehouseId())
 					.sourceWarehouseId(distributionPlanEvent.getFromWarehouseId())
 					.build();
@@ -108,17 +107,18 @@ public class DistributionPlanEventHandler
 			}
 
 			final MaterialDescriptor materialDescriptor = MaterialDescriptor.builder()
+					.complete(true)
 					.date(ddOrder.getDatePromised())
-					.productId(ddOrderLine.getProductId())
+					.productDescriptor(ddOrderLine.getProductDescriptor())
 					.quantity(ddOrderLine.getQty())
 					.warehouseId(distributionPlanEvent.getToWarehouseId())
 					.build();
 
-			final Candidate supplyCandidate = Candidate.builderForEventDescr(distributionPlanEvent.getEventDescr())
-					.type(Type.SUPPLY)
+			final Candidate supplyCandidate = Candidate.builderForEventDescr(distributionPlanEvent.getEventDescriptor())
+					.type(CandidateType.SUPPLY)
 					.status(candidateStatus)
-					.subType(SubType.DISTRIBUTION)
-					.materialDescr(materialDescriptor)
+					.subType(CandidateSubType.DISTRIBUTION)
+					.materialDescriptor(materialDescriptor)
 					.demandDetail(DemandDetail.forOrderLineIdOrNull(ddOrderLine.getSalesOrderLineId()))
 					.distributionDetail(createCandidateDetailFromDDOrderAndLine(ddOrder, ddOrderLine))
 					.build();
@@ -137,7 +137,7 @@ public class DistributionPlanEventHandler
 			final Integer groupId = supplyCandidateWithId.getGroupId();
 
 			final Candidate demandCandidate = supplyCandidate
-					.withType(Type.DEMAND)
+					.withType(CandidateType.DEMAND)
 					.withGroupId(groupId)
 					.withParentId(supplyCandidateWithId.getId())
 					.withQuantity(supplyCandidateWithId.getQuantity()) // what was added as supply in the destination warehouse needs to be registered as demand in the source warehouse
@@ -151,13 +151,14 @@ public class DistributionPlanEventHandler
 			if (expectedSeqNoForDemandCandidate != demandCandidateWithId.getSeqNo())
 			{
 				// update/override the SeqNo of both supplyCandidate and supplyCandidate's stock candidate.
-				candidateRepository.addOrUpdateOverwriteStoredSeqNo(supplyCandidateWithId
-						.withSeqNo(demandCandidateWithId.getSeqNo() - 1));
+				candidateRepositoryCommands
+						.addOrUpdateOverwriteStoredSeqNo(supplyCandidateWithId
+								.withSeqNo(demandCandidateWithId.getSeqNo() - 1));
 
 				final Candidate parentOfSupplyCandidate = candidateRepository
 						.retrieveLatestMatchOrNull(CandidatesQuery.fromId(supplyCandidateWithId.getParentId()));
 
-				candidateRepository
+				candidateRepositoryCommands
 						.addOrUpdateOverwriteStoredSeqNo(
 								parentOfSupplyCandidate
 										.withSeqNo(demandCandidateWithId.getSeqNo() - 2));

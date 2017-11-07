@@ -2,6 +2,11 @@ package de.metas.material.event.forecast;
 
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+import static de.metas.material.event.MaterialEventUtils.checkIdGreaterThanZero;
+
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -20,11 +25,11 @@ import lombok.Value;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -34,10 +39,21 @@ import lombok.Value;
 public class Forecast
 {
 	int forecastId;
-	
-	@NonNull
+
 	String docStatus;
-	
+
 	@Singular
 	List<ForecastLine> forecastLines;
+
+	@JsonCreator
+	public Forecast(
+			@JsonProperty("forecastId") final int forecastId, 
+			@JsonProperty("docStatus") @NonNull final String docStatus, 
+			@JsonProperty("forecastLines") final List<ForecastLine> forecastLines)
+	{
+		this.forecastId = checkIdGreaterThanZero("forecastId", forecastId);
+		this.docStatus = docStatus;
+		this.forecastLines = forecastLines;
+	}
+
 }

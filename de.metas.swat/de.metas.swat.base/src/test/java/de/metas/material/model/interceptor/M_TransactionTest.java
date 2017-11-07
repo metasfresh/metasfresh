@@ -9,6 +9,7 @@ import java.sql.Timestamp;
 import java.util.List;
 
 import org.adempiere.ad.modelvalidator.ModelChangeType;
+import org.adempiere.mm.attributes.api.impl.ModelProductDescriptorExtactorUsingAttributeSetInstanceFactory;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_M_Locator;
@@ -18,7 +19,11 @@ import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.X_M_Transaction;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit4.SpringRunner;
 
+import de.metas.StartupListener;
 import de.metas.business.BusinessTestHelper;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.material.event.TransactionEvent;
@@ -33,18 +38,20 @@ import de.metas.material.event.TransactionEvent;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
+@RunWith(SpringRunner.class)
+@SpringBootTest(classes = { StartupListener.class, ModelProductDescriptorExtactorUsingAttributeSetInstanceFactory.class })
 public class M_TransactionTest
 {
 
@@ -73,7 +80,7 @@ public class M_TransactionTest
 		final List<TransactionEvent> events = M_Transaction.createTransactionEvents(transaction, ModelChangeType.AFTER_NEW);
 		final TransactionEvent event = events.get(0);
 		assertCommon(transaction, event);
-		assertThat(event.getMaterialDescr().getQuantity()).isEqualByComparingTo("-10");
+		assertThat(event.getMaterialDescriptor().getQuantity()).isEqualByComparingTo("-10");
 		assertThat(event.getShipmentScheduleId()).isZero();
 	}
 
@@ -93,7 +100,7 @@ public class M_TransactionTest
 		final List<TransactionEvent> events = M_Transaction.createTransactionEvents(transaction, ModelChangeType.AFTER_NEW);
 		final TransactionEvent event = events.get(0);
 		assertCommon(transaction, event);
-		assertThat(event.getMaterialDescr().getQuantity()).isEqualByComparingTo("-10");
+		assertThat(event.getMaterialDescriptor().getQuantity()).isEqualByComparingTo("-10");
 		assertThat(event.getShipmentScheduleId()).isEqualTo(20);
 	}
 
@@ -115,12 +122,12 @@ public class M_TransactionTest
 
 		final TransactionEvent event = events.get(0);
 		assertCommon(transaction, event);
-		assertThat(event.getMaterialDescr().getQuantity()).isEqualByComparingTo("-9");
+		assertThat(event.getMaterialDescriptor().getQuantity()).isEqualByComparingTo("-9");
 		assertThat(event.getShipmentScheduleId()).isZero();
 
 		final TransactionEvent event1 = events.get(1);
 		assertCommon(transaction, event1);
-		assertThat(event1.getMaterialDescr().getQuantity()).isEqualByComparingTo("-1");
+		assertThat(event1.getMaterialDescriptor().getQuantity()).isEqualByComparingTo("-1");
 		assertThat(event1.getShipmentScheduleId()).isEqualTo(20);
 	}
 
@@ -154,17 +161,17 @@ public class M_TransactionTest
 
 		final TransactionEvent event = events.get(0);
 		assertCommon(transaction, event);
-		assertThat(event.getMaterialDescr().getQuantity()).isEqualByComparingTo("-7");
+		assertThat(event.getMaterialDescriptor().getQuantity()).isEqualByComparingTo("-7");
 		assertThat(event.getShipmentScheduleId()).isZero();
 
 		final TransactionEvent event1 = events.get(1);
 		assertCommon(transaction, event1);
-		assertThat(event1.getMaterialDescr().getQuantity()).isEqualByComparingTo("-1");
+		assertThat(event1.getMaterialDescriptor().getQuantity()).isEqualByComparingTo("-1");
 		assertThat(event1.getShipmentScheduleId()).isEqualTo(20);
 
 		final TransactionEvent event2 = events.get(2);
 		assertCommon(transaction, event2);
-		assertThat(event2.getMaterialDescr().getQuantity()).isEqualByComparingTo("-2");
+		assertThat(event2.getMaterialDescriptor().getQuantity()).isEqualByComparingTo("-2");
 		assertThat(event2.getShipmentScheduleId()).isEqualTo(21);
 	}
 
@@ -184,8 +191,8 @@ public class M_TransactionTest
 	{
 		assertThat(result).isNotNull();
 		assertThat(result.getTransactionId()).isEqualTo(transaction.getM_Transaction_ID());
-		assertThat(result.getMaterialDescr().getWarehouseId()).isEqualTo(wh.getM_Warehouse_ID());
-		assertThat(result.getMaterialDescr().getProductId()).isEqualTo(product.getM_Product_ID());
-		assertThat(result.getMaterialDescr().getDate()).isEqualTo(movementDate);
+		assertThat(result.getMaterialDescriptor().getWarehouseId()).isEqualTo(wh.getM_Warehouse_ID());
+		assertThat(result.getMaterialDescriptor().getProductId()).isEqualTo(product.getM_Product_ID());
+		assertThat(result.getMaterialDescriptor().getDate()).isEqualTo(movementDate);
 	}
 }

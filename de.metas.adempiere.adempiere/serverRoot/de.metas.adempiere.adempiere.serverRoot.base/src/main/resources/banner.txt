@@ -6,6 +6,7 @@
 | | | | | |  __/ || (_| \__ \ | | | |  __/\__ \ | | |          | |_) | (_| | (__|   <  __/ | | | (_| |
 |_| |_| |_|\___|\__\__,_|___/_| |_|  \___||___/_| |_|          |_.__/ \__,_|\___|_|\_\___|_| |_|\__,_|
 
+..also known as metasfresh-app
 ${AnsiStyle.NORMAL}
 METASFRESH-INFO: ${application.title} | ${application.formatted-version} | SpringBoot version ${spring-boot.formatted-version}
 BUILD-INFO: build [${info.build.ciBuildNo:local}], tag [${info.build.ciBuildTag:none}], job [${info.build.ciJobName:none}]

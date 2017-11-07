@@ -8,15 +8,15 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 
-import de.metas.material.dispo.CandidateRepository;
-import de.metas.material.dispo.CandidateSpecification.Type;
-import de.metas.material.dispo.candidate.Candidate;
-import de.metas.material.dispo.candidate.DemandDetail;
-import de.metas.material.dispo.candidate.TransactionDetail;
-import de.metas.material.dispo.candidate.Candidate.CandidateBuilder;
-import de.metas.material.dispo.CandidatesQuery;
-import de.metas.material.dispo.CandidatesQuery.DateOperator;
+import de.metas.material.dispo.commons.CandidatesQuery;
+import de.metas.material.dispo.commons.candidate.Candidate;
+import de.metas.material.dispo.commons.candidate.CandidateType;
+import de.metas.material.dispo.commons.candidate.DemandDetail;
+import de.metas.material.dispo.commons.candidate.TransactionDetail;
+import de.metas.material.dispo.commons.candidate.Candidate.CandidateBuilder;
+import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
+import de.metas.material.event.MaterialDescriptor.DateOperator;
 import de.metas.material.event.TransactionEvent;
 import lombok.NonNull;
 
@@ -45,11 +45,11 @@ import lombok.NonNull;
 public class TransactionEventHandler
 {
 	private final CandidateChangeService candidateChangeHandler;
-	private final CandidateRepository candidateRepository;
+	private final CandidateRepositoryRetrieval candidateRepository;
 
 	public TransactionEventHandler(
 			@NonNull final CandidateChangeService candidateChangeHandler,
-			@NonNull final CandidateRepository candidateRepository)
+			@NonNull final CandidateRepositoryRetrieval candidateRepository)
 	{
 		this.candidateChangeHandler = candidateChangeHandler;
 		this.candidateRepository = candidateRepository;
@@ -64,14 +64,17 @@ public class TransactionEventHandler
 	@VisibleForTesting
 	Candidate createCandidateForTransactionEvent(@NonNull final TransactionEvent event)
 	{
-		final TransactionDetail transactionDetailOfEvent = TransactionDetail.forCandidateOrQuery(event.getMaterialDescr().getQuantity(), event.getTransactionId());
+		final TransactionDetail transactionDetailOfEvent = TransactionDetail
+				.forCandidateOrQuery(
+						event.getMaterialDescriptor().getQuantity(), 
+						event.getTransactionId());
 
 		final Candidate candidate;
 		if (event.getShipmentScheduleId() > 0)
 		{
 			final DemandDetail demandDetail = DemandDetail.forShipmentScheduleIdAndOrderLineId(event.getShipmentScheduleId(), -1);
 
-			final CandidatesQuery query = CandidatesQuery.builder().type(Type.DEMAND)
+			final CandidatesQuery query = CandidatesQuery.builder().type(CandidateType.DEMAND)
 					.demandDetail(demandDetail) // only search via demand detail, ..the product and warehouse will also match, but e.g. the date probably won't!
 					.build();
 
@@ -93,8 +96,9 @@ public class TransactionEventHandler
 		else
 		{
 			final CandidatesQuery query = CandidatesQuery.builder()
-					.materialDescr(event.getMaterialDescr().withoutQuantity())
-					.dateOperator(DateOperator.AT)
+					.materialDescriptor(event.getMaterialDescriptor()
+							.withoutQuantity()
+							.withDateOperator(DateOperator.AT)							)
 					.transactionDetail(TransactionDetail.forQuery(event.getTransactionId()))
 					.build();
 			final Candidate existingCandidate = candidateRepository.retrieveLatestMatchOrNull(query);
@@ -142,19 +146,19 @@ public class TransactionEventHandler
 	@VisibleForTesting
 	static CandidateBuilder createCommonCandidateBuilder(@NonNull final TransactionEvent event)
 	{
-		final BigDecimal eventQuantity = event.getMaterialDescr().getQuantity();
+		final BigDecimal eventQuantity = event.getMaterialDescriptor().getQuantity();
 
 		final CandidateBuilder builder = Candidate
-				.builderForEventDescr(event.getEventDescr());
+				.builderForEventDescr(event.getEventDescriptor());
 		if (eventQuantity.signum() <= 0)
 		{
-			return builder.type(Type.UNRELATED_DECREASE)
-					.materialDescr(event.getMaterialDescr().withQuantity(eventQuantity.negate()));
+			return builder.type(CandidateType.UNRELATED_DECREASE)
+					.materialDescriptor(event.getMaterialDescriptor().withQuantity(eventQuantity.negate()));
 		}
 		else
 		{
-			return builder.type(Type.UNRELATED_INCREASE)
-					.materialDescr(event.getMaterialDescr());
+			return builder.type(CandidateType.UNRELATED_INCREASE)
+					.materialDescriptor(event.getMaterialDescriptor());
 		}
 	}
 

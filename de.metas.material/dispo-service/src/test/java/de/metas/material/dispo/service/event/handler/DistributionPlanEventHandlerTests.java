@@ -1,7 +1,9 @@
 package de.metas.material.dispo.service.event.handler;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static de.metas.material.event.EventTestHelper.CLIENT_ID;
+import static de.metas.material.event.EventTestHelper.ORG_ID;
+import static de.metas.material.event.EventTestHelper.PRODUCT_ID;
+import static de.metas.material.event.EventTestHelper.createProductDescriptor;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
@@ -12,7 +14,6 @@ import java.util.stream.Collectors;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.util.time.SystemTime;
-import org.compiere.model.I_AD_Org;
 import org.compiere.util.TimeUtil;
 import org.junit.Before;
 import org.junit.Rule;
@@ -21,10 +22,12 @@ import org.junit.rules.TestWatcher;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.material.dispo.CandidateRepository;
-import de.metas.material.dispo.CandidateService;
-import de.metas.material.dispo.CandidateSpecification.Type;
-import de.metas.material.dispo.DispoTestUtils;
+import de.metas.material.dispo.commons.CandidateService;
+import de.metas.material.dispo.commons.DispoTestUtils;
+import de.metas.material.dispo.commons.RepositoryTestHelper;
+import de.metas.material.dispo.commons.candidate.CandidateType;
+import de.metas.material.dispo.commons.repository.CandidateRepositoryCommands;
+import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
@@ -32,7 +35,7 @@ import de.metas.material.dispo.service.candidatechange.handler.DemandCandiateHan
 import de.metas.material.dispo.service.candidatechange.handler.SupplyCandiateHandler;
 import de.metas.material.dispo.service.event.MaterialDispoEventListenerFacade;
 import de.metas.material.dispo.service.event.SupplyProposalEvaluator;
-import de.metas.material.event.EventDescr;
+import de.metas.material.event.EventDescriptor;
 import de.metas.material.event.MaterialEventService;
 import de.metas.material.event.ddorder.DDOrder;
 import de.metas.material.event.ddorder.DDOrderLine;
@@ -86,8 +89,6 @@ public class DistributionPlanEventHandlerTests
 	public static final int intermediateWarehouseId = 20;
 	public static final int toWarehouseId = 30;
 
-	public static final int productId = 40;
-
 	public static final int rawProduct1Id = 50;
 
 	public static final int rawProduct2Id = 55;
@@ -100,33 +101,34 @@ public class DistributionPlanEventHandlerTests
 
 	public static final int shipperId = 95;
 
-	private I_AD_Org org;
-
 	private DistributionPlanEventHandler distributionPlanEventHandler;
 
 	@Mocked
 	private MaterialEventService materialEventService;
+
+	private CandidateRepositoryRetrieval candidateRepository;
 
 	@Before
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
 
-		org = newInstance(I_AD_Org.class);
-		save(org);
-
-		final CandidateRepository candidateRepository = new CandidateRepository();
+		candidateRepository = new CandidateRepositoryRetrieval();
+		final CandidateRepositoryCommands candidateRepositoryCommands = new CandidateRepositoryCommands();
 		final SupplyProposalEvaluator supplyProposalEvaluator = new SupplyProposalEvaluator(candidateRepository);
 
-		
-		
-		final StockCandidateService stockCandidateService = new StockCandidateService(candidateRepository);
+		final StockCandidateService stockCandidateService = new StockCandidateService(candidateRepository, candidateRepositoryCommands);
+
+		final DemandCandiateHandler demandCandiateHandler = new DemandCandiateHandler(candidateRepository, candidateRepositoryCommands, materialEventService, stockCandidateService);
+		final SupplyCandiateHandler supplyCandiateHandler = new SupplyCandiateHandler(candidateRepository, candidateRepositoryCommands, stockCandidateService);
+		final CandidateChangeService candidateChangeService = new CandidateChangeService(ImmutableList.of(
+				demandCandiateHandler,
+				supplyCandiateHandler));
+
 		distributionPlanEventHandler = new DistributionPlanEventHandler(
 				candidateRepository,
-				new CandidateChangeService(ImmutableList.of(
-						new DemandCandiateHandler(candidateRepository, materialEventService, stockCandidateService),
-						new SupplyCandiateHandler(candidateRepository, materialEventService, stockCandidateService)
-						)),
+				candidateRepositoryCommands,
+				candidateChangeService,
 				supplyProposalEvaluator,
 				new CandidateService(candidateRepository, materialEventService));
 	}
@@ -142,23 +144,26 @@ public class DistributionPlanEventHandlerTests
 	public void testSingleDistibutionPlanEvent()
 	{
 		final DistributionPlanEvent event = DistributionPlanEvent.builder()
-				.eventDescr(new EventDescr(org.getAD_Client_ID(), org.getAD_Org_ID()))
+				.eventDescriptor(new EventDescriptor(CLIENT_ID, ORG_ID))
 				.fromWarehouseId(fromWarehouseId)
 				.toWarehouseId(toWarehouseId)
 				.ddOrder(DDOrder.builder()
-						.orgId(org.getAD_Org_ID())
+						.orgId(ORG_ID)
 						.datePromised(t2)
 						.plantId(plantId)
 						.productPlanningId(productPlanningId)
 						.shipperId(shipperId)
 						.line(DDOrderLine.builder()
-								.productId(productId)
+								.productDescriptor(createProductDescriptor())
 								.qty(BigDecimal.TEN)
 								.durationDays(1)
 								.networkDistributionLineId(networkDistributionLineId)
 								.build())
 						.build())
 				.build();
+
+		RepositoryTestHelper.setupMockedRetrieveAvailableStock(candidateRepository, null /*any materialDescriptor*/, "0");
+
 		distributionPlanEventHandler.handleDistributionPlanEvent(event);
 
 		final List<I_MD_Candidate> allNonStockRecords = DispoTestUtils.filterExclStock();
@@ -171,37 +176,37 @@ public class DistributionPlanEventHandlerTests
 		final List<I_MD_Candidate> allRecords = DispoTestUtils.retrieveAllRecords();
 		assertThat(allRecords).hasSize(4);
 		assertThat(allRecords).allSatisfy(r -> {
-			assertThat(r.getAD_Org_ID()).as("all four records shall have the same org").isEqualTo(org.getAD_Org_ID());
-			assertThat(r.getM_Product_ID()).as("all four records shall have the same product").isEqualTo(productId);
+			assertThat(r.getAD_Org_ID()).as("all four records shall have the same org").isEqualTo(ORG_ID);
+			assertThat(r.getM_Product_ID()).as("all four records shall have the same product").isEqualTo(PRODUCT_ID);
 		});
 
-		assertThat(DispoTestUtils.filter(Type.SUPPLY)).hasSize(1);
-		assertThat(DispoTestUtils.filter(Type.STOCK)).hasSize(2);
-		assertThat(DispoTestUtils.filter(Type.DEMAND)).hasSize(1);
+		assertThat(DispoTestUtils.filter(CandidateType.SUPPLY)).hasSize(1);
+		assertThat(DispoTestUtils.filter(CandidateType.STOCK)).hasSize(2);
+		assertThat(DispoTestUtils.filter(CandidateType.DEMAND)).hasSize(1);
 
 		// supplyStockRecord is the parent record of supplyRecord
-		final I_MD_Candidate supplyStockRecord = DispoTestUtils.filter(Type.STOCK, t2).get(0);
-		assertThat(supplyStockRecord.getMD_Candidate_Type()).isEqualTo(Type.STOCK.toString());
+		final I_MD_Candidate supplyStockRecord = DispoTestUtils.filter(CandidateType.STOCK, t2).get(0);
+		assertThat(supplyStockRecord.getMD_Candidate_Type()).isEqualTo(CandidateType.STOCK.toString());
 		assertThat(supplyStockRecord.getMD_Candidate_Parent_ID()).isLessThanOrEqualTo(0); // supplyStockRecord shall have no parent of its own
 		assertThat(supplyStockRecord.getQty()).isEqualByComparingTo(BigDecimal.TEN);
 		assertThat(supplyStockRecord.getDateProjected().getTime()).isEqualTo(t2.getTime()); // shall have the same time as its supply record
 		assertThat(supplyStockRecord.getM_Warehouse_ID()).isEqualTo(toWarehouseId); // shall have the same wh as its supply record
 
-		final I_MD_Candidate supplyRecord = DispoTestUtils.filter(Type.SUPPLY).get(0);
+		final I_MD_Candidate supplyRecord = DispoTestUtils.filter(CandidateType.SUPPLY).get(0);
 		assertThat(supplyRecord.getMD_Candidate_Parent_ID()).isEqualTo(supplyStockRecord.getMD_Candidate_ID());
 		assertThat(supplyRecord.getDateProjected().getTime()).isEqualTo(t2.getTime());
 		assertThat(supplyRecord.getM_Warehouse_ID()).isEqualTo(toWarehouseId);
 		assertThat(supplyRecord.getQty()).isEqualByComparingTo(BigDecimal.TEN);
 		assertThat(supplyRecord.getMD_Candidate_Parent_ID() > 0).isEqualTo(true); // supplyRecord shall have supplyStockRecord as its parent
 
-		final I_MD_Candidate demandRecord = DispoTestUtils.filter(Type.DEMAND).get(0);
+		final I_MD_Candidate demandRecord = DispoTestUtils.filter(CandidateType.DEMAND).get(0);
 		assertThat(demandRecord.getDateProjected().getTime()).isEqualTo(t1.getTime());
 		assertThat(demandRecord.getMD_Candidate_Parent_ID()).isEqualTo(supplyRecord.getMD_Candidate_ID()); // demandRecord shall have supplyRecord as its parent
 		assertThat(demandRecord.getM_Warehouse_ID()).isEqualTo(fromWarehouseId);
 		assertThat(demandRecord.getQty()).isEqualByComparingTo(BigDecimal.TEN);
 
 		// demandStockRecord is "the other" stock record
-		final I_MD_Candidate demandStockRecord = DispoTestUtils.filter(Type.STOCK, t1).get(0);
+		final I_MD_Candidate demandStockRecord = DispoTestUtils.filter(CandidateType.STOCK, t1).get(0);
 		assertThat(demandStockRecord.getMD_Candidate_Parent_ID()).isEqualTo(demandRecord.getMD_Candidate_ID());
 		assertThat(demandStockRecord.getDateProjected().getTime()).isEqualTo(t1.getTime()); // demandStockRecord shall have the same time as its demand record
 		assertThat(demandStockRecord.getM_Warehouse_ID()).isEqualTo(fromWarehouseId);
@@ -219,10 +224,9 @@ public class DistributionPlanEventHandlerTests
 	@Test
 	public void testTwoDistibutionPlanEvents()
 	{
-		performTestTwoDistibutionPlanEvents(distributionPlanEventHandler, org);
+		RepositoryTestHelper.setupMockedRetrieveAvailableStock(candidateRepository, null, "0");
+		performTestTwoDistibutionPlanEvents(distributionPlanEventHandler);
 	}
-
-	// TODO: test in reversed order
 
 	/**
 	 * Contains the actual test for {@link #testTwoDistibutionPlanEvents()}. I moved this into a static method because i want to use the code to set the stage for other tests.
@@ -230,21 +234,20 @@ public class DistributionPlanEventHandlerTests
 	 * @param mdEventListener
 	 */
 	public static void performTestTwoDistibutionPlanEvents(
-			@NonNull final DistributionPlanEventHandler distributionPlanEventHandler,
-			@NonNull final I_AD_Org org)
+			@NonNull final DistributionPlanEventHandler distributionPlanEventHandler)
 	{
 		final DistributionPlanEvent event1 = DistributionPlanEvent.builder()
-				.eventDescr(new EventDescr(org.getAD_Client_ID(), org.getAD_Org_ID()))
+				.eventDescriptor(new EventDescriptor(CLIENT_ID, ORG_ID))
 				.fromWarehouseId(fromWarehouseId)
 				.toWarehouseId(intermediateWarehouseId)
 				.ddOrder(DDOrder.builder()
-						.orgId(org.getAD_Org_ID())
+						.orgId(ORG_ID)
 						.datePromised(t2) // => expected date of the supply candidate
 						.plantId(plantId)
 						.productPlanningId(productPlanningId)
 						.shipperId(shipperId)
 						.line(DDOrderLine.builder()
-								.productId(productId)
+								.productDescriptor(createProductDescriptor())
 								.qty(BigDecimal.TEN)
 								.networkDistributionLineId(networkDistributionLineId)
 								.durationDays(1) // => t2 minus 1day = t1 (expected date of the demand candidate)
@@ -253,22 +256,22 @@ public class DistributionPlanEventHandlerTests
 				.build();
 		distributionPlanEventHandler.handleDistributionPlanEvent(event1);
 
-		assertThat(DispoTestUtils.filter(Type.SUPPLY)).hasSize(1);
-		assertThat(DispoTestUtils.filter(Type.DEMAND)).hasSize(1);
-		assertThat(DispoTestUtils.filter(Type.STOCK)).hasSize(2); // one stock record per supply/demand record
+		assertThat(DispoTestUtils.filter(CandidateType.SUPPLY)).hasSize(1);
+		assertThat(DispoTestUtils.filter(CandidateType.DEMAND)).hasSize(1);
+		assertThat(DispoTestUtils.filter(CandidateType.STOCK)).hasSize(2); // one stock record per supply/demand record
 
 		final DistributionPlanEvent event2 = DistributionPlanEvent.builder()
-				.eventDescr(new EventDescr(org.getAD_Client_ID(), org.getAD_Org_ID()))
+				.eventDescriptor(new EventDescriptor(CLIENT_ID, ORG_ID))
 				.fromWarehouseId(intermediateWarehouseId)
 				.toWarehouseId(toWarehouseId)
 				.ddOrder(DDOrder.builder()
-						.orgId(org.getAD_Org_ID())
+						.orgId(ORG_ID)
 						.datePromised(t3) // => expected date of the supply candidate
 						.plantId(plantId)
 						.productPlanningId(productPlanningId)
 						.shipperId(shipperId)
 						.line(DDOrderLine.builder()
-								.productId(productId)
+								.productDescriptor(createProductDescriptor())
 								.qty(BigDecimal.TEN)
 								.durationDays(2) // => t3 minus 2days = t2 (expected date of the demand candidate)
 								.networkDistributionLineId(networkDistributionLineId)
@@ -277,46 +280,46 @@ public class DistributionPlanEventHandlerTests
 				.build();
 		distributionPlanEventHandler.handleDistributionPlanEvent(event2);
 
-		assertThat(DispoTestUtils.filter(Type.SUPPLY)).hasSize(2); // one supply record per event
-		assertThat(DispoTestUtils.filter(Type.DEMAND)).hasSize(2); // one demand record per event
-		assertThat(DispoTestUtils.filter(Type.STOCK)).hasSize(3); // the supply record and the demand record with intermediateWarehouseId and t2 *share* one stock record!
+		assertThat(DispoTestUtils.filter(CandidateType.SUPPLY)).hasSize(2); // one supply record per event
+		assertThat(DispoTestUtils.filter(CandidateType.DEMAND)).hasSize(2); // one demand record per event
+		assertThat(DispoTestUtils.filter(CandidateType.STOCK)).hasSize(3); // the supply record and the demand record with intermediateWarehouseId and t2 *share* one stock record!
 
 		//
 		// we will now verify the records in their chronological (new->old) and child->parent order
-		assertThat(DispoTestUtils.filter(Type.STOCK, t3)).hasSize(1);
-		final I_MD_Candidate t3Stock = DispoTestUtils.filter(Type.STOCK, t3).get(0);
+		assertThat(DispoTestUtils.filter(CandidateType.STOCK, t3)).hasSize(1);
+		final I_MD_Candidate t3Stock = DispoTestUtils.filter(CandidateType.STOCK, t3).get(0);
 		assertThat(t3Stock.getMD_Candidate_Parent_ID()).isLessThanOrEqualTo(0);
 		assertThat(t3Stock.getQty()).isEqualByComparingTo(BigDecimal.TEN);
 
-		assertThat(DispoTestUtils.filter(Type.SUPPLY, t3)).hasSize(1);
-		final I_MD_Candidate t3Supply = DispoTestUtils.filter(Type.SUPPLY, t3).get(0);
+		assertThat(DispoTestUtils.filter(CandidateType.SUPPLY, t3)).hasSize(1);
+		final I_MD_Candidate t3Supply = DispoTestUtils.filter(CandidateType.SUPPLY, t3).get(0);
 		assertThat(t3Supply.getMD_Candidate_Parent_ID()).isEqualTo(t3Stock.getMD_Candidate_ID()); // t3Supply => t3Stock
 		assertThat(t3Supply.getQty()).isEqualByComparingTo(BigDecimal.TEN);
 
-		assertThat(DispoTestUtils.filter(Type.DEMAND, t2)).hasSize(1);
-		final I_MD_Candidate t2Demand = DispoTestUtils.filter(Type.DEMAND, t2).get(0);
+		assertThat(DispoTestUtils.filter(CandidateType.DEMAND, t2)).hasSize(1);
+		final I_MD_Candidate t2Demand = DispoTestUtils.filter(CandidateType.DEMAND, t2).get(0);
 		assertThat(t2Demand.getMD_Candidate_Parent_ID()).isEqualTo(t3Supply.getMD_Candidate_ID()); // t2Demand => t3Supply
 		assertThat(t2Demand.getMD_Candidate_GroupId()).isEqualTo(t3Supply.getMD_Candidate_GroupId()); // t2Demand and t3Suppy belong to the same group
 		assertThat(t2Demand.getQty()).isEqualByComparingTo(BigDecimal.TEN);
 
-		assertThat(DispoTestUtils.filter(Type.STOCK, t2)).hasSize(1);
-		final I_MD_Candidate t2Stock = DispoTestUtils.filter(Type.STOCK, t2).get(0); // this is the one that is shared!
+		assertThat(DispoTestUtils.filter(CandidateType.STOCK, t2)).hasSize(1);
+		final I_MD_Candidate t2Stock = DispoTestUtils.filter(CandidateType.STOCK, t2).get(0); // this is the one that is shared!
 		assertThat(t2Stock.getMD_Candidate_Parent_ID()).isEqualTo(t2Demand.getMD_Candidate_ID()); // t2Stock => t2Demand
 		assertThat(t2Stock.getQty()).isEqualByComparingTo(BigDecimal.ZERO); // it's balanced between t2Demand and t2Supply
 
-		assertThat(DispoTestUtils.filter(Type.SUPPLY, t2)).hasSize(1);
-		final I_MD_Candidate t2Supply = DispoTestUtils.filter(Type.SUPPLY, t2).get(0);
+		assertThat(DispoTestUtils.filter(CandidateType.SUPPLY, t2)).hasSize(1);
+		final I_MD_Candidate t2Supply = DispoTestUtils.filter(CandidateType.SUPPLY, t2).get(0);
 		assertThat(t2Supply.getMD_Candidate_Parent_ID()).isEqualTo(t2Stock.getMD_Candidate_ID());  // t2Supply => t2Stock
 		assertThat(t2Supply.getQty()).isEqualByComparingTo(BigDecimal.TEN);
 
-		assertThat(DispoTestUtils.filter(Type.DEMAND, t1)).hasSize(1);
-		final I_MD_Candidate t1Demand = DispoTestUtils.filter(Type.DEMAND, t1).get(0);
+		assertThat(DispoTestUtils.filter(CandidateType.DEMAND, t1)).hasSize(1);
+		final I_MD_Candidate t1Demand = DispoTestUtils.filter(CandidateType.DEMAND, t1).get(0);
 		assertThat(t1Demand.getMD_Candidate_Parent_ID()).isEqualTo(t2Supply.getMD_Candidate_ID()); // t1Demand => t2Supply
 		assertThat(t1Demand.getMD_Candidate_GroupId()).isEqualTo(t2Supply.getMD_Candidate_GroupId()); // t2Demand and t3Suppy belong to the same group
 		assertThat(t1Demand.getQty()).isEqualByComparingTo(BigDecimal.TEN);
 
-		assertThat(DispoTestUtils.filter(Type.STOCK, t1)).hasSize(1);
-		final I_MD_Candidate t1Stock = DispoTestUtils.filter(Type.STOCK, t1).get(0);
+		assertThat(DispoTestUtils.filter(CandidateType.STOCK, t1)).hasSize(1);
+		final I_MD_Candidate t1Stock = DispoTestUtils.filter(CandidateType.STOCK, t1).get(0);
 		assertThat(t1Stock.getQty()).isEqualByComparingTo(BigDecimal.TEN.negate());
 		assertThat(t1Stock.getMD_Candidate_Parent_ID()).isEqualTo(t1Demand.getMD_Candidate_ID());
 

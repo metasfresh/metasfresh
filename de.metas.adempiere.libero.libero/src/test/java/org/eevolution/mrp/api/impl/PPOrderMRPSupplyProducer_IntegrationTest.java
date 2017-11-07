@@ -29,6 +29,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.mm.attributes.api.impl.ModelProductDescriptorExtactorUsingAttributeSetInstanceFactory;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
@@ -50,9 +51,14 @@ import org.eevolution.mrp.spi.impl.PPOrderMRPSupplyProducer;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit4.SpringRunner;
 
+import de.metas.StartupListener;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.order.compensationGroup.OrderGroupRepository;
 
 /**
  * Integration test for {@link PPOrderMRPSupplyProducer} (it is tested indirectly).
@@ -60,6 +66,11 @@ import de.metas.document.engine.IDocumentBL;
  * @author tsa
  *
  */
+@RunWith(SpringRunner.class)
+@SpringBootTest(classes = { StartupListener.class,
+		ModelProductDescriptorExtactorUsingAttributeSetInstanceFactory.class,
+		OrderGroupRepository.class
+})
 public class PPOrderMRPSupplyProducer_IntegrationTest extends AbstractMRPTestBase
 {
 	// services

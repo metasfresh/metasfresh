@@ -37,6 +37,7 @@ import org.adempiere.util.PlainStringLoggable;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.IMutable;
+import org.compiere.Adempiere;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_M_Locator;
 import org.eevolution.api.IDDOrderBL;
@@ -377,9 +378,11 @@ public class DDOrderMRPSupplyProducer extends AbstractMRPSupplyProducer
 	{
 		final IMRPExecutor executor = request.getMRPExecutor();
 
-		final List<DDOrder> ddOrderPojos = new DDOrderPojoSupplier()
-				.supplyPojos(request,
-						executor.getMRPNotesCollector());
+		final DDOrderPojoSupplier ddOrderPojoSupplier = Adempiere.getBean(DDOrderPojoSupplier.class);
+
+		final List<DDOrder> ddOrderPojos = ddOrderPojoSupplier.supplyPojos(
+				request,
+				executor.getMRPNotesCollector());
 
 		final DDOrderProducer ddOrderProducer = new DDOrderProducer();
 		for (final DDOrder ddOrderPojo : ddOrderPojos)

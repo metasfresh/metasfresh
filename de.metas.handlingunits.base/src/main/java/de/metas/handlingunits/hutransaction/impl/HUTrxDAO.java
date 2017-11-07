@@ -67,7 +67,7 @@ public class HUTrxDAO implements IHUTrxDAO
 
 		final IQueryBuilder<I_M_HU_Trx_Line> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_M_HU_Trx_Line.class, ctx, trxName);
 
-		final ICompositeQueryFilter<I_M_HU_Trx_Line> filters = queryBuilder.getFilters();
+		final ICompositeQueryFilter<I_M_HU_Trx_Line> filters = queryBuilder.getCompositeFilter();
 
 		if (huTrxQuery.getAD_Table_ID() > 0)
 		{
