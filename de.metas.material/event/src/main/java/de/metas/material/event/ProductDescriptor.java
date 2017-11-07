@@ -1,7 +1,5 @@
 package de.metas.material.event;
 
-import javax.annotation.Nullable;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
@@ -81,18 +79,6 @@ public class ProductDescriptor
 		this.attributeSetInstanceId = attributeSetInstanceId;
 
 		asssertCompleteness();
-	}
-
-	/**
-	 * Copy constructor; intended to be used by {@link MaterialDescriptor}.
-	 */
-	protected ProductDescriptor(@Nullable final ProductDescriptor copyFrom)
-	{
-		this(
-				copyFrom == null ? false : copyFrom.productDescriptorComplete,
-				copyFrom == null ? 0 : copyFrom.productId,
-				copyFrom == null ? STORAGE_ATTRIBUTES_KEY_UNSPECIFIED : copyFrom.storageAttributesKey,
-				copyFrom == null ? 0 : copyFrom.getAttributeSetInstanceId());
 	}
 
 	public ProductDescriptor asssertCompleteness()
