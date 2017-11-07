@@ -94,5 +94,5 @@ public interface IPrintJobBL extends ISingletonService
 	 * @param jobInstructions
 	 * @param asyncBatch
 	 */
-	void enquePrintJobInstructions(I_C_Print_Job_Instructions jobInstructions, I_C_Async_Batch asyncBatch);
+	void enqueuePrintJobInstructions(I_C_Print_Job_Instructions jobInstructions, I_C_Async_Batch asyncBatch);
 }
