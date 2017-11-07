@@ -57,13 +57,10 @@ import de.metas.event.IEventBusFactory;
  */
 public class Main extends AbstractModuleInterceptor
 {
-	/**
-	 * The time of waiting until the IQueueProcessorExecutorService initializes. It is defined in milliseconds.
-	 * When the async component is loaded, this delay makes sure that it was fully started by the time the async component starts to process packages.
-	 */
-	public static transient String SYSCONFIG_Async_InitDelayMillis = "de.metas.async.Async_InitDelayMillis";
+	
+	private static final String SYSCONFIG_ASYNC_INIT_DELAY_MILLIS = "de.metas.async.Async_InitDelayMillis";
 
-	public static transient int THREE_MINUTES = 3 * 60 * 1000;
+	private static final int THREE_MINUTES = 3 * 60 * 1000;
 
 	@Override
 	public void onInit(final IModelValidationEngine engine, final I_AD_Client client)
@@ -104,7 +101,7 @@ public class Main extends AbstractModuleInterceptor
 	private final int getInitDelayMillis()
 	{
 		// I will leave the default value of 3 minutes, which was the common time until #2894
-		final int delayTimeInMillis = Services.get(ISysConfigBL.class).getIntValue(SYSCONFIG_Async_InitDelayMillis, THREE_MINUTES);
+		final int delayTimeInMillis = Services.get(ISysConfigBL.class).getIntValue(SYSCONFIG_ASYNC_INIT_DELAY_MILLIS, THREE_MINUTES);
 
 		return delayTimeInMillis;
 
