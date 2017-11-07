@@ -30,6 +30,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Set;
+import java.util.function.Predicate;
 
 import javax.annotation.concurrent.Immutable;
 
@@ -38,7 +39,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.util.Check;
 import org.adempiere.util.collections.NullPredicate;
-import org.adempiere.util.collections.Predicate;
 import org.compiere.model.MTree_Base;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -216,7 +216,7 @@ public class OrgPermissions extends AbstractPermissions<OrgPermission>
 			}
 
 			final OrgResource resource = perm.getResource();
-			if (!matcher.evaluate(resource))
+			if (!matcher.test(resource))
 			{
 				continue;
 			}

@@ -63,6 +63,14 @@
 			<artifactId>de.metas.monitoring</artifactId>
 			<version>10.0.0</version>
 		</dependency>
+		
+		<dependency>
+			<groupId>de.metas.business</groupId>
+			<artifactId>de.metas.business</artifactId>
+			<version>10.0.0</version>
+			<classifier>tests</classifier>
+			<scope>test</scope>
+		</dependency>
 
 		<!--
 			Lombok

@@ -1,14 +1,14 @@
 package de.metas.material.dispo.service.candidatechange.handler;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static de.metas.material.event.EventTestHelper.AFTER_NOW;
+import static de.metas.material.event.EventTestHelper.CLIENT_ID;
+import static de.metas.material.event.EventTestHelper.NOW;
+import static de.metas.material.event.EventTestHelper.ORG_ID;
+import static de.metas.material.event.EventTestHelper.WAREHOUSE_ID;
+import static de.metas.material.event.EventTestHelper.createProductDescriptor;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.comparesEqualTo;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
 
 import java.math.BigDecimal;
-import java.util.Date;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -16,26 +16,21 @@ import java.util.function.Consumer;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.util.time.SystemTime;
-import org.compiere.model.I_AD_Org;
-import org.compiere.model.I_M_Product;
-import org.compiere.model.I_M_Warehouse;
-import org.compiere.util.TimeUtil;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestWatcher;
 
-import de.metas.material.dispo.CandidateRepository;
-import de.metas.material.dispo.CandidateSpecification.SubType;
-import de.metas.material.dispo.CandidateSpecification.Type;
-import de.metas.material.dispo.candidate.Candidate;
-import de.metas.material.dispo.DispoTestUtils;
+import de.metas.material.dispo.commons.DispoTestUtils;
+import de.metas.material.dispo.commons.candidate.Candidate;
+import de.metas.material.dispo.commons.candidate.CandidateSubType;
+import de.metas.material.dispo.commons.candidate.CandidateType;
+import de.metas.material.dispo.commons.repository.CandidateRepositoryCommands;
+import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.X_MD_Candidate;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
 import de.metas.material.event.MaterialDescriptor;
-import de.metas.material.event.MaterialEventService;
-import mockit.Mocked;
 
 /*
  * #%L
@@ -47,12 +42,12 @@ import mockit.Mocked;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -66,18 +61,6 @@ public class SupplyCandiateCangeHandlerTest
 	@Rule
 	public final TestWatcher testWatcher = new AdempiereTestWatcher();
 
-	private final Date t1 = SystemTime.asDate();
-	private final Date t2 = TimeUtil.addMinutes(t1, 10);
-
-	private I_AD_Org org;
-
-	private I_M_Product product;
-
-	private I_M_Warehouse warehouse;
-
-	@Mocked
-	private MaterialEventService materialEventService;
-
 	private SupplyCandiateHandler supplyCandiateCangeHandler;
 
 	private StockCandidateService stockCandidateService;
@@ -87,72 +70,64 @@ public class SupplyCandiateCangeHandlerTest
 	{
 		AdempiereTestHelper.get().init();
 
-		org = newInstance(I_AD_Org.class);
-		save(org);
+		final CandidateRepositoryRetrieval candidateRepository = new CandidateRepositoryRetrieval();
+		final CandidateRepositoryCommands candidateRepositoryCommands = new CandidateRepositoryCommands();
 
-		product = newInstance(I_M_Product.class);
-		save(product);
+		stockCandidateService = new StockCandidateService(candidateRepository, candidateRepositoryCommands);
 
-		warehouse = newInstance(I_M_Warehouse.class);
-		save(warehouse);
-
-		final CandidateRepository candidateRepository = new CandidateRepository();
-
-		stockCandidateService = new StockCandidateService(candidateRepository);
-
-		supplyCandiateCangeHandler = new SupplyCandiateHandler(candidateRepository,materialEventService,stockCandidateService);
+		supplyCandiateCangeHandler = new SupplyCandiateHandler(candidateRepository, candidateRepositoryCommands, stockCandidateService);
 	}
 
 	@Test
 	public void testOnSupplyCandidateNewOrChange_noOlderRecords()
 	{
 		final BigDecimal qty = new BigDecimal("23");
-		final Date t = t1;
 
-		final MaterialDescriptor materialDescr = MaterialDescriptor.builder()
-				.productId(product.getM_Product_ID())
-				.warehouseId(warehouse.getM_Warehouse_ID())
+		final MaterialDescriptor materialDescriptor = MaterialDescriptor.builder()
+				.complete(true)
+				.productDescriptor(createProductDescriptor())
+				.warehouseId(WAREHOUSE_ID)
 				.quantity(qty)
-				.date(t)
+				.date(NOW)
 				.build();
-		
+
 		final Candidate candidate = Candidate.builder()
-				.type(Type.SUPPLY)
-				.clientId(org.getAD_Client_ID())
-				.orgId(org.getAD_Org_ID())
-				.materialDescr(materialDescr)
+				.type(CandidateType.SUPPLY)
+				.clientId(CLIENT_ID)
+				.orgId(ORG_ID)
+				.materialDescriptor(materialDescriptor)
 				.build();
 		supplyCandiateCangeHandler.onCandidateNewOrChange(candidate);
 
 		final List<I_MD_Candidate> records = DispoTestUtils.retrieveAllRecords();
-		assertThat(records.size(), is(2));
-		final I_MD_Candidate stockRecord = DispoTestUtils.filter(Type.STOCK).get(0);
-		final I_MD_Candidate supplyRecord = DispoTestUtils.filter(Type.SUPPLY).get(0);
+		assertThat(records).hasSize(2);
+		final I_MD_Candidate stockRecord = DispoTestUtils.filter(CandidateType.STOCK).get(0);
+		final I_MD_Candidate supplyRecord = DispoTestUtils.filter(CandidateType.SUPPLY).get(0);
 
-		assertThat(supplyRecord.getQty(), comparesEqualTo(qty));
-		assertThat(stockRecord.getQty(), comparesEqualTo(qty)); // ..because there was no older record, the "delta" we provided is the current quantity
-		assertThat(supplyRecord.getMD_Candidate_Parent_ID(), is(stockRecord.getMD_Candidate_ID()));
-		assertThat(supplyRecord.getSeqNo() - 1, is(stockRecord.getSeqNo())); // when we sort by SeqNo, the stock needs to be first
+		assertThat(supplyRecord.getQty()).isEqualByComparingTo(qty);
+		assertThat(stockRecord.getQty()).isEqualByComparingTo(qty); // ..because there was no older record, the "delta" we provided is the current quantity
+		assertThat(supplyRecord.getMD_Candidate_Parent_ID()).isEqualTo(stockRecord.getMD_Candidate_ID());
+		assertThat(supplyRecord.getSeqNo() - 1).isEqualTo(stockRecord.getSeqNo()); // when we sort by SeqNo, the stock needs to be first
 	}
 
 	@Test
 	public void testOnSupplyCandidateNewOrChange_noOlderRecords_invokeTwiceWithSame()
 	{
 		final BigDecimal qty = new BigDecimal("23");
-		final Date t = t1;
 
-		final MaterialDescriptor materialDescr = MaterialDescriptor.builder()
-				.productId(product.getM_Product_ID())
-				.warehouseId(warehouse.getM_Warehouse_ID())
+		final MaterialDescriptor materialDescriptor = MaterialDescriptor.builder()
+				.complete(true)
+				.productDescriptor(createProductDescriptor())
+				.warehouseId(WAREHOUSE_ID)
 				.quantity(qty)
-				.date(t)
+				.date(NOW)
 				.build();
-		
+
 		final Candidate candidatee = Candidate.builder()
-				.type(Type.SUPPLY)
-				.clientId(org.getAD_Client_ID())
-				.orgId(org.getAD_Org_ID())
-				.materialDescr(materialDescr)
+				.type(CandidateType.SUPPLY)
+				.clientId(CLIENT_ID)
+				.orgId(ORG_ID)
+				.materialDescriptor(materialDescriptor)
 				.build();
 
 		final Consumer<Candidate> doTest = candidate -> {
@@ -160,15 +135,15 @@ public class SupplyCandiateCangeHandlerTest
 			supplyCandiateCangeHandler.onCandidateNewOrChange(candidate);
 
 			final List<I_MD_Candidate> records = DispoTestUtils.retrieveAllRecords();
-			assertThat(records.size(), is(2));
-			final I_MD_Candidate stockRecord = DispoTestUtils.filter(Type.STOCK).get(0);
-			final I_MD_Candidate supplyRecord = DispoTestUtils.filter(Type.SUPPLY).get(0);
+			assertThat(records).hasSize(2);
+			final I_MD_Candidate stockRecord = DispoTestUtils.filter(CandidateType.STOCK).get(0);
+			final I_MD_Candidate supplyRecord = DispoTestUtils.filter(CandidateType.SUPPLY).get(0);
 
-			assertThat(supplyRecord.getQty(), comparesEqualTo(qty));
-			assertThat(stockRecord.getQty(), comparesEqualTo(qty)); // ..because there was no older record, the "delta" we provided is the current quantity
-			assertThat(supplyRecord.getMD_Candidate_Parent_ID(), is(stockRecord.getMD_Candidate_ID()));
+			assertThat(supplyRecord.getQty()).isEqualByComparingTo(qty);
+			assertThat(stockRecord.getQty()).isEqualByComparingTo(qty); // ..because there was no older record, the "delta" we provided is the current quantity
+			assertThat(supplyRecord.getMD_Candidate_Parent_ID()).isEqualTo(stockRecord.getMD_Candidate_ID());
 
-			assertThat(supplyRecord.getSeqNo(), is(stockRecord.getSeqNo() + 1)); // when we sort by SeqNo, the stock needs to be first and thus have the smaller value
+			assertThat(supplyRecord.getSeqNo()).isEqualTo(stockRecord.getSeqNo() + 1); // when we sort by SeqNo, the stock needs to be first and thus have the smaller value
 		};
 
 		doTest.accept(candidatee); // 1st invocation
@@ -179,20 +154,20 @@ public class SupplyCandiateCangeHandlerTest
 	public void testOnSupplyCandidateNewOrChange_noOlderRecords_invokeTwiceWithDifferent()
 	{
 		final BigDecimal qty = new BigDecimal("23");
-		final Date t = t1;
 
-		final MaterialDescriptor materialDescr = MaterialDescriptor.builder()
-				.productId(product.getM_Product_ID())
-				.warehouseId(warehouse.getM_Warehouse_ID())
+		final MaterialDescriptor materialDescriptor = MaterialDescriptor.builder()
+				.complete(true)
+				.productDescriptor(createProductDescriptor())
+				.warehouseId(WAREHOUSE_ID)
 				.quantity(qty)
-				.date(t)
+				.date(NOW)
 				.build();
-		
+
 		final Candidate candidatee = Candidate.builder()
-				.type(Type.SUPPLY)
-				.clientId(org.getAD_Client_ID())
-				.orgId(org.getAD_Org_ID())
-				.materialDescr(materialDescr)
+				.type(CandidateType.SUPPLY)
+				.clientId(CLIENT_ID)
+				.orgId(ORG_ID)
+				.materialDescriptor(materialDescriptor)
 				.build();
 
 		final BiConsumer<Candidate, BigDecimal> doTest = (candidate, exptectedQty) -> {
@@ -200,15 +175,15 @@ public class SupplyCandiateCangeHandlerTest
 			supplyCandiateCangeHandler.onCandidateNewOrChange(candidate);
 
 			final List<I_MD_Candidate> records = DispoTestUtils.retrieveAllRecords();
-			assertThat(records.size(), is(2));
-			final I_MD_Candidate stockRecord = DispoTestUtils.filter(Type.STOCK).get(0);
-			final I_MD_Candidate supplyRecord = DispoTestUtils.filter(Type.SUPPLY).get(0);
+			assertThat(records).hasSize(2);
+			final I_MD_Candidate stockRecord = DispoTestUtils.filter(CandidateType.STOCK).get(0);
+			final I_MD_Candidate supplyRecord = DispoTestUtils.filter(CandidateType.SUPPLY).get(0);
 
-			assertThat(supplyRecord.getQty(), comparesEqualTo(exptectedQty));
-			assertThat(stockRecord.getQty(), comparesEqualTo(exptectedQty)); // ..because there was no older record, the "delta" we provided is the current quantity
-			assertThat(supplyRecord.getMD_Candidate_Parent_ID(), is(stockRecord.getMD_Candidate_ID()));
+			assertThat(supplyRecord.getQty()).isEqualByComparingTo(exptectedQty);
+			assertThat(stockRecord.getQty()).isEqualByComparingTo(exptectedQty); // ..because there was no older record, the "delta" we provided is the current quantity
+			assertThat(supplyRecord.getMD_Candidate_Parent_ID()).isEqualTo(stockRecord.getMD_Candidate_ID());
 
-			assertThat(supplyRecord.getSeqNo(), is(stockRecord.getSeqNo() + 1)); // when we sort by SeqNo, the stock needs to be first and thus have the smaller value
+			assertThat(supplyRecord.getSeqNo()).isEqualTo(stockRecord.getSeqNo() + 1); // when we sort by SeqNo, the stock needs to be first and thus have the smaller value
 		};
 
 		doTest.accept(candidatee, qty); // 1st invocation
@@ -223,56 +198,58 @@ public class SupplyCandiateCangeHandlerTest
 	{
 		final BigDecimal olderStockQty = new BigDecimal("11");
 
-		final MaterialDescriptor olderMaterialDescr = MaterialDescriptor.builder()
-				.productId(product.getM_Product_ID())
-				.warehouseId(warehouse.getM_Warehouse_ID())
+		final MaterialDescriptor olderMaterialDescriptor = MaterialDescriptor.builder()
+				.complete(true)
+				.productDescriptor(createProductDescriptor())
+				.warehouseId(WAREHOUSE_ID)
 				.quantity(olderStockQty)
-				.date(t1)
+				.date(NOW)
 				.build();
-		
+
 		final Candidate olderStockCandidate = Candidate.builder()
-				.type(Type.STOCK)
-				.clientId(org.getAD_Client_ID())
-				.orgId(org.getAD_Org_ID())
-				.materialDescr(olderMaterialDescr)
+				.type(CandidateType.STOCK)
+				.clientId(CLIENT_ID)
+				.orgId(ORG_ID)
+				.materialDescriptor(olderMaterialDescriptor)
 				.build();
 		stockCandidateService.addOrUpdateStock(olderStockCandidate);
 
 		final BigDecimal supplyQty = new BigDecimal("23");
 
-		final MaterialDescriptor materialDescr = MaterialDescriptor.builder()
-				.productId(product.getM_Product_ID())
-				.warehouseId(warehouse.getM_Warehouse_ID())
+		final MaterialDescriptor materialDescriptoriptor = MaterialDescriptor.builder()
+				.complete(true)
+				.productDescriptor(createProductDescriptor())
+				.warehouseId(WAREHOUSE_ID)
 				.quantity(supplyQty)
-				.date(t2)
+				.date(AFTER_NOW)
 				.build();
-		
+
 		final Candidate candidate = Candidate.builder()
-				.type(Type.SUPPLY)
-				.clientId(org.getAD_Client_ID())
-				.orgId(org.getAD_Org_ID())
-				.materialDescr(materialDescr)
-				.subType(SubType.PRODUCTION)
+				.type(CandidateType.SUPPLY)
+				.clientId(CLIENT_ID)
+				.orgId(ORG_ID)
+				.materialDescriptor(materialDescriptoriptor)
+				.subType(CandidateSubType.PRODUCTION)
 				.build();
 		supplyCandiateCangeHandler.onCandidateNewOrChange(candidate);
 
 		final List<I_MD_Candidate> records = DispoTestUtils.retrieveAllRecords();
-		assertThat(records.size(), is(3));
-		final I_MD_Candidate stockRecord = DispoTestUtils.filter(Type.STOCK, t2).get(0);
-		final I_MD_Candidate supplyRecord = DispoTestUtils.filter(Type.SUPPLY).get(0);
+		assertThat(records).hasSize(3);
+		final I_MD_Candidate stockRecord = DispoTestUtils.filter(CandidateType.STOCK, AFTER_NOW).get(0);
+		final I_MD_Candidate supplyRecord = DispoTestUtils.filter(CandidateType.SUPPLY).get(0);
 
-		assertThat(supplyRecord.getQty(), comparesEqualTo(supplyQty));
-		assertThat(supplyRecord.getMD_Candidate_SubType(), is(SubType.PRODUCTION.toString()));
-		assertThat(stockRecord.getQty(), comparesEqualTo(new BigDecimal("34")));
-		assertThat(supplyRecord.getMD_Candidate_Parent_ID(), is(stockRecord.getMD_Candidate_ID()));
+		assertThat(supplyRecord.getQty()).isEqualByComparingTo(supplyQty);
+		assertThat(supplyRecord.getMD_Candidate_SubType()).isEqualTo(CandidateSubType.PRODUCTION.toString());
+		assertThat(stockRecord.getQty()).isEqualByComparingTo(new BigDecimal("34"));
 
-		assertThat(supplyRecord.getSeqNo(), is(stockRecord.getSeqNo() + 1)); // when we sort by SeqNo, the stock needs to be first and thus have the smaller value
+
+		assertThat(supplyRecord.getSeqNo()).isEqualTo(stockRecord.getSeqNo() + 1); // when we sort by SeqNo, the stock needs to be first and thus have the smaller value
 	}
 
 	@Test
 	public void increase_stock()
 	{
-		final Candidate candidate = createCandidateWithType(Type.UNRELATED_INCREASE);
+		final Candidate candidate = createCandidateWithType(CandidateType.UNRELATED_INCREASE);
 
 		supplyCandiateCangeHandler.onCandidateNewOrChange(candidate);
 
@@ -288,15 +265,16 @@ public class SupplyCandiateCangeHandlerTest
 		assertThat(stockCandidate.getQty()).isEqualByComparingTo("10");
 		assertThat(unrelatedTransactionCandidate.getMD_Candidate_Parent_ID()).isEqualTo(stockCandidate.getMD_Candidate_ID());
 	}
-	
-	private Candidate createCandidateWithType(final Type type)
+
+	private Candidate createCandidateWithType(final CandidateType type)
 	{
 		final Candidate candidate = Candidate.builder()
 				.type(type)
-				.materialDescr(MaterialDescriptor.builder()
-						.productId(20)
+				.materialDescriptor(MaterialDescriptor.builder()
+						.complete(true)
+						.productDescriptor(createProductDescriptor())
 						.date(SystemTime.asTimestamp())
-						.warehouseId(30)
+						.warehouseId(WAREHOUSE_ID)
 						.quantity(BigDecimal.TEN)
 						.build())
 				.build();

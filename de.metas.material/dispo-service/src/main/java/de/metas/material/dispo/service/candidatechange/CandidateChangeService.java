@@ -10,8 +10,8 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
 
-import de.metas.material.dispo.CandidateSpecification.Type;
-import de.metas.material.dispo.candidate.Candidate;
+import de.metas.material.dispo.commons.candidate.Candidate;
+import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.service.candidatechange.handler.CandidateHandler;
 import lombok.NonNull;
 
@@ -40,7 +40,7 @@ import lombok.NonNull;
 public class CandidateChangeService
 {
 
-	private final Map<Type, CandidateHandler> type2handler;
+	private final Map<CandidateType, CandidateHandler> type2handler;
 
 	public CandidateChangeService(
 			@NonNull final Collection<CandidateHandler> candidateChangeHandlers)
@@ -56,7 +56,6 @@ public class CandidateChangeService
 	 */
 	public Candidate onCandidateNewOrChange(@NonNull final Candidate candidate)
 	{
-
 		final CandidateHandler candidateChangeHandler = type2handler.get(candidate.getType());
 		if (candidateChangeHandler == null)
 		{
@@ -70,13 +69,13 @@ public class CandidateChangeService
 	}
 
 	@VisibleForTesting
-	static Map<Type, CandidateHandler> createMapOfHandlers(
+	static Map<CandidateType, CandidateHandler> createMapOfHandlers(
 			@NonNull final Collection<CandidateHandler> candidateChangeHandlers)
 	{
-		final Builder<Type, CandidateHandler> builder = ImmutableMap.builder();
+		final Builder<CandidateType, CandidateHandler> builder = ImmutableMap.builder();
 		for (final CandidateHandler handler : candidateChangeHandlers)
 		{
-			for (final Type type : handler.getHandeledTypes())
+			for (final CandidateType type : handler.getHandeledTypes())
 			{
 				builder.put(type, handler); // builder already prohibits duplicate keys :-)
 			}

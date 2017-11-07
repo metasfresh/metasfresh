@@ -13,11 +13,11 @@ package de.metas.event;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -32,15 +32,25 @@ import java.util.UUID;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
-import org.adempiere.util.lang.EqualsBuilder;
-import org.adempiere.util.lang.HashcodeBuilder;
+import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.lang.ITableRecordReference;
 
-import com.google.common.base.MoreObjects;
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.Value;
 
 /**
  * Event that can be sent/received on {@link IEventBus}.
@@ -48,6 +58,8 @@ import com.google.common.collect.Sets;
  * @author tsa
  *
  */
+@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
+@Value
 public final class Event
 {
 	public static final Builder builder()
@@ -58,22 +70,41 @@ public final class Event
 	private static final String PROPERTY_Record = "record";
 	public static final String PROPERTY_SuggestedWindowId = "suggestedWindowId";
 
+	@JsonProperty("id")
 	private final String id;
+
+	@JsonProperty("summary")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final String summary;
+
+	@JsonProperty("detailPlain")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final String detailPlain;
+
+	@JsonProperty("detailADMessage")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final String detailADMessage;
+
+	@JsonProperty("senderId")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final String senderId;
+
+	@JsonProperty("recipientUserIds")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final ImmutableSet<Integer> recipientUserIds;
+
+	@JsonProperty("properties")
+	@JsonTypeInfo(use = JsonTypeInfo.Id.MINIMAL_CLASS)
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final ImmutableMap<String, Object> properties;
-	
+
 	//
+	@JsonIgnore
+	@Getter(AccessLevel.NONE)
 	private final transient Set<String> receivedByEventBusIds = Sets.newConcurrentHashSet();
-	//
-	private transient Integer _hashcode;
 
 	private Event(final Builder builder)
 	{
-		super();
 		if (builder.id != null)
 		{
 			id = builder.id;
@@ -87,117 +118,44 @@ public final class Event
 		detailADMessage = builder.getDetailADMessage();
 		senderId = builder.senderId;
 		recipientUserIds = ImmutableSet.copyOf(builder.recipientUserIds);
-		
-
-		final ImmutableMap.Builder<String, Object> propertiesBuilder = ImmutableMap.builder();
-		for (final Map.Entry<String, Object> e : builder.getProperties().entrySet())
-		{
-			// skip nulls
-			if (e.getValue() == null)
-			{
-				continue;
-			}
-			propertiesBuilder.put(e);
-		}
-		properties = propertiesBuilder.build();
+		properties = deepCopy(builder.getProperties());
 	}
 
-	@Override
-	public String toString()
+	@JsonCreator
+	private Event(
+			@JsonProperty("id") @NonNull final String id,
+			@JsonProperty("summary") final String summary,
+			@JsonProperty("detailPlain") final String detailPlain,
+			@JsonProperty("detailADMessage") final String detailADMessage,
+			@JsonProperty("senderId") final String senderId,
+			@JsonProperty("recipientUserIds") final Set<Integer> recipientUserIds,
+			@JsonProperty("properties") final Map<String, Object> properties)
 	{
-		return MoreObjects.toStringHelper(this)
-				.omitNullValues()
-				.add("id", id)
-				.add("summary", summary)
-				.add("detailPlain", detailPlain)
-				.add("detailADMessage", detailADMessage)
-				.add("senderId", senderId)
-				.add("recipientUserIds", isAllRecipients() ? "ALL" : recipientUserIds)
-				.add("properties", properties.isEmpty() ? null : properties)
-				.toString();
+		this.id = id;
+		this.summary = summary;
+		this.detailPlain = detailPlain;
+		this.detailADMessage = detailADMessage;
+		this.senderId = senderId;
+		this.recipientUserIds = recipientUserIds != null ? ImmutableSet.copyOf(recipientUserIds) : ImmutableSet.of();
+		this.properties = deepCopy(properties);
 	}
 
-	@Override
-	public int hashCode()
+	private static final ImmutableMap<String, Object> deepCopy(final Map<String, Object> properties)
 	{
-		if (_hashcode == null)
+		if (properties == null || properties.isEmpty())
 		{
-			_hashcode = new HashcodeBuilder()
-					.append(id)
-					.append(summary)
-					.append(detailPlain)
-					.append(detailADMessage)
-					.append(senderId)
-					.append(recipientUserIds)
-					.append(properties, true) // handleEmptyMapAsNull=true
-					.toHashcode();
-		}
-		return _hashcode;
-	}
-
-	@Override
-	public boolean equals(final Object obj)
-	{
-		if (this == obj)
-		{
-			return true;
+			return ImmutableMap.of();
 		}
 
-		final Event other = EqualsBuilder.getOther(this, obj);
-		if (other == null)
-		{
-			return false;
-		}
-		return new EqualsBuilder()
-				.append(id, other.id)
-				.append(summary, other.summary)
-				.append(detailPlain, other.detailPlain)
-				.append(detailADMessage, other.detailADMessage)
-				.append(senderId, other.senderId)
-				.append(recipientUserIds, other.recipientUserIds)
-				.append(properties, other.properties, true) // handleEmptyAsNull=true
-				.isEqual();
-	}
-
-	public String getId()
-	{
-		return id;
-	}
-
-	public String getSummary()
-	{
-		return summary;
-	}
-
-	/**
-	 * @return detail plain text
-	 */
-	public String getDetailPlain()
-	{
-		return detailPlain;
-	}
-
-	/**
-	 * @return detail AD_Message if any
-	 */
-	public String getDetailADMessage()
-	{
-		return detailADMessage;
-	}
-
-	public String getSenderId()
-	{
-		return senderId;
+		return properties.entrySet()
+				.stream()
+				.filter(e -> e.getValue() != null) // skip nulls
+				.collect(GuavaCollectors.toImmutableMap());
 	}
 
 	public boolean isLocalEvent()
 	{
 		return Objects.equals(EventBusConstants.getSenderId(), senderId);
-	}
-
-	public Set<Integer> getRecipientUserIds()
-	{
-		return recipientUserIds;
 	}
 
 	public final boolean hasRecipient(final int userId)
@@ -231,11 +189,6 @@ public final class Event
 		return value;
 	}
 
-	public Map<String, Object> getProperties()
-	{
-		return properties;
-	}
-
 	/**
 	 * @return record or null
 	 * @see #getProperty(String)
@@ -251,7 +204,7 @@ public final class Event
 	 *
 	 * @param eventBusId
 	 * @return
-	 * 		<ul>
+	 *         <ul>
 	 *         <li>true if event was successfully marked
 	 *         <li>false if event was already received by given event bus ID
 	 *         </ul>
@@ -451,25 +404,11 @@ public final class Event
 			return this;
 		}
 
-		/**
-		 * NOTE: DON'T use this method. It is mainly used for deserializations.
-		 *
-		 * @param properties
-		 */
-		public Builder putProperties(final ImmutableMap<String, Object> properties)
-		{
-			for (final Map.Entry<String, Object> e : properties.entrySet())
-			{
-				putPropertyFromObject(e.getKey(), e.getValue());
-			}
-			return this;
-		}
-
 		public final Builder putPropertyFromObject(final String name, final Object value)
 		{
 			if (value == null)
 			{
-				properties.put(name, null);
+				properties.remove(name);
 				return this;
 			}
 			else if (value instanceof Integer)
@@ -484,7 +423,7 @@ public final class Event
 			{
 				final Double doubleValue = (Double)value;
 				final int intValue = doubleValue.intValue();
-				if (doubleValue == intValue)
+				if (doubleValue.doubleValue() == intValue)
 				{
 					return putProperty(name, intValue);
 				}
@@ -525,6 +464,5 @@ public final class Event
 			return this;
 		}
 
-		
 	}
 }

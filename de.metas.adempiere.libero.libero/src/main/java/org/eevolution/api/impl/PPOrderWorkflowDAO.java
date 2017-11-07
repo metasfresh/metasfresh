@@ -59,7 +59,7 @@ public class PPOrderWorkflowDAO implements IPPOrderWorkflowDAO
 		final IQueryBuilder<I_PP_Order_Node> queryBuilder = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_PP_Order_Node.class, ctx, trxName);
 
-		final ICompositeQueryFilter<I_PP_Order_Node> filters = queryBuilder.getFilters();
+		final ICompositeQueryFilter<I_PP_Order_Node> filters = queryBuilder.getCompositeFilter();
 		filters.addEqualsFilter(I_PP_Order_Node.COLUMNNAME_PP_Order_Workflow_ID, ppOrderWorkflowId);
 		filters.addOnlyActiveRecordsFilter();
 
@@ -86,7 +86,7 @@ public class PPOrderWorkflowDAO implements IPPOrderWorkflowDAO
 		final IQueryBuilder<I_PP_Order_Node> queryBuilder = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_PP_Order_Node.class, ctx, trxName);
 
-		final ICompositeQueryFilter<I_PP_Order_Node> filters = queryBuilder.getFilters();
+		final ICompositeQueryFilter<I_PP_Order_Node> filters = queryBuilder.getCompositeFilter();
 		filters.addEqualsFilter(I_PP_Order_Node.COLUMNNAME_PP_Order_ID, ppOrderId);
 		filters.addOnlyActiveRecordsFilter();
 
@@ -123,7 +123,7 @@ public class PPOrderWorkflowDAO implements IPPOrderWorkflowDAO
 		final IQueryBuilder<I_PP_Order_NodeNext> queryBuilder = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_PP_Order_NodeNext.class, ctx, trxName);
 
-		final ICompositeQueryFilter<I_PP_Order_NodeNext> filters = queryBuilder.getFilters();
+		final ICompositeQueryFilter<I_PP_Order_NodeNext> filters = queryBuilder.getCompositeFilter();
 		filters.addEqualsFilter(I_PP_Order_NodeNext.COLUMNNAME_PP_Order_Node_ID, orderNodeId);
 		filters.addOnlyActiveRecordsFilter();
 

@@ -55,7 +55,9 @@ public class C_Order
 
 	private static final String MSG_ORDER_DATE_ORDERED_CHANGE_FORBIDDEN_1P = "Order_DateOrdered_Change_Forbidden";
 
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE }, ignoreColumnsChanged= {I_C_Order.COLUMNNAME_DateOrdered} )
+	@ModelChange(
+			timings = { ModelValidator.TYPE_BEFORE_CHANGE }, 
+			ifColumnsChanged = {I_C_Order.COLUMNNAME_DateOrdered} )
 	public void updateDataEntry(final I_C_Order order)
 	{
 		final IOrderDAO orderDAO = Services.get(IOrderDAO.class);

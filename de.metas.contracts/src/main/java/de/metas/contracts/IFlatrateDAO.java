@@ -220,5 +220,7 @@ public interface IFlatrateDAO extends ISingletonService
 	 * @return
 	 */
 	I_C_Flatrate_Data retriveOrCreateFlatrateData(I_C_BPartner bPartner);
+	
+	I_C_Flatrate_Term retrieveAncestorFlatrateTerm(I_C_Flatrate_Term contract);
 
 }

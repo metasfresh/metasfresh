@@ -72,7 +72,8 @@ import lombok.NonNull;
 @Validator(I_M_ShipmentSchedule.class)
 public class M_ShipmentSchedule
 {
-	private static final String ERR_QtyDeliveredGreatedThanQtyOrdered = "ERR_QtyDeliveredGreatedThanQtyOrdered";
+	private static final String MSG_DECREASE_QTY_ORDERED_BELOW_QTY_ALREADY_DELIVERED_IS_NOT_ALLOWED = //
+			"de.metas.inoutcandidate.DecreaseQtyOrderedBelowQtyAlreadyDeliveredIsNotAllowed";
 
 	/**
 	 * Does some sanity checks on the given <code>schedule</code>
@@ -182,10 +183,10 @@ public class M_ShipmentSchedule
 		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 		final I_M_ShipmentSchedule oldShipmentSchedule = InterfaceWrapperHelper.createOld(shipmentSchedule, I_M_ShipmentSchedule.class);
 		final int oldBpartnerId = shipmentScheduleEffectiveBL.getC_BPartner_ID(oldShipmentSchedule);
-		
+
 		return oldBpartnerId;
 	}
-	
+
 	private void invalidateForOldAndNewBPartners(
 			@NonNull final I_M_ShipmentSchedule shipmentSchedule,
 			final int oldBpartnerId)
@@ -252,7 +253,7 @@ public class M_ShipmentSchedule
 
 		// note: scheduleOld.getHeaderAggregationKey() being empty is also covered in the shipmentSchedulePA method
 		final I_M_ShipmentSchedule scheduleOld = InterfaceWrapperHelper.createOld(schedule, I_M_ShipmentSchedule.class);
-		final Set<String> headerAggregationKeys = new HashSet<String>();
+		final Set<String> headerAggregationKeys = new HashSet<>();
 		headerAggregationKeys.add(scheduleOld.getHeaderAggregationKey());
 		headerAggregationKeys.add(schedule.getHeaderAggregationKey());
 
@@ -263,7 +264,9 @@ public class M_ShipmentSchedule
 	}
 
 	/**
-	 * Updates the given candidate's QtyOrdered and
+	 * Updates the given candidate's QtyOrdered.
+	 * <p>
+	 * IMPORTANT: we do not want to prohibit over-deliveries. That's why this method shall not be fired if e.g. QtyDelivered changed.
 	 *
 	 * @param shipmentSchedule
 	 */
@@ -271,9 +274,7 @@ public class M_ShipmentSchedule
 			timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, //
 			ifColumnsChanged = { //
 					I_M_ShipmentSchedule.COLUMNNAME_QtyOrdered_Calculated,
-					I_M_ShipmentSchedule.COLUMNNAME_QtyOrdered_Override,
-					I_M_ShipmentSchedule.COLUMNNAME_QtyDelivered,
-					I_M_ShipmentSchedule.COLUMNNAME_IsClosed
+					I_M_ShipmentSchedule.COLUMNNAME_QtyOrdered_Override
 			})
 	public void updateQtyOrdered(final I_M_ShipmentSchedule shipmentSchedule)
 	{
@@ -285,7 +286,7 @@ public class M_ShipmentSchedule
 
 		if (qtyDelivered.compareTo(qtyOrdered) > 0)
 		{
-			throw new AdempiereException(ERR_QtyDeliveredGreatedThanQtyOrdered, new Object[] { qtyDelivered });
+			throw new AdempiereException(MSG_DECREASE_QTY_ORDERED_BELOW_QTY_ALREADY_DELIVERED_IS_NOT_ALLOWED, new Object[] { qtyDelivered });
 		}
 
 		updateQtyOrderedOfOrderLineAndReserveStock(shipmentSchedule);

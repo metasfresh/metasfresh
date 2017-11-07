@@ -25,8 +25,6 @@ package de.metas.document.refid.api;
 
 import java.util.List;
 
-import org.compiere.model.PO;
-
 import de.metas.document.refid.model.I_C_ReferenceNo_Type;
 import de.metas.document.refid.spi.IReferenceNoGenerator;
 
@@ -36,7 +34,7 @@ public interface IReferenceNoGeneratorInstance
 	 * @param source
 	 * @return generated reference number or {@link IReferenceNoGenerator#REFERENCENO_None} if no reference number was generated
 	 */
-	String generateReferenceNo(PO source);
+	String generateReferenceNo(Object sourceModel);
 
 	I_C_ReferenceNo_Type getType();
 

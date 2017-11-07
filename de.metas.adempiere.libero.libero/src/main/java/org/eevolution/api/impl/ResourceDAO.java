@@ -51,7 +51,7 @@ public class ResourceDAO implements IResourceDAO
 		final IQueryBuilder<I_S_Resource> queryBuilder = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_S_Resource.class, ctx, ITrx.TRXNAME_None);
 
-		final ICompositeQueryFilter<I_S_Resource> filters = queryBuilder.getFilters();
+		final ICompositeQueryFilter<I_S_Resource> filters = queryBuilder.getCompositeFilter();
 
 		//
 		// Only manufacturing resources

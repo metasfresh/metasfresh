@@ -29,6 +29,7 @@ import java.util.Iterator;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.adempiere.util.StringUtils;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.Query;
 import org.compiere.util.DB;
@@ -70,6 +71,8 @@ public class C_Flatrate_Term_Extend
 
 			addLog("@Processed@: @C_Flatrate_Term_ID@ " + termToExtend.getC_Flatrate_Term_ID());
 			InterfaceWrapperHelper.save(termToExtend);
+			
+			getResult().setRecordToRefreshAfterExecution(TableRecordReference.of(termToExtend));
 		}
 		else
 		{

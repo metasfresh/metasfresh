@@ -196,4 +196,11 @@ public interface IFlatrateBL extends ISingletonService
 	 * @param term
 	 */
 	void completeIfValid(I_C_Flatrate_Term term);
+
+	/**
+	 * return the initial contract, looping back through contracts
+	 * @param term
+	 * @return
+	 */
+	I_C_Flatrate_Term getInitialFlatrateTerm(I_C_Flatrate_Term term);
 }

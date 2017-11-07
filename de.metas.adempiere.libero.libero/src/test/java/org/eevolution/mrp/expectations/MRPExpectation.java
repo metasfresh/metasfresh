@@ -347,7 +347,7 @@ public class MRPExpectation<ParentExpectationType> extends AbstractExpectation<P
 		final IQueryBuilder<I_PP_MRP> queryBuilder = queryBL
 				.createQueryBuilder(I_PP_MRP.class, getContext());
 
-		final ICompositeQueryFilter<I_PP_MRP> filters = queryBuilder.getFilters();
+		final ICompositeQueryFilter<I_PP_MRP> filters = queryBuilder.getCompositeFilter();
 
 		if (_plant != null)
 		{

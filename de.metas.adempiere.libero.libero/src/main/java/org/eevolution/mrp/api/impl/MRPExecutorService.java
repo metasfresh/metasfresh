@@ -10,12 +10,12 @@ package org.eevolution.mrp.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -50,7 +50,7 @@ public class MRPExecutorService implements IMRPExecutorService
 
 	public static final String MRP_ERROR_MRPExecutorMaxIterationsExceeded = ErrorCodes.MRP_ERROR_999_Unknown; // TODO: add particular MRP code for this
 
-	private final ThreadLocal<IMRPExecutor> _currentMRPExecutor = new ThreadLocal<IMRPExecutor>();
+	private final ThreadLocal<IMRPExecutor> _currentMRPExecutor = new ThreadLocal<>();
 
 	/**
 	 * Creates and returns a new executor (but doesn't reference it).
@@ -95,9 +95,7 @@ public class MRPExecutorService implements IMRPExecutorService
 	@Override
 	public IMRPResult run(final List<IMaterialPlanningContext> mrpContexts)
 	{
-		final IMRPExecutor mrpExecutor = Adempiere
-				.getSpringApplicationContext()
-				.getBean(IMRPExecutor.class);
+		final IMRPExecutor mrpExecutor = Adempiere.getBean(IMRPExecutor.class);
 
 		//
 		// Cleanup all MRP segments before starting to plan on them
@@ -140,7 +138,7 @@ public class MRPExecutorService implements IMRPExecutorService
 		final IMRPExecutor mrpExecutor = Adempiere
 				.getSpringApplicationContext()
 				.getBean(IMRPExecutor.class);
-		
+
 		cleanup(mrpContexts, mrpExecutor);
 		return mrpExecutor.getMRPResult();
 	}

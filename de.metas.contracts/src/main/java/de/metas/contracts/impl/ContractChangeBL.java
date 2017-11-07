@@ -42,6 +42,7 @@ import org.slf4j.Logger;
 import de.metas.contracts.ContractChangeParameters;
 import de.metas.contracts.IContractChangeBL;
 import de.metas.contracts.IContractChangeDAO;
+import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.model.I_C_Contract_Change;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_SubscriptionProgress;
@@ -63,9 +64,27 @@ public class ContractChangeBL implements IContractChangeBL
 
 	private static final Logger logger = LogManager.getLogger(ContractChangeBL.class);
 
+	
+	
 	@Override
 	public void cancelContract(final I_C_Flatrate_Term currentTerm,
 			final @NonNull ContractChangeParameters contractChangeParameters)
+	{
+		final I_C_Flatrate_Term initialContract = Services.get(IFlatrateBL.class).getInitialFlatrateTerm(currentTerm);
+		if (initialContract == null)
+		{
+			cancelContract0(currentTerm, contractChangeParameters);
+		}
+		else
+		{
+			// start canceling with first ancestor
+			cancelContract0(initialContract, contractChangeParameters);
+		}
+	}
+	
+	
+	private void cancelContract0(@NonNull final I_C_Flatrate_Term currentTerm,
+			@NonNull final ContractChangeParameters contractChangeParameters)
 	{
 		final Timestamp changeDate = contractChangeParameters.getChangeDate();
 		final boolean isCloseInvoiceCandidate = contractChangeParameters.isCloseInvoiceCandidate();
@@ -73,7 +92,6 @@ public class ContractChangeBL implements IContractChangeBL
 		Check.assumeNotNull(currentTerm, "Param 'currentTerm' not null");
 		Check.assumeNotNull(changeDate, "Param 'changeDate' not null");
 
-		final IOrderPA orderPA = Services.get(IOrderPA.class);
 
 		final ISubscriptionDAO subscriptionDAO = Services.get(ISubscriptionDAO.class);
 
@@ -100,6 +118,7 @@ public class ContractChangeBL implements IContractChangeBL
 				final I_C_Order currentTermOrder = currentTermOl.getC_Order();
 
 				// we create an order to document that a change is taking place
+				final IOrderPA orderPA = Services.get(IOrderPA.class);
 				final I_C_Order termChangeOrder = orderPA.copyOrder(currentTermOrder, false, trxName);
 				termChangeOrder.setM_PricingSystem_ID(pricingSystemId);
 
@@ -126,34 +145,22 @@ public class ContractChangeBL implements IContractChangeBL
 				deleteDeliveriesAdjustOrderLine(sps, null, null, changeDate);
 			}
 
-			// update EndDate
-			if (changeDate.before(currentTerm.getStartDate()))
-			{
-				currentTerm.setEndDate(currentTerm.getStartDate());
-			}
-			else
-			{
-				currentTerm.setEndDate(new Timestamp(changeDate.getTime()));
-			}
+			currentTerm.setEndDate(computeEndDate(currentTerm, changeDate));
 			
-			// update contract status
-			currentTerm.setContractStatus(X_C_Flatrate_Term.CONTRACTSTATUS_Quit);
 		}
 
 		setTerminatioReasonAndMemo(currentTerm, contractChangeParameters);
-		currentTerm.setMasterEndDate(currentTerm.getEndDate());		
+		currentTerm.setMasterEndDate(computeMasterEndDate(currentTerm, changeDate));		
 		currentTerm.setIsCloseInvoiceCandidate(isCloseInvoiceCandidate); 
+		
+		// make sure that the canceled term won't be extended by the system
+		currentTerm.setIsAutoRenew(false);
+		currentTerm.setContractStatus(X_C_Flatrate_Term.CONTRACTSTATUS_Quit);
 		
 		if (currentTerm.getC_FlatrateTerm_Next_ID() > 0)
 		{
 			// the canceled term has already been extended, so we need to cancel the next term as well
-			cancelContract(currentTerm.getC_FlatrateTerm_Next(), contractChangeParameters);
-		}
-		else
-		{
-			// make sure that the canceled term won't be extended by the system
-			currentTerm.setIsAutoRenew(false);
-			currentTerm.setContractStatus(X_C_Flatrate_Term.CONTRACTSTATUS_Quit);
+			cancelContract0(currentTerm.getC_FlatrateTerm_Next(), contractChangeParameters);
 		}
 
 		
@@ -162,6 +169,32 @@ public class ContractChangeBL implements IContractChangeBL
  		Services.get(IInvoiceCandidateHandlerBL.class).invalidateCandidatesFor(currentTerm);
 	}
 
+	private Timestamp computeEndDate(@NonNull final I_C_Flatrate_Term currentTerm, final Timestamp changeDate)
+	{
+		if (changeDate.before(currentTerm.getStartDate()))
+		{
+			return currentTerm.getStartDate();
+		}
+		
+		return new Timestamp(changeDate.getTime());
+	}
+	
+	private Timestamp computeMasterEndDate(@NonNull final I_C_Flatrate_Term contract, final Timestamp changeDate)
+	{
+		final I_C_Flatrate_Term initialContract = Services.get(IFlatrateBL.class).getInitialFlatrateTerm(contract);
+		if (initialContract == null && !changeDate.after(contract.getEndDate()))  
+		{
+				return contract.getEndDate(); 
+		}
+		
+		if (initialContract != null && changeDate.before(initialContract.getStartDate()))
+		{
+			return initialContract.getStartDate();
+		}
+
+		return	new Timestamp(changeDate.getTime());
+	}
+	
 	private void setTerminatioReasonAndMemo(@NonNull final I_C_Flatrate_Term currentTerm, final @NonNull ContractChangeParameters contractChangeParameters)
 	{
 		final String terminationMemo = contractChangeParameters.getTerminationMemo();
@@ -184,8 +217,6 @@ public class ContractChangeBL implements IContractChangeBL
 			final I_C_OrderLine oldOl,
 			final Timestamp changeDate)
 	{
-		final IOrderPA orderPA = Services.get(IOrderPA.class);
-
 		BigDecimal surplusQty = BigDecimal.ZERO;
 		for (final I_C_SubscriptionProgress currentSP : sps)
 		{
@@ -216,6 +247,7 @@ public class ContractChangeBL implements IContractChangeBL
 		{
 			logger.info("Adjusting QtyOrdered of order " + oldOrder.getDocumentNo() + ", line " + oldOl.getLine());
 			oldOl.setQtyOrdered(oldOl.getQtyOrdered().subtract(surplusQty));
+			final IOrderPA orderPA = Services.get(IOrderPA.class);
 			orderPA.reserveStock(oldOrder, oldOl);
 		}
 	}

@@ -62,7 +62,6 @@ public final class NullAttributeStorage implements IAttributeStorage
 
 	private NullAttributeStorage()
 	{
-		super();
 	}
 
 	@Override
