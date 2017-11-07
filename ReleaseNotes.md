@@ -38,14 +38,19 @@ Here come the actual release notes:
   * [#2859](https://github.com/metasfresh/metasfresh/issues/2859) Pre-enddate termination of flatrate created compensation sales order
     * New sysconfig to control if compensation Sales Orders are created.
   * [#2862](https://github.com/metasfresh/metasfresh/issues/2862) Set MasterStartDate for a contract when creating from order
+    * Improvement in Subscription Contract, now setting the Master Start Date initially when creating the Subscription from Sales Order.
   * [#2866](https://github.com/metasfresh/metasfresh/issues/2866) Make sure that 'Print All' is working in webui
+    * Further improvement of the Handling of Printing when using select all in WebUI.
   * [#2874](https://github.com/metasfresh/metasfresh/issues/2874) Create special filters in printing queue
+    * New Filters in Prining Queue Window in WebUI.
   * [#2878](https://github.com/metasfresh/metasfresh/issues/2878) Support for 6 digits AccountNo length in ReferenceNumber
+    * Adjustment of ESR ReferenceNo Handling, extending the allowed Account No to 6 digits.
   * [#2880](https://github.com/metasfresh/metasfresh/issues/2880) Add greeting to partner quick creation from order
+    * Enhancement of the Quick Businesspartner creation in Sales Order, now allowing to record the Greeting.
   * [#2881](https://github.com/metasfresh/metasfresh/issues/2881) Add a process that removes pauses and can be ran from Contract window
+    * New Action in Contract Window that enables the cancellation of Subscription Pauses.
   * [#2887](https://github.com/metasfresh/metasfresh/issues/2887) Make ShipmentSchedule column reference search in C_SubscriptionProgress
-  * [#2895](https://github.com/metasfresh/metasfresh/issues/2895) AD_Ref_Table needs lower-case WHERE and FROM
-  * [#2907](https://github.com/metasfresh/metasfresh/issues/2907) set masterenddate correctly when extending contracts
+    * New Filter for Shipment Schedule Line in Subscription Progress.
 
 * metasfresh-webui-api
   * [#19](https://github.com/metasfresh/metasfresh-webui-api/issues/19) Cache invalidation
@@ -63,6 +68,10 @@ Here come the actual release notes:
 * metasfresh
   * [#2876](https://github.com/metasfresh/metasfresh/issues/2876) Fix Recreate printing queue for webui
   * [#2885](https://github.com/metasfresh/metasfresh/issues/2885) Test canceling extended contracts and fix if needed
+  * [#2895](https://github.com/metasfresh/metasfresh/issues/2895) AD_Ref_Table needs lower-case WHERE and FROM
+    * Fix for SQL Validation in Reference Table.
+  * [#2907](https://github.com/metasfresh/metasfresh/issues/2907) set masterenddate correctly when extending contracts
+    * Fix for the prolongation Functionality of contracts. Now setting the Master End Date correctly.
 
 * metasfresh-webui-api
   * [#633](https://github.com/metasfresh/metasfresh-webui-api/issues/633) Materialdispo Target Warehouse checks Warehouse Routing
