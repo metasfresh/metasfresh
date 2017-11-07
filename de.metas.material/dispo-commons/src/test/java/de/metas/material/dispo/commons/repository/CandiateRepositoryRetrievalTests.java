@@ -77,9 +77,6 @@ public class CandiateRepositoryRetrievalTests
 
 	private CandidateRepositoryRetrieval candidateRepository;
 
-	private CandidateRepositoryCommands candidateRepositoryCommands;
-
-	private ProductDescriptorFactory productDescriptorFactory;
 
 	private RepositoryTestHelper repositoryTestHelper;
 
@@ -91,9 +88,11 @@ public class CandiateRepositoryRetrievalTests
 	{
 		AdempiereTestHelper.get().init();
 
-		productDescriptorFactory = ProductDescriptorFactory.TESTING_INSTANCE;
+		final ProductDescriptorFactory productDescriptorFactory = ProductDescriptorFactory.TESTING_INSTANCE;
+
 		candidateRepository = new CandidateRepositoryRetrieval(productDescriptorFactory);
-		candidateRepositoryCommands = new CandidateRepositoryCommands();
+
+		final CandidateRepositoryCommands candidateRepositoryCommands = new CandidateRepositoryCommands();
 		repositoryTestHelper = new RepositoryTestHelper(productDescriptorFactory, candidateRepositoryCommands);
 	}
 

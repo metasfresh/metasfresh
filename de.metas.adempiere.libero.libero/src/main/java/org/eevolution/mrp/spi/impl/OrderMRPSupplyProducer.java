@@ -10,12 +10,12 @@ package org.eevolution.mrp.spi.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -31,7 +31,6 @@ import java.util.Properties;
 import org.adempiere.ad.modelvalidator.DocTimingType;
 import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.ad.service.IADReferenceDAO;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -242,7 +241,7 @@ public class OrderMRPSupplyProducer extends AbstractMRPSupplyProducer
 
 	/**
 	 * Create MRP record based in Order
-	 * 
+	 *
 	 * @param MOrder
 	 */
 	private void C_Order(final I_C_Order order)
@@ -280,7 +279,7 @@ public class OrderMRPSupplyProducer extends AbstractMRPSupplyProducer
 
 	/**
 	 * Create MRP record based in Order Line
-	 * 
+	 *
 	 * @param MOrderLine
 	 */
 	private void C_OrderLine(final I_C_OrderLine orderLine)
@@ -359,9 +358,9 @@ public class OrderMRPSupplyProducer extends AbstractMRPSupplyProducer
 
 	/**
 	 * Gets warehouse ID from given order line.
-	 * 
+	 *
 	 * If there is no warehouse in order line, ask current warehouse advisor.
-	 * 
+	 *
 	 * @param ol
 	 * @return warehouse ID
 	 */
@@ -529,7 +528,7 @@ public class OrderMRPSupplyProducer extends AbstractMRPSupplyProducer
 
 	/**
 	 * Create Make-to-Order Manufacturing Order base on Planning Data
-	 * 
+	 *
 	 * @param pp Product Planning
 	 * @param C_OrderLine_ID Sales Order Line
 	 * @param M_AttributeSetInstance_ID ASI

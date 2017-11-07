@@ -112,7 +112,7 @@ public final class CandidatesQuery
 	MaterialDescriptor materialDescriptor;
 
 	boolean matchExactStorageAttributesKey;
-	
+
 	/**
 	 * Used for additional infos if this candidate has the sub type {@link CandidateSubType#PRODUCTION}.
 	 */
@@ -174,7 +174,7 @@ public final class CandidatesQuery
 	 */
 	public boolean matches(final Candidate candidate)
 	{
-		if (materialDescriptor != null || materialDescriptor.getDate() != null)
+		if (materialDescriptor != null && materialDescriptor.getDate() != null)
 		{
 			final boolean dateMatches;
 			switch (materialDescriptor.getDateOperator())

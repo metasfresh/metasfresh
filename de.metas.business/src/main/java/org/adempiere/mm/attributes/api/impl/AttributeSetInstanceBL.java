@@ -201,7 +201,7 @@ public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 	public I_M_AttributeSetInstance createASI(final I_M_Product product)
 	{
 		Check.assumeNotNull(product, "Product must not be null");
-		final I_M_AttributeSetInstance asiNew = InterfaceWrapperHelper.newInstance(I_M_AttributeSetInstance.class, product);
+		final I_M_AttributeSetInstance asiNew = newInstance(I_M_AttributeSetInstance.class, product);
 
 		// use the method from the service so if the product doesn't have an AS, it can be taken from product category
 		final int productAttributeSet_ID = Services.get(IProductBL.class).getM_AttributeSet_ID(product);
@@ -245,14 +245,13 @@ public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 		I_M_AttributeInstance attributeInstance = attributeDAO.retrieveAttributeInstance(asi, attributeId);
 		if (attributeInstance == null)
 		{
-			attributeInstance = InterfaceWrapperHelper.newInstance(I_M_AttributeInstance.class, asi);
+			attributeInstance = newInstance(I_M_AttributeInstance.class, asi);
 		}
 		attributeInstance.setM_AttributeSetInstance(asi);
 		attributeInstance.setM_AttributeValue(attributeValue);
 		attributeInstance.setValue(attributeValue.getValue());
 		attributeInstance.setM_Attribute_ID(attributeId);
-		attributeInstance.setIsActive(true);
-		InterfaceWrapperHelper.save(attributeInstance);
+		save(attributeInstance);
 
 		return attributeInstance;
 	}
@@ -273,10 +272,10 @@ public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 
 		//
 		// Create New
-		final I_M_AttributeInstance instanceNew = InterfaceWrapperHelper.newInstance(I_M_AttributeInstance.class, asi);
+		final I_M_AttributeInstance instanceNew = newInstance(I_M_AttributeInstance.class, asi);
 		instanceNew.setM_Attribute_ID(attributeId);
 		instanceNew.setM_AttributeSetInstance_ID(asi.getM_AttributeSetInstance_ID());
-		InterfaceWrapperHelper.save(instanceNew);
+		save(instanceNew);
 		return instanceNew;
 	}
 

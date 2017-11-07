@@ -29,7 +29,6 @@ import java.util.Properties;
 
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.adempiere.warehouse.api.IWarehouseBL;
@@ -174,14 +173,14 @@ public class PP_Order extends CalloutEngine
 	protected static I_PP_Product_Planning findPP_Product_Planning(final I_PP_Order ppOrder)
 	{
 		final Properties ctx = Env.getCtx();
-		
+
 		I_PP_Product_Planning pp = Services.get(IProductPlanningDAO.class).find(ctx,
-				ppOrder.getAD_Org_ID(), 
+				ppOrder.getAD_Org_ID(),
 				ppOrder.getM_Warehouse_ID(),
-				ppOrder.getS_Resource_ID(), 
+				ppOrder.getS_Resource_ID(),
 				ppOrder.getM_Product_ID(),
 				ppOrder.getM_AttributeSetInstance_ID());
-		
+
 		if (pp == null)
 		{
 			pp = newInstance(I_PP_Product_Planning.class);

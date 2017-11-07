@@ -13,12 +13,12 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -51,7 +51,7 @@ import de.metas.javaclasses.model.I_AD_JavaClass_Type;
 
 /**
  * Base context and helpers for {@link M_Attribute}s related tests.
- * 
+ *
  * @author tsa
  *
  */
@@ -99,7 +99,7 @@ public class AttributesTestHelper
 		save(attribute);
 		return attribute;
 	}
-	
+
 	public I_M_Attribute createM_Attribute_TypeList(final String name)
 	{
 		final I_M_Attribute attribute = InterfaceWrapperHelper.newInstance(I_M_Attribute.class, context);
@@ -111,7 +111,7 @@ public class AttributesTestHelper
 	}
 
 	public I_M_AttributeValue createM_AttributeValue(
-			final org.compiere.model.I_M_Attribute attribute, 
+			final I_M_Attribute attribute,
 			final String value)
 	{
 		final I_M_AttributeValue attributeValue = InterfaceWrapperHelper.newInstance(I_M_AttributeValue.class, context);
@@ -121,9 +121,9 @@ public class AttributesTestHelper
 		save(attributeValue);
 		return attributeValue;
 	}
-	
+
 	public I_M_AttributeValue_Mapping createM_AttributeValue_Mapping(
-			final I_M_AttributeValue attributeValue, 
+			final I_M_AttributeValue attributeValue,
 			final I_M_AttributeValue attributeValueTo)
 	{
 		final I_M_AttributeValue_Mapping attributeValueMapping = InterfaceWrapperHelper.newInstance(I_M_AttributeValue_Mapping.class, context);
@@ -154,7 +154,7 @@ public class AttributesTestHelper
 		save(javaClassTypeDef);
 		return javaClassTypeDef;
 	}
-	
+
 	public void createAD_Ref_List_Items(final int adReferenceId, final String ...values)
 	{
 		for (final String value : values)
@@ -189,7 +189,7 @@ public class AttributesTestHelper
 			final I_C_UOM uom,
 			final boolean isInstanceAttribute)
 	{
-	
+
 		final I_AD_JavaClass javaClassDef;
 		if (javaClass != null)
 		{
@@ -202,16 +202,16 @@ public class AttributesTestHelper
 		{
 			javaClassDef = null;
 		}
-	
+
 		final I_M_Attribute attr;
-	
+
 		// make sure the attribute was not already defined
 		final I_M_Attribute existingAttribute = retrieveAttributeValue(name);
 		if (existingAttribute != null)
 		{
 			attr = existingAttribute;
 		}
-	
+
 		else
 		{
 			attr = newInstanceOutOfTrx(I_M_Attribute.class);
@@ -219,24 +219,24 @@ public class AttributesTestHelper
 		attr.setValue(name);
 		attr.setName(name);
 		attr.setAttributeValueType(valueType);
-	
+
 		//
 		// Assume all attributes active and non-mandatory
 		attr.setIsActive(true);
 		attr.setIsMandatory(false);
-	
+
 		//
 		// Configure ASI usage
 		attr.setIsInstanceAttribute(isInstanceAttribute);
-	
+
 		//
 		// Configure JC
 		attr.setAD_JavaClass(javaClassDef);
-	
+
 		//
 		// Configure UOM
 		attr.setC_UOM(uom);
-	
+
 		save(attr);
 		return attr;
 	}
@@ -257,7 +257,7 @@ public class AttributesTestHelper
 		final Class<?> javaClass = null;
 		final I_M_Attribute attr = createM_Attribute(name, valueType, javaClass, isInstanceAttribute);
 		save(attr);
-	
+
 		return attr;
 	}
 }

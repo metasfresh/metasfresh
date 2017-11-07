@@ -223,14 +223,13 @@ public class CandidateRepositoryCommands
 			candidateRecord.setMD_Candidate_Parent_ID(candidate.getParentId());
 		}
 
-		// if the candidate has a SeqNo to sync and
-		// if candidateRecordToUse does not yet have one, or if the existing seqNo is not protected by 'preserveExistingSeqNo', then (over)write it.
-		if (candidate.getSeqNo() > 0)
+		final boolean candidateHasSeqNoToSync = candidate.getSeqNo() > 0;
+		final boolean candidateRecordHasNoSeqNo = candidateRecord.getSeqNo() <= 0;
+		if (candidateHasSeqNoToSync
+				&& (candidateRecordHasNoSeqNo || !preserveExistingSeqNo))
 		{
-			if (candidateRecord.getSeqNo() <= 0 || !preserveExistingSeqNo)
-			{
-				candidateRecord.setSeqNo(candidate.getSeqNo());
-			}
+			candidateRecord.setSeqNo(candidate.getSeqNo());
+
 		}
 
 		if (candidate.getGroupId() > 0)
