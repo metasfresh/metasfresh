@@ -46,6 +46,8 @@ import org.adempiere.util.lang.Mutable;
 import org.compiere.util.TrxRunnable;
 import org.slf4j.Logger;
 
+import com.google.common.collect.ImmutableList;
+
 import de.metas.adempiere.service.IPrinterRoutingDAO;
 import de.metas.async.api.IAsyncBatchBL;
 import de.metas.async.api.IWorkPackageQueue;
@@ -85,7 +87,7 @@ public class PrintJobBL implements IPrintJobBL
 
 	private final static transient Logger logger = LogManager.getLogger(PrintJobBL.class);
 
-	private final IPrintingDAO dao = Services.get(IPrintingDAO.class);
+	private final IPrintingDAO printingDAO = Services.get(IPrintingDAO.class);
 	private final IAsyncBatchBL asyncBatchBL = Services.get(IAsyncBatchBL.class);
 	private final IPrinterBL printerBL = Services.get(IPrinterBL.class);
 
@@ -366,10 +368,10 @@ public class PrintJobBL implements IPrintJobBL
 			final I_C_Printing_Queue item = items.next();
 			if (source.isPrinted(item))
 			{
-				// Item was already printed, skip it
 				logger.debug("Skipping {} because is already printed", item);
 				continue;
 			}
+			
 			if (lastItemCopies >= 0 && item.getCopies() != lastItemCopies)
 			{
 				logger.info("The lat item had copies = {}, the current one has copies = {}; not adding further items to printJob = {}",
@@ -381,12 +383,10 @@ public class PrintJobBL implements IPrintJobBL
 			{
 				printJob = createPrintJob(item, trxName, printingQueueProcessingInfo.getAD_User_PrintJob_ID());
 			}
-			
+
 			final int maxLinesPerJobToUse = getMaxLinesPerJob(printJob);
 			if (maxLinesPerJobToUse > 0 && lineCount >= maxLinesPerJobToUse)
 			{
-				// we just created the 500th line of 'printJob' (or whatever the value of 'MAX_JOBPRINTLINES' is)
-				// that means that we stop here, we leave the iterator as is and next call of this method will process next lines
 				logger.info("Max lines per print job = {} reached; not adding further items", maxLinesPerJobToUse);
 				break;
 			}
@@ -407,20 +407,7 @@ public class PrintJobBL implements IPrintJobBL
 			return null;
 		}
 
-		//
-		// Create default instructions
-		final List<I_C_Print_Job_Instructions> result = new ArrayList<I_C_Print_Job_Instructions>();
-		for (final Integer adUserToPrintId : printingQueueProcessingInfo.getAD_User_ToPrint_IDs())
-		{
-			final I_C_Print_Job_Instructions instructions = createPrintJobInstructions(printJob,
-					adUserToPrintId,
-					printingQueueProcessingInfo.isCreateWithSpecificHostKey(),
-					firstLine,
-					lastLine,
-					lastItemCopies);
-			result.add(instructions);
-		}
-		return result;
+		return createPrintJobInstructionsForUsersToPrint(printingQueueProcessingInfo, firstLine, lastLine);
 	}
 
 	private I_C_Print_Job createPrintJob(@NonNull final I_C_Printing_Queue item, @NonNull final String trxName, final int adUserId)
@@ -432,7 +419,7 @@ public class PrintJobBL implements IPrintJobBL
 		printJob.setIsActive(true);
 		printJob.setProcessed(false);
 		InterfaceWrapperHelper.save(printJob);
-		
+
 		return printJob;
 	}
 
@@ -487,19 +474,36 @@ public class PrintJobBL implements IPrintJobBL
 		return printJobLine;
 	}
 
+	private List<I_C_Print_Job_Instructions> createPrintJobInstructionsForUsersToPrint(@NonNull final PrintingQueueProcessingInfo printingQueueProcessingInfo,
+			@NonNull final I_C_Print_Job_Line firstLine, @NonNull final I_C_Print_Job_Line lastLine)
+	{
+		final int lastItemCopies = getItemCopies(lastLine);
+		final List<Integer> userIDsToPrint = printingQueueProcessingInfo.getAD_User_ToPrint_IDs();
+		return userIDsToPrint.stream()
+				.map(adUserToPrintId -> createPrintJobInstructions(adUserToPrintId,
+						printingQueueProcessingInfo.isCreateWithSpecificHostKey(),
+						firstLine,
+						lastLine,
+						lastItemCopies))
+				.collect(ImmutableList.toImmutableList());
+	}
+	
+	private int getItemCopies(@NonNull final I_C_Print_Job_Line jobLine)
+	{
+		final I_C_Printing_Queue pq = jobLine.getC_Printing_Queue();
+		return pq.getCopies();
+	}
+
 	@Override
-	public I_C_Print_Job_Instructions createPrintJobInstructions(final I_C_Print_Job printJob,
-			final int userToPrintId,
+	public I_C_Print_Job_Instructions createPrintJobInstructions(final int userToPrintId,
 			final boolean createWithSpecificHostKey,
-			final I_C_Print_Job_Line firstLine,
-			final I_C_Print_Job_Line lastLine,
+			@NonNull final I_C_Print_Job_Line firstLine,
+			@NonNull final I_C_Print_Job_Line lastLine,
 			final int copies)
 	{
-		Check.assumeNotNull(firstLine, "firstLine not null");
-		Check.assumeNotNull(lastLine, "lastLine not null");
 		Check.assume(firstLine.getSeqNo() <= lastLine.getSeqNo(), "First line's sequence({}) <= Last line's sequence({})", firstLine.getSeqNo(), lastLine.getSeqNo());
 
-		final IPrintingDAO printingDAO = Services.get(IPrintingDAO.class);
+		final I_C_Print_Job printJob = firstLine.getC_Print_Job();
 
 		final I_C_Print_Job_Instructions instructions = InterfaceWrapperHelper.newInstance(I_C_Print_Job_Instructions.class, printJob);
 		instructions.setC_Print_Job(printJob);
@@ -553,7 +557,7 @@ public class PrintJobBL implements IPrintJobBL
 
 		final String trxName = InterfaceWrapperHelper.getTrxName(instructions);
 		// set printer for pdf printing
-		instructions.setAD_PrinterHW(dao.retrieveVirtualPrinter(ctx, hostKey, trxName));
+		instructions.setAD_PrinterHW(printingDAO.retrieveVirtualPrinter(ctx, hostKey, trxName));
 
 		InterfaceWrapperHelper.save(instructions);
 		return instructions;
@@ -562,11 +566,9 @@ public class PrintJobBL implements IPrintJobBL
 	@Override
 	public List<I_C_Print_Job_Detail> getCreatePrintJobDetails(final I_C_Print_Job_Line printJobLine)
 	{
-		final IPrintingDAO dao = Services.get(IPrintingDAO.class);
-
 		//
 		// Retrieve details if any
-		List<I_C_Print_Job_Detail> printJobDetails = dao.retrievePrintJobDetailsIfAny(printJobLine);
+		List<I_C_Print_Job_Detail> printJobDetails = printingDAO.retrievePrintJobDetailsIfAny(printJobLine);
 		if (printJobDetails != null && !printJobDetails.isEmpty())
 		{
 			return printJobDetails;

@@ -63,7 +63,6 @@ public interface IPrintJobBL extends ISingletonService
 	/**
 	 * Creates an instructions record for the given print job.
 	 * 
-	 * @param printJob
 	 * @param userToPrintId the user that shall actually do the printing. Note that if this user's printing config forwards to a shared config, then the instructions instance is created for the shared
 	 *            config's user
 	 * @param createWithSpecificHostKey if <code>false</code>, then
@@ -77,8 +76,7 @@ public interface IPrintJobBL extends ISingletonService
 	 * @param copies number of copies to print (1 means one printout).
 	 * @return
 	 */
-	I_C_Print_Job_Instructions createPrintJobInstructions(final I_C_Print_Job printJob,
-			int userToPrintId,
+	I_C_Print_Job_Instructions createPrintJobInstructions(int userToPrintId,
 			boolean createWithSpecificHostKey,
 			I_C_Print_Job_Line firstLine,
 			I_C_Print_Job_Line lastLine,

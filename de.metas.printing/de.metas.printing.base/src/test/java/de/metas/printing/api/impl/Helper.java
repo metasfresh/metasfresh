@@ -301,8 +301,7 @@ public class Helper
 
 		final boolean createWithSpecificHostKey = true; // create with hostKey, so we can verify the key later, if we want.
 
-		return Services.get(IPrintJobBL.class).createPrintJobInstructions(printJob,
-				userToPrintId,
+		return Services.get(IPrintJobBL.class).createPrintJobInstructions(userToPrintId,
 				createWithSpecificHostKey,
 				firstLine,
 				lastLine,
