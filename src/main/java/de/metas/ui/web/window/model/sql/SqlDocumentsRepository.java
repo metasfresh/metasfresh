@@ -654,7 +654,7 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 					return false; // no change
 				}
 
-				final boolean idSet = po.set_ValueNoCheck(poColumnIndex, id);
+				final boolean idSet = po.set_ValueNoCheck(columnName, id);
 				if (!idSet)
 				{
 					throw new AdempiereException("Failed setting ID=" + id + " to " + po);
@@ -713,7 +713,7 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 
 			//
 			// Try setting the value
-			final boolean valueSet = po.set_ValueReturningBoolean(poColumnIndex, fieldValueConv);
+			final boolean valueSet = po.set_ValueOfColumn(columnName, fieldValueConv);
 			if (!valueSet)
 			{
 				logger.warn("Failed setting PO's column: {}={} (old={}) -- PO={}", columnName, fieldValueConv, poValue, po);
@@ -909,7 +909,7 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 
         final LookupValuesList lookupValuesList = documentField.getValueAs(LookupValuesList.class);
         final Set<Object> listValuesToSave = lookupValuesList != null ? new HashSet<>(lookupValuesList.getKeys()) : new HashSet<>();
-        
+
 		//
 		// Delete removed labels
 		{
