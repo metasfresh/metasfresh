@@ -43,8 +43,6 @@ import lombok.Value;
 @Builder
 public class AttributesKeyGenerator
 {
-	// TODO test this stuff
-
 	int attributeSetInstanceId;
 
 	@NonNull
@@ -55,13 +53,12 @@ public class AttributesKeyGenerator
 	@Default
 	Predicate<I_M_AttributeInstance> attributeInstanceFilter = ai -> true;
 
+	/**
+	 * Default value accessor that works for list and string attributes.
+	 */
 	@NonNull
 	@Default
 	Function<I_M_AttributeInstance, String> valueAccessor = ai -> {
-
-		// TODO find out if getting values really works this way
-		// final I_M_AttributeValue attributeValue = ai.getM_AttributeValue();
-		// return attributeValue.getValue();
 
 		return ai.getValue();
 	};
