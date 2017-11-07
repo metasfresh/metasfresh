@@ -15,7 +15,6 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.apache.ecs.xhtml.code;
 import org.compiere.util.DB;
 import org.springframework.stereotype.Service;
 
@@ -299,24 +298,6 @@ public class CandidateRepositoryRetrieval
 				.endOrderBy();
 	}
 
-	/**
-	 * Retrieves the record(s) that matches the given candidate's
-	 * <ul>
-	 * <li>type</li>
-	 * <li>warehouse</li>
-	 * <li>product</li>
-	 * <li>date</li>
-	 * <li>tableId and record (only if set)</li>
-	 * <li>demand details</li>
-	 * <li>production details: if {@link Candidate#getProductionDetail()} is {@code null}, then only records without product detail are selected.<br>
-	 * If it's not null and either a product plan ID or BOM line ID is set, then only records with a matching detail record are selected. Note that those two don't change (unlike ppOrder ID and ppOrder BOM line ID which can change from zero to an actual reference)</li>
-	 * <li>distribution details:if {@link Candidate#getDistributionDetail()} is {@link code null}, then only records without product detail are selected.<br>
-	 * If it's not null and either a product plan ID or network distribution line ID is set, then only records with a matching detail record are selected. Note that those two don't change (unlike ddOrder ID and ddOrderLine ID which can change from zero to an actual reference)</li>
-	 * </ul>
-	 *
-	 * @param candidate
-	 * @return
-	 */
 	public List<Candidate> retrieveOrderedByDateAndSeqNo(@NonNull final CandidatesQuery query)
 	{
 		final IQueryBuilder<I_MD_Candidate> queryBuilderWithoutOrdering = RepositoryCommons.mkQueryBuilder(query);
