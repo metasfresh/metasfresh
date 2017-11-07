@@ -176,7 +176,7 @@ public class PrintJobBL implements IPrintJobBL
 					.printJobCount(printJobCount)
 					.parentAsyncBatchId(parentAsyncBatchId)
 					.build();
-			enqueueForPDFPrinting(pdfPrintingJobInstructions, printingAsyncBatch);
+			enqueueForPDFPrintingIfNeeded(pdfPrintingJobInstructions, printingAsyncBatch);
 		}
 
 		return printJobCount;
@@ -282,7 +282,7 @@ public class PrintJobBL implements IPrintJobBL
 	 * @param pjis
 	 * @param printJobCount
 	 */
-	private void enqueueForPDFPrinting(@NonNull final List<I_C_Print_Job_Instructions> pjis, @NonNull PrintingAsyncBatch printingAsyncBatch)
+	private void enqueueForPDFPrintingIfNeeded(@NonNull final List<I_C_Print_Job_Instructions> pjis, @NonNull PrintingAsyncBatch printingAsyncBatch)
 	{
 		if (pjis.isEmpty())
 		{
