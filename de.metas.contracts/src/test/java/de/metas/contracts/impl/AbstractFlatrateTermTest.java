@@ -17,6 +17,7 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Calendar;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_Period;
@@ -26,6 +27,7 @@ import org.compiere.util.TimeUtil;
 import org.junit.Before;
 import org.junit.BeforeClass;
 
+import de.metas.adempiere.model.I_AD_User;
 import de.metas.adempiere.model.I_C_CountryArea;
 import de.metas.adempiere.service.ICountryAreaBL;
 import de.metas.contracts.flatrate.interfaces.I_C_DocType;
@@ -59,23 +61,42 @@ import de.metas.contracts.flatrate.interfaces.I_C_DocType;
 public abstract class AbstractFlatrateTermTest
 {
 	private final String sequence = "@BP@ @CON@ @A1@ @A2@ @A3@ @A4@ @P@ @C@ @CO@";
-	
+
 	public FlatrateTermTestHelper helper;
-	
+
 	private I_C_Calendar calendar;
 	private I_C_AcctSchema acctSchema;
 	private I_C_Country country;
+	
+	private I_C_BPartner bpartner;
+	private I_C_BPartner_Location bpLocation;
+	private I_AD_User user;
+
+	public I_C_BPartner getBpartner()
+	{
+		return bpartner;
+	}
+
+	public I_C_BPartner_Location getBpLocation()
+	{
+		return bpLocation;
+	}
+
+	public I_AD_User getUser()
+	{
+		return user;
+	}
 
 	public I_C_Calendar getCalendar()
 	{
 		return calendar;
 	}
-	
+
 	public I_C_AcctSchema getAcctSchema()
 	{
 		return acctSchema;
 	}
-	
+
 	public I_C_Country getCountry()
 	{
 		return country;
@@ -98,7 +119,6 @@ public abstract class AbstractFlatrateTermTest
 		initialize();
 	}
 
-	
 	protected void initialize()
 	{
 	}
@@ -138,11 +158,10 @@ public abstract class AbstractFlatrateTermTest
 			save(period);
 		}
 
-
 		final I_C_Year nextYear = newInstance(I_C_Year.class);
 		nextYear.setC_Calendar_ID(calendar.getC_Calendar_ID());
 		save(nextYear);
-		
+
 		for (int i = 1; i <= 12; i++)
 		{
 			final Timestamp startDate = TimeUtil.getDay(2018, i, 1);
@@ -155,13 +174,12 @@ public abstract class AbstractFlatrateTermTest
 		}
 
 	}
-	
-	
+
 	private void createAcctSchema()
 	{
 		acctSchema = newInstance(I_C_AcctSchema.class);
 		save(acctSchema);
-		
+
 		Services.registerService(IAcctSchemaDAO.class, new AcctSchemaDAO()
 		{
 			@Override
@@ -171,12 +189,11 @@ public abstract class AbstractFlatrateTermTest
 			}
 		});
 	}
-	
-		
+
 	private void createWarehouse()
 	{
 		final I_M_Warehouse warehouse = newInstance(I_M_Warehouse.class);
-		warehouse.setName("WH" );
+		warehouse.setName("WH");
 		warehouse.setAD_Org(helper.getOrg());
 		save(warehouse);
 	}
@@ -189,7 +206,7 @@ public abstract class AbstractFlatrateTermTest
 		docType.setDocBaseType(I_C_DocType.DocBaseType_CustomerContract);
 		save(docType);
 	}
-	
+
 	private void createCountryAndCountryArea()
 	{
 		country = newInstance(I_C_Country.class);
@@ -200,27 +217,27 @@ public abstract class AbstractFlatrateTermTest
 		country.setDisplaySequenceLocal(sequence);
 		country.setCaptureSequence(sequence);
 		save(country);
-		
+
 		final I_C_CountryArea countryArea = newInstance(I_C_CountryArea.class, country);
 		countryArea.setValue(ICountryAreaBL.COUNTRYAREAKEY_EU);
 		save(countryArea);
 	}
-	
+
 	protected int prepareBPartner()
 	{
-		final I_C_BPartner bpartner = FlatrateTermDataFactory.bpartnerNew()
+		bpartner = FlatrateTermDataFactory.bpartnerNew()
 				.bpValue("G0022")
 				.isCustomer(true)
 				.build();
 
-		FlatrateTermDataFactory.bpLocationNew()
+		bpLocation = FlatrateTermDataFactory.bpLocationNew()
 				.bpartner(bpartner)
 				.isBillTo_Default(true)
 				.isShipTo_Default(true)
 				.country(getCountry())
 				.build();
 
-		FlatrateTermDataFactory.userNew()
+		user = FlatrateTermDataFactory.userNew()
 				.bpartner(bpartner)
 				.isBillToContact_Default(true)
 				.isShipToContact_Default(true)

@@ -96,6 +96,7 @@ public class FlatrateTermImportProcess_SimpleCase_Test extends AbstractFlatrateT
 				.pricingSystem(productAndPricingSystem.getPricingSystem())
 				.invoiceRule(X_C_Flatrate_Conditions.INVOICERULE_Sofort)
 				.typeConditions(X_C_Flatrate_Conditions.TYPE_CONDITIONS_Subscription)
+				.isAutoRenew(true)
 				.build();
 
 		final I_I_Flatrate_Term iflatrateTerm = IFlatrateTermFactory.builder()
@@ -161,6 +162,7 @@ public class FlatrateTermImportProcess_SimpleCase_Test extends AbstractFlatrateT
 				.pricingSystem(productAndPricingSystem.getPricingSystem())
 				.invoiceRule(X_C_Flatrate_Conditions.INVOICERULE_Sofort)
 				.typeConditions(X_C_Flatrate_Conditions.TYPE_CONDITIONS_Subscription)
+				.isAutoRenew(true)
 				.build();
 
 		final I_I_Flatrate_Term iflatrateTerm = IFlatrateTermFactory.builder()
@@ -221,6 +223,7 @@ public class FlatrateTermImportProcess_SimpleCase_Test extends AbstractFlatrateT
 				.pricingSystem(productAndPricingSystem.getPricingSystem())
 				.invoiceRule(X_C_Flatrate_Conditions.INVOICERULE_Sofort)
 				.typeConditions(X_C_Flatrate_Conditions.TYPE_CONDITIONS_Subscription)
+				.isAutoRenew(true)
 				.build();
 
 		final I_I_Flatrate_Term iflatrateTerm = IFlatrateTermFactory.builder()
