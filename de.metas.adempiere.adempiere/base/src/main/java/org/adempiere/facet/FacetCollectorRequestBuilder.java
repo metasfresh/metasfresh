@@ -1,5 +1,7 @@
 package org.adempiere.facet;
 
+import java.util.function.Predicate;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -27,7 +29,6 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.facet.impl.AbstractFacetCollector;
 import org.adempiere.util.Check;
 import org.adempiere.util.collections.IncludeExcludeListPredicate;
-import org.adempiere.util.collections.Predicate;
 import org.adempiere.util.lang.ObjectUtils;
 
 public final class FacetCollectorRequestBuilder<ModelType>
@@ -140,7 +141,7 @@ public final class FacetCollectorRequestBuilder<ModelType>
 	public boolean acceptFacetCategory(final IFacetCategory facetCategory)
 	{
 		// Don't accept it if is excluded by includes/excludes list
-		if (!facetCategoryIncludesExcludes.build().evaluate(facetCategory))
+		if (!facetCategoryIncludesExcludes.build().test(facetCategory))
 		{
 			return false;
 		}

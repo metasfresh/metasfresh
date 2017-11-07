@@ -3,8 +3,8 @@ package de.metas.picking.legacy.form;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Predicate;
 
-import org.adempiere.util.collections.Predicate;
 import org.compiere.model.I_C_UOM;
 
 import de.metas.adempiere.model.I_M_Product;

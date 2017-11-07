@@ -1,8 +1,9 @@
 package org.eevolution.mrp.api.impl;
 
+import java.util.function.Predicate;
+
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.collections.Predicate;
 import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
@@ -29,7 +30,7 @@ public class MRPNoteMatcher implements Predicate<I_AD_Note>
 	}
 
 	@Override
-	public boolean evaluate(I_AD_Note note)
+	public boolean test(I_AD_Note note)
 	{
 		if (note == null)
 		{
