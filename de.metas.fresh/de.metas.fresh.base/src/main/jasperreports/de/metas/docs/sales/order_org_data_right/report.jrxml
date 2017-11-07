@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
-<!-- 2017-10-30T15:25:00 -->
+<!-- 2017-11-07T18:00:22 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/sales/order_org_data_right/report" uuid="a20a5867-c30e-43f3-ac6b-5f9c3869cfea">
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="metasfresh"/>
@@ -45,7 +45,7 @@
 		</band>
 	</background>
 	<title>
-		<band height="307" splitType="Stretch">
+		<band height="307">
 			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 			<subreport>
 				<reportElement x="0" y="0" width="595" height="85" uuid="9d7b9471-8fed-4c97-9463-85e0490489af">
@@ -89,16 +89,8 @@
 		</band>
 	</title>
 	<pageHeader>
-		<band height="85" splitType="Stretch">
+		<band splitType="Stretch">
 			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-			<printWhenExpression><![CDATA[( $V{PAGE_NUMBER}.intValue() > 1 ? new Boolean(true) : new Boolean(false))]]></printWhenExpression>
-			<subreport>
-				<reportElement x="0" y="0" width="595" height="85" uuid="5e76e8c2-0672-48dc-a019-d3d03ba33cdc">
-					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-				</reportElement>
-				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
-				<subreportExpression><![CDATA["de/metas/docs/generics/report_logo.jasper"]]></subreportExpression>
-			</subreport>
 		</band>
 	</pageHeader>
 	<detail>
@@ -138,8 +130,8 @@
 			</subreport>
 		</band>
 	</detail>
-	<pageFooter>
-		<band height="150" splitType="Stretch">
+	<lastPageFooter>
+		<band height="150">
 			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 			<subreport>
 				<reportElement x="0" y="0" width="595" height="14" uuid="e675a327-4491-4caa-9c83-8af8c8176d26"/>
@@ -153,5 +145,5 @@
 				<subreportExpression><![CDATA["de/metas/docs/sales/order_org_data_right/report_details_footer.jasper"]]></subreportExpression>
 			</subreport>
 		</band>
-	</pageFooter>
+	</lastPageFooter>
 </jasperReport>

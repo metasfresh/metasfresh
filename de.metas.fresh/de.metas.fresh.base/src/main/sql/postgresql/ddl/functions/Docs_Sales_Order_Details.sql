@@ -26,7 +26,11 @@ RETURNS TABLE
 	cursymbol character varying(10),
 	p_value character varying(40),
 	p_description character varying(255),
-	order_description character varying(1024)  	
+	order_description character varying(1024),
+	c_order_compensationgroup_id numeric,
+	isgroupcompensationline character(1),
+	groupname  character varying(255),
+	iso_code character(3)  	
 )
 AS
 $$
@@ -63,10 +67,14 @@ SELECT
 	-- in case there is no C_BPartner_Product, fallback to the default ones
 	COALESCE(NULLIF(bpp.ProductNo, ''), p.value) as bp_product_no,
 	COALESCE(NULLIF(bpp.ProductName, ''), pt.Name, p.name) as bp_product_name,
-	cur.cursymbol, 
+	c.cursymbol, 
 	p.value AS p_value,
 	p.description AS p_description,
-	o.description AS order_description
+	o.description AS order_description,
+	ol.c_order_compensationgroup_id,
+	ol.isgroupcompensationline,
+	cg.name,
+	c.iso_code
 FROM
 	C_OrderLine ol
 	INNER JOIN C_Order o 			ON ol.C_Order_ID = o.C_Order_ID AND o.isActive = 'Y'
@@ -86,8 +94,7 @@ FROM
 	LEFT OUTER JOIN C_UOM_Trl uomt			ON ol.Price_UOM_ID = uomt.C_UOM_ID AND uomt.AD_Language = $2 AND uomt.isActive = 'Y' AND uomt.isActive = 'Y'
 	-- Tax
 	LEFT OUTER JOIN C_Tax t			ON ol.C_Tax_ID = t.C_Tax_ID AND t.isActive = 'Y'
-	-- Currency
-	INNER JOIN C_Currency cur ON o.C_Currency_ID = cur.C_Currency_ID AND cur.isActive = 'Y'
+
 	-- Get Attributes
 	LEFT OUTER JOIN	(
 		SELECT 	String_agg ( att.ai_value, ', ' ORDER BY length(att.ai_value)) AS Attributes, att.M_AttributeSetInstance_ID, ol.C_OrderLine_ID
@@ -96,6 +103,12 @@ FROM
 		WHERE	att.at_Value IN ('1000002', '1000001', '1000030', '1000015') AND ol.C_Order_ID = $1
 		GROUP BY	att.M_AttributeSetInstance_ID, ol.C_OrderLine_ID
 	) att ON ol.M_AttributeSetInstance_ID = att.M_AttributeSetInstance_ID AND ol.C_OrderLine_ID = att.C_OrderLine_ID
+
+	-- compensation group
+	LEFT JOIN c_order_compensationgroup cg ON ol.c_order_compensationgroup_id = cg.c_order_compensationgroup_id 
+	
+	LEFT JOIN C_Currency c ON o.C_Currency_ID = c.C_Currency_ID and c.isActive = 'Y'
+
 WHERE
 	ol.C_Order_ID = $1 AND ol.isActive = 'Y'
 	AND pc.M_Product_Category_ID != getSysConfigAsNumeric('PackingMaterialProductCategoryID', ol.AD_Client_ID, ol.AD_Org_ID)
