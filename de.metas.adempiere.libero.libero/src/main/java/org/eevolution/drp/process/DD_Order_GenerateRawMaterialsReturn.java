@@ -13,15 +13,14 @@ package org.eevolution.drp.process;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -32,6 +31,10 @@ import java.util.Map;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.api.ASICopy;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
+import org.adempiere.mm.attributes.api.PlainAttributeSetInstanceAware;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
@@ -41,6 +44,7 @@ import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
@@ -76,6 +80,7 @@ public class DD_Order_GenerateRawMaterialsReturn extends JavaProcess
 	private final transient IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	private final transient IDocumentBL docActionBL = Services.get(IDocumentBL.class);
 	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
+	private final transient IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 
 	//
 	// Parameters
@@ -113,7 +118,6 @@ public class DD_Order_GenerateRawMaterialsReturn extends JavaProcess
 		final IStorageEngine storageEngine = storageEngineService.getStorageEngine();
 		final IStorageQuery storageQuery = storageEngine.newStorageQuery();
 		storageQuery.addWarehouse(warehouse);
-
 		final Map<ArrayKey, RawMaterialsReturnDDOrderLineCandidate> key2candidate = new HashMap<>();
 
 		//
@@ -127,7 +131,15 @@ public class DD_Order_GenerateRawMaterialsReturn extends JavaProcess
 			RawMaterialsReturnDDOrderLineCandidate candidate = key2candidate.get(key);
 			if (candidate == null)
 			{
-				candidate = new RawMaterialsReturnDDOrderLineCandidate(getCtx(), storageRecord.getProduct(), storageRecord.getLocator());
+				final I_M_AttributeSetInstance attributeSetInstance = attributeSetInstanceBL.createAttributeSetInstanceFromAttributeSet(storageRecord.getAttributes());
+				final PlainAttributeSetInstanceAware attributeSetIinstanceAware = PlainAttributeSetInstanceAware.forProductIdAndAttributeSetInstanceId(
+						storageRecord.getProduct().getM_Product_ID(),
+						attributeSetInstance.getM_AttributeSetInstance_ID());
+
+				candidate = new RawMaterialsReturnDDOrderLineCandidate(
+						getCtx(),
+						attributeSetIinstanceAware,
+						storageRecord.getLocator());
 				key2candidate.put(key, candidate);
 			}
 
@@ -146,7 +158,7 @@ public class DD_Order_GenerateRawMaterialsReturn extends JavaProcess
 				addLog("@NotValid@ " + candidate.getSummary() + ": @Qty@=0");
 				continue;
 			}
-			
+
 			// Skip invalid candidates
 			if (!candidate.isValid())
 			{
@@ -222,7 +234,7 @@ public class DD_Order_GenerateRawMaterialsReturn extends JavaProcess
 	{
 		Check.assume(candidate.isValid(), "candidate is valid: {}", candidate);
 
-		final IContextAware context = new PlainContextAware(getCtx(), ITrx.TRXNAME_ThreadInherited);
+		final IContextAware context = PlainContextAware.newWithThreadInheritedTrx(getCtx());
 		final Timestamp dateOrdered = candidate.getDateOrdered();
 		final int shipperId = candidate.getDD_NetworkDistributionLine().getM_Shipper_ID();
 		final I_AD_Org org = candidate.getAD_Org();
@@ -263,7 +275,7 @@ public class DD_Order_GenerateRawMaterialsReturn extends JavaProcess
 	{
 		Check.assume(candidate.isValid(), "candidate is valid: {}", candidate);
 
-		final I_M_Product product = candidate.getM_Product();
+		final IAttributeSetInstanceAware attributeSetInstanceAware = candidate.getM_Product();
 		final I_C_UOM uom = candidate.getC_UOM();
 		final BigDecimal qtyToMove = candidate.getQty();
 		final I_DD_NetworkDistributionLine networkLine = candidate.getDD_NetworkDistributionLine();
@@ -284,7 +296,12 @@ public class DD_Order_GenerateRawMaterialsReturn extends JavaProcess
 
 		//
 		// Product, UOM, Qty
-		ddOrderline.setM_Product(product);
+		ddOrderline.setM_Product(attributeSetInstanceAware.getM_Product());
+
+		final ASICopy asiCopy = ASICopy.newInstance(attributeSetInstanceAware.getM_AttributeSetInstance());
+		ddOrderline.setM_AttributeSetInstance(asiCopy.copy());
+		ddOrderline.setM_AttributeSetInstanceTo(asiCopy.copy());
+
 		ddOrderline.setC_UOM(uom);
 		ddOrderline.setQtyEntered(qtyToMove);
 		ddOrderline.setQtyOrdered(qtyToMove);

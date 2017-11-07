@@ -15,7 +15,7 @@ public class X_MD_Candidate_Transaction_Detail extends org.compiere.model.PO imp
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -770068999L;
+	private static final long serialVersionUID = -1346359366L;
 
     /** Standard Constructor */
     public X_MD_Candidate_Transaction_Detail (Properties ctx, int MD_Candidate_Transaction_Detail_ID, String trxName)
@@ -95,6 +95,39 @@ public class X_MD_Candidate_Transaction_Detail extends org.compiere.model.PO imp
 	public int getMD_Candidate_Transaction_Detail_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_MD_Candidate_Transaction_Detail_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_M_InOutLine getM_InOutLine() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_M_InOutLine_ID, org.compiere.model.I_M_InOutLine.class);
+	}
+
+	@Override
+	public void setM_InOutLine(org.compiere.model.I_M_InOutLine M_InOutLine)
+	{
+		set_ValueFromPO(COLUMNNAME_M_InOutLine_ID, org.compiere.model.I_M_InOutLine.class, M_InOutLine);
+	}
+
+	/** Set Versand-/Wareneingangsposition.
+		@param M_InOutLine_ID 
+		Position auf Versand- oder Wareneingangsbeleg
+	  */
+	@Override
+	public void setM_InOutLine_ID (int M_InOutLine_ID)
+	{
+		throw new IllegalArgumentException ("M_InOutLine_ID is virtual column");	}
+
+	/** Get Versand-/Wareneingangsposition.
+		@return Position auf Versand- oder Wareneingangsbeleg
+	  */
+	@Override
+	public int getM_InOutLine_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_InOutLine_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

@@ -28,6 +28,7 @@ import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Test;
 
+import de.metas.material.event.ProductDescriptorFactory;
 import de.metas.material.planning.exception.MrpException;
 
 public class DDOrderPojoSupplierTest
@@ -93,9 +94,15 @@ public class DDOrderPojoSupplierTest
 		);
 	}
 
-	private void test_calculateQtyToMove(final BigDecimal qtyToMoveExpected, final BigDecimal qtyToMoveRequested, final BigDecimal transferPercent)
+	private void test_calculateQtyToMove(
+			final BigDecimal qtyToMoveExpected,
+			final BigDecimal qtyToMoveRequested,
+			final BigDecimal transferPercent)
 	{
-		final BigDecimal qtyToMoveActual = new DDOrderPojoSupplier().calculateQtyToMove(qtyToMoveRequested, transferPercent);
+		final DDOrderPojoSupplier ddOrderPojoSupplier = new DDOrderPojoSupplier(ProductDescriptorFactory.TESTING_INSTANCE);
+
+		final BigDecimal qtyToMoveActual = ddOrderPojoSupplier
+				.calculateQtyToMove(qtyToMoveRequested, transferPercent);
 
 		final String msg = "Invalid QtyToMove for "
 				+ " QtyToMoveRequested=" + qtyToMoveRequested

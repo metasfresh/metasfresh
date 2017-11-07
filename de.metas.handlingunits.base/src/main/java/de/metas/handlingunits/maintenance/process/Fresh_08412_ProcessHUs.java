@@ -246,10 +246,10 @@ public class Fresh_08412_ProcessHUs extends JavaProcess
 		order.setDocAction(X_PP_Order.DOCACTION_Complete);
 
 		//
-		// Product, UOM, ASI
+		// Product, ASI, UOM
 		order.setM_Product_ID(productBOM.getM_Product_ID());
+		order.setM_AttributeSetInstance_ID(productBOM.getM_AttributeSetInstance_ID());
 		order.setC_UOM(productBOM.getC_UOM());
-		order.setM_AttributeSetInstance_ID(0);
 
 		//
 		// BOM & Workflow

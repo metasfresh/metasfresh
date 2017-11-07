@@ -2,6 +2,8 @@ package de.metas.material.planning.ddorder;
 
 import java.util.Properties;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
@@ -54,7 +56,9 @@ public class DDOrderUtil
 	 * @param networkLine may also be {@code null} as of gh #1635
 	 * @return
 	 */
-	public int calculateDurationDays(final I_PP_Product_Planning productPlanningData, final I_DD_NetworkDistributionLine networkLine)
+	public int calculateDurationDays(
+			@Nullable final I_PP_Product_Planning productPlanningData, 
+			@Nullable final I_DD_NetworkDistributionLine networkLine)
 	{
 		//
 		// Leadtime

@@ -587,7 +587,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		final IQueryBuilder<I_M_HU> queryBuilder = queryBL.createQueryBuilder(I_M_HU.class, ctx, trxName);
 
-		final ICompositeQueryFilter<I_M_HU> filters = queryBuilder.getFilters();
+		final ICompositeQueryFilter<I_M_HU> filters = queryBuilder.getCompositeFilter();
 		filters.addInArrayOrAllFilter(I_M_HU.COLUMN_M_Locator_ID, locatorIds);
 
 		// Top Level filter

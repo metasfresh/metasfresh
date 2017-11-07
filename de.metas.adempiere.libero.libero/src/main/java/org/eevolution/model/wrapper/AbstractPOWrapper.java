@@ -26,12 +26,12 @@ package org.eevolution.model.wrapper;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -48,28 +48,28 @@ import org.compiere.model.PO;
  * @version 1.0, October 14th 2005
  */
 public abstract class AbstractPOWrapper {
-	
+
 	protected abstract PO receivePO(Properties ctx, int id, String trxName, String type);
-	
+
 	public AbstractPOWrapper(Properties ctx, int id, String trxName, String type) {
-		
+
 		po = receivePO(ctx, id, trxName, type);
 	}
 
 	protected PO po;
 
 	public PO get() {
-		
+
 		return po;
 	}
-	
+
 	/**
 	 *  String representation
 	 *  @return String representation
 	 */
 	@Override
 	public String toString() {
-		
+
 		return po.toString(); //  toString
 	}
 
@@ -80,7 +80,7 @@ public abstract class AbstractPOWrapper {
 	 */
 	@Override
 	public boolean equals(Object cmp) {
-		
+
 		return po.equals(cmp); //	equals
 	}
 
@@ -91,7 +91,7 @@ public abstract class AbstractPOWrapper {
 	 *	@return -1 if o1 < o2
 	 */
 	public int compare(Object o1, Object o2) {
-		
+
 		return po.compare(o1, o2); //	compare
 	}
 
@@ -100,7 +100,7 @@ public abstract class AbstractPOWrapper {
 	 *  @return table name
 	 */
 	public String get_TableName() {
-		
+
 		return po.get_TableName(); //  getTableName
 	}
 
@@ -109,7 +109,7 @@ public abstract class AbstractPOWrapper {
 	 *  @return ID or 0
 	 */
 	public int getID() {
-		
+
 		return po.get_ID(); //  getID
 	}
 
@@ -118,7 +118,7 @@ public abstract class AbstractPOWrapper {
 	 *  @return ID or 0
 	 */
 	public int getIDOld() {
-		
+
 		return po.get_IDOld(); //  getID
 	}
 
@@ -127,7 +127,7 @@ public abstract class AbstractPOWrapper {
 	 * 	@return context
 	 */
 	public Properties getCtx() {
-		
+
 		return po.getCtx(); //	getCtx
 	}
 
@@ -137,7 +137,7 @@ public abstract class AbstractPOWrapper {
 	 *  @return value
 	 */
 	public Object get_Value(int index) {
-		
+
 		return  po.get_Value(index); //  get_Value
 	}
 
@@ -147,7 +147,7 @@ public abstract class AbstractPOWrapper {
 	 *  @return value or null
 	 */
 	public Object get_Value(String columnName) {
-		
+
 		return  po.get_Value(columnName); //  get_Value
 	}
 
@@ -157,7 +157,7 @@ public abstract class AbstractPOWrapper {
 	 *	@return value or ""
 	 */
 	public String get_ValueAsString(String variableName) {
-		
+
 		return  po.get_ValueAsString(variableName); //	get_ValueAsString
 	}
 
@@ -167,7 +167,7 @@ public abstract class AbstractPOWrapper {
 	 *  @return value or null
 	 */
 	public Object get_ValueOfColumn(int AD_Column_ID) {
-		
+
 		return  po.get_ValueOfColumn(AD_Column_ID); //  get_ValueOfColumn
 	}
 
@@ -177,7 +177,7 @@ public abstract class AbstractPOWrapper {
 	 *  @return value
 	 */
 	public Object get_ValueOld(int index) {
-		
+
 		return  po.get_ValueOld(index); //  get_ValueOld
 	}
 
@@ -187,7 +187,7 @@ public abstract class AbstractPOWrapper {
 	 *  @return value or null
 	 */
 	public Object get_ValueOld(String columnName) {
-		
+
 		return  po.get_ValueOld(columnName); //  get_ValueOld
 	}
 
@@ -197,7 +197,7 @@ public abstract class AbstractPOWrapper {
 	 *  @return true if changed
 	 */
 	public boolean is_ValueChanged(int index) {
-		
+
 		return po.is_ValueChanged(index); //  is_ValueChanged
 	}
 
@@ -207,44 +207,34 @@ public abstract class AbstractPOWrapper {
 	 *  @return true if changed
 	 */
 	public boolean is_ValueChanged(String columnName) {
-		
+
 		return  po.is_ValueChanged(columnName); //  is_ValueChanged
 	}
 
 	/**
 	 *  Return new - old.
 	 * 	- New Value if Old Value is null
-	 * 	- New Value - Old Value if Number 
+	 * 	- New Value - Old Value if Number
 	 * 	- otherwise null
 	 *  @param index index
 	 *  @return new - old or null if not appropriate or not changed
 	 */
 	public Object get_ValueDifference(int index) {
-		
+
 		return  po.get_ValueDifference(index); //  get_ValueDifference
 	}
 
 	/**
 	 *  Return new - old.
 	 * 	- New Value if Old Value is null
-	 * 	- New Value - Old Value if Number 
+	 * 	- New Value - Old Value if Number
 	 * 	- otherwise null
 	 *  @param columnName column name
 	 *  @return new - old or null if not appropriate or not changed
 	 */
 	public Object get_ValueDifference(String columnName) {
-		
-		return  po.get_ValueDifference(columnName); //  get_ValueDifference
-	}
 
-	/**
-	 *  Set Value of Column
-	 *  @param AD_Column_ID column
-	 *  @param value value
-	 */
-	public void set_ValueOfColumn(int AD_Column_ID, Object value) {
-		
-		po.set_ValueOfAD_Column_ID(AD_Column_ID, value);
+		return  po.get_ValueDifference(columnName); //  get_ValueDifference
 	}
 
 	/**
@@ -253,7 +243,7 @@ public abstract class AbstractPOWrapper {
 	 *	@param value value
 	 */
 	public void set_CustomColumn(String columnName, Object value) {
-		
+
 		po.set_CustomColumn(columnName, value); //	set_CustomColumn
 	}
 
@@ -263,7 +253,7 @@ public abstract class AbstractPOWrapper {
 	 *  @return index of column with ColumnName or -1 if not found
 	 */
 	public int get_ColumnIndex(String columnName) {
-		
+
 		return po.get_ColumnIndex(columnName); //  getColumnIndex
 	}
 
@@ -271,7 +261,7 @@ public abstract class AbstractPOWrapper {
 	 *  (re)Load record with m_ID[*]
 	 */
 	public boolean load(String trxName) {
-		
+
 		return po.load(trxName); //  load
 	}
 
@@ -280,7 +270,7 @@ public abstract class AbstractPOWrapper {
 	 * 	@return AD_Client_ID
 	 */
 	public int getAD_Client_ID() {
-		
+
 		return po.getAD_Client_ID(); //	getAD_Client_ID
 	}
 
@@ -289,7 +279,7 @@ public abstract class AbstractPOWrapper {
 	 * 	@return AD_Org_ID
 	 */
 	public int getAD_Org_ID() {
-		
+
 		return po.getAD_Org_ID(); //	getAD_Org_ID
 	}
 
@@ -298,7 +288,7 @@ public abstract class AbstractPOWrapper {
 	 * 	@param active active
 	 */
 	public void setIsActive(boolean active) {
-		
+
 		po.setIsActive(active); //	setActive
 	}
 
@@ -307,7 +297,7 @@ public abstract class AbstractPOWrapper {
 	 *  @return is active
 	 */
 	public boolean isActive() {
-		
+
 		return po.isActive(); //	isActive
 	}
 
@@ -316,7 +306,7 @@ public abstract class AbstractPOWrapper {
 	 * 	@return created
 	 */
 	public Timestamp getCreated() {
-		
+
 		return po.getCreated(); //	getCreated
 	}
 
@@ -325,7 +315,7 @@ public abstract class AbstractPOWrapper {
 	 *	@return updated
 	 */
 	public Timestamp getUpdated() {
-		
+
 		return po.getUpdated(); //	getUpdated
 	}
 
@@ -334,7 +324,7 @@ public abstract class AbstractPOWrapper {
 	 * 	@return AD_User_ID
 	 */
 	public int getCreatedBy() {
-		
+
 		return po.getCreatedBy(); //	getCreateddBy
 	}
 
@@ -343,7 +333,7 @@ public abstract class AbstractPOWrapper {
 	 * 	@return AD_User_ID
 	 */
 	public int getUpdatedBy() {
-		
+
 		return po.getUpdatedBy(); //	getUpdatedBy
 	}
 
@@ -353,7 +343,7 @@ public abstract class AbstractPOWrapper {
 	 *  @return true if saved
 	 */
 	public boolean save() {
-		
+
 		return po.save(); //	save
 	}
 
@@ -364,7 +354,7 @@ public abstract class AbstractPOWrapper {
 	 *  @return true if saved
 	 */
 	public boolean save(String trxName) {
-		
+
 		return po.save(trxName); //	save
 	}
 
@@ -373,7 +363,7 @@ public abstract class AbstractPOWrapper {
 	 *	@return true if record changed
 	 */
 	public boolean is_Changed() {
-		
+
 		return po.is_Changed(); //	is_Change
 	}
 
@@ -383,7 +373,7 @@ public abstract class AbstractPOWrapper {
 	 * 	@return where clause
 	 */
 	public String get_WhereClause(boolean withValues) {
-		
+
 		return po.get_WhereClause(withValues); //	getWhereClause
 	}
 
@@ -393,7 +383,7 @@ public abstract class AbstractPOWrapper {
 	 * 	@return true if deleted
 	 */
 	public boolean delete(boolean force) {
-		
+
 		return po.delete(force); //	delete
 	}
 
@@ -403,7 +393,7 @@ public abstract class AbstractPOWrapper {
 	 *	@param trxName transaction
 	 */
 	public boolean delete(boolean force, String trxName) {
-		
+
 		return po.delete(force, trxName); //	delete
 	}
 
@@ -412,7 +402,7 @@ public abstract class AbstractPOWrapper {
 	 * 	@return true if locked
 	 */
 	public boolean lock() {
-		
+
 		return po.lock(); //	lock
 	}
 
@@ -421,7 +411,7 @@ public abstract class AbstractPOWrapper {
 	 * 	@return true if unlocked (false only if unlock fails)
 	 */
 	public boolean unlock(String trxName) {
-		
+
 		return po.unlock(trxName); //	unlock
 	}
 
@@ -430,7 +420,7 @@ public abstract class AbstractPOWrapper {
 	 *	@param trxName transaction
 	 */
 	public void set_TrxName(String trxName) {
-		
+
 		po.set_TrxName(trxName); //	setTrx
 	}
 
@@ -439,7 +429,7 @@ public abstract class AbstractPOWrapper {
 	 *	@return transaction
 	 */
 	public String get_TrxName() {
-		
+
 		return po.get_TrxName(); //	getTrx
 	}
 }

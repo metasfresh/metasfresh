@@ -98,6 +98,6 @@ public class ReceiptScheduleValidator extends AbstractModuleInterceptor
 	public void registerFactories()
 	{
 		Services.get(IAttributeSetInstanceAwareFactoryService.class)
-				.registerFactory(I_M_ReceiptSchedule.Table_Name, new ReceiptScheduleASIAwareFactory());
+				.registerFactoryForTableName(I_M_ReceiptSchedule.Table_Name, new ReceiptScheduleASIAwareFactory());
 	}
 }

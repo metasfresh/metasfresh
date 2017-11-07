@@ -82,7 +82,7 @@ public class MaterialDocumentListener implements MaterialEventListener
 			final PPOrderRequestedEvent productionOrderEvent = (PPOrderRequestedEvent)event;
 			createProductionOrderInTrx(
 					productionOrderEvent.getPpOrder(),
-					Date.from(productionOrderEvent.getEventDescr().getWhen()));
+					Date.from(productionOrderEvent.getEventDescriptor().getWhen()));
 		}
 		else if (event instanceof DDOrderRequestedEvent)
 		{
@@ -91,7 +91,7 @@ public class MaterialDocumentListener implements MaterialEventListener
 			final DDOrderRequestedEvent distributionOrderEvent = (DDOrderRequestedEvent)event;
 			createDistributionOrderInTrx(
 					distributionOrderEvent.getDdOrder(),
-					Date.from(distributionOrderEvent.getEventDescr().getWhen()));
+					Date.from(distributionOrderEvent.getEventDescriptor().getWhen()));
 		}
 	}
 

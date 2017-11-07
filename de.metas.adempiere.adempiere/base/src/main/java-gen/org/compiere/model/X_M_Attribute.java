@@ -4,7 +4,6 @@ package org.compiere.model;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import org.compiere.util.Env;
 
 /** Generated Model for M_Attribute
  *  @author Adempiere (generated) 
@@ -16,7 +15,7 @@ public class X_M_Attribute extends org.compiere.model.PO implements I_M_Attribut
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 224866491L;
+	private static final long serialVersionUID = -908753632L;
 
     /** Standard Constructor */
     public X_M_Attribute (Properties ctx, int M_Attribute_ID, String trxName)
@@ -336,6 +335,32 @@ public class X_M_Attribute extends org.compiere.model.PO implements I_M_Attribut
 		return false;
 	}
 
+	/** Set Ist Bestandsrelevant.
+		@param IsStorageRelevant 
+		Is used to do attibute matching between storage attributes and order line attributes (ASIs).
+	  */
+	@Override
+	public void setIsStorageRelevant (boolean IsStorageRelevant)
+	{
+		set_Value (COLUMNNAME_IsStorageRelevant, Boolean.valueOf(IsStorageRelevant));
+	}
+
+	/** Get Ist Bestandsrelevant.
+		@return Is used to do attibute matching between storage attributes and order line attributes (ASIs).
+	  */
+	@Override
+	public boolean isStorageRelevant () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsStorageRelevant);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
 	/** Set Merkmal.
 		@param M_Attribute_ID 
 		Product Attribute
@@ -454,7 +479,7 @@ public class X_M_Attribute extends org.compiere.model.PO implements I_M_Attribut
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_ValueMax);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -476,7 +501,7 @@ public class X_M_Attribute extends org.compiere.model.PO implements I_M_Attribut
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_ValueMin);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 }

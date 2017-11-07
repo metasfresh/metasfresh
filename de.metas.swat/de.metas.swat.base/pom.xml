@@ -69,13 +69,6 @@
 			<scope>test</scope>
 		</dependency>
 
-		<!-- metasfresh/metasfresh#523 -->
-		<dependency>
-			<groupId>de.metas.material</groupId>
-			<artifactId>metasfresh-material-event</artifactId>
-			<version>10.0.0</version>
-		</dependency>
-
 		<dependency>
 			<groupId>de.metas.report.jasper.client</groupId>
 			<artifactId>de.metas.report.jasper.client</artifactId>

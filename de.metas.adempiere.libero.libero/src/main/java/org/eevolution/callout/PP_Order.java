@@ -1,5 +1,7 @@
 package org.eevolution.callout;
 
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+
 /*
  * #%L
  * de.metas.adempiere.libero.libero
@@ -27,7 +29,6 @@ import java.util.Properties;
 
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.adempiere.warehouse.api.IWarehouseBL;
@@ -166,23 +167,27 @@ public class PP_Order extends CalloutEngine
 	 * TODO: refactor with org.eevolution.process.MRP.getProductPlanning method
 	 *
 	 * @param ctx context
-	 * @param order manufacturing order
+	 * @param ppOrder manufacturing order
 	 * @return product planning data (never return null)
 	 */
-	protected static I_PP_Product_Planning findPP_Product_Planning(final I_PP_Order order)
+	protected static I_PP_Product_Planning findPP_Product_Planning(final I_PP_Order ppOrder)
 	{
 		final Properties ctx = Env.getCtx();
+
 		I_PP_Product_Planning pp = Services.get(IProductPlanningDAO.class).find(ctx,
-				order.getAD_Org_ID(), order.getM_Warehouse_ID(),
-				order.getS_Resource_ID(), order.getM_Product_ID(),
-				null);
+				ppOrder.getAD_Org_ID(),
+				ppOrder.getM_Warehouse_ID(),
+				ppOrder.getS_Resource_ID(),
+				ppOrder.getM_Product_ID(),
+				ppOrder.getM_AttributeSetInstance_ID());
+
 		if (pp == null)
 		{
-			pp = InterfaceWrapperHelper.create(ctx, I_PP_Product_Planning.class, ITrx.TRXNAME_None);
-			pp.setAD_Org_ID(order.getAD_Org_ID());
-			pp.setM_Warehouse_ID(order.getM_Warehouse_ID());
-			pp.setS_Resource_ID(order.getS_Resource_ID());
-			pp.setM_Product(order.getM_Product());
+			pp = newInstance(I_PP_Product_Planning.class);
+			pp.setAD_Org_ID(ppOrder.getAD_Org_ID());
+			pp.setM_Warehouse_ID(ppOrder.getM_Warehouse_ID());
+			pp.setS_Resource_ID(ppOrder.getS_Resource_ID());
+			pp.setM_Product(ppOrder.getM_Product());
 		}
 		InterfaceWrapperHelper.setSaveDeleteDisabled(pp, true);
 

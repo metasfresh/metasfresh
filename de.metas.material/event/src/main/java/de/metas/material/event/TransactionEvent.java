@@ -1,8 +1,9 @@
 package de.metas.material.event;
 
+import static de.metas.material.event.MaterialEventUtils.checkIdGreaterThanZero;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.base.Preconditions;
 
 import lombok.Builder;
 import lombok.NonNull;
@@ -37,10 +38,10 @@ public class TransactionEvent implements MaterialEvent
 	public static final String TYPE = "TransactionEvent";
 
 	@NonNull
-	EventDescr eventDescr;
+	EventDescriptor eventDescriptor;
 
 	@NonNull
-	MaterialDescriptor materialDescr;
+	MaterialDescriptor materialDescriptor;
 
 	// ids used to match the transaction to the respective shipment, ddOrder or ppOrder event (demand if qty is negative), supply if qty is positive
 	// if *none of those are set* then the transaction will be recorded as "unplanned"
@@ -51,17 +52,18 @@ public class TransactionEvent implements MaterialEvent
 	@JsonCreator
 	@Builder
 	public TransactionEvent(
-			@JsonProperty("eventDescr") @NonNull final EventDescr eventDescr,
-			@JsonProperty("materialDescr") @NonNull final MaterialDescriptor materialDescr,
+			@JsonProperty("eventDescriptor") @NonNull final EventDescriptor eventDescriptor,
+			@JsonProperty("materialDescriptor") @NonNull final MaterialDescriptor materialDescriptor,
 			@JsonProperty("shipmentScheduleId") final int shipmentScheduleId,
 			@JsonProperty("transactionId") final int transactionId)
 	{
-		Preconditions.checkArgument(transactionId > 0, "The given parameter transactionId=%s needs to be > 0", transactionId);
-		this.transactionId = transactionId;
+		this.transactionId = checkIdGreaterThanZero("transactionId",transactionId);
 
-		this.eventDescr = eventDescr;
-		this.materialDescr = materialDescr;
+		this.eventDescriptor = eventDescriptor;
+
+		materialDescriptor.asssertMaterialDescriptorComplete();
+		this.materialDescriptor = materialDescriptor;
+
 		this.shipmentScheduleId = shipmentScheduleId;
 	}
-
 }
