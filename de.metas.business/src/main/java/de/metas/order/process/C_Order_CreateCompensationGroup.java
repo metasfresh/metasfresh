@@ -1,15 +1,13 @@
 package de.metas.order.process;
 
-import java.util.Set;
-
 import org.adempiere.util.Check;
-import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Category;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import de.metas.adempiere.model.I_C_Order;
 import de.metas.order.compensationGroup.GroupIdTemplate;
 import de.metas.order.compensationGroup.OrderGroupRepository;
 import de.metas.process.IProcessPrecondition;
@@ -62,10 +60,22 @@ public class C_Order_CreateCompensationGroup extends JavaProcess implements IPro
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
 	{
-		final Set<TableRecordReference> selectedIncludedRecords = context.getSelectedIncludedRecords();
-		if (selectedIncludedRecords.isEmpty())
+		if (!context.isSingleSelection())
 		{
-			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
+			return ProcessPreconditionsResolution.rejectWithInternalReason("one and only one order shall be selected");
+		}
+
+		// Only draft orders
+		final I_C_Order order = context.getSelectedModel(I_C_Order.class);
+		if (order.isProcessed())
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason("only draft orders are allowed");
+		}
+		
+		// Only sales orders
+		if(!order.isSOTrx())
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason("only sales orders are allowed");
 		}
 
 		return ProcessPreconditionsResolution.accept();
