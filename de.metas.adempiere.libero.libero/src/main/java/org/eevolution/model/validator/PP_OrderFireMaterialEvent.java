@@ -15,7 +15,7 @@ import org.eevolution.model.I_PP_Order_BOMLine;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.material.event.EventDescriptor;
 import de.metas.material.event.MaterialEventService;
-import de.metas.material.event.ProductDescriptorFactory;
+import de.metas.material.event.ModelProductDescriptorExtactor;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrder.PPOrderBuilder;
 import de.metas.material.event.pporder.PPOrderLine;
@@ -51,7 +51,7 @@ public class PP_OrderFireMaterialEvent
 			return;
 		}
 
-		final ProductDescriptorFactory productDescriptorFactory = Adempiere.getBean(ProductDescriptorFactory.class);
+		final ModelProductDescriptorExtactor productDescriptorFactory = Adempiere.getBean(ModelProductDescriptorExtactor.class);
 
 		final PPOrderBuilder ppOrderPojoBuilder = PPOrder.builder()
 				.datePromised(ppOrder.getDatePromised())

@@ -29,7 +29,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.mm.attributes.api.impl.ProductDescriptorFromAttributeSetInstanceFactory;
+import org.adempiere.mm.attributes.api.impl.ModelProductDescriptorExtactorUsingAttributeSetInstanceFactory;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
@@ -68,7 +68,7 @@ import de.metas.order.compensationGroup.OrderGroupRepository;
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = { StartupListener.class,
-		ProductDescriptorFromAttributeSetInstanceFactory.class,
+		ModelProductDescriptorExtactorUsingAttributeSetInstanceFactory.class,
 		OrderGroupRepository.class
 })
 public class PPOrderMRPSupplyProducer_IntegrationTest extends AbstractMRPTestBase

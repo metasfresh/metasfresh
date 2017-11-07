@@ -13,7 +13,6 @@ import org.junit.Test;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.material.dispo.commons.CandidateService;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateSubType;
 import de.metas.material.dispo.commons.candidate.CandidateType;
@@ -21,7 +20,7 @@ import de.metas.material.dispo.commons.candidate.DistributionDetail;
 import de.metas.material.dispo.commons.candidate.ProductionDetail;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.event.MaterialEventService;
-import de.metas.material.event.ProductDescriptorFactory;
+import de.metas.material.event.ProductDescriptor;
 import de.metas.material.event.ddorder.DDOrder;
 import de.metas.material.event.ddorder.DDOrderRequestedEvent;
 import de.metas.material.event.pporder.PPOrder;
@@ -51,16 +50,13 @@ import de.metas.material.event.pporder.PPOrderRequestedEvent;
 
 public class CandidateServiceTests
 {
-	private ProductDescriptorFactory productDescriptorFactory;
 	private CandidateService candidateService;
 
 	@Before
 	public void init()
 	{
-		productDescriptorFactory = ProductDescriptorFactory.TESTING_INSTANCE;
-
 		candidateService = new CandidateService(
-				new CandidateRepositoryRetrieval(productDescriptorFactory),
+				new CandidateRepositoryRetrieval(),
 				MaterialEventService.createLocalServiceThatIsReadyToUse());
 	}
 
@@ -83,7 +79,7 @@ public class CandidateServiceTests
 		final Candidate candidate2 = candidate
 				.withType(CandidateType.DEMAND)
 				.withMaterialDescriptor(candidate.getMaterialDescriptor()
-						.withProductDescriptor(productDescriptorFactory.forProductIdAndEmptyAttribute(310))
+						.withProductDescriptor(ProductDescriptor.forProductIdAndEmptyAttribute(310))
 						.withQuantity(BigDecimal.valueOf(20)))
 				.withProductionDetail(ProductionDetail.builder()
 						.plantId(210)
@@ -94,7 +90,7 @@ public class CandidateServiceTests
 		final Candidate candidate3 = candidate
 				.withType(CandidateType.DEMAND)
 				.withMaterialDescriptor(candidate.getMaterialDescriptor()
-						.withProductDescriptor(productDescriptorFactory.forProductIdAndEmptyAttribute(320))
+						.withProductDescriptor(ProductDescriptor.forProductIdAndEmptyAttribute(320))
 						.withQuantity(BigDecimal.valueOf(10)))
 				.withProductionDetail(ProductionDetail.builder()
 						.plantId(210)
@@ -136,7 +132,7 @@ public class CandidateServiceTests
 		final Candidate candidate2 = candidate
 				.withType(CandidateType.DEMAND)
 				.withMaterialDescriptor(candidate.getMaterialDescriptor()
-						.withProductDescriptor(productDescriptorFactory.forProductIdAndEmptyAttribute(310))
+						.withProductDescriptor(ProductDescriptor.forProductIdAndEmptyAttribute(310))
 						.withQuantity(BigDecimal.valueOf(20)))
 				.withDistributionDetail(DistributionDetail.builder()
 						.productPlanningId(220)
@@ -148,7 +144,7 @@ public class CandidateServiceTests
 		final Candidate candidate3 = candidate
 				.withType(CandidateType.DEMAND)
 				.withMaterialDescriptor(candidate.getMaterialDescriptor()
-						.withProductDescriptor(productDescriptorFactory.forProductIdAndEmptyAttribute(320))
+						.withProductDescriptor(ProductDescriptor.forProductIdAndEmptyAttribute(320))
 						.withQuantity(BigDecimal.valueOf(10)))
 				.withDistributionDetail(DistributionDetail.builder()
 						.productPlanningId(220)

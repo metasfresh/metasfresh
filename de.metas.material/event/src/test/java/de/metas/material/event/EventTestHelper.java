@@ -67,17 +67,15 @@ public class EventTestHelper
 
 	public static ProductDescriptor createProductDescriptor()
 	{
-		return ProductDescriptorFactory.TESTING_INSTANCE
-				.forProductAndAttributes(PRODUCT_ID, STORAGE_ATTRIBUTES_KEY, ATTRIBUTE_SET_INSTANCE_ID);
+		return ProductDescriptor.forProductAndAttributes(PRODUCT_ID, STORAGE_ATTRIBUTES_KEY, ATTRIBUTE_SET_INSTANCE_ID);
 	}
 
 	public static ProductDescriptor createProductDescriptorWithOffSet(final int offset)
 	{
-		return ProductDescriptorFactory.TESTING_INSTANCE
-				.forProductAndAttributes(
-						PRODUCT_ID + offset,
-						STORAGE_ATTRIBUTES_KEY + offset,
-						ATTRIBUTE_SET_INSTANCE_ID + offset);
+		return ProductDescriptor.forProductAndAttributes(
+				PRODUCT_ID + offset,
+				STORAGE_ATTRIBUTES_KEY + offset,
+				ATTRIBUTE_SET_INSTANCE_ID + offset);
 	}
 
 }
