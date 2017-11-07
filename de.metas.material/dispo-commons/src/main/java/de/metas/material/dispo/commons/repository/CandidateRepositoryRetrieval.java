@@ -294,7 +294,7 @@ public class CandidateRepositoryRetrieval
 				.endOrderBy();
 	}
 
- 	public List<Candidate> retrieveOrderedByDateAndSeqNo(@NonNull final CandidatesQuery query)
+	public List<Candidate> retrieveOrderedByDateAndSeqNo(@NonNull final CandidatesQuery query)
 	{
 		final IQueryBuilder<I_MD_Candidate> queryBuilderWithoutOrdering = RepositoryCommons.mkQueryBuilder(query);
 
@@ -317,33 +317,36 @@ public class CandidateRepositoryRetrieval
 				.endOrderBy();
 	}
 
-	/**
-	 *
-	 * @param materialDescriptor
-	 * @return never returns {@code null}
-	 */
+	@NonNull
 	public BigDecimal retrieveAvailableStock(@NonNull final MaterialDescriptor materialDescriptor)
 	{
-		Preconditions.checkArgument(materialDescriptor.isComplete(),
-				"The given materialDescriptor parameter needs to be complete for this method to make sense; materialDescriptor=%s",
-				materialDescriptor);
+		return retrieveAvailableStock(MaterialDescriptorQuery.builder()
+				.warehouseId(materialDescriptor.getWarehouseId())
+				.date(materialDescriptor.getDate())
+				.productId(materialDescriptor.getProductId())
+				.storageAttributesKey(materialDescriptor.getStorageAttributesKey())
+				.build());
+	}
 
+	@NonNull
+	public BigDecimal retrieveAvailableStock(@NonNull final MaterialDescriptorQuery query)
+	{
 		final String storageAttributesKeyLikeExpression = RepositoryCommons
 				.prepareStorageAttributesKeyForLikeExpression(
-						materialDescriptor.getStorageAttributesKey());
+						query.getStorageAttributesKey());
 
 		final BigDecimal result = DB.getSQLValueBDEx(
 				ITrx.TRXNAME_ThreadInherited,
 				SQL_SELECT_AVAILABLE_STOCK,
 				new Object[] {
-						materialDescriptor.getWarehouseId(),
-						materialDescriptor.getProductId(),
+						query.getWarehouseId(),
+						query.getProductId(),
 						"%" + storageAttributesKeyLikeExpression + "%",
-						materialDescriptor.getDate() });
+						query.getDate() });
 
 		return result;
 	}
-	
+
 	public I_C_UOM getStockingUOM(final int productId)
 	{
 		final I_C_UOM uom = Services.get(IProductBL.class).getStockingUOM(load(productId, I_M_Product.class));
