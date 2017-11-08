@@ -85,7 +85,7 @@ public class MRPQueryBuilderTest
 				.setDatePromisedMax(mrpContext.getPlanningHorizon())
 				//
 				.createQueryBuilder()
-				.getFilters();
+				.getCompositeFilter();
 
 		final I_PP_MRP mrp = InterfaceWrapperHelper.newInstance(I_PP_MRP.class, contextProvider);
 		mrp.setAD_Org(mrpContext.getAD_Org());
@@ -108,7 +108,7 @@ public class MRPQueryBuilderTest
 		mrpQueryBuilder.clear();
 
 		// Create query filters
-		final ICompositeQueryFilter<I_PP_MRP> filters = mrpQueryBuilder.createQueryBuilder().getFilters();
+		final ICompositeQueryFilter<I_PP_MRP> filters = mrpQueryBuilder.createQueryBuilder().getCompositeFilter();
 
 		// Make sure there are NO filters
 		Assert.assertEquals("Invalid filters: " + filters, "(((true)))", filters.toString());

@@ -66,7 +66,7 @@ public class OrderCandidate extends AbstractModuleInterceptor
 		//task 09623
 		Services.get(IOLCandValdiatorBL.class).registerValidator(new OLCandLocationValidator());
 
-		Services.get(IAttributeSetInstanceAwareFactoryService.class).registerFactory(I_C_OLCand.Table_Name, new OLCandASIAwareFactory()); // task 08803
+		Services.get(IAttributeSetInstanceAwareFactoryService.class).registerFactoryForTableName(I_C_OLCand.Table_Name, new OLCandASIAwareFactory()); // task 08803
 
 		engine.addModelValidator(new AD_Scheduler(), client);
 		engine.addModelValidator(new AD_Note(), client);

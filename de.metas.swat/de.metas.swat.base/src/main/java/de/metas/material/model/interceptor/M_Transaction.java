@@ -22,9 +22,11 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked;
-import de.metas.material.event.EventDescr;
+import de.metas.material.event.EventDescriptor;
 import de.metas.material.event.MaterialDescriptor;
 import de.metas.material.event.MaterialEventService;
+import de.metas.material.event.ProductDescriptor;
+import de.metas.material.event.ModelProductDescriptorExtactor;
 import de.metas.material.event.TransactionEvent;
 import de.metas.materialtransaction.MTransactionUtil;
 import lombok.NonNull;
@@ -104,9 +106,9 @@ public class M_Transaction
 			final BigDecimal quantity = type.isDelete() ? BigDecimal.ZERO : entries.getValue();
 
 			final TransactionEvent event = TransactionEvent.builder()
-					.eventDescr(EventDescr.createNew(transaction))
+					.eventDescriptor(EventDescriptor.createNew(transaction))
 					.transactionId(transaction.getM_Transaction_ID())
-					.materialDescr(createMaterialDescriptor(transaction, quantity))
+					.materialDescriptor(createMaterialDescriptor(transaction, quantity))
 					.shipmentScheduleId(entries.getKey())
 					.build();
 			result.add(event);
@@ -136,10 +138,10 @@ public class M_Transaction
 		for (final I_M_ShipmentSchedule_QtyPicked shipmentScheduleQtyPicked : shipmentScheduleQtysPicked)
 		{
 			assertSignumsOfQuantitiesMatch(shipmentScheduleQtyPicked, transaction);
-			
+
 			final BigDecimal qtyPicked = shipmentScheduleQtyPicked.getQtyPicked();
 			final BigDecimal quantityForMaterialDescriptor = MTransactionUtil.isInboundTransaction(transaction) ? qtyPicked : qtyPicked.negate();
-			
+
 			shipmentScheduleId2quantity.merge(
 					shipmentScheduleQtyPicked.getM_ShipmentSchedule_ID(),
 					quantityForMaterialDescriptor,
@@ -184,10 +186,13 @@ public class M_Transaction
 			@NonNull final I_M_Transaction transaction,
 			@NonNull final BigDecimal quantity)
 	{
-		return MaterialDescriptor.builder()
+		final ModelProductDescriptorExtactor productDescriptorFactory = Adempiere.getBean(ModelProductDescriptorExtactor.class);
+		final ProductDescriptor productDescriptor = productDescriptorFactory.createProductDescriptor(transaction);
+
+		return MaterialDescriptor.builderForCompleteDescriptor()
 				.warehouseId(transaction.getM_Locator().getM_Warehouse_ID())
 				.date(transaction.getMovementDate())
-				.productId(transaction.getM_Product_ID())
+				.productDescriptor(productDescriptor)
 				.quantity(quantity)
 				.build();
 	}

@@ -1,7 +1,5 @@
 package de.metas.handlingunits.attributes.impl;
 
-import static de.metas.business.BusinessTestHelper.createM_Attribute;
-
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -12,12 +10,12 @@ import static de.metas.business.BusinessTestHelper.createM_Attribute;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -30,6 +28,7 @@ import static org.hamcrest.Matchers.comparesEqualTo;
 import java.math.BigDecimal;
 import java.util.Collection;
 
+import org.adempiere.mm.attributes.api.impl.AttributesTestHelper;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.X_M_Attribute;
 import org.junit.Assert;
@@ -54,10 +53,12 @@ public class HUAttributeSetTest extends AbstractHUTest
 	@Override
 	protected void initialize()
 	{
-		attrString1 = createM_Attribute("String1", X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40, true);
-		attrNumber1 = createM_Attribute("Number1", X_M_Attribute.ATTRIBUTEVALUETYPE_Number, true);
+		final AttributesTestHelper attributesTestHelper = new AttributesTestHelper();
 
-		attrList1 = createM_Attribute("List1", X_M_Attribute.ATTRIBUTEVALUETYPE_List, true);
+		attrString1 = attributesTestHelper.createM_Attribute("String1", X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40, true);
+		attrNumber1 = attributesTestHelper.createM_Attribute("Number1", X_M_Attribute.ATTRIBUTEVALUETYPE_Number, true);
+
+		attrList1 = attributesTestHelper.createM_Attribute("List1", X_M_Attribute.ATTRIBUTEVALUETYPE_List, true);
 		helper.createAttributeListValues(attrList1, HUAttributeSetTest.ATTRLIST1_Value1, HUAttributeSetTest.ATTRLIST1_Value2, HUAttributeSetTest.ATTRLIST1_Value3);
 	}
 

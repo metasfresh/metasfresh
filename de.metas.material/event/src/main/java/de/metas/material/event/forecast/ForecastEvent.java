@@ -1,6 +1,6 @@
 package de.metas.material.event.forecast;
 
-import de.metas.material.event.EventDescr;
+import de.metas.material.event.EventDescriptor;
 import de.metas.material.event.MaterialEvent;
 import lombok.Builder;
 import lombok.NonNull;
@@ -38,6 +38,6 @@ public class ForecastEvent implements MaterialEvent
 	Forecast forecast;
 
 	@NonNull
-	EventDescr eventDescr;
+	EventDescriptor eventDescriptor;
 
 }

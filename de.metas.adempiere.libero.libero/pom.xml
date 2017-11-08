@@ -94,6 +94,14 @@
 			<scope>test</scope>
 		</dependency>
 
+		<dependency>
+			<groupId>de.metas.business</groupId>
+			<artifactId>de.metas.business</artifactId>
+			<version>10.0.0</version>
+			<classifier>tests</classifier>
+			<scope>test</scope>
+		</dependency>
+
 	</dependencies>
 
 	<build>
@@ -102,7 +110,6 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jar-plugin</artifactId>
-				<version>2.2</version>
 				<executions>
 					<execution>
 						<goals>

@@ -122,7 +122,7 @@ public class MRPTestHelper
 	public PlainDocumentBL docActionBL;
 	//
 	public MRPExecutorService mrpExecutorService = new MRPExecutorService();
-	
+
 	public MockedMRPExecutor mrpExecutor = new MockedMRPExecutor();
 
 	//
@@ -150,7 +150,6 @@ public class MRPTestHelper
 
 	public MRPTestHelper(final boolean initEnvironment)
 	{
-		super();
 		init(initEnvironment);
 	}
 
@@ -264,9 +263,8 @@ public class MRPTestHelper
 		final I_AD_Client client = null;
 		final IModelInterceptorRegistry modelInterceptorRegistry = Services.get(IModelInterceptorRegistry.class);
 
-		modelInterceptorRegistry.addModelInterceptor(new org.adempiere.model.validator.AdempiereBaseValidator(), client);
+		modelInterceptorRegistry.addModelInterceptor(new org.compiere.wf.model.validator.AD_Workflow(), client);
 		modelInterceptorRegistry.addModelInterceptor(new org.eevolution.model.LiberoValidator(), client);
-		//modelInterceptorRegistry.addModelInterceptor(new org.eevolution.model.validator.MRPInterceptor(), client);
 	}
 
 	public Timestamp getToday()

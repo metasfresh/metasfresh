@@ -554,7 +554,7 @@ public class POWrapper implements InvocationHandler, IInterfaceWrapper
 			}
 			else
 			{
-				return po.set_ValueOfColumnReturningBoolean(name, value);
+				return po.set_ValueOfColumn(name, value);
 			}
 		}
 	}

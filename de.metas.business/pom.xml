@@ -51,6 +51,13 @@
 			<version>10.0.0</version>
 		</dependency>
 
+		<!-- metasfresh/metasfresh#523 -->
+		<!-- needed because we want to create ProductDescriptors with AttributeKeys that are derived from ASIs -->
+		<dependency>
+			<groupId>de.metas.material</groupId>
+			<artifactId>metasfresh-material-event</artifactId>
+			<version>10.0.0</version>
+		</dependency>
 		
 		<!--
 			Lombok
@@ -64,6 +71,12 @@
 			<scope>provided</scope>
 		</dependency>
 		
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+
 		<dependency>
 			<groupId>org.assertj</groupId>
 			<artifactId>assertj-core</artifactId>

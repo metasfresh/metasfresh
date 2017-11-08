@@ -31,7 +31,7 @@ import org.adempiere.mm.attributes.spi.IAttributeValueCallout;
 import org.compiere.model.I_M_Attribute;
 
 /**
- * To get an instance from an attribute set instance, one can use ISto.
+ * To get an instance from an attribute set instance, one can use in a storage context.
  *
  * @author metas-dev <dev@metasfresh.com>
  *

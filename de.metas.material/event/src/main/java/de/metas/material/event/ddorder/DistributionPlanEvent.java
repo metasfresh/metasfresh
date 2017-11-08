@@ -2,7 +2,7 @@ package de.metas.material.event.ddorder;
 
 import org.eevolution.model.I_DD_Order;
 
-import de.metas.material.event.EventDescr;
+import de.metas.material.event.EventDescriptor;
 import de.metas.material.event.MaterialEvent;
 import lombok.Builder;
 import lombok.NonNull;
@@ -41,7 +41,7 @@ public class DistributionPlanEvent implements MaterialEvent
 	public static final String TYPE = "DistributionPlanEvent";
 
 	@NonNull
-	EventDescr eventDescr;
+	EventDescriptor eventDescriptor;
 
 
 	@NonNull

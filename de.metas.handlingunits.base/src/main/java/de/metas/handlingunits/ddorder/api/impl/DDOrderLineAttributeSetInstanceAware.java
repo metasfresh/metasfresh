@@ -1,12 +1,13 @@
 package de.metas.handlingunits.ddorder.api.impl;
 
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
-import org.adempiere.util.Check;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
 import org.eevolution.model.I_DD_OrderLine;
 
 import com.google.common.base.MoreObjects;
+
+import lombok.NonNull;
 
 /*
  * #%L
@@ -53,10 +54,8 @@ public class DDOrderLineAttributeSetInstanceAware implements IAttributeSetInstan
 	private final I_DD_OrderLine ddOrderLine;
 	private final boolean isASITo;
 
-	private DDOrderLineAttributeSetInstanceAware(final I_DD_OrderLine ddOrderLine, final boolean isASITo)
+	private DDOrderLineAttributeSetInstanceAware(@NonNull final I_DD_OrderLine ddOrderLine, final boolean isASITo)
 	{
-		super();
-		Check.assumeNotNull(ddOrderLine, "ddOrderLine not null");
 		this.ddOrderLine = ddOrderLine;
 		this.isASITo = isASITo;
 	}

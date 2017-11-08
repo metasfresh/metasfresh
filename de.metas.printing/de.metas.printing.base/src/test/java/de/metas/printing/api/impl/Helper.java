@@ -301,8 +301,7 @@ public class Helper
 
 		final boolean createWithSpecificHostKey = true; // create with hostKey, so we can verify the key later, if we want.
 
-		return Services.get(IPrintJobBL.class).createPrintJobInstructions(printJob,
-				userToPrintId,
+		return Services.get(IPrintJobBL.class).createPrintJobInstructions(userToPrintId,
 				createWithSpecificHostKey,
 				firstLine,
 				lastLine,
@@ -853,7 +852,7 @@ public class Helper
 		int printJobsCount = 0;
 		for (final IPrintingQueueSource source : sources)
 		{
-			printJobsCount += Services.get(IPrintJobBL.class).createPrintJobs(source, -1, -1);
+			printJobsCount += Services.get(IPrintJobBL.class).createPrintJobs(source);
 		}
 		return printJobsCount;
 	}

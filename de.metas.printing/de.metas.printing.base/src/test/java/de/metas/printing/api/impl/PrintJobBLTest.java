@@ -24,7 +24,6 @@ package de.metas.printing.api.impl;
 
 
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
 import java.util.List;
@@ -109,9 +108,6 @@ public class PrintJobBLTest extends AbstractPrintingTest
 		assertThat(instructions1.getC_PrintJob_Line_From(), is(jobLine));
 		assertThat(instructions1.getC_PrintJob_Line_To(), is(jobLine));
 		assertThat("Job1 instructions - Invalid line count", getPrintJobLinesCount(printJob), is(1));
-		// task 09028: don't check for the host key..the user shall be able to print this wherever they are logged in
-		// assertEquals("Job1 instructions - Invalid HostKey", helper.getSessionHostKey(), instructions1.getHostKey());
-		assertEquals("Job1 instructions - Invalid UserOK", true, instructions1.isUserOK());
 	}
 	
 	private int getPrintJobLinesCount(final I_C_Print_Job job)

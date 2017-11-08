@@ -211,10 +211,15 @@ public class DDOrderBL implements IDDOrderBL
 		final I_M_Locator locatorFrom = ddOrderLine.getM_Locator();
 		Check.assumeNotNull(locatorFrom, "locatorFrom not null");
 		final I_M_Warehouse warehouseFrom = locatorFrom.getM_Warehouse();
-		final int productId = ddOrderLine.getM_Product_ID();
+
 		try
 		{
-			final I_S_Resource plantFrom = Services.get(IProductPlanningDAO.class).findPlant(ctx, adOrgId, warehouseFrom, productId);
+			final I_S_Resource plantFrom = Services.get(IProductPlanningDAO.class).findPlant(
+					ctx, 
+					adOrgId, 
+					warehouseFrom, 
+					ddOrderLine.getM_Product_ID(), 
+					ddOrderLine.getM_AttributeSetInstance_ID());
 			return plantFrom;
 		}
 		catch (final NoPlantForWarehouseException e)

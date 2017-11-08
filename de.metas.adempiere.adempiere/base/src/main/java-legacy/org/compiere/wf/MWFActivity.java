@@ -379,12 +379,12 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 		m_po = TableModelLoader.instance.getPO(getCtx(), tableName, getRecord_ID(), trxName);
 		return m_po;
 	}	// getPO
-	
+
 	private final PO getPONoLoad()
 	{
 		return m_po;
 	}
-	
+
 	/**
 	 * Get Persistent Object
 	 *
@@ -407,10 +407,10 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 		{
 			throw new AdempiereException("Persistent Object not found - AD_Table_ID=" + getAD_Table_ID() + ", Record_ID=" + getRecord_ID());
 		}
-		
+
 		return Services.get(IDocumentBL.class).getDocument(po);
 	}
-	
+
 	private IDocument getDocumentOrNull(final String trxName)
 	{
 		final PO po = getPO(trxName);
@@ -418,7 +418,7 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 		{
 			throw new AdempiereException("Persistent Object not found - AD_Table_ID=" + getAD_Table_ID() + ", Record_ID=" + getRecord_ID());
 		}
-		
+
 		return Services.get(IDocumentBL.class).getDocumentOrNull(po);
 	}
 
@@ -922,7 +922,7 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 			setTextMsg(processMsg);
 			addTextMsg(ex);
 			setWFState(StateEngine.STATE_Terminated);	// unlocks
-			
+
 			// Set Document Status
 			final PO po = getPONoLoad();
 			final IDocument doc = po != null ? Services.get(IDocumentBL.class).getDocumentOrNull(po) : null;
@@ -954,10 +954,10 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 	{
 		log.debug("Performing work for {} [{}]", m_node, trx);
 		m_docStatus = null;
-		
+
 		if (m_node.getPriority() != 0)		// overwrite priority if defined
 			setPriority(m_node.getPriority());
-		
+
 		final String trxName = trx != null ? trx.getTrxName() : ITrx.TRXNAME_None;
 		final String action = m_node.getAction();
 
@@ -977,11 +977,11 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 		else if (MWFNode.ACTION_DocumentAction.equals(action))
 		{
 			log.debug("DocumentAction={}", m_node.getDocAction());
-			
+
 			boolean success = false;
 			String processMsg = null;
 			final IDocument doc = getDocument(trxName);
-			
+
 			//
 			try
 			{
@@ -1004,7 +1004,7 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 			{
 				m_process.setProcessMsg(processMsg);
 			}
-			
+
 			//
 			if (!m_po.save())
 			{
@@ -1094,7 +1094,7 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 		else if (MWFNode.ACTION_EMail.equals(action))
 		{
 			log.debug("EMail:EMailRecipient={}", m_node.getEMailRecipient());
-			
+
 			final IDocument document = getDocumentOrNull(trxName);
 			if (document != null)
 			{
@@ -1105,7 +1105,7 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 			else
 			{
 				final PO po = getPO(trxName);
-				
+
 				final IMailBL mailBL = Services.get(IMailBL.class);
 				final IMailTextBuilder mailTextBuilder = mailBL.newMailTextBuilder(getNode().getR_MailText());
 				mailTextBuilder.setRecord(po, true); // metas: tsa
@@ -1248,7 +1248,7 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 		{
 			throw new AdempiereException("Persistent Object not found - AD_Table_ID=" + getAD_Table_ID() + ", Record_ID=" + getRecord_ID());
 		}
-		
+
 		// Set Value
 		Object dbValue = null;
 		if (valueStr == null)
@@ -1259,7 +1259,10 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 			dbValue = new BigDecimal(valueStr);
 		else
 			dbValue = valueStr;
-		po.set_ValueOfAD_Column_ID(getNode().getAD_Column_ID(), dbValue);
+
+		final String nodeColumnName= Services.get(IADTableDAO.class).retrieveColumnName(getNode().getAD_Column_ID());
+		po.set_ValueOfColumn(nodeColumnName, dbValue);
+
 		po.save();
 		if (dbValue != null && !dbValue.equals(po.get_ValueOfColumn(getNode().getAD_Column_ID())))
 			throw new AdempiereException("Persistent Object not updated - AD_Table_ID="
@@ -1451,7 +1454,7 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 		setWFState(StateEngine.STATE_Completed);
 	}	// setUserConfirmation
 
-	
+
 	private List<ProcessInfoParameter> createProcessInfoParameters(final PO po)
 	{
 		return Stream.of(m_node.getParameters())
@@ -1459,13 +1462,13 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 				.filter(pip -> pip != null)
 				.collect(GuavaCollectors.toImmutableList());
 	}
-	
+
 	private final ProcessInfoParameter createProcessInfoParameter(final I_AD_WF_Node_Para nPara, final PO po)
 	{
 		final String attributeName = nPara.getAttributeName();
 		final String attributeValue = nPara.getAttributeValue();
 		log.debug("{} = {}", attributeName, attributeValue);
-		
+
 		// Value - Constant/Variable
 		Object value = attributeValue;
 		if (attributeValue == null || (attributeValue != null && attributeValue.length() == 0))
@@ -1501,7 +1504,7 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 					value = env;
 			}
 		}	// @variable@
-		
+
 		final I_AD_Process_Para adProcessPara = nPara.getAD_Process_Para();
 
 		// No Value
@@ -1557,7 +1560,7 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 	private void sendEMail()
 	{
 		final IDocument doc = getDocument();
-		
+
 		final IMailBL mailBL = Services.get(IMailBL.class);
 		final IMailTextBuilder mailTextBuilder = mailBL.newMailTextBuilder(m_node.getR_MailText());
 		mailTextBuilder.setRecord(m_po, true);

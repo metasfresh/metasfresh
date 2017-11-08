@@ -10,12 +10,12 @@ package de.metas.handlingunits.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -51,7 +51,6 @@ import org.springframework.test.context.junit4.SpringRunner;
 import de.metas.StartupListener;
 import de.metas.handlingunits.AbstractHUTest;
 import de.metas.handlingunits.HUTestHelper;
-import de.metas.handlingunits.HandlingUnitsConfiguration;
 import de.metas.handlingunits.expectations.HUExpectation;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item_Storage;
@@ -65,7 +64,7 @@ import de.metas.handlingunits.snapshot.impl.HUSnapshotDAO;
 import de.metas.handlingunits.util.TraceUtils;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = { StartupListener.class, HandlingUnitsConfiguration.class })
+@SpringBootTest(classes = { StartupListener.class })
 public class HUSnapshotDAOTest extends AbstractHUTest
 {
 	private HUSnapshotDAO huSnapshotDAO;

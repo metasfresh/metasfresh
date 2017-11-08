@@ -10,21 +10,21 @@ package org.eevolution.mrp.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.math.BigDecimal;
 
+import org.adempiere.mm.attributes.api.impl.ModelProductDescriptorExtactorUsingAttributeSetInstanceFactory;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
@@ -34,6 +34,14 @@ import org.compiere.model.X_S_Resource;
 import org.eevolution.model.I_DD_NetworkDistribution;
 import org.eevolution.mrp.AbstractMRPTestBase;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit4.SpringRunner;
+
+import de.metas.StartupListener;
+import de.metas.material.planning.ProductPlanningBL;
+import de.metas.material.planning.impl.MRPContextFactory;
+import de.metas.order.compensationGroup.OrderGroupRepository;
 
 /**
  * Test case:
@@ -44,10 +52,18 @@ import org.junit.Test;
  * <li>Expect: not run infinitelly
  * <li>Expect: MRP Note {@link MRPExecutorService#MRP_ERROR_MRPExecutorMaxIterationsExceeded} to be created
  * </ul>
- * 
+ *
  * @author tsa
  *
  */
+@RunWith(SpringRunner.class)
+@SpringBootTest(classes = { StartupListener.class,
+		ModelProductDescriptorExtactorUsingAttributeSetInstanceFactory.class,
+		MRPExecutor.class,
+		MRPContextFactory.class,
+		ProductPlanningBL.class,
+		OrderGroupRepository.class
+})
 public class MRPExecutor_CircularDistributionNetwork_Test extends AbstractMRPTestBase
 {
 	private I_M_Product pSalad;

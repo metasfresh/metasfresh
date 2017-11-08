@@ -41,8 +41,8 @@
 		</dependency>
 
 		<dependency>
-			<groupId>de.metas.adempiere.adempiere</groupId>
-			<artifactId>de.metas.adempiere.adempiere.base</artifactId>
+			<groupId>de.metas.business</groupId>
+			<artifactId>de.metas.business</artifactId>
 			<version>10.0.0</version>
 		</dependency>
 		<dependency>
@@ -57,6 +57,14 @@
 			<groupId>de.metas.material</groupId>
 			<artifactId>metasfresh-material-event</artifactId>
 			<version>10.0.0</version>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.material</groupId>
+			<artifactId>metasfresh-material-event</artifactId>
+			<version>10.0.0</version>
+			<scope>test</scope>
+			<classifier>tests</classifier>
 		</dependency>
 
 		<!--

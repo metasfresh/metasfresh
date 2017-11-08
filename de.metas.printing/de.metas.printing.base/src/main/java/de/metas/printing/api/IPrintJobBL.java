@@ -31,6 +31,7 @@ import java.util.List;
 import org.adempiere.util.ISingletonService;
 
 import de.metas.async.model.I_C_Async_Batch;
+import de.metas.printing.api.impl.PrintJobContext;
 import de.metas.printing.model.I_C_Print_Job;
 import de.metas.printing.model.I_C_Print_Job_Detail;
 import de.metas.printing.model.I_C_Print_Job_Instructions;
@@ -52,16 +53,16 @@ public interface IPrintJobBL extends ISingletonService
 	 * This method is skipping items which were already printed (see {@link I_C_Printing_Queue#isProcessed()})
 	 * 
 	 * @param source
-	 * @param adPInstanceId
-	 * @param parentAsyncBatchId
+	 * @param printJobContext
 	 * @return number of created print jobs
 	 */
-	int createPrintJobs(IPrintingQueueSource source, int adPInstanceId, int parentAsyncBatchId);
+	int createPrintJobs(IPrintingQueueSource source, PrintJobContext printJobContext);
+	
+	int createPrintJobs(IPrintingQueueSource source);
 
 	/**
 	 * Creates an instructions record for the given print job.
 	 * 
-	 * @param printJob
 	 * @param userToPrintId the user that shall actually do the printing. Note that if this user's printing config forwards to a shared config, then the instructions instance is created for the shared
 	 *            config's user
 	 * @param createWithSpecificHostKey if <code>false</code>, then
@@ -75,8 +76,7 @@ public interface IPrintJobBL extends ISingletonService
 	 * @param copies number of copies to print (1 means one printout).
 	 * @return
 	 */
-	I_C_Print_Job_Instructions createPrintJobInstructions(final I_C_Print_Job printJob,
-			int userToPrintId,
+	I_C_Print_Job_Instructions createPrintJobInstructions(int userToPrintId,
 			boolean createWithSpecificHostKey,
 			I_C_Print_Job_Line firstLine,
 			I_C_Print_Job_Line lastLine,
@@ -92,5 +92,5 @@ public interface IPrintJobBL extends ISingletonService
 	 * @param jobInstructions
 	 * @param asyncBatch
 	 */
-	void enquePrintJobInstructions(I_C_Print_Job_Instructions jobInstructions, I_C_Async_Batch asyncBatch);
+	void enqueuePrintJobInstructions(I_C_Print_Job_Instructions jobInstructions, I_C_Async_Batch asyncBatch);
 }
