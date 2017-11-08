@@ -50,6 +50,11 @@ public interface IHUPackingAwareBL extends ISingletonService
 	 * @return
 	 */
 	IHUPackingAware create(final IInfoSimple infoWindow, final int rowIndexModel);
+	
+	default HUPackingAwareCopy prepareCopyFrom(final IHUPackingAware from)
+	{
+		return HUPackingAwareCopy.from(from);
+	}
 
 	/**
 	 * Copies all fields from one {@link IHUPackingAware} to another.
@@ -57,7 +62,10 @@ public interface IHUPackingAwareBL extends ISingletonService
 	 * @param to
 	 * @param from
 	 */
-	void copy(final IHUPackingAware to, final IHUPackingAware from);
+	default void copy(final IHUPackingAware to, final IHUPackingAware from)
+	{
+		prepareCopyFrom(from).copyTo(to);
+	}
 
 	/**
 	 * Checks if given {@link IHUPackingAware} is valid and completely defined.
@@ -91,16 +99,6 @@ public interface IHUPackingAwareBL extends ISingletonService
 	void setQty(IHUPackingAware record, int qtyPacks);
 
 	boolean isValidQty(IHUPackingAware record);
-
-	/**
-	 *
-	 * Copy method that supports the choice of overriting the BPartner in the TO model or not Note: in case the bpartner in "to" is null, it will be set from "from" anyway
-	 *
-	 * @param to
-	 * @param from
-	 * @param overridePartner if true, the BPartner in "to" will be copied from "from", even i "to" already has a partner set
-	 */
-	void copy(IHUPackingAware to, IHUPackingAware from, boolean overridePartner);
 
 	/**
 	 * This method verifies if the qtyCU given as parameter fits the qtyPacks. If it does, the record will not be updated.
