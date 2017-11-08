@@ -15,7 +15,10 @@ RETURNS TABLE
 	sr_phone character varying(40),
 	sr_fax character varying(40),
 	sr_email character varying(60),
-	PrintName character varying(60)
+	PrintName character varying(60),
+	order_docno text,
+	inout_docno text,
+	io_movementdate date
 	)
 AS
 $$	
@@ -40,7 +43,10 @@ SELECT
 	srep.phone	as sr_phone,
 	srep.fax	as sr_fax,
 	srep.email	as sr_email,
-	COALESCE(dtt.PrintName, dt.PrintName) AS PrintName
+	COALESCE(dtt.PrintName, dt.PrintName) AS PrintName,
+	o.docno AS order_docno,
+	io.docno AS inout_docno,
+	io.DateFrom AS io_movementdate
 FROM
 	C_Invoice i
 	JOIN C_BPartner bp 		ON i.C_BPartner_ID = bp.C_BPartner_ID AND bp.isActive = 'Y'
@@ -50,6 +56,31 @@ FROM
 	LEFT JOIN C_Greeting srgr	ON srep.C_Greeting_ID = srgr.C_Greeting_ID AND srgr.isActive = 'Y'
 	LEFT OUTER JOIN C_DocType dt ON i.C_DocTypeTarget_ID = dt.C_DocType_ID AND dt.isActive = 'Y'
 	LEFT OUTER JOIN C_DocType_Trl dtt ON i.C_DocTypeTarget_ID = dtt.C_DocType_ID AND dtt.AD_Language = $2 AND dtt.isActive = 'Y'
+	LEFT JOIN LATERAL 
+	(
+		SELECT 
+		First_Agg ( o.DocumentNo ORDER BY o.DocumentNo ) ||
+				CASE WHEN Count( o.documentNo ) > 1 THEN ' ff.' ELSE '' END AS DocNo
+		FROM C_InvoiceLine il
+		JOIN C_OrderLine ol ON il.C_OrderLine_ID = ol.C_OrderLine_ID
+		JOIN C_Order o ON ol.C_Order_ID = o.C_Order_ID
+		
+		WHERE il.C_Invoice_ID = $1
+	) o ON TRUE
+	
+	LEFT JOIN LATERAL 
+	(
+		SELECT 
+			First_Agg ( io.DocumentNo ORDER BY io.DocumentNo ) ||
+				CASE WHEN Count( io.documentNo ) > 1 THEN ' ff.' ELSE '' END AS DocNo,
+			Min ( io.MovementDate )::date AS DateFrom
+		FROM C_InvoiceLine il
+		JOIN M_InOutLine iol ON il.M_InOutLine_ID = iol.M_InOutLine_ID
+		JOIN M_InOut io ON iol.M_InOut_ID = io.M_InOut_ID
+		
+		WHERE il.C_Invoice_ID = $1
+	) io ON TRUE
+	
 
 WHERE
 	i.C_Invoice_ID = $1 AND i.isActive = 'Y'
