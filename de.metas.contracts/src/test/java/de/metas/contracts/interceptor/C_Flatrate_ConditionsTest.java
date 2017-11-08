@@ -10,6 +10,7 @@ import org.junit.Test;
 
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.contracts.model.I_C_Flatrate_Transition;
 import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 
@@ -43,6 +44,23 @@ public class C_Flatrate_ConditionsTest
 		AdempiereTestHelper.get().init();
 	}
 
+	@Test
+	public void prohibitWrongDeliveryInterval()
+	{
+		final I_C_Flatrate_Transition transition = newInstance(I_C_Flatrate_Transition.class);
+		transition.setDeliveryInterval(0);
+		save(transition);
+		
+		final I_C_Flatrate_Conditions conditions = newInstance(I_C_Flatrate_Conditions.class);
+		conditions.setType_Conditions(X_C_Flatrate_Conditions.TYPE_CONDITIONS_Subscription);
+		conditions.setC_Flatrate_Transition(transition);
+		save(conditions);
+				
+		assertThatThrownBy(() -> {
+			C_Flatrate_Conditions.INSTANCE.onTransitionChange(conditions);
+		});
+	}
+	
 	@Test
 	public void prohibitVoidAndClose()
 	{
