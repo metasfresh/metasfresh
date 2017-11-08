@@ -24,7 +24,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import de.metas.StartupListener;
 import de.metas.material.event.ProductDescriptor;
-import de.metas.material.event.ModelProductDescriptorExtactor;
+import de.metas.material.event.ModelProductDescriptorExtractor;
 
 /*
  * #%L
@@ -49,24 +49,24 @@ import de.metas.material.event.ModelProductDescriptorExtactor;
  */
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = { StartupListener.class, ModelProductDescriptorExtactorUsingAttributeSetInstanceFactory.class })
+@SpringBootTest(classes = { StartupListener.class, ModelProductDescriptorExtractorUsingAttributeSetInstanceFactory.class })
 public class ProductDescriptorFromAttributeSetInstanceFactoryTest
 {
 	private static final int PRODUCT_ID = 20;
-	private ModelProductDescriptorExtactorUsingAttributeSetInstanceFactory factory;
+	private ModelProductDescriptorExtractorUsingAttributeSetInstanceFactory factory;
 
 	@Before
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
-		factory = new ModelProductDescriptorExtactorUsingAttributeSetInstanceFactory();
+		factory = new ModelProductDescriptorExtractorUsingAttributeSetInstanceFactory();
 	}
 
 	@Test
 	public void productDescriptorFactory_bean_is_a_ProductDescriptorFromAttributeSetInstanceFactory()
 	{
-		final ModelProductDescriptorExtactor productDescriptor = Adempiere.getBean(ModelProductDescriptorExtactor.class);
-		assertThat(productDescriptor).isInstanceOf(ModelProductDescriptorExtactorUsingAttributeSetInstanceFactory.class);
+		final ModelProductDescriptorExtractor productDescriptor = Adempiere.getBean(ModelProductDescriptorExtractor.class);
+		assertThat(productDescriptor).isInstanceOf(ModelProductDescriptorExtractorUsingAttributeSetInstanceFactory.class);
 	}
 
 	@Test
