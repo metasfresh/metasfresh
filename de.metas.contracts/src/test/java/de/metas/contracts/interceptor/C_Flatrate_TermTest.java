@@ -12,9 +12,7 @@ import org.adempiere.util.Services;
 import org.junit.Before;
 import org.junit.Test;
 
-import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
-import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 
 /*
@@ -93,18 +91,4 @@ public class C_Flatrate_TermTest
 		Services.get(ISysConfigBL.class)
 				.setValue(sysConfigName, true, 0);
 	}
-	
-	@Test
-	public void prohibitCompletingConditionsWithNoTransition()
-	{
-
-		final I_C_Flatrate_Conditions conditions = newInstance(I_C_Flatrate_Conditions.class);
-		conditions.setType_Conditions(X_C_Flatrate_Conditions.TYPE_CONDITIONS_Subscription);
-		save(conditions);
-
-		invokeMethodAndAssertExceptionThrown(subscriptionTerm);
-	}
-
-	
-	
 }
