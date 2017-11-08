@@ -124,6 +124,7 @@ public class PPOrderLineRowTest
 	public void canBuildForIssuedOrReceivedHU()
 	{
 		final I_C_UOM uom = newInstance(I_C_UOM.class);
+		uom.setUOMSymbol("UOMSymbol");
 		final I_PP_Order_Qty ppOrderQty = newInstance(I_PP_Order_Qty.class);
 		ppOrderQty.setM_HU_ID(10);
 
