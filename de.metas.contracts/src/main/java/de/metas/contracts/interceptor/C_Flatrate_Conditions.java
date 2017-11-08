@@ -55,6 +55,10 @@ public class C_Flatrate_Conditions
 	public static final String MSG_CONDITIONS_ERROR_TRANSITION_NOT_CO_0P = "Conditions_Error_Transition_Not_Completed";
 	public static final String MSG_CONDITIONS_ERROR_ORDERLESS_SUBSCRIPTION_NOT_SUPPORTED_0P = "Conditions_Error_Subscription_Not_Supported"; // 03204
 
+	private C_Flatrate_Conditions()
+	{
+	}
+	
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE)
 	public void onTransitionChange(final I_C_Flatrate_Conditions cond)
 	{
