@@ -994,7 +994,18 @@ public final class DocumentFieldDescriptor implements Serializable
 			}
 
 			final DocumentFieldWidgetType widgetType = getWidgetType();
-			return widgetType.getValueClass();
+			if (widgetType.getValueClassOrNull() != null)
+			{
+				return widgetType.getValueClassOrNull();
+			}
+
+			final LookupDescriptorProvider lookupDescriptor = getLookupDescriptorProvider();
+			if (lookupDescriptor != null)
+			{
+				return lookupDescriptor.isNumericKey() ? IntegerLookupValue.class : StringLookupValue.class;
+			}
+
+			throw new AdempiereException("valueClass is unknown for " + this);
 		}
 
 		public Builder setDefaultValueExpression(final Optional<IExpression<?>> defaultValueExpression)
