@@ -154,7 +154,7 @@ public class OrderLineQuickInputProcessor implements IQuickInputProcessor
 		}
 
 		final IAttributeSetInstanceBL asiBL = Services.get(IAttributeSetInstanceBL.class);
-		final I_M_AttributeSetInstance asi = asiBL.createAttributeSetInstanceFromProductAndAttributeSet(productAndAttributes.getProductId(), attributes);
+		final I_M_AttributeSetInstance asi = asiBL.createASIFromProductAndAttributeSet(productAndAttributes.getProductId(), attributes);
 		return asi.getM_AttributeSetInstance_ID();
 	}
 }
