@@ -406,10 +406,6 @@ public class C_Flatrate_Term
 				// note that we accept a qty of 0
 				missingValues.add(I_C_Flatrate_Term.COLUMNNAME_PlannedQtyPerUnit);
 			}
-			if (term.getC_Flatrate_Conditions_ID() <= 0)
-			{
-				missingValues.add(I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Conditions_ID);
-			}
 			if (!missingValues.isEmpty())
 			{
 				throw new FillMandatoryException(missingValues.toArray(new String[0]));
