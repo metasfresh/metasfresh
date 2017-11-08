@@ -12,13 +12,15 @@ import org.adempiere.util.Services;
 import org.compiere.Adempiere;
 import org.compiere.model.ModelValidator;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.material.event.EventDescriptor;
 import de.metas.material.event.MaterialDescriptor;
 import de.metas.material.event.MaterialEventService;
-import de.metas.material.event.ProductDescriptor;
 import de.metas.material.event.ModelProductDescriptorExtactor;
+import de.metas.material.event.ProductDescriptor;
 import de.metas.material.event.ShipmentScheduleEvent;
 import lombok.NonNull;
 
@@ -52,7 +54,7 @@ public class M_ShipmentSchedule
 			I_M_ShipmentSchedule.COLUMNNAME_PreparationDate,
 			I_M_ShipmentSchedule.COLUMNNAME_IsActive /* IsActive=N shall be threaded like a deletion */ })
 	public void createAndFireEvent(
-			@NonNull final I_M_ShipmentSchedule schedule, 
+			@NonNull final I_M_ShipmentSchedule schedule,
 			@NonNull final ModelChangeType timing)
 	{
 		final ShipmentScheduleEvent event = createShipmentscheduleEvent(schedule, timing);
@@ -61,7 +63,8 @@ public class M_ShipmentSchedule
 		materialEventService.fireEventAfterNextCommit(event, getTrxName(schedule));
 	}
 
-	private ShipmentScheduleEvent createShipmentscheduleEvent(
+	@VisibleForTesting
+	ShipmentScheduleEvent createShipmentscheduleEvent(
 			@NonNull final I_M_ShipmentSchedule shipmentSchedule,
 			@NonNull final ModelChangeType timing)
 	{
@@ -72,10 +75,10 @@ public class M_ShipmentSchedule
 
 		final ModelProductDescriptorExtactor productDescriptorFactory = Adempiere.getBean(ModelProductDescriptorExtactor.class);
 		final ProductDescriptor productDescriptor = productDescriptorFactory.createProductDescriptor(shipmentSchedule);
-		
+
 		final ShipmentScheduleEvent event = ShipmentScheduleEvent.builder()
 				.eventDescriptor(EventDescriptor.createNew(shipmentSchedule))
-				.materialDescriptor(MaterialDescriptor.builder()
+				.materialDescriptor(MaterialDescriptor.builderForCompleteDescriptor()
 						.date(preparationDate)
 						.productDescriptor(productDescriptor)
 						.warehouseId(shipmentScheduleEffectiveBL.getWarehouseId(shipmentSchedule))
@@ -88,7 +91,7 @@ public class M_ShipmentSchedule
 	}
 
 	private BigDecimal computeEffectiveQuantity(
-			@NonNull final I_M_ShipmentSchedule schedule, 
+			@NonNull final I_M_ShipmentSchedule schedule,
 			@NonNull final ModelChangeType timing)
 	{
 		final BigDecimal quantity;
