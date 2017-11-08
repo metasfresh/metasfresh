@@ -47,7 +47,8 @@ import de.metas.i18n.IMsgBL;
 @Validator(I_C_Flatrate_Conditions.class)
 public class C_Flatrate_Conditions
 {
-
+	public static C_Flatrate_Conditions INSTANCE = new C_Flatrate_Conditions();
+	
 	public static final String MSG_CONDITIONS_ERROR_INVALID_TRANSITION_2P = "Conditions_Error_Invalid_Transition";
 	public static final String MSG_CONDITIONS_ERROR_ALREADY_IN_USE_0P = "Conditions_Error_AlreadyInUse";
 	public static final String MSG_CONDITIONS_ERROR_MATCHING_MISSING_0P = "Conditions_Error_MatchingMissing";
