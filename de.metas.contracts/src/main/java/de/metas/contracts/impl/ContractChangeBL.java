@@ -13,15 +13,14 @@ package de.metas.contracts.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -39,7 +38,6 @@ import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;
 import org.slf4j.Logger;
 
-import de.metas.contracts.ContractChangeParameters;
 import de.metas.contracts.IContractChangeBL;
 import de.metas.contracts.IContractChangeDAO;
 import de.metas.contracts.IFlatrateBL;
@@ -57,116 +55,156 @@ import de.metas.document.engine.IDocumentBL;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
 import de.metas.logging.LogManager;
 import de.metas.order.IOrderPA;
+import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.Builder.Default;
+import lombok.Getter;
 import lombok.NonNull;
+import lombok.Setter;
+import lombok.experimental.Delegate;
+import lombok.experimental.FieldDefaults;
 
 public class ContractChangeBL implements IContractChangeBL
 {
 
 	private static final Logger logger = LogManager.getLogger(ContractChangeBL.class);
 
-	
-	
 	@Override
-	public void cancelContract(final I_C_Flatrate_Term currentTerm,
+	public void cancelContract(@NonNull final I_C_Flatrate_Term currentTerm,
 			final @NonNull ContractChangeParameters contractChangeParameters)
 	{
 		final I_C_Flatrate_Term initialContract = Services.get(IFlatrateBL.class).getInitialFlatrateTerm(currentTerm);
 		if (initialContract == null)
 		{
-			cancelContract0(currentTerm, contractChangeParameters);
+			cancelContractIfNotCanceledAlready(currentTerm, contractChangeParameters);
 		}
 		else
 		{
 			// start canceling with first ancestor
-			cancelContract0(initialContract, contractChangeParameters);
+			cancelContractIfNotCanceledAlready(initialContract, contractChangeParameters);
 		}
 	}
-	
-	
-	private void cancelContract0(@NonNull final I_C_Flatrate_Term currentTerm,
+
+	@Builder
+	@Getter
+	@FieldDefaults(level = AccessLevel.PRIVATE)
+	public static class ContextForCompesationOrder
+	{
+		@NonNull
+		final Timestamp changeDate;
+
+		@NonNull
+		@Delegate
+		final List<I_C_SubscriptionProgress> subscriptionProgress;
+
+		@NonNull
+		final I_C_Flatrate_Term currentTerm;
+
+		@Default
+		@Setter
+		boolean isOrderCreated = false;
+	}
+
+	private void cancelContractIfNotCanceledAlready(@NonNull final I_C_Flatrate_Term currentTerm,
 			@NonNull final ContractChangeParameters contractChangeParameters)
 	{
+		if (isCanceledContract(currentTerm))
+		{
+			return;
+		}
+
 		final Timestamp changeDate = contractChangeParameters.getChangeDate();
 		final boolean isCloseInvoiceCandidate = contractChangeParameters.isCloseInvoiceCandidate();
-		
-		Check.assumeNotNull(currentTerm, "Param 'currentTerm' not null");
-		Check.assumeNotNull(changeDate, "Param 'changeDate' not null");
-
-
-		final ISubscriptionDAO subscriptionDAO = Services.get(ISubscriptionDAO.class);
-
-		// get the subscription progress entries that we might be dealing with
-		final SubscriptionProgressQuery currentTermQuery = SubscriptionProgressQuery.term(currentTerm).build();
-		final List<I_C_SubscriptionProgress> sps = subscriptionDAO.retrieveSubscriptionProgresses(currentTermQuery);
-
-		final Properties ctx = InterfaceWrapperHelper.getCtx(currentTerm);
-		final String trxName = InterfaceWrapperHelper.getTrxName(currentTerm);
 
 		if (changeDate.before(currentTerm.getEndDate()))
 		{
-			final I_C_Contract_Change changeConditions =
-					Services.get(IContractChangeDAO.class).retrieveChangeConditions(currentTerm, X_C_Contract_Change.CONTRACTSTATUS_Gekuendigt, changeDate);
+			final ISubscriptionDAO subscriptionDAO = Services.get(ISubscriptionDAO.class);
+			final SubscriptionProgressQuery currentTermQuery = SubscriptionProgressQuery.term(currentTerm).build();
+			final List<I_C_SubscriptionProgress> subscriptionProgress = subscriptionDAO.retrieveSubscriptionProgresses(currentTermQuery);
 
-			// 'retrieveChangeConditions' would have thrown a exception in case of missing change conditions
-			Check.assume(changeConditions != null, "");
+			final ContextForCompesationOrder compensationOrderContext = ContextForCompesationOrder.builder()
+					.changeDate(changeDate)
+					.currentTerm(currentTerm)
+					.subscriptionProgress(subscriptionProgress)
+					.build();
 
-			final int pricingSystemId = getPricingSystemId(currentTerm, changeConditions);
+			createCompesationOrderIfNeeded(compensationOrderContext);
 
-			if (currentTerm.getC_OrderLine_Term_ID() > 0 && changeConditions.getM_Product_ID() > 0)
-			{
-				final I_C_OrderLine currentTermOl = currentTerm.getC_OrderLine_Term();
-				final I_C_Order currentTermOrder = currentTermOl.getC_Order();
+			final I_C_OrderLine currentTermOl = compensationOrderContext.isOrderCreated() ? currentTerm.getC_OrderLine_Term() : null;
+			final I_C_Order currentTermOrder = compensationOrderContext.isOrderCreated() ? currentTermOl.getC_Order() : null;
 
-				// we create an order to document that a change is taking place
-				final IOrderPA orderPA = Services.get(IOrderPA.class);
-				final I_C_Order termChangeOrder = orderPA.copyOrder(currentTermOrder, false, trxName);
-				termChangeOrder.setM_PricingSystem_ID(pricingSystemId);
-
-				termChangeOrder.setDateOrdered(SystemTime.asDayTimestamp());
-				termChangeOrder.setDatePromised(changeDate);
-				termChangeOrder.setDocAction(IDocument.ACTION_Complete);
-
-				InterfaceWrapperHelper.save(termChangeOrder);
-
-				final BigDecimal difference = computePriceDifference(ctx, sps, pricingSystemId, changeDate, trxName);
-
-				final I_C_OrderLine termChangeOL = createChargeOrderLine(termChangeOrder, changeConditions, difference);
-
-				final IDocumentBL docActionBL = Services.get(IDocumentBL.class);
-				docActionBL.processEx(termChangeOrder, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
-				logger.info("Completed new order {}", termChangeOrder);
-
-				currentTerm.setC_OrderLine_TermChange_ID(termChangeOL.getC_OrderLine_ID());
-
-				deleteDeliveriesAdjustOrderLine(sps, currentTermOrder, currentTermOl, changeDate);
-			}
-			else
-			{
-				deleteDeliveriesAdjustOrderLine(sps, null, null, changeDate);
-			}
-
+			deleteDeliveriesAdjustOrderLine(subscriptionProgress, currentTermOrder, currentTermOl, changeDate);
 			currentTerm.setEndDate(computeEndDate(currentTerm, changeDate));
-			
 		}
 
 		setTerminatioReasonAndMemo(currentTerm, contractChangeParameters);
-		currentTerm.setMasterEndDate(computeMasterEndDate(currentTerm, changeDate));		
-		currentTerm.setIsCloseInvoiceCandidate(isCloseInvoiceCandidate); 
-		
-		// make sure that the canceled term won't be extended by the system
+		currentTerm.setMasterEndDate(computeMasterEndDate(currentTerm, changeDate));
+		currentTerm.setIsCloseInvoiceCandidate(isCloseInvoiceCandidate);
 		currentTerm.setIsAutoRenew(false);
 		currentTerm.setContractStatus(X_C_Flatrate_Term.CONTRACTSTATUS_Quit);
+		InterfaceWrapperHelper.save(currentTerm);
 		
+		cancelNextContractIfNeeded(currentTerm, contractChangeParameters);
+
+		Services.get(IInvoiceCandidateHandlerBL.class).invalidateCandidatesFor(currentTerm);
+	}
+
+	private void cancelNextContractIfNeeded(@NonNull final I_C_Flatrate_Term currentTerm,
+			@NonNull final ContractChangeParameters contractChangeParameters)
+	{
 		if (currentTerm.getC_FlatrateTerm_Next_ID() > 0)
 		{
 			// the canceled term has already been extended, so we need to cancel the next term as well
-			cancelContract0(currentTerm.getC_FlatrateTerm_Next(), contractChangeParameters);
+			cancelContractIfNotCanceledAlready(currentTerm.getC_FlatrateTerm_Next(), contractChangeParameters);
 		}
+	}
 
-		
-		InterfaceWrapperHelper.save(currentTerm);
-		
- 		Services.get(IInvoiceCandidateHandlerBL.class).invalidateCandidatesFor(currentTerm);
+	private void createCompesationOrderIfNeeded(final ContextForCompesationOrder compensationOrderContext)
+	{
+		final I_C_Flatrate_Term currentTerm = compensationOrderContext.getCurrentTerm();
+		final Timestamp changeDate = compensationOrderContext.getChangeDate();
+
+		final I_C_Contract_Change changeConditions = Services.get(IContractChangeDAO.class).retrieveChangeConditions(currentTerm, X_C_Contract_Change.CONTRACTSTATUS_Gekuendigt, changeDate);
+
+		Check.assume(changeConditions != null, "");
+
+		if (currentTerm.getC_OrderLine_Term_ID() > 0 && changeConditions.getM_Product_ID() > 0)
+		{
+
+			final I_C_OrderLine currentTermOl = currentTerm.getC_OrderLine_Term();
+			final I_C_Order currentTermOrder = currentTermOl.getC_Order();
+
+			final IOrderPA orderPA = Services.get(IOrderPA.class);
+			final String trxName = InterfaceWrapperHelper.getTrxName(currentTerm);
+			final I_C_Order termChangeOrder = orderPA.copyOrder(currentTermOrder, false, trxName);
+			final int pricingSystemId = getPricingSystemId(currentTerm, changeConditions);
+			termChangeOrder.setM_PricingSystem_ID(pricingSystemId);
+
+			termChangeOrder.setDateOrdered(SystemTime.asDayTimestamp());
+			termChangeOrder.setDatePromised(changeDate);
+			termChangeOrder.setDocAction(IDocument.ACTION_Complete);
+			InterfaceWrapperHelper.save(termChangeOrder);
+
+			final Properties ctx = InterfaceWrapperHelper.getCtx(currentTerm);
+			final List<I_C_SubscriptionProgress> subscriptionProgress = compensationOrderContext.getSubscriptionProgress();
+			final BigDecimal difference = computePriceDifference(ctx, subscriptionProgress, pricingSystemId, changeDate, trxName);
+
+			final I_C_OrderLine termChangeOL = createChargeOrderLine(termChangeOrder, changeConditions, difference);
+
+			final IDocumentBL docActionBL = Services.get(IDocumentBL.class);
+			docActionBL.processEx(termChangeOrder, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
+			logger.info("Completed new order {}", termChangeOrder);
+
+			currentTerm.setC_OrderLine_TermChange_ID(termChangeOL.getC_OrderLine_ID());
+
+			compensationOrderContext.setOrderCreated(true);
+
+		}
+	}
+
+	private boolean isCanceledContract(@NonNull final I_C_Flatrate_Term currentTerm)
+	{
+		return X_C_Flatrate_Term.CONTRACTSTATUS_Quit.equals(currentTerm.getContractStatus());
 	}
 
 	private Timestamp computeEndDate(@NonNull final I_C_Flatrate_Term currentTerm, final Timestamp changeDate)
@@ -175,26 +213,26 @@ public class ContractChangeBL implements IContractChangeBL
 		{
 			return currentTerm.getStartDate();
 		}
-		
+
 		return new Timestamp(changeDate.getTime());
 	}
-	
+
 	private Timestamp computeMasterEndDate(@NonNull final I_C_Flatrate_Term contract, final Timestamp changeDate)
 	{
 		final I_C_Flatrate_Term initialContract = Services.get(IFlatrateBL.class).getInitialFlatrateTerm(contract);
-		if (initialContract == null && !changeDate.after(contract.getEndDate()))  
+		if (initialContract == null && !changeDate.after(contract.getEndDate()))
 		{
-				return contract.getEndDate(); 
+			return contract.getEndDate();
 		}
-		
+
 		if (initialContract != null && changeDate.before(initialContract.getStartDate()))
 		{
 			return initialContract.getStartDate();
 		}
 
-		return	new Timestamp(changeDate.getTime());
+		return new Timestamp(changeDate.getTime());
 	}
-	
+
 	private void setTerminatioReasonAndMemo(@NonNull final I_C_Flatrate_Term currentTerm, final @NonNull ContractChangeParameters contractChangeParameters)
 	{
 		final String terminationMemo = contractChangeParameters.getTerminationMemo();
@@ -203,14 +241,13 @@ public class ContractChangeBL implements IContractChangeBL
 		{
 			currentTerm.setTerminationReason(terminationReason);
 		}
-		
+
 		if (!Check.isEmpty(terminationMemo, true))
 		{
 			currentTerm.setTerminationMemo(terminationMemo);
 		}
 	}
-	
-	
+
 	private void deleteDeliveriesAdjustOrderLine(
 			final List<I_C_SubscriptionProgress> sps,
 			final I_C_Order oldOrder,
@@ -227,7 +264,7 @@ public class ContractChangeBL implements IContractChangeBL
 			else
 			{
 				final String evtType = currentSP.getEventType();
-				
+
 				final String status = currentSP.getStatus();
 
 				if (X_C_SubscriptionProgress.EVENTTYPE_Delivery.equals(evtType)
@@ -251,7 +288,7 @@ public class ContractChangeBL implements IContractChangeBL
 			orderPA.reserveStock(oldOrder, oldOl);
 		}
 	}
-	
+
 	private void setQuitContractStatus(@NonNull final I_C_SubscriptionProgress progress)
 	{
 		final Timestamp today = SystemTime.asDayTimestamp();
@@ -326,7 +363,7 @@ public class ContractChangeBL implements IContractChangeBL
 		}
 		return pricingSystemId;
 	}
-	
+
 	@Override
 	public void endContract(I_C_Flatrate_Term currentTerm)
 	{
