@@ -56,7 +56,7 @@ public class AttributeSetInstanceBLTest
 	}
 
 	@Test
-	public void createAttributeSetInstanceFromAttributeSet()
+	public void createASIFromAttributeSet()
 	{
 		final TestAttributeSet testAttributeSet = new TestAttributeSet();
 
