@@ -8,9 +8,7 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
-import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.IQuery;
 import org.compiere.util.Ini;
 
@@ -80,23 +78,11 @@ public class C_Flatrate_Term_Change extends JavaProcess
 				.terminationMemo(terminationMemo)
 				.terminationReason(terminationReason)
 				.build();
+
+		final Iterable<I_C_Flatrate_Term> flatrateTerms = retrieveSelection(getAD_PInstance_ID());
+		flatrateTerms.forEach(currentTerm -> contractChangeBL.cancelContract(currentTerm, contractChangeParameters));
 		
-		if (I_C_Flatrate_Term.Table_Name.equals(getTableName()))
-		{
-			final I_C_Flatrate_Term currentTerm = InterfaceWrapperHelper.create(getCtx(), getRecord_ID(), I_C_Flatrate_Term.class, get_TrxName());
-
-			
-
-			contractChangeBL.cancelContract(currentTerm, contractChangeParameters);
-
-			getResult().setRecordToRefreshAfterExecution(TableRecordReference.of(currentTerm));
-		}
-		else
-		{
-			
-			final Iterable<I_C_Flatrate_Term> flatrateTerms = retrieveSelection(getAD_PInstance_ID());
-			flatrateTerms.forEach(currentTerm -> contractChangeBL.cancelContract(currentTerm, contractChangeParameters));
-		}
+		getResult().setRefreshAllAfterExecution(true);
 
 		return "@Success@";
 	}
