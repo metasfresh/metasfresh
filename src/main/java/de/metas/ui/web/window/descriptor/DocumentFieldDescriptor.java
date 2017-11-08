@@ -108,7 +108,6 @@ public final class DocumentFieldDescriptor implements Serializable
 	private final Optional<IExpression<?>> defaultValueExpression;
 	private final ImmutableList<IDocumentFieldCallout> callouts;
 
-	
 	public static enum Characteristic
 	{
 		PublicField //
@@ -186,7 +185,7 @@ public final class DocumentFieldDescriptor implements Serializable
 		//
 		// Default filtering
 		defaultFilterField = builder.defaultFilterField;
-		if(defaultFilterField)
+		if (defaultFilterField)
 		{
 			this.defaultFilterFieldSeqNo = builder.defaultFilterFieldSeqNo > 0 ? builder.defaultFilterFieldSeqNo : Integer.MAX_VALUE;
 		}
@@ -258,7 +257,7 @@ public final class DocumentFieldDescriptor implements Serializable
 	{
 		return widgetType;
 	}
-	
+
 	public boolean isAllowShowPassword()
 	{
 		return allowShowPassword;
@@ -464,12 +463,12 @@ public final class DocumentFieldDescriptor implements Serializable
 				if (value instanceof String)
 				{
 					final String valueStr = (String)value;
-					if(valueStr.isEmpty())
+					if (valueStr.isEmpty())
 					{
 						return null;
 					}
-					
-					final BigDecimal valueBD = new BigDecimal(valueStr); 
+
+					final BigDecimal valueBD = new BigDecimal(valueStr);
 					@SuppressWarnings("unchecked")
 					final T valueConv = (T)(Integer)valueBD.intValueExact();
 					return valueConv;
@@ -489,7 +488,7 @@ public final class DocumentFieldDescriptor implements Serializable
 				else if (value instanceof Map)
 				{
 					@SuppressWarnings("unchecked")
-					final Map<String, String> map = (Map<String, String>)value;
+					final Map<String, Object> map = (Map<String, Object>)value;
 					final IntegerLookupValue lookupValue = JSONLookupValue.integerLookupValueFromJsonMap(map);
 					@SuppressWarnings("unchecked")
 					final T valueConv = (T)(Integer)lookupValue.getIdAsInt();
@@ -539,7 +538,7 @@ public final class DocumentFieldDescriptor implements Serializable
 				if (Map.class.isAssignableFrom(fromType))
 				{
 					@SuppressWarnings("unchecked")
-					final Map<String, String> map = (Map<String, String>)value;
+					final Map<String, Object> map = (Map<String, Object>)value;
 					final IntegerLookupValue lookupValue = JSONLookupValue.integerLookupValueFromJsonMap(map);
 
 					if (Check.isEmpty(lookupValue.getDisplayName(), true) && lookupDataSource != null)
@@ -598,7 +597,7 @@ public final class DocumentFieldDescriptor implements Serializable
 				if (Map.class.isAssignableFrom(fromType))
 				{
 					@SuppressWarnings("unchecked")
-					final Map<String, String> map = (Map<String, String>)value;
+					final Map<String, Object> map = (Map<String, Object>)value;
 					final StringLookupValue lookupValue = JSONLookupValue.stringLookupValueFromJsonMap(map);
 
 					if (Check.isEmpty(lookupValue.getDisplayName(), true) && lookupDataSource != null)
@@ -640,7 +639,7 @@ public final class DocumentFieldDescriptor implements Serializable
 					return valueConv;
 				}
 			}
-			else if(LookupValuesList.class == targetType)
+			else if (LookupValuesList.class == targetType)
 			{
 				if (Map.class.isAssignableFrom(fromType))
 				{
@@ -651,7 +650,7 @@ public final class DocumentFieldDescriptor implements Serializable
 					return valueConv;
 				}
 			}
-			else if(DateRangeValue.class == targetType)
+			else if (DateRangeValue.class == targetType)
 			{
 				if (Map.class.isAssignableFrom(fromType))
 				{
@@ -680,12 +679,12 @@ public final class DocumentFieldDescriptor implements Serializable
 	{
 		return callouts;
 	}
-	
+
 	public boolean isDefaultFilterField()
 	{
 		return defaultFilterField;
 	}
-	
+
 	public int getDefaultFilterFieldSeqNo()
 	{
 		return defaultFilterFieldSeqNo;
@@ -713,7 +712,6 @@ public final class DocumentFieldDescriptor implements Serializable
 		private Class<?> _valueClass;
 		private boolean _allowShowPassword = false; // in case widgetType is Password
 
-
 		// Lookup
 		private LookupDescriptorProvider lookupDescriptorProvider = LookupDescriptorProvider.NULL;
 
@@ -733,7 +731,7 @@ public final class DocumentFieldDescriptor implements Serializable
 		private final List<IDocumentFieldCallout> callouts = new ArrayList<>();
 
 		private ButtonFieldActionDescriptor buttonActionDescriptor = null;
-		
+
 		//
 		// Default filtering options
 		private boolean defaultFilterField = false;
@@ -933,13 +931,13 @@ public final class DocumentFieldDescriptor implements Serializable
 			Preconditions.checkNotNull(_widgetType, "widgetType is null");
 			return _widgetType;
 		}
-		
+
 		public Builder setAllowShowPassword(final boolean allowShowPassword)
 		{
 			this._allowShowPassword = allowShowPassword;
 			return this;
 		}
-		
+
 		private boolean isAllowShowPassword()
 		{
 			return _allowShowPassword;
@@ -1356,11 +1354,11 @@ public final class DocumentFieldDescriptor implements Serializable
 			// Allow zooming into key column. It shall open precisely this record in a new window
 			// (see https://github.com/metasfresh/metasfresh/issues/1687 to understand the use-case)
 			// In future we shall think to narrow it down only to included tabs and only for those tables which also have a window where they are the header document.
-			if(isKey())
+			if (isKey())
 			{
 				return true;
 			}
-			
+
 			final DocumentFieldWidgetType widgetType = getWidgetType();
 			if (!widgetType.isSupportZoomInto())
 			{
@@ -1381,19 +1379,19 @@ public final class DocumentFieldDescriptor implements Serializable
 
 			return true;
 		}
-		
+
 		public Builder setDefaultFilterField(final boolean defaultFilterField)
 		{
 			this.defaultFilterField = defaultFilterField;
 			return this;
 		}
-		
+
 		public Builder setDefaultFilterFieldSeqNo(final int defaultFilterFieldSeqNo)
 		{
 			this.defaultFilterFieldSeqNo = defaultFilterFieldSeqNo;
 			return this;
 		}
-		
+
 		/**
 		 * @return true if this field has ORDER BY instructions
 		 */

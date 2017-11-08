@@ -105,7 +105,7 @@ public class JSONLookupValuesList implements Serializable
 		return values.stream()
 				.map(valueObj -> {
 					@SuppressWarnings("unchecked")
-					final Map<String, String> valueAsMap = (Map<String, String>)valueObj;
+					final Map<String, Object> valueAsMap = (Map<String, Object>)valueObj;
 					return JSONLookupValue.stringLookupValueFromJsonMap(valueAsMap);
 				})
 				.collect(LookupValuesList.collect());

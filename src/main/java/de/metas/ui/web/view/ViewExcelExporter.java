@@ -187,7 +187,7 @@ import lombok.NonNull;
 		}
 		else if (value instanceof JSONLookupValue)
 		{
-			final String valueStr = ((JSONLookupValue)value).getName();
+			final String valueStr = ((JSONLookupValue)value).getCaption();
 			return CellValues.toCellValue(valueStr, widgetType.getDisplayType());
 		}
 		else

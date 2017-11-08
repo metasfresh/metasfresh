@@ -644,7 +644,7 @@ public class BoardDescriptorRepository
 			}
 			else if (value instanceof JSONLookupValue)
 			{
-				return ImmutableTranslatableString.constant(((JSONLookupValue)value).getName().trim());
+				return ImmutableTranslatableString.constant(((JSONLookupValue)value).getCaption().trim());
 			}
 		}
 		else if (widgetType.isBoolean())

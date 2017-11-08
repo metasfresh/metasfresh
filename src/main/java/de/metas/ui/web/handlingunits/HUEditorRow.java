@@ -432,7 +432,7 @@ public final class HUEditorRow implements IViewRow
 	public String getM_Product_DisplayName()
 	{
 		final JSONLookupValue productLV = getProduct();
-		return productLV == null ? null : productLV.getName();
+		return productLV == null ? null : productLV.getCaption();
 	}
 
 	public I_M_Product getM_Product()

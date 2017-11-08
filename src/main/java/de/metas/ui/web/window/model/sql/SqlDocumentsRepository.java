@@ -788,7 +788,7 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 			else if (Map.class.isAssignableFrom(valueClass))
 			{
 				@SuppressWarnings("unchecked")
-				final Map<String, String> map = (Map<String, String>)value;
+				final Map<String, Object> map = (Map<String, Object>)value;
 				final IntegerLookupValue lookupValue = JSONLookupValue.integerLookupValueFromJsonMap(map);
 				return lookupValue == null ? null : lookupValue.getIdAsInt();
 			}
@@ -806,7 +806,7 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 			else if (Map.class.isAssignableFrom(valueClass))
 			{
 				@SuppressWarnings("unchecked")
-				final Map<String, String> map = (Map<String, String>)value;
+				final Map<String, Object> map = (Map<String, Object>)value;
 				final StringLookupValue lookupValue = JSONLookupValue.stringLookupValueFromJsonMap(map);
 				return lookupValue == null ? null : lookupValue.getIdAsString();
 			}
