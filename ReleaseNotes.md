@@ -65,10 +65,16 @@ Here come the actual release notes:
     * Improvement of Cache Invalidation in WebUI.
   * [#652](https://github.com/metasfresh/metasfresh-webui-api/issues/652) Implement document discardChanges endpoint
     * Endpoint Implementation for the possibility of discarding document changes. This endpoint will be used by a new cancel button in WebUI.
+  * [#653](https://github.com/metasfresh/metasfresh-webui-api/issues/653) metasfresh.webui.debug.showColumnNamesForCaption shall be false by default
+    * Fix in WebUI API, switching the Developer Mode off by default.
+  * [#656](https://github.com/metasfresh/metasfresh-webui-api/issues/656) Address editor fields are not translated
+    * Improvement of Translations in en_US, de_DE for the Address editor.
 
 * metasfresh-webui-frontend
-  * [#1295](https://github.com/metasfresh/metasfresh-webui-api/issues/653) metasfresh.webui.debug.showColumnNamesForCaption shall be false by default
-    * Fix in WebUI Frontend, switching the Developer Mode off by default.
+  * [#1294](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1294) window actions shall respect the "disabled" flag
+    * Now only enabled window actions are active in WebUI Frontend, if disabled then the action is greyed out.
+  * [#1295](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1295) processes: provide current selected tab and rows
+    * Processes now provide the info about the selected Tab and rows when called in WebUI.
   * [#1303](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1303) Change the hostname from config.js.dist to localhost
     * Internal Housekeeping Issue, switching Hostnames on config.js for easier maintenance.
   
@@ -80,7 +86,9 @@ Here come the actual release notes:
 
 * metasfresh
   * [#2876](https://github.com/metasfresh/metasfresh/issues/2876) Fix Recreate printing queue for webui
+    * Fix for the Process Recreate Printing Queue, and enabling to run in WebUI.
   * [#2885](https://github.com/metasfresh/metasfresh/issues/2885) Test canceling extended contracts and fix if needed
+    * Improvement of the Cancel Action when used on extended contracts.
   * [#2895](https://github.com/metasfresh/metasfresh/issues/2895) AD_Ref_Table needs lower-case WHERE and FROM
     * Fix for SQL Validation in Reference Table.
   * [#2907](https://github.com/metasfresh/metasfresh/issues/2907) set masterenddate correctly when extending contracts
@@ -88,15 +96,17 @@ Here come the actual release notes:
 
 * metasfresh-webui-api
   * [#633](https://github.com/metasfresh/metasfresh-webui-api/issues/633) Materialdispo Target Warehouse checks Warehouse Routing
+    * Fix for the Warehouse Routing in Material Disposition. Now only validating the Document Reference for Source Warehouse.
   * [#650](https://github.com/metasfresh/metasfresh-webui-api/issues/650) flatrate contractstatus not refresh in single view after terminated
+    * Now setting the contractstatus directly when terminating a contract.
   * [#651](https://github.com/metasfresh/metasfresh-webui-api/issues/651) Document references endpoints are not respecting role permissions
+    * The Record Reference List is now respecting the Role Permissions of the user and only showing references which are allowed for the user.
   * [#654](https://github.com/metasfresh/metasfresh-webui-api/issues/654) Address country lookup not working correctly
-  * [#656](https://github.com/metasfresh/metasfresh-webui-api/issues/656) Address editor fields are not translated
+    * Fix for the country Lookup in Location widget.
 
 * metasfresh-webui-frontend
-  * [#1294](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1294) window actions shall respect the "disabled" flag
-  * [#1295](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1295) processes: provide current selected tab and rows
   * [#1312](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1312) Wrong process call
+    * Improvement for Action calls in WebUI.
 
 # metasfresh 5.33 (2017-44)
 
