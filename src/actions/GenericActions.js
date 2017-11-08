@@ -88,6 +88,37 @@ export function patchRequest({
         }
     }
 
+    /* TODO: Remove this compatibility layer after API has been completely
+     * migrated
+     * https://github.com/metasfresh/metasfresh-webui-frontend/issues/1327
+     */
+    try {
+        if (Array.isArray(payload)) {
+            let patch;
+
+            if (payload[0].value && payload[0].value.values) {
+                patch = payload[0].value.values[0];
+            } else {
+                patch = payload[0].value;
+            }
+
+            const keys = new Set(Object.keys(patch));
+
+            if (
+                keys.has('key') &&
+                keys.has('caption') &&
+                patch[patch.key] === patch.caption
+            ) {
+                // eslint-disable-next-line max-len
+                console.warn(`Deprecated usage of API, removed key "${patch.key}" from payload. See https://github.com/metasfresh/metasfresh-webui-frontend/issues/1327 for more info.`);
+
+                delete patch[patch.key];
+            }
+        }
+    } catch (error) {
+        console.error(error);
+    }
+
     return axios.patch(
         config.API_URL +
         '/' + entity +
