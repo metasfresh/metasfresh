@@ -408,27 +408,4 @@ public interface I_C_Print_Job_Instructions
     public static final org.adempiere.model.ModelColumn<I_C_Print_Job_Instructions, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_C_Print_Job_Instructions, org.compiere.model.I_AD_User>(I_C_Print_Job_Instructions.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
     /** Column name UpdatedBy */
     public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
-
-	/**
-	 * Set UserOK.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setUserOK (boolean UserOK);
-
-	/**
-	 * Get UserOK.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public boolean isUserOK();
-
-    /** Column definition for UserOK */
-    public static final org.adempiere.model.ModelColumn<I_C_Print_Job_Instructions, Object> COLUMN_UserOK = new org.adempiere.model.ModelColumn<I_C_Print_Job_Instructions, Object>(I_C_Print_Job_Instructions.class, "UserOK", null);
-    /** Column name UserOK */
-    public static final String COLUMNNAME_UserOK = "UserOK";
 }

@@ -1,7 +1,5 @@
 package de.metas.material.event;
 
-import javax.annotation.Nullable;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
@@ -45,6 +43,32 @@ import lombok.experimental.FieldDefaults;
 		@JsonSubTypes.Type(name = "MaterialDescriptor", value = MaterialDescriptor.class) })
 public class ProductDescriptor
 {
+	public static ProductDescriptor forProductIdAndAttributeSetInstanceId(final int productId, final int attributeSetInstanceId)
+	{
+		throw new UnsupportedOperationException();
+	}
+
+	public static final ProductDescriptor forProductIdOnly(final int productId)
+	{
+		return new ProductDescriptor(false, // complete == false
+				productId,
+				ProductDescriptor.STORAGE_ATTRIBUTES_KEY_UNSPECIFIED,
+				-1);
+	}
+
+	public static final ProductDescriptor forProductIdAndEmptyAttribute(final int productId)
+	{
+		return new ProductDescriptor(true, productId, "", 0); // complete == true
+	}
+
+	public static final ProductDescriptor forProductAndAttributes(
+			final int productId,
+			@NonNull final String storageAttributesKey,
+			final int attributeSetInstanceId)
+	{
+		return new ProductDescriptor(true, productId, storageAttributesKey, attributeSetInstanceId); // complete == true
+	}
+
 	public static final String STORAGE_ATTRIBUTES_KEY_UNSPECIFIED = new String("");
 
 	/**
@@ -81,18 +105,6 @@ public class ProductDescriptor
 		this.attributeSetInstanceId = attributeSetInstanceId;
 
 		asssertCompleteness();
-	}
-
-	/**
-	 * Copy constructor; intended to be used by {@link MaterialDescriptor}.
-	 */
-	protected ProductDescriptor(@Nullable final ProductDescriptor copyFrom)
-	{
-		this(
-				copyFrom == null ? false : copyFrom.productDescriptorComplete,
-				copyFrom == null ? 0 : copyFrom.productId,
-				copyFrom == null ? STORAGE_ATTRIBUTES_KEY_UNSPECIFIED : copyFrom.storageAttributesKey,
-				copyFrom == null ? 0 : copyFrom.getAttributeSetInstanceId());
 	}
 
 	public ProductDescriptor asssertCompleteness()

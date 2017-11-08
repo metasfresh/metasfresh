@@ -31,7 +31,12 @@ RETURNS TABLE
 	IsPrintTax character(1),
 	Description character varying(255),
 	bp_product_no character varying(30),
-	bp_product_name character varying(100)
+	bp_product_name character varying(100),
+	
+	p_value character varying(40),
+	p_description character varying(255),
+	invoice_description character varying(1024),
+	cursymbol character varying(10)
 )
 AS
 $$
@@ -78,7 +83,12 @@ SELECT
 	il.Description,
 	-- in case there is no C_BPartner_Product, fallback to the default ones
 	COALESCE(NULLIF(bpp.ProductNo, ''), p.value) as bp_product_no,
-	COALESCE(NULLIF(bpp.ProductName, ''), pt.Name, p.name) as bp_product_name
+	COALESCE(NULLIF(bpp.ProductName, ''), pt.Name, p.name) as bp_product_name,
+	p.value AS p_value,
+	p.description AS p_description,
+	i.description AS invoice_description,
+	c.cursymbol
+	
 FROM
 	C_InvoiceLine il
 	INNER JOIN C_Invoice i ON il.C_Invoice_ID = i.C_Invoice_ID AND i.isActive = 'Y'
@@ -106,6 +116,8 @@ FROM
 
 	-- Tax rate
 	LEFT OUTER JOIN C_Tax t ON il.C_Tax_ID = t.C_Tax_ID AND t.isActive = 'Y'
+	
+	LEFT OUTER JOIN C_Currency c ON i.C_Currency_ID = c.C_Currency_ID AND c.isActive = 'Y'
 
 	-- Get shipment details
 	LEFT OUTER JOIN (

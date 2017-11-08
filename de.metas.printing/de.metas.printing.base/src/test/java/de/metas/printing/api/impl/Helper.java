@@ -29,6 +29,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.UUID;
 
@@ -97,10 +98,8 @@ import de.metas.printing.model.I_C_Printing_Queue;
 import de.metas.printing.model.X_C_Print_Job_Instructions;
 import de.metas.printing.model.validator.AD_Archive;
 import de.metas.printing.rpl.requesthandler.CreatePrintPackageRequestHandler;
-import de.metas.printing.spi.IPrintJobMonitor;
 
 // there is high amount of methods because it's a helper...
-@SuppressWarnings("PMD.CouplingBetweenObjects")
 public class Helper
 {
 	public static final POJOLookupMap db;
@@ -302,8 +301,7 @@ public class Helper
 
 		final boolean createWithSpecificHostKey = true; // create with hostKey, so we can verify the key later, if we want.
 
-		return Services.get(IPrintJobBL.class).createPrintJobInstructions(printJob,
-				userToPrintId,
+		return Services.get(IPrintJobBL.class).createPrintJobInstructions(userToPrintId,
 				createWithSpecificHostKey,
 				firstLine,
 				lastLine,
@@ -318,7 +316,7 @@ public class Helper
 			@Override
 			public boolean accept(final I_AD_Printer pojo)
 			{
-				return Check.equals(pojo.getPrinterName(), printerName);
+				return Objects.equals(pojo.getPrinterName(), printerName);
 			}
 		});
 		if (printer == null)
@@ -338,7 +336,7 @@ public class Helper
 			@Override
 			public boolean accept(final I_AD_PrinterHW pojo)
 			{
-				return Check.equals(pojo.getName(), printerName);
+				return Objects.equals(pojo.getName(), printerName);
 			}
 		});
 		if (printer == null)
@@ -358,8 +356,8 @@ public class Helper
 			@Override
 			public boolean accept(final I_AD_Printer_Tray pojo)
 			{
-				return Check.equals(pojo.getAD_Printer(), printer)
-						&& Check.equals(pojo.getName(), trayName);
+				return Objects.equals(pojo.getAD_Printer(), printer)
+						&& Objects.equals(pojo.getName(), trayName);
 			}
 		});
 		if (tray == null)
@@ -406,8 +404,8 @@ public class Helper
 			@Override
 			public boolean accept(final I_AD_PrinterHW_MediaTray pojo)
 			{
-				return Check.equals(pojo.getAD_PrinterHW(), printer)
-						&& Check.equals(pojo.getName(), trayName);
+				return Objects.equals(pojo.getAD_PrinterHW(), printer)
+						&& Objects.equals(pojo.getName(), trayName);
 			}
 		});
 		if (tray == null)
@@ -508,7 +506,7 @@ public class Helper
 			@Override
 			public boolean accept(I_AD_Printer_Config model)
 			{
-				return Check.equals(hostKey, model.getHostKey());
+				return Objects.equals(hostKey, model.getHostKey());
 			}
 		});
 
@@ -529,10 +527,10 @@ public class Helper
 			@Override
 			public boolean accept(final I_AD_Printer_Matching pojo)
 			{
-				return Check.equals(pojo.getAD_Printer_Config_ID(), printerConfigToUse.getAD_Printer_Config_ID())
-						&& Check.equals(pojo.getHostKey(), hostKey)
-						&& Check.equals(pojo.getAD_Printer().getPrinterName(), printerName)
-						&& Check.equals(pojo.getAD_PrinterHW().getName(), hwPrinterName);
+				return Objects.equals(pojo.getAD_Printer_Config_ID(), printerConfigToUse.getAD_Printer_Config_ID())
+						&& Objects.equals(pojo.getHostKey(), hostKey)
+						&& Objects.equals(pojo.getAD_Printer().getPrinterName(), printerName)
+						&& Objects.equals(pojo.getAD_PrinterHW().getName(), hwPrinterName);
 			}
 		});
 		if (printerMatching == null)
@@ -551,9 +549,9 @@ public class Helper
 			@Override
 			public boolean accept(final I_AD_PrinterTray_Matching pojo)
 			{
-				return Check.equals(pojo.getAD_Printer_Tray().getName(), trayName)
-						&& Check.equals(pojo.getAD_PrinterHW_MediaTray(), hwTrayName)
-						&& Check.equals(pojo.getAD_Printer_Matching_ID(), printerMatchingID);
+				return Objects.equals(pojo.getAD_Printer_Tray().getName(), trayName)
+						&& Objects.equals(pojo.getAD_PrinterHW_MediaTray(), hwTrayName)
+						&& Objects.equals(pojo.getAD_Printer_Matching_ID(), printerMatchingID);
 			}
 		});
 		if (trayMatching == null)
@@ -801,7 +799,7 @@ public class Helper
 	public I_C_Print_Package createPrintPackageRequest()
 	{
 		final String transactionId = UUID.randomUUID().toString();
-		final I_C_Print_Package printPackageRequest = InterfaceWrapperHelper.newInstance(I_C_Print_Package.class, new PlainContextAware(ctx, trxName));
+		final I_C_Print_Package printPackageRequest = InterfaceWrapperHelper.newInstance(I_C_Print_Package.class, PlainContextAware.newWithTrxName(ctx, trxName));
 		printPackageRequest.setTransactionID(transactionId);
 		InterfaceWrapperHelper.save(printPackageRequest);
 
@@ -845,11 +843,6 @@ public class Helper
 	 */
 	public int createAllPrintJobs()
 	{
-		return createAllPrintJobs(IPrintJobMonitor.NULL);
-	}
-
-	public int createAllPrintJobs(final IPrintJobMonitor monitor)
-	{
 		final IPrintingQueueBL printingQueueBL = Services.get(IPrintingQueueBL.class);
 		final IPrintingQueueQuery query = printingQueueBL.createPrintingQueueQuery();
 		query.setIsPrinted(false);
@@ -859,7 +852,7 @@ public class Helper
 		int printJobsCount = 0;
 		for (final IPrintingQueueSource source : sources)
 		{
-			printJobsCount += Services.get(IPrintJobBL.class).createPrintJobs(source, monitor);
+			printJobsCount += Services.get(IPrintJobBL.class).createPrintJobs(source);
 		}
 		return printJobsCount;
 	}

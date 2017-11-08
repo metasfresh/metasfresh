@@ -38,7 +38,6 @@ import org.junit.Test;
 
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.material.event.ProductDescriptor;
-import de.metas.material.event.ProductDescriptorFactory;
 import de.metas.material.event.pporder.PPOrder;
 
 /*
@@ -152,7 +151,7 @@ public class MaterialDocumentListenerTests
 			save(bomComponentLine);
 		}
 
-		final ProductDescriptor productDescriptor = ProductDescriptorFactory.TESTING_INSTANCE.forProductAndAttributes(bomMainProduct.getM_Product_ID(), 
+		final ProductDescriptor productDescriptor = ProductDescriptor.forProductAndAttributes(bomMainProduct.getM_Product_ID(), 
 				"storageAttributesKey", 
 				bomMainProduct.getM_AttributeSetInstance_ID());
 		

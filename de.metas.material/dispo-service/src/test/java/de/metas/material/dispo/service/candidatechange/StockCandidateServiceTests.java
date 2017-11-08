@@ -20,7 +20,6 @@ import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryCommands;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.event.MaterialDescriptor;
-import de.metas.material.event.ProductDescriptorFactory;
 
 /*
  * #%L
@@ -53,7 +52,7 @@ public class StockCandidateServiceTests
 	{
 		AdempiereTestHelper.get().init();
 
-		final CandidateRepositoryRetrieval candidateRepository = new CandidateRepositoryRetrieval(ProductDescriptorFactory.TESTING_INSTANCE);
+		final CandidateRepositoryRetrieval candidateRepository = new CandidateRepositoryRetrieval();
 		final CandidateRepositoryCommands candidateRepositoryCommands = new CandidateRepositoryCommands();
 		stockCandidateService = new StockCandidateService(candidateRepository, candidateRepositoryCommands);
 
