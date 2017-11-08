@@ -107,5 +107,7 @@ public interface IAttributeSetInstanceBL extends ISingletonService
 	 */
 	void cloneASI(Object to, Object from);
 
-	I_M_AttributeSetInstance createAttributeSetInstanceFromAttributeSet(IAttributeSet attributeSet);
+	I_M_AttributeSetInstance createASIFromAttributeSet(IAttributeSet attributeSet);
+
+	I_M_AttributeSetInstance createASIFromProductAndAttributeSet(int productId, IAttributeSet attributeSet);
 }

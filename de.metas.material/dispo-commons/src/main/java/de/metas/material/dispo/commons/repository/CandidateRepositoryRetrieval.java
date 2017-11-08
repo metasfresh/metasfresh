@@ -323,7 +323,7 @@ public class CandidateRepositoryRetrieval
 	@NonNull
 	public BigDecimal retrieveAvailableStock(@NonNull final MaterialDescriptor materialDescriptor)
 	{
-		final AvailableStockResult result = retrieveAvailableStock(MaterialDescriptorQuery.builder()
+		final AvailableStockResult result = retrieveAvailableStock(MaterialQuery.builder()
 				.warehouseId(materialDescriptor.getWarehouseId())
 				.date(materialDescriptor.getDate())
 				.productId(materialDescriptor.getProductId())
@@ -333,7 +333,7 @@ public class CandidateRepositoryRetrieval
 	}
 
 	@NonNull
-	public AvailableStockResult retrieveAvailableStock(@NonNull final MaterialDescriptorQuery query)
+	public AvailableStockResult retrieveAvailableStock(@NonNull final MaterialQuery query)
 	{
 		final String storageAttributesKeyLikeExpression = RepositoryCommons
 				.prepareStorageAttributesKeyForLikeExpression(

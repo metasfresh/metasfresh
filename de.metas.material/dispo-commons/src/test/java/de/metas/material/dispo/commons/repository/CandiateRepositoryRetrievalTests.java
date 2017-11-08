@@ -541,7 +541,7 @@ public class CandiateRepositoryRetrievalTests
 	@Test(expected = RuntimeException.class)
 	public void retrieveAvailableStockForCompleteDescriptor_throw_ex_if_not_complete()
 	{
-		MaterialDescriptorQuery.builder().build();
+		MaterialQuery.builder().build();
 	}
 
 	@Test

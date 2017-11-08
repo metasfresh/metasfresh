@@ -60,7 +60,7 @@ public class AttributeSetInstanceBLTest
 	{
 		final TestAttributeSet testAttributeSet = new TestAttributeSet();
 
-		final I_M_AttributeSetInstance result = new AttributeSetInstanceBL().createAttributeSetInstanceFromAttributeSet(testAttributeSet);
+		final I_M_AttributeSetInstance result = new AttributeSetInstanceBL().createASIFromAttributeSet(testAttributeSet);
 
 		final List<I_M_AttributeInstance> createdAttributeInstances = POJOLookupMap.get().getRecords(I_M_AttributeInstance.class);
 
