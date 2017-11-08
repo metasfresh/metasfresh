@@ -406,18 +406,14 @@ public class FlatrateDAO implements IFlatrateDAO
 	@Override
 	public List<I_C_Flatrate_Term> retrieveTerms(final I_C_Flatrate_Conditions fc)
 	{
-		final IQueryBuilder<I_C_Flatrate_Term> queryBuilder = queryBL.createQueryBuilder(I_C_Flatrate_Term.class, fc);
-
-		final IQueryOrderBy orderBy = queryBuilder.orderBy()
-				.addColumn(I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Conditions_ID)
-				.createQueryOrderBy();
-
-		return queryBuilder
+		return queryBL.createQueryBuilder(I_C_Flatrate_Term.class, fc)
 				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Conditions_ID, fc.getC_Flatrate_Conditions_ID())
 				.addOnlyActiveRecordsFilter()
+				.orderBy()
+				.addColumn(I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Conditions_ID)
+				.endOrderBy()
 				.create()
 				.setClient_ID()
-				.setOrderBy(orderBy)
 				.list(I_C_Flatrate_Term.class);
 
 	}
