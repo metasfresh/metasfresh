@@ -5,18 +5,19 @@ import java.util.Set;
 import org.adempiere.ad.expression.api.ConstantLogicExpression;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_InvoiceLine;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.i18n.IMsgBL;
+import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.ui.web.quickinput.IQuickInputDescriptorFactory;
 import de.metas.ui.web.quickinput.QuickInputDescriptor;
 import de.metas.ui.web.quickinput.QuickInputLayoutDescriptor;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentType;
-import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
@@ -49,6 +50,8 @@ import de.metas.ui.web.window.descriptor.sql.ProductLookupDescriptor;
 @Component
 public class InvoiceLineQuickInputDescriptorFactory implements IQuickInputDescriptorFactory
 {
+	@Autowired
+	private CandidateRepositoryRetrieval storageService;
 
 	@Override
 	public Set<MatchingKey> getMatchingKeys()
@@ -78,10 +81,11 @@ public class InvoiceLineQuickInputDescriptorFactory implements IQuickInputDescri
 		entityDescriptor.addField(DocumentFieldDescriptor.builder(IInvoiceLineQuickInput.COLUMNNAME_M_Product_ID)
 				.setCaption(msgBL.translatable(IInvoiceLineQuickInput.COLUMNNAME_M_Product_ID))
 				//
-				.setWidgetType(DocumentFieldWidgetType.Lookup).setValueClass(IntegerLookupValue.class)
+				.setWidgetType(DocumentFieldWidgetType.Lookup)
 				.setLookupDescriptorProvider(ProductLookupDescriptor.builder()
 						.bpartnerParamName(I_C_Invoice.COLUMNNAME_C_BPartner_ID)
 						.dateParamName(I_C_Invoice.COLUMNNAME_DateInvoiced)
+						.storageService(storageService)
 						.build())
 				.setMandatoryLogic(true)
 				.setDisplayLogic(ConstantLogicExpression.TRUE)

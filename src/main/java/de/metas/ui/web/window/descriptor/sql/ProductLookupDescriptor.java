@@ -3,31 +3,44 @@ package de.metas.ui.web.window.descriptor.sql;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
+import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.model.I_M_FreightCost;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.pricing.api.IPriceListDAO;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
+import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_ProductPrice;
 import org.compiere.util.CtxName;
 import org.compiere.util.CtxNames;
 import org.compiere.util.DB;
+import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 
 import com.google.common.base.Joiner;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.Language;
+import de.metas.i18n.NumberTranslatableString;
+import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
+import de.metas.material.dispo.commons.repository.MaterialDescriptorQuery;
 import de.metas.product.model.I_M_Product;
+import de.metas.quantity.Quantity;
 import de.metas.ui.web.document.filter.sql.SqlParamsCollector;
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.datatypes.LookupValue;
@@ -39,7 +52,9 @@ import de.metas.ui.web.window.descriptor.LookupDescriptor;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceContext;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFetcher;
 import lombok.Builder;
+import lombok.Builder.Default;
 import lombok.NonNull;
+import lombok.Value;
 
 /*
  * #%L
@@ -82,12 +97,21 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 	private static final CtxName param_AD_Org_ID = CtxNames.parse(WindowConstants.FIELDNAME_AD_Org_ID + "/-1");
 	private final Set<CtxName> parameters;
 
+	private final CandidateRepositoryRetrieval storageService;
+
+	private static final String ATTRIBUTE_ASI = "asi";
+
 	@Builder
-	private ProductLookupDescriptor(@NonNull final String bpartnerParamName, @NonNull final String dateParamName)
+	private ProductLookupDescriptor(
+			@NonNull final String bpartnerParamName,
+			@NonNull final String dateParamName,
+			@NonNull final CandidateRepositoryRetrieval storageService)
 	{
 		param_C_BPartner_ID = CtxNames.parse(bpartnerParamName + "/-1");
 		param_Date = CtxNames.parse(dateParamName + "/NULL");
 		parameters = ImmutableSet.of(param_C_BPartner_ID, param_M_PriceList_ID, param_Date, param_AD_Org_ID);
+
+		this.storageService = storageService;
 	}
 
 	@Override
@@ -141,7 +165,7 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 				valuesById.putIfAbsent(value.getIdAsInt(), value);
 			}
 
-			return LookupValuesList.fromCollection(valuesById.values());
+			return LookupValuesList.fromCollection(explodeByStorageRecords(valuesById.values()));
 		}
 		catch (final SQLException ex)
 		{
@@ -393,6 +417,71 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 	public Optional<WindowId> getZoomIntoWindowId()
 	{
 		return Optional.empty();
+	}
+
+	private final Collection<LookupValue> explodeByStorageRecords(final Collection<LookupValue> productLookupValues)
+	{
+		if (productLookupValues.isEmpty())
+		{
+			return productLookupValues;
+		}
+
+		final List<LookupValue> explodedProductValues = new ArrayList<>();
+		for (LookupValue productLookupValue : productLookupValues)
+		{
+			final int productId = productLookupValue.getIdAsInt();
+			final Quantity qtyOnHand = storageService.retrieveAvailableStock(MaterialDescriptorQuery.builder()
+					.productId(productId)
+					.build())
+					.getSingleQuantity();
+			if (qtyOnHand.signum() > 0)
+			{
+				final ITranslatableString qtyValueStr = NumberTranslatableString.of(qtyOnHand.getQty(), DisplayType.Quantity);
+				final I_C_UOM uom = qtyOnHand.getUOM();
+				final ITranslatableString uomSymbolStr = InterfaceWrapperHelper.getModelTranslationMap(uom)
+						.getColumnTrl(I_C_UOM.COLUMNNAME_UOMSymbol, uom.getUOMSymbol());
+
+				final ITranslatableString displayName = ITranslatableString.compose("",
+						productLookupValue.getDisplayNameTrl(),
+						" (", qtyValueStr, " ", uomSymbolStr, ")");
+
+				explodedProductValues.add(IntegerLookupValue.builder()
+						.id(productId)
+						.displayName(displayName)
+						// TODO: set the actual attributes
+						.attribute(ATTRIBUTE_ASI, ImmutableMap.<String, Object> builder()
+								.put("1000018", "somebarcode")// barcode
+								.build())
+						.build());
+			}
+			else
+			{
+				explodedProductValues.add(productLookupValue);
+			}
+		}
+
+		return explodedProductValues;
+	}
+
+	public static ProductAndAttributes toProductAndAttributes(@NonNull final LookupValue lookupValue)
+	{
+		final ImmutableAttributeSet attributes = ImmutableAttributeSet.ofValuesIndexByAttributeId(lookupValue.getAttribute(ATTRIBUTE_ASI));
+
+		return ProductAndAttributes.builder()
+				.productId(lookupValue.getIdAsInt())
+				.attributes(attributes)
+				.build();
+	}
+
+	@Value
+	@Builder
+	public static class ProductAndAttributes
+	{
+		private final int productId;
+
+		@Default
+		@NonNull
+		private final ImmutableAttributeSet attributes = ImmutableAttributeSet.EMPTY;
 	}
 
 	private static interface I_M_Product_Lookup_V

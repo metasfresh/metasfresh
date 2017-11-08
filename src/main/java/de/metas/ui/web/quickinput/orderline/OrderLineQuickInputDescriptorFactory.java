@@ -1,5 +1,7 @@
 package de.metas.ui.web.quickinput.orderline;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+
 import java.util.Set;
 
 import org.adempiere.ad.callout.api.ICalloutField;
@@ -8,6 +10,7 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.DisplayType;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.google.common.collect.ImmutableSet;
@@ -15,6 +18,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.handlingunits.order.api.IHUOrderBL;
 import de.metas.i18n.IMsgBL;
+import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.ui.web.quickinput.IQuickInputDescriptorFactory;
 import de.metas.ui.web.quickinput.QuickInput;
 import de.metas.ui.web.quickinput.QuickInputDescriptor;
@@ -29,6 +33,7 @@ import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Builder;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.sql.ProductLookupDescriptor;
+import de.metas.ui.web.window.descriptor.sql.ProductLookupDescriptor.ProductAndAttributes;
 import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
 
 /*
@@ -56,6 +61,9 @@ import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
 @Component
 /* package */ final class OrderLineQuickInputDescriptorFactory implements IQuickInputDescriptorFactory
 {
+	@Autowired
+	private CandidateRepositoryRetrieval storageService;
+
 	@Override
 	public Set<MatchingKey> getMatchingKeys()
 	{
@@ -71,7 +79,7 @@ import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
 		return QuickInputDescriptor.of(entityDescriptor, layout, OrderLineQuickInputProcessor.class);
 	}
 
-	private static DocumentEntityDescriptor createEntityDescriptor(
+	private DocumentEntityDescriptor createEntityDescriptor(
 			final DocumentType documentType,
 			final DocumentId documentTypeId,
 			final DetailId detailId)
@@ -97,7 +105,7 @@ import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
 		return entityDescriptor;
 	}
 
-	private static Builder createProductFieldBuilder()
+	private Builder createProductFieldBuilder()
 	{
 		final Builder productFieldBuilder = DocumentFieldDescriptor.builder(IOrderLineQuickInput.COLUMNNAME_M_Product_ID)
 				.setCaption(Services.get(IMsgBL.class).translatable(IOrderLineQuickInput.COLUMNNAME_M_Product_ID))
@@ -106,8 +114,8 @@ import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
 				.setLookupDescriptorProvider(ProductLookupDescriptor.builder()
 						.bpartnerParamName(I_C_Order.COLUMNNAME_C_BPartner_ID)
 						.dateParamName(I_C_Order.COLUMNNAME_DatePromised)
+						.storageService(storageService)
 						.build())
-				.setValueClass(IntegerLookupValue.class)
 				.setReadonlyLogic(ConstantLogicExpression.FALSE)
 				.setAlwaysUpdateable(true)
 				.setMandatoryLogic(ConstantLogicExpression.TRUE)
@@ -126,7 +134,8 @@ import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
 		}
 
 		final IOrderLineQuickInput quickInputModel = quickInput.getQuickInputDocumentAs(IOrderLineQuickInput.class);
-		final I_M_Product quickInputProduct = quickInputModel.getM_Product();
+		final ProductAndAttributes productAndAttributes = ProductLookupDescriptor.toProductAndAttributes(quickInputModel.getM_Product_ID());
+		final I_M_Product quickInputProduct = load(productAndAttributes.getProductId(), I_M_Product.class);
 
 		final I_C_Order order = quickInput.getRootDocumentAs(I_C_Order.class);
 		Services.get(IHUOrderBL.class).findM_HU_PI_Item_Product(order, quickInputProduct, quickInputModel::setM_HU_PI_Item_Product);
