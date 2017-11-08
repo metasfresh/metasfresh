@@ -414,21 +414,24 @@ class RawList extends Component {
 
         const value = defaultValue && defaultValue[Object.keys(defaultValue)[0]]
 
+        const classes = ['input-dropdown-list-option'];
+
+        if (selected !== 0) {
+            if (
+                this.areOptionsEqual(selected, option) ||
+                !selected && (
+                    value === option[Object.keys(option)[0]] ||
+                    !value && index === 1
+                )
+            ) {
+                classes.push('input-dropdown-list-option-key-on');
+            }
+        }
+
         return (
             <div
                 key={index}
-                className={'input-dropdown-list-option'  +
-                    (
-                        selected === 0 ? '' :
-                        this.areOptionsEqual(selected, option) ?
-                        ' input-dropdown-list-option-key-on ' :
-                        value === option[Object.keys(option)[0]] && !selected ?
-                        ' input-dropdown-list-option-key-on ' :
-                        !value && !selected && index == 1 ?
-                        ' input-dropdown-list-option-key-on ':
-                        ''
-                    )
-                }
+                className={classes.join(' ')}
                 onMouseEnter={() => this.handleSwitch(option)}
                 onClick={() => this.handleSelect(option)}
                 ref={option => this.optionElement = option}
