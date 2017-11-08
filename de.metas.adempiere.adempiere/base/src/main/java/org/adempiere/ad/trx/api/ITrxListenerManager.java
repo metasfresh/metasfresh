@@ -81,7 +81,7 @@ public interface ITrxListenerManager
 	 * Similar to {@link #onAfterCommit(Runnable)}, but the given {@code runnable} is automatically unregistered after its first invocation.
 	 * @param runnable
 	 */
-	void onAfterFirstCommit(Runnable runnable);
+	void onAfterNextCommit(Runnable runnable);
 
 	void fireBeforeCommit(ITrx trx);
 

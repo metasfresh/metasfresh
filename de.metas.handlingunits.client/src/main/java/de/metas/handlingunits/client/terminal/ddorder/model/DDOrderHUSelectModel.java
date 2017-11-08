@@ -27,14 +27,15 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Predicate;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.collections.Predicate;
 import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_Warehouse;
 import org.eevolution.api.IPPOrderBOMDAO;
 import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_DD_OrderLine;
@@ -60,7 +61,6 @@ import de.metas.handlingunits.client.terminal.select.model.IHUEditorCallback;
 import de.metas.handlingunits.client.terminal.select.model.WarehouseKey;
 import de.metas.handlingunits.document.impl.NullHUDocumentLineFinder;
 import de.metas.handlingunits.storage.IHUProductStorage;
-import de.metas.interfaces.I_M_Warehouse;
 
 public class DDOrderHUSelectModel extends AbstractHUSelectModel
 {
@@ -164,7 +164,7 @@ public class DDOrderHUSelectModel extends AbstractHUSelectModel
 	private final Predicate<IPOSTableRow> rowsFilter = new Predicate<IPOSTableRow>()
 	{
 		@Override
-		public boolean evaluate(final IPOSTableRow row)
+		public boolean test(final IPOSTableRow row)
 		{
 			if (row == null)
 			{
@@ -199,7 +199,7 @@ public class DDOrderHUSelectModel extends AbstractHUSelectModel
 	private final Predicate<IPOSTableRow> rowsFilterPPOrder = new Predicate<IPOSTableRow>()
 	{
 		@Override
-		public boolean evaluate(final IPOSTableRow row)
+		public boolean test(final IPOSTableRow row)
 		{
 			Check.assumeNotNull(pp_Order, "PP Order is not null");
 

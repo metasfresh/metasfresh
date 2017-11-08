@@ -1,6 +1,4 @@
-<project
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
-	xmlns="http://maven.apache.org/POM/4.0.0"
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 	<modelVersion>4.0.0</modelVersion>
 
@@ -36,13 +34,23 @@
 			<version>10.0.0</version>
 		</dependency>
 
+		<!--
+			Lombok
+			See https://github.com/metasfresh/metasfresh/issues/1125
+			NOTE: if you don't need fancy things like @SneakyThrows then scope 'provided' it's totally fine
+			Also note that the version is managed by spring-boot.
+		 -->
 		<dependency>
-			<groupId>de.metas.adempiere.adempiere</groupId>
-			<artifactId>de.metas.adempiere.adempiere.base</artifactId>
-			<version>10.0.0</version>
-			<classifier>tests</classifier>
-			<scope>test</scope>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<scope>provided</scope>
 		</dependency>
+
+		<dependency>
+			<groupId>org.assertj</groupId>
+			<artifactId>assertj-core</artifactId>
+		</dependency>
+		
 	</dependencies>
 
 </project>

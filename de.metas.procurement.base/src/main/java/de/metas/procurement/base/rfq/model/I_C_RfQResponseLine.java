@@ -1,6 +1,6 @@
 package de.metas.procurement.base.rfq.model;
 
-import de.metas.flatrate.model.I_C_Flatrate_DataEntry;
+import de.metas.contracts.model.I_C_Flatrate_DataEntry;
 import de.metas.procurement.base.model.I_PMM_Product;
 
 /*
@@ -36,9 +36,9 @@ public interface I_C_RfQResponseLine extends de.metas.rfq.model.I_C_RfQResponseL
 
 	//@formatter:off
 	String COLUMNNAME_C_Flatrate_Term_ID = "C_Flatrate_Term_ID";
-	org.adempiere.model.ModelColumn<I_C_Flatrate_DataEntry, de.metas.flatrate.model.I_C_Flatrate_Term> COLUMN_C_Flatrate_Term_ID = new org.adempiere.model.ModelColumn<I_C_Flatrate_DataEntry, de.metas.flatrate.model.I_C_Flatrate_Term>(I_C_Flatrate_DataEntry.class, "C_Flatrate_Term_ID", de.metas.flatrate.model.I_C_Flatrate_Term.class);
+	org.adempiere.model.ModelColumn<I_C_Flatrate_DataEntry, de.metas.contracts.model.I_C_Flatrate_Term> COLUMN_C_Flatrate_Term_ID = new org.adempiere.model.ModelColumn<I_C_Flatrate_DataEntry, de.metas.contracts.model.I_C_Flatrate_Term>(I_C_Flatrate_DataEntry.class, "C_Flatrate_Term_ID", de.metas.contracts.model.I_C_Flatrate_Term.class);
 	int getC_Flatrate_Term_ID();
 	de.metas.procurement.base.model.I_C_Flatrate_Term getC_Flatrate_Term();
-	void setC_Flatrate_Term(de.metas.flatrate.model.I_C_Flatrate_Term C_Flatrate_Term);
+	void setC_Flatrate_Term(de.metas.contracts.model.I_C_Flatrate_Term C_Flatrate_Term);
 	//@formatter:on
 }

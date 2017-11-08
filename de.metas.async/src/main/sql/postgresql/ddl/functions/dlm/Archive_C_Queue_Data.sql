@@ -1,16 +1,18 @@
 -- Function: dlm.archive_c_queue_data(integer, integer)
 
 -- DROP FUNCTION dlm.archive_c_queue_data(integer, integer);
+
 CREATE OR REPLACE FUNCTION dlm.archive_c_queue_data(
-    IN daysback integer,
-    IN limitrecords integer)
-  RETURNS TABLE(count_workpackages_toarchive integer, 
-	Count_Queue_Element_Archived_Inserted integer, 
-	Count_Queue_WorkPackage_Param_Archived_Inserted integer, 
-	Count_Queue_WorkPackage_Log_Archived_Inserted integer, 
-	Count_Queue_Workpackage_Archived_Inserted integer, 
-	Count_Queue_Block_Archived integer, 
-	remaining_toarchive integer) AS
+    IN p_daysback integer,
+    IN p_limitrecords integer)
+  RETURNS TABLE(
+	count_workpackages_toarchive integer, 
+	count_queue_element_archived_inserted integer, 
+	count_queue_workpackage_param_archived_inserted integer, 
+	count_queue_workpackage_log_archived_inserted integer, 
+	count_queue_workpackage_archived_inserted integer, 
+	count_queue_block_archived integer, remaining_toarchive integer
+  ) AS
 $BODY$
 DECLARE
 	Count_Workpackages_ToArchive int; 
@@ -28,7 +30,7 @@ BEGIN
 
 	IF (C_Queue_Workpackage_ToArchive_All_Initial_Count=0) 
 	THEN
-		RAISE NOTICE 'Table dlm.C_Queue_Workpackage_ToArchive_All is empty; we recreate and fill it using parameter daysBack=%',daysBack;
+		RAISE NOTICE 'Table dlm.C_Queue_Workpackage_ToArchive_All is empty; we recreate and fill it using parameter p_daysback=%',p_daysback;
 		drop table if exists dlm.C_Queue_Workpackage_ToArchive_All;
 		
 		create table dlm.C_Queue_Workpackage_ToArchive_All as
@@ -47,7 +49,7 @@ BEGIN
 		
 		RAISE NOTICE 'Inserted % records into dlm.C_Queue_Workpackage_ToArchive_All.',C_Queue_Workpackage_ToArchive_All_Inserted_Count;
 	ELSE
-		RAISE NOTICE 'Table dlm.C_Queue_Workpackage_ToArchive_All still contains % records from a previous run, so we ignore parameter daysBack=%',C_Queue_Workpackage_ToArchive_All_Initial_Count, daysBack;
+		RAISE NOTICE 'Table dlm.C_Queue_Workpackage_ToArchive_All still contains % records from a previous run, so we ignore parameter p_daysback=%',C_Queue_Workpackage_ToArchive_All_Initial_Count, p_daysback;
 	END IF;
 		
 
@@ -58,7 +60,7 @@ BEGIN
 
 	RAISE NOTICE 'Inserting records into TMP_C_Queue_Workpackage_ToArchive.';
 
-	-- move 'limitRecords' records from dlm.C_Queue_Workpackage_ToArchive_All to TMP_C_Queue_Workpackage_ToArchive
+	-- move 'p_limitrecords' records from dlm.C_Queue_Workpackage_ToArchive_All to TMP_C_Queue_Workpackage_ToArchive
 	with items as (
 		delete from dlm.C_Queue_Workpackage_ToArchive_All t
 		where t.C_Queue_Workpackage_ID in (
@@ -80,7 +82,7 @@ BEGIN
 	ANALYZE TMP_C_Queue_Workpackage_ToArchive;
 
 	-- also move such records from dlm.C_Queue_Workpackage_ToArchive_All to TMP_C_Queue_Workpackage_ToArchive that share a C_Queue_Block_ID with an already moved record
-	RAISE NOTICE 'Inserting additional records into TMP_C_Queue_Workpackage_ToArchive that share a C_Queue_Block_ID with an already indested record.';
+	RAISE NOTICE 'Inserting additional records into TMP_C_Queue_Workpackage_ToArchive that share a C_Queue_Block_ID with an already inserted record.';
 	with items as (
 		delete from dlm.C_Queue_Workpackage_ToArchive_All t
 		where t.C_Queue_Block_ID in (
@@ -94,7 +96,7 @@ BEGIN
 	;
 	
 	-- also move such records from dlm.C_Queue_Workpackage_ToArchive_All to TMP_C_Queue_Workpackage_ToArchive that share a C_ASync_Batch_ID with an already moved record
-	RAISE NOTICE 'Inserting additional records into TMP_C_Queue_Workpackage_ToArchive that share a C_ASync_Batch_ID with an already indested record.';
+	RAISE NOTICE 'Inserting additional records into TMP_C_Queue_Workpackage_ToArchive that share a C_ASync_Batch_ID with an already inserted record.';
 	with items as (
 		delete from dlm.C_Queue_Workpackage_ToArchive_All t
 		where t.C_ASync_Batch_ID in (
@@ -111,7 +113,7 @@ BEGIN
 	ANALYZE TMP_C_Queue_Workpackage_ToArchive;
 
 	select count(1) from TMP_C_Queue_Workpackage_ToArchive INTO Count_Workpackages_ToArchive;
-	RAISE NOTICE 'Workpackages to archive: % (param limitRecords=%) ', Count_Workpackages_ToArchive, limitRecords;
+	RAISE NOTICE 'Workpackages to archive: % (param p_limitrecords=%) ', Count_Workpackages_ToArchive, p_limitrecords;
 	
 	-- Archive C_Queue_Elements
 	with deleted_rows as (
@@ -202,8 +204,8 @@ ALTER FUNCTION dlm.archive_c_queue_data(integer, integer)
   OWNER TO metasfresh;
 COMMENT ON FUNCTION dlm.archive_c_queue_data(integer, integer) IS 'Moves async wrokpackage data do and "archive"-table in the dlm schema;
 Parameters:
-	daysBack: work packages older than the given number of days are moved
-	limitRecords: the chunk-size, i.e. the number of workpackages that are moved per invokaction.
+	p_daysback: work packages older than the given number of days are moved
+	p_limitrecords: the chunk-size, i.e. the number of workpackages that are moved per invokaction.
 	
 Tip: to see more about what the fucntion does, do
 	BEGIN; SELECT * FROM dlm.Archive_C_Queue_Data(3,30000); ROLLBACK;

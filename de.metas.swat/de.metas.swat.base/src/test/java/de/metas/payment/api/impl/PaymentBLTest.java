@@ -125,59 +125,59 @@ public class PaymentBLTest
 		paymentBL.updateAmounts(payment, I_C_Payment.COLUMNNAME_C_Currency_ID, false);
 		db.save(payment);
 
-		payment.setDiscountAmt(Env.ONE);
-		payment.setWriteOffAmt(Env.ONE);
-		payment.setOverUnderAmt(Env.ONE);
+		payment.setDiscountAmt(BigDecimal.ONE);
+		payment.setWriteOffAmt(BigDecimal.ONE);
+		payment.setOverUnderAmt(BigDecimal.ONE);
 		paymentBL.updateAmounts(payment, I_C_Payment.COLUMNNAME_C_DocType_ID, false);
 
-		Assert.assertEquals("Incorrect over/under amount", Env.ZERO, payment.getOverUnderAmt());
-		Assert.assertEquals("Incorrect discount amount", Env.ZERO, payment.getDiscountAmt());
-		Assert.assertEquals("Incorrect writteoff amount", Env.ZERO, payment.getWriteOffAmt());
+		Assert.assertEquals("Incorrect over/under amount", BigDecimal.ZERO, payment.getOverUnderAmt());
+		Assert.assertEquals("Incorrect discount amount", BigDecimal.ZERO, payment.getDiscountAmt());
+		Assert.assertEquals("Incorrect writteoff amount", BigDecimal.ZERO, payment.getWriteOffAmt());
 
 		paymentBL.updateAmounts(payment, I_C_Payment.COLUMNNAME_C_DocType_ID, false);
 
-		Assert.assertEquals("Incorrect over/under amount", Env.ZERO, payment.getOverUnderAmt());
-		Assert.assertEquals("Incorrect discount amount", Env.ZERO, payment.getDiscountAmt());
-		Assert.assertEquals("Incorrect writeoff amount", Env.ZERO, payment.getWriteOffAmt());
+		Assert.assertEquals("Incorrect over/under amount", BigDecimal.ZERO, payment.getOverUnderAmt());
+		Assert.assertEquals("Incorrect discount amount", BigDecimal.ZERO, payment.getDiscountAmt());
+		Assert.assertEquals("Incorrect writeoff amount", BigDecimal.ZERO, payment.getWriteOffAmt());
 
-		payment.setDiscountAmt(Env.ONE);
-		payment.setWriteOffAmt(Env.ONE);
-		payment.setOverUnderAmt(Env.ONE);
+		payment.setDiscountAmt(BigDecimal.ONE);
+		payment.setWriteOffAmt(BigDecimal.ONE);
+		payment.setOverUnderAmt(BigDecimal.ONE);
 		paymentBL.updateAmounts(payment, I_C_Payment.COLUMNNAME_C_Currency_ID, false);
 
-		Assert.assertEquals("Incorrect over/under amount", Env.ZERO, payment.getOverUnderAmt());
-		Assert.assertEquals("Incorrect discount amount", Env.ZERO, payment.getDiscountAmt());
-		Assert.assertEquals("Incorrect writteoff amount", Env.ZERO, payment.getWriteOffAmt());
+		Assert.assertEquals("Incorrect over/under amount", BigDecimal.ZERO, payment.getOverUnderAmt());
+		Assert.assertEquals("Incorrect discount amount", BigDecimal.ZERO, payment.getDiscountAmt());
+		Assert.assertEquals("Incorrect writteoff amount", BigDecimal.ZERO, payment.getWriteOffAmt());
 		payment.setC_Currency_ID(currencyEUR.getC_Currency_ID());
 		db.save(payment);
 
-		payment.setDiscountAmt(Env.ONE);
-		payment.setWriteOffAmt(Env.ONE);
-		payment.setOverUnderAmt(Env.ONE);
+		payment.setDiscountAmt(BigDecimal.ONE);
+		payment.setWriteOffAmt(BigDecimal.ONE);
+		payment.setOverUnderAmt(BigDecimal.ONE);
 		paymentBL.onCurrencyChange(payment);
 
-		Assert.assertEquals("Incorrect over/under amount", Env.ZERO, payment.getOverUnderAmt());
-		Assert.assertEquals("Incorrect discount amount", Env.ZERO, payment.getDiscountAmt());
-		Assert.assertEquals("Incorrect writteoff amount", Env.ZERO, payment.getWriteOffAmt());
+		Assert.assertEquals("Incorrect over/under amount", BigDecimal.ZERO, payment.getOverUnderAmt());
+		Assert.assertEquals("Incorrect discount amount", BigDecimal.ZERO, payment.getDiscountAmt());
+		Assert.assertEquals("Incorrect writteoff amount", BigDecimal.ZERO, payment.getWriteOffAmt());
 
 		paymentBL.updateAmounts(payment, I_C_Payment.COLUMNNAME_C_ConversionType_ID, false);
 
-		Assert.assertEquals("Incorrect over/under amount", Env.ZERO, payment.getOverUnderAmt());
-		Assert.assertEquals("Incorrect discount amount", Env.ZERO, payment.getDiscountAmt());
-		Assert.assertEquals("Incorrect writeoff amount", Env.ZERO, payment.getWriteOffAmt());
+		Assert.assertEquals("Incorrect over/under amount", BigDecimal.ZERO, payment.getOverUnderAmt());
+		Assert.assertEquals("Incorrect discount amount", BigDecimal.ZERO, payment.getDiscountAmt());
+		Assert.assertEquals("Incorrect writeoff amount", BigDecimal.ZERO, payment.getWriteOffAmt());
 
-		Assert.assertEquals("Incorrect over/under amount", Env.ZERO, payment.getOverUnderAmt());
-		Assert.assertEquals("Incorrect discount amount", Env.ZERO, payment.getDiscountAmt());
-		Assert.assertEquals("Incorrect writeoff amount", Env.ZERO, payment.getWriteOffAmt());
+		Assert.assertEquals("Incorrect over/under amount", BigDecimal.ZERO, payment.getOverUnderAmt());
+		Assert.assertEquals("Incorrect discount amount", BigDecimal.ZERO, payment.getDiscountAmt());
+		Assert.assertEquals("Incorrect writeoff amount", BigDecimal.ZERO, payment.getWriteOffAmt());
 
-		payment.setDiscountAmt(Env.ONE);
-		payment.setWriteOffAmt(Env.ONE);
-		payment.setOverUnderAmt(Env.ONE);
+		payment.setDiscountAmt(BigDecimal.ONE);
+		payment.setWriteOffAmt(BigDecimal.ONE);
+		payment.setOverUnderAmt(BigDecimal.ONE);
 		paymentBL.updateAmounts(payment, I_C_Payment.COLUMNNAME_C_Currency_ID, false);
 
-		Assert.assertEquals("Incorrect over/under amount", Env.ZERO, payment.getOverUnderAmt());
-		Assert.assertEquals("Incorrect discount amount", Env.ZERO, payment.getDiscountAmt());
-		Assert.assertEquals("Incorrect writteoff amount", Env.ZERO, payment.getWriteOffAmt());
+		Assert.assertEquals("Incorrect over/under amount", BigDecimal.ZERO, payment.getOverUnderAmt());
+		Assert.assertEquals("Incorrect discount amount", BigDecimal.ZERO, payment.getDiscountAmt());
+		Assert.assertEquals("Incorrect writteoff amount", BigDecimal.ZERO, payment.getWriteOffAmt());
 		payment.setC_Currency_ID(currencyEUR.getC_Currency_ID());
 		payment.setC_Invoice_ID(db.getRecords(I_C_Invoice.class).get(0).getC_Invoice_ID());
 		invoice.setC_Currency_ID(currencyCHF.getC_Currency_ID());
@@ -197,9 +197,9 @@ public class PaymentBLTest
 		payment.setC_Invoice_ID(-1);
 		payment.setC_Invoice_ID(db.getRecords(I_C_Invoice.class).get(0).getC_Invoice_ID());
 		payment.setC_Currency_ID(currencyEUR.getC_Currency_ID());
-		payment.setDiscountAmt(Env.ZERO);
-		payment.setWriteOffAmt(Env.ZERO);
-		payment.setOverUnderAmt(Env.ZERO);
+		payment.setDiscountAmt(BigDecimal.ZERO);
+		payment.setWriteOffAmt(BigDecimal.ZERO);
+		payment.setOverUnderAmt(BigDecimal.ZERO);
 		payment.setDocStatus(X_C_Payment.DOCSTATUS_Drafted);
 		payment.setDocAction(X_C_Payment.DOCACTION_Complete);
 		db.save(payment);
@@ -271,9 +271,9 @@ public class PaymentBLTest
 		payment.setAD_Org_ID(1);
 		payment.setC_Invoice_ID(db.getRecords(I_C_Invoice.class).get(0).getC_Invoice_ID());
 		payment.setC_Currency_ID(currencyEUR.getC_Currency_ID());
-		payment.setDiscountAmt(Env.ZERO);
-		payment.setWriteOffAmt(Env.ZERO);
-		payment.setOverUnderAmt(Env.ZERO);
+		payment.setDiscountAmt(BigDecimal.ZERO);
+		payment.setWriteOffAmt(BigDecimal.ZERO);
+		payment.setOverUnderAmt(BigDecimal.ZERO);
 		payment.setDocStatus(X_C_Payment.DOCSTATUS_Drafted);
 		payment.setDocAction(X_C_Payment.DOCACTION_Complete);
 		invoice.setC_Currency_ID(currencyCHF.getC_Currency_ID());

@@ -24,9 +24,11 @@ package de.metas.handlingunits.ddorder.intergrationtest;
 
 
 import java.math.BigDecimal;
+import static de.metas.business.BusinessTestHelper.*;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Predicate;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
@@ -36,7 +38,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.collections.ListUtils;
-import org.adempiere.util.collections.Predicate;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_Activity;
@@ -141,7 +142,7 @@ public abstract class AbstractHUDDOrderProcessIntegrationTest extends AbstractHU
 		setupMiscWorkaroundsAndMocks();
 
 		// Misc masterdata
-		bpartner_Customer01 = helper.createBPartner("BP_Customer01");
+		bpartner_Customer01 = createBPartner("BP_Customer01");
 		bpartner_Customer01.setIsCustomer(true);
 		bpartner_Customer01.setIsVendor(false);
 		InterfaceWrapperHelper.save(bpartner_Customer01);
@@ -363,7 +364,7 @@ public abstract class AbstractHUDDOrderProcessIntegrationTest extends AbstractHU
 		{
 
 			@Override
-			public boolean evaluate(final I_M_MovementLine movementLine)
+			public boolean test(final I_M_MovementLine movementLine)
 			{
 				final boolean movementLineIsReceipt = ddOrderBL.isMovementReceipt(movementLine);
 				return movementReceipt == movementLineIsReceipt;

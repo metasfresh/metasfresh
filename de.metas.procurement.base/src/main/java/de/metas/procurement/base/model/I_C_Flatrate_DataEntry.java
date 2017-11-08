@@ -22,7 +22,7 @@ package de.metas.procurement.base.model;
  * #L%
  */
 
-public interface I_C_Flatrate_DataEntry extends de.metas.flatrate.model.I_C_Flatrate_DataEntry
+public interface I_C_Flatrate_DataEntry extends de.metas.contracts.model.I_C_Flatrate_DataEntry
 {
 	/**
 	 * Type AD_Reference_ID=540263

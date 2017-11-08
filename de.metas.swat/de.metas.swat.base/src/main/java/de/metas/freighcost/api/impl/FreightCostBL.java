@@ -50,12 +50,12 @@ import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_OrderOrInOut;
-import de.metas.adempiere.service.IOrderDAO;
 import de.metas.freighcost.api.IFreightCostBL;
 import de.metas.freighcost.spi.IFreightCostFreeEvaluator;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.logging.LogManager;
+import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderPA;
 
 // This class was formerly known as de.metas.adempiere.service.impl.FreightCostSubscriptionBL
@@ -88,14 +88,6 @@ public class FreightCostBL implements IFreightCostBL
 		if (X_C_Order.FREIGHTCOSTRULE_FreightIncluded.equals(orderOrInOut.getFreightCostRule()))
 		{
 			logger.debug("No freightcost because order has FreightCostRule='{}'; Order: {}", X_C_Order.FREIGHTCOSTRULE_FreightIncluded, orderOrInOut);
-			return true;
-		}
-
-		final String postageFree = bPartner.getPostageFree();
-
-		if (I_C_BPartner.POSTAGEFREE_Always.equals(postageFree))
-		{
-			logger.debug("No freigtcost because of receiving c_bpartner has postageFree={}; Order: {}", postageFree, orderOrInOut);
 			return true;
 		}
 

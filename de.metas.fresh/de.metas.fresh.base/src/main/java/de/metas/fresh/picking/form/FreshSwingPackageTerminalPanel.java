@@ -39,16 +39,16 @@ import de.metas.adempiere.form.terminal.TerminalException;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.adempiere.form.terminal.swing.SwingTerminalFactory;
 import de.metas.fresh.picking.FreshPackingDetailsMd;
+import de.metas.fresh.picking.FreshProductKey;
 import de.metas.fresh.picking.PackingMaterialKey;
 import de.metas.fresh.picking.PackingMaterialLayout;
 import de.metas.fresh.picking.PickingSlotKey;
 import de.metas.fresh.picking.form.swing.FreshSwingPackageItems;
-import de.metas.fresh.picking.terminal.FreshProductKey;
-import de.metas.handlingunits.IHUCapacityDefinition;
 import de.metas.picking.terminal.form.swing.AbstractPackageDataPanel;
 import de.metas.picking.terminal.form.swing.AbstractPackageTerminal;
 import de.metas.picking.terminal.form.swing.AbstractPackageTerminalPanel;
 import de.metas.picking.terminal.form.swing.SwingPackageBoxesItems;
+import de.metas.quantity.CapacityInterface;
 
 /**
  * Packing window main panel (second window)
@@ -289,11 +289,11 @@ public class FreshSwingPackageTerminalPanel extends AbstractPackageTerminalPanel
 		//
 		// Case: our picking slot has a finite capacity defined
 		// => use the capacity
-		final IHUCapacityDefinition pickingSlotCapacity = pickingSlotKey.getHUTotalCapacity(productKey.getM_Product(), productKey.getQtyUnallocatedUOM());
+		final CapacityInterface pickingSlotCapacity = pickingSlotKey.getHUTotalCapacity(productKey.getM_Product(), productKey.getQtyUnallocatedUOM());
 		if (pickingSlotCapacity != null
 				&& !pickingSlotCapacity.isInfiniteCapacity())
 		{
-			final BigDecimal qtyCapacity = pickingSlotCapacity.getCapacity();
+			final BigDecimal qtyCapacity = pickingSlotCapacity.getCapacityQty();
 			return qtyCapacity.min(qtyUnallocated); // qtyCapacity, but if it's bigger then our qty to allocate, then qty to allocate would be smart to set
 		}
 

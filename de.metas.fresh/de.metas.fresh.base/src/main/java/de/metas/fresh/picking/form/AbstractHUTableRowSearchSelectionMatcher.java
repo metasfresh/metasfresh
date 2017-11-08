@@ -32,7 +32,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 
-import de.metas.adempiere.form.AbstractTableRowSearchSelectionMatcher;
 import de.metas.handlingunits.IHUAware;
 import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -41,6 +40,7 @@ import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.storage.IHUProductStorage;
+import de.metas.picking.legacy.form.AbstractTableRowSearchSelectionMatcher;
 
 /**
  * Matchers all rows suitable for given HU.

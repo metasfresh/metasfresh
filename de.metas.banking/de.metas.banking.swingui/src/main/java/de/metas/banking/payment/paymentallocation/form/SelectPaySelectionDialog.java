@@ -13,15 +13,14 @@ package de.metas.banking.payment.paymentallocation.form;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.awt.BorderLayout;
 import java.awt.Container;
@@ -177,6 +176,7 @@ final class SelectPaySelectionDialog
 					windowNo,
 					paySelectionColumn.getAD_Column_ID(),
 					DisplayType.Search,
+					null, //table name
 					paySelectionColumnName,
 					paySelectionColumn.getAD_Reference_Value_ID(),
 					false, // IsParent,
@@ -380,7 +380,8 @@ final class SelectPaySelectionDialog
 			@Override
 			public void run()
 			{
-				AEnv.zoom(I_C_PaySelection.Table_ID, paySelection.getC_PaySelection_ID());
+				final int paySelectionTableID = InterfaceWrapperHelper.getTableId(I_C_PaySelection.class);
+				AEnv.zoom(paySelectionTableID, paySelection.getC_PaySelection_ID());
 			}
 		});
 
@@ -439,7 +440,6 @@ final class SelectPaySelectionDialog
 		//
 		// Commented-out lines below are left not completed (not required / default / we don't have data to auto-complete them)
 		//
-		// paySelectionLine.setC_PaySelectionCheck_ID(int); // auto
 		// paySelectionLine.setDescription(String); // auto
 		// paySelectionLine.setIsActive(boolean); // auto
 		// paySelectionLine.setIsManual(boolean); // auto

@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Properties;
 
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_AcctSchema_Default;
@@ -41,7 +42,6 @@ import org.compiere.model.MInvoice;
 import org.compiere.model.MInvoiceLine;
 import org.compiere.model.MQuery;
 import org.compiere.model.MTable;
-import org.compiere.process.DocAction;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
@@ -49,7 +49,8 @@ import de.metas.adempiere.ait.helper.AcctFactAssert.AcctDimension;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.currency.ICurrencyDAO;
-import de.metas.document.IDocumentPA;
+import de.metas.document.IDocTypeDAO;
+import de.metas.document.engine.IDocument;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.logging.LogManager;
 
@@ -73,7 +74,7 @@ public class InvoiceHelper
 	private Boolean soTrx = Boolean.TRUE;
 	private Boolean isTaxIncluded = Boolean.FALSE;
 
-	private ArrayList<ProductPriceVO> lines = new ArrayList<ProductPriceVO>();
+	private ArrayList<ProductPriceVO> lines = new ArrayList<>();
 
 	private boolean gridTabLevel = false;
 
@@ -134,8 +135,7 @@ public class InvoiceHelper
 
 		if (docBaseType != null)
 		{
-			invoice.setC_DocTypeTarget_ID(
-					Services.get(IDocumentPA.class).retriveDocTypeId(ctx, invoice.getAD_Org_ID(), docBaseType));
+			invoice.setC_DocTypeTarget_ID(Services.get(IDocTypeDAO.class).getDocTypeId(ctx, docBaseType, invoice.getAD_Client_ID(), invoice.getAD_Org_ID(), ITrx.TRXNAME_None));
 		}
 
 		if (gridTabLevel)
@@ -260,7 +260,7 @@ public class InvoiceHelper
 
 		if (expectedCompleteStatus != null)
 		{
-			helper.process(invoice, DocAction.ACTION_Complete, expectedCompleteStatus);
+			helper.process(invoice, IDocument.ACTION_Complete, expectedCompleteStatus);
 			// BPOpenBalanceValidator.get().afterInvoiceComplete(invoicePO);
 
 			doAccountingAssertions(invoice);

@@ -17,6 +17,7 @@
 package org.compiere.util;
 
 import java.sql.Timestamp;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.util.BitSet;
@@ -26,6 +27,7 @@ import java.util.GregorianCalendar;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.adempiere.util.time.SystemTime;
 
@@ -1291,12 +1293,31 @@ public class TimeUtil
 		return year;
 	}
 
-	static public String formatDate(final Timestamp date, final String pattern)
+	public static String formatDate(final Timestamp date, final String pattern)
 	{
 		final SimpleDateFormat sdf = new SimpleDateFormat(pattern);
 		final String s = sdf.format(date);
 
 		return s;
+	}
+
+	/**
+	 * Creates a {@link Timestamp} for a string according to the pattern {@code yyyy-MM-dd}.
+	 * 
+	 * @param date
+	 * @return
+	 */
+	public static Timestamp parseTimestamp(@NonNull final String date)
+	{
+		try
+		{
+			final Date parsedDate = new SimpleDateFormat("yyyy-MM-dd").parse(date);
+			return new Timestamp(parsedDate.getTime());
+		}
+		catch (final ParseException e)
+		{
+			throw AdempiereException.wrapIfNeeded(e);
+		}
 	}
 
 	public static Calendar asCalendar(final Date date)

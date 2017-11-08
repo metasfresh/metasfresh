@@ -2,11 +2,13 @@ package de.metas.handlingunits.trace;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.OptionalInt;
 
-import de.metas.handlingunits.trace.HUTraceSpecification.RecursionMode;
+import de.metas.handlingunits.trace.HUTraceEventQuery.HUTraceEventQueryBuilder;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Builder.Default;
 import lombok.NonNull;
+import lombok.Value;
 import lombok.experimental.Wither;
 
 /*
@@ -30,73 +32,86 @@ import lombok.experimental.Wither;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-@Data
+@Value
 @Builder
 @Wither
 public class HUTraceEvent
 {
+	/**
+	 * If the event is coming out of the repo, the ID is present. If we create a new huTraceEvent to be added to the repo, it's not.
+	 */
 	@NonNull
-	private final HUTraceType type;
+	@Default
+	OptionalInt huTraceEventId = OptionalInt.empty();
 
 	@NonNull
-	private final Instant eventTime;
+	Integer orgId;
 
 	@NonNull
-	private final Integer vhuId;
-
-	private final int productId;
+	HUTraceType type;
 
 	@NonNull
-	private final BigDecimal qty;
+	Instant eventTime;
 
 	@NonNull
-	private final String vhuStatus;
+	Integer vhuId;
+
+	int productId;
+
+	@NonNull
+	BigDecimal qty;
+
+	@NonNull
+	String vhuStatus;
 
 	/**
 	 * The topmost HU as seen from the vhu.
 	 */
 	@NonNull
-	private final Integer topLevelHuId;
+	Integer topLevelHuId;
 
-	private final int vhuSourceId;
+	int vhuSourceId;
 
-	private final int inOutId;
+	int inOutId;
 
-	private final int shipmentScheduleId;
+	int shipmentScheduleId;
 
-	private final int movementId;
+	int movementId;
 
-	private final int costCollectorId;
+	int ppCostCollectorId;
 
-	private final int ppOrderId;
+	int ppOrderId;
 
-	private final String docStatus;
+	String docStatus;
 
 	/**
 	 * Needs to be {@code null} if not set, because {@code C_DocType_ID=0} means "new".
 	 */
-	private final Integer docTypeId;
+	@NonNull
+	@Default
+	OptionalInt docTypeId = OptionalInt.empty();
 
-	private final int huTrxLineId;
+	int huTrxLineId;
 
-	public HUTraceSpecification asQuery()
+	public HUTraceEventQueryBuilder asQueryBuilder()
 	{
-		return new HUTraceSpecification(RecursionMode.NONE,
-				type,
-				eventTime,
-				vhuId,
-				productId,
-				qty,
-				vhuStatus,
-				topLevelHuId,
-				vhuSourceId,
-				inOutId,
-				shipmentScheduleId,
-				movementId,
-				costCollectorId,
-				ppOrderId,
-				docStatus,
-				docTypeId,
-				huTrxLineId);
+		return HUTraceEventQuery.builder()
+				.huTraceEventId(huTraceEventId)
+				.orgId(orgId)
+				.type(type)
+				.eventTime(eventTime)
+				.vhuId(vhuId)
+				.productId(productId)
+				.qty(qty)
+				.vhuStatus(vhuStatus)
+				.inOutId(inOutId)
+				.shipmentScheduleId(shipmentScheduleId)
+				.movementId(movementId)
+				.ppCostCollectorId(ppCostCollectorId)
+				.ppOrderId(ppOrderId)
+				.docStatus(docStatus)
+				.docTypeId(docTypeId)
+				.huTrxLineId(huTrxLineId);
+
 	}
 }

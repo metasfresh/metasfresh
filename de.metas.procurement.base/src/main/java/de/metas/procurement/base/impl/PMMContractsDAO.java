@@ -15,10 +15,10 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_BPartner;
-import org.compiere.process.DocAction;
 import org.compiere.util.Env;
 
-import de.metas.flatrate.api.IFlatrateDAO;
+import de.metas.contracts.IFlatrateDAO;
+import de.metas.document.engine.IDocument;
 import de.metas.procurement.base.IPMMContractsDAO;
 import de.metas.procurement.base.model.I_C_Flatrate_Conditions;
 import de.metas.procurement.base.model.I_C_Flatrate_DataEntry;
@@ -66,16 +66,16 @@ public class PMMContractsDAO implements IPMMContractsDAO
 				.list(I_C_Flatrate_Term.class);
 	}
 
-	private IQueryBuilder<de.metas.flatrate.model.I_C_Flatrate_Term> retrieveAllRunningContractsOnDateQuery(final Date date)
+	private IQueryBuilder<de.metas.contracts.model.I_C_Flatrate_Term> retrieveAllRunningContractsOnDateQuery(final Date date)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-		final IQueryBuilder<de.metas.flatrate.model.I_C_Flatrate_Term> queryBuilder = queryBL.createQueryBuilder(de.metas.flatrate.model.I_C_Flatrate_Term.class, Env.getCtx(), ITrx.TRXNAME_ThreadInherited)
+		final IQueryBuilder<de.metas.contracts.model.I_C_Flatrate_Term> queryBuilder = queryBL.createQueryBuilder(de.metas.contracts.model.I_C_Flatrate_Term.class, Env.getCtx(), ITrx.TRXNAME_ThreadInherited)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(de.metas.flatrate.model.I_C_Flatrate_Term.COLUMNNAME_Type_Conditions, I_C_Flatrate_Conditions.TYPE_CONDITIONS_Procuremnt)
+				.addEqualsFilter(de.metas.contracts.model.I_C_Flatrate_Term.COLUMNNAME_Type_Conditions, I_C_Flatrate_Conditions.TYPE_CONDITIONS_Procuremnt)
 
 				// completed contract restriction
-				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_DocStatus, DocAction.STATUS_Completed)
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_DocStatus, IDocument.STATUS_Completed)
 
 				// gh #1241: we don't maintain the contract status for procurement contracts; in particular, we do not set it to "running" "sometimes, but not if a contract is extended
 				// also, even if a contract's current status is not running, it doesn't mean that it's not valid within the period if time between its start and end date! 
@@ -116,7 +116,7 @@ public class PMMContractsDAO implements IPMMContractsDAO
 	}
 
 	@Override
-	public I_C_Flatrate_DataEntry retrieveFlatrateDataEntry(final de.metas.flatrate.model.I_C_Flatrate_Term flatrateTerm, final Timestamp date)
+	public I_C_Flatrate_DataEntry retrieveFlatrateDataEntry(final de.metas.contracts.model.I_C_Flatrate_Term flatrateTerm, final Timestamp date)
 	{
 		Check.assumeNotNull(flatrateTerm, "flatrateTerm not null");
 		Check.assumeNotNull(date, "date not null");

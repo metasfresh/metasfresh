@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
-<!-- 2016-10-24T16:14:21 -->
+<!-- 2017-10-05T16:46:29 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/reports/saldobilanz/report" uuid="8895fecc-00d6-4320-8b0a-ab970c9a09bd">
 	<property name="ireport.zoom" value="1.5"/>
 	<property name="ireport.x" value="0"/>
@@ -57,6 +57,7 @@ $P{ExcludeYearEndBooking}
 	<field name="c_calendar_id" class="java.math.BigDecimal"/>
 	<field name="c_elementvalue_id" class="java.math.BigDecimal"/>
 	<field name="ad_org_id" class="java.math.BigDecimal"/>
+	<field name="currency" class="java.lang.String"/>
 	<group name="lvl1">
 		<groupExpression><![CDATA[$F{parentvalue1}]]></groupExpression>
 		<groupHeader>
@@ -225,7 +226,7 @@ $P{ExcludeYearEndBooking}
 				<textElement>
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{CurrencyCHF}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{Currency} +" "+ $F{currency}]]></textFieldExpression>
 			</textField>
 			<textField pattern="dd.MM.yyyy">
 				<reportElement x="279" y="10" width="90" height="13" uuid="68f3a29c-8833-4395-b12e-542c09097be4"/>
@@ -308,7 +309,7 @@ $P{ExcludeYearEndBooking}
 				<textElement textAlignment="Right">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA["Seite " + $V{PAGE_NUMBER} + " von"]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{page} + " " + $V{PAGE_NUMBER} + " " + $R{of}]]></textFieldExpression>
 			</textField>
 			<textField evaluationTime="Report" pattern="" isBlankWhenNull="false">
 				<reportElement key="textField-31" mode="Transparent" x="541" y="0" width="14" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="1e49ce28-ec9f-4acd-93d7-b54d9b52df03"/>

@@ -32,7 +32,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
-import org.compiere.process.DocAction;
 import org.eevolution.api.IPPCostCollectorBL;
 import org.eevolution.api.IPPCostCollectorDAO;
 import org.eevolution.api.IPPOrderBL;
@@ -42,7 +41,8 @@ import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.eevolution.model.X_PP_Order;
 
-import de.metas.document.engine.IDocActionBL;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
@@ -58,7 +58,7 @@ import de.metas.process.ProcessPreconditionsResolution;
 public class PP_Order_UnClose extends JavaProcess implements IProcessPrecondition
 {
 	// services
-	private final transient IDocActionBL docActionBL = Services.get(IDocActionBL.class);
+	private final transient IDocumentBL docActionBL = Services.get(IDocumentBL.class);
 	private final transient IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
 	private final transient IPPOrderBOMBL ppOrderBOMBL = Services.get(IPPOrderBOMBL.class);
 	private final transient IPPCostCollectorDAO ppCostCollectorDAO = Services.get(IPPCostCollectorDAO.class);
@@ -124,8 +124,8 @@ public class PP_Order_UnClose extends JavaProcess implements IProcessPreconditio
 
 		//
 		// Update DocStatus
-		ppOrder.setDocStatus(DocAction.STATUS_Completed);
-		ppOrder.setDocAction(DocAction.ACTION_Close);
+		ppOrder.setDocStatus(IDocument.STATUS_Completed);
+		ppOrder.setDocAction(IDocument.ACTION_Close);
 		InterfaceWrapperHelper.save(ppOrder);
 
 		//
@@ -154,13 +154,13 @@ public class PP_Order_UnClose extends JavaProcess implements IProcessPreconditio
 				continue;
 			}
 
-			if (docActionBL.isDocumentStatusOneOf(cc, DocAction.STATUS_Closed))
+			if (docActionBL.isDocumentStatusOneOf(cc, IDocument.STATUS_Closed))
 			{
-				cc.setDocStatus(DocAction.STATUS_Completed);
+				cc.setDocStatus(IDocument.STATUS_Completed);
 				InterfaceWrapperHelper.save(cc);
 			}
 
-			docActionBL.processEx(cc, DocAction.ACTION_Reverse_Correct, DocAction.STATUS_Reversed);
+			docActionBL.processEx(cc, IDocument.ACTION_Reverse_Correct, IDocument.STATUS_Reversed);
 		}
 	}
 }

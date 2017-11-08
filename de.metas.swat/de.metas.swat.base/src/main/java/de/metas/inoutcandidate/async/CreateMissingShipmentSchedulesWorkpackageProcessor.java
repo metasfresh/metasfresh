@@ -34,7 +34,7 @@ import de.metas.async.api.IQueueDAO;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.async.spi.WorkpackageProcessorAdapter;
-import de.metas.inoutcandidate.api.IInOutCandHandlerBL;
+import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 
@@ -70,7 +70,7 @@ public class CreateMissingShipmentSchedulesWorkpackageProcessor extends Workpack
 	}
 
 	// services
-	private final transient IInOutCandHandlerBL inOutCandHandlerBL = Services.get(IInOutCandHandlerBL.class);
+	private final transient IShipmentScheduleHandlerBL inOutCandHandlerBL = Services.get(IShipmentScheduleHandlerBL.class);
 
 	@Override
 	public Result processWorkPackage(I_C_Queue_WorkPackage workpackage, String localTrxName)

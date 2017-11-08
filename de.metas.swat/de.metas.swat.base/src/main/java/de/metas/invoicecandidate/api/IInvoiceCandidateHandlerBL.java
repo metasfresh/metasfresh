@@ -31,6 +31,7 @@ import org.adempiere.util.ISingletonService;
 import de.metas.invoicecandidate.model.I_C_ILCandHandler;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler;
+import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler.PriceAndTax;
 
 /**
  * This API identifies and invokes {@link IInvoiceCandidateHandler}s for specific invoice candidates
@@ -66,7 +67,7 @@ public interface IInvoiceCandidateHandlerBL extends ISingletonService
 	 * @param ctx
 	 * @param handlers see {@link IInvoiceCandBL#createMissingCandidates(org.compiere.model.I_AD_PInstance, List, String)}
 	 */
-	void createMissingCandidates(Properties ctx, List<I_C_ILCandHandler> handlers);
+	void createMissingCandidates(List<I_C_ILCandHandler> handlers);
 
 	/**
 	 * Creates missing invoice candidates for the given table name and model. It is assumes that 'model' can be handled by {@link InterfaceWrapperHelper}.
@@ -101,18 +102,11 @@ public interface IInvoiceCandidateHandlerBL extends ISingletonService
 	 */
 	void setDeliveredData(I_C_Invoice_Candidate ic);
 
-	/**
-	 * Sets: <code>PriceActual</code>, <code>Price_UOM_ID</code>, <code>IsTaxIncluded</code> for the given <code>ic</code>.
-	 *
-	 * @param ic
-	 */
-	void setPriceActual(I_C_Invoice_Candidate ic);
+	PriceAndTax calculatePriceAndTax(I_C_Invoice_Candidate ic);
+	
+	void setC_UOM_ID(I_C_Invoice_Candidate ic);
 
 	void invalidateCandidatesFor(Object model);
 
 	void setBPartnerData(I_C_Invoice_Candidate ic);
-
-	void setC_UOM_ID(I_C_Invoice_Candidate ic);
-
-	void setPriceEntered(I_C_Invoice_Candidate ic);
 }

@@ -100,7 +100,6 @@ public class HUTransformServiceReceiptCandidatesTests
 		huDocumentFactoryService = Services.get(IHUDocumentFactoryService.class);
 	}
 
-
 	private I_M_ReceiptSchedule create_receiptSchedule_for_CU(final I_M_HU cu, final String cuQtyStr)
 	{
 		final List<IHUProductStorage> storages = data.helper.getHUContext().getHUStorageFactory().getStorage(cu).getProductStorages();
@@ -173,7 +172,8 @@ public class HUTransformServiceReceiptCandidatesTests
 		final I_M_HU cuToSplit = mkRealStandAloneCUToSplit("40");
 
 		// invoke the method under test
-		final List<I_M_HU> newTUs = HUTransformService.get(data.helper.getHUContext())
+		final List<I_M_HU> newTUs = HUTransformService.builderForHUcontext()
+				.huContext(data.helper.getHUContext()).build()
 				.cuToNewTUs(cuToSplit, BigDecimal.ONE, data.piTU_Item_Product_Bag_8KgTomatoes, isOwnPackingMaterials);
 
 		assertThat(newTUs.size(), is(1));
@@ -190,7 +190,6 @@ public class HUTransformServiceReceiptCandidatesTests
 		assertThat(newTUXML, hasXPath("string(HU-TU_Bag/@HUPlanningReceiptOwnerPM)", is(Boolean.toString(isOwnPackingMaterials))));
 		assertThat(newTUXML, hasXPath("count(HU-TU_Bag/Storage[@M_Product_Value='Tomato' and @Qty='1.000' and @C_UOM_Name='Kg'])", is("1")));
 	}
-
 
 	@Theory
 	public void testRealStandaloneTU_To_NewLU(
@@ -266,8 +265,10 @@ public class HUTransformServiceReceiptCandidatesTests
 		}
 
 		// invoke the method under test.
-		HUTransformService.get(data.helper.getHUContext())
-				.withReferencedObjects(ImmutableList.of(rs1TableRef, rs2TableRef))
+		HUTransformService.builderForHUcontext()
+				.huContext(data.helper.getHUContext())
+				.referencedObjects(ImmutableList.of(rs1TableRef, rs2TableRef))
+				.build()
 				.cuToExistingTU(cu2, new BigDecimal("1.6"), existingTU);
 
 		// secondCU is still there, with the remaining 1.4kg
@@ -355,10 +356,12 @@ public class HUTransformServiceReceiptCandidatesTests
 			assertThat(rs2HuDocument.get(0).getAssignedHandlingUnits().stream().anyMatch(hu -> hu.getM_HU_ID() == cu2.getM_HU_ID()), is(true));
 		}
 
-		HUTransformService.get(data.helper.getHUContext())
-				.withReferencedObjects(ImmutableList.of(
+		HUTransformService.builderForHUcontext()
+				.huContext(data.helper.getHUContext())
+				.referencedObjects(ImmutableList.of(
 						rs1TableRef,
 						TableRecordReference.of(rs2)))
+				.build()
 				.cuToExistingTU(cu2, four, tuWithMixedCUs);
 
 		// data.helper.commitAndDumpHU(tuWithMixedCUs);
@@ -502,8 +505,7 @@ public class HUTransformServiceReceiptCandidatesTests
 		verifyQuantities(new BigDecimal("40"), new BigDecimal("9"), firstLU, aggregateTU, newCU, secondLU);
 
 		// "Split off 1 TU on its own, without new LU"
-		final List<I_M_HU> singleNewTUs = HUTransformService.get(data.helper.getHUContext())
-				.tuToNewTUs(aggregateTU, BigDecimal.ONE, false);
+		final List<I_M_HU> singleNewTUs = HUTransformService.get(data.helper.getHUContext()).tuToNewTUs(aggregateTU, BigDecimal.ONE);
 		assertThat(singleNewTUs.size(), is(1));
 		final I_M_HU singleNewTU = singleNewTUs.get(0);
 		verifyQuantities(new BigDecimal("4"), new BigDecimal("1"), singleNewTU);

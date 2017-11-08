@@ -7,14 +7,16 @@ import java.util.Set;
 
 import org.springframework.stereotype.Service;
 
-import de.metas.material.dispo.Candidate;
-import de.metas.material.dispo.Candidate.Type;
-import de.metas.material.dispo.CandidateRepository;
-import de.metas.material.dispo.CandidatesSegment;
-import de.metas.material.dispo.CandidatesSegment.DateOperator;
+import de.metas.material.dispo.commons.CandidatesQuery;
+import de.metas.material.dispo.commons.candidate.Candidate;
+import de.metas.material.dispo.commons.candidate.CandidateType;
+import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
+import de.metas.material.event.MaterialDescriptor;
+import de.metas.material.event.MaterialDescriptor.DateOperator;
+import de.metas.material.event.ProductDescriptor;
 import lombok.Builder;
-import lombok.Data;
 import lombok.NonNull;
+import lombok.Value;
 
 /*
  * #%L
@@ -50,15 +52,16 @@ public class SupplyProposalEvaluator
 	/**
 	 * Needed so the evaluator can check what's already there.
 	 */
-	private final CandidateRepository candidateRepository;
+	private final CandidateRepositoryRetrieval candidateRepository;
 
-	public SupplyProposalEvaluator(@NonNull final CandidateRepository candidateRepository)
+	public SupplyProposalEvaluator(@NonNull final CandidateRepositoryRetrieval candidateRepository)
 	{
 		this.candidateRepository = candidateRepository;
 	}
 
 	/**
-	 * For the given {@code proposal}, look for existing demand records which match the proposal's <b>destination</b> and are linked (directly or indirectly, via parent-references) to any supply record matching the proposal's <b>source</b>.
+	 * For the given {@code proposal}, look for existing demand records which match the proposal's <b>destination</b>
+	 * and are linked (directly or indirectly, via parent-references) to any supply record matching the proposal's <b>source</b>.
 	 * <p>
 	 * Background:
 	 * <ul>
@@ -75,36 +78,42 @@ public class SupplyProposalEvaluator
 	 */
 	public boolean evaluateSupply(@NonNull final SupplyProposal proposal)
 	{
-		final CandidatesSegment demandSegment = CandidatesSegment.builder()
-				.type(Type.DEMAND)
-				.date(proposal.getDate())
-				.dateOperator(DateOperator.from)
-				.productId(proposal.getProductId())
-				.warehouseId(proposal.getDestWarehouseId())
+		final CandidatesQuery demandQuery = CandidatesQuery.builder()
+				.type(CandidateType.DEMAND)
+				.materialDescriptor(MaterialDescriptor.builderForQuery()
+						.date(proposal.getDate())
+						.dateOperator(DateOperator.AT_OR_AFTER)
+						.productDescriptor(proposal.getProductDescriptor())
+						.warehouseId(proposal.getDestWarehouseId()).build())
 				.build();
 
-		final CandidatesSegment directReverseSegment = demandSegment
-				.withParentProductId(proposal.getProductId())
-				.withParentWarehouseId(proposal.getSourceWarehouseId());
+		final MaterialDescriptor sourceMaterialDescriptor = MaterialDescriptor.builderForQuery()
+				.productDescriptor(proposal.getProductDescriptor())
+				.warehouseId(proposal.getSourceWarehouseId())
+				.build();
 
-		final List<Candidate> directReversals = candidateRepository.retrieveMatches(directReverseSegment);
+		final CandidatesQuery directReverseForDemandQuery = demandQuery
+				.withParentMaterialDescriptor(sourceMaterialDescriptor);
+
+		final List<Candidate> directReversals = candidateRepository.retrieveOrderedByDateAndSeqNo(directReverseForDemandQuery);
 		if (!directReversals.isEmpty())
 		{
 			return false;
 		}
 
-		final CandidatesSegment supplySegment = demandSegment
-				.withType(Type.SUPPLY)
-				.withDate(proposal.getDate())
-				.withDateOperator(DateOperator.from)
-				.withWarehouseId(proposal.getSourceWarehouseId());
+		final CandidatesQuery supplyQuery = demandQuery
+				.withType(CandidateType.SUPPLY)
+				.withMaterialDescriptor(demandQuery.getMaterialDescriptor()
+						.withDate(proposal.getDate())
+						.withDateOperator(DateOperator.AT_OR_AFTER)
+						.withWarehouseId(proposal.getSourceWarehouseId()));
 
-		final List<Candidate> demands = candidateRepository.retrieveMatches(demandSegment);
+		final List<Candidate> demands = candidateRepository.retrieveOrderedByDateAndSeqNo(demandQuery);
 		for (final Candidate demand : demands)
 		{
 			final Candidate indirectSupplyCandidate = searchRecursive(
 					demand,
-					supplySegment,
+					supplyQuery,
 					new HashSet<>());
 
 			if (indirectSupplyCandidate != null)
@@ -112,13 +121,12 @@ public class SupplyProposalEvaluator
 				return false;
 			}
 		}
-
 		return true;
 	}
 
 	private Candidate searchRecursive(
 			@NonNull final Candidate currentCandidate,
-			@NonNull final CandidatesSegment searchTarget,
+			@NonNull final CandidatesQuery searchTarget,
 			@NonNull final Set<Candidate> alreadySeen)
 	{
 		if (!alreadySeen.add(currentCandidate))
@@ -131,10 +139,10 @@ public class SupplyProposalEvaluator
 			return currentCandidate;
 		}
 
-		if (currentCandidate.getParentIdNotNull() > 0)
+		if (currentCandidate.getParentId() > 0)
 		{
 			final Candidate foundSearchTarget = searchRecursive(
-					candidateRepository.retrieve(currentCandidate.getParentId()),
+					candidateRepository.retrieveLatestMatchOrNull(CandidatesQuery.fromId(currentCandidate.getParentId())),
 					searchTarget,
 					alreadySeen);
 			if (foundSearchTarget != null)
@@ -143,9 +151,9 @@ public class SupplyProposalEvaluator
 			}
 		}
 		else /* the "else" is important to avoid a stack overflow error */
-		if (currentCandidate.getGroupIdNotNull() > 0)
+		if (currentCandidate.getEffectiveGroupId() > 0)
 		{
-			final List<Candidate> group = candidateRepository.retrieveGroup(currentCandidate.getGroupIdNotNull());
+			final List<Candidate> group = candidateRepository.retrieveGroup(currentCandidate.getEffectiveGroupId());
 			for (final Candidate groupMember : group)
 			{
 				if (groupMember.getId() <= currentCandidate.getId())
@@ -175,20 +183,20 @@ public class SupplyProposalEvaluator
 	 * @author metas-dev <dev@metasfresh.com>
 	 *
 	 */
-	@Data
+	@Value
 	@Builder
 	public static class SupplyProposal
 	{
 		@NonNull
-		private final Integer productId;
+		ProductDescriptor productDescriptor;
 
 		@NonNull
-		private final Integer sourceWarehouseId;
+		Integer sourceWarehouseId;
 
 		@NonNull
-		private final Integer destWarehouseId;
+		Integer destWarehouseId;
 
 		@NonNull
-		private final Date date;
+		Date date;
 	}
 }

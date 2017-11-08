@@ -32,8 +32,8 @@ import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 
-import de.metas.adempiere.service.IOrderLineBL;
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.order.IOrderLineBL;
 
 /**
  * @author cg

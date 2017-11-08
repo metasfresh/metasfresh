@@ -170,7 +170,7 @@ public class TourInstance_DeliveryDay_ShipmentSchedule_IntegrationTest extends T
 	{
 		// Increase QtyOrdered by 10
 		// task 09005: make sure the correct qtyOrdered is taken from the shipmentSchedule
-		final BigDecimal qtyOrdered = Services.get(IShipmentScheduleEffectiveBL.class).getQtyOrdered(shipmentSchedule);
+		final BigDecimal qtyOrdered = Services.get(IShipmentScheduleEffectiveBL.class).computeQtyOrdered(shipmentSchedule);
 		shipmentSchedule.setQtyOrdered_Calculated(qtyOrdered.add(BigDecimal.valueOf(10)));
 
 		// NOTE: because the de.metas.tourplanning.api.impl.ShipmentScheduleDeliveryDayHandler.updateDeliveryDayWhenAllocationChanged(I_M_DeliveryDay, I_M_DeliveryDay_Alloc, I_M_DeliveryDay_Alloc)
@@ -252,36 +252,13 @@ public class TourInstance_DeliveryDay_ShipmentSchedule_IntegrationTest extends T
 		return order;
 	}
 
-	private I_M_ShipmentSchedule createShipmentSchedule(final I_C_Order order, final int qtyOrdered)
-	{
-		final I_M_ShipmentSchedule shipmentSchedule = InterfaceWrapperHelper.newInstance(I_M_ShipmentSchedule.class, contextProvider);
-		shipmentSchedule.setC_Order(order);
-		shipmentSchedule.setM_Product(product);
-		shipmentSchedule.setC_BPartner(bpartner);
-		shipmentSchedule.setC_BPartner_Location(bpLocation);
-		shipmentSchedule.setQtyOrdered_Calculated(BigDecimal.valueOf(qtyOrdered));
-
-		shipmentScheduleDeliveryDayBL.updateDeliveryDayInfo(shipmentSchedule);
-
-		InterfaceWrapperHelper.save(shipmentSchedule);
-
-		Assert.assertEquals("Invalid shipment schedule's DeliveryDate: " + shipmentSchedule,
-				order.getDatePromised(),
-				shipmentSchedule.getDeliveryDate());
-		Assert.assertEquals("Invalid shipment schedule's PreparationDate: " + shipmentSchedule,
-				order.getPreparationDate(),
-				shipmentSchedule.getPreparationDate());
-
-		return shipmentSchedule;
-	}
-
 	@Override
 	protected I_M_DeliveryDay_Alloc assertDeliveryDayAlloc(final I_M_DeliveryDay deliveryDayExpected, final I_M_ShipmentSchedule shipmentSchedule)
 	{
 		final I_M_DeliveryDay_Alloc alloc = super.assertDeliveryDayAlloc(deliveryDayExpected, shipmentSchedule);
 
 		// task 09005: make sure the correct qtyOrdered is taken from the shipmentSchedule
-		final BigDecimal qtyOrdered = Services.get(IShipmentScheduleEffectiveBL.class).getQtyOrdered(shipmentSchedule);
+		final BigDecimal qtyOrdered = Services.get(IShipmentScheduleEffectiveBL.class).computeQtyOrdered(shipmentSchedule);
 		
 		Assert.assertEquals("Invalid allocation QtyOrdered: " + alloc, qtyOrdered, alloc.getQtyOrdered());
 

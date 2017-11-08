@@ -145,11 +145,11 @@ public class MRPProductInfoSelectorFactory implements IMRPProductInfoSelectorFac
 
 	private Timestamp getDateForOrderLine(final I_C_OrderLine orderLine)
 	{
-		final I_M_ShipmentSchedule shipmentSched = Services.get(IShipmentSchedulePA.class).retrieveForOrderLine(orderLine);
-		if (shipmentSched != null)
+		final I_M_ShipmentSchedule schedForOrderLine = Services.get(IShipmentSchedulePA.class).retrieveForOrderLine(orderLine);
+		if (schedForOrderLine != null)
 		{
-			final Timestamp date = Services.get(IShipmentScheduleEffectiveBL.class).getPreparationDate(shipmentSched);
-			if (date != null)                // don't blindly assume that the sched is already initialized
+			final Timestamp date = Services.get(IShipmentScheduleEffectiveBL.class).getPreparationDate(schedForOrderLine);
+			if (date != null)
 			{
 				return date;
 			}

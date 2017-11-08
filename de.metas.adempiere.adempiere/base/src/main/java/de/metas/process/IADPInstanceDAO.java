@@ -24,8 +24,10 @@ package de.metas.process;
 
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
 import org.adempiere.util.ISingletonService;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_PInstance;
 
 public interface IADPInstanceDAO extends ISingletonService
@@ -116,4 +118,8 @@ public interface IADPInstanceDAO extends ISingletonService
 	 * @return process instance; never returns null
 	 */
 	I_AD_PInstance retrieveAD_PInstance(Properties ctx, int adPInstanceId);
+	
+	Set<TableRecordReference> retrieveSelectedIncludedRecords(final int adPInstanceId);
+	
+	void saveSelectedIncludedRecords(final int adPInstanceId, final Set<TableRecordReference> recordRefs);
 }

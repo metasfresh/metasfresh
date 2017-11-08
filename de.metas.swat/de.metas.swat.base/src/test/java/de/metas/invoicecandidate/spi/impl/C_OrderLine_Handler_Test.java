@@ -41,13 +41,13 @@ import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.X_C_DocType;
-import org.compiere.process.DocAction;
 import org.compiere.util.Env;
 import org.junit.Before;
 import org.junit.Test;
 
 import ch.qos.logback.classic.Level;
 import de.metas.aggregation.model.I_C_Aggregation;
+import de.metas.document.engine.IDocument;
 import de.metas.invoicecandidate.AbstractICTestSupport;
 import de.metas.invoicecandidate.InvoiceCandidatesTestHelper;
 import de.metas.invoicecandidate.api.impl.HeaderAggregationKeyBuilder;
@@ -56,6 +56,7 @@ import de.metas.invoicecandidate.model.I_C_ILCandHandler;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateRequest;
 import de.metas.logging.LogManager;
+import de.metas.order.invoicecandidate.C_OrderLine_Handler;
 import de.metas.product.acct.api.IProductAcctDAO;
 import de.metas.tax.api.ITaxBL;
 import mockit.Expectations;
@@ -276,7 +277,7 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 		order1.setIsSOTrx(true);
 		order1.setC_DocType_ID(1);
 		order1.setBill_BPartner_ID(bp.getC_BPartner_ID());
-		order1.setDocStatus(DocAction.ACTION_Complete);
+		order1.setDocStatus(IDocument.ACTION_Complete);
 		InterfaceWrapperHelper.save(order1);
 
 		final I_C_OrderLine oL1 = orderLine("1");
@@ -294,7 +295,7 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 		order2.setIsSOTrx(false);
 		order2.setC_DocType_ID(2);
 		order2.setBill_BPartner_ID(bp.getC_BPartner_ID());
-		order2.setDocStatus(DocAction.ACTION_Complete);
+		order2.setDocStatus(IDocument.ACTION_Complete);
 		InterfaceWrapperHelper.save(order2);
 
 		final I_C_OrderLine oL2 = orderLine("2");
@@ -312,7 +313,7 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 		order3.setIsSOTrx(false);
 		order3.setC_DocType_ID(2);
 		order3.setBill_BPartner_ID(bp.getC_BPartner_ID());
-		order3.setDocStatus(DocAction.ACTION_WaitComplete);
+		order3.setDocStatus(IDocument.ACTION_WaitComplete);
 		InterfaceWrapperHelper.save(order3);
 
 		final I_C_OrderLine oL3 = orderLine("3");
@@ -330,7 +331,7 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 		order4.setIsSOTrx(true);
 		order4.setC_DocType_ID(1);
 		order4.setBill_BPartner_ID(bp.getC_BPartner_ID());
-		order4.setDocStatus(DocAction.ACTION_Complete);
+		order4.setDocStatus(IDocument.ACTION_Complete);
 		InterfaceWrapperHelper.save(order4);
 
 		final I_C_OrderLine oL4 = orderLine("4");
@@ -342,7 +343,7 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 
 		setUpActivityAndTaxRetrieval(order4, oL4);
 
-		final List<I_C_Invoice_Candidate> candidates = InvoiceCandidatesTestHelper.createMissingCandidates(oLHandler, InterfaceWrapperHelper.getCtx(handler), 5, ITrx.TRXNAME_None);
+		final List<I_C_Invoice_Candidate> candidates = InvoiceCandidatesTestHelper.createMissingCandidates(oLHandler, 5);
 
 		assertEquals(2, candidates.size());
 

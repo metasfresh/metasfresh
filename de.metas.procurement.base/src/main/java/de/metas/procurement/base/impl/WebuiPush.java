@@ -14,7 +14,7 @@ import org.springframework.jmx.export.annotation.ManagedOperation;
 import org.springframework.jmx.export.annotation.ManagedResource;
 import org.springframework.stereotype.Service;
 
-import de.metas.flatrate.model.I_C_Flatrate_Term;
+import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.logging.LogManager;
 import de.metas.procurement.base.IAgentSyncBL;
 import de.metas.procurement.base.IPMMProductDAO;

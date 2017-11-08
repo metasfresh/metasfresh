@@ -155,7 +155,7 @@ public interface I_AD_AttachmentEntry
 	 *
 	 * <br>Type: Binary
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
+	 * <br>Virtual Column: false (lazy loading)
 	 */
 	public void setBinaryData (byte[] BinaryData);
 
@@ -165,7 +165,7 @@ public interface I_AD_AttachmentEntry
 	 *
 	 * <br>Type: Binary
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
+	 * <br>Virtual Column: false (lazy loading)
 	 */
 	public byte[] getBinaryData();
 
@@ -326,6 +326,31 @@ public interface I_AD_AttachmentEntry
     public static final String COLUMNNAME_Record_ID = "Record_ID";
 
 	/**
+	 * Set Art.
+	 * Type of Validation (SQL, Java Script, Java Language)
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setType (java.lang.String Type);
+
+	/**
+	 * Get Art.
+	 * Type of Validation (SQL, Java Script, Java Language)
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getType();
+
+    /** Column definition for Type */
+    public static final org.adempiere.model.ModelColumn<I_AD_AttachmentEntry, Object> COLUMN_Type = new org.adempiere.model.ModelColumn<I_AD_AttachmentEntry, Object>(I_AD_AttachmentEntry.class, "Type", null);
+    /** Column name Type */
+    public static final String COLUMNNAME_Type = "Type";
+
+	/**
 	 * Get Aktualisiert.
 	 * Datum, an dem dieser Eintrag aktualisiert wurde
 	 *
@@ -354,4 +379,29 @@ public interface I_AD_AttachmentEntry
     public static final org.adempiere.model.ModelColumn<I_AD_AttachmentEntry, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_AD_AttachmentEntry, org.compiere.model.I_AD_User>(I_AD_AttachmentEntry.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
     /** Column name UpdatedBy */
     public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
+
+	/**
+	 * Set URL.
+	 * Full URL address - e.g. http://www.adempiere.org
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setURL (java.lang.String URL);
+
+	/**
+	 * Get URL.
+	 * Full URL address - e.g. http://www.adempiere.org
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getURL();
+
+    /** Column definition for URL */
+    public static final org.adempiere.model.ModelColumn<I_AD_AttachmentEntry, Object> COLUMN_URL = new org.adempiere.model.ModelColumn<I_AD_AttachmentEntry, Object>(I_AD_AttachmentEntry.class, "URL", null);
+    /** Column name URL */
+    public static final String COLUMNNAME_URL = "URL";
 }

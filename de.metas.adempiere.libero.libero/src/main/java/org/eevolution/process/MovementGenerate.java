@@ -55,7 +55,6 @@ import org.compiere.model.MMovementLine;
 import org.compiere.model.MProduct;
 import org.compiere.model.MProductCategory;
 import org.compiere.model.MStorage;
-import org.compiere.process.DocAction;
 import org.compiere.util.AdempiereUserError;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -64,7 +63,8 @@ import org.eevolution.api.IDDOrderMovementBuilder;
 import org.eevolution.model.MDDOrder;
 import org.eevolution.model.MDDOrderLine;
 
-import de.metas.document.engine.IDocActionBL;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.product.IProductBL;
@@ -93,7 +93,7 @@ public class MovementGenerate extends JavaProcess
 	/** Include Orders w. unconfirmed Shipments	*/
 	private boolean		p_IsUnconfirmedInOut = false;
 	/** DocAction				*/
-	private String		p_docAction = DocAction.ACTION_Complete;
+	private String		p_docAction = IDocument.ACTION_Complete;
 	/** Consolidate				*/
 	private boolean		p_ConsolidateDocument = true;
     /** Shipment Date                       */
@@ -159,8 +159,8 @@ public class MovementGenerate extends JavaProcess
 			} else
 				m_movementDate = p_DateShipped;
 			//	DocAction check
-			if (!DocAction.ACTION_Complete.equals(p_docAction))
-				p_docAction = DocAction.ACTION_Prepare;
+			if (!IDocument.ACTION_Complete.equals(p_docAction))
+				p_docAction = IDocument.ACTION_Prepare;
 		}
 	}	//	prepare
 
@@ -646,7 +646,7 @@ public class MovementGenerate extends JavaProcess
 		if (m_movement != null)
 		{
 			//	Fails if there is a confirmation
-			if (!Services.get(IDocActionBL.class).processIt(m_movement, p_docAction))
+			if (!Services.get(IDocumentBL.class).processIt(m_movement, p_docAction))
 				log.warn("Failed: " + m_movement);
 			InterfaceWrapperHelper.save(m_movement);
 			//

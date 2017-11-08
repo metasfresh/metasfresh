@@ -653,7 +653,7 @@ public final class Msg
 
 		// Check AD_Message
 		final Message message = get().lookup(adLanguageToUse, text);
-		if (message != null)
+		if (message != null && !message.isMissing())
 		{
 			return message.getMsgTextAndTip();
 		}
@@ -823,7 +823,8 @@ public final class Msg
 		/** @return instance for given message text and tip */
 		public static final Message ofTextAndTip(final String adMessage, final String msgText, final String msgTip)
 		{
-			return new Message(adMessage, msgText, msgTip);
+			final boolean missing = false;
+			return new Message(adMessage, msgText, msgTip, missing);
 		}
 
 		/** @return instance of given missing adMessage */
@@ -831,15 +832,17 @@ public final class Msg
 		{
 			final String msgText = adMessage;
 			final String msgTip = null; // no tip
-			return new Message(adMessage, msgText, msgTip);
+			final boolean missing = true;
+			return new Message(adMessage, msgText, msgTip, missing);
 		}
 
 		private final String adMessage;
 		private final String msgText;
 		private final String msgTip;
 		private final String msgTextAndTip;
+		private final boolean missing;
 
-		private Message(@NonNull final String adMessage, final String msgText, final String msgTip)
+		private Message(@NonNull final String adMessage, final String msgText, final String msgTip, final boolean missing)
 		{
 			super();
 			this.adMessage = adMessage;
@@ -853,6 +856,8 @@ public final class Msg
 				msgTextAndTip.append(" ").append(SEPARATOR).append(this.msgTip);
 			}
 			this.msgTextAndTip = msgTextAndTip.toString();
+			
+			this.missing = missing;
 		}
 
 		@Override
@@ -862,6 +867,7 @@ public final class Msg
 					.add("adMessage", adMessage)
 					.add("msgText", msgText)
 					.add("msgTip", msgTip)
+					.add("missing", missing)
 					.toString();
 		}
 
@@ -883,6 +889,11 @@ public final class Msg
 		public String getMsgTextAndTip()
 		{
 			return msgTextAndTip;
+		}
+		
+		public boolean isMissing()
+		{
+			return missing;
 		}
 	}
 }	// Msg

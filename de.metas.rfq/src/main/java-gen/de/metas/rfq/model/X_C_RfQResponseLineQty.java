@@ -4,7 +4,6 @@ package de.metas.rfq.model;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import org.compiere.util.Env;
 
 /** Generated Model for C_RfQResponseLineQty
  *  @author Adempiere (generated) 
@@ -16,7 +15,7 @@ public class X_C_RfQResponseLineQty extends org.compiere.model.PO implements I_C
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 497842527L;
+	private static final long serialVersionUID = 1047750694L;
 
     /** Standard Constructor */
     public X_C_RfQResponseLineQty (Properties ctx, int C_RfQResponseLineQty_ID, String trxName)
@@ -24,13 +23,11 @@ public class X_C_RfQResponseLineQty extends org.compiere.model.PO implements I_C
       super (ctx, C_RfQResponseLineQty_ID, trxName);
       /** if (C_RfQResponseLineQty_ID == 0)
         {
-			setC_RfQLine_ID (0);
-// @C_RfQLine_ID@
+			setC_RfQLine_ID (0); // @C_RfQLine_ID@
 			setC_RfQResponseLine_ID (0);
 			setC_RfQResponseLineQty_ID (0);
-			setPrice (Env.ZERO);
-			setQtyPromised (Env.ZERO);
-// 0
+			setPrice (BigDecimal.ZERO);
+			setQtyPromised (BigDecimal.ZERO); // 0
         } */
     }
 
@@ -222,7 +219,7 @@ public class X_C_RfQResponseLineQty extends org.compiere.model.PO implements I_C
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Discount);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -244,7 +241,7 @@ public class X_C_RfQResponseLineQty extends org.compiere.model.PO implements I_C
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Price);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -263,7 +260,7 @@ public class X_C_RfQResponseLineQty extends org.compiere.model.PO implements I_C
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyPromised);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 

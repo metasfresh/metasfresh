@@ -48,13 +48,13 @@ import org.compiere.model.X_M_PackagingTreeItemSched;
 import org.compiere.util.DB;
 import org.compiere.util.TrxRunnable;
 
-import de.metas.adempiere.form.AvailableBins;
-import de.metas.adempiere.form.PackingDetailsMd;
-import de.metas.adempiere.form.LegacyPackingItem;
-import de.metas.adempiere.form.PackingTreeModel;
-import de.metas.adempiere.form.UsedBin;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.picking.legacy.form.AvailableBins;
+import de.metas.picking.legacy.form.LegacyPackingItem;
+import de.metas.picking.legacy.form.PackingDetailsMd;
+import de.metas.picking.legacy.form.PackingTreeModel;
+import de.metas.picking.legacy.form.UsedBin;
 import de.metas.picking.terminal.form.swing.AbstractPackageTerminalPanel;
 
 /**

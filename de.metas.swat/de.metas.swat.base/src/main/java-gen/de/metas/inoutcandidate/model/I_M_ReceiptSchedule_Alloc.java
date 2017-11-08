@@ -191,7 +191,7 @@ public interface I_M_ReceiptSchedule_Alloc
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: false (lazy loading)
+	 * <br>Virtual Column: false
 	 */
 	public void setM_InOutLine_ID (int M_InOutLine_ID);
 
@@ -201,7 +201,7 @@ public interface I_M_ReceiptSchedule_Alloc
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: false (lazy loading)
+	 * <br>Virtual Column: false
 	 */
 	public int getM_InOutLine_ID();
 

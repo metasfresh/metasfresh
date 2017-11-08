@@ -308,6 +308,8 @@ public interface IHUQueryBuilder
 	 */
 	IHUQueryBuilder addHUStatusToInclude(String huStatus);
 
+	IHUQueryBuilder addHUStatusesToInclude(Collection<String> huStatuses);
+	
 	/**
 	 * Adds an HU Status that shall be excluded. So all HUs which have that status will be excluded.
 	 * <p>

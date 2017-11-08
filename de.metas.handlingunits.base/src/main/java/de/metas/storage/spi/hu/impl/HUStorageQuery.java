@@ -29,6 +29,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.model.IContextAware;
@@ -53,6 +55,7 @@ import de.metas.handlingunits.model.I_M_Locator;
 import de.metas.storage.IStorageQuery;
 import de.metas.storage.IStorageRecord;
 import de.metas.storage.spi.hu.IHUStorageBL;
+import lombok.NonNull;
 
 /**
  *
@@ -362,11 +365,12 @@ import de.metas.storage.spi.hu.IHUStorageBL;
 	 * Adds a filter for the given attribute, <b>if</b> it is relevant according to {@link IHUStorageBL#getAvailableAttributeIds(java.util.Properties)}.
 	 */
 	@Override
-	public IStorageQuery addAttribute(final I_M_Attribute attribute, final String attributeValueType, final Object attributeValue)
+	public IStorageQuery addAttribute(
+			@NonNull final I_M_Attribute attribute, 
+			final String attributeValueType, 
+			@Nullable final Object attributeValue)
 	{
-		Check.assumeNotNull(attribute, "attribute not null");
-
-		// Skip null values because in this case user filled nothing => so we accept any value
+			// Skip null values because in this case user filled nothing => so we accept any value
 		if (attributeValue == null)
 		{
 			return this;

@@ -289,11 +289,6 @@ public class UserBL implements IUserBL
 						.setParameter("reason", "User does not have a password set. Please leave empty the OldPassword field.");
 			}
 
-			if(Check.isEmpty(oldPassword))
-			{
-				throw new AdempiereException("@OldPasswordMandatory@");
-			}
-
 			if (!Objects.equals(oldPassword, userPassword))
 			{
 				throw new AdempiereException("@OldPasswordNoMatch@");

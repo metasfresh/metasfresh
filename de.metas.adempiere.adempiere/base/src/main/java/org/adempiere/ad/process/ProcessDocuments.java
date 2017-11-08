@@ -38,7 +38,7 @@ import org.compiere.model.IQuery;
 import org.compiere.model.Query;
 import org.compiere.util.TrxRunnable2;
 
-import de.metas.document.engine.IDocActionBL;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.process.JavaProcess;
 
@@ -53,7 +53,7 @@ public class ProcessDocuments extends JavaProcess
 	// services
 	final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 	final ITrxManager trxManager = Services.get(ITrxManager.class);
-	final IDocActionBL docActionBL = Services.get(IDocActionBL.class);
+	final IDocumentBL docActionBL = Services.get(IDocumentBL.class);
 	
 	private int p_AD_Table_ID = -1;
 	public static final String PARAM_AD_Table_ID = "AD_Table_ID";
@@ -134,7 +134,7 @@ public class ProcessDocuments extends JavaProcess
 				public boolean doCatch(final Throwable e) throws Throwable
 				{
 					final String msg = "Processing of document " + doc
-							+ ": Failed - ProccessMsg: " + Services.get(IDocActionBL.class).getDocAction(doc).getProcessMsg()
+							+ ": Failed - ProccessMsg: " + Services.get(IDocumentBL.class).getDocument(doc).getProcessMsg()
 							+ "; ExceptionMsg: " + e.getMessage();
 					addLog(msg);
 					ProcessDocuments.this.log.warn(msg, e);

@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.adempiere.ad.dao.ICompositeQueryFilter;
+import org.adempiere.ad.dao.IInSubQueryFilterClause;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryBuilderDAO;
@@ -82,7 +83,6 @@ import com.google.common.collect.ImmutableMap;
 	 */
 	public QueryBuilder(final Class<T> modelClass, final String tableName)
 	{
-		super();
 		this.modelClass = modelClass;
 		this.modelKeyColumnName = null; // lazy
 
@@ -173,7 +173,7 @@ import com.google.common.collect.ImmutableMap;
 	}
 
 	@Override
-	public ICompositeQueryFilter<T> getFilters()
+	public ICompositeQueryFilter<T> getCompositeFilter()
 	{
 		return filters;
 	}
@@ -353,6 +353,12 @@ import com.google.common.collect.ImmutableMap;
 	}
 
 	@Override
+	public IInSubQueryFilterClause<T, IQueryBuilder<T>> addInSubQueryFilter()
+	{
+		return new InSubQueryFilterClause<>(getModelTableName(), this, this::filter);
+	}
+
+	@Override
 	public <ST> IQueryBuilder<T> addInSubQueryFilter(final String columnName, final IQueryFilterModifier modifier, final String subQueryColumnName, final IQuery<ST> subQuery)
 	{
 		filters.addInSubQueryFilter(columnName, modifier, subQueryColumnName, subQuery);
@@ -520,17 +526,17 @@ import com.google.common.collect.ImmutableMap;
 	}
 
 	@Override
-	public IQueryBuilder<T> addSubstringFilter(final String columnname, final String substring, final boolean ignoreCase)
+	public IQueryBuilder<T> addStringLikeFilter(final String columnname, final String substring, final boolean ignoreCase)
 	{
-		filters.addSubstringFilter(columnname, substring, ignoreCase);
+		filters.addStringLikeFilter(columnname, substring, ignoreCase);
 		return this;
 	}
 
 	@Override
-	public IQueryBuilder<T> addSubstringFilter(final ModelColumn<T, ?> column, final String substring, final boolean ignoreCase)
+	public IQueryBuilder<T> addStringLikeFilter(final ModelColumn<T, ?> column, final String substring, final boolean ignoreCase)
 	{
 		final String columnName = column.getColumnName();
-		return addSubstringFilter(columnName, substring, ignoreCase);
+		return addStringLikeFilter(columnName, substring, ignoreCase);
 	}
 
 	@Override
@@ -685,5 +691,4 @@ import com.google.common.collect.ImmutableMap;
 		filters.addValidFromToMatchesFilter(validFromColumn, validToColumn, dateToMatch);
 		return this;
 	}
-
 }

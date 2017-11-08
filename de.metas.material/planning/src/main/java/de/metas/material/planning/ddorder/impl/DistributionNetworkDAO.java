@@ -73,7 +73,7 @@ public class DistributionNetworkDAO implements IDistributionNetworkDAO
 		final IQueryBuilder<I_DD_NetworkDistributionLine> queryBuilder = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_DD_NetworkDistributionLine.class, ctx, trxName);
 
-		final ICompositeQueryFilter<I_DD_NetworkDistributionLine> filters = queryBuilder.getFilters();
+		final ICompositeQueryFilter<I_DD_NetworkDistributionLine> filters = queryBuilder.getCompositeFilter();
 		filters.addEqualsFilter(I_DD_NetworkDistributionLine.COLUMNNAME_DD_NetworkDistribution_ID, distributionNetworkId);
 
 		queryBuilder.orderBy()

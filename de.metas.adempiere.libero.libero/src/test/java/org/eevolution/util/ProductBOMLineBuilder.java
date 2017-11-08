@@ -35,10 +35,13 @@ import org.eevolution.model.I_PP_Product_BOMLine;
 import org.eevolution.model.X_PP_Order_BOMLine;
 import org.eevolution.model.X_PP_Product_BOMLine;
 
+import lombok.NonNull;
+
 public class ProductBOMLineBuilder
 {
 	private ProductBOMBuilder _parent;
 	//
+	private String componentType = X_PP_Product_BOMLine.COMPONENTTYPE_Component;
 	private I_M_Product _product;
 	private I_C_UOM _uom;
 	private boolean _isQtyPercentage;
@@ -80,7 +83,7 @@ public class ProductBOMLineBuilder
 		bomLine.setC_UOM(getC_UOM());
 
 		bomLine.setIsCritical(false);
-		bomLine.setComponentType(X_PP_Product_BOMLine.COMPONENTTYPE_Component);
+		bomLine.setComponentType(componentType);
 		bomLine.setIssueMethod(_issueMethod);
 
 		bomLine.setIsQtyPercentage(_isQtyPercentage);
@@ -213,6 +216,12 @@ public class ProductBOMLineBuilder
 	public ProductBOMLineBuilder setIssueMethod(final String issueMethod)
 	{
 		this._issueMethod = issueMethod;
+		return this;
+	}
+	
+	public ProductBOMLineBuilder componentType(@NonNull final String componentType)
+	{
+		this.componentType = componentType;
 		return this;
 	}
 }

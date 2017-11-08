@@ -18,16 +18,13 @@
  *****************************************************************************/
 package org.compiere.db;
 
-import java.math.BigDecimal;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.sql.Timestamp;
 import java.sql.Types;
-import java.text.DecimalFormat;
 import java.util.List;
 
 import javax.sql.DataSource;
@@ -131,8 +128,6 @@ public class DB_PostgreSQL implements AdempiereDatabase
 	 */
 	public DB_PostgreSQL()
 	{
-		super();
-
 		final Convert_PostgreSQL converter = new Convert_PostgreSQL();
 		final Convert_PostgreSQL_Native converterNative = new Convert_PostgreSQL_Native();
 
@@ -428,170 +423,6 @@ public class DB_PostgreSQL implements AdempiereDatabase
 	{
 		return "template1";
 	}	// getSystemDatabase
-
-	/**
-	 * Create SQL TO Date String from Timestamp
-	 *
-	 * @param time Date to be converted
-	 * @param dayOnly true if time set to 00:00:00
-	 *
-	 * @return TO_DATE('2001-01-30 18:10:20',''YYYY-MM-DD HH24:MI:SS')
-	 *         or TO_DATE('2001-01-30',''YYYY-MM-DD')
-	 */
-	@Override
-	public String TO_DATE(Timestamp time, boolean dayOnly)
-	{
-		if (time == null)
-		{
-			if (dayOnly)
-				return "current_date()";
-			return "current_date()";
-		}
-
-		StringBuilder dateString = new StringBuilder("TO_TIMESTAMP('");
-		// YYYY-MM-DD HH24:MI:SS.mmmm JDBC Timestamp format
-		String myDate = time.toString();
-		if (dayOnly)
-		{
-			dateString.append(myDate.substring(0, 10));
-			dateString.append("','YYYY-MM-DD')");
-		}
-		else
-		{
-			dateString.append(myDate.substring(0, myDate.indexOf('.')));	// cut off miliseconds
-			dateString.append("','YYYY-MM-DD HH24:MI:SS')");
-		}
-		return dateString.toString();
-	}   // TO_DATE
-
-	@Override
-	public String TO_CHAR(String columnName, int displayType)
-	{
-		Check.assumeNotEmpty(columnName, "columnName is not empty");
-
-		final StringBuilder retValue = new StringBuilder("CAST (");
-		retValue.append(columnName);
-		retValue.append(" AS Text)");
-		return retValue.toString();
-
-		// Numbers
-		/*
-		 * if (DisplayType.isNumeric(displayType))
-		 * {
-		 * if (displayType == DisplayType.Amount)
-		 * retValue.append(" AS TEXT");
-		 * else
-		 * retValue.append(" AS TEXT");
-		 * //if (!Language.isDecimalPoint(AD_Language)) // reversed
-		 * //retValue.append(",'NLS_NUMERIC_CHARACTERS='',.'''");
-		 * }
-		 * else if (DisplayType.isDate(displayType))
-		 * {
-		 * retValue.append(",'")
-		 * .append(Language.getLanguage(AD_Language).getDBdatePattern())
-		 * .append("'");
-		 * }
-		 * retValue.append(")");
-		 * //
-		 */
-	}   // TO_CHAR
-
-	@Override
-	public String TO_CHAR(
-			final String columnName,
-			final int displayType,
-			final String formatPattern)
-	{
-		if (Check.isEmpty(formatPattern, false))
-		{
-			return TO_CHAR(columnName, displayType);
-		}
-		else if (DisplayType.isNumeric(displayType))
-		{
-			final String pgFormatPattern = convertDecimalPatternToPG(formatPattern);
-			if (pgFormatPattern == null)
-			{
-				return TO_CHAR(columnName, displayType);
-			}
-
-			return TO_CHAR("to_char(" + columnName + ", '" + pgFormatPattern + "')", displayType);
-		}
-		else
-		{
-			return TO_CHAR(columnName, displayType);
-		}
-	}
-
-	/**
-	 * Convert {@link DecimalFormat} pattern to PostgreSQL's number formatting pattern
-	 *
-	 * @param formatPattern
-	 * @return PostgreSQL's number formatting pattern or <code>null</code> if it could not be converted
-	 * @see DecimalFormat
-	 * @see http://www.postgresql.org/docs/9.1/static/functions-formatting.html#FUNCTIONS-FORMATTING-NUMERIC-TABLE
-	 */
-	// package level for testing
-	/* package */static final String convertDecimalPatternToPG(final String formatPattern)
-	{
-		if (formatPattern == null || formatPattern.isEmpty())
-		{
-			return null;
-		}
-
-		final StringBuilder pgFormatPattern = new StringBuilder(formatPattern.length() + 2);
-		pgFormatPattern.append("FM"); // fill mode (suppress padding blanks and trailing zeroes)
-		for (int i = 0; i < formatPattern.length(); i++)
-		{
-			final char ch = formatPattern.charAt(i);
-
-			// Case: chars that don't need to be translated because have the same meaning
-			if (ch == '0' || ch == '.' || ch == ',')
-			{
-				pgFormatPattern.append(ch);
-			}
-			// Case: # - Digit, zero shows as absent
-			// Convert to: 9 - value with the specified number of digits
-			else if (ch == '#')
-			{
-				pgFormatPattern.append('9');
-			}
-			// Case: invalid char / char that we cannot convert (atm)
-			else
-			{
-				return null;
-			}
-		}
-
-		return pgFormatPattern.toString();
-	}
-
-	/**
-	 * Return number as string for INSERT statements with correct precision
-	 *
-	 * @param number number
-	 * @param displayType display Type
-	 * @return number as string
-	 */
-	@Override
-	public String TO_NUMBER(BigDecimal number, int displayType)
-	{
-		if (number == null)
-			return "NULL";
-		BigDecimal result = number;
-		int scale = DisplayType.getDefaultPrecision(displayType);
-		if (scale > number.scale())
-		{
-			try
-			{
-				result = number.setScale(scale, BigDecimal.ROUND_HALF_UP);
-			}
-			catch (Exception e)
-			{
-				// log.error("Number=" + number + ", Scale=" + " - " + e.getMessage());
-			}
-		}
-		return result.toString();
-	}	// TO_NUMBER
 
 	/**
 	 * Get Cached Connection

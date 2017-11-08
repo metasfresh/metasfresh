@@ -41,7 +41,7 @@ import lombok.NonNull;
 
 public class HUStatusBL implements IHUStatusBL
 {
-	private final static List<String> HUSTATUSES_QtyOnHand = ImmutableList.of(
+	private final static List<String> HU_STATUSES_THAT_COUNT_FOR_QTY_ON_HAND = ImmutableList.of(
 			X_M_HU.HUSTATUS_Active,
 			X_M_HU.HUSTATUS_Picked,
 			X_M_HU.HUSTATUS_Issued);
@@ -60,7 +60,9 @@ public class HUStatusBL implements IHUStatusBL
 			.put(X_M_HU.HUSTATUS_Active, X_M_HU.HUSTATUS_Picked)
 			.put(X_M_HU.HUSTATUS_Active, X_M_HU.HUSTATUS_Issued)
 			.put(X_M_HU.HUSTATUS_Active, X_M_HU.HUSTATUS_Destroyed)
-			// .put(X_M_HU.HUSTATUS_Active, X_M_HU.HUSTATUS_Shipped)
+			
+			// this transition is used in vendor returns
+			.put(X_M_HU.HUSTATUS_Active, X_M_HU.HUSTATUS_Shipped)
 
 			.put(X_M_HU.HUSTATUS_Picked, X_M_HU.HUSTATUS_Active)
 			.put(X_M_HU.HUSTATUS_Picked, X_M_HU.HUSTATUS_Shipped)
@@ -71,22 +73,26 @@ public class HUStatusBL implements IHUStatusBL
 			.put(X_M_HU.HUSTATUS_Destroyed, X_M_HU.HUSTATUS_Active)
 			.put(X_M_HU.HUSTATUS_Destroyed, X_M_HU.HUSTATUS_Issued)
 
+			// this transition is used e.g. when reverse-correcting a vendor return https://github.com/metasfresh/metasfresh/issues/2755
+			.put(X_M_HU.HUSTATUS_Shipped, X_M_HU.HUSTATUS_Active)
+			
 			.build();
 
 	private final static List<String> ALLOWED_STATUSES_FOR_LOCATOR_CHANGE = ImmutableList.of(
 			X_M_HU.HUSTATUS_Planning,
+			X_M_HU.HUSTATUS_Picked, // a HU can be commissioned/picked anywhere, and it still needs to be moved and afterwards
 			X_M_HU.HUSTATUS_Active);
 
 	@Override
 	public boolean isQtyOnHand(final String huStatus)
 	{
-		return HUSTATUSES_QtyOnHand.contains(huStatus);
+		return HU_STATUSES_THAT_COUNT_FOR_QTY_ON_HAND.contains(huStatus);
 	}
 
 	@Override
 	public List<String> getQtyOnHandStatuses()
 	{
-		return HUSTATUSES_QtyOnHand;
+		return HU_STATUSES_THAT_COUNT_FOR_QTY_ON_HAND;
 	}
 
 	@Override
@@ -107,7 +113,7 @@ public class HUStatusBL implements IHUStatusBL
 		throw new HUException(StringUtils.formatMessage("Illegal M_HU.HUStatus change from {} to {}", oldHuStatus, newHuStatus));
 	}
 
-	@VisibleForTesting	
+	@VisibleForTesting
 	boolean isStatusTransitionAllowed(final String oldHuStatus, final String newHuStatus)
 	{
 		if (oldHuStatus == null)

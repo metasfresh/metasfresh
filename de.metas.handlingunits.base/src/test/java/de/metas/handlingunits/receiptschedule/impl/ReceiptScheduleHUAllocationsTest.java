@@ -1,5 +1,7 @@
 package de.metas.handlingunits.receiptschedule.impl;
 
+import static org.junit.Assert.assertEquals;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -26,8 +28,6 @@ package de.metas.handlingunits.receiptschedule.impl;
 import java.math.BigDecimal;
 import java.util.List;
 
-
-import static org.junit.Assert.*;
 import org.junit.Test;
 
 import de.metas.handlingunits.expectations.HUAssignmentExpectation;

@@ -112,7 +112,7 @@ public class CreateDraftIssues
 	{
 		if (!X_M_HU.HUSTATUS_Active.equals(hu.getHUStatus()))
 		{
-			throw new HUException("Only active HUs can be issued but " + hu + " is " + hu.getHUStatus());
+			throw new HUException("Parameter 'hu' needs to have the status \"active\", but has HUStatus=" + hu.getHUStatus()).setParameter("hu", hu);
 		}
 
 		removeHuFromParentIfAny(huContext, hu);

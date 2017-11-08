@@ -53,19 +53,14 @@ import de.metas.storage.IStorageSegment;
 public interface IShipmentSchedulePA extends ISingletonService
 {
 	/**
-	 *
-	 * @param orderLineId
-	 * @param trxName
-	 * @return the shipment schedule entry that refers to the given order line id or <code>null</code>
-	 */
-	I_M_ShipmentSchedule retrieveForOrderLine(Properties ctx, int orderLineId, String trxName);
-
-	/**
-	 *
-	 * @param orderLine
 	 * @return the shipment schedule entry that refers to the given order line or <code>null</code>
 	 */
 	I_M_ShipmentSchedule retrieveForOrderLine(org.compiere.model.I_C_OrderLine orderLine);
+
+	/**
+	 * @return the shipment schedule entry that refers to the given order line or <code>null</code>
+	 */
+	I_M_ShipmentSchedule retrieveForOrderLine(int orderLineId);
 
 	/**
 	 * @param ctx
@@ -180,14 +175,6 @@ public interface IShipmentSchedulePA extends ISingletonService
 	void invalidateForProducts(Collection<Integer> productIds, String trxName);
 
 	/**
-	 * Sets the {@link I_M_ShipmentSchedule#COLUMNNAME_IsValid} column to <code>'N'</code> for all shipment schedule entries whose delivery date is equla or after the given date.
-	 *
-	 * @param productId
-	 * @param trxName
-	 */
-	void invalidateForDeliveryDate(Timestamp date, String trxName);
-
-	/**
 	 * Invalidates all shipment schedules which have one of the given <code>headerAggregationKeys</code>.
 	 *
 	 * @param headerAggregationKeys
@@ -206,11 +193,7 @@ public interface IShipmentSchedulePA extends ISingletonService
 	/**
 	 * Invalidates shipment schedules for the given storage segments.
 	 * <p>
-	 * <b>IMPORTANT:</b> won't invalidate
-	 * <ul>
-	 * <li>any processed schedules.
-	 * <li>any schedules with delivery rule "force"
-	 * </ul>
+	 * <b>IMPORTANT:</b> won't invalidate any processed schedules.
 	 *
 	 * @param storageSegments
 	 */

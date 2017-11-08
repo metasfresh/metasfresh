@@ -25,9 +25,7 @@ package org.eevolution.api.impl;
 
 import java.math.BigDecimal;
 import java.util.Date;
-import java.util.Properties;
 
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
@@ -81,12 +79,9 @@ public class ProductBOMBL implements IProductBOMBL
 	}
 
 	@Override
-	public int calculateProductLowestLevel(final I_M_Product product)
+	public int calculateProductLowestLevel(final int productId)
 	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(product);
-		final String trxName = InterfaceWrapperHelper.getTrxName(product);
-		final int productId = product.getM_Product_ID();
-		return new ProductLowLevelCalculator(ctx, trxName).getLowLevel(productId);
+		return ProductLowLevelCalculator.newInstance().getLowLevel(productId);
 	}
 
 	@Override

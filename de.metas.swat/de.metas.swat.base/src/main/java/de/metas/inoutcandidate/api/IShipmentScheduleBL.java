@@ -24,21 +24,16 @@ package de.metas.inoutcandidate.api;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
-import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.inout.util.CachedObjects;
 import org.adempiere.util.ISingletonService;
 import org.adempiere.util.agg.key.IAggregationKeyBuilder;
-import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_UOM;
 import org.compiere.util.Util.ArrayKey;
 
-import de.metas.adempiere.model.I_C_Order;
-import de.metas.inout.model.I_M_InOut;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.inoutcandidate.spi.ICandidateProcessor;
+import de.metas.inoutcandidate.spi.IShipmentSchedulesAfterFirstPassUpdater;
 import de.metas.inoutcandidate.spi.IShipmentScheduleQtyUpdateListener;
 import de.metas.storage.IStorageQuery;
 
@@ -51,8 +46,6 @@ public interface IShipmentScheduleBL extends ISingletonService
 	 * <li>
 	 * {@link I_M_ShipmentSchedule#COLUMNNAME_QtyToDeliver}
 	 * <li>
-	 * {@link I_M_ShipmentSchedule#COLUMNNAME_QtyDeliverable}
-	 * <li>
 	 * {@link I_M_ShipmentSchedule#COLUMNNAME_QtyOnHand}
 	 * <li>
 	 * {@link I_M_ShipmentSchedule#COLUMNNAME_Status}
@@ -61,24 +54,19 @@ public interface IShipmentScheduleBL extends ISingletonService
 	 * <li>
 	 * {@link I_M_ShipmentSchedule#COLUMNNAME_AllowConsolidateInOut}
 	 *
-	 * To actually set those values, this method calls the registered {@link ICandidateProcessor}.
+	 * To actually set those values, this method calls the registered {@link IShipmentSchedulesAfterFirstPassUpdater}.
 	 *
 	 *
 	 * @param olsAndScheds
-	 * @param saveSchedules decides if the schedules are also stored to database after they have been updated.
-	 * @param date may be <code>null</code>. If not, only those products are allocated from storage whose minGuaranteeDate is not set or is after this date
-	 * @param cachedObjects data structure that can contain e.g. bPartners or orders that have already been loaded in the process of computing the <code>olsAndScheds</code> value. May be
-	 *            <code>null</code>.
+
 	 * @param trxName
 	 */
-	void updateSchedules(Properties ctx,
-			List<OlAndSched> olsAndScheds, boolean saveSchedules, Timestamp date,
-			CachedObjects cachedObjects,
+	void updateSchedules(
+			Properties ctx,
+			List<OlAndSched> olsAndScheds, 
 			String trxName);
 
-	void invalidateProducts(Collection<I_C_OrderLine> orderLines, String trxName);
-
-	void registerCandidateProcessor(ICandidateProcessor processor);
+	void registerCandidateProcessor(IShipmentSchedulesAfterFirstPassUpdater processor);
 
 	/**
 	 * Create grouping key for given shipment schedule.
@@ -102,13 +90,16 @@ public interface IShipmentScheduleBL extends ISingletonService
 	/**
 	 * Updates the given shipment schedule's {@link I_M_ShipmentSchedule#COLUMNNAME_BPartnerAddress_Override} field
 	 *
-	 * @param ctx
 	 * @param sched
-	 * @param trxName
 	 */
-	void updateBPArtnerAddressOverride(Properties ctx, I_M_ShipmentSchedule sched, String trxName);
+	void updateBPArtnerAddressOverrideIfNotYetSet(I_M_ShipmentSchedule sched);
 
-	I_M_InOut createInOut(Properties ctx, I_C_Order order, Timestamp movementDate, OlAndSched olAndSched, String trxName);
+	/**
+	 * Update the given {@code sched}'s delivery and preparation date from its underlying document (orderline etc).
+	 * 
+	 * @param sched
+	 */
+	void updatePreparationAndDeliveryDate(I_M_ShipmentSchedule sched);
 
 	/**
 	 * Currently this method returns true iff the given {@code sched} has just been changes by {@link #updateSchedules(Properties, List, boolean, Timestamp, CachedObjects, String)}.
@@ -119,24 +110,12 @@ public interface IShipmentScheduleBL extends ISingletonService
 	boolean isChangedByUpdateProcess(I_M_ShipmentSchedule sched);
 
 	/**
-	 * Returns the UOM of QtyOrdered, QtyToDelvier, QtyPicked etc
+	 * Returns the UOM of QtyOrdered, QtyToDeliver, QtyPicked etc
 	 *
 	 * @param sched
 	 * @return
 	 */
-	I_C_UOM getC_UOM(I_M_ShipmentSchedule sched);
-
-	/**
-	 *
-	 * <strike>Return the UOM of the orderLine, which is also the UOM of both the order line's and the shipment line's QtyEntered.</strike>
-	 *
-	 * Return the UOM of the prospective shipment line's QtyEntered. Note that currently this is the internal stocking-UOM because that's what our EDI-customer expects the UOM to be. they order
-	 * in UOM "TU", but want a CU-UOM to be returned.
-	 *
-	 * @param sched
-	 * @return
-	 */
-	I_C_UOM getC_UOM_For_ShipmentLine(I_M_ShipmentSchedule sched);
+	I_C_UOM getUomOfProduct(I_M_ShipmentSchedule sched);
 
 	/**
 	 * Evaluates if the given shipment schedule's order and effective bPartner allow that different orders' schedules to go into one and the same shipment.
@@ -191,4 +170,11 @@ public interface IShipmentScheduleBL extends ISingletonService
 	 * @return query
 	 */
 	IStorageQuery createStorageQuery(I_M_ShipmentSchedule shipmentSchedule, boolean considerAttributes);
+
+	/**
+	 * Reopen the closed shipment schedule given as parameter
+	 * 
+	 * @param shipmentSchedule
+	 */
+	void openShipmentSchedule(I_M_ShipmentSchedule shipmentSchedule);
 }

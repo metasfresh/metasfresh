@@ -39,7 +39,6 @@ import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.dao.IQueryOrderByBuilder;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.dao.impl.EqualsQueryFilter;
-import org.adempiere.ad.dao.impl.InSubQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.IClientDAO;
@@ -377,10 +376,10 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 					.create();
 
 			final IQuery<I_M_HU_PI_Item> piItemQuery = queryBL.createQueryBuilder(I_M_HU_PI_Item.class, ctx, trxName)
-					.filter(new InSubQueryFilter<I_M_HU_PI_Item>(
+					.addInSubQueryFilter(
 							I_M_HU_PI_Item.COLUMN_M_HU_PI_Version_ID,
-							I_M_HU_PI_Version.COLUMNNAME_M_HU_PI_Version_ID,
-							piVersionQuery))
+							I_M_HU_PI_Version.COLUMN_M_HU_PI_Version_ID,
+							piVersionQuery)
 					.addEqualsFilter(I_M_HU_PI_Item.COLUMN_ItemType, X_M_HU_PI_Item.ITEMTYPE_Material) // when we query PI_Items, we make sure that they have the correct type, just as a failsafe measure
 					.create();
 
@@ -599,7 +598,7 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 
 		//
 		// Retrieve inital matching PI Item Products
-		final List<I_M_HU_PI_Item_Product> availableHUPIItemProducts = new ArrayList<I_M_HU_PI_Item_Product>(
+		final List<I_M_HU_PI_Item_Product> availableHUPIItemProducts = new ArrayList<>(
 				retrieveHUItemProducts(ctx, queryVO, ITrx.TRXNAME_None)); // explicitly use ArrayList in order to use .add(int, element)
 
 		//

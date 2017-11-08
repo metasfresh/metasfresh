@@ -15,7 +15,10 @@ package org.compiere.model;
 import java.util.Properties;
 
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.Services;
 import org.compiere.util.DisplayType;
+
+import de.metas.adempiere.service.IColumnBL;
 
 /**
  * @author teo_sarca
@@ -45,6 +48,7 @@ public class Callout_AD_Column extends CalloutEngine
 		column.setName(element.getName());
 		column.setDescription(element.getDescription());
 		column.setHelp(element.getHelp());
+		column.setIsCalculated(Services.get(IColumnBL.class).getDefaultIsCalculatedByColumnName(element.getColumnName()));
 
 		I_AD_Table table = column.getAD_Table();
 		String entityType = table.getEntityType();

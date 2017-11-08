@@ -69,13 +69,6 @@
 			<scope>test</scope>
 		</dependency>
 
-		<!-- metasfresh/metasfresh#523 -->
-		<dependency>
-			<groupId>de.metas.material</groupId>
-			<artifactId>metasfresh-material-event</artifactId>
-			<version>10.0.0</version>
-		</dependency>
-
 		<dependency>
 			<groupId>de.metas.report.jasper.client</groupId>
 			<artifactId>de.metas.report.jasper.client</artifactId>
@@ -107,6 +100,18 @@
 			<artifactId>spring-context</artifactId>
 		</dependency>
 
+		<!--
+			Lombok
+			See https://github.com/metasfresh/metasfresh/issues/1125
+			NOTE: if you don't need fancy things like @SneakyThrows then scope 'provided' it's totally fine
+			Also note that the version is managed by spring-boot.
+		 -->
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<scope>provided</scope>
+		</dependency>
+		
 		<!-- unit testing dependencies -->
 		<dependency>
 			<groupId>org.easymock</groupId>
@@ -129,20 +134,15 @@
 		</dependency>
 
 		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
 			<groupId>org.assertj</groupId>
 			<artifactId>assertj-core</artifactId>
-		</dependency>
-		
-		<!--
-			Lombok
-			See https://github.com/metasfresh/metasfresh/issues/1125
-			NOTE: if you don't need fancy things like @SneakyThrows then scope 'provided' it's totally fine
-			Also note that the version is managed by spring-boot.
-		 -->
-		<dependency>
-			<groupId>org.projectlombok</groupId>
-			<artifactId>lombok</artifactId>
-			<scope>provided</scope>
+			<scope>test</scope>
 		</dependency>
 
 	</dependencies>

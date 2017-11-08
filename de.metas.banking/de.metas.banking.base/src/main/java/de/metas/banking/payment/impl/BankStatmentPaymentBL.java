@@ -45,7 +45,6 @@ import org.compiere.model.X_C_Payment;
 import org.compiere.model.X_I_BankStatement;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import de.metas.banking.interfaces.I_C_BankStatementLine_Ref;
 import de.metas.banking.model.IBankStatementLineOrRef;
@@ -53,6 +52,7 @@ import de.metas.banking.model.I_C_BankStatement;
 import de.metas.banking.payment.IBankStatmentPaymentBL;
 import de.metas.banking.service.IBankStatementDAO;
 import de.metas.currency.ICurrencyBL;
+import de.metas.logging.LogManager;
 
 public class BankStatmentPaymentBL implements IBankStatmentPaymentBL
 {
@@ -65,11 +65,11 @@ public class BankStatmentPaymentBL implements IBankStatmentPaymentBL
 		if (payment == null)
 		{
 			lineOrRef.setC_Payment_ID(0);
-			lineOrRef.setDiscountAmt(Env.ZERO);
-			lineOrRef.setWriteOffAmt(Env.ZERO);
+			lineOrRef.setDiscountAmt(BigDecimal.ZERO);
+			lineOrRef.setWriteOffAmt(BigDecimal.ZERO);
 			lineOrRef.setIsOverUnderPayment(false);
-			lineOrRef.setOverUnderAmt(Env.ZERO);
-			setPayAmt(lineOrRef, Env.ZERO);
+			lineOrRef.setOverUnderAmt(BigDecimal.ZERO);
+			setPayAmt(lineOrRef, BigDecimal.ZERO);
 			return;
 		}
 
@@ -78,7 +78,7 @@ public class BankStatmentPaymentBL implements IBankStatmentPaymentBL
 		lineOrRef.setC_BPartner_ID(payment.getC_BPartner_ID());
 		lineOrRef.setC_Invoice_ID(payment.getC_Invoice_ID());
 		//
-		BigDecimal multiplier = Env.ONE;
+		BigDecimal multiplier = BigDecimal.ONE;
 		if (!payment.isReceipt())
 			multiplier = multiplier.negate();
 
@@ -156,7 +156,7 @@ public class BankStatmentPaymentBL implements IBankStatmentPaymentBL
 		final MPayment payment = createPayment(ctx,
 				ibs.getC_Invoice_ID(), ibs.getC_BPartner_ID(),
 				ibs.getC_Currency_ID(), ibs.getStmtAmt(), ibs.getTrxAmt(),
-				Env.ZERO, Env.ZERO, Env.ZERO, // metas
+				BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, // metas
 				ibs.getC_BP_BankAccount_ID(),
 				ibs.getStatementLineDate() == null ? ibs.getStatementDate() : ibs.getStatementLineDate(),
 				ibs.getDateAcct(), ibs.getDescription(), ibs.getAD_Org_ID(),
@@ -448,7 +448,7 @@ public class BankStatmentPaymentBL implements IBankStatmentPaymentBL
 		}
 		if (PayAmt == null)
 		{
-			PayAmt = Env.ZERO;
+			PayAmt = BigDecimal.ZERO;
 		}
 		//
 		final MPayment payment = new MPayment(ctx, 0, trxName);

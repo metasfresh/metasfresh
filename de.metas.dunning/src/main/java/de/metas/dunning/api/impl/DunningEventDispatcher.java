@@ -36,6 +36,7 @@ import de.metas.dunning.model.I_C_DunningDoc_Line_Source;
 import de.metas.dunning.model.I_C_Dunning_Candidate;
 import de.metas.dunning.spi.IDunningCandidateListener;
 import de.metas.dunning.spi.IDunningDocLineSourceListener;
+import lombok.NonNull;
 
 public class DunningEventDispatcher implements IDunningEventDispatcher
 {
@@ -65,11 +66,10 @@ public class DunningEventDispatcher implements IDunningEventDispatcher
 	}
 
 	@Override
-	public void fireDunningCandidateEvent(final String eventName, final I_C_Dunning_Candidate candidate)
+	public void fireDunningCandidateEvent(
+			@NonNull final String eventName, 
+			@NonNull final I_C_Dunning_Candidate candidate)
 	{
-		Check.assumeNotNull(eventName, "eventName not null");
-		Check.assumeNotNull(candidate, "candidate not null");
-
 		synchronized (dunningCandidateListeners)
 		{
 			final List<IDunningCandidateListener> listeners = dunningCandidateListeners.get(eventName);

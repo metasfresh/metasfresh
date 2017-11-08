@@ -1,5 +1,7 @@
 package de.metas.handlingunits.impl;
 
+import static de.metas.business.BusinessTestHelper.createBPartner;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -67,9 +69,9 @@ public class HandlingUnitsDAO_retrieveParentPIItemsForParentPI_Test extends Abst
 		Services.registerService(IHandlingUnitsDAO.class, dao);
 
 		bpartner_NULL = null;
-		bpartner1 = helper.createBPartner("BP1");
-		bpartner2 = helper.createBPartner("BP2");
-		bpartner3 = helper.createBPartner("BP3");
+		bpartner1 = createBPartner("BP1");
+		bpartner2 = createBPartner("BP2");
+		bpartner3 = createBPartner("BP3");
 
 		tuPI1 = helper.createHUDefinition("TU1", X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
 		tuPI_withoutLU = helper.createHUDefinition("TU_withoutLU", X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);

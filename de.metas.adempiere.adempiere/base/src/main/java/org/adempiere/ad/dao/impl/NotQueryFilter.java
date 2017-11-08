@@ -28,17 +28,20 @@ import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.ISqlQueryFilter;
-import org.adempiere.util.Check;
+
+import lombok.NonNull;
 
 public class NotQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 {
+	public static final <T> NotQueryFilter<T> of(final IQueryFilter<T> filter)
+	{
+		return new NotQueryFilter<>(filter);
+	}
+	
 	private final IQueryFilter<T> filter;
 
-	public NotQueryFilter(final IQueryFilter<T> filter)
+	public NotQueryFilter(@NonNull final IQueryFilter<T> filter)
 	{
-		super();
-		Check.assumeNotNull(filter, "filter not null");
-
 		this.filter = filter;
 	}
 

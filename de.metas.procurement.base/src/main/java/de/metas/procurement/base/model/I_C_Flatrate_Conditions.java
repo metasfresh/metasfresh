@@ -22,7 +22,7 @@ package de.metas.procurement.base.model;
  * #L%
  */
 
-public interface I_C_Flatrate_Conditions extends de.metas.flatrate.model.I_C_Flatrate_Conditions
+public interface I_C_Flatrate_Conditions extends de.metas.contracts.model.I_C_Flatrate_Conditions
 {
 	public static final int TYPE_CONDITIONS_AD_Reference_ID=540271;
 	/** Procurement = Procuremnt */

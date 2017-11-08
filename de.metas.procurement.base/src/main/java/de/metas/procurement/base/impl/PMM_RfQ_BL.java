@@ -8,9 +8,9 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 
-import de.metas.document.engine.IDocActionBL;
-import de.metas.flatrate.api.IFlatrateBL;
-import de.metas.flatrate.model.I_C_Flatrate_Conditions;
+import de.metas.contracts.IFlatrateBL;
+import de.metas.contracts.model.I_C_Flatrate_Conditions;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.procurement.base.IPMM_RfQ_BL;
 import de.metas.procurement.base.IPMM_RfQ_DAO;
 import de.metas.procurement.base.PMMContractBuilder;
@@ -136,7 +136,7 @@ public class PMM_RfQ_BL implements IPMM_RfQ_BL
 		final I_C_Flatrate_Term contractExisting = rfqResponseLine.getC_Flatrate_Term();
 		if (contractExisting != null)
 		{
-			final IDocActionBL docActionBL = Services.get(IDocActionBL.class);
+			final IDocumentBL docActionBL = Services.get(IDocumentBL.class);
 			// Voided/Reversed contract
 			if (docActionBL.isDocumentReversedOrVoided(contractExisting))
 			{
@@ -207,7 +207,7 @@ public class PMM_RfQ_BL implements IPMM_RfQ_BL
 			return;
 		}
 
-		final IDocActionBL docActionBL = Services.get(IDocActionBL.class);
+		final IDocumentBL docActionBL = Services.get(IDocumentBL.class);
 		// Voided/Reversed contract
 		if (docActionBL.isDocumentReversedOrVoided(contractExisting))
 		{
@@ -259,7 +259,7 @@ public class PMM_RfQ_BL implements IPMM_RfQ_BL
 			throw new AdempiereException("@NotFound@ @C_Flatrate_Term_ID@: " + rfqResponseLine);
 		}
 
-		final IDocActionBL docActionBL = Services.get(IDocActionBL.class);
+		final IDocumentBL docActionBL = Services.get(IDocumentBL.class);
 		if (docActionBL.issDocumentDraftedOrInProgress(contract))
 		{
 			final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);

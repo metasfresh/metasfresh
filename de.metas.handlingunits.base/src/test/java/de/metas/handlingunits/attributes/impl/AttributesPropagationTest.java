@@ -28,6 +28,7 @@ import static org.hamcrest.Matchers.comparesEqualTo;
 import java.math.BigDecimal;
 import java.util.List;
 
+import org.adempiere.mm.attributes.api.impl.AttributesTestHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_Transaction;
@@ -65,10 +66,13 @@ public class AttributesPropagationTest extends AbstractHUTest
 	private I_M_HU_PI huDefPalet;
 	private I_M_HU_PI huDefIFCO;
 	private I_M_HU_PI huDefBag;
+	private AttributesTestHelper attributesTestHelper;
 
 	@Override
 	protected void initialize()
 	{
+		attributesTestHelper = new AttributesTestHelper();
+		
 		//
 		// Handling Units Definition
 		huDefBag = helper.createHUDefinition(HUTestHelper.NAME_Bag_Product, X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
@@ -262,7 +266,7 @@ public class AttributesPropagationTest extends AbstractHUTest
 	{
 		//
 		// Create and assign an attribute with "invalid propagation"
-		final I_M_Attribute attr_InvalidPropagation = helper.createM_Attribute("InvalidPropagation_Attribute",
+		final I_M_Attribute attr_InvalidPropagation = attributesTestHelper.createM_Attribute("InvalidPropagation_Attribute",
 				X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40,
 				true // isInstanceAttribute
 				);
@@ -285,9 +289,7 @@ public class AttributesPropagationTest extends AbstractHUTest
 	@Test
 	public void testNoParentCopyValueSplitterStrategy()
 	{
-		//
-		// Create and assign attribute
-		final I_M_Attribute attr_CopyValueNoParent = helper.createM_Attribute("InheritValueNoParent_Attribute",
+		final I_M_Attribute attr_CopyValueNoParent = attributesTestHelper.createM_Attribute("InheritValueNoParent_Attribute",
 				X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40,
 				true // instance attribute
 				);

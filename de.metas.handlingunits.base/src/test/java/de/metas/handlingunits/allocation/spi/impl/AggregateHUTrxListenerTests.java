@@ -1,10 +1,11 @@
 package de.metas.handlingunits.allocation.spi.impl;
 
+import static org.hamcrest.Matchers.comparesEqualTo;
+import static org.junit.Assert.assertThat;
+
 import java.math.BigDecimal;
 
 import org.junit.Test;
-import static org.junit.Assert.*;
-import static org.hamcrest.Matchers.*;
 
 /*
  * #%L

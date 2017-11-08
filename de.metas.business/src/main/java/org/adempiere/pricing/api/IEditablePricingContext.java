@@ -85,10 +85,6 @@ public interface IEditablePricingContext extends IPricingContext
 
 	void setProperty(String propertyName, Object value);
 
-	/**
-	 * set property in context
-	 */
-	// void setProperty(String name, Object value);
 
 	/**
 	 * See {@link IPricingContext#isManualPrice()}.

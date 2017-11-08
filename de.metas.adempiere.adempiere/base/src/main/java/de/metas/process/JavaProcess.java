@@ -8,6 +8,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
@@ -41,7 +42,9 @@ import org.springframework.context.annotation.Profile;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
@@ -388,12 +391,11 @@ public abstract class JavaProcess implements IProcess, ILoggable, IContextAware
 		//
 		// Iterate all process class info parameters and try to update the corresponding field
 		final IRangeAwareParams source = pi.getParameterAsIParams();
-		parameterInfos.forEach(paramInfo ->
-			{
-				final ArrayKey fieldKey = paramInfo.getFieldKey();
-				final Field processField = processFields.get(fieldKey);
-				paramInfo.loadParameterValue(this, processField, source, failIfNotValid);
-			});
+		parameterInfos.forEach(paramInfo -> {
+			final ArrayKey fieldKey = paramInfo.getFieldKey();
+			final Field processField = processFields.get(fieldKey);
+			paramInfo.loadParameterValue(this, processField, source, failIfNotValid);
+		});
 	}
 
 	/**
@@ -416,11 +418,10 @@ public abstract class JavaProcess implements IProcess, ILoggable, IContextAware
 
 		// Iterate all process class info parameters and try to update the corresponding field
 		// No parameters => nothing to do
-		parameterInfos.forEach(paramInfo ->
-			{
-				final Field processField = processFields.get(paramInfo.getFieldKey());
-				paramInfo.loadParameterValue(this, processField, source, failIfNotValid);
-			});
+		parameterInfos.forEach(paramInfo -> {
+			final Field processField = processFields.get(paramInfo.getFieldKey());
+			paramInfo.loadParameterValue(this, processField, source, failIfNotValid);
+		});
 
 	}
 
@@ -845,6 +846,36 @@ public abstract class JavaProcess implements IProcess, ILoggable, IContextAware
 		}
 
 		return getProcessInfo().getRecord(modelClass, trxName);
+	}
+	
+	/** @return selected included row IDs of current single selected document */
+	protected final <T> Set<Integer> getSelectedIncludedRecordIds(final Class<T> modelClass)
+	{
+		final String tableName = InterfaceWrapperHelper.getTableName(modelClass);
+		return getProcessInfo().getSelectedIncludedRecords().stream()
+				.filter(recordRef -> recordRef.getTableName().equals(tableName))
+				.map(TableRecordReference::getRecord_ID)
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	/** @return selected included rows of current single selected document */
+	protected final <T> List<T> getSelectedIncludedRecords(final Class<T> modelClass)
+	{
+		final Set<Integer> recordIds = getSelectedIncludedRecordIds(modelClass);
+		if (recordIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		final String keyColumnName = InterfaceWrapperHelper.getKeyColumnName(modelClass);
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(modelClass)
+				.addInArrayFilter(keyColumnName, recordIds)
+				.orderBy()
+				.addColumn(keyColumnName)
+				.endOrderBy()
+				.create()
+				.list(modelClass);
 	}
 
 	/**

@@ -424,7 +424,7 @@ public interface IInvoiceCandBL extends ISingletonService
 
 	/**
 	 * Find out if invoice candidates with flag IsToCLear are supposed to be closed
-	 * The decision is bade based on the System Configuration "C_Invoice_Candidate_Close_IsToClear"
+	 * The decision is made based on the System Configuration "C_Invoice_Candidate_Close_IsToClear"
 	 *
 	 * @return the value of the SYS_Config if found, false by default
 	 */

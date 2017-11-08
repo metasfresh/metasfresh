@@ -26,7 +26,7 @@ package test.integration.contracts;
 import test.integration.ordercandidates.OrderCandidatesTestConfig;
 import de.metas.adempiere.ait.helper.Helper;
 import de.metas.adempiere.ait.helper.TestConfig;
-import de.metas.flatrate.model.X_C_Contract_Change;
+import de.metas.contracts.model.X_C_Contract_Change;
 
 /**
  * This config contains parameters for the testing of flatrate/flatfee/subscription contracts.

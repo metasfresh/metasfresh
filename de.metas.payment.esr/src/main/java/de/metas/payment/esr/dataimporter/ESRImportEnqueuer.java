@@ -190,7 +190,7 @@ public class ESRImportEnqueuer
 		//
 		// Check for duplicates
 		final String preventDuplicates = sysConfigBL.getValue(ESRConstants.SYSCONFIG_PreventDuplicateImportFiles);
-		if (preventDuplicates == null)
+		if (Check.isEmpty(preventDuplicates, true) || "-".equals(preventDuplicates))
 		{
 			// the sys config not defined. Functionality to work as before
 		}

@@ -238,7 +238,7 @@ import de.metas.logging.LogManager;
 		product = candidate.getM_Product();
 		attributeSetInstanceId = candidate.getM_AttributeSetInstance_ID();
 		attributesAggregationKey = candidate.getAttributesAggregationKey();
-		uom = shipmentScheduleBL.getC_UOM_For_ShipmentLine(candidate.getM_ShipmentSchedule());
+		uom = shipmentScheduleBL.getUomOfProduct(candidate.getM_ShipmentSchedule());
 
 		//
 		// Order Line Link (retrieved from current Shipment)

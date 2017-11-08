@@ -52,7 +52,6 @@ public interface IAttachmentDAO extends ISingletonService
 
 	AttachmentEntry toAttachmentEntry(I_AD_AttachmentEntry entryRecord);
 
-	void saveAttachmentEntry(I_AD_Attachment attachment, AttachmentEntry entry);
 	void saveAttachmentEntryData(AttachmentEntry entry, byte[] data);
 
 	boolean deleteAttachmentEntryById(int attachmentId, int attachmentEntryId);

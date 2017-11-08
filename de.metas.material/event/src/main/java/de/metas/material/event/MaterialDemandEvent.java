@@ -1,11 +1,8 @@
 package de.metas.material.event;
 
-import org.adempiere.util.lang.impl.TableRecordReference;
-
-import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
 import lombok.NonNull;
+import lombok.Value;
 
 /*
  * #%L
@@ -29,20 +26,19 @@ import lombok.NonNull;
  * #L%
  */
 
-@Data
-@AllArgsConstructor // used by jackson when it deserializes a string
-@Builder // used by devs to make sure they know with parameter value does into which property
+@Value
+@Builder
 public class MaterialDemandEvent implements MaterialEvent
 {
 	public static final String TYPE = "MaterialDemandEvent";
 
 	@NonNull
-	private final EventDescr eventDescr;
+	MaterialDemandDescriptor materialDemandDescriptor;
 
-	@NonNull
-	private final MaterialDescriptor descr;
 
-	private final TableRecordReference reference;
-
-	private int orderLineId;
+	@Override
+	public EventDescriptor getEventDescriptor()
+	{
+		return materialDemandDescriptor.getEventDescr();
+	}
 }

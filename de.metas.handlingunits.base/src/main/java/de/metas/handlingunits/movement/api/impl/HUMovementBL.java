@@ -13,6 +13,7 @@ import org.adempiere.model.PlainContextAware;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_C_Activity;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
@@ -97,6 +98,14 @@ public class HUMovementBL implements IHUMovementBL
 	@Override
 	public HUMovementResult moveHUsToWarehouse(@NonNull final List<I_M_HU> hus, @NonNull final I_M_Warehouse warehouseTo)
 	{
+		final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
+		final I_M_Locator locatorTo = warehouseBL.getDefaultLocator(warehouseTo);
+		return moveHUsToLocator(hus, locatorTo);
+	}
+
+	@Override
+	public HUMovementResult moveHUsToLocator(@NonNull final List<I_M_HU> hus, @NonNull final I_M_Locator locatorTo)
+	{
 		if (hus.isEmpty())
 		{
 			throw new AdempiereException("@NoSelection@ @M_HU_ID@");
@@ -120,7 +129,7 @@ public class HUMovementBL implements IHUMovementBL
 				movementBuilder = new HUMovementBuilder();
 				movementBuilder.setContextInitial(initialContext);
 				movementBuilder.setWarehouseFrom(huLocator.getM_Warehouse());
-				movementBuilder.setWarehouseTo(warehouseTo);
+				movementBuilder.setLocatorTo(locatorTo);
 
 				warehouseId2builder.put(sourceWarehouseId, movementBuilder);
 			}

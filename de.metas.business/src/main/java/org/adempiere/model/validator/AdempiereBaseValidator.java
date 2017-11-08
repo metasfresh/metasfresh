@@ -23,6 +23,7 @@ package org.adempiere.model.validator;
  */
 
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
+import org.adempiere.ad.column.callout.AD_Column;
 import org.adempiere.ad.dao.cache.IModelCacheService;
 import org.adempiere.ad.dao.cache.ITableCacheConfig;
 import org.adempiere.ad.dao.cache.ITableCacheConfig.TrxLevel;
@@ -69,6 +70,7 @@ import de.metas.adempiere.model.I_M_Product;
 import de.metas.async.api.IAsyncBatchListeners;
 import de.metas.async.spi.impl.NotifyAsyncBatch;
 import de.metas.event.EventBusAdempiereInterceptor;
+import de.metas.reference.model.interceptor.AD_Ref_Table;
 
 /**
  * ADempiere Base Module Activator
@@ -83,8 +85,8 @@ public final class AdempiereBaseValidator extends AbstractModuleInterceptor
 	protected void onAfterInit()
 	{
 		CopyRecordFactory.addOnRecordCopiedListener(new CloneASIListener());
-		
-		// 
+
+		//
 		registerFactories();
 	}
 
@@ -94,7 +96,7 @@ public final class AdempiereBaseValidator extends AbstractModuleInterceptor
 		// Register notifier
 		Services.get(IAsyncBatchListeners.class).registerAsyncBatchNotifier(new NotifyAsyncBatch());
 	}
-	
+
 	@Override
 	protected void registerInterceptors(final IModelValidationEngine engine, final I_AD_Client client)
 	{
@@ -114,11 +116,11 @@ public final class AdempiereBaseValidator extends AbstractModuleInterceptor
 
 		engine.addModelValidator(new de.metas.javaclasses.model.interceptor.AD_JavaClass(), client); // 04599
 		engine.addModelValidator(new de.metas.javaclasses.model.interceptor.AD_JavaClass_Type(), client); // 04599
-		
+
 		engine.addModelValidator(de.metas.process.model.interceptor.AD_Process.instance, client); // FRESH-727
 
 		engine.addModelValidator(de.metas.system.interceptor.AD_System.INSTANCE, client);
-		
+
 		//
 		// Currency
 		{
@@ -154,29 +156,41 @@ public final class AdempiereBaseValidator extends AbstractModuleInterceptor
 
 		// gh-issue #288
 		engine.addModelValidator(de.metas.logging.model.interceptor.LoggingModuleInterceptor.INSTANCE, client);
-		
+
 		//
 		// Script/Rule engine
 		engine.addModelValidator(de.metas.script.model.interceptor.AD_Rule.instance, client);
 		engine.addModelValidator(de.metas.script.model.interceptor.AD_Table_ScriptValidator.instance, client);
-		
+
 		//
 		// Request
 		engine.addModelValidator(de.metas.request.model.interceptor.RequestsModuleInterceptor.instance, client);
-		
+
 		//
 		// BPartner
 		engine.addModelValidator(new org.adempiere.bpartner.model.interceptor.C_BPartner(), client);
 		// Prevent users from creating duplicate main prices https://github.com/metasfresh/metasfresh/issues/2510
 		engine.addModelValidator(de.metas.pricing.interceptor.M_ProductPrice.INSTANCE, client);
-	}
+
+		// #2895
+		engine.addModelValidator(AD_Ref_Table.instance, client);
+
+
+		// #2913
+		engine.addModelValidator(org.adempiere.ad.column.model.interceptor.AD_Column.instance, client);
+	
+
+		engine.addModelValidator(org.adempiere.mm.attributes.interceptor.M_AttributeValue.INSTANCE, client);	}
+
 
 	@Override
 	protected void registerCallouts(final IProgramaticCalloutProvider calloutsRegistry)
 	{
 		calloutsRegistry.registerAnnotatedCallout(new de.metas.javaclasses.model.interceptor.AD_JavaClass_Type());
-		
+
 		calloutsRegistry.registerAnnotatedCallout(new de.metas.process.callout.AD_Process_Para()); // FRESH-727
+
+		calloutsRegistry.registerAnnotatedCallout(AD_Column.instance);
 	}
 
 	@Override

@@ -34,8 +34,6 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 
-import de.metas.handlingunits.IHUCapacityBL;
-import de.metas.handlingunits.IHUCapacityDefinition;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.IAllocationResult;
@@ -55,7 +53,10 @@ import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.handlingunits.util.HUByIdComparator;
+import de.metas.quantity.Capacity;
+import de.metas.quantity.CapacityInterface;
 import de.metas.quantity.Quantity;
+import lombok.NonNull;
 
 public class LUTUProducerDestination extends AbstractProducerDestination implements ILUTUProducerAllocationDestination
 {
@@ -63,7 +64,6 @@ public class LUTUProducerDestination extends AbstractProducerDestination impleme
 	// Services
 	private final transient IHUTransactionBL huTransactionBL = Services.get(IHUTransactionBL.class);
 	private final transient IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-	private final transient IHUCapacityBL huCapacityBL = Services.get(IHUCapacityBL.class);
 
 	/**
 	 * Load Unit PI
@@ -101,7 +101,7 @@ public class LUTUProducerDestination extends AbstractProducerDestination impleme
 	/**
 	 * TU Capacities by M_Product_ID
 	 */
-	private final Map<Integer, IHUCapacityDefinition> productId2tuCapacity = new HashMap<>();
+	private final Map<Integer, Capacity> productId2tuCapacity = new HashMap<>();
 
 	/**
 	 * How many TUs to put into one LU
@@ -422,7 +422,7 @@ public class LUTUProducerDestination extends AbstractProducerDestination impleme
 	}
 
 	@Override
-	public void addTUCapacity(final IHUCapacityDefinition tuCapacity)
+	public void addTUCapacity(final Capacity tuCapacity)
 	{
 		Check.assumeNotNull(tuCapacity, "tuCapacity not null");
 
@@ -436,12 +436,12 @@ public class LUTUProducerDestination extends AbstractProducerDestination impleme
 	@Override
 	public void addTUCapacity(final I_M_Product cuProduct, final BigDecimal qtyCUPerTU, final I_C_UOM cuUOM)
 	{
-		final IHUCapacityDefinition tuCapacity = createCapacity(cuProduct, qtyCUPerTU, cuUOM);
+		final Capacity tuCapacity = createCapacity(cuProduct, qtyCUPerTU, cuUOM);
 		addTUCapacity(tuCapacity);
 	}
 
 	@Override
-	public IHUCapacityDefinition getTUCapacity()
+	public Capacity getTUCapacity()
 	{
 		if (productId2tuCapacity.isEmpty())
 		{
@@ -458,24 +458,22 @@ public class LUTUProducerDestination extends AbstractProducerDestination impleme
 	}
 
 	@Override
-	public IHUCapacityDefinition getTUCapacity(final I_M_Product cuProduct)
+	public CapacityInterface getTUCapacity(final I_M_Product cuProduct)
 	{
 		Check.assumeNotNull(cuProduct, "cuProduct not null");
 		final int cuProductId = cuProduct.getM_Product_ID();
-		final IHUCapacityDefinition tuCapacity = productId2tuCapacity.get(cuProductId);
+		final CapacityInterface tuCapacity = productId2tuCapacity.get(cuProductId);
 		return tuCapacity;
 	}
 
-	private final IHUCapacityDefinition createCapacity(final I_M_Product cuProduct,
-			final BigDecimal qtyCUPerTU,
-			final I_C_UOM cuUOM)
+	private final Capacity createCapacity(
+			@NonNull final I_M_Product cuProduct,
+			@NonNull final BigDecimal qtyCUPerTU,
+			@NonNull final I_C_UOM cuUOM)
 	{
-		Check.assumeNotNull(cuProduct, "cuProduct not null");
-		Check.assumeNotNull(qtyCUPerTU, "qtyCUPerTU not null");
 		Check.assume(qtyCUPerTU.signum() > 0, "qtyCUPerTU > 0, but it was {}", qtyCUPerTU);
-		Check.assumeNotNull(cuUOM, "cuUOM not null");
 
-		return huCapacityBL.createCapacity(qtyCUPerTU, cuProduct, cuUOM, false); // allowNegativeCapacity=false;
+		return Capacity.createCapacity(qtyCUPerTU, cuProduct, cuUOM, false); // allowNegativeCapacity=false;
 	}
 
 	/**
@@ -760,23 +758,23 @@ public class LUTUProducerDestination extends AbstractProducerDestination impleme
 	@Override
 	public Quantity calculateTotalQtyCU()
 	{
-		final IHUCapacityDefinition tuCapacity = getTUCapacity();
+		final CapacityInterface tuCapacity = getTUCapacity();
 		return calculateTotalQtyCU(tuCapacity);
 	}
 
 	@Override
 	public Quantity calculateTotalQtyCU(final I_M_Product cuProduct)
 	{
-		final IHUCapacityDefinition tuCapacity = getTUCapacity(cuProduct);
+		final CapacityInterface tuCapacity = getTUCapacity(cuProduct);
 		Check.assumeNotNull(tuCapacity, "tuCapacity defined for {}", cuProduct);
 
 		return calculateTotalQtyCU(tuCapacity);
 	}
 
-	private final Quantity calculateTotalQtyCU(final IHUCapacityDefinition tuCapacity)
+	private final Quantity calculateTotalQtyCU(final CapacityInterface tuCapacity)
 	{
 		Check.assumeNotNull(tuCapacity, "tuCapacity not null");
-		final BigDecimal qtyCUsPerTU = tuCapacity.getCapacity();
+		final BigDecimal qtyCUsPerTU = tuCapacity.getCapacityQty();
 		final I_C_UOM cuUOM = tuCapacity.getC_UOM();
 
 		// If Qty CU/TU is infinite, we cannot calculate

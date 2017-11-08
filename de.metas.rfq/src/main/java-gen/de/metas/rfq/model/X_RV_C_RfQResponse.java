@@ -4,7 +4,6 @@ package de.metas.rfq.model;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import org.compiere.util.Env;
 
 /** Generated Model for RV_C_RfQResponse
  *  @author Adempiere (generated) 
@@ -16,7 +15,7 @@ public class X_RV_C_RfQResponse extends org.compiere.model.PO implements I_RV_C_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1463987480L;
+	private static final long serialVersionUID = -987033641L;
 
     /** Standard Constructor */
     public X_RV_C_RfQResponse (Properties ctx, int RV_C_RfQResponse_ID, String trxName)
@@ -24,7 +23,7 @@ public class X_RV_C_RfQResponse extends org.compiere.model.PO implements I_RV_C_
       super (ctx, RV_C_RfQResponse_ID, trxName);
       /** if (RV_C_RfQResponse_ID == 0)
         {
-			setBenchmarkPrice (Env.ZERO);
+			setBenchmarkPrice (BigDecimal.ZERO);
 			setC_BPartner_ID (0);
 			setC_BPartner_Location_ID (0);
 			setC_Currency_ID (0);
@@ -34,9 +33,9 @@ public class X_RV_C_RfQResponse extends org.compiere.model.PO implements I_RV_C_
 			setC_UOM_ID (0);
 			setIsSelfService (false);
 			setLine (0);
-			setPrice (Env.ZERO);
-			setQty (Env.ZERO);
-			setQtyPrice (Env.ZERO);
+			setPrice (BigDecimal.ZERO);
+			setQty (BigDecimal.ZERO);
+			setQtyPrice (BigDecimal.ZERO);
         } */
     }
 
@@ -110,7 +109,7 @@ public class X_RV_C_RfQResponse extends org.compiere.model.PO implements I_RV_C_
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_BenchmarkDifference);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -132,7 +131,7 @@ public class X_RV_C_RfQResponse extends org.compiere.model.PO implements I_RV_C_
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_BenchmarkPrice);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -395,9 +394,9 @@ public class X_RV_C_RfQResponse extends org.compiere.model.PO implements I_RV_C_
 		return ii.intValue();
 	}
 
-	/** Set Antwort-datum.
+	/** Set Datum Antwort.
 		@param DateResponse 
-		Date of the Response
+		Datum der Antwort
 	  */
 	@Override
 	public void setDateResponse (java.sql.Timestamp DateResponse)
@@ -405,8 +404,8 @@ public class X_RV_C_RfQResponse extends org.compiere.model.PO implements I_RV_C_
 		set_ValueNoCheck (COLUMNNAME_DateResponse, DateResponse);
 	}
 
-	/** Get Antwort-datum.
-		@return Date of the Response
+	/** Get Datum Antwort.
+		@return Datum der Antwort
 	  */
 	@Override
 	public java.sql.Timestamp getDateResponse () 
@@ -508,7 +507,7 @@ public class X_RV_C_RfQResponse extends org.compiere.model.PO implements I_RV_C_
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Discount);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -683,9 +682,9 @@ public class X_RV_C_RfQResponse extends org.compiere.model.PO implements I_RV_C_
 		set_ValueFromPO(COLUMNNAME_M_AttributeSetInstance_ID, org.compiere.model.I_M_AttributeSetInstance.class, M_AttributeSetInstance);
 	}
 
-	/** Set Ausprägung Merkmals-Satz.
+	/** Set Merkmale.
 		@param M_AttributeSetInstance_ID 
-		Product Attribute Set Instance
+		Merkmals Ausprägungen zum Produkt
 	  */
 	@Override
 	public void setM_AttributeSetInstance_ID (int M_AttributeSetInstance_ID)
@@ -696,8 +695,8 @@ public class X_RV_C_RfQResponse extends org.compiere.model.PO implements I_RV_C_
 			set_ValueNoCheck (COLUMNNAME_M_AttributeSetInstance_ID, Integer.valueOf(M_AttributeSetInstance_ID));
 	}
 
-	/** Get Ausprägung Merkmals-Satz.
-		@return Product Attribute Set Instance
+	/** Get Merkmale.
+		@return Merkmals Ausprägungen zum Produkt
 	  */
 	@Override
 	public int getM_AttributeSetInstance_ID () 
@@ -763,7 +762,7 @@ public class X_RV_C_RfQResponse extends org.compiere.model.PO implements I_RV_C_
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Price);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -785,7 +784,7 @@ public class X_RV_C_RfQResponse extends org.compiere.model.PO implements I_RV_C_
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Qty);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -804,7 +803,7 @@ public class X_RV_C_RfQResponse extends org.compiere.model.PO implements I_RV_C_
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyPrice);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 

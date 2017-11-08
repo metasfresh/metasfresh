@@ -19,8 +19,14 @@ RETURNS TABLE
 	rate character varying, 
 	isPrintTax character(1),
 	description character varying,
+	documentnote character varying,
+	productdescription character varying, 
 	bp_product_no character varying(30),
-	bp_product_name character varying(100)
+	bp_product_name character varying(100),
+	c_order_compensationgroup_id numeric,
+	isgroupcompensationline character(1),
+	groupname  character varying(255),
+	iso_code character(3)
 )
 AS
 $$
@@ -52,9 +58,15 @@ SELECT
 	END::character varying AS rate,
 	isPrintTax,
 	ol.description,
+	p.documentnote,
+	ol.productdescription,
 	-- in case there is no C_BPartner_Product, fallback to the default ones
 	COALESCE(NULLIF(bpp.ProductNo, ''), p.value) as bp_product_no,
-	COALESCE(NULLIF(bpp.ProductName, ''), pt.Name, p.name) as bp_product_name
+	COALESCE(NULLIF(bpp.ProductName, ''), pt.Name, p.name) as bp_product_name,
+	ol.c_order_compensationgroup_id,
+	ol.isgroupcompensationline,
+	cg.name,
+	c.iso_code
 FROM
 	C_OrderLine ol
 	INNER JOIN C_Order o 			ON ol.C_Order_ID = o.C_Order_ID AND o.isActive = 'Y'
@@ -82,6 +94,11 @@ FROM
 		WHERE	att.at_Value IN ('1000002', '1000001', '1000030', '1000015') AND ol.C_Order_ID = $1
 		GROUP BY	att.M_AttributeSetInstance_ID, ol.C_OrderLine_ID
 	) att ON ol.M_AttributeSetInstance_ID = att.M_AttributeSetInstance_ID AND ol.C_OrderLine_ID = att.C_OrderLine_ID
+
+	-- compensation group
+	LEFT JOIN c_order_compensationgroup cg ON ol.c_order_compensationgroup_id = cg.c_order_compensationgroup_id 
+	
+	LEFT JOIN C_Currency c ON ol.C_Currency_ID = c.C_Currency_ID and c.isActive = 'Y'
 WHERE
 	ol.C_Order_ID = $1 AND ol.isActive = 'Y'
 	AND pc.M_Product_Category_ID != getSysConfigAsNumeric('PackingMaterialProductCategoryID', ol.AD_Client_ID, ol.AD_Org_ID)

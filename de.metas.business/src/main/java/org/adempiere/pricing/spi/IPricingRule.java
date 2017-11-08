@@ -2,12 +2,12 @@ package org.adempiere.pricing.spi;
 
 import org.adempiere.pricing.api.IPricingContext;
 import org.adempiere.pricing.api.IPricingResult;
-import org.adempiere.pricing.spi.rules.PricingRuleAdapter;
+import org.adempiere.pricing.model.I_C_PricingRule;
 
 /**
- * Pluggable Pricing Rule interface.
+ * Pluggable Pricing Rule interface.<br>
  * 
- * NOTE to developer: instead of extending this interface, consider extending {@link PricingRuleAdapter}.
+ * To be used by the system, an implementation of this interface needs to have its own {@link I_C_PricingRule} record.
  * 
  * @author tsa
  * 

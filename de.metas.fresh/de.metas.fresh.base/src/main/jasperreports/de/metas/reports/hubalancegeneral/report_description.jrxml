@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
-<!-- 2016-10-14T09:24:37 -->
+<!-- 2017-10-09T16:11:07 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_description" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/reports/hubalancegeneral/report" uuid="76495d90-b1ae-4c08-8670-90019f94d24a">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -12,7 +12,6 @@
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
-	<parameter name="ad_language" class="java.lang.String"/>
 	<parameter name="StartDate" class="java.util.Date"/>
 	<parameter name="EndDate" class="java.util.Date"/>
 	<parameter name="C_BPartner_ID" class="java.math.BigDecimal"/>
@@ -20,12 +19,19 @@
 	<parameter name="M_Product_ID" class="java.math.BigDecimal"/>
 	<parameter name="IsRefundableConditions" class="java.lang.String"/>
 	<parameter name="showdetails" class="java.lang.String"/>
+	<parameter name="ad_language" class="java.lang.String">
+		<defaultValueExpression><![CDATA[$P{REPORT_LOCALE}.toString()]]></defaultValueExpression>
+	</parameter>
 	<queryString>
 		<![CDATA[SELECT
 	 now(),
 	(select name from C_BPartner where C_BPartner_ID = $P{C_BPartner_ID} AND isActive = 'Y') as bpartner,
 	(select name from C_BP_Group where C_BP_Group_ID = $P{C_BP_Group_ID} AND isActive = 'Y') as bpgroup,
-	(select name from M_Product where M_Product_ID = $P{M_Product_ID} AND isActive = 'Y') as product
+	(select COALESCe(pt.name, p.name) as name 
+		from M_Product p 
+		left join M_Product_Trl pt ON p.M_Product_ID = pt.M_Product_ID AND pt.ad_language = $P{ad_language} AND pt.isActive = 'Y'
+		where p.M_Product_ID = $P{M_Product_ID} AND p.isActive = 'Y'
+	) as product
 
 ;]]>
 	</queryString>

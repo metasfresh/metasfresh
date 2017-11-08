@@ -33,31 +33,31 @@ import org.adempiere.util.Check;
  */
 public class HUException extends AdempiereException
 {
+
+	private static final long serialVersionUID = 800341714184424257L;
+
 	public static final HUException ofAD_Message(final String adMessage)
 	{
 		final String adMessageEffective = !Check.isEmpty(adMessage, true) ? adMessage : "Error";
 		return new HUException("@" + adMessageEffective + "@");
 	}
 
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = 800341714184424257L;
-	private boolean appendParametersToMessage;
-
 	public HUException(final String message, final Throwable cause)
 	{
 		super(message, cause);
+		appendParametersToMessage(); // preserve HUException's historical behavior
 	}
 
 	public HUException(final String message)
 	{
 		super(message);
+		appendParametersToMessage(); // preserve HUException's historical behavior
 	}
 
 	public HUException(final Throwable cause)
 	{
 		super(cause);
+		appendParametersToMessage(); // preserve HUException's historical behavior
 	}
 
 	@Override
@@ -68,24 +68,9 @@ public class HUException extends AdempiereException
 	}
 
 	@Override
-	protected String buildMessage()
+	public final HUException appendParametersToMessage()
 	{
-		final StringBuilder message = new StringBuilder();
-		message.append(getOriginalMessage());
-		appendParameters(message);
-		return message.toString();
-	}
-
-	/**
-	 * Ask the exception to also include the parameters in it's message.
-	 */
-	public HUException appendParametersToMessage()
-	{
-		if (!appendParametersToMessage)
-		{
-			appendParametersToMessage = true;
-			resetMessageBuilt();
-		}
+		super.appendParametersToMessage();
 		return this;
 	}
 }

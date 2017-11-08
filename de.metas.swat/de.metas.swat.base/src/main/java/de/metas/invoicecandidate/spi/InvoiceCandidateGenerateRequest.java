@@ -66,8 +66,6 @@ public final class InvoiceCandidateGenerateRequest
 
 	private InvoiceCandidateGenerateRequest(final IInvoiceCandidateHandler handler, final Object model)
 	{
-		super();
-
 		Check.assumeNotNull(handler, "handler not null");
 		this.handler = handler;
 

@@ -25,6 +25,8 @@ import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import de.metas.logging.LogManager;
+import de.metas.material.event.ProductDescriptor;
+import de.metas.material.event.ModelProductDescriptorExtractor;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrder.PPOrderBuilder;
 import de.metas.material.event.pporder.PPOrderLine;
@@ -65,20 +67,27 @@ public class PPOrderPojoSupplier
 
 	private final ProductPlanningBL productPlanningBL;
 
-	public PPOrderPojoSupplier(@NonNull final ProductPlanningBL productPlanningBL)
+	private final ModelProductDescriptorExtractor productDescriptorFactory;
+
+	public PPOrderPojoSupplier(
+			@NonNull final ProductPlanningBL productPlanningBL,
+			@NonNull final ModelProductDescriptorExtractor productDescriptorFactory)
 	{
 		this.productPlanningBL = productPlanningBL;
+		this.productDescriptorFactory = productDescriptorFactory;
 	}
 
 	public PPOrder supplyPPOrderPojo(
 			@NonNull final IMaterialRequest request,
 			@NonNull final IMRPNotesCollector mrpNotesCollector)
 	{
-		final IMaterialPlanningContext mrpContext = request.getMRPContext();
-		// final IMRPExecutor executor = request.getMRPExecutor();
+		final IMaterialPlanningContext mrpContext = request.getMrpContext();
+
+		mrpContext.assertContextConsistent();
 
 		final I_PP_Product_Planning productPlanningData = mrpContext.getProductPlanning();
 		final I_M_Product product = mrpContext.getM_Product();
+
 		final I_C_UOM uom = mrpContext.getC_UOM();
 		final Timestamp demandDateStartSchedule = TimeUtil.asTimestamp(request.getDemandDate());
 		final BigDecimal qtyToSupply = request.getQtyToSupply();
@@ -105,6 +114,8 @@ public class PPOrderPojoSupplier
 
 		final Timestamp dateStartSchedule = TimeUtil.addDays(dateFinishSchedule, -durationDays);
 
+		final ProductDescriptor productDescriptor = productDescriptorFactory.createProductDescriptor(productPlanningData);
+
 		final PPOrderBuilder ppOrderPojoBuilder = PPOrder.builder()
 				.orgId(mrpContext.getAD_Org_ID())
 				//
@@ -114,7 +125,7 @@ public class PPOrderPojoSupplier
 				.productPlanningId(productPlanningData.getPP_Product_Planning_ID())
 				//
 				// Product, UOM, ASI
-				.productId(product.getM_Product_ID())
+				.productDescriptor(productDescriptor)
 				.uomId(uom.getC_UOM_ID())
 
 				//
@@ -125,11 +136,10 @@ public class PPOrderPojoSupplier
 				// Qtys
 				.quantity(qtyToSupply)
 
-				.orderLineId(request.getMRPDemandOrderLineSOId())
+				.orderLineId(request.getMrpDemandOrderLineSOId())
 				//
 				// offer further advise :-)
-				.createPPOrder(productPlanningData.isCreatePlan())
-				;
+				.createPPOrder(productPlanningData.isCreatePlan());
 
 		return ppOrderPojoBuilder.build();
 	}
@@ -190,11 +200,12 @@ public class PPOrderPojoSupplier
 				continue;
 			}
 
+			final ProductDescriptor productDescriptor = productDescriptorFactory.createProductDescriptor(productBomLine);
+
 			final PPOrderLine ppOrderLine = PPOrderLine.builder()
 					.productBomLineId(productBomLine.getPP_Product_BOMLine_ID())
 					.description(productBomLine.getDescription())
-					.productId(productBomLine.getM_Product_ID())
-					.attributeSetInstanceId(productBomLine.getM_AttributeSetInstance_ID())
+					.productDescriptor(productDescriptor)
 					.qtyRequired(BigDecimal.ZERO) // is computed in the next step
 					.build();
 
@@ -210,7 +221,7 @@ public class PPOrderPojoSupplier
 	private I_PP_Product_BOM retriveAndVerifyBOM(@NonNull final PPOrder ppOrder)
 	{
 		final Date dateStartSchedule = ppOrder.getDateStartSchedule();
-		final Integer ppOrderProductId = ppOrder.getProductId();
+		final Integer ppOrderProductId = ppOrder.getProductDescriptor().getProductId();
 
 		final I_PP_Product_BOM productBOM = InterfaceWrapperHelper
 				.create(Env.getCtx(), ppOrder.getProductPlanningId(), I_PP_Product_Planning.class, ITrx.TRXNAME_None)

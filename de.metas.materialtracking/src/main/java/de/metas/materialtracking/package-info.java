@@ -3,9 +3,9 @@
  * <p>
  * The rough workflow from a user's perspective is as follows:
  * <ul>
- * <li>The system is preconfigured with a {@link de.metas.flatrate.model.I_C_Flatrate_Conditions I_C_Flatrate_Conditions} record that has {@link de.metas.flatrate.model.I_C_Flatrate_Conditions#COLUMN_Type_Conditions Type_Conditions} ==
+ * <li>The system is preconfigured with a {@link de.metas.contracts.model.I_C_Flatrate_Conditions I_C_Flatrate_Conditions} record that has {@link de.metas.contracts.model.I_C_Flatrate_Conditions#COLUMN_Type_Conditions Type_Conditions} ==
  * {@link de.metas.materialtracking.ch.lagerkonf.callout.interfaces.I_C_Flatrate_Conditions#TYPE_CONDITIONS_QualityBasedInvoicing QualityBasedInvoicing}</li>
- * <li>Also, there is a vendor (<code>C_BPartner</code>) which has a running contract (i.e. {@link de.metas.flatrate.model.I_C_Flatrate_Term I_C_Flatrate_Term}) with that conditions</li>
+ * <li>Also, there is a vendor (<code>C_BPartner</code>) which has a running contract (i.e. {@link de.metas.contracts.model.I_C_Flatrate_Term I_C_Flatrate_Term}) with that conditions</li>
  * <li>The user generates a {@link de.metas.materialtracking.model.I_M_Material_Tracking I_M_Material_Tracking} record for the vendor with the contract and the product that is the subject of the contract</li>
  * <li>The user creates a purchase order with the vendor and product</li>
  * <li>In the product's purchase order line's ASI, the user selects the <code>M_Material_Tracking</code> that was created further up
@@ -24,7 +24,7 @@
  * </ul></li>
  * <li>When the Quality Inspection Manufacturing Order is closed, the system will generate
  * <ul>
- * <li><code>C_Invoice_Candidates</code>, and will link them to the original IC (the one with <code>IsToClear='Y'</code>, see above) via {@link de.metas.flatrate.model.I_C_Invoice_Clearing_Alloc I_C_Invoice_Clearing_Alloc} records.</li>
+ * <li><code>C_Invoice_Candidates</code>, and will link them to the original IC (the one with <code>IsToClear='Y'</code>, see above) via {@link de.metas.contracts.model.I_C_Invoice_Clearing_Alloc I_C_Invoice_Clearing_Alloc} records.</li>
  * <li>{@link de.metas.materialtracking.model.I_C_Invoice_Detail I_C_Invoice_Detail} lines linked to the ICs.</li>
  * <li>{@link de.metas.materialtracking.model.I_PP_Order_Report I_PP_Order_Report} lines.</li>
  * </ul></li>

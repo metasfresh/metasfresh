@@ -2,12 +2,16 @@ package de.metas.document.engine.impl;
 
 import java.util.Map;
 import java.util.Properties;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 import org.adempiere.ad.security.IUserRolePermissions;
-import org.adempiere.util.Check;
+import org.compiere.Adempiere;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
+
+import com.google.common.base.Suppliers;
+import com.google.common.collect.ImmutableMap;
 
 import de.metas.document.engine.IDocActionOptionsBL;
 import de.metas.document.engine.IDocActionOptionsContext;
@@ -18,7 +22,7 @@ public class DocActionOptionsBL implements IDocActionOptionsBL
 {
 	private static final Logger logger = LogManager.getLogger(DocActionOptionsBL.class);
 
-	private final Map<String, IDocActionOptionsCustomizer> docActionOptionsCustomizerByTableName = new ConcurrentHashMap<>();
+	private final Supplier<Map<String, IDocActionOptionsCustomizer>> _docActionOptionsCustomizerByTableName = Suppliers.memoize(() -> retrieveDocActionOptionsCustomizer());
 
 	@Override
 	public void updateDocActions(final IDocActionOptionsContext optionsCtx)
@@ -30,8 +34,8 @@ public class DocActionOptionsBL implements IDocActionOptionsBL
 		//
 		// Apply specific customizer
 		final String tableName = optionsCtx.getTableName();
-		final IDocActionOptionsCustomizer customizer = docActionOptionsCustomizerByTableName.get(tableName);
-		if(customizer != null)
+		final IDocActionOptionsCustomizer customizer = getDocActionOptionsCustomizerOrNull(tableName);
+		if (customizer != null)
 		{
 			customizer.customizeValidActions(optionsCtx);
 		}
@@ -46,19 +50,21 @@ public class DocActionOptionsBL implements IDocActionOptionsBL
 			role.applyActionAccess(optionsCtx);
 		}
 	}
-
-	@Override
-	public void setDocActionOptionsCustomizer(final String tableName, final IDocActionOptionsCustomizer customizer)
+	
+	private IDocActionOptionsCustomizer getDocActionOptionsCustomizerOrNull(final String tableName)
 	{
-		Check.assumeNotEmpty(tableName, "tableName is not empty");
-		Check.assumeNotNull(customizer, "Parameter customizer is not null");
+		return _docActionOptionsCustomizerByTableName.get().get(tableName);
+	}
 
-		final IDocActionOptionsCustomizer customizerPrev = docActionOptionsCustomizerByTableName.put(tableName, customizer);
-		if (customizerPrev != null)
-		{
-			logger.warn("Replaced {} with {} for {}", customizerPrev, customizer, tableName);
-		}
-		
-		logger.info("Registered {} for {}", customizer, tableName);
+	private static final ImmutableMap<String, IDocActionOptionsCustomizer> retrieveDocActionOptionsCustomizer()
+	{
+		final ImmutableMap<String, IDocActionOptionsCustomizer> customizers = Adempiere.getSpringApplicationContext().getBeansOfType(IDocActionOptionsCustomizer.class)
+				.values()
+				.stream()
+				.collect(ImmutableMap.toImmutableMap(IDocActionOptionsCustomizer::getAppliesToTableName, Function.identity()));
+
+		logger.info("Loaded {}(s): {}", IDocActionOptionsCustomizer.class, customizers);
+
+		return customizers;
 	}
 }

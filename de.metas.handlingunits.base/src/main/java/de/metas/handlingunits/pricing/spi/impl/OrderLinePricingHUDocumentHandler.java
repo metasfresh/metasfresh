@@ -35,11 +35,11 @@ import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_Product;
 
-import de.metas.adempiere.service.IOrderLineBL;
 import de.metas.handlingunits.IHUDocumentHandler;
 import de.metas.handlingunits.model.I_C_OrderLine;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_ProductPrice;
+import de.metas.order.IOrderLineBL;
 import de.metas.pricing.ProductPrices;
 import de.metas.pricing.attributebased.IAttributePricingBL;
 import de.metas.pricing.attributebased.IProductPriceAware;

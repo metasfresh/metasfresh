@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.ad.dao.ICompositeQueryFilter;
+import org.adempiere.ad.dao.IInSubQueryFilterClause;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.IQueryFilterModifier;
 import org.adempiere.ad.dao.ISqlQueryFilter;
@@ -60,7 +61,7 @@ import org.compiere.model.IQuery;
 	//
 	// Status
 	// NOTE: when adding new fields here, please update #copy() method too
-	private final List<IQueryFilter<T>> filters = new ArrayList<IQueryFilter<T>>();
+	private final List<IQueryFilter<T>> filters = new ArrayList<>();
 	private boolean and = true;
 	private boolean _defaultAccept = true;
 
@@ -153,7 +154,7 @@ import org.compiere.model.IQuery;
 	@Override
 	public ICompositeQueryFilter<T> copy()
 	{
-		final CompositeQueryFilter<T> copy = new CompositeQueryFilter<T>(tableName);
+		final CompositeQueryFilter<T> copy = new CompositeQueryFilter<>(tableName);
 		copy.filters.addAll(this.filters);
 		copy.and = this.and;
 		copy._defaultAccept = this._defaultAccept;
@@ -181,10 +182,10 @@ import org.compiere.model.IQuery;
 			return;
 		}
 
-		final List<ISqlQueryFilter> resultSqlFilters = new ArrayList<ISqlQueryFilter>();
+		final List<ISqlQueryFilter> resultSqlFilters = new ArrayList<>();
 		final StringBuilder resultSqlWhereClause = new StringBuilder();
-		final List<IQueryFilter<T>> resultNonSqlFilters = new ArrayList<IQueryFilter<T>>();
-		final List<IQueryFilter<T>> resultAllFiltersSoFar = new ArrayList<IQueryFilter<T>>(filters.size());
+		final List<IQueryFilter<T>> resultNonSqlFilters = new ArrayList<>();
+		final List<IQueryFilter<T>> resultAllFiltersSoFar = new ArrayList<>(filters.size());
 		boolean allowSqlFilters = true; // do we allow SQL filter?
 
 		for (final IQueryFilter<T> filter : filters)
@@ -378,7 +379,7 @@ import org.compiere.model.IQuery;
 	@Override
 	public List<IQueryFilter<T>> getFilters()
 	{
-		return new ArrayList<IQueryFilter<T>>(filters);
+		return new ArrayList<>(filters);
 	}
 
 	@Override
@@ -460,21 +461,21 @@ import org.compiere.model.IQuery;
 	@Override
 	public ICompositeQueryFilter<T> addEqualsFilter(final String columnName, final Object value)
 	{
-		final EqualsQueryFilter<T> filter = new EqualsQueryFilter<T>(columnName, value);
+		final EqualsQueryFilter<T> filter = new EqualsQueryFilter<>(columnName, value);
 		return addFilter(filter);
 	}
 
 	@Override
 	public ICompositeQueryFilter<T> addEqualsFilter(final ModelColumn<T, ?> column, final Object value)
 	{
-		final EqualsQueryFilter<T> filter = new EqualsQueryFilter<T>(column.getColumnName(), value);
+		final EqualsQueryFilter<T> filter = new EqualsQueryFilter<>(column.getColumnName(), value);
 		return addFilter(filter);
 	}
 
 	@Override
 	public ICompositeQueryFilter<T> addEqualsFilter(final String columnName, final Object value, final IQueryFilterModifier modifier)
 	{
-		final EqualsQueryFilter<T> filter = new EqualsQueryFilter<T>(columnName, value, modifier);
+		final EqualsQueryFilter<T> filter = new EqualsQueryFilter<>(columnName, value, modifier);
 		return addFilter(filter);
 	}
 
@@ -486,30 +487,30 @@ import org.compiere.model.IQuery;
 	}
 
 	@Override
-	public ICompositeQueryFilter<T> addSubstringFilter(final ModelColumn<T, ?> column, final String substring, final boolean ignoreCase)
+	public ICompositeQueryFilter<T> addStringLikeFilter(final ModelColumn<T, ?> column, final String substring, final boolean ignoreCase)
 	{
 		final String columnName = column.getColumnName();
-		return addSubstringFilter(columnName, substring, ignoreCase);
+		return addStringLikeFilter(columnName, substring, ignoreCase);
 	}
 
 	@Override
-	public ICompositeQueryFilter<T> addSubstringFilter(final String columnName, final String substring, final boolean ignoreCase)
+	public ICompositeQueryFilter<T> addStringLikeFilter(final String columnName, final String substring, final boolean ignoreCase)
 	{
-		final SubstringFilter<T> filter = new SubstringFilter<T>(columnName, substring, ignoreCase);
+		final StringLikeFilter<T> filter = new StringLikeFilter<>(columnName, substring, ignoreCase);
 		return addFilter(filter);
 	}
 
 	@Override
 	public ICompositeQueryFilter<T> addCoalesceEqualsFilter(final Object value, final String... columnNames)
 	{
-		final CoalesceEqualsQueryFilter<T> filter = new CoalesceEqualsQueryFilter<T>(value, columnNames);
+		final CoalesceEqualsQueryFilter<T> filter = new CoalesceEqualsQueryFilter<>(value, columnNames);
 		return addFilter(filter);
 	}
 
 	@Override
 	public ICompositeQueryFilter<T> addNotEqualsFilter(final String columnName, final Object value)
 	{
-		final NotEqualsQueryFilter<T> filter = new NotEqualsQueryFilter<T>(columnName, value);
+		final NotEqualsQueryFilter<T> filter = new NotEqualsQueryFilter<>(columnName, value);
 		return addFilter(filter);
 	}
 
@@ -536,21 +537,21 @@ import org.compiere.model.IQuery;
 	@Override
 	public ICompositeQueryFilter<T> addCompareFilter(final String columnName, final CompareQueryFilter.Operator operator, final Object value)
 	{
-		final CompareQueryFilter<T> filter = new CompareQueryFilter<T>(columnName, operator, value);
+		final CompareQueryFilter<T> filter = new CompareQueryFilter<>(columnName, operator, value);
 		return addFilter(filter);
 	}
 
 	@Override
 	public ICompositeQueryFilter<T> addCompareFilter(final ModelColumn<T, ?> column, final CompareQueryFilter.Operator operator, final Object value)
 	{
-		final CompareQueryFilter<T> filter = new CompareQueryFilter<T>(column.getColumnName(), operator, value);
+		final CompareQueryFilter<T> filter = new CompareQueryFilter<>(column.getColumnName(), operator, value);
 		return addFilter(filter);
 	}
 
 	@Override
 	public ICompositeQueryFilter<T> addCompareFilter(final String columnName, final CompareQueryFilter.Operator operator, final Object value, final IQueryFilterModifier modifier)
 	{
-		final CompareQueryFilter<T> filter = new CompareQueryFilter<T>(columnName, operator, value, modifier);
+		final CompareQueryFilter<T> filter = new CompareQueryFilter<>(columnName, operator, value, modifier);
 		return addFilter(filter);
 	}
 
@@ -570,7 +571,7 @@ import org.compiere.model.IQuery;
 	@Override
 	public ICompositeQueryFilter<T> addOnlyContextClient(final Properties ctx)
 	{
-		final IQueryFilter<T> filter = new ContextClientQueryFilter<T>(ctx);
+		final IQueryFilter<T> filter = new ContextClientQueryFilter<>(ctx);
 		return addFilter(filter);
 	}
 
@@ -578,7 +579,7 @@ import org.compiere.model.IQuery;
 	public ICompositeQueryFilter<T> addOnlyContextClientOrSystem(final Properties ctx)
 	{
 		final boolean includeSystemClient = true;
-		final IQueryFilter<T> filter = new ContextClientQueryFilter<T>(ctx, includeSystemClient);
+		final IQueryFilter<T> filter = new ContextClientQueryFilter<>(ctx, includeSystemClient);
 		return addFilter(filter);
 	}
 
@@ -660,7 +661,7 @@ import org.compiere.model.IQuery;
 	@Override
 	public <V> ICompositeQueryFilter<T> addNotInArrayFilter(final String columnName, final Collection<V> values)
 	{
-		final InArrayQueryFilter<T> filter = new InArrayQueryFilter<T>(columnName, values);
+		final InArrayQueryFilter<T> filter = new InArrayQueryFilter<>(columnName, values);
 
 		// NOTE: in case the values collection is empty then
 		// InArrayQueryFilter shall return false,
@@ -668,8 +669,14 @@ import org.compiere.model.IQuery;
 		// which actully is the intuitive result
 		// i.e. when there are no values then "not in array" shall return "true".
 		filter.setDefaultReturnWhenEmpty(false);
-		final IQueryFilter<T> notFilter = new NotQueryFilter<T>(filter);
+		final IQueryFilter<T> notFilter = NotQueryFilter.of(filter);
 		return addFilter(notFilter);
+	}
+
+	@Override
+	public IInSubQueryFilterClause<T, ICompositeQueryFilter<T>> addInSubQueryFilter()
+	{
+		return new InSubQueryFilterClause<>(tableName, this, this::addFilter);
 	}
 
 	@Override
@@ -677,7 +684,11 @@ import org.compiere.model.IQuery;
 			final String subQueryColumnName,
 			final IQuery<ST> subQuery)
 	{
-		final IQueryFilter<T> filter = new InSubQueryFilter<T>(tableName, columnName, subQueryColumnName, subQuery);
+		final IQueryFilter<T> filter = InSubQueryFilter.<T>builder()
+				.tableName(tableName)
+				.subQuery(subQuery)
+				.matchingColumnNames(columnName, subQueryColumnName)
+				.build();
 		return addFilter(filter);
 	}
 
@@ -686,8 +697,12 @@ import org.compiere.model.IQuery;
 			final String subQueryColumnName,
 			final IQuery<ST> subQuery)
 	{
-		final IQueryFilter<T> filter = new InSubQueryFilter<T>(tableName, columnName, subQueryColumnName, subQuery);
-		final IQueryFilter<T> notFilter = new NotQueryFilter<T>(filter);
+		final IQueryFilter<T> filter = InSubQueryFilter.<T>builder()
+				.tableName(tableName)
+				.subQuery(subQuery)
+				.matchingColumnNames(columnName, subQueryColumnName)
+				.build();
+		final IQueryFilter<T> notFilter = NotQueryFilter.of(filter);
 		return addFilter(notFilter);
 	}
 
@@ -696,8 +711,13 @@ import org.compiere.model.IQuery;
 			final ModelColumn<ST, ?> subQueryColumn,
 			final IQuery<ST> subQuery)
 	{
-		final IQueryFilter<T> filter = new InSubQueryFilter<T>(tableName, column.getColumnName(), subQueryColumn.getColumnName(), subQuery);
-		final IQueryFilter<T> notFilter = new NotQueryFilter<T>(filter);
+		final IQueryFilter<T> filter = InSubQueryFilter.<T>builder()
+				.tableName(tableName)
+				.subQuery(subQuery)
+				.matchingColumnNames(column.getColumnName(), subQueryColumn.getColumnName())
+				.build();
+		
+		final IQueryFilter<T> notFilter = NotQueryFilter.of(filter);
 		return addFilter(notFilter);
 	}
 
@@ -706,14 +726,19 @@ import org.compiere.model.IQuery;
 			final ModelColumn<ST, ?> subQueryColumn,
 			final IQuery<ST> subQuery)
 	{
-		final IQueryFilter<T> filter = new InSubQueryFilter<T>(tableName, column.getColumnName(), subQueryColumn.getColumnName(), subQuery);
+		final IQueryFilter<T> filter = InSubQueryFilter.<T>builder()
+				.tableName(tableName)
+				.subQuery(subQuery)
+				.matchingColumnNames(column.getColumnName(), subQueryColumn.getColumnName())
+				.build();
+		
 		return addFilter(filter);
 	}
 
 	@Override
 	public ICompositeQueryFilter<T> addEndsWithQueryFilter(final String columnName, final String endsWithString)
 	{
-		final EndsWithQueryFilter<T> filter = new EndsWithQueryFilter<T>(columnName, endsWithString);
+		final EndsWithQueryFilter<T> filter = new EndsWithQueryFilter<>(columnName, endsWithString);
 		return addFilter(filter);
 	}
 
@@ -723,7 +748,11 @@ import org.compiere.model.IQuery;
 			final String subQueryColumnName,
 			final IQuery<ST> subQuery)
 	{
-		final IQueryFilter<T> filter = new InSubQueryFilter<T>(tableName, columnName, modifier, subQueryColumnName, subQuery);
+		final IQueryFilter<T> filter = InSubQueryFilter.<T>builder()
+				.tableName(tableName)
+				.subQuery(subQuery)
+				.matchingColumnNames(columnName, subQueryColumnName, modifier)
+				.build();
 		return addFilter(filter);
 	}
 
@@ -783,7 +812,7 @@ import org.compiere.model.IQuery;
 			return Collections.emptyList();
 		}
 
-		final List<Object> params = new ArrayList<Object>();
+		final List<Object> params = new ArrayList<>();
 		for (final ISqlQueryFilter sqlFilter : filters)
 		{
 			final String sqlFilterWhereClause = sqlFilter.getSql();
@@ -924,35 +953,35 @@ import org.compiere.model.IQuery;
 	@Override
 	public ICompositeQueryFilter<T> addBetweenFilter(final String columnName, final Object valueFrom, final Object valueTo)
 	{
-		final BetweenQueryFilter<T> filter = new BetweenQueryFilter<T>(tableName, columnName, valueFrom, valueTo);
+		final BetweenQueryFilter<T> filter = new BetweenQueryFilter<>(tableName, columnName, valueFrom, valueTo);
 		return addFilter(filter);
 	}
 
 	@Override
 	public ICompositeQueryFilter<T> addBetweenFilter(final ModelColumn<T, ?> column, final Object valueFrom, final Object valueTo)
 	{
-		final BetweenQueryFilter<T> filter = new BetweenQueryFilter<T>(column, valueFrom, valueTo);
+		final BetweenQueryFilter<T> filter = new BetweenQueryFilter<>(column, valueFrom, valueTo);
 		return addFilter(filter);
 	}
 
 	@Override
 	public ICompositeQueryFilter<T> addBetweenFilter(final String columnName, final Object valueFrom, final Object valueTo, final IQueryFilterModifier modifier)
 	{
-		final BetweenQueryFilter<T> filter = new BetweenQueryFilter<T>(tableName, columnName, valueFrom, valueTo, modifier);
+		final BetweenQueryFilter<T> filter = new BetweenQueryFilter<>(tableName, columnName, valueFrom, valueTo, modifier);
 		return addFilter(filter);
 	}
 
 	@Override
 	public ICompositeQueryFilter<T> addBetweenFilter(final ModelColumn<T, ?> column, final Object valueFrom, final Object valueTo, final IQueryFilterModifier modifier)
 	{
-		final BetweenQueryFilter<T> filter = new BetweenQueryFilter<T>(column, valueFrom, valueTo, modifier);
+		final BetweenQueryFilter<T> filter = new BetweenQueryFilter<>(column, valueFrom, valueTo, modifier);
 		return addFilter(filter);
 	}
 
 	@Override
 	public ICompositeQueryFilter<T> addValidFromToMatchesFilter(final ModelColumn<T, ?> validFromColumn, final ModelColumn<T, ?> validToColumn, final Date dateToMatch)
 	{
-		final ValidFromToMatchesQueryFilter<T> filter = new ValidFromToMatchesQueryFilter<T>(validFromColumn, validToColumn, dateToMatch);
+		final ValidFromToMatchesQueryFilter<T> filter = new ValidFromToMatchesQueryFilter<>(validFromColumn, validToColumn, dateToMatch);
 		return addFilter(filter);
 	}
 

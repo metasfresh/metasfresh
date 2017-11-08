@@ -746,7 +746,7 @@ public class MRPExecutor implements IMRPExecutor
 				warehouse.getM_Warehouse_ID(), // M_Warehouse_ID
 				plant.getS_Resource_ID(), // S_Resource_ID
 				product.getM_Product_ID(),
-				mrpContext.getTrxName());
+				mrpContext.getM_AttributeSetInstance_ID());
 		if (productPlanning == null)
 		{
 			return null;

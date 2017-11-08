@@ -985,25 +985,6 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 		return (java.lang.String)get_Value(COLUMNNAME_Lastname);
 	}
 
-	/** Set Berechtigen über LDAP.
-		@param LDAPUser 
-		User Name used for authorization via LDAP (directory) services
-	  */
-	@Override
-	public void setLDAPUser (java.lang.String LDAPUser)
-	{
-		set_Value (COLUMNNAME_LDAPUser, LDAPUser);
-	}
-
-	/** Get Berechtigen über LDAP.
-		@return User Name used for authorization via LDAP (directory) services
-	  */
-	@Override
-	public java.lang.String getLDAPUser () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_LDAPUser);
-	}
-
 	/** Set Name.
 		@param Name 
 		Alphanumeric identifier of the entity

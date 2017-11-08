@@ -18,13 +18,13 @@ import org.compiere.model.MInvoice;
 import org.compiere.model.MInvoiceLine;
 import org.compiere.model.MRecurrentPaymentHistory;
 import org.compiere.model.MRecurrentPaymentLine;
-import org.compiere.process.DocAction;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import de.metas.banking.model.I_C_RecurrentPayment;
 import de.metas.banking.model.X_C_RecurrentPaymentLine;
 import de.metas.banking.service.IBankingBL;
+import de.metas.document.engine.IDocument;
 import de.metas.logging.LogManager;
 
 public class BankingBL implements IBankingBL
@@ -149,7 +149,7 @@ public class BankingBL implements IBankingBL
 		invoiceLine.saveEx();
 
 		// complete the invoice
-		final boolean completed = invoice.processIt(DocAction.ACTION_Complete);
+		final boolean completed = invoice.processIt(IDocument.ACTION_Complete);
 		if (completed)
 		{
 			invoice.saveEx();

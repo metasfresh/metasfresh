@@ -14,7 +14,7 @@ public class X_RV_C_RfQ_UnAnswered extends org.compiere.model.PO implements I_RV
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 2033106006L;
+	private static final long serialVersionUID = 92461258L;
 
     /** Standard Constructor */
     public X_RV_C_RfQ_UnAnswered (Properties ctx, int RV_C_RfQ_UnAnswered_ID, String trxName)
@@ -274,9 +274,9 @@ public class X_RV_C_RfQ_UnAnswered extends org.compiere.model.PO implements I_RV
 		return ii.intValue();
 	}
 
-	/** Set Antwort-datum.
+	/** Set Datum Antwort.
 		@param DateResponse 
-		Date of the Response
+		Datum der Antwort
 	  */
 	@Override
 	public void setDateResponse (java.sql.Timestamp DateResponse)
@@ -284,8 +284,8 @@ public class X_RV_C_RfQ_UnAnswered extends org.compiere.model.PO implements I_RV
 		set_ValueNoCheck (COLUMNNAME_DateResponse, DateResponse);
 	}
 
-	/** Get Antwort-datum.
-		@return Date of the Response
+	/** Get Datum Antwort.
+		@return Datum der Antwort
 	  */
 	@Override
 	public java.sql.Timestamp getDateResponse () 
@@ -528,10 +528,8 @@ public class X_RV_C_RfQ_UnAnswered extends org.compiere.model.PO implements I_RV
 		set_ValueFromPO(COLUMNNAME_SalesRep_ID, org.compiere.model.I_AD_User.class, SalesRep);
 	}
 
-	/** Set Vertriebsbeauftragter.
-		@param SalesRep_ID 
-		Sales Representative or Company Agent
-	  */
+	/** Set Aussendienst.
+		@param SalesRep_ID Aussendienst	  */
 	@Override
 	public void setSalesRep_ID (int SalesRep_ID)
 	{
@@ -541,9 +539,8 @@ public class X_RV_C_RfQ_UnAnswered extends org.compiere.model.PO implements I_RV
 			set_ValueNoCheck (COLUMNNAME_SalesRep_ID, Integer.valueOf(SalesRep_ID));
 	}
 
-	/** Get Vertriebsbeauftragter.
-		@return Sales Representative or Company Agent
-	  */
+	/** Get Aussendienst.
+		@return Aussendienst	  */
 	@Override
 	public int getSalesRep_ID () 
 	{

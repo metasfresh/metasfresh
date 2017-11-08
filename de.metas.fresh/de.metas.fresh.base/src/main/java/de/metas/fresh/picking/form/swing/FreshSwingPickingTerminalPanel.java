@@ -43,9 +43,6 @@ import org.adempiere.util.Check;
 import org.compiere.minigrid.IMiniTable;
 import org.compiere.util.KeyNamePair;
 
-import de.metas.adempiere.form.ITableRowSearchSelectionMatcher;
-import de.metas.adempiere.form.NullTableRowSearchSelectionMatcher;
-import de.metas.adempiere.form.PackingMd;
 import de.metas.adempiere.form.terminal.IContainer;
 import de.metas.adempiere.form.terminal.IKeyLayout;
 import de.metas.adempiere.form.terminal.IKeyLayoutSelectionModel;
@@ -64,6 +61,9 @@ import de.metas.fresh.picking.DeliveryDateKeyLayout;
 import de.metas.fresh.picking.form.BarcodeHUTableRowSearchSelectionMatcher;
 import de.metas.fresh.picking.form.ProductTableRowSearchSelectionMatcher;
 import de.metas.fresh.picking.form.SSCC18HUTableRowSearchSelectionMatcher;
+import de.metas.picking.legacy.form.ITableRowSearchSelectionMatcher;
+import de.metas.picking.legacy.form.NullTableRowSearchSelectionMatcher;
+import de.metas.picking.legacy.form.PackingMd;
 import de.metas.picking.terminal.PickingOKPanel;
 import de.metas.picking.terminal.form.swing.SwingPickingTerminalPanel;
 

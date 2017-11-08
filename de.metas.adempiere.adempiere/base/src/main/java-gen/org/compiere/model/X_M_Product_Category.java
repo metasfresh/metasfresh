@@ -1,27 +1,9 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
 package org.compiere.model;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-
-import org.compiere.util.Env;
 
 /** Generated Model for M_Product_Category
  *  @author Adempiere (generated) 
@@ -33,7 +15,7 @@ public class X_M_Product_Category extends org.compiere.model.PO implements I_M_P
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 287347612L;
+	private static final long serialVersionUID = 2050048807L;
 
     /** Standard Constructor */
     public X_M_Product_Category (Properties ctx, int M_Product_Category_ID, String trxName)
@@ -42,13 +24,12 @@ public class X_M_Product_Category extends org.compiere.model.PO implements I_M_P
       /** if (M_Product_Category_ID == 0)
         {
 			setIsDefault (false);
-			setIsSelfService (true);
-// Y
+			setIsPackagingMaterial (false); // N
+			setIsSelfService (true); // Y
 			setM_Product_Category_ID (0);
-			setMMPolicy (null);
-// F
+			setMMPolicy (null); // F
 			setName (null);
-			setPlannedMargin (Env.ZERO);
+			setPlannedMargin (BigDecimal.ZERO);
 			setValue (null);
         } */
     }
@@ -59,29 +40,13 @@ public class X_M_Product_Category extends org.compiere.model.PO implements I_M_P
       super (ctx, rs, trxName);
     }
 
-    /** AccessLevel
-      * @return 3 - Client - Org 
-      */
-    @Override
-    protected int get_AccessLevel()
-    {
-      return accessLevel.intValue();
-    }
 
     /** Load Meta Data */
     @Override
     protected org.compiere.model.POInfo initPO (Properties ctx)
     {
-      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_ID, get_TrxName());
+      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
-    }
-
-    @Override
-    public String toString()
-    {
-      StringBuffer sb = new StringBuffer ("X_M_Product_Category[")
-        .append(get_ID()).append("]");
-      return sb.toString();
     }
 
 	@Override
@@ -228,6 +193,29 @@ public class X_M_Product_Category extends org.compiere.model.PO implements I_M_P
 	public boolean isDefault () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsDefault);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set Verpackungsmaterial.
+		@param IsPackagingMaterial Verpackungsmaterial	  */
+	@Override
+	public void setIsPackagingMaterial (boolean IsPackagingMaterial)
+	{
+		set_Value (COLUMNNAME_IsPackagingMaterial, Boolean.valueOf(IsPackagingMaterial));
+	}
+
+	/** Get Verpackungsmaterial.
+		@return Verpackungsmaterial	  */
+	@Override
+	public boolean isPackagingMaterial () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsPackagingMaterial);
 		if (oo != null) 
 		{
 			 if (oo instanceof Boolean) 
@@ -414,6 +402,32 @@ public class X_M_Product_Category extends org.compiere.model.PO implements I_M_P
 		return (java.lang.String)get_Value(COLUMNNAME_MMPolicy);
 	}
 
+	/** 
+	 * MRP_Exclude AD_Reference_ID=319
+	 * Reference name: _YesNo
+	 */
+	public static final int MRP_EXCLUDE_AD_Reference_ID=319;
+	/** Yes = Y */
+	public static final String MRP_EXCLUDE_Yes = "Y";
+	/** No = N */
+	public static final String MRP_EXCLUDE_No = "N";
+	/** Set MRP ausschliessen.
+		@param MRP_Exclude MRP ausschliessen	  */
+	@Override
+	public void setMRP_Exclude (java.lang.String MRP_Exclude)
+	{
+
+		set_Value (COLUMNNAME_MRP_Exclude, MRP_Exclude);
+	}
+
+	/** Get MRP ausschliessen.
+		@return MRP ausschliessen	  */
+	@Override
+	public java.lang.String getMRP_Exclude () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_MRP_Exclude);
+	}
+
 	/** Set Name.
 		@param Name 
 		Alphanumeric identifier of the entity
@@ -433,14 +447,6 @@ public class X_M_Product_Category extends org.compiere.model.PO implements I_M_P
 		return (java.lang.String)get_Value(COLUMNNAME_Name);
 	}
 
-    /** Get Record ID/ColumnName
-        @return ID/ColumnName pair
-      */
-    public org.compiere.util.KeyNamePair getKeyNamePair() 
-    {
-        return new org.compiere.util.KeyNamePair(get_ID(), getName());
-    }
-
 	/** Set DB1 %.
 		@param PlannedMargin 
 		Project's planned margin as a percentage
@@ -459,7 +465,7 @@ public class X_M_Product_Category extends org.compiere.model.PO implements I_M_P
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PlannedMargin);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -480,34 +486,5 @@ public class X_M_Product_Category extends org.compiere.model.PO implements I_M_P
 	public java.lang.String getValue () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Value);
-	}
-
-	/** 
-	 * MRP_Exclude AD_Reference_ID=319
-	 * Reference name: _YesNo
-	 */
-	public static final int MRP_EXCLUDE_AD_Reference_ID=319;
-	/** Yes = Y */
-	public static final String MRP_EXCLUDE_Yes = "Y";
-	/** No = N */
-	public static final String MRP_EXCLUDE_No = "N";
-	/** Set Exclude from MRP.
-		@param MRP_Exclude 
-		Exclude from MRP calculation
-	  */
-	@Override
-	public void setMRP_Exclude (java.lang.String MRP_Exclude)
-	{
-
-		set_Value (COLUMNNAME_MRP_Exclude, MRP_Exclude);
-	}
-
-	/** Get Exclude from MRP.
-		@return Exclude from MRP calculation
-	  */
-	@Override
-	public java.lang.String getMRP_Exclude () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_MRP_Exclude);
 	}
 }

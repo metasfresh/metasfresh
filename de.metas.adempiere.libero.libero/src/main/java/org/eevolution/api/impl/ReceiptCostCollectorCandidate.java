@@ -25,7 +25,7 @@ package org.eevolution.api.impl;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 
-import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
@@ -73,7 +73,7 @@ public class ReceiptCostCollectorCandidate implements IReceiptCostCollectorCandi
 			qtyScrap(BigDecimal.ZERO);
 			qtyReject(BigDecimal.ZERO);
 			M_Locator_ID(-1);
-			M_AttributeSetInstance_ID(IAttributeDAO.M_AttributeSetInstance_ID_None);
+			M_AttributeSetInstance_ID(AttributeConstants.M_AttributeSetInstance_ID_None);
 		}
 	}
 }

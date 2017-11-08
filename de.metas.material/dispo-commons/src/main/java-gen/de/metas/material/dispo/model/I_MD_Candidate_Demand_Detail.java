@@ -203,6 +203,58 @@ public interface I_MD_Candidate_Demand_Detail
     public static final String COLUMNNAME_MD_Candidate_ID = "MD_Candidate_ID";
 
 	/**
+	 * Set Prognose-Position.
+	 * Prognose-Position
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setM_ForecastLine_ID (int M_ForecastLine_ID);
+
+	/**
+	 * Get Prognose-Position.
+	 * Prognose-Position
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getM_ForecastLine_ID();
+
+	public org.compiere.model.I_M_ForecastLine getM_ForecastLine();
+
+	public void setM_ForecastLine(org.compiere.model.I_M_ForecastLine M_ForecastLine);
+
+    /** Column definition for M_ForecastLine_ID */
+    public static final org.adempiere.model.ModelColumn<I_MD_Candidate_Demand_Detail, org.compiere.model.I_M_ForecastLine> COLUMN_M_ForecastLine_ID = new org.adempiere.model.ModelColumn<I_MD_Candidate_Demand_Detail, org.compiere.model.I_M_ForecastLine>(I_MD_Candidate_Demand_Detail.class, "M_ForecastLine_ID", org.compiere.model.I_M_ForecastLine.class);
+    /** Column name M_ForecastLine_ID */
+    public static final String COLUMNNAME_M_ForecastLine_ID = "M_ForecastLine_ID";
+
+	/**
+	 * Set Lieferdisposition.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setM_ShipmentSchedule_ID (int M_ShipmentSchedule_ID);
+
+	/**
+	 * Get Lieferdisposition.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getM_ShipmentSchedule_ID();
+
+    /** Column definition for M_ShipmentSchedule_ID */
+    public static final org.adempiere.model.ModelColumn<I_MD_Candidate_Demand_Detail, Object> COLUMN_M_ShipmentSchedule_ID = new org.adempiere.model.ModelColumn<I_MD_Candidate_Demand_Detail, Object>(I_MD_Candidate_Demand_Detail.class, "M_ShipmentSchedule_ID", null);
+    /** Column name M_ShipmentSchedule_ID */
+    public static final String COLUMNNAME_M_ShipmentSchedule_ID = "M_ShipmentSchedule_ID";
+
+	/**
 	 * Get Aktualisiert.
 	 * Datum, an dem dieser Eintrag aktualisiert wurde
 	 *

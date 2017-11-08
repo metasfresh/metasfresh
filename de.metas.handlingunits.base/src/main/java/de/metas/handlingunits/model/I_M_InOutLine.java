@@ -29,15 +29,6 @@ public interface I_M_InOutLine extends de.metas.materialtracking.model.I_M_InOut
 	// code formatter will be off to maintain aspect
 
 	// @formatter:off
-	// TODO: delete this and database column too because it's not used anymore
-//	public static final String COLUMNNAME_M_HU_PackingMaterial_ID = "M_HU_PackingMaterial_ID";
-//	public void setM_HU_PackingMaterial_ID(int M_HU_PackingMaterial_ID);
-//	public int getM_HU_PackingMaterial_ID();
-//	public void setM_HU_PackingMaterial(I_M_HU_PackingMaterial M_HU_PackingMaterial) throws RuntimeException;
-//	public I_M_HU_PackingMaterial getM_HU_PackingMaterial() throws RuntimeException;
-	// @formatter:on
-
-	// @formatter:off
 	public static final String COLUMNNAME_QtyEnteredTU = "QtyEnteredTU";
 	public BigDecimal getQtyEnteredTU();
 	public void setQtyEnteredTU(BigDecimal QtyEnteredTU);

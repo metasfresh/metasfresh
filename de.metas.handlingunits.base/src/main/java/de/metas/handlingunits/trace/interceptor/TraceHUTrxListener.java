@@ -90,7 +90,7 @@ public class TraceHUTrxListener implements IHUTrxListener
 
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
 		final ITrxListenerManager trxListenerManager = trxManager.getTrxListenerManager(ITrx.TRXNAME_ThreadInherited);
-		trxListenerManager.onAfterFirstCommit(() -> {
+		trxListenerManager.onAfterNextCommit(() -> {
 
 			final ITrxManager innerTrxManager = Services.get(ITrxManager.class);
 			innerTrxManager.run(localTrxName -> {

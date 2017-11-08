@@ -13,15 +13,14 @@ package org.eevolution.drp.process;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -31,6 +30,7 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.StringUtils;
@@ -42,7 +42,6 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Locator;
-import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_S_Resource;
 import org.eevolution.model.I_DD_NetworkDistribution;
@@ -55,6 +54,7 @@ import de.metas.material.planning.ddorder.IDistributionNetworkDAO;
 import de.metas.material.planning.exception.NoPlantForWarehouseException;
 import de.metas.product.IProductBL;
 import de.metas.storage.IStorageRecord;
+import lombok.NonNull;
 
 /**
  *
@@ -72,7 +72,8 @@ import de.metas.storage.IStorageRecord;
 
 	// Parameters
 	private final Properties ctx;
-	private final I_M_Product product;
+	private final IAttributeSetInstanceAware attributeSetInstanceAware;
+
 	/** Current locator */
 	private final I_M_Locator locator;
 	private final Timestamp dateOrdered;
@@ -98,23 +99,19 @@ import de.metas.storage.IStorageRecord;
 	private I_C_BPartner_Location orgBPLocation;
 	private I_M_Warehouse inTransitWarehouse;
 
-	public RawMaterialsReturnDDOrderLineCandidate(final Properties ctx,
-			final I_M_Product product,
-			final I_M_Locator locator)
+	public RawMaterialsReturnDDOrderLineCandidate(
+			@NonNull final Properties ctx,
+			@NonNull final IAttributeSetInstanceAware attributeSetInstanceAware,
+			@NonNull final I_M_Locator locator)
 	{
-		super();
-
-		Check.assumeNotNull(ctx, "ctx not null");
 		this.ctx = ctx;
 
-		Check.assumeNotNull(product, "product not null");
-		this.product = product;
-		uom = productBL.getStockingUOM(product);
+		this.attributeSetInstanceAware = attributeSetInstanceAware;
+		this.uom = productBL.getStockingUOM(attributeSetInstanceAware.getM_Product());
 
-		Check.assumeNotNull(locator, "locator not null");
 		this.locator = locator;
 
-		dateOrdered = SystemTime.asTimestamp();
+		this.dateOrdered = SystemTime.asTimestamp();
 	}
 
 	private final void loadIfNeeded()
@@ -139,7 +136,7 @@ import de.metas.storage.IStorageRecord;
 	{
 		notValidReasons.clear();
 
-		if (product.isBOM())
+		if (attributeSetInstanceAware.getM_Product().isBOM())
 		{
 			notValidReasons.add("@IsBOM@=@Y@");
 			return;
@@ -150,7 +147,8 @@ import de.metas.storage.IStorageRecord;
 		final I_M_Warehouse warehouse = locator.getM_Warehouse();
 		final I_S_Resource warehousePlant = productPlanningDAO.findPlant(ctx, warehouse.getAD_Org_ID(),
 				warehouse,
-				product.getM_Product_ID());
+				attributeSetInstanceAware.getM_Product_ID(),
+				attributeSetInstanceAware.getM_AttributeSetInstance_ID());
 
 		//
 		// Retrieve Product Planning
@@ -158,8 +156,8 @@ import de.metas.storage.IStorageRecord;
 				warehouse.getAD_Org_ID(),
 				warehouse.getM_Warehouse_ID(),
 				warehousePlant == null ? 0 : warehousePlant.getS_Resource_ID(),
-				product.getM_Product_ID(),
-				ITrx.TRXNAME_None);
+				attributeSetInstanceAware.getM_Product_ID(),
+				attributeSetInstanceAware.getM_AttributeSetInstance_ID());
 		if (productPlanning == null)
 		{
 			notValidReasons.add("@NotFound@ @PP_Product_Planning_ID@");
@@ -205,10 +203,12 @@ import de.metas.storage.IStorageRecord;
 		// Retrive Raw materials Plant
 		try
 		{
-			rawMaterialsPlant = productPlanningDAO.findPlant(ctx,
+			rawMaterialsPlant = productPlanningDAO.findPlant(
+					ctx,
 					rawMaterialsWarehouse.getAD_Org_ID(),
 					warehouse,
-					product.getM_Product_ID());
+					attributeSetInstanceAware.getM_Product_ID(),
+					attributeSetInstanceAware.getM_AttributeSetInstance_ID());
 		}
 		catch (final NoPlantForWarehouseException ex)
 		{
@@ -254,7 +254,7 @@ import de.metas.storage.IStorageRecord;
 	public String getSummary()
 	{
 		return "@M_Locator_ID@:" + locator.getValue() + " - " + (rawMaterialsWarehouse == null ? "?" : rawMaterialsWarehouse.getName())
-				+ ", @M_Product_ID@:" + product.getName()
+				+ ", @M_Product_ID@:" + attributeSetInstanceAware.getM_Product().getName()
 				+ ", @Qty@:" + qty + " " + uom.getUOMSymbol();
 	}
 
@@ -269,9 +269,9 @@ import de.metas.storage.IStorageRecord;
 		return StringUtils.toString(notValidReasons, "; ");
 	}
 
-	public I_M_Product getM_Product()
+	public IAttributeSetInstanceAware getM_Product()
 	{
-		return product;
+		return attributeSetInstanceAware;
 	}
 
 	public I_C_UOM getC_UOM()

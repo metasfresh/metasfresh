@@ -25,12 +25,12 @@ package de.metas.handlingunits.client.terminal.aggregate.model;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Predicate;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.adempiere.util.collections.ListUtils;
-import org.adempiere.util.collections.Predicate;
 import org.compiere.model.I_C_BPartner_Location;
 import org.junit.Assert;
 import org.junit.Test;
@@ -355,7 +355,7 @@ public class AggregateHUSelectModelTest extends InventoryHUSelectModelTestTempla
 		return ListUtils.singleElement(bpartnerLocationKeys, new Predicate<BPartnerLocationKey>()
 		{
 			@Override
-			public boolean evaluate(final BPartnerLocationKey value)
+			public boolean test(final BPartnerLocationKey value)
 			{
 				return value.getC_BPartner_Location_ID() == bpartnerLocationId;
 			}

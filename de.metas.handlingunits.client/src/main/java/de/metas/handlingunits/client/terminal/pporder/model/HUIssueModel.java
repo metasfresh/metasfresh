@@ -42,7 +42,6 @@ import org.adempiere.util.time.SystemTime;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
-import org.compiere.process.DocAction;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
 
@@ -52,7 +51,8 @@ import de.metas.adempiere.form.terminal.TerminalKeyListenerAdapter;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.adempiere.form.terminal.context.ITerminalContextReferences;
 import de.metas.adempiere.service.IPOSAccessBL;
-import de.metas.document.engine.IDocActionBL;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.client.terminal.editor.model.IHUKey;
 import de.metas.handlingunits.client.terminal.editor.model.IHUKeyFactory;
@@ -81,7 +81,7 @@ public class HUIssueModel implements IDisposable
 	// Services
 	private final transient IPOSAccessBL posAccessBL = Services.get(IPOSAccessBL.class);
 	private final transient IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
-	private final transient IDocActionBL docActionBL = Services.get(IDocActionBL.class);
+	private final transient IDocumentBL docActionBL = Services.get(IDocumentBL.class);
 	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
 	//
 	private final transient IHUPPOrderBL huPPOrderBL = Services.get(IHUPPOrderBL.class);
@@ -448,7 +448,7 @@ public class HUIssueModel implements IDisposable
 	{
 		final I_PP_Order selectedOrder = getSelectedOrder();
 
-		docActionBL.processEx(selectedOrder, DocAction.ACTION_Close, DocAction.STATUS_Closed);
+		docActionBL.processEx(selectedOrder, IDocument.ACTION_Close, IDocument.STATUS_Closed);
 
 		// Afterwards, refresh orders.
 		clearSelected();

@@ -1,5 +1,7 @@
 package de.metas.adempiere.service.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.create;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -13,15 +15,14 @@ package de.metas.adempiere.service.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,7 +42,6 @@ import org.compiere.util.Util;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_AD_User;
-import de.metas.adempiere.model.I_C_BPartner_Location;
 import de.metas.adempiere.model.I_C_Location;
 import de.metas.adempiere.service.ICountryCustomInfo;
 import de.metas.adempiere.service.ICountryDAO;
@@ -52,13 +52,13 @@ import de.metas.logging.LogManager;
 public class AddressBuilder
 {
 	private static final transient Logger log = LogManager.getLogger(AddressBuilder.class);
-	
+
 	/**
-	 *  org is mandatory; we need it when we retrieve country sequences; needs to be a perfect match
+	 * org is mandatory; we need it when we retrieve country sequences; needs to be a perfect match
 	 */
 	private final I_AD_Org org;
 	private String adLanguage;
-	
+
 	private int getAD_Org_ID()
 	{
 		return org == null ? Env.CTXVALUE_AD_Org_ID_Any : org.getAD_Org_ID();
@@ -78,8 +78,11 @@ public class AddressBuilder
 	public enum Uservars
 	{
 		Title("TI"),
+
 		LastName("LN"),
+
 		FirstName("FN"),
+
 		Greeting("GR");
 
 		private final String name;
@@ -94,7 +97,7 @@ public class AddressBuilder
 			return name;
 		}
 	}
-		
+
 	public AddressBuilder(final I_AD_Org org)
 	{
 		super();
@@ -113,7 +116,7 @@ public class AddressBuilder
 	 */
 	public String buildAddressString(final I_C_Location location, boolean isLocalAddress, String bPartnerBlock, String userBlock)
 	{
-		final String displaySequence =  getDisplaySequence(location.getC_Country(), isLocalAddress);
+		final String displaySequence = getDisplaySequence(location.getC_Country(), isLocalAddress);
 
 		String inStr = displaySequence;
 		final StringBuilder outStr = new StringBuilder();
@@ -255,7 +258,7 @@ public class AddressBuilder
 			else if (token.equals("CO"))
 			{
 				final String countryName;
-				if(isLocalAddress)
+				if (isLocalAddress)
 				{
 					countryName = null;
 				}
@@ -264,7 +267,7 @@ public class AddressBuilder
 					final I_C_Country countryTrl = InterfaceWrapperHelper.translate(country, I_C_Country.class);
 					countryName = countryTrl.getName();
 				}
-				
+
 				if (countryName != null && countryName.length() > 0)
 				{
 					outStr.append(countryName);
@@ -422,8 +425,8 @@ public class AddressBuilder
 	}
 
 	public String buildBPartnerFullAddressString(
-			final I_C_BPartner bPartner,
-			final I_C_BPartner_Location location,
+			final org.compiere.model.I_C_BPartner bPartner,
+			final org.compiere.model.I_C_BPartner_Location location,
 			final I_AD_User user,
 			final String trxName)
 	{
@@ -439,7 +442,7 @@ public class AddressBuilder
 		{
 			return "";
 		}
-		
+
 		final String bPartnerBlock = buildBPartnerBlock(bPartner, user);
 
 		final Properties ctx = Env.getCtx();
@@ -451,7 +454,12 @@ public class AddressBuilder
 		String userBlock = buildUserBlock(InterfaceWrapperHelper.getCtx(bPartner), isLocal, user, bPartnerBlock, bPartner.isCompany(), trxName);
 
 		// Addressblock
-		final String fullAddressBlock = Services.get(ILocationBL.class).mkAddress(location.getC_Location(), bPartner, bPartnerBlock, userBlock);
+		final String fullAddressBlock = Services.get(ILocationBL.class)
+				.mkAddress(
+						location.getC_Location(),
+						create(bPartner, I_C_BPartner.class),
+						bPartnerBlock,
+						userBlock);
 
 		return fullAddressBlock;
 	}
@@ -463,7 +471,7 @@ public class AddressBuilder
 	 * @param user
 	 * @return
 	 */
-	private String buildBPartnerBlock(final I_C_BPartner bPartner, final I_AD_User user)
+	private String buildBPartnerBlock(final org.compiere.model.I_C_BPartner bPartner, final I_AD_User user)
 	{
 		// Name, Name2
 		String bpName = "";
@@ -601,7 +609,6 @@ public class AddressBuilder
 			i = inStr.indexOf('@');
 		}
 
-		
 		if (withBrackets)
 		{
 			// if variables are empty, don't put prefix
@@ -653,7 +660,7 @@ public class AddressBuilder
 			if (ds == null || ds.length() == 0)
 			{
 				I_C_Country country = Services.get(ICountryDAO.class).getDefault(ctx);
-				
+
 				ds = getDisplaySequence(country, isLocal);
 			}
 
@@ -757,11 +764,11 @@ public class AddressBuilder
 
 		return bracketsTxt;
 	}
-	
-	private String getDisplaySequence(final I_C_Country country , final boolean isLocalAddress)
+
+	private String getDisplaySequence(final I_C_Country country, final boolean isLocalAddress)
 	{
 		final I_C_Country_Sequence countrySequence = Services.get(ICountryDAO.class).retrieveCountrySequence(country, getAD_Org_ID(), getAD_Language());
-		if(countrySequence == null)
+		if (countrySequence == null)
 		{
 			final String displaySequence = isLocalAddress ? country.getDisplaySequenceLocal() : country.getDisplaySequence();
 			return displaySequence;

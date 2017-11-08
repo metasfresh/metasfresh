@@ -29,13 +29,13 @@ import org.adempiere.mmovement.api.IMovementDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
-import org.compiere.process.DocAction;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
 import de.metas.document.documentNo.IDocumentNoBuilder;
 import de.metas.document.documentNo.IDocumentNoBuilderFactory;
-import de.metas.document.engine.IDocActionBL;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.IMsgBL;
 import de.metas.product.IProductBL;
 
@@ -54,7 +54,7 @@ import de.metas.product.IProductBL;
  *  		<li>FR [ 2214883 ] Remove SQL code and Replace for Query
  *  @version $Id: MMovement.java,v 1.3 2006/07/30 00:51:03 jjanke Exp $
  */
-public class MMovement extends X_M_Movement implements DocAction
+public class MMovement extends X_M_Movement implements IDocument
 {
 	/**
 	 *
@@ -238,7 +238,7 @@ public class MMovement extends X_M_Movement implements DocAction
 	public boolean processIt (String processAction)
 	{
 		m_processMsg = null;
-		return Services.get(IDocActionBL.class).processIt(this, processAction); // task 09824
+		return Services.get(IDocumentBL.class).processIt(this, processAction); // task 09824
 	}	//	processIt
 
 	/**	Process Message 			*/
@@ -280,20 +280,20 @@ public class MMovement extends X_M_Movement implements DocAction
 		log.info(toString());
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_PREPARE);
 		if (m_processMsg != null)
-			return DocAction.STATUS_Invalid;
+			return IDocument.STATUS_Invalid;
 		MDocType dt = MDocType.get(getCtx(), getC_DocType_ID());
 
 		//	Std Period open?
 		if (!MPeriod.isOpen(getCtx(), getMovementDate(), dt.getDocBaseType(), getAD_Org_ID()))
 		{
 			m_processMsg = "@PeriodClosed@";
-			return DocAction.STATUS_Invalid;
+			return IDocument.STATUS_Invalid;
 		}
 		MMovementLine[] lines = getLines(true);
 		if (lines.length == 0)
 		{
 			m_processMsg = "@NoLines@";
-			return DocAction.STATUS_Invalid;
+			return IDocument.STATUS_Invalid;
 		}
 
 		//	Confirmation
@@ -302,12 +302,12 @@ public class MMovement extends X_M_Movement implements DocAction
 
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_PREPARE);
 		if (m_processMsg != null)
-			return DocAction.STATUS_Invalid;
+			return IDocument.STATUS_Invalid;
 
 		m_justPrepared = true;
 		if (!DOCACTION_Complete.equals(getDocAction()))
 			setDocAction(DOCACTION_Complete);
-		return DocAction.STATUS_InProgress;
+		return IDocument.STATUS_InProgress;
 	}	//	prepareIt
 
 	/**
@@ -358,13 +358,13 @@ public class MMovement extends X_M_Movement implements DocAction
 		if (!m_justPrepared)
 		{
 			String status = prepareIt();
-			if (!DocAction.STATUS_InProgress.equals(status))
+			if (!IDocument.STATUS_InProgress.equals(status))
 				return status;
 		}
 
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_COMPLETE);
 		if (m_processMsg != null)
-			return DocAction.STATUS_Invalid;
+			return IDocument.STATUS_Invalid;
 
 		//	Outstanding (not processed) Incoming Confirmations ?
 		MMovementConfirm[] confirmations = getConfirmations(true);
@@ -375,7 +375,7 @@ public class MMovement extends X_M_Movement implements DocAction
 			{
 				m_processMsg = "Open: @M_MovementConfirm_ID@ - "
 					+ confirm.getDocumentNo();
-				return DocAction.STATUS_InProgress;
+				return IDocument.STATUS_InProgress;
 			}
 		}
 
@@ -418,7 +418,7 @@ public class MMovement extends X_M_Movement implements DocAction
 								ma.getMovementQty().negate(), BigDecimal.ZERO ,  BigDecimal.ZERO , get_TrxName()))
 						{
 							m_processMsg = "Cannot correct Inventory (MA)";
-							return DocAction.STATUS_Invalid;
+							return IDocument.STATUS_Invalid;
 						}
 
 						int M_AttributeSetInstanceTo_ID = line.getM_AttributeSetInstanceTo_ID();
@@ -435,7 +435,7 @@ public class MMovement extends X_M_Movement implements DocAction
 								ma.getMovementQty(), BigDecimal.ZERO ,  BigDecimal.ZERO , get_TrxName()))
 						{
 							m_processMsg = "Cannot correct Inventory (MA)";
-							return DocAction.STATUS_Invalid;
+							return IDocument.STATUS_Invalid;
 						}
 
 						//
@@ -456,7 +456,7 @@ public class MMovement extends X_M_Movement implements DocAction
 						if (!trxFrom.save())
 						{
 							m_processMsg = "Transaction From not inserted (MA)";
-							return DocAction.STATUS_Invalid;
+							return IDocument.STATUS_Invalid;
 						}
 						//
 						final MTransaction trxTo = new MTransaction (getCtx(),
@@ -475,7 +475,7 @@ public class MMovement extends X_M_Movement implements DocAction
 						if (!trxTo.save())
 						{
 							m_processMsg = "Transaction To not inserted (MA)";
-							return DocAction.STATUS_Invalid;
+							return IDocument.STATUS_Invalid;
 						}
 					}
 				}
@@ -491,7 +491,7 @@ public class MMovement extends X_M_Movement implements DocAction
 							line.getMovementQty().negate(), BigDecimal.ZERO ,  BigDecimal.ZERO , get_TrxName()))
 					{
 						m_processMsg = "Cannot correct Inventory (MA)";
-						return DocAction.STATUS_Invalid;
+						return IDocument.STATUS_Invalid;
 					}
 
 					//Update Storage
@@ -502,7 +502,7 @@ public class MMovement extends X_M_Movement implements DocAction
 							line.getMovementQty(), BigDecimal.ZERO ,  BigDecimal.ZERO , get_TrxName()))
 					{
 						m_processMsg = "Cannot correct Inventory (MA)";
-						return DocAction.STATUS_Invalid;
+						return IDocument.STATUS_Invalid;
 					}
 
 					//
@@ -519,7 +519,7 @@ public class MMovement extends X_M_Movement implements DocAction
 					if (!trxFrom.save())
 					{
 						m_processMsg = "Transaction From not inserted";
-						return DocAction.STATUS_Invalid;
+						return IDocument.STATUS_Invalid;
 					}
 					//
 					MTransaction trxTo = new MTransaction (getCtx(),
@@ -535,7 +535,7 @@ public class MMovement extends X_M_Movement implements DocAction
 					if (!trxTo.save())
 					{
 						m_processMsg = "Transaction To not inserted";
-						return DocAction.STATUS_Invalid;
+						return IDocument.STATUS_Invalid;
 					}
 				}	//	Fallback
 			} // product stock
@@ -545,7 +545,7 @@ public class MMovement extends X_M_Movement implements DocAction
 		if (valid != null)
 		{
 			m_processMsg = valid;
-			return DocAction.STATUS_Invalid;
+			return IDocument.STATUS_Invalid;
 		}
 
 		// Set the definite document number after completed (if needed)
@@ -554,7 +554,7 @@ public class MMovement extends X_M_Movement implements DocAction
 		//
 		setProcessed(true);
 		setDocAction(DOCACTION_Reverse_Correct); // issue #347
-		return DocAction.STATUS_Completed;
+		return IDocument.STATUS_Completed;
 	}	//	completeIt
 
 	/**
@@ -739,7 +739,7 @@ public class MMovement extends X_M_Movement implements DocAction
 			}
 		}
 		//
-		if (!reversal.processIt(DocAction.ACTION_Complete))
+		if (!reversal.processIt(IDocument.ACTION_Complete))
 		{
 			m_processMsg = "Reversal ERROR: " + reversal.getProcessMsg();
 			return false;

@@ -33,7 +33,7 @@ import org.compiere.model.CalloutEngine;
 import org.compiere.model.X_C_Order;
 
 import de.metas.adempiere.model.I_C_Order;
-import de.metas.adempiere.service.IOrderBL;
+import de.metas.order.IOrderBL;
 
 /**
  * 

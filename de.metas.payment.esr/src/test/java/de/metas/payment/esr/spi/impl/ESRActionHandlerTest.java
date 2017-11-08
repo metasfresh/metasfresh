@@ -247,6 +247,6 @@ public class ESRActionHandlerTest extends ESRTestBase
 		assertThat("Second allocation line doesn't have the correct total", secondAllocationLine.getAmount(), comparesEqualTo(BigDecimal.ZERO));
 		assertThat("Second allocation line doesn't have the correct writeoff", secondAllocationLine.getWriteOffAmt(), comparesEqualTo(new BigDecimal("10")));
 		assertThat("Second allocation line doesn't reference our invoice", secondAllocationLine.getC_Invoice_ID(), greaterThan(0));
-		assertThat("Second allocation line references a payment", secondAllocationLine.getC_Payment_ID(), is(-1));
+		assertThat("Second allocation line references a payment", secondAllocationLine.getC_Payment_ID(), is(0));
 	}
 }

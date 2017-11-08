@@ -16,13 +16,9 @@
  *****************************************************************************/
 package org.compiere.db;
 
-import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.SQLException;
-import java.sql.Timestamp;
-import java.text.DecimalFormat;
-import java.text.SimpleDateFormat;
 
 import javax.sql.DataSource;
 
@@ -166,53 +162,6 @@ public interface AdempiereDatabase
 	 */
 	public String getSystemDatabase(String databaseName);
 
-	/**
-	 * Create SQL TO Date String from Timestamp
-	 *
-	 * @param time Date to be converted
-	 * @param dayOnly true if time set to 00:00:00
-	 * @return date function
-	 */
-	public String TO_DATE(Timestamp time, boolean dayOnly);
-
-	/**
-	 * Create SQL for formatted Date, Number
-	 *
-	 * @param columnName the column name in the SQL
-	 * @param displayType Display Type
-	 *
-	 * @return TRIM(TO_CHAR(columnName,'999G999G999G990D00','NLS_NUMERIC_CHARACTERS='',.'''))
-	 *         or TRIM(TO_CHAR(columnName,'TM9')) depending on DisplayType and Language
-	 * @see org.compiere.util.DisplayType
-	 * @see org.compiere.util.Env
-	 *
-	 **/
-	/**
-	 * @see #TO_CHAR(String, int, String)
-	 */
-	public String TO_CHAR(String columnName, int displayType);
-
-	/**
-	 * Create SQL for formatted Date, Number.
-	 *
-	 * @param columnName the column name in the SQL
-	 * @param displayType Display Type
-	 * @param AD_Language 6 character language setting (from Env.LANG_*)
-	 * @param formatPattern formatting pattern to be used ( {@link DecimalFormat} pattern, {@link SimpleDateFormat} pattern etc). In case the formatting pattern is not supported or is not valid, the
-	 *            implementation method can ignore it silently.
-	 *
-	 * @return SQL code
-	 */
-	String TO_CHAR(String columnName, int displayType, String formatPattern);
-
-	/**
-	 * Return number as string for INSERT statements with correct precision
-	 *
-	 * @param number number
-	 * @param displayType display Type
-	 * @return number as string
-	 */
-	public String TO_NUMBER(BigDecimal number, int displayType);
 
 	/**
 	 * Return next sequence this Sequence

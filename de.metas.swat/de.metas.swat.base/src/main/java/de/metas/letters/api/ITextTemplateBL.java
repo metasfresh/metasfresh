@@ -49,7 +49,7 @@ public interface ITextTemplateBL extends ISingletonService
 
 	void setLocationContactAndOrg(I_C_Letter letter);
 
-	byte[] createPDF(I_C_Letter letter);
+	byte[] createPDF(LetterPDFCreateRequest request);
 
 	/**
 	 * 

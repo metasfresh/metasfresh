@@ -34,7 +34,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.pricing.api.IMDiscountSchemaBL;
 import org.adempiere.pricing.api.IPricingContext;
 import org.adempiere.pricing.api.IPricingResult;
-import org.adempiere.pricing.spi.rules.PricingRuleAdapter;
+import org.adempiere.pricing.spi.IPricingRule;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_AttributeInstance;
@@ -54,7 +54,8 @@ import de.metas.logging.LogManager;
  * 
  * @version $Id: MProductPricing.java,v 1.2 2006/07/30 00:51:02 jjanke Exp $
  */
-public class Discount extends PricingRuleAdapter
+public class Discount implements IPricingRule
+
 {
 	private final transient Logger log = LogManager.getLogger(getClass());
 

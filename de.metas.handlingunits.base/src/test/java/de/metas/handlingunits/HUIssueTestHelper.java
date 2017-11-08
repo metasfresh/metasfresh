@@ -1,5 +1,9 @@
 package de.metas.handlingunits;
 
+import static de.metas.business.BusinessTestHelper.createLocator;
+import static de.metas.business.BusinessTestHelper.createProduct;
+import static de.metas.business.BusinessTestHelper.createWarehouse;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -13,15 +17,14 @@ package de.metas.handlingunits;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -31,8 +34,10 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_S_Resource;
 import org.compiere.model.X_C_DocType;
 import org.eevolution.model.I_M_Warehouse_Routing;
@@ -49,11 +54,9 @@ import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.test.misc.builders.HUPIAttributeBuilder;
-import de.metas.interfaces.I_M_Warehouse;
 
 public class HUIssueTestHelper extends HUTestHelper
 {
-
 	public static final String NAME_Warehouse1 = "Warehouse 1";
 	public static final String NAME_Warehouse2 = "Warehouse 2";
 	public static final String NAME_Warehouse3 = "Warehouse 3";
@@ -129,6 +132,7 @@ public class HUIssueTestHelper extends HUTestHelper
 	public I_M_HU hu8;
 	public I_M_HU hu9;
 	public I_M_HU hu10;
+	private I_C_UOM uomEach;
 
 	public HUIssueTestHelper()
 	{
@@ -150,7 +154,7 @@ public class HUIssueTestHelper extends HUTestHelper
 	protected void setupMasterData()
 	{
 		super.setupMasterData();
-
+	
 		//
 		// Document Types
 		{

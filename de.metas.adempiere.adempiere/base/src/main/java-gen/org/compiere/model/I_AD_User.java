@@ -1070,31 +1070,6 @@ public interface I_AD_User
     public static final String COLUMNNAME_Lastname = "Lastname";
 
 	/**
-	 * Set Berechtigen über LDAP.
-	 * User Name used for authorization via LDAP (directory) services
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setLDAPUser (java.lang.String LDAPUser);
-
-	/**
-	 * Get Berechtigen über LDAP.
-	 * User Name used for authorization via LDAP (directory) services
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getLDAPUser();
-
-    /** Column definition for LDAPUser */
-    public static final org.adempiere.model.ModelColumn<I_AD_User, Object> COLUMN_LDAPUser = new org.adempiere.model.ModelColumn<I_AD_User, Object>(I_AD_User.class, "LDAPUser", null);
-    /** Column name LDAPUser */
-    public static final String COLUMNNAME_LDAPUser = "LDAPUser";
-
-	/**
 	 * Set Name.
 	 * Alphanumeric identifier of the entity
 	 *

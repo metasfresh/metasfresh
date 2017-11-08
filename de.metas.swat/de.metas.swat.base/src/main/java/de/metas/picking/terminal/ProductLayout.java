@@ -40,13 +40,13 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.MProduct;
 
-import de.metas.adempiere.form.IPackingItem;
-import de.metas.adempiere.form.LegacyPackingItem;
-import de.metas.adempiere.form.PackingItemsMap;
 import de.metas.adempiere.form.terminal.IKeyLayoutSelectionModelAware;
 import de.metas.adempiere.form.terminal.ITerminalKey;
 import de.metas.adempiere.form.terminal.KeyLayout;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
+import de.metas.picking.legacy.form.IPackingItem;
+import de.metas.picking.legacy.form.LegacyPackingItem;
+import de.metas.picking.service.PackingItemsMap;
 import de.metas.picking.terminal.Utils.PackingStates;
 import de.metas.picking.terminal.form.swing.AbstractPackageTerminalPanel;
 
@@ -96,7 +96,7 @@ public class ProductLayout extends KeyLayout implements IKeyLayoutSelectionModel
 		
 		final PackingItemsMap map = getPackageTerminalPanel().getPackItems();
 		final Map<Integer, DefaultMutableTreeNode> boxes = getPackageTerminalPanel().getBoxes();
-		final List<ITerminalKey> list = new ArrayList<ITerminalKey>();
+		final List<ITerminalKey> list = new ArrayList<>();
 
 		final boolean isSelectedBox = getSelectedBox() != null;
 

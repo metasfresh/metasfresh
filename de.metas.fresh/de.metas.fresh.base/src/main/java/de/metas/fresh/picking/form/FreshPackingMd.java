@@ -34,13 +34,13 @@ import org.adempiere.util.Services;
 import org.compiere.model.IClientOrgAware;
 import org.compiere.util.Env;
 
-import de.metas.adempiere.form.PackingMd;
-import de.metas.adempiere.form.TableRow;
-import de.metas.adempiere.form.TableRowKey;
-import de.metas.adempiere.form.TableRowKey.TableRowKeyBuilder;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.inoutcandidate.api.IPackageable;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.picking.legacy.form.PackingMd;
+import de.metas.picking.legacy.form.TableRow;
+import de.metas.picking.legacy.form.TableRowKey;
+import de.metas.picking.legacy.form.TableRowKey.TableRowKeyBuilder;
 
 public class FreshPackingMd extends PackingMd
 {

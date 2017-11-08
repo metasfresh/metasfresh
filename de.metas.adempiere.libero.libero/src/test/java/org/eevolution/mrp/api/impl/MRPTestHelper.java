@@ -56,7 +56,6 @@ import org.compiere.model.I_S_Resource;
 import org.compiere.model.I_S_ResourceType;
 import org.compiere.model.X_AD_Workflow;
 import org.compiere.model.X_C_DocType;
-import org.compiere.process.DocAction;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.eevolution.LiberoConstants;
@@ -79,8 +78,9 @@ import org.slf4j.Logger;
 import ch.qos.logback.classic.Level;
 import de.metas.adempiere.model.I_AD_OrgInfo;
 import de.metas.adempiere.model.I_C_BPartner_Location;
-import de.metas.document.engine.IDocActionBL;
-import de.metas.document.engine.impl.PlainDocActionBL;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
+import de.metas.document.engine.impl.PlainDocumentBL;
 import de.metas.logging.LogManager;
 import de.metas.material.planning.ErrorCodes;
 import de.metas.material.planning.IMaterialPlanningContext;
@@ -119,10 +119,10 @@ public class MRPTestHelper
 	// Services
 	public PlainMRPDAO mrpDAO;
 	public IQueryBL queryBL;
-	public PlainDocActionBL docActionBL;
+	public PlainDocumentBL docActionBL;
 	//
 	public MRPExecutorService mrpExecutorService = new MRPExecutorService();
-	
+
 	public MockedMRPExecutor mrpExecutor = new MockedMRPExecutor();
 
 	//
@@ -150,7 +150,6 @@ public class MRPTestHelper
 
 	public MRPTestHelper(final boolean initEnvironment)
 	{
-		super();
 		init(initEnvironment);
 	}
 
@@ -164,7 +163,7 @@ public class MRPTestHelper
 		// POJOWrapper.setDefaultStrictValues(true);
 		this.mrpDAO = (PlainMRPDAO)Services.get(IMRPDAO.class);
 		this.queryBL = Services.get(IQueryBL.class);
-		this.docActionBL = (PlainDocActionBL)Services.get(IDocActionBL.class);
+		this.docActionBL = (PlainDocumentBL)Services.get(IDocumentBL.class);
 
 		setupContext(initEnvironment);
 		setupMRPExecutorService();
@@ -259,14 +258,13 @@ public class MRPTestHelper
 	private void registerModelValidators()
 	{
 		// FIXME: workaround to bypass org.adempiere.document.service.impl.PlainDocActionBL.isDocumentTable(String) failure
-		PlainDocActionBL.isDocumentTableResponse = false;
+		PlainDocumentBL.isDocumentTableResponse = false;
 
 		final I_AD_Client client = null;
 		final IModelInterceptorRegistry modelInterceptorRegistry = Services.get(IModelInterceptorRegistry.class);
 
-		modelInterceptorRegistry.addModelInterceptor(new org.adempiere.model.validator.AdempiereBaseValidator(), client);
+		modelInterceptorRegistry.addModelInterceptor(new org.compiere.wf.model.validator.AD_Workflow(), client);
 		modelInterceptorRegistry.addModelInterceptor(new org.eevolution.model.LiberoValidator(), client);
-		//modelInterceptorRegistry.addModelInterceptor(new org.eevolution.model.validator.MRPInterceptor(), client);
 	}
 
 	public Timestamp getToday()
@@ -702,8 +700,8 @@ public class MRPTestHelper
 		final List<T> documentModelsCompleted = new ArrayList<>(documentModels.size());
 		for (final T documentModel : documentModels)
 		{
-			final DocAction document = docActionBL.getDocAction(documentModel);
-			docActionBL.processEx(document, DocAction.ACTION_Complete, DocAction.STATUS_Completed);
+			final IDocument document = docActionBL.getDocument(documentModel);
+			docActionBL.processEx(document, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
 
 			documentModelsCompleted.add(documentModel);
 		}

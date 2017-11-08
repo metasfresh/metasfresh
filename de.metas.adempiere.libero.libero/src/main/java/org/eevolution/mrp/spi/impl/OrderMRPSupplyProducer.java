@@ -10,14 +10,14 @@ package org.eevolution.mrp.spi.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -31,7 +31,6 @@ import java.util.Properties;
 import org.adempiere.ad.modelvalidator.DocTimingType;
 import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.ad.service.IADReferenceDAO;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -50,7 +49,6 @@ import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_S_Resource;
 import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_C_Order;
-import org.compiere.process.DocAction;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.IPPOrderDAO;
@@ -71,8 +69,8 @@ import org.eevolution.mrp.api.IMRPSourceEvent;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import de.metas.adempiere.service.IOrderDAO;
-import de.metas.document.engine.IDocActionBL;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.material.planning.IMaterialPlanningContext;
@@ -81,6 +79,7 @@ import de.metas.material.planning.ProductPlanningBL;
 import de.metas.material.planning.RoutingService;
 import de.metas.material.planning.RoutingServiceFactory;
 import de.metas.material.planning.exception.NoPlantForWarehouseException;
+import de.metas.order.IOrderDAO;
 
 public class OrderMRPSupplyProducer extends AbstractMRPSupplyProducer
 {
@@ -90,7 +89,7 @@ public class OrderMRPSupplyProducer extends AbstractMRPSupplyProducer
 
 	@Autowired
 	private transient ProductPlanningBL productPlanningBL;
-	
+
 	public OrderMRPSupplyProducer()
 	{
 		super();
@@ -144,13 +143,14 @@ public class OrderMRPSupplyProducer extends AbstractMRPSupplyProducer
 				final List<I_PP_Order> orders = Services.get(IPPOrderDAO.class).retrieveMakeToOrderForInOut(inout);
 				for (final I_PP_Order order : orders)
 				{
-					final String description = order.getDescription() != null ? order.getDescription() : ""
-							+ Services.get(IMsgBL.class).translate(ctx, I_M_InOut.COLUMNNAME_M_InOut_ID)
-							+ " : "
-							+ Services.get(IMsgBL.class).translate(ctx, I_M_InOut.COLUMNNAME_DocumentNo);
+					final String description = order.getDescription() != null ? order.getDescription()
+							: ""
+									+ Services.get(IMsgBL.class).translate(ctx, I_M_InOut.COLUMNNAME_M_InOut_ID)
+									+ " : "
+									+ Services.get(IMsgBL.class).translate(ctx, I_M_InOut.COLUMNNAME_DocumentNo);
 
 					order.setDescription(description);
-					Services.get(IDocActionBL.class).processIt(order, DocAction.ACTION_Close);
+					Services.get(IDocumentBL.class).processIt(order, IDocument.ACTION_Close);
 					order.setDocStatus(X_PP_Order.DOCACTION_Close);
 					order.setDocAction(X_PP_Order.DOCACTION_None);
 					InterfaceWrapperHelper.save(order);
@@ -241,7 +241,7 @@ public class OrderMRPSupplyProducer extends AbstractMRPSupplyProducer
 
 	/**
 	 * Create MRP record based in Order
-	 * 
+	 *
 	 * @param MOrder
 	 */
 	private void C_Order(final I_C_Order order)
@@ -279,7 +279,7 @@ public class OrderMRPSupplyProducer extends AbstractMRPSupplyProducer
 
 	/**
 	 * Create MRP record based in Order Line
-	 * 
+	 *
 	 * @param MOrderLine
 	 */
 	private void C_OrderLine(final I_C_OrderLine orderLine)
@@ -314,7 +314,12 @@ public class OrderMRPSupplyProducer extends AbstractMRPSupplyProducer
 		try
 		{
 			final Properties ctx = InterfaceWrapperHelper.getCtx(orderLine);
-			orderLinePlant = Services.get(IProductPlanningDAO.class).findPlant(ctx, orderLine.getAD_Org_ID(), warehouse, product.getM_Product_ID());
+			orderLinePlant = Services.get(IProductPlanningDAO.class).findPlant(
+					ctx,
+					orderLine.getAD_Org_ID(),
+					warehouse,
+					orderLine.getM_Product_ID(),
+					orderLine.getM_AttributeSetInstance_ID());
 		}
 		catch (final NoPlantForWarehouseException e)
 		{
@@ -353,9 +358,9 @@ public class OrderMRPSupplyProducer extends AbstractMRPSupplyProducer
 
 	/**
 	 * Gets warehouse ID from given order line.
-	 * 
+	 *
 	 * If there is no warehouse in order line, ask current warehouse advisor.
-	 * 
+	 *
 	 * @param ol
 	 * @return warehouse ID
 	 */
@@ -379,7 +384,10 @@ public class OrderMRPSupplyProducer extends AbstractMRPSupplyProducer
 	 * @param orderLinePlant the order line's detected plant
 	 * @return manufacturing order
 	 */
-	private final I_PP_Order createMakeToOrderMO(final I_C_OrderLine ol, final BigDecimal qty, final I_S_Resource orderLinePlant)
+	private final I_PP_Order createMakeToOrderMO(
+			final I_C_OrderLine ol,
+			final BigDecimal qty,
+			final I_S_Resource orderLinePlant)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(ol);
 		final String trxName = InterfaceWrapperHelper.getTrxName(ol);
@@ -398,8 +406,8 @@ public class OrderMRPSupplyProducer extends AbstractMRPSupplyProducer
 								ol.getAD_Org_ID(),
 								0,   // warehouse
 								0,   // plant
-								ol.getM_Product_ID(),   // product
-								ITrx.TRXNAME_None);
+								ol.getM_Product_ID(),
+								ol.getM_AttributeSetInstance_ID());
 				if (productPlanning != null)
 				{
 					bom = productPlanning.getPP_Product_BOM();
@@ -494,7 +502,7 @@ public class OrderMRPSupplyProducer extends AbstractMRPSupplyProducer
 					order.setC_OrderLine(null);
 					order.setC_OrderLine_MTO(null);
 
-					Services.get(IDocActionBL.class).processIt(order, DocAction.ACTION_Void);
+					Services.get(IDocumentBL.class).processIt(order, IDocument.ACTION_Void);
 					// order.voidIt();
 
 					order.setDocStatus(X_PP_Order.DOCSTATUS_Voided);
@@ -520,7 +528,7 @@ public class OrderMRPSupplyProducer extends AbstractMRPSupplyProducer
 
 	/**
 	 * Create Make-to-Order Manufacturing Order base on Planning Data
-	 * 
+	 *
 	 * @param pp Product Planning
 	 * @param C_OrderLine_ID Sales Order Line
 	 * @param M_AttributeSetInstance_ID ASI
@@ -587,7 +595,7 @@ public class OrderMRPSupplyProducer extends AbstractMRPSupplyProducer
 		order.setPriorityRule(X_PP_Order.PRIORITYRULE_High);
 		InterfaceWrapperHelper.save(order);
 
-		Services.get(IDocActionBL.class).processIt(order, DocAction.ACTION_Prepare);
+		Services.get(IDocumentBL.class).processIt(order, IDocument.ACTION_Prepare);
 		// order.setDocStatus(order.prepareIt());
 
 		order.setDocAction(X_PP_Order.DOCACTION_Complete); // TODO: legacy code, but why we do this???

@@ -51,6 +51,7 @@ import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 
 import de.metas.adempiere.model.I_C_Invoice;
+import de.metas.document.engine.IDocument;
 import de.metas.i18n.Language;
 import de.metas.interfaces.I_C_OrderLine;
 
@@ -79,7 +80,7 @@ public class InvoiceGenerate extends JavaProcess
 	/** Consolidate */
 	private boolean p_ConsolidateDocument = true;
 	/** Invoice Document Action */
-	private String p_docAction = DocAction.ACTION_Complete;
+	private String p_docAction = IDocument.ACTION_Complete;
 
 	/** The current Invoice */
 	private MInvoice m_invoice = null;
@@ -129,8 +130,8 @@ public class InvoiceGenerate extends JavaProcess
 			p_DateInvoiced = new Timestamp(System.currentTimeMillis());
 
 		// DocAction check
-		if (!DocAction.ACTION_Complete.equals(p_docAction))
-			p_docAction = DocAction.ACTION_Prepare;
+		if (!IDocument.ACTION_Complete.equals(p_docAction))
+			p_docAction = IDocument.ACTION_Prepare;
 	} // prepare
 
 	/**

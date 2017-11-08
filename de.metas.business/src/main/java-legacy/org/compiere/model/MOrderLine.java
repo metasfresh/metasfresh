@@ -26,8 +26,6 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.spi.TrxListenerAdapter;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.pricing.exceptions.ProductNotOnPriceListException;
-import org.adempiere.util.Check;
 import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
 import org.adempiere.warehouse.api.IWarehouseBL;
@@ -36,11 +34,10 @@ import org.compiere.util.DB;
 import org.compiere.util.TrxRunnableAdapter;
 import org.slf4j.Logger;
 
-import de.metas.adempiere.service.IOrderBL;
-import de.metas.adempiere.service.IOrderLineBL;
 import de.metas.currency.ICurrencyDAO;
-import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
+import de.metas.order.IOrderBL;
+import de.metas.order.IOrderLineBL;
 import de.metas.tax.api.ITaxBL;
 
 /**
@@ -223,8 +220,6 @@ public class MOrderLine extends X_C_OrderLine
 	private int m_M_PriceList_ID = 0;
 	//
 	private boolean m_IsSOTrx = true;
-	// Product Pricing
-	private MProductPricing m_productPrice = null;
 
 	/** Tax */
 	private MTax m_tax = null;
@@ -318,6 +313,8 @@ public class MOrderLine extends X_C_OrderLine
 
 	/**
 	 * Set Price for Product and PriceList. Use only if newly created.
+	 *
+	 * @param M_PriceList_ID price list
 	 */
 	public void setPrice()
 	{
@@ -329,52 +326,10 @@ public class MOrderLine extends X_C_OrderLine
 		{
 			throw new AdempiereException("@NotFound@ @M_Pricelist_ID@ @C_BPartner_ID@ " + getC_BPartner().getName());
 		}
-		setPrice(m_M_PriceList_ID);
-	}	// setPrice
-
-	/**
-	 * Set Price for Product and PriceList
-	 *
-	 * @param M_PriceList_ID price list
-	 */
-	public void setPrice(int INGORED)
-	{
-		if (getM_Product_ID() <= 0)
-		{
-			return;
-		}
 		//
 		final de.metas.interfaces.I_C_OrderLine ol = InterfaceWrapperHelper.create(this, de.metas.interfaces.I_C_OrderLine.class);
 		Services.get(IOrderLineBL.class).updatePrices(ol);
 	}	// setPrice
-
-	/**
-	 * Get and calculate Product Pricing
-	 *
-	 * @param M_PriceList_ID id
-	 * @param M_PriceList_Version_ID
-	 * @return product pricing
-	 */
-	private MProductPricing getProductPricing(int M_PriceList_ID, int M_PriceList_Version_ID)
-	{
-		final I_M_PriceList_Version plv = InterfaceWrapperHelper.create(getCtx(), M_PriceList_Version_ID, I_M_PriceList_Version.class, get_TrxName());
-		if (M_PriceList_Version_ID > 0)
-		{
-			// If we have a pricelist version, make sure it belongs to the pricelist
-			Check.assume(M_PriceList_ID == plv.getM_PriceList_ID(), Msg.getMsg(getCtx(), MSG_PriceListVersionInvalid));
-		}
-
-		m_productPrice = new MProductPricing(getM_Product_ID(), getC_BPartner_ID(), getQtyOrdered(), m_IsSOTrx);
-
-		m_productPrice.setReferencedObject(this); // 03152: setting the 'ol' to allow the subscription system to compute the right price
-		m_productPrice.setPriceDate(getDatePromised()); // important: need to use the data when the service will be provided, so we make sure that we get the right PLV
-		m_productPrice.setM_PriceList_ID(M_PriceList_ID);
-		m_productPrice.setPriceDate(getDateOrdered());
-		m_productPrice.setM_PriceList_Version_ID(M_PriceList_Version_ID);
-		//
-		m_productPrice.calculatePrice();
-		return m_productPrice;
-	}	// getProductPrice
 
 	/**
 	 * Set Tax
@@ -383,13 +338,6 @@ public class MOrderLine extends X_C_OrderLine
 	 */
 	public boolean setTax()
 	{
-		// metas: we need to fetch the Tax based on pricing tax category and not directly
-
-		// int ii = Tax.get(getCtx(), getM_Product_ID(), getC_Charge_ID(), getDateOrdered(), getDateOrdered(),
-		// getAD_Org_ID(), Services.get(IWarehouseAdvisor.class).evaluateWarehouse(this).getM_Warehouse_ID(),
-		// getC_BPartner_Location_ID(), // should be bill to
-		// getC_BPartner_Location_ID(), m_IsSOTrx);
-
 		final int taxCategoryId = Services.get(IOrderLineBL.class).getC_TaxCategory_ID(this);
 		if (taxCategoryId <= 0)
 		{
@@ -467,11 +415,8 @@ public class MOrderLine extends X_C_OrderLine
 			else
 			// Product
 			{
-				// FIXME metas 05129 need proper concept (link between M_Product and C_TaxCategory_ID was removed!!!!!)
+				// FIXME metas 05129 need proper concept (link between M_Product and C_TaxCategory_ID was removed)
 				throw new AdempiereException("Unsupported tax calculation when tax is included, but it's not on document level");
-				// stdTax = new MTax (getCtx(),
-				// ((MTaxCategory) getProduct().getC_TaxCategory()).getDefaultTax().getC_Tax_ID(),
-				// get_TrxName());
 			}
 
 			if (stdTax != null)
@@ -963,19 +908,10 @@ public class MOrderLine extends X_C_OrderLine
 		// Set/check Product Price
 		{
 			// Set Price if Actual = 0
-			if (m_productPrice == null
-					&& getPriceActual().signum() == 0
+			if (getPriceActual().signum() == 0
 					&& getPriceList().signum() == 0)
 			{
 				setPrice();
-			}
-
-			// Check if on Price list
-			if (m_productPrice == null)
-				getProductPricing(m_M_PriceList_ID, get_ValueAsInt(de.metas.interfaces.I_C_OrderLine.COLUMNNAME_M_PriceList_Version_ID));
-			if (!m_productPrice.isCalculated())
-			{
-				throw new ProductNotOnPriceListException(m_productPrice, getLine());
 			}
 		}
 
@@ -1003,47 +939,6 @@ public class MOrderLine extends X_C_OrderLine
 		if (newRecord || is_ValueChanged("QtyOrdered"))
 			setQtyOrdered(getQtyOrdered());
 
-		// task 05295: commenting this out because also for ASI-Order-Lines it shall be allowed to order qty that is not yet fully avalable on stock
-		// // Qty on instance ASI for SO
-		// if (m_IsSOTrx
-		// && getM_AttributeSetInstance_ID() != 0
-		// && (newRecord || is_ValueChanged("M_Product_ID")
-		// || is_ValueChanged("M_AttributeSetInstance_ID")
-		// || is_ValueChanged("M_Warehouse_ID")))
-		// {
-		// MProduct product = getProduct();
-		// if (product.isStocked())
-		// {
-		// int M_AttributeSet_ID = product.getM_AttributeSet_ID();
-		// boolean isInstance = M_AttributeSet_ID != 0;
-		// if (isInstance)
-		// {
-		// MAttributeSet mas = MAttributeSet.get(getCtx(), M_AttributeSet_ID);
-		// isInstance = mas.isInstanceAttribute();
-		// }
-		// // Max
-		// if (isInstance)
-		// {
-		// MStorage[] storages = MStorage.getWarehouse(getCtx(),
-		// Services.get(IWarehouseAdvisor.class).evaluateWarehouse(this).getM_Warehouse_ID(), getM_Product_ID(), getM_AttributeSetInstance_ID(),
-		// M_AttributeSet_ID, false, null, true, get_TrxName());
-		// BigDecimal qty = BigDecimal.ZERO;
-		// for (int i = 0; i < storages.length; i++)
-		// {
-		// if (storages[i].getM_AttributeSetInstance_ID() == getM_AttributeSetInstance_ID())
-		// qty = qty.add(storages[i].getQtyOnHand());
-		// }
-		//
-		// if (getQtyOrdered().compareTo(qty) > 0)
-		// {
-		// log.warn("Qty - Stock=" + qty + ", Ordered=" + getQtyOrdered());
-		// log.error("QtyInsufficient", "=" + qty);
-		// return false;
-		// }
-		// }
-		// } // stocked
-		// } // SO instance
-
 		// FreightAmt Not used
 		if (BigDecimal.ZERO.compareTo(getFreightAmt()) != 0)
 			setFreightAmt(BigDecimal.ZERO);
@@ -1064,20 +959,6 @@ public class MOrderLine extends X_C_OrderLine
 			int ii = DB.getSQLValue(get_TrxName(), sql, getC_Order_ID());
 			setLine(ii);
 		}
-
-		// Calculations & Rounding
-
-		// FIXME: commented out because actually was doing nothing (see, it was updating another instance of this order line, which is not saved), and more, setLineNetAmt is no longer called from here
-		// final I_C_OrderLine orderLine = InterfaceWrapperHelper.create(getCtx(), getC_OrderLine_ID(), I_C_OrderLine.class, get_TrxName());
-		// Services.get(IOrderLineBL.class).setPrices(orderLine);
-
-		// 07264
-		// commented out because we are not using this anymore
-		// setLineNetAmt(); // extended Amount with or without tax
-
-		// metas
-		// setDiscount();
-		// metas ende
 
 		return true;
 	}	// beforeSave

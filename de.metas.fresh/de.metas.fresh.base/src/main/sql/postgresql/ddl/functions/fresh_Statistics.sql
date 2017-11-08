@@ -2,12 +2,13 @@
 
 DROP FUNCTION IF EXISTS report.fresh_statistics ( 
 	IN C_Period_ID numeric, IN issotrx character varying, IN C_BPartner_ID numeric, IN C_Activity_ID numeric,
-	IN M_Product_ID numeric, IN M_Product_Category_ID numeric, IN M_AttributeSetInstance_ID numeric
+	IN M_Product_ID numeric, IN M_Product_Category_ID numeric, IN M_AttributeSetInstance_ID numeric, IN AD_Org_ID numeric
 );
 DROP FUNCTION IF EXISTS report.fresh_statistics ( 
 	IN C_Period_ID numeric, IN issotrx character varying, IN C_BPartner_ID numeric, IN C_Activity_ID numeric,
-	IN M_Product_ID numeric, IN M_Product_Category_ID numeric, IN M_AttributeSetInstance_ID numeric, IN AD_Org_ID numeric
+	IN M_Product_ID numeric, IN M_Product_Category_ID numeric, IN M_AttributeSetInstance_ID numeric, IN AD_Org_ID numeric, IN AD_Language Character Varying (6)
 );
+
 
 
 DROP TABLE IF EXISTS report.fresh_statistics;
@@ -50,13 +51,13 @@ CREATE TABLE report.fresh_statistics
   totalamt numeric,
   startdate text,
   enddate text,
-  param_issotrx character varying,
   param_bp character varying(60),
   param_activity character varying(60),
   param_product character varying(255),
   param_product_category character varying(60),
   param_attributes character varying(255),
-  ad_org_id numeric
+  ad_org_id numeric,
+  iso_code char(3)
 )
 WITH (
   OIDS=FALSE
@@ -73,7 +74,8 @@ CREATE OR REPLACE FUNCTION report.fresh_statistics
 		IN M_Product_ID numeric,
 		IN M_Product_Category_ID numeric,
 		IN M_AttributeSetInstance_ID numeric,
-		IN AD_Org_ID numeric
+		IN AD_Org_ID numeric,
+		IN AD_Language Character Varying (6) 
 	) 
   RETURNS SETOF report.fresh_statistics AS
 $BODY$
@@ -81,22 +83,24 @@ SELECT
 	bp.Name AS bp_name,
 	bp.value AS bp_Value,
 	pc.Name AS pc_name, 
-	p.Name AS P_name,
+	COALESCE(pt.Name,p.Name) AS P_name,
 	p.value AS P_value,
-	uom.UOMSymbol,
+	COALESCE(uomt.UOMSymbol,uom.UOMSymbol) AS UOMSymbol,
 	Col1, Col2, Col3, Col4, Col5, Col6, Col7, Col8, Col9, Col10, Col11, Col12,
 	Period1Sum, Period2Sum, Period3Sum, Period4Sum, Period5Sum, Period6Sum, Period7Sum, Period8Sum, Period9Sum, Period10Sum, Period11Sum, Period12Sum,
 	TotalSum, TotalAmt,
 	to_char( COALESCE(Col12, Col11, Col10, Col9, Col8, Col7, Col6, Col5, Col4, Col3, Col2, Col1), 'DD.MM.YYYY' ) AS StartDate,
 	to_char( EndDate, 'DD.MM.YYYY' ) AS EndDate,
-	CASE WHEN $2 = 'N' THEN 'Einkauf' WHEN $2 = 'Y' THEN 'Verkauf' ELSE 'alle' END AS param_IsSOTrx,
-
-	COALESCE ((SELECT name FROM C_BPartner WHERE C_BPartner_ID = $3 AND isActive = 'Y'), 'alle' ) AS param_bp,
-	COALESCE ((SELECT name FROM C_Activity WHERE C_Activity_ID = $4 AND isActive = 'Y'), 'alle' ) AS param_Activity,
-	COALESCE ((SELECT name FROM M_Product WHERE M_Product_ID = $5 AND isActive = 'Y'), 'alle' ) AS param_product,
-	COALESCE ((SELECT name FROM M_Product_Category WHERE M_Product_Category_ID = $6 AND isActive = 'Y'), 'alle' ) AS param_Product_Category,
-	COALESCE ((SELECT String_Agg(ai_value, ', ' ORDER BY ai_Value) FROM Report.fresh_Attributes WHERE M_AttributeSetInstance_ID = $7), 'alle') AS Param_Attributes,
-	a.ad_org_id
+	(SELECT name FROM C_BPartner WHERE C_BPartner_ID = $3 AND isActive = 'Y') AS param_bp,
+	(SELECT name FROM C_Activity WHERE C_Activity_ID = $4 AND isActive = 'Y') AS param_Activity,
+	(SELECT COALESCE(pt.name, p.name) FROM M_Product p 
+		LEFT OUTER JOIN M_Product_Trl pt ON p.M_Product_ID = pt.M_Product_ID AND pt.AD_Language = $9 AND pt.isActive = 'Y'
+		WHERE p.M_Product_ID = $5 AND p.isActive = 'Y'
+	) AS param_product,
+	(SELECT name FROM M_Product_Category WHERE M_Product_Category_ID = $6 AND isActive = 'Y') AS param_Product_Category,
+	(SELECT String_Agg(ai_value, ', ' ORDER BY ai_Value) FROM Report.fresh_Attributes WHERE M_AttributeSetInstance_ID = $7) AS Param_Attributes,
+	a.ad_org_id,
+	a.iso_code
 
 FROM
 	(
@@ -130,7 +134,8 @@ FROM
 					p7.C_Period_ID, p8.C_Period_ID, p9.C_Period_ID, p10.C_Period_ID, p11.C_Period_ID, p12.C_Period_ID)
 				THEN fa.AmtAcct ELSE 0 END
 			) AS TotalAmt,
-			fa.ad_org_id
+			fa.ad_org_id,
+			fa.iso_code
 		FROM
 			C_Period p1
 			LEFT OUTER JOIN C_Period p2 ON p2.C_Period_ID = report.fresh_Get_Predecessor_Period(p1.C_Period_ID) AND p2.isActive = 'Y'
@@ -149,8 +154,13 @@ FROM
 			(
 				SELECT *, ABS(qty) * SIGN(AmtAcct) AS QtyAcct
 				FROM (	
-					SELECT 	fa.*, CASE WHEN isSOTrx = 'Y' THEN AmtAcctCr - AmtAcctDr ELSE AmtAcctDr - AmtAcctCr END AS AmtAcct 
-					FROM 	Fact_Acct fa JOIN C_Invoice i ON fa.Record_ID = i.C_Invoice_ID AND i.isActive = 'Y'
+					SELECT 	fa.*, CASE WHEN isSOTrx = 'Y' THEN AmtAcctCr - AmtAcctDr ELSE AmtAcctDr - AmtAcctCr END AS AmtAcct, c.iso_code
+					FROM 	Fact_Acct fa 
+					JOIN C_Invoice i ON fa.Record_ID = i.C_Invoice_ID AND i.isActive = 'Y'
+					INNER JOIN AD_Org o ON fa.ad_org_id = o.ad_org_id
+					INNER JOIN AD_ClientInfo ci ON o.AD_Client_ID=ci.ad_client_id
+					LEFT OUTER JOIN C_AcctSchema acs ON acs.C_AcctSchema_ID=ci.C_AcctSchema1_ID
+					LEFT OUTER JOIN C_Currency c ON acs.C_Currency_ID=c.C_Currency_ID
 					WHERE	AD_Table_ID = (SELECT Get_Table_ID('C_Invoice')) AND fa.isActive = 'Y'
 				) fa
 			) fa ON true
@@ -208,16 +218,19 @@ FROM
 			p1.EndDate,
 			p1.StartDate, p2.StartDate, p3.StartDate, p4.StartDate, p5.StartDate, p6.StartDate, 
 			p7.StartDate, p8.StartDate, p9.StartDate, p10.StartDate, p11.StartDate, p12.StartDate,
-			fa.ad_org_id
+			fa.ad_org_id,
+			fa.iso_code
 	) a
 	INNER JOIN C_UOM uom ON a.C_UOM_ID = uom.C_UOM_ID AND uom.isActive = 'Y'
+	LEFT OUTER JOIN C_UOM_Trl uomt ON uom.C_UOM_ID = uomt.C_UOM_ID AND uomt.AD_Language = $9 AND uomt.isActive = 'Y'
 	INNER JOIN C_BPartner bp ON a.C_BPartner_ID = bp.C_BPartner_ID AND bp.isActive = 'Y'
 	INNER JOIN M_Product p ON a.M_Product_ID = p.M_Product_ID AND p.isActive = 'Y'
+	LEFT OUTER JOIN M_Product_Trl pt ON p.M_Product_ID = pt.M_Product_ID AND pt.AD_Language = $9 AND pt.isActive = 'Y'
 	INNER JOIN M_Product_Category pc ON p.M_Product_Category_ID = pc.M_Product_Category_ID AND pc.isActive = 'Y'
 ORDER BY
 	bp.Name, pc.value, p.name
 $BODY$
 LANGUAGE sql VOLATILE;
 
-COMMENT ON FUNCTION report.fresh_product_statistics_report(numeric, character varying, numeric, numeric, numeric, numeric, numeric,numeric) IS 'Making this function volatile is currently our only known way to avoid
+COMMENT ON FUNCTION report.fresh_product_statistics_report(numeric, character varying, numeric, numeric, numeric, numeric, numeric,numeric, character varying) IS 'Making this function volatile is currently our only known way to avoid
 http://postgresql.nabble.com/BUG-8393-quot-ERROR-failed-to-locate-grouping-columns-quot-on-grouping-by-varchar-returned-from-funcn-td5768367.html';

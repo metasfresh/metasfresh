@@ -64,7 +64,7 @@ public class ReplicationTrxDAO implements IReplicationTrxDAO
 		final IQueryBuilder<I_EXP_ReplicationTrxLine> queryBuilder = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_EXP_ReplicationTrxLine.class, ctx, trxName);
 
-		final ICompositeQueryFilter<I_EXP_ReplicationTrxLine> filters = queryBuilder.getFilters();
+		final ICompositeQueryFilter<I_EXP_ReplicationTrxLine> filters = queryBuilder.getCompositeFilter();
 
 		filters.addEqualsFilter(I_EXP_ReplicationTrxLine.COLUMNNAME_EXP_ReplicationTrx_ID, rplTrxID);
 		filters.addEqualsFilter(I_EXP_ReplicationTrxLine.COLUMNNAME_AD_Table_ID, tableID);

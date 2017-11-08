@@ -1,11 +1,13 @@
 package de.metas.material.event;
 
-import org.adempiere.util.lang.impl.TableRecordReference;
+import static de.metas.material.event.MaterialEventUtils.checkIdGreaterThanZero;
 
-import lombok.AllArgsConstructor;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import lombok.Builder;
-import lombok.Data;
 import lombok.NonNull;
+import lombok.Value;
 
 /*
  * #%L
@@ -28,22 +30,40 @@ import lombok.NonNull;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-@Data
-@AllArgsConstructor // used by jackson when it deserializes a string
-@Builder // used by devs to make sure they know with parameter-value goes into which property
+
+@Value
+@Builder
 public class TransactionEvent implements MaterialEvent
 {
 	public static final String TYPE = "TransactionEvent";
 
 	@NonNull
-	private final EventDescr eventDescr;
+	EventDescriptor eventDescriptor;
 
 	@NonNull
-	private final TableRecordReference reference;
+	MaterialDescriptor materialDescriptor;
 
-	@NonNull
-	private final MaterialDescriptor materialDescr;
+	// ids used to match the transaction to the respective shipment, ddOrder or ppOrder event (demand if qty is negative), supply if qty is positive
+	// if *none of those are set* then the transaction will be recorded as "unplanned"
+	int shipmentScheduleId;
 
-	private final boolean transactionDeleted;
+	int transactionId;
 
+	@JsonCreator
+	@Builder
+	public TransactionEvent(
+			@JsonProperty("eventDescriptor") @NonNull final EventDescriptor eventDescriptor,
+			@JsonProperty("materialDescriptor") @NonNull final MaterialDescriptor materialDescriptor,
+			@JsonProperty("shipmentScheduleId") final int shipmentScheduleId,
+			@JsonProperty("transactionId") final int transactionId)
+	{
+		this.transactionId = checkIdGreaterThanZero("transactionId",transactionId);
+
+		this.eventDescriptor = eventDescriptor;
+
+		materialDescriptor.asssertMaterialDescriptorComplete();
+		this.materialDescriptor = materialDescriptor;
+
+		this.shipmentScheduleId = shipmentScheduleId;
+	}
 }

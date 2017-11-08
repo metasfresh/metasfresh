@@ -35,8 +35,8 @@ import org.compiere.util.Env;
 import org.concordion.integration.junit4.ConcordionRunner;
 import org.junit.runner.RunWith;
 
-import de.metas.flatrate.model.I_C_Flatrate_Conditions;
-import de.metas.flatrate.model.X_C_Flatrate_Conditions;
+import de.metas.contracts.model.I_C_Flatrate_Conditions;
+import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.handlingunits.materialtracking.spi.impl.HUHandlingUnitsInfoFactory;
 import de.metas.materialtracking.ait.helpers.Helper;
 import de.metas.materialtracking.ait.helpers.MockedInvoicedSumProvider;

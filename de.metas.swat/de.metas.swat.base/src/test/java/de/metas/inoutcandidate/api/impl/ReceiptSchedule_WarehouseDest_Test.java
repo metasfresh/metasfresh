@@ -57,13 +57,13 @@ import de.metas.interfaces.I_M_Movement;
 
 public class ReceiptSchedule_WarehouseDest_Test extends ReceiptScheduleTestBase
 {
-	private de.metas.interfaces.I_M_Warehouse warehouseForIssues;
+	private org.adempiere.warehouse.model.I_M_Warehouse warehouseForIssues;
 	private I_M_Locator locatorForIssues;
 
 	@Override
 	public void setup()
 	{
-		warehouseForIssues = InterfaceWrapperHelper.create(ctx, de.metas.interfaces.I_M_Warehouse.class, ITrx.TRXNAME_None);
+		warehouseForIssues = InterfaceWrapperHelper.create(ctx, org.adempiere.warehouse.model.I_M_Warehouse.class, ITrx.TRXNAME_None);
 		warehouseForIssues.setIsIssueWarehouse(true);
 		warehouseForIssues.setName("Warehouse for Issues");
 		warehouseForIssues.setValue("Warehouse for Issues");

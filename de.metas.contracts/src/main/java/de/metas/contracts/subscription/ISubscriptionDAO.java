@@ -13,15 +13,14 @@ package de.metas.contracts.subscription;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.sql.Timestamp;
 import java.util.List;
@@ -29,50 +28,67 @@ import java.util.Properties;
 
 import org.adempiere.util.ISingletonService;
 
+import de.metas.contracts.flatrate.interfaces.I_C_OLCand;
+import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.contracts.model.I_C_SubscriptionProgress;
+import de.metas.contracts.model.X_C_SubscriptionProgress;
 import de.metas.contracts.subscription.model.I_C_OrderLine;
-import de.metas.flatrate.interfaces.I_C_OLCand;
-import de.metas.flatrate.model.I_C_Flatrate_Conditions;
-import de.metas.flatrate.model.I_C_Flatrate_Term;
-import de.metas.flatrate.model.I_C_SubscriptionProgress;
-import de.metas.flatrate.model.X_C_SubscriptionProgress;
+import lombok.Builder.Default;
+import lombok.NonNull;
+import lombok.Singular;
 
 public interface ISubscriptionDAO extends ISingletonService
 {
+	List<I_C_SubscriptionProgress> retrieveSubscriptionProgresses(SubscriptionProgressQuery query);
 
-	/**
-	 * Retrieve the "next" subscription progress with seqNo>= the given seqNo and eventDate<=date.
-	 * 
-	 * @param control
-	 * @param date
-	 * @param seqNo
-	 * @param trxName
-	 * @return
-	 */
-	I_C_SubscriptionProgress retrieveNextSP(I_C_Flatrate_Term control, Timestamp date, int seqNo);
+	I_C_SubscriptionProgress retrieveFirstSubscriptionProgress(SubscriptionProgressQuery query);
 
-	/**
-	 * Returns all <code>C_SubscriptionProgress</code> records that belong to the given <code>term</code> and have an
-	 * <code>EventDate</code> at or after the given <code>date</code>.
-	 * 
-	 * The result is ordered by <code>EventDate</code>
-	 * 
-	 * @param term
-	 * @param date
-	 * @param trxName
-	 * @return
-	 */
-	List<I_C_SubscriptionProgress> retrieveNextSPs(I_C_Flatrate_Term term, Timestamp date);
+	@lombok.Value
+	@lombok.Builder
+	public class SubscriptionProgressQuery
+	{
+		public static SubscriptionProgressQueryBuilder startingWith(@NonNull final I_C_SubscriptionProgress subscriptionProgress)
+		{
+			final I_C_Flatrate_Term term = subscriptionProgress.getC_Flatrate_Term();
+			return term(term).seqNoNotLessThan(subscriptionProgress.getSeqNo());
+		}
 
-	/**
-	 * Returns those {@link I_C_SubscriptionProgress} instances that belong to the same running subscription (same
-	 * C_OrderLineId) and have there after the given date.
-	 * 
-	 * @param subscriptionControlId
-	 * @param date
-	 * @param trxName
-	 * @return
-	 */
-	List<I_C_SubscriptionProgress> retrieveSubscriptionProgress(I_C_Flatrate_Term term);
+		public static SubscriptionProgressQueryBuilder endingRightBefore(@NonNull final I_C_SubscriptionProgress subscriptionProgress)
+		{
+			final I_C_Flatrate_Term term = subscriptionProgress.getC_Flatrate_Term();
+			return term(term).seqNoLessThan(subscriptionProgress.getSeqNo());
+		}
+		
+		public static SubscriptionProgressQueryBuilder term(@NonNull final I_C_Flatrate_Term term)
+		{
+			return builder().term(term);
+		}
+
+		@NonNull
+		I_C_Flatrate_Term term;
+
+		Timestamp eventDateNotBefore;
+
+		Timestamp eventDateNotAfter;
+		
+		@Default
+		int seqNoNotLessThan = 0;
+
+		@Default
+		int seqNoLessThan = 0;
+
+		/** never {@code null}. Empty means "don't filter by status altogether". */
+		@Singular
+		List<String> excludedStatuses;
+
+		/** never {@code null}. Empty means "don't filter by status altogether". */
+		@Singular
+		List<String> includedStatuses;
+		
+		/** never {@code null}. Empty means "don't filter by status altogether". */
+		@Singular
+		List<String> includedContractStatuses;
+	}
 
 	/**
 	 * Loads all {@link I_C_SubscriptionProgress} records that have event type
@@ -88,13 +104,11 @@ public interface ISubscriptionDAO extends ISingletonService
 	List<I_C_SubscriptionProgress> retrievePlannedAndDelayedDeliveries(Properties ctx, Timestamp date, String trxName);
 
 	/**
-	 * Retrieves the term that references the given <code>ol</code> via its <code>C_OrderLine_Term_ID</code> column or
-	 * <code>null</code>. The method assumes that there is at most one such term.
 	 * 
 	 * @param ol
-	 * @return
+	 * @return {@code true} if there is at lease one term that references the given <code>ol</code> via its <code>C_OrderLine_Term_ID</code> column.
 	 */
-	I_C_Flatrate_Term retrieveTermForOl(I_C_OrderLine ol);
+	boolean existsTermForOl(I_C_OrderLine ol);
 
 	/**
 	 * Retrieves the terms that are connection to the given <code>olCand</code> via an active
@@ -104,17 +118,6 @@ public interface ISubscriptionDAO extends ISingletonService
 	 * @return
 	 */
 	List<I_C_Flatrate_Term> retrieveTermsForOLCand(I_C_OLCand olCand);
-
-	/**
-	 * Returns the subscription for the given bPartner and product. The subscription must currently be in state
-	 * <code>Ru</code> (running). If there is more than one subscription, the one with the most recent start date is
-	 * returned. If there is no such subscription, <code>null</code> is returned.
-	 * 
-	 * @param bPArtnerId
-	 * @param productId
-	 * @return a matching subscription or <code>null</code>.
-	 */
-	I_C_Flatrate_Conditions retrieveSubscription(Timestamp date, int bPartnerId, int productId, int locationId, String trxName);
 
 	/**
 	 * Insert a new {@link I_C_SubscriptionProgress} after the given predecessor. All values from the predecessor are
@@ -127,7 +130,6 @@ public interface ISubscriptionDAO extends ISingletonService
 	 * @return
 	 */
 	I_C_SubscriptionProgress insertNewDelivery(I_C_SubscriptionProgress predecessor);
-
 
 	<T extends I_C_OLCand> List<T> retrieveOLCands(I_C_Flatrate_Term term, Class<T> clazz);
 

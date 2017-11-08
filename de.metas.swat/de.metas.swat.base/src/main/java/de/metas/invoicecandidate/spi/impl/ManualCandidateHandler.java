@@ -34,6 +34,7 @@ import java.util.Properties;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.slf4j.Logger;
+
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandidateQuery;
 import de.metas.invoicecandidate.api.InvoiceCandidate_Constants;
@@ -72,7 +73,7 @@ public class ManualCandidateHandler extends AbstractInvoiceCandidateHandler
 	 * @return empty iterator
 	 */
 	@Override
-	public Iterator<Object> retrieveAllModelsWithMissingCandidates(final Properties ctx, final int limit, final String trxName)
+	public Iterator<Object> retrieveAllModelsWithMissingCandidates(final int limit)
 	{
 		return Collections.emptyIterator();
 	}
@@ -203,12 +204,6 @@ public class ManualCandidateHandler extends AbstractInvoiceCandidateHandler
 	}
 
 	@Override
-	public void setPriceActual(final I_C_Invoice_Candidate ic)
-	{
-		// nothing to do
-	}
-
-	@Override
 	public void setBPartnerData(final I_C_Invoice_Candidate ic)
 	{
 		// nothing to do
@@ -216,12 +211,6 @@ public class ManualCandidateHandler extends AbstractInvoiceCandidateHandler
 
 	@Override
 	public void setC_UOM_ID(final I_C_Invoice_Candidate ic)
-	{
-		// nothing to do
-	}
-
-	@Override
-	public void setPriceEntered(final I_C_Invoice_Candidate ic)
 	{
 		// nothing to do
 	}

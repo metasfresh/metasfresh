@@ -28,11 +28,11 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.ad.dao.impl.TypedSqlQuery;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.exceptions.AdempiereException;
@@ -44,13 +44,12 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.StringUtils;
 import org.adempiere.warehouse.api.IWarehouseBL;
-import org.compiere.model.IQuery;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.MBPartnerLocation;
-import org.compiere.model.MLocation;
+import org.compiere.model.X_C_Tax;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
@@ -176,7 +175,7 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 
 		final boolean hasTaxCertificate = !Check.isEmpty(bPartner.getVATaxID());
 
-		final I_C_Location locationTo = MLocation.get(ctx, bpLocTo.getC_Location_ID(), trxName);
+		final I_C_Location locationTo = InterfaceWrapperHelper.create(ctx, bpLocTo.getC_Location_ID(), I_C_Location.class, trxName); 
 
 		final boolean toEULocation = Services.get(ICountryAreaBL.class).isMemberOf(ctx,
 				ICountryAreaBL.COUNTRYAREAKEY_EU,
@@ -187,78 +186,70 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 
 		final boolean toSameCountry = countryToId == countryFromId;
 
-		final StringBuilder sql = new StringBuilder();
-
-		final List<Object> params = new ArrayList<Object>();
-		sql.append(I_C_Tax.COLUMNNAME_ValidFrom + " < ? ");
-		params.add(date);
+		final IQueryBuilder<I_C_Tax> queryBuilder = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_Tax.class, ctx, ITrx.TRXNAME_None)
+				.addCompareFilter(I_C_Tax.COLUMNNAME_ValidFrom, Operator.LESS, date)
+				.addOnlyActiveRecordsFilter();
+		
 
 		if (countryFromId > 0)
 		{
-			sql.append(" AND ").append(I_C_Tax.COLUMNNAME_C_Country_ID).append("=? ");
-			params.add(countryFromId);
+			queryBuilder.addEqualsFilter(I_C_Tax.COLUMNNAME_C_Country_ID, countryFromId);
 		}
 		else
 		{
-			sql.append(" AND ").append(I_C_Tax.COLUMNNAME_C_Country_ID).append(" IS NULL ");
+			queryBuilder.addEqualsFilter(I_C_Tax.COLUMNNAME_C_Country_ID, null);
 		}
 
-		sql.append(" AND C_TaxCategory_ID=?");
-		params.add(taxCategoryId);
+		queryBuilder.addEqualsFilter(I_C_Tax.COLUMNNAME_C_TaxCategory_ID, taxCategoryId);
 
 		if (toSameCountry)
 		{
-			// hardcoded from/to germany
-			sql.append(" AND To_Country_ID=" + countryToId);
+			queryBuilder.addEqualsFilter(I_C_Tax.COLUMNNAME_To_Country_ID, countryToId);
 		}
 		else if (toEULocation)
 		{
-			sql.append(
-					" AND (To_Country_ID IS NULL OR To_Country_ID="
-							+ countryToId).append(") ");
-			sql.append(" AND IsToEULocation = 'Y' ");
+			queryBuilder.addInArrayFilter(I_C_Tax.COLUMNNAME_To_Country_ID, countryToId, null);
+			queryBuilder.addEqualsFilter(I_C_Tax.COLUMNNAME_IsToEULocation, true);
 
 			if (hasTaxCertificate)
 			{
-				sql.append(" AND RequiresTaxCertificate = 'Y' ");
+				queryBuilder.addEqualsFilter(I_C_Tax.COLUMNNAME_RequiresTaxCertificate, true);
 			}
 			else
 			{
-				sql.append(" AND RequiresTaxCertificate = 'N' ");
+				queryBuilder.addEqualsFilter(I_C_Tax.COLUMNNAME_RequiresTaxCertificate, false);
 			}
 		}
 		else
 		{
-			// rest of the world
-			sql.append(" AND (To_Country_ID IS NULL OR To_Country_ID =");
-			// Abweichungen zu Drittland finden finden wenn definiert
-			sql.append(countryToId + ") ");
-			sql.append(" AND IsToEULocation = 'N' ");
+			queryBuilder.addInArrayFilter(I_C_Tax.COLUMNNAME_To_Country_ID, countryToId, null);
+			queryBuilder.addEqualsFilter(I_C_Tax.COLUMNNAME_IsToEULocation, false);
 		}
 
-		sql.append(" AND SOPOType in ('B', ");
 		if (isSOTrx)
 		{
-			sql.append("'S')");
+			queryBuilder.addInArrayFilter(I_C_Tax.COLUMNNAME_SOPOType, X_C_Tax.SOPOTYPE_Both, X_C_Tax.SOPOTYPE_SalesTax);
 		}
 		else
 		{
-			sql.append("'P')");
+			queryBuilder.addInArrayFilter(I_C_Tax.COLUMNNAME_SOPOType, X_C_Tax.SOPOTYPE_Both , X_C_Tax.SOPOTYPE_PurchaseTax);
 		}
 
 		if (orgId > 0)
 		{
-			sql.append(" AND (AD_Org_ID=0 OR AD_Org_ID=" + orgId + ") ");
+			queryBuilder.addInArrayFilter(I_C_Tax.COLUMNNAME_AD_Org_ID, orgId, 0);
 		}
 
-		final String orderBy = " AD_Org_ID DESC, To_Country_ID, validFrom DESC ";
-
-		final IQuery<I_C_Tax> query = new TypedSqlQuery<I_C_Tax>(ctx, I_C_Tax.class, sql.toString(), trxName)
-				.setParameters(params)
+		final int taxId =  queryBuilder
+				.orderBy()
+				.addColumnDescending(I_C_Tax.COLUMNNAME_AD_Org_ID)
+				.addColumn(I_C_Tax.COLUMNNAME_To_Country_ID)
+				.addColumnDescending(I_C_Tax.COLUMNNAME_ValidFrom)
+				.endOrderBy()
+				.create()
 				.setClient_ID()
-				.setOnlyActiveRecords(true)
-				.setOrderBy(orderBy);
-		final int taxId = query.firstId();
+				.firstId();
 
 		if (taxId <= 0)
 		{

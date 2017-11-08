@@ -1,41 +1,32 @@
 package de.metas.inoutcandidate.api.impl;
 
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.refresh;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.Assert;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.inout.util.DeliveryGroupCandidate;
+import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.util.Env;
+import org.junit.Before;
 import org.junit.Test;
 
-import de.metas.adempiere.test.POTest;
 import de.metas.inoutcandidate.api.OlAndSched;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.inoutcandidate.spi.ShipmentScheduleReferencedLine;
 
-public class ShipmentScheduleBLTest extends ShipmentScheduleTestBase
+public class ShipmentScheduleBLTest
 {
+	@Before
+	public void init()
+	{
+		AdempiereTestHelper.get().init();
+	}
 
 	/**
 	 * Calls updateSchedule with an empty list.
@@ -43,59 +34,119 @@ public class ShipmentScheduleBLTest extends ShipmentScheduleTestBase
 	@Test
 	public void testEmpty()
 	{
-		final String trxName = "trxName";
-		final List<OlAndSched> olAndScheds = new ArrayList<OlAndSched>();
+		final List<OlAndSched> olAndScheds = new ArrayList<>();
 
 		final ShipmentScheduleBL shipmentScheduleBL = new ShipmentScheduleBL();
-		shipmentScheduleBL.updateSchedules(POTest.CTX, olAndScheds, true, null, null, trxName);
+		shipmentScheduleBL.updateSchedules(Env.getCtx(), olAndScheds, ITrx.TRXNAME_ThreadInherited);
 	}
 
-	/**
-	 * set qtyToDeliver_Override to 10, qtyToDeliver is still on 0
-	 */
 	@Test
-	public void testQtyToDeliver1()
+	public void createInout()
 	{
-		I_M_ShipmentSchedule sched = createShipmentSchedule(new BigDecimal("14"));
-		sched.setQtyToDeliver_Override(new BigDecimal("10"));
-		shipmentScheduleBL.setQtyToDeliverWhenNullInoutLine(sched);
-		Assert.assertEquals("Invalid qtyToDeliver", BigDecimal.ZERO, sched.getQtyToDeliver());
+		final I_M_ShipmentSchedule sched = newInstance(I_M_ShipmentSchedule.class);
+		sched.setBPartnerAddress_Override("bPartnerAddress");
+		sched.setM_Warehouse_Override_ID(35);
+		save(sched);
+
+		final ShipmentScheduleReferencedLine scheduleSourceDoc = ShipmentScheduleReferencedLine.builder()
+				.groupId(10)
+				.shipperId(20)
+				.warehouseId(30) // different from the sched's effective WH
+				.build();
+
+		final DeliveryGroupCandidate result = new ShipmentScheduleBL().createGroup(scheduleSourceDoc, sched);
+		assertThat(result.getGroupId()).isEqualTo(10);
+		assertThat(result.getShipperId()).isEqualTo(20);
+		assertThat(result.getWarehouseId()).isEqualTo(35);
+		assertThat(result.getBPartnerAddress()).isEqualTo("bPartnerAddress");
 	}
 
-	/**
-	 * set qtyToDeliver_Override to 10, set DeliveryRule_Override to F, qtyToDeliver is set on 10;
-	 */
 	@Test
-	public void testQtyToDeliver2()
+	public void updateProcessedFlag()
 	{
-		I_M_ShipmentSchedule sched = createShipmentSchedule(new BigDecimal("14"));
-		sched.setQtyToDeliver_Override(new BigDecimal("10"));
-		sched.setDeliveryRule("F");
-		shipmentScheduleBL.setQtyToDeliverWhenNullInoutLine(sched);
-		Assert.assertEquals("Invalid qtyToDeliver", BigDecimal.valueOf(10), sched.getQtyToDeliver());
+		final I_M_ShipmentSchedule sched = newInstance(I_M_ShipmentSchedule.class);
+		sched.setQtyReserved(BigDecimal.TEN);
+
+		final ShipmentScheduleBL shipmentScheduleBL = new ShipmentScheduleBL();
+
+		shipmentScheduleBL.updateProcessedFlag(sched);
+		assertThat(sched.isProcessed()).isFalse();
+
+		sched.setIsClosed(true);
+		shipmentScheduleBL.updateProcessedFlag(sched);
+		assertThat(sched.isProcessed()).isTrue();
 	}
 
-	/**
-	 * set qtyToDeliver_Override to null, set DeliveryRule_Override to F, qtyToDeliver is set on 14 (as qtyOrdered);
-	 */
 	@Test
-	public void testQtyToDeliver3()
+	public void close()
 	{
-		I_M_ShipmentSchedule sched = createShipmentSchedule(new BigDecimal("14"));
-		sched.setDeliveryRule("F");
-		shipmentScheduleBL.setQtyToDeliverWhenNullInoutLine(sched);
-		Assert.assertEquals("Invalid qtyToDeliver", BigDecimal.valueOf(14), sched.getQtyToDeliver());
+		final I_M_ShipmentSchedule schedule = newInstance(I_M_ShipmentSchedule.class);
+		schedule.setQtyOrdered_Override(new BigDecimal("23"));
+		schedule.setQtyToDeliver_Override(new BigDecimal("24"));
+		assertThat(schedule.isClosed()).isFalse();
+
+		final ShipmentScheduleBL shipmentScheduleBL = new ShipmentScheduleBL();
+
+		shipmentScheduleBL.closeShipmentSchedule(schedule);
+		save(schedule);
+		refresh(schedule);
+
+		assertThat(schedule.isClosed()).isTrue();
+		assertThat(schedule.getQtyOrdered_Override()).isEqualByComparingTo("23")
+				.as("closing a shipmentschedule may not fiddle with its QtyOrdered_Override value");
+		assertThat(schedule.getQtyToDeliver_Override()).isEqualByComparingTo("24")
+				.as("closing a shipmentschedule may not fiddle with its QtyToDeliver_Override value");
 	}
 
-	/**
-	 * left qtyToDeliver_Override to null, set DeliveryRule_Override to null, qtyToDeliver is set on 0.
-	 */
 	@Test
-	public void testQtyToDeliver4()
+	public void openProcessedShipmentSchedule()
 	{
-		I_M_ShipmentSchedule sched = createShipmentSchedule(new BigDecimal("14"));
-		sched.setQtyToDeliver_Override(new BigDecimal("10"));
-		shipmentScheduleBL.setQtyToDeliverWhenNullInoutLine(sched);
-		Assert.assertEquals("Invalid qtyToDeliver", BigDecimal.valueOf(0), sched.getQtyToDeliver());
+		final I_M_ShipmentSchedule schedule = newInstance(I_M_ShipmentSchedule.class);
+		schedule.setIsClosed(true);
+
+		schedule.setQtyOrdered_Calculated(BigDecimal.TEN);
+		schedule.setQtyOrdered(new BigDecimal("5"));
+		schedule.setQtyDelivered(new BigDecimal("5"));
+		schedule.setQtyOrdered_Override(new BigDecimal("23"));
+		schedule.setQtyToDeliver_Override(new BigDecimal("24"));
+
+		final ShipmentScheduleBL shipmentScheduleBL = new ShipmentScheduleBL();
+		shipmentScheduleBL.openShipmentSchedule(schedule);
+
+		assertThat(schedule.isClosed()).isFalse();
+		assertThat(schedule.getQtyOrdered_Override())
+				.as("opening a shipmentschedule may not fiddle with its QtyOrdered_Override value")
+				.isEqualByComparingTo("23");
+		assertThat(schedule.getQtyOrdered_Calculated())
+				.as("opening a shipmentschedule may not fiddle with its QtyOrdered_Calculated value")
+				.isEqualByComparingTo(BigDecimal.TEN);
+
+		assertThat(schedule.getQtyOrdered())
+				.as("opening a shipmentschedule shall restore its QtyOrdered from its QtyOrdered_Override or .._Calculated value")
+				.isEqualByComparingTo("23");
+	}
+
+	@Test
+	public void updateQtyOrdered()
+	{
+		final I_M_ShipmentSchedule schedule = newInstance(I_M_ShipmentSchedule.class);
+		schedule.setIsClosed(true);
+		schedule.setQtyDelivered(BigDecimal.ONE);
+		schedule.setQtyOrdered_Override(new BigDecimal("23"));
+		schedule.setQtyOrdered_Calculated(new BigDecimal("24"));
+
+		final ShipmentScheduleBL shipmentScheduleBL = new ShipmentScheduleBL();
+		shipmentScheduleBL.updateQtyOrdered(schedule);
+
+		assertThat(schedule.getQtyOrdered()).isEqualByComparingTo(BigDecimal.ONE);
+	}
+
+	@Test
+	public void isConsolidateVetoedByOrderOfSched_C_Order_ID_zero()
+	{
+		final I_M_ShipmentSchedule shipmentSchedule = newInstance(I_M_ShipmentSchedule.class);
+		shipmentSchedule.setC_Order_ID(0);
+		final ShipmentScheduleBL shipmentScheduleBL = new ShipmentScheduleBL();
+		assertThat(shipmentScheduleBL.isConsolidateVetoedByOrderOfSched(shipmentSchedule)).isFalse();
 	}
 }

@@ -221,6 +221,19 @@ public class ADWindowDAO implements IADWindowDAO
 	}
 
 	@Override
+	public IQueryBuilder<I_AD_UI_Element> retrieveUIElementsQueryByTabId(final int adTabId)
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		return queryBL
+				.createQueryBuilder(I_AD_UI_Element.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_AD_UI_Element.COLUMN_AD_Tab_ID, adTabId)
+				.orderBy()
+				.addColumn(I_AD_UI_Element.COLUMN_SeqNo)
+				.endOrderBy();
+	}
+
+	@Override
 	public List<I_AD_UI_ElementField> retrieveUIElementFields(final I_AD_UI_Element uiElement)
 	{
 		return retrieveUIElementFieldsQuery(uiElement)

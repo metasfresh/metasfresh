@@ -27,17 +27,19 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.impexp.BPartnerImportProcess;
+import org.adempiere.impexp.ADUserImportProcess;
 import org.adempiere.impexp.IImportProcess;
 import org.adempiere.impexp.IImportProcessFactory;
 import org.adempiere.impexp.ProductImportProcess;
 import org.adempiere.impexp.RequestImportProcess;
+import org.adempiere.impexp.bpartner.BPartnerImportProcess;
 import org.adempiere.impexp.spi.IAsyncImportProcessBuilder;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.compiere.model.I_I_BPartner;
 import org.compiere.model.I_I_Product;
 import org.compiere.model.I_I_Request;
+import org.compiere.model.I_I_User;
 
 import com.google.common.base.Supplier;
 
@@ -51,6 +53,7 @@ public class ImportProcessFactory implements IImportProcessFactory
 	{
 		// Register standard import processes
 		registerImportProcess(I_I_BPartner.class, BPartnerImportProcess.class);
+		registerImportProcess(I_I_User.class, ADUserImportProcess.class);
 		registerImportProcess(I_I_Product.class, ProductImportProcess.class);
 		registerImportProcess(I_I_Request.class, RequestImportProcess.class);
 	}

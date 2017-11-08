@@ -14,7 +14,7 @@ public class X_MD_Candidate_Prod_Detail extends org.compiere.model.PO implements
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -265625769L;
+	private static final long serialVersionUID = -117710910L;
 
     /** Standard Constructor */
     public X_MD_Candidate_Prod_Detail (Properties ctx, int MD_Candidate_Prod_Detail_ID, String trxName)

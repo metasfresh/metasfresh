@@ -10,7 +10,7 @@ import org.adempiere.mm.attributes.api.IAttributeSetInstanceAwareFactoryService;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.pricing.api.IPricingContext;
 import org.adempiere.pricing.api.IPricingResult;
-import org.adempiere.pricing.spi.rules.PricingRuleAdapter;
+import org.adempiere.pricing.spi.IPricingRule;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_AttributeSetInstance;
@@ -27,7 +27,7 @@ import de.metas.pricing.attributebased.IAttributePricingBL;
 import de.metas.pricing.attributebased.IProductPriceAware;
 import de.metas.pricing.attributebased.ProductPriceAware;
 
-public class AttributePricing extends PricingRuleAdapter
+public class AttributePricing implements IPricingRule
 {
 	private static final Logger logger = LogManager.getLogger(AttributePricing.class);
 

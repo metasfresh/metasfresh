@@ -60,61 +60,6 @@ public final class InOutPA implements IInOutPA
 	}
 
 	/**
-	 * Invokes {@link MInOutLine#MInOutLine(java.util.Properties, int, String)}.
-	 */
-	@Override
-	public MInOutLine createNewLine(final I_M_InOut inout, final String trxName)
-	{
-		final MInOutLine inoutLine = new MInOutLine(Env.getCtx(), 0, trxName);
-
-		final IPOService poService = Services.get(IPOService.class);
-		poService.copyClientOrg(inout, inoutLine);
-		inoutLine.setM_Warehouse_ID(inout.getM_Warehouse_ID());
-		inoutLine.setC_Project_ID(inout.getC_Project_ID());
-
-		// set the inOutId only if the inOut actually has one
-		if (inout.getM_InOut_ID() > 0)
-		{
-			inoutLine.setM_InOut_ID(inout.getM_InOut_ID());
-		}
-
-		return inoutLine;
-	}
-
-	/**
-	 * Invokes {@link MInOutLine#setOrderLine(MOrderLine, int, BigDecimal)}
-	 * 
-	 * @throws IllegalArgumentException
-	 *             if InterfaceWrapperHelper.getPO() is not able to produce an {@link MInOutLine} final the given line or orderLine
-	 *             is not an {@link MOrderLine}.
-	 */
-	@Override
-	public void setLineOrderLine(
-			final I_M_InOutLine line,
-			final I_C_OrderLine orderLine,
-			final int locatorId,
-			final BigDecimal qty)
-	{
-		final MInOutLine linePO = (MInOutLine)InterfaceWrapperHelper.getPO(line);
-		linePO.setOrderLine(orderLine, locatorId, qty);
-	
-		line.setIsIndividualDescription(InterfaceWrapperHelper.create(orderLine, de.metas.interfaces.I_C_OrderLine.class).isIndividualDescription());
-	}
-
-	/**
-	 * Invokes {@link MInOutLine#setQty(BigDecimal)}.
-	 * 
-	 * @throws IllegalArgumentException
-	 *             if line is not an {@link MInOutLine}
-	 */
-	@Override
-	public void setLineQty(final I_M_InOutLine line, final BigDecimal qty)
-	{
-		final MInOutLine linePO = InterfaceWrapperHelper.getPO(line);
-		linePO.setQty(qty);
-	}
-
-	/**
 	 * Invokes {@link MInOutLine#setM_Warehouse_ID(int)}.
 	 * 
 	 * @throws IllegalArgumentException

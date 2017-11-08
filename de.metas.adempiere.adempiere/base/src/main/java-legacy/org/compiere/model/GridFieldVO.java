@@ -27,12 +27,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import javax.annotation.Nullable;
+
+import org.adempiere.ad.expression.api.ConstantLogicExpression;
 import org.adempiere.ad.expression.api.IExpressionFactory;
 import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.security.asp.IASPFiltersFactory;
 import org.adempiere.ad.security.permissions.UIDisplayedEntityTypes;
 import org.adempiere.ad.service.IDeveloperModeBL;
+import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.FieldGroupVO.FieldGroupType;
@@ -155,6 +159,8 @@ public class GridFieldVO implements Serializable
 			final boolean loadAllLanguages,
 			final ResultSet rs)
 	{
+		final IExpressionFactory expressionFactory = Services.get(IExpressionFactory.class);
+		
 		final GridFieldVO vo = new GridFieldVO (ctx, WindowNo, TabNo, AD_Window_ID, AD_Tab_ID, readOnly);
 		
 		String columnName = "ColumnName";
@@ -300,7 +306,10 @@ public class GridFieldVO implements Serializable
 				else if (columnName.equalsIgnoreCase("ReadOnlyLogic"))
 					vo.ReadOnlyLogic = rs.getString (i);
 				else if (columnName.equalsIgnoreCase("MandatoryLogic"))
-					vo.MandatoryLogic = rs.getString (i);
+				{
+					final String mandatoryLogic = rs.getString (i);
+					vo.mandatoryLogicExpr = expressionFactory.compileOrDefault(mandatoryLogic, null, ILogicExpression.class); // metas: 03093
+				}
 				else if (columnName.equalsIgnoreCase("ObscureType"))
 					vo.ObscureType = rs.getString (i);
 				//
@@ -666,8 +675,8 @@ public class GridFieldVO implements Serializable
 	private String help = "";
 	private Map<String, String> helpTrls = null; // lazy
 	/**	Mandatory Logic	*/
-	public String 		MandatoryLogic = "";
-	private ILogicExpression MandatoryLogicExpr; // metas: 03093
+	@Nullable
+	private ILogicExpression mandatoryLogicExpr; // metas: 03093
 	/**	Read Only Logic	*/
 	public String       ReadOnlyLogic = "";
 	private ILogicExpression ReadOnlyLogicExpr; // metas: 03093
@@ -723,7 +732,7 @@ public class GridFieldVO implements Serializable
 		//  Not null fields
 		if (DisplayLogic == null)
 			DisplayLogic = "";
-		DisplayLogicExpr = expressionFactory.compileOrDefault(DisplayLogic, ILogicExpression.TRUE, ILogicExpression.class); // metas: 03093
+		DisplayLogicExpr = expressionFactory.compileOrDefault(DisplayLogic, ConstantLogicExpression.TRUE, ILogicExpression.class); // metas: 03093
 
 		// metas-2009_0021_AP1_CR045: begin
 		if (ColorLogic == null)
@@ -742,11 +751,7 @@ public class GridFieldVO implements Serializable
 
 		if (ReadOnlyLogic == null)
 			ReadOnlyLogic = "";
-		ReadOnlyLogicExpr = expressionFactory.compileOrDefault(ReadOnlyLogic, ILogicExpression.FALSE, ILogicExpression.class); // metas: 03093
-
-		if (MandatoryLogic == null)
-			MandatoryLogic = "";
-		MandatoryLogicExpr = expressionFactory.compileOrDefault(MandatoryLogic, ILogicExpression.FALSE, ILogicExpression.class); // metas: 03093
+		ReadOnlyLogicExpr = expressionFactory.compileOrDefault(ReadOnlyLogic, ConstantLogicExpression.FALSE, ILogicExpression.class); // metas: 03093
 
 		//
 		// If EntityType is not displayed, hide this field
@@ -787,8 +792,11 @@ public class GridFieldVO implements Serializable
 				}
 				else
 				{
+					final String tablename = Services.get(IADTableDAO.class).retrieveTableName(getAD_Table_ID());
 					lookupInfo = MLookupFactory.getLookupInfo(WindowNo, displayType,
-							ColumnName, AD_Reference_Value_ID,
+							tablename,
+							ColumnName,
+							AD_Reference_Value_ID,
 							IsParent, AD_Val_Rule_ID); // metas: 03271
 				}
 				lookupInfo.InfoFactoryClass = this.InfoFactoryClass;
@@ -874,8 +882,7 @@ public class GridFieldVO implements Serializable
 		clone.AD_Process_ID = AD_Process_ID;
 		clone.ReadOnlyLogic = ReadOnlyLogic;
 		clone.ReadOnlyLogicExpr = ReadOnlyLogicExpr; // metas: 03093
-		clone.MandatoryLogic = MandatoryLogic;
-		clone.MandatoryLogicExpr = MandatoryLogicExpr; // metas: 03093
+		clone.mandatoryLogicExpr = mandatoryLogicExpr; // metas: 03093
 		clone.ObscureType = ObscureType;
 		clone.Included_Tab_ID = Included_Tab_ID;
 		clone.IncludedTabHeight = IncludedTabHeight; // metas-2009_0021_AP1_CR051
@@ -951,7 +958,7 @@ public class GridFieldVO implements Serializable
 		//  Not null fields
 		if (DisplayLogic == null)
 			DisplayLogic = "";
-		DisplayLogicExpr = expressionFactory.compileOrDefault(DisplayLogic, ILogicExpression.TRUE, ILogicExpression.class); // metas: 03093
+		DisplayLogicExpr = expressionFactory.compileOrDefault(DisplayLogic, ConstantLogicExpression.TRUE, ILogicExpression.class); // metas: 03093
 	}
 
 	public ILogicExpression getReadOnlyLogic()
@@ -961,7 +968,12 @@ public class GridFieldVO implements Serializable
 
 	public ILogicExpression getMandatoryLogic()
 	{
-		return MandatoryLogicExpr;
+		return mandatoryLogicExpr != null ? mandatoryLogicExpr : ConstantLogicExpression.FALSE;
+	}
+	
+	public boolean isMandatoryLogicExpression()
+	{
+		return mandatoryLogicExpr != null;
 	}
 
 	public IStringExpression getColorLogic()

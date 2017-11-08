@@ -51,7 +51,6 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.MCashLine;
 import org.compiere.model.MPayment;
 import org.compiere.model.X_C_Order;
-import org.compiere.process.DocAction;
 import org.compiere.swing.CComboBox;
 import org.compiere.swing.CDialog;
 import org.compiere.swing.CLabel;
@@ -65,6 +64,7 @@ import org.compiere.util.TrxRunnable2;
 import org.compiere.util.ValueNamePair;
 
 import de.metas.currency.ICurrencyDAO;
+import de.metas.document.engine.IDocument;
 import de.metas.i18n.IMsgBL;
 
 /**
@@ -317,9 +317,9 @@ public class VPayment extends CDialog
 		final String docStatus = doc.getDocStatus() == null ? "" : doc.getDocStatus();
 		log.info(docStatus);
 		// Is the Trx closed? Reversed / Voided / Closed
-		if (DocAction.STATUS_Reversed.equals(docStatus)
-				|| DocAction.STATUS_Voided.equals(docStatus)
-				|| DocAction.STATUS_Closed.equals(docStatus))
+		if (IDocument.STATUS_Reversed.equals(docStatus)
+				|| IDocument.STATUS_Voided.equals(docStatus)
+				|| IDocument.STATUS_Closed.equals(docStatus))
 		{
 			log.info("Document is reversed/voided/closed => nothing to do");
 			return false;
@@ -382,16 +382,16 @@ public class VPayment extends CDialog
 	{
 		boolean isPayable = false;
 		final String docStatus = doc.getDocStatus();
-		if (DocAction.STATUS_Reversed.equals(docStatus)
-				|| DocAction.STATUS_Voided.equals(docStatus)
-				|| DocAction.STATUS_Closed.equals(docStatus))
+		if (IDocument.STATUS_Reversed.equals(docStatus)
+				|| IDocument.STATUS_Voided.equals(docStatus)
+				|| IDocument.STATUS_Closed.equals(docStatus))
 		{
 			log.info("Document is reversed/voided/closed => nothing to do");
 			return false;
 		}
 		// Document is not complete - allow to change the Payment Rule only
-		if (DocAction.STATUS_Completed.equals(docStatus)
-				|| DocAction.STATUS_WaitingPayment.equals(docStatus))
+		if (IDocument.STATUS_Completed.equals(docStatus)
+				|| IDocument.STATUS_WaitingPayment.equals(docStatus))
 		{
 			log.info("Document is completed/WP => payable=false");
 			return false;
@@ -707,7 +707,7 @@ public class VPayment extends CDialog
 			final IVPaymentPanel panel = paymentRulePanels.get(pctx.newPaymentRule);
 			proc = new VPaymentProcess(pctx, doc, panel);
 
-			if (!DocAction.STATUS_Drafted.equals(doc.getDocStatus())) // metas: cg: 0217
+			if (!IDocument.STATUS_Drafted.equals(doc.getDocStatus())) // metas: cg: 0217
 				proc.process();
 		}
 

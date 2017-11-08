@@ -25,11 +25,11 @@ package de.metas.tourplanning.integrationtest;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
-import org.compiere.process.DocAction;
 import org.junit.Test;
 
-import de.metas.document.engine.IDocActionBL;
-import de.metas.document.engine.impl.PlainDocActionBL;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
+import de.metas.document.engine.impl.PlainDocumentBL;
 import de.metas.document.exceptions.DocumentProcessingException;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.tourplanning.TourPlanningTestBase;
@@ -46,7 +46,7 @@ public class TourInstance_ShipperTransporation_IntegrationTest extends TourPlann
 {
 	//
 	// Services
-	private PlainDocActionBL docActionBL;
+	private PlainDocumentBL docActionBL;
 
 	//
 	// Master data
@@ -59,10 +59,10 @@ public class TourInstance_ShipperTransporation_IntegrationTest extends TourPlann
 	{
 		//
 		// Configure and register PlainDocActionBL
-		this.docActionBL = new PlainDocActionBL();
-		PlainDocActionBL.isDocumentTableResponse = true;
-		this.docActionBL.setDefaultProcessInterceptor(PlainDocActionBL.PROCESSINTERCEPTOR_CompleteDirectly);
-		Services.registerService(IDocActionBL.class, docActionBL);
+		this.docActionBL = new PlainDocumentBL();
+		PlainDocumentBL.isDocumentTableResponse = true;
+		this.docActionBL.setDefaultProcessInterceptor(PlainDocumentBL.PROCESSINTERCEPTOR_CompleteDirectly);
+		Services.registerService(IDocumentBL.class, docActionBL);
 
 		//
 		// Master data
@@ -77,14 +77,14 @@ public class TourInstance_ShipperTransporation_IntegrationTest extends TourPlann
 		assertProcessed(false, tourInstance);
 
 		// Complete
-		docActionBL.processEx(shipperTransportation, DocAction.ACTION_Complete, DocAction.STATUS_Completed);
+		docActionBL.processEx(shipperTransportation, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
 
 		// Assert Tour Instance is processed
 		InterfaceWrapperHelper.refresh(tourInstance);
 		assertProcessed(true, tourInstance);
 
 		// ReActivate
-		docActionBL.processEx(shipperTransportation, DocAction.ACTION_ReActivate, DocAction.STATUS_InProgress);
+		docActionBL.processEx(shipperTransportation, IDocument.ACTION_ReActivate, IDocument.STATUS_InProgress);
 
 		// Assert Tour Instance is NOT processed
 		InterfaceWrapperHelper.refresh(tourInstance);
@@ -95,14 +95,14 @@ public class TourInstance_ShipperTransporation_IntegrationTest extends TourPlann
 	public void test_void_ShipperTransportation_ShallFail()
 	{
 		// Void it => shall throw exception
-		docActionBL.processEx(shipperTransportation, DocAction.ACTION_Void, null);
+		docActionBL.processEx(shipperTransportation, IDocument.ACTION_Void, null);
 	}
 
 	@Test(expected = DocumentProcessingException.class)
 	public void test_reverse_ShipperTransportation_ShallFail()
 	{
 		// Reverse it => shall throw exception
-		docActionBL.processEx(shipperTransportation, DocAction.ACTION_Reverse_Correct, null);
+		docActionBL.processEx(shipperTransportation, IDocument.ACTION_Reverse_Correct, null);
 	}
 
 	private I_M_ShipperTransportation createShipperTransporation()
@@ -110,8 +110,8 @@ public class TourInstance_ShipperTransporation_IntegrationTest extends TourPlann
 		final I_M_ShipperTransportation shipperTransportation = InterfaceWrapperHelper.newInstance(I_M_ShipperTransportation.class, contextProvider);
 		shipperTransportation.setProcessed(false);
 		shipperTransportation.setProcessing(false);
-		shipperTransportation.setDocStatus(DocAction.STATUS_Drafted);
-		shipperTransportation.setDocAction(DocAction.ACTION_Complete);
+		shipperTransportation.setDocStatus(IDocument.STATUS_Drafted);
+		shipperTransportation.setDocAction(IDocument.ACTION_Complete);
 		InterfaceWrapperHelper.save(shipperTransportation);
 
 		return shipperTransportation;

@@ -37,7 +37,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.invoice.service.IInvoiceBL;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.ILoggable;
@@ -54,7 +54,6 @@ import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.MPriceList;
-import org.compiere.process.DocAction;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.TrxRunnable;
@@ -63,7 +62,8 @@ import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.adempiere.model.I_C_Order;
-import de.metas.document.engine.IDocActionBL;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.IADMessageDAO;
 import de.metas.i18n.IMsgBL;
 import de.metas.interfaces.I_C_OrderLine;
@@ -95,7 +95,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 	private final transient IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 	private final transient IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	private final transient IInvoiceCandidateListeners invoiceCandListeners = Services.get(IInvoiceCandidateListeners.class);
-	private final transient IDocActionBL docActionBL = Services.get(IDocActionBL.class);
+	private final transient IDocumentBL docActionBL = Services.get(IDocumentBL.class);
 	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final transient IWFExecutionFactory wfExecutionFactory = Services.get(IWFExecutionFactory.class);
 	private final transient IADMessageDAO msgDAO = Services.get(IADMessageDAO.class);
@@ -215,7 +215,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 
 			//
 			// Complete the invoice and assume it's status is COmpleted.
-			docActionBL.processEx(invoice, DocAction.ACTION_Complete, DocAction.STATUS_Completed);
+			docActionBL.processEx(invoice, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
 
 			//
 			// Set the created invoice which will be retrieved by the caller.
@@ -702,7 +702,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 
 			// Create ASI
 			final I_M_AttributeSetInstance asi = InterfaceWrapperHelper.create(getCtx(), I_M_AttributeSetInstance.class, getTrxName());
-			asi.setM_AttributeSet_ID(IAttributeDAO.M_AttributeSet_ID_None);
+			asi.setM_AttributeSet_ID(AttributeConstants.M_AttributeSet_ID_None);
 			InterfaceWrapperHelper.save(asi);
 
 			// Create one Attribute Instance for each invoice line attribute

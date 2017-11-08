@@ -24,7 +24,7 @@ import de.metas.procurement.base.rfq.model.I_C_RfQResponseLine;
  * #L%
  */
 
-public interface I_C_Flatrate_Term extends de.metas.flatrate.model.I_C_Flatrate_Term
+public interface I_C_Flatrate_Term extends de.metas.contracts.model.I_C_Flatrate_Term
 {
 	//@formatter:off
 	public static final String COLUMNNAME_PMM_Product_ID = "PMM_Product_ID";

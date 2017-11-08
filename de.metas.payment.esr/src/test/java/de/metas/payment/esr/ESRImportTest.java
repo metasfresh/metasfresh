@@ -69,7 +69,7 @@ import de.metas.adempiere.service.IPeriodBL;
 import de.metas.allocation.api.IAllocationDAO;
 import de.metas.attachments.IAttachmentBL;
 import de.metas.document.IDocTypeDAO;
-import de.metas.document.engine.IDocActionBL;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.document.refid.api.IReferenceNoDAO;
 import de.metas.document.refid.model.I_C_ReferenceNo;
 import de.metas.document.refid.model.I_C_ReferenceNo_Doc;
@@ -293,7 +293,7 @@ public class ESRImportTest extends ESRTestBase
 		final I_C_Payment esrLine1Payment2 = esrImportLine2.getC_Payment();
 		InterfaceWrapperHelper.refresh(esrLine1Payment2, true);
 		assertThat(esrLine1Payment2.getPayAmt(), comparesEqualTo(new BigDecimal(25)));
-		assertThat(esrLine1Payment2.getC_Invoice_ID(), is(-1));
+		assertThat(esrLine1Payment2.getC_Invoice_ID(), is(0));
 		assertThat(esrLine1Payment2.isAllocated(), is(false));
 
 		// check allocations - first payment
@@ -351,7 +351,7 @@ public class ESRImportTest extends ESRTestBase
 		// check the created payments
 		I_C_Payment esrLine1Payment = esrImportLine.getC_Payment();
 		assertThat(esrLine1Payment.getPayAmt(), comparesEqualTo(new BigDecimal(50)));
-		assertThat(esrLine1Payment.getC_Invoice_ID(), is(-1));
+		assertThat(esrLine1Payment.getC_Invoice_ID(), is(0));
 		assertThat(esrLine1Payment.isAllocated(), is(false));
 
 		// shall be a previous allocation
@@ -452,7 +452,7 @@ public class ESRImportTest extends ESRTestBase
 		// check the created payments
 		I_C_Payment esrLine1Payment = esrImportLine.getC_Payment();
 		assertThat(esrLine1Payment.getPayAmt(), comparesEqualTo(new BigDecimal(25)));
-		assertThat(esrLine1Payment.getC_Invoice_ID(), is(-1));
+		assertThat(esrLine1Payment.getC_Invoice_ID(), is(0));
 		assertThat(esrLine1Payment.isAllocated(), is(false));
 
 		// Registrate payment action handlers.
@@ -534,7 +534,7 @@ public class ESRImportTest extends ESRTestBase
 		// check the created payments
 		final I_C_Payment esrLine1Payment = esrImportLine.getC_Payment();
 		assertThat(esrLine1Payment.getPayAmt(), comparesEqualTo(new BigDecimal(70)));
-		assertThat(esrLine1Payment.getC_Invoice_ID(), is(-1));
+		assertThat(esrLine1Payment.getC_Invoice_ID(), is(0));
 		assertThat(esrLine1Payment.isAllocated(), is(false));
 
 		// Registrate payment action handlers.
@@ -615,7 +615,7 @@ public class ESRImportTest extends ESRTestBase
 		// check the created payments
 		final I_C_Payment esrLine1Payment = esrImportLine.getC_Payment();
 		assertThat(esrLine1Payment.getPayAmt(), comparesEqualTo(new BigDecimal(70)));
-		assertThat(esrLine1Payment.getC_Invoice_ID(), is(-1));
+		assertThat(esrLine1Payment.getC_Invoice_ID(), is(0));
 		assertThat(esrLine1Payment.isAllocated(), is(false));
 
 		// allocations
@@ -1054,7 +1054,7 @@ public class ESRImportTest extends ESRTestBase
 		Services.get(IESRImportDAO.class);
 		Services.get(IAttachmentBL.class);
 		Services.get(IESRImportBL.class);
-		Services.get(IDocActionBL.class);
+		Services.get(IDocumentBL.class);
 		Services.get(ITrxManager.class);
 		Services.get(ITrxConstraintsBL.class);
 		Services.get(ISysConfigBL.class);

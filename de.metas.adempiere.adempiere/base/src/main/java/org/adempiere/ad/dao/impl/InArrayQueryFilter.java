@@ -39,6 +39,8 @@ import org.apache.ecs.xhtml.code;
 
 import com.google.common.collect.ImmutableList;
 
+import lombok.NonNull;
+
 /**
  * In Array Query filter: Checks if given columnName is in a list of values.
  *
@@ -77,9 +79,8 @@ public class InArrayQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 	 * @param columnName
 	 * @param values
 	 */
-	public InArrayQueryFilter(final String columnName, final Object... values)
+	public InArrayQueryFilter(@NonNull final String columnName, final Object... values)
 	{
-		Check.assumeNotNull(columnName, "columnName not null");
 		this.columnName = columnName;
 
 		if (values == null || values.length == 0)

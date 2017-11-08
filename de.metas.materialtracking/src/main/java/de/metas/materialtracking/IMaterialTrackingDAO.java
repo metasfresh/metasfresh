@@ -33,7 +33,7 @@ import org.compiere.model.I_C_Period;
 import org.compiere.model.I_M_AttributeValue;
 import org.eevolution.model.I_PP_Order;
 
-import de.metas.flatrate.model.I_C_Flatrate_Term;
+import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.materialtracking.ch.lagerkonf.interfaces.I_M_Material_Tracking;
 import de.metas.materialtracking.ch.lagerkonf.model.I_M_Material_Tracking_Report;
 import de.metas.materialtracking.model.I_M_Material_Tracking_Ref;

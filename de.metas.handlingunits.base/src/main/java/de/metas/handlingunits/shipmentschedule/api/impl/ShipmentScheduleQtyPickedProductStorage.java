@@ -31,12 +31,13 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 
-import de.metas.handlingunits.IHUCapacityDefinition;
 import de.metas.handlingunits.storage.impl.AbstractProductStorage;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.quantity.Capacity;
+import de.metas.quantity.CapacityInterface;
 
 /**
  * Product storage oriented on {@link I_M_ShipmentSchedule}'s QtyPicked.
@@ -54,7 +55,6 @@ public class ShipmentScheduleQtyPickedProductStorage extends AbstractProductStor
 
 	public ShipmentScheduleQtyPickedProductStorage(final I_M_ShipmentSchedule shipmentSchedule)
 	{
-		super();
 		setConsiderForceQtyAllocationFromRequest(false); // TODO: consider changing it to "true" (default)
 
 		Check.assumeNotNull(shipmentSchedule, "shipmentSchedule not null");
@@ -71,8 +71,8 @@ public class ShipmentScheduleQtyPickedProductStorage extends AbstractProductStor
 		// NOTE: we cannot relly on QtyToDeliver because that one is about what it needs to be delivered and we are able to deliver it.
 		// But in our case we need to have how much is Picked but not delivered because we want to let the API/user to "un-pick" that quantity if he wants.
 
-		final IHUCapacityDefinition capacityTotal = getTotalCapacity();
-		final BigDecimal qtyTarget = capacityTotal.getCapacity();
+		final CapacityInterface capacityTotal = getTotalCapacity();
+		final BigDecimal qtyTarget = capacityTotal.getCapacityQty();
 		BigDecimal qtyToPick = qtyTarget;
 
 		// NOTE: we shall consider QtyDelivered and QtyPickedNotDelivered only if the QtyToDeliver_Override is not set,
@@ -90,7 +90,7 @@ public class ShipmentScheduleQtyPickedProductStorage extends AbstractProductStor
 	}
 
 	@Override
-	protected IHUCapacityDefinition retrieveTotalCapacity()
+	protected Capacity retrieveTotalCapacity()
 	{
 		checkStaled();
 
@@ -106,15 +106,15 @@ public class ShipmentScheduleQtyPickedProductStorage extends AbstractProductStor
 		else
 		{
 			// task 09005: make sure the correct qtyOrdered is taken from the shipmentSchedule
-			final BigDecimal qtyOrdered = Services.get(IShipmentScheduleEffectiveBL.class).getQtyOrdered(shipmentSchedule);
+			final BigDecimal qtyOrdered = Services.get(IShipmentScheduleEffectiveBL.class).computeQtyOrdered(shipmentSchedule);
 			qtyTarget = qtyOrdered;
 		}
 
 		//
 		// Create the total capacity based on qtyTarget
 		final I_M_Product product = shipmentSchedule.getM_Product();
-		final I_C_UOM uom = shipmentScheduleBL.getC_UOM(shipmentSchedule);
-		return capacityBL.createCapacity(
+		final I_C_UOM uom = shipmentScheduleBL.getUomOfProduct(shipmentSchedule);
+		return Capacity.createCapacity(
 				qtyTarget, // qty
 				product, // product
 				uom, // uom

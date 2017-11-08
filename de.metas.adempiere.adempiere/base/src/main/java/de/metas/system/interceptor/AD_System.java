@@ -52,8 +52,6 @@ public class AD_System
 				(isValueChanged(system, I_AD_System.COLUMNNAME_Name)
 						|| isValueChanged(system, I_AD_System.COLUMNNAME_UserName)
 						|| isValueChanged(system, I_AD_System.COLUMNNAME_Password)
-						|| isValueChanged(system, I_AD_System.COLUMNNAME_LDAPHost)
-						|| isValueChanged(system, I_AD_System.COLUMNNAME_LDAPDomain)
 						|| isValueChanged(system, I_AD_System.COLUMNNAME_CustomPrefix));
 		if (userChange)
 		{

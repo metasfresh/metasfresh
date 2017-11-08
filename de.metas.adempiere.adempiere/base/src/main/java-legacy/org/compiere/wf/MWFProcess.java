@@ -20,19 +20,22 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.util.Services;
 import org.compiere.model.MTable;
 import org.compiere.model.PO;
 import org.compiere.model.Query;
 import org.compiere.model.X_AD_WF_Process;
-import org.compiere.process.DocAction;
 import org.compiere.process.StateEngine;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.Util;
 
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.process.ProcessInfo;
 
 
@@ -175,7 +178,7 @@ public class MWFProcess extends X_AD_WF_Process
 		if (!requery && m_activities != null)
 			return m_activities;
 		//
-		ArrayList<Object> params = new ArrayList<Object>();
+		ArrayList<Object> params = new ArrayList<>();
 		StringBuffer whereClause = new StringBuffer("AD_WF_Process_ID=?");
 		params.add(getAD_WF_Process_ID());
 		if (onlyActive)
@@ -416,23 +419,23 @@ public class MWFProcess extends X_AD_WF_Process
 		//	Invoker - get Sales Rep or last updater of Document
 		if (AD_User_ID == 0 && resp.isInvoker())
 		{
-			getPO();
+			final PO po = getPO();
 			//	(2) Doc Owner
-			if (m_po != null && m_po instanceof DocAction)
+			final IDocument document = po != null ? Services.get(IDocumentBL.class).getDocumentOrNull(po) : null;
+			if (document != null)
 			{
-				DocAction da = (DocAction)m_po;
-				AD_User_ID = da.getDoc_User_ID();
+				AD_User_ID = document.getDoc_User_ID();
 			}
 			//	(2) Sales Rep
-			if (AD_User_ID == 0 && m_po != null && m_po.get_ColumnIndex("SalesRep_ID") != -1)
+			if (AD_User_ID == 0 && po != null && po.get_ColumnIndex("SalesRep_ID") != -1)
 			{
-				Object sr = m_po.get_Value("SalesRep_ID");
+				Object sr = po.get_Value("SalesRep_ID");
 				if (sr != null && sr instanceof Integer)
 					AD_User_ID = ((Integer)sr).intValue();
 			}
 			//	(3) UpdatedBy
-			if (AD_User_ID == 0 && m_po != null)
-				AD_User_ID = m_po.getUpdatedBy();
+			if (AD_User_ID == 0 && po != null)
+				AD_User_ID = po.getUpdatedBy();
 		}
 		
 		//	(4) Process Owner
@@ -540,10 +543,13 @@ public class MWFProcess extends X_AD_WF_Process
 	 * 	Set Text Msg (add to existing)
 	 *	@param po base object
 	 */
-	public void setTextMsg (PO po)
+	public void setTextMsg (final PO po)
 	{
-		if (po != null && po instanceof DocAction)
-			setTextMsg(((DocAction)po).getSummary());
+		final IDocument document = po != null ? Services.get(IDocumentBL.class).getDocumentOrNull(po) : null;
+		if (document != null)
+		{
+			setTextMsg(document.getSummary());
+		}
 	}	//	setTextMsg	
 
 	/**

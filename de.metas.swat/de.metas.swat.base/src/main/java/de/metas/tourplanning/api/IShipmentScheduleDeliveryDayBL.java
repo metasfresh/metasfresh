@@ -51,7 +51,6 @@ public interface IShipmentScheduleDeliveryDayBL extends ISingletonService
 
 	/**
 	 * <ul>
-	 * <li>Update's shipment schedule's DeliveryDate and PreparationDate from order lines.
 	 * <li>create/update shipment schedule to {@link I_M_DeliveryDay} allocation (i.e. {@link I_M_DeliveryDay_Alloc})
 	 * 
 	 * @param sched
