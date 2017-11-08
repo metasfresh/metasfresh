@@ -1735,31 +1735,6 @@ public interface I_C_BPartner
     public static final String COLUMNNAME_POReferencePattern = "POReferencePattern";
 
 	/**
-	 * Set PostageFreeAmt.
-	 * Betrag zur Bestimmung der Potofreigrenze im Lieferlauf.
-	 *
-	 * <br>Type: Amount
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setPostageFreeAmt (java.math.BigDecimal PostageFreeAmt);
-
-	/**
-	 * Get PostageFreeAmt.
-	 * Betrag zur Bestimmung der Potofreigrenze im Lieferlauf.
-	 *
-	 * <br>Type: Amount
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.math.BigDecimal getPostageFreeAmt();
-
-    /** Column definition for PostageFreeAmt */
-    public static final org.adempiere.model.ModelColumn<I_C_BPartner, Object> COLUMN_PostageFreeAmt = new org.adempiere.model.ModelColumn<I_C_BPartner, Object>(I_C_BPartner.class, "PostageFreeAmt", null);
-    /** Column name PostageFreeAmt */
-    public static final String COLUMNNAME_PostageFreeAmt = "PostageFreeAmt";
-
-	/**
 	 * Set Möglicher Gesamtertrag.
 	 * Total Revenue expected
 	 *

@@ -14,7 +14,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Profile;
 
-import de.metas.material.dispo.service.event.MDEventListener;
+import de.metas.material.dispo.service.event.MaterialDispoEventListenerFacade;
 import de.metas.material.event.MaterialEventService;
 
 /*
@@ -67,7 +67,7 @@ public class Application
 	private MaterialEventService eventService;
 
 	@Autowired
-	private MDEventListener mdEventListener;
+	private MaterialDispoEventListenerFacade mdEventListener;
 
 	@Bean
 	@Profile("!test")

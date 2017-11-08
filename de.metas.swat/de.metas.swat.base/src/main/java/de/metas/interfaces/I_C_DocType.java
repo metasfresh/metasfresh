@@ -26,10 +26,4 @@ package de.metas.interfaces;
 public interface I_C_DocType extends org.compiere.model.I_C_DocType
 {
 	public static final String DOCSUBTYPE_InOutAmountCorrection = "EC";
-
-	//@formatter:off
-	public static final String COLUMNNAME_EntityType = "EntityType";
-	public String getEntityType();
-	public void setEntityType(String EntityType);
-	//@formatter:on
 }

@@ -184,7 +184,7 @@ public class WarehouseDAO implements IWarehouseDAO
 		final IQueryBuilder<I_M_Warehouse> queryBuilder = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_M_Warehouse.class, ctx, ITrx.TRXNAME_None);
 
-		queryBuilder.getFilters()
+		queryBuilder.getCompositeFilter()
 				.addEqualsFilter(I_M_Warehouse.COLUMNNAME_AD_Org_ID, adOrgId)
 				.addEqualsFilter(I_M_Warehouse.COLUMNNAME_IsInTransit, true)
 				.addOnlyActiveRecordsFilter();
@@ -216,7 +216,7 @@ public class WarehouseDAO implements IWarehouseDAO
 		final IQueryBuilder<I_M_Warehouse> queryBuilder = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_M_Warehouse.class, ctx, ITrx.TRXNAME_None);
 
-		queryBuilder.getFilters()
+		queryBuilder.getCompositeFilter()
 				.addEqualsFilter(I_M_Warehouse.COLUMNNAME_AD_Org_ID, AD_Org_ID)
 				.addOnlyActiveRecordsFilter();
 

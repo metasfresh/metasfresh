@@ -396,11 +396,14 @@ public class InvoiceLineBL implements IInvoiceLineBL
 		invoiceLine.setPriceEntered(pricingResult.getPriceStd());
 		invoiceLine.setPriceActual(pricingResult.getPriceStd());
 
-		//
-		// Discount
-
-		invoiceLine.setDiscount(pricingResult.getDiscount());
-
+		// Issue https://github.com/metasfresh/metasfresh/issues/2400:
+		// If the line has a discout, we assome it was manually added and stick with it
+		// When invoices are created by the system, there is no need to change an already-set discound (and this code is executed only once anyways)
+		if (invoiceLine.getDiscount().signum() == 0)   
+		{
+			invoiceLine.setDiscount(pricingResult.getDiscount());
+		}
+		
 		//
 		// Calculate PriceActual from PriceEntered and Discount
 		calculatePriceActual(invoiceLine, pricingResult.getPrecision());

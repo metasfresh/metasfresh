@@ -42,7 +42,7 @@ public interface IPMMContractsDAO extends ISingletonService
 
 	boolean hasRunningContract(I_C_BPartner bpartner);
 
-	I_C_Flatrate_DataEntry retrieveFlatrateDataEntry(de.metas.flatrate.model.I_C_Flatrate_Term flatrateTerm, Timestamp date);
+	I_C_Flatrate_DataEntry retrieveFlatrateDataEntry(de.metas.contracts.model.I_C_Flatrate_Term flatrateTerm, Timestamp date);
 
 	boolean hasRunningContracts(I_PMM_Product pmmProduct);
 

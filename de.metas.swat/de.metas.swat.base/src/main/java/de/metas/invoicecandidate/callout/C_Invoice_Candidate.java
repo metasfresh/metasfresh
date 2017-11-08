@@ -33,14 +33,18 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
+import org.compiere.Adempiere;
 
 import de.metas.invoicecandidate.api.IAggregationBL;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerDAO;
+import de.metas.invoicecandidate.compensationGroup.InvoiceCandidateGroupRepository;
+import de.metas.invoicecandidate.compensationGroup.InvoiceCandidatesStorage;
 import de.metas.invoicecandidate.model.I_C_ILCandHandler;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.impl.ManualCandidateHandler;
+import de.metas.order.compensationGroup.Group;
 
 @Callout(I_C_Invoice_Candidate.class)
 public class C_Invoice_Candidate
@@ -139,5 +143,17 @@ public class C_Invoice_Candidate
 	public void onQualityDiscountPercentOverride(final I_C_Invoice_Candidate ic, final ICalloutField field)
 	{
 		ic.setIsInDispute(false);
+	}
+	
+	@CalloutMethod(columnNames = I_C_Invoice_Candidate.COLUMNNAME_GroupCompensationPercentage)
+	public void onGroupCompensationPercentageChanged(final I_C_Invoice_Candidate ic)
+	{
+		final InvoiceCandidateGroupRepository groupsRepo = Adempiere.getBean(InvoiceCandidateGroupRepository.class);
+
+		final Group group = groupsRepo.createPartialGroupFromCompensationLine(ic);
+		group.updateAllPercentageLines();
+
+		final InvoiceCandidatesStorage orderLinesStorage = groupsRepo.createNotSaveableSingleOrderLineStorage(ic);
+		groupsRepo.saveGroup(group, orderLinesStorage);
 	}
 }

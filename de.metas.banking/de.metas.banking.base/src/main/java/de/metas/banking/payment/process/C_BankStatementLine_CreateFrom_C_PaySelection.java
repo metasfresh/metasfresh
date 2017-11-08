@@ -4,11 +4,11 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_PaySelection;
-import org.compiere.process.DocAction;
 
 import de.metas.banking.model.I_C_BankStatement;
 import de.metas.banking.payment.IPaySelectionBL;
-import de.metas.document.engine.IDocActionBL;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
@@ -19,7 +19,7 @@ public class C_BankStatementLine_CreateFrom_C_PaySelection extends JavaProcess i
 {
 	private final IPaySelectionBL paySelectionBL = Services.get(IPaySelectionBL.class);
 
-	private final IDocActionBL docActionBL = Services.get(IDocActionBL.class);
+	private final IDocumentBL docActionBL = Services.get(IDocumentBL.class);
 	
 	private int p_C_PaySelection_ID;
 
@@ -62,7 +62,7 @@ public class C_BankStatementLine_CreateFrom_C_PaySelection extends JavaProcess i
 		{
 			final I_C_BankStatement bankStatement = context.getSelectedModel(I_C_BankStatement.class);
 			return ProcessPreconditionsResolution.acceptIf(docActionBL.isDocumentStatusOneOf(bankStatement,
-					DocAction.STATUS_Drafted, DocAction.STATUS_InProgress));
+					IDocument.STATUS_Drafted, IDocument.STATUS_InProgress));
 		}
 		return ProcessPreconditionsResolution.reject();
 	}

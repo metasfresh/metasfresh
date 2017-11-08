@@ -35,6 +35,8 @@ import org.compiere.util.Util.ArrayKey;
 
 import com.google.common.collect.ImmutableSet;
 
+import lombok.NonNull;
+
 /**
  * Singleton used to hold the immutable classes list.
  * 
@@ -85,10 +87,8 @@ public final class CacheImmutableClassesIndex
 	 * @param clazz
 	 * @return true if given class is considered to be immutable
 	 */
-	public boolean isImmutable(final Class<?> clazz)
+	public boolean isImmutable(@NonNull final Class<?> clazz)
 	{
-		Check.assumeNotNull(clazz, "clazz not null");
-
 		// Primitive types are always immutable
 		if (clazz.isPrimitive())
 		{

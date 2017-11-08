@@ -29,9 +29,9 @@ import org.adempiere.ad.ui.ITable;
 import org.adempiere.ad.ui.TableColorProviderAdapter;
 import org.adempiere.util.Check;
 
-import de.metas.adempiere.form.ITableRowSearchSelectionMatcher;
-import de.metas.adempiere.form.PackingMd;
-import de.metas.adempiere.form.TableRowKey;
+import de.metas.picking.legacy.form.ITableRowSearchSelectionMatcher;
+import de.metas.picking.legacy.form.PackingMd;
+import de.metas.picking.legacy.form.TableRowKey;
 import de.metas.picking.terminal.form.swing.SwingPickingOKPanel;
 
 /**

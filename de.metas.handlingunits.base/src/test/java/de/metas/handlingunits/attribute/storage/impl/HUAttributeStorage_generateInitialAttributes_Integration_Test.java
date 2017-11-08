@@ -10,12 +10,12 @@ package de.metas.handlingunits.attribute.storage.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -28,6 +28,7 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 
+import org.adempiere.mm.attributes.api.impl.AttributesTestHelper;
 import org.adempiere.mm.attributes.spi.IAttributeValueGenerator;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
@@ -114,7 +115,7 @@ public class HUAttributeStorage_generateInitialAttributes_Integration_Test exten
 		}
 
 		final boolean isInstanceAttribute = true;
-		final I_M_Attribute attribute = helper.createM_Attribute(
+		final I_M_Attribute attribute = new AttributesTestHelper().createM_Attribute(
 				"ATTR_" + attributeValueGeneratorClass.getSimpleName(), // Attribute Name
 				attributeValueGenerator.getAttributeValueType(), // Attribute Type
 				attributeValueGeneratorClass,

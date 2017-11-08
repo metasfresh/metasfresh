@@ -154,11 +154,11 @@ import de.metas.logging.LogManager;
 				//
 				// Consider tables which have an AD_Table_ID/Record_ID reference to our column
 				+ " AND ("
-					+ " t.AD_Table_ID IN (SELECT AD_Table_ID FROM AD_Column WHERE ColumnName=? AND IsKey='N' AND IsParent='N') " // #2
+					+ " t.AD_Table_ID IN (SELECT AD_Table_ID FROM AD_Column WHERE ColumnName=? AND IsKey='N') " // #2
 					// metas: begin: support for "Zoomable Record_IDs" (03921)
 					+ " OR ("
-						+ " t.AD_Table_ID IN (SELECT AD_Table_ID FROM AD_Column WHERE ColumnName='AD_Table_ID' AND IsKey='N' AND IsParent='N')"
-						+ " AND t.AD_Table_ID IN (SELECT AD_Table_ID FROM AD_Column WHERE ColumnName='Record_ID' AND IsKey='N' AND IsParent='N' AND "+I_AD_Column.COLUMNNAME_AllowZoomTo+"='Y')"
+						+ " t.AD_Table_ID IN (SELECT AD_Table_ID FROM AD_Column WHERE ColumnName='AD_Table_ID' AND IsKey='N')"
+						+ " AND t.AD_Table_ID IN (SELECT AD_Table_ID FROM AD_Column WHERE ColumnName='Record_ID' AND IsKey='N' AND "+I_AD_Column.COLUMNNAME_AllowZoomTo+"='Y')"
 					+ ") "
 				+ ") "
 

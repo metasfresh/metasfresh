@@ -24,6 +24,7 @@ package de.metas.payment.sepa.api.impl;
 
 
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_PaySelection;
 
@@ -34,10 +35,12 @@ public class PaymentDAO implements IPaymentDAO
 {
 
 	@Override
-	public I_SEPA_Export retrieveForPaySelection(I_C_PaySelection paySelection)
+	public I_SEPA_Export retrieveForPaySelection(final I_C_PaySelection paySelection)
 	{
+		final int paySelectionTableID = InterfaceWrapperHelper.getTableId(I_C_PaySelection.class);
+		
 		return Services.get(IQueryBL.class).createQueryBuilder(I_SEPA_Export.class, paySelection)
-				.addEqualsFilter(I_SEPA_Export.COLUMNNAME_AD_Table_ID, I_C_PaySelection.Table_ID)
+				.addEqualsFilter(I_SEPA_Export.COLUMNNAME_AD_Table_ID, paySelectionTableID)
 				.addEqualsFilter(I_SEPA_Export.COLUMNNAME_Record_ID, paySelection.getC_PaySelection_ID())
 				.addEqualsFilter(I_SEPA_Export.COLUMNNAME_Processed, false)
 				.addOnlyActiveRecordsFilter()

@@ -55,7 +55,7 @@ import org.compiere.util.Ini;
 
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.commission.util.CommissionConstants;
-import de.metas.document.IDocumentPA;
+import de.metas.document.IDocTypeDAO;
 import de.metas.i18n.Msg;
 
 /**
@@ -102,8 +102,7 @@ public class Invoice extends CalloutEngine
 				|| !CommissionConstants.COMMISSON_INVOICE_DOCSUBTYPE_CORRECTION.equals(dt.getDocSubType()))
 		{
 			// nothing to do
-			final IDocumentPA docPA = Services.get(IDocumentPA.class);
-			final I_C_DocType dtCorr = docPA.retrieve(ctx, invoice.getAD_Org_ID(), Constants.DOCBASETYPE_AEInvoice, CommissionConstants.COMMISSON_INVOICE_DOCSUBTYPE_CORRECTION, true, null);
+			final I_C_DocType dtCorr = Services.get(IDocTypeDAO.class).getDocType(Constants.DOCBASETYPE_AEInvoice, CommissionConstants.COMMISSON_INVOICE_DOCSUBTYPE_CORRECTION, invoice.getAD_Client_ID(), invoice.getAD_Org_ID());
 			if (dtCorr != null)
 			{
 				final String msg = Msg.getMsg(ctx, MSG_INVOICECORR_CREATEFROM_WRONG_DOCTYPE_1P, new Object[] { dtCorr.getName() });

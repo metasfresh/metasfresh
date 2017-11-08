@@ -42,7 +42,6 @@ import org.compiere.model.MBPartnerLocation;
 import org.compiere.model.MUOM;
 import org.compiere.model.Query;
 
-import test.integration.contracts.flatrate.FlatFeeScenario;
 import de.metas.adempiere.ait.event.AIntegrationTestDriver;
 import de.metas.adempiere.ait.event.EventType;
 import de.metas.adempiere.ait.helper.GridWindowHelper;
@@ -51,23 +50,24 @@ import de.metas.adempiere.ait.helper.IHelper;
 import de.metas.adempiere.ait.helper.TestConfig;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.adempiere.model.I_M_Product;
+import de.metas.contracts.IFlatrateDAO;
+import de.metas.contracts.model.I_C_Contract_Change;
+import de.metas.contracts.model.I_C_Flatrate_Conditions;
+import de.metas.contracts.model.I_C_Flatrate_Data;
+import de.metas.contracts.model.I_C_Flatrate_DataEntry;
+import de.metas.contracts.model.I_C_Flatrate_Matching;
+import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.contracts.model.I_C_Flatrate_Transition;
+import de.metas.contracts.model.X_C_Contract_Change;
+import de.metas.contracts.model.X_C_Flatrate_Conditions;
+import de.metas.contracts.model.X_C_Flatrate_DataEntry;
+import de.metas.contracts.model.X_C_Flatrate_Term;
+import de.metas.contracts.model.X_C_Flatrate_Transition;
 import de.metas.currency.ICurrencyDAO;
-import de.metas.document.engine.IDocActionBL;
-import de.metas.flatrate.api.IFlatrateDAO;
-import de.metas.flatrate.model.I_C_Contract_Change;
-import de.metas.flatrate.model.I_C_Flatrate_Conditions;
-import de.metas.flatrate.model.I_C_Flatrate_Data;
-import de.metas.flatrate.model.I_C_Flatrate_DataEntry;
-import de.metas.flatrate.model.I_C_Flatrate_Matching;
-import de.metas.flatrate.model.I_C_Flatrate_Term;
-import de.metas.flatrate.model.I_C_Flatrate_Transition;
-import de.metas.flatrate.model.X_C_Contract_Change;
-import de.metas.flatrate.model.X_C_Flatrate_Conditions;
-import de.metas.flatrate.model.X_C_Flatrate_DataEntry;
-import de.metas.flatrate.model.X_C_Flatrate_Term;
-import de.metas.flatrate.model.X_C_Flatrate_Transition;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import test.integration.contracts.flatrate.FlatFeeScenario;
 
 public class ContractsHelper extends HelperDelegator
 {
@@ -174,7 +174,7 @@ public class ContractsHelper extends HelperDelegator
 		change.setM_Product_ID(chargeProduct.getM_Product_ID());
 		gridWindowHelper.save();
 
-		Services.get(IDocActionBL.class).processEx(trans, X_C_Flatrate_Transition.DOCACTION_Complete, X_C_Flatrate_Transition.DOCSTATUS_Completed);
+		Services.get(IDocumentBL.class).processEx(trans, X_C_Flatrate_Transition.DOCACTION_Complete, X_C_Flatrate_Transition.DOCSTATUS_Completed);
 
 		InterfaceWrapperHelper.refresh(trans);
 		assertThat(trans.getDocStatus(), equalTo(X_C_Flatrate_Transition.DOCSTATUS_Completed));
@@ -186,7 +186,7 @@ public class ContractsHelper extends HelperDelegator
 			final AIntegrationTestDriver driver,
 			final I_C_Flatrate_Conditions conditions)
 	{
-		assertThat(conditions.getType_Conditions(), equalTo(X_C_Flatrate_Conditions.TYPE_CONDITIONS_Abonnement));
+		assertThat(conditions.getType_Conditions(), equalTo(X_C_Flatrate_Conditions.TYPE_CONDITIONS_Subscription));
 
 		final GridWindowHelper gridWindowHelper = mkGridWindowHelper();
 		final ContractsTestConfig testConfig = getContractsTestConfig();
@@ -210,7 +210,7 @@ public class ContractsHelper extends HelperDelegator
 			final AIntegrationTestDriver driver,
 			final I_C_Flatrate_Conditions conditions)
 	{
-		assertThat(conditions.getType_Conditions(), equalTo(X_C_Flatrate_Conditions.TYPE_CONDITIONS_Depotgebuehr));
+		assertThat(conditions.getType_Conditions(), equalTo(X_C_Flatrate_Conditions.TYPE_CONDITIONS_HoldingFee));
 
 		final GridWindowHelper gridWindowHelper = mkGridWindowHelper();
 		final TestConfig testConfig = getConfig();
@@ -226,7 +226,7 @@ public class ContractsHelper extends HelperDelegator
 			final AIntegrationTestDriver driver,
 			final I_C_Flatrate_Conditions conditions)
 	{
-		assertThat(conditions.getType_Conditions(), equalTo(X_C_Flatrate_Conditions.TYPE_CONDITIONS_Pauschalengebuehr));
+		assertThat(conditions.getType_Conditions(), equalTo(X_C_Flatrate_Conditions.TYPE_CONDITIONS_FlatFee));
 
 		final GridWindowHelper gridWindowHelper = mkGridWindowHelper();
 		final TestConfig testConfig = getConfig();
@@ -313,10 +313,7 @@ public class ContractsHelper extends HelperDelegator
 		final ContractsTestConfig testConfig = getContractsTestConfig();
 
 		// this is the part specific to subscription
-		conditions.setType_Conditions(X_C_Flatrate_Conditions.TYPE_CONDITIONS_Abonnement);
-
-		// 03660
-		conditions.setIsNewTermCreatesOrder(testConfig.getCustomParamBool(FlatFeeScenario.PARAM_BOOL_IS_CREATE_ORDER_LINES));
+		conditions.setType_Conditions(X_C_Flatrate_Conditions.TYPE_CONDITIONS_Subscription);
 
 		createConditionsCommonEnd(driver, gridWindowHelper, conditions,
 				testConfig.getM_Product_Matching_Subcr_Value(),
@@ -333,7 +330,7 @@ public class ContractsHelper extends HelperDelegator
 		createCommonForNonSubscription(conditions);
 
 		// this is the part specific to holding fee
-		conditions.setType_Conditions(X_C_Flatrate_Conditions.TYPE_CONDITIONS_Depotgebuehr);
+		conditions.setType_Conditions(X_C_Flatrate_Conditions.TYPE_CONDITIONS_HoldingFee);
 
 		final ContractsTestConfig testConfig = getContractsTestConfig();
 
@@ -352,7 +349,7 @@ public class ContractsHelper extends HelperDelegator
 		createCommonForNonSubscription(conditions);
 
 		// this is the part specific to flat fee
-		conditions.setType_Conditions(X_C_Flatrate_Conditions.TYPE_CONDITIONS_Pauschalengebuehr);
+		conditions.setType_Conditions(X_C_Flatrate_Conditions.TYPE_CONDITIONS_FlatFee);
 
 		final ContractsTestConfig testConfig = getContractsTestConfig();
 		conditions.setUOMType(testConfig.getFlatrateUOMType());
@@ -360,7 +357,7 @@ public class ContractsHelper extends HelperDelegator
 
 		conditions.setIsClosingWithActualSum(true);
 
-		conditions.setType_Flatrate(X_C_Flatrate_Conditions.TYPE_FLATRATE_Korridor);
+		conditions.setType_Flatrate(X_C_Flatrate_Conditions.TYPE_FLATRATE_Corridor_Percent);
 		conditions.setMargin_Max(new BigDecimal("5"));
 		conditions.setMargin_Min(new BigDecimal("5"));
 

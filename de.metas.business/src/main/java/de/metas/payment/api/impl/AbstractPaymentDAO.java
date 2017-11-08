@@ -43,10 +43,10 @@ import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_PaySelection;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.I_Fact_Acct;
-import org.compiere.process.DocAction;
 
 import de.metas.adempiere.model.I_C_PaySelectionLine;
 import de.metas.allocation.api.IAllocationDAO;
+import de.metas.document.engine.IDocument;
 import de.metas.payment.api.IPaymentDAO;
 
 public abstract class AbstractPaymentDAO implements IPaymentDAO
@@ -88,7 +88,7 @@ public abstract class AbstractPaymentDAO implements IPaymentDAO
 		queryBuilder
 				.addEqualsFilter(I_C_Payment.COLUMNNAME_Posted, true) // Posted
 				.addEqualsFilter(I_C_Payment.COLUMNNAME_Processed, true) // Processed
-				.addInArrayOrAllFilter(I_C_Payment.COLUMN_DocStatus, DocAction.STATUS_Closed, DocAction.STATUS_Completed)  // DocStatus in ('CO', 'CL')
+				.addInArrayOrAllFilter(I_C_Payment.COLUMN_DocStatus, IDocument.STATUS_Closed, IDocument.STATUS_Completed)  // DocStatus in ('CO', 'CL')
 				;
 
 		// Only the documents created after the given start time
@@ -135,7 +135,7 @@ public abstract class AbstractPaymentDAO implements IPaymentDAO
 		queryBuilder
 				.addEqualsFilter(I_C_Payment.COLUMNNAME_C_BPartner_ID, invoice.getC_BPartner_ID()) // C_BPartner_ID
 				.addEqualsFilter(I_C_Payment.COLUMNNAME_Processed, true) // Processed
-				.addInArrayOrAllFilter(I_C_Payment.COLUMN_DocStatus, DocAction.STATUS_Closed, DocAction.STATUS_Completed)  // DocStatus in ('CO', 'CL')
+				.addInArrayOrAllFilter(I_C_Payment.COLUMN_DocStatus, IDocument.STATUS_Closed, IDocument.STATUS_Completed)  // DocStatus in ('CO', 'CL')
 				.addEqualsFilter(I_C_Payment.COLUMNNAME_IsReceipt, isReceipt); // Matching DocType
 				
 	

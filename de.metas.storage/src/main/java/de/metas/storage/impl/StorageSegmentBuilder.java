@@ -41,7 +41,7 @@ public class StorageSegmentBuilder implements IStorageSegmentBuilder
 	private final Set<Integer> productIds = new HashSet<>();
 	private final Set<Integer> bpartnerIds = new HashSet<>();
 	private final Set<Integer> locatorIds = new HashSet<>();
-	private final Set<IStorageAttributeSegment> attributeSegments = new HashSet<IStorageAttributeSegment>();
+	private final Set<IStorageAttributeSegment> attributeSegments = new HashSet<>();
 
 	public StorageSegmentBuilder()
 	{
@@ -51,7 +51,12 @@ public class StorageSegmentBuilder implements IStorageSegmentBuilder
 	@Override
 	public IStorageSegment build()
 	{
-		return new ImmutableStorageSegment(productIds, bpartnerIds, locatorIds, attributeSegments);
+		return ImmutableStorageSegment.builder()
+				.M_Product_IDs(productIds)
+				.M_Locator_IDs(locatorIds)
+				.C_BPartner_IDs(bpartnerIds)
+				.attributeSegments(attributeSegments)
+				.build();
 	}
 
 	@Override

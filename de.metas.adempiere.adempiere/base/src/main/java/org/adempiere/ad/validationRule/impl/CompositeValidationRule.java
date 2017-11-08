@@ -13,11 +13,11 @@ package org.adempiere.ad.validationRule.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -31,6 +31,7 @@ import org.adempiere.ad.expression.api.impl.CompositeStringExpression;
 import org.adempiere.ad.validationRule.INamePairPredicate;
 import org.adempiere.ad.validationRule.IValidationRule;
 import org.adempiere.ad.validationRule.NamePairPredicates;
+import org.compiere.util.ValueNamePair;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
@@ -63,7 +64,7 @@ public final class CompositeValidationRule implements IValidationRule
 	private final INamePairPredicate postQueryPredicates;
 
 	private Set<String> _allParameters; // lazy
-	
+
 	private CompositeValidationRule(final Builder builder)
 	{
 		super();
@@ -95,9 +96,9 @@ public final class CompositeValidationRule implements IValidationRule
 	@Override
 	public Set<String> getAllParameters()
 	{
-		if(_allParameters == null)
+		if (_allParameters == null)
 		{
-			_allParameters = ImmutableSet.<String>builder()
+			_allParameters = ImmutableSet.<String> builder()
 					.addAll(prefilterWhereClause.getParameterNames())
 					.addAll(postQueryPredicates.getParameters())
 					.build();
@@ -110,11 +111,30 @@ public final class CompositeValidationRule implements IValidationRule
 	{
 		return prefilterWhereClause;
 	}
-	
+
 	@Override
 	public INamePairPredicate getPostQueryFilter()
 	{
 		return postQueryPredicates;
+	}
+
+	@Override
+	public List<ValueNamePair> getExceptionTableAndColumns()
+	{
+		final List<ValueNamePair> exceptionTableAndColumns = new ArrayList<>();
+
+		for (final IValidationRule rule : rules)
+		{
+			exceptionTableAndColumns.addAll(rule.getExceptionTableAndColumns());
+		}
+
+		return exceptionTableAndColumns;
+	}
+
+	@Override
+	public void registerException(final String tableName, final String columnName)
+	{
+		throw new UnsupportedOperationException("There is no implementation for registering exceptions in the composite validation rule class: " + this);
 	}
 
 	@Override
@@ -151,7 +171,7 @@ public final class CompositeValidationRule implements IValidationRule
 				return new CompositeValidationRule(this);
 			}
 		}
-		
+
 		private IStringExpression buildPrefilterWhereClause()
 		{
 			final CompositeStringExpression.Builder builder = CompositeStringExpression.builder();
@@ -169,7 +189,7 @@ public final class CompositeValidationRule implements IValidationRule
 
 			return builder.build();
 		}
-		
+
 		public Builder add(final IValidationRule rule)
 		{
 			final boolean explodeComposite = false;

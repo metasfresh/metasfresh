@@ -43,7 +43,7 @@ import org.apache.commons.lang3.StringEscapeUtils;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
-import de.metas.document.engine.IDocActionBL;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.logging.LogManager;
 
 public class ADHyperlinkBuilder
@@ -73,7 +73,7 @@ public class ADHyperlinkBuilder
 			return "<" + recordRef.getRecord_ID() + ">";
 		}
 
-		String documentNo = Services.get(IDocActionBL.class).getDocumentNo(record);
+		String documentNo = Services.get(IDocumentBL.class).getDocumentNo(record);
 		final String tableName = InterfaceWrapperHelper.getModelTableName(record);
 		final int recordId = InterfaceWrapperHelper.getId(record);
 		return createShowWindowHTML(documentNo, tableName, recordId, adWindowId);

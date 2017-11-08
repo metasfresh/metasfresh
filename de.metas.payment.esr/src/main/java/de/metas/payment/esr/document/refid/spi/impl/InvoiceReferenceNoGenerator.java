@@ -29,19 +29,18 @@ import java.util.Properties;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Invoice;
-import org.compiere.model.MOrg;
-import org.compiere.model.PO;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.Util;
+import org.slf4j.Logger;
 
 import de.metas.document.refid.spi.IReferenceNoGenerator;
+import de.metas.logging.LogManager;
 import de.metas.payment.esr.ESRConstants;
 import de.metas.payment.esr.api.IBPBankAccountBL;
-import de.metas.payment.esr.api.IESRBPBankAccountDAO;
 import de.metas.payment.esr.api.IESRBL;
+import de.metas.payment.esr.api.IESRBPBankAccountDAO;
 import de.metas.payment.esr.api.IESRImportBL;
 import de.metas.payment.esr.model.I_C_BP_BankAccount;
 
@@ -67,27 +66,28 @@ public class InvoiceReferenceNoGenerator implements IReferenceNoGenerator
 	private final transient Logger logger = LogManager.getLogger(getClass());
 
 	@Override
-	public String generateReferenceNo(PO source)
+	public String generateReferenceNo(Object sourceModel)
 	{
 		// Do nothing if ESR is not enabled
-		final Properties ctx = source.getCtx();
+		final Properties ctx = InterfaceWrapperHelper.getCtx(sourceModel);
+		
 		if (!ESRConstants.isEnabled(ctx))
 		{
 			logger.debug("Skip generating because ESR not enabled");
 			return REFERENCENO_None;
 		}
 		
-		if(!Services.get(IESRBL.class).appliesForESRDocumentRefId(source))
+		if(!Services.get(IESRBL.class).appliesForESRDocumentRefId(sourceModel))
 		{
-			logger.debug("Skip generating because source does not apply: " + source);
+			logger.debug("Skip generating because source does not apply: " + sourceModel);
 			return REFERENCENO_None;
 		}
 
-		final I_C_Invoice invoice = InterfaceWrapperHelper.create(source, I_C_Invoice.class);
+		final I_C_Invoice invoice = InterfaceWrapperHelper.create(sourceModel, I_C_Invoice.class);
 				
 		final StringBuilder sb = new StringBuilder();
 
-		final MOrg org = MOrg.get(ctx, invoice.getAD_Org_ID());
+		final I_AD_Org org = invoice.getAD_Org();
 
 		final I_C_BPartner bPartner = invoice.getC_BPartner();
 
@@ -98,7 +98,7 @@ public class InvoiceReferenceNoGenerator implements IReferenceNoGenerator
 		final I_C_BP_BankAccount bankAccount = bankAccounts.get(0);
 
 		final IBPBankAccountBL bpBankAccountBL = Services.get(IBPBankAccountBL.class);
-		sb.append(Util.lpadZero(bpBankAccountBL.retrieveBankAccountNo(bankAccount), 7, "BankAccountNo"));
+		sb.append(Util.rpadZero(bpBankAccountBL.retrieveBankAccountNo(bankAccount), 7, "BankAccountNo"));
 
 		sb.append(Util.lpadZero(org.getValue(), 3, "organization"));
 		

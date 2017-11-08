@@ -35,6 +35,7 @@ import org.adempiere.ad.trx.api.ITrxRunConfig.OnRunnableFail;
 import org.adempiere.ad.trx.api.ITrxRunConfig.OnRunnableSuccess;
 import org.adempiere.ad.trx.api.ITrxRunConfig.TrxPropagation;
 import org.adempiere.ad.trx.spi.TrxListenerAdapter;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBDeadLockDetectedException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
@@ -73,8 +74,8 @@ import de.metas.async.processor.IQueueProcessor;
 import de.metas.async.processor.IWorkpackageSkipRequest;
 import de.metas.async.spi.IWorkpackageProcessor;
 import de.metas.async.spi.IWorkpackageProcessor.Result;
-import de.metas.i18n.IMsgBL;
 import de.metas.async.spi.IWorkpackageProcessor2;
+import de.metas.i18n.IMsgBL;
 import de.metas.lock.api.ILock;
 import de.metas.lock.api.ILockManager;
 import de.metas.lock.exceptions.LockFailedException;
@@ -89,10 +90,10 @@ import de.metas.notification.INotificationBL;
 	private static final transient Logger logger = LogManager.getLogger(WorkpackageProcessorTask.class);
 	private final transient IQueueDAO queueDAO = Services.get(IQueueDAO.class);
 	private final transient IWorkpackageParamDAO workpackageParamDAO = Services.get(IWorkpackageParamDAO.class);
-	private final IWorkpackageProcessorContextFactory contextFactory = Services.get(IWorkpackageProcessorContextFactory.class);
-	private final IAsyncBatchBL iAsyncBatchBL = Services.get(IAsyncBatchBL.class);
+	private final transient IWorkpackageProcessorContextFactory contextFactory = Services.get(IWorkpackageProcessorContextFactory.class);
+	private final transient IAsyncBatchBL iAsyncBatchBL = Services.get(IAsyncBatchBL.class);
 
-	private IQueueProcessor queueProcessor;
+	private final IQueueProcessor queueProcessor;
 	/** Workpackage processor (that we got as parameter) */
 	private final IWorkpackageProcessor workPackageProcessorOriginal;
 	/** Workpackage processor which is wrapped with all features that we have */
@@ -101,7 +102,7 @@ import de.metas.notification.INotificationBL;
 	private final String trxNamePrefix;
 
 	// task 09933 just adding this member for now, because it's unclear if in future we want to or have to extend on it or not.
-	private boolean retryOnDeadLock = true;
+	private final boolean retryOnDeadLock = true;
 
 	public WorkpackageProcessorTask(final IQueueProcessor queueProcessor,
 			final IWorkpackageProcessor workPackageProcessor,
@@ -112,9 +113,9 @@ import de.metas.notification.INotificationBL;
 		this.queueProcessor = queueProcessor;
 		this.workPackage = workPackage;
 
-		this.workPackageProcessorOriginal = workPackageProcessor;
-		this.workPackageProcessorWrapped = WorkpackageProcessor2Wrapper.wrapIfNeeded(workPackageProcessor);
-		this.trxNamePrefix = workPackageProcessorOriginal.getClass().getSimpleName(); // use work processor's name as trx name prefix
+		workPackageProcessorOriginal = workPackageProcessor;
+		workPackageProcessorWrapped = WorkpackageProcessor2Wrapper.wrapIfNeeded(workPackageProcessor);
+		trxNamePrefix = workPackageProcessorOriginal.getClass().getSimpleName(); // use work processor's name as trx name prefix
 	}
 
 	/**
@@ -281,8 +282,24 @@ import de.metas.notification.INotificationBL;
 
 		//
 		// Execute the processor
-		final Result result = workPackageProcessorWrapped.processWorkPackage(workPackage, trxName);
+		final Result result = invokeProcessorAndHandleException(trxName);
 		return result;
+	}
+
+	private Result invokeProcessorAndHandleException(final String trxName)
+	{
+		try
+		{
+			return workPackageProcessorWrapped.processWorkPackage(workPackage, trxName);
+		}
+		catch (final RuntimeException e)
+		{
+			throw AdempiereException.wrapIfNeeded(e)
+					.appendParametersToMessage()
+					.setParameter("I_C_Queue_WorkPackage", workPackage)
+					.setParameter("IQueueProcessor", queueProcessor)
+					.setParameter("trxName", trxName);
+		}
 	}
 
 	/**
@@ -393,7 +410,6 @@ import de.metas.notification.INotificationBL;
 
 		final Timestamp skippedAt = SystemTime.asTimestamp();
 		final Exception skipException = skipRequest.getException();
-//		final I_AD_Issue issue = skipException == null ? null : Services.get(IErrorManager.class).createIssue(null, skipException); // gh #160 : do not create ad_issue
 		final int skippedCount = workPackage.getSkipped_Count();
 
 		final int skipTimeoutMillis = skipRequest.getSkipTimeoutMillis() > 0 ? skipRequest.getSkipTimeoutMillis() : Async_Constants.DEFAULT_RETRY_TIMEOUT_MILLIS;
@@ -401,7 +417,6 @@ import de.metas.notification.INotificationBL;
 		workPackage.setProcessed(false); // just in case it was true
 		workPackage.setIsError(false); // just in case it was true
 		workPackage.setSkipped_Last_Reason(skipRequest.getSkipReason());
-//		workPackage.setAD_Issue(issue); // gh #160 : do not create ad_issue
 		workPackage.setSkippedAt(skippedAt);
 		workPackage.setSkipTimeoutMillis(skipTimeoutMillis);
 		workPackage.setSkipped_Count(skippedCount + 1);

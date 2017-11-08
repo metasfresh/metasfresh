@@ -4,6 +4,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.util.Env;
 
 import de.metas.adempiere.form.IClientUI;
@@ -63,8 +64,9 @@ public class ESR_Import_LoadFromFile
 	@RunOutOfTrx // ...because we might show a dialog to the user
 	protected String doIt() throws Exception
 	{
+		final I_ESR_Import esrImport = retrieveESR_Import();
 		ESRImportEnqueuer.newInstance()
-				.esrImport(retrieveESR_Import())
+				.esrImport(esrImport)
 				.fromDataSource(ESRImportEnqueuerDataSource.ofFile(p_FileName))
 				//
 				.asyncBatchName(p_AsyncBatchName)
@@ -92,6 +94,8 @@ public class ESR_Import_LoadFromFile
 				})
 				//
 				.execute();
+
+		getResult().setRecordToRefreshAfterExecution(TableRecordReference.of(esrImport));
 
 		return MSG_OK;
 	}

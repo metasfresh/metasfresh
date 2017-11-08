@@ -9,6 +9,7 @@ import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import com.google.common.base.Preconditions;
@@ -20,6 +21,7 @@ import de.metas.event.IEventListener;
 import de.metas.event.SimpleObjectSerializer;
 import de.metas.event.Topic;
 import de.metas.event.Type;
+import de.metas.logging.LogManager;
 import de.metas.material.event.impl.MaterialEventBus;
 import lombok.NonNull;
 
@@ -47,7 +49,9 @@ import lombok.NonNull;
 @Service
 public class MaterialEventService
 {
-	public static final String MANUFACTURING_DISPOSITION_EVENT = "ManufacturingDispositionEvent";
+	private static final Logger logger = LogManager.getLogger(MaterialEventService.class);
+
+	public static final String MATERIAL_DISPOSITION_EVENT = "MaterialDispositionEvent";
 
 	private final List<MaterialEventListener> listeners = new ArrayList<>();
 
@@ -59,24 +63,51 @@ public class MaterialEventService
 	private final IEventListener internalListener = new IEventListener()
 	{
 		@Override
-		public void onEvent(final IEventBus eventBus, final Event event)
+		public void onEvent(@NonNull final IEventBus eventBus, @NonNull final Event event)
 		{
-			final String lightWeigthEventStr = event.getProperty(MANUFACTURING_DISPOSITION_EVENT);
+			final String lightWeigthEventStr = event.getProperty(MATERIAL_DISPOSITION_EVENT);
 			final MaterialEvent lightWeightEvent = SimpleObjectSerializer.get().deserialize(lightWeigthEventStr, MaterialEvent.class);
+			logger.info("Received MaterialEvent={}", event);
 
 			//
 			// make sure that every record we create has the correct AD_Client_ID and AD_Org_ID
-			final Properties copyCtx = Env.copyCtx(Env.getCtx());
+			final Properties temporaryCtx = Env.copyCtx(Env.getCtx());
 
-			Env.setContext(copyCtx, Env.CTXNAME_AD_Client_ID, lightWeightEvent.getEventDescr().getClientId());
-			Env.setContext(copyCtx, Env.CTXNAME_AD_Org_ID, lightWeightEvent.getEventDescr().getOrgId());
+			Env.setContext(temporaryCtx, Env.CTXNAME_AD_Client_ID, lightWeightEvent.getEventDescriptor().getClientId());
+			Env.setContext(temporaryCtx, Env.CTXNAME_AD_Org_ID, lightWeightEvent.getEventDescriptor().getOrgId());
 
-			try (final IAutoCloseable c = Env.switchContext(copyCtx))
+			try (final IAutoCloseable c = Env.switchContext(temporaryCtx))
 			{
-				listeners.forEach(l -> l.onEvent(lightWeightEvent));
+				for (final MaterialEventListener listener : listeners)
+				{
+					listener.onEvent(lightWeightEvent);
+				}
 			}
 		}
+
+		@Override
+		public String toString()
+		{
+			return MaterialEventService.class.getName() + ".internalListener";
+		}
 	};
+
+	public static MaterialEventService createLocalServiceThatIsReadyToUse()
+	{
+		final MaterialEventService materialEventService = new MaterialEventService(Type.LOCAL);
+		materialEventService.subscribeToEventBus();
+		return materialEventService;
+	}
+
+	/**
+	 * Also see {@link #subscribeToEventBus()}.
+	 * 
+	 * @return
+	 */
+	public static MaterialEventService createDistributedServiceThatNeedsToSubscribe()
+	{
+		return new MaterialEventService(Type.REMOTE);
+	}
 
 	/**
 	 * Can be called to create a local-only event service which will not try to set up or connect to a message broker. Useful for testing.
@@ -85,7 +116,7 @@ public class MaterialEventService
 	 *
 	 * @param eventType
 	 */
-	public MaterialEventService(@NonNull final Type eventType)
+	private MaterialEventService(@NonNull final Type eventType)
 	{
 		eventBusTopic = Topic.builder()
 				.setName(MaterialEventBus.EVENTBUS_TOPIC_NAME)
@@ -102,7 +133,7 @@ public class MaterialEventService
 	 */
 	public synchronized void subscribeToEventBus()
 	{
-		if(subscribedToEventBus)
+		if (subscribedToEventBus)
 		{
 			return; // nothing to do
 		}
@@ -128,17 +159,17 @@ public class MaterialEventService
 	 * @param event
 	 * @param trxName
 	 */
-	public void fireEventAfterCommit(final MaterialEvent event, final String trxName)
+	public void fireEventAfterNextCommit(final MaterialEvent event, final String trxName)
 	{
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 		trxManager
 				.getTrxListenerManager(trxName)
-				.onAfterCommit(() -> fireEvent(event));
+				.onAfterNextCommit(() -> fireEvent(event));
 	}
 
 	/**
-	 * Fires the given event using our (distributed) event framework. If {@link #subscribeToEventBus()} was not yet invoked, an exception is thorwn.
+	 * Fires the given event using our (distributed) event framework. If {@link #subscribeToEventBus()} was not yet invoked, an exception is thrown.
 	 *
 	 * @param event
 	 */
@@ -149,10 +180,11 @@ public class MaterialEventService
 		final String eventStr = SimpleObjectSerializer.get().serialize(event);
 
 		final Event realEvent = Event.builder()
-				.putProperty(MANUFACTURING_DISPOSITION_EVENT, eventStr)
+				.putProperty(MATERIAL_DISPOSITION_EVENT, eventStr)
 				.build();
 
 		getEventBus().postEvent(realEvent);
+		logger.info("Posted MaterialEvent={}", event);
 	}
 
 	private IEventBus getEventBus()

@@ -52,11 +52,11 @@ import org.compiere.model.MPeriod;
 import org.compiere.model.Query;
 import org.compiere.model.X_C_Invoice;
 import org.compiere.model.X_C_Order;
-import org.compiere.process.DocAction;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
 
-import de.metas.document.engine.IDocActionBL;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.prepayorder.interfaces.I_C_PaymentAllocate;
@@ -188,7 +188,7 @@ public class PrepayOrderAllocationBL implements IPrepayOrderAllocationBL
 			aLine.setC_Payment_ID(payment.getC_Payment_ID());
 			aLine.saveEx();
 			// Should start WF
-			if (!alloc.processIt(DocAction.ACTION_Complete))
+			if (!alloc.processIt(IDocument.ACTION_Complete))
 			{
 				throw new AdempiereException(alloc.getProcessMsg());
 			}
@@ -226,7 +226,7 @@ public class PrepayOrderAllocationBL implements IPrepayOrderAllocationBL
 			if (allocated.compareTo(order.getGrandTotal()) < 0)
 			{
 				order.setProcessed(true);
-				return DocAction.STATUS_WaitingPayment;
+				return IDocument.STATUS_WaitingPayment;
 			}
 		}
 		return null;
@@ -531,7 +531,7 @@ public class PrepayOrderAllocationBL implements IPrepayOrderAllocationBL
 			final String docStatus = order.getDocStatus();
 			if (X_C_Order.DOCSTATUS_WaitingPayment.equals(docStatus))
 			{
-				Services.get(IDocActionBL.class).processEx(order, DocAction.ACTION_WaitComplete, null);
+				Services.get(IDocumentBL.class).processEx(order, IDocument.ACTION_WaitComplete, null);
 				InterfaceWrapperHelper.save(order, trxName);
 			}
 			else

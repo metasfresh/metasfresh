@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 package org.compiere.model;
 
 
@@ -28,7 +12,7 @@ public interface I_C_PaySelectionLine
     public static final String Table_Name = "C_PaySelectionLine";
 
     /** AD_Table_ID=427 */
-    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
 //    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
 
@@ -83,6 +67,41 @@ public interface I_C_PaySelectionLine
     public static final org.adempiere.model.ModelColumn<I_C_PaySelectionLine, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_C_PaySelectionLine, org.compiere.model.I_AD_Org>(I_C_PaySelectionLine.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
     /** Column name AD_Org_ID */
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+
+	/**
+	 * Set Währung.
+	 * Die Währung für diesen Eintrag
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	public void setC_Currency_ID (int C_Currency_ID);
+
+	/**
+	 * Get Währung.
+	 * Die Währung für diesen Eintrag
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 */
+	@Deprecated
+	public int getC_Currency_ID();
+
+	@Deprecated
+	public org.compiere.model.I_C_Currency getC_Currency();
+
+	@Deprecated
+	public void setC_Currency(org.compiere.model.I_C_Currency C_Currency);
+
+    /** Column definition for C_Currency_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_PaySelectionLine, org.compiere.model.I_C_Currency> COLUMN_C_Currency_ID = new org.adempiere.model.ModelColumn<I_C_PaySelectionLine, org.compiere.model.I_C_Currency>(I_C_PaySelectionLine.class, "C_Currency_ID", org.compiere.model.I_C_Currency.class);
+    /** Column name C_Currency_ID */
+    public static final String COLUMNNAME_C_Currency_ID = "C_Currency_ID";
 
 	/**
 	 * Set Rechnung.
@@ -141,35 +160,6 @@ public interface I_C_PaySelectionLine
     public static final org.adempiere.model.ModelColumn<I_C_PaySelectionLine, org.compiere.model.I_C_Payment> COLUMN_C_Payment_ID = new org.adempiere.model.ModelColumn<I_C_PaySelectionLine, org.compiere.model.I_C_Payment>(I_C_PaySelectionLine.class, "C_Payment_ID", org.compiere.model.I_C_Payment.class);
     /** Column name C_Payment_ID */
     public static final String COLUMNNAME_C_Payment_ID = "C_Payment_ID";
-
-	/**
-	 * Set Zahlungsanweisung.
-	 * Check oder sonstige vorbereitete Zahlungsanweisung
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setC_PaySelectionCheck_ID (int C_PaySelectionCheck_ID);
-
-	/**
-	 * Get Zahlungsanweisung.
-	 * Check oder sonstige vorbereitete Zahlungsanweisung
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getC_PaySelectionCheck_ID();
-
-	public org.compiere.model.I_C_PaySelectionCheck getC_PaySelectionCheck();
-
-	public void setC_PaySelectionCheck(org.compiere.model.I_C_PaySelectionCheck C_PaySelectionCheck);
-
-    /** Column definition for C_PaySelectionCheck_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_PaySelectionLine, org.compiere.model.I_C_PaySelectionCheck> COLUMN_C_PaySelectionCheck_ID = new org.adempiere.model.ModelColumn<I_C_PaySelectionLine, org.compiere.model.I_C_PaySelectionCheck>(I_C_PaySelectionLine.class, "C_PaySelectionCheck_ID", org.compiere.model.I_C_PaySelectionCheck.class);
-    /** Column name C_PaySelectionCheck_ID */
-    public static final String COLUMNNAME_C_PaySelectionCheck_ID = "C_PaySelectionCheck_ID";
 
 	/**
 	 * Set Zahlung Anweisen.
@@ -304,7 +294,7 @@ public interface I_C_PaySelectionLine
     public static final String COLUMNNAME_DifferenceAmt = "DifferenceAmt";
 
 	/**
-	 * Set Discount Amount.
+	 * Set Skonto.
 	 * Calculated amount of discount
 	 *
 	 * <br>Type: Amount
@@ -314,7 +304,7 @@ public interface I_C_PaySelectionLine
 	public void setDiscountAmt (java.math.BigDecimal DiscountAmt);
 
 	/**
-	 * Get Discount Amount.
+	 * Get Skonto.
 	 * Calculated amount of discount
 	 *
 	 * <br>Type: Amount

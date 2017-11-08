@@ -26,12 +26,6 @@ import org.junit.Test;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.adempiere.form.IPackingItem;
-import de.metas.adempiere.form.PackingItemsMap;
-import de.metas.fresh.picking.form.FreshPackingItemHelper;
-import de.metas.fresh.picking.form.IFreshPackingItem;
-import de.metas.fresh.picking.service.IPackingContext;
-import de.metas.fresh.picking.service.IPackingService;
 import de.metas.handlingunits.AbstractHUTest;
 import de.metas.handlingunits.HUTestHelper;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -42,6 +36,13 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.shipmentschedule.util.ShipmentScheduleHelper;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.picking.legacy.form.IPackingItem;
+import de.metas.picking.service.FreshPackingItemHelper;
+import de.metas.picking.service.IFreshPackingItem;
+import de.metas.picking.service.IPackingContext;
+import de.metas.picking.service.IPackingService;
+import de.metas.picking.service.PackingItemsMap;
+import de.metas.picking.service.impl.HU2PackingItemsAllocator;
 
 /*
  * #%L

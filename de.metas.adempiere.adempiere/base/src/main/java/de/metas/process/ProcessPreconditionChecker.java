@@ -101,7 +101,7 @@ public class ProcessPreconditionChecker
 					}
 				}
 			}
-			catch (final Exception ex)
+			catch (final Throwable ex)
 			{
 				resolution = ProcessPreconditionsResolution.rejectWithInternalReason(ex.getLocalizedMessage());
 				logger.warn("checkApplies={}: Failed checking preconditions for {}", resolution, preconditionsClass, ex);

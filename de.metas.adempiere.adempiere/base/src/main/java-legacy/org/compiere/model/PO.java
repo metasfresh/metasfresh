@@ -47,10 +47,12 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
+import org.adempiere.ad.dao.cache.CacheInvalidateRequest;
+import org.adempiere.ad.dao.cache.IModelCacheInvalidationService;
+import org.adempiere.ad.dao.cache.ModelCacheInvalidationTiming;
 import org.adempiere.ad.dao.cache.impl.TableRecordCacheLocal;
 import org.adempiere.ad.migration.logger.IMigrationLogger;
 import org.adempiere.ad.migration.model.X_AD_MigrationStep;
-import org.adempiere.ad.persistence.TableModelLoader;
 import org.adempiere.ad.persistence.po.INoDataFoundHandler;
 import org.adempiere.ad.persistence.po.NoDataFoundHandlers;
 import org.adempiere.ad.security.TableAccessLevel;
@@ -75,7 +77,6 @@ import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.Adempiere;
-import org.compiere.util.CacheMgt;
 import org.compiere.util.DB;
 import org.compiere.util.DB.OnFail;
 import org.compiere.util.DisplayType;
@@ -225,7 +226,7 @@ public abstract class PO
 	 */
 	public PO(final Properties ctx, final int ID, final String trxName, final ResultSet rs)
 	{
-		super();
+
 		if (ctx == null)
 			throw new IllegalArgumentException("No Context");
 		p_ctx = ctx;
@@ -955,18 +956,6 @@ public abstract class PO
 	}   // setValue
 
 	/**
-	 * Set Encrypted Value
-	 *
-	 * @param ColumnName column name
-	 * @param value value
-	 * @return true if value set
-	 */
-	protected final boolean set_ValueE(final String ColumnName, final Object value)
-	{
-		return set_Value(ColumnName, value);
-	}   // setValueE
-
-	/**
 	 * Set Value if updatable and correct class.
 	 * (and to NULL if not mandatory)
 	 *
@@ -974,7 +963,7 @@ public abstract class PO
 	 * @param value value
 	 * @return true if value set
 	 */
-	protected final boolean set_Value(final int index, final Object value)
+	private final boolean set_Value(final int index, final Object value)
 	{
 		if (index < 0 || index >= get_ColumnCount())
 		{
@@ -1165,8 +1154,7 @@ public abstract class PO
 		return set_ValueNoCheck(index, value);
 	}
 
-	// metas: changed from private to public
-	public final boolean set_ValueNoCheck(final int index, final Object value)
+	private final boolean set_ValueNoCheck(final int index, final Object value)
 	{
 		//
 		// Load record if stale (01537)
@@ -1245,38 +1233,13 @@ public abstract class PO
 	}   // set_ValueNoCheck
 
 	/**
-	 * Set Encrypted Value w/o check (update, r/o, ..).
-	 * Used when Column is R/O
-	 * Required for key and parent values
-	 *
-	 * @param ColumnName column name
-	 * @param value value
-	 * @return true if value set
-	 */
-	protected final boolean set_ValueNoCheckE(final String ColumnName, final Object value)
-	{
-		return set_ValueNoCheck(ColumnName, value);
-	}	// set_ValueNoCheckE
-
-	/**
-	 * Set value of Column
-	 *
-	 * @param columnName
-	 * @param value
-	 */
-	public final void set_ValueOfColumn(final String columnName, final Object value)
-	{
-		set_ValueOfColumnReturningBoolean(columnName, value);
-	}
-
-	/**
 	 * Set value of Column returning boolean
 	 *
 	 * @param columnName
 	 * @param value
 	 * @returns boolean indicating success or failure
 	 */
-	public final boolean set_ValueOfColumnReturningBoolean(final String columnName, final Object value)
+	public final boolean set_ValueOfColumn(final String columnName, final Object value)
 	{
 		final int columnIndex = p_info.getColumnIndex(columnName);
 		if (columnIndex < 0)
@@ -1288,26 +1251,7 @@ public abstract class PO
 		return set_ValueReturningBoolean(columnIndex, value);
 	}
 
-	/**
-	 * Set Value of AD_Column_ID
-	 *
-	 * @param AD_Column_ID column
-	 * @param value value
-	 * @returns boolean indicating success or failure
-	 */
-	public final boolean set_ValueOfAD_Column_ID(final int AD_Column_ID, final Object value)
-	{
-		final int columnIndex = p_info.getColumnIndex(AD_Column_ID);
-		if (columnIndex < 0)
-		{
-			log.warn("Column with AD_Column_ID={} not found in method PO.set_ValueOfAD_Column_ID", AD_Column_ID);
-			return false;
-		}
-
-		return set_ValueReturningBoolean(columnIndex, value);
-	}
-
-	public final boolean set_ValueReturningBoolean(final int columnIndex, final Object value)
+	private final boolean set_ValueReturningBoolean(final int columnIndex, final Object value)
 	{
 		final String columnName = p_info.getColumnName(columnIndex);
 		if (COLUMNNAME_IsApproved.equals(columnName))
@@ -1795,7 +1739,7 @@ public abstract class PO
 			success = false;
 			m_IDs = new Object[] { I_ZERO };
 			log.error(msg, e);
-			// throw new DBException(e);
+			throw DBException.wrapIfNeeded(e);
 		}
 		// Finish
 		finally
@@ -2865,7 +2809,7 @@ public abstract class PO
 			final boolean b = saveNew();
 			if (!b)
 			{
-				throw new AdempiereException("saveNew failed");
+				throw new AdempiereException("saveNew failed").setParameter("po", this).appendParametersToMessage();
 			}
 		}
 		else
@@ -2873,7 +2817,7 @@ public abstract class PO
 			final boolean b = saveUpdate();
 			if (!b)
 			{
-				throw new AdempiereException("saveUpdate failed");
+				throw new AdempiereException("saveUpdate failed").setParameter("po", this).appendParametersToMessage();
 			}
 		}
 	}
@@ -2918,7 +2862,7 @@ public abstract class PO
 				{
 					copyRecordSupport.setParentPO(this);
 					copyRecordSupport.copyRecord(this, get_TrxName());
-					
+
 					copyRecordSupport = null;
 					setDynAttribute(DYNATTR_CopyRecordSupport, null);
 				}
@@ -2988,18 +2932,9 @@ public abstract class PO
 
 		//
 		// Reset model cache
-		if (!newRecord)
+		if(p_info.isSingleKeyColumnName())
 		{
-			TableModelLoader.instance.invalidateCache(get_TableName(), get_ID(), get_TrxName());
-		}
-		//
-		// Reset cache
-		// NOTE: we need to do it even for newly created records because there are some aggregates which are cached (e.g. all lines for a given document),
-		// so in case a new record pops in, those caches shall be reset..
-		// if (!newRecord)
-		{
-			final int id = get_ID();
-			CacheMgt.get().resetOnTrxCommit(get_TrxName(), p_info.getTableName(), id);
+			Services.get(IModelCacheInvalidationService.class).invalidateForModel(this, newRecord ? ModelCacheInvalidationTiming.NEW : ModelCacheInvalidationTiming.CHANGE);
 		}
 
 		//
@@ -3009,7 +2944,6 @@ public abstract class PO
 			fireModelChange(ModelValidator.TYPE_SUBSEQUENT);
 		}
 
-		//
 		// Return "success"
 		return success;
 	}	// saveFinish
@@ -3993,38 +3927,44 @@ public abstract class PO
 		PO_Record.deleteCascade(AD_Table_ID, Record_ID, trxName);
 
 		//
-		// The Delete Statement
-		final StringBuilder sql = new StringBuilder("DELETE FROM ") // jz why no FROM??
+		// Execute SQL DELETE
+		final StringBuilder sql = new StringBuilder("DELETE FROM ")
 				.append(p_info.getTableName())
 				.append(" WHERE ")
 				.append(get_WhereClause(true));
 		final int no;
 		if (isUseTimeoutForUpdate())
+		{
 			no = DB.executeUpdateEx(sql.toString(), trxName, QUERY_TIME_OUT);
+		}
 		else
+		{
 			no = DB.executeUpdateEx(sql.toString(), trxName);
-		boolean success = no == 1;
-
-		// Save ID
-		m_idOld = get_ID();
-		//
-		if (!success)
+		}
+		if (no != 1)
 		{
 			throw new AdempiereException("@CannotDelete@: " + this + "+; SQL update returned no=" + no + "; SQL=(" + sql + ")");
 		}
-		else
-		{
-			createChangeLog(X_AD_ChangeLog.EVENTCHANGELOG_Delete);
-			logMigration(X_AD_MigrationStep.ACTION_Delete);
 
-			// Housekeeping
-			m_IDs[0] = I_ZERO;
+		// Save ID
+		m_idOld = get_ID();
 
-			if (log.isDebugEnabled())
-				log.debug("[" + m_trxName + "] - complete");
-		}
+		//
+		// Create cache invalidation request
+		// (we have to do it here, before we reset all fields)
+		final IModelCacheInvalidationService cacheInvalidationService = Services.get(IModelCacheInvalidationService.class);
+		final CacheInvalidateRequest cacheInvalidateRequest = p_info.isSingleKeyColumnName() ?
+				cacheInvalidationService.createRequest(this, ModelCacheInvalidationTiming.DELETE)
+				: null;
 
-		success = afterDelete(success);
+		//
+		createChangeLog(X_AD_ChangeLog.EVENTCHANGELOG_Delete);
+		logMigration(X_AD_MigrationStep.ACTION_Delete);
+
+		// Housekeeping
+		m_IDs[0] = I_ZERO;
+
+		final boolean success = afterDelete(true);
 		if (success)
 			MTree.deleteTreeNode(this);
 
@@ -4034,20 +3974,23 @@ public abstract class PO
 			fireModelChange(ModelValidator.TYPE_AFTER_DELETE); // metas: use fireModelChange method - 01512
 		}
 
-		// Reset
+		//
+		// Reset all fields
 		if (success)
 		{
-			int size = p_info.getColumnCount();
+			final int size = p_info.getColumnCount();
 			m_oldValues = new Object[size];
 			m_newValues = new Object[size];
 			m_valueLoaded = new boolean[size]; // metas
 			m_stale = false; // metas: 01537
-
-			final String tableName = get_TableName();
-			CacheMgt.get().resetOnTrxCommit(trxName, tableName, m_idOld);
-			TableModelLoader.instance.invalidateCache(tableName, m_idOld, trxName);
-
 			m_idOld = 0;
+		}
+
+		//
+		// Fire cache invalidation event, as last thing
+		if(cacheInvalidateRequest != null)
+		{
+			cacheInvalidationService.invalidate(cacheInvalidateRequest, ModelCacheInvalidationTiming.DELETE);
 		}
 	}
 
@@ -4099,14 +4042,14 @@ public abstract class PO
 	{
 		return success;
 	} 	// afterDelete
-	
+
 	private boolean is_Translatable()
 	{
 		if(!p_info.getTrlInfo().isTranslated())
 		{
 			return false;
 		}
-		
+
 		// Make sure it's single ID key which is integer and which is set
 		if (m_IDs.length > 1 || m_IDs.length == 0
 				|| I_ZERO.equals(m_IDs[0])
@@ -4114,7 +4057,7 @@ public abstract class PO
 		{
 			return false;
 		}
-		
+
 		return true;
 	}
 
@@ -4130,7 +4073,7 @@ public abstract class PO
 		{
 			return true;
 		}
-		
+
 		final boolean ok = POTrlRepository.instance.insertTranslations(p_info.getTrlInfo(), get_ID());
 		if(ok)
 		{
@@ -4155,7 +4098,7 @@ public abstract class PO
 		{
 			return true; // OK
 		}
-		
+
 		final boolean ok = POTrlRepository.instance.updateTranslations(this);
 		if(ok)
 		{
@@ -4178,13 +4121,13 @@ public abstract class PO
 		{
 			return true;
 		}
-		
+
 		final boolean ok = POTrlRepository.instance.deleteTranslations(p_info.getTrlInfo(), get_ID());
 		if(ok)
 		{
 			m_translations = NullModelTranslationMap.instance; // reset cached translations
 		}
-		
+
 		//
 		return ok;
 	}	// deleteTranslations

@@ -1,22 +1,13 @@
 package de.metas.procurement.base.order.callout;
 
-import java.math.BigDecimal;
-import java.util.List;
-
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.ui.sideactions.model.ExecutableSideAction;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.GridTab;
-import org.compiere.model.IQuery;
 import org.compiere.util.Env;
 
 import de.metas.adempiere.form.IClientUI;
 import de.metas.i18n.IMsgBL;
-import de.metas.lock.api.ILockCommand;
-import de.metas.lock.api.ILockManager;
-import de.metas.lock.api.LockOwner;
 import de.metas.procurement.base.model.I_PMM_PurchaseCandidate;
 import de.metas.procurement.base.order.async.PMM_GenerateOrders;
 
@@ -47,7 +38,6 @@ public class PMM_CreatePurchaseOrders_Action extends ExecutableSideAction
 	// services
 	private final transient IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final transient IClientUI clientUI = Services.get(IClientUI.class);
-	private final transient ILockManager lockManager = Services.get(ILockManager.class);
 
 	// messages
 	private static final String MSG_Root = "PMM_PurchaseCandidate.SideActions.CreatePurchaseOrders.";
@@ -102,81 +92,29 @@ public class PMM_CreatePurchaseOrders_Action extends ExecutableSideAction
 
 	private void execute0()
 	{
-		final IQuery<I_PMM_PurchaseCandidate> query = retrieveRecordsToProcess()
-				.create();
-
-		//
-		// Fail if there is nothing to update
-		final int countToProcess = query.count();
-		if (countToProcess <= 0)
-		{
-			throw new AdempiereException("@NoSelection@");
-		}
-
-		//
-		// Ask user if we shall process
-		final boolean doUpdate = clientUI.ask()
-				.setParentWindowNo(windowNo)
-				.setAdditionalMessage(msgBL.getMsg(Env.getCtx(), MSG_DoYouWantToUpdate_1P, new Object[] { countToProcess }))
-				.setDefaultAnswer(false)
-				.getAnswer();
-		if (!doUpdate)
-		{
-			return;
-		}
-
-		//
-		// Process them
-		final int countProcessed = process(query);
+		final int countEnqueued = PMM_GenerateOrders.prepareEnqueuing()
+				.filter(gridTab.createCurrentRecordsQueryFilter(I_PMM_PurchaseCandidate.class))
+				.confirmRecordsToProcess(this::confirmRecordsToProcess)
+				.enqueue();
 
 		//
 		// Refresh rows, because they were updated
-		if (countProcessed > 0)
+		if (countEnqueued > 0)
 		{
 			gridTab.dataRefreshAll();
 		}
 
 		//
 		// Inform the user
-		clientUI.info(windowNo,
-				"Updated",  // AD_Message/title
-				"#" + countProcessed // message
-		);
+		clientUI.info(windowNo, "Updated", "#" + countEnqueued);
 	}
 
-	private final IQueryBuilder<I_PMM_PurchaseCandidate> retrieveRecordsToProcess()
+	private final boolean confirmRecordsToProcess(final int countToProcess)
 	{
-		return gridTab.createQueryBuilder(I_PMM_PurchaseCandidate.class)
-				.addOnlyActiveRecordsFilter()
-				.filter(lockManager.getNotLockedFilter(I_PMM_PurchaseCandidate.class))
-				.addNotEqualsFilter(I_PMM_PurchaseCandidate.COLUMN_QtyToOrder, BigDecimal.ZERO)
-				.orderBy()
-				.addColumn(I_PMM_PurchaseCandidate.COLUMNNAME_AD_Org_ID)
-				.addColumn(I_PMM_PurchaseCandidate.COLUMNNAME_M_Warehouse_ID)
-				.addColumn(I_PMM_PurchaseCandidate.COLUMNNAME_C_BPartner_ID)
-				.addColumn(I_PMM_PurchaseCandidate.COLUMNNAME_DatePromised)
-				.addColumn(I_PMM_PurchaseCandidate.COLUMNNAME_M_PricingSystem_ID)
-				.addColumn(I_PMM_PurchaseCandidate.COLUMNNAME_C_Currency_ID)
-				.endOrderBy()
-				//
-				;
-	}
-
-	private final int process(final IQuery<I_PMM_PurchaseCandidate> query)
-	{
-		final List<I_PMM_PurchaseCandidate> candidates = query.list();
-		if (candidates.isEmpty())
-		{
-			throw new AdempiereException("@NoSelection@");
-		}
-
-		final LockOwner lockOwner = LockOwner.newOwner(getClass().getSimpleName());
-		final ILockCommand elementsLocker = lockManager.lock()
-				.setOwner(lockOwner)
-				.setAutoCleanup(false);
-
-		PMM_GenerateOrders.enqueue(Env.getCtx(), elementsLocker, candidates);
-
-		return candidates.size();
+		return clientUI.ask()
+				.setParentWindowNo(windowNo)
+				.setAdditionalMessage(msgBL.getMsg(Env.getCtx(), MSG_DoYouWantToUpdate_1P, new Object[] { countToProcess }))
+				.setDefaultAnswer(false)
+				.getAnswer();
 	}
 }

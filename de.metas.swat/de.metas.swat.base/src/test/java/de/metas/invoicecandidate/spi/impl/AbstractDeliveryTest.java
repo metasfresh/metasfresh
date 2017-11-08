@@ -39,15 +39,16 @@ import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_Product;
-import org.compiere.process.DocAction;
 import org.compiere.util.Env;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.rules.TestWatcher;
 
+import de.metas.document.engine.IDocument;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.invoicecandidate.model.I_C_ILCandHandler;
+import de.metas.order.invoicecandidate.C_OrderLine_Handler;
 import de.metas.product.acct.api.IProductAcctDAO;
 import de.metas.tax.api.ITaxBL;
 import mockit.Expectations;
@@ -190,8 +191,8 @@ public abstract class AbstractDeliveryTest
 	{
 		mInOut.setC_Order_ID(order.getC_Order_ID());
 
-		mInOut.setDocStatus(DocAction.STATUS_Completed);
-		mInOut.setDocAction(DocAction.ACTION_Close);
+		mInOut.setDocStatus(IDocument.STATUS_Completed);
+		mInOut.setDocAction(IDocument.ACTION_Close);
 
 		InterfaceWrapperHelper.save(mInOut);
 	}

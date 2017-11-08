@@ -1,6 +1,7 @@
 package de.metas.payment.esr.process;
 
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.impl.TableRecordReference;
 
 import de.metas.async.model.I_C_Async_Batch;
 import de.metas.attachments.AttachmentEntry;
@@ -57,8 +58,9 @@ public class ESR_Import_LoadFromAttachmentEntry
 	{
 		final AttachmentEntry fromAttachmentEntry = attachmentDAO.retrieveAttachmentEntryById(-1, p_AD_AttachmentEntry_ID); // attachmentId = -1
 
+		final I_ESR_Import esrImport = getRecord(I_ESR_Import.class);
 		ESRImportEnqueuer.newInstance()
-				.esrImport(getRecord(I_ESR_Import.class))
+				.esrImport(esrImport)
 				.fromDataSource(ESRImportEnqueuerDataSource.builder()
 						.filename(fromAttachmentEntry.getFilename())
 						.content(attachmentDAO.retrieveData(fromAttachmentEntry))
@@ -74,7 +76,9 @@ public class ESR_Import_LoadFromAttachmentEntry
 				.duplicateFilePolicy(ESRImportEnqueuerDuplicateFilePolicy.NEVER)
 				//
 				.execute();
-
+		
+		getResult().setRecordToRefreshAfterExecution(TableRecordReference.of(esrImport));
+		
 		return MSG_OK;
 	}
 

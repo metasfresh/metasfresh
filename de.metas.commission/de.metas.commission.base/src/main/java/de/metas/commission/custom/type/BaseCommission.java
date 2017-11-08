@@ -36,11 +36,9 @@ import org.compiere.model.MInvoiceLine;
 import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;
 import org.compiere.model.PO;
-import org.compiere.process.DocAction;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
-
-import de.metas.adempiere.service.IOrderLineBL;
+import de.metas.order.IOrderLineBL;
 import de.metas.commission.interfaces.IAdvComInstance;
 import de.metas.commission.model.I_C_AdvComSalesRepFact;
 import de.metas.commission.model.I_C_AdvComSystem_Type;
@@ -53,6 +51,7 @@ import de.metas.commission.service.ICommissionFactBL;
 import de.metas.commission.service.ICommissionFactCandBL;
 import de.metas.commission.service.IFieldAccessBL;
 import de.metas.commission.util.CommissionTools;
+import de.metas.document.engine.IDocument;
 
 /**
  * Common base class for all commission types.
@@ -157,10 +156,10 @@ public abstract class BaseCommission implements ICommissionType
 		final String docStatus = order.getDocStatus();
 
 		final boolean completeSO = order.isSOTrx()
-				&& (DocAction.STATUS_Completed.equals(docStatus)
-						|| DocAction.STATUS_WaitingPayment.equals(docStatus)
-						|| DocAction.STATUS_Closed.equals(docStatus)
-						|| DocAction.STATUS_Voided.equals(docStatus));
+				&& (IDocument.STATUS_Completed.equals(docStatus)
+						|| IDocument.STATUS_WaitingPayment.equals(docStatus)
+						|| IDocument.STATUS_Closed.equals(docStatus)
+						|| IDocument.STATUS_Voided.equals(docStatus));
 
 		if (!completeSO)
 		{

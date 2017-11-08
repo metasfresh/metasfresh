@@ -26,7 +26,7 @@ package de.metas.aggregation.api.impl;
 import java.util.Arrays;
 import java.util.List;
 
-import org.adempiere.ad.expression.api.ILogicExpression;
+import org.adempiere.ad.expression.api.ConstantLogicExpression;
 import org.compiere.util.DisplayType;
 import org.junit.Assert;
 import org.junit.Test;
@@ -52,8 +52,8 @@ public class AggregationTest
 		final int aggregationId = 1;
 		int aggregationItemId = 1;
 		final List<IAggregationItem> aggregationItems = Arrays.<IAggregationItem> asList(
-				new AggregationItem(aggregationItemId++, Type.ModelColumn, "Column1", DisplayType.String, IAggregationAttribute.NULL, ILogicExpression.TRUE)
-				, new AggregationItem(aggregationItemId++, Type.ModelColumn, "Column2", DisplayType.String, IAggregationAttribute.NULL, ILogicExpression.TRUE)
+				new AggregationItem(aggregationItemId++, Type.ModelColumn, "Column1", DisplayType.String, IAggregationAttribute.NULL, ConstantLogicExpression.TRUE)
+				, new AggregationItem(aggregationItemId++, Type.ModelColumn, "Column2", DisplayType.String, IAggregationAttribute.NULL, ConstantLogicExpression.TRUE)
 				);
 		final Aggregation aggregation = new Aggregation("MyTable", aggregationItems, aggregationId);
 

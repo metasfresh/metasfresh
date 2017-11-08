@@ -35,7 +35,7 @@ import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_PriceList_Version;
 
-import de.metas.flatrate.model.I_C_Invoice_Clearing_Alloc;
+import de.metas.contracts.model.I_C_Invoice_Clearing_Alloc;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;

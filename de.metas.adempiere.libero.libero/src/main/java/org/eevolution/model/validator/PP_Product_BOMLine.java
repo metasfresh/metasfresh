@@ -10,12 +10,12 @@ package org.eevolution.model.validator;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -53,7 +53,8 @@ public class PP_Product_BOMLine
 	public void validate(final I_PP_Product_BOMLine bomLine)
 	{
 		boolean valid = false;
-		if (X_PP_Order_BOMLine.COMPONENTTYPE_Variant.equals(bomLine.getComponentType()) && Check.isEmpty(bomLine.getVariantGroup()))
+		if (X_PP_Order_BOMLine.COMPONENTTYPE_Variant.equals(bomLine.getComponentType()) //
+				&& Check.isEmpty(bomLine.getVariantGroup()))
 		{
 			throw new LiberoException("@MandatoryVariant@");
 		}
@@ -118,7 +119,7 @@ public class PP_Product_BOMLine
 	public void updateProductLowestLevelCode(final I_PP_Product_BOMLine bomLine)
 	{
 		final I_M_Product product = bomLine.getM_Product();
-		final int lowLevel = Services.get(IProductBOMBL.class).calculateProductLowestLevel(product);
+		final int lowLevel = Services.get(IProductBOMBL.class).calculateProductLowestLevel(product.getM_Product_ID());
 
 		product.setLowLevel(lowLevel); // update lowlevel
 		InterfaceWrapperHelper.save(product);

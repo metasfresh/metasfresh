@@ -33,12 +33,12 @@ import javax.swing.tree.DefaultMutableTreeNode;
 
 import org.compiere.util.KeyNamePair;
 
-import de.metas.adempiere.form.LegacyPackingItem;
 import de.metas.adempiere.form.terminal.IKeyLayout;
 import de.metas.adempiere.form.terminal.ITerminalKeyStatus;
 import de.metas.adempiere.form.terminal.TerminalKey;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.adempiere.model.I_C_POSKey;
+import de.metas.picking.legacy.form.LegacyPackingItem;
 
 /**
  * @author cg

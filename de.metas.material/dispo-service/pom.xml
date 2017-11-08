@@ -67,6 +67,13 @@
 			<artifactId>metasfresh-material-dispo-commons</artifactId>
 			<version>10.0.0</version>
 		</dependency>
+		<dependency>
+			<groupId>de.metas.material</groupId>
+			<artifactId>metasfresh-material-dispo-commons</artifactId>
+			<version>10.0.0</version>
+			<classifier>tests</classifier>
+			<scope>test</scope>
+		</dependency>
 
 		<dependency>
 			<groupId>de.metas.util</groupId>
@@ -74,10 +81,17 @@
 			<version>10.0.0</version>
 		</dependency>
 
-
 		<dependency>
 			<groupId>de.metas.adempiere.adempiere</groupId>
 			<artifactId>de.metas.adempiere.adempiere.base</artifactId>
+			<version>10.0.0</version>
+			<classifier>tests</classifier>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.material</groupId>
+			<artifactId>metasfresh-material-event</artifactId>
 			<version>10.0.0</version>
 			<classifier>tests</classifier>
 			<scope>test</scope>
@@ -107,23 +121,25 @@
 			<groupId>net.logstash.logback</groupId>
 			<artifactId>logstash-logback-encoder</artifactId>
 			<version>4.9</version>
-			<!--
-			<exclusions>
-				<exclusion>
-					<groupId>ch.qos.logback</groupId>
-					<artifactId>logback-core</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>com.fasterxml.jackson.core</groupId>
-					<artifactId>jackson-databind</artifactId>
-				</exclusion>
-			</exclusions>
-			-->
 		</dependency>
+
 		<!-- we need janino for the conditional that we have in the logback config -->
 		<dependency>
 			<groupId>org.codehaus.janino</groupId>
 			<artifactId>janino</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>io.takari.junit</groupId>
+			<artifactId>takari-cpsuite </artifactId>
+			<version>1.2.7</version>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.assertj</groupId>
+			<artifactId>assertj-core</artifactId>
+			<scope>test</scope>
 		</dependency>
 
 	</dependencies>

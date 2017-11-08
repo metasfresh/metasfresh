@@ -35,6 +35,7 @@ import javax.swing.JPasswordField;
 import org.adempiere.images.Images;
 import org.adempiere.plaf.AdempierePLAF;
 import org.adempiere.util.Check;
+import org.compiere.db.connectiondialog.i18n.DBRes;
 import org.compiere.swing.CButton;
 import org.compiere.swing.CComboBox;
 import org.compiere.swing.CDialog;
@@ -43,6 +44,8 @@ import org.compiere.swing.CPanel;
 import org.compiere.swing.CTextField;
 import org.compiere.util.Ini;
 import org.slf4j.Logger;
+
+import com.google.common.collect.ImmutableList;
 
 import de.metas.logging.LogManager;
 
@@ -53,7 +56,7 @@ import de.metas.logging.LogManager;
  *  @author     Marek Mosiewicz<marek.mosiewicz@jotel.com.pl> - support for RMI over HTTP
  *  @version    $Id: CConnectionDialog.java,v 1.2 2006/07/30 00:55:13 jjanke Exp $
  */
-class CConnectionDialog extends CDialog implements ActionListener
+public class CConnectionDialog extends CDialog implements ActionListener
 {
 	private static final long serialVersionUID = 1L;
 
@@ -82,7 +85,7 @@ class CConnectionDialog extends CDialog implements ActionListener
 	}   //  CConnection
 
 	/** Resources							*/
-	private static final transient ResourceBundle res = ResourceBundle.getBundle("org.compiere.db.DBRes");
+	private static final transient ResourceBundle res = ResourceBundle.getBundle(DBRes.class.getName());
 
 	/** Connection							*/
 	private CConnection 	m_cc = null;
@@ -112,7 +115,7 @@ class CConnectionDialog extends CDialog implements ActionListener
 
 	private CButton bTestDB = new CButton();
 	private CLabel dbTypeLabel = new CLabel();
-	private CComboBox<String> dbTypeField = new CComboBox<>(Database.DB_NAMES);
+	private CComboBox<String> dbTypeField = new CComboBox<>(ImmutableList.of(Database.DB_POSTGRESQL));
 	
 	private CLabel appsHostLabel = new CLabel();
 	private CTextField appsHostField = new CTextField();

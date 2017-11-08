@@ -25,6 +25,7 @@ package org.adempiere.util.collections;
 
 import java.util.LinkedHashSet;
 import java.util.Set;
+import java.util.function.Predicate;
 
 import org.adempiere.util.Check;
 import org.adempiere.util.lang.ObjectUtils;
@@ -122,7 +123,7 @@ public class IncludeExcludeListPredicate<T> implements Predicate<T>
 	}
 
 	@Override
-	public boolean evaluate(final T item)
+	public boolean test(final T item)
 	{
 		if (item == null)
 		{

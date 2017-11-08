@@ -49,12 +49,12 @@ import org.compiere.model.I_C_BankStatementLine;
 import org.compiere.model.I_I_BankStatement;
 import org.compiere.model.MBankStatementLine;
 import org.compiere.model.X_I_BankStatement;
-import org.compiere.process.DocAction;
 
 import de.metas.banking.interfaces.I_C_BankStatementLine_Ref;
 import de.metas.banking.payment.IBankStatmentPaymentBL;
 import de.metas.banking.service.IBankStatementDAO;
-import de.metas.document.engine.IDocActionBL;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
@@ -71,7 +71,7 @@ public class C_Payment_CreateFrom_BankStatement extends JavaProcess implements I
 {
 	private final IBankStatementDAO bankStatementDAO = Services.get(IBankStatementDAO.class);
 
-	private final IDocActionBL docActionBL = Services.get(IDocActionBL.class);
+	private final IDocumentBL docActionBL = Services.get(IDocumentBL.class);
 
 	/**
 	 * Prepare - e.g., get Parameters.
@@ -148,7 +148,7 @@ public class C_Payment_CreateFrom_BankStatement extends JavaProcess implements I
 		{
 			final I_C_BankStatement bankStatement = context.getSelectedModel(I_C_BankStatement.class);
 			return ProcessPreconditionsResolution.acceptIf(docActionBL.isDocumentStatusOneOf(bankStatement,
-					DocAction.STATUS_Completed, DocAction.STATUS_Closed));
+					IDocument.STATUS_Completed, IDocument.STATUS_Closed));
 		}
 		return ProcessPreconditionsResolution.reject();
 	}

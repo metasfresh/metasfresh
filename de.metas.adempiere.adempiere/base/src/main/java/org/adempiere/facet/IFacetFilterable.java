@@ -24,9 +24,9 @@ package org.adempiere.facet;
 
 
 import java.util.Collection;
+import java.util.function.Predicate;
 
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.util.collections.Predicate;
 
 /**
  * A data model which is can be filtered by {@link IFacet}s.

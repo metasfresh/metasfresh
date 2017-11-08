@@ -13,7 +13,7 @@ import org.compiere.model.I_M_Product;
 
 import com.google.common.base.MoreObjects;
 
-import de.metas.flatrate.model.I_C_Flatrate_Term;
+import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.procurement.base.IPMMContractsBL;
 import de.metas.procurement.base.IPMMPricingAware;
 import de.metas.procurement.base.model.I_C_Flatrate_DataEntry;

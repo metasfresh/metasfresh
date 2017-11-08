@@ -35,8 +35,9 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_Product;
-import org.compiere.process.DocAction;
-import de.metas.document.engine.IDocActionBL;
+
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.materialtracking.IHandlingUnitsInfo;
 import de.metas.materialtracking.model.I_M_InOutLine;
 import de.metas.materialtracking.qualityBasedInvoicing.IVendorReceipt;
@@ -185,8 +186,8 @@ import de.metas.materialtracking.spi.IHandlingUnitsInfoFactory;
 			}
 
 			// task 09117: we only may count iol that are not reversed, in progress of otherwise "not relevant"
-			final IDocActionBL docActionBL = Services.get(IDocActionBL.class);
-			if (!docActionBL.isDocumentStatusOneOf(inoutLine.getM_InOut(), DocAction.STATUS_Completed, DocAction.STATUS_Closed))
+			final IDocumentBL docActionBL = Services.get(IDocumentBL.class);
+			if (!docActionBL.isDocumentStatusOneOf(inoutLine.getM_InOut(), IDocument.STATUS_Completed, IDocument.STATUS_Closed))
 			{
 				logger.debug("Not counting {} because its M_InOut has docstatus {}", new Object[] { inoutLine, inoutLine.getM_InOut().getDocStatus() });
 				continue;

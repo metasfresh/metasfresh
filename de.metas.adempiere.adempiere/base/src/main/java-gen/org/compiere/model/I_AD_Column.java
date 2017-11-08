@@ -673,6 +673,31 @@ public interface I_AD_Column
     public static final String COLUMNNAME_IsAutocomplete = "IsAutocomplete";
 
 	/**
+	 * Set Berechnet.
+	 * The value is calculated by the system
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsCalculated (boolean IsCalculated);
+
+	/**
+	 * Get Berechnet.
+	 * The value is calculated by the system
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isCalculated();
+
+    /** Column definition for IsCalculated */
+    public static final org.adempiere.model.ModelColumn<I_AD_Column, Object> COLUMN_IsCalculated = new org.adempiere.model.ModelColumn<I_AD_Column, Object>(I_AD_Column.class, "IsCalculated", null);
+    /** Column name IsCalculated */
+    public static final String COLUMNNAME_IsCalculated = "IsCalculated";
+
+	/**
 	 * Set Encrypted.
 	 * Display or Storage is encrypted
 	 *
@@ -1095,7 +1120,7 @@ public interface I_AD_Column
 
 	/**
 	 * Get Aktualisiert.
-	 * Date this record was updated
+	 * Datum, an dem dieser Eintrag aktualisiert wurde
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true

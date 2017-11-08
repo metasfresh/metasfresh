@@ -126,6 +126,7 @@ public class CallCenterModel
 			m_bundlesLookup = MLookupFactory.get(m_ctx, m_windowNo,
 					0,								// Column_ID,
 					DisplayType.Table,				//AD_Reference_ID,
+					c.get_TableName(),
 					c.getColumnName(),				// ColumnName
 					c.getAD_Reference_Value_ID(),	// AD_Reference_Value_ID,
 					false,							// IsParent,

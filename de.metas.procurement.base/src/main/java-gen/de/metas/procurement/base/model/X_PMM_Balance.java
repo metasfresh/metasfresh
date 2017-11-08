@@ -95,15 +95,15 @@ public class X_PMM_Balance extends org.compiere.model.PO implements I_PMM_Balanc
 	}
 
 	@Override
-	public de.metas.flatrate.model.I_C_Flatrate_DataEntry getC_Flatrate_DataEntry() throws RuntimeException
+	public de.metas.contracts.model.I_C_Flatrate_DataEntry getC_Flatrate_DataEntry() throws RuntimeException
 	{
-		return get_ValueAsPO(COLUMNNAME_C_Flatrate_DataEntry_ID, de.metas.flatrate.model.I_C_Flatrate_DataEntry.class);
+		return get_ValueAsPO(COLUMNNAME_C_Flatrate_DataEntry_ID, de.metas.contracts.model.I_C_Flatrate_DataEntry.class);
 	}
 
 	@Override
-	public void setC_Flatrate_DataEntry(de.metas.flatrate.model.I_C_Flatrate_DataEntry C_Flatrate_DataEntry)
+	public void setC_Flatrate_DataEntry(de.metas.contracts.model.I_C_Flatrate_DataEntry C_Flatrate_DataEntry)
 	{
-		set_ValueFromPO(COLUMNNAME_C_Flatrate_DataEntry_ID, de.metas.flatrate.model.I_C_Flatrate_DataEntry.class, C_Flatrate_DataEntry);
+		set_ValueFromPO(COLUMNNAME_C_Flatrate_DataEntry_ID, de.metas.contracts.model.I_C_Flatrate_DataEntry.class, C_Flatrate_DataEntry);
 	}
 
 	/** Set Abrechnungssatz.

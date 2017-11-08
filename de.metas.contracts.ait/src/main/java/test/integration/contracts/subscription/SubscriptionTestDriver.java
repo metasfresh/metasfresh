@@ -44,7 +44,6 @@ import org.compiere.model.MUOM;
 import org.compiere.model.Query;
 import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_C_Order;
-import org.compiere.process.DocAction;
 import org.compiere.util.TimeUtil;
 import org.junit.Assume;
 import org.junit.Test;
@@ -59,23 +58,24 @@ import de.metas.adempiere.ait.helper.TestConfig;
 import de.metas.adempiere.ait.test.annotation.IntegrationTest;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.adempiere.model.I_M_Product;
+import de.metas.contracts.Contracts_Constants;
+import de.metas.contracts.IContractsDAO;
+import de.metas.contracts.flatrate.exceptions.SubscriptionChangeException;
+import de.metas.contracts.flatrate.interfaces.I_C_OLCand;
+import de.metas.contracts.flatrate.process.C_Flatrate_Term_Change;
+import de.metas.contracts.flatrate.process.C_Flatrate_Term_Create_From_OLCand;
+import de.metas.contracts.flatrate.process.C_Flatrate_Term_Extend;
+import de.metas.contracts.model.I_C_Flatrate_Conditions;
+import de.metas.contracts.model.I_C_Flatrate_Data;
+import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.contracts.model.I_C_Flatrate_Transition;
+import de.metas.contracts.model.I_C_SubscriptionProgress;
+import de.metas.contracts.model.X_C_Contract_Change;
+import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.subscription.ISubscriptionDAO;
 import de.metas.contracts.subscription.model.I_C_OrderLine;
 import de.metas.currency.ICurrencyDAO;
-import de.metas.flatrate.Contracts_Constants;
-import de.metas.flatrate.api.IContractsDAO;
-import de.metas.flatrate.exceptions.SubscriptionChangeException;
-import de.metas.flatrate.interfaces.I_C_OLCand;
-import de.metas.flatrate.model.I_C_Flatrate_Conditions;
-import de.metas.flatrate.model.I_C_Flatrate_Data;
-import de.metas.flatrate.model.I_C_Flatrate_Term;
-import de.metas.flatrate.model.I_C_Flatrate_Transition;
-import de.metas.flatrate.model.I_C_SubscriptionProgress;
-import de.metas.flatrate.model.X_C_Contract_Change;
-import de.metas.flatrate.model.X_C_Flatrate_Term;
-import de.metas.flatrate.process.C_Flatrate_Term_Create_From_OLCand;
-import de.metas.flatrate.process.C_Flatrate_Term_Extend;
-import de.metas.flatrate.process.C_Flatrate_Term_Change;
+import de.metas.document.engine.IDocument;
 import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.impex.model.I_AD_InputDataSource;
 import de.metas.inoutcandidate.api.IInOutCandidateConfig;
@@ -118,7 +118,6 @@ public class SubscriptionTestDriver extends AIntegrationTestDriver
 		testConfig.setCustomParam(FlatFeeScenario.PARAM_BD_PRICE_PER_UNIT, new BigDecimal("2"));
 		testConfig.setCustomParam(FlatFeeScenario.PARAM_STR_PRODUCT_FLATRATE_VALUE, Helper.parseName("SubscrOdr1st_(*)"));
 		testConfig.setCustomParam(FlatFeeScenario.PARAM_BD_ACTUAL_QTY, new BigDecimal("3"));
-		testConfig.setCustomParam(FlatFeeScenario.PARAM_BOOL_IS_CREATE_ORDER_LINES, true);
 
 		final I_C_Flatrate_Transition ft = helper.createTransistion(this);
 		final I_C_Flatrate_Conditions conditions = helper.createSubscriptionContract(this, ft);
@@ -132,7 +131,7 @@ public class SubscriptionTestDriver extends AIntegrationTestDriver
 				.setDocSubType(X_C_DocType.DOCSUBTYPE_StandardOrder)
 				.setBPartnerName(testConfig.getC_BPartner_Value())
 				.setInvoiceRule(OrderHelper.Order_InvoiceRule.AFTER_DELIVERY)
-				.setComplete(DocAction.STATUS_Completed)
+				.setComplete(IDocument.STATUS_Completed)
 				.addLine(ContractsOrderLineHelper.class)
 				.setContractConditions(conditions)
 				.setProductValue(testConfig.getM_Product_Matching_Subcr_Value())
@@ -180,7 +179,6 @@ public class SubscriptionTestDriver extends AIntegrationTestDriver
 		testConfig.setCustomParam(FlatFeeScenario.PARAM_BOOL_IS_SIMULATION, false);
 		testConfig.setCustomParam(FlatFeeScenario.PARAM_BD_PRICE_PER_UNIT, new BigDecimal("2"));
 		testConfig.setCustomParam(FlatFeeScenario.PARAM_STR_PRODUCT_FLATRATE_VALUE, Helper.parseName("SubscrTrm1st_(*)"));
-		testConfig.setCustomParam(FlatFeeScenario.PARAM_BOOL_IS_CREATE_ORDER_LINES, true);
 
 		final I_C_Flatrate_Transition ft = helper.createTransistion(this);
 		final I_C_Flatrate_Conditions conditions = helper.createSubscriptionContract(this, ft);
@@ -222,7 +220,6 @@ public class SubscriptionTestDriver extends AIntegrationTestDriver
 		testConfig.setCustomParam(FlatFeeScenario.PARAM_BOOL_IS_SIMULATION, false);
 		testConfig.setCustomParam(FlatFeeScenario.PARAM_BD_PRICE_PER_UNIT, new BigDecimal("2"));
 		testConfig.setCustomParam(FlatFeeScenario.PARAM_STR_PRODUCT_FLATRATE_VALUE, Helper.parseName("SubscrTrm1st_(*)"));
-		testConfig.setCustomParam(FlatFeeScenario.PARAM_BOOL_IS_CREATE_ORDER_LINES, false);
 
 		// create the term
 		final I_C_Flatrate_Transition ft = helper.createTransistion(this);
@@ -266,7 +263,6 @@ public class SubscriptionTestDriver extends AIntegrationTestDriver
 		testConfig.setCustomParam(FlatFeeScenario.PARAM_BOOL_IS_SIMULATION, false);
 		testConfig.setCustomParam(FlatFeeScenario.PARAM_BD_PRICE_PER_UNIT, new BigDecimal("2"));
 		testConfig.setCustomParam(FlatFeeScenario.PARAM_STR_PRODUCT_FLATRATE_VALUE, Helper.parseName("createTermFromOLCand_(*)"));
-		testConfig.setCustomParam(FlatFeeScenario.PARAM_BOOL_IS_CREATE_ORDER_LINES, false);
 
 		// create the conditions
 		final I_C_Flatrate_Transition ft = helper.createTransistion(this);
@@ -361,7 +357,6 @@ public class SubscriptionTestDriver extends AIntegrationTestDriver
 		testConfig.setCustomParam(FlatFeeScenario.PARAM_BOOL_IS_SIMULATION, false);
 		testConfig.setCustomParam(FlatFeeScenario.PARAM_BD_PRICE_PER_UNIT, new BigDecimal("2"));
 		testConfig.setCustomParam(FlatFeeScenario.PARAM_STR_PRODUCT_FLATRATE_VALUE, Helper.parseName("SubscrManualRenew(*)"));
-		testConfig.setCustomParam(FlatFeeScenario.PARAM_BOOL_IS_CREATE_ORDER_LINES, true);
 
 		// explicitly setting the deadline params here, because we wan to have a 'changeDate' that is before the
 		// deadline
@@ -413,7 +408,6 @@ public class SubscriptionTestDriver extends AIntegrationTestDriver
 		testConfig.setCustomParam(FlatFeeScenario.PARAM_BOOL_IS_SIMULATION, false);
 		testConfig.setCustomParam(FlatFeeScenario.PARAM_BD_PRICE_PER_UNIT, new BigDecimal("2"));
 		testConfig.setCustomParam(FlatFeeScenario.PARAM_STR_PRODUCT_FLATRATE_VALUE, Helper.parseName("SubscrProcessRenew(*)"));
-		testConfig.setCustomParam(FlatFeeScenario.PARAM_BOOL_IS_CREATE_ORDER_LINES, true);
 
 		// explicitly setting the deadline params here, because we wan to have a 'changeDate' that is before the
 		// deadline
@@ -517,7 +511,6 @@ public class SubscriptionTestDriver extends AIntegrationTestDriver
 		testConfig.setCustomParam(FlatFeeScenario.PARAM_BOOL_IS_SIMULATION, false);
 		testConfig.setCustomParam(FlatFeeScenario.PARAM_BD_PRICE_PER_UNIT, new BigDecimal("2"));
 		testConfig.setCustomParam(FlatFeeScenario.PARAM_STR_PRODUCT_FLATRATE_VALUE, Helper.parseName("SubscrCancelRenew_(*)"));
-		testConfig.setCustomParam(FlatFeeScenario.PARAM_BOOL_IS_CREATE_ORDER_LINES, true);
 
 		// explicitly setting the deadline params here, because we wan to have a 'changeDate' that is before the
 		// deadline
@@ -565,7 +558,6 @@ public class SubscriptionTestDriver extends AIntegrationTestDriver
 		testConfig.setCustomParam(FlatFeeScenario.PARAM_BOOL_IS_SIMULATION, false);
 		testConfig.setCustomParam(FlatFeeScenario.PARAM_BD_PRICE_PER_UNIT, new BigDecimal("2"));
 		testConfig.setCustomParam(FlatFeeScenario.PARAM_STR_PRODUCT_FLATRATE_VALUE, Helper.parseName("SubscrCancelOK_(*)"));
-		testConfig.setCustomParam(FlatFeeScenario.PARAM_BOOL_IS_CREATE_ORDER_LINES, true);
 
 		// explicitly setting the duration and deadline params here, because we want to have
 		// a 'changeDate' that is before the deadline
@@ -620,7 +612,6 @@ public class SubscriptionTestDriver extends AIntegrationTestDriver
 		testConfig.setCustomParam(FlatFeeScenario.PARAM_BOOL_IS_SIMULATION, false);
 		testConfig.setCustomParam(FlatFeeScenario.PARAM_BD_PRICE_PER_UNIT, new BigDecimal("2"));
 		testConfig.setCustomParam(FlatFeeScenario.PARAM_STR_PRODUCT_FLATRATE_VALUE, Helper.parseName("SubscrCancelOK_(*)"));
-		testConfig.setCustomParam(FlatFeeScenario.PARAM_BOOL_IS_CREATE_ORDER_LINES, false);
 
 		// explicitly setting the duration and deadline params here, because we want to have
 		// a 'changeDate' that is before the deadline
@@ -663,7 +654,7 @@ public class SubscriptionTestDriver extends AIntegrationTestDriver
 
 		InterfaceWrapperHelper.refresh(term);
 		assertThat(term.isAutoRenew(), is(false));
-		assertThat(term.getContractStatus(), equalTo(X_C_Flatrate_Term.CONTRACTSTATUS_Gekuendigt));
+		assertThat(term.getContractStatus(), equalTo(X_C_Flatrate_Term.CONTRACTSTATUS_Quit));
 		assertThat("After a early change, " + term + " without order should have C_OrderLine_TermChange_ID==0", term.getC_OrderLine_TermChange_ID(), is(0));
 
 		InterfaceWrapperHelper.refresh(candForTermBeforeCancel);
@@ -707,7 +698,6 @@ public class SubscriptionTestDriver extends AIntegrationTestDriver
 
 		testConfig.setCustomParam(ContractsHelper.PARAM_CONTRACT_CANGE_CANCEL_DEADLINE, 4);
 		testConfig.setCustomParam(ContractsHelper.PARAM_CONTRACT_CANGE_CANCEL_DEADLINE_UNIT, X_C_Contract_Change.DEADLINEUNIT_MonatE);
-		testConfig.setCustomParam(FlatFeeScenario.PARAM_BOOL_IS_CREATE_ORDER_LINES, true);
 
 		final I_C_Flatrate_Transition ft = helper.createTransistion(this);
 		final I_C_Flatrate_Conditions conditions = helper.createSubscriptionContract(this, ft);
@@ -745,10 +735,7 @@ public class SubscriptionTestDriver extends AIntegrationTestDriver
 	{
 		assertThat(term, notNullValue());
 
-		if (term.isNewTermCreatesOrder())
-		{
-			assertThat("term has a C_OrderLine_Term_ID>0", term.getC_OrderLine_Term_ID(), greaterThan(0));
-		}
+		assertThat("term has a C_OrderLine_Term_ID>0", term.getC_OrderLine_Term_ID(), greaterThan(0));
 		if (trans.isAutoCompleteNewTerm())
 		{
 			assertThat(term.getDocStatus(), equalTo(X_C_Flatrate_Term.DOCSTATUS_Completed));

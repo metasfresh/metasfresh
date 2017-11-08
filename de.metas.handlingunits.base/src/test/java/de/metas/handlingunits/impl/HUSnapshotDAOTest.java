@@ -10,18 +10,19 @@ package de.metas.handlingunits.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
+import static de.metas.business.BusinessTestHelper.createLocator;
+import static de.metas.business.BusinessTestHelper.createWarehouse;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -36,6 +37,8 @@ import org.adempiere.util.Services;
 import org.adempiere.util.lang.IMutable;
 import org.adempiere.util.lang.Mutable;
 import org.adempiere.util.time.SystemTime;
+import org.compiere.model.I_M_Locator;
+import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.Env;
 import org.compiere.util.TrxRunnableAdapter;
 import org.hamcrest.Matchers;
@@ -45,25 +48,23 @@ import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import de.metas.StartupListener;
 import de.metas.handlingunits.AbstractHUTest;
 import de.metas.handlingunits.HUTestHelper;
-import de.metas.handlingunits.HandlingUnitsConfiguration;
 import de.metas.handlingunits.expectations.HUExpectation;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item_Storage;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_Trx_Line;
-import de.metas.handlingunits.model.I_M_Locator;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.snapshot.IHUSnapshotDAO;
 import de.metas.handlingunits.snapshot.impl.HUSnapshotDAO;
 import de.metas.handlingunits.util.TraceUtils;
-import de.metas.interfaces.I_M_Warehouse;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes= HandlingUnitsConfiguration.class)
+@SpringBootTest(classes = { StartupListener.class })
 public class HUSnapshotDAOTest extends AbstractHUTest
 {
 	private HUSnapshotDAO huSnapshotDAO;
@@ -103,9 +104,9 @@ public class HUSnapshotDAOTest extends AbstractHUTest
 		Check.assumeNotNull(trxManager, "trxManager not null");
 
 		setupMasterData_HU_PI();
-		
-		final I_M_Warehouse warehouse1 = helper.createWarehouse("Warehouse1");
-		warehouse1_locator1 = helper.createLocator("Warehouse1_Locator1", warehouse1);
+
+		final I_M_Warehouse warehouse1 = createWarehouse("Warehouse1");
+		warehouse1_locator1 = createLocator("Warehouse1_Locator1", warehouse1);
 	}
 
 	protected void setupMasterData_HU_PI()

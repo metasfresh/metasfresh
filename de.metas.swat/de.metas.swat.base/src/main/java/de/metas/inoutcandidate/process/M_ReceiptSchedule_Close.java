@@ -11,7 +11,6 @@ import org.adempiere.util.Services;
 import org.apache.commons.collections4.IteratorUtils;
 import org.compiere.util.TrxRunnable;
 
-import de.metas.i18n.IMsgBL;
 import de.metas.inoutcandidate.api.IReceiptScheduleBL;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.process.IProcessPrecondition;
@@ -37,7 +36,6 @@ public class M_ReceiptSchedule_Close extends JavaProcess implements IProcessPrec
 
 	private final transient IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
 	private final transient IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final transient IMsgBL msgBL = Services.get(IMsgBL.class);
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(@NonNull final IProcessPreconditionsContext context)
@@ -53,7 +51,7 @@ public class M_ReceiptSchedule_Close extends JavaProcess implements IProcessPrec
 
 		if (!someSchedsAreStillOpen)
 		{
-			return ProcessPreconditionsResolution.reject(MSG_RECEIPT_SCHEDULES_ALL_CLOSED);
+			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_RECEIPT_SCHEDULES_ALL_CLOSED));
 		}
 
 		return ProcessPreconditionsResolution.accept();

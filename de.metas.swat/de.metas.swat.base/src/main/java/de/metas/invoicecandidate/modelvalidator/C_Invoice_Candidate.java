@@ -27,8 +27,8 @@ import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.cache.impl.TableRecordCacheLocal;
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
@@ -40,6 +40,7 @@ import org.compiere.model.I_C_Tax;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.X_C_OrderLine;
 import org.slf4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import de.metas.invoicecandidate.api.IAggregationBL;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
@@ -47,16 +48,40 @@ import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
 import de.metas.invoicecandidate.api.InvoiceCandidate_Constants;
 import de.metas.invoicecandidate.api.impl.InvoiceCandBL;
+import de.metas.invoicecandidate.compensationGroup.InvoiceCandidateGroupCompensationChangesHandler;
+import de.metas.invoicecandidate.compensationGroup.InvoiceCandidateGroupRepository;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Line_Alloc;
 import de.metas.invoicecandidate.model.I_M_InOutLine;
+import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
 import de.metas.tax.api.ITaxDAO;
 
-// this model validation code used to be in the class 'InvoiceCandidateValidator'
-@Validator(I_C_Invoice_Candidate.class)
+@Interceptor(I_C_Invoice_Candidate.class)
 public class C_Invoice_Candidate
 {
 	private static final transient Logger logger = InvoiceCandidate_Constants.getLogger(C_Invoice_Candidate.class);
+
+	// NOTE: set required=false because atm, for some reason junit tests are failing on jenkins
+	@Autowired(required = false)
+	private InvoiceCandidateGroupRepository groupsRepo;
+	private InvoiceCandidateGroupCompensationChangesHandler groupChangesHandler;
+
+	public C_Invoice_Candidate()
+	{
+		Adempiere.autowire(this);
+
+		// NOTE: in unit test mode and while running tools like model generators,
+		// the groupsRepo is not Autowired because there is no spring context,
+		// so we have to instantiate it directly
+		if (groupsRepo == null)
+		{
+			groupsRepo = new InvoiceCandidateGroupRepository();
+		}
+
+		groupChangesHandler = InvoiceCandidateGroupCompensationChangesHandler.builder()
+				.groupsRepo(groupsRepo)
+				.build();
+	};
 
 	/**
 	 * Set QtyToInvoiceInPriceUOM, just to make sure it is up2date.
@@ -350,7 +375,7 @@ public class C_Invoice_Candidate
 		final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 
 		final boolean isBackgroundProcessInProcess = invoiceCandBL.isUpdateProcessInProgress();
-		if (ic.isProcessed() || "Y".equals(ic.getProcessed_Override()) || isBackgroundProcessInProcess)
+		if (ic.isProcessed() || X_C_Invoice_Candidate.PROCESSED_OVERRIDE_Yes.equals(ic.getProcessed_Override()) || isBackgroundProcessInProcess)
 		{
 			return; // nothing to do
 		}
@@ -379,4 +404,14 @@ public class C_Invoice_Candidate
 			candidate.setIsError(true);
 		}
 	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = {
+			I_C_Invoice_Candidate.COLUMNNAME_NetAmtToInvoice,
+			I_C_Invoice_Candidate.COLUMNNAME_GroupCompensationPercentage
+	})
+	public void handleCompensantionGroupRelatedChanges(final I_C_Invoice_Candidate invoiceCandidate)
+	{
+		groupChangesHandler.onInvoiceCandidateChanged(invoiceCandidate);
+	}
+
 }

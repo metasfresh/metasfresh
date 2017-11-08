@@ -1,6 +1,7 @@
 package de.metas.handlingunits.attribute.impl;
 
 
+import org.adempiere.mm.attributes.api.impl.AttributesTestHelper;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_Attribute;
@@ -59,7 +60,7 @@ public class HUPIAttributesDAO_isTemplateAttribute_Test extends AbstractHUTest
 	{
 		piAttributesDAO = (HUPIAttributesDAO)Services.get(IHUPIAttributesDAO.class);
 
-		attribute = helper.createM_Attribute("test-attribute", X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40, true);
+		attribute = new AttributesTestHelper().createM_Attribute("test-attribute", X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40, true);
 
 		piTemplate = helper.huDefNone;
 		piLU = helper.createHUDefinition("LI", X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit);

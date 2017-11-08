@@ -45,6 +45,7 @@ import de.metas.async.spi.IWorkpackageProcessor;
 import de.metas.async.spi.impl.SizeBasedWorkpackagePrio;
 import de.metas.lock.api.ILock;
 import de.metas.lock.api.ILockCommand;
+import lombok.NonNull;
 
 /*package*/class WorkPackageBuilder implements IWorkPackageBuilder
 {
@@ -120,12 +121,7 @@ import de.metas.lock.api.ILockCommand;
 			_parametersBuilder.build();
 		}
 
-		//
-		// Create workpackage elements
-		for (final ITableRecordReference element : elements)
-		{
-			workpackageQueue.enqueueElement(workpackage, element.getAD_Table_ID(), element.getRecord_ID());
-		}
+		createWorkpackageElements(workpackageQueue, workpackage);
 
 		//
 		// Lock enqueued workpackage elements
@@ -140,6 +136,16 @@ import de.metas.lock.api.ILockCommand;
 		workpackageQueue.markReadyForProcessingAfterTrxCommit(workpackage, _trxName);
 
 		return workpackage;
+	}
+
+	private void createWorkpackageElements(
+			@NonNull final IWorkPackageQueue workpackageQueue, 
+			@NonNull final I_C_Queue_WorkPackage workpackage)
+	{
+		for (final ITableRecordReference element : elements)
+		{
+			workpackageQueue.enqueueElement(workpackage, element.getAD_Table_ID(), element.getRecord_ID());
+		}
 	}
 
 	private final I_C_Queue_Block getC_Queue_Block()

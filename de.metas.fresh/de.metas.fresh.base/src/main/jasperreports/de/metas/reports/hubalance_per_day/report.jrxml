@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
-<!-- 2016-11-17T11:21:37 -->
+<!-- 2017-10-06T16:26:57 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" resourceBundle="de/metas/reports/hubalance_per_day/report" uuid="97db45d5-efca-414e-835a-5d81c0144a0c">
 	<property name="ireport.zoom" value="1.0"/>
 	<property name="ireport.x" value="0"/>
@@ -26,6 +26,9 @@
 		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
 	</parameter>
 	<parameter name="AD_Org_ID" class="java.math.BigDecimal"/>
+	<parameter name="ad_language" class="java.lang.String">
+		<defaultValueExpression><![CDATA[$P{REPORT_LOCALE}.toString()]]></defaultValueExpression>
+	</parameter>
 	<queryString>
 		<![CDATA[SELECT * FROM de_metas_endcustomer_fresh_reports.Docs_HUBalance_Report_General_Day
 ( $P{Date},
@@ -34,9 +37,9 @@
   $P{M_Product_ID},
   $P{M_Material_Balance_Config_ID},
   $P{IsRefundableConditions},
-  $P{AD_Org_ID}
-  );
-]]>
+  $P{AD_Org_ID},
+  $P{ad_language}
+  );]]>
 	</queryString>
 	<field name="bpartnerno" class="java.lang.String"/>
 	<field name="bpartner" class="java.lang.String"/>

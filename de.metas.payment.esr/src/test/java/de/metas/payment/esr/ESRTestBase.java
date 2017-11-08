@@ -53,7 +53,6 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.MSequence;
 import org.compiere.model.X_C_DocType;
-import org.compiere.process.DocAction;
 import org.compiere.util.Env;
 import org.junit.After;
 import org.junit.Before;
@@ -64,8 +63,9 @@ import org.junit.rules.TestWatcher;
 import de.metas.adempiere.model.I_C_Currency;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.allocation.api.C_AllocationHdr_ProcessInterceptor;
-import de.metas.document.engine.IDocActionBL;
-import de.metas.document.engine.impl.PlainDocActionBL;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
+import de.metas.document.engine.impl.PlainDocumentBL;
 import de.metas.document.refid.model.I_C_ReferenceNo;
 import de.metas.document.refid.model.I_C_ReferenceNo_Doc;
 import de.metas.document.refid.model.I_C_ReferenceNo_Type;
@@ -114,10 +114,10 @@ public class ESRTestBase
 		esrImportBL = new ESRImportBL();
 
 		// register processors
-		final PlainDocActionBL docActionBL = (PlainDocActionBL)Services.get(IDocActionBL.class);
-		docActionBL.setDefaultProcessInterceptor(PlainDocActionBL.PROCESSINTERCEPTOR_CompleteDirectly);
-		docActionBL.registerProcessInterceptor(I_C_Payment.Table_Name, DocAction.ACTION_Complete, new C_Payment_ProcessInterceptor());
-		docActionBL.registerProcessInterceptor(I_C_AllocationHdr.Table_Name, DocAction.ACTION_Complete, new C_AllocationHdr_ProcessInterceptor());
+		final PlainDocumentBL docActionBL = (PlainDocumentBL)Services.get(IDocumentBL.class);
+		docActionBL.setDefaultProcessInterceptor(PlainDocumentBL.PROCESSINTERCEPTOR_CompleteDirectly);
+		docActionBL.registerProcessInterceptor(I_C_Payment.Table_Name, IDocument.ACTION_Complete, new C_Payment_ProcessInterceptor());
+		docActionBL.registerProcessInterceptor(I_C_AllocationHdr.Table_Name, IDocument.ACTION_Complete, new C_AllocationHdr_ProcessInterceptor());
 
 		// Client
 		client = newInstance(I_AD_Client.class);

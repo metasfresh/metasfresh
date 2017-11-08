@@ -51,6 +51,7 @@ import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.apps.ConfirmPanel;
 import org.compiere.apps.form.fileimport.FileImportPreviewColumnFactory;
 import org.compiere.apps.form.fileimport.FileImportPreviewTableModel;
+import org.compiere.apps.form.fileimport.FileImportReader;
 import org.compiere.impexp.ImpDataLine;
 import org.compiere.impexp.ImpFormat;
 import org.compiere.impexp.ImportStatus;
@@ -65,12 +66,10 @@ import org.compiere.util.Ini;
 import org.jdesktop.swingx.JXTable;
 import org.slf4j.Logger;
 
-import com.google.common.io.Files;
-import com.google.common.io.LineProcessor;
-
 import de.metas.adempiere.form.IClientUI;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
+import lombok.NonNull;
 
 /**
  * Fixed length file import
@@ -98,7 +97,6 @@ public class VFileImport extends CPanel
 	private final transient IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final transient IClientUI clientUI = Services.get(IClientUI.class);
 
-	private static final int MAX_LOADED_LINES = 100;
 	private static final int MAX_SHOWN_LINES = 10;
 
 	/**
@@ -400,6 +398,7 @@ public class VFileImport extends CPanel
 		return _file;
 	}
 
+	
 	/**
 	 * Reload/Load file
 	 */
@@ -407,8 +406,8 @@ public class VFileImport extends CPanel
 	{
 		final File file = getFile();
 
-		final List<String> loadedDataLines = new ArrayList<>();
-		final StringBuilder loadedDataPreview = new StringBuilder();
+		List<String> loadedDataLines = new ArrayList<>();
+		String loadedDataPreview = "";
 		boolean loadOK = false;
 
 		try
@@ -418,33 +417,11 @@ public class VFileImport extends CPanel
 			if (file != null)
 			{
 				final Charset charset = fCharset.getSelectedItem();
-				Files.readLines(file, charset, new LineProcessor<Void>()
-				{
-					@Override
-					public boolean processLine(final String line) throws IOException
-					{
-						loadedDataLines.add(line);
-						if (loadedDataLines.size() <= MAX_LOADED_LINES)
-						{
-							loadedDataPreview.append(line);
-							loadedDataPreview.append("\n");
-						}
-						return true;
-					}
-
-					@Override
-					public Void getResult()
-					{
-						return null;
-					}
-				});
-
-				if (loadedDataLines.size() > MAX_LOADED_LINES)
-				{
-					loadedDataPreview.append("......................................................\n");
-				}
+				loadedDataLines = readLines(file, charset);
+				//
+				// build the preview string
+				loadedDataPreview = FileImportReader.buildDataPreview(loadedDataLines);
 			}
-
 			loadOK = true;
 		}
 		catch (final Exception e)
@@ -469,6 +446,27 @@ public class VFileImport extends CPanel
 		}
 	}	// cmd_loadFile
 
+	private List<String> readLines(@NonNull final File file, @NonNull final Charset charset) throws IOException
+	{
+		if (isMultiLineFormat())
+		{
+			return FileImportReader.readMultiLines(file, charset);
+		}
+		return FileImportReader.readRegularLines(file, charset);
+	}
+	
+	private boolean isMultiLineFormat()
+	{
+		final I_AD_ImpFormat impFormatModel = (I_AD_ImpFormat)pickImpFormat.getSelectedItem();
+		if (impFormatModel == null)
+		{
+			return false;
+		}
+		return impFormatModel.isMultiLine();
+	}
+	
+	
+	
 	private final void updateButtonsStatus()
 	{
 		final ImpFormat impFormat = previewTableModel.getImpFormat();

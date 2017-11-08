@@ -13,15 +13,14 @@ package org.adempiere.warehouse.model;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import org.compiere.model.I_AD_User;
 
@@ -31,6 +30,12 @@ public interface I_M_Warehouse extends org.compiere.model.I_M_Warehouse
 	public static final String COLUMNNAME_isPickingWarehouse = "isPickingWarehouse";
 	public void setisPickingWarehouse(boolean isPickingWarehouse);
 	public boolean isPickingWarehouse();
+	//@formatter:on
+
+	//@formatter:off
+	public static final String COLUMNNAME_IsIssueWarehouse = "IsIssueWarehouse";
+	public boolean isIssueWarehouse();
+	public void setIsIssueWarehouse(boolean IsIssueWarehouse);
 	//@formatter:on
 
 	//@formatter:off

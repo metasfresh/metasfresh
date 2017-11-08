@@ -1,5 +1,10 @@
 package de.metas.handlingunits.allocation.transfer;
 
+
+import static de.metas.business.BusinessTestHelper.createBPartner;
+import static de.metas.business.BusinessTestHelper.createBPartnerLocation;
+import static de.metas.business.BusinessTestHelper.createLocator;
+import static de.metas.business.BusinessTestHelper.createWarehouse;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.hamcrest.Matchers.hasXPath;
 import static org.hamcrest.Matchers.is;
@@ -13,7 +18,9 @@ import java.util.List;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_Warehouse;
 import org.w3c.dom.Node;
 
 import de.metas.adempiere.model.I_C_BPartner_Location;
@@ -30,12 +37,11 @@ import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestination;
 import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestinationTestSupport;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
-import de.metas.handlingunits.model.I_M_Locator;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.validator.M_HU;
 import de.metas.handlingunits.spi.IHUPackingMaterialCollectorSource;
 import de.metas.handlingunits.trace.HUTransformTracingTests;
-import de.metas.interfaces.I_M_Warehouse;
+
 
 
 /*
@@ -92,11 +98,11 @@ public class HUTransformTestsBase
 	{
 		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 
-		final I_C_BPartner bpartner = data.helper.createBPartner("testVendor");
-		final I_C_BPartner_Location bPartnerLocation = data.helper.createBPartnerLocation(bpartner);
+		final I_C_BPartner bpartner =createBPartner("testVendor");
+		final I_C_BPartner_Location bPartnerLocation = createBPartnerLocation(bpartner);
 
-		final I_M_Warehouse warehouse = data.helper.createWarehouse("testWarehouse");
-		final I_M_Locator locator = data.helper.createLocator("testLocator", warehouse);
+		final I_M_Warehouse warehouse = createWarehouse("testWarehouse");
+		final I_M_Locator locator = createLocator("testLocator", warehouse);
 
 		final TestHUsBuilder testHUsBuilder = TestHUs.builder();
 
@@ -163,7 +169,7 @@ public class HUTransformTestsBase
 
 	public final TestHUs testCU_To_NewCU_MaxValueNoParent_DoIt()
 	{
-		final I_M_HU cuToSplit = mkRealStandAloneCUToSplit("3");
+		final I_M_HU cuToSplit = mkRealStandAloneCuWithCuQty("3");
 		assertThat(cuToSplit.getM_HU_Item_Parent(), nullValue()); // this test makes no sense if the given CU has a parent
 
 		// invoke the method under test
@@ -176,7 +182,7 @@ public class HUTransformTestsBase
 
 	public final TestHUs testCU_To_NewCU_MaxValueParent_DoIt()
 	{
-		final I_M_HU cuToSplit = mkRealCUWithTUToSplit("3");
+		final I_M_HU cuToSplit = mkRealCUWithTUandQtyCU("3");
 		final I_M_HU parentTU = cuToSplit.getM_HU_Item_Parent().getM_HU();
 
 		// invoke the method under test
@@ -193,7 +199,7 @@ public class HUTransformTestsBase
 
 	public final TestHUs testAggregateCU_To_NewTUs_1Tomato_DoIt(final boolean isOwnPackingMaterials)
 	{
-		final I_M_HU cuToSplit = mkAggregateCUToSplit("80");
+		final I_M_HU cuToSplit = mkAggregateHUWithTotalQtyCU("80");
 		assertThat(cuToSplit.getHUStatus(), is(X_M_HU.HUSTATUS_Active));
 		assertThat(cuToSplit.getM_HU_Item_Parent().getM_HU().getHUStatus(), is(X_M_HU.HUSTATUS_Active));
 
@@ -231,7 +237,7 @@ public class HUTransformTestsBase
 	 * @param strCuQty
 	 * @return
 	 */
-	public I_M_HU mkRealStandAloneCUToSplit(final String strCuQty)
+	public I_M_HU mkRealStandAloneCuWithCuQty(final String strCuQty)
 	{
 		final HUProducerDestination producer = HUProducerDestination.ofVirtualPI();
 
@@ -255,7 +261,7 @@ public class HUTransformTestsBase
 		return cuToSplit;
 	}
 
-	public I_M_HU mkRealCUWithTUToSplit(final String strCuQty)
+	public I_M_HU mkRealCUWithTUandQtyCU(final String strCuQty)
 	{
 		final LUTUProducerDestination lutuProducer = new LUTUProducerDestination();
 		lutuProducer.setNoLU();
@@ -274,9 +280,8 @@ public class HUTransformTestsBase
 		final List<I_M_HU> createdCUs = handlingUnitsDAO.retrieveIncludedHUs(createdTU);
 		assertThat(createdCUs.size(), is(1));
 
-		final I_M_HU cuToSplit = createdCUs.get(0);
-
-		return cuToSplit;
+		final I_M_HU cu = createdCUs.get(0);
+		return cu;
 	}
 
 	/**
@@ -285,20 +290,20 @@ public class HUTransformTestsBase
 	 * @param totalQtyCUStr
 	 * @return
 	 */
-	public I_M_HU mkAggregateCUToSplit(final String totalQtyCUStr)
+	public I_M_HU mkAggregateHUWithTotalQtyCU(final String totalQtyCUStr)
 	{
 		final int qtyCUsPerTU = -1; // N/A
-		return mkAggregateCUToSplit(totalQtyCUStr, qtyCUsPerTU);
+		return mkAggregateHUWithTotalQtyCUandCustomQtyCUsPerTU(totalQtyCUStr, qtyCUsPerTU);
 	}
 
 	/**
 	 * Creates an LU with one aggregate HU. Both the LU's and aggregate HU's status is "active".
 	 *
 	 * @param totalQtyCUStr
-	 * @param qtyCUsPerTU
+	 * @param customQtyCUsPerTU
 	 * @return
 	 */
-	public I_M_HU mkAggregateCUToSplit(final String totalQtyCUStr, final int qtyCUsPerTU)
+	public I_M_HU mkAggregateHUWithTotalQtyCUandCustomQtyCUsPerTU(final String totalQtyCUStr, final int customQtyCUsPerTU)
 	{
 		final I_M_Product cuProduct = data.helper.pTomato;
 		final I_C_UOM cuUOM = data.helper.uomKg;
@@ -311,9 +316,9 @@ public class HUTransformTestsBase
 		lutuProducer.setMaxTUsPerLU(Integer.MAX_VALUE); // allow as many TUs on that one pallet as we want
 
 		// Custom TU capacity (if specified)
-		if (qtyCUsPerTU > 0)
+		if (customQtyCUsPerTU > 0)
 		{
-			lutuProducer.addTUCapacity(cuProduct, BigDecimal.valueOf(qtyCUsPerTU), cuUOM);
+			lutuProducer.addTUCapacity(cuProduct, BigDecimal.valueOf(customQtyCUsPerTU), cuUOM);
 		}
 
 		final TestHelperLoadRequest loadRequest = HUTestHelper.TestHelperLoadRequest.builder()

@@ -13,27 +13,23 @@ package test.integration.swat.sales.shipment;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import static org.junit.Assert.assertEquals;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.MOrderLine;
-import org.compiere.process.DocAction;
 import org.compiere.util.DB;
-import org.compiere.util.Env;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -44,10 +40,11 @@ import de.metas.adempiere.ait.helper.IHelper;
 import de.metas.adempiere.ait.helper.OrderHelper;
 import de.metas.adempiere.ait.test.IntegrationTestRunner;
 import de.metas.adempiere.model.I_C_Order;
+import de.metas.document.engine.IDocument;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.OlAndSched;
 import de.metas.inoutcandidate.api.impl.ShipmentSchedulePA;
-import de.metas.interfaces.I_C_OrderLine;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 
 @RunWith(IntegrationTestRunner.class)
 public class ShipmentTests extends AIntegrationTestDriver
@@ -138,7 +135,7 @@ public class ShipmentTests extends AIntegrationTestDriver
 		final OrderHelper orderHelper = getHelper().mkOrderHelper();
 
 		final I_C_Order order = orderHelper
-				.setComplete(DocAction.STATUS_Completed)
+				.setComplete(IDocument.STATUS_Completed)
 				.addLine(IHelper.DEFAULT_ProductValue + "_0", 10, 11)
 				.addLine(IHelper.DEFAULT_ProductValue + "_1", 10, 11)
 				.addLine(IHelper.DEFAULT_ProductValue + "_2", 10, 11)
@@ -146,15 +143,19 @@ public class ShipmentTests extends AIntegrationTestDriver
 				.createOrder();
 		getHelper().runProcess_UpdateShipmentScheds();
 
-		final List<OlAndSched> olsAndSchedsToLock = new ArrayList<OlAndSched>();
+		final List<OlAndSched> olsAndSchedsToLock = new ArrayList<>();
 
 		final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
 		for (final MOrderLine ol : orderHelper.getOrderPO(order).getLines())
 		{
-			olsAndSchedsToLock.add(
-					new OlAndSched(
-							InterfaceWrapperHelper.create(ol, I_C_OrderLine.class),
-							shipmentSchedulePA.retrieveForOrderLine(Env.getCtx(), ol.getC_OrderLine_ID(), trxName)));
+			final I_M_ShipmentSchedule schedForOrderLine = shipmentSchedulePA.retrieveForOrderLine(ol);
+			if (schedForOrderLine != null)
+			{
+				olsAndSchedsToLock.add(OlAndSched.builder()
+						.orderLineOrNull(ol)
+						.shipmentSchedule(schedForOrderLine)
+						.build());
+			}
 		}
 		return olsAndSchedsToLock;
 	}

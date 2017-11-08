@@ -46,9 +46,10 @@ public class HUPPOrderQtyDAO implements IHUPPOrderQtyDAO
 	public I_PP_Order_Qty retrieveById(final int ppOrderQtyId)
 	{
 		Preconditions.checkArgument(ppOrderQtyId > 0, "ppOrderQtyId > 0");
-		
+
 		return InterfaceWrapperHelper.load(ppOrderQtyId, I_PP_Order_Qty.class);
 	}
+
 	@Override
 	public void save(final I_PP_Order_Qty ppOrderQty)
 	{
@@ -93,5 +94,17 @@ public class HUPPOrderQtyDAO implements IHUPPOrderQtyDAO
 					throw new HUException("Expected only one candidate but got: " + cand1 + ", " + cand2);
 				})
 				.orElse(null);
+	}
+
+	@Override
+	@Cached(cacheName = I_PP_Order_Qty.Table_Name + "#by#" + I_PP_Order_Qty.COLUMNNAME_M_HU_ID)
+	public boolean isHuIdIssued(int huId)
+	{
+		Preconditions.checkArgument(huId > 0, "huId shall be > 0");
+		return Services.get(IQueryBL.class).createQueryBuilder(I_PP_Order_Qty.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_PP_Order_Qty.COLUMN_M_HU_ID, huId)
+				.create()
+				.match();
 	}
 }

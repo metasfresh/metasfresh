@@ -37,10 +37,10 @@ import de.metas.adempiere.ait.event.AIntegrationTestDriver;
 import de.metas.adempiere.ait.helper.Helper;
 import de.metas.adempiere.ait.helper.IHelper;
 import de.metas.adempiere.ait.test.IntegrationTestRunner;
-import de.metas.flatrate.interfaces.IFlatrateConditionsAware;
-import de.metas.flatrate.model.I_C_Flatrate_Conditions;
-import de.metas.flatrate.model.I_C_Flatrate_Transition;
-import de.metas.flatrate.pricing.spi.impl.ContractPricingUtil;
+import de.metas.contracts.flatrate.interfaces.IFlatrateConditionsAware;
+import de.metas.contracts.model.I_C_Flatrate_Conditions;
+import de.metas.contracts.model.I_C_Flatrate_Transition;
+import de.metas.contracts.pricing.ContractPricingUtil;
 import test.integration.contracts.ContractsHelper;
 import test.integration.contracts.ContractsTestConfig;
 import test.integration.contracts.flatrate.FlatFeeScenario;
@@ -145,7 +145,6 @@ public class ContractPricingUtilTests extends AIntegrationTestDriver
 		testConfig.setCustomParam(FlatFeeScenario.PARAM_BD_PRICE_PER_UNIT, new BigDecimal("2"));
 		testConfig.setCustomParam(FlatFeeScenario.PARAM_STR_PRODUCT_FLATRATE_VALUE, Helper.parseName(id + "_(*)"));
 		testConfig.setCustomParam(FlatFeeScenario.PARAM_BD_ACTUAL_QTY, new BigDecimal("3"));
-		testConfig.setCustomParam(FlatFeeScenario.PARAM_BOOL_IS_CREATE_ORDER_LINES, true); // this value shouldn't really matter for the test
 
 		final I_C_Flatrate_Transition ft = helper.createTransistion(this);
 		return helper.createSubscriptionContract(this, ft);

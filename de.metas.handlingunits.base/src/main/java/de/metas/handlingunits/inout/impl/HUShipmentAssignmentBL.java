@@ -194,8 +194,8 @@ public class HUShipmentAssignmentBL implements IHUShipmentAssignmentBL
 				.addInSubQueryFilter(I_M_HU_Assignment.COLUMNNAME_Record_ID, org.compiere.model.I_M_InOutLine.COLUMNNAME_M_InOutLine_ID, queryShipmentLines)
 				.create();
 
-		final IQueryFilter<I_M_HU> assignedQueryFilter = new InSubQueryFilter<I_M_HU>(I_M_HU.COLUMN_M_HU_ID, I_M_HU_Assignment.COLUMNNAME_M_HU_ID, queryHUAssignments);
-		final IQueryFilter<I_M_HU> notAssignedQueryFilter = new NotQueryFilter<I_M_HU>(assignedQueryFilter);
+		final IQueryFilter<I_M_HU> assignedQueryFilter = InSubQueryFilter.of(I_M_HU.COLUMN_M_HU_ID, I_M_HU_Assignment.COLUMNNAME_M_HU_ID, queryHUAssignments);
+		final IQueryFilter<I_M_HU> notAssignedQueryFilter = NotQueryFilter.of(assignedQueryFilter);
 
 		return notAssignedQueryFilter;
 	}

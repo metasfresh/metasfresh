@@ -25,12 +25,9 @@ package de.metas.tourplanning.api.impl;
 
 import java.sql.Timestamp;
 
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.model.I_C_OrderLine;
 
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
@@ -38,6 +35,7 @@ import de.metas.tourplanning.api.IDeliveryDayAllocable;
 import de.metas.tourplanning.api.IDeliveryDayBL;
 import de.metas.tourplanning.api.IShipmentScheduleDeliveryDayBL;
 import de.metas.tourplanning.model.I_M_DeliveryDay_Alloc;
+import lombok.NonNull;
 
 public class ShipmentScheduleDeliveryDayBL implements IShipmentScheduleDeliveryDayBL
 {
@@ -67,17 +65,13 @@ public class ShipmentScheduleDeliveryDayBL implements IShipmentScheduleDeliveryD
 	}
 
 	@Override
-	public final void updateDeliveryDayInfo(final I_M_ShipmentSchedule sched)
+	public final void updateDeliveryDayInfo(@NonNull final I_M_ShipmentSchedule sched)
 	{
-		Check.assumeNotNull(sched, "sched not null");
-
-		updateDeliveryDayInfoFromOrder(sched);
-
-		//
 		// Get Delivery Day Allocation
 		final IDeliveryDayBL deliveryDayBL = Services.get(IDeliveryDayBL.class);
 		final IContextAware context = InterfaceWrapperHelper.getContextAware(sched);
 		final IDeliveryDayAllocable deliveryDayAllocable = asDeliveryDayAllocable(sched);
+
 		final I_M_DeliveryDay_Alloc deliveryDayAlloc = deliveryDayBL.getCreateDeliveryDayAlloc(context, deliveryDayAllocable);
 		if (deliveryDayAlloc == null)
 		{
@@ -87,79 +81,10 @@ public class ShipmentScheduleDeliveryDayBL implements IShipmentScheduleDeliveryD
 		InterfaceWrapperHelper.save(deliveryDayAlloc); // make sure is saved
 	}
 
-	private final void updateDeliveryDayInfoFromOrder(final I_M_ShipmentSchedule sched)
-	{
-		final Timestamp deliveryDate = getOrderLineDeliveryDate(sched);
-		final Timestamp preparationDate = getOrderPreparationDate(sched);
-
-		sched.setDeliveryDate(deliveryDate);
-		sched.setPreparationDate(preparationDate);
-	}
-
 	@Override
 	public Timestamp getDeliveryDateCurrent(final I_M_ShipmentSchedule sched)
 	{
-		//
-		// If DeliveryDate was set, return it
 		final Timestamp deliveryDate = Services.get(IShipmentScheduleEffectiveBL.class).getDeliveryDate(sched);
-
-		if (deliveryDate != null)
-		{
-			return deliveryDate;
-		}
-
-		return getOrderLineDeliveryDate(sched);
-	}
-
-	private Timestamp getOrderLineDeliveryDate(final I_M_ShipmentSchedule sched)
-	{
-		//
-		// Fetch it from order line if possible
-		final I_C_OrderLine orderLine = sched.getC_OrderLine();
-		if (orderLine != null && orderLine.getC_OrderLine_ID() > 0)
-		{
-			final Timestamp datePromised = orderLine.getDatePromised();
-			if (datePromised != null)
-			{
-				return datePromised;
-			}
-		}
-
-		//
-		// Fetch it from order header if possible
-		final org.compiere.model.I_C_Order order = sched.getC_Order();
-		if (order != null && order.getC_Order_ID() > 0)
-		{
-			final Timestamp datePromised = order.getDatePromised();
-			if (datePromised != null)
-			{
-				return datePromised;
-			}
-		}
-
-		//
-		// Fail miserably...
-		throw new AdempiereException("@NotFound@ @DeliveryDate@"
-				+ "\n @M_ShipmentSchedule_ID@: " + sched
-				+ "\n @C_OrderLine_ID@: " + orderLine
-				+ "\n @C_Order_ID@: " + order);
-	}
-
-	private Timestamp getOrderPreparationDate(final I_M_ShipmentSchedule sched)
-	{
-		//
-		// Fetch it from order header if possible
-		final org.compiere.model.I_C_Order order = sched.getC_Order();
-		if (order != null && order.getC_Order_ID() > 0)
-		{
-			final Timestamp preparationDate = order.getPreparationDate();
-
-			if (preparationDate != null)
-			{
-				return preparationDate;
-			}
-		}
-
-		return null;
+		return deliveryDate;
 	}
 }

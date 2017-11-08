@@ -23,7 +23,6 @@ package org.adempiere.inout.util;
  */
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -41,30 +40,27 @@ import org.adempiere.model.IContextAware;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.ObjectUtils;
-import org.adempiere.util.time.SystemTime;
-import org.adempiere.warehouse.spi.IWarehouseAdvisor;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
+import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
-import org.compiere.model.X_AD_Client;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
 
-import de.metas.adempiere.model.I_M_Product;
 import de.metas.inout.IInOutDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.OlAndSched;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.inoutcandidate.model.X_M_ShipmentSchedule;
-import de.metas.product.IProductBL;
 import de.metas.storage.IStorageEngine;
 import de.metas.storage.IStorageEngineService;
 import de.metas.storage.IStorageQuery;
 import de.metas.storage.IStorageRecord;
+import lombok.NonNull;
 
 /**
  * A complex class to load and cache {@link IStorageRecord}s which are relevant to {@link I_M_ShipmentSchedule}s and their {@link I_C_OrderLine}s.
@@ -74,21 +70,11 @@ public class ShipmentScheduleQtyOnHandStorage
 {
 	// services
 	private final transient IStorageEngineService storageEngineProvider = Services.get(IStorageEngineService.class);
-	private final transient IProductBL productBL = Services.get(IProductBL.class);
-	private final transient IWarehouseAdvisor warehouseAdvisor = Services.get(IWarehouseAdvisor.class);
 	private final transient IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
-	private final transient IShipmentScheduleEffectiveBL shipmentScheduleEffectiveValuesBL = Services.get(IShipmentScheduleEffectiveBL.class);
 
-	//
-	// Parametes
 	private IContextAware _context;
-	/** date when storage is evaluated */
-	@SuppressWarnings("unused")
-	private Timestamp _date;
 
-	//
 	// Cache
-	private CachedObjects _cachedObjects;
 	private final Map<ArrayKey, IStorageQuery> _cachedStorageQueries = new HashMap<>();
 
 	//
@@ -108,9 +94,6 @@ public class ShipmentScheduleQtyOnHandStorage
 
 	public ShipmentScheduleQtyOnHandStorage()
 	{
-		super();
-		_date = SystemTime.asDayTimestamp();
-
 		storageEngine = storageEngineProvider.getStorageEngine();
 	}
 
@@ -136,23 +119,6 @@ public class ShipmentScheduleQtyOnHandStorage
 		return getContext().getCtx();
 	}
 
-	public void setDate(final Timestamp date)
-	{
-		Check.assumeNotNull(date, "date not null");
-		_date = date;
-	}
-
-	private CachedObjects getCachedObjects()
-	{
-		Check.assumeNotNull(_cachedObjects, "cachedObjects not null");
-		return _cachedObjects;
-	}
-
-	public void setCachedObjects(final CachedObjects cachedObjects)
-	{
-		_cachedObjects = cachedObjects;
-	}
-
 	public void loadStoragesFor(final List<OlAndSched> lines)
 	{
 		if (Check.isEmpty(lines))
@@ -168,20 +134,19 @@ public class ShipmentScheduleQtyOnHandStorage
 		final Set<IStorageQuery> storageQueries = new HashSet<>(lines.size());
 		for (final OlAndSched olAndSched : lines)
 		{
-			//
 			// Create query
 			// In case the DeliveryRule is Force, there is no point to load the storage, because it's not needed.
-			final I_M_ShipmentSchedule shipmentSchedule = olAndSched.getSched();
-			final String deliveryRule = shipmentScheduleEffectiveValuesBL.getDeliveryRule(shipmentSchedule);
-			if (!X_M_ShipmentSchedule.DELIVERYRULE_Force.equals(deliveryRule))
-			{
-				final IStorageQuery storageQuery = createStorageQuery(olAndSched);
+			// FIXME: make sure this works performance wise, then remove the commented code
+//			final I_M_ShipmentSchedule shipmentSchedule = olAndSched.getSched();
+//			final String deliveryRule = shipmentScheduleEffectiveValuesBL.getDeliveryRule(shipmentSchedule);
+//			if (!X_M_ShipmentSchedule.DELIVERYRULE_Force.equals(deliveryRule))
+//			{
+				final IStorageQuery storageQuery = createStorageQuery(olAndSched.getSched());
 				storageQueries.add(storageQuery);
-			}
+//			}
 
 			// Collect product IDs
-			final I_C_OrderLine orderLine = olAndSched.getOl();
-			final int productId = orderLine.getM_Product_ID();
+			final int productId = olAndSched.getSched().getM_Product_ID();
 			if (productId > 0)
 			{
 				productIds.add(productId);
@@ -202,9 +167,9 @@ public class ShipmentScheduleQtyOnHandStorage
 		loadAndApplyUnconfirmedShipments(productIds);
 	}
 
-	public void loadStoragesFor(final OlAndSched olAndSched)
+	public void loadStoragesFor(@NonNull final I_M_ShipmentSchedule sched)
 	{
-		final IStorageQuery storageQuery = createStorageQuery(olAndSched);
+		final IStorageQuery storageQuery = createStorageQuery(sched);
 
 		final IContextAware context = getContext();
 		final Collection<IStorageRecord> storagesForLine = storageEngine.retrieveStorageRecords(context, storageQuery);
@@ -306,28 +271,30 @@ public class ShipmentScheduleQtyOnHandStorage
 		}
 	}
 
-	public IStorageQuery createStorageQuery(final OlAndSched olAndSched)
+	public IStorageQuery createStorageQuery(@NonNull final I_M_ShipmentSchedule sched)
 	{
-		final de.metas.interfaces.I_C_OrderLine orderLine = olAndSched.getOl();
-		final I_M_ShipmentSchedule sched = olAndSched.getSched();
+		final TableRecordReference scheduleReference = TableRecordReference.ofReferenced(sched);
 
 		//
 		// Get the storage query from cache if available
 		final ArrayKey storageQueryCacheKey = Util.mkKey(
-				I_C_OrderLine.Table_Name, orderLine.getC_OrderLine_ID(),
-				I_M_ShipmentSchedule.Table_Name, sched.getM_ShipmentSchedule_ID());
+				scheduleReference.getTableName(),
+				scheduleReference.getRecord_ID(),
+				I_M_ShipmentSchedule.Table_Name,
+				sched.getM_ShipmentSchedule_ID());
+
 		IStorageQuery storageQuery = _cachedStorageQueries.get(storageQueryCacheKey);
 		if (storageQuery != null)
 		{
 			return storageQuery;
 		}
 
-		//
-		// Create stoarge query
-		final CachedObjects co = getCachedObjects();
-		final I_M_Product product = co.retrieveAndCacheProduct(orderLine);
-		final I_M_Warehouse warehouse = warehouseAdvisor.evaluateWarehouse(orderLine);
-		final I_C_BPartner bpartner = co.retrieveAndCacheBPartner(orderLine);
+		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
+
+		// Create storage query
+		final I_M_Product product = sched.getM_Product();
+		final I_M_Warehouse warehouse = shipmentScheduleEffectiveBL.getWarehouse(sched);
+		final I_C_BPartner bpartner = shipmentScheduleEffectiveBL.getBPartner(sched);
 
 		storageQuery = storageEngine.newStorageQuery();
 		storageQuery.addWarehouse(warehouse);
@@ -342,7 +309,6 @@ public class ShipmentScheduleQtyOnHandStorage
 			storageQuery.addAttributes(attributeSet);
 		}
 
-		//
 		// Cache the storage query and return it
 		_cachedStorageQueries.put(storageQueryCacheKey, storageQuery);
 		return storageQuery;
@@ -360,17 +326,13 @@ public class ShipmentScheduleQtyOnHandStorage
 		}
 
 		//
-		// Create stoarge query
-		final CachedObjects co = getCachedObjects();
-		final I_M_Product product = co.retrieveAndCacheProduct(shipmentLine);
+		// Create storage query
 		final I_M_InOut shipment = shipmentLine.getM_InOut();
-		final I_M_Warehouse warehouse = shipment.getM_Warehouse();
-		final I_C_BPartner bpartner = co.retrieveAndCacheBPartner(shipment);
 
 		storageQuery = storageEngine.newStorageQuery();
-		storageQuery.addWarehouse(warehouse);
-		storageQuery.addProduct(product);
-		storageQuery.addPartner(bpartner);
+		storageQuery.addWarehouse(shipment.getM_Warehouse());
+		storageQuery.addProduct(shipmentLine.getM_Product());
+		storageQuery.addPartner(shipment.getC_BPartner());
 
 		// Add query attributes
 		final I_M_AttributeSetInstance asi = shipmentLine.getM_AttributeSetInstance();
@@ -386,24 +348,6 @@ public class ShipmentScheduleQtyOnHandStorage
 		return storageQuery;
 	}
 
-	@SuppressWarnings("unused")
-	// old code... and our new storage API does not support MMPolicies
-	private boolean isFifoMMPolicy(final I_M_Product product)
-	{
-		final CachedObjects co = getCachedObjects();
-
-		//
-		// Get Product's MMPolicy
-		String MMPolicy = co.getMmPolicyCache().get(product.getM_Product_ID());
-		if (MMPolicy == null)
-		{
-			MMPolicy = productBL.getMMPolicy(product);
-			co.getMmPolicyCache().put(product.getM_Product_ID(), MMPolicy);
-		}
-		final boolean isFiFo = X_AD_Client.MMPOLICY_FiFo.equals(MMPolicy);
-		return isFiFo;
-	}
-
 	private Collection<ShipmentScheduleStorageRecord> getStorageRecords()
 	{
 		return _storageRecords.values();
@@ -414,14 +358,14 @@ public class ShipmentScheduleQtyOnHandStorage
 		return !_storageRecords.isEmpty();
 	}
 
-	public List<ShipmentScheduleStorageRecord> getStorageRecordsMatching(final OlAndSched olAndSched)
+	public List<ShipmentScheduleStorageRecord> getStorageRecordsMatching(@NonNull final I_M_ShipmentSchedule sched)
 	{
 		if (!hasStorageRecords())
 		{
 			return Collections.emptyList();
 		}
 
-		final IStorageQuery storageQuery = createStorageQuery(olAndSched);
+		final IStorageQuery storageQuery = createStorageQuery(sched);
 		return getStorageRecordsMatching(storageQuery);
 	}
 

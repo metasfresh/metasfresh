@@ -37,7 +37,7 @@ public class GridTabExcelExporter extends AbstractExcelExporter
 {
 	private GridTab m_tab = null;
 	
-	public GridTabExcelExporter(Properties ctx, GridTab tab)
+	public GridTabExcelExporter(final Properties ctx, final GridTab tab)
 	{
 		m_tab = tab;
 		setFreezePane(0, 1);
@@ -50,13 +50,13 @@ public class GridTabExcelExporter extends AbstractExcelExporter
 	}
 
 	@Override
-	public int getDisplayType(int row, int col)
+	public int getDisplayType(final int row, final int col)
 	{
 		return m_tab.getField(col).getDisplayType();
 	}
 
 	@Override
-	public String getHeaderName(int col)
+	public String getHeaderName(final int col)
 	{
 		return m_tab.getField(col).getHeader();
 	}
@@ -68,10 +68,10 @@ public class GridTabExcelExporter extends AbstractExcelExporter
 	}
 
 	@Override
-	public Object getValueAt(int row, int col)
+	public CellValue getValueAt(final int row, final int col)
 	{
-		GridField f = m_tab.getField(col);
-		Object key = m_tab.getValue(row, f.getColumnName());
+		final GridField f = m_tab.getField(col);
+		final Object key = m_tab.getValue(row, f.getColumnName());
 		Object value = key;
 		Lookup lookup = f.getLookup();
 		if (lookup != null)
@@ -87,11 +87,13 @@ public class GridTabExcelExporter extends AbstractExcelExporter
 		{
 			value = lookup.getDisplay(key);
 		}
-		return value;
+		
+		final int displayType = f.getDisplayType();
+		return CellValues.toCellValue(value, displayType);
 	}
 
 	@Override
-	public boolean isColumnPrinted(int col)
+	public boolean isColumnPrinted(final int col)
 	{
 		GridField f = m_tab.getField(col);
 		// Hide not displayed fields
@@ -118,20 +120,20 @@ public class GridTabExcelExporter extends AbstractExcelExporter
 	}
 
 	@Override
-	public boolean isPageBreak(int row, int col)
+	public boolean isPageBreak(final int row, final int col)
 	{
 		return false;
 	}
 
 	@Override
-	protected void setCurrentRow(int row)
+	protected void setCurrentRow(final int row)
 	{
 		; // nothing
 	}
 	
-	private HashMap<String, MLookup> m_buttonLookups = new HashMap<String, MLookup>();
+	private HashMap<String, MLookup> m_buttonLookups = new HashMap<>();
 	
-	private MLookup getButtonLookup(GridField mField)
+	private MLookup getButtonLookup(final GridField mField)
 	{		
 		MLookup lookup = m_buttonLookups.get(mField.getColumnName());
 		if (lookup != null)

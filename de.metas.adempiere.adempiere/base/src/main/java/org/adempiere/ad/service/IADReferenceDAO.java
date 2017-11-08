@@ -23,6 +23,7 @@ package org.adempiere.ad.service;
  */
 
 import java.util.Collection;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
@@ -46,13 +47,21 @@ public interface IADReferenceDAO extends ISingletonService
 		/** AD_Ref_List_ID */
 		private final int refListId;
 	}
+	
+	/**
+	 * 
+	 * @param ctx
+	 * @param adReferenceId
+	 * @return map of "Value" to {@link ADRefListItem}; never return null
+	 */
+	Map<String, ADRefListItem> retrieveListValuesMap(int adReferenceId);
 
 	/**
 	 * @param adReferenceId
 	 * @return a collection of all active {@link ADRefListItem} items of given <code>adReferenceId</code>
 	 */
 	Collection<ADRefListItem> retrieveListItems(int adReferenceId);
-	
+
 	/**
 	 * @param adReferenceId
 	 * @return Set of active {@link ADRefListItem#getValue()}s.
@@ -68,7 +77,7 @@ public interface IADReferenceDAO extends ISingletonService
 	 */
 	String retrieveListNameTrl(final Properties ctx, int adReferenceId, String value);
 	
-	default String retrieveListNameTrl(int adReferenceId, String value)
+	default String retrieveListNameTrl(final int adReferenceId, final String value)
 	{
 		return retrieveListNameTrl(Env.getCtx(), adReferenceId, value);
 	}

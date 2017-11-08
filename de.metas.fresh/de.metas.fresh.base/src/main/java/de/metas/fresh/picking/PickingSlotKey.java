@@ -44,18 +44,17 @@ import de.metas.adempiere.form.terminal.ITerminalKeyStatus;
 import de.metas.adempiere.form.terminal.TerminalKey;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.adempiere.model.I_C_POSKey;
-import de.metas.fresh.picking.form.IFreshPackingItem;
-import de.metas.fresh.picking.terminal.FreshProductKey;
 import de.metas.handlingunits.IHUCapacityBL;
-import de.metas.handlingunits.IHUCapacityDefinition;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_PickingSlot;
 import de.metas.handlingunits.picking.IHUPickingSlotBL;
 import de.metas.logging.LogManager;
+import de.metas.picking.service.IFreshPackingItem;
 import de.metas.picking.terminal.Utils;
 import de.metas.picking.terminal.Utils.PackingStates;
+import de.metas.quantity.CapacityInterface;
 
 /**
  * Picking Slot Terminal Key
@@ -347,7 +346,7 @@ public class PickingSlotKey extends TerminalKey
 	 *         <li>or <code>null</code> if the capacity information is not available
 	 *         </ul>
 	 */
-	public IHUCapacityDefinition getHUTotalCapacity(final I_M_Product product, final I_C_UOM uom)
+	public CapacityInterface getHUTotalCapacity(final I_M_Product product, final I_C_UOM uom)
 	{
 		final I_M_HU_PI_Item_Product piItemProduct = getM_HU_PI_Item_Product();
 		if (piItemProduct == null)

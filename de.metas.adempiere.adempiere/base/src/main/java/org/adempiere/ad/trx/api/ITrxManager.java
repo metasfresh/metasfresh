@@ -355,6 +355,14 @@ public interface ITrxManager extends ISingletonService
 	boolean isNull(String trxName);
 
 	/**
+	 * @return true if transaction is not null and it's active (e.g. not already committed/closed)
+	 */
+	default boolean isActive(final ITrx trx)
+	{
+		return !isNull(trx) && trx.isActive();
+	}
+
+	/**
 	 * Sets TrxName generator to be used for generating new transaction names.
 	 *
 	 * @param trxNameGenerator

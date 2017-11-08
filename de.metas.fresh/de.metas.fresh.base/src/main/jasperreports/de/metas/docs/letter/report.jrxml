@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
-<!-- 2016-10-06T11:19:40 -->
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/sales/invoice/report" uuid="ab0b9171-0660-4619-8c91-fa27fcaa0552">
+<!-- Created with Jaspersoft Studio version 6.3.1.final using JasperReports Library version 6.3.1  -->
+<!-- 2017-09-29T13:54:47 -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" uuid="ab0b9171-0660-4619-8c91-fa27fcaa0552">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="0.7513148009015816"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="metasfresh"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="mf15"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
@@ -15,7 +15,7 @@
 	<parameter name="SUBREPORT_DIR" class="java.lang.String" isForPrompting="false">
 		<defaultValueExpression><![CDATA[".\\"]]></defaultValueExpression>
 	</parameter>
-	<parameter name="RECORD_ID" class="java.lang.Integer"/>
+	<parameter name="AD_PInstance_ID" class="java.lang.Integer"/>
 	<parameter name="doctype" class="java.lang.String" isForPrompting="false">
 		<defaultValueExpression><![CDATA["i"]]></defaultValueExpression>
 	</parameter>
@@ -33,7 +33,7 @@ FROM
 	T_Letter_Spool l
 	JOIN AD_Org o ON l.AD_Org_ID = o.AD_Org_ID AND o.isActive = 'Y'
 WHERE
-	AD_PInstance_ID=$P{RECORD_ID} AND l.isActive = 'Y'
+	AD_PInstance_ID=$P{AD_PInstance_ID} AND l.isActive = 'Y'
 ;]]>
 	</queryString>
 	<field name="lettersubject" class="java.lang.String"/>
@@ -50,10 +50,10 @@ WHERE
 					<subreportParameterExpression><![CDATA[$F{ad_org_id}]]></subreportParameterExpression>
 				</subreportParameter>
 				<subreportParameter name="RECORD_ID">
-					<subreportParameterExpression><![CDATA[$P{RECORD_ID}]]></subreportParameterExpression>
+					<subreportParameterExpression><![CDATA[$P{AD_PInstance_ID}]]></subreportParameterExpression>
 				</subreportParameter>
 				<subreportParameter name="doctype">
-					<subreportParameterExpression><![CDATA[new String("tl")]]></subreportParameterExpression>
+					<subreportParameterExpression><![CDATA[new String("l")]]></subreportParameterExpression>
 				</subreportParameter>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
 				<subreportExpression><![CDATA["de/metas/docs/generics/report_bpblock.jasper"]]></subreportExpression>

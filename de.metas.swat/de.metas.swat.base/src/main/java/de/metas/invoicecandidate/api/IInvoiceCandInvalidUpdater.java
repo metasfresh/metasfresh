@@ -13,11 +13,11 @@ package de.metas.invoicecandidate.api;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -29,6 +29,7 @@ import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler.PriceAndTax;
 import de.metas.lock.api.ILock;
 
 /**
@@ -57,7 +58,8 @@ public interface IInvoiceCandInvalidUpdater
 	IInvoiceCandInvalidUpdater setContext(IContextAware context);
 
 	/**
-	 * @param lockedBy <ul>
+	 * @param lockedBy
+	 *            <ul>
 	 *            <li>if not null it will consider only those records which are locked by given {@link ILock}
 	 *            <li>if null, it will consider only NOT locked records
 	 *            </ul>
@@ -96,4 +98,57 @@ public interface IInvoiceCandInvalidUpdater
 	IInvoiceCandInvalidUpdater setOnlyC_Invoice_Candidates(Iterator<? extends I_C_Invoice_Candidate> invoiceCandidates);
 
 	IInvoiceCandInvalidUpdater setOnlyC_Invoice_Candidates(Iterable<? extends I_C_Invoice_Candidate> invoiceCandidates);
+
+	// TODO: find a better place for this method
+	static void updatePriceAndTax(final I_C_Invoice_Candidate ic, final PriceAndTax priceAndTax)
+	{
+		//
+		// Pricing System & Currency 
+		if (priceAndTax.getPricingSystemId() > 0)
+		{
+			ic.setM_PricingSystem_ID(priceAndTax.getPricingSystemId());
+		}
+		if (priceAndTax.getPriceListVersionId() > 0)
+		{
+			ic.setM_PriceList_Version_ID(priceAndTax.getPriceListVersionId());
+		}
+		if (priceAndTax.getCurrencyId() > 0)
+		{
+			ic.setC_Currency_ID(priceAndTax.getCurrencyId());
+		}
+
+		//
+		// Price & Discount
+		if (priceAndTax.getPriceEntered() != null)
+		{
+			ic.setPriceEntered(priceAndTax.getPriceEntered()); // task 06727
+		}
+		if (priceAndTax.getPriceActual() != null)
+		{
+			ic.setPriceActual(priceAndTax.getPriceActual());
+		}
+		if (priceAndTax.getPriceUOMId() > 0)
+		{
+			ic.setPrice_UOM_ID(priceAndTax.getPriceUOMId());
+		}
+		if (priceAndTax.getDiscount() != null)
+		{
+			ic.setDiscount(priceAndTax.getDiscount());
+		}
+
+		//
+		// Tax
+		if (priceAndTax.getTaxIncluded() != null)
+		{
+			ic.setIsTaxIncluded(priceAndTax.getTaxIncluded());
+		}
+		
+		//
+		// Compensation group
+		if(priceAndTax.getCompensationGroupBaseAmt() != null)
+		{
+			ic.setGroupCompensationBaseAmt(priceAndTax.getCompensationGroupBaseAmt());
+		}
+	}
+
 }

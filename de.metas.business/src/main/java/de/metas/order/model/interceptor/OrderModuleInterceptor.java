@@ -46,5 +46,6 @@ public class OrderModuleInterceptor extends AbstractModuleInterceptor
 	protected void registerCallouts(final IProgramaticCalloutProvider calloutsRegistry)
 	{
 		calloutsRegistry.registerAnnotatedCallout(de.metas.order.model.interceptor.C_Order.INSTANCE); // FRESH-348
+		calloutsRegistry.registerAnnotatedCallout(de.metas.order.model.interceptor.C_OrderLine.INSTANCE);
 	}
 }

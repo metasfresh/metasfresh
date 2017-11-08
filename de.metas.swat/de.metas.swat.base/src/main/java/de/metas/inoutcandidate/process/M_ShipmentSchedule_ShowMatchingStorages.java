@@ -13,30 +13,25 @@ package de.metas.inoutcandidate.process;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.List;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.FillMandatoryException;
-import org.adempiere.inout.util.CachedObjects;
 import org.adempiere.inout.util.ShipmentScheduleQtyOnHandStorage;
 import org.adempiere.inout.util.ShipmentScheduleStorageRecord;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
-import org.adempiere.util.time.SystemTime;
-import org.compiere.model.I_C_OrderLine;
 
-import de.metas.inoutcandidate.api.OlAndSched;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.process.JavaProcess;
 import de.metas.storage.IStorageBL;
@@ -63,16 +58,11 @@ public class M_ShipmentSchedule_ShowMatchingStorages extends JavaProcess
 			throw new FillMandatoryException(I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID);
 		}
 
-		final I_C_OrderLine orderLine = shipmentSchedule.getC_OrderLine();
-		final OlAndSched olAndSched = new OlAndSched(orderLine, shipmentSchedule);
-
 		final ShipmentScheduleQtyOnHandStorage storagesContainer = new ShipmentScheduleQtyOnHandStorage();
 		storagesContainer.setContext(this);
-		storagesContainer.setDate(SystemTime.asDayTimestamp());
-		storagesContainer.setCachedObjects(new CachedObjects());
-		storagesContainer.loadStoragesFor(olAndSched);
+		storagesContainer.loadStoragesFor(shipmentSchedule);
 
-		final List<ShipmentScheduleStorageRecord> storageRecords = storagesContainer.getStorageRecordsMatching(olAndSched);
+		final List<ShipmentScheduleStorageRecord> storageRecords = storagesContainer.getStorageRecordsMatching(shipmentSchedule);
 
 		final BigDecimal qtyOnHandTotal = Services.get(IStorageBL.class).calculateQtyOnHandSum(storageRecords);
 		addLog("@QtyOnHand@ (@Total@): " + qtyOnHandTotal);
@@ -82,11 +72,11 @@ public class M_ShipmentSchedule_ShowMatchingStorages extends JavaProcess
 			addLog("------------------------------------------------------------");
 			addLog(storage.getSummary());
 		}
-		
+
 		//
 		// Also show the Storage Query
 		{
-			final IStorageQuery storageQuery = storagesContainer.createStorageQuery(olAndSched);
+			final IStorageQuery storageQuery = storagesContainer.createStorageQuery(shipmentSchedule);
 			addLog("------------------------------------------------------------");
 			addLog("Storage Query:");
 			addLog(storageQuery.getSummary());

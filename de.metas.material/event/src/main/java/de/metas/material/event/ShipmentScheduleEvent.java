@@ -1,11 +1,14 @@
 package de.metas.material.event;
 
-import org.adempiere.util.lang.impl.TableRecordReference;
+import static de.metas.material.event.MaterialEventUtils.checkIdGreaterThanZero;
 
-import lombok.AllArgsConstructor;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import lombok.Builder;
-import lombok.Data;
+import lombok.Builder.Default;
 import lombok.NonNull;
+import lombok.Value;
 
 /*
  * #%L
@@ -28,26 +31,34 @@ import lombok.NonNull;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-@Data
-@AllArgsConstructor // used by jackson when it deserializes a string
+@Value // this includes @AllArgsconstructor that is used by jackson when it deserializes a string
 @Builder // used by devs to make sure they know with parameter-value goes into which property
 public class ShipmentScheduleEvent implements MaterialEvent
 {
 	public static final String TYPE = "ShipmentScheduleEvent";
 
 	@NonNull
-	private final EventDescr eventDescr;
+	EventDescriptor eventDescriptor;
 
 	@NonNull
-	private final TableRecordReference reference;
+	MaterialDescriptor materialDescriptor;
 
-	@NonNull
-	private final MaterialDescriptor materialDescr;
+	int shipmentScheduleId;
 
-	/**
-	 * Note that we count an inactive shipment schedule as deleted too, because as far as the material dispo is concerned, there is no difference
-	 */
-	private final boolean shipmentScheduleDeleted;
+	@Default
+	int orderLineId = -1;
 
-	private final int orderLineId;
+	@JsonCreator
+	public ShipmentScheduleEvent(
+			@JsonProperty("eventDescriptor") @NonNull final EventDescriptor eventDescriptor,
+			@JsonProperty("materialDescriptor") @NonNull final MaterialDescriptor materialDescriptor,
+			@JsonProperty("shipmentScheduleId") int shipmentScheduleId,
+			@JsonProperty("orderLineId") int orderLineId)
+	{
+		this.shipmentScheduleId = checkIdGreaterThanZero("shipmentScheduleId", shipmentScheduleId);
+
+		this.eventDescriptor = eventDescriptor;
+		this.materialDescriptor = materialDescriptor;
+		this.orderLineId = orderLineId;
+	}
 }

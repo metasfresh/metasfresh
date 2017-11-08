@@ -4,6 +4,11 @@ DROP FUNCTION IF EXISTS report.fresh_statistics_week (
 	IN M_Product_ID numeric, IN M_Product_Category_ID numeric, IN M_AttributeSetInstance_ID numeric, IN AD_Org_ID numeric
 );
 
+DROP FUNCTION IF EXISTS report.fresh_statistics_week ( 
+	IN C_Year_ID numeric, IN week integer, IN issotrx character varying, IN C_BPartner_ID numeric, IN C_Activity_ID numeric,
+	IN M_Product_ID numeric, IN M_Product_Category_ID numeric, IN M_AttributeSetInstance_ID numeric, IN AD_Org_ID numeric, IN AD_Language Character Varying (6)
+);
+
 DROP TABLE IF EXISTS report.fresh_statistics_week;
 
 /* ***************************************************************** */
@@ -44,13 +49,13 @@ CREATE TABLE report.fresh_statistics_week
   totalamt numeric,
   startdate text,
   enddate text,
-  param_issotrx character varying,
   param_bp character varying(60),
   param_activity character varying(60),
   param_product character varying(255),
   param_product_category character varying(60),
   param_attributes character varying(255),
-  ad_org_id numeric
+  ad_org_id numeric,
+  iso_code char(3)
 )
 WITH (
   OIDS=FALSE
@@ -68,7 +73,8 @@ CREATE FUNCTION report.fresh_statistics_week
 		IN M_Product_ID numeric,
 		IN M_Product_Category_ID numeric,
 		IN M_AttributeSetInstance_ID numeric,
-		IN AD_Org_ID numeric
+		IN AD_Org_ID numeric,
+		IN AD_Language Character Varying (6) 
 	) 
   RETURNS SETOF report.fresh_statistics_week AS
 $BODY$
@@ -76,21 +82,25 @@ SELECT
 	bp.Name AS bp_name,
 	bp.value AS bp_Value,
 	pc.Name AS pc_name, 
-	p.Name AS P_name,
+	COALESCE(pt.Name, p.Name) AS P_name,
 	p.value AS P_value,
-	uom.UOMSymbol,
+	COALESCE(uomt.UOMSymbol, uom.UOMSymbol) AS UOMSymbol,
 	Col1, Col2, Col3, Col4, Col5, Col6, Col7, Col8, Col9, Col10, Col11, Col12,
 	Week1Sum, Week2Sum, Week3Sum, Week4Sum, Week5Sum, Week6Sum, Week7Sum, Week8Sum, Week9Sum, Week10Sum, Week11Sum, Week12Sum,
 	TotalSum, TotalAmt,
 	to_char( StartDate, 'DD.MM.YYYY' ) AS StartDate,
 	to_char( EndDate, 'DD.MM.YYYY' ) AS EndDate,
-	CASE WHEN $3 = 'N' THEN 'Einkauf' WHEN $3 = 'Y' THEN 'Verkauf' ELSE 'alle' END AS param_IsSOTrx,
-	COALESCE ((SELECT name FROM C_BPartner WHERE C_BPartner_ID = $4), 'alle' ) AS param_bp,
-	COALESCE ((SELECT name FROM C_Activity WHERE C_Activity_ID = $5), 'alle' ) AS param_Activity,
-	COALESCE ((SELECT name FROM M_Product WHERE M_Product_ID = $6), 'alle' ) AS param_product,
-	COALESCE ((SELECT name FROM M_Product_Category WHERE M_Product_Category_ID = $7), 'alle' ) AS param_Product_Category,
-	COALESCE ((SELECT String_Agg(ai_value, ', ' ORDER BY ai_Value) FROM Report.fresh_Attributes WHERE M_AttributeSetInstance_ID = $8), 'alle') AS Param_Attributes,
-	a.ad_org_id
+	(SELECT name FROM C_BPartner WHERE C_BPartner_ID = $4) AS param_bp,
+	(SELECT name FROM C_Activity WHERE C_Activity_ID = $5) AS param_Activity,
+	(SELECT COALESCE(pt.name, p.name) FROM M_Product p 
+		LEFT OUTER JOIN M_Product_Trl pt ON p.M_Product_ID = pt.M_Product_ID AND pt.AD_Language = $10 AND pt.isActive = 'Y'
+		WHERE p.M_Product_ID = $6 AND p.isActive = 'Y'
+	) AS param_product,
+	(SELECT name FROM M_Product_Category WHERE M_Product_Category_ID = $7) AS param_Product_Category,
+	(SELECT String_Agg(ai_value, ', ' ORDER BY ai_Value) FROM Report.fresh_Attributes WHERE M_AttributeSetInstance_ID = $8) AS Param_Attributes,
+	a.ad_org_id,
+	a.iso_code
+
 FROM
 	(
 		SELECT
@@ -186,7 +196,9 @@ FROM
 						fa.dateacct >= (SELECT startdate FROM report.Get_Week_Number_and_Limit($2, y.fiscalyear::integer, -11))
 						AND fa.dateacct <= (SELECT enddate FROM report.Get_Week_Number_and_Limit($2, y.fiscalyear::integer, 0))
 				THEN fa.AmtAcct ELSE 0 END ) AS TotalAmt,
-			fa.ad_org_id
+			fa.ad_org_id,
+			fa.iso_code
+
 	
 		FROM
 			C_Year y
@@ -195,13 +207,19 @@ FROM
 			(
 				SELECT *, ABS(qty) * SIGN(AmtAcct) AS QtyAcct
 				FROM (	
-					SELECT 	fa.*, CASE WHEN isSOTrx = 'Y' THEN AmtAcctCr - AmtAcctDr ELSE AmtAcctDr - AmtAcctCr END AS AmtAcct 
-					FROM 	Fact_Acct fa JOIN C_Invoice i ON fa.Record_ID = i.C_Invoice_ID
+					SELECT 	fa.*, CASE WHEN isSOTrx = 'Y' THEN AmtAcctCr - AmtAcctDr ELSE AmtAcctDr - AmtAcctCr END AS AmtAcct, c.iso_code 
+					FROM 	Fact_Acct fa 
+					JOIN C_Invoice i ON fa.Record_ID = i.C_Invoice_ID
+					INNER JOIN AD_Org o ON fa.ad_org_id = o.ad_org_id
+					INNER JOIN AD_ClientInfo ci ON o.AD_Client_ID=ci.ad_client_id
+					LEFT OUTER JOIN C_AcctSchema acs ON acs.C_AcctSchema_ID=ci.C_AcctSchema1_ID
+					LEFT OUTER JOIN C_Currency c ON acs.C_Currency_ID=c.C_Currency_ID
 					WHERE	AD_Table_ID = (SELECT Get_Table_ID('C_Invoice')) AND fa.isActive = 'Y'
 				) fa
 			) fa ON true
 			INNER JOIN C_Invoice i ON fa.Record_ID = i.C_Invoice_ID AND i.isActive = 'Y'
 			INNER JOIN C_InvoiceLine il ON fa.Line_ID = il.C_InvoiceLine_ID AND il.isActive = 'Y'
+			
 			/* Please note: This is an important implicit filter. Inner Joining the Product
 			 * filters Fact Acct records for e.g. Taxes
 			 */  
@@ -252,13 +270,16 @@ FROM
 			fa.M_Product_ID,
 			fa.C_UOM_ID,
 			y.fiscalyear,
-			fa.ad_org_id
+			fa.ad_org_id,
+			fa.iso_code
 			
 	
 	) a
 	INNER JOIN C_UOM uom ON a.C_UOM_ID = uom.C_UOM_ID AND uom.isActive = 'Y'
+	LEFT OUTER JOIN C_UOM_Trl uomt ON uom.C_UOM_ID = uomt.C_UOM_ID AND uomt.AD_Language = $10 AND uomt.isActive = 'Y'
 	INNER JOIN C_BPartner bp ON a.C_BPartner_ID = bp.C_BPartner_ID AND bp.isActive = 'Y'
 	INNER JOIN M_Product p ON a.M_Product_ID = p.M_Product_ID AND p.isActive = 'Y'
+	LEFT OUTER JOIN M_Product_Trl pt ON p.M_Product_ID = pt.M_Product_ID AND pt.AD_Language = $10 AND pt.isActive = 'Y'
 	INNER JOIN M_Product_Category pc ON p.M_Product_Category_ID = pc.M_Product_Category_ID AND pc.isActive = 'Y'
 ORDER BY
 	bp.Name, pc.value, p.name

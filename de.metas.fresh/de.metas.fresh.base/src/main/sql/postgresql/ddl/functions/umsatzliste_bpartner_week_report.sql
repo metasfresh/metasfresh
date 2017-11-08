@@ -1,5 +1,6 @@
-DROP FUNCTION IF EXISTS report.umsatzliste_bpartner_week_report (IN numeric, IN numeric, IN integer, IN integer, IN numeric, IN numeric, IN integer, IN integer, IN character varying, IN numeric, IN numeric, IN numeric, IN numeric, IN numeric );
+
 DROP FUNCTION IF EXISTS report.umsatzliste_bpartner_week_report (IN numeric, IN numeric, IN integer, IN integer, IN numeric, IN numeric, IN integer, IN integer, IN character varying, IN numeric, IN numeric, IN numeric, IN numeric, IN numeric, IN numeric );
+DROP FUNCTION IF EXISTS report.umsatzliste_bpartner_week_report (IN numeric, IN numeric, IN integer, IN integer, IN numeric, IN numeric, IN integer, IN integer, IN character varying, IN numeric, IN numeric, IN numeric, IN numeric, IN numeric, IN character varying );
 
 CREATE OR REPLACE FUNCTION report.umsatzliste_bpartner_week_report
 	(
@@ -17,7 +18,8 @@ CREATE OR REPLACE FUNCTION report.umsatzliste_bpartner_week_report
 		IN M_Product_Category_ID numeric, --$12
 		IN M_AttributeSetInstance_ID numeric, --$13
 		IN C_Currency_ID numeric, --$14
-		IN AD_Org_ID numeric --$15
+		IN AD_Org_ID numeric, --$15
+		IN AD_Language Character Varying (6) --$16
 	) 
 	RETURNS TABLE
 	(
@@ -49,7 +51,7 @@ $$
 SELECT
 	bp.Name AS bp_name,
 	pc.Name AS pc_name, 
-	p.Name AS P_name,
+	COALESCE(pt.Name, p.Name) AS P_name,
 	SamePeriodSum,
 	CompPeriodSum,
 	SamePeriodQtySum,
@@ -72,7 +74,10 @@ SELECT
 
 	 $9 AS param_IsSOTrx,
 	(SELECT name FROM C_BPartner WHERE C_BPartner_ID = $10 AND isActive = 'Y') AS param_bp,
-	(SELECT name FROM M_Product WHERE M_Product_ID = $11 AND isActive = 'Y') AS param_product,
+	(SELECT COALESCE(pt.name, p.name) FROM M_Product p 
+		LEFT OUTER JOIN M_Product_Trl pt ON p.M_Product_ID = pt.M_Product_ID AND pt.AD_Language = $16 AND pt.isActive = 'Y'
+		WHERE p.M_Product_ID = $11 AND p.isActive = 'Y'
+	) AS param_product,
 	(SELECT name FROM M_Product_Category WHERE M_Product_Category_ID = $12 AND isActive = 'Y') AS param_Product_Category,
 	(SELECT String_Agg(ai_value, ', ' ORDER BY ai_Value) FROM Report.fresh_Attributes WHERE M_AttributeSetInstance_ID = $13) AS Param_Attributes,
 
@@ -165,6 +170,7 @@ FROM
 	) a
 	INNER JOIN C_BPartner bp ON a.C_BPartner_ID = bp.C_BPartner_ID AND bp.isActive = 'Y'
 	INNER JOIN M_Product p ON a.M_Product_ID = p.M_Product_ID AND p.isActive = 'Y'
+	LEFT OUTER JOIN M_Product_Trl pt ON p.M_Product_ID = pt.M_Product_ID AND pt.AD_Language = $16 AND pt.isActive = 'Y'
 	INNER JOIN M_Product_Category pc ON p.M_Product_Category_ID = pc.M_Product_Category_ID AND pc.isActive = 'Y'
 	
 	ORDER BY

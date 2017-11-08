@@ -28,29 +28,26 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.inout.util.CachedObjects;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.time.SystemTime;
 import org.slf4j.Logger;
 
-import de.metas.inoutcandidate.api.IInOutCandHandlerBL;
+import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.IShipmentScheduleUpdater;
 import de.metas.inoutcandidate.api.OlAndSched;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.inoutcandidate.spi.IUpdatableSchedulesCollector;
 import de.metas.logging.LogManager;
 
 public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 {
 	/**
-	 * Flag which is set to true when shipment schedule updater is runing.
+	 * Flag which is set to true when shipment schedule updater is running.
 	 * 
 	 * This information is stored on thread level.
 	 */
-	final InheritableThreadLocal<Boolean> running = new InheritableThreadLocal<Boolean>();
+	private final InheritableThreadLocal<Boolean> running = new InheritableThreadLocal<Boolean>();
 
 	private static final Logger logger = LogManager.getLogger(ShipmentScheduleUpdater.class);
 
@@ -80,7 +77,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 			{
 				//
 				// Create and invalidate missing shipment schedules
-				final List<I_M_ShipmentSchedule> shipmentSchedulesNew = Services.get(IInOutCandHandlerBL.class).createMissingCandidates(ctx, trxName);
+				final List<I_M_ShipmentSchedule> shipmentSchedulesNew = Services.get(IShipmentScheduleHandlerBL.class).createMissingCandidates(ctx, trxName);
 				shipmentSchedulePA.invalidate(shipmentSchedulesNew, trxName);
 			}
 
@@ -89,9 +86,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 			final List<OlAndSched> collectResult = retrieveOlsAndSchedsToProcess(ctx, adClientId, adPInstanceId, updateOnlyLocked, trxName);
 
 			logger.debug("Invoking shipmentScheduleBL to update {} shipment schedule entries.", collectResult.size());
-			final CachedObjects cachedObjects = new CachedObjects();
-			final boolean saveSchedules = true;
-			shipmentScheduleBL.updateSchedules(ctx, collectResult, saveSchedules, SystemTime.asTimestamp(), cachedObjects, trxName);
+			shipmentScheduleBL.updateSchedules(ctx, collectResult, trxName);
 
 			// cleanup the marker/pointer tables
 			shipmentSchedulePA.deleteRecomputeMarkers(adPInstanceId, trxName); // if updateOnlyLocked, then there is nothing to delete..but still making this call, it should finish rather quickly
@@ -130,7 +125,6 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 			final String trxName)
 	{
 		final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
-
 		final List<OlAndSched> olsAndScheds = shipmentSchedulePA.retrieveInvalid(adClientId, adPinstanceId, retrieveOnlyLocked, trxName);
 
 		if (olsAndScheds.isEmpty())
@@ -138,17 +132,10 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 			logger.debug("There are no shipment schedule entries to update");
 			return Collections.emptyList();
 		}
-
 		logger.debug("Found {} invalid shipment schedule entries", olsAndScheds.size());
 
-		final CachedObjects cachedObjects = new CachedObjects();
-
-		// TODO: decide if we should invoke the collector if retrieveOnlyLocked==true
-		logger.debug("Collecting additional schedule entries to update");
-		final IUpdatableSchedulesCollector updatableSchedulesCollector = Services.get(IUpdatableSchedulesCollector.class);
-
 		final List<OlAndSched> collectResult = new ArrayList<OlAndSched>();
-		collectResult.addAll(updatableSchedulesCollector.collectUpdatableLines(ctx, olsAndScheds, cachedObjects, trxName));
+		collectResult.addAll(olsAndScheds);
 
 		logger.debug("Found additional {} schedule entries to update", (collectResult.size() - olsAndScheds.size()));
 		return collectResult;

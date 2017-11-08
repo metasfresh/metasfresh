@@ -9,8 +9,8 @@ import org.adempiere.util.Services;
 import org.adempiere.util.api.IParams;
 import org.compiere.model.I_C_BPartner;
 
-import de.metas.flatrate.model.I_C_Flatrate_Term;
-import de.metas.flatrate.process.C_Flatrate_Term_Create;
+import de.metas.contracts.flatrate.process.C_Flatrate_Term_Create;
+import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.materialtracking.IMaterialTrackingDAO;
 import de.metas.materialtracking.ch.lagerkonf.interfaces.I_C_Flatrate_Conditions;
 import de.metas.materialtracking.ch.lagerkonf.interfaces.I_M_Material_Tracking;

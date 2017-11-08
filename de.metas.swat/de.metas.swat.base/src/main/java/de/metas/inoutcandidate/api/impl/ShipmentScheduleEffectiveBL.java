@@ -151,25 +151,27 @@ public class ShipmentScheduleEffectiveBL implements IShipmentScheduleEffectiveBL
 	}
 
 	@Override
-	public BigDecimal getQtyOrdered(final I_M_ShipmentSchedule shipmentSchedule)
+	public BigDecimal computeQtyOrdered(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
 	{
-		if (InterfaceWrapperHelper.isNull(shipmentSchedule, I_M_ShipmentSchedule.COLUMNNAME_QtyOrdered_Override))
+		if (shipmentSchedule.isClosed())
 		{
-			return shipmentSchedule.getQtyOrdered_Calculated();
+			return shipmentSchedule.getQtyDelivered();
 		}
-		return shipmentSchedule.getQtyOrdered_Override();
+
+		final boolean hasQtyOrderedOverride = !InterfaceWrapperHelper.isNull(shipmentSchedule, I_M_ShipmentSchedule.COLUMNNAME_QtyOrdered_Override);
+		if (hasQtyOrderedOverride)
+		{
+			return shipmentSchedule.getQtyOrdered_Override();
+		}
+
+		return shipmentSchedule.getQtyOrdered_Calculated();
 	}
 
 	@Override
 	public Timestamp getDeliveryDate(final I_M_ShipmentSchedule sched)
 	{
-		final Timestamp deliveryDateOverride = sched.getDeliveryDate_Override();
-		if (deliveryDateOverride != null)
-		{
-			return deliveryDateOverride;
-		}
-
-		return sched.getDeliveryDate();
+		final Timestamp deliveryDate = InterfaceWrapperHelper.getValueOverrideOrValue(sched, I_M_ShipmentSchedule.COLUMNNAME_DeliveryDate);
+		return deliveryDate;
 	}
 
 	@Override

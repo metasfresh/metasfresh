@@ -19,7 +19,7 @@ import org.apache.commons.collections4.IteratorUtils;
 import org.compiere.model.I_C_Period;
 import org.compiere.model.I_M_InOut;
 
-import de.metas.document.engine.IDocActionBL;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.materialtracking.IMaterialTrackingDAO;
 import de.metas.materialtracking.IMaterialTrackingPPOrderBL;
 import de.metas.materialtracking.IMaterialTrackingReportDAO;
@@ -146,7 +146,7 @@ public class M_Material_Tracking_Report_Line_Create
 			final I_M_Material_Tracking_Ref ref,
 			final I_M_Material_Tracking_Report report)
 	{
-		final IDocActionBL docActionBL = Services.get(IDocActionBL.class);
+		final IDocumentBL docActionBL = Services.get(IDocumentBL.class);
 		final IMaterialTrackingPPOrderBL materialTrackingPPOrderBL = Services.get(IMaterialTrackingPPOrderBL.class);
 
 		final I_M_Material_Tracking materialTracking = ref.getM_Material_Tracking();

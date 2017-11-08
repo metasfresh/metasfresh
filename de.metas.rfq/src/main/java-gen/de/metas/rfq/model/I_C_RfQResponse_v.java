@@ -396,8 +396,8 @@ public interface I_C_RfQResponse_v
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Antwort-datum.
-	 * Date of the Response
+	 * Set Datum Antwort.
+	 * Datum der Antwort
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
@@ -406,8 +406,8 @@ public interface I_C_RfQResponse_v
 	public void setDateResponse (java.sql.Timestamp DateResponse);
 
 	/**
-	 * Get Antwort-datum.
-	 * Date of the Response
+	 * Get Datum Antwort.
+	 * Datum der Antwort
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
@@ -623,8 +623,8 @@ public interface I_C_RfQResponse_v
     public static final String COLUMNNAME_Org_Location_ID = "Org_Location_ID";
 
 	/**
-	 * Set Phone.
-	 * Identifies a telephone number
+	 * Set Telefon.
+	 * Beschreibt eine Telefon Nummer
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -633,8 +633,8 @@ public interface I_C_RfQResponse_v
 	public void setPhone (java.lang.String Phone);
 
 	/**
-	 * Get Phone.
-	 * Identifies a telephone number
+	 * Get Telefon.
+	 * Beschreibt eine Telefon Nummer
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false

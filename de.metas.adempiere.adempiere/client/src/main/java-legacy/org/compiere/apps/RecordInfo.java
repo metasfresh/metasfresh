@@ -381,6 +381,7 @@ public class RecordInfo extends CDialog
 				final int windowNo = Env.getWindowNo(getParent()); // metas: 03090: use WindowNo when creating the lookup 
 				MLookup lookup = MLookupFactory.get (Env.getCtx(), windowNo,
 					AD_Column_ID, column.getAD_Reference_ID(),
+					column.get_TableName(),
 					column.getColumnName(),
 					column.getAD_Reference_Value_ID(),
 					column.isParent(), IValidationRule.AD_Val_Rule_ID_Null);

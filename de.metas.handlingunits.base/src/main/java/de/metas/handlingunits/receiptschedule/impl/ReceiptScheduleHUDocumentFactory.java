@@ -30,9 +30,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
-import de.metas.process.ProcessInfo;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.ProcessInfoSelectionQueryFilter;
@@ -41,6 +38,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_InOut;
+import org.slf4j.Logger;
 
 import de.metas.handlingunits.document.IHUDocument;
 import de.metas.handlingunits.document.IHUDocumentFactory;
@@ -49,6 +47,8 @@ import de.metas.handlingunits.document.IHUDocumentLine;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.api.IReceiptScheduleDAO;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule_Alloc;
+import de.metas.logging.LogManager;
+import de.metas.process.ProcessInfo;
 
 public class ReceiptScheduleHUDocumentFactory implements IHUDocumentFactory
 {

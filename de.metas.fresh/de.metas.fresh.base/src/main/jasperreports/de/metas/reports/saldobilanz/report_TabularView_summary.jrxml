@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
-<!-- 2016-11-10T14:09:34 -->
+<!-- 2017-10-05T16:15:19 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/reports/saldobilanz/report" uuid="8895fecc-00d6-4320-8b0a-ab970c9a09bd">
 	<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
 	<property name="net.sf.jasperreports.export.xls.white.page.background" value="false"/>
@@ -45,6 +45,7 @@ $P{ExcludeYearEndBooking}
 	<field name="l1_sameyearsum" class="java.math.BigDecimal"/>
 	<field name="l1_lastyearsum" class="java.math.BigDecimal"/>
 	<field name="ad_org_id" class="java.math.BigDecimal"/>
+	<field name="currency" class="java.lang.String"/>
 	<field name="unionorder" class="java.lang.Integer"/>
 	<background>
 		<band splitType="Stretch"/>
@@ -96,7 +97,7 @@ $P{ExcludeYearEndBooking}
 				<textElement>
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{CurrencyCHF}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{Currency} +" "+ $F{currency}]]></textFieldExpression>
 			</textField>
 			<textField pattern="dd.MM.yyyy">
 				<reportElement x="348" y="22" width="102" height="13" uuid="68f3a29c-8833-4395-b12e-542c09097be4">

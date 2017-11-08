@@ -23,7 +23,7 @@ FROM
 			p_value, 
 			p_name,
 			SUM(qty) 
-		FROM HU_CostPrice_Function($1,null, null, null) as sum
+		FROM report.HU_CostPrice_Function($1,null, null, null, null) as sum
 		GROUP BY p_value, p_name
 	) current
 
@@ -33,7 +33,7 @@ LEFT JOIN
 			p_value, 
 			p_name,
 			SUM(qty) 
-		FROM HU_CostPrice_Function($2, null, null, null) 
+		FROM report.HU_CostPrice_Function($2, null, null, null, null) 
 		GROUP BY p_value, p_name
 	) comparison 
 	ON comparison.p_value=current.p_value

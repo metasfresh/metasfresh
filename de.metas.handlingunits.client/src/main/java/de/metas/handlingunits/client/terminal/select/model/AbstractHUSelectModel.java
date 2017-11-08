@@ -30,6 +30,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
@@ -42,7 +43,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.beans.WeakPropertyChangeSupport;
-import org.adempiere.util.collections.Predicate;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Warehouse;
 

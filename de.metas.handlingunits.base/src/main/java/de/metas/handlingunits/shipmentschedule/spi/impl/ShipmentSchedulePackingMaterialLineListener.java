@@ -26,8 +26,8 @@ package de.metas.handlingunits.shipmentschedule.spi.impl;
 import org.adempiere.model.InterfaceWrapperHelper;
 
 import de.metas.handlingunits.model.I_C_OrderLine;
-import de.metas.inoutcandidate.spi.IInOutCandHandler;
-import de.metas.inoutcandidate.spi.IInOutCandHandlerListener;
+import de.metas.inoutcandidate.spi.ModelWithoutShipmentScheduleVetoer;
+import lombok.NonNull;
 
 /**
  * Makes sure that there are no shipment schedules for picking material lines.
@@ -37,19 +37,19 @@ import de.metas.inoutcandidate.spi.IInOutCandHandlerListener;
  * @author ts
  * @task http://dewiki908/mediawiki/index.php/07042_Simple_InOut-Creation_from_shipment-schedule_%28109342691288%29
  */
-public class ShipmentSchedulePackingMaterialLineListener implements IInOutCandHandlerListener
+public class ShipmentSchedulePackingMaterialLineListener implements ModelWithoutShipmentScheduleVetoer
 {
 
 	/**
 	 * @see #ShipmentSchedulePackingMaterialLineListener()
 	 */
 	@Override
-	public OnMissingCandidate foundModelWithoutInOutCandidate(final Object model, final IInOutCandHandler handler)
+	public OnMissingCandidate foundModelWithoutInOutCandidate(@NonNull final Object model)
 	{
 		final I_C_OrderLine ol = InterfaceWrapperHelper.create(model, I_C_OrderLine.class);
 		if (ol.isPackagingMaterial())
 		{
-			return OnMissingCandidate.SKIP_CREATION; // don't create the shipment schedule
+			return OnMissingCandidate.I_VETO; // don't create the shipment schedule
 		}
 		return OnMissingCandidate.I_DONT_CARE; // let the others decide
 	}

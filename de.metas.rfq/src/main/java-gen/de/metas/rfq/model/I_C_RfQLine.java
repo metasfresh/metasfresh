@@ -355,8 +355,8 @@ public interface I_C_RfQLine
     public static final String COLUMNNAME_Line = "Line";
 
 	/**
-	 * Set Ausprägung Merkmals-Satz.
-	 * Product Attribute Set Instance
+	 * Set Merkmale.
+	 * Merkmals Ausprägungen zum Produkt
 	 *
 	 * <br>Type: PAttribute
 	 * <br>Mandatory: true
@@ -365,8 +365,8 @@ public interface I_C_RfQLine
 	public void setM_AttributeSetInstance_ID (int M_AttributeSetInstance_ID);
 
 	/**
-	 * Get Ausprägung Merkmals-Satz.
-	 * Product Attribute Set Instance
+	 * Get Merkmale.
+	 * Merkmals Ausprägungen zum Produkt
 	 *
 	 * <br>Type: PAttribute
 	 * <br>Mandatory: true

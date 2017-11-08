@@ -1,26 +1,9 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
 package de.metas.invoicecandidate.model;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import org.compiere.util.Env;
 
 /** Generated Model for C_Invoice_Candidate
  *  @author Adempiere (generated) 
@@ -32,7 +15,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1900853030L;
+	private static final long serialVersionUID = -1381745807L;
 
     /** Standard Constructor */
     public X_C_Invoice_Candidate (Properties ctx, int C_Invoice_Candidate_ID, String trxName)
@@ -40,45 +23,31 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
       super (ctx, C_Invoice_Candidate_ID, trxName);
       /** if (C_Invoice_Candidate_ID == 0)
         {
-			setApprovalForInvoicing (false);
-// N
+			setApprovalForInvoicing (false); // N
 			setBill_BPartner_ID (0);
 			setBill_Location_ID (0);
 			setC_ILCandHandler_ID (0);
 			setC_Invoice_Candidate_ID (0);
 			setC_Tax_ID (0);
-			setDiscount (Env.ZERO);
+			setDiscount (BigDecimal.ZERO);
 			setInvoiceRule (null);
-			setIsEdiRecipient (false);
-// @SQL = SELECT IsEDIRecipient FROM C_BPartner where C_BPartner_ID = @Bill_BPartner_ID@
-			setIsError (false);
-// N
-			setIsInOutApprovedForInvoicing (false);
-// N
-			setIsManual (false);
-// N
-			setIsPackagingMaterial (false);
-// N
-			setIsPrinted (true);
-// Y
-			setIsSOTrx (true);
-// Y
-			setIsTaxIncluded (false);
-// N
-			setIsToClear (false);
-// N
-			setProcessed (false);
-// N
-			setProcessed_Calc (false);
-// N
-			setQtyOrdered (Env.ZERO);
-			setQtyToInvoice (Env.ZERO);
-// 0
-			setQtyToInvoiceBeforeDiscount (Env.ZERO);
-// 0
+			setIsEdiRecipient (false); // @SQL=SELECT COALESCE( (SELECT IsEDIRecipient FROM C_BPartner where C_BPartner_ID = @Bill_BPartner_ID/-1@), 'N')
+			setIsError (false); // N
+			setIsGroupCompensationLine (false); // N
+			setIsInOutApprovedForInvoicing (false); // N
+			setIsManual (false); // N
+			setIsPackagingMaterial (false); // N
+			setIsPrinted (true); // Y
+			setIsSOTrx (true); // Y
+			setIsTaxIncluded (false); // N
+			setIsToClear (false); // N
+			setProcessed (false); // N
+			setProcessed_Calc (false); // N
+			setQtyOrdered (BigDecimal.ZERO);
+			setQtyToInvoice (BigDecimal.ZERO); // 0
+			setQtyToInvoiceBeforeDiscount (BigDecimal.ZERO); // 0
 			setRecord_ID (0);
-			setSplitAmt (Env.ZERO);
-// 0
+			setSplitAmt (BigDecimal.ZERO); // 0
         } */
     }
 
@@ -807,6 +776,40 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
+	public org.compiere.model.I_C_Order_CompensationGroup getC_Order_CompensationGroup() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Order_CompensationGroup_ID, org.compiere.model.I_C_Order_CompensationGroup.class);
+	}
+
+	@Override
+	public void setC_Order_CompensationGroup(org.compiere.model.I_C_Order_CompensationGroup C_Order_CompensationGroup)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Order_CompensationGroup_ID, org.compiere.model.I_C_Order_CompensationGroup.class, C_Order_CompensationGroup);
+	}
+
+	/** Set Order Compensation Group.
+		@param C_Order_CompensationGroup_ID Order Compensation Group	  */
+	@Override
+	public void setC_Order_CompensationGroup_ID (int C_Order_CompensationGroup_ID)
+	{
+		if (C_Order_CompensationGroup_ID < 1) 
+			set_Value (COLUMNNAME_C_Order_CompensationGroup_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Order_CompensationGroup_ID, Integer.valueOf(C_Order_CompensationGroup_ID));
+	}
+
+	/** Get Order Compensation Group.
+		@return Order Compensation Group	  */
+	@Override
+	public int getC_Order_CompensationGroup_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_Order_CompensationGroup_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
 	public org.compiere.model.I_C_Order getC_Order() throws RuntimeException
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Order_ID, org.compiere.model.I_C_Order.class);
@@ -1078,6 +1081,24 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_DateOrdered);
 	}
 
+	/** Set Zugesagter Termin.
+		@param DatePromised 
+		Zugesagter Termin für diesen Auftrag
+	  */
+	@Override
+	public void setDatePromised (java.sql.Timestamp DatePromised)
+	{
+		throw new IllegalArgumentException ("DatePromised is virtual column");	}
+
+	/** Get Zugesagter Termin.
+		@return Zugesagter Termin für diesen Auftrag
+	  */
+	@Override
+	public java.sql.Timestamp getDatePromised () 
+	{
+		return (java.sql.Timestamp)get_Value(COLUMNNAME_DatePromised);
+	}
+
 	/** Set Abrechnung ab.
 		@param DateToInvoice 
 		Termin ab dem die Rechnung erstellt werden darf
@@ -1216,7 +1237,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Discount);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -1238,7 +1259,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Discount_Override);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -1295,6 +1316,99 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		return ii.intValue();
 	}
 
+	/** 
+	 * GroupCompensationAmtType AD_Reference_ID=540759
+	 * Reference name: GroupCompensationAmtType
+	 */
+	public static final int GROUPCOMPENSATIONAMTTYPE_AD_Reference_ID=540759;
+	/** Percent = P */
+	public static final String GROUPCOMPENSATIONAMTTYPE_Percent = "P";
+	/** PriceAndQty = Q */
+	public static final String GROUPCOMPENSATIONAMTTYPE_PriceAndQty = "Q";
+	/** Set Compensation Amount Type.
+		@param GroupCompensationAmtType Compensation Amount Type	  */
+	@Override
+	public void setGroupCompensationAmtType (java.lang.String GroupCompensationAmtType)
+	{
+
+		set_Value (COLUMNNAME_GroupCompensationAmtType, GroupCompensationAmtType);
+	}
+
+	/** Get Compensation Amount Type.
+		@return Compensation Amount Type	  */
+	@Override
+	public java.lang.String getGroupCompensationAmtType () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_GroupCompensationAmtType);
+	}
+
+	/** Set Compensation base amount.
+		@param GroupCompensationBaseAmt 
+		Base amount for calculating percentage group compensation
+	  */
+	@Override
+	public void setGroupCompensationBaseAmt (java.math.BigDecimal GroupCompensationBaseAmt)
+	{
+		set_Value (COLUMNNAME_GroupCompensationBaseAmt, GroupCompensationBaseAmt);
+	}
+
+	/** Get Compensation base amount.
+		@return Base amount for calculating percentage group compensation
+	  */
+	@Override
+	public java.math.BigDecimal getGroupCompensationBaseAmt () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_GroupCompensationBaseAmt);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
+	}
+
+	/** Set Compensation percentage.
+		@param GroupCompensationPercentage Compensation percentage	  */
+	@Override
+	public void setGroupCompensationPercentage (java.math.BigDecimal GroupCompensationPercentage)
+	{
+		set_Value (COLUMNNAME_GroupCompensationPercentage, GroupCompensationPercentage);
+	}
+
+	/** Get Compensation percentage.
+		@return Compensation percentage	  */
+	@Override
+	public java.math.BigDecimal getGroupCompensationPercentage () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_GroupCompensationPercentage);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
+	}
+
+	/** 
+	 * GroupCompensationType AD_Reference_ID=540758
+	 * Reference name: GroupCompensationType
+	 */
+	public static final int GROUPCOMPENSATIONTYPE_AD_Reference_ID=540758;
+	/** Surcharge = S */
+	public static final String GROUPCOMPENSATIONTYPE_Surcharge = "S";
+	/** Discount = D */
+	public static final String GROUPCOMPENSATIONTYPE_Discount = "D";
+	/** Set Compensation Type.
+		@param GroupCompensationType Compensation Type	  */
+	@Override
+	public void setGroupCompensationType (java.lang.String GroupCompensationType)
+	{
+
+		set_Value (COLUMNNAME_GroupCompensationType, GroupCompensationType);
+	}
+
+	/** Get Compensation Type.
+		@return Compensation Type	  */
+	@Override
+	public java.lang.String getGroupCompensationType () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_GroupCompensationType);
+	}
+
 	/** Set Kopf-Aggregationsmerkmal.
 		@param HeaderAggregationKey Kopf-Aggregationsmerkmal	  */
 	@Override
@@ -1325,18 +1439,6 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	public java.lang.String getHeaderAggregationKey_Calc () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_HeaderAggregationKey_Calc);
-	}
-
-	@Override
-	public de.metas.aggregation.model.I_C_Aggregation getHeaderAggregationKeyBuilder() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_HeaderAggregationKeyBuilder_ID, de.metas.aggregation.model.I_C_Aggregation.class);
-	}
-
-	@Override
-	public void setHeaderAggregationKeyBuilder(de.metas.aggregation.model.I_C_Aggregation HeaderAggregationKeyBuilder)
-	{
-		set_ValueFromPO(COLUMNNAME_HeaderAggregationKeyBuilder_ID, de.metas.aggregation.model.I_C_Aggregation.class, HeaderAggregationKeyBuilder);
 	}
 
 	/** Set Header aggregation builder.
@@ -1527,6 +1629,29 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		return false;
 	}
 
+	/** Set Group Compensation Line.
+		@param IsGroupCompensationLine Group Compensation Line	  */
+	@Override
+	public void setIsGroupCompensationLine (boolean IsGroupCompensationLine)
+	{
+		set_Value (COLUMNNAME_IsGroupCompensationLine, Boolean.valueOf(IsGroupCompensationLine));
+	}
+
+	/** Get Group Compensation Line.
+		@return Group Compensation Line	  */
+	@Override
+	public boolean isGroupCompensationLine () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsGroupCompensationLine);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
 	/** Set In Dispute.
 		@param IsInDispute 
 		Document is in dispute
@@ -1624,16 +1749,16 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		return false;
 	}
 
-	/** Set Packaging Material .
-		@param IsPackagingMaterial Packaging Material 	  */
+	/** Set Verpackungsmaterial.
+		@param IsPackagingMaterial Verpackungsmaterial	  */
 	@Override
 	public void setIsPackagingMaterial (boolean IsPackagingMaterial)
 	{
 		set_Value (COLUMNNAME_IsPackagingMaterial, Boolean.valueOf(IsPackagingMaterial));
 	}
 
-	/** Get Packaging Material .
-		@return Packaging Material 	  */
+	/** Get Verpackungsmaterial.
+		@return Verpackungsmaterial	  */
 	@Override
 	public boolean isPackagingMaterial () 
 	{
@@ -1647,7 +1772,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		return false;
 	}
 
-	/** Set Gedruckt.
+	/** Set andrucken.
 		@param IsPrinted 
 		Indicates if this document / line is printed
 	  */
@@ -1657,7 +1782,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		set_Value (COLUMNNAME_IsPrinted, Boolean.valueOf(IsPrinted));
 	}
 
-	/** Get Gedruckt.
+	/** Get andrucken.
 		@return Indicates if this document / line is printed
 	  */
 	@Override
@@ -1865,18 +1990,6 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		return (java.lang.String)get_Value(COLUMNNAME_LineAggregationKey_Suffix);
 	}
 
-	@Override
-	public de.metas.aggregation.model.I_C_Aggregation getLineAggregationKeyBuilder() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_LineAggregationKeyBuilder_ID, de.metas.aggregation.model.I_C_Aggregation.class);
-	}
-
-	@Override
-	public void setLineAggregationKeyBuilder(de.metas.aggregation.model.I_C_Aggregation LineAggregationKeyBuilder)
-	{
-		set_ValueFromPO(COLUMNNAME_LineAggregationKeyBuilder_ID, de.metas.aggregation.model.I_C_Aggregation.class, LineAggregationKeyBuilder);
-	}
-
 	/** Set Line aggregation builder.
 		@param LineAggregationKeyBuilder_ID Line aggregation builder	  */
 	@Override
@@ -1916,7 +2029,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_LineNetAmt);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -2119,7 +2232,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_NetAmtInvoiced);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -2141,7 +2254,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_NetAmtToInvoice);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -2216,7 +2329,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PriceActual);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -2235,7 +2348,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PriceActual_Net_Effective);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -2257,7 +2370,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PriceActual_Override);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -2279,7 +2392,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PriceEntered);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -2298,7 +2411,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PriceEntered_Override);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -2317,26 +2430,22 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	public static final String PRIORITY_Urgent = "1";
 	/** Minor = 9 */
 	public static final String PRIORITY_Minor = "9";
-
-	/**
-	 * Set Priority.
-	 * 
-	 * @param Priority Indicates if this request is of a high, medium or low priority.
-	 */
+	/** Set Priority.
+		@param Priority 
+		Indicates if this request is of a high, medium or low priority.
+	  */
 	@Override
-	public void setPriority(java.lang.String Priority)
+	public void setPriority (java.lang.String Priority)
 	{
 
-		set_Value(COLUMNNAME_Priority, Priority);
+		set_Value (COLUMNNAME_Priority, Priority);
 	}
 
-	/**
-	 * Get Priority.
-	 * 
-	 * @return Indicates if this request is of a high, medium or low priority.
-	 */
+	/** Get Priority.
+		@return Indicates if this request is of a high, medium or low priority.
+	  */
 	@Override
-	public java.lang.String getPriority()
+	public java.lang.String getPriority () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Priority);
 	}
@@ -2490,7 +2599,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyDelivered);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -2512,7 +2621,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyInvoiced);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -2534,7 +2643,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyOrdered);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -2553,7 +2662,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyOrderedOverUnder);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -2575,7 +2684,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyToInvoice);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -2597,7 +2706,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyToInvoice_Override);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -2619,7 +2728,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyToInvoice_OverrideFulfilled);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -2638,7 +2747,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyToInvoiceBeforeDiscount);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -2660,7 +2769,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyToInvoiceInPriceUOM);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -2682,7 +2791,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyWithIssues);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -2704,7 +2813,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyWithIssues_Effective);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -2723,7 +2832,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QualityDiscountPercent);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -2741,7 +2850,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QualityDiscountPercent_Effective);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -2760,8 +2869,44 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QualityDiscountPercent_Override);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
+	}
+
+	/** 
+	 * QualityInvoiceLineGroupType AD_Reference_ID=540617
+	 * Reference name: QualityInvoiceLineGroupType
+	 */
+	public static final int QUALITYINVOICELINEGROUPTYPE_AD_Reference_ID=540617;
+	/** Scrap = 01 */
+	public static final String QUALITYINVOICELINEGROUPTYPE_Scrap = "01";
+	/** ProducedByProducts = 02 */
+	public static final String QUALITYINVOICELINEGROUPTYPE_ProducedByProducts = "02";
+	/** AdditionalFee = 03 */
+	public static final String QUALITYINVOICELINEGROUPTYPE_AdditionalFee = "03";
+	/** ProducedMainProduct = 04 */
+	public static final String QUALITYINVOICELINEGROUPTYPE_ProducedMainProduct = "04";
+	/** ProducedCoProduct = 05 */
+	public static final String QUALITYINVOICELINEGROUPTYPE_ProducedCoProduct = "05";
+	/** WithholdingAmount = 06 */
+	public static final String QUALITYINVOICELINEGROUPTYPE_WithholdingAmount = "06";
+	/** PreceeedingRegularOrderDeduction = 07 */
+	public static final String QUALITYINVOICELINEGROUPTYPE_PreceeedingRegularOrderDeduction = "07";
+	/** Set Rechnungspositionsart.
+		@param QualityInvoiceLineGroupType Rechnungspositionsart	  */
+	@Override
+	public void setQualityInvoiceLineGroupType (java.lang.String QualityInvoiceLineGroupType)
+	{
+
+		set_Value (COLUMNNAME_QualityInvoiceLineGroupType, QualityInvoiceLineGroupType);
+	}
+
+	/** Get Rechnungspositionsart.
+		@return Rechnungspositionsart	  */
+	@Override
+	public java.lang.String getQualityInvoiceLineGroupType () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_QualityInvoiceLineGroupType);
 	}
 
 	/** Set ReasonDiscount.
@@ -2839,7 +2984,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_SplitAmt);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -2857,7 +3002,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_TotalOfOrder);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -2875,7 +3020,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_TotalOfOrderExcludingDiscount);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 }

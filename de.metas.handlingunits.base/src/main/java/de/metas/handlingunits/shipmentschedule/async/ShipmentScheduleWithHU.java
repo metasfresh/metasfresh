@@ -25,7 +25,7 @@ package de.metas.handlingunits.shipmentschedule.async;
 import java.math.BigDecimal;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
@@ -147,7 +147,7 @@ import de.metas.logging.LogManager;
 	public int getM_AttributeSetInstance_ID()
 	{
 		final int asiId = shipmentSchedule.getM_AttributeSetInstance_ID();
-		return asiId <= 0 ? IAttributeDAO.M_AttributeSetInstance_ID_None : asiId;
+		return asiId <= 0 ? AttributeConstants.M_AttributeSetInstance_ID_None : asiId;
 	}
 
 	@Override
@@ -222,7 +222,7 @@ import de.metas.logging.LogManager;
 	@Override
 	public I_C_UOM getQtyPickedUOM()
 	{
-		return Services.get(IShipmentScheduleBL.class).getC_UOM(shipmentSchedule);
+		return Services.get(IShipmentScheduleBL.class).getUomOfProduct(shipmentSchedule);
 	}
 
 	@Override

@@ -13,15 +13,14 @@ package de.metas.async.api.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -47,8 +46,6 @@ import org.compiere.model.I_AD_User;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
-import com.google.common.base.Throwables;
-
 import de.metas.async.Async_Constants;
 import de.metas.async.api.IAsyncBatchBL;
 import de.metas.async.api.IQueueDAO;
@@ -73,6 +70,7 @@ import de.metas.async.spi.NullWorkpackagePrio;
 import de.metas.lock.api.ILockManager;
 import de.metas.lock.exceptions.UnlockFailedException;
 import de.metas.logging.LogManager;
+import lombok.NonNull;
 
 public class WorkPackageQueue implements IWorkPackageQueue
 {
@@ -120,21 +118,21 @@ public class WorkPackageQueue implements IWorkPackageQueue
 		Check.assume(!packageProcessorIds.isEmpty(), "packageProcessorIds not empty");
 		// Check.assume(retryTimeoutMillis >= 0, "retryTimeoutMillis={} >= 0", retryTimeoutMillis);
 
-		this.dao = Services.get(IQueueDAO.class);
+		dao = Services.get(IQueueDAO.class);
 
 		this.ctx = ctx;
-		this.packageProcessorIds = Collections.unmodifiableList(new ArrayList<Integer>(packageProcessorIds));
+		this.packageProcessorIds = Collections.unmodifiableList(new ArrayList<>(packageProcessorIds));
 		this.priorityFrom = priorityFrom;
-		this.skipRetryTimeoutMillis = Async_Constants.DEFAULT_RETRY_TIMEOUT_MILLIS;
+		skipRetryTimeoutMillis = Async_Constants.DEFAULT_RETRY_TIMEOUT_MILLIS;
 
 		if (forEnqueing)
 		{
-			this.enquingPackageProcessorId = packageProcessorIds.get(0);
+			enquingPackageProcessorId = packageProcessorIds.get(0);
 			this.enquingPackageProcessorInternalName = enquingPackageProcessorInternalName;
 		}
 		else
 		{
-			this.enquingPackageProcessorId = -1;
+			enquingPackageProcessorId = -1;
 			this.enquingPackageProcessorInternalName = null;
 		}
 	}
@@ -148,7 +146,7 @@ public class WorkPackageQueue implements IWorkPackageQueue
 				enquingPackageProcessorInternalName,
 				null,
 				true);
-		}
+	}
 
 	public static WorkPackageQueue createForQueueProcessing(final Properties ctx,
 			final List<Integer> packageProcessorIds,
@@ -210,7 +208,7 @@ public class WorkPackageQueue implements IWorkPackageQueue
 
 		final IQuery<I_C_Queue_WorkPackage> query = createQuery(workPackageCtx);
 
-		long startTS = SystemTime.millis();
+		final long startTS = SystemTime.millis();
 		I_C_Queue_WorkPackage workPackage = retrieveAndLock(query);
 		if (timeoutMillis == TIMEOUT_OneTimeOnly && workPackage == null)
 		{
@@ -241,7 +239,7 @@ public class WorkPackageQueue implements IWorkPackageQueue
 				final int pollIntervalMs = Services.get(ISysConfigBL.class).getIntValue(SYSCONFIG_POLLINTERVAL, 1000);
 				Thread.sleep(pollIntervalMs);
 			}
-			catch (InterruptedException e)
+			catch (final InterruptedException e)
 			{
 				logger.debug("Got interrupted signal. Returning null", e);
 				return null;
@@ -369,7 +367,7 @@ public class WorkPackageQueue implements IWorkPackageQueue
 	}
 
 	@Override
-	public void unlock(I_C_Queue_WorkPackage workPackage)
+	public void unlock(final I_C_Queue_WorkPackage workPackage)
 	{
 		// NOTE: unlocking shall not be synchronized with mainLock because else we can get dead-locks or unlocked workPackages will be left on shutdown
 
@@ -381,7 +379,7 @@ public class WorkPackageQueue implements IWorkPackageQueue
 				throw new UnlockFailedException("Cannot unlock");
 			}
 		}
-		catch (Exception e)
+		catch (final Exception e)
 		{
 			throw UnlockFailedException.wrapIfNeeded(e)
 					.setParameter("Workpackage", workPackage);
@@ -389,7 +387,7 @@ public class WorkPackageQueue implements IWorkPackageQueue
 	}
 
 	@Override
-	public boolean unlockNoFail(I_C_Queue_WorkPackage workPackage)
+	public boolean unlockNoFail(final I_C_Queue_WorkPackage workPackage)
 	{
 		boolean success = false;
 		try
@@ -397,7 +395,7 @@ public class WorkPackageQueue implements IWorkPackageQueue
 			unlock(workPackage);
 			success = true;
 		}
-		catch (Exception e)
+		catch (final Exception e)
 		{
 			success = false;
 			logger.warn("Got exception while unlocking " + workPackage, e);
@@ -476,7 +474,7 @@ public class WorkPackageQueue implements IWorkPackageQueue
 		final int enqueuedCount = asyncBatchBL.increaseEnqueued(workPackage);
 		workPackage.setBatchEnqueuedCount(enqueuedCount);
 
- 		// Set User/Role
+		// Set User/Role
 		workPackage.setAD_User_ID(Env.getAD_User_ID(ctx));
 		workPackage.setAD_Role_ID(Env.getAD_Role_ID(ctx));
 
@@ -487,17 +485,7 @@ public class WorkPackageQueue implements IWorkPackageQueue
 			workPackage.setAD_User_InCharge(userInCharge);
 		}
 
-		//
-		// Save the workpackage
-		try
-		{
-			dao.saveInLocalTrx(workPackage);
-		}
-		catch (Throwable e)
-		{
-			asyncBatchBL.decreaseEnqueued(workPackage);
-			throw Throwables.propagate(e);
-		}
+		saveWorkPackage(workPackage);
 		localPackagecount++; // task 09049
 
 		//
@@ -509,35 +497,63 @@ public class WorkPackageQueue implements IWorkPackageQueue
 	}
 
 	@Override
-	public I_C_Queue_Element enqueueElement(final I_C_Queue_WorkPackage workPackage, final int adTableId, final int recordId)
+	public I_C_Queue_Element enqueueElement(
+			@NonNull final I_C_Queue_WorkPackage workPackage,
+			final int adTableId,
+			final int recordId)
 	{
-		Check.assume(workPackage != null, "workPackage not null");
-		Check.assume(adTableId > 0, "AD_Table_ID > 0");
-		Check.assume(recordId > 0, "Record_ID > 0");
+		try
+		{
+			Check.assume(adTableId > 0, "AD_Table_ID > 0");
+			Check.assume(recordId > 0, "Record_ID > 0");
 
-		final Properties ctx = InterfaceWrapperHelper.getCtx(workPackage);
-		final String trxName = InterfaceWrapperHelper.getTrxName(workPackage);
+			final Properties ctx = InterfaceWrapperHelper.getCtx(workPackage);
+			final String trxName = InterfaceWrapperHelper.getTrxName(workPackage);
 
-		final I_C_Queue_Element element = InterfaceWrapperHelper.create(ctx, I_C_Queue_Element.class, trxName);
+			final I_C_Queue_Element element = InterfaceWrapperHelper.create(ctx, I_C_Queue_Element.class, trxName);
 
-		// Make sure we are not registering on other AD_Client_ID
-		final int elementClientId = element.getAD_Client_ID();
-		final int workPackageClientId = workPackage.getAD_Client_ID();
-		Check.assume(elementClientId == workPackageClientId, "Element's AD_Client_ID({}) shall be the same as WorkPackage's AD_Client_ID({})", elementClientId, workPackageClientId);
+			// Make sure we are not registering on other AD_Client_ID
+			final int elementClientId = element.getAD_Client_ID();
+			final int workPackageClientId = workPackage.getAD_Client_ID();
+			Check.assume(
+					elementClientId == workPackageClientId,
+					"Element's AD_Client_ID({}) shall be the same as WorkPackage's AD_Client_ID({})",
+					elementClientId, workPackageClientId);
 
-		element.setC_Queue_Block(workPackage.getC_Queue_Block());
-		element.setC_Queue_WorkPackage(workPackage);
-		element.setAD_Org_ID(workPackage.getAD_Org_ID());
-		element.setAD_Table_ID(adTableId);
-		element.setRecord_ID(recordId);
+			element.setC_Queue_Block(workPackage.getC_Queue_Block());
+			element.setC_Queue_WorkPackage(workPackage);
+			element.setAD_Org_ID(workPackage.getAD_Org_ID());
+			element.setAD_Table_ID(adTableId);
+			element.setRecord_ID(recordId);
 
-		dao.saveInLocalTrx(element);
+			dao.saveInLocalTrx(element);
+			return element;
+		}
+		catch (final RuntimeException e)
+		{
+			throw AdempiereException.wrapIfNeeded(e)
+					.appendParametersToMessage()
+					.setParameter("workPackage", workPackage)
+					.setParameter("adTableId", adTableId)
+					.setParameter("recordId", recordId);
+		}
+	}
 
-		return element;
+	private void saveWorkPackage(@NonNull final I_C_Queue_WorkPackage workPackage)
+	{
+		try
+		{
+			dao.saveInLocalTrx(workPackage);
+		}
+		catch (final Throwable e)
+		{
+			asyncBatchBL.decreaseEnqueued(workPackage);
+			throw AdempiereException.wrapIfNeeded(e);
+		}
 	}
 
 	@Override
-	public void enqueueElements(I_C_Queue_WorkPackage workPackage, int adTableId, List<Integer> recordIds)
+	public void enqueueElements(final I_C_Queue_WorkPackage workPackage, final int adTableId, final List<Integer> recordIds)
 	{
 		Check.assumeNotEmpty(recordIds, "recordIds not empty");
 		for (final int recordId : recordIds)
@@ -576,13 +592,13 @@ public class WorkPackageQueue implements IWorkPackageQueue
 
 		final I_C_Queue_Block block = enqueueBlock(ctx);
 		final I_C_Queue_WorkPackage workPackage = enqueueWorkPackage(block, PRIORITY_AUTO); // default priority
-		
+
 		final I_C_Async_Batch asyncBatch = InterfaceWrapperHelper.getDynAttribute(model, Async_Constants.C_Async_Batch);
 		if (asyncBatch != null)
 		{
-			workPackage.setC_Async_Batch(asyncBatch);	
+			workPackage.setC_Async_Batch(asyncBatch);
 		}
-		
+
 		final I_C_Queue_Element element = enqueueElement(workPackage, model);
 
 		final String trxName = InterfaceWrapperHelper.getTrxName(model);
@@ -592,7 +608,7 @@ public class WorkPackageQueue implements IWorkPackageQueue
 	}
 
 	@Override
-	public I_C_Queue_Element enqueueElement(final Properties ctx, int adTableId, int recordId)
+	public I_C_Queue_Element enqueueElement(final Properties ctx, final int adTableId, final int recordId)
 	{
 		final I_C_Queue_Block block = enqueueBlock(ctx);
 		final I_C_Queue_WorkPackage workPackage = enqueueWorkPackage(block, PRIORITY_AUTO); // default priority
@@ -620,7 +636,7 @@ public class WorkPackageQueue implements IWorkPackageQueue
 
 		trxManager.getTrxListenerManager(trxName).registerListener(new TrxListenerAdapter()
 		{
-			private ReentrantLock sync = new ReentrantLock();
+			private final ReentrantLock sync = new ReentrantLock();
 			private boolean hit = false;
 
 			@Override
@@ -670,7 +686,7 @@ public class WorkPackageQueue implements IWorkPackageQueue
 	}
 
 	@Override
-	public Future<IWorkpackageProcessorExecutionResult> markReadyForProcessingAndReturn(I_C_Queue_WorkPackage workPackage)
+	public Future<IWorkpackageProcessorExecutionResult> markReadyForProcessingAndReturn(final I_C_Queue_WorkPackage workPackage)
 	{
 		final SyncQueueProcessorListener callback = new SyncQueueProcessorListener();
 		markReadyForProcessing(workPackage, callback);
@@ -725,7 +741,7 @@ public class WorkPackageQueue implements IWorkPackageQueue
 		//
 		// Filter out processors which were temporary blacklisted
 		final IWorkpackageProcessorFactory workpackageProcessorFactory = Services.get(IWorkpackageProcessorFactory.class);
-		final List<Integer> availablePackageProcessorIds = new ArrayList<Integer>(packageProcessorIds);
+		final List<Integer> availablePackageProcessorIds = new ArrayList<>(packageProcessorIds);
 		for (final Iterator<Integer> it = availablePackageProcessorIds.iterator(); it.hasNext();)
 		{
 			final int packageProcessorId = it.next();
@@ -765,10 +781,10 @@ public class WorkPackageQueue implements IWorkPackageQueue
 	}
 
 	@Override
-	public WorkPackageQueue setAsyncBatchForNewWorkpackages(I_C_Async_Batch asyncBatch)
+	public WorkPackageQueue setAsyncBatchForNewWorkpackages(final I_C_Async_Batch asyncBatch)
 	{
-		this.asyncBatchForNewWorkpackages = asyncBatch;
-		this.asyncBatchForNewWorkpackagesSet = true;
+		asyncBatchForNewWorkpackages = asyncBatch;
+		asyncBatchForNewWorkpackagesSet = true;
 
 		// set also in thread
 		contextFactory.setThreadInheritedAsyncBatch(asyncBatch);

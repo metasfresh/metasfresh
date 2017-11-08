@@ -10,18 +10,17 @@ package org.eevolution.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -67,7 +66,7 @@ public class ProductBOMDAO implements IProductBOMDAO
 		final IQueryBuilder<I_PP_Product_BOMLine> queryBuilder = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_PP_Product_BOMLine.class, ctx, trxName);
 
-		final ICompositeQueryFilter<I_PP_Product_BOMLine> filters = queryBuilder.getFilters();
+		final ICompositeQueryFilter<I_PP_Product_BOMLine> filters = queryBuilder.getCompositeFilter();
 		filters.addOnlyActiveRecordsFilter();
 		filters.addEqualsFilter(I_PP_Product_BOMLine.COLUMNNAME_PP_Product_BOM_ID, productBOM_ID);
 
@@ -82,8 +81,8 @@ public class ProductBOMDAO implements IProductBOMDAO
 	public List<I_PP_Product_BOMLine> retrieveLines(final I_PP_Product_BOM productBOM, final Date date)
 	{
 		final List<I_PP_Product_BOMLine> linesAll = retrieveLines(productBOM);
-		final List<I_PP_Product_BOMLine> linesValid = new ArrayList<I_PP_Product_BOMLine>(linesAll.size()); // Selected BOM Lines Only
-		for (I_PP_Product_BOMLine bomLine : linesAll)
+		final List<I_PP_Product_BOMLine> linesValid = new ArrayList<>(linesAll.size()); // Selected BOM Lines Only
+		for (final I_PP_Product_BOMLine bomLine : linesAll)
 		{
 			if (!Services.get(IProductBOMBL.class).isValidFromTo(bomLine, date))
 			{
@@ -144,7 +143,7 @@ public class ProductBOMDAO implements IProductBOMDAO
 		final IQueryBuilder<I_PP_Product_BOM> queryBuilder = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_PP_Product_BOM.class, ctx, trxName);
 
-		final ICompositeQueryFilter<I_PP_Product_BOM> filters = queryBuilder.getFilters();
+		final ICompositeQueryFilter<I_PP_Product_BOM> filters = queryBuilder.getCompositeFilter();
 		filters.addEqualsFilter(I_PP_Product_BOM.COLUMNNAME_M_Product_ID, productId);
 		filters.addEqualsFilter(I_PP_Product_BOM.COLUMNNAME_Value, productValue);
 		filters.addOnlyActiveRecordsFilter();
@@ -172,7 +171,7 @@ public class ProductBOMDAO implements IProductBOMDAO
 		final IQueryBuilder<I_PP_Product_BOM> queryBuilder = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_PP_Product_BOM.class, product);
 
-		final ICompositeQueryFilter<I_PP_Product_BOM> filters = queryBuilder.getFilters();
+		final ICompositeQueryFilter<I_PP_Product_BOM> filters = queryBuilder.getCompositeFilter();
 		filters.addEqualsFilter(I_PP_Product_BOM.COLUMNNAME_M_Product_ID, product.getM_Product_ID());
 		filters.addOnlyActiveRecordsFilter();
 

@@ -42,7 +42,6 @@ import de.metas.handlingunits.AbstractHUTest;
 import de.metas.handlingunits.HUAssert;
 import de.metas.handlingunits.HUTestHelper;
 import de.metas.handlingunits.HUXmlConverter;
-import de.metas.handlingunits.IHUCapacityDefinition;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.IMutableHUContext;
@@ -56,6 +55,7 @@ import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
+import de.metas.quantity.Quantity;
 
 /**
  * Test {@link AllocationUtils#createLUTUProducerDestinationForTUConfig(I_M_HU_PI_Item_Product, I_M_Product, I_C_UOM)}.
@@ -140,7 +140,7 @@ public class LUTUConfigurationFactory_createLUTUProducerAllocationDestination_Te
 
 		final IHUProducerAllocationDestination allocationDestination = createLUTUProducerDestination(tuPIItemProduct);
 
-		final AbstractAllocationSourceDestination allocationSource = helper.createDummySourceDestination(cuProduct, IHUCapacityDefinition.INFINITY, true);
+		final AbstractAllocationSourceDestination allocationSource = helper.createDummySourceDestination(cuProduct, Quantity.QTY_INFINITE, true);
 		final Object referencedModel = allocationSource.getReferenceModel();
 
 		final IAllocationRequest request = AllocationUtils.createQtyRequest(huContext,

@@ -28,7 +28,7 @@ import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Client;
 
-import de.metas.acct.api.IDocumentBL;
+import de.metas.acct.api.IDocumentRepostingBL;
 import de.metas.banking.service.IBankStatementListenerService;
 import de.metas.banking.spi.impl.BankStatementDocumentRepostingHandler;
 
@@ -55,7 +55,7 @@ public class Banking extends AbstractModuleInterceptor
 	{
 
 		// Register the Document Reposting Handler
-		final IDocumentBL documentBL = Services.get(IDocumentBL.class);
+		final IDocumentRepostingBL documentBL = Services.get(IDocumentRepostingBL.class);
 		documentBL.registerHandler(new BankStatementDocumentRepostingHandler());
 	}
 
@@ -74,7 +74,6 @@ public class Banking extends AbstractModuleInterceptor
 			engine.addModelValidator(de.metas.banking.payment.modelvalidator.C_Payment.instance, client); // 04203
 			engine.addModelValidator(de.metas.banking.payment.modelvalidator.C_PaySelection.instance, client); // 04203
 			engine.addModelValidator(de.metas.banking.payment.modelvalidator.C_PaySelectionLine.instance, client); // 04203
-			// engine.addModelValidator(de.metas.banking.payment.modelvalidator.C_PaySelectionCheck.instance, client);
 			engine.addModelValidator(de.metas.banking.payment.modelvalidator.C_Payment_Request.instance, client); // 08596
 			engine.addModelValidator(de.metas.banking.payment.modelvalidator.C_AllocationHdr.instance, client); // 08972
 		}
@@ -85,5 +84,8 @@ public class Banking extends AbstractModuleInterceptor
 	{
 		calloutsRegistry.registerAnnotatedCallout(de.metas.banking.callout.C_BankStatement.instance);
 		calloutsRegistry.registerAnnotatedCallout(de.metas.banking.payment.callout.C_PaySelectionLine.instance);
+		calloutsRegistry.registerAnnotatedCallout(de.metas.banking.callout.C_BankStatementLine.instance);
+		calloutsRegistry.registerAnnotatedCallout(de.metas.banking.callout.C_BankStatementLine_Ref.instance);
+		
 	}
 }

@@ -17,12 +17,12 @@ import org.eevolution.model.I_PP_Product_BOMLine;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -34,7 +34,7 @@ public class PP_Product_BOMLine
 {
 	/**
 	 * Validates and them updates the BOM line fields from selected product, if any.
-	 * 
+	 *
 	 * @param bomLine
 	 */
 	@CalloutMethod(columnNames = I_PP_Product_BOMLine.COLUMNNAME_M_Product_ID)
@@ -46,14 +46,14 @@ public class PP_Product_BOMLine
 			return;
 		}
 
-		I_PP_Product_BOM bom = bomLine.getPP_Product_BOM();
+		final I_PP_Product_BOM bom = bomLine.getPP_Product_BOM();
 		if (bom.getM_Product_ID() == bomLine.getM_Product_ID())
 		{
 			throw new AdempiereException("@ValidComponent@ - selected product cannot be a BOM component because it's actually the BOM product");
 		}
 
 		// Set BOM Line defaults
-		I_M_Product product = bomLine.getM_Product();
+		final I_M_Product product = bomLine.getM_Product();
 		bomLine.setDescription(product.getDescription());
 		bomLine.setHelp(product.getHelp());
 		bomLine.setC_UOM_ID(product.getC_UOM_ID());

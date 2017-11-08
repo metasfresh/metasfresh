@@ -1,7 +1,6 @@
 package de.metas.procurement.base.order.async;
 
 import java.util.List;
-import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
@@ -9,9 +8,7 @@ import org.adempiere.util.Services;
 
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.model.I_C_Queue_WorkPackage;
-import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.async.spi.WorkpackageProcessorAdapter;
-import de.metas.lock.api.ILockCommand;
 import de.metas.procurement.base.model.I_PMM_PurchaseCandidate;
 import de.metas.procurement.base.order.impl.OrdersGenerator;
 
@@ -28,11 +25,11 @@ import de.metas.procurement.base.order.impl.OrdersGenerator;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -45,15 +42,9 @@ import de.metas.procurement.base.order.impl.OrdersGenerator;
  */
 public class PMM_GenerateOrders extends WorkpackageProcessorAdapter
 {
-	public static final void enqueue(final Properties ctx, final ILockCommand elementsLocker, final Iterable<I_PMM_PurchaseCandidate> candidates)
+	public static final PMM_GenerateOrdersEnqueuer prepareEnqueuing()
 	{
-		Services.get(IWorkPackageQueueFactory.class)
-				.getQueueForEnqueuing(ctx, PMM_GenerateOrders.class)
-				.newBlock()
-				.newWorkpackage()
-				.setElementsLocker(elementsLocker)
-				.addElements(candidates)
-				.build();
+		return new PMM_GenerateOrdersEnqueuer();
 	}
 
 	@Override

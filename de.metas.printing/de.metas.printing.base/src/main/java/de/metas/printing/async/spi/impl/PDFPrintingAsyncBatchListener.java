@@ -14,8 +14,8 @@ import org.adempiere.archive.api.IArchiveDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.collections.IteratorUtils;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.apache.commons.collections4.IteratorUtils;
 import org.compiere.model.I_AD_Archive;
 
 import de.metas.async.api.IAsyncBatchBL;
@@ -26,9 +26,6 @@ import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.model.I_C_Queue_WorkPackage_Notified;
 import de.metas.async.spi.IAsyncBatchListener;
 import de.metas.event.Event;
-import de.metas.event.IEventBusFactory;
-import de.metas.event.Topic;
-import de.metas.event.Type;
 import de.metas.printing.Printing_Constants;
 import de.metas.printing.api.IPrintingDAO;
 import de.metas.printing.model.I_C_Print_Job_Instructions;
@@ -63,10 +60,7 @@ public class PDFPrintingAsyncBatchListener implements IAsyncBatchListener
 
 	private int printingQueueWindowId = 540165;
 
-	public static final Topic TOPIC_PDFPrinting = Topic.builder()
-			.setName("de.metas.printing.async.ProcessedEvents")
-			.setType(Type.REMOTE)
-			.build();
+
 
 	@Override
 	public void createNotice(final I_C_Async_Batch asyncBatch)
@@ -106,7 +100,7 @@ public class PDFPrintingAsyncBatchListener implements IAsyncBatchListener
 	{
 		final Map<Integer, Integer> seenPackages = new HashMap<Integer, Integer>();
 		
-		for (final I_C_Print_Job_Line jobLine : IteratorUtils.asIterable(jobLines))
+		for (final I_C_Print_Job_Line jobLine : IteratorUtils.asIterable(jobLines)) 
 		{
 			if (jobLine.getC_Print_Package_ID() <= 0)
 			{
@@ -173,8 +167,7 @@ public class PDFPrintingAsyncBatchListener implements IAsyncBatchListener
 					.setSuggestedWindowId(printingQueueWindowId)
 					.build();
 
-			Services.get(IEventBusFactory.class)
-					.getEventBus(TOPIC_PDFPrinting)
+			Printing_Constants.getPrintingEventBus()
 					.postEvent(event);
 
 			asyncBatchBL.markWorkpackageNotified(workpackageNotified);

@@ -58,9 +58,20 @@ public interface IQueryBuilderOrderByClause<ModelType> extends IQueryOrderByBuil
 	@Override
 	IQueryBuilderOrderByClause<ModelType> addColumn(ModelColumn<ModelType, ?> column);
 
+	/**
+	 * @deprecated please use {@link #addColumnAscending(String)} and {@link #addColumnDescending(String)}.
+	 */
 	@Override
-	IQueryBuilderOrderByClause<ModelType> addColumn(String columnName, boolean asc);
+	@Deprecated
+	default IQueryBuilderOrderByClause<ModelType> addColumn(String columnName, boolean asc)
+	{
+		return asc ? addColumnAscending(columnName) : addColumnDescending(columnName);
+	}
 
+	IQueryBuilderOrderByClause<ModelType> addColumnAscending(String columnName);
+	
+	IQueryBuilderOrderByClause<ModelType> addColumnDescending(String columnName);
+	
 	@Override
 	IQueryBuilderOrderByClause<ModelType> addColumn(String columnName, Direction direction, Nulls nulls);
 

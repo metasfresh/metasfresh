@@ -67,7 +67,7 @@ public class C_Invoice_Candidate_Create_Missing extends JavaProcess
 
 		try (final IAutoCloseable updateInProgressCloseable = invoiceCandBL.setUpdateProcessInProgress())
 		{
-			handlerBL.createMissingCandidates(ctx, retrieveHandlers());
+			handlerBL.createMissingCandidates(retrieveHandlers());
 		}
 		return "@Success@";
 	}

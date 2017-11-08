@@ -35,6 +35,7 @@ import javax.annotation.concurrent.Immutable;
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.security.permissions.UIDisplayedEntityTypes;
+import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.ad.service.ILookupDAO;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
@@ -61,6 +62,7 @@ import org.compiere.model.MLookup;
 import org.compiere.model.MLookupFactory;
 import org.compiere.model.MLookupInfo;
 import org.compiere.model.MQuery;
+import org.compiere.model.X_AD_Column;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.KeyNamePair;
@@ -90,14 +92,16 @@ public class LookupDAO implements ILookupDAO
 	/* package */static class ColumnInfo implements IColumnInfo
 	{
 		private final String ColumnName;
+		private final String TableName;
 		private final int AD_Reference_Value_ID;
 		private final boolean parent;
 		// String ValidationCode = "";
 		private final int AD_Val_Rule_ID;
 
-		public ColumnInfo(final String columnName, final int adReferenceValueId, final boolean isParent, final int adValRuleId)
+		public ColumnInfo(final String tableName, final String columnName, final int adReferenceValueId, final boolean isParent, final int adValRuleId)
 		{
 			super();
+			TableName = tableName;
 			ColumnName = columnName;
 			AD_Reference_Value_ID = adReferenceValueId;
 			parent = isParent;
@@ -126,6 +130,12 @@ public class LookupDAO implements ILookupDAO
 		public int getAD_Val_Rule_ID()
 		{
 			return AD_Val_Rule_ID;
+		}
+
+		@Override
+		public String getTableName()
+		{
+			return TableName;
 		}
 	}
 
@@ -581,7 +591,9 @@ public class LookupDAO implements ILookupDAO
 			return null;
 		}
 
-		final String sql = "SELECT c.ColumnName, c.AD_Reference_Value_ID, c.IsParent, c.AD_Val_Rule_ID "
+		final String sql = "SELECT c.ColumnName, "
+				+ "c.AD_Reference_Value_ID, c.IsParent, c.AD_Val_Rule_ID "
+				+ ", c." + X_AD_Column.COLUMNNAME_AD_Table_ID
 				+ " FROM AD_Column c"
 				+ " WHERE c.AD_Column_ID=?";
 		PreparedStatement pstmt = null;
@@ -594,12 +606,16 @@ public class LookupDAO implements ILookupDAO
 			rs = pstmt.executeQuery();
 			if (rs.next())
 			{
-				final String ColumnName = rs.getString(1);
+				final String columnName = rs.getString(1);
 				final int AD_Reference_Value_ID = rs.getInt(2);
 				final boolean IsParent = "Y".equals(rs.getString(3));
 				final int AD_Val_Rule_ID = rs.getInt(4);
+				
+				final int tableID = rs.getInt(5);
+				
+				final String tableName = Services.get(IADTableDAO.class).retrieveTableName(tableID);
 
-				final IColumnInfo columnInfo = new ColumnInfo(ColumnName, AD_Reference_Value_ID, IsParent, AD_Val_Rule_ID);
+				final IColumnInfo columnInfo = new ColumnInfo(tableName, columnName, AD_Reference_Value_ID, IsParent, AD_Val_Rule_ID);
 				return columnInfo;
 			}
 			else
@@ -818,7 +834,7 @@ public class LookupDAO implements ILookupDAO
 	{
 		Check.assumeNotNull(tableRefInfo, "tableRefInfo not null");
 
-		final List<ILookupDisplayColumn> lookupDisplayColumns = new ArrayList<ILookupDisplayColumn>();
+		final List<ILookupDisplayColumn> lookupDisplayColumns = new ArrayList<>();
 		boolean isTranslated = false;
 		int ZoomWindow = 0;
 		int ZoomWindowPO = 0;
@@ -826,9 +842,9 @@ public class LookupDAO implements ILookupDAO
 		//
 		// Column filter
 		final StringBuilder sqlWhereClauseColumn = new StringBuilder();
-		final List<Object> sqlWhereClauseColumnParams = new ArrayList<Object>();
+		final List<Object> sqlWhereClauseColumnParams = new ArrayList<>();
 		final StringBuilder sqlOrderBy = new StringBuilder();
-		final List<Object> sqlOrderByParams = new ArrayList<Object>();
+		final List<Object> sqlOrderByParams = new ArrayList<>();
 		//
 		if (tableRefInfo.isValueDisplayed())
 		{
@@ -845,6 +861,19 @@ public class LookupDAO implements ILookupDAO
 			}
 			sqlOrderBy.append("(CASE WHEN c.").append(I_AD_Column.COLUMNNAME_ColumnName).append("=? THEN 0 ELSE 1 END)");
 			sqlOrderByParams.add(COLUMNNAME_Value);
+		}
+		//
+		if(Services.get(IDeveloperModeBL.class).isEnabled())
+		{
+			if(I_AD_Table.Table_Name.equals(tableRefInfo.getTableName()))
+			{
+				if (sqlWhereClauseColumn.length() > 0)
+				{
+					sqlWhereClauseColumn.append(" OR ");
+				}
+				sqlWhereClauseColumn.append("c.").append(I_AD_Column.COLUMNNAME_ColumnName).append("=?");
+				sqlWhereClauseColumnParams.add(I_AD_Table.COLUMNNAME_TableName);
+			}
 		}
 		//
 		if (Check.isEmpty(tableRefInfo.getDisplayColumn(), true))
@@ -873,7 +902,7 @@ public class LookupDAO implements ILookupDAO
 			sqlWhereClauseColumnParams.add(tableRefInfo.getDisplayColumn());
 		}
 
-		final List<Object> sqlParams = new ArrayList<Object>();
+		final List<Object> sqlParams = new ArrayList<>();
 		final StringBuilder sql = new StringBuilder("SELECT "
 				+ " c." + I_AD_Column.COLUMNNAME_ColumnName
 				+ ",c." + I_AD_Column.COLUMNNAME_IsTranslated

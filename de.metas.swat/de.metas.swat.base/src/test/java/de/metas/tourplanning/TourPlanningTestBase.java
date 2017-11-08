@@ -1,5 +1,10 @@
 package de.metas.tourplanning;
 
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+
+import java.math.BigDecimal;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -50,6 +55,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.TestWatcher;
 
+import de.metas.adempiere.model.I_C_Order;
 import de.metas.tourplanning.api.IDeliveryDayAllocable;
 import de.metas.tourplanning.api.IDeliveryDayBL;
 import de.metas.tourplanning.api.IDeliveryDayDAO;
@@ -66,6 +72,7 @@ import de.metas.tourplanning.model.I_M_ShipmentSchedule;
 import de.metas.tourplanning.model.I_M_Tour;
 import de.metas.tourplanning.model.I_M_TourVersion;
 import de.metas.tourplanning.model.I_M_Tour_Instance;
+import de.metas.tourplanning.model.validator.DeliveryDayAllocableInterceptor;
 
 /**
  * Base class (to be extended) for all Tour Planning tests.
@@ -106,7 +113,7 @@ public abstract class TourPlanningTestBase
 		final String trxName = trxManager.createTrxName("Dummy_ThreadInherited", true);
 		trxManager.setThreadInheritedTrxName(trxName);
 
-		this.contextProvider = new PlainContextAware(Env.getCtx(), trxName);
+		this.contextProvider = PlainContextAware.newWithThreadInheritedTrx();
 
 		//
 		// Model Interceptors
@@ -274,6 +281,30 @@ public abstract class TourPlanningTestBase
 		InterfaceWrapperHelper.save(deliveryDay);
 
 		return deliveryDay;
+	}
+	
+	/**
+	 * Create a shipment schedule for the given oder.
+	 * <p>
+	 * NOTE: we expect that the tests was set up such that {@link DeliveryDayAllocableInterceptor} is fired when the shipment schedule is stored.
+	 * 
+	 * @param order
+	 * @return
+	 */
+	protected I_M_ShipmentSchedule createShipmentSchedule(final I_C_Order order, final int qtyOrdered)
+	{
+		final I_M_ShipmentSchedule shipmentSchedule = newInstance(I_M_ShipmentSchedule.class, order);
+		shipmentSchedule.setC_Order(order);
+		shipmentSchedule.setC_BPartner(order.getC_BPartner());
+		shipmentSchedule.setC_BPartner_Location(order.getC_BPartner_Location());
+
+		shipmentSchedule.setQtyOrdered_Calculated(BigDecimal.valueOf(qtyOrdered));
+		
+		shipmentSchedule.setDeliveryDate(order.getDatePromised());
+		shipmentSchedule.setPreparationDate(order.getPreparationDate());
+		save(shipmentSchedule);
+
+		return shipmentSchedule;
 	}
 
 

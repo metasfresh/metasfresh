@@ -34,6 +34,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.ModelValidator;
+
 import de.metas.adempiere.gui.search.IHUPackingAware;
 import de.metas.adempiere.gui.search.IHUPackingAwareBL;
 import de.metas.adempiere.gui.search.impl.DDOrderLineHUPackingAware;

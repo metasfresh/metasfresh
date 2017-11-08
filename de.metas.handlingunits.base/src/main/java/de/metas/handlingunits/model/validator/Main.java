@@ -40,6 +40,7 @@ import org.compiere.apps.search.dao.IInvoiceHistoryDAO;
 import org.compiere.apps.search.dao.impl.HUInvoiceHistoryDAO;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_OrderLine;
 import org.compiere.util.CacheMgt;
 import org.eevolution.model.I_DD_OrderLine;
 
@@ -69,6 +70,7 @@ import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.handlingunits.model.I_M_PickingSlot_HU;
 import de.metas.handlingunits.model.I_M_Picking_Candidate;
 import de.metas.handlingunits.model.I_M_Source_HU;
+import de.metas.handlingunits.model.I_PP_Order_Qty;
 import de.metas.handlingunits.ordercandidate.spi.impl.OLCandPIIPListener;
 import de.metas.handlingunits.ordercandidate.spi.impl.OLCandPIIPValidator;
 import de.metas.handlingunits.picking.interceptor.M_ShipmentSchedule_QtyPicked;
@@ -83,19 +85,18 @@ import de.metas.handlingunits.shipmentschedule.api.impl.ShipmentScheduleHUTrxLis
 import de.metas.handlingunits.shipmentschedule.spi.impl.ShipmentSchedulePackingMaterialLineListener;
 import de.metas.handlingunits.tourplanning.spi.impl.HUShipmentScheduleDeliveryDayHandler;
 import de.metas.inoutcandidate.agg.key.impl.HUShipmentScheduleKeyValueHandler;
-import de.metas.inoutcandidate.api.IInOutCandHandlerBL;
 import de.metas.inoutcandidate.api.IReceiptScheduleBL;
 import de.metas.inoutcandidate.api.IReceiptScheduleProducerFactory;
+import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleInvalidateBL;
 import de.metas.inoutcandidate.api.impl.HUShipmentScheduleHeaderAggregationKeyBuilder;
 import de.metas.inoutcandidate.spi.impl.HUReceiptScheduleProducer;
-import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoicecandidate.facet.IInvoiceCandidateFacetCollectorFactory;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
-import de.metas.invoicecandidate.spi.IC_OrderLine_HandlerDAO;
 import de.metas.materialtracking.IMaterialTrackingBL;
 import de.metas.materialtracking.spi.IHandlingUnitsInfoFactory;
 import de.metas.materialtracking.spi.IPPOrderMInOutLineRetrievalService;
+import de.metas.order.invoicecandidate.IC_OrderLine_HandlerDAO;
 import de.metas.order.process.IC_Order_CreatePOFromSOsBL;
 import de.metas.order.process.IC_Order_CreatePOFromSOsDAO;
 import de.metas.ordercandidate.api.IOLCandBL;
@@ -167,6 +168,8 @@ public final class Main extends AbstractModuleInterceptor
 		// 08743: M_ShipperTransportation
 		engine.addModelValidator(new M_ShipperTransportation(), client);
 
+		engine.addModelValidator(de.metas.handlingunits.sourcehu.interceptor.M_HU.INSTANCE, client);
+		
 		//
 		// 08255: M_ShipmentSchedule update qtys
 		programaticCalloutProvider.registerAnnotatedCallout(de.metas.handlingunits.inoutcandidate.callout.M_ShipmentSchedule.instance);
@@ -267,8 +270,11 @@ public final class Main extends AbstractModuleInterceptor
 		cacheMgt.enableRemoteCacheInvalidationForTableName(I_M_HU_PackingMaterial.Table_Name);
 
 		cacheMgt.enableRemoteCacheInvalidationForTableName(I_M_Source_HU.Table_Name);
-		cacheMgt.enableRemoteCacheInvalidationForTableName(I_M_Picking_Candidate.Table_Name);
+
+		cacheMgt.enableRemoteCacheInvalidationForTableName(I_PP_Order_Qty.Table_Name);
+
 		cacheMgt.enableRemoteCacheInvalidationForTableName(I_M_PickingSlot_HU.Table_Name);
+		cacheMgt.enableRemoteCacheInvalidationForTableName(I_M_Picking_Candidate.Table_Name);
 	}
 
 	/**
@@ -335,8 +341,8 @@ public final class Main extends AbstractModuleInterceptor
 			huTrxBL.addListener(ShipmentScheduleHUTrxListener.instance);
 
 			// 07042: we don't want shipment schedules for mere packaging order lines
-			Services.get(IInOutCandHandlerBL.class)
-					.registerListener(new ShipmentSchedulePackingMaterialLineListener(), I_C_OrderLine.Table_Name);
+			Services.get(IShipmentScheduleHandlerBL.class)
+					.registerVetoer(new ShipmentSchedulePackingMaterialLineListener(), I_C_OrderLine.Table_Name);
 		}
 
 		// Order - Fast Input

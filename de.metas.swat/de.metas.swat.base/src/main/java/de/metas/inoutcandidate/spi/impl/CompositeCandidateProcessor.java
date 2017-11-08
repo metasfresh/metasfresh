@@ -28,36 +28,34 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
 
-import org.adempiere.inout.util.CachedObjects;
-import org.adempiere.inout.util.IShipmentCandidates;
+import org.adempiere.inout.util.IShipmentSchedulesDuringUpdate;
 import org.adempiere.util.Check;
-import de.metas.inoutcandidate.spi.ICandidateProcessor;
+import de.metas.inoutcandidate.spi.IShipmentSchedulesAfterFirstPassUpdater;
 
-public final class CompositeCandidateProcessor implements ICandidateProcessor
+public final class CompositeCandidateProcessor implements IShipmentSchedulesAfterFirstPassUpdater
 {
 	private final static Logger logger = LogManager.getLogger(CompositeCandidateProcessor.class);
 
-	private final CopyOnWriteArrayList<ICandidateProcessor> processors = new CopyOnWriteArrayList<ICandidateProcessor>();
+	private final CopyOnWriteArrayList<IShipmentSchedulesAfterFirstPassUpdater> processors = new CopyOnWriteArrayList<IShipmentSchedulesAfterFirstPassUpdater>();
 
-	public void addCandidateProcessor(final ICandidateProcessor processor)
+	public void addCandidateProcessor(final IShipmentSchedulesAfterFirstPassUpdater processor)
 	{
 		Check.assumeNotNull(processor, "processor not null");
 		if (!processors.addIfAbsent(processor))
 		{
 			throw new IllegalStateException(processor + " has already been added");
 		}
-
 	}
 
 	@Override
-	public int processCandidates(Properties ctx, IShipmentCandidates candidates, CachedObjects cachedObjects, String trxName)
+	public int doUpdateAfterFirstPass(Properties ctx, IShipmentSchedulesDuringUpdate candidates, String trxName)
 	{
 		int removeCount = 0;
 
-		for (final ICandidateProcessor processor : processors)
+		for (final IShipmentSchedulesAfterFirstPassUpdater processor : processors)
 		{
 			logger.info("Invoking {}", processor);
-			final int currentCount = processor.processCandidates(ctx, candidates, cachedObjects, trxName);
+			final int currentCount = processor.doUpdateAfterFirstPass(ctx, candidates, trxName);
 
 			logger.info("{} records were discarded by {}", new Object[] { currentCount, processor });
 			removeCount += currentCount;

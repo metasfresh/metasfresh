@@ -25,13 +25,13 @@ import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_PricingSystem;
-import org.compiere.process.DocAction;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ListMultimap;
 
+import de.metas.document.engine.IDocument;
 import de.metas.materialtracking.IMaterialTrackingPPOrderBL;
 import de.metas.materialtracking.model.IMaterialTrackingAware;
 import de.metas.materialtracking.model.I_M_InOutLine;
@@ -281,7 +281,7 @@ import de.metas.materialtracking.qualityBasedInvoicing.IVendorReceipt;
 			// now get *all* the receipt lines that took place while the PLV was valid
 			final ICompositeQueryFilter<I_M_InOut> inOutFilter = queryBL.createCompositeQueryFilter(I_M_InOut.class)
 					.addOnlyActiveRecordsFilter()
-					.addInArrayOrAllFilter(I_M_InOut.COLUMN_DocStatus, DocAction.STATUS_Completed, DocAction.STATUS_Closed)
+					.addInArrayOrAllFilter(I_M_InOut.COLUMN_DocStatus, IDocument.STATUS_Completed, IDocument.STATUS_Closed)
 					.addCompareFilter(I_M_InOut.COLUMN_MovementDate, Operator.GREATER_OR_EQUAL, plv.getValidFrom());
 
 			final I_M_PriceList_Version nextPLV = priceListDAO.retrieveNextVersionOrNull(plv);

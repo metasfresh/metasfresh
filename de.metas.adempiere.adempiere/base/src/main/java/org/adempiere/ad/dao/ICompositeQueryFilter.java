@@ -83,6 +83,8 @@ public interface ICompositeQueryFilter<T> extends IQueryFilter<T>
 	 */
 	boolean isJoinOr();
 
+	IInSubQueryFilterClause<T, ICompositeQueryFilter<T>> addInSubQueryFilter();
+
 	/**
 	 * Add a {@link InSubQueryFilter}
 	 * 
@@ -143,7 +145,7 @@ public interface ICompositeQueryFilter<T> extends IQueryFilter<T>
 	<V> ICompositeQueryFilter<T> addInArrayFilter(ModelColumn<T, ?> column, Collection<V> values);
 
 	/**
-	 * NOTE: in case <code>values</code> collection is empty this filter will return <code>true</code> (as intuitivelly expected).
+	 * NOTE: in case <code>values</code> collection is empty this filter will return <code>true</code> (as intuitively expected).
 	 * 
 	 * @param column
 	 * @param values
@@ -152,7 +154,7 @@ public interface ICompositeQueryFilter<T> extends IQueryFilter<T>
 	<V> ICompositeQueryFilter<T> addNotInArrayFilter(ModelColumn<T, ?> column, Collection<V> values);
 
 	/**
-	 * NOTE: in case <code>values</code> collection is empty this filter will return <code>true</code> (as intuitivelly expected).
+	 * NOTE: in case <code>values</code> collection is empty this filter will return <code>true</code> (as intuitively expected).
 	 * 
 	 * @param columnName
 	 * @param values
@@ -251,23 +253,20 @@ public interface ICompositeQueryFilter<T> extends IQueryFilter<T>
 	ICompositeQueryFilter<T> addEqualsFilter(ModelColumn<T, ?> column, Object value, IQueryFilterModifier modifier);
 
 	/**
-	 * Adds a filter for substrings. That filter creates SQL such as <code>columnName LIKE '%substring%'</code>.
+	 * Adds a filter for substrings. That filter creates SQL such as <code>columnName LIKE '%substring%'</code>.<br>
+	 * The string to filter by may contain {@code _} and {@code %}. Starting and trailing '%' are supplemented if missing.
 	 * 
 	 * @param columnName
 	 * @param substring
 	 * @param ignoreCase if <code>true</code> the filter will use <code>ILIKE</code> instead of <code>LIKE</code>
 	 * @return
 	 */
-	ICompositeQueryFilter<T> addSubstringFilter(String columnName, String substring, boolean ignoreCase);
+	ICompositeQueryFilter<T> addStringLikeFilter(String columnName, String substring, boolean ignoreCase);
 
 	/**
 	 * See {@link #addSubstringFilter(String, String)}.
-	 * 
-	 * @param column
-	 * @param substring
-	 * @return
 	 */
-	ICompositeQueryFilter<T> addSubstringFilter(ModelColumn<T, ?> column, String substring, boolean ignoreCase);
+	ICompositeQueryFilter<T> addStringLikeFilter(ModelColumn<T, ?> column, String substring, boolean ignoreCase);
 
 	ICompositeQueryFilter<T> addCoalesceEqualsFilter(Object value, String... columnNames);
 

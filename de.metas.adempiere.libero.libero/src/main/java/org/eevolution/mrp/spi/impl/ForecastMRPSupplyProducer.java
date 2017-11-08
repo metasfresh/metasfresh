@@ -28,14 +28,12 @@ import java.util.List;
 
 import org.adempiere.ad.modelvalidator.DocTimingType;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.IForecastDAO;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IMutable;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Forecast;
 import org.compiere.model.I_M_ForecastLine;
 import org.compiere.model.I_M_Product;
-import org.compiere.process.DocAction;
 import org.eevolution.model.I_PP_MRP;
 import org.eevolution.model.X_PP_MRP;
 import org.eevolution.mrp.api.IMRPCreateSupplyRequest;
@@ -43,7 +41,9 @@ import org.eevolution.mrp.api.IMRPDAO;
 import org.eevolution.mrp.api.IMRPExecutor;
 import org.eevolution.mrp.api.IMRPSourceEvent;
 
+import de.metas.document.engine.IDocument;
 import de.metas.material.planning.IMaterialPlanningContext;
+import de.metas.mforecast.IForecastDAO;
 import de.metas.product.IProductBL;
 
 public class ForecastMRPSupplyProducer extends AbstractMRPSupplyProducer
@@ -171,7 +171,7 @@ public class ForecastMRPSupplyProducer extends AbstractMRPSupplyProducer
 		mrp.setM_Product(product);
 		mrp.setM_AttributeSetInstance_ID(forecastLine.getM_AttributeSetInstance_ID());
 		mrpBL.setQty(mrp, qtyTarget, qty, uom);
-		mrp.setDocStatus(DocAction.STATUS_InProgress);
+		mrp.setDocStatus(IDocument.STATUS_InProgress);
 		if(forecastLine.getM_Forecast().isProcessing())
 		{
 			mrp.setC_BPartner_ID(forecastLine.getC_BPartner_ID());

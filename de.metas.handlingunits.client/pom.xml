@@ -16,34 +16,6 @@
 	</properties>
 
 	<dependencies>
-		<!-- IMPORTANT: declaring junit after the other test libs to avoid some known classpath problems-->
-		<dependency>
-			<groupId>org.easytesting</groupId>
-			<artifactId>fest-swing</artifactId>
-			<version>1.2.1</version>
-			<scope>test</scope>
-			<exclusions>
-				<exclusion>
-					<groupId>org.easytesting</groupId>
-					<artifactId>fest-assert</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>org.easytesting</groupId>
-					<artifactId>fest-util</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>net.jcip</groupId>
-					<artifactId>jcip-annotations</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-		<dependency>
-			<groupId>org.easytesting</groupId>
-			<artifactId>fest-assert</artifactId>
-			<version>1.4</version>
-			<scope>test</scope>
-		</dependency>
-
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
@@ -97,6 +69,18 @@
 			<version>10.0.0</version>
 		</dependency>
 
+		<!--
+			Lombok
+			See https://github.com/metasfresh/metasfresh/issues/1125
+			NOTE: if you don't need fancy things like @SneakyThrows then scope 'provided' it's totally fine
+			Also note that the version is managed by spring-boot.
+		 -->
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<scope>provided</scope>
+		</dependency>
+
 		<dependency>
 			<groupId>de.metas.adempiere.adempiere</groupId>
 			<artifactId>de.metas.adempiere.adempiere.base</artifactId>
@@ -114,6 +98,14 @@
 		<dependency>
 			<groupId>de.metas.adempiere.libero</groupId>
 			<artifactId>de.metas.adempiere.libero.libero</artifactId>
+			<version>10.0.0</version>
+			<classifier>tests</classifier>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.business</groupId>
+			<artifactId>de.metas.business</artifactId>
 			<version>10.0.0</version>
 			<classifier>tests</classifier>
 			<scope>test</scope>

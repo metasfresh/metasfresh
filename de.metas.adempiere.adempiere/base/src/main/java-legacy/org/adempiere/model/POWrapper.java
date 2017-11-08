@@ -35,6 +35,7 @@ import org.adempiere.util.Services;
 import org.adempiere.util.proxy.ProxyMethodsCache;
 import org.compiere.model.PO;
 import org.compiere.model.POInfo;
+import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
@@ -512,14 +513,7 @@ public class POWrapper implements InvocationHandler, IInterfaceWrapper
 
 		if (boolean.class.equals(returnType))
 		{
-			if (value == null)
-			{
-				return false;
-			}
-			else
-			{
-				return value instanceof Boolean ? value : "Y".equals(value);
-			}
+			return DisplayType.toBoolean(value);
 		}
 		else
 		{
@@ -560,7 +554,7 @@ public class POWrapper implements InvocationHandler, IInterfaceWrapper
 			}
 			else
 			{
-				return po.set_ValueOfColumnReturningBoolean(name, value);
+				return po.set_ValueOfColumn(name, value);
 			}
 		}
 	}

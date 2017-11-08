@@ -39,9 +39,9 @@ import org.adempiere.util.lang.EqualsBuilder;
 import org.adempiere.util.lang.HashcodeBuilder;
 import org.compiere.model.I_M_Product;
 
-import de.metas.adempiere.form.ITableRowSearchSelectionMatcher;
-import de.metas.adempiere.form.TableRowKey;
 import de.metas.handlingunits.model.I_EDI_M_Product_Lookup_UPC_v;
+import de.metas.picking.legacy.form.ITableRowSearchSelectionMatcher;
+import de.metas.picking.legacy.form.TableRowKey;
 
 /**
  * Matchers all rows for given barcode. M_Product.UPC and M_Product.Value are matched.

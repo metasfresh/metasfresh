@@ -35,8 +35,8 @@ import de.metas.adempiere.ait.helper.GridWindowHelper;
 import de.metas.adempiere.ait.helper.Helper;
 import de.metas.adempiere.ait.helper.IHelper;
 import de.metas.adempiere.ait.test.annotation.IntegrationTest;
-import de.metas.flatrate.model.I_C_Flatrate_Conditions;
-import de.metas.flatrate.model.X_C_Flatrate_Conditions;
+import de.metas.contracts.model.I_C_Flatrate_Conditions;
+import de.metas.contracts.model.X_C_Flatrate_Conditions;
 
 public class FlatrateTests extends AIntegrationTestDriver
 {
@@ -62,7 +62,7 @@ public class FlatrateTests extends AIntegrationTestDriver
 				.newRecord()
 				.getGridTabInterface(I_C_Flatrate_Conditions.class);
 
-		conditions.setType_Conditions(X_C_Flatrate_Conditions.TYPE_CONDITIONS_Pauschalengebuehr);
+		conditions.setType_Conditions(X_C_Flatrate_Conditions.TYPE_CONDITIONS_FlatFee);
 
 		gridWindowHelper.assertFieldDisplayed(I_C_Flatrate_Conditions.COLUMNNAME_M_Product_Flatrate_ID, true);
 		gridWindowHelper.assertFieldDisplayed(I_C_Flatrate_Conditions.COLUMNNAME_UOMType, true);
@@ -78,13 +78,13 @@ public class FlatrateTests extends AIntegrationTestDriver
 		conditions.setIsClosingWithActualSum(true);
 		gridWindowHelper.assertFieldDisplayed(I_C_Flatrate_Conditions.COLUMNNAME_Type_Flatrate, true);
 
-		assertEquals("Expencting Type_Flatrate to be 'NONE' by default", X_C_Flatrate_Conditions.TYPE_FLATRATE_KeineVerrechnung, conditions.getType_Flatrate());
+		assertEquals("Expencting Type_Flatrate to be 'NONE' by default", X_C_Flatrate_Conditions.TYPE_FLATRATE_NONE, conditions.getType_Flatrate());
 		gridWindowHelper.assertFieldDisplayed(I_C_Flatrate_Conditions.COLUMNNAME_Type_Clearing, false);
 		gridWindowHelper.assertFieldDisplayed(I_C_Flatrate_Conditions.COLUMNNAME_Margin_Max, false);
 		gridWindowHelper.assertFieldDisplayed(I_C_Flatrate_Conditions.COLUMNNAME_Margin_Min, false);
 		gridWindowHelper.assertFieldDisplayed(I_C_Flatrate_Conditions.COLUMNNAME_M_Product_Actual_ID, false);
 
-		conditions.setType_Flatrate(X_C_Flatrate_Conditions.TYPE_FLATRATE_Korridor);
+		conditions.setType_Flatrate(X_C_Flatrate_Conditions.TYPE_FLATRATE_Corridor_Percent);
 		gridWindowHelper.assertFieldDisplayed(I_C_Flatrate_Conditions.COLUMNNAME_Type_Clearing, true);
 		gridWindowHelper.assertFieldDisplayed(I_C_Flatrate_Conditions.COLUMNNAME_Margin_Max, true);
 		gridWindowHelper.assertFieldDisplayed(I_C_Flatrate_Conditions.COLUMNNAME_Margin_Min, true);
@@ -113,7 +113,7 @@ public class FlatrateTests extends AIntegrationTestDriver
 				.newRecord()
 				.getGridTabInterface(I_C_Flatrate_Conditions.class);
 
-		conditions.setType_Conditions(X_C_Flatrate_Conditions.TYPE_CONDITIONS_Depotgebuehr);
+		conditions.setType_Conditions(X_C_Flatrate_Conditions.TYPE_CONDITIONS_HoldingFee);
 
 		gridWindowHelper.assertFieldDisplayed(I_C_Flatrate_Conditions.COLUMNNAME_M_Product_Flatrate_ID, false);
 		gridWindowHelper.assertFieldDisplayed(I_C_Flatrate_Conditions.COLUMNNAME_UOMType, false);
@@ -146,7 +146,7 @@ public class FlatrateTests extends AIntegrationTestDriver
 				.newRecord()
 				.getGridTabInterface(I_C_Flatrate_Conditions.class);
 
-		conditions.setType_Conditions(X_C_Flatrate_Conditions.TYPE_CONDITIONS_Pauschalengebuehr);
+		conditions.setType_Conditions(X_C_Flatrate_Conditions.TYPE_CONDITIONS_FlatFee);
 		
 		conditions.setIsClosingWithCorrectionSum(true);
 		conditions.setIsClosingWithActualSum(true);
@@ -154,7 +154,7 @@ public class FlatrateTests extends AIntegrationTestDriver
 
 		gridWindowHelper.assertFieldDisplayed(I_C_Flatrate_Conditions.COLUMNNAME_Type_Flatrate, true);
 		
-		conditions.setType_Conditions(X_C_Flatrate_Conditions.TYPE_CONDITIONS_Depotgebuehr);
+		conditions.setType_Conditions(X_C_Flatrate_Conditions.TYPE_CONDITIONS_HoldingFee);
 		// now the 'FlatFee/Pauschalengebuehr' specific fields should all be gone
 				
 		gridWindowHelper.assertFieldDisplayed(I_C_Flatrate_Conditions.COLUMNNAME_Type_Flatrate, false);

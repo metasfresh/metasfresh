@@ -1,0 +1,5 @@
+-- 2017-10-12T18:06:00.081
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Table SET AD_Window_ID=540117,Updated=TO_TIMESTAMP('2017-10-12 18:06:00','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Table_ID=540648
+;
+

@@ -33,11 +33,12 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.Query;
-import org.compiere.process.DocAction;
 import org.eevolution.api.IPPOrderDAO;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.X_PP_Order;
 import org.eevolution.model.X_PP_Order_BOM;
+
+import de.metas.document.engine.IDocument;
 
 public class PPOrderDAO implements IPPOrderDAO
 {
@@ -93,7 +94,7 @@ public class PPOrderDAO implements IPPOrderDAO
 				.addEqualsFilter(I_PP_Order.COLUMN_M_Warehouse_ID, warehouseId)
 				// Only Releases Manufacturing orders
 				.addEqualsFilter(I_PP_Order.COLUMN_Processed, true)
-				.addEqualsFilter(I_PP_Order.COLUMN_DocStatus, DocAction.STATUS_Completed)
+				.addEqualsFilter(I_PP_Order.COLUMN_DocStatus, IDocument.STATUS_Completed)
 				// Only those which are active
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient();

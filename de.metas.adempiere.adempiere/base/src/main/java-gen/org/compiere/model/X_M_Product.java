@@ -4,7 +4,6 @@ package org.compiere.model;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import org.compiere.util.Env;
 
 /** Generated Model for M_Product
  *  @author Adempiere (generated) 
@@ -16,7 +15,7 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 452328608L;
+	private static final long serialVersionUID = 571530876L;
 
     /** Standard Constructor */
     public X_M_Product (Properties ctx, int M_Product_ID, String trxName)
@@ -25,33 +24,24 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
       /** if (M_Product_ID == 0)
         {
 			setC_UOM_ID (0);
-			setIsBOM (false);
-// N
+			setIsBOM (false); // N
 			setIsDropShip (false);
-			setIsExcludeAutoDelivery (false);
-// N
+			setIsExcludeAutoDelivery (false); // N
 			setIsInvoicePrintDetails (false);
 			setIsPickListPrintDetails (false);
-			setIsPurchased (true);
-// Y
-			setIsSelfService (true);
-// Y
-			setIsSold (true);
-// Y
-			setIsStocked (true);
-// Y
+			setIsPurchased (true); // Y
+			setIsSelfService (true); // Y
+			setIsSold (true); // Y
+			setIsStocked (true); // Y
 			setIsSummary (false);
-			setIsVerified (false);
-// N
+			setIsVerified (false); // N
 			setIsWebStoreFeatured (false);
-			setLowLevel (0);
-// 0
+			setLowLevel (0); // 0
 			setM_AttributeSetInstance_ID (0);
 			setM_Product_Category_ID (0);
 			setM_Product_ID (0);
 			setName (null);
-			setProductType (null);
-// I
+			setProductType (null); // I
 			setValue (null);
         } */
     }
@@ -103,43 +93,6 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	public int getC_RevenueRecognition_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_RevenueRecognition_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_C_SubscriptionType getC_SubscriptionType() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_SubscriptionType_ID, org.compiere.model.I_C_SubscriptionType.class);
-	}
-
-	@Override
-	public void setC_SubscriptionType(org.compiere.model.I_C_SubscriptionType C_SubscriptionType)
-	{
-		set_ValueFromPO(COLUMNNAME_C_SubscriptionType_ID, org.compiere.model.I_C_SubscriptionType.class, C_SubscriptionType);
-	}
-
-	/** Set Abotyp.
-		@param C_SubscriptionType_ID 
-		Vorbestellungsart
-	  */
-	@Override
-	public void setC_SubscriptionType_ID (int C_SubscriptionType_ID)
-	{
-		if (C_SubscriptionType_ID < 1) 
-			set_Value (COLUMNNAME_C_SubscriptionType_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_SubscriptionType_ID, Integer.valueOf(C_SubscriptionType_ID));
-	}
-
-	/** Get Abotyp.
-		@return Vorbestellungsart
-	  */
-	@Override
-	public int getC_SubscriptionType_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_SubscriptionType_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -332,6 +285,58 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 		return (java.lang.String)get_Value(COLUMNNAME_Group2);
 	}
 
+	/** 
+	 * GroupCompensationAmtType AD_Reference_ID=540759
+	 * Reference name: GroupCompensationAmtType
+	 */
+	public static final int GROUPCOMPENSATIONAMTTYPE_AD_Reference_ID=540759;
+	/** Percent = P */
+	public static final String GROUPCOMPENSATIONAMTTYPE_Percent = "P";
+	/** PriceAndQty = Q */
+	public static final String GROUPCOMPENSATIONAMTTYPE_PriceAndQty = "Q";
+	/** Set Compensation Amount Type.
+		@param GroupCompensationAmtType Compensation Amount Type	  */
+	@Override
+	public void setGroupCompensationAmtType (java.lang.String GroupCompensationAmtType)
+	{
+
+		set_Value (COLUMNNAME_GroupCompensationAmtType, GroupCompensationAmtType);
+	}
+
+	/** Get Compensation Amount Type.
+		@return Compensation Amount Type	  */
+	@Override
+	public java.lang.String getGroupCompensationAmtType () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_GroupCompensationAmtType);
+	}
+
+	/** 
+	 * GroupCompensationType AD_Reference_ID=540758
+	 * Reference name: GroupCompensationType
+	 */
+	public static final int GROUPCOMPENSATIONTYPE_AD_Reference_ID=540758;
+	/** Surcharge = S */
+	public static final String GROUPCOMPENSATIONTYPE_Surcharge = "S";
+	/** Discount = D */
+	public static final String GROUPCOMPENSATIONTYPE_Discount = "D";
+	/** Set Compensation Type.
+		@param GroupCompensationType Compensation Type	  */
+	@Override
+	public void setGroupCompensationType (java.lang.String GroupCompensationType)
+	{
+
+		set_Value (COLUMNNAME_GroupCompensationType, GroupCompensationType);
+	}
+
+	/** Get Compensation Type.
+		@return Compensation Type	  */
+	@Override
+	public java.lang.String getGroupCompensationType () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_GroupCompensationType);
+	}
+
 	/** Set Kommentar/Hilfe.
 		@param Help 
 		Comment or Hint
@@ -474,15 +479,15 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 		return false;
 	}
 
-	/** Set Manufactured.
-		@param IsManufactured Manufactured	  */
+	/** Set Wird produziert.
+		@param IsManufactured Wird produziert	  */
 	@Override
 	public void setIsManufactured (boolean IsManufactured)
 	{
 		throw new IllegalArgumentException ("IsManufactured is virtual column");	}
 
-	/** Get Manufactured.
-		@return Manufactured	  */
+	/** Get Wird produziert.
+		@return Wird produziert	  */
 	@Override
 	public boolean isManufactured () 
 	{
@@ -772,9 +777,9 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 		set_ValueFromPO(COLUMNNAME_M_AttributeSetInstance_ID, org.compiere.model.I_M_AttributeSetInstance.class, M_AttributeSetInstance);
 	}
 
-	/** Set Ausprägung Merkmals-Satz.
+	/** Set Merkmale.
 		@param M_AttributeSetInstance_ID 
-		Product Attribute Set Instance
+		Merkmals Ausprägungen zum Produkt
 	  */
 	@Override
 	public void setM_AttributeSetInstance_ID (int M_AttributeSetInstance_ID)
@@ -785,8 +790,8 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 			set_Value (COLUMNNAME_M_AttributeSetInstance_ID, Integer.valueOf(M_AttributeSetInstance_ID));
 	}
 
-	/** Get Ausprägung Merkmals-Satz.
-		@return Product Attribute Set Instance
+	/** Get Merkmale.
+		@return Merkmals Ausprägungen zum Produkt
 	  */
 	@Override
 	public int getM_AttributeSetInstance_ID () 
@@ -942,10 +947,8 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	public static final String MRP_EXCLUDE_Yes = "Y";
 	/** No = N */
 	public static final String MRP_EXCLUDE_No = "N";
-	/** Set Exclude from MRP.
-		@param MRP_Exclude 
-		Exclude from MRP calculation
-	  */
+	/** Set MRP ausschliessen.
+		@param MRP_Exclude MRP ausschliessen	  */
 	@Override
 	public void setMRP_Exclude (java.lang.String MRP_Exclude)
 	{
@@ -953,9 +956,8 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 		set_Value (COLUMNNAME_MRP_Exclude, MRP_Exclude);
 	}
 
-	/** Get Exclude from MRP.
-		@return Exclude from MRP calculation
-	  */
+	/** Get MRP ausschliessen.
+		@return MRP ausschliessen	  */
 	@Override
 	public java.lang.String getMRP_Exclude () 
 	{
@@ -1162,10 +1164,8 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 		set_ValueFromPO(COLUMNNAME_SalesRep_ID, org.compiere.model.I_AD_User.class, SalesRep);
 	}
 
-	/** Set Vertriebsbeauftragter.
-		@param SalesRep_ID 
-		Sales Representative or Company Agent
-	  */
+	/** Set Aussendienst.
+		@param SalesRep_ID Aussendienst	  */
 	@Override
 	public void setSalesRep_ID (int SalesRep_ID)
 	{
@@ -1175,9 +1175,8 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 			set_Value (COLUMNNAME_SalesRep_ID, Integer.valueOf(SalesRep_ID));
 	}
 
-	/** Get Vertriebsbeauftragter.
-		@return Sales Representative or Company Agent
-	  */
+	/** Get Aussendienst.
+		@return Aussendienst	  */
 	@Override
 	public int getSalesRep_ID () 
 	{
@@ -1227,7 +1226,7 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_ShelfHeight);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -1312,7 +1311,7 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_UnitsPerPallet);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -1391,7 +1390,7 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Volume);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -1413,7 +1412,7 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Weight);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 }

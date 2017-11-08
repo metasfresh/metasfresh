@@ -41,7 +41,7 @@ import org.compiere.util.DisplayType;
 import org.compiere.util.Util;
 
 import de.metas.adempiere.form.terminal.ITerminalFactory;
-import de.metas.handlingunits.IHUCapacityDefinition;
+
 import de.metas.handlingunits.IHUIteratorListener;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
@@ -58,6 +58,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IProductStorage;
+import de.metas.quantity.Quantity;
 
 /* package */class HUKeyNameBuilder extends AbstractHUKeyNameBuilder<HUKey>
 {
@@ -239,7 +240,7 @@ import de.metas.handlingunits.storage.IProductStorage;
 		final I_C_UOM uom = productStorage.getC_UOM();
 
 		final String qtyStr;
-		if (!IHUCapacityDefinition.INFINITY.equals(qty))
+		if (!Quantity.QTY_INFINITE.equals(qty))
 		{
 			qty = qty.setScale(uom.getStdPrecision(), RoundingMode.HALF_UP);
 			qtyStr = qtyFormat.format(qty);

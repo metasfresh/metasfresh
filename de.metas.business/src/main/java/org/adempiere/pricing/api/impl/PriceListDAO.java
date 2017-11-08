@@ -29,11 +29,11 @@ import org.slf4j.Logger;
 
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.logging.LogManager;
+import lombok.NonNull;
 
 public class PriceListDAO implements IPriceListDAO
 {
 	private static final transient Logger logger = LogManager.getLogger(PriceListDAO.class);
-
 
 	@Override
 	@Cached(cacheName = I_M_PriceList.Table_Name + "#By#M_PriceList_ID")
@@ -59,7 +59,6 @@ public class PriceListDAO implements IPriceListDAO
 				.addColumn(org.compiere.model.I_M_ProductPrice.COLUMNNAME_SeqNo)
 				.addColumn(org.compiere.model.I_M_ProductPrice.COLUMNNAME_M_Product_ID)
 				.addColumn(org.compiere.model.I_M_ProductPrice.COLUMNNAME_MatchSeqNo);
-				
 
 		return queryBuilder.create()
 				.iterate(I_M_ProductPrice.class);
@@ -93,23 +92,19 @@ public class PriceListDAO implements IPriceListDAO
 
 	@Override
 	public I_M_PriceList_Version retrievePriceListVersionOrNull(
-			final org.compiere.model.I_M_PriceList priceList,
-			final Date date,
+			@NonNull final org.compiere.model.I_M_PriceList priceList,
+			@NonNull final Date date,
 			final Boolean processed)
 	{
-		Check.assumeNotNull(priceList, "param 'priceList' not null", priceList);
-		Check.assumeNotNull(priceList, "param 'date' not null", date);
-
 		final Properties ctx = InterfaceWrapperHelper.getCtx(priceList);
-
 		final int priceListId = priceList.getM_PriceList_ID();
-		final I_M_PriceList_Version plv = retrieveLastVersion(ctx, priceListId, date, processed);
-
+		final I_M_PriceList_Version plv = retrievePriceListVersionOrNull(ctx, priceListId, date, processed);
 		return plv;
 	}
 
+	@Override
 	@Cached(cacheName = I_M_PriceList_Version.Table_Name + "#By#M_PriceList_ID#Date#Processed")
-	/* package */ I_M_PriceList_Version retrieveLastVersion(@CacheCtx final Properties ctx,
+	public I_M_PriceList_Version retrievePriceListVersionOrNull(@CacheCtx final Properties ctx,
 			final int priceListId,
 			final Date date,
 			final Boolean processed)
@@ -187,7 +182,7 @@ public class PriceListDAO implements IPriceListDAO
 				.create()
 				.first();
 	}
-	
+
 	@Override
 	public int retrieveNextMatchSeqNo(final I_M_ProductPrice productPrice)
 	{
@@ -207,5 +202,4 @@ public class PriceListDAO implements IPriceListDAO
 		final int nextMatchSeqNo = (lastMatchSeqNo / 10) * 10 + 10;
 		return nextMatchSeqNo;
 	}
-
 }

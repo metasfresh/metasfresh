@@ -23,6 +23,8 @@ package de.metas.handlingunits.allocation.impl;
  */
 
 
+import static de.metas.business.BusinessTestHelper.createBPartner;
+
 import java.math.BigDecimal;
 import java.util.List;
 
@@ -64,8 +66,8 @@ public class HULoader_WithPartner_Tests extends AbstractHUTest
 	@Override
 	protected void initialize()
 	{
-		bpartner01 = helper.createBPartner("BPartner01");
-		bpartner02 = helper.createBPartner("BPartner02");
+		bpartner01 = createBPartner("BPartner01");
+		bpartner02 = createBPartner("BPartner02");
 
 		//
 		// Handling Units Definition

@@ -25,7 +25,7 @@ package de.metas.materialtracking.ch.lagerkonf.interfaces;
 
 import de.metas.materialtracking.ch.lagerkonf.model.I_M_QualityInsp_LagerKonf;
 
-public interface I_C_Flatrate_Conditions extends de.metas.flatrate.model.I_C_Flatrate_Conditions
+public interface I_C_Flatrate_Conditions extends de.metas.contracts.model.I_C_Flatrate_Conditions
 {
 	/** gemaess Lagerkonferenz = QualityBsd */
 	public static final String TYPE_CONDITIONS_QualityBasedInvoicing = "QualityBsd";

@@ -69,35 +69,6 @@ public interface I_MD_Candidate
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set DB-Tabelle.
-	 * Database Table information
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setAD_Table_ID (int AD_Table_ID);
-
-	/**
-	 * Get DB-Tabelle.
-	 * Database Table information
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getAD_Table_ID();
-
-	public org.compiere.model.I_AD_Table getAD_Table();
-
-	public void setAD_Table(org.compiere.model.I_AD_Table AD_Table);
-
-    /** Column definition for AD_Table_ID */
-    public static final org.adempiere.model.ModelColumn<I_MD_Candidate, org.compiere.model.I_AD_Table> COLUMN_AD_Table_ID = new org.adempiere.model.ModelColumn<I_MD_Candidate, org.compiere.model.I_AD_Table>(I_MD_Candidate.class, "AD_Table_ID", org.compiere.model.I_AD_Table.class);
-    /** Column name AD_Table_ID */
-    public static final String COLUMNNAME_AD_Table_ID = "AD_Table_ID";
-
-	/**
 	 * Get Erstellt.
 	 * Datum, an dem dieser Eintrag erstellt wurde
 	 *
@@ -203,64 +174,6 @@ public interface I_MD_Candidate
     public static final org.adempiere.model.ModelColumn<I_MD_Candidate, org.compiere.model.I_M_AttributeSetInstance> COLUMN_M_AttributeSetInstance_ID = new org.adempiere.model.ModelColumn<I_MD_Candidate, org.compiere.model.I_M_AttributeSetInstance>(I_MD_Candidate.class, "M_AttributeSetInstance_ID", org.compiere.model.I_M_AttributeSetInstance.class);
     /** Column name M_AttributeSetInstance_ID */
     public static final String COLUMNNAME_M_AttributeSetInstance_ID = "M_AttributeSetInstance_ID";
-
-	/**
-	 * Set Produkt.
-	 * Produkt, Leistung, Artikel
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setM_Product_ID (int M_Product_ID);
-
-	/**
-	 * Get Produkt.
-	 * Produkt, Leistung, Artikel
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getM_Product_ID();
-
-	public org.compiere.model.I_M_Product getM_Product();
-
-	public void setM_Product(org.compiere.model.I_M_Product M_Product);
-
-    /** Column definition for M_Product_ID */
-    public static final org.adempiere.model.ModelColumn<I_MD_Candidate, org.compiere.model.I_M_Product> COLUMN_M_Product_ID = new org.adempiere.model.ModelColumn<I_MD_Candidate, org.compiere.model.I_M_Product>(I_MD_Candidate.class, "M_Product_ID", org.compiere.model.I_M_Product.class);
-    /** Column name M_Product_ID */
-    public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
-
-	/**
-	 * Set Lager.
-	 * Lager oder Ort für Dienstleistung
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setM_Warehouse_ID (int M_Warehouse_ID);
-
-	/**
-	 * Get Lager.
-	 * Lager oder Ort für Dienstleistung
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getM_Warehouse_ID();
-
-	public org.compiere.model.I_M_Warehouse getM_Warehouse();
-
-	public void setM_Warehouse(org.compiere.model.I_M_Warehouse M_Warehouse);
-
-    /** Column definition for M_Warehouse_ID */
-    public static final org.adempiere.model.ModelColumn<I_MD_Candidate, org.compiere.model.I_M_Warehouse> COLUMN_M_Warehouse_ID = new org.adempiere.model.ModelColumn<I_MD_Candidate, org.compiere.model.I_M_Warehouse>(I_MD_Candidate.class, "M_Warehouse_ID", org.compiere.model.I_M_Warehouse.class);
-    /** Column name M_Warehouse_ID */
-    public static final String COLUMNNAME_M_Warehouse_ID = "M_Warehouse_ID";
 
 	/**
 	 * Set Gruppen-ID.
@@ -405,6 +318,64 @@ public interface I_MD_Candidate
     public static final String COLUMNNAME_MD_Candidate_Type = "MD_Candidate_Type";
 
 	/**
+	 * Set Produkt.
+	 * Produkt, Leistung, Artikel
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setM_Product_ID (int M_Product_ID);
+
+	/**
+	 * Get Produkt.
+	 * Produkt, Leistung, Artikel
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getM_Product_ID();
+
+	public org.compiere.model.I_M_Product getM_Product();
+
+	public void setM_Product(org.compiere.model.I_M_Product M_Product);
+
+    /** Column definition for M_Product_ID */
+    public static final org.adempiere.model.ModelColumn<I_MD_Candidate, org.compiere.model.I_M_Product> COLUMN_M_Product_ID = new org.adempiere.model.ModelColumn<I_MD_Candidate, org.compiere.model.I_M_Product>(I_MD_Candidate.class, "M_Product_ID", org.compiere.model.I_M_Product.class);
+    /** Column name M_Product_ID */
+    public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
+
+	/**
+	 * Set Lager.
+	 * Lager oder Ort für Dienstleistung
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setM_Warehouse_ID (int M_Warehouse_ID);
+
+	/**
+	 * Get Lager.
+	 * Lager oder Ort für Dienstleistung
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getM_Warehouse_ID();
+
+	public org.compiere.model.I_M_Warehouse getM_Warehouse();
+
+	public void setM_Warehouse(org.compiere.model.I_M_Warehouse M_Warehouse);
+
+    /** Column definition for M_Warehouse_ID */
+    public static final org.adempiere.model.ModelColumn<I_MD_Candidate, org.compiere.model.I_M_Warehouse> COLUMN_M_Warehouse_ID = new org.adempiere.model.ModelColumn<I_MD_Candidate, org.compiere.model.I_M_Warehouse>(I_MD_Candidate.class, "M_Warehouse_ID", org.compiere.model.I_M_Warehouse.class);
+    /** Column name M_Warehouse_ID */
+    public static final String COLUMNNAME_M_Warehouse_ID = "M_Warehouse_ID";
+
+	/**
 	 * Set Menge.
 	 * Menge
 	 *
@@ -428,77 +399,6 @@ public interface I_MD_Candidate
     public static final org.adempiere.model.ModelColumn<I_MD_Candidate, Object> COLUMN_Qty = new org.adempiere.model.ModelColumn<I_MD_Candidate, Object>(I_MD_Candidate.class, "Qty", null);
     /** Column name Qty */
     public static final String COLUMNNAME_Qty = "Qty";
-
-	/**
-	 * Set Menge Abw..
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setQty_Override (java.math.BigDecimal Qty_Override);
-
-	/**
-	 * Get Menge Abw..
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.math.BigDecimal getQty_Override();
-
-    /** Column definition for Qty_Override */
-    public static final org.adempiere.model.ModelColumn<I_MD_Candidate, Object> COLUMN_Qty_Override = new org.adempiere.model.ModelColumn<I_MD_Candidate, Object>(I_MD_Candidate.class, "Qty_Override", null);
-    /** Column name Qty_Override */
-    public static final String COLUMNNAME_Qty_Override = "Qty_Override";
-
-	/**
-	 * Set Planmenge.
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setQty_Planner (java.math.BigDecimal Qty_Planner);
-
-	/**
-	 * Get Planmenge.
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public java.math.BigDecimal getQty_Planner();
-
-    /** Column definition for Qty_Planner */
-    public static final org.adempiere.model.ModelColumn<I_MD_Candidate, Object> COLUMN_Qty_Planner = new org.adempiere.model.ModelColumn<I_MD_Candidate, Object>(I_MD_Candidate.class, "Qty_Planner", null);
-    /** Column name Qty_Planner */
-    public static final String COLUMNNAME_Qty_Planner = "Qty_Planner";
-
-	/**
-	 * Set Datensatz-ID.
-	 * Direct internal record ID
-	 *
-	 * <br>Type: Button
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setRecord_ID (int Record_ID);
-
-	/**
-	 * Get Datensatz-ID.
-	 * Direct internal record ID
-	 *
-	 * <br>Type: Button
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getRecord_ID();
-
-    /** Column definition for Record_ID */
-    public static final org.adempiere.model.ModelColumn<I_MD_Candidate, Object> COLUMN_Record_ID = new org.adempiere.model.ModelColumn<I_MD_Candidate, Object>(I_MD_Candidate.class, "Record_ID", null);
-    /** Column name Record_ID */
-    public static final String COLUMNNAME_Record_ID = "Record_ID";
 
 	/**
 	 * Set Reihenfolge.
@@ -526,6 +426,29 @@ public interface I_MD_Candidate
     public static final org.adempiere.model.ModelColumn<I_MD_Candidate, Object> COLUMN_SeqNo = new org.adempiere.model.ModelColumn<I_MD_Candidate, Object>(I_MD_Candidate.class, "SeqNo", null);
     /** Column name SeqNo */
     public static final String COLUMNNAME_SeqNo = "SeqNo";
+
+	/**
+	 * Set StorageAttributesKey (technical).
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setStorageAttributesKey (java.lang.String StorageAttributesKey);
+
+	/**
+	 * Get StorageAttributesKey (technical).
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getStorageAttributesKey();
+
+    /** Column definition for StorageAttributesKey */
+    public static final org.adempiere.model.ModelColumn<I_MD_Candidate, Object> COLUMN_StorageAttributesKey = new org.adempiere.model.ModelColumn<I_MD_Candidate, Object>(I_MD_Candidate.class, "StorageAttributesKey", null);
+    /** Column name StorageAttributesKey */
+    public static final String COLUMNNAME_StorageAttributesKey = "StorageAttributesKey";
 
 	/**
 	 * Get Aktualisiert.

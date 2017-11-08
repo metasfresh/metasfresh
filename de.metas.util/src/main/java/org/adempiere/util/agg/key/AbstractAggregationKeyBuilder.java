@@ -42,8 +42,6 @@ public abstract class AbstractAggregationKeyBuilder<T> implements IAggregationKe
 
 	public AbstractAggregationKeyBuilder(final String registrationKey)
 	{
-		super();
-
 		this.registrationKey = registrationKey;
 	}
 

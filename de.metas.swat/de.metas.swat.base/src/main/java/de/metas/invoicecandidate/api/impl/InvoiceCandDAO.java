@@ -28,6 +28,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -71,12 +72,14 @@ import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
+import com.google.common.collect.ImmutableSet;
+
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.adempiere.util.CacheModel;
 import de.metas.adempiere.util.CacheTrx;
 import de.metas.aggregation.model.I_C_Aggregation;
 import de.metas.currency.ICurrencyBL;
-import de.metas.document.engine.IDocActionBL;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandRecomputeTagger;
@@ -286,7 +289,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	@Override
 	public List<I_C_InvoiceCandidate_InOutLine> retrieveICIOLAssociationsExclRE(@CacheModel final I_C_Invoice_Candidate invoiceCandidate)
 	{
-		final IDocActionBL docActionBL = Services.get(IDocActionBL.class);
+		final IDocumentBL docActionBL = Services.get(IDocumentBL.class);
 
 		// load all I_C_InvoiceCandidate_InOutLine and filter locally.
 		// i think it's safe to assume that there are not 1000s of records to load and this way the code is simpler
@@ -1369,6 +1372,37 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 		String trxName = InterfaceWrapperHelper.getTrxName(inventoryLine);
 
 		return retrieveInvoiceCandidatesForRecordQuery(ctx, adTableId, recordId, trxName);
+	}
+
+	@Override
+	public Set<String> retrieveOrderDocumentNosForIncompleteGroupsFromSelection(final int adPInstanceId)
+	{
+		final String sql = "SELECT * FROM C_Invoice_Candidate_SelectionIncompleteGroups WHERE AD_PInstance_ID=?";
+		final List<Object> sqlParams = Arrays.asList(adPInstanceId);
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		try
+		{
+			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_ThreadInherited);
+			DB.setParameters(pstmt, sqlParams);
+			rs = pstmt.executeQuery();
+
+			final ImmutableSet.Builder<String> orderDocumentNos = ImmutableSet.builder();
+			while (rs.next())
+			{
+				final String orderDocumentNo = rs.getString("OrderDocumentNo");
+				orderDocumentNos.add(orderDocumentNo);
+			}
+			return orderDocumentNos.build();
+		}
+		catch (SQLException ex)
+		{
+			throw new DBException(ex, sql, sqlParams);
+		}
+		finally
+		{
+			DB.close(rs, pstmt);
+		}
 	}
 
 }

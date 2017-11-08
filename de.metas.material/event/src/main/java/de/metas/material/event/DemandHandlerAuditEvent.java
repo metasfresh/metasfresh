@@ -2,8 +2,6 @@ package de.metas.material.event;
 
 import java.util.List;
 
-import org.adempiere.util.lang.impl.TableRecordReference;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -40,12 +38,10 @@ public class DemandHandlerAuditEvent implements MaterialEvent
 	public static final String TYPE = "NoPlanFoundEvent";
 
 	@NonNull
-	private final EventDescr eventDescr;
+	private final EventDescriptor eventDescriptor;
 	
 	@NonNull
 	private final MaterialDescriptor descr;
-
-	private final TableRecordReference reference;
 
 	private int orderLineId;
 

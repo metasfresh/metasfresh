@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
-<!-- 2016-11-10T14:39:25 -->
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="1520" pageHeight="842" columnWidth="1520" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/reports/openitems/report" uuid="9ee5152e-1472-4ae4-ac36-02ca94f79b5d">
+<!-- 2017-10-05T15:50:00 -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="1520" pageHeight="842" columnWidth="1520" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/reports/account_info/report" uuid="9ee5152e-1472-4ae4-ac36-02ca94f79b5d">
 	<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
 	<property name="net.sf.jasperreports.export.xls.white.page.background" value="false"/>
 	<property name="net.sf.jasperreports.export.xls.detect.cell.type" value="true"/>
@@ -96,7 +96,7 @@
 				<textElement textAlignment="Left">
 					<font size="9" isBold="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA["Buchungsdatum"]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{dateacct}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement x="1159" y="91" width="70" height="12" uuid="a7f039fd-5e17-45ea-be0e-218826759121">
@@ -106,7 +106,7 @@
 				<textElement textAlignment="Right">
 					<font size="9" isBold="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA["Haben"]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{amtcr}]]></textFieldExpression>
 			</textField>
 			<textField pattern="MM.yyyy" isBlankWhenNull="true">
 				<reportElement x="729" y="91" width="220" height="12" uuid="496eb4da-1798-4d56-81fa-d1cc40ce6aec">
@@ -117,7 +117,7 @@
 				<textElement>
 					<font size="9" isBold="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA["Beschreibung"]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{description}]]></textFieldExpression>
 			</textField>
 			<textField pattern="MM.yyyy" isBlankWhenNull="true">
 				<reportElement x="529" y="91" width="200" height="12" uuid="12047f48-9b03-4b6d-b0a6-82fe36dd0ad3">
@@ -126,7 +126,7 @@
 				<textElement>
 					<font size="9" isBold="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA["Geschäftspartner"]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{bp_name}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement x="1089" y="91" width="70" height="12" uuid="15ceb9e0-5706-4f71-9d41-f8e10d2ac0a4">
@@ -135,7 +135,7 @@
 				<textElement textAlignment="Right">
 					<font size="9" isBold="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA["Soll"]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{amtdr}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="37" y="28" width="163" height="14" uuid="3807113b-3def-451d-84d6-94a55d220314">
@@ -146,7 +146,7 @@
 				<textElement>
 					<font size="11" isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA["Konten - Information"]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{title}]]></textFieldExpression>
 			</textField>
 			<textField pattern="dd.MM.yyyy HH:mm">
 				<reportElement x="1299" y="17" width="100" height="12" uuid="11b0efb1-1985-45bc-a4ff-f270dd20dd07">
@@ -166,7 +166,7 @@
 				<textElement>
 					<font size="9" isBold="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA["Datensatz ID"]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{record_id}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement x="1229" y="91" width="70" height="12" uuid="c5f38378-26ad-4a1c-8dc7-d32bf992c44d">
@@ -175,7 +175,7 @@
 				<textElement textAlignment="Right">
 					<font size="9" isBold="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA["Saldo"]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{balance}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="37" y="56" width="163" height="12" uuid="cf66fb57-aa39-4092-8307-c9d43e43ef3b">
@@ -185,7 +185,7 @@
 				<textElement>
 					<font size="9" isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA["Buchungsdatum"]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{dateacct}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="200" y="56" width="179" height="12" uuid="1cde3b72-9886-430d-9485-c2f5ef819cd3">
@@ -204,7 +204,7 @@
 				<textElement textAlignment="Right">
 					<font size="9" isBold="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA["Kostenstelle"]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{activity}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="37" y="68" width="163" height="12" uuid="549c6bdf-f5b2-46cf-af73-bcff64e73fe1">
@@ -213,7 +213,7 @@
 				<textElement>
 					<font size="9" isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA["Kostenstelle"]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{activity}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="200" y="68" width="179" height="12" uuid="71f0faa0-8190-46d9-8d21-acb0ddfb927d">
@@ -225,7 +225,7 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$P{C_Activity_ID} != null ?
     $F{param_activity_value} + " - " + $F{param_activity_name}:
-    "Alle"]]></textFieldExpression>
+    $R{all}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement x="949" y="91" width="70" height="12" uuid="95935449-36ef-4a56-bf10-1efbd2a86bc7">
@@ -234,7 +234,7 @@
 				<textElement>
 					<font size="9" isBold="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA["Gegenkonto"]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{counter_account}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement x="1299" y="91" width="100" height="12" uuid="ebf347e7-093b-473b-a679-5e6528d88525">
@@ -243,7 +243,7 @@
 				<textElement textAlignment="Right">
 					<font size="9" isBold="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA["Belegstatus"]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{docstatus}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="37" y="14" width="163" height="14" uuid="ab518f20-13b3-48e8-96e0-99acb870bfb8">
@@ -280,7 +280,7 @@
 				<textElement textAlignment="Left">
 					<font size="9" isBold="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA["Konto"]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{account}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement x="37" y="91" width="163" height="12" uuid="e8949d27-676d-4505-87d8-76f70d6aa83e">
@@ -290,7 +290,7 @@
 				<textElement textAlignment="Left">
 					<font size="9" isBold="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA["Konto-Nr."]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{accountno}]]></textFieldExpression>
 			</textField>
 		</band>
 	</title>
@@ -336,7 +336,12 @@
 				<textElement>
 					<font size="9" isBold="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{description}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{description}.equals("Anfangssaldo") ? $R{initial_balance} : 
+(
+	($F{description}.equals("Summe") ? $R{sum} :
+		($F{description}.equals("Summe in EUR") ? $R{sum_eur} : $F{description})
+	) 
+)]]></textFieldExpression>
 			</textField>
 			<textField pattern="MM.yyyy" isBlankWhenNull="true">
 				<reportElement x="529" y="0" width="200" height="12" uuid="563908a3-7488-4625-b0e5-d89de1d56c16">
@@ -456,7 +461,12 @@
 				<textElement>
 					<font size="9" isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{description}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{description}.equals("Anfangssaldo") ? $R{initial_balance} : 
+(
+	($F{description}.equals("Summe") ? $R{sum} :
+		($F{description}.equals("Summe in EUR") ? $R{sum_eur} : $F{description})
+	) 
+)]]></textFieldExpression>
 			</textField>
 			<textField pattern="MM.yyyy" isBlankWhenNull="true">
 				<reportElement x="529" y="0" width="200" height="12" uuid="563908a3-7488-4625-b0e5-d89de1d56c16">
@@ -526,7 +536,12 @@
 				<textElement>
 					<font size="9" isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{description}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{description}.equals("Anfangssaldo") ? $R{initial_balance} : 
+(
+	($F{description}.equals("Summe") ? $R{sum} :
+		($F{description}.equals("Summe in EUR") ? $R{sum_eur} : $F{description})
+	) 
+)]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.00">
 				<reportElement x="1229" y="0" width="70" height="12" uuid="3ed5e779-b96e-4c30-bb05-4091249f759d">

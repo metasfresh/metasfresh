@@ -25,7 +25,7 @@ package de.metas.inoutcandidate.api;
 
 import org.adempiere.util.ISingletonService;
 
-import de.metas.inoutcandidate.spi.IInOutCandHandlerListener;
+
 
 /**
  * Statefull singleton that contains inout candidate configuration

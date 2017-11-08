@@ -10,10 +10,10 @@ import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_Product;
 
 import de.metas.i18n.IMsgBL;
-import de.metas.interfaces.I_C_OrderLine;
 import de.metas.purchasing.api.IBPartnerProductDAO;
 
 /*

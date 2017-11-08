@@ -13,15 +13,14 @@ package de.metas.inoutcandidate.callout;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
@@ -36,7 +35,12 @@ public class M_ShipmentSchedule
 {
 	public static final M_ShipmentSchedule instance = new M_ShipmentSchedule();
 
-	@CalloutMethod(columnNames = { I_M_ShipmentSchedule.COLUMNNAME_QtyOrdered_Override })
+	@CalloutMethod(columnNames = { //
+			I_M_ShipmentSchedule.COLUMNNAME_QtyOrdered_Override,
+			I_M_ShipmentSchedule.COLUMNNAME_QtyOrdered_Calculated,
+			I_M_ShipmentSchedule.COLUMNNAME_QtyDelivered,
+			I_M_ShipmentSchedule.COLUMNNAME_IsClosed
+	})
 	private void updateQtyOrdered(final I_M_ShipmentSchedule shipmentSchedule, final ICalloutField field)
 	{
 		Services.get(IShipmentScheduleBL.class).updateQtyOrdered(shipmentSchedule);

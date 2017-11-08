@@ -1,5 +1,6 @@
 package org.adempiere.ad.validationRule.impl;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -23,6 +24,7 @@ import org.compiere.model.X_AD_Val_Rule;
 import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
 import org.compiere.util.Util;
+import org.compiere.util.ValueNamePair;
 import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
@@ -36,31 +38,39 @@ public class ValidationRuleFactory implements IValidationRuleFactory
 	private static final int ROWINDEX_None = -1;
 
 	private final Map<String, CopyOnWriteArrayList<IValidationRule>> tableRulesMap = new ConcurrentHashMap<>();
-	
+
 	private final Map<String, IValidationRule> classname2rulesCache = new ConcurrentHashMap<>();
 
 	@Override
-	public void registerTableValidationRule(final String tableName, IValidationRule rule)
+	public void registerTableValidationRule(final String tableName, final IValidationRule rule)
 	{
 		Check.assume(rule != null, "rule not null");
-		
+
 		final boolean added = tableRulesMap
-				.computeIfAbsent(tableName, key->new CopyOnWriteArrayList<>())
+				.computeIfAbsent(tableName, key -> new CopyOnWriteArrayList<>())
 				.addIfAbsent(rule);
 		if (added)
 		{
 			logger.info("Registered rule class {} for {}", rule, tableName);
 		}
 	}
+	
+	@Override
+	public void registerValidationRuleException(final IValidationRule rule, final String ctxTableName, final String ctxColumnName)
+	{
+		Check.assume(rule != null, "rule not null");
+		
+		rule.registerException(ctxTableName, ctxColumnName);
+	}
 
 	@Override
-	public IValidationRule create(final String tableName, final int adValRuleId)
+	public IValidationRule create(final String tableName, final int adValRuleId, final String ctxTableName, final String ctxColumnName)
 	{
 		final CompositeValidationRule.Builder builder = CompositeValidationRule.builder();
 
 		//
 		// Add primary validation rule
-		if(adValRuleId > 0)
+		if (adValRuleId > 0)
 		{
 			final I_AD_Val_Rule valRule = Services.get(IValidationRuleDAO.class).retriveValRule(adValRuleId);
 			final IValidationRule validationRule = create(tableName, valRule);
@@ -69,7 +79,7 @@ public class ValidationRuleFactory implements IValidationRuleFactory
 
 		//
 		// Add table specific validation rules
-		for (final IValidationRule tableValidationRule : retrieveTableValidationRules(tableName))
+		for (final IValidationRule tableValidationRule : retrieveTableValidationRules(tableName, ctxTableName, ctxColumnName))
 		{
 			builder.addExploded(tableValidationRule);
 		}
@@ -111,7 +121,7 @@ public class ValidationRuleFactory implements IValidationRuleFactory
 			logger.warn("No Classname found for {}", valRule.getName());
 			return NullValidationRule.instance;
 		}
-		
+
 		return classname2rulesCache.computeIfAbsent(classname, newClassname -> Util.getInstance(IValidationRule.class, newClassname));
 	}
 
@@ -120,16 +130,16 @@ public class ValidationRuleFactory implements IValidationRuleFactory
 	{
 		final String name = null; // N/A
 		return createSQLValidationRule(name, whereClause);
-		
+
 	}
-	
+
 	public IValidationRule createSQLValidationRule(final String name, final String whereClause)
 	{
 		if (Check.isEmpty(whereClause, true))
 		{
 			return NullValidationRule.instance;
 		}
-		
+
 		return new SQLValidationRule(name, whereClause);
 	}
 
@@ -145,21 +155,59 @@ public class ValidationRuleFactory implements IValidationRuleFactory
 		return builder.build();
 	}
 
-	private List<IValidationRule> retrieveTableValidationRules(final String tableName)
+	private List<IValidationRule> retrieveTableValidationRules(final String tableName,final String ctxTableName,  final String ctxColumnName)
 	{
 		final List<IValidationRule> rules = tableRulesMap.get(tableName);
 		if (rules == null || rules.isEmpty())
 		{
 			return ImmutableList.of();
 		}
-		
+
+		if (ctxColumnName != null && ctxTableName != null)
+		{
+			return removeExceptionsFromRules(rules, ctxTableName, ctxColumnName);
+		}
+
 		return ImmutableList.copyOf(rules);
+	}
+
+	private List<IValidationRule> removeExceptionsFromRules(final List<IValidationRule> rules, final String ctxTableName, final String ctxColumnName)
+	{
+		final List<IValidationRule> rulesWithoutExceptions = new ArrayList<>();
+
+		for (final IValidationRule rule : rules)
+		{
+
+			if (noExceptionForTableAndColumn(rule, ctxTableName, ctxColumnName))
+			{
+				rulesWithoutExceptions.add(rule);
+			}
+
+		}
+
+		return rulesWithoutExceptions;
+	}
+
+	private boolean noExceptionForTableAndColumn(final IValidationRule rule, final String ctxTableName, final String ctxColumnName)
+	{
+		final List<ValueNamePair> exceptionTableAndColumns = rule.getExceptionTableAndColumns();
+
+		for (final ValueNamePair exceptionTableAndColumn : exceptionTableAndColumns)
+		{
+			if (exceptionTableAndColumn.getValue().equals(ctxTableName) && exceptionTableAndColumn.getName().equals(ctxColumnName) )
+			{
+				return false;
+			}
+		}
+
+		return true;
 	}
 
 	@Override
 	public IValidationContext createValidationContext(final Properties ctx, final int windowNo, final int tabNo, final String tableName)
 	{
 		return new GridTabValidationContext(ctx, windowNo, tabNo, tableName);
+
 	}
 
 	@Override
@@ -243,5 +291,4 @@ public class ValidationRuleFactory implements IValidationRuleFactory
 	{
 		return new EvaluateeValidationContext(evaluatee);
 	}
-
 }

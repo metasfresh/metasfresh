@@ -49,9 +49,7 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
 import org.adempiere.warehouse.api.IWarehouseDAO;
-import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Role;
-import org.compiere.model.I_AD_System;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_M_Warehouse;
@@ -123,7 +121,7 @@ public class Login
 	 * @param isClient client connection
 	 * @return true if Java Version is OK
 	 */
-	public static boolean isJavaOK(boolean isClient)
+	public static boolean isJavaOK(final boolean isClient)
 	{
 		// Java System version check
 		final String jVersion = System.getProperty("java.version");
@@ -201,7 +199,7 @@ public class Login
 	 * @return available roles; never null or empty
 	 * @throws AdempiereException in case of any error (including no roles found)
 	 */
-	public Set<KeyNamePair> authenticate(final String username, String password)
+	public Set<KeyNamePair> authenticate(final String username, final String password)
 	{
 		log.debug("User={}", username);
 
@@ -220,18 +218,6 @@ public class Login
 		//
 		// Try auth via LDAP
 		final LoginContext ctx = getCtx();
-		boolean authenticated = false;
-		if (!authenticated)
-		{
-			authenticated = authLDAP(ctx, username, password);
-		}
-
-		//
-		// If we were authenticated, reset the password because we no longer need it
-		if (authenticated)
-		{
-			password = null;
-		}
 
 		//
 		// If not authenticated so far, use AD_User as backup
@@ -267,11 +253,8 @@ public class Login
 				throw new AdempiereException("@UserAccountLockedError@"); // TODO: specific exception
 			}
 		}
-		boolean isPasswordValid = authenticated;
-		if (!isPasswordValid)
-		{
-			isPasswordValid = Objects.equals(password, user.getPassword());
-		}
+		
+		final boolean isPasswordValid = Objects.equals(password, user.getPassword());
 		if (!isPasswordValid)
 		{
 			loginFailureCount++;
@@ -374,32 +357,6 @@ public class Login
 		Services.get(ISessionBL.class).logoutCurrentSession();
 
 		getCtx().resetAD_Session_ID();
-	}
-
-	private static final boolean authLDAP(final LoginContext ctx, final String app_user, final String app_pwd)
-	{
-		// LDAP auth is not currently supported in JUnit testing mode
-		if (Adempiere.isUnitTestMode())
-		{
-			return false;
-		}
-
-		final ISystemBL systemBL = Services.get(ISystemBL.class);
-
-		final I_AD_System system = systemBL.get(ctx.getSessionContext());
-		if (system == null)
-		{
-			throw new IllegalStateException("No System Info");
-		}
-
-		// LDAP auth not configured
-		if (!systemBL.isLDAP())
-		{
-			return false;
-		}
-
-		final boolean authenticated = systemBL.isLDAP(app_user, app_pwd);
-		return authenticated;
 	}
 
 	/**
@@ -960,7 +917,7 @@ public class Login
 		ctx.setProperty(Env.CTXNAME_UI_WindowHeader_Notice_FG_COLOR, windowHeaderForegroundColor);
 	}
 
-	public void setRemoteAddr(String remoteAddr)
+	public void setRemoteAddr(final String remoteAddr)
 	{
 		getCtx().setRemoteAddr(remoteAddr);
 	}
@@ -970,7 +927,7 @@ public class Login
 		return getCtx().getRemoteAddr();
 	}	// RemoteAddr
 
-	public void setRemoteHost(String remoteHost)
+	public void setRemoteHost(final String remoteHost)
 	{
 		getCtx().setRemoteHost(remoteHost);
 	}
@@ -980,7 +937,7 @@ public class Login
 		return getCtx().getRemoteHost();
 	}	// RemoteHost
 
-	public void setWebSession(String webSession)
+	public void setWebSession(final String webSession)
 	{
 		getCtx().setWebSession(webSession);
 	}

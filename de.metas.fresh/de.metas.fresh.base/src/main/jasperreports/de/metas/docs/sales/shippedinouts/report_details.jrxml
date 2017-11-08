@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
-<!-- 2017-04-02T15:11:18 -->
+<!-- 2017-10-09T17:34:47 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_details" pageWidth="596" pageHeight="842" columnWidth="596" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/sales/shippedinouts/report" uuid="771c1e7b-347d-4c78-a5e0-6fb78e3c3b48">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -20,61 +20,14 @@
 	<parameter name="Date" class="java.sql.Timestamp"/>
 	<parameter name="AD_Org_ID" class="java.math.BigDecimal"/>
 	<queryString>
-		<![CDATA[SELECT
-	p.Name,
-	SUM( iol.QtyEnteredTU ) AS HUQty,
-	pi.name AS HUName,
-	SUM( iol.QtyEntered ) AS Qty,
-	uom.UOMSymbol,
-	uom.stdPrecision,
-	o.DocumentNo,
-	io.ad_org_id
-FROM
-	M_InOut io
-	LEFT OUTER JOIN M_InOutLine iol ON io.M_InOut_ID = iol.M_InOut_ID AND iol.isActive = 'Y'
-	LEFT OUTER JOIN (
-		SELECT 	M_InOutLine_ID, String_Agg( DISTINCT o.Documentno, ',' ORDER BY o.Documentno ) AS Documentno
-		FROM 	C_InvoiceCandidate_InOutLine iciol
-			INNER JOIN C_Invoice_Candidate ic ON iciol.C_Invoice_Candidate_ID = ic.C_Invoice_Candidate_ID AND ic.isActive = 'Y'
-			LEFT OUTER JOIN C_Orderline ol ON ic.AD_Table_ID = Get_Table_ID('C_OrderLine')
-				AND ic.Record_ID = ol.C_OrderLine_ID AND ol.isActive = 'Y'
-			LEFT OUTER JOIN C_Order o ON ol.C_Order_ID = o.C_Order_ID AND o.isActive = 'Y'
-		WHERE iciol.isActive = 'Y'
-		GROUP BY	iciol.M_InOutLine_ID
-	) o ON iol.M_InOutLine_ID = o.M_InOutLine_ID
-	-- Get Packing instruction
-	LEFT OUTER JOIN
+		<![CDATA[SELECT * FROM de_metas_endcustomer_fresh_reports.Docs_Sales_ShippedInOuts_Details
 	(
-		SELECT String_Agg( DISTINCT name, E'\n' ) AS Name, M_InOutLine_ID
-		FROM Report.fresh_InOutLine_PI_V
-		GROUP BY M_InOutLine_ID
-	) pi ON iol.M_InOutLine_ID = pi.M_InOutLine_ID
-	-- Product and its translation
-	LEFT OUTER JOIN M_Product p 			ON iol.M_Product_ID = p.M_Product_ID AND p.isActive = 'Y'
-	LEFT OUTER JOIN M_Product_Category pc 		ON p.M_Product_Category_ID = pc.M_Product_Category_ID AND pc.isActive = 'Y'
-	-- Unit of measurement and its translation
-	LEFT OUTER JOIN C_UOM uom			ON iol.C_UOM_ID = uom.C_UOM_ID AND uom.isActive = 'Y'
-WHERE
-	io.C_BPartner_ID = $P{C_BPartner_ID}
-	AND io.C_BPartner_Location_ID =
-		CASE WHEN $P{C_BPartner_Location_ID} IS NULL
-			THEN io.C_BPartner_Location_ID
-			ELSE $P{C_BPartner_Location_ID}
-		END
-	AND io.MovementDate::date = $P{Date}::date
-	AND io.isSOTrx = 'Y'
-	AND io.isActive = 'Y'
-	AND io.DocStatus = 'CO'
-	AND p.M_Product_Category_ID !=  getSysConfigAsNumeric('PackingMaterialProductCategoryID', iol.AD_Client_ID, iol.AD_Org_ID)
-    AND io.ad_org_id = $P{AD_Org_ID}
-GROUP BY
-	p.Name, pi.name,
-	uom.UOMSymbol,
-	uom.stdPrecision,
-	o.DocumentNo,
-	io.ad_org_id
-ORDER BY
-	p.Name, pi.name
+		$P{C_BPartner_ID}, 
+		$P{C_BPartner_Location_ID}, 
+		$P{Date}, 
+		$P{AD_Org_ID}, 
+		$P{ad_language}
+	)
 ;]]>
 	</queryString>
 	<field name="name" class="java.lang.String"/>
