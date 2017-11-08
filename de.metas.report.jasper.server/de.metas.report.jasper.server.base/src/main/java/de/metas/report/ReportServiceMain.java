@@ -1,11 +1,19 @@
 package de.metas.report;
 
+import java.util.Collections;
+
 import org.adempiere.util.StringUtils;
+import org.compiere.Adempiere;
 import org.compiere.Adempiere.RunMode;
+import org.compiere.model.ModelValidationEngine;
+import org.compiere.util.Env;
 import org.compiere.util.Ini;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.servlet.ServletComponentScan;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Profile;
 
 import de.metas.adempiere.report.jasper.JasperConstants;
@@ -40,6 +48,9 @@ import de.metas.adempiere.report.jasper.JasperConstants;
 @Profile(JasperConstants.PROFILE_JasperServer)
 public class ReportServiceMain
 {
+	@Autowired
+	private ApplicationContext applicationContext;
+
 	/**
 	 * By default, we run in headless mode. But using this system property, we can also run with headless=false.
 	 * The only known use of that is that metasfresh can open the initial license & connection dialog to store the initial properties file.
@@ -48,7 +59,6 @@ public class ReportServiceMain
 
 	public static void main(final String[] args)
 	{
-		// important because in Ini, there is a org.springframework.context.annotation.Condition that userwise wouldn't e.g. let the jasper servlet start
 		Ini.setRunMode(RunMode.BACKEND);
 
 		final String headless = System.getProperty(SYSTEM_PROPERTY_HEADLESS, Boolean.toString(true));
@@ -58,5 +68,19 @@ public class ReportServiceMain
 				.web(true)
 				.profiles(JasperConstants.PROFILE_JasperServer)
 				.run(args);
+	}
+
+	@Bean
+	@Profile("!test")
+	public Adempiere adempiere()
+	{
+		// as of right now, we are not interested in loading *any* model validator whatsoever within this service
+		// therefore we don't e.g. have to deal with the async-processor. It just won't be started.
+		ModelValidationEngine.setInitEntityTypes(Collections.emptyList());
+
+		final Adempiere adempiere = Env.getSingleAdempiereInstance(applicationContext);
+		adempiere.startup(RunMode.BACKEND);
+
+		return adempiere;
 	}
 }
