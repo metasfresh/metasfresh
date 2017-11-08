@@ -82,8 +82,6 @@ public class C_Flatrate_Term_Change extends JavaProcess
 		final Iterable<I_C_Flatrate_Term> flatrateTerms = retrieveSelection(getAD_PInstance_ID());
 		flatrateTerms.forEach(currentTerm -> contractChangeBL.cancelContract(currentTerm, contractChangeParameters));
 		
-		getResult().setRefreshAllAfterExecution(true);
-
 		return "@Success@";
 	}
 
