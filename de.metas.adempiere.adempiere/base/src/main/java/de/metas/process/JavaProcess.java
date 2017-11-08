@@ -1067,4 +1067,12 @@ public abstract class JavaProcess implements IProcess, ILoggable, IContextAware
 		}
 	}
 
+	public  <T> int createSelection(@NonNull final IQueryBuilder<T> queryBuilder, final int adPInstanceId)
+	{
+		Check.assume(adPInstanceId > 0, "adPInstanceId > 0");
+		return queryBuilder
+				.create()
+				.setApplyAccessFilterRW(false)
+				.createSelection(adPInstanceId);
+	}
 }

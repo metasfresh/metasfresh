@@ -16,11 +16,10 @@ import de.metas.contracts.ContractChangeParameters;
 import de.metas.contracts.IContractChangeBL;
 import de.metas.contracts.model.I_C_Contract_Change;
 import de.metas.contracts.model.I_C_Flatrate_Term;
-import de.metas.process.IProcessSelection;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 
-public class C_Flatrate_Term_Change extends JavaProcess implements IProcessSelection
+public class C_Flatrate_Term_Change extends JavaProcess
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
