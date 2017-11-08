@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 
 import com.google.common.base.Preconditions;
 
-import de.metas.material.event.ModelProductDescriptorExtactor;
+import de.metas.material.event.ModelProductDescriptorExtractor;
 import de.metas.material.event.ProductDescriptor;
 import lombok.NonNull;
 
@@ -35,7 +35,7 @@ import lombok.NonNull;
  */
 
 @Service
-public class ModelProductDescriptorExtactorUsingAttributeSetInstanceFactory implements ModelProductDescriptorExtactor
+public class ModelProductDescriptorExtractorUsingAttributeSetInstanceFactory implements ModelProductDescriptorExtractor
 {
 	@Override
 	public final ProductDescriptor createProductDescriptor(@NonNull final Object model)

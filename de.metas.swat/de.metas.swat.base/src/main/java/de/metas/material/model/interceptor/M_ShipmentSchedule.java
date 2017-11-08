@@ -19,7 +19,7 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.material.event.EventDescriptor;
 import de.metas.material.event.MaterialDescriptor;
 import de.metas.material.event.MaterialEventService;
-import de.metas.material.event.ModelProductDescriptorExtactor;
+import de.metas.material.event.ModelProductDescriptorExtractor;
 import de.metas.material.event.ProductDescriptor;
 import de.metas.material.event.ShipmentScheduleEvent;
 import lombok.NonNull;
@@ -73,7 +73,7 @@ public class M_ShipmentSchedule
 		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 		final Timestamp preparationDate = shipmentScheduleEffectiveBL.getPreparationDate(shipmentSchedule);
 
-		final ModelProductDescriptorExtactor productDescriptorFactory = Adempiere.getBean(ModelProductDescriptorExtactor.class);
+		final ModelProductDescriptorExtractor productDescriptorFactory = Adempiere.getBean(ModelProductDescriptorExtractor.class);
 		final ProductDescriptor productDescriptor = productDescriptorFactory.createProductDescriptor(shipmentSchedule);
 
 		final ShipmentScheduleEvent event = ShipmentScheduleEvent.builder()

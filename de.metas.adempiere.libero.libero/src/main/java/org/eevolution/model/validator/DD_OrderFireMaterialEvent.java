@@ -15,7 +15,7 @@ import org.eevolution.model.I_PP_Order;
 
 import de.metas.material.event.EventDescriptor;
 import de.metas.material.event.MaterialEventService;
-import de.metas.material.event.ModelProductDescriptorExtactor;
+import de.metas.material.event.ModelProductDescriptorExtractor;
 import de.metas.material.event.ddorder.DDOrder;
 import de.metas.material.event.ddorder.DDOrder.DDOrderBuilder;
 import de.metas.material.event.ddorder.DDOrderLine;
@@ -51,7 +51,7 @@ public class DD_OrderFireMaterialEvent
 				.productPlanningId(ddOrder.getPP_Product_Planning_ID())
 				.shipperId(ddOrder.getM_Shipper_ID());
 
-		final ModelProductDescriptorExtactor productDescriptorFactory = Adempiere.getBean(ModelProductDescriptorExtactor.class);
+		final ModelProductDescriptorExtractor productDescriptorFactory = Adempiere.getBean(ModelProductDescriptorExtractor.class);
 
 		final List<I_DD_OrderLine> ddOrderLines = Services.get(IDDOrderDAO.class).retrieveLines(ddOrder);
 		for (final I_DD_OrderLine line : ddOrderLines)
