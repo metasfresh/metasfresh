@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
-<!-- 2017-10-27T14:14:07 -->
+<!-- 2017-11-08T16:36:31 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_details" pageWidth="555" pageHeight="802" columnWidth="555" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/sales/order_org_data_right/report" uuid="00f4c9e2-84b8-491d-9fc8-375751dc873d">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="metasfresh"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
@@ -33,7 +33,7 @@
 				<textElement textAlignment="Right">
 					<font size="9"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{taxbaseamt}.setScale(2, java.math.RoundingMode.HALF_UP)  + " " + $F{cursymbol}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[new java.text.DecimalFormat("#,##0.00").format($F{taxbaseamt}) + " " + $F{cursymbol}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="306" y="6" width="72" height="12" uuid="891db125-c98e-4899-a8d7-bc7390131b09">
@@ -65,7 +65,7 @@
 				<textElement textAlignment="Right">
 					<font size="9"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{sum_without_tax}.setScale(2, java.math.RoundingMode.HALF_UP)  + " " + $F{cursymbol}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[new java.text.DecimalFormat("#,##0.00").format($V{sum_without_tax}) + " " + $F{cursymbol}]]></textFieldExpression>
 			</textField>
 		</band>
 	</summary>
