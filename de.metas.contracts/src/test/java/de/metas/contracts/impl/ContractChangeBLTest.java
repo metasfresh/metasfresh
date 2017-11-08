@@ -34,8 +34,8 @@ import org.adempiere.util.time.SystemTime;
 import org.compiere.util.TimeUtil;
 import org.junit.Test;
 
-import de.metas.contracts.ContractChangeParameters;
 import de.metas.contracts.IContractChangeBL;
+import de.metas.contracts.IContractChangeBL.ContractChangeParameters;
 import de.metas.contracts.model.I_C_Contract_Change;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
