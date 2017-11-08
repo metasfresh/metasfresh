@@ -6,28 +6,23 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 
+import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.TimeUtil;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
 
-import de.metas.StartupListener;
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.impl.FlatrateTermDataFactory.ProductAndPricingSystem;
+import de.metas.contracts.interceptor.C_Flatrate_Term;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Conditions;
-import de.metas.inout.invoicecandidate.InOutLinesWithMissingInvoiceCandidate;
 import lombok.NonNull;
 
-@RunWith(SpringRunner.class)
-@SpringBootTest(classes = { StartupListener.class, InOutLinesWithMissingInvoiceCandidate.class})
 public class ExtendContractTest extends AbstractFlatrateTermTest
 {
 
@@ -36,8 +31,9 @@ public class ExtendContractTest extends AbstractFlatrateTermTest
 	@Before
 	public void before()
 	{
-		helper.setupModuleInterceptors_Contracts_Full();
+		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(C_Flatrate_Term.INSTANCE);
 	}
+	
 
 	@Test
 	public void extendContractWithAutoRenewOnYes_test()
