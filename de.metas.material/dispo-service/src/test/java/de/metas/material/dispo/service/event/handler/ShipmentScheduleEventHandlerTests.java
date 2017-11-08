@@ -30,7 +30,6 @@ import de.metas.material.dispo.service.candidatechange.handler.DemandCandiateHan
 import de.metas.material.event.EventDescriptor;
 import de.metas.material.event.MaterialDescriptor;
 import de.metas.material.event.MaterialEventService;
-import de.metas.material.event.ProductDescriptorFactory;
 import de.metas.material.event.ShipmentScheduleEvent;
 import mockit.Mocked;
 
@@ -80,7 +79,7 @@ public class ShipmentScheduleEventHandlerTests
 	{
 		AdempiereTestHelper.get().init();
 
-		candidateRepositoryRetrieval = new CandidateRepositoryRetrieval(ProductDescriptorFactory.TESTING_INSTANCE);
+		candidateRepositoryRetrieval = new CandidateRepositoryRetrieval();
 
 		final CandidateRepositoryCommands candidateRepositoryCommands = new CandidateRepositoryCommands();
 

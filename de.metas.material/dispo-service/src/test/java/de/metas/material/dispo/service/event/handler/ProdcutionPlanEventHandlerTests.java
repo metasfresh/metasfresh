@@ -34,7 +34,6 @@ import de.metas.material.dispo.service.candidatechange.handler.SupplyCandiateHan
 import de.metas.material.event.EventDescriptor;
 import de.metas.material.event.MaterialEventService;
 import de.metas.material.event.ProductDescriptor;
-import de.metas.material.event.ProductDescriptorFactory;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrderLine;
 import de.metas.material.event.pporder.ProductionPlanEvent;
@@ -87,7 +86,7 @@ public class ProdcutionPlanEventHandlerTests
 	{
 		AdempiereTestHelper.get().init();
 
-		candidateRepository = new CandidateRepositoryRetrieval(ProductDescriptorFactory.TESTING_INSTANCE);
+		candidateRepository = new CandidateRepositoryRetrieval();
 		final CandidateRepositoryCommands candidateRepositoryCommands = new CandidateRepositoryCommands();
 		final StockCandidateService stockCandidateService = new StockCandidateService(
 				candidateRepository,
@@ -181,9 +180,8 @@ public class ProdcutionPlanEventHandlerTests
 
 	private ProductionPlanEvent createProductionPlanEvent()
 	{
-		final ProductDescriptorFactory productDescritporFactory = ProductDescriptorFactory.TESTING_INSTANCE;
-		final ProductDescriptor rawProductDescriptor1 = productDescritporFactory.forProductIdAndEmptyAttribute(rawProduct1Id);
-		final ProductDescriptor rawProductDescriptor2 = productDescritporFactory.forProductIdAndEmptyAttribute(rawProduct2Id);
+		final ProductDescriptor rawProductDescriptor1 = ProductDescriptor.forProductIdAndEmptyAttribute(rawProduct1Id);
+		final ProductDescriptor rawProductDescriptor2 = ProductDescriptor.forProductIdAndEmptyAttribute(rawProduct2Id);
 
 		final ProductionPlanEvent productionPlanEvent = ProductionPlanEvent.builder()
 				.eventDescriptor(new EventDescriptor(CLIENT_ID, ORG_ID))

@@ -1,6 +1,7 @@
 package de.metas.material.dispo.commons.repository;
 
 import static org.adempiere.model.InterfaceWrapperHelper.isNew;
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -15,6 +16,7 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.compiere.model.I_C_UOM;
 import org.compiere.util.DB;
 import org.springframework.stereotype.Service;
 
@@ -38,7 +40,8 @@ import de.metas.material.dispo.model.I_MD_Candidate_Prod_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_Transaction_Detail;
 import de.metas.material.event.MaterialDescriptor;
 import de.metas.material.event.ProductDescriptor;
-import de.metas.material.event.ProductDescriptorFactory;
+import de.metas.product.IProductBL;
+import de.metas.product.model.I_M_Product;
 import lombok.NonNull;
 
 /*
@@ -70,17 +73,10 @@ public class CandidateRepositoryRetrieval
 	static final String SQL_SELECT_AVAILABLE_STOCK = "SELECT COALESCE(SUM(Qty),0) "
 			+ "FROM de_metas_material_dispo.MD_Candidate_Latest_v "
 			+ "WHERE "
-			+ "M_Warehouse_ID=? AND "
+			+ "(M_Warehouse_ID=? OR ? <= 0) AND "
 			+ "M_Product_ID=? AND "
 			+ "StorageAttributesKey LIKE ? AND "
 			+ "DateProjected <= ?";
-
-	private final ProductDescriptorFactory productDescriptorFactory;
-
-	public CandidateRepositoryRetrieval(@NonNull final ProductDescriptorFactory productDescriptorFactory)
-	{
-		this.productDescriptorFactory = productDescriptorFactory;
-	}
 
 	/**
 	 * Load and return <b>the</b> single record this has the given {@code id} as parentId.
@@ -180,7 +176,7 @@ public class CandidateRepositoryRetrieval
 				"Given parameter storageAttributesKey needs to have a not-null StorageAttributesKey; candidateRecord=%s",
 				candidateRecord);
 
-		final ProductDescriptor productDescriptor = productDescriptorFactory.forProductAndAttributes(
+		final ProductDescriptor productDescriptor = ProductDescriptor.forProductAndAttributes(
 				candidateRecord.getM_Product_ID(),
 				storageAttributesKey,
 				candidateRecord.getM_AttributeSetInstance_ID());
@@ -298,7 +294,7 @@ public class CandidateRepositoryRetrieval
 				.endOrderBy();
 	}
 
- 	public List<Candidate> retrieveOrderedByDateAndSeqNo(@NonNull final CandidatesQuery query)
+	public List<Candidate> retrieveOrderedByDateAndSeqNo(@NonNull final CandidatesQuery query)
 	{
 		final IQueryBuilder<I_MD_Candidate> queryBuilderWithoutOrdering = RepositoryCommons.mkQueryBuilder(query);
 
@@ -321,30 +317,39 @@ public class CandidateRepositoryRetrieval
 				.endOrderBy();
 	}
 
-	/**
-	 *
-	 * @param materialDescriptor
-	 * @return never returns {@code null}
-	 */
+	@NonNull
 	public BigDecimal retrieveAvailableStock(@NonNull final MaterialDescriptor materialDescriptor)
 	{
-		Preconditions.checkArgument(materialDescriptor.isComplete(),
-				"The given materialDescriptor parameter needs to be complete for this method to make sense; materialDescriptor=%s",
-				materialDescriptor);
+		return retrieveAvailableStock(MaterialDescriptorQuery.builder()
+				.warehouseId(materialDescriptor.getWarehouseId())
+				.date(materialDescriptor.getDate())
+				.productId(materialDescriptor.getProductId())
+				.storageAttributesKey(materialDescriptor.getStorageAttributesKey())
+				.build());
+	}
 
+	@NonNull
+	public BigDecimal retrieveAvailableStock(@NonNull final MaterialDescriptorQuery query)
+	{
 		final String storageAttributesKeyLikeExpression = RepositoryCommons
 				.prepareStorageAttributesKeyForLikeExpression(
-						materialDescriptor.getStorageAttributesKey());
+						query.getStorageAttributesKey());
 
 		final BigDecimal result = DB.getSQLValueBDEx(
 				ITrx.TRXNAME_ThreadInherited,
 				SQL_SELECT_AVAILABLE_STOCK,
 				new Object[] {
-						materialDescriptor.getWarehouseId(),
-						materialDescriptor.getProductId(),
+						query.getWarehouseId(), query.getWarehouseId(),
+						query.getProductId(),
 						"%" + storageAttributesKeyLikeExpression + "%",
-						materialDescriptor.getDate() });
+						query.getDate() });
 
 		return result;
+	}
+
+	public I_C_UOM getStockingUOM(final int productId)
+	{
+		final I_C_UOM uom = Services.get(IProductBL.class).getStockingUOM(load(productId, I_M_Product.class));
+		return uom;
 	}
 }

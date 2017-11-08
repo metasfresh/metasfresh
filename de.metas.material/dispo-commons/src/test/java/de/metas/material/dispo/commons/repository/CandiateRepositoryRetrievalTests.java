@@ -43,7 +43,6 @@ import de.metas.material.dispo.model.I_MD_Candidate_Transaction_Detail;
 import de.metas.material.dispo.model.X_MD_Candidate;
 import de.metas.material.event.MaterialDescriptor;
 import de.metas.material.event.ProductDescriptor;
-import de.metas.material.event.ProductDescriptorFactory;
 import mockit.Expectations;
 import mockit.Mocked;
 
@@ -88,12 +87,10 @@ public class CandiateRepositoryRetrievalTests
 	{
 		AdempiereTestHelper.get().init();
 
-		final ProductDescriptorFactory productDescriptorFactory = ProductDescriptorFactory.TESTING_INSTANCE;
-
-		candidateRepository = new CandidateRepositoryRetrieval(productDescriptorFactory);
+		candidateRepository = new CandidateRepositoryRetrieval();
 
 		final CandidateRepositoryCommands candidateRepositoryCommands = new CandidateRepositoryCommands();
-		repositoryTestHelper = new RepositoryTestHelper(productDescriptorFactory, candidateRepositoryCommands);
+		repositoryTestHelper = new RepositoryTestHelper(candidateRepositoryCommands);
 	}
 
 	@Test
@@ -544,14 +541,13 @@ public class CandiateRepositoryRetrievalTests
 	@Test(expected = RuntimeException.class)
 	public void retrieveAvailableStockForCompleteDescriptor_throw_ex_if_not_complete()
 	{
-		final MaterialDescriptor materialDescriptor = MaterialDescriptor.builderForQuery().build();
-		candidateRepository.retrieveAvailableStock(materialDescriptor);
+		MaterialDescriptorQuery.builder().build();
 	}
 
 	@Test
 	public void retrieveAvailableStockForCompleteDescriptor_invokes_DB_function()
 	{
-		final ProductDescriptor productDescriptor = ProductDescriptorFactory.TESTING_INSTANCE.forProductAndAttributes(
+		final ProductDescriptor productDescriptor = ProductDescriptor.forProductAndAttributes(
 				PRODUCT_ID,
 				"Key1" + ProductDescriptor.STORAGE_ATTRIBUTES_KEY_DELIMITER + "Key2",
 				ATTRIBUTE_SET_INSTANCE_ID);
@@ -564,7 +560,7 @@ public class CandiateRepositoryRetrievalTests
 					ITrx.TRXNAME_ThreadInherited,
 					CandidateRepositoryRetrieval.SQL_SELECT_AVAILABLE_STOCK,
 					new Object[] {
-							materialDescriptor.getWarehouseId(),
+							materialDescriptor.getWarehouseId(), materialDescriptor.getWarehouseId(),
 							materialDescriptor.getProductId(),
 							"%Key1%Key2%",
 							materialDescriptor.getDate()});

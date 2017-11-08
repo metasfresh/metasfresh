@@ -29,7 +29,6 @@ import org.springframework.stereotype.Service;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.material.event.ProductDescriptor;
-import de.metas.material.event.ProductDescriptorFactory;
 import de.metas.material.event.ddorder.DDOrder;
 import de.metas.material.event.ddorder.DDOrderLine;
 import de.metas.material.planning.ErrorCodes;
@@ -63,13 +62,6 @@ import lombok.NonNull;
 @Service
 public class DDOrderPojoSupplier
 {
-	private final ProductDescriptorFactory productDescriptorFactory;
-
-	public DDOrderPojoSupplier(@NonNull final ProductDescriptorFactory productDescriptorFactory)
-	{
-		this.productDescriptorFactory = productDescriptorFactory;
-	}
-
 	/**
 	 *
 	 * @param request
@@ -277,7 +269,7 @@ public class DDOrderPojoSupplier
 
 		final int durationDays = DDOrderUtil.calculateDurationDays(mrpContext.getProductPlanning(), networkLine);
 
-		final ProductDescriptor productDescriptor = productDescriptorFactory.forProductIdAndAttributeSetInstanceId(
+		final ProductDescriptor productDescriptor = ProductDescriptor.forProductIdAndAttributeSetInstanceId(
 				mrpContext.getM_Product_ID(),
 				mrpContext.getM_AttributeSetInstance_ID());
 

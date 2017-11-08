@@ -1,9 +1,5 @@
 package de.metas.material.event;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import org.junit.Test;
-
 /*
  * #%L
  * metasfresh-material-event
@@ -26,19 +22,14 @@ import org.junit.Test;
  * #L%
  */
 
-public class ProductDescriptorFactoryTest
+/**
+ * Extracts a {@link ProductDescriptor} from a given ASI-aware model.
+ * There is a subclass in metasfresh-material-dispo-commons that is injected at runtime and that has a working implementation for {@link #createProductDescriptor(Object)}.
+ * 
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
+public interface ModelProductDescriptorExtractor
 {
-
-	@Test
-	public void forProductIdOnly()
-	{
-		final ProductDescriptor forProductIdOnly = new ProductDescriptorFactory()
-				.forProductIdOnly(30);
-
-		assertThat(forProductIdOnly.getProductId()).isEqualTo(30);
-		assertThat(forProductIdOnly.getAttributeSetInstanceId()).isLessThanOrEqualTo(-1);
-		assertThat(forProductIdOnly.getStorageAttributesKey())
-				.isSameAs(ProductDescriptor.STORAGE_ATTRIBUTES_KEY_UNSPECIFIED);
-	}
-
+	ProductDescriptor createProductDescriptor(Object asiAwareModel);
 }

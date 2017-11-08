@@ -8,7 +8,7 @@ import java.math.BigDecimal;
 import java.util.List;
 
 import org.adempiere.ad.modelvalidator.DocTimingType;
-import org.adempiere.mm.attributes.api.impl.ProductDescriptorFromAttributeSetInstanceFactory;
+import org.adempiere.mm.attributes.api.impl.ModelProductDescriptorExtractorUsingAttributeSetInstanceFactory;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -55,7 +55,7 @@ import de.metas.material.event.forecast.ForecastLine;
  * #L%
  */
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = { StartupListener.class, ProductDescriptorFromAttributeSetInstanceFactory.class })
+@SpringBootTest(classes = { StartupListener.class, ModelProductDescriptorExtractorUsingAttributeSetInstanceFactory.class })
 public class M_ForecastEventCreatorTest
 {
 	@Rule
