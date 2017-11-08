@@ -36,7 +36,7 @@ import lombok.Value;
  */
 
 @Value
-public class MaterialDescriptorQuery
+public class MaterialQuery
 {
 	private final int warehouseId;
 	private final Date date;
@@ -45,7 +45,7 @@ public class MaterialDescriptorQuery
 	private final int dimensionSpecId;
 
 	@Builder
-	private MaterialDescriptorQuery(
+	private MaterialQuery(
 			final int warehouseId,
 			final Date date,
 			@Singular final Set<Integer> productIds,
