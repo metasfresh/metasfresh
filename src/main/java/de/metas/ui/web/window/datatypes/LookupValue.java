@@ -281,7 +281,7 @@ public abstract class LookupValue
 		final Object valueObj = getAttribute(name);
 		if (valueObj == null)
 		{
-			return null;
+			return ImmutableSet.of();
 		}
 		else if (valueObj instanceof Collection)
 		{
