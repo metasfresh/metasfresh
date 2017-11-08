@@ -1,5 +1,6 @@
 package org.adempiere.mm.attributes.api.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
@@ -309,7 +310,23 @@ public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 	@Override
 	public I_M_AttributeSetInstance createAttributeSetInstanceFromAttributeSet(@NonNull final IAttributeSet attributeSet)
 	{
-		final I_M_AttributeSetInstance attributeSetInstance = newInstance(I_M_AttributeSetInstance.class);
+		final int productId = -1;
+		return createAttributeSetInstanceFromProductAndAttributeSet(productId, attributeSet);
+	}
+
+	@Override
+	public I_M_AttributeSetInstance createAttributeSetInstanceFromProductAndAttributeSet(final int productId, @NonNull final IAttributeSet attributeSet)
+	{
+		final I_M_AttributeSetInstance attributeSetInstance;
+		if (productId > 0)
+		{
+			final I_M_Product product = load(productId, I_M_Product.class);
+			attributeSetInstance = createASI(product);
+		}
+		else
+		{
+			attributeSetInstance = newInstance(I_M_AttributeSetInstance.class);
+		}
 		save(attributeSetInstance);
 
 		final ImmutableList<I_M_Attribute> attributesOrderedById = attributeSet.getAttributes().stream()
