@@ -8,7 +8,7 @@ export default class Label extends Component {
     render() {
         return (
             <div className={this.props.className}>
-                {Object.values(this.props.label)[0]}
+                {this.props.label.caption}
                 <span
                     className="labels-label-remove"
                     onClick={this.handleClick}

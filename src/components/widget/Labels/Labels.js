@@ -232,11 +232,9 @@ class Labels extends Component {
     };
 
     unusedSuggestions = () => {
-        const selected = new Set(
-            this.props.selected.map(item => Object.keys(item)[0])
-        );
+        const selected = new Set(this.props.selected.map(item => item.key));
 
-        return suggestion => !selected.has(Object.keys(suggestion)[0]);
+        return suggestion => !selected.has(suggestion.key);
     };
 
     render() {
@@ -264,7 +262,7 @@ class Labels extends Component {
                     {this.props.selected.map(item => (
                         <Label
                             className="labels-label"
-                            key={Object.keys(item)[0]}
+                            key={item.key}
                             label={item}
                             onRemove={this.handleLabelRemove}
                         />
@@ -289,7 +287,7 @@ class Labels extends Component {
                             return (
                                 <Suggestion
                                     className="labels-suggestion"
-                                    key={Object.keys(suggestion)[0]}
+                                    key={suggestion.key}
                                     suggestion={suggestion}
                                     onAdd={this.handleSuggestionAdd}
                                     active={active}

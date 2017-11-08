@@ -17,7 +17,7 @@ export default class Suggestion extends Component {
                 className={classes.join(' ')}
                 onMouseDown={this.handleMouseDown}
             >
-                {Object.values(this.props.suggestion)[0]}
+                {this.props.suggestion.caption}
             </div>
         );
     }
