@@ -158,5 +158,5 @@ UPDATE AD_Field SET Name='Order Compensation Group', Description=NULL, Help=NULL
 ALTER TABLE C_OrderLine ADD CONSTRAINT COrderCompensationGroup_COrder FOREIGN KEY (C_Order_CompensationGroup_ID) REFERENCES public.C_Order_CompensationGroup DEFERRABLE INITIALLY DEFERRED
 ;
 
-alter table C_OrderLine drop column GroupNo;
+SELECT public.db_alter_table('C_OrderLine', 'alter table C_OrderLine drop column GroupNo');
 
