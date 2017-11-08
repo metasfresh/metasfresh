@@ -2,8 +2,11 @@ package de.metas.material.dispo.commons.repository;
 
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.IAttributeSet;
+import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.util.Check;
 
 import de.metas.quantity.Quantity;
@@ -64,19 +67,20 @@ public class AvailableStockResult
 	public static class Group
 	{
 		private final int productId;
-		@NonNull
-		private final IAttributeSet attributes;
-		@NonNull
+		private final ImmutableAttributeSet attributes;
 		private final Quantity qty;
 
 		@Builder
-		public Group(final int productId, @NonNull final IAttributeSet attributes, @NonNull final Quantity qty)
+		public Group(
+				final int productId,
+				@Nullable final IAttributeSet attributes,
+				@NonNull final Quantity qty)
 		{
 			Check.assume(productId > 0, "productId > 0");
+			
 			this.productId = productId;
-			this.attributes = attributes;
+			this.attributes = attributes != null ? ImmutableAttributeSet.copyOf(attributes) : ImmutableAttributeSet.EMPTY;
 			this.qty = qty;
 		}
-
 	}
 }
