@@ -1,6 +1,7 @@
 package de.metas.contracts.flatrate.process;
 
 import java.sql.Timestamp;
+import java.util.Iterator;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -10,18 +11,22 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.IQuery;
 import org.compiere.util.Ini;
 
-import de.metas.contracts.ContractChangeParameters;
 import de.metas.contracts.IContractChangeBL;
+import de.metas.contracts.IContractChangeBL.ContractChangeParameters;
 import de.metas.contracts.model.I_C_Contract_Change;
 import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueuer;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
+import de.metas.process.RunOutOfTrx;
 
 public class C_Flatrate_Term_Change extends JavaProcess
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IContractChangeBL contractChangeBL = Services.get(IContractChangeBL.class);
 
 	public static final String ChangeTerm_ACTION_SwitchContract = "SC";
 	public static final String ChangeTerm_ACTION_Cancel = "CA";
@@ -45,6 +50,22 @@ public class C_Flatrate_Term_Change extends JavaProcess
 	@Param(parameterName = PARAM_TERMINATION_REASON, mandatory = false)
 	private String terminationReason;
 
+	private int selectionCount = 0;
+	
+	
+	@Override
+	@RunOutOfTrx
+	protected void prepare()
+	{
+		final IQueryBuilder<I_C_Flatrate_Term> queryBuilder = createQueryBuilder();
+		selectionCount = createSelection(queryBuilder, getAD_PInstance_ID());
+		if (selectionCount <= 0)
+		{
+			throw new AdempiereException(msgBL.getMsg(getCtx(), IInvoiceCandidateEnqueuer.MSG_INVOICE_GENERATE_NO_CANDIDATES_SELECTED_0P));
+		}
+
+	}
+	
 	@Override
 	protected String doIt()
 	{
@@ -53,51 +74,75 @@ public class C_Flatrate_Term_Change extends JavaProcess
 			throw new AdempiereException("Not implemented");
 		}
 
+		final ContractChangeParameters contractChangeParameters = ContractChangeParameters.builder()
+				.changeDate(changeDate)
+				.isCloseInvoiceCandidate(true)
+				.terminationMemo(terminationMemo)
+				.terminationReason(terminationReason)
+				.build();
+		
 		if (I_C_Flatrate_Term.Table_Name.equals(getTableName()))
 		{
 			final I_C_Flatrate_Term currentTerm = InterfaceWrapperHelper.create(getCtx(), getRecord_ID(), I_C_Flatrate_Term.class, get_TrxName());
 
-			final ContractChangeParameters contractChangeParameters = ContractChangeParameters.builder()
-					.changeDate(changeDate)
-					.isCloseInvoiceCandidate(true)
-					.terminationMemo(terminationMemo)
-					.terminationReason(terminationReason)
-					.build();
+			
 
-			Services.get(IContractChangeBL.class).cancelContract(currentTerm, contractChangeParameters);
+			contractChangeBL.cancelContract(currentTerm, contractChangeParameters);
 
 			getResult().setRecordToRefreshAfterExecution(TableRecordReference.of(currentTerm));
 		}
 		else
 		{
-			final IQueryBuilder<I_C_Flatrate_Term> queryBuilder = createQueryBuilder();
-			final int selectionId = createSelection(queryBuilder, getAD_PInstance_ID());
+			
+			final Iterable<I_C_Flatrate_Term> flatrateTerms = retrieveSelection(getAD_PInstance_ID());
+			flatrateTerms.forEach(currentTerm -> contractChangeBL.cancelContract(currentTerm, contractChangeParameters));
 		}
-		
+
 		return "@Success@";
 	}
-	
-	private  IQueryBuilder<I_C_Flatrate_Term> createQueryBuilder()
+
+	private IQueryBuilder<I_C_Flatrate_Term> createQueryBuilder()
 	{
 		final IQueryFilter<I_C_Flatrate_Term> userSelectionFilter;
-		if(Ini.isClient())
+		if (Ini.isClient())
 		{
-			// In case of Swing, preserve the old functionality, i.e. if no where clause then select all 
+			// In case of Swing, preserve the old functionality, i.e. if no where clause then select all
 			userSelectionFilter = getProcessInfo().getQueryFilter();
 		}
 		else
 		{
 			userSelectionFilter = getProcessInfo().getQueryFilterOrElse(null);
-			if(userSelectionFilter == null)
+			if (userSelectionFilter == null)
 			{
 				throw new AdempiereException("@NoSelection@");
 			}
 		}
 
-		return Services.get(IQueryBL.class)
+		return queryBL
 				.createQueryBuilder(I_C_Flatrate_Term.class, getCtx(), ITrx.TRXNAME_None)
 				.filter(userSelectionFilter)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient();
+	}
+
+	private final Iterable<I_C_Flatrate_Term> retrieveSelection(final int adPInstanceId)
+	{
+		return new Iterable<I_C_Flatrate_Term>()
+		{
+			@Override
+			public Iterator<I_C_Flatrate_Term> iterator()
+			{
+				return Services.get(IQueryBL.class)
+						.createQueryBuilder(I_C_Flatrate_Term.class, getCtx(), get_TrxName())
+						.setOnlySelection(adPInstanceId)
+						.orderBy()
+						.addColumn(I_C_Flatrate_Term.COLUMN_C_Flatrate_Term_ID)
+						.endOrderBy()
+						.create()
+						.setOption(IQuery.OPTION_GuaranteedIteratorRequired, false)
+						.setOption(IQuery.OPTION_IteratorBufferSize, 50)
+						.iterate(I_C_Flatrate_Term.class	);
+			}
+		};
 	}
 }
