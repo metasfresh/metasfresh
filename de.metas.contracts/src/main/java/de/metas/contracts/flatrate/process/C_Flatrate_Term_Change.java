@@ -1,64 +1,50 @@
 package de.metas.contracts.flatrate.process;
 
-/*
- * #%L
- * de.metas.contracts
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-
-import java.math.BigDecimal;
 import java.sql.Timestamp;
 
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.apache.poi.ss.formula.functions.T;
+import org.compiere.util.Ini;
 
 import de.metas.contracts.ContractChangeParameters;
 import de.metas.contracts.IContractChangeBL;
 import de.metas.contracts.model.I_C_Contract_Change;
 import de.metas.contracts.model.I_C_Flatrate_Term;
-import de.metas.contracts.model.I_C_Flatrate_Transition;
+import de.metas.process.IProcessSelection;
 import de.metas.process.JavaProcess;
-import de.metas.process.ProcessInfoParameter;
+import de.metas.process.Param;
 
-public class C_Flatrate_Term_Change extends JavaProcess
+public class C_Flatrate_Term_Change extends JavaProcess implements IProcessSelection
 {
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	public static final String ChangeTerm_ACTION_SwitchContract = "SC";
 	public static final String ChangeTerm_ACTION_Cancel = "CA";
 
-
 	public static final String PARAM_CHANGE_DATE = "EventDate";
 
 	public static final String PARAM_ACTION = I_C_Contract_Change.COLUMNNAME_Action;
-	
+
 	public static final String PARAM_TERMINATION_MEMO = I_C_Flatrate_Term.COLUMNNAME_TerminationMemo;
 	public static final String PARAM_TERMINATION_REASON = I_C_Flatrate_Term.COLUMNNAME_TerminationReason;
 
-	@SuppressWarnings("unused")
-	private int newSubscriptionId = 0;
-
+	@Param(parameterName = PARAM_ACTION, mandatory = true)
 	private String action;
+
+	@Param(parameterName = PARAM_CHANGE_DATE, mandatory = true)
 	private Timestamp changeDate;
+
+	@Param(parameterName = PARAM_TERMINATION_MEMO, mandatory = false)
 	private String terminationMemo;
+
+	@Param(parameterName = PARAM_TERMINATION_REASON, mandatory = false)
 	private String terminationReason;
 
 	@Override
@@ -69,60 +55,51 @@ public class C_Flatrate_Term_Change extends JavaProcess
 			throw new AdempiereException("Not implemented");
 		}
 
-		
-		final I_C_Flatrate_Term currentTerm = InterfaceWrapperHelper.create(getCtx(), getRecord_ID(), I_C_Flatrate_Term.class, get_TrxName());
+		if (I_C_Flatrate_Term.Table_Name.equals(getTableName()))
+		{
+			final I_C_Flatrate_Term currentTerm = InterfaceWrapperHelper.create(getCtx(), getRecord_ID(), I_C_Flatrate_Term.class, get_TrxName());
 
-		final ContractChangeParameters contractChangeParameters = ContractChangeParameters.builder()
-																.changeDate(changeDate)
-																.isCloseInvoiceCandidate(true)
-																.terminationMemo(terminationMemo)
-																.terminationReason(terminationReason)
-																.build();
-		
-		Services.get(IContractChangeBL.class).cancelContract(currentTerm, contractChangeParameters);
-		
-		getResult().setRecordToRefreshAfterExecution(TableRecordReference.of(currentTerm));
+			final ContractChangeParameters contractChangeParameters = ContractChangeParameters.builder()
+					.changeDate(changeDate)
+					.isCloseInvoiceCandidate(true)
+					.terminationMemo(terminationMemo)
+					.terminationReason(terminationReason)
+					.build();
 
+			Services.get(IContractChangeBL.class).cancelContract(currentTerm, contractChangeParameters);
+
+			getResult().setRecordToRefreshAfterExecution(TableRecordReference.of(currentTerm));
+		}
+		else
+		{
+			final IQueryBuilder<T> queryBuilder = createQueryBuilder();
+			final int selectionId = createSelection(queryBuilder, getAD_PInstance_ID());
+		}
+		
 		return "@Success@";
 	}
-
 	
-
-	@Override
-	protected void prepare()
+	private  IQueryBuilder<I_C_Flatrate_Term> createQueryBuilder()
 	{
-		final ProcessInfoParameter[] para = getParametersAsArray();
-
-		for (int i = 0; i < para.length; i++)
+		final IQueryFilter<I_C_Flatrate_Term> userSelectionFilter;
+		if(Ini.isClient())
 		{
-			final String name = para[i].getParameterName();
-			if (para[i].getParameter() == null)
-				;
-			else if (name.equals(I_C_Flatrate_Transition.COLUMNNAME_C_Flatrate_Conditions_Next_ID))
+			// In case of Swing, preserve the old functionality, i.e. if no where clause then select all 
+			userSelectionFilter = getProcessInfo().getQueryFilter();
+		}
+		else
+		{
+			userSelectionFilter = getProcessInfo().getQueryFilterOrElse(null);
+			if(userSelectionFilter == null)
 			{
-				// currently not supported by business logic
-				newSubscriptionId = ((BigDecimal)para[i].getParameter()).intValue();
-			}
-			else if (name.equals(PARAM_ACTION))
-			{
-				action = (String)para[i].getParameter();
-			}
-			else if (name.equals(PARAM_CHANGE_DATE))
-			{
-				changeDate = (Timestamp)para[i].getParameter();
-			}
-			else if (name.equals(PARAM_TERMINATION_REASON))
-			{
-				terminationReason = (String)para[i].getParameter();
-			}
-			else if (name.equals(PARAM_TERMINATION_MEMO))
-			{
-				terminationMemo = (String)para[i].getParameter();
-			}
-			else
-			{
-				log.error("Unknown Parameter: " + name);
+				throw new AdempiereException("@NoSelection@");
 			}
 		}
+
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_Flatrate_Term.class, getCtx(), ITrx.TRXNAME_None)
+				.filter(userSelectionFilter)
+				.addOnlyActiveRecordsFilter()
+				.addOnlyContextClient();
 	}
 }
