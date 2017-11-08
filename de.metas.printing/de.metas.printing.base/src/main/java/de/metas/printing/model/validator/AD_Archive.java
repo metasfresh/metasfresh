@@ -36,7 +36,6 @@ import de.metas.printing.api.impl.SingletonPrintingQueueSource;
 import de.metas.printing.model.I_AD_Archive;
 import de.metas.printing.model.I_C_Doc_Outbound_Config;
 import de.metas.printing.model.I_C_Printing_Queue;
-import de.metas.printing.spi.IPrintJobMonitor;
 
 @Validator(I_AD_Archive.class)
 public class AD_Archive
@@ -109,11 +108,7 @@ public class AD_Archive
 	{
 		final IPrintingQueueSource source = new SingletonPrintingQueueSource(printingQueue, printingQueue.getCreatedBy());
 
-		// NOTE we cannot use UserConfirmationPrintJobMonitor because it's expecting to run out of transaction
-		// final IPrintJobMonitor monitor = new UserConfirmationPrintJobMonitor();
-		final IPrintJobMonitor monitor = IPrintJobMonitor.NULL;
-
-		Services.get(IPrintJobBL.class).createPrintJobs(source, monitor);
+		Services.get(IPrintJobBL.class).createPrintJobs(source);
 	}
 
 	private final boolean isEnqueToPrintingQueue(final I_AD_Archive archive)
