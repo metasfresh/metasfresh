@@ -15,6 +15,7 @@ import org.adempiere.util.Services;
 import org.adempiere.util.lang.Mutable;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.TimeUtil;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -65,6 +66,12 @@ public class FlatrateTermImportProcess_SimpleCase_Test extends AbstractFlatrateT
 	private final transient IInvoiceCandDAO iinvoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 	private final transient IInvoiceCandidateHandlerBL iinvoiceCandidateHandlerBL = Services.get(IInvoiceCandidateHandlerBL.class);
 	private final transient IShipmentScheduleHandlerBL inOutCandHandlerBL = Services.get(IShipmentScheduleHandlerBL.class);
+	
+	@Before
+	public void before()
+	{
+		helper.setupModuleInterceptors_Contracts_Full();
+	}
 	
 	@Test
 	public void testImportActiveFlatrateTerms()
