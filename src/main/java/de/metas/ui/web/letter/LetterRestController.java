@@ -307,7 +307,7 @@ public class LetterRestController
 		else if (PATCH_FIELD_TemplateId.equals(fieldName))
 		{
 			@SuppressWarnings("unchecked")
-			final LookupValue templateId = JSONLookupValue.integerLookupValueFromJsonMap((Map<String, String>)event.getValue());
+			final LookupValue templateId = JSONLookupValue.integerLookupValueFromJsonMap((Map<String, Object>)event.getValue());
 			applyTemplate(letter, newLetterBuilder, templateId);
 		}
 		else

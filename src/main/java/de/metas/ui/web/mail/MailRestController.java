@@ -312,7 +312,7 @@ public class MailRestController
 
 			@SuppressWarnings("unchecked")
 			final LookupValuesList to = jsonTo.stream()
-					.map(mapObj -> (Map<String, String>)mapObj)
+					.map(mapObj -> (Map<String, Object>)mapObj)
 					.map(map -> JSONLookupValue.integerLookupValueFromJsonMap(map))
 					.collect(LookupValuesList.collect());
 
@@ -335,7 +335,7 @@ public class MailRestController
 
 			@SuppressWarnings("unchecked")
 			final LookupValuesList attachments = jsonAttachments.stream()
-					.map(mapObj -> (Map<String, String>)mapObj)
+					.map(mapObj -> (Map<String, Object>)mapObj)
 					.map(map -> JSONLookupValue.stringLookupValueFromJsonMap(map))
 					.collect(LookupValuesList.collect());
 
@@ -344,7 +344,7 @@ public class MailRestController
 		else if (PATCH_FIELD_TemplateId.equals(fieldName))
 		{
 			@SuppressWarnings("unchecked")
-			final LookupValue templateId = JSONLookupValue.integerLookupValueFromJsonMap((Map<String, String>)event.getValue());
+			final LookupValue templateId = JSONLookupValue.integerLookupValueFromJsonMap((Map<String, Object>)event.getValue());
 			applyTemplate(email, newEmailBuilder, templateId);
 		}
 		else
