@@ -18,7 +18,12 @@ CREATE TABLE de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Details
 	QtyPattern text,
 	Description Character Varying,
 	bp_product_no character varying(30),
-	bp_product_name character varying(100)
+	bp_product_name character varying(100),
+	best_before_date text,
+	lotno character varying,
+	p_value character varying(30),
+	p_description character varying(255), 
+	inout_description character varying(255)
 );
 
 
@@ -46,7 +51,12 @@ SELECT
 	iol.Description,
 	-- in case there is no C_BPartner_Product, fallback to the default ones
 	COALESCE(NULLIF(bpp.ProductNo, ''), p.value) as bp_product_no,
-	COALESCE(NULLIF(bpp.ProductName, ''), pt.Name, p.name) as bp_product_name
+	COALESCE(NULLIF(bpp.ProductName, ''), pt.Name, p.name) as bp_product_name,
+	to_char(att.best_before_date::date, 'MM.YYYY') AS best_before_date,
+	att.lotno,
+	p.value AS p_value,
+	p.description AS p_description,
+	io.description AS inout_description
 FROM
 	M_InOutLine iol
 	INNER JOIN M_InOut io 			ON iol.M_InOut_ID = io.M_InOut_ID AND io.isActive = 'Y'
@@ -106,9 +116,19 @@ FROM
 		AND conv.isActive = 'Y'
 	-- Attributes
 	LEFT OUTER JOIN	(
-		SELECT 	String_agg ( at.ai_value, ', ' ORDER BY Length(at.ai_value), at.ai_value ) AS Attributes, at.M_AttributeSetInstance_ID FROM Report.fresh_Attributes at
+		SELECT 	String_agg ( at.ai_value, ', ' ORDER BY Length(at.ai_value), at.ai_value )
+					FILTER (WHERE at.at_value not in ('HU_BestBeforeDate', 'Lot-Nummer'))
+				AS Attributes, 
+
+				at.M_AttributeSetInstance_ID ,
+				String_agg (replace(at.ai_value, 'MHD: ', ''), ', ') 
+					FILTER (WHERE at.at_value like 'HU_BestBeforeDate') 
+				AS best_before_date,
+				String_agg(ai_value, ', ') FILTER (WHERE at.at_value like 'Lot-Nummer') AS lotno
+				
+		FROM Report.fresh_Attributes at
 		JOIN M_InOutLine iol ON at.M_AttributeSetInstance_ID = iol.M_AttributeSetInstance_ID AND iol.isActive = 'Y'
-		WHERE	at.at_value IN ('1000002', '1000001', '1000030', '1000015') -- Label, Herkunft, Aktionen, Marke (ADR)
+		WHERE	at.at_value IN ('1000002', '1000001', '1000030', '1000015', 'HU_BestBeforeDate', 'Lot-Nummer') -- Label, Herkunft, Aktionen, Marke (ADR)
 			AND iol.M_InOut_ID = $1
 		GROUP BY	at.M_AttributeSetInstance_ID
 	) att ON iol.M_AttributeSetInstance_ID = att.M_AttributeSetInstance_ID
