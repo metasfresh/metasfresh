@@ -74,6 +74,7 @@ import de.metas.printing.model.X_C_Print_Job_Instructions;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import lombok.experimental.Delegate;
 
 /**
  * @author cg
@@ -109,13 +110,7 @@ public class PrintJobBL implements IPrintJobBL
 	}
 
 	@Override
-	public int createPrintJobs(@NonNull final IPrintingQueueSource source)
-	{
-		return createPrintJobs(source, null);
-	}
-
-	@Override
-	public int createPrintJobs(@NonNull final IPrintingQueueSource source, final PrintJobContext printJobContext)
+	public int createPrintJobs(@NonNull final IPrintingQueueSource source, @NonNull final ContextForAsyncProcessing printJobContext)
 	{
 		final String trxName = source.getTrxName();
 		final PrintingQueueProcessingInfo printingQueueProcessingInfo = source.getProcessingInfo();
@@ -145,7 +140,6 @@ public class PrintJobBL implements IPrintJobBL
 						new IteratorChain<I_C_Printing_Queue>()
 								.addIterator(new SingletonIterator<I_C_Printing_Queue>(item))
 								.addIterator(relatedItems));
-
 				try
 				{
 					skipPrinted(source, currentItems);
@@ -175,32 +169,17 @@ public class PrintJobBL implements IPrintJobBL
 					IteratorUtils.close(currentItems);
 				}
 			}
+			return printJobCount;
 		}
 		finally
 		{
-			final int adPInstanceId;
-			final int parentAsyncBatchId;
-			if (printJobContext == null)
-			{
-				adPInstanceId = -1;
-				parentAsyncBatchId = -1;
-			}
-			else
-			{
-				adPInstanceId = printJobContext.getAdPInstanceId();
-				parentAsyncBatchId = printJobContext.getParentAsyncBatchId();
-			}
-
 			final PrintingAsyncBatch printingAsyncBatch = PrintingAsyncBatch.builder()
 					.name(source.getName())
-					.adPInstanceId(adPInstanceId)
+					.printJobContext(printJobContext)
 					.printJobCount(printJobCount)
-					.parentAsyncBatchId(parentAsyncBatchId)
 					.build();
 			enqueuePrintJobInstructionsForPDFPrintingIfNeeded(pdfPrintingJobInstructions, printingAsyncBatch);
 		}
-
-		return printJobCount;
 	}
 
 	/**
@@ -264,7 +243,7 @@ public class PrintJobBL implements IPrintJobBL
 
 	/**
 	 * Builds a list from all C_Print_Job_Instructions that have a PDF printer set
-	 * 
+	 *
 	 * @param printJobInstructions
 	 * @return
 	 */
@@ -281,10 +260,12 @@ public class PrintJobBL implements IPrintJobBL
 	@Builder
 	private static class PrintingAsyncBatch
 	{
-		final String name;
-		final int printJobCount;
-		final int adPInstanceId;
-		final int parentAsyncBatchId;
+		String name;
+		int printJobCount;
+
+		@NonNull
+		@Delegate
+		ContextForAsyncProcessing printJobContext;
 	}
 
 	private void enqueuePrintJobInstructionsForPDFPrintingIfNeeded(@NonNull final List<I_C_Print_Job_Instructions> printJobInstructions, @NonNull PrintingAsyncBatch printingAsyncBatch)
@@ -371,7 +352,7 @@ public class PrintJobBL implements IPrintJobBL
 				logger.debug("Skipping {} because is already printed", item);
 				continue;
 			}
-			
+
 			if (lastItemCopies >= 0 && item.getCopies() != lastItemCopies)
 			{
 				logger.info("The lat item had copies = {}, the current one has copies = {}; not adding further items to printJob = {}",
@@ -487,7 +468,7 @@ public class PrintJobBL implements IPrintJobBL
 						lastItemCopies))
 				.collect(ImmutableList.toImmutableList());
 	}
-	
+
 	private int getItemCopies(@NonNull final I_C_Print_Job_Line jobLine)
 	{
 		final I_C_Printing_Queue pq = jobLine.getC_Printing_Queue();

@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package de.metas.printing.api;
 
@@ -13,12 +13,12 @@ package de.metas.printing.api;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -31,38 +31,54 @@ import java.util.List;
 import org.adempiere.util.ISingletonService;
 
 import de.metas.async.model.I_C_Async_Batch;
-import de.metas.printing.api.impl.PrintJobContext;
 import de.metas.printing.model.I_C_Print_Job;
 import de.metas.printing.model.I_C_Print_Job_Detail;
 import de.metas.printing.model.I_C_Print_Job_Instructions;
 import de.metas.printing.model.I_C_Print_Job_Line;
 import de.metas.printing.model.I_C_Printing_Queue;
+import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.Builder.Default;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.experimental.FieldDefaults;
 
-/**
- * @author cg
- * 
- */
 public interface IPrintJobBL extends ISingletonService
 {
 	/**
 	 * Aggregates the all unprocessed {@link I_C_Printing_Queue}s into new printjobs. The grouping is done by AD_Org_ID and AD_Printer_ID, where the printer is retrieved via printer routing.
-	 * 
+	 *
 	 * <p>
 	 * Note that this method can deal with large numbers of unprocessed printing queue records.
 	 * <p>
 	 * This method is skipping items which were already printed (see {@link I_C_Printing_Queue#isProcessed()})
-	 * 
+	 *
 	 * @param source
 	 * @param printJobContext
 	 * @return number of created print jobs
 	 */
-	int createPrintJobs(IPrintingQueueSource source, PrintJobContext printJobContext);
-	
-	int createPrintJobs(IPrintingQueueSource source);
+	int createPrintJobs(IPrintingQueueSource source, ContextForAsyncProcessing printJobContext);
+
+	default int createPrintJobs(@NonNull final IPrintingQueueSource source)
+	{
+		return createPrintJobs(source, ContextForAsyncProcessing.builder().build());
+	}
+
+	@Builder
+	@FieldDefaults(makeFinal=true, level=AccessLevel.PRIVATE)
+	@Getter
+	public class ContextForAsyncProcessing
+	{
+		@Default
+		int adPInstanceId = -1;
+
+		@Default
+		int parentAsyncBatchId = -1;
+	}
 
 	/**
 	 * Creates an instructions record for the given print job.
-	 * 
+	 *
 	 * @param userToPrintId the user that shall actually do the printing. Note that if this user's printing config forwards to a shared config, then the instructions instance is created for the shared
 	 *            config's user
 	 * @param createWithSpecificHostKey if <code>false</code>, then
@@ -88,7 +104,7 @@ public interface IPrintJobBL extends ISingletonService
 
 	/**
 	 * enqueue print job instructions for async pdf printing
-	 * 
+	 *
 	 * @param jobInstructions
 	 * @param asyncBatch
 	 */
