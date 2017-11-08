@@ -10,7 +10,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.apache.poi.ss.formula.functions.T;
 import org.compiere.util.Ini;
 
 import de.metas.contracts.ContractChangeParameters;
@@ -72,7 +71,7 @@ public class C_Flatrate_Term_Change extends JavaProcess implements IProcessSelec
 		}
 		else
 		{
-			final IQueryBuilder<T> queryBuilder = createQueryBuilder();
+			final IQueryBuilder<I_C_Flatrate_Term> queryBuilder = createQueryBuilder();
 			final int selectionId = createSelection(queryBuilder, getAD_PInstance_ID());
 		}
 		

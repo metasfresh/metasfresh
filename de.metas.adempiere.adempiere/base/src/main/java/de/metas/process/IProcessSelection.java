@@ -2,7 +2,8 @@ package de.metas.process;
 
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.util.Check;
-import org.apache.poi.ss.formula.functions.T;
+
+import lombok.NonNull;
 
 /*
  * #%L
@@ -39,7 +40,7 @@ import org.apache.poi.ss.formula.functions.T;
 public interface IProcessSelection
 {
 	
-	default int createSelection(final IQueryBuilder<T> queryBuilder, final int adPInstanceId)
+	default  <T> int createSelection(@NonNull final IQueryBuilder<T> queryBuilder, final int adPInstanceId)
 	{
 		Check.assume(adPInstanceId > 0, "adPInstanceId > 0");
 		return queryBuilder
