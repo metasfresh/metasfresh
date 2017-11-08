@@ -24,7 +24,7 @@ package org.eevolution.mrp.api.impl;
 
 import java.math.BigDecimal;
 
-import org.adempiere.mm.attributes.api.impl.ModelProductDescriptorExtactorUsingAttributeSetInstanceFactory;
+import org.adempiere.mm.attributes.api.impl.ModelProductDescriptorExtractorUsingAttributeSetInstanceFactory;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
@@ -58,7 +58,7 @@ import de.metas.order.compensationGroup.OrderGroupRepository;
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = { StartupListener.class,
-		ModelProductDescriptorExtactorUsingAttributeSetInstanceFactory.class,
+		ModelProductDescriptorExtractorUsingAttributeSetInstanceFactory.class,
 		MRPExecutor.class,
 		MRPContextFactory.class,
 		ProductPlanningBL.class,

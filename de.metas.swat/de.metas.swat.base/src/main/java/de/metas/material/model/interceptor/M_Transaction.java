@@ -26,7 +26,7 @@ import de.metas.material.event.EventDescriptor;
 import de.metas.material.event.MaterialDescriptor;
 import de.metas.material.event.MaterialEventService;
 import de.metas.material.event.ProductDescriptor;
-import de.metas.material.event.ModelProductDescriptorExtactor;
+import de.metas.material.event.ModelProductDescriptorExtractor;
 import de.metas.material.event.TransactionEvent;
 import de.metas.materialtransaction.MTransactionUtil;
 import lombok.NonNull;
@@ -186,7 +186,7 @@ public class M_Transaction
 			@NonNull final I_M_Transaction transaction,
 			@NonNull final BigDecimal quantity)
 	{
-		final ModelProductDescriptorExtactor productDescriptorFactory = Adempiere.getBean(ModelProductDescriptorExtactor.class);
+		final ModelProductDescriptorExtractor productDescriptorFactory = Adempiere.getBean(ModelProductDescriptorExtractor.class);
 		final ProductDescriptor productDescriptor = productDescriptorFactory.createProductDescriptor(transaction);
 
 		return MaterialDescriptor.builderForCompleteDescriptor()

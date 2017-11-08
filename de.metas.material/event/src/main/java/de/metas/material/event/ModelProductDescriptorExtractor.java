@@ -29,7 +29,7 @@ package de.metas.material.event;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public interface ModelProductDescriptorExtactor
+public interface ModelProductDescriptorExtractor
 {
 	ProductDescriptor createProductDescriptor(Object asiAwareModel);
 }

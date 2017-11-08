@@ -26,7 +26,7 @@ import org.springframework.stereotype.Service;
 
 import de.metas.logging.LogManager;
 import de.metas.material.event.ProductDescriptor;
-import de.metas.material.event.ModelProductDescriptorExtactor;
+import de.metas.material.event.ModelProductDescriptorExtractor;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrder.PPOrderBuilder;
 import de.metas.material.event.pporder.PPOrderLine;
@@ -67,11 +67,11 @@ public class PPOrderPojoSupplier
 
 	private final ProductPlanningBL productPlanningBL;
 
-	private final ModelProductDescriptorExtactor productDescriptorFactory;
+	private final ModelProductDescriptorExtractor productDescriptorFactory;
 
 	public PPOrderPojoSupplier(
 			@NonNull final ProductPlanningBL productPlanningBL,
-			@NonNull final ModelProductDescriptorExtactor productDescriptorFactory)
+			@NonNull final ModelProductDescriptorExtractor productDescriptorFactory)
 	{
 		this.productPlanningBL = productPlanningBL;
 		this.productDescriptorFactory = productDescriptorFactory;
