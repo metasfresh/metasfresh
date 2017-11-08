@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
+<!-- 2017-10-27T14:14:07 -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_details" pageWidth="555" pageHeight="802" columnWidth="555" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/sales/order_org_data_right/report" uuid="00f4c9e2-84b8-491d-9fc8-375751dc873d">
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="metasfresh"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+	<parameter name="c_order_id" class="java.lang.Integer"/>
+	<queryString>
+		<![CDATA[SELECT * FROM de_metas_endcustomer_fresh_reports.Docs_Sales_Order_Details_Sum ( $P{c_order_id});]]>
+	</queryString>
+	<field name="nonhulines" class="java.math.BigDecimal"/>
+	<field name="grandtotal" class="java.math.BigDecimal"/>
+	<field name="iso_code" class="java.lang.String"/>
+	<field name="isprinttax" class="java.lang.String"/>
+	<field name="ishuline" class="java.lang.Boolean"/>
+	<field name="taxbaseamt" class="java.math.BigDecimal"/>
+	<field name="taxrate" class="java.math.BigDecimal"/>
+	<field name="taxamt" class="java.math.BigDecimal"/>
+	<field name="cursymbol" class="java.lang.String"/>
+	<variable name="sum_without_tax" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{taxbaseamt}]]></variableExpression>
+	</variable>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<detail>
+		<band height="18">
+			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+			<textField>
+				<reportElement x="378" y="6" width="72" height="12" uuid="c681af8a-30c6-4bf7-859e-b88f24f3108d">
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+				</reportElement>
+				<textElement textAlignment="Right">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{taxbaseamt}.setScale(2, java.math.RoundingMode.HALF_UP)  + " " + $F{cursymbol}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="306" y="6" width="72" height="12" uuid="891db125-c98e-4899-a8d7-bc7390131b09">
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+				</reportElement>
+				<textElement textAlignment="Right">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{value_of_goods} + " " + $F{taxrate} + "% " + $R{vat}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<summary>
+		<band height="24">
+			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+			<textField>
+				<reportElement x="306" y="6" width="72" height="12" uuid="2d45aef3-99bb-48af-8573-1e83e33a27e3">
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+				</reportElement>
+				<textElement textAlignment="Right">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{linenetamt}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="378" y="6" width="72" height="12" uuid="0bbdbb0b-a3b5-4d30-8f4e-2c2e36da459d">
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+				</reportElement>
+				<textElement textAlignment="Right">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{sum_without_tax}.setScale(2, java.math.RoundingMode.HALF_UP)  + " " + $F{cursymbol}]]></textFieldExpression>
+			</textField>
+		</band>
+	</summary>
+</jasperReport>
