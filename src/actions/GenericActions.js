@@ -94,25 +94,41 @@ export function patchRequest({
      */
     try {
         if (Array.isArray(payload)) {
-            let patch;
+            const upgradePatch = patch => {
+                const keys = new Set(Object.keys(patch));
+
+                if (
+                    keys.has('key') &&
+                    keys.has('caption') &&
+                    patch[patch.key] === patch.caption
+                ) {
+                    // eslint-disable-next-line max-len
+                    console.warn(`Deprecated usage of API. Removed key "${patch.key}" from payload. See https://github.com/metasfresh/metasfresh-webui-frontend/issues/1327 for more info.`);
+
+                    delete patch[patch.key];
+                }
+            };
+
+            const downgradePatch = patch => {
+                const keys = new Set(Object.keys(patch));
+
+                if (
+                    keys.has('key') &&
+                    keys.has('caption') &&
+                    patch[patch.key] === patch.caption
+                ) {
+                    // eslint-disable-next-line max-len
+                    console.warn('API doesn\'t support { key: ..., value: ... } format yet. Removed keys "key" and "caption" from payload. See https://github.com/metasfresh/metasfresh-webui-frontend/issues/1327 for more info.');
+
+                    delete patch.key;
+                    delete patch.caption;
+                }
+            };
 
             if (payload[0].value && payload[0].value.values) {
-                patch = payload[0].value.values[0];
+                payload[0].value.values.map(downgradePatch);
             } else {
-                patch = payload[0].value;
-            }
-
-            const keys = new Set(Object.keys(patch));
-
-            if (
-                keys.has('key') &&
-                keys.has('caption') &&
-                patch[patch.key] === patch.caption
-            ) {
-                // eslint-disable-next-line max-len
-                console.warn(`Deprecated usage of API, removed key "${patch.key}" from payload. See https://github.com/metasfresh/metasfresh-webui-frontend/issues/1327 for more info.`);
-
-                delete patch[patch.key];
+                upgradePatch(payload[0].value);
             }
         }
     } catch (error) {
