@@ -151,8 +151,8 @@ public class UserDashboardRepository
 				.create()
 				.list(I_WEBUI_DashboardItem.class)
 				.stream()
-				.map(webuiDashboardItem -> createUserDashboardItem(webuiDashboardItem))
-				.forEach(userDashboardItem -> userDashboardBuilder.addItem(userDashboardItem));
+				.map(this::createUserDashboardItem)
+				.forEach(userDashboardBuilder::addItem);
 
 		return userDashboardBuilder.build();
 	}
