@@ -16,6 +16,7 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.adempiere.util.collections.ListUtils;
 import org.compiere.model.I_C_UOM;
 import org.compiere.util.DB;
 import org.springframework.stereotype.Service;
@@ -33,6 +34,7 @@ import de.metas.material.dispo.commons.candidate.DemandDetail;
 import de.metas.material.dispo.commons.candidate.DistributionDetail;
 import de.metas.material.dispo.commons.candidate.ProductionDetail;
 import de.metas.material.dispo.commons.candidate.TransactionDetail;
+import de.metas.material.dispo.commons.repository.AvailableStockResult.Group;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.I_MD_Candidate_Demand_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_Dist_Detail;
@@ -42,6 +44,7 @@ import de.metas.material.event.MaterialDescriptor;
 import de.metas.material.event.ProductDescriptor;
 import de.metas.product.IProductBL;
 import de.metas.product.model.I_M_Product;
+import de.metas.quantity.Quantity;
 import lombok.NonNull;
 
 /*
@@ -320,31 +323,42 @@ public class CandidateRepositoryRetrieval
 	@NonNull
 	public BigDecimal retrieveAvailableStock(@NonNull final MaterialDescriptor materialDescriptor)
 	{
-		return retrieveAvailableStock(MaterialDescriptorQuery.builder()
+		final AvailableStockResult result = retrieveAvailableStock(MaterialDescriptorQuery.builder()
 				.warehouseId(materialDescriptor.getWarehouseId())
 				.date(materialDescriptor.getDate())
 				.productId(materialDescriptor.getProductId())
 				.storageAttributesKey(materialDescriptor.getStorageAttributesKey())
 				.build());
+		return result.getSingleQuantity().getQty();
 	}
 
 	@NonNull
-	public BigDecimal retrieveAvailableStock(@NonNull final MaterialDescriptorQuery query)
+	public AvailableStockResult retrieveAvailableStock(@NonNull final MaterialDescriptorQuery query)
 	{
 		final String storageAttributesKeyLikeExpression = RepositoryCommons
 				.prepareStorageAttributesKeyForLikeExpression(
 						query.getStorageAttributesKey());
 
-		final BigDecimal result = DB.getSQLValueBDEx(
+		final int productId = ListUtils.singleElement(query.getProductIds());
+		final BigDecimal qtyValue = DB.getSQLValueBDEx(
 				ITrx.TRXNAME_ThreadInherited,
 				SQL_SELECT_AVAILABLE_STOCK,
 				new Object[] {
 						query.getWarehouseId(), query.getWarehouseId(),
-						query.getProductId(),
+						productId,
 						"%" + storageAttributesKeyLikeExpression + "%",
 						query.getDate() });
 
-		return result;
+		final I_C_UOM uom = getStockingUOM(productId);
+		final Quantity qty = Quantity.of(qtyValue, uom);
+
+		return AvailableStockResult.builder()
+				.group(Group.builder()
+						.productId(productId)
+						// .attributes(attributes) // TODO
+						.qty(qty)
+						.build())
+				.build();
 	}
 
 	public I_C_UOM getStockingUOM(final int productId)

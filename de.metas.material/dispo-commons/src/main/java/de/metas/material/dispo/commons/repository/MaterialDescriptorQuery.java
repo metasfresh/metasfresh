@@ -1,13 +1,16 @@
 package de.metas.material.dispo.commons.repository;
 
 import java.util.Date;
+import java.util.Set;
 
+import org.adempiere.util.Check;
 import org.adempiere.util.time.SystemTime;
 
-import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.material.event.ProductDescriptor;
 import lombok.Builder;
+import lombok.Singular;
 import lombok.Value;
 
 /*
@@ -37,22 +40,24 @@ public class MaterialDescriptorQuery
 {
 	private final int warehouseId;
 	private final Date date;
-	private final int productId;
+	private final Set<Integer> productIds;
 	private final String storageAttributesKey;
+	private final int dimensionSpecId;
 
 	@Builder
 	private MaterialDescriptorQuery(
 			final int warehouseId,
 			final Date date,
-			final int productId,
-			final String storageAttributesKey)
+			@Singular final Set<Integer> productIds,
+			final String storageAttributesKey,
+			final int dimensionSpecId)
 	{
-		Preconditions.checkArgument(productId > 0, "productId > 0");
+		Check.assumeNotEmpty(productIds, "productIds is not empty");
 
 		this.warehouseId = warehouseId > 0 ? warehouseId : -1;
 		this.date = date != null ? date : SystemTime.asDate();
-		this.productId = productId;
+		this.productIds= ImmutableSet.copyOf(productIds);
 		this.storageAttributesKey = storageAttributesKey != null ? storageAttributesKey : ProductDescriptor.STORAGE_ATTRIBUTES_KEY_UNSPECIFIED;
+		this.dimensionSpecId = dimensionSpecId;
 	}
-
 }
