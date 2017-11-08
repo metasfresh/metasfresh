@@ -38,7 +38,7 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.Language;
 import de.metas.i18n.NumberTranslatableString;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
-import de.metas.material.dispo.commons.repository.MaterialDescriptorQuery;
+import de.metas.material.dispo.commons.repository.MaterialQuery;
 import de.metas.product.model.I_M_Product;
 import de.metas.quantity.Quantity;
 import de.metas.ui.web.document.filter.sql.SqlParamsCollector;
@@ -430,7 +430,7 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 		for (LookupValue productLookupValue : productLookupValues)
 		{
 			final int productId = productLookupValue.getIdAsInt();
-			final Quantity qtyOnHand = storageService.retrieveAvailableStock(MaterialDescriptorQuery.builder()
+			final Quantity qtyOnHand = storageService.retrieveAvailableStock(MaterialQuery.builder()
 					.productId(productId)
 					.build())
 					.getSingleQuantity();
