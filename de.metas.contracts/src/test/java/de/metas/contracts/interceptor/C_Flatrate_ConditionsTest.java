@@ -2,8 +2,10 @@ package de.metas.contracts.interceptor;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.Before;
 import org.junit.Test;
@@ -50,17 +52,20 @@ public class C_Flatrate_ConditionsTest
 		final I_C_Flatrate_Transition transition = newInstance(I_C_Flatrate_Transition.class);
 		transition.setDeliveryInterval(0);
 		save(transition);
-		
+
 		final I_C_Flatrate_Conditions conditions = newInstance(I_C_Flatrate_Conditions.class);
 		conditions.setType_Conditions(X_C_Flatrate_Conditions.TYPE_CONDITIONS_Subscription);
 		conditions.setC_Flatrate_Transition(transition);
 		save(conditions);
-				
-		assertThatThrownBy(() -> {
-			C_Flatrate_Conditions.INSTANCE.onTransitionChange(conditions);
-		});
+
+		assertThatExceptionOfType(AdempiereException.class)
+				.isThrownBy(() -> {
+					C_Flatrate_Conditions.INSTANCE.onTransitionChange(conditions);
+				})
+				.withMessageContaining(C_Flatrate_Conditions.MSG_CONDITIONS_ERROR_INVALID_TRANSITION_2P)
+				.withNoCause();
 	}
-	
+
 	@Test
 	public void prohibitVoidAndClose()
 	{
@@ -88,12 +93,12 @@ public class C_Flatrate_ConditionsTest
 		final I_C_Flatrate_Conditions conditions = newInstance(I_C_Flatrate_Conditions.class);
 		conditions.setType_Conditions(X_C_Flatrate_Conditions.TYPE_CONDITIONS_Subscription);
 		save(conditions);
-		
+
 		final I_C_Flatrate_Term subscriptionTerm = newInstance(I_C_Flatrate_Term.class);
 		subscriptionTerm.setType_Conditions(X_C_Flatrate_Term.TYPE_CONDITIONS_Subscription);
 		subscriptionTerm.setC_Flatrate_Conditions(conditions);
 		save(subscriptionTerm);
-		
+
 		assertThatThrownBy(() -> {
 			C_Flatrate_Conditions.INSTANCE.beforeReactivate(conditions);
 		}).hasMessage("@" + C_Flatrate_Conditions.MSG_CONDITIONS_ERROR_ALREADY_IN_USE_0P + "@");
