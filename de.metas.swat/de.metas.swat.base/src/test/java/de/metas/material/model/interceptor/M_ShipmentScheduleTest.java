@@ -57,12 +57,13 @@ public class M_ShipmentScheduleTest
 	public void createShipmentscheduleEvent()
 	{
 		final I_M_ShipmentSchedule shipmentSchedule = newInstance(I_M_ShipmentSchedule.class);
-		shipmentSchedule.setQtyToDeliver(BigDecimal.TEN); // TODO this doesn't seem to make sense! only accidentally works with deliveryrule=force
+		shipmentSchedule.setQtyOrdered_Calculated(BigDecimal.TEN); // note that setQtyOrdered is just for display!, QtyOrdered_Calculated one or QtyOrdered_Override is where the qty is!
 		shipmentSchedule.setM_Product_ID(20);
 		shipmentSchedule.setM_Warehouse_ID(30);
 		save(shipmentSchedule);
 
-		final ShipmentScheduleEvent result = M_ShipmentSchedule.INSTANCE.createShipmentscheduleEvent(shipmentSchedule, ModelChangeType.AFTER_CHANGE);
+		final ShipmentScheduleEvent result = M_ShipmentSchedule.INSTANCE
+				.createShipmentscheduleEvent(shipmentSchedule, ModelChangeType.AFTER_CHANGE);
 
 		assertThat(result).isNotNull();
 		assertThat(result.getShipmentScheduleId()).isEqualTo(shipmentSchedule.getM_ShipmentSchedule_ID());
