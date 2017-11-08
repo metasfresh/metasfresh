@@ -31,7 +31,6 @@ import lombok.NonNull;
 public class ExtendContractTest extends AbstractFlatrateTermTest
 {
 
-	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 	final private static Timestamp startDate = TimeUtil.parseTimestamp("2017-09-10");
 
 	@Before
@@ -45,7 +44,7 @@ public class ExtendContractTest extends AbstractFlatrateTermTest
 	{
 		final I_C_Flatrate_Term contract = prepareContractForTest(true);
 
-		flatrateBL.extendContract(contract, true, true, null, null);
+		Services.get(IFlatrateBL.class).extendContract(contract, true, true, null, null);
 
 		assertFlatrateTerm(contract);
 		assertPartnerData(contract);
@@ -55,8 +54,8 @@ public class ExtendContractTest extends AbstractFlatrateTermTest
 	public void extendContractWithAutoRenewOnNo_test()
 	{
 		final I_C_Flatrate_Term contract = prepareContractForTest(false);
-
-		flatrateBL.extendContract(contract, true, true, null, null);
+			
+		Services.get(IFlatrateBL.class).extendContract(contract, true, true, null, null);
 		save(contract);
 
 		assertFlatrateTerm(contract);
@@ -110,7 +109,7 @@ public class ExtendContractTest extends AbstractFlatrateTermTest
 	{
 		final I_M_Product product = productAndPricingSystem.getProduct();
 
-		final I_C_Flatrate_Term contract = flatrateBL.createTerm(
+		final I_C_Flatrate_Term contract = Services.get(IFlatrateBL.class).createTerm(
 				helper.getContextProvider(),
 				getBpartner(),
 				conditions,
