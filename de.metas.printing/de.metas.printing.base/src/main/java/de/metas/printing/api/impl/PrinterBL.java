@@ -28,12 +28,10 @@ import java.util.Properties;
 
 import javax.print.attribute.standard.MediaSize;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.util.Env;
 
 import de.metas.printing.Printing_Constants;
 import de.metas.printing.api.IPrinterBL;
@@ -48,6 +46,7 @@ import de.metas.printing.model.I_AD_Printer_Config;
 import de.metas.printing.model.I_AD_Printer_Matching;
 import de.metas.printing.model.I_AD_Printer_Tray;
 import de.metas.printing.model.X_AD_PrinterHW;
+import lombok.NonNull;
 
 public class PrinterBL implements IPrinterBL
 {
@@ -56,7 +55,7 @@ public class PrinterBL implements IPrinterBL
 	public I_AD_Printer_Config createPrinterConfigIfNoneExists(final I_AD_PrinterHW printerHW)
 	{
 		final IPrintingDAO printingDAO = Services.get(IPrintingDAO.class);
-		final I_AD_Printer_Config existientPrinterConfig = printingDAO.retrievePrinterConfig(new PlainContextAware(InterfaceWrapperHelper.getCtx(printerHW)),
+		final I_AD_Printer_Config existientPrinterConfig = printingDAO.retrievePrinterConfig(PlainContextAware.newOutOfTrx(InterfaceWrapperHelper.getCtx(printerHW)),
 				printerHW.getHostKey(),
 				printerHW.getUpdatedBy());
 		if(existientPrinterConfig != null)
@@ -208,10 +207,8 @@ public class PrinterBL implements IPrinterBL
 	}
 
 	@Override
-	public boolean isPDFPrinter(int AD_PrinterHW_ID)
+	public boolean isPDFPrinter(@NonNull final I_AD_PrinterHW printerHW)
 	{
-		Check.assume(AD_PrinterHW_ID > 0, "Printer ID must be > 0");
-		final I_AD_PrinterHW printerHW = InterfaceWrapperHelper.create(Env.getCtx(), AD_PrinterHW_ID, I_AD_PrinterHW.class, ITrx.TRXNAME_None);
 		return  X_AD_PrinterHW.OUTPUTTYPE_PDF.equals(printerHW.getOutputType());
 	}
 }
