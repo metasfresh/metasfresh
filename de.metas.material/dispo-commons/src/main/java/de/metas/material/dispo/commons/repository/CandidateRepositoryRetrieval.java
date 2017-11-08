@@ -73,7 +73,7 @@ public class CandidateRepositoryRetrieval
 	static final String SQL_SELECT_AVAILABLE_STOCK = "SELECT COALESCE(SUM(Qty),0) "
 			+ "FROM de_metas_material_dispo.MD_Candidate_Latest_v "
 			+ "WHERE "
-			+ "M_Warehouse_ID=? AND "
+			+ "(M_Warehouse_ID=? OR ? <= 0) AND "
 			+ "M_Product_ID=? AND "
 			+ "StorageAttributesKey LIKE ? AND "
 			+ "DateProjected <= ?";
@@ -339,7 +339,7 @@ public class CandidateRepositoryRetrieval
 				ITrx.TRXNAME_ThreadInherited,
 				SQL_SELECT_AVAILABLE_STOCK,
 				new Object[] {
-						query.getWarehouseId(),
+						query.getWarehouseId(), query.getWarehouseId(),
 						query.getProductId(),
 						"%" + storageAttributesKeyLikeExpression + "%",
 						query.getDate() });

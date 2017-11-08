@@ -2,10 +2,12 @@ package de.metas.material.dispo.commons.repository;
 
 import java.util.Date;
 
+import org.adempiere.util.time.SystemTime;
+
 import com.google.common.base.Preconditions;
 
+import de.metas.material.event.ProductDescriptor;
 import lombok.Builder;
-import lombok.NonNull;
 import lombok.Value;
 
 /*
@@ -41,19 +43,16 @@ public class MaterialDescriptorQuery
 	@Builder
 	private MaterialDescriptorQuery(
 			final int warehouseId,
-			@NonNull final Date date,
+			final Date date,
 			final int productId,
-			@NonNull final String storageAttributesKey)
+			final String storageAttributesKey)
 	{
-		Preconditions.checkArgument(warehouseId > 0, "warehouseId > 0");
 		Preconditions.checkArgument(productId > 0, "productId > 0");
 
+		this.warehouseId = warehouseId > 0 ? warehouseId : -1;
+		this.date = date != null ? date : SystemTime.asDate();
 		this.productId = productId;
-		this.storageAttributesKey = storageAttributesKey;
-
-		this.warehouseId = warehouseId;
-
-		this.date = date;
+		this.storageAttributesKey = storageAttributesKey != null ? storageAttributesKey : ProductDescriptor.STORAGE_ATTRIBUTES_KEY_UNSPECIFIED;
 	}
 
 }
