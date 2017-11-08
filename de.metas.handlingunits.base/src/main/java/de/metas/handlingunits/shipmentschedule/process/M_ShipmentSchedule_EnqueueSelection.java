@@ -35,8 +35,7 @@ import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer.Result;
 import de.metas.handlingunits.shipmentschedule.async.GenerateInOutFromShipmentSchedules;
 import de.metas.process.JavaProcess;
-import de.metas.process.ProcessExecutionResult.ShowProcessLogs;
-import de.metas.process.ProcessInfoParameter;
+import de.metas.process.Param;
 
 /**
  * Auswahl Liefern: Enqueue selected {@link I_M_ShipmentSchedule}s and let {@link GenerateInOutFromShipmentSchedules} process them.
@@ -46,36 +45,12 @@ import de.metas.process.ProcessInfoParameter;
  */
 public class M_ShipmentSchedule_EnqueueSelection extends JavaProcess
 {
-	public static final String PARAM_IsUseQtyPicked = "IsUseQtyPicked";
-	public static final String PARAM_IsCompleteShipments = "IsCompleteShipments";
 
-	private boolean p_IsUseQtyPicked = false;
-	private boolean p_IsCompleteShipments = false;
+	@Param(parameterName = "IsUseQtyPicked", mandatory = true)
+	private boolean isUseQtyPicked;
 
-	@Override
-	protected void prepare()
-	{
-		// don't FUD the user with AD_PInstance_Log records unless there is an actual error
-		setShowProcessLogs(ShowProcessLogs.OnError);
-
-		for (final ProcessInfoParameter para : getParametersAsArray())
-		{
-			if (para.getParameter() == null)
-			{
-				continue;
-			}
-			final String parameterName = para.getParameterName();
-
-			if (PARAM_IsUseQtyPicked.equals(parameterName))
-			{
-				p_IsUseQtyPicked = para.getParameterAsBoolean();
-			}
-			if (PARAM_IsCompleteShipments.equals(parameterName))
-			{
-				p_IsCompleteShipments = para.getParameterAsBoolean();
-			}
-		}
-	}
+	@Param(parameterName = "IsCompleteShipments", mandatory = true)
+	private boolean isCompleteShipments;
 
 	@Override
 	protected String doIt() throws Exception
@@ -84,7 +59,7 @@ public class M_ShipmentSchedule_EnqueueSelection extends JavaProcess
 
 		final Result result = new ShipmentScheduleEnqueuer()
 				.setContext(getCtx(), getTrxName())
-				.createWorkpackages(getAD_PInstance_ID(), queryFilters, p_IsUseQtyPicked, p_IsCompleteShipments);
+				.createWorkpackages(getAD_PInstance_ID(), queryFilters, isUseQtyPicked, isCompleteShipments);
 
 		return "@Created@: " + result.getEneuedPackagesCount() + " @" + I_C_Queue_WorkPackage.COLUMNNAME_C_Queue_WorkPackage_ID + "@; @Skip@ " + result.getSkippedPackagesCount();
 	}
@@ -99,7 +74,7 @@ public class M_ShipmentSchedule_EnqueueSelection extends JavaProcess
 
 		//
 		// Filter only selected shipment schedules
-		if(Ini.isClient())
+		if (Ini.isClient())
 		{
 			final IQueryFilter<I_M_ShipmentSchedule> selectionFilter = getProcessInfo().getQueryFilter();
 			filters.addFilter(selectionFilter);
@@ -107,7 +82,7 @@ public class M_ShipmentSchedule_EnqueueSelection extends JavaProcess
 		else
 		{
 			final IQueryFilter<I_M_ShipmentSchedule> selectionFilter = getProcessInfo().getQueryFilterOrElse(null);
-			if(selectionFilter == null)
+			if (selectionFilter == null)
 			{
 				throw new AdempiereException("@NoSelection@");
 			}
