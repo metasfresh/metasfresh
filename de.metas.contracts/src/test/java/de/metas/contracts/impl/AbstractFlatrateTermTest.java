@@ -14,7 +14,6 @@ import org.adempiere.acct.api.IAcctSchemaDAO;
 import org.adempiere.acct.api.impl.AcctSchemaDAO;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.ad.wrapper.POJOWrapper;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_AcctSchema;
@@ -334,8 +333,7 @@ public abstract class AbstractFlatrateTermTest
 		contractChange.setContractStatus( X_C_Contract_Change.CONTRACTSTATUS_Gekuendigt);
 		contractChange.setDeadLine(1);
 		contractChange.setDeadLineUnit(X_C_Contract_Change.DEADLINEUNIT_MonatE);
-		InterfaceWrapperHelper.save(contractChange);
-		
+		save(contractChange);
 		return contractChange;
 	}
 }
