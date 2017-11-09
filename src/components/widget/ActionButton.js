@@ -102,8 +102,7 @@ class ActionButton extends Component {
     getStatusClassName = (abrev) => {
         const {data} = this.props;
 
-        if((data.action.value !== undefined) &&
-            Object.keys(data.action.value)[0] !== abrev){
+        if (data.action.value && data.action.value.key !== abrev) {
             return '';
         }
 
@@ -146,10 +145,14 @@ class ActionButton extends Component {
 
     render() {
         const {data} = this.props;
-        const abrev = (data.status.value !== undefined) ?
-            Object.keys(data.status.value)[0] : null;
-        const value = (abrev !== null || undefined) ?
-            data.status.value[abrev] : null;
+        const abrev = data.status.value && data.status.value.key;
+
+        let value;
+
+        if (abrev) {
+            value = data.status.value.caption;
+        }
+
         const { list } = this.state;
 
         return (

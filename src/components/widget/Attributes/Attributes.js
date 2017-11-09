@@ -65,7 +65,8 @@ class Attributes extends Component {
             docType, dataId, tabId, rowId, fieldName, attributeType,
             widgetData, entity
         } = this.props;
-        const tmpId = Object.keys(widgetData.value)[0];
+
+        const tmpId = widgetData.value.key;
 
         getAttributesInstance(
             attributeType, tmpId, docType, dataId, tabId, rowId, fieldName,
@@ -151,8 +152,7 @@ class Attributes extends Component {
         } = this.state;
 
         const {value} = widgetData;
-        const tmpId = Object.keys(value)[0];
-        const label = value[tmpId];
+        const label = value.caption;
         const attrId = data && data.ID ? data.ID.value : -1;
 
         return (
