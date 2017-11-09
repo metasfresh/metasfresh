@@ -21,7 +21,7 @@ COPY ./configs/metasfresh.properties /opt/metasfresh/metasfresh-report/
 
 COPY ./start_report_docker.sh /opt/metasfresh/metasfresh-report/
 
-# I don't understand why I have to do this. I would assume that when I commit this sh file on windows with lf eols and 
+# I don't understand why I have to do this. I would assume that when I commit this sh file on windows with lf eols and
 # then check it out on a linux machine, it has lf eols. But aparently it doesn't.
 # At any rate, thx to https://stackoverflow.com/a/41424794/1012103
 RUN dos2unix /opt/metasfresh/metasfresh-report/start_report_docker.sh
@@ -29,7 +29,7 @@ RUN dos2unix /opt/metasfresh/metasfresh-report/start_report_docker.sh
 # make our start command executable
 RUN chmod 700 /opt/metasfresh/metasfresh-report/start_report_docker.sh
 
-COPY ./metasfresh-report.jar /opt/metasfresh/metasfresh-report/metasfresh-report.jar
+COPY ./metasfresh-report-service.jar /opt/metasfresh/metasfresh-report/metasfresh-report.jar
 RUN sh -c 'touch /opt/metasfresh/metasfresh-report/metasfresh-report.jar'
 
 ENTRYPOINT ["/opt/metasfresh/metasfresh-report/start_report_docker.sh"]
