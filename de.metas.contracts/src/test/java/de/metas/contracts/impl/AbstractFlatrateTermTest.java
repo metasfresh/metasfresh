@@ -295,7 +295,8 @@ public abstract class AbstractFlatrateTermTest
 
 	protected I_C_Flatrate_Term createFlatrateTerm(@NonNull final I_C_Flatrate_Conditions conditions, @NonNull final I_M_Product product, @NonNull final Timestamp startDate)
 	{
-		final I_C_Flatrate_Term contract = Services.get(IFlatrateBL.class).createTerm(
+		final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
+		final I_C_Flatrate_Term contract = flatrateBL.createTerm(
 				helper.getContextProvider(),
 				getBpartner(),
 				conditions,
@@ -318,6 +319,7 @@ public abstract class AbstractFlatrateTermTest
 		contract.setM_Product(product);
 		contract.setIsTaxIncluded(true);
 		save(contract);
+		flatrateBL.complete(contract);
 
 		return contract;
 	}
