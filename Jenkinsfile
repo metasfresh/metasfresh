@@ -110,7 +110,7 @@ node('agent && linux')
 				}
 				else
 				{
-					// now create and publish some docker images..well, 1 docker image for starts
+					// now create and publish some docker images
 					createAndPublishDockerImage(
 						'metasfresh-material-dispo', // dockerRepositoryName
 						'de.metas.material/dispo-service',  // dockerSourceDir

@@ -416,9 +416,13 @@
 						<goals>
 							<goal>update-file-header</goal>
 						</goals>
-						<!-- don't upodate the file haeders. it created too much unwanted changes -->
+						<!-- don't update the file headers. it created too many unwanted changes -->
 						<!-- phase>process-sources</phase -->
 						<configuration>
+							<!-- under windows, each build would update the license files 
+							     because of different fine endings. 
+							     That's the main reason why we don't try updating at all -->
+							<skipUpdateProjectLicense>false</skipUpdateProjectLicense>
 							<licenseName>${license.name}</licenseName>
 							<roots>
 								<root>src/main/java</root>
@@ -642,15 +646,15 @@
 								<groupId>net.sf.barcode4j</groupId>
 								<artifactId>barcode4j-fop-ext-complete</artifactId>
 								<version>2.0</version>
-								<type>jar</type>			
+								<type>jar</type>
 								<exclusions>
 									<exclusion>
 										<groupId>commons-logging</groupId>
 										<artifactId>commons-logging</artifactId>
 									</exclusion>
 								</exclusions>
-							</dependency>		
-								
+							</dependency>
+
 						</dependencies>
 						<executions>
 							<execution>
