@@ -109,9 +109,7 @@ public class ContractChangeBLTest extends AbstractFlatrateTermTest
 		assertThat(extendedContract).isNotNull();
 		
 		
-		final Timestamp cancelinglDate = TimeUtil.parseTimestamp("2018-12-10");
 		final ContractChangeParameters changeParameters = ContractChangeParameters.builder()
-				.changeDate(cancelinglDate)
 				.isCloseInvoiceCandidate(true)
 				.terminationReason(X_C_Flatrate_Term.TERMINATIONREASON_General)
 				.terminationMemo(terminationMemo)
@@ -122,10 +120,7 @@ public class ContractChangeBLTest extends AbstractFlatrateTermTest
 		InterfaceWrapperHelper.refresh(contract);
 		InterfaceWrapperHelper.refresh(extendedContract);
 		
-		assertFlatrateTerm(contract, cancelinglDate);
 		assertSubscriptionProgress(contract, 1);
-		assertThat(contract.getMasterEndDate()).isEqualTo(cancelinglDate);
-		assertFlatrateTerm(extendedContract, cancelinglDate);
 		assertSubscriptionProgress(extendedContract, 1);
 		assertThat(contract.getMasterEndDate()).isEqualTo(extendedContract.getMasterEndDate());
 	}
