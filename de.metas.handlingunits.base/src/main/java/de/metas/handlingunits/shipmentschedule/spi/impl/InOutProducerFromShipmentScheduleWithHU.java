@@ -178,39 +178,6 @@ public class InOutProducerFromShipmentScheduleWithHU implements IInOutProducerFr
 		return shipment;
 	}
 
-	private void updateShipmentDate(final I_M_InOut shipment, final IShipmentScheduleWithHU candidate)
-	{
-
-		final Timestamp candidateShipmentDate = calculateShipmentDate(candidate);
-
-		// the shipment was created before but wasn't yet completed;
-		if (isCandidateShipmentDateFitForShipment(shipment, candidateShipmentDate))
-		{
-			shipment.setMovementDate(candidateShipmentDate);
-			shipment.setDateAcct(candidateShipmentDate);
-
-			InterfaceWrapperHelper.save(shipment);
-		}
-
-	}
-
-	private boolean isCandidateShipmentDateFitForShipment(final I_M_InOut shipment, final Timestamp candidateShipmentDate)
-	{
-		final Timestamp currentShipmentDate = shipment.getMovementDate();
-		
-		if (currentShipmentDate.before(TimeUtil.getNow()))
-		{
-			return true;
-		}
-
-		else if (currentShipmentDate.after(candidateShipmentDate))
-		{
-			return true;
-		}
-
-		return false;
-	}
-
 	private Timestamp calculateShipmentDate(final IShipmentScheduleWithHU candidate)
 	{
 		final Timestamp now = TimeUtil.getNow();
@@ -318,32 +285,7 @@ public class InOutProducerFromShipmentScheduleWithHU implements IInOutProducerFr
 		return shipment;
 	}
 
-	private void createUpdateShipmentLine(final IShipmentScheduleWithHU candidate)
-	{
-		//
-		// If we cannot add this "candidate" to current shipment line builder
-		// then create shipment line (if any) and reset the builder
-		if (currentShipmentLineBuilder != null && !currentShipmentLineBuilder.canAdd(candidate))
-		{
-			createShipmentLineIfAny();
-			// => currentShipmentLineBuilder = null;
-		}
-
-		//
-		// If we don't have an active shipment line builder
-		// then create one
-		if (currentShipmentLineBuilder == null)
-		{
-			currentShipmentLineBuilder = new ShipmentLineBuilder(currentShipment);
-			currentShipmentLineBuilder.setManualPackingMaterial(manualPackingMaterial);
-			currentShipmentLineBuilder.setAlreadyAssignedTUIds(tuIdsAlreadyAssignedToShipmentLine);
-
-		}
-
-		//
-		// Add current "candidate"
-		currentShipmentLineBuilder.add(candidate);
-	}
+	
 
 	/**
 	 * If {@link #currentShipmentLineBuilder} is set and it can create a shipment line then:
@@ -479,6 +421,68 @@ public class InOutProducerFromShipmentScheduleWithHU implements IInOutProducerFr
 		createUpdateShipmentLine(item);
 		lastItem = item;
 	}
+	
+	private void createUpdateShipmentLine(final IShipmentScheduleWithHU candidate)
+	{
+		//
+		// If we cannot add this "candidate" to current shipment line builder
+		// then create shipment line (if any) and reset the builder
+		if (currentShipmentLineBuilder != null && !currentShipmentLineBuilder.canAdd(candidate))
+		{
+			createShipmentLineIfAny();
+			// => currentShipmentLineBuilder = null;
+		}
+
+		//
+		// If we don't have an active shipment line builder
+		// then create one
+		if (currentShipmentLineBuilder == null)
+		{
+			currentShipmentLineBuilder = new ShipmentLineBuilder(currentShipment);
+			currentShipmentLineBuilder.setManualPackingMaterial(manualPackingMaterial);
+			currentShipmentLineBuilder.setAlreadyAssignedTUIds(tuIdsAlreadyAssignedToShipmentLine);
+
+		}
+
+		//
+		// Add current "candidate"
+		currentShipmentLineBuilder.add(candidate);
+	}
+	
+
+	private void updateShipmentDate(final I_M_InOut shipment, final IShipmentScheduleWithHU candidate)
+	{
+
+		final Timestamp candidateShipmentDate = calculateShipmentDate(candidate);
+
+		// the shipment was created before but wasn't yet completed;
+		if (isCandidateShipmentDateFitForShipment(shipment, candidateShipmentDate))
+		{
+			shipment.setMovementDate(candidateShipmentDate);
+			shipment.setDateAcct(candidateShipmentDate);
+
+			InterfaceWrapperHelper.save(shipment);
+		}
+
+	}
+
+	private boolean isCandidateShipmentDateFitForShipment(final I_M_InOut shipment, final Timestamp candidateShipmentDate)
+	{
+		final Timestamp currentShipmentDate = shipment.getMovementDate();
+		
+		if (currentShipmentDate.before(TimeUtil.getNow()))
+		{
+			return true;
+		}
+
+		else if (currentShipmentDate.after(candidateShipmentDate))
+		{
+			return true;
+		}
+
+		return false;
+	}
+
 
 	@Override
 	public InOutGenerateResult getResult()
