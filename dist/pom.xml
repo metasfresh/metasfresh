@@ -783,10 +783,10 @@ note: when adding new records, please roughly order them by alphabet.
 				</executions>
 			</plugin>
 
-			<!-- Archive the whole dist/ folder -->
 			<plugin>
 				<artifactId>maven-assembly-plugin</artifactId>
 				<executions>
+					<!-- Archive the whole dist/ folder -->
 					<execution>
 						<id>package-dist</id>
 						<phase>package</phase>
