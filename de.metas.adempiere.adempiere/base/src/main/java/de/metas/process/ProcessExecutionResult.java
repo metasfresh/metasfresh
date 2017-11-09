@@ -106,7 +106,7 @@ public class ProcessExecutionResult
 	private transient Throwable throwable = null;
 
 	private boolean refreshAllAfterExecution = false;
-	
+
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private TableRecordReference recordToRefreshAfterExecution = null;
 
@@ -116,7 +116,7 @@ public class ProcessExecutionResult
 	/** Records to be opened (UI) after this process was successfully executed */
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private RecordsToOpen recordsToOpen = null;
-	
+
 	//
 	// Webui related
 	//
@@ -296,7 +296,7 @@ public class ProcessExecutionResult
 	{
 		this.refreshAllAfterExecution = refreshAllAfterExecution;
 	}
-	
+
 	/**
 	 * @return if the whole window tab shall be refreshed after process execution (applies only when the process was started from a user window)
 	 */
@@ -304,7 +304,7 @@ public class ProcessExecutionResult
 	{
 		return refreshAllAfterExecution;
 	}
-	
+
 	/**
 	 * @param record to be refreshed after process execution
 	 */
@@ -312,7 +312,7 @@ public class ProcessExecutionResult
 	{
 		this.recordToRefreshAfterExecution = recordToRefreshAfterExecution;
 	}
-	
+
 	public TableRecordReference getRecordToRefreshAfterExecution()
 	{
 		return recordToRefreshAfterExecution;
@@ -338,6 +338,11 @@ public class ProcessExecutionResult
 
 	public void setRecordsToOpen(final Collection<TableRecordReference> records, final int adWindowId)
 	{
+		setRecordsToOpen(records, String.valueOf(adWindowId));
+	}
+
+	public void setRecordsToOpen(final Collection<TableRecordReference> records, final String adWindowId)
+	{
 		if (records == null || records.isEmpty())
 		{
 			recordsToOpen = null;
@@ -356,12 +361,17 @@ public class ProcessExecutionResult
 		}
 		else
 		{
-			final int adWindowId = -1;
+			final String adWindowId = null;
 			recordsToOpen = new RecordsToOpen(records, adWindowId, OpenTarget.GridView);
 		}
 	}
 
 	public void setRecordToOpen(final TableRecordReference record, final int adWindowId, final OpenTarget target)
+	{
+		setRecordToOpen(record, String.valueOf(adWindowId), target);
+	}
+
+	public void setRecordToOpen(final TableRecordReference record, final String adWindowId, final OpenTarget target)
 	{
 		if (record == null)
 		{
@@ -377,7 +387,7 @@ public class ProcessExecutionResult
 	{
 		return recordsToOpen;
 	}
-	
+
 	/**
 	 * Sets webui's viewId on which this process was executed.
 	 * 
@@ -387,7 +397,7 @@ public class ProcessExecutionResult
 	{
 		this.webuiViewId = webuiViewId;
 	}
-	
+
 	public String getWebuiViewId()
 	{
 		return webuiViewId;
@@ -688,7 +698,7 @@ public class ProcessExecutionResult
 
 		@JsonProperty("adWindowId")
 		@JsonInclude(JsonInclude.Include.NON_NULL)
-		private final Integer adWindowId;
+		private final String adWindowIdStr;
 
 		public static enum OpenTarget
 		{
@@ -701,7 +711,7 @@ public class ProcessExecutionResult
 		@JsonCreator
 		private RecordsToOpen( //
 				@JsonProperty("records") final Collection<TableRecordReference> records //
-				, @JsonProperty("adWindowId") final Integer adWindowId //
+				, @JsonProperty("adWindowId") final String adWindowId //
 				, @JsonProperty("target") final OpenTarget target //
 		)
 		{
@@ -709,7 +719,7 @@ public class ProcessExecutionResult
 			Check.assumeNotEmpty(records, "records is not empty");
 
 			this.records = ImmutableList.copyOf(records);
-			this.adWindowId = adWindowId > 0 ? adWindowId : null;
+			this.adWindowIdStr = Check.isEmpty(adWindowId, true) ? null : adWindowId;
 			this.target = target;
 		}
 
@@ -719,7 +729,7 @@ public class ProcessExecutionResult
 			return MoreObjects.toStringHelper(this)
 					.omitNullValues()
 					.add("records", records)
-					.add("adWindowId", adWindowId)
+					.add("adWindowId", adWindowIdStr)
 					.add("target", target)
 					.toString();
 		}
@@ -727,7 +737,7 @@ public class ProcessExecutionResult
 		@Override
 		public int hashCode()
 		{
-			return Objects.hash(records, adWindowId, target);
+			return Objects.hash(records, adWindowIdStr, target);
 		}
 
 		@Override
@@ -741,7 +751,7 @@ public class ProcessExecutionResult
 			{
 				final RecordsToOpen other = (RecordsToOpen)obj;
 				return Objects.equals(records, other.records)
-						&& Objects.equals(adWindowId, other.adWindowId)
+						&& Objects.equals(adWindowIdStr, other.adWindowIdStr)
 						&& Objects.equals(target, other.target);
 			}
 			else
@@ -761,9 +771,9 @@ public class ProcessExecutionResult
 			return records.get(0);
 		}
 
-		public int getAD_Window_ID()
+		public String getWindowIdString()
 		{
-			return adWindowId == null ? -1 : adWindowId;
+			return adWindowIdStr;
 		}
 
 		public OpenTarget getTarget()
