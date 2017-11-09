@@ -109,7 +109,8 @@ public class FlatrateTermDataFactory
 
 	@Builder(builderMethodName = "flatrateConditionsNew")
 	public static I_C_Flatrate_Conditions createFlatrateConditions(final String name, final String invoiceRule, 
-			final String typeConditions, @NonNull final I_C_Calendar calendar, @NonNull final I_M_PricingSystem pricingSystem)
+			final String typeConditions, @NonNull final I_C_Calendar calendar, 
+			@NonNull final I_M_PricingSystem pricingSystem, final boolean isAutoRenew)
 	{
 		final I_C_Flatrate_Conditions conditions = newInstance(I_C_Flatrate_Conditions.class);
 		conditions.setM_PricingSystem(pricingSystem);
@@ -125,8 +126,8 @@ public class FlatrateTermDataFactory
 				.deliveryIntervalUnit(X_C_Flatrate_Transition.DELIVERYINTERVALUNIT_JahrE)
 				.termDuration(1)
 				.termDurationUnit(X_C_Flatrate_Transition.TERMDURATIONUNIT_JahrE)
-				.isAutoCompleteNewTerm(true)
-				.isAutoRenew(true)
+				.isAutoCompleteNewTerm(isAutoRenew)
+				.isAutoRenew(isAutoRenew)
 				.build();
 
 		conditions.setC_Flatrate_Transition(transition);
