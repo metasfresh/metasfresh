@@ -475,15 +475,14 @@ import lombok.NonNull;
 			return null; // shall not happen
 		}
 
-		final int adWindowId_Override = recordsToOpen.getAD_Window_ID(); // optional
+		final WindowId windowId_Override = WindowId.fromNullableJson(recordsToOpen.getWindowIdString()); // optional
 
 		//
 		// Create view create request builders from current records
 		final Map<WindowId, CreateViewRequest.Builder> viewRequestBuilders = new HashMap<>();
 		for (final TableRecordReference recordRef : recordRefs)
 		{
-			final int recordWindowIdInt = adWindowId_Override > 0 ? adWindowId_Override : RecordZoomWindowFinder.findAD_Window_ID(recordRef);
-			final WindowId recordWindowId = WindowId.of(recordWindowIdInt);
+			final WindowId recordWindowId = windowId_Override != null ? windowId_Override : WindowId.ofIntOrNull(RecordZoomWindowFinder.findAD_Window_ID(recordRef));
 			final CreateViewRequest.Builder viewRequestBuilder = viewRequestBuilders.computeIfAbsent(recordWindowId, key -> CreateViewRequest.builder(recordWindowId, JSONViewDataType.grid));
 
 			viewRequestBuilder.addFilterOnlyId(recordRef.getRecord_ID());
@@ -558,13 +557,13 @@ import lombok.NonNull;
 		final TableRecordReference recordRef = recordsToOpen.getSingleRecord();
 		final int documentId = recordRef.getRecord_ID();
 
-		int adWindowId = recordsToOpen.getAD_Window_ID();
-		if (adWindowId <= 0)
+		WindowId windowId = WindowId.fromNullableJson(recordsToOpen.getWindowIdString());
+		if (windowId == null)
 		{
-			adWindowId = RecordZoomWindowFinder.findAD_Window_ID(recordRef);
+			windowId = WindowId.ofIntOrNull(RecordZoomWindowFinder.findAD_Window_ID(recordRef));
 		}
 
-		return DocumentPath.rootDocumentPath(WindowId.of(adWindowId), documentId);
+		return DocumentPath.rootDocumentPath(windowId, documentId);
 	}
 
 	/* package */boolean saveIfValidAndHasChanges(final boolean throwEx)
