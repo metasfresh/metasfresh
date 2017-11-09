@@ -522,7 +522,7 @@ note: when adding new records, please roughly order them by alphabet.
 						</goals>
 						<configuration>
 							<type>jar</type>
-							<excludeArtifactIds>de.metas.fresh.base, de.metas.endcustomer.mf15.base</excludeArtifactIds>
+							<excludeArtifactIds>de.metas.fresh.base,metasfresh-dist-base</excludeArtifactIds>
 							<classifier>jasper</classifier>
 							<excludeTransitive>true</excludeTransitive>
 							<failOnMissingClassifierArtifact>false</failOnMissingClassifierArtifact>
@@ -560,7 +560,7 @@ note: when adding new records, please roughly order them by alphabet.
 						</goals>
 						<configuration>
 							<type>jar</type>
-							<includeArtifactIds>de.metas.endcustomer.mf15.base</includeArtifactIds>
+							<includeArtifactIds>metasfresh-dist-base</includeArtifactIds>
 							<classifier>jasper</classifier>
 							<excludeTransitive>true</excludeTransitive>
 							<failOnMissingClassifierArtifact>false</failOnMissingClassifierArtifact>
@@ -589,14 +589,14 @@ note: when adding new records, please roughly order them by alphabet.
 							<artifactItems>
 								<artifactItem>
 									<groupId>${project.groupId}</groupId>
-									<artifactId>de.metas.endcustomer.mf15.serverRoot</artifactId>
+									<artifactId>metasfresh-dist-serverRoot</artifactId>
 									<version>${project.version}</version>
 									<outputDirectory>${project.build.directory}/dist/deploy</outputDirectory>
 									<destFileName>metasfresh_server.jar</destFileName>
 								</artifactItem>
 								<artifactItem>
 									<groupId>${project.groupId}</groupId>
-									<artifactId>de.metas.endcustomer.mf15.swingui</artifactId>
+									<artifactId>metasfresh-dist-swingui</artifactId>
 									<classifier>client</classifier>
 									<version>${project.version}</version>
 									<type>zip</type>
