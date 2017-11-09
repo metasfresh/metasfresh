@@ -77,7 +77,7 @@
 		</dependency>
 
 		<dependency>
-			<groupId>de.metas.report.jasper.commons</groupId>
+			<groupId>de.metas.report</groupId>
 			<artifactId>de.metas.report.jasper.commons</artifactId>
 			<version>10.0.0</version>
 		</dependency>

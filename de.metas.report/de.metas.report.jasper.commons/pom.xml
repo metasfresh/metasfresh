@@ -8,7 +8,7 @@
 	</parent>
 
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>de.metas.report.jasper.commons</groupId>
+	<groupId>de.metas.report</groupId>
 	<artifactId>de.metas.report.jasper.commons</artifactId>
 	<packaging>jar</packaging>
 
@@ -87,7 +87,7 @@
 Our swing client is currently an uber-jar, and by copying this stuff into it, we run into trouble as described here: 
 http://community.jaspersoft.com/questions/542314/problem-fonts-input-stream-not-found-netsfjasperreportsfontsfontsxml
 Therefore we just add this dependency to both
-	de.metas.report.jasper.server.base and 
+	metasfresh-report-service and 
 	de.metas.endcustomer.xxxx.swingui
 		<dependency>
 			<groupId>ar.com.fdvs</groupId>
