@@ -46,12 +46,6 @@ import lombok.NonNull;
 		throw new UnsupportedOperationException("windowId not available");
 	}
 
-	@Override
-	public void setViewsRepository(final IViewsRepository viewsRepository)
-	{
-		// nothing
-	}
-
 	private final void onViewRemoved(final RemovalNotification<Object, Object> notification)
 	{
 		final IView view = (IView)notification.getValue();

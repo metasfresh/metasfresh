@@ -38,7 +38,9 @@ public interface IViewsIndexStorage
 	WindowId getWindowId();
 
 	/** Don't call it directly. Will be called by API. */
-	void setViewsRepository(IViewsRepository viewsRepository);
+	default void setViewsRepository(IViewsRepository viewsRepository)
+	{
+	}
 
 	/** Adds given view to the index. If the view already exists, it will be overridden. */
 	void put(IView view);
