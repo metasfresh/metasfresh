@@ -68,11 +68,11 @@ public class ContractChangeBLTest extends AbstractFlatrateTermTest
 	{
 		final I_C_Flatrate_Term contract = prepareContractForTest(true);
 		contractChangeBL.cancelContract(contract, contractChangeParameters);
-		assertFlatrateTerm(contract);
+		assertFlatrateTerm(contract, cancelDate);
 	}
 
 	@Test
-	public void cancel_a_Contract_which_was_extended()
+	public void cancel_a_Contract_which_was_extended_using_a_date_from_initial_contract()
 	{
 		final I_C_Flatrate_Term contract = prepareContractForTest(true);
 		Services.get(IFlatrateBL.class).extendContract(contract, true, true, null, null);
@@ -82,11 +82,38 @@ public class ContractChangeBLTest extends AbstractFlatrateTermTest
 		assertThat(extendedContract).isNotNull();
 		
 		contractChangeBL.cancelContract(contract, contractChangeParameters);
-		assertFlatrateTerm(contract);
+		assertFlatrateTerm(contract, cancelDate);
 		assertThat(contract.getMasterEndDate()).isEqualTo(cancelDate);
-		assertFlatrateTerm(extendedContract);
+		assertFlatrateTerm(extendedContract, cancelDate);
 	}
 
+	
+	@Test
+	public void cancel_a_Contract_which_was_extended_using_a_date_from_extended_contract()
+	{
+		final I_C_Flatrate_Term contract = prepareContractForTest(true);
+		Services.get(IFlatrateBL.class).extendContract(contract, true, true, null, null);
+		save(contract);
+		
+		final I_C_Flatrate_Term extendedContract = contract.getC_FlatrateTerm_Next();
+		assertThat(extendedContract).isNotNull();
+		
+		
+		final Timestamp cancelinglDate = TimeUtil.parseTimestamp("2018-12-10");
+		final ContractChangeParameters changeParameters = ContractChangeParameters.builder()
+				.changeDate(cancelinglDate)
+				.isCloseInvoiceCandidate(true)
+				.terminationReason(X_C_Flatrate_Term.TERMINATIONREASON_General)
+				.terminationMemo(terminationMemo)
+				.build();
+		
+		contractChangeBL.cancelContract(contract, changeParameters);
+		assertFlatrateTerm(contract, cancelinglDate);
+		assertThat(contract.getMasterEndDate()).isEqualTo(cancelinglDate);
+		assertFlatrateTerm(extendedContract, cancelinglDate);
+		assertThat(contract.getMasterEndDate()).isEqualTo(extendedContract.getMasterEndDate());
+	}
+	
 	private I_C_Flatrate_Term prepareContractForTest(final boolean isAutoRenew)
 	{
 		prepareBPartner();
@@ -98,12 +125,12 @@ public class ContractChangeBLTest extends AbstractFlatrateTermTest
 		return contract;
 	}
 
-	private void assertFlatrateTerm(@NonNull final I_C_Flatrate_Term currentflatrateTerm)
+	private void assertFlatrateTerm(@NonNull final I_C_Flatrate_Term currentflatrateTerm, final Timestamp cancelinglDate)
 	{
 		assertThat(currentflatrateTerm.getContractStatus()).isEqualTo(X_C_Flatrate_Term.CONTRACTSTATUS_Quit);
 		assertThat(currentflatrateTerm.isAutoRenew()).isFalse();
 		assertThat(currentflatrateTerm.getMasterStartDate()).isNotNull();
-		assertThat(currentflatrateTerm.getMasterEndDate()).isEqualTo(cancelDate);
+		assertThat(currentflatrateTerm.getMasterEndDate()).isEqualTo(cancelinglDate);
 		assertThat(currentflatrateTerm.getTerminationMemo()).isEqualTo(terminationMemo);
 		assertThat(currentflatrateTerm.getTerminationReason()).isEqualTo(X_C_Flatrate_Term.TERMINATIONREASON_General);
 		
