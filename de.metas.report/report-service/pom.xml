@@ -12,6 +12,8 @@
 
 	<properties>
 		<migration-sql-basedir>42-de.metas.report.jasper.server</migration-sql-basedir>
+
+		<start-class>de.metas.report.ReportServiceMain</start-class>
 	</properties>
 
 	<!-- 
@@ -148,6 +150,12 @@
 						<configuration>
 							<executable>true</executable>
 							<mainClass>${start-class}</mainClass>
+
+							<!-- layout=ZIP still creates an executable jar, but with org.springframework.boot.loader.PropertiesLauncher
+								 That way we can specify external jars which contain private user specific fonts
+								 See issue: https://github.com/metasfresh/metasfresh/issues/2932 
+		    					 Also see https://docs.spring.io/spring-boot/docs/current/reference/html/executable-jar.html#executable-jar-property-launcher-features -->
+							<layout>ZIP</layout>
 						</configuration>
 					</execution>
 					<execution>
