@@ -4,6 +4,7 @@ npm-debug.log*
 dist
 .idea
 /config.js
+/config.js.template.*
 /static
 .vscode
 .history
