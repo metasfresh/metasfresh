@@ -133,7 +133,7 @@ Since we now work with a range, we now declare the dependencies here where range
 		<!-- https://github.com/metasfresh/metasfresh/issues/523 -->
 		<dependency>
 			<groupId>de.metas.material</groupId>
-			<artifactId>metasfresh-material-dispo-service</artifactId>
+			<artifactId>material-dispo-service</artifactId>
 			<version>${metasfresh.version}</version> <!-- currently this service is not in a dedicated repo and thus doesn't have a dedicated version -->
 			<type>jar</type>
 			<scope>provided</scope> <!-- we need this dependency here to update the version property-->
@@ -335,7 +335,7 @@ note: when adding new records, please roughly order them by alphabet.
 
 		<dependency>
 			<groupId>de.metas.material</groupId>
-			<artifactId>metasfresh-material-dispo-service</artifactId>
+			<artifactId>material-dispo-service</artifactId>
 			<version>${metasfresh.version}</version>
 			<classifier>migration-postgres-sql</classifier>
 			<type>zip</type>
@@ -402,8 +402,8 @@ note: when adding new records, please roughly order them by alphabet.
 		</dependency>
 
 		<dependency>
-			<groupId>de.metas.report.jasper.server</groupId>
-			<artifactId>de.metas.report.jasper.server.base</artifactId>
+			<groupId>de.metas.report</groupId>
+			<artifactId>report-service</artifactId>
 			<version>${metasfresh.version}</version>
 			<classifier>migration-postgres-sql</classifier>
 			<type>zip</type>

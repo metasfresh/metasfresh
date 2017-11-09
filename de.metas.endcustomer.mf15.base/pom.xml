@@ -43,8 +43,8 @@
 		scope=provided so it's ONLY considered on the local dev station
 		 -->
 		<dependency>
-			<groupId>de.metas.report.jasper.server</groupId>
-			<artifactId>de.metas.report.jasper.server.base</artifactId>
+			<groupId>de.metas.report</groupId>
+			<artifactId>report-service</artifactId>
 			<version>${metasfresh.version}</version>
 			<scope>provided</scope>
 		</dependency>

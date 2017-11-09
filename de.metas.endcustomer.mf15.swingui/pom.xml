@@ -112,14 +112,14 @@
 			i.e. a developer wants to use embedded jasper server while working/debugging 
 			in eclipse. scope=provided so it's ONLY considered on the local dev station -->
 		<dependency>
-			<groupId>de.metas.report.jasper.server</groupId>
-			<artifactId>de.metas.report.jasper.server.base</artifactId>
+			<groupId>de.metas.report</groupId>
+			<artifactId>report-service</artifactId>
 			<version>${metasfresh.version}</version>
 			<scope>provided</scope>
 		</dependency>
 		
 		<dependency>
-            <groupId>de.metas.report.jasper.commons</groupId>
+            <groupId>de.metas.report</groupId>
             <artifactId>de.metas.report.jasper.commons</artifactId>
             <version>${metasfresh.version}</version>
         </dependency>
