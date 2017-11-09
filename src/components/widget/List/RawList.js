@@ -371,7 +371,7 @@ class RawList extends Component {
         const { defaultValue } = this.props;
         const { selected } = this.state;
 
-        const value = defaultValue.caption;
+        const value = defaultValue ? defaultValue.caption : null;
 
         const classes = ['input-dropdown-list-option'];
 
