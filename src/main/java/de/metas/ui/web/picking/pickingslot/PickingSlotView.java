@@ -222,12 +222,6 @@ public class PickingSlotView implements IView
 	}
 
 	@Override
-	public boolean hasAttributesSupport()
-	{
-		return false;
-	}
-
-	@Override
 	public <T> List<T> retrieveModelsByIds(final DocumentIdsSelection rowIds, final Class<T> modelClass)
 	{
 		throw new UnsupportedOperationException();
