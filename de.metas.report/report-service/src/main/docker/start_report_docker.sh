@@ -33,16 +33,15 @@ run_metasfresh()
  -Xmx512M -XX:+HeapDumpOnOutOfMemoryError \
  -DPropertyFile=/opt/metasfresh/metasfresh-report/metasfresh.properties \
  -Djava.security.egd=file:/dev/./urandom \
- -Dspring.boot.admin.url=http://localhost:9090 \
  -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=8791 \
  -jar metasfresh-report.jar
 }
 
 set_properties /opt/metasfresh/metasfresh-report/metasfresh.properties
 
-echo "*********************************************************"
-echo "Waiting for the database server to start on host $DB_HOST"
-echo "*********************************************************"
+echo "*************************************************************"
+echo "Waiting for the database server to start on DB_HOST = '${DB_HOST}'"
+echo "*************************************************************"
 wait_dbms
 echo ">>>>>>>>>>>> Database Server has started"
 
