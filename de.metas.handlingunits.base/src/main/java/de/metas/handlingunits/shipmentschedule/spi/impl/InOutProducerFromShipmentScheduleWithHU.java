@@ -37,10 +37,8 @@ import org.adempiere.util.Services;
 import org.adempiere.util.agg.key.IAggregationKeyBuilder;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_Order;
-import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_M_InOut;
-import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
 import de.metas.document.IDocTypeDAO;
@@ -163,18 +161,18 @@ public class InOutProducerFromShipmentScheduleWithHU implements IInOutProducerFr
 	{
 		final I_M_ShipmentSchedule shipmentSchedule = candidate.getM_ShipmentSchedule();
 
-		Timestamp movementDate = shipmentDateToday ? SystemTime.asTimestamp() : calculateShipmentDate(candidate);
+		final Timestamp shipmentDate = shipmentDateToday ? SystemTime.asTimestamp() : calculateShipmentDate(candidate);
 
 		//
 		// Search for existing shipment to consolidate on
 		I_M_InOut shipment = null;
 		if (shipmentScheduleBL.isSchedAllowsConsolidate(shipmentSchedule))
 		{
-			shipment = huShipmentScheduleBL.getOpenShipmentOrNull(candidate, movementDate);
+			shipment = huShipmentScheduleBL.getOpenShipmentOrNull(candidate, shipmentDate);
 
-			if (shipmentDateToday)
+			if (!shipmentDateToday && shipment != null)
 			{
-				updateShipmentDate(shipment, movementDate);
+				updateShipmentDate(shipment, shipmentDate);
 			}
 		}
 
@@ -182,49 +180,44 @@ public class InOutProducerFromShipmentScheduleWithHU implements IInOutProducerFr
 		// If there was no shipment found, create a new one now
 		if (shipment == null)
 		{
-			shipment = createShipmentHeader(candidate, movementDate);
+			shipment = createShipmentHeader(candidate, shipmentDate);
 		}
 		return shipment;
 	}
 
-	private void updateShipmentDate(final I_M_InOut shipment, final Timestamp movementDate)
+	private void updateShipmentDate(final I_M_InOut shipment, final Timestamp shipmentDate)
 	{
 		final Timestamp currentShipmentDate = shipment.getMovementDate();
-		
+
 		// the shipment was created before but wasn't yet completed;
-		if(currentShipmentDate.before(TimeUtil.getNow()))
+		if (currentShipmentDate.before(TimeUtil.getNow()))
 		{
-			shipment.setMovementDate(movementDate);
+			shipment.setMovementDate(shipmentDate);
 		}
-		
-		else if (currentShipmentDate.after(movementDate))
+
+		else if (currentShipmentDate.after(shipmentDate))
 		{
-			shipment.setMovementDate(movementDate);
+			shipment.setMovementDate(shipmentDate);
 		}
-		
+
 		InterfaceWrapperHelper.save(shipment);
-		
+
 	}
 
 	private Timestamp calculateShipmentDate(final IShipmentScheduleWithHU candidate)
 	{
 		final Timestamp now = TimeUtil.getNow();
 
-		final I_C_OrderLine orderLine = InterfaceWrapperHelper.create(Env.getCtx(), candidate.getC_OrderLine_ID(), I_C_OrderLine.class, ITrx.TRXNAME_None);
+		final I_M_ShipmentSchedule schedule = candidate.getM_ShipmentSchedule();
 
-		if (orderLine == null || orderLine.getC_Order() == null)
+		final Timestamp deliveryDateEffective = schedule.getDeliveryDate_Effective();
+
+		if (deliveryDateEffective.before(now))
 		{
 			return now;
 		}
 
-		final Timestamp datePromised = orderLine.getC_Order().getDatePromised();
-
-		if (datePromised.before(now))
-		{
-			return now;
-		}
-
-		return datePromised;
+		return deliveryDateEffective;
 	}
 
 	/**
