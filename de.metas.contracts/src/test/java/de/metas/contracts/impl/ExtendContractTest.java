@@ -3,24 +3,19 @@ package de.metas.contracts.impl;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.math.BigDecimal;
 import java.sql.Timestamp;
 
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.util.Services;
-import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_M_Product;
 import org.compiere.util.TimeUtil;
 import org.junit.Before;
 import org.junit.Test;
 
-import de.metas.adempiere.model.I_AD_User;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.impl.FlatrateTermDataFactory.ProductAndPricingSystem;
 import de.metas.contracts.interceptor.C_Flatrate_Term;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
-import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import lombok.NonNull;
 
 public class ExtendContractTest extends AbstractFlatrateTermTest
@@ -61,74 +56,10 @@ public class ExtendContractTest extends AbstractFlatrateTermTest
 	private I_C_Flatrate_Term prepareContractForTest(final boolean isAutoRenew)
 	{
 		prepareBPartner();
-		final ProductAndPricingSystem productAndPricingSystem = createProductAndPricingSystem();
+		final ProductAndPricingSystem productAndPricingSystem = createProductAndPricingSystem(startDate);
 		createProductAcct(productAndPricingSystem);
 		final I_C_Flatrate_Conditions conditions = createFlatrateConditions(productAndPricingSystem, isAutoRenew);
-		final I_C_Flatrate_Term contract = createFlatrateTerm(conditions, productAndPricingSystem);
-		return contract;
-	}
-
-	private ProductAndPricingSystem createProductAndPricingSystem()
-	{
-		return FlatrateTermDataFactory.productAndPricingNew()
-				.productValue("01")
-				.productName("testProduct")
-				.country(getCountry())
-				.isTaxInclcuded(false)
-				.validFrom(startDate)
-				.build();
-	}
-
-	private void createProductAcct(@NonNull final ProductAndPricingSystem productAndPricingSystem)
-	{
-		final I_M_Product product = productAndPricingSystem.getProduct();
-
-		FlatrateTermDataFactory.productAcctNew()
-				.product(product)
-				.acctSchema(getAcctSchema())
-				.build();
-	}
-
-	private I_C_Flatrate_Conditions createFlatrateConditions(@NonNull final ProductAndPricingSystem productAndPricingSystem, final boolean isAutoRenew)
-	{
-		return FlatrateTermDataFactory.flatrateConditionsNew()
-				.name("Abo")
-				.calendar(getCalendar())
-				.pricingSystem(productAndPricingSystem.getPricingSystem())
-				.invoiceRule(X_C_Flatrate_Conditions.INVOICERULE_Sofort)
-				.typeConditions(X_C_Flatrate_Conditions.TYPE_CONDITIONS_Subscription)
-				.isAutoRenew(isAutoRenew)
-				.build();
-	}
-
-	private I_C_Flatrate_Term createFlatrateTerm(@NonNull final I_C_Flatrate_Conditions conditions, @NonNull final ProductAndPricingSystem productAndPricingSystem)
-	{
-		final I_M_Product product = productAndPricingSystem.getProduct();
-
-		final I_C_Flatrate_Term contract = Services.get(IFlatrateBL.class).createTerm(
-				helper.getContextProvider(),
-				getBpartner(),
-				conditions,
-				startDate,
-				null,
-				product,
-				false);
-
-		final I_C_BPartner_Location bpLocation = getBpLocation();
-		final I_AD_User user = getUser();
-
-		contract.setBill_Location(bpLocation);
-		contract.setBill_User(user);
-		contract.setDropShip_BPartner(getBpartner());
-		contract.setDropShip_Location(bpLocation);
-		contract.setDropShip_User(user);
-		contract.setPriceActual(BigDecimal.valueOf(2));
-		contract.setPlannedQtyPerUnit(BigDecimal.ONE);
-		contract.setMasterStartDate(startDate);
-		contract.setM_Product(product);
-		contract.setIsTaxIncluded(true);
-		save(contract);
-
+		final I_C_Flatrate_Term contract = createFlatrateTerm(conditions, productAndPricingSystem.getProduct(), startDate);
 		return contract;
 	}
 

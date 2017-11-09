@@ -6,6 +6,7 @@ package de.metas.contracts.impl;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Properties;
 
@@ -22,6 +23,7 @@ import org.compiere.model.I_C_Calendar;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_Period;
 import org.compiere.model.I_C_Year;
+import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.TimeUtil;
 import org.junit.Before;
@@ -30,7 +32,15 @@ import org.junit.BeforeClass;
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.adempiere.model.I_C_CountryArea;
 import de.metas.adempiere.service.ICountryAreaBL;
+import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.flatrate.interfaces.I_C_DocType;
+import de.metas.contracts.impl.FlatrateTermDataFactory.ProductAndPricingSystem;
+import de.metas.contracts.model.I_C_Contract_Change;
+import de.metas.contracts.model.I_C_Flatrate_Conditions;
+import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.contracts.model.X_C_Contract_Change;
+import de.metas.contracts.model.X_C_Flatrate_Conditions;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -247,5 +257,83 @@ public abstract class AbstractFlatrateTermTest
 
 		return bpartner.getC_BPartner_ID();
 	}
+	
+	
+	protected ProductAndPricingSystem createProductAndPricingSystem(@NonNull final Timestamp startDate)
+	{
+		return FlatrateTermDataFactory.productAndPricingNew()
+				.productValue("01")
+				.productName("testProduct")
+				.country(getCountry())
+				.isTaxInclcuded(false)
+				.validFrom(startDate)
+				.build();
+	}
 
+	protected void createProductAcct(@NonNull final ProductAndPricingSystem productAndPricingSystem)
+	{
+		final I_M_Product product = productAndPricingSystem.getProduct();
+
+		FlatrateTermDataFactory.productAcctNew()
+				.product(product)
+				.acctSchema(getAcctSchema())
+				.build();
+	}
+
+	protected I_C_Flatrate_Conditions createFlatrateConditions(@NonNull final ProductAndPricingSystem productAndPricingSystem, final boolean isAutoRenew)
+	{
+		return FlatrateTermDataFactory.flatrateConditionsNew()
+				.name("Abo")
+				.calendar(getCalendar())
+				.pricingSystem(productAndPricingSystem.getPricingSystem())
+				.invoiceRule(X_C_Flatrate_Conditions.INVOICERULE_Sofort)
+				.typeConditions(X_C_Flatrate_Conditions.TYPE_CONDITIONS_Subscription)
+				.isAutoRenew(isAutoRenew)
+				.build();
+	}
+
+	protected I_C_Flatrate_Term createFlatrateTerm(@NonNull final I_C_Flatrate_Conditions conditions, @NonNull final I_M_Product product, @NonNull final Timestamp startDate)
+	{
+		final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
+		final I_C_Flatrate_Term contract = flatrateBL.createTerm(
+				helper.getContextProvider(),
+				getBpartner(),
+				conditions,
+				startDate,
+				null,
+				product,
+				false);
+
+		final I_C_BPartner_Location bpLocation = getBpLocation();
+		final I_AD_User user = getUser();
+
+		contract.setBill_Location(bpLocation);
+		contract.setBill_User(user);
+		contract.setDropShip_BPartner(getBpartner());
+		contract.setDropShip_Location(bpLocation);
+		contract.setDropShip_User(user);
+		contract.setPriceActual(BigDecimal.valueOf(2));
+		contract.setPlannedQtyPerUnit(BigDecimal.ONE);
+		contract.setMasterStartDate(startDate);
+		contract.setM_Product(product);
+		contract.setIsTaxIncluded(true);
+		save(contract);
+		flatrateBL.complete(contract);
+
+		return contract;
+	}
+
+	
+	protected I_C_Contract_Change createContractChange(@NonNull final I_C_Flatrate_Conditions flatrateConditions)
+	{
+		final I_C_Contract_Change contractChange = newInstance(I_C_Contract_Change.class);
+		contractChange.setAction(X_C_Contract_Change.ACTION_Statuswechsel);
+		contractChange.setC_Flatrate_Transition(flatrateConditions.getC_Flatrate_Transition());
+		contractChange.setC_Flatrate_Conditions(flatrateConditions);
+		contractChange.setContractStatus( X_C_Contract_Change.CONTRACTSTATUS_Gekuendigt);
+		contractChange.setDeadLine(1);
+		contractChange.setDeadLineUnit(X_C_Contract_Change.DEADLINEUNIT_MonatE);
+		save(contractChange);
+		return contractChange;
+	}
 }

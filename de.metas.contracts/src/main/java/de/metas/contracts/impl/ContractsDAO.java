@@ -41,12 +41,15 @@ import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_SubscriptionProgress;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_SubscriptionProgress;
+import de.metas.contracts.subscription.ISubscriptionDAO;
+import de.metas.contracts.subscription.ISubscriptionDAO.SubscriptionProgressQuery;
 import de.metas.document.engine.IDocument;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import lombok.NonNull;
 
 public class ContractsDAO implements IContractsDAO
 {
+	@Override
 	public List<I_C_Flatrate_Term> retrieveSubscriptionTermsWithMissingCandidates(final int limit)
 	{
 		final Timestamp now = SystemTime.asTimestamp();
@@ -136,5 +139,13 @@ public class ContractsDAO implements IContractsDAO
 				.aggregate(I_C_SubscriptionProgress.COLUMN_Qty, IQuery.AGGREGATE_SUM, BigDecimal.class);
 
 		return qty;
+	}
+	
+	@Override
+	public List<I_C_SubscriptionProgress> getSubscriptionProgress(@NonNull final I_C_Flatrate_Term currentTerm)
+	{
+		final ISubscriptionDAO subscriptionDAO = Services.get(ISubscriptionDAO.class);
+		final SubscriptionProgressQuery currentTermQuery = SubscriptionProgressQuery.term(currentTerm).build();
+		return subscriptionDAO.retrieveSubscriptionProgresses(currentTermQuery);
 	}
 }
