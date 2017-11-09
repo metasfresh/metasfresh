@@ -25,6 +25,7 @@ package org.adempiere.service;
 import java.util.List;
 import java.util.Map;
 
+import org.adempiere.util.Check;
 import org.adempiere.util.ISingletonService;
 
 public interface ISysConfigBL extends ISingletonService
@@ -72,6 +73,16 @@ public interface ISysConfigBL extends ISingletonService
 	 * @return boolean
 	 */
 	public boolean getBooleanValue(String Name, boolean defaultValue);
+	
+	default <T extends Enum<T>> T getEnumValue(final String name, final T defaultValue, final Class<T> enumType)
+	{
+		final String valueStr = getValue(name, null);
+		if(Check.isEmpty(valueStr, true))
+		{
+			return defaultValue;
+		}
+		return Enum.valueOf(enumType, valueStr);
+	}
 
 	/**
 	 * Get client configuration property of type string.<br>
