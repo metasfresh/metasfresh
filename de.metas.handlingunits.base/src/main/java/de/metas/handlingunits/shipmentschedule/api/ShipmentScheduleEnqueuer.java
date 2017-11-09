@@ -100,7 +100,8 @@ public class ShipmentScheduleEnqueuer
 			final int adPInstanceId,
 			final IQueryFilter<I_M_ShipmentSchedule> queryFilters,
 			final boolean useQtyPickedRecords,
-			final boolean completeShipments)
+			final boolean completeShipments,
+			final boolean isShipmentDateToday)
 	{
 		final String trxNameInitial = getTrxNameInitial();
 
@@ -119,6 +120,7 @@ public class ShipmentScheduleEnqueuer
 							queryFilters,
 							useQtyPickedRecords,
 							completeShipments,
+							isShipmentDateToday,
 							adPInstanceId,
 							mainLock);
 
@@ -134,6 +136,7 @@ public class ShipmentScheduleEnqueuer
 			final IQueryFilter<I_M_ShipmentSchedule> queryFilters,
 			final boolean useQtyPickedRecords,
 			final boolean completeShipments,
+			final boolean isShipmentDateToday,
 			final int adPinstanceId,
 			final ILock mainLock)
 	{
@@ -202,7 +205,9 @@ public class ShipmentScheduleEnqueuer
 				workpackageBuilder
 						.parameters()
 						.setParameter(GenerateInOutFromShipmentSchedules.PARAM_IsUseQtyPicked, useQtyPickedRecords)
-						.setParameter(GenerateInOutFromShipmentSchedules.PARAM_IsCompleteShipments, completeShipments);
+						.setParameter(GenerateInOutFromShipmentSchedules.PARAM_IsCompleteShipments, completeShipments)
+						.setParameter(GenerateInOutFromShipmentSchedules.PARAM_IsShipmentDateToday, isShipmentDateToday);
+				
 
 				// Create a new locker which will grab the locked invoice candidates from 'mainLock'
 				// and it will move them to a new owner which is created per workpackage

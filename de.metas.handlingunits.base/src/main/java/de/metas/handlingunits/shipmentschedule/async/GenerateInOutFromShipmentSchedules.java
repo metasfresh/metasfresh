@@ -111,6 +111,7 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 
 	public static final String PARAM_IsUseQtyPicked = "IsUseQtyPicked";
 	public static final String PARAM_IsCompleteShipments = "IsCompleteShipments";
+	public static final String PARAM_IsShipmentDateToday = "IsShipmentDateToday";
 
 	public GenerateInOutFromShipmentSchedules()
 	{
@@ -157,7 +158,9 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 			manualPackingMaterial = false; // use the HUs!
 
 		}
-		shipmentGenerator.generateInOuts(ctx, candidates.iterator(), shipmentDocDocAction, createPackingLines, manualPackingMaterial, ITrx.TRXNAME_ThreadInherited);
+		
+		final boolean isShipmentDateToday =  getParameters().getParameterAsBool(PARAM_IsShipmentDateToday);
+		shipmentGenerator.generateInOuts(ctx, candidates.iterator(), shipmentDocDocAction, createPackingLines, manualPackingMaterial, isShipmentDateToday, ITrx.TRXNAME_ThreadInherited);
 
 		return Result.SUCCESS;
 	}

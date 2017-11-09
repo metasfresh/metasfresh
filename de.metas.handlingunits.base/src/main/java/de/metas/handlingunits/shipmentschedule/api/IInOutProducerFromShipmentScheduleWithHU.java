@@ -74,4 +74,6 @@ public interface IInOutProducerFromShipmentScheduleWithHU extends ITrxItemChunkP
 	 * @see I_M_InOutLine#setIsManualPackingMaterial(boolean)
 	 */
 	IInOutProducerFromShipmentScheduleWithHU setManualPackingMaterial(boolean manualPackingMaterial);
+
+	IInOutProducerFromShipmentScheduleWithHU setShipmentDateToday(boolean isShipmentDateToday);
 }

@@ -52,6 +52,9 @@ public class M_ShipmentSchedule_EnqueueSelection extends JavaProcess
 	@Param(parameterName = "IsCompleteShipments", mandatory = true)
 	private boolean isCompleteShipments;
 
+	@Param(parameterName = "IsShipmentDateToday", mandatory = true)
+	private boolean isShipmentDateToday;
+	
 	@Override
 	protected String doIt() throws Exception
 	{
@@ -59,7 +62,7 @@ public class M_ShipmentSchedule_EnqueueSelection extends JavaProcess
 
 		final Result result = new ShipmentScheduleEnqueuer()
 				.setContext(getCtx(), getTrxName())
-				.createWorkpackages(getAD_PInstance_ID(), queryFilters, isUseQtyPicked, isCompleteShipments);
+				.createWorkpackages(getAD_PInstance_ID(), queryFilters, isUseQtyPicked, isCompleteShipments, isShipmentDateToday);
 
 		return "@Created@: " + result.getEneuedPackagesCount() + " @" + I_C_Queue_WorkPackage.COLUMNNAME_C_Queue_WorkPackage_ID + "@; @Skip@ " + result.getSkippedPackagesCount();
 	}

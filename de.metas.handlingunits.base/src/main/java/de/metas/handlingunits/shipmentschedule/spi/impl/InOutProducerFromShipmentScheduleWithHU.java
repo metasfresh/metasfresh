@@ -13,11 +13,11 @@ package de.metas.handlingunits.shipmentschedule.spi.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -37,8 +37,11 @@ import org.adempiere.util.Services;
 import org.adempiere.util.agg.key.IAggregationKeyBuilder;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_M_InOut;
+import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
@@ -102,6 +105,8 @@ public class InOutProducerFromShipmentScheduleWithHU implements IInOutProducerFr
 
 	private boolean createPackingLines = false;
 	private boolean manualPackingMaterial = false;
+	private boolean shipmentDateToday = false;
+
 	/**
 	 * A list of TUs which are assigned to different shipment lines.
 	 *
@@ -158,14 +163,19 @@ public class InOutProducerFromShipmentScheduleWithHU implements IInOutProducerFr
 	{
 		final I_M_ShipmentSchedule shipmentSchedule = candidate.getM_ShipmentSchedule();
 
-		final Timestamp movementDate = SystemTime.asTimestamp();
+		Timestamp movementDate = shipmentDateToday ? SystemTime.asTimestamp() : calculateShipmentDate(candidate);
 
 		//
 		// Search for existing shipment to consolidate on
 		I_M_InOut shipment = null;
 		if (shipmentScheduleBL.isSchedAllowsConsolidate(shipmentSchedule))
 		{
-			shipment = huShipmentScheduleBL.getOpenShipmentScheduleOrNull(candidate, movementDate);
+			shipment = huShipmentScheduleBL.getOpenShipmentOrNull(candidate, movementDate);
+
+			if (shipmentDateToday)
+			{
+				updateShipmentDate(shipment, movementDate);
+			}
 		}
 
 		//
@@ -175,6 +185,46 @@ public class InOutProducerFromShipmentScheduleWithHU implements IInOutProducerFr
 			shipment = createShipmentHeader(candidate, movementDate);
 		}
 		return shipment;
+	}
+
+	private void updateShipmentDate(final I_M_InOut shipment, final Timestamp movementDate)
+	{
+		final Timestamp currentShipmentDate = shipment.getMovementDate();
+		
+		// the shipment was created before but wasn't yet completed;
+		if(currentShipmentDate.before(TimeUtil.getNow()))
+		{
+			shipment.setMovementDate(movementDate);
+		}
+		
+		else if (currentShipmentDate.after(movementDate))
+		{
+			shipment.setMovementDate(movementDate);
+		}
+		
+		InterfaceWrapperHelper.save(shipment);
+		
+	}
+
+	private Timestamp calculateShipmentDate(final IShipmentScheduleWithHU candidate)
+	{
+		final Timestamp now = TimeUtil.getNow();
+
+		final I_C_OrderLine orderLine = InterfaceWrapperHelper.create(Env.getCtx(), candidate.getC_OrderLine_ID(), I_C_OrderLine.class, ITrx.TRXNAME_None);
+
+		if (orderLine == null || orderLine.getC_Order() == null)
+		{
+			return now;
+		}
+
+		final Timestamp datePromised = orderLine.getC_Order().getDatePromised();
+
+		if (datePromised.before(now))
+		{
+			return now;
+		}
+
+		return datePromised;
 	}
 
 	/**
@@ -277,6 +327,7 @@ public class InOutProducerFromShipmentScheduleWithHU implements IInOutProducerFr
 			currentShipmentLineBuilder = new ShipmentLineBuilder(currentShipment);
 			currentShipmentLineBuilder.setManualPackingMaterial(manualPackingMaterial);
 			currentShipmentLineBuilder.setAlreadyAssignedTUIds(tuIdsAlreadyAssignedToShipmentLine);
+
 		}
 
 		//
@@ -446,6 +497,13 @@ public class InOutProducerFromShipmentScheduleWithHU implements IInOutProducerFr
 	}
 
 	@Override
+	public IInOutProducerFromShipmentScheduleWithHU setShipmentDateToday(boolean isShipmentDateToday)
+	{
+		this.shipmentDateToday = isShipmentDateToday;
+		return this;
+	}
+
+	@Override
 	public String toString()
 	{
 		return "InOutProducerFromShipmentSchedule [result=" + result
@@ -454,4 +512,5 @@ public class InOutProducerFromShipmentScheduleWithHU implements IInOutProducerFr
 				+ ", currentShipmentLineBuilder=" + currentShipmentLineBuilder + ", currentCandidates=" + currentCandidates
 				+ ", lastItem=" + lastItem + "]";
 	}
+
 }
