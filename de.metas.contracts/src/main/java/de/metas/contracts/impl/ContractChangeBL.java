@@ -24,9 +24,9 @@ package de.metas.contracts.impl;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+import java.util.stream.Collectors;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
@@ -64,7 +64,7 @@ import lombok.Setter;
 public class ContractChangeBL implements IContractChangeBL
 {
 	private static final Logger logger = LogManager.getLogger(ContractChangeBL.class);
-	
+
 	@Override
 	public void cancelContract(@NonNull final I_C_Flatrate_Term currentTerm,
 			final @NonNull ContractChangeParameters contractChangeParameters)
@@ -114,16 +114,16 @@ public class ContractChangeBL implements IContractChangeBL
 		currentTerm.setIsAutoRenew(false);
 		currentTerm.setContractStatus(X_C_Flatrate_Term.CONTRACTSTATUS_Quit);
 		InterfaceWrapperHelper.save(currentTerm);
-		
+
 		cancelNextContractIfNeeded(currentTerm, contractChangeParameters);
 		Services.get(IInvoiceCandidateHandlerBL.class).invalidateCandidatesFor(currentTerm);
 	}
-	
+
 	private boolean isCanceledContract(@NonNull final I_C_Flatrate_Term currentTerm)
 	{
 		return X_C_Flatrate_Term.CONTRACTSTATUS_Quit.equals(currentTerm.getContractStatus());
 	}
-	
+
 	private void createCompesationOrderAndDeleteDeliveriesIfNeeded(@NonNull final I_C_Flatrate_Term currentTerm,
 			@NonNull final ContractChangeParameters contractChangeParameters)
 	{
@@ -159,37 +159,27 @@ public class ContractChangeBL implements IContractChangeBL
 		}
 	}
 
-	private void createCompesationOrderIfNeeded(final ContextForCompesationOrder compensationOrderContext)
+	private void createCompesationOrderIfNeeded(@NonNull final ContextForCompesationOrder compensationOrderContext)
 	{
 		final I_C_Flatrate_Term currentTerm = compensationOrderContext.getCurrentTerm();
 		final Timestamp changeDate = compensationOrderContext.getChangeDate();
 
 		final I_C_Contract_Change changeConditions = Services.get(IContractChangeDAO.class).retrieveChangeConditions(currentTerm, X_C_Contract_Change.CONTRACTSTATUS_Gekuendigt, changeDate);
-
 		Check.assume(changeConditions != null, "");
 
 		if (currentTerm.getC_OrderLine_Term_ID() > 0 && changeConditions.getM_Product_ID() > 0)
 		{
 			final I_C_Order termChangeOrder = createCompesationOrder(currentTerm, changeConditions, changeDate);
-
-			final Properties ctx = InterfaceWrapperHelper.getCtx(currentTerm);
-			final List<I_C_SubscriptionProgress> subscriptionProgress = compensationOrderContext.getSubscriptionProgress();
-			final String trxName = InterfaceWrapperHelper.getTrxName(currentTerm);
-			final int pricingSystemId = getPricingSystemId(currentTerm, changeConditions);
-			final BigDecimal difference = computePriceDifference(ctx, subscriptionProgress, pricingSystemId, changeDate, trxName);
-			
+			final BigDecimal difference = computePriceDifference(compensationOrderContext, changeConditions);
 			final I_C_OrderLine termChangeOL = createChargeOrderLine(termChangeOrder, changeConditions, difference);
-			
 			final IDocumentBL docActionBL = Services.get(IDocumentBL.class);
 			docActionBL.processEx(termChangeOrder, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
 			currentTerm.setC_OrderLine_TermChange_ID(termChangeOL.getC_OrderLine_ID());
-
 			compensationOrderContext.setOrderCreated(true);
-
 		}
 	}
-	
-	private final I_C_Order createCompesationOrder(@NonNull final I_C_Flatrate_Term currentTerm, @NonNull final I_C_Contract_Change changeConditions, final Timestamp changeDate )
+
+	private final I_C_Order createCompesationOrder(@NonNull final I_C_Flatrate_Term currentTerm, @NonNull final I_C_Contract_Change changeConditions, final Timestamp changeDate)
 	{
 		final I_C_OrderLine currentTermOl = currentTerm.getC_OrderLine_Term();
 		final I_C_Order currentTermOrder = currentTermOl.getC_Order();
@@ -203,7 +193,7 @@ public class ContractChangeBL implements IContractChangeBL
 		termChangeOrder.setDatePromised(changeDate);
 		termChangeOrder.setDocAction(IDocument.ACTION_Complete);
 		InterfaceWrapperHelper.save(termChangeOrder);
-		
+
 		return termChangeOrder;
 	}
 
@@ -320,22 +310,15 @@ public class ContractChangeBL implements IContractChangeBL
 		return chargeOl;
 	}
 
-	private BigDecimal computePriceDifference(
-			final Properties ctx,
-			final List<I_C_SubscriptionProgress> sps,
-			final int pricingSystemId,
-			final Timestamp changeDate,
-			final String trxName)
+	private BigDecimal computePriceDifference(@NonNull final ContextForCompesationOrder compensationOrderContext, @NonNull final I_C_Contract_Change contractChange)
 	{
-		final List<I_C_SubscriptionProgress> deliveries = new ArrayList<>();
-		for (final I_C_SubscriptionProgress currentSP : sps)
-		{
-			if (changeDate.after(currentSP.getEventDate())
-					&& X_C_SubscriptionProgress.EVENTTYPE_Delivery.equals(currentSP.getEventType()))
-			{
-				deliveries.add(currentSP);
-			}
-		}
+		final List<I_C_SubscriptionProgress> sps = compensationOrderContext.getSubscriptionProgress();
+		final Timestamp changeDate = compensationOrderContext.getChangeDate();
+
+		final List<I_C_SubscriptionProgress> deliveries = sps.stream()
+				.filter(currentSP -> changeDate.after(currentSP.getEventDate())
+						&& X_C_SubscriptionProgress.EVENTTYPE_Delivery.equals(currentSP.getEventType()))
+				.collect(Collectors.toList());
 
 		if (deliveries.isEmpty())
 		{
@@ -343,6 +326,10 @@ public class ContractChangeBL implements IContractChangeBL
 		}
 
 		final ISubscriptionBL subscriptionBL = Services.get(ISubscriptionBL.class);
+		final I_C_Flatrate_Term currentTerm = compensationOrderContext.getCurrentTerm();
+		final Properties ctx = InterfaceWrapperHelper.getCtx(currentTerm);
+		final String trxName = InterfaceWrapperHelper.getTrxName(currentTerm);
+		final int pricingSystemId = getPricingSystemId(currentTerm, contractChange);
 
 		// compute the difference (see javaDoc of computePriceDifference for details)
 		final BigDecimal difference = subscriptionBL.computePriceDifference(ctx, pricingSystemId, deliveries, trxName);
