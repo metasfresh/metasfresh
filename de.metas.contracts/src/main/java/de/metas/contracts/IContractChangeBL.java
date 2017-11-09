@@ -29,9 +29,11 @@ import org.adempiere.util.ISingletonService;
 
 import de.metas.contracts.flatrate.exceptions.SubscriptionChangeException;
 import de.metas.contracts.model.I_C_Flatrate_Term;
+import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import lombok.experimental.FieldDefaults;
 
 public interface IContractChangeBL extends ISingletonService
 {
@@ -44,14 +46,15 @@ public interface IContractChangeBL extends ISingletonService
 	 *<code>note></code> notice where additional infos are storred when cancelling the contract
 	 */
 	@Value
+	@FieldDefaults(makeFinal=true, level=AccessLevel.PRIVATE)
 	@Builder
 	public class ContractChangeParameters
 	{
 		@NonNull
-		final Timestamp changeDate;
-		final boolean isCloseInvoiceCandidate;
-		final String terminationMemo;
-		final String terminationReason;
+		Timestamp changeDate;
+		boolean isCloseInvoiceCandidate;
+		String terminationMemo;
+		String terminationReason;
 	}
 	
 	/**
