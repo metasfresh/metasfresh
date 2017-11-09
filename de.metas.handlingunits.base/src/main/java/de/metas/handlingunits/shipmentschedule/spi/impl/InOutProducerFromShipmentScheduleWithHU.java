@@ -35,7 +35,6 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
 import org.adempiere.util.agg.key.IAggregationKeyBuilder;
-import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_M_InOut;
@@ -161,7 +160,7 @@ public class InOutProducerFromShipmentScheduleWithHU implements IInOutProducerFr
 	{
 		final I_M_ShipmentSchedule shipmentSchedule = candidate.getM_ShipmentSchedule();
 
-		final Timestamp shipmentDate = shipmentDateToday ? SystemTime.asTimestamp() : calculateShipmentDate(candidate);
+		final Timestamp shipmentDate = calculateShipmentDate(candidate);
 
 		//
 		// Search for existing shipment to consolidate on
@@ -179,29 +178,47 @@ public class InOutProducerFromShipmentScheduleWithHU implements IInOutProducerFr
 		return shipment;
 	}
 
-	private void updateShipmentDate(final I_M_InOut shipment, IShipmentScheduleWithHU candidate)
+	private void updateShipmentDate(final I_M_InOut shipment, final IShipmentScheduleWithHU candidate)
 	{
-		final Timestamp currentShipmentDate = shipment.getMovementDate();
-		final Timestamp candidateShipmentDate = shipmentDateToday ? SystemTime.asTimestamp() : calculateShipmentDate(candidate);
+
+		final Timestamp candidateShipmentDate = calculateShipmentDate(candidate);
 
 		// the shipment was created before but wasn't yet completed;
-		if (currentShipmentDate.before(TimeUtil.getNow()))
+		if (isCandidateShipmentDateFitForShipment(shipment, candidateShipmentDate))
 		{
 			shipment.setMovementDate(candidateShipmentDate);
+			shipment.setDateAcct(candidateShipmentDate);
+
+			InterfaceWrapperHelper.save(shipment);
+		}
+
+	}
+
+	private boolean isCandidateShipmentDateFitForShipment(final I_M_InOut shipment, final Timestamp candidateShipmentDate)
+	{
+		final Timestamp currentShipmentDate = shipment.getMovementDate();
+		
+		if (currentShipmentDate.before(TimeUtil.getNow()))
+		{
+			return true;
 		}
 
 		else if (currentShipmentDate.after(candidateShipmentDate))
 		{
-			shipment.setMovementDate(candidateShipmentDate);
+			return true;
 		}
 
-		InterfaceWrapperHelper.save(shipment);
-
+		return false;
 	}
 
 	private Timestamp calculateShipmentDate(final IShipmentScheduleWithHU candidate)
 	{
 		final Timestamp now = TimeUtil.getNow();
+
+		if (shipmentDateToday)
+		{
+			return now;
+		}
 
 		final I_M_ShipmentSchedule schedule = candidate.getM_ShipmentSchedule();
 
