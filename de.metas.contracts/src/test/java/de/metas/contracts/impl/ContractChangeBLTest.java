@@ -1,6 +1,6 @@
 package de.metas.contracts.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 /*
  * #%L
@@ -27,68 +27,36 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 
 import java.sql.Timestamp;
 
-import org.adempiere.ad.wrapper.POJOWrapper;
-import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.util.Services;
-import org.adempiere.util.time.SystemTime;
 import org.compiere.util.TimeUtil;
+import org.junit.Before;
 import org.junit.Test;
 
 import de.metas.contracts.IContractChangeBL;
 import de.metas.contracts.IContractChangeBL.ContractChangeParameters;
-import de.metas.contracts.model.I_C_Contract_Change;
+import de.metas.contracts.IFlatrateBL;
+import de.metas.contracts.impl.FlatrateTermDataFactory.ProductAndPricingSystem;
+import de.metas.contracts.interceptor.C_Flatrate_Term;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
-import de.metas.contracts.model.I_C_Flatrate_Transition;
-import de.metas.contracts.model.I_C_SubscriptionProgress;
-import de.metas.contracts.model.X_C_Contract_Change;
 import de.metas.contracts.model.X_C_Flatrate_Term;
-import de.metas.contracts.model.X_C_Flatrate_Transition;
 
-public class ContractChangeBLTest extends ContractsTestBase
+public class ContractChangeBLTest extends AbstractFlatrateTermTest
 {
-	@Override
-	protected void init()
-	{
-		POJOWrapper.setDefaultStrictValues(false);
-	}
+	final private static Timestamp startDate = TimeUtil.parseTimestamp("2017-09-10");
+	final private IContractChangeBL contractChangeBL = Services.get(IContractChangeBL.class);
 
+	@Before
+	public void before()
+	{
+		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(C_Flatrate_Term.INSTANCE);
+	}
+	
 	@Test
 	public void cancelContract_test()
 	{
-		final IContractChangeBL contractChangeBL = Services.get(IContractChangeBL.class);
-
-		SystemTime.setTimeSource(new FixedTimeSource(2013, 5, 28)); // today
-
-		final I_C_Flatrate_Transition flatrateTransition = newInstance(I_C_Flatrate_Transition.class);
-		flatrateTransition.setDeliveryInterval(1);
-		flatrateTransition.setDeliveryIntervalUnit(X_C_Flatrate_Transition.DELIVERYINTERVALUNIT_JahrE);
-		InterfaceWrapperHelper.save(flatrateTransition);
-
-		final I_C_Flatrate_Conditions flatrateConditions = newInstance(I_C_Flatrate_Conditions.class);
-		flatrateConditions.setC_Flatrate_Transition(flatrateTransition);
-		InterfaceWrapperHelper.save(flatrateConditions);
-
-		final I_C_Contract_Change contractChange = newInstance(I_C_Contract_Change.class);
-		contractChange.setAction(X_C_Contract_Change.ACTION_Statuswechsel);
-		contractChange.setC_Flatrate_Transition(flatrateTransition);
-		contractChange.setC_Flatrate_Conditions(flatrateConditions);
-		contractChange.setContractStatus( X_C_Contract_Change.CONTRACTSTATUS_Gekuendigt);
-		contractChange.setDeadLine(1);
-		contractChange.setDeadLineUnit(X_C_Contract_Change.DEADLINEUNIT_MonatE);
-		InterfaceWrapperHelper.save(contractChange);
-
-
-		final I_C_Flatrate_Term currentTerm = newInstance(I_C_Flatrate_Term.class);
-		currentTerm.setStartDate(TimeUtil.getDay(1013, 1, 1));
-		currentTerm.setEndDate(TimeUtil.getDay(2014,7,27));
-		currentTerm.setC_Flatrate_Conditions(flatrateConditions);
-		InterfaceWrapperHelper.save(currentTerm);
-
-		final I_C_SubscriptionProgress progress = newInstance(I_C_SubscriptionProgress.class);
-		progress.setC_Flatrate_Term(currentTerm);
-		progress.setEventDate(TimeUtil.getDay(2013, 5, 30));
-		InterfaceWrapperHelper.save(progress);
+		final I_C_Flatrate_Term contract = prepareContractForTest(true);
 
 		final Timestamp changeTime = TimeUtil.getDay(2013,7,27);
 
@@ -99,7 +67,28 @@ public class ContractChangeBLTest extends ContractsTestBase
 				.terminationMemo("note: cancelContract_test")
 				.build();
 		
-		contractChangeBL.cancelContract(currentTerm, contractChangeParameters);
+		contractChangeBL.cancelContract(contract, contractChangeParameters);
 
+	}
+	
+	@Test
+	public void extendContractWithAutoRenewOnNo_test()
+	{
+		final I_C_Flatrate_Term contract = prepareContractForTest(true);
+			
+		Services.get(IFlatrateBL.class).extendContract(contract, true, true, null, null);
+		save(contract);
+
+	}
+	
+	private I_C_Flatrate_Term prepareContractForTest(final boolean isAutoRenew)
+	{
+		prepareBPartner();
+		final ProductAndPricingSystem productAndPricingSystem = createProductAndPricingSystem(startDate);
+		createProductAcct(productAndPricingSystem);
+		final I_C_Flatrate_Conditions conditions = createFlatrateConditions(productAndPricingSystem, isAutoRenew);
+		createContractChange(conditions); 
+		final I_C_Flatrate_Term contract = createFlatrateTerm(conditions, productAndPricingSystem.getProduct(), startDate);
+		return contract;
 	}
 }
