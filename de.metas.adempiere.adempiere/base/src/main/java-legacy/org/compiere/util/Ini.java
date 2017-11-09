@@ -38,9 +38,6 @@ import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 import org.compiere.Adempiere.RunMode;
 import org.compiere.model.ModelValidationEngine;
 import org.slf4j.Logger;
-import org.springframework.context.annotation.Condition;
-import org.springframework.context.annotation.ConditionContext;
-import org.springframework.core.type.AnnotatedTypeMetadata;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -738,7 +735,7 @@ public final class Ini implements Serializable
 
 	/**
 	 * Finds {@link #METASFRESH_HOME}.
-	 * 
+	 *
 	 * @return Metasfresh home directory; never returns <code>null</code>
 	 */
 	private static String findMetasfreshHome()
@@ -973,12 +970,12 @@ public final class Ini implements Serializable
 		return s_propertyFileName;
 	}
 
-	public static class IsNotSwingClient implements Condition
-	{
-		@Override
-		public boolean matches(ConditionContext context, AnnotatedTypeMetadata metadata)
-		{
-			return Ini.getRunMode() != RunMode.SWING_CLIENT;
-		}
-	}
+//	public static class IsNotSwingClient implements Condition
+//	{
+//		@Override
+//		public boolean matches(ConditionContext context, AnnotatedTypeMetadata metadata)
+//		{
+//			return Ini.getRunMode() != RunMode.SWING_CLIENT;
+//		}
+//	}
 }	// Ini

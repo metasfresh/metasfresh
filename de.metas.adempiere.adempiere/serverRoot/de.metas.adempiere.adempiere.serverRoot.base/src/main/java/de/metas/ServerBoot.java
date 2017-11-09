@@ -24,7 +24,6 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 
-import de.metas.adempiere.report.jasper.JasperConstants;
 import de.metas.logging.LogManager;
 import de.metas.server.housekeep.MissingTranslationHouseKeepingTask;
 import de.metas.server.housekeep.RoleAccessUpdateHouseKeepingTask;
@@ -86,7 +85,8 @@ public class ServerBoot
 		new SpringApplicationBuilder(ServerBoot.class)
 				.headless(StringUtils.toBoolean(headless)) // we need headless=false for initial connection setup popup (if any), usually this only applies on dev workstations.
 				.web(true)
-				.profiles(PROFILE, JasperConstants.PROFILE_JasperServer)
+				// to also have jasper within the backend, call with -Dspring.profiles.active=metasfresh-jasper-server
+				.profiles(PROFILE)
 				.run(args);
 	}
 

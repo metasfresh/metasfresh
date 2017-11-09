@@ -106,32 +106,24 @@ node('agent && linux')
 			{
 				if(params.MF_SKIP_TO_DIST)
 				{
-					echo "params.MF_SKIP_TO_DIST=true so don't build metasfresh and esb jars and don't invoke downstream jobs"
+					echo "params.MF_SKIP_TO_DIST=true so don't create docker images"
 				}
 				else
 				{
-				// now create and publish some docker image..well, 1 docker image for starts
-				final dockerWorkDir='docker-build/metasfresh-material-dispo'
-				sh "mkdir -p ${dockerWorkDir}"
+					// now create and publish some docker images..well, 1 docker image for starts
+					createAndPublishDockerImage(
+						'metasfresh-material-dispo', // dockerRepositoryName
+						'de.metas.material/dispo-service',  // dockerSourceDir
+						MF_UPSTREAM_BRANCH, // dockerBranchName
+						MF_VERSION // dockerVersionSuffix
+					)
 
- 				// copy the files so they can be handled by the docker build
-				sh "cp de.metas.material/dispo-service/target/metasfresh-material-dispo-service-${MF_VERSION}.jar ${dockerWorkDir}/metasfresh-material-dispo-service.jar" // please keep in sync with DockerFile!
-				sh "cp -R de.metas.material/dispo-service/src/main/docker/* ${dockerWorkDir}"
-				sh "cp -R de.metas.material/dispo-service/src/main/configs ${dockerWorkDir}"
-				docker.withRegistry('https://index.docker.io/v1/', 'dockerhub_metasfresh')
-				{
-					// note: we ommit the "-service" in the docker image name, because we also don't have "-service" in the webui-api and backend and it's pretty clear that it is a service
-					final def app = docker.build 'metasfresh/metasfresh-material-dispo-dev', "${dockerWorkDir}";
-
-          final def misc = new de.metas.jenkins.Misc();
-					app.push misc.mkDockerTag("${MF_UPSTREAM_BRANCH}-latest");
-					app.push misc.mkDockerTag("${MF_UPSTREAM_BRANCH}-${MF_VERSION}");
-          if(MF_UPSTREAM_BRANCH=='release')
-          {
-          	echo 'MF_UPSTREAM_BRANCH=release, so we also push this with the "latest" tag'
-          	app.push misc.mkDockerTag('latest');
-          }
-				} // docker.withRegistry
+					createAndPublishDockerImage(
+						'metasfresh-report', // dockerRepositoryName
+						'de.metas.material/dispo-service',  // dockerSourceDir
+						MF_UPSTREAM_BRANCH, // dockerBranchName
+						MF_VERSION // dockerVersionSuffix
+					)
 				} // if(params.MF_SKIP_TO_DIST)
       } // stage
 
@@ -313,6 +305,36 @@ stage('Invoke downstream jobs')
 }
 
 
+void createAndPublishDockerImage(
+				final String dockerRepositoryName,
+				final String dockerSourceDir,
+				final String dockerBranchName,
+				final String dockerVersionSuffix)
+{
+	final dockerWorkDir="docker-build/${dockerRepositoryName}"
+	final dockerSourceArtifactName="${dockerRepositoryName}-service"
+
+	sh "mkdir -p ${dockerWorkDir}"
+
+	// copy the files so they can be handled by the docker build
+	sh "cp ${dockerSourceDir}/target/${dockerSourceArtifactName}-${MF_VERSION}.jar ${dockerWorkDir}/${dockerSourceArtifactName}.jar" // please keep in sync with DockerFile!
+	sh "cp -R ${dockerSourceDir}/src/main/docker/* ${dockerWorkDir}"
+	sh "cp -R ${dockerSourceDir}/src/main/configs ${dockerWorkDir}"
+	docker.withRegistry('https://index.docker.io/v1/', 'dockerhub_metasfresh')
+	{
+		// note: we ommit the "-service" in the docker image name, because we also don't have "-service" in the webui-api and backend and it's pretty clear that it is a service
+		final def app = docker.build "metasfresh/${dockerRepositoryName}-dev", "${dockerWorkDir}";
+
+		final def misc = new de.metas.jenkins.Misc();
+		app.push misc.mkDockerTag("${dockerBranchName}-latest");
+		app.push misc.mkDockerTag("${dockerBranchName}-${dockerVersionSuffix}");
+		if(dockerBranchName == 'release')
+		{
+			echo 'dockerBranchName == release, so we also push this with the "latest" tag'
+			app.push misc.mkDockerTag('latest');
+		}
+	} // docker.withRegistry
+}
 /**
   *	collect the test results for the two preceeding stages. call this once to avoid counting the tests twice.
   */
