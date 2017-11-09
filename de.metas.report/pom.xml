@@ -16,7 +16,7 @@
 	<modules>
 		<module>de.metas.report.jasper.client</module>
 		<module>de.metas.report.jasper.commons</module>
-		<module>metasfresh-report-service</module>
+		<module>report-service</module>
 	</modules>
 
 </project>

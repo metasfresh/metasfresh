@@ -8,7 +8,7 @@
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
-	<artifactId>metasfresh-report-service</artifactId>
+	<artifactId>report-service</artifactId>
 
 	<properties>
 		<migration-sql-basedir>42-de.metas.report.jasper.server</migration-sql-basedir>
@@ -63,7 +63,6 @@
 			<artifactId>spring-boot-starter-web</artifactId>
 		</dependency>
 
-
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-vfs2</artifactId>
@@ -111,8 +110,7 @@
 			<artifactId>jp.osdn.ocrb</artifactId>
 		</dependency>
  		-->
- 		
- 		
+
  		<!-- JXls integration -->
 		<dependency>
 			<groupId>org.jxls</groupId>
@@ -135,6 +133,7 @@
 	</dependencies>
 
 	<build>
+		<finalName>metasfresh-report-service</finalName>
 		<plugins>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>

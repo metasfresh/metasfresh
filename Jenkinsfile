@@ -120,7 +120,7 @@ node('agent && linux')
 
 					createAndPublishDockerImage(
 						'metasfresh-report', // dockerRepositoryName
-						'de.metas.material/dispo-service',  // dockerSourceDir
+						'de.metas.report/report-service',  // dockerSourceDir
 						MF_UPSTREAM_BRANCH, // dockerBranchName
 						MF_VERSION // dockerVersionSuffix
 					)

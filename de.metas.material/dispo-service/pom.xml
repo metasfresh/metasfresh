@@ -9,7 +9,7 @@
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
-	<artifactId>metasfresh-material-dispo-service</artifactId>
+	<artifactId>material-dispo-service</artifactId>
 	<packaging>jar</packaging>
 
 	<properties>
@@ -145,6 +145,7 @@
 	</dependencies>
 
 	<build>
+		<finalName>metasfresh-material-dispo-service</finalName>
 		<plugins>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
