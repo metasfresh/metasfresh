@@ -28,11 +28,11 @@
 		</dependency>
 		
 		<!-- 
-		de.metas.fresh.base already comes in as transitive dependency of $de.metas.endcustomer.mf15.base ,
+		de.metas.fresh.base already comes in as transitive dependency of $metasfresh-dist-base ,
 		but we have it here explicitly because otherwise: 
 		  if e.g. version 2.262 is building de.metas.adempiere.adempiere.serverRoot.base-2.262 was already deployed, 
 		  but de.metas.fresh.base 2.262 was not jet deployed, then this pom's metasfresh.version might be resolved to 2.262
-		  while the metasfresh.version of the de.metas.endcustomer.mf15.base's pom might be resolved to 2.261
+		  while the metasfresh.version of the metasfresh-dist-base's pom might be resolved to 2.261
 		-->
 		<dependency>
 			<groupId>de.metas.fresh</groupId>

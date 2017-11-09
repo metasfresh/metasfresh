@@ -305,13 +305,13 @@ note: when adding new records, please roughly order them by alphabet.
 
 		<dependency>
 			<groupId>de.metas.dist</groupId>
-			<artifactId>de.metas.endcustomer.mf15.base</artifactId>
+			<artifactId>metasfresh-dist-base</artifactId>
 			<version>10.0.0</version>
 			<classifier>jasper</classifier>
 		</dependency>
 		<dependency>
 			<groupId>de.metas.dist</groupId>
-			<artifactId>de.metas.endcustomer.mf15.base</artifactId>
+			<artifactId>metasfresh-dist-base</artifactId>
 			<version>10.0.0</version>
 			<classifier>migration-postgres-sql</classifier>
 			<type>zip</type>
