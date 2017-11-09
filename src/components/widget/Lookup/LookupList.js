@@ -45,19 +45,17 @@ class LookupList extends Component {
 
     getDropdownComponent = (index, item) => {
         const {handleSelect, selected} = this.props;
-        const name = item[Object.keys(item)[0]];
-        const key = Object.keys(item)[0];
 
         return (
             <div
-                key={key}
+                key={item.key}
                 className={
                     'input-dropdown-list-option ' +
                     (selected === index ?
                         'input-dropdown-list-option-key-on' : '') }
                 onClick={() => {handleSelect(item)}}
             >
-                <p className="input-dropdown-item-title">{name}</p>
+                <p className="input-dropdown-item-title">{item.caption}</p>
             </div>
         )
     }
