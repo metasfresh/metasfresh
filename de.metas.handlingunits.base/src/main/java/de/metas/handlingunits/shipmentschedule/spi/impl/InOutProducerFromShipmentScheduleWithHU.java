@@ -211,6 +211,11 @@ public class InOutProducerFromShipmentScheduleWithHU implements IInOutProducerFr
 		final I_M_ShipmentSchedule schedule = candidate.getM_ShipmentSchedule();
 
 		final Timestamp deliveryDateEffective = schedule.getDeliveryDate_Effective();
+		
+		if(deliveryDateEffective == null)
+		{
+			return now;
+		}
 
 		if (deliveryDateEffective.before(now))
 		{
