@@ -169,13 +169,7 @@ public class InOutProducerFromShipmentScheduleWithHU implements IInOutProducerFr
 		if (shipmentScheduleBL.isSchedAllowsConsolidate(shipmentSchedule))
 		{
 			shipment = huShipmentScheduleBL.getOpenShipmentOrNull(candidate, shipmentDate);
-
-			if (!shipmentDateToday && shipment != null)
-			{
-				updateShipmentDate(shipment, shipmentDate);
-			}
 		}
-
 		//
 		// If there was no shipment found, create a new one now
 		if (shipment == null)
@@ -185,19 +179,20 @@ public class InOutProducerFromShipmentScheduleWithHU implements IInOutProducerFr
 		return shipment;
 	}
 
-	private void updateShipmentDate(final I_M_InOut shipment, final Timestamp shipmentDate)
+	private void updateShipmentDate(final I_M_InOut shipment, IShipmentScheduleWithHU candidate)
 	{
 		final Timestamp currentShipmentDate = shipment.getMovementDate();
+		final Timestamp candidateShipmentDate = shipmentDateToday ? SystemTime.asTimestamp() : calculateShipmentDate(candidate);
 
 		// the shipment was created before but wasn't yet completed;
 		if (currentShipmentDate.before(TimeUtil.getNow()))
 		{
-			shipment.setMovementDate(shipmentDate);
+			shipment.setMovementDate(candidateShipmentDate);
 		}
 
-		else if (currentShipmentDate.after(shipmentDate))
+		else if (currentShipmentDate.after(candidateShipmentDate))
 		{
-			shipment.setMovementDate(shipmentDate);
+			shipment.setMovementDate(candidateShipmentDate);
 		}
 
 		InterfaceWrapperHelper.save(shipment);
@@ -211,8 +206,8 @@ public class InOutProducerFromShipmentScheduleWithHU implements IInOutProducerFr
 		final I_M_ShipmentSchedule schedule = candidate.getM_ShipmentSchedule();
 
 		final Timestamp deliveryDateEffective = schedule.getDeliveryDate_Effective();
-		
-		if(deliveryDateEffective == null)
+
+		if (deliveryDateEffective == null)
 		{
 			return now;
 		}
@@ -463,6 +458,7 @@ public class InOutProducerFromShipmentScheduleWithHU implements IInOutProducerFr
 	@Override
 	public void process(final IShipmentScheduleWithHU item) throws Exception
 	{
+		updateShipmentDate(currentShipment, item);
 		createUpdateShipmentLine(item);
 		lastItem = item;
 	}
