@@ -70,7 +70,7 @@ public interface IHUShipmentScheduleBL extends ISingletonService
 	 * @param movementDate shipment's movement date (used to filter only if we have an consolidation period set)
 	 * @return shipment which is still open for the shipment schedule (first) and it's HU specifications or null if none is found
 	 */
-	I_M_InOut getOpenShipmentScheduleOrNull(IShipmentScheduleWithHU candidate, Date movementDate);
+	I_M_InOut getOpenShipmentOrNull(IShipmentScheduleWithHU candidate, Date movementDate);
 
 	/**
 	 * Updates all allocations from given TU and call {@link I_M_ShipmentSchedule_QtyPicked#setM_LU_HU(I_M_HU)} by setting the current TU's LU.
