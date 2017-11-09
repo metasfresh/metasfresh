@@ -56,12 +56,15 @@ import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
 import de.metas.logging.LogManager;
 import de.metas.order.IOrderPA;
 import lombok.Builder;
+import lombok.Builder.Default;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 
-public class ContractChagManager.getLogger(ContractChangeBL.class);
-
+public class ContractChangeBL implements IContractChangeBL
+{
+	private static final Logger logger = LogManager.getLogger(ContractChangeBL.class);
+	
 	@Override
 	public void cancelContract(@NonNull final I_C_Flatrate_Term currentTerm,
 			final @NonNull ContractChangeParameters contractChangeParameters)
