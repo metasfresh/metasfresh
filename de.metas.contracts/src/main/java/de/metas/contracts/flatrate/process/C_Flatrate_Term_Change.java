@@ -10,7 +10,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
-import org.compiere.util.Ini;
 
 import de.metas.contracts.IContractChangeBL;
 import de.metas.contracts.IContractChangeBL.ContractChangeParameters;
@@ -49,8 +48,7 @@ public class C_Flatrate_Term_Change extends JavaProcess
 	private String terminationReason;
 
 	private int selectionCount = 0;
-	
-	
+
 	@Override
 	@RunOutOfTrx
 	protected void prepare()
@@ -63,7 +61,7 @@ public class C_Flatrate_Term_Change extends JavaProcess
 		}
 
 	}
-	
+
 	@Override
 	protected String doIt()
 	{
@@ -81,25 +79,16 @@ public class C_Flatrate_Term_Change extends JavaProcess
 
 		final Iterable<I_C_Flatrate_Term> flatrateTerms = retrieveSelection(getAD_PInstance_ID());
 		flatrateTerms.forEach(currentTerm -> contractChangeBL.cancelContract(currentTerm, contractChangeParameters));
-		
+
 		return "@Success@";
 	}
 
 	private IQueryBuilder<I_C_Flatrate_Term> createQueryBuilder()
 	{
-		final IQueryFilter<I_C_Flatrate_Term> userSelectionFilter;
-		if (Ini.isClient())
+		final IQueryFilter<I_C_Flatrate_Term> userSelectionFilter = getProcessInfo().getQueryFilterOrElse(null);
+		if (userSelectionFilter == null)
 		{
-			// In case of Swing, preserve the old functionality, i.e. if no where clause then select all
-			userSelectionFilter = getProcessInfo().getQueryFilter();
-		}
-		else
-		{
-			userSelectionFilter = getProcessInfo().getQueryFilterOrElse(null);
-			if (userSelectionFilter == null)
-			{
-				throw new AdempiereException("@NoSelection@");
-			}
+			throw new AdempiereException("@NoSelection@");
 		}
 
 		return queryBL
@@ -125,7 +114,7 @@ public class C_Flatrate_Term_Change extends JavaProcess
 						.create()
 						.setOption(IQuery.OPTION_GuaranteedIteratorRequired, false)
 						.setOption(IQuery.OPTION_IteratorBufferSize, 50)
-						.iterate(I_C_Flatrate_Term.class	);
+						.iterate(I_C_Flatrate_Term.class);
 			}
 		};
 	}
