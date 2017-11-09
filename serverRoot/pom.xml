@@ -8,7 +8,7 @@
 		<version>10.0.0</version>
 	</parent>
 
-	<artifactId>de.metas.endcustomer.mf15.serverRoot</artifactId>
+	<artifactId>metasfresh-dist-serverRoot</artifactId>
 	<packaging>jar</packaging>
 
 	<properties>
@@ -23,7 +23,7 @@
 	<dependencies>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>de.metas.endcustomer.mf15.base</artifactId>
+			<artifactId>metasfresh-dist-base</artifactId>
 			<version>10.0.0</version>
 		</dependency>
 		

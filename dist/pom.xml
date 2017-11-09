@@ -8,7 +8,7 @@
 		<version>10.0.0</version>
 	</parent>
 
-	<artifactId>de.metas.endcustomer.mf15.dist</artifactId>
+	<artifactId>metasfresh-dist-dist</artifactId>
 	<packaging>pom</packaging>
 
 	<properties>
@@ -44,7 +44,7 @@ Since we now work with a range, we now declare the dependencies here where range
 -->
 		<dependency>
 			<groupId>de.metas.dist</groupId>
-			<artifactId>de.metas.endcustomer.mf15.serverRoot</artifactId>
+			<artifactId>metasfresh-dist-serverRoot</artifactId>
 			<version>10.0.0</version>
 		</dependency>
 
@@ -68,14 +68,14 @@ Since we now work with a range, we now declare the dependencies here where range
 
 		<dependency>
 			<groupId>de.metas.dist</groupId>
-			<artifactId>de.metas.endcustomer.mf15.base</artifactId>
+			<artifactId>metasfresh-dist-base</artifactId>
 			<version>10.0.0</version>
 			<type>jar</type>
 		</dependency>
 
 		<dependency>
 			<groupId>de.metas.dist</groupId>
-			<artifactId>de.metas.endcustomer.mf15.swingui</artifactId>
+			<artifactId>metasfresh-dist-swingui</artifactId>
 			<version>10.0.0</version>
 			<classifier>client</classifier>
 			<type>zip</type>
@@ -136,7 +136,7 @@ Since we now work with a range, we now declare the dependencies here where range
 			<artifactId>material-dispo-service</artifactId>
 			<version>${metasfresh.version}</version> <!-- currently this service is not in a dedicated repo and thus doesn't have a dedicated version -->
 			<type>jar</type>
-			<scope>provided</scope> <!-- we need this dependency here to update the version property-->
+			<scope>provided</scope> <!-- we need this dependency here to update the version property -->
 		</dependency>
 
 <!--

@@ -8,7 +8,7 @@
 		<version>10.0.0</version>
 	</parent>
 
-	<artifactId>de.metas.endcustomer.mf15.swingui</artifactId>
+	<artifactId>metasfresh-dist-swingui</artifactId>
 	<packaging>jar</packaging>
 
 	<properties>
@@ -98,7 +98,7 @@
 
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>de.metas.endcustomer.mf15.base</artifactId>
+			<artifactId>metasfresh-dist-base</artifactId>
 			<version>10.0.0</version>
 		</dependency>
 

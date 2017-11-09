@@ -76,7 +76,7 @@ node('agent && linux && libc6-i386')
 	configFileProvider([configFile(fileId: 'metasfresh-global-maven-settings', replaceTokens: true, variable: 'MAVEN_SETTINGS')])
 	{
 
-		// as of now, /de.metas.endcustomer.mf15.base/src/main/resources/org/adempiere/version.properties contains "env.MF_BUILD_VERSION", "env.MF_UPSTREAM_BRANCH" and others,
+		// as of now, /base/src/main/resources/org/adempiere/version.properties contains "env.MF_BUILD_VERSION", "env.MF_UPSTREAM_BRANCH" and others,
 		// which needs to be replaced when version.properties is dealt with by the ressources plugin, see https://maven.apache.org/plugins/maven-resources-plugin/examples/filter.html
 		withEnv([
 				"MF_VERSION=${MF_VERSION}",
@@ -99,7 +99,7 @@ node('agent && linux && libc6-i386')
 
 			nexusCreateRepoIfNotExists mvnConf.mvnDeployRepoBaseURL, mvnConf.mvnRepoName
 
-			stage('Set versions and build endcustomer-dist')
+			stage('Set versions and build dist')
 			{
 				// checkout our code
 				// note that we do not know if the stuff we checked out in the other node is available here, so we somehow need to make sure by checking out (again).
@@ -128,7 +128,7 @@ node('agent && linux && libc6-i386')
 				sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode ${mvnConf.resolveParams} ${metasfreshWebApiUpdatePropertyParam} versions:update-property"
 				sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode ${mvnConf.resolveParams} ${metasfreshProcurementWebuiUpdatePropertyParam} versions:update-property"
 
-				// set the artifact version of everything below the endcustomer.mf15's parent ${mvnConf.pomFile}
+				// set the artifact version of everything below the parent ${mvnConf.pomFile}
 				sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -DnewVersion=${MF_VERSION} -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -DexcludeReactor=true ${mvnConf.resolveParams} versions:set"
 
 				// do the actual building and deployment
@@ -137,23 +137,23 @@ node('agent && linux && libc6-i386')
 				sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -Dmaven.test.failure.ignore=true -Dmetasfresh.assembly.descriptor.version=${MF_VERSION} ${mvnConf.resolveParams} ${mvnConf.deployParam} clean deploy"
 
 
-				// endcustomer.mf15 currently has no tests. Don't try to collect any, or a typical error migh look like this:
+				// Currently there are no tests. Don't try to collect any, or a typical error migh look like this:
 				// ERROR: Test reports were found but none of them are new. Did tests run?
 				// For example, /var/lib/jenkins/workspace/metasfresh_FRESH-854-gh569-M6AHOWSSP3FKCR7CHWVIRO5S7G64X4JFSD4EZJZLAT5DONP2ZA7Q/de.metas.acct.base/target/surefire-reports/TEST-de.metas.acct.impl.FactAcctLogBLTest.xml is 2 min 57 sec old
 				// junit allowEmptyResults: true, testResults: '**/target/surefire-reports/*.xml'
 
 				// we now have set the versions of metas-webui etc within the pom.xml. In order to document them, write them into a file.
 				// the file's name is app.properties, as configured in metasfresh-parent's pom.xml. Thx to http://stackoverflow.com/a/26589696/1012103
-				final MvnConf mvnDistConf = mvnConf.withPomFile('de.metas.endcustomer.mf15.dist/pom.xml')
+				final MvnConf mvnDistConf = mvnConf.withPomFile('dist/pom.xml')
 				sh "mvn --settings ${mvnDistConf.settingsFile} --file ${mvnDistConf.pomFile} --batch-mode ${mvnDistConf.resolveParams} org.codehaus.mojo:properties-maven-plugin:1.0.0:write-project-properties"
 
 				// now load the properties we got from the pom.xml. Thx to http://stackoverflow.com/a/39644024/1012103
-				final def mavenProps = readProperties file: 'de.metas.endcustomer.mf15.dist/app.properties'
+				final def mavenProps = readProperties file: 'dist/app.properties'
 				final def urlEncodedMavenProps = misc.urlEncodeMapValues(mavenProps);
 
 				final def MF_ARTIFACT_URLS = [:];
 				MF_ARTIFACT_URLS['metasfresh-admin'] = "${mvnConf.resolveRepoURL}/de/metas/admin/metasfresh-admin/${urlEncodedMavenProps['metasfresh-admin.version']}/metasfresh-admin-${urlEncodedMavenProps['metasfresh-admin.version']}.jar"
-				MF_ARTIFACT_URLS['metasfresh-dist'] =  "${mvnConf.deployRepoURL}/de/metas/dist/de.metas.endcustomer.mf15.dist/${misc.urlEncode(MF_VERSION)}/de.metas.endcustomer.mf15.dist-${misc.urlEncode(MF_VERSION)}-dist.tar.gz"
+				MF_ARTIFACT_URLS['metasfresh-dist'] =  "${mvnConf.deployRepoURL}/de/metas/dist/metasfresh-dist-dist/${misc.urlEncode(MF_VERSION)}/metasfresh-dist-${misc.urlEncode(MF_VERSION)}-dist.tar.gz"
 				MF_ARTIFACT_URLS['metasfresh-material-dispo']=  "${mvnConf.resolveRepoURL}/de/metas/material/metasfresh-material-dispo-service/${urlEncodedMavenProps['metasfresh.version']}/metasfresh-material-dispo-service-${urlEncodedMavenProps['metasfresh.version']}.jar"
 				MF_ARTIFACT_URLS['metasfresh-procurement-webui']=  "${mvnConf.resolveRepoURL}/de/metas/procurement/de.metas.procurement.webui/${urlEncodedMavenProps['metasfresh-procurement-webui.version']}/de.metas.procurement.webui-${urlEncodedMavenProps['metasfresh-procurement-webui.version']}.jar"
 				MF_ARTIFACT_URLS['metasfresh-webui'] =  "${mvnConf.resolveRepoURL}/de/metas/ui/web/metasfresh-webui-api/${urlEncodedMavenProps['metasfresh-webui-api.version']}/metasfresh-webui-api-${urlEncodedMavenProps['metasfresh-webui-api.version']}.jar"
@@ -169,12 +169,12 @@ node('agent && linux && libc6-i386')
 				currentBuild.description="""
 <h3>Version infos</h3>
 <ul>
-  <li>endcustomer.mf15: version <b>${MF_VERSION}</b></li>
+  <li>metasfresh-dist: version <b>${MF_VERSION}</b></li>
   <li>metasfresh-webui-API: version <b>${mavenProps['metasfresh-webui-api.version']}</b></li>
   <li>metasfresh-webui-frontend: version <b>${mavenProps['metasfresh-webui-frontend.version']}</b></li>
   <li>metasfresh-procurement-webui: version <b>${mavenProps['metasfresh-procurement-webui.version']}</b></li>
-  <li>metasfresh base: version <b>${mavenProps['metasfresh.version']}</b></li>
-  <li>metasfresh admin webui: version <b>${mavenProps['metasfresh-admin.version']}</b></li>
+  <li>metasfresh-admin webui: version <b>${mavenProps['metasfresh-admin.version']}</b></li>
+	<li>metasfresh base: version <b>${mavenProps['metasfresh.version']}</b></li>
   <ul>
 		<li>metasfresh-material-dispo (always the same as metasfresh base): version <b>${mavenProps['metasfresh.version']}</b></li>
   </ul>
@@ -183,8 +183,8 @@ node('agent && linux && libc6-i386')
 <h3>Deployable artifacts</h3>
 <ul>
 	<li><a href=\"${MF_ARTIFACT_URLS['metasfresh-dist']}\">dist-tar.gz</a></li>
-	<li><a href=\"${mvnConf.deployRepoURL}/de/metas/dist/de.metas.endcustomer.mf15.dist/${misc.urlEncode(MF_VERSION)}/de.metas.endcustomer.mf15.dist-${misc.urlEncode(MF_VERSION)}-sql-only.tar.gz\">sql-only-tar.gz</a></li>
-	<li><a href=\"${mvnConf.deployRepoURL}/de/metas/dist/de.metas.endcustomer.mf15.swingui/${misc.urlEncode(MF_VERSION)}/de.metas.endcustomer.mf15.swingui-${misc.urlEncode(MF_VERSION)}-client.zip\">client.zip</a></li>
+	<li><a href=\"${mvnConf.deployRepoURL}/de/metas/dist/metasfresh-dist-dist/${misc.urlEncode(MF_VERSION)}/metasfresh-dist-dist-${misc.urlEncode(MF_VERSION)}-sql-only.tar.gz\">sql-only-tar.gz</a></li>
+	<li><a href=\"${mvnConf.deployRepoURL}/de/metas/dist/metasfresh-dist-swingui/${misc.urlEncode(MF_VERSION)}/metasfresh-dist-swingui-${misc.urlEncode(MF_VERSION)}-client.zip\">client.zip</a></li>
 	<li><a href=\"${MF_ARTIFACT_URLS['metasfresh-webui']}\">metasfresh-webui-api.jar</a></li>
 	<li><a href=\"${MF_ARTIFACT_URLS['metasfresh-webui-frontend']}\">metasfresh-webui-frontend.tar.gz</a></li>
 	<li><a href=\"${MF_ARTIFACT_URLS['metasfresh-procurement-webui']}\">metasfresh-procurement-webui.jar</a></li>
@@ -203,7 +203,7 @@ Note: all the separately listed artifacts are also included in the dist-tar.gz
 <ul>
   <li>The artifacts on <a href="${mvnConf.mvnDeployRepoBaseURL}">repo.metasfresh.com</a> are cleaned up on a regular schedule to preserve disk space.<br/>
     Therefore the artifacts that are linked to by the URLs above might already have been deleted.</li>
-  <li>It is important to note that both the <i>"endcustomer"</i> artifacts (client and backend server) build by this job and the <i>"webui"</i> artifacts that are also linked here are based on the same underlying metasfresh version.
+  <li>It is important to note that both the <i>"metasfresh-dist"</i> artifacts (client and backend server) build by this job and the <i>"webui"</i> artifacts that are also linked here are based on the same underlying metasfresh version.
 </ul>
 """;
 			}
@@ -268,7 +268,7 @@ stage('Test SQL-Migration')
 		{
 			sshagent(['jenkins-ssh-key'])
 			{
-				final distArtifactId='de.metas.endcustomer.mf15.dist';
+				final distArtifactId='metasfresh-dist-dist';
 				final classifier='sql-only';
 				final packaging='tar.gz';
 				final sshTargetHost='mf15cloudit'; // we made sure the mf15cloudit can be resolved on every jenkins node labeled with 'linux'

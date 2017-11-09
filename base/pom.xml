@@ -9,7 +9,7 @@
 		<version>10.0.0</version>
 	</parent>
 
-	<artifactId>de.metas.endcustomer.mf15.base</artifactId>
+	<artifactId>metasfresh-dist-base</artifactId>
 	<packaging>jar</packaging>
 
 
@@ -62,7 +62,6 @@
 	</dependencies>
 
 	<build>
-
 		<resources>
 			<resource>
 				<directory>src/main/resources</directory>
