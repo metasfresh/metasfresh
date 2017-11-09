@@ -40,6 +40,7 @@ import org.slf4j.Logger;
 
 import de.metas.contracts.IContractChangeBL;
 import de.metas.contracts.IContractChangeDAO;
+import de.metas.contracts.IContractsDAO;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.model.I_C_Contract_Change;
 import de.metas.contracts.model.I_C_Flatrate_Term;
@@ -48,8 +49,6 @@ import de.metas.contracts.model.X_C_Contract_Change;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_SubscriptionProgress;
 import de.metas.contracts.subscription.ISubscriptionBL;
-import de.metas.contracts.subscription.ISubscriptionDAO;
-import de.metas.contracts.subscription.ISubscriptionDAO.SubscriptionProgressQuery;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
@@ -130,26 +129,19 @@ public class ContractChangeBL implements IContractChangeBL
 		final Timestamp changeDate = contractChangeParameters.getChangeDate();
 		if (changeDate.before(currentTerm.getEndDate()))
 		{
-			final ISubscriptionDAO subscriptionDAO = Services.get(ISubscriptionDAO.class);
-			final SubscriptionProgressQuery currentTermQuery = SubscriptionProgressQuery.term(currentTerm).build();
-			final List<I_C_SubscriptionProgress> subscriptionProgress = subscriptionDAO.retrieveSubscriptionProgresses(currentTermQuery);
+			final List<I_C_SubscriptionProgress> subscriptionProgress = Services.get(IContractsDAO.class).getSubscriptionProgress(currentTerm);
 
 			final ContextForCompesationOrder compensationOrderContext = ContextForCompesationOrder.builder()
 					.changeDate(changeDate)
 					.currentTerm(currentTerm)
 					.subscriptionProgress(subscriptionProgress)
 					.build();
-
 			createCompesationOrderIfNeeded(compensationOrderContext);
-
-			final I_C_OrderLine currentTermOl = compensationOrderContext.isOrderCreated() ? currentTerm.getC_OrderLine_Term() : null;
-			final I_C_Order currentTermOrder = compensationOrderContext.isOrderCreated() ? currentTermOl.getC_Order() : null;
-
-			deleteDeliveriesAdjustOrderLine(subscriptionProgress, currentTermOrder, currentTermOl, changeDate);
+			deleteDeliveriesAdjustOrderLine(compensationOrderContext);
 			currentTerm.setEndDate(computeEndDate(currentTerm, changeDate));
 		}
 	}
-
+	
 	private void cancelNextContractIfNeeded(@NonNull final I_C_Flatrate_Term currentTerm,
 			@NonNull final ContractChangeParameters contractChangeParameters)
 	{
@@ -238,12 +230,13 @@ public class ContractChangeBL implements IContractChangeBL
 		}
 	}
 
-	private void deleteDeliveriesAdjustOrderLine(
-			final List<I_C_SubscriptionProgress> sps,
-			final I_C_Order oldOrder,
-			final I_C_OrderLine oldOl,
-			final Timestamp changeDate)
+	private void deleteDeliveriesAdjustOrderLine(final ContextForCompesationOrder compensationOrderContext)
 	{
+		final List<I_C_SubscriptionProgress> sps = compensationOrderContext.getSubscriptionProgress();
+		final Timestamp changeDate = compensationOrderContext.getChangeDate();
+		final I_C_OrderLine oldOl = compensationOrderContext.isOrderCreated() ? compensationOrderContext.getCurrentTerm().getC_OrderLine_Term() : null;
+		final I_C_Order oldOrder = compensationOrderContext.isOrderCreated() ? oldOl.getC_Order() : null;
+		
 		BigDecimal surplusQty = BigDecimal.ZERO;
 		for (final I_C_SubscriptionProgress currentSP : sps)
 		{
@@ -253,20 +246,7 @@ public class ContractChangeBL implements IContractChangeBL
 			}
 			else
 			{
-				final String evtType = currentSP.getEventType();
-
-				final String status = currentSP.getStatus();
-
-				if (X_C_SubscriptionProgress.EVENTTYPE_Delivery.equals(evtType)
-						&& (X_C_SubscriptionProgress.STATUS_Planned.equals(status) || X_C_SubscriptionProgress.STATUS_Open.equals(status)))
-				{
-					surplusQty = surplusQty.add(currentSP.getQty());
-					InterfaceWrapperHelper.delete(currentSP);
-				}
-				else if (X_C_SubscriptionProgress.EVENTTYPE_BeginOfPause.equals(evtType) || X_C_SubscriptionProgress.EVENTTYPE_EndOfPause.equals(evtType))
-				{
-					InterfaceWrapperHelper.delete(currentSP);
-				}
+				surplusQty = deleteSubscriptionProgressAndComputeSurplusQty(currentSP, surplusQty);
 			}
 		}
 
@@ -277,6 +257,25 @@ public class ContractChangeBL implements IContractChangeBL
 			final IOrderPA orderPA = Services.get(IOrderPA.class);
 			orderPA.reserveStock(oldOrder, oldOl);
 		}
+	}
+	
+	private BigDecimal deleteSubscriptionProgressAndComputeSurplusQty(@NonNull final I_C_SubscriptionProgress currentSP , BigDecimal surplusQty)
+	{
+		final String evtType = currentSP.getEventType();
+		final String status = currentSP.getStatus();
+
+		if (X_C_SubscriptionProgress.EVENTTYPE_Delivery.equals(evtType)
+				&& (X_C_SubscriptionProgress.STATUS_Planned.equals(status) || X_C_SubscriptionProgress.STATUS_Open.equals(status)))
+		{
+			surplusQty = surplusQty.add(currentSP.getQty());
+			InterfaceWrapperHelper.delete(currentSP);
+		}
+		else if (X_C_SubscriptionProgress.EVENTTYPE_BeginOfPause.equals(evtType) || X_C_SubscriptionProgress.EVENTTYPE_EndOfPause.equals(evtType))
+		{
+			InterfaceWrapperHelper.delete(currentSP);
+		}
+		
+		return surplusQty;
 	}
 
 	private void setQuitContractStatus(@NonNull final I_C_SubscriptionProgress progress)
