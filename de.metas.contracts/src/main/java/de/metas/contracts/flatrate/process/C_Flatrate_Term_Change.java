@@ -6,7 +6,6 @@ import java.util.Iterator;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
@@ -47,14 +46,13 @@ public class C_Flatrate_Term_Change extends JavaProcess
 	@Param(parameterName = PARAM_TERMINATION_REASON, mandatory = false)
 	private String terminationReason;
 
-	private int selectionCount = 0;
 
 	@Override
 	@RunOutOfTrx
 	protected void prepare()
 	{
 		final IQueryBuilder<I_C_Flatrate_Term> queryBuilder = createQueryBuilder();
-		selectionCount = createSelection(queryBuilder, getAD_PInstance_ID());
+		final int selectionCount = createSelection(queryBuilder, getAD_PInstance_ID());
 		if (selectionCount <= 0)
 		{
 			throw new AdempiereException(msgBL.getMsg(getCtx(), IInvoiceCandidateEnqueuer.MSG_INVOICE_GENERATE_NO_CANDIDATES_SELECTED_0P));
@@ -92,7 +90,7 @@ public class C_Flatrate_Term_Change extends JavaProcess
 		}
 
 		return queryBL
-				.createQueryBuilder(I_C_Flatrate_Term.class, getCtx(), ITrx.TRXNAME_None)
+				.createQueryBuilder(I_C_Flatrate_Term.class)
 				.filter(userSelectionFilter)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient();
@@ -105,8 +103,8 @@ public class C_Flatrate_Term_Change extends JavaProcess
 			@Override
 			public Iterator<I_C_Flatrate_Term> iterator()
 			{
-				return Services.get(IQueryBL.class)
-						.createQueryBuilder(I_C_Flatrate_Term.class, getCtx(), get_TrxName())
+				return queryBL
+						.createQueryBuilder(I_C_Flatrate_Term.class)
 						.setOnlySelection(adPInstanceId)
 						.orderBy()
 						.addColumn(I_C_Flatrate_Term.COLUMN_C_Flatrate_Term_ID)
