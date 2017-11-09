@@ -192,11 +192,7 @@ class RawList extends Component {
 
         let baseIndex = list.indexOf(selected);
         if (selected && (baseIndex < 0)) {
-            let selectedKey = Object.keys(selected)[0];
-
-            baseIndex = list.findIndex(
-                (item) => Object.keys(item)[0] === selectedKey
-            );
+            baseIndex = list.findIndex(item => item.key === selected.key);
         }
 
         if (!mandatory) {
@@ -204,42 +200,6 @@ class RawList extends Component {
         }
 
         return baseIndex;
-    }
-
-    areOptionsEqual(selected, option) {
-        // different types - not equal for sure
-        if (typeof option !== typeof selected) {
-            return false;
-        }
-
-        // option and selected are not objects
-        if (
-            (typeof option !== 'object') &&
-            (typeof selected !== 'object') &&
-            (selected === option)
-        ) {
-            return true;
-        }
-
-        const optionKeys = Object.keys(option);
-        const selectedKeys = selected && Object.keys(selected);
-        const firstOption = option[optionKeys[0]];
-        const firstSelectedKey = selectedKeys[0];
-        const firstSelected = selected && selected[firstSelectedKey];
-
-        // objects, and first elements are not
-        if (
-            (typeof option === 'object') &&
-            (typeof selected === 'object') &&
-            (typeof firstOption !== 'object') &&
-            (typeof firstSelected !== 'object')
-        ) {
-            return (optionKeys[0] === firstSelectedKey) &&
-                   (firstOption === firstSelected);
-        }
-
-        // first elements are nested objects, repeat checking
-        return this.areOptionsEqual(firstOption, firstSelected);
     }
 
     navigateToAlphanumeric = (char) => {
@@ -252,9 +212,8 @@ class RawList extends Component {
             });
         }
 
-        const caption = (item) => item[Object.keys(item)[0]];
-        const items = list.filter( (item) =>
-            caption(item)[0].toUpperCase() === char.toUpperCase()
+        const items = list.filter(item =>
+            item.caption.toUpperCase() === char.toUpperCase()
         );
 
         const selectedIndex = items.indexOf(selected);
@@ -408,33 +367,36 @@ class RawList extends Component {
         }
     }
 
-    getRow = (index, option, label) => {
-        const {defaultValue} = this.props;
-        const {selected} = this.state;
+    getRow = (option, index) => {
+        const { defaultValue } = this.props;
+        const { selected } = this.state;
 
-        const value = defaultValue && defaultValue[Object.keys(defaultValue)[0]]
+        const value = defaultValue.caption;
+
+        const classes = ['input-dropdown-list-option'];
+
+        if (selected !== 0) {
+            if (
+                selected.key === option.key ||
+                !selected && (
+                    value === option.caption ||
+                    !value && index === 0
+                )
+            ) {
+                classes.push('input-dropdown-list-option-key-on');
+            }
+        }
 
         return (
             <div
-                key={index}
-                className={'input-dropdown-list-option'  +
-                    (
-                        selected === 0 ? '' :
-                        this.areOptionsEqual(selected, option) ?
-                        ' input-dropdown-list-option-key-on ' :
-                        value === option[Object.keys(option)[0]] && !selected ?
-                        ' input-dropdown-list-option-key-on ' :
-                        !value && !selected && index == 1 ?
-                        ' input-dropdown-list-option-key-on ':
-                        ''
-                    )
-                }
+                key={option.key}
+                className={classes.join(' ')}
                 onMouseEnter={() => this.handleSwitch(option)}
                 onClick={() => this.handleSelect(option)}
                 ref={option => this.optionElement = option}
             >
                 <p className="input-dropdown-item-title">
-                    {label ? label : option[Object.keys(option)[0]]}
+                    {option.caption}
                 </p>
             </div>
         );
@@ -443,16 +405,17 @@ class RawList extends Component {
     renderOptions = () => {
         const { list, mandatory, emptyText } = this.props;
 
+        let emptyRow;
+
+        if (!mandatory && emptyText) {
+            emptyRow = this.getRow({ key: 'empty', caption: emptyText });
+        }
+
         return (
             <div ref="items">
-            {[
-                // if field is not mandatory add extra empty row
-                ...(!mandatory && emptyText ?
-                    [this.getRow(0, 0, emptyText)] : []
-                ),
-                // fill with options
-                ...list.map((option, index) => this.getRow(index + 1, option))
-            ]}
+                {/* if field is not mandatory add extra empty row */}
+                {emptyRow}
+                {list.map(this.getRow)}
             </div>
         );
     }
@@ -471,9 +434,7 @@ class RawList extends Component {
         if (typeof defaultValue === 'string') {
             placeholder = defaultValue;
         } else {
-            placeholder = defaultValue && (
-                defaultValue[Object.keys(defaultValue)[0]]
-            );
+            placeholder = defaultValue && defaultValue.caption;
         }
 
         let value;
@@ -481,7 +442,7 @@ class RawList extends Component {
         if (lookupList) {
             value = placeholder;
         } else if (selected) {
-            value = selected[Object.keys(selected)[0]];
+            value = selected.caption;
         }
 
         if (!value) {
@@ -537,7 +498,6 @@ class RawList extends Component {
                         <i className="meta-icon-down-1 input-icon-sm"/>
                     </div>
                 </div>
-
                 {isOpen && (
                     <div
                         className="input-dropdown-list"
@@ -548,7 +508,6 @@ class RawList extends Component {
                                 There is no choice available
                             </div>
                         )}
-
                         {(loading && isListEmpty) && (
                             <div className="input-dropdown-list-header">
                                 <ReactCSSTransitionGroup

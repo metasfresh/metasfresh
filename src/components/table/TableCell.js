@@ -85,7 +85,7 @@ class TableCell extends Component {
                     ){
                         return this.createDate(field, type);
                     } else {
-                        return field[Object.keys(field)[0]];
+                        return field.caption;
                     }
                 case 'boolean':
                     return field ?

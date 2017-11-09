@@ -21,7 +21,7 @@ class List extends Component {
         const { defaultValue } = this.props;
 
         if (defaultValue) {
-            this.previousValue = defaultValue[Object.keys(defaultValue)[0]];
+            this.previousValue = defaultValue.caption;
         }
     }
 
@@ -140,8 +140,7 @@ class List extends Component {
             enableAutofocus();
         }
 
-        let optionKey = option && Object.keys(option)[0];
-        if (this.previousValue !== (option && option[optionKey] )) {
+        if (this.previousValue !== (option && option.caption)) {
              if (lookupList) {
                 const promise = onChange(properties[0].field, option);
                 const mainPropertyField = mainProperty[0].field;
@@ -151,7 +150,7 @@ class List extends Component {
                         selectedItem: option
                     });
 
-                    this.previousValue = option[optionKey];
+                    this.previousValue = option.caption;
                 }
 
                 if (promise) {

@@ -12,12 +12,11 @@ import DocumentStatusContextShortcuts
 class ActionButton extends Component {
     constructor(props) {
         super(props);
+
         this.state = {
-            list: {
-                values: []
-            },
+            list: [],
             selected: 0
-        }
+        };
     }
 
     componentDidMount(){
@@ -38,7 +37,7 @@ class ActionButton extends Component {
             case 'Enter':
                 e.preventDefault();
                 if(selected != null){
-                    this.handleChangeStatus(list.values[selected]);
+                    this.handleChangeStatus(list[selected]);
                 }
                 break;
             case 'Escape':
@@ -53,7 +52,7 @@ class ActionButton extends Component {
         const next = up ? selected + 1 : selected - 1;
 
         this.setState({
-            selected: (next >= 0 && next <= list.values.length) ?
+            selected: (next >= 0 && next <= list.length) ?
                 next : selected
         });
     }
@@ -84,7 +83,9 @@ class ActionButton extends Component {
             entity: 'window',
             propertyName: fields[1].field
         }).then(res => {
-            this.setState({list: res.data});
+            this.setState({
+                list: res.data.values
+            });
         });
     }
 
@@ -126,19 +127,19 @@ class ActionButton extends Component {
     }
 
     renderStatusList = (list) => {
-        const {selected} = this.state;
-        return list.values.map((item, index) => {
-            const key = Object.keys(item)[0];
+        const { selected } = this.state;
+
+        return list.map((item, index) => {
             return <li
                 key={index}
                 className={
                     'dropdown-status-item ' +
                     (selected === index ? 'dropdown-status-item-on-key ' : '') +
-                    this.getStatusClassName(key)
+                    this.getStatusClassName(item.key)
                 }
                 onClick={() => this.handleChangeStatus(item)}
             >
-                {item[key]}
+                {item.caption}
             </li>
         })
     }
@@ -174,7 +175,7 @@ class ActionButton extends Component {
                 <DocumentStatusContextShortcuts
                     handleDocumentCompleteStatus={() => {
                         this.handleChangeStatus(
-                            list.values.filter(elem => !!elem.CO)[0]
+                            list.filter(elem => !!elem.CO)[0]
                         )
                     }}
                 />
