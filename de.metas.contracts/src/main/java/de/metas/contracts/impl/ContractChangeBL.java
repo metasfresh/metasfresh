@@ -55,19 +55,12 @@ import de.metas.document.engine.IDocumentBL;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
 import de.metas.logging.LogManager;
 import de.metas.order.IOrderPA;
-import lombok.AccessLevel;
 import lombok.Builder;
-import lombok.Builder.Default;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
-import lombok.experimental.Delegate;
-import lombok.experimental.FieldDefaults;
 
-public class ContractChangeBL implements IContractChangeBL
-{
-
-	private static final Logger logger = LogManager.getLogger(ContractChangeBL.class);
+public class ContractChagManager.getLogger(ContractChangeBL.class);
 
 	@Override
 	public void cancelContract(@NonNull final I_C_Flatrate_Term currentTerm,
@@ -87,22 +80,20 @@ public class ContractChangeBL implements IContractChangeBL
 
 	@Builder
 	@Getter
-	@FieldDefaults(level = AccessLevel.PRIVATE)
 	public static class ContextForCompesationOrder
 	{
 		@NonNull
-		final Timestamp changeDate;
+		private final Timestamp changeDate;
 
 		@NonNull
-		@Delegate
-		final List<I_C_SubscriptionProgress> subscriptionProgress;
+		private final List<I_C_SubscriptionProgress> subscriptionProgress;
 
 		@NonNull
-		final I_C_Flatrate_Term currentTerm;
+		private final I_C_Flatrate_Term currentTerm;
 
 		@Default
 		@Setter
-		boolean isOrderCreated = false;
+		private boolean isOrderCreated = false;
 	}
 
 	private void cancelContractIfNotCanceledAlready(@NonNull final I_C_Flatrate_Term currentTerm,
