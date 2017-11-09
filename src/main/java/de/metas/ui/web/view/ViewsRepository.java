@@ -1,7 +1,9 @@
 package de.metas.ui.web.view;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
@@ -24,6 +26,7 @@ import org.springframework.stereotype.Repository;
 
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Streams;
 
 import de.metas.logging.LogManager;
@@ -67,7 +70,7 @@ public class ViewsRepository implements IViewsRepository
 {
 	private static final Logger logger = LogManager.getLogger(ViewsRepository.class);
 
-	private final ConcurrentHashMap<ArrayKey, IViewFactory> factories = new ConcurrentHashMap<>();
+	private final ImmutableMap<ArrayKey, IViewFactory> factories;
 	@Autowired
 	private SqlViewFactory defaultFactory;
 
@@ -85,8 +88,12 @@ public class ViewsRepository implements IViewsRepository
 	 * @param neededForDBAccess not used in here, but we need to cause spring to initialize it <b>before</b> this component can be initialized.
 	 *            So, if you clean this up, please make sure that the webui-API still starts up ^^.
 	 */
-	public ViewsRepository(@NonNull final Adempiere neededForDBAccess)
+	public ViewsRepository(
+			@NonNull final Adempiere neededForDBAccess,
+			@NonNull final Collection<IViewFactory> viewFactories)
 	{
+		factories = createFactoriesMap(viewFactories);
+		logger.info("Registered following view factories: ", factories);
 	}
 
 	@PostConstruct
@@ -117,15 +124,16 @@ public class ViewsRepository implements IViewsRepository
 		}
 	}
 
-	@Autowired
-	private void registerAnnotatedFactories(final Collection<IViewFactory> viewFactories)
+	private static ImmutableMap<ArrayKey, IViewFactory> createFactoriesMap(final Collection<IViewFactory> viewFactories)
 	{
+		final Map<ArrayKey, IViewFactory> factories = new HashMap<>();
 		for (final IViewFactory factory : viewFactories)
 		{
 			final ViewFactory annotation = factory.getClass().getAnnotation(ViewFactory.class);
 			if (annotation == null)
 			{
-				logger.info("Skip registering {} because it's not annotated with {}", factory, ViewFactory.class);
+				// this might be a development bug
+				logger.warn("Skip {} because it's not annotated with {}", factory, ViewFactory.class);
 				continue;
 			}
 
@@ -139,9 +147,10 @@ public class ViewsRepository implements IViewsRepository
 			for (final JSONViewDataType viewType : viewTypes)
 			{
 				factories.put(mkFactoryKey(windowId, viewType), factory);
-				logger.info("Registered {} for windowId={}, viewType={}", factory, windowId, viewTypes);
 			}
 		}
+
+		return ImmutableMap.copyOf(factories);
 	}
 
 	private final IViewFactory getFactory(final WindowId windowId, final JSONViewDataType viewType)
