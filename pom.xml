@@ -38,6 +38,13 @@ Default parent pom with common settings (e.g. java file encoding) to be used by 
 			see http://docs.spring.io/spring-boot/docs/1.2.3.RELEASE/reference/htmlsingle/#howto-customize-dependency-versions-with-maven 
 		-->
 		<assertj.version>3.8.0</assertj.version>
+
+		<!-- right now 6.2.2 is the latest, but there we suffer from http://community.jaspersoft.com/jasperreports-library/issues/7521 -->
+		<jasperreports.version>6.2.1</jasperreports.version>
+
+		<!-- FRESH-397: jasper 6.2.1 uses poi and zxing with theses versions -->
+		<!-- actually, jasper-6.2.1 accidentally uses 2.1.7.js5-SNAPSHOT, but we don't-->
+		<itext.version>2.1.7.js5</itext.version>
 	</properties>
 
 	<modules>
@@ -46,10 +53,9 @@ Default parent pom with common settings (e.g. java file encoding) to be used by 
 	</modules>
 
 	<repositories>
-				<!-- 
-				    The repositories that we relate on are defined in this parent POM, 
-					because whether an artifact is found should not depend on a specific user's settings.xml 
-				-->
+		<!-- 
+		    The repositories that we relate on are defined in this parent POM, 
+			because whether an artifact is found should not depend on a specific user's settings.xml -->
 		<repository>
 			<id>metasfresh-repo</id>
 			<name>metasfresh maven repository</name>
@@ -87,6 +93,19 @@ Default parent pom with common settings (e.g. java file encoding) to be used by 
 				<artifactId>assertj-core</artifactId>
 				<version>${assertj.version}</version>
 			</dependency>
+
+			<dependency>
+				<groupId>net.sf.jasperreports</groupId>
+				<artifactId>jasperreports</artifactId>
+				<version>${jasperreports.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>com.lowagie</groupId>
+				<artifactId>itext</artifactId>
+				<version>${itext.version}</version>
+			</dependency>
+
 		</dependencies>
 
 	</dependencyManagement>
@@ -601,21 +620,7 @@ Failure to find de.metas:de.metas.parent:pom:(1.0.0,3) in (URL ...) was cached i
 									<goal>check</goal>
 								</goals>
 								<configuration>
-									<rules>
-										<!--  note: the two implementation attributes are needed only for Maven 2  -->
-										<!-- "intepretation" (e.g. fail if too low) is done via the jenkins jacoco plugin
-										<rule implementation="org.jacoco.maven.RuleConfiguration">
-											<element>BUNDLE</element>
-											<limits>
-												<limit implementation="org.jacoco.report.check.Limit">
-												<counter>COMPLEXITY</counter>
-												<value>COVEREDRATIO</value>
-												<minimum>0.60</minimum>
-												</limit>
-											</limits>
-										</rule>
-										-->
-									</rules>
+									<rules />
 								</configuration>
 							</execution>
 						</executions>
@@ -624,5 +629,179 @@ Failure to find de.metas:de.metas.parent:pom:(1.0.0,3) in (URL ...) was cached i
 			</build>
 		</profile>
 
+		<profile>
+			<!-- If there is a jasper sources directory, this profile will activate
+				It will compile those jrxml files and then assemble the jasper files into
+				a jar. It will *NOT* add src/main/jasperreports as additional source folder,
+				(that's done by the "jasper-source-folder" profile) -->
+			<id>jasper-build</id>
+
+			<activation>
+				<file>
+					<exists>src/main/jasperreports</exists>
+				</file>
+			</activation>
+
+			<build>
+				<plugins>
+					<plugin>
+						<artifactId>maven-resources-plugin</artifactId>
+						<version>2.6</version>
+						<executions>
+							<execution>
+								<id>copy-resources</id>
+								<phase>process-resources</phase>
+								<goals>
+									<goal>copy-resources</goal>
+								</goals>
+								<configuration>
+									<!-- same as jasperreports-maven-plugin's outputDirectory -->
+									<outputDirectory>${project.build.directory}/jasper</outputDirectory>
+									<resources>
+										<resource>
+											<directory>src/main/jasperreports</directory>
+											<excludes>
+												<exclude>**/*.jrxml</exclude> <!-- jrxmls are compiled into jasper files, they don't need to be copied -->
+											</excludes>
+										</resource>
+									</resources>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+
+					<plugin>
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>jasperreports-maven-plugin</artifactId>
+						<version>1.0-beta-2</version>
+						<configuration>
+							<outputDirectory>${project.build.directory}/jasper</outputDirectory>
+						</configuration>
+
+						<dependencies>
+							<!-- for whatever reason, if we don't set this version explicitly,
+								the plugin will try to work with 2.1.7.js5-SNAPSHOT -->
+							<dependency>
+								<groupId>com.lowagie</groupId>
+								<artifactId>itext</artifactId>
+								<version>${itext.version}</version>
+							</dependency>
+
+							<!-- note that excluding jasperreports:jasperreports version 1.2 doesn't
+								work even if we don't need it, see http://stackoverflow.com/questions/34193602/how-to-exclude-jasperreports-artifact-from-jasperreports-maven-plugin/34198348 -->
+							<dependency>
+								<groupId>org.codehaus.mojo</groupId>
+								<artifactId>jasperreports-maven-plugin</artifactId>
+								<version>1.0-beta-2</version>
+							</dependency>
+							<dependency>
+								<groupId>net.sf.jasperreports</groupId>
+								<artifactId>jasperreports</artifactId>
+								<version>${jasperreports.version}</version>
+							</dependency>
+
+							<!-- required to compile reports with barcodes -->
+							<!-- FRESH-397: see if we can remove it, too.  -->
+							<!-- 1876 It's needed to be able to run jaspers with barcodes-->
+							<dependency>
+								<groupId>net.sf.barcode4j</groupId>
+								<artifactId>barcode4j-fop-ext-complete</artifactId>
+								<version>2.0</version>
+								<type>jar</type>
+								<exclusions>
+									<exclusion>
+										<groupId>commons-logging</groupId>
+										<artifactId>commons-logging</artifactId>
+									</exclusion>
+								</exclusions>
+							</dependency>
+
+						</dependencies>
+						<executions>
+							<execution>
+								<goals>
+									<goal>compile-reports</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+
+					<plugin>
+						<artifactId>maven-assembly-plugin</artifactId>
+						<dependencies>
+							<dependency>
+								<groupId>de.metas</groupId>
+								<artifactId>metasfresh-assemblies</artifactId>
+								<!-- version>${metasfresh.assembly.descriptor.version}</version -->
+								<version>[1.0.0,10.0.0]</version>
+							</dependency>
+						</dependencies>
+						<executions>
+							<execution>
+								<id>make-jasper-assembly</id> <!-- this is used for inheritance merges -->
+								<phase>package</phase> <!-- bind to the packaging phase -->
+								<goals>
+									<goal>single</goal>
+								</goals>
+								<configuration>
+									<descriptorRefs>
+										<descriptorRef>jasper</descriptorRef>
+									</descriptorRefs>
+								</configuration>
+							</execution>
+							<execution>
+								<id>make-jasper-sources-assembly</id> <!-- this is used for inheritance merges -->
+								<phase>package</phase> <!-- bind to the packaging phase -->
+								<goals>
+									<goal>single</goal>
+								</goals>
+								<configuration>
+									<descriptorRefs>
+										<descriptorRef>jasper_sources</descriptorRef>
+									</descriptorRefs>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+
+		<profile>
+			<!-- Adds src/main/jasperreports as additional source folder (if the directory is present)
+			     this is only intended to be active when running in eclipse, and not for *any* actual maven build. 
+			     We don't want the jasper-stuff to end up in a "regular" artifact jar! 
+			     Particularly the properties files need to be overridden in certain situations, 
+			     so we can't afford to have an additional copy in the classpath via regular jars 
+			     
+			     Hint: in eclipse, you can activate	this profile in the projects where you need it, 
+			     by opening the projects properties	(=>maven). 
+			     But, then you can't build a proper artifact using eclipse-maven -->
+			<id>jasper-source-folder</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>build-helper-maven-plugin</artifactId>
+						<executions>
+							<execution>
+								<id>add-resource</id>
+								<phase>generate-resources</phase>
+								<goals>
+									<goal>add-resource</goal>
+								</goals>
+								<configuration>
+									<resources>
+										<resource>
+											<directory>src/main/jasperreports</directory>
+										</resource>
+									</resources>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
 	</profiles>
 </project>
