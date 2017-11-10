@@ -123,7 +123,7 @@ public class FlatrateTermDataFactory
 				.conditions(conditions)
 				.calendar(calendar)
 				.deliveryInterval(1)
-				.deliveryIntervalUnit(X_C_Flatrate_Transition.DELIVERYINTERVALUNIT_JahrE)
+				.deliveryIntervalUnit(X_C_Flatrate_Transition.DELIVERYINTERVALUNIT_MonatE)
 				.termDuration(1)
 				.termDurationUnit(X_C_Flatrate_Transition.TERMDURATIONUNIT_JahrE)
 				.isAutoCompleteNewTerm(isAutoRenew)

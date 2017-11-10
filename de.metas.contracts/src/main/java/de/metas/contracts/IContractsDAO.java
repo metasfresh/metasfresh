@@ -56,4 +56,7 @@ public interface IContractsDAO extends ISingletonService
 	 * @return
 	 */
 	BigDecimal retrieveSubscriptionProgressQtyForTerm(I_C_Flatrate_Term term);
+
+
+	List<I_C_SubscriptionProgress> getSubscriptionProgress(I_C_Flatrate_Term currentTerm);
 }
