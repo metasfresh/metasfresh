@@ -8,6 +8,7 @@ import java.lang.reflect.Field;
 
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
+import de.metas.ui.web.window.descriptor.ViewEditorRenderMode;
 
 /*
  * #%L
@@ -52,6 +53,8 @@ public @interface ViewColumn
 	 * If empty, the column won't be displayed in any of {@link JSONViewDataType} profiles.
 	 */
 	ViewColumnLayout[] layouts() default {};
+	
+	ViewEditorRenderMode editor() default ViewEditorRenderMode.NEVER;
 
 	@Target({ ElementType.FIELD })
 	@Retention(RetentionPolicy.RUNTIME)

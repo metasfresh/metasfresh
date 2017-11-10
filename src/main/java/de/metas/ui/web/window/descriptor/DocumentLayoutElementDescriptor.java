@@ -86,8 +86,10 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 
 	private final LayoutType layoutType;
 	private final WidgetSize widgetSize;
-	private final LayoutAlign gridAlign;
 	private final boolean advancedField;
+	
+	private final LayoutAlign gridAlign;
+	private final ViewEditorRenderMode viewEditorRenderMode;
 
 	private final Set<DocumentLayoutElementFieldDescriptor> fields;
 
@@ -110,7 +112,9 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 
 		layoutType = builder.getLayoutType();
 		widgetSize = builder.getWidgetSize();
+		
 		gridAlign = builder.getGridAlign();
+		viewEditorRenderMode = builder.getViewEditorRenderMode();
 
 		advancedField = builder.isAdvancedField();
 
@@ -183,6 +187,11 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 	{
 		return gridAlign;
 	}
+	
+	public ViewEditorRenderMode getViewEditorRenderMode()
+	{
+		return viewEditorRenderMode;
+	}
 
 	public boolean isAdvancedField()
 	{
@@ -218,7 +227,10 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 		
 		private LayoutType _layoutType;
 		private WidgetSize _widgetSize;
+		
 		private boolean _gridElement = false;
+		private ViewEditorRenderMode viewEditorRenderMode = null;
+		
 		private boolean _advancedField = false;
 		private final LinkedHashMap<String, DocumentLayoutElementFieldDescriptor.Builder> _fieldsBuilders = new LinkedHashMap<>();
 		private boolean excludeSpecialFields = false;
@@ -365,7 +377,7 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 			return _widgetType != null;
 		}
 
-		private DocumentFieldWidgetType getWidgetType()
+		public DocumentFieldWidgetType getWidgetType()
 		{
 			Check.assumeNotNull(_widgetType, DocumentLayoutBuildException.class, "Parameter widgetType is not null for {}", this);
 			return _widgetType;
@@ -505,6 +517,17 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 		private LayoutAlign getGridAlign()
 		{
 			return _gridElement ? getWidgetType().getGridAlign() : null;
+		}
+		
+		public Builder setViewEditorRenderMode(final ViewEditorRenderMode gridEditorRenderMode)
+		{
+			this.viewEditorRenderMode = gridEditorRenderMode;
+			return this;
+		}
+
+		private ViewEditorRenderMode getViewEditorRenderMode()
+		{
+			return viewEditorRenderMode;
 		}
 
 		public Builder setButtonActionDescriptor(final ButtonFieldActionDescriptor buttonActionDescriptor)

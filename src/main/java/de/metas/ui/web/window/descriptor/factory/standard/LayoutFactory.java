@@ -49,6 +49,7 @@ import de.metas.ui.web.window.descriptor.DocumentLayoutElementLineDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutSectionDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutSingleRow;
 import de.metas.ui.web.window.descriptor.LayoutType;
+import de.metas.ui.web.window.descriptor.ViewEditorRenderMode;
 import de.metas.ui.web.window.descriptor.WidgetSize;
 
 /*
@@ -149,7 +150,7 @@ public class LayoutFactory
 
 		final List<I_AD_UI_Element> labelsUIElements = _uiProvider.getUIElementsOfTypeLabels(gridTabVO.getAD_Tab_ID());
 		descriptorsFactory = new GridTabVOBasedDocumentEntityDescriptorFactory(gridTabVO, parentTab, gridWindowVO.isSOTrx(), labelsUIElements);
-		
+
 		this.childAdTabIdsToSkip = labelsUIElements.stream().map(I_AD_UI_Element::getLabels_Tab_ID).collect(ImmutableSet.toImmutableSet());
 	}
 
@@ -163,7 +164,7 @@ public class LayoutFactory
 				.add("UIProvider", getUIProvider())
 				.toString();
 	}
-	
+
 	public boolean isSkipAD_Tab_ID(final int adTabId)
 	{
 		return childAdTabIdsToSkip.contains(adTabId);
@@ -439,7 +440,7 @@ public class LayoutFactory
 	private List<DocumentFieldDescriptor.Builder> extractDocumentFields(final I_AD_UI_Element uiElement)
 	{
 		final List<DocumentFieldDescriptor.Builder> fields = new ArrayList<>();
-		
+
 		final String uiElementType = Util.coalesce(uiElement.getAD_UI_ElementType(), X_AD_UI_Element.AD_UI_ELEMENTTYPE_Field);
 		if (X_AD_UI_Element.AD_UI_ELEMENTTYPE_Field.equals(uiElementType))
 		{
@@ -477,7 +478,7 @@ public class LayoutFactory
 		{
 			final String labelsFieldName = GridTabVOBasedDocumentEntityDescriptorFactory.getLabelsFieldName(uiElement);
 			final DocumentFieldDescriptor.Builder field = descriptorsFactory.documentField(labelsFieldName);
-			if(field == null)
+			if (field == null)
 			{
 				logger.warn("No label field found for {}", labelsFieldName);
 			}
@@ -489,7 +490,7 @@ public class LayoutFactory
 		else
 		{
 			throw new IllegalArgumentException("Unknown AD_UI_ElementType: " + uiElementType + "  for " + uiElement);
-		}		
+		}
 		return fields;
 	}
 
@@ -515,7 +516,9 @@ public class LayoutFactory
 					.sorted(Comparator.comparing(I_AD_UI_Element::getSeqNoGrid))
 					.map(adUIElement -> layoutElement(adUIElement))
 					.filter(uiElement -> uiElement != null)
-					.peek(uiElement -> uiElement.setGridElement())
+					.peek(uiElement -> uiElement
+							.setGridElement()
+							.setViewEditorRenderMode(extractViewEditorRenderMode(uiElement.getWidgetType())))
 					.forEach(layout::addElement);
 		}
 
@@ -531,6 +534,7 @@ public class LayoutFactory
 					.peek(uiElement -> uiElement.setGridElement())
 					.forEach(layout::addElement);
 		}
+		
 
 		//
 		// Fallback:
@@ -544,6 +548,20 @@ public class LayoutFactory
 		descriptorsFactory.addFieldsCharacteristic(layout.getFieldNames(), Characteristic.GridViewField);
 
 		return layout;
+	}
+
+	private static final ViewEditorRenderMode extractViewEditorRenderMode(final DocumentFieldWidgetType widgetType)
+	{
+		if (widgetType == DocumentFieldWidgetType.Amount
+				|| widgetType == DocumentFieldWidgetType.CostPrice
+				|| widgetType == DocumentFieldWidgetType.Quantity)
+		{
+			return ViewEditorRenderMode.ON_DEMAND;
+		}
+		else
+		{
+			return ViewEditorRenderMode.NEVER;
+		}
 	}
 
 	/** @return included entity grid layout */
