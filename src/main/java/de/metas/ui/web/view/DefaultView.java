@@ -10,6 +10,9 @@ import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.util.CCache;
 import org.compiere.util.Env;
@@ -34,7 +37,13 @@ import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
+import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
+import de.metas.ui.web.window.model.DocumentCollection;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
+import de.metas.ui.web.window.model.DocumentSaveStatus;
+import de.metas.ui.web.window.model.DocumentValidStatus;
+import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
+import de.metas.ui.web.window.model.NullDocumentChangesCollector;
 import de.metas.ui.web.window.model.sql.SqlOptions;
 import lombok.NonNull;
 
@@ -62,11 +71,11 @@ import lombok.NonNull;
 
 /**
  * Default {@link IView} implementation.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public class DefaultView implements IView
+public class DefaultView implements IEditableView
 {
 	public static final Builder builder(final IViewDataRepository viewDataRepository)
 	{
@@ -437,12 +446,69 @@ public class DefaultView implements IView
 		ViewChangesCollector.getCurrentOrAutoflush().collectRowsChanged(this, rowIds);
 	}
 
+	@Override
+	public void patchViewRow(final RowEditingContext ctx, final List<JSONDocumentChangedEvent> fieldChangeRequests)
+	{
+		final DocumentId rowId = ctx.getRowId();
+		final DocumentCollection documentsCollection = ctx.getDocumentsCollection();
+		final DocumentPath documentPath = getById(rowId).getDocumentPath();
+
+		Services.get(ITrxManager.class)
+				.runInThreadInheritedTrx(() -> documentsCollection.forDocumentWritable(documentPath, NullDocumentChangesCollector.instance, document -> {
+					//
+					// Process changes and the save the document
+					document.processValueChanges(fieldChangeRequests, ReasonSupplier.NONE);
+					document.saveIfValidAndHasChanges();
+
+					//
+					// Important: before allowing the document to be stored back in documents collection,
+					// we need to make sure it's valid and saved.
+					final DocumentValidStatus validStatus = document.getValidStatus();
+					if (!validStatus.isValid())
+					{
+						throw new AdempiereException(validStatus.getReason());
+					}
+					final DocumentSaveStatus saveStatus = document.getSaveStatus();
+					if (saveStatus.isNotSaved())
+					{
+						throw new AdempiereException(saveStatus.getReason());
+					}
+
+					//
+					return null; // nothing/not important
+				}));
+
+		invalidateRowById(rowId);
+		ViewChangesCollector.getCurrentOrAutoflush().collectRowChanged(this, rowId);
+
+		documentsCollection.invalidateRootDocument(documentPath);
+	}
+
+	@Override
+	public LookupValuesList getFieldTypeahead(final RowEditingContext ctx, final String fieldName, final String query)
+	{
+		final DocumentId rowId = ctx.getRowId();
+		final DocumentCollection documentsCollection = ctx.getDocumentsCollection();
+		final DocumentPath documentPath = getById(rowId).getDocumentPath();
+
+		return documentsCollection.forDocumentReadonly(documentPath, document -> document.getFieldLookupValuesForQuery(fieldName, query));
+	}
+
+	@Override
+	public LookupValuesList getFieldDropdown(final RowEditingContext ctx, final String fieldName)
+	{
+		final DocumentId rowId = ctx.getRowId();
+		final DocumentCollection documentsCollection = ctx.getDocumentsCollection();
+		final DocumentPath documentPath = getById(rowId).getDocumentPath();
+
+		return documentsCollection.forDocumentReadonly(documentPath, document -> document.getFieldLookupValues(fieldName));
+	}
+
 	//
 	//
 	// Builder
 	//
 	//
-
 	public static final class Builder
 	{
 		private ViewId viewId;
@@ -482,7 +548,7 @@ public class DefaultView implements IView
 			return parentRowId;
 		}
 
-		public Builder setViewId(ViewId viewId)
+		public Builder setViewId(final ViewId viewId)
 		{
 			this.viewId = viewId;
 			return this;
