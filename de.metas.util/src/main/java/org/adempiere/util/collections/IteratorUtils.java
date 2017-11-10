@@ -250,9 +250,7 @@ public final class IteratorUtils
 	 */
 	public static <T> Stream<T> stream(final Iterator<T> iterator)
 	{
-		final int characteristics = 0;
-		Spliterator<T> spliterator = Spliterators.spliteratorUnknownSize(iterator, characteristics);
-
+		Spliterator<T> spliterator = Spliterators.spliteratorUnknownSize(iterator, Spliterator.ORDERED);
 		final boolean parallel = false;
 		return StreamSupport.stream(spliterator, parallel);
 	}
