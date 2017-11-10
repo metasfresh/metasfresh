@@ -1,6 +1,11 @@
 import React, { Component } from 'react';
-
+import PropTypes from 'prop-types';
+import {connect} from 'react-redux';
 import Datetime from 'react-datetime';
+
+import {
+    addNotification
+} from '../../actions/AppActions';
 
 class DatePicker extends Component {
     constructor(props) {
@@ -17,13 +22,19 @@ class DatePicker extends Component {
     }
 
     handleBlur = (date) => {
-        const {patch, handleBackdropLock} = this.props;
+        const {patch, handleBackdropLock, dispatch, field} = this.props;
         const {cache} = this.state;
 
-        if(JSON.stringify(cache) !== (
-            date !== '' ? JSON.stringify(date && date.toDate()) : ''
-        )){
-            patch(date);
+        try {
+            if(JSON.stringify(cache) !== (
+                date !== '' ? JSON.stringify(date && date.toDate()) : ''
+            )){
+                patch(date);
+            }
+        } catch (error) {
+            dispatch(addNotification(
+                field, `${field} has an invalid date.`, 5000, 'error'
+            ));
         }
 
         this.handleClose();
@@ -70,5 +81,11 @@ class DatePicker extends Component {
         />)
     }
 }
+
+DatePicker.propTypes = {
+    dispatch: PropTypes.func.isRequired
+};
+
+DatePicker = connect()(DatePicker);
 
 export default DatePicker

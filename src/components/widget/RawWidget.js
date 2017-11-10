@@ -230,6 +230,7 @@ class RawWidget extends Component {
                     return (
                         <div className={this.getClassNames({ icon: true })}>
                             <DatePicker
+                                field={fields[0].field}
                                 timeFormat={false}
                                 dateFormat={true}
                                 inputProps={{
@@ -286,6 +287,7 @@ class RawWidget extends Component {
                     return (
                         <div className={this.getClassNames({ icon: true })}>
                             <DatePicker
+                                field={fields[0].field}
                                 timeFormat={true}
                                 dateFormat={true}
                                 inputProps={{
@@ -332,6 +334,7 @@ class RawWidget extends Component {
                 return (
                     <div className={this.getClassNames({ icon: true })}>
                         <DatePicker
+                            field={fields[0].field}
                             timeFormat={true}
                             dateFormat={false}
                             inputProps={{
