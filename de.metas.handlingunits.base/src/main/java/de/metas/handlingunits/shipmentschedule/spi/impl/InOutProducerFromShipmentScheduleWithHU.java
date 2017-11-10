@@ -180,6 +180,7 @@ public class InOutProducerFromShipmentScheduleWithHU implements IInOutProducerFr
 		return shipment;
 	}
 
+	@VisibleForTesting
 	static Timestamp calculateShipmentDate(final @NonNull I_M_ShipmentSchedule schedule, final boolean isShipmentDateToday)
 	{
 		final Timestamp now = TimeUtil.getNow();
@@ -189,7 +190,7 @@ public class InOutProducerFromShipmentScheduleWithHU implements IInOutProducerFr
 			return now;
 		}
 
-		final Timestamp deliveryDateEffective = schedule.getDeliveryDate_Effective();
+		final Timestamp deliveryDateEffective = Services.get(IShipmentScheduleEffectiveBL.class).getDeliveryDate(schedule);
 
 		if (deliveryDateEffective == null)
 		{
@@ -459,7 +460,6 @@ public class InOutProducerFromShipmentScheduleWithHU implements IInOutProducerFr
 		return false;
 	}
 
-	@VisibleForTesting
 	private void createUpdateShipmentLine(final IShipmentScheduleWithHU candidate)
 	{
 		//
