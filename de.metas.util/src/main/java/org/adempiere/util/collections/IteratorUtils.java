@@ -13,29 +13,36 @@ package org.adempiere.util.collections;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Spliterator;
 import java.util.Spliterators;
+import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import org.adempiere.util.EmptyIterator;
 
 import com.google.common.base.Throwables;
+
+import lombok.Builder;
+import lombok.NonNull;
 
 public final class IteratorUtils
 {
@@ -76,7 +83,7 @@ public final class IteratorUtils
 				return Collections.emptyList();
 			}
 
-			final List<E> list = new ArrayList<E>();
+			final List<E> list = new ArrayList<>();
 			while (it.hasNext())
 			{
 				final E e = it.next();
@@ -100,7 +107,7 @@ public final class IteratorUtils
 			return it;
 		}
 
-		final Iterator<E> it = new BlindIteratorWrapper<E>(blindIterator);
+		final Iterator<E> it = new BlindIteratorWrapper<>(blindIterator);
 		return it;
 	}
 
@@ -208,7 +215,7 @@ public final class IteratorUtils
 		}
 		else
 		{
-			return new PeekIteratorWrapper<E>(iterator);
+			return new PeekIteratorWrapper<>(iterator);
 		}
 	}
 
@@ -224,12 +231,12 @@ public final class IteratorUtils
 	 */
 	public static <IT, OT> Iterator<OT> convertIterator(final Iterator<IT> iterator, final Converter<OT, IT> converter)
 	{
-		return new ConvertIteratorWrapper<OT, IT>(iterator, converter);
+		return new ConvertIteratorWrapper<>(iterator, converter);
 	}
 
 	public static <T> Iterator<T> unmodifiableIterator(final Iterator<T> iterator)
 	{
-		return new UnmodifiableIterator<T>(iterator);
+		return new UnmodifiableIterator<>(iterator);
 	}
 
 	public static <T> Iterator<T> emptyIterator()
