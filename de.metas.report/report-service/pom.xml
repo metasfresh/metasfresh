@@ -91,7 +91,7 @@
 			<version>10.0.0</version>
 			<scope>provided</scope>
 		</dependency>
-
+		
 		<!-- Q/R code-->
 		<dependency>
 			<groupId>com.google.zxing</groupId>
@@ -160,7 +160,7 @@
 						<configuration>
 							<executable>true</executable>
 							<mainClass>${start-class}</mainClass>
-
+							
 							<!-- this also provides the super-jar to the successive docker build 
 								Note that the ${docker.build.directory} property  is set by the prepare-docker profile 
 								that is activated by the presence of the scr/main/docker folder -->
@@ -189,6 +189,28 @@
 						</configuration>
 					</execution>
 				</executions>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-enforcer-plugin</artifactId>
+				<configuration>
+					<rules>
+						<banDuplicateClasses>
+							<dependencies>
+								<dependency>
+									<groupId>de.metas.migration</groupId>
+									<artifactId>de.metas.migration.cli</artifactId>
+									<ignoreClasses>
+										<ignoreClass>*</ignoreClass>
+									</ignoreClasses>
+								</dependency>
+							</dependencies>
+							<findAllDuplicates>true</findAllDuplicates>
+						</banDuplicateClasses>
+					</rules>
+					<fail>true</fail>
+				</configuration>
 			</plugin>
 
 			<plugin>
