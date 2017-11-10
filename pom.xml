@@ -493,6 +493,67 @@ Failure to find de.metas:de.metas.parent:pom:(1.0.0,3) in (URL ...) was cached i
 				<env.BUILD_NUMBER>0</env.BUILD_NUMBER>
 			</properties>
 		</profile>
+
+		<!--
+			If the src/main/docker is present, then this profile defines a dedicated property project.build.directory
+			and copies its contents and also the contents of src/main/configs (if it exists) into that directory.
+
+			The actual build can then provide additional files to ${project.build.directory}.
+			Note that the actual docker building is (currently) done outside of maven. 
+		-->
+		<profile>
+			<id>prepare-docker</id>
+			<activation>
+				<file>
+					<exists>src/main/docker</exists>
+				</file>
+			</activation>
+			<properties>
+				<!-- this value needs to be in sync with our createAndPublishDockerImage jenkins pipeline step -->
+				<docker.build.directory>target/docker</docker.build.directory>
+			</properties>
+			<build>
+				<plugins>
+					<plugin>
+						<artifactId>maven-resources-plugin</artifactId>
+						<executions>
+							<execution>
+								<id>copy-docker-folder</id>
+								<phase>package</phase>
+								<goals>
+									<goal>copy-resources</goal>
+								</goals>
+								<configuration>
+									<outputDirectory>${docker.build.directory}</outputDirectory>
+									<resources>
+										<resource>
+											<directory>src/main/docker</directory>
+											<filtering>true</filtering>
+										</resource>
+									</resources>
+								</configuration>
+							</execution>
+							<execution>
+								<id>copy-configs-folder</id>
+								<phase>package</phase>
+								<goals>
+									<goal>copy-resources</goal>
+								</goals>
+								<configuration>
+									<outputDirectory>${docker.build.directory}/configs</outputDirectory>
+									<resources>
+										<resource>
+											<directory>src/main/configs</directory>
+											<filtering>true</filtering>
+										</resource>
+									</resources>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
 	
 	    <!-- 
 			Add code coverage metrics to our builds https://github.com/metasfresh/metasfresh/issues/2343
@@ -508,7 +569,6 @@ Failure to find de.metas:de.metas.parent:pom:(1.0.0,3) in (URL ...) was cached i
 			</activation>
 			<repositories>
 				<!-- this additional repo's parameters can be set from outside. It usually corresponds to a (task-)branch -->
-				<!-- moved into the jenkins profile; see https://github.com/metasfresh/metasfresh-parent/issues/14 -->
 				<repository>
 					<id>${deploy-repo-id}</id>
 					<name>${deploy-repo-name}</name>
