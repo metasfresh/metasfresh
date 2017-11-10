@@ -537,7 +537,7 @@ Failure to find de.metas:de.metas.parent:pom:(1.0.0,3) in (URL ...) was cached i
 						<artifactId>maven-resources-plugin</artifactId>
 						<executions>
 							<execution>
-								<id>copy-docker-folder</id>
+								<id>copy-docker-folder-for-docker-build</id>
 								<phase>package</phase>
 								<goals>
 									<goal>copy-resources</goal>
@@ -553,7 +553,7 @@ Failure to find de.metas:de.metas.parent:pom:(1.0.0,3) in (URL ...) was cached i
 								</configuration>
 							</execution>
 							<execution>
-								<id>copy-configs-folder</id>
+								<id>copy-configs-folder-for-docker-build</id>
 								<phase>package</phase>
 								<goals>
 									<goal>copy-resources</goal>
