@@ -122,7 +122,7 @@ public class GenerateInOutFromHU extends WorkpackageProcessorAdapter
 		setTrxItemExceptionHandler(FailTrxItemExceptionHandler.instance);
 
 		inoutGenerateResult = generateInOuts(ctx, candidates, docActionNone, createPackingLines, manualPackingMaterial,
-				false, // TODO
+				true, //isShipmentDateToday:  if this is ever used, it should be on true to keep legacy
 				ITrx.TRXNAME_ThreadInherited);
 		Loggables.get().addLog("Generated " + inoutGenerateResult.toString());
 
