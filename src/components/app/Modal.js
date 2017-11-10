@@ -204,7 +204,8 @@ class Modal extends Component {
             processNewRecord('window', windowType, dataId).then(response => {
                 dispatch(patch(
                     'window', parentType, parentDataId, null, null,
-                    triggerField, { [response.data]: '' },
+                    triggerField,
+					response.data, // it's OK to patch using the newly created record ID (instead of key/caption value)
                 )).then(() => {
                     this.removeModal();
                 });
