@@ -100,32 +100,12 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 		// maven.test.failure.ignore=true: continue if tests fail, because we want a full report.
 		sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -Dmaven.test.failure.ignore=true ${mvnConf.resolveParams} ${mvnConf.deployParam} clean deploy"
 
-		// now create and publish some docker image..well, 1 docker image for starts
-		final dockerWorkDir='docker-build/metasfresh-webui-api'
-		sh "mkdir -p ${dockerWorkDir}"
-
-
-		final BUILD_DOCKER_REPOSITORY='metasfresh';
-		final BUILD_DOCKER_NAME='metasfresh-webapi-dev';
-		final BUILD_DOCKER_TAG=misc.mkDockerTag("${MF_UPSTREAM_BRANCH}-${MF_VERSION}");
-		final BUILD_DOCKER_IMAGE="${BUILD_DOCKER_REPOSITORY}/${BUILD_DOCKER_NAME}:${BUILD_DOCKER_TAG}";
-
-		// create and upload a docker image
-		sh "cp target/metasfresh-webui-api-${MF_VERSION}.jar ${dockerWorkDir}/metasfresh-webui-api.jar" // copy the file so it can be handled by the docker build
-		sh "cp -R src/main/docker/* ${dockerWorkDir}"
-		sh "cp -R src/main/configs ${dockerWorkDir}"
-		docker.withRegistry('https://index.docker.io/v1/', 'dockerhub_metasfresh')
-		{
-			def app = docker.build "${BUILD_DOCKER_REPOSITORY}/${BUILD_DOCKER_NAME}", "${dockerWorkDir}";
-
-			app.push misc.mkDockerTag("${MF_UPSTREAM_BRANCH}-latest");
-			app.push BUILD_DOCKER_TAG;
-			if(MF_UPSTREAM_BRANCH=='release')
-			{
-				echo 'MF_UPSTREAM_BRANCH=release, so we also push this with the "latest" tag'
-				app.push misc.mkDockerTag('latest');
-			}
-		}
+		createAndPublishDockerImage(
+			'metasfresh-webui-api', // dockerRepositoryName
+			'.',  // dockerModuleDir
+			MF_UPSTREAM_BRANCH, // dockerBranchName
+			MF_VERSION // dockerVersionSuffix
+		)
 
 		// gh #968:
 		// set env variables which will be available to a possible upstream job that might have called us
