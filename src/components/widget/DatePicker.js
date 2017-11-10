@@ -7,7 +7,6 @@ import {
     addNotification
 } from '../../actions/AppActions';
 
-
 class DatePicker extends Component {
     constructor(props) {
         super(props);
@@ -31,7 +30,7 @@ class DatePicker extends Component {
                 date !== '' ? JSON.stringify(date && date.toDate()) : ''
             )){
                 patch(date);
-            }    
+            }
         } catch (error) {
             dispatch(addNotification(
                 field, `${field} has an invalid date.`, 5000, 'error'
