@@ -40,7 +40,7 @@ Here come the actual release notes:
 * metasfresh-webui-frontend
   * [#1295](https://github.com/metasfresh/metasfresh-webui-api/issues/653) metasfresh.webui.debug.showColumnNamesForCaption shall be false by default
   * [#1303](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1303) Change the hostname from config.js.dist to localhost
-  
+
 * other
   * [metasfresh-dist-orgs#82](https://github.com/metasfresh/metasfresh-dist-orgs/issues/82) Invoice Medium Address Layout Changes
 
@@ -61,6 +61,7 @@ Here come the actual release notes:
   * [#1294](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1294) window actions shall respect the "disabled" flag
   * [#1295](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1295) processes: provide current selected tab and rows
   * [#1312](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1312) Wrong process call
+  * [#1324](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1324) Process is started twice when using ctrl-u shortcut
 
 # metasfresh 5.33 (2017-44)
 
