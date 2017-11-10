@@ -44,10 +44,7 @@ import lombok.Value;
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public final class JSONViewLayout
 {
-	public static JSONViewLayout of(
-			final ViewLayout gridLayout //
-			, final JSONOptions jsonOpts //
-	)
+	public static JSONViewLayout of(final ViewLayout gridLayout, final JSONOptions jsonOpts)
 	{
 		return new JSONViewLayout(gridLayout, jsonOpts);
 	}
