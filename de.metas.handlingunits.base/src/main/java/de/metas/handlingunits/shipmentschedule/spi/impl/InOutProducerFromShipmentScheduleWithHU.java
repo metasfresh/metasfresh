@@ -426,7 +426,7 @@ public class InOutProducerFromShipmentScheduleWithHU implements IInOutProducerFr
 		final Timestamp candidateShipmentDate = calculateShipmentDate(schedule, shipmentDateToday);
 
 		// the shipment was created before but wasn't yet completed;
-		if (isCandidateShipmentDateFitForShipment(shipment, candidateShipmentDate))
+		if (isCandidateShipmentDateBestForShipment(shipment, candidateShipmentDate))
 		{
 			shipment.setMovementDate(candidateShipmentDate);
 			shipment.setDateAcct(candidateShipmentDate);
@@ -436,11 +436,17 @@ public class InOutProducerFromShipmentScheduleWithHU implements IInOutProducerFr
 	}
 
 	@VisibleForTesting
-	static boolean isCandidateShipmentDateFitForShipment(final @NonNull I_M_InOut shipment, final @NonNull Timestamp candidateShipmentDate)
+	static boolean isCandidateShipmentDateBestForShipment(final @NonNull I_M_InOut shipment, final @NonNull Timestamp candidateShipmentDate)
 	{
+		final Timestamp today = TimeUtil.getNow();
 		final Timestamp currentShipmentDate = shipment.getMovementDate();
 
-		if (currentShipmentDate.before(TimeUtil.getNow()))
+		if(candidateShipmentDate.before(today))
+		{
+			return false;
+		}
+		
+		if (currentShipmentDate.before(today))
 		{
 			return true;
 		}
