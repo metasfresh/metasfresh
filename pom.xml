@@ -202,6 +202,7 @@
 	</dependencies>
 
 	<build>
+		<finalName>metasfresh-webui-api</finalName>
 		<plugins>
 			<!--
 			See http://www.mojohaus.org/versions-maven-plugin/examples/update-properties.html
