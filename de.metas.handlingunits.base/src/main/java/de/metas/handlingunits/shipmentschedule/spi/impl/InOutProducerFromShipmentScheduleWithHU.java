@@ -35,11 +35,12 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
 import org.adempiere.util.agg.key.IAggregationKeyBuilder;
-import org.assertj.core.util.VisibleForTesting;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_M_InOut;
 import org.compiere.util.TimeUtil;
+
+import com.google.common.annotations.VisibleForTesting;
 
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
