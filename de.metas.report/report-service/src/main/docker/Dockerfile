@@ -34,12 +34,17 @@ RUN sh -c 'touch /opt/metasfresh/metasfresh-report/metasfresh-report.jar'
 
 # prepare the docker image to accomodate external/private jars
 # note that for this to work
-# * metasfresh-report.jar was make with layout=ZIP, also see https://docs.spring.io/spring-boot/docs/current/maven-plugin/usage.html
+# * metasfresh-report.jar was made with layout=ZIP, also see https://docs.spring.io/spring-boot/docs/current/maven-plugin/usage.html
 # * metasfresh-report.conf contains a line saying "LOADER_PATH=/opt/metasfresh/metasfresh-report/external-libs"
 RUN sh -c 'mkdir /opt/metasfresh/metasfresh-report/external-lib'
 RUN sh -c 'echo "Jar files in this folder are part of the classpath of metasfresh-report" > /opt/metasfresh/metasfresh-report/external-lib/README.txt'
 
 # by convention, jasper files will go into this folder. It corresponds to AD_OrgInfo.ReportPrefix="file:////opt/metasfresh/reports" in the metasfresh DB
 RUN sh -c 'mkdir /opt/metasfresh/reports'
+
+COPY ./dist /opt/metasfresh/dist
+
+# make sure the docker image has a folder for custom SQLs that might come with custom jasper files
+RUN sh -c 'mkdir -p /opt/metasfresh/dist/sql'
 
 ENTRYPOINT ["/opt/metasfresh/metasfresh-report/start_report_docker.sh"]

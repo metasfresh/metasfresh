@@ -82,7 +82,16 @@
 			<artifactId>de.metas.report.jasper.commons</artifactId>
 			<version>10.0.0</version>
 		</dependency>
-		
+
+		<!-- when making the docker image, it shall automatically look for custom SQL scripts and do a migration 
+		but the migration.cli shall just be in the docker image, not in the metasfresh-report super.jar-->
+		<dependency>
+			<groupId>de.metas.migration</groupId>
+			<artifactId>de.metas.migration.cli</artifactId>
+			<version>10.0.0</version>
+			<scope>provided</scope>
+		</dependency>
+
 		<!-- Q/R code-->
 		<dependency>
 			<groupId>com.google.zxing</groupId>
@@ -137,6 +146,7 @@
 	<build>
 		<finalName>metasfresh-report-service</finalName>
 		<plugins>
+
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
@@ -151,6 +161,11 @@
 							<executable>true</executable>
 							<mainClass>${start-class}</mainClass>
 
+							<!-- this also provides the super-jar to the successive docker build 
+								Note that the ${docker.build.directory} property  is set by the prepare-docker profile 
+								that is activated by the presence of the scr/main/docker folder -->
+							<outputDirectory>${docker.build.directory}</outputDirectory>
+
 							<!-- layout=ZIP still creates an executable jar, but with org.springframework.boot.loader.PropertiesLauncher
 								 That way we can specify external jars which contain private user specific fonts
 								 See issue: https://github.com/metasfresh/metasfresh/issues/2932 
@@ -158,6 +173,7 @@
 							<layout>ZIP</layout>
 						</configuration>
 					</execution>
+
 					<execution>
 						<id>spring-boot-serverRoot-build-info</id>
 						<goals>
@@ -170,6 +186,31 @@
 								<jenkinsBuildUrl>${env.BUILD_URL}</jenkinsBuildUrl>
 								<jenkinsJobName>${env.JOB_NAME}</jenkinsJobName>
 							</additionalProperties>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<executions>
+					<!-- copy the migration.cli jar
+						We specified these artifacts as dependencies further up. Therefore they were already resolved and now we only need to grab 'em by the artifactid without having to specify a particular version.
+					-->
+					<execution>
+						<id>copy-metasfresh-external-lib</id>
+						<phase>package</phase>
+						<goals>
+							<goal>copy-dependencies</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${project.build.directory}/docker/dist/install/lib</outputDirectory>
+							<includeArtifactIds>de.metas.migration.cli</includeArtifactIds>
+							<excludeTransitive>true</excludeTransitive>
+							<overWriteReleases>true</overWriteReleases>
+							<overWriteSnapshots>true</overWriteSnapshots>
+							<stripVersion>true</stripVersion>
 						</configuration>
 					</execution>
 				</executions>

@@ -26,6 +26,12 @@ wait_dbms()
  done
 }
 
+run_db_update()
+{
+ sleep 10
+ cd /opt/metasfresh/dist/install/ && java -jar ./lib/de.metas.migration.cli.jar $@
+}
+
 # Note: the Djava.security.egd param is supposed to let tomcat start quicker, see https://spring.io/guides/gs/spring-boot-docker/
 run_metasfresh()
 {
@@ -40,13 +46,19 @@ run_metasfresh()
 set_properties /opt/metasfresh/metasfresh-report/metasfresh.properties
 
 echo "*************************************************************"
-echo "Waiting for the database server to start on DB_HOST = '${DB_HOST}'"
+echo "Wait for the database server to start on DB_HOST = '${DB_HOST}'"
 echo "*************************************************************"
 wait_dbms
 echo ">>>>>>>>>>>> Database Server has started"
 
+echo "*************************************************************"
+echo "Run local migration scripts"
+echo "*************************************************************"
+run_db_update
+echo ">>>>>>>>>>>> Local migration scripts were run"
+
 echo "****************************"
-echo "Starting metasfresh-report ";
+echo "Start metasfresh-report ";
 echo "***************************"
 run_metasfresh
 
