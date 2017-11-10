@@ -131,7 +131,6 @@ public class SalesOrderToOLCandViewFactory implements IViewFactory, IViewsIndexS
 	}
 
 	@Override
-	@Deprecated // shall not be called directly
 	public IView createView(final CreateViewRequest request)
 	{
 		return createView(OLCandViewCreateRequest.builder()

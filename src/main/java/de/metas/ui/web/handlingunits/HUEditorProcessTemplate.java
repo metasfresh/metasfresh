@@ -12,12 +12,10 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.X_M_HU;
-import de.metas.ui.web.handlingunits.HUEditorProcessTemplate.HUEditorRowFilter.Select;
+import de.metas.ui.web.handlingunits.HUEditorRowFilter.Select;
 import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import lombok.NonNull;
-import lombok.Singular;
 
 /*
  * #%L
@@ -143,37 +141,5 @@ public abstract class HUEditorProcessTemplate extends ViewBasedProcessTemplate
 		}
 
 		return onlyHUStatuses.contains(row.getHUStatusKey());
-	}
-
-	@lombok.Builder(toBuilder = true)
-	@lombok.Value
-	public static final class HUEditorRowFilter
-	{
-		@NonNull
-		private final Select select;
-
-		@Singular
-		private final ImmutableSet<String> onlyHUStatuses;
-
-		public enum Select
-		{
-			ONLY_TOPLEVEL, ALL
-		}
-
-		public static final HUEditorRowFilter ALL = builder().select(Select.ALL).build();
-
-		public static final HUEditorRowFilter select(Select select)
-		{
-			return builder().select(select).build();
-		}
-
-		public static final class HUEditorRowFilterBuilder
-		{
-			public HUEditorRowFilterBuilder onlyActiveHUs()
-			{
-				onlyHUStatus(X_M_HU.HUSTATUS_Active);
-				return this;
-			}
-		}
 	}
 }
