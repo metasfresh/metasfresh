@@ -13,15 +13,14 @@ package de.metas.handlingunits.shipmentschedule.api;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import org.adempiere.ad.trx.processor.spi.ITrxItemChunkProcessor;
 
@@ -57,7 +56,7 @@ public interface IInOutProducerFromShipmentScheduleWithHU extends ITrxItemChunkP
 	 * Notes:
 	 * <ul>
 	 * <li>if this is set to <code>true</code>, then packing lines will be created <b>before</b> the shipment's DocAction is processed
-	 * <li> {@link IHUInOutBL#createPackingMaterialLines(org.compiere.model.I_M_InOut) createPackingMaterialLines()} will also be called when the shipment is prepared, but at that stage it is much more
+	 * <li>{@link IHUInOutBL#createPackingMaterialLines(org.compiere.model.I_M_InOut) createPackingMaterialLines()} will also be called when the shipment is prepared, but at that stage it is much more
 	 * complicated to delete/reset those lines.
 	 * </ul>
 	 *
@@ -75,5 +74,12 @@ public interface IInOutProducerFromShipmentScheduleWithHU extends ITrxItemChunkP
 	 */
 	IInOutProducerFromShipmentScheduleWithHU setManualPackingMaterial(boolean manualPackingMaterial);
 
+	/**
+	 * If the flag IsShipmentDateToday is true, the shipment will be created for today, no matter what delivery dates are set in the shipment schedules.
+	 * Otherwise, the date on the shipment will be the minimum date of the shipment schedules, not older than today.
+	 * 
+	 * @param isShipmentDateToday
+	 * @return
+	 */
 	IInOutProducerFromShipmentScheduleWithHU setShipmentDateToday(boolean isShipmentDateToday);
 }

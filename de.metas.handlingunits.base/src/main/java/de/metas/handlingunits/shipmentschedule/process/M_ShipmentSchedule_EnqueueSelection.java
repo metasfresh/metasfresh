@@ -53,7 +53,7 @@ public class M_ShipmentSchedule_EnqueueSelection extends JavaProcess
 	private boolean isCompleteShipments;
 
 	@Param(parameterName = "IsShipmentDateToday", mandatory = true)
-	private boolean isShipmentDateToday;
+	private boolean isShipmentDateToday; // introduced in task #2940
 	
 	@Override
 	protected String doIt() throws Exception
