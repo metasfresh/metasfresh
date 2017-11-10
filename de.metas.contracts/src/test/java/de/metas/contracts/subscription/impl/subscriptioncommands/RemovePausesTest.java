@@ -20,7 +20,7 @@ import de.metas.contracts.model.I_C_SubscriptionProgress;
 import de.metas.contracts.model.X_C_SubscriptionProgress;
 import de.metas.contracts.subscription.ISubscriptionDAO;
 import de.metas.contracts.subscription.ISubscriptionDAO.SubscriptionProgressQuery;
-import de.metas.contracts.subscription.impl.SubscriptionCommand;
+import de.metas.contracts.subscription.impl.SubscriptionService;
 import de.metas.contracts.subscription.impl.SubscriptionTestUtil;
 import lombok.NonNull;
 
@@ -100,7 +100,7 @@ public class RemovePausesTest
 		final Timestamp dateFromBeforeFirstPauseRecord = TimeUtil.addDays(pauseFrom, -1);
 		final Timestamp dateUntilAfterLastPauseRecord = TimeUtil.addDays(pauseUntil, 1);
 
-		final RemovePauses removePauses = new RemovePauses(SubscriptionCommand.get());
+		final RemovePauses removePauses = new RemovePauses(SubscriptionService.get());
 		final List<I_C_SubscriptionProgress> pausedRecordsCompletelyWithinFromAndUntil = removePauses.retrieveAllPauseRecords(term, dateFromBeforeFirstPauseRecord, dateUntilAfterLastPauseRecord);
 		assertAllPauseRecords(pausedRecordsCompletelyWithinFromAndUntil);
 	}
@@ -108,7 +108,7 @@ public class RemovePausesTest
 	@Test
 	public void removePauses_RetrievePauseRecords_UntilBeforeLastPauseRecord()
 	{
-		final RemovePauses removePauses = new RemovePauses(SubscriptionCommand.get());
+		final RemovePauses removePauses = new RemovePauses(SubscriptionService.get());
 		final List<I_C_SubscriptionProgress> pausedRecordsCompletelyWithinFromAndUntil = removePauses.retrieveAllPauseRecords(term, TimeUtil.addDays(pauseFrom, -1), TimeUtil.addDays(pauseUntil, -1));
 		assertAllPauseRecords(pausedRecordsCompletelyWithinFromAndUntil);
 	}
@@ -116,7 +116,7 @@ public class RemovePausesTest
 	@Test
 	public void removePauses_RetrievePauseRecords_FromBeforeFirstPauseRecord_UntilBeforeLastPauseRecord()
 	{
-		final RemovePauses removePauses = new RemovePauses(SubscriptionCommand.get());
+		final RemovePauses removePauses = new RemovePauses(SubscriptionService.get());
 		final List<I_C_SubscriptionProgress> pausedRecordsCompletelyWithinFromAndUntil = removePauses.retrieveAllPauseRecords(term, TimeUtil.addDays(pauseFrom, -1), TimeUtil.addDays(pauseUntil, -1));
 		assertAllPauseRecords(pausedRecordsCompletelyWithinFromAndUntil);
 	}
@@ -124,7 +124,7 @@ public class RemovePausesTest
 	@Test
 	public void removePauses_RetrievePauseRecords_FromAfterFirstPauseRecord_UntilBeforeLastPauseRecord()
 	{
-		final RemovePauses removePauses = new RemovePauses(SubscriptionCommand.get());
+		final RemovePauses removePauses = new RemovePauses(SubscriptionService.get());
 		final List<I_C_SubscriptionProgress> pausedRecordsCompletelyWithinFromAndUntil = removePauses.retrieveAllPauseRecords(term, TimeUtil.addDays(pauseFrom, +1), TimeUtil.addDays(pauseUntil, -1));
 		assertAllPauseRecords(pausedRecordsCompletelyWithinFromAndUntil);
 	}
@@ -132,7 +132,7 @@ public class RemovePausesTest
 	@Test
 	public void removePauses_RetrievePauseRecords_FromAndUntilBeforeFirstPauseRecord()
 	{
-		final RemovePauses removePauses = new RemovePauses(SubscriptionCommand.get());
+		final RemovePauses removePauses = new RemovePauses(SubscriptionService.get());
 		final List<I_C_SubscriptionProgress> pausedRecords = removePauses.retrieveAllPauseRecords(term, TimeUtil.addDays(pauseFrom, -20), TimeUtil.addDays(pauseFrom, -5));
 		assertThat(pausedRecords).isEmpty();
 	}
@@ -140,7 +140,7 @@ public class RemovePausesTest
 	@Test
 	public void removePauses_RetrievePauseRecords_FromAndUntilAfterLastPauseRecord()
 	{
-		final RemovePauses removePauses = new RemovePauses(SubscriptionCommand.get());
+		final RemovePauses removePauses = new RemovePauses(SubscriptionService.get());
 		final List<I_C_SubscriptionProgress> pausedRecords = removePauses.retrieveAllPauseRecords(term, TimeUtil.addDays(pauseUntil, +5), TimeUtil.addDays(pauseUntil, +20));
 		assertThat(pausedRecords).isEmpty();
 	}

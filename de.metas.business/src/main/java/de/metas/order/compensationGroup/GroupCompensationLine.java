@@ -36,6 +36,7 @@ import lombok.ToString;
 @ToString
 public final class GroupCompensationLine
 {
+	/** Repository ID */
 	@Getter
 	@Setter
 	private int repoId;

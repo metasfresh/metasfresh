@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
 
+import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.bpartner.service.IBPartnerStatisticsUpdater;
 import org.adempiere.bpartner.service.IBPartnerStats;
@@ -35,12 +36,12 @@ import org.adempiere.bpartner.service.IBPartnerStatsDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.ValueNamePair;
-import org.slf4j.Logger;
 import org.slf4j.Logger;
 
 import de.metas.allocation.api.IAllocationDAO;
@@ -49,8 +50,7 @@ import de.metas.document.documentNo.IDocumentNoBuilder;
 import de.metas.document.documentNo.IDocumentNoBuilderFactory;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
-import de.metas.i18n.Msg;
-import de.metas.logging.LogManager;
+import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.payment.api.IPaymentDAO;
@@ -157,12 +157,12 @@ public final class MPayment extends X_C_Payment
 			setProcessing(false);
 			setPosted(false);
 			//
-			setPayAmt(Env.ZERO);
-			setDiscountAmt(Env.ZERO);
-			setTaxAmt(Env.ZERO);
-			setWriteOffAmt(Env.ZERO);
+			setPayAmt(BigDecimal.ZERO);
+			setDiscountAmt(BigDecimal.ZERO);
+			setTaxAmt(BigDecimal.ZERO);
+			setWriteOffAmt(BigDecimal.ZERO);
 			setIsOverUnderPayment(false);
-			setOverUnderAmt(Env.ZERO);
+			setOverUnderAmt(BigDecimal.ZERO);
 			//
 			setDateTrx(new Timestamp(System.currentTimeMillis()));
 			setDateAcct(getDateTrx());
@@ -252,33 +252,6 @@ public final class MPayment extends X_C_Payment
 				MPaymentValidate.getCreditCardExpYY(creditCardExp));
 	}   // setCreditCard
 
-	/**
-	 * Set ACH BankAccount Info
-	 *
-	 * @param preparedPayment
-	 *
-	 * @return true if valid
-	 */
-	public boolean setBankACH(MPaySelectionCheck preparedPayment)
-	{
-		// Our Bank
-		setC_BP_BankAccount_ID(preparedPayment.getParent().getC_BP_BankAccount_ID());
-		// Target Bank
-		int C_BP_BankAccount_ID = preparedPayment.getC_BP_BankAccount_ID();
-		MBPBankAccount ba = new MBPBankAccount(preparedPayment.getCtx(), C_BP_BankAccount_ID, null);
-		setRoutingNo(ba.getRoutingNo());
-		setAccountNo(ba.getAccountNo());
-		setIsReceipt(X_C_Order.PAYMENTRULE_DirectDebit.equals	// AR only
-		(preparedPayment.getPaymentRule()));
-		if (MPaySelectionCheck.PAYMENTRULE_DirectDebit.equals(preparedPayment.getPaymentRule()))
-			setTenderType(MPayment.TENDERTYPE_DirectDebit);
-		else if (MPaySelectionCheck.PAYMENTRULE_DirectDeposit.equals(preparedPayment.getPaymentRule()))
-			setTenderType(MPayment.TENDERTYPE_DirectDeposit);
-		//
-		int check = MPaymentValidate.validateRoutingNo(getRoutingNo()).length()
-				+ MPaymentValidate.validateAccountNo(getAccountNo()).length();
-		return check == 0;
-	}	// setBankACH
 
 	/**
 	 * Set ACH BankAccount Info
@@ -552,7 +525,7 @@ public final class MPayment extends X_C_Payment
 		// metas: tsa: us025b: end
 		// @Trifon - CashPayments
 		// if ( getTenderType().equals("X") ) {
-		if (isCashTrx() && !MSysConfig.getBooleanValue("CASH_AS_PAYMENT", true, getAD_Client_ID()))
+		if (isCashTrx() && ! Services.get(ISysConfigBL.class).getBooleanValue("CASH_AS_PAYMENT", true, getAD_Client_ID()))
 		{
 			// Cash Book Is mandatory
 			if (getC_CashBook_ID() <= 0)
@@ -570,10 +543,10 @@ public final class MPayment extends X_C_Payment
 			{
 				setC_Order_ID(0);
 				setC_Invoice_ID(0);
-				setWriteOffAmt(Env.ZERO);
-				setDiscountAmt(Env.ZERO);
+				setWriteOffAmt(BigDecimal.ZERO);
+				setDiscountAmt(BigDecimal.ZERO);
 				setIsOverUnderPayment(false);
-				setOverUnderAmt(Env.ZERO);
+				setOverUnderAmt(BigDecimal.ZERO);
 				setIsPrepayment(false);
 			}
 		}
@@ -617,7 +590,7 @@ public final class MPayment extends X_C_Payment
 			setDateAcct(getDateTrx());
 		//
 		if (!isOverUnderPayment())
-			setOverUnderAmt(Env.ZERO);
+			setOverUnderAmt(BigDecimal.ZERO);
 
 		// Organization
 		//
@@ -756,7 +729,7 @@ public final class MPayment extends X_C_Payment
 		// Relax Amount
 		if (m_mPaymentProcessors == null || m_mPaymentProcessors.length == 0)
 			m_mPaymentProcessors = MPaymentProcessor.find(getCtx(), tender, CCType, getAD_Client_ID(),
-					getC_Currency_ID(), Env.ZERO, get_TrxName());
+					getC_Currency_ID(), BigDecimal.ZERO, get_TrxName());
 		if (m_mPaymentProcessors == null || m_mPaymentProcessors.length == 0)
 			return false;
 
@@ -1017,7 +990,7 @@ public final class MPayment extends X_C_Payment
 		// Credit Card
 		if (TENDERTYPE_CreditCard.equals(getTenderType()))
 		{
-			if (MSysConfig.getBooleanValue("PAYMENT_OVERWRITE_DOCUMENTNO_WITH_CREDIT_CARD", true, getAD_Client_ID()))
+			if ( Services.get(ISysConfigBL.class).getBooleanValue("PAYMENT_OVERWRITE_DOCUMENTNO_WITH_CREDIT_CARD", true, getAD_Client_ID()))
 			{
 				documentNo = getCreditCardType()
 						+ " " + Obscure.obscure(getCreditCardNumber())
@@ -1030,7 +1003,7 @@ public final class MPayment extends X_C_Payment
 				&& !isReceipt()
 				&& getCheckNo() != null && getCheckNo().length() > 0)
 		{
-			if (MSysConfig.getBooleanValue("PAYMENT_OVERWRITE_DOCUMENTNO_WITH_CHECK_ON_PAYMENT", true, getAD_Client_ID()))
+			if ( Services.get(ISysConfigBL.class).getBooleanValue("PAYMENT_OVERWRITE_DOCUMENTNO_WITH_CHECK_ON_PAYMENT", true, getAD_Client_ID()))
 			{
 				documentNo = getCheckNo();
 			}
@@ -1039,7 +1012,7 @@ public final class MPayment extends X_C_Payment
 		else if (TENDERTYPE_Check.equals(getTenderType())
 				&& isReceipt())
 		{
-			if (MSysConfig.getBooleanValue("PAYMENT_OVERWRITE_DOCUMENTNO_WITH_CHECK_ON_RECEIPT", true, getAD_Client_ID()))
+			if ( Services.get(ISysConfigBL.class).getBooleanValue("PAYMENT_OVERWRITE_DOCUMENTNO_WITH_CHECK_ON_RECEIPT", true, getAD_Client_ID()))
 			{
 				if (getRoutingNo() != null)
 					documentNo = getRoutingNo() + ": ";
@@ -1071,7 +1044,7 @@ public final class MPayment extends X_C_Payment
 		super.setR_PnRef(R_PnRef);
 		if (R_PnRef != null
 				// metas: don't overwrite the documentno
-				&& MSysConfig.getBooleanValue("PAYMENT_OVERWRITE_DOCUMENTNO_WITH_CREDIT_CARD", true, getAD_Client_ID())
+				&&  Services.get(ISysConfigBL.class).getBooleanValue("PAYMENT_OVERWRITE_DOCUMENTNO_WITH_CREDIT_CARD", true, getAD_Client_ID())
 		// metas: end
 		)
 		{
@@ -1090,7 +1063,7 @@ public final class MPayment extends X_C_Payment
 	@Override
 	public void setPayAmt(BigDecimal PayAmt)
 	{
-		super.setPayAmt(PayAmt == null ? Env.ZERO : PayAmt);
+		super.setPayAmt(PayAmt == null ? BigDecimal.ZERO : PayAmt);
 	}	// setPayAmt
 
 	/**
@@ -1117,7 +1090,7 @@ public final class MPayment extends X_C_Payment
 	@Override
 	public void setDiscountAmt(BigDecimal DiscountAmt)
 	{
-		super.setDiscountAmt(DiscountAmt == null ? Env.ZERO : DiscountAmt);
+		super.setDiscountAmt(DiscountAmt == null ? BigDecimal.ZERO : DiscountAmt);
 	}	// setDiscountAmt
 
 	/**
@@ -1128,7 +1101,7 @@ public final class MPayment extends X_C_Payment
 	@Override
 	public void setWriteOffAmt(BigDecimal WriteOffAmt)
 	{
-		super.setWriteOffAmt(WriteOffAmt == null ? Env.ZERO : WriteOffAmt);
+		super.setWriteOffAmt(WriteOffAmt == null ? BigDecimal.ZERO : WriteOffAmt);
 	}	// setWriteOffAmt
 
 	/**
@@ -1139,8 +1112,8 @@ public final class MPayment extends X_C_Payment
 	@Override
 	public void setOverUnderAmt(BigDecimal OverUnderAmt)
 	{
-		super.setOverUnderAmt(OverUnderAmt == null ? Env.ZERO : OverUnderAmt);
-		setIsOverUnderPayment(getOverUnderAmt().compareTo(Env.ZERO) != 0);
+		super.setOverUnderAmt(OverUnderAmt == null ? BigDecimal.ZERO : OverUnderAmt);
+		setIsOverUnderPayment(getOverUnderAmt().compareTo(BigDecimal.ZERO) != 0);
 	}	// setOverUnderAmt
 
 	/**
@@ -1151,7 +1124,7 @@ public final class MPayment extends X_C_Payment
 	@Override
 	public void setTaxAmt(BigDecimal TaxAmt)
 	{
-		super.setTaxAmt(TaxAmt == null ? Env.ZERO : TaxAmt);
+		super.setTaxAmt(TaxAmt == null ? BigDecimal.ZERO : TaxAmt);
 	}	// setTaxAmt
 
 	/**
@@ -1511,7 +1484,7 @@ public final class MPayment extends X_C_Payment
 	 */
 	private boolean verifyPaymentAllocateSum(MPaymentAllocate[] pAllocs)
 	{
-		BigDecimal sumPaymentAllocates = Env.ZERO;
+		BigDecimal sumPaymentAllocates = BigDecimal.ZERO;
 		if (pAllocs.length > 0)
 		{
 			for (MPaymentAllocate pAlloc : pAllocs)
@@ -1529,7 +1502,7 @@ public final class MPayment extends X_C_Payment
 	 */
 	public String getDocStatusName()
 	{
-		return MRefList.getListName(getCtx(), 131, getDocStatus());
+		return Services.get(IADReferenceDAO.class).retrieveListNameTrl(getCtx(), 131, getDocStatus());
 	}	// getDocStatusName
 
 	/**
@@ -1663,12 +1636,6 @@ public final class MPayment extends X_C_Payment
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_PREPARE);
 		if (m_processMsg != null)
 			return IDocument.STATUS_Invalid;
-
-		if (!MPaySelectionCheck.deleteGeneratedDraft(getCtx(), getC_Payment_ID(), get_TrxName()))
-		{
-			m_processMsg = "Could not delete draft generated payment selection lines";
-			return IDocument.STATUS_Invalid;
-		}
 
 		// Std Period open?
 		if (!MPeriod.isOpen(getCtx(), getDateAcct(),
@@ -1858,9 +1825,6 @@ public final class MPayment extends X_C_Payment
 		if (getC_BPartner_ID() != 0 && getC_Invoice_ID() == 0 && getC_Charge_ID() == 0)
 		{
 			// task FRESH-152
-			final IBPartnerStatsBL bpartnerStatsBL = Services.get(IBPartnerStatsBL.class);
-			final IBPartnerStatsDAO bpartnerStatsDAO = Services.get(IBPartnerStatsDAO.class);
-
 			final I_C_BPartner partner = InterfaceWrapperHelper.create(getCtx(), getC_BPartner_ID(), I_C_BPartner.class, get_TrxName());
 			final IBPartnerStats stats = Services.get(IBPartnerStatsDAO.class).retrieveBPartnerStats(partner);
 
@@ -1877,7 +1841,7 @@ public final class MPayment extends X_C_Payment
 
 			if (newBalance == null)
 			{
-				newBalance = Env.ZERO;
+				newBalance = BigDecimal.ZERO;
 			}
 			if (isReceipt())
 			{
@@ -1901,7 +1865,7 @@ public final class MPayment extends X_C_Payment
 
 		// @Trifon - CashPayments
 		// if ( getTenderType().equals("X") ) {
-		if (isCashTrx() && !MSysConfig.getBooleanValue("CASH_AS_PAYMENT", true, getAD_Client_ID()))
+		if (isCashTrx() && ! Services.get(ISysConfigBL.class).getBooleanValue("CASH_AS_PAYMENT", true, getAD_Client_ID()))
 		{
 			// Create Cash Book entry
 			if (getC_CashBook_ID() <= 0)
@@ -1933,8 +1897,8 @@ public final class MPayment extends X_C_Payment
 			 */
 			cl.setAmount(amt);
 			//
-			cl.setDiscountAmt(Env.ZERO);
-			cl.setWriteOffAmt(Env.ZERO);
+			cl.setDiscountAmt(BigDecimal.ZERO);
+			cl.setWriteOffAmt(BigDecimal.ZERO);
 			cl.setIsGenerated(true);
 
 			if (!cl.save(get_TrxName()))
@@ -2103,10 +2067,7 @@ public final class MPayment extends X_C_Payment
 		{
 			return allocateInvoice();
 		}
-		// Invoices of a AP Payment Selection
-		if (allocatePaySelection())
-			return true;
-
+		
 		if (getC_Order_ID() != 0)
 			return false;
 
@@ -2117,7 +2078,7 @@ public final class MPayment extends X_C_Payment
 
 		MAllocationHdr alloc = new MAllocationHdr(getCtx(), false,
 				getDateTrx(), getC_Currency_ID(),
-				Msg.translate(getCtx(), "C_Payment_ID") + ": " + getDocumentNo(),
+				Services.get(IMsgBL.class).translate(getCtx(), "C_Payment_ID") + ": " + getDocumentNo(),
 				get_TrxName());
 		alloc.setAD_Org_ID(getAD_Org_ID());
 		if (!alloc.save())
@@ -2202,7 +2163,7 @@ public final class MPayment extends X_C_Payment
 		//
 		MAllocationHdr alloc = new MAllocationHdr(getCtx(), false,
 				getDateTrx(), getC_Currency_ID(),
-				Msg.translate(getCtx(), "C_Payment_ID") + ": " + getDocumentNo() + " [1]", get_TrxName());
+				Services.get(IMsgBL.class).translate(getCtx(), "C_Payment_ID") + ": " + getDocumentNo() + " [1]", get_TrxName());
 
 		// task 09643
 		// When the Allocation has both invoice and payment, allocation's accounting date must e the max between the invoice date and payment date
@@ -2261,92 +2222,6 @@ public final class MPayment extends X_C_Payment
 					+ " <> Payment C_Project_ID=" + getC_Project_ID());
 		return true;
 	}	// allocateInvoice
-
-	/**
-	 * Allocate Payment Selection
-	 *
-	 * @return true if allocated
-	 */
-	private boolean allocatePaySelection()
-	{
-		MAllocationHdr alloc = new MAllocationHdr(getCtx(), false,
-				getDateTrx(), getC_Currency_ID(),
-				Msg.translate(getCtx(), "C_Payment_ID") + ": " + getDocumentNo() + " [n]", get_TrxName());
-		alloc.setAD_Org_ID(getAD_Org_ID());
-
-		String sql = "SELECT psc.C_BPartner_ID, psl.C_Invoice_ID, psl.IsSOTrx, "	// 1..3
-				+ " psl.PayAmt, psl.DiscountAmt, psl.DifferenceAmt, psl.OpenAmt "
-				+ "FROM C_PaySelectionLine psl"
-				+ " INNER JOIN C_PaySelectionCheck psc ON (psl.C_PaySelectionCheck_ID=psc.C_PaySelectionCheck_ID) "
-				+ "WHERE psc.C_Payment_ID=?";
-		PreparedStatement pstmt = null;
-		ResultSet rs = null;
-		try
-		{
-			pstmt = DB.prepareStatement(sql, get_TrxName());
-			pstmt.setInt(1, getC_Payment_ID());
-			rs = pstmt.executeQuery();
-			while (rs.next())
-			{
-				int C_BPartner_ID = rs.getInt(1);
-				int C_Invoice_ID = rs.getInt(2);
-				if (C_BPartner_ID == 0 && C_Invoice_ID == 0)
-					continue;
-				boolean isSOTrx = "Y".equals(rs.getString(3));
-				BigDecimal PayAmt = rs.getBigDecimal(4);
-				BigDecimal DiscountAmt = rs.getBigDecimal(5);
-				BigDecimal WriteOffAmt = Env.ZERO;
-				BigDecimal OpenAmt = rs.getBigDecimal(7);
-				BigDecimal OverUnderAmt = OpenAmt.subtract(PayAmt)
-						.subtract(DiscountAmt).subtract(WriteOffAmt);
-				//
-				if (alloc.get_ID() == 0 && !alloc.save(get_TrxName()))
-				{
-					log.error("Could not create Allocation Hdr");
-					rs.close();
-					pstmt.close();
-					return false;
-				}
-				MAllocationLine aLine = null;
-				if (isSOTrx)
-					aLine = new MAllocationLine(alloc, PayAmt,
-							DiscountAmt, WriteOffAmt, OverUnderAmt);
-				else
-					aLine = new MAllocationLine(alloc, PayAmt.negate(),
-							DiscountAmt.negate(), WriteOffAmt.negate(), OverUnderAmt.negate());
-				aLine.setDocInfo(C_BPartner_ID, 0, C_Invoice_ID);
-				aLine.setC_Payment_ID(getC_Payment_ID());
-				if (!aLine.save(get_TrxName()))
-					log.error("Could not create Allocation Line");
-			}
-		}
-		catch (Exception e)
-		{
-			log.error("allocatePaySelection", e);
-		}
-		finally
-		{
-			DB.close(rs, pstmt);
-			rs = null;
-			pstmt = null;
-		}
-
-		// Should start WF
-		boolean ok = true;
-		if (alloc.get_ID() == 0)
-		{
-			log.debug("No Allocation created - C_Payment_ID="
-					+ getC_Payment_ID());
-			ok = false;
-		}
-		else
-		{
-			alloc.processIt(IDocument.ACTION_Complete);
-			ok = alloc.save(get_TrxName());
-			m_processMsg = "@C_AllocationHdr_ID@: " + alloc.getDocumentNo();
-		}
-		return ok;
-	}	// allocatePaySelection
 
 	/**
 	 * De-allocate Payment. Unkink Invoices and Orders and delete Allocations
@@ -2446,11 +2321,11 @@ public final class MPayment extends X_C_Payment
 				|| DOCSTATUS_Approved.equals(docStatus)
 				|| DOCSTATUS_NotApproved.equals(docStatus))
 		{
-			addDescription(Msg.getMsg(getCtx(), "Voided") + " (" + getPayAmt() + ")");
-			setPayAmt(Env.ZERO);
-			setDiscountAmt(Env.ZERO);
-			setWriteOffAmt(Env.ZERO);
-			setOverUnderAmt(Env.ZERO);
+			addDescription(Services.get(IMsgBL.class).getMsg(getCtx(), "Voided") + " (" + getPayAmt() + ")");
+			setPayAmt(BigDecimal.ZERO);
+			setDiscountAmt(BigDecimal.ZERO);
+			setWriteOffAmt(BigDecimal.ZERO);
+			setOverUnderAmt(BigDecimal.ZERO);
 			setIsAllocated(false);
 			// Unlink & De-Allocate
 			deAllocate();
@@ -2582,7 +2457,7 @@ public final class MPayment extends X_C_Payment
 		// Create automatic Allocation
 		MAllocationHdr alloc = new MAllocationHdr(getCtx(), false,
 				getDateTrx(), getC_Currency_ID(),
-				Msg.translate(getCtx(), "C_Payment_ID") + ": " + reversal.getDocumentNo(), get_TrxName());
+				Services.get(IMsgBL.class).translate(getCtx(), "C_Payment_ID") + ": " + reversal.getDocumentNo(), get_TrxName());
 		alloc.setAD_Org_ID(getAD_Org_ID());
 		if (!alloc.save())
 			log.warn("Automatic allocation - hdr not saved");
@@ -2590,14 +2465,14 @@ public final class MPayment extends X_C_Payment
 		{
 			// Original Allocation
 			MAllocationLine aLine = new MAllocationLine(alloc, getPayAmt(true),
-					Env.ZERO, Env.ZERO, Env.ZERO);
+					BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO);
 			aLine.setDocInfo(getC_BPartner_ID(), 0, 0);
 			aLine.setPaymentInfo(getC_Payment_ID(), 0);
 			if (!aLine.save(get_TrxName()))
 				log.warn("Automatic allocation - line not saved");
 			// Reversal Allocation
 			aLine = new MAllocationLine(alloc, reversal.getPayAmt(true),
-					Env.ZERO, Env.ZERO, Env.ZERO);
+					BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO);
 			aLine.setDocInfo(reversal.getC_BPartner_ID(), 0, 0);
 			aLine.setPaymentInfo(reversal.getC_Payment_ID(), 0);
 			if (!aLine.save(get_TrxName()))
@@ -2749,8 +2624,8 @@ public final class MPayment extends X_C_Payment
 		sb.append(getDocumentNo());
 		// : Total Lines = 123.00 (#1)
 		sb.append(": ")
-				.append(Msg.translate(getCtx(), "PayAmt")).append("=").append(getPayAmt())
-				.append(",").append(Msg.translate(getCtx(), "WriteOffAmt")).append("=").append(getWriteOffAmt());
+				.append(Services.get(IMsgBL.class).translate(getCtx(), "PayAmt")).append("=").append(getPayAmt())
+				.append(",").append(Services.get(IMsgBL.class).translate(getCtx(), "WriteOffAmt")).append("=").append(getWriteOffAmt());
 		// - Description
 		if (getDescription() != null && getDescription().length() > 0)
 			sb.append(" - ").append(getDescription());

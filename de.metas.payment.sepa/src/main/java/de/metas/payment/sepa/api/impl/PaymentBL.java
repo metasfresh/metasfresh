@@ -13,11 +13,11 @@ package de.metas.payment.sepa.api.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -81,7 +81,7 @@ public class PaymentBL implements IPaymentBL
 		final I_SEPA_Export_Line exportLine = InterfaceWrapperHelper.newInstance(I_SEPA_Export_Line.class, line);
 
 		exportLine.setAD_Org_ID(line.getAD_Org_ID());
-		exportLine.setAD_Table_ID(I_C_PaySelectionLine.Table_ID);
+		exportLine.setAD_Table_ID(InterfaceWrapperHelper.getTableId(I_C_PaySelectionLine.class));
 		exportLine.setRecord_ID(line.getC_PaySelectionLine_ID());
 		exportLine.setAmt(line.getPayAmt());
 		exportLine.setC_BP_BankAccount(bpBankAccount); // 07789: also setting the BP bank account so the following model validator(s) can more easily see evaluate what it is.
@@ -138,7 +138,10 @@ public class PaymentBL implements IPaymentBL
 		header.setProcessed(false);
 		header.setSEPA_CreditorIdentifier(orgBP.getName());
 		header.setSwiftCode(bpBankAccount.getC_Bank().getSwiftCode());
-		header.setAD_Table_ID(I_C_PaySelection.Table_ID);
+
+		final int paySelectionTableID = InterfaceWrapperHelper.getTableId(I_C_PaySelection.class);
+		header.setAD_Table_ID(paySelectionTableID);
+
 		header.setRecord_ID(source.getC_PaySelection_ID());
 		header.setDescription(source.getDescription());
 
