@@ -100,29 +100,30 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 		// maven.test.failure.ignore=true: continue if tests fail, because we want a full report.
 		sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -Dmaven.test.failure.ignore=true ${mvnConf.resolveParams} ${mvnConf.deployParam} clean deploy"
 
-		createAndPublishDockerImage(
-			'metasfresh-webui-api', // dockerRepositoryName
-			'.',  // dockerModuleDir
-			MF_UPSTREAM_BRANCH, // dockerBranchName
-			MF_VERSION // dockerVersionSuffix
-		)
+		final String publishedDockerImageName =
+			createAndPublishDockerImage(
+					'metasfresh-webui-api', // dockerRepositoryName
+					'.',  // dockerModuleDir
+					MF_UPSTREAM_BRANCH, // dockerBranchName
+					MF_VERSION // dockerVersionSuffix
+			)
 
 		// gh #968:
 		// set env variables which will be available to a possible upstream job that might have called us
 		// all those env variables can be gotten from <buildResultInstance>.getBuildVariables()
 		// note: we do it here, because we also expect these vars to end up in the application.properties within our artifact
-		env.BUILD_ARTIFACT_URL="${BUILD_ARTIFACT_URL}";
-		env.BUILD_CHANGE_URL="${env.CHANGE_URL}";
-		env.MF_VERSION="${MF_VERSION}";
-		env.BUILD_GIT_SHA1="${misc.getCommitSha1()}";
-		env.BUILD_DOCKER_IMAGE="${BUILD_DOCKER_IMAGE}";
-		env.MF_VERSION="${MF_VERSION}"
+		env.BUILD_ARTIFACT_URL = BUILD_ARTIFACT_URL
+		env.BUILD_CHANGE_URL = env.CHANGE_URL
+		env.MF_VERSION = MF_VERSION
+		env.BUILD_GIT_SHA1 = misc.getCommitSha1()
+		env.BUILD_DOCKER_IMAGE = publishedDockerImageName
+		env.MF_VERSION = MF_VERSION
 
 		currentBuild.description="""This build's main artifacts (if not yet cleaned up) are
 <ul>
 <li>The executable jar <a href=\"${BUILD_ARTIFACT_URL}\">metasfresh-webui-api-${MF_VERSION}.jar</a></li>
 <li>A docker image which you can run in docker via<br>
-<code>docker run --rm -d -p 8080:8080 -e "DB_HOST=localhost" --name metasfresh-webui-api-${MF_VERSION} ${BUILD_DOCKER_IMAGE}</code></li>
+<code>docker run --rm -d -p 8080:8080 -e "DB_HOST=localhost" --name metasfresh-webui-api-${MF_VERSION} ${publishedDockerImageName}</code></li>
 </ul>"""
 
 				junit '**/target/surefire-reports/*.xml'
