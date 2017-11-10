@@ -1048,7 +1048,7 @@ public class FlatrateBL implements IFlatrateBL
 		final Properties ctx = InterfaceWrapperHelper.getCtx(currentTerm);
 
 		final I_C_Flatrate_Conditions conditions = currentTerm.getC_Flatrate_Conditions();
-		final I_C_Flatrate_Transition currentTransition = currentTerm.getC_Flatrate_Transition();
+		final I_C_Flatrate_Transition currentTransition = conditions.getC_Flatrate_Transition();
 
 		I_C_Flatrate_Term termToReferenceInNote = null;
 		String msgValue = null;

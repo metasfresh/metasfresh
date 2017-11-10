@@ -108,8 +108,6 @@ public class FlatrateTermTestHelper
 		{
 			init();
 		}
-
-		setupModuleInterceptors_Contracts_Full();
 	}
 
 	public void setInitAdempiere(final boolean initAdempiere)
@@ -202,7 +200,7 @@ public class FlatrateTermTestHelper
 	 * 
 	 * Otherwise, tests will probably fail due to spring application context.
 	 */
-	protected final void setupModuleInterceptors_Contracts_Full()
+	public final void setupModuleInterceptors_Contracts_Full()
 	{
 		Services.get(IModelInterceptorRegistry.class)
 				.addModelInterceptor(new MainValidator());

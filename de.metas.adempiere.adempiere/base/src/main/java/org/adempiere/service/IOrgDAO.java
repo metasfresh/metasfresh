@@ -26,15 +26,22 @@ package org.adempiere.service;
 import java.util.List;
 import java.util.Properties;
 
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_OrgInfo;
+import org.compiere.util.Env;
 
 public interface IOrgDAO extends ISingletonService
 {
 	I_AD_Org retrieveOrg(Properties ctx, int adOrgId);
 
 	I_AD_OrgInfo retrieveOrgInfo(Properties ctx, int adOrgId, String trxName);
+
+	default I_AD_OrgInfo retrieveOrgInfo(int adOrgId)
+	{
+		return retrieveOrgInfo(Env.getCtx(), adOrgId, ITrx.TRXNAME_None);
+	}
 
 	/**
 	 * Search for the organization when the value is known

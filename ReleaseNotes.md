@@ -10,12 +10,21 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.36 (2017-47)
+
+**release for week 2017-47**
+
+## Features
+* metasfresh
+
+## Fixes
+* metasfresh-webui-frontend
+
 # metasfresh 5.35 (2017-46)
 
 **release for week 2017-46**
 
-
-
+## Features
 * metasfresh
   * [#2722](https://github.com/metasfresh/metasfresh/issues/2722) Webui Design Window: Improve window Material Schedule
     * Minor additional Field Translation for en_US added to Material Schedule Window Subtab.
@@ -37,9 +46,9 @@ Here come the actual release notes:
     * Improvement of the BOM Verification Process. Now the BOM Verification is done via action in BOM window instead of Product window.
   * [#2273](https://github.com/metasfresh/metasfresh/issues/2273) Payment Selection as real Document
     * Transforming the Payment Selection into a real document.
-  * [#2676](https://github.com/metasfresh/metasfresh/issues/2676) flatrate: make subscription progress reflecting progress
+  * [#2676](https://github.com/metasfresh/metasfresh/issues/2676) Flatrate: make subscription progress reflecting progress
     * Further Improvements to Subscription Progress Subtab in Business Partner window subtab, now showing the real progress of subscriptions.
-  * [#2803](https://github.com/metasfresh/metasfresh/issues/2803) Set hostkey for printing module when login in webui
+  * [#2803](https://github.com/metasfresh/metasfresh/issues/2803) Set Hostkey for printing module when login in WebUI
     * Now setting the Hostkey for a User when logging in via WebUI.
   * [#2854](https://github.com/metasfresh/metasfresh/issues/2854) Save Termination Reason when terminating subscription
     * Recording the Reason when canceling a subscription.
@@ -50,7 +59,7 @@ Here come the actual release notes:
   * [#2866](https://github.com/metasfresh/metasfresh/issues/2866) Make sure that 'Print All' is working in webui
     * Further improvement of the Handling of Printing when using select all in WebUI.
   * [#2874](https://github.com/metasfresh/metasfresh/issues/2874) Create special filters in printing queue
-    * New Filters in Prining Queue Window in WebUI.
+    * New Filters in Printing Queue Window in WebUI.
   * [#2878](https://github.com/metasfresh/metasfresh/issues/2878) Support for 6 digits AccountNo length in ReferenceNumber
     * Adjustment of ESR ReferenceNo Handling, extending the allowed Account No to 6 digits.
   * [#2880](https://github.com/metasfresh/metasfresh/issues/2880) Add greeting to partner quick creation from order
@@ -71,15 +80,15 @@ Here come the actual release notes:
     * Improvement of Translations in en_US, de_DE for the Address editor.
 
 * metasfresh-webui-frontend
-  * [#1294](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1294) window actions shall respect the "disabled" flag
+  * [#1294](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1294) Window actions shall respect the "disabled" flag
     * Now only enabled window actions are active in WebUI Frontend, if disabled then the action is greyed out.
-  * [#1295](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1295) processes: provide current selected tab and rows
+  * [#1295](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1295) Processes: provide current selected tab and rows
     * Processes now provide the info about the selected Tab and rows when called in WebUI.
   * [#1303](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1303) Change the hostname from config.js.dist to localhost
     * Internal Housekeeping Issue, switching Hostnames on config.js for easier maintenance.
   
 * other
-  * [metasfresh-dist-orgs#82](https://github.com/metasfresh/metasfresh-dist-orgs/issues/82) Invoice Medium Address Layout Changes
+  * [#82](https://github.com/metasfresh/metasfresh-dist-orgs/issues/82) Invoice Medium Address Layout Changes
     * Further Layout adjustments in Invoice Document. 
 
 ## Fixes
@@ -91,13 +100,13 @@ Here come the actual release notes:
     * Improvement of the Cancel Action when used on extended contracts.
   * [#2895](https://github.com/metasfresh/metasfresh/issues/2895) AD_Ref_Table needs lower-case WHERE and FROM
     * Fix for SQL Validation in Reference Table.
-  * [#2907](https://github.com/metasfresh/metasfresh/issues/2907) set masterenddate correctly when extending contracts
+  * [#2907](https://github.com/metasfresh/metasfresh/issues/2907) Set Master Enddate correctly when extending contracts
     * Fix for the prolongation Functionality of contracts. Now setting the Master End Date correctly.
 
 * metasfresh-webui-api
   * [#633](https://github.com/metasfresh/metasfresh-webui-api/issues/633) Materialdispo Target Warehouse checks Warehouse Routing
     * Fix for the Warehouse Routing in Material Disposition. Now only validating the Document Reference for Source Warehouse.
-  * [#650](https://github.com/metasfresh/metasfresh-webui-api/issues/650) flatrate contractstatus not refresh in single view after terminated
+  * [#650](https://github.com/metasfresh/metasfresh-webui-api/issues/650) Flatrate contractstatus not refresh in single view after terminated
     * Now setting the contractstatus directly when terminating a contract.
   * [#651](https://github.com/metasfresh/metasfresh-webui-api/issues/651) Document references endpoints are not respecting role permissions
     * The Record Reference List is now respecting the Role Permissions of the user and only showing references which are allowed for the user.
