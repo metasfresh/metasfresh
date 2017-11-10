@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
-<!-- 2017-11-08T15:54:38 -->
+<!-- 2017-11-10T14:22:23 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_description" pageWidth="160" pageHeight="150" columnWidth="160" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/purchase/inout_org_data_right/report" uuid="7d7d66ef-202b-465e-ad0f-47143e24a23b">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="metasfresh"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
@@ -8,24 +8,13 @@
 	<parameter name="RECORD_ID" class="java.lang.Integer"/>
 	<parameter name="ad_language" class="java.lang.String"/>
 	<queryString>
-		<![CDATA[--sql usually used for sales. The one for purchase groups all inouts for one order
-SELECT * FROM de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Description($P{RECORD_ID}, $P{ad_language});]]>
+		<![CDATA[SELECT * FROM de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_Description($P{RECORD_ID}, $P{ad_language});]]>
 	</queryString>
-	<field name="description" class="java.lang.String"/>
 	<field name="documentno" class="java.lang.String"/>
-	<field name="movementdate" class="java.sql.Timestamp"/>
-	<field name="reference" class="java.lang.String"/>
+	<field name="dateinvoiced" class="java.sql.Timestamp"/>
 	<field name="bp_value" class="java.lang.String"/>
-	<field name="cont_name" class="java.lang.String"/>
-	<field name="cont_phone" class="java.lang.String"/>
-	<field name="cont_fax" class="java.lang.String"/>
-	<field name="cont_email" class="java.lang.String"/>
-	<field name="sr_name" class="java.lang.String"/>
-	<field name="sr_phone" class="java.lang.String"/>
-	<field name="sr_fax" class="java.lang.String"/>
-	<field name="sr_email" class="java.lang.String"/>
 	<field name="printname" class="java.lang.String"/>
-	<field name="order_docno" class="java.lang.String"/>
+	<field name="o_documentno" class="java.lang.String"/>
 	<background>
 		<band splitType="Stretch"/>
 	</background>
@@ -75,15 +64,6 @@ SELECT * FROM de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Description($P
 				</textElement>
 				<textFieldExpression><![CDATA[$R{page}]]></textFieldExpression>
 			</textField>
-			<textField>
-				<reportElement x="0" y="86" width="80" height="14" uuid="608735ab-aacd-46b8-a32e-38d2f0e38af2">
-					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-				</reportElement>
-				<textElement textAlignment="Left">
-					<font size="10" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{orderno}]]></textFieldExpression>
-			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement x="80" y="16" width="80" height="14" uuid="097bbf9f-b5f3-4cf4-87c8-052d5caff1aa">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
@@ -109,7 +89,7 @@ SELECT * FROM de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Description($P
 				<textElement textAlignment="Right">
 					<font size="10" isBold="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{movementdate}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{dateinvoiced}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement x="80" y="58" width="80" height="14" uuid="e95bbefe-8720-4736-8c96-ba252049685a">
@@ -121,22 +101,13 @@ SELECT * FROM de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Description($P
 				<textFieldExpression><![CDATA[$V{PAGE_NUMBER}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement x="80" y="86" width="80" height="14" uuid="8544ae77-21e2-4cfd-95ef-06e12403b2e4">
-					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-				</reportElement>
-				<textElement textAlignment="Right">
-					<font size="10" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{reference}]]></textFieldExpression>
-			</textField>
-			<textField isBlankWhenNull="true">
 				<reportElement x="80" y="72" width="80" height="14" uuid="8f433a1b-51d5-49ee-886a-c7dd7b5e5bee">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
 				<textElement textAlignment="Right">
 					<font size="10" isBold="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{order_docno}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{o_documentno}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="0" y="72" width="80" height="14" uuid="7a2edda0-2eb2-42e4-9b07-cd4923bb0237">
@@ -145,7 +116,7 @@ SELECT * FROM de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Description($P
 				<textElement textAlignment="Left">
 					<font size="10" isBold="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{sales_orderno}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{orderno}]]></textFieldExpression>
 			</textField>
 		</band>
 	</title>

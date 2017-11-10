@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
-<!-- 2017-11-08T11:38:55 -->
+<!-- 2017-11-10T11:24:41 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_description" pageWidth="160" pageHeight="150" columnWidth="160" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/purchase/order_org_data_right/report" uuid="7d7d66ef-202b-465e-ad0f-47143e24a23b">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="metasfresh"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
@@ -74,15 +74,6 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$R{page}]]></textFieldExpression>
 			</textField>
-			<textField>
-				<reportElement x="0" y="72" width="80" height="14" uuid="608735ab-aacd-46b8-a32e-38d2f0e38af2">
-					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-				</reportElement>
-				<textElement textAlignment="Left">
-					<font size="10" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{orderno}]]></textFieldExpression>
-			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement x="80" y="16" width="80" height="14" uuid="097bbf9f-b5f3-4cf4-87c8-052d5caff1aa">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
@@ -118,15 +109,6 @@
 					<font size="10" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$V{PAGE_NUMBER}]]></textFieldExpression>
-			</textField>
-			<textField isBlankWhenNull="true">
-				<reportElement x="80" y="72" width="80" height="14" uuid="8544ae77-21e2-4cfd-95ef-06e12403b2e4">
-					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-				</reportElement>
-				<textElement textAlignment="Right">
-					<font size="10" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{reference}]]></textFieldExpression>
 			</textField>
 		</band>
 	</title>

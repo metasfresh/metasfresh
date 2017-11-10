@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
-<!-- 2017-11-08T16:36:02 -->
+<!-- 2017-11-10T11:43:22 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_details" pageWidth="555" pageHeight="802" columnWidth="555" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/sales/order_org_data_right/report" uuid="00f4c9e2-84b8-491d-9fc8-375751dc873d">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="metasfresh"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
@@ -27,8 +27,9 @@
 		<band height="12">
 			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 			<textField>
-				<reportElement x="306" y="0" width="72" height="12" uuid="4d3e9cbc-6c82-4ac0-a70d-2c24adc56262">
+				<reportElement x="268" y="0" width="100" height="12" uuid="4d3e9cbc-6c82-4ac0-a70d-2c24adc56262">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 				</reportElement>
 				<textElement textAlignment="Right">
 					<font size="9"/>
@@ -36,7 +37,7 @@
 				<textFieldExpression><![CDATA[$R{plus_vat} + " " + $F{taxrate} + "% " + $R{vat}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="378" y="0" width="72" height="12" uuid="ec58a496-bf0b-46c1-8765-0ccf53e12c97">
+				<reportElement x="368" y="0" width="82" height="12" uuid="ec58a496-bf0b-46c1-8765-0ccf53e12c97">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
 				<textElement textAlignment="Right">
@@ -50,7 +51,7 @@
 		<band height="30">
 			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 			<textField>
-				<reportElement x="306" y="12" width="72" height="16" uuid="16a60ebc-33a5-4d77-b0a4-ab0920acfbd9">
+				<reportElement x="220" y="12" width="128" height="16" uuid="16a60ebc-33a5-4d77-b0a4-ab0920acfbd9">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
 				<textElement textAlignment="Right">
@@ -59,7 +60,7 @@
 				<textFieldExpression><![CDATA[$R{amount}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="378" y="12" width="72" height="16" uuid="1ce5a820-f4a7-4733-80a6-91ee5b457312">
+				<reportElement x="348" y="12" width="102" height="16" uuid="1ce5a820-f4a7-4733-80a6-91ee5b457312">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
 				<textElement textAlignment="Right">

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
-<!-- 2017-11-08T15:01:55 -->
+<!-- 2017-11-10T11:15:55 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_description" pageWidth="160" pageHeight="150" columnWidth="160" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/purchase/invoice_org_data_right/report" uuid="7d7d66ef-202b-465e-ad0f-47143e24a23b">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="metasfresh"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
@@ -77,15 +77,6 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$R{page}]]></textFieldExpression>
 			</textField>
-			<textField>
-				<reportElement x="0" y="86" width="80" height="14" uuid="608735ab-aacd-46b8-a32e-38d2f0e38af2">
-					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-				</reportElement>
-				<textElement textAlignment="Left">
-					<font size="10" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{orderno}]]></textFieldExpression>
-			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement x="80" y="16" width="80" height="14" uuid="097bbf9f-b5f3-4cf4-87c8-052d5caff1aa">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
@@ -122,15 +113,6 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$V{PAGE_NUMBER}]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="true">
-				<reportElement x="80" y="86" width="80" height="14" uuid="8544ae77-21e2-4cfd-95ef-06e12403b2e4">
-					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-				</reportElement>
-				<textElement textAlignment="Right">
-					<font size="10" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{reference}]]></textFieldExpression>
-			</textField>
 			<textField>
 				<reportElement x="0" y="72" width="80" height="14" uuid="3e577167-5c48-4121-a069-ceaec0266e18">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
@@ -138,7 +120,7 @@
 				<textElement textAlignment="Left">
 					<font size="10" isBold="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{sales_orderno}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{orderno}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement x="80" y="72" width="80" height="14" uuid="70139622-8f8f-4e54-878a-619affb575f5">
@@ -150,7 +132,7 @@
 				<textFieldExpression><![CDATA[$F{order_docno}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="0" y="128" width="80" height="14" uuid="db83fbcf-593f-461e-8e2e-5e53720ec634">
+				<reportElement x="0" y="114" width="80" height="14" uuid="db83fbcf-593f-461e-8e2e-5e53720ec634">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
 				<textElement textAlignment="Left">
@@ -159,7 +141,7 @@
 				<textFieldExpression><![CDATA[$R{movementdate}]]></textFieldExpression>
 			</textField>
 			<textField pattern="dd.MM.yyyy" isBlankWhenNull="true">
-				<reportElement x="80" y="128" width="80" height="14" uuid="d65d73c9-4ecf-46ba-bc03-237fc76f4e98">
+				<reportElement x="80" y="114" width="80" height="14" uuid="d65d73c9-4ecf-46ba-bc03-237fc76f4e98">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
 				<textElement textAlignment="Right">
@@ -168,16 +150,16 @@
 				<textFieldExpression><![CDATA[$F{io_movementdate}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="0" y="114" width="80" height="14" uuid="a025837f-cba5-4364-8deb-e9a8201769b2">
+				<reportElement x="0" y="100" width="80" height="14" uuid="a025837f-cba5-4364-8deb-e9a8201769b2">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
 				<textElement textAlignment="Left">
 					<font size="10" isBold="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{shipmentno}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{receiptno}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement x="80" y="114" width="80" height="14" uuid="1ebd3424-9f76-41ce-9354-daa7829a24a5">
+				<reportElement x="80" y="100" width="80" height="14" uuid="1ebd3424-9f76-41ce-9354-daa7829a24a5">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
 				<textElement textAlignment="Right">
