@@ -921,7 +921,7 @@ class Table extends Component {
                         ref={(c) => {
                             if (c) {
                                 const keyProp = item[keyProperty];
-                                this.rowRefs[keyProp] = c.refs.wrappedInstance;
+                                this.rowRefs[keyProp] = c.wrappedInstance;
                             }
                         }}
                         rowId={item[keyProperty]}
