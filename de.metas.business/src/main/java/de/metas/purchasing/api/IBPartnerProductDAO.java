@@ -81,4 +81,6 @@ public interface IBPartnerProductDAO extends ISingletonService
 	 * @return first entry, order by BP vendor and org_ID, nulls last
 	 */
 	I_C_BPartner_Product retrieveBPProductForCustomer(I_C_BPartner customerPartner, I_M_Product product, int orgId);
+
+	List<I_C_BPartner_Product> retrieveAllVendors(int productId, int orgId);
 }
