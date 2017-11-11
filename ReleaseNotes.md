@@ -26,6 +26,8 @@ Here come the actual release notes:
 
 ## Features
 * metasfresh
+  * [#2407](https://github.com/metasfresh/metasfresh/issues/2407) Translate included Subtabs of Contract Window in WebUI
+    * New Translation for en_US in Contract Subtab view for Subscription History and Forecast..
   * [#2722](https://github.com/metasfresh/metasfresh/issues/2722) Webui Design Window: Improve window Material Schedule
     * Minor additional Field Translation for en_US added to Material Schedule Window Subtab.
   * [#2771](https://github.com/metasfresh/metasfresh/issues/2771) Sales order Jasper: group products by product category
