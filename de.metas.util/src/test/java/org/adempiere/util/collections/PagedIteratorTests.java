@@ -48,7 +48,7 @@ public class PagedIteratorTests
 
 		final List<String> listActual = IteratorUtils.asList(it);
 		// System.out.println(listActual);
-		
+
 		assertThat(listActual).hasSize(55);
 		assertThat(listActual).isEqualTo(generateStringRange(0, 55));
 	}
@@ -128,6 +128,26 @@ public class PagedIteratorTests
 				generateStringRangeCall(43, 10),
 				generateStringRangeCall(53, 10),
 				generateStringRangeCall(63, 5)));
+	}
+
+	@Test
+	public void pageFetcherReturnsEmpty()
+	{
+		final PagedIterator<String> it = PagedIterator.<String> builder()
+				.pageSize(10)
+				.pageFetcher((firstRow, pageSize) -> ImmutableList.of())
+				.build();
+		assertThat(it).isEmpty();
+	}
+
+	@Test
+	public void pageFetcherReturnsNull()
+	{
+		final PagedIterator<String> it = PagedIterator.<String> builder()
+				.pageSize(10)
+				.pageFetcher((firstRow, pageSize) -> null)
+				.build();
+		assertThat(it).isEmpty();
 	}
 
 	private final List<String> generateStringRange(final int firstRow, final int pageSize)

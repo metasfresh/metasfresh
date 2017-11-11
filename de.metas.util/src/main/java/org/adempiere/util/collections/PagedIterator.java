@@ -34,11 +34,8 @@ import lombok.NonNull;
 
 public class PagedIterator<E> implements Iterator<E>
 {
-	private static final int DEFAULT_PAGESIZE = 100;
-
 	private final PageFetcher<E> pageFetcher;
 	private final int pageSize;
-
 	private final int lastRow;
 
 	private int nextPageFirstRow;
@@ -47,17 +44,19 @@ public class PagedIterator<E> implements Iterator<E>
 
 	@Builder
 	private PagedIterator(
-			final int firstRow, // first row, zero based
-			final int maxRows,
 			@NonNull final PageFetcher<E> pageFetcher,
-			final int pageSize)
+			final int pageSize,
+			final int firstRow, // first row, zero based
+			final int maxRows)
 	{
 		Check.assume(firstRow >= 0, "firstRow >= 0");
+		Check.assume(pageSize > 0, "pageSize > 0");
+
+		this.pageFetcher = pageFetcher;
+		this.pageSize = pageSize;
 
 		final int maxRowsEffective = maxRows > 0 ? maxRows : Integer.MAX_VALUE;
-		this.lastRow = firstRow + maxRowsEffective;
-		this.pageFetcher = pageFetcher;
-		this.pageSize = pageSize > 0 ? pageSize : DEFAULT_PAGESIZE;
+		lastRow = firstRow + maxRowsEffective;
 
 		nextPageFirstRow = firstRow;
 	}
@@ -90,7 +89,7 @@ public class PagedIterator<E> implements Iterator<E>
 			return currentPageIterator.hasNext();
 		}
 	}
-	
+
 	private final Collection<E> getAndIncrementPage()
 	{
 		final int pageFirstRow = nextPageFirstRow;
@@ -107,7 +106,7 @@ public class PagedIterator<E> implements Iterator<E>
 		{
 			return null;
 		}
-		
+
 		return currentPage;
 	}
 
@@ -149,7 +148,7 @@ public class PagedIterator<E> implements Iterator<E>
 		/**
 		 * @param firstRow (first page is ZERO)
 		 * @param pageSize max rows to return
-		 * @return page
+		 * @return page or empty/null in case there is no page
 		 */
 		Collection<E> getPage(int firstRow, int pageSize);
 	}
