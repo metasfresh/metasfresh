@@ -2,6 +2,7 @@ package org.adempiere.ad.column.model.interceptor;
 
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.util.Check;
 import org.compiere.model.AccessSqlParser;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.ModelValidator;
@@ -38,8 +39,7 @@ public class AD_Column
 	public void lowerCaseWhereClause(final I_AD_Column column)
 	{
 		final String columnSQL = column.getColumnSQL();
-		
-		if(columnSQL.isEmpty())
+		if(Check.isEmpty(columnSQL, true))
 		{
 			// nothing to do
 			return;
