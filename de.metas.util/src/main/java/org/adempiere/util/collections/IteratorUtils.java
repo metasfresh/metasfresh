@@ -24,25 +24,19 @@ package org.adempiere.util.collections;
 
 import java.io.Closeable;
 import java.io.IOException;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Spliterator;
 import java.util.Spliterators;
-import java.util.function.Function;
-import java.util.function.Supplier;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import org.adempiere.util.EmptyIterator;
+import org.adempiere.util.collections.PagedIterator.PagedIteratorBuilder;
 
 import com.google.common.base.Throwables;
-
-import lombok.Builder;
-import lombok.NonNull;
 
 public final class IteratorUtils
 {
@@ -253,5 +247,10 @@ public final class IteratorUtils
 		Spliterator<T> spliterator = Spliterators.spliteratorUnknownSize(iterator, Spliterator.ORDERED);
 		final boolean parallel = false;
 		return StreamSupport.stream(spliterator, parallel);
+	}
+
+	public static <T> Stream<T> stream(final BlindIterator<T> blindIterator)
+	{
+		return stream(asIterator(blindIterator));
 	}
 }
