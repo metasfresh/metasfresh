@@ -35,6 +35,8 @@ Here come the actual release notes:
     * Quick Fix for the broken shortcut Handling in Documents.
   * [#1324](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1324) Process is started twice when using ctrl-u shortcut
     * Quick Fix for the Action Handling in Material Receipt when using Keyboard Shortcuts.
+  * [#1328}(https://github.com/metasfresh/metasfresh-webui-frontend/issues/1328) Date recording w/ wrong date Error
+    * Improved error handling and user information when entering an invalif date in Date picker via keyboard.
   * [#1332](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1332) view: Edit field value is broken
     * Fix for the Edit Mode in Main Grid view.
 
