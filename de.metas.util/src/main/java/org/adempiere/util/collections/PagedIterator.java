@@ -72,19 +72,8 @@ public class PagedIterator<E> implements Iterator<E>
 
 		if (currentPageIterator == null || !currentPageIterator.hasNext())
 		{
-			final int pageFirstRow = nextPageFirstRow;
-			final int pageSize = computePageSize(pageFirstRow);
-			if (pageSize <= 0)
-			{
-				currentPageIterator = null;
-				finished = true;
-				return false;
-			}
-
-			nextPageFirstRow = computeNextPageFirstRow(pageFirstRow, pageSize);
-
-			final Collection<E> currentPage = pageFetcher.getPage(pageFirstRow, pageSize);
-			if (currentPage.isEmpty())
+			final Collection<E> currentPage = getAndIncrementPage();
+			if (currentPage == null)
 			{
 				currentPageIterator = null;
 				finished = true;
@@ -100,6 +89,26 @@ public class PagedIterator<E> implements Iterator<E>
 		{
 			return currentPageIterator.hasNext();
 		}
+	}
+	
+	private final Collection<E> getAndIncrementPage()
+	{
+		final int pageFirstRow = nextPageFirstRow;
+		final int pageSize = computePageSize(pageFirstRow);
+		if (pageSize <= 0)
+		{
+			return null;
+		}
+
+		nextPageFirstRow = computeNextPageFirstRow(pageFirstRow, pageSize);
+
+		final Collection<E> currentPage = pageFetcher.getPage(pageFirstRow, pageSize);
+		if (currentPage == null || currentPage.isEmpty())
+		{
+			return null;
+		}
+		
+		return currentPage;
 	}
 
 	private int computePageSize(final int firstRow)
