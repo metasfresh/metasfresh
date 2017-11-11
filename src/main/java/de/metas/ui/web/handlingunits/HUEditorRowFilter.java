@@ -28,7 +28,7 @@ import lombok.Singular;
  * #L%
  */
 
-@lombok.Builder(toBuilder = true)
+@lombok.Builder
 @lombok.Value
 public final class HUEditorRowFilter
 {
