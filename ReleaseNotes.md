@@ -40,6 +40,8 @@ Here come the actual release notes:
     * Improving the Test coverage for contract extension. Creating automated Tests.
   * [#2936](https://github.com/metasfresh/metasfresh/issues/2936) Creating new flatrate condition and transition with autoextension became very tricky
     * Usage improvement of the new Flatrate condition and transition tothether with autoextension.
+  * [#2947](https://github.com/metasfresh/metasfresh/issues/2947) Adapt Window Role to WebUI Guidelines
+    * Improved Layout of Role Window in WebUI, adapted now to current WebUI Guidelines.
 
 ## Fixes
 * metasfresh
