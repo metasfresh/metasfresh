@@ -2,6 +2,7 @@ package de.metas.reference.model.interceptor;
 
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.util.Check;
 import org.compiere.model.AccessSqlParser;
 import org.compiere.model.I_AD_Ref_Table;
 import org.compiere.model.ModelValidator;
@@ -32,23 +33,22 @@ import org.compiere.model.ModelValidator;
 public class AD_Ref_Table
 {
 	public static final transient AD_Ref_Table instance = new AD_Ref_Table();
-	
+
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = I_AD_Ref_Table.COLUMNNAME_WhereClause)
 	public void lowerCaseWhereClause(final I_AD_Ref_Table refTable)
 	{
 		final String whereClause = refTable.getWhereClause();
-		
-		if(whereClause.isEmpty())
+		if (Check.isEmpty(whereClause, true))
 		{
 			// nothing to do
 			return;
 		}
-		
+
 		final AccessSqlParser accessSqlParserInstance = new AccessSqlParser();
 		final String adaptedWhereClause = accessSqlParserInstance.rewriteWhereClauseWithLowercaseKeyWords(whereClause);
-		
+
 		refTable.setWhereClause(adaptedWhereClause);
-		
+
 	}
 
 }
