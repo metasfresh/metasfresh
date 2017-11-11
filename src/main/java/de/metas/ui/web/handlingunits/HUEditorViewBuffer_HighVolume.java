@@ -4,10 +4,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
@@ -18,15 +17,14 @@ import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
-import org.adempiere.util.GuavaCollectors;
+import org.adempiere.util.collections.IteratorUtils;
+import org.adempiere.util.collections.PagedIterator.PageFetcher;
 import org.compiere.util.CCache;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
-import com.google.common.collect.ListMultimap;
 
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.ui.web.document.filter.DocumentFilter;
@@ -69,7 +67,7 @@ public class HUEditorViewBuffer_HighVolume implements HUEditorViewBuffer
 {
 	public static final int HIGHVOLUME_THRESHOLD = 100;
 
-	private static final int STREAM_ALL_MAX_SIZE = 100;
+	private static final int STREAM_ALL_MAX_SIZE_ALLOWED = 100;
 
 	private final HUEditorViewRepository huEditorRepo;
 	private final IStringExpression sqlSelectHUIdsByPage;
@@ -106,7 +104,7 @@ public class HUEditorViewBuffer_HighVolume implements HUEditorViewBuffer
 	{
 		return stickyFilters;
 	}
-	
+
 	private SqlViewRowIdsConverter getRowIdsConverter()
 	{
 		return huEditorRepo.getRowIdsConverter();
@@ -186,12 +184,12 @@ public class HUEditorViewBuffer_HighVolume implements HUEditorViewBuffer
 	public Stream<HUEditorRow> streamAllRecursive() throws UnsupportedOperationException
 	{
 		final ViewRowIdsOrderedSelection defaultSelection = getDefaultSelection();
-		if (defaultSelection.getSize() > STREAM_ALL_MAX_SIZE)
+		if (defaultSelection.getSize() > STREAM_ALL_MAX_SIZE_ALLOWED)
 		{
-			throw new UnsupportedOperationException("Streaming all rows when selection is bigger than " + STREAM_ALL_MAX_SIZE + " is not allowed");
+			throw new UnsupportedOperationException("Streaming all rows when selection is bigger than " + STREAM_ALL_MAX_SIZE_ALLOWED + " is not allowed");
 		}
 
-		return streamPage(0, STREAM_ALL_MAX_SIZE, defaultSelection.getOrderBys())
+		return streamPage(0, STREAM_ALL_MAX_SIZE_ALLOWED, defaultSelection.getOrderBys())
 				.flatMap(row -> row.streamRecursive());
 	}
 
@@ -213,78 +211,24 @@ public class HUEditorViewBuffer_HighVolume implements HUEditorViewBuffer
 			return Stream.empty();
 		}
 
-		// TODO: implement support for ALL rowIds
+		final Stream<HUEditorRowId> huEditorRowIds;
 		if (rowIds.isAll())
 		{
-			throw new UnsupportedOperationException("streaming all rowIds is not supported");
+			final List<DocumentQueryOrderBy> defaultOrderBys = getDefaultSelection().getOrderBys();
+			huEditorRowIds = streamHUIdsByPage(0, Integer.MAX_VALUE, defaultOrderBys)
+					.map(HUEditorRowId::ofTopLevelHU);
 		}
-
-		final HUEditorRow[] rows = new HUEditorRow[rowIds.size()];
-		final Map<HUEditorRowId, Integer> rowIdToLoad2index = new HashMap<>();
+		else
 		{
-			int idx = 0;
-			for (final HUEditorRowId rowId : rowIds.toSet(HUEditorRowId::ofDocumentId))
-			{
-				final HUEditorRowId topLevelRowId = rowId.toTopLevelRowId();
-				final HUEditorRow topLevelRow = cache_huRowsById.get(topLevelRowId.toDocumentId());
-
-				if (topLevelRow == null)
-				{
-					// to be loaded
-					rowIdToLoad2index.put(rowId, idx);
-				}
-				else
-				{
-					if (rowId.equals(topLevelRowId))
-					{
-						rows[idx] = topLevelRow;
-					}
-					else
-					{
-						rows[idx] = topLevelRow.getIncludedRowById(rowId.toDocumentId()).orElse(null);
-					}
-				}
-
-				idx++;
-			}
+			huEditorRowIds = rowIds.stream().map(HUEditorRowId::ofDocumentId);
 		}
 
-		if (!rowIdToLoad2index.isEmpty())
-		{
-			final ListMultimap<HUEditorRowId, HUEditorRowId> topLevelRowId2rowIds = rowIdToLoad2index.keySet()
-					.stream()
-					.map(rowId -> GuavaCollectors.entry(rowId.toTopLevelRowId(), rowId))
-					.collect(GuavaCollectors.toImmutableListMultimap());
-			
-			final Set<Integer> topLevelHUIds = topLevelRowId2rowIds.keys().stream().map(HUEditorRowId::getTopLevelHUId).collect(ImmutableSet.toImmutableSet());
-			
-			huEditorRepo.retrieveHUEditorRows(topLevelHUIds)
-					.forEach(topLevelRow -> {
-						final HUEditorRowId topLevelRowId = topLevelRow.getHURowId();
-						for (final HUEditorRowId includedRowId : topLevelRowId2rowIds.get(topLevelRowId))
-						{
-							final Integer idx = rowIdToLoad2index.remove(includedRowId);
-							if (idx == null)
-							{
-								// wtf?! shall not happen
-								continue;
-							}
-							
-							if(topLevelRowId.equals(includedRowId))
-							{
-								rows[idx] = topLevelRow;
-								cache_huRowsById.put(topLevelRow.getId(), topLevelRow);
-							}
-							else
-							{
-								rows[idx] = topLevelRow.getIncludedRowById(includedRowId.toDocumentId()).orElse(null);
-							}
-						}
-					});
-		}
-
-		return Stream.of(rows)
-				.filter(row -> row != null); // IMPORTANT: just to make sure we won't stream some empty gaps (e.g. missing rows because HU was not a top level one)
+		return HUEditorRowsPagedLoadingIterator.builder()
+				.huEditorRepo(huEditorRepo)
+				.cache(cache_huRowsById)
+				.rowIds(huEditorRowIds.iterator())
+				.build()
+				.stream();
 	}
 
 	@Override
@@ -293,9 +237,16 @@ public class HUEditorViewBuffer_HighVolume implements HUEditorViewBuffer
 			final int pageLength,
 			final List<DocumentQueryOrderBy> orderBys)
 	{
-		final Set<Integer> huIds = retrieveHUIdsByPage(firstRow, pageLength, orderBys);
-		final DocumentIdsSelection rowIds = HUEditorRowId.rowIdsFromTopLevelM_HU_IDs(huIds);
-		return streamByIds(rowIds);
+		final Iterator<HUEditorRowId> rowIds = streamHUIdsByPage(firstRow, pageLength, orderBys)
+				.map(HUEditorRowId::ofTopLevelHU)
+				.iterator();
+
+		return HUEditorRowsPagedLoadingIterator.builder()
+				.huEditorRepo(huEditorRepo)
+				.cache(cache_huRowsById)
+				.rowIds(rowIds)
+				.build()
+				.stream();
 	}
 
 	private ViewRowIdsOrderedSelection getSelection(final List<DocumentQueryOrderBy> orderBys)
@@ -315,46 +266,64 @@ public class HUEditorViewBuffer_HighVolume implements HUEditorViewBuffer
 		return defaultSelection;
 	}
 
-	private Set<Integer> retrieveHUIdsByPage(final int firstRow, final int pageLength, final List<DocumentQueryOrderBy> orderBys)
+	private PageFetcher<Integer> huIdsPageFetcher(final List<DocumentQueryOrderBy> orderBys)
 	{
 		final ViewRowIdsOrderedSelection selection = getSelection(orderBys);
 		final String viewSelectionId = selection.getSelectionId();
-		final int firstSeqNo = firstRow + 1; // NOTE: firstRow is 0-based while SeqNo are 1-based
-		final int lastSeqNo = firstRow + pageLength;
-
 		final ViewEvaluationCtx viewEvalCtx = ViewEvaluationCtx.of(Env.getCtx());
 		final String sql = sqlSelectHUIdsByPage.evaluate(viewEvalCtx.toEvaluatee(), OnVariableNotFound.Fail);
-		final Object[] sqlParams = new Object[] { viewSelectionId, firstSeqNo, lastSeqNo };
 
-		PreparedStatement pstmt = null;
-		ResultSet rs = null;
-		try
-		{
-			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_ThreadInherited);
-			pstmt.setMaxRows(pageLength);
-			DB.setParameters(pstmt, sqlParams);
+		return (firstRow, maxRows) -> {
+			final int firstSeqNo = firstRow + 1; // NOTE: firstRow is 0-based while SeqNo are 1-based
+			final int lastSeqNo = firstRow + maxRows;
 
-			rs = pstmt.executeQuery();
+			final Object[] sqlParams = new Object[] { viewSelectionId, firstSeqNo, lastSeqNo };
 
-			final Set<Integer> huIds = new LinkedHashSet<>();
-			while (rs.next())
+			PreparedStatement pstmt = null;
+			ResultSet rs = null;
+			try
 			{
-				final int huId = rs.getInt(I_M_HU.COLUMNNAME_M_HU_ID);
-				if (huId <= 0)
+				pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_ThreadInherited);
+				pstmt.setMaxRows(maxRows);
+				DB.setParameters(pstmt, sqlParams);
+
+				rs = pstmt.executeQuery();
+
+				final Set<Integer> huIds = new LinkedHashSet<>();
+				while (rs.next())
 				{
-					continue;
+					final int huId = rs.getInt(I_M_HU.COLUMNNAME_M_HU_ID);
+					if (huId <= 0)
+					{
+						continue;
+					}
+					huIds.add(huId);
 				}
-				huIds.add(huId);
+
+				return huIds;
+
 			}
+			catch (final SQLException ex)
+			{
+				throw DBException.wrapIfNeeded(ex)
+						.setSqlIfAbsent(sql, sqlParams);
+			}
+			finally
+			{
+				DB.close(rs, pstmt);
+			}
+		};
+	}
 
-			return huIds;
-
-		}
-		catch (final SQLException ex)
-		{
-			throw DBException.wrapIfNeeded(ex)
-					.setSqlIfAbsent(sql, sqlParams);
-		}
+	private Stream<Integer> streamHUIdsByPage(final int firstRow, final int maxRows, final List<DocumentQueryOrderBy> orderBys)
+	{
+		return IteratorUtils.<Integer> newPagedIterator()
+				.firstRow(firstRow)
+				.maxRows(maxRows)
+				.pageSize(100) // fetch 100items/chunk
+				.pageFetcher(huIdsPageFetcher(orderBys))
+				.build()
+				.stream();
 	}
 
 	@Override

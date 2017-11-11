@@ -2,7 +2,6 @@ package de.metas.ui.web.picking.process;
 
 import static de.metas.ui.web.handlingunits.WEBUI_HU_Constants.MSG_WEBUI_SELECT_ACTIVE_UNSELECTED_HU;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -44,17 +43,14 @@ public abstract class WEBUI_Picking_Select_M_HU_Base extends ViewBasedProcessTem
 
 	protected final Stream<HUEditorRow> retrieveEligibleHUEditorRows()
 	{
-		final List<HUEditorRow> huEditorRows = getView().getByIds(getSelectedDocumentIds());
 		final IHUPickingSlotDAO huPickingSlotDAO = Services.get(IHUPickingSlotDAO.class);
 		final SourceHUsService sourceHuService = SourceHUsService.get();
 
-		final Stream<HUEditorRow> stream = huEditorRows.stream()
+		return getView().streamByIds(getSelectedDocumentIds())
 				.filter(huRow -> huRow.isTopLevel())
 				.filter(huRow -> huRow.isHUStatusActive())
 				.filter(huRow -> !sourceHuService.isSourceHu(huRow.getM_HU_ID())) // may not yet be a source-HU
 				.filter(huRow -> !huPickingSlotDAO.isHuIdPicked(huRow.getM_HU_ID()));
-
-		return stream;
 	}
 
 	@Override

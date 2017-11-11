@@ -271,12 +271,6 @@ public class HUEditorView implements IView
 	}
 
 	@Override
-	public List<HUEditorRow> getByIds(final DocumentIdsSelection rowIds)
-	{
-		return streamByIds(rowIds).collect(ImmutableList.toImmutableList());
-	}
-
-	@Override
 	public LookupValuesList getFilterParameterDropdown(final String filterId, final String filterParameterName, final Evaluatee ctx)
 	{
 		return viewFilterDescriptors.getByFilterId(filterId)

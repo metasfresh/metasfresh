@@ -3,8 +3,10 @@ package de.metas.ui.web.handlingunits;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 
+import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.printing.esb.base.util.Check;
@@ -68,35 +70,40 @@ interface HUEditorViewBuffer
 	/** @return top level rows and included rows recursive stream which are matching the given query */
 	default Stream<HUEditorRow> streamAllRecursive(@NonNull final HUEditorRowQuery query)
 	{
-		Stream<HUEditorRow> result = streamAllRecursive();
-
+		return streamAllRecursive().filter(toPredicate(query));
+	}
+	
+	/* private */ static Predicate<HUEditorRow> toPredicate(@NonNull final HUEditorRowQuery query)
+	{
+		Predicate<HUEditorRow> predicate = Predicates.alwaysTrue();
+		
 		// Filter by row type
 		final HUEditorRowType rowType = query.getRowType();
 		if (rowType != null)
 		{
-			result = result.filter(row -> Objects.equals(row.getType(), rowType));
+			predicate = predicate.and(row -> Objects.equals(row.getType(), rowType));
 		}
 
 		// Filter by string filter
 		final String stringFilter = query.getUserInputFilter();
 		if (!Check.isEmpty(stringFilter, true))
 		{
-			result = result.filter(row -> row.matchesStringFilter(stringFilter));
+			predicate = predicate.and(row -> row.matchesStringFilter(stringFilter));
 		}
 
 		// Exclude M_HU_IDs
 		final ImmutableSet<Integer> excludeHUIds = query.getExcludeHUIds();
 		if (!excludeHUIds.isEmpty())
 		{
-			result = result.filter(row -> !excludeHUIds.contains(row.getM_HU_ID()));
+			predicate = predicate.and(row -> !excludeHUIds.contains(row.getM_HU_ID()));
 		}
 
 		if (!query.getExcludeHUStatuses().isEmpty())
 		{
-			result = result.filter(row -> !query.getExcludeHUStatuses().contains(row.getHUStatusKey()));
+			predicate = predicate.and(row -> !query.getExcludeHUStatuses().contains(row.getHUStatusKey()));
 		}
 
-		return result;
+		return predicate;
 	}
 
 	/** @return true if there is any top level or included row which is matching given query */
