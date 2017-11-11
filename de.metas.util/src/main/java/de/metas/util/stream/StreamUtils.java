@@ -3,12 +3,10 @@ package de.metas.util.stream;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.function.Function;
 import java.util.stream.Stream;
 
 import org.adempiere.util.collections.IteratorUtils;
 
-import lombok.Builder;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
@@ -37,55 +35,28 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public final class StreamUtils
 {
-	private static final int DEFAULT_BUFFERSIZE = 100;
-
 	/**
-	 * Transform a given input stream (the upstream) to an output stream (the downstream) by performing following operations:
-	 * <ul>
-	 * <li>buffering: the input stream elements are fetched in chunks
-	 * <li>mapping: each fetched chunk is sent to <code>mapper</code> to be transformed to a stream of output elements
-	 * </ul>
-	 * 
-	 * Usually this method is used when performing slow operations like database queries for a huge amount of input elements.
-	 * e.g. you have a stream of IDs (imagine they could be A LOT), you want to stream the loaded models for those IDs but you don't want to load all the IDs in memory,
-	 * because they can be a lot and also because the code which is streaming those IDs might be also slow.
-	 * You want to load them just in time, when they are needed.
-	 * So, using this operation basically you are able to load the IDs in chunks (let's say chunks of 100 IDs), load all those 100 records from database and stream them forward.
-	 * 
-	 * @param upstream input stream
-	 * @param mapper mapper used to convert the input elements to output elements
-	 * @param bufferSize internal buffer size (the chunk size)
-	 * @return
+	 * Dices given stream in smaller chunks, each of them having maximum <code>chunkSize</code> elements.
 	 */
-	@Builder(builderMethodName = "bufferAndMap")
-	private static <IN, OUT> Stream<OUT> bufferAndMapBuilder(
-			@NonNull final Stream<IN> upstream,
-			@NonNull final Function<List<IN>, Stream<OUT>> mapper,
-			final int bufferSize)
+	public static <T> Stream<List<T>> dice(@NonNull final Stream<T> stream, final int chunkSize)
 	{
-		final Iterator<IN> upstreamIterator = upstream.iterator();
-		if (!upstreamIterator.hasNext())
+		if (chunkSize <= 0)
 		{
-			return Stream.empty();
+			throw new IllegalArgumentException("chunkSize shall be > 0");
 		}
-		
-		final int bufferSizeEffective = bufferSize > 0 ? bufferSize : DEFAULT_BUFFERSIZE;
 
-		final Stream<List<IN>> downStream = IteratorUtils.stream(() -> {
-			if (!upstreamIterator.hasNext())
-			{
-				return null;
-			}
+		final Iterator<T> streamIterator = stream.iterator();
+		return IteratorUtils.stream(() -> readChunkOrNull(streamIterator, chunkSize));
+	}
 
-			final List<IN> list = new ArrayList<>(bufferSizeEffective);
-			while (upstreamIterator.hasNext() && list.size() < bufferSizeEffective)
-			{
-				list.add(upstreamIterator.next());
-			}
+	private static final <T> List<T> readChunkOrNull(final Iterator<T> iterator, final int chunkSize)
+	{
+		final List<T> list = new ArrayList<>(chunkSize);
+		while (iterator.hasNext() && list.size() < chunkSize)
+		{
+			list.add(iterator.next());
+		}
 
-			return list;
-		});
-
-		return downStream.flatMap(mapper);
+		return !list.isEmpty() ? list : null;
 	}
 }
