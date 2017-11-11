@@ -30,6 +30,10 @@ Here come the actual release notes:
     * Minor additional Field Translation for en_US added to Material Schedule Window Subtab.
 
 ## Fixes
+* metasfresh-webui-api
+  * [#665](https://github.com/metasfresh/metasfresh-webui-api/issues/665) Manufacturing order: create source HU is opening same view on right side as we have it on left side
+    * Fix for the source HU View in Manufacturing Order.
+
 * metasfresh-webui-frontend
   * [#1283](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1283) Revise shortcut handling
     * Quick Fix for the broken shortcut Handling in Documents.
