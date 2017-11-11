@@ -40,6 +40,8 @@ Here come the actual release notes:
     * Application Dictionary adjustment for AD_Ref_Table, setting loaer case statements for the column SQL.
   * [#2920](https://github.com/metasfresh/metasfresh/issues/2920) Create automated test for extending contracts.
     * Improving the Test coverage for contract extension. Creating automated Tests.
+  * [#2934](https://github.com/metasfresh/metasfresh/issues/2934) Additional Locator Dimensions
+    * New Locator Dimension, now allowing to additionally record a Dimension for Storage Rack.
   * [#2936](https://github.com/metasfresh/metasfresh/issues/2936) Creating new flatrate condition and transition with autoextension became very tricky
     * Usage improvement of the new Flatrate condition and transition tothether with autoextension.
   * [#2947](https://github.com/metasfresh/metasfresh/issues/2947) Adapt Window Role to WebUI Guidelines
