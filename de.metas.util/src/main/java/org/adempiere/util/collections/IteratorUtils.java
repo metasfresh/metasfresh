@@ -253,4 +253,9 @@ public final class IteratorUtils
 	{
 		return stream(asIterator(blindIterator));
 	}
+
+	public static <T> PagedIteratorBuilder<T> newPagedIterator()
+	{
+		return PagedIterator.builder();
+	}
 }
