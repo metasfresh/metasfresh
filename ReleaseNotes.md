@@ -28,13 +28,36 @@ Here come the actual release notes:
 * metasfresh
   * [#2722](https://github.com/metasfresh/metasfresh/issues/2722) Webui Design Window: Improve window Material Schedule
     * Minor additional Field Translation for en_US added to Material Schedule Window Subtab.
+  * [#2771](https://github.com/metasfresh/metasfresh/issues/2771) Sales order Jasper: group products by product category
+    * New Grouping Functionality in Sales Order Jasper, now able to group by Product Category.
+  * [#2894](https://github.com/metasfresh/metasfresh/issues/2894) Sys Config to set Waiting Time for Async
+    * Improving the waiting time handling for Asynch after backend start. Now able to set the time via sysconfig.
+  * [#2897](https://github.com/metasfresh/metasfresh/issues/2897) Drop out old code related to confirm splitting when printing
+    * Improvement in mass printing Functionality and workflow. Removing the User confirmation for printing when splitting.
+  * [#2913](https://github.com/metasfresh/metasfresh/issues/2913) Column-SQL needs lower-case WHERE and FROM
+    * Application Dictionary adjustment for AD_Ref_Table, setting loaer case statements for the column SQL.
+  * [#2920](https://github.com/metasfresh/metasfresh/issues/2920) Create automated test for extending contracts.
+    * Improving the Test coverage for contract extension. Creating automated Tests.
+  * [#2936](https://github.com/metasfresh/metasfresh/issues/2936) Creating new flatrate condition and transition with autoextension became very tricky
+    * Usage improvement of the new Flatrate condition and transition tothether with autoextension.
 
 ## Fixes
+* metasfresh
+  * [#2905](https://github.com/metasfresh/metasfresh/issues/2905) Referenced documents: sales order to invoice candidates
+    * Fixing the missing reference between Invoice Candidates and Sales Order when Inouts are created before Invoice Candidate.
+* metasfresh-webui-api
+  * [#665](https://github.com/metasfresh/metasfresh-webui-api/issues/665) Manufacturing order: create source HU is opening same view on right side as we have it on left side
+    * Fix for the source HU View in Manufacturing Order.
+
 * metasfresh-webui-frontend
   * [#1283](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1283) Revise shortcut handling
     * Quick Fix for the broken shortcut Handling in Documents.
   * [#1324](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1324) Process is started twice when using ctrl-u shortcut
     * Quick Fix for the Action Handling in Material Receipt when using Keyboard Shortcuts.
+  * [#1328}(https://github.com/metasfresh/metasfresh-webui-frontend/issues/1328) Date recording w/ wrong date Error
+    * Improved error handling and user information when entering an invalif date in Date picker via keyboard.
+  * [#1332](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1332) view: Edit field value is broken
+    * Fix for the Edit Mode in Main Grid view.
 
 # metasfresh 5.34 (2017-45)
 
