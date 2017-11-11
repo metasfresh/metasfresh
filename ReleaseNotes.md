@@ -28,6 +28,14 @@ Here come the actual release notes:
 * metasfresh
   * [#2722](https://github.com/metasfresh/metasfresh/issues/2722) Webui Design Window: Improve window Material Schedule
     * Minor additional Field Translation for en_US added to Material Schedule Window Subtab.
+  * [#2894](https://github.com/metasfresh/metasfresh/issues/2894) Sys Config to set Waiting Time for Async
+    * Improving the waiting time handling for Asynch after backend start. Now able to set the time via sysconfig.
+  * [#2897](https://github.com/metasfresh/metasfresh/issues/2897) Drop out old code related to confirm splitting when printing
+    * Improvement in mass printing Functionality and workflow. Removing the User confirmation for printing when splitting.
+  * [#2920](https://github.com/metasfresh/metasfresh/issues/2920) Create automated test for extending contracts.
+    * Improving the Test coverage for contract extension. Creating automated Tests.
+  * [#2936](https://github.com/metasfresh/metasfresh/issues/2936) Creating new flatrate condition and transition with autoextension became very tricky
+    * Usage improvement of the new Flatrate condition and transition tothether with autoextension.
 
 ## Fixes
 * metasfresh-webui-api
