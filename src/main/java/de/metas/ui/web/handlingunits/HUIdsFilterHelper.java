@@ -2,7 +2,6 @@ package de.metas.ui.web.handlingunits;
 
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import javax.annotation.Nullable;
@@ -237,32 +236,6 @@ public final class HUIdsFilterHelper
 	public static final boolean isNotHUIdsFilter(final DocumentFilter filter)
 	{
 		return !FILTER_ID.equals(filter.getFilterId());
-	}
-
-	public static boolean isHighVolume(final List<DocumentFilter> stickyFilters)
-	{
-		final HUIdsFilterData huIdsFilterData = extractFilterDataOrNull(stickyFilters);
-		if (huIdsFilterData == null)
-		{
-			return true;
-		}
-
-		final Set<Integer> huIds = huIdsFilterData.getInitialHUIds();
-		if (huIds == null)
-		{
-			// null means no restrictions, so we might have a lot of HUs
-			return true; // high volume
-		}
-		else if (huIds.isEmpty())
-		{
-			// no HUs will be allowed
-			return false; // not high volume
-		}
-		else
-		{
-			// consider high volume if it's above give threshold
-			return huIds.size() >= HUEditorViewBuffer_HighVolume.HIGHVOLUME_THRESHOLD;
-		}
 	}
 
 	public static final class HUIdsSqlDocumentFilterConverter implements SqlDocumentFilterConverter

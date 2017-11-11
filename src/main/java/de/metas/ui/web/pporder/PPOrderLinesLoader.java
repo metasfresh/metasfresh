@@ -39,10 +39,12 @@ import de.metas.quantity.Quantity;
 import de.metas.ui.web.handlingunits.HUEditorRow;
 import de.metas.ui.web.handlingunits.HUEditorRowAttributesProvider;
 import de.metas.ui.web.handlingunits.HUEditorViewRepository;
+import de.metas.ui.web.handlingunits.SqlHUEditorViewRepository;
 import de.metas.ui.web.handlingunits.util.HUPackingInfoFormatter;
 import de.metas.ui.web.handlingunits.util.HUPackingInfos;
 import de.metas.ui.web.handlingunits.util.IHUPackingInfo;
 import de.metas.ui.web.view.ASIViewRowAttributesProvider;
+import de.metas.ui.web.view.descriptor.SqlViewBinding;
 import de.metas.ui.web.window.datatypes.WindowId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -69,7 +71,7 @@ import lombok.NonNull;
  * #L%
  */
 
-public class PPOrderLinesLoader
+class PPOrderLinesLoader
 {
 	public static final PPOrderLinesLoaderBuilder builder(final WindowId viewWindowId)
 	{
@@ -84,20 +86,18 @@ public class PPOrderLinesLoader
 
 	//
 	private final transient HUEditorViewRepository huEditorRepo;
-	private final HUEditorRowAttributesProvider huAttributesProvider;
 	private final ASIViewRowAttributesProvider asiAttributesProvider;
 
 	@Builder
-	public PPOrderLinesLoader(final WindowId viewWindowId, final ASIViewRowAttributesProvider asiAttributesProvider)
+	public PPOrderLinesLoader(
+			final WindowId viewWindowId,
+			final ASIViewRowAttributesProvider asiAttributesProvider,
+			@NonNull final SqlViewBinding huSQLViewBinding)
 	{
-		huAttributesProvider = HUEditorRowAttributesProvider.builder()
-				.readonly(false)
-				.build();
-
-		huEditorRepo = HUEditorViewRepository.builder()
+		huEditorRepo = SqlHUEditorViewRepository.builder()
 				.windowId(viewWindowId)
-				.referencingTableName(I_PP_Order.Table_Name)
-				.attributesProvider(huAttributesProvider)
+				.attributesProvider(HUEditorRowAttributesProvider.builder().readonly(false).build())
+				.sqlViewBinding(huSQLViewBinding)
 				.build();
 
 		this.asiAttributesProvider = asiAttributesProvider;

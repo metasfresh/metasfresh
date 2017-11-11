@@ -22,7 +22,6 @@ import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.handlingunits.HUIdsFilterHelper.HUIdsFilterData;
 import de.metas.ui.web.view.ViewId;
-import de.metas.ui.web.view.descriptor.SqlViewRowIdsConverter;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
@@ -112,11 +111,6 @@ class HUEditorViewBuffer_FullyCached implements HUEditorViewBuffer
 				.addAll(stickyFiltersWithoutHUIdsFilter)
 				.build();
 	}
-	
-	private SqlViewRowIdsConverter getRowIdsConverter()
-	{
-		return huEditorRepo.getRowIdsConverter();
-	}
 
 	private Set<Integer> getHUIds()
 	{
@@ -200,6 +194,7 @@ class HUEditorViewBuffer_FullyCached implements HUEditorViewBuffer
 	@Override
 	public void invalidateAll()
 	{
+		huEditorRepo.invalidateCache();
 		rowsSupplier.forget();
 	}
 
@@ -242,10 +237,10 @@ class HUEditorViewBuffer_FullyCached implements HUEditorViewBuffer
 	public String getSqlWhereClause(final DocumentIdsSelection rowIds)
 	{
 		final DocumentIdsSelection rowIdsEffective = getRows().streamByIdsExcludingIncludedRows(rowIds)
-				.map(row -> row.getId())
+				.map(HUEditorRow::getId)
 				.collect(DocumentIdsSelection.toDocumentIdsSelection());
-		
-		final Set<Integer> huIds = getRowIdsConverter().convertToRecordIds(rowIdsEffective);
+
+		final Set<Integer> huIds = huEditorRepo.convertToRecordIds(rowIdsEffective);
 		if (huIds.isEmpty())
 		{
 			throw new IllegalArgumentException("No HU rows found for " + rowIds);

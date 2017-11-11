@@ -1,8 +1,6 @@
 package de.metas.ui.web.handlingunits;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -11,12 +9,10 @@ import java.util.stream.Stream;
 import javax.annotation.Nullable;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
 
 import com.google.common.collect.ImmutableList;
@@ -34,7 +30,6 @@ import de.metas.ui.web.process.view.ViewActionDescriptorsList;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.ViewResult;
-import de.metas.ui.web.view.descriptor.SqlViewBinding;
 import de.metas.ui.web.view.event.ViewChangesCollector;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.DocumentId;
@@ -69,9 +64,9 @@ import lombok.NonNull;
 
 public class HUEditorView implements IView
 {
-	public static final Builder builder(final SqlViewBinding sqlViewBinding)
+	public static final HUEditorViewBuilder builder()
 	{
-		return new Builder(sqlViewBinding);
+		return new HUEditorViewBuilder();
 	}
 
 	public static HUEditorView cast(final IView view)
@@ -92,73 +87,26 @@ public class HUEditorView implements IView
 	private final ImmutableList<RelatedProcessDescriptor> additionalRelatedProcessDescriptors;
 
 	private final HUEditorViewBuffer rowsBuffer;
-	private final HUEditorRowAttributesProvider huAttributesProvider;
 
-	private final transient DocumentFilterDescriptorsProvider viewFilterDescriptors;
+	private final transient DocumentFilterDescriptorsProvider filterDescriptors;
 	private final ImmutableList<DocumentFilter> filters;
 
 	private final ImmutableMap<String, Object> parameters;
 
-	private HUEditorView(final Builder builder)
+	/* package */ HUEditorView(final HUEditorViewBuilder builder)
 	{
 		parentViewId = builder.getParentViewId();
 		parentRowId = builder.getParentRowId();
 		viewType = builder.getViewType();
 		viewId = builder.getViewId();
-
-		final List<DocumentFilter> stickyFilters = builder.getStickyFilters();
-		final boolean isHighVolume = HUIdsFilterHelper.isHighVolume(stickyFilters);
-		//
-		// Build the attributes provider
-		huAttributesProvider = HUEditorRowAttributesProvider.builder()
-				.readonly(isHighVolume)
-				.build();
-
-		//
-		// Build the repository
 		referencingTableName = builder.getReferencingTableName();
-		final HUEditorViewRepository huEditorRepo = HUEditorViewRepository.builder()
-				.windowId(viewId.getWindowId())
-				.referencingTableName(builder.getReferencingTableName())
-				.attributesProvider(huAttributesProvider)
-				.sqlViewBinding(builder.getSqlViewBinding())
-				.build();
-
-		viewFilterDescriptors = builder.getSqlViewBinding().getViewFilterDescriptors();
-
-		//
-		// Build filters
+		filterDescriptors = builder.getFilterDescriptors();
 		filters = ImmutableList.copyOf(builder.getFilters());
-
-		//
-		// Build rowsBuffer
-		rowsBuffer = createRowsBuffer(viewId, isHighVolume, huEditorRepo, stickyFilters, filters);
-
 		referencingDocumentPaths = builder.getReferencingDocumentPaths();
-
 		actions = builder.getActions();
 		additionalRelatedProcessDescriptors = builder.getAdditionalRelatedProcessDescriptors();
-
 		parameters = builder.getParameters();
-	}
-
-	private static final HUEditorViewBuffer createRowsBuffer( //
-			final ViewId viewId //
-			, final boolean isHighVolume //
-			, final HUEditorViewRepository huEditorRepo //
-			, final List<DocumentFilter> stickyFilters //
-			, final List<DocumentFilter> filters //
-	)
-	{
-		if (isHighVolume)
-		{
-			return new HUEditorViewBuffer_HighVolume(viewId, huEditorRepo, stickyFilters, filters);
-		}
-		else
-		{
-			return new HUEditorViewBuffer_FullyCached(viewId, huEditorRepo, stickyFilters, filters);
-		}
-
+		rowsBuffer = builder.createRowsBuffer();
 	}
 
 	@Override
@@ -273,7 +221,7 @@ public class HUEditorView implements IView
 	@Override
 	public LookupValuesList getFilterParameterDropdown(final String filterId, final String filterParameterName, final Evaluatee ctx)
 	{
-		return viewFilterDescriptors.getByFilterId(filterId)
+		return filterDescriptors.getByFilterId(filterId)
 				.getParameterByName(filterParameterName)
 				.getLookupDataSource()
 				.findEntities(ctx);
@@ -282,7 +230,7 @@ public class HUEditorView implements IView
 	@Override
 	public LookupValuesList getFilterParameterTypeahead(final String filterId, final String filterParameterName, final String query, final Evaluatee ctx)
 	{
-		return viewFilterDescriptors.getByFilterId(filterId)
+		return filterDescriptors.getByFilterId(filterId)
 				.getParameterByName(filterParameterName)
 				.getLookupDataSource()
 				.findEntities(ctx, query);
@@ -359,7 +307,6 @@ public class HUEditorView implements IView
 
 	private void invalidateAllNoNotify()
 	{
-		huAttributesProvider.invalidateAll();
 		rowsBuffer.invalidateAll();
 	}
 
@@ -473,205 +420,11 @@ public class HUEditorView implements IView
 		}
 
 		final List<I_M_HU> hus = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_HU.class, Env.getCtx(), ITrx.TRXNAME_ThreadInherited)
+				.createQueryBuilder(I_M_HU.class)
 				.addInArrayFilter(I_M_HU.COLUMN_M_HU_ID, huIds)
 				.create()
 				.list(I_M_HU.class);
 
 		return InterfaceWrapperHelper.createList(hus, modelClass);
-	}
-
-	//
-	//
-	//
-	//
-	//
-
-	public static final class Builder
-	{
-		private final SqlViewBinding sqlViewBinding;
-		private ViewId parentViewId;
-		private DocumentId parentRowId;
-		private ViewId viewId;
-		private JSONViewDataType viewType;
-
-		private String referencingTableName;
-		private Set<DocumentPath> referencingDocumentPaths;
-
-		private ViewActionDescriptorsList actions = ViewActionDescriptorsList.EMPTY;
-		private List<RelatedProcessDescriptor> additionalRelatedProcessDescriptors = null;
-
-		private List<DocumentFilter> stickyFilters;
-		private List<DocumentFilter> filters;
-
-		private LinkedHashMap<String, Object> parameters;
-
-
-		private Builder(@NonNull final SqlViewBinding sqlViewBinding)
-		{
-			this.sqlViewBinding = sqlViewBinding;
-		}
-
-		public HUEditorView build()
-		{
-			return new HUEditorView(this);
-		}
-
-		private SqlViewBinding getSqlViewBinding()
-		{
-			return sqlViewBinding;
-		}
-
-		public Builder setParentViewId(final ViewId parentViewId)
-		{
-			this.parentViewId = parentViewId;
-			return this;
-		}
-
-		private ViewId getParentViewId()
-		{
-			return parentViewId;
-		}
-
-		public Builder setParentRowId(final DocumentId parentRowId)
-		{
-			this.parentRowId = parentRowId;
-			return this;
-		}
-
-		private DocumentId getParentRowId()
-		{
-			return parentRowId;
-		}
-
-		public Builder setViewId(final ViewId viewId)
-		{
-			this.viewId = viewId;
-			return this;
-		}
-
-		@NonNull
-		private ViewId getViewId()
-		{
-			return viewId;
-		}
-
-		public Builder setViewType(final JSONViewDataType viewType)
-		{
-			this.viewType = viewType;
-			return this;
-		}
-
-		private JSONViewDataType getViewType()
-		{
-			return viewType;
-		}
-
-		public Builder setReferencingDocumentPaths(final String referencingTableName, final Set<DocumentPath> referencingDocumentPaths)
-		{
-			this.referencingTableName = referencingTableName;
-			this.referencingDocumentPaths = referencingDocumentPaths;
-			return this;
-		}
-
-		public String getReferencingTableName()
-		{
-			return referencingTableName;
-		}
-
-		private Set<DocumentPath> getReferencingDocumentPaths()
-		{
-			return referencingDocumentPaths == null ? ImmutableSet.of() : ImmutableSet.copyOf(referencingDocumentPaths);
-		}
-
-		public Builder setActions(@NonNull final ViewActionDescriptorsList actions)
-		{
-			this.actions = actions;
-			return this;
-		}
-
-		private ViewActionDescriptorsList getActions()
-		{
-			return actions;
-		}
-
-		public Builder setAdditionalRelatedProcessDescriptors(@NonNull final List<RelatedProcessDescriptor> additionalRelatedProcessDescriptors)
-		{
-			if (additionalRelatedProcessDescriptors == null || additionalRelatedProcessDescriptors.isEmpty())
-			{
-				this.additionalRelatedProcessDescriptors = null;
-			}
-			else
-			{
-				this.additionalRelatedProcessDescriptors = new ArrayList<>(additionalRelatedProcessDescriptors);
-			}
-
-			return this;
-		}
-
-		public Builder addAdditionalRelatedProcessDescriptor(@NonNull final RelatedProcessDescriptor descriptor)
-		{
-			if (additionalRelatedProcessDescriptors == null)
-			{
-				additionalRelatedProcessDescriptors = new ArrayList<>();
-			}
-			additionalRelatedProcessDescriptors.add(descriptor);
-
-			return this;
-		}
-
-		private ImmutableList<RelatedProcessDescriptor> getAdditionalRelatedProcessDescriptors()
-		{
-			return additionalRelatedProcessDescriptors != null && !additionalRelatedProcessDescriptors.isEmpty() ? ImmutableList.copyOf(additionalRelatedProcessDescriptors) : ImmutableList.of();
-		}
-
-		public Builder setStickyFilters(final List<DocumentFilter> stickyFilters)
-		{
-			this.stickyFilters = stickyFilters;
-			return this;
-		}
-
-		private List<DocumentFilter> getStickyFilters()
-		{
-			return stickyFilters != null ? stickyFilters : ImmutableList.of();
-		}
-
-		public Builder setFilters(final List<DocumentFilter> filters)
-		{
-			this.filters = filters;
-			return this;
-		}
-
-		private List<DocumentFilter> getFilters()
-		{
-			return filters != null ? filters : ImmutableList.of();
-		}
-
-		public Builder setParameter(final String name, final Object value)
-		{
-			if (value == null)
-			{
-				if (parameters != null)
-				{
-					parameters.remove(name);
-				}
-			}
-			else
-			{
-				if (parameters == null)
-				{
-					parameters = new LinkedHashMap<>();
-					parameters.put(name, value);
-				}
-			}
-
-			return this;
-		}
-
-		private ImmutableMap<String, Object> getParameters()
-		{
-			return parameters != null ? ImmutableMap.copyOf(parameters) : ImmutableMap.of();
-		}
-
 	}
 }

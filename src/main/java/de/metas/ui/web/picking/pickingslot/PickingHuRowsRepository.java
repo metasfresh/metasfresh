@@ -14,6 +14,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -35,7 +36,9 @@ import de.metas.picking.model.I_M_PickingSlot;
 import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.handlingunits.HUEditorRow;
 import de.metas.ui.web.handlingunits.HUEditorRowAttributesProvider;
+import de.metas.ui.web.handlingunits.HUEditorViewFactory;
 import de.metas.ui.web.handlingunits.HUEditorViewRepository;
+import de.metas.ui.web.handlingunits.SqlHUEditorViewRepository;
 import de.metas.ui.web.picking.PickingConstants;
 import lombok.NonNull;
 
@@ -72,16 +75,20 @@ import lombok.NonNull;
 {
 	private final HUEditorViewRepository huEditorRepo;
 
-	/**
-	 * Creates an instance that builds its own {@link HUEditorViewRepository}.
-	 */
-	public PickingHURowsRepository()
+	/** Default constructor */
+	@Autowired
+	public PickingHURowsRepository(final HUEditorViewFactory huEditorViewFactory)
 	{
-		this(HUEditorViewRepository.builder()
+		this(createDefaultHUEditorViewRepository(huEditorViewFactory));
+	}
+
+	private static SqlHUEditorViewRepository createDefaultHUEditorViewRepository(final HUEditorViewFactory huEditorViewFactory)
+	{
+		return SqlHUEditorViewRepository.builder()
 				.windowId(PickingConstants.WINDOWID_PickingSlotView)
-				.referencingTableName(I_M_PickingSlot.Table_Name)
 				.attributesProvider(HUEditorRowAttributesProvider.builder().readonly(true).build())
-				.build());
+				.sqlViewBinding(huEditorViewFactory.getSqlViewBinding())
+				.build();
 	}
 
 	/**

@@ -1,6 +1,6 @@
 package de.metas.ui.web.handlingunits;
 
-import org.springframework.stereotype.Component;
+import de.metas.handlingunits.model.I_M_HU;
 
 /*
  * #%L
@@ -24,31 +24,7 @@ import org.springframework.stereotype.Component;
  * #L%
  */
 
-/**
- * {@link HUEditorView} customizer.
- * 
- * Implementations of this interface which are annotated with {@link Component} will be automatically discovered and registered.
- * 
- * @author metas-dev <dev@metasfresh.com>
- *
- */
-public interface HUEditorViewCustomizer
+public interface HUEditorRowIsProcessedPredicate
 {
-	/** @return referencing tableName to be matched */
-	String getReferencingTableNameToMatch();
-
-	default HUEditorRowIsProcessedPredicate getHUEditorRowIsProcessedPredicate()
-	{
-		return null;
-	}
-
-	/**
-	 * Called before the {@link HUEditorView} is created.
-	 * 
-	 * The method is called only if the view it's matching our criteria (i.e. {@link #getReferencingTableNameToMatch()}).
-	 * 
-	 * @param viewBuilder
-	 */
-	void beforeCreate(HUEditorViewBuilder viewBuilder);
-
+	boolean isProcessed(final I_M_HU hu);
 }

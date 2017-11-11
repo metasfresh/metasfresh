@@ -25,8 +25,6 @@ import de.metas.ui.web.handlingunits.HUEditorViewRepository;
 import de.metas.ui.web.picking.pickingslot.PickingHURowsRepository.PickedHUEditorRow;
 import de.metas.ui.web.window.datatypes.WindowId;
 import lombok.NonNull;
-import mockit.Expectations;
-import mockit.Mocked;
 
 /*
  * #%L
@@ -52,11 +50,7 @@ import mockit.Mocked;
 
 public class PickingHUsRepositoryTests
 {
-//	private static final int M_HU_ID = 223;
 	private static final int M_SHIPMENT_SCHEDULE_ID = 123;
-
-	@Mocked
-	private HUEditorViewRepository huEditorViewRepository;
 
 	@Before
 	public void init()
@@ -114,7 +108,7 @@ public class PickingHUsRepositoryTests
 	private void test_retrieveHUsIndexedByPickingSlotId(@NonNull final String pickingCandidateStatus, final boolean pickingRackSystem)
 	{
 		final int pickingSlotId = createPickingSlot(pickingRackSystem).getM_PickingSlot_ID();
-		
+
 		final I_M_HU hu = newInstance(I_M_HU.class);
 		hu.setHUStatus(X_M_HU.HUSTATUS_Active);
 		save(hu);
@@ -135,11 +129,10 @@ public class PickingHUsRepositoryTests
 				.build();
 
 		final boolean expectNoRows = X_M_Picking_Candidate.STATUS_CL.equals(pickingCandidateStatus) && pickingRackSystem;
+		final MockedHUEditorViewRepository huEditorViewRepository = new MockedHUEditorViewRepository();
 		if (!expectNoRows)
 		{
-			// @formatter:off
-			new Expectations() {{ huEditorViewRepository.retrieveForHUId(huId); result = huEditorRow; }};
-			// @formatter:on
+			huEditorViewRepository.addRow(huEditorRow);
 		}
 
 		final PickingHURowsRepository pickingHUsRepository = new PickingHURowsRepository(huEditorViewRepository);
@@ -166,6 +159,7 @@ public class PickingHUsRepositoryTests
 	@Test
 	public void test_retrieveSourceHUs_empty_shipmentScheduleIds()
 	{
+		final HUEditorViewRepository huEditorViewRepository = new MockedHUEditorViewRepository();
 		final PickingHURowsRepository pickingHUsRepository = new PickingHURowsRepository(huEditorViewRepository);
 		final List<HUEditorRow> sourceHUs = pickingHUsRepository.retrieveSourceHUs(ImmutableList.of());
 		assertThat(sourceHUs).isEmpty();

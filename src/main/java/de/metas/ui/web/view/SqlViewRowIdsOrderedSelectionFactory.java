@@ -241,7 +241,8 @@ public class SqlViewRowIdsOrderedSelectionFactory implements ViewRowIdsOrderedSe
 		return size <= 0 ? 0 : size;
 	}
 
-	public boolean containsAnyOfRowIds(final String selectionId, final DocumentIdsSelection rowIds)
+	@Override
+	public boolean containsAnyOfRowIds(final ViewRowIdsOrderedSelection selection, final DocumentIdsSelection rowIds)
 	{
 		if (rowIds.isEmpty())
 		{
@@ -249,7 +250,7 @@ public class SqlViewRowIdsOrderedSelectionFactory implements ViewRowIdsOrderedSe
 		}
 
 		final List<Object> sqlParams = new ArrayList<>();
-		final String sqlCount = newSqlViewSelectionQueryBuilder().buildSqlCount(sqlParams, selectionId, rowIds);
+		final String sqlCount = newSqlViewSelectionQueryBuilder().buildSqlCount(sqlParams, selection.getSelectionId(), rowIds);
 		final int count = DB.executeUpdateEx(sqlCount, sqlParams.toArray(), ITrx.TRXNAME_ThreadInherited);
 		return count > 0;
 	}
