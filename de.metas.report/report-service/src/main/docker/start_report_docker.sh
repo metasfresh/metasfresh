@@ -52,14 +52,14 @@ wait_dbms
 echo ">>>>>>>>>>>> Database Server has started"
 
 echo "*************************************************************"
-echo "Run local migration scripts"
+echo "Run the local migration scripts"
 echo "*************************************************************"
 run_db_update
 echo ">>>>>>>>>>>> Local migration scripts were run"
 
-echo "****************************"
-echo "Start metasfresh-report ";
-echo "***************************"
+echo "*************************************************************"
+echo "Start metasfresh-report";
+echo "*************************************************************"
 run_metasfresh
 
 exit 0 
