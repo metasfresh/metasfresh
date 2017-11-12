@@ -30,14 +30,17 @@ Here come the actual release notes:
     * New Translation for en_US in Contract Subtab view for Subscription History and Forecast..
   * [#2722](https://github.com/metasfresh/metasfresh/issues/2722) Webui Design Window: Improve window Material Schedule
     * Minor additional Field Translation for en_US added to Material Schedule Window Subtab.
+  * [#2754](https://github.com/metasfresh/metasfresh/issues/2754) Cleanup Function for old AD_Issue records
   * [#2771](https://github.com/metasfresh/metasfresh/issues/2771) Sales order Jasper: group products by product category
     * New Grouping Functionality in Sales Order Jasper, now able to group by Product Category.
+  * [#2816](https://github.com/metasfresh/metasfresh/issues/2816) Material Dispo - include storage-relevant attributes
   * [#2894](https://github.com/metasfresh/metasfresh/issues/2894) Sys Config to set Waiting Time for Async
     * Improving the waiting time handling for Asynch after backend start. Now able to set the time via sysconfig.
   * [#2897](https://github.com/metasfresh/metasfresh/issues/2897) Drop out old code related to confirm splitting when printing
     * Improvement in mass printing Functionality and workflow. Removing the User confirmation for printing when splitting.
   * [#2913](https://github.com/metasfresh/metasfresh/issues/2913) Column-SQL needs lower-case WHERE and FROM
     * Application Dictionary adjustment for AD_Ref_Table, setting loaer case statements for the column SQL.
+  * [#2914](https://github.com/metasfresh/metasfresh/issues/2914) Replace org.adempiere.util.collections.Predicate with java.util.function.Predicate
   * [#2920](https://github.com/metasfresh/metasfresh/issues/2920) Create automated test for extending contracts.
     * Improving the Test coverage for contract extension. Creating automated Tests.
   * [#2934](https://github.com/metasfresh/metasfresh/issues/2934) Additional Locator Dimensions
@@ -47,20 +50,38 @@ Here come the actual release notes:
   * [#2947](https://github.com/metasfresh/metasfresh/issues/2947) Adapt Window Role to WebUI Guidelines
     * Improved Layout of Role Window in WebUI, adapted now to current WebUI Guidelines.
 
+* metasfresh-webui-api
+  * [#664](https://github.com/metasfresh/metasfresh-webui-api/issues/664) Create Purchase Order Line by Line via Sales Order Lines
+  * [#666](https://github.com/metasfresh/metasfresh-webui-api/issues/666) Change the JSONLookupValue format
+  * [#668](https://github.com/metasfresh/metasfresh-webui-api/issues/668) Handling Unit Editor Action Internal Usage not possible for more than 1 Page
+
+* metasfresh-webui-frontend
+  * [#1199](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1199) Picking Window unselect line in modal overlay
+  * [#1219](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1219) Show mandatory fields not in blue but in red to match user expectation
+  * [#1308](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1308) Closing a document with changes shall discard those changes
+  * [#1327](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1327) frontend: Change the JSONLookupValue format
+
 ## Fixes
 * metasfresh
   * [#2905](https://github.com/metasfresh/metasfresh/issues/2905) Referenced documents: sales order to invoice candidates
     * Fixing the missing reference between Invoice Candidates and Sales Order when Inouts are created before Invoice Candidate.
+  * [#2917](https://github.com/metasfresh/metasfresh/issues/2917) Allow reactivating procurement contracts
+  * [#2919](https://github.com/metasfresh/metasfresh/issues/2919) trx API: log a warning in case we are registering a ITrxListener which might be never executed because trx is already commit/closed
+
 * metasfresh-webui-api
+  * [#649](https://github.com/metasfresh/metasfresh-webui-api/issues/649) Qty Delivered and Qty Picked not updated correctly in shipment schedule
+  * [#660](https://github.com/metasfresh/metasfresh-webui-api/issues/660) JSONUserSessionChangesEvent not fired when currently logged in user is changed
   * [#665](https://github.com/metasfresh/metasfresh-webui-api/issues/665) Manufacturing order: create source HU is opening same view on right side as we have it on left side
     * Fix for the source HU View in Manufacturing Order.
 
 * metasfresh-webui-frontend
+  * [#1279](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1279) menu actions for included row broken
   * [#1283](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1283) Revise shortcut handling
     * Quick Fix for the broken shortcut Handling in Documents.
+  * [#1286](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1286) Error when maximize subtab which does not support quick input
   * [#1324](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1324) Process is started twice when using ctrl-u shortcut
     * Quick Fix for the Action Handling in Material Receipt when using Keyboard Shortcuts.
-  * [#1328}(https://github.com/metasfresh/metasfresh-webui-frontend/issues/1328) Date recording w/ wrong date Error
+  * [#1328](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1328) Date recording w/ wrong date Error
     * Improved error handling and user information when entering an invalif date in Date picker via keyboard.
   * [#1332](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1332) view: Edit field value is broken
     * Fix for the Edit Mode in Main Grid view.
@@ -117,10 +138,10 @@ Here come the actual release notes:
     * Processes now provide the info about the selected Tab and rows when called in WebUI.
   * [#1303](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1303) Change the hostname from config.js.dist to localhost
     * Internal Housekeeping Issue, switching Hostnames on config.js for easier maintenance.
-  
+
 * other
   * [#82](https://github.com/metasfresh/metasfresh-dist-orgs/issues/82) Invoice Medium Address Layout Changes
-    * Further Layout adjustments in Invoice Document. 
+    * Further Layout adjustments in Invoice Document.
 
 ## Fixes
 
