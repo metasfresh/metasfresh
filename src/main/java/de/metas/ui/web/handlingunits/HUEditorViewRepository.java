@@ -35,7 +35,7 @@ public interface HUEditorViewRepository
 {
 	void invalidateCache();
 
-	List<HUEditorRow> retrieveHUEditorRows(Set<Integer> huIds);
+	List<HUEditorRow> retrieveHUEditorRows(Set<Integer> huIds, HUEditorRowFilter filter);
 
 	/**
 	 * Retrieves the {@link HUEditorRow} hierarchy for given M_HU_ID, even if that M_HU_ID is not in scope.

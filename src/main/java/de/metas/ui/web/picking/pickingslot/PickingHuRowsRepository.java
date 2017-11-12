@@ -36,6 +36,7 @@ import de.metas.picking.model.I_M_PickingSlot;
 import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.handlingunits.HUEditorRow;
 import de.metas.ui.web.handlingunits.HUEditorRowAttributesProvider;
+import de.metas.ui.web.handlingunits.HUEditorRowFilter;
 import de.metas.ui.web.handlingunits.HUEditorViewFactory;
 import de.metas.ui.web.handlingunits.HUEditorViewRepository;
 import de.metas.ui.web.handlingunits.SqlHUEditorViewRepository;
@@ -115,7 +116,7 @@ import lombok.NonNull;
 
 		final Set<Integer> sourceHuIds = sourceHus.stream().map(I_M_HU::getM_HU_ID).collect(Collectors.toSet());
 
-		return huEditorRepo.retrieveHUEditorRows(sourceHuIds);
+		return huEditorRepo.retrieveHUEditorRows(sourceHuIds, HUEditorRowFilter.ALL);
 	}
 
 	/**

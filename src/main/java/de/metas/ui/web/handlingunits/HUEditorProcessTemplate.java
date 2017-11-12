@@ -1,12 +1,10 @@
 package de.metas.ui.web.handlingunits;
 
-import java.util.Set;
 import java.util.stream.Stream;
 
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.util.Services;
 
-import de.metas.handlingunits.IHUQueryBuilder;
-import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.ui.web.handlingunits.HUEditorRowFilter.Select;
 import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
@@ -59,9 +57,12 @@ public abstract class HUEditorProcessTemplate extends ViewBasedProcessTemplate
 	protected final Stream<HUEditorRow> streamSelectedRows(@NonNull final HUEditorRowFilter filter)
 	{
 		final DocumentIdsSelection selectedDocumentIds = getSelectedDocumentIds();
-		return getView()
-				.streamByIds(selectedDocumentIds)
-				.filter(row -> matches(row, filter));
+		if (selectedDocumentIds.isEmpty())
+		{
+			return Stream.empty();
+		}
+		
+		return getView().streamByIds(filter.andOnlyRowIds(selectedDocumentIds));
 	}
 
 	protected final Stream<Integer> streamSelectedHUIds(@NonNull final Select select)
@@ -90,37 +91,12 @@ public abstract class HUEditorProcessTemplate extends ViewBasedProcessTemplate
 
 	protected final Stream<I_M_HU> streamSelectedHUs(@NonNull final HUEditorRowFilter filter)
 	{
-		final Stream<Integer> huIds = streamSelectedHUIds(HUEditorRowFilter.ALL);
+		final Stream<Integer> huIds = streamSelectedHUIds(filter);
 		return StreamUtils.dice(huIds, 100)
-				.flatMap(huIdsChunk -> toHUQueryBuilder(filter)
-						.addOnlyHUIds(huIdsChunk)
-						.createQuery()
+				.flatMap(huIdsChunk -> Services.get(IQueryBL.class)
+						.createQueryBuilder(I_M_HU.class)
+						.addInArrayFilter(I_M_HU.COLUMNNAME_M_HU_ID, huIdsChunk)
+						.create()
 						.stream(I_M_HU.class));
-	}
-
-	private static final IHUQueryBuilder toHUQueryBuilder(final HUEditorRowFilter filter)
-	{
-		return Services.get(IHandlingUnitsDAO.class)
-				.createHUQueryBuilder()
-				.setOnlyTopLevelHUs(filter.getSelect() == Select.ONLY_TOPLEVEL)
-				.addHUStatusesToInclude(filter.getOnlyHUStatuses());
-	}
-
-	private static final boolean matches(final HUEditorRow row, final HUEditorRowFilter filter)
-	{
-		final Select select = filter.getSelect();
-		if (select == Select.ONLY_TOPLEVEL && !row.isTopLevel())
-		{
-			return false;
-		}
-
-		final Set<String> onlyHUStatuses = filter.getOnlyHUStatuses();
-		final boolean huStatusDoesntMatter = onlyHUStatuses.isEmpty();
-		if (huStatusDoesntMatter)
-		{
-			return true;
-		}
-
-		return onlyHUStatuses.contains(row.getHUStatusKey());
 	}
 }

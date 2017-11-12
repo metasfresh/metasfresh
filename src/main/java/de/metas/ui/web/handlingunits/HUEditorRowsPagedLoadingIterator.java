@@ -5,6 +5,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import org.adempiere.util.GuavaCollectors;
@@ -48,21 +49,27 @@ class HUEditorRowsPagedLoadingIterator implements Iterator<HUEditorRow>
 	private final CCache<DocumentId, HUEditorRow> cache;
 	private final int bufferSize;
 	private final Iterator<HUEditorRowId> rowIds;
+	private final HUEditorRowFilter filter;
+	private final Predicate<HUEditorRow> filterPredicate;
 
 	private Iterator<HUEditorRow> currentPageIterator;
 	private boolean finished = false;
+
 
 	@Builder
 	private HUEditorRowsPagedLoadingIterator(
 			@NonNull final HUEditorViewRepository huEditorRepo,
 			@NonNull final CCache<DocumentId, HUEditorRow> cache,
 			final int bufferSize,
-			@NonNull final Iterator<HUEditorRowId> rowIds)
+			@NonNull final Iterator<HUEditorRowId> rowIds,
+			final HUEditorRowFilter filter)
 	{
 		this.huEditorRepo = huEditorRepo;
 		this.cache = cache;
 		this.bufferSize = bufferSize > 0 ? bufferSize : DEFAULT_BUFFERSIZE;
 		this.rowIds = rowIds;
+		this.filter = filter != null ? filter : HUEditorRowFilter.ALL;
+		this.filterPredicate = HUEditorRowFilters.toPredicate(this.filter); 
 	}
 
 	@Override
@@ -156,7 +163,7 @@ class HUEditorRowsPagedLoadingIterator implements Iterator<HUEditorRow>
 
 			final Set<Integer> topLevelHUIds = topLevelRowId2rowIds.keys().stream().map(HUEditorRowId::getTopLevelHUId).collect(ImmutableSet.toImmutableSet());
 
-			huEditorRepo.retrieveHUEditorRows(topLevelHUIds)
+			huEditorRepo.retrieveHUEditorRows(topLevelHUIds, filter)
 					.forEach(topLevelRow -> {
 						final HUEditorRowId topLevelRowId = topLevelRow.getHURowId();
 						for (final HUEditorRowId includedRowId : topLevelRowId2rowIds.get(topLevelRowId))
@@ -183,6 +190,7 @@ class HUEditorRowsPagedLoadingIterator implements Iterator<HUEditorRow>
 
 		return Stream.of(rows)
 				.filter(row -> row != null) // IMPORTANT: just to make sure we won't stream some empty gaps (e.g. missing rows because HU was not a top level one)
+				.filter(filterPredicate)
 				.iterator();
 	}
 

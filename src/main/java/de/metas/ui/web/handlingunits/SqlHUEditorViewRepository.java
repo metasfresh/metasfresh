@@ -13,7 +13,6 @@ import java.util.Set;
 import javax.annotation.Nullable;
 
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.service.IADReferenceDAO;
@@ -44,7 +43,6 @@ import de.metas.logging.LogManager;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverter;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverters;
-import de.metas.ui.web.document.filter.sql.SqlParamsCollector;
 import de.metas.ui.web.handlingunits.HUIdsFilterHelper.HUIdsFilterData;
 import de.metas.ui.web.handlingunits.util.HUPackingInfoFormatter;
 import de.metas.ui.web.handlingunits.util.HUPackingInfos;
@@ -130,10 +128,10 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 	}
 
 	@Override
-	public List<HUEditorRow> retrieveHUEditorRows(@NonNull final Set<Integer> huIds)
+	public List<HUEditorRow> retrieveHUEditorRows(@NonNull final Set<Integer> huIds, @NonNull final HUEditorRowFilter filter)
 	{
 		final int topLevelHUId = -1;
-		return retrieveTopLevelHUs(huIds)
+		return retrieveTopLevelHUs(huIds, filter)
 				.stream()
 				.map(hu -> createHUEditorRow(hu, topLevelHUId))
 				.collect(GuavaCollectors.toImmutableList());
@@ -154,15 +152,14 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 		return createHUEditorRow(hu, topLevelHUId);
 	}
 
-	private static List<I_M_HU> retrieveTopLevelHUs(@NonNull final Collection<Integer> huIds)
+	private static List<I_M_HU> retrieveTopLevelHUs(@NonNull final Collection<Integer> huIds, @NonNull final HUEditorRowFilter filter)
 	{
 		if (huIds.isEmpty())
 		{
 			return ImmutableList.of();
 		}
 
-		final IQueryBuilder<I_M_HU> queryBuilder = Services.get(IHandlingUnitsDAO.class)
-				.createHUQueryBuilder()
+		final IQueryBuilder<I_M_HU> queryBuilder = HUEditorRowFilters.toHUQueryBuilderPart(filter)
 				.setContext(PlainContextAware.newOutOfTrx())
 				.setOnlyTopLevelHUs()
 				.setOnlyActiveHUs(false) // retrieve ALL HUs, see https://github.com/metasfresh/metasfresh-webui-api/issues/563
@@ -401,10 +398,8 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 		// Convert the "filters" to SQL
 		if (!filters.isEmpty())
 		{
-			final SqlParamsCollector sqlFilterParams = SqlParamsCollector.newInstance();
 			final SqlDocumentFilterConverter sqlFilterConverter = SqlDocumentFilterConverters.createEntityBindingEffectiveConverter(sqlViewBinding);
-			final String sqlFilter = sqlFilterConverter.getSql(sqlFilterParams, filters, SqlOptions.defaults());
-			huQuery.addFilter(TypedSqlQueryFilter.of(sqlFilter, sqlFilterParams.toList()));
+			huQuery.addFilter(sqlFilterConverter.createQueryFilter(filters, SqlOptions.defaults()));
 		}
 
 		return huQuery.createQuery().listIds();

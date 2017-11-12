@@ -28,8 +28,8 @@ import de.metas.printing.esb.base.util.Check;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.ui.web.handlingunits.HUEditorRow;
-import de.metas.ui.web.handlingunits.HUEditorRowQuery;
-import de.metas.ui.web.handlingunits.HUEditorRowType;
+import de.metas.ui.web.handlingunits.HUEditorRowFilter;
+import de.metas.ui.web.handlingunits.HUEditorRowFilter.Select;
 import de.metas.ui.web.handlingunits.HUEditorView;
 import de.metas.ui.web.handlingunits.process.WebuiHUTransformCommand.ActionType;
 import de.metas.ui.web.handlingunits.util.WEBUI_ProcessHelper;
@@ -192,8 +192,8 @@ public class WebuiHUTransformParametersFiller
 		final boolean existsTUs;
 		if (isCheckExistingHUsInsideView())
 		{
-			existsTUs = getView().matchesAnyRowRecursive(HUEditorRowQuery.builder()
-					.rowType(HUEditorRowType.TU)
+			existsTUs = getView().matchesAnyRowRecursive(HUEditorRowFilter.builder()
+					.select(Select.TU)
 					.excludeHUId(getParentHUIdOfSelectedRow())
 					.excludeHUStatus(X_M_HU.HUSTATUS_Destroyed)
 					.build());
@@ -222,8 +222,8 @@ public class WebuiHUTransformParametersFiller
 		final boolean existsLUs;
 		if (isCheckExistingHUsInsideView())
 		{
-			existsLUs = getView().matchesAnyRowRecursive(HUEditorRowQuery.builder()
-					.rowType(HUEditorRowType.LU)
+			existsLUs = getView().matchesAnyRowRecursive(HUEditorRowFilter.builder()
+					.select(Select.LU)
 					.excludeHUId(getParentHUIdOfSelectedRow())
 					.excludeHUStatus(X_M_HU.HUSTATUS_Destroyed)
 					.build());
@@ -289,9 +289,9 @@ public class WebuiHUTransformParametersFiller
 		if (actionType == ActionType.CU_To_ExistingTU)
 		{
 			return getView()
-					.streamAllRecursive(HUEditorRowQuery.builder()
+					.streamAllRecursive(HUEditorRowFilter.builder()
+							.select(Select.TU) // ..needs to be a TU
 							.userInputFilter(context.getFilterOrIfAny(null))
-							.rowType(HUEditorRowType.TU) // ..needs to be a TU
 							.excludeHUId(getParentHUIdOfSelectedRow()) // ..may not be the one TU that 'cu' is already attached to
 							.excludeHUStatus(X_M_HU.HUSTATUS_Destroyed)
 							.build())
@@ -345,9 +345,9 @@ public class WebuiHUTransformParametersFiller
 		if (actionType == ActionType.TU_To_ExistingLU)
 		{
 			return getView()
-					.streamAllRecursive(HUEditorRowQuery.builder()
+					.streamAllRecursive(HUEditorRowFilter.builder()
+							.select(Select.LU) // ..needs to be a LU
 							.userInputFilter(context.getFilterOrIfAny(null))
-							.rowType(HUEditorRowType.LU) // ..needs to be a LU
 							.excludeHUId(getParentHUIdOfSelectedRow()) // ..may not be the one LU that 'tu' is already attached to
 							.excludeHUStatus(X_M_HU.HUSTATUS_Destroyed)
 							.build())

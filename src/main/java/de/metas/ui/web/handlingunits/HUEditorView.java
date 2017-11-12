@@ -188,7 +188,7 @@ public class HUEditorView implements IView
 	public ViewResult getPage(final int firstRow, final int pageLength, final List<DocumentQueryOrderBy> orderBys)
 	{
 		final List<HUEditorRow> page = rowsBuffer
-				.streamPage(firstRow, pageLength, orderBys)
+				.streamPage(firstRow, pageLength, HUEditorRowFilter.ALL, orderBys)
 				.collect(GuavaCollectors.toImmutableList());
 
 		return ViewResult.ofViewAndPage(this, firstRow, pageLength, orderBys, page);
@@ -386,25 +386,28 @@ public class HUEditorView implements IView
 	@Override
 	public Stream<HUEditorRow> streamByIds(final DocumentIdsSelection rowIds)
 	{
-		return rowsBuffer.streamByIdsExcludingIncludedRows(rowIds);
+		if (rowIds.isEmpty())
+		{
+			return Stream.empty();
+		}
+		return streamByIds(HUEditorRowFilter.onlyRowIds(rowIds));
 	}
 
-	/** @return top level rows and included rows recursive stream */
-	public Stream<HUEditorRow> streamAllRecursive()
+	public Stream<HUEditorRow> streamByIds(final HUEditorRowFilter filter)
 	{
-		return rowsBuffer.streamAllRecursive();
+		return rowsBuffer.streamByIdsExcludingIncludedRows(filter);
 	}
 
-	/** @return top level rows and included rows recursive stream which are matching the given query */
-	public Stream<HUEditorRow> streamAllRecursive(final HUEditorRowQuery query)
+	/** @return top level rows and included rows recursive stream which are matching the given filter */
+	public Stream<HUEditorRow> streamAllRecursive(final HUEditorRowFilter filter)
 	{
-		return rowsBuffer.streamAllRecursive(query);
+		return rowsBuffer.streamAllRecursive(filter);
 	}
 
-	/** @return true if there is any top level or included row which is matching given query */
-	public boolean matchesAnyRowRecursive(final HUEditorRowQuery query)
+	/** @return true if there is any top level or included row which is matching given filter */
+	public boolean matchesAnyRowRecursive(final HUEditorRowFilter filter)
 	{
-		return rowsBuffer.matchesAnyRowRecursive(query);
+		return rowsBuffer.matchesAnyRowRecursive(filter);
 	}
 
 	@Override

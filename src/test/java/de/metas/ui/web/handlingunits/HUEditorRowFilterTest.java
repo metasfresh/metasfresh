@@ -26,12 +26,12 @@ import org.junit.Test;
  * #L%
  */
 
-public class HUEditorRowQueryTest
+public class HUEditorRowFilterTest
 {
 	@Test
 	public void testListsNotNullInEmptyQuery()
 	{
-		final HUEditorRowQuery emptyQuery = HUEditorRowQuery.builder().build();
+		final HUEditorRowFilter emptyQuery = HUEditorRowFilter.builder().build();
 
 		assertThat(emptyQuery.getExcludeHUIds()).isNotNull();
 		assertThat(emptyQuery.getExcludeHUIds()).isEmpty();

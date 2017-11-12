@@ -14,6 +14,7 @@ import org.adempiere.util.collections.PagedIterator.PageFetcher;
 import org.compiere.util.CCache;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 
 import de.metas.handlingunits.model.I_M_HU;
@@ -151,7 +152,7 @@ public class HUEditorViewBuffer_HighVolume implements HUEditorViewBuffer
 	}
 
 	@Override
-	public Stream<HUEditorRow> streamAllRecursive() throws UnsupportedOperationException
+	public Stream<HUEditorRow> streamAllRecursive(@NonNull final HUEditorRowFilter filter) throws UnsupportedOperationException
 	{
 		final ViewRowIdsOrderedSelection defaultSelection = getDefaultSelection();
 		if (defaultSelection.getSize() > STREAM_ALL_MAX_SIZE_ALLOWED)
@@ -159,30 +160,21 @@ public class HUEditorViewBuffer_HighVolume implements HUEditorViewBuffer
 			throw new UnsupportedOperationException("Streaming all rows when selection is bigger than " + STREAM_ALL_MAX_SIZE_ALLOWED + " is not allowed");
 		}
 
-		return streamPage(0, STREAM_ALL_MAX_SIZE_ALLOWED, defaultSelection.getOrderBys())
+		return streamPage(0, STREAM_ALL_MAX_SIZE_ALLOWED, filter, defaultSelection.getOrderBys())
 				.flatMap(row -> row.streamRecursive());
 	}
 
 	@Override
-	public Stream<HUEditorRow> streamByIdsExcludingIncludedRows(@NonNull final DocumentIdsSelection rowIds)
+	public Stream<HUEditorRow> streamByIdsExcludingIncludedRows(@NonNull final HUEditorRowFilter filter)
 	{
-		if (rowIds == null || rowIds.isEmpty())
-		{
-			return Stream.empty();
-		}
-
-		return streamByIds(rowIds);
+		return streamByIds(filter);
 	}
 
-	private Stream<HUEditorRow> streamByIds(@NonNull final DocumentIdsSelection rowIds)
+	private Stream<HUEditorRow> streamByIds(@NonNull final HUEditorRowFilter filter)
 	{
-		if (rowIds.isEmpty())
-		{
-			return Stream.empty();
-		}
-
 		final Stream<HUEditorRowId> huEditorRowIds;
-		if (rowIds.isAll())
+		final ImmutableSet<HUEditorRowId> onlyRowIds = filter.getOnlyRowIds();
+		if (onlyRowIds.isEmpty())
 		{
 			final List<DocumentQueryOrderBy> defaultOrderBys = getDefaultSelection().getOrderBys();
 			huEditorRowIds = streamHUIdsByPage(0, Integer.MAX_VALUE, defaultOrderBys)
@@ -190,13 +182,14 @@ public class HUEditorViewBuffer_HighVolume implements HUEditorViewBuffer
 		}
 		else
 		{
-			huEditorRowIds = rowIds.stream().map(HUEditorRowId::ofDocumentId);
+			huEditorRowIds = onlyRowIds.stream();
 		}
 
 		return HUEditorRowsPagedLoadingIterator.builder()
 				.huEditorRepo(huEditorRepo)
 				.cache(cache_huRowsById)
 				.rowIds(huEditorRowIds.iterator())
+				.filter(filter)
 				.build()
 				.stream();
 	}
@@ -205,6 +198,7 @@ public class HUEditorViewBuffer_HighVolume implements HUEditorViewBuffer
 	public Stream<HUEditorRow> streamPage(
 			final int firstRow,
 			final int pageLength,
+			@NonNull final HUEditorRowFilter filter,
 			final List<DocumentQueryOrderBy> orderBys)
 	{
 		final Iterator<HUEditorRowId> rowIds = streamHUIdsByPage(firstRow, pageLength, orderBys)
@@ -215,6 +209,7 @@ public class HUEditorViewBuffer_HighVolume implements HUEditorViewBuffer
 				.huEditorRepo(huEditorRepo)
 				.cache(cache_huRowsById)
 				.rowIds(rowIds)
+				.filter(filter)
 				.build()
 				.stream();
 	}

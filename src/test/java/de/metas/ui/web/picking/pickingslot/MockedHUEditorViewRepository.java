@@ -10,6 +10,8 @@ import com.google.common.collect.ImmutableList;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.handlingunits.HUEditorRow;
+import de.metas.ui.web.handlingunits.HUEditorRowFilter;
+import de.metas.ui.web.handlingunits.HUEditorRowFilters;
 import de.metas.ui.web.handlingunits.HUEditorViewRepository;
 import de.metas.ui.web.handlingunits.HUIdsFilterHelper.HUIdsFilterData;
 import de.metas.ui.web.view.ViewId;
@@ -54,9 +56,13 @@ public class MockedHUEditorViewRepository implements HUEditorViewRepository
 	}
 
 	@Override
-	public List<HUEditorRow> retrieveHUEditorRows(final Set<Integer> huIds)
+	public List<HUEditorRow> retrieveHUEditorRows(final Set<Integer> huIds, final HUEditorRowFilter filter)
 	{
-		return huIds.stream().map(rowsByHUId::get).filter(Predicates.notNull()).collect(ImmutableList.toImmutableList());
+		return huIds.stream()
+				.map(rowsByHUId::get)
+				.filter(Predicates.notNull())
+				.filter(HUEditorRowFilters.toPredicate(filter))
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	@Override

@@ -12,9 +12,11 @@ import java.util.stream.Stream;
 import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 import org.compiere.util.DB;
 
+import com.google.common.base.Predicates;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 
 import de.metas.handlingunits.model.I_M_HU;
@@ -129,7 +131,7 @@ class HUEditorViewBuffer_FullyCached implements HUEditorViewBuffer
 
 	private IndexedHUEditorRows retrieveHUEditorRows()
 	{
-		final List<HUEditorRow> rows = huEditorRepo.retrieveHUEditorRows(getHUIds());
+		final List<HUEditorRow> rows = huEditorRepo.retrieveHUEditorRows(getHUIds(), HUEditorRowFilter.ALL);
 		return new IndexedHUEditorRows(rows);
 	}
 
@@ -140,17 +142,18 @@ class HUEditorViewBuffer_FullyCached implements HUEditorViewBuffer
 	}
 
 	@Override
-	public Stream<HUEditorRow> streamAllRecursive()
+	public Stream<HUEditorRow> streamAllRecursive(@NonNull final HUEditorRowFilter filter)
 	{
-		return getRows().streamRecursive();
+		return getRows().streamRecursive().filter(HUEditorRowFilters.toPredicate(filter));
 	}
 
 	@Override
-	public Stream<HUEditorRow> streamPage(final int firstRow, final int pageLength, final List<DocumentQueryOrderBy> orderBys)
+	public Stream<HUEditorRow> streamPage(final int firstRow, final int pageLength, @NonNull final HUEditorRowFilter filter, final List<DocumentQueryOrderBy> orderBys)
 	{
 		Stream<HUEditorRow> stream = getRows().stream()
 				.skip(firstRow)
-				.limit(pageLength);
+				.limit(pageLength)
+				.filter(HUEditorRowFilters.toPredicate(filter));
 
 		final Comparator<HUEditorRow> comparator = createComparatorOrNull(orderBys);
 		if (comparator != null)
@@ -175,14 +178,9 @@ class HUEditorViewBuffer_FullyCached implements HUEditorViewBuffer
 	}
 
 	@Override
-	public Stream<HUEditorRow> streamByIdsExcludingIncludedRows(final DocumentIdsSelection rowIds)
+	public Stream<HUEditorRow> streamByIdsExcludingIncludedRows(@NonNull final HUEditorRowFilter filter)
 	{
-		if (rowIds == null || rowIds.isEmpty())
-		{
-			return Stream.empty();
-		}
-
-		return getRows().streamByIdsExcludingIncludedRows(rowIds);
+		return getRows().streamByIdsExcludingIncludedRows(filter);
 	}
 
 	@Override
@@ -236,7 +234,7 @@ class HUEditorViewBuffer_FullyCached implements HUEditorViewBuffer
 	@Override
 	public String getSqlWhereClause(final DocumentIdsSelection rowIds)
 	{
-		final DocumentIdsSelection rowIdsEffective = getRows().streamByIdsExcludingIncludedRows(rowIds)
+		final DocumentIdsSelection rowIdsEffective = getRows().streamByIdsExcludingIncludedRows(HUEditorRowFilter.onlyRowIds(rowIds))
 				.map(HUEditorRow::getId)
 				.collect(DocumentIdsSelection.toDocumentIdsSelection());
 
@@ -261,7 +259,7 @@ class HUEditorViewBuffer_FullyCached implements HUEditorViewBuffer
 		private final ImmutableMap<DocumentId, HUEditorRow> allRowsById;
 
 		/** "rowId" to "parent's rowId" mapping */
-		private final ImmutableMap<DocumentId, DocumentId> rowId2parentId;
+		private final ImmutableMap<HUEditorRowId, HUEditorRowId> rowId2parentId;
 
 		public IndexedHUEditorRows(final List<HUEditorRow> rows)
 		{
@@ -282,27 +280,27 @@ class HUEditorViewBuffer_FullyCached implements HUEditorViewBuffer
 			return record;
 		}
 
-		public Stream<HUEditorRow> streamByIdsExcludingIncludedRows(final DocumentIdsSelection rowIds)
+		public Stream<HUEditorRow> streamByIdsExcludingIncludedRows(final HUEditorRowFilter filter)
 		{
-			if (rowIds == null || rowIds.isEmpty())
+			final ImmutableSet<HUEditorRowId> onlyRowIds = filter.getOnlyRowIds();
+			if (onlyRowIds.isEmpty())
 			{
-				return Stream.empty();
+				return allRowsById.values().stream()
+						.filter(HUEditorRowFilters.toPredicate(filter));
 			}
-
-			if (rowIds.isAll())
+			else
 			{
-				return allRowsById.values().stream();
+				return onlyRowIds.stream()
+						.distinct()
+						.filter(rowId -> !isRowIdIncluded(onlyRowIds, rowId))
+						.map(rowId -> allRowsById.get(rowId.toDocumentId()))
+						.filter(Predicates.notNull())
+						.filter(HUEditorRowFilters.toPredicate(filter));
 			}
-
-			return rowIds.stream()
-					.distinct()
-					.filter(rowId -> !isRowIdIncluded(rowIds, rowId))
-					.map(rowId -> allRowsById.get(rowId))
-					.filter(document -> document != null);
 		}
 
 		/** @return true if given <code>childRowId</code> is a direct or indirect child of any of <code>parentRowIds</code> */
-		private final boolean isRowIdIncluded(final DocumentIdsSelection parentRowIds, final DocumentId childRowId)
+		private final boolean isRowIdIncluded(final Set<HUEditorRowId> parentRowIds, final HUEditorRowId childRowId)
 		{
 			if (parentRowIds == null || parentRowIds.isEmpty())
 			{
@@ -310,10 +308,10 @@ class HUEditorViewBuffer_FullyCached implements HUEditorViewBuffer
 			}
 
 			// Iterate child row's up-stream (up to the root row)
-			DocumentId currentChildId = childRowId;
+			HUEditorRowId currentChildId = childRowId;
 			while (currentChildId != null)
 			{
-				final DocumentId currentParentRowId = rowId2parentId.get(currentChildId);
+				final HUEditorRowId currentParentRowId = rowId2parentId.get(currentChildId);
 				if (currentParentRowId == null)
 				{
 					// => not included (currentChildId is a top level row)
@@ -366,23 +364,23 @@ class HUEditorViewBuffer_FullyCached implements HUEditorViewBuffer
 					.forEach(includedRow -> indexByIdRecursively(collector, includedRow));
 		}
 
-		private static final ImmutableMap<DocumentId, DocumentId> buildRowId2ParentIdMap(final List<HUEditorRow> rows)
+		private static final ImmutableMap<HUEditorRowId, HUEditorRowId> buildRowId2ParentIdMap(final List<HUEditorRow> rows)
 		{
 			if (rows.isEmpty())
 			{
 				return ImmutableMap.of();
 			}
 
-			final ImmutableMap.Builder<DocumentId, DocumentId> rowId2parentId = ImmutableMap.builder();
+			final ImmutableMap.Builder<HUEditorRowId, HUEditorRowId> rowId2parentId = ImmutableMap.builder();
 			rows.forEach(row -> buildRowId2ParentIdMap(rowId2parentId, row));
 			return rowId2parentId.build();
 		}
 
-		private static final void buildRowId2ParentIdMap(final ImmutableMap.Builder<DocumentId, DocumentId> rowId2parentId, final HUEditorRow parentRow)
+		private static final void buildRowId2ParentIdMap(final ImmutableMap.Builder<HUEditorRowId, HUEditorRowId> rowId2parentId, final HUEditorRow parentRow)
 		{
-			final DocumentId parentId = parentRow.getId();
+			final HUEditorRowId parentId = parentRow.getHURowId();
 			parentRow.getIncludedRows()
-					.forEach(includedRow -> rowId2parentId.put(includedRow.getId(), parentId));
+					.forEach(includedRow -> rowId2parentId.put(includedRow.getHURowId(), parentId));
 		}
 
 	}
