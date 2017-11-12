@@ -13,8 +13,6 @@ import java.util.Set;
 import javax.annotation.Nullable;
 
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
-import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
@@ -52,8 +50,10 @@ import de.metas.ui.web.view.ViewEvaluationCtx;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.ViewRowIdsOrderedSelection;
 import de.metas.ui.web.view.ViewRowIdsOrderedSelectionFactory;
+import de.metas.ui.web.view.descriptor.SqlAndParams;
 import de.metas.ui.web.view.descriptor.SqlViewBinding;
 import de.metas.ui.web.view.descriptor.SqlViewRowIdsConverter;
+import de.metas.ui.web.view.descriptor.SqlViewSelect;
 import de.metas.ui.web.view.descriptor.SqlViewSelectionQueryBuilder;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.WindowId;
@@ -95,7 +95,7 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 
 	private final SqlViewBinding sqlViewBinding;
 	private final ViewRowIdsOrderedSelectionFactory viewSelectionFactory;
-	private final IStringExpression sqlSelectHUIdsByPage;
+	private final SqlViewSelect sqlViewSelect;
 
 	@Builder
 	private SqlHUEditorViewRepository(
@@ -111,7 +111,7 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 
 		this.sqlViewBinding = sqlViewBinding;
 		viewSelectionFactory = SqlViewRowIdsOrderedSelectionFactory.of(sqlViewBinding);
-		sqlSelectHUIdsByPage = sqlViewBinding.getSqlSelectByPage();
+		sqlViewSelect = sqlViewBinding.getSqlViewSelect();
 	}
 
 	@Override
@@ -431,20 +431,20 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 	@Override
 	public Page<Integer> retrieveHUIdsPage(final ViewRowIdsOrderedSelection selection, final int firstRow, final int maxRows)
 	{
-		final int firstSeqNo = firstRow + 1; // NOTE: firstRow is 0-based while SeqNo are 1-based
-		final int lastSeqNo = firstRow + maxRows;
-
-		final ViewEvaluationCtx viewEvalCtx = ViewEvaluationCtx.of(Env.getCtx());
-		final String sql = sqlSelectHUIdsByPage.evaluate(viewEvalCtx.toEvaluatee(), OnVariableNotFound.Fail);
-		final Object[] sqlParams = new Object[] { selection.getSelectionId(), firstSeqNo, lastSeqNo };
+		final SqlAndParams sqlAndParams = sqlViewSelect.selectByPage()
+				.viewEvalCtx(ViewEvaluationCtx.of(Env.getCtx()))
+				.viewId(selection.getViewId())
+				.firstRowZeroBased(firstRow)
+				.pageLength(maxRows)
+				.build();
 
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
 		{
-			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_ThreadInherited);
+			pstmt = DB.prepareStatement(sqlAndParams.getSql(), ITrx.TRXNAME_ThreadInherited);
 			pstmt.setMaxRows(maxRows);
-			DB.setParameters(pstmt, sqlParams);
+			DB.setParameters(pstmt, sqlAndParams.getSqlParams());
 
 			rs = pstmt.executeQuery();
 
@@ -464,7 +464,7 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 		catch (final SQLException ex)
 		{
 			throw DBException.wrapIfNeeded(ex)
-					.setSqlIfAbsent(sql, sqlParams);
+					.setSqlIfAbsent(sqlAndParams.getSql(), sqlAndParams.getSqlParams());
 		}
 		finally
 		{
