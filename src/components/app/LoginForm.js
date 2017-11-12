@@ -95,10 +95,15 @@ class LoginForm extends Component {
                     if(response.data.loginComplete){
                         return this.handleSuccess();
                     }
+                    const roles = response.data.roles.map(role => ({
+                      ...role,
+                      key: role.roleId
+                    }));
+
                     this.setState({
                         roleSelect: true,
-                        roles: response.data.roles,
-                        role: response.data.roles[0]
+                        roles,
+                        role: roles[0]
                     })
                 })
                 .then(() => {
@@ -112,7 +117,7 @@ class LoginForm extends Component {
                 .catch(err => {
                     this.setState({
                         err: (err.response ?
-                            err.response.data.message : 
+                            err.response.data.message :
                             counterpart.translate('login.error.fallback')),
                         pending: false
                     });
@@ -205,7 +210,7 @@ class LoginForm extends Component {
                         onClick={this.handleLogin}
                         disabled={pending}
                     >
-                        {roleSelect ? 
+                        {roleSelect ?
                             counterpart.translate('login.send.caption') :
                             counterpart.translate('login.callToAction')
                         }
