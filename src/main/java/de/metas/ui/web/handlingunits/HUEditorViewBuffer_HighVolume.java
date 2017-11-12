@@ -234,7 +234,7 @@ public class HUEditorViewBuffer_HighVolume implements HUEditorViewBuffer
 	private PageFetcher<Integer> huIdsPageFetcher(final List<DocumentQueryOrderBy> orderBys)
 	{
 		final ViewRowIdsOrderedSelection selection = getSelection(orderBys);
-		return (firstRow, maxRows) -> huEditorRepo.retrievePagedHUIds(selection, firstRow, maxRows);
+		return (firstRow, maxRows) -> huEditorRepo.retrieveHUIdsPage(selection, firstRow, maxRows);
 	}
 
 	private Stream<Integer> streamHUIdsByPage(final int firstRow, final int maxRows, final List<DocumentQueryOrderBy> orderBys)

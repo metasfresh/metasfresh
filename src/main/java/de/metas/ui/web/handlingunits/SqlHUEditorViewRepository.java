@@ -21,6 +21,7 @@ import org.adempiere.exceptions.DBException;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
+import org.adempiere.util.collections.PagedIterator.Page;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.DB;
@@ -428,7 +429,7 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 	}
 
 	@Override
-	public Set<Integer> retrievePagedHUIds(final ViewRowIdsOrderedSelection selection, final int firstRow, final int maxRows)
+	public Page<Integer> retrieveHUIdsPage(final ViewRowIdsOrderedSelection selection, final int firstRow, final int maxRows)
 	{
 		final int firstSeqNo = firstRow + 1; // NOTE: firstRow is 0-based while SeqNo are 1-based
 		final int lastSeqNo = firstRow + maxRows;
@@ -458,8 +459,7 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 				huIds.add(huId);
 			}
 
-			return huIds;
-
+			return Page.ofRows(ImmutableList.copyOf(huIds));
 		}
 		catch (final SQLException ex)
 		{

@@ -3,6 +3,8 @@ package de.metas.ui.web.handlingunits;
 import java.util.List;
 import java.util.Set;
 
+import org.adempiere.util.collections.PagedIterator.Page;
+
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.handlingunits.HUIdsFilterHelper.HUIdsFilterData;
 import de.metas.ui.web.view.ViewId;
@@ -47,7 +49,7 @@ public interface HUEditorViewRepository
 
 	List<Integer> retrieveHUIdsEffective(HUIdsFilterData huIdsFilter, List<DocumentFilter> filters);
 
-	Set<Integer> retrievePagedHUIds(ViewRowIdsOrderedSelection selection, int firstRow, int maxRows);
+	Page<Integer> retrieveHUIdsPage(ViewRowIdsOrderedSelection selection, int firstRow, int maxRows);
 
 	ViewRowIdsOrderedSelection createDefaultSelection(ViewId viewId, List<DocumentFilter> filters);
 

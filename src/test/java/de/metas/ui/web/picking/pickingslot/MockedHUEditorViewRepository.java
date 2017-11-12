@@ -4,6 +4,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Set;
 
+import org.adempiere.util.collections.PagedIterator.Page;
+
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 
@@ -83,7 +85,7 @@ public class MockedHUEditorViewRepository implements HUEditorViewRepository
 	}
 
 	@Override
-	public Set<Integer> retrievePagedHUIds(final ViewRowIdsOrderedSelection selection, final int firstRow, final int maxRows)
+	public Page<Integer> retrieveHUIdsPage(final ViewRowIdsOrderedSelection selection, final int firstRow, final int maxRows)
 	{
 		throw new UnsupportedOperationException("not implemented");
 	}
