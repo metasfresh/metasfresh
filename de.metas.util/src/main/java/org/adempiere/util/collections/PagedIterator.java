@@ -106,9 +106,9 @@ public class PagedIterator<E> implements Iterator<E>
 			return null;
 		}
 
-		if (currentPage.getLastRow() != null)
+		if (currentPage.getLastRowZeroBased() != null)
 		{
-			nextPageFirstRow = currentPage.getLastRow() + 1;
+			nextPageFirstRow = currentPage.getLastRowZeroBased() + 1;
 		}
 		else
 		{
@@ -158,21 +158,21 @@ public class PagedIterator<E> implements Iterator<E>
 			return new Page<>(rows, lastRow);
 		}
 
-		public static final <E> Page<E> ofRowsAndLastRowIndex(final List<E> rows, final int lastRow)
+		public static final <E> Page<E> ofRowsAndLastRowIndex(final List<E> rows, final int lastRowZeroBased)
 		{
-			return new Page<>(rows, lastRow);
+			return new Page<>(rows, lastRowZeroBased);
 		}
 
 		private final List<E> rows;
-		private final Integer lastRow;
+		private final Integer lastRowZeroBased;
 
-		private Page(final List<E> rows, final Integer lastRow)
+		private Page(final List<E> rows, final Integer lastRowZeroBased)
 		{
 			Check.assumeNotEmpty(rows, "rows is not empty");
-			Check.assume(lastRow == null || lastRow >= 0, "lastRow shall be null, positive or zero");
+			Check.assume(lastRowZeroBased == null || lastRowZeroBased >= 0, "lastRow shall be null, positive or zero");
 
 			this.rows = rows;
-			this.lastRow = lastRow;
+			this.lastRowZeroBased = lastRowZeroBased;
 		}
 	}
 
