@@ -18,7 +18,7 @@ echo_variable_values()
  echo ""
  echo "DB_HOST=${db_host}"
  echo "DB_PORT=${db_port}"
- echo "DB_NAME={db_name}"
+ echo "DB_NAME=${db_name}"
  echo "DB_USER=${db_user}"
  echo "DB_PASSWORD=dude, that's a secret"
  echo "APP_HOST=${app_host}"
