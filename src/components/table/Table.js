@@ -345,21 +345,24 @@ class Table extends Component {
         })
     }
 
-    deselectProduct = (id) => {
+    deselectProduct = id => {
         const { dispatch, tabInfo, type, viewId } = this.props;
-        const index = this.state.selected.indexOf(id);
+        const { selected } = this.state;
 
-        this.setState(update(this.state, {
-            selected: {$splice: [[index, 1]]}
-        }), () => {
+        const index = selected.indexOf(id);
+        const newSelected = update(selected, { $splice: [[index, 1]] });
+
+        this.setState({ selected: newSelected }, () => {
             if (tabInfo) {
                 dispatch(selectTableItems({
                     windowType: type,
                     viewId,
-                    ids: this.state.selected,
+                    ids: newSelected
                 }));
             }
-        })
+        });
+
+        return newSelected;
     }
 
     deselectAllProducts = (cb) => {
@@ -568,8 +571,8 @@ class Table extends Component {
 
             if(selectMore){
                 if(isSelected){
-                    this.deselectProduct(id);
-                    return false;
+                    const newSelected = this.deselectProduct(id);
+                    return newSelected.length > 0;
                 }else{
                     this.selectProduct(id);
                 }
@@ -933,10 +936,12 @@ class Table extends Component {
                             const selected = this.handleClick(
                                 e, item[keyProperty]
                             );
+
                             if (openIncludedViewOnSelect) {
                                 showIncludedViewOnSelect({
                                     showIncludedView: selected &&
                                         item.supportIncludedViews,
+                                    forceClose: !selected,
 
                                     windowType: item.supportIncludedViews ? (
                                         item.includedView.windowType ||
