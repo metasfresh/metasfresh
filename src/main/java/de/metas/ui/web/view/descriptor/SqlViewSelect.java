@@ -56,7 +56,7 @@ import lombok.NonNull;
 public class SqlViewSelect
 {
 	private static final String COLUMNNAME_Paging_UUID = "_sel_UUID";
-	private static final String COLUMNNAME_Paging_SeqNo = "_sel_SeqNo";
+	public static final String COLUMNNAME_Paging_SeqNo_OneBased = "_sel_SeqNo";
 	private static final String COLUMNNAME_Paging_Record_ID = "_sel_Record_ID";
 	public static final String COLUMNNAME_Paging_Parent_ID = "_sel_Parent_ID";
 
@@ -82,8 +82,8 @@ public class SqlViewSelect
 		sqlSelectByPage = sqlSelect.toComposer()
 				.append("\n WHERE ")
 				// NOTE: already filtered by UUID
-				.append("\n " + COLUMNNAME_Paging_SeqNo + " BETWEEN ? AND ?")
-				.append("\n ORDER BY " + COLUMNNAME_Paging_SeqNo)
+				.append("\n " + COLUMNNAME_Paging_SeqNo_OneBased + " BETWEEN ? AND ?")
+				.append("\n ORDER BY " + COLUMNNAME_Paging_SeqNo_OneBased)
 				.build();
 
 		sqlSelectRowIdsByPage = buildSqlSelect(sqlTableName, sqlTableAlias,
@@ -95,8 +95,8 @@ public class SqlViewSelect
 						.toComposer()
 						.append("\n WHERE ")
 						// NOTE: already filtered by UUID
-						.append("\n " + COLUMNNAME_Paging_SeqNo + " BETWEEN ? AND ?")
-						.append("\n ORDER BY " + COLUMNNAME_Paging_SeqNo)
+						.append("\n " + COLUMNNAME_Paging_SeqNo_OneBased + " BETWEEN ? AND ?")
+						.append("\n ORDER BY " + COLUMNNAME_Paging_SeqNo_OneBased)
 						.build();
 
 		sqlSelectById = sqlSelect.toComposer()
@@ -170,12 +170,12 @@ public class SqlViewSelect
 		}
 
 		sql.append("\n, null AS " + COLUMNNAME_Paging_Parent_ID);
-		sql.append("\n ," + COLUMNNAME_Paging_SeqNo);
+		sql.append("\n ," + COLUMNNAME_Paging_SeqNo_OneBased);
 
 		sql.append("\n FROM (")
 				.append("\n   SELECT ")
 				.append("\n   ").append(Joiner.on("\n   , ").join(sqlSelectValuesList))
-				.append("\n , sel." + I_T_WEBUI_ViewSelection.COLUMNNAME_Line + " AS " + COLUMNNAME_Paging_SeqNo)
+				.append("\n , sel." + I_T_WEBUI_ViewSelection.COLUMNNAME_Line + " AS " + COLUMNNAME_Paging_SeqNo_OneBased)
 				.append("\n , sel." + I_T_WEBUI_ViewSelection.COLUMNNAME_UUID + " AS " + COLUMNNAME_Paging_UUID)
 				.append("\n , sel." + I_T_WEBUI_ViewSelection.COLUMNNAME_Record_ID + " AS " + COLUMNNAME_Paging_Record_ID)
 				.append("\n   FROM " + I_T_WEBUI_ViewSelection.Table_Name + " sel")
@@ -257,7 +257,7 @@ public class SqlViewSelect
 				//
 				.append("\n   ").append(Joiner.on("\n   , ").join(sqlSelectValuesList))
 				//
-				.append("\n , sel." + I_T_WEBUI_ViewSelection.COLUMNNAME_Line + " AS " + COLUMNNAME_Paging_SeqNo)
+				.append("\n , sel." + I_T_WEBUI_ViewSelection.COLUMNNAME_Line + " AS " + COLUMNNAME_Paging_SeqNo_OneBased)
 				.append("\n , sel." + I_T_WEBUI_ViewSelection.COLUMNNAME_UUID + " AS " + COLUMNNAME_Paging_UUID)
 				.append("\n , sel." + I_T_WEBUI_ViewSelection.COLUMNNAME_Record_ID + " AS " + COLUMNNAME_Paging_Record_ID)
 				//

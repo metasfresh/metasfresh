@@ -449,6 +449,7 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 			rs = pstmt.executeQuery();
 
 			final Set<Integer> huIds = new LinkedHashSet<>();
+			int lastRowMax = -1;
 			while (rs.next())
 			{
 				final int huId = rs.getInt(I_M_HU.COLUMNNAME_M_HU_ID);
@@ -457,9 +458,21 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 					continue;
 				}
 				huIds.add(huId);
+
+				final int lastRow = rs.getInt(SqlViewSelect.COLUMNNAME_Paging_SeqNo_OneBased);
+				lastRowMax = Math.max(lastRowMax, lastRow);
 			}
 
-			return Page.ofRows(ImmutableList.copyOf(huIds));
+			if (huIds.isEmpty())
+			{
+				// shall not happen
+				return null;
+			}
+			else
+			{
+				final int lastRowZeroBased = lastRowMax - 1;
+				return Page.ofRowsAndLastRowIndex(ImmutableList.copyOf(huIds), lastRowZeroBased);
+			}
 		}
 		catch (final SQLException ex)
 		{
