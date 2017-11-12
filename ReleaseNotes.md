@@ -97,6 +97,8 @@ Here come the actual release notes:
     * New Action in Contract Window that enables the cancellation of Subscription Pauses.
   * [#2887](https://github.com/metasfresh/metasfresh/issues/2887) Make ShipmentSchedule column reference search in C_SubscriptionProgress
     * New Filter for Shipment Schedule Line in Subscription Progress.
+  * [#2895](https://github.com/metasfresh/metasfresh/issues/2895) AD_Ref_Table needs lower-case WHERE and FROM
+  * [#2907](https://github.com/metasfresh/metasfresh/issues/2907) set masterenddate correctly when extending contracts
 
 * metasfresh-webui-api
   * [#19](https://github.com/metasfresh/metasfresh-webui-api/issues/19) Cache invalidation
