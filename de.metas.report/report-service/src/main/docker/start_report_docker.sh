@@ -11,6 +11,8 @@ db_name=${DB_NAME:-metasfresh}
 db_user=${DB_USER:-metasfresh}
 db_password=${DB_PASSWORD:-metasfresh}
 app_host=${APP_HOST:-app}
+skip_run_db_update=${SKIP_DB_UPDATE:-false}
+
 
 echo_variable_values()
 {
@@ -20,7 +22,8 @@ echo_variable_values()
  echo "DB_PORT=${db_port}"
  echo "DB_NAME=${db_name}"
  echo "DB_USER=${db_user}"
- echo "DB_PASSWORD=dude, that's a secret"
+ echo "DB_PASSWORD=(that's secret)"
+ echo "SKIP_DB_UPDATE=${skip_run_db_update}"
  echo "APP_HOST=${app_host}"
 }
 
@@ -49,8 +52,12 @@ wait_dbms()
 
 run_db_update()
 {
+ if [ "$skip_run_db_update" != "false" ]; then
+	echo "We skip running the migration scripts"
+	return 0
+ fi
+
  sleep 10
- 
  settings_file="/opt/metasfresh/dist/run_db_update_settings.properties"
 
  echo "" > $settings_file
