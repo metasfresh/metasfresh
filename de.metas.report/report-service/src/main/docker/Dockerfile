@@ -3,17 +3,20 @@
 
 FROM ubuntu:16.04
 
-# note that we put all of this into one command
+# Note that we put all of this into one command
 # because otherwise, the update and full-update might not be performed (still in cache)
-# and the installs might fail, because e.g. openjdk might not yet be in the cache, however URLs might have been changed
+# and the installs might fail, because e.g. openjdk might not yet be in the cache, however URLs might have been changed.
+#
+# Note that netcat is used to wait for the DMBS to be available on startup,
+# and postgresql-client-9.5 is used in performing the eventual migration script rollout
 RUN apt update \
     && apt -y full-upgrade \
     && apt -y install netcat \
+    && apt -y install postgresql-client-9.5 \
     && apt -y install openjdk-8-jdk-headless \
     && apt -y install dos2unix \
     && apt -y autoremove \
     && apt -y autoclean
-
 
 COPY ./configs/logback.xml /opt/metasfresh/metasfresh-report/
 COPY ./configs/metasfresh-report.conf /opt/metasfresh/metasfresh-report/
