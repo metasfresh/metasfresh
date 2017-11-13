@@ -51,7 +51,7 @@ run_db_update()
 {
  sleep 10
  
- settings_file="/opt/metasfresh/run_db_update_settings.properties"
+ settings_file="/opt/metasfresh/dist/run_db_update_settings.properties"
 
  echo "" > $settings_file
  echo "IMPORTANT" >> $settings_file
@@ -64,9 +64,10 @@ run_db_update()
  echo "METASFRESH_DB_PASSWORD=${db_password}" >> $settings_file
  echo "" > $settings_file
  
- # -s sets the "Name of the (s)ettings file (e.g. settings_<hostname>.properties) *within the Rollout-Directory*" (which is /opt/metasfresh in this case)
+ # -s sets the "Name of the (s)ettings file (e.g. settings_<hostname>.properties) *within the Rollout-Directory*" (which is /opt/metasfresh/dist in this case)
+ # -v disables version-check since this is not a "main" migration and only those are handeled by the verios stored in AD_System.DBVersion
  # run with -h for a description of all params
- cd /opt/metasfresh/dist/install/ && java -jar ./lib/de.metas.migration.cli.jar -s run_db_update_settings.properties
+ cd /opt/metasfresh/dist/install/ && java -jar ./lib/de.metas.migration.cli.jar -v -s run_db_update_settings.properties
 }
 
 # Note: the Djava.security.egd param is supposed to let tomcat start quicker, see https://spring.io/guides/gs/spring-boot-docker/
