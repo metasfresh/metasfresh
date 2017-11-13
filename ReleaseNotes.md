@@ -21,6 +21,8 @@ Here come the actual release notes:
 * metasfresh-webui-frontend
   * [#1333](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1333) Process panel is closed even if /start failed
     * The modal process panel is now remaining open if an error pops up when starting the action.
+  * [#1337](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1337) All values of Dropdown list are highlighted
+    * Now only showing highlighted rows in Role List when the role is selected.
 
 # metasfresh 5.35 (2017-46)
 
