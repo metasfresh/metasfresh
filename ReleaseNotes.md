@@ -35,9 +35,11 @@ Here come the actual release notes:
   * [#2722](https://github.com/metasfresh/metasfresh/issues/2722) Webui Design Window: Improve window Material Schedule
     * Minor additional Field Translation for en_US added to Material Schedule Window Subtab.
   * [#2754](https://github.com/metasfresh/metasfresh/issues/2754) Cleanup Function for old AD_Issue records
+    * New Function that allows to cleanup old and not needed Issue Records.
   * [#2771](https://github.com/metasfresh/metasfresh/issues/2771) Sales order Jasper: group products by product category
     * New Grouping Functionality in Sales Order Jasper, now able to group by Product Category.
   * [#2816](https://github.com/metasfresh/metasfresh/issues/2816) Material Dispo - include storage-relevant attributes
+    * Including the Attributes into Material Dispo, now allowing the Product Planning to be done on detailed Attributes Level.
   * [#2894](https://github.com/metasfresh/metasfresh/issues/2894) Sys Config to set Waiting Time for Async
     * Improving the waiting time handling for Asynch after backend start. Now able to set the time via sysconfig.
   * [#2897](https://github.com/metasfresh/metasfresh/issues/2897) Drop out old code related to confirm splitting when printing
@@ -45,6 +47,7 @@ Here come the actual release notes:
   * [#2913](https://github.com/metasfresh/metasfresh/issues/2913) Column-SQL needs lower-case WHERE and FROM
     * Application Dictionary adjustment for AD_Ref_Table, setting loaer case statements for the column SQL.
   * [#2914](https://github.com/metasfresh/metasfresh/issues/2914) Replace org.adempiere.util.collections.Predicate with java.util.function.Predicate
+    * Internal Housekeeping issue, replacing legacy code with java class substitute.
   * [#2920](https://github.com/metasfresh/metasfresh/issues/2920) Create automated test for extending contracts.
     * Improving the Test coverage for contract extension. Creating automated Tests.
   * [#2934](https://github.com/metasfresh/metasfresh/issues/2934) Additional Locator Dimensions
@@ -56,14 +59,19 @@ Here come the actual release notes:
 
 * metasfresh-webui-api
   * [#664](https://github.com/metasfresh/metasfresh-webui-api/issues/664) Create Purchase Order Line by Line via Sales Order Lines
+    * New Functionality in WebUI, allowing to create Purchase Orders directly from Sales Order Lines. This feature was wanted from trade companies with very short delivery time requirements.
   * [#666](https://github.com/metasfresh/metasfresh-webui-api/issues/666) Change the JSONLookupValue format
+    * Internal Housekeeping,  adjusting the JSON lookup value format.
   * [#668](https://github.com/metasfresh/metasfresh-webui-api/issues/668) Handling Unit Editor Action Internal Usage not possible for more than 1 Page
+    * Extended Functionality for the Internal Usage Action in Handling Unit Editor. Now possible to select all rows and start the action.
 
 * metasfresh-webui-frontend
   * [#1199](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1199) Picking Window unselect line in modal overlay
-  * [#1219](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1219) Show mandatory fields not in blue but in red to match user expectation
+    * Improved Usability/ Behavior in Picking Window WebUI when un-selecting rows in modal overlay.
   * [#1308](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1308) Closing a document with changes shall discard those changes
-  * [#1327](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1327) frontend: Change the JSONLookupValue format
+    * New Feature that discards uncomplete Data rows in WebUI Frontend.
+  * [#1327](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1327) Frontend: Change the JSONLookupValue format
+    * Adjustment of the JSON lookup value format in WebUI frontend.
 
 ## Fixes
 * metasfresh
