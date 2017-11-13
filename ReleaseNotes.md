@@ -16,6 +16,8 @@ Here come the actual release notes:
 
 ## Features
 * metasfresh
+  * [#2871](https://github.com/metasfresh/metasfresh/issues/2871) Window Design Webui: Improve windows with Posted field
+    * Adding missing default Values for Posted columns in various Table Definitions.
 
 ## Fixes
 * metasfresh-webui-frontend
