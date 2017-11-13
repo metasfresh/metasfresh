@@ -67,6 +67,7 @@ public class HUMoveToDirectWarehouseService
 	private Timestamp _movementDate = null;
 	private String _description = null;
 	private boolean _failOnFirstError = false;
+	private boolean _failIfNoHUs = false; // default false for backward compatibility
 	private ILoggable loggable = NullLoggable.instance;
 	private HUEditorView huView;
 
@@ -83,13 +84,26 @@ public class HUMoveToDirectWarehouseService
 
 		//
 		// Move the HUs, one by one
+		int countMoved = 0;
 		while (hus.hasNext())
 		{
 			final I_M_HU hu = hus.next();
 			generateMovement(hu);
+			countMoved++;
 		}
-		
-		if(huView != null)
+
+		// Stop here if nothing moved
+		if (countMoved <= 0)
+		{
+			if (isFailIfNoHUs())
+			{
+				throw new AdempiereException("@NoSelection@");
+			}
+			return;
+		}
+
+		// Invalidate given view, if any
+		if (huView != null)
 		{
 			huView.invalidateAll();
 		}
@@ -185,6 +199,17 @@ public class HUMoveToDirectWarehouseService
 		return _failOnFirstError;
 	}
 
+	public HUMoveToDirectWarehouseService setFailIfNoHUs(final boolean failIfNoHUs)
+	{
+		_failIfNoHUs = failIfNoHUs;
+		return this;
+	}
+
+	private boolean isFailIfNoHUs()
+	{
+		return _failIfNoHUs;
+	}
+
 	public HUMoveToDirectWarehouseService setDocumentsCollection(final DocumentCollection documentsCollection)
 	{
 		this.documentsCollection = documentsCollection;
@@ -217,6 +242,7 @@ public class HUMoveToDirectWarehouseService
 
 		//
 		// Remove this HU from the view
+		// Don't invalidate. We will do it at the end of all processing.
 		if (huView != null)
 		{
 			huView.removeHUIds(ImmutableSet.of(huId));
