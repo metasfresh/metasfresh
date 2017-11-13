@@ -13,11 +13,11 @@ package org.adempiere.util.collections;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -34,6 +34,7 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import org.adempiere.util.EmptyIterator;
+import org.adempiere.util.collections.PagedIterator.PagedIteratorBuilder;
 
 import com.google.common.base.Throwables;
 
@@ -76,7 +77,7 @@ public final class IteratorUtils
 				return Collections.emptyList();
 			}
 
-			final List<E> list = new ArrayList<E>();
+			final List<E> list = new ArrayList<>();
 			while (it.hasNext())
 			{
 				final E e = it.next();
@@ -100,7 +101,7 @@ public final class IteratorUtils
 			return it;
 		}
 
-		final Iterator<E> it = new BlindIteratorWrapper<E>(blindIterator);
+		final Iterator<E> it = new BlindIteratorWrapper<>(blindIterator);
 		return it;
 	}
 
@@ -208,7 +209,7 @@ public final class IteratorUtils
 		}
 		else
 		{
-			return new PeekIteratorWrapper<E>(iterator);
+			return new PeekIteratorWrapper<>(iterator);
 		}
 	}
 
@@ -224,12 +225,12 @@ public final class IteratorUtils
 	 */
 	public static <IT, OT> Iterator<OT> convertIterator(final Iterator<IT> iterator, final Converter<OT, IT> converter)
 	{
-		return new ConvertIteratorWrapper<OT, IT>(iterator, converter);
+		return new ConvertIteratorWrapper<>(iterator, converter);
 	}
 
 	public static <T> Iterator<T> unmodifiableIterator(final Iterator<T> iterator)
 	{
-		return new UnmodifiableIterator<T>(iterator);
+		return new UnmodifiableIterator<>(iterator);
 	}
 
 	public static <T> Iterator<T> emptyIterator()
@@ -243,10 +244,18 @@ public final class IteratorUtils
 	 */
 	public static <T> Stream<T> stream(final Iterator<T> iterator)
 	{
-		final int characteristics = 0;
-		Spliterator<T> spliterator = Spliterators.spliteratorUnknownSize(iterator, characteristics);
-
+		Spliterator<T> spliterator = Spliterators.spliteratorUnknownSize(iterator, Spliterator.ORDERED);
 		final boolean parallel = false;
 		return StreamSupport.stream(spliterator, parallel);
+	}
+
+	public static <T> Stream<T> stream(final BlindIterator<T> blindIterator)
+	{
+		return stream(asIterator(blindIterator));
+	}
+
+	public static <T> PagedIteratorBuilder<T> newPagedIterator()
+	{
+		return PagedIterator.builder();
 	}
 }

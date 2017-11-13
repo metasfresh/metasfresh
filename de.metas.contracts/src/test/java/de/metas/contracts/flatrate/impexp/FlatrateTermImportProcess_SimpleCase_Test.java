@@ -13,9 +13,9 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.Mutable;
-import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.TimeUtil;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -67,6 +67,12 @@ public class FlatrateTermImportProcess_SimpleCase_Test extends AbstractFlatrateT
 	private final transient IInvoiceCandidateHandlerBL iinvoiceCandidateHandlerBL = Services.get(IInvoiceCandidateHandlerBL.class);
 	private final transient IShipmentScheduleHandlerBL inOutCandHandlerBL = Services.get(IShipmentScheduleHandlerBL.class);
 	
+	@Before
+	public void before()
+	{
+		helper.setupModuleInterceptors_Contracts_Full();
+	}
+	
 	@Test
 	public void testImportActiveFlatrateTerms()
 	{
@@ -97,6 +103,7 @@ public class FlatrateTermImportProcess_SimpleCase_Test extends AbstractFlatrateT
 				.pricingSystem(productAndPricingSystem.getPricingSystem())
 				.invoiceRule(X_C_Flatrate_Conditions.INVOICERULE_Sofort)
 				.typeConditions(X_C_Flatrate_Conditions.TYPE_CONDITIONS_Subscription)
+				.isAutoRenew(true)
 				.build();
 
 		final I_I_Flatrate_Term iflatrateTerm = IFlatrateTermFactory.builder()
@@ -162,6 +169,7 @@ public class FlatrateTermImportProcess_SimpleCase_Test extends AbstractFlatrateT
 				.pricingSystem(productAndPricingSystem.getPricingSystem())
 				.invoiceRule(X_C_Flatrate_Conditions.INVOICERULE_Sofort)
 				.typeConditions(X_C_Flatrate_Conditions.TYPE_CONDITIONS_Subscription)
+				.isAutoRenew(true)
 				.build();
 
 		final I_I_Flatrate_Term iflatrateTerm = IFlatrateTermFactory.builder()
@@ -222,6 +230,7 @@ public class FlatrateTermImportProcess_SimpleCase_Test extends AbstractFlatrateT
 				.pricingSystem(productAndPricingSystem.getPricingSystem())
 				.invoiceRule(X_C_Flatrate_Conditions.INVOICERULE_Sofort)
 				.typeConditions(X_C_Flatrate_Conditions.TYPE_CONDITIONS_Subscription)
+				.isAutoRenew(true)
 				.build();
 
 		final I_I_Flatrate_Term iflatrateTerm = IFlatrateTermFactory.builder()
@@ -258,31 +267,6 @@ public class FlatrateTermImportProcess_SimpleCase_Test extends AbstractFlatrateT
 		assertThat(candidates).hasSize(0);
 		
 		assertShipmentSchedules(flatrateTerm, false);
-	}
-
-	private int prepareBPartner()
-	{
-		final I_C_BPartner bpartner = FlatrateTermDataFactory.bpartnerNew()
-				.bpValue("G0022")
-				.isCustomer(true)
-				.build();
-
-		FlatrateTermDataFactory.bpLocationNew()
-				.bpartner(bpartner)
-				.isBillTo_Default(true)
-				.isShipTo_Default(true)
-				.country(getCountry())
-				.build();
-
-		FlatrateTermDataFactory.userNew()
-				.bpartner(bpartner)
-				.isBillToContact_Default(true)
-				.isShipToContact_Default(true)
-				.firstName("FN")
-				.lastName("LN")
-				.build();
-
-		return bpartner.getC_BPartner_ID();
 	}
 
 	private void assertPartnerData(final I_I_Flatrate_Term iflatrateTerm)
