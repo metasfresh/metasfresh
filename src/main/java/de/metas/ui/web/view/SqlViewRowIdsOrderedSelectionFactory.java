@@ -17,9 +17,9 @@ import com.google.common.base.Stopwatch;
 
 import de.metas.logging.LogManager;
 import de.metas.ui.web.document.filter.DocumentFilter;
+import de.metas.ui.web.view.descriptor.SqlAndParams;
 import de.metas.ui.web.view.descriptor.SqlViewBinding;
 import de.metas.ui.web.view.descriptor.SqlViewSelectionQueryBuilder;
-import de.metas.ui.web.view.descriptor.SqlViewSelectionQueryBuilder.SqlAndParams;
 import de.metas.ui.web.view.descriptor.SqlViewSelectionQueryBuilder.SqlCreateSelection;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
@@ -241,7 +241,8 @@ public class SqlViewRowIdsOrderedSelectionFactory implements ViewRowIdsOrderedSe
 		return size <= 0 ? 0 : size;
 	}
 
-	public boolean containsAnyOfRowIds(final String selectionId, final DocumentIdsSelection rowIds)
+	@Override
+	public boolean containsAnyOfRowIds(final ViewRowIdsOrderedSelection selection, final DocumentIdsSelection rowIds)
 	{
 		if (rowIds.isEmpty())
 		{
@@ -249,7 +250,7 @@ public class SqlViewRowIdsOrderedSelectionFactory implements ViewRowIdsOrderedSe
 		}
 
 		final List<Object> sqlParams = new ArrayList<>();
-		final String sqlCount = newSqlViewSelectionQueryBuilder().buildSqlCount(sqlParams, selectionId, rowIds);
+		final String sqlCount = newSqlViewSelectionQueryBuilder().buildSqlCount(sqlParams, selection.getSelectionId(), rowIds);
 		final int count = DB.executeUpdateEx(sqlCount, sqlParams.toArray(), ITrx.TRXNAME_ThreadInherited);
 		return count > 0;
 	}

@@ -1,10 +1,10 @@
 package de.metas.ui.web.handlingunits.process;
 
-import java.util.List;
 import java.util.OptionalInt;
+import java.util.stream.Stream;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.collections.ListUtils;
+import org.adempiere.util.GuavaCollectors;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -71,13 +71,13 @@ public class WEBUI_M_HU_Pick extends ViewBasedProcessTemplate implements IProces
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
-		final List<HURow> rows = getHURows();
-		if (rows.isEmpty())
+		final ImmutableList<HURow> firstRows = streamHURows().limit(2).collect(ImmutableList.toImmutableList());
+		if (firstRows.isEmpty())
 		{
 			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(WEBUI_M_HU_Messages.MSG_WEBUI_ONLY_TOP_LEVEL_HU));
 		}
 
-		if (rows.size() != 1)
+		if (firstRows.size() != 1)
 		{
 			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
 		}
@@ -85,22 +85,19 @@ public class WEBUI_M_HU_Pick extends ViewBasedProcessTemplate implements IProces
 		return ProcessPreconditionsResolution.accept();
 	}
 
-	private List<HURow> getHURows()
+	private Stream<HURow> streamHURows()
 	{
-		final List<HURow> rows = getSelectedRows()
-				.stream()
+		return streamSelectedRows()
 				.map(row -> toHURowOrNull(row))
 				.filter(Predicates.notNull())
 				.filter(HURow::isTopLevelHU)
-				.filter(HURow::isHuStatusActive)
-				.collect(ImmutableList.toImmutableList());
-		return rows;
+				.filter(HURow::isHuStatusActive);
 	}
 
 	private HURow getSingleHURow()
 	{
-		final List<HURow> rows = getHURows();
-		return ListUtils.singleElement(rows); // shall not fail because we assume we already validated before
+		return streamHURows()
+				.collect(GuavaCollectors.singleElementOrThrow(() -> new AdempiereException("only one selected row was expected")));
 	}
 
 	@Override

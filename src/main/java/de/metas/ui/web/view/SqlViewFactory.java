@@ -164,9 +164,9 @@ public class SqlViewFactory implements IViewFactory
 				request.getViewTypeRequiredFieldCharacteristic());
 
 		final SqlViewBinding sqlViewBinding = getViewBinding(sqlViewBindingKey);
-		final SqlViewDataRepository sqlViewDataRepository = new SqlViewDataRepository(sqlViewBinding);
+		final IViewDataRepository viewDataRepository = new SqlViewDataRepository(sqlViewBinding);
 
-		final DefaultView.Builder viewBuilder = DefaultView.builder(sqlViewDataRepository)
+		final DefaultView.Builder viewBuilder = DefaultView.builder(viewDataRepository)
 				.setViewId(request.getViewId())
 				.setViewType(request.getViewType())
 				.setReferencingDocumentPaths(request.getReferencingDocumentPaths())

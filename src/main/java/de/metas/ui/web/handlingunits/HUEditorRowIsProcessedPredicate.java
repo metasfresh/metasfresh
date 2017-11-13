@@ -1,8 +1,6 @@
 package de.metas.ui.web.handlingunits;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import org.junit.Test;
+import de.metas.handlingunits.model.I_M_HU;
 
 /*
  * #%L
@@ -26,17 +24,7 @@ import org.junit.Test;
  * #L%
  */
 
-public class HUEditorRowQueryTest
+public interface HUEditorRowIsProcessedPredicate
 {
-	@Test
-	public void testListsNotNullInEmptyQuery()
-	{
-		final HUEditorRowQuery emptyQuery = HUEditorRowQuery.builder().build();
-
-		assertThat(emptyQuery.getExcludeHUIds()).isNotNull();
-		assertThat(emptyQuery.getExcludeHUIds()).isEmpty();
-
-		assertThat(emptyQuery.getExcludeHUStatuses()).isNotNull();
-		assertThat(emptyQuery.getExcludeHUStatuses()).isEmpty();
-	}
+	boolean isProcessed(final I_M_HU hu);
 }

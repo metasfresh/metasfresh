@@ -1,5 +1,7 @@
 package de.metas.ui.web.handlingunits;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -67,14 +69,19 @@ public class HUEditorRowIdTest
 		{
 			final String json = rowId.toJson();
 			final HUEditorRowId rowId2 = HUEditorRowId.fromJson(json);
-			Assert.assertEquals(rowId, rowId2);
+			assertThat(rowId2).isEqualTo(rowId);
 		}
 
 		{
 			final String json = rowId.toJson();
 			final DocumentId documentId = DocumentId.of(json);
 			final HUEditorRowId rowId2 = HUEditorRowId.ofDocumentId(documentId);
-			Assert.assertEquals(rowId, rowId2);
+			assertThat(rowId2).isEqualTo(rowId);
+		}
+
+		{
+			final HUEditorRowId rowId2 = HUEditorRowId.ofDocumentId(rowId.toDocumentId());
+			assertThat(rowId2).isEqualTo(rowId);
 		}
 	}
 }

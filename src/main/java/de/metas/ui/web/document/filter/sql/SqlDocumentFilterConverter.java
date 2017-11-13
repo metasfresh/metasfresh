@@ -2,6 +2,8 @@ package de.metas.ui.web.document.filter.sql;
 
 import java.util.List;
 
+import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
 import org.compiere.util.DB;
 
 import de.metas.printing.esb.base.util.Check;
@@ -79,5 +81,12 @@ public interface SqlDocumentFilterConverter
 		}
 
 		return sqlWhereClauseBuilder.toString();
+	}
+	
+	default <T> IQueryFilter<T> createQueryFilter(@NonNull final List<DocumentFilter> filters, @NonNull final SqlOptions sqlOpts)
+	{
+		final SqlParamsCollector sqlFilterParams = SqlParamsCollector.newInstance();
+		final String sqlFilter = getSql(sqlFilterParams, filters, SqlOptions.defaults());
+		return TypedSqlQueryFilter.of(sqlFilter, sqlFilterParams.toList());
 	}
 }

@@ -11,7 +11,6 @@ import java.util.stream.Stream;
 import javax.annotation.Nullable;
 
 import org.adempiere.util.GuavaCollectors;
-import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.util.Evaluatee;
 import org.eevolution.model.I_PP_Order;
@@ -26,7 +25,6 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
-import de.metas.ui.web.view.ASIViewRowAttributesProvider;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.ViewId;
@@ -37,7 +35,6 @@ import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
-import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 import de.metas.ui.web.window.model.sql.SqlOptions;
 import lombok.Builder;
@@ -77,8 +74,7 @@ public class PPOrderLinesView implements IView
 	private final int ppOrderId;
 	private final int salesOrderLineId;
 
-	private final ASIViewRowAttributesProvider asiAttributesProvider;
-	private final ExtendedMemorizingSupplier<PPOrderLinesViewData> dataSupplier;
+	private final PPOrderLinesViewDataSupplier dataSupplier;
 
 	final List<RelatedProcessDescriptor> additionalRelatedProcessDescriptors;
 
@@ -95,7 +91,7 @@ public class PPOrderLinesView implements IView
 			@NonNull final JSONViewDataType viewType,
 			final Set<DocumentPath> referencingDocumentPaths,
 			final int ppOrderId,
-			final ASIViewRowAttributesProvider asiAttributesProvider,
+			final PPOrderLinesViewDataSupplier dataSupplier, 
 			@NonNull final List<RelatedProcessDescriptor> additionalRelatedProcessDescriptors)
 	{
 		this.parentViewId = parentViewId; // might be null
@@ -111,13 +107,7 @@ public class PPOrderLinesView implements IView
 		final I_PP_Order ppOrder = load(ppOrderId, I_PP_Order.class);
 		this.salesOrderLineId = ppOrder.getC_OrderLine_ID();
 
-		this.asiAttributesProvider = asiAttributesProvider;
-
-		final WindowId viewWindowId = viewId.getWindowId();
-		dataSupplier = ExtendedMemorizingSupplier.of(() -> PPOrderLinesLoader.builder(viewWindowId)
-				.asiAttributesProvider(asiAttributesProvider)
-				.build()
-				.retrieveData(ppOrderId));
+		this.dataSupplier = dataSupplier;
 	}
 
 	@Override
@@ -363,17 +353,12 @@ public class PPOrderLinesView implements IView
 
 	private void invalidateAllNoNotify()
 	{
-		if (asiAttributesProvider != null)
-		{
-			asiAttributesProvider.invalidateAll();
-		}
-
-		dataSupplier.forget();
+		dataSupplier.invalidate();
 	}
 
 	private PPOrderLinesViewData getData()
 	{
-		return dataSupplier.get();
+		return dataSupplier.getData();
 	}
 	
 }

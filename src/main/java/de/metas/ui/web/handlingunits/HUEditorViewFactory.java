@@ -3,7 +3,6 @@ package de.metas.ui.web.handlingunits;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 
 import javax.annotation.Nullable;
@@ -13,6 +12,7 @@ import org.adempiere.ad.dao.ISqlQueryFilter;
 import org.adempiere.ad.window.api.IADWindowDAO;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Check;
+import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Tab;
 import org.compiere.util.CCache;
@@ -21,6 +21,8 @@ import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ImmutableMap;
 
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU;
@@ -29,6 +31,7 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
+import de.metas.ui.web.document.filter.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.document.filter.DocumentFilterParamDescriptor;
 import de.metas.ui.web.document.filter.ImmutableDocumentFilterDescriptorsProvider;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverter;
@@ -81,20 +84,38 @@ public class HUEditorViewFactory implements IViewFactory
 
 	@Autowired
 	private DocumentDescriptorFactory documentDescriptorFactory;
-	private final List<HUEditorViewCustomizer> viewCustomizers;
+	private final ImmutableListMultimap<String, HUEditorViewCustomizer> viewCustomizersByReferencingTableName;
 
 	private final transient CCache<Integer, SqlViewBinding> sqlViewBindingCache = CCache.newCache("SqlViewBinding", 1, 0);
 	private final transient CCache<ArrayKey, ViewLayout> layouts = CCache.newLRUCache("HUEditorViewFactory#Layouts", 10, 0);
 
+	private ImmutableMap<String, HUEditorRowIsProcessedPredicate> rowProcessedPredicateByReferencingTableName;
+
 	@Autowired
 	private HUEditorViewFactory(final List<HUEditorViewCustomizer> viewCustomizers)
 	{
-		this.viewCustomizers = viewCustomizers;
+		viewCustomizersByReferencingTableName = viewCustomizers.stream()
+				.collect(GuavaCollectors.toImmutableListMultimap(HUEditorViewCustomizer::getReferencingTableNameToMatch));
+		logger.info("Initialized view customizers: {}", viewCustomizersByReferencingTableName);
 
-		logger.info("Initialized with customizers: {}", viewCustomizers);
+		this.rowProcessedPredicateByReferencingTableName = viewCustomizers.stream()
+				.filter(viewCustomizer -> viewCustomizer.getHUEditorRowIsProcessedPredicate() != null)
+				.distinct()
+				.collect(ImmutableMap.toImmutableMap(HUEditorViewCustomizer::getReferencingTableNameToMatch, HUEditorViewCustomizer::getHUEditorRowIsProcessedPredicate));
+		logger.info("Initialized row processed predicates: {}", rowProcessedPredicateByReferencingTableName);
 	}
 
-	private SqlViewBinding getSqlViewBinding()
+	private List<HUEditorViewCustomizer> getViewCustomizers(final String referencingTableName)
+	{
+		return viewCustomizersByReferencingTableName.get(referencingTableName);
+	}
+
+	private HUEditorRowIsProcessedPredicate getRowProcessedPredicate(final String referencingTableName)
+	{
+		return rowProcessedPredicateByReferencingTableName.getOrDefault(referencingTableName, HUEditorRowIsProcessedPredicates.NEVER);
+	}
+
+	public SqlViewBinding getSqlViewBinding()
 	{
 		final int key = 0; // not important
 		return sqlViewBindingCache.getOrLoad(key, this::createSqlViewBinding);
@@ -227,8 +248,49 @@ public class HUEditorViewFactory implements IViewFactory
 		// if (!WEBUI_HU_Constants.WEBUI_HU_Window_ID.equals(viewId.getWindowId())) throw new IllegalArgumentException("Invalid request's windowId: " + request);
 
 		//
-		// Referencing path and tableName (i.e. from where are we coming, e.g. receipt schedule)
+		// Referencing documentPaths and tableName (i.e. from where are we coming, e.g. receipt schedule)
 		final Set<DocumentPath> referencingDocumentPaths = request.getReferencingDocumentPaths();
+		final String referencingTableName = extractReferencingTablename(referencingDocumentPaths);
+
+		final SqlViewBinding sqlViewBinding = getSqlViewBinding();
+
+		@SuppressWarnings("deprecation") // as long as the deprecated getFilterOnlyIds() is around we can't ignore it
+		final List<DocumentFilter> stickyFilters = extractStickyFilters(request.getStickyFilters(), request.getFilterOnlyIds());
+		final DocumentFilterDescriptorsProvider filterDescriptors = sqlViewBinding.getViewFilterDescriptors();
+		final List<DocumentFilter> filters = request.getOrUnwrapFilters(filterDescriptors);
+
+		final WindowId windowId = viewId.getWindowId();
+		final HUEditorViewRepository huEditorViewRepository = SqlHUEditorViewRepository.builder()
+				.windowId(windowId)
+				.rowProcessedPredicate(getRowProcessedPredicate(referencingTableName))
+				.attributesProvider(HUEditorRowAttributesProvider.builder()
+						.readonly(WEBUI_HU_Constants.WEBUI_HU_Window_ID.equals(windowId)) // readonly if it's actually the HU window
+						.build())
+				.sqlViewBinding(sqlViewBinding)
+				.build();
+
+		final HUEditorViewBuilder huViewBuilder = HUEditorView.builder()
+				.setParentViewId(request.getParentViewId())
+				.setParentRowId(request.getParentRowId())
+				.setViewId(viewId)
+				.setViewType(request.getViewType())
+				.setStickyFilters(stickyFilters)
+				.setFilters(filters)
+				.setFilterDescriptors(filterDescriptors)
+				.setReferencingDocumentPaths(referencingTableName, referencingDocumentPaths)
+				.setActions(request.getActions())
+				.setAdditionalRelatedProcessDescriptors(request.getAdditionalRelatedProcessDescriptors())
+				.setHUEditorViewRepository(huEditorViewRepository);
+
+		//
+		// Call view customizers
+		getViewCustomizers(referencingTableName).forEach(viewCustomizer -> viewCustomizer.beforeCreate(huViewBuilder));
+
+		return huViewBuilder.build();
+	}
+
+	private String extractReferencingTablename(final Set<DocumentPath> referencingDocumentPaths)
+	{
 		final String referencingTableName;
 		if (!referencingDocumentPaths.isEmpty())
 		{
@@ -240,36 +302,11 @@ public class HUEditorViewFactory implements IViewFactory
 		{
 			referencingTableName = null;
 		}
-
-		@SuppressWarnings("deprecation") // as long as the deprecated getFilterOnlyIds() is around we can't ignore it
-		final List<DocumentFilter> stickyFilters = extractStickyFilters(request.getStickyFilters(), request.getFilterOnlyIds());
-
-		final List<DocumentFilter> filters = request.getOrUnwrapFilters(getSqlViewBinding().getViewFilterDescriptors());
-
-		final HUEditorView.Builder huViewBuilder = HUEditorView.builder(getSqlViewBinding())
-				.setParentViewId(request.getParentViewId())
-				.setParentRowId(request.getParentRowId())
-				.setViewId(viewId)
-				.setViewType(request.getViewType())
-				.setStickyFilters(stickyFilters)
-				.setFilters(filters)
-				.setReferencingDocumentPaths(referencingTableName, referencingDocumentPaths)
-				.setActions(request.getActions())
-				.setAdditionalRelatedProcessDescriptors(request.getAdditionalRelatedProcessDescriptors());
-
-		//
-		// Call view customizers
-		viewCustomizers.stream()
-				// Only the matching ones:
-				.filter(viewCustomizer -> Objects.equals(viewCustomizer.getReferencingTableNameToMatch(), huViewBuilder.getReferencingTableName()))
-				// Call each of them:
-				.forEach(viewCustomizer -> viewCustomizer.beforeCreate(huViewBuilder));
-
-		return huViewBuilder.build();
+		return referencingTableName;
 	}
 
 	/**
-	 * 
+	 *
 	 * @param requestStickyFilters
 	 * @param huIds {@code null} means "no restriction". Empty means "select none"
 	 * @return
@@ -323,8 +360,8 @@ public class HUEditorViewFactory implements IViewFactory
 
 		@Override
 		public String getSql(
-				@NonNull final SqlParamsCollector sqlParamsOut, 
-				@NonNull final DocumentFilter filter, 
+				@NonNull final SqlParamsCollector sqlParamsOut,
+				@NonNull final DocumentFilter filter,
 				final SqlOptions sqlOpts_NOTUSED)
 		{
 			final Object barcodeObj = filter.getParameter(PARAM_Barcode).getValue();
