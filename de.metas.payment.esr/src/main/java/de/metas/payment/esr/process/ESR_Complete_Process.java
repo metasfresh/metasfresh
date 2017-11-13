@@ -23,10 +23,6 @@ package de.metas.payment.esr.process;
  */
 
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.ad.trx.api.ITrxRunConfig;
-import org.adempiere.ad.trx.api.ITrxRunConfig.OnRunnableFail;
-import org.adempiere.ad.trx.api.ITrxRunConfig.OnRunnableSuccess;
-import org.adempiere.ad.trx.api.ITrxRunConfig.TrxPropagation;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
@@ -71,16 +67,10 @@ public class ESR_Complete_Process extends JavaProcess
 				esrImport,
 				get_TrxName());
 
-		final ITrxRunConfig trxRunConfig = trxManager.newTrxRunConfigBuilder()
-				.setTrxPropagation(TrxPropagation.NESTED)
-				.setOnRunnableSuccess(OnRunnableSuccess.COMMIT)
-				.setOnRunnableFail(OnRunnableFail.ASK_RUNNABLE)
-				.build();
-
 		Check.errorUnless(esrImport.isValid(), "The document can not be processed, since it is not valid.");
 
 		final String description = getProcessInfo().getTitle() + " #" + getAD_PInstance_ID();
-		esrImportBL.complete(esrImport, description, trxRunConfig);
+		esrImportBL.complete(esrImport, description);
 
 		return "";
 	}

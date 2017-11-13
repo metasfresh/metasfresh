@@ -3,6 +3,7 @@ package de.metas.payment.esr.api.impl;
 import static org.adempiere.model.InterfaceWrapperHelper.create;
 import static org.adempiere.model.InterfaceWrapperHelper.getCtx;
 import static org.adempiere.model.InterfaceWrapperHelper.getTrxName;
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.refresh;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
@@ -25,7 +26,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.ad.trx.api.ITrxRunConfig;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.PeriodClosedException;
@@ -135,14 +135,7 @@ public class ESRImportBL implements IESRImportBL
 	@Override
 	public void loadESRImportFile(final I_ESR_Import esrImport)
 	{
-		lockAndProcess(esrImport, new Runnable()
-		{
-			@Override
-			public void run()
-			{
-				loadAndEvaluateESRImportFile0(esrImport);
-			}
-		});
+		lockAndProcess(esrImport, () -> loadAndEvaluateESRImportFile0(esrImport));
 	}
 
 	private void loadAndEvaluateESRImportFile0(@NonNull final I_ESR_Import esrImport)
@@ -447,7 +440,7 @@ public class ESRImportBL implements IESRImportBL
 	}
 
 	@Override
-	public int process(final I_ESR_Import esrImport, final ITrxRunConfig trxRunConfig)
+	public int process(final I_ESR_Import esrImport)
 	{
 		final IMutable<Integer> processedLinesCount = new Mutable<>();
 		lockAndProcess(esrImport, new Runnable()
@@ -455,7 +448,7 @@ public class ESRImportBL implements IESRImportBL
 			@Override
 			public void run()
 			{
-				final int count = process0(esrImport, trxRunConfig);
+				final int count = process0(esrImport);
 				processedLinesCount.setValue(count);
 			}
 		});
@@ -463,7 +456,7 @@ public class ESRImportBL implements IESRImportBL
 		return processedLinesCount.getValue();
 	}
 
-	private int process0(final I_ESR_Import esrImport, final ITrxRunConfig trxRunConfig)
+	private int process0(final I_ESR_Import esrImport)
 	{
 		if (esrImport.isProcessed())
 		{
@@ -539,9 +532,6 @@ public class ESRImportBL implements IESRImportBL
 
 			Check.assume(isPositiveGroupLinesAmount, MSG_GroupLinesNegativeAmount);
 
-			final Properties ctx = getCtx(esrImport);
-			final String trxName = getTrxName(esrImport);
-
 			final Set<ArrayKey> keysSeen = new HashSet<>();
 
 			for (final I_ESR_ImportLine lineToProcess : linesToProcess)
@@ -561,14 +551,14 @@ public class ESRImportBL implements IESRImportBL
 					{
 						continue;
 					}
-					processLinesNoInvoice(ctx, linesNoInvoices, trxName, trxRunConfig);
+					processLinesNoInvoice(linesNoInvoices);
 				}
 				else
 				{
 					final List<I_ESR_ImportLine> linesForKey = invoiceKey2Line.get(key);
 					try
 					{
-						processLinesWithInvoice(linesForKey, trxName, trxRunConfig);
+						processLinesWithInvoice(linesForKey);
 					}
 					catch (final Exception e)
 					{
@@ -626,7 +616,7 @@ public class ESRImportBL implements IESRImportBL
 	}
 
 	/* package */
-	void processLinesNoInvoice(final Properties ctx, final List<I_ESR_ImportLine> linesNoInvoices, final String trxName, final ITrxRunConfig trxRunConfig)
+	void processLinesNoInvoice(final List<I_ESR_ImportLine> linesNoInvoices)
 	{
 		for (final I_ESR_ImportLine line : linesNoInvoices)
 		{
@@ -635,11 +625,6 @@ public class ESRImportBL implements IESRImportBL
 				continue; // 04607 whatever we do, don't create another payment if there is already one
 			}
 
-			Services.get(ITrxManager.class).run(trxName, trxRunConfig, new TrxRunnable()
-			{
-				@Override
-				public void run(final String localTrxName) throws Exception
-				{
 					refresh(line);
 					if (line.getC_Payment_ID() > 0)
 					{
@@ -649,7 +634,7 @@ public class ESRImportBL implements IESRImportBL
 					final I_C_Payment payment = createUnlinkedPaymentForLine(line, line.getAmount());
 					Check.assume(payment.getAD_Org_ID() == line.getAD_Org_ID(), "Payment has the same org as {}", line);
 
-					final I_C_BP_BankAccount bankAccount = create(ctx, line.getESR_Import().getC_BP_BankAccount_ID(), I_C_BP_BankAccount.class, trxName);
+					final I_C_BP_BankAccount bankAccount = loadOutOfTrx(line.getESR_Import().getC_BP_BankAccount_ID(), I_C_BP_BankAccount.class);
 
 					final de.metas.banking.model.I_C_Payment paym = create(payment, de.metas.banking.model.I_C_Payment.class);
 					paym.setC_Currency_ID(bankAccount.getC_Currency_ID());
@@ -678,9 +663,6 @@ public class ESRImportBL implements IESRImportBL
 
 					save(line);
 				}
-			});
-		}
-
 	}
 
 	/**
@@ -751,10 +733,7 @@ public class ESRImportBL implements IESRImportBL
 	 * @param trxName
 	 * @param trxRunConfig
 	 */
-	/* package */void processLinesWithInvoice(
-			final List<I_ESR_ImportLine> importLines,
-			final String trxName,
-			final ITrxRunConfig trxRunConfig)
+	/* package */void processLinesWithInvoice(final List<I_ESR_ImportLine> importLines)
 	{
 		// 04607 whatever we do, don't create another payment if there is already one
 		final List<I_ESR_ImportLine> importLinesWithoutPayment = new ArrayList<>();
@@ -780,23 +759,23 @@ public class ESRImportBL implements IESRImportBL
 
 		if (!importLinesWithPaymentNoInvoice.isEmpty())
 		{
-			processLinesWithPaymentNoInvoice(importLinesWithPaymentNoInvoice, trxName, trxRunConfig, true);
+			processLinesWithPaymentNoInvoice(importLinesWithPaymentNoInvoice, true);
 		}
 		if (importLinesWithoutPayment.isEmpty())
 		{
 			return; // nothing to do
 		}
 
-		processLinesWithPaymentNoInvoice(importLinesWithoutPayment, trxName, trxRunConfig, false);
+		processLinesWithPaymentNoInvoice(importLinesWithoutPayment, false);
 	}
 
-	private void processLinesWithPaymentNoInvoice(final List<I_ESR_ImportLine> importLinesWithPaymentNoInvoice, final String trxName, final ITrxRunConfig trxRunConfig, final boolean withPayment)
+	private void processLinesWithPaymentNoInvoice(final List<I_ESR_ImportLine> importLinesWithPaymentNoInvoice, final boolean withPayment)
 	{
-		Services.get(ITrxManager.class).run(trxName, trxRunConfig, new TrxRunnable()
-		{
-			@Override
-			public void run(final String localTrxName) throws Exception
-			{
+//		Services.get(ITrxManager.class).run(trxName, trxRunConfig, new TrxRunnable()
+//		{
+//			@Override
+//			public void run(final String localTrxName) throws Exception
+//			{
 
 				for (final I_ESR_ImportLine importLine : importLinesWithPaymentNoInvoice)
 				{
@@ -864,8 +843,8 @@ public class ESRImportBL implements IESRImportBL
 					updateLinesOpenAmt(importLine, invoice); // note that there might be further lines for this invoice
 					save(importLine); // saving, because updateLinesOpenAmt doesn't save the line it was called with
 				}
-			}
-		});
+//			}
+//		});
 	}
 
 	@Override
@@ -939,8 +918,7 @@ public class ESRImportBL implements IESRImportBL
 	@Override
 	public void complete(
 			final I_ESR_Import esrImport,
-			final String message,
-			final ITrxRunConfig trxRunConfig)
+			final String message)
 	{
 		if (esrImport.isProcessed())
 		{
@@ -948,20 +926,13 @@ public class ESRImportBL implements IESRImportBL
 		}
 
 		// create payments before completing
-		process(esrImport, trxRunConfig);
+		process(esrImport);
 
 		final List<I_ESR_ImportLine> allLines = Services.get(IESRImportDAO.class).retrieveLines(esrImport);
 
-		final String trxName = getTrxName(esrImport);
-
 		for (final I_ESR_ImportLine line : allLines)
 		{
-			// 04582: process each line within it's own TrxRunner, so that (depending on the trxRunConfig), it will be committed and thus release its locks
-			Services.get(ITrxManager.class).run(trxName, trxRunConfig, new TrxRunnable()
-			{
-				@Override
-				public void run(final String localTrxName) throws Exception
-				{
+
 					if (line.isProcessed())
 					{
 						return; // this is usually true for the 999-line
@@ -1037,9 +1008,7 @@ public class ESRImportBL implements IESRImportBL
 
 					save(line);
 				}
-			});
-		}
-
+		
 		// cg: just make sure that the esr import is not set to processed too early
 		if (isAllLinesProcessed(allLines))
 		{
