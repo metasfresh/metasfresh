@@ -102,7 +102,7 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 
 		final String publishedDockerImageName =
 			createAndPublishDockerImage(
-					'metasfresh-webui-api', // dockerRepositoryName
+					'metasfresh-webui-api-dev', // dockerRepositoryName
 					'.',  // dockerModuleDir
 					MF_UPSTREAM_BRANCH, // dockerBranchName
 					MF_VERSION // dockerVersionSuffix
