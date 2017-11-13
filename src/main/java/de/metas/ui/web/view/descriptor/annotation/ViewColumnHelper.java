@@ -30,6 +30,7 @@ import de.metas.ui.web.window.datatypes.Values;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor;
+import de.metas.ui.web.window.descriptor.ViewEditorRenderMode;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -137,6 +138,7 @@ public final class ViewColumnHelper
 				.fieldName(fieldName)
 				.caption(Services.get(IMsgBL.class).translatable(captionKey))
 				.widgetType(viewColumnAnn.widgetType())
+				.editorRenderMode(viewColumnAnn.editor())
 				.fieldReference(FieldReference.of(field))
 				.layoutsByViewType(layoutsByViewType)
 				.build();
@@ -148,6 +150,7 @@ public final class ViewColumnHelper
 				.setCaption(column.getCaption())
 				.setWidgetType(column.getWidgetType())
 				.setGridElement()
+				.setViewEditorRenderMode(column.getEditorRenderMode())
 				.addField(DocumentLayoutElementFieldDescriptor.builder(column.getFieldName()));
 	}
 
@@ -208,6 +211,8 @@ public final class ViewColumnHelper
 		private final ITranslatableString caption;
 		@NonNull
 		private final DocumentFieldWidgetType widgetType;
+		@NonNull
+		private final ViewEditorRenderMode editorRenderMode;
 		@NonNull
 		private final FieldReference fieldReference;
 		@NonNull

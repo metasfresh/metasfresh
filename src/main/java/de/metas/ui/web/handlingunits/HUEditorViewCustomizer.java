@@ -37,6 +37,11 @@ public interface HUEditorViewCustomizer
 	/** @return referencing tableName to be matched */
 	String getReferencingTableNameToMatch();
 
+	default HUEditorRowIsProcessedPredicate getHUEditorRowIsProcessedPredicate()
+	{
+		return null;
+	}
+
 	/**
 	 * Called before the {@link HUEditorView} is created.
 	 * 
@@ -44,5 +49,6 @@ public interface HUEditorViewCustomizer
 	 * 
 	 * @param viewBuilder
 	 */
-	public void beforeCreate(HUEditorView.Builder viewBuilder);
+	void beforeCreate(HUEditorViewBuilder viewBuilder);
+
 }

@@ -2,19 +2,14 @@ package de.metas.ui.web.handlingunits;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Stream;
 
-import com.google.common.collect.ImmutableSet;
-
-import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
-import lombok.NonNull;
 
 /*
  * #%L
@@ -63,46 +58,12 @@ interface HUEditorViewBuffer
 	boolean containsAnyOfHUIds(Collection<Integer> huIdsToCheck);
 
 	/** @return top level rows and included rows recursive stream */
-	Stream<HUEditorRow> streamAllRecursive() throws UnsupportedOperationException;
+	Stream<HUEditorRow> streamAllRecursive(HUEditorRowFilter filter) throws UnsupportedOperationException;
 
-	/** @return top level rows and included rows recursive stream which are matching the given query */
-	default Stream<HUEditorRow> streamAllRecursive(@NonNull final HUEditorRowQuery query)
+	/** @return true if there is any top level or included row which is matching given filter */
+	default boolean matchesAnyRowRecursive(final HUEditorRowFilter filter)
 	{
-		Stream<HUEditorRow> result = streamAllRecursive();
-
-		// Filter by row type
-		final HUEditorRowType rowType = query.getRowType();
-		if (rowType != null)
-		{
-			result = result.filter(row -> Objects.equals(row.getType(), rowType));
-		}
-
-		// Filter by string filter
-		final String stringFilter = query.getUserInputFilter();
-		if (!Check.isEmpty(stringFilter, true))
-		{
-			result = result.filter(row -> row.matchesStringFilter(stringFilter));
-		}
-
-		// Exclude M_HU_IDs
-		final ImmutableSet<Integer> excludeHUIds = query.getExcludeHUIds();
-		if (!excludeHUIds.isEmpty())
-		{
-			result = result.filter(row -> !excludeHUIds.contains(row.getM_HU_ID()));
-		}
-
-		if (!query.getExcludeHUStatuses().isEmpty())
-		{
-			result = result.filter(row -> !query.getExcludeHUStatuses().contains(row.getHUStatusKey()));
-		}
-
-		return result;
-	}
-
-	/** @return true if there is any top level or included row which is matching given query */
-	default boolean matchesAnyRowRecursive(final HUEditorRowQuery query)
-	{
-		return streamAllRecursive(query).findAny().isPresent();
+		return streamAllRecursive(filter).findAny().isPresent();
 	}
 
 	/**
@@ -118,9 +79,9 @@ interface HUEditorViewBuffer
 	 * </ul>
 	 * 
 	 */
-	Stream<HUEditorRow> streamByIdsExcludingIncludedRows(DocumentIdsSelection rowIds);
+	Stream<HUEditorRow> streamByIdsExcludingIncludedRows(HUEditorRowFilter filter);
 
-	Stream<HUEditorRow> streamPage(int firstRow, int pageLength, List<DocumentQueryOrderBy> orderBys);
+	Stream<HUEditorRow> streamPage(int firstRow, int pageLength, HUEditorRowFilter filter, List<DocumentQueryOrderBy> orderBys);
 
 	HUEditorRow getById(DocumentId rowId) throws EntityNotFoundException;
 

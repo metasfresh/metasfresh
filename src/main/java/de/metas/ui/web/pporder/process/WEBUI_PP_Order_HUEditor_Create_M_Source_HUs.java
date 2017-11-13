@@ -2,13 +2,20 @@ package de.metas.ui.web.pporder.process;
 
 import static de.metas.ui.web.handlingunits.WEBUI_HU_Constants.MSG_WEBUI_SELECT_ACTIVE_UNSELECTED_HU;
 
+import java.util.HashSet;
+import java.util.Set;
+
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.compiere.Adempiere;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.ui.web.handlingunits.HUEditorRow;
 
 /*
  * #%L
@@ -45,6 +52,16 @@ public class WEBUI_PP_Order_HUEditor_Create_M_Source_HUs
 		extends WEBUI_PP_Order_HUEditor_ProcessBase
 		implements IProcessPrecondition
 {
+	@Autowired
+	private SourceHUsService sourceHuService;
+
+	private final Set<Integer> topLevelHUIdsProcessed = new HashSet<>();
+
+	public WEBUI_PP_Order_HUEditor_Create_M_Source_HUs()
+	{
+		Adempiere.autowire(this);
+	}
+
 	@Override
 	public final ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
@@ -62,13 +79,33 @@ public class WEBUI_PP_Order_HUEditor_Create_M_Source_HUs
 	@Override
 	protected String doIt() throws Exception
 	{
-		final SourceHUsService sourceHuService = SourceHUsService.get();
+		retrieveSelectedAndEligibleHUEditorRows().forEach(this::createSourceHU);
 
-		retrieveSelectedAndEligibleHUEditorRows().forEach(huEditorRow -> sourceHuService.addSourceHuMarker(huEditorRow.getM_HU_ID()));
-
-		invalidateParentView();
-		invalidateView();
-		
 		return MSG_OK;
+	}
+
+	private void createSourceHU(final HUEditorRow row)
+	{
+		Check.assume(row.isTopLevel(), "Only top level rows are allowed"); // shall not happen
+
+		final int topLevelHUId = row.getM_HU_ID();
+		sourceHuService.addSourceHuMarker(topLevelHUId);
+		topLevelHUIdsProcessed.add(topLevelHUId);
+	}
+
+	@Override
+	protected void postProcess(boolean success)
+	{
+		if (!success)
+		{
+			return;
+		}
+
+		// PP_Order
+		invalidateParentView();
+
+		// HU Editor
+		getView().removeHUIdsAndInvalidate(topLevelHUIdsProcessed);
+		// invalidateView();
 	}
 }

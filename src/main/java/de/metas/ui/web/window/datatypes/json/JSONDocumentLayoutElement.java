@@ -84,12 +84,11 @@ public final class JSONDocumentLayoutElement
 
 	@JsonProperty("widgetType")
 	private final JSONLayoutWidgetType widgetType;
-	
+
 	@JsonProperty("allowShowPassword")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final Boolean allowShowPassword; // in case widgetType is Password
 
-	
 	@JsonProperty("buttonProcessId")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final ProcessId buttonProcessId;
@@ -111,6 +110,10 @@ public final class JSONDocumentLayoutElement
 	@JsonProperty("gridAlign")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final JSONLayoutAlign gridAlign;
+
+	@JsonProperty("viewEditorRenderMode")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private final String viewEditorRenderMode;
 
 	@JsonProperty("fields")
 	@JsonInclude(Include.NON_EMPTY)
@@ -135,10 +138,10 @@ public final class JSONDocumentLayoutElement
 		widgetType = JSONLayoutWidgetType.fromNullable(element.getWidgetType());
 		allowShowPassword = element.isAllowShowPassword() ? Boolean.TRUE : null;
 		precision = element.getPrecision().orElse(null);
-		
+
 		final ButtonFieldActionDescriptor buttonAction = element.getButtonActionDescriptor();
 		final ButtonFieldActionType buttonActionType = buttonAction == null ? null : buttonAction.getActionType();
-		if(buttonActionType == ButtonFieldActionType.processCall)
+		if (buttonActionType == ButtonFieldActionType.processCall)
 		{
 			buttonProcessId = buttonAction.getProcessId();
 		}
@@ -149,7 +152,9 @@ public final class JSONDocumentLayoutElement
 
 		type = JSONLayoutType.fromNullable(element.getLayoutType());
 		size = element.getWidgetSize();
+
 		gridAlign = JSONLayoutAlign.fromNullable(element.getGridAlign());
+		viewEditorRenderMode = element.getViewEditorRenderMode() != null ? element.getViewEditorRenderMode().toJson() : null;
 
 		fields = JSONDocumentLayoutElementField.ofSet(element.getFields(), jsonOpts);
 	}
@@ -168,6 +173,7 @@ public final class JSONDocumentLayoutElement
 		type = null;
 		size = null;
 		gridAlign = JSONLayoutAlign.right;
+		viewEditorRenderMode = null;
 
 		fields = ImmutableSet.of(new JSONDocumentLayoutElementField( //
 				fieldName, (JSONFieldType)null // type
@@ -179,7 +185,7 @@ public final class JSONDocumentLayoutElement
 				, widgetType.isSupportZoomInto() // supportZoomInfo
 		));
 	}
-	
+
 	private boolean hasFields()
 	{
 		return !fields.isEmpty();

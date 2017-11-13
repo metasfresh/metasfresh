@@ -63,11 +63,8 @@ public class SqlViewBinding implements SqlEntityBinding
 	private final ImmutableMap<String, SqlViewRowFieldBinding> _fieldsByFieldName;
 	private final SqlViewRowFieldBinding _keyField;
 
+	private final SqlViewSelectData sqlViewSelect;
 	private final IStringExpression sqlWhereClause;
-	private final IStringExpression sqlSelectByPage;
-	private final IStringExpression sqlSelectRowIdsByPage;
-	private final IStringExpression sqlSelectById;
-	private final IStringExpression sqlSelectLinesByRowIds;
 	private final List<SqlViewRowFieldLoader> rowFieldLoaders;
 
 	private final ImmutableList<DocumentQueryOrderBy> defaultOrderBys;
@@ -96,41 +93,15 @@ public class SqlViewBinding implements SqlEntityBinding
 
 		final Collection<SqlViewRowFieldBinding> allFields = _fieldsByFieldName.values();
 		this.groupingBinding = builder.groupingBinding;
-		final IStringExpression sqlSelect = SqlViewSelectionQueryBuilder.buildSqlSelect(_tableName, _tableAlias, _keyField.getColumnName(), displayFieldNames, allFields, groupingBinding);
-
+		sqlViewSelect = SqlViewSelectData.builder()
+				.sqlTableName(_tableName)
+				.sqlTableAlias(_tableAlias)
+				.keyField(_keyField)
+				.displayFieldNames(displayFieldNames)
+				.allFields(allFields)
+				.groupingBinding(groupingBinding)
+				.build();
 		sqlWhereClause = builder.getSqlWhereClause();
-		sqlSelectByPage = sqlSelect.toComposer()
-				.append("\n WHERE ")
-				// .append("\n " + SqlViewSelectionQueryBuilder.COLUMNNAME_Paging_UUID + "=?") // already filtered above
-				.append("\n " + SqlViewSelectionQueryBuilder.COLUMNNAME_Paging_SeqNo + " BETWEEN ? AND ?")
-				.append("\n ORDER BY " + SqlViewSelectionQueryBuilder.COLUMNNAME_Paging_SeqNo)
-				.build();
-
-		sqlSelectRowIdsByPage = SqlViewSelectionQueryBuilder.buildSqlSelect(_tableName, _tableAlias,
-				_keyField.getColumnName(),
-				ImmutableList.of(), // displayFieldNames
-				ImmutableList.of(_keyField), // allFields
-				groupingBinding)
-				//
-				.toComposer()
-				.append("\n WHERE ")
-				// .append("\n " + SqlViewSelectionQueryBuilder.COLUMNNAME_Paging_UUID + "=?") // already filtered above
-				.append("\n " + SqlViewSelectionQueryBuilder.COLUMNNAME_Paging_SeqNo + " BETWEEN ? AND ?")
-				.append("\n ORDER BY " + SqlViewSelectionQueryBuilder.COLUMNNAME_Paging_SeqNo)
-				.build();
-
-		sqlSelectById = sqlSelect.toComposer()
-				.append("\n WHERE ")
-				// .append("\n " + SqlViewSelectionQueryBuilder.COLUMNNAME_Paging_UUID + "=?") // already filtered above
-				.append("\n " + SqlViewSelectionQueryBuilder.COLUMNNAME_Paging_Record_ID + "=?")
-				.build();
-
-		sqlSelectLinesByRowIds = SqlViewSelectionQueryBuilder.buildSqlSelectLines(_tableName, _tableAlias, _keyField.getColumnName(), displayFieldNames, allFields)
-				.toComposer()
-				.append("\n WHERE ")
-				// .append("\n " + SqlViewSelectionQueryBuilder.COLUMNNAME_Paging_UUID + "=?") // already filtered above
-				.append("\n " + SqlViewSelectionQueryBuilder.COLUMNNAME_Paging_Record_ID + " IN ").append(SqlViewSelectionQueryBuilder.Paging_Record_IDsPlaceholder)
-				.build();
 
 		final List<SqlViewRowFieldLoader> rowFieldLoaders = new ArrayList<>(allFields.size());
 		for (final SqlViewRowFieldBinding field : allFields)
@@ -215,30 +186,15 @@ public class SqlViewBinding implements SqlEntityBinding
 		return field;
 	}
 
+	public SqlViewSelectData getSqlViewSelect()
+	{
+		return sqlViewSelect;
+	}
+
 	@Override
 	public IStringExpression getSqlWhereClause()
 	{
 		return sqlWhereClause;
-	}
-
-	public IStringExpression getSqlSelectByPage()
-	{
-		return sqlSelectByPage;
-	}
-
-	public IStringExpression getSqlSelectRowIdsByPage()
-	{
-		return sqlSelectRowIdsByPage;
-	}
-
-	public IStringExpression getSqlSelectById()
-	{
-		return sqlSelectById;
-	}
-
-	public IStringExpression getSqlSelectLinesByRowIds()
-	{
-		return sqlSelectLinesByRowIds;
 	}
 
 	public List<SqlViewRowFieldLoader> getRowFieldLoaders()
@@ -507,8 +463,7 @@ public class SqlViewBinding implements SqlEntityBinding
 			return this;
 		}
 
-		public Builder setFilterConverterDecorator(
-				@NonNull final SqlDocumentFilterConverterDecorator sqlDocumentFilterConverterDecorator)
+		public Builder setFilterConverterDecorator(@NonNull final SqlDocumentFilterConverterDecorator sqlDocumentFilterConverterDecorator)
 		{
 			this.sqlDocumentFilterConverterDecorator = sqlDocumentFilterConverterDecorator;
 			return this;

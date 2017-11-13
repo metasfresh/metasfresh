@@ -8,6 +8,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
 import org.compiere.util.Env;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.handlingunits.inventory.IHUInventoryBL;
@@ -15,8 +16,8 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.handlingunits.HUEditorProcessTemplate;
+import de.metas.ui.web.handlingunits.HUEditorRowFilter.Select;
 import de.metas.ui.web.handlingunits.WEBUI_HU_Constants;
-import de.metas.ui.web.handlingunits.HUEditorProcessTemplate.HUEditorRowFilter.Select;
 
 /*
  * #%L
@@ -55,8 +56,7 @@ public class WEBUI_M_HU_MoveToGarbage extends HUEditorProcessTemplate implements
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
-		final Set<Integer> huIds = getSelectedHUIds(Select.ONLY_TOPLEVEL);
-		if (huIds.isEmpty())
+		if (!streamSelectedHUIds(Select.ONLY_TOPLEVEL).findAny().isPresent())
 		{
 			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(WEBUI_HU_Constants.MSG_WEBUI_ONLY_TOP_LEVEL_HU));
 		}
@@ -67,7 +67,7 @@ public class WEBUI_M_HU_MoveToGarbage extends HUEditorProcessTemplate implements
 	@Override
 	protected String doIt() throws Exception
 	{
-		final List<I_M_HU> husToDestroy = getSelectedHUs(Select.ONLY_TOPLEVEL);
+		final List<I_M_HU> husToDestroy = streamSelectedHUs(Select.ONLY_TOPLEVEL).collect(ImmutableList.toImmutableList());
 		if (husToDestroy.isEmpty())
 		{
 			throw new AdempiereException("@NoSelection@");

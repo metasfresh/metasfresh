@@ -3,6 +3,7 @@ package de.metas.ui.web.pporder.process;
 import static de.metas.ui.web.handlingunits.WEBUI_HU_Constants.MSG_WEBUI_SELECT_ACTIVE_UNSELECTED_HU;
 
 import java.util.List;
+import java.util.stream.Stream;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
@@ -15,8 +16,9 @@ import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.ui.web.handlingunits.HUEditorProcessTemplate.HUEditorRowFilter.Select;
 import de.metas.ui.web.handlingunits.HUEditorRow;
+import de.metas.ui.web.handlingunits.HUEditorRowFilter;
+import de.metas.ui.web.handlingunits.HUEditorRowFilter.Select;
 import de.metas.ui.web.handlingunits.HUEditorView;
 import de.metas.ui.web.pporder.PPOrderLinesView;
 
@@ -63,9 +65,9 @@ public class WEBUI_PP_Order_HUEditor_IssueTopLevelHUs
 	@Override
 	protected String doIt() throws Exception
 	{
-		final List<HUEditorRow> selectedTopLevelHuRows = getSelectedRows(HUEditorRowFilter.select(Select.ONLY_TOPLEVEL));
+		final Stream<HUEditorRow> selectedTopLevelHuRows = streamSelectedRows(HUEditorRowFilter.select(Select.ONLY_TOPLEVEL));
 
-		final List<I_M_HU> selectedEligibleRows = retrieveEligibleHUEditorRows(selectedTopLevelHuRows.stream())
+		final List<I_M_HU> selectedEligibleRows = retrieveEligibleHUEditorRows(selectedTopLevelHuRows)
 				.map(HUEditorRow::getM_HU)
 				.collect(ImmutableList.toImmutableList());
 

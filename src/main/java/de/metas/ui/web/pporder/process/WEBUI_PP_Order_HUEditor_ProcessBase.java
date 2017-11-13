@@ -1,6 +1,5 @@
 package de.metas.ui.web.pporder.process;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -22,9 +21,9 @@ public abstract class WEBUI_PP_Order_HUEditor_ProcessBase extends HUEditorProces
 	protected final Stream<HUEditorRow> retrieveSelectedAndEligibleHUEditorRows()
 	{
 		final HUEditorView huEditorView = HUEditorView.cast(super.getView());
-		final List<HUEditorRow> huEditorRows = huEditorView.getByIds(getSelectedDocumentIds());
+		final Stream<HUEditorRow> huEditorRows = huEditorView.streamByIds(getSelectedDocumentIds());
 
-		return retrieveEligibleHUEditorRows(huEditorRows.stream());
+		return retrieveEligibleHUEditorRows(huEditorRows);
 	}
 
 	protected final static Stream<HUEditorRow> retrieveEligibleHUEditorRows(@NonNull final Stream<HUEditorRow> inputStream)
@@ -32,12 +31,10 @@ public abstract class WEBUI_PP_Order_HUEditor_ProcessBase extends HUEditorProces
 		final SourceHUsService sourceHuService = SourceHUsService.get();
 		final IHUPPOrderQtyDAO huPpOrderQtyDAO = Services.get(IHUPPOrderQtyDAO.class);
 
-		final Stream<HUEditorRow> resultStream = inputStream
+		return inputStream
 				.filter(huRow -> huRow.isHUStatusActive())
 				.filter(huRow -> !sourceHuService.isHuOrAnyParentSourceHu(huRow.getM_HU_ID()))
 				.filter(huRow -> !huPpOrderQtyDAO.isHuIdIssued(huRow.getM_HU_ID()));
-
-		return resultStream;
 	}
 
 	protected Optional<PPOrderLinesView> getPPOrderView()

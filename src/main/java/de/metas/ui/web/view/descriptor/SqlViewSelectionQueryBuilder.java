@@ -2,7 +2,6 @@ package de.metas.ui.web.view.descriptor;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -19,12 +18,9 @@ import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.security.impl.AccessSqlStringExpression;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
-import org.compiere.util.CtxName;
-import org.compiere.util.CtxNames;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
 
-import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.logging.LogManager;
@@ -79,17 +75,9 @@ public final class SqlViewSelectionQueryBuilder
 {
 	private static final transient Logger logger = LogManager.getLogger(SqlViewSelectionQueryBuilder.class);
 
-	//
-	// Paging constants
-	public static final String COLUMNNAME_Paging_UUID = "_sel_UUID";
-	public static final String COLUMNNAME_Paging_SeqNo = "_sel_SeqNo";
-	public static final String COLUMNNAME_Paging_Record_ID = "_sel_Record_ID";
-	public static final String COLUMNNAME_Paging_Parent_ID = "_sel_Parent_ID";
-	public static final CtxName Paging_Record_IDsPlaceholder = CtxNames.parse("_sel_Record_IDs");
-
 	private final SqlViewBinding _viewBinding;
 	private SqlDocumentFilterConverter _sqlDocumentFieldConverter; // lazy
-	
+
 	public static final SqlViewSelectionQueryBuilder newInstance(final SqlViewBinding viewBinding)
 	{
 		return new SqlViewSelectionQueryBuilder(viewBinding);
@@ -167,18 +155,6 @@ public final class SqlViewSelectionQueryBuilder
 	private boolean isAggregated(final String fieldName)
 	{
 		return _viewBinding.isAggregated(fieldName);
-	}
-
-	@Value
-	public static final class SqlAndParams
-	{
-		private final String sql;
-		private final List<Object> sqlParams;
-
-		public Object[] getSqlParamsArray()
-		{
-			return sqlParams == null ? null : sqlParams.toArray();
-		}
 	}
 
 	@Value
@@ -696,218 +672,4 @@ public final class SqlViewSelectionQueryBuilder
 
 		return TypedSqlQueryFilter.of(sql, sqlParams);
 	}
-
-	/**
-	 * SQL Parameters required: 1=UUID
-	 */
-	public static IStringExpression buildSqlSelect(
-			final String sqlTableName,
-			final String sqlTableAlias,
-			final String sqlKeyColumnName,
-			final Collection<String> displayFieldNames,
-			final Collection<SqlViewRowFieldBinding> allFields,
-			final SqlViewGroupingBinding groupingBinding)
-	{
-		if (groupingBinding == null)
-		{
-			return buildSqlSelect_WithoutGrouping(sqlTableName, sqlTableAlias, sqlKeyColumnName, displayFieldNames, allFields);
-		}
-		else
-		{
-			return buildSqlSelect_WithGrouping(sqlTableName, sqlTableAlias, sqlKeyColumnName, displayFieldNames, allFields, groupingBinding);
-		}
-	}
-
-	private static IStringExpression buildSqlSelect_WithoutGrouping(
-			final String sqlTableName,
-			final String sqlTableAlias,
-			final String sqlKeyColumnName,
-			final Collection<String> displayFieldNames,
-			final Collection<SqlViewRowFieldBinding> allFields)
-	{
-		final List<String> sqlSelectValuesList = new ArrayList<>();
-		final List<IStringExpression> sqlSelectDisplayNamesList = new ArrayList<>();
-		allFields.forEach(field -> {
-			// Collect the SQL select for internal value
-			// NOTE: we need to collect all fields because, even if the field is not needed it might be present in some where clause
-			sqlSelectValuesList.add(field.getSqlSelectValue());
-
-			// Collect the SQL select for displayed value,
-			// * if there is one
-			// * and if it was required by caller (i.e. present in fieldNames list)
-			if (field.isUsingDisplayColumn() && displayFieldNames.contains(field.getFieldName()))
-			{
-				sqlSelectDisplayNamesList.add(field.getSqlSelectDisplayValue());
-			}
-		});
-
-		// NOTE: we don't need access SQL here because we assume the records were already filtered
-
-		final CompositeStringExpression.Builder sql = IStringExpression.composer();
-		sql.append("SELECT ")
-				.append("\n").append(sqlTableAlias).append(".*"); // Value fields
-
-		if (!sqlSelectDisplayNamesList.isEmpty())
-		{
-			sql.append("\n, ").appendAllJoining("\n, ", sqlSelectDisplayNamesList); // DisplayName fields
-		}
-
-		sql.append("\n, null AS " + COLUMNNAME_Paging_Parent_ID);
-
-		sql.append("\n FROM (")
-				.append("\n   SELECT ")
-				.append("\n   ").append(Joiner.on("\n   , ").join(sqlSelectValuesList))
-				.append("\n , sel." + I_T_WEBUI_ViewSelection.COLUMNNAME_Line + " AS " + COLUMNNAME_Paging_SeqNo)
-				.append("\n , sel." + I_T_WEBUI_ViewSelection.COLUMNNAME_UUID + " AS " + COLUMNNAME_Paging_UUID)
-				.append("\n , sel." + I_T_WEBUI_ViewSelection.COLUMNNAME_Record_ID + " AS " + COLUMNNAME_Paging_Record_ID)
-				.append("\n   FROM " + I_T_WEBUI_ViewSelection.Table_Name + " sel")
-				.append("\n   LEFT OUTER JOIN " + sqlTableName + " ON (" + sqlTableName + "." + sqlKeyColumnName + " = sel." + I_T_WEBUI_ViewSelection.COLUMNNAME_Record_ID + ")")
-				// Filter by UUID. Keep this closer to the source table, see https://github.com/metasfresh/metasfresh-webui-api/issues/437
-				.append("\n   WHERE sel." + I_T_WEBUI_ViewSelection.COLUMNNAME_UUID + "=?")
-				.append("\n ) " + sqlTableAlias); // FROM
-
-		return sql.build().caching();
-	}
-
-	private static IStringExpression buildSqlSelect_WithGrouping(
-			final String sqlTableName,
-			final String sqlTableAlias,
-			final String sqlKeyColumnName,
-			final Collection<String> displayFieldNames,
-			final Collection<SqlViewRowFieldBinding> allFields,
-			final SqlViewGroupingBinding groupingBinding)
-	{
-		final List<String> sqlSelectValuesList = new ArrayList<>();
-		final List<IStringExpression> sqlSelectDisplayNamesList = new ArrayList<>();
-		final List<String> sqlGroupBys = new ArrayList<>();
-		allFields.forEach(field -> {
-			final String fieldName = field.getFieldName();
-			final boolean usingDisplayColumn = field.isUsingDisplayColumn() && displayFieldNames.contains(fieldName);
-
-			//
-			if (field.isKeyColumn())
-			{
-				sqlSelectValuesList.add("sel." + I_T_WEBUI_ViewSelection.COLUMNNAME_Record_ID + " AS " + field.getColumnName());
-			}
-			else if (groupingBinding.isGroupBy(fieldName))
-			{
-				final String columnSql = field.getColumnSql();
-				final String sqlSelectValue = field.getSqlSelectValue();
-				sqlSelectValuesList.add(sqlSelectValue);
-				sqlGroupBys.add(columnSql);
-
-				if (usingDisplayColumn)
-				{
-					final IStringExpression sqlSelectDisplayValue = field.getSqlSelectDisplayValue(); // TODO: introduce columnSql as parameter
-					sqlSelectDisplayNamesList.add(sqlSelectDisplayValue);
-				}
-			}
-			else
-			{
-				String sqlSelectValueAgg = groupingBinding.getColumnSqlByFieldName(fieldName);
-				if (sqlSelectValueAgg == null)
-				{
-					sqlSelectValueAgg = "NULL";
-				}
-
-				sqlSelectValuesList.add(sqlSelectValueAgg + " AS " + field.getColumnName());
-
-				// FIXME: NOT supported atm
-				// if (usingDisplayColumn)
-				// {
-				// sqlSelectDisplayValue = field.getSqlSelectDisplayValue(); // TODO: introduce columnSql as parameter
-				// sqlSelectDisplayNamesList.add(sqlSelectDisplayValue);
-				// }
-			}
-		});
-
-		// NOTE: we don't need access SQL here because we assume the records were already filtered
-
-		final CompositeStringExpression.Builder sql = IStringExpression.composer();
-		sql.append("SELECT ")
-				.append("\n").append(sqlTableAlias).append(".*"); // Value fields
-
-		if (!sqlSelectDisplayNamesList.isEmpty())
-		{
-			sql.append(", \n").appendAllJoining("\n, ", sqlSelectDisplayNamesList); // DisplayName fields
-		}
-
-		sql.append("\n, null AS " + COLUMNNAME_Paging_Parent_ID);
-
-		sql.append("\n FROM (")
-				.append("\n   SELECT ")
-				//
-				.append("\n   ").append(Joiner.on("\n   , ").join(sqlSelectValuesList))
-				//
-				.append("\n , sel." + I_T_WEBUI_ViewSelection.COLUMNNAME_Line + " AS " + COLUMNNAME_Paging_SeqNo)
-				.append("\n , sel." + I_T_WEBUI_ViewSelection.COLUMNNAME_UUID + " AS " + COLUMNNAME_Paging_UUID)
-				.append("\n , sel." + I_T_WEBUI_ViewSelection.COLUMNNAME_Record_ID + " AS " + COLUMNNAME_Paging_Record_ID)
-				//
-				.append("\n   FROM " + I_T_WEBUI_ViewSelection.Table_Name + " sel")
-				.append("\n   INNER JOIN " + I_T_WEBUI_ViewSelectionLine.Table_Name + " sl on (sl.UUID=sel.UUID and sl.Record_ID=sel.Record_ID)")
-				.append("\n   LEFT OUTER JOIN " + sqlTableName + " ON (" + sqlTableName + "." + sqlKeyColumnName + " = sl." + I_T_WEBUI_ViewSelectionLine.COLUMNNAME_Line_ID + ")")
-				//
-				// Filter by UUID. Keep this closer to the source table, see https://github.com/metasfresh/metasfresh-webui-api/issues/437
-				.append("\n   WHERE sel." + I_T_WEBUI_ViewSelection.COLUMNNAME_UUID + "=?")
-				//
-				.append("\n   GROUP BY ")
-				.append("\n   sel." + I_T_WEBUI_ViewSelection.COLUMNNAME_Line)
-				.append("\n , sel." + I_T_WEBUI_ViewSelection.COLUMNNAME_UUID)
-				.append("\n , sel." + I_T_WEBUI_ViewSelection.COLUMNNAME_Record_ID)
-				.append("\n , " + Joiner.on("\n , ").join(sqlGroupBys))
-				.append("\n ) " + sqlTableAlias); // FROM
-
-		return sql.build().caching();
-	}
-
-	public static IStringExpression buildSqlSelectLines(
-			final String sqlTableName,
-			final String sqlTableAlias,
-			final String sqlKeyColumnName,
-			final Collection<String> displayFieldNames,
-			final Collection<SqlViewRowFieldBinding> allFields)
-	{
-		final List<String> sqlSelectValuesList = new ArrayList<>();
-		final List<IStringExpression> sqlSelectDisplayNamesList = new ArrayList<>();
-		allFields.forEach(field -> {
-			// Collect the SQL select for internal value
-			// NOTE: we need to collect all fields because, even if the field is not needed it might be present in some where clause
-			sqlSelectValuesList.add(field.getSqlSelectValue());
-
-			// Collect the SQL select for displayed value,
-			// * if there is one
-			// * and if it was required by caller (i.e. present in fieldNames list)
-			if (field.isUsingDisplayColumn() && displayFieldNames.contains(field.getFieldName()))
-			{
-				sqlSelectDisplayNamesList.add(field.getSqlSelectDisplayValue());
-			}
-		});
-
-		// NOTE: we don't need access SQL here because we assume the records were already filtered
-
-		final CompositeStringExpression.Builder sql = IStringExpression.composer();
-		sql.append("SELECT ")
-				.append("\n").append(sqlTableAlias).append(".*"); // Value fields
-
-		if (!sqlSelectDisplayNamesList.isEmpty())
-		{
-			sql.append(", \n").appendAllJoining("\n, ", sqlSelectDisplayNamesList); // DisplayName fields
-		}
-
-		sql.append("\n, " + COLUMNNAME_Paging_Record_ID + " AS " + COLUMNNAME_Paging_Parent_ID);
-
-		sql.append("\n FROM (")
-				.append("\n   SELECT ")
-				.append("\n   ").append(Joiner.on("\n   , ").join(sqlSelectValuesList))
-				.append("\n , sl." + I_T_WEBUI_ViewSelectionLine.COLUMNNAME_UUID + " AS " + COLUMNNAME_Paging_UUID)
-				.append("\n , sl." + I_T_WEBUI_ViewSelectionLine.COLUMNNAME_Record_ID + " AS " + COLUMNNAME_Paging_Record_ID)
-				.append("\n   FROM " + I_T_WEBUI_ViewSelectionLine.Table_Name + " sl")
-				.append("\n   LEFT OUTER JOIN " + sqlTableName + " ON (" + sqlTableName + "." + sqlKeyColumnName + " = sl." + I_T_WEBUI_ViewSelectionLine.COLUMNNAME_Line_ID + ")")
-				// Filter by UUID. Keep this closer to the source table, see https://github.com/metasfresh/metasfresh-webui-api/issues/437
-				.append("\n   WHERE sl." + I_T_WEBUI_ViewSelectionLine.COLUMNNAME_UUID + "=?")
-				.append("\n ) " + sqlTableAlias); // FROM
-
-		return sql.build().caching();
-	}
-
 }

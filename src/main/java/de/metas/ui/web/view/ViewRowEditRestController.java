@@ -2,9 +2,7 @@ package de.metas.ui.web.view;
 
 import java.util.List;
 
-import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Services;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -15,17 +13,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import de.metas.ui.web.session.UserSession;
-import de.metas.ui.web.view.event.ViewChangesCollector;
+import de.metas.ui.web.view.IEditableView.RowEditingContext;
 import de.metas.ui.web.view.json.JSONViewRow;
 import de.metas.ui.web.window.datatypes.DocumentId;
-import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
 import de.metas.ui.web.window.model.DocumentCollection;
-import de.metas.ui.web.window.model.DocumentSaveStatus;
-import de.metas.ui.web.window.model.DocumentValidStatus;
-import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
-import de.metas.ui.web.window.model.NullDocumentChangesCollector;
 
 /*
  * #%L
@@ -51,7 +44,7 @@ import de.metas.ui.web.window.model.NullDocumentChangesCollector;
 
 /**
  * API for editing a view row.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  * @task https://github.com/metasfresh/metasfresh-webui-api/issues/577
  */
@@ -62,6 +55,7 @@ public class ViewRowEditRestController
 	private static final String PARAM_WindowId = ViewRestController.PARAM_WindowId;
 	private static final String PARAM_ViewId = "viewId";
 	private static final String PARAM_RowId = "rowId";
+	private static final String PARAM_FieldName = "fieldName";
 	/* package */ static final String ENDPOINT = ViewRestController.ENDPOINT + "/{" + PARAM_ViewId + "}/{" + PARAM_RowId + "}/edit";
 
 	@Autowired
@@ -73,50 +67,47 @@ public class ViewRowEditRestController
 	@Autowired
 	private DocumentCollection documentsCollection;
 
+	private static IEditableView asEditableView(final IView view)
+	{
+		if (view instanceof IEditableView)
+		{
+			return (IEditableView)view;
+		}
+		else
+		{
+			throw new AdempiereException("View is not editable");
+		}
+	}
+
+	private final IEditableView getEditableView(final ViewId viewId)
+	{
+		final IView view = viewsRepo.getView(viewId);
+		return asEditableView(view);
+	}
+
+	private RowEditingContext createRowEditingContext(final DocumentId rowId)
+	{
+		return RowEditingContext.builder()
+				.rowId(rowId)
+				.documentsCollection(documentsCollection)
+				.build();
+	}
+
 	@PatchMapping
 	public JSONViewRow patchRow(
 			@PathVariable(PARAM_WindowId) final String windowIdStr,
 			@PathVariable(PARAM_ViewId) final String viewIdStr,
 			@PathVariable(PARAM_RowId) final String rowIdStr,
-			@RequestBody final List<JSONDocumentChangedEvent> events)
+			@RequestBody final List<JSONDocumentChangedEvent> fieldChangeRequests)
 	{
 		userSession.assertLoggedIn();
 
 		final ViewId viewId = ViewId.of(windowIdStr, viewIdStr);
 		final DocumentId rowId = DocumentId.of(rowIdStr);
 
-		final IView view = viewsRepo.getView(viewId);
-		final DocumentPath documentPath = view.getById(rowId).getDocumentPath();
-
-		Services.get(ITrxManager.class)
-				.runInThreadInheritedTrx(() -> documentsCollection.forDocumentWritable(documentPath, NullDocumentChangesCollector.instance, document -> {
-					//
-					// Process changes and the save the document
-					document.processValueChanges(events, ReasonSupplier.NONE);
-					document.saveIfValidAndHasChanges();
-
-					//
-					// Important: before allowing the document to be stored back in documents collection,
-					// we need to make sure it's valid and saved.
-					final DocumentValidStatus validStatus = document.getValidStatus();
-					if (!validStatus.isValid())
-					{
-						throw new AdempiereException(validStatus.getReason());
-					}
-					final DocumentSaveStatus saveStatus = document.getSaveStatus();
-					if (saveStatus.isNotSaved())
-					{
-						throw new AdempiereException(saveStatus.getReason());
-					}
-
-					//
-					return null; // nothing/not important
-				}));
-
-		view.invalidateRowById(rowId);
-		ViewChangesCollector.getCurrentOrAutoflush().collectRowChanged(view, rowId);
-		
-		documentsCollection.invalidateRootDocument(documentPath);
+		final IEditableView view = getEditableView(viewId);
+		final RowEditingContext editingCtx = createRowEditingContext(rowId);
+		view.patchViewRow(editingCtx, fieldChangeRequests);
 
 		final IViewRow row = view.getById(rowId);
 		final IViewRowOverrides rowOverrides = ViewRowOverridesHelper.getViewRowOverrides(view);
@@ -124,40 +115,39 @@ public class ViewRowEditRestController
 	}
 
 	@GetMapping("/{fieldName}/typeahead")
-	public JSONLookupValuesList getViewFieldTypeahead(
+	public JSONLookupValuesList getFieldTypeahead(
 			@PathVariable(PARAM_WindowId) final String windowIdStr,
 			@PathVariable(PARAM_ViewId) final String viewIdStr,
 			@PathVariable(PARAM_RowId) final String rowIdStr,
-			@PathVariable("fieldName") final String fieldName,
+			@PathVariable(PARAM_FieldName) final String fieldName,
 			@RequestParam("query") final String query)
 	{
 		userSession.assertLoggedIn();
 
 		final ViewId viewId = ViewId.of(windowIdStr, viewIdStr);
 		final DocumentId rowId = DocumentId.of(rowIdStr);
-		final IView view = viewsRepo.getView(viewId);
-		final DocumentPath documentPath = view.getById(rowId).getDocumentPath();
 
-		return documentsCollection.forDocumentReadonly(documentPath, document -> document.getFieldLookupValuesForQuery(fieldName, query))
+		final IEditableView view = getEditableView(viewId);
+		final RowEditingContext editingCtx = createRowEditingContext(rowId);
+		return view.getFieldTypeahead(editingCtx, fieldName, query)
 				.transform(JSONLookupValuesList::ofLookupValuesList);
 	}
 
 	@GetMapping("/{fieldName}/dropdown")
-	public JSONLookupValuesList getViewFieldTypeahead(
+	public JSONLookupValuesList getFieldDropdown(
 			@PathVariable(PARAM_WindowId) final String windowIdStr,
 			@PathVariable(PARAM_ViewId) final String viewIdStr,
 			@PathVariable(PARAM_RowId) final String rowIdStr,
-			@PathVariable("fieldName") final String fieldName)
+			@PathVariable(PARAM_FieldName) final String fieldName)
 	{
 		userSession.assertLoggedIn();
 
 		final ViewId viewId = ViewId.of(windowIdStr, viewIdStr);
 		final DocumentId rowId = DocumentId.of(rowIdStr);
-		final IView view = viewsRepo.getView(viewId);
-		final DocumentPath documentPath = view.getById(rowId).getDocumentPath();
 
-		return documentsCollection.forDocumentReadonly(documentPath, document -> document.getFieldLookupValues(fieldName))
+		final IEditableView view = getEditableView(viewId);
+		final RowEditingContext editingCtx = createRowEditingContext(rowId);
+		return view.getFieldDropdown(editingCtx, fieldName)
 				.transform(JSONLookupValuesList::ofLookupValuesList);
 	}
-
 }

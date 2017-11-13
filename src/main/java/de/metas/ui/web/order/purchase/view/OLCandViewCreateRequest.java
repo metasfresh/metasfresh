@@ -1,8 +1,14 @@
-package de.metas.ui.web.handlingunits;
+package de.metas.ui.web.order.purchase.view;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import java.util.Set;
 
-import org.junit.Test;
+import org.adempiere.util.Check;
+
+import com.google.common.collect.ImmutableSet;
+
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
 
 /*
  * #%L
@@ -14,29 +20,29 @@ import org.junit.Test;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-public class HUEditorRowQueryTest
+@Value
+public class OLCandViewCreateRequest
 {
-	@Test
-	public void testListsNotNullInEmptyQuery()
+	private final Set<Integer> salesOrderLineIds;
+
+	@Builder
+	public OLCandViewCreateRequest(
+			@NonNull final Set<Integer> salesOrderLineIds)
 	{
-		final HUEditorRowQuery emptyQuery = HUEditorRowQuery.builder().build();
-
-		assertThat(emptyQuery.getExcludeHUIds()).isNotNull();
-		assertThat(emptyQuery.getExcludeHUIds()).isEmpty();
-
-		assertThat(emptyQuery.getExcludeHUStatuses()).isNotNull();
-		assertThat(emptyQuery.getExcludeHUStatuses()).isEmpty();
+		Check.assumeNotEmpty(salesOrderLineIds, "salesOrderLineIds is not empty");
+		this.salesOrderLineIds = ImmutableSet.copyOf(salesOrderLineIds);
 	}
+
 }

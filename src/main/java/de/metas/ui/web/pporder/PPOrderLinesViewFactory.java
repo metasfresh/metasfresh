@@ -15,6 +15,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
+import de.metas.ui.web.handlingunits.HUEditorViewFactory;
 import de.metas.ui.web.pattribute.ASIRepository;
 import de.metas.ui.web.view.ASIViewRowAttributesProvider;
 import de.metas.ui.web.view.CreateViewRequest;
@@ -57,6 +58,8 @@ public class PPOrderLinesViewFactory implements IViewFactory
 {
 	@Autowired
 	private ASIRepository asiRepository;
+	@Autowired
+	private HUEditorViewFactory huEditorViewFactory;
 
 	private final transient CCache<WindowId, ViewLayout> layouts = CCache.newLRUCache("PPOrderLinesViewFactory#Layouts", 10, 0);
 
@@ -64,6 +67,14 @@ public class PPOrderLinesViewFactory implements IViewFactory
 	public PPOrderLinesView createView(final CreateViewRequest request)
 	{
 		final ViewId viewId = request.getViewId();
+		final int ppOrderId = request.getSingleFilterOnlyId();
+
+		final PPOrderLinesViewDataSupplier dataSupplier = PPOrderLinesViewDataSupplier.builder()
+				.viewWindowId(viewId.getWindowId())
+				.ppOrderId(ppOrderId)
+				.asiAttributesProvider(ASIViewRowAttributesProvider.newInstance(asiRepository))
+				.huSQLViewBinding(huEditorViewFactory.getSqlViewBinding())
+				.build();
 
 		return PPOrderLinesView.builder()
 				.parentViewId(request.getParentViewId())
@@ -71,8 +82,8 @@ public class PPOrderLinesViewFactory implements IViewFactory
 				.viewId(viewId)
 				.viewType(request.getViewType())
 				.referencingDocumentPaths(request.getReferencingDocumentPaths())
-				.ppOrderId(request.getSingleFilterOnlyId())
-				.asiAttributesProvider(ASIViewRowAttributesProvider.newInstance(asiRepository))
+				.ppOrderId(ppOrderId)
+				.dataSupplier(dataSupplier)
 				.additionalRelatedProcessDescriptors(createAdditionalRelatedProcessDescriptors())
 				.build();
 	}

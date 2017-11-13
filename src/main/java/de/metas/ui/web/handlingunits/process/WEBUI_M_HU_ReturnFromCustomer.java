@@ -1,18 +1,19 @@
 package de.metas.ui.web.handlingunits.process;
 
 import java.util.List;
-import java.util.Set;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
+
+import com.google.common.collect.ImmutableList;
 
 import de.metas.handlingunits.inout.IHUInOutBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.handlingunits.HUEditorProcessTemplate;
+import de.metas.ui.web.handlingunits.HUEditorRowFilter.Select;
 import de.metas.ui.web.handlingunits.WEBUI_HU_Constants;
-import de.metas.ui.web.handlingunits.HUEditorProcessTemplate.HUEditorRowFilter.Select;
 
 /*
  * #%L
@@ -49,8 +50,7 @@ public class WEBUI_M_HU_ReturnFromCustomer extends HUEditorProcessTemplate imple
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
-		final Set<Integer> huIds = getSelectedHUIds(Select.ONLY_TOPLEVEL);
-		if (huIds.isEmpty())
+		if (!streamSelectedHUIds(Select.ONLY_TOPLEVEL).findAny().isPresent())
 		{
 			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(WEBUI_HU_Constants.MSG_WEBUI_ONLY_TOP_LEVEL_HU));
 		}
@@ -61,7 +61,7 @@ public class WEBUI_M_HU_ReturnFromCustomer extends HUEditorProcessTemplate imple
 	@Override
 	protected String doIt()
 	{
-		husToReturn = getSelectedHUs(Select.ONLY_TOPLEVEL);
+		husToReturn = streamSelectedHUs(Select.ONLY_TOPLEVEL).collect(ImmutableList.toImmutableList());
 		if (husToReturn.isEmpty())
 		{
 			throw new AdempiereException("@NoSelection@");
@@ -76,7 +76,7 @@ public class WEBUI_M_HU_ReturnFromCustomer extends HUEditorProcessTemplate imple
 	{
 		if (husToReturn != null && !husToReturn.isEmpty())
 		{
-			getView().removeHUsAndInvalidate(getSelectedHUs(Select.ONLY_TOPLEVEL));
+			getView().removeHUsAndInvalidate(husToReturn);
 		}
 	}
 

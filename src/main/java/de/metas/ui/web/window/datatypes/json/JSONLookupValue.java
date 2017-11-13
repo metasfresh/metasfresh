@@ -1,13 +1,12 @@
 package de.metas.ui.web.window.datatypes.json;
 
-import java.io.Serializable;
 import java.util.Map;
-import java.util.Set;
 
 import org.compiere.util.Env;
 import org.compiere.util.NamePair;
 
-import com.fasterxml.jackson.annotation.JsonAnyGetter;
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -21,6 +20,7 @@ import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
 import io.swagger.annotations.ApiModel;
+import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 
 /*
@@ -46,8 +46,9 @@ import lombok.NonNull;
  */
 
 @ApiModel(value = "lookup-value", description = "pair of { field : value}")
-@SuppressWarnings("serial")
-public final class JSONLookupValue implements Serializable
+@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
+@EqualsAndHashCode
+public final class JSONLookupValue
 {
 	public static final JSONLookupValue of(final String key, final String caption)
 	{
@@ -79,32 +80,31 @@ public final class JSONLookupValue implements Serializable
 
 	public static final IntegerLookupValue integerLookupValueFromJsonMap(final Map<String, Object> map)
 	{
-		final Set<Map.Entry<String, Object>> entrySet = map.entrySet();
-		final Map.Entry<String, Object> firstEntry = entrySet.iterator().next();
-
-		String idStr = firstEntry.getKey();
-		if (idStr == null)
+		final Object keyObj = map.get(PROPERTY_Key);
+		if (keyObj == null)
 		{
 			return null;
 		}
-		idStr = idStr.trim();
-		if (idStr.isEmpty())
+		final String keyStr = keyObj.toString().trim();
+		if (keyStr.isEmpty())
 		{
 			return null;
 		}
+		final int keyInt = Integer.parseInt(keyStr);
 
-		final int id = Integer.parseInt(idStr);
-		final ITranslatableString displayName = ImmutableTranslatableString.anyLanguage(firstEntry.getValue().toString());
+		final Object captionObj = map.get(PROPERTY_Caption);
+		final String caption = captionObj != null ? captionObj.toString() : "";
+		final ITranslatableString displayName = ImmutableTranslatableString.anyLanguage(caption);
 
 		@SuppressWarnings("unchecked")
 		final Map<String, Object> attributes = (Map<String, Object>)map.get(PROPERTY_Attributes);
 		if (attributes == null || attributes.isEmpty())
 		{
-			return IntegerLookupValue.of(id, displayName);
+			return IntegerLookupValue.of(keyInt, displayName);
 		}
 
 		return IntegerLookupValue.builder()
-				.id(id)
+				.id(keyInt)
 				.displayName(displayName)
 				.attributes(attributes)
 				.build();
@@ -112,35 +112,32 @@ public final class JSONLookupValue implements Serializable
 
 	public static final StringLookupValue stringLookupValueFromJsonMap(final Map<String, Object> map)
 	{
-		final Set<Map.Entry<String, Object>> entrySet = map.entrySet();
-		final Map.Entry<String, Object> firstEntry = entrySet.iterator().next();
+		final Object keyObj = map.get(PROPERTY_Key);
+		final String key = keyObj != null ? keyObj.toString() : null;
 
-		final String id = firstEntry.getKey();
-		final ITranslatableString displayName = ImmutableTranslatableString.anyLanguage(firstEntry.getValue().toString());
+		final Object captionObj = map.get(PROPERTY_Caption);
+		final String caption = captionObj != null ? captionObj.toString() : "";
+		final ITranslatableString displayName = ImmutableTranslatableString.anyLanguage(caption);
 
 		@SuppressWarnings("unchecked")
 		final Map<String, Object> attributes = (Map<String, Object>)map.get(PROPERTY_Attributes);
 		if (attributes == null || attributes.isEmpty())
 		{
-			return StringLookupValue.of(id, displayName);
+			return StringLookupValue.of(key, displayName);
 		}
 
 		return StringLookupValue.builder()
-				.id(id)
+				.id(key)
 				.displayName(displayName)
 				.attributes(attributes)
 				.build();
 	}
 
-	// NOTE: this shall be exported as first entry in form of "key:name".
-	@Deprecated
-	private final Map<String, String> keyAndCaptionMap;
-
 	private static final String PROPERTY_Key = "key";
 	@JsonProperty(PROPERTY_Key)
 	private final String key;
 	@JsonIgnore
-	private Integer keyAsInt = null; // lazy
+	private transient Integer keyAsInt = null; // lazy
 
 	private static final String PROPERTY_Caption = "caption";
 	@JsonProperty(PROPERTY_Caption)
@@ -160,8 +157,6 @@ public final class JSONLookupValue implements Serializable
 		this.key = key;
 		this.caption = caption;
 		this.attributes = attributes != null && !attributes.isEmpty() ? ImmutableMap.copyOf(attributes) : ImmutableMap.of();
-
-		keyAndCaptionMap = ImmutableMap.of(key, caption);
 	}
 
 	@Override
@@ -174,19 +169,11 @@ public final class JSONLookupValue implements Serializable
 				.toString();
 	}
 
-	@JsonAnyGetter
-	public Map<String, String> getKeyAndCaptionMap()
-	{
-		return keyAndCaptionMap;
-	}
-
-	@JsonIgnore
 	public String getKey()
 	{
 		return key;
 	}
 
-	@JsonIgnore
 	public int getKeyAsInt()
 	{
 		if (keyAsInt == null)
@@ -197,13 +184,11 @@ public final class JSONLookupValue implements Serializable
 		return keyAsInt;
 	}
 
-	@JsonIgnore
 	public String getCaption()
 	{
 		return caption;
 	}
 
-	@JsonIgnore
 	public Map<String, Object> getAttributes()
 	{
 		return attributes;

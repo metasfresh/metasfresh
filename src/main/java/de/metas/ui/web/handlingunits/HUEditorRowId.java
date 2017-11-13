@@ -90,7 +90,7 @@ public final class HUEditorRowId
 			final List<String> parts = PARTS_SPLITTER.splitToList(json);
 			if (parts.isEmpty())
 			{
-				throw new IllegalArgumentException("Invalid HU rowId: " + documentId);
+				throw new IllegalArgumentException("Invalid HU rowId: " + json);
 			}
 			partsIterator = parts.iterator();
 		}
@@ -114,7 +114,7 @@ public final class HUEditorRowId
 			}
 			else
 			{
-				throw new IllegalArgumentException("Invalid HU rowId: " + documentId + ". Cannot parse ID part: " + idStrPart);
+				throw new IllegalArgumentException("Invalid HU rowId: " + json + ". Cannot parse ID part: " + idStrPart);
 			}
 		}
 
@@ -131,7 +131,7 @@ public final class HUEditorRowId
 			}
 			else
 			{
-				throw new IllegalArgumentException("Invalid HU rowId: " + documentId + ". Cannot parse part: " + part);
+				throw new IllegalArgumentException("Invalid HU rowId: " + json + ". Cannot parse part: " + part);
 			}
 		}
 
