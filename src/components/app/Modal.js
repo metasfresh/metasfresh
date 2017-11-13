@@ -279,11 +279,11 @@ class Modal extends Component {
                 );
 
                 await dispatch(action);
+
+                this.removeModal();
             } catch(error) {
                 throw error;
             } finally {
-                this.removeModal();
-
                 this.setState({
                     pending: false
                 });
