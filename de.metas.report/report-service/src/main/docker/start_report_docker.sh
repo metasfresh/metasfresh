@@ -53,7 +53,7 @@ wait_dbms()
 run_db_update()
 {
  if [ "$skip_run_db_update" != "false" ]; then
-	echo "We skip running the migration scripts"
+	echo ">>>>>>>>>>>> We skip running the migration scripts because SKIP_DB_UPDATE=${skip_run_db_update}"
 	return 0
  fi
 
@@ -72,9 +72,11 @@ run_db_update()
  echo "" >> $settings_file
  
  # -s sets the "Name of the (s)ettings file (e.g. settings_<hostname>.properties) *within the Rollout-Directory*" (which is /opt/metasfresh/dist in this case)
- # -v disables version-check since this is not a "main" migration and only those are handeled by the verios stored in AD_System.DBVersion
+ # -v -u disable both checking and updating the local DB's version info since this is not a "main" migration and only those can currently be handeled like that.
  # run with -h for a description of all params
- cd /opt/metasfresh/dist/install/ && java -jar ./lib/de.metas.migration.cli.jar -v -s run_db_update_settings.properties
+ cd /opt/metasfresh/dist/install/ && java -jar ./lib/de.metas.migration.cli.jar -v -u -s run_db_update_settings.properties
+
+ echo ">>>>>>>>>>>> Local migration scripts were run"
 }
 
 # Note: the Djava.security.egd param is supposed to let tomcat start quicker, see https://spring.io/guides/gs/spring-boot-docker/
@@ -107,7 +109,7 @@ echo "*************************************************************"
 echo "Run the local migration scripts"
 echo "*************************************************************"
 run_db_update
-echo ">>>>>>>>>>>> Local migration scripts were run"
+
 
 echo "*************************************************************"
 echo "Start metasfresh-report";
