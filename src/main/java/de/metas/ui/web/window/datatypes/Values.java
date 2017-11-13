@@ -12,6 +12,7 @@ import de.metas.ui.web.window.datatypes.json.JSONDate;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONRange;
+import lombok.experimental.UtilityClass;
 
 /*
  * #%L
@@ -41,6 +42,7 @@ import de.metas.ui.web.window.datatypes.json.JSONRange;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
+@UtilityClass
 public final class Values
 {
 	public static final Object valueToJsonObject(final Object value)
@@ -66,7 +68,7 @@ public final class Values
 			final java.util.Date valueDate = (java.util.Date)value;
 			return JSONDate.toJson(valueDate);
 		}
-		else if(value instanceof DateRangeValue)
+		else if (value instanceof DateRangeValue)
 		{
 			final DateRangeValue dateRange = (DateRangeValue)value;
 			return JSONRange.of(dateRange);
@@ -109,8 +111,33 @@ public final class Values
 		}
 	}
 
-	private Values()
+	public static BigDecimal toBigDecimal(final Object value)
 	{
-		throw new UnsupportedOperationException();
+		if (value == null)
+		{
+			return null;
+		}
+		else if (value instanceof BigDecimal)
+		{
+			return (BigDecimal)value;
+		}
+		else
+		{
+			final String valueStr = value.toString().trim();
+			if (valueStr.isEmpty())
+			{
+				return null;
+			}
+			return new BigDecimal(valueStr);
+		}
+	}
+
+	public static int toInt(final Object value, final int defaultValueIfNull)
+	{
+		if (value == null)
+		{
+			return defaultValueIfNull;
+		}
+		return Integer.parseInt(value.toString());
 	}
 }
