@@ -143,7 +143,7 @@ public class ESRImportBL implements IESRImportBL
 		//
 		// Fetch data to be imported from attachment
 		final byte[] data;
-		if(esrImport.getAD_AttachmentEntry_ID() > 0)
+		if (esrImport.getAD_AttachmentEntry_ID() > 0)
 		{
 			data = Services.get(IAttachmentBL.class).getEntryByIdAsBytes(esrImport, esrImport.getAD_AttachmentEntry_ID());
 		}
@@ -165,7 +165,7 @@ public class ESRImportBL implements IESRImportBL
 
 	@VisibleForTesting
 	public void loadAndEvaluateESRImportStream(
-			@NonNull final I_ESR_Import esrImport, 
+			@NonNull final I_ESR_Import esrImport,
 			@NonNull final InputStream in)
 	{
 		int countLines = 0;
@@ -625,44 +625,44 @@ public class ESRImportBL implements IESRImportBL
 				continue; // 04607 whatever we do, don't create another payment if there is already one
 			}
 
-					refresh(line);
-					if (line.getC_Payment_ID() > 0)
-					{
-						return;
-					}
+			refresh(line);
+			if (line.getC_Payment_ID() > 0)
+			{
+				return;
+			}
 
-					final I_C_Payment payment = createUnlinkedPaymentForLine(line, line.getAmount());
-					Check.assume(payment.getAD_Org_ID() == line.getAD_Org_ID(), "Payment has the same org as {}", line);
+			final I_C_Payment payment = createUnlinkedPaymentForLine(line, line.getAmount());
+			Check.assume(payment.getAD_Org_ID() == line.getAD_Org_ID(), "Payment has the same org as {}", line);
 
-					final I_C_BP_BankAccount bankAccount = loadOutOfTrx(line.getESR_Import().getC_BP_BankAccount_ID(), I_C_BP_BankAccount.class);
+			final I_C_BP_BankAccount bankAccount = loadOutOfTrx(line.getESR_Import().getC_BP_BankAccount_ID(), I_C_BP_BankAccount.class);
 
-					final de.metas.banking.model.I_C_Payment paym = create(payment, de.metas.banking.model.I_C_Payment.class);
-					paym.setC_Currency_ID(bankAccount.getC_Currency_ID());
+			final de.metas.banking.model.I_C_Payment paym = create(payment, de.metas.banking.model.I_C_Payment.class);
+			paym.setC_Currency_ID(bankAccount.getC_Currency_ID());
 
-					final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-					if (sysConfigBL.getBooleanValue(ESRConstants.SYSCONFIG_EAGER_PAYMENT_ALLOCATION, true)) // task 09167: calling with true to preserve the old behavior
-					{
-						paym.setIsAutoAllocateAvailableAmt(true); // task 07783
-					}
-					save(paym);
-					// guard; there was some crappy beforeSave() code in MPayment, there might be more
-					Check.assume(payment.getAD_Org_ID() == line.getAD_Org_ID(), "Payment has the same org as {}", line);
+			final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+			if (sysConfigBL.getBooleanValue(ESRConstants.SYSCONFIG_EAGER_PAYMENT_ALLOCATION, true)) // task 09167: calling with true to preserve the old behavior
+			{
+				paym.setIsAutoAllocateAvailableAmt(true); // task 07783
+			}
+			save(paym);
+			// guard; there was some crappy beforeSave() code in MPayment, there might be more
+			Check.assume(payment.getAD_Org_ID() == line.getAD_Org_ID(), "Payment has the same org as {}", line);
 
-					line.setC_Payment(payment);
+			line.setC_Payment(payment);
 
-					// despite the amounts are fitting, we can't set this status, because there was a problem with the invoice that we found (e.g. wrong org),
-					// and the user might for example want to transfer the money back to the customer
-					// however, if we set the action to 'F', it will become read-only and (maybe worse) the user does not see that she still has to decide and/or do something in this case.
-					// if (line.getC_Payment().getPayAmt().compareTo(line.getESR_Invoice_Openamt()) == 0)
-					// {
-					// line.setESR_Payment_Action(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Fit_Amounts);
-					// }
-					save(line);
+			// despite the amounts are fitting, we can't set this status, because there was a problem with the invoice that we found (e.g. wrong org),
+			// and the user might for example want to transfer the money back to the customer
+			// however, if we set the action to 'F', it will become read-only and (maybe worse) the user does not see that she still has to decide and/or do something in this case.
+			// if (line.getC_Payment().getPayAmt().compareTo(line.getESR_Invoice_Openamt()) == 0)
+			// {
+			// line.setESR_Payment_Action(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Fit_Amounts);
+			// }
+			save(line);
 
-					Services.get(IDocumentBL.class).processEx(payment, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
+			Services.get(IDocumentBL.class).processEx(payment, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
 
-					save(line);
-				}
+			save(line);
+		}
 	}
 
 	/**
@@ -771,80 +771,73 @@ public class ESRImportBL implements IESRImportBL
 
 	private void processLinesWithPaymentNoInvoice(final List<I_ESR_ImportLine> importLinesWithPaymentNoInvoice, final boolean withPayment)
 	{
-//		Services.get(ITrxManager.class).run(trxName, trxRunConfig, new TrxRunnable()
-//		{
-//			@Override
-//			public void run(final String localTrxName) throws Exception
-//			{
+		for (final I_ESR_ImportLine importLine : importLinesWithPaymentNoInvoice)
+		{
+			final BigDecimal sum = importLine.getAmount();
 
-				for (final I_ESR_ImportLine importLine : importLinesWithPaymentNoInvoice)
+			refresh(importLine);
+			I_C_Payment payment = importLine.getC_Payment();
+
+			if (withPayment)
+			{
+
+				Check.assumeNotNull(payment, "{} has a payment", importLine);
+			}
+			else
+			{
+				if (importLine.getC_Payment_ID() <= 0)
 				{
-					final BigDecimal sum = importLine.getAmount();
+					payment = createUnlinkedPaymentForLine(importLine, sum);
+					final de.metas.banking.model.I_C_Payment paym = create(payment, de.metas.banking.model.I_C_Payment.class);
 
-					refresh(importLine);
-					I_C_Payment payment = importLine.getC_Payment();
-
-					if (withPayment)
+					final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+					if (sysConfigBL.getBooleanValue(ESRConstants.SYSCONFIG_EAGER_PAYMENT_ALLOCATION, true)) // task 09167: calling with true to preserve the old behavior
 					{
-
-						Check.assumeNotNull(payment, "{} has a payment", importLine);
+						paym.setIsAutoAllocateAvailableAmt(true); // task 07783
 					}
-					else
-					{
-						if (importLine.getC_Payment_ID() <= 0)
-						{
-							payment = createUnlinkedPaymentForLine(importLine, sum);
-							final de.metas.banking.model.I_C_Payment paym = create(payment, de.metas.banking.model.I_C_Payment.class);
-
-							final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-							if (sysConfigBL.getBooleanValue(ESRConstants.SYSCONFIG_EAGER_PAYMENT_ALLOCATION, true)) // task 09167: calling with true to preserve the old behavior
-							{
-								paym.setIsAutoAllocateAvailableAmt(true); // task 07783
-							}
-						}
-					}
-
-					Check.assume(payment.getAD_Org_ID() == importLine.getAD_Org_ID(), "Payment has the same org as {}", importLine);
-
-					final I_C_Invoice invoice = importLine.getC_Invoice();
-					Check.assumeNotNull(invoice, "{} has an invoice", importLine);
-
-					// make sure that we don't end up with inter-org allocations
-					Check.assume(invoice.getAD_Org_ID() == payment.getAD_Org_ID(), "Invoice {} and payment {} have the same AD_Org_ID");
-
-					payment.setC_Currency_ID(invoice.getC_Currency_ID());
-
-					// Note that we set OverUnderAmt to make it clear the we don't have Discount or WriteOff
-					final BigDecimal invoiceOpenAmt = Services.get(IInvoiceDAO.class).retrieveOpenAmt(invoice);
-					final BigDecimal overUnderAmt = sum.subtract(invoiceOpenAmt);
-					if (X_ESR_ImportLine.ESR_DOCUMENT_STATUS_TotallyMatched.equals(importLine.getESR_Document_Status())
-							&& !isInvoicePaidInCurrentImport(importLinesWithPaymentNoInvoice, invoice) && BigDecimal.ZERO.compareTo(overUnderAmt) == 0)
-					{
-						payment.setC_Invoice_ID(invoice.getC_Invoice_ID());
-						payment.setOverUnderAmt(overUnderAmt);
-					}
-
-					payment.setDocStatus(IDocument.STATUS_Drafted);
-					payment.setDocAction(IDocument.ACTION_Complete);
-
-					save(payment);
-
-					// guard; there was some crappy code in MPayment, there might be more
-					Check.assume(payment.getAD_Org_ID() == importLine.getAD_Org_ID(), "Payment has the same org as {}", importLine);
-
-					Services.get(IDocumentBL.class).processEx(payment, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
-					final boolean ignoreProcessed = false;
-					Services.get(IInvoiceBL.class).testAllocation(invoice, ignoreProcessed);
-					save(invoice);
-
-					importLine.setC_Payment(payment);
-					save(importLine);
-
-					updateLinesOpenAmt(importLine, invoice); // note that there might be further lines for this invoice
-					save(importLine); // saving, because updateLinesOpenAmt doesn't save the line it was called with
 				}
-//			}
-//		});
+			}
+
+			Check.assume(payment.getAD_Org_ID() == importLine.getAD_Org_ID(), "Payment has the same org as {}", importLine);
+
+			final I_C_Invoice invoice = importLine.getC_Invoice();
+			Check.assumeNotNull(invoice, "{} has an invoice", importLine);
+
+			// make sure that we don't end up with inter-org allocations
+			Check.assume(invoice.getAD_Org_ID() == payment.getAD_Org_ID(), "Invoice {} and payment {} have the same AD_Org_ID");
+
+			payment.setC_Currency_ID(invoice.getC_Currency_ID());
+
+			// Note that we set OverUnderAmt to make it clear the we don't have Discount or WriteOff
+			final BigDecimal invoiceOpenAmt = Services.get(IInvoiceDAO.class).retrieveOpenAmt(invoice);
+			final BigDecimal overUnderAmt = sum.subtract(invoiceOpenAmt);
+			if (X_ESR_ImportLine.ESR_DOCUMENT_STATUS_TotallyMatched.equals(importLine.getESR_Document_Status())
+					&& !isInvoicePaidInCurrentImport(importLinesWithPaymentNoInvoice, invoice) && BigDecimal.ZERO.compareTo(overUnderAmt) == 0)
+			{
+				payment.setC_Invoice_ID(invoice.getC_Invoice_ID());
+				payment.setOverUnderAmt(overUnderAmt);
+			}
+
+			payment.setDocStatus(IDocument.STATUS_Drafted);
+			payment.setDocAction(IDocument.ACTION_Complete);
+
+			save(payment);
+
+			// guard; there was some crappy code in MPayment, there might be more
+			Check.assume(payment.getAD_Org_ID() == importLine.getAD_Org_ID(), "Payment has the same org as {}", importLine);
+
+			Services.get(IDocumentBL.class).processEx(payment, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
+			final boolean ignoreProcessed = false;
+			Services.get(IInvoiceBL.class).testAllocation(invoice, ignoreProcessed);
+			save(invoice);
+
+			importLine.setC_Payment(payment);
+			save(importLine);
+
+			updateLinesOpenAmt(importLine, invoice); // note that there might be further lines for this invoice
+			save(importLine); // saving, because updateLinesOpenAmt doesn't save the line it was called with
+		}
+
 	}
 
 	@Override
@@ -933,82 +926,82 @@ public class ESRImportBL implements IESRImportBL
 		for (final I_ESR_ImportLine line : allLines)
 		{
 
-					if (line.isProcessed())
-					{
-						return; // this is usually true for the 999-line
-					}
-					if (!line.isActive())
-					{
-						return;
-					}
+			if (line.isProcessed())
+			{
+				continue; // this is usually true for the 999-line
+			}
+			if (!line.isActive())
+			{
+				continue;
+			}
 
-					// check partners first
-					final I_C_BPartner esrPartner = line.getC_BPartner();
-					final I_C_BPartner invPartner = line.getC_Invoice_ID() > 0 ? line.getC_Invoice().getC_BPartner() : null;
-					final I_C_BPartner paymentPartner = line.getC_Payment_ID() > 0 ? line.getC_Payment().getC_BPartner() : null;
-					if (esrPartner != null)
+			// check partners first
+			final I_C_BPartner esrPartner = line.getC_BPartner();
+			final I_C_BPartner invPartner = line.getC_Invoice_ID() > 0 ? line.getC_Invoice().getC_BPartner() : null;
+			final I_C_BPartner paymentPartner = line.getC_Payment_ID() > 0 ? line.getC_Payment().getC_BPartner() : null;
+			if (esrPartner != null)
+			{
+				if (invPartner != null)
+				{
+					if (invPartner.getC_BPartner_ID() != esrPartner.getC_BPartner_ID())
 					{
-						if (invPartner != null)
-						{
-							if (invPartner.getC_BPartner_ID() != esrPartner.getC_BPartner_ID())
-							{
-								final AdempiereException ex = new AdempiereException("@" + ESRConstants.ESR_DIFF_INV_PARTNER + "@");
-								logger.warn(ex.getLocalizedMessage(), ex);
-								ESRDataLoaderUtil.addMatchErrorMsg(line, ex.getLocalizedMessage());
-								save(line);
-								return;
-							}
-						}
-
-						if (paymentPartner != null)
-						{
-							if (paymentPartner.getC_BPartner_ID() != esrPartner.getC_BPartner_ID())
-							{
-								final AdempiereException ex = new AdempiereException("@" + ESRConstants.ESR_DIFF_PAYMENT_PARTNER + "@");
-								logger.warn(ex.getLocalizedMessage(), ex);
-								ESRDataLoaderUtil.addMatchErrorMsg(line, ex.getLocalizedMessage());
-								save(line);
-								return;
-							}
-						}
-					}
-
-					final String actionType = line.getESR_Payment_Action();
-					if (Check.isEmpty(actionType, true))
-					{
-						final AdempiereException ex = new AdempiereException("@" + ESRConstants.ERR_ESR_LINE_WITH_NO_PAYMENT_ACTION + "@");
+						final AdempiereException ex = new AdempiereException("@" + ESRConstants.ESR_DIFF_INV_PARTNER + "@");
 						logger.warn(ex.getLocalizedMessage(), ex);
 						ESRDataLoaderUtil.addMatchErrorMsg(line, ex.getLocalizedMessage());
 						save(line);
-						return;
+						continue;
 					}
-
-					final IESRActionHandler handler = handlers.get(actionType);
-					if (handler == null)
-					{
-						final AdempiereException ex = new AdempiereException("@NotSupported@ @ESR_Payment_Action@: " + actionType);
-						logger.warn(ex.getLocalizedMessage(), ex);
-						ESRDataLoaderUtil.addMatchErrorMsg(line, ex.getLocalizedMessage());
-						save(line);
-						return;
-					}
-
-					try
-					{
-						final boolean processed = handler.process(line, message);
-						line.setProcessed(processed);
-					}
-					catch (final Exception e)
-					{
-						logger.warn(e.getLocalizedMessage(), e);
-						ESRDataLoaderUtil.addMatchErrorMsg(line, e.getLocalizedMessage());
-						save(line);
-						return;
-					}
-
-					save(line);
 				}
-		
+
+				if (paymentPartner != null)
+				{
+					if (paymentPartner.getC_BPartner_ID() != esrPartner.getC_BPartner_ID())
+					{
+						final AdempiereException ex = new AdempiereException("@" + ESRConstants.ESR_DIFF_PAYMENT_PARTNER + "@");
+						logger.warn(ex.getLocalizedMessage(), ex);
+						ESRDataLoaderUtil.addMatchErrorMsg(line, ex.getLocalizedMessage());
+						save(line);
+						continue;
+					}
+				}
+			}
+
+			final String actionType = line.getESR_Payment_Action();
+			if (Check.isEmpty(actionType, true))
+			{
+				final AdempiereException ex = new AdempiereException("@" + ESRConstants.ERR_ESR_LINE_WITH_NO_PAYMENT_ACTION + "@");
+				logger.warn(ex.getLocalizedMessage(), ex);
+				ESRDataLoaderUtil.addMatchErrorMsg(line, ex.getLocalizedMessage());
+				save(line);
+				continue;
+			}
+
+			final IESRActionHandler handler = handlers.get(actionType);
+			if (handler == null)
+			{
+				final AdempiereException ex = new AdempiereException("@NotSupported@ @ESR_Payment_Action@: " + actionType);
+				logger.warn(ex.getLocalizedMessage(), ex);
+				ESRDataLoaderUtil.addMatchErrorMsg(line, ex.getLocalizedMessage());
+				save(line);
+				continue;
+			}
+
+			try
+			{
+				final boolean processed = handler.process(line, message);
+				line.setProcessed(processed);
+			}
+			catch (final Exception e)
+			{
+				logger.warn(e.getLocalizedMessage(), e);
+				ESRDataLoaderUtil.addMatchErrorMsg(line, e.getLocalizedMessage());
+				save(line);
+				continue;
+			}
+
+			save(line);
+		}
+
 		// cg: just make sure that the esr import is not set to processed too early
 		if (isAllLinesProcessed(allLines))
 		{
@@ -1256,14 +1249,13 @@ public class ESRImportBL implements IESRImportBL
 		final byte[] md5 = computeMD5ChecksumAsBytes(filename);
 		return convertMD5BytesToString(md5);
 	}
-	
+
 	@Override
 	public String computeMD5Checksum(final byte[] fileContent)
 	{
 		final byte[] md5 = computeMD5ChecksumAsBytes(new ByteArrayInputStream(fileContent));
 		return convertMD5BytesToString(md5);
 	}
-
 
 	@Override
 	public void unlinkESRImportLinesFor(final I_C_BankStatementLine bankStatementLine)
