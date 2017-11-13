@@ -48,6 +48,8 @@ Here come the actual release notes:
     * Application Dictionary adjustment for AD_Ref_Table, setting loaer case statements for the column SQL.
   * [#2914](https://github.com/metasfresh/metasfresh/issues/2914) Replace org.adempiere.util.collections.Predicate with java.util.function.Predicate
     * Internal Housekeeping issue, replacing legacy code with java class substitute.
+  * [#2919](https://github.com/metasfresh/metasfresh/issues/2919) trx API: log a warning in case we are registering a ITrxListener which might be never executed because trx is already commit/closed
+    * Internal Housekeepign improvement for Transaction handlign.
   * [#2920](https://github.com/metasfresh/metasfresh/issues/2920) Create automated test for extending contracts.
     * Improving the Test coverage for contract extension. Creating automated Tests.
   * [#2934](https://github.com/metasfresh/metasfresh/issues/2934) Additional Locator Dimensions
@@ -78,19 +80,23 @@ Here come the actual release notes:
   * [#2905](https://github.com/metasfresh/metasfresh/issues/2905) Referenced documents: sales order to invoice candidates
     * Fixing the missing reference between Invoice Candidates and Sales Order when Inouts are created before Invoice Candidate.
   * [#2917](https://github.com/metasfresh/metasfresh/issues/2917) Allow reactivating procurement contracts
-  * [#2919](https://github.com/metasfresh/metasfresh/issues/2919) trx API: log a warning in case we are registering a ITrxListener which might be never executed because trx is already commit/closed
+    * Allowing the document action for reactivation of procurement contracts.
 
 * metasfresh-webui-api
   * [#649](https://github.com/metasfresh/metasfresh-webui-api/issues/649) Qty Delivered and Qty Picked not updated correctly in shipment schedule
+    * Fix for Qty fields in shipment schedule. Now field contend is updated correctly in WebUI.
   * [#660](https://github.com/metasfresh/metasfresh-webui-api/issues/660) JSONUserSessionChangesEvent not fired when currently logged in user is changed
+    * Internal Housekeeping Issue solving the firing of session change events after chainging the login user.
   * [#665](https://github.com/metasfresh/metasfresh-webui-api/issues/665) Manufacturing order: create source HU is opening same view on right side as we have it on left side
     * Fix for the source HU View in Manufacturing Order.
 
 * metasfresh-webui-frontend
   * [#1279](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1279) menu actions for included row broken
+    * Fix for the usage of menu actions when opening from included rows.
   * [#1283](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1283) Revise shortcut handling
     * Quick Fix for the broken shortcut Handling in Documents.
   * [#1286](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1286) Error when maximize subtab which does not support quick input
+    * Fixes a Bug that occured for included subtabs when maximizing and not supporting quick input.
   * [#1324](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1324) Process is started twice when using ctrl-u shortcut
     * Quick Fix for the Action Handling in Material Receipt when using Keyboard Shortcuts.
   * [#1328](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1328) Date recording w/ wrong date Error
