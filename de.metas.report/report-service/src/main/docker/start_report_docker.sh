@@ -62,7 +62,7 @@ run_db_update()
  echo "METASFRESH_DB_NAME=${db_name}" >> $settings_file
  echo "METASFRESH_DB_USER=${db_user}" >> $settings_file
  echo "METASFRESH_DB_PASSWORD=${db_password}" >> $settings_file
- echo "" > $settings_file
+ echo "" >> $settings_file
  
  # -s sets the "Name of the (s)ettings file (e.g. settings_<hostname>.properties) *within the Rollout-Directory*" (which is /opt/metasfresh/dist in this case)
  # -v disables version-check since this is not a "main" migration and only those are handeled by the verios stored in AD_System.DBVersion
@@ -87,7 +87,7 @@ echo "*************************************************************"
 echo_variable_values
 echo ""
 
-set_properties /opt/metasfresh/metasfresh-report/
+set_properties /opt/metasfresh/metasfresh-report/metasfresh.properties
 
 
 echo "*************************************************************"
