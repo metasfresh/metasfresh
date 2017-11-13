@@ -68,13 +68,15 @@ public class OLCandRow implements IViewRow
 	})
 	private final BigDecimal qtyToDeliver;
 
-	@ViewColumn(captionKey = "QtyToPurchase", widgetType = DocumentFieldWidgetType.Quantity, editor = ViewEditorRenderMode.ALWAYS, layouts = {
+	public static final String FIELDNAME_QtyToPurchase = "qtyToPurchase";
+	@ViewColumn(fieldName = FIELDNAME_QtyToPurchase, captionKey = "QtyToPurchase", widgetType = DocumentFieldWidgetType.Quantity, editor = ViewEditorRenderMode.ALWAYS, layouts = {
 			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 40),
 			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 40)
 	})
 	private final BigDecimal qtyToPurchase;
 
-	@ViewColumn(captionKey = "DatePromised", widgetType = DocumentFieldWidgetType.DateTime, editor = ViewEditorRenderMode.ALWAYS, layouts = {
+	public static final String FIELDNAME_DatePromised = "datePromised";
+	@ViewColumn(fieldName = FIELDNAME_DatePromised, captionKey = "DatePromised", widgetType = DocumentFieldWidgetType.DateTime, editor = ViewEditorRenderMode.ALWAYS, layouts = {
 			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 50),
 			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 50)
 	})
@@ -82,7 +84,7 @@ public class OLCandRow implements IViewRow
 
 	private transient ImmutableMap<String, Object> _fieldNameAndJsonValues;
 
-	@Builder
+	@Builder(toBuilder = true)
 	public OLCandRow(
 			@NonNull final DocumentId rowId,
 			@NonNull final JSONLookupValue product,
