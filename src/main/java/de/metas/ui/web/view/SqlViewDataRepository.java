@@ -37,7 +37,7 @@ import de.metas.ui.web.view.descriptor.SqlAndParams;
 import de.metas.ui.web.view.descriptor.SqlViewBinding;
 import de.metas.ui.web.view.descriptor.SqlViewRowFieldBinding;
 import de.metas.ui.web.view.descriptor.SqlViewRowFieldBinding.SqlViewRowFieldLoader;
-import de.metas.ui.web.view.descriptor.SqlViewSelect;
+import de.metas.ui.web.view.descriptor.SqlViewSelectData;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.WindowId;
@@ -72,7 +72,7 @@ class SqlViewDataRepository implements IViewDataRepository
 	private static final Logger logger = LogManager.getLogger(SqlViewDataRepository.class);
 
 	private final String tableName;
-	private final SqlViewSelect sqlViewSelect;
+	private final SqlViewSelectData sqlViewSelect;
 	private final ViewRowIdsOrderedSelectionFactory viewRowIdsOrderedSelectionFactory;
 	private final DocumentFilterDescriptorsProvider viewFilterDescriptors;
 	private final List<DocumentQueryOrderBy> defaultOrderBys;
@@ -269,7 +269,7 @@ class SqlViewDataRepository implements IViewDataRepository
 	{
 		final ViewRow.Builder viewRowBuilder = ViewRow.builder(windowId);
 
-		final int parentIdInt = rs.getInt(SqlViewSelect.COLUMNNAME_Paging_Parent_ID);
+		final int parentIdInt = rs.getInt(SqlViewSelectData.COLUMNNAME_Paging_Parent_ID);
 		if (!rs.wasNull())
 		{
 			viewRowBuilder.setParentRowId(DocumentId.of(parentIdInt));

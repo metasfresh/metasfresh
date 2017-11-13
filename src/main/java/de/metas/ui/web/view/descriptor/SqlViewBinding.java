@@ -63,7 +63,7 @@ public class SqlViewBinding implements SqlEntityBinding
 	private final ImmutableMap<String, SqlViewRowFieldBinding> _fieldsByFieldName;
 	private final SqlViewRowFieldBinding _keyField;
 
-	private final SqlViewSelect sqlViewSelect;
+	private final SqlViewSelectData sqlViewSelect;
 	private final IStringExpression sqlWhereClause;
 	private final List<SqlViewRowFieldLoader> rowFieldLoaders;
 
@@ -93,7 +93,7 @@ public class SqlViewBinding implements SqlEntityBinding
 
 		final Collection<SqlViewRowFieldBinding> allFields = _fieldsByFieldName.values();
 		this.groupingBinding = builder.groupingBinding;
-		sqlViewSelect = SqlViewSelect.builder()
+		sqlViewSelect = SqlViewSelectData.builder()
 				.sqlTableName(_tableName)
 				.sqlTableAlias(_tableAlias)
 				.keyField(_keyField)
@@ -186,7 +186,7 @@ public class SqlViewBinding implements SqlEntityBinding
 		return field;
 	}
 
-	public SqlViewSelect getSqlViewSelect()
+	public SqlViewSelectData getSqlViewSelect()
 	{
 		return sqlViewSelect;
 	}

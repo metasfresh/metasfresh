@@ -53,7 +53,7 @@ import lombok.NonNull;
  * 
  * @author metas-dev <dev@metasfresh.com>
  */
-public class SqlViewSelect
+public class SqlViewSelectData
 {
 	private static final String COLUMNNAME_Paging_UUID = "_sel_UUID";
 	public static final String COLUMNNAME_Paging_SeqNo_OneBased = "_sel_SeqNo";
@@ -68,7 +68,7 @@ public class SqlViewSelect
 	private final IStringExpression sqlSelectLinesByRowIds;
 
 	@Builder
-	private SqlViewSelect(
+	private SqlViewSelectData(
 			final String sqlTableName,
 			final String sqlTableAlias,
 			final SqlViewRowFieldBinding keyField,
@@ -109,7 +109,7 @@ public class SqlViewSelect
 				.toComposer()
 				.append("\n WHERE ")
 				// .append("\n " + SqlViewSelectionQueryBuilder.COLUMNNAME_Paging_UUID + "=?") // already filtered above
-				.append("\n " + SqlViewSelect.COLUMNNAME_Paging_Record_ID + " IN ").append(PLACEHOLDER_Paging_Record_IDs)
+				.append("\n " + SqlViewSelectData.COLUMNNAME_Paging_Record_ID + " IN ").append(PLACEHOLDER_Paging_Record_IDs)
 				.build();
 
 	}
@@ -312,13 +312,13 @@ public class SqlViewSelect
 			sql.append(", \n").appendAllJoining("\n, ", sqlSelectDisplayNamesList); // DisplayName fields
 		}
 
-		sql.append("\n, " + SqlViewSelect.COLUMNNAME_Paging_Record_ID + " AS " + SqlViewSelect.COLUMNNAME_Paging_Parent_ID);
+		sql.append("\n, " + SqlViewSelectData.COLUMNNAME_Paging_Record_ID + " AS " + SqlViewSelectData.COLUMNNAME_Paging_Parent_ID);
 
 		sql.append("\n FROM (")
 				.append("\n   SELECT ")
 				.append("\n   ").append(Joiner.on("\n   , ").join(sqlSelectValuesList))
-				.append("\n , sl." + I_T_WEBUI_ViewSelectionLine.COLUMNNAME_UUID + " AS " + SqlViewSelect.COLUMNNAME_Paging_UUID)
-				.append("\n , sl." + I_T_WEBUI_ViewSelectionLine.COLUMNNAME_Record_ID + " AS " + SqlViewSelect.COLUMNNAME_Paging_Record_ID)
+				.append("\n , sl." + I_T_WEBUI_ViewSelectionLine.COLUMNNAME_UUID + " AS " + SqlViewSelectData.COLUMNNAME_Paging_UUID)
+				.append("\n , sl." + I_T_WEBUI_ViewSelectionLine.COLUMNNAME_Record_ID + " AS " + SqlViewSelectData.COLUMNNAME_Paging_Record_ID)
 				.append("\n   FROM " + I_T_WEBUI_ViewSelectionLine.Table_Name + " sl")
 				.append("\n   LEFT OUTER JOIN " + sqlTableName + " ON (" + sqlTableName + "." + sqlKeyColumnName + " = sl." + I_T_WEBUI_ViewSelectionLine.COLUMNNAME_Line_ID + ")")
 				// Filter by UUID. Keep this closer to the source table, see https://github.com/metasfresh/metasfresh-webui-api/issues/437

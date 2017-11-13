@@ -53,7 +53,7 @@ import de.metas.ui.web.view.ViewRowIdsOrderedSelectionFactory;
 import de.metas.ui.web.view.descriptor.SqlAndParams;
 import de.metas.ui.web.view.descriptor.SqlViewBinding;
 import de.metas.ui.web.view.descriptor.SqlViewRowIdsConverter;
-import de.metas.ui.web.view.descriptor.SqlViewSelect;
+import de.metas.ui.web.view.descriptor.SqlViewSelectData;
 import de.metas.ui.web.view.descriptor.SqlViewSelectionQueryBuilder;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.WindowId;
@@ -95,7 +95,7 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 
 	private final SqlViewBinding sqlViewBinding;
 	private final ViewRowIdsOrderedSelectionFactory viewSelectionFactory;
-	private final SqlViewSelect sqlViewSelect;
+	private final SqlViewSelectData sqlViewSelect;
 
 	@Builder
 	private SqlHUEditorViewRepository(
@@ -459,7 +459,7 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 				}
 				huIds.add(huId);
 
-				final int lastRow = rs.getInt(SqlViewSelect.COLUMNNAME_Paging_SeqNo_OneBased);
+				final int lastRow = rs.getInt(SqlViewSelectData.COLUMNNAME_Paging_SeqNo_OneBased);
 				lastRowMax = Math.max(lastRowMax, lastRow);
 			}
 
