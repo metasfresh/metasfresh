@@ -14,16 +14,17 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
+import de.metas.ui.web.view.IEditableView;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.ViewResult;
-import de.metas.ui.web.view.event.ViewChangesCollector;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
+import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 import de.metas.ui.web.window.model.sql.SqlOptions;
 import lombok.Builder;
@@ -51,9 +52,9 @@ import lombok.NonNull;
  * #L%
  */
 
-public class OLCandView implements IView
+public class OLCandView implements IEditableView
 {
-	public static OLCandView cast(IView view)
+	public static OLCandView cast(final IView view)
 	{
 		return (OLCandView)view;
 	}
@@ -132,8 +133,6 @@ public class OLCandView implements IView
 	@Override
 	public void invalidateAll()
 	{
-		rows.invalidateAll();
-		ViewChangesCollector.getCurrentOrAutoflush().collectFullyChanged(this);
 	}
 
 	@Override
@@ -186,8 +185,7 @@ public class OLCandView implements IView
 	@Override
 	public String getSqlWhereClause(final DocumentIdsSelection rowIds, final SqlOptions sqlOpts)
 	{
-		// TODO Auto-generated method stub
-		return null;
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
@@ -205,11 +203,23 @@ public class OLCandView implements IView
 	@Override
 	public void notifyRecordsChanged(final Set<TableRecordReference> recordRefs)
 	{
-		if (rows.notifyRecordsChanged(recordRefs))
-		{
-			// Collect event
-			// TODO: check which rowIds are contained in this view and fire events only for those
-			ViewChangesCollector.getCurrentOrAutoflush().collectFullyChanged(this);
-		}
+	}
+
+	@Override
+	public void patchViewRow(final RowEditingContext ctx, final List<JSONDocumentChangedEvent> fieldChangeRequests)
+	{
+		rows.patchRow(ctx.getRowId(), fieldChangeRequests);
+	}
+
+	@Override
+	public LookupValuesList getFieldTypeahead(final RowEditingContext ctx, final String fieldName, final String query)
+	{
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public LookupValuesList getFieldDropdown(final RowEditingContext ctx, final String fieldName)
+	{
+		throw new UnsupportedOperationException();
 	}
 }

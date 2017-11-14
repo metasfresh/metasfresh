@@ -73,6 +73,16 @@ public final class JSONDate implements Serializable
 			return fromDateTimeString(valueStr);
 		}
 	}
+	
+	public static java.util.Date fromObject(final Object value, final DocumentFieldWidgetType widgetType)
+	{
+		if (value == null)
+		{
+			return null;
+		}
+		final String valueStr = value.toString().trim();
+		return JSONDate.fromJson(valueStr, DocumentFieldWidgetType.DateTime);
+	}
 
 	public static java.util.Date fromTimestamp(final Timestamp ts)
 	{

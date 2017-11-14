@@ -90,14 +90,14 @@ public class SalesOrderToOLCandViewFactory implements IViewFactory, IViewsIndexS
 	}
 
 	@Override
-	public IView getByIdOrNull(final ViewId viewId)
+	public OLCandView getByIdOrNull(final ViewId viewId)
 	{
 		return views.getIfPresent(viewId);
 	}
 
-	public IView getById(final ViewId viewId)
+	public OLCandView getById(final ViewId viewId)
 	{
-		final IView view = getByIdOrNull(viewId);
+		final OLCandView view = getByIdOrNull(viewId);
 		if (view == null)
 		{
 			throw new EntityNotFoundException("View " + viewId + " was not found");
@@ -131,14 +131,14 @@ public class SalesOrderToOLCandViewFactory implements IViewFactory, IViewsIndexS
 	}
 
 	@Override
-	public IView createView(final CreateViewRequest request)
+	public OLCandView createView(final CreateViewRequest request)
 	{
 		return createView(OLCandViewCreateRequest.builder()
 				.salesOrderLineIds(request.getFilterOnlyIds())
 				.build());
 	}
 
-	private IView createView(final OLCandViewCreateRequest request)
+	private OLCandView createView(final OLCandViewCreateRequest request)
 	{
 		final OLCandView view = OLCandView.builder()
 				.viewId(ViewId.random(WINDOW_ID))
