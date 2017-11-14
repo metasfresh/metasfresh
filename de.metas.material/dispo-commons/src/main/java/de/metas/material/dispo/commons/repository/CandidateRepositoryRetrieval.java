@@ -1,7 +1,6 @@
 package de.metas.material.dispo.commons.repository;
 
 import static org.adempiere.model.InterfaceWrapperHelper.isNew;
-import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -17,7 +16,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.collections.ListUtils;
-import org.compiere.model.I_C_UOM;
 import org.compiere.util.DB;
 import org.springframework.stereotype.Service;
 
@@ -34,7 +32,6 @@ import de.metas.material.dispo.commons.candidate.DemandDetail;
 import de.metas.material.dispo.commons.candidate.DistributionDetail;
 import de.metas.material.dispo.commons.candidate.ProductionDetail;
 import de.metas.material.dispo.commons.candidate.TransactionDetail;
-import de.metas.material.dispo.commons.repository.AvailableStockResult.Group;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.I_MD_Candidate_Demand_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_Dist_Detail;
@@ -42,9 +39,6 @@ import de.metas.material.dispo.model.I_MD_Candidate_Prod_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_Transaction_Detail;
 import de.metas.material.event.MaterialDescriptor;
 import de.metas.material.event.ProductDescriptor;
-import de.metas.product.IProductBL;
-import de.metas.product.model.I_M_Product;
-import de.metas.quantity.Quantity;
 import lombok.NonNull;
 
 /*
@@ -323,17 +317,12 @@ public class CandidateRepositoryRetrieval
 	@NonNull
 	public BigDecimal retrieveAvailableStock(@NonNull final MaterialDescriptor materialDescriptor)
 	{
-		final AvailableStockResult result = retrieveAvailableStock(MaterialQuery.builder()
-				.warehouseId(materialDescriptor.getWarehouseId())
-				.date(materialDescriptor.getDate())
-				.productId(materialDescriptor.getProductId())
-				.storageAttributesKey(materialDescriptor.getStorageAttributesKey())
-				.build());
-		return result.getSingleQuantity().getQty();
+		final MaterialQuery query = MaterialQuery.forMaterialDescriptor(materialDescriptor);
+		return retrieveAvailableStock(query);
 	}
 
 	@NonNull
-	public AvailableStockResult retrieveAvailableStock(@NonNull final MaterialQuery query)
+	public BigDecimal retrieveAvailableStock(@NonNull final MaterialQuery query)
 	{
 		final String storageAttributesKeyLikeExpression = RepositoryCommons
 				.prepareStorageAttributesKeyForLikeExpression(
@@ -349,21 +338,6 @@ public class CandidateRepositoryRetrieval
 						"%" + storageAttributesKeyLikeExpression + "%",
 						query.getDate() });
 
-		final I_C_UOM uom = getStockingUOM(productId);
-		final Quantity qty = Quantity.of(qtyValue, uom);
-
-		return AvailableStockResult.builder()
-				.group(Group.builder()
-						.productId(productId)
-						// .attributes(attributes) // TODO
-						.qty(qty)
-						.build())
-				.build();
-	}
-
-	public I_C_UOM getStockingUOM(final int productId)
-	{
-		final I_C_UOM uom = Services.get(IProductBL.class).getStockingUOM(load(productId, I_M_Product.class));
-		return uom;
+		return qtyValue;
 	}
 }

@@ -8,8 +8,10 @@ import org.adempiere.util.time.SystemTime;
 
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.material.event.MaterialDescriptor;
 import de.metas.material.event.ProductDescriptor;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
 
@@ -38,6 +40,16 @@ import lombok.Value;
 @Value
 public class MaterialQuery
 {
+	public static MaterialQuery forMaterialDescriptor(@NonNull final MaterialDescriptor materialDescriptor)
+	{
+		return MaterialQuery.builder()
+				.warehouseId(materialDescriptor.getWarehouseId())
+				.date(materialDescriptor.getDate())
+				.productId(materialDescriptor.getProductId())
+				.storageAttributesKey(materialDescriptor.getStorageAttributesKey())
+				.build();
+	}
+
 	private final int warehouseId;
 	private final Date date;
 	private final Set<Integer> productIds;
@@ -56,7 +68,7 @@ public class MaterialQuery
 
 		this.warehouseId = warehouseId > 0 ? warehouseId : -1;
 		this.date = date != null ? date : SystemTime.asDate();
-		this.productIds= ImmutableSet.copyOf(productIds);
+		this.productIds = ImmutableSet.copyOf(productIds);
 		this.storageAttributesKey = storageAttributesKey != null ? storageAttributesKey : ProductDescriptor.STORAGE_ATTRIBUTES_KEY_UNSPECIFIED;
 		this.dimensionSpecId = dimensionSpecId;
 	}

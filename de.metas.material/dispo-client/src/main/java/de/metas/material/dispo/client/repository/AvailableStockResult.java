@@ -1,4 +1,4 @@
-package de.metas.material.dispo.commons.repository;
+package de.metas.material.dispo.client.repository;
 
 import java.util.List;
 

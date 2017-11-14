@@ -76,7 +76,6 @@ public class CandiateRepositoryRetrievalTests
 
 	private CandidateRepositoryRetrieval candidateRepository;
 
-
 	private RepositoryTestHelper repositoryTestHelper;
 
 	@Mocked
@@ -539,13 +538,13 @@ public class CandiateRepositoryRetrievalTests
 	}
 
 	@Test(expected = RuntimeException.class)
-	public void retrieveAvailableStockForCompleteDescriptor_throw_ex_if_not_complete()
+	public void retrieveAvailableStock_throw_ex_if_not_complete()
 	{
 		MaterialQuery.builder().build();
 	}
 
 	@Test
-	public void retrieveAvailableStockForCompleteDescriptor_invokes_DB_function()
+	public void retrieveAvailableStock_invokes_DB_function()
 	{
 		final ProductDescriptor productDescriptor = ProductDescriptor.forProductAndAttributes(
 				PRODUCT_ID,
@@ -566,8 +565,7 @@ public class CandiateRepositoryRetrievalTests
 							materialDescriptor.getDate()});
 			times = 1;
 			result = BigDecimal.TEN;
-		}};
-		// @formatter:on
+		}}; // @formatter:on
 
 		final BigDecimal result = candidateRepository.retrieveAvailableStock(materialDescriptor);
 		assertThat(result).isEqualByComparingTo("10");

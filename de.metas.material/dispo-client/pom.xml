@@ -9,12 +9,11 @@
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
-	<artifactId>metasfresh-material-dispo-commons</artifactId>
+	<artifactId>metasfresh-material-dispo-client</artifactId>
 	<packaging>jar</packaging>
 
+
 	<properties>
-		<start-class>de.metas.material.dispo.Application</start-class>
-		<migration-sql-basedir>75-material-dispo</migration-sql-basedir>
 		<metasfresh.version>[1,10.0.0]</metasfresh.version>
 	</properties>
 
@@ -38,15 +37,39 @@
 		<dependency>
 			<groupId>de.metas.util</groupId>
 			<artifactId>de.metas.util</artifactId>
-			<version>10.0.0</version>
+			<version>${metasfresh.version}</version>
 		</dependency>
 
+		<dependency>
+			<groupId>de.metas.business</groupId>
+			<artifactId>de.metas.business</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>de.metas.business</groupId>
+			<artifactId>de.metas.business</artifactId>
+			<version>${metasfresh.version}</version>
+			<classifier>tests</classifier>
+			<scope>test</scope>
+		</dependency>
 		<dependency>
 			<groupId>de.metas.adempiere.adempiere</groupId>
 			<artifactId>de.metas.adempiere.adempiere.base</artifactId>
 			<version>${metasfresh.version}</version>
 			<classifier>tests</classifier>
 			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.dimension</groupId>
+			<artifactId>de.metas.dimension</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.material</groupId>
+			<artifactId>metasfresh-material-dispo-commons</artifactId>
+			<version>${metasfresh.version}</version>
 		</dependency>
 
 		<dependency>
@@ -81,32 +104,6 @@
 			<scope>test</scope>
 		</dependency>
 
-
-		<!-- TEST enforcer rule in service -->
-		<!-- 
-		<dependency>
-			<groupId>de.metas.business</groupId>
-			<artifactId>de.metas.business</artifactId>
-			<version>${metasfresh.version}</version>
-		</dependency>
-		-->
 	</dependencies>
-
-	<build>
-		<plugins>
-			<!-- Create tests JAR -->
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-jar-plugin</artifactId>
-				<executions>
-					<execution>
-						<goals>
-							<goal>test-jar</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-		</plugins>
-	</build>
 
 </project>
