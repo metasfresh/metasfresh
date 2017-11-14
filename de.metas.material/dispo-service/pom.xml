@@ -9,7 +9,7 @@
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
-	<artifactId>metasfresh-material-dispo-service</artifactId>
+	<artifactId>material-dispo-service</artifactId>
 	<packaging>jar</packaging>
 
 	<properties>
@@ -145,6 +145,7 @@
 	</dependencies>
 
 	<build>
+		<finalName>metasfresh-material-dispo-service</finalName>
 		<plugins>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
@@ -159,6 +160,11 @@
 						<configuration>
 							<executable>true</executable>
 							<mainClass>${start-class}</mainClass>
+							
+							<!-- this also provides the super-jar to the successive docker build 
+								Note that the ${docker.build.directory} property  is set by the prepare-docker profile 
+								that is activated by the presence of the scr/main/docker folder -->
+							<outputDirectory>${docker.build.directory}</outputDirectory>
 						</configuration>
 					</execution>
 					<execution>
