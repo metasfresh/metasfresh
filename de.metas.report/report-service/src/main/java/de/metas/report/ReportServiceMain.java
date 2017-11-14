@@ -1,7 +1,8 @@
-package de.metas.material.dispo.service;
+package de.metas.report;
 
 import java.util.Collections;
 
+import org.adempiere.util.StringUtils;
 import org.compiere.Adempiere;
 import org.compiere.Adempiere.RunMode;
 import org.compiere.model.ModelValidationEngine;
@@ -10,12 +11,12 @@ import org.compiere.util.Ini;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
+import org.springframework.boot.web.servlet.ServletComponentScan;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Profile;
 
-import de.metas.material.dispo.service.event.MaterialDispoEventListenerFacade;
-import de.metas.material.event.MaterialEventService;
+import de.metas.adempiere.report.jasper.JasperConstants;
 
 /*
  * #%L
@@ -39,32 +40,33 @@ import de.metas.material.event.MaterialEventService;
  * #L%
  */
 
-/**
- * metasfresh server boot.
- *
- * @author metas-dev <dev@metasfresh.com>
- */
-@SpringBootApplication( //
-		scanBasePackages = { "de.metas", "org.adempiere" }  //
-)
-public class Application
+
+@SpringBootApplication(scanBasePackages =
+	{ "de.metas.report", "de.metas.adempiere.report.jasper" })
+@ServletComponentScan(value =
+	{ "de.metas.adempiere.report.jasper.servlet" })
+@Profile(JasperConstants.PROFILE_JasperServer)
+public class ReportServiceMain
 {
 	@Autowired
 	private ApplicationContext applicationContext;
 
-	@Autowired
-	private MaterialEventService eventService;
-
-	@Autowired
-	private MaterialDispoEventListenerFacade mdEventListener;
+	/**
+	 * By default, we run in headless mode. But using this system property, we can also run with headless=false.
+	 * The only known use of that is that metasfresh can open the initial license & connection dialog to store the initial properties file.
+	 */
+	public static final String SYSTEM_PROPERTY_HEADLESS = "app-server-run-headless";
 
 	public static void main(final String[] args)
 	{
 		Ini.setRunMode(RunMode.BACKEND);
 
-		new SpringApplicationBuilder(Application.class)
-				.headless(true)
+		final String headless = System.getProperty(SYSTEM_PROPERTY_HEADLESS, Boolean.toString(true));
+
+		new SpringApplicationBuilder(ReportServiceMain.class)
+				.headless(StringUtils.toBoolean(headless)) // we need headless=false for initial connection setup popup (if any), usually this only applies on dev workstations.
 				.web(true)
+				.profiles(JasperConstants.PROFILE_JasperServer)
 				.run(args);
 	}
 
@@ -72,17 +74,13 @@ public class Application
 	@Profile("!test")
 	public Adempiere adempiere()
 	{
-		// as of right now, we are not interested in loading any model validator whatsoever within this service
+		// as of right now, we are not interested in loading *any* model validator whatsoever within this service
 		// therefore we don't e.g. have to deal with the async-processor. It just won't be started.
 		ModelValidationEngine.setInitEntityTypes(Collections.emptyList());
 
 		final Adempiere adempiere = Env.getSingleAdempiereInstance(applicationContext);
 		adempiere.startup(RunMode.BACKEND);
 
-		eventService.registerListener(mdEventListener);
-		eventService.subscribeToEventBus();
-
 		return adempiere;
 	}
-
 }

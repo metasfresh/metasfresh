@@ -86,6 +86,8 @@ public class ServerBoot
 		new SpringApplicationBuilder(ServerBoot.class)
 				.headless(StringUtils.toBoolean(headless)) // we need headless=false for initial connection setup popup (if any), usually this only applies on dev workstations.
 				.web(true)
+				// consider removing the jasper profile
+				// if we did that, then to also have jasper within the backend, we would start it with -Dspring.profiles.active=metasfresh-jasper-server
 				.profiles(PROFILE, JasperConstants.PROFILE_JasperServer)
 				.run(args);
 	}
