@@ -40,7 +40,6 @@ import java.util.List;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.ad.trx.api.ITrxRunConfig;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.invoice.service.IInvoiceBL;
@@ -130,10 +129,8 @@ public class ESRImportTest extends ESRTestBase
 		final I_ESR_ImportLine esrImportLine = setupESR_ImportLine(invDocNo, grandTotal, false, completeRef, refNo, ESR_Rendered_AccountNo, partnerValue, "50", false);
 		final I_ESR_Import esrImport = esrImportLine.getESR_Import();
 
-		final ITrxRunConfig trxRunConfig = ESRTestUtil.createTrxRunconfig();
 		final ESRImportBL esrBL = new ESRImportBL();
-
-		esrBL.process(esrImport, trxRunConfig);
+		esrBL.process(esrImport);
 
 		// check import line
 		InterfaceWrapperHelper.refresh(esrImportLine, true);
@@ -255,8 +252,7 @@ public class ESRImportTest extends ESRTestBase
 		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream((esrLineText + '\n' + esrLineText).getBytes()));
 
 		// start processing
-		final ITrxRunConfig trxRunConfig = ESRTestUtil.createTrxRunconfig();
-		esrImportBL.process(esrImport, trxRunConfig);
+		esrImportBL.process(esrImport);
 
 		final List<I_ESR_ImportLine> lines = Services.get(IESRImportDAO.class).retrieveLines(esrImport);
 		assertThat(lines.size(), is(2));
@@ -333,9 +329,8 @@ public class ESRImportTest extends ESRTestBase
 		final I_ESR_Import esrImport = esrImportLine.getESR_Import();
 
 		// start processing
-		final ITrxRunConfig trxRunConfig = ESRTestUtil.createTrxRunconfig();
 		final ESRImportBL esrBL = new ESRImportBL();
-		esrBL.process(esrImport, trxRunConfig);
+		esrBL.process(esrImport);
 
 		// check import line
 		InterfaceWrapperHelper.refresh(esrImportLine, true);
@@ -380,7 +375,7 @@ public class ESRImportTest extends ESRTestBase
 		Services.get(IESRImportBL.class).setInvoice(esrImportLine, inv1);
 		InterfaceWrapperHelper.save(esrImportLine);
 
-		esrBL.complete(esrImport, "Complete", trxRunConfig);
+		esrBL.complete(esrImport, "Complete");
 
 		// check import line
 		InterfaceWrapperHelper.refresh(esrImportLine, true);
@@ -438,9 +433,8 @@ public class ESRImportTest extends ESRTestBase
 		final I_ESR_Import esrImport = esrImportLine.getESR_Import();
 
 		// start processing
-		final ITrxRunConfig trxRunConfig = ESRTestUtil.createTrxRunconfig();
 		final ESRImportBL esrBL = new ESRImportBL();
-		esrBL.process(esrImport, trxRunConfig);
+		esrBL.process(esrImport);
 
 		// check import line
 		InterfaceWrapperHelper.refresh(esrImportLine, true);
@@ -460,7 +454,7 @@ public class ESRImportTest extends ESRTestBase
 		esrImportLine.setESR_Payment_Action(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Write_Off_Amount);
 		InterfaceWrapperHelper.save(esrImportLine);
 
-		esrBL.complete(esrImport, "Complete", trxRunConfig);
+		esrBL.complete(esrImport, "Complete");
 
 		InterfaceWrapperHelper.refresh(getC_Invoice(), true);
 		assertThat(getC_Invoice().isPaid(), is(true));
@@ -516,13 +510,12 @@ public class ESRImportTest extends ESRTestBase
 		final String invDocNo = "654321";
 		final String ESR_Rendered_AccountNo = "01-067789-3";
 
-		final I_ESR_ImportLine esrImportLine = setupESR_ImportLine(invDocNo, grandTotal, false, esrLineText, refNo, ESR_Rendered_AccountNo, partnerValue, "70",false);
+		final I_ESR_ImportLine esrImportLine = setupESR_ImportLine(invDocNo, grandTotal, false, esrLineText, refNo, ESR_Rendered_AccountNo, partnerValue, "70", false);
 		final I_ESR_Import esrImport = esrImportLine.getESR_Import();
 
 		// start processing
-		final ITrxRunConfig trxRunConfig = ESRTestUtil.createTrxRunconfig();
 		final ESRImportBL esrBL = new ESRImportBL();
-		esrBL.process(esrImport, trxRunConfig);
+		esrBL.process(esrImport);
 
 		// check import line
 		InterfaceWrapperHelper.refresh(esrImportLine, true);
@@ -542,7 +535,7 @@ public class ESRImportTest extends ESRTestBase
 		esrImportLine.setESR_Payment_Action(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Allocate_Payment_With_Next_Invoice);
 		InterfaceWrapperHelper.save(esrImportLine);
 
-		esrBL.complete(esrImport, "Complete", trxRunConfig);
+		esrBL.complete(esrImport, "Complete");
 
 		// check the invoice
 		InterfaceWrapperHelper.refresh(getC_Invoice(), true);
@@ -600,9 +593,8 @@ public class ESRImportTest extends ESRTestBase
 
 		// start processing
 
-		final ITrxRunConfig trxRunConfig = ESRTestUtil.createTrxRunconfig();
 		final ESRImportBL esrBL = new ESRImportBL();
-		esrBL.process(esrImport, trxRunConfig);
+		esrBL.process(esrImport);
 
 		// check import line
 		InterfaceWrapperHelper.refresh(esrImportLine, true);
@@ -632,7 +624,7 @@ public class ESRImportTest extends ESRTestBase
 		type.setDocBaseType(X_C_DocType.DOCBASETYPE_ARCreditMemo);
 		InterfaceWrapperHelper.save(type);
 
-		esrBL.complete(esrImport, "Complete", trxRunConfig);
+		esrBL.complete(esrImport, "Complete");
 
 		// check the invoice
 		InterfaceWrapperHelper.refresh(getC_Invoice(), true);
@@ -706,7 +698,7 @@ public class ESRImportTest extends ESRTestBase
 		InterfaceWrapperHelper.save(account);
 
 		// esr line
-		final List<I_ESR_ImportLine> lines = new ArrayList<I_ESR_ImportLine>();
+		final List<I_ESR_ImportLine> lines = new ArrayList<>();
 		final String esrLineText = "01201067789300000001060000000000000000400000050009072  030014040914041014041100001006800000000000090                          ";
 		final I_ESR_Import esrImport = createImport();
 		esrImport.setAD_Org_ID(org.getAD_Org_ID());
@@ -717,8 +709,7 @@ public class ESRImportTest extends ESRTestBase
 		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream(esrLineText.getBytes()));
 
 		// start processing
-		final ITrxRunConfig trxRunConfig = ESRTestUtil.createTrxRunconfig();
-		esrImportBL.process(esrImport, trxRunConfig);
+		esrImportBL.process(esrImport);
 
 		// this needs to be here because happens when saving, while importing the line
 		// process emulates the importing of the file and at the end the line is saved when the default values are set
@@ -769,7 +760,7 @@ public class ESRImportTest extends ESRTestBase
 		InterfaceWrapperHelper.save(esrImportLine);
 		lines.add(esrImportLine);
 
-		esrImportBL.complete(esrImport, "Complete", trxRunConfig);
+		esrImportBL.complete(esrImport, "Complete");
 
 		// check invoice
 		InterfaceWrapperHelper.refresh(inv, true);
@@ -855,11 +846,10 @@ public class ESRImportTest extends ESRTestBase
 		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream(esrLineText.getBytes()));
 
 		// start processing
-		final ITrxRunConfig trxRunConfig = ESRTestUtil.createTrxRunconfig();
-		esrImportBL.process(esrImport, trxRunConfig);
+		esrImportBL.process(esrImport);
 		final I_ESR_ImportLine esrImportLine = ESRTestUtil.retrieveSingleLine(esrImport);
 
-		final List<I_ESR_ImportLine> lines = new ArrayList<I_ESR_ImportLine>();
+		final List<I_ESR_ImportLine> lines = new ArrayList<>();
 		esrImportLine.setC_BPartner(partner);
 		InterfaceWrapperHelper.save(esrImportLine);
 		lines.add(esrImportLine);
@@ -908,7 +898,7 @@ public class ESRImportTest extends ESRTestBase
 		esrImportBL.setInvoice(esrImportLine, inv);
 		InterfaceWrapperHelper.save(esrImportLine);
 
-		esrImportBL.complete(esrImport, "Complete", trxRunConfig);
+		esrImportBL.complete(esrImport, "Complete");
 
 		// check invoice
 		InterfaceWrapperHelper.refresh(inv, true);
@@ -965,7 +955,7 @@ public class ESRImportTest extends ESRTestBase
 		InterfaceWrapperHelper.save(refNoType);
 
 		// esr line
-		final List<I_ESR_ImportLine> lines = new ArrayList<I_ESR_ImportLine>();
+		final List<I_ESR_ImportLine> lines = new ArrayList<>();
 		final String esrLineText = "01201067789300000001060012345600000000400000050009072  030014040914041014041100001006800000000000090                          ";
 		final I_ESR_Import esrImport = createImport();
 		esrImport.setAD_Org_ID(org.getAD_Org_ID());
@@ -993,8 +983,7 @@ public class ESRImportTest extends ESRTestBase
 		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream(esrLineText.getBytes()));
 
 		// start processing
-		final ITrxRunConfig trxRunConfig = ESRTestUtil.createTrxRunconfig();
-		esrImportBL.process(esrImport, trxRunConfig);
+		esrImportBL.process(esrImport);
 
 		final I_ESR_ImportLine esrImportLine = ESRTestUtil.retrieveSingleLine(esrImport);
 		esrImportLine.setC_BPartner(partner);
@@ -1024,7 +1013,7 @@ public class ESRImportTest extends ESRTestBase
 		esrImportLine.setESR_Payment_Action(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Unable_To_Assign_Income);
 		InterfaceWrapperHelper.save(esrImportLine);
 
-		esrImportBL.complete(esrImport, "Complete", trxRunConfig);
+		esrImportBL.complete(esrImport, "Complete");
 
 		// check import line
 		InterfaceWrapperHelper.refresh(esrImportLine, true);
@@ -1081,7 +1070,6 @@ public class ESRImportTest extends ESRTestBase
 		final I_ESR_ImportLine esrImportLine = setupESR_ImportLine(invDocNo, grandTotal, false, esrLineText, refNo, ESR_Rendered_AccountNo, partnerValue, "50", false);
 		final I_ESR_Import esrImport = esrImportLine.getESR_Import();
 
-		final ITrxRunConfig trxRunConfig = ESRTestUtil.createTrxRunconfig();
 		final ESRImportBL esrBL = new ESRImportBL();
 
 		final Runnable runnable = new Runnable()
@@ -1090,11 +1078,11 @@ public class ESRImportTest extends ESRTestBase
 			@Override
 			public void run()
 			{
-				esrBL.process(esrImport, trxRunConfig);
+				esrBL.process(esrImport);
 			}
 		};
 
-		final List<Thread> threadsRunning = new ArrayList<Thread>();
+		final List<Thread> threadsRunning = new ArrayList<>();
 		for (int threadNo = 1; threadNo <= 5; threadNo++)
 		{
 			final Thread thread = new Thread(runnable, Thread.currentThread().getName() + "_PrintJobsProducer" + threadNo);
@@ -1238,8 +1226,7 @@ public class ESRImportTest extends ESRTestBase
 
 		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream(esrLineText.getBytes()));
 
-		final ITrxRunConfig trxRunConfig = ESRTestUtil.createTrxRunconfig();
-		esrImportBL.process(esrImport, trxRunConfig);
+		esrImportBL.process(esrImport);
 
 		final I_ESR_ImportLine esrImportLine = ESRTestUtil.retrieveSingleLine(esrImport);
 
@@ -1361,8 +1348,7 @@ public class ESRImportTest extends ESRTestBase
 
 		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream(esrLineText.getBytes()));
 
-		final ITrxRunConfig trxRunConfig = ESRTestUtil.createTrxRunconfig();
-		esrImportBL.process(esrImport, trxRunConfig);
+		esrImportBL.process(esrImport);
 
 		final I_ESR_ImportLine esrImportLine = ESRTestUtil.retrieveSingleLine(esrImport);
 
@@ -1484,8 +1470,7 @@ public class ESRImportTest extends ESRTestBase
 
 		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream(esrLineText.getBytes()));
 
-		final ITrxRunConfig trxRunConfig = ESRTestUtil.createTrxRunconfig();
-		esrImportBL.process(esrImport, trxRunConfig);
+		esrImportBL.process(esrImport);
 
 		final I_ESR_ImportLine esrImportLine = ESRTestUtil.retrieveSingleLine(esrImport);
 
@@ -1598,8 +1583,7 @@ public class ESRImportTest extends ESRTestBase
 
 		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream((esrLineText + '\n' + esrLineText + '\n' + esrLineText).getBytes()));
 
-		final ITrxRunConfig trxRunConfig = ESRTestUtil.createTrxRunconfig();
-		esrImportBL.process(esrImport, trxRunConfig);
+		esrImportBL.process(esrImport);
 
 		final List<I_ESR_ImportLine> lines = Services.get(IESRImportDAO.class).retrieveLines(esrImport);
 		final I_ESR_ImportLine esrImportLine1 = lines.get(0);
@@ -1626,8 +1610,9 @@ public class ESRImportTest extends ESRTestBase
 		esrImportLine3.setESR_Payment_Action(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Unable_To_Assign_Income);
 		InterfaceWrapperHelper.save(esrImportLine3);
 		// esrBL.process(esrImport, trxRunConfig);
-		esrImportBL.complete(esrImport, "test", trxRunConfig);
+		esrImportBL.complete(esrImport, "test");
 
+	
 		InterfaceWrapperHelper.refresh(esrImportLine3, true);
 		assertThat(esrImportLine3.isProcessed(), is(true));
 	}

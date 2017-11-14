@@ -25,6 +25,7 @@ package de.metas.payment.esr.actionhandler.impl;
 
 import java.math.BigDecimal;
 
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -83,10 +84,10 @@ public class MoneyTransferedBackESRActionHandler extends AbstractESRActionHandle
 		trxManager.run(trxName, new TrxRunnable()
 		{
 			@Override
-			public void run(String trxName) throws Exception
+			public void run(String localTrxName) throws Exception
 			{
 				// must assure that the line has transaction
-				InterfaceWrapperHelper.refresh(line, trxName);
+				InterfaceWrapperHelper.refresh(line, ITrx.TRXNAME_ThreadInherited);
 				
 				// Create the reversal payment
 				final I_C_Payment transferBackPayment =
