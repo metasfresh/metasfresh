@@ -1,6 +1,6 @@
 package de.metas.ui.web.process.adprocess;
 
-import java.util.List;
+import java.util.stream.Stream;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
@@ -184,9 +184,9 @@ public abstract class ViewBasedProcessTemplate extends JavaProcess
 	}
 	
 	@OverridingMethodsMustInvokeSuper
-	protected List<? extends IViewRow> getSelectedRows()
+	protected Stream<? extends IViewRow> streamSelectedRows()
 	{
 		final DocumentIdsSelection selectedDocumentIds = getSelectedDocumentIds();
-		return getView().getByIds(selectedDocumentIds);
+		return getView().streamByIds(selectedDocumentIds);
 	}
 }

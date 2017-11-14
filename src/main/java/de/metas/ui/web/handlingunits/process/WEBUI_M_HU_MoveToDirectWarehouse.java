@@ -1,9 +1,7 @@
 package de.metas.ui.web.handlingunits.process;
 
-import java.util.List;
-import java.util.Set;
+import java.util.stream.Stream;
 
-import org.adempiere.exceptions.AdempiereException;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import de.metas.handlingunits.model.I_M_HU;
@@ -49,7 +47,7 @@ public class WEBUI_M_HU_MoveToDirectWarehouse extends HUEditorProcessTemplate im
 {
 	@Autowired
 	private DocumentCollection documentsCollection;
-	
+
 	private static final HUEditorRowFilter rowsFilter = HUEditorRowFilter.builder().select(Select.ONLY_TOPLEVEL).onlyActiveHUs().build();
 
 	@Override
@@ -61,8 +59,7 @@ public class WEBUI_M_HU_MoveToDirectWarehouse extends HUEditorProcessTemplate im
 			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
 		}
 
-		final Set<Integer> huIds = getSelectedHUIds(rowsFilter);
-		if (huIds.isEmpty())
+		if (!streamSelectedHUIds(rowsFilter).findAny().isPresent())
 		{
 			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(WEBUI_HU_Constants.MSG_WEBUI_ONLY_TOP_LEVEL_HU));
 		}
@@ -74,18 +71,14 @@ public class WEBUI_M_HU_MoveToDirectWarehouse extends HUEditorProcessTemplate im
 	@RunOutOfTrx
 	protected String doIt()
 	{
-		final List<I_M_HU> selectedTopLevelHUs = getSelectedHUs(rowsFilter);
-		if (selectedTopLevelHUs.isEmpty())
-		{
-			throw new AdempiereException("@NoSelection@");
-		}
-
+		final Stream<I_M_HU> selectedTopLevelHUs = streamSelectedHUs(rowsFilter);
 		HUMoveToDirectWarehouseService.newInstance()
 				.setDocumentsCollection(documentsCollection)
 				.setHUView(getView())
 				// .setMovementDate(movementDate) // now
 				// .setDescription(description) // none
 				.setFailOnFirstError(true)
+				.setFailIfNoHUs(true)
 				.setLoggable(this)
 				.move(selectedTopLevelHUs.iterator());
 

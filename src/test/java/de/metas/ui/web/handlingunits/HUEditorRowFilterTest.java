@@ -1,6 +1,8 @@
 package de.metas.ui.web.handlingunits;
 
-import org.springframework.stereotype.Component;
+import static org.assertj.core.api.Assertions.assertThat;
+
+import org.junit.Test;
 
 /*
  * #%L
@@ -24,31 +26,17 @@ import org.springframework.stereotype.Component;
  * #L%
  */
 
-/**
- * {@link HUEditorView} customizer.
- * 
- * Implementations of this interface which are annotated with {@link Component} will be automatically discovered and registered.
- * 
- * @author metas-dev <dev@metasfresh.com>
- *
- */
-public interface HUEditorViewCustomizer
+public class HUEditorRowFilterTest
 {
-	/** @return referencing tableName to be matched */
-	String getReferencingTableNameToMatch();
-
-	default HUEditorRowIsProcessedPredicate getHUEditorRowIsProcessedPredicate()
+	@Test
+	public void testListsNotNullInEmptyQuery()
 	{
-		return null;
+		final HUEditorRowFilter emptyQuery = HUEditorRowFilter.builder().build();
+
+		assertThat(emptyQuery.getExcludeHUIds()).isNotNull();
+		assertThat(emptyQuery.getExcludeHUIds()).isEmpty();
+
+		assertThat(emptyQuery.getExcludeHUStatuses()).isNotNull();
+		assertThat(emptyQuery.getExcludeHUStatuses()).isEmpty();
 	}
-
-	/**
-	 * Called before the {@link HUEditorView} is created.
-	 * 
-	 * The method is called only if the view it's matching our criteria (i.e. {@link #getReferencingTableNameToMatch()}).
-	 * 
-	 * @param viewBuilder
-	 */
-	void beforeCreate(HUEditorViewBuilder viewBuilder);
-
 }

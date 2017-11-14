@@ -1,9 +1,10 @@
 package de.metas.ui.web.handlingunits.process;
 
 import java.util.List;
-import java.util.Set;
 
 import org.adempiere.util.Services;
+
+import com.google.common.collect.ImmutableList;
 
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Warehouse;
@@ -56,8 +57,7 @@ public class WEBUI_M_HU_MoveToAnotherWarehouse extends HUEditorProcessTemplate i
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
-		final Set<Integer> huIds = getSelectedHUIds(Select.ONLY_TOPLEVEL);
-		if (huIds.isEmpty())
+		if (!streamSelectedHUIds(Select.ONLY_TOPLEVEL).findAny().isPresent())
 		{
 			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(WEBUI_HU_Constants.MSG_WEBUI_ONLY_TOP_LEVEL_HU));
 		}
@@ -68,7 +68,7 @@ public class WEBUI_M_HU_MoveToAnotherWarehouse extends HUEditorProcessTemplate i
 	@Override
 	protected String doIt() throws Exception
 	{
-		final List<I_M_HU> hus = getSelectedHUs(Select.ONLY_TOPLEVEL);
+		final List<I_M_HU> hus = streamSelectedHUs(Select.ONLY_TOPLEVEL).collect(ImmutableList.toImmutableList());
 		movementResult = huMovementBL.moveHUsToWarehouse(hus, warehouse);
 
 		return MSG_OK;

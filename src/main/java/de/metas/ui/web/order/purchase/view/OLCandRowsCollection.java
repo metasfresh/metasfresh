@@ -1,22 +1,24 @@
 package de.metas.ui.web.order.purchase.view;
 
+import java.math.BigDecimal;
+import java.util.Date;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.concurrent.ConcurrentMap;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.adempiere.util.lang.ExtendedMemorizingSupplier;
-import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.exceptions.AdempiereException;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Maps;
 
-import de.metas.handlingunits.model.I_C_OLCand;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
+import de.metas.ui.web.order.purchase.view.OLCandRow.OLCandRowBuilder;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
+import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import lombok.NonNull;
 
 /*
@@ -50,37 +52,29 @@ class OLCandRowsCollection
 		return new OLCandRowsCollection(rowsSupplier);
 	}
 
-	private final ExtendedMemorizingSupplier<Map<DocumentId, OLCandRow>> rowsSupplier;
+	private final ConcurrentMap<DocumentId, OLCandRow> rowsById;
 
 	private OLCandRowsCollection(@NonNull final OLCandRowsSupplier rowsSupplier)
 	{
-		this.rowsSupplier = ExtendedMemorizingSupplier.of(() -> Maps.uniqueIndex(rowsSupplier.retrieveRows(), OLCandRow::getId));
+		rowsById = rowsSupplier.retrieveRows()
+				.stream()
+				.collect(Collectors.toConcurrentMap(OLCandRow::getId, Function.identity()));
 	}
 
 	@Override
 	public String toString()
 	{
-		return MoreObjects.toStringHelper(this).addValue(rowsSupplier).toString();
-	}
-
-	public void invalidateAll()
-	{
-		rowsSupplier.forget();
-	}
-
-	private final Map<DocumentId, OLCandRow> getRowsMap()
-	{
-		return rowsSupplier.get();
+		return MoreObjects.toStringHelper(this).addValue(rowsById).toString();
 	}
 
 	public long size()
 	{
-		return getRowsMap().size();
+		return rowsById.size();
 	}
 
 	public List<OLCandRow> getPage(final int firstRow, final int pageLength)
 	{
-		return getRowsMap().values().stream()
+		return rowsById.values().stream()
 				.skip(firstRow >= 0 ? firstRow : 0)
 				.limit(pageLength > 0 ? pageLength : DEFAULT_PAGE_LENGTH)
 				.collect(ImmutableList.toImmutableList());
@@ -88,7 +82,7 @@ class OLCandRowsCollection
 
 	public OLCandRow getById(@NonNull final DocumentId rowId) throws EntityNotFoundException
 	{
-		final OLCandRow row = getRowsMap().get(rowId);
+		final OLCandRow row = rowsById.get(rowId);
 		if (row == null)
 		{
 			throw new EntityNotFoundException("Row not found").setParameter("rowId", rowId);
@@ -100,7 +94,7 @@ class OLCandRowsCollection
 	{
 		if (rowIds.isAll())
 		{
-			return getRowsMap().values().stream();
+			return rowsById.values().stream();
 		}
 		else
 		{
@@ -108,23 +102,44 @@ class OLCandRowsCollection
 		}
 	}
 
-	public boolean notifyRecordsChanged(Set<TableRecordReference> recordRefs)
+	private void updateRow(@NonNull final DocumentId rowId, @NonNull final Function<OLCandRow, OLCandRow> mapper)
 	{
-		final Set<DocumentId> rowIds = getRowsMap().keySet();
+		rowsById.compute(rowId, (k, existingRow) -> {
+			if (existingRow == null)
+			{
+				throw new EntityNotFoundException("Row not found").setParameter("rowId", rowId);
+			}
+			return mapper.apply(existingRow);
+		});
+	}
 
-		final boolean matches = recordRefs.stream()
-				.filter(record -> I_C_OLCand.Table_Name.equals(record.getTableName()))
-				.map(record -> DocumentId.of(record.getRecord_ID()))
-				.anyMatch(rowIds::contains);
-		
-		if(matches)
+	public void patchRow(final DocumentId rowId, final List<JSONDocumentChangedEvent> fieldChangeRequests)
+	{
+		updateRow(rowId, row -> patchRow(row, fieldChangeRequests));
+	}
+
+	private OLCandRow patchRow(final OLCandRow row, final List<JSONDocumentChangedEvent> fieldChangeRequests)
+	{
+		final OLCandRowBuilder newRowBuilder = row.toBuilder();
+		for (final JSONDocumentChangedEvent fieldChangeRequest : fieldChangeRequests)
 		{
-			invalidateAll();
-			return true;
+			final String fieldName = fieldChangeRequest.getPath();
+			if (OLCandRow.FIELDNAME_QtyToPurchase.equals(fieldName))
+			{
+				final BigDecimal qtyToPurchase = fieldChangeRequest.getValueAsBigDecimal();
+				newRowBuilder.qtyToPurchase(qtyToPurchase);
+			}
+			else if (OLCandRow.FIELDNAME_DatePromised.equals(fieldName))
+			{
+				final Date datePromised = fieldChangeRequest.getValueAsDateTime();
+				newRowBuilder.datePromised(datePromised);
+			}
+			else
+			{
+				throw new AdempiereException("Field " + fieldName + " is not editable").setParameter("row", row);
+			}
 		}
-		else
-		{
-			return false;
-		}
+
+		return newRowBuilder.build();
 	}
 }

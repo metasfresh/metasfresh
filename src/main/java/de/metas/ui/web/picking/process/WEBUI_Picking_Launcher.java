@@ -1,8 +1,8 @@
 package de.metas.ui.web.picking.process;
 
+import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_CANNOT_PICK_INCLUDED_ROWS;
 import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_DIVERGING_LOCATIONS;
 import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_TOO_MANY_PACKAGEABLES_1P;
-import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_CANNOT_PICK_INCLUDED_ROWS;
 
 import java.util.List;
 import java.util.Set;
@@ -67,8 +67,7 @@ public class WEBUI_Picking_Launcher extends ViewBasedProcessTemplate implements 
 		}
 
 		final DocumentIdsSelection selectedRowIds = getSelectedDocumentIds();
-		final List<Integer> rowIds = getView().getByIds(selectedRowIds)
-				.stream()
+		final List<Integer> rowIds = getView().streamByIds(selectedRowIds)
 				.flatMap(selectedRow -> selectedRow.getIncludedRows().stream())
 				.map(IViewRow::getId)
 				.map(rowId -> rowId.removeDocumentPrefixAndConvertToInt())
@@ -110,8 +109,7 @@ public class WEBUI_Picking_Launcher extends ViewBasedProcessTemplate implements 
 		if (selectedRowIds.size() > 1)
 		{
 			// make sure that they all have the same C_BPartner and location.
-			final Set<Integer> flatMap = getView().getByIds(selectedRowIds)
-					.stream()
+			final Set<Integer> flatMap = getView().streamByIds(selectedRowIds)
 					.flatMap(selectedRow -> selectedRow.getIncludedRows().stream())
 					.map(row -> getBPartnerLocationId(row))
 					.collect(Collectors.toSet());

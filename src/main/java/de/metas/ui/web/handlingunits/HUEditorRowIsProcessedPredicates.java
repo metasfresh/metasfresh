@@ -1,6 +1,8 @@
 package de.metas.ui.web.handlingunits;
 
-import org.springframework.stereotype.Component;
+import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.X_M_HU;
+import lombok.experimental.UtilityClass;
 
 /*
  * #%L
@@ -24,31 +26,29 @@ import org.springframework.stereotype.Component;
  * #L%
  */
 
-/**
- * {@link HUEditorView} customizer.
- * 
- * Implementations of this interface which are annotated with {@link Component} will be automatically discovered and registered.
- * 
- * @author metas-dev <dev@metasfresh.com>
- *
- */
-public interface HUEditorViewCustomizer
+@UtilityClass
+public class HUEditorRowIsProcessedPredicates
 {
-	/** @return referencing tableName to be matched */
-	String getReferencingTableNameToMatch();
+	public static final HUEditorRowIsProcessedPredicate NEVER = new Never();
+	public static final HUEditorRowIsProcessedPredicate IF_NOT_PLANNING_HUSTATUS = new IfNotPlanningHUStatus();
 
-	default HUEditorRowIsProcessedPredicate getHUEditorRowIsProcessedPredicate()
+	private static final class Never implements HUEditorRowIsProcessedPredicate
 	{
-		return null;
+		@Override
+		public boolean isProcessed(I_M_HU hu)
+		{
+			return false;
+		}
 	}
 
-	/**
-	 * Called before the {@link HUEditorView} is created.
-	 * 
-	 * The method is called only if the view it's matching our criteria (i.e. {@link #getReferencingTableNameToMatch()}).
-	 * 
-	 * @param viewBuilder
-	 */
-	void beforeCreate(HUEditorViewBuilder viewBuilder);
+	private static final class IfNotPlanningHUStatus implements HUEditorRowIsProcessedPredicate
+	{
+		@Override
+		public boolean isProcessed(I_M_HU hu)
+		{
+			return !X_M_HU.HUSTATUS_Planning.equals(hu.getHUStatus());
+		}
+
+	}
 
 }

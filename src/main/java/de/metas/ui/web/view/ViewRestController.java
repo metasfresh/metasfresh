@@ -9,6 +9,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.concurrent.AsyncIOStreamProducerExecutor;
 import org.adempiere.util.concurrent.CustomizableThreadFactory;
 import org.slf4j.Logger;
@@ -261,10 +262,14 @@ public class ViewRestController
 		userSession.assertLoggedIn();
 
 		final DocumentIdsSelection rowIds = DocumentIdsSelection.ofCommaSeparatedString(idsListStr);
+		if(rowIds.isAll())
+		{
+			throw new AdempiereException("retrieving ALL rows is not allowed here");
+		}
 
 		final ViewId viewId = ViewId.of(windowId, viewIdStr);
 		final IView view = viewsRepo.getView(viewId);
-		final List<? extends IViewRow> result = view.getByIds(rowIds);
+		final List<? extends IViewRow> result = view.streamByIds(rowIds).collect(ImmutableList.toImmutableList());
 		final IViewRowOverrides rowOverrides = ViewRowOverridesHelper.getViewRowOverrides(view);
 		return JSONViewRow.ofViewRows(result, rowOverrides, userSession.getAD_Language());
 	}

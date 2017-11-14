@@ -119,11 +119,6 @@ public interface IView
 
 	IViewRow getById(DocumentId rowId) throws EntityNotFoundException;
 
-	default List<? extends IViewRow> getByIds(final DocumentIdsSelection rowIds)
-	{
-		return streamByIds(rowIds).collect(ImmutableList.toImmutableList());
-	}
-
 	LookupValuesList getFilterParameterDropdown(String filterId, String filterParameterName, Evaluatee ctx);
 
 	LookupValuesList getFilterParameterTypeahead(String filterId, String filterParameterName, String query, Evaluatee ctx);
