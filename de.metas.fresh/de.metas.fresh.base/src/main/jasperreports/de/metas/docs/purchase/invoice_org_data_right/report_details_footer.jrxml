@@ -1,15 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
-<!-- 2017-11-08T16:37:26 -->
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_details_footer" pageWidth="555" pageHeight="802" columnWidth="555" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/sales/order_org_data_right/report" uuid="00f4c9e2-84b8-491d-9fc8-375751dc873d">
+<!-- 2017-11-08T15:24:40 -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_details_footer" pageWidth="555" pageHeight="802" columnWidth="555" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/purchase/invoice_org_data_right/report" uuid="00f4c9e2-84b8-491d-9fc8-375751dc873d">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="metasfresh"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
-	<parameter name="c_order_id" class="java.lang.Integer"/>
+	<parameter name="c_invoice_id" class="java.lang.Integer"/>
 	<parameter name="ad_language" class="java.lang.String"/>
 	<queryString>
-		<![CDATA[SELECT * FROM de_metas_endcustomer_fresh_reports.Docs_Sales_Order_Details_Footer ( $P{c_order_id}, $P{ad_language});]]>
+		<![CDATA[SELECT * FROM de_metas_endcustomer_fresh_reports.Docs_Invoice_Details_Footer ( $P{c_invoice_id}, $P{ad_language});]]>
 	</queryString>
-	<field name="paymentrule" class="java.lang.String"/>
+	<field name="descriptionbottom" class="java.lang.String"/>
+	<field name="p_cond" class="java.lang.String"/>
+	<field name="p_term" class="java.lang.String"/>
+	<field name="textcenter" class="java.lang.String"/>
 	<field name="paymentterm" class="java.lang.String"/>
 	<field name="discount1" class="java.math.BigDecimal"/>
 	<field name="discount2" class="java.math.BigDecimal"/>
@@ -74,7 +77,7 @@
 					<printWhenExpression><![CDATA[new Boolean($F{discount1} != null)]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right"/>
-				<textFieldExpression><![CDATA[new java.text.DecimalFormat("#,##0.00").format($F{discount1}) + " " + $F{cursymbol}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[new java.text.DecimalFormat("#,##0.00").format($F{discount1}) + " " +  $F{cursymbol}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.00" isBlankWhenNull="true">
 				<reportElement x="180" y="44" width="79" height="14" uuid="76443806-83c0-448d-a9aa-fd42976d5fa4">
@@ -83,14 +86,14 @@
 					<printWhenExpression><![CDATA[new Boolean($F{discount2} != null)]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right"/>
-				<textFieldExpression><![CDATA[new java.text.DecimalFormat("#,##0.00").format($F{discount2}) + " " + $F{cursymbol}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[new java.text.DecimalFormat("#,##0.00").format($F{discount2}) + " " +  $F{cursymbol}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement x="180" y="2" width="319" height="14" uuid="72e8566c-738e-434a-b1d1-f04fe7aacd46">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 				</reportElement>
-				<textFieldExpression><![CDATA[$F{paymentrule}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{p_term}]]></textFieldExpression>
 			</textField>
 		</band>
 	</summary>
