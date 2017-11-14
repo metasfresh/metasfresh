@@ -74,6 +74,7 @@ import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
 import de.metas.handlingunits.shipmentschedule.api.IShipmentScheduleWithHU;
+import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer.ShipmentScheduleWorkPackageParameters;
 import de.metas.handlingunits.shipmentschedule.api.impl.ShipmentScheduleQtyPickedProductStorage;
 import de.metas.i18n.IMsgBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
@@ -109,10 +110,6 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 
 	private static final String MSG_NoQtyPicked = "MSG_NoQtyPicked";
 
-	public static final String PARAM_IsUseQtyPicked = "IsUseQtyPicked";
-	public static final String PARAM_IsCompleteShipments = "IsCompleteShipments";
-	public static final String PARAM_IsShipmentDateToday = "IsShipmentDateToday";
-
 	public GenerateInOutFromShipmentSchedules()
 	{
 		super();
@@ -137,7 +134,7 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 		shipmentGenerator.setTrxItemExceptionHandler(FailTrxItemExceptionHandler.instance);
 
 		final String shipmentDocDocAction;
-		if (getParameters().getParameterAsBool(PARAM_IsCompleteShipments))
+		if (getParameters().getParameterAsBool(ShipmentScheduleWorkPackageParameters.PARAM_IsCompleteShipments))
 		{
 			shipmentDocDocAction = IDocument.ACTION_Complete;
 		}
@@ -149,7 +146,7 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 		boolean createPackingLines = true; // task 08138: the packing lines shall be created directly, and shall be user-editable.
 		boolean manualPackingMaterial = true;
 
-		final boolean isUseQtyPicked = getParameters().getParameterAsBool(PARAM_IsUseQtyPicked);
+		final boolean isUseQtyPicked = getParameters().getParameterAsBool(ShipmentScheduleWorkPackageParameters.PARAM_IsUseQtyPicked);
 		// task FRESH-251
 		// In case of using the qty Picked entries, the logic will be similar with shipment creation from HU, therefore the packinglines and manualPackingMaterial flags will be disabled
 		if (isUseQtyPicked)
@@ -159,7 +156,7 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 
 		}
 		
-		final boolean isShipmentDateToday =  getParameters().getParameterAsBool(PARAM_IsShipmentDateToday);
+		final boolean isShipmentDateToday =  getParameters().getParameterAsBool(ShipmentScheduleWorkPackageParameters.PARAM_IsShipmentDateToday);
 		shipmentGenerator.generateInOuts(ctx, candidates.iterator(), shipmentDocDocAction, createPackingLines, manualPackingMaterial, isShipmentDateToday, ITrx.TRXNAME_ThreadInherited);
 
 		return Result.SUCCESS;
@@ -267,7 +264,7 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 		// Load all QtyPicked records that have no InOutLine yet
 		List<I_M_ShipmentSchedule_QtyPicked> qtyPickedRecords = retrieveQtyPickedRecords(schedule);
 
-		final boolean isUseQtyPicked = getParameters().getParameterAsBool(PARAM_IsUseQtyPicked);
+		final boolean isUseQtyPicked = getParameters().getParameterAsBool(ShipmentScheduleWorkPackageParameters.PARAM_IsUseQtyPicked);
 		if (qtyPickedRecords.isEmpty())
 		{
 			if (isUseQtyPicked)
@@ -411,7 +408,7 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 
 		// in case of using the isUseQtyPicked, create the LUs
 
-		final boolean isUseQtyPicked = getParameters().getParameterAsBool(PARAM_IsUseQtyPicked);
+		final boolean isUseQtyPicked = getParameters().getParameterAsBool(ShipmentScheduleWorkPackageParameters.PARAM_IsUseQtyPicked);
 
 		if (HUConstants.isQuickShipment() && !isUseQtyPicked)
 		{

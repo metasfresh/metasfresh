@@ -26,6 +26,7 @@ import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.util.Ini;
 
@@ -33,6 +34,7 @@ import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer.Result;
+import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer.ShipmentScheduleWorkPackageParameters;
 import de.metas.handlingunits.shipmentschedule.async.GenerateInOutFromShipmentSchedules;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
@@ -54,15 +56,25 @@ public class M_ShipmentSchedule_EnqueueSelection extends JavaProcess
 
 	@Param(parameterName = "IsShipmentDateToday", mandatory = true)
 	private boolean isShipmentDateToday; // introduced in task #2940
-	
+
 	@Override
 	protected String doIt() throws Exception
 	{
 		final IQueryFilter<I_M_ShipmentSchedule> queryFilters = createShipmentSchedulesQueryFilters();
+		
+		Check.assumeNotNull(queryFilters, "Shipment Schedule queryFiletrs shall not be null");
+
+		final ShipmentScheduleWorkPackageParameters workPackageParameters = ShipmentScheduleWorkPackageParameters.builder()
+				.adPInstanceId(getAD_PInstance_ID())
+				.queryFilters(queryFilters)
+				.useQtyPickedRecords(isUseQtyPicked)
+				.completeShipments(isCompleteShipments)
+				.isShipmentDateToday(isShipmentDateToday)
+				.build();
 
 		final Result result = new ShipmentScheduleEnqueuer()
 				.setContext(getCtx(), getTrxName())
-				.createWorkpackages(getAD_PInstance_ID(), queryFilters, isUseQtyPicked, isCompleteShipments, isShipmentDateToday);
+				.createWorkpackages(workPackageParameters);
 
 		return "@Created@: " + result.getEneuedPackagesCount() + " @" + I_C_Queue_WorkPackage.COLUMNNAME_C_Queue_WorkPackage_ID + "@; @Skip@ " + result.getSkippedPackagesCount();
 	}
