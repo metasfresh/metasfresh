@@ -91,7 +91,7 @@ public class HUAttributesBL implements IHUAttributesBL
 		final IAttributeStorageFactoryService attributeStorageFactoryService = Services.get(IAttributeStorageFactoryService.class);
 
 		final IHUStorageFactory storageFactory = handlingUnitsBL.getStorageFactory();
-		final IAttributeStorageFactory huAttributeStorageFactory = attributeStorageFactoryService.createHUAttributeStorageFactory(null); // huContext==null
+		final IAttributeStorageFactory huAttributeStorageFactory = attributeStorageFactoryService.createHUAttributeStorageFactory();
 		huAttributeStorageFactory.setHUStorageFactory(storageFactory);
 
 		final HUIterator iterator = new HUIterator();
