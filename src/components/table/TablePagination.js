@@ -27,7 +27,8 @@ class TablePagination extends Component {
 
         const selectedWholePage = selected && (selected.length === rowLength);
 
-        return selectedWholePage? handleSelectRange(['all']) : handleSelectAll();
+        return selectedWholePage?
+            handleSelectRange(['all']) :handleSelectAll();
     }
 
     handleSubmit = (e, value, pages) => {
@@ -271,7 +272,7 @@ class TablePagination extends Component {
 
     paginationShortcuts = () => {
         const {
-            size, pageLength, disablePaginationShortcuts
+            size, pageLength, disablePaginationShortcuts, handleChangePage
         } = this.props;
 
         const pages = size ? Math.ceil(size / pageLength) : 0;

@@ -31,7 +31,6 @@ class PaginationContextShortcuts extends Component {
             case 'SELECT_ALL_ROWS':
                 event.preventDefault();
                 return handleSelectAll();
-                
         }
     }
 
