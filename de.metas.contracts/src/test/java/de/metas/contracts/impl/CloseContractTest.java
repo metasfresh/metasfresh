@@ -45,8 +45,6 @@ import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_SubscriptionProgress;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_SubscriptionProgress;
-import de.metas.document.engine.IDocument;
-import de.metas.document.engine.IDocumentBL;
 import lombok.NonNull;
 
 public class CloseContractTest extends AbstractFlatrateTermTest
@@ -59,7 +57,7 @@ public class CloseContractTest extends AbstractFlatrateTermTest
 	final private static ContractChangeParameters contractChangeParameters = ContractChangeParameters.builder()
 			.changeDate(closelDate)
 			.isCloseInvoiceCandidate(true)
-			.isForceClosingContract(true)
+			.isOnlyTerminateCurrentTerm(true)
 			.build();
 
 	@Before
@@ -74,7 +72,7 @@ public class CloseContractTest extends AbstractFlatrateTermTest
 	public void closeContract_test()
 	{
 		final I_C_Flatrate_Term contract = prepareContractForTest(true);
-		Services.get(IDocumentBL.class).processEx(contract, IDocument.ACTION_Close, IDocument.STATUS_Closed);
+		contractChangeBL.cancelContract(contract, contractChangeParameters);
 		assertFlatrateTerm(contract);
 	}
 
