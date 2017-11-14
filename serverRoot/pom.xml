@@ -8,7 +8,7 @@
 		<version>10.0.0</version>
 	</parent>
 
-	<artifactId>de.metas.endcustomer.mf15.serverRoot</artifactId>
+	<artifactId>metasfresh-dist-serverRoot</artifactId>
 	<packaging>jar</packaging>
 
 	<properties>
@@ -23,16 +23,16 @@
 	<dependencies>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>de.metas.endcustomer.mf15.base</artifactId>
+			<artifactId>metasfresh-dist-base</artifactId>
 			<version>10.0.0</version>
 		</dependency>
 		
 		<!-- 
-		de.metas.fresh.base already comes in as transitive dependency of $de.metas.endcustomer.mf15.base ,
+		de.metas.fresh.base already comes in as transitive dependency of $metasfresh-dist-base ,
 		but we have it here explicitly because otherwise: 
 		  if e.g. version 2.262 is building de.metas.adempiere.adempiere.serverRoot.base-2.262 was already deployed, 
 		  but de.metas.fresh.base 2.262 was not jet deployed, then this pom's metasfresh.version might be resolved to 2.262
-		  while the metasfresh.version of the de.metas.endcustomer.mf15.base's pom might be resolved to 2.261
+		  while the metasfresh.version of the metasfresh-dist-base's pom might be resolved to 2.261
 		-->
 		<dependency>
 			<groupId>de.metas.fresh</groupId>
@@ -47,8 +47,8 @@
 		</dependency>
 
 		<dependency>
-			<groupId>de.metas.report.jasper.server</groupId>
-			<artifactId>de.metas.report.jasper.server.base</artifactId>
+			<groupId>de.metas.report</groupId>
+			<artifactId>report-service</artifactId>
 			<version>${metasfresh.version}</version>
 		</dependency>
 

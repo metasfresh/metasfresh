@@ -21,7 +21,7 @@
 	<dependencies>
 		<dependency>
 			<groupId>de.metas.dist</groupId>
-			<artifactId>de.metas.endcustomer.mf15.serverRoot</artifactId>
+			<artifactId>metasfresh-dist-serverRoot</artifactId>
 			<version>${metasfresh.version}</version>
 			<scope>test</scope>
 		</dependency>

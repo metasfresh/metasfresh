@@ -8,7 +8,7 @@
 		<version>10.0.0</version>
 	</parent>
 
-	<artifactId>de.metas.endcustomer.mf15.dist</artifactId>
+	<artifactId>metasfresh-dist-dist</artifactId>
 	<packaging>pom</packaging>
 
 	<properties>
@@ -44,7 +44,7 @@ Since we now work with a range, we now declare the dependencies here where range
 -->
 		<dependency>
 			<groupId>de.metas.dist</groupId>
-			<artifactId>de.metas.endcustomer.mf15.serverRoot</artifactId>
+			<artifactId>metasfresh-dist-serverRoot</artifactId>
 			<version>10.0.0</version>
 		</dependency>
 
@@ -68,14 +68,14 @@ Since we now work with a range, we now declare the dependencies here where range
 
 		<dependency>
 			<groupId>de.metas.dist</groupId>
-			<artifactId>de.metas.endcustomer.mf15.base</artifactId>
+			<artifactId>metasfresh-dist-base</artifactId>
 			<version>10.0.0</version>
 			<type>jar</type>
 		</dependency>
 
 		<dependency>
 			<groupId>de.metas.dist</groupId>
-			<artifactId>de.metas.endcustomer.mf15.swingui</artifactId>
+			<artifactId>metasfresh-dist-swingui</artifactId>
 			<version>10.0.0</version>
 			<classifier>client</classifier>
 			<type>zip</type>
@@ -133,10 +133,10 @@ Since we now work with a range, we now declare the dependencies here where range
 		<!-- https://github.com/metasfresh/metasfresh/issues/523 -->
 		<dependency>
 			<groupId>de.metas.material</groupId>
-			<artifactId>metasfresh-material-dispo-service</artifactId>
+			<artifactId>material-dispo-service</artifactId>
 			<version>${metasfresh.version}</version> <!-- currently this service is not in a dedicated repo and thus doesn't have a dedicated version -->
 			<type>jar</type>
-			<scope>provided</scope> <!-- we need this dependency here to update the version property-->
+			<scope>provided</scope> <!-- we need this dependency here to update the version property -->
 		</dependency>
 
 <!--
@@ -305,13 +305,13 @@ note: when adding new records, please roughly order them by alphabet.
 
 		<dependency>
 			<groupId>de.metas.dist</groupId>
-			<artifactId>de.metas.endcustomer.mf15.base</artifactId>
+			<artifactId>metasfresh-dist-base</artifactId>
 			<version>10.0.0</version>
 			<classifier>jasper</classifier>
 		</dependency>
 		<dependency>
 			<groupId>de.metas.dist</groupId>
-			<artifactId>de.metas.endcustomer.mf15.base</artifactId>
+			<artifactId>metasfresh-dist-base</artifactId>
 			<version>10.0.0</version>
 			<classifier>migration-postgres-sql</classifier>
 			<type>zip</type>
@@ -335,7 +335,7 @@ note: when adding new records, please roughly order them by alphabet.
 
 		<dependency>
 			<groupId>de.metas.material</groupId>
-			<artifactId>metasfresh-material-dispo-service</artifactId>
+			<artifactId>material-dispo-service</artifactId>
 			<version>${metasfresh.version}</version>
 			<classifier>migration-postgres-sql</classifier>
 			<type>zip</type>
@@ -402,8 +402,8 @@ note: when adding new records, please roughly order them by alphabet.
 		</dependency>
 
 		<dependency>
-			<groupId>de.metas.report.jasper.server</groupId>
-			<artifactId>de.metas.report.jasper.server.base</artifactId>
+			<groupId>de.metas.report</groupId>
+			<artifactId>report-service</artifactId>
 			<version>${metasfresh.version}</version>
 			<classifier>migration-postgres-sql</classifier>
 			<type>zip</type>
@@ -522,7 +522,7 @@ note: when adding new records, please roughly order them by alphabet.
 						</goals>
 						<configuration>
 							<type>jar</type>
-							<excludeArtifactIds>de.metas.fresh.base, de.metas.endcustomer.mf15.base</excludeArtifactIds>
+							<excludeArtifactIds>de.metas.fresh.base,metasfresh-dist-base</excludeArtifactIds>
 							<classifier>jasper</classifier>
 							<excludeTransitive>true</excludeTransitive>
 							<failOnMissingClassifierArtifact>false</failOnMissingClassifierArtifact>
@@ -560,7 +560,7 @@ note: when adding new records, please roughly order them by alphabet.
 						</goals>
 						<configuration>
 							<type>jar</type>
-							<includeArtifactIds>de.metas.endcustomer.mf15.base</includeArtifactIds>
+							<includeArtifactIds>metasfresh-dist-base</includeArtifactIds>
 							<classifier>jasper</classifier>
 							<excludeTransitive>true</excludeTransitive>
 							<failOnMissingClassifierArtifact>false</failOnMissingClassifierArtifact>
@@ -589,14 +589,14 @@ note: when adding new records, please roughly order them by alphabet.
 							<artifactItems>
 								<artifactItem>
 									<groupId>${project.groupId}</groupId>
-									<artifactId>de.metas.endcustomer.mf15.serverRoot</artifactId>
+									<artifactId>metasfresh-dist-serverRoot</artifactId>
 									<version>${project.version}</version>
 									<outputDirectory>${project.build.directory}/dist/deploy</outputDirectory>
 									<destFileName>metasfresh_server.jar</destFileName>
 								</artifactItem>
 								<artifactItem>
 									<groupId>${project.groupId}</groupId>
-									<artifactId>de.metas.endcustomer.mf15.swingui</artifactId>
+									<artifactId>metasfresh-dist-swingui</artifactId>
 									<classifier>client</classifier>
 									<version>${project.version}</version>
 									<type>zip</type>
@@ -783,10 +783,10 @@ note: when adding new records, please roughly order them by alphabet.
 				</executions>
 			</plugin>
 
-			<!-- Archive the whole dist/ folder -->
 			<plugin>
 				<artifactId>maven-assembly-plugin</artifactId>
 				<executions>
+					<!-- Archive the whole dist/ folder -->
 					<execution>
 						<id>package-dist</id>
 						<phase>package</phase>
