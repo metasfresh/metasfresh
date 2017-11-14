@@ -121,7 +121,7 @@ public class AttributePricingBL implements IAttributePricingBL
 	}
 
 	// task 08839
-	private final static ModelDynAttributeAccessor<IAttributeSetInstanceAware, IProductPriceAware> DYN_ATTR_IProductPriceAware = new ModelDynAttributeAccessor<IAttributeSetInstanceAware, IProductPriceAware>(IProductPriceAware.class);
+	private final static ModelDynAttributeAccessor<IAttributeSetInstanceAware, IProductPriceAware> DYN_ATTR_IProductPriceAware = new ModelDynAttributeAccessor<>(IProductPriceAware.class);
 
 	@Override
 	public void setDynAttrProductPriceAttributeAware(final IAttributeSetInstanceAware asiAware, final Optional<IProductPriceAware> productPriceAware)
@@ -132,6 +132,17 @@ public class AttributePricingBL implements IAttributePricingBL
 		}
 		DYN_ATTR_IProductPriceAware.setValue(asiAware, productPriceAware.orElse(null));
 	}
+	
+	@Override
+	public void setDynAttrProductPriceAttributeAware(final IAttributeSetInstanceAware asiAware, final IProductPriceAware productPriceAware)
+	{
+		if (asiAware == null)
+		{
+			return; // nothing to do
+		}
+		DYN_ATTR_IProductPriceAware.setValue(asiAware, productPriceAware);
+	}
+
 
 	@Override
 	public Optional<IProductPriceAware> getDynAttrProductPriceAttributeAware(final IAttributeSetInstanceAware asiAware)
