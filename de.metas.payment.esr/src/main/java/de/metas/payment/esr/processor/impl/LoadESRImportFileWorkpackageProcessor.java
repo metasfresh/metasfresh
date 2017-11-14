@@ -27,11 +27,6 @@ package de.metas.payment.esr.processor.impl;
 
 import java.util.List;
 
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.ad.trx.api.ITrxRunConfig;
-import org.adempiere.ad.trx.api.ITrxRunConfig.OnRunnableFail;
-import org.adempiere.ad.trx.api.ITrxRunConfig.OnRunnableSuccess;
-import org.adempiere.ad.trx.api.ITrxRunConfig.TrxPropagation;
 import org.adempiere.util.Services;
 
 import de.metas.async.api.IQueueDAO;
@@ -79,14 +74,7 @@ public class LoadESRImportFileWorkpackageProcessor implements IWorkpackageProces
 
 	private void processESRImportFile(final I_ESR_Import esrImport)
 	{
-		final ITrxManager trxManager = Services.get(ITrxManager.class);
-		final ITrxRunConfig trxRunConfig = trxManager.newTrxRunConfigBuilder()
-				.setTrxPropagation(TrxPropagation.NESTED)
-				.setOnRunnableSuccess(OnRunnableSuccess.COMMIT)
-				.setOnRunnableFail(OnRunnableFail.ASK_RUNNABLE)
-				.build();
-
-		Services.get(IESRImportBL.class).process(esrImport, trxRunConfig);
+		Services.get(IESRImportBL.class).process(esrImport);
 
 	}
 }

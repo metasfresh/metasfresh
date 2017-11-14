@@ -1,5 +1,7 @@
 package org.adempiere.util.collections;
 
+import java.util.Iterator;
+
 /*
  * #%L
  * de.metas.util
@@ -13,17 +15,17 @@ package org.adempiere.util.collections;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.util.NoSuchElementException;
+import java.util.stream.Stream;
 
 /**
  * A Blind Iterator is an iterator which does not have the look-ahead method (i.e. hasNext()).
@@ -34,6 +36,7 @@ import java.util.NoSuchElementException;
  * 
  * @param <E>
  */
+@FunctionalInterface
 public interface BlindIterator<E>
 {
 	/**
@@ -42,5 +45,15 @@ public interface BlindIterator<E>
 	 * @return the next element in the iteration or null
 	 * @throws NoSuchElementException implementations could throw this exception if repeatedly called after end was reached
 	 */
-	public E next();
+	E next();
+
+	default Stream<E> stream()
+	{
+		return IteratorUtils.stream(this);
+	}
+
+	default Iterator<E> iterator()
+	{
+		return IteratorUtils.asIterator(this);
+	}
 }

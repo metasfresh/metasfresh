@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
-<!-- 2017-11-07T19:04:10 -->
+<!-- 2017-11-08T16:46:23 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_details" pageWidth="555" pageHeight="802" columnWidth="555" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/sales/invoice_org_data_right/report" uuid="00f4c9e2-84b8-491d-9fc8-375751dc873d">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="metasfresh"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
@@ -50,7 +50,7 @@
 		<band height="20" splitType="Stretch">
 			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 			<textField>
-				<reportElement x="56" y="6" width="50" height="12" uuid="57c64900-e11d-4ddc-88bb-e835e51e1e44">
+				<reportElement x="56" y="6" width="45" height="12" uuid="57c64900-e11d-4ddc-88bb-e835e51e1e44">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 				</reportElement>
@@ -60,7 +60,7 @@
 				<textFieldExpression><![CDATA[$R{product_no}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="106" y="6" width="31" height="12" uuid="2582f50a-47cf-42a2-aaad-f039991c6e29">
+				<reportElement x="101" y="6" width="31" height="12" uuid="2582f50a-47cf-42a2-aaad-f039991c6e29">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 				</reportElement>
@@ -70,7 +70,7 @@
 				<textFieldExpression><![CDATA[$R{qty}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="140" y="6" width="130" height="12" uuid="dbc060fd-ee18-485f-abb3-6d57c45bdd06">
+				<reportElement x="135" y="6" width="120" height="12" uuid="dbc060fd-ee18-485f-abb3-6d57c45bdd06">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
@@ -81,7 +81,7 @@
 				<textFieldExpression><![CDATA[$R{product_name}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="270" y="6" width="40" height="12" uuid="74071805-2851-4f6e-8330-0c1a1df3f577">
+				<reportElement x="255" y="6" width="40" height="12" uuid="74071805-2851-4f6e-8330-0c1a1df3f577">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 					<printWhenExpression><![CDATA[//hide column for now
@@ -93,7 +93,7 @@ new Boolean (false)]]></printWhenExpression>
 				<textFieldExpression><![CDATA[$R{uom}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="313" y="6" width="33" height="12" uuid="98eaf5a2-cfba-4e7f-a4cb-8cdde89efbb4">
+				<reportElement x="295" y="6" width="33" height="12" uuid="98eaf5a2-cfba-4e7f-a4cb-8cdde89efbb4">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
@@ -104,9 +104,10 @@ new Boolean (false)]]></printWhenExpression>
 				<textFieldExpression><![CDATA[$R{tax}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="346" y="6" width="52" height="12" uuid="97eb77c9-1dfe-41c4-a03b-177531e4d42c">
+				<reportElement x="328" y="6" width="61" height="12" uuid="97eb77c9-1dfe-41c4-a03b-177531e4d42c">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 				</reportElement>
 				<textElement textAlignment="Right">
 					<font size="9"/>
@@ -114,7 +115,7 @@ new Boolean (false)]]></printWhenExpression>
 				<textFieldExpression><![CDATA[$R{net_price}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="398" y="6" width="52" height="12" uuid="821e106b-e319-472d-bb41-7fafb82eb50f">
+				<reportElement x="389" y="6" width="61" height="12" uuid="821e106b-e319-472d-bb41-7fafb82eb50f">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
@@ -140,7 +141,7 @@ new Boolean (false)]]></printWhenExpression>
 		<band height="18" splitType="Stretch">
 			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 			<textField>
-				<reportElement x="56" y="6" width="50" height="12" uuid="ef540692-3078-4ed3-9dfb-47ebd575dbaa">
+				<reportElement x="56" y="6" width="45" height="12" uuid="ef540692-3078-4ed3-9dfb-47ebd575dbaa">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
@@ -151,7 +152,7 @@ new Boolean (false)]]></printWhenExpression>
 				<textFieldExpression><![CDATA[$F{p_value}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0">
-				<reportElement x="106" y="6" width="31" height="12" uuid="0dbdad0b-5f48-4cd5-8195-d067209a3fa4">
+				<reportElement x="101" y="6" width="31" height="12" uuid="0dbdad0b-5f48-4cd5-8195-d067209a3fa4">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
@@ -162,7 +163,7 @@ new Boolean (false)]]></printWhenExpression>
 				<textFieldExpression><![CDATA[$F{qtyinvoicedinpriceuom}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement x="140" y="6" width="130" height="12" uuid="683a8a90-b078-47da-a1ca-60e57c49c48c">
+				<reportElement x="135" y="6" width="120" height="12" uuid="683a8a90-b078-47da-a1ca-60e57c49c48c">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 				</reportElement>
@@ -172,7 +173,7 @@ new Boolean (false)]]></printWhenExpression>
 				<textFieldExpression><![CDATA[$F{name}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="270" y="6" width="40" height="12" uuid="d0653e96-f4c1-4f55-a62b-b2c025d9ab3e">
+				<reportElement x="255" y="6" width="40" height="12" uuid="d0653e96-f4c1-4f55-a62b-b2c025d9ab3e">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
@@ -185,7 +186,7 @@ new Boolean (false)]]></printWhenExpression>
 				<textFieldExpression><![CDATA["qty"+ $F{uom}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="313" y="6" width="33" height="12" uuid="1e19b164-fb2e-4ab2-9930-075bbad7d96f">
+				<reportElement x="295" y="6" width="33" height="12" uuid="1e19b164-fb2e-4ab2-9930-075bbad7d96f">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 				</reportElement>
@@ -195,7 +196,7 @@ new Boolean (false)]]></printWhenExpression>
 				<textFieldExpression><![CDATA[$F{rate}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="346" y="6" width="52" height="12" uuid="2799db8b-973e-422e-8154-0ed417e6a83c">
+				<reportElement x="328" y="6" width="61" height="12" uuid="2799db8b-973e-422e-8154-0ed417e6a83c">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
@@ -203,10 +204,10 @@ new Boolean (false)]]></printWhenExpression>
 				<textElement textAlignment="Right">
 					<font size="9"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{priceentered}.setScale(2, java.math.RoundingMode.HALF_UP) + " " + $F{cursymbol}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[new java.text.DecimalFormat("#,##0.00").format($F{priceentered}) + " " + $F{cursymbol}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="398" y="6" width="52" height="12" uuid="7c826eaf-adbb-4ec2-a1e1-73b61d8bf2ed">
+				<reportElement x="389" y="6" width="61" height="12" uuid="7c826eaf-adbb-4ec2-a1e1-73b61d8bf2ed">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
@@ -214,13 +215,13 @@ new Boolean (false)]]></printWhenExpression>
 				<textElement textAlignment="Right">
 					<font size="9"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{linenetamt}.setScale(2,BigDecimal. ROUND_HALF_UP) + " " + $F{cursymbol}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[new java.text.DecimalFormat("#,##0.00").format($F{linenetamt}) + " " + $F{cursymbol}]]></textFieldExpression>
 			</textField>
 		</band>
 		<band height="12">
 			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement x="140" y="0" width="130" height="12" isRemoveLineWhenBlank="true" uuid="6d2a516e-9c01-4de0-b18e-10093e0455f6">
+				<reportElement x="135" y="0" width="120" height="12" isRemoveLineWhenBlank="true" uuid="6d2a516e-9c01-4de0-b18e-10093e0455f6">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
