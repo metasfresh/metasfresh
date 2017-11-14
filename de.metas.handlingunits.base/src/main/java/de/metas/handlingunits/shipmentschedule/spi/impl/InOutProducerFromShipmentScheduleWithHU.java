@@ -516,9 +516,9 @@ public class InOutProducerFromShipmentScheduleWithHU implements IInOutProducerFr
 	}
 
 	@Override
-	public IInOutProducerFromShipmentScheduleWithHU setShipmentDateToday(boolean isShipmentDateToday)
+	public IInOutProducerFromShipmentScheduleWithHU computeShipmentDate(boolean forceDateToday)
 	{
-		this.shipmentDateToday = isShipmentDateToday;
+		this.shipmentDateToday = forceDateToday;
 		return this;
 	}
 

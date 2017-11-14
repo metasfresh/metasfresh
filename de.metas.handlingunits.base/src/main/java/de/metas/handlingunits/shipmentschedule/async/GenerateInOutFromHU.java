@@ -165,7 +165,7 @@ public class GenerateInOutFromHU extends WorkpackageProcessorAdapter
 			final String processShipmentsDocAction,
 			final boolean createPackingLines,
 			final boolean manualPackingMaterial,
-			final boolean isShipmentDateToday,
+			final boolean forceDateToday,
 			final String trxName)
 	{
 		final IHUShipmentScheduleBL huShipmentScheduleBL = Services.get(IHUShipmentScheduleBL.class);
@@ -178,7 +178,7 @@ public class GenerateInOutFromHU extends WorkpackageProcessorAdapter
 				.setProcessShipmentsDocAction(processShipmentsDocAction)
 				.setCreatePackingLines(createPackingLines)
 				.setManualPackingMaterial(manualPackingMaterial)
-				.setShipmentDateToday(isShipmentDateToday);
+				.computeShipmentDate(forceDateToday);
 
 		//
 		// Create shipment producer batch executor

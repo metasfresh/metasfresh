@@ -78,8 +78,8 @@ public interface IInOutProducerFromShipmentScheduleWithHU extends ITrxItemChunkP
 	 * If the flag IsShipmentDateToday is true, the shipment will be created for today, no matter what delivery dates are set in the shipment schedules.
 	 * Otherwise, the date on the shipment will be the minimum date of the shipment schedules, not older than today.
 	 * 
-	 * @param isShipmentDateToday
+	 * @param forceDateToday
 	 * @return
 	 */
-	IInOutProducerFromShipmentScheduleWithHU setShipmentDateToday(boolean isShipmentDateToday);
+	IInOutProducerFromShipmentScheduleWithHU computeShipmentDate(boolean forceDateToday);
 }
