@@ -46,7 +46,8 @@ export default {
         NEXT_PAGE: 'pagedown',
         PREV_PAGE: 'pageup',
         FIRST_PAGE: 'home',
-        LAST_PAGE: 'end'
+        LAST_PAGE: 'end',
+        SELECT_ALL_ROWS: mod + '+' + 'a'
     },
     QUICK_ACTIONS: {
         QUICK_ACTION_POS: mod + '+' + 'u',
