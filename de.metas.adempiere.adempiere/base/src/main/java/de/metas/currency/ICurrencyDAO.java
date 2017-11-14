@@ -10,6 +10,7 @@ import java.util.Properties;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_ConversionType;
 import org.compiere.model.I_C_Currency;
+import org.compiere.util.Env;
 
 /*
  * #%L
@@ -74,6 +75,11 @@ public interface ICurrencyDAO extends ISingletonService
 	 * @return Standard Precision
 	 */
 	int getStdPrecision(Properties ctx, int C_Currency_ID);
+
+	default int getStdPrecision(int C_Currency_ID)
+	{
+		return getStdPrecision(Env.getCtx(), C_Currency_ID);
+	}
 
 	/**
 	 * @param ctx
