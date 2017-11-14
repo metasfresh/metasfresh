@@ -36,7 +36,7 @@ package de.metas.pricing.attributebased;
 public interface IProductPriceAware
 {
 	//@formatter:off
-    public static final String COLUMNNAME_M_ProductPrice_ID = "M_ProductPrice_Attribute_ID";
+    public static final String COLUMNNAME_M_ProductPrice_ID = "M_ProductPrice_ID";
 	public int getM_ProductPrice_ID();
 	//@formatter:on
 
