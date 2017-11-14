@@ -10,6 +10,7 @@
 	</parent>
 
 	<artifactId>metasfresh-material-event</artifactId>
+	<version>10.0.0</version>
 	<packaging>jar</packaging>
 
 	<properties>
