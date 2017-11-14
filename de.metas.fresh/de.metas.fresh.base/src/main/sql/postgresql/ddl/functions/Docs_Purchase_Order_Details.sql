@@ -20,7 +20,11 @@ RETURNS TABLE
 	isPrintTax character(1),
 	Description Character Varying,
 	bp_product_no character varying(30),
-	bp_product_name character varying(100)
+	bp_product_name character varying(100),
+	cursymbol character varying(10),
+	p_value character varying(40),
+	p_description character varying(255),
+	order_description character varying(1024)
 )
 AS
 $$
@@ -54,9 +58,15 @@ SELECT
 	ol.Description,
 	-- in case there is no C_BPartner_Product, fallback to the default ones
 	COALESCE(NULLIF(bpp.ProductNo, ''), p.value) as bp_product_no,
-	COALESCE(NULLIF(bpp.ProductName, ''), pt.Name, p.name) as bp_product_name
+	COALESCE(NULLIF(bpp.ProductName, ''), pt.Name, p.name) as bp_product_name,
+	c.cursymbol, 
+	p.value AS p_value,
+	p.description AS p_description,
+	o.description AS order_description
+
 FROM
 	C_OrderLine ol
+	INNER JOIN C_Order o 			ON ol.C_Order_ID = o.C_Order_ID AND o.isActive = 'Y'
 	LEFT OUTER JOIN C_BPartner bp			ON ol.C_BPartner_ID =  bp.C_BPartner_ID AND bp.isActive = 'Y'
 	INNER JOIN C_BP_Group bpg 			ON bp.C_BP_Group_ID = bpg.C_BP_Group_ID AND bpg.isActive = 'Y'
 	LEFT OUTER JOIN M_HU_PI_Item_Product ip 		ON ol.M_HU_PI_Item_Product_ID = ip.M_HU_PI_Item_Product_ID AND ip.isActive = 'Y'
@@ -82,6 +92,9 @@ FROM
 			-- att.at_IsAttrDocumentRelevant = 'Y' currently those flags are set to be correct for purchase invoices. we need something more flexible for all kinds of documents
 		GROUP BY	att.M_AttributeSetInstance_ID, ol.C_OrderLine_ID
 	) att ON ol.M_AttributeSetInstance_ID = att.M_AttributeSetInstance_ID AND ol.C_OrderLine_ID = att.C_OrderLine_ID
+
+	LEFT JOIN C_Currency c ON o.C_Currency_ID = c.C_Currency_ID and c.isActive = 'Y'
+
 WHERE
 	ol.C_Order_ID = $1 AND ol.isActive = 'Y'
 	AND pc.M_Product_Category_ID != getSysConfigAsNumeric('PackingMaterialProductCategoryID', ol.AD_Client_ID, ol.AD_Org_ID)

@@ -1,0 +1,100 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<artifactId>metasfresh-report</artifactId>
+		<groupId>de.metas.report</groupId>
+		<version>10.0.0</version>
+		<relativePath>../pom.xml</relativePath>
+	</parent>
+
+	<groupId>de.metas.report</groupId>
+	<artifactId>de.metas.report.jasper.client</artifactId>
+	<packaging>jar</packaging>
+
+	<dependencies>
+		<dependency>
+			<groupId>net.sf.jasperreports</groupId>
+			<artifactId>jasperreports</artifactId>
+			<exclusions>
+				<!-- excluding Lucene dependencies because they are conflicting with
+						org.elasticsearch:elasticsearch -->
+				<exclusion>
+					<groupId>org.apache.lucene</groupId>
+					<artifactId>lucene-core</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.apache.lucene</groupId>
+					<artifactId>lucene-analyzers-common</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.apache.lucene</groupId>
+					<artifactId>lucene-queryparser</artifactId>
+				</exclusion>
+				<!-- exclude itext, because jasper 6.2.1 accidentally uses version 2.1.7.js5-SNAPSHOT -->
+				<exclusion>
+					<groupId>com.lowagie</groupId>
+					<artifactId>itext</artifactId>
+				</exclusion>
+				<!--  exclude commons-logging because jasperreports 6.2.1 uses 1.1.1, and we use 1.2 -->
+				<exclusion>
+					<groupId>commons-logging</groupId>
+					<artifactId>commons-logging</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+
+		<dependency>
+			<groupId>com.lowagie</groupId>
+			<artifactId>itext</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>commons-logging</groupId>
+			<artifactId>commons-logging</artifactId>
+		</dependency>
+
+		<!-- 
+		Adding spring-core to avoid:
+java.lang.ClassNotFoundException: No ClassLoaders found for: org.springframework.core.io.Resource
+        at org.jboss.mx.loading.LoadMgr3.beginLoadTask(LoadMgr3.java:212)
+        at org.jboss.mx.loading.RepositoryClassLoader.loadClassImpl(RepositoryClassLoader.java:521)
+        at org.jboss.mx.loading.RepositoryClassLoader.loadClass(RepositoryClassLoader.java:415)
+        at java.lang.ClassLoader.loadClass(ClassLoader.java:358)
+        at java.lang.Class.forName0(Native Method)
+        at java.lang.Class.forName(Class.java:270)
+        at net.sf.jasperreports.engine.util.JRClassLoader.loadClassForRealName(JRClassLoader.java:157)
+		 -->
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-core</artifactId>
+		</dependency>
+		<!-- 
+		Adding spring-beans to avoid:
+java.lang.ClassNotFoundException: No ClassLoaders found for: org.springframework.beans.factory.ListableBeanFactory
+        at org.jboss.mx.loading.LoadMgr3.beginLoadTask(LoadMgr3.java:212)
+        at org.jboss.mx.loading.RepositoryClassLoader.loadClassImpl(RepositoryClassLoader.java:521)
+        at org.jboss.mx.loading.RepositoryClassLoader.loadClass(RepositoryClassLoader.java:415)
+        at java.lang.ClassLoader.loadClass(ClassLoader.java:358)
+        at java.lang.Class.forName0(Native Method)
+        at java.lang.Class.forName(Class.java:270)
+        at net.sf.jasperreports.engine.util.JRClassLoader.loadClassForRealName(JRClassLoader.java:157)
+		-->
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-beans</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.adempiere.adempiere</groupId>
+			<artifactId>de.metas.adempiere.adempiere.base</artifactId>
+			<version>10.0.0</version>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.report</groupId>
+			<artifactId>de.metas.report.jasper.commons</artifactId>
+			<version>10.0.0</version>
+		</dependency>
+	</dependencies>
+</project>

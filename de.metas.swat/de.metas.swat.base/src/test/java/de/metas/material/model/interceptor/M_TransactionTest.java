@@ -9,7 +9,7 @@ import java.sql.Timestamp;
 import java.util.List;
 
 import org.adempiere.ad.modelvalidator.ModelChangeType;
-import org.adempiere.mm.attributes.api.impl.ModelProductDescriptorExtactorUsingAttributeSetInstanceFactory;
+import org.adempiere.mm.attributes.api.impl.ModelProductDescriptorExtractorUsingAttributeSetInstanceFactory;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_M_Locator;
@@ -51,7 +51,7 @@ import de.metas.material.event.TransactionEvent;
  */
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = { StartupListener.class, ModelProductDescriptorExtactorUsingAttributeSetInstanceFactory.class })
+@SpringBootTest(classes = { StartupListener.class, ModelProductDescriptorExtractorUsingAttributeSetInstanceFactory.class })
 public class M_TransactionTest
 {
 

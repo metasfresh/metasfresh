@@ -17,7 +17,8 @@ CREATE TABLE de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Description
 	SR_Phone Character Varying (40),
 	SR_Fax Character Varying (40),
 	SR_Email Character Varying (60),
-	PrintName Character Varying (60)
+	PrintName Character Varying (60),
+	order_docno Character Varying (30)
 );
 
 
@@ -44,7 +45,8 @@ SELECT
 	srep.phone	as sr_phone,
 	srep.fax	as sr_fax,
 	srep.email	as sr_email,
-	COALESCE ( dtt.printname, dt.printname ) AS printname
+	COALESCE ( dtt.printname, dt.printname ) AS printname,
+	o.docno AS order_docno
 FROM
 	m_inout io
 	INNER JOIN C_DocType dt ON io.C_DocType_ID = dt.C_DocType_ID AND dt.isActive = 'Y'
@@ -54,6 +56,18 @@ FROM
 	LEFT OUTER JOIN AD_User cont ON io.AD_User_ID = cont.AD_User_ID AND cont.isActive = 'Y'
 	LEFT OUTER JOIN C_Greeting cogr ON cont.C_Greeting_ID = cogr.C_Greeting_ID AND cogr.isActive = 'Y'
 	LEFT OUTER JOIN C_Greeting srgr ON srep.C_Greeting_ID = srgr.C_Greeting_ID AND srgr.isActive = 'Y'
+	
+	LEFT JOIN LATERAL 
+	(
+		SELECT 
+		First_Agg ( o.DocumentNo ORDER BY o.DocumentNo ) ||
+				CASE WHEN Count( o.documentNo ) > 1 THEN ' ff.' ELSE '' END AS DocNo
+		FROM M_InOutLine iol
+		JOIN C_OrderLine ol ON iol.C_OrderLine_ID = ol.C_OrderLine_ID
+		JOIN C_Order o ON ol.C_Order_ID = o.C_Order_ID
+		
+		WHERE iol.M_InOut_ID = $1
+	) o ON TRUE
 WHERE
 	io.m_inout_id = $1 AND io.isActive = 'Y'
 $$

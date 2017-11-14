@@ -23,10 +23,14 @@ RETURNS TABLE
 	productdescription character varying, 
 	bp_product_no character varying(30),
 	bp_product_name character varying(100),
+	cursymbol character varying(10),
+	p_value character varying(40),
+	p_description character varying(255),
+	order_description character varying(1024),
 	c_order_compensationgroup_id numeric,
 	isgroupcompensationline character(1),
 	groupname  character varying(255),
-	iso_code character(3)
+	iso_code character(3)  	
 )
 AS
 $$
@@ -63,6 +67,10 @@ SELECT
 	-- in case there is no C_BPartner_Product, fallback to the default ones
 	COALESCE(NULLIF(bpp.ProductNo, ''), p.value) as bp_product_no,
 	COALESCE(NULLIF(bpp.ProductName, ''), pt.Name, p.name) as bp_product_name,
+	c.cursymbol, 
+	p.value AS p_value,
+	p.description AS p_description,
+	o.description AS order_description,
 	ol.c_order_compensationgroup_id,
 	ol.isgroupcompensationline,
 	cg.name,
@@ -86,6 +94,7 @@ FROM
 	LEFT OUTER JOIN C_UOM_Trl uomt			ON ol.Price_UOM_ID = uomt.C_UOM_ID AND uomt.AD_Language = $2 AND uomt.isActive = 'Y' AND uomt.isActive = 'Y'
 	-- Tax
 	LEFT OUTER JOIN C_Tax t			ON ol.C_Tax_ID = t.C_Tax_ID AND t.isActive = 'Y'
+
 	-- Get Attributes
 	LEFT OUTER JOIN	(
 		SELECT 	String_agg ( att.ai_value, ', ' ORDER BY length(att.ai_value)) AS Attributes, att.M_AttributeSetInstance_ID, ol.C_OrderLine_ID
@@ -98,7 +107,8 @@ FROM
 	-- compensation group
 	LEFT JOIN c_order_compensationgroup cg ON ol.c_order_compensationgroup_id = cg.c_order_compensationgroup_id 
 	
-	LEFT JOIN C_Currency c ON ol.C_Currency_ID = c.C_Currency_ID and c.isActive = 'Y'
+	LEFT JOIN C_Currency c ON o.C_Currency_ID = c.C_Currency_ID and c.isActive = 'Y'
+
 WHERE
 	ol.C_Order_ID = $1 AND ol.isActive = 'Y'
 	AND pc.M_Product_Category_ID != getSysConfigAsNumeric('PackingMaterialProductCategoryID', ol.AD_Client_ID, ol.AD_Org_ID)

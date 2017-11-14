@@ -144,7 +144,7 @@ public class PP_Order_MaterialTracking_HandlerDAO
 
 		//
 		// Only those manufacturing orders which are invoiceable
-		ppOrderQueryBuilder.filter(getPP_OrderInvoiceableFilter(new PlainContextAware(ctx, trxName)));
+		ppOrderQueryBuilder.filter(getPP_OrderInvoiceableFilter(PlainContextAware.newWithTrxName(ctx, trxName)));
 
 		//
 		// Order by

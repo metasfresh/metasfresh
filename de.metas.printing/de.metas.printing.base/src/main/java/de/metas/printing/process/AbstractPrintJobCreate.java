@@ -10,12 +10,12 @@ package de.metas.printing.process;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -29,7 +29,6 @@ import java.util.Properties;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
-import org.compiere.model.I_AD_PInstance;
 import org.compiere.util.Env;
 
 import de.metas.adempiere.form.IClientUI;
@@ -37,20 +36,19 @@ import de.metas.adempiere.form.IClientUIInstance;
 import de.metas.event.Event;
 import de.metas.printing.Printing_Constants;
 import de.metas.printing.api.IPrintJobBL;
+import de.metas.printing.api.IPrintJobBL.ContextForAsyncProcessing;
 import de.metas.printing.api.IPrintingQueueBL;
 import de.metas.printing.api.IPrintingQueueQuery;
 import de.metas.printing.api.IPrintingQueueSource;
 import de.metas.printing.model.I_C_Print_Job;
 import de.metas.printing.model.I_C_Printing_Queue;
-import de.metas.printing.spi.IPrintJobMonitor;
-import de.metas.printing.spi.impl.UserConfirmationPrintJobMonitor;
 import de.metas.process.JavaProcess;
 
 /**
  * Process all {@link I_C_Printing_Queue} items from selection (see {@link #createSelection()}) and creates corresponding {@link I_C_Print_Job}s.
- * 
+ *
  * @author tsa
- * 
+ *
  */
 public abstract class AbstractPrintJobCreate extends JavaProcess
 {
@@ -58,7 +56,7 @@ public abstract class AbstractPrintJobCreate extends JavaProcess
 
 	/**
 	 * Create {@link I_C_Printing_Queue} selection by using {@link #getAD_PInstance_ID()} as current instance
-	 * 
+	 *
 	 * @param trxName transaction to be used when creating the selection
 	 * @return number of records selected
 	 */
@@ -74,8 +72,6 @@ public abstract class AbstractPrintJobCreate extends JavaProcess
 		final List<IPrintingQueueSource> sources = createPrintingQueueSources(ctxToUse);
 
 		final IClientUIInstance clientUI = Services.get(IClientUI.class).createInstance();
-		final IPrintJobMonitor monitor = createPrintJobMonitor(clientUI);
-		monitor.setDynAttribute(I_AD_PInstance.COLUMNNAME_AD_PInstance_ID, getAD_PInstance_ID());
 
 		for (final IPrintingQueueSource source : sources)
 		{
@@ -84,10 +80,14 @@ public abstract class AbstractPrintJobCreate extends JavaProcess
 				@Override
 				public void run()
 				{
-					
+
 					try
 					{
-						Services.get(IPrintJobBL.class).createPrintJobs(source, monitor);
+						final ContextForAsyncProcessing printJobContext = ContextForAsyncProcessing.builder()
+								.adPInstanceId(getAD_PInstance_ID())
+								.build();
+
+						Services.get(IPrintJobBL.class).createPrintJobs(source, printJobContext);
 					}
 					catch (Exception e)
 					{
@@ -107,21 +107,10 @@ public abstract class AbstractPrintJobCreate extends JavaProcess
 			thread.setDaemon(true);
 			thread.start();
 		}
-		
+
 		return "@Started@";
 	}
 
-	/**
-	 * Creates and configures the monitor
-	 * 
-	 * @return created monitor
-	 */
-	protected UserConfirmationPrintJobMonitor createPrintJobMonitor(final IClientUIInstance clientUI)
-	{
-		// We use UserConfirmation monitor (user will confirm after each job created) - 03922
-		final UserConfirmationPrintJobMonitor monitor = new UserConfirmationPrintJobMonitor(clientUI);
-		return monitor;
-	}
 
 	// each one with their own users to print user to print
 	protected List<IPrintingQueueSource> createPrintingQueueSources(final Properties ctxToUse)

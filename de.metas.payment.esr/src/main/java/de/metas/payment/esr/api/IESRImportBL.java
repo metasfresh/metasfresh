@@ -22,7 +22,6 @@ package de.metas.payment.esr.api;
  * #L%
  */
 
-import org.adempiere.ad.trx.api.ITrxRunConfig;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
@@ -50,10 +49,9 @@ public interface IESRImportBL extends ISingletonService
 	 * Lines that are processed or that already have a payment are skipped.
 	 *
 	 * @param esrImport
-	 * @param trxRunConfig
 	 * @return the number of lines that the method created payments for
 	 */
-	int process(I_ESR_Import esrImport, ITrxRunConfig trxRunConfig);
+	int process(I_ESR_Import esrImport);
 
 	/**
 	 * Method for calculating the check digit.
@@ -70,9 +68,8 @@ public interface IESRImportBL extends ISingletonService
 	 *
 	 * @param esrImport
 	 * @param message a status message or description to be passed to new documents (e.g. Payments or Allocations) that might be created by this method.
-	 * @param trxRunConfig
 	 */
-	void complete(I_ESR_Import esrImport, String message, ITrxRunConfig trxRunConfig);
+	void complete(I_ESR_Import esrImport, String message);
 
 	/**
 	 * Updates the given <code>importLine</code>'s <code>C_Invoice_ID</code> together with its related columns:

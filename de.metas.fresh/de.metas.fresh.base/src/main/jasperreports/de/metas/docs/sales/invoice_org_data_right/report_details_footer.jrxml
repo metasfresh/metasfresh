@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
+<!-- 2017-11-08T16:43:24 -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_details_footer" pageWidth="555" pageHeight="802" columnWidth="555" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/sales/invoice_org_data_right/report" uuid="00f4c9e2-84b8-491d-9fc8-375751dc873d">
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="metasfresh"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+	<parameter name="c_invoice_id" class="java.lang.Integer"/>
+	<parameter name="ad_language" class="java.lang.String"/>
+	<queryString>
+		<![CDATA[SELECT * FROM de_metas_endcustomer_fresh_reports.Docs_Invoice_Details_Footer ( $P{c_invoice_id}, $P{ad_language});]]>
+	</queryString>
+	<field name="descriptionbottom" class="java.lang.String"/>
+	<field name="p_cond" class="java.lang.String"/>
+	<field name="p_term" class="java.lang.String"/>
+	<field name="textcenter" class="java.lang.String"/>
+	<field name="paymentterm" class="java.lang.String"/>
+	<field name="discount1" class="java.math.BigDecimal"/>
+	<field name="discount2" class="java.math.BigDecimal"/>
+	<field name="discount_date1" class="java.lang.String"/>
+	<field name="discount_date2" class="java.lang.String"/>
+	<field name="cursymbol" class="java.lang.String"/>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band>
+			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+		</band>
+	</title>
+	<summary>
+		<band height="100">
+			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+			<textField isBlankWhenNull="true">
+				<reportElement x="56" y="44" width="124" height="14" uuid="1735dd56-472f-4656-a75b-367188022b0f">
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
+					<printWhenExpression><![CDATA[new Boolean($F{discount2} != null)]]></printWhenExpression>
+				</reportElement>
+				<textFieldExpression><![CDATA[$R{payment} + " " + $R{to} + " " + $F{discount_date2} + " = "]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="56" y="2" width="123" height="14" uuid="68e8cedc-cb4d-46d0-bbde-7dd72f4851d1">
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
+				</reportElement>
+				<textElement>
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{payment_term}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="56" y="16" width="444" height="14" uuid="7f1c0c9b-c234-46f1-96bb-095d61b7bf9d">
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
+				</reportElement>
+				<textFieldExpression><![CDATA[$F{paymentterm}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="56" y="30" width="124" height="14" uuid="80f9670f-69e5-4e8c-8f6f-f9195931c4f5">
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
+					<printWhenExpression><![CDATA[new Boolean($F{discount1} != null)]]></printWhenExpression>
+				</reportElement>
+				<textFieldExpression><![CDATA[$R{payment} + " " + $R{to} + " " + $F{discount_date1} + " = "]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="56" y="64" width="445" height="28" uuid="c1597794-20c3-448c-a5b0-d29c7aa7ed28">
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
+				</reportElement>
+				<textFieldExpression><![CDATA[$R{footer_note}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00" isBlankWhenNull="true">
+				<reportElement x="180" y="30" width="80" height="14" uuid="86747b2c-8fa0-4760-b2d1-a4884a902854">
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
+					<printWhenExpression><![CDATA[new Boolean($F{discount1} != null)]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression><![CDATA[new java.text.DecimalFormat("#,##0.00").format($F{discount1}) + " " + $F{cursymbol}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00" isBlankWhenNull="true">
+				<reportElement x="180" y="44" width="79" height="14" uuid="76443806-83c0-448d-a9aa-fd42976d5fa4">
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
+					<printWhenExpression><![CDATA[new Boolean($F{discount2} != null)]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression><![CDATA[new java.text.DecimalFormat("#,##0.00").format($F{discount2}) + " " + $F{cursymbol}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="180" y="2" width="319" height="14" uuid="72e8566c-738e-434a-b1d1-f04fe7aacd46">
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
+				</reportElement>
+				<textFieldExpression><![CDATA[$F{p_term}]]></textFieldExpression>
+			</textField>
+		</band>
+	</summary>
+</jasperReport>
