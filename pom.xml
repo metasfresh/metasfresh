@@ -200,6 +200,17 @@ Default parent pom with common settings (e.g. java file encoding) to be used by 
 					<artifactId>maven-surefire-plugin</artifactId>
 					<version>2.20</version>
 					<configuration>
+					    <!-- Jacoco prepare-agent builds some command-line params without -->
+						<!-- which jacoco will not instrument. Hence it is important to add -->
+						<!-- those command-line params here (${argLine} holds those params) -->
+						<argLine>${argLine} -Xms256m -Xmx2048m</argLine>
+						<!-- From http://www.jacoco.org/jacoco/trunk/doc/maven.html :
+							When using the maven-surefire-plugin or maven-failsafe-plugin you must not use a forkCount of 0 
+							or set the forkMode to never as this would prevent the execution of the tests with the javaagent set and no coverage would be recorded. 
+						-->
+						<forkCount>1</forkCount>
+						<runOrder>random</runOrder>
+
 						<systemPropertyVariables>
 							<concordion.output.dir>${acceptance.reports.dir}</concordion.output.dir>
 						</systemPropertyVariables>
@@ -243,6 +254,12 @@ Default parent pom with common settings (e.g. java file encoding) to be used by 
 							<version>1.0-beta-4</version>
 						</dependency>
 					</dependencies>
+				</plugin>
+
+				<plugin>
+					<groupId>org.jacoco</groupId>
+					<artifactId>jacoco-maven-plugin</artifactId>
+					<version>0.7.9</version>
 				</plugin>
 
 				<!--This plugin's configuration is used to store Eclipse m2e settings 
@@ -599,29 +616,18 @@ Failure to find de.metas:de.metas.parent:pom:(1.0.0,3) in (URL ...) was cached i
 					<plugin>
 						<groupId>org.jacoco</groupId>
 						<artifactId>jacoco-maven-plugin</artifactId>
-						<version>0.7.9</version>
 						<executions>
 							<execution>
-								<id>default-prepare-agent</id>
+								<id>jacoco-prepare-agent</id>
 								<goals>
 									<goal>prepare-agent</goal>
 								</goals>
 							</execution>
 							<execution>
-								<id>default-report</id>
-								<phase>prepare-package</phase>
+								<id>jacoco-report</id>
 								<goals>
 									<goal>report</goal>
 								</goals>
-							</execution>
-							<execution>
-								<id>default-check</id>
-								<goals>
-									<goal>check</goal>
-								</goals>
-								<configuration>
-									<rules />
-								</configuration>
 							</execution>
 						</executions>
 					</plugin>
