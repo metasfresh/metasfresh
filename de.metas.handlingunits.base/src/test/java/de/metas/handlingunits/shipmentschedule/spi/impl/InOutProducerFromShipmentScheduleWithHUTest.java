@@ -47,95 +47,97 @@ public class InOutProducerFromShipmentScheduleWithHUTest
 	}
 
 	@Test
-	public void isCandidateShipmentDateFitForShipment_SameDate_Test()
+	public void isShipmentDeliveryDateBetterThanMovementDate_SameDate()
 	{
-		SystemTime.setTimeSource(new FixedTimeSource(2017, 11, 10, 0, 0, 0));
+		SystemTime.setTimeSource(new FixedTimeSource(2017, 11, 10, 18, 0, 0));
 
 		final Timestamp today = TimeUtil.getDay(2017, 11, 10);
 
 		final I_M_InOut shipment = createShipment(today);
 
-		boolean isTodayBestForShipmentDate = InOutProducerFromShipmentScheduleWithHU.isCandidateShipmentDateBestForShipment(shipment, today);
+		boolean isTodayBestForShipmentDate = InOutProducerFromShipmentScheduleWithHU.isShipmentDeliveryDateBetterThanMovementDate(shipment, today);
 
 		// the candidate date is not better than the already existing date in shipment, because it's the same date
 		assertThat(isTodayBestForShipmentDate).isFalse();
 	}
 
 	@Test
-	public void isCandidateShipmentDateFitForShipment_CandidateBeforeToday_Test()
+	public void isShipmentDeliveryDateBetterThanMovementDate_CandidateBeforeToday()
 	{
-		SystemTime.setTimeSource(new FixedTimeSource(2017, 11, 10, 0, 0, 0));
+		SystemTime.setTimeSource(new FixedTimeSource(2017, 11, 10, 50, 15, 16));
 
 		final Timestamp yesterday = TimeUtil.getDay(2017, 11, 9);
 		final Timestamp today = TimeUtil.getDay(2017, 11, 10);
 
 		final I_M_InOut shipment = createShipment(today);
 
-		boolean isYesterdayBestForShipmentDate = InOutProducerFromShipmentScheduleWithHU.isCandidateShipmentDateBestForShipment(shipment, yesterday);
+		boolean isYesterdayBestForShipmentDate = InOutProducerFromShipmentScheduleWithHU.isShipmentDeliveryDateBetterThanMovementDate(shipment, yesterday);
 
 		// the candidate date is not better than the already existing date in shipment because it's in the past
 		assertThat(isYesterdayBestForShipmentDate).isFalse();
 	}
 
 	@Test
-	public void isCandidateShipmentDateFitForShipment_CurrentYesterday_CandidateToday_Test()
+	public void isShipmentDeliveryDateBetterThanMovementDate_CurrentYesterday_CandidateToday()
 	{
-		SystemTime.setTimeSource(new FixedTimeSource(2017, 11, 10, 0, 0, 0));
+		SystemTime.setTimeSource(new FixedTimeSource(2017, 11, 10, 2, 30, 20));
 
 		final Timestamp yesterday = TimeUtil.getDay(2017, 11, 9);
-		final Timestamp today = TimeUtil.getDay(2017, 11, 10);
+
+		final Timestamp now = TimeUtil.getNow();
 
 		final I_M_InOut shipment = createShipment(yesterday);
 
-		boolean isTodayBestForShipmentDate = InOutProducerFromShipmentScheduleWithHU.isCandidateShipmentDateBestForShipment(shipment, today);
+		boolean isNowBestForShipmentDate = InOutProducerFromShipmentScheduleWithHU.isShipmentDeliveryDateBetterThanMovementDate(shipment, now);
 
 		// the candidate date is better than the already existing date in shipment because the existing date is in the past
-		assertThat(isTodayBestForShipmentDate).isTrue();
+		assertThat(isNowBestForShipmentDate).isTrue();
 	}
 
 	@Test
-	public void isCandidateShipmentDateFitForShipment_CurrentToday_CandidateTomorrow_Test()
+	public void isShipmentDeliveryDateBetterThanMovementDate_CurrentToday_CandidateTomorrow()
 	{
-		SystemTime.setTimeSource(new FixedTimeSource(2017, 11, 10, 0, 0, 0));
+		SystemTime.setTimeSource(new FixedTimeSource(2017, 11, 10, 0, 51, 14));
 
 		final Timestamp tomorrow = TimeUtil.getDay(2017, 11, 12);
-		final Timestamp today = TimeUtil.getDay(2017, 11, 10);
 
-		final I_M_InOut shipment = createShipment(today);
+		final Timestamp now = TimeUtil.getNow();
 
-		boolean isTodayBestForShipmentDate = InOutProducerFromShipmentScheduleWithHU.isCandidateShipmentDateBestForShipment(shipment, tomorrow);
+		final I_M_InOut shipment = createShipment(now);
+
+		boolean isNowBestForShipmentDate = InOutProducerFromShipmentScheduleWithHU.isShipmentDeliveryDateBetterThanMovementDate(shipment, tomorrow);
 
 		// the candidate date is not better than the already existing date in shipment because the existing date is before the candidate and not in the past
-		assertThat(isTodayBestForShipmentDate).isFalse();
+		assertThat(isNowBestForShipmentDate).isFalse();
 	}
 
 	@Test
-	public void isCandidateShipmentDateFitForShipment_CurrentNextWeek_CandidateTomorrow_Test()
+	public void isShipmentDeliveryDateBetterThanMovementDate_CurrentNextWeek_CandidateTomorrow()
 	{
-		SystemTime.setTimeSource(new FixedTimeSource(2017, 11, 10, 0, 0, 0));
+		SystemTime.setTimeSource(new FixedTimeSource(2017, 11, 10, 12, 30, 15));
 
 		final Timestamp tomorrow = TimeUtil.getDay(2017, 11, 12);
 		final Timestamp nextWeek = TimeUtil.getDay(2017, 11, 17);
 
 		final I_M_InOut shipment = createShipment(nextWeek);
 
-		boolean isTodayBestForShipmentDate = InOutProducerFromShipmentScheduleWithHU.isCandidateShipmentDateBestForShipment(shipment, tomorrow);
+		boolean isTodayBestForShipmentDate = InOutProducerFromShipmentScheduleWithHU.isShipmentDeliveryDateBetterThanMovementDate(shipment, tomorrow);
 
 		// the candidate date is better than the already existing date in shipment because the existing date is after the candidate and they are both in the future
 		assertThat(isTodayBestForShipmentDate).isTrue();
 	}
 
 	@Test
-	public void isCandidateShipmentDateFitForShipment_BothDatesInThePast_Test()
+	public void isShipmentDeliveryDateBetterThanMovementDate_BothDatesInThePast()
 	{
-		SystemTime.setTimeSource(new FixedTimeSource(2017, 11, 10, 0, 0, 0));
+		SystemTime.setTimeSource(new FixedTimeSource(2017, 11, 10, 1, 1, 1));
 
 		final Timestamp yesterday = TimeUtil.getDay(2017, 11, 9);
 		final Timestamp lastWeek = TimeUtil.getDay(2017, 11, 3);
 
 		final I_M_InOut shipment = createShipment(yesterday);
 
-		boolean isTodayBestForShipmentDate = InOutProducerFromShipmentScheduleWithHU.isCandidateShipmentDateBestForShipment(shipment, lastWeek);
+		boolean isTodayBestForShipmentDate = InOutProducerFromShipmentScheduleWithHU.isShipmentDeliveryDateBetterThanMovementDate(shipment, lastWeek);
 
 		// the candidate date is not better than the already existing date in shipment because they are both in the past.
 		assertThat(isTodayBestForShipmentDate).isFalse();
@@ -151,52 +153,55 @@ public class InOutProducerFromShipmentScheduleWithHUTest
 	}
 
 	@Test
-	public void calculateShipmentDate_Today_IsShipmentDateTodayTrue_Test()
+	public void calculateShipmentDate_Today_IsShipmentDateTodayTrue()
 	{
-		SystemTime.setTimeSource(new FixedTimeSource(2017, 11, 10, 0, 0, 0));
+		SystemTime.setTimeSource(new FixedTimeSource(2017, 11, 10, 10, 15, 0));
 
 		final Timestamp today = TimeUtil.getDay(2017, 11, 10);
+		final Timestamp now = TimeUtil.getNow();
 
 		final I_M_ShipmentSchedule schedule = createSchedule(today);
 
 		final Timestamp shipmentDate = InOutProducerFromShipmentScheduleWithHU.calculateShipmentDate(schedule, true);
 
-		assertThat(shipmentDate).isEqualTo(today);
+		assertThat(shipmentDate).isEqualTo(now);
 	}
 
 	@Test
-	public void calculateShipmentDate_Today_IsShipmentDateTodayFalse_Test()
+	public void calculateShipmentDate_Today_IsShipmentDateTodayFalse()
 	{
-		SystemTime.setTimeSource(new FixedTimeSource(2017, 11, 10, 0, 0, 0));
+		SystemTime.setTimeSource(new FixedTimeSource(2017, 11, 10, 19, 17, 16));
 
 		final Timestamp today = TimeUtil.getDay(2017, 11, 10);
+		final Timestamp now = TimeUtil.getNow();
 
 		final I_M_ShipmentSchedule schedule = createSchedule(today);
 
 		final Timestamp shipmentDate = InOutProducerFromShipmentScheduleWithHU.calculateShipmentDate(schedule, false);
 
-		assertThat(shipmentDate).isEqualTo(today);
+		assertThat(shipmentDate).isEqualTo(now);
 	}
 
 	@Test
-	public void calculateShipmentDate_AnotherDate_IsShipmentDateTodayTrue_Test()
+	public void calculateShipmentDate_AnotherDate_IsShipmentDateTodayTrue()
 	{
-		SystemTime.setTimeSource(new FixedTimeSource(2017, 11, 10, 0, 0, 0));
+		SystemTime.setTimeSource(new FixedTimeSource(2017, 11, 10, 13, 13, 13));
 
-		final Timestamp today = TimeUtil.getDay(2017, 11, 10);
+		final Timestamp now = TimeUtil.getNow();
+
 		final Timestamp anotherDate = TimeUtil.getDay(2017, 11, 17);
 
 		final I_M_ShipmentSchedule schedule = createSchedule(anotherDate);
 
 		final Timestamp shipmentDate = InOutProducerFromShipmentScheduleWithHU.calculateShipmentDate(schedule, true);
 
-		assertThat(shipmentDate).isEqualTo(today);
+		assertThat(shipmentDate).isEqualTo(now);
 	}
 
 	@Test
-	public void calculateShipmentDate_DateInFuture_IsShipmentDateTodayFalse_Test()
+	public void calculateShipmentDate_DateInFuture_IsShipmentDateTodayFalse()
 	{
-		SystemTime.setTimeSource(new FixedTimeSource(2017, 11, 10, 0, 0, 0));
+		SystemTime.setTimeSource(new FixedTimeSource(2017, 11, 10, 19, 4, 4));
 
 		final Timestamp dateInFuture = TimeUtil.getDay(2017, 11, 17);
 
@@ -208,18 +213,18 @@ public class InOutProducerFromShipmentScheduleWithHUTest
 	}
 
 	@Test
-	public void calculateShipmentDate_DateInPast_IsShipmentDateTodayFalse_Test()
+	public void calculateShipmentDate_DateInPast_IsShipmentDateTodayFalse()
 	{
-		SystemTime.setTimeSource(new FixedTimeSource(2017, 11, 10, 0, 0, 0));
+		SystemTime.setTimeSource(new FixedTimeSource(2017, 11, 10, 1, 2, 30));
 
-		final Timestamp today = TimeUtil.getDay(2017, 11, 10);
+		final Timestamp now = TimeUtil.getNow();
 		final Timestamp dateInPast = TimeUtil.getDay(2017, 11, 3);
 
 		final I_M_ShipmentSchedule schedule = createSchedule(dateInPast);
 
 		final Timestamp shipmentDate = InOutProducerFromShipmentScheduleWithHU.calculateShipmentDate(schedule, false);
 
-		assertThat(shipmentDate).isEqualTo(today);
+		assertThat(shipmentDate).isEqualTo(now);
 	}
 
 	private I_M_ShipmentSchedule createSchedule(final Timestamp date)
