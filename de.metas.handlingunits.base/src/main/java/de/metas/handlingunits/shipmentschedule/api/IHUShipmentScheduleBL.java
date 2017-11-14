@@ -13,11 +13,11 @@ package de.metas.handlingunits.shipmentschedule.api;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -68,7 +68,7 @@ public interface IHUShipmentScheduleBL extends ISingletonService
 	/**
 	 * @param candidate
 	 * @param movementDate shipment's movement date (used to filter only if we have an consolidation period set)
-	 * @return shipment which is still open for the shipment schedule (first) and it's HU specifications or null if none is found
+	 * @return shipment which is still open for the shipment schedule (first) and it's HU specifications (shipper transportation) or null if none is found
 	 */
 	I_M_InOut getOpenShipmentOrNull(IShipmentScheduleWithHU candidate, Date movementDate);
 
@@ -94,9 +94,9 @@ public interface IHUShipmentScheduleBL extends ISingletonService
 	/**
 	 * Gets {@link I_M_HU_PI_Item_Product} by checking:
 	 * <ul>
-	 * <li> {@link de.metas.handlingunits.model.I_M_ShipmentSchedule#getM_HU_PI_Item_Product_Override()}
-	 * <li> {@link de.metas.handlingunits.model.I_M_ShipmentSchedule#getM_HU_PI_Item_Product()}
-	 * <li> {@link de.metas.handlingunits.model.I_C_OrderLine#getM_HU_PI_Item_Product()}
+	 * <li>{@link de.metas.handlingunits.model.I_M_ShipmentSchedule#getM_HU_PI_Item_Product_Override()}
+	 * <li>{@link de.metas.handlingunits.model.I_M_ShipmentSchedule#getM_HU_PI_Item_Product()}
+	 * <li>{@link de.metas.handlingunits.model.I_C_OrderLine#getM_HU_PI_Item_Product()}
 	 * </ul>
 	 *
 	 * If no PI item product was found, null will be returned.
