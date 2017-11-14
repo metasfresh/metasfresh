@@ -37,7 +37,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.Language;
 import de.metas.i18n.NumberTranslatableString;
-import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
+import de.metas.material.dispo.client.repository.AvailableStockService;
 import de.metas.material.dispo.commons.repository.MaterialQuery;
 import de.metas.product.model.I_M_Product;
 import de.metas.quantity.Quantity;
@@ -80,9 +80,9 @@ import lombok.Value;
 
 /**
  * Product lookup.
- * 
+ *
  * It is searching by product's Value, Name, UPC and bpartner's ProductNo.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  * @task https://github.com/metasfresh/metasfresh/issues/2484
  */
@@ -97,7 +97,7 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 	private static final CtxName param_AD_Org_ID = CtxNames.parse(WindowConstants.FIELDNAME_AD_Org_ID + "/-1");
 	private final Set<CtxName> parameters;
 
-	private final CandidateRepositoryRetrieval storageService;
+	private final AvailableStockService availableStockService;
 
 	private static final String ATTRIBUTE_ASI = "asi";
 
@@ -105,13 +105,13 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 	private ProductLookupDescriptor(
 			@NonNull final String bpartnerParamName,
 			@NonNull final String dateParamName,
-			@NonNull final CandidateRepositoryRetrieval storageService)
+			@NonNull final AvailableStockService availableStockService)
 	{
 		param_C_BPartner_ID = CtxNames.parse(bpartnerParamName + "/-1");
 		param_Date = CtxNames.parse(dateParamName + "/NULL");
 		parameters = ImmutableSet.of(param_C_BPartner_ID, param_M_PriceList_ID, param_Date, param_AD_Org_ID);
 
-		this.storageService = storageService;
+		this.availableStockService = availableStockService;
 	}
 
 	@Override
@@ -430,7 +430,7 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 		for (LookupValue productLookupValue : productLookupValues)
 		{
 			final int productId = productLookupValue.getIdAsInt();
-			final Quantity qtyOnHand = storageService.retrieveAvailableStock(MaterialQuery.builder()
+			final Quantity qtyOnHand = availableStockService.retrieveAvailableStock(MaterialQuery.builder()
 					.productId(productId)
 					.build())
 					.getSingleQuantity();

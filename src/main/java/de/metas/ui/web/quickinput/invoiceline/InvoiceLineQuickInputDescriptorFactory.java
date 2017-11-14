@@ -12,7 +12,7 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.i18n.IMsgBL;
-import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
+import de.metas.material.dispo.client.repository.AvailableStockService;
 import de.metas.ui.web.quickinput.IQuickInputDescriptorFactory;
 import de.metas.ui.web.quickinput.QuickInputDescriptor;
 import de.metas.ui.web.quickinput.QuickInputLayoutDescriptor;
@@ -35,12 +35,12 @@ import de.metas.ui.web.window.descriptor.sql.ProductLookupDescriptor;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -51,7 +51,7 @@ import de.metas.ui.web.window.descriptor.sql.ProductLookupDescriptor;
 public class InvoiceLineQuickInputDescriptorFactory implements IQuickInputDescriptorFactory
 {
 	@Autowired
-	private CandidateRepositoryRetrieval storageService;
+	private AvailableStockService availableStockService;
 
 	@Override
 	public Set<MatchingKey> getMatchingKeys()
@@ -85,7 +85,7 @@ public class InvoiceLineQuickInputDescriptorFactory implements IQuickInputDescri
 				.setLookupDescriptorProvider(ProductLookupDescriptor.builder()
 						.bpartnerParamName(I_C_Invoice.COLUMNNAME_C_BPartner_ID)
 						.dateParamName(I_C_Invoice.COLUMNNAME_DateInvoiced)
-						.storageService(storageService)
+						.availableStockService(availableStockService)
 						.build())
 				.setMandatoryLogic(true)
 				.setDisplayLogic(ConstantLogicExpression.TRUE)
