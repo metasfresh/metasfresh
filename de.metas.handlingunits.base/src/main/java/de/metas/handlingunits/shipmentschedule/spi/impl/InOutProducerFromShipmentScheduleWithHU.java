@@ -428,7 +428,7 @@ public class InOutProducerFromShipmentScheduleWithHU implements IInOutProducerFr
 		final Timestamp candidateShipmentDate = calculateShipmentDate(schedule, shipmentDateToday);
 
 		// the shipment was created before but wasn't yet completed;
-		if (isCandidateShipmentDateBestForShipment(shipment, candidateShipmentDate))
+		if (isShipmentDeliveryDateBetterThanMovementDate(shipment, candidateShipmentDate))
 		{
 			shipment.setMovementDate(candidateShipmentDate);
 			shipment.setDateAcct(candidateShipmentDate);
@@ -438,22 +438,26 @@ public class InOutProducerFromShipmentScheduleWithHU implements IInOutProducerFr
 	}
 
 	@VisibleForTesting
-	static boolean isCandidateShipmentDateBestForShipment(final @NonNull I_M_InOut shipment, final @NonNull Timestamp candidateShipmentDate)
+	static boolean isShipmentDeliveryDateBetterThanMovementDate(final @NonNull I_M_InOut shipment, final @NonNull Timestamp shipmentDeliveryDate)
 	{
 		final Timestamp today = TimeUtil.getNow();
-		final Timestamp currentShipmentDate = shipment.getMovementDate();
+		final Timestamp movementDate = shipment.getMovementDate();
+		
+		final boolean isCandidateInThePast = shipmentDeliveryDate.before(today);
+		final boolean isMovementDateInThePast = movementDate.before(today);
+		final boolean isCandidateSoonerThanMovementDate = movementDate.after(shipmentDeliveryDate);
 
-		if(candidateShipmentDate.before(today))
+		if(isCandidateInThePast)
 		{
 			return false;
 		}
 		
-		if (currentShipmentDate.before(today))
+		if (isMovementDateInThePast)
 		{
 			return true;
 		}
 
-		else if (currentShipmentDate.after(candidateShipmentDate))
+		else if (isCandidateSoonerThanMovementDate)
 		{
 			return true;
 		}
