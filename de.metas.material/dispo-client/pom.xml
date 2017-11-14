@@ -71,6 +71,13 @@
 			<artifactId>metasfresh-material-dispo-commons</artifactId>
 			<version>${metasfresh.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>de.metas.material</groupId>
+			<artifactId>metasfresh-material-dispo-commons</artifactId>
+			<version>${metasfresh.version}</version>
+			<classifier>tests</classifier>
+			<scope>test</scope>
+		</dependency>
 
 		<dependency>
 			<groupId>de.metas.material</groupId>
