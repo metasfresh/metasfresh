@@ -1,24 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
-<!-- 2017-11-08T16:46:23 -->
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_details" pageWidth="555" pageHeight="802" columnWidth="555" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/sales/invoice_org_data_right/report" uuid="00f4c9e2-84b8-491d-9fc8-375751dc873d">
+<!-- 2017-11-08T15:31:17 -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_details" pageWidth="555" pageHeight="802" columnWidth="555" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/purchase/invoice_org_data_right/report" uuid="00f4c9e2-84b8-491d-9fc8-375751dc873d">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="metasfresh"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<parameter name="c_invoice_id" class="java.lang.Integer"/>
 	<parameter name="ad_language" class="java.lang.String"/>
 	<queryString>
-		<![CDATA[SELECT * FROM de_metas_endcustomer_fresh_reports.Docs_Sales_Invoice_Details($P{c_invoice_id}, $P{ad_language});]]>
+		<![CDATA[SELECT * FROM de_metas_endcustomer_fresh_reports.Docs_Purchase_Invoice_Details($P{c_invoice_id}, $P{ad_language});]]>
 	</queryString>
 	<field name="inouts" class="java.lang.String"/>
 	<field name="doctype" class="java.lang.String"/>
-	<field name="reference" class="java.lang.String"/>
-	<field name="shiplocation" class="java.lang.String"/>
 	<field name="inouts_datefrom" class="java.lang.String"/>
-	<field name="inouts_dateto" class="java.lang.String"/>
-	<field name="inouts_issamedate" class="java.lang.Boolean"/>
 	<field name="inouts_isdatacomplete" class="java.lang.Boolean"/>
 	<field name="ishu" class="java.lang.Boolean"/>
 	<field name="line" class="java.math.BigDecimal"/>
+	<field name="description" class="java.lang.String"/>
 	<field name="name" class="java.lang.String"/>
 	<field name="attributes" class="java.lang.String"/>
 	<field name="huqty" class="java.math.BigDecimal"/>
@@ -28,15 +25,12 @@
 	<field name="retour" class="java.math.BigDecimal"/>
 	<field name="priceactual" class="java.math.BigDecimal"/>
 	<field name="priceentered" class="java.math.BigDecimal"/>
-	<field name="discount" class="java.math.BigDecimal"/>
 	<field name="uom" class="java.lang.String"/>
 	<field name="priceuom" class="java.lang.String"/>
 	<field name="stdprecision" class="java.math.BigDecimal"/>
 	<field name="linenetamt" class="java.math.BigDecimal"/>
 	<field name="rate" class="java.math.BigDecimal"/>
-	<field name="isdiscountprinted" class="java.lang.String"/>
 	<field name="isprinttax" class="java.lang.String"/>
-	<field name="description" class="java.lang.String"/>
 	<field name="bp_product_no" class="java.lang.String"/>
 	<field name="bp_product_name" class="java.lang.String"/>
 	<field name="p_value" class="java.lang.String"/>
@@ -204,7 +198,7 @@ new Boolean (false)]]></printWhenExpression>
 				<textElement textAlignment="Right">
 					<font size="9"/>
 				</textElement>
-				<textFieldExpression><![CDATA[new java.text.DecimalFormat("#,##0.00").format($F{priceentered}) + " " + $F{cursymbol}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[new java.text.DecimalFormat("#,##0.00").format($F{priceentered}) + " " +  $F{cursymbol}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="389" y="6" width="61" height="12" uuid="7c826eaf-adbb-4ec2-a1e1-73b61d8bf2ed">
@@ -215,7 +209,7 @@ new Boolean (false)]]></printWhenExpression>
 				<textElement textAlignment="Right">
 					<font size="9"/>
 				</textElement>
-				<textFieldExpression><![CDATA[new java.text.DecimalFormat("#,##0.00").format($F{linenetamt}) + " " + $F{cursymbol}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[new java.text.DecimalFormat("#,##0.00").format($F{linenetamt}) + " " +  $F{cursymbol}]]></textFieldExpression>
 			</textField>
 		</band>
 		<band height="12">
@@ -225,6 +219,7 @@ new Boolean (false)]]></printWhenExpression>
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 				</reportElement>
 				<textElement textAlignment="Left">
 					<font size="9"/>
