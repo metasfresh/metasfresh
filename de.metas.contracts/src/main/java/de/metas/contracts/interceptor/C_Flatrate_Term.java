@@ -177,7 +177,6 @@ public class C_Flatrate_Term
 			flatrateBL.validatePricing(term);
 		}
 	}
-	
 
 	@ModelChange(timings = {
 			ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE
@@ -234,7 +233,7 @@ public class C_Flatrate_Term
 			throw new AdempiereException(concatStrings(errors));
 		}
 	}
-	
+
 	/**
 	 * If the term that is deleted was the last term, remove the "processed"-flag from the term's data record.
 	 *
@@ -496,13 +495,12 @@ public class C_Flatrate_Term
 			throw new AdempiereException(FlatrateBL.MSG_HasOverlapping_Term, new Object[] { term.getC_Flatrate_Term_ID(), term.getBill_BPartner().getValue() });
 		}
 	}
-	
-	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE , ifColumnsChanged = I_C_Flatrate_Term.COLUMNNAME_C_FlatrateTerm_Next_ID )
+
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = I_C_Flatrate_Term.COLUMNNAME_C_FlatrateTerm_Next_ID)
 	public void updateMasterEndDate(final I_C_Flatrate_Term term)
 	{
 		setMasterEndDate(term);
 	}
-	
 
 	private void setMasterEndDate(final I_C_Flatrate_Term term)
 	{
@@ -511,15 +509,19 @@ public class C_Flatrate_Term
 		{
 			masterEndDate = term.getEndDate();
 		}
-		
-		if (term.getC_FlatrateTerm_Next_ID() > 0)
+
+		if (InterfaceWrapperHelper.isValueChanged(term, I_C_Flatrate_Term.COLUMNNAME_C_FlatrateTerm_Next_ID) && !term.isAutoRenew())
 		{
-			if (!term.isAutoRenew())
+			if (term.getC_FlatrateTerm_Next_ID() > 0)
 			{
 				masterEndDate = term.getC_FlatrateTerm_Next().getMasterEndDate();
 			}
+			else
+			{
+				masterEndDate = term.getEndDate();
+			}
 		}
-		
+
 		term.setMasterEndDate(masterEndDate);
 	}
 }

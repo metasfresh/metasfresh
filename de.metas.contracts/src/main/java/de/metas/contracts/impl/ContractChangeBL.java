@@ -93,7 +93,21 @@ public class ContractChangeBL implements IContractChangeBL
 		 {
 			 ancestor.setC_FlatrateTerm_Next(null);
 			 ancestor.setAD_PInstance_EndOfTerm(null);
-			 InterfaceWrapperHelper.disableReadOnlyColumnCheck(ancestor);
+			 setAncestorMasterEndDateWhenUnlinkContract(ancestor);
+			 
+			 InterfaceWrapperHelper.save(ancestor);
+		 }
+	}
+	
+	private void setAncestorMasterEndDateWhenUnlinkContract(@NonNull final I_C_Flatrate_Term ancestor)
+	{
+		if (ancestor.isAutoRenew())
+		 {
+			 ancestor.setMasterEndDate(null);
+		 }
+		 else
+		 {
+			 ancestor.setMasterEndDate(ancestor.getEndDate());
 		 }
 	}
 
