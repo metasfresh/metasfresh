@@ -20,6 +20,17 @@ class TablePagination extends Component {
         })
     }
 
+    _handleSelectAll = () => {
+        const {
+            selected, rowLength, handleSelectAll, handleSelectRange
+        } = this.props;
+
+        const selectedWholePage = selected && (selected.length === rowLength);
+
+        return selectedWholePage?
+            handleSelectRange(['all']) :handleSelectAll();
+    }
+
     handleSubmit = (e, value, pages) => {
         const {handleChangePage, deselect} = this.props;
         if(e.key === 'Enter'){
@@ -203,7 +214,7 @@ class TablePagination extends Component {
 
     renderSelectAll = () => {
         const {
-            selected, handleSelectAll, handleSelectRange, size, rowLength
+            selected, size, rowLength
         } = this.props;
 
         const selectedWholePage = selected && (selected.length === rowLength);
@@ -224,8 +235,7 @@ class TablePagination extends Component {
                 <div
                     className="pagination-link pointer"
                     onClick={() => {
-                        selectedWholePage ?
-                             handleSelectRange(['all']) : handleSelectAll()
+                        this._handleSelectAll();
                     }}
                 >
                     {selectedWholePage ?
@@ -260,10 +270,26 @@ class TablePagination extends Component {
         )
     }
 
+    paginationShortcuts = () => {
+        const {
+            size, pageLength, disablePaginationShortcuts, handleChangePage
+        } = this.props;
+
+        const pages = size ? Math.ceil(size / pageLength) : 0;
+
+        return !disablePaginationShortcuts && {
+            handleFirstPage : () => handleChangePage(1),
+            handleLastPage : () => handleChangePage(
+                size ? Math.ceil(size / pageLength) : 0),
+            handleNextPage : () => handleChangePage('up'),
+            handlePrevPage : () => handleChangePage('down'),
+            pages : pages
+        }
+    }
+
     render() {
         const {
-            size, pageLength, handleChangePage, page, compressed,
-            disablePaginationShortcuts
+            size, pageLength, page, compressed
         } = this.props;
 
         const pages = size ? Math.ceil(size / pageLength) : 0;
@@ -310,18 +336,10 @@ class TablePagination extends Component {
                     </div>
                 </div>
 
-                {
-                    !disablePaginationShortcuts &&
-                    <PaginationContextShortcuts
-                        handleFirstPage={() => handleChangePage(1)}
-                        handleLastPage={() => handleChangePage(
-                            size ? Math.ceil(size / pageLength) : 0)
-                        }
-                        handleNextPage={() => handleChangePage('up')}
-                        handlePrevPage={() => handleChangePage('down')}
-                        pages={pages}
-                    />
-                }
+                <PaginationContextShortcuts
+                    handleSelectAll={() => this._handleSelectAll()}
+                    {...this.paginationShortcuts()}
+                />
             </div>
         );
 
