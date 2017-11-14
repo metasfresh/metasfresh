@@ -37,18 +37,11 @@ import org.adempiere.pricing.api.IPricingResult;
 import org.adempiere.pricing.exceptions.ProductNotOnPriceListException;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.model.I_AD_Column;
-import org.compiere.model.I_AD_Ref_Table;
-import org.compiere.model.I_AD_Reference;
-import org.compiere.model.I_AD_RelationType;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_M_PriceList;
-import org.compiere.model.MRefTable;
-import org.compiere.model.MReference;
 import org.compiere.model.MTable;
 import org.compiere.model.PO;
-import org.compiere.model.X_AD_Reference;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
 import org.slf4j.Logger;
@@ -74,7 +67,6 @@ import de.metas.ordercandidate.spi.IOLCandCreator;
 import de.metas.ordercandidate.spi.IOLCandGroupingProvider;
 import de.metas.ordercandidate.spi.IOLCandListener;
 import de.metas.product.IProductPA;
-import de.metas.relation.IRelationTypeDAO;
 import de.metas.relation.grid.ModelRelationTarget;
 import de.metas.workflow.api.IWFExecutionFactory;
 import lombok.NonNull;
@@ -204,130 +196,6 @@ public class OLCandBL implements IOLCandBL
 						+ olCandTable.getName());
 
 		return model;
-	}
-
-	@Override
-	public void createOrUpdateOCProcessorRelationType(
-			final Properties ctx,
-			final ModelRelationTarget model,
-			final String trxName)
-	{
-		final String entityType = OrderCandidate_Constants.ENTITY_TYPE;
-
-		final I_AD_RelationType retrievedRelType = Services.get(IRelationTypeDAO.class).retrieveForInternalName(ctx, model.getRelationTypeInternalName());
-
-		final I_AD_RelationType relType;
-
-		final I_AD_Reference refSource;
-		final I_AD_Ref_Table refTableSource;
-
-		final I_AD_Reference refTarget;
-		final I_AD_Ref_Table refTableTarget;
-
-		final int orgId = 0;
-
-		if (retrievedRelType == null)
-		{
-			relType = InterfaceWrapperHelper.create(ctx, I_AD_RelationType.class, trxName);
-			relType.setInternalName(model.getRelationTypeInternalName());
-
-			refSource = new MReference(ctx, 0, trxName);
-			refSource.setAD_Org_ID(orgId);
-			refSource.setEntityType(entityType);
-			refSource.setName(mkNameOfSourceRef(ctx, model));
-			refSource.setValidationType(X_AD_Reference.VALIDATIONTYPE_TableValidation);
-			InterfaceWrapperHelper.save(refSource);
-			relType.setAD_Reference_Source_ID(refSource.getAD_Reference_ID());
-
-			refTableSource = new MRefTable(ctx, 0, trxName);
-			refTableSource.setAD_Org_ID(orgId);
-			refTableSource.setAD_Reference_ID(refSource.getAD_Reference_ID());
-			refTableSource.setEntityType(entityType);
-
-			refTarget = new MReference(ctx, 0, trxName);
-			refTarget.setAD_Org_ID(orgId);
-			refTarget.setEntityType(entityType);
-			refTarget.setName(mkNameOfTargetRef(ctx, model));
-			refTarget.setValidationType(X_AD_Reference.VALIDATIONTYPE_TableValidation);
-			InterfaceWrapperHelper.save(refTarget);
-			relType.setAD_Reference_Target_ID(refTarget.getAD_Reference_ID());
-
-			refTableTarget = new MRefTable(ctx, 0, trxName);
-			refTableTarget.setAD_Org_ID(orgId);
-			refTableTarget.setAD_Reference_ID(refTarget.getAD_Reference_ID());
-			refTableTarget.setEntityType(entityType);
-		}
-		else
-		{
-
-			relType = retrievedRelType;
-			refSource = relType.getAD_Reference_Source();
-			refTableSource = MReference.retrieveRefTable(ctx, refSource.getAD_Reference_ID(), trxName);
-
-			refTarget = relType.getAD_Reference_Target();
-			refTableTarget = MReference.retrieveRefTable(ctx, refTarget.getAD_Reference_ID(), trxName);
-
-		}
-		relType.setName(model.getRelationTypeName());
-		relType.setIsDirected(model.isRelationTypeDirected());
-		InterfaceWrapperHelper.save(relType);
-
-		// source reference
-		refTableSource.setAD_Table_ID(model.getAdTableSourceId());
-		refTableSource.setAD_Window_ID(model.getAdWindowSourceId());
-
-		final MTable tableSource = MTable.get(ctx, model.getAdTableSourceId());
-		final String[] keyColumnsSource = tableSource.getKeyColumns();
-		Check.assume(keyColumnsSource.length == 1, "keyColumnsSource=" + keyColumnsSource + " has one element");
-
-		final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
-
-		final I_AD_Column keyColumnSource = tableDAO.retrieveColumnOrNull(tableSource.get_TableName(), keyColumnsSource[0]);
-		final int keyColumnSourceId = keyColumnSource.getAD_Column_ID();
-		refTableSource.setAD_Key(keyColumnSourceId);
-		refTableSource.setAD_Display(keyColumnSourceId);
-
-		refTableSource.setWhereClause(keyColumnsSource[0] + "=" + model.getRecordSourceId());
-		InterfaceWrapperHelper.save(refTableSource);
-
-		// target reference
-		refTableTarget.setAD_Table_ID(model.getAdTableTargetId());
-		refTableTarget.setAD_Window_ID(model.getAdWindowTargetId());
-
-		final MTable tableTarget = MTable.get(ctx, model.getAdTableTargetId());
-		final String[] keyColumnsTarget = tableTarget.getKeyColumns();
-		assert keyColumnsTarget.length == 1;
-
-		final I_AD_Column keyColumnTarget = tableDAO.retrieveColumnOrNull(tableSource.get_TableName(), keyColumnsSource[0]);
-		final int keyColumnTargetId = keyColumnTarget.getAD_Column_ID();
-		refTableTarget.setAD_Key(keyColumnTargetId);
-		refTableTarget.setAD_Display(keyColumnTargetId);
-
-		final String targetWhereClauseToUse;
-		if (Check.isEmpty(model.getTargetWhereClause()))
-		{
-			targetWhereClauseToUse = "1=1";
-		}
-		else
-		{
-			targetWhereClauseToUse = model.getTargetWhereClause();
-		}
-		refTableTarget.setWhereClause(targetWhereClauseToUse);
-		InterfaceWrapperHelper.save(refTableTarget);
-	}
-
-	private String mkNameOfSourceRef(
-			final Properties ctx,
-			final ModelRelationTarget model)
-	{
-		return "RelType_" + Services.get(IADTableDAO.class).retrieveTableName(model.getAdTableSourceId()) + "_" + model.getRecordSourceId();
-	}
-
-	private String mkNameOfTargetRef(
-			final Properties ctx,
-			final ModelRelationTarget model)
-	{
-		return "RelType_" + Services.get(IADTableDAO.class).retrieveTableName(model.getAdTableTargetId()) + "_" + model.getRecordSourceId();
 	}
 
 	@Override
