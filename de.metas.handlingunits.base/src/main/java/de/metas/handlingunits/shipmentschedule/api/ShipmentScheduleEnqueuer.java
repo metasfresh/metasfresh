@@ -319,7 +319,7 @@ public class ShipmentScheduleEnqueuer
 	{
 		public static final String PARAM_IsUseQtyPicked = "IsUseQtyPicked";
 		public static final String PARAM_IsCompleteShipments = "IsCompleteShipments";
-		public static final String PARAM_IsShipmentDateToday = "IsShipmentDateToday";
+		public static final String PARAM_IsShipmentDateToday = "IsShipToday";
 
 		private int adPInstanceId;
 		@NonNull
