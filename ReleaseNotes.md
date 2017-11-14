@@ -20,6 +20,8 @@ Here come the actual release notes:
     * Adding missing default Values for Posted columns in various Table Definitions.
   * [#2872](https://github.com/metasfresh/metasfresh/issues/2872) Window Design Webui : Improve Distribution Order window
     * Improved Layout and Translations for the Distribution Order Window in WebUI.
+  * [#2959](https://github.com/metasfresh/metasfresh/issues/2959) Default WebUI Window for Distribution Orderlines Handling
+    * New Window for Distribution Orderlines that allows better Distrbution handling in WebUI.
 
 ## Fixes
 * metasfresh-webui-frontend
