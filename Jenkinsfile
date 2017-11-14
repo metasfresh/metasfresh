@@ -39,6 +39,8 @@ So if this is a "master" build, but it was invoked by a "feature-branch" build t
 	buildDiscarder(logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: '', numToKeepStr: numberOfBuildsToKeepStr)) // keep the last $numberOfBuildsToKeepStr builds
 ]);
 
+final String VERSIONS_PLUGIN = 'org.codehaus.mojo:versions-maven-plugin:2.5'
+
 try
 {
 timestamps
@@ -82,10 +84,9 @@ node('agent && linux')
 
 				// update the parent pom version
  				mvnUpdateParentPomVersion mvnConf
-
 				// set the artifact version of everything below ${mvnConf.pomFile}
 				// do not set versions for de.metas.endcustomer.mf15/pom.xml, because that one will be build in another node!
-				sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -DnewVersion=${MF_VERSION} -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -DexcludeReactor=true -DprocessPlugins=true -Dincludes=\"de.metas*:*\" ${mvnConf.resolveParams} versions:set"
+				sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -DnewVersion=${MF_VERSION} -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -DexcludeReactor=true -DprocessPlugins=true -Dincludes=\"de.metas*:*\" ${mvnConf.resolveParams} ${VERSIONS_PLUGIN}:set"
 
 				// deploy the de.metas.parent pom.xml to our repo. Other projects that are not build right now on this node will also need it. But don't build the modules that are declared in there
 				sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode --non-recursive ${mvnConf.resolveParams} ${mvnConf.deployParam} clean deploy";
@@ -94,7 +95,7 @@ node('agent && linux')
 				echo "mvnReactorConf=${mvnReactorConf}"
 
 				// update the versions of metas dependencies that are external to our reactor modules
-				sh "mvn --settings ${mvnReactorConf.settingsFile} --file ${mvnReactorConf.pomFile} --batch-mode -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -DexcludeReactor=true -Dincludes=\"de.metas*:*\" ${mvnReactorConf.resolveParams} versions:use-latest-versions"
+				sh "mvn --settings ${mvnReactorConf.settingsFile} --file ${mvnReactorConf.pomFile} --batch-mode -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -DexcludeReactor=true -Dincludes=\"de.metas*:*\" ${mvnReactorConf.resolveParams} ${VERSIONS_PLUGIN}:use-latest-versions"
 
 				// build and deploy
 				// about -Dmetasfresh.assembly.descriptor.version: the versions plugin can't update the version of our shared assembly descriptor de.metas.assemblies. Therefore we need to provide the version from outside via this property
@@ -151,10 +152,10 @@ node('agent && linux')
  				mvnUpdateParentPomVersion mvnEsbConf
 
 				// set the artifact version of everything below de.metas.esb/pom.xml
-				sh "mvn --settings ${mvnEsbConf.settingsFile} --file ${mvnEsbConf.pomFile} --batch-mode -DnewVersion=${MF_VERSION} -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -DexcludeReactor=true -Dincludes=\"de.metas*:*\" ${mvnEsbConf.resolveParams} versions:set"
+				sh "mvn --settings ${mvnEsbConf.settingsFile} --file ${mvnEsbConf.pomFile} --batch-mode -DnewVersion=${MF_VERSION} -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -DexcludeReactor=true -Dincludes=\"de.metas*:*\" ${mvnEsbConf.resolveParams} ${VERSIONS_PLUGIN}:set"
 
 				// update the versions of metas dependencies that are external to the de.metas.esb reactor modules
-				sh "mvn --settings ${mvnEsbConf.settingsFile} --file ${mvnEsbConf.pomFile} --batch-mode -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -DexcludeReactor=true -Dincludes=\"de.metas*:*\" ${mvnEsbConf.resolveParams} versions:use-latest-versions"
+				sh "mvn --settings ${mvnEsbConf.settingsFile} --file ${mvnEsbConf.pomFile} --batch-mode -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -DexcludeReactor=true -Dincludes=\"de.metas*:*\" ${mvnEsbConf.resolveParams} ${VERSIONS_PLUGIN}:use-latest-versions"
 
 				// build and deploy
 				// about -Dmetasfresh.assembly.descriptor.version: the versions plugin can't update the version of our shared assembly descriptor de.metas.assemblies. Therefore we need to provide the version from outside via this property
