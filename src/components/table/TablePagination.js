@@ -289,8 +289,7 @@ class TablePagination extends Component {
 
     render() {
         const {
-            size, pageLength, handleChangePage, page, compressed,
-            disablePaginationShortcuts
+            size, pageLength, page, compressed
         } = this.props;
 
         const pages = size ? Math.ceil(size / pageLength) : 0;
