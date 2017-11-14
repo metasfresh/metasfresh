@@ -74,6 +74,7 @@ public class CloseContractTest extends AbstractFlatrateTermTest
 		final I_C_Flatrate_Term contract = prepareContractForTest(true);
 		contractChangeBL.cancelContract(contract, contractChangeParameters);
 		assertFlatrateTerm(contract);
+		assertSubscriptionProgress(contract, 0);
 	}
 
 
@@ -91,9 +92,13 @@ public class CloseContractTest extends AbstractFlatrateTermTest
 
 	private void assertFlatrateTerm(@NonNull final I_C_Flatrate_Term flatrateTerm)
 	{
-		assertThat(flatrateTerm.getDocStatus()).isEqualTo(X_C_Flatrate_Term.DOCSTATUS_Closed);
+		assertThat(flatrateTerm.getDocStatus()).isEqualTo(X_C_Flatrate_Term.DOCSTATUS_Completed);
 		assertThat(flatrateTerm.getContractStatus()).isEqualTo(X_C_Flatrate_Term.CONTRACTSTATUS_Quit);
+		assertThat(flatrateTerm.getMasterStartDate()).isNull();
+		assertThat(flatrateTerm.getMasterEndDate()).isNull();
 		assertThat(flatrateTerm.isAutoRenew()).isFalse();
+		assertThat(flatrateTerm.getC_FlatrateTerm_Next()).isNull();
+		assertThat(flatrateTerm.getAD_PInstance_EndOfTerm()).isNull();
 	}
 
 	private void assertSubscriptionProgress(@NonNull final I_C_Flatrate_Term flatrateTerm, final int expected)
