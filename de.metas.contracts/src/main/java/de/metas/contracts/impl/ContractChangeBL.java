@@ -43,6 +43,7 @@ import de.metas.contracts.IContractChangeBL;
 import de.metas.contracts.IContractChangeDAO;
 import de.metas.contracts.IContractsDAO;
 import de.metas.contracts.IFlatrateBL;
+import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.model.I_C_Contract_Change;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_SubscriptionProgress;
@@ -64,6 +65,8 @@ import lombok.Setter;
 public class ContractChangeBL implements IContractChangeBL
 {
 	private static final Logger logger = LogManager.getLogger(ContractChangeBL.class);
+	
+	private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
 
 	@Override
 	public void cancelContract(@NonNull final I_C_Flatrate_Term currentTerm,
@@ -73,12 +76,25 @@ public class ContractChangeBL implements IContractChangeBL
 		if (initialContract == null || contractChangeParameters.isOnlyTerminateCurrentTerm())
 		{
 			cancelContractIfNotCanceledAlready(currentTerm, contractChangeParameters);
+			unlinkContractIfNeeded(currentTerm, contractChangeParameters);
 		}
 		else
 		{
 			// start canceling with first ancestor
 			cancelContractIfNotCanceledAlready(initialContract, contractChangeParameters);
 		}
+	}
+	
+	private void unlinkContractIfNeeded(@NonNull final I_C_Flatrate_Term currentTerm,
+			final @NonNull ContractChangeParameters contractChangeParameters)
+	{
+		final I_C_Flatrate_Term ancestor = flatrateDAO.retrieveAncestorFlatrateTerm(currentTerm);
+		 if (ancestor != null && contractChangeParameters.isOnlyTerminateCurrentTerm())
+		 {
+			 ancestor.setC_FlatrateTerm_Next(null);
+			 ancestor.setAD_PInstance_EndOfTerm(null);
+			 InterfaceWrapperHelper.disableReadOnlyColumnCheck(ancestor);
+		 }
 	}
 
 	@Builder
@@ -109,7 +125,8 @@ public class ContractChangeBL implements IContractChangeBL
 		
 		if (isNotAllowedToTerminateCurrentContract(currentTerm, contractChangeParameters))
 		{
-			throw new AdempiereException("Contract can not be voided since was extended!");
+			throw new AdempiereException("de.metas.contracts.isNotAllowedToTerminateCurrentContract",
+					new Object[] { currentTerm });
 		}
 		
 

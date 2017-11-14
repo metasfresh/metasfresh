@@ -14,7 +14,6 @@ import de.metas.contracts.IContractChangeBL;
 import de.metas.contracts.IContractChangeBL.ContractChangeParameters;
 import de.metas.contracts.model.I_C_Contract_Change;
 import de.metas.contracts.model.I_C_Flatrate_Term;
-import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueuer;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.process.RunOutOfTrx;
@@ -60,7 +59,7 @@ public class C_Flatrate_Term_Change extends JavaProcess
 		final int selectionCount = createSelection(queryBuilder, getAD_PInstance_ID());
 		if (selectionCount <= 0)
 		{
-			throw new AdempiereException(msgBL.getMsg(getCtx(), IInvoiceCandidateEnqueuer.MSG_INVOICE_GENERATE_NO_CANDIDATES_SELECTED_0P));
+			throw new AdempiereException("@NoSelection@");
 		}
 
 	}
