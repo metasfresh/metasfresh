@@ -100,49 +100,30 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 		// maven.test.failure.ignore=true: continue if tests fail, because we want a full report.
 		sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -Dmaven.test.failure.ignore=true ${mvnConf.resolveParams} ${mvnConf.deployParam} clean deploy"
 
-		// now create and publish some docker image..well, 1 docker image for starts
-		final dockerWorkDir='docker-build/metasfresh-webui-api'
-		sh "mkdir -p ${dockerWorkDir}"
-
-
-		final BUILD_DOCKER_REPOSITORY='metasfresh';
-		final BUILD_DOCKER_NAME='metasfresh-webapi-dev';
-		final BUILD_DOCKER_TAG=misc.mkDockerTag("${MF_UPSTREAM_BRANCH}-${MF_VERSION}");
-		final BUILD_DOCKER_IMAGE="${BUILD_DOCKER_REPOSITORY}/${BUILD_DOCKER_NAME}:${BUILD_DOCKER_TAG}";
-
-		// create and upload a docker image
-		sh "cp target/metasfresh-webui-api-${MF_VERSION}.jar ${dockerWorkDir}/metasfresh-webui-api.jar" // copy the file so it can be handled by the docker build
-		sh "cp -R src/main/docker/* ${dockerWorkDir}"
-		sh "cp -R src/main/configs ${dockerWorkDir}"
-		docker.withRegistry('https://index.docker.io/v1/', 'dockerhub_metasfresh')
-		{
-			def app = docker.build "${BUILD_DOCKER_REPOSITORY}/${BUILD_DOCKER_NAME}", "${dockerWorkDir}";
-
-			app.push misc.mkDockerTag("${MF_UPSTREAM_BRANCH}-latest");
-			app.push BUILD_DOCKER_TAG;
-			if(MF_UPSTREAM_BRANCH=='release')
-			{
-				echo 'MF_UPSTREAM_BRANCH=release, so we also push this with the "latest" tag'
-				app.push misc.mkDockerTag('latest');
-			}
-		}
+		final String publishedDockerImageName =
+			createAndPublishDockerImage(
+					'metasfresh-webui-api-dev', // dockerRepositoryName
+					'.',  // dockerModuleDir
+					MF_UPSTREAM_BRANCH, // dockerBranchName
+					MF_VERSION // dockerVersionSuffix
+			)
 
 		// gh #968:
 		// set env variables which will be available to a possible upstream job that might have called us
 		// all those env variables can be gotten from <buildResultInstance>.getBuildVariables()
 		// note: we do it here, because we also expect these vars to end up in the application.properties within our artifact
-		env.BUILD_ARTIFACT_URL="${BUILD_ARTIFACT_URL}";
-		env.BUILD_CHANGE_URL="${env.CHANGE_URL}";
-		env.MF_VERSION="${MF_VERSION}";
-		env.BUILD_GIT_SHA1="${misc.getCommitSha1()}";
-		env.BUILD_DOCKER_IMAGE="${BUILD_DOCKER_IMAGE}";
-		env.MF_VERSION="${MF_VERSION}"
+		env.BUILD_ARTIFACT_URL = BUILD_ARTIFACT_URL
+		env.BUILD_CHANGE_URL = env.CHANGE_URL
+		env.MF_VERSION = MF_VERSION
+		env.BUILD_GIT_SHA1 = misc.getCommitSha1()
+		env.BUILD_DOCKER_IMAGE = publishedDockerImageName
+		env.MF_VERSION = MF_VERSION
 
 		currentBuild.description="""This build's main artifacts (if not yet cleaned up) are
 <ul>
 <li>The executable jar <a href=\"${BUILD_ARTIFACT_URL}\">metasfresh-webui-api-${MF_VERSION}.jar</a></li>
 <li>A docker image which you can run in docker via<br>
-<code>docker run --rm -d -p 8080:8080 -e "DB_HOST=localhost" --name metasfresh-webui-api-${MF_VERSION} ${BUILD_DOCKER_IMAGE}</code></li>
+<code>docker run --rm -d -p 8080:8080 -e "DB_HOST=localhost" --name metasfresh-webui-api-${MF_VERSION} ${publishedDockerImageName}</code></li>
 </ul>"""
 
 				junit '**/target/surefire-reports/*.xml'
