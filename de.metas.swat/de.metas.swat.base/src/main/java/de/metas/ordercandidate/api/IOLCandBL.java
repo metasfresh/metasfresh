@@ -70,8 +70,6 @@ public interface IOLCandBL extends ISingletonService
 	 */
 	ModelRelationTarget mkModelRelationTarget(I_C_OLCandProcessor processor, int sourceWindowId, String sourceTabName, String whereClause);
 
-	void createOrUpdateOCProcessorRelationType(Properties ctx, ModelRelationTarget model, String trxName);
-
 	/**
 	 * Registers a listener to be informed about events regarding order line candidates.
 	 *
