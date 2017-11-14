@@ -40,9 +40,10 @@ FROM DIM_Dimension_Spec ds
 			''Y'' /* IsEmpty */
 	) data ON data.DIM_Dimension_Spec_ID=ds.DIM_Dimension_Spec_ID OR (data.IsEmpty=''Y'' AND ds.IsIncludeEmpty=''Y'')
 WHERE true
-	AND ds.IsActive=''Y''
-;');
-COMMENT ON VIEW "de.metas.dimension".DIM_Dimension_Spec_Attribute_AllValues IS 'Task 08681: lists all attribute values that are defined by a given DIM_Dimension_Spec. If the DIM_Dimension_Spec has IsIncludeEmpty=Y, then it selects an additional record for reprecent the empty value.'
+	AND ds.IsActive=''Y'';'
+);
+COMMENT ON VIEW "de.metas.dimension".DIM_Dimension_Spec_Attribute_AllValues IS 
+'Task 08681: lists all attribute values that are defined by a given DIM_Dimension_Spec. If the DIM_Dimension_Spec has IsIncludeEmpty=Y, then it selects an additional record for reprecent the empty value.';
 
 --
 -- just extend the documentation
