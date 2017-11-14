@@ -27,6 +27,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_OrderLine;
 
 import de.metas.adempiere.gui.search.impl.OLCandHUPackingAware;
+import de.metas.ordercandidate.api.OLCand;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.ordercandidate.spi.IOLCandListener;
 
@@ -42,10 +43,10 @@ public class OLCandPIIPListener implements IOLCandListener
 	 * Sets the new order line's <code>M_HU_PI_Item_Product_ID</code> from the olCand's effective <code>M_HU_PI_Item_Product_ID</code>, so that the sytem won't have to guess.
 	 */
 	@Override
-	public void onOrderLineCreated(final I_C_OLCand olCand, final I_C_OrderLine newOrderLine)
+	public void onOrderLineCreated(final OLCand olCand, final I_C_OrderLine newOrderLine)
 	{
 		final de.metas.handlingunits.model.I_C_OrderLine newOrderLineExt = InterfaceWrapperHelper.create(newOrderLine, de.metas.handlingunits.model.I_C_OrderLine.class);
-		final OLCandHUPackingAware olCandHUPackingAware = new OLCandHUPackingAware(olCand);
+		final OLCandHUPackingAware olCandHUPackingAware = new OLCandHUPackingAware(olCand.unbox());
 
 		newOrderLineExt.setM_HU_PI_Item_Product_ID(olCandHUPackingAware.getM_HU_PI_Item_Product_ID());
 	}

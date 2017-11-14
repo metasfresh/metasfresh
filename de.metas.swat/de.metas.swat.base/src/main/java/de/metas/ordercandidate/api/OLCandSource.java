@@ -1,12 +1,12 @@
-package de.metas.edi.api;
+package de.metas.ordercandidate.api;
 
-import org.adempiere.util.ISingletonService;
+import java.util.stream.Stream;
 
 /*
  * #%L
- * de.metas.edi
+ * de.metas.swat.base
  * %%
- * Copyright (C) 2016 metas GmbH
+ * Copyright (C) 2017 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -24,7 +24,7 @@ import org.adempiere.util.ISingletonService;
  * #L%
  */
 
-public interface IEDIInputDataSourceBL extends ISingletonService
+public interface OLCandSource
 {
-	boolean isEDIInputDataSource(int inputDataSourceId);
+	Stream<OLCand> streamOLCands();
 }

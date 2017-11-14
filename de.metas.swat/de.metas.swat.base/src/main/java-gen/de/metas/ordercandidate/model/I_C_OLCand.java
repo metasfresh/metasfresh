@@ -57,12 +57,8 @@ public interface I_C_OLCand
 	 */
 	public int getAD_DataDestination_ID();
 
-	public de.metas.impex.model.I_AD_InputDataSource getAD_DataDestination();
-
-	public void setAD_DataDestination(de.metas.impex.model.I_AD_InputDataSource AD_DataDestination);
-
     /** Column definition for AD_DataDestination_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_OLCand, de.metas.impex.model.I_AD_InputDataSource> COLUMN_AD_DataDestination_ID = new org.adempiere.model.ModelColumn<I_C_OLCand, de.metas.impex.model.I_AD_InputDataSource>(I_C_OLCand.class, "AD_DataDestination_ID", de.metas.impex.model.I_AD_InputDataSource.class);
+    public static final org.adempiere.model.ModelColumn<I_C_OLCand, Object> COLUMN_AD_DataDestination_ID = new org.adempiere.model.ModelColumn<I_C_OLCand, Object>(I_C_OLCand.class, "AD_DataDestination_ID", null);
     /** Column name AD_DataDestination_ID */
     public static final String COLUMNNAME_AD_DataDestination_ID = "AD_DataDestination_ID";
 
@@ -84,12 +80,8 @@ public interface I_C_OLCand
 	 */
 	public int getAD_InputDataSource_ID();
 
-	public de.metas.impex.model.I_AD_InputDataSource getAD_InputDataSource();
-
-	public void setAD_InputDataSource(de.metas.impex.model.I_AD_InputDataSource AD_InputDataSource);
-
     /** Column definition for AD_InputDataSource_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_OLCand, de.metas.impex.model.I_AD_InputDataSource> COLUMN_AD_InputDataSource_ID = new org.adempiere.model.ModelColumn<I_C_OLCand, de.metas.impex.model.I_AD_InputDataSource>(I_C_OLCand.class, "AD_InputDataSource_ID", de.metas.impex.model.I_AD_InputDataSource.class);
+    public static final org.adempiere.model.ModelColumn<I_C_OLCand, Object> COLUMN_AD_InputDataSource_ID = new org.adempiere.model.ModelColumn<I_C_OLCand, Object>(I_C_OLCand.class, "AD_InputDataSource_ID", null);
     /** Column name AD_InputDataSource_ID */
     public static final String COLUMNNAME_AD_InputDataSource_ID = "AD_InputDataSource_ID";
 
@@ -324,12 +316,75 @@ public interface I_C_OLCand
     public static final String COLUMNNAME_Bill_User_ID = "Bill_User_ID";
 
 	/**
-	 * Set Geschäftspartner eff..
+	 * Set Standort eff..
+	 * Identifiziert die (Liefer-) Adresse des Geschäftspartners
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	public void setC_BP_Location_Effective_ID (int C_BP_Location_Effective_ID);
+
+	/**
+	 * Get Standort eff..
+	 * Identifiziert die (Liefer-) Adresse des Geschäftspartners
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: true
 	 */
+	public int getC_BP_Location_Effective_ID();
+
+	public org.compiere.model.I_C_BPartner_Location getC_BP_Location_Effective();
+
+	@Deprecated
+	public void setC_BP_Location_Effective(org.compiere.model.I_C_BPartner_Location C_BP_Location_Effective);
+
+    /** Column definition for C_BP_Location_Effective_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_OLCand, org.compiere.model.I_C_BPartner_Location> COLUMN_C_BP_Location_Effective_ID = new org.adempiere.model.ModelColumn<I_C_OLCand, org.compiere.model.I_C_BPartner_Location>(I_C_OLCand.class, "C_BP_Location_Effective_ID", org.compiere.model.I_C_BPartner_Location.class);
+    /** Column name C_BP_Location_Effective_ID */
+    public static final String COLUMNNAME_C_BP_Location_Effective_ID = "C_BP_Location_Effective_ID";
+
+	/**
+	 * Set Standort abw..
+	 * Identifiziert die (Liefer-) Adresse des Geschäftspartners
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_BP_Location_Override_ID (int C_BP_Location_Override_ID);
+
+	/**
+	 * Get Standort abw..
+	 * Identifiziert die (Liefer-) Adresse des Geschäftspartners
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_BP_Location_Override_ID();
+
+	public org.compiere.model.I_C_BPartner_Location getC_BP_Location_Override();
+
+	public void setC_BP_Location_Override(org.compiere.model.I_C_BPartner_Location C_BP_Location_Override);
+
+    /** Column definition for C_BP_Location_Override_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_OLCand, org.compiere.model.I_C_BPartner_Location> COLUMN_C_BP_Location_Override_ID = new org.adempiere.model.ModelColumn<I_C_OLCand, org.compiere.model.I_C_BPartner_Location>(I_C_OLCand.class, "C_BP_Location_Override_ID", org.compiere.model.I_C_BPartner_Location.class);
+    /** Column name C_BP_Location_Override_ID */
+    public static final String COLUMNNAME_C_BP_Location_Override_ID = "C_BP_Location_Override_ID";
+
+	/**
+	 * Set Geschäftspartner eff..
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
 	public void setC_BPartner_Effective_ID (int C_BPartner_Effective_ID);
 
 	/**
@@ -343,6 +398,7 @@ public interface I_C_OLCand
 
 	public org.compiere.model.I_C_BPartner getC_BPartner_Effective();
 
+	@Deprecated
 	public void setC_BPartner_Effective(org.compiere.model.I_C_BPartner C_BPartner_Effective);
 
     /** Column definition for C_BPartner_Effective_ID */
@@ -438,64 +494,6 @@ public interface I_C_OLCand
     public static final String COLUMNNAME_C_BPartner_Override_ID = "C_BPartner_Override_ID";
 
 	/**
-	 * Set Standort eff..
-	 * Identifiziert die (Liefer-) Adresse des Geschäftspartners
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
-	 */
-	public void setC_BP_Location_Effective_ID (int C_BP_Location_Effective_ID);
-
-	/**
-	 * Get Standort eff..
-	 * Identifiziert die (Liefer-) Adresse des Geschäftspartners
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
-	 */
-	public int getC_BP_Location_Effective_ID();
-
-	public org.compiere.model.I_C_BPartner_Location getC_BP_Location_Effective();
-
-	public void setC_BP_Location_Effective(org.compiere.model.I_C_BPartner_Location C_BP_Location_Effective);
-
-    /** Column definition for C_BP_Location_Effective_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_OLCand, org.compiere.model.I_C_BPartner_Location> COLUMN_C_BP_Location_Effective_ID = new org.adempiere.model.ModelColumn<I_C_OLCand, org.compiere.model.I_C_BPartner_Location>(I_C_OLCand.class, "C_BP_Location_Effective_ID", org.compiere.model.I_C_BPartner_Location.class);
-    /** Column name C_BP_Location_Effective_ID */
-    public static final String COLUMNNAME_C_BP_Location_Effective_ID = "C_BP_Location_Effective_ID";
-
-	/**
-	 * Set Standort abw..
-	 * Identifiziert die (Liefer-) Adresse des Geschäftspartners
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setC_BP_Location_Override_ID (int C_BP_Location_Override_ID);
-
-	/**
-	 * Get Standort abw..
-	 * Identifiziert die (Liefer-) Adresse des Geschäftspartners
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getC_BP_Location_Override_ID();
-
-	public org.compiere.model.I_C_BPartner_Location getC_BP_Location_Override();
-
-	public void setC_BP_Location_Override(org.compiere.model.I_C_BPartner_Location C_BP_Location_Override);
-
-    /** Column definition for C_BP_Location_Override_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_OLCand, org.compiere.model.I_C_BPartner_Location> COLUMN_C_BP_Location_Override_ID = new org.adempiere.model.ModelColumn<I_C_OLCand, org.compiere.model.I_C_BPartner_Location>(I_C_OLCand.class, "C_BP_Location_Override_ID", org.compiere.model.I_C_BPartner_Location.class);
-    /** Column name C_BP_Location_Override_ID */
-    public static final String COLUMNNAME_C_BP_Location_Override_ID = "C_BP_Location_Override_ID";
-
-	/**
 	 * Set Kosten.
 	 * Zusätzliche Kosten
 	 *
@@ -577,36 +575,6 @@ public interface I_C_OLCand
     public static final String COLUMNNAME_C_OLCand_ID = "C_OLCand_ID";
 
 	/**
-	 * Get Erstellt.
-	 * Datum, an dem dieser Eintrag erstellt wurde
-	 *
-	 * <br>Type: DateTime
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public java.sql.Timestamp getCreated();
-
-    /** Column definition for Created */
-    public static final org.adempiere.model.ModelColumn<I_C_OLCand, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_C_OLCand, Object>(I_C_OLCand.class, "Created", null);
-    /** Column name Created */
-    public static final String COLUMNNAME_Created = "Created";
-
-	/**
-	 * Get Erstellt durch.
-	 * Nutzer, der diesen Eintrag erstellt hat
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getCreatedBy();
-
-    /** Column definition for CreatedBy */
-    public static final org.adempiere.model.ModelColumn<I_C_OLCand, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_C_OLCand, org.compiere.model.I_AD_User>(I_C_OLCand.class, "CreatedBy", org.compiere.model.I_AD_User.class);
-    /** Column name CreatedBy */
-    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
-
-	/**
 	 * Set Maßeinheit.
 	 * Maßeinheit
 	 *
@@ -663,6 +631,36 @@ public interface I_C_OLCand
     public static final String COLUMNNAME_C_UOM_Internal_ID = "C_UOM_Internal_ID";
 
 	/**
+	 * Get Erstellt.
+	 * Datum, an dem dieser Eintrag erstellt wurde
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.sql.Timestamp getCreated();
+
+    /** Column definition for Created */
+    public static final org.adempiere.model.ModelColumn<I_C_OLCand, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_C_OLCand, Object>(I_C_OLCand.class, "Created", null);
+    /** Column name Created */
+    public static final String COLUMNNAME_Created = "Created";
+
+	/**
+	 * Get Erstellt durch.
+	 * Nutzer, der diesen Eintrag erstellt hat
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getCreatedBy();
+
+    /** Column definition for CreatedBy */
+    public static final org.adempiere.model.ModelColumn<I_C_OLCand, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_C_OLCand, org.compiere.model.I_AD_User>(I_C_OLCand.class, "CreatedBy", org.compiere.model.I_AD_User.class);
+    /** Column name CreatedBy */
+    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+
+	/**
 	 * Set Kand.-Datum.
 	 *
 	 * <br>Type: Date
@@ -717,7 +715,9 @@ public interface I_C_OLCand
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
 	 */
+	@Deprecated
 	public void setDatePromised_Effective (java.sql.Timestamp DatePromised_Effective);
 
 	/**
@@ -910,7 +910,9 @@ public interface I_C_OLCand
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
 	 */
+	@Deprecated
 	public void setDropShip_BPartner_Effective_ID (int DropShip_BPartner_Effective_ID);
 
 	/**
@@ -924,6 +926,7 @@ public interface I_C_OLCand
 
 	public org.compiere.model.I_C_BPartner getDropShip_BPartner_Effective();
 
+	@Deprecated
 	public void setDropShip_BPartner_Effective(org.compiere.model.I_C_BPartner DropShip_BPartner_Effective);
 
     /** Column definition for DropShip_BPartner_Effective_ID */
@@ -993,7 +996,9 @@ public interface I_C_OLCand
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
 	 */
+	@Deprecated
 	public void setDropShip_Location_Effective_ID (int DropShip_Location_Effective_ID);
 
 	/**
@@ -1007,6 +1012,7 @@ public interface I_C_OLCand
 
 	public org.compiere.model.I_C_BPartner_Location getDropShip_Location_Effective();
 
+	@Deprecated
 	public void setDropShip_Location_Effective(org.compiere.model.I_C_BPartner_Location DropShip_Location_Effective);
 
     /** Column definition for DropShip_Location_Effective_ID */
@@ -1099,7 +1105,9 @@ public interface I_C_OLCand
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
 	 */
+	@Deprecated
 	public void setHandOver_Location_Effective_ID (int HandOver_Location_Effective_ID);
 
 	/**
@@ -1113,6 +1121,7 @@ public interface I_C_OLCand
 
 	public org.compiere.model.I_C_BPartner_Location getHandOver_Location_Effective();
 
+	@Deprecated
 	public void setHandOver_Location_Effective(org.compiere.model.I_C_BPartner_Location HandOver_Location_Effective);
 
     /** Column definition for HandOver_Location_Effective_ID */
@@ -1180,7 +1189,9 @@ public interface I_C_OLCand
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
 	 */
+	@Deprecated
 	public void setHandOver_Partner_Effective_ID (int HandOver_Partner_Effective_ID);
 
 	/**
@@ -1194,6 +1205,7 @@ public interface I_C_OLCand
 
 	public org.compiere.model.I_C_BPartner getHandOver_Partner_Effective();
 
+	@Deprecated
 	public void setHandOver_Partner_Effective(org.compiere.model.I_C_BPartner HandOver_Partner_Effective);
 
     /** Column definition for HandOver_Partner_Effective_ID */
@@ -1306,6 +1318,29 @@ public interface I_C_OLCand
     public static final String COLUMNNAME_IsError = "IsError";
 
 	/**
+	 * Set Explicit Product Price Attributes.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsExplicitProductPriceAttribute (boolean IsExplicitProductPriceAttribute);
+
+	/**
+	 * Get Explicit Product Price Attributes.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isExplicitProductPriceAttribute();
+
+    /** Column definition for IsExplicitProductPriceAttribute */
+    public static final org.adempiere.model.ModelColumn<I_C_OLCand, Object> COLUMN_IsExplicitProductPriceAttribute = new org.adempiere.model.ModelColumn<I_C_OLCand, Object>(I_C_OLCand.class, "IsExplicitProductPriceAttribute", null);
+    /** Column name IsExplicitProductPriceAttribute */
+    public static final String COLUMNNAME_IsExplicitProductPriceAttribute = "IsExplicitProductPriceAttribute";
+
+	/**
 	 * Set Manueller Rabatt.
 	 * Ein Rabatt, der von Hand eingetragen wurde, wird vom Provisionssystem nicht überschrieben
 	 *
@@ -1408,8 +1443,8 @@ public interface I_C_OLCand
     public static final String COLUMNNAME_M_AttributeSet_ID = "M_AttributeSet_ID";
 
 	/**
-	 * Set Ausprägung Merkmals-Satz.
-	 * Instanz des Merkmals-Satzes zum Produkt
+	 * Set Merkmale.
+	 * Merkmals Ausprägungen zum Produkt
 	 *
 	 * <br>Type: PAttribute
 	 * <br>Mandatory: false
@@ -1418,8 +1453,8 @@ public interface I_C_OLCand
 	public void setM_AttributeSetInstance_ID (int M_AttributeSetInstance_ID);
 
 	/**
-	 * Get Ausprägung Merkmals-Satz.
-	 * Instanz des Merkmals-Satzes zum Produkt
+	 * Get Merkmale.
+	 * Merkmals Ausprägungen zum Produkt
 	 *
 	 * <br>Type: PAttribute
 	 * <br>Mandatory: false
@@ -1435,6 +1470,54 @@ public interface I_C_OLCand
     public static final org.adempiere.model.ModelColumn<I_C_OLCand, org.compiere.model.I_M_AttributeSetInstance> COLUMN_M_AttributeSetInstance_ID = new org.adempiere.model.ModelColumn<I_C_OLCand, org.compiere.model.I_M_AttributeSetInstance>(I_C_OLCand.class, "M_AttributeSetInstance_ID", org.compiere.model.I_M_AttributeSetInstance.class);
     /** Column name M_AttributeSetInstance_ID */
     public static final String COLUMNNAME_M_AttributeSetInstance_ID = "M_AttributeSetInstance_ID";
+
+	/**
+	 * Set Packvorschrift-Produkt Zuordnung eff..
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	public void setM_HU_PI_Item_Product_Effective_ID (int M_HU_PI_Item_Product_Effective_ID);
+
+	/**
+	 * Get Packvorschrift-Produkt Zuordnung eff..
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	public int getM_HU_PI_Item_Product_Effective_ID();
+
+    /** Column definition for M_HU_PI_Item_Product_Effective_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_OLCand, Object> COLUMN_M_HU_PI_Item_Product_Effective_ID = new org.adempiere.model.ModelColumn<I_C_OLCand, Object>(I_C_OLCand.class, "M_HU_PI_Item_Product_Effective_ID", null);
+    /** Column name M_HU_PI_Item_Product_Effective_ID */
+    public static final String COLUMNNAME_M_HU_PI_Item_Product_Effective_ID = "M_HU_PI_Item_Product_Effective_ID";
+
+	/**
+	 * Set Packvorschrift-Produkt Zuordnung abw..
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setM_HU_PI_Item_Product_Override_ID (int M_HU_PI_Item_Product_Override_ID);
+
+	/**
+	 * Get Packvorschrift-Produkt Zuordnung abw..
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getM_HU_PI_Item_Product_Override_ID();
+
+    /** Column definition for M_HU_PI_Item_Product_Override_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_OLCand, Object> COLUMN_M_HU_PI_Item_Product_Override_ID = new org.adempiere.model.ModelColumn<I_C_OLCand, Object>(I_C_OLCand.class, "M_HU_PI_Item_Product_Override_ID", null);
+    /** Column name M_HU_PI_Item_Product_Override_ID */
+    public static final String COLUMNNAME_M_HU_PI_Item_Product_Override_ID = "M_HU_PI_Item_Product_Override_ID";
 
 	/**
 	 * Set Preissystem.
@@ -1471,7 +1554,9 @@ public interface I_C_OLCand
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
 	 */
+	@Deprecated
 	public void setM_Product_Effective_ID (int M_Product_Effective_ID);
 
 	/**
@@ -1485,6 +1570,7 @@ public interface I_C_OLCand
 
 	public org.compiere.model.I_M_Product getM_Product_Effective();
 
+	@Deprecated
 	public void setM_Product_Effective(org.compiere.model.I_M_Product M_Product_Effective);
 
     /** Column definition for M_Product_Effective_ID */
@@ -1549,6 +1635,56 @@ public interface I_C_OLCand
     public static final String COLUMNNAME_M_Product_Override_ID = "M_Product_Override_ID";
 
 	/**
+	 * Set Attribute price.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setM_ProductPrice_Attribute_ID (int M_ProductPrice_Attribute_ID);
+
+	/**
+	 * Get Attribute price.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getM_ProductPrice_Attribute_ID();
+
+    /** Column definition for M_ProductPrice_Attribute_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_OLCand, Object> COLUMN_M_ProductPrice_Attribute_ID = new org.adempiere.model.ModelColumn<I_C_OLCand, Object>(I_C_OLCand.class, "M_ProductPrice_Attribute_ID", null);
+    /** Column name M_ProductPrice_Attribute_ID */
+    public static final String COLUMNNAME_M_ProductPrice_Attribute_ID = "M_ProductPrice_Attribute_ID";
+
+	/**
+	 * Set Produkt-Preis.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setM_ProductPrice_ID (int M_ProductPrice_ID);
+
+	/**
+	 * Get Produkt-Preis.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getM_ProductPrice_ID();
+
+	public org.compiere.model.I_M_ProductPrice getM_ProductPrice();
+
+	public void setM_ProductPrice(org.compiere.model.I_M_ProductPrice M_ProductPrice);
+
+    /** Column definition for M_ProductPrice_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_OLCand, org.compiere.model.I_M_ProductPrice> COLUMN_M_ProductPrice_ID = new org.adempiere.model.ModelColumn<I_C_OLCand, org.compiere.model.I_M_ProductPrice>(I_C_OLCand.class, "M_ProductPrice_ID", org.compiere.model.I_M_ProductPrice.class);
+    /** Column name M_ProductPrice_ID */
+    public static final String COLUMNNAME_M_ProductPrice_ID = "M_ProductPrice_ID";
+
+	/**
 	 * Set Ziel-Lager.
 	 *
 	 * <br>Type: Table
@@ -1601,6 +1737,35 @@ public interface I_C_OLCand
     public static final String COLUMNNAME_POReference = "POReference";
 
 	/**
+	 * Set Preiseinheit int..
+	 * Interne Preiseinheit laut Stammdaten
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setPrice_UOM_Internal_ID (int Price_UOM_Internal_ID);
+
+	/**
+	 * Get Preiseinheit int..
+	 * Interne Preiseinheit laut Stammdaten
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getPrice_UOM_Internal_ID();
+
+	public org.compiere.model.I_C_UOM getPrice_UOM_Internal();
+
+	public void setPrice_UOM_Internal(org.compiere.model.I_C_UOM Price_UOM_Internal);
+
+    /** Column definition for Price_UOM_Internal_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_OLCand, org.compiere.model.I_C_UOM> COLUMN_Price_UOM_Internal_ID = new org.adempiere.model.ModelColumn<I_C_OLCand, org.compiere.model.I_C_UOM>(I_C_OLCand.class, "Price_UOM_Internal_ID", org.compiere.model.I_C_UOM.class);
+    /** Column name Price_UOM_Internal_ID */
+    public static final String COLUMNNAME_Price_UOM_Internal_ID = "Price_UOM_Internal_ID";
+
+	/**
 	 * Set Einzelpreis.
 	 * Effektiver Preis
 	 *
@@ -1631,7 +1796,9 @@ public interface I_C_OLCand
 	 * <br>Type: CostPrice
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
 	 */
+	@Deprecated
 	public void setPriceDifference (java.math.BigDecimal PriceDifference);
 
 	/**
@@ -1697,35 +1864,6 @@ public interface I_C_OLCand
     public static final org.adempiere.model.ModelColumn<I_C_OLCand, Object> COLUMN_PriceInternal = new org.adempiere.model.ModelColumn<I_C_OLCand, Object>(I_C_OLCand.class, "PriceInternal", null);
     /** Column name PriceInternal */
     public static final String COLUMNNAME_PriceInternal = "PriceInternal";
-
-	/**
-	 * Set Preiseinheit int..
-	 * Interne Preiseinheit laut Stammdaten
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setPrice_UOM_Internal_ID (int Price_UOM_Internal_ID);
-
-	/**
-	 * Get Preiseinheit int..
-	 * Interne Preiseinheit laut Stammdaten
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getPrice_UOM_Internal_ID();
-
-	public org.compiere.model.I_C_UOM getPrice_UOM_Internal();
-
-	public void setPrice_UOM_Internal(org.compiere.model.I_C_UOM Price_UOM_Internal);
-
-    /** Column definition for Price_UOM_Internal_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_OLCand, org.compiere.model.I_C_UOM> COLUMN_Price_UOM_Internal_ID = new org.adempiere.model.ModelColumn<I_C_OLCand, org.compiere.model.I_C_UOM>(I_C_OLCand.class, "Price_UOM_Internal_ID", org.compiere.model.I_C_UOM.class);
-    /** Column name Price_UOM_Internal_ID */
-    public static final String COLUMNNAME_Price_UOM_Internal_ID = "Price_UOM_Internal_ID";
 
 	/**
 	 * Set Verarbeitet.

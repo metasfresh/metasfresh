@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 package de.metas.ordercandidate.model;
 
 
@@ -32,7 +16,7 @@ public interface I_C_OLCandAggAndOrder
 
 //    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
 
-    /** AccessLevel = 1 - Org 
+    /** AccessLevel = 1 - Org
      */
 //    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(1);
 
@@ -83,6 +67,29 @@ public interface I_C_OLCandAggAndOrder
     public static final String COLUMNNAME_AD_Column_OLCand_ID = "AD_Column_OLCand_ID";
 
 	/**
+	 * Set Eingabequelle.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setAD_InputDataSource_ID (int AD_InputDataSource_ID);
+
+	/**
+	 * Get Eingabequelle.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getAD_InputDataSource_ID();
+
+    /** Column definition for AD_InputDataSource_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_OLCandAggAndOrder, Object> COLUMN_AD_InputDataSource_ID = new org.adempiere.model.ModelColumn<I_C_OLCandAggAndOrder, Object>(I_C_OLCandAggAndOrder.class, "AD_InputDataSource_ID", null);
+    /** Column name AD_InputDataSource_ID */
+    public static final String COLUMNNAME_AD_InputDataSource_ID = "AD_InputDataSource_ID";
+
+	/**
 	 * Set Sektion.
 	 * Organisatorische Einheit des Mandanten
 	 *
@@ -117,7 +124,9 @@ public interface I_C_OLCandAggAndOrder
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
 	 */
+	@Deprecated
 	public void setAD_Reference_OLCand_ID (int AD_Reference_OLCand_ID);
 
 	/**

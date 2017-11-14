@@ -25,7 +25,7 @@ package de.metas.ordercandidate.spi;
 
 import org.compiere.model.I_C_OrderLine;
 
-import de.metas.ordercandidate.model.I_C_OLCand;
+import de.metas.ordercandidate.api.OLCand;
 
 /**
  * Interface to be implemented by other modules if they want to add their<br>
@@ -40,5 +40,5 @@ public interface IOLCandListener
 	 * @param olCand
 	 * @param newOrderLine
 	 */
-	public void onOrderLineCreated(I_C_OLCand olCand, I_C_OrderLine newOrderLine);
+	public void onOrderLineCreated(OLCand olCand, I_C_OrderLine newOrderLine);
 }

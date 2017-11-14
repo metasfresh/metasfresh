@@ -89,6 +89,7 @@ public class OLCandEffectiveValuesBL implements IOLCandEffectiveValuesBL
 		return olCand.getAD_User_ID();
 	}
 
+	// TODO: figure out which of those getDatePromised methods shall stay!
 	@Override
 	public Timestamp getDatePromised_Effective(final I_C_OLCand olCand)
 	{
@@ -99,6 +100,20 @@ public class OLCandEffectiveValuesBL implements IOLCandEffectiveValuesBL
 					: SystemTime.asDayTimestamp();
 		}
 		return olCand.getDatePromised_Override();
+	}
+
+	@Override
+	public Timestamp getDatePromisedEffective(final I_C_OLCand olCand)
+	{
+		Check.assumeNotNull(olCand, "OLCand not null");
+		final Timestamp datePromisedOverride = olCand.getDatePromised_Override();
+
+		if (datePromisedOverride != null)
+		{
+			return datePromisedOverride;
+		}
+
+		return olCand.getDatePromised();
 	}
 
 	@Override
@@ -195,20 +210,6 @@ public class OLCandEffectiveValuesBL implements IOLCandEffectiveValuesBL
 	public int getDropShip_User_Effective_ID(final I_C_OLCand olCand)
 	{
 		return getAD_User_Effective_ID(olCand);
-	}
-
-	@Override
-	public Timestamp getDatePromisedEffective(final I_C_OLCand olCand)
-	{
-		Check.assumeNotNull(olCand, "OLCand not null");
-		final Timestamp datePromisedOverride = olCand.getDatePromised_Override();
-
-		if (datePromisedOverride != null)
-		{
-			return datePromisedOverride;
-		}
-
-		return olCand.getDatePromised();
 	}
 
 	@Override

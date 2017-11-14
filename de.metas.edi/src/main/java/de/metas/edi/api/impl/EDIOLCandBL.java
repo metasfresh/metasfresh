@@ -29,7 +29,6 @@ import de.metas.adempiere.gui.search.impl.OLCandHUPackingAware;
 import de.metas.edi.api.IEDIInputDataSourceBL;
 import de.metas.edi.api.IEDIOLCandBL;
 import de.metas.handlingunits.model.I_C_OLCand;
-import de.metas.impex.model.I_AD_InputDataSource;
 
 public class EDIOLCandBL implements IEDIOLCandBL
 {
@@ -65,7 +64,7 @@ public class EDIOLCandBL implements IEDIOLCandBL
 		{
 			return false;
 		}
-		final I_AD_InputDataSource dataSource = olCand.getAD_InputDataSource();
-		return Services.get(IEDIInputDataSourceBL.class).isEDIInputDataSource(dataSource);
+		final int dataSourceId = olCand.getAD_InputDataSource_ID();
+		return Services.get(IEDIInputDataSourceBL.class).isEDIInputDataSource(dataSourceId);
 	}
 }
