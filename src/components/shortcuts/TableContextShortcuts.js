@@ -24,16 +24,16 @@ class TableContextShortcuts extends Component {
     render() {
         return (
             <Shortcuts
-                name="TABLE_CONTEXT"
-                handler={this.handleShortcuts}
-                targetNodeSelector="body"
-                isolate
-                preventDefault
-                stopPropagation
                 alwaysFireHandler
                 global
+                handler={this.handleShortcuts}
+                isolate
+                name="TABLE_CONTEXT"
+                preventDefault
+                stopPropagation
+                targetNodeSelector="body"
             />
-        )
+        );
     }
 }
 

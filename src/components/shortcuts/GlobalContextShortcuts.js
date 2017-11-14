@@ -97,16 +97,16 @@ class GlobalContextShortcuts extends Component {
     render() {
         return (
             <Shortcuts
-                name = "GLOBAL_CONTEXT"
-                handler = { this.handleShortcuts }
-                targetNodeSelector = "body"
-                isolate = { true }
-                preventDefault = { true }
-                stopPropagation = { true }
-                global = {true}
-                alwaysFireHandler = { true }
+                alwaysFireHandler
+                global
+                handler={this.handleShortcuts}
+                isolate
+                name="GLOBAL_CONTEXT"
+                preventDefault
+                stopPropagation
+                targetNodeSelector="body"
             />
-        )
+        );
     }
 }
 

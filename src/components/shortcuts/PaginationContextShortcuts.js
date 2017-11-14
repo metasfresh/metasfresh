@@ -37,15 +37,15 @@ class PaginationContextShortcuts extends Component {
     render() {
         return (
             <Shortcuts
-                name="PAGINATION_CONTEXT"
-                handler = { this.handleShortcuts }
-                targetNodeSelector = "body"
-                isolate = { true }
-                preventDefault = { true }
-                stopPropagation = { true }
                 global
+                handler={this.handleShortcuts}
+                isolate
+                name="PAGINATION_CONTEXT"
+                preventDefault
+                stopPropagation
+                targetNodeSelector="body"
             />
-        )
+        );
     }
 }
 

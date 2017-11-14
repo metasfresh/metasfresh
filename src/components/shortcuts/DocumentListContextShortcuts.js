@@ -45,15 +45,15 @@ class DocumentListContextShortcuts extends Component {
 
     render() {
         return (
-        <Shortcuts
-            name="DOCUMENT_LIST_CONTEXT"
-            handler = { this.handleShortcuts }
-            targetNodeSelector="body"
-            isolate = { true }
-            preventDefault = { true }
-            stopPropagation = { true }
-        />
-        )
+            <Shortcuts
+                handler={this.handleShortcuts}
+                isolate
+                name="DOCUMENT_LIST_CONTEXT"
+                preventDefault
+                stopPropagation
+                targetNodeSelector="body"
+            />
+        );
     }
 }
 

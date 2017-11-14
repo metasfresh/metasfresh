@@ -46,14 +46,14 @@ class QuickActionsContextShortcuts extends Component {
 
         return (
             <Shortcuts
-                name="QUICK_ACTIONS"
-                handler={this.handleShortcuts}
-                targetNodeSelector = "body"
-                isolate
+                alwaysFireHandler
                 global
+                handler={this.handleShortcuts}
+                isolate
+                name="QUICK_ACTIONS"
                 preventDefault
                 stopPropagation
-                alwaysFireHandler
+                targetNodeSelector="body"
             />
         );
     }

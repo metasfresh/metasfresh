@@ -35,16 +35,16 @@ class ModalContextShortcuts extends Component {
 
     render() {
         return (
-        <Shortcuts
-            name="MODAL_CONTEXT"
-            handler = { this.handleShortcuts }
-            targetNodeSelector = "body"
-            isolate = { true }
-            preventDefault = { true }
-            stopPropagation = { true }
-            alwaysFireHandler = { true }
-        />
-        )
+            <Shortcuts
+                alwaysFireHandler
+                handler={this.handleShortcuts}
+                isolate
+                name="MODAL_CONTEXT"
+                preventDefault
+                stopPropagation
+                targetNodeSelector="body"
+            />
+        );
     }
 }
 
