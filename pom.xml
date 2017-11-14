@@ -302,6 +302,19 @@ Default parent pom with common settings (e.g. java file encoding) to be used by 
 										<ignore></ignore>
 									</action>
 								</pluginExecution>
+								<pluginExecution>
+									<pluginExecutionFilter>
+										<groupId>org.codehaus.mojo</groupId>
+										<artifactId>jasperreports-maven-plugin</artifactId>
+										<versionRange>[1.0-beta-2,)</versionRange>
+										<goals>
+											<goal>compile-reports</goal>
+										</goals>
+									</pluginExecutionFilter>
+									<action>
+										<ignore></ignore>
+									</action>
+								</pluginExecution>
 							</pluginExecutions>
 						</lifecycleMappingMetadata>
 					</configuration>
