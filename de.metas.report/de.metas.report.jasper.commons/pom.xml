@@ -3,12 +3,13 @@
 	<parent>
 		<artifactId>metasfresh-report</artifactId>
 		<groupId>de.metas.report</groupId>
-		<version>10.0.0</version>
+		<version>[1,10.0.0]</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>de.metas.report</groupId>
+	
+	<version>10.0.0</version>
 	<artifactId>de.metas.report.jasper.commons</artifactId>
 	<packaging>jar</packaging>
 

@@ -10,6 +10,7 @@
 	</parent>
 
 	<artifactId>metasfresh-material-dispo-client</artifactId>
+	<version>10.0.0</version>
 	<packaging>jar</packaging>
 
 
