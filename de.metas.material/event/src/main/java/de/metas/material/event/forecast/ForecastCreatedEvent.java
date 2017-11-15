@@ -1,9 +1,7 @@
-package de.metas.material.event.pporder;
+package de.metas.material.event.forecast;
 
-import org.eevolution.model.I_PP_Order;
-
-import de.metas.material.event.EventDescriptor;
 import de.metas.material.event.MaterialEvent;
+import de.metas.material.event.commons.EventDescriptor;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -29,26 +27,17 @@ import lombok.Value;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-/**
- * Send by the material dispo when it wants a {@link I_PP_Order} to be created.
- * <p>
- * <b>Important: right now, any {@link PPOrderLine}s are ignored</b>. The receiver of this event will mostly use
- * the event's {@link PPOrder}'s {@link PPOrder#getProductPlanningId()} to create the @{code PP_Order}.
- *
- * @author metas-dev <dev@metasfresh.com>
- *
- */
-@Value
-@Builder
-public class PPOrderRequestedEvent implements MaterialEvent
+
+@Value // note that we need AllArgsConstructor. It's used by jackson when it deserializes a string
+@Builder // used by devs to make sure they know with parameter value does into which property
+public class ForecastCreatedEvent implements MaterialEvent
 {
-	public static final String TYPE = "PPOrderRequestedEvent";
+	public static final String TYPE = "ForecastEvent";
+	
+	@NonNull
+	Forecast forecast;
 
 	@NonNull
 	EventDescriptor eventDescriptor;
 
-	@NonNull
-	PPOrder ppOrder;
-
-	int groupId;
 }

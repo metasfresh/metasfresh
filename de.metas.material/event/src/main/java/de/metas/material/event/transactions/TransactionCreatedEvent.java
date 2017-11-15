@@ -1,12 +1,14 @@
-package de.metas.material.event;
+package de.metas.material.event.transactions;
 
 import static de.metas.material.event.MaterialEventUtils.checkIdGreaterThanZero;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import de.metas.material.event.MaterialEvent;
+import de.metas.material.event.commons.EventDescriptor;
+import de.metas.material.event.commons.MaterialDescriptor;
 import lombok.Builder;
-import lombok.Builder.Default;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -31,11 +33,12 @@ import lombok.Value;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-@Value // this includes @AllArgsconstructor that is used by jackson when it deserializes a string
-@Builder // used by devs to make sure they know with parameter-value goes into which property
-public class ShipmentScheduleEvent implements MaterialEvent
+
+@Value
+@Builder
+public class TransactionCreatedEvent implements MaterialEvent
 {
-	public static final String TYPE = "ShipmentScheduleEvent";
+	public static final String TYPE = "TransactionEvent";
 
 	@NonNull
 	EventDescriptor eventDescriptor;
@@ -43,22 +46,27 @@ public class ShipmentScheduleEvent implements MaterialEvent
 	@NonNull
 	MaterialDescriptor materialDescriptor;
 
+	// ids used to match the transaction to the respective shipment, ddOrder or ppOrder event (demand if qty is negative), supply if qty is positive
+	// if *none of those are set* then the transaction will be recorded as "unplanned"
 	int shipmentScheduleId;
 
-	@Default
-	int orderLineId = -1;
+	int transactionId;
 
 	@JsonCreator
-	public ShipmentScheduleEvent(
+	@Builder
+	public TransactionCreatedEvent(
 			@JsonProperty("eventDescriptor") @NonNull final EventDescriptor eventDescriptor,
 			@JsonProperty("materialDescriptor") @NonNull final MaterialDescriptor materialDescriptor,
-			@JsonProperty("shipmentScheduleId") int shipmentScheduleId,
-			@JsonProperty("orderLineId") int orderLineId)
+			@JsonProperty("shipmentScheduleId") final int shipmentScheduleId,
+			@JsonProperty("transactionId") final int transactionId)
 	{
-		this.shipmentScheduleId = checkIdGreaterThanZero("shipmentScheduleId", shipmentScheduleId);
+		this.transactionId = checkIdGreaterThanZero("transactionId",transactionId);
 
 		this.eventDescriptor = eventDescriptor;
+
+		materialDescriptor.asssertMaterialDescriptorComplete();
 		this.materialDescriptor = materialDescriptor;
-		this.orderLineId = orderLineId;
+
+		this.shipmentScheduleId = shipmentScheduleId;
 	}
 }

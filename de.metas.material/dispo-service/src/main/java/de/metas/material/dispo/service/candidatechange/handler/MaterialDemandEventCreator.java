@@ -6,9 +6,9 @@ import com.google.common.base.Preconditions;
 
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateType;
-import de.metas.material.event.EventDescriptor;
-import de.metas.material.event.MaterialDemandDescriptor;
-import de.metas.material.event.MaterialDemandEvent;
+import de.metas.material.event.commons.EventDescriptor;
+import de.metas.material.event.commons.MaterialDemandDescriptor;
+import de.metas.material.event.demandWasFound.SupplyRequiredEvent;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
@@ -37,7 +37,7 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public class MaterialDemandEventCreator
 {
-	public MaterialDemandEvent createMaterialDemandEvent(
+	public SupplyRequiredEvent createMaterialDemandEvent(
 			@NonNull final Candidate demandCandidate,
 			@NonNull final BigDecimal requiredAdditionalQty)
 	{
@@ -46,7 +46,7 @@ public class MaterialDemandEventCreator
 		final int orderLineId = demandCandidate.getDemandDetail() == null ? 0
 				: demandCandidate.getDemandDetail().getOrderLineId();
 
-		final MaterialDemandEvent materialDemandEvent = MaterialDemandEvent
+		final SupplyRequiredEvent materialDemandEvent = SupplyRequiredEvent
 				.builder()
 				.materialDemandDescriptor(createMaterialDemandDescr(demandCandidate, requiredAdditionalQty, orderLineId))
 				.build();

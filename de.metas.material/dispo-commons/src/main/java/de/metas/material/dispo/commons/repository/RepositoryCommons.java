@@ -22,9 +22,9 @@ import de.metas.material.dispo.model.I_MD_Candidate_Demand_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_Dist_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_Prod_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_Transaction_Detail;
-import de.metas.material.event.MaterialDescriptor;
-import de.metas.material.event.MaterialDescriptor.DateOperator;
-import de.metas.material.event.ProductDescriptor;
+import de.metas.material.event.commons.MaterialDescriptor;
+import de.metas.material.event.commons.ProductDescriptor;
+import de.metas.material.event.commons.MaterialDescriptor.DateOperator;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 

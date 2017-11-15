@@ -26,12 +26,12 @@ import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.dispo.service.candidatechange.handler.StockUpCandiateHandler;
-import de.metas.material.event.EventDescriptor;
-import de.metas.material.event.MaterialDemandEvent;
-import de.metas.material.event.MaterialDescriptor;
 import de.metas.material.event.MaterialEventService;
+import de.metas.material.event.commons.EventDescriptor;
+import de.metas.material.event.commons.MaterialDescriptor;
+import de.metas.material.event.demandWasFound.SupplyRequiredEvent;
 import de.metas.material.event.forecast.Forecast;
-import de.metas.material.event.forecast.ForecastEvent;
+import de.metas.material.event.forecast.ForecastCreatedEvent;
 import de.metas.material.event.forecast.ForecastLine;
 import lombok.NonNull;
 import mockit.Delegate;
@@ -65,7 +65,7 @@ public class ForecastEventHandlerTest
 	@Rule
 	public final AdempiereTestWatcher testWatcher = new AdempiereTestWatcher();
 
-	private ForecastEventHandler forecastEventHandler;
+	private ForecastCreatedHandler forecastEventHandler;
 
 	@Mocked
 	private MaterialEventService materialEventService;
@@ -79,7 +79,7 @@ public class ForecastEventHandlerTest
 		AdempiereTestHelper.get().init();
 
 		final CandidateRepositoryCommands candidateRepositoryCommands = new CandidateRepositoryCommands();
-		forecastEventHandler = new ForecastEventHandler(
+		forecastEventHandler = new ForecastCreatedHandler(
 				new CandidateChangeService(ImmutableList.of(
 						new StockUpCandiateHandler(
 								candidateRepository,
@@ -94,7 +94,7 @@ public class ForecastEventHandlerTest
 	@Test
 	public void testWithoutProjectedQty()
 	{
-		final ForecastEvent forecastEvent = createForecastWithQtyOfEight();
+		final ForecastCreatedEvent forecastEvent = createForecastWithQtyOfEight();
 		final MaterialDescriptor materialDescriptorOfFirstAndOnlyForecastLine = forecastEvent
 				.getForecast()
 				.getForecastLines()
@@ -111,7 +111,7 @@ public class ForecastEventHandlerTest
 			times = 1;
 		}}; // @formatter:on
 
-		forecastEventHandler.handleForecastEvent(forecastEvent);
+		forecastEventHandler.handleForecastCreatedEvent(forecastEvent);
 		final List<I_MD_Candidate> result = DispoTestUtils.retrieveAllRecords().stream().sorted(Comparator.comparing(I_MD_Candidate::getSeqNo)).collect(Collectors.toList());
 
 		assertThat(result).hasSize(1);
@@ -128,7 +128,7 @@ public class ForecastEventHandlerTest
 	@Test
 	public void testWithProjectedQty()
 	{
-		final ForecastEvent forecastEvent = createForecastWithQtyOfEight();
+		final ForecastCreatedEvent forecastEvent = createForecastWithQtyOfEight();
 		final MaterialDescriptor materialDescriptorOfFirstAndOnlyForecastLine = forecastEvent
 				.getForecast()
 				.getForecastLines()
@@ -145,7 +145,7 @@ public class ForecastEventHandlerTest
 			times = 1;
 		}};	// @formatter:on
 
-		forecastEventHandler.handleForecastEvent(forecastEvent);
+		forecastEventHandler.handleForecastCreatedEvent(forecastEvent);
 		final List<I_MD_Candidate> result = DispoTestUtils.retrieveAllRecords().stream().sorted(Comparator.comparing(I_MD_Candidate::getSeqNo)).collect(Collectors.toList());
 
 		assertThat(result).hasSize(1);
@@ -154,7 +154,7 @@ public class ForecastEventHandlerTest
 		assertThat(result.get(0).getQty()).isEqualByComparingTo("8");
 	}
 
-	private ForecastEvent createForecastWithQtyOfEight()
+	private ForecastCreatedEvent createForecastWithQtyOfEight()
 	{
 		final ForecastLine forecastLine = ForecastLine.builder()
 				.forecastLineId(300)
@@ -173,18 +173,18 @@ public class ForecastEventHandlerTest
 				.forecastLine(forecastLine)
 				.build();
 
-		return ForecastEvent.builder()
+		return ForecastCreatedEvent.builder()
 				.eventDescriptor(new EventDescriptor(1, 2))
 				.forecast(forecast)
 				.build();
 	}
 
-	private Delegate<MaterialDemandEvent> eventQuantity(@NonNull final String expectedEventQty)
+	private Delegate<SupplyRequiredEvent> eventQuantity(@NonNull final String expectedEventQty)
 	{
-		return new Delegate<MaterialDemandEvent>()
+		return new Delegate<SupplyRequiredEvent>()
 		{
 			@SuppressWarnings("unused")
-			public boolean verifyQty(@NonNull final MaterialDemandEvent event)
+			public boolean verifyQty(@NonNull final SupplyRequiredEvent event)
 			{
 				return event.getMaterialDemandDescriptor().getMaterialDescriptor().getQuantity().compareTo(new BigDecimal(expectedEventQty)) == 0;
 			}

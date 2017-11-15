@@ -3,11 +3,15 @@ package de.metas.material.event;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
-import de.metas.material.event.ddorder.DDOrderRequestedEvent;
-import de.metas.material.event.ddorder.DistributionPlanEvent;
-import de.metas.material.event.forecast.ForecastEvent;
-import de.metas.material.event.pporder.PPOrderRequestedEvent;
-import de.metas.material.event.pporder.ProductionPlanEvent;
+import de.metas.material.event.commons.EventDescriptor;
+import de.metas.material.event.ddorder.DistributionRequestedEvent;
+import de.metas.material.event.ddorder.DistributionAdvisedEvent;
+import de.metas.material.event.demandWasFound.SupplyRequiredEvent;
+import de.metas.material.event.forecast.ForecastCreatedEvent;
+import de.metas.material.event.pporder.ProductionRequestedEvent;
+import de.metas.material.event.pporder.ProductionAdvisedEvent;
+import de.metas.material.event.shipmentschedule.ShipmentScheduleCreatedEvent;
+import de.metas.material.event.transactions.TransactionCreatedEvent;
 
 /*
  * #%L
@@ -42,18 +46,18 @@ import de.metas.material.event.pporder.ProductionPlanEvent;
  */
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
 @JsonSubTypes({
-		@JsonSubTypes.Type(name = MaterialDemandEvent.TYPE, value = MaterialDemandEvent.class),
+		@JsonSubTypes.Type(name = SupplyRequiredEvent.TYPE, value = SupplyRequiredEvent.class),
 
-		@JsonSubTypes.Type(name = DistributionPlanEvent.TYPE, value = DistributionPlanEvent.class),
-		@JsonSubTypes.Type(name = ProductionPlanEvent.TYPE, value = ProductionPlanEvent.class),
+		@JsonSubTypes.Type(name = DistributionAdvisedEvent.TYPE, value = DistributionAdvisedEvent.class),
+		@JsonSubTypes.Type(name = ProductionAdvisedEvent.TYPE, value = ProductionAdvisedEvent.class),
 		@JsonSubTypes.Type(name = DemandHandlerAuditEvent.TYPE, value = DemandHandlerAuditEvent.class),
 
-		@JsonSubTypes.Type(name = PPOrderRequestedEvent.TYPE, value = PPOrderRequestedEvent.class),
-		@JsonSubTypes.Type(name = DDOrderRequestedEvent.TYPE, value = DDOrderRequestedEvent.class),
-		@JsonSubTypes.Type(name = ForecastEvent.TYPE, value = ForecastEvent.class),
+		@JsonSubTypes.Type(name = ProductionRequestedEvent.TYPE, value = ProductionRequestedEvent.class),
+		@JsonSubTypes.Type(name = DistributionRequestedEvent.TYPE, value = DistributionRequestedEvent.class),
+		@JsonSubTypes.Type(name = ForecastCreatedEvent.TYPE, value = ForecastCreatedEvent.class),
 		
-		@JsonSubTypes.Type(name = ShipmentScheduleEvent.TYPE, value = ShipmentScheduleEvent.class),
-		@JsonSubTypes.Type(name = TransactionEvent.TYPE, value = TransactionEvent.class)
+		@JsonSubTypes.Type(name = ShipmentScheduleCreatedEvent.TYPE, value = ShipmentScheduleCreatedEvent.class),
+		@JsonSubTypes.Type(name = TransactionCreatedEvent.TYPE, value = TransactionCreatedEvent.class)
 })
 public interface MaterialEvent
 {

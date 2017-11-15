@@ -3,7 +3,7 @@ package de.metas.material.dispo.commons.candidate;
 import java.util.Optional;
 
 import de.metas.material.dispo.model.I_MD_Candidate_Demand_Detail;
-import de.metas.material.event.MaterialDemandDescriptor;
+import de.metas.material.event.commons.MaterialDemandDescriptor;
 import lombok.NonNull;
 import lombok.Value;
 

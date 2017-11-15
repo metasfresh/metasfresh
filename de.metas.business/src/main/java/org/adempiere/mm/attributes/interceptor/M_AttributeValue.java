@@ -10,7 +10,7 @@ import org.compiere.model.ModelValidator;
 
 import com.google.common.base.Objects;
 
-import de.metas.material.event.ProductDescriptor;
+import de.metas.material.event.commons.ProductDescriptor;
 import lombok.NonNull;
 
 /*

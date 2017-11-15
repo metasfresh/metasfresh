@@ -25,15 +25,15 @@ import org.springframework.stereotype.Service;
 import com.google.common.annotations.VisibleForTesting;
 
 import de.metas.material.event.DemandHandlerAuditEvent;
-import de.metas.material.event.EventDescriptor;
-import de.metas.material.event.MaterialDemandDescriptor;
-import de.metas.material.event.MaterialDescriptor;
 import de.metas.material.event.MaterialEventService;
+import de.metas.material.event.commons.EventDescriptor;
+import de.metas.material.event.commons.MaterialDemandDescriptor;
+import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.ddorder.DDOrder;
 import de.metas.material.event.ddorder.DDOrderLine;
-import de.metas.material.event.ddorder.DistributionPlanEvent;
+import de.metas.material.event.ddorder.DistributionAdvisedEvent;
 import de.metas.material.event.pporder.PPOrder;
-import de.metas.material.event.pporder.ProductionPlanEvent;
+import de.metas.material.event.pporder.ProductionAdvisedEvent;
 import de.metas.material.planning.IMRPContextFactory;
 import de.metas.material.planning.IMRPNoteBuilder;
 import de.metas.material.planning.IMRPNotesCollector;
@@ -58,12 +58,12 @@ import lombok.NonNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -89,8 +89,8 @@ public class CommonDemandHandler
 	private MaterialEventService materialEventService;
 
 	/**
-	 * Invokes our {@link DDOrderPojoSupplier} and returns the resulting {@link DDOrder} pojo as {@link DistributionPlanEvent}
-	 * 
+	 * Invokes our {@link DDOrderPojoSupplier} and returns the resulting {@link DDOrder} pojo as {@link DistributionAdvisedEvent}
+	 *
 	 * @param materialDemandEvent
 	 */
 	public void handleMaterialDemandEvent(@NonNull final MaterialDemandDescriptor materialDemandDescr)
@@ -133,7 +133,7 @@ public class CommonDemandHandler
 				{
 					final I_DD_NetworkDistributionLine networkLine = InterfaceWrapperHelper.create(mrpContext.getCtx(), ddOrderLine.getNetworkDistributionLineId(), I_DD_NetworkDistributionLine.class, mrpContext.getTrxName());
 
-					final DistributionPlanEvent distributionPlanEvent = DistributionPlanEvent.builder()
+					final DistributionAdvisedEvent distributionPlanEvent = DistributionAdvisedEvent.builder()
 							.eventDescriptor(materialDemandDescr.getEventDescr().createNew())
 							.fromWarehouseId(networkLine.getM_WarehouseSource_ID())
 							.toWarehouseId(networkLine.getM_Warehouse_ID())
@@ -152,7 +152,7 @@ public class CommonDemandHandler
 							mkRequest(materialDemandDescr, mrpContext),
 							mkMRPNotesCollector());
 
-			final ProductionPlanEvent event = ProductionPlanEvent.builder()
+			final ProductionAdvisedEvent event = ProductionAdvisedEvent.builder()
 					.eventDescriptor(materialDemandDescr.getEventDescr().createNew())
 					.ppOrder(ppOrder)
 					.build();

@@ -1,9 +1,10 @@
-package de.metas.material.event.ddorder;
+package de.metas.material.event.pporder;
 
-import org.eevolution.model.I_DD_Order;
+import org.eevolution.model.I_PP_Order;
 
-import de.metas.material.event.EventDescriptor;
 import de.metas.material.event.MaterialEvent;
+import de.metas.material.event.commons.EventDescriptor;
+import de.metas.material.event.commons.MaterialDemandDescriptor;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -30,32 +31,22 @@ import lombok.Value;
  * #L%
  */
 /**
- * Send by the material planner when it came up with a distribution plan that could be turned into an {@link I_DD_Order}.
+ * Send by the material planner when it came up with a brilliant production plan that could be turned into an {@link I_PP_Order} <b>or</or> if a ppOrder was actually created or changed.
  *
  * @author metas-dev <dev@metasfresh.com>
+ *
  */
-@Value
+@Value // this implies @AllArgsConstructor which is needed by jackson
 @Builder
-public class DistributionPlanEvent implements MaterialEvent
+final public class ProductionAdvisedEvent implements MaterialEvent
 {
-	public static final String TYPE = "DistributionPlanEvent";
+	public static final String TYPE = "ProductionPlanEvent";
 
 	@NonNull
 	EventDescriptor eventDescriptor;
 
-
 	@NonNull
-	DDOrder ddOrder;
+	PPOrder ppOrder;
 
-	/**
-	 * Note: this field is a bit redundant because the {@link #getPpOrder()}'s lines contain a network distribution line with this info. However, the material-dispo code doesn't know or care about how to get to that information.
-	 */
-	@NonNull
-	Integer fromWarehouseId;
-
-	/**
-	 * Also check the note about {@link #getFromWarehouseId()}.
-	 */
-	@NonNull
-	Integer toWarehouseId;
+	MaterialDemandDescriptor materialDemandDescr;
 }

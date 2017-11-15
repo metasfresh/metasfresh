@@ -8,8 +8,8 @@ import java.util.Optional;
 import org.junit.Test;
 
 import de.metas.material.dispo.commons.candidate.DemandDetail;
-import de.metas.material.event.EventDescriptor;
-import de.metas.material.event.MaterialDemandDescriptor;
+import de.metas.material.event.commons.EventDescriptor;
+import de.metas.material.event.commons.MaterialDemandDescriptor;
 
 /*
  * #%L

@@ -7,7 +7,7 @@ import de.metas.material.dispo.commons.candidate.CandidateSubType;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.candidate.DemandDetail;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
-import de.metas.material.event.ShipmentScheduleEvent;
+import de.metas.material.event.shipmentschedule.ShipmentScheduleCreatedEvent;
 import lombok.NonNull;
 
 /*
@@ -32,16 +32,16 @@ import lombok.NonNull;
  * #L%
  */
 @Service
-public class ShipmentScheduleEventHandler
+public class ShipmentScheduleCreatedHandler
 {
 	private final CandidateChangeService candidateChangeHandler;
 
-	public ShipmentScheduleEventHandler(@NonNull final CandidateChangeService candidateChangeHandler)
+	public ShipmentScheduleCreatedHandler(@NonNull final CandidateChangeService candidateChangeHandler)
 	{
 		this.candidateChangeHandler = candidateChangeHandler;
 	}
 
-	public void handleShipmentScheduleEvent(@NonNull final ShipmentScheduleEvent event)
+	public void handleShipmentScheduleCreatedEvent(@NonNull final ShipmentScheduleCreatedEvent event)
 	{
 		final Candidate candidate = Candidate.builderForEventDescr(event.getEventDescriptor())
 				.materialDescriptor(event.getMaterialDescriptor())

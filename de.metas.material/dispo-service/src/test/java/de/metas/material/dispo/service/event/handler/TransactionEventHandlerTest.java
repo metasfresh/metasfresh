@@ -20,10 +20,10 @@ import de.metas.material.dispo.commons.candidate.DemandDetail;
 import de.metas.material.dispo.commons.candidate.TransactionDetail;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
-import de.metas.material.event.EventDescriptor;
-import de.metas.material.event.MaterialDescriptor;
-import de.metas.material.event.TransactionEvent;
-import de.metas.material.event.TransactionEvent.TransactionEventBuilder;
+import de.metas.material.event.commons.EventDescriptor;
+import de.metas.material.event.commons.MaterialDescriptor;
+import de.metas.material.event.transactions.TransactionCreatedEvent;
+import de.metas.material.event.transactions.TransactionCreatedEvent.TransactionCreatedEventBuilder;
 import lombok.NonNull;
 import mockit.Expectations;
 import mockit.Injectable;
@@ -40,12 +40,12 @@ import mockit.Verifications;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -59,7 +59,7 @@ public class TransactionEventHandlerTest
 	private static final int SHIPMENT_SCHEDULE_ID = 40;
 
 	@Tested
-	private TransactionEventHandler transactionEventHandler;
+	private TransactionCreatedHandler transactionEventHandler;
 
 	@Injectable
 	private CandidateChangeService candidateChangeService;
@@ -76,9 +76,9 @@ public class TransactionEventHandlerTest
 	@Test
 	public void createCommonCandidateBuilder_negative_qantity()
 	{
-		final TransactionEvent event = createTransactionEventBuilderWithQuantity(BigDecimal.TEN.negate()).build();
+		final TransactionCreatedEvent event = createTransactionEventBuilderWithQuantity(BigDecimal.TEN.negate()).build();
 
-		final Candidate candidate = TransactionEventHandler.createCommonCandidateBuilder(event).build();
+		final Candidate candidate = TransactionCreatedHandler.createCommonCandidateBuilder(event).build();
 
 		assertThat(candidate.getType()).isSameAs(CandidateType.UNRELATED_DECREASE);
 		assertThat(candidate.getQuantity()).isEqualByComparingTo("10");
@@ -87,9 +87,9 @@ public class TransactionEventHandlerTest
 	@Test
 	public void createCommonCandidateBuilder_positive_qantity()
 	{
-		final TransactionEvent event = createTransactionEventBuilderWithQuantity(BigDecimal.TEN).build();
+		final TransactionCreatedEvent event = createTransactionEventBuilderWithQuantity(BigDecimal.TEN).build();
 
-		final Candidate candidate = TransactionEventHandler.createCommonCandidateBuilder(event).build();
+		final Candidate candidate = TransactionCreatedHandler.createCommonCandidateBuilder(event).build();
 
 		assertThat(candidate.getType()).isSameAs(CandidateType.UNRELATED_INCREASE);
 		assertThat(candidate.getQuantity()).isEqualByComparingTo("10");
@@ -98,7 +98,7 @@ public class TransactionEventHandlerTest
 	@Test
 	public void createCandidate_unrelated_transaction_no_existing_candiate()
 	{
-		final TransactionEvent unrelatedEvent = createTransactionEventBuilderWithQuantity(BigDecimal.TEN).build();
+		final TransactionCreatedEvent unrelatedEvent = createTransactionEventBuilderWithQuantity(BigDecimal.TEN).build();
 
 		// @formatter:off
 		new Expectations()
@@ -129,7 +129,7 @@ public class TransactionEventHandlerTest
 	@Test
 	public void createCandidate_unrelated_transaction_already_existing_candiate_with_different_transaction()
 	{
-		final TransactionEvent unrelatedEvent = createTransactionEventBuilderWithQuantity(BigDecimal.TEN).build();
+		final TransactionCreatedEvent unrelatedEvent = createTransactionEventBuilderWithQuantity(BigDecimal.TEN).build();
 
 		final Candidate exisitingCandidate = Candidate.builder()
 				.type(CandidateType.UNRELATED_INCREASE)
@@ -184,7 +184,7 @@ public class TransactionEventHandlerTest
 	@Test
 	public void createCandidate_unrelated_transaction_with_shipmentSchedule()
 	{
-		final TransactionEvent relatedEvent = createTransactionEventBuilderWithQuantity(BigDecimal.TEN.negate())
+		final TransactionCreatedEvent relatedEvent = createTransactionEventBuilderWithQuantity(BigDecimal.TEN.negate())
 				.shipmentScheduleId(SHIPMENT_SCHEDULE_ID).build();
 
 		// @formatter:off
@@ -235,7 +235,7 @@ public class TransactionEventHandlerTest
 				candidateRepository.retrieveLatestMatchOrNull((CandidatesQuery)any); times = 1;	result = exisitingCandidate;
 		}}; // @formatter:on
 
-		final TransactionEvent relatedEvent = createTransactionEventBuilderWithQuantity(BigDecimal.TEN.negate())
+		final TransactionCreatedEvent relatedEvent = createTransactionEventBuilderWithQuantity(BigDecimal.TEN.negate())
 				.shipmentScheduleId(SHIPMENT_SCHEDULE_ID)
 				.transactionId(TRANSACTION_ID)
 				.build();
@@ -275,10 +275,10 @@ public class TransactionEventHandlerTest
 			.isNull();
 		assertThat(query.getTransactionDetail()).as("only search via the demand detail, if we have one").isNull();
 	}
-	
-	private TransactionEventBuilder createTransactionEventBuilderWithQuantity(@NonNull final BigDecimal quantity)
+
+	private TransactionCreatedEventBuilder createTransactionEventBuilderWithQuantity(@NonNull final BigDecimal quantity)
 	{
-		return TransactionEvent.builder()
+		return TransactionCreatedEvent.builder()
 				.eventDescriptor(new EventDescriptor(10, 20))
 				.transactionId(TRANSACTION_ID)
 				.materialDescriptor(MaterialDescriptor.builder()

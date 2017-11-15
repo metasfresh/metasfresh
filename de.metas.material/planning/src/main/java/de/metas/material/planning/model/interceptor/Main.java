@@ -8,7 +8,7 @@ import org.compiere.model.I_AD_Client;
 import org.compiere.util.Ini;
 
 import de.metas.material.event.MaterialEventService;
-import de.metas.material.planning.event.MaterialDemandEventListener;
+import de.metas.material.planning.event.SupplyRequiredEventListener;
 
 /*
  * #%L
@@ -53,7 +53,7 @@ public class Main extends AbstractModuleInterceptor
 		}
 
 		final MaterialEventService materialEventService = Adempiere.getBean(MaterialEventService.class);
-		final MaterialDemandEventListener materialDemandListener = Adempiere.getBean(MaterialDemandEventListener.class);
+		final SupplyRequiredEventListener materialDemandListener = Adempiere.getBean(SupplyRequiredEventListener.class);
 
 		materialEventService.registerListener(materialDemandListener);
 		materialEventService.subscribeToEventBus();
