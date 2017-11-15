@@ -1,4 +1,4 @@
-package de.metas.ui.web.order.purchase.view;
+package de.metas.ui.web.order.sales.purchasePlanning.view;
 
 import de.metas.ui.web.pporder.PPOrderLineType;
 import de.metas.ui.web.view.IViewRowType;
@@ -25,14 +25,14 @@ import de.metas.ui.web.view.IViewRowType;
  * #L%
  */
 
-public enum OLCandRowType implements IViewRowType
+public enum PurchaseRowType implements IViewRowType
 {
 	GROUP(PPOrderLineType.MainProduct.getIconName()), //
 	LINE(PPOrderLineType.BOMLine_Component.getIconName());
 
 	private final String iconName;
 
-	OLCandRowType(final String iconName)
+	PurchaseRowType(final String iconName)
 	{
 		this.iconName = iconName;
 	}

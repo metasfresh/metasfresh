@@ -1,4 +1,4 @@
-package de.metas.ui.web.order.purchase.process;
+package de.metas.ui.web.order.sales.purchasePlanning.process;
 
 import java.util.Set;
 
@@ -13,7 +13,7 @@ import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.ui.web.order.purchase.view.SalesOrderToOLCandViewFactory;
+import de.metas.ui.web.order.sales.purchasePlanning.view.SalesOrder2PurchaseViewFactory;
 
 /*
  * #%L
@@ -37,7 +37,7 @@ import de.metas.ui.web.order.purchase.view.SalesOrderToOLCandViewFactory;
  * #L%
  */
 
-public class WEBUI_SalesOrder_CreatePurchaseOLCands_Launcher extends JavaProcess implements IProcessPrecondition
+public class WEBUI_SalesOrder_PurchaseView_Launcher extends JavaProcess implements IProcessPrecondition
 {
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
@@ -82,7 +82,7 @@ public class WEBUI_SalesOrder_CreatePurchaseOLCands_Launcher extends JavaProcess
 			throw new AdempiereException("@NoSelection@");
 		}
 
-		getResult().setRecordsToOpen(salesOrderLineRefs, SalesOrderToOLCandViewFactory.WINDOW_ID_STRING);
+		getResult().setRecordsToOpen(salesOrderLineRefs, SalesOrder2PurchaseViewFactory.WINDOW_ID_STRING);
 
 		return MSG_OK;
 	}

@@ -1,4 +1,4 @@
-package de.metas.ui.web.order.purchase.view;
+package de.metas.ui.web.order.sales.purchasePlanning.view;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -53,13 +53,13 @@ import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
  * #L%
  */
 
-@ViewFactory(windowId = SalesOrderToOLCandViewFactory.WINDOW_ID_STRING)
-public class SalesOrderToOLCandViewFactory implements IViewFactory, IViewsIndexStorage
+@ViewFactory(windowId = SalesOrder2PurchaseViewFactory.WINDOW_ID_STRING)
+public class SalesOrder2PurchaseViewFactory implements IViewFactory, IViewsIndexStorage
 {
 	public static final String WINDOW_ID_STRING = "SO2OLCand";
 	public static final WindowId WINDOW_ID = WindowId.fromJson(WINDOW_ID_STRING);
 
-	private final Cache<ViewId, OLCandView> views = CacheBuilder.newBuilder()
+	private final Cache<ViewId, PurchaseView> views = CacheBuilder.newBuilder()
 			.expireAfterAccess(1, TimeUnit.HOURS)
 			.removalListener(notification -> onViewRemoved(notification))
 			.build();
@@ -79,7 +79,7 @@ public class SalesOrderToOLCandViewFactory implements IViewFactory, IViewsIndexS
 				.setHasAttributesSupport(false)
 				.setHasTreeSupport(true)
 				//
-				.addElementsFromViewRowClass(OLCandRow.class, viewDataType)
+				.addElementsFromViewRowClass(PurchaseRow.class, viewDataType)
 				//
 				.build();
 	}
@@ -87,18 +87,18 @@ public class SalesOrderToOLCandViewFactory implements IViewFactory, IViewsIndexS
 	@Override
 	public void put(final IView view)
 	{
-		views.put(view.getViewId(), OLCandView.cast(view));
+		views.put(view.getViewId(), PurchaseView.cast(view));
 	}
 
 	@Override
-	public OLCandView getByIdOrNull(final ViewId viewId)
+	public PurchaseView getByIdOrNull(final ViewId viewId)
 	{
 		return views.getIfPresent(viewId);
 	}
 
-	public OLCandView getById(final ViewId viewId)
+	public PurchaseView getById(final ViewId viewId)
 	{
-		final OLCandView view = getByIdOrNull(viewId);
+		final PurchaseView view = getByIdOrNull(viewId);
 		if (view == null)
 		{
 			throw new EntityNotFoundException("View " + viewId + " was not found");
@@ -115,7 +115,7 @@ public class SalesOrderToOLCandViewFactory implements IViewFactory, IViewsIndexS
 
 	private final void onViewRemoved(final RemovalNotification<Object, Object> notification)
 	{
-		final OLCandView view = OLCandView.cast(notification.getValue());
+		final PurchaseView view = PurchaseView.cast(notification.getValue());
 		final ViewCloseReason closeReason = ViewCloseReason.fromCacheEvictedFlag(notification.wasEvicted());
 		view.close(closeReason);
 	}
@@ -139,16 +139,16 @@ public class SalesOrderToOLCandViewFactory implements IViewFactory, IViewsIndexS
 	}
 
 	@Override
-	public OLCandView createView(final CreateViewRequest request)
+	public PurchaseView createView(final CreateViewRequest request)
 	{
-		return createView(OLCandViewCreateRequest.builder()
+		return createView(PurchaseViewCreateRequest.builder()
 				.salesOrderLineIds(request.getFilterOnlyIds())
 				.build());
 	}
 
-	private OLCandView createView(final OLCandViewCreateRequest request)
+	private PurchaseView createView(final PurchaseViewCreateRequest request)
 	{
-		final OLCandView view = OLCandView.builder()
+		final PurchaseView view = PurchaseView.builder()
 				.viewId(ViewId.random(WINDOW_ID))
 				.rowsSupplier(() -> retrieveRows(request))
 				.build();
@@ -156,7 +156,7 @@ public class SalesOrderToOLCandViewFactory implements IViewFactory, IViewsIndexS
 		return view;
 	}
 
-	private List<OLCandRow> retrieveRows(final OLCandViewCreateRequest request)
+	private List<PurchaseRow> retrieveRows(final PurchaseViewCreateRequest request)
 	{
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_OrderLine.class)
@@ -167,28 +167,28 @@ public class SalesOrderToOLCandViewFactory implements IViewFactory, IViewsIndexS
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	private OLCandRow createOLCandRow(final I_C_OrderLine salesOrderLine)
+	private PurchaseRow createOLCandRow(final I_C_OrderLine salesOrderLine)
 	{
 		final int salesOrderLineId = salesOrderLine.getC_OrderLine_ID();
 		final JSONLookupValue product = createProductLookupValue(salesOrderLine.getM_Product());
 		final BigDecimal qtyToDeliver = salesOrderLine.getQtyOrdered().subtract(salesOrderLine.getQtyDelivered());
 		final Timestamp datePromised = salesOrderLine.getDatePromised();
 
-		final ImmutableList<OLCandRow> olCandRows = Services.get(IBPartnerProductDAO.class)
+		final ImmutableList<PurchaseRow> olCandRows = Services.get(IBPartnerProductDAO.class)
 				.retrieveAllVendors(salesOrderLine.getM_Product_ID(), salesOrderLine.getAD_Org_ID())
 				.stream()
-				.map(vendorProductInfo -> OLCandRow.builder()
-						.rowId(OLCandRowId.lineId(salesOrderLineId, vendorProductInfo.getC_BPartner_ID()))
-						.rowType(OLCandRowType.LINE)
+				.map(vendorProductInfo -> PurchaseRow.builder()
+						.rowId(PurchaseRowId.lineId(salesOrderLineId, vendorProductInfo.getC_BPartner_ID()))
+						.rowType(PurchaseRowType.LINE)
 						.product(product)
 						.datePromised(datePromised)
 						.vendorBPartner(createBPartnerLookupValue(vendorProductInfo.getC_BPartner()))
 						.build())
 				.collect(ImmutableList.toImmutableList());
 
-		final OLCandRow groupRow = OLCandRow.builder()
-				.rowId(OLCandRowId.groupId(salesOrderLineId))
-				.rowType(OLCandRowType.GROUP)
+		final PurchaseRow groupRow = PurchaseRow.builder()
+				.rowId(PurchaseRowId.groupId(salesOrderLineId))
+				.rowType(PurchaseRowType.GROUP)
 				.product(product)
 				.qtyToDeliver(qtyToDeliver)
 				.datePromised(datePromised)

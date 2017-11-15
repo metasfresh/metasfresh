@@ -1,4 +1,4 @@
-package de.metas.ui.web.order.purchase.view;
+package de.metas.ui.web.order.sales.purchasePlanning.view;
 
 import java.util.Set;
 
@@ -33,12 +33,12 @@ import lombok.Value;
  */
 
 @Value
-public class OLCandViewCreateRequest
+public class PurchaseViewCreateRequest
 {
 	private final Set<Integer> salesOrderLineIds;
 
 	@Builder
-	public OLCandViewCreateRequest(
+	public PurchaseViewCreateRequest(
 			@NonNull final Set<Integer> salesOrderLineIds)
 	{
 		Check.assumeNotEmpty(salesOrderLineIds, "salesOrderLineIds is not empty");

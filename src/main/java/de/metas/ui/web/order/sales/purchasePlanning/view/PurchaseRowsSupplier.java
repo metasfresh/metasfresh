@@ -1,4 +1,4 @@
-package de.metas.ui.web.order.purchase.view;
+package de.metas.ui.web.order.sales.purchasePlanning.view;
 
 import java.util.List;
 
@@ -25,7 +25,7 @@ import java.util.List;
  */
 
 @FunctionalInterface
-public interface OLCandRowsSupplier
+public interface PurchaseRowsSupplier
 {
-	List<OLCandRow> retrieveRows();
+	List<PurchaseRow> retrieveRows();
 }

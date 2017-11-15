@@ -1,4 +1,4 @@
-package de.metas.ui.web.order.purchase.view;
+package de.metas.ui.web.order.sales.purchasePlanning.view;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -54,7 +54,7 @@ import lombok.ToString;
  */
 
 @ToString(exclude = "_fieldNameAndJsonValues")
-public class OLCandRow implements IViewRow
+public class PurchaseRow implements IViewRow
 {
 	@ViewColumn(captionKey = "M_Product_ID", widgetType = DocumentFieldWidgetType.Lookup, layouts = {
 			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 10),
@@ -88,24 +88,24 @@ public class OLCandRow implements IViewRow
 	private Date datePromised;
 
 	//
-	private final OLCandRowId rowId;
+	private final PurchaseRowId rowId;
 	private final IViewRowType rowType;
-	private final ImmutableList<OLCandRow> includedRows;
-	private final ImmutableMap<OLCandRowId, OLCandRow> includedRowsByRowId;
+	private final ImmutableList<PurchaseRow> includedRows;
+	private final ImmutableMap<PurchaseRowId, PurchaseRow> includedRowsByRowId;
 
 	//
 	private transient ImmutableMap<String, Object> _fieldNameAndJsonValues; // lazy
 
 	@Builder
-	private OLCandRow(
-			@NonNull final OLCandRowId rowId,
+	private PurchaseRow(
+			@NonNull final PurchaseRowId rowId,
 			@NonNull final IViewRowType rowType,
 			@NonNull final JSONLookupValue product,
 			@Nullable final JSONLookupValue vendorBPartner,
 			@Nullable final BigDecimal qtyToDeliver,
 			@Nullable final BigDecimal qtyToPurchase,
 			@Nullable final Date datePromised,
-			@NonNull @Singular final ImmutableList<OLCandRow> includedRows)
+			@NonNull @Singular final ImmutableList<PurchaseRow> includedRows)
 	{
 		this.rowId = rowId;
 		this.rowType = rowType;
@@ -114,32 +114,32 @@ public class OLCandRow implements IViewRow
 		this.qtyToDeliver = qtyToDeliver;
 		this.qtyToPurchase = qtyToPurchase != null ? qtyToPurchase : BigDecimal.ZERO;
 
-		Check.assume(rowType == OLCandRowType.GROUP || datePromised != null, "datePromised shall not be null");
+		Check.assume(rowType == PurchaseRowType.GROUP || datePromised != null, "datePromised shall not be null");
 		this.datePromised = datePromised;
 
-		if (rowType == OLCandRowType.LINE && !includedRows.isEmpty())
+		if (rowType == PurchaseRowType.LINE && !includedRows.isEmpty())
 		{
 			throw new AdempiereException("Lines does not allow included rows");
 		}
 		this.includedRows = includedRows;
 		includedRowsByRowId = includedRows.stream()
-				.collect(ImmutableMap.toImmutableMap(OLCandRow::getRowId, Function.identity()));
+				.collect(ImmutableMap.toImmutableMap(PurchaseRow::getRowId, Function.identity()));
 
-		if (rowType == OLCandRowType.GROUP)
+		if (rowType == PurchaseRowType.GROUP)
 		{
 			updateQtyToPurchaseFromIncludedRows();
 		}
 	}
 
-	public OLCandRow copy()
+	public PurchaseRow copy()
 	{
-		final ImmutableList<OLCandRow> includedRowsCopy = includedRows.stream()
-				.map(OLCandRow::copy)
+		final ImmutableList<PurchaseRow> includedRowsCopy = includedRows.stream()
+				.map(PurchaseRow::copy)
 				.collect(ImmutableList.toImmutableList());
-		return new OLCandRow(rowId, rowType, product, vendorBPartner, qtyToDeliver, qtyToPurchase, datePromised, includedRowsCopy);
+		return new PurchaseRow(rowId, rowType, product, vendorBPartner, qtyToDeliver, qtyToPurchase, datePromised, includedRowsCopy);
 	}
 
-	public OLCandRowId getRowId()
+	public PurchaseRowId getRowId()
 	{
 		return rowId;
 	}
@@ -180,14 +180,14 @@ public class OLCandRow implements IViewRow
 	}
 
 	@Override
-	public List<OLCandRow> getIncludedRows()
+	public List<PurchaseRow> getIncludedRows()
 	{
 		return includedRows;
 	}
 
-	public OLCandRow getIncludedRowById(final OLCandRowId rowId)
+	public PurchaseRow getIncludedRowById(final PurchaseRowId rowId)
 	{
-		final OLCandRow row = includedRowsByRowId.get(rowId);
+		final PurchaseRow row = includedRowsByRowId.get(rowId);
 		if (row == null)
 		{
 			throw new EntityNotFoundException("Row not found").setParameter("rowId", rowId);
@@ -210,7 +210,7 @@ public class OLCandRow implements IViewRow
 	{
 		final BigDecimal qtyToPurchaseSum = getIncludedRows()
 				.stream()
-				.map(OLCandRow::getQtyToPurchase)
+				.map(PurchaseRow::getQtyToPurchase)
 				.reduce(BigDecimal.ZERO, BigDecimal::add);
 		setQtyToPurchase(qtyToPurchaseSum);
 	}
@@ -222,27 +222,27 @@ public class OLCandRow implements IViewRow
 
 	private void assertRowTypeIsGroup(final String errorMsg)
 	{
-		if (getType() != OLCandRowType.GROUP)
+		if (getType() != PurchaseRowType.GROUP)
 		{
 			throw new AdempiereException(errorMsg);
 		}
 	}
 
-	public void changeQtyToPurchase(@NonNull final OLCandRowId rowId, @NonNull final BigDecimal qtyToPurchase)
+	public void changeQtyToPurchase(@NonNull final PurchaseRowId rowId, @NonNull final BigDecimal qtyToPurchase)
 	{
 		assertRowTypeIsGroup("row not editable");
 
-		final OLCandRow row = getIncludedRowById(rowId);
+		final PurchaseRow row = getIncludedRowById(rowId);
 		row.setQtyToPurchase(qtyToPurchase);
 
 		updateQtyToPurchaseFromIncludedRows();
 	}
 
-	public void changeDatePromised(@NonNull final OLCandRowId rowId, @NonNull final Date datePromised)
+	public void changeDatePromised(@NonNull final PurchaseRowId rowId, @NonNull final Date datePromised)
 	{
 		assertRowTypeIsGroup("row not editable");
 
-		final OLCandRow row = getIncludedRowById(rowId);
+		final PurchaseRow row = getIncludedRowById(rowId);
 		row.setDatePromised(datePromised);
 	}
 }

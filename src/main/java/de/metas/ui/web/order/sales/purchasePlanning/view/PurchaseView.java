@@ -1,4 +1,4 @@
-package de.metas.ui.web.order.purchase.view;
+package de.metas.ui.web.order.sales.purchasePlanning.view;
 
 import java.util.List;
 import java.util.Set;
@@ -52,23 +52,23 @@ import lombok.NonNull;
  * #L%
  */
 
-public class OLCandView implements IEditableView
+public class PurchaseView implements IEditableView
 {
-	public static OLCandView cast(final Object view)
+	public static PurchaseView cast(final Object view)
 	{
-		return (OLCandView)view;
+		return (PurchaseView)view;
 	}
 
 	private final ViewId viewId;
-	private final OLCandRowsCollection rows;
+	private final PurchaseRowsCollection rows;
 
 	@Builder
-	private OLCandView(
+	private PurchaseView(
 			@NonNull final ViewId viewId,
-			@NonNull final OLCandRowsSupplier rowsSupplier)
+			@NonNull final PurchaseRowsSupplier rowsSupplier)
 	{
 		this.viewId = viewId;
-		rows = OLCandRowsCollection.ofSupplier(rowsSupplier);
+		rows = PurchaseRowsCollection.ofSupplier(rowsSupplier);
 	}
 
 	@Override
@@ -144,14 +144,14 @@ public class OLCandView implements IEditableView
 		{
 			throw new AdempiereException("orderBys is not supported");
 		}
-		final List<OLCandRow> pageRows = rows.getPage(firstRow, pageLength);
+		final List<PurchaseRow> pageRows = rows.getPage(firstRow, pageLength);
 		return ViewResult.ofViewAndPage(this, firstRow, pageLength, orderBys, pageRows);
 	}
 
 	@Override
 	public IViewRow getById(final DocumentId rowId) throws EntityNotFoundException
 	{
-		final OLCandRowId olCandRowId = OLCandRowId.fromDocumentId(rowId);
+		final PurchaseRowId olCandRowId = PurchaseRowId.fromDocumentId(rowId);
 		if (olCandRowId.isGroupRowId())
 		{
 			return rows.getById(olCandRowId);
@@ -210,7 +210,7 @@ public class OLCandView implements IEditableView
 		return rows.streamByIds(rowIds);
 	}
 
-	public List<OLCandRow> getRows()
+	public List<PurchaseRow> getRows()
 	{
 		return rows.getAll();
 	}
@@ -223,7 +223,7 @@ public class OLCandView implements IEditableView
 	@Override
 	public void patchViewRow(final RowEditingContext ctx, final List<JSONDocumentChangedEvent> fieldChangeRequests)
 	{
-		final OLCandRowId rowId = OLCandRowId.fromDocumentId(ctx.getRowId());
+		final PurchaseRowId rowId = PurchaseRowId.fromDocumentId(ctx.getRowId());
 		rows.patchRow(rowId, fieldChangeRequests);
 
 		// i.e. notify frontend that given row and it's parent changed.

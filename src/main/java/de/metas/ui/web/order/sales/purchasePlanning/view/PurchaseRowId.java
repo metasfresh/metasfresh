@@ -1,4 +1,4 @@
-package de.metas.ui.web.order.purchase.view;
+package de.metas.ui.web.order.sales.purchasePlanning.view;
 
 import java.util.List;
 
@@ -34,33 +34,33 @@ import lombok.ToString;
 
 @ToString
 @EqualsAndHashCode
-public final class OLCandRowId
+public final class PurchaseRowId
 {
-	public static OLCandRowId groupId(final int salesOrderLineId)
+	public static PurchaseRowId groupId(final int salesOrderLineId)
 	{
 		final int vendorBPartnerId = -1;
 		final DocumentId documentId = null;
-		return new OLCandRowId(salesOrderLineId, vendorBPartnerId, documentId);
+		return new PurchaseRowId(salesOrderLineId, vendorBPartnerId, documentId);
 	}
 
-	public static OLCandRowId lineId(final int salesOrderLineId, final int vendorBPartnerId)
+	public static PurchaseRowId lineId(final int salesOrderLineId, final int vendorBPartnerId)
 	{
 		final DocumentId documentId = null;
-		return new OLCandRowId(salesOrderLineId, vendorBPartnerId, documentId);
+		return new PurchaseRowId(salesOrderLineId, vendorBPartnerId, documentId);
 	}
 
-	public static OLCandRowId fromDocumentId(final DocumentId documentId)
+	public static PurchaseRowId fromDocumentId(final DocumentId documentId)
 	{
 		return fromJson(documentId.toJson(), documentId);
 	}
 
-	public static final OLCandRowId fromJson(final String json)
+	public static final PurchaseRowId fromJson(final String json)
 	{
 		final DocumentId documentId = null;
 		return fromJson(json, documentId);
 	}
 
-	private static final OLCandRowId fromJson(final String json, final DocumentId documentId)
+	private static final PurchaseRowId fromJson(final String json, final DocumentId documentId)
 	{
 		final List<String> parts = PARTS_SPLITTER.splitToList(json);
 		final int partsCount = parts.size();
@@ -73,11 +73,11 @@ public final class OLCandRowId
 		{
 			final int salesOrderLineId = Integer.parseInt(parts.get(0));
 			final int vendorBPartnerId = partsCount == 2 ? Integer.parseInt(parts.get(1)) : -1;
-			return new OLCandRowId(salesOrderLineId, vendorBPartnerId, documentId);
+			return new PurchaseRowId(salesOrderLineId, vendorBPartnerId, documentId);
 		}
 		catch (Exception ex)
 		{
-			throw new AdempiereException("Cannot convert '" + json + "' to " + OLCandRowId.class, ex);
+			throw new AdempiereException("Cannot convert '" + json + "' to " + PurchaseRowId.class, ex);
 		}
 	}
 
@@ -89,7 +89,7 @@ public final class OLCandRowId
 
 	private transient DocumentId _documentId; // lazy
 
-	private OLCandRowId(final int salesOrderLineId, final int vendorBPartnerId, final DocumentId documentId)
+	private PurchaseRowId(final int salesOrderLineId, final int vendorBPartnerId, final DocumentId documentId)
 	{
 		if (salesOrderLineId <= 0)
 		{
@@ -116,7 +116,7 @@ public final class OLCandRowId
 		return _documentId;
 	}
 
-	public OLCandRowId toGroupRowId()
+	public PurchaseRowId toGroupRowId()
 	{
 		if (vendorBPartnerId <= 0)
 		{
@@ -124,7 +124,7 @@ public final class OLCandRowId
 		}
 		else
 		{
-			return new OLCandRowId(salesOrderLineId, -1, null);
+			return new PurchaseRowId(salesOrderLineId, -1, null);
 		}
 	}
 	
