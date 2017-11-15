@@ -13,7 +13,7 @@ export default ({ keymap = {}, blacklist = {} } = {}) => {
 
         if (hotkeys[hotkey]) {
             // eslint-disable-next-line max-len
-            console.warn(`There exist multiple definition for key combination "${hotkey}"`);
+            console.warn(`"${name}" uses already existing key combination "${hotkey}"`);
         }
 
         const bucket = [];
