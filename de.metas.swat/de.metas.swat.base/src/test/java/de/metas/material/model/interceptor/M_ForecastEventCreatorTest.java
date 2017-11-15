@@ -25,6 +25,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.ShutdownListener;
 import de.metas.StartupListener;
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.document.engine.IDocument;
@@ -55,7 +56,9 @@ import de.metas.material.event.forecast.ForecastLine;
  * #L%
  */
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = { StartupListener.class, ModelProductDescriptorExtractorUsingAttributeSetInstanceFactory.class })
+@SpringBootTest(classes = { StartupListener.class,
+		ShutdownListener.class,
+		ModelProductDescriptorExtractorUsingAttributeSetInstanceFactory.class })
 public class M_ForecastEventCreatorTest
 {
 	@Rule

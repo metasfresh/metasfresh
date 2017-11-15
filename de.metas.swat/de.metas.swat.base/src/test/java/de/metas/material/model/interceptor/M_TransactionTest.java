@@ -23,6 +23,7 @@ import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import de.metas.ShutdownListener;
 import de.metas.StartupListener;
 import de.metas.business.BusinessTestHelper;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked;
@@ -51,7 +52,9 @@ import de.metas.material.event.TransactionEvent;
  */
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = { StartupListener.class, ModelProductDescriptorExtractorUsingAttributeSetInstanceFactory.class })
+@SpringBootTest(classes = { StartupListener.class,
+		ShutdownListener.class,
+		ModelProductDescriptorExtractorUsingAttributeSetInstanceFactory.class })
 public class M_TransactionTest
 {
 

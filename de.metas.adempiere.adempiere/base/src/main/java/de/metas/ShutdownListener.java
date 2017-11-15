@@ -1,14 +1,13 @@
-package de.metas.material.planning;
+package de.metas;
 
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
-
-import de.metas.ShutdownListener;
-import de.metas.StartupListener;
+import org.compiere.Adempiere;
+import org.springframework.context.ApplicationListener;
+import org.springframework.context.event.ContextClosedEvent;
+import org.springframework.stereotype.Component;
 
 /*
  * #%L
- * metasfresh-material-planning
+ * de.metas.adempiere.adempiere.base
  * %%
  * Copyright (C) 2017 metas GmbH
  * %%
@@ -27,13 +26,13 @@ import de.metas.StartupListener;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-@Configuration
-@ComponentScan(basePackageClasses = {
-		MaterialPlanningConfiguration.class, // scan the classes in the material planning sub-packages for components. Without this, we need to have @Bean annotated methods in here
-		StartupListener.class,
-		ShutdownListener.class,
-		})
-public class MaterialPlanningConfiguration
-{
 
+@Component
+public class ShutdownListener implements ApplicationListener<ContextClosedEvent>
+{
+	@Override
+	public void onApplicationEvent(ContextClosedEvent event)
+	{
+		Adempiere.instance.setApplicationContext(null);
+	}
 }
