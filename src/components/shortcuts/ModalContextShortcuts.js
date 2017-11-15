@@ -37,6 +37,7 @@ class ModalContextShortcuts extends Component {
         return (
             <Shortcuts
                 alwaysFireHandler
+                global
                 handler={this.handleShortcuts}
                 isolate
                 name="MODAL_CONTEXT"
