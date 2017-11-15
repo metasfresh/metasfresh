@@ -8,6 +8,12 @@ const FIELD_EDIT_WIDGET_TYPES = [
     'CostPrice'
 ];
 
+const VIEW_EDITOR_RENDER_MODES = [
+    'never',
+    'on-demand',
+    'always'
+]
+
 class TableItem extends Component {
     constructor(props) {
         super(props);
@@ -133,7 +139,7 @@ class TableItem extends Component {
     }
 
     isAllowedFieldEdit = (item) => {
-        return FIELD_EDIT_WIDGET_TYPES.indexOf(item.widgetType) > -1;
+        return item.viewEditorRenderMode === VIEW_EDITOR_RENDER_MODES[1];
     }
 
     renderCells = (cols, cells) => {
@@ -160,16 +166,17 @@ class TableItem extends Component {
                 const {supportZoomInto} = item.fields[0];
                 const supportFieldEdit = mainTable &&
                     this.isAllowedFieldEdit(item);
-
+                    
                 const property = item.fields[0].field;
+                let isEditable = item.viewEditorRenderMode === VIEW_EDITOR_RENDER_MODES[2];
                 let widgetData = item.fields.map(
                     (prop) => {
                         if (cells) {
                             let cellWidget = cells[prop.field] || -1;
 
                             if (
-                                supportFieldEdit &&
-                                typeof cellWidget === 'object'
+                                isEditable || (supportFieldEdit &&
+                                typeof cellWidget === 'object')
                             ) {
                                 cellWidget = Object.assign({}, cellWidget, {
                                     widgetType: item.widgetType,
@@ -193,7 +200,7 @@ class TableItem extends Component {
                             listenOnKeys, caption, mainTable
                         }}
                         key={index}
-                        isEdited={edited === property}
+                        isEdited={isEditable || edited === property}
                         onDoubleClick={(e) =>
                             this.handleEditProperty(
                                 e, property, true, widgetData[0]
