@@ -14,7 +14,6 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
-import de.metas.ui.web.handlingunits.OLCandRowId;
 import de.metas.ui.web.view.IEditableView;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.ViewId;

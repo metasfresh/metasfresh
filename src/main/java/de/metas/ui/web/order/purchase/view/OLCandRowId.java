@@ -1,4 +1,4 @@
-package de.metas.ui.web.handlingunits;
+package de.metas.ui.web.order.purchase.view;
 
 import java.util.List;
 

@@ -19,7 +19,6 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.purchasing.api.IBPartnerProductDAO;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
-import de.metas.ui.web.handlingunits.OLCandRowId;
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewFactory;
