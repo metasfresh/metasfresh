@@ -2,6 +2,7 @@
   "name": "metasfresh-webui-frontend",
   "scripts": {
     "start": "node server.js",
+    "test": "mocha --require babel-register src/**/*.test.js",
     "lint": "eslint src --fix",
     "stylelint": "stylelint 'src/assets/**/*.css'",
     "storybook": "node .storybook/findStories && start-storybook -p 6006",
@@ -22,6 +23,7 @@
     "globby": "^6.1.0",
     "html-loader": "~0.4.4",
     "html-webpack-plugin": "~2.26.0",
+    "mocha": "^4.0.1",
     "postcss-color-function": "~2.0.1",
     "postcss-import": "~8.1.2",
     "postcss-loader": "~0.9.1",
