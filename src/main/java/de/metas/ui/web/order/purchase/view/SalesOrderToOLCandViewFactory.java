@@ -14,6 +14,7 @@ import org.compiere.model.I_M_Product;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.RemovalNotification;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.interfaces.I_C_BPartner_Product;
@@ -23,6 +24,7 @@ import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewFactory;
 import de.metas.ui.web.view.IViewsIndexStorage;
+import de.metas.ui.web.view.ViewCloseReason;
 import de.metas.ui.web.view.ViewFactory;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.descriptor.ViewLayout;
@@ -61,6 +63,7 @@ public class SalesOrderToOLCandViewFactory implements IViewFactory, IViewsIndexS
 
 	private final Cache<ViewId, OLCandView> views = CacheBuilder.newBuilder()
 			.expireAfterAccess(1, TimeUnit.HOURS)
+			.removalListener(notification -> onViewRemoved(notification))
 			.build();
 
 	@Override
@@ -110,6 +113,13 @@ public class SalesOrderToOLCandViewFactory implements IViewFactory, IViewsIndexS
 	{
 		views.invalidate(viewId);
 		views.cleanUp(); // also cleanup to prevent views cache to grow.
+	}
+
+	private final void onViewRemoved(final RemovalNotification<Object, Object> notification)
+	{
+		final OLCandView view = OLCandView.cast(notification.getValue());
+		final ViewCloseReason closeReason = ViewCloseReason.fromCacheEvictedFlag(notification.wasEvicted());
+		view.close(closeReason);
 	}
 
 	@Override

@@ -49,7 +49,8 @@ import lombok.NonNull;
 	private final void onViewRemoved(final RemovalNotification<Object, Object> notification)
 	{
 		final IView view = (IView)notification.getValue();
-		view.close();
+		final ViewCloseReason closeReason = ViewCloseReason.fromCacheEvictedFlag(notification.wasEvicted());
+		view.close(closeReason);
 	}
 
 	@Override

@@ -15,7 +15,6 @@ import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.view.IEditableView;
-import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.ViewResult;
@@ -54,7 +53,7 @@ import lombok.NonNull;
 
 public class OLCandView implements IEditableView
 {
-	public static OLCandView cast(final IView view)
+	public static OLCandView cast(final Object view)
 	{
 		return (OLCandView)view;
 	}
@@ -111,11 +110,6 @@ public class OLCandView implements IEditableView
 	public long size()
 	{
 		return rows.size();
-	}
-
-	@Override
-	public void close()
-	{
 	}
 
 	@Override

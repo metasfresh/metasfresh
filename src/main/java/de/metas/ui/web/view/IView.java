@@ -83,7 +83,10 @@ public interface IView
 
 	long size();
 
-	void close();
+	default void close(final ViewCloseReason reason)
+	{
+		// nothing
+	}
 
 	int getQueryLimit();
 

@@ -15,6 +15,7 @@ import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewsIndexStorage;
 import de.metas.ui.web.view.IViewsRepository;
+import de.metas.ui.web.view.ViewCloseReason;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.event.ViewChangesCollector;
 import de.metas.ui.web.view.json.JSONViewDataType;
@@ -166,7 +167,7 @@ public class PickingSlotViewsIndexStorage implements IViewsIndexStorage
 	{
 		final DocumentId rowId = extractRowId(pickingSlotViewId);
 		final PackageableView packageableView = getPackageableViewByPickingSlotViewId(pickingSlotViewId);
-		packageableView.removePickingSlotView(rowId);
+		packageableView.removePickingSlotView(rowId, ViewCloseReason.USER_REQUEST);
 	}
 
 	@Override

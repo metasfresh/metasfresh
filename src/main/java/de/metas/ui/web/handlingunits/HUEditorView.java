@@ -28,6 +28,7 @@ import de.metas.ui.web.document.filter.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.process.view.ViewActionDescriptorsList;
 import de.metas.ui.web.view.IView;
+import de.metas.ui.web.view.ViewCloseReason;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.ViewResult;
 import de.metas.ui.web.view.event.ViewChangesCollector;
@@ -167,7 +168,7 @@ public class HUEditorView implements IView
 	}
 
 	@Override
-	public void close()
+	public void close(final ViewCloseReason reason)
 	{
 		invalidateAllNoNotify();
 	}
