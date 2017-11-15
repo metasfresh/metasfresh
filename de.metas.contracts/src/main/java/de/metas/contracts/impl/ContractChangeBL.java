@@ -67,6 +67,8 @@ public class ContractChangeBL implements IContractChangeBL
 	private static final Logger logger = LogManager.getLogger(ContractChangeBL.class);
 	
 	private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
+	
+	public static final String MSG_IS_NOT_ALLOWED_TO_TERMINATE_CURRENT_CONTRACT = "de.metas.contracts.isNotAllowedToTerminateCurrentContract";
 
 	@Override
 	public void cancelContract(@NonNull final I_C_Flatrate_Term currentTerm,
@@ -139,7 +141,7 @@ public class ContractChangeBL implements IContractChangeBL
 		
 		if (isNotAllowedToTerminateCurrentContract(currentTerm, contractChangeParameters))
 		{
-			throw new AdempiereException("de.metas.contracts.isNotAllowedToTerminateCurrentContract",
+			throw new AdempiereException(MSG_IS_NOT_ALLOWED_TO_TERMINATE_CURRENT_CONTRACT,
 					new Object[] { currentTerm });
 		}
 		
