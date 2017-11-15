@@ -1,6 +1,4 @@
-/* Define your mod button*/
-
-let mod = 'ctrl';
+const mod = 'ctrl';
 
 // DO NOT USE:
 // mod + l - windows browser focusing address bar
