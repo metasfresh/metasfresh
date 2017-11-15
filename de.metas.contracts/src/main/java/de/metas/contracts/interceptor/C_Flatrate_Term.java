@@ -71,6 +71,7 @@ import de.metas.document.IDocTypeDAO;
 import de.metas.document.IDocTypeDAO.DocTypeCreateRequest;
 import de.metas.i18n.IMsgBL;
 import de.metas.ordercandidate.modelvalidator.C_OLCand;
+import lombok.NonNull;
 
 @Interceptor(I_C_Flatrate_Term.class)
 public class C_Flatrate_Term
@@ -510,6 +511,13 @@ public class C_Flatrate_Term
 			masterEndDate = term.getEndDate();
 		}
 
+		masterEndDate = computeMasterEndDateIfC_FlatrateTerm_Next_IDChanged(term, masterEndDate);
+
+		term.setMasterEndDate(masterEndDate);
+	}
+	
+	private Timestamp computeMasterEndDateIfC_FlatrateTerm_Next_IDChanged(@NonNull final I_C_Flatrate_Term term, Timestamp masterEndDate)
+	{
 		if (InterfaceWrapperHelper.isValueChanged(term, I_C_Flatrate_Term.COLUMNNAME_C_FlatrateTerm_Next_ID) && !term.isAutoRenew())
 		{
 			if (term.getC_FlatrateTerm_Next_ID() > 0)
@@ -521,7 +529,7 @@ public class C_Flatrate_Term
 				masterEndDate = term.getEndDate();
 			}
 		}
-
-		term.setMasterEndDate(masterEndDate);
+		
+		return masterEndDate;
 	}
 }
