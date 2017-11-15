@@ -231,9 +231,14 @@ Default parent pom with common settings (e.g. java file encoding) to be used by 
 						<!-- Hope to solve 
 						Spring boot related tests fail on jenkins sometimes https://github.com/metasfresh/metasfresh/issues/2988 
 						The problem might be related to the static variable Adempiere.instance which holds a SpringContext -->
-						<reuseForks>false</reuseForks>
+						<!-- reuseForks>false</reuseForks -->
+						<!-- reuseForks=false solved the problem, but we can't live with the increase in build time
+						<reuseForks>true</reuseForks> -->
 						
-						<runOrder>random</runOrder>
+						<!-- random might be a good idea in general, but due to our known problems, prefer determinability 
+						Again, see Spring boot related tests fail on jenkins sometimes https://github.com/metasfresh/metasfresh/issues/2988 -->
+						<runOrder>filesystem</runOrder>
+						<!-- runOrder>random</runOrder -->
 
 						<systemPropertyVariables>
 							<concordion.output.dir>${acceptance.reports.dir}</concordion.output.dir>
