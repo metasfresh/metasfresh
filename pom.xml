@@ -112,6 +112,18 @@ Default parent pom with common settings (e.g. java file encoding) to be used by 
 				<version>${itext.version}</version>
 			</dependency>
 
+                        <!-- Thx for the two fonts to http://ansuz.sooke.bc.ca/page/fonts ^^ -->
+                        <dependency>
+                                <groupId>jp.osdn.ocra</groupId>
+                                <artifactId>jp.osdn.ocra</artifactId>
+                                <version>0.2</version>
+                        </dependency>
+                        <dependency>
+                                <groupId>jp.osdn.ocrb</groupId>
+                                <artifactId>jp.osdn.ocrb</artifactId>
+                                <version>0.2.1</version>
+                        </dependency>
+
 		</dependencies>
 
 	</dependencyManagement>
