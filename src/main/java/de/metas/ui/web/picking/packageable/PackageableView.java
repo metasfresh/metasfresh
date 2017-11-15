@@ -159,6 +159,14 @@ public class PackageableView implements IView
 	@Override
 	public void close(final ViewCloseReason reason)
 	{
+		if (reason == ViewCloseReason.USER_REQUEST)
+		{
+			closePickingCandidatesFromRackSystemPickingSlots();
+		}
+	}
+
+	private void closePickingCandidatesFromRackSystemPickingSlots()
+	{
 		final List<Integer> shipmentScheduleIds = getRows()
 				.values().stream()
 				.map(PackageableRow::getShipmentScheduleId)
