@@ -51,5 +51,5 @@ public interface IPaymentStringDataProvider
 	 * @param bpartnerId
 	 * @return {@link I_C_BP_BankAccount} which was created
 	 */
-	I_C_BP_BankAccount createNewC_BP_BankAccount(IContextAware contextProvider, int bpartnerId);
+	I_C_BP_BankAccount createNewC_BP_BankAccount_With_ESRPostFinancialUserNumber(IContextAware contextProvider, int bpartnerId);
 }
