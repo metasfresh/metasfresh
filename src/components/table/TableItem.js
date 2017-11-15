@@ -134,7 +134,7 @@ class TableItem extends Component {
     }
 
     isAllowedFieldEdit = (item) => {
-        return item.viewEditorRenderMode === 
+        return item.viewEditorRenderMode ===
             VIEW_EDITOR_RENDER_MODES[1];
     }
 
@@ -160,10 +160,12 @@ class TableItem extends Component {
         } else {
             return cols && cols.map((item, index) => {
                 const {supportZoomInto} = item.fields[0];
-                const supportFieldEdit = mainTable && 
+                const supportFieldEdit = mainTable &&
                     this.isAllowedFieldEdit(item);
                 const property = item.fields[0].field;
-                let isEditable = item.viewEditorRenderMode === VIEW_EDITOR_RENDER_MODES[2];
+                let isEditable = item.viewEditorRenderMode ===
+                    VIEW_EDITOR_RENDER_MODES[2];
+
                 let widgetData = item.fields.map(
                     (prop) => {
                         if (cells) {
