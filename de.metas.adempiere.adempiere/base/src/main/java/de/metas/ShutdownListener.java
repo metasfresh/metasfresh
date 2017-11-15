@@ -2,7 +2,7 @@ package de.metas;
 
 import org.compiere.Adempiere;
 import org.springframework.context.ApplicationListener;
-import org.springframework.context.event.ContextClosedEvent;
+import org.springframework.context.event.ContextStoppedEvent;
 import org.springframework.stereotype.Component;
 
 /*
@@ -28,10 +28,10 @@ import org.springframework.stereotype.Component;
  */
 
 @Component
-public class ShutdownListener implements ApplicationListener<ContextClosedEvent>
+public class ShutdownListener implements ApplicationListener<ContextStoppedEvent>
 {
 	@Override
-	public void onApplicationEvent(ContextClosedEvent event)
+	public void onApplicationEvent(ContextStoppedEvent event)
 	{
 		Adempiere.instance.setApplicationContext(null);
 	}
