@@ -20,7 +20,7 @@ describe('generateHotkeys', () => {
             COMBO_B: 'ctrl+b'
         };
 
-        const hotkeys = generateHotkeys(keymap);
+        const hotkeys = generateHotkeys({ keymap });
 
         expect(hotkeys).to.deep.equal({
             'ctrl+a': [],
@@ -37,7 +37,29 @@ describe('generateHotkeys', () => {
                 COMBO_2: 'ctrl+a'
             };
 
-            generateHotkeys(keymap);
+            generateHotkeys({ keymap });
+
+            expect(warn).to.have.been.called;
+        } catch (error) {
+            throw error;
+        } finally {
+            warn.restore();
+        }
+    });
+
+    it('should warn about blacklisted hotkeys', () => {
+        const warn = sinon.spy(console, 'warn');
+
+        try {
+            const blacklist = {
+                'ctrl+w': 'Close tab'
+            };
+
+            const keymap = {
+                COMBO_1: 'ctrl+w'
+            };
+
+            generateHotkeys({ keymap, blacklist });
 
             expect(warn).to.have.been.called;
         } catch (error) {

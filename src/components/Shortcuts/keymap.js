@@ -1,9 +1,5 @@
 const mod = 'ctrl';
 
-// DO NOT USE:
-// mod + l - windows browser focusing address bar
-// mod + w - closes tab (preconfigured chrome shortcut)
-
 export default {
     /* Global context */
     OPEN_ACTIONS_MENU: `${mod}+1`,
