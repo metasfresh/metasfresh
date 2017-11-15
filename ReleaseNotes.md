@@ -26,6 +26,8 @@ Here come the actual release notes:
     * New Field Warehouse anf Filter in Distribution Editor.
   * [#2985](https://github.com/metasfresh/metasfresh/issues/2985) Refining Distribution Editor Window in WebUI
     * Improvements for the Distribution Editor Window in WebUI. Additional Translations for de_DE and en_US Language/ Locale.
+  * [#2989](https://github.com/metasfresh/metasfresh/issues/2989) Filter for GAP No. is missing in Businesspartner window
+    * Adding the GAP Filter to Businesspartner Window.
 
 ## Fixes
 * metasfresh-webui-frontend
