@@ -22,6 +22,10 @@ Here come the actual release notes:
     * Improved Layout and Translations for the Distribution Order Window in WebUI.
   * [#2959](https://github.com/metasfresh/metasfresh/issues/2959) Default WebUI Window for Distribution Orderlines Handling
     * New Window for Distribution Orderlines that allows better Distrbution handling in WebUI.
+  * [#2969](https://github.com/metasfresh/metasfresh/issues/2969) Add SQL Column M_Warehouse to Distribution Orderline
+    * New Field Warehouse anf Filter in Distribution Editor.
+  * [#2985](https://github.com/metasfresh/metasfresh/issues/2985) Refining Distribution Editor Window in WebUI
+    * Improvements for the Distribution Editor Window in WebUI. Additional Translations for de_DE and en_US Language/ Locale.
 
 ## Fixes
 * metasfresh-webui-frontend
