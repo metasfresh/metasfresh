@@ -35,6 +35,7 @@ import org.compiere.util.Env;
 
 import de.metas.payment.esr.api.IESRBPBankAccountDAO;
 import de.metas.payment.esr.model.I_C_BP_BankAccount;
+import de.metas.payment.esr.model.I_ESR_PostFinanceUserNumber;
 
 public abstract class AbstractBPBankAccountDAO implements IESRBPBankAccountDAO
 {
@@ -49,8 +50,9 @@ public abstract class AbstractBPBankAccountDAO implements IESRBPBankAccountDAO
 
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-		final IQueryBuilder<I_C_BP_BankAccount> qb = queryBL.createQueryBuilder(I_C_BP_BankAccount.class, ctx, trxName)
-				.addEqualsFilter(I_C_BP_BankAccount.COLUMNNAME_ESR_RenderedAccountNo, postAccountNo)
+		final IQueryBuilder<I_C_BP_BankAccount> qb = queryBL.createQueryBuilder(I_ESR_PostFinanceUserNumber.class, ctx, trxName)
+				.addEqualsFilter(I_ESR_PostFinanceUserNumber.COLUMNNAME_ESR_RenderedAccountNo, postAccountNo)
+				.andCollect(I_ESR_PostFinanceUserNumber.COLUMN_C_BP_BankAccount_ID, I_C_BP_BankAccount.class)
 				.addEqualsFilter(I_C_BP_BankAccount.COLUMNNAME_IsEsrAccount, true);
 
 		if (!innerAccountNo.equals("0000000")) // 7 x 0
