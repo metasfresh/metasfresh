@@ -36,7 +36,7 @@ fi
 MAIN_CLASSNAME=org.springframework.boot.loader.PropertiesLauncher
 
 #get the path of our executable jar file. Note the wildcards, they are here mostly because we like this to also work with feature builds.
-JAR_FILE=$(ls $METASFRESH_HOME/lib/de.metas.endcustomer.*.swingui-*.jar)
+JAR_FILE=$(ls $METASFRESH_HOME/lib/*-swingui-*.jar)
 
 CLASSPATH=$JAR_FILE
 

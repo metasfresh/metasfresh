@@ -85,7 +85,7 @@ SET MAIN_CLASSNAME=org.springframework.boot.loader.PropertiesLauncher
 
 @REM finding our jar file
 @REM thx to http://stackoverflow.com/questions/13876771/find-file-and-return-full-path-using-a-batch-file
-for /f "delims=" %%F in ('dir /b /s "%METASFRESH_HOME%\lib\de.metas.endcustomer.*.swingui-*.jar" 2^>nul') do set JAR_FILE=%%F
+for /f "delims=" %%F in ('dir /b /s "%METASFRESH_HOME%\lib\*-swingui-*.jar" 2^>nul') do set JAR_FILE=%%F
 
 SET CLASSPATH=%JAR_FILE%
 
