@@ -8,7 +8,8 @@
 	</parent>
 
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>de.metas.report</groupId>
+	
+	<version>10.0.0</version>
 	<artifactId>de.metas.report.jasper.commons</artifactId>
 	<packaging>jar</packaging>
 
