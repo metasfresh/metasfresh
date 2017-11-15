@@ -1,5 +1,8 @@
 package de.metas.ui.web.order.purchase.view;
 
+import de.metas.ui.web.pporder.PPOrderLineType;
+import de.metas.ui.web.view.IViewRowType;
+
 /*
  * #%L
  * metasfresh-webui-api
@@ -10,22 +13,39 @@ package de.metas.ui.web.order.purchase.view;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-public class OLCandViewService
+public enum OLCandRowType implements IViewRowType
 {
-	public void createOLCandRecords(final OLCandView view)
+	GROUP(PPOrderLineType.MainProduct.getIconName()), //
+	LINE(PPOrderLineType.BOMLine_Component.getIconName());
+
+	private final String iconName;
+
+	OLCandRowType(final String iconName)
 	{
-		
+		this.iconName = iconName;
+	}
+
+	@Override
+	public String getName()
+	{
+		return iconName;
+	}
+
+	@Override
+	public String getIconName()
+	{
+		return iconName;
 	}
 }

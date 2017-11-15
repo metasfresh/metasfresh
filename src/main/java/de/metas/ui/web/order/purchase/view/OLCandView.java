@@ -14,10 +14,12 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
+import de.metas.ui.web.handlingunits.OLCandRowId;
 import de.metas.ui.web.view.IEditableView;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.ViewResult;
+import de.metas.ui.web.view.event.ViewChangesCollector;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
@@ -127,6 +129,13 @@ public class OLCandView implements IEditableView
 	@Override
 	public void invalidateAll()
 	{
+		ViewChangesCollector.getCurrentOrAutoflush().collectFullyChanged(this);
+	}
+
+	@Override
+	public void invalidateRowById(final DocumentId rowId)
+	{
+		ViewChangesCollector.getCurrentOrAutoflush().collectRowChanged(this, rowId);
 	}
 
 	@Override
@@ -143,7 +152,15 @@ public class OLCandView implements IEditableView
 	@Override
 	public IViewRow getById(final DocumentId rowId) throws EntityNotFoundException
 	{
-		return rows.getById(rowId);
+		final OLCandRowId olCandRowId = OLCandRowId.fromDocumentId(rowId);
+		if (olCandRowId.isGroupRowId())
+		{
+			return rows.getById(olCandRowId);
+		}
+		else
+		{
+			return rows.getById(olCandRowId.toGroupRowId()).getIncludedRowById(olCandRowId);
+		}
 	}
 
 	@Override
@@ -194,6 +211,11 @@ public class OLCandView implements IEditableView
 		return rows.streamByIds(rowIds);
 	}
 
+	public List<OLCandRow> getRows()
+	{
+		return rows.getAll();
+	}
+
 	@Override
 	public void notifyRecordsChanged(final Set<TableRecordReference> recordRefs)
 	{
@@ -202,7 +224,12 @@ public class OLCandView implements IEditableView
 	@Override
 	public void patchViewRow(final RowEditingContext ctx, final List<JSONDocumentChangedEvent> fieldChangeRequests)
 	{
-		rows.patchRow(ctx.getRowId(), fieldChangeRequests);
+		final OLCandRowId rowId = OLCandRowId.fromDocumentId(ctx.getRowId());
+		rows.patchRow(rowId, fieldChangeRequests);
+
+		// i.e. notify frontend that given row and it's parent changed.
+		// better invalidate all then trying to figure out which rows where changed, precisely
+		invalidateAll();
 	}
 
 	@Override

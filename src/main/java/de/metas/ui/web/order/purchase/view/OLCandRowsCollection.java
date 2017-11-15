@@ -14,9 +14,8 @@ import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.ui.web.exceptions.EntityNotFoundException;
-import de.metas.ui.web.order.purchase.view.OLCandRow.OLCandRowBuilder;
+import de.metas.ui.web.handlingunits.OLCandRowId;
 import de.metas.ui.web.view.IViewRow;
-import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import lombok.NonNull;
@@ -52,13 +51,13 @@ class OLCandRowsCollection
 		return new OLCandRowsCollection(rowsSupplier);
 	}
 
-	private final ConcurrentMap<DocumentId, OLCandRow> rowsById;
+	private final ConcurrentMap<OLCandRowId, OLCandRow> rowsById;
 
 	private OLCandRowsCollection(@NonNull final OLCandRowsSupplier rowsSupplier)
 	{
 		rowsById = rowsSupplier.retrieveRows()
 				.stream()
-				.collect(Collectors.toConcurrentMap(OLCandRow::getId, Function.identity()));
+				.collect(Collectors.toConcurrentMap(OLCandRow::getRowId, Function.identity()));
 	}
 
 	@Override
@@ -80,7 +79,13 @@ class OLCandRowsCollection
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	public OLCandRow getById(@NonNull final DocumentId rowId) throws EntityNotFoundException
+	public List<OLCandRow> getAll()
+	{
+		// there are not so many, so we can afford to return all of them
+		return ImmutableList.copyOf(rowsById.values());
+	}
+
+	public OLCandRow getById(@NonNull final OLCandRowId rowId) throws EntityNotFoundException
 	{
 		final OLCandRow row = rowsById.get(rowId);
 		if (row == null)
@@ -98,48 +103,66 @@ class OLCandRowsCollection
 		}
 		else
 		{
-			return rowIds.stream().map(this::getById);
+			return rowIds.stream()
+					.map(OLCandRowId::fromDocumentId)
+					.map(this::getById);
 		}
 	}
 
-	private void updateRow(@NonNull final DocumentId rowId, @NonNull final Function<OLCandRow, OLCandRow> mapper)
+	private void updateRow(@NonNull final OLCandRowId rowId, @NonNull final OLCandViewRowEditor editor)
 	{
-		rowsById.compute(rowId, (k, existingRow) -> {
-			if (existingRow == null)
+		rowsById.compute(rowId.toGroupRowId(), (groupRowId, groupRow) -> {
+			if (groupRow == null)
 			{
-				throw new EntityNotFoundException("Row not found").setParameter("rowId", rowId);
+				throw new EntityNotFoundException("Row not found").setParameter("rowId", groupRowId);
 			}
-			return mapper.apply(existingRow);
+
+			final OLCandRow newGroupRow = groupRow.copy();
+			if (rowId.isGroupRowId())
+			{
+				final OLCandRowId includedRowId = null;
+				editor.edit(newGroupRow, includedRowId);
+			}
+			else
+			{
+				final OLCandRowId includedRowId = rowId;
+				editor.edit(newGroupRow, includedRowId);
+			}
+
+			return newGroupRow;
 		});
 	}
 
-	public void patchRow(final DocumentId rowId, final List<JSONDocumentChangedEvent> fieldChangeRequests)
+	public void patchRow(final OLCandRowId rowId, final List<JSONDocumentChangedEvent> fieldChangeRequests)
 	{
-		updateRow(rowId, row -> patchRow(row, fieldChangeRequests));
+		updateRow(rowId, (groupRow, includedRowId) -> applyFieldChangeRequests(groupRow, includedRowId, fieldChangeRequests));
 	}
 
-	private OLCandRow patchRow(final OLCandRow row, final List<JSONDocumentChangedEvent> fieldChangeRequests)
+	private void applyFieldChangeRequests(final OLCandRow editableGroupRow, final OLCandRowId includedRowId, final List<JSONDocumentChangedEvent> fieldChangeRequests)
 	{
-		final OLCandRowBuilder newRowBuilder = row.toBuilder();
 		for (final JSONDocumentChangedEvent fieldChangeRequest : fieldChangeRequests)
 		{
 			final String fieldName = fieldChangeRequest.getPath();
 			if (OLCandRow.FIELDNAME_QtyToPurchase.equals(fieldName))
 			{
 				final BigDecimal qtyToPurchase = fieldChangeRequest.getValueAsBigDecimal();
-				newRowBuilder.qtyToPurchase(qtyToPurchase);
+				editableGroupRow.changeQtyToPurchase(includedRowId, qtyToPurchase);
 			}
 			else if (OLCandRow.FIELDNAME_DatePromised.equals(fieldName))
 			{
 				final Date datePromised = fieldChangeRequest.getValueAsDateTime();
-				newRowBuilder.datePromised(datePromised);
+				editableGroupRow.changeDatePromised(includedRowId, datePromised);
 			}
 			else
 			{
-				throw new AdempiereException("Field " + fieldName + " is not editable").setParameter("row", row);
+				throw new AdempiereException("Field " + fieldName + " is not editable").setParameter("row", editableGroupRow);
 			}
 		}
+	}
 
-		return newRowBuilder.build();
+	@FunctionalInterface
+	private static interface OLCandViewRowEditor
+	{
+		void edit(final OLCandRow editableGroupRow, final OLCandRowId includedRowId);
 	}
 }

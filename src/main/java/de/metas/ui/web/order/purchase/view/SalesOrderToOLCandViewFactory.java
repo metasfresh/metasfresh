@@ -1,8 +1,8 @@
 package de.metas.ui.web.order.purchase.view;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.util.List;
-import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
@@ -17,9 +17,9 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.RemovalNotification;
 import com.google.common.collect.ImmutableList;
 
-import de.metas.interfaces.I_C_BPartner_Product;
 import de.metas.purchasing.api.IBPartnerProductDAO;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
+import de.metas.ui.web.handlingunits.OLCandRowId;
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewFactory;
@@ -29,7 +29,6 @@ import de.metas.ui.web.view.ViewFactory;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.view.json.JSONViewDataType;
-import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 
@@ -79,7 +78,7 @@ public class SalesOrderToOLCandViewFactory implements IViewFactory, IViewsIndexS
 				.setWindowId(windowId)
 				//
 				.setHasAttributesSupport(false)
-				.setHasTreeSupport(false)
+				.setHasTreeSupport(true)
 				//
 				.addElementsFromViewRowClass(OLCandRow.class, viewDataType)
 				//
@@ -165,28 +164,41 @@ public class SalesOrderToOLCandViewFactory implements IViewFactory, IViewsIndexS
 				.addInArrayFilter(I_C_OrderLine.COLUMNNAME_C_OrderLine_ID, request.getSalesOrderLineIds())
 				.create()
 				.stream(I_C_OrderLine.class)
-				.flatMap(this::createOLCandRows)
+				.map(this::createOLCandRow)
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	private Stream<OLCandRow> createOLCandRows(final I_C_OrderLine salesOrderLine)
+	private OLCandRow createOLCandRow(final I_C_OrderLine salesOrderLine)
 	{
-		return Services.get(IBPartnerProductDAO.class)
+		final int salesOrderLineId = salesOrderLine.getC_OrderLine_ID();
+		final JSONLookupValue product = createProductLookupValue(salesOrderLine.getM_Product());
+		final BigDecimal qtyToDeliver = salesOrderLine.getQtyOrdered().subtract(salesOrderLine.getQtyDelivered());
+		final Timestamp datePromised = salesOrderLine.getDatePromised();
+
+		final ImmutableList<OLCandRow> olCandRows = Services.get(IBPartnerProductDAO.class)
 				.retrieveAllVendors(salesOrderLine.getM_Product_ID(), salesOrderLine.getAD_Org_ID())
 				.stream()
-				.map(vendorProductInfo -> createOLCandRow(salesOrderLine, vendorProductInfo));
-	}
+				.map(vendorProductInfo -> OLCandRow.builder()
+						.rowId(OLCandRowId.lineId(salesOrderLineId, vendorProductInfo.getC_BPartner_ID()))
+						.rowType(OLCandRowType.LINE)
+						.product(product)
+						.datePromised(salesOrderLine.getDatePromised())
+						.qtyToPurchase(BigDecimal.ZERO)
+						.vendorBPartner(createBPartnerLookupValue(vendorProductInfo.getC_BPartner()))
+						.build())
+				.collect(ImmutableList.toImmutableList());
 
-	private OLCandRow createOLCandRow(final I_C_OrderLine salesOrderLine, final I_C_BPartner_Product vendorProductInfo)
-	{
-		return OLCandRow.builder()
-				.rowId(DocumentId.ofString(UUID.randomUUID().toString()))
-				.product(createProductLookupValue(salesOrderLine.getM_Product()))
-				.qtyToDeliver(salesOrderLine.getQtyOrdered().subtract(salesOrderLine.getQtyDelivered()))
-				.datePromised(salesOrderLine.getDatePromised())
+		final OLCandRow orderLineGrouppingRow = OLCandRow.builder()
+				.rowId(OLCandRowId.groupId(salesOrderLineId))
+				.rowType(OLCandRowType.GROUP)
+				.product(product)
+				.qtyToDeliver(qtyToDeliver)
 				.qtyToPurchase(BigDecimal.ZERO)
-				.vendorBPartner(createBPartnerLookupValue(vendorProductInfo.getC_BPartner()))
+				.datePromised(datePromised)
+				.includedRows(olCandRows)
 				.build();
+
+		return orderLineGrouppingRow;
 	}
 
 	private static JSONLookupValue createProductLookupValue(final I_M_Product product)
