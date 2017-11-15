@@ -3,11 +3,6 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import TableCell from './TableCell';
 
-// Widgets IDs which allowed to be edited in field edit mode
-const FIELD_EDIT_WIDGET_TYPES = [
-    'CostPrice'
-];
-
 const VIEW_EDITOR_RENDER_MODES = [
     'never',
     'on-demand',
@@ -139,7 +134,8 @@ class TableItem extends Component {
     }
 
     isAllowedFieldEdit = (item) => {
-        return item.viewEditorRenderMode === VIEW_EDITOR_RENDER_MODES[1];
+        return item.viewEditorRenderMode === 
+            VIEW_EDITOR_RENDER_MODES[1];
     }
 
     renderCells = (cols, cells) => {
@@ -164,9 +160,8 @@ class TableItem extends Component {
         } else {
             return cols && cols.map((item, index) => {
                 const {supportZoomInto} = item.fields[0];
-                const supportFieldEdit = mainTable &&
+                const supportFieldEdit = mainTable && 
                     this.isAllowedFieldEdit(item);
-                    
                 const property = item.fields[0].field;
                 let isEditable = item.viewEditorRenderMode === VIEW_EDITOR_RENDER_MODES[2];
                 let widgetData = item.fields.map(
