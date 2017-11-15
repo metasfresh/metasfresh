@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <launchConfiguration type="org.eclipse.jdt.launching.localJavaApplication">
+<stringAttribute key="bad_container_name" value="\metasfresh-dist\swing"/>
 <listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_PATHS">
-<listEntry value="/swingui/src/main/java/de/metas/SwingUIApplication.java"/>
+<listEntry value="/metasfresh-dist-swingui/src/main/java/de/metas/SwingUIApplication.java"/>
 </listAttribute>
 <listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_TYPES">
 <listEntry value="1"/>
