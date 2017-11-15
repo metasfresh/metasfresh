@@ -181,23 +181,21 @@ public class SalesOrderToOLCandViewFactory implements IViewFactory, IViewsIndexS
 						.rowId(OLCandRowId.lineId(salesOrderLineId, vendorProductInfo.getC_BPartner_ID()))
 						.rowType(OLCandRowType.LINE)
 						.product(product)
-						.datePromised(salesOrderLine.getDatePromised())
-						.qtyToPurchase(BigDecimal.ZERO)
+						.datePromised(datePromised)
 						.vendorBPartner(createBPartnerLookupValue(vendorProductInfo.getC_BPartner()))
 						.build())
 				.collect(ImmutableList.toImmutableList());
 
-		final OLCandRow orderLineGrouppingRow = OLCandRow.builder()
+		final OLCandRow groupRow = OLCandRow.builder()
 				.rowId(OLCandRowId.groupId(salesOrderLineId))
 				.rowType(OLCandRowType.GROUP)
 				.product(product)
 				.qtyToDeliver(qtyToDeliver)
-				.qtyToPurchase(BigDecimal.ZERO)
 				.datePromised(datePromised)
 				.includedRows(olCandRows)
 				.build();
 
-		return orderLineGrouppingRow;
+		return groupRow;
 	}
 
 	private static JSONLookupValue createProductLookupValue(final I_M_Product product)

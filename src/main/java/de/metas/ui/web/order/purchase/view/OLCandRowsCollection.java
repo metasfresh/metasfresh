@@ -139,6 +139,11 @@ class OLCandRowsCollection
 
 	private void applyFieldChangeRequests(final OLCandRow editableGroupRow, final OLCandRowId includedRowId, final List<JSONDocumentChangedEvent> fieldChangeRequests)
 	{
+		if (includedRowId == null)
+		{
+			throw new AdempiereException("Only included rows are editable");
+		}
+
 		for (final JSONDocumentChangedEvent fieldChangeRequest : fieldChangeRequests)
 		{
 			final String fieldName = fieldChangeRequest.getPath();

@@ -96,14 +96,14 @@ public class OLCandRow implements IViewRow
 	//
 	private transient ImmutableMap<String, Object> _fieldNameAndJsonValues; // lazy
 
-	@Builder(toBuilder = true)
+	@Builder
 	private OLCandRow(
 			@NonNull final OLCandRowId rowId,
 			@NonNull final IViewRowType rowType,
 			@NonNull final JSONLookupValue product,
 			@Nullable final JSONLookupValue vendorBPartner,
 			@Nullable final BigDecimal qtyToDeliver,
-			@NonNull final BigDecimal qtyToPurchase,
+			@Nullable final BigDecimal qtyToPurchase,
 			@Nullable final Date datePromised,
 			@NonNull @Singular final ImmutableList<OLCandRow> includedRows)
 	{
@@ -112,7 +112,7 @@ public class OLCandRow implements IViewRow
 		this.product = product;
 		this.vendorBPartner = vendorBPartner;
 		this.qtyToDeliver = qtyToDeliver;
-		this.qtyToPurchase = qtyToPurchase;
+		this.qtyToPurchase = qtyToPurchase != null ? qtyToPurchase : BigDecimal.ZERO;
 
 		Check.assume(rowType == OLCandRowType.GROUP || datePromised != null, "datePromised shall not be null");
 		this.datePromised = datePromised;
@@ -124,6 +124,11 @@ public class OLCandRow implements IViewRow
 		this.includedRows = includedRows;
 		includedRowsByRowId = includedRows.stream()
 				.collect(ImmutableMap.toImmutableMap(OLCandRow::getRowId, Function.identity()));
+
+		if (rowType == OLCandRowType.GROUP)
+		{
+			updateQtyToPurchaseFromIncludedRows();
+		}
 	}
 
 	public OLCandRow copy()
@@ -223,7 +228,7 @@ public class OLCandRow implements IViewRow
 		}
 	}
 
-	public void changeQtyToPurchase(final OLCandRowId rowId, @NonNull final BigDecimal qtyToPurchase)
+	public void changeQtyToPurchase(@NonNull final OLCandRowId rowId, @NonNull final BigDecimal qtyToPurchase)
 	{
 		assertRowTypeIsGroup("row not editable");
 
@@ -233,7 +238,7 @@ public class OLCandRow implements IViewRow
 		updateQtyToPurchaseFromIncludedRows();
 	}
 
-	public void changeDatePromised(final OLCandRowId rowId, @NonNull final Date datePromised)
+	public void changeDatePromised(@NonNull final OLCandRowId rowId, @NonNull final Date datePromised)
 	{
 		assertRowTypeIsGroup("row not editable");
 
