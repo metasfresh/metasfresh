@@ -43,7 +43,7 @@ import lombok.NonNull;
 // JSON
 public abstract class DocumentId implements Serializable
 {
-	private static final transient String DOCUMENT_ID_PREFIX = "D";
+	public static final transient String DOCUMENT_ID_PREFIX = "D";
 
 	private static final transient int NEW_ID = -1;
 	
