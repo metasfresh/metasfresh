@@ -1,4 +1,4 @@
-DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_Invoice_Details_Sum ( IN c_invoice_id numeric);
+﻿DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_Invoice_Details_Sum ( IN c_invoice_id numeric);
 
 CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_Invoice_Details_Sum ( IN c_invoice_id numeric)
 RETURNS TABLE 

@@ -293,12 +293,10 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 
 	/**
 	 * NOTE: KEEP IN SYNC WITH {@link de.metas.handlingunits.shipmentschedule.spi.impl.InOutProducerFromShipmentScheduleWithHU#createShipmentHeader(I_M_ShipmentSchedule)}
-	 *
-	 * @param candidate
-	 * @return shipment which is still open for the shipment schedule (first) and it's shipper transportation
+	 * 
 	 */
 	@Override
-	public I_M_InOut getOpenShipmentScheduleOrNull(final IShipmentScheduleWithHU candidate, final Date movementDate)
+	public I_M_InOut getOpenShipmentOrNull(final IShipmentScheduleWithHU candidate, final Date movementDate)
 	{
 		final I_M_ShipmentSchedule shipmentSchedule = InterfaceWrapperHelper.create(candidate.getM_ShipmentSchedule(), I_M_ShipmentSchedule.class);
 
