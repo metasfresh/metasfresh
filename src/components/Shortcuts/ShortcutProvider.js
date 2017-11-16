@@ -4,7 +4,8 @@ import PropTypes from 'prop-types';
 export default class ShortcutProvider extends Component {
     static propTypes = {
         children: PropTypes.node,
-        hotkeys: PropTypes.object.isRequired
+        hotkeys: PropTypes.object.isRequired,
+        keymap: PropTypes.object.isRequired
     };
 
     static childContextTypes = {
@@ -72,32 +73,34 @@ export default class ShortcutProvider extends Component {
     };
 
     subscribe = (name, handler) => {
-        const { hotkeys } = this.props;
+        const { hotkeys, keymap } = this.props;
 
-        if (!(name in hotkeys)) {
+        if (!(name in this.props.keymap)) {
             console.warn(`There are no hotkeys defined for "${name}".`);
 
             return;
         }
 
-        const bucket = hotkeys[name];
+        const key = keymap[name].toUpperCase();
+        const bucket = hotkeys[key];
 
-        hotkeys[name] = [...bucket, handler];
+        hotkeys[key] = [...bucket, handler];
     };
 
     unsubscribe = (name, handler) => {
-        const { hotkeys } = this.props;
+        const { hotkeys, keymap } = this.props;
 
-        if (!(name in hotkeys)) {
+        if (!(name in this.props.keymap)) {
             console.warn(`There are no hotkeys defined for "${name}".`);
 
             return;
         }
 
-        const bucket = hotkeys[name];
+        const key = keymap[name].toUpperCase();
+        const bucket = hotkeys[key];
         let found = false;
 
-        hotkeys[name] = bucket.filter(_handler => {
+        hotkeys[key] = bucket.filter(_handler => {
             if (_handler === handler) {
                 found = true;
 

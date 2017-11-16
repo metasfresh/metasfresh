@@ -84,17 +84,22 @@ describe('ShortcutProvider', () => {
         it('should be able to subscribe to hotkeys', () => {
             const shortcutProvider = new ShortcutProvider;
 
-            const shortcut = 'ctrl+1';
+            const name = 'FOO';
+            const shortcut = 'CONTROL+1';
 
             const hotkeys = {
                 [shortcut]: []
             };
 
-            shortcutProvider.props = { hotkeys };
+            const keymap = {
+                [name]: shortcut
+            };
+
+            shortcutProvider.props = { hotkeys, keymap };
 
             const handler = () => {};
 
-            shortcutProvider.subscribe(shortcut, handler);
+            shortcutProvider.subscribe(name, handler);
 
             expect(shortcutProvider.props.hotkeys[shortcut]).to.include(handler);
         });
@@ -106,8 +111,9 @@ describe('ShortcutProvider', () => {
                 const shortcutProvider = new ShortcutProvider;
 
                 const hotkeys = {};
+                const keymap = {}
 
-                shortcutProvider.props = { hotkeys };
+                shortcutProvider.props = { hotkeys, keymap };
 
                 const handler = () => {};
 
@@ -126,16 +132,20 @@ describe('ShortcutProvider', () => {
         it('should be able to unsubscribe from hotkeys', () => {
             const shortcutProvider = new ShortcutProvider;
 
-            const shortcut = 'ctrl+1';
+            const name = 'FOO';
+            const shortcut = 'CONTROL+1';
             const handler = () => {};
 
             shortcutProvider.props = {
                 hotkeys: {
                     [shortcut]: [ handler ]
+                },
+                keymap: {
+                    [name]: shortcut
                 }
             };
 
-            shortcutProvider.unsubscribe(shortcut, handler);
+            shortcutProvider.unsubscribe(name, handler);
 
             expect(shortcutProvider.props.hotkeys[shortcut]).to.not.include(handler);
         });
@@ -143,7 +153,8 @@ describe('ShortcutProvider', () => {
         it('should not modify other handlers when unsubscribing', () => {
             const shortcutProvider = new ShortcutProvider;
 
-            const shortcut = 'ctrl+1';
+            const name = 'FOO';
+            const shortcut = 'CONTROL+1';
 
             const handler1 = () => {};
             const handler2 = () => {};
@@ -152,10 +163,13 @@ describe('ShortcutProvider', () => {
             shortcutProvider.props = {
                 hotkeys: {
                     [shortcut]: [ handler1, handler2, handler3 ]
+                },
+                keymap: {
+                    [name]: shortcut
                 }
             };
 
-            shortcutProvider.unsubscribe(shortcut, handler2);
+            shortcutProvider.unsubscribe(name, handler2);
 
             expect(shortcutProvider.props.hotkeys[shortcut]).to.deep.equal([
                 handler1, handler3
@@ -168,7 +182,7 @@ describe('ShortcutProvider', () => {
             try {
                 const shortcutProvider = new ShortcutProvider;
 
-                shortcutProvider.props = { hotkeys: {} };
+                shortcutProvider.props = { hotkeys: {}, keymap: {} };
 
                 const handler = () => {};
 
@@ -188,17 +202,21 @@ describe('ShortcutProvider', () => {
             try {
                 const shortcutProvider = new ShortcutProvider;
 
-                const shortcut = 'ctrl+1';
+                const name = 'FOO';
+                const shortcut = 'CONTROL+1';
 
                 shortcutProvider.props = {
                     hotkeys:  {
                         [shortcut]: []
+                    },
+                    keymap: {
+                        [name]: shortcut
                     }
                 };
 
                 const handler = () => {};
 
-                shortcutProvider.unsubscribe(shortcut, handler);
+                shortcutProvider.unsubscribe(name, handler);
 
                 expect(warn).to.have.been.called;
             } catch (error) {
