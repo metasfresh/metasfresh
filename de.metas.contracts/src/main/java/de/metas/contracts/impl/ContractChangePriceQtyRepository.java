@@ -47,7 +47,25 @@ import lombok.NonNull;
 @Component
 public class ContractChangePriceQtyRepository
 {
-	public void changeFlatrateTermPrice(@NonNull final I_C_Flatrate_Term term, @NonNull final BigDecimal price)
+	public void changePriceIfNeeded(@NonNull final I_C_Flatrate_Term contract, final BigDecimal priceActual)
+	{
+		if (priceActual != null)
+		{
+			changeFlatrateTermPrice(contract, priceActual);
+		}
+	}
+
+	public void changeQtyIfNeeded(@NonNull final I_C_Flatrate_Term contract, final BigDecimal plannedQtyPerUnit)
+	{
+		if (plannedQtyPerUnit != null)
+		{
+			changeFlatrateTermQty(contract, plannedQtyPerUnit);
+			changeQtyInSubscriptionProgressOfFlatrateTerm(contract, plannedQtyPerUnit);
+		}
+	}
+
+
+	private void changeFlatrateTermPrice(@NonNull final I_C_Flatrate_Term term, @NonNull final BigDecimal price)
 	{
 		term.setPriceActual(price);
 		InterfaceWrapperHelper.save(term);
@@ -55,7 +73,7 @@ public class ContractChangePriceQtyRepository
 		invalidateInvoiceCandidatesOfFlatrateTerm(term);
 	}
 
-	public void changeFlatrateTermQty(@NonNull final I_C_Flatrate_Term term, @NonNull final BigDecimal qty)
+	private void changeFlatrateTermQty(@NonNull final I_C_Flatrate_Term term, @NonNull final BigDecimal qty)
 	{
 		term.setPlannedQtyPerUnit(qty);
 		InterfaceWrapperHelper.save(term);
@@ -68,7 +86,7 @@ public class ContractChangePriceQtyRepository
 		Services.get(IInvoiceCandidateHandlerBL.class).invalidateCandidatesFor(term);
 	}
 
-	public void changeQtyInSubscriptionProgressOfFlatrateTerm(@NonNull final I_C_Flatrate_Term term, @NonNull final BigDecimal qty)
+	private void changeQtyInSubscriptionProgressOfFlatrateTerm(@NonNull final I_C_Flatrate_Term term, @NonNull final BigDecimal qty)
 	{
 		final ISubscriptionDAO subscriptionPA = Services.get(ISubscriptionDAO.class);
 

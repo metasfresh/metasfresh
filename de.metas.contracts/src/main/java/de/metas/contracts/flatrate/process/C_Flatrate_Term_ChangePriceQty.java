@@ -8,7 +8,6 @@ import de.metas.contracts.impl.ContractChangePriceQtyRepository;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
-import lombok.NonNull;
 
 public class C_Flatrate_Term_ChangePriceQty extends JavaProcess
 {
@@ -29,25 +28,8 @@ public class C_Flatrate_Term_ChangePriceQty extends JavaProcess
 	protected String doIt()
 	{
 		final I_C_Flatrate_Term contract = getRecord(I_C_Flatrate_Term.class);
-		changePriceIfNeeded(contract);
-		changeQtyIfNeeded(contract);
+		contractsRepository.changePriceIfNeeded(contract, priceActual);
+		contractsRepository.changeQtyIfNeeded(contract, plannedQtyPerUnit);
 		return "@Success@";
-	}
-
-	private void changePriceIfNeeded(@NonNull final I_C_Flatrate_Term contract )
-	{
-		if (priceActual != null)
-		{
-			contractsRepository.changeFlatrateTermPrice(contract, priceActual);
-		}
-	}
-
-	private void changeQtyIfNeeded(@NonNull final I_C_Flatrate_Term contract )
-	{
-		if (plannedQtyPerUnit != null)
-		{
-			contractsRepository.changeFlatrateTermQty(contract, plannedQtyPerUnit);
-			contractsRepository.changeQtyInSubscriptionProgressOfFlatrateTerm(contract, plannedQtyPerUnit);
-		}
 	}
 }
