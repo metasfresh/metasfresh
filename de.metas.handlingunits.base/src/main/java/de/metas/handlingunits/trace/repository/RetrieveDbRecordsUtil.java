@@ -140,7 +140,6 @@ public class RetrieveDbRecordsUtil
 					.sorted()
 					.distinct()
 					.collect(Collectors.toList());
-
 		}
 
 		public List<I_M_HU_Trace> getList()
@@ -176,14 +175,25 @@ public class RetrieveDbRecordsUtil
 		}
 
 		@Override
-		public void addAll(@NonNull final Result result)
+		public void addAll(@NonNull final Result resultToAdd)
 		{
-			final SelectionResult selectionResult = (SelectionResult)result;
-
-			final IQuery<I_M_HU_Trace> query = Services.get(IQueryBL.class).createQueryBuilder(I_M_HU_Trace.class)
-					.setOnlySelection(selectionResult.getSelectionId())
-					.create();
-			executeQueryAndAddAll(query);
+			final SelectionResult selectionResultToAdd = (SelectionResult)resultToAdd;
+			if (selectionResultToAdd.getSelectionId() <= 0)
+			{
+				return; // result contains nothing to add
+			}
+			if (selectionId <= 0)
+			{
+				// performance: we don't really need to add anything but can just take the "pointer" from selectionResultToAdd
+				selectionId = selectionResultToAdd.getSelectionId();
+			}
+			else
+			{
+				final IQuery<I_M_HU_Trace> query = Services.get(IQueryBL.class).createQueryBuilder(I_M_HU_Trace.class)
+						.setOnlySelection(selectionResultToAdd.getSelectionId())
+						.create();
+				executeQueryAndAddAll(query);
+			}
 		}
 
 		@Override
@@ -216,7 +226,6 @@ public class RetrieveDbRecordsUtil
 			@NonNull final HUTraceEventQuery huTraceEventQuery,
 			@NonNull final EmptyResultOfSameClassCreator provider)
 	{
-
 		final Result resultOut = provider.newEmptyResult();
 
 		final IQueryBuilder<I_M_HU_Trace> queryBuilder = createQueryBuilderOrNull(huTraceEventQuery);
@@ -410,8 +419,10 @@ public class RetrieveDbRecordsUtil
 					.vhuSourceId(vhuId)
 					.recursionMode(RecursionMode.NONE)
 					.build();
-			final Result directFollowUpRecordsResult = queryDbRecord(directFollowUpRecordsQuery, resultIn);
-
+			final Result directFollowUpRecordsResult = queryDbRecord(
+					directFollowUpRecordsQuery,
+					resultIn.newEmptyResult() // newEmptyResult, because we don't want to iterate the VhuIDs we already collected so far
+			);
 			final List<Integer> directFollowupVhuIDs = directFollowUpRecordsResult.getVhuIds();
 
 			// and now expand on those direct follow ups
