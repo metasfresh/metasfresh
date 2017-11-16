@@ -342,9 +342,7 @@ class Header extends Component {
                                     }
                                     onMouseEnter={() =>
                                         this.toggleTooltip(
-                                            keymap
-                                                .GLOBAL_CONTEXT
-                                                .OPEN_ACTIONS_MENU
+                                            keymap.OPEN_ACTIONS_MENU
                                         )
                                     }
                                     onMouseLeave={() => this.toggleTooltip('')}
@@ -360,12 +358,10 @@ class Header extends Component {
                                     <i className="meta-icon-more" />
 
                                     {tooltipOpen ===
-                                        keymap.GLOBAL_CONTEXT.OPEN_ACTIONS_MENU
+                                        keymap.OPEN_ACTIONS_MENU
                                         && <Tooltips
                                             name={
-                                                keymap
-                                                    .GLOBAL_CONTEXT
-                                                    .OPEN_ACTIONS_MENU
+                                                keymap.OPEN_ACTIONS_MENU
                                             }
                                             action={
                                                 counterpart.translate(
@@ -404,9 +400,7 @@ class Header extends Component {
                                         onClick={() => this.toggleTooltip('')}
                                         onMouseEnter={() =>
                                             this.toggleTooltip(
-                                                keymap
-                                                    .GLOBAL_CONTEXT
-                                                    .DOC_STATUS
+                                                keymap.DOC_STATUS
                                             )
                                         }
                                         onMouseLeave={() =>
@@ -426,14 +420,10 @@ class Header extends Component {
                                             {...docStatus}
                                         />
                                         { tooltipOpen ===
-                                            keymap
-                                                .GLOBAL_CONTEXT
-                                                .DOC_STATUS
+                                            keymap.DOC_STATUS
                                             && <Tooltips
                                                 name={
-                                                    keymap
-                                                        .GLOBAL_CONTEXT
-                                                        .DOC_STATUS
+                                                    keymap.DOC_STATUS
                                                 }
                                                 action= {
                                                 counterpart.translate(
@@ -459,9 +449,7 @@ class Header extends Component {
                                     )}
                                     onMouseEnter={() =>
                                         this.toggleTooltip(
-                                            keymap
-                                                .GLOBAL_CONTEXT
-                                                .OPEN_INBOX_MENU
+                                            keymap.OPEN_INBOX_MENU
                                         )
                                     }
                                     onMouseLeave={() => this.toggleTooltip('')}
@@ -481,14 +469,10 @@ class Header extends Component {
                                         }
                                     </span>
                                     { tooltipOpen ===
-                                        keymap
-                                            .GLOBAL_CONTEXT
-                                            .OPEN_INBOX_MENU &&
+                                        keymap.OPEN_INBOX_MENU &&
                                         <Tooltips
                                             name={
-                                                keymap
-                                                    .GLOBAL_CONTEXT
-                                                    .OPEN_INBOX_MENU
+                                                keymap.OPEN_INBOX_MENU
                                             }
                                             action= {
                                                 counterpart.translate(
@@ -513,7 +497,7 @@ class Header extends Component {
                                     disableOnClickOutside={!isUDOpen}
                                     redirect={this.redirect}
                                     shortcut={
-                                        keymap.GLOBAL_CONTEXT.OPEN_AVATAR_MENU
+                                        keymap.OPEN_AVATAR_MENU
                                     }
                                     toggleTooltip={this.toggleTooltip}
                                     tooltipOpen={tooltipOpen}
@@ -536,9 +520,7 @@ class Header extends Component {
                                         }}
                                         onMouseEnter={() =>
                                             this.toggleTooltip(
-                                                keymap
-                                                    .GLOBAL_CONTEXT
-                                                    .OPEN_SIDEBAR_MENU_0
+                                                keymap.OPEN_SIDEBAR_MENU_0
                                             )
                                         }
                                         onMouseLeave={() =>
@@ -547,14 +529,10 @@ class Header extends Component {
                                     >
                                         <i className="meta-icon-list" />
                                         { tooltipOpen ===
-                                            keymap
-                                                .GLOBAL_CONTEXT
-                                                .OPEN_SIDEBAR_MENU_0 &&
+                                            keymap.OPEN_SIDEBAR_MENU_0 &&
                                             <Tooltips
                                                 name={
-                                                    keymap
-                                                        .GLOBAL_CONTEXT
-                                                        .OPEN_SIDEBAR_MENU_0
+                                                    keymap.OPEN_SIDEBAR_MENU_0
                                                 }
                                                 action={counterpart.translate(
                                                     /* eslint-disable max-len */

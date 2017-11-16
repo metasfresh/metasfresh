@@ -143,7 +143,7 @@ class Breadcrumb extends Component {
                 {tooltipOpen &&
                     <Tooltips
                         extraClass="tooltip-home-menu"
-                        name={keymap.GLOBAL_CONTEXT.OPEN_NAVIGATION_MENU}
+                        name={keymap.OPEN_NAVIGATION_MENU}
                         action= {
                             counterpart.translate(
                                 'mainScreen.navigation.tooltip'

@@ -222,7 +222,7 @@ class FiltersItem extends Component {
                             {counterpart.translate('window.apply.caption')}
                             {isTooltipShow &&
                                 <Tooltips
-                                    name={keymap.MODAL_CONTEXT.APPLY}
+                                    name={keymap.APPLY}
                                     action={counterpart.translate('window.apply.caption')}
                                     type={''}
                                 />

@@ -149,7 +149,7 @@ class RawModal extends Component {
                                 {counterpart.translate('modal.actions.done')}
                             {isTooltipShow &&
                                 <Tooltips
-                                    name={keymap.MODAL_CONTEXT.APPLY}
+                                    name={keymap.APPLY}
                                     action={counterpart.translate('modal.actions.done')}
                                     type={''}
                                 />

@@ -153,7 +153,7 @@ class TableContextMenu extends Component {
                     >
                         <i className="meta-icon-edit" /> Advanced edit
                         <span className="tooltip-inline">
-                            {keymap.DOCUMENT_LIST_CONTEXT.ADVANCED_EDIT}
+                            {keymap.ADVANCED_EDIT}
                         </span>
                     </div>
                 }
@@ -165,7 +165,7 @@ class TableContextMenu extends Component {
                 >
                     <i className="meta-icon-file" /> Open in new tab
                     <span className="tooltip-inline">
-                        {keymap.DOCUMENT_LIST_CONTEXT.OPEN_SELECTED}
+                        {keymap.OPEN_SELECTED}
                     </span>
                 </div>
                 }
@@ -174,7 +174,7 @@ class TableContextMenu extends Component {
                     <div className="context-menu-item" onClick={handleDelete}>
                         <i className="meta-icon-trash" /> Delete
                         <span className="tooltip-inline">
-                            {keymap.DOCUMENT_LIST_CONTEXT.REMOVE_SELECTED}
+                            {keymap.REMOVE_SELECTED}
                         </span>
                     </div>
                 }

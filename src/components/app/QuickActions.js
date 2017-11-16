@@ -222,7 +222,7 @@ class QuickActions extends Component {
                             {isTooltip &&
                                 <Tooltips
                                     name={
-                                        keymap.QUICK_ACTIONS.QUICK_ACTION_TOGGLE
+                                        keymap.QUICK_ACTION_TOGGLE
                                     }
                                     action={
                                             'Toggle list'
