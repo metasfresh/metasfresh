@@ -50,7 +50,11 @@ export default class ShortcutProvider extends Component {
 
         this.keySequence = [...keySequence, key];
 
-        const serializedSequence = this.keySequence.join('+').toUpperCase();
+        const serializedSequence = (this.keySequence
+            .join('+')
+            .replace(/\s/, 'space')
+            .toUpperCase()
+        );
 
         if (!(serializedSequence in hotkeys)) {
             return;
