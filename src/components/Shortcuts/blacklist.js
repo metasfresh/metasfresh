@@ -1,10 +1,16 @@
 const mods = [
-    'ctrl', // Windows, Linux
-    'cmd' // macOS
+    'Control', // Windows, Linux
+    'Meta' // macOS
 ];
 
-export default Object.assign(...mods.map(mod => ({
+export default Object.entries(Object.assign(...mods.map(mod => ({
     [`${mod}+l`]: 'Focus address bar',
     [`${mod}+t`]: 'New tab',
     [`${mod}+w`]: 'Close tab'
-})));
+})))).reduce((blacklist, pair) => {
+    const [key, value] = pair;
+
+    blacklist[key.toUpperCase()] = value;
+
+    return blacklist;
+}, {});

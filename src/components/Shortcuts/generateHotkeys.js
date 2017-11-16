@@ -1,7 +1,9 @@
 export default ({ keymap = {}, blacklist = {} } = {}) => {
     const hotkeys = {};
 
-    for (const [name, hotkey] of Object.entries(keymap)) {
+    for (const [name, _hotkey] of Object.entries(keymap)) {
+        const hotkey = _hotkey.toUpperCase();
+
         if (hotkey in blacklist) {
             const reason = blacklist[hotkey];
 

@@ -16,15 +16,15 @@ describe('generateHotkeys', () => {
 
     it('should transform a key map to a map of hotkeys', () => {
         const keymap = {
-            COMBO_A: 'ctrl+a',
-            COMBO_B: 'ctrl+b'
+            COMBO_A: 'CONTROL+A',
+            COMBO_B: 'CONTROL+B'
         };
 
         const hotkeys = generateHotkeys({ keymap });
 
         expect(hotkeys).to.deep.equal({
-            'ctrl+a': [],
-            'ctrl+b': []
+            'CONTROL+A': [],
+            'CONTROL+B': []
         });
     });
 
@@ -33,8 +33,8 @@ describe('generateHotkeys', () => {
 
         try {
             const keymap = {
-                COMBO_1: 'ctrl+a',
-                COMBO_2: 'ctrl+a'
+                COMBO_1: 'CONTROL+A',
+                COMBO_2: 'CONTROL+A'
             };
 
             generateHotkeys({ keymap });
@@ -52,11 +52,11 @@ describe('generateHotkeys', () => {
 
         try {
             const blacklist = {
-                'ctrl+w': 'Close tab'
+                'CONTROL+W': 'Close tab'
             };
 
             const keymap = {
-                COMBO_1: 'ctrl+w'
+                COMBO_1: 'CONTROL+W'
             };
 
             generateHotkeys({ keymap, blacklist });
