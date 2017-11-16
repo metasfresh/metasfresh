@@ -148,7 +148,7 @@ public class DemandCandiateHandler implements CandidateHandler
 				// notify whoever is in charge that we have a demand to balance
 				final BigDecimal requiredAdditionalQty = demandCandidate.getQuantity().subtract(availableQuantity);
 
-				final SupplyRequiredEvent materialDemandEvent = MaterialDemandEventCreator.createMaterialDemandEvent(demandCandidateWithId, requiredAdditionalQty);
+				final SupplyRequiredEvent materialDemandEvent = SupplyRequiredEventCreator.createMaterialDemandEvent(demandCandidateWithId, requiredAdditionalQty);
 				materialEventService.fireEvent(materialDemandEvent);
 			}
 		}

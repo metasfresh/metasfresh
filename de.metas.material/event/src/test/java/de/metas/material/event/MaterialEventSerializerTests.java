@@ -17,7 +17,7 @@ import org.junit.Test;
 
 import de.metas.event.SimpleObjectSerializer;
 import de.metas.material.event.commons.EventDescriptor;
-import de.metas.material.event.commons.MaterialDemandDescriptor;
+import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.ddorder.DDOrder;
 import de.metas.material.event.ddorder.DDOrderLine;
@@ -216,9 +216,9 @@ public class MaterialEventSerializerTests
 		assertEventEqualAfterSerializeDeserialize(materialDemandEvent);
 	}
 
-	private MaterialDemandDescriptor createMaterialDemandDescriptor()
+	private SupplyRequiredDescriptor createMaterialDemandDescriptor()
 	{
-		return MaterialDemandDescriptor.builder()
+		return SupplyRequiredDescriptor.builder()
 				.demandCandidateId(30)
 				.eventDescr(createEventDescriptor())
 				.forecastLineId(40)

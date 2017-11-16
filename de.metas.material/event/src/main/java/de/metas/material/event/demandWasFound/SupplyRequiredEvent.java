@@ -2,7 +2,7 @@ package de.metas.material.event.demandWasFound;
 
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.commons.EventDescriptor;
-import de.metas.material.event.commons.MaterialDemandDescriptor;
+import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -36,7 +36,7 @@ public class SupplyRequiredEvent implements MaterialEvent
 	public static final String TYPE = "MaterialDemandEvent";
 
 	@NonNull
-	MaterialDemandDescriptor materialDemandDescriptor;
+	SupplyRequiredDescriptor materialDemandDescriptor;
 
 
 	@Override

@@ -8,6 +8,7 @@ import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.Check;
 import org.adempiere.util.Loggables;
 import org.adempiere.util.PlainStringLoggable;
 import org.adempiere.util.Services;
@@ -27,8 +28,8 @@ import com.google.common.annotations.VisibleForTesting;
 import de.metas.material.event.DemandHandlerAuditEvent;
 import de.metas.material.event.MaterialEventService;
 import de.metas.material.event.commons.EventDescriptor;
-import de.metas.material.event.commons.MaterialDemandDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
+import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.ddorder.DDOrder;
 import de.metas.material.event.ddorder.DDOrderLine;
 import de.metas.material.event.ddorder.DistributionAdvisedEvent;
@@ -93,12 +94,12 @@ public class CommonDemandHandler
 	 *
 	 * @param materialDemandEvent
 	 */
-	public void handleMaterialDemandEvent(@NonNull final MaterialDemandDescriptor materialDemandDescr)
+	public void handleSupplyRequiredEvent(@NonNull final SupplyRequiredDescriptor descriptor)
 	{
 		final PlainStringLoggable plainStringLoggable = new PlainStringLoggable();
 		try (final IAutoCloseable closable = Loggables.temporarySetLoggable(plainStringLoggable);)
 		{
-			handleMaterialDemandEvent0(materialDemandDescr);
+			handleSupplyRequiredEvent0(descriptor);
 		}
 
 		if (!plainStringLoggable.isEmpty())
@@ -106,9 +107,9 @@ public class CommonDemandHandler
 			final List<String> singleMessages = plainStringLoggable.getSingleMessages();
 
 			final DemandHandlerAuditEvent demandHandlerAuditEvent = DemandHandlerAuditEvent.builder()
-					.eventDescriptor(materialDemandDescr.getEventDescr().createNew())
-					.descr(materialDemandDescr.getMaterialDescriptor())
-					.orderLineId(materialDemandDescr.getOrderLineId())
+					.eventDescriptor(descriptor.getEventDescr().createNew())
+					.descr(descriptor.getMaterialDescriptor())
+					.orderLineId(descriptor.getOrderLineId())
 					.messages(singleMessages)
 					.build();
 
@@ -116,7 +117,7 @@ public class CommonDemandHandler
 		}
 	}
 
-	private void handleMaterialDemandEvent0(@NonNull final MaterialDemandDescriptor materialDemandDescr)
+	private void handleSupplyRequiredEvent0(@NonNull final SupplyRequiredDescriptor materialDemandDescr)
 	{
 		final IMutableMRPContext mrpContext = mkMRPContext(materialDemandDescr);
 
@@ -131,7 +132,15 @@ public class CommonDemandHandler
 			{
 				for (final DDOrderLine ddOrderLine : ddOrder.getLines())
 				{
-					final I_DD_NetworkDistributionLine networkLine = InterfaceWrapperHelper.create(mrpContext.getCtx(), ddOrderLine.getNetworkDistributionLineId(), I_DD_NetworkDistributionLine.class, mrpContext.getTrxName());
+					Check.errorIf(ddOrderLine.getNetworkDistributionLineId() <= 0,
+							"Every DDOrderLine pojo created by this planner needs to have detworkDistributionLineId > 0, but this one hasn't; ddOrderLine={}",
+							ddOrderLine);
+
+					final I_DD_NetworkDistributionLine networkLine = InterfaceWrapperHelper.create(
+							mrpContext.getCtx(),
+							ddOrderLine.getNetworkDistributionLineId(),
+							I_DD_NetworkDistributionLine.class,
+							mrpContext.getTrxName());
 
 					final DistributionAdvisedEvent distributionPlanEvent = DistributionAdvisedEvent.builder()
 							.eventDescriptor(materialDemandDescr.getEventDescr().createNew())
@@ -161,7 +170,7 @@ public class CommonDemandHandler
 		}
 	}
 
-	private IMutableMRPContext mkMRPContext(@NonNull final MaterialDemandDescriptor materialDemandEvent)
+	private IMutableMRPContext mkMRPContext(@NonNull final SupplyRequiredDescriptor materialDemandEvent)
 	{
 		final EventDescriptor eventDescr = materialDemandEvent.getEventDescr();
 
@@ -209,7 +218,7 @@ public class CommonDemandHandler
 	}
 
 	private IMaterialRequest mkRequest(
-			@NonNull final MaterialDemandDescriptor materialDemandEvent,
+			@NonNull final SupplyRequiredDescriptor materialDemandEvent,
 			@NonNull final IMaterialPlanningContext mrpContext)
 	{
 		return MaterialRequest.builder()

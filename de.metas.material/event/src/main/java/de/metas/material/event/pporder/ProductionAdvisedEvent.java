@@ -4,7 +4,7 @@ import org.eevolution.model.I_PP_Order;
 
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.commons.EventDescriptor;
-import de.metas.material.event.commons.MaterialDemandDescriptor;
+import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -48,5 +48,5 @@ final public class ProductionAdvisedEvent implements MaterialEvent
 	@NonNull
 	PPOrder ppOrder;
 
-	MaterialDemandDescriptor materialDemandDescr;
+	SupplyRequiredDescriptor materialDemandDescr;
 }

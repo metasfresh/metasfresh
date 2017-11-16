@@ -32,7 +32,7 @@ import lombok.Value;
  */
 
 @Value // includes @AllArgsConstructor which is used by jackson when it deserializes a string
-public class MaterialDemandDescriptor
+public class SupplyRequiredDescriptor
 {
 	@NonNull
 	EventDescriptor eventDescr;
@@ -50,7 +50,7 @@ public class MaterialDemandDescriptor
 
 	@JsonCreator
 	@Builder
-	private MaterialDemandDescriptor(
+	private SupplyRequiredDescriptor(
 			@JsonProperty("eventDescr") @NonNull final EventDescriptor eventDescr,
 			@JsonProperty("materialDescriptor") @NonNull MaterialDescriptor materialDescriptor,
 			@JsonProperty("demandCandidateId") int demandCandidateId,

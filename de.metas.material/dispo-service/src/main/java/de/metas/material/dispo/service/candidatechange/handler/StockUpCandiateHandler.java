@@ -94,7 +94,7 @@ public class StockUpCandiateHandler implements CandidateHandler
 
 		if (requiredAdditionalQty.signum() > 0)
 		{
-			final SupplyRequiredEvent materialDemandEvent = MaterialDemandEventCreator //
+			final SupplyRequiredEvent materialDemandEvent = SupplyRequiredEventCreator //
 					.createMaterialDemandEvent(candidateWithQtyDeltaAndId, requiredAdditionalQty);
 			materialEventService.fireEvent(materialDemandEvent);
 		}

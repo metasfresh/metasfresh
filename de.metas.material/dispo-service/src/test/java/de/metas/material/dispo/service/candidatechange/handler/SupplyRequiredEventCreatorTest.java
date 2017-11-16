@@ -39,7 +39,7 @@ import de.metas.material.event.demandWasFound.SupplyRequiredEvent;
  * #L%
  */
 
-public class MaterialDemandEventCreatorTest
+public class SupplyRequiredEventCreatorTest
 {
 	@Test
 	public void createMaterialDemandEvent()
@@ -59,7 +59,7 @@ public class MaterialDemandEventCreatorTest
 						.warehouseId(WAREHOUSE_ID)
 						.build())
 				.build();
-		final SupplyRequiredEvent result = MaterialDemandEventCreator.createMaterialDemandEvent(demandCandidate, BigDecimal.TEN);
+		final SupplyRequiredEvent result = SupplyRequiredEventCreator.createMaterialDemandEvent(demandCandidate, BigDecimal.TEN);
 		assertThat(result).isNotNull();
 		assertThat(result.getEventDescriptor().getClientId()).isEqualTo(20);
 		assertThat(result.getEventDescriptor().getOrgId()).isEqualTo(30);

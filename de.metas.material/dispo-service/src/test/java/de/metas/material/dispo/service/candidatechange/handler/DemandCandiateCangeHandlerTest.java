@@ -31,7 +31,7 @@ import de.metas.material.dispo.model.X_MD_Candidate;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.MaterialEventService;
-import de.metas.material.event.commons.MaterialDemandDescriptor;
+import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.demandWasFound.SupplyRequiredEvent;
 import lombok.NonNull;
@@ -217,7 +217,7 @@ public class DemandCandiateCangeHandlerTest
 
 			assertThat(event).isInstanceOf(SupplyRequiredEvent.class);
 			final SupplyRequiredEvent materialDemandEvent = (SupplyRequiredEvent)event;
-			final MaterialDemandDescriptor materialDemandDescriptor = materialDemandEvent.getMaterialDemandDescriptor();
+			final SupplyRequiredDescriptor materialDemandDescriptor = materialDemandEvent.getMaterialDemandDescriptor();
 			assertThat(materialDemandDescriptor).isNotNull();
 
 			final MaterialDescriptor materialDescriptorOfEvent = materialDemandDescriptor.getMaterialDescriptor();

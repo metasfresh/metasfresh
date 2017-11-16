@@ -61,6 +61,6 @@ public class SupplyRequiredEventListener implements MaterialEventListener
 
 		final SupplyRequiredEvent materialDemandEvent = (SupplyRequiredEvent)event;
 
-		commonDemandHandler.handleMaterialDemandEvent(materialDemandEvent.getMaterialDemandDescriptor());
+		commonDemandHandler.handleSupplyRequiredEvent(materialDemandEvent.getMaterialDemandDescriptor());
 	}
 }
