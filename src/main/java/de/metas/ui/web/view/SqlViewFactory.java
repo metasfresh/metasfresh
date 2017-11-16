@@ -231,7 +231,7 @@ public class SqlViewFactory implements IViewFactory
 		final SqlViewBinding.Builder builder = createBuilderForEntityBindingAndFieldNames(entityBinding, displayFieldNames);
 
 		builder.setFilterDescriptors(filterDescriptors)
-				.setGroupingBinding(groupingBinding);;
+				.setGroupingBinding(groupingBinding);
 
 		if (windowId2SqlDocumentFilterConverterDecorator.containsKey(key.getWindowId()))
 		{
