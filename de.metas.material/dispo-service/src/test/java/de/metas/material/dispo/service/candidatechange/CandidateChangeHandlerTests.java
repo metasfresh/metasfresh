@@ -43,9 +43,9 @@ import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.service.candidatechange.handler.CandidateHandler;
 import de.metas.material.dispo.service.candidatechange.handler.DemandCandiateHandler;
 import de.metas.material.dispo.service.candidatechange.handler.SupplyCandiateHandler;
-import de.metas.material.event.MaterialDescriptor;
-import de.metas.material.event.MaterialDescriptor.DateOperator;
 import de.metas.material.event.MaterialEventService;
+import de.metas.material.event.commons.MaterialDescriptor;
+import de.metas.material.event.commons.MaterialDescriptor.DateOperator;
 import lombok.NonNull;
 import mockit.Mocked;
 

@@ -15,9 +15,10 @@ import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import de.metas.ShutdownListener;
 import de.metas.StartupListener;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.material.event.ShipmentScheduleEvent;
+import de.metas.material.event.shipmentschedule.ShipmentScheduleCreatedEvent;
 
 /*
  * #%L
@@ -43,7 +44,9 @@ import de.metas.material.event.ShipmentScheduleEvent;
 
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = { StartupListener.class, ModelProductDescriptorExtractorUsingAttributeSetInstanceFactory.class })
+@SpringBootTest(classes = { StartupListener.class,
+		ShutdownListener.class,
+		ModelProductDescriptorExtractorUsingAttributeSetInstanceFactory.class })
 public class M_ShipmentScheduleTest
 {
 
@@ -62,7 +65,7 @@ public class M_ShipmentScheduleTest
 		shipmentSchedule.setM_Warehouse_ID(30);
 		save(shipmentSchedule);
 
-		final ShipmentScheduleEvent result = M_ShipmentSchedule.INSTANCE
+		final ShipmentScheduleCreatedEvent result = M_ShipmentSchedule.INSTANCE
 				.createShipmentscheduleEvent(shipmentSchedule, ModelChangeType.AFTER_CHANGE);
 
 		assertThat(result).isNotNull();

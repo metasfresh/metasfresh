@@ -410,8 +410,10 @@ public class RetrieveDbRecordsUtil
 					.vhuSourceId(vhuId)
 					.recursionMode(RecursionMode.NONE)
 					.build();
-			final Result directFollowUpRecordsResult = queryDbRecord(directFollowUpRecordsQuery, resultIn);
-
+			final Result directFollowUpRecordsResult = queryDbRecord(
+					directFollowUpRecordsQuery,
+					resultIn.newEmptyResult() // newEmptyResult, because we don't want to iterate the VhuIDs we already collected so far
+			);
 			final List<Integer> directFollowupVhuIDs = directFollowUpRecordsResult.getVhuIds();
 
 			// and now expand on those direct follow ups

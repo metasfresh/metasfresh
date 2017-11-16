@@ -9,6 +9,7 @@ import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import de.metas.ShutdownListener;
 import de.metas.StartupListener;
 import de.metas.inoutcandidate.spi.impl.ShipmentScheduleOrderDocForOrderLine;
 
@@ -22,12 +23,12 @@ import de.metas.inoutcandidate.spi.impl.ShipmentScheduleOrderDocForOrderLine;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -36,9 +37,9 @@ import de.metas.inoutcandidate.spi.impl.ShipmentScheduleOrderDocForOrderLine;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = {
-		
+
 		// needed to register the spring context with the Adempiere main class
-		StartupListener.class,
+		StartupListener.class, ShutdownListener.class,
 
 		// needed so that the spring context can discover those two components. Note that there are other ways too, but this one is very fast
 		ShipmentScheduleReferencedLineFactory.class, ShipmentScheduleOrderDocForOrderLine.class

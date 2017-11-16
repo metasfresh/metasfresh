@@ -30,6 +30,7 @@ import org.adempiere.util.ISingletonService;
 import de.metas.contracts.flatrate.exceptions.SubscriptionChangeException;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import lombok.Builder;
+import lombok.Builder.Default;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -52,6 +53,8 @@ public interface IContractChangeBL extends ISingletonService
 		private final boolean isCloseInvoiceCandidate;
 		private final String terminationMemo;
 		private final String terminationReason;
+		@Default
+		private boolean isOnlyTerminateCurrentTerm = false;
 	}
 	
 	/**
@@ -82,4 +85,5 @@ public interface IContractChangeBL extends ISingletonService
 	 * @param term
 	 */
 	void endContract(I_C_Flatrate_Term term);
+
 }

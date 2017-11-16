@@ -15,17 +15,17 @@ import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.candidate.DistributionDetail;
 import de.metas.material.dispo.commons.candidate.ProductionDetail;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
-import de.metas.material.event.EventDescriptor;
 import de.metas.material.event.MaterialEventService;
+import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.ddorder.DDOrder;
 import de.metas.material.event.ddorder.DDOrder.DDOrderBuilder;
 import de.metas.material.event.ddorder.DDOrderLine;
 import de.metas.material.event.ddorder.DDOrderLine.DDOrderLineBuilder;
-import de.metas.material.event.ddorder.DDOrderRequestedEvent;
+import de.metas.material.event.ddorder.DistributionRequestedEvent;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrder.PPOrderBuilder;
 import de.metas.material.event.pporder.PPOrderLine;
-import de.metas.material.event.pporder.PPOrderRequestedEvent;
+import de.metas.material.event.pporder.ProductionRequestedEvent;
 import lombok.NonNull;
 
 /*
@@ -94,12 +94,12 @@ public class CandidateService
 
 	private void requestProductionOrder(@NonNull final List<Candidate> group)
 	{
-		final PPOrderRequestedEvent ppOrderRequestEvent = createPPOrderRequestEvent(group);
+		final ProductionRequestedEvent ppOrderRequestEvent = createPPOrderRequestEvent(group);
 		materialEventService.fireEvent(ppOrderRequestEvent);
 	}
 
 	@VisibleForTesting
-	PPOrderRequestedEvent createPPOrderRequestEvent(final List<Candidate> group)
+	ProductionRequestedEvent createPPOrderRequestEvent(final List<Candidate> group)
 	{
 		Preconditions.checkArgument(!group.isEmpty(), "Param 'group' is an empty list");
 
@@ -152,7 +152,7 @@ public class CandidateService
 
 		final Candidate firstGroupMember = group.get(0);
 
-		return PPOrderRequestedEvent.builder()
+		return ProductionRequestedEvent.builder()
 				.eventDescriptor(new EventDescriptor(firstGroupMember.getClientId(), firstGroupMember.getOrgId()))
 				.ppOrder(ppOrderBuilder.build())
 				.groupId(firstGroupMember.getEffectiveGroupId())
@@ -161,12 +161,12 @@ public class CandidateService
 
 	private void requestDistributionOrder(@NonNull final List<Candidate> group)
 	{
-		final DDOrderRequestedEvent ddOrderRequestEvent = createDDOrderRequestEvent(group);
+		final DistributionRequestedEvent ddOrderRequestEvent = createDDOrderRequestEvent(group);
 		materialEventService.fireEvent(ddOrderRequestEvent);
 	}
 
 	@VisibleForTesting
-	DDOrderRequestedEvent createDDOrderRequestEvent(@NonNull final List<Candidate> group)
+	DistributionRequestedEvent createDDOrderRequestEvent(@NonNull final List<Candidate> group)
 	{
 		Preconditions.checkArgument(!group.isEmpty(), "Param 'group' is an empty list");
 
@@ -213,7 +213,7 @@ public class CandidateService
 
 		final Candidate firstGroupMember = group.get(0);
 
-		return DDOrderRequestedEvent.builder()
+		return DistributionRequestedEvent.builder()
 				.eventDescriptor(new EventDescriptor(firstGroupMember.getClientId(), firstGroupMember.getOrgId()))
 				.ddOrder(ddOrderBuilder
 						.line(ddOrderLineBuilder

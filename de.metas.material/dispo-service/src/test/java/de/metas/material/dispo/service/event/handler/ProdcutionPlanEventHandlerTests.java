@@ -31,12 +31,12 @@ import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
 import de.metas.material.dispo.service.candidatechange.handler.DemandCandiateHandler;
 import de.metas.material.dispo.service.candidatechange.handler.SupplyCandiateHandler;
-import de.metas.material.event.EventDescriptor;
 import de.metas.material.event.MaterialEventService;
-import de.metas.material.event.ProductDescriptor;
+import de.metas.material.event.commons.EventDescriptor;
+import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrderLine;
-import de.metas.material.event.pporder.ProductionPlanEvent;
+import de.metas.material.event.pporder.ProductionAdvisedEvent;
 import mockit.Mocked;
 
 /*
@@ -77,7 +77,7 @@ public class ProdcutionPlanEventHandlerTests
 	@Mocked
 	private MaterialEventService materialEventService;
 
-	private ProductionPlanEventHandler productionPlanEventHandler;
+	private ProductionAdvisedHandler productionPlanEventHandler;
 
 	private CandidateRepositoryRetrieval candidateRepository;
 
@@ -100,13 +100,13 @@ public class ProdcutionPlanEventHandlerTests
 				candidateRepository,
 				MaterialEventService.createLocalServiceThatIsReadyToUse());
 
-		productionPlanEventHandler = new ProductionPlanEventHandler(candidateChangeHandler, candidateService);
+		productionPlanEventHandler = new ProductionAdvisedHandler(candidateChangeHandler, candidateService);
 	}
 
 	@Test
 	public void testProductionPlanEvent()
 	{
-		final ProductionPlanEvent productionPlanEvent = createProductionPlanEvent();
+		final ProductionAdvisedEvent productionPlanEvent = createProductionPlanEvent();
 
 		RepositoryTestHelper.setupMockedRetrieveAvailableStock(candidateRepository, null, "0");
 
@@ -116,7 +116,7 @@ public class ProdcutionPlanEventHandlerTests
 	@Test
 	public void testProductionPlanEvent_invoke_twice()
 	{
-		final ProductionPlanEvent productionPlanEvent = createProductionPlanEvent();
+		final ProductionAdvisedEvent productionPlanEvent = createProductionPlanEvent();
 
 		RepositoryTestHelper.setupMockedRetrieveAvailableStock(candidateRepository, null, "0");
 
@@ -124,9 +124,9 @@ public class ProdcutionPlanEventHandlerTests
 		perform_testProductionPlanEvent(productionPlanEvent);
 	}
 
-	private void perform_testProductionPlanEvent(final ProductionPlanEvent productionPlanEvent)
+	private void perform_testProductionPlanEvent(final ProductionAdvisedEvent productionPlanEvent)
 	{
-		productionPlanEventHandler.handleProductionPlanEvent(productionPlanEvent);
+		productionPlanEventHandler.handleProductionAdvisedEvent(productionPlanEvent);
 
 		assertThat(DispoTestUtils.filter(CandidateType.SUPPLY).size()).isEqualTo(1); //
 		assertThat(DispoTestUtils.filter(CandidateType.DEMAND)).hasSize(2); // we have two different inputs
@@ -178,12 +178,12 @@ public class ProdcutionPlanEventHandlerTests
 		assertThat(t1Product2Stock.getMD_Candidate_GroupId()).isNotEqualTo(t1Product1Stock.getMD_Candidate_GroupId());  // stock candidates' groupIds are different if they are about different products or warehouses
 	}
 
-	private ProductionPlanEvent createProductionPlanEvent()
+	private ProductionAdvisedEvent createProductionPlanEvent()
 	{
 		final ProductDescriptor rawProductDescriptor1 = ProductDescriptor.forProductIdAndEmptyAttribute(rawProduct1Id);
 		final ProductDescriptor rawProductDescriptor2 = ProductDescriptor.forProductIdAndEmptyAttribute(rawProduct2Id);
 
-		final ProductionPlanEvent productionPlanEvent = ProductionPlanEvent.builder()
+		final ProductionAdvisedEvent productionPlanEvent = ProductionAdvisedEvent.builder()
 				.eventDescriptor(new EventDescriptor(CLIENT_ID, ORG_ID))
 				.materialDemandDescr(null)
 				.ppOrder(PPOrder.builder()

@@ -15,8 +15,8 @@ import org.junit.Test;
 import de.metas.material.dispo.commons.CandidatesQuery;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateType;
-import de.metas.material.event.MaterialDescriptor;
-import de.metas.material.event.MaterialDescriptor.DateOperator;
+import de.metas.material.event.commons.MaterialDescriptor;
+import de.metas.material.event.commons.MaterialDescriptor.DateOperator;
 
 /*
  * #%L

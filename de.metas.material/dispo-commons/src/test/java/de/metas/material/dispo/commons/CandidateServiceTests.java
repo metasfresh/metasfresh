@@ -20,11 +20,11 @@ import de.metas.material.dispo.commons.candidate.DistributionDetail;
 import de.metas.material.dispo.commons.candidate.ProductionDetail;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.event.MaterialEventService;
-import de.metas.material.event.ProductDescriptor;
+import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.ddorder.DDOrder;
-import de.metas.material.event.ddorder.DDOrderRequestedEvent;
+import de.metas.material.event.ddorder.DistributionRequestedEvent;
 import de.metas.material.event.pporder.PPOrder;
-import de.metas.material.event.pporder.PPOrderRequestedEvent;
+import de.metas.material.event.pporder.ProductionRequestedEvent;
 
 /*
  * #%L
@@ -98,7 +98,7 @@ public class CandidateServiceTests
 						.productBomLineId(600)
 						.build());
 
-		final PPOrderRequestedEvent productionOrderEvent = candidateService.createPPOrderRequestEvent(ImmutableList.of(candidate, candidate2, candidate3));
+		final ProductionRequestedEvent productionOrderEvent = candidateService.createPPOrderRequestEvent(ImmutableList.of(candidate, candidate2, candidate3));
 		assertThat(productionOrderEvent, notNullValue());
 		assertThat(productionOrderEvent.getEventDescriptor(), notNullValue());
 
@@ -153,7 +153,7 @@ public class CandidateServiceTests
 						.networkDistributionLineId(501)
 						.build());
 
-		final DDOrderRequestedEvent distributionOrderEvent = candidateService.createDDOrderRequestEvent(ImmutableList.of(candidate, candidate2, candidate3));
+		final DistributionRequestedEvent distributionOrderEvent = candidateService.createDDOrderRequestEvent(ImmutableList.of(candidate, candidate2, candidate3));
 		assertThat(distributionOrderEvent, notNullValue());
 
 		assertThat(distributionOrderEvent.getEventDescriptor(), notNullValue());
