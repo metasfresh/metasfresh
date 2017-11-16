@@ -68,7 +68,7 @@ export default class ShortcutProvider extends Component {
         }
 
         // eslint-disable-next-line max-len
-        console.warn(`Handler defined for key sequence "${keySequence}" is not a function.`);
+        console.warn(`Handler defined for key sequence "${serializedSequence}" is not a function.`, handler);
     };
 
     handleKeyUp = () => {
@@ -116,7 +116,7 @@ export default class ShortcutProvider extends Component {
 
         if (!found) {
             // eslint-disable-next-line max-len
-            console.warn(`The handler you are trying to unsubscribe from "${name}" has not been subscribed yet.`);
+            console.warn(`The handler you are trying to unsubscribe from "${name}" has not been subscribed yet.`, handler);
         }
     };
 
