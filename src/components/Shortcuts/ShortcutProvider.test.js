@@ -80,18 +80,6 @@ describe('ShortcutProvider', () => {
         });
     });
 
-    describe('register', () => {
-        it('should be able to register hotkeys', () => {
-            const shortcutProvider = new ShortcutProvider;
-
-            const hotkeys = {};
-
-            shortcutProvider.register(hotkeys);
-
-            expect(shortcutProvider.hotkeys).to.equal(hotkeys);
-        });
-    });
-
     describe('subscribe', () => {
         it('should be able to subscribe to hotkeys', () => {
             const shortcutProvider = new ShortcutProvider;
@@ -102,13 +90,13 @@ describe('ShortcutProvider', () => {
                 [shortcut]: []
             };
 
-            shortcutProvider.register(hotkeys);
+            shortcutProvider.props = { hotkeys };
 
             const handler = () => {};
 
             shortcutProvider.subscribe(shortcut, handler);
 
-            expect(shortcutProvider.hotkeys[shortcut]).to.include(handler);
+            expect(shortcutProvider.props.hotkeys[shortcut]).to.include(handler);
         });
 
         it('should warn when trying to subscribe to a not defined shortcut', () => {
@@ -119,7 +107,7 @@ describe('ShortcutProvider', () => {
 
                 const hotkeys = {};
 
-                shortcutProvider.register(hotkeys);
+                shortcutProvider.props = { hotkeys };
 
                 const handler = () => {};
 
@@ -141,13 +129,15 @@ describe('ShortcutProvider', () => {
             const shortcut = 'ctrl+1';
             const handler = () => {};
 
-            shortcutProvider.hotkeys = {
-                [shortcut]: [ handler ]
+            shortcutProvider.props = {
+                hotkeys: {
+                    [shortcut]: [ handler ]
+                }
             };
 
             shortcutProvider.unsubscribe(shortcut, handler);
 
-            expect(shortcutProvider.hotkeys[shortcut]).to.not.include(handler);
+            expect(shortcutProvider.props.hotkeys[shortcut]).to.not.include(handler);
         });
 
         it('should not modify other handlers when unsubscribing', () => {
@@ -159,13 +149,15 @@ describe('ShortcutProvider', () => {
             const handler2 = () => {};
             const handler3 = () => {};
 
-            shortcutProvider.hotkeys = {
-                [shortcut]: [ handler1, handler2, handler3 ]
+            shortcutProvider.props = {
+                hotkeys: {
+                    [shortcut]: [ handler1, handler2, handler3 ]
+                }
             };
 
             shortcutProvider.unsubscribe(shortcut, handler2);
 
-            expect(shortcutProvider.hotkeys[shortcut]).to.deep.equal([
+            expect(shortcutProvider.props.hotkeys[shortcut]).to.deep.equal([
                 handler1, handler3
             ]);
         });
@@ -176,7 +168,7 @@ describe('ShortcutProvider', () => {
             try {
                 const shortcutProvider = new ShortcutProvider;
 
-                shortcutProvider.hotkeys = {};
+                shortcutProvider.props = { hotkeys: {} };
 
                 const handler = () => {};
 
@@ -198,8 +190,10 @@ describe('ShortcutProvider', () => {
 
                 const shortcut = 'ctrl+1';
 
-                shortcutProvider.hotkeys = {
-                    [shortcut]: []
+                shortcutProvider.props = {
+                    hotkeys:  {
+                        [shortcut]: []
+                    }
                 };
 
                 const handler = () => {};
@@ -218,6 +212,7 @@ describe('ShortcutProvider', () => {
     describe('handleKeyDown', () => {
         it('should not fire multiple times for a single key', () => {
             const shortcutProvider = new ShortcutProvider;
+            shortcutProvider.props = { hotkeys: {} };
 
             const key = 'a';
 
@@ -243,8 +238,10 @@ describe('ShortcutProvider', () => {
             const handler2 = spy();
             const handler3 = spy();
 
-            shortcutProvider.hotkeys = {
-                [key]: [ handler1, handler2, handler3 ]
+            shortcutProvider.props = {
+                hotkeys: {
+                    [key]: [ handler1, handler2, handler3 ]
+                }
             };
 
             shortcutProvider.handleKeyDown({ key });
@@ -261,8 +258,10 @@ describe('ShortcutProvider', () => {
 
             const handler = spy();
 
-            shortcutProvider.hotkeys = {
-                [key]: [ handler ]
+            shortcutProvider.props = {
+                hotkeys: {
+                    [key]: [ handler ]
+                }
             };
 
             const event = { key };
@@ -282,8 +281,10 @@ describe('ShortcutProvider', () => {
 
                 const handler = null;
 
-                shortcutProvider.hotkeys = {
-                    [key]: [ handler ]
+                shortcutProvider.props = {
+                    hotkeys: {
+                        [key]: [ handler ]
+                    }
                 };
 
                 shortcutProvider.handleKeyDown({ key });

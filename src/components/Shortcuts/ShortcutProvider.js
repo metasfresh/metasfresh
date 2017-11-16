@@ -3,7 +3,8 @@ import PropTypes from 'prop-types';
 
 export default class ShortcutProvider extends Component {
     static propTypes = {
-        children: PropTypes.node
+        children: PropTypes.node,
+        hotkeys: PropTypes.object.isRequired
     };
 
     static childContextTypes = {
@@ -13,7 +14,6 @@ export default class ShortcutProvider extends Component {
         })
     };
 
-    hotkeys = {};
     keySequence = [];
     fired = {};
 
@@ -38,7 +38,8 @@ export default class ShortcutProvider extends Component {
 
     handleKeyDown = event => {
         const { key } = event;
-        const { keySequence, fired, hotkeys } = this;
+        const { keySequence, fired } = this;
+        const { hotkeys } = this.props;
 
         if (fired[key]) {
             return;
@@ -70,12 +71,8 @@ export default class ShortcutProvider extends Component {
         this.fired = {};
     };
 
-    register = hotkeys => {
-        this.hotkeys = hotkeys;
-    };
-
     subscribe = (name, handler) => {
-        const { hotkeys } = this;
+        const { hotkeys } = this.props;
 
         if (!(name in hotkeys)) {
             console.warn(`There are no hotkeys defined for "${name}".`);
@@ -89,7 +86,7 @@ export default class ShortcutProvider extends Component {
     };
 
     unsubscribe = (name, handler) => {
-        const { hotkeys } = this;
+        const { hotkeys } = this.props;
 
         if (!(name in hotkeys)) {
             console.warn(`There are no hotkeys defined for "${name}".`);
