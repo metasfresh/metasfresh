@@ -32,6 +32,8 @@ Here come the actual release notes:
     * New Filter in Order Control Window for Date, CreatedBy and more.
   * [#2981](https://github.com/metasfresh/metasfresh/issues/2981) Action translation in Invoice Candidates Window
     * Improved Translation for Action Menu in invoice candidate window.
+  * [#2992](https://github.com/metasfresh/metasfresh/issues/2992) WebUI: Window Shipment Packing Item
+    * Adaption of Field Names to current WebUI Guidelines.
     
 
 ## Fixes
