@@ -9,7 +9,7 @@ import {
   updateBreadcrumb,
 } from '../../actions/MenuActions';
 import { getSelection } from '../../reducers/windowHandler';
-import keymap from '../../shortcuts/keymap';
+import keymap from '../../keymap.js';
 
 import Actions from './Actions';
 import BookmarkButton from './BookmarkButton';
@@ -187,7 +187,7 @@ class Subheader extends Component {
             },
             icon: 'meta-icon-edit',
             caption: counterpart.translate('window.advancedEdit.caption'),
-            hotkey: keymap.OPEN_ADVANCED_EDIT
+            hotkey: keymap.GLOBAL_CONTEXT.OPEN_ADVANCED_EDIT
         }, {
             action: 'clone',
             handler: () => {
@@ -195,7 +195,7 @@ class Subheader extends Component {
             },
             icon: 'meta-icon-duplicate',
             caption: counterpart.translate('window.clone.caption'),
-            hotkey: keymap.CLONE_DOCUMENT
+            hotkey: keymap.GLOBAL_CONTEXT.CLONE_DOCUMENT
         }, {
             action: 'email',
             handler: () => {
@@ -203,7 +203,7 @@ class Subheader extends Component {
             },
             icon: 'meta-icon-mail',
             caption: counterpart.translate('window.email.caption'),
-            hotkey: keymap.OPEN_EMAIL
+            hotkey: keymap.GLOBAL_CONTEXT.OPEN_EMAIL
         }, {
             action: 'letter',
             handler: () => {
@@ -211,7 +211,7 @@ class Subheader extends Component {
             },
             icon: 'meta-icon-letter',
             caption: counterpart.translate('window.letter.caption'),
-            hotkey: keymap.OPEN_LETTER
+            hotkey: keymap.GLOBAL_CONTEXT.OPEN_LETTER
         }, {
             action: 'print',
             handler: () => {
@@ -219,7 +219,7 @@ class Subheader extends Component {
             },
             icon: 'meta-icon-print',
             caption: counterpart.translate('window.Print.caption'),
-            hotkey: keymap.OPEN_PRINT_RAPORT
+            hotkey: keymap.GLOBAL_CONTEXT.OPEN_PRINT_RAPORT
         }, {
             action: 'delete',
             handler: () => {
@@ -227,7 +227,7 @@ class Subheader extends Component {
             },
             icon: 'meta-icon-delete',
             caption: counterpart.translate('window.Delete.caption'),
-            hotkey: keymap.DELETE_DOCUMENT
+            hotkey: keymap.GLOBAL_CONTEXT.DELETE_DOCUMENT
         }]
             .filter(docLink => standardActions.has(docLink.action))
             .map(docLink => {
@@ -297,7 +297,7 @@ class Subheader extends Component {
                         {counterpart.translate('window.new.caption')}
 
                         <span className="tooltip-inline">
-                            {keymap.NEW_DOCUMENT}
+                            {keymap.GLOBAL_CONTEXT.NEW_DOCUMENT}
                         </span>
                     </div>
                 )}
@@ -328,7 +328,7 @@ class Subheader extends Component {
                         counterpart.translate('window.openEditMode')
                     }
                     <span className="tooltip-inline">
-                        {keymap.TOGGLE_EDIT_MODE}
+                        {keymap.GLOBAL_CONTEXT.TOGGLE_EDIT_MODE}
                     </span>
                 </div>}
             </div>

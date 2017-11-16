@@ -30,12 +30,6 @@ import {
 
 import '../assets/css/styles.css';
 
-import { ShortcutProvider, generateHotkeys } from '../components/Shortcuts';
-import keymap from '../shortcuts/keymap';
-import blacklist from '../shortcuts/blacklist';
-
-const hotkeys = generateHotkeys({ keymap, blacklist });
-
 const store = configureStore(browserHistory);
 const history = syncHistoryWithStore(browserHistory, store);
 
@@ -121,27 +115,25 @@ export default class App extends Component {
             const valuesFlatten = values.map(item => Object.keys(item)[0]);
             const lang = valuesFlatten.indexOf(navigator.language) > -1 ?
                 navigator.language : defaultValue;
-
+                
             languageSuccess(lang);
         });
-
+        
         counterpart.setMissingEntryGenerator(() => '');
     }
 
     render() {
         return (
-            <ShortcutProvider hotkeys={hotkeys} keymap={keymap}>
-                <Provider store={store}>
-                    <Translation>
-                        <NotificationHandler>
-                            <Router
-                                history={history}
-                                routes={getRoutes(store, this.auth)}
-                            />
-                        </NotificationHandler>
-                    </Translation>
-                </Provider>
-            </ShortcutProvider>
-        );
+            <Provider store={store}>
+                <Translation>
+                    <NotificationHandler>
+                        <Router
+                            history={history}
+                            routes={getRoutes(store, this.auth)}
+                        />
+                    </NotificationHandler>
+                </Translation>
+            </Provider>
+        )
     }
 }

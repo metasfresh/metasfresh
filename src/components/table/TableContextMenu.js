@@ -9,7 +9,7 @@ import {
     setFilter
 } from '../../actions/ListActions';
 
-import keymap from '../../shortcuts/keymap';
+import keymap from '../../keymap.js';
 
 class TableContextMenu extends Component {
     constructor(props) {
@@ -153,7 +153,7 @@ class TableContextMenu extends Component {
                     >
                         <i className="meta-icon-edit" /> Advanced edit
                         <span className="tooltip-inline">
-                            {keymap.ADVANCED_EDIT}
+                            {keymap.DOCUMENT_LIST_CONTEXT.ADVANCED_EDIT}
                         </span>
                     </div>
                 }
@@ -165,7 +165,7 @@ class TableContextMenu extends Component {
                 >
                     <i className="meta-icon-file" /> Open in new tab
                     <span className="tooltip-inline">
-                        {keymap.OPEN_SELECTED}
+                        {keymap.DOCUMENT_LIST_CONTEXT.OPEN_SELECTED}
                     </span>
                 </div>
                 }
@@ -174,7 +174,7 @@ class TableContextMenu extends Component {
                     <div className="context-menu-item" onClick={handleDelete}>
                         <i className="meta-icon-trash" /> Delete
                         <span className="tooltip-inline">
-                            {keymap.REMOVE_SELECTED}
+                            {keymap.DOCUMENT_LIST_CONTEXT.REMOVE_SELECTED}
                         </span>
                     </div>
                 }

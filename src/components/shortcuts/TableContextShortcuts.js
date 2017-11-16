@@ -1,28 +1,40 @@
 import React, { Component } from 'react';
-import { Shortcut } from '../Shortcuts';
+import { Shortcuts } from 'react-shortcuts';
 
-export default class TableContextShortcuts extends Component {
-    handlers = {
-        TOGGLE_EXPAND: () => {
-            this.props.handleToggleExpand();
-        },
-        TOGGLE_QUICK_INPUT: () => {
-            this.props.handleToggleQuickInput();
+class TableContextShortcuts extends Component {
+    constructor(props){
+        super(props);
+    }
+
+    handleShortcuts = (action) => {
+        const {
+            handleToggleExpand, handleToggleQuickInput
+        } = this.props;
+
+        switch (action) {
+            case 'TOGGLE_EXPAND':
+                handleToggleExpand();
+                break;
+            case 'TOGGLE_QUICK_INPUT':
+                handleToggleQuickInput();
+                break;
         }
-    };
+    }
 
     render() {
-        return [
-            <Shortcut
-                key="TOGGLE_EXPAND"
-                name="TOGGLE_EXPAND"
-                handler={this.handlers.TOGGLE_EXPAND}
-            />,
-            <Shortcut
-                key="TOGGLE_QUICK_INPUT"
-                name="TOGGLE_QUICK_INPUT"
-                handler={this.handlers.TOGGLE_QUICK_INPUT}
+        return (
+            <Shortcuts
+                name="TABLE_CONTEXT"
+                handler={this.handleShortcuts}
+                targetNodeSelector="body"
+                isolate
+                preventDefault
+                stopPropagation
+                alwaysFireHandler
+                global
             />
-        ];
+        )
     }
 }
+
+export default TableContextShortcuts;
