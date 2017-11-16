@@ -65,7 +65,7 @@ public class TerminateSingleContractTest extends AbstractFlatrateTermTest
 	}
 
 	@Test
-	public void terminateOneSingleContract()
+	public void assertThrowingException_When_terminatingOneSingleContract_which_was_extended()
 	{
 		final I_C_Flatrate_Term contract = prepareContractForTest(true, startDate);
 		Services.get(IFlatrateBL.class).extendContract(contract, true, true, null, null);
@@ -83,6 +83,24 @@ public class TerminateSingleContractTest extends AbstractFlatrateTermTest
 		assertThatThrownBy(() -> {
 			contractChangeBL.cancelContract(contract, contractChangeParameters);
 		}).hasMessageContaining(ContractChangeBL.MSG_IS_NOT_ALLOWED_TO_TERMINATE_CURRENT_CONTRACT);
+
+	}
+
+	@Test
+	public void terminateOneSingleContract()
+	{
+		final I_C_Flatrate_Term contract = prepareContractForTest(true, startDate);
+		Services.get(IFlatrateBL.class).extendContract(contract, true, true, null, null);
+		save(contract);
+
+		final I_C_Flatrate_Term extendedContract = contract.getC_FlatrateTerm_Next();
+		assertThat(extendedContract).isNotNull();
+
+		final ContractChangeParameters contractChangeParameters = ContractChangeParameters.builder()
+				.changeDate(SystemTime.asDayTimestamp())
+				.isCloseInvoiceCandidate(true)
+				.isOnlyTerminateCurrentTerm(true)
+				.build();
 
 		contractChangeBL.cancelContract(extendedContract, contractChangeParameters);
 		assertClosedFlatrateTerm(extendedContract);
