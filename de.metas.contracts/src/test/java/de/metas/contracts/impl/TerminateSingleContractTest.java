@@ -2,6 +2,7 @@ package de.metas.contracts.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /*
  * #%L
@@ -29,7 +30,6 @@ import java.sql.Timestamp;
 import java.util.List;
 
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.util.TimeUtil;
@@ -40,6 +40,7 @@ import de.metas.contracts.IContractChangeBL;
 import de.metas.contracts.IContractChangeBL.ContractChangeParameters;
 import de.metas.contracts.IContractsDAO;
 import de.metas.contracts.IFlatrateBL;
+import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.impl.ContractsTestBase.FixedTimeSource;
 import de.metas.contracts.interceptor.C_Flatrate_Term;
 import de.metas.contracts.model.I_C_Flatrate_Term;
@@ -48,40 +49,23 @@ import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_SubscriptionProgress;
 import lombok.NonNull;
 
-public class ContractChangeBLTest extends AbstractFlatrateTermTest
+public class TerminateSingleContractTest extends AbstractFlatrateTermTest
 {
 	final private IContractChangeBL contractChangeBL = Services.get(IContractChangeBL.class);
 	final private IContractsDAO contractsDAO = Services.get(IContractsDAO.class);
 
 	final private static Timestamp startDate = TimeUtil.parseTimestamp("2017-09-10");
-	final private static Timestamp cancelDate = TimeUtil.parseTimestamp("2017-12-10");
-	final private static String terminationMemo = "note: cancelContract_test";
 	final private static FixedTimeSource today = new FixedTimeSource(2017, 11, 10);
-	final private static ContractChangeParameters contractChangeParameters = ContractChangeParameters.builder()
-			.changeDate(cancelDate)
-			.isCloseInvoiceCandidate(true)
-			.terminationReason(X_C_Flatrate_Term.TERMINATIONREASON_General)
-			.terminationMemo(terminationMemo)
-			.build();
 
 	@Before
 	public void before()
 	{
 		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(C_Flatrate_Term.INSTANCE);
-		SystemTime.setTimeSource(today); 
+		SystemTime.setTimeSource(today);
 	}
 
 	@Test
-	public void cancelContract_test()
-	{
-		final I_C_Flatrate_Term contract = prepareContractForTest(true, startDate);
-		contractChangeBL.cancelContract(contract, contractChangeParameters);
-		assertFlatrateTerm(contract, cancelDate);
-		assertSubscriptionProgress(contract, 1);
-	}
-
-	@Test
-	public void cancel_a_Contract_which_was_extended_using_a_date_from_initial_contract()
+	public void terminateOneSingleContract()
 	{
 		final I_C_Flatrate_Term contract = prepareContractForTest(true, startDate);
 		Services.get(IFlatrateBL.class).extendContract(contract, true, true, null, null);
@@ -90,54 +74,19 @@ public class ContractChangeBLTest extends AbstractFlatrateTermTest
 		final I_C_Flatrate_Term extendedContract = contract.getC_FlatrateTerm_Next();
 		assertThat(extendedContract).isNotNull();
 
-		contractChangeBL.cancelContract(contract, contractChangeParameters);
-
-		assertFlatrateTerm(contract, cancelDate);
-		assertSubscriptionProgress(contract, 1);
-		assertThat(contract.getMasterEndDate()).isEqualTo(cancelDate);
-		assertFlatrateTerm(extendedContract, cancelDate);
-		assertSubscriptionProgress(extendedContract, 0);
-	}
-
-	@Test
-	public void cancel_a_Contract_which_was_extended_using_a_date_from_extended_contract()
-	{
-		final I_C_Flatrate_Term contract = prepareContractForTest(true, startDate);
-		Services.get(IFlatrateBL.class).extendContract(contract, true, true, null, null);
-		save(contract);
-
-		final I_C_Flatrate_Term extendedContract = contract.getC_FlatrateTerm_Next();
-		assertThat(extendedContract).isNotNull();
-
-		final Timestamp cancellingDate = TimeUtil.parseTimestamp("2018-12-10");
-		final ContractChangeParameters changeParameters = ContractChangeParameters.builder()
-				.changeDate(cancellingDate)
+		final ContractChangeParameters contractChangeParameters = ContractChangeParameters.builder()
+				.changeDate(SystemTime.asDayTimestamp())
 				.isCloseInvoiceCandidate(true)
-				.terminationReason(X_C_Flatrate_Term.TERMINATIONREASON_General)
-				.terminationMemo(terminationMemo)
+				.isOnlyTerminateCurrentTerm(true)
 				.build();
 
-		contractChangeBL.cancelContract(extendedContract, changeParameters);
+		assertThatThrownBy(() -> {
+			contractChangeBL.cancelContract(contract, contractChangeParameters);
+		}).hasMessageContaining(ContractChangeBL.MSG_IS_NOT_ALLOWED_TO_TERMINATE_CURRENT_CONTRACT);
 
-		InterfaceWrapperHelper.refresh(contract);
-		InterfaceWrapperHelper.refresh(extendedContract);
-
-		assertFlatrateTerm(contract, cancellingDate);
-		assertSubscriptionProgress(contract, 12);
-		assertThat(contract.getMasterEndDate()).isEqualTo(cancellingDate);
-		assertFlatrateTerm(extendedContract, cancellingDate);
-		assertSubscriptionProgress(extendedContract, 3);
-		assertThat(contract.getMasterEndDate()).isEqualTo(extendedContract.getMasterEndDate());
-	}
-	
-	private void assertFlatrateTerm(@NonNull final I_C_Flatrate_Term flatrateTerm, final Timestamp cancelinglDate)
-	{
-		assertThat(flatrateTerm.getContractStatus()).isEqualTo(X_C_Flatrate_Term.CONTRACTSTATUS_Quit);
-		assertThat(flatrateTerm.isAutoRenew()).isFalse();
-		assertThat(flatrateTerm.getMasterStartDate()).isNotNull();
-		assertThat(flatrateTerm.getMasterEndDate()).isEqualTo(cancelinglDate);
-		assertThat(flatrateTerm.getTerminationMemo()).isEqualTo(terminationMemo);
-		assertThat(flatrateTerm.getTerminationReason()).isEqualTo(X_C_Flatrate_Term.TERMINATIONREASON_General);
+		contractChangeBL.cancelContract(extendedContract, contractChangeParameters);
+		assertClosedFlatrateTerm(extendedContract);
+		assertSubscriptionProgress(extendedContract, 0);
 	}
 
 	private void assertSubscriptionProgress(@NonNull final I_C_Flatrate_Term flatrateTerm, final int expected)
@@ -151,4 +100,20 @@ public class ContractChangeBLTest extends AbstractFlatrateTermTest
 				.filter(progress -> progress.getEventDate().after(flatrateTerm.getMasterEndDate()))
 				.peek(progress -> assertThat(progress.getContractStatus()).isEqualTo(X_C_SubscriptionProgress.CONTRACTSTATUS_Running));
 	}
+
+	private void assertClosedFlatrateTerm(@NonNull final I_C_Flatrate_Term flatrateTerm)
+	{
+		assertThat(flatrateTerm.getDocStatus()).isEqualTo(X_C_Flatrate_Term.DOCSTATUS_Completed);
+		assertThat(flatrateTerm.getContractStatus()).isEqualTo(X_C_Flatrate_Term.CONTRACTSTATUS_Quit);
+		assertThat(flatrateTerm.getMasterStartDate()).isNull();
+		assertThat(flatrateTerm.getMasterEndDate()).isNull();
+		assertThat(flatrateTerm.isAutoRenew()).isFalse();
+		assertThat(flatrateTerm.getC_FlatrateTerm_Next()).isNull();
+		assertThat(flatrateTerm.getAD_PInstance_EndOfTerm()).isNull();
+
+		final I_C_Flatrate_Term ancestor = Services.get(IFlatrateDAO.class).retrieveAncestorFlatrateTerm(flatrateTerm);
+
+		assertThat(ancestor).isNull();
+	}
+
 }
