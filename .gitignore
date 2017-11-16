@@ -11,3 +11,7 @@ dist
 
 # Dynamic storybook configuration file
 .storybook/foundStories.js
+
+# Coverage report
+.nyc_output
+coverage
