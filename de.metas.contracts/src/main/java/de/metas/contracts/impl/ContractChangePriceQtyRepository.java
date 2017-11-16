@@ -79,10 +79,9 @@ public class ContractChangePriceQtyRepository
 				.excludedStatus(X_C_SubscriptionProgress.STATUS_InPicking)
 				.build());
 
-		deliveries.stream()
-				.peek(delivery -> {
+		deliveries.forEach(delivery -> {
 					delivery.setQty(qty);
-					InterfaceWrapperHelper.disableReadOnlyColumnCheck(delivery);
+					InterfaceWrapperHelper.save(delivery);
 				});
 
 	}
