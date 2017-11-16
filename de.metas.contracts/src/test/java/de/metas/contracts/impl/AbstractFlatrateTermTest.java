@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package de.metas.contracts.impl;
 
@@ -52,12 +52,12 @@ import lombok.NonNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -71,16 +71,18 @@ import lombok.NonNull;
 public abstract class AbstractFlatrateTermTest
 {
 	private final String sequence = "@BP@ @CON@ @A1@ @A2@ @A3@ @A4@ @P@ @C@ @CO@";
+	private final static BigDecimal qty = BigDecimal.ONE;
 
 	public FlatrateTermTestHelper helper;
 
 	private I_C_Calendar calendar;
 	private I_C_AcctSchema acctSchema;
 	private I_C_Country country;
-	
+
 	private I_C_BPartner bpartner;
 	private I_C_BPartner_Location bpLocation;
 	private I_AD_User user;
+
 
 	public I_C_BPartner getBpartner()
 	{
@@ -147,8 +149,8 @@ public abstract class AbstractFlatrateTermTest
 		createDocType();
 		createCountryAndCountryArea();
 	}
-	
-	
+
+
 	public I_C_Flatrate_Term prepareContractForTest(final boolean isAutoRenew, final Timestamp startDate)
 	{
 		prepareBPartner();
@@ -270,8 +272,8 @@ public abstract class AbstractFlatrateTermTest
 
 		return bpartner.getC_BPartner_ID();
 	}
-	
-	
+
+
 	protected ProductAndPricingSystem createProductAndPricingSystem(@NonNull final Timestamp startDate)
 	{
 		return FlatrateTermDataFactory.productAndPricingNew()
@@ -336,7 +338,7 @@ public abstract class AbstractFlatrateTermTest
 		return contract;
 	}
 
-	
+
 	protected I_C_Contract_Change createContractChange(@NonNull final I_C_Flatrate_Conditions flatrateConditions)
 	{
 		final I_C_Contract_Change contractChange = newInstance(I_C_Contract_Change.class);
