@@ -2,6 +2,8 @@ package de.metas.material.event;
 
 import java.util.List;
 
+import de.metas.material.event.commons.EventDescriptor;
+import de.metas.material.event.commons.MaterialDescriptor;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

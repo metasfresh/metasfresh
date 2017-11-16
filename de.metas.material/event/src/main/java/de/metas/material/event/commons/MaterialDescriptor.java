@@ -1,4 +1,4 @@
-package de.metas.material.event;
+package de.metas.material.event.commons;
 
 import java.math.BigDecimal;
 import java.util.Date;

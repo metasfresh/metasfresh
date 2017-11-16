@@ -5,9 +5,9 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import de.metas.logging.LogManager;
-import de.metas.material.event.MaterialDemandEvent;
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.MaterialEventListener;
+import de.metas.material.event.demandWasFound.SupplyRequiredEvent;
 import lombok.NonNull;
 
 /*
@@ -32,21 +32,20 @@ import lombok.NonNull;
  * #L%
  */
 /**
- * This listener is dedicated to handle {@link MaterialDemandEvent}s. It ignores and other {@link MaterialEvent}.
+ * This listener is dedicated to handle {@link SupplyRequiredEvent}s. It ignores and other {@link MaterialEvent}.
  *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
 @Service
 @Lazy // .. because MaterialEventService needs to be lazy
-public class MaterialDemandEventListener implements MaterialEventListener
+public class SupplyRequiredEventListener implements MaterialEventListener
 {
-	private static final transient Logger logger = LogManager.getLogger(MaterialDemandEventListener.class);
+	private static final transient Logger logger = LogManager.getLogger(SupplyRequiredEventListener.class);
 
 	private final CommonDemandHandler commonDemandHandler;
 
-	public MaterialDemandEventListener(
-			@NonNull final CommonDemandHandler commonDemandHandler)
+	public SupplyRequiredEventListener(@NonNull final CommonDemandHandler commonDemandHandler)
 	{
 		this.commonDemandHandler = commonDemandHandler;
 	}
@@ -54,14 +53,14 @@ public class MaterialDemandEventListener implements MaterialEventListener
 	@Override
 	public void onEvent(@NonNull final MaterialEvent event)
 	{
-		if (!(event instanceof MaterialDemandEvent))
+		if (!(event instanceof SupplyRequiredEvent))
 		{
 			return;
 		}
 		logger.info("Received event {}", event);
 
-		final MaterialDemandEvent materialDemandEvent = (MaterialDemandEvent)event;
+		final SupplyRequiredEvent materialDemandEvent = (SupplyRequiredEvent)event;
 
-		commonDemandHandler.handleMaterialDemandEvent(materialDemandEvent.getMaterialDemandDescriptor());
+		commonDemandHandler.handleSupplyRequiredEvent(materialDemandEvent.getMaterialDemandDescriptor());
 	}
 }

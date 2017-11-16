@@ -27,10 +27,10 @@ import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
 import de.metas.material.dispo.service.candidatechange.handler.DemandCandiateHandler;
-import de.metas.material.event.EventDescriptor;
-import de.metas.material.event.MaterialDescriptor;
 import de.metas.material.event.MaterialEventService;
-import de.metas.material.event.ShipmentScheduleEvent;
+import de.metas.material.event.commons.EventDescriptor;
+import de.metas.material.event.commons.MaterialDescriptor;
+import de.metas.material.event.shipmentschedule.ShipmentScheduleCreatedEvent;
 import mockit.Mocked;
 
 /*
@@ -72,7 +72,7 @@ public class ShipmentScheduleEventHandlerTests
 
 	private CandidateRepositoryRetrieval candidateRepositoryRetrieval;
 
-	private ShipmentScheduleEventHandler shipmentScheduleEventHandler;
+	private ShipmentScheduleCreatedHandler shipmentScheduleEventHandler;
 
 	@Before
 	public void init()
@@ -87,20 +87,20 @@ public class ShipmentScheduleEventHandlerTests
 				new DemandCandiateHandler(candidateRepositoryRetrieval, candidateRepositoryCommands, materialEventService,
 						new StockCandidateService(candidateRepositoryRetrieval, candidateRepositoryCommands))));
 
-		shipmentScheduleEventHandler = new ShipmentScheduleEventHandler(candidateChangeHandler);
+		shipmentScheduleEventHandler = new ShipmentScheduleCreatedHandler(candidateChangeHandler);
 	}
 
 	@Test
 	public void testShipmentScheduleEvent()
 	{
-		final ShipmentScheduleEvent event = createShipmentScheduleTestEvent();
+		final ShipmentScheduleCreatedEvent event = createShipmentScheduleTestEvent();
 
 		RepositoryTestHelper.setupMockedRetrieveAvailableStock(
 				candidateRepositoryRetrieval,
 				event.getMaterialDescriptor(),
 				"0");
 
-		shipmentScheduleEventHandler.handleShipmentScheduleEvent(event);
+		shipmentScheduleEventHandler.handleShipmentScheduleCreatedEvent(event);
 
 		final List<I_MD_Candidate> allRecords = DispoTestUtils.retrieveAllRecords();
 		assertThat(allRecords).hasSize(2);
@@ -118,9 +118,9 @@ public class ShipmentScheduleEventHandlerTests
 		assertThat(stockRecord.getQty()).isEqualByComparingTo("-10"); // the stock is unbalanced, because there is no existing stock and no supply
 	}
 
-	public static ShipmentScheduleEvent createShipmentScheduleTestEvent()
+	public static ShipmentScheduleCreatedEvent createShipmentScheduleTestEvent()
 	{
-		final ShipmentScheduleEvent event = ShipmentScheduleEvent.builder()
+		final ShipmentScheduleCreatedEvent event = ShipmentScheduleCreatedEvent.builder()
 				.eventDescriptor(new EventDescriptor(CLIENT_ID, ORG_ID))
 				.materialDescriptor(MaterialDescriptor.builder()
 						.complete(true)

@@ -8,6 +8,9 @@ import org.adempiere.util.time.SystemTime;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
+import de.metas.material.event.commons.MaterialDescriptor;
+import de.metas.material.event.commons.ProductDescriptor;
+
 /*
  * #%L
  * metasfresh-material-event

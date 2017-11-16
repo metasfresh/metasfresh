@@ -146,7 +146,6 @@
 	<build>
 		<finalName>metasfresh-report-service</finalName>
 		<plugins>
-
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
@@ -158,6 +157,10 @@
 							<goal>repackage</goal>
 						</goals>
 						<configuration>
+							<!-- we *also* need the normal main jar to be use in app
+							so don't replace the normal jar, but create the executable jar with this classifier -->
+							<classifier>standalone</classifier>
+
 							<executable>true</executable>
 							<mainClass>${start-class}</mainClass>
 							

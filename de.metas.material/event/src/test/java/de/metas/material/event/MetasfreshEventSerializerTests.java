@@ -8,6 +8,7 @@ import de.metas.event.Event;
 import de.metas.event.SimpleObjectSerializer;
 import de.metas.event.jms.ActiveMQJMSEndpoint;
 import de.metas.event.jms.IEventSerializer;
+import de.metas.material.event.transactions.TransactionCreatedEvent;
 
 /*
  * #%L
@@ -47,7 +48,7 @@ public class MetasfreshEventSerializerTests
 	{
 		final IEventSerializer eventSerializer = ActiveMQJMSEndpoint.DEFAULT_EVENT_SERIALIZER;
 		
-		final TransactionEvent transactionEvent = MaterialEventSerializerTests.createSampleTransactionEvent();
+		final TransactionCreatedEvent transactionEvent = MaterialEventSerializerTests.createSampleTransactionEvent();
 		final String transactionEventStr = SimpleObjectSerializer.get().serialize(transactionEvent);
 
 		final Event event = Event.builder()
@@ -61,8 +62,8 @@ public class MetasfreshEventSerializerTests
 
 		final MaterialEvent deserializedTransactionEvent = SimpleObjectSerializer.get().deserialize(deserializedTransactionEventStr, MaterialEvent.class);
 
-		assertThat(deserializedTransactionEvent).isInstanceOf(TransactionEvent.class);
-		assertThat(((TransactionEvent)deserializedTransactionEvent).getMaterialDescriptor().getProductId())
+		assertThat(deserializedTransactionEvent).isInstanceOf(TransactionCreatedEvent.class);
+		assertThat(((TransactionCreatedEvent)deserializedTransactionEvent).getMaterialDescriptor().getProductId())
 				.isEqualTo(transactionEvent.getMaterialDescriptor().getProductId()); // "spot check": picking the productId
 		assertThat(deserializedTransactionEvent).isEqualTo(transactionEvent);
 	}

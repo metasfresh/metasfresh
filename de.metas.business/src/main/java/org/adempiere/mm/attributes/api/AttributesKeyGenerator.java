@@ -11,7 +11,7 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
 
-import de.metas.material.event.ProductDescriptor;
+import de.metas.material.event.commons.ProductDescriptor;
 import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.NonNull;

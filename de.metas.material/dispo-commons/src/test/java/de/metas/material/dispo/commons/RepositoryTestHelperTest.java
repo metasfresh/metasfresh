@@ -13,7 +13,7 @@ import de.metas.material.dispo.commons.repository.CandidateRepositoryCommands;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.event.EventTestHelper;
-import de.metas.material.event.ProductDescriptor;
+import de.metas.material.event.commons.ProductDescriptor;
 
 /*
  * #%L
