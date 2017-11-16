@@ -8,6 +8,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.acct.api.IAcctSchemaDAO;
@@ -40,6 +41,8 @@ import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Contract_Change;
 import de.metas.contracts.model.X_C_Flatrate_Conditions;
+import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import lombok.NonNull;
 
 /*
@@ -70,8 +73,11 @@ import lombok.NonNull;
  */
 public abstract class AbstractFlatrateTermTest
 {
+	private final transient IInvoiceCandidateHandlerBL iinvoiceCandidateHandlerBL = Services.get(IInvoiceCandidateHandlerBL.class);
+
 	private final String sequence = "@BP@ @CON@ @A1@ @A2@ @A3@ @A4@ @P@ @C@ @CO@";
-	private final static BigDecimal qty = BigDecimal.ONE;
+	protected final static BigDecimal QTY = BigDecimal.ONE;
+	protected final static BigDecimal PRICE = BigDecimal.TEN;
 
 	public FlatrateTermTestHelper helper;
 
@@ -160,6 +166,11 @@ public abstract class AbstractFlatrateTermTest
 		createContractChange(conditions);
 		final I_C_Flatrate_Term contract = createFlatrateTerm(conditions, productAndPricingSystem.getProduct(), startDate);
 		return contract;
+	}
+
+	public List<I_C_Invoice_Candidate> createInvoiceCandidates(final I_C_Flatrate_Term flatrateTerm)
+	{
+		return iinvoiceCandidateHandlerBL.createMissingCandidatesFor(flatrateTerm);
 	}
 
 
@@ -327,8 +338,8 @@ public abstract class AbstractFlatrateTermTest
 		contract.setDropShip_BPartner(getBpartner());
 		contract.setDropShip_Location(bpLocation);
 		contract.setDropShip_User(user);
-		contract.setPriceActual(BigDecimal.valueOf(2));
-		contract.setPlannedQtyPerUnit(BigDecimal.ONE);
+		contract.setPriceActual(PRICE);
+		contract.setPlannedQtyPerUnit(QTY);
 		contract.setMasterStartDate(startDate);
 		contract.setM_Product(product);
 		contract.setIsTaxIncluded(true);

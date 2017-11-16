@@ -1,5 +1,7 @@
 package de.metas.contracts.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
@@ -30,88 +32,118 @@ import java.sql.Timestamp;
 import java.util.List;
 
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
+import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.Adempiere;
 import org.compiere.util.TimeUtil;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit4.SpringRunner;
 
-import de.metas.contracts.IContractChangeBL;
+import de.metas.StartupListener;
 import de.metas.contracts.IContractsDAO;
-import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.interceptor.C_Flatrate_Term;
+import de.metas.contracts.interceptor.M_ShipmentSchedule;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_SubscriptionProgress;
-import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_SubscriptionProgress;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import lombok.NonNull;
 
+@RunWith(SpringRunner.class)
+@SpringBootTest(classes = { StartupListener.class, ContractChangePriceQtyRepository.class })
 public class ContractChangePriceQtyTest extends AbstractFlatrateTermTest
 {
-	final private IContractChangeBL contractChangeBL = Services.get(IContractChangeBL.class);
 	final private IContractsDAO contractsDAO = Services.get(IContractsDAO.class);
 	final private static Timestamp startDate = TimeUtil.parseTimestamp("2017-09-10");
-
-	final private ContractChangePriceQtyRepository contractsRepository = Adempiere.getBean(ContractChangePriceQtyRepository.class);
-
 
 	@Before
 	public void before()
 	{
 		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(C_Flatrate_Term.INSTANCE);
+		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(M_ShipmentSchedule.INSTANCE);
 	}
 
 	@Test
 	public void changeQty()
 	{
 		final I_C_Flatrate_Term contract = prepareContractForTest(true, startDate);
-		contractsRepository.changeFlatrateTermQty(contract, BigDecimal.valueOf(5));
-		assertFlatrateTerm(contract);
-		assertSubscriptionProgress(contract, 1);
+		final ContractChangePriceQtyRepository contractsRepository = Adempiere.getBean(ContractChangePriceQtyRepository.class);
+		final BigDecimal newQty = BigDecimal.valueOf(5);
+		contractsRepository.changeQtyIfNeeded(contract, newQty);
+
+		assertThat(contract.getPlannedQtyPerUnit()).isEqualTo(newQty);
+		assertInvoiceCandidates(contract);
+		assertSubscriptionProgress(contract);
+	}
+
+	@Test
+	public void changeQtyAndDeliver()
+	{
+		final I_C_Flatrate_Term contract = prepareContractForTest(true, startDate);
+		final ContractChangePriceQtyRepository contractsRepository = Adempiere.getBean(ContractChangePriceQtyRepository.class);
+		deliverFirstSubscriptionProgress(contract);
+		final BigDecimal newQty = BigDecimal.valueOf(5);
+		contractsRepository.changeQtyIfNeeded(contract, newQty);
+
+		assertThat(contract.getPlannedQtyPerUnit()).isEqualTo(newQty);
+		assertInvoiceCandidates(contract);
+		assertSubscriptionProgress(contract);
 	}
 
 	@Test
 	public void changePrice()
 	{
 		final I_C_Flatrate_Term contract = prepareContractForTest(true, startDate);
-		contractsRepository.changeFlatrateTermPrice(contract, BigDecimal.valueOf(5));
-		assertFlatrateTerm(contract);
-		assertSubscriptionProgress(contract, 1);
+		final ContractChangePriceQtyRepository contractsRepository = Adempiere.getBean(ContractChangePriceQtyRepository.class);
+		final BigDecimal newPrice = BigDecimal.valueOf(5);
+		contractsRepository.changePriceIfNeeded(contract, newPrice);
+
+		assertThat(contract.getPriceActual()).isEqualTo(newPrice);
+		assertInvoiceCandidates(contract);
+		assertSubscriptionProgress(contract);
 	}
 
-
-	private void assertFlatrateTerm(@NonNull final I_C_Flatrate_Term flatrateTerm)
-	{
-		assertThat(flatrateTerm.getContractStatus()).isEqualTo(X_C_Flatrate_Term.CONTRACTSTATUS_Quit);
-		assertThat(flatrateTerm.isAutoRenew()).isFalse();
-		assertThat(flatrateTerm.getMasterStartDate()).isNotNull();
-	}
-
-	private void assertSubscriptionProgress(@NonNull final I_C_Flatrate_Term flatrateTerm, final int expected)
+	private void deliverFirstSubscriptionProgress(@NonNull final I_C_Flatrate_Term flatrateTerm)
 	{
 		final List<I_C_SubscriptionProgress> subscriptionProgress = contractsDAO.getSubscriptionProgress(flatrateTerm);
-		assertThat(subscriptionProgress).hasSize(expected);
+		final I_C_SubscriptionProgress firstSubscription = subscriptionProgress.get(0);
+		firstSubscription.setStatus(X_C_SubscriptionProgress.STATUS_Open);
+		save(firstSubscription);
 
-		subscriptionProgress.stream()
-				.filter(progress -> progress.getEventDate().before(flatrateTerm.getMasterEndDate()))
-				.peek(progress -> assertThat(progress.getContractStatus()).isEqualTo(X_C_SubscriptionProgress.CONTRACTSTATUS_Quit))
-				.filter(progress -> progress.getEventDate().after(flatrateTerm.getMasterEndDate()))
-				.peek(progress -> assertThat(progress.getContractStatus()).isEqualTo(X_C_SubscriptionProgress.CONTRACTSTATUS_Running));
+		final I_M_ShipmentSchedule shipmentSchedule = newInstance(I_M_ShipmentSchedule.class);
+		shipmentSchedule.setQtyDelivered(flatrateTerm.getPlannedQtyPerUnit());
+		shipmentSchedule.setRecord_ID(firstSubscription.getC_SubscriptionProgress_ID());
+		shipmentSchedule.setAD_Table_ID(Services.get(IADTableDAO.class).retrieveTableId(I_C_SubscriptionProgress.Table_Name));
+		save(shipmentSchedule);
+
+		InterfaceWrapperHelper.refresh(firstSubscription);
+		firstSubscription.setM_ShipmentSchedule(shipmentSchedule);
+		save(firstSubscription);
 	}
 
-	private void assertClosedFlatrateTerm(@NonNull final I_C_Flatrate_Term flatrateTerm)
+	private void assertInvoiceCandidates(@NonNull final I_C_Flatrate_Term flatrateTerm)
 	{
-		assertThat(flatrateTerm.getDocStatus()).isEqualTo(X_C_Flatrate_Term.DOCSTATUS_Completed);
-		assertThat(flatrateTerm.getContractStatus()).isEqualTo(X_C_Flatrate_Term.CONTRACTSTATUS_Quit);
-		assertThat(flatrateTerm.getMasterStartDate()).isNull();
-		assertThat(flatrateTerm.getMasterEndDate()).isNull();
-		assertThat(flatrateTerm.isAutoRenew()).isFalse();
-		assertThat(flatrateTerm.getC_FlatrateTerm_Next()).isNull();
-		assertThat(flatrateTerm.getAD_PInstance_EndOfTerm()).isNull();
+		final List<I_C_Invoice_Candidate> candidates = createInvoiceCandidates(flatrateTerm);
+		candidates.forEach(invoiceCand -> {
+			assertThat(invoiceCand.getQtyToInvoice()).isEqualTo(flatrateTerm.getPlannedQtyPerUnit());
+			assertThat(invoiceCand.getPriceActual()).isEqualTo(flatrateTerm.getPriceActual());
+		});
+	}
 
-		final I_C_Flatrate_Term ancestor = Services.get(IFlatrateDAO.class).retrieveAncestorFlatrateTerm(flatrateTerm);
+	private void assertSubscriptionProgress(@NonNull final I_C_Flatrate_Term flatrateTerm)
+	{
+		final List<I_C_SubscriptionProgress> subscriptionProgress = contractsDAO.getSubscriptionProgress(flatrateTerm);
 
-		assertThat(ancestor).isNull();
+		subscriptionProgress.stream()
+				.filter(progress -> progress.getStatus().equals(X_C_SubscriptionProgress.STATUS_Done) || progress.getStatus().equals(X_C_SubscriptionProgress.STATUS_Delivered))
+				.peek(progress -> assertThat(progress.getQty()).isEqualTo(QTY))
+				.filter(progress -> progress.getStatus().equals(X_C_SubscriptionProgress.STATUS_Planned) || progress.getStatus().equals(X_C_SubscriptionProgress.STATUS_Open))
+				.peek(progress -> assertThat(progress.getQty()).isEqualTo(flatrateTerm.getPlannedQtyPerUnit()));
 	}
 
 }
