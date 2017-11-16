@@ -13,13 +13,13 @@ describe('Shortcut', () => {
     });
 
     it('should return null from render()', () => {
-        const shortcut = new Shortcut;
+        const shortcut = new Shortcut();
 
         expect(shortcut.render()).to.equal(null);
     });
 
     it('should subscribe when mounting', () => {
-        const shortcut = new Shortcut;
+        const shortcut = new Shortcut();
 
         const subscribe = spy();
 
@@ -34,19 +34,48 @@ describe('Shortcut', () => {
         expect(subscribe).to.have.been.calledWith(name, handler);
     });
 
-    it('should unsubscribe when mounting', () => {
-        const shortcut = new Shortcut;
+    it('should unsubscribe when unmounting', () => {
+        const shortcut = new Shortcut();
 
         const unsubscribe = spy();
+
+        shortcut.context = { shortcuts: { unsubscribe } };
 
         const name = 'Foo';
         const handler = () => {};
 
-        shortcut.props = { name, handler };
-        shortcut.context = { shortcuts: { unsubscribe } };
+        shortcut.name = name;
+        shortcut.handler = handler;
 
         shortcut.componentWillUnmount();
 
         expect(unsubscribe).to.have.been.calledWith(name, handler);
+    });
+
+    it('should unsubscribe the same attributes which were subscribed', () => {
+        const shortcut = new Shortcut();
+
+        const subscribe = spy();
+        const unsubscribe = spy();
+
+        shortcut.context = { shortcuts: { subscribe, unsubscribe } };
+
+        const name1 = 'Foo';
+        const handler1 = () => {};
+
+        shortcut.props = { name: name1, handler: handler1 };
+
+        shortcut.componentWillMount();
+
+        expect(subscribe).to.have.been.calledWith(name1, handler1);
+
+        const name2 = 'Bar';
+        const handler2 = () => {};
+
+        shortcut.props = { name: name2, handler: handler2 };
+
+        shortcut.componentWillUnmount();
+
+        expect(unsubscribe).to.have.been.calledWith(name1, handler1);
     });
 });

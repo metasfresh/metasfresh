@@ -19,12 +19,15 @@ export default class Shortcut extends Component {
         const { subscribe } = this.context.shortcuts;
         const { name, handler } = this.props;
 
+        this.name = name;
+        this.handler = handler;
+
         subscribe(name, handler);
     }
 
     componentWillUnmount() {
         const { unsubscribe } = this.context.shortcuts;
-        const { name, handler } = this.props;
+        const { name, handler } = this;
 
         unsubscribe(name, handler);
     }
