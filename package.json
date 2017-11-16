@@ -1,6 +1,7 @@
 {
   "name": "metasfresh-webui-frontend",
   "scripts": {
+    "coverage": "nyc --reporter=lcov --reporter=text-lcov npm test > /dev/null",
     "start": "node server.js",
     "test": "mocha --require babel-register src/**/*.test.js",
     "lint": "eslint src --fix",
@@ -25,6 +26,7 @@
     "html-loader": "~0.4.4",
     "html-webpack-plugin": "~2.26.0",
     "mocha": "^4.0.1",
+    "nyc": "^11.3.0",
     "postcss-color-function": "~2.0.1",
     "postcss-import": "~8.1.2",
     "postcss-loader": "~0.9.1",
