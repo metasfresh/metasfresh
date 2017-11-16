@@ -54,6 +54,9 @@ public interface IESRBPBankAccountDAO extends ISingletonService
 
 	/**
 	 * @param bankAcct
+	 * 
+	 * @return All the ESR_PostFinanceUserNumber entries for the bank account
 	 */
+	public List<I_ESR_PostFinanceUserNumber> retrieveESRPostFinanceUserNumbers(I_C_BP_BankAccount bankAcct);
 
 }
