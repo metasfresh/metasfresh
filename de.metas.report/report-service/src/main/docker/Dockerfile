@@ -32,7 +32,7 @@ RUN dos2unix /opt/metasfresh/metasfresh-report/start_report_docker.sh
 # make our start command executable
 RUN chmod 700 /opt/metasfresh/metasfresh-report/start_report_docker.sh
 
-COPY ./metasfresh-report-service.jar /opt/metasfresh/metasfresh-report/metasfresh-report.jar
+COPY ./metasfresh-report-service-standalone.jar /opt/metasfresh/metasfresh-report/metasfresh-report.jar
 RUN sh -c 'touch /opt/metasfresh/metasfresh-report/metasfresh-report.jar'
 
 # prepare the docker image to accomodate external/private jars

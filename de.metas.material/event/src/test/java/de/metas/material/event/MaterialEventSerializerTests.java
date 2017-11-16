@@ -16,17 +16,23 @@ import org.junit.Before;
 import org.junit.Test;
 
 import de.metas.event.SimpleObjectSerializer;
+import de.metas.material.event.commons.EventDescriptor;
+import de.metas.material.event.commons.SupplyRequiredDescriptor;
+import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.ddorder.DDOrder;
 import de.metas.material.event.ddorder.DDOrderLine;
-import de.metas.material.event.ddorder.DDOrderRequestedEvent;
-import de.metas.material.event.ddorder.DistributionPlanEvent;
+import de.metas.material.event.ddorder.DistributionRequestedEvent;
+import de.metas.material.event.ddorder.DistributionAdvisedEvent;
+import de.metas.material.event.demandWasFound.SupplyRequiredEvent;
 import de.metas.material.event.forecast.Forecast;
-import de.metas.material.event.forecast.ForecastEvent;
+import de.metas.material.event.forecast.ForecastCreatedEvent;
 import de.metas.material.event.forecast.ForecastLine;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrderLine;
-import de.metas.material.event.pporder.PPOrderRequestedEvent;
-import de.metas.material.event.pporder.ProductionPlanEvent;
+import de.metas.material.event.pporder.ProductionAdvisedEvent;
+import de.metas.material.event.pporder.ProductionRequestedEvent;
+import de.metas.material.event.shipmentschedule.ShipmentScheduleCreatedEvent;
+import de.metas.material.event.transactions.TransactionCreatedEvent;
 
 /*
  * #%L
@@ -61,7 +67,7 @@ public class MaterialEventSerializerTests
 	@Test
 	public void ddOrderRequestedEvent()
 	{
-		final DDOrderRequestedEvent event = DDOrderRequestedEvent.builder()
+		final DistributionRequestedEvent event = DistributionRequestedEvent.builder()
 				.eventDescriptor(createEventDescriptor())
 				.groupId(20)
 				.ddOrder(createDdOrder())
@@ -73,7 +79,7 @@ public class MaterialEventSerializerTests
 	@Test
 	public void distributionPlanEvent()
 	{
-		final DistributionPlanEvent event = DistributionPlanEvent.builder()
+		final DistributionAdvisedEvent event = DistributionAdvisedEvent.builder()
 				.ddOrder(createDdOrder())
 				.fromWarehouseId(30)
 				.eventDescriptor(createEventDescriptor())
@@ -86,7 +92,7 @@ public class MaterialEventSerializerTests
 	private DDOrder createDdOrder()
 	{
 		return DDOrder.builder()
-				.createDDrder(true)
+				.advisedToCreateDDrder(true)
 				.datePromised(SystemTime.asDayTimestamp())
 				.ddOrderId(30)
 				.docStatus("IP")
@@ -108,7 +114,7 @@ public class MaterialEventSerializerTests
 	@Test
 	public void ppOrderRequestedEvent()
 	{
-		final PPOrderRequestedEvent event = PPOrderRequestedEvent.builder()
+		final ProductionRequestedEvent event = ProductionRequestedEvent.builder()
 				.eventDescriptor(createEventDescriptor())
 				.groupId(30)
 				.ppOrder(PPOrder.builder()
@@ -144,7 +150,7 @@ public class MaterialEventSerializerTests
 	@Test
 	public void productionPlanEvent()
 	{
-		final ProductionPlanEvent event = ProductionPlanEvent.builder()
+		final ProductionAdvisedEvent event = ProductionAdvisedEvent.builder()
 				.eventDescriptor(createEventDescriptor())
 				.materialDemandDescr(createMaterialDemandDescriptor())
 				.ppOrder(PPOrder.builder()
@@ -192,7 +198,7 @@ public class MaterialEventSerializerTests
 				.docStatus("docStatus")
 				.forecastLine(forecastLine)
 				.build();
-		final ForecastEvent forecastEvent = ForecastEvent
+		final ForecastCreatedEvent forecastEvent = ForecastCreatedEvent
 				.builder()
 				.forecast(forecast)
 				.eventDescriptor(createEventDescriptor())
@@ -204,15 +210,15 @@ public class MaterialEventSerializerTests
 	@Test
 	public void materialDemandEvent()
 	{
-		final MaterialDemandEvent materialDemandEvent = MaterialDemandEvent.builder()
+		final SupplyRequiredEvent materialDemandEvent = SupplyRequiredEvent.builder()
 				.materialDemandDescriptor(createMaterialDemandDescriptor())
 				.build();
 		assertEventEqualAfterSerializeDeserialize(materialDemandEvent);
 	}
 
-	private MaterialDemandDescriptor createMaterialDemandDescriptor()
+	private SupplyRequiredDescriptor createMaterialDemandDescriptor()
 	{
-		return MaterialDemandDescriptor.builder()
+		return SupplyRequiredDescriptor.builder()
 				.demandCandidateId(30)
 				.eventDescr(createEventDescriptor())
 				.forecastLineId(40)
@@ -225,7 +231,7 @@ public class MaterialEventSerializerTests
 	@Test
 	public void shipmentScheduleEvent()
 	{
-		final ShipmentScheduleEvent shipmentScheduleEvent = ShipmentScheduleEvent.builder()
+		final ShipmentScheduleCreatedEvent shipmentScheduleEvent = ShipmentScheduleCreatedEvent.builder()
 				.eventDescriptor(createEventDescriptor())
 				.materialDescriptor(createMaterialDescriptor())
 				.shipmentScheduleId(3)
@@ -238,14 +244,14 @@ public class MaterialEventSerializerTests
 	@Test
 	public void transactionEvent()
 	{
-		final TransactionEvent evt = createSampleTransactionEvent();
+		final TransactionCreatedEvent evt = createSampleTransactionEvent();
 
 		assertEventEqualAfterSerializeDeserialize(evt);
 	}
 
-	public static TransactionEvent createSampleTransactionEvent()
+	public static TransactionCreatedEvent createSampleTransactionEvent()
 	{
-		final TransactionEvent evt = TransactionEvent
+		final TransactionCreatedEvent evt = TransactionCreatedEvent
 				.builder()
 				.transactionId(10)
 				.eventDescriptor(createEventDescriptor())

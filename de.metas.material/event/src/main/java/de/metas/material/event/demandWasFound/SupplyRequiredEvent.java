@@ -1,10 +1,8 @@
-package de.metas.material.event.pporder;
+package de.metas.material.event.demandWasFound;
 
-import org.eevolution.model.I_PP_Order;
-
-import de.metas.material.event.EventDescriptor;
-import de.metas.material.event.MaterialDemandDescriptor;
 import de.metas.material.event.MaterialEvent;
+import de.metas.material.event.commons.EventDescriptor;
+import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -30,23 +28,20 @@ import lombok.Value;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-/**
- * Send by the material planner when it came up with a brilliant production plan that could be turned into an {@link I_PP_Order} <b>or</or> if a ppOrder was actually created or changed.
- *
- * @author metas-dev <dev@metasfresh.com>
- *
- */
-@Value // this implies @AllArgsConstructor which is needed by jackson
+
+@Value
 @Builder
-final public class ProductionPlanEvent implements MaterialEvent
+public class SupplyRequiredEvent implements MaterialEvent
 {
-	public static final String TYPE = "ProductionPlanEvent";
+	public static final String TYPE = "MaterialDemandEvent";
 
 	@NonNull
-	EventDescriptor eventDescriptor;
+	SupplyRequiredDescriptor materialDemandDescriptor;
 
-	@NonNull
-	PPOrder ppOrder;
 
-	MaterialDemandDescriptor materialDemandDescr;
+	@Override
+	public EventDescriptor getEventDescriptor()
+	{
+		return materialDemandDescriptor.getEventDescr();
+	}
 }

@@ -7,7 +7,7 @@ import java.math.BigDecimal;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import de.metas.material.event.ProductDescriptor;
+import de.metas.material.event.commons.ProductDescriptor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;

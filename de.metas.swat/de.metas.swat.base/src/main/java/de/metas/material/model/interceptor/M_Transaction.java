@@ -22,12 +22,12 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked;
-import de.metas.material.event.EventDescriptor;
-import de.metas.material.event.MaterialDescriptor;
 import de.metas.material.event.MaterialEventService;
-import de.metas.material.event.ProductDescriptor;
 import de.metas.material.event.ModelProductDescriptorExtractor;
-import de.metas.material.event.TransactionEvent;
+import de.metas.material.event.commons.EventDescriptor;
+import de.metas.material.event.commons.MaterialDescriptor;
+import de.metas.material.event.commons.ProductDescriptor;
+import de.metas.material.event.transactions.TransactionCreatedEvent;
 import de.metas.materialtransaction.MTransactionUtil;
 import lombok.NonNull;
 
@@ -85,19 +85,19 @@ public class M_Transaction
 
 		final MaterialEventService materialEventService = Adempiere.getBean(MaterialEventService.class);
 
-		final Collection<TransactionEvent> events = createTransactionEvents(transaction, type);
-		for (final TransactionEvent event : events)
+		final Collection<TransactionCreatedEvent> events = createTransactionEvents(transaction, type);
+		for (final TransactionCreatedEvent event : events)
 		{
 			materialEventService.fireEvent(event);
 		}
 	}
 
 	@VisibleForTesting
-	static List<TransactionEvent> createTransactionEvents(
+	static List<TransactionCreatedEvent> createTransactionEvents(
 			@NonNull final I_M_Transaction transaction,
 			@NonNull final ModelChangeType type)
 	{
-		final Builder<TransactionEvent> result = ImmutableList.builder();
+		final Builder<TransactionCreatedEvent> result = ImmutableList.builder();
 
 		final Map<Integer, BigDecimal> shipmentScheduleId2qty = retrieveShipmentScheduleId(transaction);
 
@@ -105,7 +105,7 @@ public class M_Transaction
 		{
 			final BigDecimal quantity = type.isDelete() ? BigDecimal.ZERO : entries.getValue();
 
-			final TransactionEvent event = TransactionEvent.builder()
+			final TransactionCreatedEvent event = TransactionCreatedEvent.builder()
 					.eventDescriptor(EventDescriptor.createNew(transaction))
 					.transactionId(transaction.getM_Transaction_ID())
 					.materialDescriptor(createMaterialDescriptor(transaction, quantity))

@@ -4,6 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Test;
 
+import de.metas.material.event.commons.ProductDescriptor;
+
 /*
  * #%L
  * metasfresh-material-event

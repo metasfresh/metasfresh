@@ -7,9 +7,9 @@ import java.util.List;
 import com.google.common.base.Preconditions;
 
 import de.metas.material.dispo.commons.CandidatesQuery;
-import de.metas.material.event.EventDescriptor;
-import de.metas.material.event.MaterialDescriptor;
-import de.metas.material.event.MaterialDescriptor.DateOperator;
+import de.metas.material.event.commons.EventDescriptor;
+import de.metas.material.event.commons.MaterialDescriptor;
+import de.metas.material.event.commons.MaterialDescriptor.DateOperator;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;

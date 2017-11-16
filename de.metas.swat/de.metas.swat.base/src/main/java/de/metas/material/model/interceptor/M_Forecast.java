@@ -18,7 +18,7 @@ import org.compiere.util.Env;
 
 import de.metas.i18n.IMsgBL;
 import de.metas.material.event.MaterialEventService;
-import de.metas.material.event.forecast.ForecastEvent;
+import de.metas.material.event.forecast.ForecastCreatedEvent;
 import lombok.NonNull;
 
 @Interceptor(I_M_Forecast.class)
@@ -59,7 +59,7 @@ public class M_Forecast
 			return;
 		}
 
-		final ForecastEvent forecastEvent = M_ForecastEventCreator.createEventWithLinesAndTiming(
+		final ForecastCreatedEvent forecastEvent = M_ForecastEventCreator.createEventWithLinesAndTiming(
 				forecastLines,
 				timing);
 

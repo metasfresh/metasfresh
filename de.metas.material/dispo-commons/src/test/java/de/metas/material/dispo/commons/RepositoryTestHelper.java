@@ -20,9 +20,9 @@ import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryCommands;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
-import de.metas.material.event.MaterialDescriptor;
-import de.metas.material.event.MaterialDescriptor.DateOperator;
-import de.metas.material.event.ProductDescriptor;
+import de.metas.material.event.commons.MaterialDescriptor;
+import de.metas.material.event.commons.ProductDescriptor;
+import de.metas.material.event.commons.MaterialDescriptor.DateOperator;
 import lombok.NonNull;
 import mockit.Expectations;
 

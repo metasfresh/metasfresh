@@ -11,7 +11,8 @@ RETURNS TABLE
 	taxbaseamt numeric,
 	taxrate numeric,
 	taxamt numeric,
-	cursymbol character varying(10)
+	cursymbol character varying(10),
+	vattaxid character varying(60)
 )
 AS
 $$
@@ -33,7 +34,8 @@ SELECT
 	ELSE round(sum.TaxRate,2)
 	END AS TaxRate,
 	sum.TaxAmt,
-	cur.cursymbol
+	cur.cursymbol,
+	COALESCE(bp.VATaxID, '') as VATaxID
 FROM
 	C_Order o
 	INNER JOIN

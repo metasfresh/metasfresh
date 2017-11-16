@@ -3,11 +3,11 @@ package de.metas.material.planning.pporder;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.springframework.stereotype.Service;
 
-import de.metas.material.event.ProductDescriptor;
 import de.metas.material.event.ModelProductDescriptorExtractor;
+import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrderLine;
-import de.metas.material.event.pporder.PPOrderRequestedEvent;
+import de.metas.material.event.pporder.ProductionRequestedEvent;
 import lombok.NonNull;
 
 /*
@@ -53,7 +53,7 @@ public class PPOrderPojoConverter
 				.build();
 	}
 
-	public PPOrder asPPOrderPojo(@NonNull final PPOrderRequestedEvent event)
+	public PPOrder asPPOrderPojo(@NonNull final ProductionRequestedEvent event)
 	{
 		return event.getPpOrder();
 	}

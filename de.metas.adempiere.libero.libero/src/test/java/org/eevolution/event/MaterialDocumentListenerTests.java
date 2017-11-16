@@ -37,7 +37,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import de.metas.adempiere.model.I_M_Product;
-import de.metas.material.event.ProductDescriptor;
+import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.pporder.PPOrder;
 
 /*
