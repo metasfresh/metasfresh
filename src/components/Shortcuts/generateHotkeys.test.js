@@ -1,6 +1,6 @@
 /* eslint-env mocha */
 import chai, { expect } from 'chai';
-import sinon from 'sinon';
+import { stub } from 'sinon';
 import sinonChai from 'sinon-chai';
 
 chai.use(sinonChai);
@@ -29,7 +29,7 @@ describe('generateHotkeys', () => {
     });
 
     it('should warn about duplicate keys', () => {
-        const warn = sinon.spy(console, 'warn');
+        const warn = stub(console, 'warn');
 
         try {
             const keymap = {
@@ -48,7 +48,7 @@ describe('generateHotkeys', () => {
     });
 
     it('should warn about blacklisted hotkeys', () => {
-        const warn = sinon.spy(console, 'warn');
+        const warn = stub(console, 'warn');
 
         try {
             const blacklist = {
