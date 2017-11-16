@@ -11,6 +11,10 @@ export default class ShortcutProvider extends Component {
         unsubscribe: PropTypes.func.isRequired
     };
 
+    hotkeys = {};
+    keySequence = [];
+    fired = {};
+
     getChildContext() {
         return {
             subscribe: this.subscribe,
@@ -18,7 +22,49 @@ export default class ShortcutProvider extends Component {
         };
     }
 
-    hotkeys = {};
+    componentWillMount() {
+        document.addEventListener('keydown', this.handleKeyDown);
+        document.addEventListener('keyup', this.handleKeyUp);
+    }
+
+    componentWillUnmount() {
+        document.removeEventListener('keydown', this.handleKeyDown);
+        document.removeEventListener('keyup', this.handleKeyUp);
+    }
+
+    handleKeyDown = event => {
+        const { key } = event;
+        const { keySequence, fired, hotkeys } = this;
+
+        if (fired[key]) {
+            return;
+        }
+
+        fired[key] = true;
+
+        this.keySequence = [...keySequence, key];
+
+        const serializedSequence = this.keySequence.join('+').toUpperCase();
+
+        if (!(serializedSequence in hotkeys)) {
+            return;
+        }
+
+        const bucket = hotkeys[serializedSequence];
+        const handler = bucket[bucket.length - 1];
+
+        if (typeof handler === 'function') {
+            return handler(event);
+        }
+
+        // eslint-disable-next-line max-len
+        console.warn(`Handler defined for key sequence "${keySequence}" is not a function.`);
+    };
+
+    handleKeyUp = () => {
+        this.keySequence = [];
+        this.fired = {};
+    };
 
     register = hotkeys => {
         this.hotkeys = hotkeys;

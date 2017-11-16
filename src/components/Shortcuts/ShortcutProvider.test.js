@@ -1,6 +1,6 @@
 /* eslint-env mocha */
 import chai, { expect } from 'chai';
-import { stub } from 'sinon';
+import { spy, stub } from 'sinon';
 import sinonChai from 'sinon-chai';
 import { Component } from 'react';
 import ShortcutProvider from './ShortcutProvider';
@@ -22,6 +22,49 @@ describe('Shortcuts', () => {
         };
 
         expect(shortcutProvider.render()).to.equal(children);
+    });
+
+    it('should clean up event listeners', () => {
+        const listeners = [];
+
+        global.document = {
+            addEventListener: (event, handler) => {
+                listeners.push([event, handler]);
+            },
+            removeEventListener: (event, handler) => {
+                const indices = [];
+                let i = 0;
+
+                for (const listener of listeners) {
+                    if (
+                        listener[0] === event &&
+                        listener[1] === handler
+                    ) {
+                        indices.push(i);
+                    }
+
+                    i++;
+                }
+
+                for (const index of indices.reverse()) {
+                    listeners.splice(index, 1);
+                }
+            }
+        };
+
+        try {
+            const shortcutProvider = new ShortcutProvider;
+
+            shortcutProvider.componentWillMount();
+
+            shortcutProvider.componentWillUnmount();
+
+            expect(listeners).to.have.length(0);
+        } catch (error) {
+            throw error;
+        } finally {
+            delete global.document;
+        }
     });
 
     it('should expose context', () => {
@@ -167,6 +210,106 @@ describe('Shortcuts', () => {
             } finally {
                 warn.restore();
             }
+        });
+    });
+
+    describe('handleKeyDown', () => {
+        it('should not fire multiple times for a single key', () => {
+            const shortcutProvider = new ShortcutProvider;
+
+            const key = 'a';
+
+            expect(shortcutProvider.fired[key]).to.equal(undefined);
+
+            shortcutProvider.handleKeyDown({ key });
+
+            expect(shortcutProvider.fired[key]).to.equal(true);
+            expect(shortcutProvider.keySequence).to.deep.equal(['a']);
+
+            shortcutProvider.handleKeyDown({ key });
+
+            expect(shortcutProvider.fired[key]).to.equal(true);
+            expect(shortcutProvider.keySequence).to.deep.equal(['a']);
+        });
+
+        it('should call latest registered handler for that hotkey', () => {
+            const shortcutProvider = new ShortcutProvider;
+
+            const key = 'A';
+
+            const handler1 = spy();
+            const handler2 = spy();
+            const handler3 = spy();
+
+            shortcutProvider.hotkeys = {
+                [key]: [ handler1, handler2, handler3 ]
+            };
+
+            shortcutProvider.handleKeyDown({ key });
+
+            expect(handler1).to.not.have.been.called;
+            expect(handler1).to.not.have.been.called;
+            expect(handler3).to.have.been.called;
+        });
+
+        it('should call handler with event as argument', () => {
+            const shortcutProvider = new ShortcutProvider;
+
+            const key = 'A';
+
+            const handler = spy();
+
+            shortcutProvider.hotkeys = {
+                [key]: [ handler ]
+            };
+
+            const event = { key };
+
+            shortcutProvider.handleKeyDown(event);
+
+            expect(handler).to.have.been.calledWith(event);
+        });
+
+        it('should warn when handler is not a function', () => {
+            const warn = stub(console, 'warn');
+
+            try {
+                const shortcutProvider = new ShortcutProvider;
+
+                const key = 'A';
+
+                const handler = null;
+
+                shortcutProvider.hotkeys = {
+                    [key]: [ handler ]
+                };
+
+                shortcutProvider.handleKeyDown({ key });
+
+                expect(warn).to.have.been.called;
+            } catch (error) {
+                throw error;
+            } finally {
+                warn.restore();
+            }
+        });
+    });
+
+    describe('handleKeyUp', () => {
+        it('should reset key sequence', () => {
+            const shortcutProvider = new ShortcutProvider;
+
+            const key1 = 'a';
+            const key2 = 'A';
+            const key3 = 'b';
+            const key4 = 'c';
+
+            shortcutProvider.keySequence = [ key1, key2, key3, key4 ];
+
+            shortcutProvider.handleKeyUp();
+
+            expect(shortcutProvider.keySequence).to.deep.equal([]);
+            expect(shortcutProvider.fired).to.deep.equal({});
         });
     });
 });
