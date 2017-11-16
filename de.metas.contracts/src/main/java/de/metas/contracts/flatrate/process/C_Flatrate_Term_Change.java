@@ -14,7 +14,6 @@ import de.metas.contracts.IContractChangeBL;
 import de.metas.contracts.IContractChangeBL.ContractChangeParameters;
 import de.metas.contracts.model.I_C_Contract_Change;
 import de.metas.contracts.model.I_C_Flatrate_Term;
-import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueuer;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.process.RunOutOfTrx;
@@ -33,6 +32,8 @@ public class C_Flatrate_Term_Change extends JavaProcess
 
 	public static final String PARAM_TERMINATION_MEMO = I_C_Flatrate_Term.COLUMNNAME_TerminationMemo;
 	public static final String PARAM_TERMINATION_REASON = I_C_Flatrate_Term.COLUMNNAME_TerminationReason;
+	
+	public static final String PARAM_ONLY_TERMINATE_CURRENT_TERM = "OnlyTerminateCurrentTerm";
 
 	@Param(parameterName = PARAM_ACTION, mandatory = true)
 	private String action;
@@ -45,6 +46,9 @@ public class C_Flatrate_Term_Change extends JavaProcess
 
 	@Param(parameterName = PARAM_TERMINATION_REASON, mandatory = false)
 	private String terminationReason;
+	
+	@Param(parameterName = PARAM_ONLY_TERMINATE_CURRENT_TERM, mandatory = false)
+	private boolean isOnlyTerminateCurrentTerm;
 
 
 	@Override
@@ -55,7 +59,7 @@ public class C_Flatrate_Term_Change extends JavaProcess
 		final int selectionCount = createSelection(queryBuilder, getAD_PInstance_ID());
 		if (selectionCount <= 0)
 		{
-			throw new AdempiereException(msgBL.getMsg(getCtx(), IInvoiceCandidateEnqueuer.MSG_INVOICE_GENERATE_NO_CANDIDATES_SELECTED_0P));
+			throw new AdempiereException("@NoSelection@");
 		}
 
 	}
@@ -73,6 +77,7 @@ public class C_Flatrate_Term_Change extends JavaProcess
 				.isCloseInvoiceCandidate(true)
 				.terminationMemo(terminationMemo)
 				.terminationReason(terminationReason)
+				.isOnlyTerminateCurrentTerm(isOnlyTerminateCurrentTerm)
 				.build();
 
 		final Iterable<I_C_Flatrate_Term> flatrateTerms = retrieveSelection(getAD_PInstance_ID());

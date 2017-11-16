@@ -2,6 +2,7 @@ package de.metas.contracts.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /*
  * #%L
@@ -40,6 +41,7 @@ import de.metas.contracts.IContractChangeBL;
 import de.metas.contracts.IContractChangeBL.ContractChangeParameters;
 import de.metas.contracts.IContractsDAO;
 import de.metas.contracts.IFlatrateBL;
+import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.impl.ContractsTestBase.FixedTimeSource;
 import de.metas.contracts.impl.FlatrateTermDataFactory.ProductAndPricingSystem;
 import de.metas.contracts.interceptor.C_Flatrate_Term;
@@ -58,6 +60,7 @@ public class ContractChangeBLTest extends AbstractFlatrateTermTest
 	final private static Timestamp startDate = TimeUtil.parseTimestamp("2017-09-10");
 	final private static Timestamp cancelDate = TimeUtil.parseTimestamp("2017-12-10");
 	final private static String terminationMemo = "note: cancelContract_test";
+	final private static FixedTimeSource today = new FixedTimeSource(2017, 11, 10);
 	final private static ContractChangeParameters contractChangeParameters = ContractChangeParameters.builder()
 			.changeDate(cancelDate)
 			.isCloseInvoiceCandidate(true)
@@ -69,8 +72,7 @@ public class ContractChangeBLTest extends AbstractFlatrateTermTest
 	public void before()
 	{
 		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(C_Flatrate_Term.INSTANCE);
-
-		SystemTime.setTimeSource(new FixedTimeSource(2017, 11, 10)); // today
+		SystemTime.setTimeSource(today); 
 	}
 
 	@Test
@@ -131,6 +133,31 @@ public class ContractChangeBLTest extends AbstractFlatrateTermTest
 		assertSubscriptionProgress(extendedContract, 3);
 		assertThat(contract.getMasterEndDate()).isEqualTo(extendedContract.getMasterEndDate());
 	}
+	
+	@Test
+	public void closeContract_test()
+	{
+		final I_C_Flatrate_Term contract = prepareContractForTest(true);
+		Services.get(IFlatrateBL.class).extendContract(contract, true, true, null, null);
+		save(contract);
+
+		final I_C_Flatrate_Term extendedContract = contract.getC_FlatrateTerm_Next();
+		assertThat(extendedContract).isNotNull();
+		
+		final ContractChangeParameters contractChangeParameters = ContractChangeParameters.builder()
+				.changeDate(SystemTime.asDayTimestamp())
+				.isCloseInvoiceCandidate(true)
+				.isOnlyTerminateCurrentTerm(true)
+				.build();
+		
+		assertThatThrownBy(() -> {
+			contractChangeBL.cancelContract(contract, contractChangeParameters);
+		}).hasMessageContaining(ContractChangeBL.MSG_IS_NOT_ALLOWED_TO_TERMINATE_CURRENT_CONTRACT);
+		
+		contractChangeBL.cancelContract(extendedContract, contractChangeParameters);
+		assertClosedFlatrateTerm(extendedContract);
+		assertSubscriptionProgress(extendedContract, 0);
+	}
 
 	private I_C_Flatrate_Term prepareContractForTest(final boolean isAutoRenew)
 	{
@@ -163,6 +190,21 @@ public class ContractChangeBLTest extends AbstractFlatrateTermTest
 				.peek(progress -> assertThat(progress.getContractStatus()).isEqualTo(X_C_SubscriptionProgress.CONTRACTSTATUS_Quit))
 				.filter(progress -> progress.getEventDate().after(flatrateTerm.getMasterEndDate()))
 				.peek(progress -> assertThat(progress.getContractStatus()).isEqualTo(X_C_SubscriptionProgress.CONTRACTSTATUS_Running));
+	}
+	
+	private void assertClosedFlatrateTerm(@NonNull final I_C_Flatrate_Term flatrateTerm)
+	{
+		assertThat(flatrateTerm.getDocStatus()).isEqualTo(X_C_Flatrate_Term.DOCSTATUS_Completed);
+		assertThat(flatrateTerm.getContractStatus()).isEqualTo(X_C_Flatrate_Term.CONTRACTSTATUS_Quit);
+		assertThat(flatrateTerm.getMasterStartDate()).isNull();
+		assertThat(flatrateTerm.getMasterEndDate()).isNull();
+		assertThat(flatrateTerm.isAutoRenew()).isFalse();
+		assertThat(flatrateTerm.getC_FlatrateTerm_Next()).isNull();
+		assertThat(flatrateTerm.getAD_PInstance_EndOfTerm()).isNull();
+		
+		final I_C_Flatrate_Term ancestor = Services.get(IFlatrateDAO.class).retrieveAncestorFlatrateTerm(flatrateTerm);
+		
+		assertThat(ancestor).isNull();
 	}
 
 }
