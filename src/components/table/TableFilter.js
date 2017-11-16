@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 import counterpart from 'counterpart';
 import TableQuickInput from './TableQuickInput';
 import Tooltips from '../tooltips/Tooltips';
-import keymap from '../../keymap.js';
+import keymap from '../../shortcuts/keymap';
 
 class TableFilter extends Component {
     constructor(props) {

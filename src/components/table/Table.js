@@ -4,7 +4,6 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import onClickOutside from 'react-onclickoutside';
 import { connect } from 'react-redux';
-import { ShortcutManager } from 'react-shortcuts';
 
 import {
     openModal,
@@ -15,7 +14,6 @@ import {
     getZoomIntoWindow,
 } from '../../actions/WindowActions';
 import { deleteRequest } from '../../actions/GenericActions';
-import keymap from '../../keymap.js';
 
 import Prompt from '../app/Prompt';
 import DocumentListContextShortcuts
@@ -27,8 +25,6 @@ import TableItem from './TableItem';
 import TablePagination from './TablePagination';
 import TableHeader from './TableHeader';
 import TableContextMenu from './TableContextMenu';
-
-const shortcutManager = new ShortcutManager(keymap);
 
 class Table extends Component {
     constructor(props) {
@@ -166,12 +162,6 @@ class Table extends Component {
                 }
             });
         }
-    }
-
-    getChildContext = () => {
-        return {
-            shortcuts: shortcutManager
-        };
     }
 
     getIndentData = (selectFirst) => {
@@ -1178,10 +1168,6 @@ class Table extends Component {
             </div>
         )
     }
-}
-
-Table.childContextTypes = {
-    shortcuts: PropTypes.object.isRequired
 }
 
 Table.propTypes = {

@@ -6,7 +6,7 @@ import counterpart from 'counterpart';
 
 import MenuOverlay from './MenuOverlay';
 import Tooltips from '../tooltips/Tooltips';
-import keymap from '../../keymap.js';
+import keymap from '../../shortcuts/keymap';
 
 class Breadcrumb extends Component {
     constructor(props) {

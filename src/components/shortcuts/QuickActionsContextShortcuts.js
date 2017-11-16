@@ -1,62 +1,32 @@
 import React, { Component } from 'react';
-import { Shortcuts } from 'react-shortcuts';
+import { Shortcut } from '../Shortcuts';
 
-/* TODO: Refactor this hack
- * https://github.com/metasfresh/metasfresh-webui-frontend/issues/1283
- */
-let componentHierarchy = [];
-
-class QuickActionsContextShortcuts extends Component {
-    componentWillMount() {
-        // Rerender components lower in the hierarchy when a new one is added
-        const _componentHierarchy = componentHierarchy;
-        componentHierarchy = [...componentHierarchy, this];
-
-        for (const component of _componentHierarchy) {
-            component.forceUpdate();
-        }
-    }
-
-    componentWillUnmount() {
-        componentHierarchy = componentHierarchy.filter(
-            component => component !== this
-        );
-    }
-
-    handleShortcuts = (action, event) => {
-        const {handleClick, onClick} = this.props;
-
-        switch (action) {
-        case 'QUICK_ACTION_POS':
+export default class QuickActionsContextShortcuts extends Component {
+    handlers = {
+        QUICK_ACTION_POS: event => {
             event.preventDefault();
-            handleClick();
-            break
-        case 'QUICK_ACTION_TOGGLE':
+
+            this.props.handleClick();
+        },
+        QUICK_ACTION_TOGGLE: event => {
             event.preventDefault();
-            onClick();
-            break
+
+            this.props.onClick();
         }
-    }
+    };
 
     render() {
-        // Only render the top most component in the hierarchy
-        if (componentHierarchy[componentHierarchy.length - 1] !== this) {
-            return null;
-        }
-
-        return (
-            <Shortcuts
-                alwaysFireHandler
-                global
-                handler={this.handleShortcuts}
-                isolate
-                name="QUICK_ACTIONS"
-                preventDefault
-                stopPropagation
-                targetNodeSelector="body"
+        return [
+            <Shortcut
+                key="QUICK_ACTION_POS"
+                name="QUICK_ACTION_POS"
+                handler={this.handlers.QUICK_ACTION_POS}
+            />,
+            <Shortcut
+                key="QUICK_ACTION_TOGGLE"
+                name="QUICK_ACTION_TOGGLE"
+                handler={this.handlers.QUICK_ACTION_TOGGLE}
             />
-        );
+        ];
     }
 }
-
-export default QuickActionsContextShortcuts;

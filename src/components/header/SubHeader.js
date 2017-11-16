@@ -9,7 +9,7 @@ import {
   updateBreadcrumb,
 } from '../../actions/MenuActions';
 import { getSelection } from '../../reducers/windowHandler';
-import keymap from '../../keymap.js';
+import keymap from '../../shortcuts/keymap';
 
 import Actions from './Actions';
 import BookmarkButton from './BookmarkButton';

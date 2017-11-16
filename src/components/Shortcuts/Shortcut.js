@@ -1,6 +1,6 @@
 import { Component } from 'react';
 import PropTypes from 'prop-types';
-import keymap from './keymap';
+import keymap from '../../shortcuts/keymap';
 
 export default class Shortcut extends Component {
     static contextTypes = {

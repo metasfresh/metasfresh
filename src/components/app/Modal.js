@@ -2,7 +2,6 @@ import counterpart from 'counterpart';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import {connect} from 'react-redux';
-import { ShortcutManager } from 'react-shortcuts';
 
 import { processNewRecord } from '../../actions/GenericActions';
 import {
@@ -14,7 +13,7 @@ import {
     patch,
 } from '../../actions/WindowActions';
 import { getSelection } from '../../reducers/windowHandler';
-import keymap from '../../keymap.js';
+import keymap from '../../shortcuts/keymap';
 
 import Process from '../Process';
 import ModalContextShortcuts from '../shortcuts/ModalContextShortcuts';
@@ -23,8 +22,6 @@ import Window from '../Window';
 
 import Indicator from './Indicator';
 import OverlayField from './OverlayField';
-
-const shortcutManager = new ShortcutManager(keymap);
 
 const mapStateToProps = (state, props) => ({
     parentSelection: getSelection({
@@ -37,10 +34,6 @@ const mapStateToProps = (state, props) => ({
 
 class Modal extends Component {
     mounted = false;
-
-    static childContextTypes = {
-        shortcuts: PropTypes.object.isRequired,
-    }
 
     static propTypes = {
         dispatch: PropTypes.func.isRequired,
@@ -110,10 +103,6 @@ class Modal extends Component {
 
     toggleTooltip = (key = null) => {
         this.setState({ isTooltipShow: key });
-    }
-
-    getChildContext = () => {
-        return { shortcuts: shortcutManager };
     }
 
     initEventListeners = () => {
@@ -469,7 +458,6 @@ class Modal extends Component {
                     >
                         {this.renderModalBody()}
                     </div>
-
                     <ModalContextShortcuts
                         apply={modalType === 'process' ?
                             this.handleStart :

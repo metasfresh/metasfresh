@@ -1,60 +1,84 @@
 import React, { Component } from 'react';
-import { Shortcuts } from 'react-shortcuts';
+import { Shortcut } from '../Shortcuts';
 
-class DocumentListContextShortcuts extends Component {
-    constructor(props){
-        super(props);
-    }
-    handleShortcuts = (action, event) => {
-        const {
-            handleAdvancedEdit, handleOpenNewTab, handleDelete, getAllLeafs,
-            handleIndent
-        } = this.props;
+export default class DocumentListContextShortcuts extends Component {
+    handlers = {
+        OPEN_SELECTED: event => {
+            event.preventDefault();
 
-        switch (action) {
-        case 'OPEN_SELECTED':
-            event.preventDefault();
-            if(handleOpenNewTab) {
-            handleOpenNewTab();
+            if (this.props.handleOpenNewTab) {
+                this.props.handleOpenNewTab();
             }
-            break;
-        case 'REMOVE_SELECTED':
+        },
+        REMOVE_SELECTED: event => {
             event.preventDefault();
-            if(handleDelete){
-            handleDelete();
+
+            if (this.props.handleDelete) {
+                this.props.handleDelete();
             }
-            break;
-        case 'ADVANCED_EDIT':
+        },
+        ADVANCED_EDIT: event => {
             event.preventDefault();
-            if(handleAdvancedEdit){
-            handleAdvancedEdit();
+
+            if (this.props.handleAdvancedEdit) {
+                this.props.handleAdvancedEdit();
             }
-            break;
-        case 'SELECT_ALL_LEAFS':
+        },
+        SELECT_ALL_LEAFS: event => {
             event.preventDefault();
-            getAllLeafs();
-            break;
-        case 'EXPAND_INDENT':
-            handleIndent(true);
-            break;
-        case 'COLLAPSE_INDENT':
-            handleIndent(false);
-            break;
+
+            if (this.props.getAllLeafs) {
+                this.props.getAllLeafs();
+            }
+        },
+        EXPAND_INDENT: event => {
+            event.preventDefault();
+
+            if (this.props.handleIndent) {
+                this.props.handleIndent(true);
+            }
+        },
+        COLLAPSE_INDENT: event => {
+            event.preventDefault();
+
+            if (this.props.handleIndent) {
+                this.props.handleIndent(false);
+            }
         }
-    }
+    };
 
     render() {
-        return (
-            <Shortcuts
-                handler={this.handleShortcuts}
-                isolate
-                name="DOCUMENT_LIST_CONTEXT"
-                preventDefault
-                stopPropagation
-                targetNodeSelector="body"
+        return [
+            <Shortcut
+                key="OPEN_SELECTED"
+                name="OPEN_SELECTED"
+                handler={this.handlers.OPEN_SELECTED}
+            />,
+            <Shortcut
+                key="REMOVE_SELECTED"
+                name="REMOVE_SELECTED"
+                handler={this.handlers.REMOVE_SELECTED}
+            />,
+            <Shortcut
+                key="ADVANCED_EDIT"
+                name="ADVANCED_EDIT"
+                handler={this.handlers.ADVANCED_EDIT}
+            />,
+            <Shortcut
+                key="SELECT_ALL_LEAFS"
+                name="SELECT_ALL_LEAFS"
+                handler={this.handlers.SELECT_ALL_LEAFS}
+            />,
+            <Shortcut
+                key="EXPAND_INDENT"
+                name="EXPAND_INDENT"
+                handler={this.handlers.EXPAND_INDENT}
+            />,
+            <Shortcut
+                key="COLLAPSE_INDENT"
+                name="COLLAPSE_INDENT"
+                handler={this.handlers.COLLAPSE_INDENT}
             />
-        );
+        ];
     }
 }
-
-export default DocumentListContextShortcuts;

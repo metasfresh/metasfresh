@@ -3,7 +3,6 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { push } from 'react-router-redux';
-import { ShortcutManager } from 'react-shortcuts';
 
 import {
     deleteRequest,
@@ -12,7 +11,7 @@ import {
 } from '../../actions/GenericActions';
 import { openModal } from '../../actions/WindowActions';
 import logo from '../../assets/images/metasfresh_logo_green_thumb.png';
-import keymap from '../../keymap';
+import keymap from '../../shortcuts/keymap';
 
 import Indicator from '../app/Indicator';
 import Prompt from '../app/Prompt';
@@ -27,8 +26,6 @@ import Breadcrumb from './Breadcrumb';
 import SideList from './SideList';
 import Subheader from './SubHeader';
 import UserDropdown from './UserDropdown';
-
-const shortcutManager = new ShortcutManager(keymap);
 
 const mapStateToProps = state => ({
     inbox: state.appHandler.inbox,
@@ -49,10 +46,6 @@ class Header extends Component {
         tooltipOpen: '',
         isEmailOpen: false,
         prompt: { open: false },
-    }
-
-    static childContextTypes = {
-        shortcuts: PropTypes.object.isRequired,
     }
 
     static propTypes = {
@@ -95,10 +88,6 @@ class Header extends Component {
             // Need to reload page completely when current locale gets changed
             window.location.reload(false);
         }
-    }
-
-    getChildContext = () => {
-        return { shortcuts: shortcutManager };
     }
 
     initEventListeners = () => {

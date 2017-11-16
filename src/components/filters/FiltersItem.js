@@ -1,13 +1,10 @@
 import React, { Component } from 'react';
-import PropTypes from 'prop-types';
 import RawWidget from '../widget/RawWidget';
 import OverlayField from '../app/OverlayField';
 import counterpart from 'counterpart';
-import keymap from '../../keymap.js';
+import keymap from '../../shortcuts/keymap';
 import ModalContextShortcuts from '../shortcuts/ModalContextShortcuts';
-import { ShortcutManager } from 'react-shortcuts';
 import Tooltips from '../tooltips/Tooltips.js';
-const shortcutManager = new ShortcutManager(keymap);
 
 class FiltersItem extends Component {
     constructor(props) {
@@ -62,10 +59,6 @@ class FiltersItem extends Component {
                 );
             })
         }
-    }
-
-    getChildContext = () => {
-        return { shortcuts: shortcutManager }
     }
 
     setValue = (property, value, id, valueTo) => {
@@ -236,10 +229,6 @@ class FiltersItem extends Component {
                 />
             </div>
     )}
-}
-
-FiltersItem.childContextTypes = {
-    shortcuts: PropTypes.object.isRequired
 }
 
 export default FiltersItem

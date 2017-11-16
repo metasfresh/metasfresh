@@ -14,12 +14,10 @@ import {
 
 import QuickActionsDropdown from './QuickActionsDropdown';
 
-import keymap from '../../keymap.js';
+import keymap from '../../shortcuts/keymap';
 import QuickActionsContextShortcuts
     from '../shortcuts/QuickActionsContextShortcuts';
 import Tooltips from '../tooltips/Tooltips.js'
-import { ShortcutManager } from 'react-shortcuts';
-const shortcutManager = new ShortcutManager(keymap);
 
 class QuickActions extends Component {
     constructor(props){
@@ -94,10 +92,6 @@ class QuickActions extends Component {
             isTooltip: false,
             loading: false
         }
-    }
-
-    getChildContext = () => {
-        return { shortcuts: shortcutManager }
     }
 
     handleClickOutside = () => {
@@ -255,10 +249,6 @@ class QuickActions extends Component {
             return false;
         }
     }
-}
-
-QuickActions.childContextTypes = {
-    shortcuts: PropTypes.object.isRequired
 }
 
 QuickActions.propTypes = {

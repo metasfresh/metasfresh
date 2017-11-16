@@ -9,7 +9,7 @@ import {
     setFilter
 } from '../../actions/ListActions';
 
-import keymap from '../../keymap.js';
+import keymap from '../../shortcuts/keymap';
 
 class TableContextMenu extends Component {
     constructor(props) {
