@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package de.metas.contracts.impl;
 
@@ -8,6 +8,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.acct.api.IAcctSchemaDAO;
@@ -40,6 +41,8 @@ import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Contract_Change;
 import de.metas.contracts.model.X_C_Flatrate_Conditions;
+import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import lombok.NonNull;
 
 /*
@@ -52,12 +55,12 @@ import lombok.NonNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -70,17 +73,22 @@ import lombok.NonNull;
  */
 public abstract class AbstractFlatrateTermTest
 {
+	private final transient IInvoiceCandidateHandlerBL iinvoiceCandidateHandlerBL = Services.get(IInvoiceCandidateHandlerBL.class);
+
 	private final String sequence = "@BP@ @CON@ @A1@ @A2@ @A3@ @A4@ @P@ @C@ @CO@";
+	protected final static BigDecimal QTY = BigDecimal.ONE;
+	protected final static BigDecimal PRICE = BigDecimal.TEN;
 
 	public FlatrateTermTestHelper helper;
 
 	private I_C_Calendar calendar;
 	private I_C_AcctSchema acctSchema;
 	private I_C_Country country;
-	
+
 	private I_C_BPartner bpartner;
 	private I_C_BPartner_Location bpLocation;
 	private I_AD_User user;
+
 
 	public I_C_BPartner getBpartner()
 	{
@@ -147,8 +155,8 @@ public abstract class AbstractFlatrateTermTest
 		createDocType();
 		createCountryAndCountryArea();
 	}
-	
-	
+
+
 	public I_C_Flatrate_Term prepareContractForTest(final boolean isAutoRenew, final Timestamp startDate)
 	{
 		prepareBPartner();
@@ -158,6 +166,11 @@ public abstract class AbstractFlatrateTermTest
 		createContractChange(conditions);
 		final I_C_Flatrate_Term contract = createFlatrateTerm(conditions, productAndPricingSystem.getProduct(), startDate);
 		return contract;
+	}
+
+	public List<I_C_Invoice_Candidate> createInvoiceCandidates(final I_C_Flatrate_Term flatrateTerm)
+	{
+		return iinvoiceCandidateHandlerBL.createMissingCandidatesFor(flatrateTerm);
 	}
 
 
@@ -270,8 +283,8 @@ public abstract class AbstractFlatrateTermTest
 
 		return bpartner.getC_BPartner_ID();
 	}
-	
-	
+
+
 	protected ProductAndPricingSystem createProductAndPricingSystem(@NonNull final Timestamp startDate)
 	{
 		return FlatrateTermDataFactory.productAndPricingNew()
@@ -325,8 +338,8 @@ public abstract class AbstractFlatrateTermTest
 		contract.setDropShip_BPartner(getBpartner());
 		contract.setDropShip_Location(bpLocation);
 		contract.setDropShip_User(user);
-		contract.setPriceActual(BigDecimal.valueOf(2));
-		contract.setPlannedQtyPerUnit(BigDecimal.ONE);
+		contract.setPriceActual(PRICE);
+		contract.setPlannedQtyPerUnit(QTY);
 		contract.setMasterStartDate(startDate);
 		contract.setM_Product(product);
 		contract.setIsTaxIncluded(true);
@@ -336,7 +349,7 @@ public abstract class AbstractFlatrateTermTest
 		return contract;
 	}
 
-	
+
 	protected I_C_Contract_Change createContractChange(@NonNull final I_C_Flatrate_Conditions flatrateConditions)
 	{
 		final I_C_Contract_Change contractChange = newInstance(I_C_Contract_Change.class);
