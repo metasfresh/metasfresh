@@ -47,13 +47,14 @@ public class BPBankAccountDAOTest
 	@Test
 	public void retrieveESRBPBankAccounts_OneAccount_FitPostalAndAcctNumber()
 	{
-		final String accountNo1 = "1234567";
-		final I_C_BP_BankAccount account1 = createAccount(true, accountNo1);
+		final String esrPostal = "1234567";
+		final String accountNo = "notImportant";
+		final I_C_BP_BankAccount account1 = createAccount(true, esrPostal, accountNo);
 
 		final String esrAccountNo1 = "12-345-67";
 		createESRPostFinanceUserNumber(account1, esrAccountNo1);
 
-		final List<I_C_BP_BankAccount> esrBPBankAccounts = Services.get(IESRBPBankAccountDAO.class).retrieveESRBPBankAccounts(esrAccountNo1, accountNo1);
+		final List<I_C_BP_BankAccount> esrBPBankAccounts = Services.get(IESRBPBankAccountDAO.class).retrieveESRBPBankAccounts(esrAccountNo1, accountNo);
 
 		assertThat(esrBPBankAccounts).contains(account1);
 
@@ -62,15 +63,16 @@ public class BPBankAccountDAOTest
 	@Test
 	public void retrieveESRBPBankAccounts_OneAccount_FitPostalButNoAcctNumber()
 	{
-		final String accountNo1 = "1234567";
-		final String accountNo2 = "7654321";
+		final String esrPostal1 = "1234567";
 
-		final I_C_BP_BankAccount account1 = createAccount(true, accountNo1);
+		final String rightAccountNo = "7777777";
+		final String wrongAccountNo = "8888888";
+		final I_C_BP_BankAccount account1 = createAccount(true, esrPostal1, rightAccountNo);
 
 		final String esrAccountNo1 = "12-345-67";
 		createESRPostFinanceUserNumber(account1, esrAccountNo1);
 
-		final List<I_C_BP_BankAccount> esrBPBankAccounts = Services.get(IESRBPBankAccountDAO.class).retrieveESRBPBankAccounts(esrAccountNo1, accountNo2);
+		final List<I_C_BP_BankAccount> esrBPBankAccounts = Services.get(IESRBPBankAccountDAO.class).retrieveESRBPBankAccounts(esrAccountNo1, wrongAccountNo);
 
 		assertThat(esrBPBankAccounts).isEmpty();
 
@@ -79,15 +81,16 @@ public class BPBankAccountDAOTest
 	@Test
 	public void retrieveESRBPBankAccounts_OneAccount_FitAcctNumberButNoPostal()
 	{
-		final String accountNo1 = "1234567";
+		final String esrAcctNo = "1234567";
 
-		final I_C_BP_BankAccount account1 = createAccount(true, accountNo1);
+		final String accountNo = "notImportant";
+		final I_C_BP_BankAccount account1 = createAccount(true, esrAcctNo, accountNo);
 
 		final String esrAccountNo1 = "12-345-67";
 		final String esrAccountNo2 = "76-543-21";
 		createESRPostFinanceUserNumber(account1, esrAccountNo1);
 
-		final List<I_C_BP_BankAccount> esrBPBankAccounts = Services.get(IESRBPBankAccountDAO.class).retrieveESRBPBankAccounts(esrAccountNo2, accountNo1);
+		final List<I_C_BP_BankAccount> esrBPBankAccounts = Services.get(IESRBPBankAccountDAO.class).retrieveESRBPBankAccounts(esrAccountNo2, accountNo);
 
 		assertThat(esrBPBankAccounts).isEmpty();
 
@@ -96,13 +99,14 @@ public class BPBankAccountDAOTest
 	@Test
 	public void retrieveESRBPBankAccounts_TwoAccounts_FitPostalAcctNumber0000000()
 	{
-		final String accountNo1 = "1234567";
-		final String accountNo2 = "7654321";
+		final String esrAcctNo1 = "1234567";
+		final String esrAcctNo2 = "7654321";
 
 		final String unimportantAccountNo = "0000000";
 
-		final I_C_BP_BankAccount account1 = createAccount(true, accountNo1);
-		final I_C_BP_BankAccount account2 = createAccount(true, accountNo2);
+	
+		final I_C_BP_BankAccount account1 = createAccount(true, esrAcctNo1, unimportantAccountNo);
+		final I_C_BP_BankAccount account2 = createAccount(true, esrAcctNo2, unimportantAccountNo);
 
 		final String esrAccountNo1 = "12-345-67";
 		createESRPostFinanceUserNumber(account1, esrAccountNo1);
@@ -114,11 +118,44 @@ public class BPBankAccountDAOTest
 
 	}
 
-	private I_C_BP_BankAccount createAccount(final boolean isEsrAccount, final String accountNo)
+	@Test
+	public void retrieveESRBPBankAccounts_OneAccount_NumberFitsBPBankAccount()
+	{
+		final String esrAcctNo = "1234567";
+
+		final String accountNo = "8888888";
+		final I_C_BP_BankAccount account1 = createAccount(true, esrAcctNo, accountNo);
+		final String esrAccountNo1 = "12-345-67";
+		createESRPostFinanceUserNumber(account1, esrAccountNo1);
+
+		final List<I_C_BP_BankAccount> esrBPBankAccounts = Services.get(IESRBPBankAccountDAO.class).retrieveESRBPBankAccounts(esrAccountNo1, accountNo);
+
+		assertThat(esrBPBankAccounts).contains(account1);
+
+	}
+	
+	@Test
+	public void retrieveESRBPBankAccounts_OneAccount_NumberFitsBPBankAccountButNoESR()
+	{
+		final String esrAcctNo = "1234567";
+
+		final String accountNo = "8888888";
+		final I_C_BP_BankAccount account1 = createAccount(true, esrAcctNo, accountNo);
+		final String esrAccountNo1 = "12-345-67";
+		createESRPostFinanceUserNumber(account1, esrAccountNo1);
+
+		final List<I_C_BP_BankAccount> esrBPBankAccounts = Services.get(IESRBPBankAccountDAO.class).retrieveESRBPBankAccounts(esrAccountNo1, accountNo);
+
+		assertThat(esrBPBankAccounts).contains(account1);
+
+	}
+
+	private I_C_BP_BankAccount createAccount(final boolean isEsrAccount, final String esrRenderedAcctNo, final String accountNo)
 	{
 		final I_C_BP_BankAccount account = InterfaceWrapperHelper.newInstance(I_C_BP_BankAccount.class);
 		account.setIsEsrAccount(isEsrAccount);
 		account.setAccountNo(accountNo);
+		account.setESR_RenderedAccountNo(esrRenderedAcctNo);
 
 		InterfaceWrapperHelper.save(account);
 

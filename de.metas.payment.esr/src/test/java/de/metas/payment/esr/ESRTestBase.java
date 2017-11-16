@@ -39,6 +39,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.model.IContextAware;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
@@ -77,6 +78,7 @@ import de.metas.payment.esr.api.impl.PlainESRImportDAO;
 import de.metas.payment.esr.model.I_C_BP_BankAccount;
 import de.metas.payment.esr.model.I_ESR_Import;
 import de.metas.payment.esr.model.I_ESR_ImportLine;
+import de.metas.payment.esr.model.I_ESR_PostFinanceUserNumber;
 import de.metas.payment.esr.model.X_ESR_Import;
 import de.metas.payment.esr.model.validator.ESR_Main_Validator;
 import lombok.NonNull;
@@ -164,7 +166,7 @@ public class ESRTestBase
 	{
 		return invoice;
 	}
-	
+
 	public I_C_BPartner getBPartner()
 	{
 		return partner;
@@ -239,7 +241,6 @@ public class ESRTestBase
 		save(adSequence);
 	}
 
-	
 	protected I_ESR_ImportLine setupESR_ImportLine(
 			@NonNull final String invDocNo,
 			@NonNull final String invAmount,
@@ -253,7 +254,7 @@ public class ESRTestBase
 	{
 		return setupESR_ImportLine(invDocNo, invAmount, invPaid, fullRefNo, refNo, ESR_RenderedAccountNo, partnerValue, payAmt, createAllocation, false);
 	}
-	
+
 	protected I_ESR_ImportLine setupESR_ImportLine(
 			@NonNull final String invDocNo,
 			@NonNull final String invAmount,
@@ -275,7 +276,7 @@ public class ESRTestBase
 		final I_AD_Org org1 = newInstance(I_AD_Org.class);
 		org1.setValue("105");
 		save(org1);
-		
+
 		// partner
 		partner = newInstance(I_C_BPartner.class, contextProvider);
 		partner.setValue(partnerValue);
@@ -352,7 +353,7 @@ public class ESRTestBase
 		save(esrReferenceNumberDocument);
 
 		// esr line
-		final List<I_ESR_ImportLine> lines = new ArrayList<I_ESR_ImportLine>();
+		final List<I_ESR_ImportLine> lines = new ArrayList<>();
 		final I_ESR_Import esrImport = createImport();
 		esrImport.setC_BP_BankAccount(account);
 		save(esrImport);
@@ -381,5 +382,15 @@ public class ESRTestBase
 		}
 
 		return esrImportLine;
+	}
+
+	protected I_ESR_PostFinanceUserNumber createPostFinanceUserNumber(final I_C_BP_BankAccount account, final String esrNoForPostFinanceUser)
+	{
+		final I_ESR_PostFinanceUserNumber postFinanceUserNumber = InterfaceWrapperHelper.newInstance(I_ESR_PostFinanceUserNumber.class);
+		postFinanceUserNumber.setC_BP_BankAccount(account);
+		postFinanceUserNumber.setESR_RenderedAccountNo(esrNoForPostFinanceUser);
+		InterfaceWrapperHelper.save(postFinanceUserNumber);
+
+		return postFinanceUserNumber;
 	}
 }
