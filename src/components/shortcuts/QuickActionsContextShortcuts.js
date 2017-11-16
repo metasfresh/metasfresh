@@ -1,32 +1,62 @@
 import React, { Component } from 'react';
-import { Shortcut } from '../Shortcuts';
+import { Shortcuts } from 'react-shortcuts';
 
-export default class QuickActionsContextShortcuts extends Component {
-    handlers = {
-        QUICK_ACTION_POS: event => {
-            event.preventDefault();
+/* TODO: Refactor this hack
+ * https://github.com/metasfresh/metasfresh-webui-frontend/issues/1283
+ */
+let componentHierarchy = [];
 
-            this.props.handleClick();
-        },
-        QUICK_ACTION_TOGGLE: event => {
-            event.preventDefault();
+class QuickActionsContextShortcuts extends Component {
+    componentWillMount() {
+        // Rerender components lower in the hierarchy when a new one is added
+        const _componentHierarchy = componentHierarchy;
+        componentHierarchy = [...componentHierarchy, this];
 
-            this.props.onClick();
+        for (const component of _componentHierarchy) {
+            component.forceUpdate();
         }
-    };
+    }
+
+    componentWillUnmount() {
+        componentHierarchy = componentHierarchy.filter(
+            component => component !== this
+        );
+    }
+
+    handleShortcuts = (action, event) => {
+        const {handleClick, onClick} = this.props;
+
+        switch (action) {
+        case 'QUICK_ACTION_POS':
+            event.preventDefault();
+            handleClick();
+            break
+        case 'QUICK_ACTION_TOGGLE':
+            event.preventDefault();
+            onClick();
+            break
+        }
+    }
 
     render() {
-        return [
-            <Shortcut
-                key="QUICK_ACTION_POS"
-                name="QUICK_ACTION_POS"
-                handler={this.handlers.QUICK_ACTION_POS}
-            />,
-            <Shortcut
-                key="QUICK_ACTION_TOGGLE"
-                name="QUICK_ACTION_TOGGLE"
-                handler={this.handlers.QUICK_ACTION_TOGGLE}
+        // Only render the top most component in the hierarchy
+        if (componentHierarchy[componentHierarchy.length - 1] !== this) {
+            return null;
+        }
+
+        return (
+            <Shortcuts
+                name="QUICK_ACTIONS"
+                handler={this.handleShortcuts}
+                targetNodeSelector = "body"
+                isolate
+                global
+                preventDefault
+                stopPropagation
+                alwaysFireHandler
             />
-        ];
+        );
     }
 }
+
+export default QuickActionsContextShortcuts;

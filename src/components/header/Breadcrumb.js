@@ -6,7 +6,7 @@ import counterpart from 'counterpart';
 
 import MenuOverlay from './MenuOverlay';
 import Tooltips from '../tooltips/Tooltips';
-import keymap from '../../shortcuts/keymap';
+import keymap from '../../keymap.js';
 
 class Breadcrumb extends Component {
     constructor(props) {
@@ -143,7 +143,7 @@ class Breadcrumb extends Component {
                 {tooltipOpen &&
                     <Tooltips
                         extraClass="tooltip-home-menu"
-                        name={keymap.OPEN_NAVIGATION_MENU}
+                        name={keymap.GLOBAL_CONTEXT.OPEN_NAVIGATION_MENU}
                         action= {
                             counterpart.translate(
                                 'mainScreen.navigation.tooltip'
