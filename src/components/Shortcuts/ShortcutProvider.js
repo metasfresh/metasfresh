@@ -7,8 +7,10 @@ export default class ShortcutProvider extends Component {
     };
 
     static childContextTypes = {
-        subscribe: PropTypes.func.isRequired,
-        unsubscribe: PropTypes.func.isRequired
+        shortcuts: PropTypes.shape({
+            subscribe: PropTypes.func.isRequired,
+            unsubscribe: PropTypes.func.isRequired
+        })
     };
 
     hotkeys = {};
@@ -17,8 +19,10 @@ export default class ShortcutProvider extends Component {
 
     getChildContext() {
         return {
-            subscribe: this.subscribe,
-            unsubscribe: this.unsubscribe
+            shortcuts: {
+                subscribe: this.subscribe,
+                unsubscribe: this.unsubscribe
+            }
         };
     }
 

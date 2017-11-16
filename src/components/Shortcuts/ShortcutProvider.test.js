@@ -7,7 +7,7 @@ import ShortcutProvider from './ShortcutProvider';
 
 chai.use(sinonChai);
 
-describe('Shortcuts', () => {
+describe('ShortcutProvider', () => {
     it('should be a React component', () => {
         expect(ShortcutProvider).to.be.an.instanceOf(Component.constructor);
     });
@@ -73,8 +73,10 @@ describe('Shortcuts', () => {
         const context = shortcutProvider.getChildContext();
 
         expect(context).to.deep.equal({
-            subscribe: shortcutProvider.subscribe,
-            unsubscribe: shortcutProvider.unsubscribe
+            shortcuts: {
+                subscribe: shortcutProvider.subscribe,
+                unsubscribe: shortcutProvider.unsubscribe
+            }
         });
     });
 
