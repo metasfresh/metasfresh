@@ -1,4 +1,4 @@
-package de.metas.material.event;
+package de.metas.material.event.commons;
 
 import java.time.Instant;
 import java.util.UUID;

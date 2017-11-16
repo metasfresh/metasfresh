@@ -30,7 +30,7 @@ import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.X_MD_Candidate;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
-import de.metas.material.event.MaterialDescriptor;
+import de.metas.material.event.commons.MaterialDescriptor;
 
 /*
  * #%L

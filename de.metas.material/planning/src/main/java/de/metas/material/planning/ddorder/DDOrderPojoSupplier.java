@@ -28,7 +28,7 @@ import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.material.event.ProductDescriptor;
+import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.ddorder.DDOrder;
 import de.metas.material.event.ddorder.DDOrderLine;
 import de.metas.material.planning.ErrorCodes;
@@ -200,7 +200,7 @@ public class DDOrderPojoSupplier
 						.productPlanningId(productPlanningData.getPP_Product_Planning_ID())
 						.datePromised(supplyDateFinishSchedule)
 						.shipperId(networkLine.getM_Shipper_ID())
-						.createDDrder(productPlanningData.isCreatePlan());
+						.advisedToCreateDDrder(productPlanningData.isCreatePlan());
 
 				builders.add(orderBuilder);
 

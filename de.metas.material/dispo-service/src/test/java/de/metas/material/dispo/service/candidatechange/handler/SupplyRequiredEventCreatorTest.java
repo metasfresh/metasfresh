@@ -13,9 +13,9 @@ import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateStatus;
 import de.metas.material.dispo.commons.candidate.CandidateSubType;
 import de.metas.material.dispo.commons.candidate.CandidateType;
-import de.metas.material.event.EventDescriptor;
-import de.metas.material.event.MaterialDemandEvent;
-import de.metas.material.event.MaterialDescriptor;
+import de.metas.material.event.commons.EventDescriptor;
+import de.metas.material.event.commons.MaterialDescriptor;
+import de.metas.material.event.demandWasFound.SupplyRequiredEvent;
 
 /*
  * #%L
@@ -39,7 +39,7 @@ import de.metas.material.event.MaterialDescriptor;
  * #L%
  */
 
-public class MaterialDemandEventCreatorTest
+public class SupplyRequiredEventCreatorTest
 {
 	@Test
 	public void createMaterialDemandEvent()
@@ -59,7 +59,7 @@ public class MaterialDemandEventCreatorTest
 						.warehouseId(WAREHOUSE_ID)
 						.build())
 				.build();
-		final MaterialDemandEvent result = MaterialDemandEventCreator.createMaterialDemandEvent(demandCandidate, BigDecimal.TEN);
+		final SupplyRequiredEvent result = SupplyRequiredEventCreator.createMaterialDemandEvent(demandCandidate, BigDecimal.TEN);
 		assertThat(result).isNotNull();
 		assertThat(result.getEventDescriptor().getClientId()).isEqualTo(20);
 		assertThat(result.getEventDescriptor().getOrgId()).isEqualTo(30);

@@ -22,9 +22,9 @@ import org.junit.Test;
 import de.metas.material.dispo.commons.CandidatesQuery;
 import de.metas.material.dispo.commons.repository.RepositoryCommons;
 import de.metas.material.dispo.model.I_MD_Candidate;
-import de.metas.material.event.MaterialDescriptor;
-import de.metas.material.event.MaterialDescriptor.DateOperator;
-import de.metas.material.event.ProductDescriptor;
+import de.metas.material.event.commons.MaterialDescriptor;
+import de.metas.material.event.commons.ProductDescriptor;
+import de.metas.material.event.commons.MaterialDescriptor.DateOperator;
 import lombok.NonNull;
 
 /*

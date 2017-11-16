@@ -16,8 +16,8 @@ import de.metas.material.dispo.commons.candidate.TransactionDetail;
 import de.metas.material.dispo.commons.candidate.Candidate.CandidateBuilder;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
-import de.metas.material.event.MaterialDescriptor.DateOperator;
-import de.metas.material.event.TransactionEvent;
+import de.metas.material.event.commons.MaterialDescriptor.DateOperator;
+import de.metas.material.event.transactions.TransactionCreatedEvent;
 import lombok.NonNull;
 
 /*
@@ -42,12 +42,12 @@ import lombok.NonNull;
  * #L%
  */
 @Service
-public class TransactionEventHandler
+public class TransactionCreatedHandler
 {
 	private final CandidateChangeService candidateChangeHandler;
 	private final CandidateRepositoryRetrieval candidateRepository;
 
-	public TransactionEventHandler(
+	public TransactionCreatedHandler(
 			@NonNull final CandidateChangeService candidateChangeHandler,
 			@NonNull final CandidateRepositoryRetrieval candidateRepository)
 	{
@@ -55,14 +55,14 @@ public class TransactionEventHandler
 		this.candidateRepository = candidateRepository;
 	}
 
-	public void handleTransactionEvent(@NonNull final TransactionEvent event)
+	public void handleTransactionCreatedEvent(@NonNull final TransactionCreatedEvent event)
 	{
 		final Candidate candidate = createCandidateForTransactionEvent(event);
 		candidateChangeHandler.onCandidateNewOrChange(candidate);
 	}
 
 	@VisibleForTesting
-	Candidate createCandidateForTransactionEvent(@NonNull final TransactionEvent event)
+	Candidate createCandidateForTransactionEvent(@NonNull final TransactionCreatedEvent event)
 	{
 		final TransactionDetail transactionDetailOfEvent = TransactionDetail
 				.forCandidateOrQuery(
@@ -144,7 +144,7 @@ public class TransactionEventHandler
 	}
 
 	@VisibleForTesting
-	static CandidateBuilder createCommonCandidateBuilder(@NonNull final TransactionEvent event)
+	static CandidateBuilder createCommonCandidateBuilder(@NonNull final TransactionCreatedEvent event)
 	{
 		final BigDecimal eventQuantity = event.getMaterialDescriptor().getQuantity();
 

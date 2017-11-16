@@ -6,9 +6,9 @@ import com.google.common.base.Preconditions;
 
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateType;
-import de.metas.material.event.EventDescriptor;
-import de.metas.material.event.MaterialDemandDescriptor;
-import de.metas.material.event.MaterialDemandEvent;
+import de.metas.material.event.commons.EventDescriptor;
+import de.metas.material.event.commons.SupplyRequiredDescriptor;
+import de.metas.material.event.demandWasFound.SupplyRequiredEvent;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
@@ -35,9 +35,9 @@ import lombok.experimental.UtilityClass;
  */
 
 @UtilityClass
-public class MaterialDemandEventCreator
+public class SupplyRequiredEventCreator
 {
-	public MaterialDemandEvent createMaterialDemandEvent(
+	public SupplyRequiredEvent createMaterialDemandEvent(
 			@NonNull final Candidate demandCandidate,
 			@NonNull final BigDecimal requiredAdditionalQty)
 	{
@@ -46,7 +46,7 @@ public class MaterialDemandEventCreator
 		final int orderLineId = demandCandidate.getDemandDetail() == null ? 0
 				: demandCandidate.getDemandDetail().getOrderLineId();
 
-		final MaterialDemandEvent materialDemandEvent = MaterialDemandEvent
+		final SupplyRequiredEvent materialDemandEvent = SupplyRequiredEvent
 				.builder()
 				.materialDemandDescriptor(createMaterialDemandDescr(demandCandidate, requiredAdditionalQty, orderLineId))
 				.build();
@@ -60,12 +60,12 @@ public class MaterialDemandEventCreator
 				"Given parameter demandCandidate needs to have DEMAND or STOCK_UP as type; demandCandidate=%s", demandCandidate);
 	}
 
-	private MaterialDemandDescriptor createMaterialDemandDescr(
+	private SupplyRequiredDescriptor createMaterialDemandDescr(
 			@NonNull final Candidate candidate,
 			@NonNull final BigDecimal qty,
 			final int orderLineId)
 	{
-		return MaterialDemandDescriptor.builder()
+		return SupplyRequiredDescriptor.builder()
 				.demandCandidateId(candidate.getId())
 				.eventDescr(new EventDescriptor(candidate.getClientId(), candidate.getOrgId()))
 				.materialDescriptor(candidate.getMaterialDescriptor().withQuantity(qty))
