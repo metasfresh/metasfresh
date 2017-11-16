@@ -28,6 +28,8 @@ Here come the actual release notes:
     * Improvements for the Distribution Editor Window in WebUI. Additional Translations for de_DE and en_US Language/ Locale.
   * [#2989](https://github.com/metasfresh/metasfresh/issues/2989) Filter for GAP No. is missing in Businesspartner window
     * Adding the GAP Filter to Businesspartner Window.
+  * [#2980](https://github.com/metasfresh/metasfresh/issues/2980) Date Filter missing in Order Control Window
+    * New Filter in Order Control Window for Date, CreatedBy and more.
 
 ## Fixes
 * metasfresh-webui-frontend
