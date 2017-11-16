@@ -199,6 +199,10 @@ public class RetrieveDbRecordsUtil
 		@Override
 		public List<Integer> getVhuIds()
 		{
+			if (selectionId <= 0)
+			{
+				return ImmutableList.of();
+			}
 			return Services.get(IQueryBL.class).createQueryBuilder(I_M_HU_Trace.class)
 					.setOnlySelection(selectionId)
 					.addNotEqualsFilter(I_M_HU_Trace.COLUMN_VHU_ID, null)
@@ -209,6 +213,10 @@ public class RetrieveDbRecordsUtil
 		@Override
 		public List<Integer> getVhuSourceIds()
 		{
+			if (selectionId <= 0)
+			{
+				return ImmutableList.of();
+			}
 			return Services.get(IQueryBL.class).createQueryBuilder(I_M_HU_Trace.class)
 					.setOnlySelection(selectionId)
 					.addNotEqualsFilter(I_M_HU_Trace.COLUMN_VHU_Source_ID, null)
