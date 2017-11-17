@@ -15,15 +15,14 @@ import static org.assertj.core.api.Assertions.assertThat;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -47,7 +46,6 @@ import org.compiere.model.I_M_DiscountSchemaLine;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Category;
 import org.compiere.util.Env;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -102,11 +100,9 @@ public class MDiscountSchemaTest
 
 		final List<I_M_DiscountSchemaBreak> breaks = dao.retrieveBreaks(schema1);
 
-		Assert.assertEquals(breaks.size(), 2);
-		Assert.assertTrue(" breaks contain schemabreak1", breaks.contains(schemaBreak1));
-		Assert.assertTrue(" breaks contain schemabreak2", breaks.contains(schemaBreak2));
-		Assert.assertFalse(" breaks contain schemabreak3", breaks.contains(schemaBreak3));
-
+		assertThat(breaks).hasSize(2);
+		assertThat(breaks).contains(schemaBreak1, schemaBreak2);
+		assertThat(breaks).doesNotContain(schemaBreak3);
 	}
 
 	@Test
@@ -122,11 +118,9 @@ public class MDiscountSchemaTest
 
 		final List<I_M_DiscountSchemaLine> lines = dao.retrieveLines(schema1);
 
-		Assert.assertEquals(lines.size(), 2);
-		Assert.assertTrue(" Lines contain schemaLine1", lines.contains(schemaLine1));
-		Assert.assertTrue(" Lines contain schemaLine2", lines.contains(schemaLine2));
-		Assert.assertFalse(" Lines contain schemaLine3", lines.contains(schemaLine3));
-
+		assertThat(lines).hasSize(2);
+		assertThat(lines).contains(schemaLine1, schemaLine2);
+		assertThat(lines).doesNotContain(schemaLine3);
 	}
 
 	@Test
@@ -158,42 +152,34 @@ public class MDiscountSchemaTest
 				product1.getM_Product_ID(),
 				category1.getM_Product_Category_ID(),
 				new BigDecimal(15),
-				new BigDecimal(30)
-				);
+				new BigDecimal(30));
 
 		assertThat(actualSchemaBreak1).isNotNull();
 		assertThat(schemaBreak1.getM_DiscountSchemaBreak_ID()).isEqualTo(actualSchemaBreak1.getM_DiscountSchemaBreak_ID());
 
-
-		final I_M_DiscountSchemaBreak actualSchemaBreak2 =
-				bl.pickApplyingBreak(
-						breaks,
-						-1, // attribute value
-						true,
-						product1.getM_Product_ID(),
-						category1.getM_Product_Category_ID(),
-						new BigDecimal(25),
-						new BigDecimal(50)
-				);
+		final I_M_DiscountSchemaBreak actualSchemaBreak2 = bl.pickApplyingBreak(
+				breaks,
+				-1, // attribute value
+				true,
+				product1.getM_Product_ID(),
+				category1.getM_Product_Category_ID(),
+				new BigDecimal(25),
+				new BigDecimal(50));
 
 		assertThat(actualSchemaBreak2).isNotNull();
 		assertThat(schemaBreak2.getM_DiscountSchemaBreak_ID()).isEqualTo(actualSchemaBreak2.getM_DiscountSchemaBreak_ID());
 	}
 
-
 	@Test
 	public void testPickApplyingBreak_NoAttributes()
 	{
-		final I_M_DiscountSchema schema1 = createSchema();
-
-		final I_M_DiscountSchemaBreak schemaBreak1 = createBreak(schema1, 10);
-
 		final I_M_Product_Category category1 = createM_ProductCategory("Category1");
 		final I_M_Product product1 = createM_Product("Product1", category1);
 
+		final I_M_DiscountSchema schema1 = createSchema();
+		final I_M_DiscountSchemaBreak schemaBreak1 = createBreak(schema1, 10);
 		schemaBreak1.setM_Product_Category_ID(category1.getM_Product_Category_ID());
 		schemaBreak1.setM_Product_ID(product1.getM_Product_ID());
-
 		InterfaceWrapperHelper.save(schemaBreak1);
 
 		final List<I_M_DiscountSchemaBreak> breaks = dao.retrieveBreaks(schema1);
@@ -206,29 +192,28 @@ public class MDiscountSchemaTest
 				category1.getM_Product_Category_ID(),
 				new BigDecimal(15), // not relevant in this test
 				new BigDecimal(30) // e.g. 15 * 2 ( not relevant in this test)
-				);
+		);
 
-		Assert.assertNotNull(actualSchemaBreak1);
-		Assert.assertTrue(schemaBreak1.getM_DiscountSchemaBreak_ID() == actualSchemaBreak1.getM_DiscountSchemaBreak_ID());
+		assertThat(actualSchemaBreak1).isNotNull();
+		assertThat(schemaBreak1.getM_DiscountSchemaBreak_ID()).isEqualTo(actualSchemaBreak1.getM_DiscountSchemaBreak_ID());
 
 		schemaBreak1.setM_Product_Category_ID(category1.getM_Product_Category_ID());
 		schemaBreak1.setM_Product_ID(-1);
 
 		InterfaceWrapperHelper.save(schemaBreak1);
 
-		final I_M_DiscountSchemaBreak actualSchemaBreak2 =
-				bl.pickApplyingBreak(
-						breaks,
-						-1, // attribute value
-						true,
-						product1.getM_Product_ID(),
-						category1.getM_Product_Category_ID(),
-						new BigDecimal(15), // not relevant in this test
-						new BigDecimal(30) // e.g. 15 * 2 ( not relevant in this test)
-				);
+		final I_M_DiscountSchemaBreak actualSchemaBreak2 = bl.pickApplyingBreak(
+				breaks,
+				-1, // attribute value
+				true,
+				product1.getM_Product_ID(),
+				category1.getM_Product_Category_ID(),
+				new BigDecimal(15), // not relevant in this test
+				new BigDecimal(30) // e.g. 15 * 2 ( not relevant in this test)
+		);
 
-		Assert.assertNotNull(actualSchemaBreak2);
-		Assert.assertTrue(schemaBreak1.getM_DiscountSchemaBreak_ID() == actualSchemaBreak2.getM_DiscountSchemaBreak_ID());
+		assertThat(actualSchemaBreak2).isNotNull();
+		assertThat(schemaBreak1.getM_DiscountSchemaBreak_ID()).isEqualTo(actualSchemaBreak2.getM_DiscountSchemaBreak_ID());
 
 		schemaBreak1.setM_Product_Category_ID(-1);
 		schemaBreak1.setM_Product_ID(-1);
@@ -241,18 +226,15 @@ public class MDiscountSchemaTest
 				category1.getM_Product_Category_ID(),
 				new BigDecimal(15), // not relevant in this test
 				new BigDecimal(30) // e.g. 15 * 2 ( not relevant in this test)
-				);
+		);
 
-		Assert.assertNotNull(actualSchemaBreak3);
-		Assert.assertTrue(schemaBreak1.getM_DiscountSchemaBreak_ID() == actualSchemaBreak3.getM_DiscountSchemaBreak_ID());
-
+		assertThat(actualSchemaBreak3).isNotNull();
+		assertThat(schemaBreak1.getM_DiscountSchemaBreak_ID()).isEqualTo(actualSchemaBreak3.getM_DiscountSchemaBreak_ID());
 	}
 
 	@Test
 	public void testPickApplyingBreak_AttributeValue()
 	{
-		final I_M_DiscountSchema schema1 = createSchema();
-
 		final I_M_Product_Category category1 = createM_ProductCategory("Category1");
 		final I_M_Product product1 = createM_Product("Product1", category1);
 
@@ -260,22 +242,17 @@ public class MDiscountSchemaTest
 		final I_M_AttributeValue attrValue1 = createAttrValue(attr1, "AttrValue1");
 		final I_M_AttributeValue attrValue2 = createAttrValue(attr1, "AttrValue2");
 
-		final de.metas.adempiere.model.I_M_DiscountSchemaBreak schemaBreak1 =
-				InterfaceWrapperHelper.create(createBreak(schema1, 10), de.metas.adempiere.model.I_M_DiscountSchemaBreak.class);
-
+		final I_M_DiscountSchema schema1 = createSchema();
+		final de.metas.adempiere.model.I_M_DiscountSchemaBreak schemaBreak1 = InterfaceWrapperHelper.create(createBreak(schema1, 10), de.metas.adempiere.model.I_M_DiscountSchemaBreak.class);
 		schemaBreak1.setM_Product_Category_ID(category1.getM_Product_Category_ID());
 		schemaBreak1.setM_Product_ID(product1.getM_Product_ID());
 		schemaBreak1.setM_AttributeValue(attrValue1);
-
 		InterfaceWrapperHelper.save(schemaBreak1);
 
-		final de.metas.adempiere.model.I_M_DiscountSchemaBreak schemaBreak2 =
-				InterfaceWrapperHelper.create(createBreak(schema1, 20), de.metas.adempiere.model.I_M_DiscountSchemaBreak.class);
-
+		final de.metas.adempiere.model.I_M_DiscountSchemaBreak schemaBreak2 = InterfaceWrapperHelper.create(createBreak(schema1, 20), de.metas.adempiere.model.I_M_DiscountSchemaBreak.class);
 		schemaBreak2.setM_Product_Category_ID(category1.getM_Product_Category_ID());
 		schemaBreak2.setM_Product_ID(product1.getM_Product_ID());
 		schemaBreak2.setM_AttributeValue(attrValue2);
-
 		InterfaceWrapperHelper.save(schemaBreak2);
 
 		List<I_M_DiscountSchemaBreak> breaks = dao.retrieveBreaks(schema1);
@@ -288,10 +265,10 @@ public class MDiscountSchemaTest
 				category1.getM_Product_Category_ID(),
 				new BigDecimal(15), // not relevant in this test
 				new BigDecimal(30) // e.g. 15 * 2 ( not relevant in this test)
-				);
+		);
 
-		Assert.assertNotNull(actualSchemaBreak1);
-		Assert.assertTrue(schemaBreak1.getM_DiscountSchemaBreak_ID() == actualSchemaBreak1.getM_DiscountSchemaBreak_ID());
+		assertThat(actualSchemaBreak1).isNotNull();
+		assertThat(schemaBreak1.getM_DiscountSchemaBreak_ID()).isEqualTo(actualSchemaBreak1.getM_DiscountSchemaBreak_ID());
 
 		final I_M_DiscountSchemaBreak actualSchemaBreak2 = bl.pickApplyingBreak(
 				breaks,
@@ -301,9 +278,9 @@ public class MDiscountSchemaTest
 				category1.getM_Product_Category_ID(),
 				new BigDecimal(15), // not relevant in this test
 				new BigDecimal(30) // e.g. 15 * 2 ( not relevant in this test)
-				);
+		);
 
-		Assert.assertNull(actualSchemaBreak2);
+		assertThat(actualSchemaBreak2).isNull();
 
 		final I_M_DiscountSchemaBreak actualSchemaBreak3 = bl.pickApplyingBreak(
 				breaks,
@@ -313,13 +290,12 @@ public class MDiscountSchemaTest
 				category1.getM_Product_Category_ID(),
 				new BigDecimal(15), // not relevant in this test
 				new BigDecimal(30) // e.g. 15 * 2 ( not relevant in this test)
-				);
+		);
 
-		Assert.assertNotNull(actualSchemaBreak3);
-		Assert.assertTrue(schemaBreak2.getM_DiscountSchemaBreak_ID() == actualSchemaBreak3.getM_DiscountSchemaBreak_ID());
+		assertThat(actualSchemaBreak3).isNotNull();
+		assertThat(schemaBreak2.getM_DiscountSchemaBreak_ID()).isEqualTo(actualSchemaBreak3.getM_DiscountSchemaBreak_ID());
 
 		// test also if seqNo is still respected
-
 		schemaBreak1.setM_AttributeValue(null);
 		InterfaceWrapperHelper.save(schemaBreak1);
 
@@ -333,11 +309,10 @@ public class MDiscountSchemaTest
 				category1.getM_Product_Category_ID(),
 				new BigDecimal(15), // not relevant in this test
 				new BigDecimal(30) // e.g. 15 * 2 ( not relevant in this test)
-				);
+		);
 
-		Assert.assertNotNull(actualSchemaBreak4);
-		Assert.assertTrue(schemaBreak1.getM_DiscountSchemaBreak_ID() == actualSchemaBreak4.getM_DiscountSchemaBreak_ID());
-
+		assertThat(actualSchemaBreak4).isNotNull();
+		assertThat(schemaBreak1.getM_DiscountSchemaBreak_ID()).isEqualTo(actualSchemaBreak4.getM_DiscountSchemaBreak_ID());
 	}
 
 	@Test
@@ -351,22 +326,16 @@ public class MDiscountSchemaTest
 		final I_M_Attribute attr1 = createAttr("Attr1");
 		final I_M_AttributeValue attrValue1 = createAttrValue(attr1, "AttrValue1");
 
-		final de.metas.adempiere.model.I_M_DiscountSchemaBreak schemaBreak1 =
-				InterfaceWrapperHelper.create(createBreak(schema1, 10), de.metas.adempiere.model.I_M_DiscountSchemaBreak.class);
-
+		final de.metas.adempiere.model.I_M_DiscountSchemaBreak schemaBreak1 = InterfaceWrapperHelper.create(createBreak(schema1, 10), de.metas.adempiere.model.I_M_DiscountSchemaBreak.class);
 		schemaBreak1.setM_Product_Category_ID(category1.getM_Product_Category_ID());
 		schemaBreak1.setM_Product_ID(product1.getM_Product_ID());
 		schemaBreak1.setM_AttributeValue(attrValue1);
-
 		InterfaceWrapperHelper.save(schemaBreak1);
 
-		final de.metas.adempiere.model.I_M_DiscountSchemaBreak schemaBreak2 =
-				InterfaceWrapperHelper.create(createBreak(schema1, 20), de.metas.adempiere.model.I_M_DiscountSchemaBreak.class);
-
+		final de.metas.adempiere.model.I_M_DiscountSchemaBreak schemaBreak2 = InterfaceWrapperHelper.create(createBreak(schema1, 20), de.metas.adempiere.model.I_M_DiscountSchemaBreak.class);
 		schemaBreak2.setM_Product_Category_ID(category1.getM_Product_Category_ID());
 		schemaBreak2.setM_Product_ID(product1.getM_Product_ID());
 		schemaBreak2.setM_AttributeValue(null);
-
 		InterfaceWrapperHelper.save(schemaBreak2);
 
 		List<I_M_DiscountSchemaBreak> breaks = dao.retrieveBreaks(schema1);
@@ -380,10 +349,10 @@ public class MDiscountSchemaTest
 				category1.getM_Product_Category_ID(),
 				new BigDecimal(15), // not relevant in this test
 				new BigDecimal(30) // e.g. 15 * 2 ( not relevant in this test)
-				);
+		);
 
-		Assert.assertNotNull(actualSchemaBreak1);
-		Assert.assertTrue(schemaBreak2.getM_DiscountSchemaBreak_ID() == actualSchemaBreak1.getM_DiscountSchemaBreak_ID());
+		assertThat(actualSchemaBreak1).isNotNull();
+		assertThat(schemaBreak2.getM_DiscountSchemaBreak_ID()).isEqualTo(actualSchemaBreak1.getM_DiscountSchemaBreak_ID());
 	}
 
 	@Test
@@ -398,29 +367,22 @@ public class MDiscountSchemaTest
 		final I_M_AttributeValue attrValue1 = createAttrValue(attr1, "AttrValue1");
 		final I_M_AttributeValue attrValue2 = createAttrValue(attr1, "AttrValue2");
 
-		final de.metas.adempiere.model.I_M_DiscountSchemaBreak schemaBreak1 =
-				InterfaceWrapperHelper.create(createBreak(schema1, 10), de.metas.adempiere.model.I_M_DiscountSchemaBreak.class);
-
+		final de.metas.adempiere.model.I_M_DiscountSchemaBreak schemaBreak1 = InterfaceWrapperHelper.create(createBreak(schema1, 10), de.metas.adempiere.model.I_M_DiscountSchemaBreak.class);
 		schemaBreak1.setM_Product_Category_ID(category1.getM_Product_Category_ID());
 		schemaBreak1.setM_Product_ID(product1.getM_Product_ID());
 		schemaBreak1.setM_AttributeValue(attrValue1);
-
 		InterfaceWrapperHelper.save(schemaBreak1);
 
-		final de.metas.adempiere.model.I_M_DiscountSchemaBreak schemaBreak2 =
-				InterfaceWrapperHelper.create(createBreak(schema1, 20), de.metas.adempiere.model.I_M_DiscountSchemaBreak.class);
-
+		final de.metas.adempiere.model.I_M_DiscountSchemaBreak schemaBreak2 = InterfaceWrapperHelper.create(createBreak(schema1, 20), de.metas.adempiere.model.I_M_DiscountSchemaBreak.class);
 		schemaBreak2.setM_Product_Category_ID(category1.getM_Product_Category_ID());
 		schemaBreak2.setM_Product_ID(product1.getM_Product_ID());
 		schemaBreak2.setM_AttributeValue(attrValue2);
-
 		InterfaceWrapperHelper.save(schemaBreak2);
 
 		final I_M_AttributeInstance instance1 = createAttributeInstance(attr1, attrValue1);
 		final I_M_AttributeInstance instance2 = createAttributeInstance(attr1, attrValue2);
 
 		final List<I_M_AttributeInstance> instances = new ArrayList<>();
-
 		instances.add(instance1);
 		instances.add(instance2);
 
@@ -434,35 +396,10 @@ public class MDiscountSchemaTest
 				category1.getM_Product_Category_ID(),
 				new BigDecimal(15), // not relevant in this test
 				new BigDecimal(30) // e.g. 15 * 2 ( not relevant in this test)
-				);
+		);
 
-		Assert.assertNotNull(actualSchemaBreak1);
-		Assert.assertTrue(schemaBreak1.getM_DiscountSchemaBreak_ID() == actualSchemaBreak1.getM_DiscountSchemaBreak_ID());
-
-		// mind the seqNo
-
-		// schemaBreak1.setSeqNo(20);
-		// InterfaceWrapperHelper.save(schemaBreak1);
-		//
-		// schemaBreak2.setSeqNo(10);
-		// InterfaceWrapperHelper.save(schemaBreak2);
-		//
-		// breaks = dao.retrieveBreaks(schema1);
-		//
-		// final I_M_DiscountSchemaBreak actualSchemaBreak2 = bl.pickApplyingBreak(
-		// breaks,
-		// instances,
-		// true,
-		// product1.getM_Product_ID(),
-		// category1.getM_Product_Category_ID(),
-		// new BigDecimal(15), // not relevant in this test
-		// new BigDecimal(30) // e.g. 15 * 2 ( not relevant in this test)
-		// );
-		//
-		// Assert.assertNotNull(actualSchemaBreak2);
-		// Assert.assertTrue(schemaBreak2.getM_DiscountSchemaBreak_ID() == actualSchemaBreak2.getM_DiscountSchemaBreak_ID());
-
-		// TODO: As a working incremet, this is ok as is. This test shall be modified after we introduce the intermediate table.
+		assertThat(actualSchemaBreak1).isNotNull();
+		assertThat(schemaBreak1.getM_DiscountSchemaBreak_ID()).isEqualTo(actualSchemaBreak1.getM_DiscountSchemaBreak_ID());
 	}
 
 	@Test
@@ -477,31 +414,24 @@ public class MDiscountSchemaTest
 		final I_M_AttributeValue attrValue1 = createAttrValue(attr1, "AttrValue1");
 		final I_M_AttributeValue attrValue2 = createAttrValue(attr1, "AttrValue2");
 
-		final de.metas.adempiere.model.I_M_DiscountSchemaBreak schemaBreak1 =
-				InterfaceWrapperHelper.create(createBreak(schema1, 10), de.metas.adempiere.model.I_M_DiscountSchemaBreak.class);
-
+		final de.metas.adempiere.model.I_M_DiscountSchemaBreak schemaBreak1 = InterfaceWrapperHelper.create(createBreak(schema1, 10), de.metas.adempiere.model.I_M_DiscountSchemaBreak.class);
 		schemaBreak1.setM_Product_Category_ID(category1.getM_Product_Category_ID());
 		schemaBreak1.setM_Product_ID(product1.getM_Product_ID());
 		schemaBreak1.setM_AttributeValue(attrValue1);
 		schemaBreak1.setBreakDiscount(new BigDecimal(50));
-
 		InterfaceWrapperHelper.save(schemaBreak1);
 
-		final de.metas.adempiere.model.I_M_DiscountSchemaBreak schemaBreak2 =
-				InterfaceWrapperHelper.create(createBreak(schema1, 20), de.metas.adempiere.model.I_M_DiscountSchemaBreak.class);
-
+		final de.metas.adempiere.model.I_M_DiscountSchemaBreak schemaBreak2 = InterfaceWrapperHelper.create(createBreak(schema1, 20), de.metas.adempiere.model.I_M_DiscountSchemaBreak.class);
 		schemaBreak2.setM_Product_Category_ID(category1.getM_Product_Category_ID());
 		schemaBreak2.setM_Product_ID(product1.getM_Product_ID());
 		schemaBreak2.setM_AttributeValue(attrValue2);
 		schemaBreak2.setBreakDiscount(new BigDecimal(25));
-
 		InterfaceWrapperHelper.save(schemaBreak2);
 
 		final I_M_AttributeInstance instance1 = createAttributeInstance(attr1, attrValue1);
 		final I_M_AttributeInstance instance2 = createAttributeInstance(attr1, attrValue2);
 
 		final List<I_M_AttributeInstance> instances = new ArrayList<>();
-
 		instances.add(instance1);
 		instances.add(instance2);
 
@@ -515,7 +445,7 @@ public class MDiscountSchemaTest
 				category1.getM_Product_Category_ID(),
 				new BigDecimal(1));
 
-		Assert.assertTrue("Expected price: " + Env.ONE + "but was " + price, Env.ONE.equals(price));
+		assertThat(price).isEqualByComparingTo(BigDecimal.ONE);
 
 		schemaBreak1.setM_AttributeValue(null);
 		InterfaceWrapperHelper.save(schemaBreak1);
@@ -529,9 +459,7 @@ public class MDiscountSchemaTest
 				new BigDecimal(1));
 
 		final BigDecimal expectedPrice = new BigDecimal("0.500000");
-
-		Assert.assertTrue("Expected price: " + expectedPrice + "But was " + price2, expectedPrice.equals(price2));
-
+		assertThat(expectedPrice).isEqualByComparingTo(price2);
 	}
 
 	@Test
@@ -546,31 +474,24 @@ public class MDiscountSchemaTest
 		final I_M_AttributeValue attrValue1 = createAttrValue(attr1, "AttrValue1");
 		final I_M_AttributeValue attrValue2 = createAttrValue(attr1, "AttrValue2");
 
-		final de.metas.adempiere.model.I_M_DiscountSchemaBreak schemaBreak1 =
-				InterfaceWrapperHelper.create(createBreak(schema1, 10), de.metas.adempiere.model.I_M_DiscountSchemaBreak.class);
-
+		final de.metas.adempiere.model.I_M_DiscountSchemaBreak schemaBreak1 = InterfaceWrapperHelper.create(createBreak(schema1, 10), de.metas.adempiere.model.I_M_DiscountSchemaBreak.class);
 		schemaBreak1.setM_Product_Category_ID(category1.getM_Product_Category_ID());
 		schemaBreak1.setM_Product_ID(product1.getM_Product_ID());
 		schemaBreak1.setM_AttributeValue(attrValue1);
 		schemaBreak1.setBreakDiscount(new BigDecimal(50));
-
 		InterfaceWrapperHelper.save(schemaBreak1);
 
-		final de.metas.adempiere.model.I_M_DiscountSchemaBreak schemaBreak2 =
-				InterfaceWrapperHelper.create(createBreak(schema1, 20), de.metas.adempiere.model.I_M_DiscountSchemaBreak.class);
-
+		final de.metas.adempiere.model.I_M_DiscountSchemaBreak schemaBreak2 = InterfaceWrapperHelper.create(createBreak(schema1, 20), de.metas.adempiere.model.I_M_DiscountSchemaBreak.class);
 		schemaBreak2.setM_Product_Category_ID(category1.getM_Product_Category_ID());
 		schemaBreak2.setM_Product_ID(product1.getM_Product_ID());
 		schemaBreak2.setM_AttributeValue(attrValue2);
 		schemaBreak2.setBreakDiscount(new BigDecimal(25));
-
 		InterfaceWrapperHelper.save(schemaBreak2);
 
 		final I_M_AttributeInstance instance1 = createAttributeInstance(attr1, attrValue1);
 		final I_M_AttributeInstance instance2 = createAttributeInstance(attr1, attrValue2);
 
 		final List<I_M_AttributeInstance> instances = new ArrayList<>();
-
 		instances.add(instance1);
 		instances.add(instance2);
 
@@ -586,10 +507,9 @@ public class MDiscountSchemaTest
 				new BigDecimal(1));
 
 		BigDecimal expectedPrice = new BigDecimal("0.500000");
-		Assert.assertTrue("Expected price: " + expectedPrice + "but was " + price, expectedPrice.equals(price));
+		assertThat(expectedPrice).isEqualByComparingTo(price);
 
 		final I_M_AttributeValue attrValue3 = createAttrValue(attr1, "Attr Value 3");
-
 		schemaBreak1.setM_AttributeValue(attrValue3);
 		InterfaceWrapperHelper.save(schemaBreak1);
 
@@ -603,8 +523,7 @@ public class MDiscountSchemaTest
 				new BigDecimal(1));
 
 		expectedPrice = new BigDecimal("0.750000");
-
-		Assert.assertTrue("Expected price: " + expectedPrice + "But was " + price2, expectedPrice.equals(price2));
+		assertThat(expectedPrice).isEqualByComparingTo(price2);
 	}
 
 	private I_M_AttributeInstance createAttributeInstance(final I_M_Attribute attr, final I_M_AttributeValue attrValue)
@@ -613,7 +532,6 @@ public class MDiscountSchemaTest
 		attrInstance.setM_Attribute(attr);
 		attrInstance.setM_AttributeValue(attrValue);
 		InterfaceWrapperHelper.save(attrInstance);
-
 		return attrInstance;
 	}
 
@@ -623,7 +541,6 @@ public class MDiscountSchemaTest
 		attrValue.setM_Attribute(attr);
 		attrValue.setName(attrValueName);
 		InterfaceWrapperHelper.save(attrValue);
-
 		return attrValue;
 	}
 
@@ -632,7 +549,6 @@ public class MDiscountSchemaTest
 		final I_M_Attribute attr = InterfaceWrapperHelper.newInstance(I_M_Attribute.class, contextProvider);
 		attr.setName(attrName);
 		InterfaceWrapperHelper.save(attr);
-
 		return attr;
 	}
 
@@ -674,8 +590,7 @@ public class MDiscountSchemaTest
 	{
 		final I_M_Product_Category productCategory = InterfaceWrapperHelper.newInstance(I_M_Product_Category.class, contextProvider);
 		productCategory.setValue(value);
-
-		InterfaceWrapperHelper.save(productCategory);
+			InterfaceWrapperHelper.save(productCategory);
 		return productCategory;
 	}
 }
