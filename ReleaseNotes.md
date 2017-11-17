@@ -98,7 +98,7 @@ Here come the actual release notes:
   * [#2897](https://github.com/metasfresh/metasfresh/issues/2897) Drop out old code related to confirm splitting when printing
     * Improvement in mass printing functionality and workflow. Removing the user confirmation for printing when splitting.
   * [#2913](https://github.com/metasfresh/metasfresh/issues/2913) Column-SQL needs lower-case WHERE and FROM
-    * Application dictionary adjustment for AD_Ref_Table, setting loaer case statements for the column SQL.
+    * Application dictionary adjustment for AD_Ref_Table, setting lower case statements for the column SQL.
   * [#2914](https://github.com/metasfresh/metasfresh/issues/2914) Replace org.adempiere.util.collections.Predicate with java.util.function.Predicate
     * Internal housekeeping issue, replacing legacy code with java class substitute.
   * [#2919](https://github.com/metasfresh/metasfresh/issues/2919) Trx API: log a warning in case we are registering a ITrxListener which might be never executed because trx is already commit/closed
@@ -131,31 +131,31 @@ Here come the actual release notes:
 ## Fixes
 * metasfresh
   * [#2905](https://github.com/metasfresh/metasfresh/issues/2905) Referenced documents: sales order to invoice candidates
-    * Fixing the missing reference between Invoice Candidates and Sales Order when Inouts are created before Invoice Candidate.
+    * Fixing the missing reference between invoice candidates and sales order when inouts are created before invoice candidate.
   * [#2917](https://github.com/metasfresh/metasfresh/issues/2917) Allow reactivating procurement contracts
     * Allowing the document action for reactivation of procurement contracts.
 
 * metasfresh-webui-api
-  * [#649](https://github.com/metasfresh/metasfresh-webui-api/issues/649) Qty Delivered and Qty Picked not updated correctly in shipment schedule
+  * [#649](https://github.com/metasfresh/metasfresh-webui-api/issues/649) Qty delivered and qty picked not updated correctly in shipment schedule
     * Fix for Qty fields in shipment schedule. Now field contend is updated correctly in WebUI.
   * [#660](https://github.com/metasfresh/metasfresh-webui-api/issues/660) JSONUserSessionChangesEvent not fired when currently logged in user is changed
-    * Internal Housekeeping Issue solving the firing of session change events after chainging the login user.
+    * Internal housekeeping issue solving the firing of session change events after chainging the login user.
   * [#665](https://github.com/metasfresh/metasfresh-webui-api/issues/665) Manufacturing order: create source HU is opening same view on right side as we have it on left side
-    * Fix for the source HU View in Manufacturing Order.
+    * Fix for the source HU View in manufacturing order.
 
 * metasfresh-webui-frontend
-  * [#1279](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1279) menu actions for included row broken
+  * [#1279](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1279) Menu actions for included row broken
     * Fix for the usage of menu actions when opening from included rows.
   * [#1283](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1283) Revise shortcut handling
-    * Quick Fix for the broken shortcut Handling in Documents.
+    * Quick fix for the broken shortcut handling in documents.
   * [#1286](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1286) Error when maximize subtab which does not support quick input
-    * Fixes a Bug that occured for included subtabs when maximizing and not supporting quick input.
+    * Fixes a bug that occurred for included subtabs when maximizing and not supporting quick input.
   * [#1324](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1324) Process is started twice when using ctrl-u shortcut
-    * Quick Fix for the Action Handling in Material Receipt when using Keyboard Shortcuts.
-  * [#1328](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1328) Date recording w/ wrong date Error
-    * Improved error handling and user information when entering an invalif date in Date picker via keyboard.
-  * [#1332](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1332) view: Edit field value is broken
-    * Fix for the Edit Mode in Main Grid view.
+    * Quick fix for the action handling in material receipt when using keyboard shortcuts.
+  * [#1328](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1328) Date recording w/ wrong date error
+    * Improved error handling and user information when entering an invalif date in date picker via keyboard.
+  * [#1332](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1332) View: Edit field value is broken
+    * Fix for the edit mode in main grid view.
 
 # metasfresh 5.34 (2017-45)
 
