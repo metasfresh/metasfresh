@@ -424,6 +424,15 @@ note: when adding new records, please roughly order them by alphabet.
 			<classifier>migration-postgres-sql</classifier>
 			<type>zip</type>
 		</dependency>
+		
+		<dependency>
+			<groupId>de.metas.purchasecandidate</groupId>
+			<artifactId>de.metas.purchasecandidate.base</artifactId>
+			<version>${metasfresh.version}</version>
+			<classifier>migration-postgres-sql</classifier>
+			<type>zip</type>
+		</dependency>
+
 
 		<dependency>
 			<groupId>de.metas.ui.web</groupId>
