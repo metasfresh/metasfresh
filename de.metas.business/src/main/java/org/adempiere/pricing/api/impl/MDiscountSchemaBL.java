@@ -10,23 +10,23 @@ package org.adempiere.pricing.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.pricing.api.IMDiscountSchemaBL;
@@ -41,8 +41,8 @@ import org.compiere.model.I_M_DiscountSchemaLine;
 import org.compiere.model.MProductCategory;
 import org.compiere.model.X_M_DiscountSchema;
 import org.slf4j.Logger;
+
 import de.metas.logging.LogManager;
-import org.compiere.util.Env;
 
 public class MDiscountSchemaBL implements IMDiscountSchemaBL
 {
@@ -89,7 +89,7 @@ public class MDiscountSchemaBL implements IMDiscountSchemaBL
 		final BigDecimal bpFlatDiscountToUse;
 		if (bPartnerFlatDiscount == null)
 		{
-			bpFlatDiscountToUse = Env.ZERO;
+			bpFlatDiscountToUse = BigDecimal.ZERO;
 		}
 		else
 		{
@@ -115,7 +115,7 @@ public class MDiscountSchemaBL implements IMDiscountSchemaBL
 				|| X_M_DiscountSchema.DISCOUNTTYPE_Pricelist.equals(discountType))
 		{
 			logger.info("Not supported (yet) DiscountType=" + discountType);
-			return Env.ZERO;
+			return BigDecimal.ZERO;
 		}
 
 		// Price Breaks
@@ -132,8 +132,7 @@ public class MDiscountSchemaBL implements IMDiscountSchemaBL
 			logger.trace("Amt=" + amt + ",M_Product_ID=" + M_Product_ID + ",M_Product_Category_ID=" + M_Product_Category_ID);
 		}
 
-		I_M_DiscountSchemaBreak breakApplied = null;
-		;
+		I_M_DiscountSchemaBreak breakApplied = null;;
 		if (hasNoValues(instances))
 		{
 			breakApplied = pickApplyingBreak(
@@ -191,7 +190,7 @@ public class MDiscountSchemaBL implements IMDiscountSchemaBL
 			// for all breaks
 		}
 
-		return Env.ZERO;
+		return BigDecimal.ZERO;
 	}
 
 	@Override
@@ -204,40 +203,24 @@ public class MDiscountSchemaBL implements IMDiscountSchemaBL
 			final BigDecimal qty,
 			final BigDecimal amt)
 	{
-		for (final I_M_DiscountSchemaBreak br : breaks)
+
+		final List<I_M_DiscountSchemaBreak> applicableBreaks = breaks.stream()
+				.filter(schemaBreak -> schemaBreak.isActive())
+				.filter(schemaBreak -> breakApplies(schemaBreak, isQtyBased ? qty : amt, M_Product_ID, M_Product_Category_ID, attributeValueID))
+				.sorted(BREAKS_COMPARATOR)
+				.collect(Collectors.toList());
+
+		if (applicableBreaks.isEmpty())
 		{
-
-			if (!br.isActive())
-				continue;
-
-			if (isQtyBased)
-			{
-				if (!breakApplies(br, qty, M_Product_ID, M_Product_Category_ID, attributeValueID))
-				{
-					logger.trace("No: " + br);
-					continue;
-				}
-				logger.trace("Yes: " + br);
-				return br;
-			}
-			else
-			{
-				if (!breakApplies(br, amt, M_Product_ID, M_Product_Category_ID, attributeValueID))
-				{
-					logger.trace("No: " + br);
-					continue;
-				}
-				logger.trace("Yes: " + br);
-				return br;
-			}
+			return null;
 		}
 
-		return null;
+		return applicableBreaks.get(0);
 	}
 
 	/**
 	 * Check if the instance has no value set
-	 * 
+	 *
 	 * @param instance
 	 * @return true if the instance has no value set, false if it has one
 	 */
@@ -253,7 +236,7 @@ public class MDiscountSchemaBL implements IMDiscountSchemaBL
 
 	/**
 	 * Check if the instances are empty ( have "" value)
-	 * 
+	 *
 	 * @param instances
 	 * @return true if all the instances are empty, false if at least one is not
 	 */
@@ -370,7 +353,7 @@ public class MDiscountSchemaBL implements IMDiscountSchemaBL
 			final BigDecimal bPartnerFlatDiscount)
 	{
 		logger.debug("Price=" + price + ",Qty=" + qty);
-		if (price == null || Env.ZERO.compareTo(price) == 0)
+		if (price == null || BigDecimal.ZERO.compareTo(price) == 0)
 		{
 			return price;
 		}
