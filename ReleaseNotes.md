@@ -113,19 +113,19 @@ Here come the actual release notes:
     * Improved Layout of Role Window in WebUI, adapted now to current WebUI Guidelines.
 
 * metasfresh-webui-api
-  * [#664](https://github.com/metasfresh/metasfresh-webui-api/issues/664) Create Purchase Order Line by Line via Sales Order Lines
-    * New Functionality in WebUI, allowing to create Purchase Orders directly from Sales Order Lines. This feature was wanted from trade companies with very short delivery time requirements.
+  * [#664](https://github.com/metasfresh/metasfresh-webui-api/issues/664) Create purchase order line by line via sales order lines
+    * New functionality in WebUI, allowing to create purchase orders directly from sales order lines. This feature was wanted from trade companies with very short delivery time requirements.
   * [#666](https://github.com/metasfresh/metasfresh-webui-api/issues/666) Change the JSONLookupValue format
-    * Internal Housekeeping,  adjusting the JSON lookup value format.
-  * [#668](https://github.com/metasfresh/metasfresh-webui-api/issues/668) Handling Unit Editor Action Internal Usage not possible for more than 1 Page
-    * Extended Functionality for the Internal Usage Action in Handling Unit Editor. Now possible to select all rows and start the action.
+    * Internal housekeeping, adjusting the JSON lookup value format.
+  * [#668](https://github.com/metasfresh/metasfresh-webui-api/issues/668) Handling unit editor action internal usage not possible for more than 1 Page
+    * Extended functionality for the Internal usage action in handling unit editor. Now possible to select all rows and start the action.
 
 * metasfresh-webui-frontend
-  * [#1199](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1199) Picking Window unselect line in modal overlay
-    * Improved Usability/ Behavior in Picking Window WebUI when un-selecting rows in modal overlay.
+  * [#1199](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1199) Picking window unselect line in modal overlay
+    * Improved usability/ behavior in picking window WebUI when un-selecting rows in modal overlay.
   * [#1308](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1308) Closing a document with changes shall discard those changes
-    * New Feature that discards uncomplete Data rows in WebUI Frontend.
-  * [#1327](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1327) Frontend: Change the JSONLookupValue format
+    * New feature that discards uncomplete data rows in WebUI frontend.
+  * [#1327](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1327) Frontend: change the JSONLookupValue format
     * Adjustment of the JSON lookup value format in WebUI frontend.
 
 ## Fixes
