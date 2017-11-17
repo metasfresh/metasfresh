@@ -1,5 +1,7 @@
 package org.adempiere.pricing.api.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.create;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -34,7 +36,6 @@ import java.util.Properties;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.model.IContextAware;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.pricing.api.IMDiscountSchemaDAO;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.Services;
@@ -170,7 +171,6 @@ public class MDiscountSchemaTest
 		assertThat(expectedDiscountSchemaBreak.getM_DiscountSchemaBreak_ID()).isEqualTo(actualSchemaBreak.getM_DiscountSchemaBreak_ID());
 	}
 
-
 	@Test
 	public void testPickApplyingBreak_with_Multiple_breaks_defined_with_no_product()
 	{
@@ -192,7 +192,6 @@ public class MDiscountSchemaTest
 				new BigDecimal(25),
 				new BigDecimal(50));
 
-
 		assertThat(actualSchemaBreak).isNotNull();
 		assertThat(expectedDiscountSchemaBreak.getM_DiscountSchemaBreak_ID()).isEqualTo(actualSchemaBreak.getM_DiscountSchemaBreak_ID());
 	}
@@ -207,7 +206,7 @@ public class MDiscountSchemaTest
 		final I_M_DiscountSchemaBreak schemaBreak1 = createBreak(schema1, 10);
 		schemaBreak1.setM_Product_Category_ID(category1.getM_Product_Category_ID());
 		schemaBreak1.setM_Product_ID(product1.getM_Product_ID());
-		InterfaceWrapperHelper.save(schemaBreak1);
+		save(schemaBreak1);
 
 		final List<I_M_DiscountSchemaBreak> breaks = dao.retrieveBreaks(schema1);
 
@@ -227,7 +226,7 @@ public class MDiscountSchemaTest
 		schemaBreak1.setM_Product_Category_ID(category1.getM_Product_Category_ID());
 		schemaBreak1.setM_Product_ID(-1);
 
-		InterfaceWrapperHelper.save(schemaBreak1);
+		save(schemaBreak1);
 
 		final I_M_DiscountSchemaBreak actualSchemaBreak2 = bl.pickApplyingBreak(
 				breaks,
@@ -270,17 +269,17 @@ public class MDiscountSchemaTest
 		final I_M_AttributeValue attrValue2 = createAttrValue(attr1, "AttrValue2");
 
 		final I_M_DiscountSchema schema1 = createSchema();
-		final de.metas.adempiere.model.I_M_DiscountSchemaBreak schemaBreak1 = InterfaceWrapperHelper.create(createBreak(schema1, 10), de.metas.adempiere.model.I_M_DiscountSchemaBreak.class);
+		final de.metas.adempiere.model.I_M_DiscountSchemaBreak schemaBreak1 = create(createBreak(schema1, 10), de.metas.adempiere.model.I_M_DiscountSchemaBreak.class);
 		schemaBreak1.setM_Product_Category_ID(category1.getM_Product_Category_ID());
 		schemaBreak1.setM_Product_ID(product1.getM_Product_ID());
 		schemaBreak1.setM_AttributeValue(attrValue1);
-		InterfaceWrapperHelper.save(schemaBreak1);
+		save(schemaBreak1);
 
-		final de.metas.adempiere.model.I_M_DiscountSchemaBreak schemaBreak2 = InterfaceWrapperHelper.create(createBreak(schema1, 20), de.metas.adempiere.model.I_M_DiscountSchemaBreak.class);
+		final de.metas.adempiere.model.I_M_DiscountSchemaBreak schemaBreak2 = create(createBreak(schema1, 20), de.metas.adempiere.model.I_M_DiscountSchemaBreak.class);
 		schemaBreak2.setM_Product_Category_ID(category1.getM_Product_Category_ID());
 		schemaBreak2.setM_Product_ID(product1.getM_Product_ID());
 		schemaBreak2.setM_AttributeValue(attrValue2);
-		InterfaceWrapperHelper.save(schemaBreak2);
+		save(schemaBreak2);
 
 		List<I_M_DiscountSchemaBreak> breaks = dao.retrieveBreaks(schema1);
 
@@ -324,7 +323,7 @@ public class MDiscountSchemaTest
 
 		// test also if seqNo is still respected
 		schemaBreak1.setM_AttributeValue(null);
-		InterfaceWrapperHelper.save(schemaBreak1);
+		save(schemaBreak1);
 
 		breaks = dao.retrieveBreaks(schema1);
 
@@ -353,17 +352,17 @@ public class MDiscountSchemaTest
 		final I_M_Attribute attr1 = createAttr("Attr1");
 		final I_M_AttributeValue attrValue1 = createAttrValue(attr1, "AttrValue1");
 
-		final de.metas.adempiere.model.I_M_DiscountSchemaBreak schemaBreak1 = InterfaceWrapperHelper.create(createBreak(schema1, 10), de.metas.adempiere.model.I_M_DiscountSchemaBreak.class);
+		final de.metas.adempiere.model.I_M_DiscountSchemaBreak schemaBreak1 = create(createBreak(schema1, 10), de.metas.adempiere.model.I_M_DiscountSchemaBreak.class);
 		schemaBreak1.setM_Product_Category_ID(category1.getM_Product_Category_ID());
 		schemaBreak1.setM_Product_ID(product1.getM_Product_ID());
 		schemaBreak1.setM_AttributeValue(attrValue1);
-		InterfaceWrapperHelper.save(schemaBreak1);
+		save(schemaBreak1);
 
-		final de.metas.adempiere.model.I_M_DiscountSchemaBreak schemaBreak2 = InterfaceWrapperHelper.create(createBreak(schema1, 20), de.metas.adempiere.model.I_M_DiscountSchemaBreak.class);
+		final de.metas.adempiere.model.I_M_DiscountSchemaBreak schemaBreak2 = create(createBreak(schema1, 20), de.metas.adempiere.model.I_M_DiscountSchemaBreak.class);
 		schemaBreak2.setM_Product_Category_ID(category1.getM_Product_Category_ID());
 		schemaBreak2.setM_Product_ID(product1.getM_Product_ID());
 		schemaBreak2.setM_AttributeValue(null);
-		InterfaceWrapperHelper.save(schemaBreak2);
+		save(schemaBreak2);
 
 		List<I_M_DiscountSchemaBreak> breaks = dao.retrieveBreaks(schema1);
 
@@ -394,17 +393,17 @@ public class MDiscountSchemaTest
 		final I_M_AttributeValue attrValue1 = createAttrValue(attr1, "AttrValue1");
 		final I_M_AttributeValue attrValue2 = createAttrValue(attr1, "AttrValue2");
 
-		final de.metas.adempiere.model.I_M_DiscountSchemaBreak schemaBreak1 = InterfaceWrapperHelper.create(createBreak(schema1, 10), de.metas.adempiere.model.I_M_DiscountSchemaBreak.class);
+		final de.metas.adempiere.model.I_M_DiscountSchemaBreak schemaBreak1 = create(createBreak(schema1, 10), de.metas.adempiere.model.I_M_DiscountSchemaBreak.class);
 		schemaBreak1.setM_Product_Category_ID(category1.getM_Product_Category_ID());
 		schemaBreak1.setM_Product_ID(product1.getM_Product_ID());
 		schemaBreak1.setM_AttributeValue(attrValue1);
-		InterfaceWrapperHelper.save(schemaBreak1);
+		save(schemaBreak1);
 
-		final de.metas.adempiere.model.I_M_DiscountSchemaBreak schemaBreak2 = InterfaceWrapperHelper.create(createBreak(schema1, 20), de.metas.adempiere.model.I_M_DiscountSchemaBreak.class);
+		final de.metas.adempiere.model.I_M_DiscountSchemaBreak schemaBreak2 = create(createBreak(schema1, 20), de.metas.adempiere.model.I_M_DiscountSchemaBreak.class);
 		schemaBreak2.setM_Product_Category_ID(category1.getM_Product_Category_ID());
 		schemaBreak2.setM_Product_ID(product1.getM_Product_ID());
 		schemaBreak2.setM_AttributeValue(attrValue2);
-		InterfaceWrapperHelper.save(schemaBreak2);
+		save(schemaBreak2);
 
 		final I_M_AttributeInstance instance1 = createAttributeInstance(attr1, attrValue1);
 		final I_M_AttributeInstance instance2 = createAttributeInstance(attr1, attrValue2);
@@ -441,19 +440,19 @@ public class MDiscountSchemaTest
 		final I_M_AttributeValue attrValue1 = createAttrValue(attr1, "AttrValue1");
 		final I_M_AttributeValue attrValue2 = createAttrValue(attr1, "AttrValue2");
 
-		final de.metas.adempiere.model.I_M_DiscountSchemaBreak schemaBreak1 = InterfaceWrapperHelper.create(createBreak(schema1, 10), de.metas.adempiere.model.I_M_DiscountSchemaBreak.class);
+		final de.metas.adempiere.model.I_M_DiscountSchemaBreak schemaBreak1 = create(createBreak(schema1, 10), de.metas.adempiere.model.I_M_DiscountSchemaBreak.class);
 		schemaBreak1.setM_Product_Category_ID(category1.getM_Product_Category_ID());
 		schemaBreak1.setM_Product_ID(product1.getM_Product_ID());
 		schemaBreak1.setM_AttributeValue(attrValue1);
 		schemaBreak1.setBreakDiscount(new BigDecimal(50));
-		InterfaceWrapperHelper.save(schemaBreak1);
+		save(schemaBreak1);
 
-		final de.metas.adempiere.model.I_M_DiscountSchemaBreak schemaBreak2 = InterfaceWrapperHelper.create(createBreak(schema1, 20), de.metas.adempiere.model.I_M_DiscountSchemaBreak.class);
+		final de.metas.adempiere.model.I_M_DiscountSchemaBreak schemaBreak2 = create(createBreak(schema1, 20), de.metas.adempiere.model.I_M_DiscountSchemaBreak.class);
 		schemaBreak2.setM_Product_Category_ID(category1.getM_Product_Category_ID());
 		schemaBreak2.setM_Product_ID(product1.getM_Product_ID());
 		schemaBreak2.setM_AttributeValue(attrValue2);
 		schemaBreak2.setBreakDiscount(new BigDecimal(25));
-		InterfaceWrapperHelper.save(schemaBreak2);
+		save(schemaBreak2);
 
 		final I_M_AttributeInstance instance1 = createAttributeInstance(attr1, attrValue1);
 		final I_M_AttributeInstance instance2 = createAttributeInstance(attr1, attrValue2);
@@ -475,7 +474,7 @@ public class MDiscountSchemaTest
 		assertThat(price).isEqualByComparingTo(BigDecimal.ONE);
 
 		schemaBreak1.setM_AttributeValue(null);
-		InterfaceWrapperHelper.save(schemaBreak1);
+		save(schemaBreak1);
 
 		final BigDecimal price2 = bl.calculatePrice(
 				schema1,
@@ -501,19 +500,19 @@ public class MDiscountSchemaTest
 		final I_M_AttributeValue attrValue1 = createAttrValue(attr1, "AttrValue1");
 		final I_M_AttributeValue attrValue2 = createAttrValue(attr1, "AttrValue2");
 
-		final de.metas.adempiere.model.I_M_DiscountSchemaBreak schemaBreak1 = InterfaceWrapperHelper.create(createBreak(schema1, 10), de.metas.adempiere.model.I_M_DiscountSchemaBreak.class);
+		final de.metas.adempiere.model.I_M_DiscountSchemaBreak schemaBreak1 = create(createBreak(schema1, 10), de.metas.adempiere.model.I_M_DiscountSchemaBreak.class);
 		schemaBreak1.setM_Product_Category_ID(category1.getM_Product_Category_ID());
 		schemaBreak1.setM_Product_ID(product1.getM_Product_ID());
 		schemaBreak1.setM_AttributeValue(attrValue1);
 		schemaBreak1.setBreakDiscount(new BigDecimal(50));
-		InterfaceWrapperHelper.save(schemaBreak1);
+		save(schemaBreak1);
 
-		final de.metas.adempiere.model.I_M_DiscountSchemaBreak schemaBreak2 = InterfaceWrapperHelper.create(createBreak(schema1, 20), de.metas.adempiere.model.I_M_DiscountSchemaBreak.class);
+		final de.metas.adempiere.model.I_M_DiscountSchemaBreak schemaBreak2 = create(createBreak(schema1, 20), de.metas.adempiere.model.I_M_DiscountSchemaBreak.class);
 		schemaBreak2.setM_Product_Category_ID(category1.getM_Product_Category_ID());
 		schemaBreak2.setM_Product_ID(product1.getM_Product_ID());
 		schemaBreak2.setM_AttributeValue(attrValue2);
 		schemaBreak2.setBreakDiscount(new BigDecimal(25));
-		InterfaceWrapperHelper.save(schemaBreak2);
+		save(schemaBreak2);
 
 		final I_M_AttributeInstance instance1 = createAttributeInstance(attr1, attrValue1);
 		final I_M_AttributeInstance instance2 = createAttributeInstance(attr1, attrValue2);
@@ -538,7 +537,7 @@ public class MDiscountSchemaTest
 
 		final I_M_AttributeValue attrValue3 = createAttrValue(attr1, "Attr Value 3");
 		schemaBreak1.setM_AttributeValue(attrValue3);
-		InterfaceWrapperHelper.save(schemaBreak1);
+		save(schemaBreak1);
 
 		final BigDecimal price2 = bl.calculatePrice(
 				schema1,
@@ -555,53 +554,53 @@ public class MDiscountSchemaTest
 
 	private I_M_AttributeInstance createAttributeInstance(final I_M_Attribute attr, final I_M_AttributeValue attrValue)
 	{
-		final I_M_AttributeInstance attrInstance = InterfaceWrapperHelper.newInstance(I_M_AttributeInstance.class, contextProvider);
+		final I_M_AttributeInstance attrInstance = newInstance(I_M_AttributeInstance.class, contextProvider);
 		attrInstance.setM_Attribute(attr);
 		attrInstance.setM_AttributeValue(attrValue);
-		InterfaceWrapperHelper.save(attrInstance);
+		save(attrInstance);
 		return attrInstance;
 	}
 
 	private I_M_AttributeValue createAttrValue(final I_M_Attribute attr, final String attrValueName)
 	{
-		final I_M_AttributeValue attrValue = InterfaceWrapperHelper.newInstance(I_M_AttributeValue.class, contextProvider);
+		final I_M_AttributeValue attrValue = newInstance(I_M_AttributeValue.class, contextProvider);
 		attrValue.setM_Attribute(attr);
 		attrValue.setName(attrValueName);
-		InterfaceWrapperHelper.save(attrValue);
+		save(attrValue);
 		return attrValue;
 	}
 
 	private I_M_Attribute createAttr(final String attrName)
 	{
-		final I_M_Attribute attr = InterfaceWrapperHelper.newInstance(I_M_Attribute.class, contextProvider);
+		final I_M_Attribute attr = newInstance(I_M_Attribute.class, contextProvider);
 		attr.setName(attrName);
-		InterfaceWrapperHelper.save(attr);
+		save(attr);
 		return attr;
 	}
 
 	private I_M_DiscountSchemaLine createLine(final I_M_DiscountSchema schema, final int seqNo)
 	{
-		final I_M_DiscountSchemaLine schemaLine = InterfaceWrapperHelper.newInstance(I_M_DiscountSchemaLine.class, contextProvider);
+		final I_M_DiscountSchemaLine schemaLine = newInstance(I_M_DiscountSchemaLine.class, contextProvider);
 		schemaLine.setM_DiscountSchema_ID(schema.getM_DiscountSchema_ID());
 		schemaLine.setSeqNo(seqNo);
-		InterfaceWrapperHelper.save(schemaLine);
+		save(schemaLine);
 		return schemaLine;
 	}
 
 	private I_M_Product createM_Product(final String value, final I_M_Product_Category category)
 	{
-		final I_M_Product product = InterfaceWrapperHelper.newInstance(I_M_Product.class, contextProvider);
+		final I_M_Product product = newInstance(I_M_Product.class, contextProvider);
 		product.setValue(value);
 		product.setM_Product_Category(category);
-		InterfaceWrapperHelper.save(product);
+		save(product);
 		return product;
 	}
 
 	private I_M_Product_Category createM_ProductCategory(final String value)
 	{
-		final I_M_Product_Category productCategory = InterfaceWrapperHelper.newInstance(I_M_Product_Category.class, contextProvider);
+		final I_M_Product_Category productCategory = newInstance(I_M_Product_Category.class, contextProvider);
 		productCategory.setValue(value);
-			InterfaceWrapperHelper.save(productCategory);
+		save(productCategory);
 		return productCategory;
 	}
 
@@ -614,14 +613,14 @@ public class MDiscountSchemaTest
 		schemaBreak1.setM_Product_ID(product.getM_Product_ID());
 		schemaBreak1.setBreakDiscount(BigDecimal.TEN);
 		schemaBreak1.setBreakValue(BigDecimal.TEN);
-		InterfaceWrapperHelper.save(schemaBreak1);
+		save(schemaBreak1);
 		breaks.add(schemaBreak1);
 
 		final I_M_DiscountSchemaBreak schemaBreak2 = createBreak(schema, 20);
 		schemaBreak2.setM_Product_ID(product.getM_Product_ID());
 		schemaBreak2.setBreakDiscount(BigDecimal.valueOf(20));
 		schemaBreak2.setBreakValue(BigDecimal.valueOf(20));
-		InterfaceWrapperHelper.save(schemaBreak2);
+		save(schemaBreak2);
 		breaks.add(schemaBreak2);
 
 		return breaks;
@@ -629,18 +628,17 @@ public class MDiscountSchemaTest
 
 	public I_M_DiscountSchema createSchema()
 	{
-		final I_M_DiscountSchema schema = InterfaceWrapperHelper.newInstance(I_M_DiscountSchema.class, contextProvider);
-		InterfaceWrapperHelper.save(schema);
+		final I_M_DiscountSchema schema = newInstance(I_M_DiscountSchema.class, contextProvider);
+		save(schema);
 		return schema;
 	}
 
-
 	private I_M_DiscountSchemaBreak createBreak(final I_M_DiscountSchema schema, final int seqNo)
 	{
-		final I_M_DiscountSchemaBreak schemaBreak = InterfaceWrapperHelper.newInstance(I_M_DiscountSchemaBreak.class, contextProvider);
+		final I_M_DiscountSchemaBreak schemaBreak = newInstance(I_M_DiscountSchemaBreak.class, contextProvider);
 		schemaBreak.setM_DiscountSchema_ID(schema.getM_DiscountSchema_ID());
 		schemaBreak.setSeqNo(seqNo);
-		InterfaceWrapperHelper.save(schemaBreak);
+		save(schemaBreak);
 		return schemaBreak;
 	}
 }
