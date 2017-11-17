@@ -68,12 +68,12 @@ public class RetrieveDbRecordsUtil
 		return resultOut.getSelectionId();
 	}
 
-	private static interface EmptyResultOfSameClassCreator
+	private static interface EmptyResultSupplier
 	{
 		Result newEmptyResult();
 	}
 
-	private interface Result extends EmptyResultOfSameClassCreator
+	private interface Result extends EmptyResultSupplier
 	{
 		void executeQueryAndAddAll(IQuery<I_M_HU_Trace> query);
 
@@ -199,6 +199,10 @@ public class RetrieveDbRecordsUtil
 		@Override
 		public List<Integer> getVhuIds()
 		{
+			if (selectionId <= 0)
+			{
+				return ImmutableList.of();
+			}
 			return Services.get(IQueryBL.class).createQueryBuilder(I_M_HU_Trace.class)
 					.setOnlySelection(selectionId)
 					.addNotEqualsFilter(I_M_HU_Trace.COLUMN_VHU_ID, null)
@@ -209,6 +213,10 @@ public class RetrieveDbRecordsUtil
 		@Override
 		public List<Integer> getVhuSourceIds()
 		{
+			if (selectionId <= 0)
+			{
+				return ImmutableList.of();
+			}
 			return Services.get(IQueryBL.class).createQueryBuilder(I_M_HU_Trace.class)
 					.setOnlySelection(selectionId)
 					.addNotEqualsFilter(I_M_HU_Trace.COLUMN_VHU_Source_ID, null)
@@ -224,9 +232,9 @@ public class RetrieveDbRecordsUtil
 
 	private Result queryDbRecord(
 			@NonNull final HUTraceEventQuery huTraceEventQuery,
-			@NonNull final EmptyResultOfSameClassCreator provider)
+			@NonNull final EmptyResultSupplier emptyResultSupplier)
 	{
-		final Result resultOut = provider.newEmptyResult();
+		final Result resultOut = emptyResultSupplier.newEmptyResult();
 
 		final IQueryBuilder<I_M_HU_Trace> queryBuilder = createQueryBuilderOrNull(huTraceEventQuery);
 		if (queryBuilder == null)
@@ -234,7 +242,7 @@ public class RetrieveDbRecordsUtil
 			return resultOut;
 		}
 
-		final Result noRecursiveResult = provider.newEmptyResult();
+		final Result noRecursiveResult = emptyResultSupplier.newEmptyResult();
 		final IQuery<I_M_HU_Trace> query = queryBuilder
 				.orderBy().addColumn(I_M_HU_Trace.COLUMN_EventTime).endOrderBy()
 				.create();
@@ -248,14 +256,14 @@ public class RetrieveDbRecordsUtil
 			case NONE:
 				break;
 			case FORWARD:
-				resultOut.addAll(resurseForwards(noRecursiveResult));
+				resultOut.addAll(recurseForwards(noRecursiveResult));
 				break;
 			case BACKWARD:
 				// recurse and add the records whose M_HU_IDs show up as M_HU_Source_IDs in the records we already loaded
 				resultOut.addAll(recurseBackwards(noRecursiveResult));
 				break;
 			case BOTH:
-				resultOut.addAll(resurseForwards(noRecursiveResult));
+				resultOut.addAll(recurseForwards(noRecursiveResult));
 				resultOut.addAll(recurseBackwards(noRecursiveResult));
 				break;
 			default:
@@ -407,36 +415,67 @@ public class RetrieveDbRecordsUtil
 		return resultOut;
 	}
 
-	private Result resurseForwards(@NonNull final Result resultIn)
+	private Result recurseForwards(@NonNull final Result resultIn)
 	{
 		final Result resultOut = resultIn.newEmptyResult();
 
 		final List<Integer> vhuIDs = resultIn.getVhuIds();
 		for (final int vhuId : vhuIDs)
 		{
-			// get the records where our M_HU_IDs are the M_HU_Source_IDs
-			final HUTraceEventQuery directFollowUpRecordsQuery = HUTraceEventQuery.builder()
-					.vhuSourceId(vhuId)
-					.recursionMode(RecursionMode.NONE)
-					.build();
-			final Result directFollowUpRecordsResult = queryDbRecord(
-					directFollowUpRecordsQuery,
-					resultIn.newEmptyResult() // newEmptyResult, because we don't want to iterate the VhuIDs we already collected so far
-			);
-			final List<Integer> directFollowupVhuIDs = directFollowUpRecordsResult.getVhuIds();
+			resultOut.addAll(recuseForwardViaVhuLink(resultIn, vhuId));
 
-			// and now expand on those direct follow ups
-			for (final int directFollowupVhuID : directFollowupVhuIDs)
-			{
-				final Result forwardResult = queryDbRecord(
-						HUTraceEventQuery.builder()
-								.vhuId(directFollowupVhuID)
-								.recursionMode(RecursionMode.FORWARD)
-								.build(),
-						resultIn);
-				resultOut.addAll(forwardResult);
-			}
+			resultOut.addAll(recurseForwardViaSourceVhuLink(resultIn, vhuId));
 		}
+		return resultOut;
+	}
+
+	private Result recuseForwardViaVhuLink(
+			@NonNull final EmptyResultSupplier emptyResultSupplier,
+			final int vhuId)
+	{
+
+		final HUTraceEventQuery sameVhuIdRecordsQuery = HUTraceEventQuery.builder()
+				.vhuId(vhuId)
+				.recursionMode(RecursionMode.NONE)
+				.build();
+		final Result sameVhuIdRecordsResult = queryDbRecord(
+				sameVhuIdRecordsQuery,
+				emptyResultSupplier.newEmptyResult());
+
+		final Result resultOut = emptyResultSupplier.newEmptyResult();
+		resultOut.addAll(sameVhuIdRecordsResult);
+
+		return resultOut;
+	}
+
+	/**
+	 * Get the records where our vhuId is the vhuSourceId.
+	 */
+	private Result recurseForwardViaSourceVhuLink(
+			@NonNull final EmptyResultSupplier emptyResultSupplier,
+			final int vhuId)
+	{
+		final HUTraceEventQuery directFollowUpRecordsQuery = HUTraceEventQuery.builder()
+				.vhuSourceId(vhuId)
+				.recursionMode(RecursionMode.NONE)
+				.build();
+		final Result directFollowUpRecordsResult = queryDbRecord(
+				directFollowUpRecordsQuery,
+				emptyResultSupplier.newEmptyResult());
+		final List<Integer> directFollowupVhuIDs = directFollowUpRecordsResult.getVhuIds();
+
+		final Result resultOut = emptyResultSupplier.newEmptyResult();
+		for (final int directFollowupVhuID : directFollowupVhuIDs)
+		{
+			final Result forwardResult = queryDbRecord(
+					HUTraceEventQuery.builder()
+							.vhuId(directFollowupVhuID)
+							.recursionMode(RecursionMode.FORWARD)
+							.build(),
+					emptyResultSupplier);
+			resultOut.addAll(forwardResult);
+		}
+
 		return resultOut;
 	}
 
