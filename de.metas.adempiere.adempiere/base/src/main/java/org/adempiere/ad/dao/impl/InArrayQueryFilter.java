@@ -37,6 +37,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.apache.ecs.xhtml.code;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 
 import lombok.NonNull;
@@ -89,7 +90,7 @@ public class InArrayQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 		}
 		else
 		{
-			this.values = new ArrayList<Object>(values.length);
+			this.values = new ArrayList<>(values.length);
 			for (final Object v : values)
 			{
 				this.values.add(v);
@@ -137,7 +138,7 @@ public class InArrayQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 	 * Sets default value to be returned when the "values" list is empty.
 	 *
 	 * @param defaultReturnWhenEmpty
-	 * @return 
+	 * @return
 	 */
 	public InArrayQueryFilter<T> setDefaultReturnWhenEmpty(boolean defaultReturnWhenEmpty)
 	{
@@ -185,6 +186,18 @@ public class InArrayQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 		return sqlParams;
 	}
 
+	@VisibleForTesting
+	public String getColumnName()
+	{
+		return columnName;
+	}
+
+	@VisibleForTesting
+	public List<Object> getValuesOrNull()
+	{
+		return values;
+	}
+
 	private boolean sqlBuilt = false;
 	private String sqlWhereClause = null;
 	private List<Object> sqlParams = null;
@@ -217,7 +230,7 @@ public class InArrayQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 		}
 		else
 		{
-			final List<Object> sqlParamsBuilt = new ArrayList<Object>(values.size());
+			final List<Object> sqlParamsBuilt = new ArrayList<>(values.size());
 			final StringBuilder sqlWhereClauseBuilt = new StringBuilder();
 			boolean hasNullValues = false;
 			boolean hasNonNullValues = false;
