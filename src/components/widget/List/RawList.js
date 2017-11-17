@@ -306,10 +306,10 @@ class RawList extends Component {
     handleSelect = (option) => {
         const { onSelect } = this.props;
 
-        if (option) {
-            onSelect(option);
-        } else {
+        if (option.key === null) {
             onSelect(null);
+        } else {
+            onSelect(option);
         }
 
         this.setState({
@@ -408,7 +408,7 @@ class RawList extends Component {
         let emptyRow;
 
         if (!mandatory && emptyText) {
-            emptyRow = this.getRow({ key: 'empty', caption: emptyText });
+            emptyRow = this.getRow({ key: null, caption: emptyText });
         }
 
         return (
