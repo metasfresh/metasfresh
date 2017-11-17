@@ -10,7 +10,7 @@ import org.adempiere.util.Check;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 
-import de.metas.material.event.ProductDescriptor;
+import de.metas.material.event.commons.ProductDescriptor;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;

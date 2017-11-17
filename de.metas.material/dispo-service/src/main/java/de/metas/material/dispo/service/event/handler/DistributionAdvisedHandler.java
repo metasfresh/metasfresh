@@ -9,7 +9,6 @@ import org.springframework.stereotype.Service;
 
 import de.metas.material.dispo.commons.CandidateService;
 import de.metas.material.dispo.commons.CandidatesQuery;
-
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateStatus;
 import de.metas.material.dispo.commons.candidate.CandidateSubType;
@@ -22,10 +21,10 @@ import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.dispo.service.event.EventUtil;
 import de.metas.material.dispo.service.event.SupplyProposalEvaluator;
 import de.metas.material.dispo.service.event.SupplyProposalEvaluator.SupplyProposal;
-import de.metas.material.event.MaterialDescriptor;
+import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.ddorder.DDOrder;
 import de.metas.material.event.ddorder.DDOrderLine;
-import de.metas.material.event.ddorder.DistributionPlanEvent;
+import de.metas.material.event.ddorder.DistributionAdvisedEvent;
 import lombok.NonNull;
 
 /*
@@ -50,7 +49,7 @@ import lombok.NonNull;
  * #L%
  */
 @Service
-public class DistributionPlanEventHandler
+public class DistributionAdvisedHandler
 {
 	private final CandidateRepositoryRetrieval candidateRepository;
 	private final CandidateRepositoryCommands candidateRepositoryCommands;
@@ -58,7 +57,7 @@ public class DistributionPlanEventHandler
 	private final CandidateChangeService candidateChangeHandler;
 	private final CandidateService candidateService;
 
-	public DistributionPlanEventHandler(
+	public DistributionAdvisedHandler(
 			@NonNull final CandidateRepositoryRetrieval candidateRepository,
 			@NonNull final CandidateRepositoryCommands candidateRepositoryCommands,
 			@NonNull final CandidateChangeService candidateChangeHandler,
@@ -72,7 +71,7 @@ public class DistributionPlanEventHandler
 		this.supplyProposalEvaluator = supplyProposalEvaluator;
 	}
 
-	public void handleDistributionPlanEvent(final DistributionPlanEvent distributionPlanEvent)
+	public void handleDistributionAdvisedEvent(final DistributionAdvisedEvent distributionPlanEvent)
 	{
 		final DDOrder ddOrder = distributionPlanEvent.getDdOrder();
 		final CandidateStatus candidateStatus;
@@ -164,7 +163,7 @@ public class DistributionPlanEventHandler
 										.withSeqNo(demandCandidateWithId.getSeqNo() - 2));
 			}
 
-			if (ddOrder.isCreateDDrder() && groupIdsWithRequestedPPOrders.add(groupId))
+			if (ddOrder.isAdvisedToCreateDDrder() && groupIdsWithRequestedPPOrders.add(groupId))
 			{
 				candidateService.requestMaterialOrder(groupId);
 			}

@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.stream.Collectors;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -42,6 +43,7 @@ import de.metas.contracts.IContractChangeBL;
 import de.metas.contracts.IContractChangeDAO;
 import de.metas.contracts.IContractsDAO;
 import de.metas.contracts.IFlatrateBL;
+import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.model.I_C_Contract_Change;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_SubscriptionProgress;
@@ -63,21 +65,52 @@ import lombok.Setter;
 public class ContractChangeBL implements IContractChangeBL
 {
 	private static final Logger logger = LogManager.getLogger(ContractChangeBL.class);
+	
+	private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
+	
+	public static final String MSG_IS_NOT_ALLOWED_TO_TERMINATE_CURRENT_CONTRACT = "de.metas.contracts.isNotAllowedToTerminateCurrentContract";
 
 	@Override
 	public void cancelContract(@NonNull final I_C_Flatrate_Term currentTerm,
 			final @NonNull ContractChangeParameters contractChangeParameters)
 	{
 		final I_C_Flatrate_Term initialContract = Services.get(IFlatrateBL.class).getInitialFlatrateTerm(currentTerm);
-		if (initialContract == null)
+		if (initialContract == null || contractChangeParameters.isOnlyTerminateCurrentTerm())
 		{
 			cancelContractIfNotCanceledAlready(currentTerm, contractChangeParameters);
+			unlinkContractIfNeeded(currentTerm, contractChangeParameters);
 		}
 		else
 		{
 			// start canceling with first ancestor
 			cancelContractIfNotCanceledAlready(initialContract, contractChangeParameters);
 		}
+	}
+	
+	private void unlinkContractIfNeeded(@NonNull final I_C_Flatrate_Term currentTerm,
+			final @NonNull ContractChangeParameters contractChangeParameters)
+	{
+		final I_C_Flatrate_Term ancestor = flatrateDAO.retrieveAncestorFlatrateTerm(currentTerm);
+		 if (ancestor != null && contractChangeParameters.isOnlyTerminateCurrentTerm())
+		 {
+			 ancestor.setC_FlatrateTerm_Next(null);
+			 ancestor.setAD_PInstance_EndOfTerm(null);
+			 setAncestorMasterEndDateWhenUnlinkContract(ancestor);
+			 
+			 InterfaceWrapperHelper.save(ancestor);
+		 }
+	}
+	
+	private void setAncestorMasterEndDateWhenUnlinkContract(@NonNull final I_C_Flatrate_Term ancestor)
+	{
+		if (ancestor.isAutoRenew())
+		 {
+			 ancestor.setMasterEndDate(null);
+		 }
+		 else
+		 {
+			 ancestor.setMasterEndDate(ancestor.getEndDate());
+		 }
 	}
 
 	@Builder
@@ -105,10 +138,17 @@ public class ContractChangeBL implements IContractChangeBL
 		{
 			return;
 		}
+		
+		if (isNotAllowedToTerminateCurrentContract(currentTerm, contractChangeParameters))
+		{
+			throw new AdempiereException(MSG_IS_NOT_ALLOWED_TO_TERMINATE_CURRENT_CONTRACT,
+					new Object[] { currentTerm });
+		}
+		
 
 		createCompesationOrderAndDeleteDeliveriesIfNeeded(currentTerm, contractChangeParameters);
 		setTerminatioReasonAndMemo(currentTerm, contractChangeParameters);
-		currentTerm.setMasterEndDate(computeMasterEndDate(currentTerm, contractChangeParameters.getChangeDate()));
+		setMasterDates(currentTerm, contractChangeParameters);
 		currentTerm.setIsCloseInvoiceCandidate(contractChangeParameters.isCloseInvoiceCandidate());
 		currentTerm.setIsAutoRenew(false);
 		currentTerm.setContractStatus(X_C_Flatrate_Term.CONTRACTSTATUS_Quit);
@@ -121,6 +161,27 @@ public class ContractChangeBL implements IContractChangeBL
 	private boolean isCanceledContract(@NonNull final I_C_Flatrate_Term currentTerm)
 	{
 		return X_C_Flatrate_Term.CONTRACTSTATUS_Quit.equals(currentTerm.getContractStatus());
+	}
+	
+	private boolean isNotAllowedToTerminateCurrentContract(@NonNull final I_C_Flatrate_Term currentTerm,
+			@NonNull final ContractChangeParameters contractChangeParameters)
+	{
+		return contractChangeParameters.isOnlyTerminateCurrentTerm() && currentTerm.getC_FlatrateTerm_Next_ID() > 0;
+			
+	}
+	
+	private void setMasterDates(@NonNull final I_C_Flatrate_Term currentTerm,
+			@NonNull final ContractChangeParameters contractChangeParameters)
+	{
+		if (contractChangeParameters.isOnlyTerminateCurrentTerm())
+		{
+			currentTerm.setMasterStartDate(null);
+			currentTerm.setMasterEndDate(null);
+		}
+		else 
+		{
+			currentTerm.setMasterEndDate(computeMasterEndDate(currentTerm, contractChangeParameters.getChangeDate()));
+		}
 	}
 
 	private void createCompesationOrderAndDeleteDeliveriesIfNeeded(@NonNull final I_C_Flatrate_Term currentTerm,

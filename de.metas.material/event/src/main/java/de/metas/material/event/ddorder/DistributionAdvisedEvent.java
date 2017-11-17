@@ -1,7 +1,9 @@
-package de.metas.material.event.forecast;
+package de.metas.material.event.ddorder;
 
-import de.metas.material.event.EventDescriptor;
+import org.eevolution.model.I_DD_Order;
+
 import de.metas.material.event.MaterialEvent;
+import de.metas.material.event.commons.EventDescriptor;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -27,17 +29,32 @@ import lombok.Value;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
-@Value // note that we need AllArgsConstructor. It's used by jackson when it deserializes a string
-@Builder // used by devs to make sure they know with parameter value does into which property
-public class ForecastEvent implements MaterialEvent
+/**
+ * Send by the material planner when it came up with a distribution plan that could be turned into an {@link I_DD_Order}.
+ *
+ * @author metas-dev <dev@metasfresh.com>
+ */
+@Value
+@Builder
+public class DistributionAdvisedEvent implements MaterialEvent
 {
-	public static final String TYPE = "ForecastEvent";
-	
-	@NonNull
-	Forecast forecast;
+	public static final String TYPE = "DistributionPlanEvent";
 
 	@NonNull
 	EventDescriptor eventDescriptor;
 
+	@NonNull
+	DDOrder ddOrder;
+
+	/**
+	 * Note: this field is a bit redundant because the {@link #getPpOrder()}'s lines contain a network distribution line with this info. However, the material-dispo code doesn't know or care about how to get to that information.
+	 */
+	@NonNull
+	Integer fromWarehouseId;
+
+	/**
+	 * Also check the note about {@link #getFromWarehouseId()}.
+	 */
+	@NonNull
+	Integer toWarehouseId;
 }

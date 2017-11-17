@@ -1,11 +1,11 @@
 package de.metas.material.dispo.commons.repository;
 
-import static de.metas.material.dispo.commons.repository.CompositeQueryFilterAssert.assertThat;
 import static de.metas.material.event.EventTestHelper.ATTRIBUTE_SET_INSTANCE_ID;
 import static de.metas.material.event.EventTestHelper.BEFORE_NOW;
 import static de.metas.material.event.EventTestHelper.NOW;
 import static de.metas.material.event.EventTestHelper.PRODUCT_ID;
 import static de.metas.material.event.EventTestHelper.WAREHOUSE_ID;
+import static de.metas.testsupport.MetasfreshAssertions.assertThat;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -29,8 +29,8 @@ import com.google.common.collect.ImmutableList;
 import de.metas.material.dispo.commons.repository.AvailableStockResult.ResultGroup;
 import de.metas.material.dispo.model.I_MD_Candidate_Stock_v;
 import de.metas.material.event.EventTestHelper;
-import de.metas.material.event.MaterialDescriptor;
-import de.metas.material.event.ProductDescriptor;
+import de.metas.material.event.commons.MaterialDescriptor;
+import de.metas.material.event.commons.ProductDescriptor;
 import mockit.Mocked;
 
 /*

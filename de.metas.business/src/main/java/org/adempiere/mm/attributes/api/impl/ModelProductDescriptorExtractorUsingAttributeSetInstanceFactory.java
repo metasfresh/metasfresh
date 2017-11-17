@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 import com.google.common.base.Preconditions;
 
 import de.metas.material.event.ModelProductDescriptorExtractor;
-import de.metas.material.event.ProductDescriptor;
+import de.metas.material.event.commons.ProductDescriptor;
 import lombok.NonNull;
 
 /*

@@ -9,7 +9,7 @@ import org.adempiere.util.time.SystemTime;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.material.event.MaterialDescriptor;
+import de.metas.material.event.commons.MaterialDescriptor;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;

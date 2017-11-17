@@ -4,18 +4,18 @@ import org.springframework.stereotype.Service;
 
 import de.metas.material.dispo.commons.CandidateService;
 import de.metas.material.dispo.commons.candidate.Candidate;
+import de.metas.material.dispo.commons.candidate.Candidate.CandidateBuilder;
 import de.metas.material.dispo.commons.candidate.CandidateStatus;
 import de.metas.material.dispo.commons.candidate.CandidateSubType;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.candidate.DemandDetail;
 import de.metas.material.dispo.commons.candidate.ProductionDetail;
-import de.metas.material.dispo.commons.candidate.Candidate.CandidateBuilder;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.dispo.service.event.EventUtil;
-import de.metas.material.event.MaterialDescriptor;
+import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrderLine;
-import de.metas.material.event.pporder.ProductionPlanEvent;
+import de.metas.material.event.pporder.ProductionAdvisedEvent;
 import lombok.NonNull;
 
 /*
@@ -40,17 +40,17 @@ import lombok.NonNull;
  * #L%
  */
 @Service
-public class ProductionPlanEventHandler
+public class ProductionAdvisedHandler
 {
 	private final CandidateChangeService candidateChangeHandler;
 	private final CandidateService candidateService;
 
 	/**
-	 * 
+	 *
 	 * @param candidateChangeHandler
-	 * @param candidateService needed in case we directly request a {@link ProductionPlanEvent}'s proposed PP_Order to be created.
+	 * @param candidateService needed in case we directly request a {@link PpOrderSuggestedEvent}'s proposed PP_Order to be created.
 	 */
-	public ProductionPlanEventHandler(
+	public ProductionAdvisedHandler(
 			@NonNull final CandidateChangeService candidateChangeHandler,
 			@NonNull final CandidateService candidateService)
 	{
@@ -58,7 +58,7 @@ public class ProductionPlanEventHandler
 		this.candidateService = candidateService;
 	}
 
-	public void handleProductionPlanEvent(final ProductionPlanEvent event)
+	public void handleProductionAdvisedEvent(final ProductionAdvisedEvent event)
 	{
 		final PPOrder ppOrder = event.getPpOrder();
 
@@ -87,12 +87,12 @@ public class ProductionPlanEventHandler
 					.materialDescriptor(createMaterialDescriptorForPpOrderAndLine(ppOrder, ppOrderLine))
 					.demandDetail(DemandDetail.forOrderLineIdOrNull(ppOrder.getOrderLineId()))
 					.productionDetail(createProductionDetailForPPOrderAndLine(ppOrder, ppOrderLine));
-			
+
 			// might trigger further demand events
 			candidateChangeHandler.onCandidateNewOrChange(builder.build());
 		}
 
-		if (ppOrder.isCreatePPOrder())
+		if (ppOrder.isAdvisedToCreatePPOrder())
 		{
 			candidateService.requestMaterialOrder(candidateWithGroupId.getGroupId());
 		}

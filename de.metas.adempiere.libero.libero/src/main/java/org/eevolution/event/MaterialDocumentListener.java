@@ -22,9 +22,9 @@ import de.metas.logging.LogManager;
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.MaterialEventListener;
 import de.metas.material.event.ddorder.DDOrder;
-import de.metas.material.event.ddorder.DDOrderRequestedEvent;
+import de.metas.material.event.ddorder.DistributionRequestedEvent;
 import de.metas.material.event.pporder.PPOrder;
-import de.metas.material.event.pporder.PPOrderRequestedEvent;
+import de.metas.material.event.pporder.ProductionRequestedEvent;
 import lombok.NonNull;
 
 /*
@@ -49,7 +49,7 @@ import lombok.NonNull;
  * #L%
  */
 /**
- * This listener is dedicated to handle {@link PPOrderRequestedEvent} and {@link DDOrderRequestedEvent}s.<br>
+ * This listener is dedicated to handle {@link ProductionRequestedEvent} and {@link DistributionRequestedEvent}s.<br>
  * It ignores and other {@link MaterialEvent}.
  *
  * @author metas-dev <dev@metasfresh.com>
@@ -75,20 +75,20 @@ public class MaterialDocumentListener implements MaterialEventListener
 	@Override
 	public void onEvent(final MaterialEvent event)
 	{
-		if (event instanceof PPOrderRequestedEvent)
+		if (event instanceof ProductionRequestedEvent)
 		{
 			logger.info("Received event {}", event);
 
-			final PPOrderRequestedEvent productionOrderEvent = (PPOrderRequestedEvent)event;
+			final ProductionRequestedEvent productionOrderEvent = (ProductionRequestedEvent)event;
 			createProductionOrderInTrx(
 					productionOrderEvent.getPpOrder(),
 					Date.from(productionOrderEvent.getEventDescriptor().getWhen()));
 		}
-		else if (event instanceof DDOrderRequestedEvent)
+		else if (event instanceof DistributionRequestedEvent)
 		{
 			logger.info("Received event {}", event);
 
-			final DDOrderRequestedEvent distributionOrderEvent = (DDOrderRequestedEvent)event;
+			final DistributionRequestedEvent distributionOrderEvent = (DistributionRequestedEvent)event;
 			createDistributionOrderInTrx(
 					distributionOrderEvent.getDdOrder(),
 					Date.from(distributionOrderEvent.getEventDescriptor().getWhen()));

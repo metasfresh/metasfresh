@@ -21,7 +21,7 @@ import org.eevolution.model.X_PP_Order;
 import org.springframework.stereotype.Service;
 
 import de.metas.document.IDocTypeDAO;
-import de.metas.material.event.ProductDescriptor;
+import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.pporder.PPOrder;
 import lombok.NonNull;
 

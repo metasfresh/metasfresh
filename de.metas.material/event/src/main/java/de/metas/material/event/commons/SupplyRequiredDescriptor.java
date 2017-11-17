@@ -1,4 +1,4 @@
-package de.metas.material.event;
+package de.metas.material.event.commons;
 
 import static de.metas.material.event.MaterialEventUtils.checkIdGreaterThanZero;
 
@@ -11,7 +11,7 @@ import lombok.Value;
 
 /*
  * #%L
- * metasfresh-manufacturing-event-api
+ * metasfresh-material-event
  * %%
  * Copyright (C) 2017 metas GmbH
  * %%
@@ -19,51 +19,52 @@ import lombok.Value;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-@Value
-@Builder
-public class TransactionEvent implements MaterialEvent
+@Value // includes @AllArgsConstructor which is used by jackson when it deserializes a string
+public class SupplyRequiredDescriptor
 {
-	public static final String TYPE = "TransactionEvent";
-
 	@NonNull
-	EventDescriptor eventDescriptor;
+	EventDescriptor eventDescr;
 
 	@NonNull
 	MaterialDescriptor materialDescriptor;
 
-	// ids used to match the transaction to the respective shipment, ddOrder or ppOrder event (demand if qty is negative), supply if qty is positive
-	// if *none of those are set* then the transaction will be recorded as "unplanned"
+	int demandCandidateId;
+
 	int shipmentScheduleId;
 
-	int transactionId;
+	int forecastLineId;
+
+	int orderLineId;
 
 	@JsonCreator
 	@Builder
-	public TransactionEvent(
-			@JsonProperty("eventDescriptor") @NonNull final EventDescriptor eventDescriptor,
-			@JsonProperty("materialDescriptor") @NonNull final MaterialDescriptor materialDescriptor,
-			@JsonProperty("shipmentScheduleId") final int shipmentScheduleId,
-			@JsonProperty("transactionId") final int transactionId)
+	private SupplyRequiredDescriptor(
+			@JsonProperty("eventDescr") @NonNull final EventDescriptor eventDescr,
+			@JsonProperty("materialDescriptor") @NonNull MaterialDescriptor materialDescriptor,
+			@JsonProperty("demandCandidateId") int demandCandidateId,
+			@JsonProperty("shipmentScheduleId") int shipmentScheduleId,
+			@JsonProperty("forecastLineId") int forecastLineId,
+			@JsonProperty("orderLineId") int orderLineId)
 	{
-		this.transactionId = checkIdGreaterThanZero("transactionId",transactionId);
+		this.demandCandidateId = checkIdGreaterThanZero("demandCandidateId", demandCandidateId);
 
-		this.eventDescriptor = eventDescriptor;
+		this.shipmentScheduleId = shipmentScheduleId > 0 ? shipmentScheduleId : -1;
+		this.forecastLineId = forecastLineId > 0 ? forecastLineId : -1;
+		this.orderLineId = orderLineId > 0 ? orderLineId : -1;
 
-		materialDescriptor.asssertMaterialDescriptorComplete();
+		this.eventDescr = eventDescr;
 		this.materialDescriptor = materialDescriptor;
-
-		this.shipmentScheduleId = shipmentScheduleId;
 	}
 }

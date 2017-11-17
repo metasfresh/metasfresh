@@ -1,4 +1,4 @@
-package de.metas.material.event;
+package de.metas.material.event.commons;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;

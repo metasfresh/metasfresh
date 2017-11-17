@@ -5,9 +5,10 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import de.metas.material.event.commons.MaterialDescriptor;
+
 import static de.metas.material.event.MaterialEventUtils.checkIdGreaterThanZero;
 
-import de.metas.material.event.MaterialDescriptor;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;

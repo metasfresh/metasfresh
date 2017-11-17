@@ -12,7 +12,7 @@ import org.junit.Test;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.material.dispo.commons.repository.AvailableStockResult.ResultGroup;
-import de.metas.material.event.ProductDescriptor;
+import de.metas.material.event.commons.ProductDescriptor;
 
 /*
  * #%L

@@ -31,10 +31,10 @@ import de.metas.material.dispo.service.candidatechange.StockCandidateService;
 import de.metas.material.dispo.service.candidatechange.handler.DemandCandiateHandler;
 import de.metas.material.dispo.service.candidatechange.handler.SupplyCandiateHandler;
 import de.metas.material.dispo.service.event.SupplyProposalEvaluator.SupplyProposal;
-import de.metas.material.dispo.service.event.handler.DistributionPlanEventHandler;
+import de.metas.material.dispo.service.event.handler.DistributionAdvisedHandler;
 import de.metas.material.dispo.service.event.handler.DistributionPlanEventHandlerTests;
-import de.metas.material.event.MaterialDescriptor;
 import de.metas.material.event.MaterialEventService;
+import de.metas.material.event.commons.MaterialDescriptor;
 import mockit.Mocked;
 
 /*
@@ -77,7 +77,7 @@ public class SupplyProposalEvaluatorTests
 
 	private static final int DEMAND_WAREHOUSE_ID = 6;
 
-	private DistributionPlanEventHandler distributionPlanEventHandler;
+	private DistributionAdvisedHandler distributionPlanEventHandler;
 
 	/**
 	 * This is the code under test
@@ -118,7 +118,7 @@ public class SupplyProposalEvaluatorTests
 						stockCandidateService
 						)));
 
-		distributionPlanEventHandler = new DistributionPlanEventHandler(
+		distributionPlanEventHandler = new DistributionAdvisedHandler(
 				candidateRepositoryRetrieval,
 				candidateRepositoryCommands,
 				candidateChangeHandler,

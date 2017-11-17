@@ -90,7 +90,7 @@ public class InArrayQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 		}
 		else
 		{
-			this.values = new ArrayList<Object>(values.length);
+			this.values = new ArrayList<>(values.length);
 			for (final Object v : values)
 			{
 				this.values.add(v);
@@ -230,7 +230,7 @@ public class InArrayQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 		}
 		else
 		{
-			final List<Object> sqlParamsBuilt = new ArrayList<Object>(values.size());
+			final List<Object> sqlParamsBuilt = new ArrayList<>(values.size());
 			final StringBuilder sqlWhereClauseBuilt = new StringBuilder();
 			boolean hasNullValues = false;
 			boolean hasNonNullValues = false;

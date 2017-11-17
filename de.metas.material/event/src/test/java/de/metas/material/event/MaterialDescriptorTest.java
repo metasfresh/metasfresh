@@ -10,7 +10,9 @@ import java.math.BigDecimal;
 
 import org.junit.Test;
 
-import de.metas.material.event.MaterialDescriptor.DateOperator;
+import de.metas.material.event.commons.MaterialDescriptor;
+import de.metas.material.event.commons.ProductDescriptor;
+import de.metas.material.event.commons.MaterialDescriptor.DateOperator;
 
 /*
  * #%L

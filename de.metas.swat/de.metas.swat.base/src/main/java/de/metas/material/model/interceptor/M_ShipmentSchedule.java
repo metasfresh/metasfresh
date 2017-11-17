@@ -16,12 +16,12 @@ import com.google.common.annotations.VisibleForTesting;
 
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.material.event.EventDescriptor;
-import de.metas.material.event.MaterialDescriptor;
 import de.metas.material.event.MaterialEventService;
 import de.metas.material.event.ModelProductDescriptorExtractor;
-import de.metas.material.event.ProductDescriptor;
-import de.metas.material.event.ShipmentScheduleEvent;
+import de.metas.material.event.commons.EventDescriptor;
+import de.metas.material.event.commons.MaterialDescriptor;
+import de.metas.material.event.commons.ProductDescriptor;
+import de.metas.material.event.shipmentschedule.ShipmentScheduleCreatedEvent;
 import lombok.NonNull;
 
 /**
@@ -57,14 +57,14 @@ public class M_ShipmentSchedule
 			@NonNull final I_M_ShipmentSchedule schedule,
 			@NonNull final ModelChangeType timing)
 	{
-		final ShipmentScheduleEvent event = createShipmentscheduleEvent(schedule, timing);
+		final ShipmentScheduleCreatedEvent event = createShipmentscheduleEvent(schedule, timing);
 
 		final MaterialEventService materialEventService = Adempiere.getBean(MaterialEventService.class);
 		materialEventService.fireEventAfterNextCommit(event, getTrxName(schedule));
 	}
 
 	@VisibleForTesting
-	ShipmentScheduleEvent createShipmentscheduleEvent(
+	ShipmentScheduleCreatedEvent createShipmentscheduleEvent(
 			@NonNull final I_M_ShipmentSchedule shipmentSchedule,
 			@NonNull final ModelChangeType timing)
 	{
@@ -76,7 +76,7 @@ public class M_ShipmentSchedule
 		final ModelProductDescriptorExtractor productDescriptorFactory = Adempiere.getBean(ModelProductDescriptorExtractor.class);
 		final ProductDescriptor productDescriptor = productDescriptorFactory.createProductDescriptor(shipmentSchedule);
 
-		final ShipmentScheduleEvent event = ShipmentScheduleEvent.builder()
+		final ShipmentScheduleCreatedEvent event = ShipmentScheduleCreatedEvent.builder()
 				.eventDescriptor(EventDescriptor.createNew(shipmentSchedule))
 				.materialDescriptor(MaterialDescriptor.builderForCompleteDescriptor()
 						.date(preparationDate)

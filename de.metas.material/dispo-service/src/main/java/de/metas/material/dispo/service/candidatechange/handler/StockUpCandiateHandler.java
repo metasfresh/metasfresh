@@ -14,8 +14,8 @@ import de.metas.material.dispo.commons.repository.CandidateRepositoryCommands;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.MaterialQuery;
 import de.metas.material.dispo.commons.repository.StockRepository;
-import de.metas.material.event.MaterialDemandEvent;
 import de.metas.material.event.MaterialEventService;
+import de.metas.material.event.demandWasFound.SupplyRequiredEvent;
 import lombok.NonNull;
 
 /*
@@ -41,7 +41,7 @@ import lombok.NonNull;
  */
 
 /**
- * This handler might create a {@link MaterialDemandEvent}, but does not decrease the protected stock quantity.
+ * This handler might create a {@link SupplyRequiredEvent}, but does not decrease the protected stock quantity.
  *
  * @author metas-dev <dev@metasfresh.com>
  *
@@ -100,7 +100,7 @@ public class StockUpCandiateHandler implements CandidateHandler
 
 		if (requiredAdditionalQty.signum() > 0)
 		{
-			final MaterialDemandEvent materialDemandEvent = MaterialDemandEventCreator //
+			final SupplyRequiredEvent materialDemandEvent = SupplyRequiredEventCreator //
 					.createMaterialDemandEvent(candidateWithQtyDeltaAndId, requiredAdditionalQty);
 			materialEventService.fireEvent(materialDemandEvent);
 		}

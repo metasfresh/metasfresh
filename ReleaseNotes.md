@@ -22,6 +22,21 @@ Here come the actual release notes:
     * Improved Layout and Translations for the Distribution Order Window in WebUI.
   * [#2959](https://github.com/metasfresh/metasfresh/issues/2959) Default WebUI Window for Distribution Orderlines Handling
     * New Window for Distribution Orderlines that allows better Distrbution handling in WebUI.
+  * [#2969](https://github.com/metasfresh/metasfresh/issues/2969) Add SQL Column M_Warehouse to Distribution Orderline
+    * New Field Warehouse anf Filter in Distribution Editor.
+  * [#2978](https://github.com/metasfresh/metasfresh/issues/2978) New Window in WebUI for EDI DESADV
+    * New Window for EDI DESADV records in WebUI.
+  * [#2985](https://github.com/metasfresh/metasfresh/issues/2985) Refining Distribution Editor Window in WebUI
+    * Improvements for the Distribution Editor Window in WebUI. Additional Translations for de_DE and en_US Language/ Locale.
+  * [#2989](https://github.com/metasfresh/metasfresh/issues/2989) Filter for GAP No. is missing in Businesspartner window
+    * Adding the GAP Filter to Businesspartner Window.
+  * [#2980](https://github.com/metasfresh/metasfresh/issues/2980) Date Filter missing in Order Control Window
+    * New Filter in Order Control Window for Date, CreatedBy and more.
+  * [#2981](https://github.com/metasfresh/metasfresh/issues/2981) Action translation in Invoice Candidates Window
+    * Improved Translation for Action Menu in invoice candidate window.
+  * [#2992](https://github.com/metasfresh/metasfresh/issues/2992) WebUI: Window Shipment Packing Item
+    * Adaption of Field Names to current WebUI Guidelines.
+    
 
 ## Fixes
 * metasfresh-webui-frontend
