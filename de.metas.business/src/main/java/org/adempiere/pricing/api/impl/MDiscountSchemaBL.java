@@ -44,6 +44,7 @@ import org.slf4j.Logger;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.logging.LogManager;
+import lombok.NonNull;
 
 public class MDiscountSchemaBL implements IMDiscountSchemaBL
 {
@@ -206,7 +207,7 @@ public class MDiscountSchemaBL implements IMDiscountSchemaBL
 	{
 
 		final List<I_M_DiscountSchemaBreak> applicableBreaks = breaks.stream()
-				.filter(schemaBreak -> schemaBreak.isActive())
+				.filter(I_M_DiscountSchemaBreak::isActive)
 				.filter(schemaBreak -> breakApplies(schemaBreak, isQtyBased ? qty : amt, M_Product_ID, M_Product_Category_ID, attributeValueID))
 				.sorted(REVERSED_BREAKS_COMPARATOR)
 				.collect(ImmutableList.toImmutableList());
@@ -227,12 +228,7 @@ public class MDiscountSchemaBL implements IMDiscountSchemaBL
 	 */
 	private boolean hasNoValue(final I_M_AttributeInstance instance)
 	{
-		if (instance.getM_AttributeValue_ID() > 0)
-		{
-			return false;
-		}
-
-		return true;
+		return instance.getM_AttributeValue_ID() <= 0;
 	}
 
 	/**
@@ -248,15 +244,11 @@ public class MDiscountSchemaBL implements IMDiscountSchemaBL
 			return true;
 		}
 
-		for (final I_M_AttributeInstance instance : instances)
-		{
-			if (!hasNoValue(instance))
-			{
-				return false;
-			}
-		}
+		final List<I_M_AttributeInstance> attributeInstances = instances.stream()
+				.filter(instance -> !hasNoValue(instance))
+				.collect(ImmutableList.toImmutableList());
 
-		return true;
+		return attributeInstances.isEmpty();
 	}
 
 	@Override
@@ -353,13 +345,11 @@ public class MDiscountSchemaBL implements IMDiscountSchemaBL
 			final List<I_M_AttributeInstance> instances,
 			final BigDecimal bPartnerFlatDiscount)
 	{
-		logger.debug("Price=" + price + ",Qty=" + qty);
 		if (price == null || BigDecimal.ZERO.compareTo(price) == 0)
 		{
 			return price;
 		}
-		//
-		//
+
 		final BigDecimal discount = calculateDiscount(
 				schema,
 				qty,
@@ -369,18 +359,20 @@ public class MDiscountSchemaBL implements IMDiscountSchemaBL
 				instances,
 				bPartnerFlatDiscount);
 
-		// nothing to calculate
 		if (discount == null || discount.signum() == 0)
 		{
 			return price;
 		}
-		//
-		BigDecimal onehundred = new BigDecimal(100);
+
+		return applyDiscount(price, discount);
+	}
+
+	private BigDecimal applyDiscount(@NonNull final BigDecimal price, @NonNull final BigDecimal discount)
+	{
+		final BigDecimal onehundred = BigDecimal.valueOf(100);
 		BigDecimal multiplier = (onehundred).subtract(discount);
 		multiplier = multiplier.divide(onehundred, 6, BigDecimal.ROUND_HALF_UP);
-		BigDecimal newPrice = price.multiply(multiplier);
-		logger.debug("=>" + newPrice);
-		return newPrice;
+		return price.multiply(multiplier);
 	}
 
 	/**
