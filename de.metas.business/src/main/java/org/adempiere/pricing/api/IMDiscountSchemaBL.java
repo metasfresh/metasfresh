@@ -26,10 +26,7 @@ import java.math.BigDecimal;
 import java.util.Comparator;
 import java.util.List;
 
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.util.ISingletonService;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_DiscountSchema;
@@ -37,15 +34,9 @@ import org.compiere.model.I_M_DiscountSchemaBreak;
 
 public interface IMDiscountSchemaBL extends ISingletonService
 {
-	final public static IQueryOrderBy queryOrderBy = Services.get(IQueryBL.class)
-			.createQueryOrderByBuilder(I_M_DiscountSchemaBreak.class)
-			.addColumnDescending(I_M_DiscountSchemaBreak.COLUMNNAME_BreakValue)
-			.createQueryOrderBy();
-
-	final public static Comparator<I_M_DiscountSchemaBreak> BREAKS_COMPARATOR = Comparator.<I_M_DiscountSchemaBreak, BigDecimal> comparing(
+	final public static Comparator<I_M_DiscountSchemaBreak> REVERSED_BREAKS_COMPARATOR = Comparator.<I_M_DiscountSchemaBreak, BigDecimal> comparing(
 			schemaBreak -> schemaBreak.getBreakValue())
-			.thenComparing(
-					queryOrderBy.getComparator(I_M_DiscountSchemaBreak.class));
+			.reversed();
 
 	/**
 	 * Calculate Discount Percentage

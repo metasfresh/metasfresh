@@ -207,7 +207,7 @@ public class MDiscountSchemaBL implements IMDiscountSchemaBL
 		final List<I_M_DiscountSchemaBreak> applicableBreaks = breaks.stream()
 				.filter(schemaBreak -> schemaBreak.isActive())
 				.filter(schemaBreak -> breakApplies(schemaBreak, isQtyBased ? qty : amt, M_Product_ID, M_Product_Category_ID, attributeValueID))
-				.sorted(BREAKS_COMPARATOR)
+				.sorted(REVERSED_BREAKS_COMPARATOR)
 				.collect(Collectors.toList());
 
 		if (applicableBreaks.isEmpty())
