@@ -392,9 +392,10 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		account.setESR_RenderedAccountNo("01-888888-0");
 
 		save(account);
-		final String esrNoForPostFinanceUser = "01-059931-0";
+		final String renderedEsrNoForPostFinanceUser = "01-059931-0";
+		final String unRenderedEsrNoForPostFinanceUser = "010599310";
 
-		createPostFinanceUserNumber(account, esrNoForPostFinanceUser);
+		createPostFinanceUserNumber(account, renderedEsrNoForPostFinanceUser);
 
 		esrImport.setC_BP_BankAccount(account);
 		save(esrImport);
@@ -402,7 +403,7 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream(esrImportLineText.getBytes()));
 		final I_ESR_ImportLine esrImportLine = ESRTestUtil.retrieveSingleLine(esrImport);
 
-		assertThat(esrImportLine.getESRPostParticipantNumber()).isEqualTo(esrNoForPostFinanceUser);
+		assertThat(esrImportLine.getESRPostParticipantNumber()).isEqualTo(unRenderedEsrNoForPostFinanceUser);
 	}
 
 	@Test(expected = AdempiereException.class)
