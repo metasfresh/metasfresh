@@ -208,7 +208,8 @@ class TableItem extends Component {
                             changeListenOnTrue();
                         }}
                         disableOnClickOutside={edited !== property}
-                        onKeyDown = {(!mainTable || forceKeysBind || isEditable) ?
+                        onKeyDown = {(!mainTable || forceKeysBind || 
+                            isEditable) ?
                             (e) => this.handleKey(e, property) : null
                         }
                         onCellChange={onItemChange}
