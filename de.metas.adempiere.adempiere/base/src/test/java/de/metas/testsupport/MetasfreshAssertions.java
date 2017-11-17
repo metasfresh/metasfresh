@@ -54,4 +54,9 @@ public class MetasfreshAssertions extends Assertions
 	{
 		return new QueryFilterAssert(actual);
 	}
+
+	public static ModelAssert assertThatModel(@Nullable final Object actual)
+	{
+		return new ModelAssert(actual);
+	}
 }

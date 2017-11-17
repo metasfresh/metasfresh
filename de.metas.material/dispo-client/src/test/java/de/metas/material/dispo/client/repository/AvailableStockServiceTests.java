@@ -1,31 +1,21 @@
 package de.metas.material.dispo.client.repository;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static de.metas.testsupport.MetasfreshAssertions.assertThatModel;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.Collection;
-
+import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.mm.attributes.api.impl.AttributesTestHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
-import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Attribute;
-import org.compiere.model.I_M_Product;
 import org.compiere.model.X_M_Attribute;
-import org.compiere.util.DB;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestWatcher;
 
-import de.metas.business.BusinessTestHelper;
-import de.metas.dimension.model.I_DIM_Dimension_Spec;
-import de.metas.dimension.model.I_DIM_Dimension_Spec_Attribute;
-import de.metas.material.dispo.commons.RepositoryTestHelper;
-import de.metas.material.dispo.commons.repository.CandidateRepositoryCommands;
 import de.metas.material.dispo.commons.repository.StockRepository;
-import mockit.Mocked;
+import de.metas.material.event.commons.ProductDescriptor;
 
 /*
  * #%L
@@ -57,13 +47,6 @@ public class AvailableStockServiceTests
 
 	private StockRepository stockRepository;
 
-	@Mocked
-	private DB db;
-
-	private I_M_Product product;
-
-	private RepositoryTestHelper repositoryTestHelper;
-
 	private AttributesTestHelper attributesTestHelper;
 
 	@Before
@@ -72,34 +55,35 @@ public class AvailableStockServiceTests
 		AdempiereTestHelper.get().init();
 		stockRepository = new StockRepository();
 
-		final I_C_UOM uom = BusinessTestHelper.createUOM("uom");
-		product = BusinessTestHelper.createProduct("product", uom);
-
-		final CandidateRepositoryCommands candidateRepositoryCommands = new CandidateRepositoryCommands();
-		repositoryTestHelper = new RepositoryTestHelper(candidateRepositoryCommands);
-
 		attributesTestHelper = new AttributesTestHelper();
 	}
 
 	@Test
-	public void createStorageAttributeKeysForDimensionSpec()
+	public void createAttributeSetFromStorageAttributesKey()
 	{
-		final I_DIM_Dimension_Spec dimensionSpec = newInstance(I_DIM_Dimension_Spec.class);
-		save(dimensionSpec);
-
-		final I_DIM_Dimension_Spec_Attribute dsa = newInstance(I_DIM_Dimension_Spec_Attribute.class);
-		dsa.setDIM_Dimension_Spec(dimensionSpec);
-		dsa.setAttributeValueType(X_M_Attribute.ATTRIBUTEVALUETYPE_List);
-
 		final I_M_Attribute attr1 = attributesTestHelper.createM_Attribute("attr1", X_M_Attribute.ATTRIBUTEVALUETYPE_List, true);
 		attributesTestHelper.createM_AttributeValue(attr1, "value");
-		dsa.setM_Attribute(attr1);
-		save(dsa);
 
-		final AvailableStockService availableStockService = new AvailableStockService(stockRepository);
+		final I_M_Attribute attr2 = attributesTestHelper.createM_Attribute("attr2", X_M_Attribute.ATTRIBUTEVALUETYPE_List, true);
+		attributesTestHelper.createM_AttributeValue(attr2, "value2");
 
-		final Collection<String> storageKeys = availableStockService.extractStorageAttributeKeysForDimensionSpec(dimensionSpec.getDIM_Dimension_Spec_ID());
-		assertThat(storageKeys).containsOnly("", "value");
+		// invoke the method under test
+		final ImmutableAttributeSet result = new AvailableStockService(stockRepository)
+				.createAttributeSetFromStorageAttributesKey("value" + ProductDescriptor.STORAGE_ATTRIBUTES_KEY_DELIMITER + "value2");
+
+		assertThat(result.getAttributes()).hasSize(2);
+
+		assertThat(result.getAttributes()).anySatisfy(attribute -> {
+			assertThatModel(attribute).hasSameIdAs(attr1);
+			assertThat(result.getValueAsString(attribute)).isEqualTo("value");
+		});
+
+		assertThat(result.getAttributes()).anySatisfy(attribute -> {
+			assertThatModel(attribute).hasSameIdAs(attr2);
+			assertThat(result.getValueAsString(attribute)).isEqualTo("value2");
+		});
+
+
 	}
 
 }
