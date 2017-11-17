@@ -6,10 +6,8 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.compiere.Adempiere;
 import org.compiere.db.Database;
 import org.compiere.util.DisplayType;
-import org.junit.Before;
 import org.junit.Test;
 
 /*
@@ -22,12 +20,12 @@ import org.junit.Test;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -36,12 +34,6 @@ import org.junit.Test;
 
 public class SqlParamsCollectorTest
 {
-	@Before
-	public void init()
-	{
-		Adempiere.enableUnitTestMode();
-	}
-
 	@Test
 	public void newInstance()
 	{
@@ -71,7 +63,6 @@ public class SqlParamsCollectorTest
 		assertThat(newInstance.placeholder(10)).isEqualTo("10");
 		assertThat(newInstance.placeholder(null)).isEqualTo("NULL");
 
-		// this is why we need the "Adempiere.enableUnitTestMode();" in the init method
 		assertThat(newInstance.placeholder(BigDecimal.TEN)).isEqualTo(Database.TO_NUMBER(BigDecimal.TEN, DisplayType.Number));
 
 		final List<Object> collectedParams = newInstance.toList();
@@ -87,20 +78,20 @@ public class SqlParamsCollectorTest
 		assertThat(fromNullable.toList()).isNull();
 		assertThat(fromNullable.placeholder("string")).isEqualTo("'string'");
 	}
-	
+
 	@Test
 	public void wrapNullable()
 	{
 		final ArrayList<Object> list = new ArrayList<>();
 		list.add("preexistingString");
-		
+
 		final SqlParamsCollector fromNullable = SqlParamsCollector.wrapNullable(list);
 		assertThat(fromNullable).isNotNull();
 		assertThat(fromNullable.isCollecting()).isTrue();
 		assertThat(fromNullable.toList()).isNotNull();
 		assertThat(fromNullable.placeholder("anotherString")).isEqualTo("?");
-		
+
 		assertThat(list).containsExactly("preexistingString", "anotherString");
 	}
-	
+
 }
