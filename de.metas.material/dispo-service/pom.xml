@@ -9,7 +9,7 @@
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
-	<artifactId>material-dispo-service</artifactId>
+	<artifactId>metasfresh-material-dispo-service</artifactId>
 	<version>10.0.0</version>
 	<packaging>jar</packaging>
 
