@@ -147,6 +147,19 @@ public abstract class AbstractFlatrateTermTest
 		createDocType();
 		createCountryAndCountryArea();
 	}
+	
+	
+	public I_C_Flatrate_Term prepareContractForTest(final boolean isAutoRenew, final Timestamp startDate)
+	{
+		prepareBPartner();
+		final ProductAndPricingSystem productAndPricingSystem = createProductAndPricingSystem(startDate);
+		createProductAcct(productAndPricingSystem);
+		final I_C_Flatrate_Conditions conditions = createFlatrateConditions(productAndPricingSystem, isAutoRenew);
+		createContractChange(conditions);
+		final I_C_Flatrate_Term contract = createFlatrateTerm(conditions, productAndPricingSystem.getProduct(), startDate);
+		return contract;
+	}
+
 
 	private void createCalendar()
 	{
