@@ -79,8 +79,9 @@ public class MDiscountSchemaBL implements IMDiscountSchemaBL
 				bPartnerFlatDiscount);
 	}	// calculateDiscount
 
+
 	@Override
-	public BigDecimal calculateDiscount(final I_M_DiscountSchema schema,
+	public BigDecimal calculateDiscount(@NonNull final I_M_DiscountSchema schema,
 			final BigDecimal qty,
 			final BigDecimal Price,
 			final int M_Product_ID,
@@ -88,31 +89,14 @@ public class MDiscountSchemaBL implements IMDiscountSchemaBL
 			final List<I_M_AttributeInstance> instances,
 			final BigDecimal bPartnerFlatDiscount)
 	{
-		final BigDecimal bpFlatDiscountToUse;
-		if (bPartnerFlatDiscount == null)
-		{
-			bpFlatDiscountToUse = BigDecimal.ZERO;
-		}
-		else
-		{
-			bpFlatDiscountToUse = bPartnerFlatDiscount;
-		}
-
+		final BigDecimal bpFlatDiscountToUse = bPartnerFlatDiscount == null ? BigDecimal.ZERO : bPartnerFlatDiscount;
 		final String discountType = schema.getDiscountType();
-
 		final boolean isQtyBased = schema.isQuantityBased();
-		//
+
 		if (X_M_DiscountSchema.DISCOUNTTYPE_FlatPercent.equals(discountType))
 		{
-			if (schema.isBPartnerFlatDiscount())
-			{
-				return bpFlatDiscountToUse;
-			}
-
-			return schema.getFlatDiscount();
+			return computeFlatDiscount(schema, bpFlatDiscountToUse);
 		}
-
-		// Not supported
 		else if (X_M_DiscountSchema.DISCOUNTTYPE_Formula.equals(discountType)
 				|| X_M_DiscountSchema.DISCOUNTTYPE_Pricelist.equals(discountType))
 		{
@@ -134,7 +118,7 @@ public class MDiscountSchemaBL implements IMDiscountSchemaBL
 			logger.trace("Amt=" + amt + ",M_Product_ID=" + M_Product_ID + ",M_Product_Category_ID=" + M_Product_Category_ID);
 		}
 
-		I_M_DiscountSchemaBreak breakApplied = null;;
+		I_M_DiscountSchemaBreak breakApplied = null;
 		if (hasNoValues(instances))
 		{
 			breakApplied = pickApplyingBreak(
@@ -194,6 +178,17 @@ public class MDiscountSchemaBL implements IMDiscountSchemaBL
 
 		return BigDecimal.ZERO;
 	}
+
+	private BigDecimal computeFlatDiscount(@NonNull final I_M_DiscountSchema schema, @NonNull final BigDecimal bpFlatDiscountToUse)
+	{
+		if (schema.isBPartnerFlatDiscount())
+		{
+			return bpFlatDiscountToUse;
+		}
+
+		return schema.getFlatDiscount();
+	}
+
 
 	@Override
 	public I_M_DiscountSchemaBreak pickApplyingBreak(
