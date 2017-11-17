@@ -1,4 +1,4 @@
-package de.metas.ui.web.order.purchase.view;
+package de.metas.ui.web.order.sales.purchasePlanning.view;
 
 import java.util.List;
 import java.util.Set;
@@ -15,10 +15,10 @@ import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.view.IEditableView;
-import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.ViewResult;
+import de.metas.ui.web.view.event.ViewChangesCollector;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
@@ -52,23 +52,23 @@ import lombok.NonNull;
  * #L%
  */
 
-public class OLCandView implements IEditableView
+public class PurchaseView implements IEditableView
 {
-	public static OLCandView cast(final IView view)
+	public static PurchaseView cast(final Object view)
 	{
-		return (OLCandView)view;
+		return (PurchaseView)view;
 	}
 
 	private final ViewId viewId;
-	private final OLCandRowsCollection rows;
+	private final PurchaseRowsCollection rows;
 
 	@Builder
-	private OLCandView(
+	private PurchaseView(
 			@NonNull final ViewId viewId,
-			@NonNull final OLCandRowsSupplier rowsSupplier)
+			@NonNull final PurchaseRowsSupplier rowsSupplier)
 	{
 		this.viewId = viewId;
-		rows = OLCandRowsCollection.ofSupplier(rowsSupplier);
+		rows = PurchaseRowsCollection.ofSupplier(rowsSupplier);
 	}
 
 	@Override
@@ -114,11 +114,6 @@ public class OLCandView implements IEditableView
 	}
 
 	@Override
-	public void close()
-	{
-	}
-
-	@Override
 	public int getQueryLimit()
 	{
 		return -1;
@@ -133,6 +128,13 @@ public class OLCandView implements IEditableView
 	@Override
 	public void invalidateAll()
 	{
+		ViewChangesCollector.getCurrentOrAutoflush().collectFullyChanged(this);
+	}
+
+	@Override
+	public void invalidateRowById(final DocumentId rowId)
+	{
+		ViewChangesCollector.getCurrentOrAutoflush().collectRowChanged(this, rowId);
 	}
 
 	@Override
@@ -142,14 +144,22 @@ public class OLCandView implements IEditableView
 		{
 			throw new AdempiereException("orderBys is not supported");
 		}
-		final List<OLCandRow> pageRows = rows.getPage(firstRow, pageLength);
+		final List<PurchaseRow> pageRows = rows.getPage(firstRow, pageLength);
 		return ViewResult.ofViewAndPage(this, firstRow, pageLength, orderBys, pageRows);
 	}
 
 	@Override
 	public IViewRow getById(final DocumentId rowId) throws EntityNotFoundException
 	{
-		return rows.getById(rowId);
+		final PurchaseRowId olCandRowId = PurchaseRowId.fromDocumentId(rowId);
+		if (olCandRowId.isGroupRowId())
+		{
+			return rows.getById(olCandRowId);
+		}
+		else
+		{
+			return rows.getById(olCandRowId.toGroupRowId()).getIncludedRowById(olCandRowId);
+		}
 	}
 
 	@Override
@@ -200,6 +210,11 @@ public class OLCandView implements IEditableView
 		return rows.streamByIds(rowIds);
 	}
 
+	public List<PurchaseRow> getRows()
+	{
+		return rows.getAll();
+	}
+
 	@Override
 	public void notifyRecordsChanged(final Set<TableRecordReference> recordRefs)
 	{
@@ -208,7 +223,12 @@ public class OLCandView implements IEditableView
 	@Override
 	public void patchViewRow(final RowEditingContext ctx, final List<JSONDocumentChangedEvent> fieldChangeRequests)
 	{
-		rows.patchRow(ctx.getRowId(), fieldChangeRequests);
+		final PurchaseRowId rowId = PurchaseRowId.fromDocumentId(ctx.getRowId());
+		rows.patchRow(rowId, fieldChangeRequests);
+
+		// i.e. notify frontend that given row and it's parent changed.
+		// better invalidate all then trying to figure out which rows where changed, precisely
+		invalidateAll();
 	}
 
 	@Override

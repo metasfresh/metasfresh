@@ -24,6 +24,7 @@ import de.metas.ui.web.picking.pickingslot.PickingSlotRowsCollection;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.IViewRowOverrides;
+import de.metas.ui.web.view.ViewCloseReason;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.ViewResult;
 import de.metas.ui.web.view.event.ViewChangesCollector;
@@ -137,12 +138,6 @@ public class AggregationPickingSlotView implements IView, IViewRowOverrides
 	public long size()
 	{
 		return rows.size();
-	}
-
-	@Override
-	public void close()
-	{
-		// nothing
 	}
 
 	@Override
@@ -266,7 +261,7 @@ public class AggregationPickingSlotView implements IView, IViewRowOverrides
 
 		if (afterPickingHUView != null)
 		{
-			afterPickingHUView.close();
+			afterPickingHUView.close(ViewCloseReason.USER_REQUEST);
 		}
 	}
 }

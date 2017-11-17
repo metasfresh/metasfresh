@@ -155,11 +155,6 @@ public class PickingSlotView implements IView
 	}
 
 	@Override
-	public void close()
-	{
-	}
-
-	@Override
 	public int getQueryLimit()
 	{
 		return -1;

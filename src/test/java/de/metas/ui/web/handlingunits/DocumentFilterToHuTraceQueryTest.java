@@ -13,6 +13,7 @@ import de.metas.handlingunits.model.I_M_HU_Trace;
 import de.metas.handlingunits.model.X_M_HU_Trace;
 import de.metas.handlingunits.trace.HUTraceEventQuery;
 import de.metas.handlingunits.trace.HUTraceEventQuery.EventTimeOperator;
+import de.metas.handlingunits.trace.HUTraceEventQuery.RecursionMode;
 import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilterParam;
@@ -31,12 +32,12 @@ import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -67,8 +68,11 @@ public class DocumentFilterToHuTraceQueryTest
 				.setFilterId("simple-M_InOut_ID-filter")
 				.addParameter(DocumentFilterParam.ofNameOperatorValue(I_M_HU_Trace.COLUMNNAME_M_InOut_ID, Operator.EQUAL, IntegerLookupValue.of(20, "test-inout-id")))
 				.build();
+
 		final HUTraceEventQuery huTraceQuery = HuTraceQueryCreator.createTraceQueryFromDocumentFilter(emptyFilter);
+
 		assertThat(huTraceQuery).isNotNull();
+		assertThat(huTraceQuery.getRecursionMode()).isEqualTo(RecursionMode.BOTH);
 		assertThat(huTraceQuery.getInOutId()).isEqualTo(20);
 	}
 
@@ -106,8 +110,11 @@ public class DocumentFilterToHuTraceQueryTest
 				.addParameter(DocumentFilterParam.ofNameOperatorValue(I_M_HU_Trace.COLUMNNAME_VHU_Source_ID, Operator.EQUAL, IntegerLookupValue.of(170, "test-VHU_Source_ID")))
 				.addParameter(DocumentFilterParam.ofNameOperatorValue(I_M_HU_Trace.COLUMNNAME_VHUStatus, Operator.EQUAL, StringLookupValue.of(X_M_HU_Trace.VHUSTATUS_Active, "test-VHUStatus")))
 				.build();
+
 		final HUTraceEventQuery huTraceQuery = HuTraceQueryCreator.createTraceQueryFromDocumentFilter(filter);
+
 		assertThat(huTraceQuery).isNotNull();
+		assertThat(huTraceQuery.getRecursionMode()).isEqualTo(RecursionMode.BOTH);
 		assertThat(huTraceQuery.getOrgId()).isEqualTo(20);
 		assertThat(huTraceQuery.getDocTypeId().getAsInt()).isEqualTo(30);
 		assertThat(huTraceQuery.getDocStatus()).isEqualTo("CO");
@@ -136,7 +143,10 @@ public class DocumentFilterToHuTraceQueryTest
 				.setFilterId("filter")
 				.addParameter(createEventTimeBetweenParameter(date, dateTo))
 				.build();
+
 		final HUTraceEventQuery huTraceQuery = HuTraceQueryCreator.createTraceQueryFromDocumentFilter(filter);
+
+		assertThat(huTraceQuery.getRecursionMode()).isEqualTo(RecursionMode.BOTH);
 		assertThat(huTraceQuery.getEventTime()).isEqualTo(date.toInstant());
 		assertThat(huTraceQuery.getEventTimeOperator()).isEqualTo(EventTimeOperator.BETWEEN);
 		assertThat(huTraceQuery.getEventTimeTo()).isEqualTo(dateTo.toInstant());

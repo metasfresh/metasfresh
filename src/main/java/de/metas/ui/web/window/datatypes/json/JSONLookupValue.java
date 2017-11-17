@@ -133,6 +133,11 @@ public final class JSONLookupValue
 				.build();
 	}
 
+	public static JSONLookupValue unknown(final int id)
+	{
+		return of(id, "<" + id + ">");
+	}
+
 	private static final String PROPERTY_Key = "key";
 	@JsonProperty(PROPERTY_Key)
 	private final String key;

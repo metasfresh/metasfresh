@@ -77,7 +77,7 @@ public class WebRestApiApplication
 			System.setProperty("PropertyFile", "./metasfresh.properties");
 		}
 
-		// important because in Ini, there is a org.springframework.context.annotation.Condition that userwise wouldn't e.g. let the jasper servlet start
+		// important because in Ini, there is a org.springframework.context.annotation.Condition that otherwise wouldn't e.g. let the jasper servlet start
 		Ini.setRunMode(RunMode.WEBUI);
 
 		final String headless = System.getProperty(SYSTEM_PROPERTY_HEADLESS, Boolean.toString(true));
@@ -123,7 +123,7 @@ public class WebRestApiApplication
 
 		final Adempiere adempiere = Env.getSingleAdempiereInstance(applicationContext);
 		adempiere.startup(RunMode.WEBUI);
-		
+
 		Services.get(IMigrationLogger.class).addTableToIgnoreList(I_T_WEBUI_ViewSelection.Table_Name);
 
 		return adempiere;

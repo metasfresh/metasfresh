@@ -299,7 +299,7 @@ public class SqlViewBinding implements SqlEntityBinding
 		private DocumentFilterDescriptorsProvider filterDescriptors = NullDocumentFilterDescriptorsProvider.instance;
 		private SqlDocumentFilterConvertersList.Builder filterConverters = null;
 
-		private SqlViewRowIdsConverter rowIdsConverter = DefaultSqlViewRowIdsConverter.instance;
+		private SqlViewRowIdsConverter rowIdsConverter = null;
 
 		private SqlViewGroupingBinding groupingBinding;
 		private SqlDocumentFilterConverterDecorator sqlDocumentFilterConverterDecorator = null;
@@ -454,7 +454,15 @@ public class SqlViewBinding implements SqlEntityBinding
 
 		private SqlViewRowIdsConverter getRowIdsConverter()
 		{
-			return rowIdsConverter;
+			if (rowIdsConverter != null)
+			{
+				return rowIdsConverter;
+			}
+			if (groupingBinding != null)
+			{
+				return groupingBinding.getRowIdsConverter();
+			}
+			return DefaultSqlViewRowIdsConverter.instance;
 		}
 
 		public Builder setGroupingBinding(SqlViewGroupingBinding groupingBinding)

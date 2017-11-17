@@ -261,7 +261,7 @@ public class DefaultView implements IEditableView
 	}
 
 	@Override
-	public void close()
+	public void close(final ViewCloseReason reason)
 	{
 		if (closed.getAndSet(true))
 		{
@@ -271,7 +271,7 @@ public class DefaultView implements IEditableView
 		// nothing now.
 		// TODO in future me might notify somebody to remove the temporary selections from database
 
-		logger.debug("View closed: {}", this);
+		logger.debug("View closed with reason={}: {}", reason, this);
 	}
 
 	@Override

@@ -1,16 +1,22 @@
-package de.metas.ui.web.order.purchase.view;
+package de.metas.ui.web.order.sales.purchasePlanning.view;
 
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
+
+import javax.annotation.Nullable;
+
+import org.adempiere.exceptions.AdempiereException;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
+import de.metas.printing.esb.base.util.Check;
+import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.IViewRowType;
-import de.metas.ui.web.view.ViewRow.DefaultRowType;
 import de.metas.ui.web.view.descriptor.annotation.ViewColumn;
 import de.metas.ui.web.view.descriptor.annotation.ViewColumn.ViewColumnLayout;
 import de.metas.ui.web.view.descriptor.annotation.ViewColumnHelper;
@@ -22,6 +28,7 @@ import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.ViewEditorRenderMode;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.Singular;
 import lombok.ToString;
 
 /*
@@ -47,10 +54,8 @@ import lombok.ToString;
  */
 
 @ToString(exclude = "_fieldNameAndJsonValues")
-public class OLCandRow implements IViewRow
+public class PurchaseRow implements IViewRow
 {
-	private final DocumentId rowId;
-
 	@ViewColumn(captionKey = "M_Product_ID", widgetType = DocumentFieldWidgetType.Lookup, layouts = {
 			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 10),
 			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 10)
@@ -73,44 +78,82 @@ public class OLCandRow implements IViewRow
 			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 40),
 			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 40)
 	})
-	private final BigDecimal qtyToPurchase;
+	private BigDecimal qtyToPurchase;
 
 	public static final String FIELDNAME_DatePromised = "datePromised";
 	@ViewColumn(fieldName = FIELDNAME_DatePromised, captionKey = "DatePromised", widgetType = DocumentFieldWidgetType.DateTime, editor = ViewEditorRenderMode.ALWAYS, layouts = {
 			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 50),
 			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 50)
 	})
-	private final Date datePromised;
+	private Date datePromised;
 
-	private transient ImmutableMap<String, Object> _fieldNameAndJsonValues;
+	//
+	private final PurchaseRowId rowId;
+	private final IViewRowType rowType;
+	private final ImmutableList<PurchaseRow> includedRows;
+	private final ImmutableMap<PurchaseRowId, PurchaseRow> includedRowsByRowId;
 
-	@Builder(toBuilder = true)
-	public OLCandRow(
-			@NonNull final DocumentId rowId,
+	//
+	private transient ImmutableMap<String, Object> _fieldNameAndJsonValues; // lazy
+
+	@Builder
+	private PurchaseRow(
+			@NonNull final PurchaseRowId rowId,
+			@NonNull final IViewRowType rowType,
 			@NonNull final JSONLookupValue product,
-			@NonNull final JSONLookupValue vendorBPartner,
-			@NonNull final BigDecimal qtyToDeliver,
-			@NonNull final BigDecimal qtyToPurchase,
-			@NonNull final Date datePromised)
+			@Nullable final JSONLookupValue vendorBPartner,
+			@Nullable final BigDecimal qtyToDeliver,
+			@Nullable final BigDecimal qtyToPurchase,
+			@Nullable final Date datePromised,
+			@NonNull @Singular final ImmutableList<PurchaseRow> includedRows)
 	{
 		this.rowId = rowId;
+		this.rowType = rowType;
 		this.product = product;
 		this.vendorBPartner = vendorBPartner;
 		this.qtyToDeliver = qtyToDeliver;
-		this.qtyToPurchase = qtyToPurchase;
+		this.qtyToPurchase = qtyToPurchase != null ? qtyToPurchase : BigDecimal.ZERO;
+
+		Check.assume(rowType == PurchaseRowType.GROUP || datePromised != null, "datePromised shall not be null");
 		this.datePromised = datePromised;
+
+		if (rowType == PurchaseRowType.LINE && !includedRows.isEmpty())
+		{
+			throw new AdempiereException("Lines does not allow included rows");
+		}
+		this.includedRows = includedRows;
+		includedRowsByRowId = includedRows.stream()
+				.collect(ImmutableMap.toImmutableMap(PurchaseRow::getRowId, Function.identity()));
+
+		if (rowType == PurchaseRowType.GROUP)
+		{
+			updateQtyToPurchaseFromIncludedRows();
+		}
 	}
 
-	@Override
-	public DocumentId getId()
+	public PurchaseRow copy()
+	{
+		final ImmutableList<PurchaseRow> includedRowsCopy = includedRows.stream()
+				.map(PurchaseRow::copy)
+				.collect(ImmutableList.toImmutableList());
+		return new PurchaseRow(rowId, rowType, product, vendorBPartner, qtyToDeliver, qtyToPurchase, datePromised, includedRowsCopy);
+	}
+
+	public PurchaseRowId getRowId()
 	{
 		return rowId;
 	}
 
 	@Override
+	public DocumentId getId()
+	{
+		return rowId.toDocumentId();
+	}
+
+	@Override
 	public IViewRowType getType()
 	{
-		return DefaultRowType.Row;
+		return rowType;
 	}
 
 	@Override
@@ -137,8 +180,69 @@ public class OLCandRow implements IViewRow
 	}
 
 	@Override
-	public List<? extends IViewRow> getIncludedRows()
+	public List<PurchaseRow> getIncludedRows()
 	{
-		return ImmutableList.of();
+		return includedRows;
+	}
+
+	public PurchaseRow getIncludedRowById(final PurchaseRowId rowId)
+	{
+		final PurchaseRow row = includedRowsByRowId.get(rowId);
+		if (row == null)
+		{
+			throw new EntityNotFoundException("Row not found").setParameter("rowId", rowId);
+		}
+		return row;
+	}
+
+	private void setQtyToPurchase(@NonNull final BigDecimal qtyToPurchase)
+	{
+		Check.assume(qtyToPurchase.signum() >= 0, "qtyToPurchase shall be positive");
+		this.qtyToPurchase = qtyToPurchase;
+	}
+
+	private BigDecimal getQtyToPurchase()
+	{
+		return qtyToPurchase;
+	}
+
+	private void updateQtyToPurchaseFromIncludedRows()
+	{
+		final BigDecimal qtyToPurchaseSum = getIncludedRows()
+				.stream()
+				.map(PurchaseRow::getQtyToPurchase)
+				.reduce(BigDecimal.ZERO, BigDecimal::add);
+		setQtyToPurchase(qtyToPurchaseSum);
+	}
+
+	public void setDatePromised(@NonNull final Date datePromised)
+	{
+		this.datePromised = (Date)datePromised.clone();
+	}
+
+	private void assertRowTypeIsGroup(final String errorMsg)
+	{
+		if (getType() != PurchaseRowType.GROUP)
+		{
+			throw new AdempiereException(errorMsg);
+		}
+	}
+
+	public void changeQtyToPurchase(@NonNull final PurchaseRowId rowId, @NonNull final BigDecimal qtyToPurchase)
+	{
+		assertRowTypeIsGroup("row not editable");
+
+		final PurchaseRow row = getIncludedRowById(rowId);
+		row.setQtyToPurchase(qtyToPurchase);
+
+		updateQtyToPurchaseFromIncludedRows();
+	}
+
+	public void changeDatePromised(@NonNull final PurchaseRowId rowId, @NonNull final Date datePromised)
+	{
+		assertRowTypeIsGroup("row not editable");
+
+		final PurchaseRow row = getIncludedRowById(rowId);
+		row.setDatePromised(datePromised);
 	}
 }

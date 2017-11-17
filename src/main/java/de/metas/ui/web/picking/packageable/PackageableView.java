@@ -29,6 +29,7 @@ import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.picking.pickingslot.PickingSlotView;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewRow;
+import de.metas.ui.web.view.ViewCloseReason;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.ViewResult;
 import de.metas.ui.web.view.event.ViewChangesCollector;
@@ -156,7 +157,15 @@ public class PackageableView implements IView
 	}
 
 	@Override
-	public void close()
+	public void close(final ViewCloseReason reason)
+	{
+		if (reason == ViewCloseReason.USER_REQUEST)
+		{
+			closePickingCandidatesFromRackSystemPickingSlots();
+		}
+	}
+
+	private void closePickingCandidatesFromRackSystemPickingSlots()
 	{
 		final List<Integer> shipmentScheduleIds = getRows()
 				.values().stream()
@@ -317,9 +326,13 @@ public class PackageableView implements IView
 		pickingSlotsViewByRowId.put(rowId, pickingSlotView);
 	}
 
-	public void removePickingSlotView(@NonNull final DocumentId rowId)
+	public void removePickingSlotView(@NonNull final DocumentId rowId, @NonNull final ViewCloseReason viewCloseReason)
 	{
-		pickingSlotsViewByRowId.remove(rowId);
+		final PickingSlotView view = pickingSlotsViewByRowId.remove(rowId);
+		if (view != null)
+		{
+			view.close(viewCloseReason);
+		}
 	}
 
 	public PickingSlotView getPickingSlotViewOrNull(@NonNull final DocumentId rowId)

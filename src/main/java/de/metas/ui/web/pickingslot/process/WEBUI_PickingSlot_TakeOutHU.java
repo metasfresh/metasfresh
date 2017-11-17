@@ -1,15 +1,22 @@
 package de.metas.ui.web.pickingslot.process;
 
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+
 import java.util.ArrayList;
 import java.util.List;
 
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 
+import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
+import de.metas.handlingunits.IHUContext;
+import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHUWarehouseDAO;
+import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Locator;
 import de.metas.handlingunits.movement.api.IHUMovementBL;
@@ -78,6 +85,7 @@ public class WEBUI_PickingSlot_TakeOutHU extends ViewBasedProcessTemplate implem
 		final PickingSlotRow row = PickingSlotRow.cast(getSingleSelectedRow());
 		Preconditions.checkState(row.isTopLevelHU(), "row %s shall be a top level HU", row);
 		final I_M_HU hu = InterfaceWrapperHelper.load(row.getHuId(), I_M_HU.class);
+		final String huStatus = hu.getHUStatus();
 
 		//
 		// Remove the HU from it's picking slot
@@ -90,6 +98,17 @@ public class WEBUI_PickingSlot_TakeOutHU extends ViewBasedProcessTemplate implem
 		{
 			final IHUMovementBL huMovementBL = Services.get(IHUMovementBL.class);
 			huMovementBL.moveHUsToLocator(ImmutableList.of(hu), afterPickingLocator);
+
+			//
+			// FIXME: workaround to restore HU's HUStatus (i.e. which was changed from Picked to Active by the meveHUsToLocator() method, indirectly).
+			// See https://github.com/metasfresh/metasfresh-webui-api/issues/678#issuecomment-344876035, that's the stacktrace where the HU status was set to Active.
+			InterfaceWrapperHelper.refresh(hu, ITrx.TRXNAME_ThreadInherited);
+			if (!Objects.equal(huStatus, hu.getHUStatus()))
+			{
+				final IHUContext huContext = Services.get(IHUContextFactory.class).createMutableHUContext();
+				Services.get(IHandlingUnitsBL.class).setHUStatus(huContext, hu, huStatus);
+				save(hu);
+			}
 		}
 
 		huIdsRemoved.add(hu.getM_HU_ID());
