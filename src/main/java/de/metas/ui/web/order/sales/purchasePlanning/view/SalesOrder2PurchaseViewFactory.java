@@ -8,7 +8,7 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.RemovalNotification;
 
-import de.metas.purchasecandidate.impl.PurchaseCandidateRepository;
+import de.metas.purchasecandidate.PurchaseCandidateRepository;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IView;

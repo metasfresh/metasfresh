@@ -30,8 +30,8 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.interfaces.I_C_BPartner_Product;
 import de.metas.product.IProductBL;
-import de.metas.purchasecandidate.impl.PurchaseCandidate;
-import de.metas.purchasecandidate.impl.PurchaseCandidateRepository;
+import de.metas.purchasecandidate.PurchaseCandidate;
+import de.metas.purchasecandidate.PurchaseCandidateRepository;
 import de.metas.purchasing.api.IBPartnerProductDAO;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import lombok.Builder;

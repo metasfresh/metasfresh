@@ -11,8 +11,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.purchasecandidate.impl.PurchaseCandidate;
-import de.metas.purchasecandidate.impl.PurchaseCandidateRepository;
+import de.metas.purchasecandidate.PurchaseCandidate;
+import de.metas.purchasecandidate.PurchaseCandidateRepository;
 import lombok.Builder;
 import lombok.NonNull;
 
