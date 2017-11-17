@@ -2,16 +2,17 @@ package de.metas.material.dispo.client.repository;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
-import java.math.BigDecimal;
 import java.util.Collection;
+import java.util.List;
 
 import org.adempiere.util.Services;
-import org.adempiere.util.collections.ListUtils;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.springframework.stereotype.Service;
 
+import de.metas.material.dispo.client.repository.AvailableStockResult.AvailableStockResultBuilder;
 import de.metas.material.dispo.client.repository.AvailableStockResult.Group;
+import de.metas.material.dispo.commons.repository.AvailableStockResult.ResultGroup;
 import de.metas.material.dispo.commons.repository.MaterialQuery;
 import de.metas.material.dispo.commons.repository.StockRepository;
 import de.metas.product.IProductBL;
@@ -53,24 +54,30 @@ public class AvailableStockService
 	@NonNull
 	public AvailableStockResult retrieveAvailableStock(@NonNull final MaterialQuery query)
 	{
-		final BigDecimal qtyValue = stockRepository.retrieveSingleAvailableStockQty(query);
+		final de.metas.material.dispo.commons.repository.AvailableStockResult availableStock = //
+				stockRepository.retrieveAvailableStock(query);
 
-		final int productId = ListUtils.singleElement(query.getProductIds());
+		final AvailableStockResultBuilder clientResultBuilder = AvailableStockResult.builder();
 
-		final I_C_UOM uom = getStockingUOM(productId);
-		final Quantity qty = Quantity.of(qtyValue, uom);
+		final List<ResultGroup> commonsResultGroups = availableStock.getResultGroups();
+		for (final ResultGroup commonsResultGroup : commonsResultGroups)
+		{
+			final Quantity quantity = Quantity.of(
+					commonsResultGroup.getQty(),
+					retrieveStockingUOM(commonsResultGroup.getProductId()));
 
-		return AvailableStockResult.builder()
-				.group(Group.builder()
-						.productId(productId)
-						// .attributes(attributes) // TODO
-						.qty(qty)
-						.build())
-				.build();
+			final Group clientResultGroup = Group.builder()
+					.productId(commonsResultGroup.getProductId())
+					.qty(quantity)
+					// .attributes(attributes) // TODO
+					.build();
+
+			clientResultBuilder.group(clientResultGroup);
+		}
+		return clientResultBuilder.build();
 	}
 
-
-	public I_C_UOM getStockingUOM(final int productId)
+	public I_C_UOM retrieveStockingUOM(final int productId)
 	{
 		final I_C_UOM uom = Services.get(IProductBL.class).getStockingUOM(load(productId, I_M_Product.class));
 		return uom;

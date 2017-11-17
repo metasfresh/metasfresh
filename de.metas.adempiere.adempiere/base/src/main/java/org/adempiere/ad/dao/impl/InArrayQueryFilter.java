@@ -13,15 +13,14 @@ package org.adempiere.ad.dao.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -125,7 +124,7 @@ public class InArrayQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 		return "InArrayQueryFilter ["
 				+ (columnName != null ? "columnName=" + columnName + ", " : "")
 				+ "defaultReturnWhenEmpty=" + defaultReturnWhenEmpty
-				+ (values != null ? "values=" + values + ", " : "") // values last, to make this more readbale in case of *many* values
+				+ (values != null ? ", values=" + values : "") // values last, to make this more readable in case of *many* values
 				+ "]";
 	}
 
@@ -214,7 +213,7 @@ public class InArrayQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 			sqlWhereClause = defaultReturnWhenEmpty ? SQL_TRUE : SQL_FALSE;
 			sqlParams = Collections.emptyList();
 		}
-		else if(values.size() == 1)
+		else if (values.size() == 1)
 		{
 			final Object value = values.get(0);
 			if (value == null)

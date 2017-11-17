@@ -46,7 +46,7 @@ import lombok.NonNull;
 
 /**
  * Immutable {@link IAttributeSet} implementation.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
@@ -57,7 +57,8 @@ public final class ImmutableAttributeSet implements IAttributeSet
 		return new Builder();
 	}
 
-	public static final ImmutableAttributeSet ofValuesIndexByAttributeId(@Nullable final Map<Object, Object> valuesByAttributeIdObj)
+	public static final ImmutableAttributeSet ofValuesIndexByAttributeId(
+			@Nullable final Map<Object, Object> valuesByAttributeIdObj)
 	{
 		if (valuesByAttributeIdObj == null || valuesByAttributeIdObj.isEmpty())
 		{
@@ -66,6 +67,7 @@ public final class ImmutableAttributeSet implements IAttributeSet
 
 		final ImmutableMap.Builder<Integer, I_M_Attribute> attributes = ImmutableMap.builder();
 		final ImmutableMap.Builder<Integer, Object> valuesByAttributeId = ImmutableMap.builder();
+
 		valuesByAttributeIdObj.forEach((attributeIdObj, value) -> {
 			final int attributeId = Integer.parseInt(attributeIdObj.toString());
 			final I_M_Attribute attribute = load(attributeId, I_M_Attribute.class);

@@ -6,18 +6,23 @@ import static de.metas.material.event.EventTestHelper.NOW;
 import static de.metas.material.event.EventTestHelper.PRODUCT_ID;
 import static de.metas.material.event.EventTestHelper.WAREHOUSE_ID;
 import static de.metas.testsupport.MetasfreshAssertions.assertThat;
+import static de.metas.testsupport.QueryFilterTestUtil.extractFilters;
+import static de.metas.testsupport.QueryFilterTestUtil.extractSingleFilter;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.util.Collection;
+import java.util.List;
 
 import javax.sql.RowSet;
 
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
+import org.adempiere.ad.dao.impl.NotQueryFilter;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.collections.ListUtils;
 import org.compiere.util.DB;
@@ -31,6 +36,7 @@ import de.metas.material.dispo.model.I_MD_Candidate_Stock_v;
 import de.metas.material.event.EventTestHelper;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
+import lombok.NonNull;
 import mockit.Mocked;
 
 /*
@@ -55,6 +61,7 @@ import mockit.Mocked;
  * #L%
  */
 
+@SuppressWarnings({ "rawtypes" })
 public class StockRepositoryTest
 {
 	private static final String STORAGE_ATTRIBUTES_KEY = "Key1" + ProductDescriptor.STORAGE_ATTRIBUTES_KEY_DELIMITER + "Key2";
@@ -110,10 +117,7 @@ public class StockRepositoryTest
 	}
 
 	// TODO
-	// move query-assertThat to base
-	// UNION in case of multiple storage attributes keys
 	// exclusion of storage attributes keys (->i.e."none of the previous or sth)
-	//
 
 	@Test
 	public void createDBQuery_for_simple_stock_query()
@@ -125,10 +129,13 @@ public class StockRepositoryTest
 
 		final ICompositeQueryFilter<I_MD_Candidate_Stock_v> dbFilter = dbQuery.getCompositeFilter();
 		assertThat(dbFilter).hasEqualsFilter(I_MD_Candidate_Stock_v.COLUMN_M_Warehouse_ID, WAREHOUSE_ID);
-		assertThat(dbFilter).hasInArrayFilter(I_MD_Candidate_Stock_v.COLUMN_M_Product_ID, PRODUCT_ID);
-		assertThat(dbFilter).hasStringLikeFilter(I_MD_Candidate_Stock_v.COLUMN_StorageAttributesKey, "%Key1%Key2%");
-	}
 
+		final ICompositeQueryFilter includedCompositeOrFilter = extractSingleFilter(dbFilter, ICompositeQueryFilter.class);
+		assertThat(includedCompositeOrFilter).isJoinOr();
+
+		assertHasANDFiltersThatAllHaveInArrayForProductIds(includedCompositeOrFilter, ImmutableList.of(PRODUCT_ID));
+		assertHasOneANDFilterWithLikeExpression(includedCompositeOrFilter, "%Key1%Key2%");
+	}
 
 	@Test
 	public void createDBQuery_multiple_products()
@@ -145,16 +152,19 @@ public class StockRepositoryTest
 		final ICompositeQueryFilter<I_MD_Candidate_Stock_v> dbFilter = dbQuery.getCompositeFilter();
 		assertThat(dbFilter).hasNoFilterRegarding(I_MD_Candidate_Stock_v.COLUMN_M_Warehouse_ID);
 		assertThat(dbFilter).hasCompareFilter(I_MD_Candidate_Stock_v.COLUMN_DateProjected, Operator.LESS_OR_EQUAL, NOW);
-		assertThat(dbFilter).hasInArrayFilter(I_MD_Candidate_Stock_v.COLUMN_M_Product_ID, 10, 20);
-		assertThat(dbFilter).hasStringLikeFilter(I_MD_Candidate_Stock_v.COLUMN_StorageAttributesKey, "%Key1%Key2%");
+
+		final ICompositeQueryFilter includedCompositeOrFilter = extractSingleFilter(dbFilter, ICompositeQueryFilter.class);
+		assertThat(includedCompositeOrFilter).isJoinOr();
+
+		assertHasANDFiltersThatAllHaveInArrayForProductIds(includedCompositeOrFilter, ImmutableList.of(10, 20));
+		assertHasOneANDFilterWithLikeExpression(includedCompositeOrFilter, "%Key1%Key2%");
 	}
 
 	@Test
 	public void createDBQuery_multiple_storageAttributesKeys()
 	{
 		final MaterialQuery query = MaterialQuery.builder()
-				.productId(10)
-				.warehouseId(PRODUCT_ID)
+				.productId(PRODUCT_ID)
 				.storageAttributesKey(STORAGE_ATTRIBUTES_KEY)
 				.storageAttributesKey("Key3")
 				.date(NOW)
@@ -163,9 +173,90 @@ public class StockRepositoryTest
 		final IQueryBuilder<I_MD_Candidate_Stock_v> dbQuery = new StockRepository().createDBQueryForMaterialQuery(query);
 
 		final ICompositeQueryFilter<I_MD_Candidate_Stock_v> dbFilter = dbQuery.getCompositeFilter();
-		assertThat(dbFilter).hasCompositeOrFilter();
+		assertThat(dbFilter).hasNoFilterRegarding(I_MD_Candidate_Stock_v.COLUMN_M_Warehouse_ID);
+		assertThat(dbFilter).hasCompareFilter(I_MD_Candidate_Stock_v.COLUMN_DateProjected, Operator.LESS_OR_EQUAL, NOW);
+
+		final ICompositeQueryFilter includedCompositeOrFilter = extractSingleFilter(dbFilter, ICompositeQueryFilter.class);
+		assertThat(includedCompositeOrFilter).isJoinOr();
+
+		assertHasANDFiltersThatAllHaveInArrayForProductIds(includedCompositeOrFilter, ImmutableList.of(PRODUCT_ID));
+
+		assertHasOneANDFilterWithLikeExpression(includedCompositeOrFilter, "%Key3%");
+		assertHasOneANDFilterWithLikeExpression(includedCompositeOrFilter, "%Key1%Key2%");
 	}
 
+	@Test
+	public void createDBQuery_multiple_storageAttributesKeys_including_OtherKeys()
+	{
+		final MaterialQuery query = MaterialQuery.builder()
+				.productId(PRODUCT_ID)
+				.storageAttributesKey(STORAGE_ATTRIBUTES_KEY)
+				.storageAttributesKey("Key3")
+				.storageAttributesKey(ProductDescriptor.STORAGE_ATTRIBUTES_KEY_OTHER)
+				.date(NOW)
+				.build();
+
+		// invoke the method under test
+		final IQueryBuilder<I_MD_Candidate_Stock_v> dbQuery = new StockRepository().createDBQueryForMaterialQuery(query);
+
+		final ICompositeQueryFilter<I_MD_Candidate_Stock_v> dbFilter = dbQuery.getCompositeFilter();
+		assertThat(dbFilter).hasNoFilterRegarding(I_MD_Candidate_Stock_v.COLUMN_M_Warehouse_ID);
+		assertThat(dbFilter).hasCompareFilter(I_MD_Candidate_Stock_v.COLUMN_DateProjected, Operator.LESS_OR_EQUAL, NOW);
+
+		assertThat(dbFilter).hasCompositeOrFilter();
+		final ICompositeQueryFilter includedCompositeOrFilter = extractSingleFilter(dbFilter, ICompositeQueryFilter.class);
+		assertThat(includedCompositeOrFilter).isJoinOr();
+
+		assertHasANDFiltersThatAllHaveInArrayForProductIds(includedCompositeOrFilter, ImmutableList.of(PRODUCT_ID));
+
+		assertHasOneANDFilterWithLikeExpression(includedCompositeOrFilter, "%Key3%");
+		assertHasOneANDFilterWithLikeExpression(includedCompositeOrFilter, "%Key1%Key2%");
+
+		assertThat(includedCompositeOrFilter).hasCompositeAndFilter();
+		final List<ICompositeQueryFilter> includedCompositeAndFilters = extractFilters(includedCompositeOrFilter, ICompositeQueryFilter.class);
+
+		assertThat(includedCompositeAndFilters).anySatisfy(includedCompositeAndFilter -> {
+
+			assertThat(includedCompositeAndFilter).isJoinAnd();
+			assertThat(includedCompositeAndFilter).hasNotQueryFilter();
+			final List<NotQueryFilter> notQueryFilters = extractFilters(includedCompositeAndFilter, NotQueryFilter.class);
+			assertThat(notQueryFilters).hasSize(2);
+
+			assertThat(notQueryFilters).anySatisfy(notQueryFilter -> {
+				assertThat(notQueryFilter.getFilter()).isStringLikeFilter(I_MD_Candidate_Stock_v.COLUMN_StorageAttributesKey, "%Key3%");
+			});
+			assertThat(notQueryFilters).anySatisfy(notQueryFilter -> {
+				assertThat(notQueryFilter.getFilter()).isStringLikeFilter(I_MD_Candidate_Stock_v.COLUMN_StorageAttributesKey, "%Key1%Key2%");
+			});
+		});
+	}
+
+	private void assertHasOneANDFilterWithLikeExpression(
+			@NonNull final ICompositeQueryFilter compositeFilter,
+			@NonNull final String likeExpression)
+	{
+		assertThat(compositeFilter).hasCompositeAndFilter();
+
+		final List<ICompositeQueryFilter> includedCompositeAndFilters = extractFilters(compositeFilter, ICompositeQueryFilter.class);
+		assertThat(includedCompositeAndFilters).anySatisfy(filter -> {
+			assertThat(filter).isJoinAnd();
+			assertThat(filter).hasStringLikeFilter(I_MD_Candidate_Stock_v.COLUMN_StorageAttributesKey, likeExpression);
+		});
+
+	}
+
+	private void assertHasANDFiltersThatAllHaveInArrayForProductIds(
+			@NonNull final ICompositeQueryFilter compositeFilter,
+			@NonNull final Collection<?> productIds)
+	{
+		assertThat(compositeFilter).hasCompositeAndFilter();
+
+		final List<ICompositeQueryFilter> includedCompositeAndFilters = extractFilters(compositeFilter, ICompositeQueryFilter.class);
+		assertThat(includedCompositeAndFilters).allSatisfy(filter -> {
+			assertThat(filter).isJoinAnd();
+			assertThat(filter).hasInArrayFilter(I_MD_Candidate_Stock_v.COLUMN_M_Product_ID, productIds);
+		});
+	}
 
 	@Test
 	public void applyStockRecordsToEmptyResult()

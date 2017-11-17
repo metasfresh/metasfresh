@@ -12,6 +12,7 @@ import org.adempiere.util.Services;
 import com.google.common.annotations.VisibleForTesting;
 
 import de.metas.material.dispo.model.I_MD_Candidate_Stock_v;
+import de.metas.material.event.commons.ProductDescriptor;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -39,17 +40,6 @@ import lombok.Value;
 
 public class StockRepository
 {
-	private static final String STORAGE_ATTRIBUTES_KEY_LIKE = "StorageAttributesKey LIKE ? ";
-
-	@VisibleForTesting
-	static final String SQL_SELECT_AVAILABLE_STOCK = "SELECT COALESCE(SUM(Qty),0) "
-			+ "FROM de_metas_material_dispo.MD_Candidate_Latest_v "
-			+ "WHERE "
-			+ "(M_Warehouse_ID=? OR ? <= 0) AND "
-			+ "M_Product_ID=? AND "
-			+ STORAGE_ATTRIBUTES_KEY_LIKE + "AND "
-			+ "DateProjected <= ?";
-
 	@NonNull
 	public BigDecimal retrieveSingleAvailableStockQty(@NonNull final MaterialQuery query)
 	{
@@ -78,6 +68,24 @@ public class StockRepository
 	@VisibleForTesting
 	IQueryBuilder<I_MD_Candidate_Stock_v> createDBQueryForMaterialQuery(@NonNull final MaterialQuery query)
 	{
+		final IQueryBuilder<I_MD_Candidate_Stock_v> queryBuilder = createInitialQueryBuilderForDateAndWarehouse(query);
+
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		final ICompositeQueryFilter<I_MD_Candidate_Stock_v> orFilterForDifferentStorageAttributesKeys = queryBL
+				.createCompositeQueryFilter(I_MD_Candidate_Stock_v.class)
+				.setJoinOr();
+		queryBuilder.filter(orFilterForDifferentStorageAttributesKeys);
+
+		for (final String storageAttributesKey : query.getStorageAttributesKeys())
+		{
+			final ICompositeQueryFilter<I_MD_Candidate_Stock_v> andFilterForCurrentStorageAttributesKey = createANDFilterForStorageAttributesKey(query, storageAttributesKey);
+			orFilterForDifferentStorageAttributesKeys.addFilter(andFilterForCurrentStorageAttributesKey);
+		}
+		return queryBuilder;
+	}
+
+	private IQueryBuilder<I_MD_Candidate_Stock_v> createInitialQueryBuilderForDateAndWarehouse(@NonNull final MaterialQuery query)
+	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 		final IQueryBuilder<I_MD_Candidate_Stock_v> queryBuilder = queryBL
@@ -88,26 +96,59 @@ public class StockRepository
 		{
 			queryBuilder.addEqualsFilter(I_MD_Candidate_Stock_v.COLUMN_M_Warehouse_ID, query.getWarehouseId());
 		}
-
-		final ICompositeQueryFilter<I_MD_Candidate_Stock_v> filterForDifferentStorageAttributesKeys = queryBL.createCompositeQueryFilter(I_MD_Candidate_Stock_v.class)
-				.setJoinOr();
-		queryBuilder.filter(filterForDifferentStorageAttributesKeys);
-
-		for (String storageAttributesKey : query.getStorageAttributesKeys())
-		{
-			final ICompositeQueryFilter<I_MD_Candidate_Stock_v> filterForCurrentStorageAttributesKey = filterForDifferentStorageAttributesKeys;
-
-			final String likeExpression = createLikeExpression(storageAttributesKey);
-			filterForCurrentStorageAttributesKey
-					.addInArrayFilter(I_MD_Candidate_Stock_v.COLUMN_M_Product_ID, query.getProductIds())
-					.addStringLikeFilter(I_MD_Candidate_Stock_v.COLUMN_StorageAttributesKey, likeExpression, false);
-
-			filterForDifferentStorageAttributesKeys.addFilter(filterForCurrentStorageAttributesKey);
-		}
 		return queryBuilder;
 	}
 
-	private static String createLikeExpression(final String storageAttributesKey)
+	private ICompositeQueryFilter<I_MD_Candidate_Stock_v> createANDFilterForStorageAttributesKey(
+			@NonNull final MaterialQuery query,
+			@NonNull final String storageAttributesKey)
+	{
+		final ICompositeQueryFilter<I_MD_Candidate_Stock_v> filterForCurrentStorageAttributesKey = createInitialANDFilterForProductIds(query);
+
+		if (storageAttributesKey == ProductDescriptor.STORAGE_ATTRIBUTES_KEY_OTHER)
+		{
+			addNotLikeFiltersForAttributesKeys(filterForCurrentStorageAttributesKey, query.getStorageAttributesKeys());
+		}
+		else if (storageAttributesKey == ProductDescriptor.STORAGE_ATTRIBUTES_KEY_UNSPECIFIED)
+		{
+			// nothing to add to the initial productIds filters
+		}
+		else
+		{
+			addLikeFilterForAttributesKey(storageAttributesKey, filterForCurrentStorageAttributesKey);
+		}
+		return filterForCurrentStorageAttributesKey;
+	}
+
+	private ICompositeQueryFilter<I_MD_Candidate_Stock_v> createInitialANDFilterForProductIds(@NonNull final MaterialQuery query)
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		return queryBL.createCompositeQueryFilter(I_MD_Candidate_Stock_v.class)
+				.setJoinAnd()
+				.addInArrayFilter(I_MD_Candidate_Stock_v.COLUMN_M_Product_ID, query.getProductIds());
+	}
+
+	private void addNotLikeFiltersForAttributesKeys(
+			@NonNull final ICompositeQueryFilter<I_MD_Candidate_Stock_v> compositeFilter,
+			@NonNull final List<String> attributesKeys)
+	{
+		for (final String storageAttributesKeyAgain : attributesKeys)
+		{
+			if (storageAttributesKeyAgain != ProductDescriptor.STORAGE_ATTRIBUTES_KEY_OTHER)
+			{
+				final String likeExpression = createLikeExpression(storageAttributesKeyAgain);
+				compositeFilter.addStringNotLikeFilter(I_MD_Candidate_Stock_v.COLUMN_StorageAttributesKey, likeExpression, false);
+			}
+		}
+	}
+
+	private void addLikeFilterForAttributesKey(final String storageAttributesKey, final ICompositeQueryFilter<I_MD_Candidate_Stock_v> andFilterForCurrentStorageAttributesKey)
+	{
+		final String likeExpression = createLikeExpression(storageAttributesKey);
+		andFilterForCurrentStorageAttributesKey.addStringLikeFilter(I_MD_Candidate_Stock_v.COLUMN_StorageAttributesKey, likeExpression, false);
+	}
+
+	private static String createLikeExpression(@NonNull final String storageAttributesKey)
 	{
 		final String storageAttributesKeyLikeExpression = RepositoryCommons
 				.prepareStorageAttributesKeyForLikeExpression(
