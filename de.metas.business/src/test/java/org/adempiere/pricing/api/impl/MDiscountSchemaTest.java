@@ -128,7 +128,7 @@ public class MDiscountSchemaTest
 	}
 
 	@Test
-	public void testPickApplyingBreak_NoAttrbiutes()
+	public void testPickApplyingBreak_NoAttributes()
 	{
 		final I_M_DiscountSchema schema1 = createSchema();
 
