@@ -13,4 +13,5 @@ This repo contains the API service of our webui. The frontend can be found in it
   * if you also run metasfresh-admin locally on port 9090, you might also want to run the this API with `-Dspring.boot.admin.url=http://localhost:9090 -Dmanagement.security.enabled=false`
 * by default, it listens on port 8080
 * swagger UI url: http://localhost:8080/swagger-ui.html
+* you might also add this property when run the API `-Delastic_enable=false` , so that the console to not be flooded with elastic search issues
 

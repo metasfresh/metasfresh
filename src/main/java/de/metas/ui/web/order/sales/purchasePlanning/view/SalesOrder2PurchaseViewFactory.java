@@ -1,23 +1,14 @@
 package de.metas.ui.web.order.sales.purchasePlanning.view;
 
-import java.math.BigDecimal;
-import java.sql.Timestamp;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.util.Services;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.I_M_Product;
-
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.RemovalNotification;
-import com.google.common.collect.ImmutableList;
 
-import de.metas.purchasing.api.IBPartnerProductDAO;
+import de.metas.purchasecandidate.PurchaseCandidateRepository;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IView;
@@ -29,7 +20,6 @@ import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.WindowId;
-import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 
 /*
  * #%L
@@ -56,13 +46,22 @@ import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 @ViewFactory(windowId = SalesOrder2PurchaseViewFactory.WINDOW_ID_STRING)
 public class SalesOrder2PurchaseViewFactory implements IViewFactory, IViewsIndexStorage
 {
-	public static final String WINDOW_ID_STRING = "SO2OLCand";
+	public static final String WINDOW_ID_STRING = "SO2PO";
 	public static final WindowId WINDOW_ID = WindowId.fromJson(WINDOW_ID_STRING);
 
+	// services
+	private final PurchaseCandidateRepository purchaseCandidatesRepo;
+
+	//
 	private final Cache<ViewId, PurchaseView> views = CacheBuilder.newBuilder()
 			.expireAfterAccess(1, TimeUnit.HOURS)
 			.removalListener(notification -> onViewRemoved(notification))
 			.build();
+
+	public SalesOrder2PurchaseViewFactory(final PurchaseCandidateRepository purchaseCandidatesRepo)
+	{
+		this.purchaseCandidatesRepo = purchaseCandidatesRepo;
+	}
 
 	@Override
 	public WindowId getWindowId()
@@ -150,74 +149,36 @@ public class SalesOrder2PurchaseViewFactory implements IViewFactory, IViewsIndex
 	{
 		final PurchaseView view = PurchaseView.builder()
 				.viewId(ViewId.random(WINDOW_ID))
-				.rowsSupplier(() -> retrieveRows(request))
+				.rowsSupplier(() -> loadRows(request))
+				.onViewClosed(this::onViewClosed)
 				.build();
 
 		return view;
 	}
 
-	private List<PurchaseRow> retrieveRows(final PurchaseViewCreateRequest request)
+	private void onViewClosed(final PurchaseView purchaseView, final ViewCloseReason reason)
 	{
-		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_OrderLine.class)
-				.addInArrayFilter(I_C_OrderLine.COLUMNNAME_C_OrderLine_ID, request.getSalesOrderLineIds())
-				.create()
-				.stream(I_C_OrderLine.class)
-				.map(this::createOLCandRow)
-				.collect(ImmutableList.toImmutableList());
-	}
-
-	private PurchaseRow createOLCandRow(final I_C_OrderLine salesOrderLine)
-	{
-		final int salesOrderLineId = salesOrderLine.getC_OrderLine_ID();
-		final JSONLookupValue product = createProductLookupValue(salesOrderLine.getM_Product());
-		final BigDecimal qtyToDeliver = salesOrderLine.getQtyOrdered().subtract(salesOrderLine.getQtyDelivered());
-		final Timestamp datePromised = salesOrderLine.getDatePromised();
-
-		final ImmutableList<PurchaseRow> olCandRows = Services.get(IBPartnerProductDAO.class)
-				.retrieveAllVendors(salesOrderLine.getM_Product_ID(), salesOrderLine.getAD_Org_ID())
-				.stream()
-				.map(vendorProductInfo -> PurchaseRow.builder()
-						.rowId(PurchaseRowId.lineId(salesOrderLineId, vendorProductInfo.getC_BPartner_ID()))
-						.rowType(PurchaseRowType.LINE)
-						.product(product)
-						.datePromised(datePromised)
-						.vendorBPartner(createBPartnerLookupValue(vendorProductInfo.getC_BPartner()))
-						.build())
-				.collect(ImmutableList.toImmutableList());
-
-		final PurchaseRow groupRow = PurchaseRow.builder()
-				.rowId(PurchaseRowId.groupId(salesOrderLineId))
-				.rowType(PurchaseRowType.GROUP)
-				.product(product)
-				.qtyToDeliver(qtyToDeliver)
-				.datePromised(datePromised)
-				.includedRows(olCandRows)
-				.build();
-
-		return groupRow;
-	}
-
-	private static JSONLookupValue createProductLookupValue(final I_M_Product product)
-	{
-		if (product == null)
+		if (reason == ViewCloseReason.USER_REQUEST)
 		{
-			return null;
+			saveRows(purchaseView);
 		}
-
-		final String displayName = product.getValue() + "_" + product.getName();
-		return JSONLookupValue.of(product.getM_Product_ID(), displayName);
 	}
 
-	private static JSONLookupValue createBPartnerLookupValue(final I_C_BPartner bpartner)
+	private List<PurchaseRow> loadRows(final PurchaseViewCreateRequest request)
 	{
-		if (bpartner == null)
-		{
-			return null;
-		}
-
-		final String displayName = bpartner.getValue() + "_" + bpartner.getName();
-		return JSONLookupValue.of(bpartner.getC_BPartner_ID(), displayName);
+		return PurchaseRowsLoader.builder()
+				.salesOrderLineIds(request.getSalesOrderLineIds())
+				.purchaseCandidatesRepo(purchaseCandidatesRepo)
+				.build()
+				.load();
 	}
 
+	private void saveRows(final PurchaseView purchaseView)
+	{
+		PurchaseRowsSaver.builder()
+				.grouppingRows(purchaseView.getRows())
+				.purchaseCandidatesRepo(purchaseCandidatesRepo)
+				.build()
+				.save();
+	}
 }
