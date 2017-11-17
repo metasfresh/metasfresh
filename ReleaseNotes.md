@@ -83,26 +83,26 @@ Here come the actual release notes:
 
 ## Features
 * metasfresh
-  * [#2407](https://github.com/metasfresh/metasfresh/issues/2407) Translate included Subtabs of Contract Window in WebUI
-    * New Translation for en_US in Contract Subtab view for Subscription History and Forecast..
-  * [#2722](https://github.com/metasfresh/metasfresh/issues/2722) Webui Design Window: Improve window Material Schedule
-    * Minor additional Field Translation for en_US added to Material Schedule Window Subtab.
-  * [#2754](https://github.com/metasfresh/metasfresh/issues/2754) Cleanup Function for old AD_Issue records
-    * New Function that allows to cleanup old and not needed Issue Records.
-  * [#2771](https://github.com/metasfresh/metasfresh/issues/2771) Sales order Jasper: group products by product category
-    * New Grouping Functionality in Sales Order Jasper, now able to group by Product Category.
-  * [#2816](https://github.com/metasfresh/metasfresh/issues/2816) Material Dispo - include storage-relevant attributes
-    * Including the Attributes into Material Dispo, now allowing the Product Planning to be done on detailed Attributes Level.
-  * [#2894](https://github.com/metasfresh/metasfresh/issues/2894) Sys Config to set Waiting Time for Async
-    * Improving the waiting time handling for Asynch after backend start. Now able to set the time via sysconfig.
+  * [#2407](https://github.com/metasfresh/metasfresh/issues/2407) Translate included subtabs of contract window in WebUI
+    * New Translation for en_US in contract subtab view for subscription history and forecast.
+  * [#2722](https://github.com/metasfresh/metasfresh/issues/2722) WebUI design: Improve window material schedule
+    * Minor additional field translation for en_US added to material schedule window subtab.
+  * [#2754](https://github.com/metasfresh/metasfresh/issues/2754) Cleanup function for old AD_Issue records
+    * New function that allows to cleanup old and not needed issue records.
+  * [#2771](https://github.com/metasfresh/metasfresh/issues/2771) Sales order jasper reports: group products by product category
+    * New grouping functionality in sales order jasper, now able to group by product category.
+  * [#2816](https://github.com/metasfresh/metasfresh/issues/2816) Material dispo - include storage-relevant attributes
+    * Including the attributes into material dispo, now allowing the product planning to be done on detailed attributes level.
+  * [#2894](https://github.com/metasfresh/metasfresh/issues/2894) Sys config to set waiting time for async
+    * Improving the waiting time handling for asynch after backend start. Now able to set the time via sysconfig.
   * [#2897](https://github.com/metasfresh/metasfresh/issues/2897) Drop out old code related to confirm splitting when printing
-    * Improvement in mass printing Functionality and workflow. Removing the User confirmation for printing when splitting.
+    * Improvement in mass printing functionality and workflow. Removing the user confirmation for printing when splitting.
   * [#2913](https://github.com/metasfresh/metasfresh/issues/2913) Column-SQL needs lower-case WHERE and FROM
-    * Application Dictionary adjustment for AD_Ref_Table, setting loaer case statements for the column SQL.
+    * Application dictionary adjustment for AD_Ref_Table, setting loaer case statements for the column SQL.
   * [#2914](https://github.com/metasfresh/metasfresh/issues/2914) Replace org.adempiere.util.collections.Predicate with java.util.function.Predicate
-    * Internal Housekeeping issue, replacing legacy code with java class substitute.
-  * [#2919](https://github.com/metasfresh/metasfresh/issues/2919) trx API: log a warning in case we are registering a ITrxListener which might be never executed because trx is already commit/closed
-    * Internal Housekeepign improvement for Transaction handlign.
+    * Internal housekeeping issue, replacing legacy code with java class substitute.
+  * [#2919](https://github.com/metasfresh/metasfresh/issues/2919) Trx API: log a warning in case we are registering a ITrxListener which might be never executed because trx is already commit/closed
+    * Internal housekeeping improvement for transaction handling.
   * [#2920](https://github.com/metasfresh/metasfresh/issues/2920) Create automated test for extending contracts.
     * Improving the Test coverage for contract extension. Creating automated Tests.
   * [#2934](https://github.com/metasfresh/metasfresh/issues/2934) Additional Locator Dimensions
