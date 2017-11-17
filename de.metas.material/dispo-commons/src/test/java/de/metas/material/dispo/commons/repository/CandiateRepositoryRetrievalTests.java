@@ -8,7 +8,6 @@ import static de.metas.material.event.EventTestHelper.PRODUCT_ID;
 import static de.metas.material.event.EventTestHelper.STORAGE_ATTRIBUTES_KEY;
 import static de.metas.material.event.EventTestHelper.TRANSACTION_ID;
 import static de.metas.material.event.EventTestHelper.WAREHOUSE_ID;
-import static de.metas.material.event.EventTestHelper.createMaterialDescriptor;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -18,7 +17,6 @@ import java.sql.Timestamp;
 import java.util.List;
 import java.util.Optional;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.util.lang.IPair;
@@ -42,8 +40,6 @@ import de.metas.material.dispo.model.I_MD_Candidate_Prod_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_Transaction_Detail;
 import de.metas.material.dispo.model.X_MD_Candidate;
 import de.metas.material.event.MaterialDescriptor;
-import de.metas.material.event.ProductDescriptor;
-import mockit.Expectations;
 import mockit.Mocked;
 
 /*
@@ -535,40 +531,6 @@ public class CandiateRepositoryRetrievalTests
 		assertThat(resultCandidate.getDemandDetail()).isNotNull();
 		assertThat(resultCandidate.getDemandDetail().getForecastLineId()).isEqualTo(25);
 
-	}
-
-	@Test(expected = RuntimeException.class)
-	public void retrieveAvailableStock_throw_ex_if_not_complete()
-	{
-		MaterialQuery.builder().build();
-	}
-
-	@Test
-	public void retrieveAvailableStock_invokes_DB_function()
-	{
-		final ProductDescriptor productDescriptor = ProductDescriptor.forProductAndAttributes(
-				PRODUCT_ID,
-				"Key1" + ProductDescriptor.STORAGE_ATTRIBUTES_KEY_DELIMITER + "Key2",
-				ATTRIBUTE_SET_INSTANCE_ID);
-		final MaterialDescriptor materialDescriptor = createMaterialDescriptor()
-				.withProductDescriptor(productDescriptor);
-
-		// @formatter:off
-		new Expectations() {{
-			DB.getSQLValueBDEx(
-					ITrx.TRXNAME_ThreadInherited,
-					CandidateRepositoryRetrieval.SQL_SELECT_AVAILABLE_STOCK,
-					new Object[] {
-							materialDescriptor.getWarehouseId(), materialDescriptor.getWarehouseId(),
-							materialDescriptor.getProductId(),
-							"%Key1%Key2%",
-							materialDescriptor.getDate()});
-			times = 1;
-			result = BigDecimal.TEN;
-		}}; // @formatter:on
-
-		final BigDecimal result = candidateRepository.retrieveAvailableStock(materialDescriptor);
-		assertThat(result).isEqualByComparingTo("10");
 	}
 
 	private static I_MD_Candidate createCandiateRecordWithForecastLineId(final int forecastLineId)

@@ -1,15 +1,15 @@
 package de.metas.material.dispo.commons.repository;
 
 import java.util.Date;
+import java.util.List;
 import java.util.Set;
 
 import org.adempiere.util.Check;
 import org.adempiere.util.time.SystemTime;
 
-import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableList;
 
 import de.metas.material.event.MaterialDescriptor;
-import de.metas.material.event.ProductDescriptor;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -50,26 +50,33 @@ public class MaterialQuery
 				.build();
 	}
 
-	private final int warehouseId;
-	private final Date date;
-	private final Set<Integer> productIds;
-	private final String storageAttributesKey;
-	private final int dimensionSpecId;
+	int warehouseId;
+
+	@NonNull
+	Date date;
+
+	@NonNull
+	List<Integer> productIds;
+
+	@NonNull
+	List<String> storageAttributesKeys;
+
+	int dimensionSpecId;
 
 	@Builder
 	private MaterialQuery(
 			final int warehouseId,
 			final Date date,
 			@Singular final Set<Integer> productIds,
-			final String storageAttributesKey,
+			@Singular final List<String> storageAttributesKeys,
 			final int dimensionSpecId)
 	{
 		Check.assumeNotEmpty(productIds, "productIds is not empty");
 
 		this.warehouseId = warehouseId > 0 ? warehouseId : -1;
 		this.date = date != null ? date : SystemTime.asDate();
-		this.productIds = ImmutableSet.copyOf(productIds);
-		this.storageAttributesKey = storageAttributesKey != null ? storageAttributesKey : ProductDescriptor.STORAGE_ATTRIBUTES_KEY_UNSPECIFIED;
+		this.productIds = ImmutableList.copyOf(productIds);
+		this.storageAttributesKeys = storageAttributesKeys;
 		this.dimensionSpecId = dimensionSpecId;
 	}
 }

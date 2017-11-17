@@ -39,6 +39,7 @@ import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryCommands;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
+import de.metas.material.dispo.commons.repository.StockRepository;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.service.candidatechange.handler.CandidateHandler;
 import de.metas.material.dispo.service.candidatechange.handler.DemandCandiateHandler;
@@ -86,6 +87,8 @@ public class CandidateChangeHandlerTests
 
 	private CandidateRepositoryRetrieval candidateRepositoryRetrieval;
 
+	private StockRepository stockRepository;
+
 	private CandidateChangeService candidateChangeHandler;
 
 	@Mocked
@@ -103,11 +106,12 @@ public class CandidateChangeHandlerTests
 		candidateRepositoryRetrieval = new CandidateRepositoryRetrieval();
 		candidateRepositoryCommands = new CandidateRepositoryCommands();
 
+		stockRepository = new StockRepository();
 		stockCandidateService = new StockCandidateService(candidateRepositoryRetrieval, candidateRepositoryCommands);
 
 		candidateChangeHandler = new CandidateChangeService(
 				ImmutableList.of(
-						new DemandCandiateHandler(candidateRepositoryRetrieval, candidateRepositoryCommands, materialEventService, stockCandidateService),
+						new DemandCandiateHandler(candidateRepositoryRetrieval, candidateRepositoryCommands, materialEventService, stockRepository, stockCandidateService),
 						new SupplyCandiateHandler(candidateRepositoryRetrieval, candidateRepositoryCommands, stockCandidateService)));
 	}
 
@@ -502,7 +506,7 @@ public class CandidateChangeHandlerTests
 				.build();
 
 		RepositoryTestHelper.setupMockedRetrieveAvailableStock(
-				candidateRepositoryRetrieval,
+				stockRepository,
 				materialDescr,
 				"0");
 
@@ -591,7 +595,7 @@ public class CandidateChangeHandlerTests
 				.date(t)
 				.build();
 		RepositoryTestHelper.setupMockedRetrieveAvailableStock(
-				candidateRepositoryRetrieval,
+				stockRepository,
 				demandMaterialDescriptor,
 				"0");
 		final Candidate demandCandidate = Candidate.builder()
@@ -635,7 +639,7 @@ public class CandidateChangeHandlerTests
 				.build();
 
 		RepositoryTestHelper.setupMockedRetrieveAvailableStock(
-				candidateRepositoryRetrieval,
+				stockRepository,
 				materialDescriptor,
 				"0");
 
@@ -685,7 +689,7 @@ public class CandidateChangeHandlerTests
 				.build();
 
 		RepositoryTestHelper.setupMockedRetrieveAvailableStock(
-				candidateRepositoryRetrieval,
+				stockRepository,
 				null, // null=any
 				"0");
 

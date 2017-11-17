@@ -2,7 +2,6 @@ package de.metas.material.dispo.commons.repository;
 
 import static org.adempiere.model.InterfaceWrapperHelper.isNew;
 
-import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
@@ -12,11 +11,8 @@ import java.util.stream.Stream;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.collections.ListUtils;
-import org.compiere.util.DB;
 import org.springframework.stereotype.Service;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -66,15 +62,6 @@ import lombok.NonNull;
 @Service
 public class CandidateRepositoryRetrieval
 {
-	@VisibleForTesting
-	static final String SQL_SELECT_AVAILABLE_STOCK = "SELECT COALESCE(SUM(Qty),0) "
-			+ "FROM de_metas_material_dispo.MD_Candidate_Latest_v "
-			+ "WHERE "
-			+ "(M_Warehouse_ID=? OR ? <= 0) AND "
-			+ "M_Product_ID=? AND "
-			+ "StorageAttributesKey LIKE ? AND "
-			+ "DateProjected <= ?";
-
 	/**
 	 * Load and return <b>the</b> single record this has the given {@code id} as parentId.
 	 *
@@ -314,30 +301,4 @@ public class CandidateRepositoryRetrieval
 				.endOrderBy();
 	}
 
-	@NonNull
-	public BigDecimal retrieveAvailableStock(@NonNull final MaterialDescriptor materialDescriptor)
-	{
-		final MaterialQuery query = MaterialQuery.forMaterialDescriptor(materialDescriptor);
-		return retrieveAvailableStock(query);
-	}
-
-	@NonNull
-	public BigDecimal retrieveAvailableStock(@NonNull final MaterialQuery query)
-	{
-		final String storageAttributesKeyLikeExpression = RepositoryCommons
-				.prepareStorageAttributesKeyForLikeExpression(
-						query.getStorageAttributesKey());
-
-		final int productId = ListUtils.singleElement(query.getProductIds());
-		final BigDecimal qtyValue = DB.getSQLValueBDEx(
-				ITrx.TRXNAME_ThreadInherited,
-				SQL_SELECT_AVAILABLE_STOCK,
-				new Object[] {
-						query.getWarehouseId(), query.getWarehouseId(),
-						productId,
-						"%" + storageAttributesKeyLikeExpression + "%",
-						query.getDate() });
-
-		return qtyValue;
-	}
 }

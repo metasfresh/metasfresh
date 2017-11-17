@@ -28,6 +28,7 @@ import de.metas.material.dispo.commons.RepositoryTestHelper;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryCommands;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
+import de.metas.material.dispo.commons.repository.StockRepository;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
@@ -106,20 +107,26 @@ public class DistributionPlanEventHandlerTests
 	@Mocked
 	private MaterialEventService materialEventService;
 
-	private CandidateRepositoryRetrieval candidateRepository;
+	private StockRepository stockRepository;
 
 	@Before
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
 
-		candidateRepository = new CandidateRepositoryRetrieval();
+		final CandidateRepositoryRetrieval candidateRepository = new CandidateRepositoryRetrieval();
 		final CandidateRepositoryCommands candidateRepositoryCommands = new CandidateRepositoryCommands();
 		final SupplyProposalEvaluator supplyProposalEvaluator = new SupplyProposalEvaluator(candidateRepository);
 
+		stockRepository = new StockRepository();
 		final StockCandidateService stockCandidateService = new StockCandidateService(candidateRepository, candidateRepositoryCommands);
 
-		final DemandCandiateHandler demandCandiateHandler = new DemandCandiateHandler(candidateRepository, candidateRepositoryCommands, materialEventService, stockCandidateService);
+		final DemandCandiateHandler demandCandiateHandler = new DemandCandiateHandler(
+				candidateRepository,
+				candidateRepositoryCommands,
+				materialEventService,
+				stockRepository,
+				stockCandidateService);
 		final SupplyCandiateHandler supplyCandiateHandler = new SupplyCandiateHandler(candidateRepository, candidateRepositoryCommands, stockCandidateService);
 		final CandidateChangeService candidateChangeService = new CandidateChangeService(ImmutableList.of(
 				demandCandiateHandler,
@@ -162,7 +169,7 @@ public class DistributionPlanEventHandlerTests
 						.build())
 				.build();
 
-		RepositoryTestHelper.setupMockedRetrieveAvailableStock(candidateRepository, null /*any materialDescriptor*/, "0");
+		RepositoryTestHelper.setupMockedRetrieveAvailableStock(stockRepository, null /* any materialDescriptor */, "0");
 
 		distributionPlanEventHandler.handleDistributionPlanEvent(event);
 
@@ -224,7 +231,7 @@ public class DistributionPlanEventHandlerTests
 	@Test
 	public void testTwoDistibutionPlanEvents()
 	{
-		RepositoryTestHelper.setupMockedRetrieveAvailableStock(candidateRepository, null, "0");
+		RepositoryTestHelper.setupMockedRetrieveAvailableStock(stockRepository, null, "0");
 		performTestTwoDistibutionPlanEvents(distributionPlanEventHandler);
 	}
 

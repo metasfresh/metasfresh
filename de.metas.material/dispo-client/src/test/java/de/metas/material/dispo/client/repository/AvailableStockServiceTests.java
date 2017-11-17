@@ -24,7 +24,7 @@ import de.metas.dimension.model.I_DIM_Dimension_Spec;
 import de.metas.dimension.model.I_DIM_Dimension_Spec_Attribute;
 import de.metas.material.dispo.commons.RepositoryTestHelper;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryCommands;
-import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
+import de.metas.material.dispo.commons.repository.StockRepository;
 import mockit.Mocked;
 
 /*
@@ -55,7 +55,7 @@ public class AvailableStockServiceTests
 	@Rule
 	public final TestWatcher testWatcher = new AdempiereTestWatcher();
 
-	private CandidateRepositoryRetrieval candidateRepository;
+	private StockRepository stockRepository;
 
 	@Mocked
 	private DB db;
@@ -70,7 +70,7 @@ public class AvailableStockServiceTests
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
-		candidateRepository = new CandidateRepositoryRetrieval();
+		stockRepository = new StockRepository();
 
 		final I_C_UOM uom = BusinessTestHelper.createUOM("uom");
 		product = BusinessTestHelper.createProduct("product", uom);
@@ -96,7 +96,7 @@ public class AvailableStockServiceTests
 		dsa.setM_Attribute(attr1);
 		save(dsa);
 
-		final AvailableStockService availableStockService = new AvailableStockService(candidateRepository);
+		final AvailableStockService availableStockService = new AvailableStockService(stockRepository);
 
 		final Collection<String> storageKeys = availableStockService.extractStorageAttributeKeysForDimensionSpec(dimensionSpec.getDIM_Dimension_Spec_ID());
 		assertThat(storageKeys).containsOnly("", "value");

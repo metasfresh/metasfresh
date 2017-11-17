@@ -37,6 +37,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.apache.ecs.xhtml.code;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 
 import lombok.NonNull;
@@ -137,7 +138,7 @@ public class InArrayQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 	 * Sets default value to be returned when the "values" list is empty.
 	 *
 	 * @param defaultReturnWhenEmpty
-	 * @return 
+	 * @return
 	 */
 	public InArrayQueryFilter<T> setDefaultReturnWhenEmpty(boolean defaultReturnWhenEmpty)
 	{
@@ -183,6 +184,18 @@ public class InArrayQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 	{
 		buildSql();
 		return sqlParams;
+	}
+
+	@VisibleForTesting
+	public String getColumnName()
+	{
+		return columnName;
+	}
+
+	@VisibleForTesting
+	public List<Object> getValuesOrNull()
+	{
+		return values;
 	}
 
 	private boolean sqlBuilt = false;

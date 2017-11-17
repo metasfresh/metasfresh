@@ -26,6 +26,8 @@ import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryCommands;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
+import de.metas.material.dispo.commons.repository.MaterialQuery;
+import de.metas.material.dispo.commons.repository.StockRepository;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.X_MD_Candidate;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
@@ -75,6 +77,9 @@ public class DemandCandiateCangeHandlerTest
 	@Mocked
 	private CandidateRepositoryRetrieval candidateRepositoryRetrieval;
 
+	@Mocked
+	private StockRepository stockRepository;
+
 	@Before
 	public void init()
 	{
@@ -84,7 +89,12 @@ public class DemandCandiateCangeHandlerTest
 
 		final StockCandidateService stockCandidateService = new StockCandidateService(candidateRepositoryRetrieval, candidateRepositoryCommands);
 
-		demandCandiateHandler = new DemandCandiateHandler(candidateRepositoryRetrieval, candidateRepositoryCommands, materialEventService, stockCandidateService);
+		demandCandiateHandler = new DemandCandiateHandler(
+				candidateRepositoryRetrieval,
+				candidateRepositoryCommands,
+				materialEventService,
+				stockRepository,
+				stockCandidateService);
 	}
 
 	@Test
@@ -169,10 +179,12 @@ public class DemandCandiateCangeHandlerTest
 
 	public void setupRepositorReturnsQuantityForMaterial(final String quantity, final MaterialDescriptor materialDescriptor)
 	{
+		final MaterialQuery query = MaterialQuery.forMaterialDescriptor(materialDescriptor);
+
 		// @formatter:off
 		new Expectations()
 		{{
-			candidateRepositoryRetrieval.retrieveAvailableStock(materialDescriptor);
+			stockRepository.retrieveSingleAvailableStockQty(query);
 			times = 1;
 			result = new BigDecimal(quantity);
 		}}; // @formatter:on

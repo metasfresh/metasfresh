@@ -20,6 +20,8 @@ import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryCommands;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
+import de.metas.material.dispo.commons.repository.MaterialQuery;
+import de.metas.material.dispo.commons.repository.StockRepository;
 import de.metas.material.event.MaterialDescriptor;
 import de.metas.material.event.MaterialDescriptor.DateOperator;
 import de.metas.material.event.ProductDescriptor;
@@ -96,7 +98,7 @@ public class RepositoryTestHelper
 		return CandidatesQuery.builder()
 				.type(CandidateType.STOCK)
 				.materialDescriptor(MaterialDescriptor.builderForQuery()
-						.productDescriptor(ProductDescriptor.forProductIdOnly(PRODUCT_ID))
+						.productDescriptor(ProductDescriptor.incompleteForProductId(PRODUCT_ID))
 						.warehouseId(WAREHOUSE_ID)
 						.date(date)
 						.dateOperator(DateOperator.BEFORE_OR_AT)
@@ -109,7 +111,7 @@ public class RepositoryTestHelper
 		return CandidatesQuery.builder()
 				.type(CandidateType.STOCK)
 				.materialDescriptor(MaterialDescriptor.builderForQuery()
-						.productDescriptor(ProductDescriptor.forProductIdOnly(PRODUCT_ID))
+						.productDescriptor(ProductDescriptor.incompleteForProductId(PRODUCT_ID))
 						.warehouseId(WAREHOUSE_ID)
 						.date(date)
 						.dateOperator(DateOperator.AT_OR_AFTER)
@@ -118,7 +120,7 @@ public class RepositoryTestHelper
 	}
 
 	public static void setupMockedRetrieveAvailableStock(
-			@NonNull final CandidateRepositoryRetrieval candidateRepository,
+			@NonNull final StockRepository stockRepository,
 			@Nullable final MaterialDescriptor materialDescriptor,
 			@NonNull final String quantity)
 	{
@@ -126,8 +128,10 @@ public class RepositoryTestHelper
 		// @formatter:off
 		new Expectations(CandidateRepositoryRetrieval.class)
 		{{
-			final MaterialDescriptor materialDescriptorToUse = ObjectUtils.firstNonNull(materialDescriptor, (MaterialDescriptor)any);
-			candidateRepository.retrieveAvailableStock(materialDescriptorToUse);
+			final MaterialQuery query = materialDescriptor == null ? null:MaterialQuery.forMaterialDescriptor(materialDescriptor);
+			final MaterialQuery queryToUse = ObjectUtils.firstNonNull(query, (MaterialQuery)any);
+
+			stockRepository.retrieveSingleAvailableStockQty(queryToUse);
 			minTimes = 0;
 			result = new BigDecimal(quantity);
 		}}; // @formatter:on

@@ -26,6 +26,7 @@ import de.metas.material.dispo.commons.RepositoryTestHelper;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryCommands;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
+import de.metas.material.dispo.commons.repository.StockRepository;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
@@ -79,22 +80,29 @@ public class ProdcutionPlanEventHandlerTests
 
 	private ProductionPlanEventHandler productionPlanEventHandler;
 
-	private CandidateRepositoryRetrieval candidateRepository;
+	private StockRepository stockRepository;
 
 	@Before
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
 
-		candidateRepository = new CandidateRepositoryRetrieval();
+		final CandidateRepositoryRetrieval candidateRepository = new CandidateRepositoryRetrieval();
 		final CandidateRepositoryCommands candidateRepositoryCommands = new CandidateRepositoryCommands();
 		final StockCandidateService stockCandidateService = new StockCandidateService(
 				candidateRepository,
 				candidateRepositoryCommands);
 
+		stockRepository = new StockRepository();
+
 		final CandidateChangeService candidateChangeHandler = new CandidateChangeService(ImmutableList.of(
 				new SupplyCandiateHandler(candidateRepository, candidateRepositoryCommands, stockCandidateService),
-				new DemandCandiateHandler(candidateRepository, candidateRepositoryCommands, materialEventService, stockCandidateService)));
+				new DemandCandiateHandler(
+						candidateRepository,
+						candidateRepositoryCommands,
+						materialEventService,
+						stockRepository,
+						stockCandidateService)));
 
 		final CandidateService candidateService = new CandidateService(
 				candidateRepository,
@@ -108,7 +116,7 @@ public class ProdcutionPlanEventHandlerTests
 	{
 		final ProductionPlanEvent productionPlanEvent = createProductionPlanEvent();
 
-		RepositoryTestHelper.setupMockedRetrieveAvailableStock(candidateRepository, null, "0");
+		RepositoryTestHelper.setupMockedRetrieveAvailableStock(stockRepository, null, "0");
 
 		perform_testProductionPlanEvent(productionPlanEvent);
 	}
@@ -118,7 +126,7 @@ public class ProdcutionPlanEventHandlerTests
 	{
 		final ProductionPlanEvent productionPlanEvent = createProductionPlanEvent();
 
-		RepositoryTestHelper.setupMockedRetrieveAvailableStock(candidateRepository, null, "0");
+		RepositoryTestHelper.setupMockedRetrieveAvailableStock(stockRepository, null, "0");
 
 		perform_testProductionPlanEvent(productionPlanEvent);
 		perform_testProductionPlanEvent(productionPlanEvent);

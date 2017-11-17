@@ -13,6 +13,8 @@ import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryCommands;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
+import de.metas.material.dispo.commons.repository.MaterialQuery;
+import de.metas.material.dispo.commons.repository.StockRepository;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
 import de.metas.material.event.MaterialDemandEvent;
 import de.metas.material.event.MaterialEventService;
@@ -45,6 +47,8 @@ public class DemandCandiateHandler implements CandidateHandler
 {
 	private final CandidateRepositoryRetrieval candidateRepository;
 
+	private final StockRepository stockRepository;
+
 	private final MaterialEventService materialEventService;
 
 	private final StockCandidateService stockCandidateService;
@@ -55,11 +59,13 @@ public class DemandCandiateHandler implements CandidateHandler
 			@NonNull final CandidateRepositoryRetrieval candidateRepository,
 			@NonNull final CandidateRepositoryCommands candidateRepositoryCommands,
 			@NonNull final MaterialEventService materialEventService,
+			@NonNull final StockRepository stockRepository,
 			@NonNull final StockCandidateService stockCandidateService)
 	{
 		this.candidateRepository = candidateRepository;
 		this.candidateRepositoryCommands = candidateRepositoryCommands;
 		this.materialEventService = materialEventService;
+		this.stockRepository = stockRepository;
 		this.stockCandidateService = stockCandidateService;
 	}
 
@@ -139,7 +145,8 @@ public class DemandCandiateHandler implements CandidateHandler
 
 		if (demandCandidate.getType() == CandidateType.DEMAND)
 		{
-			final BigDecimal availableQuantity = candidateRepository.retrieveAvailableStock(demandCandidate.getMaterialDescriptor());
+			final MaterialQuery query = MaterialQuery.forMaterialDescriptor(demandCandidate.getMaterialDescriptor());
+			final BigDecimal availableQuantity = stockRepository.retrieveSingleAvailableStockQty(query);
 			final boolean demandExceedsAvailableQty = demandCandidate.getQuantity().compareTo(availableQuantity) > 0;
 
 			if (demandExceedsAvailableQty)

@@ -48,7 +48,7 @@ public class ProductDescriptor
 		throw new UnsupportedOperationException();
 	}
 
-	public static final ProductDescriptor forProductIdOnly(final int productId)
+	public static final ProductDescriptor incompleteForProductId(final int productId)
 	{
 		return new ProductDescriptor(false, // complete == false
 				productId,

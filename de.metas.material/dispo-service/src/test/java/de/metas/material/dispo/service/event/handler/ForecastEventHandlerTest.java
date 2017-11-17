@@ -23,6 +23,8 @@ import de.metas.material.dispo.commons.DispoTestUtils;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryCommands;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
+import de.metas.material.dispo.commons.repository.MaterialQuery;
+import de.metas.material.dispo.commons.repository.StockRepository;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.dispo.service.candidatechange.handler.StockUpCandiateHandler;
@@ -73,6 +75,9 @@ public class ForecastEventHandlerTest
 	@Mocked
 	private CandidateRepositoryRetrieval candidateRepository;
 
+	@Mocked
+	private StockRepository stockRepository;
+
 	@Before
 	public void init()
 	{
@@ -84,7 +89,8 @@ public class ForecastEventHandlerTest
 						new StockUpCandiateHandler(
 								candidateRepository,
 								candidateRepositoryCommands,
-								materialEventService))));
+								materialEventService,
+								stockRepository))));
 	}
 
 	/**
@@ -101,10 +107,12 @@ public class ForecastEventHandlerTest
 				.get(0)
 				.getMaterialDescriptor();
 
+		final MaterialQuery query = MaterialQuery.forMaterialDescriptor(materialDescriptorOfFirstAndOnlyForecastLine);
+
 		// @formatter:off
 		new Expectations()
 		{{
-			candidateRepository.retrieveAvailableStock(materialDescriptorOfFirstAndOnlyForecastLine);
+			stockRepository.retrieveSingleAvailableStockQty(query);
 			times = 1; result = BigDecimal.ZERO;
 
 			materialEventService.fireEvent(with(eventQuantity("8")));
@@ -135,10 +143,12 @@ public class ForecastEventHandlerTest
 				.get(0)
 				.getMaterialDescriptor();
 
+		final MaterialQuery query = MaterialQuery.forMaterialDescriptor(materialDescriptorOfFirstAndOnlyForecastLine);
+
 		// @formatter:off
 		new Expectations()
 		{{
-			candidateRepository.retrieveAvailableStock(materialDescriptorOfFirstAndOnlyForecastLine);
+			stockRepository.retrieveSingleAvailableStockQty(query);
 			times = 1; result = new BigDecimal("3");
 
 			materialEventService.fireEvent(with(eventQuantity("5")));

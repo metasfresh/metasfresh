@@ -94,7 +94,7 @@ public class MaterialDescriptorTest
 	@Test(expected = RuntimeException.class)
 	public void completeMaterialDescriptor_with_incomplete_productdescriptor()
 	{
-		final ProductDescriptor incompleteProductDescriptor = ProductDescriptor.forProductIdOnly(PRODUCT_ID);
+		final ProductDescriptor incompleteProductDescriptor = ProductDescriptor.incompleteForProductId(PRODUCT_ID);
 		assertThat(incompleteProductDescriptor.isComplete()).isFalse();
 
 		MaterialDescriptor.builderForCompleteDescriptor()

@@ -12,8 +12,8 @@ import org.compiere.model.I_M_Product;
 import org.springframework.stereotype.Service;
 
 import de.metas.material.dispo.client.repository.AvailableStockResult.Group;
-import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.MaterialQuery;
+import de.metas.material.dispo.commons.repository.StockRepository;
 import de.metas.product.IProductBL;
 import de.metas.quantity.Quantity;
 import lombok.NonNull;
@@ -43,17 +43,17 @@ import lombok.NonNull;
 @Service
 public class AvailableStockService
 {
-	private final CandidateRepositoryRetrieval candidateRepositoryRetrieval;
+	private final StockRepository stockRepository;
 
-	public AvailableStockService(@NonNull final CandidateRepositoryRetrieval candidateRepositoryRetrieval)
+	public AvailableStockService(@NonNull final StockRepository stockRepository)
 	{
-		this.candidateRepositoryRetrieval = candidateRepositoryRetrieval;
+		this.stockRepository = stockRepository;
 	}
 
 	@NonNull
 	public AvailableStockResult retrieveAvailableStock(@NonNull final MaterialQuery query)
 	{
-		final BigDecimal qtyValue = candidateRepositoryRetrieval.retrieveAvailableStock(query);
+		final BigDecimal qtyValue = stockRepository.retrieveSingleAvailableStockQty(query);
 
 		final int productId = ListUtils.singleElement(query.getProductIds());
 
