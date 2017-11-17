@@ -6,6 +6,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,8 +38,12 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.Language;
 import de.metas.i18n.NumberTranslatableString;
+import de.metas.material.dispo.client.repository.AvailableStockResult;
+import de.metas.material.dispo.client.repository.AvailableStockResult.Group;
 import de.metas.material.dispo.client.repository.AvailableStockService;
 import de.metas.material.dispo.commons.repository.MaterialQuery;
+import de.metas.material.dispo.commons.repository.MaterialQuery.MaterialQueryBuilder;
+import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.product.model.I_M_Product;
 import de.metas.quantity.Quantity;
 import de.metas.ui.web.document.filter.sql.SqlParamsCollector;
@@ -419,21 +424,44 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 		return Optional.empty();
 	}
 
-	private final Collection<LookupValue> explodeByStorageRecords(final Collection<LookupValue> productLookupValues)
+	private final Collection<LookupValue> explodeByStorageRecords(
+			@NonNull final Collection<LookupValue> productLookupValues)
 	{
 		if (productLookupValues.isEmpty())
 		{
 			return productLookupValues;
 		}
 
-		final List<LookupValue> explodedProductValues = new ArrayList<>();
-		for (LookupValue productLookupValue : productLookupValues)
+		// prepare the query
+		// TODO get the storage attribute keys from somewhere..e.g. from a SysConfig with value = 'expired,damaged,<OTHER_STORAGE_ATTRIBUTES_KEYS>'
+		final MaterialQueryBuilder materialQueryBuilder = MaterialQuery.builder()
+				.storageAttributesKey("expired")
+				.storageAttributesKey("broken")
+				.storageAttributesKey(ProductDescriptor.STORAGE_ATTRIBUTES_KEY_OTHER);
+
+		final Map<Integer, LookupValue> productId2LookupValue = new HashMap<>();
+
+		for (final LookupValue productLookupValue : productLookupValues)
 		{
 			final int productId = productLookupValue.getIdAsInt();
-			final Quantity qtyOnHand = availableStockService.retrieveAvailableStock(MaterialQuery.builder()
-					.productId(productId)
-					.build())
-					.getSingleQuantity();
+
+			materialQueryBuilder.productId(productId);
+			productId2LookupValue.put(productId, productLookupValue);
+		}
+
+		// invoke the query
+		final AvailableStockResult availableStock = availableStockService.retrieveAvailableStock(materialQueryBuilder.build());
+		final List<Group> availableStockGroups = availableStock.getGroups();
+
+		// process the query's result into those explodedProductValues
+		final List<LookupValue> explodedProductValues = new ArrayList<>();
+		for (final Group availableStockGroup : availableStockGroups)
+		{
+			final Quantity qtyOnHand = availableStockGroup.getQty();
+
+			final int productId = availableStockGroup.getProductId();
+			final LookupValue productLookupValue = productId2LookupValue.get(productId);
+
 			if (qtyOnHand.signum() > 0)
 			{
 				final ITranslatableString qtyValueStr = NumberTranslatableString.of(qtyOnHand.getQty(), DisplayType.Quantity);
@@ -445,21 +473,21 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 						productLookupValue.getDisplayNameTrl(),
 						" (", qtyValueStr, " ", uomSymbolStr, ")");
 
-				explodedProductValues.add(IntegerLookupValue.builder()
+				// TODO: somehow convert the availableStockGroup.getAttributes() into "attribute"
+				final IntegerLookupValue integerLookupValue = IntegerLookupValue.builder()
 						.id(productId)
 						.displayName(displayName)
-						// TODO: set the actual attributes
 						.attribute(ATTRIBUTE_ASI, ImmutableMap.<String, Object> builder()
 								.put("1000018", "somebarcode")// barcode
 								.build())
-						.build());
+						.build();
+				explodedProductValues.add(integerLookupValue);
 			}
 			else
 			{
 				explodedProductValues.add(productLookupValue);
 			}
 		}
-
 		return explodedProductValues;
 	}
 
