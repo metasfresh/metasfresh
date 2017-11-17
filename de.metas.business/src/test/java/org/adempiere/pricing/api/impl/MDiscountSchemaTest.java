@@ -1,5 +1,7 @@
 package org.adempiere.pricing.api.impl;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -126,6 +128,58 @@ public class MDiscountSchemaTest
 		Assert.assertFalse(" Lines contain schemaLine3", lines.contains(schemaLine3));
 
 	}
+
+	@Test
+	public void testPickRightBreak_NoAttributes()
+	{
+		final I_M_Product_Category category1 = createM_ProductCategory("Category1");
+		final I_M_Product product1 = createM_Product("Product1", category1);
+
+		final I_M_DiscountSchema schema1 = createSchema();
+
+		final I_M_DiscountSchemaBreak schemaBreak1 = createBreak(schema1, 10);
+		schemaBreak1.setM_Product_ID(product1.getM_Product_ID());
+		schemaBreak1.setBreakDiscount(BigDecimal.TEN);
+		schemaBreak1.setBreakValue(BigDecimal.TEN);
+		InterfaceWrapperHelper.save(schemaBreak1);
+
+		final I_M_DiscountSchemaBreak schemaBreak2 = createBreak(schema1, 20);
+		schemaBreak2.setM_Product_ID(product1.getM_Product_ID());
+		schemaBreak2.setBreakDiscount(BigDecimal.valueOf(20));
+		schemaBreak2.setBreakValue(BigDecimal.valueOf(20));
+		InterfaceWrapperHelper.save(schemaBreak2);
+
+		final List<I_M_DiscountSchemaBreak> breaks = dao.retrieveBreaks(schema1);
+
+		final I_M_DiscountSchemaBreak actualSchemaBreak1 = bl.pickApplyingBreak(
+				breaks,
+				-1, // attribute value
+				true,
+				product1.getM_Product_ID(),
+				category1.getM_Product_Category_ID(),
+				new BigDecimal(15),
+				new BigDecimal(30)
+				);
+
+		assertThat(actualSchemaBreak1).isNotNull();
+		assertThat(schemaBreak1.getM_DiscountSchemaBreak_ID()).isEqualTo(actualSchemaBreak1.getM_DiscountSchemaBreak_ID());
+
+
+		final I_M_DiscountSchemaBreak actualSchemaBreak2 =
+				bl.pickApplyingBreak(
+						breaks,
+						-1, // attribute value
+						true,
+						product1.getM_Product_ID(),
+						category1.getM_Product_Category_ID(),
+						new BigDecimal(25),
+						new BigDecimal(50)
+				);
+
+		assertThat(actualSchemaBreak2).isNotNull();
+		assertThat(schemaBreak2.getM_DiscountSchemaBreak_ID()).isEqualTo(actualSchemaBreak2.getM_DiscountSchemaBreak_ID());
+	}
+
 
 	@Test
 	public void testPickApplyingBreak_NoAttributes()
@@ -365,7 +419,7 @@ public class MDiscountSchemaTest
 		final I_M_AttributeInstance instance1 = createAttributeInstance(attr1, attrValue1);
 		final I_M_AttributeInstance instance2 = createAttributeInstance(attr1, attrValue2);
 
-		final List<I_M_AttributeInstance> instances = new ArrayList<I_M_AttributeInstance>();
+		final List<I_M_AttributeInstance> instances = new ArrayList<>();
 
 		instances.add(instance1);
 		instances.add(instance2);
@@ -446,7 +500,7 @@ public class MDiscountSchemaTest
 		final I_M_AttributeInstance instance1 = createAttributeInstance(attr1, attrValue1);
 		final I_M_AttributeInstance instance2 = createAttributeInstance(attr1, attrValue2);
 
-		final List<I_M_AttributeInstance> instances = new ArrayList<I_M_AttributeInstance>();
+		final List<I_M_AttributeInstance> instances = new ArrayList<>();
 
 		instances.add(instance1);
 		instances.add(instance2);
@@ -515,7 +569,7 @@ public class MDiscountSchemaTest
 		final I_M_AttributeInstance instance1 = createAttributeInstance(attr1, attrValue1);
 		final I_M_AttributeInstance instance2 = createAttributeInstance(attr1, attrValue2);
 
-		final List<I_M_AttributeInstance> instances = new ArrayList<I_M_AttributeInstance>();
+		final List<I_M_AttributeInstance> instances = new ArrayList<>();
 
 		instances.add(instance1);
 		instances.add(instance2);
