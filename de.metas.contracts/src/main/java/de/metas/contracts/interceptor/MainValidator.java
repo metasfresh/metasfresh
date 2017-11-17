@@ -141,7 +141,7 @@ public class MainValidator extends AbstractModuleInterceptor
 		engine.addModelValidator(new M_ShipmentSchedule_QtyPicked(), client);
 
 		// 09869
-		engine.addModelValidator(new de.metas.contracts.interceptor.M_ShipmentSchedule(), client);
+		engine.addModelValidator(M_ShipmentSchedule.INSTANCE, client);
 	}
 
 }

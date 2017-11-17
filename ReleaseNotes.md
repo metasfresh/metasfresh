@@ -10,20 +10,37 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.37 (2017-48)
+
+**release for week 2017-48**
+
+## Features
+
+## Fixes
+
 # metasfresh 5.36 (2017-47)
 
 **release for week 2017-47**
 
 ## Features
-* metasfresh
+* metasfresh-app
+  * [#1964](https://github.com/metasfresh/metasfresh/issues/1964) ESR Import w/o Invoice reference (w/ reversed Invoice)
   * [#2871](https://github.com/metasfresh/metasfresh/issues/2871) Window Design Webui: Improve windows with Posted field
     * Adding missing default Values for Posted columns in various Table Definitions.
   * [#2872](https://github.com/metasfresh/metasfresh/issues/2872) Window Design Webui : Improve Distribution Order window
     * Improved Layout and Translations for the Distribution Order Window in WebUI.
+  * [#2908](https://github.com/metasfresh/metasfresh/issues/2908) Provide Doc Action voiding for contract period
+  * [#2911](https://github.com/metasfresh/metasfresh/issues/2911) Create Action for changing price and qty for a contract
+  * [#2932](https://github.com/metasfresh/metasfresh/issues/2932) standalone report / jasper service
+  * [#2937](https://github.com/metasfresh/metasfresh/issues/2937) Jasper Reports: New Purchase Order, Inout and Invoice Layout
+  * [#2940](https://github.com/metasfresh/metasfresh/issues/2940) Shipment Date = Promised Date
+  * [#2942](https://github.com/metasfresh/metasfresh/issues/2942) Fix the message for PrintJob_Done
   * [#2959](https://github.com/metasfresh/metasfresh/issues/2959) Default WebUI Window for Distribution Orderlines Handling
     * New Window for Distribution Orderlines that allows better Distrbution handling in WebUI.
+  * [#2963](https://github.com/metasfresh/metasfresh/issues/2963) flatrate: use datepromised instead of order data for master and startdate
   * [#2969](https://github.com/metasfresh/metasfresh/issues/2969) Add SQL Column M_Warehouse to Distribution Orderline
     * New Field Warehouse anf Filter in Distribution Editor.
+  * [#2975](https://github.com/metasfresh/metasfresh/issues/2975) sales invoice jasper: group products by product category
   * [#2978](https://github.com/metasfresh/metasfresh/issues/2978) New Window in WebUI for EDI DESADV
     * New Window for EDI DESADV records in WebUI.
   * [#2985](https://github.com/metasfresh/metasfresh/issues/2985) Refining Distribution Editor Window in WebUI
@@ -36,9 +53,24 @@ Here come the actual release notes:
     * Improved Translation for Action Menu in invoice candidate window.
   * [#2992](https://github.com/metasfresh/metasfresh/issues/2992) WebUI: Window Shipment Packing Item
     * Adaption of Field Names to current WebUI Guidelines.
-    
+
+* metasfresh-webui-api
+  * [#670](https://github.com/metasfresh/metasfresh-webui-api/issues/670) views: backend shall specify which columns are editable and how to render the editor
+
+* metasfresh-webui-frontend
+  * [#1222](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1222) Keyboard Shortcut for "Select all"/ "Select all x rows"
+  * [#1335](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1335) views: backend shall specify which columns are editable and how to render the editor (frontend)
 
 ## Fixes
+* metasfesh-app
+  * [#2965](https://github.com/metasfresh/metasfresh/issues/2965) error for HU changing locator if status E
+  * [#2966](https://github.com/metasfresh/metasfresh/issues/2966) error in console when creating customer return
+
+* metasfresh-webui-api
+  * [#677](https://github.com/metasfresh/metasfresh-webui-api/issues/677) Close all picking candidates only if the view was closed/removed by user
+  * [#678](https://github.com/metasfresh/metasfresh-webui-api/issues/678) HU that was taken out in Picking Try Clearing shall remain Picked
+  * [#681](https://github.com/metasfresh/metasfresh-webui-api/issues/681) Picking not possible for >1 orderline in Picking Terminal
+
 * metasfresh-webui-frontend
   * [#1333](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1333) Process panel is closed even if /start failed
     * The modal process panel is now remaining open if an error pops up when starting the action.
@@ -51,26 +83,26 @@ Here come the actual release notes:
 
 ## Features
 * metasfresh
-  * [#2407](https://github.com/metasfresh/metasfresh/issues/2407) Translate included Subtabs of Contract Window in WebUI
-    * New Translation for en_US in Contract Subtab view for Subscription History and Forecast..
-  * [#2722](https://github.com/metasfresh/metasfresh/issues/2722) Webui Design Window: Improve window Material Schedule
-    * Minor additional Field Translation for en_US added to Material Schedule Window Subtab.
-  * [#2754](https://github.com/metasfresh/metasfresh/issues/2754) Cleanup Function for old AD_Issue records
-    * New Function that allows to cleanup old and not needed Issue Records.
-  * [#2771](https://github.com/metasfresh/metasfresh/issues/2771) Sales order Jasper: group products by product category
-    * New Grouping Functionality in Sales Order Jasper, now able to group by Product Category.
-  * [#2816](https://github.com/metasfresh/metasfresh/issues/2816) Material Dispo - include storage-relevant attributes
-    * Including the Attributes into Material Dispo, now allowing the Product Planning to be done on detailed Attributes Level.
-  * [#2894](https://github.com/metasfresh/metasfresh/issues/2894) Sys Config to set Waiting Time for Async
-    * Improving the waiting time handling for Asynch after backend start. Now able to set the time via sysconfig.
+  * [#2407](https://github.com/metasfresh/metasfresh/issues/2407) Translate included subtabs of contract window in WebUI
+    * New Translation for en_US in contract subtab view for subscription history and forecast.
+  * [#2722](https://github.com/metasfresh/metasfresh/issues/2722) WebUI design: Improve window material schedule
+    * Minor additional field translation for en_US added to material schedule window subtab.
+  * [#2754](https://github.com/metasfresh/metasfresh/issues/2754) Cleanup function for old AD_Issue records
+    * New function that allows to cleanup old and not needed issue records.
+  * [#2771](https://github.com/metasfresh/metasfresh/issues/2771) Sales order jasper reports: group products by product category
+    * New grouping functionality in sales order jasper, now able to group by product category.
+  * [#2816](https://github.com/metasfresh/metasfresh/issues/2816) Material dispo - include storage-relevant attributes
+    * Including the attributes into material dispo, now allowing the product planning to be done on detailed attributes level.
+  * [#2894](https://github.com/metasfresh/metasfresh/issues/2894) Sys config to set waiting time for async
+    * Improving the waiting time handling for asynch after backend start. Now able to set the time via sysconfig.
   * [#2897](https://github.com/metasfresh/metasfresh/issues/2897) Drop out old code related to confirm splitting when printing
-    * Improvement in mass printing Functionality and workflow. Removing the User confirmation for printing when splitting.
+    * Improvement in mass printing functionality and workflow. Removing the user confirmation for printing when splitting.
   * [#2913](https://github.com/metasfresh/metasfresh/issues/2913) Column-SQL needs lower-case WHERE and FROM
-    * Application Dictionary adjustment for AD_Ref_Table, setting loaer case statements for the column SQL.
+    * Application dictionary adjustment for AD_Ref_Table, setting loaer case statements for the column SQL.
   * [#2914](https://github.com/metasfresh/metasfresh/issues/2914) Replace org.adempiere.util.collections.Predicate with java.util.function.Predicate
-    * Internal Housekeeping issue, replacing legacy code with java class substitute.
-  * [#2919](https://github.com/metasfresh/metasfresh/issues/2919) trx API: log a warning in case we are registering a ITrxListener which might be never executed because trx is already commit/closed
-    * Internal Housekeepign improvement for Transaction handlign.
+    * Internal housekeeping issue, replacing legacy code with java class substitute.
+  * [#2919](https://github.com/metasfresh/metasfresh/issues/2919) Trx API: log a warning in case we are registering a ITrxListener which might be never executed because trx is already commit/closed
+    * Internal housekeeping improvement for transaction handling.
   * [#2920](https://github.com/metasfresh/metasfresh/issues/2920) Create automated test for extending contracts.
     * Improving the Test coverage for contract extension. Creating automated Tests.
   * [#2934](https://github.com/metasfresh/metasfresh/issues/2934) Additional Locator Dimensions

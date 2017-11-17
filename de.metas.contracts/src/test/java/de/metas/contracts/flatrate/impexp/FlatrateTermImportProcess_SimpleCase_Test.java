@@ -35,7 +35,6 @@ import de.metas.inout.invoicecandidate.InOutLinesWithMissingInvoiceCandidate;
 import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
-import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 
 /*
@@ -68,7 +67,6 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 public class FlatrateTermImportProcess_SimpleCase_Test extends AbstractFlatrateTermTest
 {
 	private final transient IInvoiceCandDAO iinvoiceCandDAO = Services.get(IInvoiceCandDAO.class);
-	private final transient IInvoiceCandidateHandlerBL iinvoiceCandidateHandlerBL = Services.get(IInvoiceCandidateHandlerBL.class);
 	private final transient IShipmentScheduleHandlerBL inOutCandHandlerBL = Services.get(IShipmentScheduleHandlerBL.class);
 
 	@Before
@@ -301,11 +299,6 @@ public class FlatrateTermImportProcess_SimpleCase_Test extends AbstractFlatrateT
 
 		final List<I_C_Invoice_Candidate> candsForTerm = iinvoiceCandDAO.retrieveReferencing(flatrateTerm);
 		assertThat(candsForTerm.size(), equalTo(1));
-	}
-
-	private List<I_C_Invoice_Candidate> createInvoiceCandidates(final I_C_Flatrate_Term flatrateTerm)
-	{
-		return iinvoiceCandidateHandlerBL.createMissingCandidatesFor(flatrateTerm);
 	}
 
 	private void assertShipmentSchedules(final I_C_Flatrate_Term flatrateTerm, final boolean isActiveFT)
