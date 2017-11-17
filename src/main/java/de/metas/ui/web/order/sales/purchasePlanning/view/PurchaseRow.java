@@ -61,29 +61,36 @@ public class PurchaseRow implements IViewRow
 			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 10)
 	})
 	private final JSONLookupValue product;
+
 	@ViewColumn(captionKey = "Vendor_ID", widgetType = DocumentFieldWidgetType.Lookup, layouts = {
 			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 20),
 			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 20)
 	})
 	private final JSONLookupValue vendorBPartner;
 
-	@ViewColumn(captionKey = "QtyToDeliver", widgetType = DocumentFieldWidgetType.Quantity, layouts = {
+	@ViewColumn(captionKey = "C_UOM_ID", widgetType = DocumentFieldWidgetType.Lookup, layouts = {
 			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 30),
 			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 30)
+	})
+	private final JSONLookupValue uom;
+
+	@ViewColumn(captionKey = "QtyToDeliver", widgetType = DocumentFieldWidgetType.Quantity, layouts = {
+			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 40),
+			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 40)
 	})
 	private final BigDecimal qtyToDeliver;
 
 	public static final String FIELDNAME_QtyToPurchase = "qtyToPurchase";
 	@ViewColumn(fieldName = FIELDNAME_QtyToPurchase, captionKey = "QtyToPurchase", widgetType = DocumentFieldWidgetType.Quantity, editor = ViewEditorRenderMode.ALWAYS, layouts = {
-			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 40),
-			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 40)
+			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 50),
+			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 50)
 	})
 	private BigDecimal qtyToPurchase;
 
 	public static final String FIELDNAME_DatePromised = "datePromised";
 	@ViewColumn(fieldName = FIELDNAME_DatePromised, captionKey = "DatePromised", widgetType = DocumentFieldWidgetType.DateTime, editor = ViewEditorRenderMode.ALWAYS, layouts = {
-			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 50),
-			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 50)
+			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 60),
+			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 60)
 	})
 	private Date datePromised;
 
@@ -92,6 +99,7 @@ public class PurchaseRow implements IViewRow
 	private final IViewRowType rowType;
 	private final ImmutableList<PurchaseRow> includedRows;
 	private final ImmutableMap<PurchaseRowId, PurchaseRow> includedRowsByRowId;
+	private final int purcaseCandidateRepoId;
 
 	//
 	private transient ImmutableMap<String, Object> _fieldNameAndJsonValues; // lazy
@@ -102,15 +110,18 @@ public class PurchaseRow implements IViewRow
 			@NonNull final IViewRowType rowType,
 			@NonNull final JSONLookupValue product,
 			@Nullable final JSONLookupValue vendorBPartner,
+			@NonNull final JSONLookupValue uom,
 			@Nullable final BigDecimal qtyToDeliver,
 			@Nullable final BigDecimal qtyToPurchase,
 			@Nullable final Date datePromised,
-			@NonNull @Singular final ImmutableList<PurchaseRow> includedRows)
+			@NonNull @Singular final ImmutableList<PurchaseRow> includedRows,
+			final int purcaseCandidateRepoId)
 	{
 		this.rowId = rowId;
 		this.rowType = rowType;
 		this.product = product;
 		this.vendorBPartner = vendorBPartner;
+		this.uom = uom;
 		this.qtyToDeliver = qtyToDeliver;
 		this.qtyToPurchase = qtyToPurchase != null ? qtyToPurchase : BigDecimal.ZERO;
 
@@ -122,8 +133,9 @@ public class PurchaseRow implements IViewRow
 			throw new AdempiereException("Lines does not allow included rows");
 		}
 		this.includedRows = includedRows;
-		includedRowsByRowId = includedRows.stream()
-				.collect(ImmutableMap.toImmutableMap(PurchaseRow::getRowId, Function.identity()));
+		includedRowsByRowId = includedRows.stream().collect(ImmutableMap.toImmutableMap(PurchaseRow::getRowId, Function.identity()));
+
+		this.purcaseCandidateRepoId = purcaseCandidateRepoId > 0 ? purcaseCandidateRepoId : -1;
 
 		if (rowType == PurchaseRowType.GROUP)
 		{
@@ -131,12 +143,24 @@ public class PurchaseRow implements IViewRow
 		}
 	}
 
+	private PurchaseRow(final PurchaseRow from)
+	{
+		this.rowId = from.rowId;
+		this.rowType = from.rowType;
+		this.product = from.product;
+		this.vendorBPartner = from.vendorBPartner;
+		this.uom = from.uom;
+		this.qtyToDeliver = from.qtyToDeliver;
+		this.qtyToPurchase = from.qtyToPurchase;
+		this.datePromised = from.datePromised;
+		this.includedRows = from.includedRows.stream().map(PurchaseRow::new).collect(ImmutableList.toImmutableList());
+		includedRowsByRowId = this.includedRows.stream().collect(ImmutableMap.toImmutableMap(PurchaseRow::getRowId, Function.identity()));
+		this.purcaseCandidateRepoId = from.purcaseCandidateRepoId;
+	}
+
 	public PurchaseRow copy()
 	{
-		final ImmutableList<PurchaseRow> includedRowsCopy = includedRows.stream()
-				.map(PurchaseRow::copy)
-				.collect(ImmutableList.toImmutableList());
-		return new PurchaseRow(rowId, rowType, product, vendorBPartner, qtyToDeliver, qtyToPurchase, datePromised, includedRowsCopy);
+		return new PurchaseRow(this);
 	}
 
 	public PurchaseRowId getRowId()
@@ -148,6 +172,16 @@ public class PurchaseRow implements IViewRow
 	public DocumentId getId()
 	{
 		return rowId.toDocumentId();
+	}
+
+	public int getSalesOrderLineId()
+	{
+		return rowId.getSalesOrderLineId();
+	}
+
+	public int getPurcaseCandidateRepoId()
+	{
+		return purcaseCandidateRepoId;
 	}
 
 	@Override
@@ -201,7 +235,7 @@ public class PurchaseRow implements IViewRow
 		this.qtyToPurchase = qtyToPurchase;
 	}
 
-	private BigDecimal getQtyToPurchase()
+	public BigDecimal getQtyToPurchase()
 	{
 		return qtyToPurchase;
 	}
@@ -244,5 +278,25 @@ public class PurchaseRow implements IViewRow
 
 		final PurchaseRow row = getIncludedRowById(rowId);
 		row.setDatePromised(datePromised);
+	}
+
+	public int getProductId()
+	{
+		return product.getKeyAsInt();
+	}
+
+	public int getUOMId()
+	{
+		return uom.getKeyAsInt();
+	}
+
+	public int getVendorBPartnerId()
+	{
+		return vendorBPartner.getKeyAsInt();
+	}
+
+	public Date getDatePromised()
+	{
+		return datePromised;
 	}
 }

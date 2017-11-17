@@ -99,6 +99,11 @@ public final class PurchaseRowId
 		this.vendorBPartnerId = vendorBPartnerId > 0 ? vendorBPartnerId : -1;
 		this._documentId = documentId;
 	}
+	
+	public int getSalesOrderLineId()
+	{
+		return salesOrderLineId;
+	}
 
 	public DocumentId toDocumentId()
 	{
