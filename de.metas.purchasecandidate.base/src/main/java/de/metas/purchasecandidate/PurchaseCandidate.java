@@ -1,4 +1,4 @@
-package de.metas.purchasecandidate.impl;
+package de.metas.purchasecandidate;
 
 import java.math.BigDecimal;
 import java.util.Date;
