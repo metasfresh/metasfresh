@@ -1,10 +1,11 @@
 package de.metas.payment.esr.api.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
 
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.Services;
 import org.junit.Before;
@@ -152,22 +153,22 @@ public class BPBankAccountDAOTest
 
 	private I_C_BP_BankAccount createAccount(final boolean isEsrAccount, final String esrRenderedAcctNo, final String accountNo)
 	{
-		final I_C_BP_BankAccount account = InterfaceWrapperHelper.newInstance(I_C_BP_BankAccount.class);
+		final I_C_BP_BankAccount account = newInstance(I_C_BP_BankAccount.class);
 		account.setIsEsrAccount(isEsrAccount);
 		account.setAccountNo(accountNo);
 		account.setESR_RenderedAccountNo(esrRenderedAcctNo);
 
-		InterfaceWrapperHelper.save(account);
+		save(account);
 
 		return account;
 	}
 
 	private I_ESR_PostFinanceUserNumber createESRPostFinanceUserNumber(final I_C_BP_BankAccount account, final String esrAccountNo)
 	{
-		final I_ESR_PostFinanceUserNumber postFinanceUserNumber = InterfaceWrapperHelper.newInstance(I_ESR_PostFinanceUserNumber.class);
+		final I_ESR_PostFinanceUserNumber postFinanceUserNumber = newInstance(I_ESR_PostFinanceUserNumber.class);
 		postFinanceUserNumber.setC_BP_BankAccount(account);
 		postFinanceUserNumber.setESR_RenderedAccountNo(esrAccountNo);
-		InterfaceWrapperHelper.save(postFinanceUserNumber);
+		save(postFinanceUserNumber);
 
 		return postFinanceUserNumber;
 	}

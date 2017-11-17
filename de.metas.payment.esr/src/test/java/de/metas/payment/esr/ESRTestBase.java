@@ -39,7 +39,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.model.IContextAware;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
@@ -386,10 +385,10 @@ public class ESRTestBase
 
 	protected I_ESR_PostFinanceUserNumber createPostFinanceUserNumber(final I_C_BP_BankAccount account, final String esrNoForPostFinanceUser)
 	{
-		final I_ESR_PostFinanceUserNumber postFinanceUserNumber = InterfaceWrapperHelper.newInstance(I_ESR_PostFinanceUserNumber.class);
+		final I_ESR_PostFinanceUserNumber postFinanceUserNumber = newInstance(I_ESR_PostFinanceUserNumber.class);
 		postFinanceUserNumber.setC_BP_BankAccount(account);
 		postFinanceUserNumber.setESR_RenderedAccountNo(esrNoForPostFinanceUser);
-		InterfaceWrapperHelper.save(postFinanceUserNumber);
+		save(postFinanceUserNumber);
 
 		return postFinanceUserNumber;
 	}
