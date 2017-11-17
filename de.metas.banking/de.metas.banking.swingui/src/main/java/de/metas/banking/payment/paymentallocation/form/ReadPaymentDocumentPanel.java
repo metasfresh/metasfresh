@@ -432,7 +432,7 @@ class ReadPaymentDocumentPanel
 				//
 				// Let the user edit for now
 				// bpartnerField.setReadWrite(false); // set read-only to true (user shall not be able to edit)
-				final I_C_BP_BankAccount bpBankAccountNew = dataProvider.createNewC_BP_BankAccount_With_ESRPostFinancialUserNumber(contextProvider, bpartnerId);
+				final I_C_BP_BankAccount bpBankAccountNew = dataProvider.createNewC_BP_BankAccount(contextProvider, bpartnerId);
 				setC_BP_BankAccount(bpBankAccountNew);
 				newBankAccount = true;
 			}

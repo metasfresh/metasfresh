@@ -23,7 +23,6 @@ package de.metas.payment.api.impl;
  */
 
 import java.util.List;
-
 import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -36,7 +35,6 @@ import de.metas.banking.payment.impl.AbstractPaymentStringDataProvider;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.payment.esr.api.IESRBPBankAccountDAO;
 import de.metas.payment.esr.model.I_C_BP_BankAccount;
-import de.metas.payment.esr.model.I_ESR_PostFinanceUserNumber;
 
 /**
  * @author al
@@ -66,16 +64,7 @@ public class ESRPaymentStringDataProvider extends AbstractPaymentStringDataProvi
 	}
 
 	@Override
-	public de.metas.interfaces.I_C_BP_BankAccount createNewC_BP_BankAccount_With_ESRPostFinancialUserNumber(final IContextAware contextProvider, final int bpartnerId)
-	{
-		final I_C_BP_BankAccount bpBankAccount = createBankAccount(contextProvider, bpartnerId);
-
-		createESRPostFinanceUserNumber(bpBankAccount);
-
-		return bpBankAccount;
-	}
-
-	private I_C_BP_BankAccount createBankAccount(final IContextAware contextProvider, final int bpartnerId)
+	public de.metas.interfaces.I_C_BP_BankAccount createNewC_BP_BankAccount(final IContextAware contextProvider, final int bpartnerId)
 	{
 		final IPaymentString paymentString = getPaymentString();
 
@@ -98,21 +87,11 @@ public class ESRPaymentStringDataProvider extends AbstractPaymentStringDataProvi
 		bpBankAccount.setA_Name(bpBankAccount.getC_BPartner().getName());
 
 		bpBankAccount.setAccountNo(paymentString.getInnerAccountNo());
+		bpBankAccount.setESR_RenderedAccountNo(paymentString.getPostAccountNo());
 
 		InterfaceWrapperHelper.save(bpBankAccount);
 
 		return bpBankAccount;
-	}
-
-	private void createESRPostFinanceUserNumber(final I_C_BP_BankAccount bpBankAccount)
-	{
-		final IPaymentString paymentString = getPaymentString();
-
-		final I_ESR_PostFinanceUserNumber postFinanceUserNumber = InterfaceWrapperHelper.newInstance(I_ESR_PostFinanceUserNumber.class);
-		postFinanceUserNumber.setC_BP_BankAccount(bpBankAccount);
-		postFinanceUserNumber.setESR_RenderedAccountNo(paymentString.getPostAccountNo());
-
-		InterfaceWrapperHelper.save(postFinanceUserNumber);
 	}
 
 	@Override
