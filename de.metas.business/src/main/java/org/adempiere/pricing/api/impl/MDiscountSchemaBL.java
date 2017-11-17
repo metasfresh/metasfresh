@@ -26,7 +26,6 @@ import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.pricing.api.IMDiscountSchemaBL;
@@ -41,6 +40,8 @@ import org.compiere.model.I_M_DiscountSchemaLine;
 import org.compiere.model.MProductCategory;
 import org.compiere.model.X_M_DiscountSchema;
 import org.slf4j.Logger;
+
+import com.google.common.collect.ImmutableList;
 
 import de.metas.logging.LogManager;
 
@@ -208,7 +209,7 @@ public class MDiscountSchemaBL implements IMDiscountSchemaBL
 				.filter(schemaBreak -> schemaBreak.isActive())
 				.filter(schemaBreak -> breakApplies(schemaBreak, isQtyBased ? qty : amt, M_Product_ID, M_Product_Category_ID, attributeValueID))
 				.sorted(REVERSED_BREAKS_COMPARATOR)
-				.collect(Collectors.toList());
+				.collect(ImmutableList.toImmutableList());
 
 		if (applicableBreaks.isEmpty())
 		{
