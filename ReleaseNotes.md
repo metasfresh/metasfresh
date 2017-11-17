@@ -15,15 +15,24 @@ Here come the actual release notes:
 **release for week 2017-47**
 
 ## Features
-* metasfresh
+* metasfresh-app
+  * [#1964](https://github.com/metasfresh/metasfresh/issues/1964) ESR Import w/o Invoice reference (w/ reversed Invoice)
   * [#2871](https://github.com/metasfresh/metasfresh/issues/2871) Window Design Webui: Improve windows with Posted field
     * Adding missing default Values for Posted columns in various Table Definitions.
   * [#2872](https://github.com/metasfresh/metasfresh/issues/2872) Window Design Webui : Improve Distribution Order window
     * Improved Layout and Translations for the Distribution Order Window in WebUI.
+  * [#2908](https://github.com/metasfresh/metasfresh/issues/2908) Provide Doc Action voiding for contract period
+  * [#2911](https://github.com/metasfresh/metasfresh/issues/2911) Create Action for changing price and qty for a contract
+  * [#2932](https://github.com/metasfresh/metasfresh/issues/2932) standalone report / jasper service
+  * [#2937](https://github.com/metasfresh/metasfresh/issues/2937) Jasper Reports: New Purchase Order, Inout and Invoice Layout
+  * [#2940](https://github.com/metasfresh/metasfresh/issues/2940) Shipment Date = Promised Date
+  * [#2942](https://github.com/metasfresh/metasfresh/issues/2942) Fix the message for PrintJob_Done
   * [#2959](https://github.com/metasfresh/metasfresh/issues/2959) Default WebUI Window for Distribution Orderlines Handling
     * New Window for Distribution Orderlines that allows better Distrbution handling in WebUI.
+  * [#2963](https://github.com/metasfresh/metasfresh/issues/2963) flatrate: use datepromised instead of order data for master and startdate
   * [#2969](https://github.com/metasfresh/metasfresh/issues/2969) Add SQL Column M_Warehouse to Distribution Orderline
     * New Field Warehouse anf Filter in Distribution Editor.
+  * [#2975](https://github.com/metasfresh/metasfresh/issues/2975) sales invoice jasper: group products by product category
   * [#2978](https://github.com/metasfresh/metasfresh/issues/2978) New Window in WebUI for EDI DESADV
     * New Window for EDI DESADV records in WebUI.
   * [#2985](https://github.com/metasfresh/metasfresh/issues/2985) Refining Distribution Editor Window in WebUI
@@ -36,9 +45,24 @@ Here come the actual release notes:
     * Improved Translation for Action Menu in invoice candidate window.
   * [#2992](https://github.com/metasfresh/metasfresh/issues/2992) WebUI: Window Shipment Packing Item
     * Adaption of Field Names to current WebUI Guidelines.
-    
+
+* metasfresh-webui-api
+  * [#670](https://github.com/metasfresh/metasfresh-webui-api/issues/670) views: backend shall specify which columns are editable and how to render the editor
+
+* metasfresh-webui-frontend
+  * [#1222](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1222) Keyboard Shortcut for "Select all"/ "Select all x rows"
+  * [#1335](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1335) views: backend shall specify which columns are editable and how to render the editor (frontend)
 
 ## Fixes
+* metasfesh-app
+  * [#2965](https://github.com/metasfresh/metasfresh/issues/2965) error for HU changing locator if status E
+  * [#2966](https://github.com/metasfresh/metasfresh/issues/2966) error in console when creating customer return
+
+* metasfresh-webui-api
+  * [#677](https://github.com/metasfresh/metasfresh-webui-api/issues/677) Close all picking candidates only if the view was closed/removed by user
+  * [#678](https://github.com/metasfresh/metasfresh-webui-api/issues/678) HU that was taken out in Picking Try Clearing shall remain Picked
+  * [#681](https://github.com/metasfresh/metasfresh-webui-api/issues/681) Picking not possible for >1 orderline in Picking Terminal
+
 * metasfresh-webui-frontend
   * [#1333](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1333) Process panel is closed even if /start failed
     * The modal process panel is now remaining open if an error pops up when starting the action.
