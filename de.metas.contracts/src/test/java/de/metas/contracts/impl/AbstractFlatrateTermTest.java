@@ -76,8 +76,8 @@ public abstract class AbstractFlatrateTermTest
 	private final transient IInvoiceCandidateHandlerBL iinvoiceCandidateHandlerBL = Services.get(IInvoiceCandidateHandlerBL.class);
 
 	private final String sequence = "@BP@ @CON@ @A1@ @A2@ @A3@ @A4@ @P@ @C@ @CO@";
-	protected final static BigDecimal QTY = BigDecimal.ONE;
-	protected final static BigDecimal PRICE = BigDecimal.TEN;
+	protected final static BigDecimal QTY_ONE = BigDecimal.ONE;
+	protected final static BigDecimal PRICE_TEN = BigDecimal.TEN;
 
 	public FlatrateTermTestHelper helper;
 
@@ -338,8 +338,8 @@ public abstract class AbstractFlatrateTermTest
 		contract.setDropShip_BPartner(getBpartner());
 		contract.setDropShip_Location(bpLocation);
 		contract.setDropShip_User(user);
-		contract.setPriceActual(PRICE);
-		contract.setPlannedQtyPerUnit(QTY);
+		contract.setPriceActual(PRICE_TEN);
+		contract.setPlannedQtyPerUnit(QTY_ONE);
 		contract.setMasterStartDate(startDate);
 		contract.setM_Product(product);
 		contract.setIsTaxIncluded(true);

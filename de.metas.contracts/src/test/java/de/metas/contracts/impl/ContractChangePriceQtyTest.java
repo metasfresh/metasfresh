@@ -55,7 +55,7 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import lombok.NonNull;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = { StartupListener.class, ContractChangePriceQtyRepository.class })
+@SpringBootTest(classes = { StartupListener.class, ContractChangePriceQtyService.class })
 public class ContractChangePriceQtyTest extends AbstractFlatrateTermTest
 {
 	final private IContractsDAO contractsDAO = Services.get(IContractsDAO.class);
@@ -72,7 +72,7 @@ public class ContractChangePriceQtyTest extends AbstractFlatrateTermTest
 	public void changeQty()
 	{
 		final I_C_Flatrate_Term contract = prepareContractForTest(true, startDate);
-		final ContractChangePriceQtyRepository contractsRepository = Adempiere.getBean(ContractChangePriceQtyRepository.class);
+		final ContractChangePriceQtyService contractsRepository = Adempiere.getBean(ContractChangePriceQtyService.class);
 		final BigDecimal newQty = BigDecimal.valueOf(5);
 		contractsRepository.changeQtyIfNeeded(contract, newQty);
 
@@ -85,7 +85,7 @@ public class ContractChangePriceQtyTest extends AbstractFlatrateTermTest
 	public void changeQtyAndDeliver()
 	{
 		final I_C_Flatrate_Term contract = prepareContractForTest(true, startDate);
-		final ContractChangePriceQtyRepository contractsRepository = Adempiere.getBean(ContractChangePriceQtyRepository.class);
+		final ContractChangePriceQtyService contractsRepository = Adempiere.getBean(ContractChangePriceQtyService.class);
 		deliverFirstSubscriptionProgress(contract);
 		final BigDecimal newQty = BigDecimal.valueOf(5);
 		contractsRepository.changeQtyIfNeeded(contract, newQty);
@@ -99,7 +99,7 @@ public class ContractChangePriceQtyTest extends AbstractFlatrateTermTest
 	public void changePrice()
 	{
 		final I_C_Flatrate_Term contract = prepareContractForTest(true, startDate);
-		final ContractChangePriceQtyRepository contractsRepository = Adempiere.getBean(ContractChangePriceQtyRepository.class);
+		final ContractChangePriceQtyService contractsRepository = Adempiere.getBean(ContractChangePriceQtyService.class);
 		final BigDecimal newPrice = BigDecimal.valueOf(5);
 		contractsRepository.changePriceIfNeeded(contract, newPrice);
 
@@ -141,7 +141,7 @@ public class ContractChangePriceQtyTest extends AbstractFlatrateTermTest
 
 		subscriptionProgress.stream()
 				.filter(progress -> progress.getStatus().equals(X_C_SubscriptionProgress.STATUS_Done) || progress.getStatus().equals(X_C_SubscriptionProgress.STATUS_Delivered))
-				.peek(progress -> assertThat(progress.getQty()).isEqualTo(QTY))
+				.peek(progress -> assertThat(progress.getQty()).isEqualTo(QTY_ONE))
 				.filter(progress -> progress.getStatus().equals(X_C_SubscriptionProgress.STATUS_Planned) || progress.getStatus().equals(X_C_SubscriptionProgress.STATUS_Open))
 				.peek(progress -> assertThat(progress.getQty()).isEqualTo(flatrateTerm.getPlannedQtyPerUnit()));
 	}

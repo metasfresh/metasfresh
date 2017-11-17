@@ -8,7 +8,7 @@ import java.util.List;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_SubscriptionProgress;
@@ -44,8 +44,8 @@ import lombok.NonNull;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-@Component
-public class ContractChangePriceQtyRepository
+@Service
+public class ContractChangePriceQtyService
 {
 	public void changePriceIfNeeded(@NonNull final I_C_Flatrate_Term contract, final BigDecimal priceActual)
 	{
@@ -63,7 +63,6 @@ public class ContractChangePriceQtyRepository
 			changeQtyInSubscriptionProgressOfFlatrateTerm(contract, plannedQtyPerUnit);
 		}
 	}
-
 
 	private void changeFlatrateTermPrice(@NonNull final I_C_Flatrate_Term term, @NonNull final BigDecimal price)
 	{
@@ -98,9 +97,9 @@ public class ContractChangePriceQtyRepository
 				.build());
 
 		deliveries.forEach(delivery -> {
-					delivery.setQty(qty);
-					InterfaceWrapperHelper.save(delivery);
-				});
+			delivery.setQty(qty);
+			InterfaceWrapperHelper.save(delivery);
+		});
 
 	}
 }
