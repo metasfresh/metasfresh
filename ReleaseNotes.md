@@ -15,6 +15,9 @@ Here come the actual release notes:
 **release for week 2017-48**
 
 ## Features
+* metasfresh-app
+  * [#3002](https://github.com/metasfresh/metasfresh/issues/3002) WebUI: New Window for HU Transaction
+    * New window for Handling Unit transaktion in WebUI.
 
 ## Fixes
 
