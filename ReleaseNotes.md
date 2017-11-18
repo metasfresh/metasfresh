@@ -20,6 +20,9 @@ Here come the actual release notes:
     * New window for Handling Unit transaktion in WebUI.
 
 ## Fixes
+* metasfresh-webui-frontend
+  * [#1352](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1352) Cannot clear dropdown fields
+    * Fix for Dropdown Fields, now allowing to select empty values again.
 
 # metasfresh 5.36 (2017-47)
 
