@@ -896,7 +896,7 @@ class Table extends Component {
         const {
             tabid, cols, type, docId, readonly, keyProperty, onDoubleClick,
             mainTable, newRow, tabIndex, entity, indentSupported, collapsible,
-            showIncludedViewOnSelect, openIncludedViewOnSelect
+            showIncludedViewOnSelect, openIncludedViewOnSelect, viewId
         } = this.props;
 
         const {
@@ -914,7 +914,8 @@ class Table extends Component {
                     <TableItem
                         {...item}
                         {...{entity, cols, type, mainTable, indentSupported,
-                            selected, docId, tabIndex, readonly, collapsible
+                            selected, docId, tabIndex, readonly, collapsible,
+                            viewId
                         }}
                         collapsed={
                             collapsedParentsRows

@@ -455,7 +455,7 @@ export function initWindow(windowType, docId, tabId, rowId = null, isAdvanced) {
  */
 export function patch(
     entity, windowType, id = 'NEW', tabId, rowId, property, value, isModal,
-    isAdvanced
+    isAdvanced, viewId, isEdit
 ) {
     return dispatch => {
         dispatch(indicatorState('pending'));
@@ -468,7 +468,9 @@ export function patch(
             rowId,
             property,
             value,
-            isAdvanced
+            isAdvanced,
+            viewId,
+            isEdit
         }).then(response => {
             dispatch(mapDataToState(
                 response.data, isModal, rowId, id, windowType, isAdvanced
@@ -479,7 +481,8 @@ export function patch(
             return response.data;
         }).catch(() => {
             getData(
-                entity, windowType, id, tabId, rowId, null, null, isAdvanced
+                entity, windowType, id, tabId, rowId, null, null, isAdvanced,
+                null, viewId
             ).then(response => {
                 dispatch(mapDataToState(
                     response.data, isModal, rowId, id, windowType, isAdvanced
@@ -630,35 +633,42 @@ export function updatePropertyValue(property, value, tabid, rowid, isModal) {
 }
 
 function handleUploadProgress(dispatch, notificationTitle, progressEvent) {
-    let percentLeft = Math.min(Math.floor((progressEvent.loaded * 100) / progressEvent.total), 98);
+    let percentLeft = Math.min(
+        Math.floor((progressEvent.loaded * 100) / progressEvent.total), 98);
 
     dispatch(setNotificationProgress(notificationTitle, percentLeft));
 }
 
 export function attachFileAction(windowType, docId, data){
     return (dispatch) => {
-        const notificationTitle = counterpart.translate('window.attachment.title');
+        const notificationTitle =
+            counterpart.translate('window.attachment.title');
 
         dispatch(addNotification(
-            notificationTitle, counterpart.translate('window.attachment.uploading'), 0, 'primary'
+            notificationTitle, counterpart.translate(
+                'window.attachment.uploading'), 0, 'primary'
         ));
 
         let requestConfig = {
-            onUploadProgress: handleUploadProgress.bind(this, dispatch, notificationTitle)
+            onUploadProgress: handleUploadProgress.bind(this,
+                dispatch, notificationTitle)
         };
 
         return axios.post(
-            `${config.API_URL}/window/${windowType}/${docId}/attachments`, data, requestConfig
+            `${config.API_URL}/window/${windowType}/${docId}/attachments`,
+            data, requestConfig
         ).then(() => {
             dispatch(setNotificationProgress(notificationTitle, 100));
 
             dispatch(addNotification(
-                notificationTitle, counterpart.translate('window.attachment.upload.success'), 5000, 'primary'
+                notificationTitle, counterpart.translate(
+                    'window.attachment.upload.success'), 5000, 'primary'
             ))
         })
         .catch(() => {
             dispatch(addNotification(
-                notificationTitle, counterpart.translate('window.attachment.upload.error'), 5000, 'error'
+                notificationTitle, counterpart.translate(
+                    'window.attachment.upload.error'), 5000, 'error'
             ))
         })
     }
@@ -800,7 +810,8 @@ export function handleProcessResponse(response, type, id) {
                         await dispatch(closeModal());
 
                         if (action.modal) {
-                            // Do not close process modal, since it will be re-used with document view
+                            // Do not close process modal,
+                            // since it will be re-used with document view
                             keepProcessModal = true;
 
                             await dispatch(

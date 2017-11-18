@@ -21,12 +21,13 @@ export function initLayout(
 
 export function getData(
     entity, docType, docId, tabId, rowId, subentity, subentityId, isAdvanced,
-    orderBy
+    orderBy, viewId
 ) {
     return axios.get(
         config.API_URL +
         '/' + entity +
         '/' + docType +
+        (viewId ? '/' + viewId : '') +
         (docId ? '/' + docId : '') +
         (tabId ? '/' + tabId : '') +
         (rowId ? '/' + rowId : '') +
@@ -62,7 +63,8 @@ export function patchRequest({
     subentityId,
     tabId,
     value,
-    viewId
+    viewId,
+    isEdit
 }) {
     let payload = [];
 
@@ -98,7 +100,8 @@ export function patchRequest({
         (rowId ? '/' + rowId : '') +
         (subentity ? '/' + subentity : '') +
         (subentityId ? '/' + subentityId : '') +
-        (isAdvanced ? '?advanced=true' : ''), payload);
+        (isAdvanced ? '?advanced=true' : '') +
+        (isEdit ? '/edit' : ''), payload);
 }
 
 export function getDataByIds(entity, docType, viewId, docIds) {

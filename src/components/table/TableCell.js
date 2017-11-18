@@ -118,7 +118,7 @@ class TableCell extends Component {
             isEdited, widgetData, item, docId, type, rowId, tabId,
             onDoubleClick, onKeyDown, readonly, updatedRow, tabIndex, entity,
             listenOnKeys, listenOnKeysFalse, closeTableField, getSizeClass,
-            handleRightClick, mainTable, onCellChange
+            handleRightClick, mainTable, onCellChange, viewId
         } = this.props;
 
         let tdValue = (!isEdited) ?
@@ -150,6 +150,7 @@ class TableCell extends Component {
                             windowType={type}
                             isMainTable={mainTable}
                             rowId={rowId}
+                            viewId={viewId}
                             tabId={mainTable ? null : tabId}
                             noLabel={true}
                             gridAlign={item.gridAlign}

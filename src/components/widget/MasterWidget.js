@@ -73,11 +73,14 @@ class MasterWidget extends Component {
     handlePatch = (property, value) => {
         const {
             isModal, widgetType, dataId, windowType, dispatch, rowId, tabId,
-            onChange, relativeDocId, isAdvanced = false, entity
+            onChange, relativeDocId, isAdvanced = false, viewId
         } = this.props;
+
+        let {entity} = this.props;
 
         let currRowId = rowId;
         let ret = null;
+        let isEdit = false;
 
         if(rowId === 'NEW'){
             currRowId = relativeDocId;
@@ -89,9 +92,14 @@ class MasterWidget extends Component {
             );
         }
 
+        if (viewId) {
+            entity = 'documentView';
+            isEdit = true;
+        }
+
         ret = dispatch(patch(
             entity, windowType, dataId, tabId, currRowId, property, value,
-            isModal, isAdvanced
+            isModal, isAdvanced, viewId, isEdit
         ));
 
         //callback
