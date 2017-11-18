@@ -18,8 +18,10 @@ Here come the actual release notes:
 * metasfresh-app
   * [#3002](https://github.com/metasfresh/metasfresh/issues/3002) WebUI: New Window for HU Transaction
     * New window for Handling Unit transaktion in WebUI.
-  *[#3003](https://github.com/metasfresh/metasfresh/issues/3003) WebUI: Adjustments on HU Trace Window
+  * [#3003](https://github.com/metasfresh/metasfresh/issues/3003) WebUI: Adjustments on HU Trace Window
     * Improvement in Handling Unit Trace Window, rearranging fields, new filter criteria and improved translations for en_US, de_DE.
+  * [#3005](https://github.com/metasfresh/metasfresh/issues/3005) Manufacturing Order add Filter for Planstatus
+    * Additional, new filter criteria in manufacturing order.
 
 ## Fixes
 * metasfresh-webui-frontend
