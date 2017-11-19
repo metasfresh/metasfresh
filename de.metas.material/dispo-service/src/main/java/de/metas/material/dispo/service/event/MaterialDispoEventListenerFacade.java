@@ -43,27 +43,27 @@ import lombok.NonNull;
 public class MaterialDispoEventListenerFacade implements MaterialEventListener
 {
 
-	private final ProductionAdvisedHandler productionPlanEventHandler;
+	private final ProductionAdvisedHandler productionAdvisedHandler;
 
-	private final DistributionAdvisedHandler distributionPlanEventHandler;
+	private final DistributionAdvisedHandler distributionAdvisedHandler;
 
-	private final ForecastCreatedHandler forecastEventHandler;
+	private final ForecastCreatedHandler forecastCreatedHandler;
 
 	private final TransactionCreatedHandler transactionEventHandler;
 
-	private final ShipmentScheduleCreatedHandler shipmentScheduleEventHandler;
+	private final ShipmentScheduleCreatedHandler shipmentScheduleCreatedHandler;
 
 	public MaterialDispoEventListenerFacade(
-			@NonNull final DistributionAdvisedHandler distributionPlanEventHandler,
-			@NonNull final ProductionAdvisedHandler productionPlanEventHandler,
-			@NonNull final ForecastCreatedHandler forecastEventHandler,
+			@NonNull final DistributionAdvisedHandler distributionAdvisedHandler,
+			@NonNull final ProductionAdvisedHandler productionAdvisedHandler,
+			@NonNull final ForecastCreatedHandler forecastCreatedHandler,
 			@NonNull final TransactionCreatedHandler transactionEventHandler,
-			@NonNull final ShipmentScheduleCreatedHandler shipmentScheduleEventHandler)
+			@NonNull final ShipmentScheduleCreatedHandler shipmentScheduleCreatedHandler)
 	{
-		this.shipmentScheduleEventHandler = shipmentScheduleEventHandler;
-		this.distributionPlanEventHandler = distributionPlanEventHandler;
-		this.productionPlanEventHandler = productionPlanEventHandler;
-		this.forecastEventHandler = forecastEventHandler;
+		this.shipmentScheduleCreatedHandler = shipmentScheduleCreatedHandler;
+		this.distributionAdvisedHandler = distributionAdvisedHandler;
+		this.productionAdvisedHandler = productionAdvisedHandler;
+		this.forecastCreatedHandler = forecastCreatedHandler;
 		this.transactionEventHandler = transactionEventHandler;
 	}
 
@@ -76,19 +76,19 @@ public class MaterialDispoEventListenerFacade implements MaterialEventListener
 		}
 		else if (event instanceof ShipmentScheduleCreatedEvent)
 		{
-			shipmentScheduleEventHandler.handleShipmentScheduleCreatedEvent((ShipmentScheduleCreatedEvent)event);
+			shipmentScheduleCreatedHandler.handleShipmentScheduleCreatedEvent((ShipmentScheduleCreatedEvent)event);
 		}
 		else if (event instanceof ForecastCreatedEvent)
 		{
-			forecastEventHandler.handleForecastCreatedEvent((ForecastCreatedEvent)event);
+			forecastCreatedHandler.handleForecastCreatedEvent((ForecastCreatedEvent)event);
 		}
 		else if (event instanceof DistributionAdvisedEvent)
 		{
-			distributionPlanEventHandler.handleDistributionAdvisedEvent((DistributionAdvisedEvent)event);
+			distributionAdvisedHandler.handleDistributionAdvisedEvent((DistributionAdvisedEvent)event);
 		}
 		else if (event instanceof ProductionAdvisedEvent)
 		{
-			productionPlanEventHandler.handleProductionAdvisedEvent((ProductionAdvisedEvent)event);
+			productionAdvisedHandler.handleProductionAdvisedEvent((ProductionAdvisedEvent)event);
 		}
 	}
 }

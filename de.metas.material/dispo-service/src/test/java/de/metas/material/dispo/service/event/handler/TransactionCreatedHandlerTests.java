@@ -52,7 +52,7 @@ import mockit.Verifications;
  * #L%
  */
 
-public class TransactionEventHandlerTest
+public class TransactionCreatedHandlerTests
 {
 	private static final int TRANSACTION_ID = 60;
 

@@ -690,7 +690,7 @@ public class CandidateChangeHandlerTests
 
 		RepositoryTestHelper.setupMockedRetrieveAvailableStock(
 				stockRepository,
-				null, // null=any
+				materialDescriptor,
 				"0");
 
 		final Candidate candidate = Candidate.builder()

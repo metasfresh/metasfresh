@@ -32,7 +32,7 @@ public class M_Forecast
 	}
 
 	/**
-	 * 
+	 *
 	 * @param forecast
 	 * @param timing
 	 */
@@ -51,7 +51,7 @@ public class M_Forecast
 	}
 
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
-	public void fireForecastEventOnComplete(@NonNull final I_M_Forecast forecast, @NonNull final DocTimingType timing)
+	public void fireForecastCreatedEventOnComplete(@NonNull final I_M_Forecast forecast, @NonNull final DocTimingType timing)
 	{
 		final List<I_M_ForecastLine> forecastLines = retrieveForecastLines(forecast);
 		if (forecastLines.isEmpty())
@@ -59,12 +59,12 @@ public class M_Forecast
 			return;
 		}
 
-		final ForecastCreatedEvent forecastEvent = M_ForecastEventCreator.createEventWithLinesAndTiming(
+		final ForecastCreatedEvent forecastCreatedEvent = M_ForecastEventCreator.createEventWithLinesAndTiming(
 				forecastLines,
 				timing);
 
 		final MaterialEventService materialEventService = Adempiere.getBean(MaterialEventService.class);
-		materialEventService.fireEventAfterNextCommit(forecastEvent, getTrxName(forecast));
+		materialEventService.fireEventAfterNextCommit(forecastCreatedEvent, getTrxName(forecast));
 	}
 
 	private List<I_M_ForecastLine> retrieveForecastLines(@NonNull final I_M_Forecast forecast)

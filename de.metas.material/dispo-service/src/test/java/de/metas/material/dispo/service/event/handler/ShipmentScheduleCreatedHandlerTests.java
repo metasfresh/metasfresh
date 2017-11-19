@@ -56,7 +56,7 @@ import mockit.Mocked;
  * #L%
  */
 
-public class ShipmentScheduleEventHandlerTests
+public class ShipmentScheduleCreatedHandlerTests
 {
 	private static final int shipmentScheduleId = 76;
 

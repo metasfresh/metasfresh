@@ -72,7 +72,7 @@ import lombok.NonNull;
  */
 
 @Service
-public class CommonDemandHandler
+public class SupplyRequiredHandler
 {
 	@Autowired
 	private DDOrderDemandMatcher ddOrderDemandMatcher;
@@ -142,14 +142,14 @@ public class CommonDemandHandler
 							I_DD_NetworkDistributionLine.class,
 							mrpContext.getTrxName());
 
-					final DistributionAdvisedEvent distributionPlanEvent = DistributionAdvisedEvent.builder()
+					final DistributionAdvisedEvent distributionAdvisedEvent = DistributionAdvisedEvent.builder()
 							.eventDescriptor(materialDemandDescr.getEventDescr().createNew())
 							.fromWarehouseId(networkLine.getM_WarehouseSource_ID())
 							.toWarehouseId(networkLine.getM_Warehouse_ID())
 							.ddOrder(ddOrder)
 							.build();
 
-					materialEventService.fireEvent(distributionPlanEvent);
+					materialEventService.fireEvent(distributionAdvisedEvent);
 				}
 			}
 		}

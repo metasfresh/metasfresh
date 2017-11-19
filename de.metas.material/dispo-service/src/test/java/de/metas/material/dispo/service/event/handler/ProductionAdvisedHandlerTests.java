@@ -22,7 +22,6 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.material.dispo.commons.CandidateService;
 import de.metas.material.dispo.commons.DispoTestUtils;
-import de.metas.material.dispo.commons.RepositoryTestHelper;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryCommands;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
@@ -62,7 +61,7 @@ import mockit.Mocked;
  * #L%
  */
 
-public class ProdcutionPlanEventHandlerTests
+public class ProductionAdvisedHandlerTests
 {
 	@Rule
 	public final AdempiereTestWatcher testWatcher = new AdempiereTestWatcher();
@@ -78,7 +77,7 @@ public class ProdcutionPlanEventHandlerTests
 	@Mocked
 	private MaterialEventService materialEventService;
 
-	private ProductionAdvisedHandler productionPlanEventHandler;
+	private ProductionAdvisedHandler productionAdvisedEventHandler;
 
 	private StockRepository stockRepository;
 
@@ -108,33 +107,29 @@ public class ProdcutionPlanEventHandlerTests
 				candidateRepository,
 				MaterialEventService.createLocalServiceThatIsReadyToUse());
 
-		productionPlanEventHandler = new ProductionAdvisedHandler(candidateChangeHandler, candidateService);
+		productionAdvisedEventHandler = new ProductionAdvisedHandler(candidateChangeHandler, candidateService);
 	}
 
 	@Test
-	public void testProductionPlanEvent()
+	public void testproductionAdvisedEvent()
 	{
-		final ProductionAdvisedEvent productionPlanEvent = createProductionPlanEvent();
+		final ProductionAdvisedEvent productionAdvisedEvent = createproductionAdvisedEvent();
 
-		RepositoryTestHelper.setupMockedRetrieveAvailableStock(stockRepository, null, "0");
-
-		perform_testProductionPlanEvent(productionPlanEvent);
+		perform_testproductionAdvisedEvent(productionAdvisedEvent);
 	}
 
 	@Test
-	public void testProductionPlanEvent_invoke_twice()
+	public void testproductionAdvisedEvent_invoke_twice()
 	{
-		final ProductionAdvisedEvent productionPlanEvent = createProductionPlanEvent();
+		final ProductionAdvisedEvent productionAdvisedEvent = createproductionAdvisedEvent();
 
-		RepositoryTestHelper.setupMockedRetrieveAvailableStock(stockRepository, null, "0");
-
-		perform_testProductionPlanEvent(productionPlanEvent);
-		perform_testProductionPlanEvent(productionPlanEvent);
+		perform_testproductionAdvisedEvent(productionAdvisedEvent);
+		perform_testproductionAdvisedEvent(productionAdvisedEvent);
 	}
 
-	private void perform_testProductionPlanEvent(final ProductionAdvisedEvent productionPlanEvent)
+	private void perform_testproductionAdvisedEvent(final ProductionAdvisedEvent productionAdvisedEvent)
 	{
-		productionPlanEventHandler.handleProductionAdvisedEvent(productionPlanEvent);
+		productionAdvisedEventHandler.handleProductionAdvisedEvent(productionAdvisedEvent);
 
 		assertThat(DispoTestUtils.filter(CandidateType.SUPPLY).size()).isEqualTo(1); //
 		assertThat(DispoTestUtils.filter(CandidateType.DEMAND)).hasSize(2); // we have two different inputs
@@ -186,14 +181,14 @@ public class ProdcutionPlanEventHandlerTests
 		assertThat(t1Product2Stock.getMD_Candidate_GroupId()).isNotEqualTo(t1Product1Stock.getMD_Candidate_GroupId());  // stock candidates' groupIds are different if they are about different products or warehouses
 	}
 
-	private ProductionAdvisedEvent createProductionPlanEvent()
+	private ProductionAdvisedEvent createproductionAdvisedEvent()
 	{
 		final ProductDescriptor rawProductDescriptor1 = ProductDescriptor.forProductIdAndEmptyAttribute(rawProduct1Id);
 		final ProductDescriptor rawProductDescriptor2 = ProductDescriptor.forProductIdAndEmptyAttribute(rawProduct2Id);
 
-		final ProductionAdvisedEvent productionPlanEvent = ProductionAdvisedEvent.builder()
+		final ProductionAdvisedEvent productionAdvisedEvent = ProductionAdvisedEvent.builder()
 				.eventDescriptor(new EventDescriptor(CLIENT_ID, ORG_ID))
-				.materialDemandDescr(null)
+				.supplyRequiredDescriptor(null)
 				.ppOrder(PPOrder.builder()
 						.orgId(ORG_ID)
 						.datePromised(AFTER_NOW)
@@ -220,8 +215,8 @@ public class ProdcutionPlanEventHandlerTests
 								.build())
 						.build())
 				.build();
-		assertThat(productionPlanEvent.getMaterialDemandDescr()).isNull();
-		return productionPlanEvent;
+		assertThat(productionAdvisedEvent.getSupplyRequiredDescriptor()).isNull();
+		return productionAdvisedEvent;
 	}
 
 }

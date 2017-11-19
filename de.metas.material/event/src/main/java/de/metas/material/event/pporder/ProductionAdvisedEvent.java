@@ -40,7 +40,7 @@ import lombok.Value;
 @Builder
 final public class ProductionAdvisedEvent implements MaterialEvent
 {
-	public static final String TYPE = "ProductionPlanEvent";
+	public static final String TYPE = "productionAdvisedEvent";
 
 	@NonNull
 	EventDescriptor eventDescriptor;
@@ -48,5 +48,5 @@ final public class ProductionAdvisedEvent implements MaterialEvent
 	@NonNull
 	PPOrder ppOrder;
 
-	SupplyRequiredDescriptor materialDemandDescr;
+	SupplyRequiredDescriptor supplyRequiredDescriptor;
 }

@@ -12,10 +12,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.math.BigDecimal;
 import java.util.Date;
 
-import javax.annotation.Nullable;
-
-import org.apache.commons.lang3.ObjectUtils;
-
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryCommands;
@@ -121,17 +117,13 @@ public class RepositoryTestHelper
 
 	public static void setupMockedRetrieveAvailableStock(
 			@NonNull final StockRepository stockRepository,
-			@Nullable final MaterialDescriptor materialDescriptor,
+			@NonNull final MaterialDescriptor materialDescriptor,
 			@NonNull final String quantity)
 	{
-
 		// @formatter:off
 		new Expectations(CandidateRepositoryRetrieval.class)
 		{{
-			final MaterialQuery query = materialDescriptor == null ? null:MaterialQuery.forMaterialDescriptor(materialDescriptor);
-			final MaterialQuery queryToUse = ObjectUtils.firstNonNull(query, (MaterialQuery)any);
-
-			stockRepository.retrieveSingleAvailableStockQty(queryToUse);
+			stockRepository.retrieveSingleAvailableStockQty(MaterialQuery.forMaterialDescriptor(materialDescriptor));
 			minTimes = 0;
 			result = new BigDecimal(quantity);
 		}}; // @formatter:on
