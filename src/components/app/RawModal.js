@@ -17,11 +17,9 @@ import {
     closeListIncludedView
 } from '../../actions/ListActions';
 
-import keymap from '../../keymap.js';
+import keymap from '../../shortcuts/keymap';
 import ModalContextShortcuts from '../shortcuts/ModalContextShortcuts';
-import { ShortcutManager } from 'react-shortcuts';
 import Tooltips from '../tooltips/Tooltips.js';
-const shortcutManager = new ShortcutManager(keymap);
 
 class RawModal extends Component {
     state = {
@@ -54,10 +52,6 @@ class RawModal extends Component {
         this.setState({
             isTooltipShow: visible
         });
-    }
-
-    getChildContext = () => {
-        return { shortcuts: shortcutManager }
     }
 
     initEventListeners = () => {
@@ -149,7 +143,7 @@ class RawModal extends Component {
                                 {counterpart.translate('modal.actions.done')}
                             {isTooltipShow &&
                                 <Tooltips
-                                    name={keymap.MODAL_CONTEXT.APPLY}
+                                    name={keymap.APPLY}
                                     action={counterpart.translate('modal.actions.done')}
                                     type={''}
                                 />
@@ -176,10 +170,6 @@ class RawModal extends Component {
 const mapStateToProps = state => ({
     modalVisible: state.windowHandler.modal.visible || false
 });
-
-RawModal.childContextTypes = {
-    shortcuts: PropTypes.object.isRequired
-}
 
 RawModal.propTypes = {
     dispatch: PropTypes.func.isRequired,
