@@ -66,20 +66,37 @@ public class AvailableStockResult
 	@Value
 	public static class Group
 	{
+		public enum Type
+		{
+			ATTRIBUTE_SET, OTHER_STORAGE_KEYS, ALL_STORAGE_KEYS
+		}
+
 		private final int productId;
 		private final ImmutableAttributeSet attributes;
 		private final Quantity qty;
+		private final Type type;
 
 		@Builder
 		public Group(
 				final int productId,
+				@NonNull final Type type,
 				@Nullable final IAttributeSet attributes,
 				@NonNull final Quantity qty)
 		{
 			Check.assume(productId > 0, "productId > 0");
-			
+			this.type = type;
 			this.productId = productId;
-			this.attributes = attributes != null ? ImmutableAttributeSet.copyOf(attributes) : ImmutableAttributeSet.EMPTY;
+
+			if (type == Type.ATTRIBUTE_SET)
+			{
+				Check.errorIf(attributes == null,
+						"The given type parameter is {}, therefore the given attribute set may not be null; productId={}; qty={}", type, productId, qty);
+				this.attributes = ImmutableAttributeSet.copyOf(attributes);
+			}
+			else
+			{
+				this.attributes = ImmutableAttributeSet.EMPTY;
+			}
 			this.qty = qty;
 		}
 	}

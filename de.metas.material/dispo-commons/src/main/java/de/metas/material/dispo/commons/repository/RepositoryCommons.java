@@ -133,7 +133,7 @@ public class RepositoryCommons
 			builder.addEqualsFilter(I_MD_Candidate.COLUMN_M_Product_ID, materialDescriptor.getProductId());
 			atLeastOneFilterAdded = true;
 		}
-		if (materialDescriptor.getStorageAttributesKey() != ProductDescriptor.STORAGE_ATTRIBUTES_KEY_UNSPECIFIED)
+		if (materialDescriptor.getStorageAttributesKey() != ProductDescriptor.STORAGE_ATTRIBUTES_KEY_ALL)
 		{
 			final String storageAttributesKey = materialDescriptor.getStorageAttributesKey();
 			if (matchExactStorageAttributesKey)

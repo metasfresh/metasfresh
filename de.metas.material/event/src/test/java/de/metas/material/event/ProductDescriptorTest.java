@@ -39,7 +39,7 @@ public class ProductDescriptorTest
 		assertThat(forProductIdOnly.getProductId()).isEqualTo(30);
 		assertThat(forProductIdOnly.getAttributeSetInstanceId()).isLessThanOrEqualTo(-1);
 		assertThat(forProductIdOnly.getStorageAttributesKey())
-				.isSameAs(ProductDescriptor.STORAGE_ATTRIBUTES_KEY_UNSPECIFIED);
+				.isSameAs(ProductDescriptor.STORAGE_ATTRIBUTES_KEY_ALL);
 	}
 
 }

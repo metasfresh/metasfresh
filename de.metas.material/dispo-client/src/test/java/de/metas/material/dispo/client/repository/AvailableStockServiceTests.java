@@ -15,6 +15,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestWatcher;
 
+import de.metas.material.dispo.client.repository.AvailableStockResult.Group;
+import de.metas.material.dispo.client.repository.AvailableStockResult.Group.Type;
 import de.metas.material.dispo.commons.repository.StockRepository;
 import de.metas.material.event.commons.ProductDescriptor;
 
@@ -37,7 +39,7 @@ import de.metas.material.event.commons.ProductDescriptor;
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
+ * #L%t
  */
 
 public class AvailableStockServiceTests
@@ -46,21 +48,23 @@ public class AvailableStockServiceTests
 	@Rule
 	public final TestWatcher testWatcher = new AdempiereTestWatcher();
 
-	private StockRepository stockRepository;
-
 	private AttributesTestHelper attributesTestHelper;
+
+	private AvailableStockService availableStockService;
 
 	@Before
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
-		stockRepository = new StockRepository();
+		final StockRepository stockRepository = new StockRepository();
 
 		attributesTestHelper = new AttributesTestHelper();
+
+		availableStockService = new AvailableStockService(stockRepository);
 	}
 
 	@Test
-	public void createAttributeSetFromStorageAttributesKey()
+	public void extractAttributeSetFromStorageAttributesKey()
 	{
 		final I_M_Attribute attr1 = attributesTestHelper.createM_Attribute("attr1", X_M_Attribute.ATTRIBUTEVALUETYPE_List, true);
 		final I_M_AttributeValue attributeValue1 = attributesTestHelper.createM_AttributeValue(attr1, "value1");
@@ -72,8 +76,8 @@ public class AvailableStockServiceTests
 		final String storageAttributesKey = attributeValue1.getM_AttributeValue_ID()
 				+ ProductDescriptor.STORAGE_ATTRIBUTES_KEY_DELIMITER
 				+ attributeValue2.getM_AttributeValue_ID();
-		final ImmutableAttributeSet result = new AvailableStockService(stockRepository)
-				.createAttributeSetFromStorageAttributesKey(storageAttributesKey);
+		final ImmutableAttributeSet result = availableStockService
+				.extractAttributeSetFromStorageAttributesKey(storageAttributesKey);
 
 		assertThat(result.getAttributes()).hasSize(2);
 
@@ -86,7 +90,28 @@ public class AvailableStockServiceTests
 			assertThatModel(attribute).hasSameIdAs(attr2);
 			assertThat(result.getValueAsString(attribute)).isEqualTo("value2");
 		});
+	}
 
+	@Test
+	public void extractType_all()
+	{
+		final Group.Type type = availableStockService.extractType(ProductDescriptor.STORAGE_ATTRIBUTES_KEY_ALL);
+		assertThat(type).isSameAs(Type.ALL_STORAGE_KEYS);
+	}
+
+	@Test
+	public void extractType_other()
+	{
+		final Group.Type type = availableStockService.extractType(ProductDescriptor.STORAGE_ATTRIBUTES_KEY_OTHER);
+		assertThat(type).isSameAs(Type.OTHER_STORAGE_KEYS);
+	}
+
+	@Test
+	public void extractType_attributeSet()
+	{
+		final String storageAttributesKey = "12345";
+		final Group.Type type = availableStockService.extractType(storageAttributesKey);
+		assertThat(type).isSameAs(Type.ATTRIBUTE_SET);
 	}
 
 }

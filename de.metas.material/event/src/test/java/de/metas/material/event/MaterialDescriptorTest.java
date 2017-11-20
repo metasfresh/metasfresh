@@ -48,7 +48,7 @@ public class MaterialDescriptorTest
 		assertThat(result.getProductId()).isLessThanOrEqualTo(0);
 		assertThat(result.getAttributeSetInstanceId()).isLessThanOrEqualTo(-1);
 		assertThat(result.getStorageAttributesKey())
-				.isSameAs(ProductDescriptor.STORAGE_ATTRIBUTES_KEY_UNSPECIFIED);
+				.isSameAs(ProductDescriptor.STORAGE_ATTRIBUTES_KEY_ALL);
 	}
 
 	@Test(expected = RuntimeException.class)

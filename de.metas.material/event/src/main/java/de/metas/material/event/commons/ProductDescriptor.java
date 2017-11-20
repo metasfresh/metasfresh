@@ -52,7 +52,7 @@ public class ProductDescriptor
 	{
 		return new ProductDescriptor(false, // complete == false
 				productId,
-				ProductDescriptor.STORAGE_ATTRIBUTES_KEY_UNSPECIFIED,
+				ProductDescriptor.STORAGE_ATTRIBUTES_KEY_ALL,
 				-1);
 	}
 
@@ -69,12 +69,16 @@ public class ProductDescriptor
 		return new ProductDescriptor(true, productId, storageAttributesKey, attributeSetInstanceId); // complete == true
 	}
 
-	public static final String STORAGE_ATTRIBUTES_KEY_UNSPECIFIED = new String("<STORAGE_ATTRIBUTES_KEY_NOT_SPECIFIED>");
+	public static final String STORAGE_ATTRIBUTES_KEY_ALL = new String("<ALL_STORAGE_ATTRIBUTES_KEYS>");
+
+	public static final String MSG_STORAGE_ATTRIBUTES_KEY_ALL = "de.metas.material.dispo." + STORAGE_ATTRIBUTES_KEY_ALL;
 
 	/**
 	 * This key's meaning depends on the other keys it comes with.
 	 */
 	public static final String STORAGE_ATTRIBUTES_KEY_OTHER = new String("<OTHER_STORAGE_ATTRIBUTES_KEYS>");
+
+	public static final String MSG_STORAGE_ATTRIBUTES_KEY_OTHER = "de.metas.material.dispo." + STORAGE_ATTRIBUTES_KEY_OTHER;
 
 	/**
 	 * The delimiter should not contain any character that has a "regexp" meaning

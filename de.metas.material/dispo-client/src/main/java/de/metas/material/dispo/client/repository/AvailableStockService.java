@@ -18,6 +18,8 @@ import com.google.common.base.Splitter;
 
 import de.metas.material.dispo.client.repository.AvailableStockResult.AvailableStockResultBuilder;
 import de.metas.material.dispo.client.repository.AvailableStockResult.Group;
+import de.metas.material.dispo.client.repository.AvailableStockResult.Group.GroupBuilder;
+import de.metas.material.dispo.client.repository.AvailableStockResult.Group.Type;
 import de.metas.material.dispo.commons.repository.AvailableStockResult.ResultGroup;
 import de.metas.material.dispo.commons.repository.MaterialQuery;
 import de.metas.material.dispo.commons.repository.StockRepository;
@@ -79,18 +81,25 @@ public class AvailableStockService
 	{
 		try
 		{
+			final GroupBuilder groupBuilder = Group.builder()
+					.productId(commonsResultGroup.getProductId());
+
 			final Quantity quantity = Quantity.of(
 					commonsResultGroup.getQty(),
 					retrieveStockingUOM(commonsResultGroup.getProductId()));
+			groupBuilder.qty(quantity);
 
-			final ImmutableAttributeSet attributeSet = createAttributeSetFromStorageAttributesKey(commonsResultGroup.getStorageAttributesKey());
+			final String storageAttributesKey = commonsResultGroup.getStorageAttributesKey();
+			final Type type = extractType(storageAttributesKey);
+			groupBuilder.type(type);
 
-			final Group clientResultGroup = Group.builder()
-					.productId(commonsResultGroup.getProductId())
-					.qty(quantity)
-					.attributes(attributeSet)
-					.build();
-			return clientResultGroup;
+			if (type == Type.ATTRIBUTE_SET)
+			{
+				final ImmutableAttributeSet attributeSet = extractAttributeSetFromStorageAttributesKey(storageAttributesKey);
+				groupBuilder.attributes(attributeSet);
+			}
+
+			return groupBuilder.build();
 		}
 		catch (final RuntimeException e)
 		{
@@ -106,7 +115,24 @@ public class AvailableStockService
 	}
 
 	@VisibleForTesting
-	ImmutableAttributeSet createAttributeSetFromStorageAttributesKey(@NonNull final String storageAttributesKey)
+	Type extractType(@NonNull final String storageAttributesKey)
+	{
+		if (ProductDescriptor.STORAGE_ATTRIBUTES_KEY_ALL.equals(storageAttributesKey))
+		{
+			return Type.ALL_STORAGE_KEYS;
+		}
+		else if (ProductDescriptor.STORAGE_ATTRIBUTES_KEY_OTHER.equals(storageAttributesKey))
+		{
+			return Type.OTHER_STORAGE_KEYS;
+		}
+		else
+		{
+			return Type.ATTRIBUTE_SET;
+		}
+	}
+
+	@VisibleForTesting
+	ImmutableAttributeSet extractAttributeSetFromStorageAttributesKey(@NonNull final String storageAttributesKey)
 	{
 		try
 		{

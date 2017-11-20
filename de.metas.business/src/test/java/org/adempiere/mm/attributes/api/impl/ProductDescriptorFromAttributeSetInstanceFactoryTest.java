@@ -88,7 +88,7 @@ public class ProductDescriptorFromAttributeSetInstanceFactoryTest
 		assertThat(productDescriptor).isNotNull();
 		assertThat(productDescriptor.getProductId()).isEqualTo(20);
 		assertThat(productDescriptor.getAttributeSetInstanceId()).isEqualTo(AttributeConstants.M_AttributeSetInstance_ID_None);
-		assertThat(productDescriptor.getStorageAttributesKey()).isEqualTo(ProductDescriptor.STORAGE_ATTRIBUTES_KEY_UNSPECIFIED);
+		assertThat(productDescriptor.getStorageAttributesKey()).isEqualTo(ProductDescriptor.STORAGE_ATTRIBUTES_KEY_ALL);
 	}
 
 	@Test

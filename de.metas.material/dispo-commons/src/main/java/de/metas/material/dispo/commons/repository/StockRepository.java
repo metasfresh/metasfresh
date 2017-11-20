@@ -109,7 +109,7 @@ public class StockRepository
 		{
 			addNotLikeFiltersForAttributesKeys(filterForCurrentStorageAttributesKey, query.getStorageAttributesKeys());
 		}
-		else if (storageAttributesKey == ProductDescriptor.STORAGE_ATTRIBUTES_KEY_UNSPECIFIED)
+		else if (storageAttributesKey == ProductDescriptor.STORAGE_ATTRIBUTES_KEY_ALL)
 		{
 			// nothing to add to the initial productIds filters
 		}
