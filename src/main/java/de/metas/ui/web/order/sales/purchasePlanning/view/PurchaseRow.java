@@ -220,6 +220,11 @@ public class PurchaseRow implements IViewRow
 		return _fieldNameAndJsonValues;
 	}
 
+	private void resetFieldNameAndJsonValues()
+	{
+		_fieldNameAndJsonValues = null;
+	}
+
 	@Override
 	public List<PurchaseRow> getIncludedRows()
 	{
@@ -240,6 +245,7 @@ public class PurchaseRow implements IViewRow
 	{
 		Check.assume(qtyToPurchase.signum() >= 0, "qtyToPurchase shall be positive");
 		this.qtyToPurchase = qtyToPurchase;
+		resetFieldNameAndJsonValues();
 	}
 
 	public BigDecimal getQtyToPurchase()
@@ -259,6 +265,7 @@ public class PurchaseRow implements IViewRow
 	public void setDatePromised(@NonNull final Date datePromised)
 	{
 		this.datePromised = (Date)datePromised.clone();
+		resetFieldNameAndJsonValues();
 	}
 
 	private void assertRowTypeIsGroup(final String errorMsg)
@@ -306,12 +313,12 @@ public class PurchaseRow implements IViewRow
 	{
 		return datePromised;
 	}
-	
+
 	public int getOrgId()
 	{
 		return orgId;
 	}
-	
+
 	public int getWarehouseId()
 	{
 		return warehouseId;
