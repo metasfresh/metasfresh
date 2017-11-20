@@ -76,7 +76,8 @@ Vagrant.configure("2") do |config|
     vb.customize ['storageattach', :id, '--storagectl', controller_name, '--port', 2, '--device', 0, '--type', 'hdd', '--medium', additional_disk_filename]
   end
 
-  # install docker and docker-compose
+  # prepare the additional disk for docke and install docker and docker-compose 
+  # run only once, because it e.g. adds a line to /etc/fstab
   config.vm.provision :shell, path: "provision/docker/provision_docker.sh"
 
   # install an elk stack. To start the elk stack later, do
@@ -85,5 +86,5 @@ Vagrant.configure("2") do |config|
   config.vm.provision :shell, path: "provision/elk/provision_docker_elk.sh"
 
   # install and start metasfresh-admin and metasfresh-db
-  # config.vm.provision :shell, path: "provision/provision_docker_metasfresh-services.sh", run: "always"
+  config.vm.provision :shell, path: "provision/provision_docker_metasfresh-services.sh", run: "always"
 end

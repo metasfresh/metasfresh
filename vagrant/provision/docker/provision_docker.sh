@@ -22,7 +22,13 @@ mkfs.ext4 /dev/storage/docker
 #mount /dev/storage/docker /var/lib/docker
 #systemctl start docker.service
 mkdir -p /var/lib/docker
-mount /dev/storage/docker /var/lib/docker
+
+echo '' >> /etc/fstab
+echo '# the following like was added by the script provision_docker.sh' >> /etc/fstab
+echo '/dev/storage/docker  /var/lib/docker              ext4     defaults                              0       2' >> /etc/fstab
+
+mount -v /dev/storage/docker
+
 
 echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
 echo "Installing docker"
