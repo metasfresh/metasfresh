@@ -45,6 +45,7 @@ import de.metas.material.dispo.client.repository.AvailableStockResult.Group;
 import de.metas.material.dispo.client.repository.AvailableStockService;
 import de.metas.material.dispo.commons.repository.MaterialQuery;
 import de.metas.material.dispo.commons.repository.MaterialQuery.MaterialQueryBuilder;
+import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.product.model.I_M_Product;
 import de.metas.quantity.Quantity;
 import de.metas.ui.web.document.filter.sql.SqlParamsCollector;
@@ -94,7 +95,7 @@ import lombok.Value;
  */
 public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSourceFetcher
 {
-	private static final String SYSCONFIG_MATERIAL_ORDERLINE_STORAGE_ATTRIBUTES_KEYS = "de.metas.material.ProductLookupDescriptor.StorageAttributesKeys";
+	private static final String SYSCONFIG_MATERIAL_ORDERLINE_STORAGE_ATTRIBUTES_KEYS = "de.metas.ui.web.window.descriptor.sql.ProductLookupDescriptor.StorageAttributesKeys";
 
 	private static final Optional<String> LookupTableName = Optional.of(I_M_Product.Table_Name);
 	private static final String CONTEXT_LookupTableName = LookupTableName.get();
@@ -494,13 +495,11 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 				}
 				break;
 			case OTHER_STORAGE_KEYS:
-				// nothing
-				break;
+				break; // nothing
 			case ALL_STORAGE_KEYS:
-				// nothing
-				break;
+				break; // nothing
 			default:
-				// throw error
+				Check.errorIf(true, "Unexpected Group.Type={}; gtroup={}", availableStockGroup.getType(), availableStockGroup);
 				break;
 		}
 		return attributeMapBuilder.build();
@@ -512,7 +511,7 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 		final int orgId = Env.getAD_Org_ID(Env.getCtx());
 		final int clientId = Env.getAD_Client_ID(Env.getCtx());
 
-		final String storageAttributesKeys = sysConfigBL.getValue(SYSCONFIG_MATERIAL_ORDERLINE_STORAGE_ATTRIBUTES_KEYS, "", clientId, orgId);
+		final String storageAttributesKeys = sysConfigBL.getValue(SYSCONFIG_MATERIAL_ORDERLINE_STORAGE_ATTRIBUTES_KEYS, ProductDescriptor.STORAGE_ATTRIBUTES_KEY_ALL, clientId, orgId);
 
 		final Splitter splitter = Splitter
 				.on(",")

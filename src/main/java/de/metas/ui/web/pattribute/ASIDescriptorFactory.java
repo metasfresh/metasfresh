@@ -125,7 +125,7 @@ public class ASIDescriptorFactory
 	{
 		if (attributes.isEmpty())
 		{
-			throw new AdempiereException("Attributes not allowed")
+			throw new AdempiereException("No attributes are configured")
 					.setParameter("asiDescriptorId", asiDescriptorId);
 		}
 
