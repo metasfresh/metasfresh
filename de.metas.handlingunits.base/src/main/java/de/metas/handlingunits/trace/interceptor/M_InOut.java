@@ -39,28 +39,25 @@ import lombok.NonNull;
 @Interceptor(I_M_InOut.class)
 /* package */ class M_InOut
 {
-	@DocValidate(timings =
-		{
-				ModelValidator.TIMING_AFTER_CLOSE,
-				ModelValidator.TIMING_AFTER_COMPLETE,
-				ModelValidator.TIMING_AFTER_REACTIVATE,
-				ModelValidator.TIMING_AFTER_REVERSEACCRUAL,
-				ModelValidator.TIMING_AFTER_REVERSECORRECT,
-				ModelValidator.TIMING_AFTER_UNCLOSE,
-				ModelValidator.TIMING_AFTER_VOID
-		}, afterCommit = true)
+	@DocValidate(timings = {
+			ModelValidator.TIMING_AFTER_CLOSE,
+			ModelValidator.TIMING_AFTER_COMPLETE,
+			ModelValidator.TIMING_AFTER_REACTIVATE,
+			ModelValidator.TIMING_AFTER_REVERSEACCRUAL,
+			ModelValidator.TIMING_AFTER_REVERSECORRECT,
+			ModelValidator.TIMING_AFTER_UNCLOSE,
+			ModelValidator.TIMING_AFTER_VOID
+	}, afterCommit = true)
 	public void addTraceEvent(@NonNull final I_M_InOut inOut)
 	{
-		Services.get(ITrxManager.class).run(() -> {
-			addTraceEvent0(inOut);
-		});
+		Services.get(ITrxManager.class).run(() -> addTraceEvent0(inOut));
 	}
 
 	private void addTraceEvent0(@NonNull final I_M_InOut inOut)
 	{
 		final List<I_M_InOutLine> iols = Services.get(IInOutDAO.class).retrieveLines(inOut);
 
-		final HUTraceEventsService huTraceEventsCreateAndAdd = Adempiere.getBean(HUTraceEventsService.class);
-		huTraceEventsCreateAndAdd.createAndAddFor(inOut, iols);
+		final HUTraceEventsService huTraceEventsService = Adempiere.getBean(HUTraceEventsService.class);
+		huTraceEventsService.createAndAddFor(inOut, iols);
 	}
 }
