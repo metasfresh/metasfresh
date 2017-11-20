@@ -45,7 +45,7 @@ public class ModelAssert extends AbstractAssert<ModelAssert, Object>
 		final int actualId = InterfaceWrapperHelper.getId(actual);
 		if (otherId != actualId)
 		{
-			failWithMessage("Expected model <%s> to have the same ID as given model <%s>, hut hasn't.", actual, otherModel);
+			failWithMessage("Expected\nmodel <%s>\nto have the same ID as \ngiven model <%s>", actual, otherModel);
 		}
 
 		return this;
