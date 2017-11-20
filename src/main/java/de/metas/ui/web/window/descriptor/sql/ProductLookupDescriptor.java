@@ -281,7 +281,7 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 	private static void appendFilterByOrg(final StringBuilder sqlWhereClause, final SqlParamsCollector sqlWhereClauseParams, final LookupDataSourceContext evalCtx)
 	{
 		final Integer adOrgId = param_AD_Org_ID.getValueAsInteger(evalCtx);
-		sqlWhereClause.append("\n AND p.AD_Org_ID IN (0, ").append(sqlWhereClauseParams.placeholder(adOrgId)).append(")");;
+		sqlWhereClause.append("\n AND p.AD_Org_ID IN (0, ").append(sqlWhereClauseParams.placeholder(adOrgId)).append(")");
 	}
 
 	private static final String convertFilterToSql(final String filter)
