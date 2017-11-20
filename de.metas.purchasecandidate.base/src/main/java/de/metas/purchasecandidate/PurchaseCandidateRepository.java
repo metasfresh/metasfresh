@@ -3,6 +3,7 @@ package de.metas.purchasecandidate;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -10,6 +11,7 @@ import java.util.stream.Stream;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
+import org.compiere.model.I_C_OrderLine;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
@@ -71,6 +73,17 @@ public class PurchaseCandidateRepository
 				.stream(I_C_PurchaseCandidate.class)
 				.map(this::toPurchaseCandidate);
 	}
+	
+	public List<Integer> getAllPurchaseCandidateIdsBySalesOrderId(final int salesOrderId)
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		return queryBL.createQueryBuilder(I_C_OrderLine.class)
+				.addEqualsFilter(I_C_OrderLine.COLUMNNAME_C_Order_ID, salesOrderId)
+				.andCollectChildren(I_C_PurchaseCandidate.COLUMN_C_OrderLineSO_ID)
+				.addEqualsFilter(I_C_PurchaseCandidate.COLUMN_Processed, false)
+				.create()
+				.listIds();
+	}
 
 	public void saveAll(final Collection<PurchaseCandidate> purchaseCandidates)
 	{
@@ -109,11 +122,15 @@ public class PurchaseCandidateRepository
 		}
 
 		record.setC_OrderLineSO_ID(purchaseCandidate.getSalesOrderLineId());
+		record.setC_OrderLinePO_ID(purchaseCandidate.getPurchaseOrderLineId());
+		record.setAD_Org_ID(purchaseCandidate.getOrgId());
+		record.setM_Warehouse_ID(purchaseCandidate.getWarehouseId());
 		record.setM_Product_ID(purchaseCandidate.getProductId());
 		record.setC_UOM_ID(purchaseCandidate.getUomId());
 		record.setVendor_ID(purchaseCandidate.getVendorBPartnerId());
 		record.setQtyRequiered(purchaseCandidate.getQtyRequired());
 		record.setDatePromised(TimeUtil.asTimestamp(purchaseCandidate.getDatePromised()));
+
 		record.setProcessed(purchaseCandidate.isProcessed());
 
 		InterfaceWrapperHelper.save(record);
@@ -129,6 +146,8 @@ public class PurchaseCandidateRepository
 		return PurchaseCandidate.builder()
 				.repoId(purchaseCandidatePO.getC_PurchaseCandidate_ID())
 				.salesOrderLineId(purchaseCandidatePO.getC_OrderLineSO_ID())
+				.orgId(purchaseCandidatePO.getAD_Org_ID())
+				.warehouseId(purchaseCandidatePO.getM_Warehouse_ID())
 				.productId(purchaseCandidatePO.getM_Product_ID())
 				.uomId(purchaseCandidatePO.getC_UOM_ID())
 				.vendorBPartnerId(purchaseCandidatePO.getVendor_ID())

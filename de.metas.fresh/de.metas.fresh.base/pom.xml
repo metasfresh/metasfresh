@@ -228,6 +228,13 @@
 			<version>10.0.0</version>
 		</dependency>
 		
+		<!-- required here at least for processing async packages (e.g. C_PurchaseCandidates_GeneratePurchaseOrders) -->
+		<dependency>
+			<groupId>de.metas.purchasecandidate</groupId>
+			<artifactId>de.metas.purchasecandidate.base</artifactId>
+			<version>10.0.0</version>
+		</dependency>
+		
 		<!--
 			Lombok
 			See https://github.com/metasfresh/metasfresh/issues/1125
