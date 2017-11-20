@@ -95,14 +95,14 @@ public class PurchaseRow implements IViewRow
 	private Date datePromised;
 
 	//
+	private transient ImmutableMap<String, Object> _fieldNameAndJsonValues; // lazy
 	private final PurchaseRowId rowId;
 	private final IViewRowType rowType;
 	private final ImmutableList<PurchaseRow> includedRows;
 	private final ImmutableMap<PurchaseRowId, PurchaseRow> includedRowsByRowId;
 	private final int purcaseCandidateRepoId;
-
-	//
-	private transient ImmutableMap<String, Object> _fieldNameAndJsonValues; // lazy
+	private final int orgId;
+	private final int warehouseId;
 
 	@Builder
 	private PurchaseRow(
@@ -115,7 +115,9 @@ public class PurchaseRow implements IViewRow
 			@Nullable final BigDecimal qtyToPurchase,
 			@Nullable final Date datePromised,
 			@NonNull @Singular final ImmutableList<PurchaseRow> includedRows,
-			final int purcaseCandidateRepoId)
+			final int purcaseCandidateRepoId,
+			final int orgId,
+			final int warehouseId)
 	{
 		this.rowId = rowId;
 		this.rowType = rowType;
@@ -136,7 +138,10 @@ public class PurchaseRow implements IViewRow
 		includedRowsByRowId = includedRows.stream().collect(ImmutableMap.toImmutableMap(PurchaseRow::getRowId, Function.identity()));
 
 		this.purcaseCandidateRepoId = purcaseCandidateRepoId > 0 ? purcaseCandidateRepoId : -1;
+		this.orgId = orgId;
+		this.warehouseId = warehouseId;
 
+		//
 		if (rowType == PurchaseRowType.GROUP)
 		{
 			updateQtyToPurchaseFromIncludedRows();
@@ -156,6 +161,8 @@ public class PurchaseRow implements IViewRow
 		this.includedRows = from.includedRows.stream().map(PurchaseRow::new).collect(ImmutableList.toImmutableList());
 		includedRowsByRowId = this.includedRows.stream().collect(ImmutableMap.toImmutableMap(PurchaseRow::getRowId, Function.identity()));
 		this.purcaseCandidateRepoId = from.purcaseCandidateRepoId;
+		this.orgId = from.orgId;
+		this.warehouseId = from.warehouseId;
 	}
 
 	public PurchaseRow copy()
@@ -214,6 +221,17 @@ public class PurchaseRow implements IViewRow
 	}
 
 	@Override
+	public Map<String, DocumentFieldWidgetType> getWidgetTypesByFieldName()
+	{
+		return ViewColumnHelper.getWidgetTypesByFieldName(PurchaseRow.class);
+	}
+
+	private void resetFieldNameAndJsonValues()
+	{
+		_fieldNameAndJsonValues = null;
+	}
+
+	@Override
 	public List<PurchaseRow> getIncludedRows()
 	{
 		return includedRows;
@@ -233,6 +251,7 @@ public class PurchaseRow implements IViewRow
 	{
 		Check.assume(qtyToPurchase.signum() >= 0, "qtyToPurchase shall be positive");
 		this.qtyToPurchase = qtyToPurchase;
+		resetFieldNameAndJsonValues();
 	}
 
 	public BigDecimal getQtyToPurchase()
@@ -252,6 +271,7 @@ public class PurchaseRow implements IViewRow
 	public void setDatePromised(@NonNull final Date datePromised)
 	{
 		this.datePromised = (Date)datePromised.clone();
+		resetFieldNameAndJsonValues();
 	}
 
 	private void assertRowTypeIsGroup(final String errorMsg)
@@ -298,5 +318,15 @@ public class PurchaseRow implements IViewRow
 	public Date getDatePromised()
 	{
 		return datePromised;
+	}
+
+	public int getOrgId()
+	{
+		return orgId;
+	}
+
+	public int getWarehouseId()
+	{
+		return warehouseId;
 	}
 }

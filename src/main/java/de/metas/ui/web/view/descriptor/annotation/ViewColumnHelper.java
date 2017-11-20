@@ -32,8 +32,11 @@ import de.metas.ui.web.window.descriptor.DocumentLayoutElementDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor;
 import de.metas.ui.web.window.descriptor.ViewEditorRenderMode;
 import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.Singular;
+import lombok.ToString;
 import lombok.Value;
 import lombok.experimental.UtilityClass;
 
@@ -115,7 +118,7 @@ public final class ViewColumnHelper
 		}
 
 		return ClassViewDescriptor.builder()
-				.className(dataType.getName())
+				// .className(dataType.getName())
 				.columns(columns)
 				.build();
 
@@ -189,15 +192,29 @@ public final class ViewColumnHelper
 		}
 	}
 
-	@Value
-	@Builder
+	public static <T extends IViewRow> ImmutableMap<String, DocumentFieldWidgetType> getWidgetTypesByFieldName(@NonNull final Class<T> rowClass)
+	{
+		return getDescriptor(rowClass).getWidgetTypesByFieldName();
+	}
+
+	@ToString
+	@EqualsAndHashCode
 	private static final class ClassViewDescriptor
 	{
 		public static final ClassViewDescriptor EMPTY = builder().build();
 
-		private final String className;
-		@Singular
+		@Getter
 		private final ImmutableList<ClassViewColumnDescriptor> columns;
+		@Getter
+		private final ImmutableMap<String, DocumentFieldWidgetType> widgetTypesByFieldName;
+
+		@Builder
+		private ClassViewDescriptor(@Singular ImmutableList<ClassViewColumnDescriptor> columns)
+		{
+			this.columns = columns;
+			this.widgetTypesByFieldName = columns.stream()
+					.collect(ImmutableMap.toImmutableMap(ClassViewColumnDescriptor::getFieldName, ClassViewColumnDescriptor::getWidgetType));
+		}
 	}
 
 	@Value

@@ -1,6 +1,7 @@
 package de.metas.ui.web.order.sales.purchasePlanning.view;
 
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
@@ -147,9 +148,11 @@ public class SalesOrder2PurchaseViewFactory implements IViewFactory, IViewsIndex
 
 	private PurchaseView createView(final PurchaseViewCreateRequest request)
 	{
+		final Set<Integer> salesOrderLineIds = request.getSalesOrderLineIds();
+
 		final PurchaseView view = PurchaseView.builder()
 				.viewId(ViewId.random(WINDOW_ID))
-				.rowsSupplier(() -> loadRows(request))
+				.rowsSupplier(() -> loadRows(salesOrderLineIds))
 				.onViewClosed(this::onViewClosed)
 				.build();
 
@@ -163,11 +166,11 @@ public class SalesOrder2PurchaseViewFactory implements IViewFactory, IViewsIndex
 			saveRows(purchaseView);
 		}
 	}
-
-	private List<PurchaseRow> loadRows(final PurchaseViewCreateRequest request)
+	
+	private List<PurchaseRow> loadRows(final Set<Integer> salesOrderLineIds)
 	{
 		return PurchaseRowsLoader.builder()
-				.salesOrderLineIds(request.getSalesOrderLineIds())
+				.salesOrderLineIds(salesOrderLineIds)
 				.purchaseCandidatesRepo(purchaseCandidatesRepo)
 				.build()
 				.load();
