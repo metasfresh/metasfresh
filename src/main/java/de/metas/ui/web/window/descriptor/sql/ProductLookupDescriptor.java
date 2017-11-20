@@ -4,9 +4,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,6 +22,7 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_ProductPrice;
 import org.compiere.util.CtxName;
@@ -95,7 +94,7 @@ import lombok.Value;
  */
 public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSourceFetcher
 {
-	private static final String SYSCONFIG_MATERIAL_ORDERLINE_STORAGE_ATTRIBUTES_KEYS = "de.metas.material.orderline.StorageAttributesKeys";
+	private static final String SYSCONFIG_MATERIAL_ORDERLINE_STORAGE_ATTRIBUTES_KEYS = "de.metas.material.ProductLookupDescriptor.StorageAttributesKeys";
 
 	private static final Optional<String> LookupTableName = Optional.of(I_M_Product.Table_Name);
 	private static final String CONTEXT_LookupTableName = LookupTableName.get();
@@ -173,8 +172,7 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 				final LookupValue value = loadLookupValue(rs);
 				valuesById.putIfAbsent(value.getIdAsInt(), value);
 			}
-
-			return LookupValuesList.fromCollection(explodeByStorageRecords(valuesById.values()));
+			return explodeByStorageRecords(LookupValuesList.fromCollection(valuesById.values()));
 		}
 		catch (final SQLException ex)
 		{
@@ -428,8 +426,8 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 		return Optional.empty();
 	}
 
-	private final Collection<LookupValue> explodeByStorageRecords(
-			@NonNull final Collection<LookupValue> productLookupValues)
+	private final LookupValuesList explodeByStorageRecords(
+			@NonNull final LookupValuesList productLookupValues)
 	{
 		if (productLookupValues.isEmpty())
 		{
@@ -439,15 +437,7 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 		final MaterialQueryBuilder materialQueryBuilder = MaterialQuery.builder();
 		addStorageAttributeKeysToQueryBuilder(materialQueryBuilder);
 
-		final Map<Integer, LookupValue> productId2LookupValue = new HashMap<>();
-
-		for (final LookupValue productLookupValue : productLookupValues)
-		{
-			final int productId = productLookupValue.getIdAsInt();
-
-			materialQueryBuilder.productId(productId);
-			productId2LookupValue.put(productId, productLookupValue);
-		}
+		materialQueryBuilder.productIds(productLookupValues.getKeysAsInt());
 
 		// invoke the query
 		final AvailableStockResult availableStock = availableStockService.retrieveAvailableStock(materialQueryBuilder.build());
@@ -460,7 +450,7 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 			final Quantity qtyOnHand = availableStockGroup.getQty();
 
 			final int productId = availableStockGroup.getProductId();
-			final LookupValue productLookupValue = productId2LookupValue.get(productId);
+			final LookupValue productLookupValue = productLookupValues.getById(productId);
 
 			if (qtyOnHand.signum() > 0)
 			{
@@ -473,13 +463,12 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 						productLookupValue.getDisplayNameTrl(),
 						" (", qtyValueStr, " ", uomSymbolStr, ")");
 
-				// TODO: somehow convert the availableStockGroup.getAttributes() into "attribute"
+				final ImmutableMap<String, Object> attributeMap = createIntegerLookupAttributeMap(availableStockGroup);
+
 				final IntegerLookupValue integerLookupValue = IntegerLookupValue.builder()
 						.id(productId)
 						.displayName(displayName)
-						.attribute(ATTRIBUTE_ASI, ImmutableMap.<String, Object> builder()
-								.put("1000018", "somebarcode")// barcode
-								.build())
+						.attribute(ATTRIBUTE_ASI, attributeMap)
 						.build();
 				explodedProductValues.add(integerLookupValue);
 			}
@@ -488,7 +477,33 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 				explodedProductValues.add(productLookupValue);
 			}
 		}
-		return explodedProductValues;
+		return LookupValuesList.fromCollection(explodedProductValues);
+	}
+
+	private ImmutableMap<String, Object> createIntegerLookupAttributeMap(@NonNull final Group availableStockGroup)
+	{
+		final ImmutableMap.Builder<String, Object> attributeMapBuilder = ImmutableMap.builder();
+
+		switch (availableStockGroup.getType())
+		{
+			case ATTRIBUTE_SET:
+				final ImmutableAttributeSet attributes = availableStockGroup.getAttributes();
+				for (final I_M_Attribute attribute : attributes.getAttributes())
+				{
+					attributeMapBuilder.put(Integer.toString(attribute.getM_Attribute_ID()), attributes.getValue(attribute));
+				}
+				break;
+			case OTHER_STORAGE_KEYS:
+				// nothing
+				break;
+			case ALL_STORAGE_KEYS:
+				// nothing
+				break;
+			default:
+				// throw error
+				break;
+		}
+		return attributeMapBuilder.build();
 	}
 
 	private void addStorageAttributeKeysToQueryBuilder(@NonNull final MaterialQueryBuilder materialQueryBuilder)

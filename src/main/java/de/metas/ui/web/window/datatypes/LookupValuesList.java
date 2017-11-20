@@ -17,6 +17,7 @@ import org.adempiere.util.GuavaCollectors;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 
 import lombok.NonNull;
 
@@ -94,7 +95,7 @@ public final class LookupValuesList
 		{
 			return EMPTY;
 		}
-		
+
 		final ImmutableMap<Object, LookupValue> valuesById = lookupValues.stream().collect(GuavaCollectors.toImmutableMapByKey(LookupValue::getId));
 		final Map<String, String> debugProperties = ImmutableMap.of();
 		return new LookupValuesList(valuesById, debugProperties);
@@ -119,7 +120,6 @@ public final class LookupValuesList
 
 	private LookupValuesList(final ImmutableMap<Object, LookupValue> valuesById, final Map<String, String> debugProperties)
 	{
-		super();
 		this.valuesById = valuesById;
 		this.debugProperties = debugProperties == null || debugProperties.isEmpty() ? ImmutableMap.of() : ImmutableMap.copyOf(debugProperties);
 	}
@@ -127,7 +127,6 @@ public final class LookupValuesList
 	/** Empty constructor */
 	private LookupValuesList()
 	{
-		super();
 		valuesById = ImmutableMap.of();
 		debugProperties = ImmutableMap.of();
 	}
@@ -182,10 +181,17 @@ public final class LookupValuesList
 	{
 		return valuesById.isEmpty() && debugProperties.isEmpty();
 	}
-	
+
 	public Set<Object> getKeys()
 	{
 		return valuesById.keySet();
+	}
+
+	public Set<Integer> getKeysAsInt()
+	{
+		return valuesById.values().stream()
+				.map(LookupValue::getIdAsInt)
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	/**
