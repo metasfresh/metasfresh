@@ -1,4 +1,4 @@
-const mod = 'Control';
+const mod = 'Alt';
 
 export default {
     /* Global context */
