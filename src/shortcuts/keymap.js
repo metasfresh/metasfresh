@@ -9,47 +9,47 @@ export default {
     OPEN_SIDEBAR_MENU_0: `${mod}+5`,
     OPEN_SIDEBAR_MENU_1: `${mod}+6`,
     OPEN_SIDEBAR_MENU_2: `${mod}+7`,
-    DOC_STATUS: `${mod}+i`,
+    DOC_STATUS: `${mod}+I`,
 
     /* Document context */
-    OPEN_ADVANCED_EDIT: `${mod}+e`,
-    CLONE_DOCUMENT: `${mod}+w`,
-    OPEN_PRINT_RAPORT: `${mod}+p`,
-    OPEN_EMAIL: `${mod}+k`,
-    OPEN_LETTER: `${mod}+r`,
-    DELETE_DOCUMENT: `${mod}+d`,
-    NEW_DOCUMENT: `${mod}+m`,
-    TOGGLE_EDIT_MODE: `${mod}+o`,
+    OPEN_ADVANCED_EDIT: `${mod}+E`,
+    CLONE_DOCUMENT: `${mod}+W`,
+    OPEN_PRINT_RAPORT: `${mod}+P`,
+    OPEN_EMAIL: `${mod}+K`,
+    OPEN_LETTER: `${mod}+R`,
+    DELETE_DOCUMENT: `${mod}+D`,
+    NEW_DOCUMENT: `${mod}+M`,
+    TOGGLE_EDIT_MODE: `${mod}+O`,
 
     /* Document list context */
-    OPEN_SELECTED: `${mod}+b`, // Open document in new tab
-    REMOVE_SELECTED: `${mod}+y`,
-    ADVANCED_EDIT: `${mod}+a`,
+    OPEN_SELECTED: `${mod}+B`, // Open document in new tab
+    REMOVE_SELECTED: `${mod}+Y`,
+    ADVANCED_EDIT: `${mod}+A`,
 
     /* POS context */
-    SELECT_ALL_LEAFS: `${mod}+s`,
+    SELECT_ALL_LEAFS: `${mod}+S`,
     EXPAND_INDENT: '+',
     COLLAPSE_INDENT: '-',
 
     /* Table context */
-    TOGGLE_QUICK_INPUT: `${mod}+q`,
-    TOGGLE_EXPAND: `${mod}+space`,
+    TOGGLE_QUICK_INPUT: `${mod}+Q`,
+    TOGGLE_EXPAND: `${mod}+Spacebar`,
 
     /* Pagination context */
-    NEXT_PAGE: 'pagedown',
-    PREV_PAGE: 'pageup',
-    FIRST_PAGE: 'home',
-    LAST_PAGE: 'end',
-    SELECT_ALL_ROWS: `${mod}+a`,
+    NEXT_PAGE: 'PageDown',
+    PREV_PAGE: 'PageUp',
+    FIRST_PAGE: 'Home',
+    LAST_PAGE: 'End',
+    SELECT_ALL_ROWS: `${mod}+A`,
 
     /* Quick actions context */
-    QUICK_ACTION_POS: `${mod}+u`,
-    QUICK_ACTION_TOGGLE: `${mod}+l`,
+    QUICK_ACTION_POS: `${mod}+U`,
+    QUICK_ACTION_TOGGLE: `${mod}+L`,
 
     /* Document status context */
-    COMPLETE_STATUS: `${mod}+u`,
+    COMPLETE_STATUS: `${mod}+U`,
 
     /* Modal context */
-    APPLY: `${mod}+enter`,
-    CANCEL: 'esc'
+    APPLY: `${mod}+Enter`,
+    CANCEL: 'Escape'
 };
