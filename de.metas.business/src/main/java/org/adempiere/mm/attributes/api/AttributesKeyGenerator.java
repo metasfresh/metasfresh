@@ -58,10 +58,7 @@ public class AttributesKeyGenerator
 	 */
 	@NonNull
 	@Default
-	Function<I_M_AttributeInstance, String> valueAccessor = ai -> {
-
-		return ai.getValue();
-	};
+	Function<I_M_AttributeInstance, String> valueAccessor = ai -> Integer.toString(ai.getM_AttributeValue_ID());
 
 	public String createAttributesKey()
 	{

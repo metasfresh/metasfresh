@@ -4,7 +4,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 import java.util.List;
 
-import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet.Builder;
 import org.adempiere.util.Services;
@@ -69,6 +69,16 @@ public class AvailableStockService
 		final List<ResultGroup> commonsResultGroups = commonsAvailableStock.getResultGroups();
 		for (final ResultGroup commonsResultGroup : commonsResultGroups)
 		{
+			final Group clientResultGroup = createClientResultGroup(commonsResultGroup);
+			clientResultBuilder.group(clientResultGroup);
+		}
+		return clientResultBuilder.build();
+	}
+
+	private Group createClientResultGroup(@NonNull final ResultGroup commonsResultGroup)
+	{
+		try
+		{
 			final Quantity quantity = Quantity.of(
 					commonsResultGroup.getQty(),
 					retrieveStockingUOM(commonsResultGroup.getProductId()));
@@ -80,10 +90,13 @@ public class AvailableStockService
 					.qty(quantity)
 					.attributes(attributeSet)
 					.build();
-
-			clientResultBuilder.group(clientResultGroup);
+			return clientResultGroup;
 		}
-		return clientResultBuilder.build();
+		catch (final RuntimeException e)
+		{
+			throw AdempiereException.wrapIfNeeded(e).appendParametersToMessage()
+					.setParameter("commonsResultGroup", commonsResultGroup);
+		}
 	}
 
 	private I_C_UOM retrieveStockingUOM(final int productId)
@@ -93,23 +106,40 @@ public class AvailableStockService
 	}
 
 	@VisibleForTesting
-	ImmutableAttributeSet createAttributeSetFromStorageAttributesKey(@NonNull final String string)
+	ImmutableAttributeSet createAttributeSetFromStorageAttributesKey(@NonNull final String storageAttributesKey)
 	{
-		final Iterable<String> singleAttributeValues = Splitter
-				.on(ProductDescriptor.STORAGE_ATTRIBUTES_KEY_DELIMITER)
-				.split(string);
-		final Builder builder = ImmutableAttributeSet.builder();
-
-		for (final String singleAttributeValue : singleAttributeValues)
+		try
 		{
-			final I_M_AttributeValue attributeValue = Services.get(IQueryBL.class).createQueryBuilder(I_M_AttributeValue.class)
-					.addOnlyActiveRecordsFilter()
-					.addEqualsFilter(I_M_AttributeValue.COLUMN_Value, singleAttributeValue)
-					.create()
-					.firstOnlyNotNull(I_M_AttributeValue.class);
+			final Builder builder = ImmutableAttributeSet.builder();
 
-			builder.attributeValue(attributeValue.getM_Attribute(), attributeValue.getValue());
+			final Iterable<String> singleAttributeIds = Splitter
+					.on(ProductDescriptor.STORAGE_ATTRIBUTES_KEY_DELIMITER).split(storageAttributesKey);
+			for (final String singleAttributeId : singleAttributeIds)
+			{
+				final I_M_AttributeValue attributeValue = loadAttributeValueFromStringId(singleAttributeId);
+				builder.attributeValue(attributeValue.getM_Attribute(), attributeValue.getValue());
+			}
+			return builder.build();
 		}
-		return builder.build();
+		catch (final RuntimeException e)
+		{
+			throw AdempiereException.wrapIfNeeded(e).appendParametersToMessage()
+					.setParameter("storageAttributesKey", storageAttributesKey);
+		}
+	}
+
+	private I_M_AttributeValue loadAttributeValueFromStringId(@NonNull final String attributeValueIdAsString)
+	{
+		try
+		{
+			final int parsedAttributeId = Integer.parseInt(attributeValueIdAsString);
+			final I_M_AttributeValue attributeValue = load(parsedAttributeId, I_M_AttributeValue.class);
+			return attributeValue;
+		}
+		catch (final RuntimeException e)
+		{
+			throw AdempiereException.wrapIfNeeded(e).appendParametersToMessage()
+					.setParameter("attributeValueIdAsString", attributeValueIdAsString);
+		}
 	}
 }

@@ -263,7 +263,6 @@ public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 		Check.assumeNotNull(asi, "asi not null");
 		Check.assume(attributeId > 0, "attributeId > 0");
 
-		//
 		// Check if already exists
 		final I_M_AttributeInstance instanceExisting = Services.get(IAttributeDAO.class).retrieveAttributeInstance(asi, attributeId);
 		if (instanceExisting != null)
@@ -271,7 +270,6 @@ public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 			return instanceExisting;
 		}
 
-		//
 		// Create New
 		final I_M_AttributeInstance instanceNew = newInstance(I_M_AttributeInstance.class, asi);
 		instanceNew.setM_Attribute_ID(attributeId);

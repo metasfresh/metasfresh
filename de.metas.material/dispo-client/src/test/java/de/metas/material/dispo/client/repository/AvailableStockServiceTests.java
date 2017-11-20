@@ -8,6 +8,7 @@ import org.adempiere.mm.attributes.api.impl.AttributesTestHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.compiere.model.I_M_Attribute;
+import org.compiere.model.I_M_AttributeValue;
 import org.compiere.model.X_M_Attribute;
 import org.junit.Before;
 import org.junit.Rule;
@@ -62,27 +63,29 @@ public class AvailableStockServiceTests
 	public void createAttributeSetFromStorageAttributesKey()
 	{
 		final I_M_Attribute attr1 = attributesTestHelper.createM_Attribute("attr1", X_M_Attribute.ATTRIBUTEVALUETYPE_List, true);
-		attributesTestHelper.createM_AttributeValue(attr1, "value");
+		final I_M_AttributeValue attributeValue1 = attributesTestHelper.createM_AttributeValue(attr1, "value1");
 
 		final I_M_Attribute attr2 = attributesTestHelper.createM_Attribute("attr2", X_M_Attribute.ATTRIBUTEVALUETYPE_List, true);
-		attributesTestHelper.createM_AttributeValue(attr2, "value2");
+		final I_M_AttributeValue attributeValue2 = attributesTestHelper.createM_AttributeValue(attr2, "value2");
 
 		// invoke the method under test
+		final String storageAttributesKey = attributeValue1.getM_AttributeValue_ID()
+				+ ProductDescriptor.STORAGE_ATTRIBUTES_KEY_DELIMITER
+				+ attributeValue2.getM_AttributeValue_ID();
 		final ImmutableAttributeSet result = new AvailableStockService(stockRepository)
-				.createAttributeSetFromStorageAttributesKey("value" + ProductDescriptor.STORAGE_ATTRIBUTES_KEY_DELIMITER + "value2");
+				.createAttributeSetFromStorageAttributesKey(storageAttributesKey);
 
 		assertThat(result.getAttributes()).hasSize(2);
 
 		assertThat(result.getAttributes()).anySatisfy(attribute -> {
 			assertThatModel(attribute).hasSameIdAs(attr1);
-			assertThat(result.getValueAsString(attribute)).isEqualTo("value");
+			assertThat(result.getValueAsString(attribute)).isEqualTo("value1");
 		});
 
 		assertThat(result.getAttributes()).anySatisfy(attribute -> {
 			assertThatModel(attribute).hasSameIdAs(attr2);
 			assertThat(result.getValueAsString(attribute)).isEqualTo("value2");
 		});
-
 
 	}
 
