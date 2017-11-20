@@ -40,7 +40,9 @@ export default class ShortcutProvider extends Component {
     }
 
     handleKeyDown = event => {
-        const { key } = event;
+        /* .toUpperCase() is essential to normalize all keys when dealing with
+         * combinations containing the SHIFT key */
+        const key = event.key.toUpperCase();
         const { keySequence, fired } = this;
         const { hotkeys } = this.props;
 
@@ -73,9 +75,16 @@ export default class ShortcutProvider extends Component {
         console.warn(`Handler defined for key sequence "${serializedSequence}" is not a function.`, handler);
     };
 
-    handleKeyUp = () => {
-        this.keySequence = [];
-        this.fired = {};
+    handleKeyUp = event => {
+        /* .toUpperCase() is essential to normalize all keys when dealing with
+         * combinations containing the SHIFT key */
+        const key = event.key.toUpperCase();
+
+        this.keySequence = this.keySequence.filter(
+            _key => _key !== key
+        );
+
+        delete this.fired[key];
     };
 
     handleBlur = () => {

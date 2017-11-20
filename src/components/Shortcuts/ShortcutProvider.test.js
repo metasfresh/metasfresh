@@ -236,19 +236,42 @@ describe('ShortcutProvider', () => {
             const shortcutProvider = new ShortcutProvider;
             shortcutProvider.props = { hotkeys: {} };
 
-            const key = 'a';
+            const key = 'A';
 
             expect(shortcutProvider.fired[key]).to.equal(undefined);
 
             shortcutProvider.handleKeyDown({ key });
 
             expect(shortcutProvider.fired[key]).to.equal(true);
-            expect(shortcutProvider.keySequence).to.deep.equal(['a']);
+            expect(shortcutProvider.keySequence).to.deep.equal(['A']);
 
             shortcutProvider.handleKeyDown({ key });
 
             expect(shortcutProvider.fired[key]).to.equal(true);
-            expect(shortcutProvider.keySequence).to.deep.equal(['a']);
+            expect(shortcutProvider.keySequence).to.deep.equal(['A']);
+        });
+
+        it('should handle differently capitalized keys the same', () => {
+            const shortcutProvider = new ShortcutProvider;
+            shortcutProvider.props = { hotkeys: {} };
+
+            const keyLowerCase = 'a';
+            const keyUpperCase = 'A';
+
+            expect(shortcutProvider.fired[keyLowerCase]).to.equal(undefined);
+            expect(shortcutProvider.fired[keyUpperCase]).to.equal(undefined);
+
+            shortcutProvider.handleKeyDown({ key: keyUpperCase });
+
+            expect(shortcutProvider.fired[keyLowerCase]).to.equal(undefined);
+            expect(shortcutProvider.fired[keyUpperCase]).to.equal(true);
+            expect(shortcutProvider.keySequence).to.deep.equal(['A']);
+
+            shortcutProvider.handleKeyDown({ key: keyLowerCase });
+
+            expect(shortcutProvider.fired[keyLowerCase]).to.equal(undefined);
+            expect(shortcutProvider.fired[keyUpperCase]).to.equal(true);
+            expect(shortcutProvider.keySequence).to.deep.equal(['A']);
         });
 
         it('should call latest registered handler for that hotkey', () => {
@@ -317,6 +340,31 @@ describe('ShortcutProvider', () => {
             } finally {
                 warn.restore();
             }
+        });
+    });
+
+    describe('handleKeyUp', () => {
+        it('should take key out of sequence', () => {
+            const shortcutProvider = new ShortcutProvider;
+
+            const key1 = 'A';
+            const key2 = 'B';
+            const key3 = 'C';
+
+            shortcutProvider.keySequence = [ key1, key2, key3 ];
+            shortcutProvider.fired = {
+                [key1]: true,
+                [key2]: true,
+                [key3]: true
+            };
+
+            shortcutProvider.handleKeyUp({ key: key2 });
+
+            expect(shortcutProvider.keySequence).to.deep.equal([ key1, key3 ]);
+            expect(shortcutProvider.fired).to.deep.equal({
+                [key1]: true,
+                [key3]: true
+            });
         });
     });
 
