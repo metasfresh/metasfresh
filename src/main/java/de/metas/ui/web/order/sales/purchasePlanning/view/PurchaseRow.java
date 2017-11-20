@@ -96,17 +96,28 @@ public class PurchaseRow implements IViewRow
 
 	//
 	private final PurchaseRowId rowId;
+	private final int salesOrderId;
 	private final IViewRowType rowType;
 	private final ImmutableList<PurchaseRow> includedRows;
 	private final ImmutableMap<PurchaseRowId, PurchaseRow> includedRowsByRowId;
 	private final int purcaseCandidateRepoId;
+	private final int orgId;
+	private final int warehouseId;
+	private final boolean readonly;
 
-	//
 	private transient ImmutableMap<String, Object> _fieldNameAndJsonValues; // lazy
+	private final ImmutableMap<String, ViewEditorRenderMode> viewEditorRenderModeByFieldName;
+
+	private static final ImmutableMap<String, ViewEditorRenderMode> ViewEditorRenderModeByFieldName_ReadOnly = ImmutableMap.<String, ViewEditorRenderMode> builder()
+			.put(FIELDNAME_QtyToPurchase, ViewEditorRenderMode.NEVER)
+			.put(FIELDNAME_DatePromised, ViewEditorRenderMode.NEVER)
+			.build();
+	private static final ImmutableMap<String, ViewEditorRenderMode> ViewEditorRenderModeByFieldName_Inherit = ImmutableMap.of();
 
 	@Builder
 	private PurchaseRow(
 			@NonNull final PurchaseRowId rowId,
+			final int salesOrderId,
 			@NonNull final IViewRowType rowType,
 			@NonNull final JSONLookupValue product,
 			@Nullable final JSONLookupValue vendorBPartner,
@@ -115,9 +126,15 @@ public class PurchaseRow implements IViewRow
 			@Nullable final BigDecimal qtyToPurchase,
 			@Nullable final Date datePromised,
 			@NonNull @Singular final ImmutableList<PurchaseRow> includedRows,
-			final int purcaseCandidateRepoId)
+			final int purcaseCandidateRepoId,
+			final int orgId,
+			final int warehouseId,
+			final boolean readonly)
 	{
+		Check.assume(salesOrderId > 0, "salesOrderId > 0");
+
 		this.rowId = rowId;
+		this.salesOrderId = salesOrderId;
 		this.rowType = rowType;
 		this.product = product;
 		this.vendorBPartner = vendorBPartner;
@@ -136,7 +153,13 @@ public class PurchaseRow implements IViewRow
 		includedRowsByRowId = includedRows.stream().collect(ImmutableMap.toImmutableMap(PurchaseRow::getRowId, Function.identity()));
 
 		this.purcaseCandidateRepoId = purcaseCandidateRepoId > 0 ? purcaseCandidateRepoId : -1;
+		this.orgId = orgId;
+		this.warehouseId = warehouseId;
+		this.readonly = readonly;
 
+		viewEditorRenderModeByFieldName = readonly ? ViewEditorRenderModeByFieldName_ReadOnly : ViewEditorRenderModeByFieldName_Inherit;
+
+		//
 		if (rowType == PurchaseRowType.GROUP)
 		{
 			updateQtyToPurchaseFromIncludedRows();
@@ -146,6 +169,7 @@ public class PurchaseRow implements IViewRow
 	private PurchaseRow(final PurchaseRow from)
 	{
 		this.rowId = from.rowId;
+		this.salesOrderId = from.salesOrderId;
 		this.rowType = from.rowType;
 		this.product = from.product;
 		this.vendorBPartner = from.vendorBPartner;
@@ -156,6 +180,12 @@ public class PurchaseRow implements IViewRow
 		this.includedRows = from.includedRows.stream().map(PurchaseRow::new).collect(ImmutableList.toImmutableList());
 		includedRowsByRowId = this.includedRows.stream().collect(ImmutableMap.toImmutableMap(PurchaseRow::getRowId, Function.identity()));
 		this.purcaseCandidateRepoId = from.purcaseCandidateRepoId;
+		this.orgId = from.orgId;
+		this.warehouseId = from.warehouseId;
+		this.readonly = from.readonly;
+
+		viewEditorRenderModeByFieldName = from.viewEditorRenderModeByFieldName;
+		_fieldNameAndJsonValues = from._fieldNameAndJsonValues;
 	}
 
 	public PurchaseRow copy()
@@ -172,6 +202,11 @@ public class PurchaseRow implements IViewRow
 	public DocumentId getId()
 	{
 		return rowId.toDocumentId();
+	}
+
+	public int getSalesOrderId()
+	{
+		return salesOrderId;
 	}
 
 	public int getSalesOrderLineId()
@@ -193,7 +228,7 @@ public class PurchaseRow implements IViewRow
 	@Override
 	public boolean isProcessed()
 	{
-		return false;
+		return readonly;
 	}
 
 	@Override
@@ -211,6 +246,23 @@ public class PurchaseRow implements IViewRow
 			_fieldNameAndJsonValues = ViewColumnHelper.extractJsonMap(this);
 		}
 		return _fieldNameAndJsonValues;
+	}
+
+	@Override
+	public Map<String, DocumentFieldWidgetType> getWidgetTypesByFieldName()
+	{
+		return ViewColumnHelper.getWidgetTypesByFieldName(PurchaseRow.class);
+	}
+
+	@Override
+	public Map<String, ViewEditorRenderMode> getViewEditorRenderModeByFieldName()
+	{
+		return viewEditorRenderModeByFieldName;
+	}
+
+	private void resetFieldNameAndJsonValues()
+	{
+		_fieldNameAndJsonValues = null;
 	}
 
 	@Override
@@ -233,6 +285,7 @@ public class PurchaseRow implements IViewRow
 	{
 		Check.assume(qtyToPurchase.signum() >= 0, "qtyToPurchase shall be positive");
 		this.qtyToPurchase = qtyToPurchase;
+		resetFieldNameAndJsonValues();
 	}
 
 	public BigDecimal getQtyToPurchase()
@@ -249,22 +302,23 @@ public class PurchaseRow implements IViewRow
 		setQtyToPurchase(qtyToPurchaseSum);
 	}
 
-	public void setDatePromised(@NonNull final Date datePromised)
+	private void setDatePromised(@NonNull final Date datePromised)
 	{
 		this.datePromised = (Date)datePromised.clone();
+		resetFieldNameAndJsonValues();
 	}
 
-	private void assertRowTypeIsGroup(final String errorMsg)
+	private void assertRowEditable()
 	{
-		if (getType() != PurchaseRowType.GROUP)
+		if (readonly)
 		{
-			throw new AdempiereException(errorMsg);
+			throw new AdempiereException("readonly");
 		}
 	}
 
 	public void changeQtyToPurchase(@NonNull final PurchaseRowId rowId, @NonNull final BigDecimal qtyToPurchase)
 	{
-		assertRowTypeIsGroup("row not editable");
+		assertRowEditable();
 
 		final PurchaseRow row = getIncludedRowById(rowId);
 		row.setQtyToPurchase(qtyToPurchase);
@@ -274,7 +328,7 @@ public class PurchaseRow implements IViewRow
 
 	public void changeDatePromised(@NonNull final PurchaseRowId rowId, @NonNull final Date datePromised)
 	{
-		assertRowTypeIsGroup("row not editable");
+		assertRowEditable();
 
 		final PurchaseRow row = getIncludedRowById(rowId);
 		row.setDatePromised(datePromised);
@@ -298,5 +352,15 @@ public class PurchaseRow implements IViewRow
 	public Date getDatePromised()
 	{
 		return datePromised;
+	}
+
+	public int getOrgId()
+	{
+		return orgId;
+	}
+
+	public int getWarehouseId()
+	{
+		return warehouseId;
 	}
 }

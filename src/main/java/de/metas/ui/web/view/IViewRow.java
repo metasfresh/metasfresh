@@ -3,10 +3,14 @@ package de.metas.ui.web.view;
 import java.util.List;
 import java.util.Map;
 
+import com.google.common.collect.ImmutableMap;
+
 import de.metas.i18n.ITranslatableString;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
+import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
+import de.metas.ui.web.window.descriptor.ViewEditorRenderMode;
 
 /*
  * #%L
@@ -51,9 +55,17 @@ public interface IViewRow
 
 	//
 	// Fields
-	// @formatter:off
 	Map<String, Object> getFieldNameAndJsonValues();
-	// @formatter:on
+
+	default Map<String, DocumentFieldWidgetType> getWidgetTypesByFieldName()
+	{
+		return ImmutableMap.of();
+	}
+	
+	default Map<String, ViewEditorRenderMode> getViewEditorRenderModeByFieldName()
+	{
+		return ImmutableMap.of();
+	}
 
 	//
 	// Included documents (children)

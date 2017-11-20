@@ -46,14 +46,15 @@ class PurchaseRowsSaver
 
 	@Builder
 	private PurchaseRowsSaver(
-			@NonNull final List<PurchaseRow> grouppingRows,
-			@NonNull final PurchaseCandidateRepository purchaseCandidatesRepo)
+			@NonNull final PurchaseCandidateRepository purchaseCandidatesRepo,
+			@NonNull final List<PurchaseRow> grouppingRows)
 	{
-		this.grouppingRows = grouppingRows;
 		this.purchaseCandidatesRepo = purchaseCandidatesRepo;
+
+		this.grouppingRows = grouppingRows;
 	}
 
-	public void save()
+	public List<PurchaseCandidate> save()
 	{
 		final Set<Integer> salesOrderLineIds = grouppingRows.stream()
 				.map(PurchaseRow::getSalesOrderLineId)
@@ -79,6 +80,8 @@ class PurchaseRowsSaver
 				.filter(id -> !purchaseCandidateIdsSaved.contains(id))
 				.collect(ImmutableSet.toImmutableSet());
 		purchaseCandidatesRepo.deleteByIds(purchaseCandidateIdsToDelete);
+		
+		return purchaseCandidatesToSave;
 	}
 
 	private PurchaseCandidate createOrUpdatePurchaseCandidate(final PurchaseRow row, final Map<Integer, PurchaseCandidate> existingPurchaseCandidatesById)
@@ -87,7 +90,10 @@ class PurchaseRowsSaver
 		if (purchaseCandidate == null)
 		{
 			purchaseCandidate = PurchaseCandidate.builder()
+					.salesOrderId(row.getSalesOrderId())
 					.salesOrderLineId(row.getSalesOrderLineId())
+					.orgId(row.getOrgId())
+					.warehouseId(row.getWarehouseId())
 					.productId(row.getProductId())
 					.uomId(row.getUOMId())
 					.vendorBPartnerId(row.getVendorBPartnerId())

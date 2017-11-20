@@ -15,6 +15,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.google.common.base.MoreObjects;
 
 import de.metas.ui.web.window.WindowConstants;
+import de.metas.ui.web.window.descriptor.ViewEditorRenderMode;
 import de.metas.ui.web.window.model.DocumentFieldChange;
 import de.metas.ui.web.window.model.DocumentValidStatus;
 import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
@@ -195,6 +196,10 @@ public final class JSONDocumentField implements Serializable
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private DocumentValidStatus validStatus;
 
+	@JsonProperty("viewEditorRenderMode")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private String viewEditorRenderMode;
+
 	/** Other properties */
 	private final Map<String, Object> otherProperties = new LinkedHashMap<>();
 
@@ -233,13 +238,13 @@ public final class JSONDocumentField implements Serializable
 		valueReason = reason;
 		return this;
 	}
-	
+
 	public JSONDocumentField setWidgetType(final JSONLayoutWidgetType widgetType)
 	{
 		this.widgetType = widgetType;
 		return this;
 	}
-	
+
 	public boolean isReadonly()
 	{
 		return readonly != null && readonly;
@@ -251,8 +256,8 @@ public final class JSONDocumentField implements Serializable
 		readonlyReason = reason;
 		return this;
 	}
-	
-	public JSONDocumentField setReadonly(LogicExpressionResult readonly)
+
+	public JSONDocumentField setReadonly(final LogicExpressionResult readonly)
 	{
 		setReadonly(readonly.booleanValue(), readonly.getName());
 		return this;
@@ -272,7 +277,7 @@ public final class JSONDocumentField implements Serializable
 		return this;
 	}
 
-	public JSONDocumentField setMandatory(LogicExpressionResult mandatory)
+	public JSONDocumentField setMandatory(final LogicExpressionResult mandatory)
 	{
 		setMandatory(mandatory.booleanValue(), mandatory.getName());
 		return this;
@@ -292,7 +297,7 @@ public final class JSONDocumentField implements Serializable
 		return this;
 	}
 
-	public JSONDocumentField setDisplayed(LogicExpressionResult displayed)
+	public JSONDocumentField setDisplayed(final LogicExpressionResult displayed)
 	{
 		setDisplayed(displayed.booleanValue(), displayed.getName());
 		return this;
@@ -300,7 +305,7 @@ public final class JSONDocumentField implements Serializable
 
 	public JSONDocumentField setDisplayed(final boolean displayed)
 	{
-		String reason = null; // N/A
+		final String reason = null; // N/A
 		setDisplayed(displayed, reason);
 		return this;
 	}
@@ -404,4 +409,9 @@ public final class JSONDocumentField implements Serializable
 		}
 	}
 
+	public JSONDocumentField setViewEditorRenderMode(final ViewEditorRenderMode viewEditorRenderMode)
+	{
+		this.viewEditorRenderMode = viewEditorRenderMode != null ? viewEditorRenderMode.toJson() : null;
+		return this;
+	}
 }
