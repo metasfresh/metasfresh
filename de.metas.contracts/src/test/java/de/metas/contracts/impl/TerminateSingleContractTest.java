@@ -77,7 +77,7 @@ public class TerminateSingleContractTest extends AbstractFlatrateTermTest
 		final ContractChangeParameters contractChangeParameters = ContractChangeParameters.builder()
 				.changeDate(SystemTime.asDayTimestamp())
 				.isCloseInvoiceCandidate(true)
-				.isOnlyTerminateCurrentTerm(true)
+				.action(IContractChangeBL.ChangeTerm_ACTION_VoidSingleContract)
 				.build();
 
 		assertThatThrownBy(() -> {
@@ -99,7 +99,7 @@ public class TerminateSingleContractTest extends AbstractFlatrateTermTest
 		final ContractChangeParameters contractChangeParameters = ContractChangeParameters.builder()
 				.changeDate(SystemTime.asDayTimestamp())
 				.isCloseInvoiceCandidate(true)
-				.isOnlyTerminateCurrentTerm(true)
+				.action(IContractChangeBL.ChangeTerm_ACTION_VoidSingleContract)
 				.build();
 
 		contractChangeBL.cancelContract(extendedContract, contractChangeParameters);
@@ -122,7 +122,7 @@ public class TerminateSingleContractTest extends AbstractFlatrateTermTest
 	private void assertClosedFlatrateTerm(@NonNull final I_C_Flatrate_Term flatrateTerm)
 	{
 		assertThat(flatrateTerm.getDocStatus()).isEqualTo(X_C_Flatrate_Term.DOCSTATUS_Completed);
-		assertThat(flatrateTerm.getContractStatus()).isEqualTo(X_C_Flatrate_Term.CONTRACTSTATUS_Quit);
+		assertThat(flatrateTerm.getContractStatus()).isEqualTo(X_C_Flatrate_Term.CONTRACTSTATUS_Voided);
 		assertThat(flatrateTerm.getMasterStartDate()).isNull();
 		assertThat(flatrateTerm.getMasterEndDate()).isNull();
 		assertThat(flatrateTerm.isAutoRenew()).isFalse();
