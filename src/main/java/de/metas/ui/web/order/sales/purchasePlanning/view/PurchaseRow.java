@@ -220,6 +220,12 @@ public class PurchaseRow implements IViewRow
 		return _fieldNameAndJsonValues;
 	}
 
+	@Override
+	public Map<String, DocumentFieldWidgetType> getWidgetTypesByFieldName()
+	{
+		return ViewColumnHelper.getWidgetTypesByFieldName(PurchaseRow.class);
+	}
+
 	private void resetFieldNameAndJsonValues()
 	{
 		_fieldNameAndJsonValues = null;

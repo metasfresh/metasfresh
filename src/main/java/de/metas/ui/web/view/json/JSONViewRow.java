@@ -20,6 +20,8 @@ import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentBase;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentField;
+import de.metas.ui.web.window.datatypes.json.JSONLayoutWidgetType;
+import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import lombok.Value;
 
 /*
@@ -86,11 +88,14 @@ public class JSONViewRow extends JSONDocumentBase implements JSONViewRowBase
 				jsonFields.put(jsonIDField.getField(), jsonIDField);
 			}
 
+			final Map<String, DocumentFieldWidgetType> widgetTypesByFieldName = row.getWidgetTypesByFieldName();
+
 			// Append the other fields
 			row.getFieldNameAndJsonValues()
 					.entrySet()
 					.stream()
-					.map(e -> JSONDocumentField.ofNameAndValue(e.getKey(), e.getValue()))
+					.map(e -> JSONDocumentField.ofNameAndValue(e.getKey(), e.getValue())
+							.setWidgetType(JSONLayoutWidgetType.fromNullable(widgetTypesByFieldName.get(e.getKey()))))
 					.forEach(jsonField -> jsonFields.put(jsonField.getField(), jsonField));
 
 			jsonRow.setFields(jsonFields);
@@ -115,12 +120,12 @@ public class JSONViewRow extends JSONDocumentBase implements JSONViewRowBase
 
 		//
 		// Included views
-		if(ViewRowOverridesHelper.extractSupportIncludedViews(row, rowOverrides))
+		if (ViewRowOverridesHelper.extractSupportIncludedViews(row, rowOverrides))
 		{
 			jsonRow.supportIncludedViews = true;
-			
+
 			final ViewId includedViewId = ViewRowOverridesHelper.extractIncludedViewId(row, rowOverrides);
-			if(includedViewId != null)
+			if (includedViewId != null)
 			{
 				jsonRow.includedView = new JSONIncludedViewId(includedViewId.getWindowId(), includedViewId.getViewId());
 			}
@@ -178,7 +183,7 @@ public class JSONViewRow extends JSONDocumentBase implements JSONViewRowBase
 	{
 		super(documentId);
 	}
-	
+
 	@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 	@Value
 	private static final class JSONIncludedViewId
