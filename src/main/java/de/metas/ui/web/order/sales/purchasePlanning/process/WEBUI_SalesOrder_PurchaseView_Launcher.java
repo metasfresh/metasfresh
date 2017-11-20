@@ -9,6 +9,7 @@ import org.compiere.model.I_C_OrderLine;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.adempiere.model.I_C_Order;
+import de.metas.document.engine.IDocument;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
@@ -47,17 +48,18 @@ public class WEBUI_SalesOrder_PurchaseView_Launcher extends JavaProcess implemen
 			return ProcessPreconditionsResolution.rejectWithInternalReason("one and only one order shall be selected");
 		}
 
-		// Only draft orders
-		final I_C_Order order = context.getSelectedModel(I_C_Order.class);
-		if (order.isProcessed())
-		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason("only draft orders are allowed");
-		}
-
 		// Only sales orders
-		if (!order.isSOTrx())
+		final I_C_Order salesOrder = context.getSelectedModel(I_C_Order.class);
+		if (!salesOrder.isSOTrx())
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("only sales orders are allowed");
+		}
+
+		final String docStatus = salesOrder.getDocStatus();
+		if (!IDocument.STATUS_Drafted.equals(docStatus)
+				&& !IDocument.STATUS_Completed.equals(docStatus))
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason("only draft or completed orders are allowed");
 		}
 
 		// At least one sales order line shall be selected
