@@ -232,52 +232,38 @@ describe('ShortcutProvider', () => {
     });
 
     describe('handleKeyDown', () => {
+        it('should return when key is not defined', () => {
+            const shortcutProvider = new ShortcutProvider;
+            shortcutProvider.props = { hotkeys: {} };
+
+            const keyCode = 0; // 'a'
+
+            shortcutProvider.handleKeyDown({ keyCode });
+        });
+
         it('should not fire multiple times for a single key', () => {
             const shortcutProvider = new ShortcutProvider;
             shortcutProvider.props = { hotkeys: {} };
 
-            const key = 'A';
+            const keyCode = 65; // 'a'
 
-            expect(shortcutProvider.fired[key]).to.equal(undefined);
+            expect(shortcutProvider.fired[keyCode]).to.equal(undefined);
 
-            shortcutProvider.handleKeyDown({ key });
+            shortcutProvider.handleKeyDown({ keyCode });
 
-            expect(shortcutProvider.fired[key]).to.equal(true);
+            expect(shortcutProvider.fired['A']).to.equal(true);
             expect(shortcutProvider.keySequence).to.deep.equal(['A']);
 
-            shortcutProvider.handleKeyDown({ key });
+            shortcutProvider.handleKeyDown({ keyCode });
 
-            expect(shortcutProvider.fired[key]).to.equal(true);
-            expect(shortcutProvider.keySequence).to.deep.equal(['A']);
-        });
-
-        it('should handle differently capitalized keys the same', () => {
-            const shortcutProvider = new ShortcutProvider;
-            shortcutProvider.props = { hotkeys: {} };
-
-            const keyLowerCase = 'a';
-            const keyUpperCase = 'A';
-
-            expect(shortcutProvider.fired[keyLowerCase]).to.equal(undefined);
-            expect(shortcutProvider.fired[keyUpperCase]).to.equal(undefined);
-
-            shortcutProvider.handleKeyDown({ key: keyUpperCase });
-
-            expect(shortcutProvider.fired[keyLowerCase]).to.equal(undefined);
-            expect(shortcutProvider.fired[keyUpperCase]).to.equal(true);
-            expect(shortcutProvider.keySequence).to.deep.equal(['A']);
-
-            shortcutProvider.handleKeyDown({ key: keyLowerCase });
-
-            expect(shortcutProvider.fired[keyLowerCase]).to.equal(undefined);
-            expect(shortcutProvider.fired[keyUpperCase]).to.equal(true);
+            expect(shortcutProvider.fired['A']).to.equal(true);
             expect(shortcutProvider.keySequence).to.deep.equal(['A']);
         });
 
         it('should call latest registered handler for that hotkey', () => {
             const shortcutProvider = new ShortcutProvider;
 
-            const key = 'A';
+            const keyCode = 65; // 'a'
 
             const handler1 = spy();
             const handler2 = spy();
@@ -285,11 +271,11 @@ describe('ShortcutProvider', () => {
 
             shortcutProvider.props = {
                 hotkeys: {
-                    [key]: [ handler1, handler2, handler3 ]
+                    A: [ handler1, handler2, handler3 ]
                 }
             };
 
-            shortcutProvider.handleKeyDown({ key });
+            shortcutProvider.handleKeyDown({ keyCode });
 
             expect(handler1).to.not.have.been.called;
             expect(handler1).to.not.have.been.called;
@@ -299,17 +285,17 @@ describe('ShortcutProvider', () => {
         it('should call handler with event as argument', () => {
             const shortcutProvider = new ShortcutProvider;
 
-            const key = 'A';
+            const keyCode = 65; // 'a'
 
             const handler = spy();
 
             shortcutProvider.props = {
                 hotkeys: {
-                    [key]: [ handler ]
+                    A: [ handler ]
                 }
             };
 
-            const event = { key };
+            const event = { keyCode };
 
             shortcutProvider.handleKeyDown(event);
 
@@ -322,17 +308,17 @@ describe('ShortcutProvider', () => {
             try {
                 const shortcutProvider = new ShortcutProvider;
 
-                const key = 'A';
+                const keyCode = 65; // 'a'
 
                 const handler = null;
 
                 shortcutProvider.props = {
                     hotkeys: {
-                        [key]: [ handler ]
+                        A: [ handler ]
                     }
                 };
 
-                shortcutProvider.handleKeyDown({ key });
+                shortcutProvider.handleKeyDown({ keyCode });
 
                 expect(warn).to.have.been.called;
             } catch (error) {
@@ -344,6 +330,15 @@ describe('ShortcutProvider', () => {
     });
 
     describe('handleKeyUp', () => {
+        it('should return when key is not defined', () => {
+            const shortcutProvider = new ShortcutProvider;
+            shortcutProvider.props = { hotkeys: {} };
+
+            const keyCode = 0; // 'a'
+
+            shortcutProvider.handleKeyUp({ keyCode });
+        });
+
         it('should take key out of sequence', () => {
             const shortcutProvider = new ShortcutProvider;
 
@@ -358,7 +353,7 @@ describe('ShortcutProvider', () => {
                 [key3]: true
             };
 
-            shortcutProvider.handleKeyUp({ key: key2 });
+            shortcutProvider.handleKeyUp({ keyCode: 66 /* 'b' */ });
 
             expect(shortcutProvider.keySequence).to.deep.equal([ key1, key3 ]);
             expect(shortcutProvider.fired).to.deep.equal({
@@ -372,12 +367,11 @@ describe('ShortcutProvider', () => {
         it('should reset key sequence', () => {
             const shortcutProvider = new ShortcutProvider;
 
-            const key1 = 'a';
-            const key2 = 'A';
-            const key3 = 'b';
-            const key4 = 'c';
+            const key1 = 'A';
+            const key2 = 'B';
+            const key3 = 'C';
 
-            shortcutProvider.keySequence = [ key1, key2, key3, key4 ];
+            shortcutProvider.keySequence = [ key1, key2, key3 ];
 
             shortcutProvider.handleBlur();
 

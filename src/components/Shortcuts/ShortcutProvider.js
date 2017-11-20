@@ -1,6 +1,64 @@
 import { Component } from 'react';
 import PropTypes from 'prop-types';
 
+const codeToKey = {
+    8: 'Backspace',
+    9: 'Tab',
+    13: 'Enter',
+    16: 'Shift',
+    17: 'Control',
+    18: 'Alt',
+    20: 'CapsLock',
+    27: 'Escape',
+    32: ' ',
+    33: 'PageUp',
+    34: 'PageDown',
+    35: 'End',
+    37: 'ArrowLeft',
+    38: 'ArrowUp',
+    39: 'ArrowRight',
+    40: 'ArrowDown',
+    48: '0',
+    49: '1',
+    50: '2',
+    51: '3',
+    52: '4',
+    53: '5',
+    54: '6',
+    55: '7',
+    56: '8',
+    57: '9',
+    65: 'a',
+    66: 'b',
+    67: 'c',
+    68: 'd',
+    69: 'e',
+    70: 'f',
+    71: 'g',
+    72: 'h',
+    73: 'i',
+    74: 'j',
+    75: 'k',
+    76: 'l',
+    77: 'm',
+    78: 'n',
+    79: 'o',
+    80: 'p',
+    81: 'q',
+    82: 'r',
+    83: 's',
+    84: 't',
+    85: 'u',
+    86: 'v',
+    87: 'w',
+    88: 'x',
+    89: 'y',
+    90: 'z',
+    91: 'Meta',
+    187: '+',
+    189: '-'
+};
+
 export default class ShortcutProvider extends Component {
     static propTypes = {
         children: PropTypes.node,
@@ -40,9 +98,13 @@ export default class ShortcutProvider extends Component {
     }
 
     handleKeyDown = event => {
-        /* .toUpperCase() is essential to normalize all keys when dealing with
-         * combinations containing the SHIFT key */
-        const key = event.key.toUpperCase();
+        const _key = codeToKey[event.keyCode];
+        const key = _key && _key.toUpperCase();
+
+        if (!key) {
+            return;
+        }
+
         const { keySequence, fired } = this;
         const { hotkeys } = this.props;
 
@@ -56,7 +118,7 @@ export default class ShortcutProvider extends Component {
 
         const serializedSequence = (this.keySequence
             .join('+')
-            .replace(/\s/, 'space')
+            .replace(/\s/, 'Spacebar')
             .toUpperCase()
         );
 
@@ -76,9 +138,12 @@ export default class ShortcutProvider extends Component {
     };
 
     handleKeyUp = event => {
-        /* .toUpperCase() is essential to normalize all keys when dealing with
-         * combinations containing the SHIFT key */
-        const key = event.key.toUpperCase();
+        const _key = codeToKey[event.keyCode];
+        const key = _key && _key.toUpperCase();
+
+        if (!key) {
+            return;
+        }
 
         this.keySequence = this.keySequence.filter(
             _key => _key !== key
