@@ -65,9 +65,9 @@ import lombok.NonNull;
 
 /**
  * Product lookup.
- * 
+ *
  * It is searching by product's Value, Name, UPC and bpartner's ProductNo.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  * @task https://github.com/metasfresh/metasfresh/issues/2484
  */
@@ -171,6 +171,7 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 		appendFilterByBPartner(sqlWhereClause, sqlWhereClauseParams, evalCtx);
 		appendFilterByPriceList(sqlWhereClause, sqlWhereClauseParams, evalCtx);
 		appendFilterByNotFreightCostProduct(sqlWhereClause, sqlWhereClauseParams, evalCtx);
+		appendFilterByOrg(sqlWhereClause, sqlWhereClauseParams, evalCtx);
 
 		//
 		// SQL: SELECT ... FROM
@@ -275,6 +276,12 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 				.append("SELECT 1 FROM " + I_M_FreightCost.Table_Name + " fc WHERE fc.M_Product_ID=p." + I_M_Product_Lookup_V.COLUMNNAME_M_Product_ID)
 				.append(" AND fc.AD_Org_ID IN (0, ").append(sqlWhereClauseParams.placeholder(adOrgId)).append(")")
 				.append(")");
+	}
+
+	private static void appendFilterByOrg(final StringBuilder sqlWhereClause, final SqlParamsCollector sqlWhereClauseParams, final LookupDataSourceContext evalCtx)
+	{
+		final Integer adOrgId = param_AD_Org_ID.getValueAsInteger(evalCtx);
+		sqlWhereClause.append("\n AND p.AD_Org_ID IN (0, ").append(sqlWhereClauseParams.placeholder(adOrgId)).append(")");;
 	}
 
 	private static final String convertFilterToSql(final String filter)
