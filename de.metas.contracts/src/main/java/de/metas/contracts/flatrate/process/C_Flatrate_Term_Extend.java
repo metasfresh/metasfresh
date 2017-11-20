@@ -56,11 +56,11 @@ public class C_Flatrate_Term_Extend
 		final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 
 		final Boolean forceComplete = StringUtils.toBooleanOrNull(p_forceComplete);
-		
+
 		if (I_C_Flatrate_Term.Table_Name.equals(getTableName()))
 		{
 			final I_C_Flatrate_Term termToExtend = getRecord(I_C_Flatrate_Term.class);
-			
+
 			// we are called from a given term => extend the term
 			flatrateBL.extendContract(termToExtend,
 					true,   // forceExtend
@@ -71,7 +71,7 @@ public class C_Flatrate_Term_Extend
 
 			addLog("@Processed@: @C_Flatrate_Term_ID@ " + termToExtend.getC_Flatrate_Term_ID());
 			InterfaceWrapperHelper.save(termToExtend);
-			
+
 			getResult().setRecordToRefreshAfterExecution(TableRecordReference.of(termToExtend));
 		}
 		else
@@ -81,7 +81,8 @@ public class C_Flatrate_Term_Extend
 					+ I_C_Flatrate_Term.COLUMNNAME_DocStatus + "='" + X_C_Flatrate_Term.DOCSTATUS_Completed + "' AND "
 					+ I_C_Flatrate_Term.COLUMNNAME_NoticeDate + "<? AND "
 					// 04432 don't extend canceled contracts
-					+ "COALESCE (" + I_C_Flatrate_Term.COLUMNNAME_ContractStatus + ",'') != " + DB.TO_STRING(X_C_Flatrate_Term.CONTRACTSTATUS_Quit);
+					+ "COALESCE (" + I_C_Flatrate_Term.COLUMNNAME_ContractStatus + ",'') != " + DB.TO_STRING(X_C_Flatrate_Term.CONTRACTSTATUS_Quit)
+					+ " AND COALESCE (" + I_C_Flatrate_Term.COLUMNNAME_ContractStatus + ",'') != " + DB.TO_STRING(X_C_Flatrate_Term.CONTRACTSTATUS_Voided);
 
 			final Iterator<I_C_Flatrate_Term> termsToExtend = new Query(getCtx(), I_C_Flatrate_Term.Table_Name, wc, get_TrxName())
 					.setParameters(SystemTime.asTimestamp())
