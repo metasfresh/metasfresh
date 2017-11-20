@@ -103,7 +103,7 @@ public class TerminateSingleContractTest extends AbstractFlatrateTermTest
 				.build();
 
 		contractChangeBL.cancelContract(extendedContract, contractChangeParameters);
-		assertClosedFlatrateTerm(extendedContract);
+		assertVoidedFlatrateTerm(extendedContract);
 		assertSubscriptionProgress(extendedContract, 0);
 	}
 
@@ -119,9 +119,9 @@ public class TerminateSingleContractTest extends AbstractFlatrateTermTest
 				.peek(progress -> assertThat(progress.getContractStatus()).isEqualTo(X_C_SubscriptionProgress.CONTRACTSTATUS_Running));
 	}
 
-	private void assertClosedFlatrateTerm(@NonNull final I_C_Flatrate_Term flatrateTerm)
+	private void assertVoidedFlatrateTerm(@NonNull final I_C_Flatrate_Term flatrateTerm)
 	{
-		assertThat(flatrateTerm.getDocStatus()).isEqualTo(X_C_Flatrate_Term.DOCSTATUS_Completed);
+		assertThat(flatrateTerm.getDocStatus()).isEqualTo(X_C_Flatrate_Term.DOCSTATUS_Closed);
 		assertThat(flatrateTerm.getContractStatus()).isEqualTo(X_C_Flatrate_Term.CONTRACTSTATUS_Voided);
 		assertThat(flatrateTerm.getMasterStartDate()).isNull();
 		assertThat(flatrateTerm.getMasterEndDate()).isNull();

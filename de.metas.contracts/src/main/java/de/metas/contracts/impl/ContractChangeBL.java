@@ -161,6 +161,7 @@ public class ContractChangeBL implements IContractChangeBL
 		currentTerm.setIsCloseInvoiceCandidate(contractChangeParameters.isCloseInvoiceCandidate());
 		currentTerm.setIsAutoRenew(false);
 		setContractStatus(currentTerm, contractChangeParameters);
+		setDocStatusIfNeeded(currentTerm, contractChangeParameters);
 		InterfaceWrapperHelper.save(currentTerm);
 
 		cancelNextContractIfNeeded(currentTerm, contractChangeParameters);
@@ -224,6 +225,15 @@ public class ContractChangeBL implements IContractChangeBL
 		else
 		{
 			currentTerm.setContractStatus(X_C_Flatrate_Term.CONTRACTSTATUS_Quit);
+		}
+	}
+
+	private void setDocStatusIfNeeded(@NonNull final I_C_Flatrate_Term currentTerm,
+			@NonNull final ContractChangeParameters contractChangeParameters)
+	{
+		if (isVoidSingleContract(contractChangeParameters))
+		{
+			currentTerm.setDocStatus(X_C_Flatrate_Term.DOCSTATUS_Closed);
 		}
 	}
 
