@@ -10,6 +10,7 @@ import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
+import de.metas.ui.web.window.descriptor.ViewEditorRenderMode;
 
 /*
  * #%L
@@ -57,6 +58,11 @@ public interface IViewRow
 	Map<String, Object> getFieldNameAndJsonValues();
 
 	default Map<String, DocumentFieldWidgetType> getWidgetTypesByFieldName()
+	{
+		return ImmutableMap.of();
+	}
+	
+	default Map<String, ViewEditorRenderMode> getViewEditorRenderModeByFieldName()
 	{
 		return ImmutableMap.of();
 	}
