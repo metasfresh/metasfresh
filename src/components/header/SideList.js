@@ -126,12 +126,7 @@ class SideList extends Component {
                             <i className={item.icon} />
                             { tooltipOpen === index &&
                                 <Tooltips
-                                    name={
-                                        keymap
-                                            .GLOBAL_CONTEXT[
-                                                'OPEN_SIDEBAR_MENU_' + index
-                                            ]
-                                    }
+                                    name={keymap['OPEN_SIDEBAR_MENU_' + index]}
                                     action={item.title}
                                     type={''}
                                 />
