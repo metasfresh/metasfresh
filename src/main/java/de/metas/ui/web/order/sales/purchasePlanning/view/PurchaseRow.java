@@ -95,7 +95,6 @@ public class PurchaseRow implements IViewRow
 	private Date datePromised;
 
 	//
-	private transient ImmutableMap<String, Object> _fieldNameAndJsonValues; // lazy
 	private final PurchaseRowId rowId;
 	private final IViewRowType rowType;
 	private final ImmutableList<PurchaseRow> includedRows;
@@ -103,6 +102,13 @@ public class PurchaseRow implements IViewRow
 	private final int purcaseCandidateRepoId;
 	private final int orgId;
 	private final int warehouseId;
+
+	private transient ImmutableMap<String, Object> _fieldNameAndJsonValues; // lazy
+	private final ImmutableMap<String, ViewEditorRenderMode> viewEditorRenderModeByFieldName;
+	private static final ImmutableMap<String, ViewEditorRenderMode> ViewEditorRenderModeByFieldName_Group = ImmutableMap.<String, ViewEditorRenderMode> builder()
+			.put(FIELDNAME_QtyToPurchase, ViewEditorRenderMode.NEVER)
+			.put(FIELDNAME_DatePromised, ViewEditorRenderMode.NEVER)
+			.build();
 
 	@Builder
 	private PurchaseRow(
@@ -141,6 +147,8 @@ public class PurchaseRow implements IViewRow
 		this.orgId = orgId;
 		this.warehouseId = warehouseId;
 
+		viewEditorRenderModeByFieldName = rowType == PurchaseRowType.GROUP ? ViewEditorRenderModeByFieldName_Group : ImmutableMap.of();
+
 		//
 		if (rowType == PurchaseRowType.GROUP)
 		{
@@ -163,6 +171,9 @@ public class PurchaseRow implements IViewRow
 		this.purcaseCandidateRepoId = from.purcaseCandidateRepoId;
 		this.orgId = from.orgId;
 		this.warehouseId = from.warehouseId;
+
+		viewEditorRenderModeByFieldName = from.viewEditorRenderModeByFieldName;
+		_fieldNameAndJsonValues = from._fieldNameAndJsonValues;
 	}
 
 	public PurchaseRow copy()
@@ -224,6 +235,12 @@ public class PurchaseRow implements IViewRow
 	public Map<String, DocumentFieldWidgetType> getWidgetTypesByFieldName()
 	{
 		return ViewColumnHelper.getWidgetTypesByFieldName(PurchaseRow.class);
+	}
+
+	@Override
+	public Map<String, ViewEditorRenderMode> getViewEditorRenderModeByFieldName()
+	{
+		return viewEditorRenderModeByFieldName;
 	}
 
 	private void resetFieldNameAndJsonValues()
