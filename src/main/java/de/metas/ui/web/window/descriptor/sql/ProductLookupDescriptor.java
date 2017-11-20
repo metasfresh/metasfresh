@@ -19,6 +19,7 @@ import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.model.I_M_FreightCost;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.pricing.api.IPriceListDAO;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
@@ -31,7 +32,9 @@ import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 
+import com.google.common.base.CharMatcher;
 import com.google.common.base.Joiner;
+import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
@@ -43,7 +46,6 @@ import de.metas.material.dispo.client.repository.AvailableStockResult.Group;
 import de.metas.material.dispo.client.repository.AvailableStockService;
 import de.metas.material.dispo.commons.repository.MaterialQuery;
 import de.metas.material.dispo.commons.repository.MaterialQuery.MaterialQueryBuilder;
-import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.product.model.I_M_Product;
 import de.metas.quantity.Quantity;
 import de.metas.ui.web.document.filter.sql.SqlParamsCollector;
@@ -93,6 +95,8 @@ import lombok.Value;
  */
 public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSourceFetcher
 {
+	private static final String SYSCONFIG_MATERIAL_ORDERLINE_STORAGE_ATTRIBUTES_KEYS = "de.metas.material.orderline.StorageAttributesKeys";
+
 	private static final Optional<String> LookupTableName = Optional.of(I_M_Product.Table_Name);
 	private static final String CONTEXT_LookupTableName = LookupTableName.get();
 
@@ -432,12 +436,8 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 			return productLookupValues;
 		}
 
-		// prepare the query
-		// TODO get the storage attribute keys from somewhere..e.g. from a SysConfig with value = 'expired,damaged,<OTHER_STORAGE_ATTRIBUTES_KEYS>'
-		final MaterialQueryBuilder materialQueryBuilder = MaterialQuery.builder()
-				.storageAttributesKey("expired")
-				.storageAttributesKey("broken")
-				.storageAttributesKey(ProductDescriptor.STORAGE_ATTRIBUTES_KEY_OTHER);
+		final MaterialQueryBuilder materialQueryBuilder = MaterialQuery.builder();
+		addStorageAttributeKeysToQueryBuilder(materialQueryBuilder);
 
 		final Map<Integer, LookupValue> productId2LookupValue = new HashMap<>();
 
@@ -489,6 +489,24 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 			}
 		}
 		return explodedProductValues;
+	}
+
+	private void addStorageAttributeKeysToQueryBuilder(@NonNull final MaterialQueryBuilder materialQueryBuilder)
+	{
+		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+		final int orgId = Env.getAD_Org_ID(Env.getCtx());
+		final int clientId = Env.getAD_Client_ID(Env.getCtx());
+
+		final String storageAttributesKeys = sysConfigBL.getValue(SYSCONFIG_MATERIAL_ORDERLINE_STORAGE_ATTRIBUTES_KEYS, "", clientId, orgId);
+
+		final Splitter splitter = Splitter
+				.on(",")
+				.trimResults(CharMatcher.whitespace())
+				.omitEmptyStrings();
+		for (final String storageAttributesKey : splitter.splitToList(storageAttributesKeys))
+		{
+			materialQueryBuilder.storageAttributesKey(storageAttributesKey);
+		}
 	}
 
 	public static ProductAndAttributes toProductAndAttributes(@NonNull final LookupValue lookupValue)
