@@ -3,6 +3,7 @@ package de.metas.ui.web.view.json;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.adempiere.util.GuavaCollectors;
@@ -22,6 +23,7 @@ import de.metas.ui.web.window.datatypes.json.JSONDocumentBase;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentField;
 import de.metas.ui.web.window.datatypes.json.JSONLayoutWidgetType;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
+import de.metas.ui.web.window.descriptor.ViewEditorRenderMode;
 import lombok.Value;
 
 /*
@@ -88,14 +90,11 @@ public class JSONViewRow extends JSONDocumentBase implements JSONViewRowBase
 				jsonFields.put(jsonIDField.getField(), jsonIDField);
 			}
 
-			final Map<String, DocumentFieldWidgetType> widgetTypesByFieldName = row.getWidgetTypesByFieldName();
-
 			// Append the other fields
 			row.getFieldNameAndJsonValues()
 					.entrySet()
 					.stream()
-					.map(e -> JSONDocumentField.ofNameAndValue(e.getKey(), e.getValue())
-							.setWidgetType(JSONLayoutWidgetType.fromNullable(widgetTypesByFieldName.get(e.getKey()))))
+					.map(createJSONDocumentField(row))
 					.forEach(jsonField -> jsonFields.put(jsonField.getField(), jsonField));
 
 			jsonRow.setFields(jsonFields);
@@ -140,6 +139,20 @@ public class JSONViewRow extends JSONDocumentBase implements JSONViewRowBase
 		}
 
 		return jsonRow;
+	}
+
+	private static final Function<Map.Entry<String, Object>, JSONDocumentField> createJSONDocumentField(final IViewRow row)
+	{
+		final Map<String, DocumentFieldWidgetType> widgetTypesByFieldName = row.getWidgetTypesByFieldName();
+		final Map<String, ViewEditorRenderMode> viewEditorRenderModeByFieldName = row.getViewEditorRenderModeByFieldName();
+
+		return fieldNameAndValue -> {
+			final String fieldName = fieldNameAndValue.getKey();
+			final Object value = fieldNameAndValue.getValue();
+			return JSONDocumentField.ofNameAndValue(fieldName, value)
+					.setWidgetType(JSONLayoutWidgetType.fromNullable(widgetTypesByFieldName.get(fieldName)))
+					.setViewEditorRenderMode(viewEditorRenderModeByFieldName.get(fieldName));
+		};
 	}
 
 	/**
