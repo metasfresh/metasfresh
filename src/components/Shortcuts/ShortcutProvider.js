@@ -30,11 +30,13 @@ export default class ShortcutProvider extends Component {
     componentWillMount() {
         document.addEventListener('keydown', this.handleKeyDown);
         document.addEventListener('keyup', this.handleKeyUp);
+        window.addEventListener('blur', this.handleBlur);
     }
 
     componentWillUnmount() {
         document.removeEventListener('keydown', this.handleKeyDown);
         document.removeEventListener('keyup', this.handleKeyUp);
+        window.removeEventListener('blur', this.handleBlur);
     }
 
     handleKeyDown = event => {
@@ -72,6 +74,11 @@ export default class ShortcutProvider extends Component {
     };
 
     handleKeyUp = () => {
+        this.keySequence = [];
+        this.fired = {};
+    };
+
+    handleBlur = () => {
         this.keySequence = [];
         this.fired = {};
     };

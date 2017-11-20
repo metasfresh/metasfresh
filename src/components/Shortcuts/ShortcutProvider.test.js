@@ -27,7 +27,7 @@ describe('ShortcutProvider', () => {
     it('should clean up event listeners', () => {
         const listeners = [];
 
-        global.document = {
+        const listenerAPI = {
             addEventListener: (event, handler) => {
                 listeners.push([event, handler]);
             },
@@ -52,6 +52,9 @@ describe('ShortcutProvider', () => {
             }
         };
 
+        global.document = listenerAPI;
+        global.window = listenerAPI;
+
         try {
             const shortcutProvider = new ShortcutProvider;
 
@@ -64,6 +67,7 @@ describe('ShortcutProvider', () => {
             throw error;
         } finally {
             delete global.document;
+            delete global.window;
         }
     });
 
@@ -316,7 +320,7 @@ describe('ShortcutProvider', () => {
         });
     });
 
-    describe('handleKeyUp', () => {
+    describe('handleBlur', () => {
         it('should reset key sequence', () => {
             const shortcutProvider = new ShortcutProvider;
 
@@ -327,7 +331,7 @@ describe('ShortcutProvider', () => {
 
             shortcutProvider.keySequence = [ key1, key2, key3, key4 ];
 
-            shortcutProvider.handleKeyUp();
+            shortcutProvider.handleBlur();
 
             expect(shortcutProvider.keySequence).to.deep.equal([]);
             expect(shortcutProvider.fired).to.deep.equal({});
