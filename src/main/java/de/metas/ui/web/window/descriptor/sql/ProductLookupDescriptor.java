@@ -15,14 +15,11 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.model.I_M_FreightCost;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.pricing.api.IPriceListDAO;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_ProductPrice;
 import org.compiere.util.CtxName;
@@ -453,56 +450,26 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 			final int productId = availableStockGroup.getProductId();
 			final LookupValue productLookupValue = productLookupValues.getById(productId);
 
-			if (qtyOnHand.signum() > 0)
-			{
-				final ITranslatableString qtyValueStr = NumberTranslatableString.of(qtyOnHand.getQty(), DisplayType.Quantity);
-				final I_C_UOM uom = qtyOnHand.getUOM();
-				final ITranslatableString uomSymbolStr = InterfaceWrapperHelper.getModelTranslationMap(uom)
-						.getColumnTrl(I_C_UOM.COLUMNNAME_UOMSymbol, uom.getUOMSymbol());
+			final ITranslatableString qtyValueStr = NumberTranslatableString.of(qtyOnHand.getQty(), DisplayType.Quantity);
 
-				final ITranslatableString displayName = ITranslatableString.compose("",
-						productLookupValue.getDisplayNameTrl(),
-						" (", qtyValueStr, " ", uomSymbolStr, ")");
+			final ITranslatableString uomSymbolStr = availableStockGroup.getUomSymbolStr();
 
-				final ImmutableMap<String, Object> attributeMap = createIntegerLookupAttributeMap(availableStockGroup);
+			final ITranslatableString storageAttributeString = availableStockGroup.getStorageAttributesString();
 
-				final IntegerLookupValue integerLookupValue = IntegerLookupValue.builder()
-						.id(productId)
-						.displayName(displayName)
-						.attribute(ATTRIBUTE_ASI, attributeMap)
-						.build();
-				explodedProductValues.add(integerLookupValue);
-			}
-			else
-			{
-				explodedProductValues.add(productLookupValue);
-			}
+			final ITranslatableString displayName = ITranslatableString.compose("",
+					productLookupValue.getDisplayNameTrl(),
+					" - ", qtyValueStr, " ", uomSymbolStr, " - ", storageAttributeString);
+
+			final ImmutableMap<String, Object> attributeMap = availableStockGroup.getLookupAttributesMap();
+
+			final IntegerLookupValue integerLookupValue = IntegerLookupValue.builder()
+					.id(productId)
+					.displayName(displayName)
+					.attribute(ATTRIBUTE_ASI, attributeMap)
+					.build();
+			explodedProductValues.add(integerLookupValue);
 		}
 		return LookupValuesList.fromCollection(explodedProductValues);
-	}
-
-	private ImmutableMap<String, Object> createIntegerLookupAttributeMap(@NonNull final Group availableStockGroup)
-	{
-		final ImmutableMap.Builder<String, Object> attributeMapBuilder = ImmutableMap.builder();
-
-		switch (availableStockGroup.getType())
-		{
-			case ATTRIBUTE_SET:
-				final ImmutableAttributeSet attributes = availableStockGroup.getAttributes();
-				for (final I_M_Attribute attribute : attributes.getAttributes())
-				{
-					attributeMapBuilder.put(Integer.toString(attribute.getM_Attribute_ID()), attributes.getValue(attribute));
-				}
-				break;
-			case OTHER_STORAGE_KEYS:
-				break; // nothing
-			case ALL_STORAGE_KEYS:
-				break; // nothing
-			default:
-				Check.errorIf(true, "Unexpected Group.Type={}; gtroup={}", availableStockGroup.getType(), availableStockGroup);
-				break;
-		}
-		return attributeMapBuilder.build();
 	}
 
 	private void addStorageAttributeKeysToQueryBuilder(@NonNull final MaterialQueryBuilder materialQueryBuilder)
