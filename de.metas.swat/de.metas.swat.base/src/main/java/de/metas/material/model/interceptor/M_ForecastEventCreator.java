@@ -10,13 +10,13 @@ import org.compiere.model.I_M_ForecastLine;
 
 import com.google.common.base.Preconditions;
 
-import de.metas.material.event.EventDescriptor;
-import de.metas.material.event.MaterialDescriptor;
-import de.metas.material.event.ProductDescriptor;
 import de.metas.material.event.ModelProductDescriptorExtractor;
+import de.metas.material.event.commons.EventDescriptor;
+import de.metas.material.event.commons.MaterialDescriptor;
+import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.forecast.Forecast;
 import de.metas.material.event.forecast.Forecast.ForecastBuilder;
-import de.metas.material.event.forecast.ForecastEvent;
+import de.metas.material.event.forecast.ForecastCreatedEvent;
 import de.metas.material.event.forecast.ForecastLine;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
@@ -46,7 +46,7 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public class M_ForecastEventCreator
 {
-	public ForecastEvent createEventWithLinesAndTiming(
+	public ForecastCreatedEvent createEventWithLinesAndTiming(
 			@NonNull final List<I_M_ForecastLine> forecastLines,
 			@NonNull final DocTimingType timing)
 	{
@@ -63,7 +63,7 @@ public class M_ForecastEventCreator
 			forecastBuilder.forecastLine(createForecastLine(forecastLine));
 		}
 
-		final ForecastEvent forecastEvent = ForecastEvent
+		final ForecastCreatedEvent forecastEvent = ForecastCreatedEvent
 				.builder()
 				.forecast(forecastBuilder.build())
 				.eventDescriptor(EventDescriptor.createNew(forecastModel))

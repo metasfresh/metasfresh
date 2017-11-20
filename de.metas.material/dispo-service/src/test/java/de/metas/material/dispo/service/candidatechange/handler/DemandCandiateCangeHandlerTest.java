@@ -29,11 +29,11 @@ import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.X_MD_Candidate;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
-import de.metas.material.event.MaterialDemandDescriptor;
-import de.metas.material.event.MaterialDemandEvent;
-import de.metas.material.event.MaterialDescriptor;
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.MaterialEventService;
+import de.metas.material.event.commons.SupplyRequiredDescriptor;
+import de.metas.material.event.commons.MaterialDescriptor;
+import de.metas.material.event.demandWasFound.SupplyRequiredEvent;
 import lombok.NonNull;
 import mockit.Expectations;
 import mockit.Mocked;
@@ -215,9 +215,9 @@ public class DemandCandiateCangeHandlerTest
 			MaterialEvent event;
 			materialEventService.fireEvent(event = withCapture());
 
-			assertThat(event).isInstanceOf(MaterialDemandEvent.class);
-			final MaterialDemandEvent materialDemandEvent = (MaterialDemandEvent)event;
-			final MaterialDemandDescriptor materialDemandDescriptor = materialDemandEvent.getMaterialDemandDescriptor();
+			assertThat(event).isInstanceOf(SupplyRequiredEvent.class);
+			final SupplyRequiredEvent materialDemandEvent = (SupplyRequiredEvent)event;
+			final SupplyRequiredDescriptor materialDemandDescriptor = materialDemandEvent.getMaterialDemandDescriptor();
 			assertThat(materialDemandDescriptor).isNotNull();
 
 			final MaterialDescriptor materialDescriptorOfEvent = materialDemandDescriptor.getMaterialDescriptor();

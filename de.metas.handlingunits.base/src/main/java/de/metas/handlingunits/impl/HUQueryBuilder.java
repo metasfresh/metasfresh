@@ -919,6 +919,13 @@ import lombok.NonNull;
 		_huStatusesToExclude.add(huStatus);
 		return this;
 	}
+	
+	@Override
+	public IHUQueryBuilder addHUStatusesToExclude(final Collection<String> huStatuses)
+	{
+		huStatuses.stream().filter(huStatus -> !Check.isEmpty(huStatus, true)).forEach(this::addHUStatusToExclude);
+		return this;
+	}
 
 	private Set<String> getHUStatusesToExclude()
 	{

@@ -204,8 +204,8 @@
 		scope=provided so it's ONLY considered on the local dev station
 		 -->
 		<dependency>
-			<groupId>de.metas.report.jasper.server</groupId>
-			<artifactId>de.metas.report.jasper.server.base</artifactId>
+			<groupId>de.metas.report</groupId>
+			<artifactId>report-service</artifactId>
 			<version>10.0.0</version>
 			<scope>provided</scope>
 		</dependency>
@@ -225,6 +225,13 @@
 		<dependency>
 			<groupId>de.metas.rfq</groupId>
 			<artifactId>de.metas.rfq</artifactId>
+			<version>10.0.0</version>
+		</dependency>
+		
+		<!-- required here at least for processing async packages (e.g. C_PurchaseCandidates_GeneratePurchaseOrders) -->
+		<dependency>
+			<groupId>de.metas.purchasecandidate</groupId>
+			<artifactId>de.metas.purchasecandidate.base</artifactId>
 			<version>10.0.0</version>
 		</dependency>
 		

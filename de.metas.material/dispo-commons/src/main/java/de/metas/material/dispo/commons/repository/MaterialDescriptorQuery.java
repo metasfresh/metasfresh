@@ -6,7 +6,7 @@ import org.adempiere.util.time.SystemTime;
 
 import com.google.common.base.Preconditions;
 
-import de.metas.material.event.ProductDescriptor;
+import de.metas.material.event.commons.ProductDescriptor;
 import lombok.Builder;
 import lombok.Value;
 

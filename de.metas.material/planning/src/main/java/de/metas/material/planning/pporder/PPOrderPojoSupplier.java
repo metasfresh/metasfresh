@@ -25,8 +25,8 @@ import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import de.metas.logging.LogManager;
-import de.metas.material.event.ProductDescriptor;
 import de.metas.material.event.ModelProductDescriptorExtractor;
+import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrder.PPOrderBuilder;
 import de.metas.material.event.pporder.PPOrderLine;
@@ -139,7 +139,7 @@ public class PPOrderPojoSupplier
 				.orderLineId(request.getMrpDemandOrderLineSOId())
 				//
 				// offer further advise :-)
-				.createPPOrder(productPlanningData.isCreatePlan());
+				.advisedToCreatePPOrder(productPlanningData.isCreatePlan());
 
 		return ppOrderPojoBuilder.build();
 	}

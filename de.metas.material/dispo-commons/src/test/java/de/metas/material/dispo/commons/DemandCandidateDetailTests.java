@@ -8,8 +8,8 @@ import java.util.Optional;
 import org.junit.Test;
 
 import de.metas.material.dispo.commons.candidate.DemandDetail;
-import de.metas.material.event.EventDescriptor;
-import de.metas.material.event.MaterialDemandDescriptor;
+import de.metas.material.event.commons.EventDescriptor;
+import de.metas.material.event.commons.SupplyRequiredDescriptor;
 
 /*
  * #%L
@@ -38,14 +38,14 @@ public class DemandCandidateDetailTests
 	@Test
 	public void createOrNull_when_empty_optional_then_null()
 	{
-		final Optional<MaterialDemandDescriptor> materialDemandDescr = Optional.empty();
+		final Optional<SupplyRequiredDescriptor> materialDemandDescr = Optional.empty();
 		assertThat(DemandDetail.createOrNull(materialDemandDescr)).isNull();
 	}
 
 	@Test
 	public void createOrNull_when_not_empty()
 	{
-		final MaterialDemandDescriptor descriptor = MaterialDemandDescriptor.builder()
+		final SupplyRequiredDescriptor descriptor = SupplyRequiredDescriptor.builder()
 				.eventDescr(new EventDescriptor(10, 20))
 				.forecastLineId(1)
 				.shipmentScheduleId(2)

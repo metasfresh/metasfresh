@@ -1,14 +1,12 @@
 package de.metas.material.event.ddorder;
 
-import static de.metas.material.event.MaterialEventUtils.checkIdGreaterThanZero;
-
 import java.math.BigDecimal;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Preconditions;
 
-import de.metas.material.event.ProductDescriptor;
+import de.metas.material.event.commons.ProductDescriptor;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -73,7 +71,7 @@ public class DDOrderLine
 
 		Preconditions.checkArgument(durationDays >= 0, "The Given parameter durationDays=%s needs to be > 0", "durationDays");
 		this.durationDays = durationDays;
-		this.networkDistributionLineId = checkIdGreaterThanZero("networkDistributionLineId", networkDistributionLineId);
+		this.networkDistributionLineId = networkDistributionLineId; // can be <= 0 if the DD_Order was created "manually"
 
 		this.ddOrderLineId = ddOrderLineId;
 	}

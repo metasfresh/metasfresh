@@ -13,7 +13,7 @@ import org.compiere.model.I_S_Resource;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import de.metas.material.event.ProductDescriptor;
+import de.metas.material.event.commons.ProductDescriptor;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -91,7 +91,7 @@ public class PPOrder
 	/**
 	 * If {@code true}, then this event advises the recipient to directly request an actual PP_Order to be created.
 	 */
-	boolean createPPOrder;
+	boolean advisedToCreatePPOrder;
 
 	/**
 	 * Attention, might be {@code null}.
@@ -114,7 +114,7 @@ public class PPOrder
 			@JsonProperty("datePromised") @NonNull final Date datePromised,
 			@JsonProperty("dateStartSchedule") @NonNull final Date dateStartSchedule,
 			@JsonProperty("quantity") @NonNull final BigDecimal quantity,
-			@JsonProperty("createPPOrder") final boolean createPPOrder,
+			@JsonProperty("advisedToCreatePPOrder") final boolean advisedToCreatePPOrder,
 			@JsonProperty("lines") @Singular final List<PPOrderLine> lines)
 	{
 		this.orgId = checkIdGreaterThanZero("orgId", orgId);
@@ -132,7 +132,7 @@ public class PPOrder
 		this.datePromised = datePromised;
 		this.dateStartSchedule = dateStartSchedule;
 		this.quantity = quantity;
-		this.createPPOrder = createPPOrder;
+		this.advisedToCreatePPOrder = advisedToCreatePPOrder;
 		this.lines = lines;
 	}
 }

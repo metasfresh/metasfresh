@@ -23,10 +23,11 @@ import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import de.metas.ShutdownListener;
 import de.metas.StartupListener;
 import de.metas.business.BusinessTestHelper;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked;
-import de.metas.material.event.TransactionEvent;
+import de.metas.material.event.transactions.TransactionCreatedEvent;
 
 /*
  * #%L
@@ -51,7 +52,9 @@ import de.metas.material.event.TransactionEvent;
  */
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = { StartupListener.class, ModelProductDescriptorExtractorUsingAttributeSetInstanceFactory.class })
+@SpringBootTest(classes = { StartupListener.class,
+		ShutdownListener.class,
+		ModelProductDescriptorExtractorUsingAttributeSetInstanceFactory.class })
 public class M_TransactionTest
 {
 
@@ -77,8 +80,8 @@ public class M_TransactionTest
 	{
 		final I_M_Transaction transaction = createShipmentTransaction();
 
-		final List<TransactionEvent> events = M_Transaction.createTransactionEvents(transaction, ModelChangeType.AFTER_NEW);
-		final TransactionEvent event = events.get(0);
+		final List<TransactionCreatedEvent> events = M_Transaction.createTransactionEvents(transaction, ModelChangeType.AFTER_NEW);
+		final TransactionCreatedEvent event = events.get(0);
 		assertCommon(transaction, event);
 		assertThat(event.getMaterialDescriptor().getQuantity()).isEqualByComparingTo("-10");
 		assertThat(event.getShipmentScheduleId()).isZero();
@@ -97,8 +100,8 @@ public class M_TransactionTest
 		transaction.setM_InOutLine_ID(INOUT_LINE_ID);
 		save(transaction);
 
-		final List<TransactionEvent> events = M_Transaction.createTransactionEvents(transaction, ModelChangeType.AFTER_NEW);
-		final TransactionEvent event = events.get(0);
+		final List<TransactionCreatedEvent> events = M_Transaction.createTransactionEvents(transaction, ModelChangeType.AFTER_NEW);
+		final TransactionCreatedEvent event = events.get(0);
 		assertCommon(transaction, event);
 		assertThat(event.getMaterialDescriptor().getQuantity()).isEqualByComparingTo("-10");
 		assertThat(event.getShipmentScheduleId()).isEqualTo(20);
@@ -117,15 +120,15 @@ public class M_TransactionTest
 		transaction.setM_InOutLine_ID(INOUT_LINE_ID);
 		save(transaction);
 
-		final List<TransactionEvent> events = M_Transaction.createTransactionEvents(transaction, ModelChangeType.AFTER_NEW);
+		final List<TransactionCreatedEvent> events = M_Transaction.createTransactionEvents(transaction, ModelChangeType.AFTER_NEW);
 		assertThat(events).hasSize(2);
 
-		final TransactionEvent event = events.get(0);
+		final TransactionCreatedEvent event = events.get(0);
 		assertCommon(transaction, event);
 		assertThat(event.getMaterialDescriptor().getQuantity()).isEqualByComparingTo("-9");
 		assertThat(event.getShipmentScheduleId()).isZero();
 
-		final TransactionEvent event1 = events.get(1);
+		final TransactionCreatedEvent event1 = events.get(1);
 		assertCommon(transaction, event1);
 		assertThat(event1.getMaterialDescriptor().getQuantity()).isEqualByComparingTo("-1");
 		assertThat(event1.getShipmentScheduleId()).isEqualTo(20);
@@ -156,20 +159,20 @@ public class M_TransactionTest
 		transaction.setM_InOutLine_ID(INOUT_LINE_ID);
 		save(transaction);
 
-		final List<TransactionEvent> events = M_Transaction.createTransactionEvents(transaction, ModelChangeType.AFTER_NEW);
+		final List<TransactionCreatedEvent> events = M_Transaction.createTransactionEvents(transaction, ModelChangeType.AFTER_NEW);
 		assertThat(events).hasSize(3);
 
-		final TransactionEvent event = events.get(0);
+		final TransactionCreatedEvent event = events.get(0);
 		assertCommon(transaction, event);
 		assertThat(event.getMaterialDescriptor().getQuantity()).isEqualByComparingTo("-7");
 		assertThat(event.getShipmentScheduleId()).isZero();
 
-		final TransactionEvent event1 = events.get(1);
+		final TransactionCreatedEvent event1 = events.get(1);
 		assertCommon(transaction, event1);
 		assertThat(event1.getMaterialDescriptor().getQuantity()).isEqualByComparingTo("-1");
 		assertThat(event1.getShipmentScheduleId()).isEqualTo(20);
 
-		final TransactionEvent event2 = events.get(2);
+		final TransactionCreatedEvent event2 = events.get(2);
 		assertCommon(transaction, event2);
 		assertThat(event2.getMaterialDescriptor().getQuantity()).isEqualByComparingTo("-2");
 		assertThat(event2.getShipmentScheduleId()).isEqualTo(21);
@@ -187,7 +190,7 @@ public class M_TransactionTest
 		return transaction;
 	}
 
-	private void assertCommon(final I_M_Transaction transaction, final TransactionEvent result)
+	private void assertCommon(final I_M_Transaction transaction, final TransactionCreatedEvent result)
 	{
 		assertThat(result).isNotNull();
 		assertThat(result.getTransactionId()).isEqualTo(transaction.getM_Transaction_ID());

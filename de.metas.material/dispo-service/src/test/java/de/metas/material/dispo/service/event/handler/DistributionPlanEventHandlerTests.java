@@ -35,11 +35,11 @@ import de.metas.material.dispo.service.candidatechange.handler.DemandCandiateHan
 import de.metas.material.dispo.service.candidatechange.handler.SupplyCandiateHandler;
 import de.metas.material.dispo.service.event.MaterialDispoEventListenerFacade;
 import de.metas.material.dispo.service.event.SupplyProposalEvaluator;
-import de.metas.material.event.EventDescriptor;
 import de.metas.material.event.MaterialEventService;
+import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.ddorder.DDOrder;
 import de.metas.material.event.ddorder.DDOrderLine;
-import de.metas.material.event.ddorder.DistributionPlanEvent;
+import de.metas.material.event.ddorder.DistributionAdvisedEvent;
 import lombok.NonNull;
 import mockit.Mocked;
 
@@ -101,7 +101,7 @@ public class DistributionPlanEventHandlerTests
 
 	public static final int shipperId = 95;
 
-	private DistributionPlanEventHandler distributionPlanEventHandler;
+	private DistributionAdvisedHandler distributionPlanEventHandler;
 
 	@Mocked
 	private MaterialEventService materialEventService;
@@ -125,7 +125,7 @@ public class DistributionPlanEventHandlerTests
 				demandCandiateHandler,
 				supplyCandiateHandler));
 
-		distributionPlanEventHandler = new DistributionPlanEventHandler(
+		distributionPlanEventHandler = new DistributionAdvisedHandler(
 				candidateRepository,
 				candidateRepositoryCommands,
 				candidateChangeService,
@@ -134,7 +134,7 @@ public class DistributionPlanEventHandlerTests
 	}
 
 	/**
-	 * Verifies that for a {@link DistributionPlanEvent}, the system shall (unless the event is ignored for different reasons!) create two pairs of candidate records:
+	 * Verifies that for a {@link DistributionAdvisedEvent}, the system shall (unless the event is ignored for different reasons!) create two pairs of candidate records:
 	 * <ul>
 	 * <li>one supply-pair with a supply candidate and its stock <b>parent</b></li>
 	 * <li>one demand-pair with a demand candidate and its stock <b>child</b></li>
@@ -143,7 +143,7 @@ public class DistributionPlanEventHandlerTests
 	@Test
 	public void testSingleDistibutionPlanEvent()
 	{
-		final DistributionPlanEvent event = DistributionPlanEvent.builder()
+		final DistributionAdvisedEvent event = DistributionAdvisedEvent.builder()
 				.eventDescriptor(new EventDescriptor(CLIENT_ID, ORG_ID))
 				.fromWarehouseId(fromWarehouseId)
 				.toWarehouseId(toWarehouseId)
@@ -164,7 +164,7 @@ public class DistributionPlanEventHandlerTests
 
 		RepositoryTestHelper.setupMockedRetrieveAvailableStock(candidateRepository, null /*any materialDescriptor*/, "0");
 
-		distributionPlanEventHandler.handleDistributionPlanEvent(event);
+		distributionPlanEventHandler.handleDistributionAdvisedEvent(event);
 
 		final List<I_MD_Candidate> allNonStockRecords = DispoTestUtils.filterExclStock();
 		final int groupIdOfFirstRecord = allNonStockRecords.get(0).getMD_Candidate_GroupId();
@@ -234,9 +234,9 @@ public class DistributionPlanEventHandlerTests
 	 * @param mdEventListener
 	 */
 	public static void performTestTwoDistibutionPlanEvents(
-			@NonNull final DistributionPlanEventHandler distributionPlanEventHandler)
+			@NonNull final DistributionAdvisedHandler distributionPlanEventHandler)
 	{
-		final DistributionPlanEvent event1 = DistributionPlanEvent.builder()
+		final DistributionAdvisedEvent event1 = DistributionAdvisedEvent.builder()
 				.eventDescriptor(new EventDescriptor(CLIENT_ID, ORG_ID))
 				.fromWarehouseId(fromWarehouseId)
 				.toWarehouseId(intermediateWarehouseId)
@@ -254,13 +254,13 @@ public class DistributionPlanEventHandlerTests
 								.build())
 						.build())
 				.build();
-		distributionPlanEventHandler.handleDistributionPlanEvent(event1);
+		distributionPlanEventHandler.handleDistributionAdvisedEvent(event1);
 
 		assertThat(DispoTestUtils.filter(CandidateType.SUPPLY)).hasSize(1);
 		assertThat(DispoTestUtils.filter(CandidateType.DEMAND)).hasSize(1);
 		assertThat(DispoTestUtils.filter(CandidateType.STOCK)).hasSize(2); // one stock record per supply/demand record
 
-		final DistributionPlanEvent event2 = DistributionPlanEvent.builder()
+		final DistributionAdvisedEvent event2 = DistributionAdvisedEvent.builder()
 				.eventDescriptor(new EventDescriptor(CLIENT_ID, ORG_ID))
 				.fromWarehouseId(intermediateWarehouseId)
 				.toWarehouseId(toWarehouseId)
@@ -278,7 +278,7 @@ public class DistributionPlanEventHandlerTests
 								.build())
 						.build())
 				.build();
-		distributionPlanEventHandler.handleDistributionPlanEvent(event2);
+		distributionPlanEventHandler.handleDistributionAdvisedEvent(event2);
 
 		assertThat(DispoTestUtils.filter(CandidateType.SUPPLY)).hasSize(2); // one supply record per event
 		assertThat(DispoTestUtils.filter(CandidateType.DEMAND)).hasSize(2); // one demand record per event

@@ -119,7 +119,7 @@ public class MainValidator extends AbstractModuleInterceptor
 	@Override
 	protected void registerInterceptors(IModelValidationEngine engine, I_AD_Client client)
 	{
-		engine.addModelValidator(new C_Flatrate_Conditions(), client);
+		engine.addModelValidator(C_Flatrate_Conditions.INSTANCE, client);
 		engine.addModelValidator(C_SubscriptionProgress.instance, client);
 		engine.addModelValidator(C_Flatrate_DataEntry.instance, client);
 		engine.addModelValidator(C_Flatrate_Matching.instance, client);
@@ -141,7 +141,7 @@ public class MainValidator extends AbstractModuleInterceptor
 		engine.addModelValidator(new M_ShipmentSchedule_QtyPicked(), client);
 
 		// 09869
-		engine.addModelValidator(new de.metas.contracts.interceptor.M_ShipmentSchedule(), client);
+		engine.addModelValidator(M_ShipmentSchedule.INSTANCE, client);
 	}
 
 }

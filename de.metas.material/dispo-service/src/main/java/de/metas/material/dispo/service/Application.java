@@ -52,9 +52,14 @@ public class Application
 	@Autowired
 	private ApplicationContext applicationContext;
 
+	@Autowired
+	private MaterialEventService eventService;
+
+	@Autowired
+	private MaterialDispoEventListenerFacade mdEventListener;
+
 	public static void main(final String[] args)
 	{
-		// important because in Ini, there is a org.springframework.context.annotation.Condition that otherwise wouldn't e.g. let the jasper servlet start
 		Ini.setRunMode(RunMode.BACKEND);
 
 		new SpringApplicationBuilder(Application.class)
@@ -62,12 +67,6 @@ public class Application
 				.web(true)
 				.run(args);
 	}
-
-	@Autowired
-	private MaterialEventService eventService;
-
-	@Autowired
-	private MaterialDispoEventListenerFacade mdEventListener;
 
 	@Bean
 	@Profile("!test")
