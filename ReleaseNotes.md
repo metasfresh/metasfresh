@@ -20,6 +20,8 @@ Here come the actual release notes:
     * Improved Translation and Naming in Procurement Planning window.
   * [#2982](https://github.com/metasfresh/metasfresh/issues/2982) Filter for Shipment Documentstatus is missing in WebUI
     * New filter criteria "documentstatus" added to Shipment window.
+  * [#2987](https://github.com/metasfresh/metasfresh/issues/2987) Adjust the Naming of Locators
+    * Improvement of the Locator Naming.
   * [#3002](https://github.com/metasfresh/metasfresh/issues/3002) WebUI: New Window for HU Transaction
     * New window for Handling Unit transaction in WebUI.
   * [#3003](https://github.com/metasfresh/metasfresh/issues/3003) WebUI: Adjustments on HU Trace Window
