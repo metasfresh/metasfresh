@@ -4,8 +4,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import javax.annotation.Nullable;
-
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.util.Evaluatee;
@@ -18,7 +16,6 @@ import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.view.IEditableView;
 import de.metas.ui.web.view.IViewRow;
-import de.metas.ui.web.view.ViewCloseReason;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.ViewResult;
 import de.metas.ui.web.view.event.ViewChangesCollector;
@@ -64,26 +61,14 @@ public class PurchaseView implements IEditableView
 
 	private final ViewId viewId;
 	private final PurchaseRowsCollection rows;
-	private final PurchaseViewClosedListener viewClosedListener;
 
 	@Builder
 	private PurchaseView(
 			@NonNull final ViewId viewId,
-			@NonNull final PurchaseRowsSupplier rowsSupplier,
-			@Nullable final PurchaseViewClosedListener onViewClosed)
+			@NonNull final PurchaseRowsSupplier rowsSupplier)
 	{
 		this.viewId = viewId;
 		rows = PurchaseRowsCollection.ofSupplier(rowsSupplier);
-		this.viewClosedListener = onViewClosed;
-	}
-
-	@Override
-	public void close(ViewCloseReason reason)
-	{
-		if (viewClosedListener != null)
-		{
-			viewClosedListener.onViewClosed(this, reason);
-		}
 	}
 
 	@Override
