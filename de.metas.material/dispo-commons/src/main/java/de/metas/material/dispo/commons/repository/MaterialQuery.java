@@ -61,8 +61,6 @@ public class MaterialQuery
 	@NonNull
 	List<String> storageAttributesKeys;
 
-	int dimensionSpecId;
-
 	@Builder
 	private MaterialQuery(
 			final int warehouseId,
@@ -77,6 +75,5 @@ public class MaterialQuery
 		this.date = date != null ? date : SystemTime.asDate();
 		this.productIds = ImmutableList.copyOf(productIds);
 		this.storageAttributesKeys = storageAttributesKeys;
-		this.dimensionSpecId = dimensionSpecId;
 	}
 }
