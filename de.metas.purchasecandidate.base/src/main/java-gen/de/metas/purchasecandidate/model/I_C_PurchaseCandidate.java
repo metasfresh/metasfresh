@@ -69,6 +69,33 @@ public interface I_C_PurchaseCandidate
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
+	 * Set Bestellposition.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_OrderLinePO_ID (int C_OrderLinePO_ID);
+
+	/**
+	 * Get Bestellposition.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_OrderLinePO_ID();
+
+	public org.compiere.model.I_C_OrderLine getC_OrderLinePO();
+
+	public void setC_OrderLinePO(org.compiere.model.I_C_OrderLine C_OrderLinePO);
+
+    /** Column definition for C_OrderLinePO_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_PurchaseCandidate, org.compiere.model.I_C_OrderLine> COLUMN_C_OrderLinePO_ID = new org.adempiere.model.ModelColumn<I_C_PurchaseCandidate, org.compiere.model.I_C_OrderLine>(I_C_PurchaseCandidate.class, "C_OrderLinePO_ID", org.compiere.model.I_C_OrderLine.class);
+    /** Column name C_OrderLinePO_ID */
+    public static final String COLUMNNAME_C_OrderLinePO_ID = "C_OrderLinePO_ID";
+
+	/**
 	 * Set Auftragsposition.
 	 * Auftragsposition
 	 *
@@ -257,6 +284,35 @@ public interface I_C_PurchaseCandidate
     public static final org.adempiere.model.ModelColumn<I_C_PurchaseCandidate, org.compiere.model.I_M_Product> COLUMN_M_Product_ID = new org.adempiere.model.ModelColumn<I_C_PurchaseCandidate, org.compiere.model.I_M_Product>(I_C_PurchaseCandidate.class, "M_Product_ID", org.compiere.model.I_M_Product.class);
     /** Column name M_Product_ID */
     public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
+
+	/**
+	 * Set Lager.
+	 * Lager oder Ort für Dienstleistung
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setM_Warehouse_ID (int M_Warehouse_ID);
+
+	/**
+	 * Get Lager.
+	 * Lager oder Ort für Dienstleistung
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getM_Warehouse_ID();
+
+	public org.compiere.model.I_M_Warehouse getM_Warehouse();
+
+	public void setM_Warehouse(org.compiere.model.I_M_Warehouse M_Warehouse);
+
+    /** Column definition for M_Warehouse_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_PurchaseCandidate, org.compiere.model.I_M_Warehouse> COLUMN_M_Warehouse_ID = new org.adempiere.model.ModelColumn<I_C_PurchaseCandidate, org.compiere.model.I_M_Warehouse>(I_C_PurchaseCandidate.class, "M_Warehouse_ID", org.compiere.model.I_M_Warehouse.class);
+    /** Column name M_Warehouse_ID */
+    public static final String COLUMNNAME_M_Warehouse_ID = "M_Warehouse_ID";
 
 	/**
 	 * Set Verarbeitet.
