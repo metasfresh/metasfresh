@@ -22,12 +22,12 @@ import lombok.experimental.UtilityClass;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -39,7 +39,7 @@ import lombok.experimental.UtilityClass;
 /**
  * A helper class for {@link BPartnerImportProcess} that performs the "dirty" but efficient SQL updates on the {@link I_I_BPartner} table.
  * Those updates complements the data from existing metasfresh records and flag those import records that can't yet be imported.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
@@ -50,35 +50,47 @@ public class BPartnerImportTableSqlUpdater
 
 	public void updateBPartnerImtortTable(@NonNull final String whereClause)
 	{
-		// Set BP_Group
+		dbUpdateOrgs(whereClause);
+
 		dbUpdateBPGroups(whereClause);
 
-		// Set Country
 		dbUpdateCountries(whereClause);
 
-		// Set Region
 		dpUpdateRegions(whereClause);
 
-		// Set Greeting
 		dbUpdateGreetings(whereClause);
 
-		// Existing User ?
 		dbUpdateAdUserIdsFromExisting(whereClause);
 
-		// Existing BPartner ? Match Value
 		dbUpdateCbPartnerIds(whereClause);
 
-		// Existing Contact ? Match Name
 		dbUpdateAdUserIdsFromContactNames(whereClause);
 
-		// Existing Location ? Exact Match
 		dbUpdateLocations(whereClause);
 
-		// Interest Area
 		dbUpdateInterestAreas(whereClause);
 
-		// Value is mandatory error
 		dbUpdateErrorMessages(whereClause);
+	}
+
+	private void dbUpdateOrgs(final String whereClause)
+	{
+		StringBuffer sql;
+		int no;
+		sql = new StringBuffer("UPDATE I_BPartner i "
+				+ "SET AD_Org_ID=(SELECT AD_Org_ID FROM AD_Org o"
+				+ " WHERE i.OrgValue=o.Value AND o.AD_Client_ID IN (0, i.AD_Client_ID)) "
+				+ "WHERE AD_Org_ID IS NULL AND OrgValue IS NOT NULL"
+				+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
+		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		logger.debug("Set Org =" + no);
+		//
+		sql = new StringBuffer("UPDATE I_BPartner i "
+				+ "SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||'ERR=Invalid Greeting, ' "
+				+ "WHERE AD_Org_ID IS NULL AND OrgValue IS NOT NULL"
+				+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
+		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		logger.info("Invalid Org=" + no);
 	}
 
 	private void dbUpdateBPGroups(final String whereClause)
