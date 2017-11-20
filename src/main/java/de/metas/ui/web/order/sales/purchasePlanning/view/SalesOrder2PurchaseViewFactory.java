@@ -113,13 +113,6 @@ public class SalesOrder2PurchaseViewFactory implements IViewFactory, IViewsIndex
 		views.cleanUp(); // also cleanup to prevent views cache to grow.
 	}
 
-	private final void onViewRemoved(final RemovalNotification<Object, Object> notification)
-	{
-		final PurchaseView view = PurchaseView.cast(notification.getValue());
-		final ViewCloseReason closeReason = ViewCloseReason.fromCacheEvictedFlag(notification.wasEvicted());
-		view.close(closeReason);
-	}
-
 	@Override
 	public Stream<IView> streamAllViews()
 	{
@@ -141,14 +134,7 @@ public class SalesOrder2PurchaseViewFactory implements IViewFactory, IViewsIndex
 	@Override
 	public PurchaseView createView(final CreateViewRequest request)
 	{
-		return createView(PurchaseViewCreateRequest.builder()
-				.salesOrderLineIds(request.getFilterOnlyIds())
-				.build());
-	}
-
-	private PurchaseView createView(final PurchaseViewCreateRequest request)
-	{
-		final Set<Integer> salesOrderLineIds = request.getSalesOrderLineIds();
+		final Set<Integer> salesOrderLineIds = request.getFilterOnlyIds();
 
 		final PurchaseView view = PurchaseView.builder()
 				.viewId(ViewId.random(WINDOW_ID))
@@ -159,6 +145,13 @@ public class SalesOrder2PurchaseViewFactory implements IViewFactory, IViewsIndex
 		return view;
 	}
 
+	private final void onViewRemoved(final RemovalNotification<Object, Object> notification)
+	{
+		final PurchaseView view = PurchaseView.cast(notification.getValue());
+		final ViewCloseReason closeReason = ViewCloseReason.fromCacheEvictedFlag(notification.wasEvicted());
+		view.close(closeReason);
+	}
+
 	private void onViewClosed(final PurchaseView purchaseView, final ViewCloseReason reason)
 	{
 		if (reason == ViewCloseReason.USER_REQUEST)
@@ -166,7 +159,7 @@ public class SalesOrder2PurchaseViewFactory implements IViewFactory, IViewsIndex
 			saveRows(purchaseView);
 		}
 	}
-	
+
 	private List<PurchaseRow> loadRows(final Set<Integer> salesOrderLineIds)
 	{
 		return PurchaseRowsLoader.builder()
