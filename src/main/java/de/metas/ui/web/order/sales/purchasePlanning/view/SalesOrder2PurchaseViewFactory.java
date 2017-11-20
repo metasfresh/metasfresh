@@ -1,15 +1,26 @@
 package de.metas.ui.web.order.sales.purchasePlanning.view;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.Check;
+import org.adempiere.util.GuavaCollectors;
+import org.compiere.model.I_C_Order;
+
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.RemovalNotification;
+import com.google.common.collect.ImmutableSet;
 
+import de.metas.document.engine.IDocument;
+import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.PurchaseCandidateRepository;
+import de.metas.purchasecandidate.async.C_PurchaseCandidates_GeneratePurchaseOrders;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IView;
@@ -113,13 +124,6 @@ public class SalesOrder2PurchaseViewFactory implements IViewFactory, IViewsIndex
 		views.cleanUp(); // also cleanup to prevent views cache to grow.
 	}
 
-	private final void onViewRemoved(final RemovalNotification<Object, Object> notification)
-	{
-		final PurchaseView view = PurchaseView.cast(notification.getValue());
-		final ViewCloseReason closeReason = ViewCloseReason.fromCacheEvictedFlag(notification.wasEvicted());
-		view.close(closeReason);
-	}
-
 	@Override
 	public Stream<IView> streamAllViews()
 	{
@@ -141,32 +145,29 @@ public class SalesOrder2PurchaseViewFactory implements IViewFactory, IViewsIndex
 	@Override
 	public PurchaseView createView(final CreateViewRequest request)
 	{
-		return createView(PurchaseViewCreateRequest.builder()
-				.salesOrderLineIds(request.getFilterOnlyIds())
-				.build());
-	}
-
-	private PurchaseView createView(final PurchaseViewCreateRequest request)
-	{
-		final Set<Integer> salesOrderLineIds = request.getSalesOrderLineIds();
+		final Set<Integer> salesOrderLineIds = request.getFilterOnlyIds();
+		Check.assumeNotEmpty(salesOrderLineIds, "salesOrderLineIds is not empty");
 
 		final PurchaseView view = PurchaseView.builder()
 				.viewId(ViewId.random(WINDOW_ID))
 				.rowsSupplier(() -> loadRows(salesOrderLineIds))
-				.onViewClosed(this::onViewClosed)
 				.build();
 
 		return view;
 	}
 
-	private void onViewClosed(final PurchaseView purchaseView, final ViewCloseReason reason)
+	private final void onViewRemoved(final RemovalNotification<Object, Object> notification)
 	{
-		if (reason == ViewCloseReason.USER_REQUEST)
+		final PurchaseView view = PurchaseView.cast(notification.getValue());
+		final ViewCloseReason closeReason = ViewCloseReason.fromCacheEvictedFlag(notification.wasEvicted());
+		view.close(closeReason);
+
+		if (closeReason == ViewCloseReason.USER_REQUEST)
 		{
-			saveRows(purchaseView);
+			saveRowsAndEnqueueIfOrderCompleted(view);
 		}
 	}
-	
+
 	private List<PurchaseRow> loadRows(final Set<Integer> salesOrderLineIds)
 	{
 		return PurchaseRowsLoader.builder()
@@ -176,12 +177,41 @@ public class SalesOrder2PurchaseViewFactory implements IViewFactory, IViewsIndex
 				.load();
 	}
 
-	private void saveRows(final PurchaseView purchaseView)
+	private void saveRowsAndEnqueueIfOrderCompleted(final PurchaseView purchaseView)
 	{
-		PurchaseRowsSaver.builder()
-				.grouppingRows(purchaseView.getRows())
+		final List<PurchaseCandidate> purchaseCandidates = saveRows(purchaseView);
+
+		//
+		// If the sales order was already completed, enqueue the purchase candidates
+		final I_C_Order salesOrder = getSingleSalesOrder(purchaseCandidates);
+		if (IDocument.STATUS_Completed.equals(salesOrder.getDocStatus()))
+		{
+			final Set<Integer> purchaseCandidateIds = purchaseCandidates.stream()
+					.filter(purchaseCandidate -> !purchaseCandidate.isProcessed())
+					.map(PurchaseCandidate::getRepoId)
+					.collect(ImmutableSet.toImmutableSet());
+			C_PurchaseCandidates_GeneratePurchaseOrders.enqueue(purchaseCandidateIds);
+		}
+	}
+
+	private List<PurchaseCandidate> saveRows(final PurchaseView purchaseView)
+	{
+		final List<PurchaseRow> rows = purchaseView.getRows();
+
+		return PurchaseRowsSaver.builder()
+				.grouppingRows(rows)
 				.purchaseCandidatesRepo(purchaseCandidatesRepo)
 				.build()
 				.save();
+	}
+
+	private final I_C_Order getSingleSalesOrder(final List<PurchaseCandidate> purchaseCandidates)
+	{
+		final int salesOrderId = purchaseCandidates.stream()
+				.map(PurchaseCandidate::getSalesOrderId)
+				.distinct()
+				.collect(GuavaCollectors.singleElementOrThrow(() -> new AdempiereException("more than one salesOrderId found")));
+		final I_C_Order salesOrder = load(salesOrderId, I_C_Order.class);
+		return salesOrder;
 	}
 }

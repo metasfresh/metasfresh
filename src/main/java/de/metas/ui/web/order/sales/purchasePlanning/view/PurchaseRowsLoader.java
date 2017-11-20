@@ -6,7 +6,6 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -106,32 +105,42 @@ class PurchaseRowsLoader
 
 	private PurchaseRow createPurchaseRowsGroup(final I_C_OrderLine salesOrderLine)
 	{
+		final int salesOrderId = salesOrderLine.getC_Order_ID();
 		final int salesOrderLineId = salesOrderLine.getC_OrderLine_ID();
 		final Timestamp datePromised = salesOrderLine.getDatePromised();
 		final int orgId = salesOrderLine.getAD_Org_ID();
 		final int warehouseId = salesOrderLine.getM_Warehouse_ID();
 
 		final Map<Integer, I_C_BPartner_Product> vendorProductInfosByVendorId = getVendorProductInfosIndexedByVendorId(salesOrderLine);
-		final Set<Integer> vendorIdsConsidered = new HashSet<>();
 
+		//
+		// Create rows from existing Purchase candidates
 		final List<PurchaseCandidate> purchaseCandidates = purchaseCandidatesBySalesOrderLineId.get(salesOrderLineId);
 		final ArrayList<PurchaseRow> rows = purchaseCandidates.stream()
-				// TODO: shall we skip already Processed/Processing candidates?
-				.map(purchaseCandidate -> {
-					final I_C_BPartner_Product vendorProductInfo = vendorProductInfosByVendorId.get(purchaseCandidate.getVendorBPartnerId());
-					final PurchaseRow row = createRowFromPurchaseCandidate(purchaseCandidate, vendorProductInfo, datePromised);
-					vendorIdsConsidered.add(purchaseCandidate.getVendorBPartnerId());
-					return row;
-				})
+				.map(purchaseCandidate -> rowFromPurchaseCandidateBuilder()
+						.purchaseCandidate(purchaseCandidate)
+						.vendorProductInfo(vendorProductInfosByVendorId.get(purchaseCandidate.getVendorBPartnerId()))
+						.datePromised(datePromised)
+						.build())
 				.collect(Collectors.toCollection(ArrayList::new));
 
+		//
+		// Create rows from vendor product info
+		final Set<Integer> vendorIdsConsidered = rows.stream().map(PurchaseRow::getVendorBPartnerId).collect(ImmutableSet.toImmutableSet());
 		vendorProductInfosByVendorId.values()
 				.stream()
-				.filter(vendorProductInfo -> !vendorIdsConsidered.contains(vendorProductInfo.getC_BPartner_ID()))
-				.map(vendorProductInfo -> createRowFromVendorProductInfo(salesOrderLineId, vendorProductInfo, datePromised, orgId, warehouseId))
+				.filter(vendorProductInfo -> !vendorIdsConsidered.contains(vendorProductInfo.getC_BPartner_ID())) // only if vendor was not already considered (i.e. there was no purchase candidate for it)
+				.map(vendorProductInfo -> rowFromVendorProductInfoBuilder()
+						.salesOrderId(salesOrderId)
+						.salesOrderLineId(salesOrderLineId)
+						.vendorProductInfo(vendorProductInfo)
+						.datePromised(datePromised)
+						.orgId(orgId)
+						.warehouseId(warehouseId)
+						.build())
 				.forEach(rows::add);
-		
-		if(rows.isEmpty())
+
+		if (rows.isEmpty())
 		{
 			return null;
 		}
@@ -141,6 +150,7 @@ class PurchaseRowsLoader
 		final JSONLookupValue uom = createUOMLookupValueForProductId(product.getKeyAsInt());
 		final PurchaseRow groupRow = PurchaseRow.builder()
 				.rowId(PurchaseRowId.groupId(salesOrderLineId))
+				.salesOrderId(salesOrderLine.getC_Order_ID())
 				.rowType(PurchaseRowType.GROUP)
 				.product(product)
 				.uom(uom)
@@ -149,6 +159,7 @@ class PurchaseRowsLoader
 				.orgId(orgId)
 				.warehouseId(warehouseId)
 				.includedRows(rows)
+				.readonly(true) // grouping lines are always readonly
 				.build();
 
 		return groupRow;
@@ -165,7 +176,8 @@ class PurchaseRowsLoader
 				.collect(GuavaCollectors.toImmutableMapByKeyKeepFirstDuplicate(I_C_BPartner_Product::getC_BPartner_ID));
 	}
 
-	private PurchaseRow createRowFromPurchaseCandidate(
+	@Builder(builderMethodName = "rowFromPurchaseCandidateBuilder", builderClassName = "RowFromPurchaseCandidateBuilder")
+	private PurchaseRow buildRowFromPurchaseCandidate(
 			@NonNull final PurchaseCandidate purchaseCandidate,
 			@Nullable final I_C_BPartner_Product vendorProductInfo,
 			@NotNull final Date datePromised)
@@ -185,6 +197,7 @@ class PurchaseRowsLoader
 
 		return PurchaseRow.builder()
 				.rowId(PurchaseRowId.lineId(purchaseCandidate.getSalesOrderLineId(), bpartnerId))
+				.salesOrderId(purchaseCandidate.getSalesOrderId())
 				.rowType(PurchaseRowType.LINE)
 				.product(product)
 				.uom(uom)
@@ -194,10 +207,13 @@ class PurchaseRowsLoader
 				.purcaseCandidateRepoId(purchaseCandidate.getRepoId())
 				.orgId(purchaseCandidate.getOrgId())
 				.warehouseId(purchaseCandidate.getWarehouseId())
+				.readonly(!purchaseCandidate.isProcessed())
 				.build();
 	}
 
-	private PurchaseRow createRowFromVendorProductInfo(
+	@Builder(builderMethodName = "rowFromVendorProductInfoBuilder", builderClassName = "RowFromVendorProductInfoBuilder")
+	private static PurchaseRow buildRowFromVendorProductInfo(
+			final int salesOrderId,
 			final int salesOrderLineId,
 			@Nullable final I_C_BPartner_Product vendorProductInfo,
 			@NotNull final Date datePromised,
@@ -211,6 +227,7 @@ class PurchaseRowsLoader
 
 		return PurchaseRow.builder()
 				.rowId(PurchaseRowId.lineId(salesOrderLineId, bpartnerId))
+				.salesOrderId(salesOrderId)
 				.rowType(PurchaseRowType.LINE)
 				.product(product)
 				.uom(uom)
@@ -218,6 +235,7 @@ class PurchaseRowsLoader
 				.vendorBPartner(vendorBPartner)
 				.orgId(orgId)
 				.warehouseId(warehouseId)
+				.readonly(false)
 				.build();
 	}
 
