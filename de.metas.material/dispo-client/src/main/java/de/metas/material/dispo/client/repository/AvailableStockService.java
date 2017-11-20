@@ -5,8 +5,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
 import java.util.List;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
-import org.adempiere.mm.attributes.api.ImmutableAttributeSet.Builder;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeValue;
@@ -15,6 +13,8 @@ import org.springframework.stereotype.Service;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Splitter;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableList.Builder;
 
 import de.metas.material.dispo.client.repository.AvailableStockResult.AvailableStockResultBuilder;
 import de.metas.material.dispo.client.repository.AvailableStockResult.Group;
@@ -95,8 +95,8 @@ public class AvailableStockService
 
 			if (type == Type.ATTRIBUTE_SET)
 			{
-				final ImmutableAttributeSet attributeSet = extractAttributeSetFromStorageAttributesKey(storageAttributesKey);
-				groupBuilder.attributes(attributeSet);
+				final List<I_M_AttributeValue> attributevalues = extractAttributeSetFromStorageAttributesKey(storageAttributesKey);
+				groupBuilder.attributeValues(attributevalues);
 			}
 
 			return groupBuilder.build();
@@ -132,18 +132,18 @@ public class AvailableStockService
 	}
 
 	@VisibleForTesting
-	ImmutableAttributeSet extractAttributeSetFromStorageAttributesKey(@NonNull final String storageAttributesKey)
+	List<I_M_AttributeValue> extractAttributeSetFromStorageAttributesKey(@NonNull final String storageAttributesKey)
 	{
 		try
 		{
-			final Builder builder = ImmutableAttributeSet.builder();
+			final Builder<I_M_AttributeValue> builder = ImmutableList.<I_M_AttributeValue>builder();
 
 			final Iterable<String> singleAttributeIds = Splitter
 					.on(ProductDescriptor.STORAGE_ATTRIBUTES_KEY_DELIMITER).split(storageAttributesKey);
 			for (final String singleAttributeId : singleAttributeIds)
 			{
 				final I_M_AttributeValue attributeValue = loadAttributeValueFromStringId(singleAttributeId);
-				builder.attributeValue(attributeValue.getM_Attribute(), attributeValue.getValue());
+				builder.add(attributeValue);
 			}
 			return builder.build();
 		}

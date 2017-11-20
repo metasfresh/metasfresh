@@ -3,7 +3,8 @@ package de.metas.material.dispo.client.repository;
 import static de.metas.testsupport.MetasfreshAssertions.assertThatModel;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
+import java.util.List;
+
 import org.adempiere.mm.attributes.api.impl.AttributesTestHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
@@ -76,19 +77,19 @@ public class AvailableStockServiceTests
 		final String storageAttributesKey = attributeValue1.getM_AttributeValue_ID()
 				+ ProductDescriptor.STORAGE_ATTRIBUTES_KEY_DELIMITER
 				+ attributeValue2.getM_AttributeValue_ID();
-		final ImmutableAttributeSet result = availableStockService
+		final List<I_M_AttributeValue> result = availableStockService
 				.extractAttributeSetFromStorageAttributesKey(storageAttributesKey);
 
-		assertThat(result.getAttributes()).hasSize(2);
+		assertThat(result).hasSize(2);
 
-		assertThat(result.getAttributes()).anySatisfy(attribute -> {
-			assertThatModel(attribute).hasSameIdAs(attr1);
-			assertThat(result.getValueAsString(attribute)).isEqualTo("value1");
+		assertThat(result).anySatisfy(attributeValue -> {
+			assertThatModel(attributeValue).hasSameIdAs(attributeValue1);
+			assertThat(attributeValue.getValue()).isEqualTo("value1");
 		});
 
-		assertThat(result.getAttributes()).anySatisfy(attribute -> {
-			assertThatModel(attribute).hasSameIdAs(attr2);
-			assertThat(result.getValueAsString(attribute)).isEqualTo("value2");
+		assertThat(result).anySatisfy(attributeValue -> {
+			assertThatModel(attributeValue).hasSameIdAs(attributeValue2);
+			assertThat(attributeValue.getValue()).isEqualTo("value2");
 		});
 	}
 

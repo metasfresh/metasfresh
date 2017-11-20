@@ -1,14 +1,24 @@
 package de.metas.material.dispo.client.repository;
 
+import static org.adempiere.model.InterfaceWrapperHelper.getModelTranslationMap;
+
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.mm.attributes.api.IAttributeSet;
-import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.util.Check;
+import org.adempiere.util.Services;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_AttributeValue;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+
+import de.metas.i18n.IMsgBL;
+import de.metas.i18n.ITranslatableString;
+import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.NonNull;
@@ -71,16 +81,21 @@ public class AvailableStockResult
 			ATTRIBUTE_SET, OTHER_STORAGE_KEYS, ALL_STORAGE_KEYS
 		}
 
-		private final int productId;
-		private final ImmutableAttributeSet attributes;
-		private final Quantity qty;
-		private final Type type;
+		int productId;
+
+		List<I_M_AttributeValue> attributeValues;
+		Quantity qty;
+		Type type;
+
+		ImmutableMap<String, Object> lookupAttributesMap;
+		ITranslatableString storageAttributesString;
+		ITranslatableString uomSymbolStr;
 
 		@Builder
 		public Group(
 				final int productId,
 				@NonNull final Type type,
-				@Nullable final IAttributeSet attributes,
+				@Nullable final List<I_M_AttributeValue> attributeValues,
 				@NonNull final Quantity qty)
 		{
 			Check.assume(productId > 0, "productId > 0");
@@ -89,15 +104,82 @@ public class AvailableStockResult
 
 			if (type == Type.ATTRIBUTE_SET)
 			{
-				Check.errorIf(attributes == null,
+				Check.errorIf(attributeValues == null,
 						"The given type parameter is {}, therefore the given attribute set may not be null; productId={}; qty={}", type, productId, qty);
-				this.attributes = ImmutableAttributeSet.copyOf(attributes);
+				this.attributeValues = ImmutableList.copyOf(attributeValues);
 			}
 			else
 			{
-				this.attributes = ImmutableAttributeSet.EMPTY;
+				this.attributeValues = ImmutableList.of();
 			}
 			this.qty = qty;
+			this.uomSymbolStr = createUomSymbolStr();
+			this.lookupAttributesMap = createLookupAttributesMap();
+			this.storageAttributesString = createStorageAttributesString();
+		}
+
+		private ITranslatableString createUomSymbolStr()
+		{
+			final I_C_UOM uom = qty.getUOM();
+			final ITranslatableString uomSymbolStr = getModelTranslationMap(uom)
+					.getColumnTrl(I_C_UOM.COLUMNNAME_UOMSymbol, uom.getUOMSymbol());
+			return uomSymbolStr;
+		}
+
+		private ImmutableMap<String, Object> createLookupAttributesMap()
+		{
+			final ImmutableMap.Builder<String, Object> attributeMapBuilder = ImmutableMap.builder();
+			switch (getType())
+			{
+				case ATTRIBUTE_SET:
+					for (final I_M_AttributeValue attributevalue : attributeValues)
+					{
+						attributeMapBuilder.put(Integer.toString(attributevalue.getM_Attribute_ID()), attributevalue.getValue());
+					}
+					break;
+				case OTHER_STORAGE_KEYS:
+					break; // nothing
+				case ALL_STORAGE_KEYS:
+					break; // nothing
+				default:
+					Check.errorIf(true, "Unexpected Group.Type={}; gtroup={}", getType(), this);
+					break;
+			}
+			return attributeMapBuilder.build();
+		}
+
+		private ITranslatableString createStorageAttributesString()
+		{
+			final IMsgBL msgBL = Services.get(IMsgBL.class);
+
+			final ITranslatableString result;
+			switch (getType())
+			{
+				case ATTRIBUTE_SET:
+					final List<ITranslatableString> singleStrings = new ArrayList<>();
+					for (final I_M_AttributeValue attributeValue : attributeValues)
+					{
+						final ITranslatableString attributeValueStr = getModelTranslationMap(attributeValue)
+								.getColumnTrl(I_M_AttributeValue.COLUMNNAME_Name, attributeValue.getName());
+						singleStrings.add(attributeValueStr);
+					}
+					result = ITranslatableString.compose(" ", singleStrings);
+
+					break;
+				case OTHER_STORAGE_KEYS:
+					result = msgBL.getTranslatableMsgText(ProductDescriptor.MSG_STORAGE_ATTRIBUTES_KEY_OTHER);
+					break;
+				case ALL_STORAGE_KEYS:
+					result = msgBL.getTranslatableMsgText(ProductDescriptor.MSG_STORAGE_ATTRIBUTES_KEY_ALL);
+					break;
+				default:
+					Check.errorIf(true, "Unexpected type={}; gtroup={}", getType(), this);
+					result = null;
+					break;
+			}
+			return result;
 		}
 	}
+
+
 }
