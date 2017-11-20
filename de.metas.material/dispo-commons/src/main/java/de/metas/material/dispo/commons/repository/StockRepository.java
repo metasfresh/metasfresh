@@ -2,12 +2,14 @@ package de.metas.material.dispo.commons.repository;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Objects;
 
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.util.Services;
+import org.springframework.stereotype.Service;
 
 import com.google.common.annotations.VisibleForTesting;
 
@@ -38,6 +40,7 @@ import lombok.Value;
  * #L%
  */
 
+@Service
 public class StockRepository
 {
 	@NonNull
@@ -105,11 +108,11 @@ public class StockRepository
 	{
 		final ICompositeQueryFilter<I_MD_Candidate_Stock_v> filterForCurrentStorageAttributesKey = createInitialANDFilterForProductIds(query);
 
-		if (storageAttributesKey == ProductDescriptor.STORAGE_ATTRIBUTES_KEY_OTHER)
+		if (Objects.equals(storageAttributesKey, ProductDescriptor.STORAGE_ATTRIBUTES_KEY_OTHER))
 		{
 			addNotLikeFiltersForAttributesKeys(filterForCurrentStorageAttributesKey, query.getStorageAttributesKeys());
 		}
-		else if (storageAttributesKey == ProductDescriptor.STORAGE_ATTRIBUTES_KEY_ALL)
+		else if (Objects.equals(storageAttributesKey, ProductDescriptor.STORAGE_ATTRIBUTES_KEY_ALL))
 		{
 			// nothing to add to the initial productIds filters
 		}
@@ -134,7 +137,7 @@ public class StockRepository
 	{
 		for (final String storageAttributesKeyAgain : attributesKeys)
 		{
-			if (storageAttributesKeyAgain != ProductDescriptor.STORAGE_ATTRIBUTES_KEY_OTHER)
+			if (!Objects.equals(storageAttributesKeyAgain, ProductDescriptor.STORAGE_ATTRIBUTES_KEY_OTHER))
 			{
 				final String likeExpression = createLikeExpression(storageAttributesKeyAgain);
 				compositeFilter.addStringNotLikeFilter(I_MD_Candidate_Stock_v.COLUMN_StorageAttributesKey, likeExpression, false);
