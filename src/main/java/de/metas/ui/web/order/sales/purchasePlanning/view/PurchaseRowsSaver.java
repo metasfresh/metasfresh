@@ -46,11 +46,12 @@ class PurchaseRowsSaver
 
 	@Builder
 	private PurchaseRowsSaver(
-			@NonNull final List<PurchaseRow> grouppingRows,
-			@NonNull final PurchaseCandidateRepository purchaseCandidatesRepo)
+			@NonNull final PurchaseCandidateRepository purchaseCandidatesRepo,
+			@NonNull final List<PurchaseRow> grouppingRows)
 	{
-		this.grouppingRows = grouppingRows;
 		this.purchaseCandidatesRepo = purchaseCandidatesRepo;
+
+		this.grouppingRows = grouppingRows;
 	}
 
 	public void save()
@@ -88,6 +89,8 @@ class PurchaseRowsSaver
 		{
 			purchaseCandidate = PurchaseCandidate.builder()
 					.salesOrderLineId(row.getSalesOrderLineId())
+					.orgId(row.getOrgId())
+					.warehouseId(row.getWarehouseId())
 					.productId(row.getProductId())
 					.uomId(row.getUOMId())
 					.vendorBPartnerId(row.getVendorBPartnerId())

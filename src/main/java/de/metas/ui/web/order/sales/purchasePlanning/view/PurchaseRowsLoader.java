@@ -24,6 +24,7 @@ import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 
+import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
@@ -98,6 +99,7 @@ class PurchaseRowsLoader
 		return salesOrderLines
 				.stream()
 				.map(salesOrderLine -> createPurchaseRowsGroup(salesOrderLine))
+				.filter(Predicates.notNull())
 				.collect(ImmutableList.toImmutableList());
 
 	}
@@ -106,6 +108,8 @@ class PurchaseRowsLoader
 	{
 		final int salesOrderLineId = salesOrderLine.getC_OrderLine_ID();
 		final Timestamp datePromised = salesOrderLine.getDatePromised();
+		final int orgId = salesOrderLine.getAD_Org_ID();
+		final int warehouseId = salesOrderLine.getM_Warehouse_ID();
 
 		final Map<Integer, I_C_BPartner_Product> vendorProductInfosByVendorId = getVendorProductInfosIndexedByVendorId(salesOrderLine);
 		final Set<Integer> vendorIdsConsidered = new HashSet<>();
@@ -124,8 +128,13 @@ class PurchaseRowsLoader
 		vendorProductInfosByVendorId.values()
 				.stream()
 				.filter(vendorProductInfo -> !vendorIdsConsidered.contains(vendorProductInfo.getC_BPartner_ID()))
-				.map(vendorProductInfo -> createRowFromVendorProductInfo(salesOrderLineId, vendorProductInfo, datePromised))
+				.map(vendorProductInfo -> createRowFromVendorProductInfo(salesOrderLineId, vendorProductInfo, datePromised, orgId, warehouseId))
 				.forEach(rows::add);
+		
+		if(rows.isEmpty())
+		{
+			return null;
+		}
 
 		final JSONLookupValue product = createProductLookupValue(salesOrderLine.getM_Product_ID());
 		final BigDecimal qtyToDeliver = salesOrderLine.getQtyOrdered().subtract(salesOrderLine.getQtyDelivered());
@@ -137,6 +146,8 @@ class PurchaseRowsLoader
 				.uom(uom)
 				.qtyToDeliver(qtyToDeliver)
 				.datePromised(datePromised)
+				.orgId(orgId)
+				.warehouseId(warehouseId)
 				.includedRows(rows)
 				.build();
 
@@ -177,16 +188,21 @@ class PurchaseRowsLoader
 				.rowType(PurchaseRowType.LINE)
 				.product(product)
 				.uom(uom)
+				.qtyToPurchase(purchaseCandidate.getQtyRequired())
 				.datePromised(datePromised)
 				.vendorBPartner(vendorBPartner)
 				.purcaseCandidateRepoId(purchaseCandidate.getRepoId())
+				.orgId(purchaseCandidate.getOrgId())
+				.warehouseId(purchaseCandidate.getWarehouseId())
 				.build();
 	}
 
 	private PurchaseRow createRowFromVendorProductInfo(
 			final int salesOrderLineId,
 			@Nullable final I_C_BPartner_Product vendorProductInfo,
-			@NotNull final Date datePromised)
+			@NotNull final Date datePromised,
+			final int orgId,
+			final int warehouseId)
 	{
 		final int bpartnerId = vendorProductInfo.getC_BPartner_ID();
 		final JSONLookupValue vendorBPartner = createBPartnerLookupValue(bpartnerId);
@@ -200,6 +216,8 @@ class PurchaseRowsLoader
 				.uom(uom)
 				.datePromised(datePromised)
 				.vendorBPartner(vendorBPartner)
+				.orgId(orgId)
+				.warehouseId(warehouseId)
 				.build();
 	}
 
