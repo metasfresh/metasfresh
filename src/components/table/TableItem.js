@@ -142,7 +142,7 @@ class TableItem extends Component {
         const {
             type, docId, rowId, tabId, readonly, mainTable, newRow,
             changeListenOnTrue, tabIndex, entity, getSizeClass,
-            handleRightClick, caption, colspan, onItemChange
+            handleRightClick, caption, colspan, onItemChange, viewId
         } = this.props;
 
         const {
@@ -194,7 +194,7 @@ class TableItem extends Component {
                     <TableCell
                         {...{getSizeClass, entity, type, docId, rowId,
                             tabId, item, readonly, widgetData, tabIndex,
-                            listenOnKeys, caption, mainTable
+                            listenOnKeys, caption, mainTable, viewId
                         }}
                         key={index}
                         isEdited={isEditable || edited === property}
