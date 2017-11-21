@@ -42,6 +42,11 @@ import lombok.NonNull;
  */
 public abstract class HUEditorProcessTemplate extends ViewBasedProcessTemplate
 {
+	protected final boolean isHUEditorView()
+	{
+		return isViewClass(HUEditorView.class);
+	}
+
 	@Override
 	protected final HUEditorView getView()
 	{
@@ -61,7 +66,7 @@ public abstract class HUEditorProcessTemplate extends ViewBasedProcessTemplate
 		{
 			return Stream.empty();
 		}
-		
+
 		return getView().streamByIds(filter.andOnlyRowIds(selectedDocumentIds));
 	}
 
