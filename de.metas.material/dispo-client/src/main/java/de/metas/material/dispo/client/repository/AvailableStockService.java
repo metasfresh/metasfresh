@@ -81,31 +81,36 @@ public class AvailableStockService
 	{
 		try
 		{
-			final GroupBuilder groupBuilder = Group.builder()
-					.productId(commonsResultGroup.getProductId());
-
-			final Quantity quantity = Quantity.of(
-					commonsResultGroup.getQty(),
-					retrieveStockingUOM(commonsResultGroup.getProductId()));
-			groupBuilder.qty(quantity);
-
-			final String storageAttributesKey = commonsResultGroup.getStorageAttributesKey();
-			final Type type = extractType(storageAttributesKey);
-			groupBuilder.type(type);
-
-			if (type == Type.ATTRIBUTE_SET)
-			{
-				final List<I_M_AttributeValue> attributevalues = extractAttributeSetFromStorageAttributesKey(storageAttributesKey);
-				groupBuilder.attributeValues(attributevalues);
-			}
-
-			return groupBuilder.build();
+			return createClientResultGroup0(commonsResultGroup);
 		}
 		catch (final RuntimeException e)
 		{
 			throw AdempiereException.wrapIfNeeded(e).appendParametersToMessage()
 					.setParameter("commonsResultGroup", commonsResultGroup);
 		}
+	}
+
+	private Group createClientResultGroup0(final ResultGroup commonsResultGroup)
+	{
+		final GroupBuilder groupBuilder = Group.builder()
+				.productId(commonsResultGroup.getProductId());
+
+		final Quantity quantity = Quantity.of(
+				commonsResultGroup.getQty(),
+				retrieveStockingUOM(commonsResultGroup.getProductId()));
+		groupBuilder.qty(quantity);
+
+		final String storageAttributesKey = commonsResultGroup.getStorageAttributesKey();
+		final Type type = extractType(storageAttributesKey);
+		groupBuilder.type(type);
+
+		if (type == Type.ATTRIBUTE_SET)
+		{
+			final List<I_M_AttributeValue> attributevalues = extractAttributeSetFromStorageAttributesKey(storageAttributesKey);
+			groupBuilder.attributeValues(attributevalues);
+		}
+
+		return groupBuilder.build();
 	}
 
 	private I_C_UOM retrieveStockingUOM(final int productId)

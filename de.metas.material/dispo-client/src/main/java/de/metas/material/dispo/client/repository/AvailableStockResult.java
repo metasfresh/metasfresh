@@ -13,7 +13,6 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeValue;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.i18n.IMsgBL;
@@ -83,8 +82,8 @@ public class AvailableStockResult
 
 		int productId;
 
-		List<I_M_AttributeValue> attributeValues;
 		Quantity qty;
+
 		Type type;
 
 		ImmutableMap<String, Object> lookupAttributesMap;
@@ -106,16 +105,11 @@ public class AvailableStockResult
 			{
 				Check.errorIf(attributeValues == null,
 						"The given type parameter is {}, therefore the given attribute set may not be null; productId={}; qty={}", type, productId, qty);
-				this.attributeValues = ImmutableList.copyOf(attributeValues);
-			}
-			else
-			{
-				this.attributeValues = ImmutableList.of();
 			}
 			this.qty = qty;
 			this.uomSymbolStr = createUomSymbolStr();
-			this.lookupAttributesMap = createLookupAttributesMap();
-			this.storageAttributesString = createStorageAttributesString();
+			this.lookupAttributesMap = createLookupAttributesMap(attributeValues);
+			this.storageAttributesString = createStorageAttributesString(attributeValues);
 		}
 
 		private ITranslatableString createUomSymbolStr()
@@ -126,7 +120,8 @@ public class AvailableStockResult
 			return uomSymbolStr;
 		}
 
-		private ImmutableMap<String, Object> createLookupAttributesMap()
+		private ImmutableMap<String, Object> createLookupAttributesMap(
+				@Nullable final List<I_M_AttributeValue> attributeValues)
 		{
 			final ImmutableMap.Builder<String, Object> attributeMapBuilder = ImmutableMap.builder();
 			switch (getType())
@@ -148,7 +143,8 @@ public class AvailableStockResult
 			return attributeMapBuilder.build();
 		}
 
-		private ITranslatableString createStorageAttributesString()
+		private ITranslatableString createStorageAttributesString(
+				@Nullable final List<I_M_AttributeValue> attributeValues)
 		{
 			final IMsgBL msgBL = Services.get(IMsgBL.class);
 

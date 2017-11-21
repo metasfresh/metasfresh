@@ -4,7 +4,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -117,57 +116,71 @@ public class SupplyRequiredHandler
 		}
 	}
 
-	private void handleSupplyRequiredEvent0(@NonNull final SupplyRequiredDescriptor materialDemandDescr)
+	private void handleSupplyRequiredEvent0(@NonNull final SupplyRequiredDescriptor supplyRequiredDescriptor)
 	{
-		final IMutableMRPContext mrpContext = mkMRPContext(materialDemandDescr);
+		final IMutableMRPContext mrpContext = mkMRPContext(supplyRequiredDescriptor);
 
 		if (ddOrderDemandMatcher.matches(mrpContext))
 		{
-			final List<DDOrder> ddOrders = ddOrderPojoSupplier
-					.supplyPojos(
-							mkRequest(materialDemandDescr, mrpContext),
-							mkMRPNotesCollector());
-
-			for (final DDOrder ddOrder : ddOrders)
-			{
-				for (final DDOrderLine ddOrderLine : ddOrder.getLines())
-				{
-					Check.errorIf(ddOrderLine.getNetworkDistributionLineId() <= 0,
-							"Every DDOrderLine pojo created by this planner needs to have detworkDistributionLineId > 0, but this one hasn't; ddOrderLine={}",
-							ddOrderLine);
-
-					final I_DD_NetworkDistributionLine networkLine = InterfaceWrapperHelper.create(
-							mrpContext.getCtx(),
-							ddOrderLine.getNetworkDistributionLineId(),
-							I_DD_NetworkDistributionLine.class,
-							mrpContext.getTrxName());
-
-					final DistributionAdvisedEvent distributionAdvisedEvent = DistributionAdvisedEvent.builder()
-							.eventDescriptor(materialDemandDescr.getEventDescr().createNew())
-							.fromWarehouseId(networkLine.getM_WarehouseSource_ID())
-							.toWarehouseId(networkLine.getM_Warehouse_ID())
-							.ddOrder(ddOrder)
-							.build();
-
-					materialEventService.fireEvent(distributionAdvisedEvent);
-				}
-			}
+			createAndFireDistributionAdvisedEvents(supplyRequiredDescriptor, mrpContext);
 		}
 
 		if (ppOrderDemandMatcher.matches(mrpContext))
 		{
-			final PPOrder ppOrder = ppOrderPojoSupplier
-					.supplyPPOrderPojoWithLines(
-							mkRequest(materialDemandDescr, mrpContext),
-							mkMRPNotesCollector());
-
-			final ProductionAdvisedEvent event = ProductionAdvisedEvent.builder()
-					.eventDescriptor(materialDemandDescr.getEventDescr().createNew())
-					.ppOrder(ppOrder)
-					.build();
-
-			materialEventService.fireEvent(event);
+			createAndFireProductionAdvisedEvents(supplyRequiredDescriptor, mrpContext);
 		}
+	}
+
+	private void createAndFireDistributionAdvisedEvents(
+			@NonNull final SupplyRequiredDescriptor supplyRequiredDescriptor,
+			@NonNull final IMutableMRPContext mrpContext)
+	{
+		final List<DDOrder> ddOrders = ddOrderPojoSupplier
+				.supplyPojos(
+						mkRequest(supplyRequiredDescriptor, mrpContext),
+						mkMRPNotesCollector());
+
+		for (final DDOrder ddOrder : ddOrders)
+		{
+			for (final DDOrderLine ddOrderLine : ddOrder.getLines())
+			{
+				Check.errorIf(ddOrderLine.getNetworkDistributionLineId() <= 0,
+						"Every DDOrderLine pojo created by this planner needs to have detworkDistributionLineId > 0, but this one hasn't; ddOrderLine={}",
+						ddOrderLine);
+
+				final I_DD_NetworkDistributionLine networkLine = InterfaceWrapperHelper.create(
+						mrpContext.getCtx(),
+						ddOrderLine.getNetworkDistributionLineId(),
+						I_DD_NetworkDistributionLine.class,
+						mrpContext.getTrxName());
+
+				final DistributionAdvisedEvent distributionAdvisedEvent = DistributionAdvisedEvent.builder()
+						.eventDescriptor(supplyRequiredDescriptor.getEventDescr().createNew())
+						.fromWarehouseId(networkLine.getM_WarehouseSource_ID())
+						.toWarehouseId(networkLine.getM_Warehouse_ID())
+						.ddOrder(ddOrder)
+						.build();
+
+				materialEventService.fireEvent(distributionAdvisedEvent);
+			}
+		}
+	}
+
+	private void createAndFireProductionAdvisedEvents(
+			@NonNull final SupplyRequiredDescriptor supplyRequiredDescriptor,
+			@NonNull final IMutableMRPContext mrpContext)
+	{
+		final PPOrder ppOrder = ppOrderPojoSupplier
+				.supplyPPOrderPojoWithLines(
+						mkRequest(supplyRequiredDescriptor, mrpContext),
+						mkMRPNotesCollector());
+
+		final ProductionAdvisedEvent event = ProductionAdvisedEvent.builder()
+				.eventDescriptor(supplyRequiredDescriptor.getEventDescr().createNew())
+				.ppOrder(ppOrder)
+				.build();
+
+		materialEventService.fireEvent(event);
 	}
 
 	private IMutableMRPContext mkMRPContext(@NonNull final SupplyRequiredDescriptor materialDemandEvent)
@@ -176,21 +189,17 @@ public class SupplyRequiredHandler
 
 		final MaterialDescriptor materialDescr = materialDemandEvent.getMaterialDescriptor();
 
-		final Properties ctx = Env.getCtx();
-		final String trxName = ITrx.TRXNAME_ThreadInherited;
-
-		final I_AD_Org org = load(eventDescr.getOrgId(), I_AD_Org.class);
 		final I_M_Warehouse warehouse = load(materialDescr.getWarehouseId(), I_M_Warehouse.class);
 
 		final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
 
-		final I_S_Resource plant = productPlanningDAO.findPlant(ctx,
+		final I_S_Resource plant = productPlanningDAO.findPlant(Env.getCtx(),
 				eventDescr.getOrgId(),
 				warehouse,
 				materialDescr.getProductId(),
 				materialDescr.getAttributeSetInstanceId());
 
-		final I_PP_Product_Planning productPlanning = productPlanningDAO.find(ctx,
+		final I_PP_Product_Planning productPlanning = productPlanningDAO.find(Env.getCtx(),
 				eventDescr.getOrgId(),
 				materialDescr.getWarehouseId(),
 				plant.getS_Resource_ID(),
@@ -205,13 +214,14 @@ public class SupplyRequiredHandler
 		mrpContext.setM_AttributeSetInstance_ID(materialDescr.getAttributeSetInstanceId());
 		mrpContext.setM_Warehouse(warehouse);
 		mrpContext.setDate(materialDescr.getDate());
-		mrpContext.setCtx(ctx);
-		mrpContext.setTrxName(trxName);
+		mrpContext.setCtx(Env.getCtx());
+		mrpContext.setTrxName(ITrx.TRXNAME_ThreadInherited);
 		mrpContext.setRequireDRP(true); // DRP means distribution resource planning? i.e. "consider making DD_Orders"?
 
 		mrpContext.setProductPlanning(productPlanning);
 		mrpContext.setPlant(plant);
 
+		final I_AD_Org org = load(eventDescr.getOrgId(), I_AD_Org.class);
 		mrpContext.setAD_Client_ID(org.getAD_Client_ID());
 		mrpContext.setAD_Org(org);
 		return mrpContext;
