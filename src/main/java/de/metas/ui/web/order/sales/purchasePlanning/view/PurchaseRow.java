@@ -164,6 +164,8 @@ public class PurchaseRow implements IViewRow
 		{
 			updateQtyToPurchaseFromIncludedRows();
 		}
+
+		System.out.println("created: " + this.rowId + ", RO=" + this.readonly + " -- " + this);
 	}
 
 	private PurchaseRow(final PurchaseRow from)
@@ -186,6 +188,8 @@ public class PurchaseRow implements IViewRow
 
 		viewEditorRenderModeByFieldName = from.viewEditorRenderModeByFieldName;
 		_fieldNameAndJsonValues = from._fieldNameAndJsonValues;
+
+		System.out.println("copied: " + this.rowId + ", RO=" + this.readonly + " -- " + this);
 	}
 
 	public PurchaseRow copy()
@@ -312,15 +316,14 @@ public class PurchaseRow implements IViewRow
 	{
 		if (readonly)
 		{
-			throw new AdempiereException("readonly");
+			throw new AdempiereException("readonly").setParameter("rowId", rowId);
 		}
 	}
 
 	public void changeQtyToPurchase(@NonNull final PurchaseRowId rowId, @NonNull final BigDecimal qtyToPurchase)
 	{
-		assertRowEditable();
-
 		final PurchaseRow row = getIncludedRowById(rowId);
+		row.assertRowEditable();
 		row.setQtyToPurchase(qtyToPurchase);
 
 		updateQtyToPurchaseFromIncludedRows();
@@ -328,9 +331,8 @@ public class PurchaseRow implements IViewRow
 
 	public void changeDatePromised(@NonNull final PurchaseRowId rowId, @NonNull final Date datePromised)
 	{
-		assertRowEditable();
-
 		final PurchaseRow row = getIncludedRowById(rowId);
+		row.assertRowEditable();
 		row.setDatePromised(datePromised);
 	}
 
