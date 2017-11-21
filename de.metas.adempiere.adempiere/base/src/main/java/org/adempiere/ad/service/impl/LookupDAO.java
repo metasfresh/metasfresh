@@ -166,14 +166,6 @@ public class LookupDAO implements ILookupDAO
 		private final String displayColumnSQL;
 		private final int zoomAD_Window_ID_Override;
 		private final boolean autoComplete;
-
-		// #2340
-		// Flag to mark a ref_table as ReferenceTarget
-		private final boolean isReferenceTarget;
-		// #2340
-		// Specify which [table_]Record_ID column is the wanter ReferenceTargetColumn; only relevant if the isReferenceTarget flag is true
-		private final int referenceTargetColumnID;
-
 	
 		private TableRefInfo(final TableRefInfoBuilder builder)
 		{
@@ -232,11 +224,6 @@ public class LookupDAO implements ILookupDAO
 
 			autoComplete = builder.autoComplete;
 
-			// #2340 ReferenceTarget
-			isReferenceTarget = builder.isReferenceTarget;
-			// #2340
-			// Specify which [table_]Record_ID column is the wanter ReferenceTargetColumn
-			referenceTargetColumnID = builder.referenceTargetColumnID;
 		}
 
 		@Override
@@ -257,9 +244,7 @@ public class LookupDAO implements ILookupDAO
 					.add("zoomWindowPO", zoomPO_Window_ID)
 					.add("overrideZoomWindow", zoomAD_Window_ID_Override)
 					.add("autoComplete", autoComplete)
-					// #2340
-					.add("isReferenceTarget", isReferenceTarget)
-					.add("referenceTargetColumnID", referenceTargetColumnID)
+					
 					.toString();
 		}
 
@@ -279,9 +264,7 @@ public class LookupDAO implements ILookupDAO
 					.append(zoomPO_Window_ID)
 					.append(zoomAD_Window_ID_Override)
 					.append(autoComplete)
-					// #2340
-					.append(isReferenceTarget)
-					.append(referenceTargetColumnID)
+					
 					.toHashcode();
 		}
 
@@ -402,17 +385,7 @@ public class LookupDAO implements ILookupDAO
 
 		}
 
-		@Override
-		public boolean isReferenceTarget()
-		{
-			return isReferenceTarget;
-		}
 		
-		@Override
-		public int getReferenceTargetColumnID()
-		{
-			return referenceTargetColumnID;
-		}
 
 	}
 
