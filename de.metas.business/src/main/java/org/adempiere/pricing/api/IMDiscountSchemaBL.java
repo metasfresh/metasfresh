@@ -34,8 +34,7 @@ import org.compiere.model.I_M_DiscountSchemaBreak;
 
 public interface IMDiscountSchemaBL extends ISingletonService
 {
-	final public static Comparator<I_M_DiscountSchemaBreak> REVERSED_BREAKS_COMPARATOR = Comparator.<I_M_DiscountSchemaBreak, BigDecimal> comparing(
-			schemaBreak -> schemaBreak.getBreakValue())
+	final public static Comparator<I_M_DiscountSchemaBreak> REVERSED_BREAKS_COMPARATOR = Comparator.<I_M_DiscountSchemaBreak, BigDecimal> comparing(I_M_DiscountSchemaBreak::getBreakValue)
 			.reversed();
 
 	/**

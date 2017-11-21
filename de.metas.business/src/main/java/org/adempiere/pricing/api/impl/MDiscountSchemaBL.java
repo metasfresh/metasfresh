@@ -39,9 +39,8 @@ import org.compiere.model.I_M_DiscountSchemaBreak;
 import org.compiere.model.I_M_DiscountSchemaLine;
 import org.compiere.model.MProductCategory;
 import org.compiere.model.X_M_DiscountSchema;
+import org.compiere.util.Env;
 import org.slf4j.Logger;
-
-import com.google.common.collect.ImmutableList;
 
 import de.metas.logging.LogManager;
 import lombok.NonNull;
@@ -100,7 +99,7 @@ public class MDiscountSchemaBL implements IMDiscountSchemaBL
 		else if (X_M_DiscountSchema.DISCOUNTTYPE_Formula.equals(discountType)
 				|| X_M_DiscountSchema.DISCOUNTTYPE_Pricelist.equals(discountType))
 		{
-			logger.info("Not supported (yet) DiscountType=" + discountType);
+			logger.warn("Not supported (yet) DiscountType={}", discountType);
 			return BigDecimal.ZERO;
 		}
 
@@ -111,11 +110,11 @@ public class MDiscountSchemaBL implements IMDiscountSchemaBL
 
 		if (isQtyBased)
 		{
-			logger.trace("Qty=" + qty + ",M_Product_ID=" + M_Product_ID + ",M_Product_Category_ID=" + M_Product_Category_ID);
+			logger.trace("Qty={}, M_Product_ID={}, M_Product_Category_ID={}", qty, M_Product_ID, M_Product_Category_ID);
 		}
 		else
 		{
-			logger.trace("Amt=" + amt + ",M_Product_ID=" + M_Product_ID + ",M_Product_Category_ID=" + M_Product_Category_ID);
+			logger.trace("Amt={}, M_Product_ID={}, M_Product_Category_ID={}", amt, M_Product_ID, M_Product_Category_ID);
 		}
 
 		I_M_DiscountSchemaBreak breakApplied = null;
@@ -171,7 +170,7 @@ public class MDiscountSchemaBL implements IMDiscountSchemaBL
 			{
 				discount = breakApplied.getBreakDiscount();
 			}
-			logger.debug("Discount=>" + discount);
+			logger.debug("Discount=>{}", discount);
 			return discount;
 			// for all breaks
 		}
@@ -201,18 +200,11 @@ public class MDiscountSchemaBL implements IMDiscountSchemaBL
 			final BigDecimal amt)
 	{
 
-		final List<I_M_DiscountSchemaBreak> applicableBreaks = breaks.stream()
+		return breaks.stream()
 				.filter(I_M_DiscountSchemaBreak::isActive)
 				.filter(schemaBreak -> breakApplies(schemaBreak, isQtyBased ? qty : amt, M_Product_ID, M_Product_Category_ID, attributeValueID))
 				.sorted(REVERSED_BREAKS_COMPARATOR)
-				.collect(ImmutableList.toImmutableList());
-
-		if (applicableBreaks.isEmpty())
-		{
-			return null;
-		}
-
-		return applicableBreaks.get(0);
+				.findFirst().orElse(null);
 	}
 
 	/**
@@ -239,11 +231,10 @@ public class MDiscountSchemaBL implements IMDiscountSchemaBL
 			return true;
 		}
 
-		final List<I_M_AttributeInstance> attributeInstances = instances.stream()
-				.filter(instance -> !hasNoValue(instance))
-				.collect(ImmutableList.toImmutableList());
+		final boolean anyAttributeInstanceMatches = instances.stream()
+				.anyMatch(instance -> !hasNoValue(instance));
 
-		return attributeInstances.isEmpty();
+		return !anyAttributeInstanceMatches;
 	}
 
 	@Override
@@ -340,7 +331,7 @@ public class MDiscountSchemaBL implements IMDiscountSchemaBL
 			final List<I_M_AttributeInstance> instances,
 			final BigDecimal bPartnerFlatDiscount)
 	{
-		if (price == null || BigDecimal.ZERO.compareTo(price) == 0)
+		if (price == null || price.signum() == 0)
 		{
 			return price;
 		}
@@ -364,9 +355,8 @@ public class MDiscountSchemaBL implements IMDiscountSchemaBL
 
 	private BigDecimal applyDiscount(@NonNull final BigDecimal price, @NonNull final BigDecimal discount)
 	{
-		final BigDecimal onehundred = BigDecimal.valueOf(100);
-		BigDecimal multiplier = (onehundred).subtract(discount);
-		multiplier = multiplier.divide(onehundred, 6, BigDecimal.ROUND_HALF_UP);
+		BigDecimal multiplier = (Env.ONEHUNDRED).subtract(discount);
+		multiplier = multiplier.divide(Env.ONEHUNDRED, 6, BigDecimal.ROUND_HALF_UP);
 		return price.multiply(multiplier);
 	}
 
