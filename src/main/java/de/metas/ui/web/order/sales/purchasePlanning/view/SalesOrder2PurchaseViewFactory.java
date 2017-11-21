@@ -10,7 +10,10 @@ import java.util.stream.Stream;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
+import org.adempiere.util.Services;
 import org.compiere.model.I_C_Order;
+import org.compiere.util.CCache;
+import org.compiere.util.Util.ArrayKey;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
@@ -18,10 +21,13 @@ import com.google.common.cache.RemovalNotification;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.document.engine.IDocument;
+import de.metas.i18n.ITranslatableString;
+import de.metas.process.IADProcessDAO;
 import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.PurchaseCandidateRepository;
 import de.metas.purchasecandidate.async.C_PurchaseCandidates_GeneratePurchaseOrders;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
+import de.metas.ui.web.order.sales.purchasePlanning.process.WEBUI_SalesOrder_PurchaseView_Launcher;
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewFactory;
@@ -32,6 +38,7 @@ import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.WindowId;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -64,6 +71,8 @@ public class SalesOrder2PurchaseViewFactory implements IViewFactory, IViewsIndex
 	// services
 	private final PurchaseCandidateRepository purchaseCandidatesRepo;
 
+	private final CCache<ArrayKey, ViewLayout> viewLayoutCache = CCache.newCache(SalesOrder2PurchaseViewFactory.class + "#ViewLayout", 1, 0);
+
 	//
 	private final Cache<ViewId, PurchaseView> views = CacheBuilder.newBuilder()
 			.expireAfterAccess(1, TimeUnit.HOURS)
@@ -82,10 +91,20 @@ public class SalesOrder2PurchaseViewFactory implements IViewFactory, IViewsIndex
 	}
 
 	@Override
-	public ViewLayout getViewLayout(final WindowId windowId, final JSONViewDataType viewDataType)
+	public ViewLayout getViewLayout(@NonNull final WindowId windowId, @NonNull final JSONViewDataType viewDataType)
 	{
+		final ArrayKey key = ArrayKey.of(windowId, viewDataType);
+		return viewLayoutCache.getOrLoad(key, () -> createViewLayout(windowId, viewDataType));
+	}
+
+	private ViewLayout createViewLayout(final WindowId windowId, final JSONViewDataType viewDataType)
+	{
+		final ITranslatableString caption = Services.get(IADProcessDAO.class).retrieveProcessNameByClassIfUnique(WEBUI_SalesOrder_PurchaseView_Launcher.class)
+				.orElse(null);
+		
 		return ViewLayout.builder()
 				.setWindowId(windowId)
+				.setCaption(caption)
 				//
 				.setHasAttributesSupport(false)
 				.setHasTreeSupport(true)
