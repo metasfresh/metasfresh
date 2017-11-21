@@ -5,13 +5,17 @@
 	<parent>
 		<artifactId>metasfresh-report</artifactId>
 		<groupId>de.metas.report</groupId>
-		<version>10.0.0</version>
+		<version>[1,10.0.0]</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
-	<groupId>de.metas.report</groupId>
+	<version>10.0.0</version>
 	<artifactId>de.metas.report.jasper.client</artifactId>
 	<packaging>jar</packaging>
+
+	<properties>
+		<metasfresh.version>[1,10.0.0]</metasfresh.version>
+	</properties>
 
 	<dependencies>
 		<dependency>
@@ -88,13 +92,13 @@ java.lang.ClassNotFoundException: No ClassLoaders found for: org.springframework
 		<dependency>
 			<groupId>de.metas.adempiere.adempiere</groupId>
 			<artifactId>de.metas.adempiere.adempiere.base</artifactId>
-			<version>10.0.0</version>
+			<version>${metasfresh.version}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>de.metas.report</groupId>
 			<artifactId>de.metas.report.jasper.commons</artifactId>
-			<version>10.0.0</version>
+			<version>${metasfresh.version}</version>
 		</dependency>
 	</dependencies>
 </project>

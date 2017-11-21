@@ -1,8 +1,10 @@
 package de.metas.testsupport;
 
+import static de.metas.testsupport.QueryFilterTestUtil.castOrNull;
 import static org.assertj.core.error.ElementsShouldSatisfy.elementsShouldSatisfyAny;
 
 import java.lang.reflect.Method;
+import java.util.Collection;
 import java.util.List;
 import java.util.function.Predicate;
 
@@ -14,7 +16,7 @@ import org.adempiere.ad.dao.impl.CompareQueryFilter;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.dao.impl.EqualsQueryFilter;
 import org.adempiere.ad.dao.impl.InArrayQueryFilter;
-import org.adempiere.ad.dao.impl.StringLikeFilter;
+import org.adempiere.ad.dao.impl.NotQueryFilter;
 import org.adempiere.model.ModelColumn;
 import org.assertj.core.api.AbstractAssert;
 import org.assertj.core.internal.Failures;
@@ -60,6 +62,24 @@ public class CompositeQueryFilterAssert extends AbstractAssert<CompositeQueryFil
 		return new CompositeQueryFilterAssert(actual);
 	}
 
+	public CompositeQueryFilterAssert isJoinAnd()
+	{
+		if(!actual.isJoinAnd())
+		{
+			failWithMessage("Expected the ICompositeQueryFilter <%s> to have JoinAnd", actual);
+		}
+		return this;
+	}
+
+	public CompositeQueryFilterAssert isJoinOr()
+	{
+		if(!actual.isJoinOr())
+		{
+			failWithMessage("Expected the ICompositeQueryFilter <%s> to be JoinOr", actual);
+		}
+		return this;
+	}
+
 	public CompositeQueryFilterAssert hasEqualsFilter(final ModelColumn column, final Object value)
 	{
 		final Predicate<IQueryFilter> p = filter -> {
@@ -87,21 +107,8 @@ public class CompositeQueryFilterAssert extends AbstractAssert<CompositeQueryFil
 		return anyFilterMatches(p);
 	}
 
-	@SuppressWarnings("unchecked")
-	private static <T extends IQueryFilter> T castOrNull(final IQueryFilter filter, final Class<T> clazz)
+	public CompositeQueryFilterAssert hasInArrayFilter(final ModelColumn column, final Collection<?> values)
 	{
-		final boolean filterIsInstanceOfClass = clazz.isAssignableFrom(filter.getClass());
-		if (!filterIsInstanceOfClass)
-		{
-			return null;
-		}
-		return (T)filter;
-	}
-
-	public CompositeQueryFilterAssert hasInArrayFilter(final ModelColumn column, final Object... values)
-	{
-		final String columnName = column.getColumnName();
-
 		final Predicate<IQueryFilter> p = filter -> {
 
 			final InArrayQueryFilter inArrayQueryFilter = castOrNull(filter, InArrayQueryFilter.class);
@@ -110,7 +117,7 @@ public class CompositeQueryFilterAssert extends AbstractAssert<CompositeQueryFil
 				return false;
 			}
 
-			final boolean hasColumnName = inArrayQueryFilter.getColumnName().equals(columnName);
+			final boolean hasColumnName = inArrayQueryFilter.getColumnName().equals(column.getColumnName());
 			if (!hasColumnName)
 			{
 				return false;
@@ -118,7 +125,7 @@ public class CompositeQueryFilterAssert extends AbstractAssert<CompositeQueryFil
 
 			try
 			{
-				Iterables.instance().assertContainsOnly(info, inArrayQueryFilter.getValuesOrNull(), values);
+				Iterables.instance().assertContainsOnly(info, inArrayQueryFilter.getValuesOrNull(), values.toArray());
 			}
 			catch (final AssertionError assertionError)
 			{
@@ -133,32 +140,33 @@ public class CompositeQueryFilterAssert extends AbstractAssert<CompositeQueryFil
 	public CompositeQueryFilterAssert hasStringLikeFilter(final ModelColumn column, final String likeExpression)
 	{
 		final Predicate<IQueryFilter> p = filter -> {
-
-			final StringLikeFilter stringLikeQueryFilter = castOrNull(filter, StringLikeFilter.class);
-			if (stringLikeQueryFilter == null)
+			try
+			{
+				QueryFilterAssert.assertThat(filter).isStringLikeFilter(column, likeExpression);
+				return true;
+			}
+			catch (AssertionError e)
 			{
 				return false;
 			}
+		};
+		return anyFilterMatches(p);
+	}
 
-			final boolean hasColumnName = stringLikeQueryFilter.getColumnName().equals(column.getColumnName());
-			if (!hasColumnName)
-			{
-				return false;
-			}
+	public CompositeQueryFilterAssert hasNotQueryFilter()
+	{
+		final Predicate<IQueryFilter> p = filter -> {
 
-			final boolean hasLikeExpression = Objects.equals(stringLikeQueryFilter.getValue(), likeExpression);
-			if (!hasLikeExpression)
-			{
-				return false;
-			}
-			return true;
+			final NotQueryFilter notQueryFilter = castOrNull(filter, NotQueryFilter.class);
+
+			final boolean filterIsNotQueryFilter = notQueryFilter != null;
+			return filterIsNotQueryFilter;
 		};
 		return anyFilterMatches(p);
 	}
 
 	public CompositeQueryFilterAssert hasCompositeOrFilter()
 	{
-
 		final Predicate<IQueryFilter> p = filter -> {
 
 			final ICompositeQueryFilter compositeQueryFilter = castOrNull(filter, ICompositeQueryFilter.class);
@@ -166,11 +174,23 @@ public class CompositeQueryFilterAssert extends AbstractAssert<CompositeQueryFil
 			{
 				return false;
 			}
-
 			return compositeQueryFilter.isJoinOr();
 		};
 		return anyFilterMatches(p);
+	}
 
+	public CompositeQueryFilterAssert hasCompositeAndFilter()
+	{
+		final Predicate<IQueryFilter> p = filter -> {
+
+			final ICompositeQueryFilter compositeQueryFilter = castOrNull(filter, ICompositeQueryFilter.class);
+			if (compositeQueryFilter == null)
+			{
+				return false;
+			}
+			return compositeQueryFilter.isJoinAnd();
+		};
+		return anyFilterMatches(p);
 	}
 
 	public CompositeQueryFilterAssert hasCompareFilter(final ModelColumn column, final Operator operator, final Object value)
@@ -251,7 +271,8 @@ public class CompositeQueryFilterAssert extends AbstractAssert<CompositeQueryFil
 		{
 			if (p.test(filter))
 			{
-				failWithMessage("None of the included filters should have columnName <%s>, but this filter does: <%s>", column.getColumnName(), filter);
+				failWithMessage("None of the filters included in actual \n<%s>\n should have columnName <%s>, but this filter does:\n<%s>",
+						actual, column.getColumnName(), filter);
 			}
 		}
 		return this;

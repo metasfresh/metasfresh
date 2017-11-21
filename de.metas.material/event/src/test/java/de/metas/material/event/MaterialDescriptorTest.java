@@ -48,7 +48,7 @@ public class MaterialDescriptorTest
 		assertThat(result.getProductId()).isLessThanOrEqualTo(0);
 		assertThat(result.getAttributeSetInstanceId()).isLessThanOrEqualTo(-1);
 		assertThat(result.getStorageAttributesKey())
-				.isSameAs(ProductDescriptor.STORAGE_ATTRIBUTES_KEY_UNSPECIFIED);
+				.isSameAs(ProductDescriptor.STORAGE_ATTRIBUTES_KEY_ALL);
 	}
 
 	@Test(expected = RuntimeException.class)
@@ -96,7 +96,7 @@ public class MaterialDescriptorTest
 	@Test(expected = RuntimeException.class)
 	public void completeMaterialDescriptor_with_incomplete_productdescriptor()
 	{
-		final ProductDescriptor incompleteProductDescriptor = ProductDescriptor.forProductIdOnly(PRODUCT_ID);
+		final ProductDescriptor incompleteProductDescriptor = ProductDescriptor.incompleteForProductId(PRODUCT_ID);
 		assertThat(incompleteProductDescriptor.isComplete()).isFalse();
 
 		MaterialDescriptor.builderForCompleteDescriptor()

@@ -131,7 +131,7 @@ public class DD_Order_GenerateRawMaterialsReturn extends JavaProcess
 			RawMaterialsReturnDDOrderLineCandidate candidate = key2candidate.get(key);
 			if (candidate == null)
 			{
-				final I_M_AttributeSetInstance attributeSetInstance = attributeSetInstanceBL.createAttributeSetInstanceFromAttributeSet(storageRecord.getAttributes());
+				final I_M_AttributeSetInstance attributeSetInstance = attributeSetInstanceBL.createASIFromAttributeSet(storageRecord.getAttributes());
 				final PlainAttributeSetInstanceAware attributeSetIinstanceAware = PlainAttributeSetInstanceAware.forProductIdAndAttributeSetInstanceId(
 						storageRecord.getProduct().getM_Product_ID(),
 						attributeSetInstance.getM_AttributeSetInstance_ID());

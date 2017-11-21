@@ -54,7 +54,8 @@ public interface IDimensionSpecAttributeBL extends ISingletonService
 	List<KeyNamePair> createAttrToValue(I_M_AttributeSetInstance asi, I_DIM_Dimension_Spec dimensionSpec);
 
 	/**
-	 * Create a new {@link I_M_AttributeSetInstance} containing instances for relevant attributes in dimensionSpec and values from the give asi
+	 * Create a new {@link I_M_AttributeSetInstance} containing instances for relevant attributes in dimensionSpec and values from the given asi.<br>
+	 * In other words, create a "projection" of the given asi, with respect to the given dimensionSpec.
 	 *
 	 * @param asi
 	 * @param dimensionSpec

@@ -34,12 +34,12 @@ public class ProductDescriptorTest
 	@Test
 	public void forProductIdOnly()
 	{
-		final ProductDescriptor forProductIdOnly = ProductDescriptor.forProductIdOnly(30);
+		final ProductDescriptor forProductIdOnly = ProductDescriptor.incompleteForProductId(30);
 
 		assertThat(forProductIdOnly.getProductId()).isEqualTo(30);
 		assertThat(forProductIdOnly.getAttributeSetInstanceId()).isLessThanOrEqualTo(-1);
 		assertThat(forProductIdOnly.getStorageAttributesKey())
-				.isSameAs(ProductDescriptor.STORAGE_ATTRIBUTES_KEY_UNSPECIFIED);
+				.isSameAs(ProductDescriptor.STORAGE_ATTRIBUTES_KEY_ALL);
 	}
 
 }

@@ -38,7 +38,7 @@ import lombok.Value;
 @Builder
 public class TransactionCreatedEvent implements MaterialEvent
 {
-	public static final String TYPE = "TransactionEvent";
+	public static final String TYPE = "TransactionCreatedEvent";
 
 	@NonNull
 	EventDescriptor eventDescriptor;

@@ -104,7 +104,7 @@ public class MaterialDescriptor extends ProductDescriptor
 				dateOperator,
 				productDescriptor == null ? 0 : productDescriptor.getProductId(),
 				productDescriptor == null ? -1 : productDescriptor.getAttributeSetInstanceId(),
-				productDescriptor == null ? STORAGE_ATTRIBUTES_KEY_UNSPECIFIED : productDescriptor.getStorageAttributesKey(),
+				productDescriptor == null ? STORAGE_ATTRIBUTES_KEY_ALL : productDescriptor.getStorageAttributesKey(),
 				productDescriptor == null ? false : productDescriptor.isComplete(),
 				complete);
 	}

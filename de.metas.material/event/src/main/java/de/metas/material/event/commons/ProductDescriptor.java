@@ -23,12 +23,12 @@ import lombok.experimental.FieldDefaults;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -48,11 +48,11 @@ public class ProductDescriptor
 		throw new UnsupportedOperationException();
 	}
 
-	public static final ProductDescriptor forProductIdOnly(final int productId)
+	public static final ProductDescriptor incompleteForProductId(final int productId)
 	{
 		return new ProductDescriptor(false, // complete == false
 				productId,
-				ProductDescriptor.STORAGE_ATTRIBUTES_KEY_UNSPECIFIED,
+				ProductDescriptor.STORAGE_ATTRIBUTES_KEY_ALL,
 				-1);
 	}
 
@@ -69,7 +69,16 @@ public class ProductDescriptor
 		return new ProductDescriptor(true, productId, storageAttributesKey, attributeSetInstanceId); // complete == true
 	}
 
-	public static final String STORAGE_ATTRIBUTES_KEY_UNSPECIFIED = new String("");
+	public static final String STORAGE_ATTRIBUTES_KEY_ALL = new String("<ALL_STORAGE_ATTRIBUTES_KEYS>");
+
+	public static final String MSG_STORAGE_ATTRIBUTES_KEY_ALL = "de.metas.material.dispo." + STORAGE_ATTRIBUTES_KEY_ALL;
+
+	/**
+	 * This key's meaning depends on the other keys it comes with.
+	 */
+	public static final String STORAGE_ATTRIBUTES_KEY_OTHER = new String("<OTHER_STORAGE_ATTRIBUTES_KEYS>");
+
+	public static final String MSG_STORAGE_ATTRIBUTES_KEY_OTHER = "de.metas.material.dispo." + STORAGE_ATTRIBUTES_KEY_OTHER;
 
 	/**
 	 * The delimiter should not contain any character that has a "regexp" meaning
@@ -85,7 +94,7 @@ public class ProductDescriptor
 
 	@Getter
 	String storageAttributesKey;
-	
+
 	/**
 	 * This ID is only here so that the candidate row's attributes can be displayed properly in the UI.
 	 */
