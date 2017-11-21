@@ -1,32 +1,18 @@
 import React, { Component } from 'react';
-import { Shortcuts } from 'react-shortcuts';
+import { Shortcut } from '../Shortcuts';
 
-class DocumentStatusContextShortcuts extends Component {
-    handleShortcuts = (action, event) => {
-        const {
-            handleDocumentCompleteStatus
-        } = this.props;
+export default class DocumentStatusContextShortcuts extends Component {
+    handleShortcut = event => {
+        const { handleDocumentCompleteStatus } = this.props;
 
-        switch (action) {
-            case 'COMPLETE_STATUS':
-                event.preventDefault();
-                return handleDocumentCompleteStatus();
-        }
-    }
+        event.preventDefault();
+
+        return handleDocumentCompleteStatus();
+    };
 
     render() {
         return (
-            <Shortcuts
-                name="DOCUMENT_STATUS_CONTEXT"
-                handler = { this.handleShortcuts }
-                targetNodeSelector = "body"
-                isolate = { true }
-                preventDefault = { true }
-                stopPropagation = { true }
-                alwaysFireHandler = { true }
-            />
-        )
+            <Shortcut name="COMPLETE_STATUS" handler={this.handleShortcut} />
+        );
     }
 }
-
-export default DocumentStatusContextShortcuts;

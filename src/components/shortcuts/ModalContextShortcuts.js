@@ -1,10 +1,21 @@
 import React, { Component } from 'react';
-import { Shortcuts } from 'react-shortcuts';
+import { Shortcut } from '../Shortcuts';
 
-class ModalContextShortcuts extends Component {
-    constructor(props){
-        super(props);
-    }
+export default class ModalContextShortcuts extends Component {
+    handlers = {
+        APPLY: event => {
+            event.preventDefault();
+
+            this.blurActiveElement();
+
+            this.props.apply && this.props.apply();
+        },
+        CANCEL: event => {
+            event.preventDefault();
+
+            this.props.cancel && this.props.cancel();
+        }
+    };
 
     blurActiveElement = () => {
         const activeElement = document.activeElement;
@@ -12,40 +23,20 @@ class ModalContextShortcuts extends Component {
         if (activeElement && activeElement.blur) {
             activeElement.blur();
         }
-    }
-
-    handleShortcuts = (action, event) => {
-        const {apply, cancel} = this.props;
-
-        switch (action) {
-            case 'APPLY':
-                event.preventDefault();
-
-                this.blurActiveElement();
-
-                apply && apply();
-
-                break;
-            case 'CANCEL':
-                event.preventDefault();
-                cancel && cancel();
-                break;
-        }
-    }
+    };
 
     render() {
-        return (
-        <Shortcuts
-            name="MODAL_CONTEXT"
-            handler = { this.handleShortcuts }
-            targetNodeSelector = "body"
-            isolate = { true }
-            preventDefault = { true }
-            stopPropagation = { true }
-            alwaysFireHandler = { true }
-        />
-        )
+        return [
+            <Shortcut
+                key="APPLY"
+                name="APPLY"
+                handler={this.handlers.APPLY}
+            />,
+            <Shortcut
+                key="CANCEL"
+                name="CANCEL"
+                handler={this.handlers.CANCEL}
+            />
+        ];
     }
 }
-
-export default ModalContextShortcuts;

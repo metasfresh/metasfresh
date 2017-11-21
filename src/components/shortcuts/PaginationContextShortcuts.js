@@ -1,52 +1,64 @@
 import React, { Component } from 'react';
-import { Shortcuts } from 'react-shortcuts';
+import { Shortcut } from '../Shortcuts';
 
-class PaginationContextShortcuts extends Component {
-    constructor(props){
-        super(props);
-    }
+export default class PaginationContextShortcuts extends Component {
+    handlers = {
+        FIRST_PAGE: event => {
+            event.preventDefault();
 
-    handleShortcuts = (action, event) => {
-        const {
-            handleFirstPage, handleLastPage, handlePrevPage, handleNextPage, pages, handleSelectAll
-        } = this.props;
+            return this.props.handleFirstPage();
+        },
+        LAST_PAGE: event => {
+            event.preventDefault();
 
-        switch (action) {
-            case 'FIRST_PAGE':
-                event.preventDefault();
-                return handleFirstPage();
-            case 'LAST_PAGE':
-                event.preventDefault();
-                return handleLastPage();
-            case 'NEXT_PAGE':
-                event.preventDefault();
-                if (pages > 1)
-                    return handleNextPage();
-                return;
-            case 'PREV_PAGE':
-                event.preventDefault();
-                if (pages > 1)
-                    return handlePrevPage();
-                return;
-            case 'SELECT_ALL_ROWS':
-                event.preventDefault();
-                return handleSelectAll();
+            return this.props.handleLastPage();
+        },
+        NEXT_PAGE: event => {
+            event.preventDefault();
+
+            if (this.props.pages > 1) return this.props.handleNextPage();
+            return;
+        },
+        PREV_PAGE: event => {
+            event.preventDefault();
+
+            if (this.props.pages > 1) return this.props.handlePrevPage();
+            return;
+        },
+        SELECT_ALL_ROWS: event => {
+            event.preventDefault();
+
+            return this.props.handleSelectAll();
         }
-    }
+    };
 
     render() {
-        return (
-            <Shortcuts
-                name="PAGINATION_CONTEXT"
-                handler = { this.handleShortcuts }
-                targetNodeSelector = "body"
-                isolate = { true }
-                preventDefault = { true }
-                stopPropagation = { true }
-                global
+        return [
+            <Shortcut
+                key="FIRST_PAGE"
+                name="FIRST_PAGE"
+                handler={this.handlers.FIRST_PAGE}
+            />,
+            <Shortcut
+                key="LAST_PAGE"
+                name="LAST_PAGE"
+                handler={this.handlers.LAST_PAGE}
+            />,
+            <Shortcut
+                key="NEXT_PAGE"
+                name="NEXT_PAGE"
+                handler={this.handlers.NEXT_PAGE}
+            />,
+            <Shortcut
+                key="PREV_PAGE"
+                name="PREV_PAGE"
+                handler={this.handlers.PREV_PAGE}
+            />,
+            <Shortcut
+                key="SELECT_ALL_ROWS"
+                name="SELECT_ALL_ROWS"
+                handler={this.handlers.SELECT_ALL_ROWS}
             />
-        )
+        ];
     }
 }
-
-export default PaginationContextShortcuts;

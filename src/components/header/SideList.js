@@ -6,7 +6,7 @@ import Referenced from './Referenced';
 import DocumentList from '../app/DocumentList';
 import onClickOutside from 'react-onclickoutside';
 import Tooltips from '../tooltips/Tooltips';
-import keymap from '../../keymap.js';
+import keymap from '../../shortcuts/keymap';
 import counterpart from 'counterpart';
 
 class SideList extends Component {
@@ -126,12 +126,7 @@ class SideList extends Component {
                             <i className={item.icon} />
                             { tooltipOpen === index &&
                                 <Tooltips
-                                    name={
-                                        keymap
-                                            .GLOBAL_CONTEXT[
-                                                'OPEN_SIDEBAR_MENU_' + index
-                                            ]
-                                    }
+                                    name={keymap['OPEN_SIDEBAR_MENU_' + index]}
                                     action={item.title}
                                     type={''}
                                 />
