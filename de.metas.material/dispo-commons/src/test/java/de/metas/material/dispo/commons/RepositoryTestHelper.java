@@ -14,7 +14,7 @@ import java.util.Date;
 
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateType;
-import de.metas.material.dispo.commons.repository.CandidateRepositoryCommands;
+import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.MaterialQuery;
 import de.metas.material.dispo.commons.repository.StockRepository;
@@ -53,7 +53,7 @@ public class RepositoryTestHelper
 
 	public final Candidate laterStockCandidate;
 
-	public RepositoryTestHelper(@NonNull final CandidateRepositoryCommands candidateRepositoryCommands)
+	public RepositoryTestHelper(@NonNull final CandidateRepositoryWriteService candidateRepositoryCommands)
 	{
 		materialDescriptorOfStockCandidate = MaterialDescriptor.builderForCompleteDescriptor()
 				.productDescriptor(createProductDescriptor())

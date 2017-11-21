@@ -65,12 +65,12 @@ import de.metas.material.dispo.model.X_MD_Candidate;
  * #L%
  */
 
-public class CandidateRepositoryCommandsTest
+public class CandidateRepositoryWriteServiceTests
 {
 	@Rule
 	public final AdempiereTestWatcher testWatcher = new AdempiereTestWatcher();
 
-	private CandidateRepositoryCommands candidateRepositoryCommands;
+	private CandidateRepositoryWriteService candidateRepositoryCommands;
 
 	private RepositoryTestHelper repositoryTestHelper;
 
@@ -79,7 +79,7 @@ public class CandidateRepositoryCommandsTest
 	{
 		AdempiereTestHelper.get().init();
 
-		candidateRepositoryCommands = new CandidateRepositoryCommands();
+		candidateRepositoryCommands = new CandidateRepositoryWriteService();
 
 		repositoryTestHelper = new RepositoryTestHelper(candidateRepositoryCommands);
 	}

@@ -37,7 +37,7 @@ import de.metas.material.dispo.commons.DispoTestUtils;
 import de.metas.material.dispo.commons.RepositoryTestHelper;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateType;
-import de.metas.material.dispo.commons.repository.CandidateRepositoryCommands;
+import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.StockRepository;
 import de.metas.material.dispo.model.I_MD_Candidate;
@@ -96,7 +96,7 @@ public class CandidateChangeHandlerTests
 
 	private StockCandidateService stockCandidateService;
 
-	private CandidateRepositoryCommands candidateRepositoryCommands;
+	private CandidateRepositoryWriteService candidateRepositoryCommands;
 
 	@Before
 	public void init()
@@ -104,7 +104,7 @@ public class CandidateChangeHandlerTests
 		AdempiereTestHelper.get().init();
 
 		candidateRepositoryRetrieval = new CandidateRepositoryRetrieval();
-		candidateRepositoryCommands = new CandidateRepositoryCommands();
+		candidateRepositoryCommands = new CandidateRepositoryWriteService();
 
 		stockRepository = new StockRepository();
 		stockCandidateService = new StockCandidateService(candidateRepositoryRetrieval, candidateRepositoryCommands);
