@@ -15,7 +15,7 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1740272971L;
+	private static final long serialVersionUID = -194506059L;
 
     /** Standard Constructor */
     public X_C_Flatrate_Term (Properties ctx, int C_Flatrate_Term_ID, String trxName)
@@ -696,6 +696,8 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	public static final String CONTRACTSTATUS_Waiting = "Wa";
 	/** EndingContract = Ec */
 	public static final String CONTRACTSTATUS_EndingContract = "Ec";
+	/** Voided = Vo */
+	public static final String CONTRACTSTATUS_Voided = "Vo";
 	/** Set Vertrags-Status.
 		@param ContractStatus Vertrags-Status	  */
 	@Override
