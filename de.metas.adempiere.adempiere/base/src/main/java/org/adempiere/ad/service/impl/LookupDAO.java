@@ -70,6 +70,7 @@ import org.compiere.util.NamePair;
 import org.compiere.util.ValueNamePair;
 import org.slf4j.Logger;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
@@ -140,7 +141,8 @@ public class LookupDAO implements ILookupDAO
 	}
 
 	@Immutable
-	/* package */static final class TableRefInfo implements ITableRefInfo
+	@VisibleForTesting
+	public static final class TableRefInfo implements ITableRefInfo
 	{
 		public static TableRefInfoBuilder builder()
 		{
@@ -414,7 +416,8 @@ public class LookupDAO implements ILookupDAO
 
 	}
 
-	static final class TableRefInfoBuilder
+	@VisibleForTesting
+	public static final class TableRefInfoBuilder
 	{
 		private String name; // used only for debugging
 		private String tableName;
@@ -680,7 +683,7 @@ public class LookupDAO implements ILookupDAO
 				+ "rt.AD_Window_ID as RT_AD_Window_ID, " // 12
 				+ "t." + I_AD_Table.COLUMNNAME_IsAutocomplete // 13
 				+ ", r.Name as ReferenceName" // 14
-				// #2340 Also collect infor about the ref table being a reference target
+				// #2340 Also collect information about the ref table being a reference target
 				+ ", rt." + I_AD_Ref_Table.COLUMNNAME_IsReferenceTarget // 15
 				+ ", rt." + I_AD_Ref_Table.COLUMNNAME_AD_Column_ReferenceTarget_ID // 16
 				+ " FROM AD_Ref_Table rt"

@@ -31,6 +31,8 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import de.metas.i18n.ITranslatableString;
 import de.metas.logging.LogManager;
 
@@ -59,6 +61,7 @@ import de.metas.logging.LogManager;
 public final class RelationTypeZoomProvidersFactory
 {
 	private static final Logger logger = LogManager.getLogger(RelationTypeZoomProvidersFactory.class);
+	private static final IADReferenceDAO adReferenceDAO = Services.get(IADReferenceDAO.class);
 
 	public static final transient RelationTypeZoomProvidersFactory instance = new RelationTypeZoomProvidersFactory();
 
@@ -152,7 +155,7 @@ public final class RelationTypeZoomProvidersFactory
 		Check.assumeNotEmpty(tableName, "tableName is not empty");
 
 		final POInfo poInfo = POInfo.getPOInfo(tableName);
-		
+
 		if (poInfo.getKeyColumnName() == null)
 		{
 			logger.error("{} does not have a single key column", tableName);
@@ -161,11 +164,11 @@ public final class RelationTypeZoomProvidersFactory
 
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
-		
+
 		try
 		{
 			pstmt = DB.prepareStatement(SQL_Reference, ITrx.TRXNAME_None);
-		
+
 			rs = pstmt.executeQuery();
 
 			final List<RelationTypeZoomProvider> result = retrieveZoomProviders(rs);
@@ -226,7 +229,7 @@ public final class RelationTypeZoomProvidersFactory
 
 	private static List<RelationTypeZoomProvider> retrieveZoomProviders(final ResultSet rs) throws SQLException
 	{
-		final IADReferenceDAO adReferenceDAO = Services.get(IADReferenceDAO.class);
+
 		final Properties ctx = Env.getCtx();
 
 		final List<RelationTypeZoomProvider> result = new ArrayList<>();
@@ -242,34 +245,16 @@ public final class RelationTypeZoomProvidersFactory
 
 			final I_AD_RelationType relationType = InterfaceWrapperHelper.create(ctx, adRelationTypeId, I_AD_RelationType.class, ITrx.TRXNAME_None);
 
-			final ADRefListItem roleSourceItem = adReferenceDAO.retrieveListItemOrNull(X_AD_RelationType.ROLE_SOURCE_AD_Reference_ID, relationType.getRole_Source());
-			final ITranslatableString roleSourceDisplayName = roleSourceItem == null ? null : roleSourceItem.getName();
-
-			final ADRefListItem roleTargetItem = adReferenceDAO.retrieveListItemOrNull(X_AD_RelationType.ROLE_TARGET_AD_Reference_ID, relationType.getRole_Target());
-			final ITranslatableString roleTargetDisplayName = roleTargetItem == null ? null : roleTargetItem.getName();
-
 			try
 			{
-				final RelationTypeZoomProvider zoomProvider = RelationTypeZoomProvider.builder()
-						.setDirected(relationType.isDirected())
-						.setAD_RelationType_ID(relationType.getAD_RelationType_ID())
-						.setInternalName(relationType.getInternalName())
-						//
-						.setSource_Reference_ID(relationType.getAD_Reference_Source_ID())
-						.setSourceRoleDisplayName(roleSourceDisplayName)
-						//
-						.setTarget_Reference_AD(relationType.getAD_Reference_Target_ID())
-						.setTargetRoleDisplayName(roleTargetDisplayName)
-						//
-						.setIsReferenceTarget(relationType.isReferenceTarget())
-						//
-						.buildOrNull();
-				if (zoomProvider == null)
+				final RelationTypeZoomProvider zoomProviderForRelType = findZoomProvider(relationType);
+
+				if (zoomProviderForRelType == null)
 				{
 					continue;
 				}
 
-				result.add(zoomProvider);
+				result.add(zoomProviderForRelType);
 			}
 			catch (Exception ex)
 			{
@@ -277,5 +262,33 @@ public final class RelationTypeZoomProvidersFactory
 			}
 		}
 		return result;
+
+	}
+
+	@VisibleForTesting
+	protected static RelationTypeZoomProvider findZoomProvider(final I_AD_RelationType relationType)
+	{
+		final ADRefListItem roleSourceItem = adReferenceDAO.retrieveListItemOrNull(X_AD_RelationType.ROLE_SOURCE_AD_Reference_ID, relationType.getRole_Source());
+		final ITranslatableString roleSourceDisplayName = roleSourceItem == null ? null : roleSourceItem.getName();
+
+		final ADRefListItem roleTargetItem = adReferenceDAO.retrieveListItemOrNull(X_AD_RelationType.ROLE_TARGET_AD_Reference_ID, relationType.getRole_Target());
+		final ITranslatableString roleTargetDisplayName = roleTargetItem == null ? null : roleTargetItem.getName();
+
+		final RelationTypeZoomProvider zoomProvider = RelationTypeZoomProvider.builder()
+				.setDirected(relationType.isDirected())
+				.setAD_RelationType_ID(relationType.getAD_RelationType_ID())
+				.setInternalName(relationType.getInternalName())
+				//
+				.setSource_Reference_ID(relationType.getAD_Reference_Source_ID())
+				.setSourceRoleDisplayName(roleSourceDisplayName)
+				//
+				.setTarget_Reference_AD(relationType.getAD_Reference_Target_ID())
+				.setTargetRoleDisplayName(roleTargetDisplayName)
+				//
+				.setIsReferenceTarget(relationType.isReferenceTarget())
+				//
+				.buildOrNull();
+		
+		return zoomProvider;
 	}
 }
