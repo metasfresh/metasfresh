@@ -188,6 +188,13 @@ public class WEBUI_M_HU_Pick extends ViewBasedProcessTemplate implements IProces
 		else if (row instanceof PPOrderLineRow)
 		{
 			final PPOrderLineRow ppOrderLineRow = PPOrderLineRow.cast(row);
+			
+			// this process does not apply to source HUs
+			if(ppOrderLineRow.isSourceHU())
+			{
+				return null;
+			}
+			
 			if (!ppOrderLineRow.getType().isHUOrHUStorage())
 			{
 				return null;
