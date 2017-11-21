@@ -54,7 +54,9 @@ import org.compiere.model.I_C_DocType_Sequence;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_C_UOM_Conversion;
+import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeSet;
+import org.compiere.model.I_M_AttributeValue;
 import org.compiere.model.I_M_DiscountSchema;
 import org.compiere.model.I_M_DiscountSchemaLine;
 import org.compiere.model.I_M_PriceList;
@@ -316,5 +318,8 @@ public final class AdempiereBaseValidator extends AbstractModuleInterceptor
 		
 		cacheMgt.enableRemoteCacheInvalidationForTableName(I_C_BPartner.Table_Name);
 		cacheMgt.enableRemoteCacheInvalidationForTableName(I_C_BP_Relation.Table_Name);
+
+		cacheMgt.enableRemoteCacheInvalidationForTableName(I_M_Attribute.Table_Name);
+		cacheMgt.enableRemoteCacheInvalidationForTableName(I_M_AttributeValue.Table_Name);
 	}
 }
