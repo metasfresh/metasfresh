@@ -132,7 +132,6 @@ public final class LookupValuesList
 	/** Empty constructor */
 	private LookupValuesList()
 	{
-		super();
 		valuesById = ImmutableListMultimap.of();
 		debugProperties = ImmutableMap.of();
 	}

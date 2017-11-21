@@ -3,16 +3,20 @@ package de.metas.ui.web.window.descriptor.sql;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
+import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.model.I_M_FreightCost;
 import org.adempiere.pricing.api.IPriceListDAO;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
@@ -21,13 +25,26 @@ import org.compiere.model.I_M_ProductPrice;
 import org.compiere.util.CtxName;
 import org.compiere.util.CtxNames;
 import org.compiere.util.DB;
+import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 
+import com.google.common.base.CharMatcher;
 import com.google.common.base.Joiner;
+import com.google.common.base.Splitter;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.Language;
+import de.metas.i18n.NumberTranslatableString;
+import de.metas.material.dispo.client.repository.AvailableStockResult;
+import de.metas.material.dispo.client.repository.AvailableStockResult.Group;
+import de.metas.material.dispo.client.repository.AvailableStockService;
+import de.metas.material.dispo.commons.repository.MaterialQuery;
+import de.metas.material.dispo.commons.repository.MaterialQuery.MaterialQueryBuilder;
+import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.product.model.I_M_Product;
+import de.metas.quantity.Quantity;
 import de.metas.ui.web.document.filter.sql.SqlParamsCollector;
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.datatypes.LookupValue;
@@ -39,7 +56,9 @@ import de.metas.ui.web.window.descriptor.LookupDescriptor;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceContext;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFetcher;
 import lombok.Builder;
+import lombok.Builder.Default;
 import lombok.NonNull;
+import lombok.Value;
 
 /*
  * #%L
@@ -73,6 +92,8 @@ import lombok.NonNull;
  */
 public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSourceFetcher
 {
+	private static final String SYSCONFIG_MATERIAL_ORDERLINE_STORAGE_ATTRIBUTES_KEYS = "de.metas.ui.web.window.descriptor.sql.ProductLookupDescriptor.StorageAttributesKeys";
+
 	private static final Optional<String> LookupTableName = Optional.of(I_M_Product.Table_Name);
 	private static final String CONTEXT_LookupTableName = LookupTableName.get();
 
@@ -82,12 +103,21 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 	private static final CtxName param_AD_Org_ID = CtxNames.parse(WindowConstants.FIELDNAME_AD_Org_ID + "/-1");
 	private final Set<CtxName> parameters;
 
+	private final AvailableStockService availableStockService;
+
+	private static final String ATTRIBUTE_ASI = "asi";
+
 	@Builder
-	private ProductLookupDescriptor(@NonNull final String bpartnerParamName, @NonNull final String dateParamName)
+	private ProductLookupDescriptor(
+			@NonNull final String bpartnerParamName,
+			@NonNull final String dateParamName,
+			@NonNull final AvailableStockService availableStockService)
 	{
 		param_C_BPartner_ID = CtxNames.parse(bpartnerParamName + "/-1");
 		param_Date = CtxNames.parse(dateParamName + "/NULL");
 		parameters = ImmutableSet.of(param_C_BPartner_ID, param_M_PriceList_ID, param_Date, param_AD_Org_ID);
+
+		this.availableStockService = availableStockService;
 	}
 
 	@Override
@@ -140,8 +170,7 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 				final LookupValue value = loadLookupValue(rs);
 				valuesById.putIfAbsent(value.getIdAsInt(), value);
 			}
-
-			return LookupValuesList.fromCollection(valuesById.values());
+			return explodeByStorageRecords(LookupValuesList.fromCollection(valuesById.values()));
 		}
 		catch (final SQLException ex)
 		{
@@ -400,6 +429,107 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 	public Optional<WindowId> getZoomIntoWindowId()
 	{
 		return Optional.empty();
+	}
+
+	private final LookupValuesList explodeByStorageRecords(
+			@NonNull final LookupValuesList productLookupValues)
+	{
+		if (productLookupValues.isEmpty())
+		{
+			return productLookupValues;
+		}
+
+		final MaterialQueryBuilder materialQueryBuilder = MaterialQuery.builder();
+		addStorageAttributeKeysToQueryBuilder(materialQueryBuilder);
+
+		materialQueryBuilder.productIds(productLookupValues.getKeysAsInt());
+
+		// invoke the query
+		final AvailableStockResult availableStock = availableStockService.retrieveAvailableStock(materialQueryBuilder.build());
+		final List<Group> availableStockGroups = availableStock.getGroups();
+
+		// process the query's result into those explodedProductValues
+		return createLookupValuesFromAvailableStockGroups(productLookupValues, availableStockGroups);
+	}
+
+	private void addStorageAttributeKeysToQueryBuilder(@NonNull final MaterialQueryBuilder materialQueryBuilder)
+	{
+		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+		final int orgId = Env.getAD_Org_ID(Env.getCtx());
+		final int clientId = Env.getAD_Client_ID(Env.getCtx());
+
+		final String storageAttributesKeys = sysConfigBL.getValue(SYSCONFIG_MATERIAL_ORDERLINE_STORAGE_ATTRIBUTES_KEYS, ProductDescriptor.STORAGE_ATTRIBUTES_KEY_ALL, clientId, orgId);
+
+		final Splitter splitter = Splitter
+				.on(",")
+				.trimResults(CharMatcher.whitespace())
+				.omitEmptyStrings();
+		for (final String storageAttributesKey : splitter.splitToList(storageAttributesKeys))
+		{
+			materialQueryBuilder.storageAttributesKey(storageAttributesKey);
+		}
+	}
+
+	private LookupValuesList createLookupValuesFromAvailableStockGroups(
+			@NonNull final LookupValuesList initialLookupValues,
+			@NonNull final List<Group> availableStockGroups)
+	{
+		final List<LookupValue> explodedProductValues = new ArrayList<>();
+		for (final Group availableStockGroup : availableStockGroups)
+		{
+			final int productId = availableStockGroup.getProductId();
+			final LookupValue productLookupValue = initialLookupValues.getById(productId);
+			final ITranslatableString displayName = createDisplayName(productLookupValue.getDisplayNameTrl(), availableStockGroup);
+
+			final ImmutableMap<String, Object> attributeMap = availableStockGroup.getLookupAttributesMap();
+
+			final IntegerLookupValue integerLookupValue = IntegerLookupValue.builder()
+					.id(productId)
+					.displayName(displayName)
+					.attribute(ATTRIBUTE_ASI, attributeMap)
+					.build();
+			explodedProductValues.add(integerLookupValue);
+		}
+		return LookupValuesList.fromCollection(explodedProductValues);
+	}
+
+	private ITranslatableString createDisplayName(
+			@NonNull final ITranslatableString productDisplayName,
+			@NonNull final Group availableStockGroup)
+	{
+		final Quantity qtyOnHand = availableStockGroup.getQty();
+		final ITranslatableString qtyValueStr = NumberTranslatableString.of(qtyOnHand.getQty(), DisplayType.Quantity);
+
+		final ITranslatableString uomSymbolStr = availableStockGroup.getUomSymbolStr();
+
+		final ITranslatableString storageAttributeString = availableStockGroup.getStorageAttributesString();
+
+		final ITranslatableString displayName = ITranslatableString.compose("",
+				productDisplayName,
+				" - ", qtyValueStr, " ", uomSymbolStr,
+				" - ", storageAttributeString);
+		return displayName;
+	}
+
+	public static ProductAndAttributes toProductAndAttributes(@NonNull final LookupValue lookupValue)
+	{
+		final ImmutableAttributeSet attributes = ImmutableAttributeSet.ofValuesIndexByAttributeId(lookupValue.getAttribute(ATTRIBUTE_ASI));
+
+		return ProductAndAttributes.builder()
+				.productId(lookupValue.getIdAsInt())
+				.attributes(attributes)
+				.build();
+	}
+
+	@Value
+	@Builder
+	public static class ProductAndAttributes
+	{
+		private final int productId;
+
+		@Default
+		@NonNull
+		private final ImmutableAttributeSet attributes = ImmutableAttributeSet.EMPTY;
 	}
 
 	private static interface I_M_Product_Lookup_V
