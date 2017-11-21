@@ -37,13 +37,13 @@ import de.metas.material.planning.ProductPlanningBL;
 @SpringBootTest(classes = { StartupListener.class,
 		ShutdownListener.class,
 		ProductPlanningBL.class })
-public class CommonDemandHandlerTest
+public class SupplyRequiredHandlerTest
 {
 
 	@Test
 	public void collectNote_avoids_stackoverflowerror()
 	{
-		final IMRPNotesCollector mrpNotesCollector = new CommonDemandHandler().mkMRPNotesCollector();
+		final IMRPNotesCollector mrpNotesCollector = new SupplyRequiredHandler().mkMRPNotesCollector();
 		final IMRPNoteBuilder mrpNoteBuilder = mrpNotesCollector.newMRPNoteBuilder(null, "mrpErrorCode");
 		mrpNotesCollector.collectNote(mrpNoteBuilder);
 	}

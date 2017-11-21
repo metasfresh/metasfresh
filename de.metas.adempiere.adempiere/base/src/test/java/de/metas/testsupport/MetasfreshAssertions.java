@@ -3,6 +3,7 @@ package de.metas.testsupport;
 import javax.annotation.Nullable;
 
 import org.adempiere.ad.dao.ICompositeQueryFilter;
+import org.adempiere.ad.dao.IQueryFilter;
 import org.assertj.core.api.Assertions;
 
 /*
@@ -41,11 +42,21 @@ import org.assertj.core.api.Assertions;
  * @task https://github.com/metasfresh/metasfresh/issues/3006
  *
  */
+@SuppressWarnings("rawtypes")
 public class MetasfreshAssertions extends Assertions
 {
-	@SuppressWarnings("rawtypes")
 	public static CompositeQueryFilterAssert assertThat(@Nullable final ICompositeQueryFilter actual)
 	{
 		return new CompositeQueryFilterAssert(actual);
+	}
+
+	public static QueryFilterAssert assertThat(@Nullable final IQueryFilter actual)
+	{
+		return new QueryFilterAssert(actual);
+	}
+
+	public static ModelAssert assertThatModel(@Nullable final Object actual)
+	{
+		return new ModelAssert(actual);
 	}
 }

@@ -51,7 +51,7 @@ public class AttributesKeyGeneratorTest
 	public void updateStorageAttributesKey()
 	{
 		final I_M_Attribute attr1 = attributesTestHelper.createM_Attribute("test1", X_M_Attribute.ATTRIBUTEVALUETYPE_List, true);
-		final I_M_AttributeValue attributeValue = attributesTestHelper.createM_AttributeValue(attr1, "testValue1");
+		final I_M_AttributeValue attributeValue1 = attributesTestHelper.createM_AttributeValue(attr1, "testValue1");
 
 		final I_M_Attribute attr2 = attributesTestHelper.createM_Attribute("test2", X_M_Attribute.ATTRIBUTEVALUETYPE_List, true);
 		final I_M_AttributeValue attributeValue2 = attributesTestHelper.createM_AttributeValue(attr2, "testValue2");
@@ -60,16 +60,17 @@ public class AttributesKeyGeneratorTest
 		save(asi);
 
 		final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
-		attributeSetInstanceBL.getCreateAttributeInstance(asi, attributeValue);
+		attributeSetInstanceBL.getCreateAttributeInstance(asi, attributeValue1);
 		attributeSetInstanceBL.getCreateAttributeInstance(asi, attributeValue2);
 
 		final String result = AttributesKeyGenerator.builder()
 				.attributeSetInstanceId(asi.getM_AttributeSetInstance_ID())
 				.valueDelimiter("-MYDELIM-")
+				.valueAccessor(ai -> Integer.toString(ai.getM_AttributeValue_ID()))
 				.build()
 				.createAttributesKey();
 
-		assertThat(result).isEqualTo("testValue1-MYDELIM-testValue2");
+		assertThat(result).isEqualTo(attributeValue1.getM_AttributeValue_ID() + "-MYDELIM-" + attributeValue2.getM_AttributeValue_ID());
 	}
 
 }

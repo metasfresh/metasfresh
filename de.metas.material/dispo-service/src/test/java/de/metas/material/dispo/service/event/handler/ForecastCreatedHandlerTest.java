@@ -23,6 +23,8 @@ import de.metas.material.dispo.commons.DispoTestUtils;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryCommands;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
+import de.metas.material.dispo.commons.repository.MaterialQuery;
+import de.metas.material.dispo.commons.repository.StockRepository;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.dispo.service.candidatechange.handler.StockUpCandiateHandler;
@@ -60,12 +62,12 @@ import mockit.Mocked;
  * #L%
  */
 
-public class ForecastEventHandlerTest
+public class ForecastCreatedHandlerTest
 {
 	@Rule
 	public final AdempiereTestWatcher testWatcher = new AdempiereTestWatcher();
 
-	private ForecastCreatedHandler forecastEventHandler;
+	private ForecastCreatedHandler forecastCreatedHandler;
 
 	@Mocked
 	private MaterialEventService materialEventService;
@@ -73,18 +75,22 @@ public class ForecastEventHandlerTest
 	@Mocked
 	private CandidateRepositoryRetrieval candidateRepository;
 
+	@Mocked
+	private StockRepository stockRepository;
+
 	@Before
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
 
 		final CandidateRepositoryCommands candidateRepositoryCommands = new CandidateRepositoryCommands();
-		forecastEventHandler = new ForecastCreatedHandler(
+		forecastCreatedHandler = new ForecastCreatedHandler(
 				new CandidateChangeService(ImmutableList.of(
 						new StockUpCandiateHandler(
 								candidateRepository,
 								candidateRepositoryCommands,
-								materialEventService))));
+								materialEventService,
+								stockRepository))));
 	}
 
 	/**
@@ -94,24 +100,26 @@ public class ForecastEventHandlerTest
 	@Test
 	public void testWithoutProjectedQty()
 	{
-		final ForecastCreatedEvent forecastEvent = createForecastWithQtyOfEight();
-		final MaterialDescriptor materialDescriptorOfFirstAndOnlyForecastLine = forecastEvent
+		final ForecastCreatedEvent forecastCreatedEvent = createForecastWithQtyOfEight();
+		final MaterialDescriptor materialDescriptorOfFirstAndOnlyForecastLine = forecastCreatedEvent
 				.getForecast()
 				.getForecastLines()
 				.get(0)
 				.getMaterialDescriptor();
 
+		final MaterialQuery query = MaterialQuery.forMaterialDescriptor(materialDescriptorOfFirstAndOnlyForecastLine);
+
 		// @formatter:off
 		new Expectations()
 		{{
-			candidateRepository.retrieveAvailableStock(materialDescriptorOfFirstAndOnlyForecastLine);
+			stockRepository.retrieveSingleAvailableStockQty(query);
 			times = 1; result = BigDecimal.ZERO;
 
 			materialEventService.fireEvent(with(eventQuantity("8")));
 			times = 1;
 		}}; // @formatter:on
 
-		forecastEventHandler.handleForecastCreatedEvent(forecastEvent);
+		forecastCreatedHandler.handleForecastCreatedEvent(forecastCreatedEvent);
 		final List<I_MD_Candidate> result = DispoTestUtils.retrieveAllRecords().stream().sorted(Comparator.comparing(I_MD_Candidate::getSeqNo)).collect(Collectors.toList());
 
 		assertThat(result).hasSize(1);
@@ -128,24 +136,26 @@ public class ForecastEventHandlerTest
 	@Test
 	public void testWithProjectedQty()
 	{
-		final ForecastCreatedEvent forecastEvent = createForecastWithQtyOfEight();
-		final MaterialDescriptor materialDescriptorOfFirstAndOnlyForecastLine = forecastEvent
+		final ForecastCreatedEvent forecastCreatedEvent = createForecastWithQtyOfEight();
+		final MaterialDescriptor materialDescriptorOfFirstAndOnlyForecastLine = forecastCreatedEvent
 				.getForecast()
 				.getForecastLines()
 				.get(0)
 				.getMaterialDescriptor();
 
+		final MaterialQuery query = MaterialQuery.forMaterialDescriptor(materialDescriptorOfFirstAndOnlyForecastLine);
+
 		// @formatter:off
 		new Expectations()
 		{{
-			candidateRepository.retrieveAvailableStock(materialDescriptorOfFirstAndOnlyForecastLine);
+			stockRepository.retrieveSingleAvailableStockQty(query);
 			times = 1; result = new BigDecimal("3");
 
 			materialEventService.fireEvent(with(eventQuantity("5")));
 			times = 1;
 		}};	// @formatter:on
 
-		forecastEventHandler.handleForecastCreatedEvent(forecastEvent);
+		forecastCreatedHandler.handleForecastCreatedEvent(forecastCreatedEvent);
 		final List<I_MD_Candidate> result = DispoTestUtils.retrieveAllRecords().stream().sorted(Comparator.comparing(I_MD_Candidate::getSeqNo)).collect(Collectors.toList());
 
 		assertThat(result).hasSize(1);

@@ -24,10 +24,10 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.material.dispo.commons.CandidateService;
 import de.metas.material.dispo.commons.DispoTestUtils;
-import de.metas.material.dispo.commons.RepositoryTestHelper;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryCommands;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
+import de.metas.material.dispo.commons.repository.StockRepository;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
@@ -65,7 +65,7 @@ import mockit.Mocked;
  * #L%
  */
 
-public class DistributionPlanEventHandlerTests
+public class DistributionAdvisedHandlerHandlerTests
 {
 	/** Watches the current tests and dumps the database to console in case of failure */
 	@Rule
@@ -101,31 +101,37 @@ public class DistributionPlanEventHandlerTests
 
 	public static final int shipperId = 95;
 
-	private DistributionAdvisedHandler distributionPlanEventHandler;
+	private DistributionAdvisedHandler distributionAdvisedHandler;
 
 	@Mocked
 	private MaterialEventService materialEventService;
 
-	private CandidateRepositoryRetrieval candidateRepository;
+	private StockRepository stockRepository;
 
 	@Before
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
 
-		candidateRepository = new CandidateRepositoryRetrieval();
+		final CandidateRepositoryRetrieval candidateRepository = new CandidateRepositoryRetrieval();
 		final CandidateRepositoryCommands candidateRepositoryCommands = new CandidateRepositoryCommands();
 		final SupplyProposalEvaluator supplyProposalEvaluator = new SupplyProposalEvaluator(candidateRepository);
 
+		stockRepository = new StockRepository();
 		final StockCandidateService stockCandidateService = new StockCandidateService(candidateRepository, candidateRepositoryCommands);
 
-		final DemandCandiateHandler demandCandiateHandler = new DemandCandiateHandler(candidateRepository, candidateRepositoryCommands, materialEventService, stockCandidateService);
+		final DemandCandiateHandler demandCandiateHandler = new DemandCandiateHandler(
+				candidateRepository,
+				candidateRepositoryCommands,
+				materialEventService,
+				stockRepository,
+				stockCandidateService);
 		final SupplyCandiateHandler supplyCandiateHandler = new SupplyCandiateHandler(candidateRepository, candidateRepositoryCommands, stockCandidateService);
 		final CandidateChangeService candidateChangeService = new CandidateChangeService(ImmutableList.of(
 				demandCandiateHandler,
 				supplyCandiateHandler));
 
-		distributionPlanEventHandler = new DistributionAdvisedHandler(
+		distributionAdvisedHandler = new DistributionAdvisedHandler(
 				candidateRepository,
 				candidateRepositoryCommands,
 				candidateChangeService,
@@ -162,9 +168,7 @@ public class DistributionPlanEventHandlerTests
 						.build())
 				.build();
 
-		RepositoryTestHelper.setupMockedRetrieveAvailableStock(candidateRepository, null /*any materialDescriptor*/, "0");
-
-		distributionPlanEventHandler.handleDistributionAdvisedEvent(event);
+		distributionAdvisedHandler.handleDistributionAdvisedEvent(event);
 
 		final List<I_MD_Candidate> allNonStockRecords = DispoTestUtils.filterExclStock();
 		final int groupIdOfFirstRecord = allNonStockRecords.get(0).getMD_Candidate_GroupId();
@@ -219,13 +223,12 @@ public class DistributionPlanEventHandlerTests
 	}
 
 	/**
-	 * Submits two DistributionPlanEvent to the {@link MaterialDispoEventListenerFacade}.
+	 * Submits two distributionAdvisedEvent to the {@link MaterialDispoEventListenerFacade}.
 	 */
 	@Test
 	public void testTwoDistibutionPlanEvents()
 	{
-		RepositoryTestHelper.setupMockedRetrieveAvailableStock(candidateRepository, null, "0");
-		performTestTwoDistibutionPlanEvents(distributionPlanEventHandler);
+		performTestTwoDistibutionPlanEvents(distributionAdvisedHandler);
 	}
 
 	/**
@@ -234,7 +237,7 @@ public class DistributionPlanEventHandlerTests
 	 * @param mdEventListener
 	 */
 	public static void performTestTwoDistibutionPlanEvents(
-			@NonNull final DistributionAdvisedHandler distributionPlanEventHandler)
+			@NonNull final DistributionAdvisedHandler distributionAdvisedEventHandler)
 	{
 		final DistributionAdvisedEvent event1 = DistributionAdvisedEvent.builder()
 				.eventDescriptor(new EventDescriptor(CLIENT_ID, ORG_ID))
@@ -254,7 +257,7 @@ public class DistributionPlanEventHandlerTests
 								.build())
 						.build())
 				.build();
-		distributionPlanEventHandler.handleDistributionAdvisedEvent(event1);
+		distributionAdvisedEventHandler.handleDistributionAdvisedEvent(event1);
 
 		assertThat(DispoTestUtils.filter(CandidateType.SUPPLY)).hasSize(1);
 		assertThat(DispoTestUtils.filter(CandidateType.DEMAND)).hasSize(1);
@@ -278,7 +281,7 @@ public class DistributionPlanEventHandlerTests
 								.build())
 						.build())
 				.build();
-		distributionPlanEventHandler.handleDistributionAdvisedEvent(event2);
+		distributionAdvisedEventHandler.handleDistributionAdvisedEvent(event2);
 
 		assertThat(DispoTestUtils.filter(CandidateType.SUPPLY)).hasSize(2); // one supply record per event
 		assertThat(DispoTestUtils.filter(CandidateType.DEMAND)).hasSize(2); // one demand record per event

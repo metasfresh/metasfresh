@@ -5,12 +5,17 @@
 	<parent>
 		<groupId>de.metas.material</groupId>
 		<artifactId>metasfresh-material</artifactId>
-		<version>10.0.0</version>
+		<version>[1,10.0.0]</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
 	<artifactId>metasfresh-material-event</artifactId>
+	<version>10.0.0</version>
 	<packaging>jar</packaging>
+
+	<properties>
+		<metasfresh.version>[1,10.0.0]</metasfresh.version>
+	</properties>
 
 	<dependencies>
 
@@ -18,15 +23,15 @@
 		<dependency>
 			<groupId>de.metas.util</groupId>
 			<artifactId>de.metas.util</artifactId>
-			<version>10.0.0</version>
+			<version>${metasfresh.version}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>de.metas.adempiere.adempiere</groupId>
 			<artifactId>de.metas.adempiere.adempiere.base</artifactId>
-			<version>10.0.0</version>
+			<version>${metasfresh.version}</version>
 		</dependency>
-		
+
 		<!--
 			Lombok
 			See https://github.com/metasfresh/metasfresh/issues/1125
@@ -42,7 +47,7 @@
 		<dependency>
 			<groupId>de.metas.adempiere.adempiere</groupId>
 			<artifactId>de.metas.adempiere.adempiere.base</artifactId>
-			<version>10.0.0</version>
+			<version>${metasfresh.version}</version>
 			<classifier>tests</classifier>
 			<scope>test</scope>
 		</dependency>

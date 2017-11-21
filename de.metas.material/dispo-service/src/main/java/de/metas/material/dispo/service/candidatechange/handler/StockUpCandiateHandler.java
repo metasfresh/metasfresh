@@ -12,6 +12,8 @@ import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryCommands;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
+import de.metas.material.dispo.commons.repository.MaterialQuery;
+import de.metas.material.dispo.commons.repository.StockRepository;
 import de.metas.material.event.MaterialEventService;
 import de.metas.material.event.demandWasFound.SupplyRequiredEvent;
 import lombok.NonNull;
@@ -54,11 +56,15 @@ public class StockUpCandiateHandler implements CandidateHandler
 
 	private final CandidateRepositoryCommands candidateRepositoryCommands;
 
+	private final StockRepository stockRepository;
+
 	public StockUpCandiateHandler(
 			@NonNull final CandidateRepositoryRetrieval candidateRepository,
 			@NonNull final CandidateRepositoryCommands candidateRepositoryCommands,
-			@NonNull final MaterialEventService materialEventService)
+			@NonNull final MaterialEventService materialEventService,
+			@NonNull final StockRepository stockRepository)
 	{
+		this.stockRepository = stockRepository;
 		this.candidateRepositoryCommands = candidateRepositoryCommands;
 		this.candidateRepository = candidateRepository;
 		this.materialEventService = materialEventService;
@@ -85,8 +91,8 @@ public class StockUpCandiateHandler implements CandidateHandler
 			return candidateWithQtyDeltaAndId; // this candidate didn't change anything
 		}
 
-		final BigDecimal projectedQty = candidateRepository //
-				.retrieveAvailableStock(candidate.getMaterialDescriptor());
+		final MaterialQuery query = MaterialQuery.forMaterialDescriptor(candidate.getMaterialDescriptor());
+		final BigDecimal projectedQty = stockRepository.retrieveSingleAvailableStockQty(query);
 
 		final BigDecimal requiredAdditionalQty = candidateWithQtyDeltaAndId
 				.getQuantity()

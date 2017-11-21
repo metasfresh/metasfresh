@@ -10,10 +10,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<artifactId>de.metas.document.archive.base</artifactId>
-
 	<packaging>jar</packaging>
-
-	<description>Document Archive Management :: Base</description>
 
 	<developers>
 
@@ -96,7 +93,6 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jar-plugin</artifactId>
-				<version>2.2</version>
 				<executions>
 					<execution>
 						<goals>

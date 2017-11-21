@@ -23,6 +23,7 @@ import de.metas.material.dispo.commons.RepositoryTestHelper;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryCommands;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
+import de.metas.material.dispo.commons.repository.StockRepository;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
@@ -55,7 +56,7 @@ import mockit.Mocked;
  * #L%
  */
 
-public class ShipmentScheduleEventHandlerTests
+public class ShipmentScheduleCreatedHandlerTests
 {
 	private static final int shipmentScheduleId = 76;
 
@@ -70,21 +71,27 @@ public class ShipmentScheduleEventHandlerTests
 	@Mocked
 	private MaterialEventService materialEventService;
 
-	private CandidateRepositoryRetrieval candidateRepositoryRetrieval;
-
 	private ShipmentScheduleCreatedHandler shipmentScheduleEventHandler;
+
+	private StockRepository stockRepository;
 
 	@Before
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
 
-		candidateRepositoryRetrieval = new CandidateRepositoryRetrieval();
+		final CandidateRepositoryRetrieval candidateRepositoryRetrieval = new CandidateRepositoryRetrieval();
 
 		final CandidateRepositoryCommands candidateRepositoryCommands = new CandidateRepositoryCommands();
 
+		stockRepository = new StockRepository();
+
 		final CandidateChangeService candidateChangeHandler = new CandidateChangeService(ImmutableList.of(
-				new DemandCandiateHandler(candidateRepositoryRetrieval, candidateRepositoryCommands, materialEventService,
+				new DemandCandiateHandler(
+						candidateRepositoryRetrieval,
+						candidateRepositoryCommands,
+						materialEventService,
+						stockRepository,
 						new StockCandidateService(candidateRepositoryRetrieval, candidateRepositoryCommands))));
 
 		shipmentScheduleEventHandler = new ShipmentScheduleCreatedHandler(candidateChangeHandler);
@@ -96,7 +103,7 @@ public class ShipmentScheduleEventHandlerTests
 		final ShipmentScheduleCreatedEvent event = createShipmentScheduleTestEvent();
 
 		RepositoryTestHelper.setupMockedRetrieveAvailableStock(
-				candidateRepositoryRetrieval,
+				stockRepository,
 				event.getMaterialDescriptor(),
 				"0");
 
