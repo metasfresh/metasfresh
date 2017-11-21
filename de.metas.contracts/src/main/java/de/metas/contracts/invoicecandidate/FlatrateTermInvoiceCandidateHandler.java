@@ -141,11 +141,13 @@ public class FlatrateTermInvoiceCandidateHandler extends AbstractInvoiceCandidat
 	private void setOrderAndOrderLineIfNeeded(@NonNull final I_C_Flatrate_Term term, @NonNull final I_C_Invoice_Candidate ic)
 	{
 		final I_C_OrderLine orderLine = term.getC_OrderLine_Term();
-		if (orderLine != null)
+		if (orderLine == null)
 		{
-			ic.setC_OrderLine(orderLine);
-			ic.setC_Order(orderLine.getC_Order());
+			return;
 		}
+
+		ic.setC_OrderLine(orderLine);
+		ic.setC_Order(orderLine.getC_Order());
 	}
 
 	private I_C_Invoice_Candidate createCandidateForTerm(final I_C_Flatrate_Term term)
@@ -370,7 +372,6 @@ public class FlatrateTermInvoiceCandidateHandler extends AbstractInvoiceCandidat
 		final I_C_Flatrate_Term term = retrieveTerm(ic);
 		ic.setC_UOM_ID(term.getC_UOM_ID());
 	}
-
 
 	@Override
 	public void setBPartnerData(final I_C_Invoice_Candidate ic)
