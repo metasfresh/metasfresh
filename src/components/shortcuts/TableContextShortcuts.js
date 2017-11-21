@@ -3,10 +3,14 @@ import { Shortcut } from '../Shortcuts';
 
 export default class TableContextShortcuts extends Component {
     handlers = {
-        TOGGLE_EXPAND: () => {
+        TOGGLE_EXPAND: event => {
+            event.preventDefault();
+
             this.props.handleToggleExpand();
         },
-        TOGGLE_QUICK_INPUT: () => {
+        TOGGLE_QUICK_INPUT: event => {
+            event.preventDefault();
+
             this.props.handleToggleQuickInput();
         }
     };
