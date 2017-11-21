@@ -90,14 +90,16 @@ public class ContractChangeBL implements IContractChangeBL
 	private void unlinkContractIfNeeded(@NonNull final I_C_Flatrate_Term currentTerm,
 			final @NonNull ContractChangeParameters contractChangeParameters)
 	{
-		final I_C_Flatrate_Term ancestor = flatrateDAO.retrieveAncestorFlatrateTerm(currentTerm);
-		if (ancestor != null && contractChangeParameters.isVoidSingleContract())
+		if (contractChangeParameters.isVoidSingleContract())
 		{
-			ancestor.setC_FlatrateTerm_Next(null);
-			ancestor.setAD_PInstance_EndOfTerm(null);
-			setAncestorMasterEndDateWhenUnlinkContract(ancestor);
-
-			InterfaceWrapperHelper.save(ancestor);
+			final I_C_Flatrate_Term ancestor = flatrateDAO.retrieveAncestorFlatrateTerm(currentTerm);
+			if (ancestor != null)
+			{
+				ancestor.setC_FlatrateTerm_Next(null);
+				ancestor.setAD_PInstance_EndOfTerm(null);
+				setAncestorMasterEndDateWhenUnlinkContract(ancestor);
+				InterfaceWrapperHelper.save(ancestor);
+			}
 		}
 	}
 
