@@ -40,33 +40,6 @@ public interface I_AD_Ref_Table
     public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set AD_Column_ReferenceTarget_ID.
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setAD_Column_ReferenceTarget_ID (int AD_Column_ReferenceTarget_ID);
-
-	/**
-	 * Get AD_Column_ReferenceTarget_ID.
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getAD_Column_ReferenceTarget_ID();
-
-	public org.compiere.model.I_AD_Column getAD_Column_ReferenceTarget();
-
-	public void setAD_Column_ReferenceTarget(org.compiere.model.I_AD_Column AD_Column_ReferenceTarget);
-
-    /** Column definition for AD_Column_ReferenceTarget_ID */
-    public static final org.adempiere.model.ModelColumn<I_AD_Ref_Table, org.compiere.model.I_AD_Column> COLUMN_AD_Column_ReferenceTarget_ID = new org.adempiere.model.ModelColumn<I_AD_Ref_Table, org.compiere.model.I_AD_Column>(I_AD_Ref_Table.class, "AD_Column_ReferenceTarget_ID", org.compiere.model.I_AD_Column.class);
-    /** Column name AD_Column_ReferenceTarget_ID */
-    public static final String COLUMNNAME_AD_Column_ReferenceTarget_ID = "AD_Column_ReferenceTarget_ID";
-
-	/**
 	 * Set Anzeige-Spalte.
 	 * Column that will display
 	 *
@@ -321,29 +294,6 @@ public interface I_AD_Ref_Table
     public static final org.adempiere.model.ModelColumn<I_AD_Ref_Table, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_AD_Ref_Table, Object>(I_AD_Ref_Table.class, "IsActive", null);
     /** Column name IsActive */
     public static final String COLUMNNAME_IsActive = "IsActive";
-
-	/**
-	 * Set IsReferenceTarget.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setIsReferenceTarget (boolean IsReferenceTarget);
-
-	/**
-	 * Get IsReferenceTarget.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public boolean isReferenceTarget();
-
-    /** Column definition for IsReferenceTarget */
-    public static final org.adempiere.model.ModelColumn<I_AD_Ref_Table, Object> COLUMN_IsReferenceTarget = new org.adempiere.model.ModelColumn<I_AD_Ref_Table, Object>(I_AD_Ref_Table.class, "IsReferenceTarget", null);
-    /** Column name IsReferenceTarget */
-    public static final String COLUMNNAME_IsReferenceTarget = "IsReferenceTarget";
 
 	/**
 	 * Set 'Value' anzeigen.

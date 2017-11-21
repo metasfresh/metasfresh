@@ -121,12 +121,12 @@ public class RelationTypeZoomProviderFactoryTest
 		return table;
 	}
 
-	private I_AD_Ref_Table createRefTable(final I_AD_Reference reference, @NonNull final I_AD_Column column)
+	private I_AD_Ref_Table createRefTable(final I_AD_Reference reference, @NonNull final I_AD_Table table)
 	{
 		final I_AD_Ref_Table refTable = newInstance(I_AD_Ref_Table.class);
 		refTable.setAD_Reference(reference);
-		refTable.setAD_Table(column.getAD_Table());
-		refTable.setAD_Column_ReferenceTarget(column);
+		refTable.setAD_Table(table);
+	
 
 		save(refTable);
 		return refTable;

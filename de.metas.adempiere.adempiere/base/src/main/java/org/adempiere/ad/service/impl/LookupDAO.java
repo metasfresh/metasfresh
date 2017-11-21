@@ -684,8 +684,6 @@ public class LookupDAO implements ILookupDAO
 				+ "t." + I_AD_Table.COLUMNNAME_IsAutocomplete // 13
 				+ ", r.Name as ReferenceName" // 14
 				// #2340 Also collect information about the ref table being a reference target
-				+ ", rt." + I_AD_Ref_Table.COLUMNNAME_IsReferenceTarget // 15
-				+ ", rt." + I_AD_Ref_Table.COLUMNNAME_AD_Column_ReferenceTarget_ID // 16
 				+ " FROM AD_Ref_Table rt"
 				+ " INNER JOIN AD_Reference r on (r.AD_Reference_ID=rt.AD_Reference_ID)"
 				+ " INNER JOIN AD_Table t ON (rt.AD_Table_ID=t.AD_Table_ID)"
@@ -720,10 +718,6 @@ public class LookupDAO implements ILookupDAO
 				final boolean autoComplete = "Y".equals(rs.getString(13));
 				final String referenceName = rs.getString(14);
 
-				// #2340 referenceTarget
-				final boolean isReferenceTarget = "Y".equals(rs.getString(15));
-				final int referenceTargetColumnID = rs.getInt(16);
-
 				tableRefInfo = TableRefInfo.builder()
 						.setName(referenceName)
 						.setTableName(TableName)
@@ -738,9 +732,6 @@ public class LookupDAO implements ILookupDAO
 						.setZoomPO_Window_ID(zoomPO_Window_ID)
 						.setZoomAD_Window_ID_Override(zoomAD_Window_ID_Override)
 						.setAutoComplete(autoComplete)
-						// #2340 ReferenceTarget
-						.setReferenceTarget(isReferenceTarget)
-						.setReferenceTargetColumnID(referenceTargetColumnID)
 						.build();
 			}
 

@@ -21,7 +21,6 @@ import org.adempiere.exceptions.DBException;
 import org.adempiere.exceptions.PORelationException;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.model.I_AD_Ref_Table;
 import org.compiere.model.I_AD_RelationType;
 import org.compiere.model.PO;
 import org.compiere.model.POInfo;
@@ -97,7 +96,6 @@ public final class RelationTypeZoomProvidersFactory
 					+ "    AND tab.AD_Reference_ID=ref.AD_Reference_ID" //
 					+ "    AND tab.AD_Table_ID=?" //
 					+ "    AND tab.AD_Key=?" //
-					+ "    AND tab." + I_AD_Ref_Table.COLUMNNAME_IsReferenceTarget + " = 'N'"
 					+ "  ORDER BY rt.Name";
 
 	/**
@@ -125,8 +123,6 @@ public final class RelationTypeZoomProvidersFactory
 			+ "      )" //
 			+ "    AND tab.IsActive='Y'" // Join the AD_Reference's AD_Ref_Table
 			+ "    AND tab.AD_Reference_ID=ref.AD_Reference_ID" //
-			+ "    AND tab." + I_AD_Ref_Table.COLUMNNAME_IsReferenceTarget + " = 'Y'"
-			+ "    AND tab." + I_AD_Ref_Table.COLUMNNAME_AD_Column_ReferenceTarget_ID + " is not null "
 			+ "  ORDER BY rt.Name";
 
 	private final CCache<String, List<RelationTypeZoomProvider>> sourceTableName2zoomProviders = CCache.newLRUCache(I_AD_RelationType.Table_Name + "#ZoomProvidersBySourceTableName", 100, 0);

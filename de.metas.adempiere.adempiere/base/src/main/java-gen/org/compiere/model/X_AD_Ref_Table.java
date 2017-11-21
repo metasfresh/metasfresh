@@ -14,7 +14,7 @@ public class X_AD_Ref_Table extends org.compiere.model.PO implements I_AD_Ref_Ta
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -2113606878L;
+	private static final long serialVersionUID = -1951439871L;
 
     /** Standard Constructor */
     public X_AD_Ref_Table (Properties ctx, int AD_Ref_Table_ID, String trxName)
@@ -26,7 +26,6 @@ public class X_AD_Ref_Table extends org.compiere.model.PO implements I_AD_Ref_Ta
 			setAD_Reference_ID (0);
 			setAD_Table_ID (0);
 			setEntityType (null); // U
-			setIsReferenceTarget (false); // N
 			setIsValueDisplayed (false);
         } */
     }
@@ -45,40 +44,6 @@ public class X_AD_Ref_Table extends org.compiere.model.PO implements I_AD_Ref_Ta
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
-
-	@Override
-	public org.compiere.model.I_AD_Column getAD_Column_ReferenceTarget() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_AD_Column_ReferenceTarget_ID, org.compiere.model.I_AD_Column.class);
-	}
-
-	@Override
-	public void setAD_Column_ReferenceTarget(org.compiere.model.I_AD_Column AD_Column_ReferenceTarget)
-	{
-		set_ValueFromPO(COLUMNNAME_AD_Column_ReferenceTarget_ID, org.compiere.model.I_AD_Column.class, AD_Column_ReferenceTarget);
-	}
-
-	/** Set AD_Column_ReferenceTarget_ID.
-		@param AD_Column_ReferenceTarget_ID AD_Column_ReferenceTarget_ID	  */
-	@Override
-	public void setAD_Column_ReferenceTarget_ID (int AD_Column_ReferenceTarget_ID)
-	{
-		if (AD_Column_ReferenceTarget_ID < 1) 
-			set_Value (COLUMNNAME_AD_Column_ReferenceTarget_ID, null);
-		else 
-			set_Value (COLUMNNAME_AD_Column_ReferenceTarget_ID, Integer.valueOf(AD_Column_ReferenceTarget_ID));
-	}
-
-	/** Get AD_Column_ReferenceTarget_ID.
-		@return AD_Column_ReferenceTarget_ID	  */
-	@Override
-	public int getAD_Column_ReferenceTarget_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Column_ReferenceTarget_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
 
 	@Override
 	public org.compiere.model.I_AD_Column getAD_Disp() throws RuntimeException
@@ -282,29 +247,6 @@ public class X_AD_Ref_Table extends org.compiere.model.PO implements I_AD_Ref_Ta
 	public java.lang.String getEntityType () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_EntityType);
-	}
-
-	/** Set IsReferenceTarget.
-		@param IsReferenceTarget IsReferenceTarget	  */
-	@Override
-	public void setIsReferenceTarget (boolean IsReferenceTarget)
-	{
-		set_Value (COLUMNNAME_IsReferenceTarget, Boolean.valueOf(IsReferenceTarget));
-	}
-
-	/** Get IsReferenceTarget.
-		@return IsReferenceTarget	  */
-	@Override
-	public boolean isReferenceTarget () 
-	{
-		Object oo = get_Value(COLUMNNAME_IsReferenceTarget);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
 	}
 
 	/** Set 'Value' anzeigen.
