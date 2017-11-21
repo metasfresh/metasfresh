@@ -59,6 +59,11 @@ public interface IContractChangeBL extends ISingletonService
 		private final String terminationReason;
 		@Default
 		private String action = ChangeTerm_ACTION_Cancel;
+
+		public boolean isVoidSingleContract()
+		{
+			return ChangeTerm_ACTION_VoidSingleContract.equals(getAction());
+		}
 	}
 
 	/**

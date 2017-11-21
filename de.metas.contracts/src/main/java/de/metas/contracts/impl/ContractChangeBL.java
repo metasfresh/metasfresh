@@ -75,7 +75,7 @@ public class ContractChangeBL implements IContractChangeBL
 			final @NonNull ContractChangeParameters contractChangeParameters)
 	{
 		final I_C_Flatrate_Term initialContract = Services.get(IFlatrateBL.class).getInitialFlatrateTerm(currentTerm);
-		if (initialContract == null || isVoidSingleContract(contractChangeParameters))
+		if (initialContract == null || contractChangeParameters.isVoidSingleContract())
 		{
 			cancelContractIfNotCanceledAlready(currentTerm, contractChangeParameters);
 			unlinkContractIfNeeded(currentTerm, contractChangeParameters);
@@ -87,21 +87,11 @@ public class ContractChangeBL implements IContractChangeBL
 		}
 	}
 
-	private boolean isVoidSingleContract(final @NonNull ContractChangeParameters contractChangeParameters)
-	{
-		return ChangeTerm_ACTION_VoidSingleContract.equals(extractAction(contractChangeParameters));
-	}
-
-	private String extractAction(final @NonNull ContractChangeParameters contractChangeParameters)
-	{
-		return contractChangeParameters.getAction();
-	}
-
 	private void unlinkContractIfNeeded(@NonNull final I_C_Flatrate_Term currentTerm,
 			final @NonNull ContractChangeParameters contractChangeParameters)
 	{
 		final I_C_Flatrate_Term ancestor = flatrateDAO.retrieveAncestorFlatrateTerm(currentTerm);
-		if (ancestor != null && isVoidSingleContract(contractChangeParameters))
+		if (ancestor != null && contractChangeParameters.isVoidSingleContract())
 		{
 			ancestor.setC_FlatrateTerm_Next(null);
 			ancestor.setAD_PInstance_EndOfTerm(null);

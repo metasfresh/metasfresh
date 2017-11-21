@@ -47,8 +47,8 @@ import de.metas.process.Param;
 public class C_Flatrate_Term_Extend
 		extends JavaProcess
 {
-	final private static IQueryBL queryBL = Services.get(IQueryBL.class);
-	final private static IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
+	final private IQueryBL queryBL = Services.get(IQueryBL.class);
+	final private IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 
 	@Param(parameterName = I_C_Flatrate_Transition.COLUMNNAME_IsAutoCompleteNewTerm, mandatory = false)
 	private String p_forceComplete;
