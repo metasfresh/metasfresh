@@ -1,7 +1,6 @@
 package de.metas.contracts.flatrate.process;
 
 import java.sql.Timestamp;
-import java.util.Iterator;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -23,8 +22,6 @@ public class C_Flatrate_Term_Change extends JavaProcess
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IContractChangeBL contractChangeBL = Services.get(IContractChangeBL.class);
 
-	public static final String ChangeTerm_ACTION_SwitchContract = "SC";
-	public static final String ChangeTerm_ACTION_Cancel = "CA";
 
 	public static final String PARAM_CHANGE_DATE = "EventDate";
 
@@ -32,7 +29,7 @@ public class C_Flatrate_Term_Change extends JavaProcess
 
 	public static final String PARAM_TERMINATION_MEMO = I_C_Flatrate_Term.COLUMNNAME_TerminationMemo;
 	public static final String PARAM_TERMINATION_REASON = I_C_Flatrate_Term.COLUMNNAME_TerminationReason;
-	
+
 	public static final String PARAM_ONLY_TERMINATE_CURRENT_TERM = "OnlyTerminateCurrentTerm";
 
 	@Param(parameterName = PARAM_ACTION, mandatory = true)
@@ -46,10 +43,6 @@ public class C_Flatrate_Term_Change extends JavaProcess
 
 	@Param(parameterName = PARAM_TERMINATION_REASON, mandatory = false)
 	private String terminationReason;
-	
-	@Param(parameterName = PARAM_ONLY_TERMINATE_CURRENT_TERM, mandatory = false)
-	private boolean isOnlyTerminateCurrentTerm;
-
 
 	@Override
 	@RunOutOfTrx
@@ -67,7 +60,7 @@ public class C_Flatrate_Term_Change extends JavaProcess
 	@Override
 	protected String doIt()
 	{
-		if (ChangeTerm_ACTION_SwitchContract.equals(action))
+		if (IContractChangeBL.ChangeTerm_ACTION_SwitchContract.equals(action))
 		{
 			throw new AdempiereException("Not implemented");
 		}
@@ -77,7 +70,7 @@ public class C_Flatrate_Term_Change extends JavaProcess
 				.isCloseInvoiceCandidate(true)
 				.terminationMemo(terminationMemo)
 				.terminationReason(terminationReason)
-				.isOnlyTerminateCurrentTerm(isOnlyTerminateCurrentTerm)
+				.action(action)
 				.build();
 
 		final Iterable<I_C_Flatrate_Term> flatrateTerms = retrieveSelection(getAD_PInstance_ID());
@@ -103,22 +96,15 @@ public class C_Flatrate_Term_Change extends JavaProcess
 
 	private final Iterable<I_C_Flatrate_Term> retrieveSelection(final int adPInstanceId)
 	{
-		return new Iterable<I_C_Flatrate_Term>()
-		{
-			@Override
-			public Iterator<I_C_Flatrate_Term> iterator()
-			{
-				return queryBL
-						.createQueryBuilder(I_C_Flatrate_Term.class)
-						.setOnlySelection(adPInstanceId)
-						.orderBy()
-						.addColumn(I_C_Flatrate_Term.COLUMN_C_Flatrate_Term_ID)
-						.endOrderBy()
-						.create()
-						.setOption(IQuery.OPTION_GuaranteedIteratorRequired, false)
-						.setOption(IQuery.OPTION_IteratorBufferSize, 50)
-						.iterate(I_C_Flatrate_Term.class);
-			}
-		};
+		return () -> queryBL
+				.createQueryBuilder(I_C_Flatrate_Term.class)
+				.setOnlySelection(adPInstanceId)
+				.orderBy()
+				.addColumn(I_C_Flatrate_Term.COLUMN_C_Flatrate_Term_ID)
+				.endOrderBy()
+				.create()
+				.setOption(IQuery.OPTION_GuaranteedIteratorRequired, false)
+				.setOption(IQuery.OPTION_IteratorBufferSize, 50)
+				.iterate(I_C_Flatrate_Term.class);
 	}
 }

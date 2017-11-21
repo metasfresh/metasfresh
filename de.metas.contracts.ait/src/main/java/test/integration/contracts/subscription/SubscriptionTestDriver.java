@@ -10,12 +10,12 @@ package test.integration.contracts.subscription;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -38,7 +38,6 @@ import java.util.List;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
-import org.adempiere.util.time.TimeSource;
 import org.compiere.model.MBPartnerLocation;
 import org.compiere.model.MUOM;
 import org.compiere.model.Query;
@@ -59,6 +58,7 @@ import de.metas.adempiere.ait.test.annotation.IntegrationTest;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.contracts.Contracts_Constants;
+import de.metas.contracts.IContractChangeBL;
 import de.metas.contracts.IContractsDAO;
 import de.metas.contracts.flatrate.exceptions.SubscriptionChangeException;
 import de.metas.contracts.flatrate.interfaces.I_C_OLCand;
@@ -430,14 +430,7 @@ public class SubscriptionTestDriver extends AIntegrationTestDriver
 		// set the system time to the term's NoticeDate + 1 day
 		// this way, we can expect our process to extend the term
 		final Timestamp testDate = TimeUtil.addDays(term.getNoticeDate(), +1);
-		SystemTime.setTimeSource(new TimeSource()
-		{
-			@Override
-			public long millis()
-			{
-				return testDate.getTime();
-			}
-		});
+		SystemTime.setTimeSource(() -> testDate.getTime());
 
 		// now run the process
 		helper.mkProcessHelper()
@@ -533,7 +526,7 @@ public class SubscriptionTestDriver extends AIntegrationTestDriver
 		// we expect the process to run successfully
 		helper.mkProcessHelper().setProcessClass(C_Flatrate_Term_Change.class)
 				.setRecordId(term.getC_Flatrate_Term_ID())
-				.setParameter(C_Flatrate_Term_Change.PARAM_ACTION, C_Flatrate_Term_Change.ChangeTerm_ACTION_Cancel)
+				.setParameter(C_Flatrate_Term_Change.PARAM_ACTION, IContractChangeBL.ChangeTerm_ACTION_Cancel)
 				.setParameter(C_Flatrate_Term_Change.PARAM_CHANGE_DATE, term.getEndDate())
 				.run();
 
@@ -587,7 +580,7 @@ public class SubscriptionTestDriver extends AIntegrationTestDriver
 		// we expect the process to run successfully
 		helper.mkProcessHelper().setProcessClass(C_Flatrate_Term_Change.class)
 				.setRecordId(term.getC_Flatrate_Term_ID())
-				.setParameter(C_Flatrate_Term_Change.PARAM_ACTION, C_Flatrate_Term_Change.ChangeTerm_ACTION_Cancel)
+				.setParameter(C_Flatrate_Term_Change.PARAM_ACTION, IContractChangeBL.ChangeTerm_ACTION_Cancel)
 				.setParameter(C_Flatrate_Term_Change.PARAM_CHANGE_DATE, cancelDate)
 				.run();
 
@@ -648,7 +641,7 @@ public class SubscriptionTestDriver extends AIntegrationTestDriver
 		// we expect the process to run successfully
 		helper.mkProcessHelper().setProcessClass(C_Flatrate_Term_Change.class)
 				.setRecordId(term.getC_Flatrate_Term_ID())
-				.setParameter(C_Flatrate_Term_Change.PARAM_ACTION, C_Flatrate_Term_Change.ChangeTerm_ACTION_Cancel)
+				.setParameter(C_Flatrate_Term_Change.PARAM_ACTION, IContractChangeBL.ChangeTerm_ACTION_Cancel)
 				.setParameter(C_Flatrate_Term_Change.PARAM_CHANGE_DATE, cancelDate)
 				.run();
 
@@ -715,7 +708,7 @@ public class SubscriptionTestDriver extends AIntegrationTestDriver
 
 		helper.mkProcessHelper().setProcessClass(C_Flatrate_Term_Change.class)
 				.setRecordId(term.getC_Flatrate_Term_ID())
-				.setParameter(C_Flatrate_Term_Change.PARAM_ACTION, C_Flatrate_Term_Change.ChangeTerm_ACTION_Cancel)
+				.setParameter(C_Flatrate_Term_Change.PARAM_ACTION, IContractChangeBL.ChangeTerm_ACTION_Cancel)
 				.setParameter(C_Flatrate_Term_Change.PARAM_CHANGE_DATE, cancelDate)
 				.setExpectedException(SubscriptionChangeException.class)
 				.run();
@@ -723,7 +716,7 @@ public class SubscriptionTestDriver extends AIntegrationTestDriver
 
 	/**
 	 * Checks if the newly created term is consistent with the conditions and transition it is based on.
-	 * 
+	 *
 	 * @param conditions
 	 * @param trans
 	 * @param term
@@ -781,7 +774,7 @@ public class SubscriptionTestDriver extends AIntegrationTestDriver
 	}
 
 	/**
-	 * 
+	 *
 	 * @param order
 	 */
 	private void checkSubscriptionOrder(final I_C_Order order)

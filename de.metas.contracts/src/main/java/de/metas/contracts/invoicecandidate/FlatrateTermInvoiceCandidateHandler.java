@@ -42,6 +42,7 @@ import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
+import de.metas.contracts.IContractChangeBL;
 import de.metas.contracts.IContractsDAO;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
@@ -130,13 +131,19 @@ public class FlatrateTermInvoiceCandidateHandler extends AbstractInvoiceCandidat
 		return false;
 	}
 
+	private boolean isCancelledContract(final I_C_Flatrate_Term term)
+	{
+		return X_C_Flatrate_Term.CONTRACTSTATUS_Quit.equals(term.getContractStatus())
+				|| X_C_Flatrate_Term.CONTRACTSTATUS_Voided.equals(term.getContractStatus());
+	}
+
 	private I_C_Invoice_Candidate createCandidateForTerm(final I_C_Flatrate_Term term)
 	{
-		if (X_C_Flatrate_Term.CONTRACTSTATUS_Quit.equals(term.getContractStatus()))
+		if (isCancelledContract(term))
 		{
 			return null;
 		}
-		
+
 		final Properties ctx = InterfaceWrapperHelper.getCtx(term);
 		final String trxName = InterfaceWrapperHelper.getTrxName(term);
 
@@ -188,7 +195,7 @@ public class FlatrateTermInvoiceCandidateHandler extends AbstractInvoiceCandidat
 		final I_C_Activity activity = Services.get(IProductAcctDAO.class).retrieveActivityForAcct(contextProvider, term.getAD_Org(), term.getM_Product());
 
 		ic.setC_Activity(activity);
-		ic.setIsTaxIncluded(term.isTaxIncluded()); 
+		ic.setIsTaxIncluded(term.isTaxIncluded());
 
 		final int taxCategoryId = term.getC_TaxCategory_ID();
 		final I_M_Warehouse warehouse = null;
@@ -299,7 +306,7 @@ public class FlatrateTermInvoiceCandidateHandler extends AbstractInvoiceCandidat
 
 		ic.setDateOrdered(getDateOrdered(term));
 
-		if (X_C_Flatrate_Term.CONTRACTSTATUS_Quit.equals(term.getContractStatus()) && term.isCloseInvoiceCandidate()) // terminate invoice candidates only when the flag is set
+		if (Services.get(IContractChangeBL.class).isCanceledContract(term) && term.isCloseInvoiceCandidate()) // terminate invoice candidates only when the flag is set
 		{
 			// Make sure that no further invoicing takes place
 			Services.get(IInvoiceCandBL.class).closeInvoiceCandidate(ic);
@@ -334,7 +341,7 @@ public class FlatrateTermInvoiceCandidateHandler extends AbstractInvoiceCandidat
 		ic.setDeliveryDate(ic.getDateOrdered());
 		ic.setQtyDelivered(ic.getQtyOrdered());
 	}
-	
+
 	@Override
 	public PriceAndTax calculatePriceAndTax(final I_C_Invoice_Candidate ic)
 	{
@@ -344,7 +351,7 @@ public class FlatrateTermInvoiceCandidateHandler extends AbstractInvoiceCandidat
 				.priceUOMId(term.getC_UOM_ID()) // 07090: when setting a priceActual, we also need to specify a PriceUOM
 				.build();
 	}
-	
+
 	@Override
 	public void setC_UOM_ID(final I_C_Invoice_Candidate ic)
 	{
