@@ -33,7 +33,7 @@ import lombok.Value;
 @Builder
 public class SupplyRequiredEvent implements MaterialEvent
 {
-	public static final String TYPE = "MaterialDemandEvent";
+	public static final String TYPE = "SupplyRequiredEvent";
 
 	@NonNull
 	SupplyRequiredDescriptor materialDemandDescriptor;
