@@ -92,7 +92,7 @@ public class StockUpCandiateHandler implements CandidateHandler
 		}
 
 		final MaterialQuery query = MaterialQuery.forMaterialDescriptor(candidate.getMaterialDescriptor());
-		final BigDecimal projectedQty = stockRepository.retrieveSingleAvailableStockQty(query);
+		final BigDecimal projectedQty = stockRepository.retrieveAvailableStockQtySum(query);
 
 		final BigDecimal requiredAdditionalQty = candidateWithQtyDeltaAndId
 				.getQuantity()
