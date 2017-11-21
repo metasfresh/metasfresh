@@ -153,7 +153,7 @@ public class ContractChangeBL implements IContractChangeBL
 		currentTerm.setIsCloseInvoiceCandidate(contractChangeParameters.isCloseInvoiceCandidate());
 		currentTerm.setIsAutoRenew(false);
 		setContractStatus(currentTerm, contractChangeParameters);
-		setDocStatusIfNeeded(currentTerm, contractChangeParameters);
+		setClosedDocStatusIfNeeded(currentTerm, contractChangeParameters);
 		InterfaceWrapperHelper.save(currentTerm);
 
 		cancelNextContractIfNeeded(currentTerm, contractChangeParameters);
@@ -170,7 +170,7 @@ public class ContractChangeBL implements IContractChangeBL
 	private boolean isNotAllowedToTerminateCurrentContract(@NonNull final I_C_Flatrate_Term currentTerm,
 			@NonNull final ContractChangeParameters contractChangeParameters)
 	{
-		return isVoidSingleContract(contractChangeParameters) && currentTerm.getC_FlatrateTerm_Next_ID() > 0;
+		return contractChangeParameters.isVoidSingleContract() && currentTerm.getC_FlatrateTerm_Next_ID() > 0;
 
 	}
 
@@ -196,7 +196,7 @@ public class ContractChangeBL implements IContractChangeBL
 	private void setMasterDates(@NonNull final I_C_Flatrate_Term currentTerm,
 			@NonNull final ContractChangeParameters contractChangeParameters)
 	{
-		if (isVoidSingleContract(contractChangeParameters))
+		if (contractChangeParameters.isVoidSingleContract())
 		{
 			currentTerm.setMasterStartDate(null);
 			currentTerm.setMasterEndDate(null);
@@ -210,7 +210,7 @@ public class ContractChangeBL implements IContractChangeBL
 	private void setContractStatus(@NonNull final I_C_Flatrate_Term currentTerm,
 			@NonNull final ContractChangeParameters contractChangeParameters)
 	{
-		if (isVoidSingleContract(contractChangeParameters))
+		if (contractChangeParameters.isVoidSingleContract())
 		{
 			currentTerm.setContractStatus(X_C_Flatrate_Term.CONTRACTSTATUS_Voided);
 		}
@@ -220,10 +220,10 @@ public class ContractChangeBL implements IContractChangeBL
 		}
 	}
 
-	private void setDocStatusIfNeeded(@NonNull final I_C_Flatrate_Term currentTerm,
+	private void setClosedDocStatusIfNeeded(@NonNull final I_C_Flatrate_Term currentTerm,
 			@NonNull final ContractChangeParameters contractChangeParameters)
 	{
-		if (isVoidSingleContract(contractChangeParameters))
+		if (contractChangeParameters.isVoidSingleContract())
 		{
 			currentTerm.setDocStatus(X_C_Flatrate_Term.DOCSTATUS_Closed);
 		}
