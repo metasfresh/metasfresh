@@ -442,34 +442,7 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 		final List<Group> availableStockGroups = availableStock.getGroups();
 
 		// process the query's result into those explodedProductValues
-		final List<LookupValue> explodedProductValues = new ArrayList<>();
-		for (final Group availableStockGroup : availableStockGroups)
-		{
-			final Quantity qtyOnHand = availableStockGroup.getQty();
-
-			final int productId = availableStockGroup.getProductId();
-			final LookupValue productLookupValue = productLookupValues.getById(productId);
-
-			final ITranslatableString qtyValueStr = NumberTranslatableString.of(qtyOnHand.getQty(), DisplayType.Quantity);
-
-			final ITranslatableString uomSymbolStr = availableStockGroup.getUomSymbolStr();
-
-			final ITranslatableString storageAttributeString = availableStockGroup.getStorageAttributesString();
-
-			final ITranslatableString displayName = ITranslatableString.compose("",
-					productLookupValue.getDisplayNameTrl(),
-					" - ", qtyValueStr, " ", uomSymbolStr, " - ", storageAttributeString);
-
-			final ImmutableMap<String, Object> attributeMap = availableStockGroup.getLookupAttributesMap();
-
-			final IntegerLookupValue integerLookupValue = IntegerLookupValue.builder()
-					.id(productId)
-					.displayName(displayName)
-					.attribute(ATTRIBUTE_ASI, attributeMap)
-					.build();
-			explodedProductValues.add(integerLookupValue);
-		}
-		return LookupValuesList.fromCollection(explodedProductValues);
+		return createLookupValuesFromAvailableStockGroups(productLookupValues, availableStockGroups);
 	}
 
 	private void addStorageAttributeKeysToQueryBuilder(@NonNull final MaterialQueryBuilder materialQueryBuilder)
@@ -488,6 +461,47 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 		{
 			materialQueryBuilder.storageAttributesKey(storageAttributesKey);
 		}
+	}
+
+	private LookupValuesList createLookupValuesFromAvailableStockGroups(
+			@NonNull final LookupValuesList initialLookupValues,
+			@NonNull final List<Group> availableStockGroups)
+	{
+		final List<LookupValue> explodedProductValues = new ArrayList<>();
+		for (final Group availableStockGroup : availableStockGroups)
+		{
+			final int productId = availableStockGroup.getProductId();
+			final LookupValue productLookupValue = initialLookupValues.getById(productId);
+			final ITranslatableString displayName = createDisplayName(productLookupValue.getDisplayNameTrl(), availableStockGroup);
+
+			final ImmutableMap<String, Object> attributeMap = availableStockGroup.getLookupAttributesMap();
+
+			final IntegerLookupValue integerLookupValue = IntegerLookupValue.builder()
+					.id(productId)
+					.displayName(displayName)
+					.attribute(ATTRIBUTE_ASI, attributeMap)
+					.build();
+			explodedProductValues.add(integerLookupValue);
+		}
+		return LookupValuesList.fromCollection(explodedProductValues);
+	}
+
+	private ITranslatableString createDisplayName(
+			@NonNull final ITranslatableString productDisplayName,
+			@NonNull final Group availableStockGroup)
+	{
+		final Quantity qtyOnHand = availableStockGroup.getQty();
+		final ITranslatableString qtyValueStr = NumberTranslatableString.of(qtyOnHand.getQty(), DisplayType.Quantity);
+
+		final ITranslatableString uomSymbolStr = availableStockGroup.getUomSymbolStr();
+
+		final ITranslatableString storageAttributeString = availableStockGroup.getStorageAttributesString();
+
+		final ITranslatableString displayName = ITranslatableString.compose("",
+				productDisplayName,
+				" - ", qtyValueStr, " ", uomSymbolStr,
+				" - ", storageAttributeString);
+		return displayName;
 	}
 
 	public static ProductAndAttributes toProductAndAttributes(@NonNull final LookupValue lookupValue)

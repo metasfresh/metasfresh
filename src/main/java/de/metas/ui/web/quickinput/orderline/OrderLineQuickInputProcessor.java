@@ -30,6 +30,7 @@ import de.metas.ui.web.quickinput.QuickInput;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.descriptor.sql.ProductLookupDescriptor;
 import de.metas.ui.web.window.descriptor.sql.ProductLookupDescriptor.ProductAndAttributes;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -91,7 +92,28 @@ public class OrderLineQuickInputProcessor implements IQuickInputProcessor
 				.copyTo(orderLinePackingAware);
 	}
 
-	private IHUPackingAware createQuickInputPackingAware(final I_C_Order order, final IOrderLineQuickInput quickInput)
+	private IHUPackingAware createQuickInputPackingAware(
+			@NonNull final I_C_Order order,
+			@NonNull final IOrderLineQuickInput quickInput)
+	{
+		final PlainHUPackingAware huPackingAware = createAndInitHuPackingAware(order, quickInput);
+
+		// Get quickInput's Qty
+		final BigDecimal quickInputQty = quickInput.getQty();
+		if (quickInputQty == null || quickInputQty.signum() <= 0)
+		{
+			logger.warn("Invalid Qty={} for {}", quickInputQty, quickInput);
+			throw new AdempiereException("Qty shall be greather than zero"); // TODO trl
+		}
+
+		computeAndSetQtysForNewHuPackingAware(huPackingAware, quickInputQty);
+
+		return validateNewHuPackingAware(huPackingAware);
+	}
+
+	private PlainHUPackingAware createAndInitHuPackingAware(
+			@NonNull final I_C_Order order,
+			@NonNull final IOrderLineQuickInput quickInput)
 	{
 		final PlainHUPackingAware huPackingAware = new PlainHUPackingAware();
 		huPackingAware.setC_BPartner(order.getC_BPartner());
@@ -107,16 +129,14 @@ public class OrderLineQuickInputProcessor implements IQuickInputProcessor
 		final I_M_HU_PI_Item_Product piItemProduct = quickInput.getM_HU_PI_Item_Product();
 		huPackingAware.setM_HU_PI_Item_Product(piItemProduct);
 
-		// Get quickInput's Qty
-		final BigDecimal quickInputQty = quickInput.getQty();
-		if (quickInputQty == null || quickInputQty.signum() <= 0)
-		{
-			logger.warn("Invalid Qty={} for {}", quickInputQty, quickInput);
-			throw new AdempiereException("Qty shall be greather than zero"); // TODO trl
-		}
+		return huPackingAware;
+	}
 
-		//
-		// Compute QtyCU and QtyTU
+	private void computeAndSetQtysForNewHuPackingAware(
+			@NonNull final PlainHUPackingAware huPackingAware,
+			@NonNull final BigDecimal quickInputQty)
+	{
+		final I_M_HU_PI_Item_Product piItemProduct = huPackingAware.getM_HU_PI_Item_Product();
 		if (piItemProduct == null || piPIItemProductBL.isVirtualHUPIItemProduct(piItemProduct) || piItemProduct.isInfiniteCapacity())
 		{
 			huPackingAware.setQty(quickInputQty);
@@ -128,9 +148,10 @@ public class OrderLineQuickInputProcessor implements IQuickInputProcessor
 			huPackingAware.setQtyPacks(qtyTU);
 			huPackingAwareBL.setQty(huPackingAware, qtyTU.intValue());
 		}
+	}
 
-		//
-		// Validate the result
+	private PlainHUPackingAware validateNewHuPackingAware(@NonNull final PlainHUPackingAware huPackingAware)
+	{
 		if (huPackingAware.getQty() == null || huPackingAware.getQty().signum() <= 0)
 		{
 			logger.warn("Invalid Qty={} for {}", huPackingAware.getQty(), huPackingAware);
@@ -141,7 +162,6 @@ public class OrderLineQuickInputProcessor implements IQuickInputProcessor
 			logger.warn("Invalid QtyTU={} for {}", huPackingAware.getQtyPacks(), huPackingAware);
 			throw new AdempiereException("QtyTU shall be greather than zero"); // TODO trl
 		}
-
 		return huPackingAware;
 	}
 
@@ -154,7 +174,11 @@ public class OrderLineQuickInputProcessor implements IQuickInputProcessor
 		}
 
 		final IAttributeSetInstanceBL asiBL = Services.get(IAttributeSetInstanceBL.class);
-		final I_M_AttributeSetInstance asi = asiBL.createASIFromProductAndAttributeSet(productAndAttributes.getProductId(), attributes);
+
+		final I_M_AttributeSetInstance asi = asiBL.createASIWithASFromProductAndInsertAttributeSet(
+				productAndAttributes.getProductId(),
+				attributes);
+
 		return asi.getM_AttributeSetInstance_ID();
 	}
 }
