@@ -47,6 +47,12 @@ public class HUEditorView_ReceiptScheduleCustomizer implements HUEditorViewCusto
 	}
 
 	@Override
+	public Boolean isAttributesAlwaysReadonly()
+	{
+		return Boolean.FALSE;
+	}
+
+	@Override
 	public void beforeCreate(final HUEditorViewBuilder viewBuilder)
 	{
 		viewBuilder.setParameter(WEBUI_M_HU_Transform.PARAM_CheckExistingHUsInsideView, true);
