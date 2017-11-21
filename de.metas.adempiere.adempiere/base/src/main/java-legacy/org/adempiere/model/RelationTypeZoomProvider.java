@@ -9,6 +9,7 @@ import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.service.ILookupDAO;
 import org.adempiere.ad.service.ILookupDAO.ITableRefInfo;
+import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.window.api.IADWindowDAO;
 import org.adempiere.exceptions.AdempiereException;
@@ -19,8 +20,10 @@ import org.adempiere.model.ZoomInfoFactory.ZoomInfo;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IPair;
+import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.ImmutablePair;
 import org.compiere.model.I_AD_Column;
+import org.compiere.model.I_AD_Table;
 import org.compiere.model.MQuery;
 import org.compiere.model.PO;
 import org.compiere.model.Query;
@@ -32,6 +35,7 @@ import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
+import de.metas.adempiere.service.IColumnBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.logging.LogManager;
 import lombok.NonNull;
@@ -79,6 +83,8 @@ public class RelationTypeZoomProvider implements IZoomProvider
 	// #2340
 	// Reference Target zoom provider destination
 	private final ReferenceTargetZoomProviderDestination referenceTarget;
+
+	
 
 	private RelationTypeZoomProvider(final Builder builder)
 	{
@@ -175,6 +181,12 @@ public class RelationTypeZoomProvider implements IZoomProvider
 	{
 		return directed;
 	}
+	
+	public boolean isReferenceTarget()
+	{
+		return isReferenceTarget;
+	}
+
 
 	private String getZoomInfoId()
 	{
@@ -256,7 +268,11 @@ public class RelationTypeZoomProvider implements IZoomProvider
 		if (isReferenceTarget)
 		{
 
-			final I_AD_Column columnReference = InterfaceWrapperHelper.create(zoomSource.getCtx(), refTable.getReferenceTargetColumnID(), I_AD_Column.class, zoomSource.getTrxName());
+			int referenceTargetColumn = getReferenceTargetColumnID(refTable.getTableName());
+			
+			// TODO fix this message, bring more context
+			Check.assume(referenceTargetColumn > 0, "The table " + tableName + "must have a Record_ID column so it can be part of a ReferenceTarget relation type");
+			final I_AD_Column columnReference = InterfaceWrapperHelper.create(zoomSource.getCtx(), referenceTargetColumn , I_AD_Column.class, zoomSource.getTrxName());
 
 			Check.assumeNotNull(columnReference, "The reference table {} does not have a Column ReferenceTarget defined", refTable);
 
@@ -295,6 +311,33 @@ public class RelationTypeZoomProvider implements IZoomProvider
 		query.setZoomColumnName(columnName);
 
 		return query;
+	}
+
+	private int getReferenceTargetColumnID(final String tableName)
+	{
+		final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
+		final IColumnBL columnBL = Services.get(IColumnBL.class);
+		
+		final I_AD_Column recordColumn = tableDAO .retrieveColumnOrNull(tableName, ITableRecordReference.COLUMNNAME_Record_ID);
+
+		if(recordColumn != null)
+		{
+			return recordColumn.getAD_Column_ID();
+		}
+		
+		
+		final I_AD_Table table = tableDAO.retrieveTable(tableName);
+		final List<I_AD_Column> allColumns = tableDAO.retrieveColumnsForTable(table);
+		
+		for(final I_AD_Column column: allColumns)
+		{
+			if(columnBL.isRecordColumnName(column.getColumnName()))
+			{
+				return column.getAD_Column_ID();
+			}
+		}
+		
+		return -1;
 	}
 
 	/**
