@@ -24,7 +24,7 @@ import de.metas.material.dispo.commons.CandidatesQuery;
 import de.metas.material.dispo.commons.DispoTestUtils;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateType;
-import de.metas.material.dispo.commons.repository.CandidateRepositoryCommands;
+import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.MaterialQuery;
 import de.metas.material.dispo.commons.repository.StockRepository;
@@ -85,7 +85,7 @@ public class DemandCandiateCangeHandlerTest
 	{
 		AdempiereTestHelper.get().init();
 
-		final CandidateRepositoryCommands candidateRepositoryCommands = new CandidateRepositoryCommands();
+		final CandidateRepositoryWriteService candidateRepositoryCommands = new CandidateRepositoryWriteService();
 
 		final StockCandidateService stockCandidateService = new StockCandidateService(candidateRepositoryRetrieval, candidateRepositoryCommands);
 

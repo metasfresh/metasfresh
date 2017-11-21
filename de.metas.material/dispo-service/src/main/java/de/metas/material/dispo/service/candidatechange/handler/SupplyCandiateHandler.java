@@ -10,7 +10,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.material.dispo.commons.CandidatesQuery;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateType;
-import de.metas.material.dispo.commons.repository.CandidateRepositoryCommands;
+import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
 import lombok.NonNull;
@@ -39,7 +39,7 @@ import lombok.NonNull;
 @Service
 public class SupplyCandiateHandler implements CandidateHandler
 {
-	private final CandidateRepositoryCommands candidateRepositoryCommands;
+	private final CandidateRepositoryWriteService candidateRepositoryCommands;
 
 	private final StockCandidateService stockCandidateService;
 
@@ -47,7 +47,7 @@ public class SupplyCandiateHandler implements CandidateHandler
 
 	public SupplyCandiateHandler(
 			@NonNull final CandidateRepositoryRetrieval candidateRepositoryRetrieval,
-			@NonNull final CandidateRepositoryCommands candidateRepository,
+			@NonNull final CandidateRepositoryWriteService candidateRepository,
 			@NonNull final StockCandidateService stockCandidateService)
 	{
 		this.candidateRepository = candidateRepositoryRetrieval;
