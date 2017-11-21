@@ -1007,6 +1007,7 @@ export function mapIncluded(
     if(node.includedDocuments){
         for(let i = 0; i < node.includedDocuments.length; i++){
             let copy = node.includedDocuments[i];
+            copy.fieldsByName = parseToDisplay(copy.fieldsByName);
             if(i === node.includedDocuments.length - 1){
                 copy = Object.assign({}, copy, {
                     lastChild: true

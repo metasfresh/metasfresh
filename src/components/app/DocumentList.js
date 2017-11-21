@@ -28,6 +28,7 @@ import {
     indicatorState,
     connectWS,
     disconnectWS,
+    parseToDisplay
 } from '../../actions/WindowActions';
 import { getSelection } from '../../reducers/windowHandler';
 
@@ -405,6 +406,10 @@ class DocumentList extends Component {
                     })
                 )
             );
+
+            response.data.result.map((el) => {
+                el.fieldsByName = parseToDisplay(el.fieldsByName)
+            });
 
             if (this.mounted) {
                 this.setState({
