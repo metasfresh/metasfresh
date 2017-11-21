@@ -15,7 +15,7 @@ import de.metas.material.dispo.commons.candidate.CandidateSubType;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.candidate.DemandDetail;
 import de.metas.material.dispo.commons.candidate.DistributionDetail;
-import de.metas.material.dispo.commons.repository.CandidateRepositoryCommands;
+import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.dispo.service.event.EventUtil;
@@ -52,14 +52,14 @@ import lombok.NonNull;
 public class DistributionAdvisedHandler
 {
 	private final CandidateRepositoryRetrieval candidateRepository;
-	private final CandidateRepositoryCommands candidateRepositoryCommands;
+	private final CandidateRepositoryWriteService candidateRepositoryCommands;
 	private final SupplyProposalEvaluator supplyProposalEvaluator;
 	private final CandidateChangeService candidateChangeHandler;
 	private final CandidateService candidateService;
 
 	public DistributionAdvisedHandler(
 			@NonNull final CandidateRepositoryRetrieval candidateRepository,
-			@NonNull final CandidateRepositoryCommands candidateRepositoryCommands,
+			@NonNull final CandidateRepositoryWriteService candidateRepositoryCommands,
 			@NonNull final CandidateChangeService candidateChangeHandler,
 			@NonNull final SupplyProposalEvaluator supplyProposalEvaluator,
 			@NonNull final CandidateService candidateService)

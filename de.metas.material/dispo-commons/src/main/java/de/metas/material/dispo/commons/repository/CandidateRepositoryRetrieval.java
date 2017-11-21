@@ -156,13 +156,10 @@ public class CandidateRepositoryRetrieval
 		final String md_candidate_type = Preconditions.checkNotNull(candidateRecord.getMD_Candidate_Type(),
 				"Given parameter candidateRecord needs to have a not-null MD_Candidate_Type; candidateRecord=%s",
 				candidateRecord);
-		final String storageAttributesKey = Preconditions.checkNotNull(candidateRecord.getStorageAttributesKey(),
-				"Given parameter storageAttributesKey needs to have a not-null StorageAttributesKey; candidateRecord=%s",
-				candidateRecord);
 
 		final ProductDescriptor productDescriptor = ProductDescriptor.forProductAndAttributes(
 				candidateRecord.getM_Product_ID(),
-				storageAttributesKey,
+				getEfferciveStorageAttributesKey(candidateRecord),
 				candidateRecord.getM_AttributeSetInstance_ID());
 
 		final MaterialDescriptor materialDescriptor = MaterialDescriptor.builderForCompleteDescriptor()
@@ -189,6 +186,20 @@ public class CandidateRepositoryRetrieval
 			candidateBuilder.parentId(candidateRecord.getMD_Candidate_Parent_ID());
 		}
 		return candidateBuilder;
+	}
+
+	private String getEfferciveStorageAttributesKey(@NonNull final I_MD_Candidate candidateRecord)
+	{
+		final String storageAttributesKey;
+		if (Check.isEmpty(candidateRecord.getStorageAttributesKey(), true))
+		{
+			storageAttributesKey = ProductDescriptor.STORAGE_ATTRIBUTES_KEY_ALL;
+		}
+		else
+		{
+			storageAttributesKey = candidateRecord.getStorageAttributesKey();
+		}
+		return storageAttributesKey;
 	}
 
 	private ProductionDetail createProductionDetailOrNull(@NonNull final I_MD_Candidate candidateRecord)

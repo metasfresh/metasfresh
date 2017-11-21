@@ -12,7 +12,7 @@ import com.google.common.annotations.VisibleForTesting;
 import de.metas.material.dispo.commons.CandidatesQuery;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateType;
-import de.metas.material.dispo.commons.repository.CandidateRepositoryCommands;
+import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
@@ -45,11 +45,11 @@ import lombok.NonNull;
 public class StockCandidateService
 {
 	private final CandidateRepositoryRetrieval candidateRepositoryRetrieval;
-	private final CandidateRepositoryCommands candidateRepositoryCommands;
+	private final CandidateRepositoryWriteService candidateRepositoryCommands;
 
 	public StockCandidateService(
 			@NonNull final CandidateRepositoryRetrieval candidateRepository,
-			@NonNull final CandidateRepositoryCommands candidateRepositoryCommands)
+			@NonNull final CandidateRepositoryWriteService candidateRepositoryCommands)
 	{
 		this.candidateRepositoryRetrieval = candidateRepository;
 		this.candidateRepositoryCommands = candidateRepositoryCommands;

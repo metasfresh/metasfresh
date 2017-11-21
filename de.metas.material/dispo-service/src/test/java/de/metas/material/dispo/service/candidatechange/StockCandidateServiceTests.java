@@ -17,7 +17,7 @@ import org.junit.Test;
 
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateType;
-import de.metas.material.dispo.commons.repository.CandidateRepositoryCommands;
+import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.event.commons.MaterialDescriptor;
 
@@ -53,7 +53,7 @@ public class StockCandidateServiceTests
 		AdempiereTestHelper.get().init();
 
 		final CandidateRepositoryRetrieval candidateRepository = new CandidateRepositoryRetrieval();
-		final CandidateRepositoryCommands candidateRepositoryCommands = new CandidateRepositoryCommands();
+		final CandidateRepositoryWriteService candidateRepositoryCommands = new CandidateRepositoryWriteService();
 		stockCandidateService = new StockCandidateService(candidateRepository, candidateRepositoryCommands);
 
 		final MaterialDescriptor materialDescr = MaterialDescriptor.builder()

@@ -10,7 +10,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateType;
-import de.metas.material.dispo.commons.repository.CandidateRepositoryCommands;
+import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.MaterialQuery;
 import de.metas.material.dispo.commons.repository.StockRepository;
@@ -54,13 +54,13 @@ public class StockUpCandiateHandler implements CandidateHandler
 
 	private final MaterialEventService materialEventService;
 
-	private final CandidateRepositoryCommands candidateRepositoryCommands;
+	private final CandidateRepositoryWriteService candidateRepositoryCommands;
 
 	private final StockRepository stockRepository;
 
 	public StockUpCandiateHandler(
 			@NonNull final CandidateRepositoryRetrieval candidateRepository,
-			@NonNull final CandidateRepositoryCommands candidateRepositoryCommands,
+			@NonNull final CandidateRepositoryWriteService candidateRepositoryCommands,
 			@NonNull final MaterialEventService materialEventService,
 			@NonNull final StockRepository stockRepository)
 	{
