@@ -92,7 +92,11 @@ import lombok.Value;
  */
 public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSourceFetcher
 {
-	private static final String SYSCONFIG_MATERIAL_ORDERLINE_STORAGE_ATTRIBUTES_KEYS = "de.metas.ui.web.window.descriptor.sql.ProductLookupDescriptor.StorageAttributesKeys";
+	private static final String SYSCONFIG_PRODUCT_LOOKUP_DESCRIPTOR_STORAGE_ATTRIBUTES_KEYS = //
+			"de.metas.ui.web.window.descriptor.sql.ProductLookupDescriptor.QueryStockAttributesKeys";
+
+	private static final String SYSCONFIG_PRODUCT_LOOKUP_DESCRIPTOR_QUERY_AVAILABLE_STOCK = //
+			"de.metas.ui.web.window.descriptor.sql.ProductLookupDescriptor.QueryAvailableStock";
 
 	private static final Optional<String> LookupTableName = Optional.of(I_M_Product.Table_Name);
 	private static final String CONTEXT_LookupTableName = LookupTableName.get();
@@ -434,7 +438,7 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 	private final LookupValuesList explodeByStorageRecords(
 			@NonNull final LookupValuesList productLookupValues)
 	{
-		if (productLookupValues.isEmpty())
+		if (productLookupValues.isEmpty() || !isAvailableStockQueryActivated())
 		{
 			return productLookupValues;
 		}
@@ -452,13 +456,28 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 		return createLookupValuesFromAvailableStockGroups(productLookupValues, availableStockGroups);
 	}
 
+	private boolean isAvailableStockQueryActivated()
+	{
+		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+		final int clientId = Env.getAD_Client_ID(Env.getCtx());
+		final int orgId = Env.getAD_Org_ID(Env.getCtx());
+
+		final boolean stockQueryActivated = sysConfigBL.getBooleanValue(
+				SYSCONFIG_PRODUCT_LOOKUP_DESCRIPTOR_QUERY_AVAILABLE_STOCK,
+				false, clientId, orgId);
+		return stockQueryActivated;
+	}
+
 	private void addStorageAttributeKeysToQueryBuilder(@NonNull final MaterialQueryBuilder materialQueryBuilder)
 	{
 		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-		final int orgId = Env.getAD_Org_ID(Env.getCtx());
 		final int clientId = Env.getAD_Client_ID(Env.getCtx());
+		final int orgId = Env.getAD_Org_ID(Env.getCtx());
 
-		final String storageAttributesKeys = sysConfigBL.getValue(SYSCONFIG_MATERIAL_ORDERLINE_STORAGE_ATTRIBUTES_KEYS, ProductDescriptor.STORAGE_ATTRIBUTES_KEY_ALL, clientId, orgId);
+		final String storageAttributesKeys = sysConfigBL.getValue(
+				SYSCONFIG_PRODUCT_LOOKUP_DESCRIPTOR_STORAGE_ATTRIBUTES_KEYS,
+				ProductDescriptor.STORAGE_ATTRIBUTES_KEY_ALL,
+				clientId, orgId);
 
 		final Splitter splitter = Splitter
 				.on(",")
