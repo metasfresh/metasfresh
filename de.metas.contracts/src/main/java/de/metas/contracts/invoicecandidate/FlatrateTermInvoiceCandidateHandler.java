@@ -38,6 +38,7 @@ import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_Activity;
+import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -131,10 +132,20 @@ public class FlatrateTermInvoiceCandidateHandler extends AbstractInvoiceCandidat
 		return false;
 	}
 
-	private boolean isCancelledContract(final I_C_Flatrate_Term term)
+	private boolean isCancelledContract(@NonNull final I_C_Flatrate_Term term)
 	{
 		return X_C_Flatrate_Term.CONTRACTSTATUS_Quit.equals(term.getContractStatus())
 				|| X_C_Flatrate_Term.CONTRACTSTATUS_Voided.equals(term.getContractStatus());
+	}
+
+	private void setOrderAndOrderLineIfNeeded(@NonNull final I_C_Flatrate_Term term, @NonNull final I_C_Invoice_Candidate ic)
+	{
+		final I_C_OrderLine orderLine = term.getC_OrderLine_Term();
+		if (orderLine != null)
+		{
+			ic.setC_OrderLine(orderLine);
+			ic.setC_Order(orderLine.getC_Order());
+		}
 	}
 
 	private I_C_Invoice_Candidate createCandidateForTerm(final I_C_Flatrate_Term term)
@@ -162,10 +173,11 @@ public class FlatrateTermInvoiceCandidateHandler extends AbstractInvoiceCandidat
 
 		ic.setQtyOrdered(qty);
 
+		setOrderAndOrderLineIfNeeded(term, ic);
+
 		// 03799
 		// If the term is the first one, then the candidate should be created
 		// with DateOrdered=Term.getStartDate
-
 		final Timestamp dateOrdered = getDateOrdered(term);
 
 		ic.setDateOrdered(dateOrdered);
