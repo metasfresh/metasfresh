@@ -38,7 +38,7 @@ import lombok.Value;
 @Builder
 public class DistributionAdvisedEvent implements MaterialEvent
 {
-	public static final String TYPE = "DistributionPlanEvent";
+	public static final String TYPE = "DistributionAdvisedEvent";
 
 	@NonNull
 	EventDescriptor eventDescriptor;

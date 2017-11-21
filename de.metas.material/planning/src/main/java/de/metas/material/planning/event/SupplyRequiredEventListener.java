@@ -43,9 +43,9 @@ public class SupplyRequiredEventListener implements MaterialEventListener
 {
 	private static final transient Logger logger = LogManager.getLogger(SupplyRequiredEventListener.class);
 
-	private final CommonDemandHandler commonDemandHandler;
+	private final SupplyRequiredHandler commonDemandHandler;
 
-	public SupplyRequiredEventListener(@NonNull final CommonDemandHandler commonDemandHandler)
+	public SupplyRequiredEventListener(@NonNull final SupplyRequiredHandler commonDemandHandler)
 	{
 		this.commonDemandHandler = commonDemandHandler;
 	}

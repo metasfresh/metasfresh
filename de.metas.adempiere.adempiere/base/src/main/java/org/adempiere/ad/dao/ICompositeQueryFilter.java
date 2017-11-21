@@ -10,12 +10,12 @@ package org.adempiere.ad.dao;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -41,20 +41,20 @@ public interface ICompositeQueryFilter<T> extends IQueryFilter<T>
 {
 	/**
 	 * Creates a copy of this object.
-	 * 
+	 *
 	 * @return a copy of this object
 	 */
 	ICompositeQueryFilter<T> copy();
 
 	/**
 	 * Set default behavior in case this composite is empty.
-	 * 
+	 *
 	 * @param defaultAccept
 	 */
 	ICompositeQueryFilter<T> setDefaultAccept(boolean defaultAccept);
 
 	/**
-	 * 
+	 *
 	 * @return default behavior in case this composite is empty
 	 */
 	boolean isDefaultAccept();
@@ -70,14 +70,14 @@ public interface ICompositeQueryFilter<T> extends IQueryFilter<T>
 	int getFiltersCount();
 
 	/**
-	 * 
+	 *
 	 * @return true if the JOIN method is AND
 	 * @see #setJoinAnd()
 	 */
 	boolean isJoinAnd();
 
 	/**
-	 * 
+	 *
 	 * @return true if the JOIN method is OR
 	 * @see #setJoinOr()
 	 */
@@ -87,7 +87,7 @@ public interface ICompositeQueryFilter<T> extends IQueryFilter<T>
 
 	/**
 	 * Add a {@link InSubQueryFilter}
-	 * 
+	 *
 	 * @param columnName
 	 * @param subQueryColumnName
 	 * @param subQuery
@@ -97,7 +97,7 @@ public interface ICompositeQueryFilter<T> extends IQueryFilter<T>
 
 	/**
 	 * Add a NOT-{@link InSubQueryFilter}.
-	 * 
+	 *
 	 * @param columnName
 	 * @param subQueryColumnName
 	 * @param subQuery
@@ -111,7 +111,7 @@ public interface ICompositeQueryFilter<T> extends IQueryFilter<T>
 
 	/**
 	 * Add a {@link InSubQueryFilter}
-	 * 
+	 *
 	 * @param columnName
 	 * @param modifier
 	 * @param subQueryColumnName
@@ -137,7 +137,7 @@ public interface ICompositeQueryFilter<T> extends IQueryFilter<T>
 	 * If no values were provided the record is accepted.
 	 */
 	<V> ICompositeQueryFilter<T> addInArrayOrAllFilter(ModelColumn<T, ?> column, Collection<V> values);
-	
+
 	/**
 	 * Filters those rows for whom the columnName's value is in given collection.
 	 * If no values were provided the record is rejected.
@@ -146,7 +146,7 @@ public interface ICompositeQueryFilter<T> extends IQueryFilter<T>
 
 	/**
 	 * NOTE: in case <code>values</code> collection is empty this filter will return <code>true</code> (as intuitively expected).
-	 * 
+	 *
 	 * @param column
 	 * @param values
 	 * @return this
@@ -155,7 +155,7 @@ public interface ICompositeQueryFilter<T> extends IQueryFilter<T>
 
 	/**
 	 * NOTE: in case <code>values</code> collection is empty this filter will return <code>true</code> (as intuitively expected).
-	 * 
+	 *
 	 * @param columnName
 	 * @param values
 	 * @return this
@@ -168,7 +168,7 @@ public interface ICompositeQueryFilter<T> extends IQueryFilter<T>
 	 */
 	@SuppressWarnings("unchecked")
 	<V> ICompositeQueryFilter<T> addInArrayOrAllFilter(String columnName, V... values);
-	
+
 	/**
 	 * Filters those rows for whom the columnName's value is in given array.
 	 * If no values were provided the record is rejected.
@@ -182,7 +182,7 @@ public interface ICompositeQueryFilter<T> extends IQueryFilter<T>
 	 */
 	@SuppressWarnings("unchecked")
 	<V> ICompositeQueryFilter<T> addInArrayOrAllFilter(ModelColumn<T, ?> column, V... values);
-	
+
 	/**
 	 * Filters those rows for whom the columnName's value is in given array.
 	 * If no values were provided the record is rejected.
@@ -192,14 +192,14 @@ public interface ICompositeQueryFilter<T> extends IQueryFilter<T>
 
 	/**
 	 * Add a {@link ActiveRecordQueryFilter}
-	 * 
+	 *
 	 * @return this
 	 */
 	ICompositeQueryFilter<T> addOnlyActiveRecordsFilter();
 
 	/**
 	 * Accept only those records which have AD_Client_ID same as the "#AD_Client_ID" from given context.
-	 * 
+	 *
 	 * @param ctx
 	 * @return this
 	 */
@@ -207,7 +207,7 @@ public interface ICompositeQueryFilter<T> extends IQueryFilter<T>
 
 	/**
 	 * Accept only those records which have AD_Client_ID same as the "#AD_Client_ID" from given context or System client.
-	 * 
+	 *
 	 * @param ctx
 	 * @return this
 	 */
@@ -215,7 +215,7 @@ public interface ICompositeQueryFilter<T> extends IQueryFilter<T>
 
 	/**
 	 * Add a {@link CompareQueryFilter}
-	 * 
+	 *
 	 * @param columnName
 	 * @param operator
 	 * @param value
@@ -231,7 +231,7 @@ public interface ICompositeQueryFilter<T> extends IQueryFilter<T>
 
 	/**
 	 * Add a {@link EqualsQueryFilter}
-	 * 
+	 *
 	 * @param columnName
 	 * @param value
 	 * @return this
@@ -242,7 +242,7 @@ public interface ICompositeQueryFilter<T> extends IQueryFilter<T>
 
 	/**
 	 * Add a {@link EqualsQueryFilter}
-	 * 
+	 *
 	 * @param columnName
 	 * @param value
 	 * @param modifier
@@ -255,7 +255,7 @@ public interface ICompositeQueryFilter<T> extends IQueryFilter<T>
 	/**
 	 * Adds a filter for substrings. That filter creates SQL such as <code>columnName LIKE '%substring%'</code>.<br>
 	 * The string to filter by may contain {@code _} and {@code %}. Starting and trailing '%' are supplemented if missing.
-	 * 
+	 *
 	 * @param columnName
 	 * @param substring
 	 * @param ignoreCase if <code>true</code> the filter will use <code>ILIKE</code> instead of <code>LIKE</code>
@@ -268,11 +268,13 @@ public interface ICompositeQueryFilter<T> extends IQueryFilter<T>
 	 */
 	ICompositeQueryFilter<T> addStringLikeFilter(ModelColumn<T, ?> column, String substring, boolean ignoreCase);
 
+	ICompositeQueryFilter<T>  addStringNotLikeFilter(ModelColumn<T, ?> column, String substring, boolean ignoreCase);
+
 	ICompositeQueryFilter<T> addCoalesceEqualsFilter(Object value, String... columnNames);
 
 	/**
 	 * Add a {@link NotEqualsQueryFilter}
-	 * 
+	 *
 	 * @param columnName
 	 * @param value
 	 * @return this
@@ -287,21 +289,21 @@ public interface ICompositeQueryFilter<T> extends IQueryFilter<T>
 
 	/**
 	 * Calling this method means that <b>all</b> filters (not just subsequent ones) added to this composite are joined by OR.
-	 * 
+	 *
 	 * @return
 	 */
 	ICompositeQueryFilter<T> setJoinOr();
 
 	/**
 	 * Calling this method means that <b>all</b> filters (not just subsequent ones) added to this composite are joined by AND.
-	 * 
+	 *
 	 * @return
 	 */
 	ICompositeQueryFilter<T> setJoinAnd();
 
 	/**
 	 * Add a group of filters
-	 * 
+	 *
 	 * @param filters
 	 * @return this
 	 */
@@ -309,7 +311,7 @@ public interface ICompositeQueryFilter<T> extends IQueryFilter<T>
 
 	/**
 	 * Add a single filter
-	 * 
+	 *
 	 * @param filter
 	 * @return this
 	 */
@@ -317,7 +319,7 @@ public interface ICompositeQueryFilter<T> extends IQueryFilter<T>
 
 	/**
 	 * Remove filter
-	 * 
+	 *
 	 * @param filter
 	 * @return this
 	 */
@@ -329,19 +331,19 @@ public interface ICompositeQueryFilter<T> extends IQueryFilter<T>
 	List<IQueryFilter<T>> getFilters();
 
 	/**
-	 * 
+	 *
 	 * @return a readonly list of current nonSQL filters (i.e. which are NOT implementing {@link ISqlQueryFilter} interface).
 	 */
 	List<IQueryFilter<T>> getNonSqlFilters();
 
 	/**
-	 * 
+	 *
 	 * @return a readonly list of current SQL filters (i.e. which are implementing {@link ISqlQueryFilter} interface).
 	 */
 	List<ISqlQueryFilter> getSqlFilters();
 
 	/**
-	 * 
+	 *
 	 * @return true if all inner filters are {@link ISqlQueryFilter}s. In this case {@link #getNonSqlFilters()} shall return an empty list.
 	 */
 	boolean isPureSql();
@@ -353,14 +355,14 @@ public interface ICompositeQueryFilter<T> extends IQueryFilter<T>
 
 	/**
 	 * Gets the built SQL where clause from {@link #getSqlFilters()}.
-	 * 
+	 *
 	 * @return sql where clause
 	 */
 	String getSqlFiltersWhereClause();
 
 	/**
 	 * Gets SQL where clause parameters from {@link #getSqlFilters()}
-	 * 
+	 *
 	 * @param ctx
 	 * @return sql parameters
 	 */
@@ -368,25 +370,25 @@ public interface ICompositeQueryFilter<T> extends IQueryFilter<T>
 
 	/**
 	 * Gets an query filter which behaves like {@link #getNonSqlFilters()} list.
-	 * 
+	 *
 	 * If there are no nonSQL filters, this method will return null.
-	 * 
+	 *
 	 * @return query filter or null
 	 */
 	IQueryFilter<T> asPartialNonSqlFilterOrNull();
 
 	/**
 	 * Gets an query filter which behaves like {@link #getSqlFilters()} list.
-	 * 
+	 *
 	 * @return
 	 */
 	ISqlQueryFilter asPartialSqlQueryFilter();
 
 	/**
 	 * Converts this filter to an {@link ISqlQueryFilter} if {@link #isPureSql()}.
-	 * 
+	 *
 	 * If this is not a pure SQL filter, an exception will be thrown.
-	 * 
+	 *
 	 * @return
 	 * @throws IllegalStateException if it's not a Pure SQL
 	 */
@@ -403,7 +405,7 @@ public interface ICompositeQueryFilter<T> extends IQueryFilter<T>
 	ICompositeQueryFilter<T> addEndsWithQueryFilter(String columnName, String endsWithString);
 
 	ICompositeQueryFilter<T> addValidFromToMatchesFilter(ModelColumn<T, ?> validFromColumn, ModelColumn<T, ?> validToColumn, Date dateToMatch);
-	
+
 	/**
 	 * Creates, appends and returns new composite filter.
 	 *

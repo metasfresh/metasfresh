@@ -20,18 +20,18 @@ import org.junit.rules.TestWatcher;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.material.dispo.commons.CandidateService;
-import de.metas.material.dispo.commons.RepositoryTestHelper;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryCommands;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
+import de.metas.material.dispo.commons.repository.StockRepository;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
 import de.metas.material.dispo.service.candidatechange.handler.DemandCandiateHandler;
 import de.metas.material.dispo.service.candidatechange.handler.SupplyCandiateHandler;
 import de.metas.material.dispo.service.event.SupplyProposalEvaluator.SupplyProposal;
 import de.metas.material.dispo.service.event.handler.DistributionAdvisedHandler;
-import de.metas.material.dispo.service.event.handler.DistributionPlanEventHandlerTests;
+import de.metas.material.dispo.service.event.handler.DistributionAdvisedHandlerHandlerTests;
 import de.metas.material.event.MaterialEventService;
 import de.metas.material.event.commons.MaterialDescriptor;
 import mockit.Mocked;
@@ -76,7 +76,7 @@ public class SupplyProposalEvaluatorTests
 
 	private static final int DEMAND_WAREHOUSE_ID = 6;
 
-	private DistributionAdvisedHandler distributionPlanEventHandler;
+	private DistributionAdvisedHandler distributionAdvisedEventHandler;
 
 	/**
 	 * This is the code under test
@@ -89,7 +89,8 @@ public class SupplyProposalEvaluatorTests
 	@Mocked
 	private MaterialEventService materialEventService;
 
-	private CandidateRepositoryRetrieval candidateRepositoryRetrieval;
+
+	private StockRepository stockRepository;
 
 	@Before
 	public void init()
@@ -98,17 +99,25 @@ public class SupplyProposalEvaluatorTests
 
 		candidateRepositoryCommands = new CandidateRepositoryCommands();
 
-		candidateRepositoryRetrieval = new CandidateRepositoryRetrieval();
+		final CandidateRepositoryRetrieval candidateRepositoryRetrieval = new CandidateRepositoryRetrieval();
 		supplyProposalEvaluator = new SupplyProposalEvaluator(candidateRepositoryRetrieval);
 
 		final StockCandidateService stockCandidateService = new StockCandidateService(
 				candidateRepositoryRetrieval, candidateRepositoryCommands);
 
+		stockRepository = new StockRepository();
+
 		final CandidateChangeService candidateChangeHandler = new CandidateChangeService(ImmutableList.of(
 				new SupplyCandiateHandler(candidateRepositoryRetrieval, candidateRepositoryCommands, stockCandidateService),
-				new DemandCandiateHandler(candidateRepositoryRetrieval, candidateRepositoryCommands, materialEventService, stockCandidateService)));
+				new DemandCandiateHandler(
+						candidateRepositoryRetrieval,
+						candidateRepositoryCommands,
+						materialEventService,
+						stockRepository,
+						stockCandidateService
+						)));
 
-		distributionPlanEventHandler = new DistributionAdvisedHandler(
+		distributionAdvisedEventHandler = new DistributionAdvisedHandler(
 				candidateRepositoryRetrieval,
 				candidateRepositoryCommands,
 				candidateChangeHandler,
@@ -138,8 +147,6 @@ public class SupplyProposalEvaluatorTests
 	@Test
 	public void testNothingAfter()
 	{
-		RepositoryTestHelper.setupMockedRetrieveAvailableStock(candidateRepositoryRetrieval, null, "0");
-
 		addSimpleSupplyDemand();
 
 		final SupplyProposal supplyProposal = SupplyProposal.builder()
@@ -155,8 +162,6 @@ public class SupplyProposalEvaluatorTests
 	@Test
 	public void testWithSameDirectionData()
 	{
-		RepositoryTestHelper.setupMockedRetrieveAvailableStock(candidateRepositoryRetrieval, null, "0");
-
 		addSimpleSupplyDemand();
 
 		// OK now we have in our plan something like DEMAND_WAREHOUSE_ID => SUPPLY_WAREHOUSE_ID in the repo
@@ -176,8 +181,6 @@ public class SupplyProposalEvaluatorTests
 	@Test
 	public void testWithOppositeDirectionData()
 	{
-		RepositoryTestHelper.setupMockedRetrieveAvailableStock(candidateRepositoryRetrieval, null, "0");
-
 		addSimpleSupplyDemand();
 
 		// OK now we have in our plan something like DEMAND_WAREHOUSE_ID => SUPPLY_WAREHOUSE_ID in the repo
@@ -241,9 +244,7 @@ public class SupplyProposalEvaluatorTests
 	@Test
 	public void testWithChain()
 	{
-		RepositoryTestHelper.setupMockedRetrieveAvailableStock(candidateRepositoryRetrieval, null, "0");
-
-		DistributionPlanEventHandlerTests.performTestTwoDistibutionPlanEvents(distributionPlanEventHandler);
+		DistributionAdvisedHandlerHandlerTests.performTestTwoDistibutionPlanEvents(distributionAdvisedEventHandler);
 
 		// propose what would create an additional demand on A and an additional supply on B. nothing wrong with that
 		final SupplyProposal supplyProposal1 = SupplyProposal.builder()
@@ -279,9 +280,7 @@ public class SupplyProposalEvaluatorTests
 	@Test
 	public void testWithChainOpposite()
 	{
-		RepositoryTestHelper.setupMockedRetrieveAvailableStock(candidateRepositoryRetrieval, null, "0");
-
-		DistributionPlanEventHandlerTests.performTestTwoDistibutionPlanEvents(distributionPlanEventHandler);
+		DistributionAdvisedHandlerHandlerTests.performTestTwoDistibutionPlanEvents(distributionAdvisedEventHandler);
 		// we now have an unbalanced demand with a stock of -10 in "fromWarehouseId" (because that's where the "last" demand of the "last" DistibutionPlan is)
 		// and we have a stock of +10 in "toWarehouseId"
 
