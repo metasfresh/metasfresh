@@ -55,9 +55,11 @@ public final class CandidatesQuery
 
 	public static final DistributionDetail NO_DISTRIBUTION_DETAIL = DistributionDetail.builder().build();
 
-	public static CandidatesQuery fromCandidate(@NonNull final Candidate candidate)
+	public static CandidatesQuery fromCandidate(
+			@NonNull final Candidate candidate,
+			final boolean includeParentId)
 	{
-		return CandidatesQuery.builder()
+		final CandidatesQueryBuilder builder = CandidatesQuery.builder()
 				.materialDescriptor(candidate.getMaterialDescriptor())
 				.matchExactStorageAttributesKey(true)
 				.demandDetail(candidate.getDemandDetail())
@@ -65,13 +67,16 @@ public final class CandidatesQuery
 				.groupId(candidate.getGroupId())
 				.id(candidate.getId())
 				.orgId(candidate.getOrgId())
-				.parentId(candidate.getParentId())
 				.productionDetail(candidate.getProductionDetail())
-				.seqNo(candidate.getSeqNo())
 				.status(candidate.getStatus())
 				.subType(candidate.getSubType())
-				.type(candidate.getType())
-				.build();
+				.type(candidate.getType());
+
+		if (includeParentId)
+		{
+			builder.parentId(candidate.getParentId());
+		}
+		return builder.build();
 	}
 
 	public static CandidatesQuery fromId(final int id)
@@ -107,8 +112,6 @@ public final class CandidatesQuery
 	 */
 	int groupId;
 
-	int seqNo;
-
 	MaterialDescriptor materialDescriptor;
 
 	boolean matchExactStorageAttributesKey;
@@ -139,7 +142,6 @@ public final class CandidatesQuery
 			final int id,
 			final int parentId,
 			final int groupId,
-			final int seqNo,
 			final MaterialDescriptor materialDescriptor,
 			final boolean matchExactStorageAttributesKey,
 			final ProductionDetail productionDetail,
@@ -156,7 +158,6 @@ public final class CandidatesQuery
 		this.id = id;
 		this.parentId = parentId;
 		this.groupId = groupId;
-		this.seqNo = seqNo;
 
 		this.materialDescriptor = materialDescriptor;
 		this.productionDetail = productionDetail;

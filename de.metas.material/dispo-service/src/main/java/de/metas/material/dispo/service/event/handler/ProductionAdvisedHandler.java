@@ -73,7 +73,6 @@ public class ProductionAdvisedHandler
 				.materialDescriptor(createMAterialDescriptorFromPpOrder(ppOrder))
 				.build();
 
-		// this might cause 'candidateChangeHandler' to trigger another event
 		final Candidate candidateWithGroupId = candidateChangeHandler.onCandidateNewOrChange(supplyCandidate);
 
 		for (final PPOrderLine ppOrderLine : ppOrder.getLines())
@@ -88,7 +87,7 @@ public class ProductionAdvisedHandler
 					.demandDetail(DemandDetail.forOrderLineIdOrNull(ppOrder.getOrderLineId()))
 					.productionDetail(createProductionDetailForPPOrderAndLine(ppOrder, ppOrderLine));
 
-			// might trigger further demand events
+			// in case of CandidateType.DEMAND this might trigger further demand events
 			candidateChangeHandler.onCandidateNewOrChange(builder.build());
 		}
 

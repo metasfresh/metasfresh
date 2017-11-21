@@ -116,9 +116,10 @@ public class CandidateRepositoryWriteService
 		return addOrUpdate(candidate, true);
 	}
 
-	private Candidate addOrUpdate(@NonNull final Candidate candidate, final boolean preserveExistingSeqNo)
+	private Candidate addOrUpdate(@NonNull final Candidate candidate, final boolean preserveExistingSeqNoAndParentId)
 	{
-		final CandidatesQuery query = CandidatesQuery.fromCandidate(candidate);
+		final CandidatesQuery query = CandidatesQuery.fromCandidate(candidate, preserveExistingSeqNoAndParentId);
+
 		final I_MD_Candidate oldCandidateRecord = RepositoryCommons
 				.mkQueryBuilder(query)
 				.create().firstOnly(I_MD_Candidate.class);
@@ -129,7 +130,7 @@ public class CandidateRepositoryWriteService
 		final I_MD_Candidate synchedRecord = updateOrCreateCandidateRecord(
 				oldCandidateRecord,
 				candidate,
-				preserveExistingSeqNo);
+				preserveExistingSeqNoAndParentId);
 		save(synchedRecord); // save now, because we need to have MD_Candidate_ID > 0
 
 		setFallBackSeqNoAndGroupIdIfNeeded(synchedRecord);

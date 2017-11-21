@@ -12,11 +12,11 @@ import com.google.common.annotations.VisibleForTesting;
 import de.metas.material.dispo.commons.CandidatesQuery;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateType;
-import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
+import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
 import de.metas.material.event.commons.MaterialDescriptor;
-import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor.DateOperator;
+import de.metas.material.event.commons.ProductDescriptor;
 import lombok.NonNull;
 
 /*
@@ -137,7 +137,8 @@ public class StockCandidateService
 			@NonNull final Candidate relatedCandiateWithDelta,
 			@NonNull final Supplier<Candidate> stockCandidateToUpdate)
 	{
-		final CandidatesQuery query = CandidatesQuery.fromCandidate(relatedCandiateWithDelta);
+		final CandidatesQuery query = CandidatesQuery.fromCandidate(relatedCandiateWithDelta, false);
+
 		final Candidate previousCandidateOrNull = candidateRepositoryRetrieval.retrieveLatestMatchOrNull(query);
 
 		final Candidate persistedStockCandidate = stockCandidateToUpdate.get();

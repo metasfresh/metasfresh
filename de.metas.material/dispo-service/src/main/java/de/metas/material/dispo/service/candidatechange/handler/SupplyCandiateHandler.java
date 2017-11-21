@@ -39,7 +39,7 @@ import lombok.NonNull;
 @Service
 public class SupplyCandiateHandler implements CandidateHandler
 {
-	private final CandidateRepositoryWriteService candidateRepositoryCommands;
+	private final CandidateRepositoryWriteService candidateRepositoryWriteService;
 
 	private final StockCandidateService stockCandidateService;
 
@@ -51,7 +51,7 @@ public class SupplyCandiateHandler implements CandidateHandler
 			@NonNull final StockCandidateService stockCandidateService)
 	{
 		this.candidateRepository = candidateRepositoryRetrieval;
-		this.candidateRepositoryCommands = candidateRepository;
+		this.candidateRepositoryWriteService = candidateRepository;
 		this.stockCandidateService = stockCandidateService;
 	}
 
@@ -76,7 +76,7 @@ public class SupplyCandiateHandler implements CandidateHandler
 		assertCorrectCandidateType(supplyCandidate);
 
 		// store the supply candidate and get both it's ID and qty-delta
-		final Candidate supplyCandidateDeltaWithId = candidateRepositoryCommands.addOrUpdateOverwriteStoredSeqNo(supplyCandidate);
+		final Candidate supplyCandidateDeltaWithId = candidateRepositoryWriteService.addOrUpdateOverwriteStoredSeqNo(supplyCandidate);
 
 		if (supplyCandidateDeltaWithId.getQuantity().signum() == 0)
 		{
@@ -92,7 +92,7 @@ public class SupplyCandiateHandler implements CandidateHandler
 					() -> {
 						// don't check if we might create a new stock candidate, because we know we don't. Get the one that already exists and just update its quantity
 						final Candidate stockCandidate = candidateRepository.retrieveLatestMatchOrNull(CandidatesQuery.fromId(supplyCandidateDeltaWithId.getParentId()));
-						return candidateRepositoryCommands.updateQty(
+						return candidateRepositoryWriteService.updateQty(
 								stockCandidate.withQuantity(
 										stockCandidate.getQuantity().add(supplyCandidateDeltaWithId.getQuantity())));
 					});
@@ -108,7 +108,7 @@ public class SupplyCandiateHandler implements CandidateHandler
 
 		// set the stock candidate as parent for the supply candidate
 		// the return value would have qty=0, but in the repository we updated the parent-ID
-		candidateRepositoryCommands.addOrUpdateOverwriteStoredSeqNo(
+		candidateRepositoryWriteService.addOrUpdateOverwriteStoredSeqNo(
 				supplyCandidate
 						.withParentId(parentStockCandidateWithId.getId())
 						.withSeqNo(parentStockCandidateWithId.getSeqNo() + 1));
