@@ -37,15 +37,15 @@ import lombok.NonNull;
 @AllArgsConstructor
 public class DemandHandlerAuditEvent implements MaterialEvent
 {
-	public static final String TYPE = "NoPlanFoundEvent";
+	public static final String TYPE = "DemandHandlerAuditEvent";
 
 	@NonNull
 	private final EventDescriptor eventDescriptor;
-	
+
 	@NonNull
 	private final MaterialDescriptor descr;
 
 	private int orderLineId;
 
-	private final List<String> messages; 
+	private final List<String> messages;
 }

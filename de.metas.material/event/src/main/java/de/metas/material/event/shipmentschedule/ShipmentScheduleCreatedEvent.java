@@ -40,7 +40,7 @@ import lombok.Value;
 @Builder // used by devs to make sure they know with parameter-value goes into which property
 public class ShipmentScheduleCreatedEvent implements MaterialEvent
 {
-	public static final String TYPE = "ShipmentScheduleEvent";
+	public static final String TYPE = "ShipmentScheduleCreatedEvent";
 
 	@NonNull
 	EventDescriptor eventDescriptor;

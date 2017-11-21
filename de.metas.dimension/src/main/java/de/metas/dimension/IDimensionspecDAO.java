@@ -23,7 +23,6 @@ package de.metas.dimension;
  */
 
 import java.util.List;
-import java.util.Properties;
 
 import org.adempiere.model.IContextAware;
 import org.adempiere.util.ISingletonService;

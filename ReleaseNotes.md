@@ -15,8 +15,22 @@ Here come the actual release notes:
 **release for week 2017-48**
 
 ## Features
+* metasfresh-app
+  * [#2976](https://github.com/metasfresh/metasfresh/issues/2976) Translate Processname to de_DE in Procurement Candidates
+    * Improved Translation and Naming in Procurement Planning window.
+  * [#2982](https://github.com/metasfresh/metasfresh/issues/2982) Filter for Shipment Documentstatus is missing in WebUI
+    * New filter criteria "documentstatus" added to Shipment window.
+  * [#3002](https://github.com/metasfresh/metasfresh/issues/3002) WebUI: New Window for HU Transaction
+    * New window for Handling Unit transaction in WebUI.
+  * [#3003](https://github.com/metasfresh/metasfresh/issues/3003) WebUI: Adjustments on HU Trace Window
+    * Improvement in Handling Unit Trace Window, rearranging fields, new filter criteria and improved translations for en_US, de_DE.
+  * [#3005](https://github.com/metasfresh/metasfresh/issues/3005) Manufacturing Order add Filter for Planstatus
+    * Additional, new filter criteria in manufacturing order.
 
 ## Fixes
+* metasfresh-webui-frontend
+  * [#1352](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1352) Cannot clear dropdown fields
+    * Fix for Dropdown Fields, now allowing to select empty values again.
 
 # metasfresh 5.36 (2017-47)
 

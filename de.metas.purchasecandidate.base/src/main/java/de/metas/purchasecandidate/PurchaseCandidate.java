@@ -3,9 +3,13 @@ package de.metas.purchasecandidate;
 import java.math.BigDecimal;
 import java.util.Date;
 
+import org.adempiere.util.Check;
+
+import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
+import lombok.Setter;
 
 /*
  * #%L
@@ -35,22 +39,34 @@ public class PurchaseCandidate
 {
 	private int repoId;
 
+	private final int salesOrderId;
 	private final int salesOrderLineId;
+	
+	@Setter(AccessLevel.NONE)
+	private int purchaseOrderLineId;
+
+	private final int orgId;
+	private final int warehouseId;
 	private final int productId;
 	private final int uomId;
 	private final int vendorBPartnerId;
-	
+
 	@NonNull
 	private BigDecimal qtyRequired;
 	@NonNull
 	private Date datePromised;
 
-	private final boolean processed;
+	@Setter(AccessLevel.NONE)
+	private boolean processed;
 
 	@Builder
 	public PurchaseCandidate(
 			final int repoId,
+			final int salesOrderId,
 			final int salesOrderLineId,
+			final int purchaseOrderLineId,
+			final int orgId,
+			final int warehouseId,
 			final int productId,
 			final int uomId,
 			final int vendorBPartnerId,
@@ -58,8 +74,22 @@ public class PurchaseCandidate
 			@NonNull final Date datePromised,
 			final boolean processed)
 	{
+		Check.assume(salesOrderId > 0, "salesOrderId > 0"); // for now this shall be always set; might be that in future this won't be mandatory
+		Check.assume(salesOrderLineId > 0, "salesOrderLineId > 0"); // for now this shall be always set; might be that in future this won't be mandatory
+		Check.assume(orgId > 0, "orgId > 0");
+		Check.assume(warehouseId > 0, "warehouseId > 0");
+		Check.assume(productId > 0, "productId > 0");
+		Check.assume(uomId > 0, "uomId > 0");
+		Check.assume(vendorBPartnerId > 0, "vendorBPartnerId > 0");
+
 		this.repoId = repoId;
+
+		this.salesOrderId = salesOrderId;
 		this.salesOrderLineId = salesOrderLineId;
+		this.purchaseOrderLineId = purchaseOrderLineId > 0 ? purchaseOrderLineId : 0;
+
+		this.orgId = orgId;
+		this.warehouseId = warehouseId;
 		this.productId = productId;
 		this.uomId = uomId;
 		this.vendorBPartnerId = vendorBPartnerId;
@@ -71,7 +101,10 @@ public class PurchaseCandidate
 	private PurchaseCandidate(final PurchaseCandidate from)
 	{
 		repoId = from.repoId;
+		salesOrderId = from.salesOrderId;
 		salesOrderLineId = from.salesOrderLineId;
+		orgId = from.orgId;
+		warehouseId = from.warehouseId;
 		productId = from.productId;
 		uomId = from.uomId;
 		vendorBPartnerId = from.vendorBPartnerId;
@@ -79,9 +112,18 @@ public class PurchaseCandidate
 		datePromised = from.datePromised;
 		processed = from.processed;
 	}
-	
+
 	public PurchaseCandidate copy()
 	{
 		return new PurchaseCandidate(this);
+	}
+	
+	public void setPurchaseOrderLineIdAndMarkProcessed(final int purchaseOrderLineId)
+	{
+		Check.assume(!processed, "already processed: {}", this);
+		Check.assume(purchaseOrderLineId > 0, "purchaseOrderLineId > 0");
+		
+		this.processed = true;
+		this.purchaseOrderLineId = purchaseOrderLineId;
 	}
 }
