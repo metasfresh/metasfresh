@@ -9,10 +9,13 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.util.Services;
+import org.compiere.model.IQuery;
+import org.compiere.util.Util;
 import org.springframework.stereotype.Service;
 
 import com.google.common.annotations.VisibleForTesting;
 
+import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.I_MD_Candidate_Stock_v;
 import de.metas.material.event.commons.ProductDescriptor;
 import lombok.NonNull;
@@ -44,13 +47,13 @@ import lombok.Value;
 public class StockRepository
 {
 	@NonNull
-	public BigDecimal retrieveSingleAvailableStockQty(@NonNull final MaterialQuery query)
+	public BigDecimal retrieveAvailableStockQtySum(@NonNull final MaterialQuery query)
 	{
-		final I_MD_Candidate_Stock_v stockRecord = createDBQueryForMaterialQuery(query)
+		final BigDecimal qty = createDBQueryForMaterialQuery(query)
 				.create()
-				.firstOnly(I_MD_Candidate_Stock_v.class);
+				.aggregate(I_MD_Candidate.COLUMNNAME_Qty, IQuery.AGGREGATE_SUM, BigDecimal.class);
 
-		return stockRecord == null ? BigDecimal.ZERO : stockRecord.getQty();
+		return Util.coalesce(qty, BigDecimal.ZERO);
 	}
 
 	@NonNull

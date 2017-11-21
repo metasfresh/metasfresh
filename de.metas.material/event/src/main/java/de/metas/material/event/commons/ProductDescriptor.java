@@ -56,9 +56,12 @@ public class ProductDescriptor
 				-1);
 	}
 
-	public static final ProductDescriptor forProductIdAndEmptyAttribute(final int productId)
+	public static final ProductDescriptor completeForProductIdAndEmptyAttribute(final int productId)
 	{
-		return new ProductDescriptor(true, productId, "", 0); // complete == true
+		return new ProductDescriptor(true, // complete == true
+				productId,
+				ProductDescriptor.STORAGE_ATTRIBUTES_KEY_ALL,
+				0);
 	}
 
 	public static final ProductDescriptor forProductAndAttributes(

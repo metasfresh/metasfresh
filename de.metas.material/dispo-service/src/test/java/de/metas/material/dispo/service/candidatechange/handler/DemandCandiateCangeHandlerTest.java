@@ -184,7 +184,7 @@ public class DemandCandiateCangeHandlerTest
 		// @formatter:off
 		new Expectations()
 		{{
-			stockRepository.retrieveSingleAvailableStockQty(query);
+			stockRepository.retrieveAvailableStockQtySum(query);
 			times = 1;
 			result = new BigDecimal(quantity);
 		}}; // @formatter:on
