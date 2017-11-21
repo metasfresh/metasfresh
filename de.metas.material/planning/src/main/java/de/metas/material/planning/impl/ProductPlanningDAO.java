@@ -197,7 +197,6 @@ public class ProductPlanningDAO implements IProductPlanningDAO
 				.valueDelimiter("%")
 				.build()
 				.createAttributesKey();
-
 	}
 
 	@Override

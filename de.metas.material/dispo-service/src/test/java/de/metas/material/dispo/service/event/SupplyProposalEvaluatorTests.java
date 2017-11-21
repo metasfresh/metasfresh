@@ -22,7 +22,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.material.dispo.commons.CandidateService;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateType;
-import de.metas.material.dispo.commons.repository.CandidateRepositoryCommands;
+import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.StockRepository;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
@@ -84,7 +84,7 @@ public class SupplyProposalEvaluatorTests
 
 	private SupplyProposalEvaluator supplyProposalEvaluator;
 
-	private CandidateRepositoryCommands candidateRepositoryCommands;
+	private CandidateRepositoryWriteService candidateRepositoryCommands;
 
 	@Mocked
 	private MaterialEventService materialEventService;
@@ -97,7 +97,7 @@ public class SupplyProposalEvaluatorTests
 	{
 		AdempiereTestHelper.get().init();
 
-		candidateRepositoryCommands = new CandidateRepositoryCommands();
+		candidateRepositoryCommands = new CandidateRepositoryWriteService();
 
 		final CandidateRepositoryRetrieval candidateRepositoryRetrieval = new CandidateRepositoryRetrieval();
 		supplyProposalEvaluator = new SupplyProposalEvaluator(candidateRepositoryRetrieval);

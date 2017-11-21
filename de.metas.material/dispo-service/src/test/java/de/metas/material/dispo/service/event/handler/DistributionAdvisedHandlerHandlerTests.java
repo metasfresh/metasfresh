@@ -25,7 +25,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.material.dispo.commons.CandidateService;
 import de.metas.material.dispo.commons.DispoTestUtils;
 import de.metas.material.dispo.commons.candidate.CandidateType;
-import de.metas.material.dispo.commons.repository.CandidateRepositoryCommands;
+import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.StockRepository;
 import de.metas.material.dispo.model.I_MD_Candidate;
@@ -114,7 +114,7 @@ public class DistributionAdvisedHandlerHandlerTests
 		AdempiereTestHelper.get().init();
 
 		final CandidateRepositoryRetrieval candidateRepository = new CandidateRepositoryRetrieval();
-		final CandidateRepositoryCommands candidateRepositoryCommands = new CandidateRepositoryCommands();
+		final CandidateRepositoryWriteService candidateRepositoryCommands = new CandidateRepositoryWriteService();
 		final SupplyProposalEvaluator supplyProposalEvaluator = new SupplyProposalEvaluator(candidateRepository);
 
 		stockRepository = new StockRepository();

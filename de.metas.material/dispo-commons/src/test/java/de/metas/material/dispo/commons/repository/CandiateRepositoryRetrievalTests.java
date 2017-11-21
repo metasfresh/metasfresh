@@ -84,7 +84,7 @@ public class CandiateRepositoryRetrievalTests
 
 		candidateRepository = new CandidateRepositoryRetrieval();
 
-		final CandidateRepositoryCommands candidateRepositoryCommands = new CandidateRepositoryCommands();
+		final CandidateRepositoryWriteService candidateRepositoryCommands = new CandidateRepositoryWriteService();
 		repositoryTestHelper = new RepositoryTestHelper(candidateRepositoryCommands);
 	}
 

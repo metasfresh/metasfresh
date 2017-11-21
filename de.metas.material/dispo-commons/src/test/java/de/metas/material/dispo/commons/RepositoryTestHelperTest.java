@@ -9,7 +9,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import de.metas.material.dispo.commons.candidate.Candidate;
-import de.metas.material.dispo.commons.repository.CandidateRepositoryCommands;
+import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.event.EventTestHelper;
@@ -49,7 +49,7 @@ public class RepositoryTestHelperTest
 	@Test
 	public void mkQueryForStockUntilDate_has_unspecified_StorageAttributesKey()
 	{
-		final RepositoryTestHelper repositoryTestHelper = new RepositoryTestHelper(new CandidateRepositoryCommands());
+		final RepositoryTestHelper repositoryTestHelper = new RepositoryTestHelper(new CandidateRepositoryWriteService());
 
 		final CandidatesQuery stockCandidatequery = repositoryTestHelper
 				.mkQueryForStockUntilDate(EventTestHelper.NOW);
@@ -61,7 +61,7 @@ public class RepositoryTestHelperTest
 	@Test
 	public void constructor_sets_up_candidates_correctly()
 	{
-		final RepositoryTestHelper repositoryTestHelper = new RepositoryTestHelper(new CandidateRepositoryCommands());
+		final RepositoryTestHelper repositoryTestHelper = new RepositoryTestHelper(new CandidateRepositoryWriteService());
 
 		final Candidate laterStockCandidate = repositoryTestHelper.laterStockCandidate;
 		final Candidate stockCandidate = repositoryTestHelper.stockCandidate;
@@ -92,7 +92,7 @@ public class RepositoryTestHelperTest
 	@Test
 	public void constructor_sets_up_candidates_correctly_and_queryies_work()
 	{
-		final RepositoryTestHelper repositoryTestHelper = new RepositoryTestHelper(new CandidateRepositoryCommands());
+		final RepositoryTestHelper repositoryTestHelper = new RepositoryTestHelper(new CandidateRepositoryWriteService());
 
 		final CandidatesQuery stockCandidatequery = repositoryTestHelper.mkQueryForStockUntilDate(EventTestHelper.NOW);
 		final CandidateRepositoryRetrieval candidateRepositoryRetrieval = new CandidateRepositoryRetrieval();

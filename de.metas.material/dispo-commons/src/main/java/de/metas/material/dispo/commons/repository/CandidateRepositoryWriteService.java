@@ -10,6 +10,7 @@ import java.sql.Timestamp;
 import java.util.Objects;
 
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.springframework.stereotype.Service;
 
@@ -29,6 +30,7 @@ import de.metas.material.dispo.model.I_MD_Candidate_Dist_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_Prod_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_Transaction_Detail;
 import de.metas.material.event.commons.MaterialDescriptor;
+import de.metas.material.event.commons.ProductDescriptor;
 import lombok.NonNull;
 
 /*
@@ -54,7 +56,7 @@ import lombok.NonNull;
  */
 
 @Service
-public class CandidateRepositoryCommands
+public class CandidateRepositoryWriteService
 {
 	/**
 	 * Updates the qty of the given candidate.
@@ -208,7 +210,8 @@ public class CandidateRepositoryCommands
 
 		candidateRecord.setM_Product_ID(materialDescriptor.getProductId());
 		candidateRecord.setM_AttributeSetInstance_ID(materialDescriptor.getAttributeSetInstanceId());
-		candidateRecord.setStorageAttributesKey(materialDescriptor.getStorageAttributesKey());
+
+		candidateRecord.setStorageAttributesKey(computeStorageAttributesKeyToStore(materialDescriptor));
 
 		candidateRecord.setQty(candidate.getQuantity());
 		candidateRecord.setDateProjected(new Timestamp(materialDescriptor.getDate().getTime()));
@@ -240,6 +243,23 @@ public class CandidateRepositoryCommands
 		if (candidate.getStatus() != null)
 		{
 			candidateRecord.setMD_Candidate_Status(candidate.getStatus().toString());
+		}
+	}
+
+	@NonNull
+	private String computeStorageAttributesKeyToStore(@NonNull final MaterialDescriptor materialDescriptor)
+	{
+		final String storageAttributesKey = materialDescriptor.getStorageAttributesKey();
+
+		if (Objects.equals(storageAttributesKey, ProductDescriptor.STORAGE_ATTRIBUTES_KEY_ALL)
+				|| Check.isEmpty(storageAttributesKey, true))
+		{
+			// don't store NULL because within the DB we have an index on this and NULL values are trouble with indexes
+			return "";
+		}
+		else
+		{
+			return storageAttributesKey;
 		}
 	}
 

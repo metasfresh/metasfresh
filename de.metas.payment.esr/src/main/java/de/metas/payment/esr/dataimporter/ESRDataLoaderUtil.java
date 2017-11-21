@@ -1,5 +1,9 @@
 package de.metas.payment.esr.dataimporter;
 
+import static org.adempiere.model.InterfaceWrapperHelper.create;
+
+import java.util.List;
+
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.bpartner.service.IBPartnerDAO;
@@ -12,16 +16,20 @@ import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.util.Env;
+import org.compiere.util.Util;
 
 import de.metas.document.documentNo.IDocumentNoBuilderFactory;
 import de.metas.document.refid.model.I_C_ReferenceNo;
 import de.metas.document.refid.model.I_C_ReferenceNo_Doc;
 import de.metas.i18n.IMsgBL;
+import de.metas.payment.esr.api.IESRBPBankAccountDAO;
 import de.metas.payment.esr.api.IESRImportBL;
 import de.metas.payment.esr.api.IESRImportDAO;
 import de.metas.payment.esr.api.IESRLineHandlersService;
+import de.metas.payment.esr.model.I_C_BP_BankAccount;
 import de.metas.payment.esr.model.I_ESR_Import;
 import de.metas.payment.esr.model.I_ESR_ImportLine;
+import de.metas.payment.esr.model.I_ESR_PostFinanceUserNumber;
 import de.metas.payment.esr.model.X_ESR_ImportLine;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
@@ -68,6 +76,8 @@ public class ESRDataLoaderUtil
 
 	public static final String ERR_UNFIT_DOCUMENT_NOS = "ESR_Unfit_DocumentNo";
 
+	public static final String ERR_WRONG_POST_BANK_ACCOUNT = "ESR_Wrong_Post_Bank_Account";
+
 	public I_ESR_ImportLine newLine(@NonNull final I_ESR_Import esrImport)
 	{
 		final I_ESR_ImportLine newLine = InterfaceWrapperHelper.newInstance(I_ESR_ImportLine.class, esrImport);
@@ -112,8 +122,7 @@ public class ESRDataLoaderUtil
 		{
 			addMatchErrorMsg(importLine,
 					Services.get(IMsgBL.class).getMsg(Env.getCtx(), ERR_NO_ESR_NO_FOUND_IN_DB_1P,
-							new Object[]
-							{ completeEsrReferenceNumberStr }));
+							new Object[] { completeEsrReferenceNumberStr }));
 		}
 		else
 		{
@@ -152,8 +161,7 @@ public class ESRDataLoaderUtil
 				addMatchErrorMsg(
 						importLine,
 						Services.get(IMsgBL.class).getMsg(Env.getCtx(), ERR_ESR_DOES_NOT_BELONG_TO_INVOICE_2P,
-								new Object[]
-								{ completeEsrReferenceNumberStr, tableName }));
+								new Object[] { completeEsrReferenceNumberStr, tableName }));
 			}
 		}
 
@@ -219,14 +227,14 @@ public class ESRDataLoaderUtil
 		if (bPartner != null)
 		{
 			final boolean match = Services.get(IESRLineHandlersService.class).applyESRMatchingBPartner(bPartner, importLine);
-			
+
 			// check the org: should not match with invoices from other orgs
 			if (match)
 			{
 				bPartnerId = bPartner.getC_BPartner_ID();
 				importLine.setC_BPartner(bPartner);
 				importLine.setESR_Document_Status(X_ESR_ImportLine.ESR_DOCUMENT_STATUS_PartiallyMatched);
-				
+
 			}
 			else
 			{
@@ -285,8 +293,7 @@ public class ESRDataLoaderUtil
 					else
 					{
 						addMatchErrorMsg(importLine,
-								Services.get(IMsgBL.class).getMsg(Env.getCtx(), ERR_UNFIT_BPARTNER_VALUES, new Object[]
-								{
+								Services.get(IMsgBL.class).getMsg(Env.getCtx(), ERR_UNFIT_BPARTNER_VALUES, new Object[] {
 										invoicePartner.getValue(),
 										bpValue
 								}));
@@ -296,8 +303,7 @@ public class ESRDataLoaderUtil
 				if (!invoiceDocumentNo.equals(documentNo))
 				{
 					addMatchErrorMsg(importLine,
-							Services.get(IMsgBL.class).getMsg(Env.getCtx(), ERR_UNFIT_DOCUMENT_NOS, new Object[]
-							{
+							Services.get(IMsgBL.class).getMsg(Env.getCtx(), ERR_UNFIT_DOCUMENT_NOS, new Object[] {
 									invoiceDocumentNo,
 									documentNo
 							}));
@@ -383,4 +389,76 @@ public class ESRDataLoaderUtil
 
 		return str + "; " + msg;
 	}
+
+	public void evaluateESRAccountNumber(final I_ESR_Import esrImport, final I_ESR_ImportLine importLine)
+	{
+		final I_C_BP_BankAccount bankAcct = create(esrImport.getC_BP_BankAccount(), I_C_BP_BankAccount.class);
+
+		final String postAcctNo = importLine.getESRPostParticipantNumber();
+
+		final String renderedPostAccountNo = bankAcct.getESR_RenderedAccountNo();
+		final String unrenderedPostAcctNo = unrenderPostAccountNo(renderedPostAccountNo);
+
+		final boolean esrLineFitsBankAcctESRPostAcct = unrenderedPostAcctNo.equals(postAcctNo);
+
+		final List<I_ESR_PostFinanceUserNumber> postFinanceUserNumbers = Services.get(IESRBPBankAccountDAO.class).retrieveESRPostFinanceUserNumbers(bankAcct);
+
+		final boolean existsFittingPostFinanceUserNumber = existsPostFinanceUserNumberFitsPostAcctNo(postFinanceUserNumbers, postAcctNo);
+
+		final boolean esrNumbersFit = esrLineFitsBankAcctESRPostAcct || existsFittingPostFinanceUserNumber;
+
+		if (!esrNumbersFit)
+		{
+
+			ESRDataLoaderUtil.addMatchErrorMsg(importLine, Services.get(IMsgBL.class).getMsg(Env.getCtx(), ERR_WRONG_POST_BANK_ACCOUNT,
+					new Object[] { postAcctNo }));
+		}
+
+	}
+
+	private boolean existsPostFinanceUserNumberFitsPostAcctNo(final List<I_ESR_PostFinanceUserNumber> postFinanceUserNumbers, @NonNull final String postAcctNo)
+	{
+		if (Check.isEmpty(postFinanceUserNumbers))
+		{
+			return false;
+		}
+
+		for (final I_ESR_PostFinanceUserNumber postFinanceUserNumber : postFinanceUserNumbers)
+		{
+			// Provide support for both rendered and unrendered esr account numbers
+			final String esrAcctNo = postFinanceUserNumber.getESR_RenderedAccountNo();
+
+			if (postAcctNo.equals(esrAcctNo))
+			{
+				return true;
+			}
+
+			if (esrAcctNo.contains("-"))
+			{
+				final String unrenderedESRAcctNo = unrenderPostAccountNo(esrAcctNo);
+
+				if (postAcctNo.equals(unrenderedESRAcctNo))
+				{
+					return true;
+				}
+			}
+
+		}
+
+		return false;
+	}
+
+	private String unrenderPostAccountNo(final String renderedPostAccountNo)
+	{
+		final String[] renderenNoComponents = renderedPostAccountNo.split("-");
+		Check.assume(renderenNoComponents.length == 3, renderedPostAccountNo + " contains three '-' separated parts");
+
+		final StringBuilder sb = new StringBuilder();
+		sb.append(renderenNoComponents[0]);
+		sb.append(Util.lpadZero(renderenNoComponents[1], 6, "middle section of " + renderedPostAccountNo));
+		sb.append(renderenNoComponents[2]);
+
+		return sb.toString();
+	}
+
 }
