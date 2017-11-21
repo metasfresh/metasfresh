@@ -4,6 +4,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.math.BigDecimal;
+
 /*
  * #%L
  * de.metas.contracts
@@ -47,12 +49,15 @@ import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_SubscriptionProgress;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_SubscriptionProgress;
+import de.metas.invoicecandidate.api.IInvoiceCandDAO;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import lombok.NonNull;
 
 public class TerminateSingleContractTest extends AbstractFlatrateTermTest
 {
 	final private IContractChangeBL contractChangeBL = Services.get(IContractChangeBL.class);
 	final private IContractsDAO contractsDAO = Services.get(IContractsDAO.class);
+	private final transient IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 
 	final private static Timestamp startDate = TimeUtil.parseTimestamp("2017-09-10");
 	final private static FixedTimeSource today = new FixedTimeSource(2017, 11, 10);
@@ -77,7 +82,7 @@ public class TerminateSingleContractTest extends AbstractFlatrateTermTest
 		final ContractChangeParameters contractChangeParameters = ContractChangeParameters.builder()
 				.changeDate(SystemTime.asDayTimestamp())
 				.isCloseInvoiceCandidate(true)
-				.isOnlyTerminateCurrentTerm(true)
+				.action(IContractChangeBL.ChangeTerm_ACTION_VoidSingleContract)
 				.build();
 
 		assertThatThrownBy(() -> {
@@ -96,15 +101,42 @@ public class TerminateSingleContractTest extends AbstractFlatrateTermTest
 		final I_C_Flatrate_Term extendedContract = contract.getC_FlatrateTerm_Next();
 		assertThat(extendedContract).isNotNull();
 
+		createInvoiceCandidates(extendedContract);
+
 		final ContractChangeParameters contractChangeParameters = ContractChangeParameters.builder()
 				.changeDate(SystemTime.asDayTimestamp())
 				.isCloseInvoiceCandidate(true)
-				.isOnlyTerminateCurrentTerm(true)
+				.action(IContractChangeBL.ChangeTerm_ACTION_VoidSingleContract)
 				.build();
 
 		contractChangeBL.cancelContract(extendedContract, contractChangeParameters);
-		assertClosedFlatrateTerm(extendedContract);
+		assertVoidedFlatrateTerm(extendedContract);
+		assertInvoiceCandidate(extendedContract);
 		assertSubscriptionProgress(extendedContract, 0);
+	}
+
+	private void assertVoidedFlatrateTerm(@NonNull final I_C_Flatrate_Term flatrateTerm)
+	{
+		assertThat(flatrateTerm.getDocStatus()).isEqualTo(X_C_Flatrate_Term.DOCSTATUS_Closed);
+		assertThat(flatrateTerm.getContractStatus()).isEqualTo(X_C_Flatrate_Term.CONTRACTSTATUS_Voided);
+		assertThat(flatrateTerm.getMasterStartDate()).isNull();
+		assertThat(flatrateTerm.getMasterEndDate()).isNull();
+		assertThat(flatrateTerm.isAutoRenew()).isFalse();
+		assertThat(flatrateTerm.getC_FlatrateTerm_Next()).isNull();
+		assertThat(flatrateTerm.getAD_PInstance_EndOfTerm()).isNull();
+
+		final I_C_Flatrate_Term ancestor = Services.get(IFlatrateDAO.class).retrieveAncestorFlatrateTerm(flatrateTerm);
+
+		assertThat(ancestor).isNull();
+	}
+
+	private void assertInvoiceCandidate(final I_C_Flatrate_Term flatrateTerm)
+	{
+		final List<I_C_Invoice_Candidate> candsForTerm = invoiceCandDAO.retrieveReferencing(flatrateTerm);
+		assertThat(candsForTerm).hasSize(1);
+		final I_C_Invoice_Candidate invoiceCandidate = candsForTerm.get(0);
+		assertThat(invoiceCandidate.getQtyInvoiced()).isEqualByComparingTo(BigDecimal.ZERO);
+		assertThat(invoiceCandidate.getQtyToInvoice()).isEqualByComparingTo(BigDecimal.ZERO);
 	}
 
 	private void assertSubscriptionProgress(@NonNull final I_C_Flatrate_Term flatrateTerm, final int expected)
@@ -117,21 +149,6 @@ public class TerminateSingleContractTest extends AbstractFlatrateTermTest
 				.peek(progress -> assertThat(progress.getContractStatus()).isEqualTo(X_C_SubscriptionProgress.CONTRACTSTATUS_Quit))
 				.filter(progress -> progress.getEventDate().after(flatrateTerm.getMasterEndDate()))
 				.peek(progress -> assertThat(progress.getContractStatus()).isEqualTo(X_C_SubscriptionProgress.CONTRACTSTATUS_Running));
-	}
-
-	private void assertClosedFlatrateTerm(@NonNull final I_C_Flatrate_Term flatrateTerm)
-	{
-		assertThat(flatrateTerm.getDocStatus()).isEqualTo(X_C_Flatrate_Term.DOCSTATUS_Completed);
-		assertThat(flatrateTerm.getContractStatus()).isEqualTo(X_C_Flatrate_Term.CONTRACTSTATUS_Quit);
-		assertThat(flatrateTerm.getMasterStartDate()).isNull();
-		assertThat(flatrateTerm.getMasterEndDate()).isNull();
-		assertThat(flatrateTerm.isAutoRenew()).isFalse();
-		assertThat(flatrateTerm.getC_FlatrateTerm_Next()).isNull();
-		assertThat(flatrateTerm.getAD_PInstance_EndOfTerm()).isNull();
-
-		final I_C_Flatrate_Term ancestor = Services.get(IFlatrateDAO.class).retrieveAncestorFlatrateTerm(flatrateTerm);
-
-		assertThat(ancestor).isNull();
 	}
 
 }
