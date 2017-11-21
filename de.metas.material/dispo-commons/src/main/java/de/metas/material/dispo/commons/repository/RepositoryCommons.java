@@ -79,6 +79,11 @@ public class RepositoryCommons
 			builder.addEqualsFilter(I_MD_Candidate.COLUMN_MD_Candidate_ID, query.getId());
 		}
 
+		if (query.getParentId() > 0)
+		{
+			builder.addEqualsFilter(I_MD_Candidate.COLUMN_MD_Candidate_Parent_ID, query.getParentId());
+		}
+
 		addMaterialDescriptorToQueryBuilderIfNotNull(
 				query.getMaterialDescriptor(),
 				query.isMatchExactStorageAttributesKey(),
