@@ -25,6 +25,7 @@ import de.metas.ui.web.quickinput.QuickInputDescriptor;
 import de.metas.ui.web.quickinput.QuickInputLayoutDescriptor;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentType;
+import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
@@ -134,7 +135,13 @@ import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
 		}
 
 		final IOrderLineQuickInput quickInputModel = quickInput.getQuickInputDocumentAs(IOrderLineQuickInput.class);
-		final ProductAndAttributes productAndAttributes = ProductLookupDescriptor.toProductAndAttributes(quickInputModel.getM_Product_ID());
+		final LookupValue productLookupValue = quickInputModel.getM_Product_ID();
+		if(productLookupValue == null)
+		{
+			return;
+		}
+		
+		final ProductAndAttributes productAndAttributes = ProductLookupDescriptor.toProductAndAttributes(productLookupValue);
 		final I_M_Product quickInputProduct = load(productAndAttributes.getProductId(), I_M_Product.class);
 
 		final I_C_Order order = quickInput.getRootDocumentAs(I_C_Order.class);
