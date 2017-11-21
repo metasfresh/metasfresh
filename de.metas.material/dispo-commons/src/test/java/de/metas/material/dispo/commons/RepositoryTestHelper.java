@@ -123,7 +123,7 @@ public class RepositoryTestHelper
 		// @formatter:off
 		new Expectations(CandidateRepositoryRetrieval.class)
 		{{
-			stockRepository.retrieveSingleAvailableStockQty(MaterialQuery.forMaterialDescriptor(materialDescriptor));
+			stockRepository.retrieveAvailableStockQtySum(MaterialQuery.forMaterialDescriptor(materialDescriptor));
 			minTimes = 0;
 			result = new BigDecimal(quantity);
 		}}; // @formatter:on

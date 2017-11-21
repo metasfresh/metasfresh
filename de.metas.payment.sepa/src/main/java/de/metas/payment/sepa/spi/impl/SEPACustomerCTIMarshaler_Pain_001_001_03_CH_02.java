@@ -70,7 +70,6 @@ import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.ChargeBearerType1Cod
 import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.ClearingSystemIdentification2Choice;
 import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.ClearingSystemMemberIdentification2;
 import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.CreditTransferTransactionInformation10CH;
-import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.CreditorReferenceInformation2;
 import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.CustomerCreditTransferInitiationV03CH;
 import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.Document;
 import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.FinancialInstitutionIdentification7CH;
@@ -90,7 +89,6 @@ import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.PaymentTypeInformati
 import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.PostalAddress6CH;
 import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.RemittanceInformation5CH;
 import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.ServiceLevel8Choice;
-import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.StructuredRemittanceInformation7;
 import de.metas.payment.sepa.model.I_SEPA_Export;
 import de.metas.payment.sepa.model.I_SEPA_Export_Line;
 import de.metas.payment.sepa.spi.ISEPAMarshaller;
@@ -570,7 +568,8 @@ public class SEPACustomerCTIMarshaler_Pain_001_001_03_CH_02 implements ISEPAMars
 
 		// Remittance Info
 		{
-			final RemittanceInformation5CH rmfInf = new RemittanceInformation5CH();
+
+			final RemittanceInformation5CH rmtInf = new RemittanceInformation5CH();
 			if (Check.isEmpty(line.getStructuredRemittanceInfo(), true) || paymentMode == ZAHLUNGS_ART_5)
 			{
 				Check.errorIf(paymentMode == ZAHLUNGS_ART_1, SepaMarshallerException.class,
@@ -586,25 +585,19 @@ public class SEPACustomerCTIMarshaler_Pain_001_001_03_CH_02 implements ISEPAMars
 				if (Check.isEmpty(reference, true))
 				{
 					// at least add a "." to make sure the node exists.
-					rmfInf.setUstrd(".");
+					rmtInf.setUstrd(".");
 				}
 				else
 				{
-					rmfInf.setUstrd(reference);
+					rmtInf.setUstrd(reference);
 				}
 			}
 			else
 			{
-				// task 07789
-				final StructuredRemittanceInformation7 strd = new StructuredRemittanceInformation7();
-				rmfInf.setStrd(strd);
-				final CreditorReferenceInformation2 cdtrRefInf = new CreditorReferenceInformation2();
-				strd.setCdtrRefInf(cdtrRefInf);
-				cdtrRefInf.setRef(line.getStructuredRemittanceInfo());
+				rmtInf.setUstrd(line.getStructuredRemittanceInfo());
 			}
-			cdtTrfTxInf.setRmtInf(rmfInf);
+			cdtTrfTxInf.setRmtInf(rmtInf);
 		}
-
 		return cdtTrfTxInf;
 	}
 

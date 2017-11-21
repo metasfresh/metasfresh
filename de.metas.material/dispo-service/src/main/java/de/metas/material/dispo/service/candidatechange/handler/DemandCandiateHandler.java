@@ -146,7 +146,7 @@ public class DemandCandiateHandler implements CandidateHandler
 		if (demandCandidate.getType() == CandidateType.DEMAND)
 		{
 			final MaterialQuery query = MaterialQuery.forMaterialDescriptor(demandCandidate.getMaterialDescriptor());
-			final BigDecimal availableQuantity = stockRepository.retrieveSingleAvailableStockQty(query);
+			final BigDecimal availableQuantity = stockRepository.retrieveAvailableStockQtySum(query);
 			final boolean demandExceedsAvailableQty = demandCandidate.getQuantity().compareTo(availableQuantity) > 0;
 
 			if (demandExceedsAvailableQty)
