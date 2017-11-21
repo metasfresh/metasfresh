@@ -18,6 +18,7 @@ import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_Activity;
 import org.compiere.model.I_M_Warehouse;
+import org.compiere.model.X_C_Order;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.junit.Assert;
@@ -25,14 +26,15 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import de.metas.adempiere.model.I_C_Order;
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.contracts.impl.ContractsTestBase;
-import de.metas.contracts.invoicecandidate.FlatrateTermInvoiceCandidateHandler;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_Flatrate_Transition;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Transition;
+import de.metas.contracts.subscription.model.I_C_OrderLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateRequest;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateResult;
@@ -233,6 +235,19 @@ public class FlatrateTermHandlerTest extends ContractsTestBase
 		conditions.setType_Conditions(X_C_Flatrate_Term.TYPE_CONDITIONS_Subscription);
 		save(conditions);
 
+		final I_C_Order order  = newInstance(I_C_Order.class);
+		order.setAD_Org(org);
+		order.setDocStatus(X_C_Order.DOCSTATUS_Completed);
+		save(order);
+
+		final I_C_OrderLine orderLine  = newInstance(I_C_OrderLine.class);
+		orderLine.setAD_Org(org);
+		orderLine.setC_Order(order);
+		orderLine.setC_Flatrate_Conditions(conditions);
+		orderLine.setM_Product(product1);
+		save(orderLine);
+
+
 		final I_C_Flatrate_Term term1 = newInstance(I_C_Flatrate_Term.class);
 		POJOWrapper.setInstanceName(term1, "term1");
 
@@ -242,6 +257,7 @@ public class FlatrateTermHandlerTest extends ContractsTestBase
 		term1.setType_Conditions(X_C_Flatrate_Term.TYPE_CONDITIONS_Subscription);
 		term1.setM_Product(product1);
 		term1.setStartDate(TimeUtil.getDay(2013, 5, 27)); // yesterday
+		term1.setC_OrderLine_Term(orderLine);
 		save(term1);
 
 		Services.registerService(IProductAcctDAO.class, productAcctDAO);
@@ -283,9 +299,15 @@ public class FlatrateTermHandlerTest extends ContractsTestBase
 
 		final FlatrateTermInvoiceCandidateHandler flatrateTermHandler = new FlatrateTermInvoiceCandidateHandler();
 		final InvoiceCandidateGenerateResult candidates = flatrateTermHandler.createCandidatesFor(InvoiceCandidateGenerateRequest.of(flatrateTermHandler, term1));
+		assertInvoiceCandidates(candidates, term1);
+	}
 
+	private void assertInvoiceCandidates(final InvoiceCandidateGenerateResult candidates, final I_C_Flatrate_Term term1)
+	{
 		assertThat(candidates.getC_Invoice_Candidates()).hasSize(1);
 		final I_C_Invoice_Candidate invoiceCandidate = candidates.getC_Invoice_Candidates().get(0);
-		assertThat(invoiceCandidate.getM_Product_ID()).isEqualTo(product1.getM_Product_ID());
+		assertThat(invoiceCandidate.getM_Product_ID()).isEqualTo(term1.getM_Product_ID());
+		assertThat(invoiceCandidate.getC_Order()).isNotNull();
+		assertThat(invoiceCandidate.getC_OrderLine()).isEqualTo(term1.getC_OrderLine_Term());
 	}
 }
