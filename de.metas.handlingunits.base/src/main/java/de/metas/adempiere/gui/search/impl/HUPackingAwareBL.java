@@ -25,7 +25,6 @@ package de.metas.adempiere.gui.search.impl;
 import java.math.BigDecimal;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.util.Services;
 import org.compiere.apps.search.IInfoSimple;
 import org.compiere.model.I_C_UOM;
@@ -50,36 +49,6 @@ public class HUPackingAwareBL implements IHUPackingAwareBL
 	public IHUPackingAware createPlain()
 	{
 		return new PlainHUPackingAware();
-	}
-
-	@Override
-	public void copy(final IHUPackingAware to, final IHUPackingAware from)
-	{
-		copy(to, from, true);
-	}
-
-	@Override
-	public void copy(final IHUPackingAware to, final IHUPackingAware from, final boolean overridePartner)
-	{
-		to.setM_Product_ID(from.getM_Product_ID());
-
-		final int asiId = from.getM_AttributeSetInstance_ID();
-		if (asiId >= 0)
-		{
-			Services.get(IAttributeSetInstanceBL.class).cloneASI(to, from);
-		}
-		to.setC_UOM(from.getC_UOM());
-		to.setQty(from.getQty());
-		to.setM_HU_PI_Item_Product(from.getM_HU_PI_Item_Product());
-		to.setQtyPacks(from.getQtyPacks());
-
-		// 08276
-		// do not modify the partner in the orderline if it was already set
-
-		if (to.getC_BPartner() == null || overridePartner)
-		{
-			to.setC_BPartner(from.getC_BPartner());
-		}
 	}
 
 	@Override

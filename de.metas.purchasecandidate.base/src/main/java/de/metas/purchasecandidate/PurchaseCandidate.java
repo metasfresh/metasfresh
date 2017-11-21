@@ -39,7 +39,9 @@ public class PurchaseCandidate
 {
 	private int repoId;
 
+	private final int salesOrderId;
 	private final int salesOrderLineId;
+	
 	@Setter(AccessLevel.NONE)
 	private int purchaseOrderLineId;
 
@@ -60,6 +62,7 @@ public class PurchaseCandidate
 	@Builder
 	public PurchaseCandidate(
 			final int repoId,
+			final int salesOrderId,
 			final int salesOrderLineId,
 			final int purchaseOrderLineId,
 			final int orgId,
@@ -71,6 +74,7 @@ public class PurchaseCandidate
 			@NonNull final Date datePromised,
 			final boolean processed)
 	{
+		Check.assume(salesOrderId > 0, "salesOrderId > 0"); // for now this shall be always set; might be that in future this won't be mandatory
 		Check.assume(salesOrderLineId > 0, "salesOrderLineId > 0"); // for now this shall be always set; might be that in future this won't be mandatory
 		Check.assume(orgId > 0, "orgId > 0");
 		Check.assume(warehouseId > 0, "warehouseId > 0");
@@ -80,6 +84,7 @@ public class PurchaseCandidate
 
 		this.repoId = repoId;
 
+		this.salesOrderId = salesOrderId;
 		this.salesOrderLineId = salesOrderLineId;
 		this.purchaseOrderLineId = purchaseOrderLineId > 0 ? purchaseOrderLineId : 0;
 
@@ -96,6 +101,7 @@ public class PurchaseCandidate
 	private PurchaseCandidate(final PurchaseCandidate from)
 	{
 		repoId = from.repoId;
+		salesOrderId = from.salesOrderId;
 		salesOrderLineId = from.salesOrderLineId;
 		orgId = from.orgId;
 		warehouseId = from.warehouseId;

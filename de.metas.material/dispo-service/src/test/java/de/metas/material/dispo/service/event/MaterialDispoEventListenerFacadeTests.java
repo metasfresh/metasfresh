@@ -26,6 +26,7 @@ import de.metas.material.dispo.commons.RepositoryTestHelper;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryCommands;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
+import de.metas.material.dispo.commons.repository.StockRepository;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
@@ -35,7 +36,7 @@ import de.metas.material.dispo.service.event.handler.DistributionAdvisedHandler;
 import de.metas.material.dispo.service.event.handler.ForecastCreatedHandler;
 import de.metas.material.dispo.service.event.handler.ProductionAdvisedHandler;
 import de.metas.material.dispo.service.event.handler.ShipmentScheduleCreatedHandler;
-import de.metas.material.dispo.service.event.handler.ShipmentScheduleEventHandlerTests;
+import de.metas.material.dispo.service.event.handler.ShipmentScheduleCreatedHandlerTests;
 import de.metas.material.dispo.service.event.handler.TransactionCreatedHandler;
 import de.metas.material.event.MaterialEventService;
 import de.metas.material.event.commons.EventDescriptor;
@@ -89,49 +90,56 @@ public class MaterialDispoEventListenerFacadeTests
 	@Mocked
 	private MaterialEventService materialEventService;
 
-	private CandidateRepositoryRetrieval candidateRepositoryRetrieval;
+	private StockRepository stockRepository;
 
 	@Before
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
 
-		candidateRepositoryRetrieval = new CandidateRepositoryRetrieval();
+		final CandidateRepositoryRetrieval candidateRepositoryRetrieval = new CandidateRepositoryRetrieval();
 		final SupplyProposalEvaluator supplyProposalEvaluator = new SupplyProposalEvaluator(candidateRepositoryRetrieval);
 
 		final CandidateRepositoryCommands candidateRepositoryCommands = new CandidateRepositoryCommands();
+
+		stockRepository = new StockRepository();
 
 		final StockCandidateService stockCandidateService = new StockCandidateService(
 				candidateRepositoryRetrieval,
 				candidateRepositoryCommands);
 
 		final CandidateChangeService candidateChangeHandler = new CandidateChangeService(ImmutableList.of(
-				new DemandCandiateHandler(candidateRepositoryRetrieval, candidateRepositoryCommands, materialEventService, stockCandidateService),
+				new DemandCandiateHandler(
+						candidateRepositoryRetrieval,
+						candidateRepositoryCommands,
+						materialEventService,
+						stockRepository,
+						stockCandidateService),
 				new SupplyCandiateHandler(candidateRepositoryRetrieval, candidateRepositoryCommands, stockCandidateService)));
 
 		final CandidateService candidateService = new CandidateService(
 				candidateRepositoryRetrieval,
 				MaterialEventService.createLocalServiceThatIsReadyToUse());
 
-		final DistributionAdvisedHandler distributionPlanEventHandler = new DistributionAdvisedHandler(
+		final DistributionAdvisedHandler distributionAdvisedEventHandler = new DistributionAdvisedHandler(
 				candidateRepositoryRetrieval,
 				candidateRepositoryCommands,
 				candidateChangeHandler,
 				supplyProposalEvaluator,
 				new CandidateService(candidateRepositoryRetrieval, materialEventService));
 
-		final ProductionAdvisedHandler productionPlanEventHandler = new ProductionAdvisedHandler(candidateChangeHandler, candidateService);
+		final ProductionAdvisedHandler productionAdvisedEventHandler = new ProductionAdvisedHandler(candidateChangeHandler, candidateService);
 
-		final ForecastCreatedHandler forecastEventHandler = new ForecastCreatedHandler(candidateChangeHandler);
+		final ForecastCreatedHandler forecastCreatedEventHandler = new ForecastCreatedHandler(candidateChangeHandler);
 
 		final TransactionCreatedHandler transactionEventHandler = new TransactionCreatedHandler(candidateChangeHandler, candidateRepositoryRetrieval);
 
 		final ShipmentScheduleCreatedHandler shipmentScheduleEventHandler = new ShipmentScheduleCreatedHandler(candidateChangeHandler);
 
 		mdEventListener = new MaterialDispoEventListenerFacade(
-				distributionPlanEventHandler,
-				productionPlanEventHandler,
-				forecastEventHandler,
+				distributionAdvisedEventHandler,
+				productionAdvisedEventHandler,
+				forecastCreatedEventHandler,
 				transactionEventHandler,
 				shipmentScheduleEventHandler);
 	}
@@ -140,16 +148,16 @@ public class MaterialDispoEventListenerFacadeTests
 	 * This test is more for myself, to figure out how the system works :-$
 	 */
 	@Test
-	public void testShipmentScheduleEvent_then_DistributionPlanevent()
+	public void testShipmentScheduleEvent_then_distributionAdvisedEvent()
 	{
-		final ShipmentScheduleCreatedEvent shipmentScheduleEvent = ShipmentScheduleEventHandlerTests.createShipmentScheduleTestEvent();
+		final ShipmentScheduleCreatedEvent shipmentScheduleEvent = ShipmentScheduleCreatedHandlerTests.createShipmentScheduleTestEvent();
 		final Date shipmentScheduleEventTime = shipmentScheduleEvent.getMaterialDescriptor().getDate();
 
-		RepositoryTestHelper.setupMockedRetrieveAvailableStock(candidateRepositoryRetrieval, shipmentScheduleEvent.getMaterialDescriptor(), "0");
+		RepositoryTestHelper.setupMockedRetrieveAvailableStock(stockRepository, shipmentScheduleEvent.getMaterialDescriptor(), "0");
 
 		mdEventListener.onEvent(shipmentScheduleEvent);
 
-		// create a DistributionPlanEvent event which matches the shipmentscheduleEvent that we processed in testShipmentScheduleEvent()
+		// create a distributionAdvisedEvent event which matches the shipmentscheduleEvent that we processed in testShipmentScheduleEvent()
 		final DistributionAdvisedEvent event = DistributionAdvisedEvent.builder()
 				.eventDescriptor(new EventDescriptor(CLIENT_ID, ORG_ID))
 				.fromWarehouseId(fromWarehouseId)
@@ -187,7 +195,7 @@ public class MaterialDispoEventListenerFacadeTests
 	@Ignore("You can extend on this one when starting with https://github.com/metasfresh/metasfresh/issues/2684")
 	public void testShipmentScheduleEvent_then_Shipment()
 	{
-		final ShipmentScheduleCreatedEvent shipmentScheduleEvent = ShipmentScheduleEventHandlerTests.createShipmentScheduleTestEvent();
+		final ShipmentScheduleCreatedEvent shipmentScheduleEvent = ShipmentScheduleCreatedHandlerTests.createShipmentScheduleTestEvent();
 
 		final Date shipmentScheduleEventTime = shipmentScheduleEvent.getMaterialDescriptor().getDate();
 		final Timestamp twoHoursAfterShipmentSched = TimeUtil.addHours(shipmentScheduleEventTime, 2);

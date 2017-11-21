@@ -12,17 +12,15 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.math.BigDecimal;
 import java.util.Date;
 
-import javax.annotation.Nullable;
-
-import org.apache.commons.lang3.ObjectUtils;
-
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryCommands;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
+import de.metas.material.dispo.commons.repository.MaterialQuery;
+import de.metas.material.dispo.commons.repository.StockRepository;
 import de.metas.material.event.commons.MaterialDescriptor;
-import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor.DateOperator;
+import de.metas.material.event.commons.ProductDescriptor;
 import lombok.NonNull;
 import mockit.Expectations;
 
@@ -96,7 +94,7 @@ public class RepositoryTestHelper
 		return CandidatesQuery.builder()
 				.type(CandidateType.STOCK)
 				.materialDescriptor(MaterialDescriptor.builderForQuery()
-						.productDescriptor(ProductDescriptor.forProductIdOnly(PRODUCT_ID))
+						.productDescriptor(ProductDescriptor.incompleteForProductId(PRODUCT_ID))
 						.warehouseId(WAREHOUSE_ID)
 						.date(date)
 						.dateOperator(DateOperator.BEFORE_OR_AT)
@@ -109,7 +107,7 @@ public class RepositoryTestHelper
 		return CandidatesQuery.builder()
 				.type(CandidateType.STOCK)
 				.materialDescriptor(MaterialDescriptor.builderForQuery()
-						.productDescriptor(ProductDescriptor.forProductIdOnly(PRODUCT_ID))
+						.productDescriptor(ProductDescriptor.incompleteForProductId(PRODUCT_ID))
 						.warehouseId(WAREHOUSE_ID)
 						.date(date)
 						.dateOperator(DateOperator.AT_OR_AFTER)
@@ -118,16 +116,14 @@ public class RepositoryTestHelper
 	}
 
 	public static void setupMockedRetrieveAvailableStock(
-			@NonNull final CandidateRepositoryRetrieval candidateRepository,
-			@Nullable final MaterialDescriptor materialDescriptor,
+			@NonNull final StockRepository stockRepository,
+			@NonNull final MaterialDescriptor materialDescriptor,
 			@NonNull final String quantity)
 	{
-
 		// @formatter:off
 		new Expectations(CandidateRepositoryRetrieval.class)
 		{{
-			final MaterialDescriptor materialDescriptorToUse = ObjectUtils.firstNonNull(materialDescriptor, (MaterialDescriptor)any);
-			candidateRepository.retrieveAvailableStock(materialDescriptorToUse);
+			stockRepository.retrieveSingleAvailableStockQty(MaterialQuery.forMaterialDescriptor(materialDescriptor));
 			minTimes = 0;
 			result = new BigDecimal(quantity);
 		}}; // @formatter:on

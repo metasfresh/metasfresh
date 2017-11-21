@@ -125,6 +125,35 @@ public interface I_C_PurchaseCandidate
     public static final String COLUMNNAME_C_OrderLineSO_ID = "C_OrderLineSO_ID";
 
 	/**
+	 * Set Auftrag.
+	 * Auftrag
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setC_OrderSO_ID (int C_OrderSO_ID);
+
+	/**
+	 * Get Auftrag.
+	 * Auftrag
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getC_OrderSO_ID();
+
+	public org.compiere.model.I_C_Order getC_OrderSO();
+
+	public void setC_OrderSO(org.compiere.model.I_C_Order C_OrderSO);
+
+    /** Column definition for C_OrderSO_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_PurchaseCandidate, org.compiere.model.I_C_Order> COLUMN_C_OrderSO_ID = new org.adempiere.model.ModelColumn<I_C_PurchaseCandidate, org.compiere.model.I_C_Order>(I_C_PurchaseCandidate.class, "C_OrderSO_ID", org.compiere.model.I_C_Order.class);
+    /** Column name C_OrderSO_ID */
+    public static final String COLUMNNAME_C_OrderSO_ID = "C_OrderSO_ID";
+
+	/**
 	 * Set Purchase candidate.
 	 *
 	 * <br>Type: ID
