@@ -145,6 +145,7 @@ public class PurchaseCandidateRepository
 	{
 		return PurchaseCandidate.builder()
 				.repoId(purchaseCandidatePO.getC_PurchaseCandidate_ID())
+				.salesOrderId(purchaseCandidatePO.getC_OrderSO_ID())
 				.salesOrderLineId(purchaseCandidatePO.getC_OrderLineSO_ID())
 				.orgId(purchaseCandidatePO.getAD_Org_ID())
 				.warehouseId(purchaseCandidatePO.getM_Warehouse_ID())

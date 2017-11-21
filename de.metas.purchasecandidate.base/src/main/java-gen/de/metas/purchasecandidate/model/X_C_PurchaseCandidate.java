@@ -15,7 +15,7 @@ public class X_C_PurchaseCandidate extends org.compiere.model.PO implements I_C_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1384723942L;
+	private static final long serialVersionUID = 1958824287L;
 
     /** Standard Constructor */
     public X_C_PurchaseCandidate (Properties ctx, int C_PurchaseCandidate_ID, String trxName)
@@ -24,6 +24,7 @@ public class X_C_PurchaseCandidate extends org.compiere.model.PO implements I_C_
       /** if (C_PurchaseCandidate_ID == 0)
         {
 			setC_OrderLineSO_ID (0);
+			setC_OrderSO_ID (0);
 			setC_PurchaseCandidate_ID (0);
 			setC_UOM_ID (0);
 			setDatePromised (new Timestamp( System.currentTimeMillis() ));
@@ -117,6 +118,43 @@ public class X_C_PurchaseCandidate extends org.compiere.model.PO implements I_C_
 	public int getC_OrderLineSO_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_OrderLineSO_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_C_Order getC_OrderSO() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_OrderSO_ID, org.compiere.model.I_C_Order.class);
+	}
+
+	@Override
+	public void setC_OrderSO(org.compiere.model.I_C_Order C_OrderSO)
+	{
+		set_ValueFromPO(COLUMNNAME_C_OrderSO_ID, org.compiere.model.I_C_Order.class, C_OrderSO);
+	}
+
+	/** Set Auftrag.
+		@param C_OrderSO_ID 
+		Auftrag
+	  */
+	@Override
+	public void setC_OrderSO_ID (int C_OrderSO_ID)
+	{
+		if (C_OrderSO_ID < 1) 
+			set_Value (COLUMNNAME_C_OrderSO_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_OrderSO_ID, Integer.valueOf(C_OrderSO_ID));
+	}
+
+	/** Get Auftrag.
+		@return Auftrag
+	  */
+	@Override
+	public int getC_OrderSO_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_OrderSO_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

@@ -58,16 +58,13 @@ public class AttributesKeyGenerator
 	 */
 	@NonNull
 	@Default
-	Function<I_M_AttributeInstance, String> valueAccessor = ai -> {
-
-		return ai.getValue();
-	};
+	Function<I_M_AttributeInstance, String> valueAccessor = ai -> Integer.toString(ai.getM_AttributeValue_ID());
 
 	public String createAttributesKey()
 	{
 		if (attributeSetInstanceId == AttributeConstants.M_AttributeSetInstance_ID_None)
 		{
-			return ProductDescriptor.STORAGE_ATTRIBUTES_KEY_UNSPECIFIED;
+			return ProductDescriptor.STORAGE_ATTRIBUTES_KEY_ALL;
 		}
 
 		final I_M_AttributeSetInstance attributeSetInstance = load(attributeSetInstanceId, I_M_AttributeSetInstance.class);

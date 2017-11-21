@@ -63,13 +63,13 @@ public class M_ForecastEventCreator
 			forecastBuilder.forecastLine(createForecastLine(forecastLine));
 		}
 
-		final ForecastCreatedEvent forecastEvent = ForecastCreatedEvent
+		final ForecastCreatedEvent forecastCreatedEvent = ForecastCreatedEvent
 				.builder()
 				.forecast(forecastBuilder.build())
 				.eventDescriptor(EventDescriptor.createNew(forecastModel))
 				.build();
 
-		return forecastEvent;
+		return forecastCreatedEvent;
 	}
 
 	private ForecastLine createForecastLine(@NonNull final I_M_ForecastLine forecastLine)
