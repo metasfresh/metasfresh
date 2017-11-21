@@ -121,6 +121,7 @@ public class PurchaseCandidateRepository
 			record = newInstance(I_C_PurchaseCandidate.class);
 		}
 
+		record.setC_OrderSO_ID(purchaseCandidate.getSalesOrderId());
 		record.setC_OrderLineSO_ID(purchaseCandidate.getSalesOrderLineId());
 		record.setC_OrderLinePO_ID(purchaseCandidate.getPurchaseOrderLineId());
 		record.setAD_Org_ID(purchaseCandidate.getOrgId());
