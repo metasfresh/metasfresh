@@ -46,6 +46,8 @@ import org.compiere.model.I_AD_Process_Para;
 import org.compiere.model.I_AD_Ref_List;
 import org.compiere.model.I_AD_SysConfig;
 import org.compiere.model.I_AD_Table;
+import org.compiere.model.I_C_BP_Relation;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_DocTypeCounter;
 import org.compiere.model.I_C_DocType_Sequence;
@@ -311,5 +313,8 @@ public final class AdempiereBaseValidator extends AbstractModuleInterceptor
 
 		cacheMgt.enableRemoteCacheInvalidationForTableName(I_AD_InfoWindow.Table_Name);
 		cacheMgt.enableRemoteCacheInvalidationForTableName(I_AD_InfoColumn.Table_Name);
+		
+		cacheMgt.enableRemoteCacheInvalidationForTableName(I_C_BPartner.Table_Name);
+		cacheMgt.enableRemoteCacheInvalidationForTableName(I_C_BP_Relation.Table_Name);
 	}
 }
