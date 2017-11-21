@@ -59,6 +59,7 @@ public class PackageableViewRepository
 {
 	private final Supplier<LookupDataSource> orderLookup;
 	private final Supplier<LookupDataSource> productLookup;
+	private final Supplier<LookupDataSource> bpartnerLookup;
 
 	public PackageableViewRepository()
 	{
@@ -76,6 +77,14 @@ public class PackageableViewRepository
 		productLookup = Suppliers.memoize(() -> LookupDataSourceFactory.instance.getLookupDataSource(SqlLookupDescriptor.builder()
 				.setCtxTableName(null)
 				.setCtxColumnName(I_M_Packageable_V.COLUMNNAME_M_Product_ID)
+				.setDisplayType(DisplayType.Search)
+				.setWidgetType(DocumentFieldWidgetType.Lookup)
+				.buildProvider()
+				.provideForScope(LookupScope.DocumentField)));
+		
+		bpartnerLookup = Suppliers.memoize(() -> LookupDataSourceFactory.instance.getLookupDataSource(SqlLookupDescriptor.builder()
+				.setCtxTableName(null)
+				.setCtxColumnName(I_M_Packageable_V.COLUMNNAME_C_BPartner_ID)
 				.setDisplayType(DisplayType.Search)
 				.setWidgetType(DocumentFieldWidgetType.Lookup)
 				.buildProvider()
@@ -113,7 +122,7 @@ public class PackageableViewRepository
 				//
 				.order(orderLookup.get().findById(packageable.getC_Order_ID()))
 				.product(productLookup.get().findById(packageable.getM_Product_ID()))
-				.deliveryDate(packageable.getDeliveryDate())
+				.bpartner(bpartnerLookup.get().findById(packageable.getC_BPartner_ID()))
 				.preparationDate(packageable.getPreparationDate())
 				.qtyToDeliver(packageable.getQtyToDeliver())
 				.shipmentScheduleId(packageable.getM_ShipmentSchedule_ID())
